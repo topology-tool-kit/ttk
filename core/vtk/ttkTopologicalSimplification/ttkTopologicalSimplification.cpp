@@ -20,6 +20,7 @@ vtkStandardNewMacro(ttkTopologicalSimplification)
   InputVertexScalarFieldName = ttk::VertexScalarFieldName;
   ConsiderIdentifierAsBlackList = false;
   InputOffsetScalarFieldName = ttk::OffsetScalarFieldName;
+  PeriodicBoundaryConditions = false;
 
   UseAllCores = true;
 }
@@ -54,6 +55,7 @@ int ttkTopologicalSimplification::getTriangulation(vtkDataSet *input) {
   }
 #endif
 
+  triangulation_->setPeriodicBoundaryConditions(PeriodicBoundaryConditions);
   triangulation_->setWrapper(this);
   topologicalSimplification_.setWrapper(this);
   topologicalSimplification_.setupTriangulation(triangulation_);
@@ -176,6 +178,18 @@ int ttkTopologicalSimplification::getOffsets(vtkDataSet *input) {
 #endif
 
   return 0;
+}
+
+template <typename VTK_TT>
+int ttkTopologicalSimplification::dispatch() {
+  int ret = 0;
+  if(inputOffsets_->GetDataType() == VTK_INT) {
+    ret = topologicalSimplification_.execute<VTK_TT, int>();
+  }
+  if(inputOffsets_->GetDataType() == VTK_ID_TYPE) {
+    ret = topologicalSimplification_.execute<VTK_TT, vtkIdType>();
+  }
+  return ret;
 }
 
 int ttkTopologicalSimplification::doIt(vector<vtkDataSet *> &inputs,
@@ -351,12 +365,7 @@ int ttkTopologicalSimplification::doIt(vector<vtkDataSet *> &inputs,
 #endif
 
   switch(inputScalars_->GetDataType()) {
-    ttkTemplateMacro({
-      if(inputOffsets_->GetDataType() == VTK_INT)
-        ret = topologicalSimplification_.execute<VTK_TT TTK_COMMA int>();
-      if(inputOffsets_->GetDataType() == VTK_ID_TYPE)
-        ret = topologicalSimplification_.execute<VTK_TT TTK_COMMA vtkIdType>();
-    });
+    vtkTemplateMacro(ret = dispatch<VTK_TT>());
   }
 #ifndef TTK_ENABLE_KAMIKAZE
   // something wrong in baseCode

@@ -272,8 +272,8 @@ namespace ttk {
         const SimplexId g_vertexId = idMapper->GetTuple1(l_vertexId);
         float cellScalar = 0;
         switch(scalarType) {
-          vtkTemplateMacro(
-            { cellScalar = (float)tree->getValue<VTK_TT>(l_vertexId); });
+          vtkTemplateMacro(cellScalar
+                           = (float)tree->getValue<VTK_TT>(l_vertexId));
         }
 
         ids->SetTuple1(arrIdx, idOffset + nodeId);

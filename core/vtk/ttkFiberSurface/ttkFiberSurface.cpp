@@ -20,6 +20,18 @@ vtkStandardNewMacro(ttkFiberSurface)
 
 ttkFiberSurface::~ttkFiberSurface() {
 }
+
+template <typename VTK_T1, typename VTK_T2>
+int ttkFiberSurface::dispatch() {
+#ifdef TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE
+  if(RangeOctree) {
+    fiberSurface_.buildOctree<VTK_T1, VTK_T2>();
+  }
+#endif // TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE
+  fiberSurface_.computeSurface<VTK_T1, VTK_T2>();
+  return 0;
+}
+
 int ttkFiberSurface::doIt(vector<vtkDataSet *> &inputs,
                           vector<vtkDataSet *> &outputs) {
 
@@ -169,21 +181,10 @@ int ttkFiberSurface::doIt(vector<vtkDataSet *> &inputs,
     fiberSurface_.setVertexList(i, &(threadedVertexList_[i]));
   }
 
-#ifdef TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE
   switch(vtkTemplate2PackMacro(
     dataUfield->GetDataType(), dataVfield->GetDataType())) {
-    ttkTemplate2Macro({
-      if(RangeOctree)
-        fiberSurface_.buildOctree<VTK_T1 TTK_COMMA VTK_T2>();
-      fiberSurface_.computeSurface<VTK_T1 TTK_COMMA VTK_T2>();
-    });
+    vtkTemplate2Macro((dispatch<VTK_T1, VTK_T2>()));
   }
-#else
-  switch(vtkTemplate2PackMacro(
-    dataUfield->GetDataType(), dataVfield->GetDataType())) {
-    ttkTemplate2Macro(fiberSurface_.computeSurface<VTK_T1 TTK_COMMA VTK_T2>());
-  }
-#endif
 
   // prepare the VTK output
   // NOTE: right now, there is a copy of the output data. this is no good.

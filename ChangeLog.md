@@ -1,6 +1,11 @@
 ## TTK - ChangeLog
 =
 ### ttk.git
+- Progressive Wasserstein Barycenters of Persistence Diagrams (IEEE VIS 2019)
+- Fast Wasserstein distance between Persistence Diagrams (auction+kd-tree)
+- Support for periodic grids
+- VTK/Python API with conda-forge packaging
+- Fixes
 
 ### 0.9.8
 - Updates for ParaView-5.6.1

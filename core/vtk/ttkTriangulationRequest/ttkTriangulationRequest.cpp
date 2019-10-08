@@ -18,6 +18,7 @@ vtkStandardNewMacro(ttkTriangulationRequest)
   if(!triangulation)
     return -1;
 
+  triangulation->setPeriodicBoundaryConditions(PeriodicBoundaryConditions);
   triangulation->setWrapper(this);
   const int dimensionality = triangulation->getDimensionality();
   const Request requestType = static_cast<Request>(RequestType);

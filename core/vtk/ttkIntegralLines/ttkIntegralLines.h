@@ -100,6 +100,9 @@ public:
                       std::vector<std::vector<ttk::SimplexId>> &trajectories,
                       vtkUnstructuredGrid *output);
 
+  template <typename VTK_TT>
+  int dispatch();
+
 protected:
   ttkIntegralLines();
   ~ttkIntegralLines() override;

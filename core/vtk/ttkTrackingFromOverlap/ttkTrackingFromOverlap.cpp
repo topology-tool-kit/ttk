@@ -235,11 +235,10 @@ int ttkTrackingFromOverlap::meshNestedTrackingGraph(
     cout, "[ttkTrackingFromOverlap] Meshing nested tracking graph\n", infoMsg);
 
   switch(this->LabelDataType) {
-    vtkTemplateMacro({
+    vtkTemplateMacro(
       finalize<VTK_TT>(this->levelTimeNodesMap, this->levelTimeEdgesTMap,
                        this->timeLevelEdgesNMap, this->LabelDataType,
-                       this->GetLabelFieldName(), trackingGraph);
-    });
+                       this->GetLabelFieldName(), trackingGraph));
   }
 
   stringstream msg;
@@ -516,12 +515,10 @@ int ttkTrackingFromOverlap::computeNodes(vtkMultiBlockDataSet *data) {
           continue;
 
         switch(this->LabelDataType) {
-          vtkTemplateMacro({
-            this->trackingFromOverlap.computeNodes<VTK_TT>(
-              (float *)pointSet->GetPoints()->GetVoidPointer(0),
-              (VTK_TT *)labels->GetVoidPointer(0), nPoints,
-              timeNodesMap[timeOffset + t]);
-          });
+          vtkTemplateMacro(this->trackingFromOverlap.computeNodes<VTK_TT>(
+            (float *)pointSet->GetPoints()->GetVoidPointer(0),
+            (VTK_TT *)labels->GetVoidPointer(0), nPoints,
+            timeNodesMap[timeOffset + t]));
         }
       }
     }
@@ -593,15 +590,12 @@ int ttkTrackingFromOverlap::computeTrackingGraphs(vtkMultiBlockDataSet *data) {
         continue;
 
       switch(this->LabelDataType) {
-        vtkTemplateMacro({
-          this->trackingFromOverlap.computeOverlap<VTK_TT>(
-            (float *)pointSet0->GetPoints()->GetVoidPointer(0),
-            (float *)pointSet1->GetPoints()->GetVoidPointer(0),
-            (VTK_TT *)labels0->GetVoidPointer(0),
-            (VTK_TT *)labels1->GetVoidPointer(0), nPoints0, nPoints1,
-
-            timeEdgesTMap[timeOffset + t - 1]);
-        });
+        vtkTemplateMacro(this->trackingFromOverlap.computeOverlap<VTK_TT>(
+          (float *)pointSet0->GetPoints()->GetVoidPointer(0),
+          (float *)pointSet1->GetPoints()->GetVoidPointer(0),
+          (VTK_TT *)labels0->GetVoidPointer(0),
+          (VTK_TT *)labels1->GetVoidPointer(0), nPoints0, nPoints1,
+          timeEdgesTMap[timeOffset + t - 1]));
       }
     }
   }
@@ -670,15 +664,12 @@ int ttkTrackingFromOverlap::computeNestingTrees(vtkMultiBlockDataSet *data) {
         continue;
 
       switch(this->LabelDataType) {
-        vtkTemplateMacro({
-          this->trackingFromOverlap.computeOverlap<VTK_TT>(
-            (float *)pointSet0->GetPoints()->GetVoidPointer(0),
-            (float *)pointSet1->GetPoints()->GetVoidPointer(0),
-            (VTK_TT *)labels0->GetVoidPointer(0),
-            (VTK_TT *)labels1->GetVoidPointer(0), nPoints0, nPoints1,
-
-            levelEdgesNMap[l - 1]);
-        });
+        vtkTemplateMacro(this->trackingFromOverlap.computeOverlap<VTK_TT>(
+          (float *)pointSet0->GetPoints()->GetVoidPointer(0),
+          (float *)pointSet1->GetPoints()->GetVoidPointer(0),
+          (VTK_TT *)labels0->GetVoidPointer(0),
+          (VTK_TT *)labels1->GetVoidPointer(0), nPoints0, nPoints1,
+          levelEdgesNMap[l - 1]));
       }
     }
   }

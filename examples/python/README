@@ -1,4 +1,4 @@
-Minimalist python TTK example pipeline, including:
+Minimalist VTK-based python TTK example pipeline, including:
 -# The computation of a persistence curve
 -# The computation of a persistence diagram
 -# The selection of the most persistent pairs of the diagram
@@ -13,21 +13,33 @@ IEEE Transactions on Visualization and Computer Graphics,
 Proc. of IEEE VIS 2017.
 
 
-To run this example, first install TTK on your system 
-(https://topology-tool-kit.github.io/installation.html).
+To run this example, either install TTK using Conda (Linux and OSX) or manually install TTK on your system.
+
+Using Conda
+===========
+0) Install either miniconda (https://docs.conda.io/en/latest/miniconda.html) or 
+   anaconda (https://www.anaconda.com/distribution/) on your system.
+
+1) Create a conda environment and install the 'topologytoolkit' package from conda-forge:
+$ conda create -n ttk
+$ conda activate ttk
+$ conda install -c conda-forge topologytoolkit
+
+2) From the current directory, enter the following command (omit the '$' character):
+$ ./example.py ../data/inputData.vtu
+
+
+Manual Installation
+===================
+First install TTK on your system (https://topology-tool-kit.github.io/installation.html).
 
 Next, before launching the script, make sure that you properly define the following environment variables:
-- LD_LIBRARY_PATH (where ParaView libraries are installed)
-- PV_PLUGIN_PATH (where TTK modules are installed)
-- PYTHONPATH (where ParaView python modules are installed)
+- LD_LIBRARY_PATH (where TTK libraries are installed)
+- PYTHONPATH (where TTK VTK python modules are installed)
 
 For instance, under Linux, with Python 3.6, this can be done as follows, assuming that you installed ParaView and TTK to /usr/local:
 $ export LD_LIBRARY_PATH="/usr/local/lib/"
-$ export PV_PLUGIN_PATH="/usr/local/lib/plugins"
 $ export PYTHONPATH="/usr/local/lib/python3.6/site-packages/"
 
 Then, from the current directory, enter the following command (omit the '$' character):
-$ ./ttkExample-python.py ../data/inputData.vtu
-
-Alternatively, you can also use the ParaView python wrapper (which will automatically position environment variables correctly):
-$ pvpython ttkExample-python.py ../data/inputData.vtu
+$ ./example.py ../data/inputData.vtu

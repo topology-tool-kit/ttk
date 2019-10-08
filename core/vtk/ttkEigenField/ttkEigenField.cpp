@@ -97,7 +97,7 @@ int ttkEigenField::doIt(std::vector<vtkDataSet *> &inputs,
     stats->SetComponentName(0, "Min");
     stats->SetComponentName(1, "Max");
     stats->SetComponentName(2, "Sum");
-    stats->SetComponentName(3, "Average");
+    stats->SetComponentName(3, "EigenMagnitude");
   }
 
   baseWorker_.setOutputFieldPointer(eigenFunctions->GetVoidPointer(0));

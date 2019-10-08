@@ -84,6 +84,9 @@ public:
   vtkSetMacro(KeepAllDataArrays, bool);
   vtkGetMacro(KeepAllDataArrays, bool);
 
+  vtkSetMacro(PeriodicBoundaryConditions, int);
+  vtkGetMacro(PeriodicBoundaryConditions, int);
+
   int FillInputPortInformation(int port, vtkInformation *info) override {
 
     switch(port) {
@@ -119,6 +122,7 @@ protected:
     SimplexIdentifier = 0;
     RequestType = 0;
     KeepAllDataArrays = true;
+    PeriodicBoundaryConditions = false;
 
     SetNumberOfInputPorts(1);
     SetNumberOfOutputPorts(1);
@@ -133,4 +137,5 @@ private:
   int SimplexIdentifier;
   int RequestType;
   bool KeepAllDataArrays;
+  bool PeriodicBoundaryConditions;
 };

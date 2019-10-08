@@ -30,6 +30,13 @@ namespace ttk {
   class BarycentricSubdivision : public Debug {
 
   public:
+    BarycentricSubdivision(std::vector<float> &points,
+                           std::vector<LongSimplexId> &cells,
+                           std::vector<SimplexId> &pointId,
+                           std::vector<SimplexId> &pointDim)
+      : points_{points}, cells_{cells}, pointId_{pointId}, pointDim_{pointDim} {
+    }
+
     inline void setOutputTriangulation(Triangulation *const triangulation) {
       outputTriangl_ = triangulation;
     }
@@ -44,15 +51,21 @@ namespace ttk {
         inputTriangl_->preprocessTriangles();
         inputTriangl_->preprocessTriangleEdges();
       }
+      nVertices_ = inputTriangl_->getNumberOfVertices();
+      nEdges_ = inputTriangl_->getNumberOfEdges();
+      nTriangles_ = inputTriangl_->getNumberOfTriangles();
     }
 
-    inline SimplexId getNumberOfVertices() {
-      if(inputTriangl_ == nullptr) {
-        return 0;
-      }
-      return inputTriangl_->getNumberOfVertices()
-             + inputTriangl_->getNumberOfEdges()
-             + inputTriangl_->getNumberOfTriangles();
+    /** @brief Return the number of vertices in the output triangulation
+     */
+    inline SimplexId getNumberOfVertices() const {
+      return nVertices_ + nEdges_ + nTriangles_;
+    }
+
+    /** @brief Return the number of triangles in the output triangulation
+     */
+    inline SimplexId getNumberOfTriangles() const {
+      return nTriangles_ * 6;
     }
 
     int execute();
@@ -68,38 +81,35 @@ namespace ttk {
      * @return 0 in case of success
      */
     template <typename T>
-    int interpolateContinuousScalarField(const T *data, T *output) {
+    int interpolateContinuousScalarField(const T *data, T *output) const {
       static_assert(
         std::is_floating_point<T>::value, "Floating point type required.");
       if(inputTriangl_ == nullptr || outputTriangl_ == nullptr) {
         return 1;
       }
-      const auto nInVerts = inputTriangl_->getNumberOfVertices();
-      const auto nInEdges = inputTriangl_->getNumberOfEdges();
-      const auto nInTriangles = inputTriangl_->getNumberOfTriangles();
-      const auto nOutVerts = outputTriangl_->getNumberOfVertices();
-      if(nOutVerts < 0 || nOutVerts != nInVerts + nInEdges + nInTriangles) {
+      const auto nOutVerts = this->getNumberOfVertices();
+      if(nOutVerts < 0 || nOutVerts != nVertices_ + nEdges_ + nTriangles_) {
         return 1;
       }
 
       // copy data on parent vertices
-      std::copy(data, data + nInVerts, output);
+      std::copy(data, data + nVertices_, output);
 
       // interpolate on edges
-      for(SimplexId i = 0; i < nInEdges; ++i) {
+      for(SimplexId i = 0; i < nEdges_; ++i) {
         SimplexId a{}, b{};
         inputTriangl_->getEdgeVertex(i, 0, a);
         inputTriangl_->getEdgeVertex(i, 0, b);
-        output[nInVerts + i] = (data[a] + data[b]) / T{2.0};
+        output[nVertices_ + i] = (data[a] + data[b]) / T{2.0};
       }
 
       // interpolate on triangle barycenters
-      for(SimplexId i = 0; i < nInTriangles; ++i) {
+      for(SimplexId i = 0; i < nTriangles_; ++i) {
         SimplexId a{}, b{}, c{};
         inputTriangl_->getTriangleVertex(i, 0, a);
         inputTriangl_->getTriangleVertex(i, 1, b);
         inputTriangl_->getTriangleVertex(i, 2, c);
-        output[nInVerts + nInEdges + i]
+        output[nVertices_ + nEdges_ + i]
           = (data[a] + data[b] + data[c]) / T{3.0};
       }
       return 0;
@@ -116,18 +126,17 @@ namespace ttk {
      * @return 0 in case of success
      */
     template <typename T>
-    int interpolateDiscreteScalarField(const T *data, T *output) {
+    int interpolateDiscreteScalarField(const T *data, T *output) const {
       static_assert(std::is_integral<T>::value, "Integral type required.");
       if(inputTriangl_ == nullptr || outputTriangl_ == nullptr) {
         return 1;
       }
-      const auto nInVerts = inputTriangl_->getNumberOfVertices();
-      const auto nOutVerts = outputTriangl_->getNumberOfVertices();
-      if(nOutVerts < 0 || nOutVerts < nInVerts) {
+      const auto nOutVerts = this->getNumberOfVertices();
+      if(nOutVerts < 0 || nOutVerts < nVertices_) {
         return 1;
       }
       std::fill(output, output + nOutVerts, T{0});
-      std::copy(data, data + nInVerts, output);
+      std::copy(data, data + nVertices_, output);
       return 0;
     }
 
@@ -142,18 +151,17 @@ namespace ttk {
      * @return 0 in case of success
      */
     template <typename T>
-    int interpolateCellDataField(const T *data, T *output) {
+    int interpolateCellDataField(const T *data, T *output) const {
       if(inputTriangl_ == nullptr || outputTriangl_ == nullptr) {
         return 1;
       }
       const size_t newTrianglesPerParent{6};
-      const size_t nInTriangles = inputTriangl_->getNumberOfTriangles();
-      const size_t nOutTriangles = outputTriangl_->getNumberOfTriangles();
+      const size_t nOutTriangles = this->getNumberOfTriangles();
       if(nOutTriangles < 0
-         || nOutTriangles != newTrianglesPerParent * nInTriangles) {
+         || nOutTriangles != newTrianglesPerParent * nTriangles_) {
         return 1;
       }
-      for(size_t i = 0; i < nInTriangles; ++i) {
+      for(SimplexId i = 0; i < nTriangles_; ++i) {
         output[i * newTrianglesPerParent + 0] = data[i];
         output[i * newTrianglesPerParent + 1] = data[i];
         output[i * newTrianglesPerParent + 2] = data[i];
@@ -168,6 +176,11 @@ namespace ttk {
     int subdiviseTriangulation();
     int buildOutputTriangulation();
 
+    // input triangulation properties
+    SimplexId nVertices_{};
+    SimplexId nEdges_{};
+    SimplexId nTriangles_{};
+
     // input triangulation
     Triangulation *inputTriangl_{};
     // array of input points coordinates
@@ -177,18 +190,18 @@ namespace ttk {
     // list of input cell data
     std::vector<void *> cellData_{};
 
-  public:
     // output 3D coordinates of generated points: old points first, then edge
     // middles, then triangle barycenters
-    std::vector<float> points_{};
+    std::vector<float> &points_;
     // output triangles
-    std::vector<LongSimplexId> cells_{};
-    // output triangulation built on output points & output cells
-    Triangulation *outputTriangl_{};
+    std::vector<LongSimplexId> &cells_;
     // generated point cell id
-    std::vector<SimplexId> pointId_{};
+    std::vector<SimplexId> &pointId_;
     // generated points dimension: 0 vertex of parent triangulation, 1 edge
     // middle, 2 triangle barycenter
-    std::vector<SimplexId> pointDim_{};
+    std::vector<SimplexId> &pointDim_;
+
+    // output triangulation built on output points & output cells
+    Triangulation *outputTriangl_{};
   };
 } // namespace ttk

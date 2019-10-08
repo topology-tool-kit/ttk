@@ -38,14 +38,6 @@ vtk_module_autoinit(
 
 target_link_libraries(ttkAll INTERFACE ${TTK_ENABLED_MODULES})
 
-get_property(HH TARGET ttkBlank PROPERTY INCLUDE_DIRECTORIES)
-message(STATUS "headers: ${HH}")
- # with VTK:
- # -- headers: $<BUILD_INTERFACE:/home/charles/Software/compil/ttk-charles/build/core/vtk/ttkBlank>
- #             $<BUILD_INTERFACE:/home/charles/Software/compil/ttk-charles/core/vtk/ttkBlank>
- #             $<INSTALL_INTERFACE:include>
- # with PV, the INSTALL_INTERFACE is missing
-
 # Use folder as configured by the distribution
 include(GNUInstallDirs)
 install(

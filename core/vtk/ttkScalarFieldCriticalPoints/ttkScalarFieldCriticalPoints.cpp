@@ -23,6 +23,35 @@ vtkStandardNewMacro(ttkScalarFieldCriticalPoints)
 ttkScalarFieldCriticalPoints::~ttkScalarFieldCriticalPoints() {
 }
 
+template <typename VTK_TT>
+int ttkScalarFieldCriticalPoints::dispatch(Triangulation *triangulation,
+                                           void *scalarValues,
+                                           const SimplexId vertexNumber) {
+  ScalarFieldCriticalPoints<VTK_TT> criticalPoints;
+  criticalPoints.setupTriangulation(triangulation);
+  int domainDimension = triangulation->getCellVertexNumber(0) - 1;
+
+  criticalPoints.setWrapper(this);
+  criticalPoints.setDomainDimension(domainDimension);
+  // set up input
+  // 1 -- vertex values
+  criticalPoints.setScalarValues(scalarValues);
+  criticalPoints.setVertexNumber(vertexNumber);
+
+  // 2 -- set offsets (here, let the baseCode class fill it for us)
+  criticalPoints.setSosOffsets(&sosOffsets_);
+
+  // 3 -- set the connectivity
+  criticalPoints.setupTriangulation(triangulation);
+
+  // set up output
+  criticalPoints.setOutput(&criticalPoints_);
+
+  criticalPoints.execute();
+
+  return 0;
+}
+
 int ttkScalarFieldCriticalPoints::doIt(vector<vtkDataSet *> &inputs,
                                        vector<vtkDataSet *> &outputs) {
   Memory m;
@@ -121,37 +150,9 @@ int ttkScalarFieldCriticalPoints::doIt(vector<vtkDataSet *> &inputs,
   }
 
   switch(inputScalarField->GetDataType()) {
-
-    vtkTemplateMacro({
-      ScalarFieldCriticalPoints<VTK_TT> criticalPoints;
-      criticalPoints.setupTriangulation(triangulation);
-    });
-  }
-
-  int domainDimension = triangulation->getCellVertexNumber(0) - 1;
-
-  switch(inputScalarField->GetDataType()) {
-    vtkTemplateMacro({
-      ScalarFieldCriticalPoints<VTK_TT> criticalPoints;
-
-      criticalPoints.setWrapper(this);
-      criticalPoints.setDomainDimension(domainDimension);
-      // set up input
-      // 1 -- vertex values
-      criticalPoints.setScalarValues(inputScalarField->GetVoidPointer(0));
-      criticalPoints.setVertexNumber(input->GetNumberOfPoints());
-
-      // 2 -- set offsets (here, let the baseCode class fill it for us)
-      criticalPoints.setSosOffsets(&sosOffsets_);
-
-      // 3 -- set the connectivity
-      criticalPoints.setupTriangulation(triangulation);
-
-      // set up output
-      criticalPoints.setOutput(&criticalPoints_);
-
-      criticalPoints.execute();
-    });
+    vtkTemplateMacro(dispatch<VTK_TT>(triangulation,
+                                      inputScalarField->GetVoidPointer(0),
+                                      input->GetNumberOfPoints()));
   }
 
   // allocate the output
@@ -213,89 +214,42 @@ int ttkScalarFieldCriticalPoints::doIt(vector<vtkDataSet *> &inputs,
     for(SimplexId i = 0; i < input->GetPointData()->GetNumberOfArrays(); i++) {
 
       vtkDataArray *scalarField = input->GetPointData()->GetArray(i);
+      vtkSmartPointer<vtkDataArray> scalarArray;
+
+      auto copyToScalarArray = [&]() {
+        scalarArray->SetNumberOfComponents(
+          scalarField->GetNumberOfComponents());
+        scalarArray->SetNumberOfTuples(criticalPoints_.size());
+        scalarArray->SetName(scalarField->GetName());
+        std::vector<double> value(scalarField->GetNumberOfComponents());
+        for(SimplexId j = 0; j < (SimplexId)criticalPoints_.size(); j++) {
+          scalarField->GetTuple(criticalPoints_[j].first, value.data());
+          scalarArray->SetTuple(j, value.data());
+        }
+        output->GetPointData()->AddArray(scalarArray);
+      };
 
       switch(scalarField->GetDataType()) {
-
-        case VTK_CHAR: {
-          vtkSmartPointer<vtkCharArray> scalarArray
-            = vtkSmartPointer<vtkCharArray>::New();
-          scalarArray->SetNumberOfComponents(
-            scalarField->GetNumberOfComponents());
-          scalarArray->SetNumberOfTuples(criticalPoints_.size());
-          scalarArray->SetName(scalarField->GetName());
-          double *value = new double[scalarField->GetNumberOfComponents()];
-          for(SimplexId j = 0; j < (SimplexId)criticalPoints_.size(); j++) {
-            scalarField->GetTuple(criticalPoints_[j].first, value);
-            scalarArray->SetTuple(j, value);
-          }
-          output->GetPointData()->AddArray(scalarArray);
-          delete[] value;
-        } break;
-
-        case VTK_DOUBLE: {
-          vtkSmartPointer<vtkDoubleArray> scalarArray
-            = vtkSmartPointer<vtkDoubleArray>::New();
-          scalarArray->SetNumberOfComponents(
-            scalarField->GetNumberOfComponents());
-          scalarArray->SetNumberOfTuples(criticalPoints_.size());
-          scalarArray->SetName(scalarField->GetName());
-          double *value = new double[scalarField->GetNumberOfComponents()];
-          for(SimplexId j = 0; j < (SimplexId)criticalPoints_.size(); j++) {
-            scalarField->GetTuple(criticalPoints_[j].first, value);
-            scalarArray->SetTuple(j, value);
-          }
-          output->GetPointData()->AddArray(scalarArray);
-          delete[] value;
-        } break;
-
-        case VTK_FLOAT: {
-          vtkSmartPointer<vtkFloatArray> scalarArray
-            = vtkSmartPointer<vtkFloatArray>::New();
-          scalarArray->SetNumberOfComponents(
-            scalarField->GetNumberOfComponents());
-          scalarArray->SetNumberOfTuples(criticalPoints_.size());
-          scalarArray->SetName(scalarField->GetName());
-          double *value = new double[scalarField->GetNumberOfComponents()];
-          for(SimplexId j = 0; j < (SimplexId)criticalPoints_.size(); j++) {
-            scalarField->GetTuple(criticalPoints_[j].first, value);
-            scalarArray->SetTuple(j, value);
-          }
-          output->GetPointData()->AddArray(scalarArray);
-          delete[] value;
-        } break;
-
-        case VTK_INT: {
-          vtkSmartPointer<vtkIntArray> scalarArray
-            = vtkSmartPointer<vtkIntArray>::New();
-          scalarArray->SetNumberOfComponents(
-            scalarField->GetNumberOfComponents());
-          scalarArray->SetNumberOfTuples(criticalPoints_.size());
-          scalarArray->SetName(scalarField->GetName());
-          double *value = new double[scalarField->GetNumberOfComponents()];
-          for(SimplexId j = 0; j < (SimplexId)criticalPoints_.size(); j++) {
-            scalarField->GetTuple(criticalPoints_[j].first, value);
-            scalarArray->SetTuple(j, value);
-          }
-          output->GetPointData()->AddArray(scalarArray);
-          delete[] value;
-        } break;
-
-        case VTK_ID_TYPE: {
-          vtkSmartPointer<vtkIdTypeArray> scalarArray
-            = vtkSmartPointer<vtkIdTypeArray>::New();
-          scalarArray->SetNumberOfComponents(
-            scalarField->GetNumberOfComponents());
-          scalarArray->SetNumberOfTuples(criticalPoints_.size());
-          scalarArray->SetName(scalarField->GetName());
-          double *value = new double[scalarField->GetNumberOfComponents()];
-          for(SimplexId j = 0; j < (SimplexId)criticalPoints_.size(); j++) {
-            scalarField->GetTuple(criticalPoints_[j].first, value);
-            scalarArray->SetTuple(j, value);
-          }
-          output->GetPointData()->AddArray(scalarArray);
-          delete[] value;
-        } break;
-
+        case VTK_CHAR:
+          scalarArray = vtkSmartPointer<vtkCharArray>::New();
+          copyToScalarArray();
+          break;
+        case VTK_DOUBLE:
+          scalarArray = vtkSmartPointer<vtkDoubleArray>::New();
+          copyToScalarArray();
+          break;
+        case VTK_FLOAT:
+          scalarArray = vtkSmartPointer<vtkFloatArray>::New();
+          copyToScalarArray();
+          break;
+        case VTK_INT:
+          scalarArray = vtkSmartPointer<vtkIntArray>::New();
+          copyToScalarArray();
+          break;
+        case VTK_ID_TYPE:
+          scalarArray = vtkSmartPointer<vtkIdTypeArray>::New();
+          copyToScalarArray();
+          break;
         default: {
           stringstream msg;
           msg << "[ttkScalarFieldCriticalPoints] Scalar attachment: "

@@ -180,11 +180,13 @@ if(EIGEN3_FOUND)
   option(TTK_ENABLE_EIGEN "Enable Eigen3 support" ON)
 else()
   option(TTK_ENABLE_EIGEN "Enable Eigen3 support" OFF)
+  message(STATUS "Eigen not found, disabling Eigen support in TTK.")
 endif()
 
 # scikit-learn support is disabled by default for now under MacOs
 if(APPLE)
   option(TTK_ENABLE_SCIKIT_LEARN "Enable scikit-learn support" OFF)
+  message(STATUS "Disabling scikit-learn support by default under MacOs.")
 endif()
 
 if(NOT APPLE)
@@ -233,6 +235,19 @@ endif()
 
 if(TTK_ENABLE_MPI)
   find_package(MPI REQUIRED)
+endif()
+
+# Install path
+
+include(GNUInstallDirs)
+if(NOT CMAKE_RUNTIME_OUTPUT_DIRECTORY)
+  set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}")
+endif()
+if(NOT CMAKE_LIBRARY_OUTPUT_DIRECTORY)
+  set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}")
+endif()
+if(NOT CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
+  set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}")
 endif()
 
 # Install rapth

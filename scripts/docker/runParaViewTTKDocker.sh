@@ -10,5 +10,5 @@ if [ -z "${PARAVIEW_PATH}" ]; then
 fi
 
 DOCKER_ID=`docker run -d --rm -p 11111:11111 -v "${HOME}:/home/${USER}/" --user ${UID} topologytoolkit/ttk:${PARAVIEW_VERSION}-master`
-${PARAVIEW_PATH} --server-url=cs://127.0.0.1:11111
+${PARAVIEW_PATH} --server-url=cs://127.0.0.1:11111 ${@:2}
 docker kill ${DOCKER_ID} &> /dev/null

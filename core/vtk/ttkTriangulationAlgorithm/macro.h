@@ -7,6 +7,8 @@
 #include <vtkPolyData.h>
 #include <vtkUnstructuredGrid.h>
 
+#define TTK_COMMA ,
+
 #if VTK_MAJOR_VERSION <= 8
 #define vtkTemplate2Macro(call)                                             \
   vtkTemplate2MacroCase1(VTK_DOUBLE, double, call);                         \
@@ -55,21 +57,11 @@
 #endif
 #endif
 
-#ifndef _MSC_VER
-#define ttkTemplateMacro(s) vtkTemplateMacro((s))
-#define ttkTemplate2Macro(s) vtkTemplate2Macro((s))
-#else
-#define ttkTemplateMacro(s) vtkTemplateMacro(s);
-#define ttkTemplate2Macro(s) vtkTemplate2Macro(s);
-#endif
-
 #ifdef TTK_ENABLE_64BIT_IDS
 using ttkSimplexIdTypeArray = vtkIdTypeArray;
 #else
 using ttkSimplexIdTypeArray = vtkIntArray;
 #endif
-
-#define TTK_COMMA ,
 
 //------------------------------------------------------------------
 

@@ -252,6 +252,30 @@ int ttkFTRGraph::addSampledSkeletonArc(const Graph &graph,
   return 0;
 }
 
+template <typename VTK_TT>
+int ttkFTRGraph::dispatch(Graph &graph) {
+  ttk::ftr::FTRGraph<VTK_TT> ftrGraph_(triangulation_);
+
+  // common parameters
+  ftrGraph_.setWrapper(this);
+  ftrGraph_.setParams(params_);
+  // reeb graph parameters
+  ftrGraph_.setScalars(inputScalars_->GetVoidPointer(0));
+  ftrGraph_.setVertexSoSoffsets(&offsets_);
+  // build
+  {
+    std::stringstream msg;
+    msg << "[ttkFTRGraph] Starting computation on field: " << ScalarField
+        << std::endl;
+    dMsg(cout, msg.str(), infoMsg);
+  }
+  ftrGraph_.build();
+  // get output
+  graph = std::move(ftrGraph_.extractOutputGraph());
+
+  return 0;
+}
+
 int ttkFTRGraph::doIt(std::vector<vtkDataSet *> &inputs,
                       std::vector<vtkDataSet *> &outputs) {
   ttk::Memory m;
@@ -287,25 +311,7 @@ int ttkFTRGraph::doIt(std::vector<vtkDataSet *> &inputs,
 
   // compute graph
   switch(inputScalars_->GetDataType()) {
-    vtkTemplateMacro({
-      ttk::ftr::FTRGraph<VTK_TT> ftrGraph_(triangulation_);
-      // common parameters
-      ftrGraph_.setWrapper(this);
-      ftrGraph_.setParams(params_);
-      // reeb graph parameters
-      ftrGraph_.setScalars(inputScalars_->GetVoidPointer(0));
-      ftrGraph_.setVertexSoSoffsets(&offsets_);
-      // build
-      {
-        std::stringstream msg;
-        msg << "[ttkFTRGraph] Starting computation on field: " << ScalarField
-            << std::endl;
-        dMsg(cout, msg.str(), infoMsg);
-      }
-      ftrGraph_.build();
-      // get output
-      graph = std::move(ftrGraph_.extractOutputGraph());
-    });
+    vtkTemplateMacro(dispatch<VTK_TT>(graph));
   }
 
   UpdateProgress(0.50);

@@ -39,6 +39,17 @@
       </InputProperty>
 
       <IntVectorProperty
+          name="SubdivisionLevel"
+          label="Level of subdivisions"
+          command="SetSubdivisionLevel"
+          number_of_elements="1"
+          default_values="1">
+        <Documentation>
+          Number of subdivisions of the original triangulation.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
          name="UseAllCores"
          label="Use All Cores"
          command="SetUseAllCores"
@@ -79,6 +90,10 @@
            Debug level.
          </Documentation>
       </IntVectorProperty>
+
+      <PropertyGroup panel_widget="Line" label="Input options">
+        <Property name="SubdivisionLevel" />
+      </PropertyGroup>
 
       <PropertyGroup panel_widget="Line" label="Testing">
         <Property name="UseAllCores" />

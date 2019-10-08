@@ -485,8 +485,8 @@ int ttk::TopologicalCompression::WriteToFile(FILE *fp,
 
   int totalSize = usePersistence
                     ? ComputeTotalSizeForPersistenceDiagram<double>(
-                        getMapping(), getCriticalConstraints(), zfpOnly,
-                        getNbSegments(), getNbVertices(), zfpBitBudget)
+                      getMapping(), getCriticalConstraints(), zfpOnly,
+                      getNbSegments(), getNbVertices(), zfpBitBudget)
                     : useOther ? ComputeTotalSizeForOther<double>() : 0;
 
   std::vector<char> bbuf(totalSize);
@@ -688,7 +688,6 @@ int ttk::TopologicalCompression::ReadFromFile(FILE *fp) {
   bool useZlib = ReadBool(fp);
   unsigned char *dest;
   std::vector<unsigned char> ddest;
-  unsigned long sourceLen;
   unsigned long destLen;
 
 #ifdef TTK_ENABLE_ZLIB
@@ -697,7 +696,7 @@ int ttk::TopologicalCompression::ReadFromFile(FILE *fp) {
     uLongf sl = ReadUnsignedLong(fp); // Compressed size...
     uLongf dl = ReadUnsignedLong(fp); // Uncompressed size...
 
-    sourceLen = (uLongf)sl;
+    unsigned long sourceLen = (uLongf)sl;
     destLen = dl;
     std::vector<Bytef> ssource(sl);
     Bytef *source = ssource.data();

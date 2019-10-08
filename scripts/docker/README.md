@@ -7,11 +7,15 @@ This docker image contains an installation of the [Topology Tool Kit (TTK)](http
 
 It is supposed to be used in conjunction with a local ParaView GUI.
 
-## Dummy usage
+## Simple usage
 
 To run Kitware's binary distribution of ParaView with TTK's docker, simply run:
 
-``` ./runParaViewTTKDocker.sh <Path to ParaView binary (version 5.6.1)>```
+``` ./runParaViewTTKDocker.sh <Path to ParaView binary (version 5.6.1)> [<Standard ParaView arguments (state files, data, etc.)>]```
+
+To run a python script which uses TTK, simply run:
+
+``` ./runTTKPythonDocker.sh [<Standard pvpython arguments: Python script, data, etc. ABSOLUTE PATHS ONLY)>]```
 
 ## Advanced usage
 

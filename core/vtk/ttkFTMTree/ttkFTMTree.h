@@ -68,6 +68,9 @@ public:
   vtkSetMacro(OffsetFieldId, int);
   vtkGetMacro(OffsetFieldId, int);
 
+  vtkSetMacro(PeriodicBoundaryConditions, int);
+  vtkGetMacro(PeriodicBoundaryConditions, int);
+
   // Parameters uses a structure, we can't use vtkMacro on them
   void SetTreeType(const int type) {
     params_.treeType = (ttk::ftm::TreeType)type;
@@ -165,6 +168,7 @@ private:
   std::string InputOffsetScalarFieldName;
   int ScalarFieldId;
   int OffsetFieldId;
+  bool PeriodicBoundaryConditions;
 
   ttk::ftm::Params params_;
 

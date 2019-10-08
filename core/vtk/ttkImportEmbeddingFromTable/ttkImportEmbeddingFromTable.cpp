@@ -26,6 +26,21 @@ int ttkImportEmbeddingFromTable::updateProgress(const float &progress) {
   return 0;
 }
 
+template <typename VTK_TT>
+inline void setPointFromData(vtkSmartPointer<vtkPoints> points,
+                             VTK_TT *xdata,
+                             VTK_TT *ydata,
+                             VTK_TT *zdata,
+                             const bool Embedding2D) {
+  for(SimplexId i = 0; i < points->GetNumberOfPoints(); ++i) {
+    double p[3];
+    p[0] = xdata[i];
+    p[1] = ydata[i];
+    p[2] = Embedding2D ? 0 : zdata[i];
+    points->SetPoint(i, p);
+  }
+}
+
 int ttkImportEmbeddingFromTable::doIt(vtkPointSet *inputDataSet,
                                       vtkTable *inputTable,
                                       vtkPointSet *output) {
@@ -73,19 +88,10 @@ int ttkImportEmbeddingFromTable::doIt(vtkPointSet *inputDataSet,
   points->SetNumberOfPoints(numberOfPoints);
 
   switch(xarr->GetDataType()) {
-    vtkTemplateMacro({
-      VTK_TT *xdata = static_cast<VTK_TT *>(xarr->GetVoidPointer(0));
-      VTK_TT *ydata = static_cast<VTK_TT *>(yarr->GetVoidPointer(0));
-      VTK_TT *zdata = static_cast<VTK_TT *>(zarr->GetVoidPointer(0));
-
-      for(SimplexId i = 0; i < numberOfPoints; ++i) {
-        double p[3];
-        p[0] = xdata[i];
-        p[1] = ydata[i];
-        p[2] = Embedding2D ? 0 : zdata[i];
-        points->SetPoint(i, p);
-      }
-    });
+    vtkTemplateMacro(setPointFromData(
+      points, static_cast<VTK_TT *>(xarr->GetVoidPointer(0)),
+      static_cast<VTK_TT *>(yarr->GetVoidPointer(0)),
+      static_cast<VTK_TT *>(zarr->GetVoidPointer(0)), Embedding2D));
   }
 
   output->ShallowCopy(inputDataSet);

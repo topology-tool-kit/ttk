@@ -140,6 +140,9 @@ public:
     return 1;
   }
 
+  template <typename VTK_T1, typename VTK_T2>
+  int dispatch();
+
 protected:
   ttkFiberSurface();
 
