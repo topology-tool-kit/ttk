@@ -2199,7 +2199,7 @@ int DiscreteGradient::reverseGradient(
   dmt1Saddle2PL_.resize(inputTriangulation_->getNumberOfEdges());
   std::fill(dmt1Saddle2PL_.begin(), dmt1Saddle2PL_.end(), -1);
 
-  if(dimensionality_ == 3 and ReverseSaddleSaddleConnection) {
+  if(dimensionality_ == 3) {
     simplifySaddleSaddleConnections1<dataType>(
       criticalPoints, isPL, IterationThreshold, allowBoundary, allowBruteForce,
       returnSaddleConnectors);
@@ -2210,7 +2210,7 @@ int DiscreteGradient::reverseGradient(
 
   allowBruteForce = true;
 
-  if(dimensionality_ == 3 and ReverseSaddleSaddleConnection) {
+  if(dimensionality_ == 3) {
     simplifySaddleSaddleConnections1<dataType>(
       criticalPoints, isPL, IterationThreshold, allowBoundary, allowBruteForce,
       returnSaddleConnectors);
@@ -2219,8 +2219,7 @@ int DiscreteGradient::reverseGradient(
       returnSaddleConnectors);
   }
 
-  if(dimensionality_ == 3 and ReverseSaddleSaddleConnection
-     and ReturnSaddleConnectors) {
+  if(dimensionality_ == 3 and ReturnSaddleConnectors) {
     filterSaddleConnectors<dataType, idType>(allowBoundary);
   }
 

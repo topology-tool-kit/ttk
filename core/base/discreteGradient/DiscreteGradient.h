@@ -297,14 +297,6 @@ namespace ttk {
       }
 
       /**
-       * Enable/Disable gradient reversal of saddle/saddle VPaths.
-       */
-      int setReverseSaddleSaddleConnection(const bool state) {
-        ReverseSaddleSaddleConnection = state;
-        return 0;
-      }
-
-      /**
        * Enable/Disable collecting of persistence pairs during the
 simplification.
        */
@@ -1110,7 +1102,6 @@ tetra identifier.
 
     protected:
       int IterationThreshold{-1};
-      bool ReverseSaddleSaddleConnection{false};
       bool CollectPersistencePairs{false};
       bool ReturnSaddleConnectors{false};
       double SaddleConnectorsPersistenceThreshold{0.0};
