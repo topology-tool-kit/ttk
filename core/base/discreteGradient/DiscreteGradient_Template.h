@@ -2208,17 +2208,6 @@ int DiscreteGradient::reverseGradient(
       returnSaddleConnectors);
   }
 
-  allowBruteForce = true;
-
-  if(dimensionality_ == 3) {
-    simplifySaddleSaddleConnections1<dataType>(
-      criticalPoints, isPL, IterationThreshold, allowBoundary, allowBruteForce,
-      returnSaddleConnectors);
-    simplifySaddleSaddleConnections2<dataType>(
-      criticalPoints, isPL, IterationThreshold, allowBoundary, allowBruteForce,
-      returnSaddleConnectors);
-  }
-
   if(dimensionality_ == 3 and ReturnSaddleConnectors) {
     filterSaddleConnectors<dataType, idType>(allowBoundary);
   }
