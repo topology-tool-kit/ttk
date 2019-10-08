@@ -6,12 +6,17 @@ if("${PROJECT_SOURCE_DIR}" STREQUAL "${PROJECT_BINARY_DIR}")
   message(FATAL_ERROR "Build in sources is not supported by TTK, please use a separate build folder")
 endif()
 
+
 option(TTK_BUILD_VTK_WRAPPERS "Build the TTK VTK Wrappers" ON)
 option(TTK_BUILD_PARAVIEW_PLUGINS "Build the TTK ParaView Plugins" ON)
 option(TTK_BUILD_STANDALONE_APPS "Build the TTK Standalone Applications" ON)
 option(TTK_WHITELIST_MODE "Explicitely enable each filter" OFF)
 
-mark_as_advanced(TTK_WHITELIST_MODE)
+# This option allows library to be built dynamic
+# like the TopologyToolKit.so file for paraview
+option(BUILD_SHARED_LIBS "Build TTK as shared lib" ON)
+
+mark_as_advanced(TTK_WHITELIST_MODE BUILD_SHARED_LIBS)
 
 if(TTK_BUILD_STANDALONE_APPS AND NOT TTK_BUILD_VTK_WRAPPERS)
   message(WARNING "Can't build standalones without the VTK wrappers: disable")
@@ -38,8 +43,6 @@ add_subdirectory(core)
 # ---------------
 
 if(TTK_BUILD_PARAVIEW_PLUGINS)
-  # This option allows to build the TopologyToolKit.so file for paraview
-  option(BUILD_SHARED_LIBS "Build TTK as shared lib" ON)
   if(${TTK_WHITELIST_MODE})
     set(TTK_ENABLE_FILTER_DEFAULT OFF CACHE INTERNAL "Default value for each filter build")
   else()
