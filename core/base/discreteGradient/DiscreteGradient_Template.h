@@ -2223,8 +2223,8 @@ int DiscreteGradient::reverseGradient(
 }
 
 template <typename dataType, typename idType>
-void DiscreteGradient::getCriticalPoints(
-  std::vector<std::pair<SimplexId, char>> &criticalPoints) const {
+int DiscreteGradient::reverseGradient() {
+  std::vector<std::pair<SimplexId, char>> criticalPoints{};
 
   criticalPoints.clear();
 
@@ -2250,13 +2250,6 @@ void DiscreteGradient::getCriticalPoints(
                    auto vertexId = getCellGreaterVertex<dataType, idType>(c);
                    return std::make_pair(vertexId, static_cast<char>(type));
                  });
-}
-
-template <typename dataType, typename idType>
-int DiscreteGradient::reverseGradient() {
-  std::vector<std::pair<SimplexId, char>> criticalPoints{};
-
-  getCriticalPoints<dataType, idType>(criticalPoints);
 
   // print number of critical cells
   {

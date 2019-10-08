@@ -1055,14 +1055,6 @@ tetra identifier.
       inline SimplexId getCellGreaterVertex(const Cell c) const;
 
       /**
-       * Store the critical points from the gradient_ member into the
-       * criticalPoints vector reference
-       */
-      template <typename dataType, typename idType>
-      void getCriticalPoints(
-        std::vector<std::pair<SimplexId, char>> &criticalPoints) const;
-
-      /**
        * Build the geometric embedding of the given STL vector of cells.
        * The output data pointers are modified accordingly. This
        * function needs the following internal pointers to be set:
