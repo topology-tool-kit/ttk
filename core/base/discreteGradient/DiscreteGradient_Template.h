@@ -2224,13 +2224,14 @@ int DiscreteGradient::reverseGradient(
 
 template <typename dataType, typename idType>
 int DiscreteGradient::reverseGradient() {
-  std::vector<std::pair<SimplexId, char>> criticalPoints{};
 
-  criticalPoints.clear();
+  std::vector<std::pair<SimplexId, char>> criticalPoints{};
 
   // get critical points as cells
   std::vector<Cell> criticalCells{};
   getCriticalPoints(criticalCells);
+
+  criticalPoints.resize(criticalCells.size());
 
   // iterate over cells to get points (max vertex) and type
   std::transform(criticalCells.begin(), criticalCells.end(),
