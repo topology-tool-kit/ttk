@@ -2255,39 +2255,24 @@ int DiscreteGradient::reverseGradient() {
   {
     // foreach dimension
     const int numberOfDimensions = getNumberOfDimensions();
-    std::vector<SimplexId> numberOfDMTCriticalPointsByDimension(
-      numberOfDimensions, 0);
-    for(int i = 0; i < numberOfDimensions; ++i) {
-
-      // foreach cell of that dimension
-      const SimplexId numberOfCells = getNumberOfCells(i);
-      for(SimplexId j = 0; j < numberOfCells; ++j) {
-        const Cell cell(i, j);
-
-        if(isCellCritical(cell)) {
-          ++numberOfDMTCriticalPointsByDimension[i];
-        }
-      }
+    std::vector<SimplexId> nDMTCriticalPoints(numberOfDimensions, 0);
+    for(const auto &c : criticalCells) {
+      ++nDMTCriticalPoints[c.dim_];
     }
 
-    std::vector<SimplexId> numberOfPLInteriorCriticalPoints(
-      CriticalTypeNumber, 0);
-    for(auto &criticalPoint : criticalPoints) {
-      const SimplexId criticalPointId = criticalPoint.first;
-      const char criticalPointType = criticalPoint.second;
-
-      if(!inputTriangulation_->isVertexOnBoundary(criticalPointId)
-         and criticalPointType != static_cast<char>(CriticalType::Regular)) {
-        ++numberOfPLInteriorCriticalPoints[criticalPointType];
+    std::vector<SimplexId> nPLInteriorCriticalPoints(numberOfDimensions, 0);
+    for(const auto &cp : criticalPoints) {
+      if(!inputTriangulation_->isVertexOnBoundary(cp.first)) {
+        ++nPLInteriorCriticalPoints[cp.second];
       }
     }
 
     {
       std::stringstream msg;
       for(int i = 0; i < numberOfDimensions; ++i) {
-        msg << "[DiscreteGradient] " << numberOfDMTCriticalPointsByDimension[i]
-            << " " << i << "-cell(s)";
-        msg << " and " << numberOfPLInteriorCriticalPoints[i] << " interior PL."
+        msg << "[DiscreteGradient] " << nDMTCriticalPoints[i] << " " << i
+            << "-cell(s)";
+        msg << " and " << nPLInteriorCriticalPoints[i] << " interior PL."
             << std::endl;
       }
 
