@@ -214,6 +214,9 @@ int ttkBarycentricSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
   ttkUtils::SetVoidArray(cellDim, pointDim_.data(), pointDim_.size(), 1);
   output->GetPointData()->AddArray(cellDim);
 
+  // shallow copy input field data
+  output->GetFieldData()->ShallowCopy(input->GetFieldData());
+
   {
     std::stringstream msg;
     msg << MODULE_S "Memory usage: " << m.getElapsedUsage() << " MB." << endl;

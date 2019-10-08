@@ -176,6 +176,9 @@ int ttkMorseSmaleQuadrangulation::doIt(std::vector<vtkDataSet *> &inputs,
   // update output: get quadrangle values
   output->SetCells(VTK_QUAD, cells);
 
+  // shallow copy input field data
+  output->GetFieldData()->ShallowCopy(seg->GetFieldData());
+
   {
     std::stringstream msg;
     msg << MODULE_S "Memory usage: " << m.getElapsedUsage() << " MB." << endl;

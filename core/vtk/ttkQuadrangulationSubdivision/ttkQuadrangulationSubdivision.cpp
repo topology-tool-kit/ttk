@@ -217,6 +217,9 @@ int ttkQuadrangulationSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
     output->GetPointData()->AddArray(hausDist);
   }
 
+  // shallow copy input field data
+  output->GetFieldData()->ShallowCopy(mesh->GetFieldData());
+
   {
     std::stringstream msg;
     msg << MODULE_S "Memory usage: " << m.getElapsedUsage() << " MB." << endl;
