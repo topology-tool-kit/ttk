@@ -2198,23 +2198,13 @@ int DiscreteGradient::reverseGradient(bool detectCriticalPoints) {
     criticalPoints.resize(criticalCells.size());
 
     // iterate over cells to get points (max vertex) and type
-    std::transform(criticalCells.begin(), criticalCells.end(),
-                   criticalPoints.begin(), [&](const Cell &c) {
-                     CriticalType type;
-                     if(c.dim_ == 0) {
-                       type = CriticalType::Local_minimum;
-                     } else if(c.dim_ == 1) {
-                       type = CriticalType::Saddle1;
-                     } else if(c.dim_ == 2 && dimensionality_ == 2) {
-                       type = CriticalType::Local_maximum;
-                     } else if(c.dim_ == 2 && dimensionality_ == 3) {
-                       type = CriticalType::Saddle2;
-                     } else if(c.dim_ == 3) {
-                       type = CriticalType::Local_maximum;
-                     }
-                     auto vertexId = getCellGreaterVertex<dataType, idType>(c);
-                     return std::make_pair(vertexId, static_cast<char>(type));
-                   });
+    std::transform(
+      criticalCells.begin(), criticalCells.end(), criticalPoints.begin(),
+      [&](const Cell &c) {
+        const auto cellType = criticalTypeFromCellDimension(c.dim_);
+        const auto vertexId = getCellGreaterVertex<dataType, idType>(c);
+        return std::make_pair(vertexId, static_cast<char>(cellType));
+      });
 
     // print number of critical cells
     {

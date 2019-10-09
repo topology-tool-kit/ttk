@@ -527,6 +527,12 @@ function value.
         numUnpairedFaces(const CellExt &c, const lowerStarType &ls) const;
 
       /**
+       * @brief Return the critical type corresponding to given
+       * dimension
+       */
+      CriticalType criticalTypeFromCellDimension(const int dim) const;
+
+      /**
        * @brief Pair cells into discrete gradient field
        *
        * @param[in] alpha Cell of lower dimension

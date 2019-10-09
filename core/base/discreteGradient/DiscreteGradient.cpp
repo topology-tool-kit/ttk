@@ -108,6 +108,22 @@ std::pair<size_t, SimplexId>
   return res;
 }
 
+CriticalType
+  DiscreteGradient::criticalTypeFromCellDimension(const int dim) const {
+  if(dim == 0) {
+    return CriticalType::Local_minimum;
+  } else if(dim == 1) {
+    return CriticalType::Saddle1;
+  } else if(dim == 2 && dimensionality_ == 2) {
+    return CriticalType::Local_maximum;
+  } else if(dim == 2 && dimensionality_ == 3) {
+    return CriticalType::Saddle2;
+  } else if(dim == 3) {
+    return CriticalType::Local_maximum;
+  }
+  return CriticalType::Regular;
+}
+
 bool DiscreteGradient::isMinimum(const Cell &cell) const {
   if(cell.dim_ == 0) {
     return (gradient_[0][0][cell.id_] == -1);
