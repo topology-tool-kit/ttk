@@ -1453,8 +1453,7 @@ int ttk::MorseSmaleComplex3D::computePersistencePairs(
     // collect saddle-saddle connections
     discreteGradient_.setCollectPersistencePairs(true);
     discreteGradient_.setOutputPersistencePairs(&dmt_pairs);
-    discreteGradient_.reverseGradient<dataType, idType>(
-      std::vector<std::pair<SimplexId, char>>());
+    discreteGradient_.reverseGradient<dataType, idType>(false);
   }
 
   // transform DMT pairs into PL pairs

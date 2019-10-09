@@ -2185,8 +2185,67 @@ int DiscreteGradient::filterSaddleConnectors(const bool allowBoundary) {
 }
 
 template <typename dataType, typename idType>
-int DiscreteGradient::reverseGradient(
-  const std::vector<std::pair<SimplexId, char>> &criticalPoints) {
+int DiscreteGradient::reverseGradient(bool detectCriticalPoints) {
+
+  std::vector<std::pair<SimplexId, char>> criticalPoints{};
+
+  if(detectCriticalPoints) {
+
+    // get critical points as cells
+    std::vector<Cell> criticalCells{};
+    getCriticalPoints(criticalCells);
+
+    criticalPoints.resize(criticalCells.size());
+
+    // iterate over cells to get points (max vertex) and type
+    std::transform(criticalCells.begin(), criticalCells.end(),
+                   criticalPoints.begin(), [&](const Cell &c) {
+                     CriticalType type;
+                     if(c.dim_ == 0) {
+                       type = CriticalType::Local_minimum;
+                     } else if(c.dim_ == 1) {
+                       type = CriticalType::Saddle1;
+                     } else if(c.dim_ == 2 && dimensionality_ == 2) {
+                       type = CriticalType::Local_maximum;
+                     } else if(c.dim_ == 2 && dimensionality_ == 3) {
+                       type = CriticalType::Saddle2;
+                     } else if(c.dim_ == 3) {
+                       type = CriticalType::Local_maximum;
+                     }
+                     auto vertexId = getCellGreaterVertex<dataType, idType>(c);
+                     return std::make_pair(vertexId, static_cast<char>(type));
+                   });
+
+    // print number of critical cells
+    {
+      // foreach dimension
+      const int numberOfDimensions = getNumberOfDimensions();
+      std::vector<SimplexId> nDMTCriticalPoints(numberOfDimensions, 0);
+      for(const auto &c : criticalCells) {
+        ++nDMTCriticalPoints[c.dim_];
+      }
+
+      std::vector<SimplexId> nPLInteriorCriticalPoints(numberOfDimensions, 0);
+      for(const auto &cp : criticalPoints) {
+        if(!inputTriangulation_->isVertexOnBoundary(cp.first)) {
+          ++nPLInteriorCriticalPoints[cp.second];
+        }
+      }
+
+      {
+        std::stringstream msg;
+        for(int i = 0; i < numberOfDimensions; ++i) {
+          msg << "[DiscreteGradient] " << nDMTCriticalPoints[i] << " " << i
+              << "-cell(s)";
+          msg << " and " << nPLInteriorCriticalPoints[i] << " interior PL."
+              << std::endl;
+        }
+
+        dMsg(std::cout, msg.str(), infoMsg);
+      }
+    }
+  }
+
   Timer t;
 
   const bool allowBoundary = true;
@@ -2218,70 +2277,6 @@ int DiscreteGradient::reverseGradient(
         << " s. (" << threadNumber_ << " thread(s))." << std::endl;
     dMsg(std::cout, msg.str(), timeMsg);
   }
-
-  return 0;
-}
-
-template <typename dataType, typename idType>
-int DiscreteGradient::reverseGradient() {
-
-  std::vector<std::pair<SimplexId, char>> criticalPoints{};
-
-  // get critical points as cells
-  std::vector<Cell> criticalCells{};
-  getCriticalPoints(criticalCells);
-
-  criticalPoints.resize(criticalCells.size());
-
-  // iterate over cells to get points (max vertex) and type
-  std::transform(criticalCells.begin(), criticalCells.end(),
-                 criticalPoints.begin(), [&](const Cell &c) {
-                   CriticalType type;
-                   if(c.dim_ == 0) {
-                     type = CriticalType::Local_minimum;
-                   } else if(c.dim_ == 1) {
-                     type = CriticalType::Saddle1;
-                   } else if(c.dim_ == 2 && dimensionality_ == 2) {
-                     type = CriticalType::Local_maximum;
-                   } else if(c.dim_ == 2 && dimensionality_ == 3) {
-                     type = CriticalType::Saddle2;
-                   } else if(c.dim_ == 3) {
-                     type = CriticalType::Local_maximum;
-                   }
-                   auto vertexId = getCellGreaterVertex<dataType, idType>(c);
-                   return std::make_pair(vertexId, static_cast<char>(type));
-                 });
-
-  // print number of critical cells
-  {
-    // foreach dimension
-    const int numberOfDimensions = getNumberOfDimensions();
-    std::vector<SimplexId> nDMTCriticalPoints(numberOfDimensions, 0);
-    for(const auto &c : criticalCells) {
-      ++nDMTCriticalPoints[c.dim_];
-    }
-
-    std::vector<SimplexId> nPLInteriorCriticalPoints(numberOfDimensions, 0);
-    for(const auto &cp : criticalPoints) {
-      if(!inputTriangulation_->isVertexOnBoundary(cp.first)) {
-        ++nPLInteriorCriticalPoints[cp.second];
-      }
-    }
-
-    {
-      std::stringstream msg;
-      for(int i = 0; i < numberOfDimensions; ++i) {
-        msg << "[DiscreteGradient] " << nDMTCriticalPoints[i] << " " << i
-            << "-cell(s)";
-        msg << " and " << nPLInteriorCriticalPoints[i] << " interior PL."
-            << std::endl;
-      }
-
-      dMsg(std::cout, msg.str(), infoMsg);
-    }
-  }
-
-  reverseGradient<dataType, idType>(criticalPoints);
 
   return 0;
 }

@@ -779,20 +779,11 @@ a given threshold is met.
       int filterSaddleConnectors(bool allowBoundary);
 
       /**
-       * Highest-level simplification function, manage all the simplification
-steps
-       * compliant to the critical points given by the user.
-       */
-      template <typename dataType, typename idType>
-      int reverseGradient(
-        const std::vector<std::pair<SimplexId, char>> &criticalPoints);
-
-      /**
        * Automatic detection of the PL critical points and simplification
 according to them.
        */
       template <typename dataType, typename idType>
-      int reverseGradient();
+      int reverseGradient(bool detectCriticalPoints = true);
 
       /**
        * Set the input scalar function.
