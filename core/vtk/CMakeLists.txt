@@ -12,17 +12,61 @@ vtk_module_scan(
     ON
   )
 
-if(TTK_BUILD_PARAVIEW_PLUGINS)
-  # still want to add the header files in include/ttk
-  # when building against paraview
-  file(GLOB VTKWRAPPER_DIRS RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} ttk*)
-  foreach(VTKWRAPPER ${VTKWRAPPER_DIRS})
-    ttk_module_register_headers(${CMAKE_CURRENT_SOURCE_DIR}/${VTKWRAPPER})
-  endforeach()
-else()
+if(NOT TTK_BUILD_PARAVIEW_PLUGINS)
+  # when build against ParaView,
+  # vtk_module_build is already called
+  # by the paraview_add_plugin
   vtk_module_build(
     MODULES
       ${TTK_ENABLED_MODULES}
+    )
+endif()
+
+if(VTK_WRAP_PYTHON)
+  if(NOT DEFINED TTK_PYTHON_MODULE_DIR)
+    vtk_module_python_default_destination(PYTHON_SITE_PACKAGES_SUFFIX)
+    set(TTK_PYTHON_MODULE_DIR
+      ${PYTHON_SITE_PACKAGES_SUFFIX}
+      CACHE
+      PATH
+      "Where the TTK python module in installed"
+      )
+  endif()
+  vtk_module_wrap_python(
+    MODULES
+      ${TTK_ENABLED_MODULES}
+    INSTALL_EXPORT
+      TTKPython
+    PYTHON_PACKAGE
+      "topologytoolkit"
+    MODULE_DESTINATION
+      "${TTK_PYTHON_MODULE_DIR}"
+    CMAKE_DESTINATION
+      "${CMAKE_INSTALL_LIBDIR}/ttk/python"
+    LIBRARY_DESTINATION
+      "${CMAKE_INSTALL_LIBDIR}"
+    INSTALL_HEADERS
+      OFF
+    TARGET
+      TTK::Python
+    )
+  export(
+    EXPORT
+      TTKPython
+    NAMESPACE
+      TTK::
+    FILE
+      "${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}/ttk/python/TTKPython-targets.cmake"
+    )
+  install(
+    EXPORT
+      TTKPython
+    NAMESPACE
+      TTK::
+    FILE
+      TTKPython-targets.cmake
+    DESTINATION
+      "${CMAKE_INSTALL_LIBDIR}/ttk/python"
     )
 endif()
 
@@ -37,6 +81,14 @@ vtk_module_autoinit(
   )
 
 target_link_libraries(ttkAll INTERFACE ${TTK_ENABLED_MODULES})
+
+# get_property(HH TARGET ttkBlank PROPERTY INCLUDE_DIRECTORIES)
+# message(STATUS "headers: ${HH}")
+ # with VTK:
+ # -- headers: $<BUILD_INTERFACE:/home/charles/Software/compil/ttk-charles/build/core/vtk/ttkBlank>
+ #             $<BUILD_INTERFACE:/home/charles/Software/compil/ttk-charles/core/vtk/ttkBlank>
+ #             $<INSTALL_INTERFACE:include>
+ # with PV, the INSTALL_INTERFACE is missing
 
 # Use folder as configured by the distribution
 include(GNUInstallDirs)

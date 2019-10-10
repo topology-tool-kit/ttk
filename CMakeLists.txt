@@ -30,7 +30,6 @@ include(config.cmake)
 if(VTK_FOUND)
   # required for both wrappers and paraview
   include(CMake/VTKModule.cmake)
-  include(CMake/VTKWrapper.cmake)
 endif()
 
 # Base code
