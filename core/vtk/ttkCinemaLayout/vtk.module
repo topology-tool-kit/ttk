@@ -2,6 +2,8 @@ NAME
  ttkCinemaLayout
 DEPENDS
   VTK::FiltersCore
+  VTK::IOXML
+  VTK::IOParallelXML
 PRIVATE_DEPENDS
   VTK::CommonCore
 
