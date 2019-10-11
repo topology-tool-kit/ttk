@@ -65,8 +65,6 @@ replace "core/base/${smallNameDestination}/${NameDestination}.h"
 echo "Creating VTK wrapper 'core/vtk/ttk${NameDestination}'..."
 cp -R "core/vtk/ttk${NameSource}" \
       "core/vtk/ttk${NameDestination}"
-# replace "core/vtk/ttk${NameDestination}/CMakeLists.txt"
-# replace "core/vtk/ttk${NameDestination}/TTKWrapper.txt"
 replace "core/vtk/ttk${NameDestination}/vtk.module"
 replace "core/vtk/ttk${NameDestination}/ttk.module"
 mv "core/vtk/ttk${NameDestination}/ttk${NameSource}.cpp" \
@@ -75,29 +73,35 @@ replace "core/vtk/ttk${NameDestination}/ttk${NameDestination}.cpp"
 mv "core/vtk/ttk${NameDestination}/ttk${NameSource}.h" \
    "core/vtk/ttk${NameDestination}/ttk${NameDestination}.h"
 replace "core/vtk/ttk${NameDestination}/ttk${NameDestination}.h"
-mv "core/vtk/ttk${NameDestination}/${NameSource}.xml" \
-   "core/vtk/ttk${NameDestination}/${NameDestination}.xml"
-replace "core/vtk/ttk${NameDestination}/${NameDestination}.xml"
 
 # 3) duplicate the source standalone modules
-echo "Creating command line standalone program 'standalone/${NameDestination}/cmd'..."
-mkdir "standalone/${NameDestination}"
-cp -R "standalone/${NameSource}/cmd/" \
-      "standalone/${NameDestination}/cmd"
-replace "standalone/${NameDestination}/cmd/CMakeLists.txt"
-replace "standalone/${NameDestination}/cmd/main.cpp"
+if [ -d "standalone/${NameSource}/cmd" ]; then
+  echo "Creating command line standalone program 'standalone/${NameDestination}/cmd'..."
+  mkdir -p "standalone/${NameDestination}"
+  cp -R "standalone/${NameSource}/cmd/" \
+        "standalone/${NameDestination}/cmd"
+  replace "standalone/${NameDestination}/cmd/CMakeLists.txt"
+  replace "standalone/${NameDestination}/cmd/main.cpp"
+fi
+if [ -d "standalone/${NameSource}/gui" ]; then
+  echo "Creating GUI standalone program 'standalone/${NameDestination}/gui'..."
+  mkdir -p "standalone/${NameDestination}"
+  cp -R "standalone/${NameSource}/gui/" \
+        "standalone/${NameDestination}/gui"
+  replace "standalone/${NameDestination}/gui/CMakeLists.txt"
+  replace "standalone/${NameDestination}/gui/main.cpp"
+fi
 
-echo "Creating GUI standalone program 'standalone/${NameDestination}/gui'..."
-cp -R "standalone/${NameSource}/gui/" \
-      "standalone/${NameDestination}/gui"
-replace "standalone/${NameDestination}/gui/CMakeLists.txt"
-replace "standalone/${NameDestination}/gui/main.cpp"
-
-# 4) duplicate the source paraview plugin
-echo "Creating ParaView plugin 'paraview/${NameDestination}'..."
+# 4) duplicate the source paraview filter
+echo "Creating ParaView filter 'paraview/${NameDestination}'..."
 cp -R "paraview/${NameSource}/" \
       "paraview/${NameDestination}"
 replace "paraview/${NameDestination}/TTKFilter.cmake"
-
+mv "paraview/${NameDestination}/${NameSource}.xml" \
+   "paraview/${NameDestination}/${NameDestination}.xml"
+replace "paraview/${NameDestination}/${NameDestination}.xml"
 
 echo "Module ${NameDestination} created."
+# Due to the use of file(GLOB...) make does not see any changes
+# if cmake is not run after the new module is created
+echo "/!\\ Please re-run cmake in your build folder to compile it."
