@@ -35,6 +35,8 @@ if(VTK_WRAP_PYTHON)
   vtk_module_wrap_python(
     MODULES
       ${TTK_ENABLED_MODULES}
+    WRAPPED_MODULES
+      TTK_WRAPPED_MODULES
     INSTALL_EXPORT
       TTKPython
     PYTHON_PACKAGE
@@ -46,10 +48,17 @@ if(VTK_WRAP_PYTHON)
     LIBRARY_DESTINATION
       "${CMAKE_INSTALL_LIBDIR}"
     INSTALL_HEADERS
-      OFF
+      ON
     TARGET
       TTK::Python
     )
+  foreach(TTK_MODULE ${TTK_WRAPPED_MODULES})
+    target_link_libraries(${TTK_MODULE}Python
+      PUBLIC
+        VTK::WrappingPythonCore
+        VTK::vtkCommonExecutionModelPython
+      )
+  endforeach()
   export(
     EXPORT
       TTKPython
@@ -81,14 +90,6 @@ vtk_module_autoinit(
   )
 
 target_link_libraries(ttkAll INTERFACE ${TTK_ENABLED_MODULES})
-
-# get_property(HH TARGET ttkBlank PROPERTY INCLUDE_DIRECTORIES)
-# message(STATUS "headers: ${HH}")
- # with VTK:
- # -- headers: $<BUILD_INTERFACE:/home/charles/Software/compil/ttk-charles/build/core/vtk/ttkBlank>
- #             $<BUILD_INTERFACE:/home/charles/Software/compil/ttk-charles/core/vtk/ttkBlank>
- #             $<INSTALL_INTERFACE:include>
- # with PV, the INSTALL_INTERFACE is missing
 
 # Use folder as configured by the distribution
 include(GNUInstallDirs)
