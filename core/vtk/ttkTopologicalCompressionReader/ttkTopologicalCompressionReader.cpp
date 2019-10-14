@@ -124,7 +124,7 @@ int ttkTopologicalCompressionReader::RequestData(
 
   decompressed = vtkSmartPointer<vtkDoubleArray>::New();
   decompressed->SetNumberOfTuples(vertexNumber);
-  decompressed->SetName("Decompressed");
+  decompressed->SetName(topologicalCompression.getDataArrayName().data());
   std::vector<double> decompressdeData
     = topologicalCompression.getDecompressedData();
   for(int i = 0; i < vertexNumber; ++i)

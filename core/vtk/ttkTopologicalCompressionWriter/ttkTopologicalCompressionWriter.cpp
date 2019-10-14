@@ -157,10 +157,13 @@ void ttkTopologicalCompressionWriter::WriteData() {
                  ->GetArray(inputScalarField->GetName())
                  ->GetVoidPointer(0);
 
+  std::string inputScalarFieldName = inputScalarField->GetName();
+
   topologicalCompression.setFileName(FileName);
   topologicalCompression.WriteToFile<double>(
     fp, CompressionType, ZFPOnly, SQMethod.c_str(), dt, vti->GetExtent(),
-    vti->GetSpacing(), vti->GetOrigin(), vp, Tolerance, ZFPBitBudget);
+    vti->GetSpacing(), vti->GetOrigin(), vp, Tolerance, ZFPBitBudget,
+    inputScalarFieldName);
 
   {
     ttk::Debug d;

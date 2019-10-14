@@ -266,6 +266,30 @@ void ttk::TopologicalCompression::WriteUnsignedCharArray(FILE *fm,
   }
 }
 
+void ttk::TopologicalCompression::ReadCharArray(FILE *fm,
+                                                char *buffer,
+                                                size_t length) {
+  int ret = (int)std::fread(buffer, sizeof(char), length, fm);
+  if(!ret) {
+    std::stringstream msg;
+    ttk::Debug d;
+    msg << "[TopologicalCompression] Error reading char array!" << std::endl;
+    d.dMsg(std::cerr, msg.str(), ttk::Debug::fatalMsg);
+  }
+}
+
+void ttk::TopologicalCompression::WriteConstCharArray(FILE *fm,
+                                                      const char *buffer,
+                                                      size_t length) {
+  int ret = (int)std::fwrite(buffer, sizeof(char), length, fm);
+  if(!ret) {
+    std::stringstream msg;
+    ttk::Debug d;
+    msg << "[TopologicalCompression] Error writing char array!" << std::endl;
+    d.dMsg(std::cerr, msg.str(), ttk::Debug::fatalMsg);
+  }
+}
+
 int ttk::TopologicalCompression::ReadCompactSegmentation(
   FILE *fm,
   std::vector<int> &segmentation,
