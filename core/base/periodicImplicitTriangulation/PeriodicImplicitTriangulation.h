@@ -268,13 +268,13 @@ namespace ttk {
     virtual int getEdgeIncenter(SimplexId edgeId,
                                 float incenter[3]) const override {
       std::array<SimplexId, 2> vertexId;
-      for(int i = 0; i < vertexId.size(); ++i) {
+      for(int i = 0; i < (int)vertexId.size(); ++i) {
         getEdgeVertex(edgeId, i, vertexId[i]);
       }
 
       std::array<std::array<float, 3>, vertexId.size()> p;
       std::array<std::array<SimplexId, 3>, vertexId.size()> ind;
-      for(int i = 0; i < vertexId.size(); ++i) {
+      for(int i = 0; i < (int)vertexId.size(); ++i) {
         getVertexPoint(vertexId[i], p[i][0], p[i][1], p[i][2]);
         ind[i] = vertexToPositionNd(vertexId[i]);
       }
@@ -302,13 +302,13 @@ namespace ttk {
                                     float incenter[3]) const override {
 
       std::array<SimplexId, 3> vertexId;
-      for(int i = 0; i < vertexId.size(); ++i) {
+      for(int i = 0; i < (int)vertexId.size(); ++i) {
         getTriangleVertex(triangleId, i, vertexId[i]);
       }
 
       std::array<std::array<float, 3>, vertexId.size()> p;
       std::array<std::array<SimplexId, 3>, vertexId.size()> ind;
-      for(int i = 0; i < vertexId.size(); ++i) {
+      for(int i = 0; i < (int)vertexId.size(); ++i) {
         getVertexPoint(vertexId[i], p[i][0], p[i][1], p[i][2]);
         ind[i] = vertexToPositionNd(vertexId[i]);
       }
@@ -327,11 +327,11 @@ namespace ttk {
       }
 
       std::array<float, p.size()> d;
-      for(int i = 0; i < d.size(); ++i) {
+      for(int i = 0; i < (int)d.size(); ++i) {
         d[i] = Geometry::distance(p[(i + 1) % 3].data(), p[(i + 2) % 3].data());
       }
       const float sum = d[0] + d[1] + d[2];
-      for(int i = 0; i < d.size(); ++i) {
+      for(int i = 0; i < (int)d.size(); ++i) {
         d[i] = d[i] / sum;
       }
 
@@ -350,13 +350,13 @@ namespace ttk {
                                  float incenter[3]) const override {
 
       std::array<SimplexId, 4> vertexId;
-      for(int i = 0; i < vertexId.size(); ++i) {
+      for(int i = 0; i < (int)vertexId.size(); ++i) {
         getCellVertex(tetraId, i, vertexId[i]);
       }
 
       std::array<std::array<float, 3>, vertexId.size()> p;
       std::array<std::array<SimplexId, 3>, vertexId.size()> ind;
-      for(int i = 0; i < vertexId.size(); ++i) {
+      for(int i = 0; i < (int)vertexId.size(); ++i) {
         getVertexPoint(vertexId[i], p[i][0], p[i][1], p[i][2]);
         ind[i] = vertexToPositionNd(vertexId[i]);
       }
