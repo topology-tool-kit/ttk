@@ -14,6 +14,10 @@ ttk::TopologicalCompression::TopologicalCompression() {
 ttk::TopologicalCompression::~TopologicalCompression() {
 }
 
+const std::string ttk::TopologicalCompression::magicBytes_{
+  "TTKCompressedFileFormat"};
+const unsigned long ttk::TopologicalCompression::formatVersion_{1};
+
 // Dependencies.
 
 #ifdef TTK_ENABLE_ZFP

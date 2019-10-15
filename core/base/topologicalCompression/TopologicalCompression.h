@@ -420,6 +420,12 @@ namespace ttk {
     std::vector<int> compressedOffsets_;
     int vertexNumberRead_;
     char *fileName;
+
+    // Char array that identifies the file format.
+    static const std::string magicBytes_;
+    // Current version of the file format. To be incremented at every
+    // breaking change to keep backward compatibility.
+    static const unsigned long formatVersion_;
   };
 
   // End namespace ttk.
@@ -637,6 +643,13 @@ int ttk::TopologicalCompression::WriteMetaData(
   double tolerance,
   double zfpBitBudget,
   const std::string &dataArrayName) {
+
+  // -4. Magic bytes
+  WriteConstCharArray(fp, magicBytes_.data(), magicBytes_.size());
+
+  // -3. File format version
+  WriteUnsignedLong(fp, formatVersion_);
+
   // -2. Persistence, or Other
   WriteInt(fp, compressionType);
 
@@ -849,6 +862,23 @@ int ttk::TopologicalCompression::ReadFromFile(FILE *fp) {
 
 template <typename T>
 int ttk::TopologicalCompression::ReadMetaData(FILE *fm) {
+
+  // -4. Magic bytes
+  std::vector<char> mBytes(magicBytes_.size() + 1);
+  mBytes[magicBytes_.size()] = '\0'; // NULL-termination
+  ReadCharArray(fm, mBytes.data(), magicBytes_.size());
+
+  if(strcmp(mBytes.data(), magicBytes_.data()) != 0) {
+    std::stringstream msg;
+    msg << "[TopologicalCompression] Could not find magic bytes in input file!"
+        << std::endl;
+    msg << "[TopologicalCompression] File may be corrupted!" << std::endl;
+    dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
+  }
+
+  // -3. File format version
+  auto vers = ReadUnsignedLong(fm);
+
   // -2. Compression type.
   compressionType_ = ReadInt(fm);
 
