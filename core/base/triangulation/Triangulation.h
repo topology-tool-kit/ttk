@@ -53,7 +53,6 @@ namespace ttk {
     Triangulation(Triangulation &&);
     Triangulation &operator=(const Triangulation &);
     Triangulation &operator=(Triangulation &&);
-
     ~Triangulation();
 
     /// Reset the triangulation data-structures.
@@ -3094,6 +3093,32 @@ namespace ttk {
       return !((!abstractTriangulation_->preprocessVertexTriangles())
                && (hasPreprocessedVertexTriangles_ = true));
     }
+
+    int getEdgeIncenter(SimplexId edgeId, float incenter[3]) const override {
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(isEmptyCheck())
+        return -1;
+#endif
+
+      return abstractTriangulation_->getEdgeIncenter(edgeId, incenter);
+    };
+
+    int getTriangleIncenter(SimplexId triangleId,
+                            float incenter[3]) const override {
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(isEmptyCheck())
+        return -1;
+#endif
+      return abstractTriangulation_->getTriangleIncenter(triangleId, incenter);
+    };
+
+    int getTetraIncenter(SimplexId tetraId, float incenter[3]) const override {
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(isEmptyCheck())
+        return -1;
+#endif
+      return abstractTriangulation_->getTetraIncenter(tetraId, incenter);
+    };
 
     /// Tune the debug level (default: 0)
     inline int setDebugLevel(const int &debugLevel) override {
