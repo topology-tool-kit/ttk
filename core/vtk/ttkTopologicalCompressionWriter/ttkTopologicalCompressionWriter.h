@@ -106,6 +106,10 @@ public:
   vtkSetMacro(UseTopologicalSimplification, bool);
   vtkGetMacro(UseTopologicalSimplification, bool);
 
+  void SetDebugLevel(int debugLevel) {
+    d.setDebugLevel(debugLevel);
+  }
+
   inline void SetSQMethodPV(int c) {
     switch(c) {
       case 1:
@@ -163,6 +167,8 @@ private:
   ttk::TopologicalCompression topologicalCompression;
   int ThreadNumber;
   bool UseAllCores;
+
+  ttk::Debug d;
 
   // Whatever.
   ttkTopologicalCompressionWriter(const ttkTopologicalCompressionWriter &);
