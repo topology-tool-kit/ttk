@@ -868,16 +868,25 @@ int ttk::TopologicalCompression::ReadMetaData(FILE *fm) {
   mBytes[magicBytes_.size()] = '\0'; // NULL-termination
   ReadCharArray(fm, mBytes.data(), magicBytes_.size());
 
-  if(strcmp(mBytes.data(), magicBytes_.data()) != 0) {
+  // To deal with pre-v1 file format (without scalar field array name)
+  bool hasMagicBytes = strcmp(mBytes.data(), magicBytes_.data()) == 0;
+
+  if(!hasMagicBytes) {
     std::stringstream msg;
     msg << "[TopologicalCompression] Could not find magic bytes in input file!"
         << std::endl;
     msg << "[TopologicalCompression] File may be corrupted!" << std::endl;
     dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
+
+    // rewind fm to beginning of file
+    std::rewind(fm);
   }
 
   // -3. File format version
-  auto vers = ReadUnsignedLong(fm);
+  unsigned long version = 0;
+  if(hasMagicBytes) {
+    version = ReadUnsignedLong(fm);
+  }
 
   // -2. Compression type.
   compressionType_ = ReadInt(fm);
@@ -907,6 +916,11 @@ int ttk::TopologicalCompression::ReadMetaData(FILE *fm) {
 
   // 5. Lossy compressor ratio
   zfpBitBudget_ = ReadDouble(fm);
+
+  if(version == 0) {
+    // Pre-v1 format has no scalar field array name
+    return 0;
+  }
 
   // 6. Length of array name
   size_t dataArrayNameLength = ReadUnsignedLong(fm);
