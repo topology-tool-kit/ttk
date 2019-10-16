@@ -99,6 +99,13 @@ void ttkTopologicalCompressionWriter::PerformCompression(
 }
 
 void ttkTopologicalCompressionWriter::WriteData() {
+  vtkDataObject *input = GetInput();
+  vtkImageData *vti = vtkImageData::SafeDownCast(input);
+
+  execute(vti);
+}
+
+void ttkTopologicalCompressionWriter::execute(vtkImageData *vti) {
   bool zfpOnly = ZFPOnly;
   double zfpBitBudget = ZFPBitBudget;
   topologicalCompression.setThreadNumber(threadNumber_);
@@ -119,9 +126,6 @@ void ttkTopologicalCompressionWriter::WriteData() {
     d.dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
     return;
   }
-
-  vtkDataObject *input = GetInput();
-  vtkImageData *vti = vtkImageData::SafeDownCast(input);
 
   vtkDataArray *inputScalarField = GetInputScalarField(vti);
 

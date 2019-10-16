@@ -127,6 +127,7 @@ protected:
   ~ttkTopologicalCompressionWriter();
   virtual int FillInputPortInformation(int port, vtkInformation *info) override;
   void WriteData() override;
+  void execute(vtkImageData *vti);
 
   // TTK management.
   vtkDataArray *GetInputScalarField(vtkImageData *vti);
