@@ -1,8 +1,9 @@
 ttk_add_vtk_library(ttkCinemaWriter
-  SOURCES 
+  SOURCES
     ttkCinemaWriter.cpp
-  HEADERS 
+  HEADERS
     ttkCinemaWriter.h
-  LINK 
+  LINK
     ttkTriangulation
+    ttkTopologicalCompressionWriter
     )

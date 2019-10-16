@@ -1,4 +1,5 @@
 #include <ttkCinemaWriter.h>
+#include <ttkTopologicalCompressionWriter.h>
 
 #include <vtkVersion.h>
 
@@ -81,6 +82,11 @@ vtkStandardNewMacro(ttkCinemaWriter)
   string dataCsvPath = this->DatabasePath + "/data.csv";
   string pathSuffix = ".vtm";
 
+  if(input->IsA("vtkImageData")) {
+    this->UseTopologicalCompression = true;
+    pathSuffix = ".ttk";
+  }
+
   // Create directory if it does not already exist
   {
     auto directory = vtkSmartPointer<vtkDirectory>::New();
@@ -144,14 +150,28 @@ vtkStandardNewMacro(ttkCinemaWriter)
 
   t0 = t.getElapsedTime();
 
-  auto mbWriter = vtkSmartPointer<vtkXMLMultiBlockDataWriter>::New();
-  mbWriter->SetFileName(path.data());
-  mbWriter->SetDataModeToAppended();
-  mbWriter->SetCompressorTypeToZLib();
-  vtkZLibDataCompressor::SafeDownCast(mbWriter->GetCompressor())
-    ->SetCompressionLevel(this->GetCompressLevel());
-  mbWriter->SetInputData(inputMB);
-  mbWriter->Write();
+  if(this->UseTopologicalCompression) {
+    // Create data sub-directory if it does not exist yet
+    vtkNew<vtkDirectory>()->MakeDirectory(pathPrefix.data());
+
+    auto ttkCompWriter
+      = vtkSmartPointer<ttkTopologicalCompressionWriter>::New();
+    ttkCompWriter->SetFileName(path.data());
+    ttkCompWriter->SetScalarField("");
+    ttkCompWriter->SetScalarFieldId(0);
+    ttkCompWriter->SetDebugLevel(debugLevel_);
+    ttkCompWriter->execute(vtkImageData::SafeDownCast(input));
+  } else {
+
+    auto mbWriter = vtkSmartPointer<vtkXMLMultiBlockDataWriter>::New();
+    mbWriter->SetFileName(path.data());
+    mbWriter->SetDataModeToAppended();
+    mbWriter->SetCompressorTypeToZLib();
+    vtkZLibDataCompressor::SafeDownCast(mbWriter->GetCompressor())
+      ->SetCompressionLevel(this->GetCompressLevel());
+    mbWriter->SetInputData(inputMB);
+    mbWriter->Write();
+  }
 
   {
     stringstream msg;
@@ -242,9 +262,13 @@ vtkStandardNewMacro(ttkCinemaWriter)
       auto columnName = table->GetColumnName(j);
       auto columnCSV = vtkStringArray::SafeDownCast(table->GetColumn(j));
       if(string(columnName).compare("FILE") == 0)
-        columnCSV->SetValue(
-          offset + i, vtkStdString(dataPrefix + id + "/" + id + "_"
-                                   + to_string(i) + "." + blockExtension));
+        if(this->UseTopologicalCompression) {
+          columnCSV->SetValue(offset + i, dataPrefix + id + pathSuffix);
+        } else {
+          columnCSV->SetValue(
+            offset + i, vtkStdString(dataPrefix + id + "/" + id + "_"
+                                     + to_string(i) + "." + blockExtension));
+        }
       else {
         auto array = fieldData->GetAbstractArray(columnName);
         string value = array->GetVariantValue(0).ToString();

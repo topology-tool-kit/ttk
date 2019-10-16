@@ -173,6 +173,10 @@ private:
   // Whatever.
   ttkTopologicalCompressionWriter(const ttkTopologicalCompressionWriter &);
   void operator=(const ttkTopologicalCompressionWriter &);
+
+  // give ttkCinemaWriter access to ttkTopologicalCompressionWriter
+  // protected member functions
+  friend class ttkCinemaWriter;
 };
 
 #endif // _VTK_TOPOLOGICALCOMPRESSIONWRITER_H
