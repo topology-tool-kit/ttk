@@ -429,7 +429,7 @@ between matched critical points.
       <OutputPort name="Matchings" index="2" id="port2" />
 
       <Hints>
-        <ShowInMenu category="TTK - Uncertain Scalar Data" />
+        <ShowInMenu category="TTK - Scalar Data" />
       </Hints>
    </SourceProxy>
  </ProxyGroup>
