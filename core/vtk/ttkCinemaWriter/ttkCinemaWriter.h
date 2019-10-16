@@ -40,6 +40,9 @@ public:
   vtkSetMacro(CompressLevel, int);
   vtkGetMacro(CompressLevel, int);
 
+  vtkSetMacro(UseTopologicalCompression, bool);
+  vtkGetMacro(UseTopologicalCompression, bool);
+
   // default ttk setters
   vtkSetMacro(debugLevel_, int);
   void SetThreads() {
@@ -84,6 +87,7 @@ protected:
     SetDatabasePath("");
     SetOverrideDatabase(true);
     SetCompressLevel(9);
+    SetUseTopologicalCompression(false);
 
     UseAllCores = false;
 
@@ -103,6 +107,7 @@ private:
   std::string DatabasePath;
   bool OverrideDatabase;
   int CompressLevel;
+  bool UseTopologicalCompression;
 
   bool needsToAbort() override {
     return GetAbortExecute();
