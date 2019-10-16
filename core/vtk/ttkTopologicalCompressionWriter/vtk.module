@@ -2,6 +2,8 @@ NAME
  ttkTopologicalCompressionWriter
 DEPENDS
   VTK::FiltersCore
+  VTK::IOParallelXML
+  VTK::IOLegacy
 PRIVATE_DEPENDS
   VTK::CommonCore
 
