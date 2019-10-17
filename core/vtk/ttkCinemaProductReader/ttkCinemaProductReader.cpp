@@ -1,4 +1,5 @@
 #include <ttkCinemaProductReader.h>
+#include <ttkTopologicalCompressionReader.h>
 
 #include <vtkDoubleArray.h>
 #include <vtkFieldData.h>
@@ -90,8 +91,16 @@ vtkStandardNewMacro(ttkCinemaProductReader)
         continue;
       }
 
+      if(ext == "ttk") {
+        vtkNew<ttkTopologicalCompressionReader> reader;
+        reader->SetFileName(path.data());
+        reader->Update();
+
+        output->SetBlock(i, reader->GetOutput());
+      }
+
       // Read any data using vtkXMLGenericDataObjectReader
-      {
+      else {
         auto reader = vtkSmartPointer<vtkXMLGenericDataObjectReader>::New();
         reader->SetFileName(path.data());
         reader->Update();

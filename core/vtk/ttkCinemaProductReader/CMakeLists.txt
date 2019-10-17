@@ -5,4 +5,5 @@ ttk_add_vtk_library(ttkCinemaProductReader
     ttkCinemaProductReader.h
   LINK
     ttkTriangulation
+    ttkTopologicalCompressionReader
     )
