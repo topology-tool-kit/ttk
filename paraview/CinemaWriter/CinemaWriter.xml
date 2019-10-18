@@ -31,6 +31,19 @@
                 <Documentation>Determines the compression level form 0 (fast + large files) to 9 (slow + small files).</Documentation>
             </IntVectorProperty>
 
+      <IntVectorProperty
+              name="UseTopologicalCompression"
+              label="Use Topological Compression"
+              command="SetUseTopologicalCompression"
+              number_of_elements="1"
+              default_values="0">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Use TTK Topological Compression algorithm instead of writing
+          uncompressed data.
+        </Documentation>
+      </IntVectorProperty>
+
             <IntVectorProperty name="UseAllCores" label="Use All Cores" command="SetUseAllCores" number_of_elements="1" default_values="1" panel_visibility="advanced">
                 <BooleanDomain name="bool" />
                 <Documentation>Use all available cores.</Documentation>
@@ -176,11 +189,31 @@
                 <Property name="DatabasePath" />
                 <Property name="OverrideDatabase" />
                 <Property name="CompressionLevel" />
+                <Property name="UseTopologicalCompression" />
             </PropertyGroup>
             <PropertyGroup panel_widget="Line" label="Testing">
                 <Property name="UseAllCores" />
                 <Property name="ThreadNumber" />
                 <Property name="DebugLevel" />
+            </PropertyGroup>
+
+            <PropertyGroup panel_widget="Line" label="Topological Compression" >
+              <Property name="ScalarField" />
+              <Property name="CompressionType" />
+              <Property name="Tolerance" />
+              <Property name="Subdivide" />
+              <Property name="MaximumError" />
+              <Property name="ZFPBitBudget" />
+              <Property name="ZFPOnly" />
+              <Property name="UseTopologicalSimplification" />
+              <Property name="SQMethod" />
+              <Hints>
+                <PropertyWidgetDecorator
+                    type="GenericDecorator"
+                    mode="visibility"
+                    property="UseTopologicalCompression"
+                    value="1" />
+              </Hints>
             </PropertyGroup>
 
             <Hints>
