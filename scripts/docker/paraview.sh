@@ -7,7 +7,7 @@ build_pkgs \
 	curl			\
 	cmake			\
 	ninja-build		\
-	python3.6-dev		\
+	python3.7-dev		\
 	libexpat1-dev		\
 	libeigen3-dev		\
 	libfreetype6-dev	\
@@ -31,12 +31,12 @@ build_pkgs \
 
 runtime_pkgs \
 	libstdc++6		\
-	libpython3.6		\
+	libpython3.7		\
 	libexpat1		\
 	libfreetype6		\
 	liblz4-1		\
 	liblzma5		\
-	libhdf5-100		\
+	libhdf5-103		\
 	libtiff5		\
 	libjpeg8		\
 	libpng16-16		\
@@ -47,7 +47,7 @@ runtime_pkgs \
 	libxml++2.6-2v5		\
 	libjsoncpp1		\
 	libpugixml1v5		\
-	libprotobuf10		\
+	libprotobuf17		\
 	libcgns3.3		\
 	libtbb2
 
@@ -58,7 +58,7 @@ echo "### build ParaView ###"
 # get source code
 mkdir -p $BUILD_DIR
 
-curl -kL "https://www.paraview.org/paraview-downloads/download.php?submit=Download&version=v5.6&type=source&os=Sources&downloadFile=ParaView-v${PARAVIEW_VERSION}.tar.xz" | \
+curl -kL "https://www.paraview.org/paraview-downloads/download.php?submit=Download&version=v${PARAVIEW_VERSION%.*}&type=source&os=Sources&downloadFile=ParaView-v${PARAVIEW_VERSION}.tar.xz" | \
   tar Jx -C $BUILD_DIR --strip-components 1
 
 # FIXME: hack to allow plugins built against ParaView to know about ospray targets 
