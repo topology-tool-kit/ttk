@@ -154,8 +154,6 @@ vtkStandardNewMacro(ttkCinemaWriter)
     vtkNew<vtkDirectory>()->MakeDirectory(pathPrefix.data());
 
     this->ttkCompWriter_->SetFileName(path.data());
-    this->ttkCompWriter_->SetScalarField("");
-    this->ttkCompWriter_->SetScalarFieldId(0);
     this->ttkCompWriter_->SetDebugLevel(debugLevel_);
     this->ttkCompWriter_->execute(vtkImageData::SafeDownCast(input));
   } else {

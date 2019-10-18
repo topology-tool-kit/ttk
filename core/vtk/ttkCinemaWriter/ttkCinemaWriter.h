@@ -44,66 +44,52 @@ public:
   vtkSetMacro(UseTopologicalCompression, bool);
   vtkGetMacro(UseTopologicalCompression, bool);
 
-  void SetTolerance(double arg) {
-    this->ttkCompWriter_->SetTolerance(arg);
+#define TopoCompWriterSetMacro(NAME, TYPE)        \
+  void Set##NAME(TYPE _arg) {                     \
+    this->ttkCompWriter_->Set##NAME(_arg);        \
   }
-  double GetTolerance() {
-    return this->ttkCompWriter_->GetTolerance();
+#define TopoCompWriterGetMacro(NAME, TYPE)        \
+  TYPE Get##NAME() {                              \
+    return this->ttkCompWriter_->Get##NAME();     \
   }
-  void SetMaximumError(double arg) {
-    this->ttkCompWriter_->SetMaximumError(arg);
-  }
-  double GetMaximumError() {
-    return this->ttkCompWriter_->GetMaximumError();
-  }
-  void SetZFPBitBudget(double arg) {
-    this->ttkCompWriter_->SetZFPBitBudget(arg);
-  }
-  double GetZFPBitBudget() {
-    return this->ttkCompWriter_->GetZFPBitBudget();
-  }
-  void SetZFPOnly(bool arg) {
-    this->ttkCompWriter_->SetZFPOnly(arg);
-  }
-  bool GetZFPOnly() {
-    return this->ttkCompWriter_->GetZFPOnly();
-  }
-  void SetCompressionType(int arg) {
-    this->ttkCompWriter_->SetCompressionType(arg);
-  }
-  int GetCompressionType() {
-    return this->ttkCompWriter_->GetCompressionType();
-  }
-  void SetNbSegments(int arg) {
-    this->ttkCompWriter_->SetNbSegments(arg);
-  }
-  int GetNbSegments() {
-    return this->ttkCompWriter_->GetNbSegments();
-  }
-  void SetNbVertices(int arg) {
-    this->ttkCompWriter_->SetNbVertices(arg);
-  }
-  int GetNbVertices() {
-    return this->ttkCompWriter_->GetNbVertices();
-  }
-  void SetSQMethod(std::string arg) {
-    this->ttkCompWriter_->SetSQMethod(arg);
-  }
-  std::string GetSQMethod() {
-    return this->ttkCompWriter_->GetSQMethod();
-  }
-  void SetSubdivide(bool arg) {
-    this->ttkCompWriter_->SetSubdivide(arg);
-  }
-  bool GetSubdivide() {
-    return this->ttkCompWriter_->GetSubdivide();
-  }
-  void SetUseTopologicalSimplification(bool arg) {
-    this->ttkCompWriter_->SetUseTopologicalSimplification(arg);
-  }
-  bool GetUseTopologicalSimplification() {
-    return this->ttkCompWriter_->GetUseTopologicalSimplification();
-  }
+
+  TopoCompWriterSetMacro(ScalarField, std::string);
+  TopoCompWriterGetMacro(ScalarField, std::string);
+
+  TopoCompWriterSetMacro(ScalarFieldId, int);
+  TopoCompWriterGetMacro(ScalarFieldId, int);
+
+  TopoCompWriterGetMacro(Tolerance, double);
+  TopoCompWriterSetMacro(Tolerance, double);
+
+  TopoCompWriterGetMacro(MaximumError, double);
+  TopoCompWriterSetMacro(MaximumError, double);
+
+  TopoCompWriterGetMacro(ZFPBitBudget, double);
+  TopoCompWriterSetMacro(ZFPBitBudget, double);
+
+  TopoCompWriterGetMacro(ZFPOnly, bool);
+  TopoCompWriterSetMacro(ZFPOnly, bool);
+
+  TopoCompWriterGetMacro(CompressionType, int);
+  TopoCompWriterSetMacro(CompressionType, int);
+
+  TopoCompWriterGetMacro(NbSegments, int);
+  TopoCompWriterSetMacro(NbSegments, int);
+
+  TopoCompWriterGetMacro(NbVertices, int);
+  TopoCompWriterSetMacro(NbVertices, int);
+
+  TopoCompWriterGetMacro(SQMethod, std::string);
+  TopoCompWriterSetMacro(SQMethod, std::string);
+
+  TopoCompWriterGetMacro(Subdivide, bool);
+  TopoCompWriterSetMacro(Subdivide, bool);
+
+  TopoCompWriterGetMacro(UseTopologicalSimplification, bool);
+  TopoCompWriterSetMacro(UseTopologicalSimplification, bool);
+
+  TopoCompWriterSetMacro(SQMethodPV, int);
 
   // default ttk setters
   vtkSetMacro(debugLevel_, int);
