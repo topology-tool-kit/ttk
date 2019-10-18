@@ -1,5 +1,4 @@
 #include <ttkCinemaWriter.h>
-#include <ttkTopologicalCompressionWriter.h>
 
 #include <vtkVersion.h>
 
@@ -154,13 +153,11 @@ vtkStandardNewMacro(ttkCinemaWriter)
     // Create data sub-directory if it does not exist yet
     vtkNew<vtkDirectory>()->MakeDirectory(pathPrefix.data());
 
-    auto ttkCompWriter
-      = vtkSmartPointer<ttkTopologicalCompressionWriter>::New();
-    ttkCompWriter->SetFileName(path.data());
-    ttkCompWriter->SetScalarField("");
-    ttkCompWriter->SetScalarFieldId(0);
-    ttkCompWriter->SetDebugLevel(debugLevel_);
-    ttkCompWriter->execute(vtkImageData::SafeDownCast(input));
+    this->ttkCompWriter_->SetFileName(path.data());
+    this->ttkCompWriter_->SetScalarField("");
+    this->ttkCompWriter_->SetScalarFieldId(0);
+    this->ttkCompWriter_->SetDebugLevel(debugLevel_);
+    this->ttkCompWriter_->execute(vtkImageData::SafeDownCast(input));
   } else {
 
     auto mbWriter = vtkSmartPointer<vtkXMLMultiBlockDataWriter>::New();

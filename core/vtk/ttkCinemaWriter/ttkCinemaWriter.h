@@ -17,6 +17,7 @@
 #include <vtkXMLPMultiBlockDataWriter.h>
 
 // TTK includes
+#include <ttkTopologicalCompressionWriter.h>
 #include <ttkWrapper.h>
 
 #ifndef TTK_PLUGIN
@@ -108,6 +109,7 @@ private:
   bool OverrideDatabase;
   int CompressLevel;
   bool UseTopologicalCompression;
+  vtkNew<ttkTopologicalCompressionWriter> ttkCompWriter_;
 
   bool needsToAbort() override {
     return GetAbortExecute();
