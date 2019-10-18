@@ -44,6 +44,67 @@ public:
   vtkSetMacro(UseTopologicalCompression, bool);
   vtkGetMacro(UseTopologicalCompression, bool);
 
+  void SetTolerance(double arg) {
+    this->ttkCompWriter_->SetTolerance(arg);
+  }
+  double GetTolerance() {
+    return this->ttkCompWriter_->GetTolerance();
+  }
+  void SetMaximumError(double arg) {
+    this->ttkCompWriter_->SetMaximumError(arg);
+  }
+  double GetMaximumError() {
+    return this->ttkCompWriter_->GetMaximumError();
+  }
+  void SetZFPBitBudget(double arg) {
+    this->ttkCompWriter_->SetZFPBitBudget(arg);
+  }
+  double GetZFPBitBudget() {
+    return this->ttkCompWriter_->GetZFPBitBudget();
+  }
+  void SetZFPOnly(bool arg) {
+    this->ttkCompWriter_->SetZFPOnly(arg);
+  }
+  bool GetZFPOnly() {
+    return this->ttkCompWriter_->GetZFPOnly();
+  }
+  void SetCompressionType(int arg) {
+    this->ttkCompWriter_->SetCompressionType(arg);
+  }
+  int GetCompressionType() {
+    return this->ttkCompWriter_->GetCompressionType();
+  }
+  void SetNbSegments(int arg) {
+    this->ttkCompWriter_->SetNbSegments(arg);
+  }
+  int GetNbSegments() {
+    return this->ttkCompWriter_->GetNbSegments();
+  }
+  void SetNbVertices(int arg) {
+    this->ttkCompWriter_->SetNbVertices(arg);
+  }
+  int GetNbVertices() {
+    return this->ttkCompWriter_->GetNbVertices();
+  }
+  void SetSQMethod(std::string arg) {
+    this->ttkCompWriter_->SetSQMethod(arg);
+  }
+  std::string GetSQMethod() {
+    return this->ttkCompWriter_->GetSQMethod();
+  }
+  void SetSubdivide(bool arg) {
+    this->ttkCompWriter_->SetSubdivide(arg);
+  }
+  bool GetSubdivide() {
+    return this->ttkCompWriter_->GetSubdivide();
+  }
+  void SetUseTopologicalSimplification(bool arg) {
+    this->ttkCompWriter_->SetUseTopologicalSimplification(arg);
+  }
+  bool GetUseTopologicalSimplification() {
+    return this->ttkCompWriter_->GetUseTopologicalSimplification();
+  }
+
   // default ttk setters
   vtkSetMacro(debugLevel_, int);
   void SetThreads() {
