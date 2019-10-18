@@ -81,8 +81,17 @@ vtkStandardNewMacro(ttkCinemaWriter)
   string dataCsvPath = this->DatabasePath + "/data.csv";
   string pathSuffix = ".vtm";
 
-  if(input->IsA("vtkImageData")) {
-    this->UseTopologicalCompression = true;
+  bool doTopologicalCompression
+    = input->IsA("vtkImageData") && this->UseTopologicalCompression;
+
+  if(!doTopologicalCompression && this->UseTopologicalCompression) {
+    dMsg(cout,
+         "[ttkCinemaWriter] Cannot use Topological Compression, Input not a "
+         "vtkImageData instance\n",
+         infoMsg);
+  }
+
+  if(doTopologicalCompression) {
     pathSuffix = ".ttk";
   }
 
@@ -149,7 +158,7 @@ vtkStandardNewMacro(ttkCinemaWriter)
 
   t0 = t.getElapsedTime();
 
-  if(this->UseTopologicalCompression) {
+  if(doTopologicalCompression) {
     // Create data sub-directory if it does not exist yet
     vtkNew<vtkDirectory>()->MakeDirectory(pathPrefix.data());
 
