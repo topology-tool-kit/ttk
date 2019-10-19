@@ -29,6 +29,13 @@
             <IntVectorProperty name="CompressionLevel" label="Compression Level" command="SetCompressLevel" number_of_elements="1" default_values="9">
                 <IntRangeDomain name="range" min="0" max="9" />
                 <Documentation>Determines the compression level form 0 (fast + large files) to 9 (slow + small files).</Documentation>
+              <Hints>
+                <PropertyWidgetDecorator
+                    type="GenericDecorator"
+                    mode="visibility"
+                    property="UseTopologicalCompression"
+                    value="0" />
+              </Hints>
             </IntVectorProperty>
 
       <IntVectorProperty
