@@ -159,12 +159,17 @@ vtkStandardNewMacro(ttkCinemaWriter)
   t0 = t.getElapsedTime();
 
   if(doTopologicalCompression) {
+    dMsg(cout, "\n", timeMsg);
+
     // Create data sub-directory if it does not exist yet
     vtkNew<vtkDirectory>()->MakeDirectory(pathPrefix.data());
 
     this->ttkCompWriter_->SetFileName(path.data());
     this->ttkCompWriter_->SetDebugLevel(debugLevel_);
     this->ttkCompWriter_->execute(vtkImageData::SafeDownCast(input));
+
+    dMsg(cout, "[ttkCinemaWriter] - Writing to disk                   ... ",
+         timeMsg);
   } else {
 
     auto mbWriter = vtkSmartPointer<vtkXMLMultiBlockDataWriter>::New();
