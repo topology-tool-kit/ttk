@@ -9,6 +9,6 @@ runtime_pkgs \
 # install OSPRay
 
 curl -kL https://github.com/ospray/OSPRay/releases/download/v1.8.5/ospray-1.8.5.x86_64.linux.tar.gz | \
-  tar zvx -C /usr --strip-components 1 \
-  	  --exclude="scripts" \
-	  --exclude="libtbb*"
+  tar zx -C /usr --strip-components 1 \
+	--exclude="scripts" \
+	--exclude="libtbb*"
