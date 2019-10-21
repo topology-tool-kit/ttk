@@ -85,10 +85,8 @@ vtkStandardNewMacro(ttkCinemaWriter)
     = input->IsA("vtkImageData") && this->UseTopologicalCompression;
 
   if(!doTopologicalCompression && this->UseTopologicalCompression) {
-    dMsg(cout,
-         "[ttkCinemaWriter] Cannot use Topological Compression, Input not a "
-         "vtkImageData instance\n",
-         infoMsg);
+    vtkErrorMacro("Cannot use Topological Compression without a vtkImageData");
+    return 0;
   }
 
   if(doTopologicalCompression) {
