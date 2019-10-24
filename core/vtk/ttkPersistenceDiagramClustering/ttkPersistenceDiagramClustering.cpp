@@ -271,27 +271,14 @@ int ttkPersistenceDiagramClustering::RequestData(
       needUpdate_ = true;
     }
   }
-  // TODO Set output
-  vtkInformation *outInfo1;
-  outInfo1 = outputVector->GetInformationObject(0);
-  vtkDataSet *output1
-    = vtkDataSet::SafeDownCast(outInfo1->Get(vtkDataObject::DATA_OBJECT()));
-  vtkUnstructuredGrid *output_clusters
-    = vtkUnstructuredGrid::SafeDownCast(output1);
 
-  vtkInformation *outInfo2;
-  outInfo2 = outputVector->GetInformationObject(1);
-  vtkDataSet *output2
-    = vtkDataSet::SafeDownCast(outInfo2->Get(vtkDataObject::DATA_OBJECT()));
-  vtkUnstructuredGrid *output_centroids
-    = vtkUnstructuredGrid::SafeDownCast(output2);
-
-  vtkInformation *outInfo3;
-  outInfo3 = outputVector->GetInformationObject(2);
-  vtkDataSet *output3
-    = vtkDataSet::SafeDownCast(outInfo3->Get(vtkDataObject::DATA_OBJECT()));
-  vtkUnstructuredGrid *output_matchings
-    = vtkUnstructuredGrid::SafeDownCast(output3);
+  // Set outputs
+  auto output_clusters = vtkUnstructuredGrid::SafeDownCast(
+    outputVector->GetInformationObject(0)->Get(vtkDataObject::DATA_OBJECT()));
+  auto output_centroids = vtkUnstructuredGrid::SafeDownCast(
+    outputVector->GetInformationObject(1)->Get(vtkDataObject::DATA_OBJECT()));
+  auto output_matchings = vtkUnstructuredGrid::SafeDownCast(
+    outputVector->GetInformationObject(2)->Get(vtkDataObject::DATA_OBJECT()));
 
   doIt(input, output_clusters, output_centroids, output_matchings, numInputs);
 
