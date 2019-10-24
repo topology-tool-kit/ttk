@@ -230,7 +230,7 @@ int ttkPersistenceDiagramClustering::FillInputPortInformation(
   if(!this->Superclass::FillInputPortInformation(port, info)) {
     return 0;
   }
-  info->Set(vtkAlgorithm::INPUT_IS_REPEATABLE(), 1);
+  info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkMultiBlockDataSet");
   return 1;
 }
 
@@ -239,8 +239,8 @@ int ttkPersistenceDiagramClustering::FillOutputPortInformation(
   if(!this->Superclass::FillOutputPortInformation(port, info)) {
     return 0;
   }
-  if(port == 0 || port == 1 || port == 3)
-    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataSet");
+  if(port == 0 || port == 1 || port == 2)
+    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
   return 1;
 }
 
@@ -253,23 +253,19 @@ int ttkPersistenceDiagramClustering::RequestData(
 
   // Number of input files
   int numInputs = numberOfInputsFromCommandLine;
-  if(numInputs == 1) {
-    numInputs = inputVector[0]->GetNumberOfInformationObjects();
-  }
 
-  // Get input datas
-  std::vector<vtkDataSet *> input(numInputs);
-  for(int i = 0; i < numInputs; ++i) {
-    if(numberOfInputsFromCommandLine > 1) {
-      input[i] = vtkDataSet::GetData(inputVector[i], 0);
-    } else {
-      input[i] = vtkDataSet::GetData(inputVector[0], i);
+  // Get input data
+  std::vector<vtkDataSet *> input;
+
+  auto blocks = vtkMultiBlockDataSet::GetData(inputVector[0], 0);
+
+  if(blocks != nullptr) {
+    numInputs = blocks->GetNumberOfBlocks();
+    input.resize(numInputs);
+    for(int i = 0; i < numInputs; ++i) {
+      input[i] = vtkUnstructuredGrid::SafeDownCast(blocks->GetBlock(i));
     }
-    if(!input[i]) {
-      std::cout << "No data in input[" << i << "]" << std::endl;
-    } else if(this->GetMTime() < input[i]->GetMTime()) {
-      needUpdate_ = true;
-    }
+    needUpdate_ = true;
   }
 
   // Set outputs

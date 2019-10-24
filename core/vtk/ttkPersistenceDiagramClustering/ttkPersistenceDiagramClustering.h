@@ -35,13 +35,14 @@
 #include <vtkCharArray.h>
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
-#include <vtkDataSetAlgorithm.h>
 #include <vtkDoubleArray.h>
 #include <vtkFiltersCoreModule.h>
 #include <vtkFloatArray.h>
 #include <vtkInformation.h>
 #include <vtkInformationVector.h>
 #include <vtkIntArray.h>
+#include <vtkMultiBlockDataSet.h>
+#include <vtkMultiBlockDataSetAlgorithm.h>
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
 #include <vtkSmartPointer.h>
@@ -63,7 +64,7 @@
 // see the documentation of the vtkAlgorithm class to decide from which VTK
 // class your wrapper should inherit.
 class TTKPERSISTENCEDIAGRAMCLUSTERING_EXPORT ttkPersistenceDiagramClustering
-  : public vtkDataSetAlgorithm,
+  : public vtkMultiBlockDataSetAlgorithm,
     public ttk::Wrapper {
 
 public:
@@ -73,7 +74,7 @@ public:
   }
   static ttkPersistenceDiagramClustering *New();
 
-  vtkTypeMacro(ttkPersistenceDiagramClustering, vtkDataSetAlgorithm);
+  vtkTypeMacro(ttkPersistenceDiagramClustering, vtkMultiBlockDataSetAlgorithm);
 
   // default ttk setters
   void SetDebugLevel(int debugLevel) {
