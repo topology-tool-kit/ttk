@@ -263,8 +263,6 @@ public:
 protected:
   ttkPersistenceDiagramClustering();
 
-  ~ttkPersistenceDiagramClustering();
-
   template <typename dataType>
   double getPersistenceDiagram(std::vector<diagramTuple> *diagram,
                                vtkUnstructuredGrid *CTPersistenceDiagram_,
@@ -302,45 +300,45 @@ protected:
 
 private:
   // std::vector<std::vector<diagramTuple>>
-  void *intermediateDiagrams_;
+  void *intermediateDiagrams_{nullptr};
   // std::vector<std::vector<diagramTuple>>
-  void *all_matchings_;
-  void *final_centroids_;
-  std::vector<int> inv_clustering_;
+  void *all_matchings_{nullptr};
+  void *final_centroids_{nullptr};
+  std::vector<int> inv_clustering_{};
 
   // vtkUnstructuredGrid* output_clusters_;
   // vtkUnstructuredGrid* output_centroids_;
 
-  int numberOfInputsFromCommandLine;
-  int PairTypeClustering;
-  bool ForceUseOfAlgorithm;
-  bool Deterministic;
-  bool UseAllCores;
-  int ThreadNumber;
-  bool UseOutputMatching;
-  bool UseAdditionalPrecision;
-  int DistanceWritingOptions;
-  double Alpha;
-  double DeltaLim;
-  double Lambda;
-  double Spacing;
-  double oldSpacing;
-  int DisplayMethod;
-  bool UseInterruptible;
-  int Method; // 0 = progressive approach, 1 = Auction approach
-  double max_dimension_total_;
+  int numberOfInputsFromCommandLine{1};
+  int PairTypeClustering{-1};
+  bool ForceUseOfAlgorithm{false};
+  bool Deterministic{true};
+  bool UseAllCores{false};
+  int ThreadNumber{1};
+  bool UseOutputMatching{true};
+  bool UseAdditionalPrecision{false};
+  int DistanceWritingOptions{0};
+  double Alpha{1.0};
+  double DeltaLim{0.01};
+  double Lambda{1.0};
+  double Spacing{1.0};
+  double oldSpacing{1.0};
+  int DisplayMethod{0};
+  bool UseInterruptible{true};
+  int Method{0}; // 0 = progressive approach, 1 = Auction approach
+  double max_dimension_total_{};
 
-  bool needUpdate_;
+  bool needUpdate_{true};
 
-  int NumberOfClusters;
-  bool UseAccelerated;
-  bool UseKmeansppInit;
+  int NumberOfClusters{1};
+  bool UseAccelerated{false};
+  bool UseKmeansppInit{false};
 
-  std::string ScalarField;
-  std::string WassersteinMetric;
+  std::string ScalarField{};
+  std::string WassersteinMetric{"2"};
 
-  bool UseProgressive;
-  double TimeLimit;
+  bool UseProgressive{true};
+  double TimeLimit{9999999};
 
   // base code features
   int doIt(const std::vector<vtkDataSet *> &input,

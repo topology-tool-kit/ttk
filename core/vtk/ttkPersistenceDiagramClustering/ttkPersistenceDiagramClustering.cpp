@@ -5,41 +5,9 @@ using namespace ttk;
 
 vtkStandardNewMacro(ttkPersistenceDiagramClustering)
 
-  ttkPersistenceDiagramClustering::ttkPersistenceDiagramClustering() {
-  UseAllCores = false;
-  WassersteinMetric = "2";
-  UseOutputMatching = true;
-  TimeLimit = 9999999;
-  NumberOfClusters = 1;
-  Deterministic = 1;
-  ThreadNumber = 1;
-  PairTypeClustering = -1;
-  numberOfInputsFromCommandLine = 1;
-  UseProgressive = 1;
-  UseAccelerated = 0;
-  UseKmeansppInit = 0;
-  Alpha = 1;
-  DeltaLim = 0.01;
-  Lambda = 1;
-  Spacing = 1;
-  oldSpacing = 1;
-  Method = 0;
-  needUpdate_ = true;
-  UseInterruptible = true;
-  UseAdditionalPrecision = false;
-  ForceUseOfAlgorithm = false;
-  DistanceWritingOptions = 0;
-  DisplayMethod = 0;
-
-  final_centroids_ = NULL;
-  intermediateDiagrams_ = NULL;
-  all_matchings_ = NULL;
-
+ttkPersistenceDiagramClustering::ttkPersistenceDiagramClustering() {
   SetNumberOfInputPorts(1);
   SetNumberOfOutputPorts(3);
-}
-
-ttkPersistenceDiagramClustering::~ttkPersistenceDiagramClustering() {
 }
 
 // transmit abort signals -- to copy paste in other wrappers
