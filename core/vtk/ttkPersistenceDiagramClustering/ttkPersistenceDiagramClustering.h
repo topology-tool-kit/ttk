@@ -342,7 +342,7 @@ private:
   double TimeLimit;
 
   // base code features
-  int doIt(vtkDataSet **input,
+  int doIt(const std::vector<vtkDataSet *> &input,
            vtkUnstructuredGrid *outputClusters,
            vtkUnstructuredGrid *outputCentroids,
            vtkUnstructuredGrid *outputMatchings,

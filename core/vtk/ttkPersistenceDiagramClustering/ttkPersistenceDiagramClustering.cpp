@@ -198,11 +198,12 @@ int ttkPersistenceDiagramClustering::dispatch(
   return ret;
 }
 
-int ttkPersistenceDiagramClustering::doIt(vtkDataSet **input,
-                                          vtkUnstructuredGrid *outputClusters,
-                                          vtkUnstructuredGrid *outputCentroids,
-                                          vtkUnstructuredGrid *outputMatchings,
-                                          int numInputs) {
+int ttkPersistenceDiagramClustering::doIt(
+  const std::vector<vtkDataSet *> &input,
+  vtkUnstructuredGrid *outputClusters,
+  vtkUnstructuredGrid *outputCentroids,
+  vtkUnstructuredGrid *outputMatchings,
+  int numInputs) {
   // Get arrays from input datas
   // vtkDataArray* inputDiagram[numInputs] = { NULL };
   //
@@ -260,7 +261,7 @@ int ttkPersistenceDiagramClustering::RequestData(
     dMsg(cout, msg.str(), infoMsg);
   }
   // Get input datas
-  vtkDataSet **input = new vtkDataSet *[numInputs];
+  std::vector<vtkDataSet *> input(numInputs);
   for(int i = 0; i < numInputs; ++i) {
     if(numberOfInputsFromCommandLine > 1) {
       input[i] = vtkDataSet::GetData(inputVector[i], 0);
@@ -296,7 +297,6 @@ int ttkPersistenceDiagramClustering::RequestData(
     = vtkUnstructuredGrid::SafeDownCast(output3);
 
   doIt(input, output_clusters, output_centroids, output_matchings, numInputs);
-  delete[] input;
 
   {
     stringstream msg;
