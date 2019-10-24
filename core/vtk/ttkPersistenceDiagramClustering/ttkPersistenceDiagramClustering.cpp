@@ -256,10 +256,7 @@ int ttkPersistenceDiagramClustering::RequestData(
   if(numInputs == 1) {
     numInputs = inputVector[0]->GetNumberOfInformationObjects();
   }
-  {
-    stringstream msg;
-    dMsg(cout, msg.str(), infoMsg);
-  }
+
   // Get input datas
   std::vector<vtkDataSet *> input(numInputs);
   for(int i = 0; i < numInputs; ++i) {
