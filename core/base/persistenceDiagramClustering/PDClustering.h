@@ -222,6 +222,10 @@ namespace ttk {
       deltaLim_ = deltaLim;
     }
 
+    inline void setPerClusterDistanceMatrix(const bool arg) {
+      perClusterDistanceMatrix_ = arg;
+    }
+
     inline void printClustering() {
       for(int c = 0; c < k_; ++c) {
         std::cout << "[PersistenceDiagramClustering] Cluster " << c << " : [";
@@ -332,6 +336,7 @@ namespace ttk {
     std::vector<std::vector<dataType>> l_;
     std::vector<std::vector<dataType>> d_;
     std::vector<std::vector<double>> diagramsDistanceMatrix_{};
+    bool perClusterDistanceMatrix_{false};
 
     int n_iterations_;
   };

@@ -374,6 +374,21 @@ between matched critical points.
         </Documentation>
       </DoubleVectorProperty>
 
+      <IntVectorProperty
+          name="PerClusterDistanceMatrix"
+          label="Per Cluster Distance Matrix"
+          command="SetPerClusterDistanceMatrix"
+          number_of_elements="1"
+          default_values="0"
+          panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Restrict the distance matrix computation to persistence
+          diagrams sharing the same cluster. Persistence diagrams in
+          different clusters will have a distance set to +infinity.
+        </Documentation>
+      </IntVectorProperty>
+
       <!-- <PropertyGroup panel_widget="Line" label="Testing"> -->
       <!--   <Property name="UseAllCores" /> -->
       <!--   <Property name="ThreadNumber" /> -->

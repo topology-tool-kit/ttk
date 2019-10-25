@@ -1320,9 +1320,8 @@ void PDClustering<dataType>::computeDiagramsDistanceMatrix() {
     for(int j = i + 1; j < numberOfInputs_; ++j) {
       double distance{};
 
-      // TODO
-      if(/* PerClusterDistanceMatrix && */ inv_clustering_[i]
-         != inv_clustering_[j]) {
+      if(perClusterDistanceMatrix_
+         && inv_clustering_[i] != inv_clustering_[j]) {
         continue;
       }
 

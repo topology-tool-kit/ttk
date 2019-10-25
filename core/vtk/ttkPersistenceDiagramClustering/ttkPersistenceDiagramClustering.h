@@ -260,6 +260,13 @@ public:
   }
   vtkGetMacro(Method, double);
 
+  void SetPerClusterDistanceMatrix(const bool arg) {
+    PerClusterDistanceMatrix = arg;
+    needUpdate_ = true;
+    Modified();
+  }
+  vtkGetMacro(PerClusterDistanceMatrix, bool);
+
 protected:
   ttkPersistenceDiagramClustering();
 
@@ -339,6 +346,7 @@ private:
 
   bool UseProgressive{true};
   double TimeLimit{9999999};
+  bool PerClusterDistanceMatrix{false};
 
   // base code features
   int doIt(const std::vector<vtkUnstructuredGrid *> &input,
