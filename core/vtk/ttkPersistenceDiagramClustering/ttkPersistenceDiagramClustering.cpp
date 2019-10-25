@@ -209,6 +209,9 @@ int ttkPersistenceDiagramClustering::FillOutputPortInformation(
   }
   if(port == 0 || port == 1 || port == 2)
     info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
+  if(port == 3) {
+    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkTable");
+  }
   return 1;
 }
 
