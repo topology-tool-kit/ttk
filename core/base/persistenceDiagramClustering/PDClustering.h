@@ -108,6 +108,7 @@ namespace ttk {
 
     std::vector<std::vector<dataType>> getDistanceMatrix();
     void getCentroidDistanceMatrix();
+    void computeDiagramsDistanceMatrix();
 
     void updateClusters();
     void invertClusters();
@@ -330,6 +331,8 @@ namespace ttk {
     std::vector<dataType> u_;
     std::vector<std::vector<dataType>> l_;
     std::vector<std::vector<dataType>> d_;
+    std::vector<std::vector<double>> diagramsDistanceMatrix_{};
+
     int n_iterations_;
   };
 } // namespace ttk

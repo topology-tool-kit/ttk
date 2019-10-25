@@ -21,7 +21,7 @@
 #define BSaddle2 ttk::CriticalType::Saddle2
 
 //
-#include <stdlib.h> /* srand, rand */
+#include <cstdlib> /* srand, rand */
 //
 #include <cmath>
 //
@@ -1302,6 +1302,51 @@ void PDClustering<dataType>::getCentroidDistanceMatrix() {
     }
   }
   return;
+}
+
+template <typename dataType>
+void PDClustering<dataType>::computeDiagramsDistanceMatrix() {
+
+  diagramsDistanceMatrix_.resize(numberOfInputs_);
+  double delta_lim = 0.01;
+
+  for(int i = 0; i < numberOfInputs_; ++i) {
+    diagramsDistanceMatrix_[i].resize(
+      numberOfInputs_, std::numeric_limits<double>::infinity());
+
+    // matrix diagonal
+    diagramsDistanceMatrix_[i][i] = 0.0;
+
+    for(int j = i + 1; j < numberOfInputs_; ++j) {
+      double distance{};
+
+      // TODO
+      if(/* PerClusterDistanceMatrix && */ inv_clustering_[i]
+         != inv_clustering_[j]) {
+        continue;
+      }
+
+      if(do_min_) {
+        const auto &dimin = current_bidder_diagrams_min_[i];
+        const auto &djmin = current_bidder_diagrams_min_[j];
+        distance += computeDistance(dimin, djmin, delta_lim);
+      }
+      if(do_sad_) {
+        const auto &disad = current_bidder_diagrams_saddle_[i];
+        const auto &djsad = current_bidder_diagrams_saddle_[j];
+        distance += computeDistance(disad, djsad, delta_lim);
+      }
+      if(do_max_) {
+        const auto &dimax = current_bidder_diagrams_max_[i];
+        const auto &djmax = current_bidder_diagrams_max_[j];
+        distance += computeDistance(dimax, djmax, delta_lim);
+      }
+
+      // distance matrix is symmetric
+      diagramsDistanceMatrix_[i][j] = distance;
+      diagramsDistanceMatrix_[j][i] = distance;
+    }
+  }
 }
 
 template <typename dataType>
