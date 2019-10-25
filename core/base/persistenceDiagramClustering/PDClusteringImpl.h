@@ -626,6 +626,9 @@ std::vector<int> PDClustering<dataType>::execute(
   } else if(distanceWritingOptions_ == 2) {
     printRealDistancesToFile();
   }
+
+  computeDiagramsDistanceMatrix();
+
   // cout<<" final EPSILONS "<<epsilon_[0]<<" "<<epsilon_[1]<<"
   // "<<epsilon_[2]<<endl;
   return inv_clustering_;
@@ -1326,18 +1329,18 @@ void PDClustering<dataType>::computeDiagramsDistanceMatrix() {
       }
 
       if(do_min_) {
-        const auto &dimin = current_bidder_diagrams_min_[i];
-        const auto &djmin = current_bidder_diagrams_min_[j];
+        auto &dimin = current_bidder_diagrams_min_[i];
+        auto &djmin = current_bidder_diagrams_min_[j];
         distance += computeDistance(dimin, djmin, delta_lim);
       }
       if(do_sad_) {
-        const auto &disad = current_bidder_diagrams_saddle_[i];
-        const auto &djsad = current_bidder_diagrams_saddle_[j];
+        auto &disad = current_bidder_diagrams_saddle_[i];
+        auto &djsad = current_bidder_diagrams_saddle_[j];
         distance += computeDistance(disad, djsad, delta_lim);
       }
       if(do_max_) {
-        const auto &dimax = current_bidder_diagrams_max_[i];
-        const auto &djmax = current_bidder_diagrams_max_[j];
+        auto &dimax = current_bidder_diagrams_max_[i];
+        auto &djmax = current_bidder_diagrams_max_[j];
         distance += computeDistance(dimax, djmax, delta_lim);
       }
 
