@@ -341,7 +341,7 @@ private:
   double TimeLimit{9999999};
 
   // base code features
-  int doIt(const std::vector<vtkDataSet *> &input,
+  int doIt(const std::vector<vtkUnstructuredGrid *> &input,
            vtkUnstructuredGrid *outputClusters,
            vtkUnstructuredGrid *outputCentroids,
            vtkUnstructuredGrid *outputMatchings,
@@ -353,7 +353,7 @@ private:
 
   template <typename T>
   int dispatch(int numInputs,
-               std::vector<vtkUnstructuredGrid *> &inputDiagram,
+               const std::vector<vtkUnstructuredGrid *> &inputDiagram,
                vtkUnstructuredGrid *outputClusters,
                vtkUnstructuredGrid *outputCentroids,
                vtkUnstructuredGrid *outputMatchings);

@@ -31,7 +31,7 @@ int ttkPersistenceDiagramClustering::updateProgress(const float &progress) {
 template <typename VTK_TT>
 int ttkPersistenceDiagramClustering::dispatch(
   int numInputs,
-  std::vector<vtkUnstructuredGrid *> &inputDiagram,
+  const std::vector<vtkUnstructuredGrid *> &inputDiagram,
   vtkUnstructuredGrid *outputClusters,
   vtkUnstructuredGrid *outputCentroids,
   vtkUnstructuredGrid *outputMatchings) {
@@ -167,27 +167,19 @@ int ttkPersistenceDiagramClustering::dispatch(
 }
 
 int ttkPersistenceDiagramClustering::doIt(
-  const std::vector<vtkDataSet *> &input,
+  const std::vector<vtkUnstructuredGrid *> &input,
   vtkUnstructuredGrid *outputClusters,
   vtkUnstructuredGrid *outputCentroids,
   vtkUnstructuredGrid *outputMatchings,
   int numInputs) {
-  // Get arrays from input datas
-  // vtkDataArray* inputDiagram[numInputs] = { NULL };
-  //
-  //
-  vector<vtkUnstructuredGrid *> inputDiagram(numInputs);
-  for(int i = 0; i < numInputs; ++i) {
-    inputDiagram[i] = vtkUnstructuredGrid::SafeDownCast(input[i]);
-  }
-  // Calling the executing package
 
+  // Calling the executing package
   int dataType
-    = inputDiagram[0]->GetCellData()->GetArray("Persistence")->GetDataType();
+    = input[0]->GetCellData()->GetArray("Persistence")->GetDataType();
 
   switch(dataType) {
-    vtkTemplateMacro(dispatch<VTK_TT>(numInputs, inputDiagram, outputClusters,
-                                      outputCentroids, outputMatchings));
+    vtkTemplateMacro(dispatch<VTK_TT>(
+      numInputs, input, outputClusters, outputCentroids, outputMatchings));
   }
 
   return 0;
@@ -226,7 +218,7 @@ int ttkPersistenceDiagramClustering::RequestData(
   int numInputs = numberOfInputsFromCommandLine;
 
   // Get input data
-  std::vector<vtkDataSet *> input;
+  std::vector<vtkUnstructuredGrid *> input;
 
   auto blocks = vtkMultiBlockDataSet::GetData(inputVector[0], 0);
 
