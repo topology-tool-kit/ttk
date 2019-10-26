@@ -1746,9 +1746,11 @@ bool MergeTree::verifyTree(void) {
         cout << " and a null list" << endl;
       }
 
-      for(SimplexId v = 0; v < segmSize; v++) {
-        if(!segmVect[v].second) {
-          segmSeen.at(segmVect[v].first) = true;
+      if(segmVect != nullptr) {
+        for(SimplexId v = 0; v < segmSize; v++) {
+          if(!segmVect[v].second) {
+            segmSeen.at(segmVect[v].first) = true;
+          }
         }
       }
     }
