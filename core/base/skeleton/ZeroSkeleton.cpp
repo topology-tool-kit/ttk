@@ -315,7 +315,6 @@ int ZeroSkeleton::buildVertexLinks(
                   for(SimplexId n = 0; n < 3; n++) {
                     vertexLinks[i][j * nbVertCell + n] = faceIds[threadId][n];
                   }
-                  hasPivotVertex = true;
                   break;
                 }
                 if(hasPivotVertex)
@@ -328,7 +327,6 @@ int ZeroSkeleton::buildVertexLinks(
             for(SimplexId n = 0; n < 2; n++) {
               vertexLinks[i][j * nbVertCell + n] = faceIds[threadId][n];
             }
-            hasPivotVertex = true;
             break;
           }
         }
