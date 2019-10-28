@@ -252,6 +252,11 @@ namespace ttk {
       }
     }
 
+    inline const std::vector<std::vector<double>> &&
+      getDiagramsDistanceMatrix() {
+      return std::move(diagramsDistanceMatrix_);
+    }
+
     template <typename type>
     static type abs(const type var) {
       return (var >= 0) ? var : -var;

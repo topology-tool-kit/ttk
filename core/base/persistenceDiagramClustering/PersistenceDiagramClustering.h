@@ -156,6 +156,10 @@ namespace ttk {
       return (var >= 0) ? var : -var;
     }
 
+    inline const std::vector<std::vector<double>> &&getDistanceMatrix() {
+      return std::move(distanceMatrix_);
+    }
+
   protected:
     // Critical pairs used for clustering
     // 0:min-saddles ; 1:saddles-saddles ; 2:sad-max ; else : all
@@ -187,6 +191,7 @@ namespace ttk {
     std::vector<GoodDiagram<dataType>> barycenter_goods_;
 
     bool perClusterDistanceMatrix_{false};
+    std::vector<std::vector<double>> distanceMatrix_{};
   };
 
   template <typename dataType>
@@ -316,6 +321,7 @@ namespace ttk {
       inv_clustering
         = KMeans.execute(*final_centroids, all_matchings_per_type_and_cluster);
       vector<vector<int>> centroids_sizes = KMeans.get_centroids_sizes();
+      distanceMatrix_ = KMeans.getDiagramsDistanceMatrix();
 
       std::stringstream msg;
       msg << "[PersistenceDiagramClustering] processed in "
