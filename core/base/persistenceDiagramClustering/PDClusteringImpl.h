@@ -1344,11 +1344,17 @@ void PDClustering<dataType>::computeDiagramsDistanceMatrix() {
         distance += computeDistance(dimax, djmax, delta_lim);
       }
 
-      // distance matrix is symmetric
       diagramsDistanceMatrix_[i][j] = distance;
-      diagramsDistanceMatrix_[j][i] = distance;
     }
   }
+
+  // distance matrix is symmetric
+  for(int i = 0; i < numberOfInputs_; ++i) {
+    for(int j = i + 1; j < numberOfInputs_; ++j) {
+      diagramsDistanceMatrix_[j][i] = diagramsDistanceMatrix_[i][j];
+    }
+  }
+
 }
 
 template <typename dataType>
