@@ -171,9 +171,15 @@ int ttkPersistenceDiagramClustering::dispatch(
   // copy distance matrix to output
   for(size_t i = 0; i < distanceMatrix.size(); ++i) {
     std::string name{"Diagram"};
+
+    // zero-padding to keep Row Data ordered
+    std::string max{std::to_string(distanceMatrix.size() - 1)};
+    std::string cur{std::to_string(i)};
+    std::string zer(max.size() - cur.size(), '0');
+
     vtkNew<vtkDoubleArray> col{};
     col->SetNumberOfTuples(numInputs);
-    col->SetName(name.append(std::to_string(i)).c_str());
+    col->SetName(name.append(zer).append(cur).c_str());
     for(size_t j = 0; j < distanceMatrix[i].size(); ++j) {
       col->SetTuple1(j, distanceMatrix[i][j]);
     }
