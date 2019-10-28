@@ -310,32 +310,20 @@ namespace ttk {
     }
 
     inline int setDebugLevel(const int &debugLevel) {
-#ifndef TTK_ENABLE_KAMIKAZE
-      if(!abstractMorseSmaleComplex_) {
-        return -1;
-      }
-#endif
-      abstractMorseSmaleComplex_->setDebugLevel(debugLevel);
+      morseSmaleComplex2D_.setDebugLevel(debugLevel);
+      morseSmaleComplex3D_.setDebugLevel(debugLevel);
       return 0;
     }
 
     inline int setThreadNumber(const int &threadNumber) {
-#ifndef TTK_ENABLE_KAMIKAZE
-      if(!abstractMorseSmaleComplex_) {
-        return -1;
-      }
-#endif
-      abstractMorseSmaleComplex_->setThreadNumber(threadNumber);
+      morseSmaleComplex2D_.setThreadNumber(threadNumber);
+      morseSmaleComplex3D_.setThreadNumber(threadNumber);
       return 0;
     }
 
     inline int setWrapper(const Wrapper *const wrapper) {
-#ifndef TTK_ENABLE_KAMIKAZE
-      if(!abstractMorseSmaleComplex_) {
-        return -1;
-      }
-#endif
-      abstractMorseSmaleComplex_->setWrapper(wrapper);
+      morseSmaleComplex2D_.setWrapper(wrapper);
+      morseSmaleComplex3D_.setWrapper(wrapper);
       return 0;
     }
 
