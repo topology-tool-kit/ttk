@@ -442,7 +442,7 @@ between matched critical points.
       <OutputPort name="Clustered Diagrams" index="0" id="port0" />
       <OutputPort name="Cluster Centroids" index="1" id="port1" />
       <OutputPort name="Matchings" index="2" id="port2" />
-      <OutputPort name="Distance Matrix" index="2" id="port3" />
+      <OutputPort name="Distance Matrix" index="3" id="port3" />
 
 
       <Hints>

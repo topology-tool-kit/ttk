@@ -7,7 +7,7 @@ vtkStandardNewMacro(ttkPersistenceDiagramClustering)
 
 ttkPersistenceDiagramClustering::ttkPersistenceDiagramClustering() {
   SetNumberOfInputPorts(1);
-  SetNumberOfOutputPorts(3);
+  SetNumberOfOutputPorts(4);
 }
 
 // transmit abort signals -- to copy paste in other wrappers
