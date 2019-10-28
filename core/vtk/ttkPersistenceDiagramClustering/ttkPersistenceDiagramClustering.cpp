@@ -75,6 +75,8 @@ int ttkPersistenceDiagramClustering::dispatch(
     = (vector<vector<macroDiagramTuple>> *)intermediateDiagrams_;
   all_matchings = (vector<vector<vector<macroMatchingTuple>>> *)all_matchings_;
 
+  std::vector<std::vector<double>> distanceMatrix{};
+
   if(needUpdate_) {
 
     max_dimension_total_ = 0;
@@ -118,6 +120,8 @@ int ttkPersistenceDiagramClustering::dispatch(
       persistenceDiagramsClustering.setDiagrams((void *)intermediateDiagrams);
       inv_clustering_
         = persistenceDiagramsClustering.execute(final_centroids, all_matchings);
+
+      distanceMatrix = persistenceDiagramsClustering.getDistanceMatrix();
 
       needUpdate_ = false;
     }
@@ -163,6 +167,18 @@ int ttkPersistenceDiagramClustering::dispatch(
     *intermediateDiagrams, inv_clustering_, max_dimension_total_, Spacing));
   outputCentroids->ShallowCopy(createOutputCentroids<VTK_TT>(
     final_centroids, inv_clustering_, max_dimension_total_, Spacing));
+
+  // copy distance matrix to output
+  for(size_t i = 0; i < distanceMatrix.size(); ++i) {
+    std::string name{"Diagram"};
+    vtkNew<vtkDoubleArray> col{};
+    col->SetNumberOfTuples(numInputs);
+    col->SetName(name.append(std::to_string(i)).c_str());
+    for(size_t j = 0; j < distanceMatrix[i].size(); ++j) {
+      col->SetTuple1(j, distanceMatrix[i][j]);
+    }
+    outputMatrix->AddColumn(col);
+  }
 
   return ret;
 }
