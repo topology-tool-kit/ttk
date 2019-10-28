@@ -263,6 +263,14 @@ int ttkPersistenceDiagramClustering::RequestData(
   doIt(input, output_clusters, output_centroids, output_matchings,
        output_matrix, numInputs);
 
+  // copy input field data to distance matrix output
+  auto fd = output_matrix->GetFieldData();
+  fd->CopyStructure(input[0]->GetFieldData());
+  fd->SetNumberOfTuples(input.size());
+  for(size_t i = 0; i < input.size(); ++i) {
+    fd->SetTuple(i, 0, input[i]->GetFieldData());
+  }
+
   {
     stringstream msg;
     msg << "[ttkPersistenceDiagramClustering] Memory usage: "
