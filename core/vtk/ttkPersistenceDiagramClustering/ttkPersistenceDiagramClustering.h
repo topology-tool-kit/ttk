@@ -353,6 +353,7 @@ private:
            vtkUnstructuredGrid *outputClusters,
            vtkUnstructuredGrid *outputCentroids,
            vtkUnstructuredGrid *outputMatchings,
+           vtkTable *outputMatrix,
            int numInputs);
 
   bool needsToAbort() override;
@@ -364,7 +365,8 @@ private:
                const std::vector<vtkUnstructuredGrid *> &inputDiagram,
                vtkUnstructuredGrid *outputClusters,
                vtkUnstructuredGrid *outputCentroids,
-               vtkUnstructuredGrid *outputMatchings);
+               vtkUnstructuredGrid *outputMatchings,
+               vtkTable *outputMatrix);
 };
 
 template <typename dataType>

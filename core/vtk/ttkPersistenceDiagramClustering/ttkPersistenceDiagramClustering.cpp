@@ -34,7 +34,8 @@ int ttkPersistenceDiagramClustering::dispatch(
   const std::vector<vtkUnstructuredGrid *> &inputDiagram,
   vtkUnstructuredGrid *outputClusters,
   vtkUnstructuredGrid *outputCentroids,
-  vtkUnstructuredGrid *outputMatchings) {
+  vtkUnstructuredGrid *outputMatchings,
+  vtkTable *outputMatrix) {
 
   using macroDiagramTuple
     = std::tuple<ttk::SimplexId, ttk::CriticalType, ttk::SimplexId,
@@ -171,6 +172,7 @@ int ttkPersistenceDiagramClustering::doIt(
   vtkUnstructuredGrid *outputClusters,
   vtkUnstructuredGrid *outputCentroids,
   vtkUnstructuredGrid *outputMatchings,
+  vtkTable *outputMatrix,
   int numInputs) {
 
   // Calling the executing package
@@ -178,8 +180,9 @@ int ttkPersistenceDiagramClustering::doIt(
     = input[0]->GetCellData()->GetArray("Persistence")->GetDataType();
 
   switch(dataType) {
-    vtkTemplateMacro(dispatch<VTK_TT>(
-      numInputs, input, outputClusters, outputCentroids, outputMatchings));
+    vtkTemplateMacro(dispatch<VTK_TT>(numInputs, input, outputClusters,
+                                      outputCentroids, outputMatchings,
+                                      outputMatrix));
   }
 
   return 0;
@@ -238,8 +241,11 @@ int ttkPersistenceDiagramClustering::RequestData(
     outputVector->GetInformationObject(1)->Get(vtkDataObject::DATA_OBJECT()));
   auto output_matchings = vtkUnstructuredGrid::SafeDownCast(
     outputVector->GetInformationObject(2)->Get(vtkDataObject::DATA_OBJECT()));
+  auto output_matrix = vtkTable::SafeDownCast(
+    outputVector->GetInformationObject(3)->Get(vtkDataObject::DATA_OBJECT()));
 
-  doIt(input, output_clusters, output_centroids, output_matchings, numInputs);
+  doIt(input, output_clusters, output_centroids, output_matchings,
+       output_matrix, numInputs);
 
   {
     stringstream msg;
