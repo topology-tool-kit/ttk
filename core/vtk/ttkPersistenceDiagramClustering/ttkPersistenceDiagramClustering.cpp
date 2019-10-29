@@ -191,6 +191,18 @@ int ttkPersistenceDiagramClustering::dispatch(
     outputMatrix->AddColumn(col);
   }
 
+  // add clusters id to distance matrix output
+  vtkNew<vtkIntArray> clusterId{};
+  clusterId->SetName("ClusterId");
+  clusterId->SetArray(inv_clustering_.data(), inv_clustering_.size(), 1);
+  outputMatrix->AddColumn(clusterId);
+
+  // add distance to cluster centroid to distance matrix output
+  vtkNew<vtkDoubleArray> dCentroid{};
+  dCentroid->SetName("DistanceToCentroid");
+  dCentroid->SetArray(distanceToCentroid.data(), distanceToCentroid.size(), 1);
+  outputMatrix->AddColumn(dCentroid);
+
   return ret;
 }
 
