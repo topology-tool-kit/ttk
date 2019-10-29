@@ -1318,7 +1318,7 @@ void PDClustering<dataType>::computeDiagramsDistanceMatrix() {
 
   for(int i = 0; i < numberOfInputs_; ++i) {
     diagramsDistanceMatrix_[i].resize(
-      numberOfInputs_, std::numeric_limits<double>::infinity());
+      numberOfInputs_, std::numeric_limits<float>::max());
 
     // matrix diagonal
     diagramsDistanceMatrix_[i][i] = 0.0;
