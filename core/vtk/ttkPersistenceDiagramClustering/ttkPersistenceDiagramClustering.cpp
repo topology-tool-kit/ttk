@@ -116,6 +116,8 @@ int ttkPersistenceDiagramClustering::dispatch(
       persistenceDiagramsClustering.setUseKmeansppInit(UseKmeansppInit);
       persistenceDiagramsClustering.setDistanceWritingOptions(
         DistanceWritingOptions);
+      persistenceDiagramsClustering.setPerClusterDistanceMatrix(
+        PerClusterDistanceMatrix);
 
       persistenceDiagramsClustering.setDiagrams((void *)intermediateDiagrams);
       inv_clustering_
