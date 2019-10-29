@@ -623,13 +623,14 @@ std::vector<int> PDClustering<dataType>::execute(
     }
   }
 
+  computeDistanceToCentroid();
+  computeDiagramsDistanceMatrix();
+
   if(distanceWritingOptions_ == 1) {
     printDistancesToFile();
   } else if(distanceWritingOptions_ == 2) {
     printRealDistancesToFile();
   }
-
-  computeDiagramsDistanceMatrix();
 
   // cout<<" final EPSILONS "<<epsilon_[0]<<" "<<epsilon_[1]<<"
   // "<<epsilon_[2]<<endl;
@@ -1358,6 +1359,39 @@ void PDClustering<dataType>::computeDiagramsDistanceMatrix() {
     for(int j = i + 1; j < numberOfInputs_; ++j) {
       diagramsDistanceMatrix_[j][i] = diagramsDistanceMatrix_[i][j];
     }
+  }
+}
+
+template <typename dataType>
+void PDClustering<dataType>::computeDistanceToCentroid() {
+  distanceToCentroid_.resize(numberOfInputs_);
+
+  for(int i = 0; i < numberOfInputs_; ++i) {
+    double delta_lim{0.01};
+    double distance{};
+    auto c = inv_clustering_[i];
+    if(original_dos[0]) {
+      GoodDiagram<dataType> centroid_min
+        = centroidWithZeroPrices(centroids_min_[c]);
+      BidderDiagram<dataType> bidder_diag
+        = diagramWithZeroPrices(current_bidder_diagrams_min_[i]);
+      distance += computeDistance(bidder_diag, centroid_min, delta_lim);
+    }
+    if(original_dos[1]) {
+      GoodDiagram<dataType> centroid_saddle
+        = centroidWithZeroPrices(centroids_saddle_[c]);
+      BidderDiagram<dataType> bidder_diag
+        = diagramWithZeroPrices(current_bidder_diagrams_saddle_[i]);
+      distance += computeDistance(bidder_diag, centroid_saddle, delta_lim);
+    }
+    if(original_dos[2]) {
+      GoodDiagram<dataType> centroid_max
+        = centroidWithZeroPrices(centroids_max_[c]);
+      BidderDiagram<dataType> bidder_diag
+        = diagramWithZeroPrices(current_bidder_diagrams_max_[i]);
+      distance += computeDistance(bidder_diag, centroid_max, delta_lim);
+    }
+    distanceToCentroid_[i] = distance;
   }
 }
 
@@ -2917,29 +2951,7 @@ void PDClustering<dataType>::printRealDistancesToFile() {
   if(file.is_open()) {
     for(int c = 0; c < k_; c++) {
       for(int i : clustering_[c]) {
-        dataType distance = 0;
-        if(original_dos[0]) {
-          GoodDiagram<dataType> centroid_min
-            = centroidWithZeroPrices(centroids_min_[c]);
-          BidderDiagram<dataType> bidder_diag
-            = diagramWithZeroPrices(current_bidder_diagrams_min_[i]);
-          distance += computeDistance(bidder_diag, centroid_min, 0.01);
-        }
-        if(original_dos[1]) {
-          GoodDiagram<dataType> centroid_saddle
-            = centroidWithZeroPrices(centroids_saddle_[c]);
-          BidderDiagram<dataType> bidder_diag
-            = diagramWithZeroPrices(current_bidder_diagrams_saddle_[i]);
-          distance += computeDistance(bidder_diag, centroid_saddle, 0.01);
-        }
-        if(original_dos[2]) {
-          GoodDiagram<dataType> centroid_max
-            = centroidWithZeroPrices(centroids_max_[c]);
-          BidderDiagram<dataType> bidder_diag
-            = diagramWithZeroPrices(current_bidder_diagrams_max_[i]);
-          distance += computeDistance(bidder_diag, centroid_max, 0.01);
-        }
-        file << distance << " ";
+        file << distanceToCentroid_[i] << " ";
       }
       file << "\n";
     }
