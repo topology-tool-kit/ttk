@@ -22,6 +22,8 @@
 #include <limits>
 //
 
+#include <PDBarycenter.h>
+
 using namespace std;
 using namespace ttk;
 

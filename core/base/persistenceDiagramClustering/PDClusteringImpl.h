@@ -34,6 +34,8 @@
 //
 #include <random>
 
+#include <PDClustering.h>
+
 using namespace ttk;
 
 template <typename dataType>
@@ -1311,7 +1313,7 @@ template <typename dataType>
 void PDClustering<dataType>::computeDiagramsDistanceMatrix() {
 
   diagramsDistanceMatrix_.resize(numberOfInputs_);
-  double delta_lim = 0.01;
+  double delta_lim{0.01};
 
   for(int i = 0; i < numberOfInputs_; ++i) {
     diagramsDistanceMatrix_[i].resize(
@@ -1354,7 +1356,6 @@ void PDClustering<dataType>::computeDiagramsDistanceMatrix() {
       diagramsDistanceMatrix_[j][i] = diagramsDistanceMatrix_[i][j];
     }
   }
-
 }
 
 template <typename dataType>
