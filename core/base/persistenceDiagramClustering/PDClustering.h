@@ -260,6 +260,10 @@ namespace ttk {
       return std::move(diagramsDistanceMatrix_);
     }
 
+    inline const std::vector<double> &&getDistanceToCentroid() {
+      return std::move(distanceToCentroid_);
+    }
+
     template <typename type>
     static type abs(const type var) {
       return (var >= 0) ? var : -var;

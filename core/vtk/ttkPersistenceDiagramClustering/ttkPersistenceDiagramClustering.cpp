@@ -76,6 +76,7 @@ int ttkPersistenceDiagramClustering::dispatch(
   all_matchings = (vector<vector<vector<macroMatchingTuple>>> *)all_matchings_;
 
   std::vector<std::vector<double>> distanceMatrix{};
+  std::vector<double> distanceToCentroid{};
 
   if(needUpdate_) {
 
@@ -124,6 +125,8 @@ int ttkPersistenceDiagramClustering::dispatch(
         = persistenceDiagramsClustering.execute(final_centroids, all_matchings);
 
       distanceMatrix = persistenceDiagramsClustering.getDistanceMatrix();
+      distanceToCentroid
+        = persistenceDiagramsClustering.getDistanceToCentroid();
 
       needUpdate_ = false;
     }
