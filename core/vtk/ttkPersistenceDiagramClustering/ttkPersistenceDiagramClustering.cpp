@@ -203,6 +203,19 @@ int ttkPersistenceDiagramClustering::dispatch(
   dCentroid->SetArray(distanceToCentroid.data(), distanceToCentroid.size(), 1);
   outputMatrix->AddColumn(dCentroid);
 
+  // aggregate input field data into distance matrix output field data
+  auto fd = outputMatrix->GetFieldData();
+  fd->CopyStructure(inputDiagram[0]->GetFieldData());
+  fd->SetNumberOfTuples(inputDiagram.size());
+  for(size_t i = 0; i < inputDiagram.size(); ++i) {
+    fd->SetTuple(i, 0, inputDiagram[i]->GetFieldData());
+  }
+
+  // also copy field data arrays to row data
+  for(int i = 0; i < fd->GetNumberOfArrays(); ++i) {
+    outputMatrix->AddColumn(fd->GetAbstractArray(i));
+  }
+
   return ret;
 }
 
@@ -285,14 +298,6 @@ int ttkPersistenceDiagramClustering::RequestData(
 
   doIt(input, output_clusters, output_centroids, output_matchings,
        output_matrix, numInputs);
-
-  // copy input field data to distance matrix output
-  auto fd = output_matrix->GetFieldData();
-  fd->CopyStructure(input[0]->GetFieldData());
-  fd->SetNumberOfTuples(input.size());
-  for(size_t i = 0; i < input.size(); ++i) {
-    fd->SetTuple(i, 0, input[i]->GetFieldData());
-  }
 
   {
     stringstream msg;
