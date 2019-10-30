@@ -33,8 +33,7 @@
 
      <InputProperty
         name="Input"
-        command="AddInputConnection"
-        multiple_input="1">
+        command="SetInputConnection">
         <ProxyGroupDomain name="groups">
           <Group name="sources"/>
           <Group name="filters"/>
