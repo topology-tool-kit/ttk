@@ -310,19 +310,16 @@
         </Documentation>
       </DoubleVectorProperty>
 
-      <StringVectorProperty name="mds_Dissimilarity"
-        label="Dissimilarity"
+      <IntVectorProperty name="mds_Dissimilarity"
+        label="Input Is a Distance Matrix"
         command="Setmds_Dissimilarity"
         number_of_elements="1"
-        default_values="euclidean"
+        default_values="0"
         panel_visibility="advanced">
-        <StringListDomain name="enum">
-          <String value="euclidean"/>
-          <String value="precomputed"/>
-        </StringListDomain>
+        <BooleanDomain name="bool"/>
         <Documentation>
         </Documentation>
-      </StringVectorProperty>
+      </IntVectorProperty>
 
       <DoubleVectorProperty name="tsne_Perplexity"
         label="Perplexity"

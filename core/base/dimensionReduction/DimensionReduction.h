@@ -60,13 +60,17 @@ namespace ttk {
                                 int MaxIteration,
                                 int Verbose,
                                 float Epsilon,
-                                std::string &Dissimilarity) {
+                                bool Dissimilarity) {
       mds_Metric = Metric;
       mds_Init = Init;
       mds_MaxIteration = MaxIteration;
       mds_Verbose = Verbose;
       mds_Epsilon = Epsilon;
-      mds_Dissimilarity = Dissimilarity;
+      if(Dissimilarity) {
+        mds_Dissimilarity = "precomputed";
+      } else {
+        mds_Dissimilarity = "euclidean";
+      }
       return 0;
     }
 
