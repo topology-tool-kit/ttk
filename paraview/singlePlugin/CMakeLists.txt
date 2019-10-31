@@ -10,7 +10,7 @@ paraview_add_plugin(TopologyToolKit
     ${TTK_MODULES}
   MODULE_FILES
     ${TTK_VTK_MODULE_FILES}
-  MODULE_ARGS # BUG
+  MODULE_ARGS # BUG: see above
     INSTALL_HEADERS ON
   SERVER_MANAGER_XML
     ${TTK_XMLS}

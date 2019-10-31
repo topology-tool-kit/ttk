@@ -25,6 +25,12 @@ if(NOT "$ENV{PV_PLUGIN_PATH}" STREQUAL "")
     )
 else()
   message(WARNING "Please, set the PV_PLUGIN_PATH environement variable, the TTK ParaView plugin will be built but not installed.")
+  set(TTK_INSTALL_PLUGIN_DIR
+    ""
+    CACHE
+    PATH
+    "Directory where the ParaView plugin will be installed"
+    )
 endif()
 
 set("PARAVIEW_PLUGIN_ENABLE_TopologyToolKit"
@@ -57,7 +63,7 @@ paraview_plugin_build(
     "${PARAVIEW_PLUGIN_SUBDIR}"
   )
 
-if(DEFINED TTK_INSTALL_PLUGIN_DIR)
+if(NOT "${TTK_INSTALL_PLUGIN_DIR}" STREQUAL "")
   # Keep TTK libraries in the TopologyToolKit folder
   foreach(TTK_MODULE ${TTK_MODULES})
     install(

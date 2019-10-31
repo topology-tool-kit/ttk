@@ -29,28 +29,31 @@ macro(ttk_add_vtk_module)
   ttk_parse_module_file(${CMAKE_CURRENT_LIST_DIR}/ttk.module)
   cmake_parse_arguments("TTK" "" "NAME" "SOURCES;HEADERS;DEPENDS" ${moduleFileContent})
 
-  if(NOT TARGET ${TTK_NAME})
-    vtk_module_add_module(${TTK_NAME}
-      SOURCES
-        ${TTK_SOURCES}
-      HEADERS
-        ${TTK_HEADERS}
+  string(TOUPPER ${TTK_NAME} TTK_UPPER_NAME)
+  option(TTK_BUILD_${TTK_UPPER_NAME} "Build the ${TTK_UPPER_NAME} filter" ${TTK_ENABLE_FILTER_DEFAULT})
+  mark_as_advanced(TTK_BUILD_${TTK_UPPER_NAME})
+
+  if(${TTK_BUILD_${TTK_UPPER_NAME}})
+    if(NOT TARGET ${TTK_NAME})
+      vtk_module_add_module(${TTK_NAME}
+        SOURCES
+          ${TTK_SOURCES}
+        HEADERS
+          ${TTK_HEADERS}
+        )
+    endif()
+
+    vtk_module_link(${TTK_NAME}
+      PUBLIC
+        ${VTK_LIBRARIES}
+        ${TTK_DEPENDS}
       )
-  endif()
 
-  vtk_module_link(${TTK_NAME}
-    PUBLIC
-      ${VTK_LIBRARIES}
-      ${TTK_DEPENDS}
-    )
-
-  # Maybe we could do this with ParaView, but how ?
-  # install(TARGETS ${TTK_NAME} PUBLIC_HEADER DESTINATION include/ttk)
-
-  # Fix a race condition in the VTK's CMake:
-  # https://discourse.vtk.org/t/building-vtk-modules-with-dependencies-results-in-race-condition-in-make/1711
-  if(TARGET ${TTK_NAME}-hierarchy)
-    add_dependencies(${TTK_NAME} ${TTK_NAME}-hierarchy)
+    # Fix a race condition in the VTK's CMake:
+    # https://discourse.vtk.org/t/building-vtk-modules-with-dependencies-results-in-race-condition-in-make/1711
+    if(TARGET ${TTK_NAME}-hierarchy)
+      add_dependencies(${TTK_NAME} ${TTK_NAME}-hierarchy)
+    endif()
   endif()
 
 endmacro()
