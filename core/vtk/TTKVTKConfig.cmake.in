@@ -1,6 +1,10 @@
 include(CMakeFindDependencyMacro)
 
-find_dependency(VTK REQUIRED)
+if(@TTK_FORCE_VTK_PARAVIEW@)
+  find_dependency(ParaView REQUIRED)
+else()
+  find_dependency(VTK REQUIRED)
+endif()
 include(${VTK_USE_FILE})
 include_directories(${VTK_INCLUDE_DIRS})
 
