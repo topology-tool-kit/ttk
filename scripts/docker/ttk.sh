@@ -8,7 +8,7 @@ build_pkgs \
         build-essential         \
         cmake                   \
         curl                    \
-        libboost-system1.62-dev \
+        libboost-system1.67-dev \
         libcgns-dev             \
         libeigen3-dev           \
         libexpat1-dev           \
@@ -37,7 +37,7 @@ build_pkgs \
         zlib1g-dev
 
 runtime_pkgs \
-	libboost-system1.62	\
+	libboost-system1.67	\
 	python3-numpy		\
 	python3-sklearn		\
 	libsqlite3-0		\
@@ -49,8 +49,13 @@ echo "### build TTK ###"
 # get source code
 mkdir -p $BUILD_DIR
 
-curl -kL "https://github.com/topology-tool-kit/ttk/archive/${TTK_VERSION}.tar.gz" | \
-  tar zx -C $BUILD_DIR --strip-components 1
+url="https://github.com/topology-tool-kit/ttk/archive/${TTK_VERSION}.tar.gz"
+
+if [ ${PARAVIEW_VERSION%.*} == "5.7" ]; then
+    url="https://github.com/CharlesGueunet/ttk/archive/ParaView57.tar.gz"
+fi
+
+curl -kL "$url" | tar zx -C $BUILD_DIR --strip-components 1
 
 # actually compile
 mkdir -p $BUILD_DIR/build

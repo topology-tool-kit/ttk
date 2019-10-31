@@ -195,6 +195,10 @@ namespace ttk {
       return zfpOnly_;
     }
 
+    inline const std::vector<char> &getDataArrayName() const {
+      return dataArrayName_;
+    }
+
     inline std::vector<double> &getDecompressedData() {
       return decompressedData_;
     }
@@ -224,6 +228,7 @@ namespace ttk {
     static unsigned long ReadUnsignedLong(FILE *fm);
     static void
       ReadUnsignedCharArray(FILE *fm, unsigned char *buffer, size_t length);
+    static void ReadCharArray(FILE *fm, char *buffer, size_t length);
     static int ReadCompactSegmentation(FILE *fm,
                                        std::vector<int> &segmentation,
                                        int &numberOfVertices,
@@ -247,6 +252,8 @@ namespace ttk {
     static void WriteUnsignedLong(FILE *fm, unsigned long ul);
     static void
       WriteUnsignedCharArray(FILE *fm, unsigned char *buffer, size_t length);
+    static void
+      WriteConstCharArray(FILE *fm, const char *buffer, size_t length);
     static int WriteCompactSegmentation(FILE *fm,
                                         int *segmentation,
                                         int numberOfVertices,
@@ -265,7 +272,8 @@ namespace ttk {
                       double *dataSpacing,
                       double *dataOrigin,
                       double tolerance,
-                      double zfpBitBudget);
+                      double zfpBitBudget,
+                      const std::string &dataArrayName);
     template <typename T>
     int WriteToFile(FILE *fp,
                     int compressionType,
@@ -277,7 +285,8 @@ namespace ttk {
                     double *dataOrigin,
                     double *data,
                     double tolerance,
-                    double zfpBitBudget);
+                    double zfpBitBudget,
+                    const std::string &dataArrayName);
 
     template <typename dataType>
     static void CropIntervals(
@@ -395,6 +404,7 @@ namespace ttk {
     double zfpBitBudget_;
     bool dontSubdivide_;
     bool useTopologicalSimplification_;
+    std::vector<char> dataArrayName_{};
 
     // Persistence compression.
     std::vector<int> segmentation_;
@@ -410,6 +420,12 @@ namespace ttk {
     std::vector<int> compressedOffsets_;
     int vertexNumberRead_;
     char *fileName;
+
+    // Char array that identifies the file format.
+    static const std::string magicBytes_;
+    // Current version of the file format. To be incremented at every
+    // breaking change to keep backward compatibility.
+    static const unsigned long formatVersion_;
   };
 
   // End namespace ttk.
@@ -462,11 +478,12 @@ int ttk::TopologicalCompression::WriteToFile(FILE *fp,
                                              double *dataOrigin,
                                              double *data,
                                              double tolerance,
-                                             double zfpBitBudget) {
+                                             double zfpBitBudget,
+                                             const std::string &dataArrayName) {
   // [->fp] Write metadata.
   WriteMetaData<double>(fp, compressionType, zfpOnly, sqMethod, dataType,
                         dataExtent, dataSpacing, dataOrigin, tolerance,
-                        zfpBitBudget);
+                        zfpBitBudget, dataArrayName);
 
 #ifdef TTK_ENABLE_ZLIB
   WriteBool(fp, true);
@@ -614,16 +631,25 @@ int ttk::TopologicalCompression::WriteToFile(FILE *fp,
 }
 
 template <typename T>
-int ttk::TopologicalCompression::WriteMetaData(FILE *fp,
-                                               int compressionType,
-                                               bool zfpOnly,
-                                               const char *sqMethod,
-                                               int dataType,
-                                               int *dataExtent,
-                                               double *dataSpacing,
-                                               double *dataOrigin,
-                                               double tolerance,
-                                               double zfpBitBudget) {
+int ttk::TopologicalCompression::WriteMetaData(
+  FILE *fp,
+  int compressionType,
+  bool zfpOnly,
+  const char *sqMethod,
+  int dataType,
+  int *dataExtent,
+  double *dataSpacing,
+  double *dataOrigin,
+  double tolerance,
+  double zfpBitBudget,
+  const std::string &dataArrayName) {
+
+  // -4. Magic bytes
+  WriteConstCharArray(fp, magicBytes_.data(), magicBytes_.size());
+
+  // -3. File format version
+  WriteUnsignedLong(fp, formatVersion_);
+
   // -2. Persistence, or Other
   WriteInt(fp, compressionType);
 
@@ -658,6 +684,12 @@ int ttk::TopologicalCompression::WriteMetaData(FILE *fp,
 
   // 5. ZFP ratio
   WriteDouble(fp, zfpBitBudget);
+
+  // 6. Length of array name
+  WriteUnsignedLong(fp, dataArrayName.size());
+
+  // 7. Array name (as unsigned chars)
+  WriteConstCharArray(fp, dataArrayName.c_str(), dataArrayName.size());
 
   {
     std::stringstream msg;
@@ -830,6 +862,32 @@ int ttk::TopologicalCompression::ReadFromFile(FILE *fp) {
 
 template <typename T>
 int ttk::TopologicalCompression::ReadMetaData(FILE *fm) {
+
+  // -4. Magic bytes
+  std::vector<char> mBytes(magicBytes_.size() + 1);
+  mBytes[magicBytes_.size()] = '\0'; // NULL-termination
+  ReadCharArray(fm, mBytes.data(), magicBytes_.size());
+
+  // To deal with pre-v1 file format (without scalar field array name)
+  bool hasMagicBytes = strcmp(mBytes.data(), magicBytes_.data()) == 0;
+
+  if(!hasMagicBytes) {
+    std::stringstream msg;
+    msg << "[TopologicalCompression] Could not find magic bytes in input file!"
+        << std::endl;
+    msg << "[TopologicalCompression] File may be corrupted!" << std::endl;
+    dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
+
+    // rewind fm to beginning of file
+    std::rewind(fm);
+  }
+
+  // -3. File format version
+  unsigned long version = 0;
+  if(hasMagicBytes) {
+    version = ReadUnsignedLong(fm);
+  }
+
   // -2. Compression type.
   compressionType_ = ReadInt(fm);
 
@@ -858,6 +916,19 @@ int ttk::TopologicalCompression::ReadMetaData(FILE *fm) {
 
   // 5. Lossy compressor ratio
   zfpBitBudget_ = ReadDouble(fm);
+
+  if(version == 0) {
+    // Pre-v1 format has no scalar field array name
+    return 0;
+  }
+
+  // 6. Length of array name
+  size_t dataArrayNameLength = ReadUnsignedLong(fm);
+
+  // 7. Array name (as unsigned chars)
+  dataArrayName_.resize(dataArrayNameLength + 1);
+  dataArrayName_[dataArrayNameLength] = '\0'; // NULL-termination
+  ReadCharArray(fm, dataArrayName_.data(), dataArrayNameLength);
 
   return 0;
 }

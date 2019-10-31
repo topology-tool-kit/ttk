@@ -13,6 +13,7 @@
 #define _ABSTRACTTRIANGULATION_H
 
 // base code includes
+#include <Geometry.h>
 #include <Wrapper.h>
 
 namespace ttk {
@@ -368,6 +369,111 @@ namespace ttk {
     virtual int preprocessVertexTriangles() {
       preprocessTriangles();
       hasPreprocessedVertexTriangles_ = true;
+      return 0;
+    }
+
+    /**
+     * Compute the barycenter of the points of the given edge identifier.
+     */
+    virtual int getEdgeIncenter(SimplexId edgeId, float incenter[3]) const {
+      SimplexId vertexId[2];
+      getEdgeVertex(edgeId, 0, vertexId[0]);
+      getEdgeVertex(edgeId, 1, vertexId[1]);
+
+      float p[6];
+      getVertexPoint(vertexId[0], p[0], p[1], p[2]);
+      getVertexPoint(vertexId[1], p[3], p[4], p[5]);
+
+      incenter[0] = 0.5 * p[0] + 0.5 * p[3];
+      incenter[1] = 0.5 * p[1] + 0.5 * p[4];
+      incenter[2] = 0.5 * p[2] + 0.5 * p[5];
+
+      return 0;
+    }
+
+    /**
+     * Compute the incenter of the points of the given triangle identifier.
+     */
+    virtual int getTriangleIncenter(SimplexId triangleId,
+                                    float incenter[3]) const {
+
+      SimplexId vertexId[3];
+      if(getDimensionality() == 2) {
+        getCellVertex(triangleId, 0, vertexId[0]);
+        getCellVertex(triangleId, 1, vertexId[1]);
+        getCellVertex(triangleId, 2, vertexId[2]);
+      } else if(getDimensionality() == 3) {
+        getTriangleVertex(triangleId, 0, vertexId[0]);
+        getTriangleVertex(triangleId, 1, vertexId[1]);
+        getTriangleVertex(triangleId, 2, vertexId[2]);
+      }
+
+      float p[9];
+      getVertexPoint(vertexId[0], p[0], p[1], p[2]);
+      getVertexPoint(vertexId[1], p[3], p[4], p[5]);
+      getVertexPoint(vertexId[2], p[6], p[7], p[8]);
+
+      float d[3];
+      d[0] = Geometry::distance(p + 3, p + 6);
+      d[1] = Geometry::distance(p, p + 6);
+      d[2] = Geometry::distance(p, p + 3);
+      const float sum = d[0] + d[1] + d[2];
+
+      d[0] = d[0] / sum;
+      d[1] = d[1] / sum;
+      d[2] = d[2] / sum;
+
+      incenter[0] = d[0] * p[0] + d[1] * p[3] + d[2] * p[6];
+      incenter[1] = d[0] * p[1] + d[1] * p[4] + d[2] * p[7];
+      incenter[2] = d[0] * p[2] + d[1] * p[5] + d[2] * p[8];
+
+      return 0;
+    }
+
+    /**
+     * Compute the barycenter of the incenters of the triangles of the given
+       tetra identifier.
+     */
+    virtual int getTetraIncenter(SimplexId tetraId, float incenter[3]) const {
+      incenter[0] = 0.0f;
+      incenter[1] = 0.0f;
+      incenter[2] = 0.0f;
+
+      float p[3];
+      for(int i = 0; i < 4; ++i) {
+        SimplexId triangleId;
+        getCellTriangle(tetraId, i, triangleId);
+        getTriangleIncenter(triangleId, p);
+        incenter[0] += p[0];
+        incenter[1] += p[1];
+        incenter[2] += p[2];
+      }
+
+      incenter[0] /= 4.0f;
+      incenter[1] /= 4.0f;
+      incenter[2] /= 4.0f;
+
+      return 0;
+    }
+
+    /**
+     * Compute the geometric barycenter of a given cell.
+     */
+    int getCellIncenter(SimplexId cellid, int dim, float incenter[3]) const {
+      switch(dim) {
+        case 0:
+          getVertexPoint(cellid, incenter[0], incenter[1], incenter[2]);
+          break;
+        case 1:
+          getEdgeIncenter(cellid, incenter);
+          break;
+        case 2:
+          getTriangleIncenter(cellid, incenter);
+          break;
+        case 3:
+          getTetraIncenter(cellid, incenter);
+          break;
+      }
       return 0;
     }
 

@@ -5,5 +5,6 @@ ttk_add_base_library(abstractTriangulation
     AbstractTriangulation.h
   LINK
     common
+    geometry
     )
 
