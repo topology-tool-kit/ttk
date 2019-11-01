@@ -39,8 +39,8 @@ int ttkDataSetToTable::doIt(vtkDataSet *input, vtkTable *output) {
       }
 #endif
 
-      const SimplexId numberOfArrays = inputPointData->GetNumberOfArrays();
 #ifndef TTK_ENABLE_KAMIKAZE
+      const SimplexId numberOfArrays = inputPointData->GetNumberOfArrays();
       if(numberOfArrays <= 0) {
         cerr << "[ttkDataSetToTable] Error: input point data is empty." << endl;
         return -1;
@@ -59,8 +59,8 @@ int ttkDataSetToTable::doIt(vtkDataSet *input, vtkTable *output) {
       }
 #endif
 
-      const SimplexId numberOfArrays = inputCellData->GetNumberOfArrays();
 #ifndef TTK_ENABLE_KAMIKAZE
+      const SimplexId numberOfArrays = inputCellData->GetNumberOfArrays();
       if(numberOfArrays <= 0) {
         cerr << "[ttkDataSetToTable] Error: input cell data is empty." << endl;
         return -1;

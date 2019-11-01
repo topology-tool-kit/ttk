@@ -218,5 +218,5 @@ int ttkBarycentricSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
     dMsg(std::cout, msg.str(), memoryMsg);
   }
 
-  return 0;
+  return ret;
 }
