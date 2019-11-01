@@ -60,7 +60,7 @@ void FTMTree_CT::build(TreeType tt) {
 #endif
       { leafSearch(); }
     }
-    printTime(precomputeTime, "leafSearch", -1, 3);
+    printTime(precomputeTime, "[FTM] leafSearch", -1, 3);
   }
 
 #ifdef TTK_ENABLE_OMP_PRIORITY
