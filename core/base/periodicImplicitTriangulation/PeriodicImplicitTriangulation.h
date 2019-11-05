@@ -20,6 +20,8 @@
 #include <ciso646>
 #endif
 
+#include <array>
+
 namespace ttk {
 
   class PeriodicImplicitTriangulation final : public AbstractTriangulation {
@@ -246,6 +248,144 @@ namespace ttk {
                      const int &xDim,
                      const int &yDim,
                      const int &zDim);
+
+    std::array<SimplexId, 3>
+      vertexToPositionNd(const SimplexId vertexId) const {
+      std::array<SimplexId, 3> p{};
+      if(dimensionality_ == 1) {
+        p[0] = vertexId;
+      } else if(dimensionality_ == 2) {
+        vertexToPosition2d(vertexId, p.data());
+      } else if(dimensionality_ == 3) {
+        vertexToPosition(vertexId, p.data());
+      }
+      return p;
+    }
+
+    /**
+     * Compute the barycenter of the points of the given edge identifier.
+     */
+    virtual int getEdgeIncenter(SimplexId edgeId,
+                                float incenter[3]) const override {
+      std::array<SimplexId, 2> vertexId;
+      for(int i = 0; i < (int)vertexId.size(); ++i) {
+        getEdgeVertex(edgeId, i, vertexId[i]);
+      }
+
+      std::array<std::array<float, 3>, vertexId.size()> p;
+      std::array<std::array<SimplexId, 3>, vertexId.size()> ind;
+      for(int i = 0; i < (int)vertexId.size(); ++i) {
+        getVertexPoint(vertexId[i], p[i][0], p[i][1], p[i][2]);
+        ind[i] = vertexToPositionNd(vertexId[i]);
+      }
+
+      for(int i = 0; i < dimensionality_; ++i) {
+        if(ind[1][i] == nbvoxels_[i]) {
+          p[0][i] += (ind[0][i] == 0) * dimensions_[i] * spacing_[i];
+        } else if(ind[0][i] == nbvoxels_[i]) {
+          p[1][i] += (ind[1][i] == 0) * dimensions_[i] * spacing_[i];
+        }
+      }
+
+      for(int i = 0; i < 3; ++i) {
+        incenter[i] = 0.5f * (p[0][i] + p[1][i]);
+      }
+
+      return 0;
+    }
+
+    /**
+     * Compute the incenter of the points of the given triangle
+     * identifier.
+     */
+    virtual int getTriangleIncenter(SimplexId triangleId,
+                                    float incenter[3]) const override {
+
+      std::array<SimplexId, 3> vertexId;
+      for(int i = 0; i < (int)vertexId.size(); ++i) {
+        getTriangleVertex(triangleId, i, vertexId[i]);
+      }
+
+      std::array<std::array<float, 3>, vertexId.size()> p;
+      std::array<std::array<SimplexId, 3>, vertexId.size()> ind;
+      for(int i = 0; i < (int)vertexId.size(); ++i) {
+        getVertexPoint(vertexId[i], p[i][0], p[i][1], p[i][2]);
+        ind[i] = vertexToPositionNd(vertexId[i]);
+      }
+
+      for(int i = 0; i < dimensionality_; ++i) {
+        if(ind[0][i] == nbvoxels_[i]) {
+          p[1][i] += (ind[1][i] == 0) * dimensions_[i] * spacing_[i];
+          p[2][i] += (ind[2][i] == 0) * dimensions_[i] * spacing_[i];
+        } else if(ind[1][i] == nbvoxels_[i]) {
+          p[0][i] += (ind[0][i] == 0) * dimensions_[i] * spacing_[i];
+          p[2][i] += (ind[2][i] == 0) * dimensions_[i] * spacing_[i];
+        } else if(ind[2][i] == nbvoxels_[i]) {
+          p[0][i] += (ind[0][i] == 0) * dimensions_[i] * spacing_[i];
+          p[1][i] += (ind[1][i] == 0) * dimensions_[i] * spacing_[i];
+        }
+      }
+
+      std::array<float, p.size()> d;
+      for(int i = 0; i < (int)d.size(); ++i) {
+        d[i] = Geometry::distance(p[(i + 1) % 3].data(), p[(i + 2) % 3].data());
+      }
+      const float sum = d[0] + d[1] + d[2];
+      for(int i = 0; i < (int)d.size(); ++i) {
+        d[i] = d[i] / sum;
+      }
+
+      for(int i = 0; i < 3; ++i) {
+        incenter[i] = d[0] * p[0][i] + d[1] * p[1][i] + d[2] * p[2][i];
+      }
+
+      return 0;
+    }
+
+    /**
+     * Compute the barycenter of the incenters of the triangles of the
+     * given tetra identifier.
+     */
+    virtual int getTetraIncenter(SimplexId tetraId,
+                                 float incenter[3]) const override {
+
+      std::array<SimplexId, 4> vertexId;
+      for(int i = 0; i < (int)vertexId.size(); ++i) {
+        getCellVertex(tetraId, i, vertexId[i]);
+      }
+
+      std::array<std::array<float, 3>, vertexId.size()> p;
+      std::array<std::array<SimplexId, 3>, vertexId.size()> ind;
+      for(int i = 0; i < (int)vertexId.size(); ++i) {
+        getVertexPoint(vertexId[i], p[i][0], p[i][1], p[i][2]);
+        ind[i] = vertexToPositionNd(vertexId[i]);
+      }
+
+      for(int i = 0; i < dimensionality_; ++i) {
+        if(ind[0][i] == nbvoxels_[i]) {
+          p[1][i] += (ind[1][i] == 0) * dimensions_[i] * spacing_[i];
+          p[2][i] += (ind[2][i] == 0) * dimensions_[i] * spacing_[i];
+          p[3][i] += (ind[3][i] == 0) * dimensions_[i] * spacing_[i];
+        } else if(ind[1][i] == nbvoxels_[i]) {
+          p[0][i] += (ind[0][i] == 0) * dimensions_[i] * spacing_[i];
+          p[2][i] += (ind[2][i] == 0) * dimensions_[i] * spacing_[i];
+          p[3][i] += (ind[3][i] == 0) * dimensions_[i] * spacing_[i];
+        } else if(ind[2][i] == nbvoxels_[i]) {
+          p[0][i] += (ind[0][i] == 0) * dimensions_[i] * spacing_[i];
+          p[1][i] += (ind[1][i] == 0) * dimensions_[i] * spacing_[i];
+          p[3][i] += (ind[3][i] == 0) * dimensions_[i] * spacing_[i];
+        } else if(ind[3][i] == nbvoxels_[i]) {
+          p[0][i] += (ind[0][i] == 0) * dimensions_[i] * spacing_[i];
+          p[1][i] += (ind[1][i] == 0) * dimensions_[i] * spacing_[i];
+          p[2][i] += (ind[2][i] == 0) * dimensions_[i] * spacing_[i];
+        }
+      }
+
+      for(int i = 0; i < 3; ++i) {
+        incenter[i] = 0.25f * (p[0][i] + p[1][i] + p[2][i] + p[3][i]);
+      }
+      return 0;
+    }
 
   protected:
     int dimensionality_; //

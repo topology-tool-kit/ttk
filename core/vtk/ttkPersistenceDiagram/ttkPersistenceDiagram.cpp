@@ -313,5 +313,5 @@ int ttkPersistenceDiagram::doIt(vector<vtkDataSet *> &inputs,
     dMsg(cout, msg.str(), memoryMsg);
   }
 
-  return 0;
+  return ret;
 }

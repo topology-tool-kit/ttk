@@ -321,7 +321,7 @@ int ttkPersistenceCurve::doIt(vtkDataSet *input,
   outputSTPersistenceCurve->ShallowCopy(STPersistenceCurve_);
   outputCTPersistenceCurve->ShallowCopy(CTPersistenceCurve_);
 
-  return 0;
+  return ret;
 }
 
 int ttkPersistenceCurve::RequestData(vtkInformation *request,

@@ -8,8 +8,6 @@ else()
   find_dependency(VTK REQUIRED)
 endif()
 
-message(STATUS "in ttk config ${VTK_LIBRARIES}")
-
 # Include the actual config for TTK Base
 include("${CMAKE_CURRENT_LIST_DIR}/TTKBaseConfig.cmake")
 # And the actual targets for TTK VTK

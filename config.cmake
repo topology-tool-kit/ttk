@@ -1,8 +1,6 @@
-
 set(CMAKE_CXX_STANDARD 11)
 
-# Build type
-
+# Set a predefined build type
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   message(STATUS "Setting build type to 'Release'.")
   set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build." FORCE)
@@ -21,7 +19,7 @@ endif()
 option(TTK_ENABLE_64BIT_IDS "Enable processing on large datasets" OFF)
 mark_as_advanced(TTK_ENABLE_64BIT_IDS)
 
-option(TTK_ENABLE_KAMIKAZE "Enable Kamikaze compilation mode" OFF)
+option(TTK_ENABLE_KAMIKAZE "Enable Kamikaze compilation mode" ON)
 mark_as_advanced(TTK_ENABLE_KAMIKAZE)
 
 option(TTK_ENABLE_CPU_OPTIMIZATION "Enable native CPU optimizations" ON)
@@ -143,21 +141,21 @@ find_library(SQLITE3_LIBRARY
   PATHS
     $ENV{SQLITE3_ROOT_DIR}/lib /opt/sqlite3/lib
     )
-if(SQLITE3_LIBRARY AND SQLITE3_INCLUDE_DIR)
+if (SQLITE3_LIBRARY AND SQLITE3_INCLUDE_DIR)
   set(SQLITE3_LIBRARIES ${SQLITE3_LIBRARY})
   set(SQLITE3_FOUND "YES")
-else()
+else (SQLITE3_LIBRARY AND SQLITE3_INCLUDE_DIR)
   set(SQLITE3_FOUND "NO")
-endif()
-if(SQLITE3_FOUND)
-  if(NOT SQLITE3_FIND_QUIETLY)
+endif (SQLITE3_LIBRARY AND SQLITE3_INCLUDE_DIR)
+if (SQLITE3_FOUND)
+  if (NOT SQLITE3_FIND_QUIETLY)
     message(STATUS "Found SQLITE3: ${SQLITE3_LIBRARIES}")
-  endif()
-else()
-  if(SQLITE3_FIND_REQUIRED)
+  endif (NOT SQLITE3_FIND_QUIETLY)
+else (SQLITE3_FOUND)
+  if (SQLITE3_FIND_REQUIRED)
     message(FATAL_ERROR "Could not find SQLITE3 library...")
-  endif()
-endif()
+  endif (SQLITE3_FIND_REQUIRED)
+endif (SQLITE3_FOUND)
 mark_as_advanced(SQLITE3_LIBRARY SQLITE3_INCLUDE_DIR)
 # END_FINDSQLITE3
 if(SQLITE3_FOUND)
@@ -233,7 +231,8 @@ else()
 endif()
 
 
-if(TTK_ENABLE_MPI)
+
+if (TTK_ENABLE_MPI)
   find_package(MPI REQUIRED)
 endif()
 

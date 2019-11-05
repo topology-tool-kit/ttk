@@ -544,5 +544,5 @@ int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
     cellData->AddArray(pairTypes);
   }
 
-  return 0;
+  return ret;
 }
