@@ -1,4 +1,4 @@
-![TTK Logo](https://topology-tool-kit.github.io/android-chrome-512x512.png)
+![TTK Logo](https://topology-tool-kit.github.io/android-chrome-192x192.png)
 
 ## TTK - The Topology ToolKit 
 
