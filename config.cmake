@@ -165,7 +165,7 @@ else()
   message(STATUS "SQLITE3 not found, disabling SQLITE3 support in TTK.")
 endif()
 
-find_package(ZFP)
+find_package(ZFP QUIET)
 if(NOT ZFP_INCLUDE_DIRS)
   option(TTK_ENABLE_ZFP "Enable ZFP support" OFF)
   message(STATUS "ZFP not found, disabling ZFP support in TTK.")
