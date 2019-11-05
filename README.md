@@ -1,4 +1,4 @@
-.. image:: //https://topology-tool-kit.github.io/android-chrome-512x512.png
+.. image:: https://topology-tool-kit.github.io/android-chrome-512x512.png
    :width: 850
 
 ## TTK - The Topology ToolKit 
