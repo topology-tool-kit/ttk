@@ -7,12 +7,18 @@ vtk_module_scan(
   MODULE_FILES
     ${TTK_VTK_MODULE_FILE}
   PROVIDES_MODULES
-    TTK_ENABLED_MODULES
+    TTK_PROVIDED_MODULES
   WANT_BY_DEFAULT
     ON
   )
 
-if(NOT TTK_BUILD_PARAVIEW_PLUGINS)
+# Whitelist mechanism
+foreach(TTK_MODULE ${TTK_PROVIDED_MODULES})
+  ttk_get_target(${TTK_MODULE} TTK_TARGET)
+  list(APPEND TTK_ENABLED_MODULES ${TTK_TARGET})
+endforeach()
+
+if(NOT ${TTK_BUILD_PARAVIEW_PLUGINS})
   # when build against ParaView,
   # vtk_module_build is already called
   # by the paraview_add_plugin

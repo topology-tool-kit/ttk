@@ -10,12 +10,17 @@ option(TTK_BUILD_VTK_WRAPPERS "Build the TTK VTK Wrappers" ON)
 option(TTK_BUILD_PARAVIEW_PLUGINS "Build the TTK ParaView Plugins" ON)
 option(TTK_BUILD_STANDALONE_APPS "Build the TTK Standalone Applications" ON)
 option(TTK_WHITELIST_MODE "Explicitely enable each filter" OFF)
+mark_as_advanced(TTK_WHITELIST_MODE BUILD_SHARED_LIBS)
+
+if(${TTK_WHITELIST_MODE})
+  set(TTK_ENABLE_FILTER_DEFAULT OFF CACHE INTERNAL "Default value for each filter build")
+else()
+  set(TTK_ENABLE_FILTER_DEFAULT ON CACHE INTERNAL "Default value for each filter build")
+endif()
 
 # This option allows library to be built dynamic
 # like the TopologyToolKit.so file for paraview
 option(BUILD_SHARED_LIBS "Build TTK as shared lib" ON)
-
-mark_as_advanced(TTK_WHITELIST_MODE BUILD_SHARED_LIBS)
 
 if(TTK_BUILD_STANDALONE_APPS AND NOT TTK_BUILD_VTK_WRAPPERS)
   message(WARNING "Can't build standalones without the VTK wrappers: disable")
@@ -28,6 +33,7 @@ include(config.cmake)
 # Functiond to read ttk.module files
 if(VTK_FOUND)
   # required for both wrappers and paraview
+  # Note, may also use it for basecode it we want a base.module file
   include(CMake/VTKModule.cmake)
 endif()
 
@@ -41,11 +47,6 @@ add_subdirectory(core)
 # ---------------
 
 if(TTK_BUILD_PARAVIEW_PLUGINS)
-  if(${TTK_WHITELIST_MODE})
-    set(TTK_ENABLE_FILTER_DEFAULT OFF CACHE INTERNAL "Default value for each filter build")
-  else()
-    set(TTK_ENABLE_FILTER_DEFAULT ON CACHE INTERNAL "Default value for each filter build")
-  endif()
   include(CMake/ParaViewFilter.cmake)
   add_subdirectory(paraview)
 endif()

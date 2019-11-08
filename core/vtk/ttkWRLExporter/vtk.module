@@ -2,6 +2,6 @@ NAME
  ttkWRLExporter
 DEPENDS
   VTK::FiltersCore
+  VTK::RenderingCore
 PRIVATE_DEPENDS
   VTK::CommonCore
-

@@ -1,1 +1,1 @@
-ttk_register_pv_module(ttkWRLExporter)
+ttk_register_pv_filter(ttkWRLExporter "")

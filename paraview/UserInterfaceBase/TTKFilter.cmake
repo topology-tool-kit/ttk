@@ -1,1 +1,1 @@
-ttk_register_pv_module(ttkUserInterfaceBase)
+ttk_register_pv_filter(ttkUserInterfaceBase "")

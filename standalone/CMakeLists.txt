@@ -1,10 +1,12 @@
 set(TTK_INSTALL_BINARY_DIR "bin")
 
-if(NOT TARGET ttkProgramBase)
-  ttk_register_vtk_filter("../core/vtk/ttkProgramBase")
-endif()
+set(cmd_dirs "*/cmd")
+set(gui_dirs "*/gui")
+
+# still build cmd if no rendering
 if(NOT TARGET ttkUserInterfaceBase)
-  ttk_register_vtk_filter("../core/vtk/ttkUserInterfaceBase")
+  message(WARNING "ttkUserInterfaceBase is disabled, no gui standalone")
+  set(gui_dirs "")
 endif()
 
 # TODO investigate (mac)
@@ -13,7 +15,7 @@ endif()
 
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
-file(GLOB STANDALONE_DIRS */cmd */gui)
+file(GLOB STANDALONE_DIRS ${cmd_dirs} ${gui_dirs})
 foreach(STANDALONE ${STANDALONE_DIRS})
   if(IS_DIRECTORY ${STANDALONE})
     add_subdirectory(${STANDALONE})

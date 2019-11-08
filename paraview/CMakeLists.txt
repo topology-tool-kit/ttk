@@ -16,6 +16,7 @@ foreach(PARAVIEW_PLUGIN ${PARAVIEW_PLUGIN_DIRS})
   endif()
 endforeach()
 
+# Install location
 if(NOT "$ENV{PV_PLUGIN_PATH}" STREQUAL "")
   set(TTK_INSTALL_PLUGIN_DIR
     $ENV{PV_PLUGIN_PATH}

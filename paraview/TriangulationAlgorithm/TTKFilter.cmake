@@ -1,1 +1,1 @@
-ttk_register_pv_module(ttkTriangulationAlgorithm)
+ttk_register_pv_filter(ttkTriangulationAlgorithm "")
