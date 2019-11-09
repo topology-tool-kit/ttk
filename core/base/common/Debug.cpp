@@ -63,6 +63,13 @@ int Debug::dMsg(ostream &stream, string msg, const int &debugLevel) const {
       //"                                        \\_\\  /_/"
       << endl;
     s << "[Common] Welcome!" << endl;
+#ifndef NDEBUG
+    s << "[Common]" << endl;
+    s << "[Common] WARNING:" << endl;
+    s << "[Common] TTK has been built in debug mode! (developers only)" << endl;
+    s << "[Common] Expect important performance degradation." << endl;
+    s << "[Common]" << endl;
+#endif
     dMsg(cout, s.str(), 1);
   }
 
