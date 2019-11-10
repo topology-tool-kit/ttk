@@ -23,7 +23,7 @@ namespace ttk {
   public:
     AbstractTriangulation();
 
-    ~AbstractTriangulation();
+    virtual ~AbstractTriangulation();
 
     virtual int clear();
 
