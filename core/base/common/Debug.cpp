@@ -76,8 +76,9 @@ int Debug::dMsg(ostream &stream, string msg, const int &debugLevel) const {
     s << "[Common] TTK has *NOT* been built in performance mode!"
       << " (developers only)" << endl;
     s << "[Common] Expect important performance degradation." << endl;
-    s << "[Common] To enable the performance mode, rebuild TTK with"
-      << " -DTTK_ENABLE_KAMIKAZE=ON" << endl;
+    s << "[Common] " << endl;
+    s << "[Common] To enable the performance mode, rebuild TTK with:" << endl;
+    s << "[Common]   -DTTK_ENABLE_KAMIKAZE=ON" << endl;
     s << "[Common]" << endl;
 #endif
     dMsg(cout, s.str(), 1);
