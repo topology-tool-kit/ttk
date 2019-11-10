@@ -115,7 +115,7 @@ namespace ttk {
 
   public:
     AbstractMorseSmaleComplex();
-    ~AbstractMorseSmaleComplex();
+    virtual ~AbstractMorseSmaleComplex();
 
     /**
      * Set the threshold for the iterative gradient reversal process.
