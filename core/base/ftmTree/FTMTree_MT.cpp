@@ -39,7 +39,7 @@ using namespace ftm;
 DebugTimer _launchGlobalTime;
 
 FTMTree_MT::FTMTree_MT(Params *const params,
-                       Triangulation *mesh,
+                       AbstractTriangulation *mesh,
                        Scalars *const scalars,
                        TreeType type)
   : params_(params), mesh_(mesh), scalars_(scalars) {
