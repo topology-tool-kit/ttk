@@ -1,4 +1,4 @@
-FROM ubuntu:18.04
+FROM ubuntu:disco
 
 MAINTAINER Christoph Garth <garth@cs.uni-kl.de>
 

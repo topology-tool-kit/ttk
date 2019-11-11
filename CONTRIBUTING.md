@@ -2,7 +2,10 @@ Thanks for contributing to TTK!
 
 Please find below a few guidelines that we invite you to consider before making a pull request.
 
-# 1. Code formatting
+# 1. Authorship
+  - Please enter in header files doxygen style information regarding authorship and, if applicable, related publications. See [core/base/topologicalSimplification/TopologicalSimplification.h](https://github.com/topology-tool-kit/ttk/blob/master/core/base/topologicalSimplification/TopologicalSimplification.h) for a base layer example, [core/vtk/ttkTopologicalSimplification/ttkTopologicalSimplification.h](https://github.com/topology-tool-kit/ttk/blob/master/core/vtk/ttkTopologicalSimplification/ttkTopologicalSimplification.h) for a vtk wrapper example and [paraview/TopologicalSimplification/TopologicalSimplification.xml](https://github.com/topology-tool-kit/ttk/blob/master/paraview/TopologicalSimplification/TopologicalSimplification.xml) for a ParaView plugin example.
+
+# 2. Code formatting
   - To make TTK's source code more homogeneous and readable, we use [clang-format](https://clang.llvm.org/docs/ClangFormat.html). A style file is already available in TTK's source tree.
 **Before creating a new pull request**, please make sure that you clang-formatted your local 
 repository by entering the following command at the top of TTK's source tree: <code>
@@ -12,12 +15,12 @@ $ clang-format -i -style=file core/\*/\*/\*h core/\*/\*/\*cpp core/\*/\*/\*inl s
 For this, we recommend to use scripts such as [this one](https://github.com/barisione/clang-format-hooks/).
 
 
-# 2. Continuous integration
+# 3. Continuous integration
   - TTK uses some basic continuous integration, which consists in testing for build success under Linux (with [travis](https://travis-ci.org/)) and Windows (with [app-veyor](https://www.appveyor.com/)) upon each commit or pull request. **Your pull request will not be merged if it fails these tests**.
   - To make your life easier, we recommend that you sign up for both services (which both offer free plans) and that you connect your TTK github fork to these services. This will run the build tests upon each of your commits to your local TTK repository.
 
 
-# 3. Submitting a new module
+# 4. Submitting a new module
   - **Before submitting a new module**, we invite you to read our [Guidelines for Developing a New TTK Module](https://github.com/topology-tool-kit/ttk/wiki/Guidelines-for-Developing-a-New-TTK-Module). Also, before submitting your pull-request to [TTK's source repository](https://github.com/topology-tool-kit/ttk), please make sure that your fork is in sync with the latest version of TTK's source tree (typically by entering a command like <code>git pull ttk-public master</code>, where <code>ttk-public</code> is the name of your remote pointing to TTK's public source tree).
   - Please submit a pull-request with an example to [ttk-data](https://github.com/topology-tool-kit/ttk-data):
     - Provide a ParaView state file (*.pvsm) in the [<code>states/</code>](https://github.com/topology-tool-kit/ttk-data/tree/master/states) directory which runs your new module. This example will be used to both test and demo your module.

@@ -20,9 +20,11 @@
 #include <ciso646>
 #endif
 
+#include <array>
+
 namespace ttk {
 
-  class PeriodicImplicitTriangulation : public AbstractTriangulation {
+  class PeriodicImplicitTriangulation final : public AbstractTriangulation {
 
   public:
     PeriodicImplicitTriangulation();
@@ -30,85 +32,85 @@ namespace ttk {
 
     int getCellEdge(const SimplexId &cellId,
                     const int &id,
-                    SimplexId &edgeId) const;
+                    SimplexId &edgeId) const override;
 
-    SimplexId getCellEdgeNumber(const SimplexId &cellId) const;
+    SimplexId getCellEdgeNumber(const SimplexId &cellId) const override;
 
-    const std::vector<std::vector<SimplexId>> *getCellEdges();
+    const std::vector<std::vector<SimplexId>> *getCellEdges() override;
 
     int getCellNeighbor(const SimplexId &cellId,
                         const int &localNeighborId,
-                        SimplexId &neighborId) const;
+                        SimplexId &neighborId) const override;
 
-    SimplexId getCellNeighborNumber(const SimplexId &cellId) const;
+    SimplexId getCellNeighborNumber(const SimplexId &cellId) const override;
 
-    const std::vector<std::vector<SimplexId>> *getCellNeighbors();
+    const std::vector<std::vector<SimplexId>> *getCellNeighbors() override;
 
     int getCellTriangle(const SimplexId &cellId,
                         const int &id,
-                        SimplexId &triangleId) const;
+                        SimplexId &triangleId) const override;
 
-    SimplexId getCellTriangleNumber(const SimplexId &cellId) const {
+    SimplexId getCellTriangleNumber(const SimplexId &cellId) const override {
       // NOTE: the output is always 4 here. let's keep the function in there
       // in case of further generalization to CW-complexes
       return 4;
     };
 
-    const std::vector<std::vector<SimplexId>> *getCellTriangles();
+    const std::vector<std::vector<SimplexId>> *getCellTriangles() override;
 
     int getCellVertex(const SimplexId &cellId,
                       const int &localVertexId,
-                      SimplexId &vertexId) const;
+                      SimplexId &vertexId) const override;
 
-    SimplexId getCellVertexNumber(const SimplexId &cellId) const;
+    SimplexId getCellVertexNumber(const SimplexId &cellId) const override;
 
-    int getDimensionality() const {
+    int getDimensionality() const override {
       return dimensionality_;
     };
 
     int getEdgeLink(const SimplexId &edgeId,
                     const int &localLinkId,
-                    SimplexId &linkId) const;
+                    SimplexId &linkId) const override;
 
-    SimplexId getEdgeLinkNumber(const SimplexId &edgeId) const;
+    SimplexId getEdgeLinkNumber(const SimplexId &edgeId) const override;
 
-    const std::vector<std::vector<SimplexId>> *getEdgeLinks();
+    const std::vector<std::vector<SimplexId>> *getEdgeLinks() override;
 
     int getEdgeStar(const SimplexId &edgeId,
                     const int &localStarId,
-                    SimplexId &starId) const;
+                    SimplexId &starId) const override;
 
-    SimplexId getEdgeStarNumber(const SimplexId &edgeId) const;
+    SimplexId getEdgeStarNumber(const SimplexId &edgeId) const override;
 
-    const std::vector<std::vector<SimplexId>> *getEdgeStars();
+    const std::vector<std::vector<SimplexId>> *getEdgeStars() override;
 
     int getEdgeTriangle(const SimplexId &edgeId,
                         const int &id,
-                        SimplexId &triangleId) const;
+                        SimplexId &triangleId) const override;
 
-    SimplexId getEdgeTriangleNumber(const SimplexId &edgeId) const;
+    SimplexId getEdgeTriangleNumber(const SimplexId &edgeId) const override;
 
-    const std::vector<std::vector<SimplexId>> *getEdgeTriangles();
+    const std::vector<std::vector<SimplexId>> *getEdgeTriangles() override;
 
     int getEdgeVertex(const SimplexId &edgeId,
                       const int &localVertexId,
-                      SimplexId &vertexId) const;
+                      SimplexId &vertexId) const override;
 
-    const std::vector<std::pair<SimplexId, SimplexId>> *getEdges();
+    const std::vector<std::pair<SimplexId, SimplexId>> *getEdges() override;
 
-    SimplexId getNumberOfCells() const {
+    SimplexId getNumberOfCells() const override {
       return cellNumber_;
     };
 
-    SimplexId getNumberOfEdges() const {
+    SimplexId getNumberOfEdges() const override {
       return edgeNumber_;
     };
 
-    SimplexId getNumberOfTriangles() const {
+    SimplexId getNumberOfTriangles() const override {
       return triangleNumber_;
     };
 
-    SimplexId getNumberOfVertices() const {
+    SimplexId getNumberOfVertices() const override {
       return vertexNumber_;
     };
 
@@ -139,25 +141,26 @@ namespace ttk {
 
     int getTriangleEdge(const SimplexId &triangleId,
                         const int &id,
-                        SimplexId &edgeId) const;
+                        SimplexId &edgeId) const override;
 
-    SimplexId getTriangleEdgeNumber(const SimplexId &triangleId) const {
+    SimplexId
+      getTriangleEdgeNumber(const SimplexId &triangleId) const override {
       // NOTE: the output is always 3 here. let's keep the function in there
       // in case of further generalization to CW-complexes
       return 3;
     }
 
-    const std::vector<std::vector<SimplexId>> *getTriangleEdges();
+    const std::vector<std::vector<SimplexId>> *getTriangleEdges() override;
 
     int getTriangleEdges(std::vector<std::vector<SimplexId>> &edges) const;
 
     int getTriangleLink(const SimplexId &triangleId,
                         const int &localLinkId,
-                        SimplexId &linkId) const;
+                        SimplexId &linkId) const override;
 
-    SimplexId getTriangleLinkNumber(const SimplexId &triangleId) const;
+    SimplexId getTriangleLinkNumber(const SimplexId &triangleId) const override;
 
-    const std::vector<std::vector<SimplexId>> *getTriangleLinks();
+    const std::vector<std::vector<SimplexId>> *getTriangleLinks() override;
 
     int getTriangleNeighbor(const SimplexId &triangleId,
                             const int &localNeighborId,
@@ -169,72 +172,72 @@ namespace ttk {
 
     int getTriangleStar(const SimplexId &triangleId,
                         const int &localStarId,
-                        SimplexId &starId) const;
+                        SimplexId &starId) const override;
 
-    SimplexId getTriangleStarNumber(const SimplexId &triangleId) const;
+    SimplexId getTriangleStarNumber(const SimplexId &triangleId) const override;
 
-    const std::vector<std::vector<SimplexId>> *getTriangleStars();
+    const std::vector<std::vector<SimplexId>> *getTriangleStars() override;
 
     int getTriangleVertex(const SimplexId &triangleId,
                           const int &localVertexId,
-                          SimplexId &vertexId) const;
+                          SimplexId &vertexId) const override;
 
-    const std::vector<std::vector<SimplexId>> *getTriangles();
+    const std::vector<std::vector<SimplexId>> *getTriangles() override;
 
     int getVertexEdge(const SimplexId &vertexId,
                       const int &id,
-                      SimplexId &edgeId) const;
+                      SimplexId &edgeId) const override;
 
-    SimplexId getVertexEdgeNumber(const SimplexId &vertexId) const;
+    SimplexId getVertexEdgeNumber(const SimplexId &vertexId) const override;
 
-    const std::vector<std::vector<SimplexId>> *getVertexEdges();
+    const std::vector<std::vector<SimplexId>> *getVertexEdges() override;
 
     int getVertexLink(const SimplexId &vertexId,
                       const int &localLinkId,
-                      SimplexId &linkId) const;
+                      SimplexId &linkId) const override;
 
-    SimplexId getVertexLinkNumber(const SimplexId &vertexId) const;
+    SimplexId getVertexLinkNumber(const SimplexId &vertexId) const override;
 
-    const std::vector<std::vector<SimplexId>> *getVertexLinks();
+    const std::vector<std::vector<SimplexId>> *getVertexLinks() override;
 
     int getVertexNeighbor(const SimplexId &vertexId,
                           const int &localNeighborId,
-                          SimplexId &neighborId) const;
+                          SimplexId &neighborId) const override;
 
-    SimplexId getVertexNeighborNumber(const SimplexId &vertexId) const;
+    SimplexId getVertexNeighborNumber(const SimplexId &vertexId) const override;
 
-    const std::vector<std::vector<SimplexId>> *getVertexNeighbors();
+    const std::vector<std::vector<SimplexId>> *getVertexNeighbors() override;
 
     int getVertexPoint(const SimplexId &vertexId,
                        float &x,
                        float &y,
-                       float &z) const;
+                       float &z) const override;
 
     int getVertexStar(const SimplexId &vertexId,
                       const int &localStarId,
-                      SimplexId &starId) const;
+                      SimplexId &starId) const override;
 
-    SimplexId getVertexStarNumber(const SimplexId &vertexId) const;
+    SimplexId getVertexStarNumber(const SimplexId &vertexId) const override;
 
-    const std::vector<std::vector<SimplexId>> *getVertexStars();
+    const std::vector<std::vector<SimplexId>> *getVertexStars() override;
 
     int getVertexTriangle(const SimplexId &vertexId,
                           const int &id,
-                          SimplexId &triangleId) const;
+                          SimplexId &triangleId) const override;
 
-    SimplexId getVertexTriangleNumber(const SimplexId &vertexId) const;
+    SimplexId getVertexTriangleNumber(const SimplexId &vertexId) const override;
 
-    const std::vector<std::vector<SimplexId>> *getVertexTriangles();
+    const std::vector<std::vector<SimplexId>> *getVertexTriangles() override;
 
-    bool isEdgeOnBoundary(const SimplexId &edgeId) const;
+    bool isEdgeOnBoundary(const SimplexId &edgeId) const override;
 
-    bool isEmpty() const {
+    bool isEmpty() const override {
       return !vertexNumber_;
     };
 
-    bool isTriangleOnBoundary(const SimplexId &triangleId) const;
+    bool isTriangleOnBoundary(const SimplexId &triangleId) const override;
 
-    bool isVertexOnBoundary(const SimplexId &vertexId) const;
+    bool isVertexOnBoundary(const SimplexId &vertexId) const override;
 
     int setInputGrid(const float &xOrigin,
                      const float &yOrigin,
@@ -245,6 +248,144 @@ namespace ttk {
                      const int &xDim,
                      const int &yDim,
                      const int &zDim);
+
+    std::array<SimplexId, 3>
+      vertexToPositionNd(const SimplexId vertexId) const {
+      std::array<SimplexId, 3> p{};
+      if(dimensionality_ == 1) {
+        p[0] = vertexId;
+      } else if(dimensionality_ == 2) {
+        vertexToPosition2d(vertexId, p.data());
+      } else if(dimensionality_ == 3) {
+        vertexToPosition(vertexId, p.data());
+      }
+      return p;
+    }
+
+    /**
+     * Compute the barycenter of the points of the given edge identifier.
+     */
+    virtual int getEdgeIncenter(SimplexId edgeId,
+                                float incenter[3]) const override {
+      std::array<SimplexId, 2> vertexId;
+      for(int i = 0; i < (int)vertexId.size(); ++i) {
+        getEdgeVertex(edgeId, i, vertexId[i]);
+      }
+
+      std::array<std::array<float, 3>, vertexId.size()> p;
+      std::array<std::array<SimplexId, 3>, vertexId.size()> ind;
+      for(int i = 0; i < (int)vertexId.size(); ++i) {
+        getVertexPoint(vertexId[i], p[i][0], p[i][1], p[i][2]);
+        ind[i] = vertexToPositionNd(vertexId[i]);
+      }
+
+      for(int i = 0; i < dimensionality_; ++i) {
+        if(ind[1][i] == nbvoxels_[i]) {
+          p[0][i] += (ind[0][i] == 0) * dimensions_[i] * spacing_[i];
+        } else if(ind[0][i] == nbvoxels_[i]) {
+          p[1][i] += (ind[1][i] == 0) * dimensions_[i] * spacing_[i];
+        }
+      }
+
+      for(int i = 0; i < 3; ++i) {
+        incenter[i] = 0.5f * (p[0][i] + p[1][i]);
+      }
+
+      return 0;
+    }
+
+    /**
+     * Compute the incenter of the points of the given triangle
+     * identifier.
+     */
+    virtual int getTriangleIncenter(SimplexId triangleId,
+                                    float incenter[3]) const override {
+
+      std::array<SimplexId, 3> vertexId;
+      for(int i = 0; i < (int)vertexId.size(); ++i) {
+        getTriangleVertex(triangleId, i, vertexId[i]);
+      }
+
+      std::array<std::array<float, 3>, vertexId.size()> p;
+      std::array<std::array<SimplexId, 3>, vertexId.size()> ind;
+      for(int i = 0; i < (int)vertexId.size(); ++i) {
+        getVertexPoint(vertexId[i], p[i][0], p[i][1], p[i][2]);
+        ind[i] = vertexToPositionNd(vertexId[i]);
+      }
+
+      for(int i = 0; i < dimensionality_; ++i) {
+        if(ind[0][i] == nbvoxels_[i]) {
+          p[1][i] += (ind[1][i] == 0) * dimensions_[i] * spacing_[i];
+          p[2][i] += (ind[2][i] == 0) * dimensions_[i] * spacing_[i];
+        } else if(ind[1][i] == nbvoxels_[i]) {
+          p[0][i] += (ind[0][i] == 0) * dimensions_[i] * spacing_[i];
+          p[2][i] += (ind[2][i] == 0) * dimensions_[i] * spacing_[i];
+        } else if(ind[2][i] == nbvoxels_[i]) {
+          p[0][i] += (ind[0][i] == 0) * dimensions_[i] * spacing_[i];
+          p[1][i] += (ind[1][i] == 0) * dimensions_[i] * spacing_[i];
+        }
+      }
+
+      std::array<float, p.size()> d;
+      for(int i = 0; i < (int)d.size(); ++i) {
+        d[i] = Geometry::distance(p[(i + 1) % 3].data(), p[(i + 2) % 3].data());
+      }
+      const float sum = d[0] + d[1] + d[2];
+      for(int i = 0; i < (int)d.size(); ++i) {
+        d[i] = d[i] / sum;
+      }
+
+      for(int i = 0; i < 3; ++i) {
+        incenter[i] = d[0] * p[0][i] + d[1] * p[1][i] + d[2] * p[2][i];
+      }
+
+      return 0;
+    }
+
+    /**
+     * Compute the barycenter of the incenters of the triangles of the
+     * given tetra identifier.
+     */
+    virtual int getTetraIncenter(SimplexId tetraId,
+                                 float incenter[3]) const override {
+
+      std::array<SimplexId, 4> vertexId;
+      for(int i = 0; i < (int)vertexId.size(); ++i) {
+        getCellVertex(tetraId, i, vertexId[i]);
+      }
+
+      std::array<std::array<float, 3>, vertexId.size()> p;
+      std::array<std::array<SimplexId, 3>, vertexId.size()> ind;
+      for(int i = 0; i < (int)vertexId.size(); ++i) {
+        getVertexPoint(vertexId[i], p[i][0], p[i][1], p[i][2]);
+        ind[i] = vertexToPositionNd(vertexId[i]);
+      }
+
+      for(int i = 0; i < dimensionality_; ++i) {
+        if(ind[0][i] == nbvoxels_[i]) {
+          p[1][i] += (ind[1][i] == 0) * dimensions_[i] * spacing_[i];
+          p[2][i] += (ind[2][i] == 0) * dimensions_[i] * spacing_[i];
+          p[3][i] += (ind[3][i] == 0) * dimensions_[i] * spacing_[i];
+        } else if(ind[1][i] == nbvoxels_[i]) {
+          p[0][i] += (ind[0][i] == 0) * dimensions_[i] * spacing_[i];
+          p[2][i] += (ind[2][i] == 0) * dimensions_[i] * spacing_[i];
+          p[3][i] += (ind[3][i] == 0) * dimensions_[i] * spacing_[i];
+        } else if(ind[2][i] == nbvoxels_[i]) {
+          p[0][i] += (ind[0][i] == 0) * dimensions_[i] * spacing_[i];
+          p[1][i] += (ind[1][i] == 0) * dimensions_[i] * spacing_[i];
+          p[3][i] += (ind[3][i] == 0) * dimensions_[i] * spacing_[i];
+        } else if(ind[3][i] == nbvoxels_[i]) {
+          p[0][i] += (ind[0][i] == 0) * dimensions_[i] * spacing_[i];
+          p[1][i] += (ind[1][i] == 0) * dimensions_[i] * spacing_[i];
+          p[2][i] += (ind[2][i] == 0) * dimensions_[i] * spacing_[i];
+        }
+      }
+
+      for(int i = 0; i < 3; ++i) {
+        incenter[i] = 0.25f * (p[0][i] + p[1][i] + p[2][i] + p[3][i]);
+      }
+      return 0;
+    }
 
   protected:
     int dimensionality_; //

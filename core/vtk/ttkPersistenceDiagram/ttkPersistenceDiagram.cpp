@@ -114,6 +114,9 @@ int ttkPersistenceDiagram::getTriangulation(vtkDataSet *input) {
     computeDiagram_ = true;
   }
 
+  if(this->GetMTime() < input->GetMTime())
+    computeDiagram_ = true;
+
   return 0;
 }
 
@@ -310,5 +313,5 @@ int ttkPersistenceDiagram::doIt(vector<vtkDataSet *> &inputs,
     dMsg(cout, msg.str(), memoryMsg);
   }
 
-  return 0;
+  return ret;
 }

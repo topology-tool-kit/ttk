@@ -949,102 +949,22 @@ int DiscreteGradient::reverseDescendingPathOnWall(const vector<Cell> &vpath) {
 
 int DiscreteGradient::getEdgeIncenter(const SimplexId edgeId,
                                       float incenter[3]) const {
-  SimplexId vertexId[2];
-  inputTriangulation_->getEdgeVertex(edgeId, 0, vertexId[0]);
-  inputTriangulation_->getEdgeVertex(edgeId, 1, vertexId[1]);
-
-  float p[6];
-  inputTriangulation_->getVertexPoint(vertexId[0], p[0], p[1], p[2]);
-  inputTriangulation_->getVertexPoint(vertexId[1], p[3], p[4], p[5]);
-
-  incenter[0] = 0.5 * p[0] + 0.5 * p[3];
-  incenter[1] = 0.5 * p[1] + 0.5 * p[4];
-  incenter[2] = 0.5 * p[2] + 0.5 * p[5];
-
-  return 0;
+  return inputTriangulation_->getEdgeIncenter(edgeId, incenter);
 }
 
 int DiscreteGradient::getTriangleIncenter(const SimplexId triangleId,
                                           float incenter[3]) const {
-  SimplexId vertexId[3];
-  if(dimensionality_ == 2) {
-    inputTriangulation_->getCellVertex(triangleId, 0, vertexId[0]);
-    inputTriangulation_->getCellVertex(triangleId, 1, vertexId[1]);
-    inputTriangulation_->getCellVertex(triangleId, 2, vertexId[2]);
-  } else if(dimensionality_ == 3) {
-    inputTriangulation_->getTriangleVertex(triangleId, 0, vertexId[0]);
-    inputTriangulation_->getTriangleVertex(triangleId, 1, vertexId[1]);
-    inputTriangulation_->getTriangleVertex(triangleId, 2, vertexId[2]);
-  }
-
-  float p[9];
-  inputTriangulation_->getVertexPoint(vertexId[0], p[0], p[1], p[2]);
-  inputTriangulation_->getVertexPoint(vertexId[1], p[3], p[4], p[5]);
-  inputTriangulation_->getVertexPoint(vertexId[2], p[6], p[7], p[8]);
-
-  float d[3];
-  d[0] = Geometry::distance(p + 3, p + 6);
-  d[1] = Geometry::distance(p, p + 6);
-  d[2] = Geometry::distance(p, p + 3);
-  const float sum = d[0] + d[1] + d[2];
-
-  d[0] = d[0] / sum;
-  d[1] = d[1] / sum;
-  d[2] = d[2] / sum;
-
-  incenter[0] = d[0] * p[0] + d[1] * p[3] + d[2] * p[6];
-  incenter[1] = d[0] * p[1] + d[1] * p[4] + d[2] * p[7];
-  incenter[2] = d[0] * p[2] + d[1] * p[5] + d[2] * p[8];
-
-  return 0;
+  return inputTriangulation_->getTriangleIncenter(triangleId, incenter);
 }
 
 int DiscreteGradient::getTetraIncenter(const SimplexId tetraId,
                                        float incenter[3]) const {
-  incenter[0] = 0.0f;
-  incenter[1] = 0.0f;
-  incenter[2] = 0.0f;
-
-  float p[3];
-  for(int i = 0; i < 4; ++i) {
-    SimplexId triangleId;
-    inputTriangulation_->getCellTriangle(tetraId, i, triangleId);
-
-    getTriangleIncenter(triangleId, p);
-    incenter[0] += p[0];
-    incenter[1] += p[1];
-    incenter[2] += p[2];
-  }
-
-  incenter[0] /= 4.0f;
-  incenter[1] /= 4.0f;
-  incenter[2] /= 4.0f;
-
-  return 0;
+  return inputTriangulation_->getTetraIncenter(tetraId, incenter);
 }
 
 int DiscreteGradient::getCellIncenter(const Cell &cell,
                                       float incenter[3]) const {
-  switch(cell.dim_) {
-    case 0:
-      inputTriangulation_->getVertexPoint(
-        cell.id_, incenter[0], incenter[1], incenter[2]);
-      break;
-
-    case 1:
-      getEdgeIncenter(cell.id_, incenter);
-      break;
-
-    case 2:
-      getTriangleIncenter(cell.id_, incenter);
-      break;
-
-    case 3:
-      getTetraIncenter(cell.id_, incenter);
-      break;
-  }
-
-  return 0;
+  return inputTriangulation_->getCellIncenter(cell.id_, cell.dim_, incenter);
 }
 
 int DiscreteGradient::getCriticalPointMap(

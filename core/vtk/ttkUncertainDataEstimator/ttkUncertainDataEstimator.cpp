@@ -210,6 +210,7 @@ int ttkUncertainDataEstimator::doIt(const std::vector<vtkDataSet *> &input,
   }
 
   // Calling the executing package
+
   if(numFields > 0) {
     UncertainDataEstimator uncertainDataEstimator;
     uncertainDataEstimator.setWrapper(this);
