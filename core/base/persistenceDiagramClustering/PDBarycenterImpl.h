@@ -67,9 +67,9 @@ void PDBarycenter<dataType>::runMatching(
     // cout<<"input "<<i<<" sizes : "<<current_bidder_diagrams_.size()<<"
     // "<<barycenter_goods_.size()<<" "<<min_diag_price->size()<<endl;
     Auction<dataType> auction = Auction<dataType>(
-      &current_bidder_diagrams_.at(i), &barycenter_goods_.at(i), wasserstein_,
-      geometrical_factor_, lambda_, 0.01, kdt, *correspondance_kdt_map, epsilon,
-      min_diag_price->at(i), use_kdt);
+      current_bidder_diagrams_[i], barycenter_goods_[i], wasserstein_,
+      geometrical_factor_, lambda_, 0.01, *kdt, *correspondance_kdt_map,
+      epsilon, min_diag_price->at(i), use_kdt);
     // cout<<"\n RUN MATCHINGS : "<<i<<endl;
     // cout<<use_kdt<<endl;
     // cout<<epsilon<<endl;
@@ -141,8 +141,8 @@ void PDBarycenter<dataType>::runMatchingAuction(
 #endif
   for(int i = 0; i < numberOfInputs_; i++) {
     Auction<dataType> auction = Auction<dataType>(
-      &current_bidder_diagrams_[i], &barycenter_goods_[i], wasserstein_,
-      geometrical_factor_, lambda_, 0.01, kdt, *correspondance_kdt_map,
+      current_bidder_diagrams_[i], barycenter_goods_[i], wasserstein_,
+      geometrical_factor_, lambda_, 0.01, *kdt, *correspondance_kdt_map,
       (*min_diag_price)[i], use_kdt);
     std::vector<matchingTuple> matchings;
     dataType cost = auction.run(&matchings);
