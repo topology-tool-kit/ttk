@@ -18,7 +18,7 @@ void ttk::Auction<dataType>::runAuctionRound(int &n_biddings,
     n_biddings++;
     int pos = unassignedBidders_.front();
     Bidder<dataType> &b = bidders_.get(pos);
-    unassignedBidders_.pop_front();
+    unassignedBidders_.pop();
 
     GoodDiagram<dataType> *all_goods
       = b.isDiagonal() ? diagonal_goods_ : goods_;
@@ -58,7 +58,7 @@ void ttk::Auction<dataType>::runAuctionRound(int &n_biddings,
     if(idx_reassigned >= 0) {
       Bidder<dataType> &reassigned = bidders_.get(idx_reassigned);
       reassigned.setProperty(NULL);
-      unassignedBidders_.push_back(idx_reassigned);
+      unassignedBidders_.push(idx_reassigned);
     }
   }
 }

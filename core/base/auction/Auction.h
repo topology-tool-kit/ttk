@@ -246,7 +246,7 @@ namespace ttk {
       for(int i = 0; i < bidders_.size(); i++) {
         Bidder<dataType> &b = bidders_.get(i);
         b.setProperty(NULL);
-        unassignedBidders_.push_back(i);
+        unassignedBidders_.push(i);
       }
     }
 
@@ -322,7 +322,7 @@ namespace ttk {
                         std::vector<std::pair<int, dataType>>,
                         Compare<dataType>>
       diagonal_queue_{};
-    std::vector<int> unassignedBidders_{};
+    std::queue<int> unassignedBidders_{};
 
     int n_bidders_{0};
     int n_goods_{0};
