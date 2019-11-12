@@ -20,7 +20,7 @@ void ttk::Auction<dataType>::runAuctionRound(int &n_biddings,
     Bidder<dataType> &b = bidders_.get(pos);
     unassignedBidders_.pop();
 
-    GoodDiagram<dataType> *all_goods
+    GoodDiagram<dataType> &all_goods
       = b.isDiagonal() ? diagonal_goods_ : goods_;
     Good<dataType> &twin_good
       = b.id_ >= 0 ? diagonal_goods_.get(b.id_) : goods_.get(-b.id_ - 1);
@@ -29,22 +29,22 @@ void ttk::Auction<dataType>::runAuctionRound(int &n_biddings,
     if(b.isDiagonal()) {
       if(use_kdt_) {
         idx_reassigned = b.runDiagonalKDTBidding(
-          all_goods, twin_good, wasserstein_, epsilon, geometricalFactor_,
+          &all_goods, twin_good, wasserstein_, epsilon, geometricalFactor_,
           correspondance_kdt_map_, diagonal_queue_, kdt_index);
       } else {
         idx_reassigned
-          = b.runDiagonalBidding(all_goods, twin_good, wasserstein_, epsilon,
+          = b.runDiagonalBidding(&all_goods, twin_good, wasserstein_, epsilon,
                                  geometricalFactor_, diagonal_queue_);
       }
     } else {
       if(use_kdt_) {
         // We can use the kd-tree to speed up the search
         idx_reassigned
-          = b.runKDTBidding(all_goods, twin_good, wasserstein_, epsilon,
-                            geometricalFactor_, kdt_, kdt_index);
+          = b.runKDTBidding(&all_goods, twin_good, wasserstein_, epsilon,
+                            geometricalFactor_, &kdt_, kdt_index);
       } else {
         idx_reassigned = b.runBidding(
-          all_goods, twin_good, wasserstein_, epsilon, geometricalFactor_);
+          &all_goods, twin_good, wasserstein_, epsilon, geometricalFactor_);
       }
     }
     /*if(n_biddings>-1){
