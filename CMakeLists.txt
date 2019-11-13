@@ -43,6 +43,41 @@ endif()
 include(CMake/BaseCode.cmake)
 add_subdirectory(core)
 
+add_library(baseAll INTERFACE)
+add_library(ttkAll INTERFACE)
+
+target_link_libraries(baseAll INTERFACE ${TTK_BASECODES})
+
+install(
+  TARGETS
+    baseAll
+  EXPORT
+    TTKBaseTargets
+  RUNTIME DESTINATION
+    bin/ttk
+  ARCHIVE DESTINATION
+    lib/ttk
+  LIBRARY DESTINATION
+    lib/ttk
+  )
+
+install(
+  EXPORT
+    TTKBaseTargets
+  NAMESPACE
+    ttk::base::
+  DESTINATION
+    lib/cmake/ttk
+  )
+
+configure_file(core/base/TTKBaseConfig.cmake.in TTKBaseConfig.cmake @ONLY)
+install(
+  FILES
+    "${CMAKE_CURRENT_BINARY_DIR}/TTKBaseConfig.cmake"
+  DESTINATION
+    lib/cmake/ttk
+  )
+
 # Paraview plugin
 # ---------------
 
@@ -57,6 +92,41 @@ endif()
 if(TTK_BUILD_VTK_WRAPPERS)
   add_subdirectory(core/vtk)
 endif()
+
+target_link_libraries(ttkAll INTERFACE ${TTK_ENABLED_MODULES})
+
+# Use folder as configured by the distribution
+include(GNUInstallDirs)
+install(
+  TARGETS
+    baseAll
+    ttkAll
+  EXPORT
+    TTKVTKTargets
+  RUNTIME DESTINATION
+    ${CMAKE_INSTALL_BINDIR}/ttk
+  ARCHIVE DESTINATION
+    ${CMAKE_INSTALL_LIBDIR}/ttk
+  LIBRARY DESTINATION
+    ${CMAKE_INSTALL_LIBDIR}/ttk
+  )
+
+install(
+  EXPORT
+    TTKVTKTargets
+  NAMESPACE
+    ttk::vtk::
+  DESTINATION
+    lib/cmake/ttk
+  )
+
+configure_file(core/vtk/TTKVTKConfig.cmake.in TTKVTKConfig.cmake @ONLY)
+install(
+  FILES
+    "${CMAKE_CURRENT_BINARY_DIR}/TTKVTKConfig.cmake"
+  DESTINATION
+    lib/cmake/ttk
+  )
 
 # Standalones
 # -----------

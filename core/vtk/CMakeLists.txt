@@ -29,104 +29,70 @@ if(NOT ${TTK_BUILD_PARAVIEW_PLUGINS})
 endif()
 
 if(VTK_WRAP_PYTHON)
-  if(NOT DEFINED TTK_PYTHON_MODULE_DIR)
-    vtk_module_python_default_destination(PYTHON_SITE_PACKAGES_SUFFIX)
-    set(TTK_PYTHON_MODULE_DIR
-      ${PYTHON_SITE_PACKAGES_SUFFIX}
-      CACHE
-      PATH
-      "Where the TTK python module in installed"
-      )
-  endif()
-  vtk_module_wrap_python(
-    MODULES
-      ${TTK_ENABLED_MODULES}
-    WRAPPED_MODULES
-      TTK_WRAPPED_MODULES
-    INSTALL_EXPORT
-      TTKPython
-    PYTHON_PACKAGE
-      "topologytoolkit"
-    MODULE_DESTINATION
-      "${TTK_PYTHON_MODULE_DIR}"
-    CMAKE_DESTINATION
-      "${CMAKE_INSTALL_LIBDIR}/ttk/python"
-    LIBRARY_DESTINATION
-      "${CMAKE_INSTALL_LIBDIR}"
-    INSTALL_HEADERS
-      ON
-    TARGET
-      TTK::Python
-    )
-  foreach(TTK_MODULE ${TTK_WRAPPED_MODULES})
-    target_link_libraries(${TTK_MODULE}Python
-      PUBLIC
-        VTK::WrappingPythonCore
-        VTK::vtkCommonExecutionModelPython
-      )
-  endforeach()
-  export(
-    EXPORT
-      TTKPython
-    NAMESPACE
-      TTK::
-    FILE
-      "${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}/ttk/python/TTKPython-targets.cmake"
-    )
-  install(
-    EXPORT
-      TTKPython
-    NAMESPACE
-      TTK::
-    FILE
-      TTKPython-targets.cmake
-    DESTINATION
-      "${CMAKE_INSTALL_LIBDIR}/ttk/python"
-    )
+  # if(NOT DEFINED TTK_PYTHON_MODULE_DIR)
+  #   vtk_module_python_default_destination(PYTHON_SITE_PACKAGES_SUFFIX)
+  #   set(TTK_PYTHON_MODULE_DIR
+  #     ${PYTHON_SITE_PACKAGES_SUFFIX}
+  #     CACHE
+  #     PATH
+  #     "Where the TTK python module in installed"
+  #     )
+  # endif()
+  # vtk_module_wrap_python(
+  #   MODULES
+  #     ${TTK_ENABLED_MODULES}
+  #   WRAPPED_MODULES
+  #     TTK_WRAPPED_MODULES
+  #   INSTALL_EXPORT
+  #     TTKPython
+  #   PYTHON_PACKAGE
+  #     "topologytoolkit"
+  #   MODULE_DESTINATION
+  #     "${TTK_PYTHON_MODULE_DIR}"
+  #   CMAKE_DESTINATION
+  #     "${CMAKE_INSTALL_LIBDIR}/ttk/python"
+  #   LIBRARY_DESTINATION
+  #     "${CMAKE_INSTALL_LIBDIR}"
+  #   INSTALL_HEADERS
+  #     ON
+  #   TARGET
+  #     TTK::Python
+  #   )
+  # foreach(TTK_MODULE ${TTK_WRAPPED_MODULES})
+  #   target_link_libraries(${TTK_MODULE}Python
+  #     PUBLIC
+  #       VTK::WrappingPythonCore
+  #       VTK::vtkCommonExecutionModelPython
+  #     )
+  # endforeach()
+  # export(
+  #   EXPORT
+  #     TTKPython
+  #   NAMESPACE
+  #     TTK::
+  #   FILE
+  #     "${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}/ttk/python/TTKPython-targets.cmake"
+  #   )
+  # install(
+  #   EXPORT
+  #     TTKPython
+  #   NAMESPACE
+  #     TTK::
+  #   FILE
+  #     TTKPython-targets.cmake
+  #   DESTINATION
+  #     "${CMAKE_INSTALL_LIBDIR}/ttk/python"
+  #   )
 endif()
 
 # Add a bundle library that will just link all the TTK vtkWrappers
-add_library(ttkAll INTERFACE)
+add_library(ttkTMP INTERFACE)
 
 vtk_module_autoinit(
   TARGETS
-    ttkAll
+    ttkTMP
   MODULES
     ${TTK_ENABLED_MODULES}
   )
 
-target_link_libraries(ttkAll INTERFACE ${TTK_ENABLED_MODULES})
-
-# Use folder as configured by the distribution
-include(GNUInstallDirs)
-install(
-  TARGETS
-    ttkAll
-    ${TTK_ENABLED_MODULES}
-  EXPORT
-    TTKVTKTargets
-  RUNTIME DESTINATION
-    ${CMAKE_INSTALL_BINDIR}/ttk
-  ARCHIVE DESTINATION
-    ${CMAKE_INSTALL_LIBDIR}/ttk
-  LIBRARY DESTINATION
-    ${CMAKE_INSTALL_LIBDIR}/ttk
-  )
-
-install(
-  EXPORT
-    TTKVTKTargets
-  NAMESPACE
-    ttk::vtk::
-  DESTINATION
-    lib/cmake/ttk
-  )
-
-configure_file(TTKVTKConfig.cmake.in TTKVTKConfig.cmake @ONLY)
-
-install(
-  FILES
-    "${CMAKE_CURRENT_BINARY_DIR}/TTKVTKConfig.cmake"
-  DESTINATION
-    lib/cmake/ttk
-  )
+set(TTK_ENABLED_MODULES ${TTK_ENABLED_MODULES} CACHE INTERNAL "")

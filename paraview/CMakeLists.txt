@@ -66,23 +66,22 @@ paraview_plugin_build(
 
 if(NOT "${TTK_INSTALL_PLUGIN_DIR}" STREQUAL "")
   # Keep TTK libraries in the TopologyToolKit folder
-  foreach(TTK_MODULE ${TTK_MODULES})
-    install(
-      TARGETS
-        ${TTK_MODULE}
-      DESTINATION
-        "${TTK_INSTALL_PLUGIN_DIR}/TopologyToolKit"
-      )
-  endforeach()
-  set_target_properties(${TTK_PLUGINS}
-    PROPERTIES INSTALL_RPATH
-      "${TTK_INSTALL_PLUGIN_DIR}/TopologyToolKit"
-    )
+  # foreach(TTK_MODULE ${TTK_MODULES})
+  #   install(
+  #     TARGETS
+  #       ${TTK_MODULE}
+  #     DESTINATION
+  #       "${TTK_INSTALL_PLUGIN_DIR}/TopologyToolKit"
+  #     )
+  # endforeach()
+  # set_target_properties(${TTK_PLUGINS}
+  #   PROPERTIES INSTALL_RPATH
+  #     "${TTK_INSTALL_PLUGIN_DIR}/TopologyToolKit"
+  #   )
 
   # Install the TopologyToolKit library
   install(
     TARGETS
-      TopologyToolKit
       TTKPVTargets
     DESTINATION
       "${TTK_INSTALL_PLUGIN_DIR}"

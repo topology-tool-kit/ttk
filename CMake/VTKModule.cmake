@@ -44,6 +44,19 @@ macro(ttk_add_vtk_module)
       ${TTK_DEPENDS}
     )
 
+  install(
+    TARGETS
+      ${TTK_NAME}
+    EXPORT
+      TTKVTKTargets
+    RUNTIME DESTINATION
+      bin/ttk
+    ARCHIVE DESTINATION
+      lib/ttk
+    LIBRARY DESTINATION
+      lib/ttk
+    )
+
   # Fix a race condition in the VTK's CMake:
   # https://discourse.vtk.org/t/building-vtk-modules-with-dependencies-results-in-race-condition-in-make/1711
   if(TARGET ${TTK_NAME}-hierarchy)
