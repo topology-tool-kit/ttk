@@ -651,7 +651,7 @@ void PDBarycenter<dataType>::setInitialBarycenter(dataType min_persistence) {
 
 template <typename dataType>
 std::pair<KDTree<dataType> *, std::vector<KDTree<dataType> *>>
-  PDBarycenter<dataType>::getKDTree() {
+  PDBarycenter<dataType>::getKDTree() const {
   Timer tm;
   KDTree<dataType> *kdt = new KDTree<dataType>(true, wasserstein_);
 
@@ -661,7 +661,7 @@ std::pair<KDTree<dataType> *, std::vector<KDTree<dataType> *>>
   std::vector<std::vector<dataType>> weights;
 
   for(int i = 0; i < barycenter_goods_[0].size(); i++) {
-    Good<dataType> &g = barycenter_goods_[0].get(i);
+    const Good<dataType> &g = barycenter_goods_[0].get(i);
     coordinates.push_back(geometrical_factor_ * g.x_);
     coordinates.push_back(geometrical_factor_ * g.y_);
     if(geometrical_factor_ < 1) {
@@ -675,7 +675,7 @@ std::pair<KDTree<dataType> *, std::vector<KDTree<dataType> *>>
     std::vector<dataType> empty_weights;
     weights.push_back(empty_weights);
     for(int i = 0; i < barycenter_goods_[idx].size(); i++) {
-      Good<dataType> &g = barycenter_goods_[idx].get(i);
+      const Good<dataType> &g = barycenter_goods_[idx].get(i);
       weights[idx].push_back(g.getPrice());
     }
   }
