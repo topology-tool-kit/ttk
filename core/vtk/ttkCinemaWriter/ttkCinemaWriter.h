@@ -47,6 +47,7 @@ public:
 #define TopoCompWriterGetSetMacro(NAME, TYPE) \
   void Set##NAME(const TYPE _arg) {           \
     this->ttkCompWriter_->Set##NAME(_arg);    \
+    this->Modified();                         \
   }                                           \
   TYPE Get##NAME() {                          \
     return this->ttkCompWriter_->Get##NAME(); \
