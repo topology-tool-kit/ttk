@@ -265,7 +265,7 @@ namespace ttk {
       price_ = price;
     }
 
-    inline dataType getPrice() {
+    inline dataType getPrice() const {
       return price_;
     }
 
@@ -274,7 +274,7 @@ namespace ttk {
       owner_ = b;
     }
 
-    inline int getOwner() {
+    inline int getOwner() const {
       return owner_;
     }
 
@@ -314,9 +314,10 @@ namespace ttk {
 
     void addGood(Good<dataType> &g);
     Good<dataType> &get(int idx);
+    const Good<dataType> &get(int idx) const;
     void set(Good<dataType> &g, int idx);
 
-    inline int size() {
+    inline int size() const {
       return goods_.size();
     }
 
@@ -331,6 +332,10 @@ namespace ttk {
 
   template <typename dataType>
   Good<dataType> &GoodDiagram<dataType>::get(int idx) {
+    return goods_[idx];
+  }
+  template <typename dataType>
+  const Good<dataType> &GoodDiagram<dataType>::get(int idx) const {
     return goods_[idx];
   }
 
@@ -909,11 +914,14 @@ namespace ttk {
       bidders_.push_back(b);
     }
 
-    inline int size() {
+    inline int size() const {
       return bidders_.size();
     }
 
     inline Bidder<dataType> &get(int idx) {
+      return bidders_[idx];
+    }
+    inline const Bidder<dataType> &get(int idx) const {
       return bidders_[idx];
     }
   };
