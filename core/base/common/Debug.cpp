@@ -63,6 +63,24 @@ int Debug::dMsg(ostream &stream, string msg, const int &debugLevel) const {
       //"                                        \\_\\  /_/"
       << endl;
     s << "[Common] Welcome!" << endl;
+#ifndef NDEBUG
+    s << "[Common]" << endl;
+    s << "[Common] WARNING:" << endl;
+    s << "[Common] TTK has been built in debug mode! (developers only)" << endl;
+    s << "[Common] Expect important performance degradation." << endl;
+    s << "[Common]" << endl;
+#endif
+#ifndef TTK_ENABLE_KAMIKAZE
+    s << "[Common]" << endl;
+    s << "[Common] WARNING:" << endl;
+    s << "[Common] TTK has *NOT* been built in performance mode!"
+      << " (developers only)" << endl;
+    s << "[Common] Expect important performance degradation." << endl;
+    s << "[Common] " << endl;
+    s << "[Common] To enable the performance mode, rebuild TTK with:" << endl;
+    s << "[Common]   -DTTK_ENABLE_KAMIKAZE=ON" << endl;
+    s << "[Common]" << endl;
+#endif
     dMsg(cout, s.str(), 1);
   }
 

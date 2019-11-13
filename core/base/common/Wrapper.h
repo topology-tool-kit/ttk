@@ -19,7 +19,7 @@ namespace ttk {
       processingProgress_ = 0;
     };
 
-    ~Wrapper(){};
+    virtual ~Wrapper(){};
 
     virtual bool needsToAbort() = 0;
 

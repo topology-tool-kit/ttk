@@ -26,7 +26,7 @@ namespace ttk {
     public:
       Blank();
 
-      ~Blank();
+      virtual ~Blank();
 
       /// Execute the package.
       /// \pre If this TTK package uses ttk::Triangulation for fast mesh
