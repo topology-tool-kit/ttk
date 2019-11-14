@@ -81,6 +81,18 @@ vtkStandardNewMacro(ttkCinemaWriter)
   string dataCsvPath = this->DatabasePath + "/data.csv";
   string pathSuffix = ".vtm";
 
+  bool doTopologicalCompression
+    = input->IsA("vtkImageData") && this->UseTopologicalCompression;
+
+  if(!doTopologicalCompression && this->UseTopologicalCompression) {
+    vtkErrorMacro("Cannot use Topological Compression without a vtkImageData");
+    return 0;
+  }
+
+  if(doTopologicalCompression) {
+    pathSuffix = ".ttk";
+  }
+
   // Create directory if it does not already exist
   {
     auto directory = vtkSmartPointer<vtkDirectory>::New();
@@ -144,14 +156,45 @@ vtkStandardNewMacro(ttkCinemaWriter)
 
   t0 = t.getElapsedTime();
 
-  auto mbWriter = vtkSmartPointer<vtkXMLMultiBlockDataWriter>::New();
-  mbWriter->SetFileName(path.data());
-  mbWriter->SetDataModeToAppended();
-  mbWriter->SetCompressorTypeToZLib();
-  vtkZLibDataCompressor::SafeDownCast(mbWriter->GetCompressor())
-    ->SetCompressionLevel(this->GetCompressLevel());
-  mbWriter->SetInputData(inputMB);
-  mbWriter->Write();
+  if(doTopologicalCompression) {
+    dMsg(cout, "\n", timeMsg);
+
+    // Create data sub-directory if it does not exist yet
+    vtkNew<vtkDirectory>()->MakeDirectory(pathPrefix.data());
+
+    // Fetch the scalar field array on which to perform Topological Compression
+    const auto ScalarFieldName = ttkCompWriter_->GetScalarField();
+    if(ScalarFieldName.empty()) {
+      vtkErrorMacro("Need a scalar field for Topological Compression");
+      return 0;
+    }
+    const auto inputData = vtkImageData::SafeDownCast(input);
+    const auto ScalarField
+      = inputData->GetPointData()->GetArray(ScalarFieldName.data());
+
+    // Check that input scalar field is indeed scalar
+    if(ScalarField->GetNumberOfComponents() != 1) {
+      vtkErrorMacro("Input scalar field should have only 1 component");
+      return 0;
+    }
+
+    this->ttkCompWriter_->SetFileName(path.data());
+    this->ttkCompWriter_->SetDebugLevel(debugLevel_);
+    this->ttkCompWriter_->execute(inputData);
+
+    dMsg(cout, "[ttkCinemaWriter] - Writing to disk                   ... ",
+         timeMsg);
+  } else {
+
+    auto mbWriter = vtkSmartPointer<vtkXMLMultiBlockDataWriter>::New();
+    mbWriter->SetFileName(path.data());
+    mbWriter->SetDataModeToAppended();
+    mbWriter->SetCompressorTypeToZLib();
+    vtkZLibDataCompressor::SafeDownCast(mbWriter->GetCompressor())
+      ->SetCompressionLevel(this->GetCompressLevel());
+    mbWriter->SetInputData(inputMB);
+    mbWriter->Write();
+  }
 
   {
     stringstream msg;
@@ -242,9 +285,13 @@ vtkStandardNewMacro(ttkCinemaWriter)
       auto columnName = table->GetColumnName(j);
       auto columnCSV = vtkStringArray::SafeDownCast(table->GetColumn(j));
       if(string(columnName).compare("FILE") == 0)
-        columnCSV->SetValue(
-          offset + i, vtkStdString(dataPrefix + id + "/" + id + "_"
-                                   + to_string(i) + "." + blockExtension));
+        if(this->UseTopologicalCompression) {
+          columnCSV->SetValue(offset + i, dataPrefix + id + pathSuffix);
+        } else {
+          columnCSV->SetValue(
+            offset + i, vtkStdString(dataPrefix + id + "/" + id + "_"
+                                     + to_string(i) + "." + blockExtension));
+        }
       else {
         auto array = fieldData->GetAbstractArray(columnName);
         string value = array->GetVariantValue(0).ToString();
