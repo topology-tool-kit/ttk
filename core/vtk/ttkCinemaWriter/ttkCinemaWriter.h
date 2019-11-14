@@ -14,6 +14,7 @@
 
 // VTK includes
 #include <vtkInformation.h>
+#include <vtkNew.h>
 #include <vtkXMLPMultiBlockDataWriter.h>
 
 // TTK includes
