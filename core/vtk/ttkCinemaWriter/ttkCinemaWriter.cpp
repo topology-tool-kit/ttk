@@ -162,9 +162,25 @@ vtkStandardNewMacro(ttkCinemaWriter)
     // Create data sub-directory if it does not exist yet
     vtkNew<vtkDirectory>()->MakeDirectory(pathPrefix.data());
 
+    // Fetch the scalar field array on which to perform Topological Compression
+    const auto ScalarFieldName = ttkCompWriter_->GetScalarField();
+    if(ScalarFieldName.empty()) {
+      vtkErrorMacro("Need a scalar field for Topological Compression");
+      return 0;
+    }
+    const auto inputData = vtkImageData::SafeDownCast(input);
+    const auto ScalarField
+      = inputData->GetPointData()->GetArray(ScalarFieldName.data());
+
+    // Check that input scalar field is indeed scalar
+    if(ScalarField->GetNumberOfComponents() != 1) {
+      vtkErrorMacro("Input scalar field should have only 1 component");
+      return 0;
+    }
+
     this->ttkCompWriter_->SetFileName(path.data());
     this->ttkCompWriter_->SetDebugLevel(debugLevel_);
-    this->ttkCompWriter_->execute(vtkImageData::SafeDownCast(input));
+    this->ttkCompWriter_->execute(inputData);
 
     dMsg(cout, "[ttkCinemaWriter] - Writing to disk                   ... ",
          timeMsg);
