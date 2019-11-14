@@ -148,6 +148,9 @@ namespace ttk {
     inline void setDeltaLim(const double deltaLim) {
       deltaLim_ = deltaLim;
     }
+    inline void setOutputDistanceMatrix(const bool arg) {
+      outputDistanceMatrix_ = arg;
+    }
     inline void setPerClusterDistanceMatrix(const bool arg) {
       perClusterDistanceMatrix_ = arg;
     }
@@ -193,6 +196,7 @@ namespace ttk {
     std::vector<BidderDiagram<dataType>> bidder_diagrams_;
     std::vector<GoodDiagram<dataType>> barycenter_goods_;
 
+    bool outputDistanceMatrix_{false};
     bool perClusterDistanceMatrix_{false};
     std::vector<std::vector<double>> distanceMatrix_{};
     std::vector<double> distanceToCentroid_{};
@@ -321,6 +325,7 @@ namespace ttk {
       KMeans.setK(n_clusters_);
       KMeans.setDiagrams(&data_min, &data_sad, &data_max);
       KMeans.setDos(do_min, do_sad, do_max);
+      KMeans.setOutputDistanceMatrix(outputDistanceMatrix_);
       KMeans.setPerClusterDistanceMatrix(perClusterDistanceMatrix_);
       inv_clustering
         = KMeans.execute(*final_centroids, all_matchings_per_type_and_cluster);

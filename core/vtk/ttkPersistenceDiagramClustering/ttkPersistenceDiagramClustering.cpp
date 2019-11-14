@@ -117,6 +117,8 @@ int ttkPersistenceDiagramClustering::dispatch(
       persistenceDiagramsClustering.setUseKmeansppInit(UseKmeansppInit);
       persistenceDiagramsClustering.setDistanceWritingOptions(
         DistanceWritingOptions);
+      persistenceDiagramsClustering.setOutputDistanceMatrix(
+        OutputDistanceMatrix);
       persistenceDiagramsClustering.setPerClusterDistanceMatrix(
         PerClusterDistanceMatrix);
 
@@ -172,6 +174,11 @@ int ttkPersistenceDiagramClustering::dispatch(
     *intermediateDiagrams, inv_clustering_, max_dimension_total_, Spacing));
   outputCentroids->ShallowCopy(createOutputCentroids<VTK_TT>(
     final_centroids, inv_clustering_, max_dimension_total_, Spacing));
+
+  if(!OutputDistanceMatrix) {
+    // early return
+    return ret;
+  }
 
   // copy distance matrix to output
   for(size_t i = 0; i < distanceMatrix.size(); ++i) {

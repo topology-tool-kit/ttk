@@ -260,6 +260,13 @@ public:
   }
   vtkGetMacro(Method, double);
 
+  void SetOutputDistanceMatrix(const bool arg) {
+    OutputDistanceMatrix = arg;
+    needUpdate_ = true;
+    Modified();
+  }
+  vtkGetMacro(OutputDistanceMatrix, bool);
+
   void SetPerClusterDistanceMatrix(const bool arg) {
     PerClusterDistanceMatrix = arg;
     needUpdate_ = true;
@@ -346,6 +353,7 @@ private:
 
   bool UseProgressive{true};
   double TimeLimit{9999999};
+  bool OutputDistanceMatrix{false};
   bool PerClusterDistanceMatrix{false};
 
   // base code features

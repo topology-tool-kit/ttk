@@ -225,6 +225,9 @@ namespace ttk {
       deltaLim_ = deltaLim;
     }
 
+    inline void setOutputDistanceMatrix(const bool arg) {
+      outputDistanceMatrix_ = arg;
+    }
     inline void setPerClusterDistanceMatrix(const bool arg) {
       perClusterDistanceMatrix_ = arg;
     }
@@ -348,6 +351,7 @@ namespace ttk {
     std::vector<std::vector<dataType>> l_;
     std::vector<std::vector<dataType>> d_;
     std::vector<std::vector<double>> diagramsDistanceMatrix_{};
+    bool outputDistanceMatrix_{false};
     bool perClusterDistanceMatrix_{false};
     std::vector<double> distanceToCentroid_{};
 

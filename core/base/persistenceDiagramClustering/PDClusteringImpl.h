@@ -623,8 +623,10 @@ std::vector<int> PDClustering<dataType>::execute(
     }
   }
 
-  computeDistanceToCentroid();
-  computeDiagramsDistanceMatrix();
+  if(outputDistanceMatrix_) {
+    computeDistanceToCentroid();
+    computeDiagramsDistanceMatrix();
+  }
 
   if(distanceWritingOptions_ == 1) {
     printDistancesToFile();

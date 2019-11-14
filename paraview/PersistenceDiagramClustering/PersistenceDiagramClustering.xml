@@ -374,6 +374,20 @@ between matched critical points.
       </DoubleVectorProperty>
 
       <IntVectorProperty
+          name="OutputDistanceMatrix"
+          label="Output a Distance Matrix"
+          command="SetOutputDistanceMatrix"
+          number_of_elements="1"
+          default_values="0"
+          panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Output the distance matrix between all input persistence
+          diagrams.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
           name="PerClusterDistanceMatrix"
           label="Per Cluster Distance Matrix"
           command="SetPerClusterDistanceMatrix"
@@ -381,6 +395,13 @@ between matched critical points.
           default_values="0"
           panel_visibility="advanced">
         <BooleanDomain name="bool"/>
+        <Hints>
+          <PropertyWidgetDecorator
+              type="GenericDecorator"
+              mode="visibility"
+              property="OutputDistanceMatrix"
+              value="1" />
+        </Hints>
         <Documentation>
           Restrict the distance matrix computation to persistence
           diagrams sharing the same cluster. Persistence diagrams in
