@@ -3,6 +3,7 @@
 
 #include <vtkDoubleArray.h>
 #include <vtkFieldData.h>
+#include <vtkNew.h>
 #include <vtkStreamingDemandDrivenPipeline.h>
 #include <vtkStringArray.h>
 #include <vtkTIFFReader.h>
