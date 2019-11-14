@@ -50,7 +50,7 @@ vtkStandardNewMacro(ttkDimensionReduction)
       lle_NeighborsAlgorithm);
     dimensionReduction_.setMDSParameters(mds_Metric, mds_Init, mds_MaxIteration,
                                          mds_Verbose, mds_Epsilon,
-                                         mds_Dissimilarity);
+                                         InputIsADistanceMatrix);
     dimensionReduction_.setTSNEParameters(
       tsne_Perplexity, tsne_Exaggeration, tsne_LearningRate, tsne_MaxIteration,
       tsne_MaxIterationProgress, tsne_GradientThreshold, tsne_Metric, tsne_Init,

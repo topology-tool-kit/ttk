@@ -340,17 +340,6 @@
         </Documentation>
       </DoubleVectorProperty>
 
-      <IntVectorProperty name="mds_Dissimilarity"
-        label="Input Is a Distance Matrix"
-        command="Setmds_Dissimilarity"
-        number_of_elements="1"
-        default_values="0"
-        panel_visibility="advanced">
-        <BooleanDomain name="bool"/>
-        <Documentation>
-        </Documentation>
-      </IntVectorProperty>
-
       <DoubleVectorProperty name="tsne_Perplexity"
         label="Perplexity"
         command="Settsne_Perplexity"
@@ -738,7 +727,6 @@
         <Property name="mds_MaxIteration" />
         <Property name="mds_Verbose" />
         <Property name="mds_Epsilon" />
-        <Property name="mds_Dissimilarity" />
         <Hints>
           <PropertyWidgetDecorator type="GenericDecorator"
             mode="visibility"

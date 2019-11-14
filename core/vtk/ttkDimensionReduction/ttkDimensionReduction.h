@@ -160,9 +160,6 @@ public:
   vtkSetMacro(mds_Epsilon, float);
   vtkGetMacro(mds_Epsilon, float);
 
-  vtkSetMacro(mds_Dissimilarity, bool);
-  vtkGetMacro(mds_Dissimilarity, bool);
-
   // TSNE
   vtkSetMacro(tsne_Perplexity, float);
   vtkGetMacro(tsne_Perplexity, float);
@@ -283,7 +280,6 @@ protected:
     mds_MaxIteration = 300;
     mds_Verbose = 0;
     mds_Epsilon = 0;
-    mds_Dissimilarity = false;
 
     tsne_Perplexity = 30;
     tsne_Exaggeration = 12;
@@ -355,7 +351,6 @@ private:
   int mds_MaxIteration;
   int mds_Verbose;
   float mds_Epsilon;
-  bool mds_Dissimilarity;
 
   // tsne
   float tsne_Perplexity;
