@@ -97,8 +97,6 @@
         </Documentation>
       </IntVectorProperty>
 
-      
-
       <IntVectorProperty
         name="KeepAllDataArrays"
         label="Keep All Data Arrays"
@@ -108,6 +106,33 @@
         <BooleanDomain name="bool"/>
         <Documentation>
           Keep all data arrays.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty name="InputDistanceMatrix"
+        label="Input Is a Distance Matrix"
+        command="SetInputIsADistanceMatrix"
+        number_of_elements="1"
+        default_values="0">
+        <BooleanDomain name="bool"/>
+        <Hints>
+          <PropertyWidgetDecorator type="CompositeDecorator">
+            <Expression type="or">
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="Method"
+                                       value="0" />
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="Method"
+                                       value="2" />
+            </Expression>
+          </PropertyWidgetDecorator>
+        </Hints>
+        <Documentation>
+          The Spectral Embedding and MDS methods can be fed directly
+          with dissimilarity (distance) matrices instead of raw point
+          clouds.
         </Documentation>
       </IntVectorProperty>
 
@@ -670,6 +695,7 @@
         <Property name="NumberOfComponents" />
         <Property name="NumberOfNeighbors" />
         <Property name="KeepAllDataArrays" />
+        <Property name="InputDistanceMatrix" />
       </PropertyGroup>
 
       <PropertyGroup panel_widget="Line" label="Spectral Embedding">

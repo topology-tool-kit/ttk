@@ -105,6 +105,10 @@ public:
   vtkSetMacro(KeepAllDataArrays, int);
   vtkGetMacro(KeepAllDataArrays, int);
 
+  // SE && MDS
+  vtkSetMacro(InputIsADistanceMatrix, bool);
+  vtkGetMacro(InputIsADistanceMatrix, bool);
+
   // SE
   vtkSetMacro(se_Affinity, std::string);
   vtkGetMacro(se_Affinity, std::string);
@@ -326,6 +330,9 @@ private:
   int Method;
   int IsDeterministic;
   bool KeepAllDataArrays;
+
+  // mds && se
+  bool InputIsADistanceMatrix{false};
 
   // se
   std::string se_Affinity;
