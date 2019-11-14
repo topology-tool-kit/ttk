@@ -1,3 +1,4 @@
+#include <regex>
 #include <ttkDimensionReduction.h>
 
 using namespace std;
@@ -7,6 +8,18 @@ vtkStandardNewMacro(ttkDimensionReduction)
 
   int ttkDimensionReduction::doIt(vtkTable *input, vtkTable *output) {
   Memory m;
+
+  if(SelectFieldsWithRegexp) {
+    // select all input columns whose name is matching the regexp
+    ScalarFields.clear();
+    const auto n = input->GetNumberOfColumns();
+    for(int i = 0; i < n; ++i) {
+      const auto &name = input->GetColumnName(i);
+      if(std::regex_match(name, std::regex(RegexpString))) {
+        ScalarFields.emplace_back(name);
+      }
+    }
+  }
 
   if(dimensionReduction_.isPythonFound()) {
     const SimplexId numberOfRows = input->GetNumberOfRows();

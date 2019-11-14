@@ -32,6 +32,18 @@
         </Documentation>
       </InputProperty>
 
+      <IntVectorProperty
+        name="SelectFieldsWithRegexp"
+        label="Select Fields with a Regexp"
+        command="SetSelectFieldsWithRegexp"
+        number_of_elements="1"
+        default_values="0">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Select input scalar fields matching a regular expression.
+        </Documentation>
+      </IntVectorProperty>
+
       <StringVectorProperty command="SetScalarFields"
         clean_command="ClearScalarFields"
         label="Input Columns"
@@ -49,12 +61,34 @@
         </ArrayListDomain>
         <Hints>
           <NoDefault />
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="SelectFieldsWithRegexp"
+                                   value="0" />
         </Hints>
         <Documentation>
           Select the scalar fields to process.
         </Documentation>
       </StringVectorProperty>
-      
+
+      <StringVectorProperty
+         name="Regexp"
+         command="SetRegexpString"
+         number_of_elements="1"
+         default_values=".*"
+         panel_visibility="advanced">
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="SelectFieldsWithRegexp"
+                                   value="1" />
+        </Hints>
+         <Documentation>
+            This regexp will be used to filter the chosen fields. Only
+            matching ones will be selected.
+         </Documentation>
+      </StringVectorProperty>
+
       <IntVectorProperty name="Method"
                          label="Method"
                          command="SetMethod"
@@ -681,7 +715,9 @@
       </IntVectorProperty>
 
       <PropertyGroup panel_widget="Line" label="Input options">
+        <Property name="SelectFieldsWithRegexp" />
         <Property name="ScalarFields" />
+        <Property name="Regexp" />
       </PropertyGroup>
 
       <PropertyGroup panel_widget="Line" label="Output options">

@@ -90,6 +90,12 @@ public:
   }
 
   // default
+  vtkSetMacro(SelectFieldsWithRegexp, bool);
+  vtkGetMacro(SelectFieldsWithRegexp, bool);
+
+  vtkSetMacro(RegexpString, std::string);
+  vtkGetMacro(RegexpString, std::string);
+
   vtkSetMacro(NumberOfComponents, int);
   vtkGetMacro(NumberOfComponents, int);
 
@@ -321,6 +327,8 @@ private:
   int updateProgress(const float &progress) override;
 
   // default
+  bool SelectFieldsWithRegexp{false};
+  std::string RegexpString{".*"};
   int NumberOfComponents;
   int NumberOfNeighbors;
   int Method;
