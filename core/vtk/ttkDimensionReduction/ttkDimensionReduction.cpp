@@ -42,7 +42,8 @@ vtkStandardNewMacro(ttkDimensionReduction)
     dimensionReduction_.setInputNumberOfComponents(NumberOfComponents);
     dimensionReduction_.setInputNumberOfNeighbors(NumberOfNeighbors);
     dimensionReduction_.setInputIsDeterministic(IsDeterministic);
-    dimensionReduction_.setSEParameters(se_Affinity, se_Gamma, se_EigenSolver);
+    dimensionReduction_.setSEParameters(
+      se_Affinity, se_Gamma, se_EigenSolver, InputIsADistanceMatrix);
     dimensionReduction_.setLLEParameters(
       lle_Regularization, lle_EigenSolver, lle_Tolerance, lle_MaxIteration,
       lle_Method, lle_HessianTolerance, lle_ModifiedTolerance,

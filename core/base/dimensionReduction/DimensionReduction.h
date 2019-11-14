@@ -29,8 +29,13 @@ namespace ttk {
 
     inline int setSEParameters(std::string &Affinity,
                                float Gamma,
-                               std::string &EigenSolver) {
-      se_Affinity = Affinity;
+                               std::string &EigenSolver,
+                               bool InputIsADistanceMatrix) {
+      if(InputIsADistanceMatrix) {
+        se_Affinity = "precomputed";
+      } else {
+        se_Affinity = Affinity;
+      }
       se_Gamma = Gamma;
       se_EigenSolver = EigenSolver;
       return 0;

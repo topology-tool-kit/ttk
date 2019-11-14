@@ -145,8 +145,13 @@
         <StringListDomain name="enum">
           <String value="nearest_neighbors"/>
           <String value="rbf"/>
-          <String value="precomputed"/>
         </StringListDomain>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="InputDistanceMatrix"
+                                   value="0" />
+        </Hints>
         <Documentation>
         </Documentation>
       </StringVectorProperty>
