@@ -57,6 +57,19 @@ macro(ttk_add_vtk_module)
       lib/ttk
     )
 
+  if(NOT "${TTK_INSTALL_PLUGIN_DIR}" STREQUAL "")
+    install(
+      TARGETS
+        ${TTK_NAME}
+      DESTINATION
+        "${TTK_INSTALL_PLUGIN_DIR}/TopologyToolKit"
+      )
+    set_target_properties(${TTK_NAME}
+      PROPERTIES INSTALL_RPATH
+        "${TTK_INSTALL_PLUGIN_DIR}/TopologyToolKit"
+      )
+  endif()
+
   # Fix a race condition in the VTK's CMake:
   # https://discourse.vtk.org/t/building-vtk-modules-with-dependencies-results-in-race-condition-in-make/1711
   if(TARGET ${TTK_NAME}-hierarchy)
@@ -64,19 +77,20 @@ macro(ttk_add_vtk_module)
   endif()
 endmacro()
 
-# deal with whitelist mechanism
+# whitelist mechanism
 # return the target name if target is enabled
 # empty otherwise
 function(ttk_get_target ttk_module ttk_target)
-  string(TOUPPER ${ttk_module} TTK_UPPER_NAME)
-  if(NOT DEFINED TTK_BUILD_${TTK_UPPER_NAME})
-    option(TTK_BUILD_${TTK_UPPER_NAME} "Build the ${TTK_UPPER_NAME} filter" ${TTK_ENABLE_FILTER_DEFAULT})
-    mark_as_advanced(TTK_BUILD_${TTK_UPPER_NAME})
+  if(NOT DEFINED VTK_MODULE_ENABLE_${ttk_module})
+    set(VTK_MODULE_ENABLE_${ttk_module} ${TTK_ENABLE_FILTER_DEFAULT} CACHE BOOL "Enable the ${ttk_module} module.")
+    mark_as_advanced(VTK_MODULE_ENABLE_${ttk_module})
   endif()
-  if(${TTK_BUILD_${TTK_UPPER_NAME}})
+
+  list(APPEND ACCEPTED_VALUES "YES" "WANT" "DEFAULT")
+  if("${VTK_MODULE_ENABLE_${ttk_module}}" IN_LIST ACCEPTED_VALUES)
     set(${ttk_target} ${ttk_module} PARENT_SCOPE)
   else()
-    message(STATUS "Disabled: ${ttk_module}")
+    message(STATUS "Disable ttk module: ${ttk_module}")
     set(${ttk_target} "" PARENT_SCOPE)
   endif()
 endfunction()

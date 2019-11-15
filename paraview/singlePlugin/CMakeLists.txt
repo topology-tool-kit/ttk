@@ -15,3 +15,12 @@ paraview_add_plugin(TopologyToolKit
   SERVER_MANAGER_XML
     ${TTK_XMLS}
   )
+
+if(NOT "${TTK_INSTALL_PLUGIN_DIR}" STREQUAL "")
+  install(
+    TARGETS
+      TopologyToolKit
+    DESTINATION
+      "${TTK_INSTALL_PLUGIN_DIR}"
+    )
+endif()

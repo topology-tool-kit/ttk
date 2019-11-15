@@ -16,24 +16,6 @@ foreach(PARAVIEW_PLUGIN ${PARAVIEW_PLUGIN_DIRS})
   endif()
 endforeach()
 
-# Install location
-if(NOT "$ENV{PV_PLUGIN_PATH}" STREQUAL "")
-  set(TTK_INSTALL_PLUGIN_DIR
-    $ENV{PV_PLUGIN_PATH}
-    CACHE
-    PATH
-      "Directory where the ParaView plugin will be installed"
-    )
-else()
-  message(WARNING "Please, set the PV_PLUGIN_PATH environement variable, the TTK ParaView plugin will be built but not installed.")
-  set(TTK_INSTALL_PLUGIN_DIR
-    ""
-    CACHE
-    PATH
-    "Directory where the ParaView plugin will be installed"
-    )
-endif()
-
 set("PARAVIEW_PLUGIN_ENABLE_TopologyToolKit"
   ON
   CACHE
@@ -47,7 +29,15 @@ paraview_plugin_scan(
     "singlePlugin/paraview.plugin"
   PROVIDES_PLUGINS
     TTK_PLUGINS
+  REQUIRES_MODULES
+    TTK_REQUIRED
   )
+
+foreach(REQ IN LISTS TTK_REQUIRED)
+  if(NOT TARGET "${REQ}")
+    message(FATAL_ERROR "Missing required module: ${REQ}")
+  endif()
+endforeach()
 
 paraview_plugin_build(
   TARGET
@@ -65,25 +55,12 @@ paraview_plugin_build(
   )
 
 if(NOT "${TTK_INSTALL_PLUGIN_DIR}" STREQUAL "")
-  # Keep TTK libraries in the TopologyToolKit folder
-  # foreach(TTK_MODULE ${TTK_MODULES})
-  #   install(
-  #     TARGETS
-  #       ${TTK_MODULE}
-  #     DESTINATION
-  #       "${TTK_INSTALL_PLUGIN_DIR}/TopologyToolKit"
-  #     )
-  # endforeach()
-  # set_target_properties(${TTK_PLUGINS}
-  #   PROPERTIES INSTALL_RPATH
-  #     "${TTK_INSTALL_PLUGIN_DIR}/TopologyToolKit"
-  #   )
-
-  # Install the TopologyToolKit library
   install(
     TARGETS
       TTKPVTargets
+      ${TTK_PLUGINS}
     DESTINATION
       "${TTK_INSTALL_PLUGIN_DIR}"
     )
 endif()
+

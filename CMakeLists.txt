@@ -13,9 +13,9 @@ option(TTK_WHITELIST_MODE "Explicitely enable each filter" OFF)
 mark_as_advanced(TTK_WHITELIST_MODE BUILD_SHARED_LIBS)
 
 if(${TTK_WHITELIST_MODE})
-  set(TTK_ENABLE_FILTER_DEFAULT OFF CACHE INTERNAL "Default value for each filter build")
+  set(TTK_ENABLE_FILTER_DEFAULT "DONT_WANT" CACHE INTERNAL "Default value for each filter build")
 else()
-  set(TTK_ENABLE_FILTER_DEFAULT ON CACHE INTERNAL "Default value for each filter build")
+  set(TTK_ENABLE_FILTER_DEFAULT "WANT" CACHE INTERNAL "Default value for each filter build")
 endif()
 
 # This option allows library to be built dynamic
@@ -83,6 +83,25 @@ install(
 
 if(TTK_BUILD_PARAVIEW_PLUGINS)
   include(CMake/ParaViewFilter.cmake)
+
+  # Install location
+  if(NOT "$ENV{PV_PLUGIN_PATH}" STREQUAL "")
+    set(TTK_INSTALL_PLUGIN_DIR
+      $ENV{PV_PLUGIN_PATH}
+      CACHE
+      PATH
+        "Directory where the ParaView plugin will be installed"
+      )
+  else()
+    message(WARNING "Please, set the PV_PLUGIN_PATH environement variable, the TTK ParaView plugin will be built but not installed.")
+    set(TTK_INSTALL_PLUGIN_DIR
+      ""
+      CACHE
+      PATH
+      "Directory where the ParaView plugin will be installed"
+      )
+  endif()
+
   add_subdirectory(paraview)
 endif()
 
@@ -91,42 +110,42 @@ endif()
 
 if(TTK_BUILD_VTK_WRAPPERS)
   add_subdirectory(core/vtk)
+
+  target_link_libraries(ttkAll INTERFACE ${TTK_ENABLED_MODULES})
+
+  # Use folder as configured by the distribution
+  include(GNUInstallDirs)
+  install(
+    TARGETS
+      baseAll
+      ttkAll
+    EXPORT
+      TTKVTKTargets
+    RUNTIME DESTINATION
+      ${CMAKE_INSTALL_BINDIR}/ttk
+    ARCHIVE DESTINATION
+      ${CMAKE_INSTALL_LIBDIR}/ttk
+    LIBRARY DESTINATION
+      ${CMAKE_INSTALL_LIBDIR}/ttk
+    )
+
+  install(
+    EXPORT
+      TTKVTKTargets
+    NAMESPACE
+      ttk::vtk::
+    DESTINATION
+      lib/cmake/ttk
+    )
+
+  configure_file(core/vtk/TTKVTKConfig.cmake.in TTKVTKConfig.cmake @ONLY)
+  install(
+    FILES
+      "${CMAKE_CURRENT_BINARY_DIR}/TTKVTKConfig.cmake"
+    DESTINATION
+      lib/cmake/ttk
+    )
 endif()
-
-target_link_libraries(ttkAll INTERFACE ${TTK_ENABLED_MODULES})
-
-# Use folder as configured by the distribution
-include(GNUInstallDirs)
-install(
-  TARGETS
-    baseAll
-    ttkAll
-  EXPORT
-    TTKVTKTargets
-  RUNTIME DESTINATION
-    ${CMAKE_INSTALL_BINDIR}/ttk
-  ARCHIVE DESTINATION
-    ${CMAKE_INSTALL_LIBDIR}/ttk
-  LIBRARY DESTINATION
-    ${CMAKE_INSTALL_LIBDIR}/ttk
-  )
-
-install(
-  EXPORT
-    TTKVTKTargets
-  NAMESPACE
-    ttk::vtk::
-  DESTINATION
-    lib/cmake/ttk
-  )
-
-configure_file(core/vtk/TTKVTKConfig.cmake.in TTKVTKConfig.cmake @ONLY)
-install(
-  FILES
-    "${CMAKE_CURRENT_BINARY_DIR}/TTKVTKConfig.cmake"
-  DESTINATION
-    lib/cmake/ttk
-  )
 
 # Standalones
 # -----------

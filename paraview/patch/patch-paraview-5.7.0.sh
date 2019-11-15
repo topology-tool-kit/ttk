@@ -75,8 +75,7 @@ $PATCH_BIN CMakeLists.txt \
   < "${PATCH_DIR}/paraview-5.6.0-CMakeLists.txt.patch"
 $PATCH_BIN Qt/ApplicationComponents/Resources/pqApplicationComponents.qrc \
   < "${PATCH_DIR}/paraview-5.5.0-pqApplicationComponents.qrc.patch"
-$PATCH_BIN \
-  Qt/ApplicationComponents/Resources/UI/pqExampleVisualizationsDialog.ui \
+$PATCH_BIN Qt/ApplicationComponents/Resources/UI/pqExampleVisualizationsDialog.ui \
   < "${PATCH_DIR}/paraview-5.5.0-pqExampleVisualizationsDialog.ui.patch"
 $PATCH_BIN Qt/ApplicationComponents/pqExampleVisualizationsDialog.cxx \
   < "${PATCH_DIR}/paraview-5.5.0-pqExampleVisualizationsDialog.cxx.patch"
@@ -85,4 +84,4 @@ $PATCH_BIN ParaViewCore/ClientServerCore/Default/vtkPVFileInformation.cxx \
 
 echo "Finished patching."
 
-cd "$PATCH_DIR" || exit 2
+cd "$PATCH_DIR" || exit 4
