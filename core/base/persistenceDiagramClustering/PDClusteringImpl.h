@@ -1336,17 +1336,17 @@ void PDClustering<dataType>::computeDiagramsDistanceMatrix() {
         }
       }
 
-      if(do_min_) {
+      if(original_dos[0]) {
         auto &dimin = current_bidder_diagrams_min_[i];
         auto &djmin = current_bidder_diagrams_min_[j];
         distance += computeDistance(dimin, djmin, delta_lim);
       }
-      if(do_sad_) {
+      if(original_dos[1]) {
         auto &disad = current_bidder_diagrams_saddle_[i];
         auto &djsad = current_bidder_diagrams_saddle_[j];
         distance += computeDistance(disad, djsad, delta_lim);
       }
-      if(do_max_) {
+      if(original_dos[2]) {
         auto &dimax = current_bidder_diagrams_max_[i];
         auto &djmax = current_bidder_diagrams_max_[j];
         distance += computeDistance(dimax, djmax, delta_lim);
