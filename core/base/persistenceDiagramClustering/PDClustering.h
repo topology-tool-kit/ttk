@@ -19,6 +19,7 @@
 //
 #include <KDTree.h>
 //
+#include <array>
 #include <limits>
 //
 
@@ -145,8 +146,6 @@ namespace ttk {
       do_min_ = doMin;
       do_sad_ = doSad;
       do_max_ = doMax;
-
-      original_dos.resize(3);
 
       original_dos[0] = do_min_;
       original_dos[1] = do_sad_;
@@ -320,7 +319,7 @@ namespace ttk {
     std::vector<std::vector<diagramTuple>> *inputDiagramsSaddle_;
     std::vector<std::vector<diagramTuple>> *inputDiagramsMax_;
 
-    std::vector<bool> original_dos;
+    std::array<bool, 3> original_dos;
 
     bool do_min_;
     std::vector<BidderDiagram<dataType>> bidder_diagrams_min_;
