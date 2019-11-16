@@ -77,8 +77,8 @@ namespace ttk {
             dataType epsilon = {},
             dataType initial_diag_price = {},
             bool use_kdTree = true)
-      : bidders_{bidders}, goods_{goods}, kdt_{kdt}, correspondance_kdt_map_{
-                                                       correspondance_kdt_map} {
+      : kdt_{kdt}, correspondance_kdt_map_{correspondance_kdt_map},
+        bidders_{bidders}, goods_{goods} {
 
       n_bidders_ = bidders.size();
       n_goods_ = goods.size();
@@ -342,7 +342,6 @@ namespace ttk {
     int n_goods_{0};
 
     dataType epsilon_{1};
-    double delta_lim_{};
     double geometricalFactor_{};
     double lambda_{};
     // lambda : 0<=lambda<=1
@@ -350,6 +349,7 @@ namespace ttk {
     // the persistence paired lambda = 1 : extremum (min if pair min-sad, max if
     // pair sad-max) lambda = 0 : saddle (bad stability) lambda = 1/2 : middle
     // of the 2 critical points of the pair
+    double delta_lim_{};
     bool use_kdt_{true};
 
     // KDTree<dataType>* kdt_;
