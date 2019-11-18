@@ -22,6 +22,21 @@ endif()
 # like the TopologyToolKit.so file for paraview
 option(BUILD_SHARED_LIBS "Build TTK as shared lib" ON)
 
+set(CPACK_PACKAGE_NAME "TTK")
+set(CPACK_PACKAGE_FILE_NAME "ttk")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "The Topology ToolKit")
+set(CPACK_PACKAGE_VERSION_MAJOR ${TTK_VERSION_MAJOR})
+set(CPACK_PACKAGE_VERSION_MINOR ${TTK_VERSION_MINOR})
+set(CPACK_PACKAGE_VERSION_PATCH ${TTK_VERSION_PATCH})
+set(CPACK_GENERATOR "DEB")
+set(CPACK_PACKAGE_CONTACT "Julien Tierny <julien.tierny@sorbonne-universite.fr>")
+set(CPACK_PACKAGE_VENDOR "LIP6 - Sorbonne Université")
+set(CPACK_PACKAGE_HOMEPAGE_URL "https://topology-tool-kit.github.io/")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS "ttk-paraview (= 5.8.0), python3-sklearn")
+# autogenerate dependency information
+set (CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
+include(CPack)
+
 if(TTK_BUILD_STANDALONE_APPS AND NOT TTK_BUILD_VTK_WRAPPERS)
   message(WARNING "Can't build standalones without the VTK wrappers: disable")
   set(TTK_BUILD_STANDALONE_APPS OFF CACHE BOOL "Build the cmd and gui commands" FORCE)
