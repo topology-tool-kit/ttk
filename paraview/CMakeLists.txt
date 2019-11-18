@@ -58,7 +58,6 @@ if(NOT "${TTK_INSTALL_PLUGIN_DIR}" STREQUAL "")
   install(
     TARGETS
       TTKPVTargets
-      ${TTK_PLUGINS}
     DESTINATION
       "${TTK_INSTALL_PLUGIN_DIR}"
     )
