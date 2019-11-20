@@ -65,7 +65,7 @@ if(NOT Boost_FOUND)
 endif()
 
 find_package(ZLIB)
-if(NOT ZLIB_INCLUDE_DIR)
+if(NOT ZLIB_FOUND)
   option(TTK_ENABLE_ZLIB "Enable Zlib support" OFF)
   message(STATUS "Zlib not found, disabling Zlib support in TTK.")
 else()
