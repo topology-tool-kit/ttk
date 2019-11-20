@@ -6,7 +6,10 @@
 
 #include <vtkPolyData.h>
 
-class ttkPolyData : public ttkTriangulation, public vtkPolyData {
+#include <ttkTriangulationAlgorithmModule.h>
+
+class TTKTRIANGULATIONALGORITHM_EXPORT ttkPolyData : public ttkTriangulation,
+                                                     public vtkPolyData {
 
 public:
   static ttkPolyData *New();
@@ -23,6 +26,5 @@ protected:
 
   ~ttkPolyData() override;
 };
-
 
 #endif /* end of include guard: _TTK_POLYDATA_H */

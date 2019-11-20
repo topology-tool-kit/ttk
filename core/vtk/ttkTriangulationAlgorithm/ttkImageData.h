@@ -6,7 +6,10 @@
 
 #include <vtkImageData.h>
 
-class ttkImageData : public ttkTriangulation, public vtkImageData {
+#include <ttkTriangulationAlgorithmModule.h>
+
+class TTKTRIANGULATIONALGORITHM_EXPORT ttkImageData : public ttkTriangulation,
+                                                      public vtkImageData {
 
 public:
   static ttkImageData *New();
