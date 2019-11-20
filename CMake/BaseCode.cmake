@@ -88,7 +88,13 @@ function(ttk_add_base_template_library library)
   endif()
 
   if(TTK_ENABLE_EIGEN)
-    target_link_libraries(${library} INTERFACE Eigen3::Eigen)
+    # eigen change their cmake 3.2 -> 3.3
+    if (TARGET Eigen3::Eigen)
+      target_link_libraries(${library} INTERFACE Eigen3::Eigen)
+    else()
+      target_compile_definitions(${library} INTERFACE ${EIGEN3_DEFINITIONS})
+      target_include_directories(${library} INTERFACE ${EIGEN3_INCLUDE_DIRS})
+    endif()
   endif()
 
   if(TTK_ENABLE_ZFP)
@@ -200,7 +206,13 @@ function(ttk_set_compile_options library)
 
   if(TTK_ENABLE_EIGEN)
     target_compile_definitions(${library} PUBLIC TTK_ENABLE_EIGEN)
-    target_link_libraries(${library} PUBLIC Eigen3::Eigen)
+    # eigen change their cmake 3.2 -> 3.3
+    if (TARGET Eigen3::Eigen)
+      target_link_libraries(${library} PUBLIC Eigen3::Eigen)
+    else()
+      target_compile_definitions(${library} PUBLIC ${EIGEN3_DEFINITIONS})
+      target_include_directories(${library} PUBLIC ${EIGEN3_INCLUDE_DIRS})
+    endif()
   endif()
 
   if (TTK_ENABLE_ZLIB)
