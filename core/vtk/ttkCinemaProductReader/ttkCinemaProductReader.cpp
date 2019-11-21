@@ -1,9 +1,12 @@
 #include <ttkCinemaProductReader.h>
+#include <ttkTopologicalCompressionReader.h>
 
 #include <vtkDoubleArray.h>
 #include <vtkFieldData.h>
+#include <vtkNew.h>
 #include <vtkStreamingDemandDrivenPipeline.h>
 #include <vtkStringArray.h>
+#include <vtkTIFFReader.h>
 #include <vtkTable.h>
 #include <vtkVariantArray.h>
 #include <vtkXMLGenericDataObjectReader.h>
@@ -90,8 +93,25 @@ vtkStandardNewMacro(ttkCinemaProductReader)
         continue;
       }
 
+      if(ext == "ttk") {
+        vtkNew<ttkTopologicalCompressionReader> reader;
+        reader->SetFileName(path.data());
+        reader->Update();
+
+        output->SetBlock(i, reader->GetOutput());
+      }
+
+      else if(ext == "tif" || ext == "tiff") {
+        vtkNew<vtkTIFFReader> reader;
+        if(reader->CanReadFile(path.data())) {
+          reader->SetFileName(path.data());
+          reader->Update();
+          output->SetBlock(i, reader->GetOutput());
+        }
+      }
+
       // Read any data using vtkXMLGenericDataObjectReader
-      {
+      else {
         auto reader = vtkSmartPointer<vtkXMLGenericDataObjectReader>::New();
         reader->SetFileName(path.data());
         reader->Update();

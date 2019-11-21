@@ -6,3 +6,4 @@ HEADERS
   ttkCinemaWriter.h
 DEPENDS
   ttkTriangulationAlgorithm
+  ttkTopologicalCompressionWriter

@@ -14,13 +14,14 @@
 
 // VTK includes
 #include <vtkInformation.h>
+#include <vtkNew.h>
 #include <vtkXMLPMultiBlockDataWriter.h>
 
 // VTK Module
 #include <ttkCinemaWriterModule.h>
 
 // TTK includes
-#include <ttkTriangulationAlgorithm.h>
+#include <ttkTopologicalCompressionWriter.h>
 
 class TTKCINEMAWRITER_EXPORT ttkCinemaWriter
   : public vtkXMLPMultiBlockDataWriter,
@@ -38,6 +39,31 @@ public:
 
   vtkSetMacro(CompressLevel, int);
   vtkGetMacro(CompressLevel, int);
+
+  vtkSetMacro(UseTopologicalCompression, bool);
+  vtkGetMacro(UseTopologicalCompression, bool);
+
+#define TopoCompWriterGetSetMacro(NAME, TYPE) \
+  void Set##NAME(const TYPE _arg) {           \
+    this->ttkCompWriter_->Set##NAME(_arg);    \
+    this->Modified();                         \
+  }                                           \
+  TYPE Get##NAME() {                          \
+    return this->ttkCompWriter_->Get##NAME(); \
+  }
+
+  TopoCompWriterGetSetMacro(ScalarField, std::string);
+  TopoCompWriterGetSetMacro(Tolerance, double);
+  TopoCompWriterGetSetMacro(MaximumError, double);
+  TopoCompWriterGetSetMacro(ZFPBitBudget, double);
+  TopoCompWriterGetSetMacro(ZFPOnly, bool);
+  TopoCompWriterGetSetMacro(CompressionType, int);
+  TopoCompWriterGetSetMacro(Subdivide, bool);
+  TopoCompWriterGetSetMacro(UseTopologicalSimplification, bool);
+
+  void SetSQMethodPV(const int arg) {
+    this->ttkCompWriter_->SetSQMethodPV(arg);
+  }
 
   // default ttk setters
   vtkSetMacro(debugLevel_, int);
@@ -83,6 +109,7 @@ protected:
     SetDatabasePath("");
     SetOverrideDatabase(true);
     SetCompressLevel(9);
+    SetUseTopologicalCompression(false);
 
     UseAllCores = false;
 
@@ -102,6 +129,8 @@ private:
   std::string DatabasePath;
   bool OverrideDatabase;
   int CompressLevel;
+  bool UseTopologicalCompression;
+  vtkNew<ttkTopologicalCompressionWriter> ttkCompWriter_;
 
   bool needsToAbort() override {
     return GetAbortExecute();

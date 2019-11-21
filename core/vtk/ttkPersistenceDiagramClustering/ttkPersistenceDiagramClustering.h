@@ -351,6 +351,13 @@ private:
   bool needsToAbort();
 
   int updateProgress(const float &progress);
+
+  template <typename T>
+  int dispatch(int numInputs,
+               std::vector<vtkUnstructuredGrid *> &inputDiagram,
+               vtkUnstructuredGrid *outputClusters,
+               vtkUnstructuredGrid *outputCentroids,
+               vtkUnstructuredGrid *outputMatchings);
 };
 
 template <typename dataType>
