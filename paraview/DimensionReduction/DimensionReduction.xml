@@ -32,6 +32,18 @@
         </Documentation>
       </InputProperty>
 
+      <IntVectorProperty
+        name="SelectFieldsWithRegexp"
+        label="Select Fields with a Regexp"
+        command="SetSelectFieldsWithRegexp"
+        number_of_elements="1"
+        default_values="0">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Select input scalar fields matching a regular expression.
+        </Documentation>
+      </IntVectorProperty>
+
       <StringVectorProperty command="SetScalarFields"
         clean_command="ClearScalarFields"
         label="Input Columns"
@@ -49,12 +61,34 @@
         </ArrayListDomain>
         <Hints>
           <NoDefault />
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="SelectFieldsWithRegexp"
+                                   value="0" />
         </Hints>
         <Documentation>
           Select the scalar fields to process.
         </Documentation>
       </StringVectorProperty>
-      
+
+      <StringVectorProperty
+         name="Regexp"
+         command="SetRegexpString"
+         number_of_elements="1"
+         default_values=".*"
+         panel_visibility="advanced">
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="SelectFieldsWithRegexp"
+                                   value="1" />
+        </Hints>
+         <Documentation>
+            This regexp will be used to filter the chosen fields. Only
+            matching ones will be selected.
+         </Documentation>
+      </StringVectorProperty>
+
       <IntVectorProperty name="Method"
                          label="Method"
                          command="SetMethod"
@@ -97,8 +131,6 @@
         </Documentation>
       </IntVectorProperty>
 
-      
-
       <IntVectorProperty
         name="KeepAllDataArrays"
         label="Keep All Data Arrays"
@@ -111,6 +143,33 @@
         </Documentation>
       </IntVectorProperty>
 
+      <IntVectorProperty name="InputDistanceMatrix"
+        label="Input Is a Distance Matrix"
+        command="SetInputIsADistanceMatrix"
+        number_of_elements="1"
+        default_values="0">
+        <BooleanDomain name="bool"/>
+        <Hints>
+          <PropertyWidgetDecorator type="CompositeDecorator">
+            <Expression type="or">
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="Method"
+                                       value="0" />
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="Method"
+                                       value="2" />
+            </Expression>
+          </PropertyWidgetDecorator>
+        </Hints>
+        <Documentation>
+          The Spectral Embedding and MDS methods can be fed directly
+          with dissimilarity (distance) matrices instead of raw point
+          clouds.
+        </Documentation>
+      </IntVectorProperty>
+
       <StringVectorProperty name="se_Affinity"
         label="Affinity"
         command="Setse_Affinity"
@@ -120,8 +179,13 @@
         <StringListDomain name="enum">
           <String value="nearest_neighbors"/>
           <String value="rbf"/>
-          <String value="precomputed"/>
         </StringListDomain>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="InputDistanceMatrix"
+                                   value="0" />
+        </Hints>
         <Documentation>
         </Documentation>
       </StringVectorProperty>
@@ -309,20 +373,6 @@
         <Documentation>
         </Documentation>
       </DoubleVectorProperty>
-
-      <StringVectorProperty name="mds_Dissimilarity"
-        label="Dissimilarity"
-        command="Setmds_Dissimilarity"
-        number_of_elements="1"
-        default_values="euclidean"
-        panel_visibility="advanced">
-        <StringListDomain name="enum">
-          <String value="euclidean"/>
-          <String value="precomputed"/>
-        </StringListDomain>
-        <Documentation>
-        </Documentation>
-      </StringVectorProperty>
 
       <DoubleVectorProperty name="tsne_Perplexity"
         label="Perplexity"
@@ -665,7 +715,9 @@
       </IntVectorProperty>
 
       <PropertyGroup panel_widget="Line" label="Input options">
+        <Property name="SelectFieldsWithRegexp" />
         <Property name="ScalarFields" />
+        <Property name="Regexp" />
       </PropertyGroup>
 
       <PropertyGroup panel_widget="Line" label="Output options">
@@ -673,6 +725,7 @@
         <Property name="NumberOfComponents" />
         <Property name="NumberOfNeighbors" />
         <Property name="KeepAllDataArrays" />
+        <Property name="InputDistanceMatrix" />
       </PropertyGroup>
 
       <PropertyGroup panel_widget="Line" label="Spectral Embedding">
@@ -710,7 +763,6 @@
         <Property name="mds_MaxIteration" />
         <Property name="mds_Verbose" />
         <Property name="mds_Epsilon" />
-        <Property name="mds_Dissimilarity" />
         <Hints>
           <PropertyWidgetDecorator type="GenericDecorator"
             mode="visibility"

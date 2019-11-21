@@ -1,3 +1,4 @@
+#include <regex>
 #include <ttkDimensionReduction.h>
 
 using namespace std;
@@ -7,6 +8,18 @@ vtkStandardNewMacro(ttkDimensionReduction)
 
   int ttkDimensionReduction::doIt(vtkTable *input, vtkTable *output) {
   Memory m;
+
+  if(SelectFieldsWithRegexp) {
+    // select all input columns whose name is matching the regexp
+    ScalarFields.clear();
+    const auto n = input->GetNumberOfColumns();
+    for(int i = 0; i < n; ++i) {
+      const auto &name = input->GetColumnName(i);
+      if(std::regex_match(name, std::regex(RegexpString))) {
+        ScalarFields.emplace_back(name);
+      }
+    }
+  }
 
   if(dimensionReduction_.isPythonFound()) {
     const SimplexId numberOfRows = input->GetNumberOfRows();
@@ -42,14 +55,15 @@ vtkStandardNewMacro(ttkDimensionReduction)
     dimensionReduction_.setInputNumberOfComponents(NumberOfComponents);
     dimensionReduction_.setInputNumberOfNeighbors(NumberOfNeighbors);
     dimensionReduction_.setInputIsDeterministic(IsDeterministic);
-    dimensionReduction_.setSEParameters(se_Affinity, se_Gamma, se_EigenSolver);
+    dimensionReduction_.setSEParameters(
+      se_Affinity, se_Gamma, se_EigenSolver, InputIsADistanceMatrix);
     dimensionReduction_.setLLEParameters(
       lle_Regularization, lle_EigenSolver, lle_Tolerance, lle_MaxIteration,
       lle_Method, lle_HessianTolerance, lle_ModifiedTolerance,
       lle_NeighborsAlgorithm);
     dimensionReduction_.setMDSParameters(mds_Metric, mds_Init, mds_MaxIteration,
                                          mds_Verbose, mds_Epsilon,
-                                         mds_Dissimilarity);
+                                         InputIsADistanceMatrix);
     dimensionReduction_.setTSNEParameters(
       tsne_Perplexity, tsne_Exaggeration, tsne_LearningRate, tsne_MaxIteration,
       tsne_MaxIterationProgress, tsne_GradientThreshold, tsne_Metric, tsne_Init,
