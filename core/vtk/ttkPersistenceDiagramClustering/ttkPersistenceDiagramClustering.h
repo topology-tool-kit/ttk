@@ -738,6 +738,10 @@ vtkSmartPointer<vtkUnstructuredGrid>
   coordsScalars->SetNumberOfComponents(3);
   coordsScalars->SetName("Coordinates");
 
+  auto vertexSField = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
+  vertexSField->SetName(ttk::VertexScalarFieldName);
+  vertexSField->SetNumberOfComponents(1);
+
   std::vector<int> cluster_size;
   std::vector<int> idxInCluster(all_CTDiagrams.size());
   for(unsigned int j = 0; j < all_CTDiagrams.size(); ++j) {
@@ -880,6 +884,9 @@ vtkSmartPointer<vtkUnstructuredGrid>
         default:
           pairType->InsertTuple1(count, 0);
       }
+      vertexSField->InsertTuple1(2 * count, std::get<0>(t));
+      vertexSField->InsertTuple1(2 * count + 1, std::get<2>(t));
+
       count++;
     }
   }
@@ -893,6 +900,7 @@ vtkSmartPointer<vtkUnstructuredGrid>
   persistenceDiagram->GetPointData()->AddArray(idOfDiagramPoint);
   persistenceDiagram->GetPointData()->AddArray(idOfCluster);
   persistenceDiagram->GetPointData()->AddArray(persistenceScalarsPoint);
+  persistenceDiagram->GetPointData()->AddArray(vertexSField);
 
   return persistenceDiagram;
 }
