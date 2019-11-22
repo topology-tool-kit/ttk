@@ -9,12 +9,6 @@ if(NOT TARGET ttkUserInterfaceBase)
   set(gui_dirs "")
 endif()
 
-# TODO investigate (mac)
-# set(CMAKE_SKIP_BUILD_RPATH TRUE)
-# set(CMAKE_BUILD_WITH_INSTALL_RPATH TRUE)
-
-set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-
 file(GLOB STANDALONE_DIRS ${cmd_dirs} ${gui_dirs})
 foreach(STANDALONE ${STANDALONE_DIRS})
   if(IS_DIRECTORY ${STANDALONE})
