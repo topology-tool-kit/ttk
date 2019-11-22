@@ -62,13 +62,6 @@ if(VTK_WRAP_PYTHON)
     TARGET
       TTK::Python
     )
-  foreach(TTK_MODULE ${TTK_WRAPPED_MODULES})
-    target_link_libraries(${TTK_MODULE}Python
-      PUBLIC
-        VTK::WrappingPythonCore
-        VTK::vtkCommonExecutionModelPython
-      )
-  endforeach()
   export(
     EXPORT
       TTKPython
