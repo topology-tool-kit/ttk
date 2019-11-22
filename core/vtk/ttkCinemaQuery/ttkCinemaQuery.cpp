@@ -34,11 +34,13 @@ vtkStandardNewMacro(ttkCinemaQuery)
   Memory m;
 
   // -------------------------------------------------------------------------
-  // Get Input Table
+  // Get Input Tables
   // -------------------------------------------------------------------------
-  vtkInformation *inInfo = inputVector[0]->GetInformationObject(0);
-  auto inTable
-    = vtkTable::SafeDownCast(inInfo->Get(vtkDataObject::DATA_OBJECT()));
+  auto nTables = inputVector[0]->GetNumberOfInformationObjects();
+  std::vector<vtkTable *> inTables(nTables);
+  for(int i = 0; i < nTables; ++i) {
+    inTables[i] = vtkTable::GetData(inputVector[0], i);
+  }
 
   // -------------------------------------------------------------------------
   // Get Output Table
@@ -50,12 +52,15 @@ vtkStandardNewMacro(ttkCinemaQuery)
   // -------------------------------------------------------------------------
   // Convert Input Table to SQL Table
   // -------------------------------------------------------------------------
-  string sqlTableDefinition, sqlTableRows;
-  {
+  std::vector<std::pair<string, string>> sqlTablesDefinitionAndRows(nTables);
+
+  for(int k = 0; k < nTables; ++k) {
+    const auto &inTable = inTables[k];
+    string sqlTableDefinition, sqlTableRows;
     int nc = inTable->GetNumberOfColumns();
     int nr = inTable->GetNumberOfRows();
 
-    sqlTableDefinition = "CREATE TABLE InputTable (";
+    sqlTableDefinition = "CREATE TABLE InputTable" + std::to_string(k) + " (";
     vector<bool> isNumeric(nc);
     for(int i = 0; i < nc; i++) {
       auto c = inTable->GetColumn(i);
@@ -65,7 +70,7 @@ vtkStandardNewMacro(ttkCinemaQuery)
     }
     sqlTableDefinition += ")";
 
-    sqlTableRows = "INSERT INTO InputTable VALUES ";
+    sqlTableRows = "INSERT INTO InputTable" + std::to_string(k) + " VALUES ";
     for(int j = 0; j < nr; j++) {
       if(j > 0)
         sqlTableRows += ",";
@@ -80,13 +85,16 @@ vtkStandardNewMacro(ttkCinemaQuery)
       }
       sqlTableRows += ")";
     }
+    sqlTablesDefinitionAndRows[k] = {sqlTableDefinition, sqlTableRows};
   }
 
   // -------------------------------------------------------------------------
   // Replace Variables in QueryString (e.g. {time[2]})
   // -------------------------------------------------------------------------
   string finalQueryString = this->QueryString;
-  {
+
+  // TODO: test replace variables with several input tables
+  for(const auto &inTable : inTables) {
     vtkFieldData *fieldData = inTable->GetFieldData();
 
     vector<string> temp; // vector of substrings of SQL string separated by '{'
@@ -133,7 +141,7 @@ vtkStandardNewMacro(ttkCinemaQuery)
   string result = "";
   {
     int status = cinemaQuery.execute(
-      sqlTableDefinition, sqlTableRows, finalQueryString, result);
+      sqlTablesDefinitionAndRows, finalQueryString, result);
     if(status != 1)
       return 0;
     if(result.compare("") == 0) {
@@ -167,7 +175,8 @@ vtkStandardNewMacro(ttkCinemaQuery)
     reader->Update();
 
     outTable->ShallowCopy(reader->GetOutput());
-    outTable->GetFieldData()->ShallowCopy(inTable->GetFieldData());
+    // only copy the Field Data of the first input vtkTable
+    outTable->GetFieldData()->ShallowCopy(inTables[0]->GetFieldData());
 #endif
   }
 
