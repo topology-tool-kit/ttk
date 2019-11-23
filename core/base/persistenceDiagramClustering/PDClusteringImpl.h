@@ -752,9 +752,9 @@ void PDClustering<dataType>::printMatchings(
   for(int d = 0; d < 3; d++) {
     if(original_dos[d]) {
       cout << "\n Diagram type : " << d << endl;
-      for(int i = 0; i < matchings[d].size(); i++) {
+      for(size_t i = 0; i < matchings[d].size(); i++) {
         cout << " diagram " << i << " : ";
-        for(int j = 0; j < matchings[d][i].size(); j++) {
+        for(size_t j = 0; j < matchings[d][i].size(); j++) {
           std::cout << get<0>(matchings[d][i][j]) << " ";
           std::cout << get<1>(matchings[d][i][j]) << " ";
           std::cout << get<2>(matchings[d][i][j]) << "  |   ";
@@ -861,7 +861,7 @@ std::vector<std::vector<dataType>> PDClustering<dataType>::getMinPrices() {
   std::vector<std::vector<dataType>> min_prices(3);
   // cout<<"dos : "<<original_dos[0]<<original_dos[1]<<original_dos[2]<<endl;
   if(original_dos[0]) {
-    for(unsigned int i = 0; i < numberOfInputs_; ++i) {
+    for(int i = 0; i < numberOfInputs_; ++i) {
       min_prices[0].push_back(std::numeric_limits<dataType>::max());
       for(int j = 0; j < centroids_with_price_min_[i].size(); ++j) {
         Good<dataType> g = centroids_with_price_min_[i].get(j);
@@ -874,7 +874,7 @@ std::vector<std::vector<dataType>> PDClustering<dataType>::getMinPrices() {
   }
 
   if(original_dos[1]) {
-    for(unsigned int i = 0; i < numberOfInputs_; ++i) {
+    for(int i = 0; i < numberOfInputs_; ++i) {
       min_prices[1].push_back(std::numeric_limits<dataType>::max());
       for(int j = 0; j < centroids_with_price_saddle_[i].size(); ++j) {
         Good<dataType> g = centroids_with_price_saddle_[i].get(j);
@@ -887,7 +887,7 @@ std::vector<std::vector<dataType>> PDClustering<dataType>::getMinPrices() {
   }
 
   if(original_dos[2]) {
-    for(unsigned int i = 0; i < numberOfInputs_; ++i) {
+    for(int i = 0; i < numberOfInputs_; ++i) {
       min_prices[2].push_back(std::numeric_limits<dataType>::max());
       for(int j = 0; j < centroids_with_price_max_[i].size(); ++j) {
         Good<dataType> g = centroids_with_price_max_[i].get(j);
@@ -907,7 +907,7 @@ std::vector<std::vector<dataType>>
   PDClustering<dataType>::getMinDiagonalPrices() {
   std::vector<std::vector<dataType>> min_prices(3);
   if(original_dos[0]) {
-    for(unsigned int i = 0; i < numberOfInputs_; ++i) {
+    for(int i = 0; i < numberOfInputs_; ++i) {
       min_prices[0].push_back(std::numeric_limits<dataType>::max());
       for(int j = 0; j < current_bidder_diagrams_min_[i].size(); ++j) {
         Bidder<dataType> b = current_bidder_diagrams_min_[i].get(j);
@@ -923,7 +923,7 @@ std::vector<std::vector<dataType>>
   }
 
   if(original_dos[1]) {
-    for(unsigned int i = 0; i < numberOfInputs_; ++i) {
+    for(int i = 0; i < numberOfInputs_; ++i) {
       min_prices[1].push_back(std::numeric_limits<dataType>::max());
       for(int j = 0; j < current_bidder_diagrams_saddle_[i].size(); ++j) {
         Bidder<dataType> b = current_bidder_diagrams_saddle_[i].get(j);
@@ -939,7 +939,7 @@ std::vector<std::vector<dataType>>
   }
 
   if(original_dos[2]) {
-    for(unsigned int i = 0; i < numberOfInputs_; ++i) {
+    for(int i = 0; i < numberOfInputs_; ++i) {
       min_prices[2].push_back(std::numeric_limits<dataType>::max());
       for(int j = 0; j < current_bidder_diagrams_max_[i].size(); ++j) {
         Bidder<dataType> b = current_bidder_diagrams_max_[i].get(j);
