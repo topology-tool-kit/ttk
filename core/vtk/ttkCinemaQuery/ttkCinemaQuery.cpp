@@ -92,16 +92,19 @@ vtkStandardNewMacro(ttkCinemaQuery)
   // Backward compatibility: replace "InputTable" with "InputTable0"
   // in query string
   // -------------------------------------------------------------------------
-  auto index = this->QueryString.find("InputTable");
+  const std::string needle{"InputTable"};
+  auto index = this->QueryString.find(needle);
   while(index != std::string::npos) {
-    if(this->QueryString.size() == index + 10) {
+    // move index to the end of needle
+    index += needle.size();
+    if(this->QueryString.size() == index) {
+      // add "0" to the end of the query
       this->QueryString.append("0");
-    } else if(!std::isdigit(this->QueryString[index + 10])) {
+    } else if(!std::isdigit(this->QueryString[index])) {
       // replace "e" in "InputTable" with "e0"
-      this->QueryString.replace(index + 9, 1, "e0");
+      this->QueryString.replace(index - 1, 1, "e0");
     }
-    auto nextsearchpos = index + 1;
-    index = this->QueryString.find("InputTable", nextsearchpos);
+    index = this->QueryString.find(needle, index);
   }
 
   // -------------------------------------------------------------------------
