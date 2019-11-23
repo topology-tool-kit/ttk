@@ -95,14 +95,16 @@ vtkStandardNewMacro(ttkCinemaQuery)
 
   // Backward compatibility: replace "InputTable" with "InputTable0"
   // in query string
-  const auto index = finalQueryString.find("InputTable");
-  if(index != std::string::npos) {
+  auto index = finalQueryString.find("InputTable");
+  while(index != std::string::npos) {
     if(finalQueryString.size() == index + 10) {
       finalQueryString.append("0");
     } else if(!std::isdigit(finalQueryString[index + 10])) {
       // replace "e" in "InputTable" with "e0"
       finalQueryString.replace(index + 9, 1, "e0");
     }
+    auto nextsearchpos = index + 1;
+    index = finalQueryString.find("InputTable", nextsearchpos);
   }
 
   // TODO: test replace variables with several input tables
