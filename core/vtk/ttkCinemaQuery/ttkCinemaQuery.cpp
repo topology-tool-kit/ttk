@@ -189,8 +189,17 @@ vtkStandardNewMacro(ttkCinemaQuery)
     reader->Update();
 
     outTable->ShallowCopy(reader->GetOutput());
-    // only copy the Field Data of the first input vtkTable
-    outTable->GetFieldData()->ShallowCopy(inTables[0]->GetFieldData());
+
+    // only copy first available Field Data
+    for(const auto &inTable : inTables) {
+      const auto fd = inTable->GetFieldData();
+      // pass database name
+      if(fd != nullptr && fd->HasArray("DatabasePath")) {
+        outTable->GetFieldData()->ShallowCopy(fd);
+        break;
+      }
+    }
+
 #endif
   }
 
