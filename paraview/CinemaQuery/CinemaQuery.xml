@@ -15,7 +15,11 @@
                 <Documentation>vtkTable to run the query on.</Documentation>
             </InputProperty>
 
-            <StringVectorProperty name="QueryString" label="SQL Statement" command="SetQueryString" number_of_elements="1" default_values="SELECT * FROM InputTable">
+            <StringVectorProperty name="QueryString"
+                                  label="SQL Statement"
+                                  command="SetQueryString"
+                                  number_of_elements="1"
+                                  default_values="SELECT * FROM InputTable0">
                 <Documentation>SQL statement.</Documentation>
                 <Hints>
                     <Widget type="multi_line" />
