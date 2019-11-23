@@ -89,23 +89,25 @@ vtkStandardNewMacro(ttkCinemaQuery)
   }
 
   // -------------------------------------------------------------------------
+  // Backward compatibility: replace "InputTable" with "InputTable0"
+  // in query string
+  // -------------------------------------------------------------------------
+  auto index = this->QueryString.find("InputTable");
+  while(index != std::string::npos) {
+    if(this->QueryString.size() == index + 10) {
+      this->QueryString.append("0");
+    } else if(!std::isdigit(this->QueryString[index + 10])) {
+      // replace "e" in "InputTable" with "e0"
+      this->QueryString.replace(index + 9, 1, "e0");
+    }
+    auto nextsearchpos = index + 1;
+    index = this->QueryString.find("InputTable", nextsearchpos);
+  }
+
+  // -------------------------------------------------------------------------
   // Replace Variables in QueryString (e.g. {time[2]})
   // -------------------------------------------------------------------------
   string finalQueryString = this->QueryString;
-
-  // Backward compatibility: replace "InputTable" with "InputTable0"
-  // in query string
-  auto index = finalQueryString.find("InputTable");
-  while(index != std::string::npos) {
-    if(finalQueryString.size() == index + 10) {
-      finalQueryString.append("0");
-    } else if(!std::isdigit(finalQueryString[index + 10])) {
-      // replace "e" in "InputTable" with "e0"
-      finalQueryString.replace(index + 9, 1, "e0");
-    }
-    auto nextsearchpos = index + 1;
-    index = finalQueryString.find("InputTable", nextsearchpos);
-  }
 
   // TODO: test replace variables with several input tables
   for(const auto &inTable : inTables) {
