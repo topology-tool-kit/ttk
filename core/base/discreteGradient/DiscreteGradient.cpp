@@ -775,7 +775,6 @@ bool DiscreteGradient::getAscendingPathThroughWall(
         break;
       }
 
-      int nconnections = 0;
       const SimplexId triangleNumber
         = inputTriangulation_->getEdgeTriangleNumber(connectedEdgeId);
       for(SimplexId i = 0; i < triangleNumber; ++i) {
@@ -784,11 +783,7 @@ bool DiscreteGradient::getAscendingPathThroughWall(
 
         if(isVisited[triangleId] == wallId and triangleId != oldId) {
           currentId = triangleId;
-          ++nconnections;
         }
-      }
-      if(nconnections > 1) {
-        return true;
       }
 
       // stop at convergence caused by boundary effect
