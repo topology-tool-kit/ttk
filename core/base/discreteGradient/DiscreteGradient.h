@@ -3,6 +3,7 @@
 /// \author Guillaume Favelier <guillaume.favelier@lip6.fr>
 /// \author Julien Tierny <julien.tierny@lip6.fr>
 /// \author Pierre Guillou <pierre.guillou@lip6.fr>
+/// \author Yizhe Wang <wangyizhe3518@gmail.com>
 /// \date November 2016.
 ///
 /// \brief TTK %discreteGradient processing package.
