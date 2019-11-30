@@ -232,29 +232,33 @@ namespace ttk {
     }
 
     inline void printClustering() {
+      std::stringstream msg;
       for(int c = 0; c < k_; ++c) {
-        std::cout << "[PersistenceDiagramClustering] Cluster " << c << " : [";
+        msg << "[PersistenceDiagramClustering] Cluster " << c << " = {";
         for(unsigned int idx = 0; idx < clustering_[c].size(); ++idx) {
           if(idx == clustering_[c].size() - 1) {
-            std::cout << clustering_[c][idx] << "]" << std::endl;
+            msg << clustering_[c][idx] << "}" << std::endl;
           } else {
-            std::cout << clustering_[c][idx] << ", ";
+            msg << clustering_[c][idx] << ", ";
           }
         }
       }
+      dMsg(std::cout, msg.str(), infoMsg);
     }
 
     inline void printOldClustering() {
+      std::stringstream msg;
       for(int c = 0; c < k_; ++c) {
-        std::cout << "Cluster " << c << " : [";
+        msg << "Cluster " << c << " = {";
         for(unsigned int idx = 0; idx < old_clustering_[c].size(); ++idx) {
           if(idx == old_clustering_[c].size() - 1) {
-            std::cout << old_clustering_[c][idx] << "]" << std::endl;
+            msg << old_clustering_[c][idx] << "}" << std::endl;
           } else {
-            std::cout << old_clustering_[c][idx] << ", ";
+            msg << old_clustering_[c][idx] << ", ";
           }
         }
       }
+      dMsg(std::cout, msg.str(), infoMsg);
     }
 
     inline const std::vector<std::vector<double>> &&
@@ -296,7 +300,6 @@ namespace ttk {
     double lambda_;
 
     int k_;
-    int debugLevel_;
     int numberOfInputs_;
     int threadNumber_;
     bool use_progressive_;

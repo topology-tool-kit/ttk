@@ -515,14 +515,16 @@ std::vector<int> PDClustering<dataType>::execute(
       }
     }
     resetDosToOriginalValues();
-    if(debugLevel_ > 0) {
+    {
+      std::stringstream msg;
       if(matchings_only) {
-        std::cout << "[PersistenceDiagramClustering] Wasserstein distance : "
-                  << cost_min_ + cost_sad_ + cost_max_ << std::endl;
+        msg << "[PersistenceDiagramClustering] Wasserstein distance: "
+            << cost_min_ + cost_sad_ + cost_max_ << std::endl;
       } else {
-        std::cout << "[PersistenceDiagramClustering] Final Cost : "
-                  << min_cost_min + min_cost_sad + min_cost_max << std::endl;
+        msg << "[PersistenceDiagramClustering] Final Cost: "
+            << min_cost_min + min_cost_sad + min_cost_max << std::endl;
       }
+      dMsg(std::cout, msg.str(), infoMsg);
     }
     // cout<<"TOTAL ELAPSED "<<total_time<<endl;
     // dataType real_cost=0;

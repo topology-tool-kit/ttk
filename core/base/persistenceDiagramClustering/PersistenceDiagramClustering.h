@@ -63,7 +63,6 @@ namespace ttk {
       inputData_ = NULL;
       numberOfInputs_ = 0;
       threadNumber_ = 1;
-      debugLevel_ = 2;
     };
 
     ~PersistenceDiagramClustering(){};
