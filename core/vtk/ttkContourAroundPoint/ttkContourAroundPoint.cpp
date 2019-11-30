@@ -226,15 +226,14 @@ bool ttkContourAroundPoint::process() {
 //------------------------------------------------------------------------------------------------//
 
 bool ttkContourAroundPoint::postprocess() {
-  std::vector<ttk::SimplexId> cinfosBuf;
   ttk::SimplexId nv;
   ttk::SimplexId nc;
   _wrappedModule.getOutputField(
-    coordsBuf_, nv, cinfosBuf, nc, scalarsBuf_, flagsBuf_);
+    coordsBuf_, nv, cinfosBuf_, nc, scalarsBuf_, flagsBuf_);
   if(nv == 0) // very fine area filter
     return true;
 
-  const auto nvPerC = cinfosBuf[0];
+  const auto nvPerC = cinfosBuf_[0];
   if(!(nvPerC == 2 || nvPerC == 3)) {
     vtkErrorMacro("Invalid number of vertices per cell: "
                   + std::to_string(nvPerC) + ". Must be 2 or 3");
@@ -250,7 +249,7 @@ bool ttkContourAroundPoint::postprocess() {
   }
 
   for(ttk::SimplexId c = 0, i = 0; c < nc; ++c) {
-    const auto n = cinfosBuf[i];
+    const auto n = cinfosBuf_[i];
     if(n != nvPerC) {
       vtkErrorMacro("Output cell " + std::to_string(c) + " has "
                     + std::to_string(n) + " vertices. " + "Expected "
@@ -262,9 +261,6 @@ bool ttkContourAroundPoint::postprocess() {
 #endif
 
   const std::size_t nEntriesPerC = nvPerC + 1;
-  const std::size_t n = nc * nEntriesPerC;
-  cinfosBufVtk_.resize(n);
-  std::copy(cinfosBuf.begin(), cinfosBuf.end(), cinfosBufVtk_.begin());
 
   auto points = vtkSmartPointer<vtkPoints>::New();
   auto coordArr = vtkSmartPointer<vtkFloatArray>::New();
@@ -275,8 +271,7 @@ bool ttkContourAroundPoint::postprocess() {
 
   auto cells = vtkSmartPointer<vtkCellArray>::New();
   auto cinfoArr = vtkSmartPointer<vtkIdTypeArray>::New();
-  cinfoArr->SetArray(
-    cinfosBufVtk_.data(), nc * nEntriesPerC, 1);
+  cinfoArr->SetArray(cinfosBuf_.data(), nc * nEntriesPerC, 1);
   cells->SetCells(nc, cinfoArr);
   _out->SetCells(cellType, cells);
 

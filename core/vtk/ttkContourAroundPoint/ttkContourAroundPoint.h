@@ -191,7 +191,7 @@ private:
   vtkSmartPointer<vtkUnstructuredGrid> _out;
 
   std::vector<float> coordsBuf_{};
-  std::vector<vtkIdType> cinfosBufVtk_{};
+  std::vector<ttk::LongSimplexId> cinfosBuf_{};
   std::vector<float> scalarsBuf_{};
   std::vector<int> flagsBuf_{};
 

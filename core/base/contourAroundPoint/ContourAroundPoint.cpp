@@ -131,7 +131,7 @@ void ttk::ContourAroundPoint::enqueueNeighbors(
 
 void ttk::ContourAroundPoint::getOutputField(std::vector<float> &coords,
                                              SimplexId &nv,
-                                             std::vector<SimplexId> &cinfos,
+                                             std::vector<LongSimplexId> &cinfos,
                                              SimplexId &nc,
                                              std::vector<float> &scalars,
                                              std::vector<int> &flags) {
