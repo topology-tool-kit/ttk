@@ -83,7 +83,7 @@ int ttkPersistenceDiagramClustering::dispatch(
     max_dimension_total_ = 0;
     for(int i = 0; i < numInputs; i++) {
       double max_dimension = getPersistenceDiagram<VTK_TT>(
-        &(intermediateDiagrams->at(i)), inputDiagram[i], Spacing, 0);
+        intermediateDiagrams->at(i), inputDiagram[i], Spacing, 0);
       if(max_dimension_total_ < max_dimension) {
         max_dimension_total_ = max_dimension;
       }

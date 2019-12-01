@@ -278,7 +278,7 @@ protected:
   ttkPersistenceDiagramClustering();
 
   template <typename dataType>
-  double getPersistenceDiagram(std::vector<diagramTuple> *diagram,
+  double getPersistenceDiagram(std::vector<diagramTuple> &diagram,
                                vtkUnstructuredGrid *CTPersistenceDiagram_,
                                const double spacing,
                                const int diagramNumber);
@@ -379,7 +379,7 @@ private:
 
 template <typename dataType>
 double ttkPersistenceDiagramClustering::getPersistenceDiagram(
-  std::vector<diagramTuple> *diagram,
+  std::vector<diagramTuple> &diagram,
   vtkUnstructuredGrid *CTPersistenceDiagram_,
   const double /*spacing*/,
   const int /*diagramNumber*/) {
@@ -427,9 +427,9 @@ double ttkPersistenceDiagramClustering::getPersistenceDiagram(
     return -2;
 
   if(NumberOfClusters == 1) {
-    diagram->resize(pairingsSize);
+    diagram.resize(pairingsSize);
   } else {
-    diagram->resize(pairingsSize + 1);
+    diagram.resize(pairingsSize + 1);
   }
   int nbNonCompact = 0;
   double max_dimension = 0;
@@ -481,23 +481,23 @@ double ttkPersistenceDiagramClustering::getPersistenceDiagram(
         max_dimension = (dataType)persistence;
 
         if(NumberOfClusters == 1) {
-          diagram->at(0) = std::make_tuple(
+          diagram[0] = std::make_tuple(
             vertexId1, (BNodeType)0, vertexId2, (BNodeType)3,
             (dataType)persistence, pairType, value1, coordX1, coordY1, coordZ1,
             value2, coordX2, coordY2, coordZ2);
         } else {
-          diagram->at(0) = std::make_tuple(
+          diagram[0] = std::make_tuple(
             vertexId1, (BNodeType)0, vertexId2, (BNodeType)1,
             (dataType)persistence, pairType, value1, coordX1, coordY1, coordZ1,
             value2, coordX2, coordY2, coordZ2);
-          diagram->at(pairingsSize) = std::make_tuple(
+          diagram[pairingsSize] = std::make_tuple(
             vertexId1, (BNodeType)1, vertexId2, (BNodeType)3,
             (dataType)persistence, pairType, value1, coordX1, coordY1, coordZ1,
             value2, coordX2, coordY2, coordZ2);
         }
 
       } else {
-        diagram->at(pairIdentifier) = std::make_tuple(
+        diagram[pairIdentifier] = std::make_tuple(
           vertexId1, (BNodeType)nodeType1, vertexId2, (BNodeType)nodeType2,
           (dataType)persistence, pairType, value1, coordX1, coordY1, coordZ1,
           value2, coordX2, coordY2, coordZ2);
