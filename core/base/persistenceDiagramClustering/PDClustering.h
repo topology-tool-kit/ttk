@@ -203,10 +203,6 @@ namespace ttk {
     inline void setDeterministic(const bool deterministic) {
       deterministic_ = deterministic;
     }
-    inline int setDebugLevel(const int &debugLevel) {
-      debugLevel_ = debugLevel;
-      return 0;
-    }
 
     inline void setUseDeltaLim(const bool UseDeltaLim) {
       UseDeltaLim_ = UseDeltaLim;
