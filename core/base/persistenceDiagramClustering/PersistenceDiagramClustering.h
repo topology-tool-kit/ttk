@@ -60,21 +60,16 @@ namespace ttk {
       use_progressive_ = 1;
       use_kmeanspp_ = 0;
       use_accelerated_ = 0;
-      inputData_ = NULL;
       numberOfInputs_ = 0;
       threadNumber_ = 1;
     };
 
     ~PersistenceDiagramClustering(){};
 
-    std::vector<int>
-      execute(std::vector<std::vector<diagramTuple>> *centroids,
-              vector<vector<vector<matchingTuple>>> *all_matchings);
-
-    inline int setDiagrams(void *data) {
-      inputData_ = data;
-      return 0;
-    }
+    std::vector<int> execute(
+      std::vector<std::vector<diagramTuple>> &intermediateDiagrams,
+      std::vector<std::vector<diagramTuple>> &centroids,
+      std::vector<std::vector<std::vector<matchingTuple>>> &all_matchings);
 
     inline int setNumberOfInputs(int numberOfInputs) {
       numberOfInputs_ = numberOfInputs;
@@ -179,7 +174,6 @@ namespace ttk {
     int n_clusters_;
 
     int numberOfInputs_;
-    void *inputData_; // TODO : std::vector<void*>
     int threadNumber_;
     bool use_progressive_;
     bool use_accelerated_;
@@ -202,8 +196,9 @@ namespace ttk {
 
   template <typename dataType>
   std::vector<int> PersistenceDiagramClustering<dataType>::execute(
-    std::vector<std::vector<diagramTuple>> *final_centroids,
-    vector<vector<vector<matchingTuple>>> *all_matchings) {
+    std::vector<std::vector<diagramTuple>> &intermediateDiagrams,
+    std::vector<std::vector<diagramTuple>> &final_centroids,
+    std::vector<std::vector<std::vector<matchingTuple>>> &all_matchings) {
 
     Timer tm;
     {
@@ -213,8 +208,6 @@ namespace ttk {
       dMsg(std::cout, msg.str(), infoMsg);
     }
 
-    std::vector<std::vector<diagramTuple>> *intermediateDiagrams
-      = (std::vector<std::vector<diagramTuple>> *)inputData_;
     std::vector<std::vector<diagramTuple>> data_min(numberOfInputs_);
     std::vector<std::vector<diagramTuple>> data_sad(numberOfInputs_);
     std::vector<std::vector<diagramTuple>> data_max(numberOfInputs_);
@@ -231,10 +224,10 @@ namespace ttk {
 
     // Create diagrams for min, saddle and max persistence pairs
     for(int i = 0; i < numberOfInputs_; i++) {
-      std::vector<diagramTuple> *CTDiagram = &((*intermediateDiagrams)[i]);
+      std::vector<diagramTuple> &CTDiagram = intermediateDiagrams[i];
 
-      for(int j = 0; j < (int)CTDiagram->size(); ++j) {
-        diagramTuple t = CTDiagram->at(j);
+      for(size_t j = 0; j < CTDiagram.size(); ++j) {
+        diagramTuple t = CTDiagram[j];
 
         BNodeType nt1 = std::get<1>(t);
         BNodeType nt2 = std::get<3>(t);
@@ -320,7 +313,7 @@ namespace ttk {
     KMeans.setOutputDistanceMatrix(outputDistanceMatrix_);
     KMeans.setPerClusterDistanceMatrix(perClusterDistanceMatrix_);
     inv_clustering
-      = KMeans.execute(*final_centroids, all_matchings_per_type_and_cluster);
+      = KMeans.execute(final_centroids, all_matchings_per_type_and_cluster);
     vector<vector<int>> centroids_sizes = KMeans.get_centroids_sizes();
 
     distanceMatrix_ = KMeans.getDiagramsDistanceMatrix();
@@ -346,9 +339,9 @@ namespace ttk {
       }
     }
 
-    all_matchings->resize(n_clusters_);
+    all_matchings.resize(n_clusters_);
     for(int c = 0; c < n_clusters_; c++) {
-      all_matchings->at(c).resize(numberOfInputs_);
+      all_matchings[c].resize(numberOfInputs_);
     }
     for(int i = 0; i < numberOfInputs_; i++) {
       unsigned int c = inv_clustering[i];
@@ -366,7 +359,7 @@ namespace ttk {
           } else {
             std::get<1>(t) = -1;
           }
-          all_matchings->at(inv_clustering[i])[i].push_back(t);
+          all_matchings[inv_clustering[i]][i].push_back(t);
         }
       }
       if(do_min) {
@@ -383,7 +376,7 @@ namespace ttk {
             if(std::get<1>(t) < 0) {
               std::get<1>(t) = -1;
             }
-            all_matchings->at(inv_clustering[i])[i].push_back(t);
+            all_matchings[inv_clustering[i]][i].push_back(t);
           }
         }
       }
@@ -403,7 +396,7 @@ namespace ttk {
             } else {
               std::get<1>(t) = -1;
             }
-            all_matchings->at(inv_clustering[i])[i].push_back(t);
+            all_matchings[inv_clustering[i]][i].push_back(t);
           }
         }
       }
@@ -424,7 +417,7 @@ namespace ttk {
             } else {
               std::get<1>(t) = -1;
             }
-            all_matchings->at(inv_clustering[i])[i].push_back(t);
+            all_matchings[inv_clustering[i]][i].push_back(t);
           }
         }
       }

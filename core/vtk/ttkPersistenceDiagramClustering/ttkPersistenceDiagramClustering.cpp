@@ -122,9 +122,8 @@ int ttkPersistenceDiagramClustering::dispatch(
       persistenceDiagramsClustering.setPerClusterDistanceMatrix(
         PerClusterDistanceMatrix);
 
-      persistenceDiagramsClustering.setDiagrams((void *)intermediateDiagrams);
-      inv_clustering_
-        = persistenceDiagramsClustering.execute(final_centroids, all_matchings);
+      inv_clustering_ = persistenceDiagramsClustering.execute(
+        *intermediateDiagrams, *final_centroids, *all_matchings);
 
       distanceMatrix = persistenceDiagramsClustering.getDistanceMatrix();
       distanceToCentroid
@@ -158,10 +157,8 @@ int ttkPersistenceDiagramClustering::dispatch(
       // persistenceDiagramsBarycenter.setEpsilonDecreases(EpsilonDecreases);
       // persistenceDiagramsBarycenter.setEarlyStoppage(EarlyStoppage);
 
-      persistenceDiagramsBarycenter.setDiagrams((void *)intermediateDiagrams);
-
       persistenceDiagramsBarycenter.execute(
-        &(final_centroids->at(0)), all_matchings);
+        *intermediateDiagrams, final_centroids->at(0), *all_matchings);
 
       needUpdate_ = false;
     }
