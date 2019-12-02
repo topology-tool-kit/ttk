@@ -355,7 +355,7 @@ private:
   double TimeLimit{9999999};
   bool OutputDistanceMatrix{false};
   bool PerClusterDistanceMatrix{false};
-  std::vector<std::vector<double>> distanceMatrix{};
+  std::vector<std::vector<double>> diagramsDistMat{};
   std::vector<double> distanceToCentroid{};
   std::vector<std::vector<double>> centroidsDistMat{};
 
