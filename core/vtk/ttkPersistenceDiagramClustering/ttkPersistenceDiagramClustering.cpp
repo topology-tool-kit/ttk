@@ -75,9 +75,6 @@ int ttkPersistenceDiagramClustering::dispatch(
     = (vector<vector<macroDiagramTuple>> *)intermediateDiagrams_;
   all_matchings = (vector<vector<vector<macroMatchingTuple>>> *)all_matchings_;
 
-  std::vector<std::vector<double>> distanceMatrix{};
-  std::vector<double> distanceToCentroid{};
-
   if(needUpdate_) {
 
     max_dimension_total_ = 0;
@@ -286,8 +283,10 @@ int ttkPersistenceDiagramClustering::RequestData(
     input.resize(numInputs);
     for(int i = 0; i < numInputs; ++i) {
       input[i] = vtkUnstructuredGrid::SafeDownCast(blocks->GetBlock(i));
+      if(this->GetMTime() < input[i]->GetMTime()) {
+        needUpdate_ = true;
+      }
     }
-    needUpdate_ = true;
   }
 
   // Set outputs

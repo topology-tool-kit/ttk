@@ -355,6 +355,8 @@ private:
   double TimeLimit{9999999};
   bool OutputDistanceMatrix{false};
   bool PerClusterDistanceMatrix{false};
+  std::vector<std::vector<double>> distanceMatrix{};
+  std::vector<double> distanceToCentroid{};
 
   // base code features
   int doIt(const std::vector<vtkUnstructuredGrid *> &input,
