@@ -151,6 +151,9 @@ namespace ttk {
     inline const std::vector<std::vector<double>> &&getDistanceMatrix() {
       return std::move(distanceMatrix_);
     }
+    inline const std::vector<std::vector<double>> &&getCentroidsDistMat() {
+      return std::move(centroidsDistMat_);
+    }
     inline const std::vector<double> &&getDistanceToCentroid() {
       return std::move(distanceToCentroid_);
     }
@@ -185,6 +188,7 @@ namespace ttk {
 
     bool outputDistanceMatrix_{false};
     bool perClusterDistanceMatrix_{false};
+    std::vector<std::vector<double>> centroidsDistMat_{};
     std::vector<std::vector<double>> distanceMatrix_{};
     std::vector<double> distanceToCentroid_{};
   };
@@ -311,6 +315,7 @@ namespace ttk {
       = KMeans.execute(final_centroids, all_matchings_per_type_and_cluster);
     vector<vector<int>> centroids_sizes = KMeans.get_centroids_sizes();
 
+    centroidsDistMat_ = KMeans.getCentroidsDistanceMatrix();
     distanceMatrix_ = KMeans.getDiagramsDistanceMatrix();
     distanceToCentroid_ = KMeans.getDistanceToCentroid();
 

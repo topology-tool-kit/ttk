@@ -628,6 +628,7 @@ std::vector<int> PDClustering<dataType>::execute(
   if(outputDistanceMatrix_) {
     computeDistanceToCentroid();
     computeDiagramsDistanceMatrix();
+    getCentroidDistanceMatrix();
   }
 
   if(distanceWritingOptions_ == 1) {
@@ -1233,11 +1234,9 @@ void PDClustering<dataType>::initializeAcceleratedKMeans() {
 
   // And d_ is a (K x K) matrix storing the distances between each pair of
   // centroids
-  d_ = std::vector<std::vector<dataType>>(k_);
+  centroidsDistanceMatrix_.resize(k_);
   for(int i = 0; i < k_; ++i) {
-    for(int c = 0; c < k_; ++c) {
-      d_[i].push_back(0);
-    }
+    centroidsDistanceMatrix_[i].resize(k_, 0.0);
   }
   return;
 }
@@ -1292,7 +1291,7 @@ void PDClustering<dataType>::getCentroidDistanceMatrix() {
       D1_max = centroidWithZeroPrices(centroids_max_[i]);
     }
     for(int j = i + 1; j < k_; ++j) {
-      dataType distance = 0;
+      double distance{};
       GoodDiagram<dataType> D2_min, D2_sad, D2_max;
       if(do_min_) {
         D2_min = centroidWithZeroPrices(centroids_min_[j]);
@@ -1307,8 +1306,8 @@ void PDClustering<dataType>::getCentroidDistanceMatrix() {
         distance += computeDistance(D1_max, D2_max, 0.01);
       }
 
-      d_[i][j] = distance;
-      d_[j][i] = distance;
+      centroidsDistanceMatrix_[i][j] = distance;
+      centroidsDistanceMatrix_[j][i] = distance;
     }
   }
   return;
@@ -1561,7 +1560,7 @@ void PDClustering<dataType>::acceleratedUpdateClusters() {
       }
 
       if(c != inv_clustering_[i] && u_[i] > l_[i][c]
-         && u_[i] > 0.5 * d_[inv_clustering_[i]][c]) {
+         && u_[i] > 0.5 * centroidsDistanceMatrix_[inv_clustering_[i]][c]) {
         // Step 3a, If necessary, recompute the distance to centroid
         if(r_[i]) {
           dataType distance = 0;
@@ -1587,7 +1586,9 @@ void PDClustering<dataType>::acceleratedUpdateClusters() {
         }
         // Step 3b, check if still potential change of clusters
         if((n_iterations_ > 2 || n_iterations_ < 1)
-           && (u_[i] > l_[i][c] || u_[i] > 0.5 * d_[inv_clustering_[i]][c])) {
+           && (u_[i] > l_[i][c]
+               || u_[i]
+                    > 0.5 * centroidsDistanceMatrix_[inv_clustering_[i]][c])) {
           BidderDiagram<dataType> diagram_min, diagram_sad, diagram_max;
           GoodDiagram<dataType> centroid_min, centroid_sad, centroid_max;
           dataType distance = 0;

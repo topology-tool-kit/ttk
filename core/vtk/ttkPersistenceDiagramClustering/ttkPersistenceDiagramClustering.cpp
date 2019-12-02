@@ -125,6 +125,7 @@ int ttkPersistenceDiagramClustering::dispatch(
       distanceMatrix = persistenceDiagramsClustering.getDistanceMatrix();
       distanceToCentroid
         = persistenceDiagramsClustering.getDistanceToCentroid();
+      centroidsDistMat = persistenceDiagramsClustering.getCentroidsDistMat();
 
       needUpdate_ = false;
     }

@@ -357,6 +357,7 @@ private:
   bool PerClusterDistanceMatrix{false};
   std::vector<std::vector<double>> distanceMatrix{};
   std::vector<double> distanceToCentroid{};
+  std::vector<std::vector<double>> centroidsDistMat{};
 
   // base code features
   int doIt(const std::vector<vtkUnstructuredGrid *> &input,

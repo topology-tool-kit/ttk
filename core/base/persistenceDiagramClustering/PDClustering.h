@@ -261,6 +261,10 @@ namespace ttk {
       getDiagramsDistanceMatrix() {
       return std::move(diagramsDistanceMatrix_);
     }
+    inline const std::vector<std::vector<double>> &&
+      getCentroidsDistanceMatrix() {
+      return std::move(centroidsDistanceMatrix_);
+    }
 
     inline const std::vector<double> &&getDistanceToCentroid() {
       return std::move(distanceToCentroid_);
@@ -347,7 +351,7 @@ namespace ttk {
     std::vector<bool> r_;
     std::vector<dataType> u_;
     std::vector<std::vector<dataType>> l_;
-    std::vector<std::vector<dataType>> d_;
+    std::vector<std::vector<double>> centroidsDistanceMatrix_{};
     std::vector<std::vector<double>> diagramsDistanceMatrix_{};
     bool outputDistanceMatrix_{false};
     bool perClusterDistanceMatrix_{false};
