@@ -263,7 +263,6 @@ namespace ttk {
     bool reinit_prices_;
     bool epsilon_decreases_;
     bool early_stoppage_;
-    int debugLevel_;
   };
 } // namespace ttk
 

@@ -62,7 +62,6 @@ namespace ttk {
       deterministic_ = 1;
       reinit_prices_ = 1;
       epsilon_decreases_ = 1;
-      debugLevel_ = 1;
       use_progressive_ = 1;
     };
 
@@ -149,7 +148,6 @@ namespace ttk {
     }
 
   protected:
-    int debugLevel_;
     bool deterministic_;
     int method_;
     int wasserstein_;
