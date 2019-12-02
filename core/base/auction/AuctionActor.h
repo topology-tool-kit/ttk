@@ -206,11 +206,11 @@ namespace ttk {
       dataType coords_z;
 
       this->geom_pair_length_[0]
-        = abs(std::get<7>(tuple) - std::get<11>(tuple));
+        = std::abs(std::get<7>(tuple) - std::get<11>(tuple));
       this->geom_pair_length_[1]
-        = abs(std::get<8>(tuple) - std::get<12>(tuple));
+        = std::abs(std::get<8>(tuple) - std::get<12>(tuple));
       this->geom_pair_length_[2]
-        = abs(std::get<9>(tuple) - std::get<13>(tuple));
+        = std::abs(std::get<9>(tuple) - std::get<13>(tuple));
 
       if(type2 == BLocalMax) {
         coords_x
@@ -375,11 +375,11 @@ namespace ttk {
       dataType coords_z;
 
       this->geom_pair_length_[0]
-        = abs(std::get<7>(tuple) - std::get<11>(tuple));
+        = std::abs(std::get<7>(tuple) - std::get<11>(tuple));
       this->geom_pair_length_[1]
-        = abs(std::get<8>(tuple) - std::get<12>(tuple));
+        = std::abs(std::get<8>(tuple) - std::get<12>(tuple));
       this->geom_pair_length_[2]
-        = abs(std::get<9>(tuple) - std::get<13>(tuple));
+        = std::abs(std::get<9>(tuple) - std::get<13>(tuple));
 
       if(type2 == BLocalMax) {
         coords_x
@@ -403,7 +403,8 @@ namespace ttk {
 
       this->SetCriticalCoordinates(coords_x, coords_y, coords_z);
 
-      if(fabs(x - y) < pow(10, -12)) {
+      if(std::abs(static_cast<double>(x) - static_cast<double>(y))
+         < pow(10, -12)) {
         AuctionActor<dataType>::is_diagonal_ = true;
       } else {
         AuctionActor<dataType>::is_diagonal_ = false;
