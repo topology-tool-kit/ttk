@@ -364,7 +364,8 @@ private:
            vtkUnstructuredGrid *outputClusters,
            vtkUnstructuredGrid *outputCentroids,
            vtkUnstructuredGrid *outputMatchings,
-           vtkTable *outputMatrix,
+           vtkTable *diagramsDistTable,
+           vtkTable *centroidsDistTable,
            int numInputs);
 
   bool needsToAbort() override;
@@ -377,7 +378,8 @@ private:
                vtkUnstructuredGrid *outputClusters,
                vtkUnstructuredGrid *outputCentroids,
                vtkUnstructuredGrid *outputMatchings,
-               vtkTable *outputMatrix);
+               vtkTable *diagramsDistTable,
+               vtkTable *centroidsDistTable);
 };
 
 template <typename dataType>

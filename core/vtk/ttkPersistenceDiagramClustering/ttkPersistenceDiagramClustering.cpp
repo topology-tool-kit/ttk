@@ -7,7 +7,7 @@ vtkStandardNewMacro(ttkPersistenceDiagramClustering)
 
 ttkPersistenceDiagramClustering::ttkPersistenceDiagramClustering() {
   SetNumberOfInputPorts(1);
-  SetNumberOfOutputPorts(4);
+  SetNumberOfOutputPorts(5);
 }
 
 // transmit abort signals -- to copy paste in other wrappers
@@ -35,7 +35,8 @@ int ttkPersistenceDiagramClustering::dispatch(
   vtkUnstructuredGrid *outputClusters,
   vtkUnstructuredGrid *outputCentroids,
   vtkUnstructuredGrid *outputMatchings,
-  vtkTable *outputMatrix) {
+  vtkTable *diagramsDistTable,
+  vtkTable *centroidsDistTable) {
 
   using macroDiagramTuple
     = std::tuple<ttk::SimplexId, ttk::CriticalType, ttk::SimplexId,
@@ -190,23 +191,23 @@ int ttkPersistenceDiagramClustering::dispatch(
     for(size_t j = 0; j < diagramsDistMat[i].size(); ++j) {
       col->SetTuple1(j, diagramsDistMat[i][j]);
     }
-    outputMatrix->AddColumn(col);
+    diagramsDistTable->AddColumn(col);
   }
 
   // add clusters id to distance matrix output
   vtkNew<vtkIntArray> clusterId{};
   clusterId->SetName("ClusterId");
   clusterId->SetArray(inv_clustering_.data(), inv_clustering_.size(), 1);
-  outputMatrix->AddColumn(clusterId);
+  diagramsDistTable->AddColumn(clusterId);
 
   // add distance to cluster centroid to distance matrix output
   vtkNew<vtkDoubleArray> dCentroid{};
   dCentroid->SetName("DistanceToCentroid");
   dCentroid->SetArray(distanceToCentroid.data(), distanceToCentroid.size(), 1);
-  outputMatrix->AddColumn(dCentroid);
+  diagramsDistTable->AddColumn(dCentroid);
 
   // aggregate input field data into distance matrix output field data
-  auto fd = outputMatrix->GetFieldData();
+  auto fd = diagramsDistTable->GetFieldData();
   fd->CopyStructure(inputDiagram[0]->GetFieldData());
   fd->SetNumberOfTuples(inputDiagram.size());
   for(size_t i = 0; i < inputDiagram.size(); ++i) {
@@ -215,7 +216,25 @@ int ttkPersistenceDiagramClustering::dispatch(
 
   // also copy field data arrays to row data
   for(int i = 0; i < fd->GetNumberOfArrays(); ++i) {
-    outputMatrix->AddColumn(fd->GetAbstractArray(i));
+    diagramsDistTable->AddColumn(fd->GetAbstractArray(i));
+  }
+
+  // copy centroids distance matrix to output
+  for(size_t i = 0; i < centroidsDistMat.size(); ++i) {
+    std::string name{"Cluster"};
+
+    // zero-padding to keep Row Data ordered
+    std::string max{std::to_string(centroidsDistMat.size() - 1)};
+    std::string cur{std::to_string(i)};
+    std::string zer(max.size() - cur.size(), '0');
+
+    vtkNew<vtkDoubleArray> col{};
+    col->SetNumberOfTuples(centroidsDistMat.size());
+    col->SetName(name.append(zer).append(cur).c_str());
+    for(size_t j = 0; j < centroidsDistMat[i].size(); ++j) {
+      col->SetTuple1(j, centroidsDistMat[i][j]);
+    }
+    centroidsDistTable->AddColumn(col);
   }
 
   return ret;
@@ -226,7 +245,8 @@ int ttkPersistenceDiagramClustering::doIt(
   vtkUnstructuredGrid *outputClusters,
   vtkUnstructuredGrid *outputCentroids,
   vtkUnstructuredGrid *outputMatchings,
-  vtkTable *outputMatrix,
+  vtkTable *diagramsDistTable,
+  vtkTable *centroidsDistTable,
   int numInputs) {
 
   // Calling the executing package
@@ -236,7 +256,7 @@ int ttkPersistenceDiagramClustering::doIt(
   switch(dataType) {
     vtkTemplateMacro(dispatch<VTK_TT>(numInputs, input, outputClusters,
                                       outputCentroids, outputMatchings,
-                                      outputMatrix));
+                                      diagramsDistTable, centroidsDistTable));
   }
 
   return 0;
@@ -258,7 +278,7 @@ int ttkPersistenceDiagramClustering::FillOutputPortInformation(
   }
   if(port == 0 || port == 1 || port == 2)
     info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
-  if(port == 3) {
+  if(port == 3 || port == 4) {
     info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkTable");
   }
   return 1;
@@ -297,11 +317,13 @@ int ttkPersistenceDiagramClustering::RequestData(
     outputVector->GetInformationObject(1)->Get(vtkDataObject::DATA_OBJECT()));
   auto output_matchings = vtkUnstructuredGrid::SafeDownCast(
     outputVector->GetInformationObject(2)->Get(vtkDataObject::DATA_OBJECT()));
-  auto output_matrix = vtkTable::SafeDownCast(
+  auto output_diagrams_matrix = vtkTable::SafeDownCast(
     outputVector->GetInformationObject(3)->Get(vtkDataObject::DATA_OBJECT()));
+  auto output_centroids_matrix = vtkTable::SafeDownCast(
+    outputVector->GetInformationObject(4)->Get(vtkDataObject::DATA_OBJECT()));
 
   doIt(input, output_clusters, output_centroids, output_matchings,
-       output_matrix, numInputs);
+       output_diagrams_matrix, output_centroids_matrix, numInputs);
 
   {
     stringstream msg;
