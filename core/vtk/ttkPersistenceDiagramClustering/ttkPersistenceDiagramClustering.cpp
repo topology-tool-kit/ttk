@@ -185,7 +185,7 @@ int ttkPersistenceDiagramClustering::dispatch(
         colName.append(zer).append(cur);
       };
 
-  // copy distance matrix to output
+  // copy diagrams distance matrix to output
   for(size_t i = 0; i < diagramsDistMat.size(); ++i) {
     std::string name{"Diagram"};
     zeroPad(name, diagramsDistMat.size(), i);
@@ -199,19 +199,19 @@ int ttkPersistenceDiagramClustering::dispatch(
     diagramsDistTable->AddColumn(col);
   }
 
-  // add clusters id to distance matrix output
+  // add clusters id to diagrams distance matrix output
   vtkNew<vtkIntArray> clusterId{};
   clusterId->SetName("ClusterId");
   clusterId->SetArray(inv_clustering_.data(), inv_clustering_.size(), 1);
   diagramsDistTable->AddColumn(clusterId);
 
-  // add distance to cluster centroid to distance matrix output
+  // add distance to cluster centroid to diagrams distance matrix output
   vtkNew<vtkDoubleArray> dCentroid{};
   dCentroid->SetName("DistanceToCentroid");
   dCentroid->SetArray(distanceToCentroid.data(), distanceToCentroid.size(), 1);
   diagramsDistTable->AddColumn(dCentroid);
 
-  // aggregate input field data into distance matrix output field data
+  // aggregate input field data into diagrams distance matrix output field data
   auto fd = diagramsDistTable->GetFieldData();
   fd->CopyStructure(inputDiagram[0]->GetFieldData());
   fd->SetNumberOfTuples(inputDiagram.size());
