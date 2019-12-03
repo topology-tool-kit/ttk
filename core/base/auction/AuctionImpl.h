@@ -57,7 +57,7 @@ void ttk::Auction<dataType>::runAuctionRound(int &n_biddings,
     }*/
     if(idx_reassigned >= 0) {
       Bidder<dataType> &reassigned = bidders_.get(idx_reassigned);
-      reassigned.setProperty(NULL);
+      reassigned.resetProperty();
       unassignedBidders_.push(idx_reassigned);
     }
   }
@@ -92,7 +92,7 @@ dataType ttk::Auction<dataType>::getMatchingsAndDistance(
   for(int i = 0; i < bidders_.size(); i++) {
     Bidder<dataType> &b = bidders_.get(i);
     if(!b.isDiagonal()) {
-      int good_id = b.getProperty()->id_;
+      int good_id = b.getProperty().id_;
       dataType cost;
 
       if(good_id > -1) {
@@ -101,7 +101,7 @@ dataType ttk::Auction<dataType>::getMatchingsAndDistance(
         matchingTuple t = std::make_tuple(i, good_id, cost);
         matchings->push_back(t);
       } else {
-        if(!b.getProperty()->isDiagonal()) {
+        if(!b.getProperty().isDiagonal()) {
           std::cout << "[AuctionImpl] Huho : both the bidder and the good are "
                        "diagonal points"
                     << std::endl;
@@ -115,7 +115,7 @@ dataType ttk::Auction<dataType>::getMatchingsAndDistance(
       wassersteinDistance += cost;
     } else {
       // b is diagonal
-      Good<dataType> g = *b.getProperty();
+      const Good<dataType> &g = b.getProperty();
       dataType cost = 2 * pow(abs<dataType>((g.y_ - g.x_) / 2), wasserstein_);
       if(get_diagonal_matches) {
         matchingTuple t = std::make_tuple(b.id_, g.id_, cost);

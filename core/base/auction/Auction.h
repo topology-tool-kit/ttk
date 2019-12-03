@@ -257,7 +257,7 @@ namespace ttk {
     void buildUnassignedBidders() {
       for(int i = 0; i < bidders_.size(); i++) {
         Bidder<dataType> &b = bidders_.get(i);
-        b.setProperty(NULL);
+        b.resetProperty();
         unassignedBidders_.push(i);
       }
     }

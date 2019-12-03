@@ -65,23 +65,24 @@ namespace ttk {
 
     void SetCoordinates(dataType &x, dataType &y);
     void SetCriticalCoordinates(float coords_x, float coords_y, float coords_z);
-    std::tuple<float, float, float> GetCriticalCoordinates();
+    std::tuple<float, float, float> GetCriticalCoordinates() const;
     void projectOnDiagonal();
-    int getId();
-    dataType getPersistence();
-    bool isDiagonal();
+    int getId() const;
+    dataType getPersistence() const;
+    bool isDiagonal() const;
 
     template <typename type>
     inline static type abs(const type var) {
       return (var >= 0) ? var : -var;
     }
 
-    dataType cost(AuctionActor &g, int &wasserstein, double &geometricalFactor);
+    dataType
+      cost(const AuctionActor &g, int &wasserstein, double &geometricalFactor);
 
     inline dataType
-      cost(AuctionActor *g, int &wasserstein, double &geometricalFactor);
+      cost(const AuctionActor *g, int &wasserstein, double &geometricalFactor);
 
-    double getPairGeometricalLength(const int wasserstein);
+    double getPairGeometricalLength(const int wasserstein) const;
 
   protected:
     bool is_diagonal_;
@@ -89,7 +90,7 @@ namespace ttk {
   };
 
   template <typename dataType>
-  int AuctionActor<dataType>::getId() {
+  int AuctionActor<dataType>::getId() const {
     return id_;
   }
 
@@ -110,7 +111,7 @@ namespace ttk {
 
   template <typename dataType>
   std::tuple<float, float, float>
-    AuctionActor<dataType>::GetCriticalCoordinates() {
+    AuctionActor<dataType>::GetCriticalCoordinates() const {
     return std::make_tuple(coords_x_, coords_y_, coords_z_);
   }
 
@@ -122,25 +123,25 @@ namespace ttk {
   }
 
   template <typename dataType>
-  dataType AuctionActor<dataType>::getPersistence() {
+  dataType AuctionActor<dataType>::getPersistence() const {
     return y_ - x_;
   }
 
   template <typename dataType>
-  bool AuctionActor<dataType>::isDiagonal() {
+  bool AuctionActor<dataType>::isDiagonal() const {
     return (is_diagonal_);
   }
 
   template <typename dataType>
-  double
-    AuctionActor<dataType>::getPairGeometricalLength(const int wasserstein) {
+  double AuctionActor<dataType>::getPairGeometricalLength(
+    const int wasserstein) const {
     return std::pow(geom_pair_length_[0], wasserstein)
            + std::pow(geom_pair_length_[1], wasserstein)
            + std::pow(geom_pair_length_[2], wasserstein);
   }
 
   template <typename dataType>
-  dataType AuctionActor<dataType>::cost(AuctionActor &g,
+  dataType AuctionActor<dataType>::cost(const AuctionActor &g,
                                         int &wasserstein,
                                         double &geometricalFactor) {
     if(is_diagonal_ && g.isDiagonal()) {
@@ -169,7 +170,7 @@ namespace ttk {
   }
 
   template <typename dataType>
-  dataType AuctionActor<dataType>::cost(AuctionActor *g,
+  dataType AuctionActor<dataType>::cost(const AuctionActor *g,
                                         int &wasserstein,
                                         double &geometricalFactor) {
     return this->cost(*g, wasserstein, geometricalFactor);
@@ -182,8 +183,6 @@ namespace ttk {
     Good(){};
     Good(dataType x, dataType y, bool is_diagonal, int id)
       : AuctionActor<dataType>(x, y, is_diagonal, id) {
-      owner_ = -1;
-      price_ = 0;
       AuctionActor<dataType>::is_diagonal_ = is_diagonal;
       AuctionActor<dataType>::id_ = id;
     }
@@ -243,8 +242,6 @@ namespace ttk {
       } else {
         AuctionActor<dataType>::is_diagonal_ = false;
       }
-      price_ = 0;
-      owner_ = -1;
     }
 
     Good(diagramTuple &tuple, int id) : AuctionActor<dataType>() {
@@ -258,11 +255,7 @@ namespace ttk {
       } else {
         AuctionActor<dataType>::is_diagonal_ = false;
       }
-      price_ = 0;
-      owner_ = -1;
     }
-
-    ~Good(){};
 
     inline void setPrice(dataType price) {
       price_ = price;
@@ -301,10 +294,10 @@ namespace ttk {
     }
 
   protected:
-    dataType price_;
+    dataType price_{0};
     // Position in Auction.bidders_ of the owner of this good.
     // If the good is not owned, owner_ is set to -1
-    int owner_;
+    int owner_{-1};
   };
 
   template <typename dataType>
@@ -357,7 +350,6 @@ namespace ttk {
       : AuctionActor<dataType>(x, y, is_diagonal, id) {
       price_paid_ = 0;
       diagonal_price_ = 0;
-      property_ = NULL;
       AuctionActor<dataType>::is_diagonal_ = is_diagonal;
       AuctionActor<dataType>::id_ = id;
     }
@@ -414,7 +406,6 @@ namespace ttk {
       }
       price_paid_ = 0;
       diagonal_price_ = 0;
-      property_ = NULL;
     }
 
     ~Bidder() {
@@ -457,10 +448,11 @@ namespace ttk {
       const int kdt_index = 0);
 
     // Utility wrapper functions
-    Good<dataType> *getProperty();
+    const Good<dataType> &getProperty();
     void setDiagonalPrice(dataType price);
     void setPricePaid(dataType price);
-    void setProperty(Good<dataType> *g);
+    void setProperty(const Good<dataType> &g);
+    void resetProperty();
     void setTwin(Good<dataType> *g);
     void setPositionInAuction(int pos);
     int getPositionInAuction();
@@ -468,7 +460,7 @@ namespace ttk {
   protected:
     bool is_diagonal_;
     dataType price_paid_;
-    Good<dataType> *property_;
+    Good<dataType> property_{};
 
   private:
     // Attribute stating at which position in Auction.bidders_ this bidder can
@@ -479,7 +471,7 @@ namespace ttk {
   };
 
   template <typename dataType>
-  Good<dataType> *Bidder<dataType>::getProperty() {
+  const Good<dataType> &Bidder<dataType>::getProperty() {
     return property_;
   }
 
@@ -527,7 +519,7 @@ namespace ttk {
       std::cout << "Huho 376" << std::endl;
     }
     // Assign bidder to best_good
-    this->setProperty(best_good);
+    this->setProperty(*best_good);
     this->setPricePaid(new_price);
 
     // Assign best_good to bidder and unassign the previous owner of best_good
@@ -638,7 +630,7 @@ namespace ttk {
     }
 
     // Assign bidder to best_good
-    this->setProperty(best_good);
+    this->setProperty(*best_good);
     this->setPricePaid(new_price);
 
     // Assign best_good to bidder and unassign the previous owner of best_good
@@ -761,7 +753,7 @@ namespace ttk {
     }
 
     // Assign bidder to best_good
-    this->setProperty(best_good);
+    this->setProperty(*best_good);
     this->setPricePaid(new_price);
 
     // std::cout << "got here 4" << std::endl;
@@ -864,7 +856,7 @@ namespace ttk {
       std::cout << "Huho 681" << std::endl;
     }
     // Assign bidder to best_good
-    this->setProperty(best_good);
+    this->setProperty(*best_good);
     this->setPricePaid(new_price);
     // Assign best_good to bidder and unassign the previous owner of best_good
     // if need be
@@ -890,8 +882,13 @@ namespace ttk {
   }
 
   template <typename dataType>
-  void Bidder<dataType>::setProperty(Good<dataType> *g) {
+  void Bidder<dataType>::setProperty(const Good<dataType> &g) {
     property_ = g;
+  }
+
+  template <typename dataType>
+  void Bidder<dataType>::resetProperty() {
+    property_ = {};
   }
 
   template <typename dataType>
