@@ -176,18 +176,23 @@ int ttkPersistenceDiagramClustering::dispatch(
     return ret;
   }
 
+  // zero-padd column name to keep Row Data columns ordered
+  const auto zeroPad
+    = [](std::string &colName, const size_t numberCols, const size_t colIdx) {
+        std::string max{std::to_string(numberCols - 1)};
+        std::string cur{std::to_string(colIdx)};
+        std::string zer(max.size() - cur.size(), '0');
+        colName.append(zer).append(cur);
+      };
+
   // copy distance matrix to output
   for(size_t i = 0; i < diagramsDistMat.size(); ++i) {
     std::string name{"Diagram"};
-
-    // zero-padding to keep Row Data ordered
-    std::string max{std::to_string(diagramsDistMat.size() - 1)};
-    std::string cur{std::to_string(i)};
-    std::string zer(max.size() - cur.size(), '0');
+    zeroPad(name, diagramsDistMat.size(), i);
 
     vtkNew<vtkDoubleArray> col{};
     col->SetNumberOfTuples(numInputs);
-    col->SetName(name.append(zer).append(cur).c_str());
+    col->SetName(name.c_str());
     for(size_t j = 0; j < diagramsDistMat[i].size(); ++j) {
       col->SetTuple1(j, diagramsDistMat[i][j]);
     }
@@ -222,15 +227,11 @@ int ttkPersistenceDiagramClustering::dispatch(
   // copy centroids distance matrix to output
   for(size_t i = 0; i < centroidsDistMat.size(); ++i) {
     std::string name{"Cluster"};
-
-    // zero-padding to keep Row Data ordered
-    std::string max{std::to_string(centroidsDistMat.size() - 1)};
-    std::string cur{std::to_string(i)};
-    std::string zer(max.size() - cur.size(), '0');
+    zeroPad(name, centroidsDistMat.size(), i);
 
     vtkNew<vtkDoubleArray> col{};
     col->SetNumberOfTuples(centroidsDistMat.size());
-    col->SetName(name.append(zer).append(cur).c_str());
+    col->SetName(name.c_str());
     for(size_t j = 0; j < centroidsDistMat[i].size(); ++j) {
       col->SetTuple1(j, centroidsDistMat[i][j]);
     }
