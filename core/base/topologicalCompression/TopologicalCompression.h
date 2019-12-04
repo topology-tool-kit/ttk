@@ -29,9 +29,9 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
+#include <cstring>
 #include <iostream>
 #include <stack>
-#include <string.h>
 
 #ifdef TTK_ENABLE_ZLIB
 #include <zlib.h>
@@ -41,10 +41,8 @@
 #ifndef __cplusplus
 #define __cplusplus 201112L
 #endif
-#include <limits.h>
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <climits>
+#include <cstdio>
 #include <zfp.h>
 #include <zfp/macros.h>
 #endif
@@ -422,10 +420,10 @@ namespace ttk {
     char *fileName;
 
     // Char array that identifies the file format.
-    std::string magicBytes_;
+    static const char *magicBytes_;
     // Current version of the file format. To be incremented at every
     // breaking change to keep backward compatibility.
-    unsigned long formatVersion_;
+    static const unsigned long formatVersion_;
   };
 
   // End namespace ttk.
@@ -641,7 +639,7 @@ int ttk::TopologicalCompression::WriteMetaData(
   const std::string &dataArrayName) {
 
   // -4. Magic bytes
-  WriteConstCharArray(fp, magicBytes_.data(), magicBytes_.size());
+  WriteConstCharArray(fp, magicBytes_, std::strlen(magicBytes_));
 
   // -3. File format version
   WriteUnsignedLong(fp, formatVersion_);
@@ -860,12 +858,13 @@ template <typename T>
 int ttk::TopologicalCompression::ReadMetaData(FILE *fm) {
 
   // -4. Magic bytes
-  std::vector<char> mBytes(magicBytes_.size() + 1);
-  mBytes[magicBytes_.size()] = '\0'; // NULL-termination
-  ReadCharArray(fm, mBytes.data(), magicBytes_.size());
+  const auto magicBytesLen{std::strlen(magicBytes_)};
+  std::vector<char> mBytes(magicBytesLen + 1);
+  mBytes[magicBytesLen] = '\0'; // NULL-termination
+  ReadCharArray(fm, mBytes.data(), magicBytesLen);
 
   // To deal with pre-v1 file format (without scalar field array name)
-  bool hasMagicBytes = strcmp(mBytes.data(), magicBytes_.data()) == 0;
+  bool hasMagicBytes = strcmp(mBytes.data(), magicBytes_) == 0;
 
   if(!hasMagicBytes) {
     std::stringstream msg;

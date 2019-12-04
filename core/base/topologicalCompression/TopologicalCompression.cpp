@@ -9,9 +9,10 @@ ttk::TopologicalCompression::TopologicalCompression() {
   nbSegments = 0;
   nbVertices = 0;
   rawFileLength = 0;
-  magicBytes_ = "TTKCompressedFileFormat";
-  formatVersion_ = 1;
 }
+
+const char *ttk::TopologicalCompression::magicBytes_{"TTKCompressedFileFormat"};
+const unsigned long ttk::TopologicalCompression::formatVersion_{1};
 
 ttk::TopologicalCompression::~TopologicalCompression() {
 }
