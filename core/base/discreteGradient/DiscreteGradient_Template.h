@@ -294,30 +294,21 @@ int DiscreteGradient::processLowerStars(const dataType *const scalars,
     // Insert into pqOne cofacets of cell c_alpha such as numUnpairedFaces == 1
     const auto insertCofacets = [&](const CellExt &ca, lowerStarType &ls) {
       if(ca.dim_ == 1) {
-        const auto &v = ca.lowVerts_[0];
-
         for(auto &beta : ls[2]) {
-          const auto &v0 = beta.lowVerts_[0];
-          const auto &v1 = beta.lowVerts_[1];
-
-          if(v == v0 || v == v1) {
+          if(ls[1][beta.faces_[0]].id_ == ca.id_
+             || ls[1][beta.faces_[1]].id_ == ca.id_) {
             // edge ca belongs to triangle beta
             if(numUnpairedFaces(beta, ls).first == 1) {
               pqOne.push(beta);
             }
           }
         }
+
       } else if(ca.dim_ == 2) {
-        const auto &v0 = ca.lowVerts_[0];
-        const auto &v1 = ca.lowVerts_[1];
-
         for(auto &beta : ls[3]) {
-          const auto &t0 = beta.lowVerts_[0];
-          const auto &t1 = beta.lowVerts_[1];
-          const auto &t2 = beta.lowVerts_[2];
-
-          if((v0 == t0 || v0 == t1 || v0 == t2)
-             && (v1 == t0 || v1 == t1 || v1 == t2)) {
+          if(ls[2][beta.faces_[0]].id_ == ca.id_
+             || ls[2][beta.faces_[1]].id_ == ca.id_
+             || ls[2][beta.faces_[2]].id_ == ca.id_) {
             // triangle ca belongs to tetra beta
             if(numUnpairedFaces(beta, ls).first == 1) {
               pqOne.push(beta);
