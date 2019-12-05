@@ -419,6 +419,36 @@ function value.
           return res;
         }
 
+        const auto processTriangle = [&](const SimplexId triangleId,
+                                         const SimplexId v0, const SimplexId v1,
+                                         const SimplexId v2) {
+          std::array<SimplexId, 3> lowVerts{};
+          if(v0 == a) {
+            lowVerts[0] = v1;
+            lowVerts[1] = v2;
+          } else if(v1 == a) {
+            lowVerts[0] = v0;
+            lowVerts[1] = v2;
+          } else if(v2 == a) {
+            lowVerts[0] = v0;
+            lowVerts[1] = v1;
+          }
+          if(sosGreaterThan(a, lowVerts[0]) && sosGreaterThan(a, lowVerts[1])) {
+            uint8_t j{}, k{};
+            // store edges indices of current triangle
+            std::array<uint8_t, 3> faces{};
+            for(const auto &e : res[1]) {
+              if(e.lowVerts_[0] == lowVerts[0]
+                 || e.lowVerts_[0] == lowVerts[1]) {
+                faces[k++] = j;
+              }
+              j++;
+            }
+            res[2].emplace_back(
+              CellExt{2, triangleId, std::move(lowVerts), std::move(faces)});
+          }
+        };
+
         if(dimensionality_ == 2) {
           // store lower triangles
 
@@ -430,38 +460,12 @@ function value.
           for(SimplexId i = 0; i < ncells; ++i) {
             SimplexId cellId;
             inputTriangulation_->getVertexStar(a, i, cellId);
-            std::array<SimplexId, 3> lowVerts{};
             SimplexId v0{}, v1{}, v2{};
             inputTriangulation_->getCellVertex(cellId, 0, v0);
             inputTriangulation_->getCellVertex(cellId, 1, v1);
             inputTriangulation_->getCellVertex(cellId, 2, v2);
-            if(v0 == a) {
-              lowVerts[0] = v1;
-              lowVerts[1] = v2;
-            } else if(v1 == a) {
-              lowVerts[0] = v0;
-              lowVerts[1] = v2;
-            } else if(v2 == a) {
-              lowVerts[0] = v0;
-              lowVerts[1] = v1;
-            }
-            if(sosGreaterThan(a, lowVerts[0])
-               && sosGreaterThan(a, lowVerts[1])) {
-              uint8_t j{}, k{};
-              // store edges indices of current triangle
-              std::array<uint8_t, 3> faces{};
-              for(const auto &e : res[1]) {
-                if(e.lowVerts_[0] == lowVerts[0]
-                   || e.lowVerts_[0] == lowVerts[1]) {
-                  faces[k++] = j;
-                }
-                j++;
-              }
-              res[2].emplace_back(
-                CellExt{2, cellId, std::move(lowVerts), std::move(faces)});
-            }
+            processTriangle(cellId, v0, v1, v2);
           }
-
         } else if(dimensionality_ == 3) {
           // store lower triangles
           const auto ntri = inputTriangulation_->getVertexTriangleNumber(a);
@@ -469,36 +473,11 @@ function value.
           for(SimplexId i = 0; i < ntri; i++) {
             SimplexId triangleId;
             inputTriangulation_->getVertexTriangle(a, i, triangleId);
-            std::array<SimplexId, 3> lowVerts{};
             SimplexId v0{}, v1{}, v2{};
             inputTriangulation_->getTriangleVertex(triangleId, 0, v0);
             inputTriangulation_->getTriangleVertex(triangleId, 1, v1);
             inputTriangulation_->getTriangleVertex(triangleId, 2, v2);
-            if(v0 == a) {
-              lowVerts[0] = v1;
-              lowVerts[1] = v2;
-            } else if(v1 == a) {
-              lowVerts[0] = v0;
-              lowVerts[1] = v2;
-            } else if(v2 == a) {
-              lowVerts[0] = v0;
-              lowVerts[1] = v1;
-            }
-            if(sosGreaterThan(a, lowVerts[0])
-               && sosGreaterThan(a, lowVerts[1])) {
-              uint8_t j{}, k{};
-              // store edges indices of current triangle
-              std::array<uint8_t, 3> faces{};
-              for(const auto &e : res[1]) {
-                if(e.lowVerts_[0] == lowVerts[0]
-                   || e.lowVerts_[0] == lowVerts[1]) {
-                  faces[k++] = j;
-                }
-                j++;
-              }
-              res[2].emplace_back(
-                CellExt{2, triangleId, std::move(lowVerts), std::move(faces)});
-            }
+            processTriangle(triangleId, v0, v1, v2);
           }
 
           // at least three triangles in the lower star for one tetra
