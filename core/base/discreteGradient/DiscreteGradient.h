@@ -59,12 +59,14 @@ namespace ttk {
       }
       explicit CellExt(const int dim,
                        const SimplexId id,
-                       const std::array<SimplexId, 3> &&lowVerts)
-        : Cell{dim, id}, lowVerts_{lowVerts} {
+                       const std::array<SimplexId, 3> &&lowVerts,
+                       const std::array<uint8_t, 3> &&faces)
+        : Cell{dim, id}, lowVerts_{lowVerts}, faces_{faces} {
       }
 
       bool paired_{false};
       const std::array<SimplexId, 3> lowVerts_{};
+      const std::array<uint8_t, 3> faces_{};
     };
 
     /**
@@ -402,7 +404,7 @@ function value.
             inputTriangulation_->getEdgeVertex(edgeId, 1, vertexId);
           }
           if(!sosGreaterThan(vertexId, a)) {
-            res[1].emplace_back(CellExt{1, edgeId, {vertexId}});
+            res[1].emplace_back(CellExt{1, edgeId, {vertexId}, {}});
           }
         }
 
@@ -439,7 +441,18 @@ function value.
             }
             if(sosGreaterThan(a, lowVerts[0])
                && sosGreaterThan(a, lowVerts[1])) {
-              res[2].emplace_back(CellExt{2, cellId, std::move(lowVerts)});
+              uint8_t j{}, k{};
+              // store edges indices of current triangle
+              std::array<uint8_t, 3> faces{};
+              for(const auto &e : res[1]) {
+                if(e.lowVerts_[0] == lowVerts[0]
+                   || e.lowVerts_[0] == lowVerts[1]) {
+                  faces[k++] = j;
+                }
+                j++;
+              }
+              res[2].emplace_back(
+                CellExt{2, cellId, std::move(lowVerts), std::move(faces)});
             }
           }
 
@@ -467,7 +480,18 @@ function value.
             }
             if(sosGreaterThan(a, lowVerts[0])
                && sosGreaterThan(a, lowVerts[1])) {
-              res[2].emplace_back(CellExt{2, triangleId, std::move(lowVerts)});
+              uint8_t j{}, k{};
+              // store edges indices of current triangle
+              std::array<uint8_t, 3> faces{};
+              for(const auto &e : res[1]) {
+                if(e.lowVerts_[0] == lowVerts[0]
+                   || e.lowVerts_[0] == lowVerts[1]) {
+                  faces[k++] = j;
+                }
+                j++;
+              }
+              res[2].emplace_back(
+                CellExt{2, triangleId, std::move(lowVerts), std::move(faces)});
             }
           }
 
@@ -505,7 +529,23 @@ function value.
               if(sosGreaterThan(a, lowVerts[0])
                  && sosGreaterThan(a, lowVerts[1])
                  && sosGreaterThan(a, lowVerts[2])) {
-                res[3].emplace_back(CellExt{3, cellId, std::move(lowVerts)});
+                uint8_t j{}, k{};
+                // store triangles indices of current tetra
+                std::array<uint8_t, 3> faces{};
+                for(const auto &t : res[2]) {
+                  if((t.lowVerts_[0] == lowVerts[0]
+                      || t.lowVerts_[0] == lowVerts[1]
+                      || t.lowVerts_[0] == lowVerts[2])
+                     && (t.lowVerts_[1] == lowVerts[0]
+                         || t.lowVerts_[1] == lowVerts[1]
+                         || t.lowVerts_[1] == lowVerts[2])) {
+                    faces[k++] = j;
+                  }
+                  j++;
+                }
+
+                res[3].emplace_back(
+                  CellExt{3, cellId, std::move(lowVerts), std::move(faces)});
               }
             }
           }
