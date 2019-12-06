@@ -550,6 +550,11 @@ function value.
        */
       std::pair<size_t, SimplexId>
         numUnpairedFaces(const CellExt &c, const lowerStarType &ls) const;
+      std::pair<size_t, SimplexId>
+        numUnpairedFacesTriangle(const CellExt &c,
+                                 const lowerStarType &ls) const;
+      std::pair<size_t, SimplexId>
+        numUnpairedFacesTetra(const CellExt &c, const lowerStarType &ls) const;
 
       /**
        * @brief Return the critical type corresponding to given

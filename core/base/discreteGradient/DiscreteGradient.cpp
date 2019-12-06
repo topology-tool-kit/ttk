@@ -53,28 +53,45 @@ SimplexId DiscreteGradient::getNumberOfCells(const int dimension) const {
 std::pair<size_t, SimplexId>
   DiscreteGradient::numUnpairedFaces(const CellExt &c,
                                      const lowerStarType &ls) const {
+  // c.dim_ cannot be <= 1
+  if(c.dim_ == 2) {
+    return numUnpairedFacesTriangle(c, ls);
+  } else if(c.dim_ == 3) {
+    return numUnpairedFacesTetra(c, ls);
+  }
 
+  return {0, -1};
+}
+
+std::pair<size_t, SimplexId>
+  DiscreteGradient::numUnpairedFacesTriangle(const CellExt &c,
+                                             const lowerStarType &ls) const {
   // number of unpaired faces
   std::pair<size_t, SimplexId> res{0, -1};
 
-  // c.dim_ cannot be <= 1
-
-  if(c.dim_ == 2) {
-    // loop over edge faces of triangle
-    // (2 edges per triangle in lower star)
-    for(size_t i = 0; i < 2; ++i) {
-      if(!ls[1][c.faces_[i]].paired_) {
-        res.first++;
-        res.second = c.faces_[i];
-      }
+  // loop over edge faces of triangle
+  // (2 edges per triangle in lower star)
+  for(size_t i = 0; i < 2; ++i) {
+    if(!ls[1][c.faces_[i]].paired_) {
+      res.first++;
+      res.second = c.faces_[i];
     }
-  } else if(c.dim_ == 3) {
-    // loop over triangle faces of tetra
-    for(const auto f : c.faces_) {
-      if(!ls[2][f].paired_) {
-        res.first++;
-        res.second = f;
-      }
+  }
+
+  return res;
+}
+
+std::pair<size_t, SimplexId>
+  DiscreteGradient::numUnpairedFacesTetra(const CellExt &c,
+                                          const lowerStarType &ls) const {
+  // number of unpaired faces
+  std::pair<size_t, SimplexId> res{0, -1};
+
+  // loop over triangle faces of tetra
+  for(const auto f : c.faces_) {
+    if(!ls[2][f].paired_) {
+      res.first++;
+      res.second = f;
     }
   }
 

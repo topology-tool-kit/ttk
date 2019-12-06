@@ -298,7 +298,7 @@ int DiscreteGradient::processLowerStars(const dataType *const scalars,
           if(ls[1][beta.faces_[0]].id_ == ca.id_
              || ls[1][beta.faces_[1]].id_ == ca.id_) {
             // edge ca belongs to triangle beta
-            if(numUnpairedFaces(beta, ls).first == 1) {
+            if(numUnpairedFacesTriangle(beta, ls).first == 1) {
               pqOne.push(beta);
             }
           }
@@ -310,7 +310,7 @@ int DiscreteGradient::processLowerStars(const dataType *const scalars,
              || ls[2][beta.faces_[1]].id_ == ca.id_
              || ls[2][beta.faces_[2]].id_ == ca.id_) {
             // triangle ca belongs to tetra beta
-            if(numUnpairedFaces(beta, ls).first == 1) {
+            if(numUnpairedFacesTetra(beta, ls).first == 1) {
               pqOne.push(beta);
             }
           }
