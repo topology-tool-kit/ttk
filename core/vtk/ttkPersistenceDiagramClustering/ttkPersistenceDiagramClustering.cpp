@@ -28,15 +28,14 @@ int ttkPersistenceDiagramClustering::updateProgress(const float &progress) {
   return 0;
 }
 
-template <typename VTK_TT>
-int ttkPersistenceDiagramClustering::dispatch(
-  int numInputs,
+int ttkPersistenceDiagramClustering::doIt(
   const std::vector<vtkUnstructuredGrid *> &inputDiagram,
   vtkUnstructuredGrid *outputClusters,
   vtkUnstructuredGrid *outputCentroids,
   vtkUnstructuredGrid *outputMatchings,
   vtkTable *diagramsDistTable,
-  vtkTable *centroidsDistTable) {
+  vtkTable *centroidsDistTable,
+  int numInputs) {
 
   int ret{};
   if(needUpdate_) {
@@ -54,7 +53,7 @@ int ttkPersistenceDiagramClustering::dispatch(
 
     if(Method == 0) {
       // Progressive approach
-      PersistenceDiagramClustering<VTK_TT> persistenceDiagramsClustering;
+      PersistenceDiagramClustering<double> persistenceDiagramsClustering;
       persistenceDiagramsClustering.setWrapper(this);
 
       string wassersteinMetric = WassersteinMetric;
@@ -103,7 +102,7 @@ int ttkPersistenceDiagramClustering::dispatch(
       for(int i_input = 0; i_input < numInputs; i_input++) {
         inv_clustering_[i_input] = 0;
       }
-      PersistenceDiagramBarycenter<VTK_TT> persistenceDiagramsBarycenter;
+      PersistenceDiagramBarycenter<double> persistenceDiagramsBarycenter;
       persistenceDiagramsBarycenter.setWrapper(this);
 
       string wassersteinMetric = WassersteinMetric;
@@ -128,9 +127,9 @@ int ttkPersistenceDiagramClustering::dispatch(
     }
   }
 
-  outputMatchings->ShallowCopy(createMatchings<VTK_TT>());
-  outputClusters->ShallowCopy(createOutputClusteredDiagrams<VTK_TT>());
-  outputCentroids->ShallowCopy(createOutputCentroids<VTK_TT>());
+  outputMatchings->ShallowCopy(createMatchings<double>());
+  outputClusters->ShallowCopy(createOutputClusteredDiagrams<double>());
+  outputCentroids->ShallowCopy(createOutputCentroids<double>());
 
   if(!OutputDistanceMatrix) {
     // early return
@@ -200,22 +199,6 @@ int ttkPersistenceDiagramClustering::dispatch(
   }
 
   return ret;
-}
-
-int ttkPersistenceDiagramClustering::doIt(
-  const std::vector<vtkUnstructuredGrid *> &input,
-  vtkUnstructuredGrid *outputClusters,
-  vtkUnstructuredGrid *outputCentroids,
-  vtkUnstructuredGrid *outputMatchings,
-  vtkTable *diagramsDistTable,
-  vtkTable *centroidsDistTable,
-  int numInputs) {
-
-  this->dispatch<double>(numInputs, input, outputClusters, outputCentroids,
-                         outputMatchings, diagramsDistTable,
-                         centroidsDistTable);
-
-  return 0;
 }
 
 int ttkPersistenceDiagramClustering::FillInputPortInformation(

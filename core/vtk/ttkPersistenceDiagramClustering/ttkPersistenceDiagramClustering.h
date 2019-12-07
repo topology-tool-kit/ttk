@@ -372,15 +372,6 @@ private:
   bool needsToAbort() override;
 
   int updateProgress(const float &progress) override;
-
-  template <typename T>
-  int dispatch(int numInputs,
-               const std::vector<vtkUnstructuredGrid *> &inputDiagram,
-               vtkUnstructuredGrid *outputClusters,
-               vtkUnstructuredGrid *outputCentroids,
-               vtkUnstructuredGrid *outputMatchings,
-               vtkTable *diagramsDistTable,
-               vtkTable *centroidsDistTable);
 };
 
 template <typename dataType>
