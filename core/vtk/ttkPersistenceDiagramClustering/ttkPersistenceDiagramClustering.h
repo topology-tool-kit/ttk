@@ -287,26 +287,12 @@ protected:
   int FillOutputPortInformation(int port, vtkInformation *info) override;
 
   template <typename dataType>
-  vtkSmartPointer<vtkUnstructuredGrid>
-    createMatchings(const vector<vector<diagramTuple>> *final_centroids,
-                    vector<int> inv_clustering,
-                    std::vector<std::vector<diagramTuple>> &all_CTDiagrams,
-                    const vector<vector<vector<matchingTuple>>> *matchings,
-                    double max_dimension,
-                    double spacing);
+  vtkSmartPointer<vtkUnstructuredGrid> createMatchings();
   template <typename dataType>
-  vtkSmartPointer<vtkUnstructuredGrid> createOutputClusteredDiagrams(
-    std::vector<std::vector<diagramTuple>> &all_CTDiagrams,
-    std::vector<int> inv_clustering,
-    double max_dimension,
-    double spacing);
+  vtkSmartPointer<vtkUnstructuredGrid> createOutputClusteredDiagrams();
 
   template <typename dataType>
-  vtkSmartPointer<vtkUnstructuredGrid> createOutputCentroids(
-    std::vector<std::vector<diagramTuple>> *final_centroids,
-    std::vector<int> inv_clustering,
-    double max_dimension,
-    double spacing);
+  vtkSmartPointer<vtkUnstructuredGrid> createOutputCentroids();
 
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,
@@ -548,11 +534,7 @@ double ttkPersistenceDiagramClustering::getPersistenceDiagram(
 
 template <typename dataType>
 vtkSmartPointer<vtkUnstructuredGrid>
-  ttkPersistenceDiagramClustering::createOutputCentroids(
-    std::vector<std::vector<diagramTuple>> *final_centroids,
-    std::vector<int> /*inv_clustering*/,
-    double max_dimension,
-    double spacing) {
+  ttkPersistenceDiagramClustering::createOutputCentroids() {
   if(debugLevel_ > 5) {
     std::cout << "[ttkPersistenceDiagramClustering] Creating vtk diagrams"
               << std::endl;
@@ -589,17 +571,17 @@ vtkSmartPointer<vtkUnstructuredGrid>
   coordsScalars->SetName("Coordinates");
 
   int count = 0;
-  for(unsigned int j = 0; j < final_centroids->size(); ++j) {
-    std::vector<diagramTuple> *diagram = &((*final_centroids)[j]);
+  for(unsigned int j = 0; j < final_centroids_.size(); ++j) {
+    const std::vector<diagramTuple> &diagram = final_centroids_[j];
 
     // First, add diagram points to the global input diagram
-    for(unsigned int i = 0; i < diagram->size(); ++i) {
+    for(unsigned int i = 0; i < diagram.size(); ++i) {
       vtkIdType ids[2];
-      diagramTuple t = diagram->at(i);
+      const diagramTuple &t = diagram[i];
       double x1 = std::get<6>(t);
       double y1 = x1;
-      if(DisplayMethod == 1 && spacing != 0) {
-        x1 += 3 * (abs(spacing) + 0.2) * max_dimension * j;
+      if(DisplayMethod == 1 && Spacing != 0) {
+        x1 += 3 * (abs(Spacing) + 0.2) * max_dimension_total_ * j;
       }
       double z1 = 0; // Change 1 to j if you want to isolate the diagrams
 
@@ -643,9 +625,9 @@ vtkSmartPointer<vtkUnstructuredGrid>
         default:
           nodeType->InsertTuple1(2 * count, 0);
       }
-      if(DisplayMethod == 1 && spacing != 0) {
+      if(DisplayMethod == 1 && Spacing != 0) {
         points->InsertNextPoint(
-          x2 + 3 * (abs(spacing) + 0.2) * max_dimension * j, y2, z2);
+          x2 + 3 * (abs(Spacing) + 0.2) * max_dimension_total_ * j, y2, z2);
       } else {
         points->InsertNextPoint(x2, y2, z2);
       }
@@ -714,11 +696,7 @@ vtkSmartPointer<vtkUnstructuredGrid>
 
 template <typename dataType>
 vtkSmartPointer<vtkUnstructuredGrid>
-  ttkPersistenceDiagramClustering::createOutputClusteredDiagrams(
-    std::vector<std::vector<diagramTuple>> &all_CTDiagrams,
-    std::vector<int> inv_clustering,
-    double max_dimension,
-    double spacing) {
+  ttkPersistenceDiagramClustering::createOutputClusteredDiagrams() {
   if(debugLevel_ > 5) {
     std::cout << "[ttkPersistenceDiagramClustering] Creating vtk Outputs"
               << std::endl;
@@ -763,14 +741,14 @@ vtkSmartPointer<vtkUnstructuredGrid>
   vertexSField->SetNumberOfComponents(1);
 
   std::vector<int> cluster_size;
-  std::vector<int> idxInCluster(all_CTDiagrams.size());
-  for(unsigned int j = 0; j < all_CTDiagrams.size(); ++j) {
+  std::vector<int> idxInCluster(intermediateDiagrams_.size());
+  for(unsigned int j = 0; j < intermediateDiagrams_.size(); ++j) {
     idxInCluster[j] = 0;
   }
   // RE-Invert clusters
-  if(spacing > 0) {
-    for(unsigned int j = 0; j < all_CTDiagrams.size(); ++j) {
-      unsigned int c = inv_clustering[j];
+  if(Spacing > 0) {
+    for(unsigned int j = 0; j < intermediateDiagrams_.size(); ++j) {
+      unsigned int c = inv_clustering_[j];
       if(c + 1 > cluster_size.size()) {
         cluster_size.resize(c + 1);
         cluster_size[c] = 1;
@@ -782,14 +760,14 @@ vtkSmartPointer<vtkUnstructuredGrid>
     }
   }
   int count = 0;
-  for(unsigned int j = 0; j < all_CTDiagrams.size(); ++j) {
-    std::vector<diagramTuple> *diagram = &(all_CTDiagrams[j]);
+  for(unsigned int j = 0; j < intermediateDiagrams_.size(); ++j) {
+    const std::vector<diagramTuple> &diagram = intermediateDiagrams_[j];
 
-    unsigned int c = inv_clustering[j];
+    unsigned int c = inv_clustering_[j];
     // First, add diagram points to the global input diagram
-    for(unsigned int i = 0; i < diagram->size(); ++i) {
+    for(unsigned int i = 0; i < diagram.size(); ++i) {
       vtkIdType ids[2];
-      diagramTuple t = diagram->at(i);
+      const diagramTuple t = diagram[i];
       double x1 = std::get<6>(t);
       double y1 = x1;
       double z1 = 0;
@@ -801,23 +779,23 @@ vtkSmartPointer<vtkUnstructuredGrid>
       double x2 = std::get<6>(t);
       double y2 = std::get<10>(t);
       double z2 = 0;
-      if(DisplayMethod == 1 && spacing > 0) {
+      if(DisplayMethod == 1 && Spacing > 0) {
         // cout<<"j "<<j<<" size "<<cluster_size[inv_clustering[j]]<<endl;
         // cout<<"count "<<count_diagram<<endl;
         double angle = 2 * 3.1415926 * (double)(idxInCluster[j])
-                       / cluster_size[inv_clustering[j]];
-        x1 += (abs(spacing) + .2) * 3 * max_dimension * c
-              + spacing * max_dimension * cos(angle);
-        x2 += (abs(spacing) + .2) * 3 * max_dimension * c
-              + spacing * max_dimension * cos(angle);
-        y1 += spacing * max_dimension * sin(angle);
-        y2 += spacing * max_dimension * sin(angle);
+                       / cluster_size[inv_clustering_[j]];
+        x1 += (abs(Spacing) + .2) * 3 * max_dimension_total_ * c
+              + Spacing * max_dimension_total_ * cos(angle);
+        x2 += (abs(Spacing) + .2) * 3 * max_dimension_total_ * c
+              + Spacing * max_dimension_total_ * cos(angle);
+        y1 += Spacing * max_dimension_total_ * sin(angle);
+        y2 += Spacing * max_dimension_total_ * sin(angle);
       } else if(DisplayMethod == 2) {
-        z2 = spacing;
-        z1 = spacing;
+        z2 = Spacing;
+        z1 = Spacing;
         if(j == 0) {
-          z2 = -spacing;
-          z1 = -spacing;
+          z2 = -Spacing;
+          z1 = -Spacing;
         }
       }
 
@@ -927,13 +905,7 @@ vtkSmartPointer<vtkUnstructuredGrid>
 
 template <typename dataType>
 vtkSmartPointer<vtkUnstructuredGrid>
-  ttkPersistenceDiagramClustering::createMatchings(
-    const vector<vector<diagramTuple>> *final_centroids,
-    vector<int> inv_clustering,
-    std::vector<std::vector<diagramTuple>> &all_CTDiagrams,
-    const vector<vector<vector<matchingTuple>>> *all_matchings,
-    double max_dimension,
-    double spacing) {
+  ttkPersistenceDiagramClustering::createMatchings() {
   if(debugLevel_ > 5) {
     std::cout << "[ttkPersistenceDiagramClustering] Creating vtk Matchings"
               << std::endl;
@@ -969,18 +941,18 @@ vtkSmartPointer<vtkUnstructuredGrid>
   matchingCount->SetName("MatchNumber");
 
   std::vector<int> cluster_size;
-  std::vector<int> idxInCluster(all_CTDiagrams.size());
+  std::vector<int> idxInCluster(intermediateDiagrams_.size());
 
-  std::vector<int> matchings_count(final_centroids->at(0).size(), 0);
+  std::vector<int> matchings_count(final_centroids_[0].size(), 0);
   std::vector<int> count_to_good;
 
-  for(unsigned int j = 0; j < all_CTDiagrams.size(); ++j) {
+  for(unsigned int j = 0; j < intermediateDiagrams_.size(); ++j) {
     idxInCluster[j] = 0;
   }
   // RE-Invert clusters
-  if(DisplayMethod == 1 && spacing > 0) {
-    for(unsigned int j = 0; j < all_CTDiagrams.size(); ++j) {
-      unsigned int c = inv_clustering[j];
+  if(DisplayMethod == 1 && Spacing > 0) {
+    for(unsigned int j = 0; j < intermediateDiagrams_.size(); ++j) {
+      unsigned int c = inv_clustering_[j];
       if(c + 1 > cluster_size.size()) {
         cluster_size.resize(c + 1);
         cluster_size[c] = 1;
@@ -992,11 +964,11 @@ vtkSmartPointer<vtkUnstructuredGrid>
     }
   }
   int count = 0;
-  for(unsigned int j = 0; j < all_CTDiagrams.size(); ++j) {
-    int c = inv_clustering[j];
-    std::vector<diagramTuple> *diagram = &(all_CTDiagrams[j]);
+  for(unsigned int j = 0; j < intermediateDiagrams_.size(); ++j) {
+    int c = inv_clustering_[j];
+    const auto &diagram = intermediateDiagrams_[j];
     std::vector<matchingTuple> matchings_j
-      = all_matchings->at(inv_clustering[j])[j];
+      = all_matchings_[inv_clustering_[j]][j];
     for(unsigned int i = 0; i < matchings_j.size(); ++i) {
 
       vtkIdType ids[2];
@@ -1009,29 +981,29 @@ vtkSmartPointer<vtkUnstructuredGrid>
         matchings_count[good_id] += 1;
         count_to_good.push_back(good_id);
       }
-      diagramTuple t1 = final_centroids->at(inv_clustering[j])[good_id];
+      diagramTuple t1 = final_centroids_[inv_clustering_[j]][good_id];
       double x1 = std::get<6>(t1);
       double y1 = std::get<10>(t1);
       double z1 = 0;
 
       // endl;
-      if(bidder_id < (int)diagram->size()) {
-        diagramTuple t2 = diagram->at(bidder_id);
+      if(bidder_id < (int)diagram.size()) {
+        diagramTuple t2 = diagram[bidder_id];
         double x2 = std::get<6>(t2);
         double y2 = std::get<10>(t2);
         double z2 = 0; // Change 1 to j if you want to isolate the diagrams
 
-        if(DisplayMethod == 1 && spacing > 0) {
+        if(DisplayMethod == 1 && Spacing > 0) {
           double angle
             = 2 * 3.1415926 * (double)(idxInCluster[j]) / cluster_size[c];
-          x1 += (abs(spacing) + .2) * 3 * max_dimension * c;
-          x2 += (abs(spacing) + .2) * 3 * max_dimension * c
-                + spacing * max_dimension * cos(angle);
-          y2 += spacing * max_dimension * sin(angle);
+          x1 += (abs(Spacing) + .2) * 3 * max_dimension_total_ * c;
+          x2 += (abs(Spacing) + .2) * 3 * max_dimension_total_ * c
+                + Spacing * max_dimension_total_ * cos(angle);
+          y2 += Spacing * max_dimension_total_ * sin(angle);
         } else if(DisplayMethod == 2) {
-          z2 = spacing;
-          if(all_CTDiagrams.size() == 2 and j == 0) {
-            z2 = -spacing;
+          z2 = Spacing;
+          if(intermediateDiagrams_.size() == 2 and j == 0) {
+            z2 = -Spacing;
           }
         }
         if(good_id > -1) {
@@ -1039,7 +1011,7 @@ vtkSmartPointer<vtkUnstructuredGrid>
           matchingPoints->InsertNextPoint(x2, y2, z2);
           matchingMesh->InsertNextCell(VTK_LINE, 2, ids);
           idOfDiagramMatching->InsertTuple1(count, j);
-          idOfCluster->InsertTuple1(count, inv_clustering[j]);
+          idOfCluster->InsertTuple1(count, inv_clustering_[j]);
           cost->InsertTuple1(count, std::get<2>(m));
           idOfDiagramMatchingPoint->InsertTuple1(2 * count, j);
           idOfDiagramMatchingPoint->InsertTuple1(2 * count + 1, j);
@@ -1067,7 +1039,7 @@ vtkSmartPointer<vtkUnstructuredGrid>
       }
     }
   }
-  if(NumberOfClusters == 1 and all_CTDiagrams.size() == 2) {
+  if(NumberOfClusters == 1 and intermediateDiagrams_.size() == 2) {
     for(int i = 0; i < count; i++) {
       matchingCount->InsertTuple1(i, matchings_count[count_to_good[i]]);
     }
@@ -1080,7 +1052,7 @@ vtkSmartPointer<vtkUnstructuredGrid>
   matchingMesh->GetCellData()->AddArray(idOfCluster);
   matchingMesh->GetCellData()->AddArray(pairType);
   matchingMesh->GetCellData()->AddArray(cost);
-  if(NumberOfClusters == 1 and all_CTDiagrams.size() == 2) {
+  if(NumberOfClusters == 1 and intermediateDiagrams_.size() == 2) {
     matchingMesh->GetCellData()->AddArray(matchingCount);
   }
 
