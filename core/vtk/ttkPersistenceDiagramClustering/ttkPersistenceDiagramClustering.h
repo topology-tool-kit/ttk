@@ -313,11 +313,26 @@ protected:
                   vtkInformationVector *outputVector) override;
 
 private:
-  // std::vector<std::vector<diagramTuple>>
-  void *intermediateDiagrams_{nullptr};
-  // std::vector<std::vector<diagramTuple>>
-  void *all_matchings_{nullptr};
-  void *final_centroids_{nullptr};
+  using macroDiagramTuple = std::tuple<ttk::SimplexId,
+                                       ttk::CriticalType,
+                                       ttk::SimplexId,
+                                       ttk::CriticalType,
+                                       double,
+                                       ttk::SimplexId,
+                                       double,
+                                       float,
+                                       float,
+                                       float,
+                                       double,
+                                       float,
+                                       float,
+                                       float>;
+  using macroMatchingTuple = std::tuple<ttk::SimplexId, ttk::SimplexId, double>;
+
+  std::vector<std::vector<macroDiagramTuple>> intermediateDiagrams_{};
+  std::vector<std::vector<std::vector<macroMatchingTuple>>> all_matchings_{};
+  std::vector<std::vector<macroDiagramTuple>> final_centroids_{};
+
   std::vector<int> inv_clustering_{};
 
   // vtkUnstructuredGrid* output_clusters_;

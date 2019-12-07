@@ -38,50 +38,15 @@ int ttkPersistenceDiagramClustering::dispatch(
   vtkTable *diagramsDistTable,
   vtkTable *centroidsDistTable) {
 
-  using macroDiagramTuple
-    = std::tuple<ttk::SimplexId, ttk::CriticalType, ttk::SimplexId,
-                 ttk::CriticalType, VTK_TT, ttk::SimplexId, VTK_TT, float,
-                 float, float, VTK_TT, float, float, float>;
-  using macroMatchingTuple = std::tuple<ttk::SimplexId, ttk::SimplexId, VTK_TT>;
-
   int ret{};
-  vector<vector<macroDiagramTuple>> *intermediateDiagrams;
-  vector<vector<vector<macroMatchingTuple>>> *all_matchings;
-  vector<vector<macroDiagramTuple>> *final_centroids;
   if(needUpdate_) {
-    if(intermediateDiagrams_) {
-      vector<vector<macroDiagramTuple>> *tmpPTR
-        = (vector<vector<macroDiagramTuple>> *)intermediateDiagrams_;
-      delete tmpPTR;
-    }
-    intermediateDiagrams_ = new vector<vector<macroDiagramTuple>>(numInputs);
-
-    if(final_centroids_) {
-      vector<vector<macroDiagramTuple>> *tmpPTR
-        = (vector<vector<macroDiagramTuple>> *)final_centroids_;
-      delete tmpPTR;
-    }
-    final_centroids_ = new vector<vector<macroDiagramTuple>>;
-
-    if(all_matchings_) {
-      vector<vector<vector<macroMatchingTuple>>> *tmpPTR
-        = (vector<vector<vector<macroMatchingTuple>>> *)all_matchings_;
-      delete tmpPTR;
-    }
-    all_matchings_ = new vector<vector<vector<macroMatchingTuple>>>(3);
-  }
-
-  final_centroids = (vector<vector<macroDiagramTuple>> *)final_centroids_;
-  intermediateDiagrams
-    = (vector<vector<macroDiagramTuple>> *)intermediateDiagrams_;
-  all_matchings = (vector<vector<vector<macroMatchingTuple>>> *)all_matchings_;
-
-  if(needUpdate_) {
+    intermediateDiagrams_.resize(numInputs);
+    all_matchings_.resize(3);
 
     max_dimension_total_ = 0;
     for(int i = 0; i < numInputs; i++) {
-      double max_dimension = getPersistenceDiagram<VTK_TT>(
-        intermediateDiagrams->at(i), inputDiagram[i], Spacing, 0);
+      double max_dimension = getPersistenceDiagram(
+        intermediateDiagrams_[i], inputDiagram[i], Spacing, 0);
       if(max_dimension_total_ < max_dimension) {
         max_dimension_total_ = max_dimension;
       }
@@ -121,7 +86,7 @@ int ttkPersistenceDiagramClustering::dispatch(
         PerClusterDistanceMatrix);
 
       inv_clustering_ = persistenceDiagramsClustering.execute(
-        *intermediateDiagrams, *final_centroids, *all_matchings);
+        intermediateDiagrams_, final_centroids_, all_matchings_);
 
       diagramsDistMat = persistenceDiagramsClustering.getDiagramsDistMat();
       distanceToCentroid
@@ -133,7 +98,7 @@ int ttkPersistenceDiagramClustering::dispatch(
 
     else {
       // AUCTION APPROACH
-      final_centroids->resize(1);
+      final_centroids_.resize(1);
       inv_clustering_.resize(numInputs);
       for(int i_input = 0; i_input < numInputs; i_input++) {
         inv_clustering_[i_input] = 0;
@@ -157,19 +122,19 @@ int ttkPersistenceDiagramClustering::dispatch(
       // persistenceDiagramsBarycenter.setEarlyStoppage(EarlyStoppage);
 
       persistenceDiagramsBarycenter.execute(
-        *intermediateDiagrams, final_centroids->at(0), *all_matchings);
+        intermediateDiagrams_, final_centroids_[0], all_matchings_);
 
       needUpdate_ = false;
     }
   }
 
   outputMatchings->ShallowCopy(
-    createMatchings(final_centroids, inv_clustering_, *intermediateDiagrams,
-                    all_matchings, max_dimension_total_, Spacing));
+    createMatchings(&final_centroids_, inv_clustering_, intermediateDiagrams_,
+                    &all_matchings_, max_dimension_total_, Spacing));
   outputClusters->ShallowCopy(createOutputClusteredDiagrams(
-    *intermediateDiagrams, inv_clustering_, max_dimension_total_, Spacing));
+    intermediateDiagrams_, inv_clustering_, max_dimension_total_, Spacing));
   outputCentroids->ShallowCopy(createOutputCentroids<VTK_TT>(
-    final_centroids, inv_clustering_, max_dimension_total_, Spacing));
+    &final_centroids_, inv_clustering_, max_dimension_total_, Spacing));
 
   if(!OutputDistanceMatrix) {
     // early return
@@ -250,15 +215,9 @@ int ttkPersistenceDiagramClustering::doIt(
   vtkTable *centroidsDistTable,
   int numInputs) {
 
-  // Calling the executing package
-  int dataType
-    = input[0]->GetCellData()->GetArray("Persistence")->GetDataType();
-
-  switch(dataType) {
-    vtkTemplateMacro(dispatch<VTK_TT>(numInputs, input, outputClusters,
-                                      outputCentroids, outputMatchings,
-                                      diagramsDistTable, centroidsDistTable));
-  }
+  this->dispatch<double>(numInputs, input, outputClusters, outputCentroids,
+                         outputMatchings, diagramsDistTable,
+                         centroidsDistTable);
 
   return 0;
 }
