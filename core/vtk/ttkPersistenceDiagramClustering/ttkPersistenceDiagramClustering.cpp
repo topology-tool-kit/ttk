@@ -353,49 +353,47 @@ double ttkPersistenceDiagramClustering::getPersistenceDiagram(
     auto coordZ2 = (float)critCoords2[2];
     int index1 = 2 * i;
     double *coords1 = points->GetPoint(index1);
-    auto x1 = (float)coords1[0];
+    const auto x1 = coords1[0];
     // auto y1 = (float) coords1[1];
     // auto z1 = (float) coords1[2];
 
     int index2 = index1 + 1;
     double *coords2 = points->GetPoint(index2);
     // auto x2 = (float) coords2[0];
-    auto y2 = (float)coords2[1];
+    const auto y2 = coords2[1];
     // auto z2 = (float) coords2[2];
 
-    double value1
-      = (!birthScalars) ? (double)x1 : (double)birthScalars->GetValue(2 * i);
-    double value2 = (!deathScalars) ? (double)y2
-                                    : (double)deathScalars->GetValue(2 * i + 1);
+    double value1 = (!birthScalars) ? x1 : birthScalars->GetValue(2 * i);
+    double value2 = (!deathScalars) ? y2 : deathScalars->GetValue(2 * i + 1);
 
     // if(value1 > max_dimension)  max_dimension = value1;
     // if(value2 > max_dimension)  max_dimension = value2;
 
     if(pairIdentifier != -1 && pairIdentifier < pairingsSize) {
       if(pairIdentifier == 0) {
-        max_dimension = (double)persistence;
+        max_dimension = persistence;
 
         if(NumberOfClusters == 1) {
-          diagram[0] = std::make_tuple(
-            vertexId1, (BNodeType)0, vertexId2, (BNodeType)3,
-            (double)persistence, pairType, value1, coordX1, coordY1, coordZ1,
-            value2, coordX2, coordY2, coordZ2);
+          diagram[0]
+            = std::make_tuple(vertexId1, (BNodeType)0, vertexId2, (BNodeType)3,
+                              persistence, pairType, value1, coordX1, coordY1,
+                              coordZ1, value2, coordX2, coordY2, coordZ2);
         } else {
-          diagram[0] = std::make_tuple(
-            vertexId1, (BNodeType)0, vertexId2, (BNodeType)1,
-            (double)persistence, pairType, value1, coordX1, coordY1, coordZ1,
-            value2, coordX2, coordY2, coordZ2);
-          diagram[pairingsSize] = std::make_tuple(
-            vertexId1, (BNodeType)1, vertexId2, (BNodeType)3,
-            (double)persistence, pairType, value1, coordX1, coordY1, coordZ1,
-            value2, coordX2, coordY2, coordZ2);
+          diagram[0]
+            = std::make_tuple(vertexId1, (BNodeType)0, vertexId2, (BNodeType)1,
+                              persistence, pairType, value1, coordX1, coordY1,
+                              coordZ1, value2, coordX2, coordY2, coordZ2);
+          diagram[pairingsSize]
+            = std::make_tuple(vertexId1, (BNodeType)1, vertexId2, (BNodeType)3,
+                              persistence, pairType, value1, coordX1, coordY1,
+                              coordZ1, value2, coordX2, coordY2, coordZ2);
         }
 
       } else {
         diagram[pairIdentifier] = std::make_tuple(
           vertexId1, (BNodeType)nodeType1, vertexId2, (BNodeType)nodeType2,
-          (double)persistence, pairType, value1, coordX1, coordY1, coordZ1,
-          value2, coordX2, coordY2, coordZ2);
+          persistence, pairType, value1, coordX1, coordY1, coordZ1, value2,
+          coordX2, coordY2, coordZ2);
       }
     }
     if(pairIdentifier >= pairingsSize) {
