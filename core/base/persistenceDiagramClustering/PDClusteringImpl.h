@@ -1654,7 +1654,6 @@ void PDClustering<dataType>::acceleratedUpdateClusters() {
       //         std::cout<<" ] "<<std::endl;
       std::vector<dataType> copy_of_u(u_.size());
       copy_of_u = u_;
-      // cout<<"merde"<<endl;
       while(!idx_acceptable) {
         auto argMax = std::max_element(copy_of_u.begin(), copy_of_u.end());
         idx = std::distance(copy_of_u.begin(), argMax);
@@ -1714,11 +1713,9 @@ void PDClustering<dataType>::acceleratedUpdateClusters() {
         increment += 1;
       }
 
-      // cout<<"merde"<<endl;
       clustering_[c].push_back(idx);
       inv_clustering_[idx] = c;
 
-      // cout<<"merde"<<endl;
       if(do_min) {
         centroids_min_[c]
           = diagramToCentroid(current_bidder_diagrams_min_[idx]);
@@ -1737,7 +1734,6 @@ void PDClustering<dataType>::acceleratedUpdateClusters() {
         centroids_with_price_max_[idx]
           = centroidWithZeroPrices(centroids_max_[c]);
       }
-      // cout<<"merde"<<endl;
       resetDosToOriginalValues();
       barycenter_inputs_reset_flag = true;
     }
