@@ -44,8 +44,8 @@ int ttkPersistenceDiagramClustering::doIt(
 
     max_dimension_total_ = 0;
     for(int i = 0; i < numInputs; i++) {
-      double max_dimension = getPersistenceDiagram(
-        intermediateDiagrams_[i], inputDiagram[i], Spacing, 0);
+      double max_dimension
+        = getPersistenceDiagram(intermediateDiagrams_[i], inputDiagram[i]);
       if(max_dimension_total_ < max_dimension) {
         max_dimension_total_ = max_dimension;
       }
@@ -276,9 +276,7 @@ int ttkPersistenceDiagramClustering::RequestData(
 
 double ttkPersistenceDiagramClustering::getPersistenceDiagram(
   std::vector<diagramType> &diagram,
-  vtkUnstructuredGrid *CTPersistenceDiagram_,
-  const double /*spacing*/,
-  const int /*diagramNumber*/) {
+  vtkUnstructuredGrid *CTPersistenceDiagram_) {
   vtkIntArray *vertexIdentifierScalars
     = vtkIntArray::SafeDownCast(CTPersistenceDiagram_->GetPointData()->GetArray(
       ttk::VertexScalarFieldName));

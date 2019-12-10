@@ -295,9 +295,7 @@ protected:
   using matchingType = std::tuple<ttk::SimplexId, ttk::SimplexId, double>;
 
   double getPersistenceDiagram(std::vector<diagramType> &diagram,
-                               vtkUnstructuredGrid *CTPersistenceDiagram_,
-                               const double spacing,
-                               const int diagramNumber);
+                               vtkUnstructuredGrid *CTPersistenceDiagram_);
 
   int FillInputPortInformation(int port, vtkInformation *info) override;
   int FillOutputPortInformation(int port, vtkInformation *info) override;
