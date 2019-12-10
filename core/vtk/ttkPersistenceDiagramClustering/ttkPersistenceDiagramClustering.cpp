@@ -290,17 +290,26 @@ double ttkPersistenceDiagramClustering::getPersistenceDiagram(
   vtkIntArray *extremumIndexScalars = vtkIntArray::SafeDownCast(
     CTPersistenceDiagram_->GetCellData()->GetArray("PairType"));
 
-  vtkDoubleArray *persistenceScalars = vtkDoubleArray::SafeDownCast(
+  const auto persistenceScalars = vtkDoubleArray::SafeDownCast(
     CTPersistenceDiagram_->GetCellData()->GetArray("Persistence"));
-
-  vtkDoubleArray *birthScalars = vtkDoubleArray::SafeDownCast(
+  const auto birthScalars = vtkDoubleArray::SafeDownCast(
     CTPersistenceDiagram_->GetPointData()->GetArray("Birth"));
-  vtkFloatArray *critCoordinates = vtkFloatArray::SafeDownCast(
-    CTPersistenceDiagram_->GetPointData()->GetArray("Coordinates"));
-  vtkDoubleArray *deathScalars = vtkDoubleArray::SafeDownCast(
+  const auto deathScalars = vtkDoubleArray::SafeDownCast(
     CTPersistenceDiagram_->GetPointData()->GetArray("Death"));
 
-  vtkPoints *points = (CTPersistenceDiagram_->GetPoints());
+  const auto critCoordinates = vtkFloatArray::SafeDownCast(
+    CTPersistenceDiagram_->GetPointData()->GetArray("Coordinates"));
+  const auto points = CTPersistenceDiagram_->GetPoints();
+
+  const bool embed = birthScalars != nullptr && deathScalars != nullptr;
+
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(!embed && critCoordinates == nullptr) {
+    // missing data
+    return -2;
+  }
+#endif // TTK_ENABLE_KAMIKAZE
+
   int pairingsSize = (int)pairIdentifierScalars->GetNumberOfTuples();
   // FIX : no more missed pairs
   for(int pair_index = 0; pair_index < pairingsSize; pair_index++) {
@@ -308,17 +317,14 @@ double ttkPersistenceDiagramClustering::getPersistenceDiagram(
     if(*pairIdentifierScalars->GetTuple(pair_index) != -1)
       pairIdentifierScalars->SetTuple(pair_index, &index_of_pair);
   }
-  // auto s = (float) 0.0;
 
-  if(!deathScalars != !birthScalars)
-    return -2;
-  // bool Is3D = !(!deathScalars && !birthScalars);
-  // if (!Is3D && diagramNumber == 1) s = (float) spacing;
-
+#ifndef TTK_ENABLE_KAMIKAZE
   if(pairingsSize < 1 || !vertexIdentifierScalars || !pairIdentifierScalars
      || !nodeTypeScalars || !persistenceScalars || !extremumIndexScalars
-     || !points)
+     || !points) {
     return -2;
+  }
+#endif // TTK_ENABLE_KAMIKAZE
 
   if(NumberOfClusters == 1) {
     diagram.resize(pairingsSize);
@@ -339,59 +345,54 @@ double ttkPersistenceDiagramClustering::getPersistenceDiagram(
     int pairType = extremumIndexScalars->GetValue(i);
     double persistence = persistenceScalars->GetValue(i);
 
-    double *critCoords1 = critCoordinates->GetTuple3(2 * i);
+    std::array<double, 3> coordsBirth{}, coordsDeath{};
 
-    auto coordX1 = (float)critCoords1[0];
-    auto coordY1 = (float)critCoords1[1];
-    auto coordZ1 = (float)critCoords1[2];
+    const auto i0 = 2 * i;
+    const auto i1 = 2 * i + 1;
 
-    double *critCoords2 = critCoordinates->GetTuple3(2 * i + 1);
-    auto coordX2 = (float)critCoords2[0];
-    auto coordY2 = (float)critCoords2[1];
-    auto coordZ2 = (float)critCoords2[2];
-    int index1 = 2 * i;
-    double *coords1 = points->GetPoint(index1);
-    const auto x1 = coords1[0];
-    // auto y1 = (float) coords1[1];
-    // auto z1 = (float) coords1[2];
+    double birth, death;
 
-    int index2 = index1 + 1;
-    double *coords2 = points->GetPoint(index2);
-    // auto x2 = (float) coords2[0];
-    const auto y2 = coords2[1];
-    // auto z2 = (float) coords2[2];
-
-    double value1 = (!birthScalars) ? x1 : birthScalars->GetValue(2 * i);
-    double value2 = (!deathScalars) ? y2 : deathScalars->GetValue(2 * i + 1);
-
-    // if(value1 > max_dimension)  max_dimension = value1;
-    // if(value2 > max_dimension)  max_dimension = value2;
+    if(embed) {
+      points->GetPoint(i0, coordsBirth.data());
+      points->GetPoint(i1, coordsDeath.data());
+      birth = birthScalars->GetValue(i0);
+      death = deathScalars->GetValue(i1);
+    } else {
+      critCoordinates->GetTuple(i0, coordsBirth.data());
+      critCoordinates->GetTuple(i1, coordsDeath.data());
+      birth = points->GetPoint(i0)[0];
+      death = points->GetPoint(i1)[1];
+    }
 
     if(pairIdentifier != -1 && pairIdentifier < pairingsSize) {
       if(pairIdentifier == 0) {
         max_dimension = persistence;
 
         if(NumberOfClusters == 1) {
-          diagram[0]
-            = std::make_tuple(vertexId1, (BNodeType)0, vertexId2, (BNodeType)3,
-                              persistence, pairType, value1, coordX1, coordY1,
-                              coordZ1, value2, coordX2, coordY2, coordZ2);
+          diagram[0] = std::make_tuple(
+            vertexId1, CriticalType::Local_minimum, vertexId2,
+            CriticalType::Local_maximum, persistence, pairType, birth,
+            coordsBirth[0], coordsBirth[1], coordsBirth[2], death,
+            coordsDeath[0], coordsDeath[1], coordsDeath[2]);
         } else {
-          diagram[0]
-            = std::make_tuple(vertexId1, (BNodeType)0, vertexId2, (BNodeType)1,
-                              persistence, pairType, value1, coordX1, coordY1,
-                              coordZ1, value2, coordX2, coordY2, coordZ2);
-          diagram[pairingsSize]
-            = std::make_tuple(vertexId1, (BNodeType)1, vertexId2, (BNodeType)3,
-                              persistence, pairType, value1, coordX1, coordY1,
-                              coordZ1, value2, coordX2, coordY2, coordZ2);
+          diagram[0] = std::make_tuple(
+            vertexId1, CriticalType::Local_minimum, vertexId2,
+            CriticalType::Saddle1, persistence, pairType, birth, coordsBirth[0],
+            coordsBirth[1], coordsBirth[2], death, coordsDeath[0],
+            coordsDeath[1], coordsDeath[2]);
+          diagram[pairingsSize] = std::make_tuple(
+            vertexId1, CriticalType::Saddle1, vertexId2,
+            CriticalType::Local_maximum, persistence, pairType, birth,
+            coordsBirth[0], coordsBirth[1], coordsBirth[2], death,
+            coordsDeath[0], coordsDeath[1], coordsDeath[2]);
         }
 
       } else {
         diagram[pairIdentifier] = std::make_tuple(
           vertexId1, (BNodeType)nodeType1, vertexId2, (BNodeType)nodeType2,
-          persistence, pairType, value1, coordX1, coordY1, coordZ1, value2,
-          coordX2, coordY2, coordZ2);
+          persistence, pairType, birth, coordsBirth[0], coordsBirth[1],
+          coordsBirth[2], death, coordsDeath[0], coordsDeath[1],
+          coordsDeath[2]);
       }
     }
     if(pairIdentifier >= pairingsSize) {
