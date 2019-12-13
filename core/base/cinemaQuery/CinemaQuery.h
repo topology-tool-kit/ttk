@@ -21,11 +21,24 @@ namespace ttk {
     CinemaQuery();
     ~CinemaQuery();
 
-    // Creates a temporary database based on a SQL table definition and
-    // and table content to subsequentually return a query result.
-    int execute(const string &sqlTableDefinition,
-                const string &sqlTableRows,
-                const string &sqlQuery,
-                string &resultCSV) const;
+    /** @brief Create a temporary database to execute the SQL query
+     *
+     * Create a in-memory SQLite database, create tables in it and
+     * fill them with input data. Execute the provided SQL query onto
+     * those tables.
+     *
+     * @param[in] sqlTablesDefinitionAndRows Vector of string
+     * pairs. The first string is a CREATE TABLE query, the second is
+     * an INSERT INTO to fill data in the corresponding table.
+     * @param[in] sqlQuery SQL query that will be executed on the
+     * filled tables
+     * @param[out] resultCSV SQL query output in a CSV format
+     *
+     * @return 1 in case of success
+     */
+    int execute(
+      const std::vector<std::pair<string, string>> &sqlTablesDefinitionAndRows,
+      const string &sqlQuery,
+      string &resultCSV) const;
   };
 } // namespace ttk
