@@ -1319,6 +1319,9 @@ void PDClustering<dataType>::computeDiagramsDistanceMatrix() {
   diagramsDistanceMatrix_.resize(numberOfInputs_);
   double delta_lim{0.01};
 
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for schedule(dynamic)
+#endif // TTK_ENABLE_OPENMP
   for(int i = 0; i < numberOfInputs_; ++i) {
     diagramsDistanceMatrix_[i].resize(
       numberOfInputs_, std::numeric_limits<float>::max());
