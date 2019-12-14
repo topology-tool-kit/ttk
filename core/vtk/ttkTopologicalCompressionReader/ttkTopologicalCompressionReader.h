@@ -60,6 +60,10 @@ public:
   vtkSetMacro(DataScalarType, int);
   vtkGetMacro(DataScalarType, int);
 
+  void SetDebugLevel(const int val) {
+    this->topologicalCompression.setDebugLevel(val);
+  }
+
 protected:
   // Regular ImageData reader management.
   ttkTopologicalCompressionReader();

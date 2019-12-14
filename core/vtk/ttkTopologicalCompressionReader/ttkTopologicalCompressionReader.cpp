@@ -117,7 +117,11 @@ int ttkTopologicalCompressionReader::RequestData(
   triangulation.setInputData(mesh);
   topologicalCompression.setupTriangulation(triangulation.getTriangulation());
 
-  topologicalCompression.ReadFromFile<double>(fp);
+  const auto status = topologicalCompression.ReadFromFile<double>(fp);
+  if(status != 0) {
+    vtkWarningMacro("Failure when reading compressed TTK file");
+  }
+
 
   mesh->GetPointData()->RemoveArray(0);
   mesh->GetPointData()->SetNumberOfTuples(vertexNumber);
@@ -143,7 +147,7 @@ int ttkTopologicalCompressionReader::RequestData(
     vertexOffset->SetName(ttk::OffsetScalarFieldName);
     std::vector<int> voidOffsets
       = topologicalCompression.getDecompressedOffsets();
-    for(int i = 0; i < vertexNumber; ++i)
+    for(size_t i = 0; i < voidOffsets.size(); ++i)
       vertexOffset->SetTuple1(i, voidOffsets[i]);
     //    vertexOffset->SetVoidArray(
     //      topologicalCompression.getDecompressedOffsets(), vertexNumber, 0);

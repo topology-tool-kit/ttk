@@ -106,6 +106,10 @@ public:
   vtkSetMacro(UseTopologicalSimplification, bool);
   vtkGetMacro(UseTopologicalSimplification, bool);
 
+  void SetDebugLevel(int debugLevel) {
+    d.setDebugLevel(debugLevel);
+  }
+
   inline void SetSQMethodPV(int c) {
     switch(c) {
       case 1:
@@ -127,6 +131,7 @@ protected:
   ~ttkTopologicalCompressionWriter();
   virtual int FillInputPortInformation(int port, vtkInformation *info) override;
   void WriteData() override;
+  void execute(vtkImageData *vti);
 
   // TTK management.
   vtkDataArray *GetInputScalarField(vtkImageData *vti);
@@ -163,9 +168,15 @@ private:
   int ThreadNumber;
   bool UseAllCores;
 
+  ttk::Debug d;
+
   // Whatever.
   ttkTopologicalCompressionWriter(const ttkTopologicalCompressionWriter &);
   void operator=(const ttkTopologicalCompressionWriter &);
+
+  // give ttkCinemaWriter access to ttkTopologicalCompressionWriter
+  // protected member functions
+  friend class ttkCinemaWriter;
 };
 
 #endif // _VTK_TOPOLOGICALCOMPRESSIONWRITER_H

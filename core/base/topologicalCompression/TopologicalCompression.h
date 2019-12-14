@@ -857,7 +857,7 @@ int ttk::TopologicalCompression::ReadFromFile(FILE *fp) {
     }
   }
 
-  return 0;
+  return status;
 }
 
 template <typename T>

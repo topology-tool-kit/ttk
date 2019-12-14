@@ -57,7 +57,6 @@ int ttkTopologicalCompressionWriter::AllocateOutput(
       outputScalarField = vtkSmartPointer<vtkIdTypeArray>::New();
       break;
     default: {
-      ttk::Debug d;
       std::stringstream msg;
       msg << "[vtkTopologicalCompression] Unsupported data type :(" << endl;
       d.dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
@@ -90,7 +89,6 @@ void ttkTopologicalCompressionWriter::PerformCompression(
   switch(inputScalarField->GetDataType()) {
     vtkTemplateMacro(topologicalCompression.execute<VTK_TT>(Tolerance));
     default: {
-      ttk::Debug d;
       std::stringstream msg;
       msg << "[ttkCompressionWriter] Unsupported data type." << std::endl;
       d.dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
@@ -99,19 +97,24 @@ void ttkTopologicalCompressionWriter::PerformCompression(
 }
 
 void ttkTopologicalCompressionWriter::WriteData() {
+  vtkDataObject *input = GetInput();
+  vtkImageData *vti = vtkImageData::SafeDownCast(input);
+
+  execute(vti);
+}
+
+void ttkTopologicalCompressionWriter::execute(vtkImageData *vti) {
   bool zfpOnly = ZFPOnly;
   double zfpBitBudget = ZFPBitBudget;
   topologicalCompression.setThreadNumber(threadNumber_);
 
   {
-    ttk::Debug d;
     std::stringstream msg;
     msg << "[ttkCompressionWriter] New writing task." << std::endl;
     d.dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
   }
 
   if(zfpOnly && (zfpBitBudget > 64 || zfpBitBudget < 1)) {
-    ttk::Debug d;
     std::stringstream msg;
     msg << "[ttkTopologicalCompressionReader] Wrong ZFP bit budget for "
            "ZFP-only use."
@@ -119,9 +122,6 @@ void ttkTopologicalCompressionWriter::WriteData() {
     d.dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
     return;
   }
-
-  vtkDataObject *input = GetInput();
-  vtkImageData *vti = vtkImageData::SafeDownCast(input);
 
   vtkDataArray *inputScalarField = GetInputScalarField(vti);
 
@@ -134,7 +134,6 @@ void ttkTopologicalCompressionWriter::WriteData() {
   PerformCompression(inputScalarField);
 
   {
-    ttk::Debug d;
     std::stringstream msg;
     msg << "[ttkCompressionWriter] Compression successful." << std::endl;
     d.dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
@@ -143,7 +142,6 @@ void ttkTopologicalCompressionWriter::WriteData() {
   // Open file.
   FILE *fp;
   if((fp = fopen(FileName, "wb")) == nullptr) {
-    ttk::Debug d;
     std::stringstream msg;
     msg << "[ttkCompressionWriter] System IO error while opening the file."
         << std::endl;
@@ -166,7 +164,6 @@ void ttkTopologicalCompressionWriter::WriteData() {
     inputScalarFieldName);
 
   {
-    ttk::Debug d;
     std::stringstream msg;
     msg << "[ttkTopologicalCompression] Wrote to " << FileName << "."
         << std::endl;
