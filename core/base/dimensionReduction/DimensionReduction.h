@@ -29,8 +29,13 @@ namespace ttk {
 
     inline int setSEParameters(std::string &Affinity,
                                float Gamma,
-                               std::string &EigenSolver) {
-      se_Affinity = Affinity;
+                               std::string &EigenSolver,
+                               bool InputIsADistanceMatrix) {
+      if(InputIsADistanceMatrix) {
+        se_Affinity = "precomputed";
+      } else {
+        se_Affinity = Affinity;
+      }
       se_Gamma = Gamma;
       se_EigenSolver = EigenSolver;
       return 0;
@@ -60,13 +65,17 @@ namespace ttk {
                                 int MaxIteration,
                                 int Verbose,
                                 float Epsilon,
-                                std::string &Dissimilarity) {
+                                bool Dissimilarity) {
       mds_Metric = Metric;
       mds_Init = Init;
       mds_MaxIteration = MaxIteration;
       mds_Verbose = Verbose;
       mds_Epsilon = Epsilon;
-      mds_Dissimilarity = Dissimilarity;
+      if(Dissimilarity) {
+        mds_Dissimilarity = "precomputed";
+      } else {
+        mds_Dissimilarity = "euclidean";
+      }
       return 0;
     }
 
