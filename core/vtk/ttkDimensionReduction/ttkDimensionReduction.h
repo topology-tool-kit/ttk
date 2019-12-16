@@ -91,6 +91,12 @@ public:
   }
 
   // default
+  vtkSetMacro(SelectFieldsWithRegexp, bool);
+  vtkGetMacro(SelectFieldsWithRegexp, bool);
+
+  vtkSetMacro(RegexpString, std::string);
+  vtkGetMacro(RegexpString, std::string);
+
   vtkSetMacro(NumberOfComponents, int);
   vtkGetMacro(NumberOfComponents, int);
 
@@ -105,6 +111,10 @@ public:
 
   vtkSetMacro(KeepAllDataArrays, int);
   vtkGetMacro(KeepAllDataArrays, int);
+
+  // SE && MDS
+  vtkSetMacro(InputIsADistanceMatrix, bool);
+  vtkGetMacro(InputIsADistanceMatrix, bool);
 
   // SE
   vtkSetMacro(se_Affinity, std::string);
@@ -156,9 +166,6 @@ public:
 
   vtkSetMacro(mds_Epsilon, float);
   vtkGetMacro(mds_Epsilon, float);
-
-  vtkSetMacro(mds_Dissimilarity, std::string);
-  vtkGetMacro(mds_Dissimilarity, std::string);
 
   // TSNE
   vtkSetMacro(tsne_Perplexity, float);
@@ -280,7 +287,6 @@ protected:
     mds_MaxIteration = 300;
     mds_Verbose = 0;
     mds_Epsilon = 0;
-    mds_Dissimilarity = "euclidean";
 
     tsne_Perplexity = 30;
     tsne_Exaggeration = 12;
@@ -322,11 +328,16 @@ private:
   int updateProgress(const float &progress) override;
 
   // default
+  bool SelectFieldsWithRegexp{false};
+  std::string RegexpString{".*"};
   int NumberOfComponents;
   int NumberOfNeighbors;
   int Method;
   int IsDeterministic;
   bool KeepAllDataArrays;
+
+  // mds && se
+  bool InputIsADistanceMatrix{false};
 
   // se
   std::string se_Affinity;
@@ -349,7 +360,6 @@ private:
   int mds_MaxIteration;
   int mds_Verbose;
   float mds_Epsilon;
-  std::string mds_Dissimilarity;
 
   // tsne
   float tsne_Perplexity;

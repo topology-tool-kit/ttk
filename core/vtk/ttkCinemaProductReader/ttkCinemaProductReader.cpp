@@ -95,6 +95,7 @@ vtkStandardNewMacro(ttkCinemaProductReader)
 
       if(ext == "ttk") {
         vtkNew<ttkTopologicalCompressionReader> reader;
+        reader->SetDebugLevel(this->debugLevel_);
         reader->SetFileName(path.data());
         reader->Update();
 

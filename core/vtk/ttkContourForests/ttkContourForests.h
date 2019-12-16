@@ -72,9 +72,8 @@
 #include "ContourForestsTree.h"
 #include "DeprecatedDataTypes.h"
 
-class TTKCONTOURFORESTS_DEPRECATED_EXPORT ttkContourForests
-  : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+class TTKCONTOURFORESTS_EXPORT ttkContourForests : public vtkDataSetAlgorithm,
+                                                   public ttk::Wrapper {
 
 public:
   static ttkContourForests *New();
