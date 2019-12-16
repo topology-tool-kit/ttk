@@ -203,7 +203,7 @@ namespace ttk {
     {
       std::stringstream msg;
       msg << "[PersistenceDiagramClustering] Clustering " << numberOfInputs_
-          << " diagrams in " << n_clusters_ << " clusters." << std::endl;
+          << " diagrams in " << n_clusters_ << " cluster(s)." << std::endl;
       dMsg(std::cout, msg.str(), infoMsg);
     }
 
