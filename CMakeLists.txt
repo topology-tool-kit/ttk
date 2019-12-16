@@ -78,33 +78,6 @@ install(
     lib/cmake/ttk
   )
 
-# Paraview plugin
-# ---------------
-
-if(TTK_BUILD_PARAVIEW_PLUGINS)
-  include(CMake/ParaViewFilter.cmake)
-
-  # Install location
-  if(NOT "$ENV{PV_PLUGIN_PATH}" STREQUAL "")
-    set(TTK_INSTALL_PLUGIN_DIR
-      $ENV{PV_PLUGIN_PATH}
-      CACHE
-      PATH
-        "Directory where the ParaView plugin will be installed"
-      )
-  else()
-    message(WARNING "Please, set the PV_PLUGIN_PATH environement variable, the TTK ParaView plugin will be built but not installed.")
-    set(TTK_INSTALL_PLUGIN_DIR
-      ""
-      CACHE
-      PATH
-      "Directory where the ParaView plugin will be installed"
-      )
-  endif()
-
-  add_subdirectory(paraview)
-endif()
-
 # VTK Wrappers
 # ------------
 
@@ -145,6 +118,33 @@ if(TTK_BUILD_VTK_WRAPPERS)
     DESTINATION
       lib/cmake/ttk
     )
+endif()
+
+# Paraview plugin
+# ---------------
+
+if(TTK_BUILD_PARAVIEW_PLUGINS)
+  include(CMake/ParaViewFilter.cmake)
+
+  # Install location
+  if(NOT "$ENV{PV_PLUGIN_PATH}" STREQUAL "")
+    set(TTK_INSTALL_PLUGIN_DIR
+      $ENV{PV_PLUGIN_PATH}
+      CACHE
+      PATH
+        "Directory where the ParaView plugin will be installed"
+      )
+  else()
+    message(WARNING "Please, set the PV_PLUGIN_PATH environement variable, the TTK ParaView plugin will be built but not installed.")
+    set(TTK_INSTALL_PLUGIN_DIR
+      ""
+      CACHE
+      PATH
+      "Directory where the ParaView plugin will be installed"
+      )
+  endif()
+
+  add_subdirectory(paraview)
 endif()
 
 # Standalones
