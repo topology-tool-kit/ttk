@@ -10,9 +10,9 @@
       class="ttkCellDataSelector" 
       label="TTK CellDataSelector">
       <Documentation
-        long_help="TTK fieldSelector plugin."
-        short_help="TTK fieldSelector plugin.">
-        TTK fieldSelector plugin documentation.
+        long_help="TTK filter to select scalar/vector and tensor filed to keep on a data set"
+        short_help="TTK filter to select scalar/vector and tensor filed to keep on a data set">
+        TTK filter to select scalar/vector and tensor filed to keep on a data set
       </Documentation>
       <InputProperty
         name="Input"

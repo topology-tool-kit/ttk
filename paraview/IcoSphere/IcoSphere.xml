@@ -2,7 +2,9 @@
 <ServerManagerConfiguration>
     <ProxyGroup name="sources">
         <SourceProxy name="IcoSphere" class="ttkIcoSphere" label="TTK IcoSphere">
-            <Documentation long_help="TTK IcoSphere" short_help="TTK IcoSphere"></Documentation>
+           <Documentation long_help="TTK source to create an icosahedron" short_help="TTK IcoSphere">
+               TTK source that create an icosahedron
+           </Documentation>
 
             <IntVectorProperty name="Subdivisions" label="Subdivisions" command="SetSubdivisions" number_of_elements="1" default_values="0">
                 <Documentation>Number of subdevisions.</Documentation>

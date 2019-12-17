@@ -60,15 +60,14 @@
 #include <vtkSmartPointer.h>
 #include <vtkTable.h>
 
+// VTK Module
+#include <ttkPersistenceDiagramModule.h>
+
 // ttk code includes
 #include <PersistenceDiagram.h>
-#include <ttkWrapper.h>
+#include <ttkTriangulationAlgorithm.h>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkPersistenceDiagram
-#else
-class ttkPersistenceDiagram
-#endif
+class TTKPERSISTENCEDIAGRAM_EXPORT ttkPersistenceDiagram
   : public vtkDataSetAlgorithm,
     public ttk::Wrapper {
 
@@ -211,7 +210,7 @@ public:
 
 protected:
   ttkPersistenceDiagram();
-  ~ttkPersistenceDiagram();
+  ~ttkPersistenceDiagram() override;
 
   int FillOutputPortInformation(int port, vtkInformation *info) override;
 

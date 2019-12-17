@@ -22,14 +22,13 @@
 #include <vtkMultiBlockDataSet.h>
 #include <vtkMultiBlockDataSetAlgorithm.h>
 
-// TTK includes
-#include <ttkWrapper.h>
+// VTK Module
+#include <ttkCinemaProductReaderModule.h>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkCinemaProductReader
-#else
-class ttkCinemaProductReader
-#endif
+// TTK includes
+#include <ttkTriangulationAlgorithm.h>
+
+class TTKCINEMAPRODUCTREADER_EXPORT ttkCinemaProductReader
   : public vtkMultiBlockDataSetAlgorithm,
     public ttk::Wrapper {
 
@@ -89,7 +88,7 @@ protected:
     SetNumberOfInputPorts(1);
     SetNumberOfOutputPorts(1);
   }
-  ~ttkCinemaProductReader(){};
+  ~ttkCinemaProductReader() override {};
 
   bool UseAllCores;
   int ThreadNumber;

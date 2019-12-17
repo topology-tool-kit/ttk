@@ -1,0 +1,8 @@
+NAME
+  ttkForEachRow
+SOURCES
+  ttkForEachRow.cpp
+HEADERS
+  ttkForEachRow.h
+DEPENDS
+  ttkTriangulationAlgorithm

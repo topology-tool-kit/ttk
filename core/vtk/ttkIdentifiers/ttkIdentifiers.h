@@ -34,20 +34,18 @@
 #include <vtkPointData.h>
 #include <vtkSmartPointer.h>
 
+// VTK Module
+#include <ttkIdentifiersModule.h>
+
 // ttk code includes
-#include <ttkWrapper.h>
+#include <ttkTriangulationAlgorithm.h>
 
 // in this example, this wrapper takes a data-set on the input and produces a
 // data-set on the output - to adapt.
 // see the documentation of the vtkAlgorithm class to decide from which VTK
 // class your wrapper should inherit.
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkIdentifiers
-#else
-class ttkIdentifiers
-#endif
-  : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+class TTKIDENTIFIERS_EXPORT ttkIdentifiers : public vtkDataSetAlgorithm,
+                                             public ttk::Wrapper {
 
 public:
   static ttkIdentifiers *New();
@@ -86,7 +84,7 @@ public:
 protected:
   ttkIdentifiers();
 
-  ~ttkIdentifiers();
+  ~ttkIdentifiers() override;
 
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,

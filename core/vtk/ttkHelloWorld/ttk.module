@@ -1,0 +1,6 @@
+NAME
+  ttkHelloWorld
+SOURCES
+  ttkHelloWorld.cpp
+HEADERS
+  ttkHelloWorld.h

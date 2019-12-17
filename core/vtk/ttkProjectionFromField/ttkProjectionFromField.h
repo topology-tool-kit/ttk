@@ -32,14 +32,13 @@
 #include <vtkPoints.h>
 #include <vtkSmartPointer.h>
 
-// ttk code includes
-#include <ttkWrapper.h>
+// VTK Module
+#include <ttkProjectionFromFieldModule.h>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkProjectionFromField
-#else
-class ttkProjectionFromField
-#endif
+// ttk code includes
+#include <ttkTriangulationAlgorithm.h>
+
+class TTKPROJECTIONFROMFIELD_EXPORT ttkProjectionFromField
   : public vtkPointSetAlgorithm,
     public ttk::Wrapper {
 
@@ -83,7 +82,7 @@ public:
 protected:
   ttkProjectionFromField();
 
-  ~ttkProjectionFromField();
+  ~ttkProjectionFromField() override;
 
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,

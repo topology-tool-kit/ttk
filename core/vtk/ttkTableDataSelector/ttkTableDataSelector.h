@@ -31,14 +31,13 @@
 #include <vtkTable.h>
 #include <vtkTableAlgorithm.h>
 
+// VTK Module
+#include <ttkTableDataSelectorModule.h>
+
 // ttk code includes
 #include <Wrapper.h>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkTableDataSelector
-#else
-class ttkTableDataSelector
-#endif
+class TTKTABLEDATASELECTOR_EXPORT ttkTableDataSelector
   : public vtkTableAlgorithm,
     public ttk::Wrapper {
 
@@ -112,7 +111,7 @@ protected:
     SetNumberOfOutputPorts(1);
   }
 
-  ~ttkTableDataSelector(){};
+  ~ttkTableDataSelector() override{};
 
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,

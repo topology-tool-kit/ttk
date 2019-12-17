@@ -1,0 +1,7 @@
+NAME
+  TopologyToolKit
+DESCRIPTION
+  Collection of topology related filters
+REQUIRES_MODULES
+  VTK::CommonCore
+  VTK::FiltersCore

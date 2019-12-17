@@ -55,17 +55,15 @@
 #include <vtkSmartPointer.h>
 #include <vtkUnstructuredGrid.h>
 
+// VTK Module
+#include <ttkFiberSurfaceModule.h>
+
 // ttk code includes
 #include <FiberSurface.h>
-#include <ttkWrapper.h>
+#include <ttkTriangulationAlgorithm.h>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkFiberSurface
-#else
-class ttkFiberSurface
-#endif
-  : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+class TTKFIBERSURFACE_EXPORT ttkFiberSurface : public vtkDataSetAlgorithm,
+                                               public ttk::Wrapper {
 
 public:
   static ttkFiberSurface *New();
@@ -148,7 +146,7 @@ public:
 protected:
   ttkFiberSurface();
 
-  ~ttkFiberSurface();
+  ~ttkFiberSurface() override;
 
   TTK_SETUP();
 

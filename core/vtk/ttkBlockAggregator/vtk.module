@@ -1,0 +1,7 @@
+NAME
+ ttkBlockAggregator
+DEPENDS
+  VTK::FiltersCore
+PRIVATE_DEPENDS
+  VTK::CommonCore
+

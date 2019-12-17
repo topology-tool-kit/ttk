@@ -44,19 +44,17 @@
 #include <vtkPointSet.h>
 #include <vtkSmartPointer.h>
 
+// VTK Module
+#include <ttkDistanceFieldModule.h>
+
 // ttk code includes
 #include <DistanceField.h>
-#include <ttkWrapper.h>
+#include <ttkTriangulationAlgorithm.h>
 
 enum DistanceType { Float = 0, Double };
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkDistanceField
-#else
-class ttkDistanceField
-#endif
-  : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+class TTKDISTANCEFIELD_EXPORT ttkDistanceField : public vtkDataSetAlgorithm,
+                                                 public ttk::Wrapper {
 
 public:
   static ttkDistanceField *New();
@@ -92,7 +90,7 @@ public:
 
 protected:
   ttkDistanceField();
-  ~ttkDistanceField();
+  ~ttkDistanceField() override;
 
   TTK_SETUP();
 

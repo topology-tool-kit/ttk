@@ -40,16 +40,14 @@
 #include <vtkSmartPointer.h>
 #include <vtkUnstructuredGrid.h>
 
-// ttk code includes
-#include <ttkWrapper.h>
+// VTK Module
+#include <ttkComponentSizeModule.h>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkComponentSize
-#else
-class ttkComponentSize
-#endif
-  : public vtkPointSetAlgorithm,
-    public ttk::Wrapper {
+// ttk code includes
+#include <ttkTriangulationAlgorithm.h>
+
+class TTKCOMPONENTSIZE_EXPORT ttkComponentSize : public vtkPointSetAlgorithm,
+                                               public ttk::Wrapper {
 
 public:
   static ttkComponentSize *New();
@@ -88,7 +86,7 @@ public:
 protected:
   ttkComponentSize();
 
-  ~ttkComponentSize();
+  ~ttkComponentSize() override;
 
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,

@@ -1,5 +1,5 @@
-/// \ingroup vtk
 /// \class ttkCinemaReader
+/// \ingroup vtk
 /// \author Jonas Lukasczyk <jl@jluk.de>
 /// \date 01.09.2018
 ///
@@ -17,22 +17,20 @@
 #include <vtkInformation.h>
 #include <vtkTableReader.h>
 
-// TTK includes
-#include <ttkWrapper.h>
+// for the module to be exported
+#include <ttkCinemaReaderModule.h>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkCinemaReader
-#else
-class ttkCinemaReader
-#endif
-  : public vtkTableReader,
-    public ttk::Wrapper {
+// TTK includes
+#include <ttkTriangulationAlgorithm.h>
+
+class TTKCINEMAREADER_EXPORT ttkCinemaReader : public vtkTableReader,
+                                               public ttk::Wrapper {
 
 public:
   static ttkCinemaReader *New();
   vtkTypeMacro(ttkCinemaReader, vtkTableReader)
 
-    vtkSetMacro(DatabasePath, std::string);
+  vtkSetMacro(DatabasePath, std::string);
   vtkGetMacro(DatabasePath, std::string);
 
   // default ttk setters
@@ -76,7 +74,7 @@ protected:
     SetNumberOfInputPorts(0);
     SetNumberOfOutputPorts(1);
   }
-  ~ttkCinemaReader(){};
+  ~ttkCinemaReader() override {};
 
   bool UseAllCores;
   int ThreadNumber;

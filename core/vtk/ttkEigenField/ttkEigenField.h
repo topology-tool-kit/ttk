@@ -46,21 +46,19 @@
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnsignedShortArray.h>
 
+// VTK Module
+#include <ttkEigenFieldModule.h>
+
 // ttk code includes
 #include <EigenField.h>
-#include <ttkWrapper.h>
+#include <ttkTriangulationAlgorithm.h>
 
 #include <ttkTriangulation.h>
 
 enum EigenFieldType { Float = 0, Double };
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkEigenField
-#else
-class ttkEigenField
-#endif
-  : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+class TTKEIGENFIELD_EXPORT ttkEigenField : public vtkDataSetAlgorithm,
+                                           public ttk::Wrapper {
 
 public:
   static ttkEigenField *New();

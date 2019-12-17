@@ -1,0 +1,7 @@
+NAME
+ ttkManifoldCheck
+DEPENDS
+  VTK::FiltersCore
+PRIVATE_DEPENDS
+  VTK::CommonCore
+

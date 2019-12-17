@@ -17,15 +17,13 @@
 #include <vtkNew.h>
 #include <vtkXMLPMultiBlockDataWriter.h>
 
+// VTK Module
+#include <ttkCinemaWriterModule.h>
+
 // TTK includes
 #include <ttkTopologicalCompressionWriter.h>
-#include <ttkWrapper.h>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkCinemaWriter
-#else
-class ttkCinemaWriter
-#endif
+class TTKCINEMAWRITER_EXPORT ttkCinemaWriter
   : public vtkXMLPMultiBlockDataWriter,
     public ttk::Wrapper {
 
@@ -118,7 +116,7 @@ protected:
     SetNumberOfInputPorts(1);
     SetNumberOfOutputPorts(1);
   }
-  ~ttkCinemaWriter(){};
+  ~ttkCinemaWriter() override {};
 
   bool UseAllCores;
   int ThreadNumber;

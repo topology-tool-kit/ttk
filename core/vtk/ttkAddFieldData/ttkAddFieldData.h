@@ -18,16 +18,14 @@
 #include <vtkInformation.h>
 #include <vtkPassInputTypeAlgorithm.h>
 
-// TTK includes
-#include <ttkWrapper.h>
+// VTK module
+#include <ttkAddFieldDataModule.h>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkAddFieldData
-#else
-class ttkAddFieldData
-#endif
-  : public vtkPassInputTypeAlgorithm,
-    public ttk::Wrapper {
+// TTK includes
+#include <ttkTriangulationAlgorithm.h>
+
+class TTKADDFIELDDATA_EXPORT ttkAddFieldData : public vtkPassInputTypeAlgorithm,
+                                               public ttk::Wrapper {
 
 public:
   static ttkAddFieldData *New();
@@ -111,7 +109,7 @@ protected:
     SetNumberOfInputPorts(2);
     SetNumberOfOutputPorts(1);
   }
-  ~ttkAddFieldData(){};
+  ~ttkAddFieldData() override{};
 
   bool UseAllCores;
   int ThreadNumber;

@@ -1,0 +1,7 @@
+NAME
+ ttkFTRGraph
+DEPENDS
+  VTK::FiltersCore
+PRIVATE_DEPENDS
+  VTK::CommonCore
+

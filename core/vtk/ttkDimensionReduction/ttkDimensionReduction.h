@@ -1,5 +1,5 @@
-/// \ingroup vtk
 /// \class ttkDimensionReduction
+/// \ingroup vtk
 /// \author Your Name Here <Your Email Address Here>
 /// \date The Date Here.
 ///
@@ -19,6 +19,7 @@
 /// \sa ttk::DimensionReduction
 #pragma once
 
+// VTK includes
 #include <vtkCharArray.h>
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
@@ -33,14 +34,14 @@
 #include <vtkTable.h>
 #include <vtkTableAlgorithm.h>
 
-#include <DimensionReduction.h>
-#include <ttkWrapper.h>
+// VTK Module
+#include <ttkDimensionReductionModule.h>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkDimensionReduction
-#else
-class ttkDimensionReduction
-#endif
+// TTK includes
+#include <DimensionReduction.h>
+#include <ttkTriangulationAlgorithm.h>
+
+class TTKDIMENSIONREDUCTION_EXPORT ttkDimensionReduction
   : public vtkTableAlgorithm,
     public ttk::Wrapper {
 public:
@@ -314,7 +315,7 @@ protected:
     UseAllCores = true;
   }
 
-  ~ttkDimensionReduction() {
+  ~ttkDimensionReduction() override {
   }
 
   int RequestData(vtkInformation *request,

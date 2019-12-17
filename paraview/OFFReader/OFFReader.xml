@@ -6,6 +6,7 @@
          <Documentation
             long_help="Import an Object File Format mesh into a VTK Unstructured Grid."
             short_help="Read an .off file.">
+           Import an Object File Format mesh into a VTK Unstructured Grid.
          </Documentation>
          <StringVectorProperty
             name="FileName"

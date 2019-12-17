@@ -12,7 +12,8 @@
      <Documentation
         long_help="TTK identifierRandomizer plugin."
         short_help="TTK identifierRandomizer plugin.">
-          TTK identifierRandomizer plugin documentation.
+       TTK filter to shuflle ids randomly. Useful to reduce the number of neighbor
+       regions with close ids.
      </Documentation>
      <InputProperty
         name="Input"

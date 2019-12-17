@@ -1,0 +1,9 @@
+NAME
+  ttkFiber
+SOURCES
+  ttkFiber.cpp
+HEADERS
+  ttkFiber.h
+DEPENDS
+  common
+  ttkTriangulationAlgorithm

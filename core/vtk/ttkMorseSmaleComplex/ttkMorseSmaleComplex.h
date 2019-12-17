@@ -51,15 +51,14 @@
 #include <vtkPointData.h>
 #include <vtkSmartPointer.h>
 
+// VTK Module
+#include <ttkMorseSmaleComplexModule.h>
+
 // ttk code includes
 #include <MorseSmaleComplex.h>
-#include <ttkWrapper.h>
+#include <ttkTriangulationAlgorithm.h>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkMorseSmaleComplex
-#else
-class ttkMorseSmaleComplex
-#endif
+class TTKMORSESMALECOMPLEX_EXPORT ttkMorseSmaleComplex
   : public vtkDataSetAlgorithm,
     public ttk::Wrapper {
 
@@ -186,7 +185,7 @@ protected:
     std::vector<char> &separatrices2_cells_isOnBoundary);
 
   ttkMorseSmaleComplex();
-  ~ttkMorseSmaleComplex();
+  ~ttkMorseSmaleComplex() override;
 
   TTK_SETUP();
 

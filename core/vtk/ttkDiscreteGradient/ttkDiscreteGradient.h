@@ -37,15 +37,14 @@
 #include <vtkPointData.h>
 #include <vtkSmartPointer.h>
 
+// VTK Module
+#include <ttkDiscreteGradientModule.h>
+
 // ttk code includes
 #include <DiscreteGradient.h>
-#include <ttkWrapper.h>
+#include <ttkTriangulationAlgorithm.h>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkDiscreteGradient
-#else
-class ttkDiscreteGradient
-#endif
+class TTKDISCRETEGRADIENT_EXPORT ttkDiscreteGradient
   : public vtkDataSetAlgorithm,
     public ttk::Wrapper {
 
@@ -107,7 +106,7 @@ public:
 
 protected:
   ttkDiscreteGradient();
-  ~ttkDiscreteGradient();
+  ~ttkDiscreteGradient() override;
 
   TTK_SETUP();
 

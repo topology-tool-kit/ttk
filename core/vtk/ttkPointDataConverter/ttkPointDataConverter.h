@@ -39,16 +39,15 @@
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnsignedShortArray.h>
 
+// VTK Module
+#include <ttkPointDataConverterModule.h>
+
 // ttk code includes
 #include <Wrapper.h>
 
 #include <limits>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkPointDataConverter
-#else
-class ttkPointDataConverter
-#endif
+class TTKPOINTDATACONVERTER_EXPORT ttkPointDataConverter
   : public vtkDataSetAlgorithm,
     public ttk::Wrapper {
 
@@ -108,7 +107,7 @@ public:
 
 protected:
   ttkPointDataConverter();
-  ~ttkPointDataConverter();
+  ~ttkPointDataConverter() override;
 
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,

@@ -1,9 +1,1 @@
-ttk_add_vtk_library(ttkBarycentricSubdivision
-  SOURCES
-    ttkBarycentricSubdivision.cpp
-  HEADERS
-    ttkBarycentricSubdivision.h
-  LINK
-    barycentricSubdivision
-    ttkTriangulation
-    )
+ttk_add_vtk_module()

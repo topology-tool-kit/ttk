@@ -948,7 +948,7 @@ namespace ttk {
     /// \param edgeId Input global edge identifier.
     /// \return Returns the number of edge triangles.
     /// \sa getEdgeStarNumber
-    inline SimplexId getEdgeTriangleNumber(const SimplexId &edgeId) const {
+    inline SimplexId getEdgeTriangleNumber(const SimplexId &edgeId) const override {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
         return -1;

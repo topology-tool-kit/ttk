@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ServerManagerConfiguration>
+    <ProxyGroup name="filters">
+        <SourceProxy name="HelloWorld" class="ttkHelloWorld" label="TTK HelloWorld">
+           <Documentation long_help="TTK source to create an icosahedron" short_help="TTK HelloWorld">
+               TTK source that create an icosahedron
+           </Documentation>
+
+           <InputProperty name="Input" command="SetInputConnection">
+                <ProxyGroupDomain name="groups">
+                    <Group name="sources" />
+                    <Group name="filters" />
+                </ProxyGroupDomain>
+                <DataTypeDomain name="input_type">
+                    <DataType value="vtkDataSet" />
+                </DataTypeDomain>
+                <Documentation>TODO.</Documentation>
+            </InputProperty>
+
+            <Hints>
+                <RepresentationType view="RenderView" type="Wireframe" />
+                <ShowInMenu category="TTK" />
+            </Hints>
+        </SourceProxy>
+    </ProxyGroup>
+</ServerManagerConfiguration>

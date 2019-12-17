@@ -36,15 +36,14 @@
 #include <vtkPointData.h>
 #include <vtkSmartPointer.h>
 
+// VTK Module
+#include <ttkBarycentricSubdivisionModule.h>
+
 // TTK code includes
 #include <BarycentricSubdivision.h>
-#include <ttkWrapper.h>
+#include <ttkTriangulationAlgorithm.h>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkBarycentricSubdivision
-#else
-class ttkBarycentricSubdivision
-#endif
+class TTKBARYCENTRICSUBDIVISION_EXPORT ttkBarycentricSubdivision
   : public vtkDataSetAlgorithm,
     public ttk::Wrapper {
 

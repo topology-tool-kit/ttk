@@ -17,15 +17,14 @@
 #include <vtkSmartPointer.h>
 #include <vtkUnstructuredGridAlgorithm.h>
 
+// VTK Module
+#include <ttkGaussianPointCloudModule.h>
+
 // TTK includes
 #include <GaussianPointCloud.h>
-#include <ttkWrapper.h>
+#include <ttkTriangulationAlgorithm.h>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkGaussianPointCloud
-#else
-class ttkGaussianPointCloud
-#endif
+class TTKGAUSSIANPOINTCLOUD_EXPORT ttkGaussianPointCloud
   : public vtkUnstructuredGridAlgorithm,
     public ttk::Wrapper {
 
@@ -77,7 +76,7 @@ protected:
     SetNumberOfOutputPorts(1);
   }
 
-  ~ttkGaussianPointCloud(){};
+  ~ttkGaussianPointCloud() override {};
 
   bool UseAllCores;
   int ThreadNumber;

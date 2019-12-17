@@ -10,9 +10,9 @@
       class="ttkTableDataSelector" 
       label="TTK TableDataSelector">
       <Documentation
-        long_help="TTK fieldSelector plugin."
-        short_help="TTK fieldSelector plugin.">
-        TTK fieldSelector plugin documentation.
+        long_help="TTK tableDataSelector plugin."
+        short_help="TTK tableDataSelector plugin.">
+        TTK tableDataSelector plugin documentation.
       </Documentation>
 
       <InputProperty

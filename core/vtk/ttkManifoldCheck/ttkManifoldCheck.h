@@ -42,21 +42,19 @@
 #include <vtkPointData.h>
 #include <vtkSmartPointer.h>
 
+// VTK Module
+#include <ttkManifoldCheckModule.h>
+
 // ttk code includes
 #include <ManifoldCheck.h>
-#include <ttkWrapper.h>
+#include <ttkTriangulationAlgorithm.h>
 
 // in this example, this wrapper takes a data-set on the input and produces a
 // data-set on the output - to adapt.
 // see the documentation of the vtkAlgorithm class to decide from which VTK
 // class your wrapper should inherit.
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkManifoldCheck
-#else
-class ttkManifoldCheck
-#endif
-  : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+class TTKMANIFOLDCHECK_EXPORT ttkManifoldCheck : public vtkDataSetAlgorithm,
+                                                 public ttk::Wrapper {
 
 public:
   static ttkManifoldCheck *New();
@@ -82,7 +80,7 @@ protected:
     UseAllCores = true;
   }
 
-  ~ttkManifoldCheck(){};
+  ~ttkManifoldCheck() override {};
 
   TTK_SETUP();
 

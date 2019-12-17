@@ -24,14 +24,13 @@
 #include <vtkInformation.h>
 #include <vtkMultiBlockDataSetAlgorithm.h>
 
-// TTK includes
-#include <ttkWrapper.h>
+// VTK Module
+#include <ttkCinemaImagingModule.h>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkCinemaImaging
-#else
-class ttkCinemaImaging
-#endif
+// TTK includes
+#include <ttkTriangulationAlgorithm.h>
+
+class TTKCINEMAIMAGING_EXPORT ttkCinemaImaging
   : public vtkMultiBlockDataSetAlgorithm,
     public ttk::Wrapper {
 
@@ -108,7 +107,7 @@ protected:
     SetNumberOfInputPorts(2);
     SetNumberOfOutputPorts(1);
   }
-  ~ttkCinemaImaging(){};
+  ~ttkCinemaImaging() override{};
 
   bool UseAllCores;
   int ThreadNumber;

@@ -1,0 +1,6 @@
+NAME
+  ttkOFFWriter
+SOURCES
+  ttkOFFWriter.cpp
+HEADERS
+  ttkOFFWriter.h

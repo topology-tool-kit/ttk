@@ -22,7 +22,7 @@
 #pragma once
 
 // ttk code includes
-#include <ttkWrapper.h>
+#include <ttkTriangulationAlgorithm.h>
 
 // VTK includes
 #include <vtkCharArray.h>
@@ -38,11 +38,10 @@
 #include <vtkPointData.h>
 #include <vtkSmartPointer.h>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkTriangulationRequest
-#else
-class ttkTriangulationRequest
-#endif
+// VTK Module
+#include <ttkTriangulationRequestModule.h>
+
+class TTKTRIANGULATIONREQUEST_EXPORT ttkTriangulationRequest
   : public vtkDataSetAlgorithm,
     public ttk::Wrapper {
 
@@ -129,7 +128,7 @@ protected:
     SetNumberOfOutputPorts(1);
   }
 
-  ~ttkTriangulationRequest(){};
+  ~ttkTriangulationRequest() override {};
 
   TTK_SETUP();
 

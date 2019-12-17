@@ -1,0 +1,7 @@
+NAME
+ ttkPersistenceDiagram
+DEPENDS
+  VTK::FiltersCore
+PRIVATE_DEPENDS
+  VTK::CommonCore
+

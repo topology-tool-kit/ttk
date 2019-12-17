@@ -15,17 +15,15 @@
 #include <vtkInformation.h>
 #include <vtkUnstructuredGridAlgorithm.h>
 
+// VTK Module
+#include <ttkIcoSphereModule.h>
+
 // TTK includes
 #include <IcoSphere.h>
-#include <ttkWrapper.h>
+#include <ttkTriangulationAlgorithm.h>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkIcoSphere
-#else
-class ttkIcoSphere
-#endif
-  : public vtkUnstructuredGridAlgorithm,
-    public ttk::Wrapper {
+class TTKICOSPHERE_EXPORT ttkIcoSphere : public vtkUnstructuredGridAlgorithm,
+                                         public ttk::Wrapper {
 
 public:
   static ttkIcoSphere *New();
@@ -83,7 +81,7 @@ protected:
     SetNumberOfInputPorts(0);
     SetNumberOfOutputPorts(1);
   }
-  ~ttkIcoSphere(){};
+  ~ttkIcoSphere() override {};
 
   bool UseAllCores;
   int ThreadNumber;

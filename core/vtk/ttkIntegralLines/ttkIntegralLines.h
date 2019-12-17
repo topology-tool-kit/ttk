@@ -44,17 +44,15 @@
 #include <vtkPointData.h>
 #include <vtkSmartPointer.h>
 
+// VTK Module
+#include <ttkIntegralLinesModule.h>
+
 // ttk code includes
 #include <IntegralLines.h>
-#include <ttkWrapper.h>
+#include <ttkTriangulationAlgorithm.h>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkIntegralLines
-#else
-class ttkIntegralLines
-#endif
-  : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+class TTKINTEGRALLINES_EXPORT ttkIntegralLines : public vtkDataSetAlgorithm,
+                                                 public ttk::Wrapper {
 
 public:
   static ttkIntegralLines *New();
@@ -107,7 +105,7 @@ public:
 
 protected:
   ttkIntegralLines();
-  ~ttkIntegralLines();
+  ~ttkIntegralLines() override;
 
   TTK_SETUP();
 

@@ -44,6 +44,9 @@
 #include <vtkSmartPointer.h>
 #include <vtkTable.h>
 
+// VTK Module
+#include <ttkUncertainDataEstimatorModule.h>
+
 // ttk code includes
 #include <UncertainDataEstimator.h>
 #include <Wrapper.h>
@@ -52,11 +55,7 @@
 // data-set on the output - to adapt.
 // see the documentation of the vtkAlgorithm class to decide from which VTK
 // class your wrapper should inherit.
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkUncertainDataEstimator
-#else
-class ttkUncertainDataEstimator
-#endif
+class TTKUNCERTAINDATAESTIMATOR_EXPORT ttkUncertainDataEstimator
   : public vtkDataSetAlgorithm,
     public ttk::Wrapper {
 
@@ -125,7 +124,7 @@ public:
 protected:
   ttkUncertainDataEstimator();
 
-  ~ttkUncertainDataEstimator();
+  ~ttkUncertainDataEstimator() override;
 
   int FillInputPortInformation(int port, vtkInformation *info) override;
   int FillOutputPortInformation(int port, vtkInformation *info) override;

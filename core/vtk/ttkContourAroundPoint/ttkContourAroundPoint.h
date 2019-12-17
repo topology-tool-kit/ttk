@@ -27,17 +27,16 @@
 #include <vtkInformation.h>
 #include <vtkPointData.h>
 
+// VTK Module
+#include <ttkContourAroundPointModule.h>
+
 // TTK includes
 #include <ContourAroundPoint.hpp>
-#include <ttkWrapper.h>
+#include <ttkTriangulationAlgorithm.h>
 
 // See the documentation of the vtkAlgorithm class to decide from which VTK
 // class your wrapper should inherit.
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkContourAroundPoint
-#else
-class ttkContourAroundPoint
-#endif
+class TTKCONTOURAROUNDPOINT_EXPORT ttkContourAroundPoint
   : public vtkDataSetAlgorithm,
     public ttk::Wrapper {
 
@@ -131,7 +130,7 @@ protected:
     SetNumberOfOutputPorts(1);
   }
 
-  ~ttkContourAroundPoint() {
+  ~ttkContourAroundPoint() override {
   }
 
   TTK_SETUP();

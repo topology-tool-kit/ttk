@@ -33,15 +33,14 @@
 #include <vtkObjectFactory.h>
 #include <vtkSmartPointer.h>
 
+// VTK Module
+#include <ttkGeometrySmootherModule.h>
+
 // ttk code includes
 #include <ScalarFieldSmoother.h>
-#include <ttkWrapper.h>
+#include <ttkTriangulationAlgorithm.h>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkGeometrySmoother
-#else
-class ttkGeometrySmoother
-#endif
+class TTKGEOMETRYSMOOTHER_EXPORT ttkGeometrySmoother
   : public vtkDataSetAlgorithm,
     public ttk::Wrapper {
 
@@ -79,7 +78,7 @@ public:
 protected:
   ttkGeometrySmoother();
 
-  ~ttkGeometrySmoother();
+  ~ttkGeometrySmoother() override;
 
   TTK_SETUP();
 

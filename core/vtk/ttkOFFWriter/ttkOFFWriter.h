@@ -12,15 +12,12 @@
 #include <vtkPoints.h>
 #include <vtkSmartPointer.h>
 
+#include <ttkOFFWriterModule.h>
+
 #include <string>
 #include <vector>
 
-#ifndef TTK_PLUGIN
-class VTKIOLEGACY_EXPORT ttkOFFWriter
-#else
-class ttkOFFWriter
-#endif
-  : public vtkDataSetWriter {
+class TTKOFFWRITER_EXPORT ttkOFFWriter : public vtkDataSetWriter {
 
 public:
   vtkTypeMacro(ttkOFFWriter, vtkDataSetWriter);

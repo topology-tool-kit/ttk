@@ -48,24 +48,21 @@
 #include <vtkTable.h>
 #include <vtkUnstructuredGrid.h>
 
+// VTK Module
+#include <ttkPersistenceDiagramClusteringModule.h>
+
 // ttk code includes
 #include <PersistenceDiagramClustering.h>
 //
 #include <PersistenceDiagramBarycenter.h>
 //
-#include <Wrapper.h>
-//
-#include <ttkWrapper.h>
+#include <ttkTriangulationAlgorithm.h>
 
 // in this example, this wrapper takes a data-set on the input and produces a
 // data-set on the output - to adapt.
 // see the documentation of the vtkAlgorithm class to decide from which VTK
 // class your wrapper should inherit.
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkPersistenceDiagramClustering
-#else
-class ttkPersistenceDiagramClustering
-#endif
+class TTKPERSISTENCEDIAGRAMCLUSTERING_EXPORT ttkPersistenceDiagramClustering
   : public vtkDataSetAlgorithm,
     public ttk::Wrapper {
 

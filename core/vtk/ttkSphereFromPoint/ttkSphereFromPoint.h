@@ -34,16 +34,14 @@
 #include <vtkSphereSource.h>
 #include <vtkType.h>
 
-// ttk code includes
-#include <ttkWrapper.h>
+// VTK Module
+#include <ttkSphereFromPointModule.h>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkSphereFromPoint
-#else
-class ttkSphereFromPoint
-#endif
-  : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+// ttk code includes
+#include <ttkTriangulationAlgorithm.h>
+
+class TTKSPHEREFROMPOINT_EXPORT ttkSphereFromPoint : public vtkDataSetAlgorithm,
+                                                     public ttk::Wrapper {
 
 public:
   static ttkSphereFromPoint *New();
@@ -97,7 +95,7 @@ public:
 protected:
   ttkSphereFromPoint();
 
-  ~ttkSphereFromPoint();
+  ~ttkSphereFromPoint() override;
 
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,
