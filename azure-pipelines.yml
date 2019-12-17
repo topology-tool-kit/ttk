@@ -208,7 +208,7 @@ jobs:
       otool -L ./bin/ttkBlankCmd
       echo "otoo l"
       otool -l ./bin/ttkBlankCmd
-      DYLD_PRINT_LIBRARIES=1 ./bin/ttkBlankCmd -i $(Build.SourcesDirectory)/examples/data/inputData.vtu
+#      DYLD_PRINT_LIBRARIES=1 ./bin/ttkBlankCmd -i $(Build.SourcesDirectory)/examples/data/inputData.vtu
     workingDirectory: '$(Build.ArtifactStagingDirectory)/ttk-install/'
     displayName: 'Test TTK Command line'
 
