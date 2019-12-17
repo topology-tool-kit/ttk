@@ -94,7 +94,6 @@ public:
     vtkDataArraySelection* arr = vtkDataArraySelection::New();
     arr->SetArraySetting("0", true);
     arr->SetArraySetting(std::to_string(NbScalars).c_str(), true);
-    cout << "nb is " << NbScalars << endl;
     return arr;
   }
 

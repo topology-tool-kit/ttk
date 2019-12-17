@@ -1,0 +1,282 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+# TODO could clone ttk-data and use a pvsm
+# TODO could also try a docker deploy
+
+trigger:
+  branches:
+    include:
+    - azure-pipelines
+
+jobs:
+
+# ------------------------------
+# Linux build
+# ------------------------------
+
+# VTK
+
+- job:
+  displayName: Ubuntu-VTK-Python3-OpenMP-Ninja
+  pool:
+    vmImage: 'ubuntu-latest'
+
+  strategy:
+    matrix:
+      GCC-6 Release:
+        CC: gcc-6
+        CXX: g++-6
+        BuildType: Release
+        SelfHost: false
+        CMakeArgs: ''
+
+      GCC-7 Release:
+        CC: gcc-7
+        CXX: g++-7
+        BuildType: Debug
+        SelfHost: false
+        CMakeArgs: ''
+
+  steps:
+  - script: |
+      echo "Configure distribution"
+      sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+      sudo apt-get update
+      sudo apt-get install -y ninja-build libc++-dev libc++abi-dev libc++abi1 libstdc++-7-dev libboost-all-dev gcc-7 g++-7 gcc-6 g++-6 python3 libomp-dev
+      sudo update-alternatives --install /usr/bin/cc cc /usr/bin/$(CC) 100
+      sudo update-alternatives --set cc /usr/bin/$(CC)
+      sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/$(CXX) 100
+      sudo update-alternatives --set c++ /usr/bin/$(CXX)
+    displayName: 'Install dependencies'
+
+  - script: |
+      git clone --quiet https://gitlab.kitware.com/vtk/vtk.git
+      cd vtk
+      git checkout 2c04a6b393
+      git submodule update --init --recursive
+    displayName: 'Clone VTK'
+
+  - task: CMake@1
+    inputs:
+      workingDirectory: 'vtk/build'
+      cmakeArgs: '.. $(CMakeArgs) -GNinja -DCMAKE_INSTALL_PREFIX=$(Build.ArtifactStagingDirectory)/vtk-install -DCMAKE_BUILD_TYPE=$(BuildType) -DVTK_BUILD_TESTING=OFF -DVTK_GROUP_ENABLE_Rendering=NO -DVTK_WRAP_PYTHON=YES -DVTK_PYTHON_VERSION=3'
+    displayName: 'Configure VTK'
+
+  - script: |
+      cmake --build . --target install
+    workingDirectory: 'vtk/build'
+    displayName: 'Build and install VTK (No rendering)'
+
+    # need to disable filters linked to rendering (especially vtkDelimitedTextReader.h)
+  - task: CMake@1
+    inputs:
+      workingDirectory: 'build/'
+      cmakeArgs: '.. $(CMakeArgs) -GNinja -DCMAKE_INSTALL_PREFIX=$(Build.ArtifactStagingDirectory)/ttk-install -DCMAKE_BUILD_TYPE=$(BuildType) -DVTK_DIR=$(Build.ArtifactStagingDirectory)/vtk-install/lib/cmake/vtk-8.90 -DTTK_BUILD_PARAVIEW_PLUGINS=OFF -DVTK_MODULE_ENABLE_ttkAddFieldData=NO -DVTK_MODULE_ENABLE_ttkCinemaWriter=NO -DVTK_MODULE_ENABLE_ttkCinemaReader=NO -DVTK_MODULE_ENABLE_ttkCinemaQuery=NO -DVTK_MODULE_ENABLE_ttkCinemaImaging=NO -DVTK_MODULE_ENABLE_ttkUserInterfaceBase=NO -DVTK_MODULE_ENABLE_ttkWRLExporter=NO'
+    displayName: 'Configure TTK'
+
+  - script: |
+      cmake --build . --target install
+    workingDirectory: 'build/'
+    displayName: 'Build and install TTK'
+
+  - script: |
+      ./bin/ttkBlankCmd -i $(Build.SourcesDirectory)/examples/data/inputData.vtu
+    workingDirectory: '$(Build.ArtifactStagingDirectory)/ttk-install/'
+    displayName: 'Test TTK command line'
+
+# ParaView
+
+- job:
+  displayName: Ubuntu-PV-Python3-Eigen-Make
+  timeoutInMinutes: 180
+  pool:
+    vmImage: 'ubuntu-latest'
+
+  strategy:
+    matrix:
+      GCC-7 Release:
+        CC: gcc-7
+        CXX: g++-7
+        BuildType: Release
+        SelfHost: false
+        CMakeArgs: ''
+        PV_VERSION: 'v5.7.0'
+
+  steps:
+  - script: |
+      echo "Configure distribution"
+      sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+      sudo apt-get update
+      sudo apt-get install -y libboost-all-dev libc++-dev libc++abi-dev libc++abi1 libstdc++-7-dev gcc-7 g++-7
+      sudo apt-get install -y libosmesa6-dev libglu1-mesa-dev freeglut3-dev mesa-common-dev libeigen3-dev graphviz-dev python3 python3-sklearn
+      sudo update-alternatives --install /usr/bin/cc cc /usr/bin/$(CC) 100
+      sudo update-alternatives --set cc /usr/bin/$(CC)
+      sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/$(CXX) 100
+      sudo update-alternatives --set c++ /usr/bin/$(CXX)
+    displayName: 'Install dependencies'
+
+    # becareful of the URL when changing the paraview version (/v5.7 part)
+  - script: |
+      wget https://www.paraview.org/files/v5.7/ParaView-$(PV_VERSION).tar.xz
+      xz -d ParaView-$(PV_VERSION).tar.xz
+      tar xvf ParaView-$(PV_VERSION).tar
+      mkdir ParaView-$(PV_VERSION)/build
+    displayName: 'Download and extract ParaView $(PV_VERSION)'
+
+  - script: |
+      ./patch-paraview-5.7.0.sh ../../ParaView-$(PV_VERSION)
+    workingDirectory: 'paraview/patch'
+    displayName: 'Patch ParaView $(PV_VERSION)'
+
+  - task: CMake@1
+    inputs:
+      workingDirectory: 'ParaView-$(PV_VERSION)/build'
+      cmakeArgs: '.. $(CMakeArgs) -DCMAKE_INSTALL_PREFIX=$(Build.ArtifactStagingDirectory)/pv-install -DCMAKE_BUILD_TYPE=$(BuildType) -DPARAVIEW_BUILD_TESTING=OFF -DPARAVIEW_ENABLE_PYTHON=ON -DVTK_PYTHON_VERSION=3 -DPARAVIEW_BUILD_QT_GUI=NO -DVTK_DEFAULT_RENDER_WINDOW_OFFSCREEN=ON -DVTK_USE_X=OFF'
+    displayName: 'Configure ParaView $(PV_VERSION)'
+
+  - script: |
+      cmake --build . --target install -- -j 4
+    workingDirectory: 'ParaView-$(PV_VERSION)/build'
+    displayName: 'Build and install ParaView $(PV_VERSION)'
+
+  - task: CMake@1
+    inputs:
+      workingDirectory: 'build/'
+      cmakeArgs: '.. -DCMAKE_BUILD_TYPE=$(BuildType) -DCMAKE_INSTALL_PREFIX=$(Build.ArtifactStagingDirectory)/ttk-install -DParaView_DIR=$(Build.ArtifactStagingDirectory)/pv-install/lib/cmake/paraview-5.7'
+    displayName: 'Configure TTK'
+
+  - script: |
+      cmake --build . --target install -- -j 4
+    workingDirectory: 'build/'
+    displayName: 'Build and install TTK'
+
+  - script: |
+      ./bin/ttkBlankCmd -i $(Build.SourcesDirectory)/examples/data/inputData.vtu
+    workingDirectory: '$(Build.ArtifactStagingDirectory)/ttk-install/'
+    displayName: 'Test TTK Command line'
+
+# ------------------------------
+# Mac OS build
+# ------------------------------
+
+- job:
+  displayName: MacOS-PV-Python3-OpenMP-Make (no install)
+  timeoutInMinutes: 180
+  pool:
+    vmImage: 'macOS-latest'
+  steps:
+  - script: |
+      brew cask install xquartz
+      brew install wget python ffmpeg libomp mesa glew boost
+    displayName: 'Install dependencies'
+
+  - script: |
+      wget https://www.paraview.org/files/v5.7/ParaView-v5.7.0.tar.xz
+      xz -d ParaView-v5.7.0.tar.xz
+      tar xvf ParaView-v5.7.0.tar
+      mkdir ParaView-v5.7.0/build
+    displayName: 'Download and extract ParaView'
+
+  - task: CMake@1
+    inputs:
+      workingDirectory: 'ParaView-v5.7.0/build'
+      cmakeArgs: '.. -DCMAKE_BUILD_TYPE=Release -DPARAVIEW_BUILD_TESTING=OFF -DPARAVIEW_ENABLE_PYTHON=ON -DVTK_PYTHON_VERSION=3 -DPARAVIEW_BUILD_QT_GUI=NO'
+    displayName: 'Configure ParaView'
+
+  - script: |
+      cmake --build . -- -j 4
+    workingDirectory: 'ParaView-v5.7.0/build'
+    displayName: 'Build ParaView'
+
+  - task: CMake@1
+    inputs:
+      workingDirectory: 'build/'
+      cmakeArgs: '.. -DCMAKE_INSTALL_PREFIX=$(Build.ArtifactStagingDirectory)/ttk-install -DCMAKE_BUILD_TYPE=Release -DParaView_DIR=./ParaView-v5.7.0/build/'
+    displayName: 'Configure TTK'
+
+  - script: |
+      cmake --build . --target install -- -j 4
+    workingDirectory: 'build/'
+    displayName: 'Build and install TTK'
+
+  - script: |
+      ls -R .
+      echo "otoo L"
+      otool -L ./bin/ttkBlankCmd
+      echo "otoo l"
+      otool -l ./bin/ttkBlankCmd
+      DYLD_PRINT_LIBRARIES=1 ./bin/ttkBlankCmd -i $(Build.SourcesDirectory)/examples/data/inputData.vtu
+    workingDirectory: '$(Build.ArtifactStagingDirectory)/ttk-install/'
+    displayName: 'Test TTK Command line'
+
+# ------------------------------
+# Windows build
+# ------------------------------
+
+- job:
+  displayName: Windows-VTK
+  strategy:
+    matrix:
+      Windows:
+          imageName: 'vs2017-win2016'
+          cCompiler: cl.exe
+          cxxCompiler: cl.exe
+          compilerInitialization: 'call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\VC\Auxiliary\Build\vcvars64.bat"'
+  pool:
+    vmImage: $(imageName)
+
+  steps:
+  - script: |
+      mkdir build
+      SET "FILENAME=%~dp0\boost.zip"
+      bitsadmin /transfer myDownloadJob /download /priority normal "https://dl.bintray.com/boostorg/release/1.67.0/source/boost_1_67_0.zip" "%FILENAME%"
+      move  "%FILENAME%" boost.zip
+      unzip boost.zip
+    displayName: 'Download and extract Boost'
+
+  - script: |
+      echo "compiler initialization"
+      $(compilerInitialization)
+      echo "bootstrap"
+      bootstrap
+      echo "b2"
+      .\b2
+    workingDirectory: 'boost_1_67_0'
+    displayName: 'Build boost'
+
+  - bash: |
+      git clone --quiet https://gitlab.kitware.com/vtk/vtk.git
+      cd vtk
+      git checkout 2c04a6b393
+      git submodule update --init --recursive
+      mkdir build
+    displayName: 'Clone VTK'
+
+  - script: |
+      $(compilerInitialization)
+      cmake -DCMAKE_C_COMPILER:FILEPATH="$(cCompiler)" -DCMAKE_CXX_COMPILER="$(cxxCompiler)" -DBUILD_SHARED_LIBS:BOOL=ON -DCMAKE_INSTALL_PREFIX="$(Build.ArtifactStagingDirectory)/vtk-install" -DCMAKE_BUILD_TYPE:STRING=Release -DBUILD_TESTING:BOOL=OFF -DVTK_BUILD_TESTING=OFF -DVTK_GROUP_ENABLE_Rendering=NO -GNinja ..
+    workingDirectory: vtk/build
+    displayName: 'Configure VTK'
+
+  - script: |
+      $(compilerInitialization)
+      cmake --build . --target install
+    workingDirectory: vtk/build
+    displayName: 'Build and install VTK'
+
+    # need to disable filters linked to rendering
+  - script: |
+      $(compilerInitialization)
+      cmake -DCMAKE_C_COMPILER:FILEPATH="$(cCompiler)" -DBUILD_SHARED_LIBS:BOOL=ON -DCMAKE_CXX_COMPILER="$(cxxCompiler)" -DCMAKE_INSTALL_PREFIX="$(Build.ArtifactStagingDirectory)/ttk-install" -DVTK_DIR=$(Build.ArtifactStagingDirectory)/vtk-install/lib/cmake/vtk-8.90 -DCMAKE_BUILD_TYPE:STRING=Release -DTTK_BUILD_PARAVIEW_PLUGINS=OFF -DVTK_MODULE_ENABLE_ttkAddFieldData=NO -DVTK_MODULE_ENABLE_ttkWRLExporter=NO -DVTK_MODULE_ENABLE_ttkCinemaWriter=NO -DVTK_MODULE_ENABLE_ttkCinemaReader=NO -DVTK_MODULE_ENABLE_ttkCinemaQuery=NO -DVTK_MODULE_ENABLE_ttkCinemaImaging=NO -DVTK_MODULE_ENABLE_ttkUserInterfaceBase=NO -GNinja ..
+      ninja
+    workingDirectory: build/
+    displayName: 'Configure TTK'
+
+  - script: |
+      $(compilerInitialization)
+      cmake --build . --target install
+    workingDirectory: build/
+    displayName: 'Build and install TTK'
