@@ -163,7 +163,7 @@ int main(int argc, char **argv) {
 
   // computing some elevation
   std::vector<float> height(pointSet.size() / 3);
-  std::vector<int> offsets(height.size());
+  std::vector<ttk::SimplexId> offsets(height.size());
   int vertexId = 0;
   // use the z-coordinate here
   for(int i = 2; i < (int)pointSet.size(); i += 3) {
@@ -179,7 +179,7 @@ int main(int argc, char **argv) {
   curve.setInputScalars(height.data());
   curve.setInputOffsets(offsets.data());
   curve.setOutputCTPlot(&outputCurve);
-  curve.execute<float, int>();
+  curve.execute<float, ttk::SimplexId>();
 
   // 3. computing the persitence diagram
   ttk::PersistenceDiagram diagram;
@@ -190,11 +190,12 @@ int main(int argc, char **argv) {
   diagram.setInputScalars(height.data());
   diagram.setInputOffsets(offsets.data());
   diagram.setOutputCTDiagram(&diagramOutput);
-  diagram.execute<float, int>();
+  diagram.execute<float, ttk::SimplexId>();
 
   // 4. selecting the critical point pairs
   std::vector<float> simplifiedHeight = height;
-  std::vector<int> authorizedCriticalPoints, simplifiedOffsets = offsets;
+  std::vector<ttk::SimplexId> authorizedCriticalPoints,
+    simplifiedOffsets = offsets;
   for(int i = 0; i < (int)diagramOutput.size(); i++) {
     double persistence = std::get<4>(diagramOutput[i]);
     if(persistence > 0.05) {
@@ -214,7 +215,7 @@ int main(int argc, char **argv) {
   simplification.setConstraintNumber(authorizedCriticalPoints.size());
   simplification.setVertexIdentifierScalarFieldPointer(
     authorizedCriticalPoints.data());
-  simplification.execute<float, int>();
+  simplification.execute<float, ttk::SimplexId>();
 
   // assign the simplified values to the input mesh
   for(int i = 0; i < (int)simplifiedHeight.size(); i++) {
@@ -224,32 +225,32 @@ int main(int argc, char **argv) {
   // 7. computing the Morse-Smale complex
   ttk::MorseSmaleComplex morseSmaleComplex;
   // critical points
-  int criticalPoints_numberOfPoints{};
+  ttk::SimplexId criticalPoints_numberOfPoints{};
   std::vector<float> criticalPoints_points;
   std::vector<char> criticalPoints_points_cellDimensions;
-  std::vector<int> criticalPoints_points_cellIds;
+  std::vector<ttk::SimplexId> criticalPoints_points_cellIds;
   std::vector<char> criticalPoints_points_isOnBoundary;
   std::vector<float> criticalPoints_points_cellScalars;
-  std::vector<int> criticalPoints_points_PLVertexIdentifiers;
-  std::vector<int> criticalPoints_points_manifoldSize;
+  std::vector<ttk::SimplexId> criticalPoints_points_PLVertexIdentifiers;
+  std::vector<ttk::SimplexId> criticalPoints_points_manifoldSize;
   // 1-separatrices
-  int separatrices1_numberOfPoints{};
+  ttk::SimplexId separatrices1_numberOfPoints{};
   std::vector<float> separatrices1_points;
   std::vector<char> separatrices1_points_smoothingMask;
   std::vector<char> separatrices1_points_cellDimensions;
-  std::vector<int> separatrices1_points_cellIds;
-  int separatrices1_numberOfCells{};
-  std::vector<int> separatrices1_cells;
-  std::vector<int> separatrices1_cells_sourceIds;
-  std::vector<int> separatrices1_cells_destinationIds;
-  std::vector<int> separatrices1_cells_separatrixIds;
+  std::vector<ttk::SimplexId> separatrices1_points_cellIds;
+  ttk::SimplexId separatrices1_numberOfCells{};
+  std::vector<ttk::SimplexId> separatrices1_cells;
+  std::vector<ttk::SimplexId> separatrices1_cells_sourceIds;
+  std::vector<ttk::SimplexId> separatrices1_cells_destinationIds;
+  std::vector<ttk::SimplexId> separatrices1_cells_separatrixIds;
   std::vector<char> separatrices1_cells_separatrixTypes;
   std::vector<char> separatrices1_cells_isOnBoundary;
   std::vector<float> separatrices1_cells_separatrixFunctionMaxima;
   std::vector<float> separatrices1_cells_separatrixFunctionMinima;
   std::vector<float> separatrices1_cells_separatrixFunctionDiffs;
   // segmentation
-  std::vector<int> ascendingSegmentation(
+  std::vector<ttk::SimplexId> ascendingSegmentation(
     triangulation.getNumberOfVertices(), -1),
     descendingSegmentation(triangulation.getNumberOfVertices(), -1),
     mscSegmentation(triangulation.getNumberOfVertices(), -1);
@@ -277,7 +278,7 @@ int main(int argc, char **argv) {
     &separatrices1_cells_separatrixFunctionDiffs,
     &separatrices1_cells_isOnBoundary);
 
-  morseSmaleComplex.execute<float, int>();
+  morseSmaleComplex.execute<float, ttk::SimplexId>();
 
   // save the output
   save(pointSet, triangleSet, "output.off");

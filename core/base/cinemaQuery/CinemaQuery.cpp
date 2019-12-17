@@ -30,10 +30,10 @@ ttk::CinemaQuery::CinemaQuery() {
 ttk::CinemaQuery::~CinemaQuery() {
 }
 
-int ttk::CinemaQuery::execute(const string &sqlTableDefinition,
-                              const string &sqlTableRows,
-                              const string &sqlQuery,
-                              string &resultCSV) const {
+int ttk::CinemaQuery::execute(
+  const std::vector<std::pair<string, string>> &sqlTablesDefinitionAndRows,
+  const string &sqlQuery,
+  string &resultCSV) const {
 
 #if TTK_ENABLE_SQLITE3
   // SQLite Variables
@@ -57,33 +57,35 @@ int ttk::CinemaQuery::execute(const string &sqlTableDefinition,
       return 0;
     }
 
-    // Create table
-    rc = sqlite3_exec(db, sqlTableDefinition.data(), nullptr, 0, &zErrMsg);
-    if(rc != SQLITE_OK) {
-      stringstream msg;
-      msg << "failed\n[ttkCinemaQuery] ERROR: " << zErrMsg << endl;
-      dMsg(cout, msg.str(), fatalMsg);
+    for(const auto &tables : sqlTablesDefinitionAndRows) {
+      // Create table
+      rc = sqlite3_exec(db, tables.first.data(), nullptr, 0, &zErrMsg);
+      if(rc != SQLITE_OK) {
+        stringstream msg;
+        msg << "failed\n[ttkCinemaQuery] ERROR: " << zErrMsg << endl;
+        dMsg(cout, msg.str(), fatalMsg);
 
-      sqlite3_free(zErrMsg);
-      sqlite3_close(db);
+        sqlite3_free(zErrMsg);
+        sqlite3_close(db);
 
-      return 0;
-    }
+        return 0;
+      }
 
-    // Fill table
-    rc = sqlite3_exec(db, sqlTableRows.data(), nullptr, 0, &zErrMsg);
-    if(rc != SQLITE_OK) {
-      stringstream msg;
-      msg << "failed\n[ttkCinemaQuery] ERROR: " << zErrMsg << endl;
-      dMsg(cout, msg.str(), fatalMsg);
+      // Fill table
+      rc = sqlite3_exec(db, tables.second.data(), nullptr, 0, &zErrMsg);
+      if(rc != SQLITE_OK) {
+        stringstream msg;
+        msg << "failed\n[ttkCinemaQuery] ERROR: " << zErrMsg << endl;
+        dMsg(cout, msg.str(), fatalMsg);
 
-      sqlite3_free(zErrMsg);
-      sqlite3_close(db);
-      return 0;
-    } else {
-      stringstream msg;
-      msg << "done (" << t.getElapsedTime() << " s)." << endl;
-      dMsg(cout, msg.str(), timeMsg);
+        sqlite3_free(zErrMsg);
+        sqlite3_close(db);
+        return 0;
+      } else {
+        stringstream msg;
+        msg << "done (" << t.getElapsedTime() << " s)." << endl;
+        dMsg(cout, msg.str(), timeMsg);
+      }
     }
   }
 

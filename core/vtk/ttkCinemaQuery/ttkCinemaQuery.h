@@ -61,6 +61,7 @@ public:
   int FillInputPortInformation(int port, vtkInformation *info) override {
     switch(port) {
       case 0:
+        info->Set(vtkTableAlgorithm::INPUT_IS_REPEATABLE(), 1);
         info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkTable");
         break;
       default:

@@ -4,7 +4,7 @@
         <SourceProxy name="CinemaQuery" class="ttkCinemaQuery" label="TTK CinemaQuery">
             <Documentation long_help="TTK CinemaQuery" short_help="TTK CinemaQuery">This filter uses a SQL statement to select a subset of a vtkTable.</Documentation>
 
-            <InputProperty name="Table" command="SetInputConnection">
+            <InputProperty name="Table" command="AddInputConnection" multiple_input="1">
                 <ProxyGroupDomain name="groups">
                     <Group name="sources" />
                     <Group name="filters" />
@@ -15,7 +15,11 @@
                 <Documentation>vtkTable to run the query on.</Documentation>
             </InputProperty>
 
-            <StringVectorProperty name="QueryString" label="SQL Statement" command="SetQueryString" number_of_elements="1" default_values="SELECT * FROM InputTable">
+            <StringVectorProperty name="QueryString"
+                                  label="SQL Statement"
+                                  command="SetQueryString"
+                                  number_of_elements="1"
+                                  default_values="SELECT * FROM InputTable0">
                 <Documentation>SQL statement.</Documentation>
                 <Hints>
                     <Widget type="multi_line" />
