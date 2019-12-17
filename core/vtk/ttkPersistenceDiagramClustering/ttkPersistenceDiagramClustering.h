@@ -267,6 +267,13 @@ public:
   }
   vtkGetMacro(OutputDistanceMatrix, bool);
 
+  void SetUseFullDiagrams(const bool arg) {
+    UseFullDiagrams = arg;
+    needUpdate_ = true;
+    Modified();
+  }
+  vtkGetMacro(UseFullDiagrams, bool);
+
   void SetPerClusterDistanceMatrix(const bool arg) {
     PerClusterDistanceMatrix = arg;
     needUpdate_ = true;
@@ -349,6 +356,7 @@ private:
   bool UseProgressive{true};
   double TimeLimit{9999999};
   bool OutputDistanceMatrix{false};
+  bool UseFullDiagrams{false};
   bool PerClusterDistanceMatrix{false};
   std::vector<std::vector<double>> diagramsDistMat{};
   std::vector<double> distanceToCentroid{};

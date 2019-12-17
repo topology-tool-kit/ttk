@@ -388,6 +388,26 @@ between matched critical points.
       </IntVectorProperty>
 
       <IntVectorProperty
+          name="UseFullDiagrams"
+          label="Use Full Diagrams (SLOW!)"
+          command="SetUseFullDiagrams"
+          number_of_elements="1"
+          default_values="0"
+          panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Hints>
+          <PropertyWidgetDecorator
+              type="GenericDecorator"
+              mode="visibility"
+              property="OutputDistanceMatrix"
+              value="1" />
+        </Hints>
+        <Documentation>
+          Compute the distance matrix between the full diagrams.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
           name="PerClusterDistanceMatrix"
           label="Per Cluster Distance Matrix"
           command="SetPerClusterDistanceMatrix"

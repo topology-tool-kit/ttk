@@ -1319,6 +1319,15 @@ void PDClustering<dataType>::computeDiagramsDistanceMatrix() {
   diagramsDistanceMatrix_.resize(numberOfInputs_);
   double delta_lim{0.01};
 
+  auto &diags_min = current_bidder_diagrams_min_;
+  auto &diags_saddle = current_bidder_diagrams_saddle_;
+  auto &diags_max = current_bidder_diagrams_max_;
+  if(useFullDiagrams_) {
+    diags_min = bidder_diagrams_min_;
+    diags_saddle = bidder_diagrams_saddle_;
+    diags_max = bidder_diagrams_max_;
+  }
+
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for schedule(dynamic)
 #endif // TTK_ENABLE_OPENMP
@@ -1341,18 +1350,18 @@ void PDClustering<dataType>::computeDiagramsDistanceMatrix() {
       }
 
       if(original_dos[0]) {
-        auto &dimin = current_bidder_diagrams_min_[i];
-        auto &djmin = current_bidder_diagrams_min_[j];
+        auto &dimin = diags_min[i];
+        auto &djmin = diags_min[j];
         distance += computeDistance(dimin, djmin, delta_lim);
       }
       if(original_dos[1]) {
-        auto &disad = current_bidder_diagrams_saddle_[i];
-        auto &djsad = current_bidder_diagrams_saddle_[j];
+        auto &disad = diags_saddle[i];
+        auto &djsad = diags_saddle[j];
         distance += computeDistance(disad, djsad, delta_lim);
       }
       if(original_dos[2]) {
-        auto &dimax = current_bidder_diagrams_max_[i];
-        auto &djmax = current_bidder_diagrams_max_[j];
+        auto &dimax = diags_max[i];
+        auto &djmax = diags_max[j];
         distance += computeDistance(dimax, djmax, delta_lim);
       }
 

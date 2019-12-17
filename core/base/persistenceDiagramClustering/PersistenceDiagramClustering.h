@@ -140,6 +140,9 @@ namespace ttk {
     inline void setOutputDistanceMatrix(const bool arg) {
       outputDistanceMatrix_ = arg;
     }
+    inline void setUseFullDiagrams(const bool arg) {
+      useFullDiagrams_ = arg;
+    }
     inline void setPerClusterDistanceMatrix(const bool arg) {
       perClusterDistanceMatrix_ = arg;
     }
@@ -187,6 +190,7 @@ namespace ttk {
     std::vector<GoodDiagram<dataType>> barycenter_goods_;
 
     bool outputDistanceMatrix_{false};
+    bool useFullDiagrams_{false};
     bool perClusterDistanceMatrix_{false};
     std::vector<std::vector<double>> centroidsDistMat_{};
     std::vector<std::vector<double>> diagramsDistMat_{};
@@ -310,6 +314,7 @@ namespace ttk {
     KMeans.setDiagrams(&data_min, &data_sad, &data_max);
     KMeans.setDos(do_min, do_sad, do_max);
     KMeans.setOutputDistanceMatrix(outputDistanceMatrix_);
+    KMeans.setUseFullDiagrams(useFullDiagrams_);
     KMeans.setPerClusterDistanceMatrix(perClusterDistanceMatrix_);
     inv_clustering
       = KMeans.execute(final_centroids, all_matchings_per_type_and_cluster);
