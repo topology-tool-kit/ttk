@@ -475,6 +475,12 @@ between matched critical points.
          </Documentation>
        </IntVectorProperty>
 
+      <PropertyGroup panel_widget="Line" label="Distance Matrix">
+        <Property name="OutputDistanceMatrix" />
+        <Property name="UseFullDiagrams" />
+        <Property name="PerClusterDistanceMatrix" />
+      </PropertyGroup>
+
       <PropertyGroup panel_widget="Line" label="Testing">
         <Property name="UseAllCores" />
         <Property name="ThreadNumber" />
