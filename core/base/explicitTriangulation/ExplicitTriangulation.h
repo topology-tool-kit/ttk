@@ -1119,7 +1119,7 @@ namespace ttk {
     }
 
   protected:
-    int clear();
+    int clear() override;
 
     bool doublePrecision_;
     SimplexId cellNumber_, vertexNumber_;
