@@ -50,6 +50,7 @@ public:
 
   // default ttk setters
   vtkSetMacro(debugLevel_, int);
+  vtkSetMacro(RegexpString, std::string);
 
   vtkGetVector2Macro(RangeId, int);
   vtkSetVector2Macro(RangeId, int);
@@ -74,20 +75,21 @@ public:
   }
   // end of default ttk setters
 
-  void SetScalarFields(std::string s) {
-    ScalarFields.push_back(s);
+  void AddCol(std::string s) {
+    SelectedCols.push_back(s);
     Modified();
   }
 
-  void ClearScalarFields() {
-    ScalarFields.clear();
+  void ClearCols() {
+    SelectedCols.clear();
     Modified();
   }
 
   vtkDataArraySelection *GetRangeIds() {
     vtkDataArraySelection *arr = vtkDataArraySelection::New();
     arr->SetArraySetting("0", true);
-    arr->SetArraySetting(std::to_string(NbColumns - 1).c_str(), true);
+    arr->SetArraySetting(
+      std::to_string(AvailableCols.size() - 1).c_str(), true);
     return arr;
   }
 
@@ -95,9 +97,10 @@ protected:
   ttkTableDataSelector() {
     UseAllCores = true;
 
+    RegexpString = ".*";
+
     RangeId[0] = 0;
     RangeId[1] = std::numeric_limits<int>::max();
-    NbColumns = std::numeric_limits<int>::max();
   }
 
   ~ttkTableDataSelector() override{};
@@ -113,9 +116,10 @@ protected:
 private:
   bool UseAllCores;
   int ThreadNumber;
-  std::vector<std::string> ScalarFields;
+  std::vector<std::string> SelectedCols;
+  std::vector<std::string> AvailableCols;
+  std::string RegexpString;
   int RangeId[2];
-  int NbColumns;
 
   int doIt(vtkTable *input, vtkTable *output);
   bool needsToAbort() override;

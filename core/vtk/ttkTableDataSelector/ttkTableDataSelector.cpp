@@ -1,5 +1,7 @@
 #include <ttkTableDataSelector.h>
 
+#include <regex>
+
 using namespace std;
 using namespace ttk;
 
@@ -47,14 +49,25 @@ int ttkTableDataSelector::doIt(vtkTable *input, vtkTable *output) {
     return -1;
   }
 #endif
-  const int lastCol = std::min((int)ScalarFields.size(), RangeId[1] + 1);
-  for(int i = RangeId[0]; i < lastCol; i++) {
-    auto &scalar = ScalarFields[i];
-    if(scalar.length() > 0) {
-      vtkDataArray *arr = inputRowData->GetArray(scalar.data());
-      if(arr)
-        outputRowData->AddArray(arr);
+  for(auto &col : SelectedCols) {
+    // check valid col
+    if(col.empty()) {
+      continue;
     }
+    // check bounds in the range
+    ptrdiff_t pos = find(AvailableCols.begin(), AvailableCols.end(), col)
+                    - AvailableCols.begin();
+    if(pos < RangeId[0] || pos > RangeId[1]) {
+      continue;
+    }
+    // filter by regex
+    if(!regex_match(col, regex(RegexpString))) {
+      continue;
+    }
+    // add the attay
+    vtkDataArray *arr = inputRowData->GetArray(col.c_str());
+    if(arr)
+      outputRowData->AddArray(arr);
   }
 
   output->GetRowData()->ShallowCopy(outputRowData);
@@ -75,7 +88,12 @@ int ttkTableDataSelector::RequestInformation(
   vtkInformationVector *outputVector) {
 
   vtkTable *input = vtkTable::GetData(inputVector[0]);
-  NbColumns = input->GetNumberOfColumns();
+  int nbColumns = input->GetNumberOfColumns();
+  AvailableCols.clear();
+  AvailableCols.resize(nbColumns);
+  for (int i = 0; i < nbColumns; ++i) {
+    AvailableCols[i] = input->GetColumnName(i);
+  }
   return vtkTableAlgorithm::RequestInformation(
     request, inputVector, outputVector);
 }

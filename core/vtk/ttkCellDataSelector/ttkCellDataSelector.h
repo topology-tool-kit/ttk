@@ -80,20 +80,21 @@ public:
   }
   // end of default ttk setters
 
-  void SetScalarFields(std::string s) {
-    ScalarFields.push_back(s);
+  void AddScalarField(std::string s) {
+    SelectedFields.push_back(s);
     Modified();
   }
 
   void ClearScalarFields() {
-    ScalarFields.clear();
+    SelectedFields.clear();
     Modified();
   }
 
   vtkDataArraySelection* GetRangeIds() {
     vtkDataArraySelection* arr = vtkDataArraySelection::New();
     arr->SetArraySetting("0", true);
-    arr->SetArraySetting(std::to_string(NbScalars - 1).c_str(), true);
+    arr->SetArraySetting(
+      std::to_string(AvailableFields.size() - 1).c_str(), true);
     return arr;
   }
 
@@ -102,7 +103,7 @@ protected:
     UseAllCores = false;
     RenameSelected = false;
 
-    RegexpString = "*";
+    RegexpString = ".*";
     SelectedFieldName = "SelectedField";
 
     SetNumberOfInputPorts(1);
@@ -112,7 +113,6 @@ protected:
 
     RangeId[0] = 0;
     RangeId[1] = std::numeric_limits<int>::max();
-    NbScalars = std::numeric_limits<int>::max();
   }
 
   ~ttkCellDataSelector() override {
@@ -133,11 +133,11 @@ private:
   int ThreadNumber;
   bool RenameSelected;
   std::string SelectedFieldName;
-  std::vector<std::string> ScalarFields;
+  std::vector<std::string> AvailableFields;
+  std::vector<std::string> SelectedFields;
   std::string RegexpString;
   vtkDataArray *localFieldCopy_;
   int RangeId[2];
-  int NbScalars;
 
   int doIt(vtkDataSet *input, vtkDataSet *output);
   bool needsToAbort() override;

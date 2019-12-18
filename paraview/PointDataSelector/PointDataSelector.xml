@@ -33,7 +33,7 @@
         </Documentation>
       </InputProperty>
 
-      <StringVectorProperty command="SetScalarFields"
+      <StringVectorProperty command="AddScalarField"
         clean_command="ClearScalarFields"
         label="Scalar Fields"
         name="ScalarFields"
@@ -78,7 +78,7 @@
       </IntVectorProperty>
 
       <StringVectorProperty
-         name="Filter"
+         name="RegexFilter"
          command="SetRegexpString"
          number_of_elements="1"
          default_values=".*" panel_visibility="advanced">
@@ -95,8 +95,7 @@
         default_values="0" panel_visibility="advanced">
         <BooleanDomain name="bool"/>
         <Documentation>
-          Rename the output field if only one is selected (useful for 
-animations).
+          Rename the output field if only one is selected (useful for animations).
         </Documentation>
       </IntVectorProperty>
 
@@ -163,7 +162,7 @@ animations).
       <PropertyGroup panel_widget="Line" label="Input options">
         <Property name="ScalarFields" />
         <Property name="RangeId" />
-        <Property name="Filter" />
+        <Property name="RegexFilter" />
         <Property name="RenameSelected" />
         <Property name="SelectedName" />
       </PropertyGroup>
