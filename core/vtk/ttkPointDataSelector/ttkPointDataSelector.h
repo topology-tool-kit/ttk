@@ -15,9 +15,10 @@
 /// VTK pipeline.
 #pragma once
 
-// VTK includes
 #include <limits>
 #include <string>
+
+// VTK includes
 #include <vtkCharArray.h>
 #include <vtkDataArray.h>
 #include <vtkDataArraySelection.h>
@@ -80,20 +81,20 @@ public:
   }
   // end of default ttk setters
 
-  void SetScalarFields(std::string s) {
-    ScalarFields.push_back(s);
+  void AddScalarField(std::string s) {
+    SelectedFields.emplace_back(s);
     Modified();
   }
 
   void ClearScalarFields() {
-    ScalarFields.clear();
+    SelectedFields.clear();
     Modified();
   }
 
-  vtkDataArraySelection* GetNbScalars() {
+  vtkDataArraySelection* GetRangeIds() {
     vtkDataArraySelection* arr = vtkDataArraySelection::New();
     arr->SetArraySetting("0", true);
-    arr->SetArraySetting(std::to_string(NbScalars).c_str(), true);
+    arr->SetArraySetting(std::to_string(AvailableFields.size() - 1).c_str(), true);
     return arr;
   }
 
@@ -111,7 +112,6 @@ protected:
 
     RangeId[0] = 0 ;
     RangeId[1] = std::numeric_limits<int>::max();
-    NbScalars =  std::numeric_limits<int>::max();
   }
 
   ~ttkPointDataSelector() override {
@@ -132,11 +132,11 @@ private:
   int ThreadNumber;
   bool RenameSelected;
   std::string SelectedFieldName;
-  std::vector<std::string> ScalarFields;
+  std::vector<std::string> SelectedFields;
+  std::vector<std::string> AvailableFields;
   std::string RegexpString;
   vtkDataArray *localFieldCopy_;
   int RangeId[2];
-  int NbScalars;
 
   int doIt(vtkDataSet *input, vtkDataSet *output);
   bool needsToAbort() override;

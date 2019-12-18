@@ -1,7 +1,7 @@
+#include <cstddef>
 #include <regex>
 #include <algorithm>
 #include <ttkPointDataSelector.h>
-#include <vtkSetGet.h>
 
 using namespace std;
 using namespace ttk;
@@ -52,35 +52,45 @@ int ttkPointDataSelector::doIt(vtkDataSet *input, vtkDataSet *output) {
 #endif
 
   try {
-    const int lastField = std::min((int)ScalarFields.size(), RangeId[1] + 1);
-    for(int i = RangeId[0]; i < lastField; i++) {
-      auto scalar = ScalarFields[i];
-      if(scalar.length() > 0 && regex_match(scalar, regex(RegexpString))) {
-        vtkDataArray *arr = inputPointData->GetArray(scalar.data());
-        if(arr) {
+    for(auto& scalar: SelectedFields) {
+      // valid array
+      if(scalar.empty()) {
+        continue;
+      }
+      // check bounds in the range
+      ptrdiff_t pos = find(AvailableFields.begin(), AvailableFields.end(), scalar) - AvailableFields.begin();
+      if(pos < RangeId[0] || pos > RangeId[1]) {
+        continue;
+      }
+      // retrieve array if match
+      if(!regex_match(scalar, regex(RegexpString))) {
+        continue;
+      }
+      // Add the array
+      vtkDataArray *arr = inputPointData->GetArray(scalar.c_str());
+      if(arr) {
 
-          if(RenameSelected) {
-            if(ScalarFields.size() != 1 && RangeId[1] - RangeId[0] != 0) {
-              vtkErrorMacro("Can't rename more than one field.");
-              return 0;
-            }
-
-            if(localFieldCopy_) {
-              localFieldCopy_->Delete();
-              localFieldCopy_ = nullptr;
-            }
-
-            localFieldCopy_ = arr->NewInstance();
-
-            if(localFieldCopy_) {
-              localFieldCopy_->DeepCopy(arr);
-              localFieldCopy_->SetName(SelectedFieldName.data());
-              arr = localFieldCopy_;
-            }
+        if(RenameSelected) {
+          if(SelectedFields.size() != 1 && RangeId[1] - RangeId[0] != 0) {
+            vtkErrorMacro("Can't rename more than one field.");
+            return 0;
           }
 
-          outputPointData->AddArray(arr);
+          if(localFieldCopy_) {
+            localFieldCopy_->Delete();
+            localFieldCopy_ = nullptr;
+          }
+
+          localFieldCopy_ = arr->NewInstance();
+
+          if(localFieldCopy_) {
+            localFieldCopy_->DeepCopy(arr);
+            localFieldCopy_->SetName(SelectedFieldName.data());
+            arr = localFieldCopy_;
+          }
         }
+
+        outputPointData->AddArray(arr);
       }
     }
   } catch(std::regex_error &) {
@@ -105,8 +115,13 @@ int ttkPointDataSelector::RequestInformation(
   vtkInformationVector *outputVector) {
 
   vtkDataSet *input = vtkDataSet::GetData(inputVector[0]);
-  NbScalars = input->GetPointData()->GetNumberOfArrays();
-  return vtkDataSetAlgorithm::RequestUpdateExtent(request, inputVector, outputVector);
+  int nbScalars = input->GetPointData()->GetNumberOfArrays();
+  AvailableFields.clear();
+  AvailableFields.resize(nbScalars);
+  for(int i = 0; i < nbScalars; ++i) {
+    AvailableFields[i] = input->GetPointData()->GetArrayName(i);
+  }
+  return vtkDataSetAlgorithm::RequestInformation(request, inputVector, outputVector);
 }
 
 int ttkPointDataSelector::RequestData(vtkInformation *request,
