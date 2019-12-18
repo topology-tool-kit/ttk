@@ -143,6 +143,7 @@ if(TTK_BUILD_PARAVIEW_PLUGINS)
       "Directory where the ParaView plugin will be installed"
       )
   endif()
+  mark_as_advanced(TTK_INSTALL_PLUGIN_DIR)
 
   add_subdirectory(paraview)
 endif()
