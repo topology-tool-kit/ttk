@@ -49,9 +49,6 @@
               function="Input" />
           </RequiredProperties>
         </ArrayListDomain>
-        <Hints>
-          <NoDefault />
-        </Hints>
         <Documentation>
           Select the scalar fields to process.
         </Documentation>
