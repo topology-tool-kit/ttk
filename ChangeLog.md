@@ -1,7 +1,9 @@
 ## TTK - ChangeLog
 =
 ### ttk.git
+- Support for ParaView-5.7.0 \0/
 - New branching management
+
 
 ### 0.9.8.9
 - Progressive Wasserstein Barycenters of Persistence Diagrams (IEEE VIS 2019)
