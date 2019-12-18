@@ -28,6 +28,12 @@ vtk_module_build(
   )
 
 if(VTK_WRAP_PYTHON)
+  set(TTK_BUILD_VTK_PYTHON_MODULE
+    ON
+    CACHE
+    BOOL
+    "Build the python module"
+    )
   if(NOT DEFINED TTK_PYTHON_MODULE_DIR)
     vtk_module_python_default_destination(PYTHON_SITE_PACKAGES_SUFFIX)
     set(TTK_PYTHON_MODULE_DIR
@@ -74,6 +80,13 @@ if(VTK_WRAP_PYTHON)
       TTKPython-targets.cmake
     DESTINATION
       "${CMAKE_INSTALL_LIBDIR}/ttk/python"
+    )
+else()
+  set(TTK_BUILD_VTK_PYTHON_MODULE
+    OFF
+    CACHE
+    BOOL
+    "Build the python module"
     )
 endif()
 
