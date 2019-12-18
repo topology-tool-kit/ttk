@@ -47,8 +47,9 @@ int ttkTableDataSelector::doIt(vtkTable *input, vtkTable *output) {
     return -1;
   }
 #endif
-
-  for(auto &scalar : ScalarFields) {
+  const int lastCol = std::min((int)ScalarFields.size(), RangeId[1] + 1);
+  for(int i = RangeId[0]; i < lastCol; i++) {
+    auto &scalar = ScalarFields[i];
     if(scalar.length() > 0) {
       vtkDataArray *arr = inputRowData->GetArray(scalar.data());
       if(arr)
@@ -66,6 +67,17 @@ int ttkTableDataSelector::doIt(vtkTable *input, vtkTable *output) {
   }
 
   return 0;
+}
+
+int ttkTableDataSelector::RequestInformation(
+  vtkInformation *request,
+  vtkInformationVector **inputVector,
+  vtkInformationVector *outputVector) {
+
+  vtkTable *input = vtkTable::GetData(inputVector[0]);
+  NbColumns = input->GetNumberOfColumns();
+  return vtkTableAlgorithm::RequestInformation(
+    request, inputVector, outputVector);
 }
 
 int ttkTableDataSelector::RequestData(vtkInformation *request,

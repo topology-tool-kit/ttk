@@ -15,10 +15,13 @@
 /// VTK pipeline.
 #pragma once
 
+#include <limits>
+
 // VTK includes
 #include <vtkCellData.h>
 #include <vtkCharArray.h>
 #include <vtkDataArray.h>
+#include <vtkDataArraySelection.h>
 #include <vtkDataSet.h>
 #include <vtkDataSetAlgorithm.h>
 #include <vtkDoubleArray.h>
@@ -43,11 +46,14 @@ class TTKCELLDATASELECTOR_EXPORT ttkCellDataSelector
 
 public:
   static ttkCellDataSelector *New();
-  vtkTypeMacro(ttkCellDataSelector, vtkDataSetAlgorithm)
+  vtkTypeMacro(ttkCellDataSelector, vtkDataSetAlgorithm);
 
-    // default ttk setters
-    vtkSetMacro(debugLevel_, int);
+  // default ttk setters
+  vtkSetMacro(debugLevel_, int);
   vtkSetMacro(RegexpString, std::string);
+
+  vtkSetVector2Macro(RangeId, int);
+  vtkGetVector2Macro(RangeId, int);
 
   vtkSetMacro(RenameSelected, bool);
   vtkGetMacro(RenameSelected, bool);
@@ -84,29 +90,11 @@ public:
     Modified();
   }
 
-  int FillInputPortInformation(int port, vtkInformation *info) override {
-    switch(port) {
-      case 0:
-        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataSet");
-        break;
-      default:
-        break;
-    }
-
-    return 1;
-  }
-
-  int FillOutputPortInformation(int port, vtkInformation *info) override {
-
-    switch(port) {
-      case 0:
-        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataSet");
-        break;
-      default:
-        break;
-    }
-
-    return 1;
+  vtkDataArraySelection* GetRangeIds() {
+    vtkDataArraySelection* arr = vtkDataArraySelection::New();
+    arr->SetArraySetting("0", true);
+    arr->SetArraySetting(std::to_string(NbScalars - 1).c_str(), true);
+    return arr;
   }
 
 protected:
@@ -121,12 +109,20 @@ protected:
     SetNumberOfOutputPorts(1);
 
     localFieldCopy_ = NULL;
+
+    RangeId[0] = 0;
+    RangeId[1] = std::numeric_limits<int>::max();
+    NbScalars = std::numeric_limits<int>::max();
   }
 
   ~ttkCellDataSelector() override {
     if(localFieldCopy_)
       localFieldCopy_->Delete();
   };
+
+  int RequestInformation(vtkInformation *request,
+                         vtkInformationVector **inputVector,
+                         vtkInformationVector *outputVector) override;
 
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,
@@ -140,6 +136,8 @@ private:
   std::vector<std::string> ScalarFields;
   std::string RegexpString;
   vtkDataArray *localFieldCopy_;
+  int RangeId[2];
+  int NbScalars;
 
   int doIt(vtkDataSet *input, vtkDataSet *output);
   bool needsToAbort() override;

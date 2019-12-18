@@ -15,9 +15,10 @@
 /// VTK pipeline.
 #pragma once
 
-// VTK includes
 #include <limits>
 #include <string>
+
+// VTK includes
 #include <vtkCharArray.h>
 #include <vtkDataArray.h>
 #include <vtkDataArraySelection.h>
@@ -90,10 +91,10 @@ public:
     Modified();
   }
 
-  vtkDataArraySelection* GetNbScalars() {
+  vtkDataArraySelection* GetRangeIds() {
     vtkDataArraySelection* arr = vtkDataArraySelection::New();
     arr->SetArraySetting("0", true);
-    arr->SetArraySetting(std::to_string(NbScalars).c_str(), true);
+    arr->SetArraySetting(std::to_string(NbScalars - 1).c_str(), true);
     return arr;
   }
 

@@ -1,5 +1,8 @@
 #include <regex>
+
 #include <ttkCellDataSelector.h>
+
+#include <vtkPointData.h>
 
 using namespace std;
 using namespace ttk;
@@ -54,50 +57,25 @@ int ttkCellDataSelector::doIt(vtkDataSet *input, vtkDataSet *output) {
 #endif
 
   try {
-    for(auto &scalar : ScalarFields) {
+    const int lastField = std::min((int)ScalarFields.size(), RangeId[1] + 1);
+    for(int i = RangeId[0]; i < lastField; i++) {
+      auto &scalar = ScalarFields[i];
       if(scalar.length() > 0 && regex_match(scalar, regex(RegexpString))) {
         vtkDataArray *arr = inputCellData->GetArray(scalar.data());
         if(arr) {
 
-          if((ScalarFields.size() == 1) && (RenameSelected)) {
+          if(RenameSelected) {
+            if(ScalarFields.size() != 1 && RangeId[1] - RangeId[0] != 0) {
+              vtkErrorMacro("Can't rename more than one field.");
+              return 0;
+            }
 
             if(localFieldCopy_) {
               localFieldCopy_->Delete();
-              localFieldCopy_ = NULL;
+              localFieldCopy_ = nullptr;
             }
 
-            switch(arr->GetDataType()) {
-              case VTK_CHAR:
-                localFieldCopy_ = vtkCharArray::New();
-                break;
-
-              case VTK_DOUBLE:
-                localFieldCopy_ = vtkDoubleArray::New();
-                break;
-
-              case VTK_FLOAT:
-                localFieldCopy_ = vtkFloatArray::New();
-                break;
-
-              case VTK_INT:
-                localFieldCopy_ = vtkIntArray::New();
-                break;
-
-              case VTK_ID_TYPE:
-                localFieldCopy_ = vtkIdTypeArray::New();
-                break;
-
-              case VTK_UNSIGNED_SHORT:
-                localFieldCopy_ = vtkUnsignedShortArray::New();
-                break;
-
-              default: {
-                stringstream msg;
-                msg << "[ttkPointDataSelector] Unsupported data type :("
-                    << endl;
-                dMsg(cerr, msg.str(), fatalMsg);
-              } break;
-            }
+            localFieldCopy_ = arr->NewInstance();
 
             if(localFieldCopy_) {
               localFieldCopy_->DeepCopy(arr);
@@ -124,6 +102,16 @@ int ttkCellDataSelector::doIt(vtkDataSet *input, vtkDataSet *output) {
   }
 
   return 0;
+}
+
+int ttkCellDataSelector::RequestInformation(
+  vtkInformation *request,
+  vtkInformationVector **inputVector,
+  vtkInformationVector *outputVector) {
+
+  vtkDataSet *input = vtkDataSet::GetData(inputVector[0]);
+  NbScalars = input->GetCellData()->GetNumberOfArrays();
+  return vtkDataSetAlgorithm::RequestInformation(request, inputVector, outputVector);
 }
 
 int ttkCellDataSelector::RequestData(vtkInformation *request,

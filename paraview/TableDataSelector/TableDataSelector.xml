@@ -37,6 +37,7 @@
         number_of_elements="0"
         default_values="1"
         number_of_elements_per_command="1"
+        animatable="0"
         repeat_command="1">
         <ArrayListDomain name="array_list"
           default_values="1">
@@ -45,13 +46,33 @@
               function="Input" />
           </RequiredProperties>
         </ArrayListDomain>
-        <Hints>
-          <NoDefault />
-        </Hints>
         <Documentation>
           Select the scalar fields to process.
         </Documentation>
       </StringVectorProperty>
+
+      <StringVectorProperty name="NbColumns"
+        command="GetRangeIds"
+        number_of_elements_per_command="0"
+        information_only="1"
+        si_class="vtkSIDataArraySelectionProperty" />
+
+      <IntVectorProperty
+        name="RangeId"
+        label="Range Id"
+        command="SetRangeId"
+        number_of_elements="2"
+        default_values="0 999"
+        panel_visibility="advanced">
+        <IntRangeDomain name="range" default_mode="min,min,max,max">
+          <RequiredProperties>
+            <Property name="NbColumns" function="RangeInfo" />
+          </RequiredProperties>
+        </IntRangeDomain>
+        <Documentation>
+            First and last accepted column number.
+        </Documentation>
+      </IntVectorProperty>
 
       <IntVectorProperty
         name="UseAllCores"

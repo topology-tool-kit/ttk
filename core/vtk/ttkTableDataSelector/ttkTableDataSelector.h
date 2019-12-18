@@ -15,9 +15,12 @@
 /// VTK pipeline.
 #pragma once
 
+#include <limits>
+
 // VTK includes
 #include <vtkCharArray.h>
 #include <vtkDataArray.h>
+#include <vtkDataArraySelection.h>
 #include <vtkDataSet.h>
 #include <vtkDataSetAlgorithm.h>
 #include <vtkDoubleArray.h>
@@ -43,10 +46,13 @@ class TTKTABLEDATASELECTOR_EXPORT ttkTableDataSelector
 
 public:
   static ttkTableDataSelector *New();
-  vtkTypeMacro(ttkTableDataSelector, vtkTableAlgorithm)
+  vtkTypeMacro(ttkTableDataSelector, vtkTableAlgorithm);
 
-    // default ttk setters
-    vtkSetMacro(debugLevel_, int);
+  // default ttk setters
+  vtkSetMacro(debugLevel_, int);
+
+  vtkGetVector2Macro(RangeId, int);
+  vtkSetVector2Macro(RangeId, int);
 
   void SetThreads() {
     if(!UseAllCores)
@@ -78,40 +84,27 @@ public:
     Modified();
   }
 
-  int FillInputPortInformation(int port, vtkInformation *info) override {
-    switch(port) {
-      case 0:
-        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkTable");
-        break;
-      default:
-        break;
-    }
-
-    return 1;
-  }
-
-  int FillOutputPortInformation(int port, vtkInformation *info) override {
-
-    switch(port) {
-      case 0:
-        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkTable");
-        break;
-      default:
-        break;
-    }
-
-    return 1;
+  vtkDataArraySelection *GetRangeIds() {
+    vtkDataArraySelection *arr = vtkDataArraySelection::New();
+    arr->SetArraySetting("0", true);
+    arr->SetArraySetting(std::to_string(NbColumns - 1).c_str(), true);
+    return arr;
   }
 
 protected:
   ttkTableDataSelector() {
     UseAllCores = true;
 
-    SetNumberOfInputPorts(1);
-    SetNumberOfOutputPorts(1);
+    RangeId[0] = 0;
+    RangeId[1] = std::numeric_limits<int>::max();
+    NbColumns = std::numeric_limits<int>::max();
   }
 
   ~ttkTableDataSelector() override{};
+
+  int RequestInformation(vtkInformation *request,
+                         vtkInformationVector **inputVector,
+                         vtkInformationVector *outputVector) override;
 
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,
@@ -121,6 +114,8 @@ private:
   bool UseAllCores;
   int ThreadNumber;
   std::vector<std::string> ScalarFields;
+  int RangeId[2];
+  int NbColumns;
 
   int doIt(vtkTable *input, vtkTable *output);
   bool needsToAbort() override;

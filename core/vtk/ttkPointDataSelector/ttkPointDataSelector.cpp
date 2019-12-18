@@ -1,7 +1,6 @@
 #include <regex>
 #include <algorithm>
 #include <ttkPointDataSelector.h>
-#include <vtkSetGet.h>
 
 using namespace std;
 using namespace ttk;
@@ -54,7 +53,7 @@ int ttkPointDataSelector::doIt(vtkDataSet *input, vtkDataSet *output) {
   try {
     const int lastField = std::min((int)ScalarFields.size(), RangeId[1] + 1);
     for(int i = RangeId[0]; i < lastField; i++) {
-      auto scalar = ScalarFields[i];
+      auto &scalar = ScalarFields[i];
       if(scalar.length() > 0 && regex_match(scalar, regex(RegexpString))) {
         vtkDataArray *arr = inputPointData->GetArray(scalar.data());
         if(arr) {
@@ -106,7 +105,7 @@ int ttkPointDataSelector::RequestInformation(
 
   vtkDataSet *input = vtkDataSet::GetData(inputVector[0]);
   NbScalars = input->GetPointData()->GetNumberOfArrays();
-  return vtkDataSetAlgorithm::RequestUpdateExtent(request, inputVector, outputVector);
+  return vtkDataSetAlgorithm::RequestInformation(request, inputVector, outputVector);
 }
 
 int ttkPointDataSelector::RequestData(vtkInformation *request,

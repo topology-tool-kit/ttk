@@ -55,7 +55,7 @@
       </StringVectorProperty>
 
       <StringVectorProperty name="NbScalarRange"
-        command="GetNbScalars"
+        command="GetRangeIds"
         number_of_elements_per_command="0"
         information_only="1"
         si_class="vtkSIDataArraySelectionProperty" />
