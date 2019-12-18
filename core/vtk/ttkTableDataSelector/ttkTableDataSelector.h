@@ -113,6 +113,8 @@ protected:
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;
 
+  void FillAvailableCols(vtkTable* input);
+
 private:
   bool UseAllCores;
   int ThreadNumber;

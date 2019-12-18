@@ -127,6 +127,8 @@ protected:
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;
 
+  void FillAvailableFields(vtkDataSet* input);
+
 private:
   bool UseAllCores;
   int ThreadNumber;

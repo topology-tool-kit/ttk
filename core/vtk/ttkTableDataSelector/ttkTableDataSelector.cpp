@@ -49,6 +49,12 @@ int ttkTableDataSelector::doIt(vtkTable *input, vtkTable *output) {
     return -1;
   }
 #endif
+
+  if(AvailableCols.empty()) {
+    // loading from states
+    FillAvailableCols(input);
+  }
+
   for(auto &col : SelectedCols) {
     // check valid col
     if(col.empty()) {
@@ -88,12 +94,7 @@ int ttkTableDataSelector::RequestInformation(
   vtkInformationVector *outputVector) {
 
   vtkTable *input = vtkTable::GetData(inputVector[0]);
-  int nbColumns = input->GetNumberOfColumns();
-  AvailableCols.clear();
-  AvailableCols.resize(nbColumns);
-  for (int i = 0; i < nbColumns; ++i) {
-    AvailableCols[i] = input->GetColumnName(i);
-  }
+  FillAvailableCols(input);
   return vtkTableAlgorithm::RequestInformation(
     request, inputVector, outputVector);
 }
@@ -116,4 +117,13 @@ int ttkTableDataSelector::RequestData(vtkInformation *request,
   }
 
   return 1;
+}
+
+void ttkTableDataSelector::FillAvailableCols(vtkTable *input) {
+  int nbColumns = input->GetNumberOfColumns();
+  AvailableCols.clear();
+  AvailableCols.resize(nbColumns);
+  for (int i = 0; i < nbColumns; ++i) {
+    AvailableCols[i] = input->GetColumnName(i);
+  }
 }

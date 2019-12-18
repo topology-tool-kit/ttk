@@ -56,6 +56,11 @@ int ttkCellDataSelector::doIt(vtkDataSet *input, vtkDataSet *output) {
   }
 #endif
 
+  if(AvailableFields.empty()) {
+    // when loading states
+    FillAvailableFields(input);
+  }
+
   try {
     for(auto& scalar: SelectedFields) {
       // valid array
@@ -120,12 +125,7 @@ int ttkCellDataSelector::RequestInformation(
   vtkInformationVector *outputVector) {
 
   vtkDataSet *input = vtkDataSet::GetData(inputVector[0]);
-  int nbScalars = input->GetCellData()->GetNumberOfArrays();
-  AvailableFields.clear();
-  AvailableFields.resize(nbScalars);
-  for(int i = 0; i < nbScalars; ++i) {
-    AvailableFields[i] = input->GetCellData()->GetArrayName(i);
-  }
+  FillAvailableFields(input);
   return vtkDataSetAlgorithm::RequestInformation(request, inputVector, outputVector);
 }
 
@@ -148,4 +148,13 @@ int ttkCellDataSelector::RequestData(vtkInformation *request,
   }
 
   return 1;
+}
+
+void ttkCellDataSelector::FillAvailableFields(vtkDataSet* input) {
+  int nbScalars = input->GetCellData()->GetNumberOfArrays();
+  AvailableFields.clear();
+  AvailableFields.resize(nbScalars);
+  for(int i = 0; i < nbScalars; ++i) {
+    AvailableFields[i] = input->GetCellData()->GetArrayName(i);
+  }
 }

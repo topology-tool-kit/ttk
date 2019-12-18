@@ -51,6 +51,12 @@ int ttkPointDataSelector::doIt(vtkDataSet *input, vtkDataSet *output) {
   }
 #endif
 
+  if(AvailableFields.empty()) {
+    // when loading from statefiles
+    // or vtk script
+    FillAvailableFields(input);
+  }
+
   try {
     for(auto& scalar: SelectedFields) {
       // valid array
@@ -115,12 +121,7 @@ int ttkPointDataSelector::RequestInformation(
   vtkInformationVector *outputVector) {
 
   vtkDataSet *input = vtkDataSet::GetData(inputVector[0]);
-  int nbScalars = input->GetPointData()->GetNumberOfArrays();
-  AvailableFields.clear();
-  AvailableFields.resize(nbScalars);
-  for(int i = 0; i < nbScalars; ++i) {
-    AvailableFields[i] = input->GetPointData()->GetArrayName(i);
-  }
+  FillAvailableFields(input);
   return vtkDataSetAlgorithm::RequestInformation(request, inputVector, outputVector);
 }
 
@@ -142,4 +143,13 @@ int ttkPointDataSelector::RequestData(vtkInformation *request,
   }
 
   return 1;
+}
+
+void ttkPointDataSelector::FillAvailableFields(vtkDataSet *input) {
+  int nbScalars = input->GetPointData()->GetNumberOfArrays();
+  AvailableFields.clear();
+  AvailableFields.resize(nbScalars);
+  for(int i = 0; i < nbScalars; ++i) {
+    AvailableFields[i] = input->GetPointData()->GetArrayName(i);
+  }
 }
