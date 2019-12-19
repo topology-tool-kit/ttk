@@ -32,7 +32,7 @@
                 <Documentation>The maximum number of threads (0: set to number of cores).</Documentation>
             </IntVectorProperty>
             <IntVectorProperty name="DebugLevel" label="Debug Level" command="SetDebugLevel" number_of_elements="1" default_values="2" panel_visibility="advanced">
-                <IntRangeDomain name="range" min="0" max="4" />
+                <IntRangeDomain name="range" min="0" max="5" />
                 <Documentation>Debug level.</Documentation>
             </IntVectorProperty>
             <PropertyGroup panel_widget="Line" label="Testing">
