@@ -55,6 +55,12 @@ namespace ttk {
     Triangulation &operator=(Triangulation &&);
     ~Triangulation();
 
+    enum type {
+      explicitRepresentation,
+      implicitRepresentation,
+      periodicRepresentation
+    };
+
     /// Reset the triangulation data-structures.
     /// \return Returns 0 upon success, negative values otherwise.
     inline int clear() override {
@@ -1710,6 +1716,20 @@ namespace ttk {
 
       return abstractTriangulation_->getTriangleVertex(
         triangleId, localVertexId, vertexId);
+    }
+
+    /// Get the type of internal representation for the triangulation
+    /// (explicit, implicit, periodic).
+    ///
+    /// \return Returns the current type of the triangulation.
+    /// \sa setPeriodicBoundaryConditions()
+    inline type getType() const {
+      if(abstractTriangulation_ == &explicitTriangulation_)
+        return explicitRepresentation;
+      else if(abstractTriangulation_ == &implicitTriangulation_)
+        return implicitRepresentation;
+      else
+        return periodicRepresentation;
     }
 
     /// Get the \p localEdgeId-th edge identifier connected to the
