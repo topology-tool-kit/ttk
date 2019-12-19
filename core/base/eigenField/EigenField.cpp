@@ -22,9 +22,14 @@
 
 // main routine
 template <typename T>
-int ttk::EigenField::execute() const {
+int ttk::EigenField::execute(Triangulation *triangulation,
+                             T *const outputFieldPointer,
+                             const unsigned int eigenNumber,
+                             bool computeStatistics,
+                             T *const outputStatistics) const {
 
   Timer t;
+  const auto vertexNumber = triangulation->getNumberOfVertices();
 
 #if defined(TTK_ENABLE_EIGEN) && defined(TTK_ENABLE_SPECTRA)
 
@@ -44,19 +49,19 @@ int ttk::EigenField::execute() const {
   // graph laplacian of current mesh
   SpMat lap;
   // compute graph laplacian using cotangent weights
-  Laplacian::cotanWeights<T>(lap, *triangulation_);
+  Laplacian::cotanWeights<T>(lap, *triangulation);
   // lap is square
   eigen_plain_assert(lap.cols() == lap.rows());
 
   auto n = lap.cols();
-  auto m = eigenNumber_;
+  auto m = eigenNumber;
   // threshold: minimal number of eigenpairs to get a converging solution
   const size_t minEigenNumber = 20;
 
-  if(eigenNumber_ == 0) {
+  if(eigenNumber == 0) {
     // default value
     m = n / 1000;
-  } else if(eigenNumber_ < minEigenNumber) {
+  } else if(eigenNumber < minEigenNumber) {
     m = minEigenNumber;
   }
 
@@ -77,7 +82,7 @@ int ttk::EigenField::execute() const {
         break;
       case Spectra::COMPUTATION_INFO::NOT_CONVERGING:
         msg << MODULE_S "No Convergence! (" << nconv << " out of "
-            << eigenNumber_ << " values computed)" << std::endl;
+            << eigenNumber << " values computed)" << std::endl;
         break;
       case Spectra::COMPUTATION_INFO::NOT_COMPUTED:
         msg << MODULE_S "Invalid Input!" << std::endl;
@@ -90,46 +95,46 @@ int ttk::EigenField::execute() const {
 
   DMat eigenvectors = solver.eigenvectors();
 
-  auto outputEigenFunctions = static_cast<T *>(outputFieldPointer_);
+  auto outputEigenFunctions = static_cast<T *>(outputFieldPointer);
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
-  for(SimplexId i = 0; i < vertexNumber_; ++i) {
-    for(size_t j = 0; j < eigenNumber_; ++j) {
+  for(SimplexId i = 0; i < vertexNumber; ++i) {
+    for(size_t j = 0; j < eigenNumber; ++j) {
       // cannot avoid copy here...
-      outputEigenFunctions[i * eigenNumber_ + j] = eigenvectors(i, j);
+      outputEigenFunctions[i * eigenNumber + j] = eigenvectors(i, j);
     }
   }
 
-  if(computeStatistics_ && outputStatistics_ != nullptr) {
+  if(computeStatistics && outputStatistics != nullptr) {
 
     // number of statistics components
     const int statsComp = 4;
 
-    auto outputStats = static_cast<T *>(outputStatistics_);
+    auto outputStats = static_cast<T *>(outputStatistics);
 
     // compute statistics on eigenfunctions
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
-    for(SimplexId i = 0; i < vertexNumber_; ++i) {
+    for(SimplexId i = 0; i < vertexNumber; ++i) {
       auto k = i * statsComp;
       // init current tuple computation
-      outputStats[k] = outputEigenFunctions[i * eigenNumber_];
-      outputStats[k + 1] = outputEigenFunctions[i * eigenNumber_];
-      outputStats[k + 2] = outputEigenFunctions[i * eigenNumber_];
-      outputStats[k + 3] = outputEigenFunctions[i * eigenNumber_]
-                           * outputEigenFunctions[i * eigenNumber_];
+      outputStats[k] = outputEigenFunctions[i * eigenNumber];
+      outputStats[k + 1] = outputEigenFunctions[i * eigenNumber];
+      outputStats[k + 2] = outputEigenFunctions[i * eigenNumber];
+      outputStats[k + 3] = outputEigenFunctions[i * eigenNumber]
+                           * outputEigenFunctions[i * eigenNumber];
       // loop from 1
-      for(size_t j = 1; j < eigenNumber_; ++j) {
+      for(size_t j = 1; j < eigenNumber; ++j) {
         outputStats[k] = std::min<T>(
-          outputEigenFunctions[i * eigenNumber_ + j], outputStats[k]);
+          outputEigenFunctions[i * eigenNumber + j], outputStats[k]);
         outputStats[k + 1] = std::max<T>(
-          outputEigenFunctions[i * eigenNumber_ + j], outputStats[k]);
-        outputStats[k + 2] += outputEigenFunctions[i * eigenNumber_ + j];
-        outputStats[k + 3] += outputEigenFunctions[i * eigenNumber_ + j]
-                              * outputEigenFunctions[i * eigenNumber_ + j];
+          outputEigenFunctions[i * eigenNumber + j], outputStats[k]);
+        outputStats[k + 2] += outputEigenFunctions[i * eigenNumber + j];
+        outputStats[k + 3] += outputEigenFunctions[i * eigenNumber + j]
+                              * outputEigenFunctions[i * eigenNumber + j];
         ;
       }
     }
@@ -164,5 +169,10 @@ int ttk::EigenField::execute() const {
 }
 
 // explicit instantiations for double and float types
-template int ttk::EigenField::execute<double>() const;
-template int ttk::EigenField::execute<float>() const;
+template int ttk::EigenField::execute<double>(Triangulation *,
+                                              double *const,
+                                              const unsigned int,
+                                              bool,
+                                              double *const) const;
+template int ttk::EigenField::execute<float>(
+  Triangulation *, float *const, const unsigned int, bool, float *const) const;

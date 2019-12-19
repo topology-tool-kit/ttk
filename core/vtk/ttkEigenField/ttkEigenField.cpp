@@ -61,9 +61,6 @@ int ttkEigenField::doIt(std::vector<vtkDataSet *> &inputs,
 
   TTK_ABORT_KK(vertexNumber == 0, "domain has no points", -2);
 
-  baseWorker_.setEigenNumber(EigenNumber);
-  baseWorker_.setComputeStatistics(ComputeStatistics);
-
   // array of eigenfunctions
   vtkSmartPointer<vtkDataArray> eigenFunctions{};
   // statistics
@@ -100,15 +97,18 @@ int ttkEigenField::doIt(std::vector<vtkDataSet *> &inputs,
     stats->SetComponentName(3, "EigenMagnitude");
   }
 
-  baseWorker_.setOutputFieldPointer(eigenFunctions->GetVoidPointer(0));
-  baseWorker_.setOutputStatistics(stats->GetVoidPointer(0));
-
   switch(OutputFieldType) {
     case EigenFieldType::Float:
-      res += baseWorker_.execute<float>();
+      res += baseWorker_.execute<float>(
+        triangulation_, static_cast<float *>(eigenFunctions->GetVoidPointer(0)),
+        EigenNumber, ComputeStatistics,
+        static_cast<float *>(stats->GetVoidPointer(0)));
       break;
     case EigenFieldType::Double:
-      res += baseWorker_.execute<double>();
+      res += baseWorker_.execute<double>(
+        triangulation_,
+        static_cast<double *>(eigenFunctions->GetVoidPointer(0)), EigenNumber,
+        ComputeStatistics, static_cast<double *>(stats->GetVoidPointer(0)));
       break;
     default:
       break;

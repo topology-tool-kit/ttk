@@ -90,15 +90,6 @@ public:
   // get mesh from VTK
   int getTriangulation(vtkDataSet *input);
 
-  // default copy constructor
-  ttkEigenField(const ttkEigenField &) = delete;
-  // default move constructor
-  ttkEigenField(ttkEigenField &&) = delete;
-  // default copy assignment operator
-  ttkEigenField &operator=(const ttkEigenField &) = delete;
-  // default move assignment operator
-  ttkEigenField &operator=(ttkEigenField &&) = delete;
-
 protected:
   ttkEigenField();
 
