@@ -128,7 +128,7 @@ protected:
     SetNumberOfOutputPorts(1);
   }
 
-  ~ttkTriangulationRequest() override {};
+  ~ttkTriangulationRequest() override{};
 
   TTK_SETUP();
 

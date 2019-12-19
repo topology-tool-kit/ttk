@@ -76,7 +76,7 @@ protected:
     SetNumberOfOutputPorts(1);
   }
 
-  ~ttkGaussianPointCloud() override {};
+  ~ttkGaussianPointCloud() override{};
 
   bool UseAllCores;
   int ThreadNumber;

@@ -122,7 +122,6 @@ int ttkTopologicalCompressionReader::RequestData(
     vtkWarningMacro("Failure when reading compressed TTK file");
   }
 
-
   mesh->GetPointData()->RemoveArray(0);
   mesh->GetPointData()->SetNumberOfTuples(vertexNumber);
 

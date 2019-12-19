@@ -114,7 +114,7 @@ protected:
     SetNumberOfInputPorts(1);
     SetNumberOfOutputPorts(1);
   }
-  ~ttkMeshGraph() override {};
+  ~ttkMeshGraph() override{};
 
   bool UseAllCores;
   int ThreadNumber;

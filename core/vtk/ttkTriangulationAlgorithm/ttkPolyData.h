@@ -1,8 +1,8 @@
 #ifndef _TTK_POLYDATA_H
 #define _TTK_POLYDATA_H
 
-#include <ttkTriangulation.h>
 #include <macro.h>
+#include <ttkTriangulation.h>
 
 #include <vtkPolyData.h>
 

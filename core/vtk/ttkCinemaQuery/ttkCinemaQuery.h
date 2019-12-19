@@ -87,7 +87,7 @@ protected:
     SetNumberOfInputPorts(1);
     SetNumberOfOutputPorts(1);
   }
-  ~ttkCinemaQuery() override {};
+  ~ttkCinemaQuery() override{};
 
   bool UseAllCores;
   int ThreadNumber;

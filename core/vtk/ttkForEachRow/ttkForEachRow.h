@@ -75,7 +75,7 @@ protected:
     SetNumberOfInputPorts(1);
     SetNumberOfOutputPorts(1);
   }
-  ~ttkForEachRow() override {};
+  ~ttkForEachRow() override{};
 
   bool UseAllCores;
   int ThreadNumber;

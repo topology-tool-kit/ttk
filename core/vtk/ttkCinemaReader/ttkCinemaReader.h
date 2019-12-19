@@ -30,7 +30,7 @@ public:
   static ttkCinemaReader *New();
   vtkTypeMacro(ttkCinemaReader, vtkTableReader)
 
-  vtkSetMacro(DatabasePath, std::string);
+    vtkSetMacro(DatabasePath, std::string);
   vtkGetMacro(DatabasePath, std::string);
 
   // default ttk setters
@@ -74,7 +74,7 @@ protected:
     SetNumberOfInputPorts(0);
     SetNumberOfOutputPorts(1);
   }
-  ~ttkCinemaReader() override {};
+  ~ttkCinemaReader() override{};
 
   bool UseAllCores;
   int ThreadNumber;

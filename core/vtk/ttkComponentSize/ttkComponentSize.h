@@ -47,7 +47,7 @@
 #include <ttkTriangulationAlgorithm.h>
 
 class TTKCOMPONENTSIZE_EXPORT ttkComponentSize : public vtkPointSetAlgorithm,
-                                               public ttk::Wrapper {
+                                                 public ttk::Wrapper {
 
 public:
   static ttkComponentSize *New();

@@ -104,7 +104,7 @@ protected:
     SetNumberOfOutputPorts(1);
   }
 
-  ~ttkDataSetToTable() override {};
+  ~ttkDataSetToTable() override{};
 
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,

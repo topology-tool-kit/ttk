@@ -78,7 +78,7 @@ protected:
     SetNumberOfOutputPorts(1);
   }
 
-  ~ttkDataSetInterpolator() override {};
+  ~ttkDataSetInterpolator() override{};
 
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,

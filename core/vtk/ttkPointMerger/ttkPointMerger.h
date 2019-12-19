@@ -81,7 +81,7 @@ protected:
     UseAllCores = true;
   }
 
-  ~ttkPointMerger() override {};
+  ~ttkPointMerger() override{};
 
   TTK_SETUP();
 

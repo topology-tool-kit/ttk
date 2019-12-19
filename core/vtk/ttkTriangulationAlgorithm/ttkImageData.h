@@ -1,8 +1,8 @@
 #ifndef _TTK_IMAGEDATA_H
 #define _TTK_IMAGEDATA_H
 
-#include <ttkTriangulation.h>
 #include <macro.h>
+#include <ttkTriangulation.h>
 
 #include <vtkImageData.h>
 

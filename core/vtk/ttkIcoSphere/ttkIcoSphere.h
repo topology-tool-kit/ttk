@@ -81,7 +81,7 @@ protected:
     SetNumberOfInputPorts(0);
     SetNumberOfOutputPorts(1);
   }
-  ~ttkIcoSphere() override {};
+  ~ttkIcoSphere() override{};
 
   bool UseAllCores;
   int ThreadNumber;

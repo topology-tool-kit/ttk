@@ -96,7 +96,7 @@ protected:
     SetNumberOfInputPorts(2);
   }
 
-  ~ttkImportEmbeddingFromTable() override {};
+  ~ttkImportEmbeddingFromTable() override{};
 
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,

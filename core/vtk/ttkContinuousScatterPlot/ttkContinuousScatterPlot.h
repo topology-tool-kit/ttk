@@ -50,7 +50,7 @@
 #include <vtkSmartPointer.h>
 #include <vtkUnstructuredGrid.h>
 
-//VTK Module
+// VTK Module
 #include <ttkContinuousScatterPlotModule.h>
 
 // ttk baseCode includes

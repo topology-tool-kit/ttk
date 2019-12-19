@@ -80,7 +80,7 @@ protected:
     SetNumberOfInputPorts(2);
     SetNumberOfOutputPorts(1);
   }
-  ~ttkEndFor() override {};
+  ~ttkEndFor() override{};
 
   bool UseAllCores;
   int ThreadNumber;

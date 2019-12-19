@@ -110,7 +110,7 @@ protected:
     SetNumberOfOutputPorts(1);
   }
 
-  ~ttkIdentifyByScalarField() override {};
+  ~ttkIdentifyByScalarField() override{};
 
   TTK_SETUP();
 

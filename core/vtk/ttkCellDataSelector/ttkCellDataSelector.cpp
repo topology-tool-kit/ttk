@@ -62,13 +62,15 @@ int ttkCellDataSelector::doIt(vtkDataSet *input, vtkDataSet *output) {
   }
 
   try {
-    for(auto& scalar: SelectedFields) {
+    for(auto &scalar : SelectedFields) {
       // valid array
       if(scalar.empty()) {
         continue;
       }
       // check bounds in the range
-      ptrdiff_t pos = find(AvailableFields.begin(), AvailableFields.end(), scalar) - AvailableFields.begin();
+      ptrdiff_t pos
+        = find(AvailableFields.begin(), AvailableFields.end(), scalar)
+          - AvailableFields.begin();
       if(pos < RangeId[0] || pos > RangeId[1]) {
         continue;
       }
@@ -126,7 +128,8 @@ int ttkCellDataSelector::RequestInformation(
 
   vtkDataSet *input = vtkDataSet::GetData(inputVector[0]);
   FillAvailableFields(input);
-  return vtkDataSetAlgorithm::RequestInformation(request, inputVector, outputVector);
+  return vtkDataSetAlgorithm::RequestInformation(
+    request, inputVector, outputVector);
 }
 
 int ttkCellDataSelector::RequestData(vtkInformation *request,
@@ -150,7 +153,7 @@ int ttkCellDataSelector::RequestData(vtkInformation *request,
   return 1;
 }
 
-void ttkCellDataSelector::FillAvailableFields(vtkDataSet* input) {
+void ttkCellDataSelector::FillAvailableFields(vtkDataSet *input) {
   int nbScalars = input->GetCellData()->GetNumberOfArrays();
   AvailableFields.clear();
   AvailableFields.resize(nbScalars);
