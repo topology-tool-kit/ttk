@@ -30,13 +30,18 @@
 
 namespace ttk {
 
-  class EigenField : public Debug {
+  class EigenField : virtual public Debug {
   public:
-    inline void setupTriangulation(Triangulation *triangulation) const {
+
+    inline void preconditionTriangulation(Triangulation *triangulation) const {
       if(triangulation != nullptr) {
-        triangulation->preconditionVertexNeighbors();
+        if(!triangulation->hasPreconditionedVertexNeighbors()) {
+          triangulation->preconditionVertexNeighbors();
+        }
         // cotan weights method needs more pre-processing
-        triangulation->preconditionEdgeTriangles();
+        if(!triangulation->hasPreconditionedEdgeTriangles()) {
+          triangulation->preconditionEdgeTriangles();
+        }
       }
     }
 

@@ -1,5 +1,16 @@
 #include <ttkEigenField.h>
 
+// VTK includes
+#include <vtkDataArray.h>
+#include <vtkDataSet.h>
+#include <vtkDoubleArray.h>
+#include <vtkFiltersCoreModule.h>
+#include <vtkFloatArray.h>
+#include <vtkInformation.h>
+#include <vtkObjectFactory.h>
+#include <vtkPointData.h>
+#include <vtkSmartPointer.h>
+
 #define MODULE_S "[ttkEigenField] "
 #define MODULE_ERROR_S MODULE_S "Error: "
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -25,41 +36,24 @@ int ttkEigenField::FillInputPortInformation(int port, vtkInformation *info) {
   return 0;
 }
 
-int ttkEigenField::getTriangulation(vtkDataSet *input) {
-
-  triangulation_ = ttkTriangulation::getTriangulation(input);
-
-  TTK_ABORT_KK(
-    triangulation_ == nullptr, "input triangulation pointer is NULL.", -1);
-
-  triangulation_->setWrapper(this);
-  baseWorker_.setWrapper(this);
-  baseWorker_.setupTriangulation(triangulation_);
-  Modified();
-
-  TTK_ABORT_KK(
-    triangulation_->isEmpty(), "ttkTriangulation allocation problem.", -2);
-
+int ttkEigenField::FillOutputPortInformation(int port, vtkInformation *info) {
+  if(port == 0) {
+    info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
+  }
   return 0;
 }
 
-int ttkEigenField::doIt(std::vector<vtkDataSet *> &inputs,
-                        std::vector<vtkDataSet *> &outputs) {
+int ttkEigenField::RequestData(vtkInformation *request,
+                               vtkInformationVector **inputVector,
+                               vtkInformationVector *outputVector) {
 
-  ttk::Memory m;
+  const auto domain = vtkDataSet::GetData(inputVector[0]);
+  auto output = vtkDataSet::GetData(outputVector);
+  auto triangulation = ttkAlgorithm::GetTriangulation(domain);
 
-  vtkDataSet *domain = vtkDataSet::SafeDownCast(inputs[0]);
-  vtkDataSet *output = vtkDataSet::SafeDownCast(outputs[0]);
+  this->preconditionTriangulation(triangulation);
 
   int res = 0;
-
-  res += getTriangulation(domain);
-
-  TTK_ABORT_KK(res != 0, "wrong triangulation", -1);
-
-  const auto vertexNumber = domain->GetNumberOfPoints();
-
-  TTK_ABORT_KK(vertexNumber == 0, "domain has no points", -2);
 
   // array of eigenfunctions
   vtkSmartPointer<vtkDataArray> eigenFunctions{};
@@ -82,6 +76,8 @@ int ttkEigenField::doIt(std::vector<vtkDataSet *> &inputs,
 
   TTK_ABORT_KK(eigenFunctions == nullptr, "vtkArray allocation problem", -3);
 
+  const auto vertexNumber = triangulation->getNumberOfVertices();
+
   eigenFunctions->SetNumberOfComponents(EigenNumber);
   eigenFunctions->SetNumberOfTuples(vertexNumber);
   eigenFunctions->SetName(OutputFieldName.data());
@@ -99,16 +95,16 @@ int ttkEigenField::doIt(std::vector<vtkDataSet *> &inputs,
 
   switch(OutputFieldType) {
     case EigenFieldType::Float:
-      res += baseWorker_.execute<float>(
-        triangulation_, static_cast<float *>(eigenFunctions->GetVoidPointer(0)),
+      res += this->execute<float>(
+        triangulation, static_cast<float *>(eigenFunctions->GetVoidPointer(0)),
         EigenNumber, ComputeStatistics,
         static_cast<float *>(stats->GetVoidPointer(0)));
       break;
     case EigenFieldType::Double:
-      res += baseWorker_.execute<double>(
-        triangulation_,
-        static_cast<double *>(eigenFunctions->GetVoidPointer(0)), EigenNumber,
-        ComputeStatistics, static_cast<double *>(stats->GetVoidPointer(0)));
+      res += this->execute<double>(
+        triangulation, static_cast<double *>(eigenFunctions->GetVoidPointer(0)),
+        EigenNumber, ComputeStatistics,
+        static_cast<double *>(stats->GetVoidPointer(0)));
       break;
     default:
       break;
@@ -124,10 +120,5 @@ int ttkEigenField::doIt(std::vector<vtkDataSet *> &inputs,
     output->GetPointData()->AddArray(stats);
   }
 
-  std::stringstream msg;
-  msg << "[ttkEigenField] Memory usage: " << m.getElapsedUsage() << " MB."
-      << endl;
-  dMsg(cout, msg.str(), memoryMsg);
-
-  return 0;
+  return 1;
 }
