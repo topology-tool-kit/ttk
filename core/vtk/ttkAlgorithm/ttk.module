@@ -1,0 +1,8 @@
+NAME
+  ttkAlgorithm
+SOURCES
+  ttkAlgorithm.cpp
+HEADERS
+  ttkAlgorithm.h
+DEPENDS
+  triangulation
