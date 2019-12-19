@@ -53,8 +53,6 @@ namespace ttk {
                 bool computeStatistics = false,
                 T *const outputStatistics = nullptr) const {
 
-      this->PrintMsg(ttk::debug::Separator::L1);
-
       Timer t;
 
 #if defined(TTK_ENABLE_EIGEN) && defined(TTK_ENABLE_SPECTRA)
@@ -175,8 +173,6 @@ namespace ttk {
                      ttk::debug::Priority::WARNING);
 
 #endif // TTK_ENABLE_EIGEN && TTK_ENABLE_SPECTRA
-
-      this->PrintMsg(ttk::debug::Separator::L1);
 
       return 0;
     }
