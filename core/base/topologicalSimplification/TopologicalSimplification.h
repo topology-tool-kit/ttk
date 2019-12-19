@@ -114,7 +114,7 @@ namespace ttk {
       triangulation_ = triangulation;
       if(triangulation_) {
         vertexNumber_ = triangulation_->getNumberOfVertices();
-        triangulation_->preprocessVertexNeighbors();
+        triangulation_->preconditionVertexNeighbors();
       }
       return 0;
     }

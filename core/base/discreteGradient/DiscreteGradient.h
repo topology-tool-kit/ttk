@@ -762,23 +762,23 @@ according to them.
           dimensionality_ = inputTriangulation_->getCellVertexNumber(0) - 1;
           numberOfVertices_ = inputTriangulation_->getNumberOfVertices();
 
-          inputTriangulation_->preprocessBoundaryVertices();
-          inputTriangulation_->preprocessBoundaryEdges();
-          inputTriangulation_->preprocessVertexNeighbors();
-          inputTriangulation_->preprocessVertexEdges();
-          inputTriangulation_->preprocessVertexStars();
-          inputTriangulation_->preprocessEdges();
-          inputTriangulation_->preprocessEdgeStars();
+          inputTriangulation_->preconditionBoundaryVertices();
+          inputTriangulation_->preconditionBoundaryEdges();
+          inputTriangulation_->preconditionVertexNeighbors();
+          inputTriangulation_->preconditionVertexEdges();
+          inputTriangulation_->preconditionVertexStars();
+          inputTriangulation_->preconditionEdges();
+          inputTriangulation_->preconditionEdgeStars();
           if(dimensionality_ == 2) {
-            inputTriangulation_->preprocessCellEdges();
+            inputTriangulation_->preconditionCellEdges();
           } else if(dimensionality_ == 3) {
-            inputTriangulation_->preprocessBoundaryTriangles();
-            inputTriangulation_->preprocessVertexTriangles();
-            inputTriangulation_->preprocessEdgeTriangles();
-            inputTriangulation_->preprocessTriangles();
-            inputTriangulation_->preprocessTriangleEdges();
-            inputTriangulation_->preprocessTriangleStars();
-            inputTriangulation_->preprocessCellTriangles();
+            inputTriangulation_->preconditionBoundaryTriangles();
+            inputTriangulation_->preconditionVertexTriangles();
+            inputTriangulation_->preconditionEdgeTriangles();
+            inputTriangulation_->preconditionTriangles();
+            inputTriangulation_->preconditionTriangleEdges();
+            inputTriangulation_->preconditionTriangleStars();
+            inputTriangulation_->preconditionCellTriangles();
           }
         }
 

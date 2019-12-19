@@ -213,7 +213,7 @@ namespace ttk {
 
       // for breadth-first search traversals
       if(triangulation_) {
-        triangulation_->preprocessCellNeighbors();
+        triangulation_->preconditionCellNeighbors();
       }
       return 0;
     }

@@ -85,7 +85,7 @@ namespace ttk {
     /// In 1D, this function is equivalent to getCellNeighbor().
     ///
     /// \pre For this function to behave correctly,
-    /// preprocessCellEdges() needs to be called on this object prior to any
+    /// preconditionCellEdges() needs to be called on this object prior to any
     /// traversal, in a clearly distinct pre-processing step that involves no
     /// traversal at all. An error will be returned otherwise.
     /// \note It is recommended to exclude such a pre-processing step
@@ -110,14 +110,14 @@ namespace ttk {
         return -1;
 
       if(((getDimensionality() == 1)
-          && (!abstractTriangulation_->hasPreprocessedCellNeighbors()))
+          && (!abstractTriangulation_->hasPreconditionedCellNeighbors()))
          || ((getDimensionality() > 1)
-             && (!abstractTriangulation_->hasPreprocessedCellEdges()))) {
+             && (!abstractTriangulation_->hasPreconditionedCellEdges()))) {
         std::stringstream msg;
         msg << "[Triangulation] "
             << "CellEdge query without pre-process!" << std::endl;
         msg << "[Triangulation] "
-            << "Please call preprocessCellEdges() in a"
+            << "Please call preconditionCellEdges() in a"
             << " pre-process." << std::endl;
         dMsg(std::cerr, msg.str(), Debug::fatalMsg);
         return -2;
@@ -137,7 +137,7 @@ namespace ttk {
     ///
     /// In 1D, this function is equivalent to getCellNeighborNumber().
     ///
-    /// \pre For this function to behave correctly, preprocessCellEdges()
+    /// \pre For this function to behave correctly, preconditionCellEdges()
     /// needs to be called on this object prior to any traversal, in a
     /// clearly distinct pre-processing step that involves no traversal at
     /// all. An error will be returned otherwise.
@@ -152,14 +152,14 @@ namespace ttk {
         return -1;
 
       if(((getDimensionality() == 1)
-          && (!abstractTriangulation_->hasPreprocessedCellNeighbors()))
+          && (!abstractTriangulation_->hasPreconditionedCellNeighbors()))
          || ((getDimensionality() > 1)
-             && (!abstractTriangulation_->hasPreprocessedCellEdges()))) {
+             && (!abstractTriangulation_->hasPreconditionedCellEdges()))) {
         std::stringstream msg;
         msg << "[Triangulation] "
             << "CellEdgeNumber query without pre-process!" << std::endl;
         msg << "[Triangulation] "
-            << "Please call preprocessCellEdges() in a"
+            << "Please call preconditionCellEdges() in a"
             << " pre-process." << std::endl;
         dMsg(std::cerr, msg.str(), Debug::fatalMsg);
         return -2;
@@ -191,7 +191,7 @@ namespace ttk {
     /// In 1D, this function is equivalent to getCellNeighbors().
     ///
     /// \pre For this function to behave correctly,
-    /// preprocessCellEdges() needs to be called
+    /// preconditionCellEdges() needs to be called
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
@@ -205,14 +205,14 @@ namespace ttk {
         return NULL;
 
       if(((getDimensionality() == 1)
-          && (!abstractTriangulation_->hasPreprocessedCellNeighbors()))
+          && (!abstractTriangulation_->hasPreconditionedCellNeighbors()))
          || ((getDimensionality() > 1)
-             && (!abstractTriangulation_->hasPreprocessedCellEdges()))) {
+             && (!abstractTriangulation_->hasPreconditionedCellEdges()))) {
         std::stringstream msg;
         msg << "[Triangulation] "
             << "CellEdges query without pre-process!" << std::endl;
         msg << "[Triangulation] "
-            << "Please call preprocessCellEdges() in a"
+            << "Please call preconditionCellEdges() in a"
             << " pre-process." << std::endl;
         dMsg(std::cerr, msg.str(), Debug::fatalMsg);
         return NULL;
@@ -230,7 +230,7 @@ namespace ttk {
     /// dimension (3D: tetrahedra, 2D: triangles, 1D: edges).
     ///
     /// \pre For this function to behave correctly,
-    /// preprocessCellNeighbors() needs to be called
+    /// preconditionCellNeighbors() needs to be called
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
@@ -254,12 +254,12 @@ namespace ttk {
       if(isEmptyCheck())
         return -1;
 
-      if(!abstractTriangulation_->hasPreprocessedCellNeighbors()) {
+      if(!abstractTriangulation_->hasPreconditionedCellNeighbors()) {
         std::stringstream msg;
         msg << "[Triangulation] "
             << "CellNeighbor query without pre-process!" << std::endl;
         msg << "[Triangulation] "
-            << "Please call preprocessCellNeighbors() in a"
+            << "Please call preconditionCellNeighbors() in a"
             << " pre-process." << std::endl;
         dMsg(std::cerr, msg.str(), Debug::fatalMsg);
         return -2;
@@ -275,7 +275,7 @@ namespace ttk {
     /// dimension (3D: tetrahedra, 2D: triangles, 1D: edges).
     ///
     /// \pre For this function to behave correctly,
-    /// preprocessCellNeighbors() needs to be called
+    /// preconditionCellNeighbors() needs to be called
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
@@ -290,12 +290,12 @@ namespace ttk {
       if(isEmptyCheck())
         return -1;
 
-      if(!abstractTriangulation_->hasPreprocessedCellNeighbors()) {
+      if(!abstractTriangulation_->hasPreconditionedCellNeighbors()) {
         std::stringstream msg;
         msg << "[Triangulation] "
             << "CellNeighborNumber query without pre-process!" << std::endl;
         msg << "[Triangulation] "
-            << "Please call preprocessCellNeighbors() in a"
+            << "Please call preconditionCellNeighbors() in a"
             << " pre-process." << std::endl;
         dMsg(std::cerr, msg.str(), Debug::fatalMsg);
         return -2;
@@ -322,7 +322,7 @@ namespace ttk {
     /// THIS IS USUALLY A BAD IDEA.
     ///
     /// \pre For this function to behave correctly,
-    /// preprocessCellNeighbors() needs to be called
+    /// preconditionCellNeighbors() needs to be called
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
@@ -335,12 +335,12 @@ namespace ttk {
       if(isEmptyCheck())
         return NULL;
 
-      if(!abstractTriangulation_->hasPreprocessedCellNeighbors()) {
+      if(!abstractTriangulation_->hasPreconditionedCellNeighbors()) {
         std::stringstream msg;
         msg << "[Triangulation] "
             << "CellNeighbors query without pre-process!" << std::endl;
         msg << "[Triangulation] "
-            << "Please call preprocessCellNeighbors() in a"
+            << "Please call preconditionCellNeighbors() in a"
             << " pre-process." << std::endl;
         dMsg(std::cerr, msg.str(), Debug::fatalMsg);
         return NULL;
@@ -357,7 +357,7 @@ namespace ttk {
     /// In 2D, this function is equivalent to getCellNeighbor().
     ///
     /// \pre For this function to behave correctly,
-    /// preprocessCellTriangles() needs to be called
+    /// preconditionCellTriangles() needs to be called
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
@@ -386,14 +386,14 @@ namespace ttk {
         return -2;
 
       if(((getDimensionality() == 2)
-          && (!abstractTriangulation_->hasPreprocessedCellNeighbors()))
+          && (!abstractTriangulation_->hasPreconditionedCellNeighbors()))
          || ((getDimensionality() == 3)
-             && (!abstractTriangulation_->hasPreprocessedCellTriangles()))) {
+             && (!abstractTriangulation_->hasPreconditionedCellTriangles()))) {
         std::stringstream msg;
         msg << "[Triangulation] "
             << "CellTriangle query without pre-process!" << std::endl;
         msg << "[Triangulation] "
-            << "Please call preprocessCellTriangles() in a"
+            << "Please call preconditionCellTriangles() in a"
             << " pre-process." << std::endl;
         dMsg(std::cerr, msg.str(), Debug::fatalMsg);
         return -2;
@@ -415,7 +415,7 @@ namespace ttk {
     /// In 2D, this function is equivalent to getCellNeighborNumber().
     ///
     /// \pre For this function to behave correctly,
-    /// preprocessCellTriangles() needs to be called
+    /// preconditionCellTriangles() needs to be called
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
@@ -434,14 +434,14 @@ namespace ttk {
         return -2;
 
       if(((getDimensionality() == 2)
-          && (!abstractTriangulation_->hasPreprocessedCellNeighbors()))
+          && (!abstractTriangulation_->hasPreconditionedCellNeighbors()))
          || ((getDimensionality() == 3)
-             && (!abstractTriangulation_->hasPreprocessedCellTriangles()))) {
+             && (!abstractTriangulation_->hasPreconditionedCellTriangles()))) {
         std::stringstream msg;
         msg << "[Triangulation] "
             << "CellTriangleNumber query without pre-process!" << std::endl;
         msg << "[Triangulation] "
-            << "Please call preprocessCellTriangles() in a"
+            << "Please call preconditionCellTriangles() in a"
             << " pre-process." << std::endl;
         dMsg(std::cerr, msg.str(), Debug::fatalMsg);
         return -2;
@@ -476,7 +476,7 @@ namespace ttk {
     /// In 2D, this function is equivalent to getCellNeighbors().
     ///
     /// \pre For this function to behave correctly,
-    /// preprocessCellTriangles() needs to be called
+    /// preconditionCellTriangles() needs to be called
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
@@ -494,14 +494,14 @@ namespace ttk {
         return NULL;
 
       if(((getDimensionality() == 2)
-          && (!abstractTriangulation_->hasPreprocessedCellNeighbors()))
+          && (!abstractTriangulation_->hasPreconditionedCellNeighbors()))
          || ((getDimensionality() == 3)
-             && (!abstractTriangulation_->hasPreprocessedCellTriangles()))) {
+             && (!abstractTriangulation_->hasPreconditionedCellTriangles()))) {
         std::stringstream msg;
         msg << "[Triangulation] "
             << "CellTriangles query without pre-process!" << std::endl;
         msg << "[Triangulation] "
-            << "Please call preprocessCellTriangles() in a"
+            << "Please call preconditionCellTriangles() in a"
             << " pre-process." << std::endl;
         dMsg(std::cerr, msg.str(), Debug::fatalMsg);
         return NULL;
@@ -584,7 +584,7 @@ namespace ttk {
     /// THIS IS USUALLY A BAD IDEA.
     ///
     /// \pre For this function to behave correctly,
-    /// preprocessEdges() needs to be called
+    /// preconditionEdges() needs to be called
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
@@ -600,12 +600,12 @@ namespace ttk {
       if(getDimensionality() == 1)
         return NULL;
 
-      if(!abstractTriangulation_->hasPreprocessedEdges()) {
+      if(!abstractTriangulation_->hasPreconditionedEdges()) {
         std::stringstream msg;
         msg << "[Triangulation] "
             << "Edges query without pre-process!" << std::endl;
         msg << "[Triangulation] "
-            << "Please call preprocessEdges() in a"
+            << "Please call preconditionEdges() in a"
             << " pre-process." << std::endl;
         dMsg(std::cerr, msg.str(), Debug::fatalMsg);
         return NULL;
@@ -621,7 +621,7 @@ namespace ttk {
     /// to an edge identifier. It returns a negative value in 1D.
     ///
     /// \pre For this function to behave correctly,
-    /// preprocessEdgeLinks() needs to be called
+    /// preconditionEdgeLinks() needs to be called
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
@@ -646,12 +646,12 @@ namespace ttk {
       if(getDimensionality() == 1)
         return -2;
 
-      if(!abstractTriangulation_->hasPreprocessedEdgeLinks()) {
+      if(!abstractTriangulation_->hasPreconditionedEdgeLinks()) {
         std::stringstream msg;
         msg << "[Triangulation] "
             << "EdgeLink query without pre-process!" << std::endl;
         msg << "[Triangulation] "
-            << "Please call preprocessEdgeLinks() in a"
+            << "Please call preconditionEdgeLinks() in a"
             << " pre-process." << std::endl;
         dMsg(std::cerr, msg.str(), Debug::fatalMsg);
         return -2;
@@ -666,7 +666,7 @@ namespace ttk {
     /// number of edges. It returns a negative value in 1D.
     ///
     /// \pre For this function to behave correctly,
-    /// preprocessEdgeLinks() needs to be called
+    /// preconditionEdgeLinks() needs to be called
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
@@ -682,12 +682,12 @@ namespace ttk {
       if(getDimensionality() == 1)
         return -2;
 
-      if(!abstractTriangulation_->hasPreprocessedEdgeLinks()) {
+      if(!abstractTriangulation_->hasPreconditionedEdgeLinks()) {
         std::stringstream msg;
         msg << "[Triangulation] "
             << "EdgeLinkNumber query without pre-process!" << std::endl;
         msg << "[Triangulation] "
-            << "Please call preprocessEdgeLinks() in a"
+            << "Please call preconditionEdgeLinks() in a"
             << " pre-process." << std::endl;
         dMsg(std::cerr, msg.str(), Debug::fatalMsg);
         return -2;
@@ -712,7 +712,7 @@ namespace ttk {
     /// THIS IS USUALLY A BAD IDEA.
     ///
     /// \pre For this function to behave correctly,
-    /// preprocessEdgeLinks() needs to be called
+    /// preconditionEdgeLinks() needs to be called
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
@@ -727,12 +727,12 @@ namespace ttk {
       if(getDimensionality() == 1)
         return NULL;
 
-      if(!abstractTriangulation_->hasPreprocessedEdgeLinks()) {
+      if(!abstractTriangulation_->hasPreconditionedEdgeLinks()) {
         std::stringstream msg;
         msg << "[Triangulation] "
             << "EdgeLinks query without pre-process!" << std::endl;
         msg << "[Triangulation] "
-            << "Please call preprocessEdgeLinks() in a"
+            << "Please call preconditionEdgeLinks() in a"
             << " pre-process." << std::endl;
         dMsg(std::cerr, msg.str(), Debug::fatalMsg);
         return NULL;
@@ -750,7 +750,7 @@ namespace ttk {
     /// dimension greater than 1 (otherwise, use the cell information).
     ///
     /// \pre For this function to behave correctly,
-    /// preprocessEdgeStars() needs to be called
+    /// preconditionEdgeStars() needs to be called
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
@@ -776,12 +776,12 @@ namespace ttk {
       if(getDimensionality() == 1)
         return -2;
 
-      if(!abstractTriangulation_->hasPreprocessedEdgeStars()) {
+      if(!abstractTriangulation_->hasPreconditionedEdgeStars()) {
         std::stringstream msg;
         msg << "[Triangulation] "
             << "EdgeStar query without pre-process!" << std::endl;
         msg << "[Triangulation] "
-            << "Please call preprocessEdgeStars() in a"
+            << "Please call preconditionEdgeStars() in a"
             << " pre-process." << std::endl;
         dMsg(std::cerr, msg.str(), Debug::fatalMsg);
         return -2;
@@ -799,7 +799,7 @@ namespace ttk {
     /// dimension greater than 1 (otherwise, use the cell information).
     ///
     /// \pre For this function to behave correctly,
-    /// preprocessEdgeStars() needs to be called
+    /// preconditionEdgeStars() needs to be called
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
@@ -815,12 +815,12 @@ namespace ttk {
       if(getDimensionality() == 1)
         return -2;
 
-      if(!abstractTriangulation_->hasPreprocessedEdgeStars()) {
+      if(!abstractTriangulation_->hasPreconditionedEdgeStars()) {
         std::stringstream msg;
         msg << "[Triangulation] "
             << "EdgeStarNumber query without pre-process!" << std::endl;
         msg << "[Triangulation] "
-            << "Please call preprocessEdgeStars() in a"
+            << "Please call preconditionEdgeStars() in a"
             << " pre-process." << std::endl;
         dMsg(std::cerr, msg.str(), Debug::fatalMsg);
         return -2;
@@ -850,7 +850,7 @@ namespace ttk {
     /// THIS IS USUALLY A BAD IDEA.
     ///
     /// \pre For this function to behave correctly,
-    /// preprocessEdgeStars() needs to be called
+    /// preconditionEdgeStars() needs to be called
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
@@ -865,12 +865,12 @@ namespace ttk {
       if(getDimensionality() == 1)
         return NULL;
 
-      if(!abstractTriangulation_->hasPreprocessedEdgeStars()) {
+      if(!abstractTriangulation_->hasPreconditionedEdgeStars()) {
         std::stringstream msg;
         msg << "[Triangulation] "
             << "EdgeStars query without pre-process!" << std::endl;
         msg << "[Triangulation] "
-            << "Please call preprocessEdgeStars() in a"
+            << "Please call preconditionEdgeStars() in a"
             << " pre-process." << std::endl;
         dMsg(std::cerr, msg.str(), Debug::fatalMsg);
         return NULL;
@@ -884,7 +884,7 @@ namespace ttk {
     /// In 2D, this function is equivalent to getEdgeStar().
     ///
     /// \pre For this function to behave correctly,
-    /// preprocessEdgeTriangles() needs to be called
+    /// preconditionEdgeTriangles() needs to be called
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
@@ -913,14 +913,14 @@ namespace ttk {
         return -2;
 
       if(((getDimensionality() == 2)
-          && (!abstractTriangulation_->hasPreprocessedEdgeStars()))
+          && (!abstractTriangulation_->hasPreconditionedEdgeStars()))
          || ((getDimensionality() == 3)
-             && (!abstractTriangulation_->hasPreprocessedEdgeTriangles()))) {
+             && (!abstractTriangulation_->hasPreconditionedEdgeTriangles()))) {
         std::stringstream msg;
         msg << "[Triangulation] "
             << "EdgeTriangle query without pre-process!" << std::endl;
         msg << "[Triangulation] "
-            << "Please call preprocessEdgeTriangles() in a"
+            << "Please call preconditionEdgeTriangles() in a"
             << " pre-process." << std::endl;
         dMsg(std::cerr, msg.str(), Debug::fatalMsg);
         return -2;
@@ -939,7 +939,7 @@ namespace ttk {
     /// In 2D, this function is equivalent to getEdgeStarNumber().
     ///
     /// \pre For this function to behave correctly,
-    /// preprocessEdgeTriangles() needs to be called
+    /// preconditionEdgeTriangles() needs to be called
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
@@ -957,14 +957,14 @@ namespace ttk {
         return -2;
 
       if(((getDimensionality() == 2)
-          && (!abstractTriangulation_->hasPreprocessedEdgeStars()))
+          && (!abstractTriangulation_->hasPreconditionedEdgeStars()))
          || ((getDimensionality() == 3)
-             && (!abstractTriangulation_->hasPreprocessedEdgeTriangles()))) {
+             && (!abstractTriangulation_->hasPreconditionedEdgeTriangles()))) {
         std::stringstream msg;
         msg << "[Triangulation] "
             << "EdgeTriangleNumber query without pre-process!" << std::endl;
         msg << "[Triangulation] "
-            << "Please call preprocessEdgeTriangles() in a"
+            << "Please call preconditionEdgeTriangles() in a"
             << " pre-process." << std::endl;
         dMsg(std::cerr, msg.str(), Debug::fatalMsg);
         return -2;
@@ -994,7 +994,7 @@ namespace ttk {
     /// In 2D, this function is equivalent to getEdgeStars().
     ///
     /// \pre For this function to behave correctly,
-    /// preprocessEdgeTriangles() needs to be called
+    /// preconditionEdgeTriangles() needs to be called
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
@@ -1012,14 +1012,14 @@ namespace ttk {
         return NULL;
 
       if(((getDimensionality() == 2)
-          && (!abstractTriangulation_->hasPreprocessedEdgeStars()))
+          && (!abstractTriangulation_->hasPreconditionedEdgeStars()))
          || ((getDimensionality() == 3)
-             && (!abstractTriangulation_->hasPreprocessedEdgeTriangles()))) {
+             && (!abstractTriangulation_->hasPreconditionedEdgeTriangles()))) {
         std::stringstream msg;
         msg << "[Triangulation] "
             << "EdgeTriangles query without pre-process!" << std::endl;
         msg << "[Triangulation] "
-            << "Please call preprocessEdgeTriangles() in a"
+            << "Please call preconditionEdgeTriangles() in a"
             << " pre-process." << std::endl;
         dMsg(std::cerr, msg.str(), Debug::fatalMsg);
         return NULL;
@@ -1038,7 +1038,7 @@ namespace ttk {
     /// In 1D, this function is equivalent to getCellVertex().
     ///
     /// \pre For this function to behave correctly,
-    /// preprocessEdges() needs to be called
+    /// preconditionEdges() needs to be called
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
@@ -1060,12 +1060,12 @@ namespace ttk {
         return -1;
 
       if((getDimensionality() != 1)
-         && (!abstractTriangulation_->hasPreprocessedEdges())) {
+         && (!abstractTriangulation_->hasPreconditionedEdges())) {
         std::stringstream msg;
         msg << "[Triangulation] "
             << "EdgeVertex query without pre-process!" << std::endl;
         msg << "[Triangulation] "
-            << "Please call preprocessEdges() in a"
+            << "Please call preconditionEdges() in a"
             << " pre-process." << std::endl;
         dMsg(std::cerr, msg.str(), Debug::fatalMsg);
         return -2;
@@ -1121,7 +1121,7 @@ namespace ttk {
     /// In 1D, this function is equivalent to getNumberOfCells().
     ///
     /// \pre For this function to behave correctly,
-    /// preprocessEdges() needs to be called
+    /// preconditionEdges() needs to be called
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
@@ -1135,12 +1135,12 @@ namespace ttk {
         return -1;
 
       if((getDimensionality() != 1)
-         && (!abstractTriangulation_->hasPreprocessedEdges())) {
+         && (!abstractTriangulation_->hasPreconditionedEdges())) {
         std::stringstream msg;
         msg << "[Triangulation] "
             << "NumberOfEdges query without pre-process!" << std::endl;
         msg << "[Triangulation] "
-            << "Please call preprocessEdges() in a"
+            << "Please call preconditionEdges() in a"
             << " pre-process." << std::endl;
         dMsg(std::cerr, msg.str(), Debug::fatalMsg);
         return -2;
@@ -1157,7 +1157,7 @@ namespace ttk {
     /// In 2D, this function is equivalent to getNumberOfCells().
     ///
     /// \pre For this function to behave correctly,
-    /// preprocessTriangles() needs to be called
+    /// preconditionTriangles() needs to be called
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
@@ -1175,12 +1175,12 @@ namespace ttk {
         return -2;
 
       if((getDimensionality() == 3)
-         && (!abstractTriangulation_->hasPreprocessedTriangles())) {
+         && (!abstractTriangulation_->hasPreconditionedTriangles())) {
         std::stringstream msg;
         msg << "[Triangulation] "
             << "NumberOfTriangles query without pre-process!" << std::endl;
         msg << "[Triangulation] "
-            << "Please call preprocessTriangles() in a"
+            << "Please call preconditionTriangles() in a"
             << " pre-process." << std::endl;
         dMsg(std::cerr, msg.str(), Debug::fatalMsg);
         return -2;
@@ -1220,7 +1220,7 @@ namespace ttk {
     /// list (which will be time and memory consuming).
     /// THIS IS USUALLY A BAD IDEA.
     /// \pre For this function to behave correctly,
-    /// preprocessTriangles() needs to be called
+    /// preconditionTriangles() needs to be called
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
@@ -1232,12 +1232,12 @@ namespace ttk {
       if(isEmptyCheck())
         return NULL;
 
-      if(!abstractTriangulation_->hasPreprocessedTriangles()) {
+      if(!abstractTriangulation_->hasPreconditionedTriangles()) {
         std::stringstream msg;
         msg << "[Triangulation] "
             << "Triangles query without pre-process!" << std::endl;
         msg << "[Triangulation] "
-            << "Please call preprocessTriangles() in a"
+            << "Please call preconditionTriangles() in a"
             << " pre-process." << std::endl;
         dMsg(std::cerr, msg.str(), Debug::fatalMsg);
         return NULL;
@@ -1251,7 +1251,7 @@ namespace ttk {
     /// In 2D, this function is equivalent to getCellEdge().
     ///
     /// \pre For this function to behave correctly,
-    /// preprocessTriangleEdges() needs to be called
+    /// preconditionTriangleEdges() needs to be called
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
@@ -1278,14 +1278,14 @@ namespace ttk {
         return -2;
 
       if(((getDimensionality() == 2)
-          && (!abstractTriangulation_->hasPreprocessedCellEdges()))
+          && (!abstractTriangulation_->hasPreconditionedCellEdges()))
          || ((getDimensionality() == 3)
-             && (!abstractTriangulation_->hasPreprocessedTriangleEdges()))) {
+             && (!abstractTriangulation_->hasPreconditionedTriangleEdges()))) {
         std::stringstream msg;
         msg << "[Triangulation] "
             << "TriangleEdge query without pre-process!" << std::endl;
         msg << "[Triangulation] "
-            << "Please call preprocessTriangleEdges() in a"
+            << "Please call preconditionTriangleEdges() in a"
             << " pre-process." << std::endl;
         dMsg(std::cerr, msg.str(), Debug::fatalMsg);
         return -2;
@@ -1304,7 +1304,7 @@ namespace ttk {
     /// In 2D, this function is equivalent to getCellEdgeNumber().
     ///
     /// \pre For this function to behave correctly,
-    /// preprocessTriangleEdges() needs to be called
+    /// preconditionTriangleEdges() needs to be called
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
@@ -1323,14 +1323,14 @@ namespace ttk {
         return -2;
 
       if(((getDimensionality() == 2)
-          && (!abstractTriangulation_->hasPreprocessedCellEdges()))
+          && (!abstractTriangulation_->hasPreconditionedCellEdges()))
          || ((getDimensionality() == 3)
-             && (!abstractTriangulation_->hasPreprocessedTriangleEdges()))) {
+             && (!abstractTriangulation_->hasPreconditionedTriangleEdges()))) {
         std::stringstream msg;
         msg << "[Triangulation] "
             << "TriangleEdgeNumber query without pre-process!" << std::endl;
         msg << "[Triangulation] "
-            << "Please call preprocessTriangleEdges() in a"
+            << "Please call preconditionTriangleEdges() in a"
             << " pre-process." << std::endl;
         dMsg(std::cerr, msg.str(), Debug::fatalMsg);
         return -2;
@@ -1359,7 +1359,7 @@ namespace ttk {
     /// In 2D, this function is equivalent to getCellEdges().
     ///
     /// \pre For this function to behave correctly,
-    /// preprocessTriangleEdges() needs to be called
+    /// preconditionTriangleEdges() needs to be called
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
@@ -1377,14 +1377,14 @@ namespace ttk {
         return NULL;
 
       if(((getDimensionality() == 2)
-          && (!abstractTriangulation_->hasPreprocessedCellEdges()))
+          && (!abstractTriangulation_->hasPreconditionedCellEdges()))
          || ((getDimensionality() == 3)
-             && (!abstractTriangulation_->hasPreprocessedTriangleEdges()))) {
+             && (!abstractTriangulation_->hasPreconditionedTriangleEdges()))) {
         std::stringstream msg;
         msg << "[Triangulation] "
             << "TriangleEdges query without pre-process!" << std::endl;
         msg << "[Triangulation] "
-            << "Please call preprocessTriangleEdges() in a"
+            << "Please call preconditionTriangleEdges() in a"
             << " pre-process." << std::endl;
         dMsg(std::cerr, msg.str(), Debug::fatalMsg);
         return NULL;
@@ -1403,7 +1403,7 @@ namespace ttk {
     /// \p linkId refers to a vertex identifier.
     ///
     /// \pre For this function to behave correctly,
-    /// preprocessTriangleLinks() needs to be called
+    /// preconditionTriangleLinks() needs to be called
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
@@ -1428,12 +1428,12 @@ namespace ttk {
       if(getDimensionality() != 3)
         return -2;
 
-      if(!abstractTriangulation_->hasPreprocessedTriangleLinks()) {
+      if(!abstractTriangulation_->hasPreconditionedTriangleLinks()) {
         std::stringstream msg;
         msg << "[Triangulation] "
             << "TriangleLink query without pre-process!" << std::endl;
         msg << "[Triangulation] "
-            << "Please call preprocessTriangleLinks() in a"
+            << "Please call preconditionTriangleLinks() in a"
             << " pre-process." << std::endl;
         dMsg(std::cerr, msg.str(), Debug::fatalMsg);
         return -1;
@@ -1450,7 +1450,7 @@ namespace ttk {
     /// of vertices in the link will be returned.
     ///
     /// \pre For this function to behave correctly,
-    /// preprocessTriangleLinks() needs to be called
+    /// preconditionTriangleLinks() needs to be called
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
@@ -1467,12 +1467,12 @@ namespace ttk {
       if(getDimensionality() != 3)
         return -2;
 
-      if(!abstractTriangulation_->hasPreprocessedTriangleLinks()) {
+      if(!abstractTriangulation_->hasPreconditionedTriangleLinks()) {
         std::stringstream msg;
         msg << "[Triangulation] "
             << "TriangleLinkNumber query without pre-process!" << std::endl;
         msg << "[Triangulation] "
-            << "Please call preprocessTriangleLinks() in a"
+            << "Please call preconditionTriangleLinks() in a"
             << " pre-process." << std::endl;
         dMsg(std::cerr, msg.str(), Debug::fatalMsg);
         return -2;
@@ -1498,7 +1498,7 @@ namespace ttk {
     /// THIS IS USUALLY A BAD IDEA.
     ///
     /// \pre For this function to behave correctly,
-    /// preprocessTriangleLinks() needs to be called
+    /// preconditionTriangleLinks() needs to be called
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
@@ -1514,12 +1514,12 @@ namespace ttk {
       if(getDimensionality() != 3)
         return NULL;
 
-      if(!abstractTriangulation_->hasPreprocessedTriangleLinks()) {
+      if(!abstractTriangulation_->hasPreconditionedTriangleLinks()) {
         std::stringstream msg;
         msg << "[Triangulation] "
             << "TriangleLinks query without pre-process!" << std::endl;
         msg << "[Triangulation] "
-            << "Please call preprocessTriangleLinks() in a"
+            << "Please call preconditionTriangleLinks() in a"
             << " pre-process." << std::endl;
         dMsg(std::cerr, msg.str(), Debug::fatalMsg);
         return NULL;
@@ -1535,7 +1535,7 @@ namespace ttk {
     /// \p starId refers to a tetrahedron identifier.
     ///
     /// \pre For this function to behave correctly,
-    /// preprocessTriangleStars() needs to be called
+    /// preconditionTriangleStars() needs to be called
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
@@ -1561,12 +1561,12 @@ namespace ttk {
       if(getDimensionality() != 3)
         return -2;
 
-      if(!abstractTriangulation_->hasPreprocessedTriangleStars()) {
+      if(!abstractTriangulation_->hasPreconditionedTriangleStars()) {
         std::stringstream msg;
         msg << "[Triangulation] "
             << "TriangleStar query without pre-process!" << std::endl;
         msg << "[Triangulation] "
-            << "Please call preprocessTriangleStars() in a"
+            << "Please call preconditionTriangleStars() in a"
             << " pre-process." << std::endl;
         dMsg(std::cerr, msg.str(), Debug::fatalMsg);
         return -2;
@@ -1582,7 +1582,7 @@ namespace ttk {
     /// of tetrahedra in the star will be returned.
     ///
     /// \pre For this function to behave correctly,
-    /// preprocessTriangleStars() needs to be called
+    /// preconditionTriangleStars() needs to be called
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
@@ -1599,12 +1599,12 @@ namespace ttk {
       if(getDimensionality() != 3)
         return -2;
 
-      if(!abstractTriangulation_->hasPreprocessedTriangleStars()) {
+      if(!abstractTriangulation_->hasPreconditionedTriangleStars()) {
         std::stringstream msg;
         msg << "[Triangulation] "
             << "TriangleStarNumber query without pre-process!" << std::endl;
         msg << "[Triangulation] "
-            << "Please call preprocessTriangleStars() in a"
+            << "Please call preconditionTriangleStars() in a"
             << " pre-process." << std::endl;
         dMsg(std::cerr, msg.str(), Debug::fatalMsg);
         return -2;
@@ -1631,7 +1631,7 @@ namespace ttk {
     /// THIS IS USUALLY A BAD IDEA.
     ///
     /// \pre For this function to behave correctly,
-    /// preprocessTriangleStars() needs to be called
+    /// preconditionTriangleStars() needs to be called
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
@@ -1647,12 +1647,12 @@ namespace ttk {
       if(getDimensionality() != 3)
         return NULL;
 
-      if(!abstractTriangulation_->hasPreprocessedTriangleStars()) {
+      if(!abstractTriangulation_->hasPreconditionedTriangleStars()) {
         std::stringstream msg;
         msg << "[Triangulation] "
             << "TriangleStars query without pre-process!" << std::endl;
         msg << "[Triangulation] "
-            << "Please call preprocessTriangleStars() in a"
+            << "Please call preconditionTriangleStars() in a"
             << " pre-process." << std::endl;
         dMsg(std::cerr, msg.str(), Debug::fatalMsg);
         return NULL;
@@ -1667,7 +1667,7 @@ namespace ttk {
     /// In 2D, this function is equivalent to getCellVertex().
     ///
     /// \pre For this function to behave correctly,
-    /// preprocessTriangles() needs to be called
+    /// preconditionTriangles() needs to be called
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
@@ -1693,12 +1693,12 @@ namespace ttk {
         return -2;
 
       if((getDimensionality() == 3)
-         && (!abstractTriangulation_->hasPreprocessedTriangles())) {
+         && (!abstractTriangulation_->hasPreconditionedTriangles())) {
         std::stringstream msg;
         msg << "[Triangulation] "
             << "TriangleVertex query without pre-process!" << std::endl;
         msg << "[Triangulation] "
-            << "Please call preprocessTriangles() in a"
+            << "Please call preconditionTriangles() in a"
             << " pre-process." << std::endl;
         dMsg(std::cerr, msg.str(), Debug::fatalMsg);
         return -2;
@@ -1719,7 +1719,7 @@ namespace ttk {
     /// In 1D, this function is equivalent to getVertexStar().
     ///
     /// \pre For this function to behave correctly,
-    /// preprocessVertexEdges() needs to be called
+    /// preconditionVertexEdges() needs to be called
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
@@ -1744,14 +1744,14 @@ namespace ttk {
         return -1;
 
       if(((getDimensionality() == 1)
-          && (!abstractTriangulation_->hasPreprocessedVertexStars()))
+          && (!abstractTriangulation_->hasPreconditionedVertexStars()))
          || ((getDimensionality() > 1)
-             && (!abstractTriangulation_->hasPreprocessedVertexEdges()))) {
+             && (!abstractTriangulation_->hasPreconditionedVertexEdges()))) {
         std::stringstream msg;
         msg << "[Triangulation] "
             << "VertexEdge query without pre-process!" << std::endl;
         msg << "[Triangulation] "
-            << "Please call preprocessVertexEdges() in a"
+            << "Please call preconditionVertexEdges() in a"
             << " pre-process." << std::endl;
         dMsg(std::cerr, msg.str(), Debug::fatalMsg);
         return -2;
@@ -1770,7 +1770,7 @@ namespace ttk {
     /// In 1D, this function is equivalent to getVertexStarNumber().
     ///
     /// \pre For this function to behave correctly,
-    /// preprocessVertexEdges() needs to be called
+    /// preconditionVertexEdges() needs to be called
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
@@ -1786,14 +1786,14 @@ namespace ttk {
         return -1;
 
       if(((getDimensionality() == 1)
-          && (!abstractTriangulation_->hasPreprocessedVertexStars()))
+          && (!abstractTriangulation_->hasPreconditionedVertexStars()))
          || ((getDimensionality() > 1)
-             && (!abstractTriangulation_->hasPreprocessedVertexEdges()))) {
+             && (!abstractTriangulation_->hasPreconditionedVertexEdges()))) {
         std::stringstream msg;
         msg << "[Triangulation] "
             << "VertexEdgeNumber query without pre-process!" << std::endl;
         msg << "[Triangulation] "
-            << "Please call preprocessVertexEdges() in a"
+            << "Please call preconditionVertexEdges() in a"
             << " pre-process." << std::endl;
         dMsg(std::cerr, msg.str(), Debug::fatalMsg);
         return -2;
@@ -1823,7 +1823,7 @@ namespace ttk {
     /// In 1D, this function is equivalent to getVertexStars()
     ///
     /// \pre For this function to behave correctly,
-    /// preprocessVertexEdges() needs to be called
+    /// preconditionVertexEdges() needs to be called
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
@@ -1838,14 +1838,14 @@ namespace ttk {
         return NULL;
 
       if(((getDimensionality() == 1)
-          && (!abstractTriangulation_->hasPreprocessedVertexStars()))
+          && (!abstractTriangulation_->hasPreconditionedVertexStars()))
          || ((getDimensionality() > 1)
-             && (!abstractTriangulation_->hasPreprocessedVertexEdges()))) {
+             && (!abstractTriangulation_->hasPreconditionedVertexEdges()))) {
         std::stringstream msg;
         msg << "[Triangulation] "
             << "VertexEdges query without pre-process!" << std::endl;
         msg << "[Triangulation] "
-            << "Please call preprocessVertexEdges() in a"
+            << "Please call preconditionVertexEdges() in a"
             << " pre-process." << std::endl;
         dMsg(std::cerr, msg.str(), Debug::fatalMsg);
         return NULL;
@@ -1864,7 +1864,7 @@ namespace ttk {
     /// a triangle identifier.
     ///
     /// \pre For this function to behave correctly,
-    /// preprocessVertexLinks() needs to be called
+    /// preconditionVertexLinks() needs to be called
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
@@ -1887,12 +1887,12 @@ namespace ttk {
       if(isEmptyCheck())
         return -1;
 
-      if(!abstractTriangulation_->hasPreprocessedVertexLinks()) {
+      if(!abstractTriangulation_->hasPreconditionedVertexLinks()) {
         std::stringstream msg;
         msg << "[Triangulation] "
             << "VertexLink query without pre-process!" << std::endl;
         msg << "[Triangulation] "
-            << "Please call preprocessVertexLinks() in a"
+            << "Please call preconditionVertexLinks() in a"
             << " pre-process." << std::endl;
         dMsg(std::cerr, msg.str(), Debug::fatalMsg);
         return -2;
@@ -1908,7 +1908,7 @@ namespace ttk {
     /// number of triangles.
     ///
     /// \pre For this function to behave correctly,
-    /// preprocessVertexLinks() needs to be called
+    /// preconditionVertexLinks() needs to be called
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
@@ -1923,12 +1923,12 @@ namespace ttk {
       if(isEmptyCheck())
         return -1;
 
-      if(!abstractTriangulation_->hasPreprocessedVertexLinks()) {
+      if(!abstractTriangulation_->hasPreconditionedVertexLinks()) {
         std::stringstream msg;
         msg << "[Triangulation] "
             << "VertexLinkNumber query without pre-process!" << std::endl;
         msg << "[Triangulation] "
-            << "Please call preprocessVertexLinks() in a"
+            << "Please call preconditionVertexLinks() in a"
             << " pre-process." << std::endl;
         dMsg(std::cerr, msg.str(), Debug::fatalMsg);
         return -2;
@@ -1954,7 +1954,7 @@ namespace ttk {
     /// THIS IS USUALLY A BAD IDEA.
     ///
     /// \pre For this function to behave correctly,
-    /// preprocessVertexLinks() needs to be called
+    /// preconditionVertexLinks() needs to be called
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
@@ -1968,12 +1968,12 @@ namespace ttk {
       if(isEmptyCheck())
         return NULL;
 
-      if(!abstractTriangulation_->hasPreprocessedVertexLinks()) {
+      if(!abstractTriangulation_->hasPreconditionedVertexLinks()) {
         std::stringstream msg;
         msg << "[Triangulation] "
             << "VertexLinks query without pre-process!" << std::endl;
         msg << "[Triangulation] "
-            << "Please call preprocessVertexLinks() in a"
+            << "Please call preconditionVertexLinks() in a"
             << " pre-process." << std::endl;
         dMsg(std::cerr, msg.str(), Debug::fatalMsg);
         return NULL;
@@ -1986,7 +1986,7 @@ namespace ttk {
     /// vertex.
     ///
     /// \pre For this function to behave correctly,
-    /// preprocessVertexNeighbors() needs to be called
+    /// preconditionVertexNeighbors() needs to be called
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
@@ -2009,12 +2009,12 @@ namespace ttk {
       if(isEmptyCheck())
         return -1;
 
-      if(!abstractTriangulation_->hasPreprocessedVertexNeighbors()) {
+      if(!abstractTriangulation_->hasPreconditionedVertexNeighbors()) {
         std::stringstream msg;
         msg << "[Triangulation] "
             << "VertexNeighbor query without pre-process!" << std::endl;
         msg << "[Triangulation] "
-            << "Please call preprocessVertexNeighbors() in a"
+            << "Please call preconditionVertexNeighbors() in a"
             << " pre-process." << std::endl;
         dMsg(std::cerr, msg.str(), Debug::fatalMsg);
         return -2;
@@ -2027,7 +2027,7 @@ namespace ttk {
     /// Get the number of vertex neighbors for the \p vertexId-th vertex.
     ///
     /// \pre For this function to behave correctly,
-    /// preprocessVertexNeighbors() needs to be called
+    /// preconditionVertexNeighbors() needs to be called
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
@@ -2042,12 +2042,12 @@ namespace ttk {
       if(isEmptyCheck())
         return -1;
 
-      if(!abstractTriangulation_->hasPreprocessedVertexNeighbors()) {
+      if(!abstractTriangulation_->hasPreconditionedVertexNeighbors()) {
         std::stringstream msg;
         msg << "[Triangulation] "
             << "VertexNeighborNumber query without pre-process!" << std::endl;
         msg << "[Triangulation] "
-            << "Please call preprocessVertexNeighbors() in a"
+            << "Please call preconditionVertexNeighbors() in a"
             << " pre-process." << std::endl;
         dMsg(std::cerr, msg.str(), Debug::fatalMsg);
         return -2;
@@ -2072,7 +2072,7 @@ namespace ttk {
     /// THIS IS USUALLY A BAD IDEA.
     ///
     /// \pre For this function to behave correctly,
-    /// preprocessVertexNeighbors() needs to be called
+    /// preconditionVertexNeighbors() needs to be called
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
@@ -2085,12 +2085,12 @@ namespace ttk {
       if(isEmptyCheck())
         return NULL;
 
-      if(!abstractTriangulation_->hasPreprocessedVertexNeighbors()) {
+      if(!abstractTriangulation_->hasPreconditionedVertexNeighbors()) {
         std::stringstream msg;
         msg << "[Triangulation] "
             << "VertexNeighbors query without pre-process!" << std::endl;
         msg << "[Triangulation] "
-            << "Please call preprocessVertexNeighbors() in a"
+            << "Please call preconditionVertexNeighbors() in a"
             << " pre-process." << std::endl;
         dMsg(std::cerr, msg.str(), Debug::fatalMsg);
         return NULL;
@@ -2129,7 +2129,7 @@ namespace ttk {
     /// dimension (3D: tetrahedra, 2D: triangles, 1D: edges).
     ///
     /// \pre For this function to behave correctly,
-    /// preprocessVertexStars() needs to be called
+    /// preconditionVertexStars() needs to be called
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
@@ -2153,12 +2153,12 @@ namespace ttk {
       if(isEmptyCheck())
         return -1;
 
-      if(!abstractTriangulation_->hasPreprocessedVertexStars()) {
+      if(!abstractTriangulation_->hasPreconditionedVertexStars()) {
         std::stringstream msg;
         msg << "[Triangulation] "
             << "VertexStar query without pre-process!" << std::endl;
         msg << "[Triangulation] "
-            << "Please call preprocessVertexStar() in a"
+            << "Please call preconditionVertexStar() in a"
             << " pre-process." << std::endl;
         dMsg(std::cerr, msg.str(), Debug::fatalMsg);
         return -2;
@@ -2174,7 +2174,7 @@ namespace ttk {
     /// dimension (3D: tetrahedra, 2D: triangles, 1D: edges).
     ///
     /// \pre For this function to behave correctly,
-    /// preprocessVertexStars() needs to be called
+    /// preconditionVertexStars() needs to be called
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
@@ -2188,12 +2188,12 @@ namespace ttk {
       if(isEmptyCheck())
         return -1;
 
-      if(!abstractTriangulation_->hasPreprocessedVertexStars()) {
+      if(!abstractTriangulation_->hasPreconditionedVertexStars()) {
         std::stringstream msg;
         msg << "[Triangulation] "
             << "VertexStarNumber query without pre-process!" << std::endl;
         msg << "[Triangulation] "
-            << "Please call preprocessVertexStars() in a"
+            << "Please call preconditionVertexStars() in a"
             << " pre-process." << std::endl;
         dMsg(std::cerr, msg.str(), Debug::fatalMsg);
         return -2;
@@ -2220,7 +2220,7 @@ namespace ttk {
     /// THIS IS USUALLY A BAD IDEA.
     ///
     /// \pre For this function to behave correctly,
-    /// preprocessVertexStars() needs to be called
+    /// preconditionVertexStars() needs to be called
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
@@ -2233,12 +2233,12 @@ namespace ttk {
       if(isEmptyCheck())
         return NULL;
 
-      if(!abstractTriangulation_->hasPreprocessedVertexStars()) {
+      if(!abstractTriangulation_->hasPreconditionedVertexStars()) {
         std::stringstream msg;
         msg << "[Triangulation] "
             << "VertexStars query without pre-process!" << std::endl;
         msg << "[Triangulation] "
-            << "Please call preprocessVertexStars() in a"
+            << "Please call preconditionVertexStars() in a"
             << " pre-process." << std::endl;
         dMsg(std::cerr, msg.str(), Debug::fatalMsg);
         return NULL;
@@ -2253,7 +2253,7 @@ namespace ttk {
     /// In 2D, this function is equivalent to getVertexStar().
     ///
     /// \pre For this function to behave correctly,
-    /// preprocessVertexTriangles() needs to be called
+    /// preconditionVertexTriangles() needs to be called
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
@@ -2282,14 +2282,15 @@ namespace ttk {
         return -2;
 
       if(((getDimensionality() == 2)
-          && (!abstractTriangulation_->hasPreprocessedVertexStars()))
+          && (!abstractTriangulation_->hasPreconditionedVertexStars()))
          || ((getDimensionality() == 3)
-             && (!abstractTriangulation_->hasPreprocessedVertexTriangles()))) {
+             && (!abstractTriangulation_
+                    ->hasPreconditionedVertexTriangles()))) {
         std::stringstream msg;
         msg << "[Triangulation] "
             << "VertexTriangle query without pre-process!" << std::endl;
         msg << "[Triangulation] "
-            << "Please call preprocessVertexTriangles() in a"
+            << "Please call preconditionVertexTriangles() in a"
             << " pre-process." << std::endl;
         dMsg(std::cerr, msg.str(), Debug::fatalMsg);
         return -2;
@@ -2308,7 +2309,7 @@ namespace ttk {
     /// In 2D, this function is equivalent to getVertexStarNumber().
     ///
     /// \pre For this function to behave correctly,
-    /// preprocessVertexTriangles() needs to be called
+    /// preconditionVertexTriangles() needs to be called
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
@@ -2328,14 +2329,15 @@ namespace ttk {
         return -2;
 
       if(((getDimensionality() == 2)
-          && (!abstractTriangulation_->hasPreprocessedVertexStars()))
+          && (!abstractTriangulation_->hasPreconditionedVertexStars()))
          || ((getDimensionality() == 3)
-             && (!abstractTriangulation_->hasPreprocessedVertexTriangles()))) {
+             && (!abstractTriangulation_
+                    ->hasPreconditionedVertexTriangles()))) {
         std::stringstream msg;
         msg << "[Triangulation] "
             << "VertexTriangleNumber query without pre-process!" << std::endl;
         msg << "[Triangulation] "
-            << "Please call preprocessVertexTriangles() in a"
+            << "Please call preconditionVertexTriangles() in a"
             << " pre-process." << std::endl;
         dMsg(std::cerr, msg.str(), Debug::fatalMsg);
         return -2;
@@ -2365,7 +2367,7 @@ namespace ttk {
     /// In 2D, this function is equivalent to getVertexStars().
     ///
     /// \pre For this function to behave correctly,
-    /// preprocessVertexTriangles() needs to be called
+    /// preconditionVertexTriangles() needs to be called
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
@@ -2384,14 +2386,15 @@ namespace ttk {
         return NULL;
 
       if(((getDimensionality() == 2)
-          && (!abstractTriangulation_->hasPreprocessedVertexStars()))
+          && (!abstractTriangulation_->hasPreconditionedVertexStars()))
          || ((getDimensionality() == 3)
-             && (!abstractTriangulation_->hasPreprocessedVertexTriangles()))) {
+             && (!abstractTriangulation_
+                    ->hasPreconditionedVertexTriangles()))) {
         std::stringstream msg;
         msg << "[Triangulation] "
             << "VertexTriangles query without pre-process!" << std::endl;
         msg << "[Triangulation] "
-            << "Please call preprocessVertexTriangles() in a"
+            << "Please call preconditionVertexTriangles() in a"
             << " pre-process." << std::endl;
         dMsg(std::cerr, msg.str(), Debug::fatalMsg);
         return NULL;
@@ -2414,7 +2417,7 @@ namespace ttk {
     /// has a dimension greater than 1 (otherwise, use the cell information).
     ///
     /// \pre For this function to behave correctly,
-    /// preprocessBoundaryEdges() needs to be called
+    /// preconditionBoundaryEdges() needs to be called
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
@@ -2427,12 +2430,12 @@ namespace ttk {
       if(isEmptyCheck())
         return false;
 
-      if(!abstractTriangulation_->hasPreprocessedBoundaryEdges()) {
+      if(!abstractTriangulation_->hasPreconditionedBoundaryEdges()) {
         std::stringstream msg;
         msg << "[Triangulation] "
             << "BoundaryEdge query without pre-process!" << std::endl;
         msg << "[Triangulation] "
-            << "Please call preprocessBoundaryEdges() in a"
+            << "Please call preconditionBoundaryEdges() in a"
             << " pre-process." << std::endl;
         dMsg(std::cerr, msg.str(), Debug::fatalMsg);
         return false;
@@ -2458,7 +2461,7 @@ namespace ttk {
     /// is a boundary triangle.
     ///
     /// \pre For this function to behave correctly,
-    /// preprocessBoundaryTriangles() needs to be called
+    /// preconditionBoundaryTriangles() needs to be called
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
@@ -2473,12 +2476,12 @@ namespace ttk {
       if(isEmptyCheck())
         return false;
 
-      if(!abstractTriangulation_->hasPreprocessedBoundaryTriangles()) {
+      if(!abstractTriangulation_->hasPreconditionedBoundaryTriangles()) {
         std::stringstream msg;
         msg << "[Triangulation] "
             << "BoundaryTriangle query without pre-process!" << std::endl;
         msg << "[Triangulation] "
-            << "Please call preprocessBoundaryTriangles() in a"
+            << "Please call preconditionBoundaryTriangles() in a"
             << " pre-process." << std::endl;
         dMsg(std::cerr, msg.str(), Debug::fatalMsg);
         return false;
@@ -2495,7 +2498,7 @@ namespace ttk {
     /// return true if the vertex belongs to a boundary triangle.
     ///
     /// \pre For this function to behave correctly,
-    /// preprocessBoundaryVertices() needs to be called
+    /// preconditionBoundaryVertices() needs to be called
     /// on this object prior to any traversal, in a clearly distinct
     /// pre-processing step that involves no traversal at all. An error will
     /// be returned otherwise.
@@ -2509,12 +2512,12 @@ namespace ttk {
       if(isEmptyCheck())
         return false;
 
-      if(!abstractTriangulation_->hasPreprocessedBoundaryVertices()) {
+      if(!abstractTriangulation_->hasPreconditionedBoundaryVertices()) {
         std::stringstream msg;
         msg << "[Triangulation] "
             << "BoundaryVertex query without pre-process!" << std::endl;
         msg << "[Triangulation] "
-            << "Please call preprocessBoundaryVertices() in a"
+            << "Please call preconditionBoundaryVertices() in a"
             << " pre-process." << std::endl;
         dMsg(std::cerr, msg.str(), Debug::fatalMsg);
         return false;
@@ -2536,14 +2539,14 @@ namespace ttk {
     /// any time performance measurement.
     /// \return Returns 0 upon success, negative values otherwise.
     /// \sa isEdgeOnBoundary()
-    inline int preprocessBoundaryEdges() override {
+    inline int preconditionBoundaryEdges() override {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
         return -1;
 #endif
 
-      return !((!abstractTriangulation_->preprocessBoundaryEdges())
-               && (hasPreprocessedBoundaryEdges_ = true));
+      return !((!abstractTriangulation_->preconditionBoundaryEdges())
+               && (hasPreconditionedBoundaryEdges_ = true));
     }
 
     /// Pre-process the boundary triangles.
@@ -2559,14 +2562,14 @@ namespace ttk {
     /// any time performance measurement.
     /// \return Returns 0 upon success, negative values otherwise.
     /// \sa isTriangleOnBoundary()
-    inline int preprocessBoundaryTriangles() override {
+    inline int preconditionBoundaryTriangles() override {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
         return -1;
 #endif
 
-      return !((!abstractTriangulation_->preprocessBoundaryTriangles())
-               && (hasPreprocessedBoundaryTriangles_ = true));
+      return !((!abstractTriangulation_->preconditionBoundaryTriangles())
+               && (hasPreconditionedBoundaryTriangles_ = true));
     }
 
     /// Pre-process the boundary vertices.
@@ -2582,14 +2585,14 @@ namespace ttk {
     /// any time performance measurement.
     /// \return Returns 0 upon success, negative values otherwise.
     /// \sa isVertexOnBoundary()
-    inline int preprocessBoundaryVertices() override {
+    inline int preconditionBoundaryVertices() override {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
         return -1;
 #endif
 
-      return !((!abstractTriangulation_->preprocessBoundaryVertices())
-               && (hasPreprocessedBoundaryVertices_ = true));
+      return !((!abstractTriangulation_->preconditionBoundaryVertices())
+               && (hasPreconditionedBoundaryVertices_ = true));
     }
 
     /// Pre-process the cell edges.
@@ -2607,18 +2610,18 @@ namespace ttk {
     /// \return Returns 0 upon success, negative values otherwise.
     /// \sa getCellEdge()
     /// \sa getCellEdgeNumber()
-    inline int preprocessCellEdges() override {
+    inline int preconditionCellEdges() override {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
         return -1;
 #endif
       if(getDimensionality() == 1)
-        return !((!abstractTriangulation_->preprocessCellNeighbors())
-                 && (hasPreprocessedCellEdges_ = true)
-                 && (hasPreprocessedCellNeighbors_ = true));
+        return !((!abstractTriangulation_->preconditionCellNeighbors())
+                 && (hasPreconditionedCellEdges_ = true)
+                 && (hasPreconditionedCellNeighbors_ = true));
 
-      return !((!abstractTriangulation_->preprocessCellEdges())
-               && (hasPreprocessedCellEdges_ = true));
+      return !((!abstractTriangulation_->preconditionCellEdges())
+               && (hasPreconditionedCellEdges_ = true));
     }
 
     /// Pre-process the cell neighbors.
@@ -2638,15 +2641,15 @@ namespace ttk {
     /// \sa getCellNeighbor()
     /// \sa getCellNeighbors()
     /// \sa getCellNeighborNumber()
-    inline int preprocessCellNeighbors() override {
+    inline int preconditionCellNeighbors() override {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
         return -1;
 #endif
 
-      return !((!abstractTriangulation_->preprocessCellNeighbors())
-               && (hasPreprocessedCellNeighbors_ = true));
+      return !((!abstractTriangulation_->preconditionCellNeighbors())
+               && (hasPreconditionedCellNeighbors_ = true));
     }
 
     /// Pre-process the cell triangles.
@@ -2666,7 +2669,7 @@ namespace ttk {
     /// \sa getCellTriangle()
     /// \sa getCellTriangles()
     /// \sa getCellTriangleNumber()
-    inline int preprocessCellTriangles() override {
+    inline int preconditionCellTriangles() override {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
@@ -2676,12 +2679,12 @@ namespace ttk {
         return -2;
 #endif
       if(getDimensionality() == 2)
-        return !((!abstractTriangulation_->preprocessCellNeighbors())
-                 && (hasPreprocessedCellTriangles_ = true)
-                 && (hasPreprocessedCellNeighbors_ = true));
+        return !((!abstractTriangulation_->preconditionCellNeighbors())
+                 && (hasPreconditionedCellTriangles_ = true)
+                 && (hasPreconditionedCellNeighbors_ = true));
 
-      return !((!abstractTriangulation_->preprocessCellTriangles())
-               && (hasPreprocessedCellTriangles_ = true));
+      return !((!abstractTriangulation_->preconditionCellTriangles())
+               && (hasPreconditionedCellTriangles_ = true));
     }
 
     /// Pre-process the edges.
@@ -2701,15 +2704,15 @@ namespace ttk {
     /// \sa getEdges()
     /// \sa getEdgeVertex()
     /// \sa getNumberOfEdges()
-    inline int preprocessEdges() override {
+    inline int preconditionEdges() override {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
         return -1;
 #endif
 
-      return !((!abstractTriangulation_->preprocessEdges())
-               && (hasPreprocessedBoundaryEdges_ = true));
+      return !((!abstractTriangulation_->preconditionEdges())
+               && (hasPreconditionedBoundaryEdges_ = true));
     }
 
     /// Pre-process the edge links.
@@ -2729,7 +2732,7 @@ namespace ttk {
     /// \sa getEdgeLink()
     /// \sa getEdgeLinks()
     /// \sa getEdgeLinkNumber()
-    inline int preprocessEdgeLinks() override {
+    inline int preconditionEdgeLinks() override {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
@@ -2739,8 +2742,8 @@ namespace ttk {
         return -2;
 #endif
 
-      return !((!abstractTriangulation_->preprocessEdgeLinks())
-               && (hasPreprocessedEdgeLinks_ = true));
+      return !((!abstractTriangulation_->preconditionEdgeLinks())
+               && (hasPreconditionedEdgeLinks_ = true));
     }
 
     /// Pre-process the edge stars.
@@ -2760,7 +2763,7 @@ namespace ttk {
     /// \sa getEdgeStar()
     /// \sa getEdgeStars()
     /// \sa getEdgeStarNumber()
-    inline int preprocessEdgeStars() override {
+    inline int preconditionEdgeStars() override {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
@@ -2770,8 +2773,8 @@ namespace ttk {
         return -2;
 #endif
 
-      return !((!abstractTriangulation_->preprocessEdgeStars())
-               && (hasPreprocessedEdgeStars_ = true));
+      return !((!abstractTriangulation_->preconditionEdgeStars())
+               && (hasPreconditionedEdgeStars_ = true));
     }
 
     /// Pre-process the edge triangles.
@@ -2791,7 +2794,7 @@ namespace ttk {
     /// \sa getEdgeTriangle()
     /// \sa getEdgeTriangles()
     /// \sa getEdgeTriangleNumber()
-    inline int preprocessEdgeTriangles() override {
+    inline int preconditionEdgeTriangles() override {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
@@ -2802,13 +2805,13 @@ namespace ttk {
 #endif
 
       if(getDimensionality() == 2) {
-        return !((!abstractTriangulation_->preprocessEdgeStars())
-                 && (hasPreprocessedEdgeTriangles_ = true)
-                 && (hasPreprocessedEdgeStars_ = true));
+        return !((!abstractTriangulation_->preconditionEdgeStars())
+                 && (hasPreconditionedEdgeTriangles_ = true)
+                 && (hasPreconditionedEdgeStars_ = true));
       }
 
-      return !((!abstractTriangulation_->preprocessEdgeTriangles())
-               && (hasPreprocessedEdgeTriangles_ = true));
+      return !((!abstractTriangulation_->preconditionEdgeTriangles())
+               && (hasPreconditionedEdgeTriangles_ = true));
     }
 
     /// Pre-process the triangles.
@@ -2828,7 +2831,7 @@ namespace ttk {
     /// \sa getNumberOfTriangles()
     /// \sa getTriangles()
     /// \sa getTriangleVertex()
-    inline int preprocessTriangles() override {
+    inline int preconditionTriangles() override {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
@@ -2841,8 +2844,8 @@ namespace ttk {
       if(getDimensionality() == 2)
         return 0;
 
-      return !((!abstractTriangulation_->preprocessTriangles())
-               && (hasPreprocessedTriangles_ = true));
+      return !((!abstractTriangulation_->preconditionTriangles())
+               && (hasPreconditionedTriangles_ = true));
     }
 
     /// Pre-process the triangle edges.
@@ -2862,7 +2865,7 @@ namespace ttk {
     /// \sa getTriangleEdge()
     /// \sa getTriangleEdges()
     /// \sa getTriangleEdgeNumber()
-    inline int preprocessTriangleEdges() override {
+    inline int preconditionTriangleEdges() override {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
@@ -2873,12 +2876,12 @@ namespace ttk {
 #endif
 
       if(getDimensionality() == 2)
-        return !((!abstractTriangulation_->preprocessCellEdges())
-                 && (hasPreprocessedTriangleEdges_ = true)
-                 && (hasPreprocessedCellEdges_ = true));
+        return !((!abstractTriangulation_->preconditionCellEdges())
+                 && (hasPreconditionedTriangleEdges_ = true)
+                 && (hasPreconditionedCellEdges_ = true));
 
-      return !((!abstractTriangulation_->preprocessTriangleEdges())
-               && (hasPreprocessedTriangleEdges_ = true));
+      return !((!abstractTriangulation_->preconditionTriangleEdges())
+               && (hasPreconditionedTriangleEdges_ = true));
     }
 
     /// Pre-process the triangle links.
@@ -2898,7 +2901,7 @@ namespace ttk {
     /// \sa getTriangleLink()
     /// \sa getTriangleLinks()
     /// \sa getTriangleLinkNumber()
-    inline int preprocessTriangleLinks() override {
+    inline int preconditionTriangleLinks() override {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
@@ -2908,8 +2911,8 @@ namespace ttk {
         return -2;
 #endif
 
-      return !((!abstractTriangulation_->preprocessTriangleLinks())
-               && (hasPreprocessedTriangleLinks_ = true));
+      return !((!abstractTriangulation_->preconditionTriangleLinks())
+               && (hasPreconditionedTriangleLinks_ = true));
     }
 
     /// Pre-process the triangle stars.
@@ -2929,7 +2932,7 @@ namespace ttk {
     /// \sa getTriangleStar()
     /// \sa getTriangleStars()
     /// \sa getTriangleStarNumber()
-    inline int preprocessTriangleStars() override {
+    inline int preconditionTriangleStars() override {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
@@ -2939,8 +2942,8 @@ namespace ttk {
         return -2;
 #endif
 
-      return !((!abstractTriangulation_->preprocessTriangleStars())
-               && (hasPreprocessedTriangleStars_ = true));
+      return !((!abstractTriangulation_->preconditionTriangleStars())
+               && (hasPreconditionedTriangleStars_ = true));
     }
 
     /// Pre-process the vertex edges.
@@ -2960,19 +2963,19 @@ namespace ttk {
     /// \sa getVertexEdge()
     /// \sa getVertexEdges()
     /// \sa getVertexEdgeNumber()
-    inline int preprocessVertexEdges() override {
+    inline int preconditionVertexEdges() override {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
         return -1;
 #endif
       if(getDimensionality() == 1)
-        return !((!abstractTriangulation_->preprocessVertexStars())
-                 && (hasPreprocessedVertexEdges_ = true)
-                 && (hasPreprocessedVertexStars_ = true));
+        return !((!abstractTriangulation_->preconditionVertexStars())
+                 && (hasPreconditionedVertexEdges_ = true)
+                 && (hasPreconditionedVertexStars_ = true));
 
-      return !((!abstractTriangulation_->preprocessVertexEdges())
-               && (hasPreprocessedVertexEdges_ = true));
+      return !((!abstractTriangulation_->preconditionVertexEdges())
+               && (hasPreconditionedVertexEdges_ = true));
     }
 
     /// Pre-process the vertex links.
@@ -2992,15 +2995,15 @@ namespace ttk {
     /// \sa getVertexLink()
     /// \sa getVertexLinks()
     /// \sa getVertexLinkNumber()
-    inline int preprocessVertexLinks() override {
+    inline int preconditionVertexLinks() override {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
         return -1;
 #endif
 
-      return !((!abstractTriangulation_->preprocessVertexLinks())
-               && (hasPreprocessedVertexLinks_ = true));
+      return !((!abstractTriangulation_->preconditionVertexLinks())
+               && (hasPreconditionedVertexLinks_ = true));
     }
 
     /// Pre-process the vertex neighbors.
@@ -3020,15 +3023,15 @@ namespace ttk {
     /// \sa getVertexNeighbor()
     /// \sa getVertexNeighbors()
     /// \sa getVertexNeighborNumber()
-    inline int preprocessVertexNeighbors() override {
+    inline int preconditionVertexNeighbors() override {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
         return -1;
 #endif
 
-      return !((!abstractTriangulation_->preprocessVertexNeighbors())
-               && (hasPreprocessedVertexNeighbors_ = true));
+      return !((!abstractTriangulation_->preconditionVertexNeighbors())
+               && (hasPreconditionedVertexNeighbors_ = true));
     }
 
     /// Pre-process the vertex stars.
@@ -3048,15 +3051,15 @@ namespace ttk {
     /// \sa getVertexStar()
     /// \sa getVertexStars()
     /// \sa getVertexStarNumber()
-    inline int preprocessVertexStars() override {
+    inline int preconditionVertexStars() override {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
         return -1;
 #endif
 
-      return !((!abstractTriangulation_->preprocessVertexStars())
-               && (hasPreprocessedVertexStars_ = true));
+      return !((!abstractTriangulation_->preconditionVertexStars())
+               && (hasPreconditionedVertexStars_ = true));
     }
 
     /// Pre-process the vertex triangles.
@@ -3076,7 +3079,7 @@ namespace ttk {
     /// \sa getVertexTriangle()
     /// \sa getVertexTriangles()
     /// \sa getVertexTriangleNumber()
-    inline int preprocessVertexTriangles() override {
+    inline int preconditionVertexTriangles() override {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
@@ -3085,13 +3088,13 @@ namespace ttk {
         return -2;
 #endif
       if(getDimensionality() == 2) {
-        return !((!abstractTriangulation_->preprocessVertexStars())
-                 && (hasPreprocessedVertexTriangles_ = true)
-                 && (hasPreprocessedVertexStars_ = true));
+        return !((!abstractTriangulation_->preconditionVertexStars())
+                 && (hasPreconditionedVertexTriangles_ = true)
+                 && (hasPreconditionedVertexStars_ = true));
       }
 
-      return !((!abstractTriangulation_->preprocessVertexTriangles())
-               && (hasPreprocessedVertexTriangles_ = true));
+      return !((!abstractTriangulation_->preconditionVertexTriangles())
+               && (hasPreconditionedVertexTriangles_ = true));
     }
 
     int getEdgeIncenter(SimplexId edgeId, float incenter[3]) const override {

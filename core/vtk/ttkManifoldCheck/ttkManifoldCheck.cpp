@@ -19,7 +19,7 @@ vtkStandardNewMacro(ttkManifoldCheck)
     return -1;
 
   triangulation->setWrapper(this);
-  triangulation->preprocessVertexTriangles();
+  triangulation->preconditionVertexTriangles();
   manifoldCheck_.setupTriangulation(triangulation);
   manifoldCheck_.setWrapper(this);
 

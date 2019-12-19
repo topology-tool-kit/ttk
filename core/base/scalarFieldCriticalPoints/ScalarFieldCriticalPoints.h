@@ -96,8 +96,8 @@ namespace ttk {
 
       // pre-condition functions
       if(triangulation_) {
-        triangulation_->preprocessVertexNeighbors();
-        triangulation_->preprocessVertexStars();
+        triangulation_->preconditionVertexNeighbors();
+        triangulation_->preconditionVertexStars();
       }
 
       return 0;

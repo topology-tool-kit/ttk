@@ -139,8 +139,8 @@ protected:
   bool preprocessDomain(vtkDataSet *dataset);
 
   /// @return Went well?
-  bool preprocessConstraints(vtkUnstructuredGrid *nodes,
-                             vtkUnstructuredGrid *arcs);
+  bool preconditionConstraints(vtkUnstructuredGrid *nodes,
+                               vtkUnstructuredGrid *arcs);
 
   /// @return Went well?
   bool process();

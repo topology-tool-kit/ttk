@@ -231,8 +231,8 @@ namespace ttk {
       inputTriangulation_ = data;
       discreteGradient_.setupTriangulation(inputTriangulation_);
 
-      inputTriangulation_->preprocessCellEdges();
-      inputTriangulation_->preprocessCellNeighbors();
+      inputTriangulation_->preconditionCellEdges();
+      inputTriangulation_->preconditionCellNeighbors();
       return 0;
     }
 

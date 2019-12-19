@@ -13,25 +13,25 @@ AbstractTriangulation::~AbstractTriangulation() {
 
 int AbstractTriangulation::clear() {
 
-  hasPreprocessedBoundaryEdges_ = false;
-  hasPreprocessedBoundaryTriangles_ = false;
-  hasPreprocessedBoundaryVertices_ = false;
-  hasPreprocessedCellEdges_ = false;
-  hasPreprocessedCellNeighbors_ = false;
-  hasPreprocessedCellTriangles_ = false;
-  hasPreprocessedEdges_ = false;
-  hasPreprocessedEdgeLinks_ = false;
-  hasPreprocessedEdgeStars_ = false;
-  hasPreprocessedEdgeTriangles_ = false;
-  hasPreprocessedTriangles_ = false;
-  hasPreprocessedTriangleEdges_ = false;
-  hasPreprocessedTriangleLinks_ = false;
-  hasPreprocessedTriangleStars_ = false;
-  hasPreprocessedVertexEdges_ = false;
-  hasPreprocessedVertexLinks_ = false;
-  hasPreprocessedVertexNeighbors_ = false;
-  hasPreprocessedVertexStars_ = false;
-  hasPreprocessedVertexTriangles_ = false;
+  hasPreconditionedBoundaryEdges_ = false;
+  hasPreconditionedBoundaryTriangles_ = false;
+  hasPreconditionedBoundaryVertices_ = false;
+  hasPreconditionedCellEdges_ = false;
+  hasPreconditionedCellNeighbors_ = false;
+  hasPreconditionedCellTriangles_ = false;
+  hasPreconditionedEdges_ = false;
+  hasPreconditionedEdgeLinks_ = false;
+  hasPreconditionedEdgeStars_ = false;
+  hasPreconditionedEdgeTriangles_ = false;
+  hasPreconditionedTriangles_ = false;
+  hasPreconditionedTriangleEdges_ = false;
+  hasPreconditionedTriangleLinks_ = false;
+  hasPreconditionedTriangleStars_ = false;
+  hasPreconditionedVertexEdges_ = false;
+  hasPreconditionedVertexLinks_ = false;
+  hasPreconditionedVertexNeighbors_ = false;
+  hasPreconditionedVertexStars_ = false;
+  hasPreconditionedVertexTriangles_ = false;
 
   boundaryEdges_.clear();
   boundaryTriangles_.clear();

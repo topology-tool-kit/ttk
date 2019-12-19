@@ -179,80 +179,80 @@ namespace ttk {
 
     virtual const std::vector<std::vector<SimplexId>> *getVertexTriangles() = 0;
 
-    virtual inline bool hasPreprocessedBoundaryEdges() const {
-      return hasPreprocessedBoundaryEdges_;
+    virtual inline bool hasPreconditionedBoundaryEdges() const {
+      return hasPreconditionedBoundaryEdges_;
     }
 
-    virtual inline bool hasPreprocessedBoundaryTriangles() const {
-      return hasPreprocessedBoundaryTriangles_;
+    virtual inline bool hasPreconditionedBoundaryTriangles() const {
+      return hasPreconditionedBoundaryTriangles_;
     }
 
-    virtual inline bool hasPreprocessedBoundaryVertices() const {
-      return hasPreprocessedBoundaryVertices_;
+    virtual inline bool hasPreconditionedBoundaryVertices() const {
+      return hasPreconditionedBoundaryVertices_;
     }
 
-    virtual inline bool hasPreprocessedCellEdges() const {
-      return hasPreprocessedCellEdges_;
+    virtual inline bool hasPreconditionedCellEdges() const {
+      return hasPreconditionedCellEdges_;
     }
 
-    virtual inline bool hasPreprocessedCellNeighbors() const {
-      return hasPreprocessedCellNeighbors_;
+    virtual inline bool hasPreconditionedCellNeighbors() const {
+      return hasPreconditionedCellNeighbors_;
     }
 
-    virtual inline bool hasPreprocessedCellTriangles() const {
-      return hasPreprocessedCellTriangles_;
+    virtual inline bool hasPreconditionedCellTriangles() const {
+      return hasPreconditionedCellTriangles_;
     }
 
-    virtual inline bool hasPreprocessedEdgeLinks() const {
-      return hasPreprocessedEdgeLinks_;
+    virtual inline bool hasPreconditionedEdgeLinks() const {
+      return hasPreconditionedEdgeLinks_;
     }
 
-    virtual inline bool hasPreprocessedEdgeStars() const {
-      return hasPreprocessedEdgeStars_;
+    virtual inline bool hasPreconditionedEdgeStars() const {
+      return hasPreconditionedEdgeStars_;
     }
 
-    virtual inline bool hasPreprocessedEdgeTriangles() const {
-      return hasPreprocessedEdgeTriangles_;
+    virtual inline bool hasPreconditionedEdgeTriangles() const {
+      return hasPreconditionedEdgeTriangles_;
     }
 
-    virtual inline bool hasPreprocessedEdges() const {
-      return hasPreprocessedEdges_;
+    virtual inline bool hasPreconditionedEdges() const {
+      return hasPreconditionedEdges_;
     }
 
-    virtual inline bool hasPreprocessedTriangles() const {
-      return hasPreprocessedTriangles_;
+    virtual inline bool hasPreconditionedTriangles() const {
+      return hasPreconditionedTriangles_;
     }
 
-    virtual inline bool hasPreprocessedTriangleEdges() const {
-      return hasPreprocessedTriangleEdges_;
+    virtual inline bool hasPreconditionedTriangleEdges() const {
+      return hasPreconditionedTriangleEdges_;
     }
 
-    virtual inline bool hasPreprocessedTriangleLinks() const {
-      return hasPreprocessedTriangleLinks_;
+    virtual inline bool hasPreconditionedTriangleLinks() const {
+      return hasPreconditionedTriangleLinks_;
     }
 
-    virtual inline bool hasPreprocessedTriangleStars() const {
-      return hasPreprocessedTriangleStars_;
+    virtual inline bool hasPreconditionedTriangleStars() const {
+      return hasPreconditionedTriangleStars_;
     }
 
-    virtual inline bool hasPreprocessedVertexEdges() const {
-      return hasPreprocessedVertexEdges_;
+    virtual inline bool hasPreconditionedVertexEdges() const {
+      return hasPreconditionedVertexEdges_;
     }
 
-    virtual inline bool hasPreprocessedVertexLinks() const {
-      return hasPreprocessedVertexLinks_;
+    virtual inline bool hasPreconditionedVertexLinks() const {
+      return hasPreconditionedVertexLinks_;
     }
 
-    virtual inline bool hasPreprocessedVertexNeighbors() const {
-      return hasPreprocessedVertexNeighbors_;
+    virtual inline bool hasPreconditionedVertexNeighbors() const {
+      return hasPreconditionedVertexNeighbors_;
     }
 
-    virtual inline bool hasPreprocessedVertexStars() const {
-      return hasPreprocessedVertexStars_;
+    virtual inline bool hasPreconditionedVertexStars() const {
+      return hasPreconditionedVertexStars_;
     }
 
-    virtual inline bool hasPreprocessedVertexTriangles() const {
-      return hasPreprocessedVertexTriangles_;
+    virtual inline bool hasPreconditionedVertexTriangles() const {
+      return hasPreconditionedVertexTriangles_;
     }
 
     virtual bool isEdgeOnBoundary(const SimplexId &edgeId) const = 0;
@@ -263,112 +263,112 @@ namespace ttk {
 
     virtual bool isVertexOnBoundary(const SimplexId &vertexId) const = 0;
 
-    virtual int preprocessBoundaryEdges() {
-      preprocessEdges();
-      hasPreprocessedBoundaryEdges_ = true;
+    virtual int preconditionBoundaryEdges() {
+      preconditionEdges();
+      hasPreconditionedBoundaryEdges_ = true;
       return 0;
     }
 
-    virtual int preprocessBoundaryTriangles() {
-      preprocessTriangles();
-      hasPreprocessedBoundaryTriangles_ = true;
+    virtual int preconditionBoundaryTriangles() {
+      preconditionTriangles();
+      hasPreconditionedBoundaryTriangles_ = true;
       return 0;
     }
 
-    virtual int preprocessBoundaryVertices() {
-      hasPreprocessedBoundaryVertices_ = true;
+    virtual int preconditionBoundaryVertices() {
+      hasPreconditionedBoundaryVertices_ = true;
       return 0;
     }
 
-    virtual int preprocessCellEdges() {
-      preprocessEdges();
-      hasPreprocessedCellEdges_ = true;
+    virtual int preconditionCellEdges() {
+      preconditionEdges();
+      hasPreconditionedCellEdges_ = true;
       return 0;
     }
 
-    virtual int preprocessCellNeighbors() {
-      hasPreprocessedCellNeighbors_ = true;
+    virtual int preconditionCellNeighbors() {
+      hasPreconditionedCellNeighbors_ = true;
       return 0;
     }
 
-    virtual int preprocessCellTriangles() {
-      preprocessTriangles();
-      hasPreprocessedCellTriangles_ = true;
+    virtual int preconditionCellTriangles() {
+      preconditionTriangles();
+      hasPreconditionedCellTriangles_ = true;
       return 0;
     }
 
-    virtual int preprocessEdges() {
-      hasPreprocessedEdges_ = true;
+    virtual int preconditionEdges() {
+      hasPreconditionedEdges_ = true;
       return 0;
     }
 
-    virtual int preprocessEdgeLinks() {
-      preprocessEdges();
-      hasPreprocessedEdgeLinks_ = true;
+    virtual int preconditionEdgeLinks() {
+      preconditionEdges();
+      hasPreconditionedEdgeLinks_ = true;
       return 0;
     }
 
-    virtual int preprocessEdgeStars() {
-      preprocessEdges();
-      hasPreprocessedEdgeStars_ = true;
+    virtual int preconditionEdgeStars() {
+      preconditionEdges();
+      hasPreconditionedEdgeStars_ = true;
       return 0;
     }
 
-    virtual int preprocessEdgeTriangles() {
-      preprocessEdges();
-      preprocessTriangles();
-      hasPreprocessedEdgeTriangles_ = true;
+    virtual int preconditionEdgeTriangles() {
+      preconditionEdges();
+      preconditionTriangles();
+      hasPreconditionedEdgeTriangles_ = true;
       return 0;
     }
 
-    virtual int preprocessTriangles() {
-      hasPreprocessedTriangles_ = true;
+    virtual int preconditionTriangles() {
+      hasPreconditionedTriangles_ = true;
       return 0;
     }
 
-    virtual int preprocessTriangleEdges() {
-      preprocessEdges();
-      preprocessTriangles();
-      hasPreprocessedTriangleEdges_ = true;
+    virtual int preconditionTriangleEdges() {
+      preconditionEdges();
+      preconditionTriangles();
+      hasPreconditionedTriangleEdges_ = true;
       return 0;
     }
 
-    virtual int preprocessTriangleLinks() {
-      preprocessTriangles();
-      hasPreprocessedTriangleLinks_ = true;
+    virtual int preconditionTriangleLinks() {
+      preconditionTriangles();
+      hasPreconditionedTriangleLinks_ = true;
       return 0;
     }
 
-    virtual int preprocessTriangleStars() {
-      preprocessTriangles();
-      hasPreprocessedTriangleStars_ = true;
+    virtual int preconditionTriangleStars() {
+      preconditionTriangles();
+      hasPreconditionedTriangleStars_ = true;
       return 0;
     }
 
-    virtual int preprocessVertexEdges() {
-      preprocessEdges();
-      hasPreprocessedVertexEdges_ = true;
+    virtual int preconditionVertexEdges() {
+      preconditionEdges();
+      hasPreconditionedVertexEdges_ = true;
       return 0;
     }
 
-    virtual int preprocessVertexLinks() {
-      hasPreprocessedVertexLinks_ = true;
+    virtual int preconditionVertexLinks() {
+      hasPreconditionedVertexLinks_ = true;
       return 0;
     }
 
-    virtual int preprocessVertexNeighbors() {
-      hasPreprocessedVertexNeighbors_ = true;
+    virtual int preconditionVertexNeighbors() {
+      hasPreconditionedVertexNeighbors_ = true;
       return 0;
     }
 
-    virtual int preprocessVertexStars() {
-      hasPreprocessedVertexStars_ = true;
+    virtual int preconditionVertexStars() {
+      hasPreconditionedVertexStars_ = true;
       return 0;
     }
 
-    virtual int preprocessVertexTriangles() {
-      preprocessTriangles();
-      hasPreprocessedVertexTriangles_ = true;
+    virtual int preconditionVertexTriangles() {
+      preconditionTriangles();
+      hasPreconditionedVertexTriangles_ = true;
       return 0;
     }
 
@@ -505,16 +505,16 @@ namespace ttk {
       return 0;
     };
 
-    bool hasPreprocessedBoundaryEdges_, hasPreprocessedBoundaryTriangles_,
-      hasPreprocessedBoundaryVertices_, hasPreprocessedCellEdges_,
-      hasPreprocessedCellNeighbors_, hasPreprocessedCellTriangles_,
-      hasPreprocessedEdges_, hasPreprocessedEdgeLinks_,
-      hasPreprocessedEdgeStars_, hasPreprocessedEdgeTriangles_,
-      hasPreprocessedTriangles_, hasPreprocessedTriangleEdges_,
-      hasPreprocessedTriangleLinks_, hasPreprocessedTriangleStars_,
-      hasPreprocessedVertexEdges_, hasPreprocessedVertexLinks_,
-      hasPreprocessedVertexNeighbors_, hasPreprocessedVertexStars_,
-      hasPreprocessedVertexTriangles_;
+    bool hasPreconditionedBoundaryEdges_, hasPreconditionedBoundaryTriangles_,
+      hasPreconditionedBoundaryVertices_, hasPreconditionedCellEdges_,
+      hasPreconditionedCellNeighbors_, hasPreconditionedCellTriangles_,
+      hasPreconditionedEdges_, hasPreconditionedEdgeLinks_,
+      hasPreconditionedEdgeStars_, hasPreconditionedEdgeTriangles_,
+      hasPreconditionedTriangles_, hasPreconditionedTriangleEdges_,
+      hasPreconditionedTriangleLinks_, hasPreconditionedTriangleStars_,
+      hasPreconditionedVertexEdges_, hasPreconditionedVertexLinks_,
+      hasPreconditionedVertexNeighbors_, hasPreconditionedVertexStars_,
+      hasPreconditionedVertexTriangles_;
 
     std::vector<bool> boundaryEdges_, boundaryTriangles_, boundaryVertices_;
     std::vector<std::vector<SimplexId>> cellEdgeList_;

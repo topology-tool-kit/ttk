@@ -34,11 +34,11 @@ int ttk::MorseSmaleQuadrangulation::detectCellSeps() {
   bs.setInputPoints(inputPoints_);
   bs.execute();
 
-  newT.preprocessVertexNeighbors();
-  newT.preprocessVertexEdges();
-  newT.preprocessVertexTriangles();
-  newT.preprocessEdgeTriangles();
-  newT.preprocessTriangleEdges();
+  newT.preconditionVertexNeighbors();
+  newT.preconditionVertexEdges();
+  newT.preconditionVertexTriangles();
+  newT.preconditionEdgeTriangles();
+  newT.preconditionTriangleEdges();
 
   auto nEdges = triangulation_->getNumberOfEdges();
 

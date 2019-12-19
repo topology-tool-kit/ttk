@@ -38,11 +38,11 @@ int ttk::ContourAroundPoint::setupDomain(Triangulation *triangulation,
   }
 
   // Call all the required precondition functions here!
-  triangulation->preprocessVertexStars(); // for findCell --> getVertexStar
+  triangulation->preconditionVertexStars(); // for findCell --> getVertexStar
   triangulation
-    ->preprocessCellNeighbors(); // for compOneContour --> getCellNeighbor
-  triangulation->preprocessCellEdges(); // for addOutput --> getCellEdge
-  triangulation->preprocessEdges(); //  i.a. for addOutput --> getEdgeVertex
+    ->preconditionCellNeighbors(); // for compOneContour --> getCellNeighbor
+  triangulation->preconditionCellEdges(); // for addOutput --> getCellEdge
+  triangulation->preconditionEdges(); //  i.a. for addOutput --> getEdgeVertex
   return 0;
 }
 

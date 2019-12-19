@@ -556,83 +556,83 @@ namespace ttk {
       return &vertexTriangleList_;
     }
 
-    inline bool hasPreprocessedBoundaryEdges() const override {
+    inline bool hasPreconditionedBoundaryEdges() const override {
       if(getDimensionality() == 1)
         return true;
       return (boundaryEdges_.size() != 0);
     }
 
-    inline bool hasPreprocessedBoundaryTriangles() const override {
+    inline bool hasPreconditionedBoundaryTriangles() const override {
       if(getDimensionality() == 2)
         return true;
       return (boundaryTriangles_.size() != 0);
     }
 
-    inline bool hasPreprocessedBoundaryVertices() const override {
+    inline bool hasPreconditionedBoundaryVertices() const override {
       return (boundaryVertices_.size() != 0);
     }
 
-    inline bool hasPreprocessedCellEdges() const override {
+    inline bool hasPreconditionedCellEdges() const override {
       return (cellEdgeList_.size() != 0);
     }
 
-    inline bool hasPreprocessedCellNeighbors() const override {
+    inline bool hasPreconditionedCellNeighbors() const override {
       return (cellNeighborList_.size() != 0);
     }
 
-    inline bool hasPreprocessedCellTriangles() const override {
+    inline bool hasPreconditionedCellTriangles() const override {
       return (cellTriangleList_.size() != 0);
     }
 
-    inline bool hasPreprocessedEdges() const override {
+    inline bool hasPreconditionedEdges() const override {
       return (edgeList_.size() != 0);
     }
 
-    inline bool hasPreprocessedEdgeLinks() const override {
+    inline bool hasPreconditionedEdgeLinks() const override {
       return (edgeLinkList_.size() != 0);
     }
 
-    inline bool hasPreprocessedEdgeStars() const override {
+    inline bool hasPreconditionedEdgeStars() const override {
       return (edgeStarList_.size() != 0);
     }
 
-    inline bool hasPreprocessedEdgeTriangles() const override {
+    inline bool hasPreconditionedEdgeTriangles() const override {
       return (edgeTriangleList_.size() != 0);
     }
 
-    inline bool hasPreprocessedTriangles() const override {
+    inline bool hasPreconditionedTriangles() const override {
       return (triangleList_.size() != 0);
     }
 
-    inline bool hasPreprocessedTriangleEdges() const override {
+    inline bool hasPreconditionedTriangleEdges() const override {
       return (triangleEdgeList_.size() != 0);
     }
 
-    inline bool hasPreprocessedTriangleLinks() const override {
+    inline bool hasPreconditionedTriangleLinks() const override {
       return (triangleLinkList_.size() != 0);
     }
 
-    inline bool hasPreprocessedTriangleStars() const override {
+    inline bool hasPreconditionedTriangleStars() const override {
       return (triangleStarList_.size() != 0);
     }
 
-    inline bool hasPreprocessedVertexEdges() const override {
+    inline bool hasPreconditionedVertexEdges() const override {
       return (vertexEdgeList_.size() != 0);
     }
 
-    inline bool hasPreprocessedVertexLinks() const override {
+    inline bool hasPreconditionedVertexLinks() const override {
       return (vertexLinkList_.size() != 0);
     }
 
-    inline bool hasPreprocessedVertexNeighbors() const override {
+    inline bool hasPreconditionedVertexNeighbors() const override {
       return (vertexNeighborList_.size() != 0);
     }
 
-    inline bool hasPreprocessedVertexStars() const override {
+    inline bool hasPreconditionedVertexStars() const override {
       return (vertexStarList_.size() != 0);
     }
 
-    inline bool hasPreprocessedVertexTriangles() const override {
+    inline bool hasPreconditionedVertexTriangles() const override {
       return (vertexTriangleList_.size() != 0);
     }
 
@@ -666,26 +666,26 @@ namespace ttk {
       return boundaryVertices_[vertexId];
     }
 
-    inline int preprocessBoundaryEdges() override {
+    inline int preconditionBoundaryEdges() override {
 
       if((!boundaryEdges_.empty())
          && (boundaryEdges_.size() == edgeList_.size())) {
         return 0;
       }
 
-      preprocessEdges();
+      preconditionEdges();
       boundaryEdges_.resize(edgeList_.size(), false);
 
       if(getDimensionality() == 2) {
-        preprocessEdgeStars();
+        preconditionEdgeStars();
         for(SimplexId i = 0; i < (SimplexId)edgeStarList_.size(); i++) {
           if(edgeStarList_[i].size() == 1) {
             boundaryEdges_[i] = true;
           }
         }
       } else if(getDimensionality() == 3) {
-        preprocessTriangleStars();
-        preprocessTriangleEdges();
+        preconditionTriangleStars();
+        preconditionTriangleEdges();
 
         for(SimplexId i = 0; i < (SimplexId)triangleStarList_.size(); i++) {
           if(triangleStarList_[i].size() == 1) {
@@ -706,7 +706,7 @@ namespace ttk {
       return 0;
     }
 
-    inline int preprocessBoundaryTriangles() override {
+    inline int preconditionBoundaryTriangles() override {
 
       if(getDimensionality() == 2)
         return 0;
@@ -716,11 +716,11 @@ namespace ttk {
         return 0;
       }
 
-      preprocessTriangles();
+      preconditionTriangles();
       boundaryTriangles_.resize(triangleList_.size(), false);
 
       if(getDimensionality() == 3) {
-        preprocessTriangleStars();
+        preconditionTriangleStars();
 
         for(SimplexId i = 0; i < (SimplexId)triangleStarList_.size(); i++) {
           if(triangleStarList_[i].size() == 1) {
@@ -739,7 +739,7 @@ namespace ttk {
       return 0;
     }
 
-    inline int preprocessBoundaryVertices() override {
+    inline int preconditionBoundaryVertices() override {
 
       if((!boundaryVertices_.empty())
          && ((SimplexId)boundaryVertices_.size() == vertexNumber_))
@@ -751,15 +751,15 @@ namespace ttk {
       // create their star
       // look for singletons
       if(getDimensionality() == 1) {
-        preprocessVertexStars();
+        preconditionVertexStars();
         for(SimplexId i = 0; i < (SimplexId)vertexStarList_.size(); i++) {
           if(vertexStarList_[i].size() == 1) {
             boundaryVertices_[i] = true;
           }
         }
       } else if(getDimensionality() == 2) {
-        preprocessEdges();
-        preprocessEdgeStars();
+        preconditionEdges();
+        preconditionEdgeStars();
 
         for(SimplexId i = 0; i < (SimplexId)edgeStarList_.size(); i++) {
           if(edgeStarList_[i].size() == 1) {
@@ -768,8 +768,8 @@ namespace ttk {
           }
         }
       } else if(getDimensionality() == 3) {
-        preprocessTriangles();
-        preprocessTriangleStars();
+        preconditionTriangles();
+        preconditionTriangleStars();
 
         for(SimplexId i = 0; i < (SimplexId)triangleStarList_.size(); i++) {
           if(triangleStarList_[i].size() == 1) {
@@ -790,7 +790,7 @@ namespace ttk {
       return 0;
     }
 
-    inline int preprocessCellEdges() override {
+    inline int preconditionCellEdges() override {
 
       if(!cellEdgeList_.size()) {
 
@@ -805,7 +805,7 @@ namespace ttk {
       return 0;
     }
 
-    inline int preprocessCellNeighbors() override {
+    inline int preconditionCellNeighbors() override {
 
       if(!cellNeighborList_.size()) {
         ThreeSkeleton threeSkeleton;
@@ -820,7 +820,7 @@ namespace ttk {
       return 0;
     }
 
-    inline int preprocessCellTriangles() override {
+    inline int preconditionCellTriangles() override {
 
       if(!cellTriangleList_.size()) {
 
@@ -859,7 +859,7 @@ namespace ttk {
       return 0;
     }
 
-    inline int preprocessEdges() override {
+    inline int preconditionEdges() override {
 
       if(!edgeList_.size()) {
         OneSkeleton oneSkeleton;
@@ -871,22 +871,22 @@ namespace ttk {
       return 0;
     }
 
-    inline int preprocessEdgeLinks() override {
+    inline int preconditionEdgeLinks() override {
 
       if(!edgeLinkList_.size()) {
 
         if(getDimensionality() == 2) {
-          preprocessEdges();
-          preprocessEdgeStars();
+          preconditionEdges();
+          preconditionEdgeStars();
 
           OneSkeleton oneSkeleton;
           oneSkeleton.setWrapper(this);
           return oneSkeleton.buildEdgeLinks(
             edgeList_, edgeStarList_, cellArray_, edgeLinkList_);
         } else if(getDimensionality() == 3) {
-          preprocessEdges();
-          preprocessEdgeStars();
-          preprocessCellEdges();
+          preconditionEdges();
+          preconditionEdgeStars();
+          preconditionCellEdges();
 
           OneSkeleton oneSkeleton;
           oneSkeleton.setWrapper(this);
@@ -905,7 +905,7 @@ namespace ttk {
       return 0;
     }
 
-    inline int preprocessEdgeStars() override {
+    inline int preconditionEdgeStars() override {
 
       if(!edgeStarList_.size()) {
         OneSkeleton oneSkeleton;
@@ -917,7 +917,7 @@ namespace ttk {
       return 0;
     }
 
-    inline int preprocessEdgeTriangles() override {
+    inline int preconditionEdgeTriangles() override {
 
       if(!edgeTriangleList_.size()) {
 
@@ -937,7 +937,7 @@ namespace ttk {
       return 0;
     }
 
-    inline int preprocessTriangles() override {
+    inline int preconditionTriangles() override {
 
       if(!triangleList_.size()) {
 
@@ -952,7 +952,7 @@ namespace ttk {
       return 0;
     }
 
-    inline int preprocessTriangleEdges() override {
+    inline int preconditionTriangleEdges() override {
 
       if(!triangleEdgeList_.size()) {
 
@@ -973,11 +973,11 @@ namespace ttk {
       return 0;
     }
 
-    inline int preprocessTriangleLinks() override {
+    inline int preconditionTriangleLinks() override {
 
       if(!triangleLinkList_.size()) {
 
-        preprocessTriangleStars();
+        preconditionTriangleStars();
 
         TwoSkeleton twoSkeleton;
         twoSkeleton.setWrapper(this);
@@ -988,7 +988,7 @@ namespace ttk {
       return 0;
     }
 
-    inline int preprocessTriangleStars() override {
+    inline int preconditionTriangleStars() override {
 
       if(!triangleStarList_.size()) {
 
@@ -1002,7 +1002,7 @@ namespace ttk {
       return 0;
     }
 
-    inline int preprocessVertexEdges() override {
+    inline int preconditionVertexEdges() override {
 
       if((SimplexId)vertexEdgeList_.size() != vertexNumber_) {
         ZeroSkeleton zeroSkeleton;
@@ -1021,21 +1021,21 @@ namespace ttk {
       return 0;
     }
 
-    inline int preprocessVertexLinks() override {
+    inline int preconditionVertexLinks() override {
 
       if((SimplexId)vertexLinkList_.size() != vertexNumber_) {
 
         if(getDimensionality() == 2) {
-          preprocessVertexStars();
-          preprocessCellEdges();
+          preconditionVertexStars();
+          preconditionCellEdges();
 
           ZeroSkeleton zeroSkeleton;
           zeroSkeleton.setWrapper(this);
           return zeroSkeleton.buildVertexLinks(
             vertexStarList_, cellEdgeList_, edgeList_, vertexLinkList_);
         } else if(getDimensionality() == 3) {
-          preprocessVertexStars();
-          preprocessCellTriangles();
+          preconditionVertexStars();
+          preconditionCellTriangles();
 
           ZeroSkeleton zeroSkeleton;
           zeroSkeleton.setWrapper(this);
@@ -1053,7 +1053,7 @@ namespace ttk {
       return 0;
     }
 
-    inline int preprocessVertexNeighbors() override {
+    inline int preconditionVertexNeighbors() override {
 
       if((SimplexId)vertexNeighborList_.size() != vertexNumber_) {
         ZeroSkeleton zeroSkeleton;
@@ -1065,7 +1065,7 @@ namespace ttk {
       return 0;
     }
 
-    inline int preprocessVertexStars() override {
+    inline int preconditionVertexStars() override {
 
       if((SimplexId)vertexStarList_.size() != vertexNumber_) {
         ZeroSkeleton zeroSkeleton;
@@ -1077,11 +1077,11 @@ namespace ttk {
       return 0;
     }
 
-    inline int preprocessVertexTriangles() override {
+    inline int preconditionVertexTriangles() override {
 
       if((SimplexId)vertexTriangleList_.size() != vertexNumber_) {
 
-        preprocessTriangles();
+        preconditionTriangles();
 
         TwoSkeleton twoSkeleton;
         twoSkeleton.setWrapper(this);

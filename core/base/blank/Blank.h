@@ -112,7 +112,7 @@ namespace ttk {
           // Pre-condition functions.
           // Call all the required pre-condition functions here!
           // for example:
-          triangulation_->preprocessVertexNeighbors();
+          triangulation_->preconditionVertexNeighbors();
           // end of TODO-1
         }
 

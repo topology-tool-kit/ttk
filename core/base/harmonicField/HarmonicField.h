@@ -59,12 +59,12 @@ namespace ttk {
       triangulation_ = triangulation;
       if(triangulation_ != nullptr) {
         vertexNumber_ = triangulation_->getNumberOfVertices();
-        triangulation_->preprocessVertexNeighbors();
+        triangulation_->preconditionVertexNeighbors();
         edgeNumber_ = triangulation_->getNumberOfEdges();
       }
       if(useCotanWeights_) {
         // cotan weights method needs more pre-processing
-        triangulation_->preprocessEdgeTriangles();
+        triangulation_->preconditionEdgeTriangles();
       }
       return 0;
     }

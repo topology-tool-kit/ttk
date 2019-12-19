@@ -33,7 +33,7 @@ vtkStandardNewMacro(ttkPointMerger)
 
   triangulation->setWrapper(this);
   if(BoundaryOnly)
-    triangulation->preprocessBoundaryVertices();
+    triangulation->preconditionBoundaryVertices();
 
   SimplexId vertexNumber = input->GetNumberOfPoints();
   vector<SimplexId> candidateVertices;
