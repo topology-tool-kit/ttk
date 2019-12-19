@@ -19,7 +19,7 @@
 
             <Hints>
                 <RepresentationType view="RenderView" type="Wireframe" />
-                <ShowInMenu category="TTK" />
+                <ShowInMenu category="TTK - Misc" />
             </Hints>
         </SourceProxy>
     </ProxyGroup>
