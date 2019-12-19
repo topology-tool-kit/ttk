@@ -1,7 +1,7 @@
 /// \ingroup vtk
 /// \class ttkHelloWorld
-/// \author Jonas Lukasczyk <jl@jluk.de>
-/// \date 01.09.2019.
+/// \author Your Name Here <Your Email Address Here>
+/// \date The Date Here.
 ///
 /// \brief TTK VTK-filter that wraps the ttk::HelloWorld module.
 ///
