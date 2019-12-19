@@ -8,7 +8,6 @@ HelloWorld::HelloWorld() {
 
   inputData_ = NULL;
   outputData_ = NULL;
-  triangulation_ = NULL;
 }
 
 HelloWorld::~HelloWorld() {

@@ -38,9 +38,11 @@ namespace ttk {
       /// setupTriangulation() from any time performance measurement.
       /// \param argment Dummy integer argument.
       /// \return Returns 0 upon success, negative values otherwise.
-      template <class dataType>
-      int execute(const int &argument) const;
+      template <class triangulationType, class dataType>
+      int execute(const triangulationType *triangulation,
+                  const int &argument) const;
 
+      /// Example input setter.
       /// Pass a pointer to an input array representing a scalarfield.
       /// The expected format for the array is the following:
       /// <vertex0-component0> <vertex0-component1> ... <vertex0-componentN>
@@ -55,6 +57,7 @@ namespace ttk {
         return 0;
       }
 
+      /// Example output setter.
       /// Pass a pointer to an output array representing a scalar field.
       /// The expected format for the array is the following:
       /// <vertex0-component0> <vertex0-component1> ... <vertex0-componentN>
@@ -97,7 +100,7 @@ namespace ttk {
       // implicit triangulations obtained from regular grids).
       //
       // Not all TTK packages need such mesh traversal features. If your
-      // TTK package needs any mesh traversal procedure, we recommend to use
+      // TTK module needs any mesh traversal procedure, we recommend to use
       // ttk::Triangulation as described here.
       //
       // Each call to a traversal procedure of ttk::Triangulation
@@ -105,15 +108,14 @@ namespace ttk {
       // details). Such pre-condition functions are typically called from this
       // function.
       inline int setupTriangulation(Triangulation *triangulation) {
-        triangulation_ = triangulation;
 
-        if(triangulation_) {
+        if(triangulation) {
 
           // TODO-1
           // Pre-condition functions.
           // Call all the required pre-condition functions here!
           // for example:
-          triangulation_->preconditionVertexNeighbors();
+          triangulation->preconditionVertexNeighbors();
           // end of TODO-1
         }
 
@@ -122,20 +124,20 @@ namespace ttk {
 
     protected:
       void *inputData_, *outputData_;
-      Triangulation *triangulation_;
     };
   } // namespace helloWorld
 } // namespace ttk
 
 // template functions
-template <class dataType>
-int ttk::helloWorld::HelloWorld::execute(const int &argument) const {
+template <class triangulationType, class dataType>
+int ttk::helloWorld::HelloWorld::execute(const triangulationType *triangulation,
+                                         const int &argument) const {
 
   Timer t;
 
   // check the consistency of the variables -- to adapt
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(!triangulation_)
+  if(!triangulation)
     return -1;
   if(!inputData_)
     return -2;
@@ -146,7 +148,7 @@ int ttk::helloWorld::HelloWorld::execute(const int &argument) const {
   dataType *outputData = (dataType *)outputData_;
   dataType *inputData = (dataType *)inputData_;
 
-  SimplexId vertexNumber = triangulation_->getNumberOfVertices();
+  SimplexId vertexNumber = triangulation->getNumberOfVertices();
 
   // init the output -- to adapt
   for(SimplexId i = 0; i < vertexNumber; i++) {

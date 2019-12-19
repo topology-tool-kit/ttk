@@ -4,3 +4,6 @@ SOURCES
   ttkHelloWorld.cpp
 HEADERS
   ttkHelloWorld.h
+DEPENDS
+  helloWorld
+  ttkTriangulationAlgorithm
