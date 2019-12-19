@@ -1319,14 +1319,12 @@ void PDClustering<dataType>::computeDiagramsDistanceMatrix() {
   diagramsDistanceMatrix_.resize(numberOfInputs_);
   double delta_lim{0.01};
 
-  auto &diags_min = current_bidder_diagrams_min_;
-  auto &diags_saddle = current_bidder_diagrams_saddle_;
-  auto &diags_max = current_bidder_diagrams_max_;
-  if(useFullDiagrams_) {
-    diags_min = bidder_diagrams_min_;
-    diags_saddle = bidder_diagrams_saddle_;
-    diags_max = bidder_diagrams_max_;
-  }
+  const auto &diags_min
+    = useFullDiagrams_ ? bidder_diagrams_min_ : current_bidder_diagrams_min_;
+  const auto &diags_saddle = useFullDiagrams_ ? bidder_diagrams_saddle_
+                                              : current_bidder_diagrams_saddle_;
+  const auto &diags_max
+    = useFullDiagrams_ ? bidder_diagrams_max_ : current_bidder_diagrams_max_;
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for schedule(dynamic)
