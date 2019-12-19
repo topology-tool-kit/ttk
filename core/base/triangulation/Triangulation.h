@@ -1107,6 +1107,12 @@ namespace ttk {
       return 0;
     }
 
+    /// Get the internal abstract triangulation object.
+    /// \return Returns a pointer to the internal abstract triangulation object.
+    inline const AbstractTriangulation *getAbstractTriangulation() const {
+      return abstractTriangulation_;
+    }
+
     /// Get the number of cells in the triangulation.
     ///
     /// Here the notion of cell refers to the simplicices of maximal
