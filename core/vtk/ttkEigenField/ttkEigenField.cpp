@@ -33,14 +33,14 @@ int ttkEigenField::FillInputPortInformation(int port, vtkInformation *info) {
   if(port == 0) {
     info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataSet");
   }
-  return 0;
+  return 1;
 }
 
 int ttkEigenField::FillOutputPortInformation(int port, vtkInformation *info) {
   if(port == 0) {
     info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
   }
-  return 0;
+  return 1;
 }
 
 int ttkEigenField::RequestData(vtkInformation *request,
