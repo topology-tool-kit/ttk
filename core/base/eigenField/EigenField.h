@@ -17,8 +17,6 @@
 #include <Triangulation.h>
 #include <Wrapper.h>
 
-#define MODULE_S "[EigenField] "
-
 #if defined(TTK_ENABLE_EIGEN) && defined(TTK_ENABLE_SPECTRA)
 #include <Eigen/Eigenvalues>
 #include <Eigen/Sparse>
@@ -32,6 +30,9 @@ namespace ttk {
 
   class EigenField : virtual public Debug {
   public:
+    EigenField() {
+      this->SetDebugMsgPrefix("EigenField");
+    }
 
     inline void preconditionTriangulation(Triangulation *triangulation) const {
       if(triangulation != nullptr) {
@@ -52,6 +53,8 @@ namespace ttk {
                 bool computeStatistics = false,
                 T *const outputStatistics = nullptr) const {
 
+      this->PrintMsg(ttk::DEBUG::SEPARATOR::L1);
+
       Timer t;
 
 #if defined(TTK_ENABLE_EIGEN) && defined(TTK_ENABLE_SPECTRA)
@@ -62,12 +65,6 @@ namespace ttk {
 
       using SpMat = Eigen::SparseMatrix<T>;
       using DMat = Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>;
-
-      {
-        std::stringstream msg;
-        msg << MODULE_S "Beginnning computation..." << std::endl;
-        dMsg(std::cout, msg.str(), timeMsg);
-      }
 
       // number of vertices
       const auto vertexNumber = triangulation->getNumberOfVertices();
@@ -100,23 +97,21 @@ namespace ttk {
       // number of eigenpairs correctly computed
       int nconv = solver.compute();
 
-      {
-        std::stringstream msg;
-        switch(solver.info()) {
-          case Spectra::COMPUTATION_INFO::NUMERICAL_ISSUE:
-            msg << MODULE_S "Numerical Issue!" << std::endl;
-            break;
-          case Spectra::COMPUTATION_INFO::NOT_CONVERGING:
-            msg << MODULE_S "No Convergence! (" << nconv << " out of "
-                << eigenNumber << " values computed)" << std::endl;
-            break;
-          case Spectra::COMPUTATION_INFO::NOT_COMPUTED:
-            msg << MODULE_S "Invalid Input!" << std::endl;
-            break;
-          default:
-            break;
-        }
-        dMsg(std::cout, msg.str(), infoMsg);
+      switch(solver.info()) {
+        case Spectra::COMPUTATION_INFO::NUMERICAL_ISSUE:
+          this->PrintMsg("Numerical Issue!", ttk::DEBUG::PRIORITY::ERROR);
+          break;
+        case Spectra::COMPUTATION_INFO::NOT_CONVERGING:
+          this->PrintMsg("No Convergence! (" + std::to_string(nconv)
+                           + " out of "
+                           + std::to_string(eigenNumber) " values computed)",
+                         ttk::DEBUG::PRIORITY::ERROR);
+          break;
+        case Spectra::COMPUTATION_INFO::NOT_COMPUTED:
+          this->PrintMsg("Invalid Input!", ttk::DEBUG::PRIORITY::ERROR);
+          break;
+        default:
+          break;
       }
 
       DMat eigenvectors = solver.eigenvectors();
@@ -166,31 +161,22 @@ namespace ttk {
         }
       }
 
-      {
-        std::stringstream msg;
-        msg << MODULE_S "Ending computation after " << t.getElapsedTime()
-            << "s (" << threadNumber_ << " thread(s))" << std::endl;
-        dMsg(std::cout, msg.str(), infoMsg);
-      }
+      this->PrintMsg(ttk::DEBUG::SEPARATOR::L2); // horizontal '-' separator
+      this->PrintMsg(
+        "Complete", 1, globalTimer.getElapsedTime() // global progress, time
+      );
 
 #else
 
-      {
-        std::stringstream msg;
-        msg << MODULE_S << std::endl;
-        msg << MODULE_S << std::endl;
-        msg << MODULE_S "Spectra support disabled, computation skipped!"
-            << std::endl;
-        msg << MODULE_S
-          "Please re-compile TTK with Eigen AND Spectra support to "
-          "enable this feature."
-            << std::endl;
-        msg << MODULE_S << std::endl;
-        msg << MODULE_S << std::endl;
-        dMsg(std::cerr, msg.str(), infoMsg);
-      }
+      this->PrintMsg("Spectra support disabled, computation skipped!",
+                     ttk::DEBUG::PRIORITY::WARNING);
+      this->PrintMsg("Please re-compile TTK with Eigen AND Spectra support to "
+                     "enable this feature.",
+                     ttk::DEBUG::PRIORITY::WARNING);
 
 #endif // TTK_ENABLE_EIGEN && TTK_ENABLE_SPECTRA
+
+      this->PrintMsg(ttk::DEBUG::SEPARATOR::L1);
 
       return 0;
     }
