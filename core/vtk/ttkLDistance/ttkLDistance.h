@@ -101,7 +101,7 @@ protected:
     result = -1.;
   }
 
-  ~ttkLDistance() override {};
+  ~ttkLDistance() override{};
 
   TTK_SETUP();
 

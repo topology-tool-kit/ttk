@@ -123,7 +123,7 @@ void ttkTableDataSelector::FillAvailableCols(vtkTable *input) {
   int nbColumns = input->GetNumberOfColumns();
   AvailableCols.clear();
   AvailableCols.resize(nbColumns);
-  for (int i = 0; i < nbColumns; ++i) {
+  for(int i = 0; i < nbColumns; ++i) {
     AvailableCols[i] = input->GetColumnName(i);
   }
 }

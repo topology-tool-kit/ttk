@@ -5,7 +5,7 @@ using namespace ttk;
 
 vtkStandardNewMacro(ttkReebSpace)
 
-ttkReebSpace::ttkReebSpace() {
+  ttkReebSpace::ttkReebSpace() {
 
   // init
   SetNumberOfOutputPorts(4);

@@ -108,7 +108,7 @@ protected:
     SetNumberOfInputPorts(1);
     SetNumberOfOutputPorts(1);
   }
-  ~ttkTrackingFromOverlap() override {};
+  ~ttkTrackingFromOverlap() override{};
 
   bool UseAllCores;
   int ThreadNumber;

@@ -123,7 +123,7 @@ protected:
     UseAllCores = true;
   }
 
-  ~ttkTopologicalCompression() override {};
+  ~ttkTopologicalCompression() override{};
 
   TTK_SETUP();
 

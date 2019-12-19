@@ -80,8 +80,8 @@ int ttkTriangulationAlgorithm::RequestDataObject(
 
 // to adapt if your wrapper does not inherit from vtkDataSetAlgorithm
 int ttkTriangulationAlgorithm::RequestData(vtkInformation *request,
-                                        vtkInformationVector **inputVector,
-                                        vtkInformationVector *outputVector) {
+                                           vtkInformationVector **inputVector,
+                                           vtkInformationVector *outputVector) {
 
   Memory m;
 

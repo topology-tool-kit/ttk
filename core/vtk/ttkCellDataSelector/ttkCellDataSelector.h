@@ -90,8 +90,8 @@ public:
     Modified();
   }
 
-  vtkDataArraySelection* GetRangeIds() {
-    vtkDataArraySelection* arr = vtkDataArraySelection::New();
+  vtkDataArraySelection *GetRangeIds() {
+    vtkDataArraySelection *arr = vtkDataArraySelection::New();
     arr->SetArraySetting("0", true);
     arr->SetArraySetting(
       std::to_string(AvailableFields.size() - 1).c_str(), true);
@@ -128,7 +128,7 @@ protected:
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;
 
-  void FillAvailableFields(vtkDataSet* input);
+  void FillAvailableFields(vtkDataSet *input);
 
 private:
   bool UseAllCores;

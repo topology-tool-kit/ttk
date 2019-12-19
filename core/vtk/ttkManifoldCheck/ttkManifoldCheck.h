@@ -80,7 +80,7 @@ protected:
     UseAllCores = true;
   }
 
-  ~ttkManifoldCheck() override {};
+  ~ttkManifoldCheck() override{};
 
   TTK_SETUP();
 

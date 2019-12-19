@@ -36,7 +36,7 @@ public:
 
 protected:
   ttkTriangulationAlgorithm();
-  ~ttkTriangulationAlgorithm() override {};
+  ~ttkTriangulationAlgorithm() override{};
 
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,

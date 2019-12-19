@@ -98,7 +98,7 @@ protected:
     SetNumberOfInputPorts(1);
     SetNumberOfOutputPorts(1);
   }
-  ~ttkCinemaLayout() override {};
+  ~ttkCinemaLayout() override{};
 
   int RowAxis;
   double RowGap;

@@ -37,7 +37,7 @@ public:
     vtkWrapper_ = NULL;
   };
 
-  ~ttkProgramBase() override {};
+  ~ttkProgramBase() override{};
 
   /// Set the arguments of your ttk module and execute it here.
   int execute();

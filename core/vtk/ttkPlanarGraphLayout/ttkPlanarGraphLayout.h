@@ -141,7 +141,7 @@ protected:
     SetNumberOfInputPorts(1);
     SetNumberOfOutputPorts(1);
   }
-  ~ttkPlanarGraphLayout() override {};
+  ~ttkPlanarGraphLayout() override{};
 
   bool UseAllCores;
   int ThreadNumber;

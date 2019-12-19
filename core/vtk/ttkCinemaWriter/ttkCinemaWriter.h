@@ -116,7 +116,7 @@ protected:
     SetNumberOfInputPorts(1);
     SetNumberOfOutputPorts(1);
   }
-  ~ttkCinemaWriter() override {};
+  ~ttkCinemaWriter() override{};
 
   bool UseAllCores;
   int ThreadNumber;

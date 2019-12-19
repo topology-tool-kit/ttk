@@ -1,8 +1,8 @@
 #ifndef _TTK_UNSTRUCTURED_GRID_H
 #define _TTK_UNSTRUCTURED_GRID_H
 
-#include <ttkTriangulation.h>
 #include <macro.h>
+#include <ttkTriangulation.h>
 
 #include <vtkUnstructuredGrid.h>
 

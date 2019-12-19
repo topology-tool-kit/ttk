@@ -102,7 +102,7 @@ protected:
     SetNumberOfInputPorts(1);
     SetNumberOfOutputPorts(1);
   }
-  ~ttkDepthImageBasedGeometryApproximation() override {};
+  ~ttkDepthImageBasedGeometryApproximation() override{};
 
   bool UseAllCores;
   int ThreadNumber;
