@@ -12,10 +12,10 @@
 #pragma once
 
 // base code includes
+#include <Debug.h>
 #include <Geometry.h>
 #include <Laplacian.h>
 #include <Triangulation.h>
-#include <Wrapper.h>
 
 #if defined(TTK_ENABLE_EIGEN) && defined(TTK_ENABLE_SPECTRA)
 #include <Eigen/Eigenvalues>
@@ -53,7 +53,7 @@ namespace ttk {
                 bool computeStatistics = false,
                 T *const outputStatistics = nullptr) const {
 
-      this->PrintMsg(ttk::DEBUG::SEPARATOR::L1);
+      this->PrintMsg(ttk::debug::Separator::L1);
 
       Timer t;
 
@@ -99,16 +99,16 @@ namespace ttk {
 
       switch(solver.info()) {
         case Spectra::COMPUTATION_INFO::NUMERICAL_ISSUE:
-          this->PrintMsg("Numerical Issue!", ttk::DEBUG::PRIORITY::ERROR);
+          this->PrintMsg("Numerical Issue!", ttk::debug::Priority::ERROR);
           break;
         case Spectra::COMPUTATION_INFO::NOT_CONVERGING:
           this->PrintMsg("No Convergence! (" + std::to_string(nconv)
                            + " out of "
                            + std::to_string(eigenNumber) " values computed)",
-                         ttk::DEBUG::PRIORITY::ERROR);
+                         ttk::debug::Priority::ERROR);
           break;
         case Spectra::COMPUTATION_INFO::NOT_COMPUTED:
-          this->PrintMsg("Invalid Input!", ttk::DEBUG::PRIORITY::ERROR);
+          this->PrintMsg("Invalid Input!", ttk::debug::Priority::ERROR);
           break;
         default:
           break;
@@ -161,7 +161,7 @@ namespace ttk {
         }
       }
 
-      this->PrintMsg(ttk::DEBUG::SEPARATOR::L2); // horizontal '-' separator
+      this->PrintMsg(ttk::debug::Separator::L2); // horizontal '-' separator
       this->PrintMsg(
         "Complete", 1, globalTimer.getElapsedTime() // global progress, time
       );
@@ -169,14 +169,14 @@ namespace ttk {
 #else
 
       this->PrintMsg("Spectra support disabled, computation skipped!",
-                     ttk::DEBUG::PRIORITY::WARNING);
+                     ttk::debug::Priority::WARNING);
       this->PrintMsg("Please re-compile TTK with Eigen AND Spectra support to "
                      "enable this feature.",
-                     ttk::DEBUG::PRIORITY::WARNING);
+                     ttk::debug::Priority::WARNING);
 
 #endif // TTK_ENABLE_EIGEN && TTK_ENABLE_SPECTRA
 
-      this->PrintMsg(ttk::DEBUG::SEPARATOR::L1);
+      this->PrintMsg(ttk::debug::Separator::L1);
 
       return 0;
     }
