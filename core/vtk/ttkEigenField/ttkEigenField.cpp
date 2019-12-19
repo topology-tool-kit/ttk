@@ -27,20 +27,23 @@ vtkStandardNewMacro(ttkEigenField);
 
 ttkEigenField::ttkEigenField() {
   SetNumberOfInputPorts(1);
+  SetNumberOfOutputPorts(1);
 }
 
 int ttkEigenField::FillInputPortInformation(int port, vtkInformation *info) {
   if(port == 0) {
     info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataSet");
+    return 1;
   }
-  return 1;
+  return 0;
 }
 
 int ttkEigenField::FillOutputPortInformation(int port, vtkInformation *info) {
   if(port == 0) {
     info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
+    return 1;
   }
-  return 1;
+  return 0;
 }
 
 int ttkEigenField::RequestData(vtkInformation *request,
