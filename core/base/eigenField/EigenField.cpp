@@ -1,8 +1,6 @@
 #include <EigenField.h>
 #include <Laplacian.h>
 
-#define MODULE_S "[EigenField] "
-
 #if defined(TTK_ENABLE_EIGEN) && defined(TTK_ENABLE_SPECTRA)
 #include <Eigen/Eigenvalues>
 #include <Eigen/Sparse>
@@ -139,11 +137,12 @@ int ttk::EigenField::execute(Triangulation *triangulation,
 
 #else
 
-  this->PrintMsg("Spectra support disabled, computation skipped!",
-                 ttk::debug::Priority::WARNING);
-  this->PrintMsg("Please re-compile TTK with Eigen AND Spectra support to "
-                 "enable this feature.",
-                 ttk::debug::Priority::WARNING);
+  this->PrintMsg(
+    std::vector<std::string>{
+      "Spectra support disabled, computation skipped!",
+      "Please re-compile TTK with Eigen AND Spectra support to "
+      "enable this feature."},
+    ttk::debug::Priority::WARNING);
 
 #endif // TTK_ENABLE_EIGEN && TTK_ENABLE_SPECTRA
 
