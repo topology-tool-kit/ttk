@@ -24,6 +24,7 @@
 #define _DEBUG_H
 
 #include <BaseClass.h>
+#include <algorithm>
 #include <cerrno>
 #include <fstream>
 #include <iostream>
