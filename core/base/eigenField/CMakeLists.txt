@@ -1,5 +1,6 @@
 ttk_add_base_library(eigenField
   SOURCES
+    EigenField.cpp
   HEADERS
     EigenField.h
   LINK
