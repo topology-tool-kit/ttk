@@ -101,6 +101,19 @@ vtkStandardNewMacro(ttkBlank)
   blank_.setInputDataPointer(inputScalarField->GetVoidPointer(0));
   blank_.setOutputDataPointer(outputScalarField_->GetVoidPointer(0));
 
+  ttk::Triangulation::type triangulationType = triangulation->getType();
+  int dataType = inputScalarField->GetDataType();
+
+  //   ttkTemplateMacro(triangulationType, dataType,
+  //    blank_execute<TTK_TT>(triangulation, SomeIntegerArgument));
+
+  //   ttkTemplateMacro1(triangulationType, dataType,
+  //    blank_execute<TTK_TT, VTK_TT>(triangulation, SomeIntegerArgument));
+
+  //   ttkTemplateMacro2(triangulationType, dataType,
+  //    blank_execute<TTK_TT, VTK_TT1, VTK_TT2>(
+  //    triangulation, SomeIntegerArgument));
+
   switch(triangulation->getType()) {
 
     case ttk::Triangulation::explicitRepresentation:
