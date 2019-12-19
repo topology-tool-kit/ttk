@@ -38,7 +38,7 @@ namespace ttk {
   extern int globalDebugLevel_;
 
   namespace debug {
-    enum class PRIORITY : int {
+    enum class Priority : int {
       ERROR, // 0
       WARNING, // 1
       PERFORMANCE, // 2
@@ -47,7 +47,7 @@ namespace ttk {
       VERBOSE // 5
     };
 
-    enum class SEPARATOR : char {
+    enum class Separator : char {
       L0 = '%',
       L1 = '=',
       L2 = '-',
@@ -55,7 +55,7 @@ namespace ttk {
       BACKSLASH = '\\'
     };
 
-    enum class LINEMODE : int {
+    enum class LineMode : int {
       NEW,
       APPEND, // append
       REPLACE // replace line and append
@@ -127,8 +127,8 @@ namespace ttk {
     // New Debug Methods
     // =========================================================================
     inline int PrintMsg(const std::string &msg,
-                        const debug::PRIORITY &priority = debug::PRIORITY::INFO,
-                        const debug::LINEMODE &lineMode = debug::LINEMODE::NEW,
+                        const debug::Priority &priority = debug::Priority::INFO,
+                        const debug::LineMode &lineMode = debug::LineMode::NEW,
                         std::ostream &stream = std::cout) const {
       int priorityAsInt = static_cast<int>(priority);
       if((this->debugLevel_ < priorityAsInt)
@@ -139,8 +139,8 @@ namespace ttk {
     }
 
     inline int PrintMsg(const std::vector<std::string> &msgs,
-                        const debug::PRIORITY &priority = debug::PRIORITY::INFO,
-                        const debug::LINEMODE &lineMode = debug::LINEMODE::NEW,
+                        const debug::Priority &priority = debug::Priority::INFO,
+                        const debug::LineMode &lineMode = debug::LineMode::NEW,
                         std::ostream &stream = std::cout) const {
       int priorityAsInt = static_cast<int>(priority);
       if((this->debugLevel_ < priorityAsInt)
@@ -154,19 +154,19 @@ namespace ttk {
     }
 
     inline int PrintErr(const std::string &msg,
-                        const debug::LINEMODE &lineMode = debug::LINEMODE::NEW,
+                        const debug::LineMode &lineMode = debug::LineMode::NEW,
                         std::ostream &stream = std::cerr) const {
       return this->PrintMsgInternal(
-        msg, debug::PRIORITY::ERROR, lineMode, stream);
+        msg, debug::Priority::ERROR, lineMode, stream);
     }
 
     inline int PrintMsg(const std::string &msg,
                         const double &progress,
                         const double &time,
                         const double &memory,
-                        const debug::LINEMODE &lineMode = debug::LINEMODE::NEW,
-                        const debug::PRIORITY &priority
-                        = debug::PRIORITY::PERFORMANCE,
+                        const debug::LineMode &lineMode = debug::LineMode::NEW,
+                        const debug::Priority &priority
+                        = debug::Priority::PERFORMANCE,
                         std::ostream &stream = std::cout) const {
       int priorityAsInt = static_cast<int>(priority);
       if((this->debugLevel_ < priorityAsInt)
@@ -200,9 +200,9 @@ namespace ttk {
     inline int PrintMsg(const std::string &msg,
                         const double &progress,
                         const double &time,
-                        const debug::LINEMODE &lineMode = debug::LINEMODE::NEW,
-                        const debug::PRIORITY &priority
-                        = debug::PRIORITY::PERFORMANCE,
+                        const debug::LineMode &lineMode = debug::LineMode::NEW,
+                        const debug::Priority &priority
+                        = debug::Priority::PERFORMANCE,
                         std::ostream &stream = std::cout) const {
       return this->PrintMsg(
         msg, progress, time, -1, lineMode, priority, stream);
@@ -210,25 +210,25 @@ namespace ttk {
 
     inline int PrintMsg(const std::string &msg,
                         const double &progress,
-                        const debug::LINEMODE &lineMode = debug::LINEMODE::NEW,
-                        const debug::PRIORITY &priority
-                        = debug::PRIORITY::PERFORMANCE,
+                        const debug::LineMode &lineMode = debug::LineMode::NEW,
+                        const debug::Priority &priority
+                        = debug::Priority::PERFORMANCE,
                         std::ostream &stream = std::cout) const {
       return this->PrintMsg(msg, progress, -1, -1, lineMode, priority, stream);
     }
 
     inline int PrintMsg(const std::string &msg,
                         const double &progress,
-                        const debug::PRIORITY &priority,
-                        const debug::LINEMODE &lineMode = debug::LINEMODE::NEW,
+                        const debug::Priority &priority,
+                        const debug::LineMode &lineMode = debug::LineMode::NEW,
                         std::ostream &stream = std::cout) const {
       return this->PrintMsg(msg, progress, -1, -1, lineMode, priority, stream);
     }
 
     inline int PrintMsg(const std::vector<std::vector<std::string>> &rows,
-                        const debug::PRIORITY &priority = debug::PRIORITY::INFO,
+                        const debug::Priority &priority = debug::Priority::INFO,
                         const bool hasHeader = true,
-                        const debug::LINEMODE &lineMode = debug::LINEMODE::NEW,
+                        const debug::LineMode &lineMode = debug::LineMode::NEW,
                         std::ostream &stream = std::cout) const {
       int priorityAsInt = static_cast<int>(priority);
       if((this->debugLevel_ < priorityAsInt)
@@ -269,9 +269,9 @@ namespace ttk {
       return this->PrintMsg(formatedRows, priority, lineMode, stream);
     }
 
-    inline int PrintMsg(const debug::SEPARATOR &separator,
-                        const debug::LINEMODE &lineMode = debug::LINEMODE::NEW,
-                        const debug::PRIORITY &priority = debug::PRIORITY::INFO,
+    inline int PrintMsg(const debug::Separator &separator,
+                        const debug::LineMode &lineMode = debug::LineMode::NEW,
+                        const debug::Priority &priority = debug::Priority::INFO,
                         std::ostream &stream = std::cout) const {
       int priorityAsInt = static_cast<int>(priority);
       if((this->debugLevel_ < priorityAsInt)
@@ -282,17 +282,17 @@ namespace ttk {
         "", "", std::string(1, (char &)separator), priority, lineMode, stream);
     }
 
-    inline int PrintMsg(const debug::SEPARATOR &separator,
-                        const debug::PRIORITY &priority,
-                        const debug::LINEMODE &lineMode = debug::LINEMODE::NEW,
+    inline int PrintMsg(const debug::Separator &separator,
+                        const debug::Priority &priority,
+                        const debug::LineMode &lineMode = debug::LineMode::NEW,
                         std::ostream &stream = std::cout) const {
       return this->PrintMsg(separator, lineMode, priority, stream);
     }
 
     inline int PrintMsg(const std::string &msg,
-                        const debug::SEPARATOR &separator,
-                        const debug::LINEMODE &lineMode = debug::LINEMODE::NEW,
-                        const debug::PRIORITY &priority = debug::PRIORITY::INFO,
+                        const debug::Separator &separator,
+                        const debug::LineMode &lineMode = debug::LineMode::NEW,
+                        const debug::Priority &priority = debug::Priority::INFO,
                         std::ostream &stream = std::cout) const {
       int priorityAsInt = static_cast<int>(priority);
       if((this->debugLevel_ < priorityAsInt)
@@ -316,8 +316,8 @@ namespace ttk {
       PrintMsgInternal(const std::string &msg,
                        const std::string &right,
                        const std::string &filler,
-                       const debug::PRIORITY &priority = debug::PRIORITY::INFO,
-                       const debug::LINEMODE &lineMode = debug::LINEMODE::NEW,
+                       const debug::Priority &priority = debug::Priority::INFO,
+                       const debug::LineMode &lineMode = debug::LineMode::NEW,
                        std::ostream &stream = std::cout) const {
       std::string combinedMsg = msg;
 
@@ -336,19 +336,19 @@ namespace ttk {
     }
 
     inline int PrintMsgInternal(const std::string &msg,
-                                const debug::PRIORITY &priority,
-                                const debug::LINEMODE &lineMode,
+                                const debug::Priority &priority,
+                                const debug::LineMode &lineMode,
                                 std::ostream &stream = std::cout) const {
       int priorityAsInt = static_cast<int>(priority);
 
       // go either into new line or replace current line
-      if(lineMode == debug::LINEMODE::NEW)
+      if(lineMode == debug::LineMode::NEW)
         stream << "\n";
-      if(lineMode == debug::LINEMODE::REPLACE)
+      if(lineMode == debug::LineMode::REPLACE)
         stream << "\r";
 
       // print prefix
-      if(lineMode != debug::LINEMODE::APPEND)
+      if(lineMode != debug::LineMode::APPEND)
         stream << "\33[32;1m" << this->DebugMsgPrefix << "\33[0m";
 
       // print error or warning prefix

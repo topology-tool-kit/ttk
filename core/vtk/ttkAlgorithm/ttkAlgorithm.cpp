@@ -36,7 +36,7 @@ ttk::Triangulation *ttkAlgorithm::GetTriangulation(vtkDataSet *dataSet) {
 
   this->PrintMsg("Requesting triangulation for '"
                    + std::string(dataSet->GetClassName()) + "'",
-                 ttk::debug::PRIORITY::DETAIL);
+                 ttk::debug::Priority::DETAIL);
 
   switch(dataSet->GetDataObjectType()) {
     // =====================================================================
@@ -49,16 +49,16 @@ ttk::Triangulation *ttkAlgorithm::GetTriangulation(vtkDataSet *dataSet) {
       if(it != ttkAlgorithm::DataSetToTriangulationMap.end()) {
         if(it->second.second == dataSetAsUG->GetCells()->GetMTime()) {
           this->PrintMsg("Returning already initilized triangulation",
-                         ttk::debug::PRIORITY::DETAIL);
+                         ttk::debug::Priority::DETAIL);
           return it->second.first;
         } else {
           this->PrintMsg("Chached triangulation no longer valid",
-                         ttk::debug::PRIORITY::DETAIL);
+                         ttk::debug::Priority::DETAIL);
         }
       }
 
       this->PrintMsg(
-        "Initializing triangulation", 0, ttk::debug::PRIORITY::DETAIL);
+        "Initializing triangulation", 0, ttk::debug::Priority::DETAIL);
       auto newTriangulation = new ttk::Triangulation();
       auto cells = dataSetAsUG->GetCells();
 
@@ -88,8 +88,8 @@ ttk::Triangulation *ttkAlgorithm::GetTriangulation(vtkDataSet *dataSet) {
         {(void *)cells, {newTriangulation, cells->GetMTime()}});
 
       this->PrintMsg("Initializing Triangulation", 1,
-                     ttk::debug::LINEMODE::REPLACE,
-                     ttk::debug::PRIORITY::DETAIL);
+                     ttk::debug::LineMode::REPLACE,
+                     ttk::debug::Priority::DETAIL);
       return newTriangulation;
     }
 
@@ -120,16 +120,16 @@ ttk::Triangulation *ttkAlgorithm::GetTriangulation(vtkDataSet *dataSet) {
 
       if(triangulationStatus == 2) {
         this->PrintMsg("Returning already initilized triangulation",
-                       ttk::debug::PRIORITY::DETAIL);
+                       ttk::debug::Priority::DETAIL);
         return it->second.first;
       }
       if(triangulationStatus == 1) {
         this->PrintMsg("Chached triangulation no longer valid",
-                       ttk::debug::PRIORITY::DETAIL);
+                       ttk::debug::Priority::DETAIL);
       }
 
       this->PrintMsg(
-        "Initializing triangulation", 0, ttk::debug::PRIORITY::DETAIL);
+        "Initializing triangulation", 0, ttk::debug::Priority::DETAIL);
       auto newTriangulation = new ttk::Triangulation();
 
       // init points
@@ -170,8 +170,8 @@ ttk::Triangulation *ttkAlgorithm::GetTriangulation(vtkDataSet *dataSet) {
         }
 
         this->PrintMsg("Initializing Triangulation", 1,
-                       ttk::debug::LINEMODE::REPLACE,
-                       ttk::debug::PRIORITY::DETAIL);
+                       ttk::debug::LineMode::REPLACE,
+                       ttk::debug::Priority::DETAIL);
         return newTriangulation;
       }
 
@@ -310,7 +310,7 @@ int ttkAlgorithm::RequestDataObject(vtkInformation *request,
       "Created '"
         + std::string(outputPortInfo->Get(vtkDataObject::DATA_TYPE_NAME()))
         + "' at output port " + std::to_string(i),
-      ttk::debug::PRIORITY::VERBOSE);
+      ttk::debug::Priority::VERBOSE);
   }
 
   return 1;
@@ -323,21 +323,21 @@ int ttkAlgorithm::ProcessRequest(vtkInformation *request,
   // 1. Pass
   if(request->Has(vtkCompositeDataPipeline::REQUEST_DATA_OBJECT())) {
     this->PrintMsg(
-      "Processing REQUEST_DATA_OBJECT", ttk::debug::PRIORITY::VERBOSE);
+      "Processing REQUEST_DATA_OBJECT", ttk::debug::Priority::VERBOSE);
     return this->RequestDataObject(request, inputVector, outputVector);
   }
 
   // 2. Pass
   if(request->Has(vtkCompositeDataPipeline::REQUEST_INFORMATION())) {
     this->PrintMsg(
-      "Processing REQUEST_INFORMATION", ttk::debug::PRIORITY::VERBOSE);
+      "Processing REQUEST_INFORMATION", ttk::debug::Priority::VERBOSE);
     return this->RequestInformation(request, inputVector, outputVector);
   }
 
   // 3. Pass
   if(request->Has(vtkCompositeDataPipeline::REQUEST_UPDATE_TIME())) {
     this->PrintMsg(
-      "Processing REQUEST_UPDATE_TIME", ttk::debug::PRIORITY::VERBOSE);
+      "Processing REQUEST_UPDATE_TIME", ttk::debug::Priority::VERBOSE);
     return this->RequestUpdateTime(request, inputVector, outputVector);
   }
 
@@ -345,7 +345,7 @@ int ttkAlgorithm::ProcessRequest(vtkInformation *request,
   if(request->Has(
        vtkCompositeDataPipeline::REQUEST_TIME_DEPENDENT_INFORMATION())) {
     this->PrintMsg("Processing REQUEST_TIME_DEPENDENT_INFORMATION",
-                   ttk::debug::PRIORITY::VERBOSE);
+                   ttk::debug::Priority::VERBOSE);
     return this->RequestUpdateTimeDependentInformation(
       request, inputVector, outputVector);
   }
@@ -353,21 +353,21 @@ int ttkAlgorithm::ProcessRequest(vtkInformation *request,
   // 5. Pass
   if(request->Has(vtkCompositeDataPipeline::REQUEST_UPDATE_EXTENT())) {
     this->PrintMsg(
-      "Processing REQUEST_UPDATE_EXTENT", ttk::debug::PRIORITY::VERBOSE);
+      "Processing REQUEST_UPDATE_EXTENT", ttk::debug::Priority::VERBOSE);
     return this->RequestUpdateExtent(request, inputVector, outputVector);
   }
 
   // 6. Pass
   if(request->Has(vtkCompositeDataPipeline::REQUEST_DATA_NOT_GENERATED())) {
     this->PrintMsg(
-      "Processing REQUEST_DATA_NOT_GENERATED", ttk::debug::PRIORITY::VERBOSE);
+      "Processing REQUEST_DATA_NOT_GENERATED", ttk::debug::Priority::VERBOSE);
     return this->RequestDataNotGenerated(request, inputVector, outputVector);
   }
 
   // 7. Pass
   if(request->Has(vtkCompositeDataPipeline::REQUEST_DATA())) {
-    this->PrintMsg("Processing REQUEST_DATA", ttk::debug::PRIORITY::VERBOSE);
-    this->PrintMsg(ttk::debug::SEPARATOR::L0);
+    this->PrintMsg("Processing REQUEST_DATA", ttk::debug::Priority::VERBOSE);
+    this->PrintMsg(ttk::debug::Separator::L0);
     return this->RequestData(request, inputVector, outputVector);
   }
 
