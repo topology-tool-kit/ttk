@@ -6,4 +6,3 @@ ttk_add_base_library(helloWorld
   LINK
     triangulation
     )
-

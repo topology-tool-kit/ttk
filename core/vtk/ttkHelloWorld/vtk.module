@@ -1,8 +1,4 @@
 NAME
- ttkHelloWorld
+  ttkHelloWorld
 DEPENDS
-  VTK::FiltersCore
-  ttkTriangulationAlgorithm
-PRIVATE_DEPENDS
-  VTK::CommonCore
-
+  ttkAlgorithm
