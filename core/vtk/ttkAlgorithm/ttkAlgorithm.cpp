@@ -58,7 +58,7 @@ ttk::Triangulation *ttkAlgorithm::GetTriangulation(vtkDataSet *dataSet) {
       }
 
       this->PrintMsg(
-        "Initializing triangulation", 0, ttk::debug::Priority::DETAIL);
+        "Initializing Explicit Triangulation", 0, ttk::debug::Priority::DETAIL);
       auto newTriangulation = new ttk::Triangulation();
       auto cells = dataSetAsUG->GetCells();
 
@@ -87,7 +87,7 @@ ttk::Triangulation *ttkAlgorithm::GetTriangulation(vtkDataSet *dataSet) {
       ttkAlgorithm::DataSetToTriangulationMap.insert(
         {(void *)cells, {newTriangulation, cells->GetMTime()}});
 
-      this->PrintMsg("Initializing Triangulation", 1,
+      this->PrintMsg("Initializing Explicit Triangulation", 1,
                      ttk::debug::LineMode::REPLACE,
                      ttk::debug::Priority::DETAIL);
       return newTriangulation;
@@ -129,7 +129,7 @@ ttk::Triangulation *ttkAlgorithm::GetTriangulation(vtkDataSet *dataSet) {
       }
 
       this->PrintMsg(
-        "Initializing triangulation", 0, ttk::debug::Priority::DETAIL);
+        "Initializing Explicit Triangulation", 0, ttk::debug::Priority::DETAIL);
       auto newTriangulation = new ttk::Triangulation();
 
       // init points
@@ -169,57 +169,73 @@ ttk::Triangulation *ttkAlgorithm::GetTriangulation(vtkDataSet *dataSet) {
             {(void *)lineCells, {newTriangulation, lineCells->GetMTime()}});
         }
 
-        this->PrintMsg("Initializing Triangulation", 1,
-                       ttk::debug::LineMode::REPLACE,
-                       ttk::debug::Priority::DETAIL);
-        return newTriangulation;
       }
 
-      break;
+      this->PrintMsg("Initializing Explicit Triangulation", 1,
+                     ttk::debug::LineMode::REPLACE,
+                     ttk::debug::Priority::DETAIL);
+      return newTriangulation;
     }
 
     // =====================================================================
     case VTK_IMAGE_DATA: {
-      // auto dataSetAsID = (vtkImageData*) dataSet;
+      auto dataSetAsID = (vtkImageData*) dataSet;
 
-      // int extents[6];
-      // dataSetAsID->GetExtent(extents);
+      // check if triangulation already exists
+      auto it = ttkAlgorithm::DataSetToTriangulationMap.find(
+        (void *)dataSetAsID);
+      if(it != ttkAlgorithm::DataSetToTriangulationMap.end()) {
+        if(it->second.second == dataSetAsID->GetMTime()) {
+          this->PrintMsg("Returning already initilized triangulation",
+                         ttk::debug::Priority::DETAIL);
+          return it->second.first;
+        } else {
+          this->PrintMsg("Chached triangulation no longer valid",
+                         ttk::debug::Priority::DETAIL);
+        }
+      }
 
-      // double origin[3];
-      // dataSetAsID->GetOrigin(origin);
+      this->PrintMsg(
+        "Initializing Implicit Triangulation", 0, ttk::debug::Priority::DETAIL);
+      auto newTriangulation = new ttk::Triangulation();
 
-      // double spacing[3];
-      // dataSetAsID->GetSpacing(spacing);
+      int extents[6];
+      dataSetAsID->GetExtent(extents);
 
-      // int gridDimensions[3];
-      // dataSetAsID->GetDimensions(gridDimensions);
+      double origin[3];
+      dataSetAsID->GetOrigin(origin);
 
-      // double firstPoint[3];
-      // firstPoint[0] = origin[0] + extents[0] * spacing[0];
-      // firstPoint[1] = origin[1] + extents[2] * spacing[1];
-      // firstPoint[2] = origin[2] + extents[4] * spacing[2];
+      double spacing[3];
+      dataSetAsID->GetSpacing(spacing);
 
-      // newTriangulation->setInputGrid(
-      //     firstPoint[0], firstPoint[1], firstPoint[2],
-      //     spacing[0], spacing[1], spacing[2],
-      //     gridDimensions[0], gridDimensions[1], gridDimensions[2]
-      // );
+      int gridDimensions[3];
+      dataSetAsID->GetDimensions(gridDimensions);
 
-      // cellKey = (void*)dataSet;
-      // initTime = -1;
-      break;
+      double firstPoint[3];
+      firstPoint[0] = origin[0] + extents[0] * spacing[0];
+      firstPoint[1] = origin[1] + extents[2] * spacing[1];
+      firstPoint[2] = origin[2] + extents[4] * spacing[2];
+
+      newTriangulation->setInputGrid(
+        firstPoint[0], firstPoint[1], firstPoint[2],
+        spacing[0], spacing[1], spacing[2],
+        gridDimensions[0], gridDimensions[1], gridDimensions[2]
+      );
+
+      ttkAlgorithm::DataSetToTriangulationMap.insert(
+            {(void *)dataSetAsID, {newTriangulation, dataSetAsID->GetMTime()}});
+
+      this->PrintMsg("Initializing Implicit Triangulation", 1,
+        ttk::debug::LineMode::REPLACE,
+        ttk::debug::Priority::DETAIL);
+      return newTriangulation;
     }
 
-    // =====================================================================
     // UNSUPPORTED DATA TYPE
     // =====================================================================
     default: {
     }
   }
-
-  // if(cellKey==nullptr || initTime<0 || triangulation==nullptr){
-  // return 0;
-  // }
 
   this->PrintErr("Unable to get/create triangulation for '"
                  + std::string(dataSet->GetClassName()) + "'");
