@@ -11,13 +11,11 @@
 #include <vtkPointData.h>
 #include <vtkSmartPointer.h>
 
-#define MODULE_S "[ttkEigenField] "
-#define MODULE_ERROR_S MODULE_S "Error: "
 #ifndef TTK_ENABLE_KAMIKAZE
-#define TTK_ABORT_KK(COND, MSG, RET)    \
-  if(COND) {                            \
-    cerr << MODULE_ERROR_S MSG << endl; \
-    return RET;                         \
+#define TTK_ABORT_KK(COND, MSG, RET) \
+  if(COND) {                         \
+    this->PrintErr(MSG);             \
+    return RET;                      \
   }
 #else // TTK_ENABLE_KAMIKAZE
 #define TTK_ABORT_KK(COND, MSG, RET)

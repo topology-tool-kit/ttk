@@ -142,7 +142,7 @@ int ttk::EigenField::execute(Triangulation *triangulation,
       "Spectra support disabled, computation skipped!",
       "Please re-compile TTK with Eigen AND Spectra support to "
       "enable this feature."},
-    ttk::debug::Priority::WARNING);
+    ttk::debug::Priority::ERROR);
 
 #endif // TTK_ENABLE_EIGEN && TTK_ENABLE_SPECTRA
 
