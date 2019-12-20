@@ -24,6 +24,10 @@ namespace ttk {
     enum class SolvingMethodUserType { AUTO, CHOLESKY, ITERATIVE };
     enum class SolvingMethodType { CHOLESKY, ITERATIVE };
 
+    HarmonicField() {
+      this->SetDebugMsgPrefix("HarmonicField");
+    }
+
     inline void setupTriangulation(Triangulation *const triangulation,
                                    bool cotanWeights) {
       if(triangulation == nullptr) {

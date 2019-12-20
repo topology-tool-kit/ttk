@@ -47,11 +47,6 @@ int ttk::HarmonicField::execute(Triangulation *triangulation,
                                 SolvingMethodUserType solvingMethod,
                                 double logAlpha) const {
 
-  using std::cerr;
-  using std::cout;
-  using std::endl;
-  using std::stringstream;
-
 #ifdef TTK_ENABLE_EIGEN
 
 #ifdef TTK_ENABLE_OPENMP
@@ -62,16 +57,11 @@ int ttk::HarmonicField::execute(Triangulation *triangulation,
   using SpVec = Eigen::SparseVector<ScalarFieldType>;
   using TripletType = Eigen::Triplet<ScalarFieldType>;
 
-  Timer t;
+  Timer tm;
+  Memory mem;
 
   const auto vertexNumber = triangulation->getNumberOfVertices();
   const auto edgeNumber = triangulation->getNumberOfEdges();
-
-  {
-    stringstream msg;
-    msg << "[HarmonicField] Beginnning computation" << endl;
-    dMsg(cout, msg.str(), advancedInfoMsg);
-  }
 
   // filter unique constraint identifiers
   std::set<SimplexId> uniqueIdentifiersSet;
@@ -155,24 +145,19 @@ int ttk::HarmonicField::execute(Triangulation *triangulation,
       break;
   }
 
-  {
-    stringstream msg;
-    auto info = static_cast<Eigen::ComputationInfo>(res);
-    switch(info) {
-      case Eigen::ComputationInfo::Success:
-        msg << "[HarmonicField] Success!" << endl;
-        break;
-      case Eigen::ComputationInfo::NumericalIssue:
-        msg << "[HarmonicField] Numerical Issue!" << endl;
-        break;
-      case Eigen::ComputationInfo::NoConvergence:
-        msg << "[HarmonicField] No Convergence!" << endl;
-        break;
-      case Eigen::ComputationInfo::InvalidInput:
-        msg << "[HarmonicField] Invalid Input!" << endl;
-        break;
-    }
-    dMsg(cout, msg.str(), advancedInfoMsg);
+  auto info = static_cast<Eigen::ComputationInfo>(res);
+  switch(info) {
+    case Eigen::ComputationInfo::NumericalIssue:
+      this->PrintMsg("Numerical Issue!", ttk::debug::Priority::ERROR);
+      break;
+    case Eigen::ComputationInfo::NoConvergence:
+      this->PrintMsg("No Convergence!", ttk::debug::Priority::ERROR);
+      break;
+    case Eigen::ComputationInfo::InvalidInput:
+      this->PrintMsg("Invalid Input!", ttk::debug::Priority::ERROR);
+      break;
+    default:
+      break;
   }
 
   // convert to dense Eigen matrix
@@ -187,38 +172,26 @@ int ttk::HarmonicField::execute(Triangulation *triangulation,
     outputScalarField[i] = -solDense(i, 0);
   }
 
-  {
-    stringstream msg;
-    msg << "[HarmonicField] Ending computation after " << t.getElapsedTime()
-        << "s (";
-    if(useCotanWeights) {
-      msg << "cotan weights, ";
-    } else {
-      msg << "discrete laplacian, ";
-    }
-    if(sm == SolvingMethodType::ITERATIVE) {
-      msg << "iterative solver, ";
-    } else {
-      msg << "Cholesky, ";
-    }
-    msg << threadNumber_ << " thread(s))" << endl;
-    dMsg(cout, msg.str(), infoMsg);
+  std::string endMsg{"Complete ("};
+  if(useCotanWeights) {
+    endMsg.append("cotan weights, ");
+  } else {
+    endMsg.append("discrete laplacian, ");
+  }
+  if(sm == SolvingMethodType::ITERATIVE) {
+    endMsg.append("iterative)");
+  } else {
+    endMsg.append("Cholesky)");
   }
 
+  this->PrintMsg(endMsg, 1.0, tm.getElapsedTime(), mem.getElapsedUsage());
+
 #else
-  {
-    stringstream msg;
-    msg << "[HarmonicField]" << endl;
-    msg << "[HarmonicField]" << endl;
-    msg << "[HarmonicField] Eigen support disabled, computation "
-           "skipped!"
-        << endl;
-    msg << "[HarmonicField] Please re-compile TTK with Eigen support to enable"
-        << " this feature." << endl;
-    msg << "[HarmonicField]" << endl;
-    msg << "[HarmonicField]" << endl;
-    dMsg(cerr, msg.str(), infoMsg);
-  }
+  this->PrintMsg(
+    std::vector<std::string>{
+      "Eigen support disabled, computation skipped!",
+      "Please re-compile TTK with Eigen support to enable this feature."},
+    ttk::debug::Priority::ERROR);
 #endif // TTK_ENABLE_EIGEN
 
   return 0;
