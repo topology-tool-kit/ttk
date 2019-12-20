@@ -34,53 +34,33 @@
 #pragma once
 
 // VTK includes -- to adapt
-#include <vtkCharArray.h>
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
-#include <vtkDataSetAlgorithm.h>
 #include <vtkDoubleArray.h>
 #include <vtkFiltersCoreModule.h>
 #include <vtkFloatArray.h>
 #include <vtkInformation.h>
-#include <vtkIntArray.h>
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
-#include <vtkShortArray.h>
+#include <vtkPointSet.h>
 #include <vtkSmartPointer.h>
-#include <vtkUnsignedCharArray.h>
-#include <vtkUnsignedShortArray.h>
 
 // VTK Module
 #include <ttkHarmonicFieldModule.h>
 
+// VTK Includes
+#include <ttkAlgorithm.h>
+
 // ttk code includes
 #include <HarmonicField.h>
-#include <ttkTriangulationAlgorithm.h>
 
-#include <ttkTriangulation.h>
-
-enum HarmonicFieldType { Float = 0, Double };
-
-class TTKHARMONICFIELD_EXPORT ttkHarmonicField : public vtkDataSetAlgorithm,
-                                                 protected ttk::Wrapper {
+class TTKHARMONICFIELD_EXPORT ttkHarmonicField : public ttkAlgorithm,
+                                                 protected ttk::HarmonicField {
 
 public:
   static ttkHarmonicField *New();
-  vtkTypeMacro(ttkHarmonicField, vtkDataSetAlgorithm);
 
-  void SetDebugLevel(int debugLevel) {
-    setDebugLevel(debugLevel);
-    Modified();
-  }
-  void SetThreadNumber(int threadNumber) {
-    ThreadNumber = threadNumber;
-    SetThreads();
-  }
-
-  void SetUseAllCores(bool onOff) {
-    UseAllCores = onOff;
-    SetThreads();
-  }
+  vtkTypeMacro(ttkHarmonicField, ttkAlgorithm);
 
   vtkSetMacro(InputScalarFieldName, std::string);
   vtkGetMacro(InputScalarFieldName, std::string);
@@ -103,55 +83,44 @@ public:
   vtkSetMacro(LogAlpha, double);
   vtkGetMacro(LogAlpha, double);
 
-  // get mesh from VTK
-  int getTriangulation(vtkDataSet *input);
   // get array of identifiers on the mesh
   int getIdentifiers(vtkPointSet *input);
   // get constraint values on identifiers
   int getConstraints(vtkPointSet *input);
-
-  // default copy constructor
-  ttkHarmonicField(const ttkHarmonicField &) = delete;
-  // default move constructor
-  ttkHarmonicField(ttkHarmonicField &&) = delete;
-  // default copy assignment operator
-  ttkHarmonicField &operator=(const ttkHarmonicField &) = delete;
-  // default move assignment operator
-  ttkHarmonicField &operator=(ttkHarmonicField &&) = delete;
 
 protected:
   ttkHarmonicField();
 
   ~ttkHarmonicField() override = default;
 
-  TTK_SETUP();
-
   int FillInputPortInformation(int port, vtkInformation *info) override;
+  int FillOutputPortInformation(int port, vtkInformation *info) override;
+  int RequestData(vtkInformation *request,
+                  vtkInformationVector **inputVector,
+                  vtkInformationVector *outputVector) override;
 
 private:
   // user-defined input constraints (float) scalar field name
-  std::string InputScalarFieldName;
+  std::string InputScalarFieldName{};
   // output scalar field
-  std::string OutputScalarFieldName;
+  std::string OutputScalarFieldName{"OutputHarmonicField"};
   // let the user choose a different identifier scalar field
-  bool ForceConstraintIdentifiers;
+  bool ForceConstraintIdentifiers{false};
   // graph laplacian variant
-  bool UseCotanWeights;
+  bool UseCotanWeights{true};
   // user-defined input identifier (SimplexId) scalar field name
-  std::string InputIdentifiersFieldName;
+  std::string InputIdentifiersFieldName{ttk::VertexScalarFieldName};
   // user-selected solving method
-  int SolvingMethod;
+  int SolvingMethod{0};
   // penalty value
-  double LogAlpha;
+  double LogAlpha{5};
 
   // enum: float or double
-  int OutputScalarFieldType;
-  // worker object
-  ttk::HarmonicField harmonicField_;
-  // teh mesh
-  ttk::Triangulation *triangulation_;
+  enum class HarmonicFieldType { FLOAT, DOUBLE };
+  HarmonicFieldType OutputScalarFieldType{HarmonicFieldType::FLOAT};
+
   // points on the mesh where constraints_ are set
-  vtkDataArray *identifiers_;
+  vtkDataArray *identifiers_{};
   // scalar field constraint values on identifiers_
-  vtkDataArray *constraints_;
+  vtkDataArray *constraints_{};
 };

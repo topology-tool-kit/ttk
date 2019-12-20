@@ -27,7 +27,7 @@ namespace ttk {
   enum struct SolvingMethodUserType { Auto = 0, Cholesky = 1, Iterative = 2 };
   enum struct SolvingMethodType { Cholesky, Iterative };
 
-  class HarmonicField : public Debug {
+  class HarmonicField : virtual public Debug {
 
   public:
     // default constructor
