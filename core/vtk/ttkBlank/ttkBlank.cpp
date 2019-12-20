@@ -123,8 +123,8 @@ vtkStandardNewMacro(ttkBlank)
       switch(inputScalarField->GetDataType()) {
         vtkTemplateMacro(
           blank_.execute<VTK_TT>(explicitTriangulation, SomeIntegerArgument));
-        //         vtkTemplateMacro(blank_.execute<ttk::ExplicitTriangulation,
-        //         VTK_TT>(explicitTriangulation, SomeIntegerArgument));
+        //                 vtkTemplateMacro(blank_.execute<ttk::ExplicitTriangulation,
+        //                 VTK_TT>(explicitTriangulation, SomeIntegerArgument));
       }
       break;
 

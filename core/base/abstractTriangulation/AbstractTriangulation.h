@@ -478,6 +478,77 @@ namespace ttk {
     }
 
   protected:
+    inline bool isCellEdgePreconditioned() const {
+
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(((getDimensionality() == 1) && (!hasPreconditionedCellNeighbors()))
+         || ((getDimensionality() > 1) && (!hasPreconditionedCellEdges()))) {
+        std::stringstream msg;
+        msg << "[AbstractTriangulation] "
+            << "CellEdge query without pre-process!" << std::endl;
+        msg << "[Triangulation] "
+            << "Please call preconditionCellEdges() in a"
+            << " pre-process." << std::endl;
+        dMsg(std::cerr, msg.str(), Debug::fatalMsg);
+        return false;
+      }
+#endif
+      return true;
+    }
+
+    inline bool isCellEdgeNumberPreconditioned() const {
+
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(((getDimensionality() == 1) && (!hasPreconditionedCellNeighbors()))
+         || ((getDimensionality() > 1) && (!hasPreconditionedCellEdges()))) {
+        std::stringstream msg;
+        msg << "[AbstractTriangulation] "
+            << "CellEdgeNumber query without pre-process!" << std::endl;
+        msg << "[Triangulation] "
+            << "Please call preconditionCellEdges() in a"
+            << " pre-process." << std::endl;
+        dMsg(std::cerr, msg.str(), Debug::fatalMsg);
+        return false;
+      }
+#endif
+      return true;
+    }
+
+    inline bool isCellEdgesPreconditioned() const {
+
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(((getDimensionality() == 1) && (!hasPreconditionedCellNeighbors()))
+         || ((getDimensionality() > 1) && (hasPreconditionedCellEdges()))) {
+        std::stringstream msg;
+        msg << "[Triangulation] "
+            << "CellEdges query without pre-process!" << std::endl;
+        msg << "[Triangulation] "
+            << "Please call preconditionCellEdges() in a"
+            << " pre-process." << std::endl;
+        dMsg(std::cerr, msg.str(), Debug::fatalMsg);
+        return false;
+      }
+#endif
+      return true;
+    }
+
+    inline bool isCellNeighborPreconditioned() const {
+
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(hasPreconditionedCellNeighbors()) {
+        std::stringstream msg;
+        msg << "[Triangulation] "
+            << "CellNeighbor query without pre-process!" << std::endl;
+        msg << "[Triangulation] "
+            << "Please call preconditionCellNeighbors() in a"
+            << " pre-process." << std::endl;
+        dMsg(std::cerr, msg.str(), Debug::fatalMsg);
+        return false;
+      }
+#endif
+      return true;
+    }
+
     // empty wrapping to VTK for now
     bool needsToAbort() {
       return false;

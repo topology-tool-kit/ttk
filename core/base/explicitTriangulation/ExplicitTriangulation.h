@@ -36,7 +36,12 @@ namespace ttk {
       if((localEdgeId < 0)
          || (localEdgeId >= (SimplexId)cellEdgeList_[cellId].size()))
         return -2;
+      if(!isCellEdgePreconditioned())
+        return -3;
 #endif
+      if(getDimensionality() == 1)
+        return getCellNeighbor(cellId, localEdgeId, edgeId);
+
       edgeId = cellEdgeList_[cellId][localEdgeId];
       return 0;
     }

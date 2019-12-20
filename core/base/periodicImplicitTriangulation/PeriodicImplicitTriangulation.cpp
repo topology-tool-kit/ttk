@@ -2114,10 +2114,17 @@ SimplexId PeriodicImplicitTriangulation::getCellEdgeNumber(
 int PeriodicImplicitTriangulation::getCellEdge(const SimplexId &cellId,
                                                const int &localEdgeId,
                                                SimplexId &edgeId) const {
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(!isCellEdgePreconditioned())
+    return -1;
+#endif
+
   if(dimensionality_ == 3)
     getTetrahedronEdge(cellId, localEdgeId, edgeId);
   else if(dimensionality_ == 2)
     getTriangleEdge(cellId, localEdgeId, edgeId);
+  else if(dimensionality_ == 1)
+    getCellNeighbor(cellId, localEdgeId, edgeId);
 
   return 0;
 }
