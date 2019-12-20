@@ -115,6 +115,7 @@ namespace ttk {
           // Pre-condition functions.
           // Call all the required pre-condition functions here!
           // for example:
+          triangulation->preconditionCellEdges();
           triangulation->preconditionVertexNeighbors();
           // end of TODO-1
         }
@@ -128,15 +129,15 @@ namespace ttk {
   } // namespace blank
 } // namespace ttk
 
-template <class dataType>
-int ttk::blank::Blank::execute(const AbstractTriangulation *triangulation,
+template <class triangulationType, class dataType>
+int ttk::blank::Blank::execute(const triangulationType *triangulation,
                                const int &argument) const {
   return 0;
 }
 
 // template functions
-template <class triangulationType, class dataType>
-int ttk::blank::Blank::execute(const triangulationType *triangulation,
+template <class dataType>
+int ttk::blank::Blank::execute(const AbstractTriangulation *triangulation,
                                const int &argument) const {
 
   Timer t;
@@ -157,9 +158,7 @@ int ttk::blank::Blank::execute(const triangulationType *triangulation,
   SimplexId vertexNumber = triangulation->getNumberOfVertices();
 
   SimplexId cellEdgeId = -1;
-  printf("go for get cell edge\n");
   triangulation->getCellEdge(0, 0, cellEdgeId);
-  printf("done\n");
 
   // init the output -- to adapt
   for(SimplexId i = 0; i < vertexNumber; i++) {
