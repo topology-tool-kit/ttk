@@ -1,21 +1,27 @@
+#include <Geometry.h>
 #include <HarmonicField.h>
 #include <Laplacian.h>
+#include <cmath>
+#include <set>
+#include <type_traits>
 
 #ifdef TTK_ENABLE_EIGEN
 #include <Eigen/Sparse>
 #endif // TTK_ENABLE_EIGEN
 
-ttk::SolvingMethodType ttk::HarmonicField::findBestSolver() const {
+ttk::HarmonicField::SolvingMethodType
+  ttk::HarmonicField::findBestSolver(const SimplexId vertexNumber,
+                                     const SimplexId edgeNumber) const {
 
   // for switching between Cholesky factorization and Iterate
   // (conjugate gradients) method
   const SimplexId threshold = 500000;
 
   // compare threshold to number of non-zero values in laplacian matrix
-  if(2 * edgeNumber_ + vertexNumber_ > threshold) {
-    return ttk::SolvingMethodType::Iterative;
+  if(2 * edgeNumber + vertexNumber > threshold) {
+    return SolvingMethodType::ITERATIVE;
   }
-  return ttk::SolvingMethodType::Cholesky;
+  return SolvingMethodType::CHOLESKY;
 }
 
 template <typename SparseMatrixType,
@@ -31,8 +37,15 @@ int ttk::HarmonicField::solve(SparseMatrixType const &lap,
 }
 
 // main routine
-template <typename scalarFieldType>
-int ttk::HarmonicField::execute() const {
+template <typename ScalarFieldType>
+int ttk::HarmonicField::execute(Triangulation *triangulation,
+                                SimplexId constraintNumber,
+                                SimplexId *sources,
+                                ScalarFieldType *constraints,
+                                ScalarFieldType *outputScalarField,
+                                bool useCotanWeights,
+                                SolvingMethodUserType solvingMethod,
+                                double logAlpha) const {
 
   using std::cerr;
   using std::cout;
@@ -45,14 +58,14 @@ int ttk::HarmonicField::execute() const {
   Eigen::setNbThreads(threadNumber_);
 #endif // TTK_ENABLE_OPENMP
 
-  using SpMat = Eigen::SparseMatrix<scalarFieldType>;
-  using SpVec = Eigen::SparseVector<scalarFieldType>;
-  using TripletType = Eigen::Triplet<scalarFieldType>;
+  using SpMat = Eigen::SparseMatrix<ScalarFieldType>;
+  using SpVec = Eigen::SparseVector<ScalarFieldType>;
+  using TripletType = Eigen::Triplet<ScalarFieldType>;
 
   Timer t;
 
-  // scalar field: 0 everywhere except on constraint vertices
-  auto sf = static_cast<scalarFieldType *>(constraints_);
+  const auto vertexNumber = triangulation->getNumberOfVertices();
+  const auto edgeNumber = triangulation->getNumberOfEdges();
 
   {
     stringstream msg;
@@ -62,21 +75,21 @@ int ttk::HarmonicField::execute() const {
 
   // filter unique constraint identifiers
   std::set<SimplexId> uniqueIdentifiersSet;
-  for(SimplexId i = 0; i < constraintNumber_; ++i) {
-    uniqueIdentifiersSet.insert(sources_[i]);
+  for(SimplexId i = 0; i < constraintNumber; ++i) {
+    uniqueIdentifiersSet.insert(sources[i]);
   }
 
   // vector of unique constraint identifiers
   std::vector<SimplexId> uniqueIdentifiers(
     uniqueIdentifiersSet.begin(), uniqueIdentifiersSet.end());
   // vector of unique constraint values
-  std::vector<scalarFieldType> uniqueValues(uniqueIdentifiers.size());
+  std::vector<ScalarFieldType> uniqueValues(uniqueIdentifiers.size());
 
   // put identifier corresponding constraints in vector
   for(size_t i = 0; i < uniqueIdentifiers.size(); ++i) {
-    for(SimplexId j = 0; j < constraintNumber_; ++j) {
-      if(uniqueIdentifiers[i] == sources_[j]) {
-        uniqueValues[i] = sf[j];
+    for(SimplexId j = 0; j < constraintNumber; ++j) {
+      if(uniqueIdentifiers[i] == sources[j]) {
+        uniqueValues[i] = constraints[j];
         break;
       }
     }
@@ -87,37 +100,37 @@ int ttk::HarmonicField::execute() const {
 
   // graph laplacian of current mesh
   SpMat lap;
-  if(useCotanWeights_) {
-    Laplacian::cotanWeights<scalarFieldType>(lap, *triangulation_);
+  if(useCotanWeights) {
+    Laplacian::cotanWeights<ScalarFieldType>(lap, *triangulation);
   } else {
-    Laplacian::discreteLaplacian<scalarFieldType>(lap, *triangulation_);
+    Laplacian::discreteLaplacian<ScalarFieldType>(lap, *triangulation);
   }
 
   // constraints vector
-  SpVec constraints(vertexNumber_);
+  SpVec constraintsMat(vertexNumber);
   for(size_t i = 0; i < uniqueConstraintNumber; ++i) {
     // put constraint at identifier index
-    constraints.coeffRef(uniqueIdentifiers[i]) = uniqueValues[i];
+    constraintsMat.coeffRef(uniqueIdentifiers[i]) = uniqueValues[i];
   }
 
-  auto sm = ttk::SolvingMethodType::Cholesky;
+  auto sm = SolvingMethodType::CHOLESKY;
 
-  switch(solvingMethod_) {
-    case ttk::SolvingMethodUserType::Auto:
-      sm = findBestSolver();
+  switch(solvingMethod) {
+    case SolvingMethodUserType::AUTO:
+      sm = findBestSolver(vertexNumber, edgeNumber);
       break;
-    case ttk::SolvingMethodUserType::Cholesky:
-      sm = ttk::SolvingMethodType::Cholesky;
+    case SolvingMethodUserType::CHOLESKY:
+      sm = SolvingMethodType::CHOLESKY;
       break;
-    case ttk::SolvingMethodUserType::Iterative:
-      sm = ttk::SolvingMethodType::Iterative;
+    case SolvingMethodUserType::ITERATIVE:
+      sm = SolvingMethodType::ITERATIVE;
       break;
   }
 
   // penalty matrix
-  SpMat penalty(vertexNumber_, vertexNumber_);
+  SpMat penalty(vertexNumber, vertexNumber);
   // penalty value
-  const scalarFieldType alpha = pow10(logAlpha_);
+  const ScalarFieldType alpha = pow10(logAlpha);
 
   std::vector<TripletType> triplets;
   triplets.reserve(uniqueConstraintNumber);
@@ -131,14 +144,14 @@ int ttk::HarmonicField::execute() const {
   SpMat sol;
 
   switch(sm) {
-    case ttk::SolvingMethodType::Cholesky:
+    case SolvingMethodType::CHOLESKY:
       res = solve<SpMat, SpVec, Eigen::SimplicialCholesky<SpMat>>(
-        lap, penalty, constraints, sol);
+        lap, penalty, constraintsMat, sol);
       break;
-    case ttk::SolvingMethodType::Iterative:
+    case SolvingMethodType::ITERATIVE:
       res = solve<SpMat, SpVec,
                   Eigen::ConjugateGradient<SpMat, Eigen::Upper | Eigen::Lower>>(
-        lap, penalty, constraints, sol);
+        lap, penalty, constraintsMat, sol);
       break;
   }
 
@@ -162,17 +175,14 @@ int ttk::HarmonicField::execute() const {
     dMsg(cout, msg.str(), advancedInfoMsg);
   }
 
-  auto outputScalarField
-    = static_cast<scalarFieldType *>(outputScalarFieldPointer_);
-
   // convert to dense Eigen matrix
-  Eigen::Matrix<scalarFieldType, Eigen::Dynamic, 1> solDense(sol);
+  Eigen::Matrix<ScalarFieldType, Eigen::Dynamic, 1> solDense(sol);
 
   // copy solver solution into output array
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
-  for(SimplexId i = 0; i < vertexNumber_; ++i) {
+  for(SimplexId i = 0; i < vertexNumber; ++i) {
     // cannot avoid copy here...
     outputScalarField[i] = -solDense(i, 0);
   }
@@ -181,12 +191,12 @@ int ttk::HarmonicField::execute() const {
     stringstream msg;
     msg << "[HarmonicField] Ending computation after " << t.getElapsedTime()
         << "s (";
-    if(useCotanWeights_) {
+    if(useCotanWeights) {
       msg << "cotan weights, ";
     } else {
       msg << "discrete laplacian, ";
     }
-    if(sm == ttk::SolvingMethodType::Iterative) {
+    if(sm == SolvingMethodType::ITERATIVE) {
       msg << "iterative solver, ";
     } else {
       msg << "Cholesky, ";
@@ -214,6 +224,14 @@ int ttk::HarmonicField::execute() const {
   return 0;
 }
 
-// explicit instantiations for double and float types
-template int ttk::HarmonicField::execute<double>() const;
-template int ttk::HarmonicField::execute<float>() const;
+// explicit template specializations for double and float types
+#define HARMONICFIELD_SPECIALIZE(TYPE)                                 \
+  template int ttk::HarmonicField::execute<TYPE>(                      \
+    Triangulation * triangulation, SimplexId constraintNumber,         \
+    SimplexId * sources, TYPE * constraints, TYPE * outputScalarField, \
+    bool useCotanWeights = true,                                       \
+    SolvingMethodUserType solvingMethod = SolvingMethodUserType::AUTO, \
+    double logAlpha = 5.0) const
+
+HARMONICFIELD_SPECIALIZE(float);
+HARMONICFIELD_SPECIALIZE(double);

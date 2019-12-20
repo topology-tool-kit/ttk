@@ -77,8 +77,27 @@ public:
   vtkSetMacro(UseCotanWeights, bool);
   vtkGetMacro(UseCotanWeights, bool);
 
-  vtkSetMacro(SolvingMethod, int);
-  vtkGetMacro(SolvingMethod, int);
+  void SetSolvingMethod(const int arg_) {
+    if(arg_ == 0) {
+      this->SolvingMethod = SolvingMethodUserType::AUTO;
+    } else if(arg_ == 1) {
+      this->SolvingMethod = SolvingMethodUserType::CHOLESKY;
+    } else if(arg_ == 2) {
+      this->SolvingMethod = SolvingMethodUserType::ITERATIVE;
+    }
+    this->Modified();
+  }
+  virtual int GetSolvingMethod() {
+    switch(SolvingMethod) {
+      case SolvingMethodUserType::AUTO:
+        return 0;
+      case SolvingMethodUserType::CHOLESKY:
+        return 1;
+      case SolvingMethodUserType::ITERATIVE:
+        return 2;
+    }
+    return -1;
+  }
 
   vtkSetMacro(LogAlpha, double);
   vtkGetMacro(LogAlpha, double);
@@ -111,7 +130,7 @@ private:
   // user-defined input identifier (SimplexId) scalar field name
   std::string InputIdentifiersFieldName{ttk::VertexScalarFieldName};
   // user-selected solving method
-  int SolvingMethod{0};
+  SolvingMethodUserType SolvingMethod{SolvingMethodUserType::AUTO};
   // penalty value
   double LogAlpha{5};
 

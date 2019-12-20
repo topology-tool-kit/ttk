@@ -77,16 +77,12 @@ int ttkHarmonicField::RequestData(vtkInformation *request,
                                   vtkInformationVector **inputVector,
                                   vtkInformationVector *outputVector) {
 
-  ttk::Memory mem;
-  ttk::Timer tm;
-
   const auto domain = vtkDataSet::GetData(inputVector[0]);
   const auto identifiers = vtkPointSet::GetData(inputVector[1]);
   auto output = vtkDataSet::GetData(outputVector);
   auto triangulation = ttkAlgorithm::GetTriangulation(domain);
 
-  // set this early, since it should trigger some triangulation pre-processing
-  this->setUseCotanWeights(UseCotanWeights);
+  this->setupTriangulation(triangulation, UseCotanWeights);
 
   TTK_ABORT_KK(triangulation == nullptr, "wrong triangulation", -1);
 
@@ -105,13 +101,6 @@ int ttkHarmonicField::RequestData(vtkInformation *request,
   const auto numberOfPointsInSources = identifiers->GetNumberOfPoints();
 
   TTK_ABORT_KK(numberOfPointsInSources == 0, "sources has no points", -3);
-
-  this->setVertexNumber(numberOfPointsInDomain);
-  this->setConstraintNumber(numberOfPointsInSources);
-  this->setSources(identifiers_->GetVoidPointer(0));
-  this->setConstraints(constraints_->GetVoidPointer(0));
-  this->setSolvingMethod(SolvingMethod);
-  this->setLogAlpha(LogAlpha);
 
   vtkSmartPointer<vtkDataArray> harmonicScalarField{};
 
@@ -137,14 +126,24 @@ int ttkHarmonicField::RequestData(vtkInformation *request,
   harmonicScalarField->SetNumberOfTuples(numberOfPointsInDomain);
   harmonicScalarField->SetName(OutputScalarFieldName.data());
 
-  this->setOutputScalarFieldPointer(harmonicScalarField->GetVoidPointer(0));
-
   switch(OutputScalarFieldType) {
     case HarmonicFieldType::FLOAT:
-      res += this->execute<float>();
+      res += this->execute<float>(
+        triangulation, numberOfPointsInSources,
+        static_cast<ttk::SimplexId *>(identifiers_->GetVoidPointer(0)),
+        static_cast<float *>(constraints_->GetVoidPointer(0)),
+        static_cast<float *>(harmonicScalarField->GetVoidPointer(0)),
+        UseCotanWeights, SolvingMethod, LogAlpha);
       break;
     case HarmonicFieldType::DOUBLE:
-      res += this->execute<double>();
+      res += this->execute<double>(
+        triangulation, numberOfPointsInSources,
+        static_cast<ttk::SimplexId *>(identifiers_->GetVoidPointer(0)),
+        static_cast<double *>(constraints_->GetVoidPointer(0)),
+        static_cast<double *>(harmonicScalarField->GetVoidPointer(0)),
+        UseCotanWeights, SolvingMethod, LogAlpha
+
+      );
       break;
     default:
       break;
@@ -156,9 +155,6 @@ int ttkHarmonicField::RequestData(vtkInformation *request,
   // update result
   output->ShallowCopy(domain);
   output->GetPointData()->AddArray(harmonicScalarField);
-
-  this->PrintMsg(
-    "Ended computation", 1.0, tm.getElapsedTime(), mem.getElapsedUsage());
 
   return 1;
 }
