@@ -41,17 +41,6 @@ namespace ttk {
       }
     }
 
-    SolvingMethodType findBestSolver(const SimplexId vertexNumber,
-                                     const SimplexId edgeNumber) const;
-
-    template <typename SparseMatrixType,
-              typename SparseVectorType,
-              typename SolverType>
-    int solve(SparseMatrixType const &lap,
-              SparseMatrixType const &penalty,
-              SparseVectorType const &constraints,
-              SparseMatrixType &sol) const;
-
     template <typename ScalarFieldType>
     int execute(Triangulation *triangulation,
                 SimplexId constraintNumber,
@@ -62,5 +51,17 @@ namespace ttk {
                 SolvingMethodUserType solvingMethod
                 = SolvingMethodUserType::AUTO,
                 double logAlpha = 5.0) const;
+
+  private:
+    SolvingMethodType findBestSolver(const SimplexId vertexNumber,
+                                     const SimplexId edgeNumber) const;
+
+    template <typename SparseMatrixType,
+              typename SparseVectorType,
+              typename SolverType>
+    int solve(SparseMatrixType const &lap,
+              SparseMatrixType const &penalty,
+              SparseVectorType const &constraints,
+              SparseMatrixType &sol) const;
   };
 } // namespace ttk
