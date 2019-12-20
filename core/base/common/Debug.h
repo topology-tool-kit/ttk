@@ -65,7 +65,7 @@ namespace ttk {
     const int LINEWIDTH = 80;
   }; // namespace DEBUG
 
-  class Debug : virtual public BaseClass {
+  class Debug : public BaseClass {
 
   public:
     // 1) constructors, destructors, operators, etc.
