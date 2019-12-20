@@ -82,7 +82,7 @@ int ttkHarmonicField::RequestData(vtkInformation *request,
   auto output = vtkDataSet::GetData(outputVector);
   auto triangulation = ttkAlgorithm::GetTriangulation(domain);
 
-  this->setupTriangulation(triangulation, UseCotanWeights);
+  this->preconditionTriangulation(triangulation, UseCotanWeights);
 
   TTK_ABORT_KK(triangulation == nullptr, "wrong triangulation", -1);
 

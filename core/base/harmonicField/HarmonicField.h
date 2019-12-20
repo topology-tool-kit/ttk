@@ -28,8 +28,8 @@ namespace ttk {
       this->SetDebugMsgPrefix("HarmonicField");
     }
 
-    inline void setupTriangulation(Triangulation *const triangulation,
-                                   bool cotanWeights) {
+    inline void preconditionTriangulation(Triangulation *const triangulation,
+                                          bool cotanWeights) {
       if(triangulation == nullptr) {
         return;
       }
