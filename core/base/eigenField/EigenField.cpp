@@ -149,11 +149,11 @@ int ttk::EigenField::execute(Triangulation *triangulation,
   return 0;
 }
 
-// explicit instantiations for double and float types
-template int ttk::EigenField::execute<double>(Triangulation *,
-                                              double *const,
-                                              const unsigned int,
-                                              bool,
-                                              double *const) const;
-template int ttk::EigenField::execute<float>(
-  Triangulation *, float *const, const unsigned int, bool, float *const) const;
+// explicit template specializations for double and float types
+#define EIGENFIELD_SPECIALIZE(TYPE)                                      \
+  template int ttk::EigenField::execute<TYPE>(                           \
+    Triangulation *, TYPE *const, const unsigned int, bool, TYPE *const) \
+    const
+
+EIGENFIELD_SPECIALIZE(double);
+EIGENFIELD_SPECIALIZE(float);
