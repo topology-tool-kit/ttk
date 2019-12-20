@@ -38,8 +38,6 @@
 // TTK Base Includes
 #include <EigenField.h>
 
-enum EigenFieldType { Float = 0, Double };
-
 class TTKEIGENFIELD_EXPORT ttkEigenField : public ttkAlgorithm,
                                            protected ttk::EigenField {
 
@@ -76,5 +74,7 @@ private:
   bool ComputeStatistics{false};
 
   // enum: float or double
-  int OutputFieldType{EigenFieldType::Float};
+  enum class FieldType { FLOAT, DOUBLE };
+
+  FieldType OutputFieldType{FieldType::FLOAT};
 };

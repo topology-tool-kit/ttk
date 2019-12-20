@@ -62,11 +62,11 @@ int ttkEigenField::RequestData(vtkInformation *request,
   vtkSmartPointer<vtkDataArray> stats{};
 
   switch(OutputFieldType) {
-    case EigenFieldType::Float:
+    case FieldType::FLOAT:
       eigenFunctions = vtkSmartPointer<vtkFloatArray>::New();
       stats = vtkSmartPointer<vtkFloatArray>::New();
       break;
-    case EigenFieldType::Double:
+    case FieldType::DOUBLE:
       eigenFunctions = vtkSmartPointer<vtkDoubleArray>::New();
       stats = vtkSmartPointer<vtkDoubleArray>::New();
       break;
@@ -95,13 +95,13 @@ int ttkEigenField::RequestData(vtkInformation *request,
   }
 
   switch(OutputFieldType) {
-    case EigenFieldType::Float:
+    case FieldType::FLOAT:
       res += this->execute<float>(
         triangulation, static_cast<float *>(eigenFunctions->GetVoidPointer(0)),
         EigenNumber, ComputeStatistics,
         static_cast<float *>(stats->GetVoidPointer(0)));
       break;
-    case EigenFieldType::Double:
+    case FieldType::DOUBLE:
       res += this->execute<double>(
         triangulation, static_cast<double *>(eigenFunctions->GetVoidPointer(0)),
         EigenNumber, ComputeStatistics,
@@ -111,7 +111,8 @@ int ttkEigenField::RequestData(vtkInformation *request,
       break;
   }
 
-  TTK_ABORT_KK(res != 0, "EigenField execute error code " << res, -4);
+  TTK_ABORT_KK(
+    res != 0, "EigenField execute error code " + std::to_string(res), -4);
 
   // update result
   output->ShallowCopy(domain);
