@@ -149,6 +149,7 @@ jobs:
     displayName: 'Configure TTK'
 
   - script: |
+      make ttkAlgorithm-hierarchy # TODO UGLY HOT FIX
       cmake --build . --target install -- -j 4
     workingDirectory: 'build/'
     displayName: 'Build and install TTK'
