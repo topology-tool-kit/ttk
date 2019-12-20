@@ -6,4 +6,4 @@ HEADERS
   ttkIcoSphere.h
 DEPENDS
   icoSphere
-  ttkTriangulationAlgorithm
+  ttkAlgorithm
