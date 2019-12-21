@@ -3,10 +3,10 @@
 #include <vtkDataObject.h> // For port information
 #include <vtkObjectFactory.h> // for new macro
 
-#include <vtkSmartPointer.h>
+#include <vtkDataArray.h>
 #include <vtkDataSet.h>
 #include <vtkPointData.h>
-#include <vtkDataArray.h>
+#include <vtkSmartPointer.h>
 
 // A VTK macro that enables the instantiation of this class via ::New()
 // You do not have to modify this
@@ -136,35 +136,31 @@ int ttkHelloWorld::RequestData(vtkInformation *request,
   //       If this filter is run within ParaView, then the UI will automatically
   //       call SetInputArrayToProcess (see HelloWorld.xml file).
   //
-  vtkDataArray* inputArray = this->GetInputArrayToProcess(0, inputVector);
+  vtkDataArray *inputArray = this->GetInputArrayToProcess(0, inputVector);
 
   // Create an output array that has the same data type as the input array
   // Note: vtkSmartPointers are well documented
   //       (https://vtk.org/Wiki/VTK/Tutorials/SmartPointers)
-  vtkSmartPointer<vtkDataArray> outputArray = vtkSmartPointer<vtkDataArray>::Take( inputArray->NewInstance() );
-  outputArray->SetName( this->OutputArrayName.data() ); // set array name
-  outputArray->SetNumberOfComponents( 1 ); // only one component per tuple
-  outputArray->SetNumberOfTuples( inputArray->GetNumberOfTuples() );
+  vtkSmartPointer<vtkDataArray> outputArray
+    = vtkSmartPointer<vtkDataArray>::Take(inputArray->NewInstance());
+  outputArray->SetName(this->OutputArrayName.data()); // set array name
+  outputArray->SetNumberOfComponents(1); // only one component per tuple
+  outputArray->SetNumberOfTuples(inputArray->GetNumberOfTuples());
 
   // Get ttk::triangulation of the input vtkDataSet (will create one if does
   // not exist already)
-  ttk::Triangulation *triangulation = ttkAlgorithm::GetTriangulation(
-    inputDataSet
-  );
+  ttk::Triangulation *triangulation
+    = ttkAlgorithm::GetTriangulation(inputDataSet);
 
   // Precondition the triangulation (e.g., enable fetching of vertex neighbors)
-  this->PreconditionTriangulation( triangulation ); // implemented in base class
+  this->preconditionTriangulation(triangulation); // implemented in base class
 
   // Templatize over the different input array data types and call the base code
   int status = 0; // this integer checks if the base code returns an error
-  switch( inputArray->GetDataType() ){
-    vtkTemplateMacro(
-        status = this->ComputeAverages<VTK_TT>(
-          (VTK_TT*) outputArray->GetVoidPointer(0),
-          (VTK_TT*) inputArray->GetVoidPointer(0),
-          triangulation
-        )
-    );
+  switch(inputArray->GetDataType()) {
+    vtkTemplateMacro(status = this->computeAverages<VTK_TT>(
+                       (VTK_TT *)outputArray->GetVoidPointer(0),
+                       (VTK_TT *)inputArray->GetVoidPointer(0), triangulation));
   }
 
   // On error cancel filter execution
@@ -173,7 +169,7 @@ int ttkHelloWorld::RequestData(vtkInformation *request,
 
   // Get output vtkDataSet (which was already instantiated based on the
   // information provided by FillOutputPortInformation)
-  vtkDataSet* outputDataSet = vtkDataSet::GetData( outputVector, 0 );
+  vtkDataSet *outputDataSet = vtkDataSet::GetData(outputVector, 0);
 
   // make a SHALLOW copy of the input
   outputDataSet->ShallowCopy(inputDataSet);

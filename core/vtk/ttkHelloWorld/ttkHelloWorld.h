@@ -36,7 +36,7 @@
 
 class TTKHELLOWORLD_EXPORT ttkHelloWorld
   : public ttkAlgorithm // we inherit from the generic ttkAlgorithm class
-  ,
+    ,
     public ttk::HelloWorld // and we inherit from the base class
 {
 private:

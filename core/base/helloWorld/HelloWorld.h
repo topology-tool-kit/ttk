@@ -15,7 +15,6 @@
 /// 2020.
 ///
 
-
 #pragma once
 
 // ttk common includes
@@ -30,106 +29,104 @@ namespace ttk {
    */
   class HelloWorld : virtual public Debug {
 
-    public:
-      HelloWorld() {
-        this->SetDebugMsgPrefix(
-          "HelloWorld"); // inherited from Debug: prefix will be printed at the
-                         // beginning of every msg
-      };
-      ~HelloWorld(){};
+  public:
+    HelloWorld() {
+      this->setDebugMsgPrefix(
+        "HelloWorld"); // inherited from Debug: prefix will be printed at the
+      // beginning of every msg
+    };
+    ~HelloWorld(){};
 
-      /**
-       * TODO 2: This method preconditions the triangulation for all operations
-       *         the algorithm of this module requires. For instance,
-       *         preconditionVertexNeighbors, preprocessBoundaryEdges, ...
-       *
-       *         Note: If the algorithm does not require a triangulation then
-       *               this method can be deleted.
-       */
-      int PreconditionTriangulation(ttk::Triangulation *triangulation) const {
-        return triangulation->preconditionVertexNeighbors();
-      };
+    /**
+     * TODO 2: This method preconditions the triangulation for all operations
+     *         the algorithm of this module requires. For instance,
+     *         preconditionVertexNeighbors, preprocessBoundaryEdges, ...
+     *
+     *         Note: If the algorithm does not require a triangulation then
+     *               this method can be deleted.
+     */
+    int preconditionTriangulation(ttk::Triangulation *triangulation) const {
+      return triangulation->preconditionVertexNeighbors();
+    };
 
-      /**
-       * TODO 3: Implmentation of the algorithm.
-       *
-       *         Note: If the algorithm requires a triangulation then this
-       *               method must be called after the triangulation has been
-       *               preconditioned for the upcoming operations.
-       */
-      template <class dataType>
-      int ComputeAverages(
-        dataType* outputData,
-        const dataType* inputData,
-        const ttk::Triangulation *triangulation
-      ) const {
-        // start global timer
-        ttk::Timer globalTimer;
+    /**
+     * TODO 3: Implmentation of the algorithm.
+     *
+     *         Note: If the algorithm requires a triangulation then this
+     *               method must be called after the triangulation has been
+     *               preconditioned for the upcoming operations.
+     */
+    template <class dataType>
+    int computeAverages(dataType *outputData,
+                        const dataType *inputData,
+                        const ttk::Triangulation *triangulation) const {
+      // start global timer
+      ttk::Timer globalTimer;
 
-        // print horizontal separator
-        this->PrintMsg(ttk::debug::Separator::L1); // L1 is the '=' separator
+      // print horizontal separator
+      this->printMsg(ttk::debug::Separator::L1); // L1 is the '=' separator
 
-        // print input parameters
-        this->PrintMsg({
-          {"#Threads", std::to_string(this->threadNumber_)},
-          {"#Vertices", std::to_string(triangulation->getNumberOfVertices())},
-        });
+      // print input parameters
+      this->printMsg({
+        {"#Threads", std::to_string(this->threadNumber_)},
+        {"#Vertices", std::to_string(triangulation->getNumberOfVertices())},
+      });
 
-        // ---------------------------------------------------------------------
-        // Compute Vertex Averages
-        // ---------------------------------------------------------------------
-        {
-          // start a local timer for this subprocedure
-          ttk::Timer localTimer;
+      // ---------------------------------------------------------------------
+      // Compute Vertex Averages
+      // ---------------------------------------------------------------------
+      {
+        // start a local timer for this subprocedure
+        ttk::Timer localTimer;
 
-          // print the progress of the current subprocedure (currently 0%)
-          this->PrintMsg("Computing Averages",
-                         0 // progress form 0-1
-          );
+        // print the progress of the current subprocedure (currently 0%)
+        this->printMsg("Computing Averages",
+                       0 // progress form 0-1
+                       );
 
-          // compute the average of each vertex in parallel
-          size_t nVertices = triangulation->getNumberOfVertices();
-          #ifdef TTK_ENABLE_OPENMP
-          #pragma omp parallel for num_threads(this->threadNumber_)
-          #endif
-          for(size_t i = 0; i < nVertices; i++){
-            // initialize average
-            outputData[i] = inputData[ i ];
+        // compute the average of each vertex in parallel
+        size_t nVertices = triangulation->getNumberOfVertices();
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(this->threadNumber_)
+#endif
+        for(size_t i = 0; i < nVertices; i++) {
+          // initialize average
+          outputData[i] = inputData[i];
 
-            // add neighbor values to average
-            size_t nNeighbors = triangulation->getVertexNeighborNumber(i);
-            ttk::SimplexId neighborId;
-            for(size_t j=0; j<nNeighbors; j++){
-              triangulation->getVertexNeighbor(i,j,neighborId);
-              outputData[i] += inputData[ neighborId ];
-            }
-
-            // devide by neighbor number
-            outputData[i] /= nNeighbors;
+          // add neighbor values to average
+          size_t nNeighbors = triangulation->getVertexNeighborNumber(i);
+          ttk::SimplexId neighborId;
+          for(size_t j = 0; j < nNeighbors; j++) {
+            triangulation->getVertexNeighbor(i, j, neighborId);
+            outputData[i] += inputData[neighborId];
           }
 
-          // print the progress of the current subprocedure with elapsed time
-          this->PrintMsg(
-            "Computing Averages",
-            1, // progress
-            localTimer.getElapsedTime(), // time
-            ttk::debug::LineMode::REPLACE // replace last line of output stream
-          );
+          // devide by neighbor number
+          outputData[i] /= nNeighbors;
         }
 
-        // ---------------------------------------------------------------------
-        // print global performance
-        // ---------------------------------------------------------------------
-        {
-          this->PrintMsg(ttk::debug::Separator::L2); // horizontal '-' separator
-          this->PrintMsg(
-            "Complete", 1, globalTimer.getElapsedTime() // global progress, time
+        // print the progress of the current subprocedure with elapsed time
+        this->printMsg(
+          "Computing Averages",
+          1, // progress
+          localTimer.getElapsedTime(), // time
+          ttk::debug::LineMode::REPLACE // replace last line of output stream
           );
-          this->PrintMsg(ttk::debug::Separator::L1); // horizontal '=' separator
-        }
-
-        return 1; // return success
       }
+
+      // ---------------------------------------------------------------------
+      // print global performance
+      // ---------------------------------------------------------------------
+      {
+        this->printMsg(ttk::debug::Separator::L2); // horizontal '-' separator
+        this->printMsg(
+          "Complete", 1, globalTimer.getElapsedTime() // global progress, time
+          );
+        this->printMsg(ttk::debug::Separator::L1); // horizontal '=' separator
+      }
+
+      return 1; // return success
+    }
 
   }; // HelloWorld class
 

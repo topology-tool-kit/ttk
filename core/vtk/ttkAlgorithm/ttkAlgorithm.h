@@ -34,7 +34,7 @@ private:
                             std::pair<ttk::Triangulation *, vtkMTimeType>>
     DataSetToTriangulationMap;
 
-  int ThreadNumberTemp{1};
+  int ThreadNumber{1};
   bool UseAllCores{true};
 
 public:
@@ -45,22 +45,19 @@ public:
    * Updates the number of threads of the base class based on the settings of
    * the VTK wrapper.
    */
-  void UpdateThreadNumber(){
+  void UpdateThreadNumber() {
     // update ttk::BaseClass member
-    this->setThreadNumber(
-      this->UseAllCores
-        ? ttk::OsCall::getNumberOfCores()
-        : this->ThreadNumberTemp
-    );
+    this->setThreadNumber(this->UseAllCores ? ttk::OsCall::getNumberOfCores()
+                                            : this->ThreadNumber);
     this->Modified();
   }
 
   /**
-   * Explicitly sets the maximum number of threads the base code use
+   * Explicitly sets the maximum number of threads for the base code
    * (overriden by UseAllCores member).
    */
   void SetThreadNumber(int threadNumber) {
-    this->ThreadNumberTemp = threadNumber;
+    this->ThreadNumber = threadNumber;
     this->UpdateThreadNumber();
   };
 
