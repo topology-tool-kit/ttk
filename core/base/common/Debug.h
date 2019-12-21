@@ -127,7 +127,7 @@ namespace ttk {
     // =========================================================================
     // New Debug Methods
     // =========================================================================
-    inline int PrintMsg(const std::string &msg,
+    inline int printMsg(const std::string &msg,
                         const debug::Priority &priority = debug::Priority::INFO,
                         const debug::LineMode &lineMode = debug::LineMode::NEW,
                         std::ostream &stream = std::cout) const {
@@ -136,10 +136,10 @@ namespace ttk {
          && (globalDebugLevel_ < priorityAsInt))
         return 0;
 
-      return this->PrintMsgInternal(msg, priority, lineMode, stream);
+      return this->printMsgInternal(msg, priority, lineMode, stream);
     }
 
-    inline int PrintMsg(const std::vector<std::string> &msgs,
+    inline int printMsg(const std::vector<std::string> &msgs,
                         const debug::Priority &priority = debug::Priority::INFO,
                         const debug::LineMode &lineMode = debug::LineMode::NEW,
                         std::ostream &stream = std::cout) const {
@@ -150,18 +150,18 @@ namespace ttk {
 
       size_t prints = 0;
       for(auto &msg : msgs)
-        prints += this->PrintMsgInternal(msg, priority, lineMode, stream);
+        prints += this->printMsgInternal(msg, priority, lineMode, stream);
       return prints == msgs.size() ? 1 : 0;
     }
 
-    inline int PrintErr(const std::string &msg,
+    inline int printErr(const std::string &msg,
                         const debug::LineMode &lineMode = debug::LineMode::NEW,
                         std::ostream &stream = std::cerr) const {
-      return this->PrintMsgInternal(
+      return this->printMsgInternal(
         msg, debug::Priority::ERROR, lineMode, stream);
     }
 
-    inline int PrintMsg(const std::string &msg,
+    inline int printMsg(const std::string &msg,
                         const double &progress,
                         const double &time,
                         const double &memory,
@@ -194,39 +194,39 @@ namespace ttk {
         stats += "]";
       }
 
-      return this->PrintMsgInternal(
+      return this->printMsgInternal(
         msg, stats, msg.length() < 1 ? ">" : ".", priority, lineMode, stream);
     }
 
-    inline int PrintMsg(const std::string &msg,
+    inline int printMsg(const std::string &msg,
                         const double &progress,
                         const double &time,
                         const debug::LineMode &lineMode = debug::LineMode::NEW,
                         const debug::Priority &priority
                         = debug::Priority::PERFORMANCE,
                         std::ostream &stream = std::cout) const {
-      return this->PrintMsg(
+      return this->printMsg(
         msg, progress, time, -1, lineMode, priority, stream);
     }
 
-    inline int PrintMsg(const std::string &msg,
+    inline int printMsg(const std::string &msg,
                         const double &progress,
                         const debug::LineMode &lineMode = debug::LineMode::NEW,
                         const debug::Priority &priority
                         = debug::Priority::PERFORMANCE,
                         std::ostream &stream = std::cout) const {
-      return this->PrintMsg(msg, progress, -1, -1, lineMode, priority, stream);
+      return this->printMsg(msg, progress, -1, -1, lineMode, priority, stream);
     }
 
-    inline int PrintMsg(const std::string &msg,
+    inline int printMsg(const std::string &msg,
                         const double &progress,
                         const debug::Priority &priority,
                         const debug::LineMode &lineMode = debug::LineMode::NEW,
                         std::ostream &stream = std::cout) const {
-      return this->PrintMsg(msg, progress, -1, -1, lineMode, priority, stream);
+      return this->printMsg(msg, progress, -1, -1, lineMode, priority, stream);
     }
 
-    inline int PrintMsg(const std::vector<std::vector<std::string>> &rows,
+    inline int printMsg(const std::vector<std::vector<std::string>> &rows,
                         const debug::Priority &priority = debug::Priority::INFO,
                         const bool hasHeader = true,
                         const debug::LineMode &lineMode = debug::LineMode::NEW,
@@ -267,10 +267,10 @@ namespace ttk {
           row += "," + formatCell(rows[i][j], colSizes[j]);
       }
 
-      return this->PrintMsg(formatedRows, priority, lineMode, stream);
+      return this->printMsg(formatedRows, priority, lineMode, stream);
     }
 
-    inline int PrintMsg(const debug::Separator &separator,
+    inline int printMsg(const debug::Separator &separator,
                         const debug::LineMode &lineMode = debug::LineMode::NEW,
                         const debug::Priority &priority = debug::Priority::INFO,
                         std::ostream &stream = std::cout) const {
@@ -279,18 +279,18 @@ namespace ttk {
          && (globalDebugLevel_ < priorityAsInt))
         return 0;
 
-      return this->PrintMsgInternal(
+      return this->printMsgInternal(
         "", "", std::string(1, (char &)separator), priority, lineMode, stream);
     }
 
-    inline int PrintMsg(const debug::Separator &separator,
+    inline int printMsg(const debug::Separator &separator,
                         const debug::Priority &priority,
                         const debug::LineMode &lineMode = debug::LineMode::NEW,
                         std::ostream &stream = std::cout) const {
-      return this->PrintMsg(separator, lineMode, priority, stream);
+      return this->printMsg(separator, lineMode, priority, stream);
     }
 
-    inline int PrintMsg(const std::string &msg,
+    inline int printMsg(const std::string &msg,
                         const debug::Separator &separator,
                         const debug::LineMode &lineMode = debug::LineMode::NEW,
                         const debug::Priority &priority = debug::Priority::INFO,
@@ -300,21 +300,21 @@ namespace ttk {
          && (globalDebugLevel_ < priorityAsInt))
         return 0;
 
-      return this->PrintMsgInternal(
+      return this->printMsgInternal(
         msg, "", std::string(1, (char &)separator), priority, lineMode, stream);
     }
 
-    inline void SetDebugMsgPrefix(const std::string &prefix) {
-      this->DebugMsgPrefix = prefix.length() > 0 ? "[" + prefix + "] " : "";
+    inline void setDebugMsgPrefix(const std::string &prefix) {
+      this->debugMsgPrefix_ = prefix.length() > 0 ? "[" + prefix + "] " : "";
     }
 
   protected:
     mutable int debugLevel_;
 
-    std::string DebugMsgPrefix;
+    std::string debugMsgPrefix_;
 
     inline int
-      PrintMsgInternal(const std::string &msg,
+      printMsgInternal(const std::string &msg,
                        const std::string &right,
                        const std::string &filler,
                        const debug::Priority &priority = debug::Priority::INFO,
@@ -323,7 +323,7 @@ namespace ttk {
       std::string combinedMsg = msg;
 
       if(filler.length() > 0) {
-        int gapWidth = debug::LINEWIDTH - this->DebugMsgPrefix.length()
+        int gapWidth = debug::LINEWIDTH - this->debugMsgPrefix_.length()
                        - combinedMsg.length() - right.length();
         gapWidth = std::max(gapWidth / filler.length(), (size_t)1);
 
@@ -333,10 +333,10 @@ namespace ttk {
         combinedMsg += "\33[34;1m" + right + "\33[0m";
       }
 
-      return this->PrintMsgInternal(combinedMsg, priority, lineMode, stream);
+      return this->printMsgInternal(combinedMsg, priority, lineMode, stream);
     }
 
-    inline int PrintMsgInternal(const std::string &msg,
+    inline int printMsgInternal(const std::string &msg,
                                 const debug::Priority &priority,
                                 const debug::LineMode &lineMode,
                                 std::ostream &stream = std::cout) const {
@@ -350,7 +350,7 @@ namespace ttk {
 
       // print prefix
       if(lineMode != debug::LineMode::APPEND)
-        stream << "\33[32;1m" << this->DebugMsgPrefix << "\33[0m";
+        stream << "\33[32;1m" << this->debugMsgPrefix_ << "\33[0m";
 
       // print error or warning prefix
       if(priorityAsInt == 0)

@@ -17,7 +17,7 @@ namespace ttk {
 
   public:
     HelloWorld() {
-      this->SetDebugMsgPrefix(
+      this->setDebugMsgPrefix(
         "HelloWorld"); // inherited from Debug: prefix will be printed at the
                        // beginning of every msg
     };
@@ -47,14 +47,14 @@ int ttk::HelloWorld::computeBoundingBox(float *boundingBoxPointCoordinates,
                                         ttk::Triangulation *triangulation,
                                         const float &scale) const {
   // print horizontal separator
-  this->PrintMsg(ttk::debug::Separator::L1); // horizontal '=' separator
+  this->printMsg(ttk::debug::Separator::L1); // horizontal '=' separator
 
 // check general input parameter validity only if TTK_ENABLE_KAMIKAZE is
 // disabled
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!triangulation || !boundingBoxPointCoordinates
      || !boundingBoxConnectivityList) {
-    this->PrintErr(
+    this->printErr(
       "Invalid triangulation, coordinates, or connectivity list pointer.");
     return 0; // return failure
   }
@@ -62,7 +62,7 @@ int ttk::HelloWorld::computeBoundingBox(float *boundingBoxPointCoordinates,
 
   // check algorithm specific input parameter validity
   if(triangulation->isEmpty() || triangulation->getNumberOfVertices() < 1) {
-    this->PrintErr(
+    this->printErr(
       "Unable to compute bounding box for triangulation without vertices.");
     return 0; // return failure
   }
@@ -84,7 +84,7 @@ int ttk::HelloWorld::computeBoundingBox(float *boundingBoxPointCoordinates,
     ttk::Timer timer;
 
     // print the progress of the current subprocedure (at the beginning 0)
-    this->PrintMsg("Compute BB extent",
+    this->printMsg("Compute BB extent",
                    0 // progress form 0-1
     );
 
@@ -117,13 +117,13 @@ int ttk::HelloWorld::computeBoundingBox(float *boundingBoxPointCoordinates,
     }
 
     // print the progress of the current subprocedure with elapsed time
-    this->PrintMsg(
+    this->printMsg(
       "Compute BB extent", 1, timer.getElapsedTime(), // progress, time
       ttk::debug::LineMode::REPLACE // replace last line of output stream
     );
 
     // in case of detailed reporting print extent to stream as a table
-    this->PrintMsg({{"xBounds", "[" + std::to_string(xMin) + ", "
+    this->printMsg({{"xBounds", "[" + std::to_string(xMin) + ", "
                                   + std::to_string(xMax) + "]"},
                     {"yBounds", "[" + std::to_string(yMin) + ", "
                                   + std::to_string(yMax) + "]"},
@@ -140,7 +140,7 @@ int ttk::HelloWorld::computeBoundingBox(float *boundingBoxPointCoordinates,
     ttk::Timer timer;
 
     // print the progress of the current subprocedure (at the beginning 0)
-    this->PrintMsg("Compute BB corner points",
+    this->printMsg("Compute BB corner points",
                    0 // progress form 0-1
     );
 
@@ -198,7 +198,7 @@ int ttk::HelloWorld::computeBoundingBox(float *boundingBoxPointCoordinates,
       boundingBoxPointCoordinates[i] *= scale;
 
     // print the progress of the current subprocedure with elapsed time
-    this->PrintMsg(
+    this->printMsg(
       "Compute BB corner points", 1, timer.getElapsedTime(), // progress, time
       ttk::debug::LineMode::REPLACE // replace last line of output stream
     );
@@ -212,7 +212,7 @@ int ttk::HelloWorld::computeBoundingBox(float *boundingBoxPointCoordinates,
     ttk::Timer timer;
 
     // print the progress of the current subprocedure (at the beginning 0)
-    this->PrintMsg("Compute BB connectivity list",
+    this->printMsg("Compute BB connectivity list",
                    0 // progress form 0-1
     );
 
@@ -230,7 +230,7 @@ int ttk::HelloWorld::computeBoundingBox(float *boundingBoxPointCoordinates,
     boundingBoxConnectivityList[index++] = 7; // vertex index
 
     // print the progress of the current subprocedure with elapsed time
-    this->PrintMsg(
+    this->printMsg(
       "Compute BB connectivity list", 1,
       timer.getElapsedTime(), // progress, time
       ttk::debug::LineMode::REPLACE // replace last line of output stream
@@ -241,11 +241,11 @@ int ttk::HelloWorld::computeBoundingBox(float *boundingBoxPointCoordinates,
   // print global performance
   // -------------------------------------------------------------------------
   {
-    this->PrintMsg(ttk::debug::Separator::L2); // horizontal '-' separator
-    this->PrintMsg(
+    this->printMsg(ttk::debug::Separator::L2); // horizontal '-' separator
+    this->printMsg(
       "Complete", 1, globalTimer.getElapsedTime() // global progress, time
     );
-    this->PrintMsg(ttk::debug::Separator::L1); // horizontal '=' separator
+    this->printMsg(ttk::debug::Separator::L1); // horizontal '=' separator
   }
 
   return 1; // return success
