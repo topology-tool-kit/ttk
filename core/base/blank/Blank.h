@@ -138,12 +138,20 @@ int ttk::blank::Blank::execute(const triangulationType *triangulation,
 template <class dataType>
 int ttk::blank::Blank::execute(const AbstractTriangulation *triangulation,
                                const int &argument) const {
-
-                                 
-  using namespace std;                               
+                    
+  
+  using namespace std;
   stringstream s;
-
-  s << "[Common] "
+  
+  for(int i = 0; i < 100; i++){
+    s << "\33[" << i << ";1m";
+    s << "[Common] i = " << i;
+    s << "\33[0m";
+    s << endl;
+  }
+  
+  s << "[Common] ";
+  s <<
     " _____ _____ _  __                    __  __    ____   ___ ____   ___"
     << endl
     << "[Common] "
@@ -182,7 +190,7 @@ int ttk::blank::Blank::execute(const AbstractTriangulation *triangulation,
   s << "[Common]   -DTTK_ENABLE_KAMIKAZE=ON" << endl;
   s << "[Common]" << endl;
 #endif
-  dMsg(cout, s.str(), 1);
+  dMsg(cout, s.str(), 1);                                 
                                  
   Timer t;
 
