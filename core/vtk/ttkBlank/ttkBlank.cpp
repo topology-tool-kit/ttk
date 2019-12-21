@@ -104,6 +104,12 @@ vtkStandardNewMacro(ttkBlank)
   ttk::Triangulation::Type triangulationType = triangulation->getType();
   int dataType = inputScalarField->GetDataType();
 
+  switch(dataType){
+    vtkTemplateMacro(
+      blank_.execute<VTK_TT>(triangulation, SomeIntegerArgument)
+    );
+  }
+  
   //   ttkTemplateMacro(triangulationType, dataType,
   //    blank_execute<TTK_TT>(triangulation, SomeIntegerArgument));
 
@@ -114,7 +120,7 @@ vtkStandardNewMacro(ttkBlank)
   //    blank_execute<TTK_TT, VTK_TT1, VTK_TT2>(
   //    triangulation, SomeIntegerArgument));
 
-  switch(triangulation->getType()) {
+//   switch(triangulation->getType()) {
 
     // case ttk::Triangulation::explicitRepresentation:
     //   ttk::ExplicitTriangulation *explicitTriangulation
@@ -149,7 +155,7 @@ vtkStandardNewMacro(ttkBlank)
       //             periodicTriangulation, SomeIntegerArgument));
       //       }
       //       break;
-  }
+//   }
 
   {
     stringstream msg;

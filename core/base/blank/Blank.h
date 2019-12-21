@@ -128,17 +128,62 @@ namespace ttk {
   } // namespace blank
 } // namespace ttk
 
-template <class dataType>
-int ttk::blank::Blank::execute(const AbstractTriangulation *triangulation,
+template <class triangulationType, class dataType>
+int ttk::blank::Blank::execute(const triangulationType *triangulation,
                                const int &argument) const {
   return 0;
 }
 
 // template functions
-template <class triangulationType, class dataType>
-int ttk::blank::Blank::execute(const triangulationType *triangulation,
+template <class dataType>
+int ttk::blank::Blank::execute(const AbstractTriangulation *triangulation,
                                const int &argument) const {
 
+                                 
+  using namespace std;                               
+  stringstream s;
+
+  s << "[Common] "
+    " _____ _____ _  __                    __  __    ____   ___ ____   ___"
+    << endl
+    << "[Common] "
+    "|_   _|_   _| |/ /                   / /__"
+    "\\ \\  |___ \\ / _ \\___ \\ / _ \\"
+    << endl
+    << "[Common] "
+      "  | |   | | | ' /                   | |/ __| |   __) | | | |__) | | | |"
+    << endl
+    << "[Common] "
+    "  | |   | | | . \\                   | | (__| |  / __/| |_| / __/| |_| |"
+    << endl
+    << "[Common] "
+    "  |_|   |_| |_|\\_\\                  "
+    "| |\\___| | |_____|\\___/_____|\\___/"
+    << endl
+    << "[Common] "
+    "                                     \\_\\  /_/"
+    << endl;
+  s << "[Common] Welcome!" << endl;
+#ifndef NDEBUG
+  s << "[Common]" << endl;
+  s << "[Common] WARNING:" << endl;
+  s << "[Common] TTK has been built in debug mode! (developers only)" << endl;
+  s << "[Common] Expect important performance degradation." << endl;
+  s << "[Common]" << endl;
+#endif
+#ifndef TTK_ENABLE_KAMIKAZE
+  s << "[Common]" << endl;
+  s << "[Common] WARNING:" << endl;
+  s << "[Common] TTK has *NOT* been built in performance mode!"
+    << " (developers only)" << endl;
+  s << "[Common] Expect important performance degradation." << endl;
+  s << "[Common] " << endl;
+  s << "[Common] To enable the performance mode, rebuild TTK with:" << endl;
+  s << "[Common]   -DTTK_ENABLE_KAMIKAZE=ON" << endl;
+  s << "[Common]" << endl;
+#endif
+  dMsg(cout, s.str(), 1);
+                                 
   Timer t;
 
   // check the consistency of the variables -- to adapt
