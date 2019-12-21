@@ -46,7 +46,7 @@ int ttk::HelloWorld::computeBoundingBox(float *boundingBoxPointCoordinates,
                                         idType *boundingBoxConnectivityList,
                                         ttk::Triangulation *triangulation,
                                         const float &scale) const {
-                                          
+
   // print horizontal separator
   this->printMsg(ttk::debug::Separator::L1); // horizontal '=' separator
 

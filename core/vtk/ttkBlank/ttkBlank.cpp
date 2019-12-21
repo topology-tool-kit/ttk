@@ -104,12 +104,11 @@ vtkStandardNewMacro(ttkBlank)
   ttk::Triangulation::Type triangulationType = triangulation->getType();
   int dataType = inputScalarField->GetDataType();
 
-  switch(dataType){
+  switch(dataType) {
     vtkTemplateMacro(
-      blank_.execute<VTK_TT>(triangulation, SomeIntegerArgument)
-    );
+      blank_.execute<VTK_TT>(triangulation, SomeIntegerArgument));
   }
-  
+
   //   ttkTemplateMacro(triangulationType, dataType,
   //    blank_execute<TTK_TT>(triangulation, SomeIntegerArgument));
 
@@ -120,42 +119,42 @@ vtkStandardNewMacro(ttkBlank)
   //    blank_execute<TTK_TT, VTK_TT1, VTK_TT2>(
   //    triangulation, SomeIntegerArgument));
 
-//   switch(triangulation->getType()) {
+  //   switch(triangulation->getType()) {
 
-    // case ttk::Triangulation::explicitRepresentation:
-    //   ttk::ExplicitTriangulation *explicitTriangulation
-    //     = (ttk::ExplicitTriangulation *)
-    //         triangulation->getAbstractTriangulation();
-    //   switch(inputScalarField->GetDataType()) {
-    //     vtkTemplateMacro(
-    //       blank_.execute<VTK_TT>(explicitTriangulation, SomeIntegerArgument));
-    //     //         vtkTemplateMacro(blank_.execute<ttk::ExplicitTriangulation,
-    //     //         VTK_TT>(explicitTriangulation, SomeIntegerArgument));
-    //   }
-    //   break;
+  // case ttk::Triangulation::explicitRepresentation:
+  //   ttk::ExplicitTriangulation *explicitTriangulation
+  //     = (ttk::ExplicitTriangulation *)
+  //         triangulation->getAbstractTriangulation();
+  //   switch(inputScalarField->GetDataType()) {
+  //     vtkTemplateMacro(
+  //       blank_.execute<VTK_TT>(explicitTriangulation, SomeIntegerArgument));
+  //     //         vtkTemplateMacro(blank_.execute<ttk::ExplicitTriangulation,
+  //     //         VTK_TT>(explicitTriangulation, SomeIntegerArgument));
+  //   }
+  //   break;
 
-      //     case ttk::Triangulation::implicitRepresentation:
-      //       ttk::ImplicitTriangulation *implicitTriangulation =
-      //         (ttk::ImplicitTriangulation *)
-      //           triangulation->getAbstractTriangulation();
-      //       switch(inputScalarField->GetDataType()) {
-      //         vtkTemplateMacro(
-      //           blank_.execute<ttk::ImplicitTriangulation, VTK_TT>(
-      //             implicitTriangulation, SomeIntegerArgument));
-      //       }
-      //       break;
-      //
-      //     case ttk::Triangulation::periodicRepresentation:
-      //       ttk::PeriodicImplicitTriangulation *periodicTriangulation =
-      //         (ttk::PeriodicImplicitTriangulation *)
-      //           triangulation->getAbstractTriangulation();
-      //       switch(inputScalarField->GetDataType()) {
-      //         vtkTemplateMacro(
-      //           blank_.execute<ttk::PeriodicImplicitTriangulation, VTK_TT>(
-      //             periodicTriangulation, SomeIntegerArgument));
-      //       }
-      //       break;
-//   }
+  //     case ttk::Triangulation::implicitRepresentation:
+  //       ttk::ImplicitTriangulation *implicitTriangulation =
+  //         (ttk::ImplicitTriangulation *)
+  //           triangulation->getAbstractTriangulation();
+  //       switch(inputScalarField->GetDataType()) {
+  //         vtkTemplateMacro(
+  //           blank_.execute<ttk::ImplicitTriangulation, VTK_TT>(
+  //             implicitTriangulation, SomeIntegerArgument));
+  //       }
+  //       break;
+  //
+  //     case ttk::Triangulation::periodicRepresentation:
+  //       ttk::PeriodicImplicitTriangulation *periodicTriangulation =
+  //         (ttk::PeriodicImplicitTriangulation *)
+  //           triangulation->getAbstractTriangulation();
+  //       switch(inputScalarField->GetDataType()) {
+  //         vtkTemplateMacro(
+  //           blank_.execute<ttk::PeriodicImplicitTriangulation, VTK_TT>(
+  //             periodicTriangulation, SomeIntegerArgument));
+  //       }
+  //       break;
+  //   }
 
   {
     stringstream msg;

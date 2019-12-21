@@ -138,7 +138,7 @@ int ttk::blank::Blank::execute(const triangulationType *triangulation,
 template <class dataType>
 int ttk::blank::Blank::execute(const AbstractTriangulation *triangulation,
                                const int &argument) const {
-                    
+
   Timer t;
 
   // check the consistency of the variables -- to adapt

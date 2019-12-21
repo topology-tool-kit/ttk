@@ -168,7 +168,6 @@ ttk::Triangulation *ttkAlgorithm::GetTriangulation(vtkDataSet *dataSet) {
           ttkAlgorithm::DataSetToTriangulationMap.insert(
             {(void *)lineCells, {newTriangulation, lineCells->GetMTime()}});
         }
-
       }
 
       this->printMsg("Initializing Explicit Triangulation", 1,
@@ -179,11 +178,11 @@ ttk::Triangulation *ttkAlgorithm::GetTriangulation(vtkDataSet *dataSet) {
 
     // =====================================================================
     case VTK_IMAGE_DATA: {
-      auto dataSetAsID = (vtkImageData*) dataSet;
+      auto dataSetAsID = (vtkImageData *)dataSet;
 
       // check if triangulation already exists
-      auto it = ttkAlgorithm::DataSetToTriangulationMap.find(
-        (void *)dataSetAsID);
+      auto it
+        = ttkAlgorithm::DataSetToTriangulationMap.find((void *)dataSetAsID);
       if(it != ttkAlgorithm::DataSetToTriangulationMap.end()) {
         if(it->second.second == dataSetAsID->GetMTime()) {
           this->printMsg("Returning already initilized triangulation",
@@ -217,17 +216,15 @@ ttk::Triangulation *ttkAlgorithm::GetTriangulation(vtkDataSet *dataSet) {
       firstPoint[2] = origin[2] + extents[4] * spacing[2];
 
       newTriangulation->setInputGrid(
-        firstPoint[0], firstPoint[1], firstPoint[2],
-        spacing[0], spacing[1], spacing[2],
-        gridDimensions[0], gridDimensions[1], gridDimensions[2]
-      );
+        firstPoint[0], firstPoint[1], firstPoint[2], spacing[0], spacing[1],
+        spacing[2], gridDimensions[0], gridDimensions[1], gridDimensions[2]);
 
       ttkAlgorithm::DataSetToTriangulationMap.insert(
-            {(void *)dataSetAsID, {newTriangulation, dataSetAsID->GetMTime()}});
+        {(void *)dataSetAsID, {newTriangulation, dataSetAsID->GetMTime()}});
 
       this->printMsg("Initializing Implicit Triangulation", 1,
-        ttk::debug::LineMode::REPLACE,
-        ttk::debug::Priority::DETAIL);
+                     ttk::debug::LineMode::REPLACE,
+                     ttk::debug::Priority::DETAIL);
       return newTriangulation;
     }
 

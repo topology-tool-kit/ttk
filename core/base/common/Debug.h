@@ -61,26 +61,26 @@ namespace ttk {
       APPEND, // append
       REPLACE // replace line and append
     };
-   
-    const std::string BOLD="\33[0;1m";
-    const std::string GREY="\33[2;1m";
-    const std::string ITALIC="\33[3;1m";
-    const std::string UNDERLINED="\33[4;1m";
-    const std::string FLASHING="\33[5;1m";
-    const std::string INVERTED="\33[7;1m";
-    const std::string STRIKETHROUGH="\33[9;1m";
-    const std::string DARKGREY="\33[30;1m";
-    const std::string RED="\33[31;1m";
-    const std::string GREEN="\33[32;1m";
-    const std::string YELLOW="\33[33;1m";
-    const std::string BLUE="\33[34;1m";
-    const std::string PINK="\33[35;1m";
-    const std::string LIGHTBLUE="\33[36;1m";
-    const std::string BRIGHTWHITE="\33[37;1m";
-    const std::string ENDCOLOR="\33[0m";
-    
+
+    const std::string BOLD = "\33[0;1m";
+    const std::string GREY = "\33[2;1m";
+    const std::string ITALIC = "\33[3;1m";
+    const std::string UNDERLINED = "\33[4;1m";
+    const std::string FLASHING = "\33[5;1m";
+    const std::string INVERTED = "\33[7;1m";
+    const std::string STRIKETHROUGH = "\33[9;1m";
+    const std::string DARKGREY = "\33[30;1m";
+    const std::string RED = "\33[31;1m";
+    const std::string GREEN = "\33[32;1m";
+    const std::string YELLOW = "\33[33;1m";
+    const std::string BLUE = "\33[34;1m";
+    const std::string PINK = "\33[35;1m";
+    const std::string LIGHTBLUE = "\33[36;1m";
+    const std::string BRIGHTWHITE = "\33[37;1m";
+    const std::string ENDCOLOR = "\33[0m";
+
     const int LINEWIDTH = 80;
-  }; // namespace DEBUG
+  }; // namespace debug
 
   class Debug : public BaseClass {
 
@@ -367,8 +367,7 @@ namespace ttk {
 
       // print prefix
       if(lineMode != debug::LineMode::APPEND)
-        stream << debug::GREEN 
-          << this->debugMsgPrefix_ << debug::ENDCOLOR;
+        stream << debug::GREEN << this->debugMsgPrefix_ << debug::ENDCOLOR;
 
       // print error or warning prefix
       if(priorityAsInt == 0)
