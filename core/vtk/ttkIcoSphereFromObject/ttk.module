@@ -1,0 +1,8 @@
+NAME
+  ttkIcoSphereFromObject
+SOURCES
+  ttkIcoSphereFromObject.cpp
+HEADERS
+  ttkIcoSphereFromObject.h
+DEPENDS
+  ttkIcoSphere

@@ -1,7 +1,4 @@
 NAME
- ttkIcoSphere
+  ttkIcoSphere
 DEPENDS
-  VTK::FiltersCore
-PRIVATE_DEPENDS
-  VTK::CommonCore
-
+  ttkAlgorithm

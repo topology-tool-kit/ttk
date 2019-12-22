@@ -34,17 +34,39 @@ private:
                             std::pair<ttk::Triangulation *, vtkMTimeType>>
     DataSetToTriangulationMap;
 
+  int ThreadNumber{1};
+  bool UseAllCores{true};
+
 public:
   static ttkAlgorithm *New();
   vtkTypeMacro(ttkAlgorithm, vtkAlgorithm);
 
   /**
-   * Controls the maximum number of threads used by algorithms that are invoked
-   * by the VTK wrapper.
+   * Updates the number of threads of the base class based on the settings of
+   * the VTK wrapper.
+   */
+  void UpdateThreadNumber() {
+    // update ttk::BaseClass member
+    this->setThreadNumber(this->UseAllCores ? ttk::OsCall::getNumberOfCores()
+                                            : this->ThreadNumber);
+    this->Modified();
+  }
+
+  /**
+   * Explicitly sets the maximum number of threads for the base code
+   * (overriden by UseAllCores member).
    */
   void SetThreadNumber(int threadNumber) {
-    this->setThreadNumber(threadNumber); // from ttk::BaseClass
-    this->Modified();
+    this->ThreadNumber = threadNumber;
+    this->UpdateThreadNumber();
+  };
+
+  /**
+   * Controls if the base code should use all available cores.
+   */
+  void SetUseAllCores(bool useAllCores) {
+    this->UseAllCores = useAllCores;
+    this->UpdateThreadNumber();
   };
 
   /**

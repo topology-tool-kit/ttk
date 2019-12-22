@@ -101,7 +101,7 @@ ttk::Triangulation *ttkAlgorithm::GetTriangulation(vtkDataSet *dataSet) {
       auto it = ttkAlgorithm::DataSetToTriangulationMap.end();
       int triangulationStatus
         = 0; // 0: no triangulation chached; 1: triangulation not valid; 2:
-             // triangulation valid
+      // triangulation valid
       {
         auto polyCells = dataSetAsPD->GetPolys();
         auto lineCells = dataSetAsPD->GetLines();
@@ -230,8 +230,7 @@ ttk::Triangulation *ttkAlgorithm::GetTriangulation(vtkDataSet *dataSet) {
 
     // UNSUPPORTED DATA TYPE
     // =====================================================================
-    default: {
-    }
+    default: {}
   }
 
   this->printErr("Unable to get/create triangulation for '"
