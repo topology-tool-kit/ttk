@@ -1,3 +1,5 @@
+/// TODO 4: Provide your information
+///
 /// \ingroup vtk
 /// \class ttkHelloWorld
 /// \author Your Name Here <Your Email Address Here>
@@ -39,45 +41,49 @@ class TTKHELLOWORLD_EXPORT ttkHelloWorld
 {
 private:
   /**
-   * TODO 1: Add all filter parameters only as private member variables.
+   * TODO 5: Add all filter parameters only as private member variables and
+   *         initialize them here.
    */
-  float Scale{1};
+  std::string OutputArrayName{"AveragedScalarField"};
 
 public:
   /**
-   * TODO 2: Automatically generate getters and setters of filter
-   * parameters via vtkMacros.
+   * TODO 6: Automatically generate getters and setters of filter
+   *         parameters via vtkMacros.
    */
-  vtkSetMacro(Scale, float);
-  vtkGetMacro(Scale, float);
+  vtkSetMacro(OutputArrayName, std::string);
+  vtkGetMacro(OutputArrayName, std::string);
 
   /**
-   * This static method and the macro below are VTK conventions. You don't
-   * have to modify this.
+   * This static method and the macro below are VTK conventions on how to
+   * instantiate VTK objects. You don't have to modify this.
    */
   static ttkHelloWorld *New();
   vtkTypeMacro(ttkHelloWorld, ttkAlgorithm);
 
 protected:
   /**
-   * TODO 3: Implement the filter constructor and destructor (see cpp file)
+   * TODO 7: Implement the filter constructor and destructor
+   *         (see cpp file)
    */
   ttkHelloWorld();
   ~ttkHelloWorld() override;
 
   /**
-   * TODO 4: Specify the required input data type of each input port (see cpp
-   * file)
+   * TODO 8: Specify the input data type of each input port
+   *         (see cpp file)
    */
   int FillInputPortInformation(int port, vtkInformation *info) override;
 
   /**
-   * TODO 5: Specify the data object type of each output port (see cpp file)
+   * TODO 9: Specify the data object type of each output port
+   *         (see cpp file)
    */
   int FillOutputPortInformation(int port, vtkInformation *info) override;
 
   /**
-   * TODO 6: Implement the purpose of this filter (see cpp file)
+   * TODO 10: Pass VTK data to the base code and convert base code output to VTK
+   *          (see cpp file)
    */
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,

@@ -55,11 +55,7 @@ namespace ttk {
     Triangulation &operator=(Triangulation &&);
     ~Triangulation();
 
-    enum type {
-      explicitRepresentation,
-      implicitRepresentation,
-      periodicRepresentation
-    };
+    enum class Type { EXPLICIT, IMPLICIT, PERIODIC };
 
     /// Reset the triangulation data-structures.
     /// \return Returns 0 upon success, negative values otherwise.
@@ -1690,13 +1686,13 @@ namespace ttk {
     ///
     /// \return Returns the current type of the triangulation.
     /// \sa setPeriodicBoundaryConditions()
-    inline type getType() const {
+    inline Triangulation::Type getType() const {
       if(abstractTriangulation_ == &explicitTriangulation_)
-        return explicitRepresentation;
+        return Triangulation::Type::EXPLICIT;
       else if(abstractTriangulation_ == &implicitTriangulation_)
-        return implicitRepresentation;
+        return Triangulation::Type::IMPLICIT;
       else
-        return periodicRepresentation;
+        return Triangulation::Type::PERIODIC;
     }
 
     /// Get the \p localEdgeId-th edge identifier connected to the

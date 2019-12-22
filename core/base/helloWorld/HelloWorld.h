@@ -1,9 +1,19 @@
+/// TODO 1: Provide your information
+///
 /// \ingroup base
 /// \class ttk::HelloWorld
 /// \author Your Name Here <Your Email Address Here>
-/// \date The Data Here.
+/// \date The Date Here.
 ///
-/// TODO
+/// This module defines the %HelloWorld class that computes for each vertex of a
+/// triangulation the average scalar value of itself and its direct neighbors.
+///
+/// \b Related \b publication: \n
+/// 'HelloWorld'
+/// Jonas Lukasczyk and Julien Tierny.
+/// TTK Publications.
+/// 2020.
+///
 
 #pragma once
 
@@ -13,240 +23,111 @@
 
 namespace ttk {
 
+  /**
+   * The HelloWorld class provides methods to compute for each vertex of a
+   * triangulation the average scalar value of itself and its direct neighbors.
+   */
   class HelloWorld : virtual public Debug {
 
   public:
     HelloWorld() {
-      this->SetDebugMsgPrefix(
+      this->setDebugMsgPrefix(
         "HelloWorld"); // inherited from Debug: prefix will be printed at the
-                       // beginning of every msg
+      // beginning of every msg
     };
     ~HelloWorld(){};
 
-    template <class idType>
-    int computeBoundingBox(float *boundingBoxPointCoordinates,
-                           idType *boundingBoxConnectivityList,
-                           ttk::Triangulation *triangulation,
-                           const float &scale) const;
+    /**
+     * TODO 2: This method preconditions the triangulation for all operations
+     *         the algorithm of this module requires. For instance,
+     *         preconditionVertexNeighbors, preprocessBoundaryEdges, ...
+     *
+     *         Note: If the algorithm does not require a triangulation then
+     *               this method can be deleted.
+     */
+    int preconditionTriangulation(ttk::Triangulation *triangulation) const {
+      return triangulation->preconditionVertexNeighbors();
+    };
 
-  private:
-    int preconditionTriangulation(ttk::Triangulation *triangulation) const;
-  };
-} // namespace ttk
+    /**
+     * TODO 3: Implmentation of the algorithm.
+     *
+     *         Note: If the algorithm requires a triangulation then this
+     *               method must be called after the triangulation has been
+     *               preconditioned for the upcoming operations.
+     */
+    template <class dataType>
+    int computeAverages(dataType *outputData,
+                        const dataType *inputData,
+                        const ttk::Triangulation *triangulation) const {
+      // start global timer
+      ttk::Timer globalTimer;
 
-int ttk::HelloWorld::preconditionTriangulation(
-  ttk::Triangulation *triangulation) const {
-  if(!triangulation->hasPreconditionedVertexNeighbors())
-    return triangulation->preconditionVertexNeighbors();
-  return 0;
-};
+      // print horizontal separator
+      this->printMsg(ttk::debug::Separator::L1); // L1 is the '=' separator
 
-template <class idType>
-int ttk::HelloWorld::computeBoundingBox(float *boundingBoxPointCoordinates,
-                                        idType *boundingBoxConnectivityList,
-                                        ttk::Triangulation *triangulation,
-                                        const float &scale) const {
-  // print horizontal separator
-  this->PrintMsg(ttk::debug::Separator::L1); // horizontal '=' separator
+      // print input parameters
+      this->printMsg({
+        {"#Threads", std::to_string(this->threadNumber_)},
+        {"#Vertices", std::to_string(triangulation->getNumberOfVertices())},
+      });
 
-// check general input parameter validity only if TTK_ENABLE_KAMIKAZE is
-// disabled
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(!triangulation || !boundingBoxPointCoordinates
-     || !boundingBoxConnectivityList) {
-    this->PrintErr(
-      "Invalid triangulation, coordinates, or connectivity list pointer.");
-    return 0; // return failure
-  }
+      // ---------------------------------------------------------------------
+      // Compute Vertex Averages
+      // ---------------------------------------------------------------------
+      {
+        // start a local timer for this subprocedure
+        ttk::Timer localTimer;
+
+        // print the progress of the current subprocedure (currently 0%)
+        this->printMsg("Computing Averages",
+                       0 // progress form 0-1
+        );
+
+        // compute the average of each vertex in parallel
+        size_t nVertices = triangulation->getNumberOfVertices();
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(this->threadNumber_)
 #endif
+        for(size_t i = 0; i < nVertices; i++) {
+          // initialize average
+          outputData[i] = inputData[i];
 
-  // check algorithm specific input parameter validity
-  if(triangulation->isEmpty() || triangulation->getNumberOfVertices() < 1) {
-    this->PrintErr(
-      "Unable to compute bounding box for triangulation without vertices.");
-    return 0; // return failure
-  }
+          // add neighbor values to average
+          size_t nNeighbors = triangulation->getVertexNeighborNumber(i);
+          ttk::SimplexId neighborId;
+          for(size_t j = 0; j < nNeighbors; j++) {
+            triangulation->getVertexNeighbor(i, j, neighborId);
+            outputData[i] += inputData[neighborId];
+          }
 
-  // ensure that triangulation is preconditioned for the following operations
-  this->preconditionTriangulation(triangulation);
+          // devide by neighbor number
+          outputData[i] /= nNeighbors;
+        }
 
-  // start a global timer AFTER preconditioning
-  ttk::Timer globalTimer;
+        // print the progress of the current subprocedure with elapsed time
+        this->printMsg(
+          "Computing Averages",
+          1, // progress
+          localTimer.getElapsedTime(), // time
+          ttk::debug::LineMode::REPLACE // replace last line of output stream
+        );
+      }
 
-  // variables that will store BB extent
-  float xMin, xMax, yMin, yMax, zMin, zMax = 0;
+      // ---------------------------------------------------------------------
+      // print global performance
+      // ---------------------------------------------------------------------
+      {
+        this->printMsg(ttk::debug::Separator::L2); // horizontal '-' separator
+        this->printMsg(
+          "Complete", 1, globalTimer.getElapsedTime() // global progress, time
+        );
+        this->printMsg(ttk::debug::Separator::L1); // horizontal '=' separator
+      }
 
-  // -------------------------------------------------------------------------
-  // compute bounding box extent of triangulation
-  // -------------------------------------------------------------------------
-  {
-    // start a local timer for this subprocedure
-    ttk::Timer timer;
-
-    // print the progress of the current subprocedure (at the beginning 0)
-    this->PrintMsg("Compute BB extent",
-                   0 // progress form 0-1
-    );
-
-    // variables that will store the xyz coordinates of the current vertex
-    float x, y, z = 0;
-
-    // nVertices has to > 0 otherwise the triangulation would be empty
-    size_t nVertices = triangulation->getNumberOfVertices();
-
-    // initialize BB extent with first vertex
-    triangulation->getVertexPoint(0, x, y, z);
-    xMin = x;
-    xMax = x;
-    yMin = y;
-    yMax = y;
-    zMin = z;
-    zMax = z;
-
-    // compute actual extent
-    for(size_t i = 1; i < nVertices; i++) {
-      triangulation->getVertexPoint(i, x, y, z);
-
-      xMin = std::min(xMin, x);
-      yMin = std::min(yMin, y);
-      zMin = std::min(zMin, z);
-
-      xMax = std::max(xMax, x);
-      yMax = std::max(yMax, y);
-      zMax = std::max(zMax, z);
+      return 1; // return success
     }
 
-    // print the progress of the current subprocedure with elapsed time
-    this->PrintMsg(
-      "Compute BB extent", 1, timer.getElapsedTime(), // progress, time
-      ttk::debug::LineMode::REPLACE // replace last line of output stream
-    );
+  }; // HelloWorld class
 
-    // in case of detailed reporting print extent to stream as a table
-    this->PrintMsg({{"xBounds", "[" + std::to_string(xMin) + ", "
-                                  + std::to_string(xMax) + "]"},
-                    {"yBounds", "[" + std::to_string(yMin) + ", "
-                                  + std::to_string(yMax) + "]"},
-                    {"zBounds", "[" + std::to_string(zMin) + ", "
-                                  + std::to_string(zMax) + "]"}},
-                   ttk::debug::Priority::DETAIL);
-  }
-
-  // -------------------------------------------------------------------------
-  // Compute corner point coordinates
-  // -------------------------------------------------------------------------
-  {
-    // start a local timer for this subprocedure
-    ttk::Timer timer;
-
-    // print the progress of the current subprocedure (at the beginning 0)
-    this->PrintMsg("Compute BB corner points",
-                   0 // progress form 0-1
-    );
-
-    // set corner points coordinates
-    size_t index = 0;
-
-    // Bottom 4 vertices
-    // 0. vertex
-    boundingBoxPointCoordinates[index++] = xMin;
-    boundingBoxPointCoordinates[index++] = yMin;
-    boundingBoxPointCoordinates[index++] = zMin;
-
-    // 1. vertex
-    boundingBoxPointCoordinates[index++] = xMax;
-    boundingBoxPointCoordinates[index++] = yMin;
-    boundingBoxPointCoordinates[index++] = zMin;
-
-    // 2. vertex
-    boundingBoxPointCoordinates[index++] = xMin;
-    boundingBoxPointCoordinates[index++] = yMax;
-    boundingBoxPointCoordinates[index++] = zMin;
-
-    // 3. vertex
-    boundingBoxPointCoordinates[index++] = xMax;
-    boundingBoxPointCoordinates[index++] = yMax;
-    boundingBoxPointCoordinates[index++] = zMin;
-
-    // Top 4 vertices
-    // 4. vertex
-    boundingBoxPointCoordinates[index++] = xMin;
-    boundingBoxPointCoordinates[index++] = yMin;
-    boundingBoxPointCoordinates[index++] = zMax;
-
-    // 5. vertex
-    boundingBoxPointCoordinates[index++] = xMax;
-    boundingBoxPointCoordinates[index++] = yMin;
-    boundingBoxPointCoordinates[index++] = zMax;
-
-    // 6. vertex
-    boundingBoxPointCoordinates[index++] = xMin;
-    boundingBoxPointCoordinates[index++] = yMax;
-    boundingBoxPointCoordinates[index++] = zMax;
-
-    // 7. vertex
-    boundingBoxPointCoordinates[index++] = xMax;
-    boundingBoxPointCoordinates[index++] = yMax;
-    boundingBoxPointCoordinates[index++] = zMax;
-
-// Multiply coordinates by scale (assumes object center is [0,0,0])
-// Since each computation is independent we can use a parallel for loop
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
-#endif
-    for(size_t i = 0; i < 24; i++)
-      boundingBoxPointCoordinates[i] *= scale;
-
-    // print the progress of the current subprocedure with elapsed time
-    this->PrintMsg(
-      "Compute BB corner points", 1, timer.getElapsedTime(), // progress, time
-      ttk::debug::LineMode::REPLACE // replace last line of output stream
-    );
-  }
-
-  // -------------------------------------------------------------------------
-  // update connectivity list
-  // -------------------------------------------------------------------------
-  {
-    // start a local timer for this subprocedure
-    ttk::Timer timer;
-
-    // print the progress of the current subprocedure (at the beginning 0)
-    this->PrintMsg("Compute BB connectivity list",
-                   0 // progress form 0-1
-    );
-
-    size_t index = 0;
-
-    // Voxel
-    boundingBoxConnectivityList[index++] = 8; // #vertices that constitute cell
-    boundingBoxConnectivityList[index++] = 0; // vertex index
-    boundingBoxConnectivityList[index++] = 1; // vertex index
-    boundingBoxConnectivityList[index++] = 2; // vertex index
-    boundingBoxConnectivityList[index++] = 3; // vertex index
-    boundingBoxConnectivityList[index++] = 4; // vertex index
-    boundingBoxConnectivityList[index++] = 5; // vertex index
-    boundingBoxConnectivityList[index++] = 6; // vertex index
-    boundingBoxConnectivityList[index++] = 7; // vertex index
-
-    // print the progress of the current subprocedure with elapsed time
-    this->PrintMsg(
-      "Compute BB connectivity list", 1,
-      timer.getElapsedTime(), // progress, time
-      ttk::debug::LineMode::REPLACE // replace last line of output stream
-    );
-  }
-
-  // -------------------------------------------------------------------------
-  // print global performance
-  // -------------------------------------------------------------------------
-  {
-    this->PrintMsg(ttk::debug::Separator::L2); // horizontal '-' separator
-    this->PrintMsg(
-      "Complete", 1, globalTimer.getElapsedTime() // global progress, time
-    );
-    this->PrintMsg(ttk::debug::Separator::L1); // horizontal '=' separator
-  }
-
-  return 1; // return success
-}
+} // namespace ttk

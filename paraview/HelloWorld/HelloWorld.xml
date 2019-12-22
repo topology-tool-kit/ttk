@@ -1,51 +1,97 @@
 <?xml version="1.0" encoding="UTF-8"?>
+
+<!-- TODO 11: Add widgets to the ParaView UI that control the member variables of the vtk filter -->
+
+<!-- NOTE: Unfortunately the widget types and their properties are not well documented. -->
+<!--       The best thing you can do is to look at filters that have similar widgets you require and copy their source code. -->
+<!--       Good resources are: IcoSphere.xml, PersistenceDiagram.xml, and ArrayEditor.xml -->
+
 <ServerManagerConfiguration>
     <ProxyGroup name="filters">
         <SourceProxy name="HelloWorld" class="ttkHelloWorld" label="TTK HelloWorld">
-           <Documentation long_help="TODO" short_help="TODO">
-               TODO
+           <Documentation long_help="HelloWorld Long" short_help="HelloWorld Short">
+               This filter is a well documented ttk example filter that computes for each vertex of a vtkDataSet the average scalar value of itself and its neighbors.
            </Documentation>
 
-           <InputProperty name="Input" command="SetInputConnection">
-                <ProxyGroupDomain name="groups">
-                    <Group name="sources" />
-                    <Group name="filters" />
-                </ProxyGroupDomain>
-                <DataTypeDomain name="input_type">
-                    <DataType value="vtkDataSet" />
-                </DataTypeDomain>
-                <Documentation>TODO.</Documentation>
-            </InputProperty>
+            <!-- INPUT -->
+               <InputProperty name="Input" command="SetInputConnection">
+                    <ProxyGroupDomain name="groups">
+                        <Group name="sources" />
+                        <Group name="filters" />
+                    </ProxyGroupDomain>
+                    <DataTypeDomain name="input_type">
+                        <DataType value="vtkDataSet" />
+                    </DataTypeDomain>
+                    <InputArrayDomain name="input_array" attribute_type="point"
+                              number_of_components="1" />
+                    <Documentation>A vtkDataSet that has at least one point data scalar array that can be used to compute averages.</Documentation>
+                </InputProperty>
 
-            <DoubleVectorProperty name="Scale" label="Scale" command="SetScale" number_of_elements="1" default_values="1">
-                <DoubleRangeDomain name="range" min="0" max="10" />
-                <Documentation>The scale factor of the bounding box.</Documentation>
-            </DoubleVectorProperty>
+            <!-- INPUT PARAMETER WIDGETS -->
 
-            <PropertyGroup panel_widget="Line" label="Output Options">
-                <Property name="Scale" />
-            </PropertyGroup>
+                <!-- This is the VTK way of selecting arrays for processing by calling the SetInputArrayToProcess method -->
+                <!-- (see ttkHelloWorld.cpp for details) -->
+                <StringVectorProperty name="InputArray" label="Input Array" command="SetInputArrayToProcess" element_types="0 0 0 0 2" number_of_elements="5">
+                    <ArrayListDomain attribute_type="Scalars" name="array_list">
+                        <RequiredProperties>
+                            <Property function="Input" name="Input" />
+                        </RequiredProperties>
+                    </ArrayListDomain>
+                    <Documentation>The scalar array that will be used to compute averages.</Documentation>
+                </StringVectorProperty>
+
+                <!-- Create a UI group that contains all input parameter widgets (here only one) -->
+                <PropertyGroup panel_widget="Line" label="Input Options">
+                    <Property name="InputArray" />
+                </PropertyGroup>
+
+            <!-- OUTPUT PARAMETER WIDGETS -->
+
+                <!-- A string parameter that controls the name of the output array -->
+                <StringVectorProperty name="OutputArrayName" label="Output Array Name" command="SetOutputArrayName" number_of_elements="1" default_values="AveragedScalarField">
+                </StringVectorProperty>
+
+                <!-- Create a UI group that contains all output parameter widgets (here only one) -->
+                <PropertyGroup panel_widget="Line" label="Output Options">
+                    <Property name="OutputArrayName" />
+                </PropertyGroup>
 
             <!-- DEBUG -->
-            <IntVectorProperty name="ThreadNumber" label="Thread Number" command="SetThreadNumber" number_of_elements="1" default_values="0" panel_visibility="advanced">
-                <IntRangeDomain name="range" min="0" max="256" />
-                <Documentation>The maximum number of threads (0: set to number of cores).</Documentation>
-            </IntVectorProperty>
-            <IntVectorProperty name="DebugLevel" label="Debug Level" command="SetDebugLevel" number_of_elements="1" default_values="2" panel_visibility="advanced">
-                <IntRangeDomain name="range" min="0" max="5" />
-                <Documentation>Debug level.</Documentation>
-            </IntVectorProperty>
-            <PropertyGroup panel_widget="Line" label="Testing">
-                <Property name="ThreadNumber" />
-                <Property name="DebugLevel" />
-            </PropertyGroup>
-            <!-- /DEBUG -->
 
-            <Hints>
-                <RepresentationType view="RenderView" type="Wireframe" />
-                <Visibility replace_input="0" />
-                <ShowInMenu category="TTK - Misc" />
-            </Hints>
+                <IntVectorProperty name="Debug_UseAllCores" label="Use All Cores" command="SetUseAllCores" number_of_elements="1" default_values="1" panel_visibility="advanced">
+                    <BooleanDomain name="bool" />
+                    <Documentation>Use all available cores.</Documentation>
+                </IntVectorProperty>
+
+                <IntVectorProperty name="Debug_ThreadNumber" label="Thread Number" command="SetThreadNumber" number_of_elements="1" default_values="1" panel_visibility="advanced">
+                    <IntRangeDomain name="range" min="1" max="256" />
+                    <Hints>
+                        <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="Debug_UseAllCores" value="0" />
+                    </Hints>
+                    <Documentation>The maximum number of threads.</Documentation>
+                </IntVectorProperty>
+
+                <IntVectorProperty name="Debug_DebugLevel" label="Debug Level" command="SetDebugLevel" number_of_elements="1" default_values="3" panel_visibility="advanced">
+                    <IntRangeDomain name="range" min="0" max="5" />
+                    <Documentation>Debug level.</Documentation>
+                </IntVectorProperty>
+
+                <Property name="Debug_Execute" label="Execute" command="Modified" panel_widget="command_button">
+                    <Documentation>Executes the filter with the last applied parameters, which is handy to re-start pipeline execution from a specific element without changing parameters.</Documentation>
+                </Property>
+
+                <!-- Create a UI group that contains all debug parameter widgets -->
+                <PropertyGroup panel_widget="Line" label="Testing">
+                    <Property name="Debug_UseAllCores" />
+                    <Property name="Debug_ThreadNumber" />
+                    <Property name="Debug_DebugLevel" />
+                    <Property name="Debug_Execute" />
+                </PropertyGroup>
+
+            <!-- MENU CATEGORY -->
+                <Hints>
+                    <ShowInMenu category="TTK - Misc" />
+                </Hints>
         </SourceProxy>
     </ProxyGroup>
 </ServerManagerConfiguration>
