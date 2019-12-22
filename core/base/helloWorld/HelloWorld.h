@@ -3,7 +3,7 @@
 /// \ingroup base
 /// \class ttk::HelloWorld
 /// \author Your Name Here <Your Email Address Here>
-/// \date The Data Here.
+/// \date The Date Here.
 ///
 /// This module defines the %HelloWorld class that computes for each vertex of a
 /// triangulation the average scalar value of itself and its direct neighbors.
