@@ -1,8 +1,5 @@
 NAME
- ttkCinemaReader
+  ttkCinemaReader
 DEPENDS
-  VTK::FiltersCore
-  VTK::IOLegacy
-PRIVATE_DEPENDS
-  VTK::CommonCore
+  ttkAlgorithm
 

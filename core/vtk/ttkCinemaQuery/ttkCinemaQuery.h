@@ -18,93 +18,35 @@
 
 #pragma once
 
-// VTK includes
-#include <vtkInformation.h>
-#include <vtkTableAlgorithm.h>
-
 // VTK Module
 #include <ttkCinemaQueryModule.h>
 
+// VTK includes
+#include <ttkAlgorithm.h>
+
 // TTK includes
 #include <CinemaQuery.h>
-#include <ttkTriangulationAlgorithm.h>
 
-class TTKCINEMAQUERY_EXPORT ttkCinemaQuery : public vtkTableAlgorithm,
-                                             public ttk::Wrapper {
-
+class TTKCINEMAQUERY_EXPORT ttkCinemaQuery : public ttkAlgorithm,
+                                             public ttk::CinemaQuery {
 public:
   static ttkCinemaQuery *New();
-  vtkTypeMacro(ttkCinemaQuery, vtkTableAlgorithm)
+  vtkTypeMacro(ttkCinemaQuery, ttkAlgorithm);
 
-    // default ttk setters
-    vtkSetMacro(debugLevel_, int);
-  void SetThreads() {
-    threadNumber_
-      = !UseAllCores ? ThreadNumber : ttk::OsCall::getNumberOfCores();
-    Modified();
-  }
-  void SetThreadNumber(int threadNumber) {
-    ThreadNumber = threadNumber;
-    SetThreads();
-  }
-  void SetUseAllCores(bool onOff) {
-    UseAllCores = onOff;
-    SetThreads();
-  }
-  // end of default ttk setters
-
-  vtkSetMacro(QueryString, std::string);
-  vtkGetMacro(QueryString, std::string);
-
-  int FillInputPortInformation(int port, vtkInformation *info) override {
-    switch(port) {
-      case 0:
-        info->Set(vtkTableAlgorithm::INPUT_IS_REPEATABLE(), 1);
-        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkTable");
-        break;
-      default:
-        return 0;
-    }
-    return 1;
-  }
-
-  int FillOutputPortInformation(int port, vtkInformation *info) override {
-    switch(port) {
-      case 0:
-        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkTable");
-        break;
-      default:
-        return 0;
-    }
-    return 1;
-  }
+  vtkSetMacro(SQLStatement, std::string);
+  vtkGetMacro(SQLStatement, std::string);
 
 protected:
-  ttkCinemaQuery() {
-    QueryString = "";
-    UseAllCores = false;
+  ttkCinemaQuery();
+  ~ttkCinemaQuery();
 
-    SetNumberOfInputPorts(1);
-    SetNumberOfOutputPorts(1);
-  }
-  ~ttkCinemaQuery() override{};
-
-  bool UseAllCores;
-  int ThreadNumber;
-
-  std::string QueryString;
-  ttk::CinemaQuery cinemaQuery;
+  int FillInputPortInformation(int port, vtkInformation *info) override;
+  int FillOutputPortInformation(int port, vtkInformation *info) override;
 
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;
 
 private:
-  bool needsToAbort() override {
-    return GetAbortExecute();
-  };
-  int updateProgress(const float &progress) override {
-    UpdateProgress(progress);
-    return 0;
-  };
+  std::string SQLStatement{"SELECT * FROM vtkTable0"};
 };

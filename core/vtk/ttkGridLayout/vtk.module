@@ -1,4 +1,5 @@
 NAME
-  ttkCinemaImaging
+  ttkGridLayout
 DEPENDS
   ttkAlgorithm
+

@@ -2,17 +2,20 @@
 <ServerManagerConfiguration>
     <ProxyGroup name="filters">
         <SourceProxy name="CinemaWriter" class="ttkCinemaWriter" label="TTK CinemaWriter">
-            <Documentation long_help="TTK CinemaWriter plugin." short_help="TTK CinemaWriter plugin.">TTK CinemaWriter plugin documentation.</Documentation>
+            <Documentation long_help="LOOOOOOOOONG" short_help="SHORT TTK CinemaWriter plugin.">
+This filter stores a data product that is uniquely identified by its field data arrays in a Cinema database, and passes its unmodified input through.
+Specifically, the filter stores the data product either in a VTK file format <em>(e.g., vtkUnstructuredGrid, vtkPolyData, vtkMultiBlockDataSet, vtkImageData, ...)</em> or as a PNG image (if conversion is possible and explicitly requested by the user), and then inserts the field values and the path to the data product in the <em>data.csv</em> file (the database content list).
+
+Warning: Already existing products with the same field values are replaced, and temporary field arrays (such as "_ttk_IterationInfo") are ignored.
+</Documentation>
 
             <InputProperty name="Input" command="SetInputConnection">
                 <ProxyGroupDomain name="groups">
                     <Group name="sources" />
                     <Group name="filters" />
                 </ProxyGroupDomain>
-                <DataTypeDomain name="input_type">
-                    <DataType value="vtkDataSet" />
-                </DataTypeDomain>
-                <Documentation>Data-set to process.</Documentation>
+                <InputArrayDomain name="point_arrays" attribute_type="point" optional="1"/>
+                <Documentation>Input data product of any type that is going to be stored in the Cinema database.</Documentation>
             </InputProperty>
 
             <StringVectorProperty name="DatabasePath" animateable="0" command="SetDatabasePath" number_of_elements="1">
@@ -22,211 +25,56 @@
                     <UseDirectoryName />
                 </Hints>
             </StringVectorProperty>
-            <IntVectorProperty name="OverrideDatabase" label="Override Database" command="SetOverrideDatabase" number_of_elements="1" default_values="1">
-                <BooleanDomain name="bool" />
-                <Documentation>Determines if the filter replaces (true) or appends (false) database content.</Documentation>
-            </IntVectorProperty>
-            <IntVectorProperty name="CompressionLevel" label="Compression Level" command="SetCompressLevel" number_of_elements="1" default_values="9">
+
+            <IntVectorProperty name="CompressionLevel" label="Compression Level" command="SetCompressionLevel" number_of_elements="1" default_values="5">
                 <IntRangeDomain name="range" min="0" max="9" />
                 <Documentation>Determines the compression level form 0 (fast + large files) to 9 (slow + small files).</Documentation>
-              <Hints>
-                <PropertyWidgetDecorator
-                    type="GenericDecorator"
-                    mode="visibility"
-                    property="UseTopologicalCompression"
-                    value="0" />
-              </Hints>
             </IntVectorProperty>
 
-      <IntVectorProperty
-              name="UseTopologicalCompression"
-              label="Use Topological Compression"
-              command="SetUseTopologicalCompression"
-              number_of_elements="1"
-              default_values="0">
-        <BooleanDomain name="bool"/>
-        <Documentation>
-          Use TTK Topological Compression algorithm instead of writing
-          uncompressed data.
-        </Documentation>
-      </IntVectorProperty>
-
-      <StringVectorProperty
-          name="ScalarField"
-          command="SetScalarField"
-          number_of_elements="1"
-          animateable="0"
-          label="Scalar Field">
-        <ArrayListDomain
-            name="array_list"
-            default_values="0">
-          <RequiredProperties>
-            <Property name="Input" function="Input" />
-          </RequiredProperties>
-        </ArrayListDomain>
-        <Documentation>
-          Select the scalar field to process.
-        </Documentation>
-      </StringVectorProperty>
-
-      <IntVectorProperty
-        name="CompressionType"
-        label="Compression type"
-        command="SetCompressionType"
-        number_of_elements="1"
-        default_values="0">
-        <EnumerationDomain name="enum">
-          <Entry value="0" text="Driven by persistence diagram"/>
-        </EnumerationDomain>
-        <Documentation>
-          Compression Type.
-        </Documentation>
-      </IntVectorProperty>
-
-      <DoubleVectorProperty
-          name="Tolerance"
-          command="SetTolerance"
-          label="Topological loss (persistence percentage)"
-          number_of_elements="1"
-          default_values="10">
-        <Documentation>
-          Topological loss expressed as a persistence threshold (normalized
-            between 0 and 100).
-        </Documentation>
-        <DoubleRangeDomain name="range" min="1" max="100" />
-      </DoubleVectorProperty>
-
-      <IntVectorProperty
-        name="Subdivide"
-        label="Enable maximum pointwise error control"
-        command="SetSubdivide"
-        number_of_elements="1"
-        default_values="0">
-        <BooleanDomain name="bool"/>
-        <Documentation>
-          Enable maximum pointwise error control.
-        </Documentation>
-      </IntVectorProperty>
-
-      <DoubleVectorProperty
-        name="MaximumError"
-        command="SetMaximumError"
-        label="Maximum pointwise error (percentage)"
-        number_of_elements="1"
-        default_values="10">
-        <Documentation>
-          Set the maximum allowed pointwise error (in percentage of the
-            function span).
-        </Documentation>
-        <DoubleRangeDomain name="range" min="1" max="100" />
-      </DoubleVectorProperty>
-
-      <IntVectorProperty
-              name="ZFPBitBudget"
-              label="ZFP bit budget (extra)"
-              command="SetZFPBitBudget"
-              number_of_elements="1"
-              default_values="0">
-        <IntRangeDomain name="range" min="0" max="64" />
-        <Documentation>
-          Additionally compress the data with ZFP for improved geometrical
-            quality (number of bits per vertex).
-        </Documentation>
-      </IntVectorProperty>
-
-      <IntVectorProperty
-              name="ZFPOnly"
-              label="Use ZFP compressor only (no topological compression)"
-              command="SetZFPOnly"
-              number_of_elements="1"
-              default_values="0">
-        <BooleanDomain name="bool"/>
-        <Documentation>
-          Use ZFP only.
-        </Documentation>
-      </IntVectorProperty>
-
-      <IntVectorProperty
-        name="UseTopologicalSimplification"
-        label="Simplify at compression (slower)"
-        command="SetUseTopologicalSimplification"
-        number_of_elements="1"
-        default_values="1"
-        panel_visibility="advanced">
-        <BooleanDomain name="bool"/>
-        <Documentation>
-          Enable topological simplification at compression time (higher
-          compression factors, slower compression time).
-        </Documentation>
-      </IntVectorProperty>
-
-      <IntVectorProperty
-        name="SQMethod"
-        command="SetSQMethodPV"
-        animateable="0"
-        label="Use SQ compressor only (no topological compression)"
-        panel_visibility="advanced">
-        <EnumerationDomain name="enum">
-          <Entry value="0" text="No SQ (topological compression)."/>
-          <Entry value="1" text="Range-based SQ (lowest quality, faster)."/>
-          <Entry value="2" text="Domain-based SQ (highest quality, slower)."/>
-        </EnumerationDomain>
-        <Documentation>
-          Use SQ instead of topological compression.
-        </Documentation>
-      </IntVectorProperty>
-
-
-            <IntVectorProperty name="UseAllCores" label="Use All Cores" command="SetUseAllCores" number_of_elements="1" default_values="1" panel_visibility="advanced">
-                <BooleanDomain name="bool" />
-                <Documentation>Use all available cores.</Documentation>
+            <IntVectorProperty name="Mode" label="Store as" command="SetMode" number_of_elements="1" default_values="0">
+                <EnumerationDomain name="enum">
+                    <Entry value="0" text="VTK File"/>
+                    <Entry value="1" text="PNG Image"/>
+                </EnumerationDomain>
+                <Documentation>Store input as VTK file or PNG image.</Documentation>
             </IntVectorProperty>
-            <IntVectorProperty name="ThreadNumber" label="Thread Number" command="SetThreadNumber" number_of_elements="1" default_values="1" panel_visibility="advanced">
-                <IntRangeDomain name="range" min="1" max="100" />
-                <Documentation>Thread number.</Documentation>
+
+            <StringVectorProperty command="SetColorArray" element_types="0 0 0 0 2" label="Color Array" name="ColorArray" number_of_elements="5">
+                <ArrayListDomain name="array_list">
+                    <RequiredProperties>
+                        <Property function="Input" name="Input" />
+                    </RequiredProperties>
+                </ArrayListDomain>
                 <Hints>
-                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="UseAllCores" value="0" />
+                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="Mode" value="1" />
                 </Hints>
+                <Documentation>Point data array of the input that contains RGB or RGBA values (required for PNG export).</Documentation>
+            </StringVectorProperty>
+
+            <IntVectorProperty name="IterateMultiBlock" label="Iterate MultiBlock" command="SetIterateMultiBlock" number_of_elements="1" default_values="0">
+                <BooleanDomain name="bool" />
+                <Documentation>If set to true and the input is a 'vtkMultiBlockDataSet' then store blocks individually.</Documentation>
             </IntVectorProperty>
-            <IntVectorProperty name="DebugLevel" label="Debug Level" command="SetdebugLevel_" number_of_elements="1" default_values="3" panel_visibility="advanced">
-                <IntRangeDomain name="range" min="0" max="100" />
-                <Documentation>Debug level.</Documentation>
-            </IntVectorProperty>
+
+            <Property name="DeleteDatabase" label="Delete Database" command="DeleteDatabase" panel_widget="command_button">
+                <Documentation>Delete the database folder. WARNING: No undo.</Documentation>
+            </Property>
 
             <PropertyGroup panel_widget="Line" label="Output Options">
                 <Property name="DatabasePath" />
-                <Property name="OverrideDatabase" />
                 <Property name="CompressionLevel" />
-                <Property name="UseTopologicalCompression" />
+                <Property name="Mode" />
+                <Property name="ColorArray" />
+                <Property name="IterateMultiBlock" />
             </PropertyGroup>
-            <PropertyGroup panel_widget="Line" label="Testing">
-                <Property name="UseAllCores" />
-                <Property name="ThreadNumber" />
-                <Property name="DebugLevel" />
+            <PropertyGroup panel_widget="Line" label="Commands">
+                <Property name="DeleteDatabase" />
             </PropertyGroup>
 
-            <PropertyGroup panel_widget="Line" label="Topological Compression" >
-              <Property name="ScalarField" />
-              <Property name="CompressionType" />
-              <Property name="Tolerance" />
-              <Property name="Subdivide" />
-              <Property name="MaximumError" />
-              <Property name="ZFPBitBudget" />
-              <Property name="ZFPOnly" />
-              <Property name="UseTopologicalSimplification" />
-              <Property name="SQMethod" />
-              <Hints>
-                <PropertyWidgetDecorator
-                    type="GenericDecorator"
-                    mode="visibility"
-                    property="UseTopologicalCompression"
-                    value="1" />
-              </Hints>
-            </PropertyGroup>
+            ${DEBUG_WIDGETS}
 
             <Hints>
                 <ShowInMenu category="TTK - Cinema" />
-                <Visibility replace_input="0" />
             </Hints>
         </SourceProxy>
     </ProxyGroup>

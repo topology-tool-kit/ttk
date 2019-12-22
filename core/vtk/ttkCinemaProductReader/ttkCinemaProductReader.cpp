@@ -1,165 +1,185 @@
 #include <ttkCinemaProductReader.h>
-#include <ttkTopologicalCompressionReader.h>
 
 #include <vtkDoubleArray.h>
 #include <vtkFieldData.h>
-#include <vtkNew.h>
-#include <vtkStreamingDemandDrivenPipeline.h>
+#include <vtkMultiBlockDataSet.h>
 #include <vtkStringArray.h>
-#include <vtkTIFFReader.h>
 #include <vtkTable.h>
-#include <vtkVariantArray.h>
 #include <vtkXMLGenericDataObjectReader.h>
 
-using namespace std;
-using namespace ttk;
+vtkStandardNewMacro(ttkCinemaProductReader);
 
-vtkStandardNewMacro(ttkCinemaProductReader)
+ttkCinemaProductReader::ttkCinemaProductReader() {
+  this->setDebugMsgPrefix("CinemaProductReader");
+  this->SetNumberOfInputPorts(1);
+  this->SetNumberOfOutputPorts(1);
+}
+ttkCinemaProductReader::~ttkCinemaProductReader() {
+}
 
-  int ttkCinemaProductReader::RequestData(vtkInformation *request,
-                                          vtkInformationVector **inputVector,
-                                          vtkInformationVector *outputVector) {
-  // Print status
-  {
-    stringstream msg;
-    msg << "==================================================================="
-           "============="
-        << endl;
-    msg << "[ttkCinemaProductReader] RequestData" << endl;
-    dMsg(cout, msg.str(), infoMsg);
+int ttkCinemaProductReader::FillInputPortInformation(int port,
+                                                     vtkInformation *info) {
+  if(port == 0)
+    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkTable");
+  else
+    return 0;
+  return 1;
+}
+
+int ttkCinemaProductReader::FillOutputPortInformation(int port,
+                                                      vtkInformation *info) {
+  if(port == 0)
+    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkMultiBlockDataSet");
+  else
+    return 0;
+  return 1;
+}
+
+vtkSmartPointer<vtkDataObject>
+  ttkCinemaProductReader::readFileLocal(std::string pathToFile) {
+  // Check if dataset is XML encoded
+  ifstream is(pathToFile.data());
+  char prefix[9] = "";
+  is.get(prefix, 10);
+  bool isXML = std::string(prefix).compare("<VTKFile ") == 0
+               || std::string(prefix).compare("<?xml ver") == 0;
+
+  // If isXML use vtkXMLGenericDataObjectReader
+  if(isXML) {
+    auto reader = this->xmlGenericDataObjectReader;
+    reader->SetFileName(pathToFile.data());
+    reader->Update();
+    if(reader->GetErrorCode() != 0) {
+      this->printErr("Unable to read file.");
+      return nullptr;
+    } else
+      return reader->GetOutput();
+
+  } else { // Otherwise use vtkGenericDataObjectReader
+    auto reader = this->genericDataObjectReader;
+    reader->SetFileName(pathToFile.data());
+    reader->Update();
+    if(reader->GetErrorCode() != 0) {
+      this->printErr("Unable to read file.");
+      return nullptr;
+    } else
+      return reader->GetOutput();
+  }
+}
+
+int ttkCinemaProductReader::addFieldDataRecursively(vtkDataObject *object,
+                                                    vtkFieldData *fd) {
+  auto objectAsMB = vtkMultiBlockDataSet::SafeDownCast(object);
+  if(objectAsMB) {
+    for(size_t i = 0, j = objectAsMB->GetNumberOfBlocks(); i < j; i++)
+      addFieldDataRecursively(objectAsMB->GetBlock(i), fd);
+  } else {
+    auto ofd = object->GetFieldData();
+    for(size_t i = 0, j = fd->GetNumberOfArrays(); i < j; i++)
+      ofd->AddArray(fd->GetAbstractArray(i));
   }
 
-  Timer t;
-  Memory mem;
+  return 1;
+}
 
-  // Prepare Input and Output
-  vtkInformation *inInfo = inputVector[0]->GetInformationObject(0);
-  auto inputTable
-    = vtkTable::SafeDownCast(inInfo->Get(vtkDataObject::DATA_OBJECT()));
+int ttkCinemaProductReader::RequestData(vtkInformation *request,
+                                        vtkInformationVector **inputVector,
+                                        vtkInformationVector *outputVector) {
+  ttk::Timer timer;
 
-  vtkInformation *outInfo = outputVector->GetInformationObject(0);
-  auto output = vtkMultiBlockDataSet::SafeDownCast(
-    outInfo->Get(vtkDataObject::DATA_OBJECT()));
+  // get input
+  auto inputTable = vtkTable::GetData(inputVector[0]);
+
+  auto outputMB = vtkMultiBlockDataSet::GetData(outputVector);
+
+  size_t n = inputTable->GetNumberOfRows();
+  size_t m = inputTable->GetNumberOfColumns();
+  // Determine number of files
+  this->printMsg(
+    {{"#Files", std::to_string(n)}, {"FILE Column", this->FilepathColumnName}});
+  this->printMsg(ttk::debug::Separator::L1);
 
   // Read Data
   {
-    // Determine number of files
-    size_t n = inputTable->GetNumberOfRows();
-    size_t m = inputTable->GetNumberOfColumns();
-
-    {
-      stringstream msg;
-      msg << "[ttkCinemaProductReader] Reading " << n << " files:" << endl;
-      dMsg(cout, msg.str(), infoMsg);
-    }
-
-    // Compute DatabasePath
-    auto databasePath = inputTable->GetFieldData()
-                          ->GetAbstractArray("DatabasePath")
-                          ->GetVariantValue(0)
-                          .ToString();
-
-    // Get column that contains paths
+    // Get FILE column
     auto paths = inputTable->GetColumnByName(this->FilepathColumnName.data());
-    if(paths == nullptr) {
-      stringstream msg;
-      msg << "[ttkCinemaProductReader] ERROR: Table does not have "
-             "FilepathColumn '"
-          << this->FilepathColumnName << "'" << endl;
-      dMsg(cerr, msg.str(), fatalMsg);
+    if(!paths) {
+      this->printErr("Table does not have column '" + this->FilepathColumnName
+                     + "'.");
       return 0;
     }
 
     // For each row
     for(size_t i = 0; i < n; i++) {
-      // Get path
-      auto path = databasePath + "/" + paths->GetVariantValue(i).ToString();
-      auto ext = path.substr(path.length() - 3);
 
+      // initialize timer for individual file
+      ttk::Timer fileTimer;
+
+      // get filepath
+      auto path = paths->GetVariantValue(i).ToString();
+      auto file = path.substr(path.find_last_of("/") + 1);
+
+      // print progress
+      this->printMsg("Reading (" + std::to_string(i + 1) + "/"
+                       + std::to_string(n) + "): \"" + file + "\"",
+                     0);
+
+      // read local file
       {
-        stringstream msg;
-        msg << "[ttkCinemaProductReader]    " << i << ": " << path << endl;
-        dMsg(cout, msg.str(), infoMsg);
-      }
-
-      // Check if file exists
-      std::ifstream infile(path.data());
-      bool exists = infile.good();
-      if(!exists) {
-        stringstream msg;
-        msg << "[ttkCinemaProductReader]    ERROR: File does not exist."
-            << endl;
-        dMsg(cerr, msg.str(), fatalMsg);
-        continue;
-      }
-
-      if(ext == "ttk") {
-        vtkNew<ttkTopologicalCompressionReader> reader;
-        reader->SetDebugLevel(this->debugLevel_);
-        reader->SetFileName(path.data());
-        reader->Update();
-
-        output->SetBlock(i, reader->GetOutput());
-      }
-
-      else if(ext == "tif" || ext == "tiff") {
-        vtkNew<vtkTIFFReader> reader;
-        if(reader->CanReadFile(path.data())) {
-          reader->SetFileName(path.data());
-          reader->Update();
-          output->SetBlock(i, reader->GetOutput());
+        std::ifstream infile(path.data());
+        bool exists = infile.good();
+        if(!exists) {
+          this->printErr("File does not exist.");
+          return 0;
         }
+
+        auto readerOutput = this->readFileLocal(path);
+        if(!readerOutput)
+          return 0;
+
+        outputMB->SetBlock(i, readerOutput);
       }
 
-      // Read any data using vtkXMLGenericDataObjectReader
-      else {
-        auto reader = vtkSmartPointer<vtkXMLGenericDataObjectReader>::New();
-        reader->SetFileName(path.data());
-        reader->Update();
-        output->SetBlock(i, reader->GetOutput());
-      }
-
-      // Augment read data with row information
-      // TODO: Make Optional
-      auto block = output->GetBlock(i);
-      for(size_t j = 0; j < m; j++) {
-        auto columnName = inputTable->GetColumnName(j);
+      // augment data products with row data
+      {
+        auto block = outputMB->GetBlock(i);
         auto fieldData = block->GetFieldData();
-        if(!fieldData->HasArray(columnName)) {
-          bool isNumeric = inputTable->GetColumn(j)->IsNumeric();
+        for(size_t j = 0; j < m; j++) {
+          auto columnName = inputTable->GetColumnName(j);
 
-          if(isNumeric) {
-            auto c = vtkSmartPointer<vtkDoubleArray>::New();
-            c->SetName(columnName);
-            c->SetNumberOfValues(1);
-            c->SetValue(0, inputTable->GetValue(i, j).ToDouble());
-            fieldData->AddArray(c);
-          } else {
-            auto c = vtkSmartPointer<vtkStringArray>::New();
-            c->SetName(columnName);
-            c->SetNumberOfValues(1);
-            c->SetValue(0, inputTable->GetValue(i, j).ToString());
-            fieldData->AddArray(c);
+          if(!fieldData->HasArray(columnName)) {
+            if(inputTable->GetColumn(j)->IsNumeric()) {
+              auto c = vtkSmartPointer<vtkDoubleArray>::New();
+              c->SetName(columnName);
+              c->SetNumberOfValues(1);
+              c->SetValue(0, inputTable->GetValue(i, j).ToDouble());
+              fieldData->AddArray(c);
+            } else {
+              auto c = vtkSmartPointer<vtkStringArray>::New();
+              c->SetName(columnName);
+              c->SetNumberOfValues(1);
+              c->SetValue(0, inputTable->GetValue(i, j).ToString());
+              fieldData->AddArray(c);
+            }
           }
         }
-      }
 
-      this->updateProgress(((float)i) / ((float)(n - 1)));
+        if(this->AddFieldDataRecursively)
+          this->addFieldDataRecursively(block, fieldData);
+
+        this->printMsg("Reading (" + std::to_string(i + 1) + "/"
+                         + std::to_string(n) + "): \"" + file + "\"",
+                       1, fileTimer.getElapsedTime(),
+                       ttk::debug::LineMode::REPLACE);
+      }
     }
   }
 
-  // Output Performance
-  {
-    stringstream msg;
-    msg << "[ttkCinemaProductReader] "
-           "-------------------------------------------------------"
-        << endl;
-    msg << "[ttkCinemaProductReader]   time: " << t.getElapsedTime() << " s."
-        << endl;
-    msg << "[ttkCinemaProductReader] memory: " << mem.getElapsedUsage()
-        << " MB." << endl;
-    dMsg(cout, msg.str(), timeMsg);
-  }
+  // print stats
+  this->printMsg(ttk::debug::Separator::L2);
+  this->printMsg("Complete (#products: " + std::to_string(n) + ")", 1,
+                 timer.getElapsedTime());
+  this->printMsg(ttk::debug::Separator::L1);
 
   return 1;
 }
