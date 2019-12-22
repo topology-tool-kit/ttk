@@ -82,7 +82,7 @@ namespace ttk {
         // print the progress of the current subprocedure (currently 0%)
         this->printMsg("Computing Averages",
                        0 // progress form 0-1
-                       );
+        );
 
         // compute the average of each vertex in parallel
         size_t nVertices = triangulation->getNumberOfVertices();
@@ -111,7 +111,7 @@ namespace ttk {
           1, // progress
           localTimer.getElapsedTime(), // time
           ttk::debug::LineMode::REPLACE // replace last line of output stream
-          );
+        );
       }
 
       // ---------------------------------------------------------------------
@@ -121,7 +121,7 @@ namespace ttk {
         this->printMsg(ttk::debug::Separator::L2); // horizontal '-' separator
         this->printMsg(
           "Complete", 1, globalTimer.getElapsedTime() // global progress, time
-          );
+        );
         this->printMsg(ttk::debug::Separator::L1); // horizontal '=' separator
       }
 
@@ -130,4 +130,4 @@ namespace ttk {
 
   }; // HelloWorld class
 
-} // ttk namespace
+} // namespace ttk

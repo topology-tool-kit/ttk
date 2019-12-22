@@ -230,7 +230,8 @@ ttk::Triangulation *ttkAlgorithm::GetTriangulation(vtkDataSet *dataSet) {
 
     // UNSUPPORTED DATA TYPE
     // =====================================================================
-    default: {}
+    default: {
+    }
   }
 
   this->printErr("Unable to get/create triangulation for '"

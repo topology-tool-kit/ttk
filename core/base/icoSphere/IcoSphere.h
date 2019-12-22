@@ -27,9 +27,9 @@ namespace ttk {
     ~IcoSphere(){};
 
     /**
-    * Efficiently computes for a given subdivision level the number of resulting
-    * vertices and triangles.
-    */
+     * Efficiently computes for a given subdivision level the number of
+     * resulting vertices and triangles.
+     */
     int computeNumberOfVerticesAndTriangles(const size_t nSubdivisions,
                                             size_t &nVertices,
                                             size_t &nTriangles) const {
@@ -57,8 +57,8 @@ namespace ttk {
       idType *connectivityList) const;
 
     /**
-    * Computes an icosphere for a given subdivision level, radius, and center.
-    */
+     * Computes an icosphere for a given subdivision level, radius, and center.
+     */
     template <class idType>
     int computeIcoSphere(
       // Input
@@ -70,8 +70,8 @@ namespace ttk {
       idType *connectivityList) const;
 
     /**
-    * Computes an icosphere for a given subdivision level, radius, and center.
-    */
+     * Computes an icosphere for a given subdivision level, radius, and center.
+     */
     template <class idType>
     int computeIcoSpheres(
       // Input
@@ -86,11 +86,11 @@ namespace ttk {
 
   private:
     /**
-    * Adds the coordinates of a vertex to the vertexCoords array at
-    * vertexIndex*3, return the current vertexIndex, and increases the
-    * vertexIndex by one. Note, the original coordinates are first
-    * normalized and then multiplied by the radius.
-    */
+     * Adds the coordinates of a vertex to the vertexCoords array at
+     * vertexIndex*3, return the current vertexIndex, and increases the
+     * vertexIndex by one. Note, the original coordinates are first
+     * normalized and then multiplied by the radius.
+     */
     template <class idType>
     idType addVertex(const float &x,
                      const float &y,
@@ -108,10 +108,10 @@ namespace ttk {
     };
 
     /**
-    * Adds the ijk ids of a new triangle to the connectivityList at
-    * triangleIndex*3, returns the current triangleIndex, and increases
-    * the triangleIndex by one.
-    */
+     * Adds the ijk ids of a new triangle to the connectivityList at
+     * triangleIndex*3, returns the current triangleIndex, and increases
+     * the triangleIndex by one.
+     */
     template <class idType>
     idType addTriangle(const idType &i,
                        const idType &j,
@@ -128,11 +128,11 @@ namespace ttk {
     };
 
     /**
-    * Adds a new vertex at the middle of an edge between the vertices i
-    * and j. If this vertex was already created in a previous call (as
-    * an edge of an already processed triangle), the function only
-    * returns the index of the existing vertex.
-    */
+     * Adds a new vertex at the middle of an edge between the vertices i
+     * and j. If this vertex was already created in a previous call (as
+     * an edge of an already processed triangle), the function only
+     * returns the index of the existing vertex.
+     */
     template <class idType>
     idType
       addMidVertex(const idType &i,
@@ -172,7 +172,7 @@ namespace ttk {
       }
     };
   };
-}
+} // namespace ttk
 
 template <class idType>
 int ttk::IcoSphere::computeIcoSphere(
