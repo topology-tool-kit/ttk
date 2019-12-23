@@ -2,11 +2,16 @@
 <ServerManagerConfiguration>
     <ProxyGroup name="filters">
         <SourceProxy name="CinemaWriter" class="ttkCinemaWriter" label="TTK CinemaWriter">
-            <Documentation long_help="LOOOOOOOOONG" short_help="SHORT TTK CinemaWriter plugin.">
-This filter stores a data product that is uniquely identified by its field data arrays in a Cinema database, and passes its unmodified input through.
-Specifically, the filter stores the data product either in a VTK file format <em>(e.g., vtkUnstructuredGrid, vtkPolyData, vtkMultiBlockDataSet, vtkImageData, ...)</em> or as a PNG image (if conversion is possible and explicitly requested by the user), and then inserts the field values and the path to the data product in the <em>data.csv</em> file (the database content list).
+            <Documentation long_help="ttkCinemaWriter" short_help="ttkCinemaWriter">
+This filter stores a data product in a Cinema database, and then returns the unmodified input as output.
 
-Warning: Already existing products with the same field values are replaced, and temporary field arrays (such as "_ttk_IterationInfo") are ignored.
+The field data arrays of the input are used to derive a unique key that identifies the data product in the Cinema database. If another product with the same key already exists then the filter will replace the existing data product, otherwise the data product is simply appended to the database. The data product itself is either stored in a VTK file format <em>(e.g., vtkUnstructuredGrid, vtkPolyData, vtkMultiBlockDataSet, vtkImageData, ...)</em> or in the PNG image file format (if conversion is possible and explicitly requested by the user).
+
+NOTE:
+
+1) Field data arrays whose names start with "_ttk" are ignored during key generation.
+
+2) To add/remove field data arrays (product keys) run the "ttkArrayEditor" prior to the "ttkCinemaWriter" filter.
 </Documentation>
 
             <InputProperty name="Input" command="SetInputConnection">
@@ -39,32 +44,19 @@ Warning: Already existing products with the same field values are replaced, and 
                 <Documentation>Store input as VTK file or PNG image.</Documentation>
             </IntVectorProperty>
 
-            <StringVectorProperty command="SetColorArray" element_types="0 0 0 0 2" label="Color Array" name="ColorArray" number_of_elements="5">
-                <ArrayListDomain name="array_list">
-                    <RequiredProperties>
-                        <Property function="Input" name="Input" />
-                    </RequiredProperties>
-                </ArrayListDomain>
-                <Hints>
-                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="Mode" value="1" />
-                </Hints>
-                <Documentation>Point data array of the input that contains RGB or RGBA values (required for PNG export).</Documentation>
-            </StringVectorProperty>
-
             <IntVectorProperty name="IterateMultiBlock" label="Iterate MultiBlock" command="SetIterateMultiBlock" number_of_elements="1" default_values="0">
                 <BooleanDomain name="bool" />
                 <Documentation>If set to true and the input is a 'vtkMultiBlockDataSet' then store blocks individually.</Documentation>
             </IntVectorProperty>
 
             <Property name="DeleteDatabase" label="Delete Database" command="DeleteDatabase" panel_widget="command_button">
-                <Documentation>Delete the database folder. WARNING: No undo.</Documentation>
+                <Documentation>Delete the database folder. WARNING: NO UNDO</Documentation>
             </Property>
 
             <PropertyGroup panel_widget="Line" label="Output Options">
                 <Property name="DatabasePath" />
                 <Property name="CompressionLevel" />
                 <Property name="Mode" />
-                <Property name="ColorArray" />
                 <Property name="IterateMultiBlock" />
             </PropertyGroup>
             <PropertyGroup panel_widget="Line" label="Commands">

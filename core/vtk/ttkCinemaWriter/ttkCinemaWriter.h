@@ -36,13 +36,6 @@ public:
   vtkSetMacro(IterateMultiBlock, bool);
   vtkGetMacro(IterateMultiBlock, bool);
 
-  int SetColorArray(
-    int idx, int port, int connection, int fieldAssociation, const char *name) {
-    this->ColorArray = {fieldAssociation, name};
-    this->Modified();
-    return 1;
-  }
-
   int DeleteDatabase();
 
 protected:
@@ -64,5 +57,4 @@ private:
   int CompressionLevel{5};
   bool IterateMultiBlock{true};
   int Mode{0};
-  std::pair<int, std::string> ColorArray{};
 };

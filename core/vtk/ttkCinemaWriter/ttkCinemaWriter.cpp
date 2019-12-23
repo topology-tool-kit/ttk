@@ -439,8 +439,24 @@ int ttkCinemaWriter::ProcessDataProduct(vtkDataObject *input) {
         return 0;
       }
 
-      inputAsID->GetPointData()->SetActiveScalars(
-        this->ColorArray.second.data());
+      // search color array
+      {
+        bool found = false;
+        auto inputPD = inputAsID->GetPointData();
+        for(int i = 0; i < inputPD->GetNumberOfArrays(); i++) {
+          auto array = inputPD->GetAbstractArray(i);
+          if(array->IsA("vtkUnsignedCharArray")) {
+            inputPD->SetActiveScalars(inputPD->GetArrayName(i));
+            found = true;
+            break;
+          }
+        }
+
+        if(!found) {
+          this->printErr("Input image does not have any color array.");
+          return 0;
+        }
+      }
 
       imageWriter->SetFileName(
         (this->DatabasePath + "/" + rDataProductPath).data());
