@@ -48,7 +48,7 @@ int ttk::CinemaQuery::execute(
     // Initialize DB in memory
     rc = sqlite3_open(":memory:", &db);
     if(rc != SQLITE_OK) {
-      this->printMsg(sqlite3_errmsg(db), ttk::debug::Priority::ERROR);
+      this->printErr(sqlite3_errmsg(db));
       return 0;
     }
 
@@ -56,7 +56,7 @@ int ttk::CinemaQuery::execute(
     for(auto &sqlTableDefinition : sqlTableDefinitions) {
       rc = sqlite3_exec(db, sqlTableDefinition.data(), nullptr, 0, &zErrMsg);
       if(rc != SQLITE_OK) {
-        this->printMsg(zErrMsg, ttk::debug::Priority::ERROR);
+        this->printErr(zErrMsg);
 
         sqlite3_free(zErrMsg);
         sqlite3_close(db);
@@ -69,7 +69,7 @@ int ttk::CinemaQuery::execute(
     for(auto &sqlInsertStatement : sqlInsertStatements) {
       rc = sqlite3_exec(db, sqlInsertStatement.data(), nullptr, 0, &zErrMsg);
       if(rc != SQLITE_OK) {
-        this->printMsg(zErrMsg, ttk::debug::Priority::ERROR);
+        this->printErr(zErrMsg);
 
         sqlite3_free(zErrMsg);
         sqlite3_close(db);
@@ -90,7 +90,7 @@ int ttk::CinemaQuery::execute(
 
     if(sqlite3_prepare_v2(db, sqlQuery.data(), -1, &sqlStatement, NULL)
        != SQLITE_OK) {
-      this->printMsg(sqlite3_errmsg(db), ttk::debug::Priority::ERROR);
+      this->printErr(sqlite3_errmsg(db));
 
       sqlite3_close(db);
       return 0;
@@ -100,8 +100,7 @@ int ttk::CinemaQuery::execute(
     // Get Header
     {
       if(csvNColumns < 1) {
-        this->printMsg(
-          "Query result has no columns.", ttk::debug::Priority::ERROR);
+        this->printErr("Query result has no columns.");
 
         sqlite3_close(db);
         return 0;
@@ -126,7 +125,7 @@ int ttk::CinemaQuery::execute(
       }
 
       if(rc != SQLITE_DONE) {
-        this->printMsg(sqlite3_errmsg(db), ttk::debug::Priority::ERROR);
+        this->printErr(sqlite3_errmsg(db));
 
         sqlite3_close(db);
         return 0;
@@ -149,7 +148,7 @@ int ttk::CinemaQuery::execute(
 
     // Print status
     if(rc != SQLITE_OK) {
-      this->printMsg(sqlite3_errmsg(db), ttk::debug::Priority::ERROR);
+      this->printErr(sqlite3_errmsg(db));
       return 0;
     } else {
       this->printMsg("Closing database", 1, timer.getElapsedTime(),
@@ -160,7 +159,7 @@ int ttk::CinemaQuery::execute(
   return 1;
 
 #else
-  this->printMsg("This filter requires Sqlite3", ttk::debug::Priority::ERROR);
+  this->printErr("This filter requires Sqlite3");
   return 0;
 #endif
 }
