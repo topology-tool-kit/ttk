@@ -70,36 +70,6 @@
         </Documentation>
       </StringVectorProperty>
 
-      <IntVectorProperty
-          name="ThreadNumber"
-          command="SetThreadNumber"
-          label="Thread Number"
-          number_of_elements="1"
-          default_values="1" panel_visibility="advanced"
-          >
-        <IntRangeDomain name="range" min="1" max="100" />
-        <Documentation>
-          Thread number.
-        </Documentation>
-      </IntVectorProperty>
-
-      <IntVectorProperty
-          name="DebugLevel"
-          command="SetDebugLevel"
-          label="Debug Level"
-          number_of_elements="1"
-          default_values="3" panel_visibility="advanced">
-        <IntRangeDomain name="range" min="0" max="5" />
-        <Documentation>
-          Debug level.
-        </Documentation>
-      </IntVectorProperty>
-
-      <PropertyGroup panel_widget="Line" label="Testing">
-        <Property name="ThreadNumber" />
-        <Property name="DebugLevel" />
-      </PropertyGroup>
-
       <PropertyGroup panel_widget="Line" label="Input options">
         <Property name="EigenNumber" />
       </PropertyGroup>
@@ -108,6 +78,8 @@
         <Property name="OutputFieldName"/>
         <Property name="ComputeStatistics"/>
       </PropertyGroup>
+
+      ${DEBUG_WIDGETS}
 
       <Hints>
         <ShowInMenu category="TTK - Scalar Data" />
