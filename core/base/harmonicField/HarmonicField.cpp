@@ -148,13 +148,13 @@ int ttk::HarmonicField::execute(Triangulation *triangulation,
   auto info = static_cast<Eigen::ComputationInfo>(res);
   switch(info) {
     case Eigen::ComputationInfo::NumericalIssue:
-      this->PrintMsg("Numerical Issue!", ttk::debug::Priority::ERROR);
+      this->printMsg("Numerical Issue!", ttk::debug::Priority::ERROR);
       break;
     case Eigen::ComputationInfo::NoConvergence:
-      this->PrintMsg("No Convergence!", ttk::debug::Priority::ERROR);
+      this->printMsg("No Convergence!", ttk::debug::Priority::ERROR);
       break;
     case Eigen::ComputationInfo::InvalidInput:
-      this->PrintMsg("Invalid Input!", ttk::debug::Priority::ERROR);
+      this->printMsg("Invalid Input!", ttk::debug::Priority::ERROR);
       break;
     default:
       break;
@@ -184,16 +184,16 @@ int ttk::HarmonicField::execute(Triangulation *triangulation,
     endMsg.append("Cholesky)");
   }
 
-  this->PrintMsg(endMsg, 1.0, tm.getElapsedTime(), mem.getElapsedUsage());
+  this->printMsg(endMsg, 1.0, tm.getElapsedTime(), this->threadNumber_,
+                 mem.getElapsedUsage());
 
 #else
-  this->PrintMsg(
-    std::vector<std::string>{
-      "Eigen support disabled, computation skipped!",
-      "Please re-compile TTK with Eigen support to enable this feature."},
-    ttk::debug::Priority::ERROR);
+  this->printErr(std::vector<std::string>{
+    "Eigen support disabled, computation skipped!",
+    "Please re-compile TTK with Eigen support to enable this feature."});
 #endif // TTK_ENABLE_EIGEN
 
+  this->printMsg(ttk::debug::Separator::L1); // horizontal '=' separator
   return 0;
 }
 

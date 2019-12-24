@@ -25,7 +25,7 @@ namespace ttk {
     enum class SolvingMethodType { CHOLESKY, ITERATIVE };
 
     HarmonicField() {
-      this->SetDebugMsgPrefix("HarmonicField");
+      this->setDebugMsgPrefix("HarmonicField");
     }
 
     inline void preconditionTriangulation(Triangulation *const triangulation,

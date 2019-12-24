@@ -3,7 +3,7 @@
 #ifndef TTK_ENABLE_KAMIKAZE
 #define TTK_ABORT_KK(COND, MSG, RET) \
   if(COND) {                         \
-    this->PrintErr(MSG);             \
+    this->printErr(MSG);             \
     return RET;                      \
   }
 #else // TTK_ENABLE_KAMIKAZE
@@ -113,7 +113,7 @@ int ttkHarmonicField::RequestData(vtkInformation *request,
       break;
     default:
 #ifndef TTK_ENABLE_KAMIKAZE
-      this->PrintErr("Unknown scalar field type");
+      this->printErr("Unknown scalar field type");
       return -7;
 #endif // TTK_ENABLE_KAMIKAZE
       break;
