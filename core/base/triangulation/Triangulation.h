@@ -2009,16 +2009,8 @@ namespace ttk {
       if(isEmptyCheck())
         return false;
 
-      if(!abstractTriangulation_->hasPreconditionedBoundaryEdges()) {
-        std::stringstream msg;
-        msg << "[Triangulation] "
-            << "BoundaryEdge query without pre-process!" << std::endl;
-        msg << "[Triangulation] "
-            << "Please call preconditionBoundaryEdges() in a"
-            << " pre-process." << std::endl;
-        dMsg(std::cerr, msg.str(), Debug::fatalMsg);
+      if(!isBoundaryEdgePreconditioned())
         return false;
-      }
 #endif
       return abstractTriangulation_->isEdgeOnBoundary(edgeId);
     }
@@ -2055,16 +2047,8 @@ namespace ttk {
       if(isEmptyCheck())
         return false;
 
-      if(!abstractTriangulation_->hasPreconditionedBoundaryTriangles()) {
-        std::stringstream msg;
-        msg << "[Triangulation] "
-            << "BoundaryTriangle query without pre-process!" << std::endl;
-        msg << "[Triangulation] "
-            << "Please call preconditionBoundaryTriangles() in a"
-            << " pre-process." << std::endl;
-        dMsg(std::cerr, msg.str(), Debug::fatalMsg);
+      if(!isBoundaryTrianglePreconditioned())
         return false;
-      }
 #endif
       return abstractTriangulation_->isTriangleOnBoundary(triangleId);
     }
@@ -2091,16 +2075,8 @@ namespace ttk {
       if(isEmptyCheck())
         return false;
 
-      if(!abstractTriangulation_->hasPreconditionedBoundaryVertices()) {
-        std::stringstream msg;
-        msg << "[Triangulation] "
-            << "BoundaryVertex query without pre-process!" << std::endl;
-        msg << "[Triangulation] "
-            << "Please call preconditionBoundaryVertices() in a"
-            << " pre-process." << std::endl;
-        dMsg(std::cerr, msg.str(), Debug::fatalMsg);
+      if(!isBoundaryVertexPreconditioned())
         return false;
-      }
 #endif
       return abstractTriangulation_->isVertexOnBoundary(vertexId);
     }

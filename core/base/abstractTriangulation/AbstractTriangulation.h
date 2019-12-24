@@ -478,6 +478,55 @@ namespace ttk {
     }
 
   protected:
+    inline bool isBoundaryEdgePreconditioned() const {
+
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(!hasPreconditionedBoundaryEdges()) {
+
+        printMsg("BoundaryEdge query without pre-process!",
+                 debug::Priority::ERROR, debug::LineMode::NEW, std::cerr);
+        printMsg("Please call preconditionBoundaryEdges() in a pre-process.",
+                 debug::Priority::ERROR, debug::LineMode::NEW, std::cerr);
+
+        return false;
+      }
+#endif
+      return true;
+    }
+
+    inline bool isBoundaryTrianglePreconditioned() const {
+
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(!hasPreconditionedBoundaryTriangles()) {
+
+        printMsg("BoundaryTriangle query without pre-process!",
+                 debug::Priority::ERROR, debug::LineMode::NEW, std::cerr);
+        printMsg(
+          "Please call preconditionBoundaryTriangles() in a pre-process.",
+          debug::Priority::ERROR, debug::LineMode::NEW, std::cerr);
+
+        return false;
+      }
+#endif
+      return true;
+    }
+
+    inline bool isBoundaryVertexPreconditioned() const {
+
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(!hasPreconditionedBoundaryVertices()) {
+
+        printMsg("BoundaryVertex query without pre-process!",
+                 debug::Priority::ERROR, debug::LineMode::NEW, std::cerr);
+        printMsg("Please call preconditionBoundaryVertices() in a pre-process.",
+                 debug::Priority::ERROR, debug::LineMode::NEW, std::cerr);
+
+        return false;
+      }
+#endif
+      return true;
+    }
+
     inline bool isCellEdgePreconditioned() const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
