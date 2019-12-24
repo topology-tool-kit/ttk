@@ -495,48 +495,98 @@ namespace ttk {
       return true;
     }
 
-    inline bool isCellEdgeNumberPreconditioned() const {
-
-#ifndef TTK_ENABLE_KAMIKAZE
-      if(((getDimensionality() == 1) && (!hasPreconditionedCellNeighbors()))
-         || ((getDimensionality() > 1) && (!hasPreconditionedCellEdges()))) {
-
-        printMsg("CellEdgeNumber query without pre-process!",
-                 debug::Priority::ERROR, debug::LineMode::NEW, std::cerr);
-        printMsg("Please call preconditionCellEdges() in a pre-process.",
-                 debug::Priority::ERROR, debug::LineMode::NEW, std::cerr);
-
-        return false;
-      }
-#endif
-      return true;
-    }
-
-    inline bool isCellEdgesPreconditioned() const {
-
-#ifndef TTK_ENABLE_KAMIKAZE
-      if(((getDimensionality() == 1) && (!hasPreconditionedCellNeighbors()))
-         || ((getDimensionality() > 1) && (hasPreconditionedCellEdges()))) {
-
-        printMsg("CellEdges query without pre-process!", debug::Priority::ERROR,
-                 debug::LineMode::NEW, std::cerr);
-        printMsg("Please call preconditionCellEdges() in a pre-process.",
-                 debug::Priority::ERROR, debug::LineMode::NEW, std::cerr);
-
-        return false;
-      }
-#endif
-      return true;
-    }
-
     inline bool isCellNeighborPreconditioned() const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
-      if(hasPreconditionedCellNeighbors()) {
+      if(!hasPreconditionedCellNeighbors()) {
 
         printMsg("CellNeighbor query without pre-process!",
                  debug::Priority::ERROR, debug::LineMode::NEW, std::cerr);
         printMsg("Please call preconditionCellNeighbors() in a pre-process.",
+                 debug::Priority::ERROR, debug::LineMode::NEW, std::cerr);
+
+        return false;
+      }
+#endif
+      return true;
+    }
+
+    inline bool isCellTrianglePreconditioned() const {
+
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(((getDimensionality() == 2) && (!hasPreconditionedCellNeighbors()))
+         || ((getDimensionality() == 3)
+             && (!hasPreconditionedCellTriangles()))) {
+
+        printMsg("CellTriangle query without pre-process!",
+                 debug::Priority::ERROR, debug::LineMode::NEW, std::cerr);
+        printMsg("Please call preconditionCellTriangles() in a pre-process.",
+                 debug::Priority::ERROR, debug::LineMode::NEW, std::cerr);
+
+        return false;
+      }
+#endif
+      return true;
+    }
+
+    inline bool isEdgePreconditioned() const {
+
+#ifndef TTK_ENABLE_KAMIKAZE
+      if((getDimensionality() != 1) && (!hasPreconditionedEdges())) {
+
+        printMsg("Edge query without pre-process!", debug::Priority::ERROR,
+                 debug::LineMode::NEW, std::cerr);
+        printMsg("Please call preconditionEdges() in a pre-process.",
+                 debug::Priority::ERROR, debug::LineMode::NEW, std::cerr);
+
+        return false;
+      }
+#endif
+      return true;
+    }
+
+    inline bool isEdgeLinkPreconditioned() const {
+
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(!hasPreconditionedEdgeLinks()) {
+
+        printMsg("EdgeLink query without pre-process!", debug::Priority::ERROR,
+                 debug::LineMode::NEW, std::cerr);
+        printMsg("Please call preconditionEdgeLinks() in a pre-process.",
+                 debug::Priority::ERROR, debug::LineMode::NEW, std::cerr);
+
+        return false;
+      }
+#endif
+      return true;
+    }
+
+    inline bool isEdgeStarPreconditioned() const {
+
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(!hasPreconditionedEdgeStars()) {
+
+        printMsg("EdgeStar query without pre-process!", debug::Priority::ERROR,
+                 debug::LineMode::NEW, std::cerr);
+        printMsg("Please call preconditionEdgeStars() in a pre-process.",
+                 debug::Priority::ERROR, debug::LineMode::NEW, std::cerr);
+
+        return false;
+      }
+#endif
+      return true;
+    }
+
+    inline bool isEdgeTrianglePreconditioned() const {
+
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(((getDimensionality() == 2) && (!hasPreconditionedEdgeStars()))
+         || ((getDimensionality() == 3)
+             && (!hasPreconditionedEdgeTriangles()))) {
+
+        printMsg("EdgeTriangle query without pre-process!",
+                 debug::Priority::ERROR, debug::LineMode::NEW, std::cerr);
+        printMsg("Please call preconditionEdgeTriangles() in a pre-process.",
                  debug::Priority::ERROR, debug::LineMode::NEW, std::cerr);
 
         return false;
