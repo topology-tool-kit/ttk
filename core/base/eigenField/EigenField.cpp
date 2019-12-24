@@ -26,9 +26,10 @@ int ttk::EigenField::execute(Triangulation *triangulation,
                              bool computeStatistics,
                              T *const outputStatistics) const {
 
-  Timer t;
-
 #if defined(TTK_ENABLE_EIGEN) && defined(TTK_ENABLE_SPECTRA)
+
+  Timer tm;
+  Memory mem;
 
 #ifdef TTK_ENABLE_OPENMP
   Eigen::setNbThreads(threadNumber_);
@@ -131,29 +132,24 @@ int ttk::EigenField::execute(Triangulation *triangulation,
     }
   }
 
-  this->printMsg(ttk::debug::Separator::L2); // horizontal '-' separator
-  this->printMsg("Complete", 1, t.getElapsedTime() // global progress, time
-  );
+  this->printMsg("Complete", 1, tm.getElapsedTime(), this->threadNumber_,
+                 mem.getElapsedUsage());
 
 #else
-
-  this->printMsg(
-    std::vector<std::string>{
-      "Spectra support disabled, computation skipped!",
-      "Please re-compile TTK with Eigen AND Spectra support to "
-      "enable this feature."},
-    ttk::debug::Priority::ERROR);
-
+  this->printErr(
+    std::vector<std::string>{"Spectra support disabled, computation skipped!",
+                             "Please re-compile TTK with Eigen AND Spectra "
+                             "support to enable this feature."});
 #endif // TTK_ENABLE_EIGEN && TTK_ENABLE_SPECTRA
 
+  this->printMsg(ttk::debug::Separator::L1); // horizontal '=' separator
   return 0;
 }
 
 // explicit template specializations for double and float types
-#define EIGENFIELD_SPECIALIZE(TYPE)                                      \
-  template int ttk::EigenField::execute<TYPE>(                           \
-    Triangulation *, TYPE *const, const unsigned int, bool, TYPE *const) \
-    const
+#define EIGENFIELD_SPECIALIZE(TYPE)            \
+  template int ttk::EigenField::execute<TYPE>( \
+    Triangulation *, TYPE *const, const unsigned int, bool, TYPE *const) const
 
 EIGENFIELD_SPECIALIZE(double);
 EIGENFIELD_SPECIALIZE(float);
