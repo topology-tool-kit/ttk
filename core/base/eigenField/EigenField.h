@@ -31,7 +31,7 @@ namespace ttk {
   class EigenField : virtual public Debug {
   public:
     EigenField() {
-      this->SetDebugMsgPrefix("EigenField");
+      this->setDebugMsgPrefix("EigenField");
     }
 
     inline void preconditionTriangulation(Triangulation *triangulation) const {

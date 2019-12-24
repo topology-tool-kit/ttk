@@ -70,15 +70,15 @@ int ttk::EigenField::execute(Triangulation *triangulation,
 
   switch(solver.info()) {
     case Spectra::COMPUTATION_INFO::NUMERICAL_ISSUE:
-      this->PrintMsg("Numerical Issue!", ttk::debug::Priority::ERROR);
+      this->printMsg("Numerical Issue!", ttk::debug::Priority::ERROR);
       break;
     case Spectra::COMPUTATION_INFO::NOT_CONVERGING:
-      this->PrintMsg("No Convergence! (" + std::to_string(nconv) + " out of "
+      this->printMsg("No Convergence! (" + std::to_string(nconv) + " out of "
                        + std::to_string(eigenNumber) + " values computed)",
                      ttk::debug::Priority::ERROR);
       break;
     case Spectra::COMPUTATION_INFO::NOT_COMPUTED:
-      this->PrintMsg("Invalid Input!", ttk::debug::Priority::ERROR);
+      this->printMsg("Invalid Input!", ttk::debug::Priority::ERROR);
       break;
     default:
       break;
@@ -131,13 +131,13 @@ int ttk::EigenField::execute(Triangulation *triangulation,
     }
   }
 
-  this->PrintMsg(ttk::debug::Separator::L2); // horizontal '-' separator
-  this->PrintMsg("Complete", 1, t.getElapsedTime() // global progress, time
+  this->printMsg(ttk::debug::Separator::L2); // horizontal '-' separator
+  this->printMsg("Complete", 1, t.getElapsedTime() // global progress, time
   );
 
 #else
 
-  this->PrintMsg(
+  this->printMsg(
     std::vector<std::string>{
       "Spectra support disabled, computation skipped!",
       "Please re-compile TTK with Eigen AND Spectra support to "
