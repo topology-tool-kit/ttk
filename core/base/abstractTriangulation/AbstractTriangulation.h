@@ -595,6 +595,72 @@ namespace ttk {
       return true;
     }
 
+    inline bool isTrianglePreconditioned() const {
+
+#ifndef TTK_ENABLE_KAMIKAZE
+      if((getDimensionality() == 3) && (!hasPreconditionedTriangles())) {
+
+        printMsg("Triangle query without pre-process!", debug::Priority::ERROR,
+                 debug::LineMode::NEW, std::cerr);
+        printMsg("Please call preconditionTriangles() in a pre-process.",
+                 debug::Priority::ERROR, debug::LineMode::NEW, std::cerr);
+
+        return false;
+      }
+#endif
+      return true;
+    }
+
+    inline bool isTriangleEdgePreconditioned() const {
+
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(((getDimensionality() == 2) && (!hasPreconditionedCellEdges()))
+         || ((getDimensionality() == 3)
+             && (!hasPreconditionedTriangleEdges()))) {
+
+        printMsg("TriangleEdge query without pre-process!",
+                 debug::Priority::ERROR, debug::LineMode::NEW, std::cerr);
+        printMsg("Please call preconditionTriangleEdges() in a pre-process.",
+                 debug::Priority::ERROR, debug::LineMode::NEW, std::cerr);
+
+        return false;
+      }
+#endif
+      return true;
+    }
+
+    inline bool isTriangleLinkPreconditioned() const {
+
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(!hasPreconditionedTriangleLinks()) {
+
+        printMsg("TriangleLink query without pre-process!",
+                 debug::Priority::ERROR, debug::LineMode::NEW, std::cerr);
+        printMsg("Please call preconditionTriangleLinks() in a pre-process.",
+                 debug::Priority::ERROR, debug::LineMode::NEW, std::cerr);
+
+        return false;
+      }
+#endif
+      return true;
+    }
+
+    inline bool isTriangleStarPreconditioned() const {
+
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(!hasPreconditionedTriangleStars()) {
+
+        printMsg("TriangleStar query without pre-process!",
+                 debug::Priority::ERROR, debug::LineMode::NEW, std::cerr);
+        printMsg("Please call preconditionTriangleStars() in a pre-process.",
+                 debug::Priority::ERROR, debug::LineMode::NEW, std::cerr);
+
+        return false;
+      }
+#endif
+      return true;
+    }
+
     // empty wrapping to VTK for now
     bool needsToAbort() {
       return false;

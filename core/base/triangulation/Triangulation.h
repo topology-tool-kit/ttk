@@ -987,17 +987,8 @@ namespace ttk {
       if(getDimensionality() == 1)
         return -2;
 
-      if((getDimensionality() == 3)
-         && (!abstractTriangulation_->hasPreconditionedTriangles())) {
-        std::stringstream msg;
-        msg << "[Triangulation] "
-            << "NumberOfTriangles query without pre-process!" << std::endl;
-        msg << "[Triangulation] "
-            << "Please call preconditionTriangles() in a"
-            << " pre-process." << std::endl;
-        dMsg(std::cerr, msg.str(), Debug::fatalMsg);
-        return -2;
-      }
+      if(!isTrianglePreconditioned())
+        return -3;
 #endif
       if(getDimensionality() == 2)
         return abstractTriangulation_->getNumberOfCells();
@@ -1045,16 +1036,8 @@ namespace ttk {
       if(isEmptyCheck())
         return NULL;
 
-      if(!abstractTriangulation_->hasPreconditionedTriangles()) {
-        std::stringstream msg;
-        msg << "[Triangulation] "
-            << "Triangles query without pre-process!" << std::endl;
-        msg << "[Triangulation] "
-            << "Please call preconditionTriangles() in a"
-            << " pre-process." << std::endl;
-        dMsg(std::cerr, msg.str(), Debug::fatalMsg);
+      if(!isTrianglePreconditioned())
         return NULL;
-      }
 #endif
       return abstractTriangulation_->getTriangles();
     }
@@ -1090,19 +1073,8 @@ namespace ttk {
       if(getDimensionality() == 1)
         return -2;
 
-      if(((getDimensionality() == 2)
-          && (!abstractTriangulation_->hasPreconditionedCellEdges()))
-         || ((getDimensionality() == 3)
-             && (!abstractTriangulation_->hasPreconditionedTriangleEdges()))) {
-        std::stringstream msg;
-        msg << "[Triangulation] "
-            << "TriangleEdge query without pre-process!" << std::endl;
-        msg << "[Triangulation] "
-            << "Please call preconditionTriangleEdges() in a"
-            << " pre-process." << std::endl;
-        dMsg(std::cerr, msg.str(), Debug::fatalMsg);
-        return -2;
-      }
+      if(!isTriangleEdgePreconditioned())
+        return -3;
 #endif
       if(getDimensionality() == 2)
         return abstractTriangulation_->getCellEdge(
@@ -1135,19 +1107,8 @@ namespace ttk {
       if(getDimensionality() == 1)
         return -2;
 
-      if(((getDimensionality() == 2)
-          && (!abstractTriangulation_->hasPreconditionedCellEdges()))
-         || ((getDimensionality() == 3)
-             && (!abstractTriangulation_->hasPreconditionedTriangleEdges()))) {
-        std::stringstream msg;
-        msg << "[Triangulation] "
-            << "TriangleEdgeNumber query without pre-process!" << std::endl;
-        msg << "[Triangulation] "
-            << "Please call preconditionTriangleEdges() in a"
-            << " pre-process." << std::endl;
-        dMsg(std::cerr, msg.str(), Debug::fatalMsg);
-        return -2;
-      }
+      if(!isTriangleEdgePreconditioned())
+        return -3;
 #endif
       if(getDimensionality() == 2)
         return abstractTriangulation_->getCellEdgeNumber(triangleId);
@@ -1189,19 +1150,8 @@ namespace ttk {
       if(getDimensionality() == 1)
         return NULL;
 
-      if(((getDimensionality() == 2)
-          && (!abstractTriangulation_->hasPreconditionedCellEdges()))
-         || ((getDimensionality() == 3)
-             && (!abstractTriangulation_->hasPreconditionedTriangleEdges()))) {
-        std::stringstream msg;
-        msg << "[Triangulation] "
-            << "TriangleEdges query without pre-process!" << std::endl;
-        msg << "[Triangulation] "
-            << "Please call preconditionTriangleEdges() in a"
-            << " pre-process." << std::endl;
-        dMsg(std::cerr, msg.str(), Debug::fatalMsg);
+      if(!isTriangleEdgePreconditioned())
         return NULL;
-      }
 #endif
       if(getDimensionality() == 2)
         return abstractTriangulation_->getCellEdges();
@@ -1241,16 +1191,8 @@ namespace ttk {
       if(getDimensionality() != 3)
         return -2;
 
-      if(!abstractTriangulation_->hasPreconditionedTriangleLinks()) {
-        std::stringstream msg;
-        msg << "[Triangulation] "
-            << "TriangleLink query without pre-process!" << std::endl;
-        msg << "[Triangulation] "
-            << "Please call preconditionTriangleLinks() in a"
-            << " pre-process." << std::endl;
-        dMsg(std::cerr, msg.str(), Debug::fatalMsg);
-        return -1;
-      }
+      if(!isTriangleLinkPreconditioned())
+        return -3;
 #endif
       return abstractTriangulation_->getTriangleLink(
         triangleId, localLinkId, linkId);
@@ -1280,16 +1222,8 @@ namespace ttk {
       if(getDimensionality() != 3)
         return -2;
 
-      if(!abstractTriangulation_->hasPreconditionedTriangleLinks()) {
-        std::stringstream msg;
-        msg << "[Triangulation] "
-            << "TriangleLinkNumber query without pre-process!" << std::endl;
-        msg << "[Triangulation] "
-            << "Please call preconditionTriangleLinks() in a"
-            << " pre-process." << std::endl;
-        dMsg(std::cerr, msg.str(), Debug::fatalMsg);
-        return -2;
-      }
+      if(!isTriangleLinkPreconditioned())
+        return -3;
 #endif
       return abstractTriangulation_->getTriangleLinkNumber(triangleId);
     }
@@ -1327,16 +1261,8 @@ namespace ttk {
       if(getDimensionality() != 3)
         return NULL;
 
-      if(!abstractTriangulation_->hasPreconditionedTriangleLinks()) {
-        std::stringstream msg;
-        msg << "[Triangulation] "
-            << "TriangleLinks query without pre-process!" << std::endl;
-        msg << "[Triangulation] "
-            << "Please call preconditionTriangleLinks() in a"
-            << " pre-process." << std::endl;
-        dMsg(std::cerr, msg.str(), Debug::fatalMsg);
+      if(!isTriangleLinkPreconditioned())
         return NULL;
-      }
 #endif
       return abstractTriangulation_->getTriangleLinks();
     }
@@ -1374,16 +1300,8 @@ namespace ttk {
       if(getDimensionality() != 3)
         return -2;
 
-      if(!abstractTriangulation_->hasPreconditionedTriangleStars()) {
-        std::stringstream msg;
-        msg << "[Triangulation] "
-            << "TriangleStar query without pre-process!" << std::endl;
-        msg << "[Triangulation] "
-            << "Please call preconditionTriangleStars() in a"
-            << " pre-process." << std::endl;
-        dMsg(std::cerr, msg.str(), Debug::fatalMsg);
-        return -2;
-      }
+      if(!isTriangleStarPreconditioned())
+        return -3;
 #endif
       return abstractTriangulation_->getTriangleStar(
         triangleId, localStarId, starId);
@@ -1412,16 +1330,8 @@ namespace ttk {
       if(getDimensionality() != 3)
         return -2;
 
-      if(!abstractTriangulation_->hasPreconditionedTriangleStars()) {
-        std::stringstream msg;
-        msg << "[Triangulation] "
-            << "TriangleStarNumber query without pre-process!" << std::endl;
-        msg << "[Triangulation] "
-            << "Please call preconditionTriangleStars() in a"
-            << " pre-process." << std::endl;
-        dMsg(std::cerr, msg.str(), Debug::fatalMsg);
-        return -2;
-      }
+      if(!isTriangleStarPreconditioned())
+        return -3;
 #endif
       return abstractTriangulation_->getTriangleStarNumber(triangleId);
     }
@@ -1460,16 +1370,8 @@ namespace ttk {
       if(getDimensionality() != 3)
         return NULL;
 
-      if(!abstractTriangulation_->hasPreconditionedTriangleStars()) {
-        std::stringstream msg;
-        msg << "[Triangulation] "
-            << "TriangleStars query without pre-process!" << std::endl;
-        msg << "[Triangulation] "
-            << "Please call preconditionTriangleStars() in a"
-            << " pre-process." << std::endl;
-        dMsg(std::cerr, msg.str(), Debug::fatalMsg);
+      if(!isTriangleStarPreconditioned())
         return NULL;
-      }
 #endif
       return abstractTriangulation_->getTriangleStars();
     }
@@ -1505,17 +1407,8 @@ namespace ttk {
       if(getDimensionality() == 1)
         return -2;
 
-      if((getDimensionality() == 3)
-         && (!abstractTriangulation_->hasPreconditionedTriangles())) {
-        std::stringstream msg;
-        msg << "[Triangulation] "
-            << "TriangleVertex query without pre-process!" << std::endl;
-        msg << "[Triangulation] "
-            << "Please call preconditionTriangles() in a"
-            << " pre-process." << std::endl;
-        dMsg(std::cerr, msg.str(), Debug::fatalMsg);
-        return -2;
-      }
+      if(!isTrianglePreconditioned())
+        return -3;
 #endif
       if(getDimensionality() == 2)
         return abstractTriangulation_->getCellVertex(
