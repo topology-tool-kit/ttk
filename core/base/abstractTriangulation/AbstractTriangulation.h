@@ -661,6 +661,89 @@ namespace ttk {
       return true;
     }
 
+    inline bool isVertexEdgePreconditioned() const {
+
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(((getDimensionality() == 1) && (!hasPreconditionedVertexStars()))
+         || ((getDimensionality() > 1) && (!hasPreconditionedVertexEdges()))) {
+
+        printMsg("VertexEdge query without pre-process!",
+                 debug::Priority::ERROR, debug::LineMode::NEW, std::cerr);
+        printMsg("Please call preconditionVertexEdges() in a pre-process.",
+                 debug::Priority::ERROR, debug::LineMode::NEW, std::cerr);
+
+        return false;
+      }
+#endif
+      return true;
+    }
+
+    inline bool isVertexLinkPreconditioned() const {
+
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(!hasPreconditionedVertexLinks()) {
+
+        printMsg("VertexLink query without pre-process!",
+                 debug::Priority::ERROR, debug::LineMode::NEW, std::cerr);
+        printMsg("Please call preconditionVertexLinks() in a pre-process.",
+                 debug::Priority::ERROR, debug::LineMode::NEW, std::cerr);
+
+        return false;
+      }
+#endif
+      return true;
+    }
+
+    inline bool isVertexNeighborPreconditioned() const {
+
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(!hasPreconditionedVertexNeighbors()) {
+
+        printMsg("VertexNeighbor query without pre-process!",
+                 debug::Priority::ERROR, debug::LineMode::NEW, std::cerr);
+        printMsg("Please call preconditionVertexNeighbors() in a pre-process.",
+                 debug::Priority::ERROR, debug::LineMode::NEW, std::cerr);
+
+        return false;
+      }
+#endif
+      return true;
+    }
+
+    inline bool isVertexStarPreconditioned() const {
+
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(!hasPreconditionedVertexStars()) {
+
+        printMsg("VertexStar query without pre-process!",
+                 debug::Priority::ERROR, debug::LineMode::NEW, std::cerr);
+        printMsg("Please call preconditionVertexStars() in a pre-process.",
+                 debug::Priority::ERROR, debug::LineMode::NEW, std::cerr);
+
+        return false;
+      }
+#endif
+      return true;
+    }
+
+    inline bool isVertexTrianglePreconditioned() const {
+
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(((getDimensionality() == 2) && (!hasPreconditionedVertexStars()))
+         || ((getDimensionality() == 3)
+             && (!hasPreconditionedVertexTriangles()))) {
+
+        printMsg("VertexTriangle query without pre-process!",
+                 debug::Priority::ERROR, debug::LineMode::NEW, std::cerr);
+        printMsg("Please call preconditionVertexTriangles() in a pre-process.",
+                 debug::Priority::ERROR, debug::LineMode::NEW, std::cerr);
+
+        return false;
+      }
+#endif
+      return true;
+    }
+
     // empty wrapping to VTK for now
     bool needsToAbort() {
       return false;
