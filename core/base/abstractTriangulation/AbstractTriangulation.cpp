@@ -5,6 +5,8 @@ using namespace ttk;
 
 AbstractTriangulation::AbstractTriangulation() {
 
+  setDebugMsgPrefix("AbstractTriangulation");
+
   clear();
 }
 

@@ -159,7 +159,6 @@ vtkStandardNewMacro(ttkBlank)
 //             }
 //             break;
 //   }
-=======
   //   switch(triangulation->getType()) {
 
   // case ttk::Triangulation::explicitRepresentation:
@@ -196,7 +195,6 @@ vtkStandardNewMacro(ttkBlank)
   //       }
   //       break;
   //   }
->>>>>>> 1e6b5ec749628a6d3d37af2a2f6316d9f9b9668e
 
   {
     stringstream msg;

@@ -483,13 +483,12 @@ namespace ttk {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(((getDimensionality() == 1) && (!hasPreconditionedCellNeighbors()))
          || ((getDimensionality() > 1) && (!hasPreconditionedCellEdges()))) {
-        std::stringstream msg;
-        msg << "[AbstractTriangulation] "
-            << "CellEdge query without pre-process!" << std::endl;
-        msg << "[Triangulation] "
-            << "Please call preconditionCellEdges() in a"
-            << " pre-process." << std::endl;
-        dMsg(std::cerr, msg.str(), Debug::fatalMsg);
+
+        printMsg("CellEdge query without pre-process!", debug::Priority::ERROR,
+                 debug::LineMode::NEW, std::cerr);
+        printMsg("Please call preconditionCellEdges() in a pre-process.",
+                 debug::Priority::ERROR, debug::LineMode::NEW, std::cerr);
+
         return false;
       }
 #endif
@@ -501,13 +500,12 @@ namespace ttk {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(((getDimensionality() == 1) && (!hasPreconditionedCellNeighbors()))
          || ((getDimensionality() > 1) && (!hasPreconditionedCellEdges()))) {
-        std::stringstream msg;
-        msg << "[AbstractTriangulation] "
-            << "CellEdgeNumber query without pre-process!" << std::endl;
-        msg << "[Triangulation] "
-            << "Please call preconditionCellEdges() in a"
-            << " pre-process." << std::endl;
-        dMsg(std::cerr, msg.str(), Debug::fatalMsg);
+
+        printMsg("CellEdgeNumber query without pre-process!",
+                 debug::Priority::ERROR, debug::LineMode::NEW, std::cerr);
+        printMsg("Please call preconditionCellEdges() in a pre-process.",
+                 debug::Priority::ERROR, debug::LineMode::NEW, std::cerr);
+
         return false;
       }
 #endif
@@ -519,13 +517,12 @@ namespace ttk {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(((getDimensionality() == 1) && (!hasPreconditionedCellNeighbors()))
          || ((getDimensionality() > 1) && (hasPreconditionedCellEdges()))) {
-        std::stringstream msg;
-        msg << "[Triangulation] "
-            << "CellEdges query without pre-process!" << std::endl;
-        msg << "[Triangulation] "
-            << "Please call preconditionCellEdges() in a"
-            << " pre-process." << std::endl;
-        dMsg(std::cerr, msg.str(), Debug::fatalMsg);
+
+        printMsg("CellEdges query without pre-process!", debug::Priority::ERROR,
+                 debug::LineMode::NEW, std::cerr);
+        printMsg("Please call preconditionCellEdges() in a pre-process.",
+                 debug::Priority::ERROR, debug::LineMode::NEW, std::cerr);
+
         return false;
       }
 #endif
@@ -536,13 +533,12 @@ namespace ttk {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(hasPreconditionedCellNeighbors()) {
-        std::stringstream msg;
-        msg << "[Triangulation] "
-            << "CellNeighbor query without pre-process!" << std::endl;
-        msg << "[Triangulation] "
-            << "Please call preconditionCellNeighbors() in a"
-            << " pre-process." << std::endl;
-        dMsg(std::cerr, msg.str(), Debug::fatalMsg);
+
+        printMsg("CellNeighbor query without pre-process!",
+                 debug::Priority::ERROR, debug::LineMode::NEW, std::cerr);
+        printMsg("Please call preconditionCellNeighbors() in a pre-process.",
+                 debug::Priority::ERROR, debug::LineMode::NEW, std::cerr);
+
         return false;
       }
 #endif
