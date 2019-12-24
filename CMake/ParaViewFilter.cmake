@@ -3,6 +3,7 @@
 # also register the xml file if given
 
 file(READ "CMake/debug_widgets.xml" DEBUG_WIDGETS)
+file(READ "CMake/topological_compression.xml" TOPOLOGICAL_COMPRESSION_WIDGETS)
 
 macro(ttk_register_pv_filter vtkModuleDir xmlFile)
   if(NOT EXISTS "${VTKWRAPPER_DIR}/${vtkModuleDir}/vtk.module")

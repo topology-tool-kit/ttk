@@ -42,7 +42,7 @@ NOTE:
                     <Entry value="1" text="PNG Image"/>
                     <Entry value="2" text="TTK Compression"/>
                 </EnumerationDomain>
-                <Documentation>Store input as VTK file, PNG image, or TTK topological compression file.</Documentation>
+                <Documentation>Store input as VTK file or PNG image.</Documentation>
             </IntVectorProperty>
 
             <IntVectorProperty name="IterateMultiBlock" label="Iterate MultiBlock" command="SetIterateMultiBlock" number_of_elements="1" default_values="0">
@@ -62,6 +62,27 @@ NOTE:
             </PropertyGroup>
             <PropertyGroup panel_widget="Line" label="Commands">
                 <Property name="DeleteDatabase" />
+            </PropertyGroup>
+
+            ${TOPOLOGICAL_COMPRESSION_WIDGETS}
+
+            <PropertyGroup panel_widget="Line" label="Topological Compression" >
+              <Property name="ScalarField" />
+              <Property name="CompressionType" />
+              <Property name="Tolerance" />
+              <Property name="Subdivide" />
+              <Property name="MaximumError" />
+              <Property name="ZFPBitBudget" />
+              <Property name="ZFPOnly" />
+              <Property name="UseTopologicalSimplification" />
+              <Property name="SQMethod" />
+              <Hints>
+                <PropertyWidgetDecorator
+                    type="GenericDecorator"
+                    mode="visibility"
+                    property="Mode"
+                    value="2" />
+              </Hints>
             </PropertyGroup>
 
             ${DEBUG_WIDGETS}
