@@ -2267,7 +2267,7 @@ namespace ttk {
 #endif
 
       return !((!abstractTriangulation_->preconditionEdges())
-               && (hasPreconditionedBoundaryEdges_ = true));
+               && (hasPreconditionedEdges_ = true));
     }
 
     /// Pre-process the edge links.

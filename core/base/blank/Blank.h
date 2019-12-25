@@ -115,7 +115,6 @@ namespace ttk {
           // Pre-condition functions.
           // Call all the required pre-condition functions here!
           // for example:
-          triangulation->preconditionEdges();
           triangulation->preconditionVertexNeighbors();
           // end of TODO-1
         }
@@ -160,7 +159,7 @@ int ttk::blank::Blank::execute(const AbstractTriangulation *triangulation,
   SimplexId cellEdgeId = -1, edgeNumber = -1;
   //   edgeNumber = triangulation->getNumberOfEdges();
   //   triangulation->getCellEdge(0, 0, cellEdgeId);
-  triangulation->getEdgeVertex(0, 0, cellEdgeId);
+  triangulation->getVertexNeighbor(0, 0, cellEdgeId);
   printf("cell edgeId: %d [%d]\n", cellEdgeId,
          triangulation->hasPreconditionedEdges());
 
