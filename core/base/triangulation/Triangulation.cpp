@@ -7,6 +7,7 @@ Triangulation::Triangulation()
   : AbstractTriangulation{}, gridDimensions_{-1, -1, -1},
     abstractTriangulation_{nullptr}, usePeriodicBoundaries_{false} {
   debugLevel_ = 0; // overrides the global debug level.
+  setDebugMsgPrefix("Triangulation");
 }
 
 Triangulation::Triangulation(const Triangulation &rhs)

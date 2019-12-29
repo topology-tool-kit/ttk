@@ -59,7 +59,7 @@ namespace ttk {
 
     /// Reset the triangulation data-structures.
     /// \return Returns 0 upon success, negative values otherwise.
-    inline int clear() override {
+    inline int clear() {
 
       if(abstractTriangulation_) {
         return abstractTriangulation_->clear();
@@ -70,7 +70,7 @@ namespace ttk {
 
     /// Computes and displays the memory footprint of the data-structure.
     /// \return Returns 0 upon success, negative values otherwise.
-    inline size_t footprint() const override {
+    inline size_t footprint() const {
 
       if(abstractTriangulation_) {
         return abstractTriangulation_->footprint();
@@ -102,22 +102,15 @@ namespace ttk {
     /// \sa getCellNeighbor()
     inline int getCellEdge(const SimplexId &cellId,
                            const int &localEdgeId,
-                           SimplexId &edgeId) const override {
+                           SimplexId &edgeId) const {
 
-#ifndef TTK_ENABLE_KAMIKAZE
       // initialize output variable before early return
       edgeId = -1;
 
+#ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
         return -1;
-
-      if(!isCellEdgePreconditioned())
-        return -2;
 #endif
-
-      if(getDimensionality() == 1)
-        return abstractTriangulation_->getCellNeighbor(
-          cellId, localEdgeId, edgeId);
 
       return abstractTriangulation_->getCellEdge(cellId, localEdgeId, edgeId);
     }
@@ -138,17 +131,11 @@ namespace ttk {
     /// \param cellId Input global cell identifier.
     /// \return Returns the number of cell edges.
     /// \sa getCellNeighborNumber()
-    inline SimplexId getCellEdgeNumber(const SimplexId &cellId) const override {
+    inline SimplexId getCellEdgeNumber(const SimplexId &cellId) const {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
         return -1;
-
-      if(!isCellEdgePreconditioned())
-        return -2;
 #endif
-      if(getDimensionality() == 1)
-        return abstractTriangulation_->getCellNeighborNumber(cellId);
-
       return abstractTriangulation_->getCellEdgeNumber(cellId);
     }
 
@@ -180,17 +167,11 @@ namespace ttk {
     /// from any time performance measurement.
     /// \return Returns a pointer to the cell edge list.
     /// \sa getCellNeighbors()
-    inline const std::vector<std::vector<SimplexId>> *getCellEdges() override {
+    inline const std::vector<std::vector<SimplexId>> *getCellEdges() {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
         return NULL;
-
-      if(!isCellEdgePreconditioned())
-        return NULL;
 #endif
-      if(getDimensionality() == 1)
-        return abstractTriangulation_->getCellNeighbors();
-
       return abstractTriangulation_->getCellEdges();
     }
 
@@ -215,17 +196,13 @@ namespace ttk {
     /// \sa getCellNeighborNumber()
     inline int getCellNeighbor(const SimplexId &cellId,
                                const int &localNeighborId,
-                               SimplexId &neighborId) const override {
+                               SimplexId &neighborId) const {
 
-#ifndef TTK_ENABLE_KAMIKAZE
       // initialize output variable before early return
       neighborId = -1;
-
+#ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
         return -1;
-
-      if(!isCellNeighborPreconditioned())
-        return -2;
 #endif
       return abstractTriangulation_->getCellNeighbor(
         cellId, localNeighborId, neighborId);
@@ -245,15 +222,11 @@ namespace ttk {
     /// from any time performance measurement.
     /// \param cellId Input global cell identifier.
     /// \return Returns the number of cell neighbors.
-    inline SimplexId
-      getCellNeighborNumber(const SimplexId &cellId) const override {
+    inline SimplexId getCellNeighborNumber(const SimplexId &cellId) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
         return -1;
-
-      if(!isCellNeighborPreconditioned())
-        return -2;
 #endif
       return abstractTriangulation_->getCellNeighborNumber(cellId);
     }
@@ -283,13 +256,9 @@ namespace ttk {
     /// \note It is recommended to exclude such a pre-processing step
     /// from any time performance measurement.
     /// \return Returns a pointer to the cell neighbor list.
-    inline const std::vector<std::vector<SimplexId>> *
-      getCellNeighbors() override {
+    inline const std::vector<std::vector<SimplexId>> *getCellNeighbors() {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
-        return NULL;
-
-      if(!isCellNeighborPreconditioned())
         return NULL;
 #endif
       return abstractTriangulation_->getCellNeighbors();
@@ -319,7 +288,7 @@ namespace ttk {
     /// \sa getCellNeighbor()
     inline int getCellTriangle(const SimplexId &cellId,
                                const int &localTriangleId,
-                               SimplexId &triangleId) const override {
+                               SimplexId &triangleId) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       // initialize output variable before early return
@@ -327,17 +296,7 @@ namespace ttk {
 
       if(isEmptyCheck())
         return -1;
-
-      if(getDimensionality() == 1)
-        return -2;
-
-      if(!isCellTrianglePreconditioned())
-        return -3;
 #endif
-      if(getDimensionality() == 2)
-        return abstractTriangulation_->getCellNeighbor(
-          cellId, localTriangleId, triangleId);
-
       return abstractTriangulation_->getCellTriangle(
         cellId, localTriangleId, triangleId);
     }
@@ -359,21 +318,11 @@ namespace ttk {
     /// \param cellId Input global cell identifier.
     /// \return Returns the number of cell triangles.
     /// \sa getCellNeighborNumber()
-    inline SimplexId
-      getCellTriangleNumber(const SimplexId &cellId) const override {
+    inline SimplexId getCellTriangleNumber(const SimplexId &cellId) const {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
         return -1;
-
-      if(getDimensionality() == 1)
-        return -2;
-
-      if(!isCellTrianglePreconditioned())
-        return -3;
 #endif
-      if(getDimensionality() == 2)
-        return abstractTriangulation_->getCellNeighborNumber(cellId);
-
       return abstractTriangulation_->getCellTriangleNumber(cellId);
     }
 
@@ -408,21 +357,11 @@ namespace ttk {
     /// from any time performance measurement.
     /// \return Returns a pointer to the cell triangle list.
     /// \sa getCellNeighbors()
-    inline const std::vector<std::vector<SimplexId>> *
-      getCellTriangles() override {
+    inline const std::vector<std::vector<SimplexId>> *getCellTriangles() {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
         return NULL;
-
-      if(getDimensionality() == 1)
-        return NULL;
-
-      if(!isCellTrianglePreconditioned())
-        return NULL;
 #endif
-      if(getDimensionality() == 2)
-        return abstractTriangulation_->getCellNeighbors();
-
       return abstractTriangulation_->getCellTriangles();
     }
 
@@ -439,7 +378,7 @@ namespace ttk {
     /// \sa getCellVertexNumber()
     inline int getCellVertex(const SimplexId &cellId,
                              const int &localVertexId,
-                             SimplexId &vertexId) const override {
+                             SimplexId &vertexId) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       // initialize output variable before early return
@@ -459,8 +398,7 @@ namespace ttk {
     /// dimension (3D: tetrahedra, 2D: triangles, 1D: edges).
     /// \param cellId Input global cell identifier.
     /// \returns Number of vertices in the cell.
-    inline SimplexId
-      getCellVertexNumber(const SimplexId &cellId) const override {
+    inline SimplexId getCellVertexNumber(const SimplexId &cellId) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
@@ -472,7 +410,7 @@ namespace ttk {
     /// Get the dimensionality of the triangulation (this value is equal to
     /// the dimension of the simplex with largest dimensionality).
     /// \return Returns the dimensionality of the triangulation.
-    inline int getDimensionality() const override {
+    inline int getDimensionality() const {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
         return -1;
@@ -504,16 +442,9 @@ namespace ttk {
     /// \note It is recommended to exclude such a pre-processing step
     /// from any time performance measurement.
     /// \return Returns a pointer to the edge list.
-    inline const std::vector<std::pair<SimplexId, SimplexId>> *
-      getEdges() override {
+    inline const std::vector<std::pair<SimplexId, SimplexId>> *getEdges() {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
-        return NULL;
-
-      if(getDimensionality() == 1)
-        return NULL;
-
-      if(!isEdgePreconditioned())
         return NULL;
 #endif
       return abstractTriangulation_->getEdges();
@@ -540,19 +471,13 @@ namespace ttk {
     /// \sa getEdgeLinkNumber()
     inline int getEdgeLink(const SimplexId &edgeId,
                            const int &localLinkId,
-                           SimplexId &linkId) const override {
+                           SimplexId &linkId) const {
 #ifndef TTK_ENABLE_KAMIKAZE
       // initialize output variable before early return
       linkId = -1;
 
       if(isEmptyCheck())
         return -1;
-
-      if(getDimensionality() == 1)
-        return -2;
-
-      if(!isEdgeLinkPreconditioned())
-        return -3;
 #endif
       return abstractTriangulation_->getEdgeLink(edgeId, localLinkId, linkId);
     }
@@ -571,16 +496,10 @@ namespace ttk {
     /// from any time performance measurement.
     /// \param edgeId Input global edge identifier.
     /// \return Returns the number of cells in the link of the edge.
-    inline SimplexId getEdgeLinkNumber(const SimplexId &edgeId) const override {
+    inline SimplexId getEdgeLinkNumber(const SimplexId &edgeId) const {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
         return -1;
-
-      if(getDimensionality() == 1)
-        return -2;
-
-      if(!isEdgeLinkPreconditioned())
-        return -2;
 #endif
       return abstractTriangulation_->getEdgeLinkNumber(edgeId);
     }
@@ -608,15 +527,9 @@ namespace ttk {
     /// \note It is recommended to exclude such a pre-processing step
     /// from any time performance measurement.
     /// \return Returns a pointer to the edge link list.
-    inline const std::vector<std::vector<SimplexId>> *getEdgeLinks() override {
+    inline const std::vector<std::vector<SimplexId>> *getEdgeLinks() {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
-        return NULL;
-
-      if(getDimensionality() == 1)
-        return NULL;
-
-      if(!isEdgeLinkPreconditioned())
         return NULL;
 #endif
       return abstractTriangulation_->getEdgeLinks();
@@ -646,19 +559,13 @@ namespace ttk {
     /// \sa getEdgeStarNumber()
     inline int getEdgeStar(const SimplexId &edgeId,
                            const int &localStarId,
-                           SimplexId &starId) const override {
+                           SimplexId &starId) const {
 #ifndef TTK_ENABLE_KAMIKAZE
       // initialize output variable before early return
       starId = -1;
 
       if(isEmptyCheck())
         return -1;
-
-      if(getDimensionality() == 1)
-        return -2;
-
-      if(!isEdgeStarPreconditioned())
-        return -3;
 #endif
       return abstractTriangulation_->getEdgeStar(edgeId, localStarId, starId);
     }
@@ -680,16 +587,10 @@ namespace ttk {
     /// from any time performance measurement.
     /// \param edgeId Input global edge identifier
     /// \return Returns the number of star cells.
-    inline SimplexId getEdgeStarNumber(const SimplexId &edgeId) const override {
+    inline SimplexId getEdgeStarNumber(const SimplexId &edgeId) const {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
         return -1;
-
-      if(getDimensionality() == 1)
-        return -2;
-
-      if(!isEdgeStarPreconditioned())
-        return -3;
 #endif
       return abstractTriangulation_->getEdgeStarNumber(edgeId);
     }
@@ -722,15 +623,9 @@ namespace ttk {
     /// \note It is recommended to exclude such a pre-processing step
     /// from any time performance measurement.
     /// \return Returns a pointer to the edge star list.
-    inline const std::vector<std::vector<SimplexId>> *getEdgeStars() override {
+    inline const std::vector<std::vector<SimplexId>> *getEdgeStars() {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
-        return NULL;
-
-      if(getDimensionality() == 1)
-        return NULL;
-
-      if(!isEdgeStarPreconditioned())
         return NULL;
 #endif
       return abstractTriangulation_->getEdgeStars();
@@ -757,7 +652,7 @@ namespace ttk {
     /// \sa getEdgeStar()
     inline int getEdgeTriangle(const SimplexId &edgeId,
                                const int &localTriangleId,
-                               SimplexId &triangleId) const override {
+                               SimplexId &triangleId) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       // initialize output variable before early return
@@ -765,17 +660,7 @@ namespace ttk {
 
       if(isEmptyCheck())
         return -1;
-
-      if(getDimensionality() == 1)
-        return -2;
-
-      if(!isEdgeTrianglePreconditioned())
-        return -3;
 #endif
-      if(getDimensionality() == 2)
-        return abstractTriangulation_->getEdgeStar(
-          edgeId, localTriangleId, triangleId);
-
       return abstractTriangulation_->getEdgeTriangle(
         edgeId, localTriangleId, triangleId);
     }
@@ -794,22 +679,11 @@ namespace ttk {
     /// \param edgeId Input global edge identifier.
     /// \return Returns the number of edge triangles.
     /// \sa getEdgeStarNumber
-    inline SimplexId
-      getEdgeTriangleNumber(const SimplexId &edgeId) const override {
+    inline SimplexId getEdgeTriangleNumber(const SimplexId &edgeId) const {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
         return -1;
-
-      if(getDimensionality() == 1)
-        return -2;
-
-      if(!isEdgeTrianglePreconditioned())
-        return -3;
 #endif
-
-      if(getDimensionality() == 2)
-        return abstractTriangulation_->getEdgeStarNumber(edgeId);
-
       return abstractTriangulation_->getEdgeTriangleNumber(edgeId);
     }
 
@@ -838,22 +712,11 @@ namespace ttk {
     /// from any time performance measurement.
     /// \return Returns a pointer to the edge triangle list.
     /// \sa getEdgeStars
-    inline const std::vector<std::vector<SimplexId>> *
-      getEdgeTriangles() override {
+    inline const std::vector<std::vector<SimplexId>> *getEdgeTriangles() {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
         return NULL;
-
-      if(getDimensionality() == 1)
-        return NULL;
-
-      if(!isEdgeTrianglePreconditioned())
-        return NULL;
 #endif
-
-      if(getDimensionality() == 2)
-        return abstractTriangulation_->getEdgeStars();
-
       return abstractTriangulation_->getEdgeTriangles();
     }
 
@@ -876,45 +739,16 @@ namespace ttk {
     /// \sa getCellVertex()
     inline int getEdgeVertex(const SimplexId &edgeId,
                              const int &localVertexId,
-                             SimplexId &vertexId) const override {
+                             SimplexId &vertexId) const {
 #ifndef TTK_ENABLE_KAMIKAZE
       // initialize output variable before early return
       vertexId = -1;
 
       if(isEmptyCheck())
         return -1;
-
-      if(!isEdgePreconditioned())
-        return -2;
 #endif
-      if(getDimensionality() == 1)
-        return abstractTriangulation_->getCellVertex(
-          edgeId, localVertexId, vertexId);
-
       return abstractTriangulation_->getEdgeVertex(
         edgeId, localVertexId, vertexId);
-    }
-
-    /// Get the dimensions of the grid if the current object is the implicit
-    /// triangulation of a regular grid.
-    /// \param dimensions Vector that will be filled with the dimensions of
-    /// the grid. This std::vector has 3 entries (first: x, second: y,
-    /// third: z).
-    /// \return Returns 0 upon success, negative values otherwise (for
-    /// instance, if the object is not representing a regular grid).
-    inline int getGridDimensions(std::vector<int> &dimensions) {
-
-      if((gridDimensions_[0] == -1) && (gridDimensions_[1] == -1)
-         && (gridDimensions_[2] == -1)) {
-        return -1;
-      }
-
-      dimensions.resize(3);
-      dimensions[0] = gridDimensions_[0];
-      dimensions[1] = gridDimensions_[1];
-      dimensions[2] = gridDimensions_[2];
-
-      return 0;
     }
 
     /// Get the internal abstract triangulation object.
@@ -928,7 +762,7 @@ namespace ttk {
     /// Here the notion of cell refers to the simplicices of maximal
     /// dimension (3D: tetrahedra, 2D: triangles, 1D: edges).
     /// \return Returns the number of cells.
-    inline SimplexId getNumberOfCells() const override {
+    inline SimplexId getNumberOfCells() const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
@@ -951,17 +785,11 @@ namespace ttk {
     /// from any time performance measurement.
     /// \return Returns the number of edges.
     /// \sa getNumberOfCells()
-    inline SimplexId getNumberOfEdges() const override {
+    inline SimplexId getNumberOfEdges() const {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
         return -1;
-
-      if(!isEdgePreconditioned())
-        return -2;
 #endif
-      if(getDimensionality() == 1)
-        return abstractTriangulation_->getNumberOfCells();
-
       return abstractTriangulation_->getNumberOfEdges();
     }
 
@@ -978,27 +806,18 @@ namespace ttk {
     /// from any time performance measurement.
     /// \return Returns the number of triangles.
     /// \sa getNumberOfCells()
-    inline SimplexId getNumberOfTriangles() const override {
+    inline SimplexId getNumberOfTriangles() const {
 #ifndef TTK_ENABLE_KAMIKAZE
 
       if(isEmptyCheck())
         return -1;
-
-      if(getDimensionality() == 1)
-        return -2;
-
-      if(!isTrianglePreconditioned())
-        return -3;
 #endif
-      if(getDimensionality() == 2)
-        return abstractTriangulation_->getNumberOfCells();
-
       return abstractTriangulation_->getNumberOfTriangles();
     }
 
     /// Get the number of vertices in the triangulation.
     /// \return Returns the number of vertices.
-    inline SimplexId getNumberOfVertices() const override {
+    inline SimplexId getNumberOfVertices() const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
@@ -1031,12 +850,9 @@ namespace ttk {
     /// \note It is recommended to exclude such a pre-processing step
     /// from any time performance measurement.
     /// \return Returns a pointer to the triangle list.
-    inline const std::vector<std::vector<SimplexId>> *getTriangles() override {
+    inline const std::vector<std::vector<SimplexId>> *getTriangles() {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
-        return NULL;
-
-      if(!isTrianglePreconditioned())
         return NULL;
 #endif
       return abstractTriangulation_->getTriangles();
@@ -1062,24 +878,14 @@ namespace ttk {
     /// \sa getCellEdge()
     inline int getTriangleEdge(const SimplexId &triangleId,
                                const int &localEdgeId,
-                               SimplexId &edgeId) const override {
+                               SimplexId &edgeId) const {
 #ifndef TTK_ENABLE_KAMIKAZE
       // initialize output variable before early return
       edgeId = -1;
 
       if(isEmptyCheck())
         return -1;
-
-      if(getDimensionality() == 1)
-        return -2;
-
-      if(!isTriangleEdgePreconditioned())
-        return -3;
 #endif
-      if(getDimensionality() == 2)
-        return abstractTriangulation_->getCellEdge(
-          triangleId, localEdgeId, edgeId);
-
       return abstractTriangulation_->getTriangleEdge(
         triangleId, localEdgeId, edgeId);
     }
@@ -1098,21 +904,11 @@ namespace ttk {
     /// \param triangleId Input global triangle identifier.
     /// \return Returns the number of cells in the link of the triangle.
     /// \sa getCellEdgeNumber()
-    inline SimplexId
-      getTriangleEdgeNumber(const SimplexId &triangleId) const override {
+    inline SimplexId getTriangleEdgeNumber(const SimplexId &triangleId) const {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
         return -1;
-
-      if(getDimensionality() == 1)
-        return -2;
-
-      if(!isTriangleEdgePreconditioned())
-        return -3;
 #endif
-      if(getDimensionality() == 2)
-        return abstractTriangulation_->getCellEdgeNumber(triangleId);
-
       return abstractTriangulation_->getTriangleEdgeNumber(triangleId);
     }
 
@@ -1141,21 +937,11 @@ namespace ttk {
     /// from any time performance measurement.
     /// \return Returns a pointer to the triangle edge list.
     /// \sa getCellEdges()
-    inline const std::vector<std::vector<SimplexId>> *
-      getTriangleEdges() override {
+    inline const std::vector<std::vector<SimplexId>> *getTriangleEdges() {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
         return NULL;
-
-      if(getDimensionality() == 1)
-        return NULL;
-
-      if(!isTriangleEdgePreconditioned())
-        return NULL;
 #endif
-      if(getDimensionality() == 2)
-        return abstractTriangulation_->getCellEdges();
-
       return abstractTriangulation_->getTriangleEdges();
     }
 
@@ -1180,19 +966,13 @@ namespace ttk {
     /// \sa getTriangleLinkNumber()
     inline int getTriangleLink(const SimplexId &triangleId,
                                const int &localLinkId,
-                               SimplexId &linkId) const override {
+                               SimplexId &linkId) const {
 #ifndef TTK_ENABLE_KAMIKAZE
       // initialize output variable before early return
       linkId = -1;
 
       if(isEmptyCheck())
         return -1;
-
-      if(getDimensionality() != 3)
-        return -2;
-
-      if(!isTriangleLinkPreconditioned())
-        return -3;
 #endif
       return abstractTriangulation_->getTriangleLink(
         triangleId, localLinkId, linkId);
@@ -1213,17 +993,10 @@ namespace ttk {
     /// from any time performance measurement.
     /// \param triangleId Input global triangle identifier.
     /// \return Returns the number of simplices in the link of the triangle.
-    inline SimplexId
-      getTriangleLinkNumber(const SimplexId &triangleId) const override {
+    inline SimplexId getTriangleLinkNumber(const SimplexId &triangleId) const {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
         return -1;
-
-      if(getDimensionality() != 3)
-        return -2;
-
-      if(!isTriangleLinkPreconditioned())
-        return -3;
 #endif
       return abstractTriangulation_->getTriangleLinkNumber(triangleId);
     }
@@ -1252,16 +1025,9 @@ namespace ttk {
     /// \note It is recommended to exclude such a pre-processing step
     /// from any time performance measurement.
     /// \return Returns a pointer to the triangle link list.
-    inline const std::vector<std::vector<SimplexId>> *
-      getTriangleLinks() override {
+    inline const std::vector<std::vector<SimplexId>> *getTriangleLinks() {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
-        return NULL;
-
-      if(getDimensionality() != 3)
-        return NULL;
-
-      if(!isTriangleLinkPreconditioned())
         return NULL;
 #endif
       return abstractTriangulation_->getTriangleLinks();
@@ -1289,19 +1055,13 @@ namespace ttk {
     /// \sa getTriangleStarNumber()
     inline int getTriangleStar(const SimplexId &triangleId,
                                const int &localStarId,
-                               SimplexId &starId) const override {
+                               SimplexId &starId) const {
 #ifndef TTK_ENABLE_KAMIKAZE
       // initialize output variable before early return
       starId = -1;
 
       if(isEmptyCheck())
         return -1;
-
-      if(getDimensionality() != 3)
-        return -2;
-
-      if(!isTriangleStarPreconditioned())
-        return -3;
 #endif
       return abstractTriangulation_->getTriangleStar(
         triangleId, localStarId, starId);
@@ -1321,17 +1081,10 @@ namespace ttk {
     /// from any time performance measurement.
     /// \param triangleId Input global triangle identifier.
     /// \return Returns the number of star cells.
-    inline SimplexId
-      getTriangleStarNumber(const SimplexId &triangleId) const override {
+    inline SimplexId getTriangleStarNumber(const SimplexId &triangleId) const {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
         return -1;
-
-      if(getDimensionality() != 3)
-        return -2;
-
-      if(!isTriangleStarPreconditioned())
-        return -3;
 #endif
       return abstractTriangulation_->getTriangleStarNumber(triangleId);
     }
@@ -1361,16 +1114,9 @@ namespace ttk {
     /// \note It is recommended to exclude such a pre-processing step
     /// from any time performance measurement.
     /// \return Returns a pointer to the triangle star list.
-    inline const std::vector<std::vector<SimplexId>> *
-      getTriangleStars() override {
+    inline const std::vector<std::vector<SimplexId>> *getTriangleStars() {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
-        return NULL;
-
-      if(getDimensionality() != 3)
-        return NULL;
-
-      if(!isTriangleStarPreconditioned())
         return NULL;
 #endif
       return abstractTriangulation_->getTriangleStars();
@@ -1395,7 +1141,7 @@ namespace ttk {
     /// \sa getCellVertex()
     inline int getTriangleVertex(const SimplexId &triangleId,
                                  const int &localVertexId,
-                                 SimplexId &vertexId) const override {
+                                 SimplexId &vertexId) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       // initialize output variable before early return
@@ -1403,17 +1149,7 @@ namespace ttk {
 
       if(isEmptyCheck())
         return -1;
-
-      if(getDimensionality() == 1)
-        return -2;
-
-      if(!isTrianglePreconditioned())
-        return -3;
 #endif
-      if(getDimensionality() == 2)
-        return abstractTriangulation_->getCellVertex(
-          triangleId, localVertexId, vertexId);
-
       return abstractTriangulation_->getTriangleVertex(
         triangleId, localVertexId, vertexId);
     }
@@ -1454,7 +1190,7 @@ namespace ttk {
     /// \sa getVertexStar()
     inline int getVertexEdge(const SimplexId &vertexId,
                              const int &localEdgeId,
-                             SimplexId &edgeId) const override {
+                             SimplexId &edgeId) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       // initialize output variable before early return
@@ -1462,14 +1198,7 @@ namespace ttk {
 
       if(isEmptyCheck())
         return -1;
-
-      if(!isVertexEdgePreconditioned())
-        return -2;
 #endif
-      if(getDimensionality() == 1)
-        return abstractTriangulation_->getVertexStar(
-          vertexId, localEdgeId, edgeId);
-
       return abstractTriangulation_->getVertexEdge(
         vertexId, localEdgeId, edgeId);
     }
@@ -1488,18 +1217,11 @@ namespace ttk {
     /// \param vertexId Input global vertex identifier.
     /// \return Returns the number of edges connected to the vertex.
     /// \sa getVertexStarNumber()
-    inline SimplexId
-      getVertexEdgeNumber(const SimplexId &vertexId) const override {
+    inline SimplexId getVertexEdgeNumber(const SimplexId &vertexId) const {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
         return -1;
-
-      if(!isVertexEdgePreconditioned())
-        return -2;
 #endif
-      if(getDimensionality() == 1)
-        return abstractTriangulation_->getVertexStarNumber(vertexId);
-
       return abstractTriangulation_->getVertexEdgeNumber(vertexId);
     }
 
@@ -1529,13 +1251,9 @@ namespace ttk {
     /// from any time performance measurement.
     /// \return Returns a pointer to the vertex edge list.
     /// \sa getVertexStars()
-    inline const std::vector<std::vector<SimplexId>> *
-      getVertexEdges() override {
+    inline const std::vector<std::vector<SimplexId>> *getVertexEdges() {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
-        return NULL;
-
-      if(!isVertexEdgePreconditioned())
         return NULL;
 #endif
       if(getDimensionality() == 1)
@@ -1565,7 +1283,7 @@ namespace ttk {
     /// \sa getVertexLinkNumber()
     inline int getVertexLink(const SimplexId &vertexId,
                              const int &localLinkId,
-                             SimplexId &linkId) const override {
+                             SimplexId &linkId) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       // initialize output variable before early return
@@ -1573,9 +1291,6 @@ namespace ttk {
 
       if(isEmptyCheck())
         return -1;
-
-      if(!isVertexLinkPreconditioned())
-        return -2;
 #endif
       return abstractTriangulation_->getVertexLink(
         vertexId, localLinkId, linkId);
@@ -1595,15 +1310,11 @@ namespace ttk {
     /// from any time performance measurement.
     /// \param vertexId Input global vertex identifier.
     /// \return Returns the number of cells in the link of the vertex.
-    inline SimplexId
-      getVertexLinkNumber(const SimplexId &vertexId) const override {
+    inline SimplexId getVertexLinkNumber(const SimplexId &vertexId) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
         return -1;
-
-      if(!isVertexLinkPreconditioned())
-        return -2;
 #endif
       return abstractTriangulation_->getVertexLinkNumber(vertexId);
     }
@@ -1632,14 +1343,10 @@ namespace ttk {
     /// \note It is recommended to exclude such a pre-processing step
     /// from any time performance measurement.
     /// \return Returns a pointer to the vertex link list.
-    inline const std::vector<std::vector<SimplexId>> *
-      getVertexLinks() override {
+    inline const std::vector<std::vector<SimplexId>> *getVertexLinks() {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
-        return NULL;
-
-      if(!isVertexLinkPreconditioned())
         return NULL;
 #endif
       return abstractTriangulation_->getVertexLinks();
@@ -1663,7 +1370,7 @@ namespace ttk {
     /// \sa getVertexNeighborNumber()
     inline int getVertexNeighbor(const SimplexId &vertexId,
                                  const int &localNeighborId,
-                                 SimplexId &neighborId) const override {
+                                 SimplexId &neighborId) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       // initialize output variable before early return
@@ -1671,9 +1378,6 @@ namespace ttk {
 
       if(isEmptyCheck())
         return -1;
-
-      if(!isVertexNeighborPreconditioned())
-        return -2;
 #endif
       return abstractTriangulation_->getVertexNeighbor(
         vertexId, localNeighborId, neighborId);
@@ -1690,15 +1394,11 @@ namespace ttk {
     /// from any time performance measurement.
     /// \param vertexId Input global vertex identifier.
     /// \return Returns the number vertex neighbors.
-    inline SimplexId
-      getVertexNeighborNumber(const SimplexId &vertexId) const override {
+    inline SimplexId getVertexNeighborNumber(const SimplexId &vertexId) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
         return -1;
-
-      if(!isVertexNeighborPreconditioned())
-        return -2;
 #endif
       return abstractTriangulation_->getVertexNeighborNumber(vertexId);
     }
@@ -1726,13 +1426,9 @@ namespace ttk {
     /// \note It is recommended to exclude such a pre-processing step
     /// from any time performance measurement.
     /// \return Returns a pointer to the vertex neighbor list.
-    inline const std::vector<std::vector<SimplexId>> *
-      getVertexNeighbors() override {
+    inline const std::vector<std::vector<SimplexId>> *getVertexNeighbors() {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
-        return NULL;
-
-      if(!isVertexNeighborPreconditioned())
         return NULL;
 #endif
       return abstractTriangulation_->getVertexNeighbors();
@@ -1747,7 +1443,7 @@ namespace ttk {
     inline int getVertexPoint(const SimplexId &vertexId,
                               float &x,
                               float &y,
-                              float &z) const override {
+                              float &z) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       // initialize output variables before early return
@@ -1783,7 +1479,7 @@ namespace ttk {
     /// \sa getVertexStarNumber()
     inline int getVertexStar(const SimplexId &vertexId,
                              const int &localStarId,
-                             SimplexId &starId) const override {
+                             SimplexId &starId) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       // initialize output variable before early return
@@ -1791,9 +1487,6 @@ namespace ttk {
 
       if(isEmptyCheck())
         return -1;
-
-      if(!isVertexStarPreconditioned())
-        return -2;
 #endif
       return abstractTriangulation_->getVertexStar(
         vertexId, localStarId, starId);
@@ -1813,14 +1506,10 @@ namespace ttk {
     /// from any time performance measurement.
     /// \param vertexId Input global vertex identifier
     /// \return Returns the number of star cells.
-    inline SimplexId
-      getVertexStarNumber(const SimplexId &vertexId) const override {
+    inline SimplexId getVertexStarNumber(const SimplexId &vertexId) const {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
         return -1;
-
-      if(!isVertexStarPreconditioned())
-        return -2;
 #endif
       return abstractTriangulation_->getVertexStarNumber(vertexId);
     }
@@ -1850,13 +1539,9 @@ namespace ttk {
     /// \note It is recommended to exclude such a pre-processing step
     /// from any time performance measurement.
     /// \return Returns a pointer to the vertex star list.
-    inline const std::vector<std::vector<SimplexId>> *
-      getVertexStars() override {
+    inline const std::vector<std::vector<SimplexId>> *getVertexStars() {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
-        return NULL;
-
-      if(!isVertexStarPreconditioned())
         return NULL;
 #endif
       return abstractTriangulation_->getVertexStars();
@@ -1884,7 +1569,7 @@ namespace ttk {
     /// \sa getVertexStar()
     inline int getVertexTriangle(const SimplexId &vertexId,
                                  const int &localTriangleId,
-                                 SimplexId &triangleId) const override {
+                                 SimplexId &triangleId) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       // initialize output variable before early return
@@ -1892,17 +1577,7 @@ namespace ttk {
 
       if(isEmptyCheck())
         return -1;
-
-      if(getDimensionality() == 1)
-        return -2;
-
-      if(!isVertexTrianglePreconditioned())
-        return -3;
 #endif
-      if(getDimensionality() == 2)
-        return abstractTriangulation_->getVertexStar(
-          vertexId, localTriangleId, triangleId);
-
       return abstractTriangulation_->getVertexTriangle(
         vertexId, localTriangleId, triangleId);
     }
@@ -1921,23 +1596,12 @@ namespace ttk {
     /// \param vertexId Input global vertex identifier.
     /// \return Returns the number of vertex triangles.
     /// \sa getVertexStarNumber()
-    inline SimplexId
-      getVertexTriangleNumber(const SimplexId &vertexId) const override {
+    inline SimplexId getVertexTriangleNumber(const SimplexId &vertexId) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
         return -1;
-
-      if(getDimensionality() == 1)
-        return -2;
-
-      if(!isVertexTrianglePreconditioned())
-        return -3;
 #endif
-
-      if(getDimensionality() == 2)
-        return abstractTriangulation_->getVertexStarNumber(vertexId);
-
       return abstractTriangulation_->getVertexTriangleNumber(vertexId);
     }
 
@@ -1966,22 +1630,12 @@ namespace ttk {
     /// from any time performance measurement.
     /// \return Returns a pointer to the vertex triangle list.
     /// \sa getVertexStars()
-    inline const std::vector<std::vector<SimplexId>> *
-      getVertexTriangles() override {
+    inline const std::vector<std::vector<SimplexId>> *getVertexTriangles() {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
         return NULL;
-
-      if(getDimensionality() == 1)
-        return NULL;
-
-      if(!isVertexTrianglePreconditioned())
-        return NULL;
 #endif
-      if(getDimensionality() == 2)
-        return abstractTriangulation_->getVertexStars();
-
       return abstractTriangulation_->getVertexTriangles();
     }
 
@@ -2004,12 +1658,9 @@ namespace ttk {
     /// from any time performance measurement.
     /// \param edgeId Input global edge identifier.
     /// \return Returns true if the edge is on the boundary, false otherwise.
-    inline bool isEdgeOnBoundary(const SimplexId &edgeId) const override {
+    inline bool isEdgeOnBoundary(const SimplexId &edgeId) const {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
-        return false;
-
-      if(!isBoundaryEdgePreconditioned())
         return false;
 #endif
       return abstractTriangulation_->isEdgeOnBoundary(edgeId);
@@ -2017,7 +1668,7 @@ namespace ttk {
 
     /// Check if the data structure is empty or not.
     /// \return Returns true if empty, false otherwise.
-    inline bool isEmpty() const override {
+    inline bool isEmpty() const {
       return !abstractTriangulation_;
     }
 
@@ -2041,13 +1692,9 @@ namespace ttk {
     /// \param triangleId Input global triangle identifier.
     /// \return Returns true if the triangle is on the boundary, false
     /// otherwise.
-    inline bool
-      isTriangleOnBoundary(const SimplexId &triangleId) const override {
+    inline bool isTriangleOnBoundary(const SimplexId &triangleId) const {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
-        return false;
-
-      if(!isBoundaryTrianglePreconditioned())
         return false;
 #endif
       return abstractTriangulation_->isTriangleOnBoundary(triangleId);
@@ -2070,12 +1717,9 @@ namespace ttk {
     /// \param vertexId Input global vertex identifier.
     /// \return Returns true if the vertex is on the boundary, false
     /// otherwise.
-    inline bool isVertexOnBoundary(const SimplexId &vertexId) const override {
+    inline bool isVertexOnBoundary(const SimplexId &vertexId) const {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
-        return false;
-
-      if(!isBoundaryVertexPreconditioned())
         return false;
 #endif
       return abstractTriangulation_->isVertexOnBoundary(vertexId);
@@ -2094,14 +1738,12 @@ namespace ttk {
     /// any time performance measurement.
     /// \return Returns 0 upon success, negative values otherwise.
     /// \sa isEdgeOnBoundary()
-    inline int preconditionBoundaryEdges() override {
+    inline int preconditionBoundaryEdges() {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
         return -1;
 #endif
-
-      return !((!abstractTriangulation_->preconditionBoundaryEdges())
-               && (hasPreconditionedBoundaryEdges_ = true));
+      return abstractTriangulation_->preconditionBoundaryEdges();
     }
 
     /// Pre-process the boundary triangles.
@@ -2117,14 +1759,13 @@ namespace ttk {
     /// any time performance measurement.
     /// \return Returns 0 upon success, negative values otherwise.
     /// \sa isTriangleOnBoundary()
-    inline int preconditionBoundaryTriangles() override {
+    inline int preconditionBoundaryTriangles() {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
         return -1;
 #endif
 
-      return !((!abstractTriangulation_->preconditionBoundaryTriangles())
-               && (hasPreconditionedBoundaryTriangles_ = true));
+      return abstractTriangulation_->preconditionBoundaryTriangles();
     }
 
     /// Pre-process the boundary vertices.
@@ -2140,14 +1781,12 @@ namespace ttk {
     /// any time performance measurement.
     /// \return Returns 0 upon success, negative values otherwise.
     /// \sa isVertexOnBoundary()
-    inline int preconditionBoundaryVertices() override {
+    inline int preconditionBoundaryVertices() {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
         return -1;
 #endif
-
-      return !((!abstractTriangulation_->preconditionBoundaryVertices())
-               && (hasPreconditionedBoundaryVertices_ = true));
+      return abstractTriangulation_->preconditionBoundaryVertices();
     }
 
     /// Pre-process the cell edges.
@@ -2165,18 +1804,13 @@ namespace ttk {
     /// \return Returns 0 upon success, negative values otherwise.
     /// \sa getCellEdge()
     /// \sa getCellEdgeNumber()
-    inline int preconditionCellEdges() override {
+    inline int preconditionCellEdges() {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
         return -1;
 #endif
-      if(getDimensionality() == 1)
-        return !((!abstractTriangulation_->preconditionCellNeighbors())
-                 && (hasPreconditionedCellEdges_ = true)
-                 && (hasPreconditionedCellNeighbors_ = true));
 
-      return !((!abstractTriangulation_->preconditionCellEdges())
-               && (hasPreconditionedCellEdges_ = true));
+      return abstractTriangulation_->preconditionCellEdges();
     }
 
     /// Pre-process the cell neighbors.
@@ -2196,15 +1830,13 @@ namespace ttk {
     /// \sa getCellNeighbor()
     /// \sa getCellNeighbors()
     /// \sa getCellNeighborNumber()
-    inline int preconditionCellNeighbors() override {
+    inline int preconditionCellNeighbors() {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
         return -1;
 #endif
-
-      return !((!abstractTriangulation_->preconditionCellNeighbors())
-               && (hasPreconditionedCellNeighbors_ = true));
+      return abstractTriangulation_->preconditionCellNeighbors();
     }
 
     /// Pre-process the cell triangles.
@@ -2224,22 +1856,13 @@ namespace ttk {
     /// \sa getCellTriangle()
     /// \sa getCellTriangles()
     /// \sa getCellTriangleNumber()
-    inline int preconditionCellTriangles() override {
+    inline int preconditionCellTriangles() {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
         return -1;
-
-      if(getDimensionality() == 1)
-        return -2;
 #endif
-      if(getDimensionality() == 2)
-        return !((!abstractTriangulation_->preconditionCellNeighbors())
-                 && (hasPreconditionedCellTriangles_ = true)
-                 && (hasPreconditionedCellNeighbors_ = true));
-
-      return !((!abstractTriangulation_->preconditionCellTriangles())
-               && (hasPreconditionedCellTriangles_ = true));
+      return abstractTriangulation_->preconditionCellTriangles();
     }
 
     /// Pre-process the edges.
@@ -2259,15 +1882,14 @@ namespace ttk {
     /// \sa getEdges()
     /// \sa getEdgeVertex()
     /// \sa getNumberOfEdges()
-    inline int preconditionEdges() override {
+    inline int preconditionEdges() {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
         return -1;
 #endif
 
-      return !((!abstractTriangulation_->preconditionEdges())
-               && (hasPreconditionedEdges_ = true));
+      return abstractTriangulation_->preconditionEdges();
     }
 
     /// Pre-process the edge links.
@@ -2287,18 +1909,13 @@ namespace ttk {
     /// \sa getEdgeLink()
     /// \sa getEdgeLinks()
     /// \sa getEdgeLinkNumber()
-    inline int preconditionEdgeLinks() override {
+    inline int preconditionEdgeLinks() {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
         return -1;
-
-      if(getDimensionality() == 1)
-        return -2;
 #endif
-
-      return !((!abstractTriangulation_->preconditionEdgeLinks())
-               && (hasPreconditionedEdgeLinks_ = true));
+      return abstractTriangulation_->preconditionEdgeLinks();
     }
 
     /// Pre-process the edge stars.
@@ -2318,18 +1935,13 @@ namespace ttk {
     /// \sa getEdgeStar()
     /// \sa getEdgeStars()
     /// \sa getEdgeStarNumber()
-    inline int preconditionEdgeStars() override {
+    inline int preconditionEdgeStars() {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
         return -1;
-
-      if(getDimensionality() == 1)
-        return -2;
 #endif
-
-      return !((!abstractTriangulation_->preconditionEdgeStars())
-               && (hasPreconditionedEdgeStars_ = true));
+      return abstractTriangulation_->preconditionEdgeStars();
     }
 
     /// Pre-process the edge triangles.
@@ -2349,24 +1961,14 @@ namespace ttk {
     /// \sa getEdgeTriangle()
     /// \sa getEdgeTriangles()
     /// \sa getEdgeTriangleNumber()
-    inline int preconditionEdgeTriangles() override {
+    inline int preconditionEdgeTriangles() {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
         return -1;
-
-      if(getDimensionality() == 1)
-        return -2;
 #endif
 
-      if(getDimensionality() == 2) {
-        return !((!abstractTriangulation_->preconditionEdgeStars())
-                 && (hasPreconditionedEdgeTriangles_ = true)
-                 && (hasPreconditionedEdgeStars_ = true));
-      }
-
-      return !((!abstractTriangulation_->preconditionEdgeTriangles())
-               && (hasPreconditionedEdgeTriangles_ = true));
+      return abstractTriangulation_->preconditionEdgeTriangles();
     }
 
     /// Pre-process the triangles.
@@ -2386,21 +1988,13 @@ namespace ttk {
     /// \sa getNumberOfTriangles()
     /// \sa getTriangles()
     /// \sa getTriangleVertex()
-    inline int preconditionTriangles() override {
+    inline int preconditionTriangles() {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
         return -1;
-
-      if(getDimensionality() == 1)
-        return -1;
 #endif
-
-      if(getDimensionality() == 2)
-        return 0;
-
-      return !((!abstractTriangulation_->preconditionTriangles())
-               && (hasPreconditionedTriangles_ = true));
+      return abstractTriangulation_->preconditionTriangles();
     }
 
     /// Pre-process the triangle edges.
@@ -2420,23 +2014,13 @@ namespace ttk {
     /// \sa getTriangleEdge()
     /// \sa getTriangleEdges()
     /// \sa getTriangleEdgeNumber()
-    inline int preconditionTriangleEdges() override {
+    inline int preconditionTriangleEdges() {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
         return -1;
-
-      if(getDimensionality() == 1)
-        return -2;
 #endif
-
-      if(getDimensionality() == 2)
-        return !((!abstractTriangulation_->preconditionCellEdges())
-                 && (hasPreconditionedTriangleEdges_ = true)
-                 && (hasPreconditionedCellEdges_ = true));
-
-      return !((!abstractTriangulation_->preconditionTriangleEdges())
-               && (hasPreconditionedTriangleEdges_ = true));
+      return abstractTriangulation_->preconditionTriangleEdges();
     }
 
     /// Pre-process the triangle links.
@@ -2456,18 +2040,13 @@ namespace ttk {
     /// \sa getTriangleLink()
     /// \sa getTriangleLinks()
     /// \sa getTriangleLinkNumber()
-    inline int preconditionTriangleLinks() override {
+    inline int preconditionTriangleLinks() {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
         return -1;
-
-      if(getDimensionality() != 3)
-        return -2;
 #endif
-
-      return !((!abstractTriangulation_->preconditionTriangleLinks())
-               && (hasPreconditionedTriangleLinks_ = true));
+      return abstractTriangulation_->preconditionTriangleLinks();
     }
 
     /// Pre-process the triangle stars.
@@ -2487,18 +2066,14 @@ namespace ttk {
     /// \sa getTriangleStar()
     /// \sa getTriangleStars()
     /// \sa getTriangleStarNumber()
-    inline int preconditionTriangleStars() override {
+    inline int preconditionTriangleStars() {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
         return -1;
-
-      if(getDimensionality() != 3)
-        return -2;
 #endif
 
-      return !((!abstractTriangulation_->preconditionTriangleStars())
-               && (hasPreconditionedTriangleStars_ = true));
+      return abstractTriangulation_->preconditionTriangleStars();
     }
 
     /// Pre-process the vertex edges.
@@ -2518,19 +2093,13 @@ namespace ttk {
     /// \sa getVertexEdge()
     /// \sa getVertexEdges()
     /// \sa getVertexEdgeNumber()
-    inline int preconditionVertexEdges() override {
+    inline int preconditionVertexEdges() {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
         return -1;
 #endif
-      if(getDimensionality() == 1)
-        return !((!abstractTriangulation_->preconditionVertexStars())
-                 && (hasPreconditionedVertexEdges_ = true)
-                 && (hasPreconditionedVertexStars_ = true));
-
-      return !((!abstractTriangulation_->preconditionVertexEdges())
-               && (hasPreconditionedVertexEdges_ = true));
+      return abstractTriangulation_->preconditionVertexEdges();
     }
 
     /// Pre-process the vertex links.
@@ -2550,15 +2119,14 @@ namespace ttk {
     /// \sa getVertexLink()
     /// \sa getVertexLinks()
     /// \sa getVertexLinkNumber()
-    inline int preconditionVertexLinks() override {
+    inline int preconditionVertexLinks() {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
         return -1;
 #endif
 
-      return !((!abstractTriangulation_->preconditionVertexLinks())
-               && (hasPreconditionedVertexLinks_ = true));
+      return abstractTriangulation_->preconditionVertexLinks();
     }
 
     /// Pre-process the vertex neighbors.
@@ -2578,15 +2146,14 @@ namespace ttk {
     /// \sa getVertexNeighbor()
     /// \sa getVertexNeighbors()
     /// \sa getVertexNeighborNumber()
-    inline int preconditionVertexNeighbors() override {
+    inline int preconditionVertexNeighbors() {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
         return -1;
 #endif
 
-      return !((!abstractTriangulation_->preconditionVertexNeighbors())
-               && (hasPreconditionedVertexNeighbors_ = true));
+      return abstractTriangulation_->preconditionVertexNeighbors();
     }
 
     /// Pre-process the vertex stars.
@@ -2606,15 +2173,14 @@ namespace ttk {
     /// \sa getVertexStar()
     /// \sa getVertexStars()
     /// \sa getVertexStarNumber()
-    inline int preconditionVertexStars() override {
+    inline int preconditionVertexStars() {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
         return -1;
 #endif
 
-      return !((!abstractTriangulation_->preconditionVertexStars())
-               && (hasPreconditionedVertexStars_ = true));
+      return abstractTriangulation_->preconditionVertexStars();
     }
 
     /// Pre-process the vertex triangles.
@@ -2634,25 +2200,16 @@ namespace ttk {
     /// \sa getVertexTriangle()
     /// \sa getVertexTriangles()
     /// \sa getVertexTriangleNumber()
-    inline int preconditionVertexTriangles() override {
+    inline int preconditionVertexTriangles() {
 
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
         return -1;
-      if(getDimensionality() == 1)
-        return -2;
 #endif
-      if(getDimensionality() == 2) {
-        return !((!abstractTriangulation_->preconditionVertexStars())
-                 && (hasPreconditionedVertexTriangles_ = true)
-                 && (hasPreconditionedVertexStars_ = true));
-      }
-
-      return !((!abstractTriangulation_->preconditionVertexTriangles())
-               && (hasPreconditionedVertexTriangles_ = true));
+      return abstractTriangulation_->preconditionVertexTriangles();
     }
 
-    int getEdgeIncenter(SimplexId edgeId, float incenter[3]) const override {
+    int getEdgeIncenter(SimplexId edgeId, float incenter[3]) const {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
         return -1;
@@ -2661,8 +2218,7 @@ namespace ttk {
       return abstractTriangulation_->getEdgeIncenter(edgeId, incenter);
     };
 
-    int getTriangleIncenter(SimplexId triangleId,
-                            float incenter[3]) const override {
+    int getTriangleIncenter(SimplexId triangleId, float incenter[3]) const {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
         return -1;
@@ -2670,7 +2226,7 @@ namespace ttk {
       return abstractTriangulation_->getTriangleIncenter(triangleId, incenter);
     };
 
-    int getTetraIncenter(SimplexId tetraId, float incenter[3]) const override {
+    int getTetraIncenter(SimplexId tetraId, float incenter[3]) const {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(isEmptyCheck())
         return -1;
@@ -2679,7 +2235,7 @@ namespace ttk {
     };
 
     /// Tune the debug level (default: 0)
-    inline int setDebugLevel(const int &debugLevel) override {
+    inline int setDebugLevel(const int &debugLevel) {
       explicitTriangulation_.setDebugLevel(debugLevel);
       implicitTriangulation_.setDebugLevel(debugLevel);
       periodicImplicitTriangulation_.setDebugLevel(debugLevel);
@@ -2831,7 +2387,7 @@ namespace ttk {
 
     /// Internal usage. Pass the execution context (debug level, number of
     /// threads, etc.) to the implementing classes.
-    inline int setWrapper(const Wrapper *wrapper) override {
+    inline int setWrapper(const Wrapper *wrapper) {
       explicitTriangulation_.setWrapper(wrapper);
       implicitTriangulation_.setWrapper(wrapper);
       periodicImplicitTriangulation_.setWrapper(wrapper);
@@ -2849,8 +2405,6 @@ namespace ttk {
       }
       return false;
     }
-
-    std::array<int, 3> gridDimensions_;
 
     AbstractTriangulation *abstractTriangulation_;
     ExplicitTriangulation explicitTriangulation_;

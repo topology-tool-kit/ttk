@@ -6,6 +6,7 @@ using namespace ttk;
 ImplicitTriangulation::ImplicitTriangulation()
   : dimensionality_{-1}, cellNumber_{}, vertexNumber_{}, edgeNumber_{},
     triangleNumber_{}, tetrahedronNumber_{}, isAccelerated_{} {
+  setDebugMsgPrefix("ImplicitTriangulation");
 }
 
 ImplicitTriangulation::~ImplicitTriangulation() {
@@ -225,7 +226,7 @@ bool ImplicitTriangulation::isPowerOfTwo(unsigned long long int v,
   return false;
 }
 
-bool ImplicitTriangulation::isVertexOnBoundary(
+bool ImplicitTriangulation::isVertexOnBoundaryInternal(
   const SimplexId &vertexId) const {
 #ifndef TTK_ENABLE_KAMIKAZE
   if(vertexId < 0 or vertexId >= vertexNumber_)
@@ -249,7 +250,8 @@ bool ImplicitTriangulation::isVertexOnBoundary(
   return false;
 }
 
-bool ImplicitTriangulation::isEdgeOnBoundary(const SimplexId &edgeId) const {
+bool ImplicitTriangulation::isEdgeOnBoundaryInternal(
+  const SimplexId &edgeId) const {
 #ifndef TTK_ENABLE_KAMIKAZE
   if(edgeId < 0 or edgeId >= edgeNumber_)
     return -1;
@@ -298,7 +300,7 @@ bool ImplicitTriangulation::isEdgeOnBoundary(const SimplexId &edgeId) const {
   return false;
 }
 
-bool ImplicitTriangulation::isTriangleOnBoundary(
+bool ImplicitTriangulation::isTriangleOnBoundaryInternal(
   const SimplexId &triangleId) const {
 #ifndef TTK_ENABLE_KAMIKAZE
   if(triangleId < 0 or triangleId >= triangleNumber_)
@@ -311,7 +313,7 @@ bool ImplicitTriangulation::isTriangleOnBoundary(
   return false;
 }
 
-inline SimplexId ImplicitTriangulation::getVertexNeighborNumber(
+inline SimplexId ImplicitTriangulation::getVertexNeighborNumberInternal(
   const SimplexId &vertexId) const {
 #ifndef TTK_ENABLE_KAMIKAZE
   if(vertexId < 0 or vertexId >= vertexNumber_)
@@ -422,12 +424,13 @@ inline SimplexId ImplicitTriangulation::getVertexNeighborNumber(
   return -1;
 }
 
-int ImplicitTriangulation::getVertexNeighbor(const SimplexId &vertexId,
-                                             const int &localNeighborId,
-                                             SimplexId &neighborId) const {
+int ImplicitTriangulation::getVertexNeighborInternal(
+  const SimplexId &vertexId,
+  const int &localNeighborId,
+  SimplexId &neighborId) const {
 #ifndef TTK_ENABLE_KAMIKAZE
   if(localNeighborId < 0
-     or localNeighborId >= getVertexNeighborNumber(vertexId))
+     or localNeighborId >= getVertexNeighborNumberInternal(vertexId))
     return -1;
 #endif
 
