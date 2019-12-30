@@ -223,7 +223,7 @@ namespace ttk {
       size_t q = 0;
 
       if(memory >= 0)
-        chunks[q++] = std::to_string(memory) + "mb";
+        chunks[q++] = std::to_string(static_cast<int>(memory)) + "MB";
       if(time >= 0) {
         std::stringstream sStream;
         sStream.precision(3);
