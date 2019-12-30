@@ -186,6 +186,7 @@ int ttk::IcoSphere::computeIcoSphere(
 
   // print input
   {
+    this->printMsg(ttk::debug::Separator::L1);
     this->printMsg({{"#Threads", std::to_string(this->threadNumber_)},
                     {"#Subdivisions", std::to_string(nSubdivisions)},
                     {"Radius", std::to_string(radius)}});
@@ -196,7 +197,7 @@ int ttk::IcoSphere::computeIcoSphere(
   Timer timer;
 
   // print status
-  this->printMsg("Computing icosphere", 0);
+  this->printMsg("Computing Icosphere", 0, ttk::debug::LineMode::REPLACE);
 
   idType vertexIndex = 0;
   idType triangleIndex = 0;
@@ -304,8 +305,7 @@ int ttk::IcoSphere::computeIcoSphere(
   }
 
   // print progress
-  this->printMsg("Computing icosphere", 1, timer.getElapsedTime(),
-                 ttk::debug::LineMode::REPLACE);
+  this->printMsg("Computing icosphere", 1, timer.getElapsedTime());
 
   // print stats
   {

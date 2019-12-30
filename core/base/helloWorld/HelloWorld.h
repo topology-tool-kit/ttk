@@ -71,6 +71,7 @@ namespace ttk {
         {"#Threads", std::to_string(this->threadNumber_)},
         {"#Vertices", std::to_string(triangulation->getNumberOfVertices())},
       });
+      this->printMsg(ttk::debug::Separator::L1);
 
       // ---------------------------------------------------------------------
       // Compute Vertex Averages
@@ -80,8 +81,11 @@ namespace ttk {
         ttk::Timer localTimer;
 
         // print the progress of the current subprocedure (currently 0%)
-        this->printMsg("Computing Averages",
-                       0 // progress form 0-1
+        this->printMsg(
+          "Computing Averages",
+          0, // progress form 0-1
+          this->threadNumber_,
+          ttk::debug::LineMode::REPLACE
         );
 
         // compute the average of each vertex in parallel
@@ -109,8 +113,8 @@ namespace ttk {
         this->printMsg(
           "Computing Averages",
           1, // progress
-          localTimer.getElapsedTime(), // time
-          ttk::debug::LineMode::REPLACE // replace last line of output stream
+          localTimer.getElapsedTime(),
+          this->threadNumber_
         );
       }
 

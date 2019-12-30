@@ -62,22 +62,24 @@ namespace ttk {
       REPLACE // replace line and append
     };
 
-    const std::string BOLD = "\33[0;1m";
-    const std::string GREY = "\33[2;1m";
-    const std::string ITALIC = "\33[3;1m";
-    const std::string UNDERLINED = "\33[4;1m";
-    const std::string FLASHING = "\33[5;1m";
-    const std::string INVERTED = "\33[7;1m";
-    const std::string STRIKETHROUGH = "\33[9;1m";
-    const std::string DARKGREY = "\33[30;1m";
-    const std::string RED = "\33[31;1m";
-    const std::string GREEN = "\33[32;1m";
-    const std::string YELLOW = "\33[33;1m";
-    const std::string BLUE = "\33[34;1m";
-    const std::string PINK = "\33[35;1m";
-    const std::string LIGHTBLUE = "\33[36;1m";
-    const std::string BRIGHTWHITE = "\33[37;1m";
-    const std::string ENDCOLOR = "\33[0m";
+    namespace output {
+      const std::string BOLD = "\33[0;1m";
+      const std::string GREY = "\33[2;1m";
+      const std::string ITALIC = "\33[3;1m";
+      const std::string UNDERLINED = "\33[4;1m";
+      const std::string FLASHING = "\33[5;1m";
+      const std::string INVERTED = "\33[7;1m";
+      const std::string STRIKETHROUGH = "\33[9;1m";
+      const std::string DARKGREY = "\33[30;1m";
+      const std::string RED = "\33[31;1m";
+      const std::string GREEN = "\33[32;1m";
+      const std::string YELLOW = "\33[33;1m";
+      const std::string BLUE = "\33[34;1m";
+      const std::string PINK = "\33[35;1m";
+      const std::string LIGHTBLUE = "\33[36;1m";
+      const std::string BRIGHTWHITE = "\33[37;1m";
+      const std::string ENDCOLOR = "\33[0m";
+    }
 
     const int LINEWIDTH = 80;
   }; // namespace debug
@@ -144,6 +146,10 @@ namespace ttk {
     // =========================================================================
     // New Debug Methods
     // =========================================================================
+
+    /**
+     * Prints a string debug message.
+     */
     inline int printMsg(const std::string &msg,
                         const debug::Priority &priority = debug::Priority::INFO,
                         const debug::LineMode &lineMode = debug::LineMode::NEW,
@@ -156,6 +162,9 @@ namespace ttk {
       return this->printMsgInternal(msg, priority, lineMode, stream);
     }
 
+    /**
+     * Prints multiple string debug messages at once.
+     */
     inline int printMsg(const std::vector<std::string> &msgs,
                         const debug::Priority &priority = debug::Priority::INFO,
                         const debug::LineMode &lineMode = debug::LineMode::NEW,
@@ -171,6 +180,9 @@ namespace ttk {
       return prints == msgs.size() ? 1 : 0;
     }
 
+    /**
+     * Prints an error debug message.
+     */
     inline int printErr(const std::string &msg,
                         const debug::LineMode &lineMode = debug::LineMode::NEW,
                         std::ostream &stream = std::cerr) const {
@@ -178,9 +190,25 @@ namespace ttk {
         msg, debug::Priority::ERROR, lineMode, stream);
     }
 
+    /**
+     * Prints a warning debug message.
+     */
+    inline int printWrn(const std::string &msg,
+                        const debug::LineMode &lineMode = debug::LineMode::NEW,
+                        std::ostream &stream = std::cerr) const {
+      return this->printMsgInternal(
+        msg, debug::Priority::WARNING, lineMode, stream);
+    }
+
+    /**
+     * Prints a performance debug message with specified progress, time,
+     * nThreads, and memory (values can be omitted form the message by passing
+     * the value -1)
+     */
     inline int printMsg(const std::string &msg,
                         const double &progress,
                         const double &time,
+                        const int &threads,
                         const double &memory,
                         const debug::LineMode &lineMode = debug::LineMode::NEW,
                         const debug::Priority &priority
@@ -191,18 +219,20 @@ namespace ttk {
          && (globalDebugLevel_ < priorityAsInt))
         return 0;
 
-      std::vector<std::string> chunks(3);
+      std::vector<std::string> chunks(4);
       size_t q = 0;
 
       if(memory >= 0)
         chunks[q++] = std::to_string(memory) + "mb";
       if(time >= 0)
         chunks[q++] = std::to_string(time) + "s";
+      if(threads >= 0)
+        chunks[q++] = std::to_string(threads) + "T";
       if(progress >= 0)
         chunks[q++] = std::to_string((int)(progress * 100)) + "%";
 
       std::string stats = "";
-      if(q >= 0) {
+      if(q > 0) {
         stats += " [";
         stats += chunks[0];
         for(size_t i = 1; i < q; i++)
@@ -215,6 +245,9 @@ namespace ttk {
         msg, stats, msg.length() < 1 ? ">" : ".", priority, lineMode, stream);
     }
 
+    /**
+     * Prints a performance debug message with specified progress and time.
+     */
     inline int printMsg(const std::string &msg,
                         const double &progress,
                         const double &time,
@@ -223,18 +256,42 @@ namespace ttk {
                         = debug::Priority::PERFORMANCE,
                         std::ostream &stream = std::cout) const {
       return this->printMsg(
-        msg, progress, time, -1, lineMode, priority, stream);
+        msg, progress, time, -1, -1, lineMode, priority, stream);
     }
 
+    /**
+     * Prints a performance debug message with specified progress, time, and
+     * threads.
+     */
+    inline int printMsg(const std::string &msg,
+                        const double &progress,
+                        const double &time,
+                        const int &threads,
+                        const debug::LineMode &lineMode = debug::LineMode::NEW,
+                        const debug::Priority &priority
+                        = debug::Priority::PERFORMANCE,
+                        std::ostream &stream = std::cout) const {
+      return this->printMsg(
+        msg, progress, time, threads, -1, lineMode, priority, stream);
+    }
+
+    /**
+     * Prints a performance debug message with specified progress.
+     */
     inline int printMsg(const std::string &msg,
                         const double &progress,
                         const debug::LineMode &lineMode = debug::LineMode::NEW,
                         const debug::Priority &priority
                         = debug::Priority::PERFORMANCE,
                         std::ostream &stream = std::cout) const {
-      return this->printMsg(msg, progress, -1, -1, lineMode, priority, stream);
+      return this->printMsg(
+        msg, progress, -1, -1, -1, lineMode, priority, stream);
     }
 
+    /**
+     * Prints a performance debug message with specified progress and custom
+     * priority.
+     */
     inline int printMsg(const std::string &msg,
                         const double &progress,
                         const debug::Priority &priority,
@@ -243,6 +300,9 @@ namespace ttk {
       return this->printMsg(msg, progress, -1, -1, lineMode, priority, stream);
     }
 
+    /**
+     * Prints a table.
+     */
     inline int printMsg(const std::vector<std::vector<std::string>> &rows,
                         const debug::Priority &priority = debug::Priority::INFO,
                         const bool hasHeader = true,
@@ -287,6 +347,9 @@ namespace ttk {
       return this->printMsg(formatedRows, priority, lineMode, stream);
     }
 
+    /**
+     * Prints a separator.
+     */
     inline int printMsg(const debug::Separator &separator,
                         const debug::LineMode &lineMode = debug::LineMode::NEW,
                         const debug::Priority &priority = debug::Priority::INFO,
@@ -300,6 +363,9 @@ namespace ttk {
         "", "", std::string(1, (char &)separator), priority, lineMode, stream);
     }
 
+    /**
+     * Prints a separator with custom priority.
+     */
     inline int printMsg(const debug::Separator &separator,
                         const debug::Priority &priority,
                         const debug::LineMode &lineMode = debug::LineMode::NEW,
@@ -307,6 +373,9 @@ namespace ttk {
       return this->printMsg(separator, lineMode, priority, stream);
     }
 
+    /**
+     * Prints a message and fills the remaining space with a separator.
+     */
     inline int printMsg(const std::string &msg,
                         const debug::Separator &separator,
                         const debug::LineMode &lineMode = debug::LineMode::NEW,
@@ -321,6 +390,10 @@ namespace ttk {
         msg, "", std::string(1, (char &)separator), priority, lineMode, stream);
     }
 
+    /**
+     * Sets the prefix that will be print at the beginning of every
+     * debug message.
+     */
     inline void setDebugMsgPrefix(const std::string &prefix) {
       this->debugMsgPrefix_ = prefix.length() > 0 ? "[" + prefix + "] " : "";
     }
@@ -328,8 +401,13 @@ namespace ttk {
   protected:
     mutable int debugLevel_;
 
+    static debug::LineMode lastLineMode;
+
     std::string debugMsgPrefix_;
 
+    /**
+     * Internal debug method that formats debug messages.
+     */
     inline int
       printMsgInternal(const std::string &msg,
                        const std::string &right,
@@ -347,47 +425,56 @@ namespace ttk {
         for(int i = 0; i < gapWidth; i++)
           combinedMsg += filler;
 
-        combinedMsg += debug::BLUE + right + debug::ENDCOLOR;
+        combinedMsg += debug::output::BLUE + right + debug::output::ENDCOLOR;
       }
 
       return this->printMsgInternal(combinedMsg, priority, lineMode, stream);
     }
 
+    /**
+     * Internal debug method that actually prints messages.
+     */
     inline int printMsgInternal(const std::string &msg,
                                 const debug::Priority &priority,
                                 const debug::LineMode &lineMode,
                                 std::ostream &stream = std::cout) const {
       int priorityAsInt = static_cast<int>(priority);
 
-      // go either into new line or replace current line
-      if(lineMode == debug::LineMode::NEW)
+      // on error or warning print end of line
+      if(priorityAsInt < 2 && this->lastLineMode == debug::LineMode::REPLACE)
         stream << "\n";
-      if(lineMode == debug::LineMode::REPLACE)
-        stream << "\r";
 
       // print prefix
       if(lineMode != debug::LineMode::APPEND)
-        stream << debug::GREEN << this->debugMsgPrefix_ << debug::ENDCOLOR;
+        stream << debug::output::GREEN << this->debugMsgPrefix_
+               << debug::output::ENDCOLOR;
 
       // print error or warning prefix
       if(priorityAsInt == 0)
-        stream << debug::RED << "[ERROR]" << debug::ENDCOLOR << " ";
-      if(priorityAsInt == 1)
-        stream << debug::YELLOW << "[WARNING]" << debug::ENDCOLOR << " ";
+        stream << debug::output::RED << "[ERROR]" << debug::output::ENDCOLOR
+               << " ";
+      else if(priorityAsInt == 1)
+        stream << debug::output::YELLOW << "[WARNING]"
+               << debug::output::ENDCOLOR << " ";
 
       // print msg
       stream << msg.data();
 
-      // on error or warning print end of line
-      if(priorityAsInt < 2)
+      // go either into new line or replace current line
+      if(lineMode == debug::LineMode::NEW)
         stream << "\n";
+      else if(lineMode == debug::LineMode::REPLACE)
+        stream << "\r";
 
       // flush stream
       stream.flush();
 
+      this->lastLineMode = lineMode;
+
       return 1;
     }
   };
+
 } // namespace ttk
 
 #include <Os.h>
