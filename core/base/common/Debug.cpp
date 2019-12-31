@@ -151,8 +151,9 @@ int Debug::dMsg(ostream &stream, string msg, const int &debugLevel) const {
       << debug::output::ENDCOLOR << debug::output::BRIGHTWHITE << "╣"
       << debug::output::ENDCOLOR << debug::output::BRIGHTWHITE << "▓╜^"
       << debug::output::ENDCOLOR << debug::output::GREY << "^"
-      << debug::output::ENDCOLOR << debug::output::GREY << ""
-                                                           "^"
+      << debug::output::ENDCOLOR << debug::output::GREY
+      << ""
+         "^"
       << debug::output::ENDCOLOR << debug::output::BRIGHTWHITE << "^"
       << debug::output::ENDCOLOR << debug::output::BRIGHTWHITE << "▀"
       << debug::output::ENDCOLOR << debug::output::BRIGHTWHITE << "▀█"

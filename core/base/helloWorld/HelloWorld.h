@@ -81,12 +81,9 @@ namespace ttk {
         ttk::Timer localTimer;
 
         // print the progress of the current subprocedure (currently 0%)
-        this->printMsg(
-          "Computing Averages",
-          0, // progress form 0-1
-          this->threadNumber_,
-          ttk::debug::LineMode::REPLACE
-        );
+        this->printMsg("Computing Averages",
+                       0, // progress form 0-1
+                       this->threadNumber_, ttk::debug::LineMode::REPLACE);
 
         // compute the average of each vertex in parallel
         size_t nVertices = triangulation->getNumberOfVertices();
@@ -110,12 +107,9 @@ namespace ttk {
         }
 
         // print the progress of the current subprocedure with elapsed time
-        this->printMsg(
-          "Computing Averages",
-          1, // progress
-          localTimer.getElapsedTime(),
-          this->threadNumber_
-        );
+        this->printMsg("Computing Averages",
+                       1, // progress
+                       localTimer.getElapsedTime(), this->threadNumber_);
       }
 
       // ---------------------------------------------------------------------

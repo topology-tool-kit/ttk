@@ -79,7 +79,7 @@ namespace ttk {
       const std::string LIGHTBLUE = "\33[36;1m";
       const std::string BRIGHTWHITE = "\33[37;1m";
       const std::string ENDCOLOR = "\33[0m";
-    }
+    } // namespace output
 
     const int LINEWIDTH = 80;
   }; // namespace debug
