@@ -158,7 +158,7 @@ int ttk::blank::Blank::execute(const Triangulation *triangulation,
 
   SimplexId cellEdgeId = -1, edgeNumber = -1;
   //   edgeNumber = triangulation->getNumberOfEdges();
-  //   triangulation->getCellEdge(0, 0, cellEdgeId);
+  //     triangulation->getCellEdge(0, 0, cellEdgeId);
 
   // init the output -- to adapt
   for(SimplexId i = 0; i < vertexNumber; i++) {
