@@ -147,7 +147,8 @@ namespace ttk {
 
     const std::vector<std::vector<SimplexId>> *getTriangleEdgesInternal();
 
-    int getTriangleEdges(std::vector<std::vector<SimplexId>> &edges) const;
+    int getTriangleEdgesInternal(
+      std::vector<std::vector<SimplexId>> &edges) const;
 
     int getTriangleLinkInternal(const SimplexId &triangleId,
                                 const int &localLinkId,
@@ -157,15 +158,13 @@ namespace ttk {
 
     const std::vector<std::vector<SimplexId>> *getTriangleLinksInternal();
 
-    int getTriangleNeighborInternal(const SimplexId &triangleId,
-                                    const int &localNeighborId,
-                                    SimplexId &neighborId) const;
+    int getTriangleNeighbor(const SimplexId &triangleId,
+                            const int &localNeighborId,
+                            SimplexId &neighborId) const;
 
-    SimplexId
-      getTriangleNeighborNumberInternal(const SimplexId &triangleId) const;
+    SimplexId getTriangleNeighborNumber(const SimplexId &triangleId) const;
 
-    int getTriangleNeighborsInternal(
-      std::vector<std::vector<SimplexId>> &neighbors);
+    int getTriangleNeighbors(std::vector<std::vector<SimplexId>> &neighbors);
 
     int getTriangleStarInternal(const SimplexId &triangleId,
                                 const int &localStarId,

@@ -592,19 +592,19 @@ namespace ttk {
         return 0;
       }
 
-      preconditionEdges();
+      preconditionEdgesInternal();
       boundaryEdges_.resize(edgeList_.size(), false);
 
       if(getDimensionality() == 2) {
-        preconditionEdgeStars();
+        preconditionEdgeStarsInternal();
         for(SimplexId i = 0; i < (SimplexId)edgeStarList_.size(); i++) {
           if(edgeStarList_[i].size() == 1) {
             boundaryEdges_[i] = true;
           }
         }
       } else if(getDimensionality() == 3) {
-        preconditionTriangleStars();
-        preconditionTriangleEdges();
+        preconditionTriangleStarsInternal();
+        preconditionTriangleEdgesInternal();
 
         for(SimplexId i = 0; i < (SimplexId)triangleStarList_.size(); i++) {
           if(triangleStarList_[i].size() == 1) {
@@ -635,11 +635,11 @@ namespace ttk {
         return 0;
       }
 
-      preconditionTriangles();
+      preconditionTrianglesInternal();
       boundaryTriangles_.resize(triangleList_.size(), false);
 
       if(getDimensionality() == 3) {
-        preconditionTriangleStars();
+        preconditionTriangleStarsInternal();
 
         for(SimplexId i = 0; i < (SimplexId)triangleStarList_.size(); i++) {
           if(triangleStarList_[i].size() == 1) {
@@ -670,15 +670,15 @@ namespace ttk {
       // create their star
       // look for singletons
       if(getDimensionality() == 1) {
-        preconditionVertexStars();
+        preconditionVertexStarsInternal();
         for(SimplexId i = 0; i < (SimplexId)vertexStarList_.size(); i++) {
           if(vertexStarList_[i].size() == 1) {
             boundaryVertices_[i] = true;
           }
         }
       } else if(getDimensionality() == 2) {
-        preconditionEdges();
-        preconditionEdgeStars();
+        preconditionEdgesInternal();
+        preconditionEdgeStarsInternal();
 
         for(SimplexId i = 0; i < (SimplexId)edgeStarList_.size(); i++) {
           if(edgeStarList_[i].size() == 1) {
@@ -687,8 +687,8 @@ namespace ttk {
           }
         }
       } else if(getDimensionality() == 3) {
-        preconditionTriangles();
-        preconditionTriangleStars();
+        preconditionTrianglesInternal();
+        preconditionTriangleStarsInternal();
 
         for(SimplexId i = 0; i < (SimplexId)triangleStarList_.size(); i++) {
           if(triangleStarList_[i].size() == 1) {
@@ -795,17 +795,17 @@ namespace ttk {
       if(!edgeLinkList_.size()) {
 
         if(getDimensionality() == 2) {
-          preconditionEdges();
-          preconditionEdgeStars();
+          preconditionEdgesInternal();
+          preconditionEdgeStarsInternal();
 
           OneSkeleton oneSkeleton;
           oneSkeleton.setWrapper(this);
           return oneSkeleton.buildEdgeLinks(
             edgeList_, edgeStarList_, cellArray_, edgeLinkList_);
         } else if(getDimensionality() == 3) {
-          preconditionEdges();
-          preconditionEdgeStars();
-          preconditionCellEdges();
+          preconditionEdgesInternal();
+          preconditionEdgeStarsInternal();
+          preconditionCellEdgesInternal();
 
           OneSkeleton oneSkeleton;
           oneSkeleton.setWrapper(this);
@@ -896,7 +896,7 @@ namespace ttk {
 
       if(!triangleLinkList_.size()) {
 
-        preconditionTriangleStars();
+        preconditionTriangleStarsInternal();
 
         TwoSkeleton twoSkeleton;
         twoSkeleton.setWrapper(this);
@@ -945,16 +945,16 @@ namespace ttk {
       if((SimplexId)vertexLinkList_.size() != vertexNumber_) {
 
         if(getDimensionality() == 2) {
-          preconditionVertexStars();
-          preconditionCellEdges();
+          preconditionVertexStarsInternal();
+          preconditionCellEdgesInternal();
 
           ZeroSkeleton zeroSkeleton;
           zeroSkeleton.setWrapper(this);
           return zeroSkeleton.buildVertexLinks(
             vertexStarList_, cellEdgeList_, edgeList_, vertexLinkList_);
         } else if(getDimensionality() == 3) {
-          preconditionVertexStars();
-          preconditionCellTriangles();
+          preconditionVertexStarsInternal();
+          preconditionCellTrianglesInternal();
 
           ZeroSkeleton zeroSkeleton;
           zeroSkeleton.setWrapper(this);
@@ -1000,7 +1000,7 @@ namespace ttk {
 
       if((SimplexId)vertexTriangleList_.size() != vertexNumber_) {
 
-        preconditionTriangles();
+        preconditionTrianglesInternal();
 
         TwoSkeleton twoSkeleton;
         twoSkeleton.setWrapper(this);
@@ -1038,8 +1038,6 @@ namespace ttk {
     }
 
   private:
-    int clear();
-
     bool doublePrecision_;
     SimplexId cellNumber_, vertexNumber_;
     const void *pointSet_;

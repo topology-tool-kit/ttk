@@ -379,8 +379,8 @@ namespace ttk {
       stream << msg.data();
 
       // on error or warning print end of line
-      //       if(priorityAsInt < 2)
-      //         stream << "\n";
+      if(priorityAsInt < 2)
+        stream << "\n";
 
       // flush stream
       stream.flush();

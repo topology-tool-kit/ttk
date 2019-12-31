@@ -16,6 +16,9 @@
 #include <Geometry.h>
 #include <Wrapper.h>
 
+// TODO: remove the distinction Internal (skip one function call) and make the
+// internal getters pure virtual.
+
 namespace ttk {
 
   class AbstractTriangulation : public Wrapper {
@@ -127,7 +130,7 @@ namespace ttk {
     /// from any time performance measurement.
     /// \return Returns a pointer to the cell edge list.
     /// \sa getCellNeighbors()
-    inline const std::vector<std::vector<SimplexId>> *getCellEdges() const {
+    inline const std::vector<std::vector<SimplexId>> *getCellEdges() {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(!hasPreconditionedCellEdges())
         return NULL;
@@ -219,7 +222,7 @@ namespace ttk {
     /// \note It is recommended to exclude such a pre-processing step
     /// from any time performance measurement.
     /// \return Returns a pointer to the cell neighbor list.
-    inline const std::vector<std::vector<SimplexId>> *getCellNeighbors() const {
+    inline const std::vector<std::vector<SimplexId>> *getCellNeighbors() {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(!hasPreconditionedCellNeighbors())
         return NULL;
@@ -1898,7 +1901,7 @@ namespace ttk {
       hasPreconditionedCellTriangles_ = true;
 
 #ifndef TTK_ENABLE_KAMIKAZE
-      if(getDimensionlity() == 1)
+      if(getDimensionality() == 1)
         return -1;
 #endif
       if(getDimensionality() == 2)
@@ -2414,265 +2417,304 @@ namespace ttk {
       return 0;
     }
 
-  private:
-    int getCellEdgeInternal(const SimplexId &cellId,
-                            const int &localEdgeId,
-                            SimplexId &edgeId) const;
-
-    inline SimplexId getCellEdgeNumberInternal(const SimplexId &cellId) const {
-      return 0;
-    }
-
-    inline const std::vector<std::vector<SimplexId>> *getCellEdgesInternal() {
-      return NULL;
-    }
-
-    inline int getCellNeighborsInternal(const SimplexId &cellId,
-                                        const int &localNeighborId,
-                                        SimplexId &neighborId) const {
+  protected:
+    virtual int getCellEdgeInternal(const SimplexId &cellId,
+                                    const int &localEdgeId,
+                                    SimplexId &edgeId) const {
       return 0;
     };
 
-    inline SimplexId
+    virtual inline SimplexId
+      getCellEdgeNumberInternal(const SimplexId &cellId) const {
+      return 0;
+    }
+
+    virtual inline const std::vector<std::vector<SimplexId>> *
+      getCellEdgesInternal() {
+      return NULL;
+    }
+
+    virtual inline int getCellNeighborInternal(const SimplexId &cellId,
+                                               const int &localNeighborId,
+                                               SimplexId &neighborId) const {
+      return 0;
+    };
+
+    virtual inline SimplexId
       getCellNeighborNumberInternal(const SimplexId &cellId) const {
       return 0;
     };
 
-    inline const std::vector<std::vector<SimplexId>> *
+    virtual inline const std::vector<std::vector<SimplexId>> *
       getCellNeighborsInternal() {
       return NULL;
     };
 
-    inline int getCellTriangleInternal(const SimplexId &cellId,
-                                       const int &localTriangleId,
-                                       SimplexId &triangleId) const {
+    virtual inline int getCellTriangleInternal(const SimplexId &cellId,
+                                               const int &localTriangleId,
+                                               SimplexId &triangleId) const {
       return 0;
     };
 
-    inline SimplexId
+    virtual inline SimplexId
       getCellTriangleNumberInternal(const SimplexId &cellId) const {
       return 0;
     };
 
-    inline const std::vector<std::vector<SimplexId>> *
+    virtual inline const std::vector<std::vector<SimplexId>> *
       getCellTrianglesInternal() {
       return NULL;
     };
 
-    inline int getCellVertexInternal(const SimplexId &cellId,
-                                     const int &localVertexId,
-                                     SimplexId &vertexId) const {
+    virtual inline int getCellVertexInternal(const SimplexId &cellId,
+                                             const int &localVertexId,
+                                             SimplexId &vertexId) const {
       return 0;
     };
 
-    inline SimplexId
+    virtual inline SimplexId
       getCellVertexNumberInternal(const SimplexId &cellId) const {
       return 0;
     };
 
-    inline const std::vector<std::pair<SimplexId, SimplexId>> *
+    virtual inline int getDimensionalityInternal() const {
+      return 0;
+    }
+
+    virtual inline const std::vector<std::pair<SimplexId, SimplexId>> *
       getEdgesInternal() {
       return NULL;
     };
 
-    inline int getEdgeLinkInternal(const SimplexId &edgeId,
-                                   const int &localLinkId,
-                                   SimplexId &linkId) const {
+    virtual inline int getEdgeLinkInternal(const SimplexId &edgeId,
+                                           const int &localLinkId,
+                                           SimplexId &linkId) const {
       return 0;
     };
 
-    inline SimplexId getEdgeLinkNumberInternal(const SimplexId &edgeId) const {
+    virtual inline SimplexId
+      getEdgeLinkNumberInternal(const SimplexId &edgeId) const {
       return 0;
     };
 
-    inline const std::vector<std::vector<SimplexId>> *getEdgeLinksInternal() {
+    virtual inline const std::vector<std::vector<SimplexId>> *
+      getEdgeLinksInternal() {
       return NULL;
     };
 
-    inline int getEdgeStarInternal(const SimplexId &edgeId,
-                                   const int &localStarId,
-                                   SimplexId &starId) const {
+    virtual inline int getEdgeStarInternal(const SimplexId &edgeId,
+                                           const int &localStarId,
+                                           SimplexId &starId) const {
       return 0;
     };
 
-    inline SimplexId getEdgeStarNumberInternal(const SimplexId &edgeId) const {
+    virtual inline SimplexId
+      getEdgeStarNumberInternal(const SimplexId &edgeId) const {
       return 0;
     };
 
-    inline const std::vector<std::vector<SimplexId>> *getEdgeStarsInternal() {
+    virtual inline const std::vector<std::vector<SimplexId>> *
+      getEdgeStarsInternal() {
       return NULL;
     };
 
-    inline int getEdgeTriangleInternal(const SimplexId &edgeId,
-                                       const int &localTriangleId,
-                                       SimplexId &triangleId) const {
+    virtual inline int getEdgeTriangleInternal(const SimplexId &edgeId,
+                                               const int &localTriangleId,
+                                               SimplexId &triangleId) const {
       return 0;
     };
 
-    inline SimplexId
+    virtual inline SimplexId
       getEdgeTriangleNumberInternal(const SimplexId &edgeId) const {
       return 0;
     };
 
-    inline const std::vector<std::vector<SimplexId>> *
+    virtual inline const std::vector<std::vector<SimplexId>> *
       getEdgeTrianglesInternal() {
       return NULL;
     };
 
-    inline int getEdgeVertexInternal(const SimplexId &edgeId,
-                                     const int &localVertexId,
-                                     SimplexId &vertexId) const {
+    virtual inline int getEdgeVertexInternal(const SimplexId &edgeId,
+                                             const int &localVertexId,
+                                             SimplexId &vertexId) const {
       return 0;
     };
 
-    inline SimplexId getNumberOfEdgesInternal() const {
+    virtual inline SimplexId getNumberOfCellsInternal() const {
       return 0;
     };
 
-    inline SimplexId getNumberOfTrianglesInternal() const {
+    virtual inline SimplexId getNumberOfEdgesInternal() const {
       return 0;
     };
 
-    inline const std::vector<std::vector<SimplexId>> *getTrianglesInternal() {
+    virtual inline SimplexId getNumberOfTrianglesInternal() const {
+      return 0;
+    };
+
+    virtual inline SimplexId getNumberOfVerticesInternal() const {
+      return 0;
+    }
+
+    virtual inline const std::vector<std::vector<SimplexId>> *
+      getTrianglesInternal() {
       return NULL;
     };
 
-    inline int getTriangleEdgeInternal(const SimplexId &triangleId,
-                                       const int &localEdgeId,
-                                       SimplexId &edgeId) const {
+    virtual inline int getTriangleEdgeInternal(const SimplexId &triangleId,
+                                               const int &localEdgeId,
+                                               SimplexId &edgeId) const {
       return 0;
     };
 
-    inline SimplexId
+    virtual inline SimplexId
       getTriangleEdgeNumberInternal(const SimplexId &triangleId) const {
       return 0;
     };
 
-    inline const std::vector<std::vector<SimplexId>> *
+    virtual inline const std::vector<std::vector<SimplexId>> *
       getTriangleEdgesInternal() {
       return NULL;
     };
 
-    inline int getTriangleLinkInternal(const SimplexId &triangleId,
-                                       const int &localLinkId,
-                                       SimplexId &linkId) const {
+    virtual inline int getTriangleLinkInternal(const SimplexId &triangleId,
+                                               const int &localLinkId,
+                                               SimplexId &linkId) const {
       return 0;
     };
 
-    inline SimplexId
+    virtual inline SimplexId
       getTriangleLinkNumberInternal(const SimplexId &triangleId) const {
       return 0;
     };
 
-    inline const std::vector<std::vector<SimplexId>> *
+    virtual inline const std::vector<std::vector<SimplexId>> *
       getTriangleLinksInternal() {
       return NULL;
     };
 
-    inline int getTriangleStarInternal(const SimplexId &triangleId,
-                                       const int &localStarId,
-                                       SimplexId &starId) const {
+    virtual inline int getTriangleStarInternal(const SimplexId &triangleId,
+                                               const int &localStarId,
+                                               SimplexId &starId) const {
       return 0;
     };
 
-    inline SimplexId
+    virtual inline SimplexId
       getTriangleStarNumberInternal(const SimplexId &triangleId) const {
-      retunr 0;
+      return 0;
     };
 
-    inline const std::vector<std::vector<SimplexId>> *
+    virtual inline const std::vector<std::vector<SimplexId>> *
       getTriangleStarsInternal() {
       return NULL;
     };
 
-    inline int getTriangleVertexInternal(const SimplexId &triangleId,
-                                         const int &localVertexId,
-                                         SimplexId &vertexId) const {
+    virtual inline int getTriangleVertexInternal(const SimplexId &triangleId,
+                                                 const int &localVertexId,
+                                                 SimplexId &vertexId) const {
       return 0;
     };
 
-    inline int getVertexEdgeInternal(const SimplexId &vertexId,
-                                     const int &localEdgeId,
-                                     SimplexId &edgeId) const {
+    virtual inline int getVertexEdgeInternal(const SimplexId &vertexId,
+                                             const int &localEdgeId,
+                                             SimplexId &edgeId) const {
       return 0;
     };
 
-    inline SimplexId
+    virtual inline SimplexId
       getVertexEdgeNumberInternal(const SimplexId &vertexId) const {
       return 0;
     };
 
-    inline const std::vector<std::vector<SimplexId>> *getVertexEdgesInternal() {
+    virtual inline const std::vector<std::vector<SimplexId>> *
+      getVertexEdgesInternal() {
       return NULL;
     };
 
-    inline int getVertexLinkInternal(const SimplexId &vertexId,
-                                     const int &localLinkId,
-                                     SimplexId &linkId) const {
+    virtual inline int getVertexLinkInternal(const SimplexId &vertexId,
+                                             const int &localLinkId,
+                                             SimplexId &linkId) const {
       return 0;
     };
 
-    inline SimplexId
+    virtual inline SimplexId
       getVertexLinkNumberInternal(const SimplexId &vertexId) const {
       return 0;
     };
 
-    inline const std::vector<std::vector<SimplexId>> *getVertexLinksInternal() {
+    virtual inline const std::vector<std::vector<SimplexId>> *
+      getVertexLinksInternal() {
       return NULL;
     };
 
-    inline int getVertexNeighborInternal(const SimplexId &vertexId,
-                                         const int &localNeighborId,
-                                         SimplexId &neighborId) const {
+    virtual inline int getVertexNeighborInternal(const SimplexId &vertexId,
+                                                 const int &localNeighborId,
+                                                 SimplexId &neighborId) const {
       return 0;
     };
 
-    inline SimplexId
+    virtual inline SimplexId
       getVertexNeighborNumberInternal(const SimplexId &vertexId) const {
       return 0;
     };
 
-    inline const std::vector<std::vector<SimplexId>> *
+    virtual inline const std::vector<std::vector<SimplexId>> *
       getVertexNeighborsInternal() {
       return NULL;
     };
 
-    inline int getVertexPointInternal(const SimplexId &vertexId,
-                                      float &x,
-                                      float &y,
-                                      float &z) const {
+    virtual inline int getVertexPointInternal(const SimplexId &vertexId,
+                                              float &x,
+                                              float &y,
+                                              float &z) const {
       return 0;
     };
 
-    inline int getVertexStarInternal(const SimplexId &vertexId,
-                                     const int &localStarId,
-                                     SimplexId &starId) const {
+    virtual inline int getVertexStarInternal(const SimplexId &vertexId,
+                                             const int &localStarId,
+                                             SimplexId &starId) const {
       return 0;
     };
 
-    inline SimplexId
+    virtual inline SimplexId
       getVertexStarNumberInternal(const SimplexId &vertexId) const {
       return 0;
     };
 
-    inline const std::vector<std::vector<SimplexId>> *getVertexStarsInternal() {
+    virtual inline const std::vector<std::vector<SimplexId>> *
+      getVertexStarsInternal() {
       return NULL;
     };
 
-    inline int getVertexTriangleInternal(const SimplexId &vertexId,
-                                         const int &localTriangleId,
-                                         SimplexId &triangleId) const {
+    virtual inline int getVertexTriangleInternal(const SimplexId &vertexId,
+                                                 const int &localTriangleId,
+                                                 SimplexId &triangleId) const {
       return 0;
     };
 
-    inline SimplexId
+    virtual inline SimplexId
       getVertexTriangleNumberInternal(const SimplexId &vertexId) const {
       return 0;
     };
 
-    inline const std::vector<std::vector<SimplexId>> *
+    virtual inline const std::vector<std::vector<SimplexId>> *
       getVertexTrianglesInternal() {
       return NULL;
+    };
+
+    virtual inline bool
+      isEdgeOnBoundaryInternal(const SimplexId &edgeId) const {
+      return 0;
+    };
+
+    virtual inline bool
+      isTriangleOnBoundaryInternal(const SimplexId &triangleId) const {
+      return 0;
+    };
+
+    virtual inline bool
+      isVertexOnBoundaryInternal(const SimplexId &vertexId) const {
+      return 0;
     };
 
     inline bool hasPreconditionedBoundaryEdges() const {
@@ -2956,79 +2998,79 @@ namespace ttk {
       return false;
     };
 
-    inline int preconditionBoundaryEdgesInternal() {
+    virtual inline int preconditionBoundaryEdgesInternal() {
       return 0;
     }
 
-    inline int preconditionBoundaryTrianglesInternal() {
+    virtual inline int preconditionBoundaryTrianglesInternal() {
       return 0;
     }
 
-    inline int preconditionBoundaryVerticesInternal() {
+    virtual inline int preconditionBoundaryVerticesInternal() {
       return 0;
     }
 
-    inline int preconditionCellEdgesInternal() {
+    virtual inline int preconditionCellEdgesInternal() {
       return 0;
     }
 
-    inline int preconditionCellNeighborsInternal() {
+    virtual inline int preconditionCellNeighborsInternal() {
       return 0;
     }
 
-    inline int preconditionCellTrianglesInternal() {
+    virtual inline int preconditionCellTrianglesInternal() {
       return 0;
     }
 
-    inline int preconditionEdgesInternal() {
+    virtual inline int preconditionEdgesInternal() {
       return 0;
     }
 
-    inline int preconditionEdgeLinksInternal() {
+    virtual inline int preconditionEdgeLinksInternal() {
       return 0;
     }
 
-    inline int preconditionEdgeStarsInternal() {
+    virtual inline int preconditionEdgeStarsInternal() {
       return 0;
     }
 
-    inline int preconditionEdgeTrianglesInternal() {
+    virtual inline int preconditionEdgeTrianglesInternal() {
       return 0;
     }
 
-    inline int preconditionTrianglesInternal() {
+    virtual inline int preconditionTrianglesInternal() {
       return 0;
     }
 
-    inline int preconditionTriangleEdgesInternal() {
+    virtual inline int preconditionTriangleEdgesInternal() {
       return 0;
     }
 
-    inline int preconditionTriangleLinksInternal() {
+    virtual inline int preconditionTriangleLinksInternal() {
       return 0;
     }
 
-    inline int preconditionTriangleStarsInternal() {
+    virtual inline int preconditionTriangleStarsInternal() {
       return 0;
     }
 
-    inline int preconditionVertexEdgesInternal() {
+    virtual inline int preconditionVertexEdgesInternal() {
       return 0;
     }
 
-    inline int preconditionVertexLinksInternal() {
+    virtual inline int preconditionVertexLinksInternal() {
       return 0;
     }
 
-    inline int preconditionVertexNeighborsInternal() {
+    virtual inline int preconditionVertexNeighborsInternal() {
       return 0;
     }
 
-    inline int preconditionVertexStarsInternal() {
+    virtual inline int preconditionVertexStarsInternal() {
       return 0;
     }
 
-    inline int preconditionVertexTrianglesInternal() {
+    virtual inline int preconditionVertexTrianglesInternal() {
       return 0;
     }
 

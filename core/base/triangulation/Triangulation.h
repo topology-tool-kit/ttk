@@ -175,6 +175,15 @@ namespace ttk {
       return abstractTriangulation_->getCellEdges();
     }
 
+    inline int
+      getCellIncenter(SimplexId cellId, int dim, float incenter[3]) const {
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(isEmptyCheck())
+        return -1;
+#endif
+      return abstractTriangulation_->getCellIncenter(cellId, dim, incenter);
+    }
+
     /// Get the \p localNeighborId-th cell neighbor of the \p cellId-th cell.
     ///
     /// Here the notion of cell refers to the simplicices of maximal
@@ -448,6 +457,45 @@ namespace ttk {
         return NULL;
 #endif
       return abstractTriangulation_->getEdges();
+    }
+
+    /// Compute the barycenter of the points of the given edge identifier.
+    /// \pre For this function to behave correctly,
+    /// preconditionEdges() needs to be called
+    /// on this object prior to any traversal, in a clearly distinct
+    /// pre-processing step that involves no traversal at all. An error will
+    /// be returned otherwise.
+    /// \param edgeId Input global edge identifier.
+    /// \param incenter Output barycenter.
+    /// \return Returns 0 upon success, negative values otherwise.
+    /// \sa getTriangleIncenter()
+    /// \sa getCellIncenter()
+    inline int getEdgeIncenter(SimplexId edgeId, float incenter[3]) const {
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(isEmptyCheck())
+        return -1;
+#endif
+      return abstractTriangulation_->getEdgeIncenter(edgeId, incenter);
+    }
+
+    /// Compute the barycenter of the points of the given triangle identifier.
+    /// \pre For this function to behave correctly,
+    /// preconditionTriangles() needs to be called
+    /// on this object prior to any traversal, in a clearly distinct
+    /// pre-processing step that involves no traversal at all. An error will
+    /// be returned otherwise.
+    /// \param triangleId Input global triangle identifier.
+    /// \param incenter Output barycenter.
+    /// \return Returns 0 upon success, negative values otherwise.
+    /// \sa getEdgeIncenter()
+    /// \sa getCellIncenter()
+    inline int getTriangleIncenter(SimplexId triangleId,
+                                   float incenter[3]) const {
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(isEmptyCheck())
+        return -1;
+#endif
+      return abstractTriangulation_->getTriangleIncenter(triangleId, incenter);
     }
 
     /// Get the \p localLinkId-th simplex of the link of the \p edgeId-th
@@ -825,6 +873,20 @@ namespace ttk {
 #endif
       return abstractTriangulation_->getNumberOfVertices();
     }
+
+    /// Compute the barycenter of the points of the given tet identifier.
+    /// \param tetId Input global tet identifier.
+    /// \param incenter Output barycenter.
+    /// \return Returns 0 upon success, negative values otherwise.
+    /// \sa getTriangleIncenter()
+    /// \sa getEdgeIncenter()
+    int getTetraIncenter(SimplexId tetraId, float incenter[3]) const {
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(isEmptyCheck())
+        return -1;
+#endif
+      return abstractTriangulation_->getTetraIncenter(tetraId, incenter);
+    };
 
     /// \warning
     /// YOU SHOULD NOT CALL THIS FUNCTION UNLESS YOU REALLY KNOW WHAT YOU ARE
@@ -2099,6 +2161,8 @@ namespace ttk {
       if(isEmptyCheck())
         return -1;
 #endif
+      AbstractTriangulation::preconditionVertexEdges();
+
       return abstractTriangulation_->preconditionVertexEdges();
     }
 
@@ -2152,7 +2216,6 @@ namespace ttk {
       if(isEmptyCheck())
         return -1;
 #endif
-
       return abstractTriangulation_->preconditionVertexNeighbors();
     }
 
@@ -2208,31 +2271,6 @@ namespace ttk {
 #endif
       return abstractTriangulation_->preconditionVertexTriangles();
     }
-
-    int getEdgeIncenter(SimplexId edgeId, float incenter[3]) const {
-#ifndef TTK_ENABLE_KAMIKAZE
-      if(isEmptyCheck())
-        return -1;
-#endif
-
-      return abstractTriangulation_->getEdgeIncenter(edgeId, incenter);
-    };
-
-    int getTriangleIncenter(SimplexId triangleId, float incenter[3]) const {
-#ifndef TTK_ENABLE_KAMIKAZE
-      if(isEmptyCheck())
-        return -1;
-#endif
-      return abstractTriangulation_->getTriangleIncenter(triangleId, incenter);
-    };
-
-    int getTetraIncenter(SimplexId tetraId, float incenter[3]) const {
-#ifndef TTK_ENABLE_KAMIKAZE
-      if(isEmptyCheck())
-        return -1;
-#endif
-      return abstractTriangulation_->getTetraIncenter(tetraId, incenter);
-    };
 
     /// Tune the debug level (default: 0)
     inline int setDebugLevel(const int &debugLevel) {

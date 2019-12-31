@@ -38,7 +38,7 @@ namespace ttk {
       /// \param argment Dummy integer argument.
       /// \return Returns 0 upon success, negative values otherwise.
       template <class dataType>
-      int execute(const AbstractTriangulation *triangulation,
+      int execute(const Triangulation *triangulation,
                   const int &argument) const;
       template <class triangulationType, class dataType>
       int execute(const triangulationType *triangulation,
@@ -136,7 +136,7 @@ int ttk::blank::Blank::execute(const triangulationType *triangulation,
 
 // template functions
 template <class dataType>
-int ttk::blank::Blank::execute(const AbstractTriangulation *triangulation,
+int ttk::blank::Blank::execute(const Triangulation *triangulation,
                                const int &argument) const {
 
   Timer t;
@@ -159,9 +159,6 @@ int ttk::blank::Blank::execute(const AbstractTriangulation *triangulation,
   SimplexId cellEdgeId = -1, edgeNumber = -1;
   //   edgeNumber = triangulation->getNumberOfEdges();
   //   triangulation->getCellEdge(0, 0, cellEdgeId);
-  triangulation->getVertexNeighbor(0, 0, cellEdgeId);
-  printf("cell edgeId: %d [%d]\n", cellEdgeId,
-         triangulation->hasPreconditionedEdges());
 
   // init the output -- to adapt
   for(SimplexId i = 0; i < vertexNumber; i++) {
