@@ -801,7 +801,7 @@ namespace ttk {
 
     /// Get the internal abstract triangulation object.
     /// \return Returns a pointer to the internal abstract triangulation object.
-    inline const AbstractTriangulation *getAbstractTriangulation() const {
+    inline AbstractTriangulation *getAbstractTriangulation() {
       return abstractTriangulation_;
     }
 

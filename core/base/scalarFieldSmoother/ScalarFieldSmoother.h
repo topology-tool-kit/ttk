@@ -50,13 +50,13 @@ namespace ttk {
       return 0;
     }
 
-    inline int setupTriangulation(Triangulation *triangulation) {
+    inline int setupTriangulation(AbstractTriangulation *triangulation) {
 
       triangulation_ = triangulation;
 
       // Pre-condition functions.
       if(triangulation_) {
-        triangulation_->preconditionVertexNeighbors();
+        triangulation->preconditionVertexNeighbors();
       }
 
       return 0;
@@ -69,7 +69,7 @@ namespace ttk {
     int dimensionNumber_;
     void *inputData_, *outputData_;
     char *mask_;
-    Triangulation *triangulation_;
+    AbstractTriangulation *triangulation_;
   };
 
 } // namespace ttk
