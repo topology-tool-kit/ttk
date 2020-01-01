@@ -2,7 +2,9 @@ NAME
   ttkAlgorithm
 SOURCES
   ttkAlgorithm.cpp
+  ttkUtils.cpp
 HEADERS
   ttkAlgorithm.h
+  ttkUtils.h
 DEPENDS
   triangulation

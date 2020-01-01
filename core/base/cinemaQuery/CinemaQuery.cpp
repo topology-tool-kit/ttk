@@ -1,41 +1,40 @@
 #include <CinemaQuery.h>
+#include <iostream>
 
 #if TTK_ENABLE_SQLITE3
 #include <sqlite3.h>
-
-// Process a row of a query resultCSV and append it to a string
-static int processRow(void *data, int argc, char **argv, char **azColName) {
-
-  // Get output string as reference
-  string &resultCSV = *((string *)data);
-
-  // If string is empty then add a first row that records column names
-  if(resultCSV == "") {
-    for(int i = 0; i < argc; i++)
-      resultCSV += (i > 0 ? "," : "") + string(azColName[i]);
-    resultCSV += "\n";
-  }
-
-  // Append row content to string
-  for(int i = 0; i < argc; i++)
-    resultCSV += (i > 0 ? "," : "") + string(argv[i]);
-  resultCSV += "\n";
-
-  return 0;
-}
 #endif
 
 ttk::CinemaQuery::CinemaQuery() {
+  this->setDebugMsgPrefix("CinemaQuery");
 }
 ttk::CinemaQuery::~CinemaQuery() {
 }
 
 int ttk::CinemaQuery::execute(
-  const std::vector<std::pair<string, string>> &sqlTablesDefinitionAndRows,
-  const string &sqlQuery,
-  string &resultCSV) const {
+  const std::vector<std::string> &sqlTableDefinitions,
+  const std::vector<std::string> &sqlInsertStatements,
+  const std::string &sqlQuery,
+  std::stringstream &resultCSV,
+  int &csvNColumns,
+  int &csvNRows) const {
 
 #if TTK_ENABLE_SQLITE3
+  // print input
+  {
+    // Flatten sqlQuery
+    std::string sqlQuery_(sqlQuery);
+    size_t position = sqlQuery_.find("\n");
+    while(position != std::string::npos) {
+      sqlQuery_.replace(position, 1, " ");
+      position = sqlQuery_.find("\n", position + 1);
+    }
+
+    this->printMsg({{"#Tables", std::to_string(sqlTableDefinitions.size())},
+                    {"Query", sqlQuery_}});
+    this->printMsg(ttk::debug::Separator::L1);
+  }
+
   // SQLite Variables
   sqlite3 *db;
   char *zErrMsg = 0;
@@ -43,99 +42,125 @@ int ttk::CinemaQuery::execute(
 
   // Create Temporary Database
   {
-    dMsg(cout, "[ttkCinemaQuery] Creating database ... ", timeMsg);
-    Timer t;
+    Timer timer;
+    this->printMsg(
+        "Creating inmemory database",
+        0,
+        ttk::debug::LineMode::REPLACE
+    );
 
     // Initialize DB in memory
     rc = sqlite3_open(":memory:", &db);
     if(rc != SQLITE_OK) {
-      stringstream msg;
-      msg << "failed\n[ttkCinemaQuery] ERROR: Unable to create database."
-          << endl;
-      msg << "[ttkCinemaQuery]         - " << sqlite3_errmsg(db) << endl;
-      dMsg(cout, msg.str(), fatalMsg);
+      this->printErr(sqlite3_errmsg(db));
       return 0;
     }
 
-    for(const auto &tables : sqlTablesDefinitionAndRows) {
-      // Create table
-      rc = sqlite3_exec(db, tables.first.data(), nullptr, 0, &zErrMsg);
+    // Create table
+    for(auto &sqlTableDefinition : sqlTableDefinitions) {
+      rc = sqlite3_exec(db, sqlTableDefinition.data(), nullptr, 0, &zErrMsg);
       if(rc != SQLITE_OK) {
-        stringstream msg;
-        msg << "failed\n[ttkCinemaQuery] ERROR: " << zErrMsg << endl;
-        dMsg(cout, msg.str(), fatalMsg);
+        this->printErr(zErrMsg);
 
         sqlite3_free(zErrMsg);
         sqlite3_close(db);
 
         return 0;
-      }
-
-      // Fill table
-      rc = sqlite3_exec(db, tables.second.data(), nullptr, 0, &zErrMsg);
-      if(rc != SQLITE_OK) {
-        stringstream msg;
-        msg << "failed\n[ttkCinemaQuery] ERROR: " << zErrMsg << endl;
-        dMsg(cout, msg.str(), fatalMsg);
-
-        sqlite3_free(zErrMsg);
-        sqlite3_close(db);
-        return 0;
-      } else {
-        stringstream msg;
-        msg << "done (" << t.getElapsedTime() << " s)." << endl;
-        dMsg(cout, msg.str(), timeMsg);
       }
     }
+
+    // Fill table
+    for(auto &sqlInsertStatement : sqlInsertStatements) {
+      rc = sqlite3_exec(db, sqlInsertStatement.data(), nullptr, 0, &zErrMsg);
+      if(rc != SQLITE_OK) {
+        this->printErr(zErrMsg);
+
+        sqlite3_free(zErrMsg);
+        sqlite3_close(db);
+        return 0;
+      }
+    }
+
+    this->printMsg("Creating inmemory database", 1, timer.getElapsedTime());
   }
 
   // Run SQL statement on temporary database
   {
-    dMsg(cout, "[ttkCinemaQuery] Querying database ... ", timeMsg);
-    Timer t;
+    this->printMsg("Querying database", 0, ttk::debug::LineMode::REPLACE);
+    Timer timer;
 
-    // Perform query
-    rc = sqlite3_exec(
-      db, sqlQuery.data(), processRow, (void *)(&resultCSV), &zErrMsg);
-    if(rc != SQLITE_OK) {
-      stringstream msg;
-      msg << "failed\n[ttkCinemaQuery] ERROR: " << zErrMsg << endl;
-      dMsg(cout, msg.str(), fatalMsg);
+    sqlite3_stmt *sqlStatement;
 
-      sqlite3_free(zErrMsg);
+    if(sqlite3_prepare_v2(db, sqlQuery.data(), -1, &sqlStatement, NULL)
+       != SQLITE_OK) {
+      this->printErr(sqlite3_errmsg(db));
+
       sqlite3_close(db);
       return 0;
-    } else {
-      stringstream msg;
-      msg << "done (" << t.getElapsedTime() << " s)." << endl;
-      dMsg(cout, msg.str(), timeMsg);
     }
+    csvNColumns = sqlite3_column_count(sqlStatement);
+
+    // Get Header
+    {
+      if(csvNColumns < 1) {
+        this->printErr("Query result has no columns.");
+
+        sqlite3_close(db);
+        return 0;
+      }
+
+      resultCSV << sqlite3_column_name(sqlStatement, 0);
+      for(int i = 1; i < csvNColumns; i++)
+        resultCSV << "," << sqlite3_column_name(sqlStatement, i);
+
+      resultCSV << "\n";
+    }
+
+    // Get Content
+    {
+      while((rc = sqlite3_step(sqlStatement)) == SQLITE_ROW) {
+        csvNRows++;
+
+        resultCSV << sqlite3_column_text(sqlStatement, 0);
+        for(int i = 1; i < csvNColumns; i++)
+          resultCSV << "," << sqlite3_column_text(sqlStatement, i);
+        resultCSV << "\n";
+      }
+
+      if(rc != SQLITE_DONE) {
+        this->printErr(sqlite3_errmsg(db));
+
+        sqlite3_close(db);
+        return 0;
+      } else {
+        this->printMsg("Querying database", 1, timer.getElapsedTime());
+      }
+    }
+
+    sqlite3_finalize(sqlStatement);
   }
 
   // Close database
   {
-    dMsg(cout, "[ttkCinemaQuery] Closing  database ... ", timeMsg);
+    Timer timer;
+    this->printMsg("Closing database", 0, ttk::debug::LineMode::REPLACE);
 
     // Delete DB
     rc = sqlite3_close(db);
 
     // Print status
     if(rc != SQLITE_OK) {
-      stringstream msg;
-      msg << "failed\n[ttkCinemaQuery] ERROR: Unable to close database."
-          << endl;
-      msg << "[ttkCinemaQuery]         - " << sqlite3_errmsg(db) << endl;
-      dMsg(cout, msg.str(), fatalMsg);
+      this->printErr(sqlite3_errmsg(db));
       return 0;
     } else {
-      dMsg(cout, "done.\n", timeMsg);
+      this->printMsg("Closing database", 1, timer.getElapsedTime());
     }
   }
 
-#else
-  dMsg(
-    cout, "[ttkCinemaQuery] ERROR: This filter requires Sqlite3.\n", fatalMsg);
-#endif
-
   return 1;
+
+#else
+  this->printErr("This filter requires Sqlite3");
+  return 0;
+#endif
 }

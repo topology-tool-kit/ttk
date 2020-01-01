@@ -5,5 +5,5 @@ SOURCES
 HEADERS
   ttkCinemaWriter.h
 DEPENDS
-  ttkTriangulationAlgorithm
+  ttkAlgorithm
   ttkTopologicalCompressionWriter

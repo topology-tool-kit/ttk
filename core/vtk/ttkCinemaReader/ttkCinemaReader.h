@@ -13,84 +13,38 @@
 
 #pragma once
 
-// VTK includes
-#include <vtkInformation.h>
-#include <vtkTableReader.h>
-
-// for the module to be exported
+// Module include
 #include <ttkCinemaReaderModule.h>
 
-// TTK includes
-#include <ttkTriangulationAlgorithm.h>
+// VTK includes
+#include <ttkAlgorithm.h>
+#include <vtkInformation.h>
 
-class TTKCINEMAREADER_EXPORT ttkCinemaReader : public vtkTableReader,
-                                               public ttk::Wrapper {
+class TTKCINEMAREADER_EXPORT ttkCinemaReader : public ttkAlgorithm {
 
 public:
   static ttkCinemaReader *New();
-  vtkTypeMacro(ttkCinemaReader, vtkTableReader)
+  vtkTypeMacro(ttkCinemaReader, ttkAlgorithm);
 
-    vtkSetMacro(DatabasePath, std::string);
+  vtkSetMacro(DatabasePath, std::string);
   vtkGetMacro(DatabasePath, std::string);
-
-  // default ttk setters
-  vtkSetMacro(debugLevel_, int);
-  void SetThreads() {
-    threadNumber_
-      = !UseAllCores ? ThreadNumber : ttk::OsCall::getNumberOfCores();
-    Modified();
-  }
-  void SetThreadNumber(int threadNumber) {
-    ThreadNumber = threadNumber;
-    SetThreads();
-  }
-  void SetUseAllCores(bool onOff) {
-    UseAllCores = onOff;
-    SetThreads();
-  }
-  // end of default ttk setters
-
-  int FillInputPortInformation(int port, vtkInformation *info) override {
-    return 0;
-  }
-
-  int FillOutputPortInformation(int port, vtkInformation *info) override {
-    switch(port) {
-      case 0:
-        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkTable");
-        break;
-      default:
-        return 0;
-    }
-    return 1;
-  }
+  vtkSetMacro(FilePathColumnNames, std::string);
+  vtkGetMacro(FilePathColumnNames, std::string);
 
 protected:
-  ttkCinemaReader() {
-    DatabasePath = "";
+  ttkCinemaReader();
+  ~ttkCinemaReader();
 
-    UseAllCores = true;
+  int validateDatabasePath();
 
-    SetNumberOfInputPorts(0);
-    SetNumberOfOutputPorts(1);
-  }
-  ~ttkCinemaReader() override{};
-
-  bool UseAllCores;
-  int ThreadNumber;
+  int FillInputPortInformation(int port, vtkInformation *info) override;
+  int FillOutputPortInformation(int port, vtkInformation *info) override;
 
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;
 
 private:
-  std::string DatabasePath;
-
-  bool needsToAbort() override {
-    return GetAbortExecute();
-  };
-  int updateProgress(const float &progress) override {
-    UpdateProgress(progress);
-    return 0;
-  };
+  std::string DatabasePath{""};
+  std::string FilePathColumnNames{"FILE"};
 };

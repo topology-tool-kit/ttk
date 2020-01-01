@@ -18,7 +18,7 @@ set(DEBUG_WIDGETS "\
     <IntRangeDomain name='range' min='0' max='5' />\
     <Documentation>Debug level.</Documentation>\
 </IntVectorProperty>\
-<Property name='Debug_Execute' label='Execute' command='Modified' panel_widget='command_button'>\
+<Property name='Debug_Execute' label='Execute' command='Modified' panel_widget='command_button' panel_visibility='advanced'>\
     <Documentation>Executes the filter with the last applied parameters, which is handy to re-start pipeline execution from a specific element without changing parameters.</Documentation>\
 </Property>\
 <PropertyGroup panel_widget='Line' label='Testing'>\

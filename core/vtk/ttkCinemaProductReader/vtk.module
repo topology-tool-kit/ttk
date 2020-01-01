@@ -1,7 +1,5 @@
 NAME
- ttkCinemaProductReader
+  ttkCinemaProductReader
 DEPENDS
-  VTK::FiltersCore
-PRIVATE_DEPENDS
-  VTK::CommonCore
-
+  ttkAlgorithm
+  ttkTopologicalCompressionReader
