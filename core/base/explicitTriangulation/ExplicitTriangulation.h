@@ -444,10 +444,15 @@ namespace ttk {
       return &vertexLinkList_;
     }
 
+#ifdef TTK_ENABLE_KAMIKAZE
+    inline int getVertexNeighbor(const SimplexId &vertexId,
+                                 const int &localNeighborId,
+                                 SimplexId &neighborId) const {
+#else
     inline int getVertexNeighborInternal(const SimplexId &vertexId,
                                          const int &localNeighborId,
                                          SimplexId &neighborId) const {
-#ifndef TTK_ENABLE_KAMIKAZE
+
       if((vertexId < 0) || (vertexId >= (SimplexId)vertexNeighborList_.size()))
         return -1;
       if((localNeighborId < 0)
@@ -459,9 +464,11 @@ namespace ttk {
       return 0;
     }
 
+#ifdef TTK_ENABLE_KAMIKAZE
+    inline SimplexId getVertexNeighborNumber(const SimplexId &vertexId) const {
+#else
     inline SimplexId
       getVertexNeighborNumberInternal(const SimplexId &vertexId) const {
-#ifndef TTK_ENABLE_KAMIKAZE
       if((vertexId < 0) || (vertexId >= vertexNumber_))
         return -1;
 #endif
