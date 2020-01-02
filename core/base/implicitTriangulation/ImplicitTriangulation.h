@@ -196,11 +196,21 @@ namespace ttk {
 
     const std::vector<std::vector<SimplexId>> *getVertexLinksInternal();
 
+#ifdef TTK_ENABLE_KAMIKAZE
+    inline int getVertexNeighbor(const SimplexId &vertexId,
+                                 const int &localNeighborId,
+                                 SimplexId &neighborId) const;
+#else
     int getVertexNeighborInternal(const SimplexId &vertexId,
                                   const int &localNeighborId,
                                   SimplexId &neighborId) const;
+#endif
 
+#ifdef TTK_ENABLE_KAMIKAZE
+    SimplexId getVertexNeighborNumber(const SimplexId &vertexId) const;
+#else
     SimplexId getVertexNeighborNumberInternal(const SimplexId &vertexId) const;
+#endif
 
     const std::vector<std::vector<SimplexId>> *getVertexNeighborsInternal();
 
