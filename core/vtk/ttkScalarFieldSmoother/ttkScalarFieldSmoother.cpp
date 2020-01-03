@@ -74,7 +74,7 @@ int ttkScalarFieldSmoother::doIt(vector<vtkDataSet *> &inputs,
 
   triangulation->setWrapper(this);
   smoother_.setupTriangulation(
-    (ExplicitTriangulation *)triangulation->getAbstractTriangulation());
+    (ImplicitTriangulation *)triangulation->getAbstractTriangulation());
   smoother_.setWrapper(this);
 
   // This filter copies the input into a new data-set (smoothed)

@@ -91,7 +91,7 @@ public:
     triangleMesh_.setInputPoints(vertexNumber, pointSet_.data());
     triangleMesh_.setInputCells(triangleNumber, triangleSet_.data());
     smoother->setupTriangulation(
-      (ExplicitTriangulation *)triangleMesh_.getAbstractTriangulation());
+      (ImplicitTriangulation *)triangleMesh_.getAbstractTriangulation());
 
     {
       stringstream msg;

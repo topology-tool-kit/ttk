@@ -50,7 +50,7 @@ namespace ttk {
       return 0;
     }
 
-    inline int setupTriangulation(ExplicitTriangulation *triangulation) {
+    inline int setupTriangulation(ImplicitTriangulation *triangulation) {
 
       triangulation_ = triangulation;
 
@@ -69,7 +69,7 @@ namespace ttk {
     int dimensionNumber_;
     void *inputData_, *outputData_;
     char *mask_;
-    ExplicitTriangulation *triangulation_;
+    ImplicitTriangulation *triangulation_;
   };
 
 } // namespace ttk

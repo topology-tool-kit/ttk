@@ -36,7 +36,7 @@ int ttkGeometrySmoother::doIt(vector<vtkDataSet *> &inputs,
 
   triangulation->setWrapper(this);
   smoother_.setupTriangulation(
-    (ExplicitTriangulation *)triangulation->getAbstractTriangulation());
+    (ImplicitTriangulation *)triangulation->getAbstractTriangulation());
   smoother_.setWrapper(this);
 
   vtkCharArray *inputMaskField = NULL;
