@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ServerManagerConfiguration>
+    <ProxyGroup name="filters">
+        <SourceProxy name="ArrayEditor" class="ttkArrayEditor" label="TTK ArrayEditor">
+            <Documentation long_help="TTK ArrayEditor" short_help="TTK ArrayEditor">This filter adds/removes data arrays to/form a 'vtkDataObject' (called target) based on a string and/or point/cell/field data of an optional second 'vtkDataObject' (called source).</Documentation>
+
+            <!-- Inputs -->
+            <InputProperty name="Target" port_index="0" command="SetInputConnection">
+                <ProxyGroupDomain name="groups">
+                    <Group name="sources" />
+                    <Group name="filters" />
+                </ProxyGroupDomain>
+                <DataTypeDomain name="input_type">
+                    <DataType value="vtkDataObject" />
+                </DataTypeDomain>
+                <InputArrayDomain attribute_type="point" name="target_array_point" optional="1" />
+                <InputArrayDomain attribute_type="cell"  name="target_array_cell"  optional="1" />
+                <InputArrayDomain attribute_type="field" name="target_array_field" optional="1" />
+                <InputArrayDomain attribute_type="any" name="target_array_all" optional="1"/>
+                <Documentation>vtkDataObject to add/remove data.</Documentation>
+            </InputProperty>
+            <InputProperty name="Source" port_index="1" command="SetInputConnection">
+                <ProxyGroupDomain name="groups">
+                    <Group name="sources" />
+                    <Group name="filters" />
+                </ProxyGroupDomain>
+                <DataTypeDomain name="input_type">
+                    <DataType value="vtkDataObject" />
+                </DataTypeDomain>
+                <InputArrayDomain attribute_type="point" name="source_array_point" optional="1" />
+                <InputArrayDomain attribute_type="cell"  name="source_array_cell"  optional="1" />
+                <InputArrayDomain attribute_type="field" name="source_array_field" optional="1" />
+                <Documentation>vtkDataObject that is used as a data source.</Documentation>
+                <Hints>
+                    <Optional />
+                </Hints>
+            </InputProperty>
+
+            <!-- Global -->
+            <IntVectorProperty name="EditorMode" label="Data Mode" command="SetEditorMode" number_of_elements="1" default_values="0">
+                <EnumerationDomain name="enum">
+                    <Entry value="0" text="Add Arrays from String"/>
+                    <Entry value="1" text="Add Arrays from Source"/>
+                    <Entry value="2" text="Remove Arrays"/>
+                    <Entry value="3" text="Edit Array"/>
+                </EnumerationDomain>
+                <Documentation>Determines if data arrays are either a) added based on a CSV string; b) shallow copied from a source; c) getting removed; or d) edited.</Documentation>
+            </IntVectorProperty>
+            <IntVectorProperty name="TargetAttributeType" label="Target Attribute" command="SetTargetAttributeType" number_of_elements="1" default_values="-1">
+                <EnumerationDomain name="enum">
+                    <Entry value="-1" text="Automatic"/>
+                    <Entry value="0" text="Point Data"/>
+                    <Entry value="1" text="Cell Data"/>
+                    <Entry value="2" text="Field Data"/>
+                </EnumerationDomain>
+                <Documentation>Determines if the new data arrays should be added to point, cell, or field data of the target. The default is to keep the original attribute type.</Documentation>
+                <Hints>
+                    <PropertyWidgetDecorator type="CompositeDecorator">
+                        <Expression type="or">
+                            <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="EditorMode" value="0" inverse="0" />
+                            <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="EditorMode" value="1" inverse="0" />
+                            <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="EditorMode" value="3" inverse="0" />
+                        </Expression>
+                    </PropertyWidgetDecorator>
+                </Hints>
+            </IntVectorProperty>
+
+            <!-- Source Fields -->
+            <StringVectorProperty name="DataString" label="Data String" command="SetDataString" number_of_elements="1" default_values="">
+                <Documentation>CSV string that will be used to create new 'vtkDataArrays'. Each row is converted into an array named after the first value (e.g. 'Time,0,0.23,0.5,1').</Documentation>
+                <Hints>
+                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="EditorMode" value="0" />
+                    <Widget type="multi_line" />
+                </Hints>
+            </StringVectorProperty>
+            <StringVectorProperty name="SourcePointDataArrays" label="Point Data Array" command="AddSourcePointDataArray" clean_command="ClearSourcePointDataArrays" number_of_elements_per_command="1" repeat_command="1">
+                <Documentation>Point data of the 'Source' that will be added to the 'Target' (Shallow Copy).</Documentation>
+                <ArrayListDomain name="array_list" input_domain_name="source_array_point">
+                    <RequiredProperties>
+                        <Property function="Input" name="Source" />
+                    </RequiredProperties>
+                </ArrayListDomain>
+                <Hints>
+                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="EditorMode" value="1" />
+                </Hints>
+            </StringVectorProperty>
+            <StringVectorProperty name="SourceCellDataArrays"  label="Cell Data Array" command="AddSourceCellDataArray" clean_command="ClearSourceCellDataArrays" number_of_elements_per_command="1" repeat_command="1">
+                <Documentation>Cell data of the 'Source' that will be added to the 'Target' (Shallow Copy).</Documentation>
+                <ArrayListDomain name="array_list" input_domain_name="source_array_cell">
+                    <RequiredProperties>
+                        <Property function="Input" name="Source" />
+                    </RequiredProperties>
+                </ArrayListDomain>
+                <Hints>
+                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="EditorMode" value="1" />
+                </Hints>
+            </StringVectorProperty>
+            <StringVectorProperty name="SourceFieldDataArrays" label="Field Data Arrays" command="AddSourceFieldDataArray" clean_command="ClearSourceFieldDataArrays" number_of_elements_per_command="1" repeat_command="1">
+                <Documentation>Field data of the 'Source' that will be added to the 'Target' (Shallow Copy).</Documentation>
+                <ArrayListDomain name="array_list" input_domain_name="source_array_field">
+                    <RequiredProperties>
+                        <Property function="Input" name="Source" />
+                    </RequiredProperties>
+                </ArrayListDomain>
+                <Hints>
+                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="EditorMode" value="1" />
+                </Hints>
+            </StringVectorProperty>
+
+            <!-- Target Fields -->
+            <StringVectorProperty name="TargetPointDataArrays" label="Point Data Array" command="AddTargetPointDataArray" clean_command="ClearTargetPointDataArrays" number_of_elements_per_command="1" repeat_command="1">
+                <Documentation>Point data of the 'Target' that will be removed.</Documentation>
+                <ArrayListDomain name="array_list" input_domain_name="target_array_point">
+                    <RequiredProperties>
+                        <Property function="Input" name="Target" />
+                    </RequiredProperties>
+                </ArrayListDomain>
+                <Hints>
+                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="EditorMode" value="2" />
+                </Hints>
+            </StringVectorProperty>
+            <StringVectorProperty name="TargetCellDataArrays"  label="Cell Data Array" command="AddTargetCellDataArray" clean_command="ClearTargetCellDataArrays" number_of_elements_per_command="1" repeat_command="1">
+                <Documentation>Cell data of the 'Target' that will be removed.</Documentation>
+                <ArrayListDomain name="array_list" input_domain_name="target_array_cell">
+                    <RequiredProperties>
+                        <Property function="Input" name="Target" />
+                    </RequiredProperties>
+                </ArrayListDomain>
+                <Hints>
+                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="EditorMode" value="2" />
+                </Hints>
+            </StringVectorProperty>
+            <StringVectorProperty name="TargetFieldDataArrays" label="Field Data Arrays" command="AddTargetFieldDataArray" clean_command="ClearTargetFieldDataArrays" number_of_elements_per_command="1" repeat_command="1">
+                <Documentation>Field data of the 'Target' that will be removed.</Documentation>
+                <ArrayListDomain name="array_list" input_domain_name="target_array_field">
+                    <RequiredProperties>
+                        <Property function="Input" name="Target" />
+                    </RequiredProperties>
+                </ArrayListDomain>
+                <Hints>
+                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="EditorMode" value="2" />
+                </Hints>
+            </StringVectorProperty>
+
+            <StringVectorProperty name="TargetArray" command="SetTargetArray" number_of_elements="5" element_types="0 0 0 0 2" animateable="0" label="Target Array">
+                <ArrayListDomain name="array_list" input_domain_name="target_array_all">
+                    <RequiredProperties>
+                        <Property function="Input" name="Target" />
+                    </RequiredProperties>
+                </ArrayListDomain>
+                <Hints>
+                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="EditorMode" value="3" />
+                </Hints>
+                <Documentation>Array that will be modified.</Documentation>
+            </StringVectorProperty>
+            <StringVectorProperty name="TargetArrayName" label="New Array Name" command="SetTargetArrayName" number_of_elements="1" default_values="">
+                <Documentation>New name of the resulting array (empty string will copy previous name).</Documentation>
+                <Hints>
+                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="EditorMode" value="3" />
+                </Hints>
+            </StringVectorProperty>
+            <IntVectorProperty command="SetTargetArrayType" default_values="-1" label="Result Array Type" name="TargetArrayType" number_of_elements="1">
+                <EnumerationDomain name="enum">
+                    <Entry value="-1" text="Automatic" />
+                    <Entry value="15" text="Signed Char" />
+                    <Entry value="4" text="Unsigned Char" />
+                    <Entry value="4" text="Short" />
+                    <Entry value="5" text="Unsigned Short" />
+                    <Entry value="6" text="Int" />
+                    <Entry value="7" text="Unsigned Int" />
+                    <Entry value="8" text="Long" />
+                    <Entry value="9" text="Unsigned Long" />
+                    <Entry value="10" text="Float" />
+                    <Entry value="11" text="Double" />
+                    <Entry value="12" text="Id Type" />
+                </EnumerationDomain>
+                <Hints>
+                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="EditorMode" value="3" />
+                </Hints>
+                <Documentation>This property determines the type of the edited array. The default is to keep the original data type.</Documentation>
+            </IntVectorProperty>
+            <IntVectorProperty command="SetTargetArrayIndexation" default_values="-1 -1" label="Number of tuples and components" name="TargetArrayIndexation" number_of_elements="2">
+                <Hints>
+                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="EditorMode" value="3" />
+                </Hints>
+                <Documentation>This property determines the number of tuples and components of the edited array. The default is to keep the original number.</Documentation>
+            </IntVectorProperty>
+
+            <PropertyGroup panel_widget="Line" label="Output Options">
+                <Property name="EditorMode" />
+                <Property name="TargetAttributeType" />
+                <Property name="TargetArrayName" />
+                <Property name="TargetArrayType" />
+                <Property name="TargetArrayIndexation" />
+            </PropertyGroup>
+            <PropertyGroup panel_widget="Line" label="Target">
+                <Property name="TargetPointDataArrays" />
+                <Property name="TargetCellDataArrays" />
+                <Property name="TargetFieldDataArrays" />
+                <Property name="TargetArray" />
+            </PropertyGroup>
+            <PropertyGroup panel_widget="Line" label="Source">
+                <Property name="DataString" />
+                <Property name="SourcePointDataArrays" />
+                <Property name="SourceCellDataArrays" />
+                <Property name="SourceFieldDataArrays" />
+            </PropertyGroup>
+
+            ${DEBUG_WIDGETS}
+
+            <Hints>
+                <ShowInMenu category="TTK - Pipeline" />
+            </Hints>
+        </SourceProxy>
+    </ProxyGroup>
+</ServerManagerConfiguration>
