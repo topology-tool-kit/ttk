@@ -1,8 +1,0 @@
-NAME
-  ttkCinemaLayout
-SOURCES
-  ttkCinemaLayout.cpp
-HEADERS
-  ttkCinemaLayout.h
-DEPENDS
-  ttkTriangulationAlgorithm
