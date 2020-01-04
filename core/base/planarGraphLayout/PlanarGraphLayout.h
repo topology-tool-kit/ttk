@@ -293,6 +293,9 @@ int ttk::PlanarGraphLayout::computeSlots(
   }
 #endif // TTK_ENABLE_KAMIKAZE
 
+  Timer t;
+  this->printMsg("Computing slots",0,debug::LineMode::REPLACE);
+
   // Comparator that sorts children based on layout.y
   struct ChildrenComparator {
     const float *layout_;
@@ -366,6 +369,8 @@ int ttk::PlanarGraphLayout::computeSlots(
       }
     }
   }
+
+  this->printMsg("Computing slots",1,t.getElapsedTime());
 
   return 1;
 }

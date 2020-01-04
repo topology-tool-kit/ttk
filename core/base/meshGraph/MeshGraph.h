@@ -174,8 +174,8 @@ int ttk::MeshGraph::execute(
   this->printMsg(debug::Separator::L1);
   this->printMsg({
     {"Mode", "Quadratic Quads"},
-    {"#nodes", std::to_string(nInputPoints)},
-    {"#edges", std::to_string(nInputCells)}
+    {"#Nodes", std::to_string(nInputPoints)},
+    {"#Edges", std::to_string(nInputCells)}
   });
   this->printMsg(debug::Separator::L2);
 
@@ -405,9 +405,9 @@ int ttk::MeshGraph::execute2(
   this->printMsg(debug::Separator::L1);
   this->printMsg({
       {"Mode","Linear Polygon"},
-      {"#nodes",std::to_string(nInputPoints)},
-      {"#edges",std::to_string(nInputCells)},
-      {"#subdivisions",std::to_string(nSubdivisions)}
+      {"#Nodes",std::to_string(nInputPoints)},
+      {"#Edges",std::to_string(nInputCells)},
+      {"#Subdivisions",std::to_string(nSubdivisions)}
   });
   this->printMsg(debug::Separator::L2);
 
