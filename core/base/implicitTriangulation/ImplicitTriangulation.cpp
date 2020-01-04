@@ -313,13 +313,11 @@ bool ImplicitTriangulation::isTriangleOnBoundaryInternal(
   return false;
 }
 
-
-
-#ifdef TTK_ENABLE_KAMIKAZE
-int ImplicitTriangulation::getVertexNeighbor(const SimplexId &vertexId,
-                                             const int &localNeighborId,
-                                             SimplexId &neighborId) const {
-#else
+// #ifdef TTK_ENABLE_KAMIKAZE
+// int ImplicitTriangulation::getVertexNeighbor(const SimplexId &vertexId,
+//                                              const int &localNeighborId,
+//                                              SimplexId &neighborId) const {
+// #else
 int ImplicitTriangulation::getVertexNeighborInternal(
   const SimplexId &vertexId,
   const int &localNeighborId,
@@ -327,7 +325,7 @@ int ImplicitTriangulation::getVertexNeighborInternal(
   if(localNeighborId < 0
      or localNeighborId >= getVertexNeighborNumberInternal(vertexId))
     return -1;
-#endif
+  // #endif
 
   neighborId = -1;
 
