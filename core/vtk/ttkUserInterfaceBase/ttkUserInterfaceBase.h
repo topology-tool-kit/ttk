@@ -85,11 +85,11 @@ public:
     return 0;
   }
 
-  int init(int &argc, char **argv);
+  int init(int &argc, char **argv) override;
 
   int refresh();
 
-  int run();
+  int run() override;
 
   int setKeyHandler(ttkKeyHandler *handler) {
     keyHandler_ = handler;

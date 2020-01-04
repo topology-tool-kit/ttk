@@ -47,7 +47,7 @@ struct ttkOnDeleteCommand : public vtkCommand {
       this->owner->RemoveObserver(this);
   }
 
-  void Execute(vtkObject *, unsigned long eventId, void *callData) {
+  void Execute(vtkObject *, unsigned long eventId, void *callData) override {
     this->deleteEventFired = true;
 
     void *key = this->owner;
