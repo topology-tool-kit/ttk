@@ -69,25 +69,25 @@ namespace ttk {
     void correctMatchings(
       vector<vector<vector<vector<matchingTuple>>>> &previous_matchings);
 
-    dataType computeDistance(BidderDiagram<dataType> &D1,
-                             BidderDiagram<dataType> &D2,
-                             double delta_lim);
-    dataType computeDistance(BidderDiagram<dataType> D1,
-                             GoodDiagram<dataType> D2,
-                             double delta_lim);
-    dataType computeDistance(BidderDiagram<dataType> *D1,
-                             GoodDiagram<dataType> *D2,
-                             double delta_lim);
-    dataType computeDistance(GoodDiagram<dataType> &D1,
-                             GoodDiagram<dataType> &D2,
-                             double delta_lim);
+    dataType computeDistance(const BidderDiagram<dataType> &D1,
+                             const BidderDiagram<dataType> &D2,
+                             const double delta_lim);
+    dataType computeDistance(const BidderDiagram<dataType> D1,
+                             const GoodDiagram<dataType> D2,
+                             const double delta_lim);
+    dataType computeDistance(BidderDiagram<dataType> *const D1,
+                             const GoodDiagram<dataType> *const D2,
+                             const double delta_lim);
+    dataType computeDistance(const GoodDiagram<dataType> &D1,
+                             const GoodDiagram<dataType> &D2,
+                             const double delta_lim);
 
     GoodDiagram<dataType>
-      centroidWithZeroPrices(GoodDiagram<dataType> centroid);
-    BidderDiagram<dataType> centroidToDiagram(GoodDiagram<dataType> centroid);
-    GoodDiagram<dataType> diagramToCentroid(BidderDiagram<dataType> diagram);
+      centroidWithZeroPrices(const GoodDiagram<dataType> centroid);
+    BidderDiagram<dataType> centroidToDiagram(const GoodDiagram<dataType> centroid);
+    GoodDiagram<dataType> diagramToCentroid(const BidderDiagram<dataType> diagram);
     BidderDiagram<dataType>
-      diagramWithZeroPrices(BidderDiagram<dataType> diagram);
+      diagramWithZeroPrices(const BidderDiagram<dataType> diagram);
 
     void setBidderDiagrams();
     void initializeEmptyClusters();

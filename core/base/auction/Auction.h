@@ -121,8 +121,8 @@ namespace ttk {
     dataType run(std::vector<matchingTuple> *matchings);
     dataType getMaximalPrice();
 
-    void BuildAuctionDiagrams(BidderDiagram<dataType> *BD,
-                              GoodDiagram<dataType> *GD) {
+    void BuildAuctionDiagrams(const BidderDiagram<dataType> *BD,
+                              const GoodDiagram<dataType> *GD) {
       n_bidders_ = BD->size();
       n_goods_ = GD->size();
       // delete_kdTree_ = false;

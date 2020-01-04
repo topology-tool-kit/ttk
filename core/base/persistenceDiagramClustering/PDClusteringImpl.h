@@ -960,30 +960,33 @@ std::vector<std::vector<dataType>>
 }
 
 template <typename dataType>
-dataType PDClustering<dataType>::computeDistance(BidderDiagram<dataType> &D1,
-                                                 BidderDiagram<dataType> &D2,
-                                                 double delta_lim) {
+dataType
+  PDClustering<dataType>::computeDistance(const BidderDiagram<dataType> &D1,
+                                          const BidderDiagram<dataType> &D2,
+                                          const double delta_lim) {
   GoodDiagram<dataType> D2_bis = diagramToCentroid(D2);
   return computeDistance(D1, D2_bis, delta_lim);
 }
 
 template <typename dataType>
-dataType PDClustering<dataType>::computeDistance(BidderDiagram<dataType> D1,
-                                                 GoodDiagram<dataType> D2,
-                                                 double delta_lim) {
+dataType
+  PDClustering<dataType>::computeDistance(const BidderDiagram<dataType> D1,
+                                          const GoodDiagram<dataType> D2,
+                                          const double delta_lim) {
   std::vector<matchingTuple> matchings;
-  D2 = centroidWithZeroPrices(D2);
+  const auto D2_bis = centroidWithZeroPrices(D2);
   Auction<dataType> auction(
     wasserstein_, geometrical_factor_, lambda_, delta_lim, use_kdtree_);
-  auction.BuildAuctionDiagrams(&D1, &D2);
+  auction.BuildAuctionDiagrams(&D1, &D2_bis);
   dataType cost = auction.run(&matchings);
   return cost;
 }
 
 template <typename dataType>
-dataType PDClustering<dataType>::computeDistance(BidderDiagram<dataType> *D1,
-                                                 GoodDiagram<dataType> *D2,
-                                                 double delta_lim) {
+dataType PDClustering<dataType>::computeDistance(
+  BidderDiagram<dataType> *const D1,
+  const GoodDiagram<dataType> *const D2,
+  const double delta_lim) {
   std::vector<matchingTuple> matchings;
   Auction<dataType> auction(
     wasserstein_, geometrical_factor_, lambda_, delta_lim, use_kdtree_);
@@ -997,16 +1000,17 @@ dataType PDClustering<dataType>::computeDistance(BidderDiagram<dataType> *D1,
 }
 
 template <typename dataType>
-dataType PDClustering<dataType>::computeDistance(GoodDiagram<dataType> &D1,
-                                                 GoodDiagram<dataType> &D2,
-                                                 double delta_lim) {
+dataType
+  PDClustering<dataType>::computeDistance(const GoodDiagram<dataType> &D1,
+                                          const GoodDiagram<dataType> &D2,
+                                          const double delta_lim) {
   BidderDiagram<dataType> D1_bis = centroidToDiagram(D1);
   return computeDistance(D1_bis, D2, delta_lim);
 }
 
 template <typename dataType>
 GoodDiagram<dataType> PDClustering<dataType>::centroidWithZeroPrices(
-  GoodDiagram<dataType> centroid) {
+  const GoodDiagram<dataType> centroid) {
   GoodDiagram<dataType> GD = GoodDiagram<dataType>();
   for(int i = 0; i < centroid.size(); i++) {
     Good<dataType> g = centroid.get(i);
@@ -1018,7 +1022,7 @@ GoodDiagram<dataType> PDClustering<dataType>::centroidWithZeroPrices(
 
 template <typename dataType>
 BidderDiagram<dataType> PDClustering<dataType>::diagramWithZeroPrices(
-  BidderDiagram<dataType> diagram) {
+  const BidderDiagram<dataType> diagram) {
   BidderDiagram<dataType> BD = BidderDiagram<dataType>();
   for(int i = 0; i < diagram.size(); i++) {
     Bidder<dataType> b = diagram.get(i);
@@ -1030,7 +1034,7 @@ BidderDiagram<dataType> PDClustering<dataType>::diagramWithZeroPrices(
 
 template <typename dataType>
 BidderDiagram<dataType>
-  PDClustering<dataType>::centroidToDiagram(GoodDiagram<dataType> centroid) {
+  PDClustering<dataType>::centroidToDiagram(const GoodDiagram<dataType> centroid) {
   BidderDiagram<dataType> BD = BidderDiagram<dataType>();
   for(int i = 0; i < centroid.size(); i++) {
     Good<dataType> g = centroid.get(i);
@@ -1046,7 +1050,7 @@ BidderDiagram<dataType>
 
 template <typename dataType>
 GoodDiagram<dataType>
-  PDClustering<dataType>::diagramToCentroid(BidderDiagram<dataType> diagram) {
+  PDClustering<dataType>::diagramToCentroid(const BidderDiagram<dataType> diagram) {
   GoodDiagram<dataType> GD = GoodDiagram<dataType>();
   for(int i = 0; i < diagram.size(); i++) {
     Bidder<dataType> b = diagram.get(i);
