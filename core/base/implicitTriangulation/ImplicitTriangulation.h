@@ -196,25 +196,24 @@ namespace ttk {
 
     const std::vector<std::vector<SimplexId>> *getVertexLinksInternal();
 
-    // #ifdef TTK_ENABLE_KAMIKAZE
-    //     int getVertexNeighbor(const SimplexId &vertexId,
-    //                           const int &localNeighborId,
-    //                           SimplexId &neighborId) const;
-    // #else
+#ifdef TTK_ENABLE_KAMIKAZE
+    int getVertexNeighbor(const SimplexId &vertexId,
+                          const int &localNeighborId,
+                          SimplexId &neighborId) const;
+#else
     int getVertexNeighborInternal(const SimplexId &vertexId,
                                   const int &localNeighborId,
                                   SimplexId &neighborId) const override;
-    // #endif
+#endif
 
-    // #ifdef TTK_ENABLE_KAMIKAZE
-    //     inline SimplexId getVertexNeighborNumber(const SimplexId &vertexId)
-    //     const {
-    // #else
+#ifdef TTK_ENABLE_KAMIKAZE
+    inline SimplexId getVertexNeighborNumber(const SimplexId &vertexId) const {
+#else
     inline SimplexId getVertexNeighborNumberInternal(
       const SimplexId &vertexId) const override {
       if(vertexId < 0 or vertexId >= vertexNumber_)
         return -1;
-      // #endif
+#endif
 
       if(dimensionality_ == 3) {
         SimplexId p[3];

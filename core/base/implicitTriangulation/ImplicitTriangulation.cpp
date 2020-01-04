@@ -313,19 +313,19 @@ bool ImplicitTriangulation::isTriangleOnBoundaryInternal(
   return false;
 }
 
-// #ifdef TTK_ENABLE_KAMIKAZE
-// int ImplicitTriangulation::getVertexNeighbor(const SimplexId &vertexId,
-//                                              const int &localNeighborId,
-//                                              SimplexId &neighborId) const {
-// #else
+#ifdef TTK_ENABLE_KAMIKAZE
+int ImplicitTriangulation::getVertexNeighbor(const SimplexId &vertexId,
+                                             const int &localNeighborId,
+                                             SimplexId &neighborId) const {
+#else
 int ImplicitTriangulation::getVertexNeighborInternal(
   const SimplexId &vertexId,
   const int &localNeighborId,
   SimplexId &neighborId) const {
   if(localNeighborId < 0
-     or localNeighborId >= getVertexNeighborNumberInternal(vertexId))
+     or localNeighborId >= getVertexNeighborNumber(vertexId))
     return -1;
-  // #endif
+#endif
 
   neighborId = -1;
 
@@ -452,9 +452,9 @@ const vector<vector<SimplexId>> *
     Timer t;
     vertexNeighborList_.resize(vertexNumber_);
     for(SimplexId i = 0; i < vertexNumber_; ++i) {
-      vertexNeighborList_[i].resize(getVertexNeighborNumberInternal(i));
+      vertexNeighborList_[i].resize(getVertexNeighborNumber(i));
       for(SimplexId j = 0; j < (SimplexId)vertexNeighborList_[i].size(); ++j)
-        getVertexNeighborInternal(i, j, vertexNeighborList_[i][j]);
+        getVertexNeighbor(i, j, vertexNeighborList_[i][j]);
     }
 
     {
@@ -470,7 +470,7 @@ const vector<vector<SimplexId>> *
 
 SimplexId ImplicitTriangulation::getVertexEdgeNumberInternal(
   const SimplexId &vertexId) const {
-  return getVertexNeighborNumberInternal(vertexId);
+  return getVertexNeighborNumber(vertexId);
 }
 
 int ImplicitTriangulation::getVertexEdgeInternal(const SimplexId &vertexId,
