@@ -12,25 +12,24 @@
 #include <vtkFieldData.h>
 #include <vtkSmartPointer.h>
 
-class ttkUtils {
-public:
-  static int replaceVariable(const std::string &iString,
+namespace ttkUtils {
+  int replaceVariable(const std::string &iString,
                              vtkFieldData *fieldData,
                              std::string &oString,
                              std::string &errorMsg);
 
-  static int replaceVariables(const std::string &iString,
+  int replaceVariables(const std::string &iString,
                               vtkFieldData *fieldData,
                               std::string &oString,
                               std::string &errorMsg);
 
-  static int stringListToVector(const std::string &iString,
+  int stringListToVector(const std::string &iString,
                                 std::vector<std::string> &v);
 
-  static int stringListToDoubleVector(const std::string &iString,
+  int stringListToDoubleVector(const std::string &iString,
                                       std::vector<double> &v);
 
-  static vtkSmartPointer<vtkAbstractArray> csvToVtkArray(std::string line);
+  vtkSmartPointer<vtkAbstractArray> csvToVtkArray(std::string line);
 
-  static vtkSmartPointer<vtkDoubleArray> csvToDoubleArray(std::string line);
+  vtkSmartPointer<vtkDoubleArray> csvToDoubleArray(std::string line);
 };
