@@ -64,7 +64,7 @@ function(ttk_add_base_template_library library)
 
   string(TOUPPER "${CMAKE_BUILD_TYPE}" uppercase_CMAKE_BUILD_TYPE)
   if(uppercase_CMAKE_BUILD_TYPE MATCHES RELEASE)
-    if(TTK_ENABLE_CPU_OPTIMIZATION)
+    if(TTK_ENABLE_CPU_OPTIMIZATION AND NOT MSVC)
       target_compile_options(${library} INTERFACE -march=native -O3)
     endif()
   endif()
