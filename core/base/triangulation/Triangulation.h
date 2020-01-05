@@ -2161,7 +2161,6 @@ namespace ttk {
       if(isEmptyCheck())
         return -1;
 #endif
-      AbstractTriangulation::preconditionVertexEdges();
 
       return abstractTriangulation_->preconditionVertexEdges();
     }

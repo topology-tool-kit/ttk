@@ -34,13 +34,27 @@ namespace ttk {
 
     const std::vector<std::vector<SimplexId>> *getCellEdgesInternal();
 
+#ifdef TTK_ENABLE_KAMIKAZE
+    int getCellNeighbor(const SimplexId &cellId,
+                        const int &localNeighborId,
+                        SimplexId &neighborId) const;
+#else
     int getCellNeighborInternal(const SimplexId &cellId,
                                 const int &localNeighborId,
                                 SimplexId &neighborId) const;
+#endif
 
+#ifdef TTK_ENABLE_KAMIKAZE
+    SimplexId getCellNeighborNumber(const SimplexId &cellId) const;
+#else
     SimplexId getCellNeighborNumberInternal(const SimplexId &cellId) const;
+#endif
 
+#ifdef TTK_ENABLE_KAMIKAZE
+    const std::vector<std::vector<SimplexId>> *getCellNeighbors();
+#else
     const std::vector<std::vector<SimplexId>> *getCellNeighborsInternal();
+#endif
 
     int getCellTriangleInternal(const SimplexId &cellId,
                                 const int &id,

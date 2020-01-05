@@ -25,7 +25,30 @@ public:
     smoother->setDimensionNumber(3);
     smoother->setInputDataPointer(pointSet_.data());
     smoother->setOutputDataPointer(pointSet_.data());
-    smoother->smooth<float>(iterationNumber_);
+
+    // template call based on the triangulation type
+    Triangulation::Type triangulationType = triangleMesh_.getType();
+
+    switch(triangulationType) {
+      case Triangulation::Type::EXPLICIT:
+        smoother->smooth<float, ExplicitTriangulation>(
+          (ExplicitTriangulation *)triangleMesh_.getAbstractTriangulation(),
+          iterationNumber_);
+        break;
+
+      case Triangulation::Type::IMPLICIT:
+        smoother->smooth<float, ImplicitTriangulation>(
+          (ImplicitTriangulation *)triangleMesh_.getAbstractTriangulation(),
+          iterationNumber_);
+        break;
+
+      case Triangulation::Type::PERIODIC:
+        smoother->smooth<float, PeriodicImplicitTriangulation>(
+          (PeriodicImplicitTriangulation *)
+            triangleMesh_.getAbstractTriangulation(),
+          iterationNumber_);
+        break;
+    }
 
     return 0;
   }
@@ -90,7 +113,7 @@ public:
 
     triangleMesh_.setInputPoints(vertexNumber, pointSet_.data());
     triangleMesh_.setInputCells(triangleNumber, triangleSet_.data());
-    smoother->setupTriangulation(triangleMesh_.getAbstractTriangulation());
+    smoother->setupTriangulation(&triangleMesh_);
 
     {
       stringstream msg;

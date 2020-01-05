@@ -3096,16 +3096,20 @@ const vector<vector<SimplexId>> *
   return &cellTriangleList_;
 }
 
+#ifdef TTK_ENABLE_KAMIKAZE
+SimplexId
+  ImplicitTriangulation::getCellNeighborNumber(const SimplexId &cellId) const {
+#else
 SimplexId ImplicitTriangulation::getCellNeighborNumberInternal(
   const SimplexId &cellId) const {
+#endif
   if(dimensionality_ == 3)
     return getTetrahedronNeighborNumber(cellId);
   else if(dimensionality_ == 2)
     return getTriangleNeighborNumber(cellId);
   else if(dimensionality_ == 1) {
     stringstream msg;
-    msg << "[ImplicitTriangulation] getCellNeighborNumberInternal() in 1D:"
-        << endl;
+    msg << "[ImplicitTriangulation] getCellNeighborNumber() in 1D:" << endl;
     msg << "[ImplicitTriangulation] Not implemented! TODO!" << endl;
     dMsg(cerr, msg.str(), Debug::fatalMsg);
     return -1;
@@ -3114,10 +3118,16 @@ SimplexId ImplicitTriangulation::getCellNeighborNumberInternal(
   return 0;
 }
 
+#ifdef TTK_ENABLE_KAMIKAZE
+int ImplicitTriangulation::getCellNeighbor(const SimplexId &cellId,
+                                           const int &localNeighborId,
+                                           SimplexId &neighborId) const {
+#else
 int ImplicitTriangulation::getCellNeighborInternal(
   const SimplexId &cellId,
   const int &localNeighborId,
   SimplexId &neighborId) const {
+#endif
   if(dimensionality_ == 3)
     getTetrahedronNeighbor(cellId, localNeighborId, neighborId);
   else if(dimensionality_ == 2)
@@ -3133,8 +3143,12 @@ int ImplicitTriangulation::getCellNeighborInternal(
   return 0;
 }
 
+#ifdef TTK_ENABLE_KAMIKAZE
+const vector<vector<SimplexId>> *ImplicitTriangulation::getCellNeighbors() {
+#else
 const vector<vector<SimplexId>> *
   ImplicitTriangulation::getCellNeighborsInternal() {
+#endif
   if(!cellNeighborList_.size()) {
     Timer t;
 
@@ -3144,8 +3158,7 @@ const vector<vector<SimplexId>> *
       getTriangleNeighbors(cellNeighborList_);
     else if(dimensionality_ == 1) {
       stringstream msg;
-      msg << "[ImplicitTriangulation] getCellNeighborsInternal() in 1D:"
-          << endl;
+      msg << "[ImplicitTriangulation] getCellNeighbors() in 1D:" << endl;
       msg << "[ImplicitTriangulation] Not implemented! TODO!" << endl;
       dMsg(cerr, msg.str(), Debug::fatalMsg);
       return nullptr;

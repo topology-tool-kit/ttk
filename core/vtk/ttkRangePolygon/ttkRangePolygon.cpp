@@ -123,10 +123,11 @@ int ttkRangePolygon::processTriangles(vtkUnstructuredGrid *input,
     smoother.setDimensionNumber(3);
     smoother.setInputDataPointer(output->GetPoints()->GetVoidPointer(0));
     smoother.setOutputDataPointer(output->GetPoints()->GetVoidPointer(0));
-    smoother.setupTriangulation(triangulation->getAbstractTriangulation());
+    smoother.setupTriangulation(triangulation);
 
     switch(output->GetPoints()->GetDataType()) {
-      vtkTemplateMacro(smoother.smooth<VTK_TT>(NumberOfIterations));
+      vtkTemplateMacro(
+        smoother.smooth<VTK_TT>(triangulation, NumberOfIterations));
     }
 
     for(int i = 0; i < output->GetPointData()->GetNumberOfArrays(); i++) {
@@ -139,10 +140,11 @@ int ttkRangePolygon::processTriangles(vtkUnstructuredGrid *input,
       smoother.setInputDataPointer(field->GetVoidPointer(0));
 
       smoother.setOutputDataPointer(field->GetVoidPointer(0));
-      smoother.setupTriangulation(triangulation->getAbstractTriangulation());
+      smoother.setupTriangulation(triangulation);
 
       switch(field->GetDataType()) {
-        vtkTemplateMacro(smoother.smooth<VTK_TT>(NumberOfIterations));
+        vtkTemplateMacro(
+          smoother.smooth<VTK_TT>(triangulation, NumberOfIterations));
       }
     }
   }

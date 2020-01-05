@@ -35,7 +35,7 @@ int ttkGeometrySmoother::doIt(vector<vtkDataSet *> &inputs,
     return -1;
 
   triangulation->setWrapper(this);
-  smoother_.setupTriangulation(triangulation->getAbstractTriangulation());
+  smoother_.setupTriangulation(triangulation);
   smoother_.setWrapper(this);
 
   vtkCharArray *inputMaskField = NULL;
@@ -81,7 +81,8 @@ int ttkGeometrySmoother::doIt(vector<vtkDataSet *> &inputs,
   smoother_.setMaskDataPointer(inputMaskPtr);
 
   switch(outputPointSet->GetDataType()) {
-    vtkTemplateMacro(smoother_.smooth<VTK_TT>(NumberOfIterations));
+    vtkTemplateMacro(
+      smoother_.smooth<VTK_TT>(triangulation, NumberOfIterations));
   }
 
   {
