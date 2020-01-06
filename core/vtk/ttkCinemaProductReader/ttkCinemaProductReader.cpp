@@ -36,8 +36,8 @@ int ttkCinemaProductReader::FillOutputPortInformation(int port,
 }
 
 template <class readerT>
-vtkSmartPointer<vtkDataObject>
-  readFileLocal_(std::string pathToFile, vtkSmartPointer<readerT> &reader) {
+vtkSmartPointer<vtkDataObject> readFileLocal_(std::string pathToFile,
+                                              vtkNew<readerT> &reader) {
   reader->SetFileName(pathToFile.data());
   reader->Update();
   if(reader->GetErrorCode() != 0)
@@ -52,8 +52,8 @@ vtkSmartPointer<vtkDataObject>
 vtkSmartPointer<vtkDataObject>
   ttkCinemaProductReader::readFileLocal(std::string pathToFile) {
 
-  if(pathToFile.substr(pathToFile.length()-4,4).compare(".ttk")==0){
-    return readFileLocal_(pathToFile, this->ttkTopologicalCompressionReader_);
+  if(pathToFile.substr(pathToFile.length() - 4, 4).compare(".ttk") == 0) {
+    return readFileLocal_(pathToFile, this->topologicalCompressionReader);
   } else {
     // Check if dataset is XML encoded
     ifstream is(pathToFile.data());

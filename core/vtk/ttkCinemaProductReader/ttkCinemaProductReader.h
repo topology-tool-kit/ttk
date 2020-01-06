@@ -24,6 +24,7 @@
 
 #include <ttkTopologicalCompressionReader.h>
 #include <vtkGenericDataObjectReader.h>
+#include <vtkNew.h>
 #include <vtkSmartPointer.h>
 #include <vtkXMLGenericDataObjectReader.h>
 
@@ -58,14 +59,11 @@ private:
   bool AddFieldDataRecursively{true};
 
   // TTK READER
-  vtkSmartPointer<ttkTopologicalCompressionReader> ttkTopologicalCompressionReader_
-    = vtkSmartPointer<ttkTopologicalCompressionReader>::New();
+  vtkNew<ttkTopologicalCompressionReader> topologicalCompressionReader{};
 
   // LOCAL-LEGACY && REMOTE-LEGACY
-  vtkSmartPointer<vtkGenericDataObjectReader> genericDataObjectReader
-    = vtkSmartPointer<vtkGenericDataObjectReader>::New();
+  vtkNew<vtkGenericDataObjectReader> genericDataObjectReader{};
 
   // LOCAL-XML
-  vtkSmartPointer<vtkXMLGenericDataObjectReader> xmlGenericDataObjectReader
-    = vtkSmartPointer<vtkXMLGenericDataObjectReader>::New();
+  vtkNew<vtkXMLGenericDataObjectReader> xmlGenericDataObjectReader{};
 };
