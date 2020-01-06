@@ -37,10 +37,7 @@ namespace ttk {
       /// setupTriangulation() from any time performance measurement.
       /// \param argment Dummy integer argument.
       /// \return Returns 0 upon success, negative values otherwise.
-      template <class dataType>
-      int execute(const Triangulation *triangulation,
-                  const int &argument) const;
-      template <class triangulationType, class dataType>
+      template <class dataType, class triangulationType = Triangulation>
       int execute(const triangulationType *triangulation,
                   const int &argument) const;
 
@@ -128,15 +125,9 @@ namespace ttk {
   } // namespace blank
 } // namespace ttk
 
-template <class triangulationType, class dataType>
-int ttk::blank::Blank::execute(const triangulationType *triangulation,
-                               const int &argument) const {
-  return 0;
-}
-
 // template functions
-template <class dataType>
-int ttk::blank::Blank::execute(const Triangulation *triangulation,
+template <class dataType, class triangulationType>
+int ttk::blank::Blank::execute(const triangulationType *triangulation,
                                const int &argument) const {
 
   Timer t;
