@@ -36,13 +36,15 @@ int ttkCinemaProductReader::FillOutputPortInformation(int port,
 }
 
 template <class readerT>
-vtkSmartPointer<vtkDataObject> readFileLocal_(std::string pathToFile, vtkSmartPointer<readerT>& reader){
+vtkSmartPointer<vtkDataObject>
+  readFileLocal_(std::string pathToFile, vtkSmartPointer<readerT> &reader) {
   reader->SetFileName(pathToFile.data());
   reader->Update();
   if(reader->GetErrorCode() != 0)
     return nullptr;
 
-  auto result = vtkSmartPointer<vtkDataObject>::Take( reader->GetOutput()->NewInstance() );
+  auto result
+    = vtkSmartPointer<vtkDataObject>::Take(reader->GetOutput()->NewInstance());
   result->ShallowCopy(reader->GetOutput());
   return result;
 }
@@ -138,7 +140,7 @@ int ttkCinemaProductReader::RequestData(vtkInformation *request,
         }
 
         auto readerOutput = this->readFileLocal(path);
-        if(!readerOutput){
+        if(!readerOutput) {
           this->printErr("Unable to read file.");
           return 0;
         }

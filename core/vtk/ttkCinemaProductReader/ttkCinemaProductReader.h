@@ -22,10 +22,10 @@
 // VTK includes
 #include <ttkAlgorithm.h>
 
+#include <ttkTopologicalCompressionReader.h>
 #include <vtkGenericDataObjectReader.h>
 #include <vtkSmartPointer.h>
 #include <vtkXMLGenericDataObjectReader.h>
-#include <ttkTopologicalCompressionReader.h>
 
 class TTKCINEMAPRODUCTREADER_EXPORT ttkCinemaProductReader
   : public ttkAlgorithm {
