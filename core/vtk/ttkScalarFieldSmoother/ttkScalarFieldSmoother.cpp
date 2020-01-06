@@ -204,7 +204,7 @@ int ttkScalarFieldSmoother::doIt(vector<vtkDataSet *> &inputs,
 
     case Triangulation::Type::EXPLICIT: {
       ExplicitTriangulation *explicitTriangulation
-        = (ExplicitTriangulation *)triangulation->getAbstractTriangulation();
+        = (ExplicitTriangulation *)triangulation->getData();
       switch(inputScalarField->GetDataType()) {
         vtkTemplateMacro((smoother_.smooth<VTK_TT, ExplicitTriangulation>(
           explicitTriangulation, NumberOfIterations)));
@@ -213,7 +213,7 @@ int ttkScalarFieldSmoother::doIt(vector<vtkDataSet *> &inputs,
 
     case Triangulation::Type::IMPLICIT: {
       ImplicitTriangulation *implicitTriangulation
-        = (ImplicitTriangulation *)triangulation->getAbstractTriangulation();
+        = (ImplicitTriangulation *)triangulation->getData();
       switch(inputScalarField->GetDataType()) {
         vtkTemplateMacro((smoother_.smooth<VTK_TT, ImplicitTriangulation>(
           implicitTriangulation, NumberOfIterations)));
@@ -222,8 +222,7 @@ int ttkScalarFieldSmoother::doIt(vector<vtkDataSet *> &inputs,
 
     case Triangulation::Type::PERIODIC: {
       PeriodicImplicitTriangulation *periodicTriangulation
-        = (PeriodicImplicitTriangulation *)
-            triangulation->getAbstractTriangulation();
+        = (PeriodicImplicitTriangulation *)triangulation->getData();
       switch(inputScalarField->GetDataType()) {
         vtkTemplateMacro(
           (smoother_.smooth<VTK_TT, PeriodicImplicitTriangulation>(

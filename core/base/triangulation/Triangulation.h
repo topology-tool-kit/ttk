@@ -801,7 +801,7 @@ namespace ttk {
 
     /// Get the internal abstract triangulation object.
     /// \return Returns a pointer to the internal abstract triangulation object.
-    inline AbstractTriangulation *getAbstractTriangulation() {
+    inline AbstractTriangulation *getData() {
       return abstractTriangulation_;
     }
 

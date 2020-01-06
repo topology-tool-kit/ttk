@@ -16,8 +16,18 @@
 #include <Geometry.h>
 #include <Wrapper.h>
 
-// TODO: remove the distinction Internal (skip one function call) and make the
-// internal getters pure virtual.
+#define ttkTemplateMacroCase(typeN, type, call) \
+  case typeN: {                                 \
+    typedef type TTK_TT;                        \
+    call;                                       \
+  }; break
+#define ttkTemplateMacro(call)                                   \
+  ttkTemplateMacroCase(                                          \
+    Triangulation::Type::EXPLICIT, ExplicitTriangulation, call); \
+  ttkTemplateMacroCase(                                          \
+    Triangulation::Type::IMPLICIT, ImplicitTriangulation, call); \
+  ttkTemplateMacroCase(                                          \
+    Triangulation::Type::PERIODIC, PeriodicImplicitTriangulation, call);
 
 namespace ttk {
 

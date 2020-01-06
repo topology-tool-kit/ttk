@@ -8,19 +8,6 @@
 #include <ProgramBase.h>
 #include <ScalarFieldSmoother.h>
 
-#define ttkTemplateMacroCase(typeN, type, call) \
-  case typeN: {                                 \
-    typedef type TTK_TT;                        \
-    call;                                       \
-  }; break
-#define ttkTemplateMacro(call)                                   \
-  ttkTemplateMacroCase(                                          \
-    Triangulation::Type::EXPLICIT, ExplicitTriangulation, call); \
-  ttkTemplateMacroCase(                                          \
-    Triangulation::Type::IMPLICIT, ImplicitTriangulation, call); \
-  ttkTemplateMacroCase(                                          \
-    Triangulation::Type::PERIODIC, PeriodicImplicitTriangulation, call);
-
 using namespace std;
 using namespace ttk;
 
@@ -44,7 +31,7 @@ public:
 
     switch(triangulationType) {
       ttkTemplateMacro((smoother->smooth<float, TTK_TT>(
-        (TTK_TT *)triangleMesh_.getAbstractTriangulation(), iterationNumber_)));
+        (TTK_TT *)triangleMesh_.getData(), iterationNumber_)));
     }
 
     return 0;
