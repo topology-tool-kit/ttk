@@ -26,6 +26,7 @@
 #include <vtkGenericDataObjectReader.h>
 #include <vtkNew.h>
 #include <vtkSmartPointer.h>
+#include <vtkTIFFReader.h>
 #include <vtkXMLGenericDataObjectReader.h>
 
 class TTKCINEMAPRODUCTREADER_EXPORT ttkCinemaProductReader
@@ -60,6 +61,9 @@ private:
 
   // TTK READER
   vtkNew<ttkTopologicalCompressionReader> topologicalCompressionReader{};
+
+  // TIFF READER
+  vtkNew<vtkTIFFReader> tiffReader{};
 
   // LOCAL-LEGACY && REMOTE-LEGACY
   vtkNew<vtkGenericDataObjectReader> genericDataObjectReader{};
