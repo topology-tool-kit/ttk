@@ -68,31 +68,73 @@ namespace ttk {
 
     const std::vector<std::vector<SimplexId>> *getCellTrianglesInternal();
 
+#ifdef TTK_ENABLE_KAMIKAZE    
+    int getCellVertex(const SimplexId &cellId,
+                              const int &localVertexId,
+                              SimplexId &vertexId) const;
+#else
     int getCellVertexInternal(const SimplexId &cellId,
                               const int &localVertexId,
                               SimplexId &vertexId) const;
+#endif
 
+#ifdef TTK_ENABLE_KAMIKAZE
+    SimplexId getCellVertexNumber(const SimplexId &cellId) const;
+#else
     SimplexId getCellVertexNumberInternal(const SimplexId &cellId) const;
+#endif
 
+#ifdef TTK_ENABLE_KAMIKAZE
+    int getDimensionality() const {
+#else    
     int getDimensionalityInternal() const {
+#endif
       return dimensionality_;
     };
 
+#ifdef TTK_ENABLE_KAMIKAZE    
+    int getEdgeLink(const SimplexId &edgeId,
+                            const int &localLinkId,
+                            SimplexId &linkId) const;
+#else
     int getEdgeLinkInternal(const SimplexId &edgeId,
                             const int &localLinkId,
                             SimplexId &linkId) const;
+#endif
 
+#ifdef TTK_ENABLE_KAMIKAZE
+    SimplexId getEdgeLinkNumber(const SimplexId &edgeId) const;
+#else
     SimplexId getEdgeLinkNumberInternal(const SimplexId &edgeId) const;
+#endif
 
+#ifdef TTK_ENABLE_KAMIKAZE
+    const std::vector<std::vector<SimplexId>> *getEdgeLinks();
+#else
     const std::vector<std::vector<SimplexId>> *getEdgeLinksInternal();
+#endif
 
+#ifdef TTK_ENABLE_KAMIKAZE  
+    int getEdgeStar(const SimplexId &edgeId,
+                            const int &localStarId,
+                            SimplexId &starId) const;
+#else
     int getEdgeStarInternal(const SimplexId &edgeId,
                             const int &localStarId,
                             SimplexId &starId) const;
+#endif
 
+#ifdef TTK_ENABLE_KAMIKAZE  
+    SimplexId getEdgeStarNumber(const SimplexId &edgeId) const;
+#else
     SimplexId getEdgeStarNumberInternal(const SimplexId &edgeId) const;
+#endif
 
+#ifdef TTK_ENABLE_KAMIKAZE
+    const std::vector<std::vector<SimplexId>> *getEdgeStars();
+#else
     const std::vector<std::vector<SimplexId>> *getEdgeStarsInternal();
+#endif
 
     int getEdgeTriangleInternal(const SimplexId &edgeId,
                                 const int &id,
@@ -106,9 +148,17 @@ namespace ttk {
                               const int &localVertexId,
                               SimplexId &vertexId) const;
 
+#ifdef TTK_ENABLE_KAMIKAZE
+    const std::vector<std::pair<SimplexId, SimplexId>> *getEdges();
+#else
     const std::vector<std::pair<SimplexId, SimplexId>> *getEdgesInternal();
+#endif
 
+#ifdef TTK_ENABLE_KAMIKAZE
+    SimplexId getNumberOfCells() const {
+#else
     SimplexId getNumberOfCellsInternal() const {
+#endif
       return cellNumber_;
     };
 
@@ -120,7 +170,11 @@ namespace ttk {
       return triangleNumber_;
     };
 
+#ifdef TTK_ENABLE_KAMIKAZE
+    SimplexId getNumberOfVertices() const {
+#else
     SimplexId getNumberOfVerticesInternal() const {
+#endif
       return vertexNumber_;
     };
 
@@ -164,13 +218,27 @@ namespace ttk {
     int getTriangleEdgesInternal(
       std::vector<std::vector<SimplexId>> &edges) const;
 
+#ifdef TTK_ENABLE_KAMIKAZE
+    int getTriangleLink(const SimplexId &triangleId,
+                                const int &localLinkId,
+                                SimplexId &linkId) const;
+#else
     int getTriangleLinkInternal(const SimplexId &triangleId,
                                 const int &localLinkId,
                                 SimplexId &linkId) const;
+#endif
 
+#ifdef TTK_ENABLE_KAMIKAZE
+    SimplexId getTriangleLinkNumber(const SimplexId &triangleId) const;
+#else
     SimplexId getTriangleLinkNumberInternal(const SimplexId &triangleId) const;
+#endif
 
+#ifdef TTK_ENABLE_KAMIKAZE
+    const std::vector<std::vector<SimplexId>> *getTriangleLinks();
+#else
     const std::vector<std::vector<SimplexId>> *getTriangleLinksInternal();
+#endif
 
     int getTriangleNeighbor(const SimplexId &triangleId,
                             const int &localNeighborId,
@@ -180,19 +248,37 @@ namespace ttk {
 
     int getTriangleNeighbors(std::vector<std::vector<SimplexId>> &neighbors);
 
+#ifdef TTK_ENABLE_KAMIKAZE
+    int getTriangleStar(const SimplexId &triangleId,
+                                const int &localStarId,
+                                SimplexId &starId) const;
+#else
     int getTriangleStarInternal(const SimplexId &triangleId,
                                 const int &localStarId,
                                 SimplexId &starId) const;
+#endif
 
+#ifdef TTK_ENABLE_KAMIKAZE
+    SimplexId getTriangleStarNumber(const SimplexId &triangleId) const;
+#else
     SimplexId getTriangleStarNumberInternal(const SimplexId &triangleId) const;
+#endif
 
+#ifdef TTK_ENABLE_KAMIKAZE
+    const std::vector<std::vector<SimplexId>> *getTriangleStars();
+#else
     const std::vector<std::vector<SimplexId>> *getTriangleStarsInternal();
+#endif
 
     int getTriangleVertexInternal(const SimplexId &triangleId,
                                   const int &localVertexId,
                                   SimplexId &vertexId) const;
 
+#ifdef TTK_ENABLE_KAMIKAZE
+    const std::vector<std::vector<SimplexId>> *getTriangles();
+#else
     const std::vector<std::vector<SimplexId>> *getTrianglesInternal();
+#endif
 
     int getVertexEdgeInternal(const SimplexId &vertexId,
                               const int &id,
@@ -202,13 +288,27 @@ namespace ttk {
 
     const std::vector<std::vector<SimplexId>> *getVertexEdgesInternal();
 
+#ifdef TTK_ENABLE_KAMIKAZE
+    int getVertexLink(const SimplexId &vertexId,
+                              const int &localLinkId,
+                              SimplexId &linkId) const;
+#else
     int getVertexLinkInternal(const SimplexId &vertexId,
                               const int &localLinkId,
                               SimplexId &linkId) const;
+#endif
 
+#ifdef TTK_ENABLE_KAMIKAZE
+    SimplexId getVertexLinkNumber(const SimplexId &vertexId) const;
+#else
     SimplexId getVertexLinkNumberInternal(const SimplexId &vertexId) const;
+#endif
 
+#ifdef TTK_ENABLE_KAMIKAZE
+    const std::vector<std::vector<SimplexId>> *getVertexLinks();
+#else
     const std::vector<std::vector<SimplexId>> *getVertexLinksInternal();
+#endif
 
 #ifdef TTK_ENABLE_KAMIKAZE
     int getVertexNeighbor(const SimplexId &vertexId,
@@ -333,20 +433,45 @@ namespace ttk {
       return -1;
     }
 
+#ifdef TTK_ENABLE_KAMIKAZE
+  const std::vector<std::vector<SimplexId>> *getVertexNeighbors();
+#else
     const std::vector<std::vector<SimplexId>> *getVertexNeighborsInternal();
+#endif
 
+#ifdef TTK_ENABLE_KAMIKAZE
+    int getVertexPoint(const SimplexId &vertexId,
+                               float &x,
+                               float &y,
+                               float &z) const;
+#else
     int getVertexPointInternal(const SimplexId &vertexId,
                                float &x,
                                float &y,
                                float &z) const;
+#endif
 
+#ifdef TTK_ENABLE_KAMIKAZE
+  int getVertexStar(const SimplexId &vertexId,
+                              const int &localStarId,
+                              SimplexId &starId) const;
+#else
     int getVertexStarInternal(const SimplexId &vertexId,
                               const int &localStarId,
                               SimplexId &starId) const;
+#endif
 
+#ifdef TTK_ENABLE_KAMIKAZE
+    SimplexId getVertexStarNumber(const SimplexId &vertexId) const;
+#else
     SimplexId getVertexStarNumberInternal(const SimplexId &vertexId) const;
+#endif
 
+#ifdef TTK_ENABLE_KAMIKAZE
+    const std::vector<std::vector<SimplexId>> *getVertexStars();
+#else
     const std::vector<std::vector<SimplexId>> *getVertexStarsInternal();
+#endif
 
     int getVertexTriangleInternal(const SimplexId &vertexId,
                                   const int &id,
@@ -356,15 +481,27 @@ namespace ttk {
 
     const std::vector<std::vector<SimplexId>> *getVertexTrianglesInternal();
 
+#ifdef TTK_ENABLE_KAMIKAZE
+    bool isEdgeOnBoundary(const SimplexId &edgeId) const;
+#else
     bool isEdgeOnBoundaryInternal(const SimplexId &edgeId) const;
+#endif
 
     bool isEmptyInternal() const {
       return !vertexNumber_;
     };
 
+#ifdef TTK_ENABLE_KAMIKAZE
+    bool isTriangleOnBoundary(const SimplexId &triangleId) const;
+#else    
     bool isTriangleOnBoundaryInternal(const SimplexId &triangleId) const;
+#endif
 
+#ifdef TTK_ENABLE_KAMIKAZE
+    bool isVertexOnBoundary(const SimplexId &vertexId) const;
+#else
     bool isVertexOnBoundaryInternal(const SimplexId &vertexId) const;
+#endif
 
     int setInputGrid(const float &xOrigin,
                      const float &yOrigin,

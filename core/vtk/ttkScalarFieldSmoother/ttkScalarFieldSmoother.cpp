@@ -198,39 +198,12 @@ int ttkScalarFieldSmoother::doIt(vector<vtkDataSet *> &inputs,
   smoother_.setMaskDataPointer(inputMaskPtr);
 
   // calling the smoothing package
-  Triangulation::Type triangulationType = triangulation->getType();
-
-  switch(triangulationType) {
-
-    case Triangulation::Type::EXPLICIT: {
-      ExplicitTriangulation *explicitTriangulation
-        = (ExplicitTriangulation *)triangulation->getData();
-      switch(inputScalarField->GetDataType()) {
-        vtkTemplateMacro((smoother_.smooth<VTK_TT, ExplicitTriangulation>(
-          explicitTriangulation, NumberOfIterations)));
-      }
-    } break;
-
-    case Triangulation::Type::IMPLICIT: {
-      ImplicitTriangulation *implicitTriangulation
-        = (ImplicitTriangulation *)triangulation->getData();
-      switch(inputScalarField->GetDataType()) {
-        vtkTemplateMacro((smoother_.smooth<VTK_TT, ImplicitTriangulation>(
-          implicitTriangulation, NumberOfIterations)));
-      }
-    } break;
-
-    case Triangulation::Type::PERIODIC: {
-      PeriodicImplicitTriangulation *periodicTriangulation
-        = (PeriodicImplicitTriangulation *)triangulation->getData();
-      switch(inputScalarField->GetDataType()) {
-        vtkTemplateMacro(
-          (smoother_.smooth<VTK_TT, PeriodicImplicitTriangulation>(
-            periodicTriangulation, NumberOfIterations)));
-      }
-    } break;
+  switch(triangulation->getType()){
+    ttkVtkTemplateMacro(inputScalarField->GetDataType(),
+      (smoother_.smooth<VTK_TT, TTK_TT>(
+        (TTK_TT *) triangulation->getData(), NumberOfIterations)));
   }
-
+    
   {
     stringstream msg;
     msg << "[ttkScalarFieldSmoother] Memory usage: " << m.getElapsedUsage()

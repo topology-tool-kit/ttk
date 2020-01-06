@@ -9,6 +9,23 @@
 
 #define TTK_COMMA ,
 
+#define ttkVtkTemplateMacroCase( \
+dataType, triangulationType, triangulationClass, call) \
+case triangulationType: { \
+  typedef triangulationClass TTK_TT; \
+  switch(dataType){ \
+    vtkTemplateMacro((call)); \
+  }; \
+}; break;
+
+#define ttkVtkTemplateMacro(dataType, call) \
+ttkVtkTemplateMacroCase( \
+dataType, Triangulation::Type::EXPLICIT, ExplicitTriangulation, call); \
+ttkVtkTemplateMacroCase( \
+dataType, Triangulation::Type::IMPLICIT, ImplicitTriangulation, call); \
+ttkVtkTemplateMacroCase(dataType, \
+Triangulation::Type::PERIODIC, PeriodicImplicitTriangulation, call); \
+
 #if VTK_MAJOR_VERSION <= 8
 #define vtkTemplate2Macro(call)                                             \
   vtkTemplate2MacroCase1(VTK_DOUBLE, double, call);                         \
