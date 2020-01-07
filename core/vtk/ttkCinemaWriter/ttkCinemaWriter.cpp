@@ -429,6 +429,7 @@ int ttkCinemaWriter::ProcessDataProduct(vtkDataObject *input) {
       imageWriter->SetInputData(inputAsID);
       imageWriter->Write();
     } else {
+      this->topologicalCompressionWriter->SetDebugLevel(this->debugLevel_);
       this->topologicalCompressionWriter->SetFileName(
         (this->DatabasePath + "/" + rDataProductPath).data());
       this->topologicalCompressionWriter->SetInputData(input);
