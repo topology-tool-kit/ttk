@@ -16,6 +16,8 @@
 #include <Geometry.h>
 #include <Wrapper.h>
 
+#include <array>
+
 #define ttkTemplateMacroCase(triangulationType, triangulationClass, call) \
   case triangulationType: {                                 \
     typedef triangulationClass TTK_TT;                        \
