@@ -7,3 +7,4 @@ HEADERS
 DEPENDS
   helloWorld
   ttkAlgorithm
+  ttkTriangulationAlgorithm
