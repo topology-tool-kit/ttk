@@ -21,13 +21,16 @@
     typedef triangulationClass TTK_TT;                        \
     call;                                       \
   }; break
-#define ttkTemplateMacro(call)                                   \
-  ttkTemplateMacroCase(                                          \
-    Triangulation::Type::EXPLICIT, ExplicitTriangulation, call); \
-  ttkTemplateMacroCase(                                          \
-    Triangulation::Type::IMPLICIT, ImplicitTriangulation, call); \
-  ttkTemplateMacroCase(                                          \
-    Triangulation::Type::PERIODIC, PeriodicImplicitTriangulation, call);
+
+#define ttkTemplateMacro(triangulationType, call)                          \
+  switch(triangulationType) {                                              \
+    ttkTemplateMacroCase(                                                  \
+      Triangulation::Type::EXPLICIT, ExplicitTriangulation, call);         \
+    ttkTemplateMacroCase(                                                  \
+      Triangulation::Type::IMPLICIT, ImplicitTriangulation, call);         \
+    ttkTemplateMacroCase(                                                  \
+      Triangulation::Type::PERIODIC, PeriodicImplicitTriangulation, call); \
+  }
 
 namespace ttk {
 
@@ -1813,7 +1816,7 @@ namespace ttk {
     /// any time performance measurement.
     /// \return Returns 0 upon success, negative values otherwise.
     /// \sa isEdgeOnBoundary()
-    inline int preconditionBoundaryEdges() {
+    virtual inline int preconditionBoundaryEdges() {
       preconditionEdges();
       preconditionBoundaryEdgesInternal();
       hasPreconditionedBoundaryEdges_ = true;
@@ -1833,7 +1836,7 @@ namespace ttk {
     /// any time performance measurement.
     /// \return Returns 0 upon success, negative values otherwise.
     /// \sa isTriangleOnBoundary()
-    inline int preconditionBoundaryTriangles() {
+    virtual inline int preconditionBoundaryTriangles() {
       hasPreconditionedBoundaryTriangles_ = true;
       preconditionTriangles();
       preconditionBoundaryTrianglesInternal();
@@ -1853,7 +1856,7 @@ namespace ttk {
     /// any time performance measurement.
     /// \return Returns 0 upon success, negative values otherwise.
     /// \sa isVertexOnBoundary()
-    inline int preconditionBoundaryVertices() {
+    virtual inline int preconditionBoundaryVertices() {
       hasPreconditionedBoundaryVertices_ = true;
       preconditionBoundaryVerticesInternal();
       return 0;
@@ -1874,7 +1877,7 @@ namespace ttk {
     /// \return Returns 0 upon success, negative values otherwise.
     /// \sa getCellEdge()
     /// \sa getCellEdgeNumber()
-    inline int preconditionCellEdges() {
+    virtual inline int preconditionCellEdges() {
 
       hasPreconditionedCellEdges_ = true;
 
@@ -1904,7 +1907,7 @@ namespace ttk {
     /// \sa getCellNeighbor()
     /// \sa getCellNeighbors()
     /// \sa getCellNeighborNumber()
-    inline int preconditionCellNeighbors() {
+    virtual inline int preconditionCellNeighbors() {
 
       hasPreconditionedCellNeighbors_ = true;
 
@@ -1930,7 +1933,7 @@ namespace ttk {
     /// \sa getCellTriangle()
     /// \sa getCellTriangles()
     /// \sa getCellTriangleNumber()
-    inline int preconditionCellTriangles() {
+    virtual inline int preconditionCellTriangles() {
 
       hasPreconditionedCellTriangles_ = true;
 
@@ -1964,7 +1967,7 @@ namespace ttk {
     /// \sa getEdges()
     /// \sa getEdgeVertex()
     /// \sa getNumberOfEdges()
-    inline int preconditionEdges() {
+    virtual inline int preconditionEdges() {
 
       hasPreconditionedEdges_ = true;
 
@@ -1990,7 +1993,7 @@ namespace ttk {
     /// \sa getEdgeLink()
     /// \sa getEdgeLinks()
     /// \sa getEdgeLinkNumber()
-    inline int preconditionEdgeLinks() {
+    virtual inline int preconditionEdgeLinks() {
 
       hasPreconditionedEdgeLinks_ = true;
 
@@ -2021,7 +2024,7 @@ namespace ttk {
     /// \sa getEdgeStar()
     /// \sa getEdgeStars()
     /// \sa getEdgeStarNumber()
-    inline int preconditionEdgeStars() {
+    virtual inline int preconditionEdgeStars() {
 
       hasPreconditionedEdgeStars_ = true;
 
@@ -2052,7 +2055,7 @@ namespace ttk {
     /// \sa getEdgeTriangle()
     /// \sa getEdgeTriangles()
     /// \sa getEdgeTriangleNumber()
-    inline int preconditionEdgeTriangles() {
+    virtual inline int preconditionEdgeTriangles() {
 
       hasPreconditionedEdgeTriangles_ = true;
 
@@ -2088,7 +2091,7 @@ namespace ttk {
     /// \sa getNumberOfTriangles()
     /// \sa getTriangles()
     /// \sa getTriangleVertex()
-    inline int preconditionTriangles() {
+    virtual inline int preconditionTriangles() {
 
       hasPreconditionedTriangles_ = true;
 
@@ -2121,7 +2124,7 @@ namespace ttk {
     /// \sa getTriangleEdge()
     /// \sa getTriangleEdges()
     /// \sa getTriangleEdgeNumber()
-    inline int preconditionTriangleEdges() {
+    virtual inline int preconditionTriangleEdges() {
 
       hasPreconditionedTriangleEdges_ = true;
 
@@ -2156,7 +2159,7 @@ namespace ttk {
     /// \sa getTriangleLink()
     /// \sa getTriangleLinks()
     /// \sa getTriangleLinkNumber()
-    inline int preconditionTriangleLinks() {
+    virtual inline int preconditionTriangleLinks() {
 
       hasPreconditionedTriangleLinks_ = true;
 
@@ -2187,7 +2190,7 @@ namespace ttk {
     /// \sa getTriangleStar()
     /// \sa getTriangleStars()
     /// \sa getTriangleStarNumber()
-    inline int preconditionTriangleStars() {
+    virtual inline int preconditionTriangleStars() {
 
       hasPreconditionedTriangleStars_ = true;
 
@@ -2219,7 +2222,7 @@ namespace ttk {
     /// \sa getVertexEdge()
     /// \sa getVertexEdges()
     /// \sa getVertexEdgeNumber()
-    inline int preconditionVertexEdges() {
+    virtual inline int preconditionVertexEdges() {
 
       hasPreconditionedVertexEdges_ = true;
 
@@ -2249,7 +2252,7 @@ namespace ttk {
     /// \sa getVertexLink()
     /// \sa getVertexLinks()
     /// \sa getVertexLinkNumber()
-    inline int preconditionVertexLinks() {
+    virtual inline int preconditionVertexLinks() {
 
       hasPreconditionedVertexLinks_ = true;
 
@@ -2275,7 +2278,7 @@ namespace ttk {
     /// \sa getVertexNeighbor()
     /// \sa getVertexNeighbors()
     /// \sa getVertexNeighborNumber()
-    inline int preconditionVertexNeighbors() {
+    virtual inline int preconditionVertexNeighbors() {
 
       hasPreconditionedVertexNeighbors_ = true;
 
@@ -2301,7 +2304,7 @@ namespace ttk {
     /// \sa getVertexStar()
     /// \sa getVertexStars()
     /// \sa getVertexStarNumber()
-    inline int preconditionVertexStars() {
+    virtual inline int preconditionVertexStars() {
 
       hasPreconditionedVertexStars_ = true;
 
@@ -2327,7 +2330,7 @@ namespace ttk {
     /// \sa getVertexTriangle()
     /// \sa getVertexTriangles()
     /// \sa getVertexTriangleNumber()
-    inline int preconditionVertexTriangles() {
+    virtual inline int preconditionVertexTriangles() {
 
       hasPreconditionedVertexTriangles_ = true;
 

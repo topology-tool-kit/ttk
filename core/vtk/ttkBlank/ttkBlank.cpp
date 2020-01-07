@@ -104,12 +104,11 @@ vtkStandardNewMacro(ttkBlank)
   ttk::Triangulation::Type triangulationType = triangulation->getType();
   int dataType = inputScalarField->GetDataType();
 
-  switch(triangulation->getType()){
-    ttkVtkTemplateMacro(inputScalarField->GetDataType(),
-      (blank_.execute<VTK_TT, TTK_TT>(
-        (TTK_TT *) triangulation->getData(), SomeIntegerArgument)));
-  }
-  
+  ttkVtkTemplateMacro(
+    triangulation->getType(), inputScalarField->GetDataType(),
+    (blank_.execute<VTK_TT, TTK_TT>(
+      (TTK_TT *)triangulation->getData(), SomeIntegerArgument)));
+
   {
     stringstream msg;
     msg << "[ttkBlank] Memory usage: " << m.getElapsedUsage() << " MB." << endl;

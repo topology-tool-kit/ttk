@@ -61,6 +61,8 @@
 #include <vtkSmartPointer.h>
 #include <vtkUnstructuredGrid.h>
 
+#include <macro.h>
+
 #include <ttkTriangulationAlgorithmModule.h>
 
 class TTKTRIANGULATIONALGORITHM_EXPORT ttkTriangulation : public ttk::Debug {

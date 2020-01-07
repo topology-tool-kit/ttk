@@ -50,7 +50,7 @@ namespace ttk {
       return 0;
     }
 
-    inline int setupTriangulation(Triangulation *triangulation) {
+    inline int setupTriangulation(AbstractTriangulation *triangulation) {
 
       // Pre-condition functions.
       if(triangulation) {
@@ -60,7 +60,7 @@ namespace ttk {
       return 0;
     }
 
-    template <class dataType, class TriangulationType = Triangulation>
+    template <class dataType, class TriangulationType = AbstractTriangulation>
     int smooth(const TriangulationType *triangulation,
                const int &numberOfIterations) const;
 
@@ -80,7 +80,7 @@ int ttk::ScalarFieldSmoother::smooth(const TriangulationType *triangulation,
   Timer t;
 
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(!triangulation_)
+  if(!triangulation)
     return -1;
   if(!dimensionNumber_)
     return -2;

@@ -198,12 +198,11 @@ int ttkScalarFieldSmoother::doIt(vector<vtkDataSet *> &inputs,
   smoother_.setMaskDataPointer(inputMaskPtr);
 
   // calling the smoothing package
-  switch(triangulation->getType()){
-    ttkVtkTemplateMacro(inputScalarField->GetDataType(),
-      (smoother_.smooth<VTK_TT, TTK_TT>(
-        (TTK_TT *) triangulation->getData(), NumberOfIterations)));
-  }
-    
+  ttkVtkTemplateMacro(
+    triangulation->getType(), inputScalarField->GetDataType(),
+    (smoother_.smooth<VTK_TT, TTK_TT>(
+      (TTK_TT *)triangulation->getData(), NumberOfIterations)));
+
   {
     stringstream msg;
     msg << "[ttkScalarFieldSmoother] Memory usage: " << m.getElapsedUsage()

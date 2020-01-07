@@ -2140,7 +2140,7 @@ int ImplicitTriangulation::getEdgeStar(const SimplexId &edgeId,
                                        const int &localStarId,
                                        SimplexId &starId) const {
 #else
-int ImplicitTriangulation::getEdgeStar(const SimplexId &edgeId,
+int ImplicitTriangulation::getEdgeStarInternal(const SimplexId &edgeId,
                                                const int &localStarId,
                                                SimplexId &starId) const {
   if(localStarId < 0 or localStarId >= getEdgeStarNumber(edgeId))

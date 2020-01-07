@@ -45,7 +45,8 @@ namespace ttk {
      *         Note: If the algorithm does not require a triangulation then
      *               this method can be deleted.
      */
-    int preconditionTriangulation(ttk::Triangulation *triangulation) const {
+    int preconditionTriangulation(
+      ttk::AbstractTriangulation *triangulation) const {
       return triangulation->preconditionVertexNeighbors();
     };
 
@@ -56,10 +57,11 @@ namespace ttk {
      *               method must be called after the triangulation has been
      *               preconditioned for the upcoming operations.
      */
-    template <class dataType>
+    template <class dataType,
+              class TriangulationType = ttk::AbstractTriangulation>
     int computeAverages(dataType *outputData,
                         const dataType *inputData,
-                        const ttk::Triangulation *triangulation) const {
+                        const TriangulationType *triangulation) const {
       // start global timer
       ttk::Timer globalTimer;
 

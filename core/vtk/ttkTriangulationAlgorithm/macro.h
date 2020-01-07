@@ -18,13 +18,15 @@ case triangulationType: { \
   }; \
 }; break;
 
-#define ttkVtkTemplateMacro(dataType, call) \
-ttkVtkTemplateMacroCase( \
-dataType, Triangulation::Type::EXPLICIT, ExplicitTriangulation, call); \
-ttkVtkTemplateMacroCase( \
-dataType, Triangulation::Type::IMPLICIT, ImplicitTriangulation, call); \
-ttkVtkTemplateMacroCase(dataType, \
-Triangulation::Type::PERIODIC, PeriodicImplicitTriangulation, call); \
+#define ttkVtkTemplateMacro(triangulationType, dataType, call)            \
+  switch(triangulationType) {                                             \
+    ttkVtkTemplateMacroCase(dataType, ttk::Triangulation::Type::EXPLICIT, \
+                            ttk::ExplicitTriangulation, call);            \
+    ttkVtkTemplateMacroCase(dataType, ttk::Triangulation::Type::IMPLICIT, \
+                            ttk::ImplicitTriangulation, call);            \
+    ttkVtkTemplateMacroCase(dataType, ttk::Triangulation::Type::PERIODIC, \
+                            ttk::PeriodicImplicitTriangulation, call);    \
+  }
 
 #if VTK_MAJOR_VERSION <= 8
 #define vtkTemplate2Macro(call)                                             \

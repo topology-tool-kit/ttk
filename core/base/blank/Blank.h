@@ -37,7 +37,7 @@ namespace ttk {
       /// setupTriangulation() from any time performance measurement.
       /// \param argment Dummy integer argument.
       /// \return Returns 0 upon success, negative values otherwise.
-      template <class dataType, class triangulationType = Triangulation>
+      template <class dataType, class triangulationType = AbstractTriangulation>
       int execute(const triangulationType *triangulation,
                   const int &argument) const;
 
@@ -104,7 +104,7 @@ namespace ttk {
       // must satisfy some pre-condition (see ttk::Triangulation for more
       // details). Such pre-condition functions are typically called from this
       // function.
-      inline int setupTriangulation(Triangulation *triangulation) {
+      inline int setupTriangulation(AbstractTriangulation *triangulation) {
 
         if(triangulation) {
 
