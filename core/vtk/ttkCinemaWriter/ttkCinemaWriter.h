@@ -14,9 +14,13 @@
 
 // VTK includes
 #include <ttkAlgorithm.h>
+#include <vtkNew.h>
 
 // VTK Module
 #include <ttkCinemaWriterModule.h>
+
+// TTK Writer
+#include <ttkTopologicalCompressionWriter.h>
 
 class TTKCINEMAWRITER_EXPORT ttkCinemaWriter : public ttkAlgorithm {
 
@@ -57,4 +61,5 @@ private:
   int CompressionLevel{5};
   bool IterateMultiBlock{true};
   int Mode{0};
+  vtkNew<ttkTopologicalCompressionWriter> topologicalCompressionWriter{};
 };

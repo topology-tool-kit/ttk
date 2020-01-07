@@ -22,7 +22,6 @@
 // product writers
 #include <vtkPNGWriter.h>
 #include <vtkXMLDataObjectWriter.h>
-#include <ttkTopologicalCompressionWriter.h>
 
 // file lock
 #include <boost/interprocess/sync/file_lock.hpp>
@@ -430,11 +429,10 @@ int ttkCinemaWriter::ProcessDataProduct(vtkDataObject *input) {
       imageWriter->SetInputData(inputAsID);
       imageWriter->Write();
     } else {
-      auto topologicalCompressionWriter = vtkSmartPointer<ttkTopologicalCompressionWriter>::New();
-      topologicalCompressionWriter->SetFileName(
+      this->topologicalCompressionWriter->SetFileName(
         (this->DatabasePath + "/" + rDataProductPath).data());
-      topologicalCompressionWriter->SetInputData( input );
-      topologicalCompressionWriter->WriteData();
+      this->topologicalCompressionWriter->SetInputData(input);
+      this->topologicalCompressionWriter->WriteData();
     }
 
     this->printMsg("Writing data product to disk", 1, t.getElapsedTime(),
