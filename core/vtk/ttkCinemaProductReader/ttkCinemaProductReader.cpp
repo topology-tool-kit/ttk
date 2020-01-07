@@ -53,6 +53,7 @@ vtkSmartPointer<vtkDataObject>
   ttkCinemaProductReader::readFileLocal(std::string pathToFile) {
 
   if(pathToFile.substr(pathToFile.length() - 4, 4).compare(".ttk") == 0) {
+    this->topologicalCompressionReader->SetDebugLevel(this->debugLevel_);
     return readFileLocal_(pathToFile, this->topologicalCompressionReader);
   } else if(pathToFile.substr(pathToFile.size() - 4) == ".tif"
             || pathToFile.substr(pathToFile.size() - 5) == ".tiff") {
