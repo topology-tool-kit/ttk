@@ -90,6 +90,12 @@ int ttkCinemaWriter::DeleteDatabase() {
 // =============================================================================
 int ttkCinemaWriter::ProcessDataProduct(vtkDataObject *input) {
 
+  // deal with multi-block inputs (no XML writer available)
+  if(input->GetDataObjectType() == VTK_MULTIBLOCK_DATA_SET) {
+    // take the first block only?
+    input = vtkMultiBlockDataSet::SafeDownCast(input)->GetBlock(0);
+  }
+
   // -------------------------------------------------------------------------
   // Get Correct Data Product Extension
   // -------------------------------------------------------------------------
