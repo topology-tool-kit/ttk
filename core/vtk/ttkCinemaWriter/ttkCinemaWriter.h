@@ -42,6 +42,29 @@ public:
 
   int DeleteDatabase();
 
+  // TopologicalCompressionWriter options
+#define TopoCompWriterGetSetMacro(NAME, TYPE)               \
+  void Set##NAME(const TYPE _arg) {                         \
+    this->topologicalCompressionWriter->Set##NAME(_arg);    \
+    this->Modified();                                       \
+  }                                                         \
+  TYPE Get##NAME() {                                        \
+    return this->topologicalCompressionWriter->Get##NAME(); \
+  }
+
+  TopoCompWriterGetSetMacro(ScalarField, std::string);
+  TopoCompWriterGetSetMacro(Tolerance, double);
+  TopoCompWriterGetSetMacro(MaximumError, double);
+  TopoCompWriterGetSetMacro(ZFPBitBudget, double);
+  TopoCompWriterGetSetMacro(ZFPOnly, bool);
+  TopoCompWriterGetSetMacro(CompressionType, int);
+  TopoCompWriterGetSetMacro(Subdivide, bool);
+  TopoCompWriterGetSetMacro(UseTopologicalSimplification, bool);
+
+  void SetSQMethodPV(const int arg) {
+    this->topologicalCompressionWriter->SetSQMethodPV(arg);
+  }
+
 protected:
   ttkCinemaWriter();
   ~ttkCinemaWriter();
