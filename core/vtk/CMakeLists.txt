@@ -22,10 +22,15 @@ foreach(TTK_MODULE ${TTK_PROVIDED_MODULES})
   endif()
 endforeach()
 
-vtk_module_build(
-  MODULES
-    ${TTK_ENABLED_MODULES}
-  )
+if(NOT ${TTK_BUILD_PARAVIEW_PLUGINS})
+  # when build against ParaView,
+  # vtk_module_build is already called
+  # by the paraview_add_plugin
+  vtk_module_build(
+    MODULES
+      ${TTK_ENABLED_MODULES}
+    )
+endif()
 
 if(VTK_WRAP_PYTHON)
   set(TTK_BUILD_VTK_PYTHON_MODULE
