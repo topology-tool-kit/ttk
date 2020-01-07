@@ -149,10 +149,6 @@ jobs:
     displayName: 'Configure TTK'
 
   - script: |
-      make ttkAlgorithm-hierarchy # TODO UGLY HOT FIX
-      make ttkIcoSphere-hierarchy # TODO UGLY HOT FIX
-      make ttkTopologicalCompressionWriter-hierarchy # TODO UGLY HOT FIX
-      make ttkTopologicalCompressionReader-hierarchy # TODO UGLY HOT FIX
       cmake --build . --target install -- -j 4
     workingDirectory: 'build/'
     displayName: 'Build and install TTK'
@@ -202,10 +198,7 @@ jobs:
     displayName: 'Configure TTK'
 
   - script: |
-      make ttkAlgorithm-hierarchy # TODO UGLY HOT FIX
-      make ttkIcoSphere-hierarchy # TODO UGLY HOT FIX
-      make ttkTopologicalCompressionWriter-hierarchy # TODO UGLY HOT FIX
-      make ttkTopologicalCompressionReader-hierarchy # TODO UGLY HOT FIX
+      # cmake --build . --target ttkAlgorithm-hierarchy ttkIcoSphere-hierarchy ttkTopologicalCompressionWriter-hierarchy ttkTopologicalCompressionReader-hierarchy # TODO UGLY HOT FIX
       cmake --build . --target install -- -j 4
     workingDirectory: 'build/'
     displayName: 'Build and install TTK'
@@ -285,10 +278,6 @@ jobs:
 
   - script: |
       $(compilerInitialization)
-      make ttkAlgorithm-hierarchy # TODO UGLY HOT FIX
-      make ttkIcoSphere-hierarchy # TODO UGLY HOT FIX
-      make ttkTopologicalCompressionWriter-hierarchy # TODO UGLY HOT FIX
-      make ttkTopologicalCompressionReader-hierarchy # TODO UGLY HOT FIX
       cmake --build . --target install
     workingDirectory: build/
     displayName: 'Build and install TTK'

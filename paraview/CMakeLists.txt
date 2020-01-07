@@ -54,12 +54,10 @@ paraview_plugin_build(
     "${PARAVIEW_PLUGIN_SUBDIR}"
   )
 
-if(NOT "${TTK_INSTALL_PLUGIN_DIR}" STREQUAL "")
-  install(
-    TARGETS
-      TTKPVTargets
-    DESTINATION
-      "${TTK_INSTALL_PLUGIN_DIR}"
-    )
-endif()
+install(
+  TARGETS
+    TTKPVTargets
+  DESTINATION
+    "${TTK_INSTALL_PLUGIN_DIR}"
+  )
 

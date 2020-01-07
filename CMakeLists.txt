@@ -93,13 +93,15 @@ if(TTK_BUILD_PARAVIEW_PLUGINS)
         "Directory where the ParaView plugin will be installed"
       )
   else()
-    message(WARNING "Please, set the PV_PLUGIN_PATH environement variable, the TTK ParaView plugin will be built but not installed.")
     set(TTK_INSTALL_PLUGIN_DIR
-      ""
+      ${CMAKE_INSTALL_LIBDIR}/ttk/paraview-plugin
       CACHE
       PATH
       "Directory where the ParaView plugin will be installed"
       )
+    message(WARNING "Please, set the PV_PLUGIN_PATH environement variable."
+      "Ths TTK ParaView plugin wil be installed in ${CMAKE_INSTALL_PREFIX}/${TTK_INSTALL_PLUGIN_DIR} "
+      "and needs to be loaded manually.")
   endif()
 
   add_subdirectory(paraview)
