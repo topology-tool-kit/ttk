@@ -8,7 +8,6 @@ ScalarFieldSmoother::ScalarFieldSmoother() {
   outputData_ = nullptr;
   dimensionNumber_ = 1;
   mask_ = nullptr;
-  triangulation_ = nullptr;
 }
 
 ScalarFieldSmoother::~ScalarFieldSmoother() {

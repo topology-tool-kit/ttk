@@ -50,38 +50,37 @@ namespace ttk {
       return 0;
     }
 
-    inline int setupTriangulation(Triangulation *triangulation) {
-
-      triangulation_ = triangulation;
+    inline int setupTriangulation(AbstractTriangulation *triangulation) {
 
       // Pre-condition functions.
-      if(triangulation_) {
-        triangulation_->preconditionVertexNeighbors();
+      if(triangulation) {
+        triangulation->preconditionVertexNeighbors();
       }
 
       return 0;
     }
 
-    template <class dataType>
-    int smooth(const int &numberOfIterations) const;
+    template <class dataType, class TriangulationType = AbstractTriangulation>
+    int smooth(const TriangulationType *triangulation,
+               const int &numberOfIterations) const;
 
   protected:
     int dimensionNumber_;
     void *inputData_, *outputData_;
     char *mask_;
-    Triangulation *triangulation_;
   };
 
 } // namespace ttk
 
 // template functions
-template <class dataType>
-int ttk::ScalarFieldSmoother::smooth(const int &numberOfIterations) const {
+template <class dataType, class TriangulationType>
+int ttk::ScalarFieldSmoother::smooth(const TriangulationType *triangulation,
+                                     const int &numberOfIterations) const {
 
   Timer t;
 
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(!triangulation_)
+  if(!triangulation)
     return -1;
   if(!dimensionNumber_)
     return -2;
@@ -93,7 +92,7 @@ int ttk::ScalarFieldSmoother::smooth(const int &numberOfIterations) const {
 
   int count = 0;
 
-  SimplexId vertexNumber = triangulation_->getNumberOfVertices();
+  SimplexId vertexNumber = triangulation->getNumberOfVertices();
 
   std::vector<dataType> tmpData(vertexNumber * dimensionNumber_, 0);
 
@@ -124,10 +123,10 @@ int ttk::ScalarFieldSmoother::smooth(const int &numberOfIterations) const {
         for(int j = 0; j < dimensionNumber_; j++) {
           tmpData[dimensionNumber_ * i + j] = 0;
 
-          SimplexId neighborNumber = triangulation_->getVertexNeighborNumber(i);
+          SimplexId neighborNumber = triangulation->getVertexNeighborNumber(i);
           for(SimplexId k = 0; k < neighborNumber; k++) {
             SimplexId neighborId = -1;
-            triangulation_->getVertexNeighbor(i, k, neighborId);
+            triangulation->getVertexNeighbor(i, k, neighborId);
             tmpData[dimensionNumber_ * i + j]
               += outputData[dimensionNumber_ * (neighborId) + j];
           }

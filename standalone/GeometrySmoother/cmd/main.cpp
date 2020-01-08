@@ -25,7 +25,11 @@ public:
     smoother->setDimensionNumber(3);
     smoother->setInputDataPointer(pointSet_.data());
     smoother->setOutputDataPointer(pointSet_.data());
-    smoother->smooth<float>(iterationNumber_);
+
+    // template call based on the triangulation type
+    ttkTemplateMacro(triangleMesh_.getType(),
+                     (smoother->smooth<float, TTK_TT>(
+                       (TTK_TT *)triangleMesh_.getData(), iterationNumber_)));
 
     return 0;
   }
