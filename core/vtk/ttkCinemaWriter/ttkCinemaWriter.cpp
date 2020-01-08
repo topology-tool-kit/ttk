@@ -435,10 +435,34 @@ int ttkCinemaWriter::ProcessDataProduct(vtkDataObject *input) {
       imageWriter->SetInputData(inputAsID);
       imageWriter->Write();
     } else {
+      // Topological Compression
+      if(!input->IsA("vtkImageData")) {
+        vtkErrorMacro(
+          "Cannot use Topological Compression without a vtkImageData");
+        return 0;
+      }
+
+      // Fetch the scalar field array on which to perform Topological
+      // Compression
+      const auto ScalarFieldName
+        = this->topologicalCompressionWriter->GetScalarField();
+      if(ScalarFieldName.empty()) {
+        vtkErrorMacro("Need a scalar field for Topological Compression");
+        return 0;
+      }
+      const auto inputData = vtkImageData::SafeDownCast(input);
+      const auto ScalarField
+        = inputData->GetPointData()->GetArray(ScalarFieldName.data());
+
+      // Check that input scalar field is indeed scalar
+      if(ScalarField->GetNumberOfComponents() != 1) {
+        vtkErrorMacro("Input scalar field should have only 1 component");
+        return 0;
+      }
       this->topologicalCompressionWriter->SetDebugLevel(this->debugLevel_);
       this->topologicalCompressionWriter->SetFileName(
         (this->DatabasePath + "/" + rDataProductPath).data());
-      this->topologicalCompressionWriter->SetInputData(input);
+      this->topologicalCompressionWriter->SetInputData(inputData);
       this->topologicalCompressionWriter->WriteData();
     }
 
