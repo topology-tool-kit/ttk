@@ -60,6 +60,7 @@ namespace ttk {
       if(triangulation_ != nullptr) {
         vertexNumber_ = triangulation_->getNumberOfVertices();
         triangulation_->preconditionVertexNeighbors();
+        triangulation_->preconditionEdges();
         edgeNumber_ = triangulation_->getNumberOfEdges();
       }
       if(useCotanWeights_) {
