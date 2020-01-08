@@ -36,13 +36,9 @@ namespace ttk {
 
     inline void preconditionTriangulation(Triangulation *triangulation) const {
       if(triangulation != nullptr) {
-        if(!triangulation->hasPreconditionedVertexNeighbors()) {
-          triangulation->preconditionVertexNeighbors();
-        }
+        triangulation->preconditionVertexNeighbors();
         // cotan weights method needs more pre-processing
-        if(!triangulation->hasPreconditionedEdgeTriangles()) {
-          triangulation->preconditionEdgeTriangles();
-        }
+        triangulation->preconditionEdgeTriangles();
       }
     }
 
