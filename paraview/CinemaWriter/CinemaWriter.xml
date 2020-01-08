@@ -42,7 +42,7 @@ NOTE:
                     <Entry value="1" text="PNG Image"/>
                     <Entry value="2" text="TTK Compression"/>
                 </EnumerationDomain>
-                <Documentation>Store input as VTK file or PNG image.</Documentation>
+                <Documentation>Store input as VTK file, a PNG image or a TTK compressed file.</Documentation>
             </IntVectorProperty>
 
             <IntVectorProperty name="IterateMultiBlock" label="Iterate MultiBlock" command="SetIterateMultiBlock" number_of_elements="1" default_values="0">
