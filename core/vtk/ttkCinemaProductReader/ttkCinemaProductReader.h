@@ -22,10 +22,12 @@
 // VTK includes
 #include <ttkAlgorithm.h>
 
-#include <vtkGenericDataObjectReader.h>
-#include <vtkSmartPointer.h>
-#include <vtkXMLGenericDataObjectReader.h>
 #include <ttkTopologicalCompressionReader.h>
+#include <vtkGenericDataObjectReader.h>
+#include <vtkNew.h>
+#include <vtkSmartPointer.h>
+#include <vtkTIFFReader.h>
+#include <vtkXMLGenericDataObjectReader.h>
 
 class TTKCINEMAPRODUCTREADER_EXPORT ttkCinemaProductReader
   : public ttkAlgorithm {
@@ -58,14 +60,14 @@ private:
   bool AddFieldDataRecursively{true};
 
   // TTK READER
-  vtkSmartPointer<ttkTopologicalCompressionReader> ttkTopologicalCompressionReader_
-    = vtkSmartPointer<ttkTopologicalCompressionReader>::New();
+  vtkNew<ttkTopologicalCompressionReader> topologicalCompressionReader{};
+
+  // TIFF READER
+  vtkNew<vtkTIFFReader> tiffReader{};
 
   // LOCAL-LEGACY && REMOTE-LEGACY
-  vtkSmartPointer<vtkGenericDataObjectReader> genericDataObjectReader
-    = vtkSmartPointer<vtkGenericDataObjectReader>::New();
+  vtkNew<vtkGenericDataObjectReader> genericDataObjectReader{};
 
   // LOCAL-XML
-  vtkSmartPointer<vtkXMLGenericDataObjectReader> xmlGenericDataObjectReader
-    = vtkSmartPointer<vtkXMLGenericDataObjectReader>::New();
+  vtkNew<vtkXMLGenericDataObjectReader> xmlGenericDataObjectReader{};
 };

@@ -14,9 +14,13 @@
 
 // VTK includes
 #include <ttkAlgorithm.h>
+#include <vtkNew.h>
 
 // VTK Module
 #include <ttkCinemaWriterModule.h>
+
+// TTK Writer
+#include <ttkTopologicalCompressionWriter.h>
 
 class TTKCINEMAWRITER_EXPORT ttkCinemaWriter : public ttkAlgorithm {
 
@@ -38,6 +42,29 @@ public:
 
   int DeleteDatabase();
 
+  // TopologicalCompressionWriter options
+#define TopoCompWriterGetSetMacro(NAME, TYPE)               \
+  void Set##NAME(const TYPE _arg) {                         \
+    this->topologicalCompressionWriter->Set##NAME(_arg);    \
+    this->Modified();                                       \
+  }                                                         \
+  TYPE Get##NAME() {                                        \
+    return this->topologicalCompressionWriter->Get##NAME(); \
+  }
+
+  TopoCompWriterGetSetMacro(ScalarField, std::string);
+  TopoCompWriterGetSetMacro(Tolerance, double);
+  TopoCompWriterGetSetMacro(MaximumError, double);
+  TopoCompWriterGetSetMacro(ZFPBitBudget, double);
+  TopoCompWriterGetSetMacro(ZFPOnly, bool);
+  TopoCompWriterGetSetMacro(CompressionType, int);
+  TopoCompWriterGetSetMacro(Subdivide, bool);
+  TopoCompWriterGetSetMacro(UseTopologicalSimplification, bool);
+
+  void SetSQMethodPV(const int arg) {
+    this->topologicalCompressionWriter->SetSQMethodPV(arg);
+  }
+
 protected:
   ttkCinemaWriter();
   ~ttkCinemaWriter();
@@ -57,4 +84,5 @@ private:
   int CompressionLevel{5};
   bool IterateMultiBlock{true};
   int Mode{0};
+  vtkNew<ttkTopologicalCompressionWriter> topologicalCompressionWriter{};
 };

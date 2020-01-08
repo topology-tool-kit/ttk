@@ -17,20 +17,20 @@
 vtkStandardNewMacro(ttkCinemaQuery);
 
 ttkCinemaQuery::ttkCinemaQuery() {
-  this->SetNumberOfInputPorts(5);
+  this->SetNumberOfInputPorts(1);
   this->SetNumberOfOutputPorts(1);
 }
 ttkCinemaQuery::~ttkCinemaQuery() {
 }
 
 int ttkCinemaQuery::FillInputPortInformation(int port, vtkInformation *info) {
-  if(port < 0 || port > 4)
-    return 0;
+  if(port == 0) {
+    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkTable");
+    info->Set(vtkAlgorithm::INPUT_IS_REPEATABLE(), 1);
 
-  info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkTable");
-  info->Set(vtkAlgorithm::INPUT_IS_OPTIONAL(), 1);
-
-  return 1;
+    return 1;
+  }
+  return 0;
 }
 
 int ttkCinemaQuery::FillOutputPortInformation(int port, vtkInformation *info) {
@@ -51,7 +51,13 @@ int ttkCinemaQuery::RequestData(vtkInformation *request,
 
   // ===========================================================================
   // Convert Input Tables to SQL Tables
-  auto firstTable = vtkTable::GetData(inputVector[0]);
+  auto nTables = inputVector[0]->GetNumberOfInformationObjects();
+  std::vector<vtkTable *> inTables(nTables);
+  for(int i = 0; i < nTables; ++i) {
+    inTables[i] = vtkTable::GetData(inputVector[0], i);
+  }
+
+  auto firstTable = inTables[0];
 
   std::vector<std::string> sqlTableDefinitions;
   std::vector<std::string> sqlInsertStatements;
@@ -60,12 +66,8 @@ int ttkCinemaQuery::RequestData(vtkInformation *request,
     this->printMsg("Converting input VTK tables to SQL tables", 0,
                    ttk::debug::LineMode::REPLACE);
 
-    for(size_t port = 0; port < 5; port++) {
-      auto inVector = inputVector[port];
-      if(inVector->GetNumberOfInformationObjects() != 1)
-        continue;
-
-      auto inTable = vtkTable::GetData(inputVector[port]);
+    for(size_t i = 0; i < nTables; i++) {
+      auto inTable = inTables[i];
 
       size_t nc = inTable->GetNumberOfColumns();
       size_t nr = inTable->GetNumberOfRows();
@@ -74,7 +76,7 @@ int ttkCinemaQuery::RequestData(vtkInformation *request,
       // -----------------------------------------------------------------------
       // Table Definition
       std::string sqlTableDefinition
-        = "CREATE TABLE InputTable" + std::to_string(port) + " (";
+        = "CREATE TABLE InputTable" + std::to_string(i) + " (";
       for(size_t i = 0; i < nc; i++) {
         auto c = inTable->GetColumn(i);
         isNumeric[i] = c->IsNumeric();
@@ -89,7 +91,7 @@ int ttkCinemaQuery::RequestData(vtkInformation *request,
       size_t q = 0;
       while(q < nr) {
         std::string sqlInsertStatement
-          = "INSERT INTO InputTable" + std::to_string(port) + " VALUES ";
+          = "INSERT INTO InputTable" + std::to_string(i) + " VALUES ";
         for(size_t j = 0; j < 500 && q < nr; j++) {
           if(j > 0)
             sqlInsertStatement += ",";
@@ -154,10 +156,7 @@ int ttkCinemaQuery::RequestData(vtkInformation *request,
     ttk::Timer conversionTimer;
 
     this->printMsg(
-        "Converting SQL result to VTK table",
-        0,
-        ttk::debug::LineMode::REPLACE
-    );
+      "Converting SQL result to VTK table", 0, ttk::debug::LineMode::REPLACE);
 
     auto reader = vtkSmartPointer<vtkDelimitedTextReader>::New();
     reader->SetReadFromInputString(true);
@@ -170,8 +169,7 @@ int ttkCinemaQuery::RequestData(vtkInformation *request,
     outTable->ShallowCopy(reader->GetOutput());
 
     auto outFD = outTable->GetFieldData();
-    for(size_t port = 0; port < 5; port++) {
-      auto inTable = vtkTable::GetData(inputVector[port]);
+    for(const auto inTable : inTables) {
       if(!inTable)
         continue;
       auto inFD = inTable->GetFieldData();

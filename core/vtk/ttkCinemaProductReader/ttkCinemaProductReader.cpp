@@ -36,13 +36,15 @@ int ttkCinemaProductReader::FillOutputPortInformation(int port,
 }
 
 template <class readerT>
-vtkSmartPointer<vtkDataObject> readFileLocal_(std::string pathToFile, vtkSmartPointer<readerT>& reader){
+vtkSmartPointer<vtkDataObject> readFileLocal_(std::string pathToFile,
+                                              vtkNew<readerT> &reader) {
   reader->SetFileName(pathToFile.data());
   reader->Update();
   if(reader->GetErrorCode() != 0)
     return nullptr;
 
-  auto result = vtkSmartPointer<vtkDataObject>::Take( reader->GetOutput()->NewInstance() );
+  auto result
+    = vtkSmartPointer<vtkDataObject>::Take(reader->GetOutput()->NewInstance());
   result->ShallowCopy(reader->GetOutput());
   return result;
 }
@@ -50,8 +52,12 @@ vtkSmartPointer<vtkDataObject> readFileLocal_(std::string pathToFile, vtkSmartPo
 vtkSmartPointer<vtkDataObject>
   ttkCinemaProductReader::readFileLocal(std::string pathToFile) {
 
-  if(pathToFile.substr(pathToFile.length()-4,4).compare(".ttk")==0){
-    return readFileLocal_(pathToFile, this->ttkTopologicalCompressionReader_);
+  if(pathToFile.substr(pathToFile.length() - 4, 4).compare(".ttk") == 0) {
+    this->topologicalCompressionReader->SetDebugLevel(this->debugLevel_);
+    return readFileLocal_(pathToFile, this->topologicalCompressionReader);
+  } else if(pathToFile.substr(pathToFile.size() - 4) == ".tif"
+            || pathToFile.substr(pathToFile.size() - 5) == ".tiff") {
+    return readFileLocal_(pathToFile, this->tiffReader);
   } else {
     // Check if dataset is XML encoded
     ifstream is(pathToFile.data());
@@ -138,7 +144,7 @@ int ttkCinemaProductReader::RequestData(vtkInformation *request,
         }
 
         auto readerOutput = this->readFileLocal(path);
-        if(!readerOutput){
+        if(!readerOutput) {
           this->printErr("Unable to read file.");
           return 0;
         }

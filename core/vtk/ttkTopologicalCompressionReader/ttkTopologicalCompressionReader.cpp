@@ -89,9 +89,6 @@ int ttkTopologicalCompressionReader::RequestData(
   if(FileName == nullptr) {
     return 1;
   }
-  if(fp != nullptr) {
-    return 1;
-  }
   fp = fopen(FileName, "rb"); // binary mode
   if(fp == nullptr) {
     return 1;
