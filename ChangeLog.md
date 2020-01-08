@@ -3,6 +3,9 @@
 ### ttk.git
 - Support for ParaView-5.7.0 \0/
 - New branching management
+- New templated triangulation API (up to x2 speedup)
+- New debugging API
+- New module API (simpler, clearer, more convenient)
 
 
 ### 0.9.8.9
