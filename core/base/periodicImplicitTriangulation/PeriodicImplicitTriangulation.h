@@ -460,6 +460,7 @@ namespace ttk {
       std::array<std::array<float, 3>, vertexId.size()> p;
       std::array<std::array<SimplexId, 3>, vertexId.size()> ind;
       for(int i = 0; i < (int)vertexId.size(); ++i) {
+        for(int j = 0; j < 3; j++) p[i][j] = 0;
         getVertexPointInternal(vertexId[i], p[i][0], p[i][1], p[i][2]);
         ind[i] = vertexToPositionNd(vertexId[i]);
       }
@@ -535,6 +536,7 @@ namespace ttk {
 
       std::array<SimplexId, 4> vertexId;
       for(int i = 0; i < (int)vertexId.size(); ++i) {
+        vertexId[i] = -1;
         getCellVertexInternal(tetraId, i, vertexId[i]);
       }
 
