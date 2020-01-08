@@ -4,7 +4,7 @@
         <SourceProxy name="CinemaQuery" class="ttkCinemaQuery" label="TTK CinemaQuery">
             <Documentation long_help="TTK CinemaQuery" short_help="TTK CinemaQuery">This filter evaluates a SQL statement on multiple InputTables.</Documentation>
 
-            <InputProperty name="InputTable0" port_index="0" command="SetInputConnection">
+            <InputProperty name="InputTable" command="AddInputConnection" multiple_input="1">
                 <ProxyGroupDomain name="groups">
                     <Group name="sources" />
                     <Group name="filters" />
@@ -12,60 +12,7 @@
                 <DataTypeDomain name="input_type">
                     <DataType value="vtkTable" />
                 </DataTypeDomain>
-                <Documentation>'InputTable0' in SQL statement.</Documentation>
-            </InputProperty>
-
-            <InputProperty name="InputTable1" port_index="1" command="SetInputConnection">
-                <ProxyGroupDomain name="groups">
-                    <Group name="sources" />
-                    <Group name="filters" />
-                </ProxyGroupDomain>
-                <DataTypeDomain name="input_type">
-                    <DataType value="vtkTable" />
-                </DataTypeDomain>
-                <Documentation>'InputTable1' in SQL statement.</Documentation>
-                <Hints>
-                    <Optional />
-                </Hints>
-            </InputProperty>
-            <InputProperty name="InputTable2" port_index="2" command="SetInputConnection">
-                <ProxyGroupDomain name="groups">
-                    <Group name="sources" />
-                    <Group name="filters" />
-                </ProxyGroupDomain>
-                <DataTypeDomain name="input_type">
-                    <DataType value="vtkTable" />
-                </DataTypeDomain>
-                <Documentation>'InputTable2' in SQL statement.</Documentation>
-                <Hints>
-                    <Optional />
-                </Hints>
-            </InputProperty>
-            <InputProperty name="InputTable3" port_index="3" command="SetInputConnection">
-                <ProxyGroupDomain name="groups">
-                    <Group name="sources" />
-                    <Group name="filters" />
-                </ProxyGroupDomain>
-                <DataTypeDomain name="input_type">
-                    <DataType value="vtkTable" />
-                </DataTypeDomain>
-                <Documentation>'InputTable3' in SQL statement.</Documentation>
-                <Hints>
-                    <Optional />
-                </Hints>
-            </InputProperty>
-            <InputProperty name="InputTable4" port_index="4" command="SetInputConnection">
-                <ProxyGroupDomain name="groups">
-                    <Group name="sources" />
-                    <Group name="filters" />
-                </ProxyGroupDomain>
-                <DataTypeDomain name="input_type">
-                    <DataType value="vtkTable" />
-                </DataTypeDomain>
-                <Documentation>'InputTable4' in SQL statement.</Documentation>
-                <Hints>
-                    <Optional />
-                </Hints>
+                <Documentation>Input vtkTables to run the SQL statement on.</Documentation>
             </InputProperty>
 
             <StringVectorProperty name="SQLStatement" label="SQL Statement" command="SetSQLStatement" number_of_elements="1" default_values="SELECT * FROM InputTable0">
