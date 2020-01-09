@@ -4,7 +4,7 @@
         <SourceProxy name="CinemaQuery" class="ttkCinemaQuery" label="TTK CinemaQuery">
             <Documentation long_help="TTK CinemaQuery" short_help="TTK CinemaQuery">This filter evaluates a SQL statement on multiple InputTables.</Documentation>
 
-            <InputProperty name="InputTable" command="AddInputConnection" multiple_input="1">
+            <InputProperty clean_command="RemoveAllInputs" name="InputTable" command="AddInputConnection" multiple_input="1">
                 <ProxyGroupDomain name="groups">
                     <Group name="sources" />
                     <Group name="filters" />
