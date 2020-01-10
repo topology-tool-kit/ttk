@@ -5,4 +5,4 @@ SOURCES
 HEADERS
   ttkCinemaReader.h
 DEPENDS
-  ttkTriangulationAlgorithm
+  ttkAlgorithm

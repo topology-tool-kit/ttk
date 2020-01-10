@@ -1,7 +1,4 @@
 NAME
- ttkMeshGraph
+  ttkMeshGraph
 DEPENDS
-  VTK::FiltersCore
-PRIVATE_DEPENDS
-  VTK::CommonCore
-
+  ttkAlgorithm

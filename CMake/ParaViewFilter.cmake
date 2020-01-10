@@ -2,32 +2,8 @@
 # deduce the location of the corresonding vtk.module file
 # also register the xml file if given
 
-set(DEBUG_WIDGETS "\
-<IntVectorProperty name='Debug_UseAllCores' label='Use All Cores' command='SetUseAllCores' number_of_elements='1' default_values='1' panel_visibility='advanced'>\
-    <BooleanDomain name='bool' />\
-    <Documentation>Use all available cores.</Documentation>\
-</IntVectorProperty>\
-<IntVectorProperty name='Debug_ThreadNumber' label='Thread Number' command='SetThreadNumber' number_of_elements='1' default_values='1' panel_visibility='advanced'>\
-    <IntRangeDomain name='range' min='1' max='256' />\
-    <Hints>\
-        <PropertyWidgetDecorator type='GenericDecorator' mode='visibility' property='Debug_UseAllCores' value='0' />\
-    </Hints>\
-    <Documentation>The maximum number of threads.</Documentation>\
-</IntVectorProperty>\
-<IntVectorProperty name='Debug_DebugLevel' label='Debug Level' command='SetDebugLevel' number_of_elements='1' default_values='3' panel_visibility='advanced'>\
-    <IntRangeDomain name='range' min='0' max='5' />\
-    <Documentation>Debug level.</Documentation>\
-</IntVectorProperty>\
-<Property name='Debug_Execute' label='Execute' command='Modified' panel_widget='command_button'>\
-    <Documentation>Executes the filter with the last applied parameters, which is handy to re-start pipeline execution from a specific element without changing parameters.</Documentation>\
-</Property>\
-<PropertyGroup panel_widget='Line' label='Testing'>\
-    <Property name='Debug_UseAllCores' />\
-    <Property name='Debug_ThreadNumber' />\
-    <Property name='Debug_DebugLevel' />\
-    <Property name='Debug_Execute' />\
-</PropertyGroup>\
-")
+file(READ "CMake/debug_widgets.xml" DEBUG_WIDGETS)
+file(READ "CMake/topological_compression.xml" TOPOLOGICAL_COMPRESSION_WIDGETS)
 
 macro(ttk_register_pv_filter vtkModuleDir xmlFile)
   if(NOT EXISTS "${VTKWRAPPER_DIR}/${vtkModuleDir}/vtk.module")

@@ -6,4 +6,4 @@ HEADERS
   ttkCinemaQuery.h
 DEPENDS
   cinemaQuery
-  ttkTriangulationAlgorithm
+  ttkAlgorithm

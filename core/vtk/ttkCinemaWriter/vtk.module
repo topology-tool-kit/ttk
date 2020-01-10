@@ -1,9 +1,5 @@
 NAME
- ttkCinemaWriter
+  ttkCinemaWriter
 DEPENDS
-  VTK::FiltersCore
-  VTK::IOInfovis
-  VTK::IOParallelXML
-PRIVATE_DEPENDS
-  VTK::CommonCore
-
+  ttkAlgorithm
+  ttkTopologicalCompressionWriter
