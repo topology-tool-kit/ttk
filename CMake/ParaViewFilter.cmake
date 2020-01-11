@@ -19,6 +19,7 @@ macro(ttk_register_pv_filter vtkModuleDir xmlFile)
   ttk_get_target(${TTK_NAME} TTK_TARGET)
   if(NOT "${TTK_TARGET}" STREQUAL "")
     list(APPEND TTK_MODULES ${TTK_TARGET})
+    list(APPEND TTK_VTK_MODULE_FILES ${VTKWRAPPER_DIR}/${vtkModuleDir}/vtk.module)
     if(NOT "${xmlFile}" STREQUAL "")
 
       # replace variables of original XML file and store generated file in build dir
