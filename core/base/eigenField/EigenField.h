@@ -17,15 +17,6 @@
 #include <Laplacian.h>
 #include <Triangulation.h>
 
-#if defined(TTK_ENABLE_EIGEN) && defined(TTK_ENABLE_SPECTRA)
-#include <Eigen/Eigenvalues>
-#include <Eigen/Sparse>
-
-#include <Spectra/MatOp/SparseSymMatProd.h>
-#include <Spectra/SymEigsSolver.h>
-
-#endif // TTK_ENABLE_EIGEN && TTK_ENABLE_SPECTRA
-
 namespace ttk {
 
   class EigenField : virtual public Debug {
