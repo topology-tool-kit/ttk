@@ -491,7 +491,6 @@ between matched critical points.
       <OutputPort name="Cluster Centroids" index="1" id="port1" />
       <OutputPort name="Matchings" index="2" id="port2" />
       <OutputPort name="Diagrams Distance" index="3" id="port3" />
-      <OutputPort name="Centroids Distance" index="4" id="port3" />
 
 
       <Hints>

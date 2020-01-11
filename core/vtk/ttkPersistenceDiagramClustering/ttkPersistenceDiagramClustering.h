@@ -369,7 +369,6 @@ private:
            vtkUnstructuredGrid *outputCentroids,
            vtkUnstructuredGrid *outputMatchings,
            vtkTable *diagramsDistTable,
-           vtkTable *centroidsDistTable,
            int numInputs);
 
   bool needsToAbort() override;
