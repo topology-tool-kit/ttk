@@ -43,6 +43,7 @@
 #include <vtkIntArray.h>
 #include <vtkMultiBlockDataSet.h>
 #include <vtkMultiBlockDataSetAlgorithm.h>
+#include <vtkNew.h>
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
 #include <vtkSmartPointer.h>

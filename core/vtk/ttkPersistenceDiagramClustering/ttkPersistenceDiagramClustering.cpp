@@ -425,34 +425,29 @@ vtkSmartPointer<vtkUnstructuredGrid>
     std::cout << "[ttkPersistenceDiagramClustering] Creating vtk diagrams"
               << std::endl;
   }
-  vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+  vtkNew<vtkPoints> points{};
 
-  vtkSmartPointer<vtkUnstructuredGrid> persistenceDiagram
-    = vtkSmartPointer<vtkUnstructuredGrid>::New();
+  vtkNew<vtkUnstructuredGrid> persistenceDiagram{};
 
-  vtkSmartPointer<vtkIntArray> nodeType = vtkSmartPointer<vtkIntArray>::New();
+  vtkNew<vtkIntArray> nodeType{};
   nodeType->SetName("CriticalType");
 
-  vtkSmartPointer<vtkDoubleArray> persistenceScalars
-    = vtkSmartPointer<vtkDoubleArray>::New();
+  vtkNew<vtkDoubleArray> persistenceScalars{};
   persistenceScalars->SetName("Persistence");
 
-  vtkSmartPointer<vtkIntArray> idOfPair = vtkSmartPointer<vtkIntArray>::New();
+  vtkNew<vtkIntArray> idOfPair{};
   idOfPair->SetName("PairID");
 
-  vtkSmartPointer<vtkDoubleArray> persistenceScalarsPoint
-    = vtkSmartPointer<vtkDoubleArray>::New();
+  vtkNew<vtkDoubleArray> persistenceScalarsPoint{};
   persistenceScalarsPoint->SetName("Persistence");
 
-  vtkSmartPointer<vtkIntArray> idOfDiagramPoint
-    = vtkSmartPointer<vtkIntArray>::New();
+  vtkNew<vtkIntArray> idOfDiagramPoint{};
   idOfDiagramPoint->SetName("ClusterID");
 
-  vtkSmartPointer<vtkIntArray> pairType = vtkSmartPointer<vtkIntArray>::New();
+  vtkNew<vtkIntArray> pairType{};
   pairType->SetName("PairType");
 
-  vtkSmartPointer<vtkFloatArray> coordsScalars
-    = vtkSmartPointer<vtkFloatArray>::New();
+  vtkNew<vtkFloatArray> coordsScalars{};
   coordsScalars->SetNumberOfComponents(3);
   coordsScalars->SetName("Coordinates");
 
@@ -586,42 +581,36 @@ vtkSmartPointer<vtkUnstructuredGrid>
     std::cout << "[ttkPersistenceDiagramClustering] Creating vtk Outputs"
               << std::endl;
   }
-  vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+  vtkNew<vtkPoints> points{};
 
-  vtkSmartPointer<vtkUnstructuredGrid> persistenceDiagram
-    = vtkSmartPointer<vtkUnstructuredGrid>::New();
+  vtkNew<vtkUnstructuredGrid> persistenceDiagram{};
 
-  vtkSmartPointer<vtkIntArray> nodeType = vtkSmartPointer<vtkIntArray>::New();
+  vtkNew<vtkIntArray> nodeType{};
   nodeType->SetName("CriticalType");
 
-  vtkSmartPointer<vtkDoubleArray> persistenceScalars
-    = vtkSmartPointer<vtkDoubleArray>::New();
+  vtkNew<vtkDoubleArray> persistenceScalars{};
   persistenceScalars->SetName("Persistence");
 
-  vtkSmartPointer<vtkIntArray> idOfPair = vtkSmartPointer<vtkIntArray>::New();
+  vtkNew<vtkIntArray> idOfPair{};
   idOfPair->SetName("PairID");
 
-  vtkSmartPointer<vtkDoubleArray> persistenceScalarsPoint
-    = vtkSmartPointer<vtkDoubleArray>::New();
+  vtkNew<vtkDoubleArray> persistenceScalarsPoint{};
   persistenceScalarsPoint->SetName("Persistence");
 
-  vtkSmartPointer<vtkIntArray> idOfDiagramPoint
-    = vtkSmartPointer<vtkIntArray>::New();
+  vtkNew<vtkIntArray> idOfDiagramPoint{};
   idOfDiagramPoint->SetName("DiagramID");
 
-  vtkSmartPointer<vtkIntArray> idOfCluster
-    = vtkSmartPointer<vtkIntArray>::New();
+  vtkNew<vtkIntArray> idOfCluster{};
   idOfCluster->SetName("ClusterID");
 
-  vtkSmartPointer<vtkIntArray> pairType = vtkSmartPointer<vtkIntArray>::New();
+  vtkNew<vtkIntArray> pairType{};
   pairType->SetName("PairType");
 
-  vtkSmartPointer<vtkFloatArray> coordsScalars
-    = vtkSmartPointer<vtkFloatArray>::New();
+  vtkNew<vtkFloatArray> coordsScalars{};
   coordsScalars->SetNumberOfComponents(3);
   coordsScalars->SetName("Coordinates");
 
-  auto vertexSField = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
+  vtkNew<ttkSimplexIdTypeArray> vertexSField{};
   vertexSField->SetName(ttk::VertexScalarFieldName);
   vertexSField->SetNumberOfComponents(1);
 
@@ -794,34 +783,29 @@ vtkSmartPointer<vtkUnstructuredGrid>
     std::cout << "[ttkPersistenceDiagramClustering] Creating vtk Matchings"
               << std::endl;
   }
-  vtkSmartPointer<vtkPoints> matchingPoints = vtkSmartPointer<vtkPoints>::New();
+  vtkNew<vtkPoints> matchingPoints{};
 
-  vtkSmartPointer<vtkUnstructuredGrid> matchingMesh
-    = vtkSmartPointer<vtkUnstructuredGrid>::New();
+  vtkNew<vtkUnstructuredGrid> matchingMesh{};
 
-  vtkSmartPointer<vtkIntArray> idOfDiagramMatchingPoint
-    = vtkSmartPointer<vtkIntArray>::New();
+  vtkNew<vtkIntArray> idOfDiagramMatchingPoint{};
   idOfDiagramMatchingPoint->SetName("DiagramID");
 
-  vtkSmartPointer<vtkIntArray> idOfPoint = vtkSmartPointer<vtkIntArray>::New();
+  vtkNew<vtkIntArray> idOfPoint{};
   idOfPoint->SetName("PointID");
 
-  vtkSmartPointer<vtkIntArray> idOfDiagramMatching
-    = vtkSmartPointer<vtkIntArray>::New();
+  vtkNew<vtkIntArray> idOfDiagramMatching{};
   idOfDiagramMatching->SetName("DiagramID");
 
-  vtkSmartPointer<vtkIntArray> idOfCluster
-    = vtkSmartPointer<vtkIntArray>::New();
+  vtkNew<vtkIntArray> idOfCluster{};
   idOfCluster->SetName("ClusterID");
 
-  vtkSmartPointer<vtkDoubleArray> cost = vtkSmartPointer<vtkDoubleArray>::New();
+  vtkNew<vtkDoubleArray> cost{};
   cost->SetName("Cost");
 
-  vtkSmartPointer<vtkIntArray> pairType = vtkSmartPointer<vtkIntArray>::New();
+  vtkNew<vtkIntArray> pairType{};
   pairType->SetName("PairType");
 
-  vtkSmartPointer<vtkIntArray> matchingCount
-    = vtkSmartPointer<vtkIntArray>::New();
+  vtkNew<vtkIntArray> matchingCount{};
   matchingCount->SetName("MatchNumber");
 
   std::vector<int> cluster_size;
