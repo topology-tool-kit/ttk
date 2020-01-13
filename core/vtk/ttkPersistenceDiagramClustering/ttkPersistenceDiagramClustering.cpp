@@ -317,7 +317,8 @@ double ttkPersistenceDiagramClustering::getPersistenceDiagram(
   int nbNonCompact = 0;
   double max_dimension = 0;
 
-  for(int i = 0; i < pairingsSize; ++i) {
+  // skip diagonal cell (corresponding points already dealt with)
+  for(int i = 0; i < pairingsSize - 1; ++i) {
 
     int vertexId1 = vertexIdentifierScalars->GetValue(2 * i);
     int vertexId2 = vertexIdentifierScalars->GetValue(2 * i + 1);
