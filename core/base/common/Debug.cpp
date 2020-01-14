@@ -42,7 +42,9 @@ int Debug::dMsg(ostream &stream, string msg, const int &debugLevel) const {
 
 int Debug::welcomeMsg(ostream &stream) const {
 
-  if((ttk::welcomeMsg_) && (debugLevel_)) {
+  int priorityAsInt = static_cast<int>(debug::Priority::PERFORMANCE);
+
+  if((ttk::welcomeMsg_) && (debugLevel_ > priorityAsInt)) {
     ttk::welcomeMsg_ = false;
 
     string currentPrefix = debugMsgPrefix_;

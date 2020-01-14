@@ -138,11 +138,13 @@ namespace ttk {
     HANDLE hFind
       = FindFirstFile(toWString(directoryName).c_str(), &FindFileData);
     if(hFind == INVALID_HANDLE_VALUE) {
-      std::stringstream msg;
-      msg << "[Os] Could not open directory `" << directoryName
-          << "'. Error: " << GetLastError() << std::endl;
+      std::string s;
+      s = "Could not open directory `";
+      s += directoryName;
+      s += "'. Error: ";
+      s += GetLastError();
       Debug d;
-      d.dMsg(std::cerr, msg.str(), 0);
+      d.printMsg(s, debug::Priority::ERROR, debug::LineMode::NEW, std::cerr);
     } else {
       const std::string filename = toString(FindFileData.cFileName);
 
@@ -172,11 +174,13 @@ namespace ttk {
 #else
     DIR *d = opendir((directoryName + "/").data());
     if(!d) {
-      std::stringstream msg;
-      msg << "[Os] Could not open directory `" << directoryName << "'..."
-          << std::endl;
+      std::string msg;
+      msg = "Could not open directory `";
+      msg += directoryName;
+      msg += "'...";
       Debug dbg;
-      dbg.dMsg(std::cerr, msg.str(), 0);
+      dbg.printMsg(
+        msg, debug::Priority::ERROR, debug::LineMode::NEW, std::cerr);
     } else {
       struct dirent *dirEntry;
       while((dirEntry = readdir(d)) != NULL) {
