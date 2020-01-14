@@ -11,6 +11,8 @@ using namespace ttk;
 
 Debug::Debug() {
 
+  setDebugMsgPrefix("Common");
+
   debugLevel_ = ttk::globalDebugLevel_;
 
   // avoid warnings
@@ -29,556 +31,55 @@ Debug::~Debug() {
 
 int Debug::dMsg(ostream &stream, string msg, const int &debugLevel) const {
 
+  welcomeMsg(stream);
+
+  if((debugLevel_ >= debugLevel) || (globalDebugLevel_ >= debugLevel))
+    stream << msg.data() << flush;
+
+  return 0;
+}
+
+int Debug::welcomeMsg(ostream &stream) const {
+
   if((ttk::welcomeMsg_) && (debugLevel_)) {
     ttk::welcomeMsg_ = false;
     stringstream s;
 
-    s << debug::output::BOLD << "[Common] " << debug::output::ENDCOLOR
-      << debug::output::GREEN << "                       "
-      << debug::output::ENDCOLOR << debug::output::GREEN << ","
-      << debug::output::ENDCOLOR << debug::output::GREEN
-      << ",⌂µµ▒▒▒▒▒▒▒▒▒▒▒▒µµµ," << debug::output::ENDCOLOR << endl
-      << debug::output::BOLD << "[Common] " << debug::output::ENDCOLOR
-      << debug::output::GREEN
-      << "                  ,µ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒µµ,"
-      << debug::output::ENDCOLOR << endl
-      << debug::output::BOLD << "[Common] " << debug::output::ENDCOLOR
-      << debug::output::GREEN << "              " << debug::output::ENDCOLOR
-      << debug::output::GREEN << "," << debug::output::ENDCOLOR
-      << debug::output::GREEN << "µ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒µ,"
-      << debug::output::ENDCOLOR << endl
-      << debug::output::BOLD << "[Common] " << debug::output::ENDCOLOR
-      << debug::output::GREEN << "           ,µ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒░░"
-      << debug::output::ENDCOLOR << debug::output::GREY << "░"
-      << debug::output::ENDCOLOR << debug::output::GREY << "░░░░▒▒▒▒▒"
-      << debug::output::ENDCOLOR << debug::output::GREEN << "▒"
-      << debug::output::ENDCOLOR << debug::output::GREEN << "▒▒▒▒▒▒µ"
-      << debug::output::ENDCOLOR << endl
-      << debug::output::BOLD << "[Common] " << debug::output::ENDCOLOR
-      << debug::output::GREEN << "         ,▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒░░"
-      << debug::output::ENDCOLOR << debug::output::DARKGREY << "░"
-      << debug::output::ENDCOLOR << debug::output::DARKGREY << "░░░"
-      << debug::output::ENDCOLOR << debug::output::BLUE << "░  "
-      << debug::output::ENDCOLOR << debug::output::BLUE << "░░░░░░░░░"
-      << debug::output::ENDCOLOR << debug::output::DARKGREY << "░"
-      << debug::output::ENDCOLOR << debug::output::DARKGREY << "░░░"
-      << debug::output::ENDCOLOR << debug::output::GREY << "▒"
-      << debug::output::ENDCOLOR << debug::output::GREEN << "░"
-      << debug::output::ENDCOLOR << debug::output::GREEN << "▒▒▒▒µ"
-      << debug::output::ENDCOLOR << endl
-      << debug::output::BOLD << "[Common] " << debug::output::ENDCOLOR
-      << debug::output::GREEN << "       ,▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒░"
-      << debug::output::ENDCOLOR << debug::output::GREY << "░"
-      << debug::output::ENDCOLOR << debug::output::DARKGREY << "░"
-      << debug::output::ENDCOLOR << debug::output::DARKGREY
-      << "░                    " << debug::output::ENDCOLOR
-      << debug::output::BLUE << "░" << debug::output::ENDCOLOR
-      << debug::output::BLUE << "░░" << debug::output::ENDCOLOR
-      << debug::output::DARKGREY << "░" << debug::output::ENDCOLOR
-      << debug::output::DARKGREY << "░" << debug::output::ENDCOLOR
-      << debug::output::GREY << "░" << debug::output::ENDCOLOR
-      << debug::output::GREEN << "▒" << debug::output::ENDCOLOR
-      << debug::output::GREEN << "▒▒µ" << debug::output::ENDCOLOR << endl
-      << debug::output::BOLD << "[Common] " << debug::output::ENDCOLOR
-      << debug::output::GREEN << "      ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒░"
-      << debug::output::ENDCOLOR << debug::output::DARKGREY << "░"
-      << debug::output::ENDCOLOR << debug::output::DARKGREY
-      << "░  ⌂µ▒▒▒▒▒▒▒▒▒▒▒▒∩         " << debug::output::ENDCOLOR
-      << debug::output::BLUE << "▒" << debug::output::ENDCOLOR
-      << debug::output::BLUE << "▒░" << debug::output::ENDCOLOR
-      << debug::output::DARKGREY << "░" << debug::output::ENDCOLOR
-      << debug::output::DARKGREY << "░" << debug::output::ENDCOLOR
-      << debug::output::GREEN << "░" << debug::output::ENDCOLOR
-      << debug::output::GREEN << "▒▒µ" << debug::output::ENDCOLOR << endl
-      << debug::output::BOLD << "[Common] " << debug::output::ENDCOLOR
-      << debug::output::GREEN << "    ,▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒░"
-      << debug::output::ENDCOLOR << debug::output::DARKGREY << "░"
-      << debug::output::ENDCOLOR << debug::output::DARKGREY
-      << "░ ,▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒░░▒       " << debug::output::ENDCOLOR
-      << debug::output::BLUE << "░" << debug::output::ENDCOLOR
-      << debug::output::BLUE << "░▒░" << debug::output::ENDCOLOR
-      << debug::output::DARKGREY << "░" << debug::output::ENDCOLOR
-      << debug::output::DARKGREY << "░" << debug::output::ENDCOLOR
-      << debug::output::GREEN << "░" << debug::output::ENDCOLOR
-      << debug::output::GREEN << "▒µ" << debug::output::ENDCOLOR << endl
-      << debug::output::BOLD << "[Common] " << debug::output::ENDCOLOR
-      << debug::output::GREEN << "   ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒░"
-      << debug::output::ENDCOLOR << debug::output::DARKGREY << "░ "
-      << debug::output::ENDCOLOR << debug::output::DARKGREY << ",▒"
-      << debug::output::ENDCOLOR << debug::output::GREY << "▒"
-      << debug::output::ENDCOLOR << debug::output::GREY << "▒▒▒▒▒▒▒▒▒▒▒▒"
-      << debug::output::ENDCOLOR << debug::output::GREY << "▒"
-      << debug::output::ENDCOLOR << debug::output::GREY << "░░▒░"
-      << debug::output::ENDCOLOR << debug::output::DARKGREY << "▒"
-      << debug::output::ENDCOLOR << debug::output::DARKGREY << "▒▒░░▒     "
-      << debug::output::ENDCOLOR << debug::output::BLUE << "░"
-      << debug::output::ENDCOLOR << debug::output::BLUE << "░░▒░"
-      << debug::output::ENDCOLOR << debug::output::DARKGREY << "░"
-      << debug::output::ENDCOLOR << debug::output::DARKGREY << "░"
-      << debug::output::ENDCOLOR << debug::output::GREEN << "▒"
-      << debug::output::ENDCOLOR << debug::output::GREEN << "▒"
-      << debug::output::ENDCOLOR << endl
-      << debug::output::BOLD << "[Common] " << debug::output::ENDCOLOR
-      << debug::output::GREEN << "  ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒░"
-      << debug::output::ENDCOLOR << debug::output::DARKGREY << "░  "
-      << debug::output::ENDCOLOR << debug::output::GREY << "▒"
-      << debug::output::ENDCOLOR << debug::output::GREY << "▒▒▒▒▒"
-      << debug::output::ENDCOLOR << debug::output::GREY << "▒"
-      << debug::output::ENDCOLOR << debug::output::GREY << "▒▒▒"
-      << debug::output::ENDCOLOR << debug::output::BRIGHTWHITE << "▒"
-      << debug::output::ENDCOLOR << debug::output::BRIGHTWHITE << "▓"
-      << debug::output::ENDCOLOR << debug::output::BRIGHTWHITE << "▓"
-      << debug::output::ENDCOLOR << debug::output::BRIGHTWHITE << "▓▓▓█████"
-      << debug::output::ENDCOLOR << debug::output::BRIGHTWHITE << "█▓▄"
-      << debug::output::ENDCOLOR << debug::output::GREY << "▄"
-      << debug::output::ENDCOLOR << debug::output::DARKGREY << "░"
-      << debug::output::ENDCOLOR << debug::output::DARKGREY << "░▒   "
-      << debug::output::ENDCOLOR << debug::output::BLUE << "░"
-      << debug::output::ENDCOLOR << debug::output::BLUE << "░░░░▒ "
-      << debug::output::ENDCOLOR << debug::output::DARKGREY << "░"
-      << debug::output::ENDCOLOR << debug::output::GREY << "░"
-      << debug::output::ENDCOLOR << debug::output::GREEN << "▒"
-      << debug::output::ENDCOLOR << endl
-      << debug::output::BOLD << "[Common] " << debug::output::ENDCOLOR
-      << debug::output::GREEN << "  ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒"
-      << debug::output::ENDCOLOR << debug::output::GREEN << "▒"
-      << debug::output::ENDCOLOR << debug::output::DARKGREY << "░"
-      << debug::output::ENDCOLOR << debug::output::DARKGREY << "░ "
-      << debug::output::ENDCOLOR << debug::output::GREY << "▒"
-      << debug::output::ENDCOLOR << debug::output::GREY << "▒▒▒"
-      << debug::output::ENDCOLOR << debug::output::GREY << "▒"
-      << debug::output::ENDCOLOR << debug::output::GREY << "▒▒▒▒"
-      << debug::output::ENDCOLOR << debug::output::BRIGHTWHITE << "╣"
-      << debug::output::ENDCOLOR << debug::output::BRIGHTWHITE << "▓╜^"
-      << debug::output::ENDCOLOR << debug::output::GREY << "^"
-      << debug::output::ENDCOLOR << debug::output::GREY
-      << ""
-         "^"
-      << debug::output::ENDCOLOR << debug::output::BRIGHTWHITE << "^"
-      << debug::output::ENDCOLOR << debug::output::BRIGHTWHITE << "▀"
-      << debug::output::ENDCOLOR << debug::output::BRIGHTWHITE << "▀█"
-      << debug::output::ENDCOLOR << debug::output::BRIGHTWHITE << "███▓▓▓"
-      << debug::output::ENDCOLOR << debug::output::BRIGHTWHITE << "▓"
-      << debug::output::ENDCOLOR << debug::output::GREY << "µ"
-      << debug::output::ENDCOLOR << debug::output::DARKGREY << "░"
-      << debug::output::ENDCOLOR << debug::output::DARKGREY << "░    "
-      << debug::output::ENDCOLOR << debug::output::BLUE << "░"
-      << debug::output::ENDCOLOR << debug::output::BLUE << "░░░ "
-      << debug::output::ENDCOLOR << debug::output::DARKGREY << "░"
-      << debug::output::ENDCOLOR << debug::output::DARKGREY << "░"
-      << debug::output::ENDCOLOR << debug::output::GREEN << "▒"
-      << debug::output::ENDCOLOR << endl
-      << debug::output::BOLD << "[Common] " << debug::output::ENDCOLOR
-      << debug::output::GREEN << " ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒"
-      << debug::output::ENDCOLOR << debug::output::GREEN << "▒"
-      << debug::output::ENDCOLOR << debug::output::GREEN << "▒"
-      << debug::output::ENDCOLOR << debug::output::DARKGREY << "░"
-      << debug::output::ENDCOLOR << debug::output::DARKGREY << "░ "
-      << debug::output::ENDCOLOR << debug::output::GREY << "▒"
-      << debug::output::ENDCOLOR << debug::output::GREY << "▒▒"
-      << debug::output::ENDCOLOR << debug::output::GREY << "▒"
-      << debug::output::ENDCOLOR << debug::output::GREY << "▒▒▒"
-      << debug::output::ENDCOLOR << debug::output::GREY << "╙"
-      << debug::output::ENDCOLOR << debug::output::DARKGREY << "░           "
-      << debug::output::ENDCOLOR << debug::output::DARKGREY << "░░"
-      << debug::output::ENDCOLOR << debug::output::GREY << "T"
-      << debug::output::ENDCOLOR << debug::output::BRIGHTWHITE << "▀"
-      << debug::output::ENDCOLOR << debug::output::BRIGHTWHITE << "██▓▓▓"
-      << debug::output::ENDCOLOR << debug::output::BRIGHTWHITE << "▓"
-      << debug::output::ENDCOLOR << debug::output::GREY << "µ"
-      << debug::output::ENDCOLOR << debug::output::DARKGREY << "▒   "
-      << debug::output::ENDCOLOR << debug::output::BLUE << "░"
-      << debug::output::ENDCOLOR << debug::output::BLUE << "░░░░░"
-      << debug::output::ENDCOLOR << debug::output::DARKGREY << "░"
-      << debug::output::ENDCOLOR << debug::output::DARKGREY << "░"
-      << debug::output::ENDCOLOR << debug::output::GREEN << "▒"
-      << debug::output::ENDCOLOR << endl
-      << debug::output::BOLD << "[Common] " << debug::output::ENDCOLOR
-      << debug::output::GREEN << " ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒"
-      << debug::output::ENDCOLOR << debug::output::GREEN << "▒"
-      << debug::output::ENDCOLOR << debug::output::GREEN << "░"
-      << debug::output::ENDCOLOR << debug::output::GREEN << "░"
-      << debug::output::ENDCOLOR << debug::output::DARKGREY << "░ "
-      << debug::output::ENDCOLOR << debug::output::GREY << "▒"
-      << debug::output::ENDCOLOR << debug::output::GREY << "▒▒▒▒"
-      << debug::output::ENDCOLOR << debug::output::DARKGREY
-      << "'                 " << debug::output::ENDCOLOR
-      << debug::output::DARKGREY << "░░" << debug::output::ENDCOLOR
-      << debug::output::BRIGHTWHITE << "▀" << debug::output::ENDCOLOR
-      << debug::output::BRIGHTWHITE << "█▓▓▓╪" << debug::output::ENDCOLOR
-      << debug::output::GREY << "▓" << debug::output::ENDCOLOR
-      << debug::output::DARKGREY << "░   " << debug::output::ENDCOLOR
-      << debug::output::BLUE << "░" << debug::output::ENDCOLOR
-      << debug::output::BLUE << "░░░▒ " << debug::output::ENDCOLOR
-      << debug::output::DARKGREY << "░" << debug::output::ENDCOLOR
-      << debug::output::GREEN << "░" << debug::output::ENDCOLOR
-      << debug::output::GREEN << "▒" << debug::output::ENDCOLOR << endl
-      << debug::output::BOLD << "[Common] " << debug::output::ENDCOLOR
-      << debug::output::GREEN << " ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒" << debug::output::ENDCOLOR
-      << debug::output::GREEN << "▒" << debug::output::ENDCOLOR
-      << debug::output::GREEN << "▒" << debug::output::ENDCOLOR
-      << debug::output::GREEN << "░░" << debug::output::ENDCOLOR
-      << debug::output::DARKGREY << "░ " << debug::output::ENDCOLOR
-      << debug::output::DARKGREY << "1" << debug::output::ENDCOLOR
-      << debug::output::GREY << "▒" << debug::output::ENDCOLOR
-      << debug::output::GREY << "▒" << debug::output::ENDCOLOR
-      << debug::output::DARKGREY << "∩                     "
-      << debug::output::ENDCOLOR << debug::output::DARKGREY << "░"
-      << debug::output::ENDCOLOR << debug::output::GREY << "░"
-      << debug::output::ENDCOLOR << debug::output::BRIGHTWHITE << "█"
-      << debug::output::ENDCOLOR << debug::output::BRIGHTWHITE << "▓▓╪@"
-      << debug::output::ENDCOLOR << debug::output::BRIGHTWHITE << "@    "
-      << debug::output::ENDCOLOR << debug::output::BLUE << "░"
-      << debug::output::ENDCOLOR << debug::output::BLUE << "░░▒▒"
-      << debug::output::ENDCOLOR << debug::output::DARKGREY << "░"
-      << debug::output::ENDCOLOR << debug::output::DARKGREY << "░"
-      << debug::output::ENDCOLOR << debug::output::GREEN << "▒"
-      << debug::output::ENDCOLOR << endl
-      << debug::output::BOLD << "[Common] " << debug::output::ENDCOLOR
-      << debug::output::GREEN << " ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒░░"
-      << debug::output::ENDCOLOR << debug::output::DARKGREY << "░ "
-      << debug::output::ENDCOLOR << debug::output::DARKGREY
-      << "▒∩                       ░" << debug::output::ENDCOLOR
-      << debug::output::DARKGREY << "µ" << debug::output::ENDCOLOR
-      << debug::output::BRIGHTWHITE << "█" << debug::output::ENDCOLOR
-      << debug::output::BRIGHTWHITE << "▓" << debug::output::ENDCOLOR
-      << debug::output::BRIGHTWHITE << "@@" << debug::output::ENDCOLOR
-      << debug::output::BRIGHTWHITE << "@" << debug::output::ENDCOLOR
-      << debug::output::GREY << "h" << debug::output::ENDCOLOR
-      << debug::output::BLUE << "░  " << debug::output::ENDCOLOR
-      << debug::output::BLUE << "░░░░▒ " << debug::output::ENDCOLOR
-      << debug::output::DARKGREY << "░" << debug::output::ENDCOLOR
-      << debug::output::GREEN << "░" << debug::output::ENDCOLOR << endl
-      << debug::output::BOLD << "[Common] " << debug::output::ENDCOLOR
-      << debug::output::GREEN << " ░▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒░"
-      << debug::output::ENDCOLOR << debug::output::DARKGREY << "░"
-      << debug::output::ENDCOLOR << debug::output::DARKGREY
-      << "░                       " << debug::output::ENDCOLOR
-      << debug::output::GREEN << "░ " << debug::output::ENDCOLOR
-      << debug::output::DARKGREY << "░" << debug::output::ENDCOLOR
-      << debug::output::GREY << "▐" << debug::output::ENDCOLOR
-      << debug::output::BRIGHTWHITE << "▓" << debug::output::ENDCOLOR
-      << debug::output::BRIGHTWHITE << "@" << debug::output::ENDCOLOR
-      << debug::output::BRIGHTWHITE << "@" << debug::output::ENDCOLOR
-      << debug::output::GREY << "▒" << debug::output::ENDCOLOR
-      << debug::output::GREY << "▒ " << debug::output::ENDCOLOR
-      << debug::output::BLUE << "░" << debug::output::ENDCOLOR
-      << debug::output::BLUE << "░░░░▒▒µ" << debug::output::ENDCOLOR
-      << debug::output::DARKGREY << "░" << debug::output::ENDCOLOR
-      << debug::output::DARKGREY << "░" << debug::output::ENDCOLOR
-      << debug::output::GREEN << "▒" << debug::output::ENDCOLOR << endl
-      << debug::output::BOLD << "[Common] " << debug::output::ENDCOLOR
-      << debug::output::GREEN << " " << debug::output::ENDCOLOR
-      << debug::output::DARKGREY << "░" << debug::output::ENDCOLOR
-      << debug::output::GREEN << "▒" << debug::output::ENDCOLOR
-      << debug::output::GREEN << "▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒░"
-      << debug::output::ENDCOLOR << debug::output::DARKGREY
-      << "░                      ░░" << debug::output::ENDCOLOR
-      << debug::output::DARKGREY << "░░" << debug::output::ENDCOLOR
-      << debug::output::BRIGHTWHITE << "▓" << debug::output::ENDCOLOR
-      << debug::output::BRIGHTWHITE << "@" << debug::output::ENDCOLOR
-      << debug::output::BRIGHTWHITE << "▒" << debug::output::ENDCOLOR
-      << debug::output::GREY << "▒" << debug::output::ENDCOLOR
-      << debug::output::DARKGREY << "▒" << debug::output::ENDCOLOR
-      << debug::output::BLUE << "░" << debug::output::ENDCOLOR
-      << debug::output::BLUE << "░░░░░▒▒µ" << debug::output::ENDCOLOR
-      << debug::output::DARKGREY << "░" << debug::output::ENDCOLOR
-      << debug::output::DARKGREY << "░" << debug::output::ENDCOLOR
-      << debug::output::GREEN << "▒" << debug::output::ENDCOLOR << endl
-      << debug::output::BOLD << "[Common] " << debug::output::ENDCOLOR
-      << debug::output::GREEN << "  ░░▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒░"
-      << debug::output::ENDCOLOR << debug::output::DARKGREY
-      << "░░               " << debug::output::ENDCOLOR << debug::output::GREEN
-      << "░" << debug::output::ENDCOLOR << debug::output::GREEN << "░░░░░"
-      << debug::output::ENDCOLOR << debug::output::DARKGREY << "░"
-      << debug::output::ENDCOLOR << debug::output::DARKGREY << "j"
-      << debug::output::ENDCOLOR << debug::output::BRIGHTWHITE << "▓"
-      << debug::output::ENDCOLOR << debug::output::BRIGHTWHITE << "@"
-      << debug::output::ENDCOLOR << debug::output::GREY << "▒"
-      << debug::output::ENDCOLOR << debug::output::GREY << "▒"
-      << debug::output::ENDCOLOR << debug::output::BLUE << "░"
-      << debug::output::ENDCOLOR << debug::output::BLUE << "░░░░░░▒▒∩"
-      << debug::output::ENDCOLOR << debug::output::DARKGREY << "░"
-      << debug::output::ENDCOLOR << debug::output::GREY << "░"
-      << debug::output::ENDCOLOR << endl
-      << debug::output::BOLD << "[Common] " << debug::output::ENDCOLOR
-      << debug::output::GREEN << "  " << debug::output::ENDCOLOR
-      << debug::output::DARKGREY << "░" << debug::output::ENDCOLOR
-      << debug::output::GREEN << "░" << debug::output::ENDCOLOR
-      << debug::output::GREEN
-      << "▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒░░░░         ▒░░░░░░"
-      << debug::output::ENDCOLOR << debug::output::DARKGREY << "░"
-      << debug::output::ENDCOLOR << debug::output::DARKGREY << "░"
-      << debug::output::ENDCOLOR << debug::output::BRIGHTWHITE << "{"
-      << debug::output::ENDCOLOR << debug::output::BRIGHTWHITE << "@"
-      << debug::output::ENDCOLOR << debug::output::GREY << "▒"
-      << debug::output::ENDCOLOR << debug::output::GREY << "▒"
-      << debug::output::ENDCOLOR << debug::output::DARKGREY << "░"
-      << debug::output::ENDCOLOR << debug::output::BLUE << "░"
-      << debug::output::ENDCOLOR << debug::output::BLUE << "░░░░▒▒▒▒░"
-      << debug::output::ENDCOLOR << debug::output::DARKGREY << "░"
-      << debug::output::ENDCOLOR << debug::output::GREEN << "░"
-      << debug::output::ENDCOLOR << endl
-      << debug::output::BOLD << "[Common] " << debug::output::ENDCOLOR
-      << debug::output::GREEN << "   " << debug::output::ENDCOLOR
-      << debug::output::DARKGREY << "░" << debug::output::ENDCOLOR
-      << debug::output::GREEN << "░" << debug::output::ENDCOLOR
-      << debug::output::GREEN << "▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒░░░░░░░░░░░"
-      << debug::output::ENDCOLOR << debug::output::DARKGREY << "░"
-      << debug::output::ENDCOLOR << debug::output::DARKGREY << "░"
-      << debug::output::ENDCOLOR << debug::output::BRIGHTWHITE << "@"
-      << debug::output::ENDCOLOR << debug::output::GREY << "▒"
-      << debug::output::ENDCOLOR << debug::output::GREY << "▒"
-      << debug::output::ENDCOLOR << debug::output::DARKGREY << "░"
-      << debug::output::ENDCOLOR << debug::output::BLUE << "▒"
-      << debug::output::ENDCOLOR << debug::output::BLUE << "░░░▒▒▒▒▒▒"
-      << debug::output::ENDCOLOR << debug::output::DARKGREY << "░"
-      << debug::output::ENDCOLOR << debug::output::DARKGREY << "░"
-      << debug::output::ENDCOLOR << debug::output::GREEN << "▒"
-      << debug::output::ENDCOLOR << endl
-      << debug::output::BOLD << "[Common] " << debug::output::ENDCOLOR
-      << debug::output::GREEN << "    " << debug::output::ENDCOLOR
-      << debug::output::DARKGREY << "░" << debug::output::ENDCOLOR
-      << debug::output::GREY << "░" << debug::output::ENDCOLOR
-      << debug::output::GREEN << "▒" << debug::output::ENDCOLOR
-      << debug::output::GREEN << "▒▒▒▒▒▒▒▒▒▒" << debug::output::ENDCOLOR
-      << debug::output::GREEN << "▒" << debug::output::ENDCOLOR
-      << debug::output::GREEN << "▒▒▒▒" << debug::output::ENDCOLOR
-      << debug::output::GREEN << "▒" << debug::output::ENDCOLOR
-      << debug::output::GREEN << "▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒░░░░░░░░▒░"
-      << debug::output::ENDCOLOR << debug::output::DARKGREY << "▒"
-      << debug::output::ENDCOLOR << debug::output::DARKGREY << "░"
-      << debug::output::ENDCOLOR << debug::output::GREY << "▓"
-      << debug::output::ENDCOLOR << debug::output::GREY << "▒"
-      << debug::output::ENDCOLOR << debug::output::GREY << "▒"
-      << debug::output::ENDCOLOR << debug::output::GREY << "░"
-      << debug::output::ENDCOLOR << debug::output::BLUE << "▒"
-      << debug::output::ENDCOLOR << debug::output::BLUE << "░▒▒▒▒▒▒▒▒░"
-      << debug::output::ENDCOLOR << debug::output::DARKGREY << "░"
-      << debug::output::ENDCOLOR << debug::output::GREEN << "░"
-      << debug::output::ENDCOLOR << endl
-      << debug::output::BOLD << "[Common] " << debug::output::ENDCOLOR
-      << debug::output::GREEN << "     " << debug::output::ENDCOLOR
-      << debug::output::BLUE << "░" << debug::output::ENDCOLOR
-      << debug::output::DARKGREY << "░" << debug::output::ENDCOLOR
-      << debug::output::GREEN << "▒" << debug::output::ENDCOLOR
-      << debug::output::GREEN << "▒▒▒▒▒▒▒▒▒" << debug::output::ENDCOLOR
-      << debug::output::GREEN << "▒" << debug::output::ENDCOLOR
-      << debug::output::GREEN << "║▓" << debug::output::ENDCOLOR
-      << debug::output::BRIGHTWHITE << "▓▓@▒" << debug::output::ENDCOLOR
-      << debug::output::GREEN << "▒" << debug::output::ENDCOLOR
-      << debug::output::GREEN << "▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒░"
-      << debug::output::ENDCOLOR << debug::output::DARKGREY << "░"
-      << debug::output::ENDCOLOR << debug::output::DARKGREY << "░"
-      << debug::output::ENDCOLOR << debug::output::BRIGHTWHITE << "@"
-      << debug::output::ENDCOLOR << debug::output::GREY << "▒"
-      << debug::output::ENDCOLOR << debug::output::DARKGREY << "░ "
-      << debug::output::ENDCOLOR << debug::output::BLUE << "▒"
-      << debug::output::ENDCOLOR << debug::output::BLUE << "▒▒▒▒▒▒▒▒▒░"
-      << debug::output::ENDCOLOR << debug::output::DARKGREY << "░"
-      << debug::output::ENDCOLOR << debug::output::DARKGREY << "░"
-      << debug::output::ENDCOLOR << endl
-      << debug::output::BOLD << "[Common] " << debug::output::ENDCOLOR
-      << debug::output::GREEN << "      " << debug::output::ENDCOLOR
-      << debug::output::BLUE << "▒" << debug::output::ENDCOLOR
-      << debug::output::BLUE << "░" << debug::output::ENDCOLOR
-      << debug::output::DARKGREY << "░" << debug::output::ENDCOLOR
-      << debug::output::GREY << "▒" << debug::output::ENDCOLOR
-      << debug::output::GREEN << "░" << debug::output::ENDCOLOR
-      << debug::output::GREEN << "▒▒▒▒▒▒▒" << debug::output::ENDCOLOR
-      << debug::output::GREEN << "▒" << debug::output::ENDCOLOR
-      << debug::output::GREEN << "ß" << debug::output::ENDCOLOR
-      << debug::output::BRIGHTWHITE << "▓" << debug::output::ENDCOLOR
-      << debug::output::BRIGHTWHITE << "▓▓" << debug::output::ENDCOLOR
-      << debug::output::GREEN << "@" << debug::output::ENDCOLOR
-      << debug::output::GREEN << "▒" << debug::output::ENDCOLOR
-      << debug::output::GREEN << "▒" << debug::output::ENDCOLOR
-      << debug::output::GREEN << "▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒░"
-      << debug::output::ENDCOLOR << debug::output::DARKGREY << "░"
-      << debug::output::ENDCOLOR << debug::output::DARKGREY << "░"
-      << debug::output::ENDCOLOR << debug::output::GREY << "a"
-      << debug::output::ENDCOLOR << debug::output::GREY << "▒"
-      << debug::output::ENDCOLOR << debug::output::DARKGREY << "M  "
-      << debug::output::ENDCOLOR << debug::output::BLUE << "▒"
-      << debug::output::ENDCOLOR << debug::output::BLUE << "▒▒▒▒▒▒▒▒▒▒"
-      << debug::output::ENDCOLOR << debug::output::DARKGREY << "░"
-      << debug::output::ENDCOLOR << debug::output::DARKGREY << "░"
-      << debug::output::ENDCOLOR << debug::output::GREEN << "░"
-      << debug::output::ENDCOLOR << endl
-      << debug::output::BOLD << "[Common] " << debug::output::ENDCOLOR
-      << debug::output::GREEN << "      " << debug::output::ENDCOLOR
-      << debug::output::BLUE << "░" << debug::output::ENDCOLOR
-      << debug::output::BLUE << "░▒░" << debug::output::ENDCOLOR
-      << debug::output::DARKGREY << "░" << debug::output::ENDCOLOR
-      << debug::output::GREY << "░" << debug::output::ENDCOLOR
-      << debug::output::GREEN << "░" << debug::output::ENDCOLOR
-      << debug::output::GREEN << "▒▒▒▒▒▒▒" << debug::output::ENDCOLOR
-      << debug::output::GREEN << "▒" << debug::output::ENDCOLOR
-      << debug::output::GREEN << "▒▒▒▒" << debug::output::ENDCOLOR
-      << debug::output::GREEN << "▒" << debug::output::ENDCOLOR
-      << debug::output::GREEN << "▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒░" << debug::output::ENDCOLOR
-      << debug::output::GREY << "░" << debug::output::ENDCOLOR
-      << debug::output::DARKGREY << "░" << debug::output::ENDCOLOR
-      << debug::output::DARKGREY << "░" << debug::output::ENDCOLOR
-      << debug::output::GREY << "e" << debug::output::ENDCOLOR
-      << debug::output::GREY << "M" << debug::output::ENDCOLOR
-      << debug::output::DARKGREY << "░  " << debug::output::ENDCOLOR
-      << debug::output::BLUE << "," << debug::output::ENDCOLOR
-      << debug::output::BLUE << "▒▒▒▒▒▒▒▒▒▒▒" << debug::output::ENDCOLOR
-      << debug::output::DARKGREY << "░" << debug::output::ENDCOLOR
-      << debug::output::DARKGREY << "░" << debug::output::ENDCOLOR << endl
-      << debug::output::BOLD << "[Common] " << debug::output::ENDCOLOR
-      << debug::output::GREEN << "        " << debug::output::ENDCOLOR
-      << debug::output::BLUE << "▒" << debug::output::ENDCOLOR
-      << debug::output::BLUE << "░░░" << debug::output::ENDCOLOR
-      << debug::output::GREY << "░" << debug::output::ENDCOLOR
-      << debug::output::DARKGREY << "░░" << debug::output::ENDCOLOR
-      << debug::output::GREEN << "▒" << debug::output::ENDCOLOR
-      << debug::output::GREEN << "▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒░"
-      << debug::output::ENDCOLOR << debug::output::GREY << "░"
-      << debug::output::ENDCOLOR << debug::output::DARKGREY << "░"
-      << debug::output::ENDCOLOR << debug::output::DARKGREY << "░"
-      << debug::output::ENDCOLOR << debug::output::GREY << "╓╜"
-      << debug::output::ENDCOLOR << debug::output::LIGHTBLUE << "º"
-      << debug::output::ENDCOLOR << debug::output::BLUE << ".   "
-      << debug::output::ENDCOLOR << debug::output::BLUE << "¿▒▒▒▒▒▒▒▒▒▒░"
-      << debug::output::ENDCOLOR << debug::output::DARKGREY << "░"
-      << debug::output::ENDCOLOR << debug::output::DARKGREY << "░"
-      << debug::output::ENDCOLOR << endl
-      << debug::output::BOLD << "[Common] " << debug::output::ENDCOLOR
-      << debug::output::GREEN << "         " << debug::output::ENDCOLOR
-      << debug::output::BLUE << "░" << debug::output::ENDCOLOR
-      << debug::output::BLUE << "░░░░░░" << debug::output::ENDCOLOR
-      << debug::output::DARKGREY << "░" << debug::output::ENDCOLOR
-      << debug::output::DARKGREY << "░░" << debug::output::ENDCOLOR
-      << debug::output::GREY << "░" << debug::output::ENDCOLOR
-      << debug::output::GREY << "░" << debug::output::ENDCOLOR
-      << debug::output::GREEN << "░" << debug::output::ENDCOLOR
-      << debug::output::GREEN << "░░▒▒▒▒▒▒▒▒░░" << debug::output::ENDCOLOR
-      << debug::output::GREY << "░" << debug::output::ENDCOLOR
-      << debug::output::GREY << "░" << debug::output::ENDCOLOR
-      << debug::output::DARKGREY << "░" << debug::output::ENDCOLOR
-      << debug::output::DARKGREY << "░░" << debug::output::ENDCOLOR
-      << debug::output::GREY << "╓" << debug::output::ENDCOLOR
-      << debug::output::GREY << "m" << debug::output::ENDCOLOR
-      << debug::output::LIGHTBLUE << "\"" << debug::output::ENDCOLOR
-      << debug::output::DARKGREY << "░      " << debug::output::ENDCOLOR
-      << debug::output::BLUE << "▒" << debug::output::ENDCOLOR
-      << debug::output::BLUE << "▒▒▒▒▒▒▒▒▒▒" << debug::output::ENDCOLOR
-      << debug::output::DARKGREY << "░" << debug::output::ENDCOLOR
-      << debug::output::DARKGREY << "░" << debug::output::ENDCOLOR
-      << debug::output::GREEN << "░" << debug::output::ENDCOLOR << endl
-      << debug::output::BOLD << "[Common] " << debug::output::ENDCOLOR
-      << debug::output::GREEN << "           " << debug::output::ENDCOLOR
-      << debug::output::BLUE << "▒" << debug::output::ENDCOLOR
-      << debug::output::BLUE << "░░░░░░░░░░░" << debug::output::ENDCOLOR
-      << debug::output::GREY << "░" << debug::output::ENDCOLOR
-      << debug::output::DARKGREY << "░" << debug::output::ENDCOLOR
-      << debug::output::DARKGREY << "░░░░░░░░∞⌐*\"░" << debug::output::ENDCOLOR
-      << debug::output::BLUE << ".        " << debug::output::ENDCOLOR
-      << debug::output::BLUE << "╓▒▒▒▒▒▒▒▒" << debug::output::ENDCOLOR
-      << debug::output::LIGHTBLUE << "▒▒" << debug::output::ENDCOLOR
-      << debug::output::DARKGREY << "░" << debug::output::ENDCOLOR
-      << debug::output::DARKGREY << "░" << debug::output::ENDCOLOR
-      << debug::output::GREEN << "░" << debug::output::ENDCOLOR << endl
-      << debug::output::BOLD << "[Common] " << debug::output::ENDCOLOR
-      << debug::output::GREEN << "             " << debug::output::ENDCOLOR
-      << debug::output::BLUE << "░" << debug::output::ENDCOLOR
-      << debug::output::BLUE << "░░░░░░░░░░░░░░░              ░░,▒▒▒▒▒"
-      << debug::output::ENDCOLOR << debug::output::LIGHTBLUE << "▒"
-      << debug::output::ENDCOLOR << debug::output::LIGHTBLUE << "▒▒"
-      << debug::output::ENDCOLOR << debug::output::BLUE << "▒"
-      << debug::output::ENDCOLOR << debug::output::BLUE << "░"
-      << debug::output::ENDCOLOR << debug::output::DARKGREY << "░"
-      << debug::output::ENDCOLOR << debug::output::DARKGREY << "░"
-      << debug::output::ENDCOLOR << endl
-      << debug::output::BOLD << "[Common] " << debug::output::ENDCOLOR
-      << debug::output::GREEN << "               " << debug::output::ENDCOLOR
-      << debug::output::BLUE << "░" << debug::output::ENDCOLOR
-      << debug::output::BLUE << "▒░░░░░░░░░░░░░░░░░░░░░░░░░░╓▒"
-      << debug::output::ENDCOLOR << debug::output::LIGHTBLUE << "▒"
-      << debug::output::ENDCOLOR << debug::output::LIGHTBLUE << "▒▒▒▒▒"
-      << debug::output::ENDCOLOR << debug::output::BLUE << "▒"
-      << debug::output::ENDCOLOR << debug::output::BLUE << "░░"
-      << debug::output::ENDCOLOR << debug::output::DARKGREY << "░"
-      << debug::output::ENDCOLOR << debug::output::DARKGREY << "░"
-      << debug::output::ENDCOLOR << endl
-      << debug::output::BOLD << "[Common] " << debug::output::ENDCOLOR
-      << debug::output::GREEN << "                  " << debug::output::ENDCOLOR
-      << debug::output::BLUE << "░" << debug::output::ENDCOLOR
-      << debug::output::BLUE << "░▒░░░░░░░░░░░░░░░░░░░░α"
-      << debug::output::ENDCOLOR << debug::output::LIGHTBLUE << "▒"
-      << debug::output::ENDCOLOR << debug::output::LIGHTBLUE << "▒▒▒▒"
-      << debug::output::ENDCOLOR << debug::output::BLUE << "▒"
-      << debug::output::ENDCOLOR << debug::output::BLUE << "▒░"
-      << debug::output::ENDCOLOR << debug::output::DARKGREY << "░"
-      << debug::output::ENDCOLOR << debug::output::DARKGREY << "░"
-      << debug::output::ENDCOLOR << endl
-      << debug::output::BOLD << "[Common] " << debug::output::ENDCOLOR
-      << debug::output::GREEN << "                        "
-      << debug::output::ENDCOLOR << debug::output::BLUE << "░"
-      << debug::output::ENDCOLOR << debug::output::BLUE
-      << "░░▒░░░░░░░░░░▒▒▒▒▒░░" << debug::output::ENDCOLOR
-      << debug::output::DARKGREY << "░" << debug::output::ENDCOLOR
-      << debug::output::DARKGREY << "░░" << debug::output::ENDCOLOR << endl
-      << debug::output::BOLD << "[Common] " << debug::output::ENDCOLOR
-      << debug::output::GREEN << "                                 "
-      << debug::output::ENDCOLOR << debug::output::BLUE << "░"
-      << debug::output::ENDCOLOR << debug::output::GREY << "░"
-      << debug::output::ENDCOLOR << debug::output::DARKGREY << "░"
-      << debug::output::ENDCOLOR << debug::output::DARKGREY << "░░░░"
-      << debug::output::ENDCOLOR << debug::output::DARKGREY << "░"
-      << debug::output::ENDCOLOR << endl
-      << debug::output::BOLD << "[Common] " << debug::output::ENDCOLOR << endl;
+#include <welcomeLogo.inl>
+#include <welcomeMsg.inl>
 
-    s << debug::output::BOLD << "[Common] ";
-    s << " _____ _____ _  __                    __  __    ____   ___ ____   ___"
-      << endl
-      << "[Common] "
-         "|_   _|_   _| |/ /                   / /__"
-         "\\ \\  |___ \\ / _ \\___ \\ / _ \\"
-      << endl
-      << "[Common] "
-         "  | |   | | | ' /                   | |/ __| |   __) | | | |__) | | "
-         "| |"
-      << endl
-      << "[Common] "
-         "  | |   | | | . \\                   | | (__| |  / __/| |_| / __/| "
-         "|_| "
-         "|"
-      << endl
-      << "[Common] "
-         "  |_|   |_| |_|\\_\\                  "
-         "| |\\___| | |_____|\\___/_____|\\___/"
-      << endl
-      << "[Common] "
-         "                                     \\_\\  /_/"
-      << debug::output::ENDCOLOR << endl;
-    s << debug::output::BOLD << "[Common] Welcome!" << debug::output::ENDCOLOR
-      << endl;
 #ifndef NDEBUG
-    s << debug::output::YELLOW << "[Common]" << endl;
-    s << "[Common] WARNING:" << endl;
-    s << "[Common] TTK has been built in debug mode! (developers only)" << endl;
-    s << "[Common] Expect important performance degradation." << endl;
-    s << "[Common]" << debug::output::ENDCOLOR << endl;
+    printMsg("", debug::Priority::WARNING, debug::LineMode::NEW, stream);
+    printMsg(debug::output::YELLOW + "TTK has been built in debug mode!",
+             debug::Priority::WARNING, debug::LineMode::NEW, stream);
+    printMsg(debug::output::YELLOW + "DEVELOPERS ONLY!",
+             debug::Priority::WARNING, debug::LineMode::NEW, stream);
+    printMsg(
+      debug::output::YELLOW + "Expect important performance degradation.",
+      debug::Priority::WARNING, debug::LineMode::NEW, stream);
+    printMsg("", debug::Priority::WARNING, debug::LineMode::NEW, stream);
 #endif
 #ifndef TTK_ENABLE_KAMIKAZE
-    s << debug::output::YELLOW << "[Common]" << endl;
-    s << "[Common] WARNING:" << endl;
-    s << "[Common] TTK has *NOT* been built in performance mode!"
-      << " (developers only)" << endl;
-    s << "[Common] Expect important performance degradation." << endl;
-    s << "[Common] " << endl;
-    s << "[Common] To enable the performance mode, rebuild TTK with:" << endl;
-    s << "[Common]   -DTTK_ENABLE_KAMIKAZE=ON" << endl;
-    s << "[Common]" << debug::output::ENDCOLOR << endl;
+    printMsg("", debug::Priority::WARNING, debug::LineMode::NEW, stream);
+    printMsg(
+      debug::output::YELLOW + "TTK has *NOT* been built in performance mode!",
+      debug::Priority::WARNING, debug::LineMode::NEW, stream);
+    printMsg(debug::output::YELLOW + "DEVELOPERS ONLY!",
+             debug::Priority::WARNING, debug::LineMode::NEW, stream);
+    printMsg(
+      debug::output::YELLOW + "Expect important performance degradation.",
+      debug::Priority::WARNING, debug::LineMode::NEW, stream);
+    printMsg("", debug::Priority::WARNING, debug::LineMode::NEW, stream);
+
+    printMsg(debug::output::YELLOW
+               + "To enable the performance mode, rebuild TTK with:",
+             debug::Priority::WARNING, debug::LineMode::NEW, stream);
+    printMsg(debug::output::YELLOW + "  -DTTK_ENABLE_KAMIKAZE=ON",
+             debug::Priority::WARNING, debug::LineMode::NEW, stream);
+    printMsg("", debug::Priority::WARNING, debug::LineMode::NEW, stream);
 #endif
-    dMsg(cout, s.str(), 1);
   }
 
-  if((debugLevel_ >= debugLevel) || (globalDebugLevel_ >= debugLevel))
-    stream << msg.data() << flush;
   return 0;
 }
 
