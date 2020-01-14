@@ -193,7 +193,7 @@ namespace ttk {
                debug::LineMode::NEW, o);
       for(int i = 0; i < (int)arguments_.size(); i++) {
         std::string s;
-        s += "[CommandLine]   -";
+        s += "   -";
         s += arguments_[i].key_;
         s += ": ";
 
@@ -284,25 +284,6 @@ namespace ttk {
           arguments_[i].print(std::cerr);
         }
       }
-
-      //       std::stringstream msg;
-      //       msg << "[CommandLine]" << std::endl;
-      //       msg << "[CommandLine] Usage:" << std::endl;
-      //       msg << "[CommandLine]   " << binPath << std::endl;
-      //       msg << "[CommandLine] Argument(s):" << std::endl;
-      //       for(int i = 0; i < (int)arguments_.size(); i++) {
-      //         if(!arguments_[i].isAnOption_) {
-      //           arguments_[i].print(msg);
-      //         }
-      //       }
-      //       msg << "[CommandLine] Option(s):" << std::endl;
-      //       for(int i = 0; i < (int)arguments_.size(); i++) {
-      //         if(arguments_[i].isAnOption_) {
-      //           arguments_[i].print(msg);
-      //         }
-      //       }
-      //
-      //       dMsg(std::cerr, msg.str(), 1);
 
       exit(0);
       return 0;
