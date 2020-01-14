@@ -11,7 +11,7 @@ using namespace ttk;
 
 Debug::Debug() {
 
-  setDebugMsgPrefix("Common");
+  setDebugMsgPrefix("Debug");
 
   debugLevel_ = ttk::globalDebugLevel_;
 
@@ -22,9 +22,10 @@ Debug::Debug() {
 
 Debug::~Debug() {
   if((lastObject_) && (ttk::goodbyeMsg_)) {
-    stringstream msg;
-    msg << "[Common] Goodbye :)" << endl;
-    dMsg(cout, msg.str(), 1);
+
+    printMsg(
+      "Goodbye :)", debug::Priority::PERFORMANCE, debug::LineMode::NEW, cout);
+
     ttk::goodbyeMsg_ = false;
   }
 }
@@ -43,7 +44,9 @@ int Debug::welcomeMsg(ostream &stream) const {
 
   if((ttk::welcomeMsg_) && (debugLevel_)) {
     ttk::welcomeMsg_ = false;
-    stringstream s;
+
+    string currentPrefix = debugMsgPrefix_;
+    debugMsgPrefix_ = "[Common] ";
 
 #include <welcomeLogo.inl>
 #include <welcomeMsg.inl>
@@ -78,17 +81,20 @@ int Debug::welcomeMsg(ostream &stream) const {
              debug::Priority::WARNING, debug::LineMode::NEW, stream);
     printMsg("", debug::Priority::WARNING, debug::LineMode::NEW, stream);
 #endif
+
+    debugMsgPrefix_ = currentPrefix;
   }
 
   return 0;
 }
 
 int Debug::err(const string msg, const int &debugLevel) const {
-  return dMsg(cerr, msg, 0);
+  return printMsg(msg, debug::Priority::ERROR, debug::LineMode::NEW, cerr);
 }
 
 int Debug::msg(const char *msg, const int &debugLevel) const {
-  return dMsg(cout, string(msg), debugLevel);
+  return printMsg(
+    string(msg), debug::Priority::PERFORMANCE, debug::LineMode::NEW, cout);
 }
 
 int Debug::setDebugLevel(const int &debugLevel) {

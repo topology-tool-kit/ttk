@@ -403,7 +403,7 @@ namespace ttk {
 
     static debug::LineMode lastLineMode;
 
-    std::string debugMsgPrefix_;
+    mutable std::string debugMsgPrefix_;
 
     /**
      * Internal debug method that formats debug messages.
