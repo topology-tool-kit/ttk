@@ -144,7 +144,7 @@ namespace ttk {
       s += "'. Error: ";
       s += GetLastError();
       Debug d;
-      d.printMsg(s, debug::Priority::ERROR, debug::LineMode::NEW, std::cerr);
+      d.printErr(s);
     } else {
       const std::string filename = toString(FindFileData.cFileName);
 
@@ -179,8 +179,7 @@ namespace ttk {
       msg += directoryName;
       msg += "'...";
       Debug dbg;
-      dbg.printMsg(
-        msg, debug::Priority::ERROR, debug::LineMode::NEW, std::cerr);
+      dbg.printErr(msg);
     } else {
       struct dirent *dirEntry;
       while((dirEntry = readdir(d)) != NULL) {
