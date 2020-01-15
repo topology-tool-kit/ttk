@@ -38,7 +38,7 @@ void ttk::ftm::FTMTree::build(void) {
 #ifdef TTK_ENABLE_OPENMP
   omp_set_num_threads(threadNumber_);
   omp_set_nested(1);
-#ifdef TTK_ENABLE_OMP_PRIORITY
+#ifdef TTK_ENABLE_OPENMP_TASK_PRIORITY
   if(omp_get_max_task_priority() < 5) {
     std::stringstream msg;
     msg << "[FTM Graph]: Warning, OpenMP max priority is lower than 5"

@@ -35,12 +35,20 @@ namespace ttk {
           // This propagation is dying here
           idVertex curProp;
           float curTime;
+#if TTK_OPENMP_VERSION_MAJOR > 3 \
+  || (TTK_OPENMP_VERSION_MAJOR == 3 && TTK_OPENMP_VERSION_MINOR >= 1)
 #pragma omp atomic capture seq_cst
+#elif defined(TTK_ENABLE_OPENMP)
+#pragma omp flush(curProp, nbProp_)
+#pragma omp critical
+#endif
           {
             curProp = nbProp_;
             --nbProp_;
           }
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp critical(stats)
+#endif
           { curTime = sweepStart_.getElapsedTime(); }
           propTimes_[curProp - 1] = curTime;
         }
@@ -69,7 +77,13 @@ namespace ttk {
             // This propagation is dying here
             idVertex curProp;
             float curTime;
+#if TTK_OPENMP_VERSION_MAJOR > 3 \
+  || (TTK_OPENMP_VERSION_MAJOR == 3 && TTK_OPENMP_VERSION_MINOR >= 1)
 #pragma omp atomic capture seq_cst
+#elif defined(TTK_ENABLE_OPENMP)
+#pragma omp flush(curProp, nbProp_)
+#pragma omp critical
+#endif
             {
               curProp = nbProp_;
               --nbProp_;
@@ -211,12 +225,20 @@ namespace ttk {
               // This propagation is dying here
               idVertex curProp;
               float curTime;
+#if TTK_OPENMP_VERSION_MAJOR > 3 \
+  || (TTK_OPENMP_VERSION_MAJOR == 3 && TTK_OPENMP_VERSION_MINOR >= 1)
 #pragma omp atomic capture seq_cst
+#elif defined(TTK_ENABLE_OPENMP)
+#pragma omp flush(curProp, nbProp_)
+#pragma omp critical
+#endif
               {
                 curProp = nbProp_;
                 --nbProp_;
               }
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp critical(stats)
+#endif
               { curTime = sweepStart_.getElapsedTime(); }
               propTimes_[curProp - 1] = curTime;
             }
@@ -241,12 +263,20 @@ namespace ttk {
           // This propagation is dying here
           idVertex curProp;
           float curTime;
+#if TTK_OPENMP_VERSION_MAJOR > 3 \
+  || (TTK_OPENMP_VERSION_MAJOR == 3 && TTK_OPENMP_VERSION_MINOR >= 1)
 #pragma omp atomic capture seq_cst
+#elif defined(TTK_ENABLE_OPENMP)
+#pragma omp flush(curProp, nbProp_)
+#pragma omp critical
+#endif
           {
             curProp = nbProp_;
             --nbProp_;
           }
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp critical(stats)
+#endif
           { curTime = sweepStart_.getElapsedTime(); }
           propTimes_[curProp - 1] = curTime;
         }
@@ -334,12 +364,20 @@ namespace ttk {
             // This propagation is dying here
             idVertex curProp;
             float curTime;
+#if TTK_OPENMP_VERSION_MAJOR > 3 \
+  || (TTK_OPENMP_VERSION_MAJOR == 3 && TTK_OPENMP_VERSION_MINOR >= 1)
 #pragma omp atomic capture seq_cst
+#elif defined(TTK_ENABLE_OPENMP)
+#pragma omp flush(curProp, nbProp_)
+#pragma omp critical
+#endif
             {
               curProp = nbProp_;
               --nbProp_;
             }
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp critical(stats)
+#endif
             { curTime = sweepStart_.getElapsedTime(); }
             propTimes_[curProp - 1] = curTime;
           }
@@ -362,14 +400,14 @@ namespace ttk {
 
       // starting from the saddle
       if(isSplit && (!isJoin || isJoinLast)) {
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP_TASK
 #pragma omp task OPTIONAL_PRIORITY(PriorityLevel::Low)
 #endif
         growthFromSeed(upVert, localProp);
 
       } else if(isJoinLast) {
 
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP_TASK
 #pragma omp task OPTIONAL_PRIORITY(PriorityLevel::Average)
 #endif
         growthFromSeed(upVert, localProp, joinParentArc);
@@ -380,12 +418,20 @@ namespace ttk {
         // This propagation is dying here
         idVertex curProp;
         float curTime;
+#if TTK_OPENMP_VERSION_MAJOR > 3 \
+  || (TTK_OPENMP_VERSION_MAJOR == 3 && TTK_OPENMP_VERSION_MINOR >= 1)
 #pragma omp atomic capture seq_cst
+#elif defined(TTK_ENABLE_OPENMP)
+#pragma omp flush(curProp, nbProp_)
+#pragma omp critical
+#endif
         {
           curProp = nbProp_;
           --nbProp_;
         }
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp critical(stats)
+#endif
         { curTime = sweepStart_.getElapsedTime(); }
         propTimes_[curProp - 1] = curTime;
       }
@@ -903,8 +949,11 @@ namespace ttk {
       if(localProp->goUp()) {
         // for gcc 4.8 and old openMP
         valence *const vd = &graph_.valDown_[curSaddle];
-#ifdef TTK_ENABLE_OPENMP
+#if TTK_OPENMP_VERSION_MAJOR > 3 \
+  || (TTK_OPENMP_VERSION_MAJOR == 3 && TTK_OPENMP_VERSION_MINOR >= 1)
 #pragma omp atomic capture
+#elif defined(TTK_ENABLE_OPENMP)
+#pragma omp critical
 #endif
         {
           oldVal = *vd;
@@ -913,8 +962,11 @@ namespace ttk {
 
       } else {
         valence *const vu = &graph_.valUp_[curSaddle];
-#ifdef TTK_ENABLE_OPENMP
+#if TTK_OPENMP_VERSION_MAJOR > 3 \
+  || (TTK_OPENMP_VERSION_MAJOR == 3 && TTK_OPENMP_VERSION_MINOR >= 1)
 #pragma omp atomic capture
+#elif defined(TTK_ENABLE_OPENMP)
+#pragma omp critical
 #endif
         {
           oldVal = *vu;
@@ -928,8 +980,11 @@ namespace ttk {
         valence newVal = 0;
         if(localProp->goUp()) {
           valence *const vd = &graph_.valDown_[curSaddle];
-#ifdef TTK_ENABLE_OPENMP
+#if TTK_OPENMP_VERSION_MAJOR > 3 \
+  || (TTK_OPENMP_VERSION_MAJOR == 3 && TTK_OPENMP_VERSION_MINOR >= 1)
 #pragma omp atomic capture
+#elif defined(TTK_ENABLE_OPENMP)
+#pragma omp critical
 #endif
           {
             newVal = *vd;
@@ -938,8 +993,11 @@ namespace ttk {
 
         } else {
           valence *const vu = &graph_.valUp_[curSaddle];
-#ifdef TTK_ENABLE_OPENMP
+#if TTK_OPENMP_VERSION_MAJOR > 3 \
+  || (TTK_OPENMP_VERSION_MAJOR == 3 && TTK_OPENMP_VERSION_MINOR >= 1)
 #pragma omp atomic capture
+#elif defined(TTK_ENABLE_OPENMP)
+#pragma omp critical
 #endif
           {
             newVal = *vu;
@@ -1040,8 +1098,12 @@ namespace ttk {
         propagations_.visit(curVert, localProp);
         opposite = propagations_.visitOpposite(curVert, localProp);
         bool done;
-#ifdef TTK_ENABLE_OPENMP
+#if TTK_OPENMP_VERSION_MAJOR > 3 \
+  || (TTK_OPENMP_VERSION_MAJOR == 3 && TTK_OPENMP_VERSION_MINOR >= 1)
 #pragma omp atomic read seq_cst
+#elif defined(TTK_ENABLE_OPENMP)
+#pragma omp flush(done, opposite.done)
+#pragma omp critical
 #endif
         done = opposite.done;
         if(!done) {

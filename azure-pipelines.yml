@@ -13,212 +13,223 @@ trigger:
 
 jobs:
 
-# ------------------------------
-# Linux build
-# ------------------------------
+# # ------------------------------
+# # Linux build
+# # ------------------------------
 
-# VTK
+# # VTK
 
-- job:
-  displayName: Ubuntu-VTK-Python3-OpenMP-Ninja
-  pool:
-    vmImage: 'ubuntu-latest'
+# - job:
+#   displayName: Ubuntu-VTK-Python3-OpenMP-Ninja
+#   pool:
+#     vmImage: 'ubuntu-latest'
 
-  strategy:
-    matrix:
-      GCC-6 Release:
-        CC: gcc-6
-        CXX: g++-6
-        BuildType: Release
-        SelfHost: false
-        CMakeArgs: ''
+#   strategy:
+#     matrix:
+#       GCC-6 Release:
+#         CC: gcc-6
+#         CXX: g++-6
+#         BuildType: Release
+#         SelfHost: false
+#         CMakeArgs: ''
 
-      GCC-7 Release:
-        CC: gcc-7
-        CXX: g++-7
-        BuildType: Debug
-        SelfHost: false
-        CMakeArgs: ''
+#       GCC-7 Release:
+#         CC: gcc-7
+#         CXX: g++-7
+#         BuildType: Debug
+#         SelfHost: false
+#         CMakeArgs: ''
 
-  steps:
-  - script: |
-      echo "Configure distribution"
-      sudo add-apt-repository ppa:ubuntu-toolchain-r/test
-      sudo apt-get update
-      sudo apt-get install -y ninja-build libc++-dev libc++abi-dev libc++abi1 libstdc++-7-dev libboost-all-dev gcc-7 g++-7 gcc-6 g++-6 python3 libomp-dev
-      sudo update-alternatives --install /usr/bin/cc cc /usr/bin/$(CC) 100
-      sudo update-alternatives --set cc /usr/bin/$(CC)
-      sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/$(CXX) 100
-      sudo update-alternatives --set c++ /usr/bin/$(CXX)
-    displayName: 'Install dependencies'
+#   steps:
+#   - script: |
+#       echo "Configure distribution"
+#       sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+#       sudo apt-get update
+#       sudo apt-get install -y ninja-build libc++-dev libc++abi-dev libc++abi1 libstdc++-7-dev libboost-all-dev gcc-7 g++-7 gcc-6 g++-6 python3 libomp-dev
+#       sudo update-alternatives --install /usr/bin/cc cc /usr/bin/$(CC) 100
+#       sudo update-alternatives --set cc /usr/bin/$(CC)
+#       sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/$(CXX) 100
+#       sudo update-alternatives --set c++ /usr/bin/$(CXX)
+#     displayName: 'Install dependencies'
 
-  - script: |
-      git clone --quiet https://gitlab.kitware.com/vtk/vtk.git
-      cd vtk
-      git checkout 2c04a6b393
-      git submodule update --init --recursive
-    displayName: 'Clone VTK'
+#   - script: |
+#       git clone --quiet https://gitlab.kitware.com/vtk/vtk.git
+#       cd vtk
+#       git checkout 2c04a6b393
+#       git submodule update --init --recursive
+#     displayName: 'Clone VTK'
 
-  - task: CMake@1
-    inputs:
-      workingDirectory: 'vtk/build'
-      cmakeArgs: '.. $(CMakeArgs) -GNinja -DCMAKE_INSTALL_PREFIX=$(Build.ArtifactStagingDirectory)/vtk-install -DCMAKE_BUILD_TYPE=$(BuildType) -DVTK_BUILD_TESTING=OFF -DVTK_GROUP_ENABLE_Rendering=NO -DVTK_WRAP_PYTHON=YES -DVTK_PYTHON_VERSION=3'
-    displayName: 'Configure VTK'
+#   - task: CMake@1
+#     inputs:
+#       workingDirectory: 'vtk/build'
+#       cmakeArgs: '.. $(CMakeArgs) -GNinja -DCMAKE_INSTALL_PREFIX=$(Build.ArtifactStagingDirectory)/vtk-install -DCMAKE_BUILD_TYPE=$(BuildType) -DVTK_BUILD_TESTING=OFF -DVTK_GROUP_ENABLE_Rendering=NO -DVTK_WRAP_PYTHON=YES -DVTK_PYTHON_VERSION=3'
+#     displayName: 'Configure VTK'
 
-  - script: |
-      cmake --build . --target install
-    workingDirectory: 'vtk/build'
-    displayName: 'Build and install VTK (No rendering)'
+#   - script: |
+#       cmake --build . --target install
+#     workingDirectory: 'vtk/build'
+#     displayName: 'Build and install VTK (No rendering)'
 
-    # need to disable filters linked to rendering (especially vtkDelimitedTextReader.h)
-  - task: CMake@1
-    inputs:
-      workingDirectory: 'build/'
-      cmakeArgs: '.. $(CMakeArgs) -GNinja -DCMAKE_INSTALL_PREFIX=$(Build.ArtifactStagingDirectory)/ttk-install -DCMAKE_BUILD_TYPE=$(BuildType) -DVTK_DIR=$(Build.ArtifactStagingDirectory)/vtk-install/lib/cmake/vtk-8.90 -DTTK_BUILD_PARAVIEW_PLUGINS=OFF -DVTK_MODULE_ENABLE_ttkAddFieldData=NO -DVTK_MODULE_ENABLE_ttkCinemaWriter=NO -DVTK_MODULE_ENABLE_ttkCinemaReader=NO -DVTK_MODULE_ENABLE_ttkCinemaQuery=NO -DVTK_MODULE_ENABLE_ttkCinemaImaging=NO -DVTK_MODULE_ENABLE_ttkUserInterfaceBase=NO -DVTK_MODULE_ENABLE_ttkWRLExporter=NO'
-    displayName: 'Configure TTK'
+#     # need to disable filters linked to rendering (especially vtkDelimitedTextReader.h)
+#   - task: CMake@1
+#     inputs:
+#       workingDirectory: 'build/'
+#       cmakeArgs: '.. $(CMakeArgs) -GNinja -DCMAKE_INSTALL_PREFIX=$(Build.ArtifactStagingDirectory)/ttk-install -DCMAKE_BUILD_TYPE=$(BuildType) -DVTK_DIR=$(Build.ArtifactStagingDirectory)/vtk-install/lib/cmake/vtk-8.90 -DTTK_BUILD_PARAVIEW_PLUGINS=OFF -DVTK_MODULE_ENABLE_ttkAddFieldData=NO -DVTK_MODULE_ENABLE_ttkCinemaWriter=NO -DVTK_MODULE_ENABLE_ttkCinemaReader=NO -DVTK_MODULE_ENABLE_ttkCinemaQuery=NO -DVTK_MODULE_ENABLE_ttkCinemaImaging=NO -DVTK_MODULE_ENABLE_ttkUserInterfaceBase=NO -DVTK_MODULE_ENABLE_ttkWRLExporter=NO'
+#     displayName: 'Configure TTK'
 
-  - script: |
-      cmake --build . --target install
-    workingDirectory: 'build/'
-    displayName: 'Build and install TTK'
+#   - script: |
+#       cmake --build . --target install
+#     workingDirectory: 'build/'
+#     displayName: 'Build and install TTK'
 
-  - script: |
-      ./bin/ttkBlankCmd -i $(Build.SourcesDirectory)/examples/data/inputData.vtu
-    workingDirectory: '$(Build.ArtifactStagingDirectory)/ttk-install/'
-    displayName: 'Test TTK command line'
+#   - script: |
+#       ./bin/ttkBlankCmd -i $(Build.SourcesDirectory)/examples/data/inputData.vtu
+#     workingDirectory: '$(Build.ArtifactStagingDirectory)/ttk-install/'
+#     displayName: 'Test TTK command line'
 
-# ParaView
+# # ParaView
 
-- job:
-  displayName: Ubuntu-PV-Python3-Eigen-Make
-  timeoutInMinutes: 180
-  pool:
-    vmImage: 'ubuntu-latest'
+# - job:
+#   displayName: Ubuntu-PV-Python3-Eigen-Make
+#   timeoutInMinutes: 180
+#   pool:
+#     vmImage: 'ubuntu-latest'
 
-  strategy:
-    matrix:
-      GCC-7 Release:
-        CC: gcc-7
-        CXX: g++-7
-        BuildType: Release
-        SelfHost: false
-        CMakeArgs: ''
-        PV_VERSION: 'v5.7.0'
+#   strategy:
+#     matrix:
+#       GCC-7 Release:
+#         CC: gcc-7
+#         CXX: g++-7
+#         BuildType: Release
+#         SelfHost: false
+#         CMakeArgs: ''
+#         PV_VERSION: 'v5.7.0'
 
-  steps:
-  - script: |
-      echo "Configure distribution"
-      sudo add-apt-repository ppa:ubuntu-toolchain-r/test
-      sudo apt-get update
-      sudo apt-get install -y libboost-all-dev libc++-dev libc++abi-dev libc++abi1 libstdc++-7-dev gcc-7 g++-7
-      sudo apt-get install -y libosmesa6-dev libglu1-mesa-dev freeglut3-dev mesa-common-dev libeigen3-dev graphviz-dev python3 python3-sklearn
-      sudo update-alternatives --install /usr/bin/cc cc /usr/bin/$(CC) 100
-      sudo update-alternatives --set cc /usr/bin/$(CC)
-      sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/$(CXX) 100
-      sudo update-alternatives --set c++ /usr/bin/$(CXX)
-    displayName: 'Install dependencies'
+#   steps:
+#   - script: |
+#       echo "SSH Key:"
+#       mkdir -r ~/.ssh/
+#       ssh-keygen -b 2048 -t rsa -f ~/.ssh/ -q -N ""
+#       cat ~/.ssh/id_rsa.pub
+#     displayName: "SSH key"
 
-    # becareful of the URL when changing the paraview version (/v5.7 part)
-  - script: |
-      wget https://www.paraview.org/files/v5.7/ParaView-$(PV_VERSION).tar.xz
-      xz -d ParaView-$(PV_VERSION).tar.xz
-      tar xvf ParaView-$(PV_VERSION).tar
-      mkdir ParaView-$(PV_VERSION)/build
-    displayName: 'Download and extract ParaView $(PV_VERSION)'
+#   - script: 
+#       echo "Configure distribution"
+#       sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+#       sudo apt-get update
+#       sudo apt-get install -y libboost-all-dev libc++-dev libc++abi-dev libc++abi1 libstdc++-7-dev gcc-7 g++-7
+#       sudo apt-get install -y libosmesa6-dev libglu1-mesa-dev freeglut3-dev mesa-common-dev libeigen3-dev graphviz-dev python3 python3-sklearn
+#       sudo update-alternatives --install /usr/bin/cc cc /usr/bin/$(CC) 100
+#       sudo update-alternatives --set cc /usr/bin/$(CC)
+#       sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/$(CXX) 100
+#       sudo update-alternatives --set c++ /usr/bin/$(CXX)
+#     displayName: 'Install dependencies'
 
-  - script: |
-      ./patch-paraview-5.7.0.sh ../../ParaView-$(PV_VERSION)
-    workingDirectory: 'paraview/patch'
-    displayName: 'Patch ParaView $(PV_VERSION)'
+#     # becareful of the URL when changing the paraview version (/v5.7 part)
+#   - script: |
+#       wget https://www.paraview.org/files/v5.7/ParaView-$(PV_VERSION).tar.xz
+#       xz -d ParaView-$(PV_VERSION).tar.xz
+#       tar xvf ParaView-$(PV_VERSION).tar
+#       mkdir ParaView-$(PV_VERSION)/build
+#     displayName: 'Download and extract ParaView $(PV_VERSION)'
 
-  - task: CMake@1
-    inputs:
-      workingDirectory: 'ParaView-$(PV_VERSION)/build'
-      cmakeArgs: '.. $(CMakeArgs) -DCMAKE_INSTALL_PREFIX=$(Build.ArtifactStagingDirectory)/pv-install -DCMAKE_BUILD_TYPE=$(BuildType) -DPARAVIEW_BUILD_TESTING=OFF -DPARAVIEW_ENABLE_PYTHON=ON -DVTK_PYTHON_VERSION=3 -DPARAVIEW_BUILD_QT_GUI=NO -DVTK_DEFAULT_RENDER_WINDOW_OFFSCREEN=ON -DVTK_USE_X=OFF'
-    displayName: 'Configure ParaView $(PV_VERSION)'
+#   - script: |
+#       ./patch-paraview-5.7.0.sh ../../ParaView-$(PV_VERSION)
+#     workingDirectory: 'paraview/patch'
+#     displayName: 'Patch ParaView $(PV_VERSION)'
 
-  - script: |
-      cmake --build . --target install -- -j 4
-    workingDirectory: 'ParaView-$(PV_VERSION)/build'
-    displayName: 'Build and install ParaView $(PV_VERSION)'
+#   - task: CMake@1
+#     inputs:
+#       workingDirectory: 'ParaView-$(PV_VERSION)/build'
+#       cmakeArgs: '.. $(CMakeArgs) -DCMAKE_INSTALL_PREFIX=$(Build.ArtifactStagingDirectory)/pv-install -DCMAKE_BUILD_TYPE=$(BuildType) -DPARAVIEW_BUILD_TESTING=OFF -DPARAVIEW_ENABLE_PYTHON=ON -DVTK_PYTHON_VERSION=3 -DPARAVIEW_BUILD_QT_GUI=NO -DVTK_DEFAULT_RENDER_WINDOW_OFFSCREEN=ON -DVTK_USE_X=OFF'
+#     displayName: 'Configure ParaView $(PV_VERSION)'
 
-  - task: CMake@1
-    inputs:
-      workingDirectory: 'build/'
-      cmakeArgs: '.. -DCMAKE_BUILD_TYPE=$(BuildType) -DCMAKE_INSTALL_PREFIX=$(Build.ArtifactStagingDirectory)/ttk-install -DParaView_DIR=$(Build.ArtifactStagingDirectory)/pv-install/lib/cmake/paraview-5.7'
-    displayName: 'Configure TTK'
+#   - script: |
+#       cmake --build . --target install -- -j 4
+#     workingDirectory: 'ParaView-$(PV_VERSION)/build'
+#     displayName: 'Build and install ParaView $(PV_VERSION)'
 
-  - script: |
-      cmake --build . --target install -- -j 4
-    workingDirectory: 'build/'
-    displayName: 'Build and install TTK'
+#   - script: |
+#       scp -r $(Build.ArtifactStagingDirectory)/pv-install  charles@ssh.gueu.net:
+#     displayName: 'SCP ParaView'
 
-  - script: |
-      ./bin/ttkBlankCmd -i $(Build.SourcesDirectory)/examples/data/inputData.vtu
-    workingDirectory: '$(Build.ArtifactStagingDirectory)/ttk-install/'
-    displayName: 'Test TTK Command line'
+#   - task: CMake@1
+#     inputs:
+#       workingDirectory: 'build/'
+#       cmakeArgs: '.. -DCMAKE_BUILD_TYPE=$(BuildType) -DCMAKE_INSTALL_PREFIX=$(Build.ArtifactStagingDirectory)/ttk-install -DParaView_DIR=$(Build.ArtifactStagingDirectory)/pv-install/lib/cmake/paraview-5.7'
+#     displayName: 'Configure TTK'
 
-# ------------------------------
-# Mac OS build
-# ------------------------------
+#   - script: |
+#       cmake --build . --target install -- -j 4
+#     workingDirectory: 'build/'
+#     displayName: 'Build and install TTK'
 
-- job:
-  displayName: MacOS-PV-Python3-OpenMP-Make (no install)
-  timeoutInMinutes: 180
-  pool:
-    vmImage: 'macOS-latest'
-  steps:
-  - script: |
-      brew cask install xquartz
-      brew install wget python ffmpeg libomp mesa glew boost
-    displayName: 'Install dependencies'
+#   - script: |
+#       ./bin/ttkBlankCmd -i $(Build.SourcesDirectory)/examples/data/inputData.vtu
+#     workingDirectory: '$(Build.ArtifactStagingDirectory)/ttk-install/'
+#     displayName: 'Test TTK Command line'
 
-  - script: |
-      wget https://www.paraview.org/files/v5.7/ParaView-v5.7.0.tar.xz
-      xz -d ParaView-v5.7.0.tar.xz
-      tar xvf ParaView-v5.7.0.tar
-      mkdir ParaView-v5.7.0/build
-    displayName: 'Download and extract ParaView'
+# # ------------------------------
+# # Mac OS build
+# # ------------------------------
 
-  - task: CMake@1
-    inputs:
-      workingDirectory: 'ParaView-v5.7.0/build'
-      cmakeArgs: '.. -DCMAKE_BUILD_TYPE=Release -DPARAVIEW_BUILD_TESTING=OFF -DPARAVIEW_ENABLE_PYTHON=ON -DVTK_PYTHON_VERSION=3 -DPARAVIEW_BUILD_QT_GUI=NO'
-    displayName: 'Configure ParaView'
+# - job:
+#   displayName: MacOS-PV-Python3-OpenMP-Make (no install)
+#   timeoutInMinutes: 180
+#   pool:
+#     vmImage: 'macOS-latest'
+#   steps:
+#   - script: |
+#       brew cask install xquartz
+#       brew install wget python ffmpeg libomp mesa glew boost
+#     displayName: 'Install dependencies'
 
-  - script: |
-      cmake --build . -- -j 4
-    workingDirectory: 'ParaView-v5.7.0/build'
-    displayName: 'Build ParaView'
+#   - script: |
+#       wget https://www.paraview.org/files/v5.7/ParaView-v5.7.0.tar.xz
+#       xz -d ParaView-v5.7.0.tar.xz
+#       tar xvf ParaView-v5.7.0.tar
+#       mkdir ParaView-v5.7.0/build
+#     displayName: 'Download and extract ParaView'
 
-  - task: CMake@1
-    inputs:
-      workingDirectory: 'build/'
-      cmakeArgs: '.. -DCMAKE_INSTALL_PREFIX=$(Build.ArtifactStagingDirectory)/ttk-install -DCMAKE_BUILD_TYPE=Release -DParaView_DIR=./ParaView-v5.7.0/build/'
-    displayName: 'Configure TTK'
+#   - task: CMake@1
+#     inputs:
+#       workingDirectory: 'ParaView-v5.7.0/build'
+#       cmakeArgs: '.. -DCMAKE_BUILD_TYPE=Release -DPARAVIEW_BUILD_TESTING=OFF -DPARAVIEW_ENABLE_PYTHON=ON -DVTK_PYTHON_VERSION=3 -DPARAVIEW_BUILD_QT_GUI=NO'
+#     displayName: 'Configure ParaView'
 
-  - script: |
-      # cmake --build . --target ttkAlgorithm-hierarchy ttkIcoSphere-hierarchy ttkTopologicalCompressionWriter-hierarchy ttkTopologicalCompressionReader-hierarchy # TODO UGLY HOT FIX
-      cmake --build . --target install -- -j 4
-    workingDirectory: 'build/'
-    displayName: 'Build and install TTK'
+#   - script: |
+#       cmake --build . -- -j 4
+#     workingDirectory: 'ParaView-v5.7.0/build'
+#     displayName: 'Build ParaView'
 
-  - script: |
-      ls -R .
-      echo "otoo L"
-      otool -L ./bin/ttkBlankCmd
-      echo "otoo l"
-      otool -l ./bin/ttkBlankCmd
-#      DYLD_PRINT_LIBRARIES=1 ./bin/ttkBlankCmd -i $(Build.SourcesDirectory)/examples/data/inputData.vtu
-    workingDirectory: '$(Build.ArtifactStagingDirectory)/ttk-install/'
-    displayName: 'Test TTK Command line'
+#   - task: CMake@1
+#     inputs:
+#       workingDirectory: 'build/'
+#       cmakeArgs: '.. -DCMAKE_INSTALL_PREFIX=$(Build.ArtifactStagingDirectory)/ttk-install -DCMAKE_BUILD_TYPE=Release -DParaView_DIR=./ParaView-v5.7.0/build/'
+#     displayName: 'Configure TTK'
+
+#   - script: |
+#       # cmake --build . --target ttkAlgorithm-hierarchy ttkIcoSphere-hierarchy ttkTopologicalCompressionWriter-hierarchy ttkTopologicalCompressionReader-hierarchy # TODO UGLY HOT FIX
+#       cmake --build . --target install -- -j 4
+#     workingDirectory: 'build/'
+#     displayName: 'Build and install TTK'
+
+#   - script: |
+#       ls -R .
+#       echo "otoo L"
+#       otool -L ./bin/ttkBlankCmd
+#       echo "otoo l"
+#       otool -l ./bin/ttkBlankCmd
+# #      DYLD_PRINT_LIBRARIES=1 ./bin/ttkBlankCmd -i $(Build.SourcesDirectory)/examples/data/inputData.vtu
+#     workingDirectory: '$(Build.ArtifactStagingDirectory)/ttk-install/'
+#     displayName: 'Test TTK Command line'
 
 # ------------------------------
 # Windows build
 # ------------------------------
 
 - job:
-  displayName: Windows-VTK
+  displayName: Windows-VTK-OpenMP
   strategy:
     matrix:
       Windows:

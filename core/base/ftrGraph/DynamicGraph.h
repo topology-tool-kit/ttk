@@ -336,8 +336,11 @@ namespace ttk {
       /// Get the arcs corresponding to this subtree
       idSuperArc getCorArc() const {
         idSuperArc corArc;
-#ifdef TTK_ENABLE_OPENMP
+#if TTK_OPENMP_VERSION_MAJOR > 3 \
+  || (TTK_OPENMP_VERSION_MAJOR == 3 && TTK_OPENMP_VERSION_MINOR >= 1)
 #pragma omp atomic read
+#elif defined(TTK_ENABLE_OPENMP)
+#pragma omp critical
 #endif
         corArc = corArc_;
         return corArc;

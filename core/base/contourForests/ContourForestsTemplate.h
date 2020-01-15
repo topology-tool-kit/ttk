@@ -351,12 +351,18 @@ namespace ttk {
 
           parallelData_.trees[i].getJoinTree()->localSimplify<scalarType>(
             std::get<0>(seedsPos), std::get<1>(seedsPos));
-#ifdef TTK_ENABLE_OPENMP
+#if TTK_OPENMP_VERSION_MAJOR > 3 \
+  || (TTK_OPENMP_VERSION_MAJOR == 3 && TTK_OPENMP_VERSION_MINOR >= 1)
 #pragma omp atomic update
+#elif defined(TTK_ENABLE_OPENMP)
+#pragma omp critical
 #endif
         timeSimplify[i] += timerSimplify.getElapsedTime();
-#ifdef TTK_ENABLE_OPENMP
+#if TTK_OPENMP_VERSION_MAJOR > 3 \
+  || (TTK_OPENMP_VERSION_MAJOR == 3 && TTK_OPENMP_VERSION_MINOR >= 1)
 #pragma omp atomic update
+#elif defined(TTK_ENABLE_OPENMP)
+#pragma omp critical
 #endif
         nbPairMerged += tmpMerge;
 #endif
@@ -385,12 +391,18 @@ namespace ttk {
 
           parallelData_.trees[i].getSplitTree()->localSimplify<scalarType>(
             std::get<0>(seedsPos), std::get<1>(seedsPos));
-#ifdef TTK_ENABLE_OPENMP
+#if TTK_OPENMP_VERSION_MAJOR > 3 \
+  || (TTK_OPENMP_VERSION_MAJOR == 3 && TTK_OPENMP_VERSION_MINOR >= 1)
 #pragma omp atomic update
+#elif defined(TTK_ENABLE_OPENMP)
+#pragma omp critical
 #endif
         timeSimplify[i] += timerSimplify.getElapsedTime();
-#ifdef TTK_ENABLE_OPENMP
+#if TTK_OPENMP_VERSION_MAJOR > 3 \
+  || (TTK_OPENMP_VERSION_MAJOR == 3 && TTK_OPENMP_VERSION_MINOR >= 1)
 #pragma omp atomic update
+#elif defined(TTK_ENABLE_OPENMP)
+#pragma omp critical
 #endif
         nbPairMerged += tmpMerge;
 #endif

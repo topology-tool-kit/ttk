@@ -144,8 +144,11 @@ namespace ttk {
 
 #ifdef TTK_ENABLE_FTR_VERT_STATS
       void incTouch(const idVertex v) {
-#ifdef TTK_ENABLE_OPENMP
+#if TTK_OPENMP_VERSION_MAJOR > 3 \
+  || (TTK_OPENMP_VERSION_MAJOR == 3 && TTK_OPENMP_VERSION_MINOR >= 1)
 #pragma omp atomic update
+#elif defined(TTK_ENABLE_OPENMP)
+#pragma omp critical
 #endif
         nbTouch_[v]++;
       }
@@ -155,8 +158,11 @@ namespace ttk {
       }
 
       void setNbArcActive(const idVertex v, const idSuperArc nb) {
-#ifdef TTK_ENABLE_OPENMP
+#if TTK_OPENMP_VERSION_MAJOR > 3 \
+  || (TTK_OPENMP_VERSION_MAJOR == 3 && TTK_OPENMP_VERSION_MINOR >= 1)
 #pragma omp atomic write
+#elif defined(TTK_ENABLE_OPENMP)
+#pragma omp critical
 #endif
         nbArcActif_[v] = nb;
       }
@@ -166,8 +172,11 @@ namespace ttk {
       }
 
       void incAvoid() {
-#ifdef TTK_ENABLE_OPENMP
+#if TTK_OPENMP_VERSION_MAJOR > 3 \
+  || (TTK_OPENMP_VERSION_MAJOR == 3 && TTK_OPENMP_VERSION_MINOR >= 1)
 #pragma omp atomic update
+#elif defined(TTK_ENABLE_OPENMP)
+#pragma omp critical
 #endif
         avoided_++;
       }

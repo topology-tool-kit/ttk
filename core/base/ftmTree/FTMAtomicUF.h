@@ -42,8 +42,11 @@ namespace ttk {
           return this;
         else {
           decltype(parent_) tmp = parent_->find();
-#ifdef TTK_ENABLE_OPENMP
+#if TTK_OPENMP_VERSION_MAJOR > 3 \
+  || (TTK_OPENMP_VERSION_MAJOR == 3 && TTK_OPENMP_VERSION_MINOR >= 1)
 #pragma omp atomic write
+#elif defined(TTK_ENABLE_OPENMP)
+#pragma omp critical
 #endif
           parent_ = tmp;
 
@@ -128,15 +131,21 @@ namespace ttk {
       }
 
       inline void setRank(const int &rank) {
-#ifdef TTK_ENABLE_OPENMP
+#if TTK_OPENMP_VERSION_MAJOR > 3 \
+  || (TTK_OPENMP_VERSION_MAJOR == 3 && TTK_OPENMP_VERSION_MINOR >= 1)
 #pragma omp atomic write
+#elif defined(TTK_ENABLE_OPENMP)
+#pragma omp critical
 #endif
         rank_ = rank;
       }
 
       inline void setParent(AtomicUF *parent) {
-#ifdef TTK_ENABLE_OPENMP
+#if TTK_OPENMP_VERSION_MAJOR > 3 \
+  || (TTK_OPENMP_VERSION_MAJOR == 3 && TTK_OPENMP_VERSION_MINOR >= 1)
 #pragma omp atomic write
+#elif defined(TTK_ENABLE_OPENMP)
+#pragma omp critical
 #endif
         parent_ = parent;
       }

@@ -31,9 +31,17 @@ namespace ttk {
     // --------
 
     /// \brief SuperArc index in vect_superArcs_
+#if (defined _WIN32 && defined TTK_ENABLE_OPENMP)
+    using idSuperArc = long long int;
+#else
     using idSuperArc = long unsigned int;
+#endif
     /// \brief Node index in vect_nodes_
+#if (defined _WIN32 && defined TTK_ENABLE_OPENMP)
+    using idNode = long int;
+#else
     using idNode = unsigned int;
+#endif
 
     /// \brief type used to recover Node/Arc in vert2tree SIGNED ONLY
     // Warning, in long long int the max super arc is -1, might not be able to

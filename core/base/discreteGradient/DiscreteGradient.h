@@ -246,8 +246,11 @@ namespace ttk {
       SimplexId omp_addSlot() {
         SimplexId numberOfSlots = 0;
 
-#ifdef TTK_ENABLE_OPENMP
+#if TTK_OPENMP_VERSION_MAJOR > 3 \
+  || (TTK_OPENMP_VERSION_MAJOR == 3 && TTK_OPENMP_VERSION_MINOR >= 1)
 #pragma omp atomic capture
+#elif defined(TTK_ENABLE_OPENMP)
+#pragma omp critical
 #endif
         numberOfSlots = (numberOfSlots_++);
 

@@ -82,8 +82,11 @@ namespace ttk {
     }
 
     void reset(const std::size_t &nId = 0) {
-#ifdef TTK_ENABLE_OPENMP
+#if TTK_OPENMP_VERSION_MAJOR > 3 \
+  || (TTK_OPENMP_VERSION_MAJOR == 3 && TTK_OPENMP_VERSION_MINOR >= 1)
 #pragma omp atomic write
+#elif defined(TTK_ENABLE_OPENMP)
+#pragma omp critical
 #endif
       nextId = nId;
     }
@@ -99,8 +102,11 @@ namespace ttk {
 
     std::size_t getNext(void) {
       std::size_t resId;
-#ifdef TTK_ENABLE_OPENMP
+#if TTK_OPENMP_VERSION_MAJOR > 3 \
+  || (TTK_OPENMP_VERSION_MAJOR == 3 && TTK_OPENMP_VERSION_MINOR >= 1)
 #pragma omp atomic capture
+#elif defined(TTK_ENABLE_OPENMP)
+#pragma omp critical
 #endif
       resId = nextId++;
 

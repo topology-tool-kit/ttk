@@ -188,50 +188,21 @@ if(APPLE)
 endif()
 
 if(NOT APPLE)
-  if(MSVC)
-    option(TTK_ENABLE_OPENMP "Enable OpenMP support" FALSE)
-  else()
-    option(TTK_ENABLE_OPENMP "Enable OpenMP support" TRUE)
-  endif()
+  option(TTK_ENABLE_OPENMP "Enable OpenMP support" TRUE)
 endif()
-option(TTK_ENABLE_MPI "Enable MPI support" FALSE)
-
 if(TTK_ENABLE_OPENMP)
   find_package(OpenMP REQUIRED)
-  if(OPENMP_FOUND)
-    option(TTK_ENABLE_OMP_PRIORITY
-      "Gives tasks priority, high perf improvement"
-      OFF
-      )
-    if(OpenMP_CXX_VERSION_MAJOR GREATER_EQUAL 4
-        AND OpenMP_CXX_VERSION_MINOR GREATER_EQUAL 5)
-      set(TTK_ENABLE_OMP_PRIORITY
-        OFF
-        CACHE
-        BOOL
-        "Enable priorities on opnemp tasks"
-        FORCE
-        )
-    endif()
-
-    mark_as_advanced(TTK_ENABLE_OMP_PRIORITY)
-
-  endif()
-else()
-  if(TTK_ENABLE_OMP_PRIORITY)
-    # priorities are only meaningful when openmp is on
-    set(TTK_ENABLE_OMP_PRIORITY
-      OFF
-      CACHE
-      BOOL
-      "Enable priorities on opnemp tasks"
-      FORCE
-      )
+  if(OPENMP_CXX_FOUND)
+    set(TTK_OPENMP_VERSION_MAJOR ${OpenMP_CXX_VERSION_MAJOR} CACHE STRING "OpenMP major version")
+    set(TTK_OPENMP_VERSION_MINOR ${OpenMP_CXX_VERSION_MINOR} CACHE STRING "OpenMP minor version")
+    mark_as_advanced(TTK_OPENMP_VERSION_MAJOR TTK_OPENMP_VERSION_MINOR)
+  else()
+    message(WARNING "OpenMP found has no C++ abilities, disable.")
+    set(TTK_ENABLE_OPENMP OFF CACHE BOOL "" FORCE)
   endif()
 endif()
 
-
-
+option(TTK_ENABLE_MPI "Enable MPI support" FALSE)
 if (TTK_ENABLE_MPI)
   find_package(MPI REQUIRED)
 endif()

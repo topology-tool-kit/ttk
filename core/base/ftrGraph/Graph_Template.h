@@ -194,8 +194,11 @@ namespace ttk {
           continue;
         }
 #endif
-#ifdef TTK_ENABLE_OPENMP
+#if TTK_OPENMP_VERSION_MAJOR > 3 \
+  || (TTK_OPENMP_VERSION_MAJOR == 3 && TTK_OPENMP_VERSION_MINOR >= 1)
 #pragma omp atomic update
+#elif defined(TTK_ENABLE_OPENMP)
+#pragma omp critical
 #endif
         arcSizes[segmentation_[v].corArc]++;
       }

@@ -12,7 +12,7 @@
 #include <iterator>
 #endif
 
-#ifdef TTK_ENABLE_OMP_PRIORITY
+#ifdef TTK_ENABLE_OPENMP_TASK_PRIORITY
 #define OPTIONAL_PRIORITY(value) priority(value)
 #else
 #define OPTIONAL_PRIORITY(value)
@@ -56,7 +56,8 @@ namespace ttk {
 #ifdef TTK_ENABLE_OPENMP
       omp_set_num_threads(params_.threadNumber);
       omp_set_nested(1);
-#ifdef TTK_ENABLE_OMP_PRIORITY
+
+#ifdef TTK_ENABLE_OPENMP_TASK_PRIORITY
       if(omp_get_max_task_priority() < PriorityLevel::Max) {
         std::stringstream msg;
         msg << "[FTR Graph]: Warning, OpenMP max priority is lower than 5"
@@ -104,11 +105,11 @@ namespace ttk {
 
       DebugTimer timeBuild;
 
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP_TASK
 #pragma omp parallel num_threads(params_.threadNumber)
 #endif
       {
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP_TASK
 #pragma omp single nowait
 #endif
         {
@@ -207,7 +208,7 @@ namespace ttk {
 
       for(idPropagation leafChunkId = 0; leafChunkId < std::get<1>(leafChunk);
           ++leafChunkId) {
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP_TASK
 #pragma omp task firstprivate(leafChunkId)
 #endif
         {
@@ -232,7 +233,7 @@ namespace ttk {
           }
         } // end task
       }
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP_TASK
 #pragma omp taskwait
 #endif
 #ifdef TTK_ENABLE_FTR_TASK_STATS
@@ -259,7 +260,7 @@ namespace ttk {
 #ifdef TTK_ENABLE_FTR_TASK_STATS
       sweepStart_.reStart();
 #endif
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP_TASK
 #pragma omp taskgroup
 #endif
       {
@@ -276,7 +277,7 @@ namespace ttk {
             = graph_.openArc(graph_.makeNode(corLeaf), localPropagation);
           // graph_.visit(corLeaf, newArc);
           // process
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP_TASK
 #pragma omp task OPTIONAL_PRIORITY(PriorityLevel::Higher)
 #endif
           growthFromSeed(corLeaf, localPropagation, newArc);

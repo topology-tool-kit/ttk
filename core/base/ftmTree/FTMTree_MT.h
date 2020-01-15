@@ -92,7 +92,7 @@ namespace ttk {
       std::vector<ActiveTask> *activeTasksStats;
 #endif
 
-#ifdef TTK_ENABLE_OMP_PRIORITY
+#ifdef TTK_ENABLE_OPENMP_TASK_PRIORITY
       // Is this MT to be computed with greater task priority than others
       bool prior;
 #endif
@@ -336,7 +336,7 @@ namespace ttk {
         params_->normalize = normalize;
       }
 
-#ifdef TTK_ENABLE_OMP_PRIORITY
+#ifdef TTK_ENABLE_OPENMP_TASK_PRIORITY
       inline void setPrior(void) {
         mt_data_.prior = true;
       }

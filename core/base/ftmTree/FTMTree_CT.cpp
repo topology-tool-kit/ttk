@@ -51,11 +51,11 @@ void FTMTree_CT::build(TreeType tt) {
     // single leaf search for both tree
     // When executed from CT, both minima and maxima are extracted
     DebugTimer precomputeTime;
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP_TASK
 #pragma omp parallel num_threads(threadNumber_)
 #endif
     {
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP_TASK
 #pragma omp single nowait
 #endif
       { leafSearch(); }
@@ -63,7 +63,7 @@ void FTMTree_CT::build(TreeType tt) {
     printTime(precomputeTime, "[FTM] leafSearch", -1, 3);
   }
 
-#ifdef TTK_ENABLE_OMP_PRIORITY
+#ifdef TTK_ENABLE_OPENMP_TASK_PRIORITY
   {
     // Set priority
     if(st_->getNumberOfLeaves() < jt_->getNumberOfLeaves())
@@ -74,27 +74,27 @@ void FTMTree_CT::build(TreeType tt) {
 #endif
 
   // JT & ST
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP_TASK
 #pragma omp parallel num_threads(threadNumber_)
 #endif
   {
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP_TASK
 #pragma omp single nowait
 #endif
     {if(tt == TreeType::Join || bothMT){
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP_TASK
 #pragma omp task untied if(threadNumber_ > 1)
 #endif
       jt_->build(tt == TreeType::Contour);
 }
 if(tt == TreeType::Split || bothMT) {
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP_TASK
 #pragma omp task untied if(threadNumber_ > 1)
 #endif
   st_->build(tt == TreeType::Contour);
 }
 }
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP_TASK
 #pragma omp taskwait
 #endif
 }
@@ -449,7 +449,7 @@ int FTMTree_CT::leafSearch() {
 
   // Extrema extract and launch tasks
   for(SimplexId chunkId = 0; chunkId < chunkNb; ++chunkId) {
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP_TASK
 #pragma omp task firstprivate(chunkId)
 #endif
     {
@@ -484,7 +484,7 @@ int FTMTree_CT::leafSearch() {
     }
   }
 
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP_TASK
 #pragma omp taskwait
 #endif
   return 0;

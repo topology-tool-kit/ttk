@@ -111,13 +111,21 @@ namespace ttk {
         // reversed
         bool res;
         if(prop->goUp()) {
-#ifdef TTK_ENABLE_OPENMP
+#if TTK_OPENMP_VERSION_MAJOR > 3 \
+  || (TTK_OPENMP_VERSION_MAJOR == 3 && TTK_OPENMP_VERSION_MINOR >= 1)
 #pragma omp atomic read seq_cst
+#elif defined(TTK_ENABLE_OPENMP)
+#pragma omp flush(res, visits_.down[v].done)
+#pragma omp critical
 #endif
           res = visits_.down[v].done;
         } else {
-#ifdef TTK_ENABLE_OPENMP
+#if TTK_OPENMP_VERSION_MAJOR > 3 \
+  || (TTK_OPENMP_VERSION_MAJOR == 3 && TTK_OPENMP_VERSION_MINOR >= 1)
 #pragma omp atomic read seq_cst
+#elif defined(TTK_ENABLE_OPENMP)
+#pragma omp flush(res, visits_.up[v].done)
+#pragma omp critical
 #endif
           res = visits_.up[v].done;
         }

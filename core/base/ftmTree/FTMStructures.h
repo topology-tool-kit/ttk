@@ -107,11 +107,11 @@ namespace ttk {
         }
 
         swap_el<type>(arr, begin, right);
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP_TASK
 #pragma omp task untied if(right - begin > MINSIZE)
 #endif
         qsort(arr, begin, right - 1, comp);
-#ifdef TTK_ENABLE_OPENMP
+#ifdef TTK_ENABLE_OPENMP_TASK
 #pragma omp task untied if(stop - right > MINSIZE)
 #endif
         qsort(arr, right + 1, stop, comp);

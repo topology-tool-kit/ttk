@@ -151,8 +151,11 @@ namespace ttk {
       DynGraphNode *lastNode = curNode;
       while(curNode) {
         lastNode = curNode;
-#ifdef TTK_ENABLE_OPENMP
+#if TTK_OPENMP_VERSION_MAJOR > 3 \
+  || (TTK_OPENMP_VERSION_MAJOR == 3 && TTK_OPENMP_VERSION_MINOR >= 1)
 #pragma omp atomic read
+#elif defined(TTK_ENABLE_OPENMP)
+#pragma omp critical
 #endif
         curNode = curNode->parent_;
       }

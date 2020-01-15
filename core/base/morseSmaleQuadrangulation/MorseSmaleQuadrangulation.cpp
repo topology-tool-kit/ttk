@@ -194,7 +194,12 @@ int ttk::MorseSmaleQuadrangulation::detectCellSeps() {
         // mark current triangle, skip already processed
 #ifdef TTK_ENABLE_OPENMP
         if(processed[curr] == -1 || processed[curr] > iter) {
+#if TTK_OPENMP_VERSION_MAJOR > 3 \
+  || (TTK_OPENMP_VERSION_MAJOR == 3 && TTK_OPENMP_VERSION_MINOR >= 1)
 #pragma omp atomic write
+#else
+#pragma omp critical
+#endif
           processed[curr] = iter;
         }
         // skip if curr marked by thread
@@ -253,9 +258,12 @@ int ttk::MorseSmaleQuadrangulation::detectCellSeps() {
             }
           }
           if(!vertOnSep) {
-#ifdef TTK_ENABLE_OPENMP
+#if TTK_OPENMP_VERSION_MAJOR > 3 \
+  || (TTK_OPENMP_VERSION_MAJOR == 3 && TTK_OPENMP_VERSION_MINOR >= 1)
 #pragma omp atomic write
-#endif // TTK_ENABLE_OPENMP
+#elif defined(TTK_ENABLE_OPENMP)
+#pragma omp critical
+#endif
             morseSeg_[vert] = iter;
           }
         }

@@ -465,26 +465,21 @@ int ttk::ContinuousScatterPlot::execute() const {
               continue;
 
               // triangle/ray intersection below
-#ifdef TTK_ENABLE_OPENMP
-#ifdef _WIN32
-#pragma omp atomic
-#else
+#if TTK_OPENMP_VERSION_MAJOR > 3 \
+  || (TTK_OPENMP_VERSION_MAJOR == 3 && TTK_OPENMP_VERSION_MINOR >= 1)
 #pragma omp atomic update
-#endif
+#elif defined(TTK_ENABLE_OPENMP)
+#pragma omp critical
 #endif
             (*density_)[i][j] += (1.0 - u - v) * density;
 
-#ifdef TTK_ENABLE_OPENMP
-#ifdef _WIN32
-#pragma omp atomic
-            (*validPointMask_)[i][j] += 1;
-#else
+#if TTK_OPENMP_VERSION_MAJOR > 3 \
+  || (TTK_OPENMP_VERSION_MAJOR == 3 && TTK_OPENMP_VERSION_MINOR >= 1)
 #pragma omp atomic write
-            (*validPointMask_)[i][j] = 1;
+#elif defined(TTK_ENABLE_OPENMP)
+#pragma omp critical
 #endif
-#else
             (*validPointMask_)[i][j] = 1;
-#endif
             break;
           }
         }
