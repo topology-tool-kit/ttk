@@ -416,8 +416,6 @@ namespace ttk {
                        const debug::LineMode &lineMode = debug::LineMode::NEW,
                        std::ostream &stream = std::cout) const {
 
-      welcomeMsg(stream);
-
       std::string combinedMsg = msg;
 
       if(filler.length() > 0) {
@@ -441,8 +439,6 @@ namespace ttk {
                                 const debug::Priority &priority,
                                 const debug::LineMode &lineMode,
                                 std::ostream &stream = std::cout) const {
-
-      welcomeMsg(stream);
 
       int priorityAsInt = static_cast<int>(priority);
 
