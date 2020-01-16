@@ -53,7 +53,7 @@ public:
     Modified();
   }
 
-    void SetThreads() {
+  void SetThreads() {
     if(!UseAllCores)
       threadNumber_ = ThreadNumber;
     else {

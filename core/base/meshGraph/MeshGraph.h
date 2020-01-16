@@ -41,7 +41,7 @@ namespace ttk {
   class MeshGraph : virtual public Debug {
 
   public:
-    MeshGraph(){
+    MeshGraph() {
       this->setDebugMsgPrefix("MeshGraph");
     };
     ~MeshGraph(){};
@@ -78,10 +78,10 @@ namespace ttk {
                  * 2; // cellDim + 4 corners + 2 for each subdivision
     };
 
-    inline size_t computeOutputConnectivityListSize(const size_t &nInputCells,
-                                            const bool &useQuadraticCells,
-                                            const size_t &nSubdivisions
-                                            = 0) const {
+    inline size_t
+      computeOutputConnectivityListSize(const size_t &nInputCells,
+                                        const bool &useQuadraticCells,
+                                        const size_t &nSubdivisions = 0) const {
       return useQuadraticCells
                ? nInputCells
                    * 18 // 2*cellDim + 8 corners (a0,m0,m1,a1, m0,b0,b1,m1) + 8
@@ -104,8 +104,7 @@ namespace ttk {
 
       const dataType *inputPointSizes,
       const float &sizeScale,
-      const size_t &sizeAxis
-    ) const;
+      const size_t &sizeAxis) const;
 
     // Mesh graph with linear polygon
     template <typename idType, typename dataType>
@@ -123,8 +122,7 @@ namespace ttk {
 
       const dataType *inputPointSizes,
       const float sizeScale,
-      const size_t sizeAxis
-    ) const;
+      const size_t sizeAxis) const;
 
     // Map input point data to output point data
     template <typename idType, typename dataType>
@@ -168,15 +166,12 @@ int ttk::MeshGraph::execute(
 
   const dataType *inputPointSizes,
   const float &sizeScale,
-  const size_t &sizeAxis
-) const {
+  const size_t &sizeAxis) const {
   // Print Input
   this->printMsg(debug::Separator::L1);
-  this->printMsg({
-    {"Mode", "Quadratic Quads"},
-    {"#Nodes", std::to_string(nInputPoints)},
-    {"#Edges", std::to_string(nInputCells)}
-  });
+  this->printMsg({{"Mode", "Quadratic Quads"},
+                  {"#Nodes", std::to_string(nInputPoints)},
+                  {"#Edges", std::to_string(nInputCells)}});
   this->printMsg(debug::Separator::L2);
 
   auto getInputPointData = [&](const size_t &pointIndex, float data[4]) {
@@ -200,7 +195,7 @@ int ttk::MeshGraph::execute(
   size_t edgePointOffset = 3 * nInputPoints;
   {
     Timer t;
-    this->printMsg("Computing node locations",0,debug::LineMode::REPLACE);
+    this->printMsg("Computing node locations", 0, debug::LineMode::REPLACE);
 
 // -----------------------------------------------------------------------------
 // Compute points that result from input points
@@ -309,7 +304,8 @@ int ttk::MeshGraph::execute(
     }
 
     // Print Status
-    this->printMsg("Computing mesh vertices",1,t.getElapsedTime(),this->threadNumber_);
+    this->printMsg(
+      "Computing mesh vertices", 1, t.getElapsedTime(), this->threadNumber_);
   }
 
   // ---------------------------------------------------------------------------
@@ -317,7 +313,7 @@ int ttk::MeshGraph::execute(
   // ---------------------------------------------------------------------------
   {
     Timer t;
-    this->printMsg("Computing mesh cells",0,debug::LineMode::REPLACE);
+    this->printMsg("Computing mesh cells", 0, debug::LineMode::REPLACE);
 
     idType edgePointOffset_ = (idType)edgePointOffset;
 
@@ -375,7 +371,8 @@ int ttk::MeshGraph::execute(
       outputConnectivityList[q++] = c;
     }
 
-    this->printMsg("Computing mesh cells",1,t.getElapsedTime(),this->threadNumber_);
+    this->printMsg(
+      "Computing mesh cells", 1, t.getElapsedTime(), this->threadNumber_);
   }
 
   return 1;
@@ -399,16 +396,13 @@ int ttk::MeshGraph::execute2(
 
   const dataType *inputPointSizes,
   const float sizeScale,
-  const size_t sizeAxis
-) const {
+  const size_t sizeAxis) const {
 
   this->printMsg(debug::Separator::L1);
-  this->printMsg({
-      {"Mode","Linear Polygon"},
-      {"#Nodes",std::to_string(nInputPoints)},
-      {"#Edges",std::to_string(nInputCells)},
-      {"#Subdivisions",std::to_string(nSubdivisions)}
-  });
+  this->printMsg({{"Mode", "Linear Polygon"},
+                  {"#Nodes", std::to_string(nInputPoints)},
+                  {"#Edges", std::to_string(nInputCells)},
+                  {"#Subdivisions", std::to_string(nSubdivisions)}});
   this->printMsg(debug::Separator::L2);
 
   auto getInputPointData = [&](const size_t &pointIndex, float data[4]) {
@@ -435,7 +429,7 @@ int ttk::MeshGraph::execute2(
   // ]
   {
     Timer t;
-    this->printMsg("Computing mesh vertices",0,debug::LineMode::REPLACE);
+    this->printMsg("Computing mesh vertices", 0, debug::LineMode::REPLACE);
 
 // -----------------------------------------------------------------------------
 // Compute Corners
@@ -512,7 +506,8 @@ int ttk::MeshGraph::execute2(
       }
     }
 
-    this->printMsg("Computing mesh vertices",1,t.getElapsedTime(),this->threadNumber_);
+    this->printMsg(
+      "Computing mesh vertices", 1, t.getElapsedTime(), this->threadNumber_);
   }
 
   // ---------------------------------------------------------------------------
@@ -520,7 +515,7 @@ int ttk::MeshGraph::execute2(
   // ---------------------------------------------------------------------------
   {
     Timer t;
-    this->printMsg("Computing mesh cells",0,debug::LineMode::REPLACE);
+    this->printMsg("Computing mesh cells", 0, debug::LineMode::REPLACE);
 
     size_t cellSize = this->computeOutputCellSize(nSubdivisions);
     idType cellDim = ((idType)cellSize) - 1;
@@ -556,7 +551,8 @@ int ttk::MeshGraph::execute2(
         outputConnectivityList[q2++] = (idType)(temp + j * 2);
     }
 
-    this->printMsg("Computing mesh cells",1,t.getElapsedTime(),this->threadNumber_);
+    this->printMsg(
+      "Computing mesh cells", 1, t.getElapsedTime(), this->threadNumber_);
   }
 
   return 1;

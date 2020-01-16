@@ -99,9 +99,9 @@ int Debug::msg(const char *msg, const int &debugLevel) const {
 
 int Debug::setDebugLevel(const int &debugLevel) {
   debugLevel_ = debugLevel;
-  
+
   welcomeMsg(cout);
-  
+
   return 0;
 }
 

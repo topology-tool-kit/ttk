@@ -9,14 +9,12 @@
 
 #define TTK_COMMA ,
 
-#define ttkVtkTemplateMacroCase( \
-dataType, triangulationType, triangulationClass, call) \
-case triangulationType: { \
-  typedef triangulationClass TTK_TT; \
-  switch(dataType){ \
-    vtkTemplateMacro((call)); \
-  }; \
-}; break;
+#define ttkVtkTemplateMacroCase(                         \
+  dataType, triangulationType, triangulationClass, call) \
+  case triangulationType: {                              \
+    typedef triangulationClass TTK_TT;                   \
+    switch(dataType) { vtkTemplateMacro((call)); };      \
+  }; break;
 
 #define ttkVtkTemplateMacro(triangulationType, dataType, call)            \
   switch(triangulationType) {                                             \

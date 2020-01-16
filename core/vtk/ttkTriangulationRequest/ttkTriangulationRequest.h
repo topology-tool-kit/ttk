@@ -65,7 +65,7 @@ public:
     Modified();
   }
 
-    void SetThreadNumber(int threadNumber) {
+  void SetThreadNumber(int threadNumber) {
     ThreadNumber = threadNumber;
     SetThreads();
   }

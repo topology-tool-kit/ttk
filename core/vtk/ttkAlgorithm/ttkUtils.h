@@ -14,25 +14,25 @@
 
 namespace ttkUtils {
   int replaceVariable(const std::string &iString,
-                             vtkFieldData *fieldData,
-                             std::string &oString,
-                             std::string &errorMsg);
+                      vtkFieldData *fieldData,
+                      std::string &oString,
+                      std::string &errorMsg);
 
   int replaceVariables(const std::string &iString,
-                              vtkFieldData *fieldData,
-                              std::string &oString,
-                              std::string &errorMsg);
+                       vtkFieldData *fieldData,
+                       std::string &oString,
+                       std::string &errorMsg);
 
   int stringListToVector(const std::string &iString,
-                                std::vector<std::string> &v);
+                         std::vector<std::string> &v);
 
   int stringListToDoubleVector(const std::string &iString,
-                                      std::vector<double> &v);
+                               std::vector<double> &v);
 
   vtkSmartPointer<vtkAbstractArray> csvToVtkArray(std::string line);
 
   vtkSmartPointer<vtkDoubleArray> csvToDoubleArray(std::string line);
-};
+}; // namespace ttkUtils
 
 #include <limits>
 #include <vtkStringArray.h>
@@ -48,7 +48,8 @@ int ttkUtils::replaceVariable(const std::string &iString,
   // Check if varIndex is specified
   size_t indexDelimiter0 = iString.find("[");
   size_t indexDelimiter1 = iString.find("]");
-  if(indexDelimiter0 != std::string::npos && indexDelimiter1 != std::string::npos) {
+  if(indexDelimiter0 != std::string::npos
+     && indexDelimiter1 != std::string::npos) {
     if(indexDelimiter0 > indexDelimiter1
        || iString.find("[", indexDelimiter0 + 1) != std::string::npos
        || iString.find("}", indexDelimiter1 + 1) != std::string::npos) {
@@ -124,7 +125,8 @@ int ttkUtils::replaceVariables(const std::string &iString,
               + oString.substr(c + 1, oString.length() - c - 1);
   }
 
-  if(oString.find("{") != std::string::npos || oString.find("}") != std::string::npos) {
+  if(oString.find("{") != std::string::npos
+     || oString.find("}") != std::string::npos) {
     errorMsg = "Invalid Syntax:\n" + iString;
     return 0;
   }
@@ -159,8 +161,8 @@ int ttkUtils::stringListToDoubleVector(const std::string &iString,
   size_t n = stringVector.size();
   v.resize(n);
   // try {
-    for(size_t i = 0; i < n; i++)
-        v[i] = stod(stringVector[i]);
+  for(size_t i = 0; i < n; i++)
+    v[i] = stod(stringVector[i]);
   // } catch(std::invalid_argument &e) {
   //   return 0;
   // }
@@ -177,7 +179,8 @@ vtkSmartPointer<vtkAbstractArray> ttkUtils::csvToVtkArray(std::string line) {
   std::string arrayName = line.substr(0, firstComma);
 
   std::vector<std::string> valuesAsString;
-  stringListToVector(line.substr(firstComma + 1, std::string::npos), valuesAsString);
+  stringListToVector(
+    line.substr(firstComma + 1, std::string::npos), valuesAsString);
   size_t nValues = valuesAsString.size();
   if(nValues < 1)
     return nullptr;
@@ -200,8 +203,8 @@ vtkSmartPointer<vtkAbstractArray> ttkUtils::csvToVtkArray(std::string line) {
     array->SetNumberOfTuples(nValues);
     auto arrayData = (double *)array->GetVoidPointer(0);
     // try {
-      for(size_t i = 0; i < nValues; i++)
-        arrayData[i] = std::stod(valuesAsString[i]);
+    for(size_t i = 0; i < nValues; i++)
+      arrayData[i] = std::stod(valuesAsString[i]);
     // } catch(std::invalid_argument &e) {
     //   // return nullptr;
     // }

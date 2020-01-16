@@ -44,10 +44,7 @@ int ttk::CinemaQuery::execute(
   {
     Timer timer;
     this->printMsg(
-        "Creating inmemory database",
-        0,
-        ttk::debug::LineMode::REPLACE
-    );
+      "Creating inmemory database", 0, ttk::debug::LineMode::REPLACE);
 
     // Initialize DB in memory
     rc = sqlite3_open(":memory:", &db);

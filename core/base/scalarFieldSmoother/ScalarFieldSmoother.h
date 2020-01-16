@@ -150,9 +150,8 @@ int ttk::ScalarFieldSmoother::smooth(const TriangulationType *triangulation,
         {
           std::stringstream msg;
           msg << "This is a dummy debug message " << i << " v.";
-          printMsg(msg.str(), 
-            ttk::debug::Priority::DETAIL, 
-            ttk::debug::LineMode::NEW, std::cout);
+          printMsg(msg.str(), ttk::debug::Priority::DETAIL,
+                   ttk::debug::LineMode::NEW, std::cout);
         }
       }
     }
