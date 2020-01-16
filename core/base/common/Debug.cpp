@@ -38,7 +38,7 @@ int Debug::dMsg(ostream &stream, string msg, const int &debugLevel) const {
   return 0;
 }
 
-int Debug::welcomeMsg(ostream &stream) const {
+int Debug::welcomeMsg(ostream &stream) {
 
   int priorityAsInt = static_cast<int>(debug::Priority::PERFORMANCE);
 
