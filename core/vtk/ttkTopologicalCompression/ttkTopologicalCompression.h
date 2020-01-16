@@ -58,6 +58,11 @@ public:
 
   vtkTypeMacro(ttkTopologicalCompression, vtkDataSetAlgorithm);
 
+  void SetDebugLevel(int debugLevel) {
+    setDebugLevel(debugLevel);
+    Modified();
+  }
+
   void SetThreadNumber(int threadNumber) {
     ThreadNumber = threadNumber;
     SetThreads();

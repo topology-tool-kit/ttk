@@ -76,7 +76,7 @@ public:
   vtkTypeMacro(ttkPersistenceDiagramClustering, vtkDataSetAlgorithm);
 
   // default ttk setters
-  void SetdebugLevel_(int debugLevel) {
+  void SetDebugLevel(int debugLevel) {
     setDebugLevel(debugLevel);
     Modified();
     needUpdate_ = true;

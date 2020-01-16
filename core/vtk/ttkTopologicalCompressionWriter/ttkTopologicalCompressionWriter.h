@@ -107,6 +107,7 @@ public:
 
   void SetDebugLevel(int debugLevel) {
     d.setDebugLevel(debugLevel);
+    setDebugLevel(debugLevel);
   }
 
   inline void SetSQMethodPV(int c) {

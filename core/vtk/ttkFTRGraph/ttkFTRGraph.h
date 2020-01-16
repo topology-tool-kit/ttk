@@ -56,6 +56,11 @@ public:
 
   vtkTypeMacro(ttkFTRGraph, vtkDataSetAlgorithm);
 
+  void SetDebugLevel(int debugLevel) {
+    setDebugLevel(debugLevel);
+    Modified();
+  }
+
   // default ttk setters
   void SetThreadNumber(int threadNumber) {
     ThreadNumber = threadNumber;

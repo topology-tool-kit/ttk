@@ -68,6 +68,10 @@ public:
   static ttkHarmonicField *New();
   vtkTypeMacro(ttkHarmonicField, vtkDataSetAlgorithm);
 
+  void SetDebugLevel(int debugLevel) {
+    setDebugLevel(debugLevel);
+    Modified();
+  }
   void SetThreadNumber(int threadNumber) {
     ThreadNumber = threadNumber;
     SetThreads();

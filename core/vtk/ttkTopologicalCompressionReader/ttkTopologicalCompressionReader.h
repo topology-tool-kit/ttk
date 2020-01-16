@@ -60,6 +60,7 @@ public:
   vtkGetMacro(DataScalarType, int);
 
   void SetDebugLevel(const int val) {
+    setDebugLevel(val);
     this->topologicalCompression.setDebugLevel(val);
   }
 

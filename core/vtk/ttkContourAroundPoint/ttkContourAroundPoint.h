@@ -46,7 +46,12 @@ public:
 
     // BEGIN default ttk setters
 
-      void SetThreadNumber(int threadNumber) {
+    void SetDebugLevel(int debugLevel) {
+    setDebugLevel(debugLevel);
+    Modified();
+  }
+
+  void SetThreadNumber(int threadNumber) {
     ThreadNumber = threadNumber;
     SetThreads();
   }
