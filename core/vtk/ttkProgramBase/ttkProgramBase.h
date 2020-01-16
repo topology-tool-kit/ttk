@@ -103,7 +103,6 @@ public:
 
   virtual int run() {
 
-    setDebugLevel(ttk::globalDebugLevel_);
     ttkObject_->setDebugLevel(ttk::globalDebugLevel_);
     ttkObject_->setThreadNumber(ttk::globalThreadNumber_);
 

@@ -41,9 +41,8 @@ namespace ttk {
         "o", &outputPath_, "Output file name base (no extension)", true);
 
       parser_.parse(argc, argv);
-      debugLevel_ = ttk::globalDebugLevel_;
-
-      threadNumber_ = ttk::globalThreadNumber_;
+      setDebugLevel(ttk::globalDebugLevel_);
+      setThreadNumber(ttk::globalThreadNumber_);
 
       int ret = 0;
       ret = load(inputPaths);

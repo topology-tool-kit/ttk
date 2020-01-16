@@ -57,6 +57,11 @@ public:
     SetThreads();
   }
 
+  void SetDebugLevel(int debugLevel) {
+    setDebugLevel(debugLevel);
+    Modified();
+  }
+
   vtkSetMacro(Tolerance, double);
   vtkGetMacro(Tolerance, double);
 

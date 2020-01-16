@@ -46,6 +46,10 @@ public:
   vtkTypeMacro(ttkImportEmbeddingFromTable, vtkPointSetAlgorithm)
 
     // default ttk setters
+    void SetDebugLevel(int debugLevel) {
+    setDebugLevel(debugLevel);
+    Modified();
+  }
 
   void SetThreads() {
     if(!UseAllCores)
