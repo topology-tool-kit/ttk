@@ -57,8 +57,6 @@ public:
   vtkTypeMacro(ttkFTRGraph, vtkDataSetAlgorithm);
 
   // default ttk setters
-  vtkSetMacro(debugLevel_, int);
-
   void SetThreadNumber(int threadNumber) {
     ThreadNumber = threadNumber;
 #ifdef TTK_FTR_SINGLE_LAZY_SEQ

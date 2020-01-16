@@ -210,7 +210,7 @@ plateaus).
       <IntVectorProperty
         name="DebugLevel"
         label="Debug Level"
-        command="SetdebugLevel_"
+        command="SetDebugLevel"
         number_of_elements="1"
         default_values="3" panel_visibility="advanced">
         <IntRangeDomain name="range" min="0" max="100" />

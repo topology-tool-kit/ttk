@@ -77,7 +77,7 @@ public:
 
   // default ttk setters
   void SetdebugLevel_(int debugLevel) {
-    debugLevel_ = debugLevel;
+    setDebugLevel(debugLevel);
     Modified();
     needUpdate_ = true;
   }

@@ -66,8 +66,6 @@ public:
 
   vtkTypeMacro(ttkContinuousScatterPlot, vtkDataSetAlgorithm);
 
-  vtkSetMacro(debugLevel_, int);
-
   void SetThreadNumber(int threadNumber) {
     ThreadNumber = threadNumber;
     SetThreads();

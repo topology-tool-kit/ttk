@@ -60,8 +60,6 @@ public:
   static ttkQuadrangulationSubdivision *New();
   vtkTypeMacro(ttkQuadrangulationSubdivision, vtkDataSetAlgorithm);
 
-  vtkSetMacro(debugLevel_, int);
-
   void SetThreadNumber(int threadNumber) {
     ThreadNumber = threadNumber;
     SetThreads();

@@ -216,6 +216,10 @@ public:                                                                     \
     }                                                                       \
     Modified();                                                             \
   }                                                                         \
+  void SetDebugLevel(int debugLevel) {                                      \
+    setDebugLevel(debugLevel);                                              \
+    Modified();                                                             \
+  }                                                                         \
                                                                             \
 private:                                                                    \
   int doIt(                                                                 \

@@ -83,8 +83,6 @@ public:
   static ttkTopologicalSimplification *New();
   vtkTypeMacro(ttkTopologicalSimplification, vtkDataSetAlgorithm);
 
-  vtkSetMacro(debugLevel_, int);
-
   void SetThreadNumber(int threadNumber) {
     ThreadNumber = threadNumber;
     SetThreads();

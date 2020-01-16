@@ -49,7 +49,6 @@ public:
   vtkTypeMacro(ttkCellDataSelector, vtkDataSetAlgorithm);
 
   // default ttk setters
-  vtkSetMacro(debugLevel_, int);
   vtkSetMacro(RegexpString, std::string);
 
   vtkSetVector2Macro(RangeId, int);

@@ -52,7 +52,6 @@ public:
   vtkTypeMacro(ttkTextureMapFromField, vtkDataSetAlgorithm);
 
   // default ttk setters
-  vtkSetMacro(debugLevel_, int);
 
   void SetThreads() {
     if(!UseAllCores)

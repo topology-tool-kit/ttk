@@ -258,7 +258,7 @@ offset field for flat plateau disambiguation).
       
       <IntVectorProperty
          name="DebugLevel"
-         command="SetdebugLevel_"
+         command="SetDebugLevel"
          label="Debug Level"
          number_of_elements="1"
          default_values="3" panel_visibility="advanced">

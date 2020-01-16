@@ -48,9 +48,8 @@ public:
   vtkTypeMacro(ttkDataSetInterpolator, vtkDataSetAlgorithm)
 
     // default ttk setters
-    vtkSetMacro(debugLevel_, int);
 
-  void SetThreads() {
+    void SetThreads() {
     if(!UseAllCores)
       threadNumber_ = ThreadNumber;
     else {

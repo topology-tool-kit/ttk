@@ -38,8 +38,6 @@ public:
 
   vtkTypeMacro(ttkTrackingFromPersistenceDiagrams, vtkDataSetAlgorithm);
 
-  vtkSetMacro(debugLevel_, int);
-
   void SetThreads() {
     if(!UseAllCores)
       threadNumber_ = ThreadNumber;

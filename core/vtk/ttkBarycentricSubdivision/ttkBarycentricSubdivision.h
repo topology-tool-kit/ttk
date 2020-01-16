@@ -52,8 +52,6 @@ public:
   vtkTypeMacro(ttkBarycentricSubdivision, vtkDataSetAlgorithm);
 
   // default ttk setters
-  vtkSetMacro(debugLevel_, int);
-
   vtkGetMacro(SubdivisionLevel, unsigned int);
   vtkSetMacro(SubdivisionLevel, unsigned int);
 

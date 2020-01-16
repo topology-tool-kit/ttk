@@ -48,7 +48,6 @@ public:
   vtkTypeMacro(ttkProjectionFromField, vtkPointSetAlgorithm);
 
   // default ttk setters
-  vtkSetMacro(debugLevel_, int);
 
   void SetThreads() {
     if(!UseAllCores)

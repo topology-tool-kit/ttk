@@ -57,7 +57,6 @@ public:
   vtkTypeMacro(ttkBottleneckDistance, vtkDataSetAlgorithm);
 
   // Default ttk setters
-  vtkSetMacro(debugLevel_, int);
 
   void SetThreadNumber(int threadNumber) {
     ThreadNumber = threadNumber;

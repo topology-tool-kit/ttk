@@ -55,7 +55,6 @@ public:
   vtkTypeMacro(ttkScalarFieldNormalizer, vtkDataSetAlgorithm);
 
   // default ttk setters
-  vtkSetMacro(debugLevel_, int);
 
   void SetThreads() {
     if(!UseAllCores)

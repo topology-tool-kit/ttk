@@ -97,7 +97,7 @@ public:
 
   void SetDebugLevel(int debugLevel) {
     if(debugLevel != debugLevel_) {
-      debugLevel_ = debugLevel;
+      setDebugLevel(debugLevel);
       computeAll_ = true;
       Modified();
     }

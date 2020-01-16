@@ -69,7 +69,6 @@ public:
   vtkTypeMacro(ttkMeshSubdivision, vtkUnstructuredGridAlgorithm);
 
   // default ttk setters
-  vtkSetMacro(debugLevel_, int);
 
   void SetThreads() {
     if(!UseAllCores)

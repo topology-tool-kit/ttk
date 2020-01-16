@@ -60,9 +60,8 @@ public:
   vtkTypeMacro(ttkTriangulationRequest, vtkDataSetAlgorithm)
 
     // default ttk setters
-    vtkSetMacro(debugLevel_, int);
 
-  void SetThreadNumber(int threadNumber) {
+    void SetThreadNumber(int threadNumber) {
     ThreadNumber = threadNumber;
     SetThreads();
   }

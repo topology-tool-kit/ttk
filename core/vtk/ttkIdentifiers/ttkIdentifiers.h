@@ -59,7 +59,6 @@ public:
   vtkGetMacro(VertexFieldName, std::string);
 
   // default ttk setters
-  vtkSetMacro(debugLevel_, int);
 
   void SetThreads() {
     if(!UseAllCores)

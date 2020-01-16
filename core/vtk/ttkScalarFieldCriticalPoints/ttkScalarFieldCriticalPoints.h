@@ -65,7 +65,6 @@ public:
   vtkTypeMacro(ttkScalarFieldCriticalPoints, vtkDataSetAlgorithm);
 
   // default ttk setters
-  vtkSetMacro(debugLevel_, int);
 
   void SetThreadNumber(int threadNumber) {
     ThreadNumber = threadNumber;
