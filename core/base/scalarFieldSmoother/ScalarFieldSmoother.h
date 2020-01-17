@@ -106,7 +106,11 @@ int ttk::ScalarFieldSmoother::smooth(const TriangulationType *triangulation,
   }
 
   printMsg("Smoothing " + std::to_string(vertexNumber) + " vertices", 
-    0, threadNumber_, ttk::debug::LineMode::REPLACE);
+    0, 0, threadNumber_, ttk::debug::LineMode::REPLACE);
+  
+  int timeBuckets = 10;
+  if(numberOfIterations < timeBuckets)
+    timeBuckets = numberOfIterations;
   
   for(int it = 0; it < numberOfIterations; it++) {
 #ifdef TTK_ENABLE_OPENMP
@@ -149,7 +153,7 @@ int ttk::ScalarFieldSmoother::smooth(const TriangulationType *triangulation,
       }
     }
     
-    if(!(it % ((numberOfIterations) / 10))){
+    if(!(it % ((numberOfIterations) / timeBuckets))){
       printMsg("Smoothing " + std::to_string(vertexNumber) + " vertices",
               (it/ (float) numberOfIterations), 
               t.getElapsedTime(), threadNumber_, 
