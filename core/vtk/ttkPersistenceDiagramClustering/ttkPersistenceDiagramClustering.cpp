@@ -832,7 +832,12 @@ vtkSmartPointer<vtkUnstructuredGrid>
         matchings_count[good_id] += 1;
         count_to_good.push_back(good_id);
       }
-      diagramType t1 = final_centroids_[inv_clustering_[j]][good_id];
+
+      // avoid a weird out-of-bound access
+      good_id
+        = std::min(good_id, static_cast<int>(final_centroids_[c].size() - 1));
+
+      diagramType t1 = final_centroids_[c][good_id];
       double x1 = std::get<6>(t1);
       double y1 = std::get<10>(t1);
       double z1 = 0;
