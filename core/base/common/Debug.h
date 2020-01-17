@@ -224,8 +224,13 @@ namespace ttk {
 
       if(memory >= 0)
         chunks[q++] = std::to_string(memory) + "mb";
-      if(time >= 0)
-        chunks[q++] = std::to_string(time) + "s";
+      if(time >= 0){
+        std::stringstream sStream;
+        sStream.precision(3);
+        sStream << std::fixed;
+        sStream << time;
+        chunks[q++] = sStream.str() + "s";
+      }
       if(threads >= 0)
         chunks[q++] = std::to_string(threads) + "T";
       if(progress >= 0)
