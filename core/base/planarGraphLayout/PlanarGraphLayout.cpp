@@ -5,10 +5,10 @@
 #include <graphviz/gvc.h>
 #endif
 
-ttk::PlanarGraphLayout::PlanarGraphLayout(){
+ttk::PlanarGraphLayout::PlanarGraphLayout() {
   this->setDebugMsgPrefix("PlanarGraphLayout");
 }
-ttk::PlanarGraphLayout::~PlanarGraphLayout(){
+ttk::PlanarGraphLayout::~PlanarGraphLayout() {
 }
 
 // Compute Dot Layout
@@ -18,12 +18,11 @@ int ttk::PlanarGraphLayout::computeDotLayout(
 
   // Input
   const std::vector<size_t> &nodeIndicies,
-  const std::string &dotString
-) const {
+  const std::string &dotString) const {
 #if TTK_ENABLE_GRAPHVIZ
   Timer t;
 
-  this->printMsg("Computing layout",0,debug::LineMode::REPLACE);
+  this->printMsg("Computing layout", 0, debug::LineMode::REPLACE);
 
   // ---------------------------------------------------------
   // Init GraphViz
@@ -52,7 +51,7 @@ int ttk::PlanarGraphLayout::computeDotLayout(
   agclose(G);
   gvFreeContext(gvc);
 
-  this->printMsg("Computing layout",1,t.getElapsedTime());
+  this->printMsg("Computing layout", 1, t.getElapsedTime());
 
   return 1;
 #else

@@ -45,7 +45,7 @@ Type:
                     <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="UseAllCores" value="0" />
                 </Hints>
             </IntVectorProperty>
-            <IntVectorProperty name="DebugLevel" label="Debug Level" command="SetdebugLevel_" number_of_elements="1" default_values="3" panel_visibility="advanced">
+            <IntVectorProperty name="DebugLevel" label="Debug Level" command="SetDebugLevel" number_of_elements="1" default_values="3" panel_visibility="advanced">
                 <IntRangeDomain name="range" min="0" max="100" />
                 <Documentation>Debug level.</Documentation>
             </IntVectorProperty>

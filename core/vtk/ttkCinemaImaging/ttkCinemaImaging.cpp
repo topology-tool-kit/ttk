@@ -114,8 +114,8 @@ void addValuePass(vtkDataSet *object,
       valuePass->SetScalarRange(minmax[0], minmax[1]);
 
       valuePassCollection->AddItem(valuePass);
-      valuePassNames.push_back(nComponents == 1 ? name : name + "_"
-                                                           + std::to_string(c));
+      valuePassNames.push_back(
+        nComponents == 1 ? name : name + "_" + std::to_string(c));
     }
   }
 };
@@ -174,8 +174,8 @@ int ttkCinemaImaging::RequestData(vtkInformation *request,
       double dxO, dyO, dzO, dO; // object
       double dxG, dyG, dzG, dG; // object
 
-      auto getBoxDiameter = [](
-        const double *bounds, double &dx, double &dy, double &dz, double &d) {
+      auto getBoxDiameter = [](const double *bounds, double &dx, double &dy,
+                               double &dz, double &d) {
         dx = bounds[1] - bounds[0];
         dy = bounds[3] - bounds[2];
         dz = bounds[5] - bounds[4];
@@ -254,9 +254,7 @@ int ttkCinemaImaging::RequestData(vtkInformation *request,
   // ---------------------------------------------------------------------------
   t0 = timer.getElapsedTime();
   this->printMsg(
-    "Initializing Rendering Pipeline",
-    0, ttk::debug::LineMode::REPLACE
-  );
+    "Initializing Rendering Pipeline", 0, ttk::debug::LineMode::REPLACE);
 
   // Depth Pass Elements
   auto rendererDepth = vtkSmartPointer<vtkRenderer>::New();
@@ -328,9 +326,7 @@ int ttkCinemaImaging::RequestData(vtkInformation *request,
 #endif
 
   this->printMsg(
-    "Initializing Rendering Pipeline",
-    1, timer.getElapsedTime() - t0
-  );
+    "Initializing Rendering Pipeline", 1, timer.getElapsedTime() - t0);
 
   // ---------------------------------------------------------------------------
   // Prepare Field Data for Depth Values
@@ -400,11 +396,9 @@ int ttkCinemaImaging::RequestData(vtkInformation *request,
   {
     size_t n = inputGrid->GetNumberOfPoints();
     t0 = timer.getElapsedTime();
-    this->printMsg(
-      "Rendering " + std::to_string(n) + " images with "
-        + std::to_string(nValuePasses + 1) + " fields",
-      0, ttk::debug::LineMode::REPLACE
-    );
+    this->printMsg("Rendering " + std::to_string(n) + " images with "
+                     + std::to_string(nValuePasses + 1) + " fields",
+                   0, ttk::debug::LineMode::REPLACE);
 
     double camPosition[3] = {0, 0, 0};
     auto readCameraData = [](double target[3], double *src, int index) {
@@ -523,9 +517,8 @@ int ttkCinemaImaging::RequestData(vtkInformation *request,
     }
 
     this->printMsg("Rendering " + std::to_string(n) + " images with "
-        + std::to_string(nValuePasses + 1) + " fields",
-      1, timer.getElapsedTime() - t0
-    );
+                     + std::to_string(nValuePasses + 1) + " fields",
+                   1, timer.getElapsedTime() - t0);
   }
 
   // print stats

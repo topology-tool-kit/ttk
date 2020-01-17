@@ -38,8 +38,6 @@ public:
 
   vtkTypeMacro(ttkTrackingFromPersistenceDiagrams, vtkDataSetAlgorithm);
 
-  vtkSetMacro(debugLevel_, int);
-
   void SetThreads() {
     if(!UseAllCores)
       threadNumber_ = ThreadNumber;
@@ -57,6 +55,11 @@ public:
   void SetUseAllCores(bool onOff) {
     UseAllCores = onOff;
     SetThreads();
+  }
+
+  void SetDebugLevel(int debugLevel) {
+    setDebugLevel(debugLevel);
+    Modified();
   }
 
   vtkSetMacro(Tolerance, double);

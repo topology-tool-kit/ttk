@@ -19,9 +19,9 @@
 #include <array>
 
 #define ttkTemplateMacroCase(triangulationType, triangulationClass, call) \
-  case triangulationType: {                                 \
-    typedef triangulationClass TTK_TT;                        \
-    call;                                       \
+  case triangulationType: {                                               \
+    typedef triangulationClass TTK_TT;                                    \
+    call;                                                                 \
   }; break
 
 #define ttkTemplateMacro(triangulationType, call)                          \

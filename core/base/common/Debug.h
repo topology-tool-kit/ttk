@@ -403,7 +403,7 @@ namespace ttk {
 
     static debug::LineMode lastLineMode;
 
-    mutable std::string debugMsgPrefix_;
+    std::string debugMsgPrefix_;
 
     /**
      * Internal debug method that formats debug messages.
@@ -415,8 +415,6 @@ namespace ttk {
                        const debug::Priority &priority = debug::Priority::INFO,
                        const debug::LineMode &lineMode = debug::LineMode::NEW,
                        std::ostream &stream = std::cout) const {
-
-      welcomeMsg(stream);
 
       std::string combinedMsg = msg;
 
@@ -441,8 +439,6 @@ namespace ttk {
                                 const debug::Priority &priority,
                                 const debug::LineMode &lineMode,
                                 std::ostream &stream = std::cout) const {
-
-      welcomeMsg(stream);
 
       int priorityAsInt = static_cast<int>(priority);
 
@@ -480,7 +476,7 @@ namespace ttk {
       return 1;
     }
 
-    int welcomeMsg(std::ostream &stream) const;
+    int welcomeMsg(std::ostream &stream) ;
   };
 
 } // namespace ttk

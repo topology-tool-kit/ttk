@@ -81,8 +81,6 @@ public:
   vtkTypeMacro(ttkContourForests, vtkDataSetAlgorithm);
 
   // default ttk setters
-  vtkSetMacro(debugLevel_, int);
-
   vtkSetMacro(FieldId, int);
 
   void SetThreadNumber(int threadNumber);

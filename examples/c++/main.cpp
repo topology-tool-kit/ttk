@@ -35,6 +35,7 @@ int load(const std::string &inputPath,
     return -1;
 
   ttk::Debug d;
+  d.setDebugLevel(ttk::globalDebugLevel_);
 
   {
     std::stringstream msg;
@@ -100,6 +101,7 @@ int save(const std::vector<float> &pointSet,
 
   // save the simplified terrain in some OFF file
   ttk::Debug d;
+  d.setDebugLevel(ttk::globalDebugLevel_);
 
   std::string fileName(outputPath);
 

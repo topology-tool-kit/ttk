@@ -112,7 +112,8 @@ int ttkGridLayout::RequestData(vtkInformation *request,
 
   size_t nBlocks = inputMB->GetNumberOfBlocks();
 
-  this->printMsg("Translating " + std::to_string(nBlocks) + " object(s)", 0, ttk::debug::LineMode::REPLACE);
+  this->printMsg("Translating " + std::to_string(nBlocks) + " object(s)", 0,
+                 ttk::debug::LineMode::REPLACE);
 
   for(size_t i = 0; i < nBlocks; i++) {
     auto block = inputMB->GetBlock(i);
@@ -143,7 +144,7 @@ int ttkGridLayout::RequestData(vtkInformation *request,
 
   // Determine Grid Structure
   const size_t nRows
-    = this->GetNumberOfRows() < 1 ? 0 : (size_t) this->GetNumberOfRows();
+    = this->GetNumberOfRows() < 1 ? 0 : (size_t)this->GetNumberOfRows();
   const size_t nColumns
     = nRows == 0 ? ceil(sqrt(nBlocks)) : ceil(nBlocks / nRows);
 

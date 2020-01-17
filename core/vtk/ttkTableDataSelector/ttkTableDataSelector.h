@@ -49,7 +49,11 @@ public:
   vtkTypeMacro(ttkTableDataSelector, vtkTableAlgorithm);
 
   // default ttk setters
-  vtkSetMacro(debugLevel_, int);
+  void SetDebugLevel(int debugLevel) {
+    setDebugLevel(debugLevel);
+    Modified();
+  }
+
   vtkSetMacro(RegexpString, std::string);
 
   vtkGetVector2Macro(RangeId, int);

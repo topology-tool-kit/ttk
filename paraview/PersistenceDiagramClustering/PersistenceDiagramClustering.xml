@@ -409,7 +409,7 @@ between matched critical points.
       <IntVectorProperty
          name="DebugLevel"
          label="Debug Level"
-         command="SetdebugLevel_"
+         command="SetDebugLevel"
          number_of_elements="1"
         default_values="1" 
         panel_visibility="advanced">

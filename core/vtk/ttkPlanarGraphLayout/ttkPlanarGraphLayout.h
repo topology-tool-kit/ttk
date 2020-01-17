@@ -64,7 +64,6 @@ private:
   std::string OutputArrayName{"Layout"};
 
 public:
-
   // getters and setters for optional arrays
   vtkSetMacro(UseSequences, bool);
   vtkGetMacro(UseSequences, bool);

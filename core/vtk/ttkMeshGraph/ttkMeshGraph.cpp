@@ -3,13 +3,13 @@
 #include <vtkObjectFactory.h> // for new macro
 
 #include <vtkAbstractArray.h>
+#include <vtkCellArray.h>
 #include <vtkCellData.h>
 #include <vtkDataSetTriangleFilter.h>
 #include <vtkIdTypeArray.h>
+#include <vtkInformationVector.h>
 #include <vtkPointData.h>
 #include <vtkUnstructuredGrid.h>
-#include <vtkCellArray.h>
-#include <vtkInformationVector.h>
 
 vtkStandardNewMacro(ttkMeshGraph);
 
@@ -37,8 +37,8 @@ int ttkMeshGraph::FillOutputPortInformation(int port, vtkInformation *info) {
 }
 
 int ttkMeshGraph::RequestData(vtkInformation *request,
-                                vtkInformationVector **inputVector,
-                                vtkInformationVector *outputVector) {
+                              vtkInformationVector **inputVector,
+                              vtkInformationVector *outputVector) {
   ttk::Timer t;
 
   // ---------------------------------------------------------------------------
@@ -88,20 +88,15 @@ int ttkMeshGraph::RequestData(vtkInformation *request,
       vtkTemplateMacro(
         (status = this->execute<vtkIdType, VTK_TT>(
            // Output
-           outputVertices,
-           (vtkIdType *)outputCells->GetVoidPointer(0),
+           outputVertices, (vtkIdType *)outputCells->GetVoidPointer(0),
 
            // Input
            (float *)input->GetPoints()->GetVoidPointer(0),
-           inputCells->GetPointer(),
-           nInputPoints,
-           nInputCells,
+           inputCells->GetPointer(), nInputPoints, nInputCells,
            this->GetUseVariableSize()
              ? (VTK_TT *)inputPointSizes->GetVoidPointer(0)
              : nullptr,
-           this->GetSizeScale(), this->GetSizeAxis()
-        ))
-      );
+           this->GetSizeScale(), this->GetSizeAxis())));
     }
   } else {
     // Linear Polygons
@@ -113,16 +108,12 @@ int ttkMeshGraph::RequestData(vtkInformation *request,
 
            // Input
            (float *)input->GetPoints()->GetVoidPointer(0),
-           inputCells->GetPointer(),
-           nInputPoints,
-           nInputCells,
+           inputCells->GetPointer(), nInputPoints, nInputCells,
            this->GetSubdivisions(),
            this->GetUseVariableSize()
              ? (VTK_TT *)inputPointSizes->GetVoidPointer(0)
              : nullptr,
-           this->GetSizeScale(), this->GetSizeAxis()
-        ))
-      );
+           this->GetSizeScale(), this->GetSizeAxis())));
     }
   }
   if(status != 1)
@@ -159,8 +150,7 @@ int ttkMeshGraph::RequestData(vtkInformation *request,
 
       switch(iArray->GetDataType()) {
         vtkTemplateMacro(
-          (status
-           = this->mapInputPointDataToOutputPointData<vtkIdType, VTK_TT>(
+          (status = this->mapInputPointDataToOutputPointData<vtkIdType, VTK_TT>(
              inputCells->GetPointer(), nInputPoints, nInputCells,
 
              (VTK_TT *)iArray->GetVoidPointer(0),
@@ -192,8 +182,7 @@ int ttkMeshGraph::RequestData(vtkInformation *request,
 
       switch(iArray->GetDataType()) {
         vtkTemplateMacro(
-          (status
-           = this->mapInputCellDataToOutputCellData<vtkIdType, VTK_TT>(
+          (status = this->mapInputCellDataToOutputCellData<vtkIdType, VTK_TT>(
              nInputCells,
 
              (VTK_TT *)iArray->GetVoidPointer(0),
@@ -228,7 +217,7 @@ int ttkMeshGraph::RequestData(vtkInformation *request,
   // Print status
   // -------------------------------------------------------------------------
   this->printMsg(ttk::debug::Separator::L2);
-  this->printMsg("Complete",1,t.getElapsedTime());
+  this->printMsg("Complete", 1, t.getElapsedTime());
   this->printMsg(ttk::debug::Separator::L1);
 
   return 1;

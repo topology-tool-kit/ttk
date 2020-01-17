@@ -60,7 +60,10 @@ public:
   static ttkMorseSmaleQuadrangulation *New();
   vtkTypeMacro(ttkMorseSmaleQuadrangulation, vtkDataSetAlgorithm);
 
-  vtkSetMacro(debugLevel_, int);
+  void SetDebugLevel(int debugLevel) {
+    setDebugLevel(debugLevel);
+    Modified();
+  }
 
   void SetThreadNumber(int threadNumber) {
     ThreadNumber = threadNumber;

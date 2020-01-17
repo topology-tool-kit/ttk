@@ -285,7 +285,7 @@
 
       <IntVectorProperty
         name="DebugLevel"
-        command="SetdebugLevel_"
+        command="SetDebugLevel"
         label="Debug Level"
         number_of_elements="1"
         default_values="2" panel_visibility="advanced">

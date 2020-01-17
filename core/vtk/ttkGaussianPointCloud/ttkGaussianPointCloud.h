@@ -39,7 +39,10 @@ public:
   vtkGetMacro(NumberOfSamples, int);
 
   // default ttk setters
-  vtkSetMacro(debugLevel_, int);
+  void SetDebugLevel(int debugLevel) {
+    setDebugLevel(debugLevel);
+    Modified();
+  }
   void SetThreads() {
     threadNumber_
       = !UseAllCores ? ThreadNumber : ttk::OsCall::getNumberOfCores();
