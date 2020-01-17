@@ -44,7 +44,7 @@
 // class your wrapper should inherit.
 class TTKIDENTIFIERRANDOMIZER_EXPORT ttkIdentifierRandomizer
   : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+    protected ttk::Wrapper {
 
 public:
   static ttkIdentifierRandomizer *New();

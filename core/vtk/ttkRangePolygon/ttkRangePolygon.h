@@ -71,7 +71,7 @@
 #include <ttkTriangulationAlgorithm.h>
 
 class TTKRANGEPOLYGON_EXPORT ttkRangePolygon : public vtkDataSetAlgorithm,
-                                               public ttk::Wrapper {
+                                               protected ttk::Wrapper {
 
 public:
   static ttkRangePolygon *New();

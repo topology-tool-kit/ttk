@@ -33,7 +33,7 @@
 #include <ttkTriangulationAlgorithm.h>
 
 class TTKFTMTREE_EXPORT ttkFTMTree : public vtkDataSetAlgorithm,
-                                     public ttk::Wrapper {
+                                     protected ttk::Wrapper {
 public:
   static ttkFTMTree *New();
 

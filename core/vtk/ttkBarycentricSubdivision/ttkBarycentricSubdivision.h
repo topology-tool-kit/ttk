@@ -45,7 +45,7 @@
 
 class TTKBARYCENTRICSUBDIVISION_EXPORT ttkBarycentricSubdivision
   : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+    protected ttk::Wrapper {
 
 public:
   static ttkBarycentricSubdivision *New();

@@ -47,7 +47,7 @@
 #include <Wrapper.h>
 
 class TTKFIBER_EXPORT ttkFiber : public vtkDataSetAlgorithm,
-                                 public ttk::Wrapper {
+                                 protected ttk::Wrapper {
 
 public:
   static ttkFiber *New();

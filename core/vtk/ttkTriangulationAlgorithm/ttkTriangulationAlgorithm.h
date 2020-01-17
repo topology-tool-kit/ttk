@@ -27,7 +27,7 @@
 
 class TTKTRIANGULATIONALGORITHM_EXPORT ttkTriangulationAlgorithm
   : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+    protected ttk::Wrapper {
 
 public:
   static ttkTriangulationAlgorithm *New();

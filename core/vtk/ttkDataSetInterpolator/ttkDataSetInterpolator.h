@@ -41,7 +41,7 @@
 
 class TTKDATASETINTERPOLATOR_EXPORT ttkDataSetInterpolator
   : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+    protected ttk::Wrapper {
 
 public:
   static ttkDataSetInterpolator *New();

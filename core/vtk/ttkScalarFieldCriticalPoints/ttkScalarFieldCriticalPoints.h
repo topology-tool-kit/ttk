@@ -57,7 +57,7 @@
 // class your wrapper should inherit.
 class TTKSCALARFIELDCRITICALPOINTS_EXPORT ttkScalarFieldCriticalPoints
   : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+    protected ttk::Wrapper {
 
 public:
   static ttkScalarFieldCriticalPoints *New();

@@ -56,7 +56,7 @@
 
 class TTKPERSISTENCECURVE_EXPORT ttkPersistenceCurve
   : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+    protected ttk::Wrapper {
 
 public:
   static ttkPersistenceCurve *New();

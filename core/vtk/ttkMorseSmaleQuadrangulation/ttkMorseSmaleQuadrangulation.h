@@ -54,7 +54,7 @@
 
 class TTKMORSESMALEQUADRANGULATION_EXPORT ttkMorseSmaleQuadrangulation
   : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+    protected ttk::Wrapper {
 
 public:
   static ttkMorseSmaleQuadrangulation *New();

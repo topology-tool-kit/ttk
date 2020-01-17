@@ -23,7 +23,7 @@
 #include <IcoSphere.h>
 
 class TTKICOSPHERE_EXPORT ttkIcoSphere : public ttkAlgorithm,
-                                         public ttk::IcoSphere {
+                                         protected ttk::IcoSphere {
 private:
   int NumberOfSubdivisions{0};
   float Radius{1};

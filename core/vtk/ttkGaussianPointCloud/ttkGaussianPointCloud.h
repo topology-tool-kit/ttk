@@ -26,7 +26,7 @@
 
 class TTKGAUSSIANPOINTCLOUD_EXPORT ttkGaussianPointCloud
   : public vtkUnstructuredGridAlgorithm,
-    public ttk::Wrapper {
+    protected ttk::Wrapper {
 
 public:
   static ttkGaussianPointCloud *New();

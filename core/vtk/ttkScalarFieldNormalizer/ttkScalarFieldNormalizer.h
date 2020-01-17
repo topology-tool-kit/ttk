@@ -47,7 +47,7 @@
 // class your wrapper should inherit.
 class TTKSCALARFIELDNORMALIZER_EXPORT ttkScalarFieldNormalizer
   : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+    protected ttk::Wrapper {
 
 public:
   static ttkScalarFieldNormalizer *New();

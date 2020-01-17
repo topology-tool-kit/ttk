@@ -49,7 +49,7 @@
 
 class TTKCELLDATACONVERTER_EXPORT ttkCellDataConverter
   : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+    protected ttk::Wrapper {
 
   enum SupportedType {
     Char = 0,

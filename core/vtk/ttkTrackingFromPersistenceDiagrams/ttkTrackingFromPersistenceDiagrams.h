@@ -31,7 +31,7 @@
 
 class TTKTRACKINGFROMPERSISTENCEDIAGRAMS_EXPORT
   ttkTrackingFromPersistenceDiagrams : public vtkDataSetAlgorithm,
-                                       public ttk::Wrapper {
+                                       protected ttk::Wrapper {
 
 public:
   static ttkTrackingFromPersistenceDiagrams *New();

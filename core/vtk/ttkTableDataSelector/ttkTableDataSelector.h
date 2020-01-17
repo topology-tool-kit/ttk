@@ -42,7 +42,7 @@
 
 class TTKTABLEDATASELECTOR_EXPORT ttkTableDataSelector
   : public vtkTableAlgorithm,
-    public ttk::Wrapper {
+    protected ttk::Wrapper {
 
 public:
   static ttkTableDataSelector *New();

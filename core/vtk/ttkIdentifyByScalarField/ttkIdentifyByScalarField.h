@@ -42,7 +42,7 @@
 
 class TTKIDENTIFYBYSCALARFIELD_EXPORT ttkIdentifyByScalarField
   : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+    protected ttk::Wrapper {
 
 public:
   static ttkIdentifyByScalarField *New();

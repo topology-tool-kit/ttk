@@ -61,7 +61,7 @@
 // class your wrapper should inherit.
 class TTKMESHSUBDIVISION_EXPORT ttkMeshSubdivision
   : public vtkUnstructuredGridAlgorithm,
-    public ttk::Wrapper {
+    protected ttk::Wrapper {
 
 public:
   static ttkMeshSubdivision *New();

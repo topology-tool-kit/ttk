@@ -60,7 +60,7 @@
 
 class TTKMORSESMALECOMPLEX_EXPORT ttkMorseSmaleComplex
   : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+    protected ttk::Wrapper {
 
 public:
   static ttkMorseSmaleComplex *New();

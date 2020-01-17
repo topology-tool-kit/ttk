@@ -48,7 +48,7 @@
 // see the documentation of the vtkAlgorithm class to decide from which VTK
 // class your wrapper should inherit.
 class TTKBLANK_EXPORT ttkBlank : public vtkDataSetAlgorithm,
-                                 public ttk::Wrapper {
+                                 protected ttk::Wrapper {
 
 public:
   static ttkBlank *New();
