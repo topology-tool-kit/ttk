@@ -90,8 +90,6 @@ int ttk::ScalarFieldSmoother::smooth(const TriangulationType *triangulation,
     return -4;
 #endif
 
-  int count = 0;
-
   SimplexId vertexNumber = triangulation->getNumberOfVertices();
 
   std::vector<dataType> tmpData(vertexNumber * dimensionNumber_, 0);
@@ -107,6 +105,13 @@ int ttk::ScalarFieldSmoother::smooth(const TriangulationType *triangulation,
     }
   }
 
+  printMsg("Smoothing " + std::to_string(vertexNumber) + " vertices", 
+    0, 0, threadNumber_, ttk::debug::LineMode::REPLACE);
+  
+  int timeBuckets = 10;
+  if(numberOfIterations < timeBuckets)
+    timeBuckets = numberOfIterations;
+  
   for(int it = 0; it < numberOfIterations; it++) {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
@@ -132,21 +137,6 @@ int ttk::ScalarFieldSmoother::smooth(const TriangulationType *triangulation,
           }
           tmpData[dimensionNumber_ * i + j] /= ((double)neighborNumber);
         }
-
-        if(debugLevel_ > advancedInfoMsg) {
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp critical
-#endif
-          {
-            // update the progress bar of the wrapping code
-            if((wrapper_)
-               && (!(count % ((numberOfIterations * vertexNumber) / 10)))) {
-              wrapper_->updateProgress((count + 1.0)
-                                       / (numberOfIterations * vertexNumber));
-            }
-            count++;
-          }
-        }
       }
     }
 
@@ -162,15 +152,19 @@ int ttk::ScalarFieldSmoother::smooth(const TriangulationType *triangulation,
         }
       }
     }
+    
+    if(!(it % ((numberOfIterations) / timeBuckets))){
+      printMsg("Smoothing " + std::to_string(vertexNumber) + " vertices",
+              (it/ (float) numberOfIterations), 
+              t.getElapsedTime(), threadNumber_, 
+              debug::LineMode::REPLACE);
+      if(wrapper_)
+        wrapper_->updateProgress((it/ (float) numberOfIterations));
+    }
   }
-
-  {
-    std::stringstream msg;
-    msg << "[ScalarFieldSmoother] Data-set (" << vertexNumber
-        << " points) smoothed in " << t.getElapsedTime() << " s. ("
-        << threadNumber_ << " thread(s))." << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
-  }
+  
+  printMsg("Smoothed " + std::to_string(vertexNumber) + " vertices",
+           1, t.getElapsedTime(), threadNumber_);
 
   return 0;
 }

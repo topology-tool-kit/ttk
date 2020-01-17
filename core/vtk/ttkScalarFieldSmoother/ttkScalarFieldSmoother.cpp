@@ -103,7 +103,7 @@ int ttkScalarFieldSmoother::doIt(vector<vtkDataSet *> &inputs,
 
   {
     stringstream msg;
-    msg << "[ScalarFieldSmoother] Using field `" << inputScalarField->GetName()
+    msg << "[ttkScalarFieldSmoother] Using field `" << inputScalarField->GetName()
         << "'..." << endl;
     dMsg(cout, msg.str(), infoMsg);
   }
@@ -122,7 +122,7 @@ int ttkScalarFieldSmoother::doIt(vector<vtkDataSet *> &inputs,
 
     {
       stringstream msg;
-      msg << "[ScalarFieldSmoother] Using mask `" << inputMaskField->GetName()
+      msg << "[ttkScalarFieldSmoother] Using mask `" << inputMaskField->GetName()
           << "'..." << endl;
       dMsg(cout, msg.str(), infoMsg);
     }

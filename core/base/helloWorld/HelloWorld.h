@@ -85,6 +85,7 @@ namespace ttk {
         // print the progress of the current subprocedure (currently 0%)
         this->printMsg("Computing Averages",
                        0, // progress form 0-1
+                       0, // elapsed time so far
                        this->threadNumber_, ttk::debug::LineMode::REPLACE);
 
         // compute the average of each vertex in parallel

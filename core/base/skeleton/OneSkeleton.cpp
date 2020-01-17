@@ -4,6 +4,7 @@ using namespace std;
 using namespace ttk;
 
 OneSkeleton::OneSkeleton() {
+  setDebugMsgPrefix("OneSkeleton");
 }
 
 OneSkeleton::~OneSkeleton() {
@@ -148,6 +149,12 @@ int OneSkeleton::buildEdgeList(
   // assuming triangulations here
   SimplexId verticesPerCell = cellArray[0];
 
+  printMsg("Building edges", 0, 0, 1, ttk::debug::LineMode::REPLACE);
+  
+  int timeBuckets = 10;
+  if(cellNumber < timeBuckets)
+    timeBuckets = cellNumber;
+  
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
@@ -193,6 +200,10 @@ int OneSkeleton::buildEdgeList(
         // end of edge processing
       }
     }
+    if(!(i % ((cellNumber) / timeBuckets)))
+      printMsg("Building edges",
+        (i/ (float) cellNumber), t.getElapsedTime(), 1, 
+               debug::LineMode::REPLACE);
   }
 
   // now merge the thing
@@ -247,13 +258,8 @@ int OneSkeleton::buildEdgeList(
     }
   }
 
-  {
-    stringstream msg;
-    msg << "[OneSkeleton] Edge-list built in " << t.getElapsedTime() << " s. ("
-        << edgeList.size() << " edges, " << threadNumber_ << " thread(s))."
-        << endl;
-    dMsg(cout, msg.str(), timeMsg);
-  }
+  printMsg("Built " + to_string(edgeList.size()) + " edges", 
+    1, t.getElapsedTime(), 1);
 
   threadNumber_ = oldThreadNumber;
 
