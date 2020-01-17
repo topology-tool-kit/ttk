@@ -8,6 +8,7 @@ ScalarFieldSmoother::ScalarFieldSmoother() {
   outputData_ = nullptr;
   dimensionNumber_ = 1;
   mask_ = nullptr;
+  setDebugMsgPrefix("ScalarFieldSmoother");
 }
 
 ScalarFieldSmoother::~ScalarFieldSmoother() {
