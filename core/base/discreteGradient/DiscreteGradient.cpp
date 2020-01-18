@@ -1038,19 +1038,23 @@ int DiscreteGradient::getCriticalPointMap(
   return 0;
 }
 
-int DiscreteGradient::setGradientGlyphs() const {
-  (*outputGradientGlyphs_numberOfPoints_) = 0;
-  (*outputGradientGlyphs_numberOfCells_) = 0;
+int DiscreteGradient::setGradientGlyphs(
+  SimplexId &numberOfPoints,
+  std::vector<float> &points,
+  std::vector<char> &points_pairOrigins,
+  SimplexId &numberOfCells,
+  std::vector<SimplexId> &cells,
+  std::vector<char> &cells_pairTypes) const {
 
   SimplexId pointId{};
   SimplexId cellId{};
 
   // foreach dimension
-  const int numberOfDimensions = getNumberOfDimensions();
-  for(int i = 0; i < numberOfDimensions - 1; ++i) {
+  const int nDimensions = getNumberOfDimensions();
+  for(int i = 0; i < nDimensions - 1; ++i) {
     // foreach cell of that dimension
-    const SimplexId numberOfCells = getNumberOfCells(i);
-    for(SimplexId j = 0; j < numberOfCells; ++j) {
+    const SimplexId nCells = getNumberOfCells(i);
+    for(SimplexId j = 0; j < nCells; ++j) {
       const Cell cell(i, j);
 
       const SimplexId pairedCellId = getPairedCell(cell);
@@ -1060,29 +1064,29 @@ int DiscreteGradient::setGradientGlyphs() const {
 
         const Cell pairedCell(pairedCellDim, pairedCellId);
 
-        float p0[3];
-        getCellIncenter(cell, p0);
+        std::array<float, 3> p0{};
+        getCellIncenter(cell, p0.data());
 
-        outputGradientGlyphs_points_->push_back(p0[0]);
-        outputGradientGlyphs_points_->push_back(p0[1]);
-        outputGradientGlyphs_points_->push_back(p0[2]);
+        points.push_back(p0[0]);
+        points.push_back(p0[1]);
+        points.push_back(p0[2]);
 
-        outputGradientGlyphs_points_pairOrigins_->push_back(0);
+        points_pairOrigins.push_back(0);
 
-        float p1[3];
-        getCellIncenter(pairedCell, p1);
+        std::array<float, 3> p1{};
+        getCellIncenter(pairedCell, p1.data());
 
-        outputGradientGlyphs_points_->push_back(p1[0]);
-        outputGradientGlyphs_points_->push_back(p1[1]);
-        outputGradientGlyphs_points_->push_back(p1[2]);
+        points.push_back(p1[0]);
+        points.push_back(p1[1]);
+        points.push_back(p1[2]);
 
-        outputGradientGlyphs_points_pairOrigins_->push_back(1);
+        points_pairOrigins.push_back(1);
 
-        outputGradientGlyphs_cells_->push_back(2);
-        outputGradientGlyphs_cells_->push_back(pointId);
-        outputGradientGlyphs_cells_->push_back(pointId + 1);
+        cells.push_back(2);
+        cells.push_back(pointId);
+        cells.push_back(pointId + 1);
 
-        outputGradientGlyphs_cells_pairTypes_->push_back(i);
+        cells_pairTypes.push_back(i);
 
         pointId += 2;
         cellId += 1;
@@ -1090,8 +1094,8 @@ int DiscreteGradient::setGradientGlyphs() const {
     }
   }
 
-  (*outputGradientGlyphs_numberOfPoints_) = pointId;
-  (*outputGradientGlyphs_numberOfCells_) = cellId;
+  numberOfPoints = pointId;
+  numberOfCells = cellId;
 
   return 0;
 }

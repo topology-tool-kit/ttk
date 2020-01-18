@@ -903,27 +903,6 @@ according to them.
       }
 
       /**
-       * Set the output data pointer to the gradient glyphs.
-       */
-      inline int setOutputGradientGlyphs(
-        SimplexId *const gradientGlyphs_numberOfPoints,
-        std::vector<float> *const gradientGlyphs_points,
-        std::vector<char> *const gradientGlyphs_points_pairOrigins,
-        SimplexId *const gradientGlyphs_numberOfCells,
-        std::vector<SimplexId> *const gradientGlyphs_cells,
-        std::vector<char> *const gradientGlyphs_cells_pairTypes) {
-        outputGradientGlyphs_numberOfPoints_ = gradientGlyphs_numberOfPoints;
-        outputGradientGlyphs_points_ = gradientGlyphs_points;
-
-        outputGradientGlyphs_points_pairOrigins_
-          = gradientGlyphs_points_pairOrigins;
-        outputGradientGlyphs_numberOfCells_ = gradientGlyphs_numberOfCells;
-        outputGradientGlyphs_cells_ = gradientGlyphs_cells;
-        outputGradientGlyphs_cells_pairTypes_ = gradientGlyphs_cells_pairTypes;
-        return 0;
-      }
-
-      /**
        * Get the dimensionality of the triangulation.
        */
       int getDimensionality() const;
@@ -1119,7 +1098,12 @@ tetra identifier.
       /**
        * Build the glyphs representing the discrete gradient vector field.
        */
-      int setGradientGlyphs() const;
+      int setGradientGlyphs(SimplexId &numberOfPoints,
+                            std::vector<float> &points,
+                            std::vector<char> &points_pairOrigins,
+                            SimplexId &numberOfCells,
+                            std::vector<SimplexId> &cells,
+                            std::vector<char> &cells_pairTypes) const;
 
     protected:
       int IterationThreshold{-1};
@@ -1147,13 +1131,6 @@ tetra identifier.
       std::vector<SimplexId>
         *outputCriticalPoints_points_PLVertexIdentifiers_{};
       std::vector<SimplexId> *outputCriticalPoints_points_manifoldSize_{};
-
-      SimplexId *outputGradientGlyphs_numberOfPoints_{};
-      std::vector<float> *outputGradientGlyphs_points_{};
-      std::vector<char> *outputGradientGlyphs_points_pairOrigins_{};
-      SimplexId *outputGradientGlyphs_numberOfCells_{};
-      std::vector<SimplexId> *outputGradientGlyphs_cells_{};
-      std::vector<char> *outputGradientGlyphs_cells_pairTypes_{};
 
       std::vector<std::tuple<Cell, Cell>> *outputPersistencePairs_{};
     };

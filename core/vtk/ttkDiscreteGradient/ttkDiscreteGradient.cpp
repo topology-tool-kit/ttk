@@ -379,24 +379,11 @@ int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
   }
 #endif
 
-  // gradient pairs
-  SimplexId gradientGlyphs_numberOfPoints{};
-  vector<float> gradientGlyphs_points;
-  vector<char> gradientGlyphs_points_pairOrigins;
-  SimplexId gradientGlyphs_numberOfCells{};
-  vector<SimplexId> gradientGlyphs_cells;
-  vector<char> gradientGlyphs_cells_pairTypes;
-
   // baseCode processing
   discreteGradient_.setWrapper(this);
   discreteGradient_.setIterationThreshold(IterationThreshold);
   discreteGradient_.setInputScalarField(inputScalars_->GetVoidPointer(0));
   discreteGradient_.setInputOffsets(inputOffsets_->GetVoidPointer(0));
-
-  discreteGradient_.setOutputGradientGlyphs(
-    &gradientGlyphs_numberOfPoints, &gradientGlyphs_points,
-    &gradientGlyphs_points_pairOrigins, &gradientGlyphs_numberOfCells,
-    &gradientGlyphs_cells, &gradientGlyphs_cells_pairTypes);
 
   switch(inputScalars_->GetDataType()) {
     vtkTemplateMacro(ret = dispatch<VTK_TT>(outputCriticalPoints));
@@ -410,7 +397,17 @@ int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
 
   // gradient glyphs
   if(ComputeGradientGlyphs) {
-    discreteGradient_.setGradientGlyphs();
+    SimplexId gradientGlyphs_numberOfPoints{};
+    vector<float> gradientGlyphs_points;
+    vector<char> gradientGlyphs_points_pairOrigins;
+    SimplexId gradientGlyphs_numberOfCells{};
+    vector<SimplexId> gradientGlyphs_cells;
+    vector<char> gradientGlyphs_cells_pairTypes;
+
+    discreteGradient_.setGradientGlyphs(
+      gradientGlyphs_numberOfPoints, gradientGlyphs_points,
+      gradientGlyphs_points_pairOrigins, gradientGlyphs_numberOfCells,
+      gradientGlyphs_cells, gradientGlyphs_cells_pairTypes);
 
     vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
 #ifndef TTK_ENABLE_KAMIKAZE
