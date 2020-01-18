@@ -43,11 +43,12 @@ int ZeroSkeleton::buildVertexEdges(
       vertexEdges[edgeList[i].first].push_back(i);
       vertexEdges[edgeList[i].second].push_back(i);
 
-      // TODO: protect by info
-      if(!(i % ((edgeList.size()) / timeBuckets))) {
-        printMsg("Built " + std::to_string(i) + " vertex edges",
-                 (i / (float)edgeList.size()), t.getElapsedTime(),
-                 threadNumber_, debug::LineMode::REPLACE);
+      if(debugLevel_ >= static_cast<int>(debug::Priority::INFO)) {
+        if(!(i % ((edgeList.size()) / timeBuckets))) {
+          printMsg("Built " + std::to_string(i) + " vertex edges",
+                   (i / (float)edgeList.size()), t.getElapsedTime(),
+                   threadNumber_, debug::LineMode::REPLACE);
+        }
       }
     }
   } else {
@@ -93,13 +94,6 @@ int ZeroSkeleton::buildVertexEdges(
 
   printMsg("Built " + std::to_string(vertexNumber) + " vertex edges", 1,
            t.getElapsedTime(), threadNumber_);
-
-  {
-    stringstream msg;
-    msg << "[ZeroSkeleton] Vertex edges built in " << t.getElapsedTime()
-        << " s. (" << threadNumber_ << " thread(s))." << endl;
-    dMsg(cout, msg.str(), timeMsg);
-  }
 
   threadNumber_ = oldThreadNumber;
 

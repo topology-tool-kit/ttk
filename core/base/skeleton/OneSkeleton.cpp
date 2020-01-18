@@ -192,10 +192,11 @@ int OneSkeleton::buildEdgeList(
         // end of edge processing
       }
     }
-    if(!(i % ((cellNumber) / timeBuckets)))
-      printMsg("Building edges",
-        (i/ (float) cellNumber), t.getElapsedTime(), 1, 
-               debug::LineMode::REPLACE);
+    if(debugLevel_ >= static_cast<int>(debug::Priority::INFO)) {
+      if(!(i % ((cellNumber) / timeBuckets)))
+        printMsg("Building edges", (i / (float)cellNumber), t.getElapsedTime(),
+                 1, debug::LineMode::REPLACE);
+    }
   }
 
   // now merge the thing
