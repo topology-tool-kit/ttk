@@ -208,7 +208,7 @@ int ttkDiscreteGradient::dispatch(vtkUnstructuredGrid *outputCriticalPoints) {
     if(inputOffsets_->GetDataType() == VTK_ID_TYPE)
       discreteGradient_.setCriticalPoints<VTK_TT, vtkIdType>();
 
-    vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+    vtkNew<vtkPoints> points{};
 #ifndef TTK_ENABLE_KAMIKAZE
     if(!points) {
       cerr << "[ttkDiscreteGradient] Error : vtkPoints allocation problem."
@@ -217,8 +217,7 @@ int ttkDiscreteGradient::dispatch(vtkUnstructuredGrid *outputCriticalPoints) {
     }
 #endif
 
-    vtkSmartPointer<vtkCharArray> cellDimensions
-      = vtkSmartPointer<vtkCharArray>::New();
+    vtkNew<vtkCharArray> cellDimensions{};
 #ifndef TTK_ENABLE_KAMIKAZE
     if(!cellDimensions) {
       cerr << "[ttkDiscreteGradient] Error : vtkCharArray allocation problem."
@@ -229,8 +228,7 @@ int ttkDiscreteGradient::dispatch(vtkUnstructuredGrid *outputCriticalPoints) {
     cellDimensions->SetNumberOfComponents(1);
     cellDimensions->SetName("CellDimension");
 
-    vtkSmartPointer<ttkSimplexIdTypeArray> cellIds
-      = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
+    vtkNew<ttkSimplexIdTypeArray> cellIds{};
 #ifndef TTK_ENABLE_KAMIKAZE
     if(!cellIds) {
       cerr << "[ttkDiscreteGradient] Error : ttkSimplexIdTypeArray allocation "
@@ -253,8 +251,7 @@ int ttkDiscreteGradient::dispatch(vtkUnstructuredGrid *outputCriticalPoints) {
     cellScalars->SetNumberOfComponents(1);
     cellScalars->SetName(ScalarField.data());
 
-    vtkSmartPointer<vtkCharArray> isOnBoundary
-      = vtkSmartPointer<vtkCharArray>::New();
+    vtkNew<vtkCharArray> isOnBoundary{};
 #ifndef TTK_ENABLE_KAMIKAZE
     if(!isOnBoundary) {
       cerr << "[vtkMorseSmaleComplex] Error : vtkCharArray allocation problem."
@@ -265,8 +262,7 @@ int ttkDiscreteGradient::dispatch(vtkUnstructuredGrid *outputCriticalPoints) {
     isOnBoundary->SetNumberOfComponents(1);
     isOnBoundary->SetName("IsOnBoundary");
 
-    vtkSmartPointer<ttkSimplexIdTypeArray> PLVertexIdentifiers
-      = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
+    vtkNew<ttkSimplexIdTypeArray> PLVertexIdentifiers{};
 #ifndef TTK_ENABLE_KAMIKAZE
     if(!PLVertexIdentifiers) {
       cerr << "[ttkMorseSmaleComplex] Error : ttkSimplexIdTypeArray allocation "
@@ -321,10 +317,8 @@ int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
   }
 #endif
   vtkDataSet *input = inputs[0];
-  vtkUnstructuredGrid *outputCriticalPoints
-    = vtkUnstructuredGrid::SafeDownCast(outputs[0]);
-  vtkUnstructuredGrid *outputGradientGlyphs
-    = vtkUnstructuredGrid::SafeDownCast(outputs[1]);
+  auto outputCriticalPoints = vtkUnstructuredGrid::SafeDownCast(outputs[0]);
+  auto outputGradientGlyphs = vtkUnstructuredGrid::SafeDownCast(outputs[1]);
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!input) {
@@ -409,7 +403,7 @@ int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
       gradientGlyphs_points_pairOrigins, gradientGlyphs_numberOfCells,
       gradientGlyphs_cells, gradientGlyphs_cells_pairTypes);
 
-    vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+    vtkNew<vtkPoints> points{};
 #ifndef TTK_ENABLE_KAMIKAZE
     if(!points) {
       cerr << "[ttkDiscreteGradient] Error : vtkPoints allocation problem."
@@ -418,8 +412,7 @@ int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
     }
 #endif
 
-    vtkSmartPointer<vtkCharArray> pairOrigins
-      = vtkSmartPointer<vtkCharArray>::New();
+    vtkNew<vtkCharArray> pairOrigins{};
 #ifndef TTK_ENABLE_KAMIKAZE
     if(!pairOrigins) {
       cerr << "[ttkDiscreteGradient] Error : vtkCharArray allocation problem."
@@ -430,8 +423,7 @@ int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
     pairOrigins->SetNumberOfComponents(1);
     pairOrigins->SetName("PairOrigin");
 
-    vtkSmartPointer<vtkCharArray> pairTypes
-      = vtkSmartPointer<vtkCharArray>::New();
+    vtkNew<vtkCharArray> pairTypes{};
 #ifndef TTK_ENABLE_KAMIKAZE
     if(!pairTypes) {
       cerr << "[ttkDiscreteGradient] Error : vtkCharArray allocation problem."

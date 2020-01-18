@@ -33,9 +33,9 @@
 #include <vtkInformationVector.h>
 #include <vtkIntArray.h>
 #include <vtkLine.h>
+#include <vtkNew.h>
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
-#include <vtkSmartPointer.h>
 
 // VTK Module
 #include <ttkDiscreteGradientModule.h>
