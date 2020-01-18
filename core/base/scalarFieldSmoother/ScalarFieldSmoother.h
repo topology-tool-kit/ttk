@@ -55,6 +55,10 @@ namespace ttk {
       // Pre-condition functions.
       if(triangulation) {
         triangulation->preconditionVertexNeighbors();
+
+        // tmp
+        triangulation->preconditionVertexEdges();
+        // end of tmp
       }
 
       return 0;

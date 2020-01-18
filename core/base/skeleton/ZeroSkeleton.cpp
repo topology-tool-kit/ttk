@@ -5,6 +5,8 @@ using namespace std;
 using namespace ttk;
 
 ZeroSkeleton::ZeroSkeleton() {
+
+  setDebugMsgPrefix("ZeroSkeleton");
 }
 
 ZeroSkeleton::~ZeroSkeleton() {
@@ -28,9 +30,25 @@ int ZeroSkeleton::buildVertexEdges(
   }
 
   if(threadNumber_ == 1) {
+
+    int timeBuckets = 10;
+    if(timeBuckets > (int)edgeList.size()) {
+      timeBuckets = edgeList.size();
+    }
+
+    printMsg("Building " + std::to_string(vertexNumber) + " vertex edges", 0, 0,
+             threadNumber_, ttk::debug::LineMode::REPLACE);
+
     for(SimplexId i = 0; i < (SimplexId)edgeList.size(); i++) {
       vertexEdges[edgeList[i].first].push_back(i);
       vertexEdges[edgeList[i].second].push_back(i);
+
+      // TODO: protect by info
+      if(!(i % ((edgeList.size()) / timeBuckets))) {
+        printMsg("Built " + std::to_string(i) + " vertex edges",
+                 (i / (float)edgeList.size()), t.getElapsedTime(),
+                 threadNumber_, debug::LineMode::REPLACE);
+      }
     }
   } else {
     vector<vector<vector<SimplexId>>> threadedVertexEdges(threadNumber_);
@@ -72,6 +90,9 @@ int ZeroSkeleton::buildVertexEdges(
       }
     }
   }
+
+  printMsg("Built " + std::to_string(vertexNumber) + " vertex edges", 1,
+           t.getElapsedTime(), threadNumber_);
 
   {
     stringstream msg;
