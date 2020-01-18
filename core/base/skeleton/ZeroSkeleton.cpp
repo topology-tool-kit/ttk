@@ -45,7 +45,7 @@ int ZeroSkeleton::buildVertexEdges(
 
       if(debugLevel_ >= static_cast<int>(debug::Priority::INFO)) {
         if(!(i % ((edgeList.size()) / timeBuckets))) {
-          printMsg("Built " + std::to_string(i) + " vertex edges",
+          printMsg("Building " + std::to_string(i) + " vertex edges",
                    (i / (float)edgeList.size()), t.getElapsedTime(),
                    threadNumber_, debug::LineMode::REPLACE);
         }
