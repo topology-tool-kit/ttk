@@ -52,7 +52,8 @@ namespace ttk {
       return cellEdgeList_[cellId].size();
     }
 
-    inline const std::vector<std::vector<SimplexId>> *getCellEdgesInternal() {
+    inline const std::vector<std::vector<SimplexId>> *
+      getCellEdgesInternal() override {
 
       return &cellEdgeList_;
     }
@@ -251,7 +252,8 @@ namespace ttk {
 #ifdef TTK_ENABLE_KAMIKAZE
     inline const std::vector<std::vector<SimplexId>> *getEdgeStars() override {
 #else
-    inline const std::vector<std::vector<SimplexId>> *getEdgeStarsInternal() {
+    inline const std::vector<std::vector<SimplexId>> *
+      getEdgeStarsInternal() override {
 #endif
       return &edgeStarList_;
     }
@@ -634,7 +636,7 @@ namespace ttk {
       getVertexStarNumber(const SimplexId &vertexId) const override {
 #else
     inline SimplexId
-      getVertexStarNumberInternal(const SimplexId &vertexId) const {
+      getVertexStarNumberInternal(const SimplexId &vertexId) const override {
       if((vertexId < 0) || (vertexId >= (SimplexId)vertexStarList_.size()))
         return -1;
 #endif
@@ -694,7 +696,7 @@ namespace ttk {
       return boundaryEdges_[edgeId];
     }
 
-    inline bool isEmpty() const {
+    inline bool isEmpty() const override {
       return !vertexNumber_;
     }
 

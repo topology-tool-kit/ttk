@@ -1753,7 +1753,7 @@ namespace ttk {
 
     /// Check if the data structure is empty or not.
     /// \return Returns true if empty, false otherwise.
-    virtual inline bool isEmpty() {
+    virtual inline bool isEmpty() const {
       return true;
     };
 

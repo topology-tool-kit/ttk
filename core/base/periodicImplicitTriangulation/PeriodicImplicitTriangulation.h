@@ -408,7 +408,7 @@ namespace ttk {
     bool isEdgeOnBoundaryInternal(const SimplexId &edgeId) const override;
 #endif
 
-    bool isEmpty() const {
+    bool isEmpty() const override {
       return !vertexNumber_;
     };
 
