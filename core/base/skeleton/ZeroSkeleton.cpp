@@ -36,8 +36,8 @@ int ZeroSkeleton::buildVertexEdges(
       timeBuckets = edgeList.size();
     }
 
-    printMsg("Building " + std::to_string(vertexNumber) + " vertex edges", 0, 0,
-             threadNumber_, ttk::debug::LineMode::REPLACE);
+    printMsg("Building vertex edges", 0, 0, threadNumber_,
+             ttk::debug::LineMode::REPLACE);
 
     for(SimplexId i = 0; i < (SimplexId)edgeList.size(); i++) {
       vertexEdges[edgeList[i].first].push_back(i);
@@ -45,9 +45,8 @@ int ZeroSkeleton::buildVertexEdges(
 
       if(debugLevel_ >= static_cast<int>(debug::Priority::INFO)) {
         if(!(i % ((edgeList.size()) / timeBuckets))) {
-          printMsg("Building " + std::to_string(i) + " vertex edges",
-                   (i / (float)edgeList.size()), t.getElapsedTime(),
-                   threadNumber_, debug::LineMode::REPLACE);
+          printMsg("Building vertex edges", (i / (float)edgeList.size()),
+                   t.getElapsedTime(), threadNumber_, debug::LineMode::REPLACE);
         }
       }
     }
@@ -209,6 +208,9 @@ int ZeroSkeleton::buildVertexLinks(
 
   Timer t;
 
+  printMsg("Building vertex links", 0, 0, threadNumber_,
+           ttk::debug::LineMode::REPLACE);
+
   auto localVertexStars = vertexStars;
   vector<vector<SimplexId>> defaultVertexStars{};
   if(!localVertexStars) {
@@ -345,30 +347,27 @@ int ZeroSkeleton::buildVertexLinks(
     }
   }
 
-  if(debugLevel_ >= Debug::advancedInfoMsg) {
-    stringstream msg;
+  if(debugLevel_ >= static_cast<int>(debug::Priority::DETAIL)) {
     for(SimplexId i = 0; i < (SimplexId)vertexLinks.size(); i++) {
-      msg << "[ZeroSkeleton] Vertex #" << i << " ("
+      stringstream msg;
+      msg << "Vertex #" << i << " ("
           << vertexLinks[i].size() / (vertexLinks[i][0] + 1)
-          << " items, length: " << vertexLinks[i].size() << "): " << endl;
+          << " items, length: " << vertexLinks[i].size() << "): ";
+      printMsg(msg.str(), debug::Priority::DETAIL);
       for(SimplexId j = 0;
           j < (SimplexId)vertexLinks[i].size() / (vertexLinks[i][0] + 1); j++) {
-        msg << "[ZeroSkeleton]   - " << j << ":";
+        stringstream msgLine;
+        msgLine << "  - " << j << ":";
         for(SimplexId k = 0; k < verticesPerCell; k++) {
-          msg << " " << vertexLinks[i][j * (verticesPerCell) + k];
+          msgLine << " " << vertexLinks[i][j * (verticesPerCell) + k];
         }
-        msg << endl;
+        printMsg(msgLine.str(), debug::Priority::DETAIL);
       }
     }
-    dMsg(cout, msg.str(), Debug::advancedInfoMsg);
   }
 
-  {
-    stringstream msg;
-    msg << "[ZeroSkeleton] Vertex links built in " << t.getElapsedTime()
-        << " s. (" << threadNumber_ << " thread(s))." << endl;
-    dMsg(cout, msg.str(), timeMsg);
-  }
+  printMsg("Built " + std::to_string(vertexNumber) + " vertex links", 1,
+           t.getElapsedTime(), threadNumber_);
 
   // ethaneDiolMedium.vtu, 70Mtets, hal9000 (12coresHT)
   // 1 thread: 10.47 s
@@ -396,6 +395,9 @@ int ZeroSkeleton::buildVertexLinks(
 
   vertexLinks.resize(vertexStars.size());
 
+  printMsg("Building vertex links", 0, 0, threadNumber_,
+           ttk::debug::LineMode::REPLACE);
+
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
@@ -416,12 +418,8 @@ int ZeroSkeleton::buildVertexLinks(
     }
   }
 
-  {
-    stringstream msg;
-    msg << "[ZeroSkeleton] Vertex links built in " << t.getElapsedTime()
-        << " s. (" << threadNumber_ << " thread(s))." << endl;
-    dMsg(cout, msg.str(), timeMsg);
-  }
+  printMsg("Built " + std::to_string(vertexLinks.size()) + " vertex links", 1,
+           t.getElapsedTime(), threadNumber_);
 
   return 0;
 }
@@ -444,6 +442,9 @@ int ZeroSkeleton::buildVertexLinks(
   Timer t;
 
   vertexLinks.resize(vertexStars.size());
+
+  printMsg("Building vertex links", 0, 0, threadNumber_,
+           ttk::debug::LineMode::REPLACE);
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
@@ -470,12 +471,8 @@ int ZeroSkeleton::buildVertexLinks(
     }
   }
 
-  {
-    stringstream msg;
-    msg << "[ZeroSkeleton] Vertex links built in " << t.getElapsedTime()
-        << " s. (" << threadNumber_ << " thread(s))." << endl;
-    dMsg(cout, msg.str(), timeMsg);
-  }
+  printMsg("Built " + std::to_string(vertexLinks.size()) + " vertex links", 1,
+           t.getElapsedTime(), threadNumber_);
 
   return 0;
 }
@@ -509,6 +506,9 @@ int ZeroSkeleton::buildVertexNeighbors(
     osk.buildEdgeList(vertexNumber, cellNumber, cellArray, *localEdgeList);
   }
 
+  printMsg("Building vertex neighbors", 0, 0, threadNumber_,
+           ttk::debug::LineMode::REPLACE);
+
   for(SimplexId i = 0; i < (SimplexId)localEdgeList->size(); i++) {
     oneSkeleton[(*localEdgeList)[i].first].push_back(
       (*localEdgeList)[i].second);
@@ -516,12 +516,8 @@ int ZeroSkeleton::buildVertexNeighbors(
       (*localEdgeList)[i].first);
   }
 
-  {
-    stringstream msg;
-    msg << "[ZeroSkeleton] One-skeleton built in " << t.getElapsedTime()
-        << " s. (" << threadNumber_ << " thread(s))." << endl;
-    dMsg(cout, msg.str(), timeMsg);
-  }
+  printMsg("Built " + std::to_string(vertexNumber) + " vertex neighbors", 1,
+           t.getElapsedTime(), threadNumber_);
 
   // ethaneDiolMedium.vtu, 70Mtets, hal9000 (12coresHT)
   // (only merging step, after edge list creation)
@@ -549,6 +545,9 @@ int ZeroSkeleton::buildVertexStars(
 
   Timer t;
 
+  printMsg("Building vertex stars", 0, 0, threadNumber_,
+           ttk::debug::LineMode::REPLACE);
+
   vertexStars.resize(vertexNumber);
   for(SimplexId i = 0; i < vertexNumber; i++)
     vertexStars[i].reserve(32);
@@ -569,6 +568,10 @@ int ZeroSkeleton::buildVertexStars(
 
   SimplexId vertexNumberPerCell = cellArray[0];
 
+  int timeBuckets = 10;
+  if(cellNumber < timeBuckets)
+    timeBuckets = cellNumber;
+
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
@@ -583,6 +586,13 @@ int ZeroSkeleton::buildVertexStars(
       (*threadedZeroSkeleton[threadId])[cellArray[(vertexNumberPerCell + 1) * i
                                                   + 1 + j]]
         .push_back(i);
+    }
+
+    if(debugLevel_ >= static_cast<int>(debug::Priority::INFO)) {
+      if(!(i % ((cellNumber) / timeBuckets))) {
+        printMsg("Building vertex stars", (i / (float)cellNumber),
+                 t.getElapsedTime(), threadNumber_, debug::LineMode::REPLACE);
+      }
     }
   }
 
@@ -618,25 +628,18 @@ int ZeroSkeleton::buildVertexStars(
     }
   }
 
-  {
-    stringstream msg;
-    msg << "[ZeroSkeleton] Vertex stars built in " << t.getElapsedTime()
-        << " s. (" << threadNumber_ << " thread(s))." << endl;
-    dMsg(cout, msg.str(), timeMsg);
-  }
+  printMsg("Built " + std::to_string(vertexNumber) + " vertex stars", 1,
+           t.getElapsedTime(), threadNumber_);
 
   if(debugLevel_ >= Debug::advancedInfoMsg) {
-    stringstream msg;
-
     for(SimplexId i = 0; i < (SimplexId)vertexStars.size(); i++) {
-      msg << "[ZeroSkeleton] Vertex #" << i << " (" << vertexStars[i].size()
-          << " cell(s)): ";
+      stringstream msg;
+      msg << "Vertex #" << i << " (" << vertexStars[i].size() << " cell(s)): ";
       for(SimplexId j = 0; j < (SimplexId)vertexStars[i].size(); j++) {
         msg << " " << vertexStars[i][j];
       }
-      msg << endl;
+      printMsg(msg.str(), debug::Priority::INFO);
     }
-    dMsg(cout, msg.str(), Debug::advancedInfoMsg);
   }
 
   threadNumber_ = oldThreadNumber;

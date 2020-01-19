@@ -27,6 +27,9 @@ int OneSkeleton::buildEdgeLinks(
 
   Timer t;
 
+  printMsg(
+    "Building edge links", 0, 0, threadNumber_, ttk::debug::LineMode::REPLACE);
+
   edgeLinks.resize(edgeList.size());
 
   SimplexId verticesPerCell = cellArray[0];
@@ -75,6 +78,9 @@ int OneSkeleton::buildEdgeLinks(
 #endif
 
   Timer t;
+
+  printMsg(
+    "Building edge links", 0, 0, threadNumber_, debug::LineMode::REPLACE);
 
   edgeLinks.resize(edgeList.size());
 
@@ -269,6 +275,9 @@ int OneSkeleton::buildEdgeLists(
 
   Timer t;
 
+  printMsg(
+    "Building edge lists", 0, 0, threadNumber_, debug::LineMode::REPLACE);
+
   edgeLists.resize(cellArrays.size());
 
 #ifdef TTK_ENABLE_OPENMP
@@ -319,6 +328,9 @@ int OneSkeleton::buildEdgeStars(const SimplexId &vertexNumber,
 #endif
 
   Timer t;
+
+  printMsg(
+    "Building edge stars", 0, 0, threadNumber_, debug::LineMode::REPLACE);
 
   auto localEdgeList = edgeList;
   vector<pair<SimplexId, SimplexId>> defaultEdgeList{};
