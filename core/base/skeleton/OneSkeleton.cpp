@@ -27,6 +27,9 @@ int OneSkeleton::buildEdgeLinks(
 
   Timer t;
 
+  printMsg(
+    "Building edge links", 0, 0, threadNumber_, ttk::debug::LineMode::REPLACE);
+
   edgeLinks.resize(edgeList.size());
 
   SimplexId verticesPerCell = cellArray[0];
@@ -53,12 +56,8 @@ int OneSkeleton::buildEdgeLinks(
     }
   }
 
-  {
-    stringstream msg;
-    msg << "[OneSkeleton] Edge links built in " << t.getElapsedTime() << " s. ("
-        << threadNumber_ << " thread(s))." << endl;
-    dMsg(cout, msg.str(), timeMsg);
-  }
+  printMsg("Built " + to_string(edgeLinks.size()) + " edge links", 1,
+           t.getElapsedTime(), threadNumber_);
 
   return 0;
 }
@@ -79,6 +78,9 @@ int OneSkeleton::buildEdgeLinks(
 #endif
 
   Timer t;
+
+  printMsg(
+    "Building edge links", 0, 0, threadNumber_, debug::LineMode::REPLACE);
 
   edgeLinks.resize(edgeList.size());
 
@@ -110,12 +112,8 @@ int OneSkeleton::buildEdgeLinks(
     }
   }
 
-  {
-    stringstream msg;
-    msg << "[OneSkeleton] Edge links built in " << t.getElapsedTime() << " s. ("
-        << threadNumber_ << " thread(s))." << endl;
-    dMsg(cout, msg.str(), timeMsg);
-  }
+  printMsg("Built " + to_string(edgeLinks.size()) + " edge links", 1,
+           t.getElapsedTime(), threadNumber_);
 
   return 0;
 }
@@ -200,10 +198,11 @@ int OneSkeleton::buildEdgeList(
         // end of edge processing
       }
     }
-    if(!(i % ((cellNumber) / timeBuckets)))
-      printMsg("Building edges",
-        (i/ (float) cellNumber), t.getElapsedTime(), 1, 
-               debug::LineMode::REPLACE);
+    if(debugLevel_ >= static_cast<int>(debug::Priority::INFO)) {
+      if(!(i % ((cellNumber) / timeBuckets)))
+        printMsg("Building edges", (i / (float)cellNumber), t.getElapsedTime(),
+                 1, debug::LineMode::REPLACE);
+    }
   }
 
   // now merge the thing
@@ -276,6 +275,9 @@ int OneSkeleton::buildEdgeLists(
 
   Timer t;
 
+  printMsg(
+    "Building edge lists", 0, 0, threadNumber_, debug::LineMode::REPLACE);
+
   edgeLists.resize(cellArrays.size());
 
 #ifdef TTK_ENABLE_OPENMP
@@ -286,24 +288,24 @@ int OneSkeleton::buildEdgeLists(
                      cellArrays[i].data(), edgeLists[i]);
   }
 
-  {
-    stringstream msg;
-    msg << "[OneSkeleton] Multiple edge-lists built in " << t.getElapsedTime()
-        << " s. (" << edgeLists.size() << " meshes)" << endl;
-    dMsg(cout, msg.str(), timeMsg);
-  }
+  printMsg("Built " + to_string(edgeLists.size()) + " edge lists", 1,
+           t.getElapsedTime(), threadNumber_);
 
-  if(debugLevel_ >= Debug::advancedInfoMsg) {
-    stringstream msg;
+  if(debugLevel_ >= static_cast<int>(debug::Priority::DETAIL)) {
     for(SimplexId i = 0; i < (SimplexId)edgeLists.size(); i++) {
-      msg << "[OneSkeleton] Surface #" << i << " (" << edgeLists[i].size()
-          << " edges):" << endl;
+      {
+        stringstream stringStream;
+        stringStream << "Surface #" << i << " (" << edgeLists[i].size()
+                     << " edges):";
+        printMsg(stringStream.str(), debug::Priority::DETAIL);
+      }
       for(SimplexId j = 0; j < (SimplexId)edgeLists[i].size(); j++) {
-        msg << "[OneSkeleton] - [" << edgeLists[i][j].first << " - "
-            << edgeLists[i][j].second << "]" << endl;
+        stringstream stringStream;
+        stringStream << "- [" << edgeLists[i][j].first << " - "
+                     << edgeLists[i][j].second << "]";
+        printMsg(stringStream.str(), debug::Priority::DETAIL);
       }
     }
-    dMsg(cout, msg.str(), Debug::advancedInfoMsg);
   }
 
   // computing the edge list of each vertex link:
@@ -326,6 +328,9 @@ int OneSkeleton::buildEdgeStars(const SimplexId &vertexNumber,
 #endif
 
   Timer t;
+
+  printMsg(
+    "Building edge stars", 0, 0, threadNumber_, debug::LineMode::REPLACE);
 
   auto localEdgeList = edgeList;
   vector<pair<SimplexId, SimplexId>> defaultEdgeList{};
@@ -381,13 +386,8 @@ int OneSkeleton::buildEdgeStars(const SimplexId &vertexNumber,
     }
   }
 
-  {
-    stringstream msg;
-    msg << "[OneSkeleton] Edge stars built in " << t.getElapsedTime() << " s. ("
-        << starList.size() << " edges, " << threadNumber_ << " thread(s))"
-        << endl;
-    dMsg(cout, msg.str(), timeMsg);
-  }
+  printMsg("Built " + to_string(starList.size()) + " edge stars", 1,
+           t.getElapsedTime(), threadNumber_);
 
   // ethaneDiolMedium.vtu, 70Mtets, hal9000 (12coresHT)
   // with edge list and vertex stars

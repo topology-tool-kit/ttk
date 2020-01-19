@@ -90,13 +90,18 @@ int ttkScalarFieldSmoother::doIt(vector<vtkDataSet *> &inputs,
     inputScalarField = input->GetPointData()->GetArray(ScalarFieldIdentifier);
   }
 
-#ifndef TTK_ENABLE_KAMIKAZE
   if(!inputScalarField) {
     cerr << "[ttkScalarFieldSmoother] Error: input scalar field poiner is NULL."
          << endl;
     return -2;
   }
-#endif
+
+  if(inputScalarField->GetNumberOfComponents() != 1) {
+    cerr
+      << "[ttkScalarFieldSmoother] Error: input field has multiple components."
+      << endl;
+    return -3;
+  }
 
   if(inputScalarField->GetName())
     ScalarField = inputScalarField->GetName();

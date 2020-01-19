@@ -152,14 +152,15 @@ int ttk::ScalarFieldSmoother::smooth(const TriangulationType *triangulation,
         }
       }
     }
-    
-    if(!(it % ((numberOfIterations) / timeBuckets))){
-      printMsg("Smoothing " + std::to_string(vertexNumber) + " vertices",
-              (it/ (float) numberOfIterations), 
-              t.getElapsedTime(), threadNumber_, 
-              debug::LineMode::REPLACE);
-      if(wrapper_)
-        wrapper_->updateProgress((it/ (float) numberOfIterations));
+
+    if(debugLevel_ >= static_cast<int>(debug::Priority::INFO)) {
+      if(!(it % ((numberOfIterations) / timeBuckets))) {
+        printMsg("Smoothing " + std::to_string(vertexNumber) + " vertices",
+                 (it / (float)numberOfIterations), t.getElapsedTime(),
+                 threadNumber_, debug::LineMode::REPLACE);
+        if(wrapper_)
+          wrapper_->updateProgress((it / (float)numberOfIterations));
+      }
     }
   }
   
