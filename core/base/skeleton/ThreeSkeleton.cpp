@@ -4,6 +4,7 @@ using namespace std;
 using namespace ttk;
 
 ThreeSkeleton::ThreeSkeleton() {
+  setDebugMsgPrefix("ThreeSkeleton");
 }
 
 ThreeSkeleton::~ThreeSkeleton() {
@@ -25,8 +26,6 @@ int ThreeSkeleton::buildCellEdges(
   if(!cellArray)
     return -3;
 #endif
-
-  Timer t;
 
   auto localEdgeList = edgeList;
   auto localVertexEdges = vertexEdges;
@@ -58,6 +57,11 @@ int ThreeSkeleton::buildCellEdges(
     zeroSkeleton.buildVertexEdges(
       vertexNumber, *localEdgeList, *localVertexEdges);
   }
+
+  Timer t;
+
+  printMsg(
+    "Building cell edges", 0, 0, threadNumber_, ttk::debug::LineMode::REPLACE);
 
   cellEdges.resize(cellNumber);
   for(SimplexId i = 0; i < (SimplexId)cellEdges.size(); i++) {
@@ -101,12 +105,8 @@ int ThreeSkeleton::buildCellEdges(
     }
   }
 
-  {
-    stringstream msg;
-    msg << "[ThreeSkeleton] Cell edges built in " << t.getElapsedTime()
-        << " s. (" << threadNumber_ << " thread(s))." << endl;
-    dMsg(cout, msg.str(), timeMsg);
-  }
+  printMsg("Built " + std::to_string(cellEdges.size()) + " cell edges", 1,
+           t.getElapsedTime(), threadNumber_);
 
   return 0;
 }
@@ -117,8 +117,6 @@ int ThreeSkeleton::buildCellNeighborsFromTriangles(
   const LongSimplexId *cellArray,
   vector<vector<SimplexId>> &cellNeighbors,
   vector<vector<SimplexId>> *triangleStars) const {
-
-  Timer t;
 
   auto localTriangleStars = triangleStars;
   vector<vector<SimplexId>> defaultTriangleStars{};
@@ -146,7 +144,16 @@ int ThreeSkeleton::buildCellNeighborsFromTriangles(
   ThreadId oldThreadNumber = threadNumber_;
   threadNumber_ = 1;
 
+  Timer t;
+
+  printMsg("Building cell neighbors", 0, 0, threadNumber_,
+           ttk::debug::LineMode::REPLACE);
+
   if(threadNumber_ == 1) {
+
+    int timeBuckets = 10;
+    if(timeBuckets > (SimplexId)localTriangleStars->size())
+      timeBuckets = (SimplexId)localTriangleStars->size();
 
     for(SimplexId i = 0; i < (SimplexId)localTriangleStars->size(); i++) {
 
@@ -158,6 +165,16 @@ int ThreeSkeleton::buildCellNeighborsFromTriangles(
 
         cellNeighbors[(*localTriangleStars)[i][1]].push_back(
           (*localTriangleStars)[i][0]);
+      }
+
+      // update the progress bar of the wrapping code -- to adapt
+      if(debugLevel_ >= static_cast<int>(debug::Priority::INFO)) {
+
+        if(!(i % ((localTriangleStars->size()) / timeBuckets))) {
+          printMsg("Building triangles",
+                   (i / (float)localTriangleStars->size()), t.getElapsedTime(),
+                   threadNumber_, ttk::debug::LineMode::REPLACE);
+        }
       }
     }
   } else {
@@ -205,13 +222,8 @@ int ThreeSkeleton::buildCellNeighborsFromTriangles(
     }
   }
 
-  {
-    stringstream msg;
-    msg << "[ThreeSkeleton] Cell neighbors (" << cellNumber
-        << " cells) computed in " << t.getElapsedTime() << " s. ("
-        << threadNumber_ << " thread(s))." << endl;
-    dMsg(cout, msg.str(), timeMsg);
-  }
+  printMsg("Built " + std::to_string(cellNumber) + " cell neighbors", 1,
+           t.getElapsedTime(), threadNumber_);
 
   threadNumber_ = oldThreadNumber;
 
@@ -252,14 +264,10 @@ int ThreeSkeleton::buildCellNeighborsFromVertices(
 
   if(cellArray[0] == 2) {
     // 1D
-    stringstream msg;
-    msg << "[ThreeSkeleton] buildCellNeighborsFromVertices in 1D:" << endl;
-    msg << "[ThreeSkeleton] Not implemented! TODO!" << endl;
-    dMsg(cerr, msg.str(), Debug::fatalMsg);
+    printErr("buildCellNeighbnorsFromVertices in 1D:");
+    printErr("Not implemented! TODO?!");
     return -1;
   }
-
-  Timer t;
 
   auto localVertexStars = vertexStars;
   vector<vector<SimplexId>> defaultVertexStars{};
@@ -276,6 +284,11 @@ int ThreeSkeleton::buildCellNeighborsFromVertices(
     zeroSkeleton.buildVertexStars(
       vertexNumber, cellNumber, cellArray, *localVertexStars);
   }
+
+  Timer t;
+
+  printMsg("Building cell neighnors", 0, 0, threadNumber_,
+           ttk::debug::LineMode::REPLACE);
 
   int vertexPerCell = cellArray[0];
 
@@ -372,13 +385,8 @@ int ThreeSkeleton::buildCellNeighborsFromVertices(
     }
   }
 
-  {
-    stringstream msg;
-    msg << "[ThreeSkeleton] Cell neighbors (" << cellNumber
-        << " cells) computed in " << t.getElapsedTime() << " s. ("
-        << threadNumber_ << " thread(s))." << endl;
-    dMsg(cout, msg.str(), timeMsg);
-  }
+  printMsg("Built " + to_string(cellNumber) + " cell neighbors", 1,
+           t.getElapsedTime(), threadNumber_);
 
   // ethaneDiol.vtu, 8.7Mtets, richard (4coresHT)
   // 1 thread: 9.39488 s
