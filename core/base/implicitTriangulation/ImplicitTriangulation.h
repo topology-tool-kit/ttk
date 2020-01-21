@@ -314,10 +314,8 @@ namespace ttk {
         if(0 < p[0] and p[0] < nbvoxels_[Di_]) {
           if(0 < p[1] and p[1] < nbvoxels_[Dj_])
             return 6; // abcd
-          else if(p[1] == 0)
-            return 4; // ab
           else
-            return 4; // cd
+            return 4; // ab, cd
         } else if(p[0] == 0) {
           if(0 < p[1] and p[1] < nbvoxels_[Dj_])
             return 4; // ac

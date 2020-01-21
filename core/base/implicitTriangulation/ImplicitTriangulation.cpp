@@ -1039,10 +1039,8 @@ inline SimplexId ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(
     if(0 < p[0] and p[0] < nbvoxels_[Di_]) {
       if(0 < p[1] and p[1] < nbvoxels_[Dj_])
         return 6; // abcd
-      else if(p[1] == 0)
-        return 3; // ab
       else
-        return 3; // cd
+        return 3; // ab, cd
     } else if(p[0] == 0) {
       if(0 < p[1] and p[1] < nbvoxels_[Dj_])
         return 3; // ac
@@ -1478,8 +1476,6 @@ inline SimplexId ImplicitTriangulation::getEdgeTriangleNumberInternal(
       if(p[2] > 0 and p[2] < nbvoxels_[2]) {
         if(p[1] > 0 and p[1] < nbvoxels_[1])
           return 6;
-        else if(p[1] == 0)
-          return 4;
         else
           return 4;
       } else if(p[2] == 0) {
@@ -1505,8 +1501,6 @@ inline SimplexId ImplicitTriangulation::getEdgeTriangleNumberInternal(
       if(p[0] > 0 and p[0] < nbvoxels_[0]) {
         if(p[2] > 0 and p[2] < nbvoxels_[2])
           return 6;
-        else if(p[2] == 0)
-          return 4;
         else
           return 4;
       } else if(p[0] == 0) {
@@ -1532,8 +1526,6 @@ inline SimplexId ImplicitTriangulation::getEdgeTriangleNumberInternal(
       if(p[0] > 0 and p[0] < nbvoxels_[0]) {
         if(p[1] > 0 and p[1] < nbvoxels_[1])
           return 6;
-        else if(p[1] == 0)
-          return 4;
         else
           return 4;
       } else if(p[0] == 0) {
@@ -1927,10 +1919,8 @@ inline SimplexId ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(
       if(p[0] > 0 and p[0] < nbvoxels_[0]) {
         if(p[2] > 0 and p[2] < nbvoxels_[2])
           return 6; // ABCG,ABEG,BEFG,BFGH,BCDG,BDGH
-        else if(p[2] == 0)
-          return 3; // BCDG,BDGH,ABCG
         else
-          return 3; // ABEG,BEFG,BFGH
+          return 3; // ABEG,BEFG,BFGH,BCDG,BDGH,ABCG
       } else if(p[0] == 0) {
         if(p[2] > 0 and p[2] < nbvoxels_[2])
           return 3; // ABEG,BEFG,ABCG
@@ -1954,10 +1944,8 @@ inline SimplexId ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(
       if(p[0] > 0 and p[0] < nbvoxels_[0]) {
         if(p[1] > 0 and p[1] < nbvoxels_[1])
           return 6; // BDGH,ABCG,BCDG,ABEG,BEFG,BFGH
-        else if(p[1] == 0)
-          return 3; // BEFG,BFGH,ABEG
         else
-          return 3; // ABCG,BCDG,BDGH
+          return 3; // ABCG,BCDG,BDGH,BEFG,BFGH,ABEG
       } else if(p[0] == 0) {
         if(p[1] > 0 and p[1] < nbvoxels_[1])
           return 3; // ABCG,BCDG,ABEG
