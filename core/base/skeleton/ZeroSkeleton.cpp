@@ -206,11 +206,6 @@ int ZeroSkeleton::buildVertexLinks(
     return -1;
 #endif
 
-  Timer t;
-
-  printMsg("Building vertex links", 0, 0, threadNumber_,
-           ttk::debug::LineMode::REPLACE);
-
   auto localVertexStars = vertexStars;
   vector<vector<SimplexId>> defaultVertexStars{};
   if(!localVertexStars) {
@@ -224,6 +219,11 @@ int ZeroSkeleton::buildVertexLinks(
     zeroSkeleton.buildVertexStars(
       vertexNumber, cellNumber, cellArray, *localVertexStars);
   }
+
+  Timer t;
+
+  printMsg("Building vertex links", 0, 0, threadNumber_,
+           ttk::debug::LineMode::REPLACE);
 
   // WARNING
   // assuming triangulations
@@ -489,8 +489,6 @@ int ZeroSkeleton::buildVertexNeighbors(
     return -1;
 #endif
 
-  Timer t;
-
   oneSkeleton.resize(vertexNumber);
 
   auto localEdgeList = edgeList;
@@ -505,6 +503,8 @@ int ZeroSkeleton::buildVertexNeighbors(
     osk.setThreadNumber(threadNumber_);
     osk.buildEdgeList(vertexNumber, cellNumber, cellArray, *localEdgeList);
   }
+
+  Timer t;
 
   printMsg("Building vertex neighbors", 0, 0, threadNumber_,
            ttk::debug::LineMode::REPLACE);
