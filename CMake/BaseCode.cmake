@@ -247,7 +247,7 @@ function(ttk_find_python)
   find_package(PythonLibs QUIET)
 
   if(PYTHON_INCLUDE_DIRS)
-    include_directories(${PYTHON_INCLUDE_DIRS})
+    include_directories(SYSTEM ${PYTHON_INCLUDE_DIRS})
 
     #     if (${CMAKE_VERSION} VERSION_GREATER "3.12"
     #       OR ${CMAKE_VERSION} VERSION_EQUAL "3.12")
@@ -278,7 +278,7 @@ function(ttk_find_python)
       /usr/local/lib/python${PYTHON_MAJOR_VERSION}.${PYTHON_MINOR_VERSION}/site-packages/numpy/core/include)
     if(PYTHON_NUMPY_INCLUDE_DIR)
       message(STATUS "Numpy headers: ${PYTHON_NUMPY_INCLUDE_DIR}")
-      include_directories(${PYTHON_NUMPY_INCLUDE_DIR})
+      include_directories(SYSTEM ${PYTHON_NUMPY_INCLUDE_DIR})
     else()
       message(STATUS "Numpy headers: NOT-FOUND")
     endif()
