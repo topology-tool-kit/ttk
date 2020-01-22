@@ -84,8 +84,10 @@ namespace ttk {
 
     GoodDiagram<dataType>
       centroidWithZeroPrices(const GoodDiagram<dataType> centroid);
-    BidderDiagram<dataType> centroidToDiagram(const GoodDiagram<dataType> centroid);
-    GoodDiagram<dataType> diagramToCentroid(const BidderDiagram<dataType> diagram);
+    BidderDiagram<dataType>
+      centroidToDiagram(const GoodDiagram<dataType> centroid);
+    GoodDiagram<dataType>
+      diagramToCentroid(const BidderDiagram<dataType> diagram);
     BidderDiagram<dataType>
       diagramWithZeroPrices(const BidderDiagram<dataType> diagram);
 

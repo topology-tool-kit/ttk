@@ -307,7 +307,8 @@ int ttkPersistenceDiagram::doIt(vector<vtkDataSet *> &inputs,
   computeDiagram_ = false;
 
   // shallow copy input Field Data
-  outputCTPersistenceDiagram->GetFieldData()->ShallowCopy(input->GetFieldData());
+  outputCTPersistenceDiagram->GetFieldData()->ShallowCopy(
+    input->GetFieldData());
 
   {
     stringstream msg;

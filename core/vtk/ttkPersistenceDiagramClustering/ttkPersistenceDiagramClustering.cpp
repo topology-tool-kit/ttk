@@ -5,7 +5,7 @@ using namespace ttk;
 
 vtkStandardNewMacro(ttkPersistenceDiagramClustering)
 
-ttkPersistenceDiagramClustering::ttkPersistenceDiagramClustering() {
+  ttkPersistenceDiagramClustering::ttkPersistenceDiagramClustering() {
   SetNumberOfInputPorts(1);
   SetNumberOfOutputPorts(4);
 }

@@ -148,11 +148,11 @@ int OneSkeleton::buildEdgeList(
   SimplexId verticesPerCell = cellArray[0];
 
   printMsg("Building edges", 0, 0, 1, ttk::debug::LineMode::REPLACE);
-  
+
   int timeBuckets = 10;
   if(cellNumber < timeBuckets)
     timeBuckets = cellNumber;
-  
+
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
@@ -257,8 +257,8 @@ int OneSkeleton::buildEdgeList(
     }
   }
 
-  printMsg("Built " + to_string(edgeList.size()) + " edges", 
-    1, t.getElapsedTime(), 1);
+  printMsg(
+    "Built " + to_string(edgeList.size()) + " edges", 1, t.getElapsedTime(), 1);
 
   threadNumber_ = oldThreadNumber;
 

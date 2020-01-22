@@ -224,7 +224,7 @@ namespace ttk {
 
       if(memory >= 0)
         chunks[q++] = std::to_string(memory) + "mb";
-      if(time >= 0){
+      if(time >= 0) {
         std::stringstream sStream;
         sStream.precision(3);
         sStream << std::fixed;
@@ -481,7 +481,7 @@ namespace ttk {
       return 1;
     }
 
-    int welcomeMsg(std::ostream &stream) ;
+    int welcomeMsg(std::ostream &stream);
   };
 
 } // namespace ttk
