@@ -77,9 +77,15 @@ if(VTK_WRAP_PYTHON)
   endforeach()
   file(GENERATE
     OUTPUT
-    "${CMAKE_INSTALL_PREFIX}/${TTK_PYTHON_MODULE_DIR}/topologytoolkit/__init__.py"
+    "${CMAKE_BINARY_DIR}/${TTK_PYTHON_MODULE_DIR}/topologytoolkit/__init__.py"
     CONTENT
       "${InitContent}"
+    )
+  install(
+    FILES
+    "${CMAKE_BINARY_DIR}/${TTK_PYTHON_MODULE_DIR}/topologytoolkit/__init__.py"
+    DESTINATION
+    "${TTK_PYTHON_MODULE_DIR}/topologytoolkit/"
     )
   # Install TTK Python
   export(
