@@ -68,6 +68,20 @@ if(VTK_WRAP_PYTHON)
     TARGET
       TTK::Python
     )
+  # Generate __init__.py
+  set(InitContent "from __future__ import absolute_import\n")
+  foreach(MODULE ${TTK_ENABLED_MODULES})
+    if (NOT "${MODULE}" STREQUAL "ttkTriangulationAlgorithm")
+      string(APPEND InitContent "from .${MODULE} import *\n")
+    endif()
+  endforeach()
+  file(GENERATE
+    OUTPUT
+    "${CMAKE_INSTALL_PREFIX}/${TTK_PYTHON_MODULE_DIR}/topologytoolkit/__init__.py"
+    CONTENT
+      "${InitContent}"
+    )
+  # Install TTK Python
   export(
     EXPORT
       TTKPython

@@ -27,19 +27,12 @@ from vtk import (
     vtkXMLUnstructuredGridWriter,
 )
 
-# temporary fix (till topologytoolkit package re-exports all its modules)
-from topologytoolkit.ttkMorseSmaleComplex import *
-from topologytoolkit.ttkPersistenceCurve import *
-from topologytoolkit.ttkPersistenceDiagram import *
-from topologytoolkit.ttkTopologicalSimplification import *
-
-## old import syntax
-# from topologytoolkit import (
-#     ttkMorseSmaleComplex,
-#     ttkPersistenceCurve,
-#     ttkPersistenceDiagram,
-#     ttkTopologicalSimplification,
-# )
+from topologytoolkit import (
+    ttkMorseSmaleComplex,
+    ttkPersistenceCurve,
+    ttkPersistenceDiagram,
+    ttkTopologicalSimplification,
+)
 
 if len(sys.argv) == 2:
     inputFilePath = sys.argv[1]
