@@ -66,7 +66,7 @@
 // class your wrapper should inherit.
 class TTKPERSISTENCEDIAGRAMCLUSTERING_EXPORT ttkPersistenceDiagramClustering
   : public vtkMultiBlockDataSetAlgorithm,
-    public ttk::Wrapper {
+    protected ttk::Wrapper {
 
 public:
   void setNumberOfInputsFromCommandLine(int number) {

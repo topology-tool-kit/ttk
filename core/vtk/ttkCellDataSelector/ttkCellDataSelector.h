@@ -42,7 +42,7 @@
 
 class TTKCELLDATASELECTOR_EXPORT ttkCellDataSelector
   : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+    protected ttk::Wrapper {
 
 public:
   static ttkCellDataSelector *New();

@@ -77,7 +77,7 @@
 
 class TTKTOPOLOGICALSIMPLIFICATION_EXPORT ttkTopologicalSimplification
   : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+    protected ttk::Wrapper {
 
 public:
   static ttkTopologicalSimplification *New();

@@ -28,7 +28,7 @@
 #include <CinemaQuery.h>
 
 class TTKCINEMAQUERY_EXPORT ttkCinemaQuery : public ttkAlgorithm,
-                                             public ttk::CinemaQuery {
+                                             protected ttk::CinemaQuery {
 public:
   static ttkCinemaQuery *New();
   vtkTypeMacro(ttkCinemaQuery, ttkAlgorithm);

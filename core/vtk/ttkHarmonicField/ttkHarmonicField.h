@@ -62,7 +62,7 @@
 enum HarmonicFieldType { Float = 0, Double };
 
 class TTKHARMONICFIELD_EXPORT ttkHarmonicField : public vtkDataSetAlgorithm,
-                                                 public ttk::Wrapper {
+                                                 protected ttk::Wrapper {
 
 public:
   static ttkHarmonicField *New();

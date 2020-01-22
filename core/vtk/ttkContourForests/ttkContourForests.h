@@ -73,7 +73,7 @@
 #include "DeprecatedDataTypes.h"
 
 class TTKCONTOURFORESTS_EXPORT ttkContourForests : public vtkDataSetAlgorithm,
-                                                   public ttk::Wrapper {
+                                                   protected ttk::Wrapper {
 
 public:
   static ttkContourForests *New();

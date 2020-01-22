@@ -38,7 +38,7 @@
 // class your wrapper should inherit.
 class TTKCONTOURAROUNDPOINT_EXPORT ttkContourAroundPoint
   : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+    protected ttk::Wrapper {
 
 public:
   static ttkContourAroundPoint *New();

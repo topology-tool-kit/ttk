@@ -38,7 +38,7 @@
 #include <Wrapper.h>
 
 class TTKDATASETTOTABLE_EXPORT ttkDataSetToTable : public vtkDataSetAlgorithm,
-                                                   public ttk::Wrapper {
+                                                   protected ttk::Wrapper {
 
 public:
   enum AssociationType { Point = 0, Cell };

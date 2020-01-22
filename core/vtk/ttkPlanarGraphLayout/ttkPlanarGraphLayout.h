@@ -51,7 +51,7 @@
 
 class TTKPLANARGRAPHLAYOUT_EXPORT ttkPlanarGraphLayout
   : public ttkAlgorithm,
-    public ttk::PlanarGraphLayout {
+    protected ttk::PlanarGraphLayout {
 
 private:
   // optional field data

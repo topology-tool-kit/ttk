@@ -40,7 +40,7 @@
 
 class TTKPROJECTIONFROMFIELD_EXPORT ttkProjectionFromField
   : public vtkPointSetAlgorithm,
-    public ttk::Wrapper {
+    protected ttk::Wrapper {
 
 public:
   static ttkProjectionFromField *New();

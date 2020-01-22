@@ -51,7 +51,7 @@
 
 class TTKTRACKINGFROMOVERLAP_EXPORT ttkTrackingFromOverlap
   : public vtkUnstructuredGridAlgorithm,
-    public ttk::Wrapper {
+    protected ttk::Wrapper {
 
 public:
   static ttkTrackingFromOverlap *New();

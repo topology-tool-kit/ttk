@@ -43,7 +43,7 @@
 
 class TTKTRIANGULATIONREQUEST_EXPORT ttkTriangulationRequest
   : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+    protected ttk::Wrapper {
 
 public:
   enum Simplex { Vertex = 0, Edge, Triangle, Tetra };

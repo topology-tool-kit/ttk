@@ -52,7 +52,7 @@
 #include <ttkTriangulationAlgorithm.h>
 
 class TTKINTEGRALLINES_EXPORT ttkIntegralLines : public vtkDataSetAlgorithm,
-                                                 public ttk::Wrapper {
+                                                 protected ttk::Wrapper {
 
 public:
   static ttkIntegralLines *New();

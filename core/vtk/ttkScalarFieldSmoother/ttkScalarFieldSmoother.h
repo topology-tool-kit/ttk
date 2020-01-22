@@ -48,7 +48,7 @@
 
 class TTKSCALARFIELDSMOOTHER_EXPORT ttkScalarFieldSmoother
   : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+    protected ttk::Wrapper {
 
 public:
   static ttkScalarFieldSmoother *New();

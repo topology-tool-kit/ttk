@@ -58,7 +58,7 @@
 enum EigenFieldType { Float = 0, Double };
 
 class TTKEIGENFIELD_EXPORT ttkEigenField : public vtkDataSetAlgorithm,
-                                           public ttk::Wrapper {
+                                           protected ttk::Wrapper {
 
 public:
   static ttkEigenField *New();

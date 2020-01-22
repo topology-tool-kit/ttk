@@ -29,7 +29,7 @@
 #include <MeshGraph.h>
 
 class TTKMESHGRAPH_EXPORT ttkMeshGraph : public ttkAlgorithm,
-                                         public ttk::MeshGraph {
+                                         protected ttk::MeshGraph {
 
 private:
   bool UseVariableSize{false};

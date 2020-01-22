@@ -43,7 +43,7 @@
 
 class TTKPOINTDATASELECTOR_EXPORT ttkPointDataSelector
   : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+    protected ttk::Wrapper {
 
 public:
   static ttkPointDataSelector *New();
