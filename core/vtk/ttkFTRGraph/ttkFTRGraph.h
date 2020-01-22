@@ -33,7 +33,7 @@
 #include <ttkFTRGraphModule.h>
 
 class TTKFTRGRAPH_EXPORT ttkFTRGraph : public vtkDataSetAlgorithm,
-                                       public ttk::Wrapper {
+                                       protected ttk::Wrapper {
 private:
   std::string ScalarField;
   bool UseInputOffsetScalarField;

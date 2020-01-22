@@ -39,7 +39,7 @@
 
 class TTKIMPORTEMBEDDINGFROMTABLE_EXPORT ttkImportEmbeddingFromTable
   : public vtkPointSetAlgorithm,
-    public ttk::Wrapper {
+    protected ttk::Wrapper {
 
 public:
   static ttkImportEmbeddingFromTable *New();

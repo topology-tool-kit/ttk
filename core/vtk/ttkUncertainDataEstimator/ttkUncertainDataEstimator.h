@@ -57,7 +57,7 @@
 // class your wrapper should inherit.
 class TTKUNCERTAINDATAESTIMATOR_EXPORT ttkUncertainDataEstimator
   : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+    protected ttk::Wrapper {
 
 public:
   static ttkUncertainDataEstimator *New();

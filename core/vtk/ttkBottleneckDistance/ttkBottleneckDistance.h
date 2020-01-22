@@ -49,7 +49,7 @@
 
 class TTKBOTTLENECKDISTANCE_EXPORT ttkBottleneckDistance
   : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+    protected ttk::Wrapper {
 
 public:
   static ttkBottleneckDistance *New();

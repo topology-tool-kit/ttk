@@ -40,7 +40,7 @@
 class TTKDEPTHIMAGEBASEDGEOMETRYAPPROXIMATION_EXPORT
   ttkDepthImageBasedGeometryApproximation
   : public ttkAlgorithm,
-    public ttk::DepthImageBasedGeometryApproximation {
+    protected ttk::DepthImageBasedGeometryApproximation {
 
 public:
   static ttkDepthImageBasedGeometryApproximation *New();

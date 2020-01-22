@@ -81,7 +81,7 @@
 // class your wrapper should inherit.
 class TTKMANDATORYCRITICALPOINTS_EXPORT ttkMandatoryCriticalPoints
   : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+    protected ttk::Wrapper {
 
 public:
   static ttkMandatoryCriticalPoints *New();

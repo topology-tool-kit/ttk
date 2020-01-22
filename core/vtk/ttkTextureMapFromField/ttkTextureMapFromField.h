@@ -44,7 +44,7 @@
 
 class TTKTEXTUREMAPFROMFIELD_EXPORT ttkTextureMapFromField
   : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+    protected ttk::Wrapper {
 
 public:
   static ttkTextureMapFromField *New();

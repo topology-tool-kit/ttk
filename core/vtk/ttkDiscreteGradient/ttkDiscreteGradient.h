@@ -46,7 +46,7 @@
 
 class TTKDISCRETEGRADIENT_EXPORT ttkDiscreteGradient
   : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+    protected ttk::Wrapper {
 
 public:
   static ttkDiscreteGradient *New();

@@ -37,7 +37,7 @@
 
 class TTKTRACKINGFROMFIELDS_EXPORT ttkTrackingFromFields
   : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+    protected ttk::Wrapper {
 
 public:
   static ttkTrackingFromFields *New();

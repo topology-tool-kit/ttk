@@ -54,7 +54,7 @@
 enum DistanceType { Float = 0, Double };
 
 class TTKDISTANCEFIELD_EXPORT ttkDistanceField : public vtkDataSetAlgorithm,
-                                                 public ttk::Wrapper {
+                                                 protected ttk::Wrapper {
 
 public:
   static ttkDistanceField *New();

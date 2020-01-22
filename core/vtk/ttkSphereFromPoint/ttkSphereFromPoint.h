@@ -41,7 +41,7 @@
 #include <ttkTriangulationAlgorithm.h>
 
 class TTKSPHEREFROMPOINT_EXPORT ttkSphereFromPoint : public vtkDataSetAlgorithm,
-                                                     public ttk::Wrapper {
+                                                     protected ttk::Wrapper {
 
 public:
   static ttkSphereFromPoint *New();

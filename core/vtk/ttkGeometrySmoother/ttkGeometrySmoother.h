@@ -42,7 +42,7 @@
 
 class TTKGEOMETRYSMOOTHER_EXPORT ttkGeometrySmoother
   : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+    protected ttk::Wrapper {
 
 public:
   static ttkGeometrySmoother *New();

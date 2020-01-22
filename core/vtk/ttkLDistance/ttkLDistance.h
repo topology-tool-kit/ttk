@@ -45,7 +45,7 @@
 // see the documentation of the vtkAlgorithm class to decide from which VTK
 // class your wrapper should inherit.
 class TTKLDISTANCE_EXPORT ttkLDistance : public vtkDataSetAlgorithm,
-                                         public ttk::Wrapper {
+                                         protected ttk::Wrapper {
 
 public:
   static ttkLDistance *New();

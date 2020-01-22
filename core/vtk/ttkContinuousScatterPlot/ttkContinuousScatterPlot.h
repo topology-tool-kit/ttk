@@ -59,7 +59,7 @@
 
 class TTKCONTINUOUSSCATTERPLOT_EXPORT ttkContinuousScatterPlot
   : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+    protected ttk::Wrapper {
 
 public:
   static ttkContinuousScatterPlot *New();

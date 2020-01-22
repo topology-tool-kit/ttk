@@ -54,7 +54,7 @@
 
 class TTKQUADRANGULATIONSUBDIVISION_EXPORT ttkQuadrangulationSubdivision
   : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+    protected ttk::Wrapper {
 
 public:
   static ttkQuadrangulationSubdivision *New();

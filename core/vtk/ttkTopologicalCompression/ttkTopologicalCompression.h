@@ -51,7 +51,7 @@
 // class your wrapper should inherit.
 class TTKTOPOLOGICALCOMPRESSION_EXPORT ttkTopologicalCompression
   : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+    protected ttk::Wrapper {
 
 public:
   static ttkTopologicalCompression *New();

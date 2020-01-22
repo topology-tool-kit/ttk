@@ -43,7 +43,7 @@
 
 class TTKDIMENSIONREDUCTION_EXPORT ttkDimensionReduction
   : public vtkTableAlgorithm,
-    public ttk::Wrapper {
+    protected ttk::Wrapper {
 public:
   enum Method {
     SpectralEmbedding = 0,

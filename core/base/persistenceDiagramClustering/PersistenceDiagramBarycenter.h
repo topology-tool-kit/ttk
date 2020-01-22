@@ -56,21 +56,21 @@ namespace ttk {
       wasserstein_ = 2;
       alpha_ = 1;
       lambda_ = 1;
-      inputData_ = NULL;
       numberOfInputs_ = 0;
       threadNumber_ = 1;
       time_limit_ = 1;
       deterministic_ = 1;
       reinit_prices_ = 1;
       epsilon_decreases_ = 1;
-      debugLevel_ = 1;
       use_progressive_ = 1;
     };
 
     ~PersistenceDiagramBarycenter(){};
 
-    void execute(std::vector<diagramTuple> *barycenter,
-                 vector<vector<vector<matchingTuple>>> *all_matchings);
+    void execute(
+      std::vector<std::vector<diagramTuple>> &intermediateDiagrams,
+      std::vector<diagramTuple> &barycenter,
+      std::vector<std::vector<std::vector<matchingTuple>>> &all_matchings);
 
     // 		inline int setDiagram(int idx, void* data){
     // 			if(idx < numberOfInputs_){
@@ -81,10 +81,6 @@ namespace ttk {
     // 			}
     // 			return 0;
     // 		}
-    inline int setDiagrams(void *data) {
-      inputData_ = data;
-      return 0;
-    }
 
     inline int setNumberOfInputs(int numberOfInputs) {
       numberOfInputs_ = numberOfInputs;
@@ -95,10 +91,6 @@ namespace ttk {
       // 			inputData_[i] = NULL;
       // 			}
       return 0;
-    }
-
-    inline void setDebugLevel(const int debugLevel) {
-      debugLevel_ = debugLevel;
     }
 
     inline void setDeterministic(const bool deterministic) {
@@ -156,12 +148,10 @@ namespace ttk {
     }
 
   protected:
-    int debugLevel_;
     bool deterministic_;
     int method_;
     int wasserstein_;
     int numberOfInputs_;
-    void *inputData_; // TODO : std::vector<void*>
     int threadNumber_;
     bool use_progressive_;
     double alpha_;
@@ -183,8 +173,9 @@ namespace ttk {
 
   template <typename dataType>
   void PersistenceDiagramBarycenter<dataType>::execute(
-    std::vector<diagramTuple> *barycenter,
-    vector<vector<vector<matchingTuple>>> *all_matchings) {
+    std::vector<std::vector<diagramTuple>> &intermediateDiagrams,
+    std::vector<diagramTuple> &barycenter,
+    std::vector<std::vector<std::vector<matchingTuple>>> &all_matchings) {
 
     Timer tm;
     {
@@ -193,8 +184,6 @@ namespace ttk {
                   << numberOfInputs_ << " diagrams in " << 1 << " cluster."
                   << std::endl;
       }
-      std::vector<std::vector<diagramTuple>> *intermediateDiagrams
-        = (std::vector<std::vector<diagramTuple>> *)inputData_;
 
       std::vector<std::vector<diagramTuple>> data_min(numberOfInputs_);
       std::vector<std::vector<diagramTuple>> data_sad(numberOfInputs_);
@@ -210,10 +199,10 @@ namespace ttk {
 
       // Create diagrams for min, saddle and max persistence pairs
       for(int i = 0; i < numberOfInputs_; i++) {
-        std::vector<diagramTuple> *CTDiagram = &((*intermediateDiagrams)[i]);
+        std::vector<diagramTuple> &CTDiagram = intermediateDiagrams[i];
 
-        for(int j = 0; j < (int)CTDiagram->size(); ++j) {
-          diagramTuple t = CTDiagram->at(j);
+        for(size_t j = 0; j < CTDiagram.size(); ++j) {
+          diagramTuple t = CTDiagram[j];
 
           BNodeType nt1 = std::get<1>(t);
           BNodeType nt2 = std::get<3>(t);
@@ -349,8 +338,8 @@ namespace ttk {
       //}
 
       // Reconstruct matchings
-      all_matchings->resize(1);
-      all_matchings->at(0).resize(numberOfInputs_);
+      all_matchings.resize(1);
+      all_matchings[0].resize(numberOfInputs_);
       for(int i = 0; i < numberOfInputs_; i++) {
 
         if(do_min) {
@@ -361,7 +350,7 @@ namespace ttk {
             if(std::get<1>(t) < 0) {
               std::get<1>(t) = -1;
             }
-            all_matchings->at(0)[i].push_back(t);
+            all_matchings[0][i].push_back(t);
           }
         }
 
@@ -375,7 +364,7 @@ namespace ttk {
             } else {
               std::get<1>(t) = -1;
             }
-            all_matchings->at(0)[i].push_back(t);
+            all_matchings[0][i].push_back(t);
           }
         }
 
@@ -390,33 +379,33 @@ namespace ttk {
             } else {
               std::get<1>(t) = -1;
             }
-            all_matchings->at(0)[i].push_back(t);
+            all_matchings[0][i].push_back(t);
           }
         }
       }
       // Reconstruct barcenter
       for(unsigned int j = 0; j < barycenter_min.size(); j++) {
         diagramTuple dt = barycenter_min[j];
-        barycenter->push_back(dt);
+        barycenter.push_back(dt);
       }
       for(unsigned int j = 0; j < barycenter_sad.size(); j++) {
         diagramTuple dt = barycenter_sad[j];
-        barycenter->push_back(dt);
+        barycenter.push_back(dt);
       }
       for(unsigned int j = 0; j < barycenter_max.size(); j++) {
         diagramTuple dt = barycenter_max[j];
-        barycenter->push_back(dt);
+        barycenter.push_back(dt);
       }
 
       // Recreate 3D critical coordinates of barycentric points
-      std::vector<int> number_of_matchings_for_point(barycenter->size());
-      std::vector<float> cords_x1(barycenter->size());
-      std::vector<float> cords_y1(barycenter->size());
-      std::vector<float> cords_z1(barycenter->size());
-      std::vector<float> cords_x2(barycenter->size());
-      std::vector<float> cords_y2(barycenter->size());
-      std::vector<float> cords_z2(barycenter->size());
-      for(unsigned i = 0; i < barycenter->size(); i++) {
+      std::vector<int> number_of_matchings_for_point(barycenter.size());
+      std::vector<float> cords_x1(barycenter.size());
+      std::vector<float> cords_y1(barycenter.size());
+      std::vector<float> cords_z1(barycenter.size());
+      std::vector<float> cords_x2(barycenter.size());
+      std::vector<float> cords_y2(barycenter.size());
+      std::vector<float> cords_z2(barycenter.size());
+      for(unsigned i = 0; i < barycenter.size(); i++) {
         number_of_matchings_for_point[i] = 0;
         cords_x1[i] = 0;
         cords_y1[i] = 0;
@@ -426,14 +415,14 @@ namespace ttk {
         cords_z2[i] = 0;
       }
 
-      for(unsigned i = 0; i < all_matchings->at(0).size(); i++) {
-        std::vector<diagramTuple> *CTDiagram = &((*intermediateDiagrams)[i]);
-        for(unsigned j = 0; j < all_matchings->at(0)[i].size(); j++) {
-          matchingTuple t = all_matchings->at(0)[i][j];
+      for(unsigned i = 0; i < all_matchings[0].size(); i++) {
+        std::vector<diagramTuple> &CTDiagram = intermediateDiagrams[i];
+        for(unsigned j = 0; j < all_matchings[0][i].size(); j++) {
+          matchingTuple t = all_matchings[0][i][j];
           int bidder_id = std::get<0>(t);
           int bary_id = std::get<1>(t);
 
-          diagramTuple &bidder = CTDiagram->at(bidder_id);
+          diagramTuple &bidder = CTDiagram[bidder_id];
           number_of_matchings_for_point[bary_id] += 1;
           cords_x1[bary_id] += std::get<7>(bidder);
           cords_y1[bary_id] += std::get<8>(bidder);
@@ -444,19 +433,19 @@ namespace ttk {
         }
       }
 
-      for(unsigned i = 0; i < barycenter->size(); i++) {
+      for(unsigned i = 0; i < barycenter.size(); i++) {
         if(number_of_matchings_for_point[i] > 0) {
-          std::get<7>(barycenter->at(i))
+          std::get<7>(barycenter[i])
             = cords_x1[i] / number_of_matchings_for_point[i];
-          std::get<8>(barycenter->at(i))
+          std::get<8>(barycenter[i])
             = cords_y1[i] / number_of_matchings_for_point[i];
-          std::get<9>(barycenter->at(i))
+          std::get<9>(barycenter[i])
             = cords_z1[i] / number_of_matchings_for_point[i];
-          std::get<11>(barycenter->at(i))
+          std::get<11>(barycenter[i])
             = cords_x2[i] / number_of_matchings_for_point[i];
-          std::get<12>(barycenter->at(i))
+          std::get<12>(barycenter[i])
             = cords_y2[i] / number_of_matchings_for_point[i];
-          std::get<13>(barycenter->at(i))
+          std::get<13>(barycenter[i])
             = cords_z2[i] / number_of_matchings_for_point[i];
         }
       }

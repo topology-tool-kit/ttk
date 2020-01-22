@@ -44,7 +44,7 @@
 // class your wrapper should inherit.
 class TTKIDENTIFIERRANDOMIZER_EXPORT ttkIdentifierRandomizer
   : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+    protected ttk::Wrapper {
 
 public:
   static ttkIdentifierRandomizer *New();
@@ -56,7 +56,7 @@ public:
     Modified();
   }
 
-    void SetThreadNumber(int threadNumber) {
+  void SetThreadNumber(int threadNumber) {
     ThreadNumber = threadNumber;
     SetThreads();
   }

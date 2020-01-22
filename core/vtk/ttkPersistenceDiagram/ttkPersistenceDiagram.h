@@ -69,7 +69,7 @@
 
 class TTKPERSISTENCEDIAGRAM_EXPORT ttkPersistenceDiagram
   : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+    protected ttk::Wrapper {
 
 public:
   static ttkPersistenceDiagram *New();
