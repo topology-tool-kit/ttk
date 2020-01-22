@@ -17,6 +17,7 @@
 #include <Wrapper.h>
 
 #include <array>
+#include <ostream>
 
 #define ttkTemplateMacroCase(triangulationType, triangulationClass, call) \
   case triangulationType: {                                               \
@@ -3116,11 +3117,13 @@ namespace ttk {
     template <class itemType>
     size_t tableFootprint(const std::vector<itemType> &table,
                           const std::string tableName = "",
-                          std::stringstream *msg = NULL) const {
+                          std::ostream &stream = std::cout) const {
 
-      if((table.size()) && (tableName.length()) && (msg)) {
-        (*msg) << "[AbstractTriangulation] " << tableName << ": "
-               << table.size() * sizeof(itemType) << " bytes" << std::endl;
+      std::stringstream msg;
+      if((table.size()) && (tableName.length())) {
+        msg << tableName << ": " << table.size() * sizeof(itemType) << " bytes";
+        printMsg(
+          msg.str(), debug::Priority::INFO, debug::LineMode::NEW, stream);
       }
 
       return table.size() * sizeof(itemType);
@@ -3129,7 +3132,7 @@ namespace ttk {
     template <class itemType>
     size_t tableTableFootprint(const std::vector<std::vector<itemType>> &table,
                                const std::string tableName = "",
-                               std::stringstream *msg = NULL) const;
+                               std::ostream &stream = std::cout) const;
 
     int updateProgress(const float &progress) {
       return 0;
