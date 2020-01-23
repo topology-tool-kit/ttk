@@ -19,8 +19,8 @@
 #endif // TTK_ENABLE_EIGEN && TTK_ENABLE_SPECTRA
 
 // main routine
-template <typename T>
-int ttk::EigenField::execute(Triangulation *triangulation,
+template <typename T, class TriangulationType>
+int ttk::EigenField::execute(const TriangulationType &triangulation,
                              T *const outputFieldPointer,
                              const unsigned int eigenNumber,
                              bool computeStatistics,
@@ -39,12 +39,12 @@ int ttk::EigenField::execute(Triangulation *triangulation,
   using DMat = Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>;
 
   // number of vertices
-  const auto vertexNumber = triangulation->getNumberOfVertices();
+  const auto vertexNumber = triangulation.getNumberOfVertices();
 
   // graph laplacian of current mesh
   SpMat lap;
   // compute graph laplacian using cotangent weights
-  Laplacian::cotanWeights<T>(lap, *triangulation);
+  Laplacian::cotanWeights<T>(lap, triangulation);
   // lap is square
   eigen_plain_assert(lap.cols() == lap.rows());
 
@@ -147,9 +147,10 @@ int ttk::EigenField::execute(Triangulation *triangulation,
 }
 
 // explicit template specializations for double and float types
-#define EIGENFIELD_SPECIALIZE(TYPE)            \
-  template int ttk::EigenField::execute<TYPE>( \
-    Triangulation *, TYPE *const, const unsigned int, bool, TYPE *const) const
+#define EIGENFIELD_SPECIALIZE(TYPE)                                            \
+  template int ttk::EigenField::execute<TYPE>(const AbstractTriangulation &,   \
+                                              TYPE *const, const unsigned int, \
+                                              bool, TYPE *const) const
 
 EIGENFIELD_SPECIALIZE(double);
 EIGENFIELD_SPECIALIZE(float);

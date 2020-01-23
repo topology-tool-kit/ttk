@@ -25,16 +25,15 @@ namespace ttk {
       this->setDebugMsgPrefix("EigenField");
     }
 
-    inline void preconditionTriangulation(Triangulation *triangulation) const {
-      if(triangulation != nullptr) {
-        triangulation->preconditionVertexNeighbors();
-        // cotan weights method needs more pre-processing
-        triangulation->preconditionEdgeTriangles();
-      }
+    inline void
+      preconditionTriangulation(AbstractTriangulation &triangulation) const {
+      triangulation.preconditionVertexNeighbors();
+      // cotan weights method needs more pre-processing
+      triangulation.preconditionEdgeTriangles();
     }
 
-    template <typename T>
-    int execute(Triangulation *triangulation,
+    template <typename T, class TriangulationType = AbstractTriangulation>
+    int execute(const TriangulationType &triangulation,
                 T *const outputFieldPointer,
                 const unsigned int eigenNumber = 500,
                 bool computeStatistics = false,

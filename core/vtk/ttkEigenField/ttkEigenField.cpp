@@ -52,7 +52,9 @@ int ttkEigenField::RequestData(vtkInformation *request,
   auto output = vtkDataSet::GetData(outputVector);
   auto triangulation = ttkAlgorithm::GetTriangulation(domain);
 
-  this->preconditionTriangulation(triangulation);
+  TTK_ABORT_KK(triangulation == nullptr, "wrong triangulation", -1);
+
+  this->preconditionTriangulation(*triangulation);
 
   int res = 0;
 
@@ -97,13 +99,13 @@ int ttkEigenField::RequestData(vtkInformation *request,
   switch(OutputFieldType) {
     case FieldType::FLOAT:
       res += this->execute<float>(
-        triangulation, static_cast<float *>(eigenFunctions->GetVoidPointer(0)),
+        *triangulation, static_cast<float *>(eigenFunctions->GetVoidPointer(0)),
         EigenNumber, ComputeStatistics,
         static_cast<float *>(stats->GetVoidPointer(0)));
       break;
     case FieldType::DOUBLE:
       res += this->execute<double>(
-        triangulation, static_cast<double *>(eigenFunctions->GetVoidPointer(0)),
+        *triangulation, static_cast<double *>(eigenFunctions->GetVoidPointer(0)),
         EigenNumber, ComputeStatistics,
         static_cast<double *>(stats->GetVoidPointer(0)));
       break;
