@@ -23,6 +23,8 @@ int ttk::EigenField::execute(const TriangulationType &triangulation,
   Timer tm;
   Memory mem;
 
+  this->printMsg("Beginning computation...");
+
 #ifdef TTK_ENABLE_OPENMP
   Eigen::setNbThreads(threadNumber_);
 #endif // TTK_ENABLE_OPENMP
@@ -103,7 +105,7 @@ int ttk::EigenField::execute(const TriangulationType &triangulation,
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
     for(SimplexId i = 0; i < vertexNumber; ++i) {
-      auto k = i * statsComp;
+      const auto k = i * statsComp;
       // init current tuple computation
       outputStats[k] = outputEigenFunctions[i * eigenNumber];
       outputStats[k + 1] = outputEigenFunctions[i * eigenNumber];
@@ -124,14 +126,15 @@ int ttk::EigenField::execute(const TriangulationType &triangulation,
     }
   }
 
-  this->printMsg("Complete", 1, tm.getElapsedTime(), this->threadNumber_,
+  this->printMsg("Complete", 1.0, tm.getElapsedTime(), this->threadNumber_,
                  mem.getElapsedUsage());
 
 #else
-  this->printErr(
+  this->printMsg(
     std::vector<std::string>{"Spectra support disabled, computation skipped!",
                              "Please re-compile TTK with Eigen AND Spectra "
-                             "support to enable this feature."});
+                             "support to enable this feature."},
+    debug::Priority::ERROR);
 #endif // TTK_ENABLE_EIGEN && TTK_ENABLE_SPECTRA
 
   this->printMsg(ttk::debug::Separator::L1); // horizontal '=' separator
@@ -140,9 +143,9 @@ int ttk::EigenField::execute(const TriangulationType &triangulation,
 
 // explicit template specializations for double and float types
 #define EIGENFIELD_SPECIALIZE(TYPE)                                            \
-  template int ttk::EigenField::execute<TYPE>(const AbstractTriangulation &,   \
-                                              TYPE *const, const unsigned int, \
-                                              bool, TYPE *const) const
+  template int ttk::EigenField::execute<TYPE>(                                 \
+    const Triangulation &, TYPE *const, const unsigned int, bool, TYPE *const) \
+    const
 
 EIGENFIELD_SPECIALIZE(double);
 EIGENFIELD_SPECIALIZE(float);
