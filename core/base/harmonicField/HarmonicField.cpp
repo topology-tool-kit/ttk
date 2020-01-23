@@ -1,9 +1,6 @@
-#include <Geometry.h>
 #include <HarmonicField.h>
 #include <Laplacian.h>
-#include <cmath>
 #include <set>
-#include <type_traits>
 
 #ifdef TTK_ENABLE_EIGEN
 #include <Eigen/Sparse>
@@ -49,8 +46,6 @@ int ttk::HarmonicField::execute(const TriangulationType &triangulation,
 
 #ifdef TTK_ENABLE_EIGEN
 
-  this->printMsg("Beginning computation...");
-
 #ifdef TTK_ENABLE_OPENMP
   Eigen::setNbThreads(threadNumber_);
 #endif // TTK_ENABLE_OPENMP
@@ -64,6 +59,38 @@ int ttk::HarmonicField::execute(const TriangulationType &triangulation,
 
   const auto vertexNumber = triangulation.getNumberOfVertices();
   const auto edgeNumber = triangulation.getNumberOfEdges();
+
+  // find the right solving method
+  auto findSolvingMethod = [&]() -> SolvingMethodType {
+    SolvingMethodType res{};
+    switch(solvingMethod) {
+      case SolvingMethodUserType::AUTO:
+        res = findBestSolver(vertexNumber, edgeNumber);
+        break;
+      case SolvingMethodUserType::CHOLESKY:
+        res = SolvingMethodType::CHOLESKY;
+        break;
+      case SolvingMethodUserType::ITERATIVE:
+        res = SolvingMethodType::ITERATIVE;
+        break;
+    }
+    return res;
+  };
+
+  auto sm = findSolvingMethod();
+  std::string begMsg{"Beginning computation... ("};
+  if(useCotanWeights) {
+    begMsg.append("cotan weights, ");
+  } else {
+    begMsg.append("discrete laplacian, ");
+  }
+  if(sm == SolvingMethodType::ITERATIVE) {
+    begMsg.append("iterative method)");
+  } else {
+    begMsg.append("Cholesky method)");
+  }
+
+  this->printMsg(begMsg);
 
   // filter unique constraint identifiers
   std::set<SimplexId> uniqueIdentifiersSet;
@@ -103,20 +130,6 @@ int ttk::HarmonicField::execute(const TriangulationType &triangulation,
   for(size_t i = 0; i < uniqueConstraintNumber; ++i) {
     // put constraint at identifier index
     constraintsMat.coeffRef(uniqueIdentifiers[i]) = uniqueValues[i];
-  }
-
-  auto sm = SolvingMethodType::CHOLESKY;
-
-  switch(solvingMethod) {
-    case SolvingMethodUserType::AUTO:
-      sm = findBestSolver(vertexNumber, edgeNumber);
-      break;
-    case SolvingMethodUserType::CHOLESKY:
-      sm = SolvingMethodType::CHOLESKY;
-      break;
-    case SolvingMethodUserType::ITERATIVE:
-      sm = SolvingMethodType::ITERATIVE;
-      break;
   }
 
   // penalty matrix
@@ -174,19 +187,7 @@ int ttk::HarmonicField::execute(const TriangulationType &triangulation,
     outputScalarField[i] = -solDense(i, 0);
   }
 
-  std::string endMsg{"Complete ("};
-  if(useCotanWeights) {
-    endMsg.append("cotan weights, ");
-  } else {
-    endMsg.append("discrete laplacian, ");
-  }
-  if(sm == SolvingMethodType::ITERATIVE) {
-    endMsg.append("iterative)");
-  } else {
-    endMsg.append("Cholesky)");
-  }
-
-  this->printMsg(endMsg, 1.0, tm.getElapsedTime(), this->threadNumber_,
+  this->printMsg("Complete", 1.0, tm.getElapsedTime(), this->threadNumber_,
                  mem.getElapsedUsage());
 
 #else
