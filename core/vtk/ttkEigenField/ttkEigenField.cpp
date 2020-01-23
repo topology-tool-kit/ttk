@@ -1,12 +1,8 @@
 #include <ttkEigenField.h>
 
 // VTK includes
-#include <vtkDataArray.h>
-#include <vtkDataSet.h>
 #include <vtkDoubleArray.h>
-#include <vtkFiltersCoreModule.h>
 #include <vtkFloatArray.h>
-#include <vtkInformation.h>
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
 #include <vtkSmartPointer.h>
