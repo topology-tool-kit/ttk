@@ -5,16 +5,8 @@
 #include <Eigen/Eigenvalues>
 #include <Eigen/Sparse>
 
-#if defined(__GNUC__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wshadow"
-#pragma GCC diagnostic ignored "-Wunused-parameter"
-#endif // __GNUC__
 #include <Spectra/MatOp/SparseSymMatProd.h>
 #include <Spectra/SymEigsSolver.h>
-#if defined(__GNUC__)
-#pragma GCC diagnostic pop
-#endif // __GNUC__
 
 #endif // TTK_ENABLE_EIGEN && TTK_ENABLE_SPECTRA
 
