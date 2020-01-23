@@ -38,7 +38,7 @@ int ttk::HarmonicField::solve(SparseMatrixType const &lap,
 
 // main routine
 template <class T, class TriangulationType>
-int ttk::HarmonicField::execute(TriangulationType *triangulation,
+int ttk::HarmonicField::execute(const TriangulationType &triangulation,
                                 SimplexId constraintNumber,
                                 SimplexId *sources,
                                 T *constraints,
@@ -60,8 +60,8 @@ int ttk::HarmonicField::execute(TriangulationType *triangulation,
   Timer tm;
   Memory mem;
 
-  const auto vertexNumber = triangulation->getNumberOfVertices();
-  const auto edgeNumber = triangulation->getNumberOfEdges();
+  const auto vertexNumber = triangulation.getNumberOfVertices();
+  const auto edgeNumber = triangulation.getNumberOfEdges();
 
   // filter unique constraint identifiers
   std::set<SimplexId> uniqueIdentifiersSet;
@@ -91,9 +91,9 @@ int ttk::HarmonicField::execute(TriangulationType *triangulation,
   // graph laplacian of current mesh
   SpMat lap;
   if(useCotanWeights) {
-    Laplacian::cotanWeights<T>(lap, *triangulation);
+    Laplacian::cotanWeights<T>(lap, triangulation);
   } else {
-    Laplacian::discreteLaplacian<T>(lap, *triangulation);
+    Laplacian::discreteLaplacian<T>(lap, triangulation);
   }
 
   // constraints vector
@@ -198,13 +198,10 @@ int ttk::HarmonicField::execute(TriangulationType *triangulation,
 }
 
 // explicit template specializations for double and float types
-#define HARMONICFIELD_SPECIALIZE(TYPE)                                 \
-  template int ttk::HarmonicField::execute<TYPE>(                      \
-    Triangulation * triangulation, SimplexId constraintNumber,         \
-    SimplexId * sources, TYPE * constraints, TYPE * outputScalarField, \
-    bool useCotanWeights = true,                                       \
-    SolvingMethodUserType solvingMethod = SolvingMethodUserType::AUTO, \
-    double logAlpha = 5.0) const
+#define HARMONICFIELD_SPECIALIZE(TYPE)                                   \
+  template int ttk::HarmonicField::execute<TYPE>(                        \
+    const Triangulation &, SimplexId, SimplexId *, TYPE *, TYPE *, bool, \
+    SolvingMethodUserType, double) const
 
 HARMONICFIELD_SPECIALIZE(float);
 HARMONICFIELD_SPECIALIZE(double);

@@ -28,21 +28,18 @@ namespace ttk {
       this->setDebugMsgPrefix("HarmonicField");
     }
 
-    inline void preconditionTriangulation(AbstractTriangulation *const triangulation,
-                                          bool cotanWeights) {
-      if(triangulation == nullptr) {
-        return;
-      }
-      triangulation->preconditionVertexNeighbors();
-      triangulation->preconditionEdges();
+    inline void preconditionTriangulation(AbstractTriangulation &triangulation,
+                                          const bool cotanWeights) {
+      triangulation.preconditionVertexNeighbors();
+      triangulation.preconditionEdges();
       if(cotanWeights) {
         // cotan weights method needs more pre-processing
-        triangulation->preconditionEdgeTriangles();
+        triangulation.preconditionEdgeTriangles();
       }
     }
 
     template <class T, class TriangulationType = AbstractTriangulation>
-    int execute(TriangulationType *triangulation,
+    int execute(const TriangulationType &triangulation,
                 SimplexId constraintNumber,
                 SimplexId *sources,
                 T *constraints,

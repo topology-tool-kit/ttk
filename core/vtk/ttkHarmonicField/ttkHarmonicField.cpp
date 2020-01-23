@@ -82,9 +82,9 @@ int ttkHarmonicField::RequestData(vtkInformation *request,
   auto output = vtkDataSet::GetData(outputVector);
   auto triangulation = ttkAlgorithm::GetTriangulation(domain);
 
-  this->preconditionTriangulation(triangulation, UseCotanWeights);
-
   TTK_ABORT_KK(triangulation == nullptr, "wrong triangulation", -1);
+
+  this->preconditionTriangulation(*triangulation, UseCotanWeights);
 
   int res = this->getIdentifiers(identifiers);
 
@@ -129,7 +129,7 @@ int ttkHarmonicField::RequestData(vtkInformation *request,
   switch(OutputScalarFieldType) {
     case FieldType::FLOAT:
       res += this->execute<float>(
-        triangulation, numberOfPointsInSources,
+        *triangulation, numberOfPointsInSources,
         static_cast<ttk::SimplexId *>(identifiers_->GetVoidPointer(0)),
         static_cast<float *>(constraints_->GetVoidPointer(0)),
         static_cast<float *>(harmonicScalarField->GetVoidPointer(0)),
@@ -137,7 +137,7 @@ int ttkHarmonicField::RequestData(vtkInformation *request,
       break;
     case FieldType::DOUBLE:
       res += this->execute<double>(
-        triangulation, numberOfPointsInSources,
+        *triangulation, numberOfPointsInSources,
         static_cast<ttk::SimplexId *>(identifiers_->GetVoidPointer(0)),
         static_cast<double *>(constraints_->GetVoidPointer(0)),
         static_cast<double *>(harmonicScalarField->GetVoidPointer(0)),
