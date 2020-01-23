@@ -63,9 +63,9 @@ int ttkHarmonicField::getConstraints(vtkPointSet *input) {
   TTK_ABORT_KK(constraints_ == nullptr, "wrong constraints scalar field", -1);
 
   if(constraints_->IsA("vtkDoubleArray")) {
-    OutputScalarFieldType = HarmonicFieldType::DOUBLE;
+    OutputScalarFieldType = FieldType::DOUBLE;
   } else if(constraints_->IsA("vtkFloatArray")) {
-    OutputScalarFieldType = HarmonicFieldType::FLOAT;
+    OutputScalarFieldType = FieldType::FLOAT;
   } else {
     return -2;
   }
@@ -86,11 +86,11 @@ int ttkHarmonicField::RequestData(vtkInformation *request,
 
   TTK_ABORT_KK(triangulation == nullptr, "wrong triangulation", -1);
 
-  int res = getIdentifiers(identifiers);
+  int res = this->getIdentifiers(identifiers);
 
   TTK_ABORT_KK(res != 0, "wrong identifiers", -2);
 
-  res += getConstraints(identifiers);
+  res += this->getConstraints(identifiers);
 
   TTK_ABORT_KK(res != 0, "wrong constraints", -2);
 
@@ -105,10 +105,10 @@ int ttkHarmonicField::RequestData(vtkInformation *request,
   vtkSmartPointer<vtkDataArray> harmonicScalarField{};
 
   switch(OutputScalarFieldType) {
-    case HarmonicFieldType::FLOAT:
+    case FieldType::FLOAT:
       harmonicScalarField = vtkSmartPointer<vtkFloatArray>::New();
       break;
-    case HarmonicFieldType::DOUBLE:
+    case FieldType::DOUBLE:
       harmonicScalarField = vtkSmartPointer<vtkDoubleArray>::New();
       break;
     default:
@@ -127,7 +127,7 @@ int ttkHarmonicField::RequestData(vtkInformation *request,
   harmonicScalarField->SetName(OutputScalarFieldName.data());
 
   switch(OutputScalarFieldType) {
-    case HarmonicFieldType::FLOAT:
+    case FieldType::FLOAT:
       res += this->execute<float>(
         triangulation, numberOfPointsInSources,
         static_cast<ttk::SimplexId *>(identifiers_->GetVoidPointer(0)),
@@ -135,15 +135,13 @@ int ttkHarmonicField::RequestData(vtkInformation *request,
         static_cast<float *>(harmonicScalarField->GetVoidPointer(0)),
         UseCotanWeights, SolvingMethod, LogAlpha);
       break;
-    case HarmonicFieldType::DOUBLE:
+    case FieldType::DOUBLE:
       res += this->execute<double>(
         triangulation, numberOfPointsInSources,
         static_cast<ttk::SimplexId *>(identifiers_->GetVoidPointer(0)),
         static_cast<double *>(constraints_->GetVoidPointer(0)),
         static_cast<double *>(harmonicScalarField->GetVoidPointer(0)),
-        UseCotanWeights, SolvingMethod, LogAlpha
-
-      );
+        UseCotanWeights, SolvingMethod, LogAlpha);
       break;
     default:
       break;

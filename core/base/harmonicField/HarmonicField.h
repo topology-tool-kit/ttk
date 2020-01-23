@@ -28,7 +28,7 @@ namespace ttk {
       this->setDebugMsgPrefix("HarmonicField");
     }
 
-    inline void preconditionTriangulation(Triangulation *const triangulation,
+    inline void preconditionTriangulation(AbstractTriangulation *const triangulation,
                                           bool cotanWeights) {
       if(triangulation == nullptr) {
         return;
@@ -41,12 +41,12 @@ namespace ttk {
       }
     }
 
-    template <typename ScalarFieldType>
-    int execute(Triangulation *triangulation,
+    template <class T, class TriangulationType = AbstractTriangulation>
+    int execute(TriangulationType *triangulation,
                 SimplexId constraintNumber,
                 SimplexId *sources,
-                ScalarFieldType *constraints,
-                ScalarFieldType *outputScalarField,
+                T *constraints,
+                T *outputScalarField,
                 bool useCotanWeights = true,
                 SolvingMethodUserType solvingMethod
                 = SolvingMethodUserType::AUTO,

@@ -109,7 +109,6 @@ public:
 
 protected:
   ttkHarmonicField();
-
   ~ttkHarmonicField() override = default;
 
   int FillInputPortInformation(int port, vtkInformation *info) override;
@@ -132,11 +131,11 @@ private:
   // user-selected solving method
   SolvingMethodUserType SolvingMethod{SolvingMethodUserType::AUTO};
   // penalty value
-  double LogAlpha{5};
+  double LogAlpha{5.0};
 
   // enum: float or double
-  enum class HarmonicFieldType { FLOAT, DOUBLE };
-  HarmonicFieldType OutputScalarFieldType{HarmonicFieldType::FLOAT};
+  enum class FieldType { FLOAT, DOUBLE };
+  FieldType OutputScalarFieldType{FieldType::FLOAT};
 
   // points on the mesh where constraints_ are set
   vtkDataArray *identifiers_{};

@@ -37,12 +37,12 @@ int ttk::HarmonicField::solve(SparseMatrixType const &lap,
 }
 
 // main routine
-template <typename ScalarFieldType>
-int ttk::HarmonicField::execute(Triangulation *triangulation,
+template <class T, class TriangulationType>
+int ttk::HarmonicField::execute(TriangulationType *triangulation,
                                 SimplexId constraintNumber,
                                 SimplexId *sources,
-                                ScalarFieldType *constraints,
-                                ScalarFieldType *outputScalarField,
+                                T *constraints,
+                                T *outputScalarField,
                                 bool useCotanWeights,
                                 SolvingMethodUserType solvingMethod,
                                 double logAlpha) const {
@@ -53,9 +53,9 @@ int ttk::HarmonicField::execute(Triangulation *triangulation,
   Eigen::setNbThreads(threadNumber_);
 #endif // TTK_ENABLE_OPENMP
 
-  using SpMat = Eigen::SparseMatrix<ScalarFieldType>;
-  using SpVec = Eigen::SparseVector<ScalarFieldType>;
-  using TripletType = Eigen::Triplet<ScalarFieldType>;
+  using SpMat = Eigen::SparseMatrix<T>;
+  using SpVec = Eigen::SparseVector<T>;
+  using TripletType = Eigen::Triplet<T>;
 
   Timer tm;
   Memory mem;
@@ -73,7 +73,7 @@ int ttk::HarmonicField::execute(Triangulation *triangulation,
   std::vector<SimplexId> uniqueIdentifiers(
     uniqueIdentifiersSet.begin(), uniqueIdentifiersSet.end());
   // vector of unique constraint values
-  std::vector<ScalarFieldType> uniqueValues(uniqueIdentifiers.size());
+  std::vector<T> uniqueValues(uniqueIdentifiers.size());
 
   // put identifier corresponding constraints in vector
   for(size_t i = 0; i < uniqueIdentifiers.size(); ++i) {
@@ -91,9 +91,9 @@ int ttk::HarmonicField::execute(Triangulation *triangulation,
   // graph laplacian of current mesh
   SpMat lap;
   if(useCotanWeights) {
-    Laplacian::cotanWeights<ScalarFieldType>(lap, *triangulation);
+    Laplacian::cotanWeights<T>(lap, *triangulation);
   } else {
-    Laplacian::discreteLaplacian<ScalarFieldType>(lap, *triangulation);
+    Laplacian::discreteLaplacian<T>(lap, *triangulation);
   }
 
   // constraints vector
@@ -120,7 +120,7 @@ int ttk::HarmonicField::execute(Triangulation *triangulation,
   // penalty matrix
   SpMat penalty(vertexNumber, vertexNumber);
   // penalty value
-  const ScalarFieldType alpha = pow10(logAlpha);
+  const T alpha = pow10(logAlpha);
 
   std::vector<TripletType> triplets;
   triplets.reserve(uniqueConstraintNumber);
@@ -161,7 +161,7 @@ int ttk::HarmonicField::execute(Triangulation *triangulation,
   }
 
   // convert to dense Eigen matrix
-  Eigen::Matrix<ScalarFieldType, Eigen::Dynamic, 1> solDense(sol);
+  Eigen::Matrix<T, Eigen::Dynamic, 1> solDense(sol);
 
   // copy solver solution into output array
 #ifdef TTK_ENABLE_OPENMP
