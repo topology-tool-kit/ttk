@@ -6,9 +6,11 @@
 
 #include <array>
 
-template <typename T, typename SparseMatrixType = Eigen::SparseMatrix<T>>
+template <typename T,
+          class TriangulationType,
+          typename SparseMatrixType = Eigen::SparseMatrix<T>>
 int ttk::Laplacian::discreteLaplacian(SparseMatrixType &output,
-                                      const Triangulation &triangulation) {
+                                      const TriangulationType &triangulation) {
 
   using Triplet = Eigen::Triplet<T>;
   auto vertexNumber = triangulation.getNumberOfVertices();
@@ -63,9 +65,11 @@ int ttk::Laplacian::discreteLaplacian(SparseMatrixType &output,
   return 0;
 }
 
-template <typename T, typename SparseMatrixType = Eigen::SparseMatrix<T>>
+template <typename T,
+          class TriangulationType,
+          typename SparseMatrixType = Eigen::SparseMatrix<T>>
 int ttk::Laplacian::cotanWeights(SparseMatrixType &output,
-                                 const Triangulation &triangulation) {
+                                 const TriangulationType &triangulation) {
 
   using Triplet = Eigen::Triplet<T>;
   auto vertexNumber = triangulation.getNumberOfVertices();
@@ -179,19 +183,14 @@ int ttk::Laplacian::cotanWeights(SparseMatrixType &output,
   return 0;
 }
 
-// explicit intantiations for floating-point types
-template int
-  ttk::Laplacian::discreteLaplacian<float>(Eigen::SparseMatrix<float> &output,
-                                           const Triangulation &triangulation);
-template int
-  ttk::Laplacian::discreteLaplacian<double>(Eigen::SparseMatrix<double> &output,
-                                            const Triangulation &triangulation);
+#define LAPLACIAN_SPECIALIZE(TYPE)                       \
+  template int ttk::Laplacian::discreteLaplacian<TYPE>(  \
+    Eigen::SparseMatrix<TYPE> &, const Triangulation &); \
+  template int ttk::Laplacian::cotanWeights<TYPE>(       \
+    Eigen::SparseMatrix<TYPE> &, const Triangulation &)
 
-template int
-  ttk::Laplacian::cotanWeights<float>(Eigen::SparseMatrix<float> &output,
-                                      const Triangulation &triangulation);
-template int
-  ttk::Laplacian::cotanWeights<double>(Eigen::SparseMatrix<double> &output,
-                                       const Triangulation &triangulation);
+// explicit intantiations for floating-point types
+LAPLACIAN_SPECIALIZE(float);
+LAPLACIAN_SPECIALIZE(double);
 
 #endif // TTK_ENABLE_EIGEN
