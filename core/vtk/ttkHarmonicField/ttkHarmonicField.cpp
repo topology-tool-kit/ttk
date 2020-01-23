@@ -1,5 +1,12 @@
 #include <ttkHarmonicField.h>
 
+// VTK includes
+#include <vtkDoubleArray.h>
+#include <vtkFloatArray.h>
+#include <vtkObjectFactory.h>
+#include <vtkPointData.h>
+#include <vtkSmartPointer.h>
+
 #ifndef TTK_ENABLE_KAMIKAZE
 #define TTK_ABORT_KK(COND, MSG, RET) \
   if(COND) {                         \

@@ -33,23 +33,12 @@
 
 #pragma once
 
-// VTK includes -- to adapt
-#include <vtkDataArray.h>
-#include <vtkDataSet.h>
-#include <vtkDoubleArray.h>
-#include <vtkFiltersCoreModule.h>
-#include <vtkFloatArray.h>
-#include <vtkInformation.h>
-#include <vtkObjectFactory.h>
-#include <vtkPointData.h>
-#include <vtkPointSet.h>
-#include <vtkSmartPointer.h>
-
 // VTK Module
 #include <ttkHarmonicFieldModule.h>
 
 // VTK Includes
 #include <ttkAlgorithm.h>
+#include <vtkPointSet.h>
 
 // ttk code includes
 #include <HarmonicField.h>
