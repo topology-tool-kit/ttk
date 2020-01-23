@@ -112,10 +112,8 @@ int ttkHarmonicField::RequestData(vtkInformation *request,
       harmonicScalarField = vtkSmartPointer<vtkDoubleArray>::New();
       break;
     default:
-#ifndef TTK_ENABLE_KAMIKAZE
       this->printErr("Unknown scalar field type");
       return -7;
-#endif // TTK_ENABLE_KAMIKAZE
       break;
   }
 

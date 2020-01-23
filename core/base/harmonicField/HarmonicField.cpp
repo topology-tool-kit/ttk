@@ -49,6 +49,8 @@ int ttk::HarmonicField::execute(const TriangulationType &triangulation,
 
 #ifdef TTK_ENABLE_EIGEN
 
+  this->printMsg("Beginning computation...");
+
 #ifdef TTK_ENABLE_OPENMP
   Eigen::setNbThreads(threadNumber_);
 #endif // TTK_ENABLE_OPENMP
@@ -188,9 +190,11 @@ int ttk::HarmonicField::execute(const TriangulationType &triangulation,
                  mem.getElapsedUsage());
 
 #else
-  this->printErr(std::vector<std::string>{
-    "Eigen support disabled, computation skipped!",
-    "Please re-compile TTK with Eigen support to enable this feature."});
+  this->printMsg(
+    std::vector<std::string>{
+      "Eigen support disabled, computation skipped!",
+      "Please re-compile TTK with Eigen support to enable this feature."},
+    debug::Priority::ERROR);
 #endif // TTK_ENABLE_EIGEN
 
   this->printMsg(ttk::debug::Separator::L1); // horizontal '=' separator
