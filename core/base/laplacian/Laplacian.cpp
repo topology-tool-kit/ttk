@@ -13,8 +13,8 @@ int ttk::Laplacian::discreteLaplacian(SparseMatrixType &output,
                                       const TriangulationType &triangulation) {
 
   using Triplet = Eigen::Triplet<T>;
-  auto vertexNumber = triangulation.getNumberOfVertices();
-  auto edgeNumber = triangulation.getNumberOfEdges();
+  const auto vertexNumber = triangulation.getNumberOfVertices();
+  const auto edgeNumber = triangulation.getNumberOfEdges();
 
   // early return when input graph is empty
   if(vertexNumber <= 0) {
@@ -23,7 +23,7 @@ int ttk::Laplacian::discreteLaplacian(SparseMatrixType &output,
 
 #ifdef TTK_ENABLE_OPENMP
   // get thread number from triangulation?
-  auto threadNumber = triangulation.getThreadNumber();
+  const auto threadNumber = triangulation.getThreadNumber();
 #endif // TTK_ENABLE_OPENMP
 
   // clear output
@@ -39,7 +39,7 @@ int ttk::Laplacian::discreteLaplacian(SparseMatrixType &output,
 #pragma omp parallel for num_threads(threadNumber)
 #endif // TTK_ENABLE_OPENMP
   for(SimplexId i = 0; i < vertexNumber; ++i) {
-    SimplexId nneigh = triangulation.getVertexNeighborNumber(SimplexId(i));
+    const auto nneigh = triangulation.getVertexNeighborNumber(i);
     triplets[i] = Triplet(i, i, T(nneigh));
   }
 
@@ -72,12 +72,12 @@ int ttk::Laplacian::cotanWeights(SparseMatrixType &output,
                                  const TriangulationType &triangulation) {
 
   using Triplet = Eigen::Triplet<T>;
-  auto vertexNumber = triangulation.getNumberOfVertices();
-  auto edgeNumber = triangulation.getNumberOfEdges();
+  const auto vertexNumber = triangulation.getNumberOfVertices();
+  const auto edgeNumber = triangulation.getNumberOfEdges();
 
 #ifdef TTK_ENABLE_OPENMP
   // get thread number from triangulation?
-  auto threadNumber = triangulation.getThreadNumber();
+  const auto threadNumber = triangulation.getThreadNumber();
 #endif // TTK_ENABLE_OPENMP
 
   // early return when input graph is empty
@@ -110,7 +110,7 @@ int ttk::Laplacian::cotanWeights(SparseMatrixType &output,
 
     // get the triangles that share the current edge
     // in 2D only 2, in 3D, maybe more...
-    SimplexId trianglesNumber = triangulation.getEdgeTriangleNumber(i);
+    const auto trianglesNumber = triangulation.getEdgeTriangleNumber(i);
     // stores the triangles ID for every triangle around the current edge
     std::vector<SimplexId> edgeTriangles(trianglesNumber);
     for(SimplexId j = 0; j < trianglesNumber; ++j) {
