@@ -40,7 +40,11 @@ if(VTK_WRAP_PYTHON)
     "Build the python module"
     )
   if(NOT DEFINED TTK_PYTHON_MODULE_DIR)
-    vtk_module_python_default_destination(PYTHON_SITE_PACKAGES_SUFFIX)
+    file(RELATIVE_PATH
+      PYTHON_SITE_PACKAGES_SUFFIX
+      ${VTK_PREFIX_PATH}
+      ${VTK_PYTHONPATH}
+      )
     set(TTK_PYTHON_MODULE_DIR
       ${PYTHON_SITE_PACKAGES_SUFFIX}
       CACHE
@@ -77,15 +81,15 @@ if(VTK_WRAP_PYTHON)
   endforeach()
   file(GENERATE
     OUTPUT
-    "${CMAKE_BINARY_DIR}/${TTK_PYTHON_MODULE_DIR}/topologytoolkit/__init__.py"
+      "${CMAKE_BINARY_DIR}/${TTK_PYTHON_MODULE_DIR}/topologytoolkit/__init__.py"
     CONTENT
       "${InitContent}"
     )
   install(
     FILES
-    "${CMAKE_BINARY_DIR}/${TTK_PYTHON_MODULE_DIR}/topologytoolkit/__init__.py"
+      "${CMAKE_BINARY_DIR}/${TTK_PYTHON_MODULE_DIR}/topologytoolkit/__init__.py"
     DESTINATION
-    "${TTK_PYTHON_MODULE_DIR}/topologytoolkit/"
+      "${TTK_PYTHON_MODULE_DIR}/topologytoolkit/"
     )
   # Install TTK Python
   export(
