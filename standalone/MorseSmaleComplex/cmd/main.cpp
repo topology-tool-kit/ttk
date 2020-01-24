@@ -16,15 +16,12 @@ int main(int argc, char **argv) {
 
   // specify local parameters to the TTK module with default values.
   int scalarFieldId = 0, offsetFieldId = -1;
-  bool plCompliantExtrema = true, plCompliantSaddles = false;
 
   // register these arguments to the command line parser
   program.parser_.setArgument(
     "F", &scalarFieldId, "Input scalar field identifier", true);
   program.parser_.setArgument(
     "O", &offsetFieldId, "Input vertex offset field identifier", true);
-  program.parser_.setOption("plE", &plCompliantExtrema, "PL-compliant extrema");
-  program.parser_.setOption("plS", &plCompliantSaddles, "PL-compliant saddles");
 
   int ret = 0;
   ret = program.init(argc, argv);
@@ -36,8 +33,6 @@ int main(int argc, char **argv) {
   // to execution.
   program.ttkObject_->SetScalarFieldId(scalarFieldId);
   program.ttkObject_->SetOffsetFieldId(offsetFieldId);
-  program.ttkObject_->SetReverseSaddleMaximumConnection(plCompliantExtrema);
-  program.ttkObject_->SetReverseSaddleSaddleConnection(plCompliantSaddles);
 
   // execute data processing
   ret = program.run();

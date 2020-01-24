@@ -80,7 +80,6 @@ int ttk::MorseSmaleComplex2D::execute() {
   {
     Timer tmp;
     discreteGradient_.buildGradient<dataType, idType>();
-    discreteGradient_.buildGradient2<dataType, idType>();
 
     {
       std::stringstream msg;
@@ -89,7 +88,6 @@ int ttk::MorseSmaleComplex2D::execute() {
       dMsg(std::cout, msg.str(), timeMsg);
     }
   }
-  discreteGradient_.reverseGradient<dataType, idType>();
 
   std::vector<dcg::Cell> criticalPoints;
   discreteGradient_.getCriticalPoints(criticalPoints);
