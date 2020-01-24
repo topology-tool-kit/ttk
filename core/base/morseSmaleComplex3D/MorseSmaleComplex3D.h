@@ -1412,11 +1412,12 @@ int ttk::MorseSmaleComplex3D::execute() {
   }
 
   if(outputCriticalPoints_numberOfPoints_ and outputSeparatrices1_points_) {
-    if(ascendingManifold and descendingManifold)
-      discreteGradient_.setAugmentedCriticalPoints<dataType, idType>(
+    discreteGradient_.setCriticalPoints<dataType, idType>(criticalPoints);
+
+    if(ascendingManifold and descendingManifold) {
+      discreteGradient_.setManifoldSize(
         criticalPoints, maxSeeds, ascendingManifold, descendingManifold);
-    else
-      discreteGradient_.setCriticalPoints<dataType, idType>(criticalPoints);
+    }
   }
 
   {
