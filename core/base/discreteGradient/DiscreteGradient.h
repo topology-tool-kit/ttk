@@ -2,6 +2,8 @@
 /// \class ttk::DiscreteGradient
 /// \author Guillaume Favelier <guillaume.favelier@lip6.fr>
 /// \author Julien Tierny <julien.tierny@lip6.fr>
+/// \author Pierre Guillou <pierre.guillou@lip6.fr>
+/// \author Yizhe Wang <wangyizhe3518@gmail.com>
 /// \date November 2016.
 ///
 /// \brief TTK %discreteGradient processing package.
@@ -11,18 +13,20 @@
 ///
 /// \sa ttk::Triangulation
 
-#ifndef _DISCRETEGRADIENT_H
-#define _DISCRETEGRADIENT_H
+#pragma once
 
 // base code includes
 #include <FTMTree.h>
 #include <Geometry.h>
-#include <ScalarFieldCriticalPoints.h>
 #include <Triangulation.h>
 #include <Wrapper.h>
 
 #include <algorithm>
+#include <array>
+#include <functional>
+#include <queue>
 #include <set>
+#include <utility>
 
 namespace ttk {
   namespace dcg {
@@ -38,23 +42,37 @@ namespace ttk {
      * dimension.
      */
     struct Cell {
-      explicit Cell() : dim_{-1}, id_{-1} {
-      }
+      explicit Cell() = default;
 
       explicit Cell(const int dim, const SimplexId id) : dim_{dim}, id_{id} {
       }
 
-      explicit Cell(const Cell &cell) : dim_{cell.dim_}, id_{cell.id_} {
+      int dim_{-1};
+      SimplexId id_{-1};
+    };
+
+    /**
+     * @brief Extended Cell structure for processLowerStars
+     */
+    struct CellExt : Cell {
+      explicit CellExt(const int dim, const SimplexId id) : Cell{dim, id} {
+      }
+      explicit CellExt(const int dim,
+                       const SimplexId id,
+                       const std::array<SimplexId, 3> &&lowVerts,
+                       const std::array<uint8_t, 3> &&faces)
+        : Cell{dim, id}, lowVerts_{lowVerts}, faces_{faces} {
       }
 
-      Cell &operator=(const Cell &cell) {
-        dim_ = cell.dim_;
-        id_ = cell.id_;
-        return *this;
-      }
-
-      int dim_;
-      SimplexId id_;
+      // if cell has been paired with another in current lower star
+      bool paired_{false};
+      // lower vertices in current lower star (1 for edges, 2 for triangles, 3
+      // for tetras)
+      const std::array<SimplexId, 3> lowVerts_{};
+      // indices of faces (cells of dimensions dim_ - 1) in lower star
+      // structure, only applicable for triangles (2 edge faces)  and tetras (3
+      // triangle faces)
+      const std::array<uint8_t, 3> faces_{};
     };
 
     /**
@@ -62,8 +80,7 @@ namespace ttk {
      * whether the segment has been reversed or not.
      */
     struct Segment {
-      explicit Segment() : orientation_{}, isValid_{} {
-      }
+      explicit Segment() = default;
 
       explicit Segment(const bool orientation,
                        const std::vector<Cell> &cells,
@@ -75,16 +92,6 @@ namespace ttk {
                        std::vector<Cell> &&cells,
                        const bool isValid)
         : orientation_{orientation}, cells_{cells}, isValid_{isValid} {
-      }
-
-      explicit Segment(const Segment &segment)
-        : orientation_{segment.orientation_}, cells_{segment.cells_},
-          isValid_{segment.isValid_} {
-      }
-
-      explicit Segment(Segment &&segment)
-        : orientation_{segment.orientation_}, cells_{segment.cells_},
-          isValid_{segment.isValid_} {
       }
 
       /**
@@ -107,9 +114,9 @@ namespace ttk {
         return 0;
       }
 
-      bool orientation_;
-      std::vector<Cell> cells_;
-      bool isValid_;
+      bool orientation_{};
+      std::vector<Cell> cells_{};
+      bool isValid_{};
     };
 
     /**
@@ -117,10 +124,7 @@ namespace ttk {
      * one.
      */
     struct VPath {
-      explicit VPath()
-        : isValid_{}, source_{-1}, destination_{-1}, sourceSlot_{-1},
-          destinationSlot_{-1}, persistence_{} {
-      }
+      explicit VPath() = default;
 
       explicit VPath(const bool isValid,
                      const SimplexId segmentId,
@@ -160,22 +164,6 @@ namespace ttk {
           destinationSlot_{destinationSlot}, persistence_{persistence} {
       }
 
-      explicit VPath(const VPath &vpath)
-        : isValid_{vpath.isValid_}, states_{vpath.states_},
-          segments_{vpath.segments_}, source_{vpath.source_},
-          destination_{vpath.destination_}, sourceSlot_{vpath.sourceSlot_},
-          destinationSlot_{vpath.destinationSlot_}, persistence_{
-                                                      vpath.persistence_} {
-      }
-
-      explicit VPath(VPath &&vpath)
-        : isValid_{vpath.isValid_}, states_{vpath.states_},
-          segments_{vpath.segments_}, source_{vpath.source_},
-          destination_{vpath.destination_}, sourceSlot_{vpath.sourceSlot_},
-          destinationSlot_{vpath.destinationSlot_}, persistence_{
-                                                      vpath.persistence_} {
-      }
-
       /**
        * Invalidate this vpath so that it is ignored in the simplification
        * process, free memory for economy reasons.
@@ -200,22 +188,21 @@ namespace ttk {
         return 0;
       }
 
-      bool isValid_;
-      std::vector<char> states_;
-      std::vector<SimplexId> segments_;
-      SimplexId source_;
-      SimplexId destination_;
-      SimplexId sourceSlot_;
-      SimplexId destinationSlot_;
-      double persistence_;
+      bool isValid_{};
+      std::vector<char> states_{};
+      std::vector<SimplexId> segments_{};
+      SimplexId source_{-1};
+      SimplexId destination_{-1};
+      SimplexId sourceSlot_{-1};
+      SimplexId destinationSlot_{-1};
+      double persistence_{};
     };
 
     /**
      * Limit point of integral lines in the gradient.
      */
     struct CriticalPoint {
-      explicit CriticalPoint() : numberOfSlots_{} {
-      }
+      explicit CriticalPoint() = default;
 
       explicit CriticalPoint(const Cell &cell) : cell_{cell}, numberOfSlots_{} {
       }
@@ -227,16 +214,6 @@ namespace ttk {
 
       explicit CriticalPoint(const Cell &cell, std::vector<SimplexId> &&vpaths)
         : cell_{cell}, vpaths_{vpaths}, numberOfSlots_{} {
-      }
-
-      explicit CriticalPoint(const CriticalPoint &criticalPoint)
-        : cell_{criticalPoint.cell_}, vpaths_{criticalPoint.vpaths_},
-          numberOfSlots_{criticalPoint.numberOfSlots_} {
-      }
-
-      explicit CriticalPoint(CriticalPoint &&criticalPoint)
-        : cell_{criticalPoint.cell_}, vpaths_{criticalPoint.vpaths_},
-          numberOfSlots_{criticalPoint.numberOfSlots_} {
       }
 
       /**
@@ -270,30 +247,9 @@ namespace ttk {
         return 0;
       }
 
-      Cell cell_;
-      std::vector<SimplexId> vpaths_;
-      SimplexId numberOfSlots_;
-    };
-
-    /**
-     * Comparator of VPaths, first compare persistence values then vpaths'
-     * identifiers.
-     */
-    template <typename dataType>
-    struct SaddleMaximumVPathComparator {
-      bool operator()(const std::pair<dataType, SimplexId> &v1,
-                      const std::pair<dataType, SimplexId> &v2) const {
-        const dataType persistence1 = v1.first;
-        const dataType persistence2 = v2.first;
-
-        const SimplexId vpathId1 = v1.second;
-        const SimplexId vpathId2 = v2.second;
-
-        if(persistence1 != persistence2)
-          return (persistence1 < persistence2);
-
-        return (vpathId1 < vpathId2);
-      };
+      Cell cell_{};
+      std::vector<SimplexId> vpaths_{};
+      SimplexId numberOfSlots_{};
     };
 
     /**
@@ -314,15 +270,23 @@ namespace ttk {
         const SimplexId saddleId1 = std::get<2>(v1);
         const SimplexId saddleId2 = std::get<2>(v2);
 
-        if(persistence1 != persistence2)
+        if(persistence1 != persistence2) {
           return (persistence1 < persistence2);
+        }
 
-        if(saddleId1 != saddleId2)
+        if(saddleId1 != saddleId2) {
           return (saddleId1 < saddleId2);
+        }
 
         return (vpathId1 < vpathId2);
       };
     };
+
+#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
+    using gradientType = std::vector<std::vector<std::vector<char>>>;
+#else
+    using gradientType = std::vector<std::vector<std::vector<SimplexId>>>;
+#endif
 
     /**
      * Compute and manage a discrete gradient of a function on a triangulation.
@@ -332,31 +296,11 @@ namespace ttk {
     class DiscreteGradient : public Debug {
 
     public:
-      explicit DiscreteGradient();
-
-      ~DiscreteGradient();
-
       /**
        * Impose a threshold on the number of simplification passes.
        */
       int setIterationThreshold(const int iterationThreshold) {
         IterationThreshold = iterationThreshold;
-        return 0;
-      }
-
-      /**
-       * Enable/Disable gradient reversal of saddle to maximum VPaths.
-       */
-      int setReverseSaddleMaximumConnection(const bool state) {
-        ReverseSaddleMaximumConnection = state;
-        return 0;
-      }
-
-      /**
-       * Enable/Disable gradient reversal of saddle/saddle VPaths.
-       */
-      int setReverseSaddleSaddleConnection(const bool state) {
-        ReverseSaddleSaddleConnection = state;
         return 0;
       }
 
@@ -416,79 +360,295 @@ function value.
       template <typename dataType>
       dataType getPersistence(const Cell &up,
                               const Cell &down,
-                              const dataType *const scalars) const;
+                              const dataType *scalars) const;
+
+    private:
+      /**
+       * Type alias for lower stars of a given cell
+       */
+      using lowerStarType = std::array<std::vector<CellExt>, 4>;
 
       /**
-       * Body of AssignGradient algorithm from "Parallel Computation of 3D
-Morse-Smale Complexes",
-       * N. Shivashankar and V. Natarajan.
-       * Compute the initial gradient field of the input scalar function for a
-given dimension.
+       * @brief Store the subcomplexes around vertex for which offset
+       * at vertex is maximum
+       *
+       * @param[in] a Vertex Id
+       * @param[in] scalars Scalar field
+       * @param[in] offset Offset field (for comparing vertices when on a scalar
+       * field plateau)
+       *
+       * @return Lower star as 4 sets of cells (0-cells, 1-cells, 2-cells and
+       * 3-cells)
        */
       template <typename dataType, typename idType>
-      int assignGradient(const int alphaDim,
-                         const dataType *const scalars,
-                         const idType *const offsets,
-#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
-                         std::vector<std::vector<char>> &gradient) const;
-#else
-                         std::vector<std::vector<SimplexId>> &gradient) const;
-#endif
+      inline lowerStarType lowerStar(const SimplexId a,
+                                     const dataType *const scalars,
+                                     const idType *const offsets) const {
+        lowerStarType res{};
+
+        // a belongs to its lower star
+        res[0].emplace_back(CellExt{0, a});
+
+        const auto sosGreaterThan
+          = [&scalars, &offsets](const SimplexId m, const SimplexId n) {
+              if(scalars[m] != scalars[n]) {
+                return scalars[m] > scalars[n];
+              } else {
+                return offsets[m] > offsets[n];
+              }
+            };
+
+        // store lower edges
+        const auto nedges = inputTriangulation_->getVertexEdgeNumber(a);
+        res[1].reserve(nedges);
+        for(SimplexId i = 0; i < nedges; i++) {
+          SimplexId edgeId;
+          inputTriangulation_->getVertexEdge(a, i, edgeId);
+          SimplexId vertexId;
+          inputTriangulation_->getEdgeVertex(edgeId, 0, vertexId);
+          if(vertexId == a) {
+            inputTriangulation_->getEdgeVertex(edgeId, 1, vertexId);
+          }
+          if(!sosGreaterThan(vertexId, a)) {
+            res[1].emplace_back(CellExt{1, edgeId, {vertexId}, {}});
+          }
+        }
+
+        if(res[1].size() < 2) {
+          // at least two edges in the lower star for one triangle
+          return res;
+        }
+
+        const auto processTriangle = [&](const SimplexId triangleId,
+                                         const SimplexId v0, const SimplexId v1,
+                                         const SimplexId v2) {
+          std::array<SimplexId, 3> lowVerts{};
+          if(v0 == a) {
+            lowVerts[0] = v1;
+            lowVerts[1] = v2;
+          } else if(v1 == a) {
+            lowVerts[0] = v0;
+            lowVerts[1] = v2;
+          } else if(v2 == a) {
+            lowVerts[0] = v0;
+            lowVerts[1] = v1;
+          }
+          if(sosGreaterThan(a, lowVerts[0]) && sosGreaterThan(a, lowVerts[1])) {
+            uint8_t j{}, k{};
+            // store edges indices of current triangle
+            std::array<uint8_t, 3> faces{};
+            for(const auto &e : res[1]) {
+              if(e.lowVerts_[0] == lowVerts[0]
+                 || e.lowVerts_[0] == lowVerts[1]) {
+                faces[k++] = j;
+              }
+              j++;
+            }
+            res[2].emplace_back(
+              CellExt{2, triangleId, std::move(lowVerts), std::move(faces)});
+          }
+        };
+
+        if(dimensionality_ == 2) {
+          // store lower triangles
+
+          // use optimised triangulation methods:
+          // getVertexStar instead of getVertexTriangle
+          // getCellVertex instead of getTriangleVertex
+          const auto ncells = inputTriangulation_->getVertexStarNumber(a);
+          res[2].reserve(ncells);
+          for(SimplexId i = 0; i < ncells; ++i) {
+            SimplexId cellId;
+            inputTriangulation_->getVertexStar(a, i, cellId);
+            SimplexId v0{}, v1{}, v2{};
+            inputTriangulation_->getCellVertex(cellId, 0, v0);
+            inputTriangulation_->getCellVertex(cellId, 1, v1);
+            inputTriangulation_->getCellVertex(cellId, 2, v2);
+            processTriangle(cellId, v0, v1, v2);
+          }
+        } else if(dimensionality_ == 3) {
+          // store lower triangles
+          const auto ntri = inputTriangulation_->getVertexTriangleNumber(a);
+          res[2].reserve(ntri);
+          for(SimplexId i = 0; i < ntri; i++) {
+            SimplexId triangleId;
+            inputTriangulation_->getVertexTriangle(a, i, triangleId);
+            SimplexId v0{}, v1{}, v2{};
+            inputTriangulation_->getTriangleVertex(triangleId, 0, v0);
+            inputTriangulation_->getTriangleVertex(triangleId, 1, v1);
+            inputTriangulation_->getTriangleVertex(triangleId, 2, v2);
+            processTriangle(triangleId, v0, v1, v2);
+          }
+
+          // at least three triangles in the lower star for one tetra
+          if(res[2].size() >= 3) {
+            // store lower tetra
+            const auto ncells = inputTriangulation_->getVertexStarNumber(a);
+            res[3].reserve(ncells);
+            for(SimplexId i = 0; i < ncells; ++i) {
+              SimplexId cellId;
+              inputTriangulation_->getVertexStar(a, i, cellId);
+              std::array<SimplexId, 3> lowVerts{};
+              SimplexId v0{}, v1{}, v2{}, v3{};
+              inputTriangulation_->getCellVertex(cellId, 0, v0);
+              inputTriangulation_->getCellVertex(cellId, 1, v1);
+              inputTriangulation_->getCellVertex(cellId, 2, v2);
+              inputTriangulation_->getCellVertex(cellId, 3, v3);
+              if(v0 == a) {
+                lowVerts[0] = v1;
+                lowVerts[1] = v2;
+                lowVerts[2] = v3;
+              } else if(v1 == a) {
+                lowVerts[0] = v0;
+                lowVerts[1] = v2;
+                lowVerts[2] = v3;
+              } else if(v2 == a) {
+                lowVerts[0] = v0;
+                lowVerts[1] = v1;
+                lowVerts[2] = v3;
+              } else if(v3 == a) {
+                lowVerts[0] = v0;
+                lowVerts[1] = v1;
+                lowVerts[2] = v2;
+              }
+              if(sosGreaterThan(a, lowVerts[0])
+                 && sosGreaterThan(a, lowVerts[1])
+                 && sosGreaterThan(a, lowVerts[2])) {
+                uint8_t j{}, k{};
+                // store triangles indices of current tetra
+                std::array<uint8_t, 3> faces{};
+                for(const auto &t : res[2]) {
+                  if((t.lowVerts_[0] == lowVerts[0]
+                      || t.lowVerts_[0] == lowVerts[1]
+                      || t.lowVerts_[0] == lowVerts[2])
+                     && (t.lowVerts_[1] == lowVerts[0]
+                         || t.lowVerts_[1] == lowVerts[1]
+                         || t.lowVerts_[1] == lowVerts[2])) {
+                    faces[k++] = j;
+                  }
+                  j++;
+                }
+
+                res[3].emplace_back(
+                  CellExt{3, cellId, std::move(lowVerts), std::move(faces)});
+              }
+            }
+          }
+        }
+
+        return res;
+      }
 
       /**
-       * Body of AssignGradient2 algorithm from "Parallel Computation of 3D
-Morse-Smale Complexes",
-       * N. Shivashankar and V. Natarajan.
-       * Second pass of AssignGradient algorithm, minimize the number of
-unpaired cells.
+       * @brief Return the number of unpaired faces of a given cell in
+       * a lower star
+       *
+       * @param[in] c Input cell
+       * @param[in] ls Input lower star
+       *
+       * @return Number of unpaired faces and a face id
        */
-      template <typename dataType, typename idType>
-      int assignGradient2(const int alphaDim,
-                          const dataType *const scalars,
-                          const idType *const offsets,
-#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
-                          std::vector<std::vector<char>> &gradient) const;
-#else
-                          std::vector<std::vector<SimplexId>> &gradient) const;
-#endif
+      std::pair<size_t, SimplexId>
+        numUnpairedFaces(const CellExt &c, const lowerStarType &ls) const;
+      std::pair<size_t, SimplexId>
+        numUnpairedFacesTriangle(const CellExt &c,
+                                 const lowerStarType &ls) const;
+      std::pair<size_t, SimplexId>
+        numUnpairedFacesTetra(const CellExt &c, const lowerStarType &ls) const;
 
       /**
-       * Brand new pass on the discrete gradient designed specifically for this
-project,
-       * the goal is to minimize the number of unpaired cells further (3D
-triangulation only).
+       * @brief Return the critical type corresponding to given
+       * dimension
+       */
+      CriticalType criticalTypeFromCellDimension(const int dim) const;
+
+      /**
+       * @brief Pair cells into discrete gradient field
+       *
+       * @param[in] alpha Cell of lower dimension
+       * @param[in] beta Cell of higher dimension
+       */
+      inline void pairCells(CellExt &alpha, CellExt &beta) {
+#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
+        char localBId{0}, localAId{0};
+        SimplexId a{}, b{};
+
+        if(beta.dim_ == 1) {
+
+          for(SimplexId i = 0; i < 2; ++i) {
+            inputTriangulation_->getEdgeVertex(beta.id_, i, a);
+            if(a == alpha.id_) {
+              localAId = i;
+              break;
+            }
+          }
+          const auto nedges
+            = inputTriangulation_->getVertexEdgeNumber(alpha.id_);
+          for(SimplexId i = 0; i < nedges; ++i) {
+            inputTriangulation_->getVertexEdge(alpha.id_, i, b);
+            if(b == beta.id_) {
+              localBId = i;
+            }
+          }
+        } else if(beta.dim_ == 2) {
+          for(SimplexId i = 0; i < 3; ++i) {
+            inputTriangulation_->getTriangleEdge(beta.id_, i, a);
+            if(a == alpha.id_) {
+              localAId = i;
+              break;
+            }
+          }
+          const auto ntri
+            = inputTriangulation_->getEdgeTriangleNumber(alpha.id_);
+          for(SimplexId i = 0; i < ntri; ++i) {
+            inputTriangulation_->getEdgeTriangle(alpha.id_, i, b);
+            if(b == beta.id_) {
+              localBId = i;
+            }
+          }
+        } else {
+          for(SimplexId i = 0; i < 4; ++i) {
+            inputTriangulation_->getCellTriangle(beta.id_, i, a);
+            if(a == alpha.id_) {
+              localAId = i;
+              break;
+            }
+          }
+          const auto ntetra
+            = inputTriangulation_->getTriangleStarNumber(alpha.id_);
+          for(SimplexId i = 0; i < ntetra; ++i) {
+            inputTriangulation_->getTriangleStar(alpha.id_, i, b);
+            if(b == beta.id_) {
+              localBId = i;
+            }
+          }
+        }
+        gradient_[alpha.dim_][alpha.dim_][alpha.id_] = localBId;
+        gradient_[alpha.dim_][alpha.dim_ + 1][beta.id_] = localAId;
+#else
+        gradient_[alpha.dim_][alpha.dim_][alpha.id_] = beta.id_;
+        gradient_[alpha.dim_][alpha.dim_ + 1][beta.id_] = alpha.id_;
+#endif // TTK_ENABLE_DCG_OPTIMIZE_MEMORY
+        alpha.paired_ = true;
+        beta.paired_ = true;
+      }
+
+      /**
+       * Implements the ProcessLowerStars algorithm from "Theory and
+       * Algorithms for Constructing Discrete Morse Complexes from
+       * Grayscale Digital Images", V. Robins, P. J. Wood,
+       * A. P. Sheppard
        */
       template <typename dataType, typename idType>
-      int assignGradient3(const int alphaDim,
-                          const dataType *const scalars,
-                          const idType *const offsets,
-#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
-                          std::vector<std::vector<char>> &gradient) const;
-#else
-                          std::vector<std::vector<SimplexId>> &gradient) const;
-#endif
+      int processLowerStars(const dataType *scalars, const idType *offsets);
 
+    public:
       /**
        * Compute the initial gradient field of the input scalar function on the
 triangulation.
        */
       template <typename dataType, typename idType>
       int buildGradient();
-
-      /**
-       * Minimize the number of unpaired cells of any dimensions.
-       * Assume that buildGradient() has been called before.
-       */
-      template <typename dataType, typename idType>
-      int buildGradient2();
-
-      /**
-       * Minimize further the number of unpaired cells of any dimensions (3D
-triangulation only).
-       * Assume that buildGradient2() has been called before.
-       */
-      template <typename dataType, typename idType>
-      int buildGradient3();
 
       /**
        * Get the list of maxima candidates for simplification.
@@ -519,81 +679,6 @@ triangulation only).
         const bool allowBoundary,
         std::vector<char> &isRemovableSaddle,
         std::vector<SimplexId> &pl2dmt_saddle);
-
-      /**
-       * Create initial Morse-Smale Complex structure and initialize the
-(saddle,...,maximum)
-       * vpaths to the simplification process.
-       */
-      template <typename dataType>
-      int initializeSaddleMaximumConnections(
-        std::vector<char> &isRemovableMaximum,
-        std::vector<char> &isRemovableSaddle,
-        const bool allowBruteForce,
-        std::vector<Segment> &segments,
-        std::vector<VPath> &vpaths,
-        std::vector<CriticalPoint> &criticalPoints) const;
-
-      /**
-       * Order the (saddle,...,maximum) vpaths by persistence value.
-       */
-      template <typename dataType>
-      int orderSaddleMaximumConnections(
-        const std::vector<VPath> &vpaths,
-        std::set<std::pair<dataType, SimplexId>,
-                 SaddleMaximumVPathComparator<dataType>> &S);
-
-      /**
-       * Compute simple algebra on the vpaths to minimize the number of gradient
-paths reversal.
-       * Two representations are available for the accumulation vector, a dense
-and a sparse one (default).
-       */
-      template <typename dataType>
-      int computeCoefficients(const bool isDense,
-                              std::vector<char> &denseCoefficients,
-                              std::vector<Segment> &segments,
-                              const CriticalPoint &source,
-                              VPath &newVPath,
-                              const std::vector<VPath> &vpaths) const;
-
-      /**
-       * Core of the simplification process, tag the (saddle,...,maximum) vpaths
-to be reversed.
-       */
-      template <typename dataType>
-      int processSaddleMaximumConnections(
-        const int iterationThreshold,
-        const std::vector<char> &isPL,
-        const bool allowBoundary,
-        const bool allowBruteForce,
-        std::set<std::pair<dataType, SimplexId>,
-                 SaddleMaximumVPathComparator<dataType>> &S,
-        std::vector<SimplexId> &pl2dmt_saddle,
-        std::vector<SimplexId> &pl2dmt_maximum,
-        std::vector<Segment> &segments,
-        std::vector<VPath> &vpaths,
-        std::vector<CriticalPoint> &criticalPoints);
-
-      /**
-       * Actually reverse the so-tagged (saddle,...,maximum) vpaths to simplify
-the discrete gradient.
-       * The gradient is modified during this step.
-       */
-      template <typename dataType>
-      int reverseSaddleMaximumConnections(const std::vector<Segment> &segments);
-
-      /**
-       * High-level function that manages the global simplification of
-(saddle,...,maximum) vpaths.
-       */
-      template <typename dataType>
-      int simplifySaddleMaximumConnections(
-        const std::vector<std::pair<SimplexId, char>> &criticalPoints,
-        const std::vector<char> &isPL,
-        const int iterationThreshold,
-        const bool allowBoundary,
-        const bool allowBruteForce);
 
       /**
        * Create initial Morse-Smale Complex structure and initialize the
@@ -730,20 +815,11 @@ a given threshold is met.
       int filterSaddleConnectors(const bool allowBoundary);
 
       /**
-       * Highest-level simplification function, manage all the simplification
-steps
-       * compliant to the critical points given by the user.
-       */
-      template <typename dataType, typename idType>
-      int reverseGradient(
-        const std::vector<std::pair<SimplexId, char>> &criticalPoints);
-
-      /**
        * Automatic detection of the PL critical points and simplification
 according to them.
        */
       template <typename dataType, typename idType>
-      int reverseGradient();
+      int reverseGradient(const bool detectCriticalPoints = true);
 
       /**
        * Set the input scalar function.
@@ -758,7 +834,7 @@ according to them.
        */
       inline int setupTriangulation(Triangulation *const data) {
         inputTriangulation_ = data;
-        if(inputTriangulation_) {
+        if(inputTriangulation_ != nullptr) {
           dimensionality_ = inputTriangulation_->getCellVertexNumber(0) - 1;
           numberOfVertices_ = inputTriangulation_->getNumberOfVertices();
 
@@ -823,27 +899,6 @@ according to them.
 
         outputCriticalPoints_points_manifoldSize_
           = criticalPoints_points_manifoldSize;
-        return 0;
-      }
-
-      /**
-       * Set the output data pointer to the gradient glyphs.
-       */
-      inline int setOutputGradientGlyphs(
-        SimplexId *const gradientGlyphs_numberOfPoints,
-        std::vector<float> *const gradientGlyphs_points,
-        std::vector<char> *const gradientGlyphs_points_pairOrigins,
-        SimplexId *const gradientGlyphs_numberOfCells,
-        std::vector<SimplexId> *const gradientGlyphs_cells,
-        std::vector<char> *const gradientGlyphs_cells_pairTypes) {
-        outputGradientGlyphs_numberOfPoints_ = gradientGlyphs_numberOfPoints;
-        outputGradientGlyphs_points_ = gradientGlyphs_points;
-
-        outputGradientGlyphs_points_pairOrigins_
-          = gradientGlyphs_points_pairOrigins;
-        outputGradientGlyphs_numberOfCells_ = gradientGlyphs_numberOfCells;
-        outputGradientGlyphs_cells_ = gradientGlyphs_cells;
-        outputGradientGlyphs_cells_pairTypes_ = gradientGlyphs_cells_pairTypes;
         return 0;
       }
 
@@ -1001,6 +1056,13 @@ tetra identifier.
       int getCellIncenter(const Cell &cell, float incenter[3]) const;
 
       /**
+       * Get the vertex id of with the maximum scalar field value on
+       * the given cell. Compare offsets if scalar field is constant.
+       */
+      template <typename dataType, typename idType>
+      inline SimplexId getCellGreaterVertex(const Cell c) const;
+
+      /**
        * Build the geometric embedding of the given STL vector of cells.
        * The output data pointers are modified accordingly. This
        * function needs the following internal pointers to be set:
@@ -1036,52 +1098,44 @@ tetra identifier.
       /**
        * Build the glyphs representing the discrete gradient vector field.
        */
-      int setGradientGlyphs() const;
+      int setGradientGlyphs(SimplexId &numberOfPoints,
+                            std::vector<float> &points,
+                            std::vector<char> &points_pairOrigins,
+                            SimplexId &numberOfCells,
+                            std::vector<SimplexId> &cells,
+                            std::vector<char> &cells_pairTypes) const;
 
     protected:
-      int IterationThreshold;
-      bool ReverseSaddleMaximumConnection;
-      bool ReverseSaddleSaddleConnection;
-      bool CollectPersistencePairs;
-      bool ReturnSaddleConnectors;
-      double SaddleConnectorsPersistenceThreshold;
+      int IterationThreshold{-1};
+      bool CollectPersistencePairs{false};
+      bool ReturnSaddleConnectors{false};
+      double SaddleConnectorsPersistenceThreshold{0.0};
 
-      int dimensionality_;
-      SimplexId numberOfVertices_;
-#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
-      std::vector<std::vector<std::vector<char>>> gradient_;
-#else
-      std::vector<std::vector<std::vector<SimplexId>>> gradient_;
-#endif
-      std::vector<SimplexId> dmtMax2PL_;
-      std::vector<SimplexId> dmt1Saddle2PL_;
-      std::vector<SimplexId> dmt2Saddle2PL_;
+      int dimensionality_{-1};
+      SimplexId numberOfVertices_{};
+      gradientType gradient_{};
+      std::vector<SimplexId> dmtMax2PL_{};
+      std::vector<SimplexId> dmt1Saddle2PL_{};
+      std::vector<SimplexId> dmt2Saddle2PL_{};
 
-      const void *inputScalarField_;
-      const void *inputOffsets_;
-      Triangulation *inputTriangulation_;
+      const void *inputScalarField_{};
+      const void *inputOffsets_{};
+      Triangulation *inputTriangulation_{};
 
-      SimplexId *outputCriticalPoints_numberOfPoints_;
-      std::vector<float> *outputCriticalPoints_points_;
-      std::vector<char> *outputCriticalPoints_points_cellDimensions_;
-      std::vector<SimplexId> *outputCriticalPoints_points_cellIds_;
-      void *outputCriticalPoints_points_cellScalars_;
-      std::vector<char> *outputCriticalPoints_points_isOnBoundary_;
-      std::vector<SimplexId> *outputCriticalPoints_points_PLVertexIdentifiers_;
-      std::vector<SimplexId> *outputCriticalPoints_points_manifoldSize_;
+      SimplexId *outputCriticalPoints_numberOfPoints_{};
+      std::vector<float> *outputCriticalPoints_points_{};
+      std::vector<char> *outputCriticalPoints_points_cellDimensions_{};
+      std::vector<SimplexId> *outputCriticalPoints_points_cellIds_{};
+      void *outputCriticalPoints_points_cellScalars_{};
+      std::vector<char> *outputCriticalPoints_points_isOnBoundary_{};
+      std::vector<SimplexId>
+        *outputCriticalPoints_points_PLVertexIdentifiers_{};
+      std::vector<SimplexId> *outputCriticalPoints_points_manifoldSize_{};
 
-      SimplexId *outputGradientGlyphs_numberOfPoints_;
-      std::vector<float> *outputGradientGlyphs_points_;
-      std::vector<char> *outputGradientGlyphs_points_pairOrigins_;
-      SimplexId *outputGradientGlyphs_numberOfCells_;
-      std::vector<SimplexId> *outputGradientGlyphs_cells_;
-      std::vector<char> *outputGradientGlyphs_cells_pairTypes_;
-
-      std::vector<std::tuple<Cell, Cell>> *outputPersistencePairs_;
+      std::vector<std::tuple<Cell, Cell>> *outputPersistencePairs_{};
     };
 
-#include <DiscreteGradient_Template.h>
   } // namespace dcg
 } // namespace ttk
 
-#endif // DISCRETEGRADIENT_H
+#include <DiscreteGradient_Template.h>

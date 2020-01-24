@@ -7,7 +7,6 @@ ttk_add_base_library(discreteGradient
   LINK
     triangulation
     geometry
-    scalarFieldCriticalPoints
     ftmTree
     )
 

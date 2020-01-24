@@ -33,9 +33,9 @@
 #include <vtkInformationVector.h>
 #include <vtkIntArray.h>
 #include <vtkLine.h>
+#include <vtkNew.h>
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
-#include <vtkSmartPointer.h>
 
 // VTK Module
 #include <ttkDiscreteGradientModule.h>
@@ -72,26 +72,14 @@ public:
   vtkSetMacro(ScalarField, std::string);
   vtkGetMacro(ScalarField, std::string);
 
-  vtkSetMacro(ForceInputOffsetScalarField, int);
-  vtkGetMacro(ForceInputOffsetScalarField, int);
+  vtkSetMacro(ForceInputOffsetScalarField, bool);
+  vtkGetMacro(ForceInputOffsetScalarField, bool);
 
   vtkSetMacro(InputOffsetScalarFieldName, std::string);
   vtkGetMacro(InputOffsetScalarFieldName, std::string);
 
-  vtkSetMacro(ReverseSaddleMaximumConnection, int);
-  vtkGetMacro(ReverseSaddleMaximumConnection, int);
-
-  vtkSetMacro(ReverseSaddleSaddleConnection, int);
-  vtkGetMacro(ReverseSaddleSaddleConnection, int);
-
-  vtkSetMacro(AllowSecondPass, int);
-  vtkGetMacro(AllowSecondPass, int);
-
-  vtkSetMacro(AllowThirdPass, int);
-  vtkGetMacro(AllowThirdPass, int);
-
-  vtkSetMacro(ComputeGradientGlyphs, int);
-  vtkGetMacro(ComputeGradientGlyphs, int);
+  vtkSetMacro(ComputeGradientGlyphs, bool);
+  vtkGetMacro(ComputeGradientGlyphs, bool);
 
   vtkSetMacro(IterationThreshold, int);
   vtkGetMacro(IterationThreshold, int);
@@ -117,23 +105,11 @@ protected:
 
 private:
   template <typename T>
-  int dispatch(
-    vtkUnstructuredGrid *outputCriticalPoints,
-    ttk::SimplexId criticalPoints_numberOfPoints,
-    std::vector<float> criticalPoints_points,
-    std::vector<char> criticalPoints_points_cellDimensions,
-    std::vector<ttk::SimplexId> criticalPoints_points_cellIds,
-    std::vector<char> criticalPoints_points_isOnBoundary,
-    std::vector<ttk::SimplexId> criticalPoints_points_PLVertexIdentifiers,
-    std::vector<ttk::SimplexId> criticalPoints_points_manifoldSize);
+  int dispatch(vtkUnstructuredGrid *outputCriticalPoints);
 
   std::string ScalarField;
   std::string InputOffsetScalarFieldName;
   bool ForceInputOffsetScalarField;
-  bool ReverseSaddleMaximumConnection;
-  bool ReverseSaddleSaddleConnection;
-  bool AllowSecondPass;
-  bool AllowThirdPass;
   bool ComputeGradientGlyphs;
   int IterationThreshold;
   int ScalarFieldId;
