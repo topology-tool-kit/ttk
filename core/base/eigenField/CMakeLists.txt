@@ -24,5 +24,5 @@ endif()
 
 if(TTK_ENABLE_SPECTRA)
   target_compile_definitions(eigenField PRIVATE TTK_ENABLE_SPECTRA)
-  target_include_directories(eigenField PRIVATE ${SPECTRA_INCLUDE_DIR})
+  target_include_directories(eigenField SYSTEM PRIVATE ${SPECTRA_INCLUDE_DIR})
 endif()

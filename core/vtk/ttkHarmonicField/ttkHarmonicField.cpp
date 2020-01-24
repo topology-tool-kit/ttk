@@ -1,63 +1,44 @@
 #include <ttkHarmonicField.h>
 
+// VTK includes
+#include <vtkDoubleArray.h>
+#include <vtkFloatArray.h>
+#include <vtkObjectFactory.h>
+#include <vtkPointData.h>
+#include <vtkSmartPointer.h>
+
+#ifndef TTK_ENABLE_KAMIKAZE
+#define TTK_ABORT_KK(COND, MSG, RET) \
+  if(COND) {                         \
+    this->printErr(MSG);             \
+    return RET;                      \
+  }
+#else // TTK_ENABLE_KAMIKAZE
+#define TTK_ABORT_KK(COND, MSG, RET)
+#endif // TTK_ENABLE_KAMIKAZE
+
 vtkStandardNewMacro(ttkHarmonicField);
 
-ttkHarmonicField::ttkHarmonicField()
-  : UseCotanWeights{true}, SolvingMethod{0}, LogAlpha{5}, triangulation_{},
-    identifiers_{}, constraints_{} {
-
+ttkHarmonicField::ttkHarmonicField() {
   SetNumberOfInputPorts(2);
-
-  InputScalarFieldName
-    = std::string(static_cast<const char *>(ttk::VertexScalarFieldName));
-  OutputScalarFieldName = "OutputHarmonicField";
-  OutputScalarFieldType = HarmonicFieldType::Float;
-
-  ForceConstraintIdentifiers = false;
-  ThreadNumber = threadNumber_;
-  UseAllCores = true;
-  InputIdentifiersFieldName
-    = std::string(static_cast<const char *>(ttk::VertexScalarFieldName));
+  SetNumberOfOutputPorts(1);
 }
 
 int ttkHarmonicField::FillInputPortInformation(int port, vtkInformation *info) {
-
   if(port == 0) {
     info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataSet");
-  }
-  if(port == 1) {
+  } else if(port == 1) {
     info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkPointSet");
   }
   return 1;
 }
 
-int ttkHarmonicField::getTriangulation(vtkDataSet *input) {
-
-  triangulation_ = ttkTriangulation::getTriangulation(input);
-
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(triangulation_ == nullptr) {
-    cerr << "[ttkHarmonicField] Error: input triangulation pointer "
-            "is NULL."
-         << endl;
-    return -1;
+int ttkHarmonicField::FillOutputPortInformation(int port,
+                                                vtkInformation *info) {
+  if(port == 0) {
+    info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
+    return 1;
   }
-#endif
-
-  triangulation_->setWrapper(this);
-  harmonicField_.setWrapper(this);
-  harmonicField_.setupTriangulation(triangulation_);
-  Modified();
-
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(triangulation_->isEmpty()) {
-    cerr << "[ttkHarmonicField] Error: ttkTriangulation allocation "
-            "problem."
-         << endl;
-    return -1;
-  }
-#endif
-
   return 0;
 }
 
@@ -71,14 +52,8 @@ int ttkHarmonicField::getIdentifiers(vtkPointSet *input) {
     identifiers_ = input->GetPointData()->GetArray(vsfn);
   }
 
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(identifiers_ == nullptr) {
-    cerr << "[ttkHarmonicField] Error: wrong vertex identifier "
-            "scalar field."
-         << endl;
-    return -1;
-  }
-#endif
+  TTK_ABORT_KK(
+    identifiers_ == nullptr, "wrong vertex identifier scalar field", -1);
   return 0;
 }
 
@@ -92,19 +67,12 @@ int ttkHarmonicField::getConstraints(vtkPointSet *input) {
     constraints_ = pointData->GetArray(osfn);
   }
 
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(constraints_ == nullptr) {
-    cerr << "[ttkHarmonicField] Error: wrong constraint "
-            "scalar field."
-         << endl;
-    return -1;
-  }
-#endif
+  TTK_ABORT_KK(constraints_ == nullptr, "wrong constraints scalar field", -1);
 
   if(constraints_->IsA("vtkDoubleArray")) {
-    OutputScalarFieldType = HarmonicFieldType::Double;
+    OutputScalarFieldType = FieldType::DOUBLE;
   } else if(constraints_->IsA("vtkFloatArray")) {
-    OutputScalarFieldType = HarmonicFieldType::Float;
+    OutputScalarFieldType = FieldType::FLOAT;
   } else {
     return -2;
   }
@@ -112,133 +80,84 @@ int ttkHarmonicField::getConstraints(vtkPointSet *input) {
   return 0;
 }
 
-int ttkHarmonicField::doIt(std::vector<vtkDataSet *> &inputs,
-                           std::vector<vtkDataSet *> &outputs) {
+int ttkHarmonicField::RequestData(vtkInformation *request,
+                                  vtkInformationVector **inputVector,
+                                  vtkInformationVector *outputVector) {
 
-  ttk::Memory m;
+  const auto domain = vtkDataSet::GetData(inputVector[0]);
+  const auto identifiers = vtkPointSet::GetData(inputVector[1]);
+  auto output = vtkDataSet::GetData(outputVector);
+  auto triangulation = ttkAlgorithm::GetTriangulation(domain);
 
-  vtkDataSet *domain = vtkDataSet::SafeDownCast(inputs[0]);
-  vtkPointSet *identifiers = vtkPointSet::SafeDownCast(inputs[1]);
-  vtkDataSet *output = vtkDataSet::SafeDownCast(outputs[0]);
+  TTK_ABORT_KK(triangulation == nullptr, "wrong triangulation", -1);
 
-  int res = 0;
+  this->preconditionTriangulation(*triangulation, UseCotanWeights);
 
-  // set this early, since it should trigger some triangulation pre-processing
-  harmonicField_.setUseCotanWeights(UseCotanWeights);
+  int res = this->getIdentifiers(identifiers);
 
-  res += getTriangulation(domain);
+  TTK_ABORT_KK(res != 0, "wrong identifiers", -2);
 
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(res != 0) {
-    cerr << "[ttkHarmonicField] Error: wrong triangulation." << endl;
-    return -1;
-  }
-#endif
+  res += this->getConstraints(identifiers);
 
-  res += getIdentifiers(identifiers);
+  TTK_ABORT_KK(res != 0, "wrong constraints", -2);
 
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(res != 0) {
-    cerr << "[ttkHarmonicField] Error: wrong identifiers." << endl;
-    return -2;
-  }
-#endif
+  const auto numberOfPointsInDomain = domain->GetNumberOfPoints();
 
-  res += getConstraints(identifiers);
+  TTK_ABORT_KK(numberOfPointsInDomain == 0, "domain has no points", -3);
 
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(res != 0) {
-    cerr << "[ttkHarmonicField] Error: wrong constraints." << endl;
-    return -2;
-  }
-#endif
+  const auto numberOfPointsInSources = identifiers->GetNumberOfPoints();
 
-  const ttk::SimplexId numberOfPointsInDomain = domain->GetNumberOfPoints();
-
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(numberOfPointsInDomain == 0) {
-    cerr << "[ttkHarmonicField] Error: domain has no points." << endl;
-    return -3;
-  }
-#endif
-
-  const ttk::SimplexId numberOfPointsInSources
-    = identifiers->GetNumberOfPoints();
-
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(numberOfPointsInSources == 0) {
-    cerr << "[ttkHarmonicField] Error: sources have no points." << endl;
-    return -4;
-  }
-#endif
-
-  harmonicField_.setVertexNumber(numberOfPointsInDomain);
-  harmonicField_.setConstraintNumber(numberOfPointsInSources);
-  harmonicField_.setSources(identifiers_->GetVoidPointer(0));
-  harmonicField_.setConstraints(constraints_->GetVoidPointer(0));
-  harmonicField_.setSolvingMethod(SolvingMethod);
-  harmonicField_.setLogAlpha(LogAlpha);
+  TTK_ABORT_KK(numberOfPointsInSources == 0, "sources has no points", -3);
 
   vtkSmartPointer<vtkDataArray> harmonicScalarField{};
 
   switch(OutputScalarFieldType) {
-    case HarmonicFieldType::Float:
+    case FieldType::FLOAT:
       harmonicScalarField = vtkSmartPointer<vtkFloatArray>::New();
       break;
-    case HarmonicFieldType::Double:
+    case FieldType::DOUBLE:
       harmonicScalarField = vtkSmartPointer<vtkDoubleArray>::New();
       break;
     default:
-#ifndef TTK_ENABLE_KAMIKAZE
-      cerr << "[ttkHarmonicField] Error: Unknown scalar field type" << endl;
+      this->printErr("Unknown scalar field type");
       return -7;
-#endif // TTK_ENABLE_KAMIKAZE
       break;
   }
 
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(harmonicScalarField == nullptr) {
-    cerr << "[ttkHarmonicField] Error: vtkArray allocation problem." << endl;
-    return -8;
-  }
-#endif
+  TTK_ABORT_KK(
+    harmonicScalarField == nullptr, "vtkArray allocation problem", -8);
 
   harmonicScalarField->SetNumberOfComponents(1);
   harmonicScalarField->SetNumberOfTuples(numberOfPointsInDomain);
   harmonicScalarField->SetName(OutputScalarFieldName.data());
 
-  harmonicField_.setOutputScalarFieldPointer(
-    harmonicScalarField->GetVoidPointer(0));
-
   switch(OutputScalarFieldType) {
-    case HarmonicFieldType::Float:
-      res += harmonicField_.execute<float>();
+    case FieldType::FLOAT:
+      res += this->execute<float>(
+        *triangulation, numberOfPointsInSources,
+        static_cast<ttk::SimplexId *>(identifiers_->GetVoidPointer(0)),
+        static_cast<float *>(constraints_->GetVoidPointer(0)),
+        static_cast<float *>(harmonicScalarField->GetVoidPointer(0)),
+        UseCotanWeights, SolvingMethod, LogAlpha);
       break;
-    case HarmonicFieldType::Double:
-      res += harmonicField_.execute<double>();
+    case FieldType::DOUBLE:
+      res += this->execute<double>(
+        *triangulation, numberOfPointsInSources,
+        static_cast<ttk::SimplexId *>(identifiers_->GetVoidPointer(0)),
+        static_cast<double *>(constraints_->GetVoidPointer(0)),
+        static_cast<double *>(harmonicScalarField->GetVoidPointer(0)),
+        UseCotanWeights, SolvingMethod, LogAlpha);
       break;
     default:
       break;
   }
 
-#ifndef TTK_ENABLE_KAMIKAZE
-  // something wrong in base/HarmonicField
-  if(res != 0) {
-    cerr << "[ttkHarmonicField] HarmonicField.execute() "
-            "error code: "
-         << res << endl;
-    return -9;
-  }
-#endif
+  TTK_ABORT_KK(
+    res != 0, "HarmonicField execute() error code: " + std::to_string(res), -9);
 
   // update result
   output->ShallowCopy(domain);
   output->GetPointData()->AddArray(harmonicScalarField);
 
-  std::stringstream msg;
-  msg << "[ttkHarmonicField] Memory usage: " << m.getElapsedUsage() << " MB."
-      << endl;
-  dMsg(cout, msg.str(), memoryMsg);
-
-  return 0;
+  return 1;
 }
