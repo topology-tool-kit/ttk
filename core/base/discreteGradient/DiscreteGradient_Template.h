@@ -552,9 +552,27 @@ int DiscreteGradient::setCriticalPoints(
   std::vector<SimplexId> numberOfCriticalPointsByDimension(
     numberOfDimensions, 0);
 
+  const auto nCritPoints = criticalPoints.size();
+
+  outputCriticalPoints_points_->reserve(3 * nCritPoints);
+  if(outputCriticalPoints_points_cellDimensions_) {
+    outputCriticalPoints_points_cellDimensions_->reserve(nCritPoints);
+  }
+  if(outputCriticalPoints_points_cellIds_) {
+    outputCriticalPoints_points_cellIds_->reserve(nCritPoints);
+  }
+  if(outputCriticalPoints_points_cellScalars) {
+    outputCriticalPoints_points_cellScalars->reserve(nCritPoints);
+  }
+  if(outputCriticalPoints_points_isOnBoundary_) {
+    outputCriticalPoints_points_isOnBoundary_->reserve(nCritPoints);
+  }
+  if(outputCriticalPoints_points_PLVertexIdentifiers_) {
+    outputCriticalPoints_points_PLVertexIdentifiers_->reserve(nCritPoints);
+  }
+
   // for all critical cells
-  const SimplexId numberOfCriticalPoints = criticalPoints.size();
-  for(SimplexId i = 0; i < numberOfCriticalPoints; ++i) {
+  for(SimplexId i = 0; i < nCritPoints; ++i) {
     const Cell &cell = criticalPoints[i];
     const int cellDim = cell.dim_;
     const SimplexId cellId = cell.id_;
@@ -628,9 +646,30 @@ int DiscreteGradient::setAugmentedCriticalPoints(
   std::vector<SimplexId> numberOfCriticalPointsByDimension(
     numberOfDimensions, 0);
 
+  const auto nCritPoints = criticalPoints.size();
+
+  outputCriticalPoints_points_->reserve(3 * nCritPoints);
+  if(outputCriticalPoints_points_cellDimensions_) {
+    outputCriticalPoints_points_cellDimensions_->reserve(nCritPoints);
+  }
+  if(outputCriticalPoints_points_cellIds_) {
+    outputCriticalPoints_points_cellIds_->reserve(nCritPoints);
+  }
+  if(outputCriticalPoints_points_cellScalars) {
+    outputCriticalPoints_points_cellScalars->reserve(nCritPoints);
+  }
+  if(outputCriticalPoints_points_isOnBoundary_) {
+    outputCriticalPoints_points_isOnBoundary_->reserve(nCritPoints);
+  }
+  if(outputCriticalPoints_points_PLVertexIdentifiers_) {
+    outputCriticalPoints_points_PLVertexIdentifiers_->reserve(nCritPoints);
+  }
+  if(outputCriticalPoints_points_manifoldSize_) {
+    outputCriticalPoints_points_manifoldSize_->reserve(nCritPoints);
+  }
+
   // for all critical cells
-  const SimplexId numberOfCriticalPoints = criticalPoints.size();
-  for(SimplexId i = 0; i < numberOfCriticalPoints; ++i) {
+  for(SimplexId i = 0; i < nCritPoints; ++i) {
     const Cell &cell = criticalPoints[i];
     const int cellDim = cell.dim_;
     const SimplexId cellId = cell.id_;
