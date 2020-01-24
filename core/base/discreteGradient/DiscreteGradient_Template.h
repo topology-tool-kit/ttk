@@ -554,25 +554,28 @@ int DiscreteGradient::setCriticalPoints(
 
   const auto nCritPoints = criticalPoints.size();
 
-  outputCriticalPoints_points_->reserve(3 * nCritPoints);
+  outputCriticalPoints_points_->resize(3 * nCritPoints);
   if(outputCriticalPoints_points_cellDimensions_) {
-    outputCriticalPoints_points_cellDimensions_->reserve(nCritPoints);
+    outputCriticalPoints_points_cellDimensions_->resize(nCritPoints);
   }
   if(outputCriticalPoints_points_cellIds_) {
-    outputCriticalPoints_points_cellIds_->reserve(nCritPoints);
+    outputCriticalPoints_points_cellIds_->resize(nCritPoints);
   }
   if(outputCriticalPoints_points_cellScalars) {
-    outputCriticalPoints_points_cellScalars->reserve(nCritPoints);
+    outputCriticalPoints_points_cellScalars->resize(nCritPoints);
   }
   if(outputCriticalPoints_points_isOnBoundary_) {
-    outputCriticalPoints_points_isOnBoundary_->reserve(nCritPoints);
+    outputCriticalPoints_points_isOnBoundary_->resize(nCritPoints);
   }
   if(outputCriticalPoints_points_PLVertexIdentifiers_) {
-    outputCriticalPoints_points_PLVertexIdentifiers_->reserve(nCritPoints);
+    outputCriticalPoints_points_PLVertexIdentifiers_->resize(nCritPoints);
   }
 
   // for all critical cells
-  for(SimplexId i = 0; i < nCritPoints; ++i) {
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+  for(size_t i = 0; i < nCritPoints; ++i) {
     const Cell &cell = criticalPoints[i];
     const int cellDim = cell.dim_;
     const SimplexId cellId = cell.id_;
@@ -584,25 +587,25 @@ int DiscreteGradient::setCriticalPoints(
     const auto scalar = scalarMax<dataType>(cell, scalars);
     const char isOnBoundary = isBoundary(cell);
 
-    outputCriticalPoints_points_->push_back(incenter[0]);
-    outputCriticalPoints_points_->push_back(incenter[1]);
-    outputCriticalPoints_points_->push_back(incenter[2]);
+    (*outputCriticalPoints_points_)[3 * i] = incenter[0];
+    (*outputCriticalPoints_points_)[3 * i + 1] = incenter[1];
+    (*outputCriticalPoints_points_)[3 * i + 2] = incenter[2];
 
     if(outputCriticalPoints_points_cellDimensions_) {
-      outputCriticalPoints_points_cellDimensions_->push_back(cellDim);
+      (*outputCriticalPoints_points_cellDimensions_)[i] = cellDim;
     }
     if(outputCriticalPoints_points_cellIds_) {
-      outputCriticalPoints_points_cellIds_->push_back(cellId);
+      (*outputCriticalPoints_points_cellIds_)[i] = cellId;
     }
     if(outputCriticalPoints_points_cellScalars) {
-      outputCriticalPoints_points_cellScalars->push_back(scalar);
+      (*outputCriticalPoints_points_cellScalars)[i] = scalar;
     }
     if(outputCriticalPoints_points_isOnBoundary_) {
-      outputCriticalPoints_points_isOnBoundary_->push_back(isOnBoundary);
+      (*outputCriticalPoints_points_isOnBoundary_)[i] = isOnBoundary;
     }
     if(outputCriticalPoints_points_PLVertexIdentifiers_) {
       auto vertId = getCellGreaterVertex<dataType, idType>(cell);
-      outputCriticalPoints_points_PLVertexIdentifiers_->push_back(vertId);
+      (*outputCriticalPoints_points_PLVertexIdentifiers_)[i] = vertId;
     }
 
     (*outputCriticalPoints_numberOfPoints_)++;

@@ -1047,10 +1047,13 @@ int DiscreteGradient::setManifoldSize(
   const auto nCritPoints = criticalPoints.size();
 
   if(outputCriticalPoints_points_manifoldSize_) {
-    outputCriticalPoints_points_manifoldSize_->reserve(nCritPoints);
+    outputCriticalPoints_points_manifoldSize_->resize(nCritPoints);
 
     // for all critical cells
-    for(SimplexId i = 0; i < nCritPoints; ++i) {
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_) schedule(dynamic)
+#endif // TTK_ENABLE_OPENMP
+    for(size_t i = 0; i < nCritPoints; ++i) {
       const Cell &cell = criticalPoints[i];
       const int cellDim = cell.dim_;
       const SimplexId cellId = cell.id_;
@@ -1068,7 +1071,7 @@ int DiscreteGradient::setManifoldSize(
             ascendingManifold, ascendingManifold + numberOfVertices_, seedId);
         }
       }
-      outputCriticalPoints_points_manifoldSize_->push_back(manifoldSize);
+      (*outputCriticalPoints_points_manifoldSize_)[i] = manifoldSize;
     }
   }
 
