@@ -1038,6 +1038,43 @@ int DiscreteGradient::getCriticalPointMap(
   return 0;
 }
 
+int DiscreteGradient::setManifoldSize(
+  const std::vector<Cell> &criticalPoints,
+  const std::vector<SimplexId> &maxSeeds,
+  const SimplexId *const ascendingManifold,
+  const SimplexId *const descendingManifold) const {
+
+  const auto nCritPoints = criticalPoints.size();
+
+  if(outputCriticalPoints_points_manifoldSize_) {
+    outputCriticalPoints_points_manifoldSize_->reserve(nCritPoints);
+
+    // for all critical cells
+    for(SimplexId i = 0; i < nCritPoints; ++i) {
+      const Cell &cell = criticalPoints[i];
+      const int cellDim = cell.dim_;
+      const SimplexId cellId = cell.id_;
+
+      SimplexId manifoldSize = 0;
+      if(cellDim == 0) {
+        const SimplexId seedId = descendingManifold[cellId];
+        manifoldSize = std::count(
+          descendingManifold, descendingManifold + numberOfVertices_, seedId);
+      } else if(cellDim == dimensionality_) {
+        auto ite = std::find(maxSeeds.begin(), maxSeeds.end(), cellId);
+        if(ite != maxSeeds.end()) {
+          const SimplexId seedId = std::distance(maxSeeds.begin(), ite);
+          manifoldSize = std::count(
+            ascendingManifold, ascendingManifold + numberOfVertices_, seedId);
+        }
+      }
+      outputCriticalPoints_points_manifoldSize_->push_back(manifoldSize);
+    }
+  }
+
+  return 0;
+}
+
 int DiscreteGradient::setGradientGlyphs(
   SimplexId &numberOfPoints,
   std::vector<float> &points,

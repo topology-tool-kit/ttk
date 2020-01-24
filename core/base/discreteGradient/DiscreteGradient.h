@@ -1081,19 +1081,12 @@ tetra identifier.
       int setCriticalPoints() const;
 
       /**
-       * Build the geometric embedding of the given STL vector of cells and add
-       * global information as scalar fields.
-       * The output data pointers are modified accordingly. This
-       * function needs the following internal pointers to be set:
-       * outputCriticalPoints_numberOfPoints_
-       * outputCriticalPoints_points_
-       * inputScalarField_
+       * Compute manifold size for critical extrema
        */
-      template <typename dataType, typename idType>
-      int setAugmentedCriticalPoints(const std::vector<Cell> &criticalPoints,
-                                     std::vector<SimplexId> &maxSeeds,
-                                     SimplexId *ascendingManifold,
-                                     SimplexId *descendingManifold) const;
+      int setManifoldSize(const std::vector<Cell> &criticalPoints,
+                          const std::vector<SimplexId> &maxSeeds,
+                          const SimplexId *const ascendingManifold,
+                          const SimplexId *const descendingManifold) const;
 
       /**
        * Build the glyphs representing the discrete gradient vector field.
