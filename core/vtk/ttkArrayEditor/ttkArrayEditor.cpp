@@ -177,7 +177,6 @@ int ttkArrayEditor::RequestData(vtkInformation *request,
 
   // Pass Input to Output
   auto target = vtkDataObject::GetData(inputVector[0], 0);
-  auto source = vtkDataObject::GetData(inputVector[1], 0);
 
   auto output = vtkDataObject::GetData(outputVector, 0);
 
@@ -340,8 +339,6 @@ int ttkArrayEditor::RequestData(vtkInformation *request,
                    0, ttk::debug::LineMode::REPLACE);
 
     if(selection.size() > 0) {
-      auto outputArraysByAttributeType = getarraysByAttributeType(output);
-
       for(size_t i = 0; i < selection.size(); i++) {
         auto &s = selection[i];
 

@@ -126,9 +126,6 @@ int ttk::DepthImageBasedGeometryApproximation::execute(
   camUpTrue[1] /= temp;
   camUpTrue[2] /= temp;
 
-  // Compute Index Map
-  size_t n = resolutionST[0] * resolutionST[1];
-
   // -------------------------------------------------------------------------
   // Create Vertices
   // -------------------------------------------------------------------------

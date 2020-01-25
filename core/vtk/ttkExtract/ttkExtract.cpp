@@ -196,7 +196,7 @@ int ttkExtract::RequestData(vtkInformation *request,
 
       for(size_t i = 0; i < nValues; i++) {
         size_t blockIndex = (size_t)valuesAsD[i];
-        if(0 <= blockIndex && blockIndex < inputAsMB->GetNumberOfBlocks()) {
+        if(blockIndex < inputAsMB->GetNumberOfBlocks()) {
           auto block = inputAsMB->GetBlock(blockIndex);
           auto copy
             = vtkSmartPointer<vtkDataObject>::Take(block->NewInstance());
@@ -216,7 +216,7 @@ int ttkExtract::RequestData(vtkInformation *request,
       }
 
       size_t blockIndex = (size_t)valuesAsD[0];
-      if(0 <= blockIndex && blockIndex < inputAsMB->GetNumberOfBlocks()) {
+      if(blockIndex < inputAsMB->GetNumberOfBlocks()) {
         auto block = inputAsMB->GetBlock(blockIndex);
         if(block->GetDataObjectType() != this->GetOutputType()) {
           this->printErr("BlockType does not match OutputType");
