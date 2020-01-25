@@ -546,13 +546,12 @@ int DiscreteGradient::setCriticalPoints(
     = static_cast<std::vector<dataType> *>(
       outputCriticalPoints_points_cellScalars_);
 
-  (*outputCriticalPoints_numberOfPoints_) = 0;
-
   const int numberOfDimensions = getNumberOfDimensions();
   std::vector<SimplexId> numberOfCriticalPointsByDimension(
     numberOfDimensions, 0);
 
   const auto nCritPoints = criticalPoints.size();
+  (*outputCriticalPoints_numberOfPoints_) = nCritPoints;
 
   outputCriticalPoints_points_->resize(3 * nCritPoints);
   if(outputCriticalPoints_points_cellDimensions_) {
@@ -607,8 +606,6 @@ int DiscreteGradient::setCriticalPoints(
       auto vertId = getCellGreaterVertex<dataType, idType>(cell);
       (*outputCriticalPoints_points_PLVertexIdentifiers_)[i] = vertId;
     }
-
-    (*outputCriticalPoints_numberOfPoints_)++;
   }
 
   {
