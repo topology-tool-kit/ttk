@@ -1046,32 +1046,43 @@ int DiscreteGradient::setManifoldSize(
   const SimplexId *const descendingManifold) const {
 
   const auto nCritPoints = criticalPoints.size();
+  const auto nDimensions = getNumberOfDimensions();
 
-  if(outputCriticalPoints_points_manifoldSize_) {
-    outputCriticalPoints_points_manifoldSize_->resize(nCritPoints);
+  if(outputCriticalPoints_points_manifoldSize_ == nullptr) {
+    return 1;
+  }
 
-    // for all critical cells
+  outputCriticalPoints_points_manifoldSize_->resize(nCritPoints, 0);
+
+  // minima
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_) schedule(dynamic)
+#pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
-    for(size_t i = 0; i < nCritPoints; ++i) {
-      const Cell &cell = criticalPoints[i];
-      const int cellDim = cell.dim_;
-      const SimplexId cellId = cell.id_;
+  for(size_t i = 0; i < nCriticalPointsByDim[0]; ++i) {
+    const Cell &cell = criticalPoints[i];
+    const SimplexId seedId = descendingManifold[cell.id_];
+    const SimplexId manifoldSize = std::count(
+      descendingManifold, descendingManifold + numberOfVertices_, seedId);
+    (*outputCriticalPoints_points_manifoldSize_)[i] = manifoldSize;
+  }
 
-      SimplexId manifoldSize = 0;
-      if(cellDim == 0) {
-        const SimplexId seedId = descendingManifold[cellId];
-        manifoldSize = std::count(
-          descendingManifold, descendingManifold + numberOfVertices_, seedId);
-      } else if(cellDim == dimensionality_) {
-        auto ite = std::find(maxSeeds.begin(), maxSeeds.end(), cellId);
-        if(ite != maxSeeds.end()) {
-          const SimplexId seedId = std::distance(maxSeeds.begin(), ite);
-          manifoldSize = std::count(
-            ascendingManifold, ascendingManifold + numberOfVertices_, seedId);
-        }
-      }
+  // index of first maximum in critical points array
+  size_t nFirstMaximum{};
+  for(int i = 0; i < nDimensions - 1; ++i) {
+    nFirstMaximum += nCriticalPointsByDim[i];
+  }
+
+  // maxima
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+  for(size_t i = nFirstMaximum; i < nCritPoints; ++i) {
+    const Cell &cell = criticalPoints[i];
+    auto ite = std::find(maxSeeds.begin(), maxSeeds.end(), cell.id_);
+    if(ite != maxSeeds.end()) {
+      const SimplexId seedId = std::distance(maxSeeds.begin(), ite);
+      const SimplexId manifoldSize = std::count(
+        ascendingManifold, ascendingManifold + numberOfVertices_, seedId);
       (*outputCriticalPoints_points_manifoldSize_)[i] = manifoldSize;
     }
   }
