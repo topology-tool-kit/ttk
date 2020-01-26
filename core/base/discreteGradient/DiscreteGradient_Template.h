@@ -520,7 +520,8 @@ inline ttk::SimplexId
 
 template <typename dataType, typename idType>
 int DiscreteGradient::setCriticalPoints(
-  const std::vector<Cell> &criticalPoints) const {
+  const std::vector<Cell> &criticalPoints,
+  std::vector<size_t> &nCriticalPointsByDim) const {
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!outputCriticalPoints_numberOfPoints_) {
     std::cerr << "[DiscreteGradient] critical points' pointer to "
@@ -546,12 +547,17 @@ int DiscreteGradient::setCriticalPoints(
     = static_cast<std::vector<dataType> *>(
       outputCriticalPoints_points_cellScalars_);
 
-  const int numberOfDimensions = getNumberOfDimensions();
-  std::vector<SimplexId> numberOfCriticalPointsByDimension(
-    numberOfDimensions, 0);
-
   const auto nCritPoints = criticalPoints.size();
   (*outputCriticalPoints_numberOfPoints_) = nCritPoints;
+
+  const int numberOfDimensions = getNumberOfDimensions();
+  nCriticalPointsByDim.resize(numberOfDimensions, 0);
+
+  // sequential loop over critical points
+  for(size_t i = 0; i < nCritPoints; ++i) {
+    const Cell &cell = criticalPoints[i];
+    nCriticalPointsByDim[cell.dim_]++;
+  }
 
   outputCriticalPoints_points_->resize(3 * nCritPoints);
   if(outputCriticalPoints_points_cellDimensions_) {
@@ -578,7 +584,6 @@ int DiscreteGradient::setCriticalPoints(
     const Cell &cell = criticalPoints[i];
     const int cellDim = cell.dim_;
     const SimplexId cellId = cell.id_;
-    numberOfCriticalPointsByDimension[cellDim]++;
 
     float incenter[3];
     getCellIncenter(cell, incenter);
@@ -611,8 +616,8 @@ int DiscreteGradient::setCriticalPoints(
   {
     std::stringstream msg;
     for(int i = 0; i < numberOfDimensions; ++i) {
-      msg << "[DiscreteGradient] " << numberOfCriticalPointsByDimension[i]
-          << " " << i << "-cell(s)." << std::endl;
+      msg << "[DiscreteGradient] " << nCriticalPointsByDim[i] << " " << i
+          << "-cell(s)." << std::endl;
     }
     dMsg(std::cout, msg.str(), infoMsg);
   }
@@ -624,8 +629,8 @@ template <typename dataType, typename idType>
 int DiscreteGradient::setCriticalPoints() const {
   std::vector<Cell> criticalPoints;
   getCriticalPoints(criticalPoints);
-
-  setCriticalPoints<dataType, idType>(criticalPoints);
+  std::vector<size_t> nCriticalPointsByDim{};
+  setCriticalPoints<dataType, idType>(criticalPoints, nCriticalPointsByDim);
 
   return 0;
 }

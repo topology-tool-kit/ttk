@@ -1040,6 +1040,7 @@ int DiscreteGradient::getCriticalPointMap(
 
 int DiscreteGradient::setManifoldSize(
   const std::vector<Cell> &criticalPoints,
+  const std::vector<size_t> &nCriticalPointsByDim,
   const std::vector<SimplexId> &maxSeeds,
   const SimplexId *const ascendingManifold,
   const SimplexId *const descendingManifold) const {

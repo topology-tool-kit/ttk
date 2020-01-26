@@ -1071,7 +1071,8 @@ tetra identifier.
        * inputScalarField_
        */
       template <typename dataType, typename idType>
-      int setCriticalPoints(const std::vector<Cell> &criticalPoints) const;
+      int setCriticalPoints(const std::vector<Cell> &criticalPoints,
+                            std::vector<size_t> &nCriticalPointsByDim) const;
 
       /**
        * Detect the critical points and build their geometric embedding.
@@ -1084,6 +1085,7 @@ tetra identifier.
        * Compute manifold size for critical extrema
        */
       int setManifoldSize(const std::vector<Cell> &criticalPoints,
+                          const std::vector<size_t> &nCriticalPointsByDim,
                           const std::vector<SimplexId> &maxSeeds,
                           const SimplexId *const ascendingManifold,
                           const SimplexId *const descendingManifold) const;
