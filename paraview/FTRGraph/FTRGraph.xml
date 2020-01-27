@@ -92,7 +92,7 @@
 
         <IntVectorProperty
            name="ArcSampling"
-           label="Arc samplig"
+           label="Arc Sampling"
            command="SetSampling"
            number_of_elements="1"
            default_values="0">
