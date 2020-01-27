@@ -74,10 +74,13 @@ int ttkIcospheresFromPoints::RequestData(vtkInformation *request,
     auto inputPD = input->GetPointData();
     for(size_t i = 0, n = inputPD->GetNumberOfArrays(); i < n; i++) {
       auto oldArray = vtkDataArray::SafeDownCast(inputPD->GetAbstractArray(i));
-      std::string oldArrayName(oldArray->GetName());
-      if(!oldArray
-         || (this->GetComputeNormals() && oldArrayName.compare("Normals") == 0))
+      if(!oldArray || oldArray->GetName() == nullptr) {
         continue;
+      }
+      std::string oldArrayName(oldArray->GetName());
+      if(this->GetComputeNormals() && oldArrayName.compare("Normals") == 0) {
+        continue;
+      }
       auto newArray
         = vtkSmartPointer<vtkDataArray>::Take(oldArray->NewInstance());
       size_t nComponents = oldArray->GetNumberOfComponents();
