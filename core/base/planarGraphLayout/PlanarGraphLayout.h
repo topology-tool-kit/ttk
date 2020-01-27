@@ -44,7 +44,7 @@ namespace ttk {
       float *layout,
 
       // Input
-      const idType *connectivityList,
+      const LongSimplexId *connectivityList,
       const size_t &nPoints,
       const size_t &nEdges,
       const dataType *pointSequences,
@@ -59,7 +59,7 @@ namespace ttk {
       std::vector<size_t> &edgeIndicies,
 
       // Input
-      const idType *connectivityList,
+      const LongSimplexId *connectivityList,
       const size_t &nPoints,
       const size_t &nEdges,
       const idType &level,
@@ -71,7 +71,7 @@ namespace ttk {
       std::string &dotString,
 
       // Input
-      const idType *connectivityList,
+      const LongSimplexId *connectivityList,
       const dataType *pointSequences,
       const float *sizes,
       const idType *branches,
@@ -85,7 +85,7 @@ namespace ttk {
       float *layout,
 
       // Input
-      const idType *connectivityList,
+      const LongSimplexId *connectivityList,
       const size_t &nPoints,
       const size_t &nEdges,
       const float *sizes,
@@ -113,7 +113,7 @@ int ttk::PlanarGraphLayout::extractLevel(
   std::vector<size_t> &edgeIndicies,
 
   // Input
-  const idType *connectivityList,
+  const LongSimplexId *connectivityList,
   const size_t &nPoints,
   const size_t &nEdges,
   const idType &level,
@@ -158,7 +158,7 @@ int ttk::PlanarGraphLayout::computeDotString(
   std::string &dotString,
 
   // Input
-  const idType *connectivityList,
+  const LongSimplexId *connectivityList,
   const dataType *pointSequences,
   const float *sizes,
   const idType *branches,
@@ -273,7 +273,7 @@ int ttk::PlanarGraphLayout::computeSlots(
   float *layout,
 
   // Input
-  const idType *connectivityList,
+  const LongSimplexId *connectivityList,
   const size_t &nPoints,
   const size_t &nEdges,
   const float *sizes,
@@ -375,7 +375,7 @@ int ttk::PlanarGraphLayout::execute(
   float *layout,
 
   // Input
-  const idType *connectivityList,
+  const LongSimplexId *connectivityList,
   const size_t &nPoints,
   const size_t &nEdges,
   const dataType *pointSequences,
