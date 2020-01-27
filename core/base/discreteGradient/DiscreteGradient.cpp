@@ -1054,6 +1054,12 @@ int DiscreteGradient::setManifoldSize(
 
   outputCriticalPoints_points_manifoldSize_->resize(nCritPoints, 0);
 
+  // pre-compute size of descending manifold cells
+  std::map<SimplexId, size_t> descendingCellsSize{};
+  for(SimplexId i = 0; i < numberOfVertices_; ++i) {
+    descendingCellsSize[descendingManifold[i]]++;
+  }
+
   // minima
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
@@ -1061,8 +1067,7 @@ int DiscreteGradient::setManifoldSize(
   for(size_t i = 0; i < nCriticalPointsByDim[0]; ++i) {
     const Cell &cell = criticalPoints[i];
     const SimplexId seedId = descendingManifold[cell.id_];
-    const SimplexId manifoldSize = std::count(
-      descendingManifold, descendingManifold + numberOfVertices_, seedId);
+    const SimplexId manifoldSize = descendingCellsSize[seedId];
     (*outputCriticalPoints_points_manifoldSize_)[i] = manifoldSize;
   }
 
@@ -1072,17 +1077,27 @@ int DiscreteGradient::setManifoldSize(
     nFirstMaximum += nCriticalPointsByDim[i];
   }
 
+  // pre-compute size of ascending manifold cells
+  std::map<SimplexId, size_t> ascendingCellsSize{};
+  for(SimplexId i = 0; i < numberOfVertices_; ++i) {
+    ascendingCellsSize[ascendingManifold[i]]++;
+  }
+
+  // pre-compute maximum SimplexId -> index in maxSeeds
+  std::map<SimplexId, size_t> seedsPos{};
+  for(size_t i = 0; i < maxSeeds.size(); ++i) {
+    seedsPos[maxSeeds[i]] = i;
+  }
+
   // maxima
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
   for(size_t i = nFirstMaximum; i < nCritPoints; ++i) {
     const Cell &cell = criticalPoints[i];
-    auto ite = std::find(maxSeeds.begin(), maxSeeds.end(), cell.id_);
-    if(ite != maxSeeds.end()) {
-      const SimplexId seedId = std::distance(maxSeeds.begin(), ite);
-      const SimplexId manifoldSize = std::count(
-        ascendingManifold, ascendingManifold + numberOfVertices_, seedId);
+    if(seedsPos.find(cell.id_) != seedsPos.end()) {
+      const auto seedId = seedsPos[cell.id_];
+      const SimplexId manifoldSize = ascendingCellsSize[seedId];
       (*outputCriticalPoints_points_manifoldSize_)[i] = manifoldSize;
     }
   }
