@@ -17,4 +17,4 @@ install-debug
 install-release
 doc/html
 # project files specific to a local user
-CMakeLists.txt.user
+CMakeLists.txt.user*
