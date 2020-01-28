@@ -1038,6 +1038,73 @@ int DiscreteGradient::getCriticalPointMap(
   return 0;
 }
 
+int DiscreteGradient::setManifoldSize(
+  const std::vector<Cell> &criticalPoints,
+  const std::vector<size_t> &nCriticalPointsByDim,
+  const std::vector<SimplexId> &maxSeeds,
+  const SimplexId *const ascendingManifold,
+  const SimplexId *const descendingManifold) const {
+
+  const auto nCritPoints = criticalPoints.size();
+  const auto nDimensions = getNumberOfDimensions();
+
+  if(outputCriticalPoints_points_manifoldSize_ == nullptr) {
+    return 1;
+  }
+
+  outputCriticalPoints_points_manifoldSize_->resize(nCritPoints, 0);
+
+  // pre-compute size of descending manifold cells
+  std::map<SimplexId, size_t> descendingCellsSize{};
+  for(SimplexId i = 0; i < numberOfVertices_; ++i) {
+    descendingCellsSize[descendingManifold[i]]++;
+  }
+
+  // minima
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+  for(size_t i = 0; i < nCriticalPointsByDim[0]; ++i) {
+    const Cell &cell = criticalPoints[i];
+    const SimplexId seedId = descendingManifold[cell.id_];
+    const SimplexId manifoldSize = descendingCellsSize[seedId];
+    (*outputCriticalPoints_points_manifoldSize_)[i] = manifoldSize;
+  }
+
+  // index of first maximum in critical points array
+  size_t nFirstMaximum{};
+  for(int i = 0; i < nDimensions - 1; ++i) {
+    nFirstMaximum += nCriticalPointsByDim[i];
+  }
+
+  // pre-compute size of ascending manifold cells
+  std::map<SimplexId, size_t> ascendingCellsSize{};
+  for(SimplexId i = 0; i < numberOfVertices_; ++i) {
+    ascendingCellsSize[ascendingManifold[i]]++;
+  }
+
+  // pre-compute maximum SimplexId -> index in maxSeeds
+  std::map<SimplexId, size_t> seedsPos{};
+  for(size_t i = 0; i < maxSeeds.size(); ++i) {
+    seedsPos[maxSeeds[i]] = i;
+  }
+
+  // maxima
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+  for(size_t i = nFirstMaximum; i < nCritPoints; ++i) {
+    const Cell &cell = criticalPoints[i];
+    if(seedsPos.find(cell.id_) != seedsPos.end()) {
+      const auto seedId = seedsPos[cell.id_];
+      const SimplexId manifoldSize = ascendingCellsSize[seedId];
+      (*outputCriticalPoints_points_manifoldSize_)[i] = manifoldSize;
+    }
+  }
+
+  return 0;
+}
+
 int DiscreteGradient::setGradientGlyphs(
   SimplexId &numberOfPoints,
   std::vector<float> &points,

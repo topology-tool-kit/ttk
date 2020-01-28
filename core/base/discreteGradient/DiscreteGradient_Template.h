@@ -520,7 +520,8 @@ inline ttk::SimplexId
 
 template <typename dataType, typename idType>
 int DiscreteGradient::setCriticalPoints(
-  const std::vector<Cell> &criticalPoints) const {
+  const std::vector<Cell> &criticalPoints,
+  std::vector<size_t> &nCriticalPointsByDim) const {
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!outputCriticalPoints_numberOfPoints_) {
     std::cerr << "[DiscreteGradient] critical points' pointer to "
@@ -546,19 +547,43 @@ int DiscreteGradient::setCriticalPoints(
     = static_cast<std::vector<dataType> *>(
       outputCriticalPoints_points_cellScalars_);
 
-  (*outputCriticalPoints_numberOfPoints_) = 0;
+  const auto nCritPoints = criticalPoints.size();
+  (*outputCriticalPoints_numberOfPoints_) = nCritPoints;
 
   const int numberOfDimensions = getNumberOfDimensions();
-  std::vector<SimplexId> numberOfCriticalPointsByDimension(
-    numberOfDimensions, 0);
+  nCriticalPointsByDim.resize(numberOfDimensions, 0);
+
+  // sequential loop over critical points
+  for(size_t i = 0; i < nCritPoints; ++i) {
+    const Cell &cell = criticalPoints[i];
+    nCriticalPointsByDim[cell.dim_]++;
+  }
+
+  outputCriticalPoints_points_->resize(3 * nCritPoints);
+  if(outputCriticalPoints_points_cellDimensions_) {
+    outputCriticalPoints_points_cellDimensions_->resize(nCritPoints);
+  }
+  if(outputCriticalPoints_points_cellIds_) {
+    outputCriticalPoints_points_cellIds_->resize(nCritPoints);
+  }
+  if(outputCriticalPoints_points_cellScalars) {
+    outputCriticalPoints_points_cellScalars->resize(nCritPoints);
+  }
+  if(outputCriticalPoints_points_isOnBoundary_) {
+    outputCriticalPoints_points_isOnBoundary_->resize(nCritPoints);
+  }
+  if(outputCriticalPoints_points_PLVertexIdentifiers_) {
+    outputCriticalPoints_points_PLVertexIdentifiers_->resize(nCritPoints);
+  }
 
   // for all critical cells
-  const SimplexId numberOfCriticalPoints = criticalPoints.size();
-  for(SimplexId i = 0; i < numberOfCriticalPoints; ++i) {
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+  for(size_t i = 0; i < nCritPoints; ++i) {
     const Cell &cell = criticalPoints[i];
     const int cellDim = cell.dim_;
     const SimplexId cellId = cell.id_;
-    numberOfCriticalPointsByDimension[cellDim]++;
 
     float incenter[3];
     getCellIncenter(cell, incenter);
@@ -566,35 +591,33 @@ int DiscreteGradient::setCriticalPoints(
     const auto scalar = scalarMax<dataType>(cell, scalars);
     const char isOnBoundary = isBoundary(cell);
 
-    outputCriticalPoints_points_->push_back(incenter[0]);
-    outputCriticalPoints_points_->push_back(incenter[1]);
-    outputCriticalPoints_points_->push_back(incenter[2]);
+    (*outputCriticalPoints_points_)[3 * i] = incenter[0];
+    (*outputCriticalPoints_points_)[3 * i + 1] = incenter[1];
+    (*outputCriticalPoints_points_)[3 * i + 2] = incenter[2];
 
     if(outputCriticalPoints_points_cellDimensions_) {
-      outputCriticalPoints_points_cellDimensions_->push_back(cellDim);
+      (*outputCriticalPoints_points_cellDimensions_)[i] = cellDim;
     }
     if(outputCriticalPoints_points_cellIds_) {
-      outputCriticalPoints_points_cellIds_->push_back(cellId);
+      (*outputCriticalPoints_points_cellIds_)[i] = cellId;
     }
     if(outputCriticalPoints_points_cellScalars) {
-      outputCriticalPoints_points_cellScalars->push_back(scalar);
+      (*outputCriticalPoints_points_cellScalars)[i] = scalar;
     }
     if(outputCriticalPoints_points_isOnBoundary_) {
-      outputCriticalPoints_points_isOnBoundary_->push_back(isOnBoundary);
+      (*outputCriticalPoints_points_isOnBoundary_)[i] = isOnBoundary;
     }
     if(outputCriticalPoints_points_PLVertexIdentifiers_) {
       auto vertId = getCellGreaterVertex<dataType, idType>(cell);
-      outputCriticalPoints_points_PLVertexIdentifiers_->push_back(vertId);
+      (*outputCriticalPoints_points_PLVertexIdentifiers_)[i] = vertId;
     }
-
-    (*outputCriticalPoints_numberOfPoints_)++;
   }
 
   {
     std::stringstream msg;
     for(int i = 0; i < numberOfDimensions; ++i) {
-      msg << "[DiscreteGradient] " << numberOfCriticalPointsByDimension[i]
-          << " " << i << "-cell(s)." << std::endl;
+      msg << "[DiscreteGradient] " << nCriticalPointsByDim[i] << " " << i
+          << "-cell(s)." << std::endl;
     }
     dMsg(std::cout, msg.str(), infoMsg);
   }
@@ -606,91 +629,8 @@ template <typename dataType, typename idType>
 int DiscreteGradient::setCriticalPoints() const {
   std::vector<Cell> criticalPoints;
   getCriticalPoints(criticalPoints);
-
-  setCriticalPoints<dataType, idType>(criticalPoints);
-
-  return 0;
-}
-
-template <typename dataType, typename idType>
-int DiscreteGradient::setAugmentedCriticalPoints(
-  const std::vector<Cell> &criticalPoints,
-  std::vector<SimplexId> &maxSeeds,
-  SimplexId *ascendingManifold,
-  SimplexId *descendingManifold) const {
-  const auto *const scalars = static_cast<const dataType *>(inputScalarField_);
-  auto *outputCriticalPoints_points_cellScalars
-    = static_cast<std::vector<dataType> *>(
-      outputCriticalPoints_points_cellScalars_);
-  (*outputCriticalPoints_numberOfPoints_) = 0;
-
-  const int numberOfDimensions = getNumberOfDimensions();
-  std::vector<SimplexId> numberOfCriticalPointsByDimension(
-    numberOfDimensions, 0);
-
-  // for all critical cells
-  const SimplexId numberOfCriticalPoints = criticalPoints.size();
-  for(SimplexId i = 0; i < numberOfCriticalPoints; ++i) {
-    const Cell &cell = criticalPoints[i];
-    const int cellDim = cell.dim_;
-    const SimplexId cellId = cell.id_;
-    numberOfCriticalPointsByDimension[cellDim]++;
-
-    float incenter[3];
-    getCellIncenter(cell, incenter);
-
-    const dataType scalar = scalarMax<dataType>(cell, scalars);
-    const char isOnBoundary = isBoundary(cell);
-
-    outputCriticalPoints_points_->push_back(incenter[0]);
-    outputCriticalPoints_points_->push_back(incenter[1]);
-    outputCriticalPoints_points_->push_back(incenter[2]);
-
-    if(outputCriticalPoints_points_cellDimensions_) {
-      outputCriticalPoints_points_cellDimensions_->push_back(cellDim);
-    }
-    if(outputCriticalPoints_points_cellIds_) {
-      outputCriticalPoints_points_cellIds_->push_back(cellId);
-    }
-    if(outputCriticalPoints_points_cellScalars) {
-      outputCriticalPoints_points_cellScalars->push_back(scalar);
-    }
-    if(outputCriticalPoints_points_isOnBoundary_) {
-      outputCriticalPoints_points_isOnBoundary_->push_back(isOnBoundary);
-    }
-    if(outputCriticalPoints_points_PLVertexIdentifiers_) {
-      auto vertId = getCellGreaterVertex<dataType, idType>(cell);
-      outputCriticalPoints_points_PLVertexIdentifiers_->push_back(vertId);
-    }
-
-    if(outputCriticalPoints_points_manifoldSize_) {
-      SimplexId manifoldSize = 0;
-      if(cellDim == 0) {
-        const SimplexId seedId = descendingManifold[cellId];
-        manifoldSize = std::count(
-          descendingManifold, descendingManifold + numberOfVertices_, seedId);
-      } else if(cellDim == dimensionality_) {
-        auto ite = std::find(maxSeeds.begin(), maxSeeds.end(), cellId);
-        if(ite != maxSeeds.end()) {
-          const SimplexId seedId = std::distance(maxSeeds.begin(), ite);
-          manifoldSize = std::count(
-            ascendingManifold, ascendingManifold + numberOfVertices_, seedId);
-        }
-      }
-      outputCriticalPoints_points_manifoldSize_->push_back(manifoldSize);
-    }
-
-    (*outputCriticalPoints_numberOfPoints_)++;
-  }
-
-  {
-    std::stringstream msg;
-    for(int i = 0; i < numberOfDimensions; ++i) {
-      msg << "[DiscreteGradient] " << numberOfCriticalPointsByDimension[i]
-          << " " << i << "-cell(s)." << std::endl;
-    }
-    dMsg(std::cout, msg.str(), infoMsg);
-  }
+  std::vector<size_t> nCriticalPointsByDim{};
+  setCriticalPoints<dataType, idType>(criticalPoints, nCriticalPointsByDim);
 
   return 0;
 }

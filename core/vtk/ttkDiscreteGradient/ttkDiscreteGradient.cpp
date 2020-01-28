@@ -188,19 +188,6 @@ int ttkDiscreteGradient::dispatch(vtkUnstructuredGrid *outputCriticalPoints) {
   }
 #endif
 
-  if(inputOffsets_->GetDataType() == VTK_INT)
-    ret = discreteGradient_.reverseGradient<VTK_TT, int>();
-  if(inputOffsets_->GetDataType() == VTK_ID_TYPE)
-    ret = discreteGradient_.reverseGradient<VTK_TT, vtkIdType>();
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(ret) {
-    cerr << "[ttkDiscreteGradient] Error : DiscreteGradient.reverseGradient() "
-            "error code : "
-         << ret << endl;
-    return -1;
-  }
-#endif
-
   // critical points
   {
     if(inputOffsets_->GetDataType() == VTK_INT)
