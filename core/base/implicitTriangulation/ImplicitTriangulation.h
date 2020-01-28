@@ -393,7 +393,192 @@ namespace ttk {
                      const SimplexId &yDim,
                      const SimplexId &zDim);
 
+    inline int preconditionVertexNeighborsInternal() override {
+      vertexPositions_.resize(vertexNumber_);
+      if(dimensionality_ == 1) {
+        vertexPositions_[0] = VertexPosition::LEFT_CORNER_1D;
+        for(SimplexId i = 1; i < vertexNumber_ - 1; ++i) {
+          vertexPositions_[i] = VertexPosition::CENTER_1D;
+        }
+        vertexPositions_[vertexNumber_ - 1] = VertexPosition::RIGHT_CORNER_1D;
+
+      } else if(dimensionality_ == 2) {
+        for(SimplexId i = 0; i < vertexNumber_; ++i) {
+          std::array<SimplexId, 2> p{};
+          vertexToPosition2d(i, p.data());
+
+          if(0 < p[0] and p[0] < nbvoxels_[Di_]) {
+            if(0 < p[1] and p[1] < nbvoxels_[Dj_])
+              vertexPositions_[i] = VertexPosition::CENTER_2D;
+            else if(p[1] == 0)
+              vertexPositions_[i] = VertexPosition::TOP_EDGE_2D; // ab
+            else
+              vertexPositions_[i] = VertexPosition::BOTTOM_EDGE_2D; // cd
+          } else if(p[0] == 0) {
+            if(0 < p[1] and p[1] < nbvoxels_[Dj_])
+              vertexPositions_[i] = VertexPosition::LEFT_EDGE_2D; // ac
+            else if(p[1] == 0)
+              vertexPositions_[i] = VertexPosition::TOP_LEFT_CORNER_2D; // a
+            else
+              vertexPositions_[i] = VertexPosition::BOTTOM_LEFT_CORNER_2D; // c
+          } else {
+            if(0 < p[1] and p[1] < nbvoxels_[Dj_])
+              vertexPositions_[i] = VertexPosition::RIGHT_EDGE_2D; // bd
+            else if(p[1] == 0)
+              vertexPositions_[i] = VertexPosition::TOP_RIGHT_CORNER_2D; // b
+            else
+              vertexPositions_[i] = VertexPosition::BOTTOM_RIGHT_CORNER_2D; // d
+          }
+        }
+
+      } else if(dimensionality_ == 3) {
+        for(SimplexId i = 0; i < vertexNumber_; ++i) {
+          std::array<SimplexId, 3> p{};
+          vertexToPosition(i, p.data());
+
+          if(0 < p[0] and p[0] < nbvoxels_[0]) {
+            if(0 < p[1] and p[1] < nbvoxels_[1]) {
+              if(0 < p[2] and p[2] < nbvoxels_[2])
+                vertexPositions_[i] = VertexPosition::CENTER_3D;
+              else if(p[2] == 0)
+                vertexPositions_[i] = VertexPosition::FRONT_FACE_3D; // abcd
+              else
+                vertexPositions_[i] = VertexPosition::BACK_FACE_3D; // efgh
+            } else if(p[1] == 0) {
+              if(0 < p[2] and p[2] < nbvoxels_[2])
+                vertexPositions_[i] = VertexPosition::TOP_FACE_3D; // abef
+              else if(p[2] == 0)
+                vertexPositions_[i] = VertexPosition::TOP_FRONT_EDGE_3D; // ab
+              else
+                vertexPositions_[i] = VertexPosition::TOP_BACK_EDGE_3D; // ef
+            } else {
+              if(0 < p[2] and p[2] < nbvoxels_[2])
+                vertexPositions_[i] = VertexPosition::BOTTOM_FACE_3D; // cdgh
+              else if(p[2] == 0)
+                vertexPositions_[i]
+                  = VertexPosition::BOTTOM_FRONT_EDGE_3D; // cd
+              else
+                vertexPositions_[i] = VertexPosition::BOTTOM_BACK_EDGE_3D; // gh
+            }
+          } else if(p[0] == 0) {
+            if(0 < p[1] and p[1] < nbvoxels_[1]) {
+              if(0 < p[2] and p[2] < nbvoxels_[2])
+                vertexPositions_[i] = VertexPosition::LEFT_FACE_3D; // aceg
+              else if(p[2] == 0)
+                vertexPositions_[i] = VertexPosition::LEFT_FRONT_EDGE_3D; // ac
+              else
+                vertexPositions_[i] = VertexPosition::LEFT_BACK_EDGE_3D; // eg
+            } else if(p[1] == 0) {
+              if(0 < p[2] and p[2] < nbvoxels_[2])
+                vertexPositions_[i] = VertexPosition::TOP_LEFT_EDGE_3D; // ae
+              else if(p[2] == 0)
+                vertexPositions_[i]
+                  = VertexPosition::TOP_LEFT_FRONT_CORNER_3D; // a
+              else
+                vertexPositions_[i]
+                  = VertexPosition::TOP_LEFT_BACK_CORNER_3D; // e
+            } else {
+              if(0 < p[2] and p[2] < nbvoxels_[2])
+                vertexPositions_[i] = VertexPosition::BOTTOM_LEFT_EDGE_3D; // cg
+              else if(p[2] == 0)
+                vertexPositions_[i]
+                  = VertexPosition::BOTTOM_LEFT_FRONT_CORNER_3D; // c
+              else
+                vertexPositions_[i]
+                  = VertexPosition::BOTTOM_LEFT_BACK_CORNER_3D; // g
+            }
+          } else {
+            if(0 < p[1] and p[1] < nbvoxels_[1]) {
+              if(0 < p[2] and p[2] < nbvoxels_[2])
+                vertexPositions_[i] = VertexPosition::RIGHT_FACE_3D; // bdfh
+              else if(p[2] == 0)
+                vertexPositions_[i] = VertexPosition::RIGHT_FRONT_EDGE_3D; // bd
+              else
+                vertexPositions_[i] = VertexPosition::RIGHT_BACK_EDGE_3D; // fh
+            } else if(p[1] == 0) {
+              if(0 < p[2] and p[2] < nbvoxels_[2])
+                vertexPositions_[i] = VertexPosition::TOP_RIGHT_EDGE_3D; // bf
+              else if(p[2] == 0)
+                vertexPositions_[i]
+                  = VertexPosition::TOP_RIGHT_FRONT_CORNER_3D; // b
+              else
+                vertexPositions_[i]
+                  = VertexPosition::TOP_RIGHT_BACK_CORNER_3D; // f
+            } else {
+              if(0 < p[2] and p[2] < nbvoxels_[2])
+                vertexPositions_[i]
+                  = VertexPosition::BOTTOM_RIGHT_EDGE_3D; // dh
+              else if(p[2] == 0)
+                vertexPositions_[i]
+                  = VertexPosition::BOTTOM_RIGHT_FRONT_CORNER_3D; // d
+              else
+                vertexPositions_[i]
+                  = VertexPosition::BOTTOM_RIGHT_BACK_CORNER_3D; // h
+            }
+          }
+        }
+      }
+      return 0;
+    }
+
   protected:
+    enum class VertexPosition : char {
+      LEFT_CORNER_1D,
+      RIGHT_CORNER_1D,
+      CENTER_1D,
+      // total: 3 1D cases
+
+      // 2D corners
+      TOP_LEFT_CORNER_2D,
+      TOP_RIGHT_CORNER_2D,
+      BOTTOM_LEFT_CORNER_2D,
+      BOTTOM_RIGHT_CORNER_2D,
+      // 2D edges
+      TOP_EDGE_2D,
+      BOTTOM_EDGE_2D,
+      LEFT_EDGE_2D,
+      RIGHT_EDGE_2D,
+      // 2D central strip
+      CENTER_2D,
+      // total: 9 2D cases
+
+      // 3D corners
+      TOP_LEFT_FRONT_CORNER_3D,
+      TOP_RIGHT_FRONT_CORNER_3D,
+      BOTTOM_LEFT_FRONT_CORNER_3D,
+      BOTTOM_RIGHT_FRONT_CORNER_3D,
+      TOP_LEFT_BACK_CORNER_3D,
+      TOP_RIGHT_BACK_CORNER_3D,
+      BOTTOM_LEFT_BACK_CORNER_3D,
+      BOTTOM_RIGHT_BACK_CORNER_3D,
+      // 3D edges
+      TOP_FRONT_EDGE_3D,
+      BOTTOM_FRONT_EDGE_3D,
+      LEFT_FRONT_EDGE_3D,
+      RIGHT_FRONT_EDGE_3D,
+      TOP_BACK_EDGE_3D,
+      BOTTOM_BACK_EDGE_3D,
+      LEFT_BACK_EDGE_3D,
+      RIGHT_BACK_EDGE_3D,
+      TOP_LEFT_EDGE_3D,
+      TOP_RIGHT_EDGE_3D,
+      BOTTOM_LEFT_EDGE_3D,
+      BOTTOM_RIGHT_EDGE_3D,
+      // 3D faces
+      FRONT_FACE_3D,
+      BACK_FACE_3D,
+      TOP_FACE_3D,
+      BOTTOM_FACE_3D,
+      LEFT_FACE_3D,
+      RIGHT_FACE_3D,
+      // 3D central part
+      CENTER_3D,
+      // total: 27 3D cases
+    };
+
+    // for every vertex, its position on the grid
+    std::vector<VertexPosition> vertexPositions_{};
+
     int dimensionality_; //
     float origin_[3]; //
     float spacing_[3]; //
