@@ -32,6 +32,8 @@ namespace ttkUtils {
   vtkSmartPointer<vtkAbstractArray> csvToVtkArray(std::string line);
 
   vtkSmartPointer<vtkDoubleArray> csvToDoubleArray(std::string line);
+
+  void *GetVoidPointer(vtkDataArray *array, int start);
 }; // namespace ttkUtils
 
 #include <limits>
@@ -242,3 +244,17 @@ vtkSmartPointer<vtkDoubleArray> ttkUtils::csvToDoubleArray(std::string line) {
 
   return array;
 }
+
+/// Retrieve pointer to the internal data
+/// This method is a workaround to emulate
+/// the old GetVoidPointer in vtkDataArray
+void *GetVoidPointer(vtkDataArray *array, int start) {
+  void *outPtr = nullptr;
+  switch(array->GetDataType()) {
+    vtkTemplateMacro(
+      auto *aosArray = vtkAOSDataArrayTemplate<VTK_TT>::FastDownCast(array);
+      if(aosArray) { outPtr = aosArray->GetVoidPointer(start); });
+  }
+  return outPtr;
+}
+

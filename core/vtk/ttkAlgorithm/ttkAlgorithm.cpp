@@ -1,4 +1,5 @@
 #include <ttkAlgorithm.h>
+#include <ttkUtils.h>
 
 #include <vtkDataObject.h> // For output port info
 #include <vtkObjectFactory.h> // for new macro
