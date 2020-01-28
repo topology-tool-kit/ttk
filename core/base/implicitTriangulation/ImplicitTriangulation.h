@@ -239,103 +239,55 @@ namespace ttk {
         return -1;
 #endif // !TTK_ENABLE_KAMIKAZE
 
-      if(dimensionality_ == 3) {
-        SimplexId p[3];
-        vertexToPosition(vertexId, p);
-
-        if(0 < p[0] and p[0] < nbvoxels_[0]) {
-          if(0 < p[1] and p[1] < nbvoxels_[1]) {
-            if(0 < p[2] and p[2] < nbvoxels_[2])
-              return 14; // abcdefgh
-            else
-              return 10; // abdc ou efhg
-          } else if(p[1] == 0) {
-            if(0 < p[2] and p[2] < nbvoxels_[2])
-              return 10; // aefb
-            else if(p[2] == 0)
-              return 8; // ab
-            else
-              return 6; // ef
-          } else {
-            if(0 < p[2] and p[2] < nbvoxels_[2])
-              return 10; // ghdc
-            else if(p[2] == 0)
-              return 6; // cd
-            else
-              return 8; // gh
-          }
-        } else if(p[0] == 0) {
-          if(0 < p[1] and p[1] < nbvoxels_[1]) {
-            if(0 < p[2] and p[2] < nbvoxels_[2])
-              return 10; // aegc
-            else if(p[2] == 0)
-              return 6; // ac
-            else
-              return 8; // eg
-          } else if(p[1] == 0) {
-            if(0 < p[2] and p[2] < nbvoxels_[2])
-              return 6; // ae
-            else
-              return 4; // a ou e
-          } else {
-            if(0 < p[2] and p[2] < nbvoxels_[2])
-              return 8; // cg
-            else if(p[2] == 0)
-              return 4; // c
-            else
-              return 7; // g
-          }
-        } else {
-          if(0 < p[1] and p[1] < nbvoxels_[1]) {
-            if(0 < p[2] and p[2] < nbvoxels_[2])
-              return 10; // bfhd
-            else if(p[2] == 0)
-              return 8; // bd
-            else
-              return 6; // fh
-          } else if(p[1] == 0) {
-            if(0 < p[2] and p[2] < nbvoxels_[2])
-              return 8; // bf
-            else if(p[2] == 0)
-              return 7; // b
-            else
-              return 4; // f
-          } else {
-            if(0 < p[2] and p[2] < nbvoxels_[2])
-              return 6; // dh
-            else
-              return 4; // d ou h
-          }
-        }
-      } else if(dimensionality_ == 2) {
-        SimplexId p[2];
-        vertexToPosition2d(vertexId, p);
-
-        if(0 < p[0] and p[0] < nbvoxels_[Di_]) {
-          if(0 < p[1] and p[1] < nbvoxels_[Dj_])
-            return 6; // abcd
-          else
-            return 4; // ab, cd
-        } else if(p[0] == 0) {
-          if(0 < p[1] and p[1] < nbvoxels_[Dj_])
-            return 4; // ac
-          else if(p[1] == 0)
-            return 2; // a
-          else
-            return 3; // c
-        } else {
-          if(0 < p[1] and p[1] < nbvoxels_[Dj_])
-            return 4; // bd
-          else if(p[1] == 0)
-            return 3; // b
-          else
-            return 2; // d
-        }
-      } else if(dimensionality_ == 1) {
-        if(vertexId > 0 and vertexId < nbvoxels_[Di_])
-          return 2; // ab
-        else
-          return 1; // a ou b
+      switch(vertexPositions_[vertexId]) {
+        case VertexPosition::CENTER_3D:
+          return 14;
+        case VertexPosition::FRONT_FACE_3D:
+        case VertexPosition::BACK_FACE_3D:
+        case VertexPosition::TOP_FACE_3D:
+        case VertexPosition::BOTTOM_FACE_3D:
+        case VertexPosition::LEFT_FACE_3D:
+        case VertexPosition::RIGHT_FACE_3D:
+          return 10;
+        case VertexPosition::TOP_FRONT_EDGE_3D: // ab
+        case VertexPosition::RIGHT_FRONT_EDGE_3D: // bd
+        case VertexPosition::BOTTOM_BACK_EDGE_3D: // gh
+        case VertexPosition::LEFT_BACK_EDGE_3D: // eg
+        case VertexPosition::BOTTOM_LEFT_EDGE_3D: // cg
+        case VertexPosition::TOP_RIGHT_EDGE_3D: // bf
+          return 8;
+        case VertexPosition::TOP_RIGHT_FRONT_CORNER_3D: // b
+        case VertexPosition::BOTTOM_LEFT_BACK_CORNER_3D: // g
+          return 7;
+        case VertexPosition::TOP_BACK_EDGE_3D: // ef
+        case VertexPosition::BOTTOM_FRONT_EDGE_3D: // cd
+        case VertexPosition::LEFT_FRONT_EDGE_3D: // ac
+        case VertexPosition::TOP_LEFT_EDGE_3D: // ae
+        case VertexPosition::RIGHT_BACK_EDGE_3D: // fh
+        case VertexPosition::BOTTOM_RIGHT_EDGE_3D: // dh
+        case VertexPosition::CENTER_2D:
+          return 6;
+        case VertexPosition::TOP_LEFT_FRONT_CORNER_3D: // a
+        case VertexPosition::BOTTOM_LEFT_FRONT_CORNER_3D: // c
+        case VertexPosition::BOTTOM_RIGHT_FRONT_CORNER_3D: // d
+        case VertexPosition::TOP_LEFT_BACK_CORNER_3D: // e
+        case VertexPosition::TOP_RIGHT_BACK_CORNER_3D: // f
+        case VertexPosition::BOTTOM_RIGHT_BACK_CORNER_3D: // h
+        case VertexPosition::TOP_EDGE_2D:
+        case VertexPosition::BOTTOM_EDGE_2D:
+        case VertexPosition::LEFT_EDGE_2D:
+        case VertexPosition::RIGHT_EDGE_2D:
+          return 4;
+        case VertexPosition::TOP_RIGHT_CORNER_2D: // b
+        case VertexPosition::BOTTOM_LEFT_CORNER_2D: // c
+          return 3;
+        case VertexPosition::TOP_LEFT_CORNER_2D: // a
+        case VertexPosition::BOTTOM_RIGHT_CORNER_2D: // d
+        case VertexPosition::CENTER_1D:
+          return 2;
+        case VertexPosition::LEFT_CORNER_1D:
+        case VertexPosition::RIGHT_CORNER_1D:
+          return 1;
       }
 
       return -1;
