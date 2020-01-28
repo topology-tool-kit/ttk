@@ -184,24 +184,22 @@ bool ttkTriangulation::hasChangedConnectivity(Triangulation *triangulation,
 
 int ttkTriangulation::setInputData(vtkDataSet *dataSet) {
 
+  int ret = 0;
   if(!triangulation_) {
     allocate();
   }
 
   if((dataSet->GetDataObjectType() == VTK_UNSTRUCTURED_GRID)) {
 
-    if(((vtkUnstructuredGrid *)dataSet)->GetPoints()) {
-      if(((vtkUnstructuredGrid *)dataSet)->GetPoints()->GetDataType()
-         == VTK_FLOAT) {
+    auto grid = static_cast<vtkUnstructuredGrid *>(dataSet);
+    if(grid->GetPoints()) {
+      if(grid->GetPoints()->GetDataType() == VTK_FLOAT) {
         triangulation_->setInputPoints(
-          dataSet->GetNumberOfPoints(),
-          ((vtkUnstructuredGrid *)dataSet)->GetPoints()->GetVoidPointer(0));
-      } else if(((vtkUnstructuredGrid *)dataSet)->GetPoints()->GetDataType()
-                == VTK_DOUBLE) {
-        triangulation_->setInputPoints(
-          dataSet->GetNumberOfPoints(),
-          ((vtkUnstructuredGrid *)dataSet)->GetPoints()->GetVoidPointer(0),
-          true);
+          dataSet->GetNumberOfPoints(), grid->GetPoints()->GetVoidPointer(0));
+      } else if(grid->GetPoints()->GetDataType() == VTK_DOUBLE) {
+        triangulation_->setInputPoints(dataSet->GetNumberOfPoints(),
+                                       grid->GetPoints()->GetVoidPointer(0),
+                                       true);
       } else {
         stringstream msg;
         msg << "[ttkTriangulation] Unsupported precision for input points!"
@@ -209,13 +207,54 @@ int ttkTriangulation::setInputData(vtkDataSet *dataSet) {
         dMsg(cerr, msg.str(), Debug::fatalMsg);
       }
     }
-    if(((vtkUnstructuredGrid *)dataSet)->GetCells()) {
+    if(grid->GetCells()) {
+      // As the documentation of this method says, we expect a triangulation
+      // (simplicial complex in kD)
+#ifndef NDEBUG
+      if(grid->IsHomogeneous()) {
+        const auto cType = grid->GetCellType(0);
+        if(cType != VTK_LINE && cType != VTK_TRIANGLE && cType != VTK_TETRA) {
+          std::ostringstream out;
+          out << "[ttkTriangulation] Error: unsupported VTKCellType: " << cType
+              << std::endl; // enum to string would be nice ...
+          // A homogeneous cell array of quadrilaterals is particularly
+          // dangereous because TTK will silently assume these are tetrahedra
+          // and not crash immediately since the memory layout matches. On the
+          // upside, for this case a triangulation could be generated
+          // (implemented) easily.
+          if(cType == VTK_QUAD)
+            out << "[ttkTriangulation] If your cells are actually rectangles, "
+                << "try to enforce dataset type Image or Rectilinear"
+                << std::endl;
+          err(out.str());
+          ret = -1;
+        }
+      } else // This is particularly nasty
+      {
+        std::ostringstream out;
+        out << "[ttkTriangulation] Error: unsupported vtkUnstructuredGrid "
+            << "with heterogeneous cell types" << std::endl;
+        err(out.str());
+        ret = -2;
+      }
+
+      if(ret != 0) {
+        // NOTE Triangulate unstructured grids if necessary.
+        // Maybe some lib to the rescue? VTK? CGAL?
+        // Maybe not at this place (or adapt doc) but earlier like the macro
+        // TTK_UNSTRUCTURED_GRID_NEW in ttkWrapper.h?
+        std::ostringstream out;
+        out << "[ttkTriangulation] Your application may now crash anytime or"
+            << " produce false results" << std::endl;
+        err(out.str());
+      }
+#endif
+
 #if !defined(_WIN32) || defined(_WIN32) && defined(VTK_USE_64BIT_IDS)
       triangulation_->setInputCells(
-        dataSet->GetNumberOfCells(),
-        ((vtkUnstructuredGrid *)dataSet)->GetCells()->GetPointer());
+        dataSet->GetNumberOfCells(), grid->GetCells()->GetPointer());
 #else
-      int *pt = ((vtkUnstructuredGrid *)dataSet)->GetCells()->GetPointer();
+      int *pt = grid->GetCells()->GetPointer();
       long long extra_pt = *pt;
       triangulation_->setInputCells(dataSet->GetNumberOfCells(), &extra_pt);
 #endif
@@ -302,7 +341,7 @@ int ttkTriangulation::setInputData(vtkDataSet *dataSet) {
     dMsg(cerr, msg.str(), Debug::fatalMsg);
   }
 
-  return 0;
+  return ret;
 }
 
 int ttkTriangulation::shallowCopy(vtkDataObject *other) {
