@@ -575,74 +575,42 @@ inline SimplexId ImplicitTriangulation::getVertexTriangleNumberInternal(
     return -1;
 #endif
 
-  if(dimensionality_ == 3) {
-    SimplexId p[3];
-    vertexToPosition(vertexId, p);
-
-    if(0 < p[0] and p[0] < nbvoxels_[0]) {
-      if(0 < p[1] and p[1] < nbvoxels_[1]) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          return 36; // abcdefgh
-        else
-          return 21; // abdc ou efhg
-      } else if(p[1] == 0) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          return 21; // aefb
-        else if(p[2] == 0)
-          return 15; // ab
-        else
-          return 9; // ef
-      } else {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          return 21; // ghdc
-        else if(p[2] == 0)
-          return 9; // cd
-        else
-          return 15; // gh
-      }
-    } else if(p[0] == 0) {
-      if(0 < p[1] and p[1] < nbvoxels_[1]) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          return 21; // aegc
-        else if(p[2] == 0)
-          return 9; // ac
-        else
-          return 15; // eg
-      } else if(p[1] == 0) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          return 9; // ae
-        else
-          return 5; // a ou e
-      } else {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          return 15; // cg
-        else if(p[2] == 0)
-          return 5; // c
-        else
-          return 12; // g
-      }
-    } else {
-      if(0 < p[1] and p[1] < nbvoxels_[1]) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          return 21; // bfhd
-        else if(p[2] == 0)
-          return 15; // bd
-        else
-          return 9; // fh
-      } else if(p[1] == 0) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          return 15; // bf
-        else if(p[2] == 0)
-          return 12; // b
-        else
-          return 5; // f
-      } else {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          return 9; // dh
-        else
-          return 5; // d ou h
-      }
-    }
+  switch(vertexPositions_[vertexId]) {
+    case VertexPosition::CENTER_3D:
+      return 36;
+    case VertexPosition::FRONT_FACE_3D:
+    case VertexPosition::BACK_FACE_3D:
+    case VertexPosition::TOP_FACE_3D:
+    case VertexPosition::BOTTOM_FACE_3D:
+    case VertexPosition::LEFT_FACE_3D:
+    case VertexPosition::RIGHT_FACE_3D:
+      return 21;
+    case VertexPosition::TOP_FRONT_EDGE_3D: // ab
+    case VertexPosition::RIGHT_FRONT_EDGE_3D: // bd
+    case VertexPosition::BOTTOM_BACK_EDGE_3D: // gh
+    case VertexPosition::LEFT_BACK_EDGE_3D: // eg
+    case VertexPosition::BOTTOM_LEFT_EDGE_3D: // cg
+    case VertexPosition::TOP_RIGHT_EDGE_3D: // bf
+      return 15;
+    case VertexPosition::TOP_RIGHT_FRONT_CORNER_3D: // b
+    case VertexPosition::BOTTOM_LEFT_BACK_CORNER_3D: // g
+      return 12;
+    case VertexPosition::TOP_BACK_EDGE_3D: // ef
+    case VertexPosition::BOTTOM_FRONT_EDGE_3D: // cd
+    case VertexPosition::LEFT_FRONT_EDGE_3D: // ac
+    case VertexPosition::TOP_LEFT_EDGE_3D: // ae
+    case VertexPosition::RIGHT_BACK_EDGE_3D: // fh
+    case VertexPosition::BOTTOM_RIGHT_EDGE_3D: // dh
+      return 9;
+    case VertexPosition::TOP_LEFT_FRONT_CORNER_3D: // a
+    case VertexPosition::BOTTOM_LEFT_FRONT_CORNER_3D: // c
+    case VertexPosition::BOTTOM_RIGHT_FRONT_CORNER_3D: // d
+    case VertexPosition::TOP_LEFT_BACK_CORNER_3D: // e
+    case VertexPosition::TOP_RIGHT_BACK_CORNER_3D: // f
+    case VertexPosition::BOTTOM_RIGHT_BACK_CORNER_3D: // h
+      return 5;
+    default: // 1D + 2D
+      break;
   }
 
   return 0;
