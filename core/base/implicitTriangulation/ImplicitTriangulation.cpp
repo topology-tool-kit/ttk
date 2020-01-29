@@ -730,109 +730,94 @@ int ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getVertexLink)(
     return -1;
 #endif // !TTK_ENABLE_KAMIKAZE
 
-  linkId = -1;
-
+  std::array<SimplexId, 3> p{};
   if(dimensionality_ == 3) {
-    SimplexId p[3];
-    vertexToPosition(vertexId, p);
-
-    if(0 < p[0] and p[0] < nbvoxels_[0]) {
-      if(0 < p[1] and p[1] < nbvoxels_[1]) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          linkId = getVertexLinkABCDEFGH(p, localLinkId); // abcdefgh
-        else if(p[2] == 0)
-          linkId = getVertexLinkABDC(p, localLinkId); // abdc
-        else
-          linkId = getVertexLinkEFHG(p, localLinkId); // efhg
-      } else if(p[1] == 0) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          linkId = getVertexLinkAEFB(p, localLinkId); // aefb
-        else if(p[2] == 0)
-          linkId = getVertexLinkAB(p, localLinkId); // ab
-        else
-          linkId = getVertexLinkEF(p, localLinkId); // ef
-      } else {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          linkId = getVertexLinkGHDC(p, localLinkId); // ghdc
-        else if(p[2] == 0)
-          linkId = getVertexLinkCD(p, localLinkId); // cd
-        else
-          linkId = getVertexLinkGH(p, localLinkId); // gh
-      }
-    } else if(p[0] == 0) {
-      if(0 < p[1] and p[1] < nbvoxels_[1]) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          linkId = getVertexLinkAEGC(p, localLinkId); // aegc
-        else if(p[2] == 0)
-          linkId = getVertexLinkAC(p, localLinkId); // ac
-        else
-          linkId = getVertexLinkEG(p, localLinkId); // eg
-      } else if(p[1] == 0) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          linkId = getVertexLinkAE(p, localLinkId); // ae
-        else if(p[2] == 0)
-          linkId = getVertexLinkA(p, localLinkId); // a
-        else
-          linkId = getVertexLinkE(p, localLinkId); // e
-      } else {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          linkId = getVertexLinkCG(p, localLinkId); // cg
-        else if(p[2] == 0)
-          linkId = getVertexLinkC(p, localLinkId); // c
-        else
-          linkId = getVertexLinkG(p, localLinkId); // g
-      }
-    } else {
-      if(0 < p[1] and p[1] < nbvoxels_[1]) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          linkId = getVertexLinkBFHD(p, localLinkId); // bfhd
-        else if(p[2] == 0)
-          linkId = getVertexLinkBD(p, localLinkId); // bd
-        else
-          linkId = getVertexLinkFH(p, localLinkId); // fh
-      } else if(p[1] == 0) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          linkId = getVertexLinkBF(p, localLinkId); // bf
-        else if(p[2] == 0)
-          linkId = getVertexLinkB(p, localLinkId); // b
-        else
-          linkId = getVertexLinkF(p, localLinkId); // f
-      } else {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          linkId = getVertexLinkDH(p, localLinkId); // dh
-        else if(p[2] == 0)
-          linkId = getVertexLinkD(p, localLinkId); // d
-        else
-          linkId = getVertexLinkH(p, localLinkId); // h
-      }
-    }
+    vertexToPosition(vertexId, p.data());
   } else if(dimensionality_ == 2) {
-    SimplexId p[2];
-    vertexToPosition2d(vertexId, p);
-
-    if(0 < p[0] and p[0] < nbvoxels_[Di_]) {
-      if(0 < p[1] and p[1] < nbvoxels_[Dj_])
-        linkId = getVertexLink2dABCD(p, localLinkId); // abcd
-      else if(p[1] == 0)
-        linkId = getVertexLink2dAB(p, localLinkId); // ab
-      else
-        linkId = getVertexLink2dCD(p, localLinkId); // cd
-    } else if(p[0] == 0) {
-      if(0 < p[1] and p[1] < nbvoxels_[Dj_])
-        linkId = getVertexLink2dAC(p, localLinkId); // ac
-      else if(p[1] == 0)
-        linkId = getVertexLink2dA(p, localLinkId); // a
-      else
-        linkId = getVertexLink2dC(p, localLinkId); // c
-    } else {
-      if(0 < p[1] and p[1] < nbvoxels_[Dj_])
-        linkId = getVertexLink2dBD(p, localLinkId); // bd
-      else if(p[1] == 0)
-        linkId = getVertexLink2dB(p, localLinkId); // b
-      else
-        linkId = getVertexLink2dD(p, localLinkId); // d
-    }
+    vertexToPosition2d(vertexId, p.data());
   }
+
+  const auto dispatch = [&]() -> SimplexId {
+    switch(vertexPositions_[vertexId]) {
+      case VertexPosition::CENTER_3D:
+        return getVertexLinkABCDEFGH(p.data(), localLinkId);
+      case VertexPosition::FRONT_FACE_3D:
+        return getVertexLinkABDC(p.data(), localLinkId);
+      case VertexPosition::BACK_FACE_3D:
+        return getVertexLinkEFHG(p.data(), localLinkId);
+      case VertexPosition::TOP_FACE_3D:
+        return getVertexLinkAEFB(p.data(), localLinkId);
+      case VertexPosition::BOTTOM_FACE_3D:
+        return getVertexLinkGHDC(p.data(), localLinkId);
+      case VertexPosition::LEFT_FACE_3D:
+        return getVertexLinkAEGC(p.data(), localLinkId);
+      case VertexPosition::RIGHT_FACE_3D:
+        return getVertexLinkBFHD(p.data(), localLinkId);
+      case VertexPosition::TOP_FRONT_EDGE_3D: // ab
+        return getVertexLinkAB(p.data(), localLinkId);
+      case VertexPosition::BOTTOM_FRONT_EDGE_3D: // cd
+        return getVertexLinkCD(p.data(), localLinkId);
+      case VertexPosition::LEFT_FRONT_EDGE_3D: // ac
+        return getVertexLinkAC(p.data(), localLinkId);
+      case VertexPosition::RIGHT_FRONT_EDGE_3D: // bd
+        return getVertexLinkBD(p.data(), localLinkId);
+      case VertexPosition::TOP_BACK_EDGE_3D: // ef
+        return getVertexLinkEF(p.data(), localLinkId);
+      case VertexPosition::BOTTOM_BACK_EDGE_3D: // gh
+        return getVertexLinkGH(p.data(), localLinkId);
+      case VertexPosition::LEFT_BACK_EDGE_3D: // eg
+        return getVertexLinkEG(p.data(), localLinkId);
+      case VertexPosition::RIGHT_BACK_EDGE_3D: // fh
+        return getVertexLinkFH(p.data(), localLinkId);
+      case VertexPosition::TOP_LEFT_EDGE_3D: // ae
+        return getVertexLinkAE(p.data(), localLinkId);
+      case VertexPosition::TOP_RIGHT_EDGE_3D: // bf
+        return getVertexLinkBF(p.data(), localLinkId);
+      case VertexPosition::BOTTOM_LEFT_EDGE_3D: // cg
+        return getVertexLinkCG(p.data(), localLinkId);
+      case VertexPosition::BOTTOM_RIGHT_EDGE_3D: // dh
+        return getVertexLinkDH(p.data(), localLinkId);
+      case VertexPosition::TOP_LEFT_FRONT_CORNER_3D: // a
+        return getVertexLinkA(p.data(), localLinkId);
+      case VertexPosition::TOP_RIGHT_FRONT_CORNER_3D: // b
+        return getVertexLinkB(p.data(), localLinkId);
+      case VertexPosition::BOTTOM_LEFT_FRONT_CORNER_3D: // c
+        return getVertexLinkC(p.data(), localLinkId);
+      case VertexPosition::BOTTOM_RIGHT_FRONT_CORNER_3D: // d
+        return getVertexLinkD(p.data(), localLinkId);
+      case VertexPosition::TOP_LEFT_BACK_CORNER_3D: // e
+        return getVertexLinkE(p.data(), localLinkId);
+      case VertexPosition::TOP_RIGHT_BACK_CORNER_3D: // f
+        return getVertexLinkF(p.data(), localLinkId);
+      case VertexPosition::BOTTOM_LEFT_BACK_CORNER_3D: // g
+        return getVertexLinkG(p.data(), localLinkId);
+      case VertexPosition::BOTTOM_RIGHT_BACK_CORNER_3D: // h
+        return getVertexLinkH(p.data(), localLinkId);
+      case VertexPosition::CENTER_2D:
+        return getVertexLink2dABCD(p.data(), localLinkId);
+      case VertexPosition::TOP_EDGE_2D:
+        return getVertexLink2dAB(p.data(), localLinkId);
+      case VertexPosition::BOTTOM_EDGE_2D:
+        return getVertexLink2dCD(p.data(), localLinkId);
+      case VertexPosition::LEFT_EDGE_2D:
+        return getVertexLink2dAC(p.data(), localLinkId);
+      case VertexPosition::RIGHT_EDGE_2D:
+        return getVertexLink2dBD(p.data(), localLinkId);
+      case VertexPosition::TOP_LEFT_CORNER_2D: // a
+        return getVertexLink2dA(p.data(), localLinkId);
+      case VertexPosition::TOP_RIGHT_CORNER_2D: // b
+        return getVertexLink2dB(p.data(), localLinkId);
+      case VertexPosition::BOTTOM_LEFT_CORNER_2D: // c
+        return getVertexLink2dC(p.data(), localLinkId);
+      case VertexPosition::BOTTOM_RIGHT_CORNER_2D: // d
+        return getVertexLink2dD(p.data(), localLinkId);
+      default: // 1D
+        break;
+    }
+    return -1;
+  };
+
+  linkId = dispatch();
 
   return 0;
 }
