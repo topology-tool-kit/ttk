@@ -864,98 +864,53 @@ inline SimplexId ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(
     return -1;
 #endif // !TTK_ENABLE_KAMIKAZE
 
-  if(dimensionality_ == 3) {
-    SimplexId p[3];
-    vertexToPosition(vertexId, p);
-
-    if(0 < p[0] and p[0] < nbvoxels_[0]) {
-      if(0 < p[1] and p[1] < nbvoxels_[1]) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          return 24; // abcdefgh
-        else
-          return 12; // abdc ou efhg
-      } else if(p[1] == 0) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          return 12; // aefb
-        else if(p[2] == 0)
-          return 8; // ab
-        else
-          return 4; // ef
-      } else {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          return 12; // ghdc
-        else if(p[2] == 0)
-          return 4; // cd
-        else
-          return 8; // gh
-      }
-    } else if(p[0] == 0) {
-      if(0 < p[1] and p[1] < nbvoxels_[1]) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          return 12; // aegc
-        else if(p[2] == 0)
-          return 4; // ac
-        else
-          return 8; // eg
-      } else if(p[1] == 0) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          return 4; // ae
-        else
-          return 2; // a ou e
-      } else {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          return 8; // cg
-        else if(p[2] == 0)
-          return 2; // c
-        else
-          return 6; // g
-      }
-    } else {
-      if(0 < p[1] and p[1] < nbvoxels_[1]) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          return 12; // bfhd
-        else if(p[2] == 0)
-          return 8; // bd
-        else
-          return 4; // fh
-      } else if(p[1] == 0) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          return 8; // bf
-        else if(p[2] == 0)
-          return 6; // b
-        else
-          return 2; // f
-      } else {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          return 4; // dh
-        else
-          return 2; // d ou h
-      }
-    }
-  } else if(dimensionality_ == 2) {
-    SimplexId p[2];
-    vertexToPosition2d(vertexId, p);
-
-    if(0 < p[0] and p[0] < nbvoxels_[Di_]) {
-      if(0 < p[1] and p[1] < nbvoxels_[Dj_])
-        return 6; // abcd
-      else
-        return 3; // ab, cd
-    } else if(p[0] == 0) {
-      if(0 < p[1] and p[1] < nbvoxels_[Dj_])
-        return 3; // ac
-      else if(p[1] == 0)
-        return 1; // a
-      else
-        return 2; // c
-    } else {
-      if(0 < p[1] and p[1] < nbvoxels_[Dj_])
-        return 3; // bd
-      else if(p[1] == 0)
-        return 2; // b
-      else
-        return 1; // d
-    }
+  switch(vertexPositions_[vertexId]) {
+    case VertexPosition::CENTER_3D:
+      return 24;
+    case VertexPosition::FRONT_FACE_3D:
+    case VertexPosition::BACK_FACE_3D:
+    case VertexPosition::TOP_FACE_3D:
+    case VertexPosition::BOTTOM_FACE_3D:
+    case VertexPosition::LEFT_FACE_3D:
+    case VertexPosition::RIGHT_FACE_3D:
+      return 12;
+    case VertexPosition::TOP_FRONT_EDGE_3D: // ab
+    case VertexPosition::RIGHT_FRONT_EDGE_3D: // bd
+    case VertexPosition::BOTTOM_BACK_EDGE_3D: // gh
+    case VertexPosition::LEFT_BACK_EDGE_3D: // eg
+    case VertexPosition::BOTTOM_LEFT_EDGE_3D: // cg
+    case VertexPosition::TOP_RIGHT_EDGE_3D: // bf
+      return 8;
+    case VertexPosition::TOP_RIGHT_FRONT_CORNER_3D: // b
+    case VertexPosition::BOTTOM_LEFT_BACK_CORNER_3D: // g
+    case VertexPosition::CENTER_2D:
+      return 6;
+    case VertexPosition::TOP_BACK_EDGE_3D: // ef
+    case VertexPosition::BOTTOM_FRONT_EDGE_3D: // cd
+    case VertexPosition::LEFT_FRONT_EDGE_3D: // ac
+    case VertexPosition::TOP_LEFT_EDGE_3D: // ae
+    case VertexPosition::RIGHT_BACK_EDGE_3D: // fh
+    case VertexPosition::BOTTOM_RIGHT_EDGE_3D: // dh
+      return 4;
+    case VertexPosition::TOP_EDGE_2D: // ab
+    case VertexPosition::BOTTOM_EDGE_2D: // cd
+    case VertexPosition::LEFT_EDGE_2D: // ac
+    case VertexPosition::RIGHT_EDGE_2D: // bd
+      return 3;
+    case VertexPosition::TOP_LEFT_FRONT_CORNER_3D: // a
+    case VertexPosition::BOTTOM_LEFT_FRONT_CORNER_3D: // c
+    case VertexPosition::BOTTOM_RIGHT_FRONT_CORNER_3D: // d
+    case VertexPosition::TOP_LEFT_BACK_CORNER_3D: // e
+    case VertexPosition::TOP_RIGHT_BACK_CORNER_3D: // f
+    case VertexPosition::BOTTOM_RIGHT_BACK_CORNER_3D: // h
+    case VertexPosition::TOP_RIGHT_CORNER_2D: // b
+    case VertexPosition::BOTTOM_LEFT_CORNER_2D: // c
+      return 2;
+    case VertexPosition::TOP_LEFT_CORNER_2D: // a
+    case VertexPosition::BOTTOM_RIGHT_CORNER_2D: // d
+      return 1;
+    default: // 1D
+      break;
   }
 
   return 0;
