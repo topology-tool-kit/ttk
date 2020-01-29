@@ -3,7 +3,7 @@ Thanks for contributing to TTK!
 Please find below a few guidelines that we invite you to consider before making a pull request.
 
 # 1. Authorship
-  - Please enter in header files doxygen style information regarding authorship and, if applicable, related publications. See [core/base/topologicalSimplification/TopologicalSimplification.h](https://github.com/topology-tool-kit/ttk/blob/master/core/base/topologicalSimplification/TopologicalSimplification.h) for a base layer example, [core/vtk/ttkTopologicalSimplification/ttkTopologicalSimplification.h](https://github.com/topology-tool-kit/ttk/blob/master/core/vtk/ttkTopologicalSimplification/ttkTopologicalSimplification.h) for a vtk wrapper example and [paraview/TopologicalSimplification/TopologicalSimplification.xml](https://github.com/topology-tool-kit/ttk/blob/master/paraview/TopologicalSimplification/TopologicalSimplification.xml) for a ParaView plugin example.
+  - Please enter in header files doxygen style information regarding authorship and, if applicable, related publications. See [core/base/topologicalSimplification/TopologicalSimplification.h](https://github.com/topology-tool-kit/ttk/blob/dev/core/base/topologicalSimplification/TopologicalSimplification.h) for a base layer example, [core/vtk/ttkTopologicalSimplification/ttkTopologicalSimplification.h](https://github.com/topology-tool-kit/ttk/blob/dev/core/vtk/ttkTopologicalSimplification/ttkTopologicalSimplification.h) for a vtk wrapper example and [paraview/TopologicalSimplification/TopologicalSimplification.xml](https://github.com/topology-tool-kit/ttk/blob/dev/paraview/TopologicalSimplification/TopologicalSimplification.xml) for a ParaView plugin example.
 
 # 2. Code formatting
   - To make TTK's source code more homogeneous and readable, we use [clang-format](https://clang.llvm.org/docs/ClangFormat.html). A style file is already available in TTK's source tree.
@@ -16,15 +16,16 @@ For this, we recommend to use scripts such as [this one](https://github.com/bari
 
 
 # 3. Continuous integration
-  - TTK uses some basic continuous integration, which consists in testing for build success under Linux (with [travis](https://travis-ci.org/)) and Windows (with [app-veyor](https://www.appveyor.com/)) upon each commit or pull request. **Your pull request will not be merged if it fails these tests**.
-  - To make your life easier, we recommend that you sign up for both services (which both offer free plans) and that you connect your TTK github fork to these services. This will run the build tests upon each of your commits to your local TTK repository.
+  - TTK uses some basic continuous integration, which consists in testing for build success under Linux, Windows and MacOs (with [Azure](https://azure.microsoft.com/en-us/services/devops/pipelines/)) upon each commit or pull request. **Your pull request will not be merged if it fails these tests**.
+  - To make your life easier, we recommend that you sign up for this (free) service and that you connect your TTK github fork to it. This will run the build tests upon each of your commits to your local TTK repository.
 
 
 # 4. Submitting a new module
-  - **Before submitting a new module**, we invite you to read our [Guidelines for Developing a New TTK Module](https://github.com/topology-tool-kit/ttk/wiki/Guidelines-for-Developing-a-New-TTK-Module). Also, before submitting your pull-request to [TTK's source repository](https://github.com/topology-tool-kit/ttk), please make sure that your fork is in sync with the latest version of TTK's source tree (typically by entering a command like <code>git pull ttk-public master</code>, where <code>ttk-public</code> is the name of your remote pointing to TTK's public source tree).
-  - Please submit a pull-request with an example to [ttk-data](https://github.com/topology-tool-kit/ttk-data):
-    - Provide a ParaView state file (*.pvsm) in the [<code>states/</code>](https://github.com/topology-tool-kit/ttk-data/tree/master/states) directory which runs your new module. This example will be used to both test and demo your module.
-    - Provide new data sets if needed. For new data sets, please update the [README](https://github.com/topology-tool-kit/ttk-data/blob/master/README) file to include the corresponding references.
+  - **Before submitting a new module**, we invite you to read our [Guidelines for Developing a New TTK Module](https://github.com/topology-tool-kit/ttk/wiki/Guidelines-for-Developing-a-New-TTK-Module). 
+  - Prepare your pull-request to the **dev** branch of [TTK](https://github.com/topology-tool-kit/ttk/tree/dev)). Before submitting it, please make sure that your fork is in sync with the latest version of TTK's source tree (typically by entering a command like <code>git pull ttk-public dev</code>, where <code>ttk-public</code> is the name of your remote pointing to TTK's public source tree).
+  - Please submit a pull-request with an example to the **dev** branch of [ttk-data](https://github.com/topology-tool-kit/ttk-data/tree/dev):
+    - Provide a ParaView state file (*.pvsm) in the [<code>states/</code>](https://github.com/topology-tool-kit/ttk-data/tree/dev/states) directory which runs your new module. This example will be used to both test and demo your module.
+    - Provide new data sets if needed. For new data sets, please update the [README](https://github.com/topology-tool-kit/ttk-data/blob/dev/README) file to include the corresponding references.
     - Make sure to remove all absolute paths from the state file example generated by ParaView (with a text editor). The state files are supposed to be run with ParaView from the root directory of [ttk-data](https://github.com/topology-tool-kit/ttk-data) (see [TTK's tutorial page](https://topology-tool-kit.github.io/tutorials.html) for examples).
   - Please submit a pull-request to [topology-tool-kit.github.io](https://github.com/topology-tool-kit/topology-tool-kit.github.io):
     - For this, generate a screenshot for the above ParaView state file example. Please include on the left of your screenshot a terminal with TTK's output (see examples on [TTK's gallery page](https://topology-tool-kit.github.io/gallery.html)). Please use a dark color theme if possible.
