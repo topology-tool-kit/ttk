@@ -349,12 +349,18 @@ namespace ttk {
       vertexPositions_.resize(vertexNumber_);
       if(dimensionality_ == 1) {
         vertexPositions_[0] = VertexPosition::LEFT_CORNER_1D;
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
         for(SimplexId i = 1; i < vertexNumber_ - 1; ++i) {
           vertexPositions_[i] = VertexPosition::CENTER_1D;
         }
         vertexPositions_[vertexNumber_ - 1] = VertexPosition::RIGHT_CORNER_1D;
 
       } else if(dimensionality_ == 2) {
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
         for(SimplexId i = 0; i < vertexNumber_; ++i) {
           std::array<SimplexId, 2> p{};
           vertexToPosition2d(i, p.data());
@@ -384,6 +390,9 @@ namespace ttk {
         }
 
       } else if(dimensionality_ == 3) {
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
         for(SimplexId i = 0; i < vertexNumber_; ++i) {
           std::array<SimplexId, 3> p{};
           vertexToPosition(i, p.data());
