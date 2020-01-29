@@ -565,6 +565,49 @@ namespace ttk {
     // for  every vertex, its coordinates on the grid
     std::vector<std::array<SimplexId, 3>> vertexCoords_{};
 
+    enum class EdgePosition : char {
+      //    e--------f
+      //   /|       /|
+      //  / |      / |
+      // a--------b  |
+      // |  g-----|--h
+      // | /      | /
+      // |/       |/
+      // c--------d
+
+      L, // length (ab)
+      H, // height (ac)
+      P, // depth (ae)
+      D1, // diagonal1 (bc)
+      D2, // diagonal2 (ag)
+      D3, // diagonal3 (be)
+      D4, // diagonal4 (bg)
+    };
+
+    // for every edge, its position on the grid
+    std::vector<EdgePosition> edgePositions_{};
+
+    enum class TrianglePosition : char {
+      //    e--------f
+      //   /|       /|
+      //  / |      / |
+      // a--------b  |
+      // |  g-----|--h
+      // | /      | /
+      // |/       |/
+      // c--------d
+
+      F, // face (abc, bcd)
+      C, // side (abe, bef)
+      H, // top (acg, aeg)
+      D1, // diagonal1 (bdg, beg)
+      D2, // diagonal2 (abg, bgh)
+      D3, // diagonal3 (bcg, bfg)
+    };
+
+    // for every triangle, its position on the grid
+    std::vector<TrianglePosition> trianglePositions_{};
+
     int dimensionality_; //
     float origin_[3]; //
     float spacing_[3]; //
