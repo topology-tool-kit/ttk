@@ -490,54 +490,71 @@ namespace ttk {
 
   protected:
     enum class VertexPosition : char {
-      LEFT_CORNER_1D,
-      RIGHT_CORNER_1D,
+      // a--------b
+
+      LEFT_CORNER_1D, // a
+      RIGHT_CORNER_1D, // b
       CENTER_1D,
       // total: 3 1D cases
 
+      // a--------b
+      // |        |
+      // |        |
+      // |        |
+      // c--------d
+
       // 2D corners
-      TOP_LEFT_CORNER_2D,
-      TOP_RIGHT_CORNER_2D,
-      BOTTOM_LEFT_CORNER_2D,
-      BOTTOM_RIGHT_CORNER_2D,
+      TOP_LEFT_CORNER_2D, // a
+      TOP_RIGHT_CORNER_2D, // b
+      BOTTOM_LEFT_CORNER_2D, // c
+      BOTTOM_RIGHT_CORNER_2D, // d
       // 2D edges
-      TOP_EDGE_2D,
-      BOTTOM_EDGE_2D,
-      LEFT_EDGE_2D,
-      RIGHT_EDGE_2D,
+      TOP_EDGE_2D, // ab
+      BOTTOM_EDGE_2D, // cd
+      LEFT_EDGE_2D, // ac
+      RIGHT_EDGE_2D, // bd
       // 2D central strip
       CENTER_2D,
       // total: 9 2D cases
 
+      //    e--------f
+      //   /|       /|
+      //  / |      / |
+      // a--------b  |
+      // |  g-----|--h
+      // | /      | /
+      // |/       |/
+      // c--------d
+
       // 3D corners
-      TOP_LEFT_FRONT_CORNER_3D,
-      TOP_RIGHT_FRONT_CORNER_3D,
-      BOTTOM_LEFT_FRONT_CORNER_3D,
-      BOTTOM_RIGHT_FRONT_CORNER_3D,
-      TOP_LEFT_BACK_CORNER_3D,
-      TOP_RIGHT_BACK_CORNER_3D,
-      BOTTOM_LEFT_BACK_CORNER_3D,
-      BOTTOM_RIGHT_BACK_CORNER_3D,
+      TOP_LEFT_FRONT_CORNER_3D, // a
+      TOP_RIGHT_FRONT_CORNER_3D, // b
+      BOTTOM_LEFT_FRONT_CORNER_3D, // c
+      BOTTOM_RIGHT_FRONT_CORNER_3D, // d
+      TOP_LEFT_BACK_CORNER_3D, // e
+      TOP_RIGHT_BACK_CORNER_3D, // f
+      BOTTOM_LEFT_BACK_CORNER_3D, // g
+      BOTTOM_RIGHT_BACK_CORNER_3D, // h
       // 3D edges
-      TOP_FRONT_EDGE_3D,
-      BOTTOM_FRONT_EDGE_3D,
-      LEFT_FRONT_EDGE_3D,
-      RIGHT_FRONT_EDGE_3D,
-      TOP_BACK_EDGE_3D,
-      BOTTOM_BACK_EDGE_3D,
-      LEFT_BACK_EDGE_3D,
-      RIGHT_BACK_EDGE_3D,
-      TOP_LEFT_EDGE_3D,
-      TOP_RIGHT_EDGE_3D,
-      BOTTOM_LEFT_EDGE_3D,
-      BOTTOM_RIGHT_EDGE_3D,
+      TOP_FRONT_EDGE_3D, // ab
+      BOTTOM_FRONT_EDGE_3D, // cd
+      LEFT_FRONT_EDGE_3D, // ac
+      RIGHT_FRONT_EDGE_3D, // bd
+      TOP_BACK_EDGE_3D, // ef
+      BOTTOM_BACK_EDGE_3D, // gh
+      LEFT_BACK_EDGE_3D, // eg
+      RIGHT_BACK_EDGE_3D, // fh
+      TOP_LEFT_EDGE_3D, // ae
+      TOP_RIGHT_EDGE_3D, // bf
+      BOTTOM_LEFT_EDGE_3D, // cg
+      BOTTOM_RIGHT_EDGE_3D, // dh
       // 3D faces
-      FRONT_FACE_3D,
-      BACK_FACE_3D,
-      TOP_FACE_3D,
-      BOTTOM_FACE_3D,
-      LEFT_FACE_3D,
-      RIGHT_FACE_3D,
+      FRONT_FACE_3D, // abcd
+      BACK_FACE_3D, // efgh
+      TOP_FACE_3D, // abef
+      BOTTOM_FACE_3D, // cdgh
+      LEFT_FACE_3D, // aceg
+      RIGHT_FACE_3D, // bdfh
       // 3D central part
       CENTER_3D,
       // total: 27 3D cases
