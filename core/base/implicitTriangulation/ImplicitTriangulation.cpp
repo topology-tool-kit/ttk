@@ -909,109 +909,94 @@ int ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getVertexStar)(
     return -1;
 #endif // !TTK_ENABLE_KAMIKAZE
 
-  starId = -1;
-
+  std::array<SimplexId, 3> p{};
   if(dimensionality_ == 3) {
-    SimplexId p[3];
-    vertexToPosition(vertexId, p);
-
-    if(0 < p[0] and p[0] < nbvoxels_[0]) {
-      if(0 < p[1] and p[1] < nbvoxels_[1]) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          starId = getVertexStarABCDEFGH(p, localStarId); // abcdefgh
-        else if(p[2] == 0)
-          starId = getVertexStarABDC(p, localStarId); // abdc
-        else
-          starId = getVertexStarEFHG(p, localStarId); // efhg
-      } else if(p[1] == 0) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          starId = getVertexStarAEFB(p, localStarId); // aefb
-        else if(p[2] == 0)
-          starId = getVertexStarAB(p, localStarId); // ab
-        else
-          starId = getVertexStarEF(p, localStarId); // ef
-      } else {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          starId = getVertexStarGHDC(p, localStarId); // ghdc
-        else if(p[2] == 0)
-          starId = getVertexStarCD(p, localStarId); // cd
-        else
-          starId = getVertexStarGH(p, localStarId); // gh
-      }
-    } else if(p[0] == 0) {
-      if(0 < p[1] and p[1] < nbvoxels_[1]) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          starId = getVertexStarAEGC(p, localStarId); // aegc
-        else if(p[2] == 0)
-          starId = getVertexStarAC(p, localStarId); // ac
-        else
-          starId = getVertexStarEG(p, localStarId); // eg
-      } else if(p[1] == 0) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          starId = getVertexStarAE(p, localStarId); // ae
-        else if(p[2] == 0)
-          starId = getVertexStarA(p, localStarId); // a
-        else
-          starId = getVertexStarE(p, localStarId); // e
-      } else {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          starId = getVertexStarCG(p, localStarId); // cg
-        else if(p[2] == 0)
-          starId = getVertexStarC(p, localStarId); // c
-        else
-          starId = getVertexStarG(p, localStarId); // g
-      }
-    } else {
-      if(0 < p[1] and p[1] < nbvoxels_[1]) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          starId = getVertexStarBFHD(p, localStarId); // bfhd
-        else if(p[2] == 0)
-          starId = getVertexStarBD(p, localStarId); // bd
-        else
-          starId = getVertexStarFH(p, localStarId); // fh
-      } else if(p[1] == 0) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          starId = getVertexStarBF(p, localStarId); // bf
-        else if(p[2] == 0)
-          starId = getVertexStarB(p, localStarId); // b
-        else
-          starId = getVertexStarF(p, localStarId); // f
-      } else {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          starId = getVertexStarDH(p, localStarId); // dh
-        else if(p[2] == 0)
-          starId = getVertexStarD(p, localStarId); // d
-        else
-          starId = getVertexStarH(p, localStarId); // h
-      }
-    }
+    vertexToPosition(vertexId, p.data());
   } else if(dimensionality_ == 2) {
-    SimplexId p[2];
-    vertexToPosition2d(vertexId, p);
-
-    if(0 < p[0] and p[0] < nbvoxels_[Di_]) {
-      if(0 < p[1] and p[1] < nbvoxels_[Dj_])
-        starId = getVertexStar2dABCD(p, localStarId); // abcd
-      else if(p[1] == 0)
-        starId = getVertexStar2dAB(p, localStarId); // ab
-      else
-        starId = getVertexStar2dCD(p, localStarId); // cd
-    } else if(p[0] == 0) {
-      if(0 < p[1] and p[1] < nbvoxels_[Dj_])
-        starId = getVertexStar2dAC(p, localStarId); // ac
-      else if(p[1] == 0)
-        starId = getVertexStar2dA(p, localStarId); // a
-      else
-        starId = getVertexStar2dC(p, localStarId); // c
-    } else {
-      if(0 < p[1] and p[1] < nbvoxels_[Dj_])
-        starId = getVertexStar2dBD(p, localStarId); // bd
-      else if(p[1] == 0)
-        starId = getVertexStar2dB(p, localStarId); // b
-      else
-        starId = getVertexStar2dD(p, localStarId); // d
-    }
+    vertexToPosition2d(vertexId, p.data());
   }
+
+  const auto dispatch = [&]() -> SimplexId {
+    switch(vertexPositions_[vertexId]) {
+      case VertexPosition::CENTER_3D:
+        return getVertexStarABCDEFGH(p.data(), localStarId);
+      case VertexPosition::FRONT_FACE_3D:
+        return getVertexStarABDC(p.data(), localStarId);
+      case VertexPosition::BACK_FACE_3D:
+        return getVertexStarEFHG(p.data(), localStarId);
+      case VertexPosition::TOP_FACE_3D:
+        return getVertexStarAEFB(p.data(), localStarId);
+      case VertexPosition::BOTTOM_FACE_3D:
+        return getVertexStarGHDC(p.data(), localStarId);
+      case VertexPosition::LEFT_FACE_3D:
+        return getVertexStarAEGC(p.data(), localStarId);
+      case VertexPosition::RIGHT_FACE_3D:
+        return getVertexStarBFHD(p.data(), localStarId);
+      case VertexPosition::TOP_FRONT_EDGE_3D: // ab
+        return getVertexStarAB(p.data(), localStarId);
+      case VertexPosition::BOTTOM_FRONT_EDGE_3D: // cd
+        return getVertexStarCD(p.data(), localStarId);
+      case VertexPosition::LEFT_FRONT_EDGE_3D: // ac
+        return getVertexStarAC(p.data(), localStarId);
+      case VertexPosition::RIGHT_FRONT_EDGE_3D: // bd
+        return getVertexStarBD(p.data(), localStarId);
+      case VertexPosition::TOP_BACK_EDGE_3D: // ef
+        return getVertexStarEF(p.data(), localStarId);
+      case VertexPosition::BOTTOM_BACK_EDGE_3D: // gh
+        return getVertexStarGH(p.data(), localStarId);
+      case VertexPosition::LEFT_BACK_EDGE_3D: // eg
+        return getVertexStarEG(p.data(), localStarId);
+      case VertexPosition::RIGHT_BACK_EDGE_3D: // fh
+        return getVertexStarFH(p.data(), localStarId);
+      case VertexPosition::TOP_LEFT_EDGE_3D: // ae
+        return getVertexStarAE(p.data(), localStarId);
+      case VertexPosition::TOP_RIGHT_EDGE_3D: // bf
+        return getVertexStarBF(p.data(), localStarId);
+      case VertexPosition::BOTTOM_LEFT_EDGE_3D: // cg
+        return getVertexStarCG(p.data(), localStarId);
+      case VertexPosition::BOTTOM_RIGHT_EDGE_3D: // dh
+        return getVertexStarDH(p.data(), localStarId);
+      case VertexPosition::TOP_LEFT_FRONT_CORNER_3D: // a
+        return getVertexStarA(p.data(), localStarId);
+      case VertexPosition::TOP_RIGHT_FRONT_CORNER_3D: // b
+        return getVertexStarB(p.data(), localStarId);
+      case VertexPosition::BOTTOM_LEFT_FRONT_CORNER_3D: // c
+        return getVertexStarC(p.data(), localStarId);
+      case VertexPosition::BOTTOM_RIGHT_FRONT_CORNER_3D: // d
+        return getVertexStarD(p.data(), localStarId);
+      case VertexPosition::TOP_LEFT_BACK_CORNER_3D: // e
+        return getVertexStarE(p.data(), localStarId);
+      case VertexPosition::TOP_RIGHT_BACK_CORNER_3D: // f
+        return getVertexStarF(p.data(), localStarId);
+      case VertexPosition::BOTTOM_LEFT_BACK_CORNER_3D: // g
+        return getVertexStarG(p.data(), localStarId);
+      case VertexPosition::BOTTOM_RIGHT_BACK_CORNER_3D: // h
+        return getVertexStarH(p.data(), localStarId);
+      case VertexPosition::CENTER_2D:
+        return getVertexStar2dABCD(p.data(), localStarId);
+      case VertexPosition::TOP_EDGE_2D:
+        return getVertexStar2dAB(p.data(), localStarId);
+      case VertexPosition::BOTTOM_EDGE_2D:
+        return getVertexStar2dCD(p.data(), localStarId);
+      case VertexPosition::LEFT_EDGE_2D:
+        return getVertexStar2dAC(p.data(), localStarId);
+      case VertexPosition::RIGHT_EDGE_2D:
+        return getVertexStar2dBD(p.data(), localStarId);
+      case VertexPosition::TOP_LEFT_CORNER_2D: // a
+        return getVertexStar2dA(p.data(), localStarId);
+      case VertexPosition::TOP_RIGHT_CORNER_2D: // b
+        return getVertexStar2dB(p.data(), localStarId);
+      case VertexPosition::BOTTOM_LEFT_CORNER_2D: // c
+        return getVertexStar2dC(p.data(), localStarId);
+      case VertexPosition::BOTTOM_RIGHT_CORNER_2D: // d
+        return getVertexStar2dD(p.data(), localStarId);
+      default: // 1D
+        break;
+    }
+    return -1;
+  };
+
+  starId = dispatch();
 
   return 0;
 }
