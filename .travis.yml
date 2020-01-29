@@ -1,4 +1,4 @@
-dist: trusty
+dist: xenial # Ubuntu 16.04 LTS (support until April 2021)
 sudo: required
 language: cpp
 addons:
@@ -13,6 +13,7 @@ addons:
             - python2.7
             - libopenmpi-dev
             - libvtk6-dev
+            - libproj-dev
             - libpq-dev
             - doxygen
 git:
@@ -91,6 +92,7 @@ script:
       -DTTK_ENABLE_KAMIKAZE=$TTK_ENABLE_KAMIKAZE
       -DTTK_ENABLE_MPI=$TTK_ENABLE_MPI
       -DTTK_ENABLE_OPENMP=$TTK_ENABLE_OPENMP
+      -DTTK_ENABLE_EIGEN=OFF
       -DParaView_DIR=$ParaView_DIR
       ..
     - cmake --build . --target install
