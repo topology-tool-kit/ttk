@@ -231,21 +231,14 @@ bool ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(isVertexOnBoundary)(
     return false;
 #endif // !TTK_ENABLE_KAMIKAZE
 
-  if(dimensionality_ == 3) {
-    SimplexId p[3];
-    vertexToPosition(vertexId, p);
-
-    return (p[0] == 0 or p[1] == 0 or p[2] == 0 or p[0] == nbvoxels_[0]
-            or p[1] == nbvoxels_[1] or p[2] == nbvoxels_[2]);
-  } else if(dimensionality_ == 2) {
-    SimplexId p[2];
-    vertexToPosition2d(vertexId, p);
-
-    return (p[0] == 0 or p[1] == 0 or p[0] == nbvoxels_[Di_]
-            or p[1] == nbvoxels_[Dj_]);
+  switch(vertexPositions_[vertexId]) {
+    case VertexPosition::CENTER_3D:
+    case VertexPosition::CENTER_2D:
+    case VertexPosition::CENTER_1D:
+      return false;
+    default:
+      return true;
   }
-
-  return false;
 }
 
 bool ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(isEdgeOnBoundary)(
