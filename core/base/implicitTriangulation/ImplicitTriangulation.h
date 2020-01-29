@@ -11,6 +11,8 @@
 #ifndef _IMPLICITTRIANGULATION_H
 #define _IMPLICITTRIANGULATION_H
 
+#include <array>
+
 // base code includes
 #include <AbstractTriangulation.h>
 
@@ -347,6 +349,8 @@ namespace ttk {
 
     inline int preconditionVertexNeighborsInternal() override {
       vertexPositions_.resize(vertexNumber_);
+      vertexCoords_.resize(vertexNumber_);
+
       if(dimensionality_ == 1) {
         vertexPositions_[0] = VertexPosition::LEFT_CORNER_1D;
 #ifdef TTK_ENABLE_OPENMP
@@ -362,7 +366,7 @@ namespace ttk {
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
         for(SimplexId i = 0; i < vertexNumber_; ++i) {
-          std::array<SimplexId, 2> p{};
+          std::array<SimplexId, 3> p{};
           vertexToPosition2d(i, p.data());
 
           if(0 < p[0] and p[0] < nbvoxels_[Di_]) {
@@ -387,6 +391,7 @@ namespace ttk {
             else
               vertexPositions_[i] = VertexPosition::BOTTOM_RIGHT_CORNER_2D; // d
           }
+          vertexCoords_[i] = std::move(p);
         }
 
       } else if(dimensionality_ == 3) {
@@ -477,6 +482,7 @@ namespace ttk {
                   = VertexPosition::BOTTOM_RIGHT_BACK_CORNER_3D; // h
             }
           }
+          vertexCoords_[i] = std::move(p);
         }
       }
       return 0;
@@ -539,6 +545,8 @@ namespace ttk {
 
     // for every vertex, its position on the grid
     std::vector<VertexPosition> vertexPositions_{};
+    // for  every vertex, its coordinates on the grid
+    std::vector<std::array<SimplexId, 3>> vertexCoords_{};
 
     int dimensionality_; //
     float origin_[3]; //

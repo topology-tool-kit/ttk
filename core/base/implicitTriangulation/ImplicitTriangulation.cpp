@@ -453,12 +453,7 @@ int ImplicitTriangulation::getVertexEdgeInternal(const SimplexId &vertexId,
   // D3: diagonale3 (type be)
   // D4: diagonale4 (type bg)
 
-  std::array<SimplexId, 3> p{};
-  if(dimensionality_ == 3) {
-    vertexToPosition(vertexId, p.data());
-  } else if(dimensionality_ == 2) {
-    vertexToPosition2d(vertexId, p.data());
-  }
+  const auto &p = vertexCoords_[vertexId];
 
   const auto dispatch = [&]() -> SimplexId {
     switch(vertexPositions_[vertexId]) {
@@ -626,10 +621,7 @@ int ImplicitTriangulation::getVertexTriangleInternal(
     return -1;
 #endif
 
-  std::array<SimplexId, 3> p{};
-  if(dimensionality_ == 3) {
-    vertexToPosition(vertexId, p.data());
-  }
+  const auto &p = vertexCoords_[vertexId];
 
   const auto dispatch = [&]() -> SimplexId {
     switch(vertexPositions_[vertexId]) {
@@ -730,12 +722,7 @@ int ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getVertexLink)(
     return -1;
 #endif // !TTK_ENABLE_KAMIKAZE
 
-  std::array<SimplexId, 3> p{};
-  if(dimensionality_ == 3) {
-    vertexToPosition(vertexId, p.data());
-  } else if(dimensionality_ == 2) {
-    vertexToPosition2d(vertexId, p.data());
-  }
+  const auto &p = vertexCoords_[vertexId];
 
   const auto dispatch = [&]() -> SimplexId {
     switch(vertexPositions_[vertexId]) {
@@ -909,12 +896,7 @@ int ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getVertexStar)(
     return -1;
 #endif // !TTK_ENABLE_KAMIKAZE
 
-  std::array<SimplexId, 3> p{};
-  if(dimensionality_ == 3) {
-    vertexToPosition(vertexId, p.data());
-  } else if(dimensionality_ == 2) {
-    vertexToPosition2d(vertexId, p.data());
-  }
+  const auto &p = vertexCoords_[vertexId];
 
   const auto dispatch = [&]() -> SimplexId {
     switch(vertexPositions_[vertexId]) {
@@ -1024,15 +1006,13 @@ int ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getVertexPoint)(
   const SimplexId &vertexId, float &x, float &y, float &z) const {
 
   if(dimensionality_ == 3) {
-    SimplexId p[3];
-    vertexToPosition(vertexId, p);
+    const auto &p = vertexCoords_[vertexId];
 
     x = origin_[0] + spacing_[0] * p[0];
     y = origin_[1] + spacing_[1] * p[1];
     z = origin_[2] + spacing_[2] * p[2];
   } else if(dimensionality_ == 2) {
-    SimplexId p[2];
-    vertexToPosition2d(vertexId, p);
+    const auto &p = vertexCoords_[vertexId];
 
     if(dimensions_[0] > 1 and dimensions_[1] > 1) {
       x = origin_[0] + spacing_[0] * p[0];
