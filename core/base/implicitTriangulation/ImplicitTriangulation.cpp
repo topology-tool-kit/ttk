@@ -625,84 +625,75 @@ int ImplicitTriangulation::getVertexTriangleInternal(
      or localTriangleId >= getVertexTriangleNumberInternal(vertexId))
     return -1;
 #endif
-  triangleId = -1;
 
+  std::array<SimplexId, 3> p{};
   if(dimensionality_ == 3) {
-    SimplexId p[3];
-    vertexToPosition(vertexId, p);
-
-    if(0 < p[0] and p[0] < nbvoxels_[0]) {
-      if(0 < p[1] and p[1] < nbvoxels_[1]) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          triangleId
-            = getVertexTriangleABCDEFGH(p, localTriangleId); // abcdefgh
-        else if(p[2] == 0)
-          triangleId = getVertexTriangleABDC(p, localTriangleId); // abdc
-        else
-          triangleId = getVertexTriangleEFHG(p, localTriangleId); // efhg
-      } else if(p[1] == 0) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          triangleId = getVertexTriangleAEFB(p, localTriangleId); // aefb
-        else if(p[2] == 0)
-          triangleId = getVertexTriangleAB(p, localTriangleId); // ab
-        else
-          triangleId = getVertexTriangleEF(p, localTriangleId); // ef
-      } else {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          triangleId = getVertexTriangleGHDC(p, localTriangleId); // ghdc
-        else if(p[2] == 0)
-          triangleId = getVertexTriangleCD(p, localTriangleId); // cd
-        else
-          triangleId = getVertexTriangleGH(p, localTriangleId); // gh
-      }
-    } else if(p[0] == 0) {
-      if(0 < p[1] and p[1] < nbvoxels_[1]) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          triangleId = getVertexTriangleAEGC(p, localTriangleId); // aegc
-        else if(p[2] == 0)
-          triangleId = getVertexTriangleAC(p, localTriangleId); // ac
-        else
-          triangleId = getVertexTriangleEG(p, localTriangleId); // eg
-      } else if(p[1] == 0) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          triangleId = getVertexTriangleAE(p, localTriangleId); // ae
-        else if(p[2] == 0)
-          triangleId = getVertexTriangleA(p, localTriangleId); // a
-        else
-          triangleId = getVertexTriangleE(p, localTriangleId); // e
-      } else {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          triangleId = getVertexTriangleCG(p, localTriangleId); // cg
-        else if(p[2] == 0)
-          triangleId = getVertexTriangleC(p, localTriangleId); // c
-        else
-          triangleId = getVertexTriangleG(p, localTriangleId); // g
-      }
-    } else {
-      if(0 < p[1] and p[1] < nbvoxels_[1]) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          triangleId = getVertexTriangleBFHD(p, localTriangleId); // bfhd
-        else if(p[2] == 0)
-          triangleId = getVertexTriangleBD(p, localTriangleId); // bd
-        else
-          triangleId = getVertexTriangleFH(p, localTriangleId); // fh
-      } else if(p[1] == 0) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          triangleId = getVertexTriangleBF(p, localTriangleId); // bf
-        else if(p[2] == 0)
-          triangleId = getVertexTriangleB(p, localTriangleId); // b
-        else
-          triangleId = getVertexTriangleF(p, localTriangleId); // f
-      } else {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          triangleId = getVertexTriangleDH(p, localTriangleId); // dh
-        else if(p[2] == 0)
-          triangleId = getVertexTriangleD(p, localTriangleId); // d
-        else
-          triangleId = getVertexTriangleH(p, localTriangleId); // h
-      }
-    }
+    vertexToPosition(vertexId, p.data());
   }
+
+  const auto dispatch = [&]() -> SimplexId {
+    switch(vertexPositions_[vertexId]) {
+      case VertexPosition::CENTER_3D:
+        return getVertexTriangleABCDEFGH(p.data(), localTriangleId);
+      case VertexPosition::FRONT_FACE_3D:
+        return getVertexTriangleABDC(p.data(), localTriangleId);
+      case VertexPosition::BACK_FACE_3D:
+        return getVertexTriangleEFHG(p.data(), localTriangleId);
+      case VertexPosition::TOP_FACE_3D:
+        return getVertexTriangleAEFB(p.data(), localTriangleId);
+      case VertexPosition::BOTTOM_FACE_3D:
+        return getVertexTriangleGHDC(p.data(), localTriangleId);
+      case VertexPosition::LEFT_FACE_3D:
+        return getVertexTriangleAEGC(p.data(), localTriangleId);
+      case VertexPosition::RIGHT_FACE_3D:
+        return getVertexTriangleBFHD(p.data(), localTriangleId);
+      case VertexPosition::TOP_FRONT_EDGE_3D: // ab
+        return getVertexTriangleAB(p.data(), localTriangleId);
+      case VertexPosition::BOTTOM_FRONT_EDGE_3D: // cd
+        return getVertexTriangleCD(p.data(), localTriangleId);
+      case VertexPosition::LEFT_FRONT_EDGE_3D: // ac
+        return getVertexTriangleAC(p.data(), localTriangleId);
+      case VertexPosition::RIGHT_FRONT_EDGE_3D: // bd
+        return getVertexTriangleBD(p.data(), localTriangleId);
+      case VertexPosition::TOP_BACK_EDGE_3D: // ef
+        return getVertexTriangleEF(p.data(), localTriangleId);
+      case VertexPosition::BOTTOM_BACK_EDGE_3D: // gh
+        return getVertexTriangleGH(p.data(), localTriangleId);
+      case VertexPosition::LEFT_BACK_EDGE_3D: // eg
+        return getVertexTriangleEG(p.data(), localTriangleId);
+      case VertexPosition::RIGHT_BACK_EDGE_3D: // fh
+        return getVertexTriangleFH(p.data(), localTriangleId);
+      case VertexPosition::TOP_LEFT_EDGE_3D: // ae
+        return getVertexTriangleAE(p.data(), localTriangleId);
+      case VertexPosition::TOP_RIGHT_EDGE_3D: // bf
+        return getVertexTriangleBF(p.data(), localTriangleId);
+      case VertexPosition::BOTTOM_LEFT_EDGE_3D: // cg
+        return getVertexTriangleCG(p.data(), localTriangleId);
+      case VertexPosition::BOTTOM_RIGHT_EDGE_3D: // dh
+        return getVertexTriangleDH(p.data(), localTriangleId);
+      case VertexPosition::TOP_LEFT_FRONT_CORNER_3D: // a
+        return getVertexTriangleA(p.data(), localTriangleId);
+      case VertexPosition::TOP_RIGHT_FRONT_CORNER_3D: // b
+        return getVertexTriangleB(p.data(), localTriangleId);
+      case VertexPosition::BOTTOM_LEFT_FRONT_CORNER_3D: // c
+        return getVertexTriangleC(p.data(), localTriangleId);
+      case VertexPosition::BOTTOM_RIGHT_FRONT_CORNER_3D: // d
+        return getVertexTriangleD(p.data(), localTriangleId);
+      case VertexPosition::TOP_LEFT_BACK_CORNER_3D: // e
+        return getVertexTriangleE(p.data(), localTriangleId);
+      case VertexPosition::TOP_RIGHT_BACK_CORNER_3D: // f
+        return getVertexTriangleF(p.data(), localTriangleId);
+      case VertexPosition::BOTTOM_LEFT_BACK_CORNER_3D: // g
+        return getVertexTriangleG(p.data(), localTriangleId);
+      case VertexPosition::BOTTOM_RIGHT_BACK_CORNER_3D: // h
+        return getVertexTriangleH(p.data(), localTriangleId);
+      default: // 1D + 2D
+        break;
+    }
+    return -1;
+  };
+
+  triangleId = dispatch();
 
   return 0;
 }
