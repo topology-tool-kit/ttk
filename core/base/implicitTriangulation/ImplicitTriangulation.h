@@ -511,6 +511,9 @@ namespace ttk {
       std::array<SimplexId, 3> p{};
 
       if(dimensionality_ == 3) {
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
         for(SimplexId i = 0; i < edgeNumber_; ++i) {
           if(i < esetshift_[0]) {
             edgeToPosition(i, 0, p.data());
@@ -538,6 +541,9 @@ namespace ttk {
         }
 
       } else if(dimensionality_ == 2) {
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
         for(SimplexId i = 0; i < edgeNumber_; ++i) {
           if(i < esetshift_[0]) {
             edgeToPosition2d(i, 0, p.data());
@@ -554,6 +560,9 @@ namespace ttk {
 
       } else if(dimensionality_ == 1) {
         edgePositions_[0] = EdgePosition::FIRST_EDGE_1D;
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
         for(SimplexId i = 1; i < edgeNumber_ - 1; ++i) {
           edgePositions_[i] = EdgePosition::CENTER_1D;
         }
