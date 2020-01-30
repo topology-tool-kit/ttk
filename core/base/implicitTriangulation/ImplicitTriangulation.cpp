@@ -1056,188 +1056,120 @@ int ImplicitTriangulation::getEdgeVertexInternal(const SimplexId &edgeId,
     return -2;
 #endif
 
-  vertexId = -1;
+  const auto dispatch = [&]() -> SimplexId {
+    const auto &p = edgeCoords_[edgeId];
+    switch(edgePositions_[edgeId]) {
+      case EdgePosition::L_3D:
+        if(isAccelerated_) {
+          return localVertexId == 0
+                   ? p[0] + (p[1] << div_[0]) + (p[2] << div_[1])
+                   : p[0] + (p[1] << div_[0]) + (p[2] << div_[1]) + 1;
+        } else {
+          return localVertexId == 0
+                   ? p[0] + p[1] * vshift_[0] + p[2] * vshift_[1]
+                   : p[0] + p[1] * vshift_[0] + p[2] * vshift_[1] + 1;
+        }
+      case EdgePosition::H_3D:
+        if(isAccelerated_) {
+          return localVertexId == 0
+                   ? p[0] + (p[1] << div_[0]) + (p[2] << div_[1])
+                   : p[0] + (p[1] << div_[0]) + (p[2] << div_[1]) + vshift_[0];
+        } else {
+          return localVertexId == 0
+                   ? p[0] + p[1] * vshift_[0] + p[2] * vshift_[1]
+                   : p[0] + p[1] * vshift_[0] + p[2] * vshift_[1] + vshift_[0];
+        }
+      case EdgePosition::P_3D:
+        if(isAccelerated_) {
+          return localVertexId == 0
+                   ? p[0] + (p[1] << div_[0]) + (p[2] << div_[1])
+                   : p[0] + (p[1] << div_[0]) + (p[2] << div_[1]) + vshift_[1];
+        } else {
+          return localVertexId == 0
+                   ? p[0] + p[1] * vshift_[0] + p[2] * vshift_[1]
+                   : p[0] + p[1] * vshift_[0] + p[2] * vshift_[1] + vshift_[1];
+        }
+      case EdgePosition::D1_3D:
+        if(isAccelerated_) {
+          return localVertexId == 0
+                   ? p[0] + (p[1] << div_[0]) + (p[2] << div_[1]) + 1
+                   : p[0] + (p[1] << div_[0]) + (p[2] << div_[1]) + vshift_[0];
+        } else {
+          return localVertexId == 0
+                   ? p[0] + p[1] * vshift_[0] + p[2] * vshift_[1] + 1
+                   : p[0] + p[1] * vshift_[0] + p[2] * vshift_[1] + vshift_[0];
+        }
+      case EdgePosition::D2_3D:
+        if(isAccelerated_) {
+          return localVertexId == 0
+                   ? p[0] + (p[1] << div_[0]) + (p[2] << div_[1])
+                   : p[0] + (p[1] << div_[0]) + (p[2] << div_[1]) + vshift_[0]
+                       + vshift_[1];
+        } else {
+          return localVertexId == 0
+                   ? p[0] + p[1] * vshift_[0] + p[2] * vshift_[1]
+                   : p[0] + p[1] * vshift_[0] + p[2] * vshift_[1] + vshift_[0]
+                       + vshift_[1];
+        }
+      case EdgePosition::D3_3D:
+        if(isAccelerated_) {
+          return localVertexId == 0
+                   ? p[0] + (p[1] << div_[0]) + (p[2] << div_[1]) + 1
+                   : p[0] + (p[1] << div_[0]) + (p[2] << div_[1]) + vshift_[1];
+        } else {
+          return localVertexId == 0
+                   ? p[0] + p[1] * vshift_[0] + p[2] * vshift_[1] + 1
+                   : p[0] + p[1] * vshift_[0] + p[2] * vshift_[1] + vshift_[1];
+        }
+      case EdgePosition::D4_3D:
+        if(isAccelerated_) {
+          return localVertexId == 0
+                   ? p[0] + (p[1] << div_[0]) + (p[2] << div_[1]) + 1
+                   : p[0] + (p[1] << div_[0]) + (p[2] << div_[1]) + vshift_[0]
+                       + vshift_[1];
+        } else {
+          return localVertexId == 0
+                   ? p[0] + p[1] * vshift_[0] + p[2] * vshift_[1] + 1
+                   : p[0] + p[1] * vshift_[0] + p[2] * vshift_[1] + vshift_[0]
+                       + vshift_[1];
+        }
 
-  if(dimensionality_ == 3) {
-    SimplexId p[3];
+      case EdgePosition::L_2D:
+        if(isAccelerated_) {
+          return localVertexId == 0 ? p[0] + (p[1] << div_[0])
+                                    : p[0] + (p[1] << div_[0]) + 1;
+        } else {
+          return localVertexId == 0 ? p[0] + p[1] * vshift_[0]
+                                    : p[0] + p[1] * vshift_[0] + 1;
+        }
+      case EdgePosition::H_2D:
+        if(isAccelerated_) {
+          return localVertexId == 0 ? p[0] + (p[1] << div_[0])
+                                    : p[0] + (p[1] << div_[0]) + vshift_[0];
+        } else {
+          return localVertexId == 0 ? p[0] + p[1] * vshift_[0]
+                                    : p[0] + p[1] * vshift_[0] + vshift_[0];
+        }
+      case EdgePosition::D1_2D:
+        if(isAccelerated_) {
+          return localVertexId == 0 ? p[0] + (p[1] << div_[0]) + 1
+                                    : p[0] + (p[1] << div_[0]) + vshift_[0];
+        } else {
+          return localVertexId == 0 ? p[0] + p[1] * vshift_[0] + 1
+                                    : p[0] + p[1] * vshift_[0] + vshift_[0];
+        }
 
-    // L
-    if(edgeId < esetshift_[0]) {
-      edgeToPosition(edgeId, 0, p);
-      if(isAccelerated_) {
-        if(localVertexId == 0)
-          vertexId = p[0] + (p[1] << div_[0]) + (p[2] << div_[1]);
-        else
-          vertexId = p[0] + (p[1] << div_[0]) + (p[2] << div_[1]) + 1;
-      } else {
-        if(localVertexId == 0)
-          vertexId = p[0] + p[1] * vshift_[0] + p[2] * vshift_[1];
-        else
-          vertexId = p[0] + p[1] * vshift_[0] + p[2] * vshift_[1] + 1;
-      }
-    }
-    // H
-    else if(edgeId < esetshift_[1]) {
-      edgeToPosition(edgeId, 1, p);
-      if(isAccelerated_) {
-        if(localVertexId == 0)
-          vertexId = p[0] + (p[1] << div_[0]) + (p[2] << div_[1]);
-        else
-          vertexId = p[0] + (p[1] << div_[0]) + (p[2] << div_[1]) + vshift_[0];
-      } else {
-        if(localVertexId == 0)
-          vertexId = p[0] + p[1] * vshift_[0] + p[2] * vshift_[1];
-        else
-          vertexId = p[0] + p[1] * vshift_[0] + p[2] * vshift_[1] + vshift_[0];
-      }
-    }
-    // P
-    else if(edgeId < esetshift_[2]) {
-      edgeToPosition(edgeId, 2, p);
-      if(isAccelerated_) {
-        if(localVertexId == 0)
-          vertexId = p[0] + (p[1] << div_[0]) + (p[2] << div_[1]);
-        else
-          vertexId = p[0] + (p[1] << div_[0]) + (p[2] << div_[1]) + vshift_[1];
-      } else {
-        if(localVertexId == 0)
-          vertexId = p[0] + p[1] * vshift_[0] + p[2] * vshift_[1];
-        else
-          vertexId = p[0] + p[1] * vshift_[0] + p[2] * vshift_[1] + vshift_[1];
-      }
-    }
-    // D1
-    else if(edgeId < esetshift_[3]) {
-      edgeToPosition(edgeId, 3, p);
-      if(isAccelerated_) {
-        if(localVertexId == 0)
-          vertexId = p[0] + (p[1] << div_[0]) + (p[2] << div_[1]) + 1;
-        else
-          vertexId = p[0] + (p[1] << div_[0]) + (p[2] << div_[1]) + vshift_[0];
-      } else {
-        if(localVertexId == 0)
-          vertexId = p[0] + p[1] * vshift_[0] + p[2] * vshift_[1] + 1;
-        else
-          vertexId = p[0] + p[1] * vshift_[0] + p[2] * vshift_[1] + vshift_[0];
-      }
-    }
-    // D2
-    else if(edgeId < esetshift_[4]) {
-      edgeToPosition(edgeId, 4, p);
-      if(isAccelerated_) {
-        if(localVertexId == 0)
-          vertexId = p[0] + (p[1] << div_[0]) + (p[2] << div_[1]);
-        else
-          vertexId = p[0] + (p[1] << div_[0]) + (p[2] << div_[1]) + vshift_[0]
-                     + vshift_[1];
-      } else {
-        if(localVertexId == 0)
-          vertexId = p[0] + p[1] * vshift_[0] + p[2] * vshift_[1];
-        else
-          vertexId = p[0] + p[1] * vshift_[0] + p[2] * vshift_[1] + vshift_[0]
-                     + vshift_[1];
-      }
-    }
-    // D3
-    else if(edgeId < esetshift_[5]) {
-      edgeToPosition(edgeId, 5, p);
-      if(isAccelerated_) {
-        if(localVertexId == 0)
-          vertexId = p[0] + (p[1] << div_[0]) + (p[2] << div_[1]) + 1;
-        else
-          vertexId = p[0] + (p[1] << div_[0]) + (p[2] << div_[1]) + vshift_[1];
+      case EdgePosition::FIRST_EDGE_1D:
+        return localVertexId == 0 ? 0 : 1;
+      case EdgePosition::LAST_EDGE_1D:
+        return localVertexId == 0 ? edgeNumber_ - 1 : edgeNumber_;
+      case EdgePosition::CENTER_1D:
+        return localVertexId == 0 ? edgeId : edgeId + 1;
+    };
+    return -1;
+  };
 
-      } else {
-        if(localVertexId == 0)
-          vertexId = p[0] + p[1] * vshift_[0] + p[2] * vshift_[1] + 1;
-        else
-          vertexId = p[0] + p[1] * vshift_[0] + p[2] * vshift_[1] + vshift_[1];
-      }
-    }
-    // D4
-    else if(edgeId < esetshift_[6]) {
-      edgeToPosition(edgeId, 6, p);
-      if(isAccelerated_) {
-        if(localVertexId == 0)
-          vertexId = p[0] + (p[1] << div_[0]) + (p[2] << div_[1]) + 1;
-        else
-          vertexId = p[0] + (p[1] << div_[0]) + (p[2] << div_[1]) + vshift_[0]
-                     + vshift_[1];
-
-      } else {
-        if(localVertexId == 0)
-          vertexId = p[0] + p[1] * vshift_[0] + p[2] * vshift_[1] + 1;
-        else
-          vertexId = p[0] + p[1] * vshift_[0] + p[2] * vshift_[1] + vshift_[0]
-                     + vshift_[1];
-      }
-    }
-  } else if(dimensionality_ == 2) {
-    SimplexId p[2];
-
-    // L
-    if(edgeId < esetshift_[0]) {
-      edgeToPosition2d(edgeId, 0, p);
-      if(isAccelerated_) {
-        if(localVertexId == 0)
-          vertexId = p[0] + (p[1] << div_[0]);
-        else
-          vertexId = p[0] + (p[1] << div_[0]) + 1;
-      } else {
-        if(localVertexId == 0)
-          vertexId = p[0] + p[1] * vshift_[0];
-        else
-          vertexId = p[0] + p[1] * vshift_[0] + 1;
-      }
-    }
-    // H
-    else if(edgeId < esetshift_[1]) {
-      edgeToPosition2d(edgeId, 1, p);
-      if(isAccelerated_) {
-        if(localVertexId == 0)
-          vertexId = p[0] + (p[1] << div_[0]);
-        else
-          vertexId = p[0] + (p[1] << div_[0]) + vshift_[0];
-      } else {
-        if(localVertexId == 0)
-          vertexId = p[0] + p[1] * vshift_[0];
-        else
-          vertexId = p[0] + p[1] * vshift_[0] + vshift_[0];
-      }
-    }
-    // D1
-    else if(edgeId < esetshift_[2]) {
-      edgeToPosition2d(edgeId, 2, p);
-      if(isAccelerated_) {
-        if(localVertexId == 0)
-          vertexId = p[0] + (p[1] << div_[0]) + 1;
-        else
-          vertexId = p[0] + (p[1] << div_[0]) + vshift_[0];
-      } else {
-        if(localVertexId == 0)
-          vertexId = p[0] + p[1] * vshift_[0] + 1;
-        else
-          vertexId = p[0] + p[1] * vshift_[0] + vshift_[0];
-      }
-    }
-  } else if(dimensionality_ == 1) {
-    if(edgeId > 0 and edgeId < (edgeNumber_ - 1)) {
-      if(localVertexId == 0)
-        vertexId = edgeId;
-      else
-        vertexId = edgeId + 1;
-    } else if(edgeId == 0) {
-      if(localVertexId == 0)
-        vertexId = 0;
-      else
-        vertexId = 1;
-    } else {
-      if(localVertexId == 0)
-        vertexId = edgeNumber_ - 1;
-      else
-        vertexId = edgeNumber_;
-    }
-  }
+  vertexId = dispatch();
 
   return 0;
 }
