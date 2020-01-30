@@ -16,6 +16,8 @@ ttk::ScalarFieldCriticalPoints<dataType>::ScalarFieldCriticalPoints() {
 
   forceNonManifoldCheck = false;
 
+  setDebugMsgPrefix("ScalarFieldCriticalPoints");
+  
   //   threadNumber_ = 1;
 }
 
@@ -56,14 +58,13 @@ int ttk::ScalarFieldCriticalPoints<dataType>::execute() {
     for(SimplexId i = 0; i < vertexNumber_; i++)
       (*sosOffsets_)[i] = i;
 
-    {
-      std::stringstream msg;
-      msg << "[ScalarFieldCriticalPoints] Offset pre-processing done in "
-          << preProcess.getElapsedTime() << " s. Go!" << std::endl;
-      dMsg(std::cout, msg.str(), timeMsg);
-    }
+    printMsg("Preprocessed " + std::to_string(vertexNumber_) + " offsets.", 
+1,
+           preProcess.getElapsedTime(), 1);
   }
 
+  printMsg("Extracting critical points...");
+  
   Timer t;
 
   std::vector<char> vertexTypes(vertexNumber_);
@@ -91,7 +92,7 @@ int ttk::ScalarFieldCriticalPoints<dataType>::execute() {
             oneSaddleNumber = 0, twoSaddleNumber = 0, monkeySaddleNumber = 0;
 
   // debug msg
-  if(debugLevel_ >= Debug::infoMsg) {
+  if(debugLevel_ >= static_cast<int>(debug::Priority::INFO)){
     if(dimension_ == 3) {
       for(SimplexId i = 0; i < vertexNumber_; i++) {
         switch(vertexTypes[i]) {
@@ -141,23 +142,16 @@ int ttk::ScalarFieldCriticalPoints<dataType>::execute() {
     }
 
     {
-      std::stringstream msg;
-      msg << "[ScalarFieldCriticalPoints] " << minimumNumber << " minima."
-          << std::endl;
+      printMsg(std::to_string(minimumNumber) + " minima.");
       if(dimension_ == 3) {
-        msg << "[ScalarFieldCriticalPoints] " << oneSaddleNumber
-            << " 1-saddle(s)." << std::endl;
-        msg << "[ScalarFieldCriticalPoints] " << twoSaddleNumber
-            << " 2-saddle(s)." << std::endl;
+        printMsg(std::to_string(oneSaddleNumber) + " 1-saddle(s).");
+        printMsg(std::to_string(twoSaddleNumber) + " 2-saddle(s).");
       }
       if(dimension_ == 2) {
-        msg << "[ScalarFieldCriticalPoints] " << saddleNumber << " saddle(s)."
-            << std::endl;
+        printMsg(std::to_string(saddleNumber) + " saddle(s).");
       }
-      msg << "[ScalarFieldCriticalPoints] " << monkeySaddleNumber
-          << " multi-saddle(s)." << std::endl;
-      msg << "[ScalarFieldCriticalPoints] " << maximumNumber << " maxima."
-          << std::endl;
+      printMsg(std::to_string(monkeySaddleNumber) + " multi-saddle(s).");
+      printMsg(std::to_string(maximumNumber) + " maxima.");
 
       //       msg << "[ScalarFieldCriticalPoints] Euler characteristic
       // approximation:";
@@ -174,7 +168,6 @@ int ttk::ScalarFieldCriticalPoints<dataType>::execute() {
       //         msg << minimumNumber - saddleNumber + maximumNumber;
       //       }
       //       msg << std::endl;
-      dMsg(std::cout, msg.str(), Debug::infoMsg);
     }
   }
 
@@ -187,13 +180,8 @@ int ttk::ScalarFieldCriticalPoints<dataType>::execute() {
     }
   }
 
-  {
-    std::stringstream msg;
-    msg << "[ScalarFieldCriticalPoints] Data-set (" << vertexNumber_
-        << " vertices) processed in " << t.getElapsedTime() << " s. ("
-        << threadNumber_ << " thread(s))." << std::endl;
-    dMsg(std::cout, msg.str(), 2);
-  }
+  printMsg("Processed " + std::to_string(vertexNumber_) + " vertices",
+           1, t.getElapsedTime(), threadNumber_);
 
   return 0;
 }
@@ -326,13 +314,11 @@ std::pair<ttk::SimplexId, ttk::SimplexId>
   it = unique(upperList.begin(), upperList.end());
   upperList.resize(distance(upperList.begin(), it));
 
-  if(debugLevel_ >= Debug::advancedInfoMsg) {
-    std::stringstream msg;
-    msg << "[ScalarFieldCriticalPoints] Vertex #" << vertexId
-        << ": lowerLink-#CC=" << lowerList.size()
-        << " upperLink-#CC=" << upperList.size() << std::endl;
-
-    dMsg(std::cout, msg.str(), Debug::advancedInfoMsg);
+  if(debugLevel_ >= static_cast<int>(debug::Priority::VERBOSE)){
+    printMsg("Vertex #" + std::to_string(vertexId) + ": lowerLink-#CC="
+      + std::to_string(lowerList.size()) + " upperLink-#CC=" 
+      + std::to_string(upperList.size()), 
+      debug::Priority::VERBOSE);
   }
 
   return std::make_pair(lowerList.size(), upperList.size());
@@ -453,15 +439,15 @@ char ttk::ScalarFieldCriticalPoints<dataType>::getCriticalType(
     }
   }
 
-  if(debugLevel_ >= Debug::advancedInfoMsg) {
-    std::stringstream msg;
-    msg << "[ScalarFieldCriticalPoints] Vertex #" << vertexId << " lower link ("
-        << lowerCount << " vertices)" << std::endl;
-
-    msg << "[ScalarFieldCriticalPoints] Vertex #" << vertexId << " upper link ("
-        << upperCount << " vertices)" << std::endl;
-
-    dMsg(std::cout, msg.str(), Debug::advancedInfoMsg);
+  if(debugLevel_ >= static_cast<int>(debug::Priority::VERBOSE)){
+    printMsg("Vertex #" + std::to_string(vertexId) 
+      + " lower link (" + std::to_string(lowerCount)
+      + " vertices)",
+      debug::Priority::VERBOSE);
+    printMsg("Vertex #" + std::to_string(vertexId) 
+      + " upper link (" + std::to_string(upperCount)
+      + " vertices)",
+      debug::Priority::VERBOSE);
   }
 
   if(!lowerCount) {
@@ -545,13 +531,11 @@ char ttk::ScalarFieldCriticalPoints<dataType>::getCriticalType(
   it = unique(upperList.begin(), upperList.end());
   upperList.resize(distance(upperList.begin(), it));
 
-  if(debugLevel_ >= Debug::advancedInfoMsg) {
-    std::stringstream msg;
-    msg << "[ScalarFieldCriticalPoints] Vertex #" << vertexId
-        << ": lowerLink-#CC=" << lowerList.size()
-        << " upperLink-#CC=" << upperList.size() << std::endl;
-
-    dMsg(std::cout, msg.str(), Debug::advancedInfoMsg);
+  if(debugLevel_ >= static_cast<int>(debug::Priority::VERBOSE)){
+    printMsg("Vertex #" + std::to_string(vertexId) + ": lowerLink-#CC="
+      + std::to_string(lowerList.size()) + " upperLink-#CC=" 
+      + std::to_string(upperList.size()), 
+      debug::Priority::VERBOSE);
   }
 
   if((lowerList.size() == 1) && (upperList.size() == 1))
