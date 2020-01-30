@@ -6,6 +6,7 @@
 - New templated triangulation API (up to x2 speedup)
 - New debugging API
 - New module API (simpler, clearer, more convenient)
+- Performance updates for the Morse-Smale complex (improved worstcase runtime with processlowerStar, IEEE PAMI 2011)
 
 
 ### 0.9.8.9
