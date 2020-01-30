@@ -1766,53 +1766,39 @@ int ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getEdgeStar)(
     return -1;
 #endif
 
-  starId = -1;
+  const auto dispatch = [&]() -> SimplexId {
+    const auto &p = edgeCoords_[edgeId];
+    switch(edgePositions_[edgeId]) {
+      case EdgePosition::L_3D:
+        return getEdgeStarL(p.data(), localStarId);
+      case EdgePosition::H_3D:
+        return getEdgeStarH(p.data(), localStarId);
+      case EdgePosition::P_3D:
+        return getEdgeStarP(p.data(), localStarId);
+      case EdgePosition::D1_3D:
+        return getEdgeStarD1(p.data(), localStarId);
+      case EdgePosition::D2_3D:
+        return getEdgeStarD2(p.data(), localStarId);
+      case EdgePosition::D3_3D:
+        return getEdgeStarD3(p.data(), localStarId);
+      case EdgePosition::D4_3D:
+        return p[2] * tetshift_[1] + p[1] * tetshift_[0] + p[0] * 6
+               + localStarId;
 
-  if(dimensionality_ == 3) {
-    SimplexId p[3];
+      case EdgePosition::L_2D:
+        return getEdgeStar2dL(p.data(), localStarId);
+      case EdgePosition::H_2D:
+        return getEdgeStar2dH(p.data(), localStarId);
+      case EdgePosition::D1_2D:
+        return p[0] * 2 + p[1] * tshift_[0] + localStarId;
 
-    if(edgeId < esetshift_[0]) {
-      edgeToPosition(edgeId, 0, p);
-      starId = getEdgeStarL(p, localStarId); // L
-    } else if(edgeId < esetshift_[1]) {
-      edgeToPosition(edgeId, 1, p);
-      starId = getEdgeStarH(p, localStarId); // H
-    } else if(edgeId < esetshift_[2]) {
-      edgeToPosition(edgeId, 2, p);
-      starId = getEdgeStarP(p, localStarId); // P
-    } else if(edgeId < esetshift_[3]) {
-      edgeToPosition(edgeId, 3, p);
-      starId = getEdgeStarD1(p, localStarId); // D1
-    } else if(edgeId < esetshift_[4]) {
-      edgeToPosition(edgeId, 4, p);
-      starId = getEdgeStarD2(p, localStarId); // D2
-    } else if(edgeId < esetshift_[5]) {
-      edgeToPosition(edgeId, 5, p);
-      starId = getEdgeStarD3(p, localStarId); // D3
-    } else if(edgeId < esetshift_[6]) {
-      edgeToPosition(edgeId, 6, p);
-      starId = p[2] * tetshift_[1] + p[1] * tetshift_[0] + p[0] * 6
-               + localStarId; // D4
+      default: // 1D
+        break;
     }
-  } else if(dimensionality_ == 2) {
-    SimplexId p[2];
+    return -1;
+  };
 
-    // L
-    if(edgeId < esetshift_[0]) {
-      edgeToPosition2d(edgeId, 0, p);
-      starId = getEdgeStar2dL(p, localStarId); // L
-    }
-    // H
-    else if(edgeId < esetshift_[1]) {
-      edgeToPosition2d(edgeId, 1, p);
-      starId = getEdgeStar2dH(p, localStarId); // L
-    }
-    // D1
-    else if(edgeId < esetshift_[2]) {
-      edgeToPosition2d(edgeId, 2, p);
-      starId = p[0] * 2 + p[1] * tshift_[0] + localStarId; // D1
-    }
-  }
+  starId = dispatch();
 
   return 0;
 }
