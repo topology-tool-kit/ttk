@@ -574,6 +574,72 @@ namespace ttk {
       return 0;
     }
 
+    inline int preconditionTrianglesInternal() override {
+      trianglePositions_.resize(triangleNumber_);
+      triangleCoords_.resize(triangleNumber_);
+      if(dimensionality_ == 3) {
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+        for(SimplexId i = 0; i < triangleNumber_; ++i) {
+          std::array<SimplexId, 3> p{};
+          if(i < tsetshift_[0]) {
+            triangleToPosition(i, 0, p.data());
+            trianglePositions_[i] = TrianglePosition::F_3D;
+          } else if(i < tsetshift_[1]) {
+            triangleToPosition(i, 1, p.data());
+            trianglePositions_[i] = TrianglePosition::H_3D;
+          } else if(i < tsetshift_[2]) {
+            triangleToPosition(i, 2, p.data());
+            trianglePositions_[i] = TrianglePosition::C_3D;
+          } else if(i < tsetshift_[3]) {
+            triangleToPosition(i, 3, p.data());
+            trianglePositions_[i] = TrianglePosition::D1_3D;
+          } else if(i < tsetshift_[4]) {
+            triangleToPosition(i, 4, p.data());
+            trianglePositions_[i] = TrianglePosition::D2_3D;
+          } else if(i < tsetshift_[5]) {
+            triangleToPosition(i, 5, p.data());
+            trianglePositions_[i] = TrianglePosition::D3_3D;
+          }
+          triangleCoords_[i] = std::move(p);
+        }
+
+      } else if(dimensionality_ == 2) {
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+        for(SimplexId i = 0; i < triangleNumber_; ++i) {
+          std::array<SimplexId, 3> p{};
+          triangleToPosition2d(i, p.data());
+          triangleCoords_[i] = std::move(p);
+          if(i % 2 == 0) {
+            trianglePositions_[i] = TrianglePosition::TOP_2D;
+          } else {
+            trianglePositions_[i] = TrianglePosition::BOTTOM_2D;
+          }
+        }
+      }
+      return 0;
+    }
+
+    inline int preconditionTetrahedronsInternal() {
+      if(dimensionality_ != 3) {
+        return 1;
+      }
+      tetrahedronCoords_.resize(tetrahedronNumber_);
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+      for(SimplexId i = 0; i < tetrahedronNumber_; ++i) {
+        std::array<SimplexId, 3> p{};
+        tetrahedronToPosition(i, p.data());
+        tetrahedronCoords_[i] = std::move(p);
+      }
+      return 0;
+    }
+
   protected:
     enum class VertexPosition : char {
       // a--------b
@@ -695,16 +761,24 @@ namespace ttk {
       // |/       |/
       // c--------d
 
-      F, // face (abc, bcd)
-      C, // side (abe, bef)
-      H, // top (acg, aeg)
-      D1, // diagonal1 (bdg, beg)
-      D2, // diagonal2 (abg, bgh)
-      D3, // diagonal3 (bcg, bfg)
+      F_3D, // face (abc, bcd)
+      C_3D, // side (abe, bef)
+      H_3D, // top (acg, aeg)
+      D1_3D, // diagonal1 (bdg, beg)
+      D2_3D, // diagonal2 (abg, bgh)
+      D3_3D, // diagonal3 (bcg, bfg)
+
+      TOP_2D, // abc
+      BOTTOM_2D, // bcd
     };
 
     // for every triangle, its position on the grid
     std::vector<TrianglePosition> trianglePositions_{};
+    // for every triangle, its coordinates on the grid
+    std::vector<std::array<SimplexId, 3>> triangleCoords_{};
+
+    // for every tetrahedron, its coordinates on the grid
+    std::vector<std::array<SimplexId, 3>> tetrahedronCoords_{};
 
     int dimensionality_; //
     float origin_[3]; //
