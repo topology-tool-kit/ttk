@@ -752,10 +752,7 @@ namespace ttk {
         }
       } else {
         // unsupported dimension
-        std::stringstream msg;
-        msg << "[ExplicitTriangulation] Unsupported dimension for boundary "
-            << "preprocessing." << std::endl;
-        dMsg(std::cerr, msg.str(), infoMsg);
+        printErr("Unsupported dimension for boundary precondition");
         return -1;
       }
 
@@ -785,10 +782,7 @@ namespace ttk {
         }
       } else {
         // unsupported dimension
-        std::stringstream msg;
-        msg << "[ExplicitTriangulation] Unsupported dimension for boundary "
-            << "preprocessing." << std::endl;
-        dMsg(std::cerr, msg.str(), infoMsg);
+        printErr("Unsupported dimension for boundary precondition");
         return -1;
       }
 
@@ -836,10 +830,7 @@ namespace ttk {
         }
       } else {
         // unsupported dimension
-        std::stringstream msg;
-        msg << "[ExplicitTriangulation] Unsupported dimension for boundary "
-            << "preprocessing." << std::endl;
-        dMsg(std::cerr, msg.str(), infoMsg);
+        printErr("Unsupported dimension for boundary precondition");
         return -1;
       }
 
@@ -950,10 +941,7 @@ namespace ttk {
             edgeList_, edgeStarList_, cellEdgeList_, edgeLinkList_);
         } else {
           // unsupported dimension
-          std::stringstream msg;
-          msg << "[ExplicitTriangulation] Unsupported dimension for edge link "
-              << "preprocessing." << std::endl;
-          dMsg(std::cerr, msg.str(), infoMsg);
+          printErr("Unsupported dimension for edge link precondition");
           return -1;
         }
       }
@@ -1099,10 +1087,7 @@ namespace ttk {
             vertexStarList_, cellTriangleList_, triangleList_, vertexLinkList_);
         } else {
           // unsupported dimension
-          std::stringstream msg;
-          msg << "[ExplicitTriangulation] Unsupported dimension for vertex"
-              << " link preprocessing." << std::endl;
-          dMsg(std::cerr, msg.str(), infoMsg);
+          printErr("Unsupported dimension for vertex link precondition");
           return -1;
         }
       }

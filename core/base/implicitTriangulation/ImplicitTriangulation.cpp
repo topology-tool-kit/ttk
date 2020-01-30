@@ -206,10 +206,7 @@ int ImplicitTriangulation::checkAcceleration() {
   }
 
   if(isAccelerated_) {
-    stringstream msg;
-    msg << "[ImplicitTriangulation] The getVertex*() requests are accelerated."
-        << endl;
-    dMsg(cout, msg.str(), infoMsg);
+    printMsg("Accelerated getVertex*() requests.", debug::Priority::INFO);
   }
 
   return 0;
@@ -469,12 +466,8 @@ const vector<vector<SimplexId>> *
         getVertexNeighbor(i, j, vertexNeighborList_[i][j]);
     }
 
-    {
-      stringstream msg;
-      msg << "[ImplicitTriangulation] Vertex neighbors built in "
-          << t.getElapsedTime() << " s. (" << 1 << " thread(s))." << endl;
-      dMsg(cout, msg.str(), timeMsg);
-    }
+    printMsg("Built " + to_string(vertexNumber_) + " vertex neighbors.", 1,
+             t.getElapsedTime(), 1);
   }
 
   return &vertexNeighborList_;
@@ -639,12 +632,8 @@ const vector<vector<SimplexId>> *
         getVertexEdgeInternal(i, j, vertexEdgeList_[i][j]);
     }
 
-    {
-      stringstream msg;
-      msg << "[ImplicitTriangulation] Vertex edges built in "
-          << t.getElapsedTime() << " s. (" << 1 << " thread(s))." << endl;
-      dMsg(cout, msg.str(), timeMsg);
-    }
+    printMsg("Built " + to_string(vertexNumber_) + " vertex edges.", 1,
+             t.getElapsedTime(), 1);
   }
 
   return &vertexEdgeList_;
@@ -833,12 +822,8 @@ const vector<vector<SimplexId>> *
         getVertexTriangleInternal(i, j, vertexTriangleList_[i][j]);
     }
 
-    {
-      stringstream msg;
-      msg << "[ImplicitTriangulation] Vertex triangles built in "
-          << t.getElapsedTime() << " s. (" << 1 << " thread(s))." << endl;
-      dMsg(cout, msg.str(), timeMsg);
-    }
+    printMsg("Built " + to_string(vertexNumber_) + " vertex triangles.", 1,
+             t.getElapsedTime(), 1);
   }
 
   return &vertexTriangleList_;
@@ -989,12 +974,8 @@ const vector<vector<SimplexId>> *
         getVertexLink(i, j, vertexLinkList_[i][j]);
     }
 
-    {
-      stringstream msg;
-      msg << "[ImplicitTriangulation] Vertex links built in "
-          << t.getElapsedTime() << " s. (" << 1 << " thread(s))." << endl;
-      dMsg(cout, msg.str(), timeMsg);
-    }
+    printMsg("Built " + to_string(vertexNumber_) + " vertex links.", 1,
+             t.getElapsedTime(), 1);
   }
 
   return &vertexLinkList_;
@@ -1243,12 +1224,8 @@ const vector<vector<SimplexId>> *
         getVertexStar(i, j, vertexStarList_[i][j]);
     }
 
-    {
-      stringstream msg;
-      msg << "[ImplicitTriangulation] Vertex stars built in "
-          << t.getElapsedTime() << " s. (" << 1 << " thread(s))." << endl;
-      dMsg(cout, msg.str(), timeMsg);
-    }
+    printMsg("Built " + to_string(vertexNumber_) + " vertex stars.", 1,
+             t.getElapsedTime(), 1);
   }
 
   return &vertexStarList_;
@@ -1525,13 +1502,8 @@ const vector<pair<SimplexId, SimplexId>> *
       edgeList_[i].second = id1;
     }
 
-    {
-      stringstream msg;
-      msg << "[ImplicitTriangulation] Edge-list built in " << t.getElapsedTime()
-          << " s. (" << edgeList_.size() << " edges, (" << 1 << " thread(s))"
-          << endl;
-      dMsg(cout, msg.str(), timeMsg);
-    }
+    printMsg(
+      "Built " + to_string(edgeNumber_) + " edges.", 1, t.getElapsedTime(), 1);
   }
 
   return &edgeList_;
@@ -1870,12 +1842,8 @@ const vector<vector<SimplexId>> *
         getEdgeTriangleInternal(i, j, edgeTriangleList_[i][j]);
     }
 
-    {
-      stringstream msg;
-      msg << "[ImplicitTriangulation] Triangle edges built in "
-          << t.getElapsedTime() << " s. (" << 1 << " thread(s))." << endl;
-      dMsg(cout, msg.str(), timeMsg);
-    }
+    printMsg("Built " + to_string(edgeNumber_) + " edge triangles.", 1,
+             t.getElapsedTime(), 1);
   }
 
   return &edgeTriangleList_;
@@ -1968,12 +1936,8 @@ const vector<vector<SimplexId>> *ImplicitTriangulation::getEdgeLinksInternal() {
         getEdgeLink(i, j, edgeLinkList_[i][j]);
     }
 
-    {
-      stringstream msg;
-      msg << "[ImplicitTriangulation] List of edge links built in "
-          << t.getElapsedTime() << " s. (" << 1 << " thread(s))." << endl;
-      dMsg(cout, msg.str(), timeMsg);
-    }
+    printMsg("Built " + to_string(edgeNumber_) + " edge links.", 1,
+             t.getElapsedTime(), 1);
   }
 
   return &edgeLinkList_;
@@ -2208,12 +2172,8 @@ const vector<vector<SimplexId>> *ImplicitTriangulation::getEdgeStarsInternal() {
         getEdgeStar(i, j, edgeStarList_[i][j]);
     }
 
-    {
-      stringstream msg;
-      msg << "[ImplicitTriangulation] List of edge stars built in "
-          << t.getElapsedTime() << " s. (" << 1 << " thread(s))." << endl;
-      dMsg(cout, msg.str(), timeMsg);
-    }
+    printMsg("Built " + to_string(edgeNumber_) + " edge stars.", 1,
+             t.getElapsedTime(), 1);
   }
 
   return &edgeStarList_;
@@ -2439,13 +2399,8 @@ const vector<vector<SimplexId>> *
 
     getTriangleEdgesInternal(triangleEdgeList_);
 
-    {
-      stringstream msg;
-      msg << "[ImplicitTriangulation] Triangle edges (" << triangleNumber_
-          << " triangle(s), " << edgeNumber_ << " edge(s)) computed in "
-          << t.getElapsedTime() << " s. (" << 1 << " thread(s))." << endl;
-      dMsg(cout, msg.str(), timeMsg);
-    }
+    printMsg("Built " + to_string(triangleNumber_) + " triangle edges.", 1,
+             t.getElapsedTime(), 1);
   }
 
   return &triangleEdgeList_;
@@ -2466,13 +2421,8 @@ const vector<vector<SimplexId>> *ImplicitTriangulation::getTrianglesInternal() {
         getTriangleVertexInternal(i, j, triangleList_[i][j]);
     }
 
-    {
-      stringstream msg;
-      msg << "[ImplicitTriangulation] Triangle list (" << triangleNumber_
-          << " triangles) computed in " << t.getElapsedTime() << " s. (" << 1
-          << " thread(s))." << endl;
-      dMsg(cout, msg.str(), timeMsg);
-    }
+    printMsg("Built " + to_string(triangleNumber_) + " triangles.", 1,
+             t.getElapsedTime(), 1);
   }
 
   return &triangleList_;
@@ -2556,12 +2506,8 @@ const vector<vector<SimplexId>> *
         getTriangleLink(i, j, triangleLinkList_[i][j]);
     }
 
-    {
-      stringstream msg;
-      msg << "[TriangulationVTI] Triangle links built in " << t.getElapsedTime()
-          << " s. (" << 1 << " thread(s))." << endl;
-      dMsg(cout, msg.str(), timeMsg);
-    }
+    printMsg("Built " + to_string(triangleNumber_) + " triangle links.", 1,
+             t.getElapsedTime(), 1);
   }
   return &triangleLinkList_;
 }
@@ -2687,12 +2633,8 @@ const vector<vector<SimplexId>> *
         getTriangleStar(i, j, triangleStarList_[i][j]);
     }
 
-    {
-      stringstream msg;
-      msg << "[TriangulationVTI] Triangle stars built in " << t.getElapsedTime()
-          << " s. (" << 1 << " thread(s))." << endl;
-      dMsg(cout, msg.str(), timeMsg);
-    }
+    printMsg("Built " + to_string(triangleNumber_) + " triangle stars.", 1,
+             t.getElapsedTime(), 1);
   }
   return &triangleStarList_;
 }
@@ -3161,13 +3103,8 @@ const vector<vector<SimplexId>> *ImplicitTriangulation::getCellEdgesInternal() {
     else if(dimensionality_ == 2)
       getTriangleEdgesInternal(cellEdgeList_);
 
-    {
-      stringstream msg;
-      msg << "[ImplicitTriangulation] Cell edges (" << getNumberOfCells()
-          << " cell(s), " << edgeNumber_ << "edge(s)) computed in "
-          << t.getElapsedTime() << " s. (" << 1 << " thread(s))." << endl;
-      dMsg(cout, msg.str(), timeMsg);
-    }
+    printMsg("Built " + to_string(cellNumber_) + " cell edges.", 1,
+             t.getElapsedTime(), 1);
   }
 
   return &cellEdgeList_;
@@ -3191,13 +3128,8 @@ const vector<vector<SimplexId>> *
     if(dimensionality_ == 3)
       getTetrahedronTriangles(cellTriangleList_);
 
-    {
-      stringstream msg;
-      msg << "[ImplicitTriangulation] Cell triangles (" << cellNumber_
-          << " cell(s), " << triangleNumber_ << "edge(s)) computed in "
-          << t.getElapsedTime() << " s. (" << 1 << " thread(s))." << endl;
-      dMsg(cout, msg.str(), timeMsg);
-    }
+    printMsg("Built " + to_string(cellNumber_) + " cell triangles.", 1,
+             t.getElapsedTime(), 1);
   }
 
   return &cellTriangleList_;
@@ -3215,10 +3147,7 @@ SimplexId ImplicitTriangulation::getCellNeighborNumberInternal(
   else if(dimensionality_ == 2)
     return getTriangleNeighborNumber(cellId);
   else if(dimensionality_ == 1) {
-    stringstream msg;
-    msg << "[ImplicitTriangulation] getCellNeighborNumber() in 1D:" << endl;
-    msg << "[ImplicitTriangulation] Not implemented! TODO!" << endl;
-    dMsg(cerr, msg.str(), Debug::fatalMsg);
+    printErr("getCellNeighborNumber() not implemented in 1D! (TODO)");
     return -1;
   }
 
@@ -3240,10 +3169,7 @@ int ImplicitTriangulation::getCellNeighborInternal(
   else if(dimensionality_ == 2)
     getTriangleNeighbor(cellId, localNeighborId, neighborId);
   else if(dimensionality_ == 1) {
-    stringstream msg;
-    msg << "[ImplicitTriangulation] getCellNeighbor() in 1D:" << endl;
-    msg << "[ImplicitTriangulation] Not implemented! TODO!" << endl;
-    dMsg(cerr, msg.str(), Debug::fatalMsg);
+    printErr("getCellNeighbor() not implemented in 1D! (TODO)");
     return -1;
   }
 
@@ -3264,20 +3190,12 @@ const vector<vector<SimplexId>> *
     else if(dimensionality_ == 2)
       getTriangleNeighbors(cellNeighborList_);
     else if(dimensionality_ == 1) {
-      stringstream msg;
-      msg << "[ImplicitTriangulation] getCellNeighbors() in 1D:" << endl;
-      msg << "[ImplicitTriangulation] Not implemented! TODO!" << endl;
-      dMsg(cerr, msg.str(), Debug::fatalMsg);
+      printErr("getCellNeighbors() not implemented in 1D! (TODO)");
       return nullptr;
     }
 
-    {
-      stringstream msg;
-      msg << "[ImplicitTriangulation] Cell neighbors (" << getNumberOfCells()
-          << " cells) computed in " << t.getElapsedTime() << " s. (" << 1
-          << " thread(s))." << endl;
-      dMsg(cout, msg.str(), timeMsg);
-    }
+    printMsg("Built " + to_string(cellNumber_) + " cell neighbors.", 1,
+             t.getElapsedTime(), 1);
   }
 
   return &cellNeighborList_;
