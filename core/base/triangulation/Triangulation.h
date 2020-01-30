@@ -2434,10 +2434,7 @@ namespace ttk {
   protected:
     inline bool isEmptyCheck() const {
       if(!abstractTriangulation_) {
-        std::stringstream msg;
-        msg << "[Triangulation] Trying to access an empty data-structure!"
-            << std::endl;
-        dMsg(std::cerr, msg.str(), fatalMsg);
+        printErr("Trying to access an empty data-structure!");
         return true;
       }
       return false;
