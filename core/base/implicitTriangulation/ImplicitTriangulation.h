@@ -347,7 +347,7 @@ namespace ttk {
                      const SimplexId &yDim,
                      const SimplexId &zDim);
 
-    inline int preconditionVertexNeighborsInternal() override {
+    inline int preconditionVerticesInternal() {
       vertexPositions_.resize(vertexNumber_);
       vertexCoords_.resize(vertexNumber_);
 
@@ -488,6 +488,23 @@ namespace ttk {
       return 0;
     }
 
+    // ensure all preconditionVertex functions call
+    // preconditionVertices() once
+#define PRECONDITION_VERTEX(NAME)                            \
+  inline int preconditionVertex##NAME##Internal() override { \
+    if(!hasPreconditionedVertices_) {                        \
+      hasPreconditionedVertices_ = true;                     \
+      return this->preconditionVerticesInternal();           \
+    }                                                        \
+    return 0;                                                \
+  }
+
+    PRECONDITION_VERTEX(Edges)
+    PRECONDITION_VERTEX(Links)
+    PRECONDITION_VERTEX(Neighbors)
+    PRECONDITION_VERTEX(Stars)
+    PRECONDITION_VERTEX(Triangles)
+
   protected:
     enum class VertexPosition : char {
       // a--------b
@@ -564,6 +581,8 @@ namespace ttk {
     std::vector<VertexPosition> vertexPositions_{};
     // for  every vertex, its coordinates on the grid
     std::vector<std::array<SimplexId, 3>> vertexCoords_{};
+    // if above vectors have already been filled
+    bool hasPreconditionedVertices_{false};
 
     enum class EdgePosition : char {
       //    e--------f
