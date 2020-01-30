@@ -17,7 +17,7 @@ ttk::ScalarFieldCriticalPoints<dataType>::ScalarFieldCriticalPoints() {
   forceNonManifoldCheck = false;
 
   setDebugMsgPrefix("ScalarFieldCriticalPoints");
-  
+
   //   threadNumber_ = 1;
 }
 
@@ -58,13 +58,12 @@ int ttk::ScalarFieldCriticalPoints<dataType>::execute() {
     for(SimplexId i = 0; i < vertexNumber_; i++)
       (*sosOffsets_)[i] = i;
 
-    printMsg("Preprocessed " + std::to_string(vertexNumber_) + " offsets.", 
-1,
-           preProcess.getElapsedTime(), 1);
+    printMsg("Preprocessed " + std::to_string(vertexNumber_) + " offsets.", 1,
+             preProcess.getElapsedTime(), 1);
   }
 
   printMsg("Extracting critical points...");
-  
+
   Timer t;
 
   std::vector<char> vertexTypes(vertexNumber_);
@@ -92,7 +91,7 @@ int ttk::ScalarFieldCriticalPoints<dataType>::execute() {
             oneSaddleNumber = 0, twoSaddleNumber = 0, monkeySaddleNumber = 0;
 
   // debug msg
-  if(debugLevel_ >= static_cast<int>(debug::Priority::INFO)){
+  if(debugLevel_ >= static_cast<int>(debug::Priority::INFO)) {
     if(dimension_ == 3) {
       for(SimplexId i = 0; i < vertexNumber_; i++) {
         switch(vertexTypes[i]) {
@@ -180,8 +179,8 @@ int ttk::ScalarFieldCriticalPoints<dataType>::execute() {
     }
   }
 
-  printMsg("Processed " + std::to_string(vertexNumber_) + " vertices",
-           1, t.getElapsedTime(), threadNumber_);
+  printMsg("Processed " + std::to_string(vertexNumber_) + " vertices", 1,
+           t.getElapsedTime(), threadNumber_);
 
   return 0;
 }
@@ -314,11 +313,11 @@ std::pair<ttk::SimplexId, ttk::SimplexId>
   it = unique(upperList.begin(), upperList.end());
   upperList.resize(distance(upperList.begin(), it));
 
-  if(debugLevel_ >= static_cast<int>(debug::Priority::VERBOSE)){
-    printMsg("Vertex #" + std::to_string(vertexId) + ": lowerLink-#CC="
-      + std::to_string(lowerList.size()) + " upperLink-#CC=" 
-      + std::to_string(upperList.size()), 
-      debug::Priority::VERBOSE);
+  if(debugLevel_ >= static_cast<int>(debug::Priority::VERBOSE)) {
+    printMsg("Vertex #" + std::to_string(vertexId)
+               + ": lowerLink-#CC=" + std::to_string(lowerList.size())
+               + " upperLink-#CC=" + std::to_string(upperList.size()),
+             debug::Priority::VERBOSE);
   }
 
   return std::make_pair(lowerList.size(), upperList.size());
@@ -439,15 +438,13 @@ char ttk::ScalarFieldCriticalPoints<dataType>::getCriticalType(
     }
   }
 
-  if(debugLevel_ >= static_cast<int>(debug::Priority::VERBOSE)){
-    printMsg("Vertex #" + std::to_string(vertexId) 
-      + " lower link (" + std::to_string(lowerCount)
-      + " vertices)",
-      debug::Priority::VERBOSE);
-    printMsg("Vertex #" + std::to_string(vertexId) 
-      + " upper link (" + std::to_string(upperCount)
-      + " vertices)",
-      debug::Priority::VERBOSE);
+  if(debugLevel_ >= static_cast<int>(debug::Priority::VERBOSE)) {
+    printMsg("Vertex #" + std::to_string(vertexId) + " lower link ("
+               + std::to_string(lowerCount) + " vertices)",
+             debug::Priority::VERBOSE);
+    printMsg("Vertex #" + std::to_string(vertexId) + " upper link ("
+               + std::to_string(upperCount) + " vertices)",
+             debug::Priority::VERBOSE);
   }
 
   if(!lowerCount) {
@@ -531,11 +528,11 @@ char ttk::ScalarFieldCriticalPoints<dataType>::getCriticalType(
   it = unique(upperList.begin(), upperList.end());
   upperList.resize(distance(upperList.begin(), it));
 
-  if(debugLevel_ >= static_cast<int>(debug::Priority::VERBOSE)){
-    printMsg("Vertex #" + std::to_string(vertexId) + ": lowerLink-#CC="
-      + std::to_string(lowerList.size()) + " upperLink-#CC=" 
-      + std::to_string(upperList.size()), 
-      debug::Priority::VERBOSE);
+  if(debugLevel_ >= static_cast<int>(debug::Priority::VERBOSE)) {
+    printMsg("Vertex #" + std::to_string(vertexId)
+               + ": lowerLink-#CC=" + std::to_string(lowerList.size())
+               + " upperLink-#CC=" + std::to_string(upperList.size()),
+             debug::Priority::VERBOSE);
   }
 
   if((lowerList.size() == 1) && (upperList.size() == 1))
