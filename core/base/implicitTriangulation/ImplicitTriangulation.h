@@ -505,6 +505,63 @@ namespace ttk {
     PRECONDITION_VERTEX(Stars)
     PRECONDITION_VERTEX(Triangles)
 
+    inline int preconditionEdgesInternal() override {
+      edgePositions_.resize(edgeNumber_);
+      edgeCoords_.resize(edgeNumber_);
+      std::array<SimplexId, 3> p{};
+
+      if(dimensionality_ == 3) {
+        for(SimplexId i = 0; i < edgeNumber_; ++i) {
+          if(i < esetshift_[0]) {
+            edgeToPosition(i, 0, p.data());
+            edgePositions_[i] = EdgePosition::L_3D;
+          } else if(i < esetshift_[1]) {
+            edgeToPosition(i, 1, p.data());
+            edgePositions_[i] = EdgePosition::H_3D;
+          } else if(i < esetshift_[2]) {
+            edgeToPosition(i, 2, p.data());
+            edgePositions_[i] = EdgePosition::P_3D;
+          } else if(i < esetshift_[3]) {
+            edgeToPosition(i, 3, p.data());
+            edgePositions_[i] = EdgePosition::D1_3D;
+          } else if(i < esetshift_[4]) {
+            edgeToPosition(i, 4, p.data());
+            edgePositions_[i] = EdgePosition::D2_3D;
+          } else if(i < esetshift_[5]) {
+            edgeToPosition(i, 5, p.data());
+            edgePositions_[i] = EdgePosition::D3_3D;
+          } else if(i < esetshift_[6]) {
+            edgeToPosition(i, 6, p.data());
+            edgePositions_[i] = EdgePosition::D4_3D;
+          }
+          edgeCoords_[i] = std::move(p);
+        }
+
+      } else if(dimensionality_ == 2) {
+        for(SimplexId i = 0; i < edgeNumber_; ++i) {
+          if(i < esetshift_[0]) {
+            edgeToPosition2d(i, 0, p.data());
+            edgePositions_[i] = EdgePosition::L_2D;
+          } else if(i < esetshift_[1]) {
+            edgeToPosition2d(i, 1, p.data());
+            edgePositions_[i] = EdgePosition::H_2D;
+          } else if(i < esetshift_[2]) {
+            edgeToPosition2d(i, 2, p.data());
+            edgePositions_[i] = EdgePosition::D1_2D;
+          }
+          edgeCoords_[i] = std::move(p);
+        }
+
+      } else if(dimensionality_ == 1) {
+        edgePositions_[0] = EdgePosition::FIRST_EDGE_1D;
+        for(SimplexId i = 1; i < edgeNumber_ - 1; ++i) {
+          edgePositions_[i] = EdgePosition::CENTER_1D;
+        }
+        edgePositions_[edgeNumber_ - 1] = EdgePosition::LAST_EDGE_1D;
+      }
+      return 0;
+    }
+
   protected:
     enum class VertexPosition : char {
       // a--------b
@@ -613,6 +670,8 @@ namespace ttk {
 
     // for every edge, its position on the grid
     std::vector<EdgePosition> edgePositions_{};
+    // for every edge, its coordinates on the grid
+    std::vector<std::array<SimplexId, 3>> edgeCoords_{};
 
     enum class TrianglePosition : char {
       //    e--------f
