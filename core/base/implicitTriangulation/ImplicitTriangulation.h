@@ -594,13 +594,21 @@ namespace ttk {
       // |/       |/
       // c--------d
 
-      L, // length (ab)
-      H, // height (ac)
-      P, // depth (ae)
-      D1, // diagonal1 (bc)
-      D2, // diagonal2 (ag)
-      D3, // diagonal3 (be)
-      D4, // diagonal4 (bg)
+      L_3D, // length (ab)
+      H_3D, // height (ac)
+      P_3D, // depth (ae)
+      D1_3D, // diagonal1 (bc)
+      D2_3D, // diagonal2 (ag)
+      D3_3D, // diagonal3 (be)
+      D4_3D, // diagonal4 (bg)
+
+      L_2D, // length (ab)
+      H_2D, // height (ac)
+      D1_2D, // diagonal1 (bc)
+
+      FIRST_EDGE_1D,
+      LAST_EDGE_1D,
+      CENTER_1D,
     };
 
     // for every edge, its position on the grid
