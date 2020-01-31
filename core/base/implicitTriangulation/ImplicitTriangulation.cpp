@@ -1210,144 +1210,107 @@ int ImplicitTriangulation::getEdgeTriangleInternal(
     return -1;
 #endif
 
-  triangleId = -1;
+  const auto &p = edgeCoords_[edgeId];
 
-  if(dimensionality_ == 3) {
-    const auto p = edgeCoords_[edgeId].data();
+  const auto dispatch = [&]() -> SimplexId {
+    switch(edgePositions_[edgeId]) {
+      case EdgePositionFull::L_xnn_3D:
+        return getEdgeTriangleL_xnn(p.data(), localTriangleId);
+      case EdgePositionFull::L_xn0_3D:
+        return getEdgeTriangleL_xn0(p.data(), localTriangleId);
+      case EdgePositionFull::L_xnN_3D:
+        return getEdgeTriangleL_xnN(p.data(), localTriangleId);
+      case EdgePositionFull::L_x0n_3D:
+        return getEdgeTriangleL_x0n(p.data(), localTriangleId);
+      case EdgePositionFull::L_x00_3D:
+        return getEdgeTriangleL_x00(p.data(), localTriangleId);
+      case EdgePositionFull::L_x0N_3D:
+        return getEdgeTriangleL_x0N(p.data(), localTriangleId);
+      case EdgePositionFull::L_xNn_3D:
+        return getEdgeTriangleL_xNn(p.data(), localTriangleId);
+      case EdgePositionFull::L_xN0_3D:
+        return getEdgeTriangleL_xN0(p.data(), localTriangleId);
+      case EdgePositionFull::L_xNN_3D:
+        return getEdgeTriangleL_xNN(p.data(), localTriangleId);
+      case EdgePositionFull::H_nyn_3D:
+        return getEdgeTriangleH_nyn(p.data(), localTriangleId);
+      case EdgePositionFull::H_ny0_3D:
+        return getEdgeTriangleH_ny0(p.data(), localTriangleId);
+      case EdgePositionFull::H_nyN_3D:
+        return getEdgeTriangleH_nyN(p.data(), localTriangleId);
+      case EdgePositionFull::H_0yn_3D:
+        return getEdgeTriangleH_0yn(p.data(), localTriangleId);
+      case EdgePositionFull::H_0y0_3D:
+        return getEdgeTriangleH_0y0(p.data(), localTriangleId);
+      case EdgePositionFull::H_0yN_3D:
+        return getEdgeTriangleH_0yN(p.data(), localTriangleId);
+      case EdgePositionFull::H_Nyn_3D:
+        return getEdgeTriangleH_Nyn(p.data(), localTriangleId);
+      case EdgePositionFull::H_Ny0_3D:
+        return getEdgeTriangleH_Ny0(p.data(), localTriangleId);
+      case EdgePositionFull::H_NyN_3D:
+        return getEdgeTriangleH_NyN(p.data(), localTriangleId);
+      case EdgePositionFull::P_nnz_3D:
+        return getEdgeTriangleP_nnz(p.data(), localTriangleId);
+      case EdgePositionFull::P_n0z_3D:
+        return getEdgeTriangleP_n0z(p.data(), localTriangleId);
+      case EdgePositionFull::P_nNz_3D:
+        return getEdgeTriangleP_nNz(p.data(), localTriangleId);
+      case EdgePositionFull::P_0nz_3D:
+        return getEdgeTriangleP_0nz(p.data(), localTriangleId);
+      case EdgePositionFull::P_00z_3D:
+        return getEdgeTriangleP_00z(p.data(), localTriangleId);
+      case EdgePositionFull::P_0Nz_3D:
+        return getEdgeTriangleP_0Nz(p.data(), localTriangleId);
+      case EdgePositionFull::P_Nnz_3D:
+        return getEdgeTriangleP_Nnz(p.data(), localTriangleId);
+      case EdgePositionFull::P_N0z_3D:
+        return getEdgeTriangleP_N0z(p.data(), localTriangleId);
+      case EdgePositionFull::P_NNz_3D:
+        return getEdgeTriangleP_NNz(p.data(), localTriangleId);
+      case EdgePositionFull::D1_xyn_3D:
+        return getEdgeTriangleD1_xyn(p.data(), localTriangleId);
+      case EdgePositionFull::D1_xy0_3D:
+        return getEdgeTriangleD1_xy0(p.data(), localTriangleId);
+      case EdgePositionFull::D1_xyN_3D:
+        return getEdgeTriangleD1_xyN(p.data(), localTriangleId);
+      case EdgePositionFull::D2_nyz_3D:
+        return getEdgeTriangleD2_nyz(p.data(), localTriangleId);
+      case EdgePositionFull::D2_0yz_3D:
+        return getEdgeTriangleD2_0yz(p.data(), localTriangleId);
+      case EdgePositionFull::D2_Nyz_3D:
+        return getEdgeTriangleD2_Nyz(p.data(), localTriangleId);
+      case EdgePositionFull::D3_xnz_3D:
+        return getEdgeTriangleD3_xnz(p.data(), localTriangleId);
+      case EdgePositionFull::D3_x0z_3D:
+        return getEdgeTriangleD3_x0z(p.data(), localTriangleId);
+      case EdgePositionFull::D3_xNz_3D:
+        return getEdgeTriangleD3_xNz(p.data(), localTriangleId);
+      case EdgePositionFull::D4_3D:
+        return getEdgeTriangleD4_xyz(p.data(), localTriangleId);
 
-    // L
-    if(edgeId < esetshift_[0]) {
-      if(p[1] > 0 and p[1] < nbvoxels_[1]) {
-        if(p[2] > 0 and p[2] < nbvoxels_[2])
-          triangleId = getEdgeTriangleL_xnn(p, localTriangleId);
-        else if(p[2] == 0)
-          triangleId = getEdgeTriangleL_xn0(p, localTriangleId);
-        else
-          triangleId = getEdgeTriangleL_xnN(p, localTriangleId);
-      } else if(p[1] == 0) {
-        if(p[2] > 0 and p[2] < nbvoxels_[2])
-          triangleId = getEdgeTriangleL_x0n(p, localTriangleId);
-        else if(p[2] == 0)
-          triangleId = getEdgeTriangleL_x00(p, localTriangleId);
-        else
-          triangleId = getEdgeTriangleL_x0N(p, localTriangleId);
-      } else {
-        if(p[2] > 0 and p[2] < nbvoxels_[2])
-          triangleId = getEdgeTriangleL_xNn(p, localTriangleId);
-        else if(p[2] == 0)
-          triangleId = getEdgeTriangleL_xN0(p, localTriangleId);
-        else
-          triangleId = getEdgeTriangleL_xNN(p, localTriangleId);
-      }
-    }
-    // H
-    else if(edgeId < esetshift_[1]) {
-      if(p[0] > 0 and p[0] < nbvoxels_[0]) {
-        if(p[2] > 0 and p[2] < nbvoxels_[2])
-          triangleId = getEdgeTriangleH_nyn(p, localTriangleId);
-        else if(p[2] == 0)
-          triangleId = getEdgeTriangleH_ny0(p, localTriangleId);
-        else
-          triangleId = getEdgeTriangleH_nyN(p, localTriangleId);
-      } else if(p[0] == 0) {
-        if(p[2] > 0 and p[2] < nbvoxels_[2])
-          triangleId = getEdgeTriangleH_0yn(p, localTriangleId);
-        else if(p[2] == 0)
-          triangleId = getEdgeTriangleH_0y0(p, localTriangleId);
-        else
-          triangleId = getEdgeTriangleH_0yN(p, localTriangleId);
-      } else {
-        if(p[2] > 0 and p[2] < nbvoxels_[2])
-          triangleId = getEdgeTriangleH_Nyn(p, localTriangleId);
-        else if(p[2] == 0)
-          triangleId = getEdgeTriangleH_Ny0(p, localTriangleId);
-        else
-          triangleId = getEdgeTriangleH_NyN(p, localTriangleId);
-      }
-    }
-    // P
-    else if(edgeId < esetshift_[2]) {
-      if(p[0] > 0 and p[0] < nbvoxels_[0]) {
-        if(p[1] > 0 and p[1] < nbvoxels_[1])
-          triangleId = getEdgeTriangleP_nnz(p, localTriangleId);
-        else if(p[1] == 0)
-          triangleId = getEdgeTriangleP_n0z(p, localTriangleId);
-        else
-          triangleId = getEdgeTriangleP_nNz(p, localTriangleId);
-      } else if(p[0] == 0) {
-        if(p[1] > 0 and p[1] < nbvoxels_[1])
-          triangleId = getEdgeTriangleP_0nz(p, localTriangleId);
-        else if(p[1] == 0)
-          triangleId = getEdgeTriangleP_00z(p, localTriangleId);
-        else
-          triangleId = getEdgeTriangleP_0Nz(p, localTriangleId);
-      } else {
-        if(p[1] > 0 and p[1] < nbvoxels_[1])
-          triangleId = getEdgeTriangleP_Nnz(p, localTriangleId);
-        else if(p[1] == 0)
-          triangleId = getEdgeTriangleP_N0z(p, localTriangleId);
-        else
-          triangleId = getEdgeTriangleP_NNz(p, localTriangleId);
-      }
-    }
-    // D1
-    else if(edgeId < esetshift_[3]) {
-      if(p[2] > 0 and p[2] < nbvoxels_[2])
-        triangleId = getEdgeTriangleD1_xyn(p, localTriangleId);
-      else if(p[2] == 0)
-        triangleId = getEdgeTriangleD1_xy0(p, localTriangleId);
-      else
-        triangleId = getEdgeTriangleD1_xyN(p, localTriangleId);
-    }
-    // D2
-    else if(edgeId < esetshift_[4]) {
-      if(p[0] > 0 and p[0] < nbvoxels_[0])
-        triangleId = getEdgeTriangleD2_nyz(p, localTriangleId);
-      else if(p[0] == 0)
-        triangleId = getEdgeTriangleD2_0yz(p, localTriangleId);
-      else
-        triangleId = getEdgeTriangleD2_Nyz(p, localTriangleId);
-    }
-    // D3
-    else if(edgeId < esetshift_[5]) {
-      if(p[1] > 0 and p[1] < nbvoxels_[1])
-        triangleId = getEdgeTriangleD3_xnz(p, localTriangleId);
-      else if(p[1] == 0)
-        triangleId = getEdgeTriangleD3_x0z(p, localTriangleId);
-      else
-        triangleId = getEdgeTriangleD3_xNz(p, localTriangleId);
-    }
-    // D4
-    else if(edgeId < esetshift_[6]) {
-      triangleId = getEdgeTriangleD4_xyz(p, localTriangleId);
-    }
+      case EdgePositionFull::L_xn_2D:
+        return getEdgeTriangleL_xn(p.data(), localTriangleId);
+      case EdgePositionFull::L_x0_2D:
+        return getEdgeTriangleL_x0(p.data(), localTriangleId);
+      case EdgePositionFull::L_xN_2D:
+        return getEdgeTriangleL_xN(p.data(), localTriangleId);
+      case EdgePositionFull::H_ny_2D:
+        return getEdgeTriangleH_ny(p.data(), localTriangleId);
+      case EdgePositionFull::H_0y_2D:
+        return getEdgeTriangleH_0y(p.data(), localTriangleId);
+      case EdgePositionFull::H_Ny_2D:
+        return getEdgeTriangleH_Ny(p.data(), localTriangleId);
+      case EdgePositionFull::D1_2D:
+        return getEdgeTriangleD1_xy(p.data(), localTriangleId);
 
-  } else if(dimensionality_ == 2) {
-    const auto p = edgeCoords_[edgeId].data();
+      default: // 1D
+        break;
+    }
+    return -1;
+  };
 
-    // L
-    if(edgeId < esetshift_[0]) {
-      if(p[1] > 0 and p[1] < nbvoxels_[Dj_])
-        triangleId = getEdgeTriangleL_xn(p, localTriangleId);
-      else if(p[1] == 0)
-        triangleId = getEdgeTriangleL_x0(p, localTriangleId);
-      else
-        triangleId = getEdgeTriangleL_xN(p, localTriangleId);
-    }
-    // H
-    else if(edgeId < esetshift_[1]) {
-      if(p[0] > 0 and p[0] < nbvoxels_[Di_])
-        triangleId = getEdgeTriangleH_ny(p, localTriangleId);
-      else if(p[0] == 0)
-        triangleId = getEdgeTriangleH_0y(p, localTriangleId);
-      else
-        triangleId = getEdgeTriangleH_Ny(p, localTriangleId);
-    }
-    // D1
-    else if(edgeId < esetshift_[2]) {
-      triangleId = getEdgeTriangleD1_xy(p, localTriangleId);
-    }
-  }
+  triangleId = dispatch();
 
   return 0;
 }
