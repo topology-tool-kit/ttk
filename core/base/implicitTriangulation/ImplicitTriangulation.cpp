@@ -250,39 +250,33 @@ bool ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(isEdgeOnBoundary)(
 #endif // !TTK_ENABLE_KAMIKAZE
 
   if(dimensionality_ == 3) {
-    SimplexId p[3];
+    const auto p = edgeCoords_[edgeId].data();
 
     // L
     if(edgeId < esetshift_[0]) {
-      edgeToPosition(edgeId, 0, p);
       return (p[1] == 0 or p[1] == nbvoxels_[1] or p[2] == 0
               or p[2] == nbvoxels_[2]);
     }
     // H
     else if(edgeId < esetshift_[1]) {
-      edgeToPosition(edgeId, 1, p);
       return (p[0] == 0 or p[0] == nbvoxels_[0] or p[2] == 0
               or p[2] == nbvoxels_[2]);
     }
     // P
     else if(edgeId < esetshift_[2]) {
-      edgeToPosition(edgeId, 2, p);
       return (p[0] == 0 or p[1] == 0 or p[0] == nbvoxels_[0]
               or p[1] == nbvoxels_[1]);
     }
     // D1
     else if(edgeId < esetshift_[3]) {
-      edgeToPosition(edgeId, 3, p);
       return (p[2] == 0 or p[2] == nbvoxels_[2]);
     }
     // D2
     else if(edgeId < esetshift_[4]) {
-      edgeToPosition(edgeId, 4, p);
       return (p[0] == 0 or p[0] == nbvoxels_[0]);
     }
     // D3
     else if(edgeId < esetshift_[5]) {
-      edgeToPosition(edgeId, 5, p);
       return (p[1] == 0 or p[1] == nbvoxels_[1]);
     } else
       return false;
@@ -1149,12 +1143,10 @@ inline SimplexId ImplicitTriangulation::getEdgeTriangleNumberInternal(
 #endif
 
   if(dimensionality_ == 3) {
-    SimplexId p[3];
+    const auto p = edgeCoords_[edgeId].data();
 
     // L
     if(edgeId < esetshift_[0]) {
-      edgeToPosition(edgeId, 0, p);
-
       if(p[2] > 0 and p[2] < nbvoxels_[2]) {
         if(p[1] > 0 and p[1] < nbvoxels_[1])
           return 6;
@@ -1178,8 +1170,6 @@ inline SimplexId ImplicitTriangulation::getEdgeTriangleNumberInternal(
     }
     // H
     else if(edgeId < esetshift_[1]) {
-      edgeToPosition(edgeId, 1, p);
-
       if(p[0] > 0 and p[0] < nbvoxels_[0]) {
         if(p[2] > 0 and p[2] < nbvoxels_[2])
           return 6;
@@ -1203,8 +1193,6 @@ inline SimplexId ImplicitTriangulation::getEdgeTriangleNumberInternal(
     }
     // P
     else if(edgeId < esetshift_[2]) {
-      edgeToPosition(edgeId, 2, p);
-
       if(p[0] > 0 and p[0] < nbvoxels_[0]) {
         if(p[1] > 0 and p[1] < nbvoxels_[1])
           return 6;
@@ -1228,8 +1216,6 @@ inline SimplexId ImplicitTriangulation::getEdgeTriangleNumberInternal(
     }
     // D1
     else if(edgeId < esetshift_[3]) {
-      edgeToPosition(edgeId, 3, p);
-
       if(p[2] > 0 and p[2] < nbvoxels_[2])
         return 4;
       else
@@ -1237,8 +1223,6 @@ inline SimplexId ImplicitTriangulation::getEdgeTriangleNumberInternal(
     }
     // D2
     else if(edgeId < esetshift_[4]) {
-      edgeToPosition(edgeId, 4, p);
-
       if(p[0] > 0 and p[0] < nbvoxels_[0])
         return 4;
       else
@@ -1246,8 +1230,6 @@ inline SimplexId ImplicitTriangulation::getEdgeTriangleNumberInternal(
     }
     // D3
     else if(edgeId < esetshift_[5]) {
-      edgeToPosition(edgeId, 5, p);
-
       if(p[1] > 0 and p[1] < nbvoxels_[1])
         return 4;
       else
@@ -1256,13 +1238,12 @@ inline SimplexId ImplicitTriangulation::getEdgeTriangleNumberInternal(
     // D4
     else if(edgeId < esetshift_[6])
       return 6;
+
   } else if(dimensionality_ == 2) {
-    SimplexId p[2];
+    const auto p = edgeCoords_[edgeId].data();
 
     // L
     if(edgeId < esetshift_[0]) {
-      edgeToPosition2d(edgeId, 0, p);
-
       if(p[1] > 0 and p[1] < nbvoxels_[Dj_])
         return 2;
       else
@@ -1270,8 +1251,6 @@ inline SimplexId ImplicitTriangulation::getEdgeTriangleNumberInternal(
     }
     // H
     else if(edgeId < esetshift_[1]) {
-      edgeToPosition2d(edgeId, 1, p);
-
       if(p[0] > 0 and p[0] < nbvoxels_[Di_])
         return 2;
       else
@@ -1298,12 +1277,10 @@ int ImplicitTriangulation::getEdgeTriangleInternal(
   triangleId = -1;
 
   if(dimensionality_ == 3) {
-    SimplexId p[3];
+    const auto p = edgeCoords_[edgeId].data();
 
     // L
     if(edgeId < esetshift_[0]) {
-      edgeToPosition(edgeId, 0, p);
-
       if(p[1] > 0 and p[1] < nbvoxels_[1]) {
         if(p[2] > 0 and p[2] < nbvoxels_[2])
           triangleId = getEdgeTriangleL_xnn(p, localTriangleId);
@@ -1329,8 +1306,6 @@ int ImplicitTriangulation::getEdgeTriangleInternal(
     }
     // H
     else if(edgeId < esetshift_[1]) {
-      edgeToPosition(edgeId, 1, p);
-
       if(p[0] > 0 and p[0] < nbvoxels_[0]) {
         if(p[2] > 0 and p[2] < nbvoxels_[2])
           triangleId = getEdgeTriangleH_nyn(p, localTriangleId);
@@ -1356,8 +1331,6 @@ int ImplicitTriangulation::getEdgeTriangleInternal(
     }
     // P
     else if(edgeId < esetshift_[2]) {
-      edgeToPosition(edgeId, 2, p);
-
       if(p[0] > 0 and p[0] < nbvoxels_[0]) {
         if(p[1] > 0 and p[1] < nbvoxels_[1])
           triangleId = getEdgeTriangleP_nnz(p, localTriangleId);
@@ -1383,8 +1356,6 @@ int ImplicitTriangulation::getEdgeTriangleInternal(
     }
     // D1
     else if(edgeId < esetshift_[3]) {
-      edgeToPosition(edgeId, 3, p);
-
       if(p[2] > 0 and p[2] < nbvoxels_[2])
         triangleId = getEdgeTriangleD1_xyn(p, localTriangleId);
       else if(p[2] == 0)
@@ -1394,8 +1365,6 @@ int ImplicitTriangulation::getEdgeTriangleInternal(
     }
     // D2
     else if(edgeId < esetshift_[4]) {
-      edgeToPosition(edgeId, 4, p);
-
       if(p[0] > 0 and p[0] < nbvoxels_[0])
         triangleId = getEdgeTriangleD2_nyz(p, localTriangleId);
       else if(p[0] == 0)
@@ -1405,8 +1374,6 @@ int ImplicitTriangulation::getEdgeTriangleInternal(
     }
     // D3
     else if(edgeId < esetshift_[5]) {
-      edgeToPosition(edgeId, 5, p);
-
       if(p[1] > 0 and p[1] < nbvoxels_[1])
         triangleId = getEdgeTriangleD3_xnz(p, localTriangleId);
       else if(p[1] == 0)
@@ -1416,17 +1383,14 @@ int ImplicitTriangulation::getEdgeTriangleInternal(
     }
     // D4
     else if(edgeId < esetshift_[6]) {
-      edgeToPosition(edgeId, 6, p);
-
       triangleId = getEdgeTriangleD4_xyz(p, localTriangleId);
     }
+
   } else if(dimensionality_ == 2) {
-    SimplexId p[2];
+    const auto p = edgeCoords_[edgeId].data();
 
     // L
     if(edgeId < esetshift_[0]) {
-      edgeToPosition2d(edgeId, 0, p);
-
       if(p[1] > 0 and p[1] < nbvoxels_[Dj_])
         triangleId = getEdgeTriangleL_xn(p, localTriangleId);
       else if(p[1] == 0)
@@ -1436,8 +1400,6 @@ int ImplicitTriangulation::getEdgeTriangleInternal(
     }
     // H
     else if(edgeId < esetshift_[1]) {
-      edgeToPosition2d(edgeId, 1, p);
-
       if(p[0] > 0 and p[0] < nbvoxels_[Di_])
         triangleId = getEdgeTriangleH_ny(p, localTriangleId);
       else if(p[0] == 0)
@@ -1447,8 +1409,6 @@ int ImplicitTriangulation::getEdgeTriangleInternal(
     }
     // D1
     else if(edgeId < esetshift_[2]) {
-      edgeToPosition2d(edgeId, 2, p);
-
       triangleId = getEdgeTriangleD1_xy(p, localTriangleId);
     }
   }
@@ -1553,12 +1513,10 @@ inline SimplexId ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(
 #endif
 
   if(dimensionality_ == 3) {
-    SimplexId p[3];
+    const auto p = edgeCoords_[edgeId].data();
 
     // L
     if(edgeId < esetshift_[0]) {
-      edgeToPosition(edgeId, 0, p);
-
       if(p[2] > 0 and p[2] < nbvoxels_[2]) {
         if(p[1] > 0 and p[1] < nbvoxels_[1])
           return 6; // ABCG,ABEG,BCDG,BEFG,BFGH,BDGH
@@ -1582,8 +1540,6 @@ inline SimplexId ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(
     }
     // H
     else if(edgeId < esetshift_[1]) {
-      edgeToPosition(edgeId, 1, p);
-
       if(p[0] > 0 and p[0] < nbvoxels_[0]) {
         if(p[2] > 0 and p[2] < nbvoxels_[2])
           return 6; // ABCG,ABEG,BEFG,BFGH,BCDG,BDGH
@@ -1607,8 +1563,6 @@ inline SimplexId ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(
     }
     // P
     else if(edgeId < esetshift_[2]) {
-      edgeToPosition(edgeId, 2, p);
-
       if(p[0] > 0 and p[0] < nbvoxels_[0]) {
         if(p[1] > 0 and p[1] < nbvoxels_[1])
           return 6; // BDGH,ABCG,BCDG,ABEG,BEFG,BFGH
@@ -1632,8 +1586,6 @@ inline SimplexId ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(
     }
     // D1
     else if(edgeId < esetshift_[3]) {
-      edgeToPosition(edgeId, 3, p);
-
       if(p[2] > 0 and p[2] < nbvoxels_[2])
         return 4; // ABCG,BCDG,BEFG,BFGH
       else
@@ -1641,8 +1593,6 @@ inline SimplexId ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(
     }
     // D2
     else if(edgeId < esetshift_[4]) {
-      edgeToPosition(edgeId, 4, p);
-
       if(p[0] > 0 and p[0] < nbvoxels_[0])
         return 4; // ABCG,ABEG,BDGH,BFGH
       else
@@ -1650,8 +1600,6 @@ inline SimplexId ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(
     }
     // D3
     else if(edgeId < esetshift_[5]) {
-      edgeToPosition(edgeId, 5, p);
-
       if(p[1] > 0 and p[1] < nbvoxels_[1])
         return 4; // ABEG,BEFG,BCDG,BDGH
       else
@@ -1660,13 +1608,12 @@ inline SimplexId ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(
     // D4
     else if(edgeId < esetshift_[6])
       return 6;
+
   } else if(dimensionality_ == 2) {
-    SimplexId p[2];
+    const auto p = edgeCoords_[edgeId].data();
 
     // L
     if(edgeId < esetshift_[0]) {
-      edgeToPosition2d(edgeId, 0, p);
-
       if(p[1] > 0 and p[1] < nbvoxels_[Dj_])
         return 2;
       else
@@ -1674,8 +1621,6 @@ inline SimplexId ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(
     }
     // H
     else if(edgeId < esetshift_[1]) {
-      edgeToPosition2d(edgeId, 1, p);
-
       if(p[0] > 0 and p[0] < nbvoxels_[Di_])
         return 2;
       else
