@@ -508,13 +508,14 @@ namespace ttk {
     inline int preconditionEdgesInternal() override {
       edgePositions_.resize(edgeNumber_);
       edgeCoords_.resize(edgeNumber_);
-      std::array<SimplexId, 3> p{};
 
       if(dimensionality_ == 3) {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
         for(SimplexId i = 0; i < edgeNumber_; ++i) {
+          std::array<SimplexId, 3> p{};
+
           if(i < esetshift_[0]) {
             edgeToPosition(i, 0, p.data());
             edgePositions_[i] = EdgePosition::L_3D;
@@ -545,6 +546,8 @@ namespace ttk {
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
         for(SimplexId i = 0; i < edgeNumber_; ++i) {
+          std::array<SimplexId, 3> p{};
+
           if(i < esetshift_[0]) {
             edgeToPosition2d(i, 0, p.data());
             edgePositions_[i] = EdgePosition::L_2D;
