@@ -1564,41 +1564,34 @@ int ImplicitTriangulation::getTriangleVertexInternal(
   vertexId = -1;
 
   if(dimensionality_ == 3) {
-    SimplexId p[3];
+    const auto p = triangleCoords_[triangleId].data();
 
     // F
     if(triangleId < tsetshift_[0]) {
-      triangleToPosition(triangleId, 0, p);
       vertexId = getTriangleVertexF(p, localVertexId);
     }
     // H
     else if(triangleId < tsetshift_[1]) {
-      triangleToPosition(triangleId, 1, p);
       vertexId = getTriangleVertexH(p, localVertexId);
     }
     // C
     else if(triangleId < tsetshift_[2]) {
-      triangleToPosition(triangleId, 2, p);
       vertexId = getTriangleVertexC(p, localVertexId);
     }
     // D1
     else if(triangleId < tsetshift_[3]) {
-      triangleToPosition(triangleId, 3, p);
       vertexId = getTriangleVertexD1(p, localVertexId);
     }
     // D2
     else if(triangleId < tsetshift_[4]) {
-      triangleToPosition(triangleId, 4, p);
       vertexId = getTriangleVertexD2(p, localVertexId);
     }
     // D3
     else if(triangleId < tsetshift_[5]) {
-      triangleToPosition(triangleId, 5, p);
       vertexId = getTriangleVertexD3(p, localVertexId);
     }
   } else if(dimensionality_ == 2) {
-    SimplexId p[2];
-    triangleToPosition2d(triangleId, p);
+    const auto p = triangleCoords_[triangleId].data();
     const SimplexId id = triangleId % 2;
 
     if(id == 0) {
@@ -1644,13 +1637,11 @@ int ImplicitTriangulation::getTriangleEdgeInternal(const SimplexId &triangleId,
   edgeId = -1;
 
   if(dimensionality_ == 3) {
-    SimplexId p[3];
+    const auto p = triangleCoords_[triangleId].data();
     const SimplexId id = triangleId % 2;
 
     // F
     if(triangleId < tsetshift_[0]) {
-      triangleToPosition(triangleId, 0, p);
-
       if(id)
         edgeId = getTriangleEdgeF_1(p, localEdgeId);
       else
@@ -1658,8 +1649,6 @@ int ImplicitTriangulation::getTriangleEdgeInternal(const SimplexId &triangleId,
     }
     // H
     else if(triangleId < tsetshift_[1]) {
-      triangleToPosition(triangleId, 1, p);
-
       if(id)
         edgeId = getTriangleEdgeH_1(p, localEdgeId);
       else
@@ -1667,8 +1656,6 @@ int ImplicitTriangulation::getTriangleEdgeInternal(const SimplexId &triangleId,
     }
     // C
     else if(triangleId < tsetshift_[2]) {
-      triangleToPosition(triangleId, 2, p);
-
       if(id)
         edgeId = getTriangleEdgeC_1(p, localEdgeId);
       else
@@ -1676,8 +1663,6 @@ int ImplicitTriangulation::getTriangleEdgeInternal(const SimplexId &triangleId,
     }
     // D1
     else if(triangleId < tsetshift_[3]) {
-      triangleToPosition(triangleId, 3, p);
-
       if(id)
         edgeId = getTriangleEdgeD1_1(p, localEdgeId);
       else
@@ -1685,8 +1670,6 @@ int ImplicitTriangulation::getTriangleEdgeInternal(const SimplexId &triangleId,
     }
     // D2
     else if(triangleId < tsetshift_[4]) {
-      triangleToPosition(triangleId, 4, p);
-
       if(id)
         edgeId = getTriangleEdgeD2_1(p, localEdgeId);
       else
@@ -1694,17 +1677,14 @@ int ImplicitTriangulation::getTriangleEdgeInternal(const SimplexId &triangleId,
     }
     // D3
     else if(triangleId < tsetshift_[5]) {
-      triangleToPosition(triangleId, 5, p);
-
       if(id)
         edgeId = getTriangleEdgeD3_1(p, localEdgeId);
       else
         edgeId = getTriangleEdgeD3_0(p, localEdgeId);
     }
   } else if(dimensionality_ == 2) {
-    SimplexId p[2];
+    const auto p = triangleCoords_[triangleId].data();
     const SimplexId id = triangleId % 2;
-    triangleToPosition2d(triangleId, p);
 
     if(id == 0) {
       switch(localEdgeId) {
@@ -1794,36 +1774,30 @@ int ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getTriangleLink)(
   linkId = -1;
 
   if(dimensionality_ == 3) {
-    SimplexId p[3];
+    const auto p = triangleCoords_[triangleId].data();
 
     // F
     if(triangleId < tsetshift_[0]) {
-      triangleToPosition(triangleId, 0, p);
       linkId = getTriangleLinkF(p, localLinkId);
     }
     // H
     else if(triangleId < tsetshift_[1]) {
-      triangleToPosition(triangleId, 1, p);
       linkId = getTriangleLinkH(p, localLinkId);
     }
     // C
     else if(triangleId < tsetshift_[2]) {
-      triangleToPosition(triangleId, 2, p);
       linkId = getTriangleLinkC(p, localLinkId);
     }
     // D1
     else if(triangleId < tsetshift_[3]) {
-      triangleToPosition(triangleId, 3, p);
       linkId = getTriangleLinkD1(p, localLinkId);
     }
     // D2
     else if(triangleId < tsetshift_[4]) {
-      triangleToPosition(triangleId, 4, p);
       linkId = getTriangleLinkD2(p, localLinkId);
     }
     // D3
     else if(triangleId < tsetshift_[5]) {
-      triangleToPosition(triangleId, 5, p);
       linkId = getTriangleLinkD3(p, localLinkId);
     }
   }
@@ -1863,11 +1837,10 @@ inline SimplexId ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(
 #endif
 
   if(dimensionality_ == 3) {
-    SimplexId p[3];
+    const auto p = triangleCoords_[triangleId].data();
 
     // F
     if(triangleId < tsetshift_[0]) {
-      triangleToPosition(triangleId, 0, p);
       if(p[2] > 0 and p[2] < nbvoxels_[2])
         return 2;
       else
@@ -1875,7 +1848,6 @@ inline SimplexId ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(
     }
     // H
     else if(triangleId < tsetshift_[1]) {
-      triangleToPosition(triangleId, 1, p);
       if(p[1] > 0 and p[1] < nbvoxels_[1])
         return 2;
       else
@@ -1883,7 +1855,6 @@ inline SimplexId ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(
     }
     // C
     else if(triangleId < tsetshift_[2]) {
-      triangleToPosition(triangleId, 2, p);
       if(p[0] < 2 or p[0] >= (dimensions_[0] * 2 - 2))
         return 1;
       else
@@ -1895,12 +1866,10 @@ inline SimplexId ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(
     }
     // D2
     else if(triangleId < tsetshift_[4]) {
-      triangleToPosition(triangleId, 4, p);
       return 2;
     }
     // D3
     else if(triangleId < tsetshift_[5]) {
-      triangleToPosition(triangleId, 5, p);
       return 2;
     }
   }
@@ -1919,36 +1888,30 @@ int ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getTriangleStar)(
 
   starId = -1;
   if(dimensionality_ == 3) {
-    SimplexId p[3];
+    const auto p = triangleCoords_[triangleId].data();
 
     // F
     if(triangleId < tsetshift_[0]) {
-      triangleToPosition(triangleId, 0, p);
       starId = getTriangleStarF(p, localStarId);
     }
     // H
     else if(triangleId < tsetshift_[1]) {
-      triangleToPosition(triangleId, 1, p);
       starId = getTriangleStarH(p, localStarId);
     }
     // C
     else if(triangleId < tsetshift_[2]) {
-      triangleToPosition(triangleId, 2, p);
       starId = getTriangleStarC(p, localStarId);
     }
     // D1
     else if(triangleId < tsetshift_[3]) {
-      triangleToPosition(triangleId, 3, p);
       starId = getTriangleStarD1(p, localStarId);
     }
     // D2
     else if(triangleId < tsetshift_[4]) {
-      triangleToPosition(triangleId, 4, p);
       starId = getTriangleStarD2(p, localStarId);
     }
     // D3
     else if(triangleId < tsetshift_[5]) {
-      triangleToPosition(triangleId, 5, p);
       starId = getTriangleStarD3(p, localStarId);
     }
   }
@@ -1982,8 +1945,7 @@ inline SimplexId ImplicitTriangulation::getTriangleNeighborNumber(
 #endif
 
   if(dimensionality_ == 2) {
-    SimplexId p[2];
-    triangleToPosition2d(triangleId, p);
+    const auto p = triangleCoords_[triangleId];
     const SimplexId id = triangleId % 2;
 
     if(id) {
@@ -2018,8 +1980,7 @@ int ImplicitTriangulation::getTriangleNeighbor(const SimplexId &triangleId,
   neighborId = -1;
 
   if(dimensionality_ == 2) {
-    SimplexId p[2];
-    triangleToPosition2d(triangleId, p);
+    const auto p = triangleCoords_[triangleId].data();
     const SimplexId id = triangleId % 2;
 
     if(id) {
