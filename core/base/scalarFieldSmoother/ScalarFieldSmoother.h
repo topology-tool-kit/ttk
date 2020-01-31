@@ -50,38 +50,37 @@ namespace ttk {
       return 0;
     }
 
-    inline int setupTriangulation(Triangulation *triangulation) {
-
-      triangulation_ = triangulation;
+    inline int setupTriangulation(AbstractTriangulation *triangulation) {
 
       // Pre-condition functions.
-      if(triangulation_) {
-        triangulation_->preprocessVertexNeighbors();
+      if(triangulation) {
+        triangulation->preconditionVertexNeighbors();
       }
 
       return 0;
     }
 
-    template <class dataType>
-    int smooth(const int &numberOfIterations) const;
+    template <class dataType, class TriangulationType = AbstractTriangulation>
+    int smooth(const TriangulationType *triangulation,
+               const int &numberOfIterations) const;
 
   protected:
     int dimensionNumber_;
     void *inputData_, *outputData_;
     char *mask_;
-    Triangulation *triangulation_;
   };
 
 } // namespace ttk
 
 // template functions
-template <class dataType>
-int ttk::ScalarFieldSmoother::smooth(const int &numberOfIterations) const {
+template <class dataType, class TriangulationType>
+int ttk::ScalarFieldSmoother::smooth(const TriangulationType *triangulation,
+                                     const int &numberOfIterations) const {
 
   Timer t;
 
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(!triangulation_)
+  if(!triangulation)
     return -1;
   if(!dimensionNumber_)
     return -2;
@@ -91,9 +90,7 @@ int ttk::ScalarFieldSmoother::smooth(const int &numberOfIterations) const {
     return -4;
 #endif
 
-  int count = 0;
-
-  SimplexId vertexNumber = triangulation_->getNumberOfVertices();
+  SimplexId vertexNumber = triangulation->getNumberOfVertices();
 
   std::vector<dataType> tmpData(vertexNumber * dimensionNumber_, 0);
 
@@ -107,6 +104,13 @@ int ttk::ScalarFieldSmoother::smooth(const int &numberOfIterations) const {
         = inputData[dimensionNumber_ * i + j];
     }
   }
+
+  printMsg("Smoothing " + std::to_string(vertexNumber) + " vertices", 0, 0,
+           threadNumber_, ttk::debug::LineMode::REPLACE);
+
+  int timeBuckets = 10;
+  if(numberOfIterations < timeBuckets)
+    timeBuckets = numberOfIterations;
 
   for(int it = 0; it < numberOfIterations; it++) {
 #ifdef TTK_ENABLE_OPENMP
@@ -124,29 +128,14 @@ int ttk::ScalarFieldSmoother::smooth(const int &numberOfIterations) const {
         for(int j = 0; j < dimensionNumber_; j++) {
           tmpData[dimensionNumber_ * i + j] = 0;
 
-          SimplexId neighborNumber = triangulation_->getVertexNeighborNumber(i);
+          SimplexId neighborNumber = triangulation->getVertexNeighborNumber(i);
           for(SimplexId k = 0; k < neighborNumber; k++) {
             SimplexId neighborId = -1;
-            triangulation_->getVertexNeighbor(i, k, neighborId);
+            triangulation->getVertexNeighbor(i, k, neighborId);
             tmpData[dimensionNumber_ * i + j]
               += outputData[dimensionNumber_ * (neighborId) + j];
           }
           tmpData[dimensionNumber_ * i + j] /= ((double)neighborNumber);
-        }
-
-        if(debugLevel_ > advancedInfoMsg) {
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp critical
-#endif
-          {
-            // update the progress bar of the wrapping code
-            if((wrapper_)
-               && (!(count % ((numberOfIterations * vertexNumber) / 10)))) {
-              wrapper_->updateProgress((count + 1.0)
-                                       / (numberOfIterations * vertexNumber));
-            }
-            count++;
-          }
         }
       }
     }
@@ -163,15 +152,20 @@ int ttk::ScalarFieldSmoother::smooth(const int &numberOfIterations) const {
         }
       }
     }
+
+    if(debugLevel_ >= static_cast<int>(debug::Priority::INFO)) {
+      if(!(it % ((numberOfIterations) / timeBuckets))) {
+        printMsg("Smoothing " + std::to_string(vertexNumber) + " vertices",
+                 (it / (float)numberOfIterations), t.getElapsedTime(),
+                 threadNumber_, debug::LineMode::REPLACE);
+        if(wrapper_)
+          wrapper_->updateProgress((it / (float)numberOfIterations));
+      }
+    }
   }
 
-  {
-    std::stringstream msg;
-    msg << "[ScalarFieldSmoother] Data-set (" << vertexNumber
-        << " points) smoothed in " << t.getElapsedTime() << " s. ("
-        << threadNumber_ << " thread(s))." << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
-  }
+  printMsg("Smoothed " + std::to_string(vertexNumber) + " vertices", 1,
+           t.getElapsedTime(), threadNumber_);
 
   return 0;
 }

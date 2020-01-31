@@ -6,7 +6,7 @@
 #include "FTRGraph.h"
 #include "Graph.h"
 #include "ttkFTRGraphStructures.h"
-#include "ttkWrapper.h"
+#include "ttkTriangulationAlgorithm.h"
 
 // VTK includes
 #include <vtkCellData.h>
@@ -29,14 +29,11 @@
 #include <vtkType.h>
 #include <vtkUnstructuredGrid.h>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkFTRGraph : public vtkDataSetAlgorithm,
-                                          public ttk::Wrapper
-#else
-class ttkFTRGraph : public vtkDataSetAlgorithm,
-                    public ttk::Wrapper
-#endif
-{
+// VTK Module
+#include <ttkFTRGraphModule.h>
+
+class TTKFTRGRAPH_EXPORT ttkFTRGraph : public vtkDataSetAlgorithm,
+                                       protected ttk::Wrapper {
 private:
   std::string ScalarField;
   bool UseInputOffsetScalarField;
@@ -59,9 +56,12 @@ public:
 
   vtkTypeMacro(ttkFTRGraph, vtkDataSetAlgorithm);
 
-  // default ttk setters
-  vtkSetMacro(debugLevel_, int);
+  void SetDebugLevel(int debugLevel) {
+    setDebugLevel(debugLevel);
+    Modified();
+  }
 
+  // default ttk setters
   void SetThreadNumber(int threadNumber) {
     ThreadNumber = threadNumber;
 #ifdef TTK_FTR_SINGLE_LAZY_SEQ
@@ -180,7 +180,7 @@ public:
 
 protected:
   ttkFTRGraph();
-  ~ttkFTRGraph();
+  ~ttkFTRGraph() override;
 
   TTK_SETUP();
 

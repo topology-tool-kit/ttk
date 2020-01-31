@@ -39,17 +39,16 @@
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnsignedShortArray.h>
 
+// VTK Module
+#include <ttkScalarFieldSmootherModule.h>
+
 // ttk code includes
 #include <ScalarFieldSmoother.h>
-#include <ttkWrapper.h>
+#include <ttkTriangulationAlgorithm.h>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkScalarFieldSmoother
-#else
-class ttkScalarFieldSmoother
-#endif
+class TTKSCALARFIELDSMOOTHER_EXPORT ttkScalarFieldSmoother
   : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+    protected ttk::Wrapper {
 
 public:
   static ttkScalarFieldSmoother *New();
@@ -57,7 +56,10 @@ public:
   vtkTypeMacro(ttkScalarFieldSmoother, vtkDataSetAlgorithm);
 
   // default ttk setters
-  vtkSetMacro(debugLevel_, int);
+  void SetDebugLevel(int debugLevel) {
+    setDebugLevel(debugLevel);
+    Modified();
+  }
 
   void SetThreadNumber(int threadNumber) {
     ThreadNumber = threadNumber;
@@ -91,7 +93,7 @@ public:
 protected:
   ttkScalarFieldSmoother();
 
-  ~ttkScalarFieldSmoother();
+  ~ttkScalarFieldSmoother() override;
 
   TTK_SETUP();
 

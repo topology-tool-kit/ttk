@@ -49,20 +49,19 @@
 #include <vtkUnstructuredGrid.h>
 #include <vtkUnstructuredGridAlgorithm.h>
 
+// VTK Module
+#include <ttkMeshSubdivisionModule.h>
+
 // ttk code includes
-#include <ttkWrapper.h>
+#include <ttkTriangulationAlgorithm.h>
 
 // in this example, this wrapper takes a data-set on the input and produces a
 // data-set on the output - to adapt.
 // see the documentation of the vtkAlgorithm class to decide from which VTK
 // class your wrapper should inherit.
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkMeshSubdivision
-#else
-class ttkMeshSubdivision
-#endif
+class TTKMESHSUBDIVISION_EXPORT ttkMeshSubdivision
   : public vtkUnstructuredGridAlgorithm,
-    public ttk::Wrapper {
+    protected ttk::Wrapper {
 
 public:
   static ttkMeshSubdivision *New();
@@ -70,7 +69,10 @@ public:
   vtkTypeMacro(ttkMeshSubdivision, vtkUnstructuredGridAlgorithm);
 
   // default ttk setters
-  vtkSetMacro(debugLevel_, int);
+  void SetDebugLevel(int debugLevel) {
+    setDebugLevel(debugLevel);
+    Modified();
+  }
 
   void SetThreads() {
     if(!UseAllCores)
@@ -100,7 +102,7 @@ public:
 protected:
   ttkMeshSubdivision();
 
-  ~ttkMeshSubdivision();
+  ~ttkMeshSubdivision() override;
 
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,

@@ -4,38 +4,6 @@ using namespace std;
 using namespace ttk;
 using namespace dcg;
 
-DiscreteGradient::DiscreteGradient()
-  : IterationThreshold{-1}, ReverseSaddleMaximumConnection{false},
-    ReverseSaddleSaddleConnection{false}, CollectPersistencePairs{false},
-    ReturnSaddleConnectors{false}, SaddleConnectorsPersistenceThreshold{0},
-
-    dimensionality_{-1}, numberOfVertices_{0}, gradient_{}, dmtMax2PL_{},
-
-    inputScalarField_{nullptr}, inputOffsets_{nullptr},
-    inputTriangulation_{nullptr},
-
-    outputCriticalPoints_numberOfPoints_{nullptr},
-    outputCriticalPoints_points_{nullptr},
-    outputCriticalPoints_points_cellDimensions_{nullptr},
-    outputCriticalPoints_points_cellIds_{nullptr},
-    outputCriticalPoints_points_cellScalars_{nullptr},
-    outputCriticalPoints_points_isOnBoundary_{nullptr},
-    outputCriticalPoints_points_PLVertexIdentifiers_{nullptr},
-    outputCriticalPoints_points_manifoldSize_{nullptr},
-
-    outputGradientGlyphs_numberOfPoints_{nullptr},
-    outputGradientGlyphs_points_{nullptr},
-    outputGradientGlyphs_points_pairOrigins_{nullptr},
-    outputGradientGlyphs_numberOfCells_{nullptr},
-    outputGradientGlyphs_cells_{nullptr},
-    outputGradientGlyphs_cells_pairTypes_{nullptr},
-
-    outputPersistencePairs_{nullptr} {
-}
-
-DiscreteGradient::~DiscreteGradient() {
-}
-
 int DiscreteGradient::getDimensionality() const {
   return dimensionality_;
 }
@@ -82,35 +50,104 @@ SimplexId DiscreteGradient::getNumberOfCells(const int dimension) const {
   return -1;
 }
 
+std::pair<size_t, SimplexId>
+  DiscreteGradient::numUnpairedFaces(const CellExt &c,
+                                     const lowerStarType &ls) const {
+  // c.dim_ cannot be <= 1
+  if(c.dim_ == 2) {
+    return numUnpairedFacesTriangle(c, ls);
+  } else if(c.dim_ == 3) {
+    return numUnpairedFacesTetra(c, ls);
+  }
+
+  return {0, -1};
+}
+
+std::pair<size_t, SimplexId>
+  DiscreteGradient::numUnpairedFacesTriangle(const CellExt &c,
+                                             const lowerStarType &ls) const {
+  // number of unpaired faces
+  std::pair<size_t, SimplexId> res{0, -1};
+
+  // loop over edge faces of triangle
+  // (2 edges per triangle in lower star)
+  for(size_t i = 0; i < 2; ++i) {
+    if(!ls[1][c.faces_[i]].paired_) {
+      res.first++;
+      res.second = c.faces_[i];
+    }
+  }
+
+  return res;
+}
+
+std::pair<size_t, SimplexId>
+  DiscreteGradient::numUnpairedFacesTetra(const CellExt &c,
+                                          const lowerStarType &ls) const {
+  // number of unpaired faces
+  std::pair<size_t, SimplexId> res{0, -1};
+
+  // loop over triangle faces of tetra
+  for(const auto f : c.faces_) {
+    if(!ls[2][f].paired_) {
+      res.first++;
+      res.second = f;
+    }
+  }
+
+  return res;
+}
+
+CriticalType
+  DiscreteGradient::criticalTypeFromCellDimension(const int dim) const {
+  if(dim == 0) {
+    return CriticalType::Local_minimum;
+  } else if(dim == 1) {
+    return CriticalType::Saddle1;
+  } else if(dim == 2 && dimensionality_ == 2) {
+    return CriticalType::Local_maximum;
+  } else if(dim == 2 && dimensionality_ == 3) {
+    return CriticalType::Saddle2;
+  } else if(dim == 3) {
+    return CriticalType::Local_maximum;
+  }
+  return CriticalType::Regular;
+}
+
 bool DiscreteGradient::isMinimum(const Cell &cell) const {
-  if(cell.dim_ == 0)
+  if(cell.dim_ == 0) {
     return (gradient_[0][0][cell.id_] == -1);
+  }
 
   return false;
 }
 
 bool DiscreteGradient::isSaddle1(const Cell &cell) const {
-  if(cell.dim_ == 1)
+  if(cell.dim_ == 1) {
     return (gradient_[0][1][cell.id_] == -1
             and gradient_[1][1][cell.id_] == -1);
+  }
 
   return false;
 }
 
 bool DiscreteGradient::isSaddle2(const Cell &cell) const {
-  if(dimensionality_ == 3 and cell.dim_ == 2)
+  if(dimensionality_ == 3 and cell.dim_ == 2) {
     return (gradient_[1][2][cell.id_] == -1
             and gradient_[2][2][cell.id_] == -1);
+  }
 
   return false;
 }
 
 bool DiscreteGradient::isMaximum(const Cell &cell) const {
-  if(dimensionality_ == 2 and cell.dim_ == 2)
+  if(dimensionality_ == 2 and cell.dim_ == 2) {
     return (gradient_[1][2][cell.id_] == -1);
+  }
 
-  if(dimensionality_ == 3 and cell.dim_ == 3)
+  if(dimensionality_ == 3 and cell.dim_ == 3) {
     return (gradient_[2][3][cell.id_] == -1);
+  }
 
   return false;
 }
@@ -176,8 +213,9 @@ bool DiscreteGradient::isBoundary(const Cell &cell) const {
         for(int i = 0; i < 3; ++i) {
           SimplexId edgeId;
           inputTriangulation_->getCellEdge(cellId, i, edgeId);
-          if(inputTriangulation_->isEdgeOnBoundary(edgeId))
+          if(inputTriangulation_->isEdgeOnBoundary(edgeId)) {
             return true;
+          }
         }
         break;
     }
@@ -196,8 +234,9 @@ bool DiscreteGradient::isBoundary(const Cell &cell) const {
         for(int i = 0; i < 4; ++i) {
           SimplexId triangleId;
           inputTriangulation_->getCellTriangle(cellId, i, triangleId);
-          if(inputTriangulation_->isTriangleOnBoundary(triangleId))
+          if(inputTriangulation_->isTriangleOnBoundary(triangleId)) {
             return true;
+          }
         }
         break;
     }
@@ -326,8 +365,9 @@ int DiscreteGradient::getCriticalPoints(vector<Cell> &criticalPoints) const {
     for(SimplexId j = 0; j < numberOfCells; ++j) {
       const Cell cell(i, j);
 
-      if(isCellCritical(cell))
+      if(isCellCritical(cell)) {
         criticalPoints.push_back(cell);
+      }
     }
   }
 
@@ -344,21 +384,24 @@ int DiscreteGradient::getDescendingPath(const Cell &cell,
       do {
         // add a vertex
         const Cell vertex(0, currentId);
-        vpath.push_back(std::move(vertex));
+        vpath.push_back(vertex);
 
-        if(isCellCritical(vertex))
+        if(isCellCritical(vertex)) {
           break;
+        }
 
         connectedEdgeId = getPairedCell(vertex);
-        if(connectedEdgeId == -1)
+        if(connectedEdgeId == -1) {
           break;
+        }
 
         // add an edge
         const Cell edge(1, connectedEdgeId);
-        vpath.push_back(std::move(edge));
+        vpath.push_back(edge);
 
-        if(isCellCritical(edge))
+        if(isCellCritical(edge)) {
           break;
+        }
 
         for(int i = 0; i < 2; ++i) {
           SimplexId vertexId;
@@ -380,21 +423,24 @@ int DiscreteGradient::getDescendingPath(const Cell &cell,
       do {
         // add a vertex
         const Cell vertex(0, currentId);
-        vpath.push_back(std::move(vertex));
+        vpath.push_back(vertex);
 
-        if(isCellCritical(vertex))
+        if(isCellCritical(vertex)) {
           break;
+        }
 
         connectedEdgeId = getPairedCell(vertex);
-        if(connectedEdgeId == -1)
+        if(connectedEdgeId == -1) {
           break;
+        }
 
         // add an edge
         const Cell edge(1, connectedEdgeId);
-        vpath.push_back(std::move(edge));
+        vpath.push_back(edge);
 
-        if(isCellCritical(edge))
+        if(isCellCritical(edge)) {
           break;
+        }
 
         for(int i = 0; i < 2; ++i) {
           SimplexId vertexId;
@@ -423,34 +469,33 @@ int DiscreteGradient::getDescendingPathThroughWall(
   // debug
   const SimplexId numberOfEdges = inputTriangulation_->getNumberOfEdges();
   vector<char> isCycle;
-  if(enableCycleDetector)
-    isCycle.resize(numberOfEdges, false);
+  if(enableCycleDetector) {
+    isCycle.resize(numberOfEdges, 0);
+  }
 
   if(dimensionality_ == 3) {
     // add the 2-saddle to the path
-    if(vpath)
+    if(vpath != nullptr) {
       vpath->push_back(saddle2);
+    }
 
     SimplexId currentId = -1;
     {
-      int nconnections = 0;
       for(int i = 0; i < 3; ++i) {
         SimplexId edgeId;
         inputTriangulation_->getTriangleEdge(saddle2.id_, i, edgeId);
         if(isVisited[edgeId] == wallId) {
           // saddle2 can be adjacent to saddle1 on the wall
           if(isSaddle1(Cell(1, edgeId))) {
-            if(vpath)
+            if(vpath != nullptr) {
               vpath->push_back(Cell(1, edgeId));
-            return false;
+            }
+            return 0;
           }
 
           currentId = edgeId;
-          ++nconnections;
         }
       }
-      if(nconnections > 1)
-        return true;
     }
 
     int oldId;
@@ -458,8 +503,8 @@ int DiscreteGradient::getDescendingPathThroughWall(
 
       // debug
       if(enableCycleDetector) {
-        if(!isCycle[currentId]) {
-          isCycle[currentId] = true;
+        if(isCycle[currentId] == 0) {
+          isCycle[currentId] = 1;
         } else {
           cout << "[DiscreteGradient] Error : cycle detected on the wall of "
                   "1-saddleId="
@@ -472,40 +517,40 @@ int DiscreteGradient::getDescendingPathThroughWall(
 
       // add an edge
       const Cell edge(1, currentId);
-      if(vpath)
+      if(vpath != nullptr) {
         vpath->push_back(edge);
+      }
 
-      if(isCellCritical(edge))
+      if(isCellCritical(edge)) {
         break;
+      }
 
       const SimplexId connectedTriangleId = getPairedCell(edge);
 
       // add a triangle
       const Cell triangle(2, connectedTriangleId);
-      if(vpath)
+      if(vpath != nullptr) {
         vpath->push_back(triangle);
+      }
 
-      if(isCellCritical(triangle))
+      if(isCellCritical(triangle)) {
         break;
+      }
 
-      int nconnections = 0;
       for(int i = 0; i < 3; ++i) {
         SimplexId edgeId;
         inputTriangulation_->getTriangleEdge(connectedTriangleId, i, edgeId);
 
         if(isVisited[edgeId] == wallId and edgeId != oldId) {
           currentId = edgeId;
-          ++nconnections;
         }
       }
-      if(nconnections > 1)
-        return true;
 
       // stop at convergence caused by boundary effect
     } while(currentId != oldId);
   }
 
-  return false;
+  return 0;
 }
 
 int DiscreteGradient::getAscendingPath(const Cell &cell,
@@ -514,8 +559,9 @@ int DiscreteGradient::getAscendingPath(const Cell &cell,
 
   const SimplexId numberOfCells = inputTriangulation_->getNumberOfCells();
   vector<char> isCycle;
-  if(enableCycleDetector)
-    isCycle.resize(numberOfCells, false);
+  if(enableCycleDetector) {
+    isCycle.resize(numberOfCells, 0);
+  }
 
   if(dimensionality_ == 2) {
     if(cell.dim_ == 2) {
@@ -529,19 +575,22 @@ int DiscreteGradient::getAscendingPath(const Cell &cell,
         const Cell triangle(2, currentId);
         vpath.push_back(triangle);
 
-        if(isCellCritical(triangle))
+        if(isCellCritical(triangle)) {
           break;
+        }
 
         const SimplexId connectedEdgeId = getPairedCell(triangle, true);
-        if(connectedEdgeId == -1)
+        if(connectedEdgeId == -1) {
           break;
+        }
 
         // add an edge
         const Cell edge(1, connectedEdgeId);
         vpath.push_back(edge);
 
-        if(isCellCritical(edge))
+        if(isCellCritical(edge)) {
           break;
+        }
 
         const SimplexId starNumber
           = inputTriangulation_->getEdgeStarNumber(connectedEdgeId);
@@ -567,8 +616,8 @@ int DiscreteGradient::getAscendingPath(const Cell &cell,
 
         // debug
         if(enableCycleDetector) {
-          if(!isCycle[currentId]) {
-            isCycle[currentId] = true;
+          if(isCycle[currentId] == 0) {
+            isCycle[currentId] = 1;
           } else {
             cout << "[DiscreteGradient] Error : cycle detected in the path "
                     "from tetraId="
@@ -583,19 +632,22 @@ int DiscreteGradient::getAscendingPath(const Cell &cell,
         const Cell tetra(3, currentId);
         vpath.push_back(tetra);
 
-        if(isCellCritical(tetra))
+        if(isCellCritical(tetra)) {
           break;
+        }
 
         const SimplexId connectedTriangleId = getPairedCell(tetra, true);
-        if(connectedTriangleId == -1)
+        if(connectedTriangleId == -1) {
           break;
+        }
 
         // add a triangle
         const Cell triangle(2, connectedTriangleId);
         vpath.push_back(triangle);
 
-        if(isCellCritical(triangle))
+        if(isCellCritical(triangle)) {
           break;
+        }
 
         const SimplexId starNumber
           = inputTriangulation_->getTriangleStarNumber(connectedTriangleId);
@@ -628,17 +680,18 @@ bool DiscreteGradient::getAscendingPathThroughWall(
   const SimplexId numberOfTriangles
     = inputTriangulation_->getNumberOfTriangles();
   vector<char> isCycle;
-  if(enableCycleDetector)
-    isCycle.resize(numberOfTriangles, false);
+  if(enableCycleDetector) {
+    isCycle.resize(numberOfTriangles, 0);
+  }
 
   if(dimensionality_ == 3) {
     // add the 1-saddle to the path
-    if(vpath)
+    if(vpath != nullptr) {
       vpath->push_back(saddle1);
+    }
 
     SimplexId currentId = -1;
     {
-      int nconnections = 0;
       const SimplexId triangleNumber
         = inputTriangulation_->getEdgeTriangleNumber(saddle1.id_);
       for(SimplexId i = 0; i < triangleNumber; ++i) {
@@ -647,17 +700,15 @@ bool DiscreteGradient::getAscendingPathThroughWall(
         if(isVisited[triangleId] == wallId) {
           // saddle1 can be adjacent to saddle2 on the wall
           if(isSaddle2(Cell(2, triangleId))) {
-            if(vpath)
+            if(vpath != nullptr) {
               vpath->push_back(Cell(2, triangleId));
+            }
             return false;
           }
 
           currentId = triangleId;
-          ++nconnections;
         }
       }
-      if(nconnections > 1)
-        return true;
     }
 
     SimplexId oldId;
@@ -665,8 +716,8 @@ bool DiscreteGradient::getAscendingPathThroughWall(
 
       // debug
       if(enableCycleDetector) {
-        if(!isCycle[currentId]) {
-          isCycle[currentId] = true;
+        if(isCycle[currentId] == 0) {
+          isCycle[currentId] = 1;
         } else {
           cout << "[DiscreteGradient] Error : cycle detected on the wall of "
                   "2-saddleId="
@@ -679,23 +730,26 @@ bool DiscreteGradient::getAscendingPathThroughWall(
 
       // add a triangle
       const Cell triangle(2, currentId);
-      if(vpath)
+      if(vpath != nullptr) {
         vpath->push_back(triangle);
+      }
 
-      if(isCellCritical(triangle))
+      if(isCellCritical(triangle)) {
         break;
+      }
 
       const SimplexId connectedEdgeId = getPairedCell(triangle, true);
 
       // add an edge
       const Cell edge(1, connectedEdgeId);
-      if(vpath)
+      if(vpath != nullptr) {
         vpath->push_back(edge);
+      }
 
-      if(isCellCritical(edge))
+      if(isCellCritical(edge)) {
         break;
+      }
 
-      int nconnections = 0;
       const SimplexId triangleNumber
         = inputTriangulation_->getEdgeTriangleNumber(connectedEdgeId);
       for(SimplexId i = 0; i < triangleNumber; ++i) {
@@ -704,11 +758,8 @@ bool DiscreteGradient::getAscendingPathThroughWall(
 
         if(isVisited[triangleId] == wallId and triangleId != oldId) {
           currentId = triangleId;
-          ++nconnections;
         }
       }
-      if(nconnections > 1)
-        return true;
 
       // stop at convergence caused by boundary effect
     } while(currentId != oldId);
@@ -739,20 +790,23 @@ int DiscreteGradient::getDescendingWall(const wallId_t wallId,
           isVisited[triangleId] = wallId;
 
           // add the triangle
-          if(wall)
+          if(wall != nullptr) {
             wall->push_back(Cell(2, triangleId));
+          }
 
           for(int j = 0; j < 3; ++j) {
             SimplexId edgeId;
             inputTriangulation_->getTriangleEdge(triangleId, j, edgeId);
 
-            if(saddles and isSaddle1(Cell(1, edgeId)))
+            if((saddles != nullptr) and isSaddle1(Cell(1, edgeId))) {
               saddles->insert(edgeId);
+            }
 
             const SimplexId pairedCellId = getPairedCell(Cell(1, edgeId));
 
-            if(pairedCellId != -1 and pairedCellId != triangleId)
+            if(pairedCellId != -1 and pairedCellId != triangleId) {
               bfs.push(pairedCellId);
+            }
           }
         }
       }
@@ -784,8 +838,9 @@ int DiscreteGradient::getAscendingWall(const wallId_t wallId,
           isVisited[edgeId] = wallId;
 
           // add the edge
-          if(wall)
+          if(wall != nullptr) {
             wall->push_back(Cell(1, edgeId));
+          }
 
           const SimplexId triangleNumber
             = inputTriangulation_->getEdgeTriangleNumber(edgeId);
@@ -793,14 +848,16 @@ int DiscreteGradient::getAscendingWall(const wallId_t wallId,
             SimplexId triangleId;
             inputTriangulation_->getEdgeTriangle(edgeId, j, triangleId);
 
-            if(saddles and isSaddle2(Cell(2, triangleId)))
+            if((saddles != nullptr) and isSaddle2(Cell(2, triangleId))) {
               saddles->insert(triangleId);
+            }
 
             const SimplexId pairedCellId
               = getPairedCell(Cell(2, triangleId), true);
 
-            if(pairedCellId != -1 and pairedCellId != edgeId)
+            if(pairedCellId != -1 and pairedCellId != edgeId) {
               bfs.push(pairedCellId);
+            }
           }
         }
       }
@@ -981,19 +1038,90 @@ int DiscreteGradient::getCriticalPointMap(
   return 0;
 }
 
-int DiscreteGradient::setGradientGlyphs() const {
-  (*outputGradientGlyphs_numberOfPoints_) = 0;
-  (*outputGradientGlyphs_numberOfCells_) = 0;
+int DiscreteGradient::setManifoldSize(
+  const std::vector<Cell> &criticalPoints,
+  const std::vector<size_t> &nCriticalPointsByDim,
+  const std::vector<SimplexId> &maxSeeds,
+  const SimplexId *const ascendingManifold,
+  const SimplexId *const descendingManifold) const {
+
+  const auto nCritPoints = criticalPoints.size();
+  const auto nDimensions = getNumberOfDimensions();
+
+  if(outputCriticalPoints_points_manifoldSize_ == nullptr) {
+    return 1;
+  }
+
+  outputCriticalPoints_points_manifoldSize_->resize(nCritPoints, 0);
+
+  // pre-compute size of descending manifold cells
+  std::map<SimplexId, size_t> descendingCellsSize{};
+  for(SimplexId i = 0; i < numberOfVertices_; ++i) {
+    descendingCellsSize[descendingManifold[i]]++;
+  }
+
+  // minima
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+  for(size_t i = 0; i < nCriticalPointsByDim[0]; ++i) {
+    const Cell &cell = criticalPoints[i];
+    const SimplexId seedId = descendingManifold[cell.id_];
+    const SimplexId manifoldSize = descendingCellsSize[seedId];
+    (*outputCriticalPoints_points_manifoldSize_)[i] = manifoldSize;
+  }
+
+  // index of first maximum in critical points array
+  size_t nFirstMaximum{};
+  for(int i = 0; i < nDimensions - 1; ++i) {
+    nFirstMaximum += nCriticalPointsByDim[i];
+  }
+
+  // pre-compute size of ascending manifold cells
+  std::map<SimplexId, size_t> ascendingCellsSize{};
+  for(SimplexId i = 0; i < numberOfVertices_; ++i) {
+    ascendingCellsSize[ascendingManifold[i]]++;
+  }
+
+  // pre-compute maximum SimplexId -> index in maxSeeds
+  std::map<SimplexId, size_t> seedsPos{};
+  for(size_t i = 0; i < maxSeeds.size(); ++i) {
+    seedsPos[maxSeeds[i]] = i;
+  }
+
+  // maxima
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+  for(size_t i = nFirstMaximum; i < nCritPoints; ++i) {
+    const Cell &cell = criticalPoints[i];
+    if(seedsPos.find(cell.id_) != seedsPos.end()) {
+      const auto seedId = seedsPos[cell.id_];
+      const SimplexId manifoldSize = ascendingCellsSize[seedId];
+      (*outputCriticalPoints_points_manifoldSize_)[i] = manifoldSize;
+    }
+  }
+
+  return 0;
+}
+
+int DiscreteGradient::setGradientGlyphs(
+  SimplexId &numberOfPoints,
+  std::vector<float> &points,
+  std::vector<char> &points_pairOrigins,
+  SimplexId &numberOfCells,
+  std::vector<SimplexId> &cells,
+  std::vector<char> &cells_pairTypes) const {
 
   SimplexId pointId{};
   SimplexId cellId{};
 
   // foreach dimension
-  const int numberOfDimensions = getNumberOfDimensions();
-  for(int i = 0; i < numberOfDimensions - 1; ++i) {
+  const int nDimensions = getNumberOfDimensions();
+  for(int i = 0; i < nDimensions - 1; ++i) {
     // foreach cell of that dimension
-    const SimplexId numberOfCells = getNumberOfCells(i);
-    for(SimplexId j = 0; j < numberOfCells; ++j) {
+    const SimplexId nCells = getNumberOfCells(i);
+    for(SimplexId j = 0; j < nCells; ++j) {
       const Cell cell(i, j);
 
       const SimplexId pairedCellId = getPairedCell(cell);
@@ -1003,29 +1131,29 @@ int DiscreteGradient::setGradientGlyphs() const {
 
         const Cell pairedCell(pairedCellDim, pairedCellId);
 
-        float p0[3];
-        getCellIncenter(cell, p0);
+        std::array<float, 3> p0{};
+        getCellIncenter(cell, p0.data());
 
-        outputGradientGlyphs_points_->push_back(p0[0]);
-        outputGradientGlyphs_points_->push_back(p0[1]);
-        outputGradientGlyphs_points_->push_back(p0[2]);
+        points.push_back(p0[0]);
+        points.push_back(p0[1]);
+        points.push_back(p0[2]);
 
-        outputGradientGlyphs_points_pairOrigins_->push_back(false);
+        points_pairOrigins.push_back(0);
 
-        float p1[3];
-        getCellIncenter(pairedCell, p1);
+        std::array<float, 3> p1{};
+        getCellIncenter(pairedCell, p1.data());
 
-        outputGradientGlyphs_points_->push_back(p1[0]);
-        outputGradientGlyphs_points_->push_back(p1[1]);
-        outputGradientGlyphs_points_->push_back(p1[2]);
+        points.push_back(p1[0]);
+        points.push_back(p1[1]);
+        points.push_back(p1[2]);
 
-        outputGradientGlyphs_points_pairOrigins_->push_back(true);
+        points_pairOrigins.push_back(1);
 
-        outputGradientGlyphs_cells_->push_back(2);
-        outputGradientGlyphs_cells_->push_back(pointId);
-        outputGradientGlyphs_cells_->push_back(pointId + 1);
+        cells.push_back(2);
+        cells.push_back(pointId);
+        cells.push_back(pointId + 1);
 
-        outputGradientGlyphs_cells_pairTypes_->push_back(i);
+        cells_pairTypes.push_back(i);
 
         pointId += 2;
         cellId += 1;
@@ -1033,8 +1161,8 @@ int DiscreteGradient::setGradientGlyphs() const {
     }
   }
 
-  (*outputGradientGlyphs_numberOfPoints_) = pointId;
-  (*outputGradientGlyphs_numberOfCells_) = cellId;
+  numberOfPoints = pointId;
+  numberOfCells = cellId;
 
   return 0;
 }

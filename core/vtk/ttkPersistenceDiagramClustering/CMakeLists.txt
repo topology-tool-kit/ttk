@@ -1,4 +1,1 @@
-ttk_add_vtk_library(ttkPersistenceDiagramClustering
-	SOURCES ttkPersistenceDiagramClustering.cpp
-	HEADERS ttkPersistenceDiagramClustering.h
-	LINK persistenceDiagramClustering ttkTriangulation)
+ttk_add_vtk_module()

@@ -22,50 +22,23 @@
                 <Documentation>A vtkMultiBlockDataSet containing a set of depth images represented by vtkImagedata objects.</Documentation>
             </InputProperty>
 
-            <StringVectorProperty name="DepthScalarField" command="SetDepthScalarField" number_of_elements="1" animateable="0" label="Depth Values">
-                <ArrayListDomain name="array_list" default_values="Depth"  input_domain_name="input_array">
+            <StringVectorProperty name="DepthArray" label="Depth Array" command="SetInputArrayToProcess" element_types="0 0 0 0 2" number_of_elements="5">
+                <ArrayListDomain attribute_type="Scalars" name="array_list">
                     <RequiredProperties>
-                        <Property name="Input" function="Input" />
+                        <Property function="Input" name="Input" />
                     </RequiredProperties>
                 </ArrayListDomain>
-                <Documentation>Scalar field that contains depth values.</Documentation>
+                <Documentation>A scalar array that contains depth values.</Documentation>
             </StringVectorProperty>
-            <IntVectorProperty name="Subsampling" label="Subsampling" command="SetSubsampling" number_of_elements="1" default_values="0">
-                <IntRangeDomain name="range" min="0" max="100" />
-                <Documentation>The factor that controls the sampling rate (0: no Subsampling, 1: skip every second sample, 2: skip every second and third sample...)</Documentation>
-            </IntVectorProperty>
-
-            <IntVectorProperty name="UseAllCores" label="Use All Cores" command="SetUseAllCores" number_of_elements="1" default_values="1" panel_visibility="advanced">
-                <BooleanDomain name="bool" />
-                <Documentation>Use all available cores.</Documentation>
-            </IntVectorProperty>
-            <IntVectorProperty name="ThreadNumber" label="Thread Number" command="SetThreadNumber" number_of_elements="1" default_values="1" panel_visibility="advanced">
-                <IntRangeDomain name="range" min="1" max="100" />
-                <Hints>
-                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="UseAllCores" value="0" />
-                </Hints>
-                <Documentation>Thread number.</Documentation>
-            </IntVectorProperty>
-            <IntVectorProperty name="DebugLevel" label="Debug Level" command="SetdebugLevel_" number_of_elements="1" default_values="3" panel_visibility="advanced">
-                <IntRangeDomain name="range" min="0" max="100" />
-                <Documentation>Debug level.</Documentation>
-            </IntVectorProperty>
 
             <PropertyGroup panel_widget="Line" label="Input Options">
-                <Property name="DepthScalarField" />
+                <Property name="DepthArray" />
             </PropertyGroup>
-            <PropertyGroup panel_widget="Line" label="Output Options">
-                <Property name="Subsampling" />
-            </PropertyGroup>
-            <PropertyGroup panel_widget="Line" label="Testing">
-                <Property name="UseAllCores" />
-                <Property name="ThreadNumber" />
-                <Property name="DebugLevel" />
-            </PropertyGroup>
+
+            ${DEBUG_WIDGETS}
 
             <Hints>
                 <ShowInMenu category="TTK - Cinema" />
-                <View type="RenderView" also_show_in_current_view="0" />
             </Hints>
         </SourceProxy>
     </ProxyGroup>

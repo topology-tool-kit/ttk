@@ -1,0 +1,8 @@
+NAME
+  ttkWRLExporter
+SOURCES
+  ttkWRLExporter.cpp
+HEADERS
+  ttkWRLExporter.h
+DEPENDS
+  common

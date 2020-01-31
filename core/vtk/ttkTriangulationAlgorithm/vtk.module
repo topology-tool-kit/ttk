@@ -1,0 +1,6 @@
+NAME
+  ttkTriangulationAlgorithm
+DEPENDS
+  VTK::FiltersCore
+  VTK::CommonCore
+

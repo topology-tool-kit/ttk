@@ -1,0 +1,4 @@
+NAME
+  ttkMeshGraph
+DEPENDS
+  ttkAlgorithm

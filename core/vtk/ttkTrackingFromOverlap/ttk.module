@@ -1,0 +1,9 @@
+NAME
+  ttkTrackingFromOverlap
+SOURCES
+  ttkTrackingFromOverlap.cpp
+HEADERS
+  ttkTrackingFromOverlap.h
+DEPENDS
+  trackingFromOverlap
+  ttkTriangulationAlgorithm

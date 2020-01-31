@@ -89,9 +89,6 @@ int ttkTopologicalCompressionReader::RequestData(
   if(FileName == nullptr) {
     return 1;
   }
-  if(fp != nullptr) {
-    return 1;
-  }
   fp = fopen(FileName, "rb"); // binary mode
   if(fp == nullptr) {
     return 1;
@@ -121,7 +118,6 @@ int ttkTopologicalCompressionReader::RequestData(
   if(status != 0) {
     vtkWarningMacro("Failure when reading compressed TTK file");
   }
-
 
   mesh->GetPointData()->RemoveArray(0);
   mesh->GetPointData()->SetNumberOfTuples(vertexNumber);

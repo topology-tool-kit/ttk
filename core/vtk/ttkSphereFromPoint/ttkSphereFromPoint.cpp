@@ -157,7 +157,7 @@ int ttkSphereFromPoint::doIt(vtkDataSet *input, vtkPolyData *output) {
 
         vtkDataArray *array = input->GetPointData()->GetArray(j);
 
-        if(array->GetNumberOfComponents() == 1) {
+        if(array != nullptr && array->GetNumberOfComponents() == 1) {
 
           double value = 0;
 

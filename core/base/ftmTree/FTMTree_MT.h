@@ -316,7 +316,7 @@ namespace ttk {
         mesh_ = m;
         if(mesh_ && preproc) {
           // propage through vertices (build)
-          mesh_->preprocessVertexNeighbors();
+          mesh_->preconditionVertexNeighbors();
         }
       }
 

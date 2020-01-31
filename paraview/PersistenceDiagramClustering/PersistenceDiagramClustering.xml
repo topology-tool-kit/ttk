@@ -33,14 +33,13 @@
 
      <InputProperty
         name="Input"
-        command="AddInputConnection"
-        multiple_input="1">
+        command="SetInputConnection">
         <ProxyGroupDomain name="groups">
           <Group name="sources"/>
           <Group name="filters"/>
         </ProxyGroupDomain>
         <DataTypeDomain name="input_type">
-          <DataType value="vtkDataSet"/>
+          <DataType value="vtkMultiBlockDataSet"/>
         </DataTypeDomain>
         <InputArrayDomain name="input_scalars" number_of_components="1">
           <Property name="Input" function="FieldDataSelection" />
@@ -374,11 +373,61 @@ between matched critical points.
         </Documentation>
       </DoubleVectorProperty>
 
-      <!-- <PropertyGroup panel_widget="Line" label="Testing"> -->
-      <!--   <Property name="UseAllCores" /> -->
-      <!--   <Property name="ThreadNumber" /> -->
-      <!--   <Property name="DebugLevel" /> -->
-      <!-- </PropertyGroup> -->
+      <IntVectorProperty
+          name="OutputDistanceMatrix"
+          label="Output a Distance Matrix"
+          command="SetOutputDistanceMatrix"
+          number_of_elements="1"
+          default_values="0"
+          panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Output the distance matrix between all input persistence
+          diagrams.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+          name="UseFullDiagrams"
+          label="Use Full Diagrams (SLOW!)"
+          command="SetUseFullDiagrams"
+          number_of_elements="1"
+          default_values="0"
+          panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Hints>
+          <PropertyWidgetDecorator
+              type="GenericDecorator"
+              mode="visibility"
+              property="OutputDistanceMatrix"
+              value="1" />
+        </Hints>
+        <Documentation>
+          Compute the distance matrix between the full diagrams.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+          name="PerClusterDistanceMatrix"
+          label="Per Cluster Distance Matrix"
+          command="SetPerClusterDistanceMatrix"
+          number_of_elements="1"
+          default_values="0"
+          panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Hints>
+          <PropertyWidgetDecorator
+              type="GenericDecorator"
+              mode="visibility"
+              property="OutputDistanceMatrix"
+              value="1" />
+        </Hints>
+        <Documentation>
+          Restrict the distance matrix computation to persistence
+          diagrams sharing the same cluster. Persistence diagrams in
+          different clusters will have a distance set to +infinity.
+        </Documentation>
+      </IntVectorProperty>
 
       <IntVectorProperty
          name="UseAllCores"
@@ -398,35 +447,51 @@ between matched critical points.
          label="Thread Number"
          command="SetThreadNumber"
          number_of_elements="1"
-        default_values="1" 
+        default_values="1"
         panel_visibility="advanced">
         <IntRangeDomain name="range" min="1" max="100" />
-         <Documentation>
+        <Hints>
+          <PropertyWidgetDecorator
+              type="GenericDecorator"
+              mode="visibility"
+              property="UseAllCores"
+              value="0" />
+        </Hints>
+        <Documentation>
           Thread number.
-         </Documentation>
+        </Documentation>
       </IntVectorProperty>
 
       <IntVectorProperty
          name="DebugLevel"
          label="Debug Level"
-         command="SetdebugLevel_"
+         command="SetDebugLevel"
          number_of_elements="1"
-        default_values="1" 
-        panel_visibility="advanced">
+         default_values="3"
+         panel_visibility="advanced">
         <IntRangeDomain name="range" min="0" max="100" />
          <Documentation>
            Debug level.
          </Documentation>
        </IntVectorProperty>
 
+      <PropertyGroup panel_widget="Line" label="Distance Matrix">
+        <Property name="OutputDistanceMatrix" />
+        <Property name="UseFullDiagrams" />
+        <Property name="PerClusterDistanceMatrix" />
+      </PropertyGroup>
 
-
-
-
+      <PropertyGroup panel_widget="Line" label="Testing">
+        <Property name="UseAllCores" />
+        <Property name="ThreadNumber" />
+        <Property name="DebugLevel" />
+      </PropertyGroup>
 
       <OutputPort name="Clustered Diagrams" index="0" id="port0" />
       <OutputPort name="Cluster Centroids" index="1" id="port1" />
       <OutputPort name="Matchings" index="2" id="port2" />
+      <OutputPort name="Diagrams Distance" index="3" id="port3" />
+
 
       <Hints>
         <ShowInMenu category="TTK - Scalar Data" />

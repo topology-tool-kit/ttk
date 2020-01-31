@@ -1,0 +1,1 @@
+ttk_register_pv_filter(ttkDimensionReduction DimensionReduction.xml)

@@ -33,21 +33,19 @@
 #include <vtkPointData.h>
 #include <vtkSmartPointer.h>
 
+// VTK Module
+#include <ttkLDistanceModule.h>
+
 // ttk code includes
 #include <LDistance.h>
-#include <ttkWrapper.h>
+#include <ttkTriangulationAlgorithm.h>
 
 // In this example, this wrapper takes a data-set on the input and produces a
 // data-set on the output - to adapt.
 // see the documentation of the vtkAlgorithm class to decide from which VTK
 // class your wrapper should inherit.
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkLDistance
-#else
-class ttkLDistance
-#endif
-  : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+class TTKLDISTANCE_EXPORT ttkLDistance : public vtkDataSetAlgorithm,
+                                         protected ttk::Wrapper {
 
 public:
   static ttkLDistance *New();
@@ -55,7 +53,10 @@ public:
   vtkTypeMacro(ttkLDistance, vtkDataSetAlgorithm);
 
   // Default ttk setters
-  vtkSetMacro(debugLevel_, int);
+  void SetDebugLevel(int debugLevel) {
+    setDebugLevel(debugLevel);
+    Modified();
+  }
 
   void SetThreadNumber(int threadNumber) {
     ThreadNumber = threadNumber;
@@ -103,7 +104,7 @@ protected:
     result = -1.;
   }
 
-  ~ttkLDistance(){};
+  ~ttkLDistance() override{};
 
   TTK_SETUP();
 

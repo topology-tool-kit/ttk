@@ -11,7 +11,7 @@
 
 // TTK
 #include <TopologicalCompression.h>
-#include <ttkWrapper.h>
+#include <ttkTriangulationAlgorithm.h>
 
 // VTK
 #include <vtkCellData.h>
@@ -30,17 +30,16 @@
 #include <vtkSmartPointer.h>
 #include <vtkWriter.h>
 
+// VTK Module
+#include <ttkTopologicalCompressionWriterModule.h>
+
 // STD
 #include <fstream>
 #include <iostream>
 #include <limits.h>
 #include <string>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkTopologicalCompressionWriter
-#else
-class ttkTopologicalCompressionWriter
-#endif
+class TTKTOPOLOGICALCOMPRESSIONWRITER_EXPORT ttkTopologicalCompressionWriter
   : public vtkWriter {
 
 public:
@@ -131,7 +130,6 @@ protected:
   ~ttkTopologicalCompressionWriter();
   virtual int FillInputPortInformation(int port, vtkInformation *info) override;
   void WriteData() override;
-  void execute(vtkImageData *vti);
 
   // TTK management.
   vtkDataArray *GetInputScalarField(vtkImageData *vti);

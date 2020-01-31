@@ -36,8 +36,8 @@ vtkStandardNewMacro(ttkContourAroundPoint)
 #else
   if(!preprocessDomain(inputs[0]))
     return 0;
-  if(!preprocessConstraints(static_cast<vtkUnstructuredGrid *>(inputs[1]),
-                            static_cast<vtkUnstructuredGrid *>(inputs[2])))
+  if(!preconditionConstraints(static_cast<vtkUnstructuredGrid *>(inputs[1]),
+                              static_cast<vtkUnstructuredGrid *>(inputs[2])))
     return 0;
   if(!process())
     return 0;
@@ -98,8 +98,8 @@ bool ttkContourAroundPoint::preprocessDomain(vtkDataSet *dataset) {
 
 //------------------------------------------------------------------------------------------------//
 
-bool ttkContourAroundPoint::preprocessConstraints(vtkUnstructuredGrid *nodes,
-                                                  vtkUnstructuredGrid *arcs) {
+bool ttkContourAroundPoint::preconditionConstraints(vtkUnstructuredGrid *nodes,
+                                                    vtkUnstructuredGrid *arcs) {
   // ---- Point data ---- //
 
   auto points = nodes->GetPoints();

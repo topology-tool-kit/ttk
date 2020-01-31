@@ -80,7 +80,6 @@ int ttk::MorseSmaleComplex2D::execute() {
   {
     Timer tmp;
     discreteGradient_.buildGradient<dataType, idType>();
-    discreteGradient_.buildGradient2<dataType, idType>();
 
     {
       std::stringstream msg;
@@ -89,7 +88,6 @@ int ttk::MorseSmaleComplex2D::execute() {
       dMsg(std::cout, msg.str(), timeMsg);
     }
   }
-  discreteGradient_.reverseGradient<dataType, idType>();
 
   std::vector<dcg::Cell> criticalPoints;
   discreteGradient_.getCriticalPoints(criticalPoints);
@@ -155,11 +153,15 @@ int ttk::MorseSmaleComplex2D::execute() {
   }
 
   if(outputCriticalPoints_numberOfPoints_ and outputCriticalPoints_points_) {
-    if(ascendingManifold and descendingManifold)
-      discreteGradient_.setAugmentedCriticalPoints<dataType, idType>(
-        criticalPoints, maxSeeds, ascendingManifold, descendingManifold);
-    else
-      discreteGradient_.setCriticalPoints<dataType, idType>(criticalPoints);
+    std::vector<size_t> nCriticalPointsByDim{};
+    discreteGradient_.setCriticalPoints<dataType, idType>(
+      criticalPoints, nCriticalPointsByDim);
+
+    if(ascendingManifold and descendingManifold) {
+      discreteGradient_.setManifoldSize(criticalPoints, nCriticalPointsByDim,
+                                        maxSeeds, ascendingManifold,
+                                        descendingManifold);
+    }
   }
 
   {

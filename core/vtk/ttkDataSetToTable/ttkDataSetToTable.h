@@ -31,16 +31,14 @@
 #include <vtkSmartPointer.h>
 #include <vtkTable.h>
 
+// VTK Module
+#include <ttkDataSetToTableModule.h>
+
 // ttk code includes
 #include <Wrapper.h>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkDataSetToTable
-#else
-class ttkDataSetToTable
-#endif
-  : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+class TTKDATASETTOTABLE_EXPORT ttkDataSetToTable : public vtkDataSetAlgorithm,
+                                                   protected ttk::Wrapper {
 
 public:
   enum AssociationType { Point = 0, Cell };
@@ -49,8 +47,10 @@ public:
   vtkTypeMacro(ttkDataSetToTable, vtkDataSetAlgorithm)
 
     // default ttk setters
-    vtkSetMacro(debugLevel_, int);
-
+    void SetDebugLevel(int debugLevel) {
+    setDebugLevel(debugLevel);
+    Modified();
+  }
   void SetThreads() {
     if(!UseAllCores)
       threadNumber_ = ThreadNumber;
@@ -106,7 +106,7 @@ protected:
     SetNumberOfOutputPorts(1);
   }
 
-  ~ttkDataSetToTable(){};
+  ~ttkDataSetToTable() override{};
 
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,

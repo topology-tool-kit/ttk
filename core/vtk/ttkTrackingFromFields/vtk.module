@@ -1,0 +1,7 @@
+NAME
+ ttkTrackingFromFields
+DEPENDS
+  VTK::FiltersCore
+PRIVATE_DEPENDS
+  VTK::CommonCore
+

@@ -20,114 +20,70 @@
 
 #pragma once
 
-// VTK includes
-#include <vtkInformation.h>
-#include <vtkMultiBlockDataSetAlgorithm.h>
+// VTK Module
+#include <ttkCinemaImagingModule.h>
 
 // TTK includes
-#include <ttkWrapper.h>
+#include <ttkAlgorithm.h>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkCinemaImaging
-#else
-class ttkCinemaImaging
-#endif
-  : public vtkMultiBlockDataSetAlgorithm,
-    public ttk::Wrapper {
+class TTKCINEMAIMAGING_EXPORT ttkCinemaImaging : public ttkAlgorithm {
 
 public:
   static ttkCinemaImaging *New();
-  vtkTypeMacro(ttkCinemaImaging, vtkMultiBlockDataSetAlgorithm)
+  vtkTypeMacro(ttkCinemaImaging, ttkAlgorithm);
 
-    vtkSetVector2Macro(Resolution, int);
+  // General Settings
+  vtkSetVector2Macro(Resolution, int);
   vtkGetVector2Macro(Resolution, int);
+  vtkSetMacro(GenerateScalarImages, bool);
+  vtkGetMacro(GenerateScalarImages, bool);
 
-  vtkSetVector2Macro(CamNearFar, double);
-  vtkGetVector2Macro(CamNearFar, double);
+  // Camera
+  vtkSetMacro(CamProjectionMode, int);
+  vtkGetMacro(CamProjectionMode, int);
 
+  vtkSetMacro(CamFocusAuto, bool);
+  vtkGetMacro(CamFocusAuto, bool);
   vtkSetVector3Macro(CamFocus, double);
   vtkGetVector3Macro(CamFocus, double);
 
+  vtkSetMacro(CamNearFarAuto, bool);
+  vtkGetMacro(CamNearFarAuto, bool);
+  vtkSetVector2Macro(CamNearFar, double);
+  vtkGetVector2Macro(CamNearFar, double);
+
+  // Orthographic
+  vtkSetMacro(CamHeightAuto, bool);
+  vtkGetMacro(CamHeightAuto, bool);
   vtkSetMacro(CamHeight, double);
   vtkGetMacro(CamHeight, double);
 
-  // default ttk setters
-  vtkSetMacro(debugLevel_, int);
-  void SetThreads() {
-    threadNumber_
-      = !UseAllCores ? ThreadNumber : ttk::OsCall::getNumberOfCores();
-    Modified();
-  }
-  void SetThreadNumber(int threadNumber) {
-    ThreadNumber = threadNumber;
-    SetThreads();
-  }
-  void SetUseAllCores(bool onOff) {
-    UseAllCores = onOff;
-    SetThreads();
-  }
-  // end of default ttk setters
-
-  int FillInputPortInformation(int port, vtkInformation *info) override {
-    switch(port) {
-      case 0:
-        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataObject");
-        break;
-      case 1:
-        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkPointSet");
-        break;
-      default:
-        return 0;
-    }
-    return 1;
-  }
-
-  int FillOutputPortInformation(int port, vtkInformation *info) override {
-    switch(port) {
-      case 0:
-        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkMultiBlockDataSet");
-        break;
-      default:
-        return 0;
-    }
-    return 1;
-  }
+  // Perspective
+  vtkSetMacro(CamAngle, double);
+  vtkGetMacro(CamAngle, double);
 
 protected:
-  ttkCinemaImaging() {
-    int res[2] = {256, 256};
-    SetResolution(res);
-    double nf[2] = {0.1, 2};
-    SetCamNearFar(nf);
-    double foc[3] = {0, 0, 0};
-    SetCamFocus(foc);
-    SetCamHeight(1);
+  ttkCinemaImaging();
+  ~ttkCinemaImaging() override;
 
-    UseAllCores = false;
-
-    SetNumberOfInputPorts(2);
-    SetNumberOfOutputPorts(1);
-  }
-  ~ttkCinemaImaging(){};
-
-  bool UseAllCores;
-  int ThreadNumber;
-
-  int Resolution[2];
-  double CamNearFar[2];
-  double CamFocus[3];
-  double CamHeight;
+  int FillInputPortInformation(int port, vtkInformation *info) override;
+  int FillOutputPortInformation(int port, vtkInformation *info) override;
 
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;
 
 private:
-  bool needsToAbort() override {
-    return GetAbortExecute();
-  };
-  int updateProgress(const float &progress) override {
-    UpdateProgress(progress);
-    return 0;
-  };
+  int Resolution[2]{256, 256};
+  bool GenerateScalarImages{true};
+
+  int CamProjectionMode{0};
+  bool CamFocusAuto{true};
+  double CamFocus[3]{0, 0, 0};
+  bool CamNearFarAuto{true};
+  double CamNearFar[2]{0, 1};
+
+  bool CamHeightAuto{true};
+  double CamHeight{1};
+  double CamAngle{90};
 };

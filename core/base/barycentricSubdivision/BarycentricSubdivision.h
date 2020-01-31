@@ -46,10 +46,10 @@ namespace ttk {
     inline void setupTriangulation(Triangulation *const triangulation) {
       inputTriangl_ = triangulation;
       if(inputTriangl_ != nullptr) {
-        inputTriangl_->preprocessVertexNeighbors();
-        inputTriangl_->preprocessEdges();
-        inputTriangl_->preprocessTriangles();
-        inputTriangl_->preprocessTriangleEdges();
+        inputTriangl_->preconditionVertexNeighbors();
+        inputTriangl_->preconditionEdges();
+        inputTriangl_->preconditionTriangles();
+        inputTriangl_->preconditionTriangleEdges();
       }
       nVertices_ = inputTriangl_->getNumberOfVertices();
       nEdges_ = inputTriangl_->getNumberOfEdges();

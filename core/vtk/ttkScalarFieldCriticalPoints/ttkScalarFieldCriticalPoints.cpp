@@ -92,7 +92,7 @@ int ttkScalarFieldCriticalPoints::doIt(vector<vtkDataSet *> &inputs,
 #endif
 
   if(VertexBoundary)
-    triangulation->preprocessBoundaryVertices();
+    triangulation->preconditionBoundaryVertices();
 
   // in the following, the target scalar field of the input is replaced in the
   // variable 'output' with the result of the computation.

@@ -10,16 +10,13 @@
      class="ttkIdentifiers" 
      label="TTK Identifiers">
      <Documentation
-        long_help="TTK plugin that computes the global identifiers for each 
-vertex and each cell as point data and cell data scalar fields."
-        short_help="TTK plugin that computes the global identifiers for each 
-vertex and each cell as point data and cell data scalar fields.">
-       
-TTK plugin that computes the global identifiers for each 
-vertex and each cell as point data and cell data scalar fields.
+        long_help="TTK plugin that computes the global identifiers for each vertex and each cell as point data and cell data scalar fields."
+        short_help="TTK plugin that computes the global identifiers for each vertex and each cell as point data and cell data scalar fields.">
+      TTK plugin that computes the global identifiers for each
+      vertex and each cell as point data and cell data scalar fields.
 
-This filter is useful to retrieve the global identifiers of vertices or 
-cells in subsequent filters throughout the VTK pipeline.
+      This filter is useful to retrieve the global identifiers of vertices or
+      cells in subsequent filters throughout the VTK pipeline.
      </Documentation>
      <InputProperty
         name="Input"
@@ -94,7 +91,7 @@ cells in subsequent filters throughout the VTK pipeline.
       <IntVectorProperty
          name="DebugLevel"
          label="Debug Level"
-         command="SetdebugLevel_"
+         command="SetDebugLevel"
          number_of_elements="1"
          default_values="3" panel_visibility="advanced">
         <IntRangeDomain name="range" min="0" max="100" />

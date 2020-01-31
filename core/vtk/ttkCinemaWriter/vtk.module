@@ -1,0 +1,5 @@
+NAME
+  ttkCinemaWriter
+DEPENDS
+  ttkAlgorithm
+  ttkTopologicalCompressionWriter

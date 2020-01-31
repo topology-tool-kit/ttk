@@ -48,8 +48,6 @@ AbstractMorseSmaleComplex::AbstractMorseSmaleComplex()
 
     outputAscendingManifold_{}, outputDescendingManifold_{},
     outputMorseSmaleManifold_{} {
-  discreteGradient_.setReverseSaddleMaximumConnection(true);
-  discreteGradient_.setReverseSaddleSaddleConnection(true);
 }
 
 AbstractMorseSmaleComplex::~AbstractMorseSmaleComplex() {

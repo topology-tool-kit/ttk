@@ -81,7 +81,8 @@ int ttkGeometrySmoother::doIt(vector<vtkDataSet *> &inputs,
   smoother_.setMaskDataPointer(inputMaskPtr);
 
   switch(outputPointSet->GetDataType()) {
-    vtkTemplateMacro(smoother_.smooth<VTK_TT>(NumberOfIterations));
+    vtkTemplateMacro(
+      smoother_.smooth<VTK_TT>(triangulation, NumberOfIterations));
   }
 
   {

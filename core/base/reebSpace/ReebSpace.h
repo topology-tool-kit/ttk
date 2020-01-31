@@ -266,9 +266,9 @@ namespace ttk {
 
       if(triangulation_) {
 
-        triangulation_->preprocessVertexStars();
-        triangulation_->preprocessEdges();
-        triangulation_->preprocessVertexEdges();
+        triangulation_->preconditionVertexStars();
+        triangulation_->preconditionEdges();
+        triangulation_->preconditionVertexEdges();
 
         JacobiSet<dataTypeU, dataTypeV> jacobiSet;
         jacobiSet.setWrapper(wrapper_);

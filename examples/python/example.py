@@ -47,12 +47,12 @@ reader.SetFileName(inputFilePath)
 # 2. computing the persistence curve
 curve = ttkPersistenceCurve()
 curve.SetInputConnection(reader.GetOutputPort())
-curve.SetdebugLevel_(3)
+curve.SetDebugLevel(3)
 
 # 3. computing the persitence diagram
 diagram = ttkPersistenceDiagram()
 diagram.SetInputConnection(reader.GetOutputPort())
-diagram.SetdebugLevel_(3)
+diagram.SetDebugLevel(3)
 
 # 4. selecting the critical point pairs
 criticalPairs = vtkThreshold()
@@ -72,12 +72,12 @@ persistentPairs.ThresholdBetween(0.05, 999999)
 topologicalSimplification = ttkTopologicalSimplification()
 topologicalSimplification.SetInputConnection(0, reader.GetOutputPort())
 topologicalSimplification.SetInputConnection(1, persistentPairs.GetOutputPort())
-topologicalSimplification.SetdebugLevel_(3)
+topologicalSimplification.SetDebugLevel(3)
 
 # 7. computing the Morse-Smale complex
 morseSmaleComplex = ttkMorseSmaleComplex()
 morseSmaleComplex.SetInputConnection(topologicalSimplification.GetOutputPort())
-morseSmaleComplex.SetdebugLevel_(3)
+morseSmaleComplex.SetDebugLevel(3)
 
 # 8. saving the output data
 curveWriter = vtkTableWriter()

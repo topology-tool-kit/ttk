@@ -38,18 +38,18 @@
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnsignedShortArray.h>
 
+// VTK module
+
+#include <ttkCellDataConverterModule.h>
+
 // ttk code includes
 #include <Wrapper.h>
 
 #include <limits>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkCellDataConverter
-#else
-class ttkCellDataConverter
-#endif
+class TTKCELLDATACONVERTER_EXPORT ttkCellDataConverter
   : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+    protected ttk::Wrapper {
 
   enum SupportedType {
     Char = 0,
@@ -68,7 +68,10 @@ public:
   vtkTypeMacro(ttkCellDataConverter, vtkDataSetAlgorithm);
 
   // default ttk setters
-  vtkSetMacro(debugLevel_, int);
+  void SetDebugLevel(int debugLevel) {
+    setDebugLevel(debugLevel);
+    Modified();
+  }
 
   void SetThreads() {
     if(!UseAllCores)
@@ -107,7 +110,7 @@ public:
 
 protected:
   ttkCellDataConverter();
-  ~ttkCellDataConverter();
+  ~ttkCellDataConverter() override;
 
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,

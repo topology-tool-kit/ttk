@@ -56,7 +56,7 @@ namespace ttk {
         contourTree.setDebugLevel(debugLevel_);
         contourTree.setupTriangulation(triangulation_);
 
-        triangulation_->preprocessBoundaryVertices();
+        triangulation_->preconditionBoundaryVertices();
       }
       return 0;
     }

@@ -20,16 +20,16 @@
                 <BooleanDomain name="bool" />
                 <Documentation>Use variable edge sizes.</Documentation>
             </IntVectorProperty>
-            <StringVectorProperty name="SizeFieldName" label="" command="SetSizeFieldName" number_of_elements="1" animateable="0" default_values="Size">
-                <ArrayListDomain name="array_list" input_domain_name="input_array">
+            <StringVectorProperty name="SizeArray" label="Size Array" command="SetInputArrayToProcess" element_types="0 0 0 0 2" number_of_elements="5">
+                <ArrayListDomain attribute_type="Scalars" name="array_list">
                     <RequiredProperties>
-                        <Property name="Input" function="Input" />
+                        <Property function="Input" name="Input" />
                     </RequiredProperties>
                 </ArrayListDomain>
                 <Hints>
                     <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="UseVariableSize" value="1" />
                 </Hints>
-                <Documentation>Scalar field that contains point sizes.</Documentation>
+                <Documentation>Scalar array that contains point sizes.</Documentation>
             </StringVectorProperty>
 
             <DoubleVectorProperty name="SizeScale" label="Size Scale" command="SetSizeScale" number_of_elements="1" default_values="1">
@@ -62,25 +62,9 @@
                 </Hints>
             </IntVectorProperty>
 
-            <IntVectorProperty name="UseAllCores" label="Use All Cores" command="SetUseAllCores" number_of_elements="1" default_values="1" panel_visibility="advanced">
-                <BooleanDomain name="bool" />
-                <Documentation>Use all available cores.</Documentation>
-            </IntVectorProperty>
-            <IntVectorProperty name="ThreadNumber" label="Thread Number" command="SetThreadNumber" number_of_elements="1" default_values="1" panel_visibility="advanced">
-                <IntRangeDomain name="range" min="1" max="100" />
-                <Hints>
-                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="UseAllCores" value="0" />
-                </Hints>
-                <Documentation>Thread number.</Documentation>
-            </IntVectorProperty>
-            <IntVectorProperty name="DebugLevel" label="Debug Level" command="SetdebugLevel_" number_of_elements="1" default_values="3" panel_visibility="advanced">
-                <IntRangeDomain name="range" min="0" max="100" />
-                <Documentation>Debug level.</Documentation>
-            </IntVectorProperty>
-
             <PropertyGroup panel_widget="Line" label="Input Options">
                 <Property name="UseVariableSize" />
-                <Property name="SizeFieldName" />
+                <Property name="SizeArray" />
             </PropertyGroup>
             <PropertyGroup panel_widget="Line" label="Output Options">
                 <Property name="SizeAxis" />
@@ -89,11 +73,8 @@
                 <Property name="Subdivisions" />
                 <Property name="UseTetrahedralize" />
             </PropertyGroup>
-            <PropertyGroup panel_widget="Line" label="Testing">
-                <Property name="UseAllCores" />
-                <Property name="ThreadNumber" />
-                <Property name="DebugLevel" />
-            </PropertyGroup>
+
+            ${DEBUG_WIDGETS}
 
             <Hints>
                 <ShowInMenu category="TTK - Misc" />

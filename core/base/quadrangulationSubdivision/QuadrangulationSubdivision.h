@@ -65,8 +65,8 @@ namespace ttk {
       triangulation_ = triangl;
       if(triangulation_ != nullptr) {
         vertexNumber_ = triangulation_->getNumberOfVertices();
-        triangulation_->preprocessVertexNeighbors();
-        triangulation_->preprocessVertexTriangles();
+        triangulation_->preconditionVertexNeighbors();
+        triangulation_->preconditionVertexTriangles();
       }
     }
     int execute();

@@ -12,7 +12,8 @@
      <Documentation
         long_help="TTK identifierRandomizer plugin."
         short_help="TTK identifierRandomizer plugin.">
-          TTK identifierRandomizer plugin documentation.
+       TTK filter to shuflle ids randomly. Useful to reduce the number of neighbor
+       regions with close ids.
      </Documentation>
      <InputProperty
         name="Input"
@@ -85,7 +86,7 @@
       <IntVectorProperty
          name="DebugLevel"
          label="Debug Level"
-         command="SetdebugLevel_"
+         command="SetDebugLevel"
          number_of_elements="1"
          default_values="3" panel_visibility="advanced">
         <IntRangeDomain name="range" min="0" max="100" />

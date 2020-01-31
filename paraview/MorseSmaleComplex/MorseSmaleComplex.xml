@@ -118,30 +118,6 @@ Computer Graphics Forum, 2012.
         </Documentation>
       </IntVectorProperty>
 
-      <IntVectorProperty name="ReverseSaddleMaximumConnection"
-        label="PL-compliant extrema"
-        command="SetReverseSaddleMaximumConnection"
-        number_of_elements="1"
-        default_values="1"
-        panel_visibility="advanced">
-        <BooleanDomain name="bool"/>
-        <Documentation>
-           Documentation.
-        </Documentation>
-      </IntVectorProperty>
-
-      <IntVectorProperty name="ReverseSaddleSaddleConnection"
-        label="PL-compliant saddles"
-        command="SetReverseSaddleSaddleConnection"
-        number_of_elements="1"
-        default_values="1"
-        panel_visibility="advanced">
-        <BooleanDomain name="bool"/>
-        <Documentation>
-           Documentation.
-        </Documentation>
-      </IntVectorProperty>
-
        <IntVectorProperty name="ComputeCriticalPoints"
          label="Critical Points"
          command="SetComputeCriticalPoints"
@@ -326,7 +302,7 @@ Computer Graphics Forum, 2012.
       <IntVectorProperty
         name="DebugLevel"
         label="Debug Level"
-        command="SetdebugLevel_"
+        command="SetDebugLevel"
         number_of_elements="1"
         default_values="3" panel_visibility="advanced">
         <IntRangeDomain name="range" min="0" max="100" />
@@ -356,8 +332,6 @@ Computer Graphics Forum, 2012.
       </PropertyGroup>
 
       <PropertyGroup panel_widget="Line" label="Output options">
-        <Property name="ReverseSaddleMaximumConnection"/>
-        <Property name="ReverseSaddleSaddleConnection"/>
         <Property name="ComputeCriticalPoints"/>
         <Property name="ComputeAscendingSeparatrices1"/>
         <Property name="ComputeDescendingSeparatrices1"/>

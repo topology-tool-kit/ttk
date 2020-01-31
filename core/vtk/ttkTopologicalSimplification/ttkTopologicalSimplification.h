@@ -66,25 +66,27 @@
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnsignedShortArray.h>
 
+// VTK Module
+#include <ttkTopologicalSimplificationModule.h>
+
 // ttk code includes
 #include <TopologicalSimplification.h>
-#include <ttkWrapper.h>
+#include <ttkTriangulationAlgorithm.h>
 
 #include <ttkTriangulation.h>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkTopologicalSimplification
-#else
-class ttkTopologicalSimplification
-#endif
+class TTKTOPOLOGICALSIMPLIFICATION_EXPORT ttkTopologicalSimplification
   : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+    protected ttk::Wrapper {
 
 public:
   static ttkTopologicalSimplification *New();
   vtkTypeMacro(ttkTopologicalSimplification, vtkDataSetAlgorithm);
 
-  vtkSetMacro(debugLevel_, int);
+  void SetDebugLevel(int debugLevel) {
+    setDebugLevel(debugLevel);
+    Modified();
+  }
 
   void SetThreadNumber(int threadNumber) {
     ThreadNumber = threadNumber;
@@ -134,7 +136,7 @@ public:
 protected:
   ttkTopologicalSimplification();
 
-  ~ttkTopologicalSimplification();
+  ~ttkTopologicalSimplification() override;
 
   TTK_SETUP();
 

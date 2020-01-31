@@ -21,7 +21,7 @@
 
 // TTK includes
 #include <BottleneckDistance.h>
-#include <ttkWrapper.h>
+#include <ttkTriangulationAlgorithm.h>
 
 // VTK includes
 #include <vtkCellData.h>
@@ -39,18 +39,17 @@
 #include <vtkSmartPointer.h>
 #include <vtkUnstructuredGrid.h>
 
+// VTK Module
+#include <ttkBottleneckDistanceModule.h>
+
 // Misc.
 #include <cstdlib>
 #include <ctime>
 #include <random>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkBottleneckDistance
-#else
-class ttkBottleneckDistance
-#endif
+class TTKBOTTLENECKDISTANCE_EXPORT ttkBottleneckDistance
   : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+    protected ttk::Wrapper {
 
 public:
   static ttkBottleneckDistance *New();
@@ -58,7 +57,10 @@ public:
   vtkTypeMacro(ttkBottleneckDistance, vtkDataSetAlgorithm);
 
   // Default ttk setters
-  vtkSetMacro(debugLevel_, int);
+  void SetDebugLevel(int debugLevel) {
+    setDebugLevel(debugLevel);
+    Modified();
+  }
 
   void SetThreadNumber(int threadNumber) {
     ThreadNumber = threadNumber;
@@ -215,7 +217,7 @@ protected:
     CTPersistenceDiagram3_ = vtkSmartPointer<vtkUnstructuredGrid>::New();
   }
 
-  ~ttkBottleneckDistance(){};
+  ~ttkBottleneckDistance() override{};
 
   TTK_SETUP();
 

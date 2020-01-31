@@ -37,8 +37,9 @@ namespace ttk {
       /// setupTriangulation() from any time performance measurement.
       /// \param argment Dummy integer argument.
       /// \return Returns 0 upon success, negative values otherwise.
-      template <class dataType>
-      int execute(const int &argument) const;
+      template <class dataType, class triangulationType = AbstractTriangulation>
+      int execute(const triangulationType *triangulation,
+                  const int &argument) const;
 
       /// Pass a pointer to an input array representing a scalarfield.
       /// The expected format for the array is the following:
@@ -103,16 +104,15 @@ namespace ttk {
       // must satisfy some pre-condition (see ttk::Triangulation for more
       // details). Such pre-condition functions are typically called from this
       // function.
-      inline int setupTriangulation(Triangulation *triangulation) {
-        triangulation_ = triangulation;
+      inline int setupTriangulation(AbstractTriangulation *triangulation) {
 
-        if(triangulation_) {
+        if(triangulation) {
 
           // TODO-1
           // Pre-condition functions.
           // Call all the required pre-condition functions here!
           // for example:
-          triangulation_->preprocessVertexNeighbors();
+          triangulation->preconditionVertexNeighbors();
           // end of TODO-1
         }
 
@@ -121,23 +121,20 @@ namespace ttk {
 
     protected:
       void *inputData_, *outputData_;
-      Triangulation *triangulation_;
     };
   } // namespace blank
 } // namespace ttk
 
-// if the package is a pure template class, uncomment the following line
-// #include                  <Blank.cpp>
-
 // template functions
-template <class dataType>
-int ttk::blank::Blank::execute(const int &argument) const {
+template <class dataType, class triangulationType>
+int ttk::blank::Blank::execute(const triangulationType *triangulation,
+                               const int &argument) const {
 
   Timer t;
 
   // check the consistency of the variables -- to adapt
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(!triangulation_)
+  if(!triangulation)
     return -1;
   if(!inputData_)
     return -2;
@@ -148,7 +145,11 @@ int ttk::blank::Blank::execute(const int &argument) const {
   dataType *outputData = (dataType *)outputData_;
   dataType *inputData = (dataType *)inputData_;
 
-  SimplexId vertexNumber = triangulation_->getNumberOfVertices();
+  SimplexId vertexNumber = triangulation->getNumberOfVertices();
+
+  SimplexId cellEdgeId = -1, edgeNumber = -1;
+  //   edgeNumber = triangulation->getNumberOfEdges();
+  //     triangulation->getCellEdge(0, 0, cellEdgeId);
 
   // init the output -- to adapt
   for(SimplexId i = 0; i < vertexNumber; i++) {

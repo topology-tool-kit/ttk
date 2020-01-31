@@ -12,15 +12,13 @@
 #include <vtkPoints.h>
 #include <vtkSmartPointer.h>
 
+// VTK Module
+#include <ttkOBJWriterModule.h>
+
 #include <string>
 #include <vector>
 
-#ifndef TTK_PLUGIN
-class VTKIOLEGACY_EXPORT ttkOBJWriter
-#else
-class ttkOBJWriter
-#endif
-  : public vtkDataSetWriter {
+class TTKOBJWRITER_EXPORT ttkOBJWriter : public vtkDataSetWriter {
 
 public:
   vtkTypeMacro(ttkOBJWriter, vtkDataSetWriter);
@@ -35,7 +33,7 @@ public:
 
 protected:
   ttkOBJWriter();
-  ~ttkOBJWriter();
+  ~ttkOBJWriter() override;
 
   int OpenFile();
   virtual void WriteData() override;

@@ -1,67 +1,117 @@
 #include <ttkCinemaReader.h>
 
+#include <vtkDataObject.h> // For port info
+#include <vtkObjectFactory.h> // for new macro
+
 #include <vtkDelimitedTextReader.h>
 #include <vtkFieldData.h>
 #include <vtkSmartPointer.h>
 #include <vtkStringArray.h>
 #include <vtkTable.h>
 
-using namespace std;
-using namespace ttk;
+#include <ttkUtils.h>
 
-vtkStandardNewMacro(ttkCinemaReader)
+vtkStandardNewMacro(ttkCinemaReader);
 
-  int ttkCinemaReader::RequestData(vtkInformation *request,
-                                   vtkInformationVector **inputVector,
-                                   vtkInformationVector *outputVector) {
-  Timer t;
-  Memory m;
+ttkCinemaReader::ttkCinemaReader() {
+  this->setDebugMsgPrefix("CinemaReader");
 
-  // Print Status
-  {
-    stringstream msg;
-    msg << "==================================================================="
-           "============="
-        << endl;
-    msg << "[ttkCinemaReader] RequestData" << endl;
-    dMsg(cout, msg.str(), infoMsg);
+  this->SetNumberOfInputPorts(0);
+  this->SetNumberOfOutputPorts(1);
+}
+
+ttkCinemaReader::~ttkCinemaReader() {
+}
+
+int ttkCinemaReader::FillInputPortInformation(int port, vtkInformation *info) {
+  return 0;
+}
+
+int ttkCinemaReader::FillOutputPortInformation(int port, vtkInformation *info) {
+  if(port == 0)
+    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkTable");
+  else
+    return 0;
+  return 1;
+}
+
+int ttkCinemaReader::validateDatabasePath() {
+  if(this->DatabasePath.length() < 4
+     || this->DatabasePath.substr(this->DatabasePath.length() - 4, 4)
+            .compare(".cdb")
+          != 0) {
+    this->printErr("Database path has to end with '.cdb'.");
+    return 0;
   }
 
-  // Read CSV file which is in Spec D format
-  auto reader = vtkSmartPointer<vtkDelimitedTextReader>::New();
-  reader->SetFileName((this->DatabasePath + "/data.csv").data());
-  reader->DetectNumericColumnsOn();
-  reader->SetHaveHeaders(true);
-  reader->SetFieldDelimiterCharacters(",");
-  reader->Update();
+  return 1;
+}
 
-  if(reader->GetLastError().compare("") != 0)
+int ttkCinemaReader::RequestData(vtkInformation *request,
+                                 vtkInformationVector **inputVector,
+                                 vtkInformationVector *outputVector) {
+  ttk::Timer timer;
+
+  // print input
+  this->printMsg({
+    {"Database", this->GetDatabasePath()},
+    {"FILE Columns", this->GetFilePathColumnNames()},
+  });
+  this->printMsg(ttk::debug::Separator::L1);
+
+  if(!this->validateDatabasePath())
     return 0;
 
-  // Copy Information to Output
-  vtkInformation *outInfo = outputVector->GetInformationObject(0);
-  auto outTable
-    = vtkTable::SafeDownCast(outInfo->Get(vtkDataObject::DATA_OBJECT()));
-  outTable->ShallowCopy(reader->GetOutput());
+  this->printMsg("Reading CSV file", 0, ttk::debug::LineMode::REPLACE);
 
-  // Append database path as field data
-  auto DatabasePathFD = vtkSmartPointer<vtkStringArray>::New();
-  DatabasePathFD->SetName("DatabasePath");
-  DatabasePathFD->SetNumberOfValues(1);
-  DatabasePathFD->SetValue(0, this->DatabasePath);
-  outTable->GetFieldData()->AddArray(DatabasePathFD);
+  // get output
+  auto outTable = vtkTable::GetData(outputVector);
 
-  // Output Performance
+  // read CSV file which is in Spec D format
   {
-    stringstream msg;
-    msg << "[ttkCinemaReader] "
-           "--------------------------------------------------------------"
-        << endl;
-    msg << "[ttkCinemaReader]   Time: " << t.getElapsedTime() << " s." << endl;
-    msg << "[ttkCinemaReader] Memory: " << m.getElapsedUsage() << " MB."
-        << endl;
-    dMsg(cout, msg.str(), timeMsg);
+    auto reader = vtkSmartPointer<vtkDelimitedTextReader>::New();
+    reader->SetFileName((this->GetDatabasePath() + "/data.csv").data());
+    reader->DetectNumericColumnsOn();
+    reader->SetHaveHeaders(true);
+    reader->SetFieldDelimiterCharacters(",");
+    reader->Update();
+
+    if(reader->GetLastError().compare("") != 0)
+      return 0;
+
+    // copy information to output
+    outTable->ShallowCopy(reader->GetOutput());
+
+    // prepend database path to FILE column
+    std::vector<std::string> filePathColumnNames;
+    ttkUtils::stringListToVector(
+      this->GetFilePathColumnNames(), filePathColumnNames);
+
+    for(size_t j = 0; j < filePathColumnNames.size(); j++) {
+      auto filepathColumn = vtkStringArray::SafeDownCast(
+        outTable->GetColumnByName(filePathColumnNames[j].data()));
+      if(filepathColumn) {
+        size_t n = filepathColumn->GetNumberOfValues();
+        for(size_t i = 0; i < n; i++)
+          filepathColumn->SetValue(
+            i, this->GetDatabasePath() + "/" + filepathColumn->GetValue(i));
+      } else {
+        this->printErr("Input table does not have column '"
+                       + filePathColumnNames[j]
+                       + "' or is not of type 'vtkStringArray'.");
+        return 0;
+      }
+    }
+
+    this->printMsg("Reading CSV file", 1, timer.getElapsedTime());
   }
+
+  // print stats
+  this->printMsg(ttk::debug::Separator::L2);
+  this->printMsg(
+    "Complete (#rows: " + std::to_string(outTable->GetNumberOfRows()) + ")", 1,
+    timer.getElapsedTime());
+  this->printMsg(ttk::debug::Separator::L1);
 
   return 1;
 }

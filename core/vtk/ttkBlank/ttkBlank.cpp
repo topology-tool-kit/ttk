@@ -100,9 +100,14 @@ vtkStandardNewMacro(ttkBlank)
   // calling the executing package
   blank_.setInputDataPointer(inputScalarField->GetVoidPointer(0));
   blank_.setOutputDataPointer(outputScalarField_->GetVoidPointer(0));
-  switch(inputScalarField->GetDataType()) {
-    vtkTemplateMacro(blank_.execute<VTK_TT>(SomeIntegerArgument));
-  }
+
+  ttk::Triangulation::Type triangulationType = triangulation->getType();
+  int dataType = inputScalarField->GetDataType();
+
+  ttkVtkTemplateMacro(
+    triangulation->getType(), inputScalarField->GetDataType(),
+    (blank_.execute<VTK_TT, TTK_TT>(
+      (TTK_TT *)triangulation->getData(), SomeIntegerArgument)));
 
   {
     stringstream msg;

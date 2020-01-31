@@ -30,87 +30,163 @@ namespace ttk {
     PeriodicImplicitTriangulation();
     ~PeriodicImplicitTriangulation();
 
-    int getCellEdge(const SimplexId &cellId,
-                    const int &id,
-                    SimplexId &edgeId) const override;
+    int getCellEdgeInternal(const SimplexId &cellId,
+                            const int &id,
+                            SimplexId &edgeId) const override;
 
-    SimplexId getCellEdgeNumber(const SimplexId &cellId) const override;
+    SimplexId getCellEdgeNumberInternal(const SimplexId &cellId) const override;
 
-    const std::vector<std::vector<SimplexId>> *getCellEdges() override;
+    const std::vector<std::vector<SimplexId>> *getCellEdgesInternal() override;
 
+#ifdef TTK_ENABLE_KAMIKAZE
     int getCellNeighbor(const SimplexId &cellId,
                         const int &localNeighborId,
                         SimplexId &neighborId) const override;
+#else
+    int getCellNeighborInternal(const SimplexId &cellId,
+                                const int &localNeighborId,
+                                SimplexId &neighborId) const override;
+#endif
 
+#ifdef TTK_ENABLE_KAMIKAZE
     SimplexId getCellNeighborNumber(const SimplexId &cellId) const override;
+#else
+    SimplexId
+      getCellNeighborNumberInternal(const SimplexId &cellId) const override;
+#endif
 
+#ifdef TTK_ENABLE_KAMIKAZE
     const std::vector<std::vector<SimplexId>> *getCellNeighbors() override;
+#else
+    const std::vector<std::vector<SimplexId>> *
+      getCellNeighborsInternal() override;
+#endif
 
-    int getCellTriangle(const SimplexId &cellId,
-                        const int &id,
-                        SimplexId &triangleId) const override;
+    int getCellTriangleInternal(const SimplexId &cellId,
+                                const int &id,
+                                SimplexId &triangleId) const override;
 
-    SimplexId getCellTriangleNumber(const SimplexId &cellId) const override {
+    SimplexId
+      getCellTriangleNumberInternal(const SimplexId &cellId) const override {
       // NOTE: the output is always 4 here. let's keep the function in there
       // in case of further generalization to CW-complexes
       return 4;
     };
 
-    const std::vector<std::vector<SimplexId>> *getCellTriangles() override;
+    const std::vector<std::vector<SimplexId>> *
+      getCellTrianglesInternal() override;
 
+#ifdef TTK_ENABLE_KAMIKAZE
     int getCellVertex(const SimplexId &cellId,
                       const int &localVertexId,
                       SimplexId &vertexId) const override;
+#else
+    int getCellVertexInternal(const SimplexId &cellId,
+                              const int &localVertexId,
+                              SimplexId &vertexId) const override;
+#endif
 
+#ifdef TTK_ENABLE_KAMIKAZE
     SimplexId getCellVertexNumber(const SimplexId &cellId) const override;
+#else
+    SimplexId
+      getCellVertexNumberInternal(const SimplexId &cellId) const override;
+#endif
 
+#ifdef TTK_ENABLE_KAMIKAZE
     int getDimensionality() const override {
+#else
+    int getDimensionalityInternal() const override {
+#endif
       return dimensionality_;
     };
 
+#ifdef TTK_ENABLE_KAMIKAZE
     int getEdgeLink(const SimplexId &edgeId,
                     const int &localLinkId,
                     SimplexId &linkId) const override;
+#else
+    int getEdgeLinkInternal(const SimplexId &edgeId,
+                            const int &localLinkId,
+                            SimplexId &linkId) const override;
+#endif
 
+#ifdef TTK_ENABLE_KAMIKAZE
     SimplexId getEdgeLinkNumber(const SimplexId &edgeId) const override;
+#else
+    SimplexId getEdgeLinkNumberInternal(const SimplexId &edgeId) const override;
+#endif
 
+#ifdef TTK_ENABLE_KAMIKAZE
     const std::vector<std::vector<SimplexId>> *getEdgeLinks() override;
+#else
+    const std::vector<std::vector<SimplexId>> *getEdgeLinksInternal() override;
+#endif
 
+#ifdef TTK_ENABLE_KAMIKAZE
     int getEdgeStar(const SimplexId &edgeId,
                     const int &localStarId,
                     SimplexId &starId) const override;
+#else
+    int getEdgeStarInternal(const SimplexId &edgeId,
+                            const int &localStarId,
+                            SimplexId &starId) const override;
+#endif
 
+#ifdef TTK_ENABLE_KAMIKAZE
     SimplexId getEdgeStarNumber(const SimplexId &edgeId) const override;
+#else
+    SimplexId getEdgeStarNumberInternal(const SimplexId &edgeId) const override;
+#endif
 
+#ifdef TTK_ENABLE_KAMIKAZE
     const std::vector<std::vector<SimplexId>> *getEdgeStars() override;
+#else
+    const std::vector<std::vector<SimplexId>> *getEdgeStarsInternal() override;
+#endif
 
-    int getEdgeTriangle(const SimplexId &edgeId,
-                        const int &id,
-                        SimplexId &triangleId) const override;
+    int getEdgeTriangleInternal(const SimplexId &edgeId,
+                                const int &id,
+                                SimplexId &triangleId) const override;
 
-    SimplexId getEdgeTriangleNumber(const SimplexId &edgeId) const override;
+    SimplexId
+      getEdgeTriangleNumberInternal(const SimplexId &edgeId) const override;
 
-    const std::vector<std::vector<SimplexId>> *getEdgeTriangles() override;
+    const std::vector<std::vector<SimplexId>> *
+      getEdgeTrianglesInternal() override;
 
-    int getEdgeVertex(const SimplexId &edgeId,
-                      const int &localVertexId,
-                      SimplexId &vertexId) const override;
+    int getEdgeVertexInternal(const SimplexId &edgeId,
+                              const int &localVertexId,
+                              SimplexId &vertexId) const override;
 
+#ifdef TTK_ENABLE_KAMIKAZE
     const std::vector<std::pair<SimplexId, SimplexId>> *getEdges() override;
+#else
+    const std::vector<std::pair<SimplexId, SimplexId>> *
+      getEdgesInternal() override;
+#endif
 
+#ifdef TTK_ENABLE_KAMIKAZE
     SimplexId getNumberOfCells() const override {
+#else
+    SimplexId getNumberOfCellsInternal() const override {
+#endif
       return cellNumber_;
     };
 
-    SimplexId getNumberOfEdges() const override {
+    SimplexId getNumberOfEdgesInternal() const override {
       return edgeNumber_;
     };
 
-    SimplexId getNumberOfTriangles() const override {
+    SimplexId getNumberOfTrianglesInternal() const override {
       return triangleNumber_;
     };
 
+#ifdef TTK_ENABLE_KAMIKAZE
     SimplexId getNumberOfVertices() const override {
+#else
+    SimplexId getNumberOfVerticesInternal() const override {
+#endif
       return vertexNumber_;
     };
 
@@ -139,28 +215,46 @@ namespace ttk {
                              const int &localVertexId,
                              SimplexId &vertexId) const;
 
-    int getTriangleEdge(const SimplexId &triangleId,
-                        const int &id,
-                        SimplexId &edgeId) const override;
+    int getTriangleEdgeInternal(const SimplexId &triangleId,
+                                const int &id,
+                                SimplexId &edgeId) const override;
 
-    SimplexId
-      getTriangleEdgeNumber(const SimplexId &triangleId) const override {
+    SimplexId getTriangleEdgeNumberInternal(
+      const SimplexId &triangleId) const override {
       // NOTE: the output is always 3 here. let's keep the function in there
       // in case of further generalization to CW-complexes
       return 3;
     }
 
-    const std::vector<std::vector<SimplexId>> *getTriangleEdges() override;
+    const std::vector<std::vector<SimplexId>> *
+      getTriangleEdgesInternal() override;
 
-    int getTriangleEdges(std::vector<std::vector<SimplexId>> &edges) const;
+    int getTriangleEdgesInternal(
+      std::vector<std::vector<SimplexId>> &edges) const;
 
+#ifdef TTK_ENABLE_KAMIKAZE
     int getTriangleLink(const SimplexId &triangleId,
                         const int &localLinkId,
                         SimplexId &linkId) const override;
+#else
+    int getTriangleLinkInternal(const SimplexId &triangleId,
+                                const int &localLinkId,
+                                SimplexId &linkId) const override;
+#endif
 
+#ifdef TTK_ENABLE_KAMIKAZE
     SimplexId getTriangleLinkNumber(const SimplexId &triangleId) const override;
+#else
+    SimplexId
+      getTriangleLinkNumberInternal(const SimplexId &triangleId) const override;
+#endif
 
+#ifdef TTK_ENABLE_KAMIKAZE
     const std::vector<std::vector<SimplexId>> *getTriangleLinks() override;
+#else
+    const std::vector<std::vector<SimplexId>> *
+      getTriangleLinksInternal() override;
+#endif
 
     int getTriangleNeighbor(const SimplexId &triangleId,
                             const int &localNeighborId,
@@ -170,74 +264,166 @@ namespace ttk {
 
     int getTriangleNeighbors(std::vector<std::vector<SimplexId>> &neighbors);
 
+#ifdef TTK_ENABLE_KAMIKAZE
     int getTriangleStar(const SimplexId &triangleId,
                         const int &localStarId,
                         SimplexId &starId) const override;
+#else
+    int getTriangleStarInternal(const SimplexId &triangleId,
+                                const int &localStarId,
+                                SimplexId &starId) const override;
+#endif
 
+#ifdef TTK_ENABLE_KAMIKAZE
     SimplexId getTriangleStarNumber(const SimplexId &triangleId) const override;
+#else
+    SimplexId
+      getTriangleStarNumberInternal(const SimplexId &triangleId) const override;
+#endif
 
+#ifdef TTK_ENABLE_KAMIKAZE
     const std::vector<std::vector<SimplexId>> *getTriangleStars() override;
+#else
+    const std::vector<std::vector<SimplexId>> *
+      getTriangleStarsInternal() override;
+#endif
 
-    int getTriangleVertex(const SimplexId &triangleId,
-                          const int &localVertexId,
-                          SimplexId &vertexId) const override;
+    int getTriangleVertexInternal(const SimplexId &triangleId,
+                                  const int &localVertexId,
+                                  SimplexId &vertexId) const override;
 
+#ifdef TTK_ENABLE_KAMIKAZE
     const std::vector<std::vector<SimplexId>> *getTriangles() override;
+#else
+    const std::vector<std::vector<SimplexId>> *getTrianglesInternal() override;
+#endif
 
-    int getVertexEdge(const SimplexId &vertexId,
-                      const int &id,
-                      SimplexId &edgeId) const override;
+    int getVertexEdgeInternal(const SimplexId &vertexId,
+                              const int &id,
+                              SimplexId &edgeId) const override;
 
-    SimplexId getVertexEdgeNumber(const SimplexId &vertexId) const override;
+    SimplexId
+      getVertexEdgeNumberInternal(const SimplexId &vertexId) const override;
 
-    const std::vector<std::vector<SimplexId>> *getVertexEdges() override;
+    const std::vector<std::vector<SimplexId>> *
+      getVertexEdgesInternal() override;
 
+#ifdef TTK_ENABLE_KAMIKAZE
     int getVertexLink(const SimplexId &vertexId,
                       const int &localLinkId,
                       SimplexId &linkId) const override;
+#else
+    int getVertexLinkInternal(const SimplexId &vertexId,
+                              const int &localLinkId,
+                              SimplexId &linkId) const override;
+#endif
 
+#ifdef TTK_ENABLE_KAMIKAZE
     SimplexId getVertexLinkNumber(const SimplexId &vertexId) const override;
+#else
+    SimplexId
+      getVertexLinkNumberInternal(const SimplexId &vertexId) const override;
+#endif
 
+#ifdef TTK_ENABLE_KAMIKAZE
     const std::vector<std::vector<SimplexId>> *getVertexLinks() override;
+#else
+    const std::vector<std::vector<SimplexId>> *
+      getVertexLinksInternal() override;
+#endif
 
+#ifdef TTK_ENABLE_KAMIKAZE
     int getVertexNeighbor(const SimplexId &vertexId,
                           const int &localNeighborId,
                           SimplexId &neighborId) const override;
+#else
+    int getVertexNeighborInternal(const SimplexId &vertexId,
+                                  const int &localNeighborId,
+                                  SimplexId &neighborId) const override;
+#endif
 
+#ifdef TTK_ENABLE_KAMIKAZE
     SimplexId getVertexNeighborNumber(const SimplexId &vertexId) const override;
+#else
+    SimplexId
+      getVertexNeighborNumberInternal(const SimplexId &vertexId) const override;
+#endif
 
+#ifdef TTK_ENABLE_KAMIKAZE
     const std::vector<std::vector<SimplexId>> *getVertexNeighbors() override;
+#else
+    const std::vector<std::vector<SimplexId>> *
+      getVertexNeighborsInternal() override;
+#endif
 
+#ifdef TTK_ENABLE_KAMIKAZE
     int getVertexPoint(const SimplexId &vertexId,
                        float &x,
                        float &y,
                        float &z) const override;
+#else
+    int getVertexPointInternal(const SimplexId &vertexId,
+                               float &x,
+                               float &y,
+                               float &z) const override;
+#endif
 
+#ifdef TTK_ENABLE_KAMIKAZE
     int getVertexStar(const SimplexId &vertexId,
                       const int &localStarId,
                       SimplexId &starId) const override;
+#else
+    int getVertexStarInternal(const SimplexId &vertexId,
+                              const int &localStarId,
+                              SimplexId &starId) const override;
+#endif
 
+#ifdef TTK_ENABLE_KAMIKAZE
     SimplexId getVertexStarNumber(const SimplexId &vertexId) const override;
+#else
+    SimplexId
+      getVertexStarNumberInternal(const SimplexId &vertexId) const override;
+#endif
 
+#ifdef TTK_ENABLE_KAMIKAZE
     const std::vector<std::vector<SimplexId>> *getVertexStars() override;
+#else
+    const std::vector<std::vector<SimplexId>> *
+      getVertexStarsInternal() override;
+#endif
 
-    int getVertexTriangle(const SimplexId &vertexId,
-                          const int &id,
-                          SimplexId &triangleId) const override;
+    int getVertexTriangleInternal(const SimplexId &vertexId,
+                                  const int &id,
+                                  SimplexId &triangleId) const override;
 
-    SimplexId getVertexTriangleNumber(const SimplexId &vertexId) const override;
+    SimplexId
+      getVertexTriangleNumberInternal(const SimplexId &vertexId) const override;
 
-    const std::vector<std::vector<SimplexId>> *getVertexTriangles() override;
+    const std::vector<std::vector<SimplexId>> *
+      getVertexTrianglesInternal() override;
 
+#ifdef TTK_ENABLE_KAMIKAZE
     bool isEdgeOnBoundary(const SimplexId &edgeId) const override;
+#else
+    bool isEdgeOnBoundaryInternal(const SimplexId &edgeId) const override;
+#endif
 
-    bool isEmpty() const override {
+    bool isEmpty() const {
       return !vertexNumber_;
     };
 
+#ifdef TTK_ENABLE_KAMIKAZE
     bool isTriangleOnBoundary(const SimplexId &triangleId) const override;
+#else
+    bool
+      isTriangleOnBoundaryInternal(const SimplexId &triangleId) const override;
+#endif
 
+#ifdef TTK_ENABLE_KAMIKAZE
     bool isVertexOnBoundary(const SimplexId &vertexId) const override;
+#else
+    bool isVertexOnBoundaryInternal(const SimplexId &vertexId) const override;
+#endif
 
     int setInputGrid(const float &xOrigin,
                      const float &yOrigin,
@@ -265,17 +451,18 @@ namespace ttk {
     /**
      * Compute the barycenter of the points of the given edge identifier.
      */
-    virtual int getEdgeIncenter(SimplexId edgeId,
-                                float incenter[3]) const override {
+    virtual int getEdgeIncenter(SimplexId edgeId, float incenter[3]) const {
       std::array<SimplexId, 2> vertexId;
       for(int i = 0; i < (int)vertexId.size(); ++i) {
-        getEdgeVertex(edgeId, i, vertexId[i]);
+        getEdgeVertexInternal(edgeId, i, vertexId[i]);
       }
 
       std::array<std::array<float, 3>, vertexId.size()> p;
       std::array<std::array<SimplexId, 3>, vertexId.size()> ind;
       for(int i = 0; i < (int)vertexId.size(); ++i) {
-        getVertexPoint(vertexId[i], p[i][0], p[i][1], p[i][2]);
+        for(int j = 0; j < 3; j++)
+          p[i][j] = 0;
+        getVertexPointInternal(vertexId[i], p[i][0], p[i][1], p[i][2]);
         ind[i] = vertexToPositionNd(vertexId[i]);
       }
 
@@ -299,17 +486,17 @@ namespace ttk {
      * identifier.
      */
     virtual int getTriangleIncenter(SimplexId triangleId,
-                                    float incenter[3]) const override {
+                                    float incenter[3]) const {
 
       std::array<SimplexId, 3> vertexId;
       for(int i = 0; i < (int)vertexId.size(); ++i) {
-        getTriangleVertex(triangleId, i, vertexId[i]);
+        getTriangleVertexInternal(triangleId, i, vertexId[i]);
       }
 
       std::array<std::array<float, 3>, vertexId.size()> p;
       std::array<std::array<SimplexId, 3>, vertexId.size()> ind;
       for(int i = 0; i < (int)vertexId.size(); ++i) {
-        getVertexPoint(vertexId[i], p[i][0], p[i][1], p[i][2]);
+        getVertexPointInternal(vertexId[i], p[i][0], p[i][1], p[i][2]);
         ind[i] = vertexToPositionNd(vertexId[i]);
       }
 
@@ -346,18 +533,18 @@ namespace ttk {
      * Compute the barycenter of the incenters of the triangles of the
      * given tetra identifier.
      */
-    virtual int getTetraIncenter(SimplexId tetraId,
-                                 float incenter[3]) const override {
+    virtual int getTetraIncenter(SimplexId tetraId, float incenter[3]) const {
 
       std::array<SimplexId, 4> vertexId;
       for(int i = 0; i < (int)vertexId.size(); ++i) {
-        getCellVertex(tetraId, i, vertexId[i]);
+        vertexId[i] = -1;
+        getCellVertexInternal(tetraId, i, vertexId[i]);
       }
 
       std::array<std::array<float, 3>, vertexId.size()> p;
       std::array<std::array<SimplexId, 3>, vertexId.size()> ind;
       for(int i = 0; i < (int)vertexId.size(); ++i) {
-        getVertexPoint(vertexId[i], p[i][0], p[i][1], p[i][2]);
+        getVertexPointInternal(vertexId[i], p[i][0], p[i][1], p[i][2]);
         ind[i] = vertexToPositionNd(vertexId[i]);
       }
 

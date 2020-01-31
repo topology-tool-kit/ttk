@@ -95,7 +95,7 @@ namespace ttk {
         ftm::FTMTreePP contourTree;
         contourTree.setupTriangulation(triangulation_);
 
-        triangulation_->preprocessBoundaryVertices();
+        triangulation_->preconditionBoundaryVertices();
       }
       return 0;
     }

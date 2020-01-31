@@ -44,21 +44,20 @@
 #include <vtkSmartPointer.h>
 #include <vtkUnstructuredGrid.h>
 
+// VTK Module
+#include <ttkScalarFieldCriticalPointsModule.h>
+
 // ttk baseCode includes
 #include <ScalarFieldCriticalPoints.h>
-#include <ttkWrapper.h>
+#include <ttkTriangulationAlgorithm.h>
 
 // in this example, this wrapper takes a data-set on the input and produces a
 // data-set on the output - to adapt.
 // see the documentation of the vtkAlgorithm class to decide from which VTK
 // class your wrapper should inherit.
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkScalarFieldCriticalPoints
-#else
-class ttkScalarFieldCriticalPoints
-#endif
+class TTKSCALARFIELDCRITICALPOINTS_EXPORT ttkScalarFieldCriticalPoints
   : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+    protected ttk::Wrapper {
 
 public:
   static ttkScalarFieldCriticalPoints *New();
@@ -66,7 +65,10 @@ public:
   vtkTypeMacro(ttkScalarFieldCriticalPoints, vtkDataSetAlgorithm);
 
   // default ttk setters
-  vtkSetMacro(debugLevel_, int);
+  void SetDebugLevel(int debugLevel) {
+    setDebugLevel(debugLevel);
+    Modified();
+  }
 
   void SetThreadNumber(int threadNumber) {
     ThreadNumber = threadNumber;
@@ -116,7 +118,7 @@ public:
 protected:
   ttkScalarFieldCriticalPoints();
 
-  ~ttkScalarFieldCriticalPoints();
+  ~ttkScalarFieldCriticalPoints() override;
 
   TTK_SETUP();
 

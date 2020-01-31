@@ -1,0 +1,4 @@
+NAME
+  ttkCinemaReader
+DEPENDS
+  ttkAlgorithm

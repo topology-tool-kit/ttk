@@ -158,8 +158,8 @@ namespace ttk {
                                      const bool preproc = true) {
         mesh_ = m;
         if(mesh_ && preproc) {
-          mesh_->preprocessEdges();
-          mesh_->preprocessVertexNeighbors();
+          mesh_->preconditionEdges();
+          mesh_->preconditionVertexNeighbors();
         }
       }
 

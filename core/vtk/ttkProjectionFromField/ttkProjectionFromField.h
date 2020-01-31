@@ -32,16 +32,15 @@
 #include <vtkPoints.h>
 #include <vtkSmartPointer.h>
 
-// ttk code includes
-#include <ttkWrapper.h>
+// VTK Module
+#include <ttkProjectionFromFieldModule.h>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkProjectionFromField
-#else
-class ttkProjectionFromField
-#endif
+// ttk code includes
+#include <ttkTriangulationAlgorithm.h>
+
+class TTKPROJECTIONFROMFIELD_EXPORT ttkProjectionFromField
   : public vtkPointSetAlgorithm,
-    public ttk::Wrapper {
+    protected ttk::Wrapper {
 
 public:
   static ttkProjectionFromField *New();
@@ -49,7 +48,10 @@ public:
   vtkTypeMacro(ttkProjectionFromField, vtkPointSetAlgorithm);
 
   // default ttk setters
-  vtkSetMacro(debugLevel_, int);
+  void SetDebugLevel(int debugLevel) {
+    setDebugLevel(debugLevel);
+    Modified();
+  }
 
   void SetThreads() {
     if(!UseAllCores)
@@ -83,7 +85,7 @@ public:
 protected:
   ttkProjectionFromField();
 
-  ~ttkProjectionFromField();
+  ~ttkProjectionFromField() override;
 
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,

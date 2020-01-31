@@ -43,25 +43,27 @@
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnsignedShortArray.h>
 
+// VTK Module
+#include <ttkMorseSmaleQuadrangulationModule.h>
+
 // ttk code includes
 #include <MorseSmaleQuadrangulation.h>
-#include <ttkWrapper.h>
+#include <ttkTriangulationAlgorithm.h>
 
 #include <ttkTriangulation.h>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkMorseSmaleQuadrangulation
-#else
-class ttkMorseSmaleQuadrangulation
-#endif
+class TTKMORSESMALEQUADRANGULATION_EXPORT ttkMorseSmaleQuadrangulation
   : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+    protected ttk::Wrapper {
 
 public:
   static ttkMorseSmaleQuadrangulation *New();
   vtkTypeMacro(ttkMorseSmaleQuadrangulation, vtkDataSetAlgorithm);
 
-  vtkSetMacro(debugLevel_, int);
+  void SetDebugLevel(int debugLevel) {
+    setDebugLevel(debugLevel);
+    Modified();
+  }
 
   void SetThreadNumber(int threadNumber) {
     ThreadNumber = threadNumber;

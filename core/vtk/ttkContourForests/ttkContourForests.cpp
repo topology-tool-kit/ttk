@@ -51,6 +51,9 @@ ttkContourForests::ttkContourForests()
   SetNumberOfOutputPorts(3);
 
   triangulation_ = NULL;
+
+  vtkWarningMacro(
+    "Contour Forests is deprecated, please use FTM Tree instead.");
 }
 
 ttkContourForests::~ttkContourForests() {

@@ -94,54 +94,6 @@
         </Documentation>
       </StringVectorProperty>
 
-      <IntVectorProperty name="AllowSecondPass"
-        label="Allow Second Pass"
-        command="SetAllowSecondPass"
-        number_of_elements="1"
-        default_values="1"
-        panel_visibility="advanced">
-        <BooleanDomain name="bool"/>
-        <Documentation>
-          Allow a second pass in the gradient reversal algorithm.
-        </Documentation>
-      </IntVectorProperty>
-
-      <IntVectorProperty name="AllowThirdPass"
-        label="Allow Third Pass"
-        command="SetAllowThirdPass"
-        number_of_elements="1"
-        default_values="1"
-        panel_visibility="advanced">
-        <BooleanDomain name="bool"/>
-        <Documentation>
-          Allow a third pass in the gradient reversal algorithm.
-        </Documentation>
-      </IntVectorProperty>
-
-      <IntVectorProperty name="ReverseSaddleMaximumConnection"
-        label="PL-compliant extrema"
-        command="SetReverseSaddleMaximumConnection"
-        number_of_elements="1"
-        default_values="1"
-        panel_visibility="default">
-        <BooleanDomain name="bool"/>
-        <Documentation>
-          Documentation.
-        </Documentation>
-      </IntVectorProperty>
-
-      <IntVectorProperty name="ReverseSaddleSaddleConnection"
-        label="PL-compliant saddles"
-        command="SetReverseSaddleSaddleConnection"
-        number_of_elements="1"
-        default_values="1"
-        panel_visibility="default">
-        <BooleanDomain name="bool"/>
-        <Documentation>
-          Documentation.
-        </Documentation>
-      </IntVectorProperty>
-
       <IntVectorProperty name="ComputeGradientGlyphs"
         label="Compute Gradient Glyphs"
         command="SetComputeGradientGlyphs"
@@ -188,7 +140,7 @@
       <IntVectorProperty
         name="DebugLevel"
         label="Debug Level"
-        command="SetdebugLevel_"
+        command="SetDebugLevel"
         number_of_elements="1"
         default_values="3" panel_visibility="advanced">
         <IntRangeDomain name="range" min="0" max="100" />
@@ -213,10 +165,6 @@
         <Property name="ScalarField" />
         <Property name="ForceInputOffsetScalarField"/>
         <Property name="InputOffsetScalarFieldName"/>
-        <Property name="AllowSecondPass"/>
-        <Property name="AllowThirdPass"/>
-        <Property name="ReverseSaddleMaximumConnection"/>
-        <Property name="ReverseSaddleSaddleConnection"/>
         <Property name="ComputeGradientGlyphs"/>
       </PropertyGroup>
 

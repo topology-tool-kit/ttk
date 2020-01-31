@@ -55,17 +55,15 @@
 #include <vtkSmartPointer.h>
 #include <vtkUnstructuredGrid.h>
 
+// VTK Module
+#include <ttkFiberSurfaceModule.h>
+
 // ttk code includes
 #include <FiberSurface.h>
-#include <ttkWrapper.h>
+#include <ttkTriangulationAlgorithm.h>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkFiberSurface
-#else
-class ttkFiberSurface
-#endif
-  : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+class TTKFIBERSURFACE_EXPORT ttkFiberSurface : public vtkDataSetAlgorithm,
+                                               protected ttk::Wrapper {
 
 public:
   static ttkFiberSurface *New();
@@ -73,7 +71,10 @@ public:
   vtkTypeMacro(ttkFiberSurface, vtkDataSetAlgorithm);
 
   // default ttk setters
-  vtkSetMacro(debugLevel_, int);
+  void SetDebugLevel(int debugLevel) {
+    setDebugLevel(debugLevel);
+    Modified();
+  }
 
   void SetThreadNumber(int threadNumber) {
     ThreadNumber = threadNumber;
@@ -148,7 +149,7 @@ public:
 protected:
   ttkFiberSurface();
 
-  ~ttkFiberSurface();
+  ~ttkFiberSurface() override;
 
   TTK_SETUP();
 

@@ -6,8 +6,8 @@
 /// \brief Base VTK editor class for standalone programs. This class parses the
 /// the comamnd line, execute the TTK module and takes care of the IO.
 
-#ifndef _TTK_EDITOR_BASE_H
-#define _TTK_EDITOR_BASE_H
+#ifndef _TTK_PROGRAM_BASE_H
+#define _TTK_PROGRAM_BASE_H
 
 // VTK IO
 #include <vtkDataSet.h>
@@ -25,9 +25,11 @@
 
 // base code includes
 #include <ProgramBase.h>
-#include <ttkWrapper.h>
+#include <ttkTriangulationAlgorithm.h>
 
-class VTKFILTERSCORE_EXPORT ttkProgramBase : public ttk::ProgramBase {
+#include <ttkProgramBaseModule.h>
+
+class TTKPROGRAMBASE_EXPORT ttkProgramBase : public ttk::ProgramBase {
 
 public:
   ttkProgramBase() {
@@ -35,7 +37,7 @@ public:
     vtkWrapper_ = NULL;
   };
 
-  virtual ~ttkProgramBase(){};
+  ~ttkProgramBase() override{};
 
   /// Set the arguments of your ttk module and execute it here.
   int execute();
@@ -100,10 +102,6 @@ public:
   }
 
   virtual int run() {
-
-    ttkObject_->setDebugLevel(ttk::globalDebugLevel_);
-    ttkObject_->setThreadNumber(ttk::globalThreadNumber_);
-
     return ttkProgramBase::run();
   }
 
@@ -199,4 +197,4 @@ int ttkProgramBase::load(
   return 0;
 }
 
-#endif // VTK_EDITOR_BASE_H
+#endif // VTK_PROGRAM_BASE_H

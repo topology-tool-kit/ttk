@@ -36,16 +36,15 @@
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
 
-// ttk code includes
-#include <ttkWrapper.h>
+// VTK Module
+#include <ttkTextureMapFromFieldModule.h>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkTextureMapFromField
-#else
-class ttkTextureMapFromField
-#endif
+// ttk code includes
+#include <ttkTriangulationAlgorithm.h>
+
+class TTKTEXTUREMAPFROMFIELD_EXPORT ttkTextureMapFromField
   : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+    protected ttk::Wrapper {
 
 public:
   static ttkTextureMapFromField *New();
@@ -53,7 +52,10 @@ public:
   vtkTypeMacro(ttkTextureMapFromField, vtkDataSetAlgorithm);
 
   // default ttk setters
-  vtkSetMacro(debugLevel_, int);
+  void SetDebugLevel(int debugLevel) {
+    setDebugLevel(debugLevel);
+    Modified();
+  }
 
   void SetThreads() {
     if(!UseAllCores)
@@ -96,7 +98,7 @@ public:
 protected:
   ttkTextureMapFromField();
 
-  ~ttkTextureMapFromField();
+  ~ttkTextureMapFromField() override;
 
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,

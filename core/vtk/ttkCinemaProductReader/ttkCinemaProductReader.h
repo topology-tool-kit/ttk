@@ -16,96 +16,58 @@
 
 #pragma once
 
+// VTK Module
+#include <ttkCinemaProductReaderModule.h>
+
 // VTK includes
-#include <vtkFiltersCoreModule.h>
-#include <vtkInformation.h>
-#include <vtkMultiBlockDataSet.h>
-#include <vtkMultiBlockDataSetAlgorithm.h>
+#include <ttkAlgorithm.h>
 
-// TTK includes
-#include <ttkWrapper.h>
+#include <ttkTopologicalCompressionReader.h>
+#include <vtkGenericDataObjectReader.h>
+#include <vtkNew.h>
+#include <vtkSmartPointer.h>
+#include <vtkTIFFReader.h>
+#include <vtkXMLGenericDataObjectReader.h>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkCinemaProductReader
-#else
-class ttkCinemaProductReader
-#endif
-  : public vtkMultiBlockDataSetAlgorithm,
-    public ttk::Wrapper {
+class TTKCINEMAPRODUCTREADER_EXPORT ttkCinemaProductReader
+  : public ttkAlgorithm {
 
 public:
   static ttkCinemaProductReader *New();
-  vtkTypeMacro(ttkCinemaProductReader, vtkMultiBlockDataSetAlgorithm)
+  vtkTypeMacro(ttkCinemaProductReader, ttkAlgorithm);
 
-    // default ttk setters
-    vtkSetMacro(debugLevel_, int);
-  void SetThreads() {
-    threadNumber_
-      = !UseAllCores ? ThreadNumber : ttk::OsCall::getNumberOfCores();
-    Modified();
-  }
-  void SetThreadNumber(int threadNumber) {
-    ThreadNumber = threadNumber;
-    SetThreads();
-  }
-  void SetUseAllCores(bool onOff) {
-    UseAllCores = onOff;
-    SetThreads();
-  }
-  // end of default ttk setters
-
-  void SetFilepathColumnName(
-    int idx, int port, int connection, int fieldAssociation, const char *name) {
-    this->FilepathColumnName = std::string(name);
-    this->Modified();
-  };
-
-  int FillInputPortInformation(int port, vtkInformation *info) override {
-    switch(port) {
-      case 0:
-        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkTable");
-        break;
-      default:
-        return 0;
-    }
-    return 1;
-  }
-
-  int FillOutputPortInformation(int port, vtkInformation *info) override {
-    switch(port) {
-      case 0:
-        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkMultiBlockDataSet");
-        break;
-      default:
-        return 0;
-    }
-    return 1;
-  }
+  vtkSetMacro(FilepathColumnName, std::string);
+  vtkGetMacro(FilepathColumnName, std::string);
+  vtkSetMacro(AddFieldDataRecursively, bool);
+  vtkGetMacro(AddFieldDataRecursively, bool);
 
 protected:
-  ttkCinemaProductReader() {
-    UseAllCores = false;
+  ttkCinemaProductReader();
+  ~ttkCinemaProductReader();
 
-    SetNumberOfInputPorts(1);
-    SetNumberOfOutputPorts(1);
-  }
-  ~ttkCinemaProductReader(){};
+  vtkSmartPointer<vtkDataObject> readFileLocal(std::string pathToFile);
+  int addFieldDataRecursively(vtkDataObject *object, vtkFieldData *fd);
 
-  bool UseAllCores;
-  int ThreadNumber;
-
-  std::string FilepathColumnName;
+  int FillInputPortInformation(int port, vtkInformation *info) override;
+  int FillOutputPortInformation(int port, vtkInformation *info) override;
 
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;
 
 private:
-  bool needsToAbort() override {
-    return GetAbortExecute();
-  };
-  int updateProgress(const float &progress) override {
-    UpdateProgress(progress);
-    return 0;
-  };
+  std::string FilepathColumnName{"FILE"};
+  bool AddFieldDataRecursively{true};
+
+  // TTK READER
+  vtkNew<ttkTopologicalCompressionReader> topologicalCompressionReader{};
+
+  // TIFF READER
+  vtkNew<vtkTIFFReader> tiffReader{};
+
+  // LOCAL-LEGACY && REMOTE-LEGACY
+  vtkNew<vtkGenericDataObjectReader> genericDataObjectReader{};
+
+  // LOCAL-XML
+  vtkNew<vtkXMLGenericDataObjectReader> xmlGenericDataObjectReader{};
 };

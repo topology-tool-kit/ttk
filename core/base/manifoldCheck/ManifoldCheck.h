@@ -80,9 +80,9 @@ namespace ttk {
 
       if(triangulation_) {
 
-        triangulation_->preprocessVertexLinks();
-        triangulation_->preprocessEdgeLinks();
-        triangulation_->preprocessTriangleLinks();
+        triangulation_->preconditionVertexLinks();
+        triangulation_->preconditionEdgeLinks();
+        triangulation_->preconditionTriangleLinks();
       }
 
       return 0;

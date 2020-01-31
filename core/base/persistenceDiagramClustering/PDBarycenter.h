@@ -68,7 +68,8 @@ namespace ttk {
     dataType getMaxPersistence();
     dataType getLowestPersistence();
     dataType getMinimalPrice(int i);
-    std::pair<KDTree<dataType> *, std::vector<KDTree<dataType> *>> getKDTree();
+    std::pair<KDTree<dataType> *, std::vector<KDTree<dataType> *>>
+      getKDTree() const;
 
     void runMatching(dataType *total_cost,
                      dataType epsilon,
@@ -115,9 +116,6 @@ namespace ttk {
     // 			}
     // 			return 0;
     // 		}
-    inline void setDebugLevel(const int debugLevel) {
-      debugLevel_ = debugLevel;
-    }
 
     inline void setDeterministic(const bool deterministic) {
       deterministic_ = deterministic;
@@ -250,7 +248,7 @@ namespace ttk {
     int threadNumber_;
     bool use_progressive_;
     double time_limit_;
-    float epsilon_min_;
+    double epsilon_min_;
     std::vector<std::vector<diagramTuple>> *inputDiagrams_;
 
     int points_added_;
@@ -266,7 +264,6 @@ namespace ttk {
     bool reinit_prices_;
     bool epsilon_decreases_;
     bool early_stoppage_;
-    int debugLevel_;
   };
 } // namespace ttk
 

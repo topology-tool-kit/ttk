@@ -92,11 +92,11 @@ namespace ttk {
       }
 
       void preprocess(void) {
-        tri_->preprocessVertexNeighbors();
-        tri_->preprocessVertexEdges();
-        tri_->preprocessVertexTriangles();
-        tri_->preprocessVertexStars();
-        tri_->preprocessTriangleEdges();
+        tri_->preconditionVertexNeighbors();
+        tri_->preconditionVertexEdges();
+        tri_->preconditionVertexTriangles();
+        tri_->preconditionVertexStars();
+        tri_->preconditionTriangleEdges();
 
         nbVerts_ = tri_->getNumberOfVertices();
         nbEdges_ = tri_->getNumberOfEdges();

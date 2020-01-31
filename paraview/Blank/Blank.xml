@@ -1,13 +1,12 @@
-
 <ServerManagerConfiguration>
   <!-- This is the server manager configuration XML. It defines the interface to
        our new filter. As a rule of thumb, try to locate the configuration for
        a filter already in ParaView (in Servers/ServerManager/Resources/*.xml)
        that matches your filter and then model your xml on it -->
   <ProxyGroup name="filters">
-   <SourceProxy 
-     name="Blank" 
-     class="ttkBlank" 
+   <SourceProxy
+     name="Blank"
+     class="ttkBlank"
      label="TTK Blank">
      <Documentation
         long_help="TTK blank plugin."
@@ -50,7 +49,7 @@
           Select the scalar field to process.
         </Documentation>
       </StringVectorProperty>
-      
+
       <IntVectorProperty
          name="IntegerArgument"
          label="Output integer argument"
@@ -62,7 +61,7 @@
            Integer argument for the blank filter.
          </Documentation>
       </IntVectorProperty>
-      
+
       <DoubleVectorProperty
          name="DoubleArgument"
          label="Output double argument"
@@ -74,7 +73,7 @@
           Double argument for the blank filter.
          </Documentation>
       </DoubleVectorProperty>
-     
+
        <IntVectorProperty
          name="Option"
          label="Some option"
@@ -86,7 +85,7 @@
           Some option for the blank filter.
          </Documentation>
       </IntVectorProperty>
-      
+
       <IntVectorProperty
          name="UseAllCores"
          label="Use All Cores"
@@ -98,7 +97,7 @@
           Use all available cores.
          </Documentation>
       </IntVectorProperty>
-      
+
       <IntVectorProperty
          name="ThreadNumber"
          label="Thread Number"
@@ -116,11 +115,11 @@
           Thread number.
          </Documentation>
       </IntVectorProperty>
-      
+
       <IntVectorProperty
          name="DebugLevel"
          label="Debug Level"
-         command="SetdebugLevel_"
+         command="SetDebugLevel"
          number_of_elements="1"
          default_values="3" panel_visibility="advanced">
         <IntRangeDomain name="range" min="0" max="100" />
@@ -128,23 +127,23 @@
            Debug level.
          </Documentation>
       </IntVectorProperty>
-      
+
       <PropertyGroup panel_widget="Line" label="Input options">
         <Property name="ScalarField" />
       </PropertyGroup>
-     
+
       <PropertyGroup panel_widget="Line" label="Output options">
         <Property name="IntegerArgument" />
         <Property name="DoubleArgument" />
         <Property name="Option" />
       </PropertyGroup>
-      
+
       <PropertyGroup panel_widget="Line" label="Testing">
         <Property name="UseAllCores" />
         <Property name="ThreadNumber" />
         <Property name="DebugLevel" />
       </PropertyGroup>
-      
+
       <Hints>
         <ShowInMenu category="TTK - Misc" />
       </Hints>

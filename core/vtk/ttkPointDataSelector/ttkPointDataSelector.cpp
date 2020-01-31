@@ -1,3 +1,5 @@
+#include <algorithm>
+#include <cstddef>
 #include <regex>
 #include <ttkPointDataSelector.h>
 
@@ -49,61 +51,54 @@ int ttkPointDataSelector::doIt(vtkDataSet *input, vtkDataSet *output) {
   }
 #endif
 
+  if(AvailableFields.empty()) {
+    // when loading from statefiles
+    // or vtk script
+    FillAvailableFields(input);
+  }
+
   try {
-    for(auto &scalar : ScalarFields) {
-      if(scalar.length() > 0 && regex_match(scalar, regex(RegexpString))) {
-        vtkDataArray *arr = inputPointData->GetArray(scalar.data());
-        if(arr) {
+    for(auto &scalar : SelectedFields) {
+      // valid array
+      if(scalar.empty()) {
+        continue;
+      }
+      // check bounds in the range
+      ptrdiff_t pos
+        = find(AvailableFields.begin(), AvailableFields.end(), scalar)
+          - AvailableFields.begin();
+      if(pos < RangeId[0] || pos > RangeId[1]) {
+        continue;
+      }
+      // retrieve array if match
+      if(!regex_match(scalar, regex(RegexpString))) {
+        continue;
+      }
+      // Add the array
+      vtkDataArray *arr = inputPointData->GetArray(scalar.c_str());
+      if(arr) {
 
-          if((ScalarFields.size() == 1) && (RenameSelected)) {
-
-            if(localFieldCopy_) {
-              localFieldCopy_->Delete();
-              localFieldCopy_ = NULL;
-            }
-
-            switch(arr->GetDataType()) {
-              case VTK_CHAR:
-                localFieldCopy_ = vtkCharArray::New();
-                break;
-
-              case VTK_DOUBLE:
-                localFieldCopy_ = vtkDoubleArray::New();
-                break;
-
-              case VTK_FLOAT:
-                localFieldCopy_ = vtkFloatArray::New();
-                break;
-
-              case VTK_INT:
-                localFieldCopy_ = vtkIntArray::New();
-                break;
-
-              case VTK_ID_TYPE:
-                localFieldCopy_ = vtkIdTypeArray::New();
-                break;
-
-              case VTK_UNSIGNED_SHORT:
-                localFieldCopy_ = vtkUnsignedShortArray::New();
-                break;
-
-              default: {
-                stringstream msg;
-                msg << "[ttkPointDataSelector] Unsupported data type :("
-                    << endl;
-                dMsg(cerr, msg.str(), fatalMsg);
-              } break;
-            }
-
-            if(localFieldCopy_) {
-              localFieldCopy_->DeepCopy(arr);
-              localFieldCopy_->SetName(SelectedFieldName.data());
-              arr = localFieldCopy_;
-            }
+        if(RenameSelected) {
+          if(SelectedFields.size() != 1 && RangeId[1] - RangeId[0] != 0) {
+            vtkErrorMacro("Can't rename more than one field.");
+            return 0;
           }
 
-          outputPointData->AddArray(arr);
+          if(localFieldCopy_) {
+            localFieldCopy_->Delete();
+            localFieldCopy_ = nullptr;
+          }
+
+          localFieldCopy_ = arr->NewInstance();
+
+          if(localFieldCopy_) {
+            localFieldCopy_->DeepCopy(arr);
+            localFieldCopy_->SetName(SelectedFieldName.data());
+            arr = localFieldCopy_;
+          }
         }
+
+        outputPointData->AddArray(arr);
       }
     }
   } catch(std::regex_error &) {
@@ -120,6 +115,17 @@ int ttkPointDataSelector::doIt(vtkDataSet *input, vtkDataSet *output) {
   }
 
   return 0;
+}
+
+int ttkPointDataSelector::RequestInformation(
+  vtkInformation *request,
+  vtkInformationVector **inputVector,
+  vtkInformationVector *outputVector) {
+
+  vtkDataSet *input = vtkDataSet::GetData(inputVector[0]);
+  FillAvailableFields(input);
+  return vtkDataSetAlgorithm::RequestInformation(
+    request, inputVector, outputVector);
 }
 
 int ttkPointDataSelector::RequestData(vtkInformation *request,
@@ -140,4 +146,13 @@ int ttkPointDataSelector::RequestData(vtkInformation *request,
   }
 
   return 1;
+}
+
+void ttkPointDataSelector::FillAvailableFields(vtkDataSet *input) {
+  int nbScalars = input->GetPointData()->GetNumberOfArrays();
+  AvailableFields.clear();
+  AvailableFields.resize(nbScalars);
+  for(int i = 0; i < nbScalars; ++i) {
+    AvailableFields[i] = input->GetPointData()->GetArrayName(i);
+  }
 }

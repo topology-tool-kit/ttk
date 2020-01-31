@@ -5,18 +5,24 @@
 #include <graphviz/gvc.h>
 #endif
 
+ttk::PlanarGraphLayout::PlanarGraphLayout() {
+  this->setDebugMsgPrefix("PlanarGraphLayout");
+}
+ttk::PlanarGraphLayout::~PlanarGraphLayout() {
+}
+
 // Compute Dot Layout
 int ttk::PlanarGraphLayout::computeDotLayout(
-  // Input
-  const vector<size_t> &nodeIndicies,
-  const string &dotString,
-
   // Output
-  float *layout) const {
+  float *layout,
+
+  // Input
+  const std::vector<size_t> &nodeIndicies,
+  const std::string &dotString) const {
 #if TTK_ENABLE_GRAPHVIZ
   Timer t;
 
-  dMsg(cout, "[ttkPlanarGraphLayout] Computing layout ... ", timeMsg);
+  this->printMsg("Computing layout", 0, debug::LineMode::REPLACE);
 
   // ---------------------------------------------------------
   // Init GraphViz
@@ -29,7 +35,7 @@ int ttk::PlanarGraphLayout::computeDotLayout(
   // Get layout data from GraphViz
   // ---------------------------------------------------------
   for(auto i : nodeIndicies) {
-    Agnode_t *n = agnode(G, const_cast<char *>(to_string(i).data()), 0);
+    Agnode_t *n = agnode(G, const_cast<char *>(std::to_string(i).data()), 0);
     if(n != nullptr) {
       auto &coord = ND_coord(n);
       size_t offset = i * 2;
@@ -45,21 +51,11 @@ int ttk::PlanarGraphLayout::computeDotLayout(
   agclose(G);
   gvFreeContext(gvc);
 
-  // ---------------------------------------------------------
-  // Print status
-  // ---------------------------------------------------------
-  {
-    stringstream msg;
-    msg << "done (" << t.getElapsedTime() << " s)" << endl;
-    dMsg(cout, msg.str(), timeMsg);
-  }
+  this->printMsg("Computing layout", 1, t.getElapsedTime());
 
   return 1;
 #else
-  dMsg(cout,
-       "[ttkPlanarGraphLayout] ERROR: This filter requires GraphViz to compute "
-       "a layout.\n",
-       fatalMsg);
+  this->printErr("This filter requires GraphViz to compute a layout.");
   return 0;
 #endif
 }

@@ -60,7 +60,7 @@ class VTKFILTERSCORE_EXPORT ttkUserInterfaceBase : public ttkProgramBase {
 public:
   ttkUserInterfaceBase();
 
-  virtual ~ttkUserInterfaceBase();
+  ~ttkUserInterfaceBase() override;
 
   int exportScene(const std::string &fileName = "output.wrl") const;
 
@@ -131,10 +131,6 @@ public:
   };
 
   virtual int run() {
-
-    ttkObject_->setDebugLevel(ttk::globalDebugLevel_);
-    ttkObject_->setThreadNumber(ttk::globalThreadNumber_);
-
     return ttkUserInterfaceBase::run();
   }
 

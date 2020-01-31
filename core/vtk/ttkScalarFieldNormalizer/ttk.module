@@ -1,0 +1,9 @@
+NAME
+  ttkScalarFieldNormalizer
+SOURCES
+  ttkScalarFieldNormalizer.cpp
+HEADERS
+  ttkScalarFieldNormalizer.h
+DEPENDS
+  common
+  ttkTriangulationAlgorithm

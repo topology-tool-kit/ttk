@@ -1,0 +1,4 @@
+NAME
+  ttkBlockAggregator
+DEPENDS
+  ttkAlgorithm

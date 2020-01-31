@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ServerManagerConfiguration>
+    <ProxyGroup name="filters">
+        <SourceProxy name="Extract" class="ttkExtract" label="TTK Extract">
+            <Documentation long_help="TTK Extract" short_help="TTK Extract">
+This filter uses a list of values to extract either blocks of a 'vtkMultiBlockDataSet' by interpreting the values as block indices, or the subset of a 'vtkDataObject' whose point/cell values are contained in that list.
+                </Documentation>
+
+            <InputProperty name="Input" port_index="0" command="SetInputConnection">
+                <ProxyGroupDomain name="groups">
+                    <Group name="sources" />
+                    <Group name="filters" />
+                </ProxyGroupDomain>
+                <DataTypeDomain name="input_type">
+                    <DataType value="vtkObject" />
+                </DataTypeDomain>
+                <Documentation>'vtkMultiBlockDataSet' or 'vtkUnstructuredGrid'.</Documentation>
+            </InputProperty>
+
+            <!-- Global Mode -->
+            <IntVectorProperty name="Mode" command="SetMode" number_of_elements="1" default_values="0">
+                <EnumerationDomain name="enum">
+                    <Entry value="0" text="Block"/>
+                    <Entry value="1" text="Geometry"/>
+                </EnumerationDomain>
+                <Documentation>Either extract a set of blocks from a 'vtkMultiBlockDataSet', or a geometry subset of a 'vtkDataSet'.</Documentation>
+            </IntVectorProperty>
+
+            <StringVectorProperty name="ExpressionString" label="Expression" command="SetExpressionString" number_of_elements="1" default_values="">
+                <Documentation>List expression that is used to extract blocks/geometry (e.g., '0,1,3').</Documentation>
+            </StringVectorProperty>
+
+            <!-- Block Mode -->
+            <IntVectorProperty name="OutputType" label="Output Type" command="SetOutputType" number_of_elements="1" default_values="0">
+                <EnumerationDomain name="enum">
+                    <Entry value="0" text="Auto"/>
+                    <Entry value="6" text="vtkImageData"/>
+                    <Entry value="4" text="vtkUnstructuredGrid"/>
+                    <Entry value="13" text="vtkMultiBlockDataSet"/>
+                </EnumerationDomain>
+                <Documentation>If mode is set to 'Block', then this parameter is used to set the output type of the filter at the 'RequestInformation' pass.
+
+Auto: Extracted blocks (of any type) are appended to a new 'vtkMultiBlockDataSet'.
+
+
+vtkImageData: If only one block is extracted and it is of type 'vtkImageData', then this block is returned as the output.
+
+
+vtkUnstructuredGrid: If only one block is extracted and it is of type 'vtkUnstructuredGrid', then this block is returned as the output.
+
+
+vtkMultiBlockDataSet: If only one block is extracted and it is of type 'vtkMultiBlockDataSet', then this block is returned as the output.
+
+</Documentation>
+                <Hints>
+                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="Mode" value="0" />
+                </Hints>
+            </IntVectorProperty>
+            <DoubleVectorProperty command="SetImageBounds" default_values="0 1 0 1 0 1" name="ImageBounds" number_of_elements="6" panel_visibility="default">
+                <BoundsDomain name="bounds">
+                    <RequiredProperties>
+                        <Property function="Input" name="Input" />
+                    </RequiredProperties>
+                </BoundsDomain>
+                <Documentation>The image bounds of the extracted block of type 'vtkImageData'. It is necessary to explicitly specify the bounds as currently the VTK pipeline is unable to automatically derive the image extent and bounds during the 'RequestInformation' pass.</Documentation>
+                <Hints>
+                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="OutputType" value="6" />
+                </Hints>
+            </DoubleVectorProperty>
+
+            <!-- Geometry Mode -->
+            <StringVectorProperty name="InputArray" label="Input Array" command="SetInputArrayToProcess" element_types="0 0 0 0 2" number_of_elements="5">
+                <ArrayListDomain name="array_list">
+                    <RequiredProperties>
+                        <Property function="Input" name="Input" />
+                    </RequiredProperties>
+                </ArrayListDomain>
+                <Hints>
+                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="Mode" value="1" />
+                </Hints>
+                <Documentation>The array that will be used to determine which part of the geometry should be extracted.</Documentation>
+            </StringVectorProperty>
+
+            <IntVectorProperty name="CellMode" command="SetCellMode" number_of_elements="1" animateable="0" label="Cell Mode" default_values="0">
+                <EnumerationDomain name="enum">
+                    <Entry value="0" text="All"/>
+                    <Entry value="1" text="Any"/>
+                    <Entry value="2" text="Sub"/>
+                </EnumerationDomain>
+                <Hints>
+                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="Mode" value="1" />
+                </Hints>
+                <Documentation>Determines if a complete cell is extracted if "All" or "Any" of its vertices fulfill the criterion. If mode is set to "Sub", cells are reduced to the vertices that fulfill the criterion (e.g., to an edge of a triangle/tetrahedron).</Documentation>
+            </IntVectorProperty>
+
+            <PropertyGroup panel_widget="Line" label="Input Options">
+                <Property name="Mode" />
+                <Property name="ExpressionString" />
+                <Property name="OutputType" />
+                <Property name="ImageBounds" />
+                <Property name="InputArray" />
+                <Property name="CellMode" />
+            </PropertyGroup>
+
+            ${DEBUG_WIDGETS}
+
+            <Hints>
+                <ShowInMenu category="TTK - Pipeline" />
+            </Hints>
+        </SourceProxy>
+    </ProxyGroup>
+</ServerManagerConfiguration>

@@ -1,0 +1,10 @@
+NAME
+  ttkHelloWorld
+SOURCES
+  ttkHelloWorld.cpp
+HEADERS
+  ttkHelloWorld.h
+DEPENDS
+  helloWorld
+  ttkAlgorithm
+  ttkTriangulationAlgorithm

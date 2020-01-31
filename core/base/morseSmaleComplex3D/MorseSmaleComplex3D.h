@@ -1270,8 +1270,6 @@ int ttk::MorseSmaleComplex3D::execute() {
   {
     Timer tmp;
     discreteGradient_.buildGradient<dataType, idType>();
-    discreteGradient_.buildGradient2<dataType, idType>();
-    discreteGradient_.buildGradient3<dataType, idType>();
 
     {
       std::stringstream msg;
@@ -1280,7 +1278,10 @@ int ttk::MorseSmaleComplex3D::execute() {
       dMsg(std::cout, msg.str(), timeMsg);
     }
   }
-  discreteGradient_.reverseGradient<dataType, idType>();
+
+  if(ReturnSaddleConnectors) {
+    discreteGradient_.reverseGradient<dataType, idType>();
+  }
 
   std::vector<dcg::Cell> criticalPoints;
   discreteGradient_.getCriticalPoints(criticalPoints);
@@ -1411,11 +1412,15 @@ int ttk::MorseSmaleComplex3D::execute() {
   }
 
   if(outputCriticalPoints_numberOfPoints_ and outputSeparatrices1_points_) {
-    if(ascendingManifold and descendingManifold)
-      discreteGradient_.setAugmentedCriticalPoints<dataType, idType>(
-        criticalPoints, maxSeeds, ascendingManifold, descendingManifold);
-    else
-      discreteGradient_.setCriticalPoints<dataType, idType>(criticalPoints);
+    std::vector<size_t> nCriticalPointsByDim{};
+    discreteGradient_.setCriticalPoints<dataType, idType>(
+      criticalPoints, nCriticalPointsByDim);
+
+    if(ascendingManifold and descendingManifold) {
+      discreteGradient_.setManifoldSize(criticalPoints, nCriticalPointsByDim,
+                                        maxSeeds, ascendingManifold,
+                                        descendingManifold);
+    }
   }
 
   {
@@ -1433,93 +1438,26 @@ int ttk::MorseSmaleComplex3D::execute() {
 
 template <typename dataType, typename idType>
 int ttk::MorseSmaleComplex3D::computePersistencePairs(
-  const std::vector<std::tuple<SimplexId, SimplexId, dataType>> &JTPairs,
-  const std::vector<std::tuple<SimplexId, SimplexId, dataType>> &STPairs,
+  const std::vector<std::tuple<SimplexId, SimplexId, dataType>> & /*JTPairs*/,
+  const std::vector<std::tuple<SimplexId, SimplexId, dataType>> & /*STPairs*/,
   std::vector<std::tuple<SimplexId, SimplexId, dataType>>
     &pl_saddleSaddlePairs) {
+
   const dataType *scalars = static_cast<const dataType *>(inputScalarField_);
-  const SimplexId numberOfVertices = inputTriangulation_->getNumberOfVertices();
-
-  // get original list of critical points
-  std::vector<std::pair<SimplexId, char>> pl_criticalPoints;
-  {
-    const SimplexId *const offsets
-      = static_cast<const SimplexId *>(inputOffsets_);
-    std::vector<SimplexId> sosOffsets(numberOfVertices);
-    for(SimplexId i = 0; i < numberOfVertices; ++i)
-      sosOffsets[i] = offsets[i];
-
-    ScalarFieldCriticalPoints<dataType> scp;
-
-    scp.setDebugLevel(debugLevel_);
-    scp.setThreadNumber(threadNumber_);
-    scp.setDomainDimension(inputTriangulation_->getDimensionality());
-    scp.setScalarValues(inputScalarField_);
-    scp.setVertexNumber(numberOfVertices);
-    scp.setSosOffsets(&sosOffsets);
-    scp.setupTriangulation(inputTriangulation_);
-    scp.setOutput(&pl_criticalPoints);
-
-    scp.execute();
-  }
-
-  // build accepting list
-  std::vector<char> isAccepted(numberOfVertices, false);
-  for(const auto &i : JTPairs) {
-    const SimplexId v0 = std::get<0>(i);
-    const SimplexId v1 = std::get<1>(i);
-    isAccepted[v0] = true;
-    isAccepted[v1] = true;
-  }
-  for(const auto &i : STPairs) {
-    const SimplexId v0 = std::get<0>(i);
-    const SimplexId v1 = std::get<1>(i);
-    isAccepted[v0] = true;
-    isAccepted[v1] = true;
-  }
-
-  // filter the critical points according to the filtering list and boundary
-  // condition
-  std::vector<char> isSaddle1(numberOfVertices, false);
-  std::vector<char> isSaddle2(numberOfVertices, false);
-  std::vector<std::pair<SimplexId, char>> pl_filteredCriticalPoints;
-  for(const auto &i : pl_criticalPoints) {
-    const SimplexId vertexId = i.first;
-    const char type = i.second;
-    if(isAccepted[vertexId]) {
-      pl_filteredCriticalPoints.push_back(i);
-
-      switch(type) {
-        case static_cast<char>(CriticalType::Saddle1):
-          isSaddle1[vertexId] = true;
-          break;
-
-        case static_cast<char>(CriticalType::Saddle2):
-          isSaddle2[vertexId] = true;
-          break;
-      }
-    }
-  }
 
   std::vector<std::tuple<dcg::Cell, dcg::Cell>> dmt_pairs;
   {
     // simplify to be PL-conformant
     discreteGradient_.setDebugLevel(debugLevel_);
     discreteGradient_.setThreadNumber(threadNumber_);
-    discreteGradient_.setReverseSaddleMaximumConnection(true);
-    discreteGradient_.setReverseSaddleSaddleConnection(true);
     discreteGradient_.setCollectPersistencePairs(false);
     discreteGradient_.buildGradient<dataType, idType>();
-    discreteGradient_.buildGradient2<dataType, idType>();
-    discreteGradient_.buildGradient3<dataType, idType>();
-    discreteGradient_.reverseGradient<dataType, idType>(pl_criticalPoints);
+    discreteGradient_.reverseGradient<dataType, idType>();
 
     // collect saddle-saddle connections
-    discreteGradient_.setReverseSaddleMaximumConnection(true);
     discreteGradient_.setCollectPersistencePairs(true);
     discreteGradient_.setOutputPersistencePairs(&dmt_pairs);
-    discreteGradient_.reverseGradient<dataType, idType>(
-      pl_filteredCriticalPoints);
+    discreteGradient_.reverseGradient<dataType, idType>(false);
   }
 
   // transform DMT pairs into PL pairs
@@ -1528,50 +1466,28 @@ int ttk::MorseSmaleComplex3D::computePersistencePairs(
     const dcg::Cell &saddle2 = std::get<1>(i);
 
     SimplexId v0 = -1;
-    for(SimplexId j = 0; j < 2; ++j) {
+    dataType scalar0{};
+    for(int j = 0; j < 2; ++j) {
       SimplexId vertexId;
       inputTriangulation_->getEdgeVertex(saddle1.id_, j, vertexId);
-
-      if(isSaddle1[vertexId]) {
+      const dataType vertexScalar = scalars[vertexId];
+      // get the max vertex of the edge
+      if(j == 0 || scalar0 > vertexScalar) {
         v0 = vertexId;
-        break;
-      }
-    }
-    if(v0 == -1) {
-      dataType scalar{};
-      for(int j = 0; j < 2; ++j) {
-        SimplexId vertexId;
-        inputTriangulation_->getEdgeVertex(saddle1.id_, j, vertexId);
-        const dataType vertexScalar = scalars[vertexId];
-
-        if(!j or scalar > vertexScalar) {
-          v0 = vertexId;
-          scalar = vertexScalar;
-        }
+        scalar0 = vertexScalar;
       }
     }
 
     SimplexId v1 = -1;
+    dataType scalar1{};
     for(int j = 0; j < 3; ++j) {
       SimplexId vertexId;
       inputTriangulation_->getTriangleVertex(saddle2.id_, j, vertexId);
-
-      if(isSaddle2[vertexId]) {
+      const dataType vertexScalar = scalars[vertexId];
+      // get the min vertex of the triangle
+      if(j == 0 || scalar1 < vertexScalar) {
         v1 = vertexId;
-        break;
-      }
-    }
-    if(v1 == -1) {
-      dataType scalar{};
-      for(int j = 0; j < 3; ++j) {
-        SimplexId vertexId;
-        inputTriangulation_->getTriangleVertex(saddle2.id_, j, vertexId);
-        const dataType vertexScalar = scalars[vertexId];
-
-        if(!j or scalar < vertexScalar) {
-          v1 = vertexId;
-          scalar = vertexScalar;
-        }
+        scalar1 = vertexScalar;
       }
     }
 
@@ -1580,7 +1496,7 @@ int ttk::MorseSmaleComplex3D::computePersistencePairs(
     if(v0 != -1 and v1 != -1 and persistence >= 0) {
       if(!inputTriangulation_->isVertexOnBoundary(v0)
          or !inputTriangulation_->isVertexOnBoundary(v1)) {
-        pl_saddleSaddlePairs.push_back(std::make_tuple(v0, v1, persistence));
+        pl_saddleSaddlePairs.emplace_back(v0, v1, persistence);
       }
     }
   }

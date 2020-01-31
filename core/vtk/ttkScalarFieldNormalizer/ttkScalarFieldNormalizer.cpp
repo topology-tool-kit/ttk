@@ -76,7 +76,7 @@ int ttkScalarFieldNormalizer::doIt(vtkDataSet *input, vtkDataSet *output) {
   //   ttkTriangulation myTriangulation;
   //   myTriangulation.setInputData(input);
   //
-  //   myTriangulation.preprocessCellTriangles();
+  //   myTriangulation.preconditionCellTriangles();
   //
   //   for(int i = 0; i < myTriangulation.getNumberOfCells(); i++){
   //     int triangleId = -1;
@@ -103,7 +103,7 @@ int ttkScalarFieldNormalizer::doIt(vtkDataSet *input, vtkDataSet *output) {
   //     }
   //   }
   //
-  //   myTriangulation.preprocessEdgeTriangles();
+  //   myTriangulation.preconditionEdgeTriangles();
   //
   //
   //   for(int i = 0; i < myTriangulation.getNumberOfTriangles(); i++){
@@ -135,7 +135,7 @@ int ttkScalarFieldNormalizer::doIt(vtkDataSet *input, vtkDataSet *output) {
   //     }
   //   }
   //
-  //   myTriangulation.preprocessTriangleEdges();
+  //   myTriangulation.preconditionTriangleEdges();
   //
   //   for(int i = 0; i < myTriangulation.getNumberOfTriangles(); i++){
   //

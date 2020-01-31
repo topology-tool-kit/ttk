@@ -24,26 +24,26 @@
 #include <vtkType.h>
 #include <vtkUnstructuredGrid.h>
 
+// VTK module
+#include <ttkFTMTreeModule.h>
+
 // ttk code includes
 #include <FTMTree.h>
 #include <ttkFTMStructures.h>
-#include <ttkWrapper.h>
+#include <ttkTriangulationAlgorithm.h>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkFTMTree : public vtkDataSetAlgorithm,
-                                         public ttk::Wrapper
-#else
-class ttkFTMTree : public vtkDataSetAlgorithm,
-                   public ttk::Wrapper
-#endif
-{
+class TTKFTMTREE_EXPORT ttkFTMTree : public vtkDataSetAlgorithm,
+                                     protected ttk::Wrapper {
 public:
   static ttkFTMTree *New();
 
   vtkTypeMacro(ttkFTMTree, vtkDataSetAlgorithm);
 
   // default ttk setters
-  vtkSetMacro(debugLevel_, int);
+  void SetDebugLevel(int debugLevel) {
+    setDebugLevel(debugLevel);
+    Modified();
+  }
 
   void SetThreadNumber(int threadNumber) {
     ThreadNumber = threadNumber;
@@ -155,7 +155,7 @@ public:
 
 protected:
   ttkFTMTree();
-  ~ttkFTMTree();
+  ~ttkFTMTree() override;
 
   TTK_SETUP();
 

@@ -14,82 +14,44 @@
 #pragma once
 
 // base code includes
-#include <Geometry.h>
 #include <Triangulation.h>
-#include <Wrapper.h>
-#include <cmath>
-#include <set>
-#include <tuple>
-#include <type_traits>
 
 namespace ttk {
 
-  enum struct SolvingMethodUserType { Auto = 0, Cholesky = 1, Iterative = 2 };
-  enum struct SolvingMethodType { Cholesky, Iterative };
+  class HarmonicField : virtual public Debug {
 
-  class HarmonicField : public Debug {
+  protected:
+    enum class SolvingMethodUserType { AUTO, CHOLESKY, ITERATIVE };
+    enum class SolvingMethodType { CHOLESKY, ITERATIVE };
 
-  public:
-    // default constructor
-    HarmonicField() = default;
-    // default destructor
-    ~HarmonicField() override = default;
-    // default copy constructor
-    HarmonicField(const HarmonicField &) = default;
-    // default move constructor
-    HarmonicField(HarmonicField &&) = default;
-    // default copy assignment operator
-    HarmonicField &operator=(const HarmonicField &) = default;
-    // default move assignment operator
-    HarmonicField &operator=(HarmonicField &&) = default;
+    HarmonicField() {
+      this->setDebugMsgPrefix("HarmonicField");
+    }
 
-    inline int setVertexNumber(const SimplexId vertexNumber) {
-      vertexNumber_ = vertexNumber;
-      return 0;
-    }
-    inline int setConstraintNumber(const SimplexId constraintNumber) {
-      constraintNumber_ = constraintNumber;
-      return 0;
-    }
-    inline int setUseCotanWeights(const bool useCotanWeights) {
-      useCotanWeights_ = useCotanWeights;
-      return 0;
-    }
-    inline int setupTriangulation(Triangulation *const triangulation) {
-      triangulation_ = triangulation;
-      if(triangulation_ != nullptr) {
-        vertexNumber_ = triangulation_->getNumberOfVertices();
-        triangulation_->preprocessVertexNeighbors();
-        edgeNumber_ = triangulation_->getNumberOfEdges();
-      }
-      if(useCotanWeights_) {
+    inline void preconditionTriangulation(AbstractTriangulation &triangulation,
+                                          const bool cotanWeights) {
+      triangulation.preconditionVertexNeighbors();
+      triangulation.preconditionEdges();
+      if(cotanWeights) {
         // cotan weights method needs more pre-processing
-        triangulation_->preprocessEdgeTriangles();
+        triangulation.preconditionEdgeTriangles();
       }
-      return 0;
-    }
-    inline int setSources(void *const data) {
-      sources_ = static_cast<SimplexId *>(data);
-      return 0;
-    }
-    inline int setConstraints(void *const data) {
-      constraints_ = data;
-      return 0;
-    }
-    inline int setOutputScalarFieldPointer(void *const data) {
-      outputScalarFieldPointer_ = data;
-      return 0;
-    }
-    inline int setSolvingMethod(const int solvingMethod) {
-      solvingMethod_ = static_cast<SolvingMethodUserType>(solvingMethod);
-      return 0;
-    }
-    inline int setLogAlpha(const double logAlpha) {
-      logAlpha_ = logAlpha;
-      return 0;
     }
 
-    SolvingMethodType findBestSolver() const;
+    template <class T, class TriangulationType = AbstractTriangulation>
+    int execute(const TriangulationType &triangulation,
+                SimplexId constraintNumber,
+                SimplexId *sources,
+                T *constraints,
+                T *outputScalarField,
+                bool useCotanWeights = true,
+                SolvingMethodUserType solvingMethod
+                = SolvingMethodUserType::AUTO,
+                double logAlpha = 5.0) const;
+
+  private:
+    SolvingMethodType findBestSolver(const SimplexId vertexNumber,
+                                     const SimplexId edgeNumber) const;
 
     template <typename SparseMatrixType,
               typename SparseVectorType,
@@ -98,32 +60,5 @@ namespace ttk {
               SparseMatrixType const &penalty,
               SparseVectorType const &constraints,
               SparseMatrixType &sol) const;
-
-    template <typename scalarFieldType>
-    int execute() const;
-
-  private:
-    // number of vertices in the mesh
-    SimplexId vertexNumber_{};
-    // number of edges in the mesh
-    SimplexId edgeNumber_{};
-    // number of constraints
-    SimplexId constraintNumber_{};
-    // cotan weights vs simple laplacian resolution
-    bool useCotanWeights_{true};
-    // the mesh
-    Triangulation *triangulation_{};
-    // array of mesh points with scalar constraints
-    // should be of constraintNumber_ size
-    SimplexId *sources_{};
-    // array of scalar constraints on sources_
-    // should be of constraintNumber_ size
-    void *constraints_{};
-    // output of harmonic field computation
-    void *outputScalarFieldPointer_{};
-    // user-selected solver
-    SolvingMethodUserType solvingMethod_{ttk::SolvingMethodUserType::Auto};
-    // log10 of penalty value
-    double logAlpha_{5};
   };
 } // namespace ttk

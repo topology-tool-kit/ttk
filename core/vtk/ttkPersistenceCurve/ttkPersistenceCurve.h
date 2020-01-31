@@ -47,17 +47,16 @@
 #include <vtkSmartPointer.h>
 #include <vtkTable.h>
 
+// VTK Module
+#include <ttkPersistenceCurveModule.h>
+
 // ttk code includes
 #include <PersistenceCurve.h>
-#include <ttkWrapper.h>
+#include <ttkTriangulationAlgorithm.h>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkPersistenceCurve
-#else
-class ttkPersistenceCurve
-#endif
+class TTKPERSISTENCECURVE_EXPORT ttkPersistenceCurve
   : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+    protected ttk::Wrapper {
 
 public:
   static ttkPersistenceCurve *New();
@@ -65,7 +64,10 @@ public:
   vtkTypeMacro(ttkPersistenceCurve, vtkDataSetAlgorithm);
 
   // default ttk setters
-  vtkSetMacro(debugLevel_, int);
+  void SetDebugLevel(int debugLevel) {
+    setDebugLevel(debugLevel);
+    Modified();
+  }
 
   void SetThreads() {
     if(!UseAllCores)
@@ -111,7 +113,7 @@ public:
 
 protected:
   ttkPersistenceCurve();
-  ~ttkPersistenceCurve();
+  ~ttkPersistenceCurve() override;
 
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,
@@ -148,7 +150,7 @@ private:
   vtkDataArray *offsets_;
   vtkDataArray *inputOffsets_;
   bool varyingMesh_;
-  vtkSmartPointer<ttkTriangulationFilter> inputTriangulation_;
+  vtkSmartPointer<ttkTriangulationAlgorithm> inputTriangulation_;
 
   // base code features
   int doIt(vtkDataSet *input,

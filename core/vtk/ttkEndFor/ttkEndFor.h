@@ -13,79 +13,24 @@
 
 #pragma once
 
-// VTK includes
-#include <vtkPassInputTypeAlgorithm.h>
+// VTK Module
+#include <ttkEndForModule.h>
 
 // TTK includes
-#include <ttkWrapper.h>
+#include <ttkAlgorithm.h>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkEndFor
-#else
-class ttkEndFor
-#endif
-  : public vtkPassInputTypeAlgorithm,
-    public ttk::Wrapper {
+class TTKENDFOR_EXPORT ttkEndFor : public ttkAlgorithm {
 
 public:
   static ttkEndFor *New();
-  vtkTypeMacro(ttkEndFor, vtkPassInputTypeAlgorithm)
-
-    // default ttk setters
-    vtkSetMacro(debugLevel_, int);
-  void SetThreads() {
-    threadNumber_
-      = !UseAllCores ? ThreadNumber : ttk::OsCall::getNumberOfCores();
-    Modified();
-  }
-  void SetThreadNumber(int threadNumber) {
-    ThreadNumber = threadNumber;
-    SetThreads();
-  }
-  void SetUseAllCores(bool onOff) {
-    UseAllCores = onOff;
-    SetThreads();
-  }
-  // end of default ttk setters
-
-  int FillInputPortInformation(int port, vtkInformation *info) override {
-    switch(port) {
-      case 0:
-        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataObject");
-        break;
-      case 1:
-        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkTable");
-        break;
-      default:
-        return 0;
-    }
-    return 1;
-  }
-
-  int FillOutputPortInformation(int port, vtkInformation *info) override {
-    switch(port) {
-      case 0:
-        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataObject");
-        break;
-      default:
-        return 0;
-    }
-    return 1;
-  }
+  vtkTypeMacro(ttkEndFor, ttkAlgorithm);
 
 protected:
-  ttkEndFor() {
-    nextIndex = 0;
+  ttkEndFor();
+  ~ttkEndFor();
 
-    UseAllCores = false;
-
-    SetNumberOfInputPorts(2);
-    SetNumberOfOutputPorts(1);
-  }
-  ~ttkEndFor(){};
-
-  bool UseAllCores;
-  int ThreadNumber;
+  int FillInputPortInformation(int port, vtkInformation *info) override;
+  int FillOutputPortInformation(int port, vtkInformation *info) override;
 
   int RequestInformation(vtkInformation *request,
                          vtkInformationVector **inputVector,
@@ -98,13 +43,5 @@ protected:
                   vtkInformationVector *outputVector) override;
 
 private:
-  double nextIndex;
-
-  bool needsToAbort() override {
-    return GetAbortExecute();
-  };
-  int updateProgress(const float &progress) override {
-    UpdateProgress(progress);
-    return 0;
-  };
+  int nextIndex{0};
 };

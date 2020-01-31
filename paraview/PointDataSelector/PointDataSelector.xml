@@ -33,13 +33,14 @@
         </Documentation>
       </InputProperty>
 
-      <StringVectorProperty command="SetScalarFields"
+      <StringVectorProperty command="AddScalarField"
         clean_command="ClearScalarFields"
         label="Scalar Fields"
         name="ScalarFields"
         number_of_elements="0"
         default_values="1"
         number_of_elements_per_command="1"
+        animatable="0"
         repeat_command="1">
         <ArrayListDomain name="array_list"
           default_values="1">
@@ -48,16 +49,36 @@
               function="Input" />
           </RequiredProperties>
         </ArrayListDomain>
-        <Hints>
-          <NoDefault />
-        </Hints>
         <Documentation>
           Select the scalar fields to process.
         </Documentation>
       </StringVectorProperty>
 
+      <StringVectorProperty name="NbScalarRange"
+        command="GetRangeIds"
+        number_of_elements_per_command="0"
+        information_only="1"
+        si_class="vtkSIDataArraySelectionProperty" />
+
+      <IntVectorProperty
+        name="RangeId"
+        label="Range Id"
+        command="SetRangeId"
+        number_of_elements="2"
+        default_values="0 999"
+        panel_visibility="advanced">
+        <IntRangeDomain name="range" default_mode="min,min,max,max">
+          <RequiredProperties>
+            <Property name="NbScalarRange" function="RangeInfo" />
+          </RequiredProperties>
+        </IntRangeDomain>
+        <Documentation>
+            First and last accepted scalar field id.
+        </Documentation>
+      </IntVectorProperty>
+
       <StringVectorProperty
-         name="Filter"
+         name="RegexFilter"
          command="SetRegexpString"
          number_of_elements="1"
          default_values=".*" panel_visibility="advanced">
@@ -74,11 +95,10 @@
         default_values="0" panel_visibility="advanced">
         <BooleanDomain name="bool"/>
         <Documentation>
-          Rename the output field if only one is selected (useful for 
-animations).
+          Rename the output field if only one is selected (useful for animations).
         </Documentation>
       </IntVectorProperty>
-      
+
       <StringVectorProperty
         name="SelectedName"
         label="Name for selected field"
@@ -95,7 +115,7 @@ animations).
           Name to be used for renaming the selected field.
         </Documentation>
       </StringVectorProperty>
-      
+
       <IntVectorProperty
         name="UseAllCores"
         label="Use All Cores"
@@ -130,7 +150,7 @@ animations).
       <IntVectorProperty
         name="DebugLevel"
         label="Debug Level"
-        command="SetdebugLevel_"
+        command="SetDebugLevel"
         number_of_elements="1"
         default_values="3" panel_visibility="advanced">
         <IntRangeDomain name="range" min="0" max="100" />
@@ -141,7 +161,8 @@ animations).
 
       <PropertyGroup panel_widget="Line" label="Input options">
         <Property name="ScalarFields" />
-        <Property name="Filter" />
+        <Property name="RangeId" />
+        <Property name="RegexFilter" />
         <Property name="RenameSelected" />
         <Property name="SelectedName" />
       </PropertyGroup>

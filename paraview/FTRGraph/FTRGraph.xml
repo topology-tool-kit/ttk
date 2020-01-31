@@ -12,7 +12,13 @@
         <Documentation
            long_help="TTK fTRGraph plugin."
            short_help="TTK fTRGraph plugin.">
-           TTK fTRGraph plugin documentation.
+          TTK filter to compute the Reeb graph of a manifold data set.
+          This filter is based on a parallel algorithm.
+
+          related article:
+          Gueunet C., Fortin P., Jomier J., Tierny J.:
+          "Task-based Augmented Reeb Graphs with Dynamic ST-Trees"
+          EGPGV 2019
         </Documentation>
         <InputProperty
            name="Input"
@@ -92,7 +98,7 @@
 
         <IntVectorProperty
            name="ArcSampling"
-           label="Arc samplig"
+           label="Arc Sampling"
            command="SetSampling"
            number_of_elements="1"
            default_values="0">
@@ -149,7 +155,7 @@
         <IntVectorProperty
            name="DebugLevel"
            label="Debug Level"
-           command="SetdebugLevel_"
+           command="SetDebugLevel"
            number_of_elements="1"
            default_values="3" panel_visibility="advanced">
            <IntRangeDomain name="range" min="0" max="100" />

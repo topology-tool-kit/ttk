@@ -1,38 +1,46 @@
 /// \ingroup vtk
 /// \class ttkIcoSphere
 /// \author Jonas Lukasczyk (jl@jluk.de)
-/// \date 01.10.2018
+/// \date 01.09.2019
 ///
-/// \brief TTK VTK-filter that generates an Icosphere.
-///
-/// VTK wrapping code for the @IcoSphere package.
+/// This filter creates an IcoSphere with a specified radius, center, and number
+/// of subdivisions. Alternatively, by providing an optional input, the filter
+/// will automatically determine the radius and center such that the resulting
+/// IcoSphere encapsulates the input object.
 ///
 /// \sa ttk::IcoSphere
+/// \sa ttk::ttkAlgorithm
 
 #pragma once
 
-// VTK includes
-#include <vtkInformation.h>
-#include <vtkUnstructuredGridAlgorithm.h>
+// VTK Module
+#include <ttkIcoSphereModule.h>
 
-// TTK includes
+// VTK Includes
+#include <ttkAlgorithm.h>
+
+// TTK Base Includes
 #include <IcoSphere.h>
-#include <ttkWrapper.h>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkIcoSphere
-#else
-class ttkIcoSphere
-#endif
-  : public vtkUnstructuredGridAlgorithm,
-    public ttk::Wrapper {
+class TTKICOSPHERE_EXPORT ttkIcoSphere : public ttkAlgorithm,
+                                         protected ttk::IcoSphere {
+private:
+  int NumberOfSubdivisions{0};
+  float Radius{1};
+
+  // single ico sphere
+  float Center[3]{0, 0, 0};
+
+  // alternatively: multiple ico spheres
+  int NumberOfIcoSpheres{1};
+  float *Centers{nullptr};
 
 public:
   static ttkIcoSphere *New();
-  vtkTypeMacro(ttkIcoSphere, vtkUnstructuredGridAlgorithm)
+  vtkTypeMacro(ttkIcoSphere, ttkAlgorithm);
 
-    vtkSetMacro(Subdivisions, int);
-  vtkGetMacro(Subdivisions, int);
+  vtkSetMacro(NumberOfSubdivisions, int);
+  vtkGetMacro(NumberOfSubdivisions, int);
 
   vtkSetVector3Macro(Center, float);
   vtkGetVector3Macro(Center, float);
@@ -40,69 +48,20 @@ public:
   vtkSetMacro(Radius, float);
   vtkGetMacro(Radius, float);
 
-  // default ttk setters
-  vtkSetMacro(debugLevel_, int);
-  void SetThreads() {
-    threadNumber_
-      = !UseAllCores ? ThreadNumber : ttk::OsCall::getNumberOfCores();
-    Modified();
-  }
-  void SetThreadNumber(int threadNumber) {
-    ThreadNumber = threadNumber;
-    SetThreads();
-  }
-  void SetUseAllCores(bool onOff) {
-    UseAllCores = onOff;
-    SetThreads();
-  }
-  // end of default ttk setters
+  vtkSetMacro(NumberOfIcoSpheres, int);
+  vtkGetMacro(NumberOfIcoSpheres, int);
 
-  int FillInputPortInformation(int port, vtkInformation *info) override {
-    return 0;
-  }
-
-  int FillOutputPortInformation(int port, vtkInformation *info) override {
-    switch(port) {
-      case 0:
-        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
-        break;
-      default:
-        return 0;
-    }
-    return 1;
-  }
+  vtkSetMacro(Centers, float *);
+  vtkGetMacro(Centers, float *);
 
 protected:
-  ttkIcoSphere() {
-    SetSubdivisions(0);
-    float center[3] = {0, 0, 0};
-    SetCenter(center);
-    SetRadius(1);
+  ttkIcoSphere();
+  ~ttkIcoSphere();
 
-    UseAllCores = false;
-    SetNumberOfInputPorts(0);
-    SetNumberOfOutputPorts(1);
-  }
-  ~ttkIcoSphere(){};
-
-  bool UseAllCores;
-  int ThreadNumber;
+  int FillInputPortInformation(int port, vtkInformation *info) override;
+  int FillOutputPortInformation(int port, vtkInformation *info) override;
 
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;
-
-private:
-  int Subdivisions;
-  float Center[3];
-  float Radius;
-  ttk::IcoSphere icoSphere_;
-
-  bool needsToAbort() override {
-    return GetAbortExecute();
-  };
-  int updateProgress(const float &progress) override {
-    UpdateProgress(progress);
-    return 0;
-  };
 };

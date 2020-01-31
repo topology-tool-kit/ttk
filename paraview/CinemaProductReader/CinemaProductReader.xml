@@ -15,7 +15,7 @@
                 <Documentation>vtkTable containing product references in at least one column.</Documentation>
             </InputProperty>
 
-            <StringVectorProperty animateable="0" command="SetFilepathColumnName" element_types="0 0 0 0 2" label="Filepath Column" name="SelectColumn" number_of_elements="5" default_values="FILE">
+            <StringVectorProperty command="SetFilepathColumnName" label="Filepath Column" name="SelectColumn" number_of_elements="1" default_values="FILE">
                 <ArrayListDomain name="array_list">
                     <RequiredProperties>
                         <Property function="Input" name="Input" />
@@ -23,31 +23,18 @@
                 </ArrayListDomain>
                 <Documentation>Name of the column containing data product references.</Documentation>
             </StringVectorProperty>
-
-            <IntVectorProperty name="UseAllCores" label="Use All Cores" command="SetUseAllCores" number_of_elements="1" default_values="1" panel_visibility="advanced">
+            <IntVectorProperty command="SetAddFieldDataRecursively" label="Add Field Data Recursively" name="AddFieldDataRecursively" number_of_elements="1" default_values="0">
                 <BooleanDomain name="bool" />
-                <Documentation>Use all available cores.</Documentation>
+                <Documentation>Controls if row data should be added to all children of a vtkMultiBlockDataSet.</Documentation>
             </IntVectorProperty>
-            <IntVectorProperty name="ThreadNumber" label="Thread Number" command="SetThreadNumber" number_of_elements="1" default_values="1" panel_visibility="advanced">
-                <IntRangeDomain name="range" min="1" max="100" />
-                <Documentation>Thread number.</Documentation>
-                <Hints>
-                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="UseAllCores" value="0" />
-                </Hints>
-            </IntVectorProperty>
-            <IntVectorProperty name="DebugLevel" label="Debug Level" command="SetdebugLevel_" number_of_elements="1" default_values="3" panel_visibility="advanced">
-                <IntRangeDomain name="range" min="0" max="100" />
-                <Documentation>Debug level.</Documentation>
-            </IntVectorProperty>
+
 
             <PropertyGroup panel_widget="Line" label="Input Options">
                 <Property name="SelectColumn" />
+                <Property name="AddFieldDataRecursively" />
             </PropertyGroup>
-            <PropertyGroup panel_widget="Line" label="Testing">
-                <Property name="UseAllCores" />
-                <Property name="ThreadNumber" />
-                <Property name="DebugLevel" />
-            </PropertyGroup>
+
+            ${DEBUG_WIDGETS}
 
             <Hints>
                 <ShowInMenu category="TTK - Cinema" />

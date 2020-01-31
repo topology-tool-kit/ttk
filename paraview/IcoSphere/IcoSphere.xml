@@ -2,47 +2,40 @@
 <ServerManagerConfiguration>
     <ProxyGroup name="sources">
         <SourceProxy name="IcoSphere" class="ttkIcoSphere" label="TTK IcoSphere">
-            <Documentation long_help="TTK IcoSphere" short_help="TTK IcoSphere"></Documentation>
+            <Documentation long_help="TTK filter that creates an IcoSphere" short_help="TTK filter that creates an IcoSphere">
+                This filter creates an IcoSphere with a specified radius, center, and number of subdivisions. Alternatively, by providing an optional input, the filter will automatically determine the radius and center such that the resulting IcoSphere encapsulates the input object. In this case, the entered radius parameter is used as a scaling factor.
+            </Documentation>
 
-            <IntVectorProperty name="Subdivisions" label="Subdivisions" command="SetSubdivisions" number_of_elements="1" default_values="0">
+            <InputProperty name="Object" port_index="0" command="SetInputConnection">
+                <ProxyGroupDomain name="groups">
+                    <Group name="sources" />
+                    <Group name="filters" />
+                </ProxyGroupDomain>
+                <Documentation>Object that will be used to compute bounding shpere.</Documentation>
+                <Hints>
+                    <Optional />
+                </Hints>
+            </InputProperty>
+
+            <IntVectorProperty name="NumberOfSubdivisions" label="Subdivisions" command="SetNumberOfSubdivisions" number_of_elements="1" default_values="0">
                 <Documentation>Number of subdevisions.</Documentation>
             </IntVectorProperty>
-            <DoubleVectorProperty name="Radius" label="Radius" command="SetRadius" number_of_elements="1" default_values="0.5">
-                <Documentation>Radius</Documentation>
+            <DoubleVectorProperty name="Radius" label="Radius" command="SetRadius" number_of_elements="1" default_values="1">
+                <Documentation>Radius in world coordinates. If an input is provided then the radius is used as a scaling factor of the resulting bounding icosphere.</Documentation>
             </DoubleVectorProperty>
             <DoubleVectorProperty name="Center" label="Center" command="SetCenter" number_of_elements="3" default_values="0 0 0">
-                <Documentation>Center</Documentation>
+                <Documentation>Center of the icosphere. If an input is provided this parameter will be overwritten.</Documentation>
             </DoubleVectorProperty>
 
-            <IntVectorProperty name="UseAllCores" label="Use All Cores" command="SetUseAllCores" number_of_elements="1" default_values="1" panel_visibility="advanced">
-                <BooleanDomain name="bool" />
-                <Documentation>Use all available cores.</Documentation>
-            </IntVectorProperty>
-            <IntVectorProperty name="ThreadNumber" label="Thread Number" command="SetThreadNumber" number_of_elements="1" default_values="1" panel_visibility="advanced">
-                <IntRangeDomain name="range" min="1" max="100" />
-                <Hints>
-                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="UseAllCores" value="0" />
-                </Hints>
-                <Documentation>Thread number.</Documentation>
-            </IntVectorProperty>
-            <IntVectorProperty name="DebugLevel" label="Debug Level" command="SetdebugLevel_" number_of_elements="1" default_values="3" panel_visibility="advanced">
-                <IntRangeDomain name="range" min="0" max="100" />
-                <Documentation>Debug level.</Documentation>
-            </IntVectorProperty>
-
             <PropertyGroup panel_widget="Line" label="Output Options">
-                <Property name="Subdivisions" />
+                <Property name="NumberOfSubdivisions" />
                 <Property name="Radius" />
                 <Property name="Center" />
             </PropertyGroup>
-            <PropertyGroup panel_widget="Line" label="Testing">
-                <Property name="UseAllCores" />
-                <Property name="ThreadNumber" />
-                <Property name="DebugLevel" />
-            </PropertyGroup>
+
+            ${DEBUG_WIDGETS}
 
             <Hints>
-                <RepresentationType view="RenderView" type="Wireframe" />
                 <ShowInMenu category="TTK" />
             </Hints>
         </SourceProxy>

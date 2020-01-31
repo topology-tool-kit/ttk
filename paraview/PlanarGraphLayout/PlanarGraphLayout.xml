@@ -36,106 +36,86 @@ Computer Graphics Forum (Special Issue, Proceedings Eurographics / IEEE Symposiu
                 <BooleanDomain name="bool" />
                 <Documentation>Points are positioned along the x-axis based on a sequence (e.g., time indicies or scalar values).</Documentation>
             </IntVectorProperty>
-            <StringVectorProperty name="SequenceFieldName" command="SetSequenceFieldName" number_of_elements="1" animateable="0" label="" default_values="SequenceIndex">
-                <ArrayListDomain name="array_list" input_domain_name="input_array">
+            <StringVectorProperty name="SequenceArray" label="Sequence Array" command="SetInputArrayToProcess" element_types="0 0 0 0 2" number_of_elements="5">
+                <ArrayListDomain attribute_type="Scalars" name="array_list">
                     <RequiredProperties>
-                        <Property name="Input" function="Input" />
+                        <Property function="Input" name="Input" />
                     </RequiredProperties>
                 </ArrayListDomain>
-                <Documentation>Sequence scalar field.</Documentation>
                 <Hints>
                     <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="UseSequences" value="1" />
                 </Hints>
+                <Documentation>Sequence Scalar Array.</Documentation>
             </StringVectorProperty>
 
             <IntVectorProperty name="UseSizes" label="Use Sizes" command="SetUseSizes" number_of_elements="1" default_values="0">
                 <BooleanDomain name="bool" />
                 <Documentation>Points cover space on the y-axis based on their size.</Documentation>
             </IntVectorProperty>
-            <StringVectorProperty name="SizeFieldName" command="SetSizeFieldName" number_of_elements="1" animateable="0" label="" default_values="Size">
-                <ArrayListDomain name="array_list" input_domain_name="input_array">
+            <StringVectorProperty name="SizeArray" label="Size Array" command="SetInputArrayToProcess" element_types="0 0 0 0 2" number_of_elements="5" default_values="1">
+                <ArrayListDomain attribute_type="Scalars" name="array_list">
                     <RequiredProperties>
-                        <Property name="Input" function="Input" />
+                        <Property function="Input" name="Input" />
                     </RequiredProperties>
                 </ArrayListDomain>
-                <Documentation>Size scalar field.</Documentation>
                 <Hints>
                     <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="UseSizes" value="1" />
                 </Hints>
+                <Documentation>Size Scalar Array.</Documentation>
             </StringVectorProperty>
 
             <IntVectorProperty name="UseBranches" label="Use Branches" command="SetUseBranches" number_of_elements="1" default_values="0">
                 <BooleanDomain name="bool" />
                 <Documentation>Points with the same branch label are positioned on straight lines.</Documentation>
             </IntVectorProperty>
-            <StringVectorProperty name="BranchFieldName" command="SetBranchFieldName" number_of_elements="1" animateable="0" label="" default_values="BranchId">
-                <ArrayListDomain name="array_list" input_domain_name="input_array">
+            <StringVectorProperty name="BranchArray" label="Branch Array" command="SetInputArrayToProcess" element_types="0 0 0 0 2" number_of_elements="5" default_values="2">
+                <ArrayListDomain attribute_type="Scalars" name="array_list">
                     <RequiredProperties>
-                        <Property name="Input" function="Input" />
+                        <Property function="Input" name="Input" />
                     </RequiredProperties>
                 </ArrayListDomain>
-                <Documentation>Branch scalar field.</Documentation>
                 <Hints>
                     <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="UseBranches" value="1" />
                 </Hints>
+                <Documentation>Branch Scalar Array.</Documentation>
             </StringVectorProperty>
 
             <IntVectorProperty name="UseLevels" label="Use Levels" command="SetUseLevels" number_of_elements="1" default_values="0">
                 <BooleanDomain name="bool" />
                 <Documentation>The layout of points with the same level label are computed individually and afterwards nested based on the level hierarchy.</Documentation>
             </IntVectorProperty>
-            <StringVectorProperty name="LevelFieldName" command="SetLevelFieldName" number_of_elements="1" animateable="0" label="" default_values="LevelIndex">
-                <ArrayListDomain name="array_list" input_domain_name="input_array">
+            <StringVectorProperty name="LevelArray" label="Level Array" command="SetInputArrayToProcess" element_types="0 0 0 0 2" number_of_elements="5" default_values="3">
+                <ArrayListDomain attribute_type="Scalars" name="array_list">
                     <RequiredProperties>
-                        <Property name="Input" function="Input" />
+                        <Property function="Input" name="Input" />
                     </RequiredProperties>
                 </ArrayListDomain>
-                <Documentation>Level scalar field.</Documentation>
                 <Hints>
                     <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="UseLevels" value="1" />
                 </Hints>
+                <Documentation>Level Scalar Array.</Documentation>
             </StringVectorProperty>
 
-            <StringVectorProperty name="OutputFieldName" command="SetOutputFieldName" number_of_elements="1" animateable="0" label="Output Field Name" default_values="Layout">
-                <Documentation>Name of the output scalar field.</Documentation>
+            <StringVectorProperty name="OutputArrayName" command="SetOutputArrayName" number_of_elements="1" animateable="0" label="Output Array Name" default_values="Layout">
+                <Documentation>Name of the output layout array.</Documentation>
             </StringVectorProperty>
-
-            <IntVectorProperty name="UseAllCores" label="Use All Cores" command="SetUseAllCores" number_of_elements="1" default_values="1" panel_visibility="advanced">
-                <BooleanDomain name="bool" />
-                <Documentation>Use all available cores.</Documentation>
-            </IntVectorProperty>
-            <IntVectorProperty name="ThreadNumber" label="Thread Number" command="SetThreadNumber" number_of_elements="1" default_values="1" panel_visibility="advanced">
-                <IntRangeDomain name="range" min="1" max="100" />
-                <Hints>
-                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="UseAllCores" value="0" />
-                </Hints>
-                <Documentation>Thread number.</Documentation>
-            </IntVectorProperty>
-            <IntVectorProperty name="DebugLevel" label="Debug Level" command="SetdebugLevel_" number_of_elements="1" default_values="3" panel_visibility="advanced">
-                <IntRangeDomain name="range" min="0" max="100" />
-                <Documentation>Debug level.</Documentation>
-            </IntVectorProperty>
 
             <PropertyGroup panel_widget="Line" label="Input Options">
                 <Property name="UseSequences" />
-                <Property name="SequenceFieldName" />
+                <Property name="SequenceArray" />
                 <Property name="UseSizes" />
-                <Property name="SizeFieldName" />
+                <Property name="SizeArray" />
                 <Property name="UseBranches" />
-                <Property name="BranchFieldName" />
+                <Property name="BranchArray" />
                 <Property name="UseLevels" />
-                <Property name="LevelFieldName" />
+                <Property name="LevelArray" />
             </PropertyGroup>
 
             <PropertyGroup panel_widget="Line" label="Output Options">
-                <Property name="OutputFieldName" />
+                <Property name="OutputArrayName" />
             </PropertyGroup>
 
-            <PropertyGroup panel_widget="Line" label="Testing">
-                <Property name="UseAllCores" />
-                <Property name="ThreadNumber" />
-                <Property name="DebugLevel" />
-            </PropertyGroup>
+            ${DEBUG_WIDGETS}
 
             <Hints>
                 <ShowInMenu category="TTK - Misc" />

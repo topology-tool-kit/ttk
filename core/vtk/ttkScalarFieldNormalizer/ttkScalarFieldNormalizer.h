@@ -35,20 +35,19 @@
 #include <vtkPointData.h>
 #include <vtkSmartPointer.h>
 
+// VTK Module
+#include <ttkScalarFieldNormalizerModule.h>
+
 // ttk code includes
-#include <ttkWrapper.h>
+#include <ttkTriangulationAlgorithm.h>
 
 // in this example, this wrapper takes a data-set on the input and produces a
 // data-set on the output - to adapt.
 // see the documentation of the vtkAlgorithm class to decide from which VTK
 // class your wrapper should inherit.
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkScalarFieldNormalizer
-#else
-class ttkScalarFieldNormalizer
-#endif
+class TTKSCALARFIELDNORMALIZER_EXPORT ttkScalarFieldNormalizer
   : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+    protected ttk::Wrapper {
 
 public:
   static ttkScalarFieldNormalizer *New();
@@ -56,7 +55,10 @@ public:
   vtkTypeMacro(ttkScalarFieldNormalizer, vtkDataSetAlgorithm);
 
   // default ttk setters
-  vtkSetMacro(debugLevel_, int);
+  void SetDebugLevel(int debugLevel) {
+    setDebugLevel(debugLevel);
+    Modified();
+  }
 
   void SetThreads() {
     if(!UseAllCores)
@@ -86,7 +88,7 @@ public:
 protected:
   ttkScalarFieldNormalizer();
 
-  ~ttkScalarFieldNormalizer();
+  ~ttkScalarFieldNormalizer() override;
 
   int normalize(vtkDataArray *input, vtkDataArray *output) const;
 

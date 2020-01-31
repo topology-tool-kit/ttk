@@ -306,6 +306,10 @@ int ttkPersistenceDiagram::doIt(vector<vtkDataSet *> &inputs,
   outputCTPersistenceDiagram->ShallowCopy(CTPersistenceDiagram_);
   computeDiagram_ = false;
 
+  // shallow copy input Field Data
+  outputCTPersistenceDiagram->GetFieldData()->ShallowCopy(
+    input->GetFieldData());
+
   {
     stringstream msg;
     msg << "[ttkPersistenceDiagram] Memory usage: " << m.getElapsedUsage()

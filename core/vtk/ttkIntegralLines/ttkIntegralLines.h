@@ -44,24 +44,25 @@
 #include <vtkPointData.h>
 #include <vtkSmartPointer.h>
 
+// VTK Module
+#include <ttkIntegralLinesModule.h>
+
 // ttk code includes
 #include <IntegralLines.h>
-#include <ttkWrapper.h>
+#include <ttkTriangulationAlgorithm.h>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkIntegralLines
-#else
-class ttkIntegralLines
-#endif
-  : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+class TTKINTEGRALLINES_EXPORT ttkIntegralLines : public vtkDataSetAlgorithm,
+                                                 protected ttk::Wrapper {
 
 public:
   static ttkIntegralLines *New();
 
   vtkTypeMacro(ttkIntegralLines, vtkDataSetAlgorithm);
 
-  vtkSetMacro(debugLevel_, int);
+  void SetDebugLevel(int debugLevel) {
+    setDebugLevel(debugLevel);
+    Modified();
+  }
 
   void SetThreadNumber(int threadNumber) {
     ThreadNumber = threadNumber;
@@ -107,7 +108,7 @@ public:
 
 protected:
   ttkIntegralLines();
-  ~ttkIntegralLines();
+  ~ttkIntegralLines() override;
 
   TTK_SETUP();
 

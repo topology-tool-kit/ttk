@@ -51,17 +51,16 @@
 #include <vtkPointData.h>
 #include <vtkSmartPointer.h>
 
+// VTK Module
+#include <ttkMorseSmaleComplexModule.h>
+
 // ttk code includes
 #include <MorseSmaleComplex.h>
-#include <ttkWrapper.h>
+#include <ttkTriangulationAlgorithm.h>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkMorseSmaleComplex
-#else
-class ttkMorseSmaleComplex
-#endif
+class TTKMORSESMALECOMPLEX_EXPORT ttkMorseSmaleComplex
   : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+    protected ttk::Wrapper {
 
 public:
   static ttkMorseSmaleComplex *New();
@@ -69,7 +68,10 @@ public:
   vtkTypeMacro(ttkMorseSmaleComplex, vtkDataSetAlgorithm);
 
   // default ttk setters
-  vtkSetMacro(debugLevel_, int);
+  void SetDebugLevel(int debugLevel) {
+    setDebugLevel(debugLevel);
+    Modified();
+  }
 
   void SetThreadNumber(int threadNumber) {
     ThreadNumber = threadNumber;
@@ -91,8 +93,8 @@ public:
   vtkSetMacro(OffsetFieldId, int);
   vtkGetMacro(OffsetFieldId, int);
 
-  vtkSetMacro(ForceInputOffsetScalarField, int);
-  vtkGetMacro(ForceInputOffsetScalarField, int);
+  vtkSetMacro(ForceInputOffsetScalarField, bool);
+  vtkGetMacro(ForceInputOffsetScalarField, bool);
 
   vtkSetMacro(InputOffsetScalarFieldName, std::string);
   vtkGetMacro(InputOffsetScalarFieldName, std::string);
@@ -103,38 +105,32 @@ public:
   vtkSetMacro(IterationThreshold, int);
   vtkGetMacro(IterationThreshold, int);
 
-  vtkSetMacro(ReverseSaddleMaximumConnection, int);
-  vtkGetMacro(ReverseSaddleMaximumConnection, int);
+  vtkSetMacro(ComputeCriticalPoints, bool);
+  vtkGetMacro(ComputeCriticalPoints, bool);
 
-  vtkSetMacro(ReverseSaddleSaddleConnection, int);
-  vtkGetMacro(ReverseSaddleSaddleConnection, int);
+  vtkSetMacro(ComputeAscendingSeparatrices1, bool);
+  vtkGetMacro(ComputeAscendingSeparatrices1, bool);
 
-  vtkSetMacro(ComputeCriticalPoints, int);
-  vtkGetMacro(ComputeCriticalPoints, int);
+  vtkSetMacro(ComputeDescendingSeparatrices1, bool);
+  vtkGetMacro(ComputeDescendingSeparatrices1, bool);
 
-  vtkSetMacro(ComputeAscendingSeparatrices1, int);
-  vtkGetMacro(ComputeAscendingSeparatrices1, int);
+  vtkSetMacro(ComputeSaddleConnectors, bool);
+  vtkGetMacro(ComputeSaddleConnectors, bool);
 
-  vtkSetMacro(ComputeDescendingSeparatrices1, int);
-  vtkGetMacro(ComputeDescendingSeparatrices1, int);
+  vtkSetMacro(ComputeAscendingSeparatrices2, bool);
+  vtkGetMacro(ComputeAscendingSeparatrices2, bool);
 
-  vtkSetMacro(ComputeSaddleConnectors, int);
-  vtkGetMacro(ComputeSaddleConnectors, int);
+  vtkSetMacro(ComputeDescendingSeparatrices2, bool);
+  vtkGetMacro(ComputeDescendingSeparatrices2, bool);
 
-  vtkSetMacro(ComputeAscendingSeparatrices2, int);
-  vtkGetMacro(ComputeAscendingSeparatrices2, int);
+  vtkSetMacro(ComputeAscendingSegmentation, bool);
+  vtkGetMacro(ComputeAscendingSegmentation, bool);
 
-  vtkSetMacro(ComputeDescendingSeparatrices2, int);
-  vtkGetMacro(ComputeDescendingSeparatrices2, int);
+  vtkSetMacro(ComputeDescendingSegmentation, bool);
+  vtkGetMacro(ComputeDescendingSegmentation, bool);
 
-  vtkSetMacro(ComputeAscendingSegmentation, int);
-  vtkGetMacro(ComputeAscendingSegmentation, int);
-
-  vtkSetMacro(ComputeDescendingSegmentation, int);
-  vtkGetMacro(ComputeDescendingSegmentation, int);
-
-  vtkSetMacro(ComputeFinalSegmentation, int);
-  vtkGetMacro(ComputeFinalSegmentation, int);
+  vtkSetMacro(ComputeFinalSegmentation, bool);
+  vtkGetMacro(ComputeFinalSegmentation, bool);
 
   vtkSetMacro(ReturnSaddleConnectors, int);
   vtkGetMacro(ReturnSaddleConnectors, int);
@@ -142,8 +138,8 @@ public:
   vtkSetMacro(SaddleConnectorsPersistenceThreshold, double);
   vtkGetMacro(SaddleConnectorsPersistenceThreshold, double);
 
-  vtkSetMacro(PrioritizeSpeedOverMemory, int);
-  vtkGetMacro(PrioritizeSpeedOverMemory, int);
+  vtkSetMacro(PrioritizeSpeedOverMemory, bool);
+  vtkGetMacro(PrioritizeSpeedOverMemory, bool);
 
   int setupTriangulation(vtkDataSet *input);
   vtkDataArray *getScalars(vtkDataSet *input);
@@ -186,7 +182,7 @@ protected:
     std::vector<char> &separatrices2_cells_isOnBoundary);
 
   ttkMorseSmaleComplex();
-  ~ttkMorseSmaleComplex();
+  ~ttkMorseSmaleComplex() override;
 
   TTK_SETUP();
 
@@ -200,8 +196,6 @@ private:
   bool ForceInputOffsetScalarField;
   bool PeriodicBoundaryConditions;
   int IterationThreshold;
-  bool ReverseSaddleMaximumConnection;
-  bool ReverseSaddleSaddleConnection;
   bool ComputeCriticalPoints;
   bool ComputeAscendingSeparatrices1;
   bool ComputeDescendingSeparatrices1;

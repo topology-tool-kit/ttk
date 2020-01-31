@@ -4,6 +4,7 @@
         <SourceProxy name="CinemaImaging" class="ttkCinemaImaging" label="TTK CinemaImaging">
             <Documentation long_help="TTK CinemaImaging" short_help="TTK CinemaImaging">This filter takes images of a vtkDataObject (first input) from angles specified on a vtkPointSet (second input). Each image will be a block of a vtkMultiBlockDataSet where block order corresponds to point order. Each sample point can optionally have vtkDoubleArrays to override the default rendering parameters, i.e, the resolution, camera direction, clipping planes, and viewport height.</Documentation>
 
+            <!-- Inputs -->
             <InputProperty name="Dataset" port_index="0" command="SetInputConnection">
                 <ProxyGroupDomain name="groups">
                     <Group name="sources" />
@@ -25,50 +26,84 @@
                 <Documentation>vtkPointSet that represents the camera sampling locations.</Documentation>
             </InputProperty>
 
+            <!-- Global Options -->
             <IntVectorProperty name="Resolution" label="Resolution" command="SetResolution" number_of_elements="2" default_values="256 256">
-                <Documentation>Resolution</Documentation>
+                <Documentation>Image Resolution</Documentation>
             </IntVectorProperty>
-            <DoubleVectorProperty name="CamNearFar" label="CamNearFar" command="SetCamNearFar" number_of_elements="2" default_values="0.1 1">
-                <Documentation>CamNearFar</Documentation>
-            </DoubleVectorProperty>
-            <DoubleVectorProperty name="CamFocus" label="CamFocus" command="SetCamFocus" number_of_elements="3" default_values="0 0 0">
-                <Documentation>CamFocus</Documentation>
-            </DoubleVectorProperty>
-            <DoubleVectorProperty name="CamHeight" label="CamHeight" command="SetCamHeight" number_of_elements="1" default_values="1">
-                <Documentation>CamHeight</Documentation>
-            </DoubleVectorProperty>
-
-            <IntVectorProperty name="UseAllCores" label="Use All Cores" command="SetUseAllCores" number_of_elements="1" default_values="1" panel_visibility="advanced">
+            <IntVectorProperty name="GenerateScalarImages" label="Generate Scalar Images" command="SetGenerateScalarImages" number_of_elements="1" default_values="1">
                 <BooleanDomain name="bool" />
-                <Documentation>Use all available cores.</Documentation>
+                <Documentation>Generate floating-point image for each data array of the input 'vtkDataObject'.</Documentation>
             </IntVectorProperty>
-            <IntVectorProperty name="ThreadNumber" label="Thread Number" command="SetThreadNumber" number_of_elements="1" default_values="1" panel_visibility="advanced">
-                <IntRangeDomain name="range" min="1" max="100" />
-                <Documentation>Thread number.</Documentation>
+
+            <!-- Camera Options -->
+            <IntVectorProperty name="CamProjectionMode" label="Projection Mode" command="SetCamProjectionMode" number_of_elements="1" default_values="0">
+                <EnumerationDomain name="enum">
+                    <Entry value="0" text="Orthographic"/>
+                    <Entry value="1" text="Perspective"/>
+                </EnumerationDomain>
+                <Documentation>Use orthographic or perspective camera projection.</Documentation>
+            </IntVectorProperty>
+            <IntVectorProperty name="CamHeightAuto" label="Auto CamHeight" command="SetCamHeightAuto" number_of_elements="1" default_values="1">
+                <BooleanDomain name="bool" />
+                <Documentation>Automatically set camera height to sampling grid diameter.</Documentation>
                 <Hints>
-                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="UseAllCores" value="0" />
+                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="CamProjectionMode" value="0" />
                 </Hints>
             </IntVectorProperty>
-            <IntVectorProperty name="DebugLevel" label="Debug Level" command="SetdebugLevel_" number_of_elements="1" default_values="3" panel_visibility="advanced">
-                <IntRangeDomain name="range" min="0" max="100" />
-                <Documentation>Debug level.</Documentation>
+            <DoubleVectorProperty name="CamHeight" label="CamHeight" command="SetCamHeight" number_of_elements="1" default_values="1">
+                <Documentation>Height of the camera in world coordinates.</Documentation>
+                <Hints>
+                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="CamHeightAuto" value="0" />
+                </Hints>
+            </DoubleVectorProperty>
+            <DoubleVectorProperty name="CamAngle" label="CamAngle" command="SetCamAngle" number_of_elements="1" default_values="90">
+                <DoubleRangeDomain name="range" min="1" max="180" />
+                <Documentation>CamAngle</Documentation>
+                <Hints>
+                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="CamProjectionMode" value="1" />
+                </Hints>
+            </DoubleVectorProperty>
+            <IntVectorProperty name="CamNearFarAuto" label="Auto CamNearFar" command="SetCamNearFarAuto" number_of_elements="1" default_values="1">
+                <BooleanDomain name="bool" />
+                <Documentation>Automatically set camera near-far plane settings to sampling grid diameter.</Documentation>
             </IntVectorProperty>
+            <DoubleVectorProperty name="CamNearFar" label="CamNearFar" command="SetCamNearFar" number_of_elements="2" default_values="0.1 1">
+                <Documentation>Near/Far plane settings.</Documentation>
+                <Hints>
+                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="CamNearFarAuto" value="0" />
+                </Hints>
+            </DoubleVectorProperty>
+            <IntVectorProperty name="CamFocusAuto" label="Auto CamFocus" command="SetCamFocusAuto" number_of_elements="1" default_values="1">
+                <BooleanDomain name="bool" />
+                <Documentation>Automatically set focus to sampling grid center.</Documentation>
+            </IntVectorProperty>
+            <DoubleVectorProperty name="CamFocus" label="CamFocus" command="SetCamFocus" number_of_elements="3" default_values="0 0 0">
+                <Documentation>CamFocus</Documentation>
+                <Hints>
+                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="CamFocusAuto" value="0" />
+                </Hints>
+            </DoubleVectorProperty>
 
+            <!-- Groups -->
             <PropertyGroup panel_widget="Line" label="Output Options">
                 <Property name="Resolution" />
-                <Property name="CamNearFar" />
-                <Property name="CamFocus" />
-                <Property name="CamHeight" />
+                <Property name="GenerateScalarImages" />
             </PropertyGroup>
-            <PropertyGroup panel_widget="Line" label="Testing">
-                <Property name="UseAllCores" />
-                <Property name="ThreadNumber" />
-                <Property name="DebugLevel" />
+            <PropertyGroup panel_widget="Line" label="Camera Options">
+                <Property name="CamProjectionMode" />
+                <Property name="CamFocusAuto" />
+                <Property name="CamFocus" />
+                <Property name="CamNearFarAuto" />
+                <Property name="CamNearFar" />
+                <Property name="CamHeightAuto" />
+                <Property name="CamHeight" />
+                <Property name="CamAngle" />
             </PropertyGroup>
 
+            ${DEBUG_WIDGETS}
+
             <Hints>
-                <View type="RenderView" also_show_in_current_view="0" />
-                <RepresentationType view="RenderView" type="Surface" also_show_in_current_view="0" />
+                <RepresentationType view="RenderView" type="Surface"/>
                 <ShowInMenu category="TTK - Cinema" />
             </Hints>
         </SourceProxy>

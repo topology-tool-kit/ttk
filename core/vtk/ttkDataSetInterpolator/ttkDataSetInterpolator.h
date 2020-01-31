@@ -34,22 +34,24 @@
 #include <vtkProbeFilter.h>
 #include <vtkSmartPointer.h>
 
+// VTK Module
+#include <ttkDataSetInterpolatorModule.h>
+
 #include <Wrapper.h>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkDataSetInterpolator
-#else
-class ttkDataSetInterpolator
-#endif
+class TTKDATASETINTERPOLATOR_EXPORT ttkDataSetInterpolator
   : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+    protected ttk::Wrapper {
 
 public:
   static ttkDataSetInterpolator *New();
   vtkTypeMacro(ttkDataSetInterpolator, vtkDataSetAlgorithm)
 
     // default ttk setters
-    vtkSetMacro(debugLevel_, int);
+    void SetDebugLevel(int debugLevel) {
+    setDebugLevel(debugLevel);
+    Modified();
+  }
 
   void SetThreads() {
     if(!UseAllCores)
@@ -79,7 +81,7 @@ protected:
     SetNumberOfOutputPorts(1);
   }
 
-  ~ttkDataSetInterpolator(){};
+  ~ttkDataSetInterpolator() override{};
 
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,
