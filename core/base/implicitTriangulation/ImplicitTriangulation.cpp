@@ -1448,123 +1448,59 @@ inline SimplexId ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(
     return -1;
 #endif
 
-  if(dimensionality_ == 3) {
-    const auto p = edgeCoords_[edgeId].data();
-
-    // L
-    if(edgeId < esetshift_[0]) {
-      if(p[2] > 0 and p[2] < nbvoxels_[2]) {
-        if(p[1] > 0 and p[1] < nbvoxels_[1])
-          return 6; // ABCG,ABEG,BCDG,BEFG,BFGH,BDGH
-        else
-          return 3; // BCDG,BFGH,BDGH or ABCG,ABEG,BEFG
-      } else if(p[2] == 0) {
-        if(p[1] > 0 and p[1] < nbvoxels_[1])
-          return 3; // ABCG,ABEG,BCDG
-        else if(p[1] == 0)
-          return 2; // ABCG,ABEG
-        else
-          return 1; // BCDG
-      } else {
-        if(p[1] > 0 and p[1] < nbvoxels_[1])
-          return 3; // BEFG,BFGH,BDGH
-        else if(p[1] == 0)
-          return 1; // BEFG
-        else
-          return 2; // BFGH,BDGH
-      }
-    }
-    // H
-    else if(edgeId < esetshift_[1]) {
-      if(p[0] > 0 and p[0] < nbvoxels_[0]) {
-        if(p[2] > 0 and p[2] < nbvoxels_[2])
-          return 6; // ABCG,ABEG,BEFG,BFGH,BCDG,BDGH
-        else
-          return 3; // ABEG,BEFG,BFGH,BCDG,BDGH,ABCG
-      } else if(p[0] == 0) {
-        if(p[2] > 0 and p[2] < nbvoxels_[2])
-          return 3; // ABEG,BEFG,ABCG
-        else if(p[2] == 0)
-          return 1; // ABCG
-        else
-          return 2; // ABEG,BEFG
-      } else {
-        if(p[2] > 0 and p[2] < nbvoxels_[2])
-          return 3; // BCDG,BDGH,BFGH
-        else if(p[2] == 0)
-          return 2; // BCDG,BDGH
-        else
-          return 1; // BFGH
-      }
-    }
-    // P
-    else if(edgeId < esetshift_[2]) {
-      if(p[0] > 0 and p[0] < nbvoxels_[0]) {
-        if(p[1] > 0 and p[1] < nbvoxels_[1])
-          return 6; // BDGH,ABCG,BCDG,ABEG,BEFG,BFGH
-        else
-          return 3; // ABCG,BCDG,BDGH,BEFG,BFGH,ABEG
-      } else if(p[0] == 0) {
-        if(p[1] > 0 and p[1] < nbvoxels_[1])
-          return 3; // ABCG,BCDG,ABEG
-        else if(p[1] == 0)
-          return 1; // ABEG
-        else
-          return 2; // ABCG,BCDG
-      } else {
-        if(p[1] > 0 and p[1] < nbvoxels_[1])
-          return 3; // BEFG,BFGH,BDGH
-        else if(p[1] == 0)
-          return 2; // BEFG,BFGH
-        else
-          return 1; // BDGH
-      }
-    }
-    // D1
-    else if(edgeId < esetshift_[3]) {
-      if(p[2] > 0 and p[2] < nbvoxels_[2])
-        return 4; // ABCG,BCDG,BEFG,BFGH
-      else
-        return 2; // ABCG,BCDG ou BEFG,BFGH
-    }
-    // D2
-    else if(edgeId < esetshift_[4]) {
-      if(p[0] > 0 and p[0] < nbvoxels_[0])
-        return 4; // ABCG,ABEG,BDGH,BFGH
-      else
-        return 2; // ABCG,ABEG ou BDGH,BFGH
-    }
-    // D3
-    else if(edgeId < esetshift_[5]) {
-      if(p[1] > 0 and p[1] < nbvoxels_[1])
-        return 4; // ABEG,BEFG,BCDG,BDGH
-      else
-        return 2; // ABEG,BEFG ou BCDG,BDGH
-    }
-    // D4
-    else if(edgeId < esetshift_[6])
+  switch(edgePositions_[edgeId]) {
+    case EdgePositionFull::L_xnn_3D:
+    case EdgePositionFull::H_nyn_3D:
+    case EdgePositionFull::P_nnz_3D:
+    case EdgePositionFull::D4_3D:
       return 6;
-
-  } else if(dimensionality_ == 2) {
-    const auto p = edgeCoords_[edgeId].data();
-
-    // L
-    if(edgeId < esetshift_[0]) {
-      if(p[1] > 0 and p[1] < nbvoxels_[Dj_])
-        return 2;
-      else
-        return 1;
-    }
-    // H
-    else if(edgeId < esetshift_[1]) {
-      if(p[0] > 0 and p[0] < nbvoxels_[Di_])
-        return 2;
-      else
-        return 1;
-    }
-    // D1
-    else if(edgeId < esetshift_[2])
+    case EdgePositionFull::D1_xyn_3D:
+    case EdgePositionFull::D2_nyz_3D:
+    case EdgePositionFull::D3_xnz_3D:
+      return 4;
+    case EdgePositionFull::L_x0n_3D:
+    case EdgePositionFull::L_xNn_3D:
+    case EdgePositionFull::L_xn0_3D:
+    case EdgePositionFull::L_xnN_3D:
+    case EdgePositionFull::H_ny0_3D:
+    case EdgePositionFull::H_nyN_3D:
+    case EdgePositionFull::H_0yn_3D:
+    case EdgePositionFull::H_Nyn_3D:
+    case EdgePositionFull::P_n0z_3D:
+    case EdgePositionFull::P_nNz_3D:
+    case EdgePositionFull::P_0nz_3D:
+    case EdgePositionFull::P_Nnz_3D:
+      return 3;
+    case EdgePositionFull::L_x00_3D:
+    case EdgePositionFull::L_xNN_3D:
+    case EdgePositionFull::H_0yN_3D:
+    case EdgePositionFull::H_Ny0_3D:
+    case EdgePositionFull::P_0Nz_3D:
+    case EdgePositionFull::P_N0z_3D:
+    case EdgePositionFull::D1_xy0_3D:
+    case EdgePositionFull::D1_xyN_3D:
+    case EdgePositionFull::D2_0yz_3D:
+    case EdgePositionFull::D2_Nyz_3D:
+    case EdgePositionFull::D3_x0z_3D:
+    case EdgePositionFull::D3_xNz_3D:
+    case EdgePositionFull::L_xn_2D:
+    case EdgePositionFull::H_ny_2D:
+    case EdgePositionFull::D1_2D:
       return 2;
+    case EdgePositionFull::L_xN0_3D:
+    case EdgePositionFull::L_x0N_3D:
+    case EdgePositionFull::H_0y0_3D:
+    case EdgePositionFull::H_NyN_3D:
+    case EdgePositionFull::P_00z_3D:
+    case EdgePositionFull::P_NNz_3D:
+    case EdgePositionFull::L_x0_2D:
+    case EdgePositionFull::L_xN_2D:
+    case EdgePositionFull::H_0y_2D:
+    case EdgePositionFull::H_Ny_2D:
+      return 1;
+
+    default: // 1D
+      break;
   }
 
   return 0;
