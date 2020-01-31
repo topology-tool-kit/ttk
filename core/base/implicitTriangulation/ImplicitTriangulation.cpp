@@ -2340,9 +2340,8 @@ int ImplicitTriangulation::getTetrahedronVertex(const SimplexId &tetId,
   vertexId = -1;
 
   if(dimensionality_ == 3) {
-    SimplexId p[3];
-    tetrahedronToPosition(tetId, p);
     const SimplexId id = tetId % 6;
+    const auto p = tetrahedronCoords_[tetId].data();
 
     switch(id) {
       case 0:
@@ -2381,9 +2380,8 @@ int ImplicitTriangulation::getTetrahedronEdge(const SimplexId &tetId,
   edgeId = -1;
 
   if(dimensionality_ == 3) {
-    SimplexId p[3];
-    tetrahedronToPosition(tetId, p);
     const SimplexId id = tetId % 6;
+    const auto p = tetrahedronCoords_[tetId].data();
 
     switch(id) {
       case 0:
@@ -2435,9 +2433,8 @@ int ImplicitTriangulation::getTetrahedronTriangle(const SimplexId &tetId,
   triangleId = -1;
 
   if(dimensionality_ == 3) {
-    SimplexId p[3];
-    tetrahedronToPosition(tetId, p);
     const SimplexId id = tetId % 6;
+    const auto p = tetrahedronCoords_[tetId].data();
 
     switch(id) {
       case 0:
@@ -2485,8 +2482,7 @@ SimplexId ImplicitTriangulation::getTetrahedronNeighborNumber(
 
   if(dimensionality_ == 3) {
     const SimplexId id = tetId % 6;
-    SimplexId p[3];
-    tetrahedronToPosition(tetId, p);
+    const auto p = tetrahedronCoords_[tetId].data();
 
     switch(id) {
       case 0: // ABCG
@@ -2556,8 +2552,7 @@ int ImplicitTriangulation::getTetrahedronNeighbor(const SimplexId &tetId,
 
   if(dimensionality_ == 3) {
     const SimplexId id = tetId % 6;
-    SimplexId p[3];
-    tetrahedronToPosition(tetId, p);
+    const auto p = tetrahedronCoords_[tetId].data();
 
     switch(id) {
       case 0:
