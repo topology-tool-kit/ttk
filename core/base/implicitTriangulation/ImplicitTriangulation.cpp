@@ -249,41 +249,22 @@ bool ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(isEdgeOnBoundary)(
     return false;
 #endif // !TTK_ENABLE_KAMIKAZE
 
-  if(dimensionality_ == 3) {
-    const auto p = edgeCoords_[edgeId].data();
-
-    // L
-    if(edgeId < esetshift_[0]) {
-      return (p[1] == 0 or p[1] == nbvoxels_[1] or p[2] == 0
-              or p[2] == nbvoxels_[2]);
-    }
-    // H
-    else if(edgeId < esetshift_[1]) {
-      return (p[0] == 0 or p[0] == nbvoxels_[0] or p[2] == 0
-              or p[2] == nbvoxels_[2]);
-    }
-    // P
-    else if(edgeId < esetshift_[2]) {
-      return (p[0] == 0 or p[1] == 0 or p[0] == nbvoxels_[0]
-              or p[1] == nbvoxels_[1]);
-    }
-    // D1
-    else if(edgeId < esetshift_[3]) {
-      return (p[2] == 0 or p[2] == nbvoxels_[2]);
-    }
-    // D2
-    else if(edgeId < esetshift_[4]) {
-      return (p[0] == 0 or p[0] == nbvoxels_[0]);
-    }
-    // D3
-    else if(edgeId < esetshift_[5]) {
-      return (p[1] == 0 or p[1] == nbvoxels_[1]);
-    } else
+  switch(edgePositions_[edgeId]) {
+    case EdgePositionFull::L_xnn_3D:
+    case EdgePositionFull::H_nyn_3D:
+    case EdgePositionFull::P_nnz_3D:
+    case EdgePositionFull::D1_xyn_3D:
+    case EdgePositionFull::D2_nyz_3D:
+    case EdgePositionFull::D3_xnz_3D:
+    case EdgePositionFull::D4_3D:
+    case EdgePositionFull::L_xn_2D:
+    case EdgePositionFull::H_ny_2D:
+    case EdgePositionFull::D1_2D:
       return false;
-  } else if(dimensionality_ == 2)
-    return (getEdgeStarNumber(edgeId) == 1);
-
-  return false;
+    default:
+      break;
+  }
+  return true;
 }
 
 bool ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(isTriangleOnBoundary)(
