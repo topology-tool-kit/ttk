@@ -210,45 +210,48 @@ int ttkTriangulation::setInputData(vtkDataSet *dataSet) {
     if(grid->GetCells()) {
       // As the documentation of this method says, we expect a triangulation
       // (simplicial complex in kD)
-#ifndef NDEBUG
-      if(grid->IsHomogeneous()) {
-        const auto cType = grid->GetCellType(0);
-        if(cType != VTK_LINE && cType != VTK_TRIANGLE && cType != VTK_TETRA) {
-          std::ostringstream out;
-          out << "[ttkTriangulation] Error: unsupported VTKCellType: " << cType
-              << std::endl; // enum to string would be nice ...
-          // A homogeneous cell array of quadrilaterals is particularly
-          // dangereous because TTK will silently assume these are tetrahedra
-          // and not crash immediately since the memory layout matches. On the
-          // upside, for this case a triangulation could be generated
-          // (implemented) easily.
-          if(cType == VTK_QUAD)
-            out << "[ttkTriangulation] If your cells are actually rectangles, "
-                << "try to enforce dataset type Image or Rectilinear"
-                << std::endl;
-          err(out.str());
-          ret = -1;
-        }
-      } else // This is particularly nasty
+      auto checkSimplicial = [](int type){
+        return type == VTK_LINE || type == VTK_TRIANGLE || type == VTK_TETRA;
+      };
+      std::string errMsg;
+
+      if(grid->IsHomogeneous() && !checkSimplicial(grid->GetCellType(0))) {
+        errMsg = "Input explicit mesh is not simplicial (at all). ";
+        ret = -1;
+      } else
       {
-        std::ostringstream out;
-        out << "[ttkTriangulation] Error: unsupported vtkUnstructuredGrid "
-            << "with heterogeneous cell types" << std::endl;
-        err(out.str());
+        // NOTE A mix of different simplices should theoretically be supported
+        // but this appears to not hold up (yet) in practice. Current discussion:
+        // https://github.com/topology-tool-kit/ttk/pull/323
+#if 1
+        errMsg = "Input explicit mesh has different cell types. ";
         ret = -2;
+#else // BEGIN future draft
+        const vtkIdType nc = grid->GetNumberOfCells();
+        for(vtkIdType c = 0; c < nc; ++c)
+        {
+          if(!checkSimplicial(grid->GetCellType(c))) {
+            errMsg = "Input explicit mesh is not simplicial (partly). ";
+            ret = -2;
+            break;
+          }
+        }
+#endif // END future draft
       }
 
       if(ret != 0) {
-        // NOTE Triangulate unstructured grids if necessary.
-        // Maybe some lib to the rescue? VTK? CGAL?
-        // Maybe not at this place (or adapt doc) but earlier like the macro
+        // NOTE In the long run it would be nice to not only detect this but also
+        // fix it, for an improved user-experience.
+        // Maybe not at this place though (or adapt doc) but earlier like the macro
         // TTK_UNSTRUCTURED_GRID_NEW in ttkWrapper.h?
-        std::ostringstream out;
-        out << "[ttkTriangulation] Your application may now crash anytime or"
-            << " produce false results" << std::endl;
-        err(out.str());
+
+        // This class does not inherit from vtkObject, so the vtkErrorMacro does not work.
+        // But no problem: `this` is only used to call GetClassName which is not a virtual
+        // function so it would just return "vtkObject" anyway.
+        errMsg += "Please apply the Tetrahedralize filter before any TTK filter. "
+                  "The application may now crash anytime or produce false results.";
+        vtkErrorWithObjectMacro(nullptr, << errMsg)
       }
-#endif
 
 #if !defined(_WIN32) || defined(_WIN32) && defined(VTK_USE_64BIT_IDS)
       triangulation_->setInputCells(
