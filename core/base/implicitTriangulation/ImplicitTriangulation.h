@@ -437,49 +437,6 @@ namespace ttk {
         }
       }
 
-      std::map<VertexPosition, SimplexId> neighborNumber{
-        {VertexPosition::CENTER_3D, 14},
-        {VertexPosition::FRONT_FACE_3D, 10},
-        {VertexPosition::BACK_FACE_3D, 10},
-        {VertexPosition::TOP_FACE_3D, 10},
-        {VertexPosition::BOTTOM_FACE_3D, 10},
-        {VertexPosition::LEFT_FACE_3D, 10},
-        {VertexPosition::RIGHT_FACE_3D, 10},
-        {VertexPosition::TOP_FRONT_EDGE_3D, 8},
-        {VertexPosition::RIGHT_FRONT_EDGE_3D, 8},
-        {VertexPosition::BOTTOM_BACK_EDGE_3D, 8},
-        {VertexPosition::LEFT_BACK_EDGE_3D, 8},
-        {VertexPosition::BOTTOM_LEFT_EDGE_3D, 8},
-        {VertexPosition::TOP_RIGHT_EDGE_3D, 8},
-        {VertexPosition::TOP_RIGHT_FRONT_CORNER_3D, 7},
-        {VertexPosition::BOTTOM_LEFT_BACK_CORNER_3D, 7},
-        {VertexPosition::TOP_BACK_EDGE_3D, 6},
-        {VertexPosition::BOTTOM_FRONT_EDGE_3D, 6},
-        {VertexPosition::LEFT_FRONT_EDGE_3D, 6},
-        {VertexPosition::TOP_LEFT_EDGE_3D, 6},
-        {VertexPosition::RIGHT_BACK_EDGE_3D, 6},
-        {VertexPosition::BOTTOM_RIGHT_EDGE_3D, 6},
-        {VertexPosition::CENTER_2D, 6},
-        {VertexPosition::TOP_LEFT_FRONT_CORNER_3D, 4},
-        {VertexPosition::BOTTOM_LEFT_FRONT_CORNER_3D, 4},
-        {VertexPosition::BOTTOM_RIGHT_FRONT_CORNER_3D, 4},
-        {VertexPosition::TOP_LEFT_BACK_CORNER_3D, 4},
-        {VertexPosition::TOP_RIGHT_BACK_CORNER_3D, 4},
-        {VertexPosition::BOTTOM_RIGHT_BACK_CORNER_3D, 4},
-        {VertexPosition::TOP_EDGE_2D, 4},
-        {VertexPosition::BOTTOM_EDGE_2D, 4},
-        {VertexPosition::LEFT_EDGE_2D, 4},
-        {VertexPosition::RIGHT_EDGE_2D, 4},
-        {VertexPosition::TOP_RIGHT_CORNER_2D, 3},
-        {VertexPosition::BOTTOM_LEFT_CORNER_2D, 3},
-        {VertexPosition::TOP_LEFT_CORNER_2D, 2},
-        {VertexPosition::BOTTOM_RIGHT_CORNER_2D, 2},
-        {VertexPosition::CENTER_1D, 2},
-        {VertexPosition::LEFT_CORNER_1D, 1},
-        {VertexPosition::RIGHT_CORNER_1D, 1},
-      };
-      vertexNeighborNumber_ = std::move(neighborNumber);
-
       return 0;
     }
 
@@ -828,7 +785,47 @@ namespace ttk {
     // if above vectors have already been filled
     bool hasPreconditionedVertices_{false};
     // number of neighbors per vertex position
-    std::map<VertexPosition, SimplexId> vertexNeighborNumber_{};
+    std::map<VertexPosition, SimplexId> vertexNeighborNumber_{
+      {VertexPosition::CENTER_3D, 14},
+      {VertexPosition::FRONT_FACE_3D, 10},
+      {VertexPosition::BACK_FACE_3D, 10},
+      {VertexPosition::TOP_FACE_3D, 10},
+      {VertexPosition::BOTTOM_FACE_3D, 10},
+      {VertexPosition::LEFT_FACE_3D, 10},
+      {VertexPosition::RIGHT_FACE_3D, 10},
+      {VertexPosition::TOP_FRONT_EDGE_3D, 8},
+      {VertexPosition::RIGHT_FRONT_EDGE_3D, 8},
+      {VertexPosition::BOTTOM_BACK_EDGE_3D, 8},
+      {VertexPosition::LEFT_BACK_EDGE_3D, 8},
+      {VertexPosition::BOTTOM_LEFT_EDGE_3D, 8},
+      {VertexPosition::TOP_RIGHT_EDGE_3D, 8},
+      {VertexPosition::TOP_RIGHT_FRONT_CORNER_3D, 7},
+      {VertexPosition::BOTTOM_LEFT_BACK_CORNER_3D, 7},
+      {VertexPosition::TOP_BACK_EDGE_3D, 6},
+      {VertexPosition::BOTTOM_FRONT_EDGE_3D, 6},
+      {VertexPosition::LEFT_FRONT_EDGE_3D, 6},
+      {VertexPosition::TOP_LEFT_EDGE_3D, 6},
+      {VertexPosition::RIGHT_BACK_EDGE_3D, 6},
+      {VertexPosition::BOTTOM_RIGHT_EDGE_3D, 6},
+      {VertexPosition::CENTER_2D, 6},
+      {VertexPosition::TOP_LEFT_FRONT_CORNER_3D, 4},
+      {VertexPosition::BOTTOM_LEFT_FRONT_CORNER_3D, 4},
+      {VertexPosition::BOTTOM_RIGHT_FRONT_CORNER_3D, 4},
+      {VertexPosition::TOP_LEFT_BACK_CORNER_3D, 4},
+      {VertexPosition::TOP_RIGHT_BACK_CORNER_3D, 4},
+      {VertexPosition::BOTTOM_RIGHT_BACK_CORNER_3D, 4},
+      {VertexPosition::TOP_EDGE_2D, 4},
+      {VertexPosition::BOTTOM_EDGE_2D, 4},
+      {VertexPosition::LEFT_EDGE_2D, 4},
+      {VertexPosition::RIGHT_EDGE_2D, 4},
+      {VertexPosition::TOP_RIGHT_CORNER_2D, 3},
+      {VertexPosition::BOTTOM_LEFT_CORNER_2D, 3},
+      {VertexPosition::TOP_LEFT_CORNER_2D, 2},
+      {VertexPosition::BOTTOM_RIGHT_CORNER_2D, 2},
+      {VertexPosition::CENTER_1D, 2},
+      {VertexPosition::LEFT_CORNER_1D, 1},
+      {VertexPosition::RIGHT_CORNER_1D, 1},
+    };
 
     enum class EdgePositionFull : char {
       //    e--------f
