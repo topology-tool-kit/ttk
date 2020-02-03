@@ -3,56 +3,56 @@
 using namespace std;
 using namespace ttk;
 
-#define CASE_EDGE_POSITION_L_3D    \
-  case EdgePositionFull::L_xnn_3D: \
-  case EdgePositionFull::L_xn0_3D: \
-  case EdgePositionFull::L_xnN_3D: \
-  case EdgePositionFull::L_x0n_3D: \
-  case EdgePositionFull::L_x00_3D: \
-  case EdgePositionFull::L_x0N_3D: \
-  case EdgePositionFull::L_xNn_3D: \
-  case EdgePositionFull::L_xN0_3D: \
-  case EdgePositionFull::L_xNN_3D
-#define CASE_EDGE_POSITION_H_3D    \
-  case EdgePositionFull::H_nyn_3D: \
-  case EdgePositionFull::H_ny0_3D: \
-  case EdgePositionFull::H_nyN_3D: \
-  case EdgePositionFull::H_0yn_3D: \
-  case EdgePositionFull::H_0y0_3D: \
-  case EdgePositionFull::H_0yN_3D: \
-  case EdgePositionFull::H_Nyn_3D: \
-  case EdgePositionFull::H_Ny0_3D: \
-  case EdgePositionFull::H_NyN_3D
-#define CASE_EDGE_POSITION_P_3D    \
-  case EdgePositionFull::P_nnz_3D: \
-  case EdgePositionFull::P_n0z_3D: \
-  case EdgePositionFull::P_nNz_3D: \
-  case EdgePositionFull::P_0nz_3D: \
-  case EdgePositionFull::P_00z_3D: \
-  case EdgePositionFull::P_0Nz_3D: \
-  case EdgePositionFull::P_Nnz_3D: \
-  case EdgePositionFull::P_N0z_3D: \
-  case EdgePositionFull::P_NNz_3D
-#define CASE_EDGE_POSITION_D1_3D    \
-  case EdgePositionFull::D1_xyn_3D: \
-  case EdgePositionFull::D1_xy0_3D: \
-  case EdgePositionFull::D1_xyN_3D
-#define CASE_EDGE_POSITION_D2_3D    \
-  case EdgePositionFull::D2_nyz_3D: \
-  case EdgePositionFull::D2_0yz_3D: \
-  case EdgePositionFull::D2_Nyz_3D
-#define CASE_EDGE_POSITION_D3_3D    \
-  case EdgePositionFull::D3_xnz_3D: \
-  case EdgePositionFull::D3_x0z_3D: \
-  case EdgePositionFull::D3_xNz_3D
-#define CASE_EDGE_POSITION_L_2D   \
-  case EdgePositionFull::L_xn_2D: \
-  case EdgePositionFull::L_x0_2D: \
-  case EdgePositionFull::L_xN_2D
-#define CASE_EDGE_POSITION_H_2D   \
-  case EdgePositionFull::H_ny_2D: \
-  case EdgePositionFull::H_0y_2D: \
-  case EdgePositionFull::H_Ny_2D
+#define CASE_EDGE_POSITION_L_3D \
+  case EdgePosition::L_xnn_3D:  \
+  case EdgePosition::L_xn0_3D:  \
+  case EdgePosition::L_xnN_3D:  \
+  case EdgePosition::L_x0n_3D:  \
+  case EdgePosition::L_x00_3D:  \
+  case EdgePosition::L_x0N_3D:  \
+  case EdgePosition::L_xNn_3D:  \
+  case EdgePosition::L_xN0_3D:  \
+  case EdgePosition::L_xNN_3D
+#define CASE_EDGE_POSITION_H_3D \
+  case EdgePosition::H_nyn_3D:  \
+  case EdgePosition::H_ny0_3D:  \
+  case EdgePosition::H_nyN_3D:  \
+  case EdgePosition::H_0yn_3D:  \
+  case EdgePosition::H_0y0_3D:  \
+  case EdgePosition::H_0yN_3D:  \
+  case EdgePosition::H_Nyn_3D:  \
+  case EdgePosition::H_Ny0_3D:  \
+  case EdgePosition::H_NyN_3D
+#define CASE_EDGE_POSITION_P_3D \
+  case EdgePosition::P_nnz_3D:  \
+  case EdgePosition::P_n0z_3D:  \
+  case EdgePosition::P_nNz_3D:  \
+  case EdgePosition::P_0nz_3D:  \
+  case EdgePosition::P_00z_3D:  \
+  case EdgePosition::P_0Nz_3D:  \
+  case EdgePosition::P_Nnz_3D:  \
+  case EdgePosition::P_N0z_3D:  \
+  case EdgePosition::P_NNz_3D
+#define CASE_EDGE_POSITION_D1_3D \
+  case EdgePosition::D1_xyn_3D:  \
+  case EdgePosition::D1_xy0_3D:  \
+  case EdgePosition::D1_xyN_3D
+#define CASE_EDGE_POSITION_D2_3D \
+  case EdgePosition::D2_nyz_3D:  \
+  case EdgePosition::D2_0yz_3D:  \
+  case EdgePosition::D2_Nyz_3D
+#define CASE_EDGE_POSITION_D3_3D \
+  case EdgePosition::D3_xnz_3D:  \
+  case EdgePosition::D3_x0z_3D:  \
+  case EdgePosition::D3_xNz_3D
+#define CASE_EDGE_POSITION_L_2D \
+  case EdgePosition::L_xn_2D:   \
+  case EdgePosition::L_x0_2D:   \
+  case EdgePosition::L_xN_2D
+#define CASE_EDGE_POSITION_H_2D \
+  case EdgePosition::H_ny_2D:   \
+  case EdgePosition::H_0y_2D:   \
+  case EdgePosition::H_Ny_2D
 
 ImplicitTriangulation::ImplicitTriangulation()
   : dimensionality_{-1}, cellNumber_{}, vertexNumber_{}, edgeNumber_{},
@@ -301,16 +301,16 @@ bool ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(isEdgeOnBoundary)(
 #endif // !TTK_ENABLE_KAMIKAZE
 
   switch(edgePositions_[edgeId]) {
-    case EdgePositionFull::L_xnn_3D:
-    case EdgePositionFull::H_nyn_3D:
-    case EdgePositionFull::P_nnz_3D:
-    case EdgePositionFull::D1_xyn_3D:
-    case EdgePositionFull::D2_nyz_3D:
-    case EdgePositionFull::D3_xnz_3D:
-    case EdgePositionFull::D4_3D:
-    case EdgePositionFull::L_xn_2D:
-    case EdgePositionFull::H_ny_2D:
-    case EdgePositionFull::D1_2D:
+    case EdgePosition::L_xnn_3D:
+    case EdgePosition::H_nyn_3D:
+    case EdgePosition::P_nnz_3D:
+    case EdgePosition::D1_xyn_3D:
+    case EdgePosition::D2_nyz_3D:
+    case EdgePosition::D3_xnz_3D:
+    case EdgePosition::D4_3D:
+    case EdgePosition::L_xn_2D:
+    case EdgePosition::H_ny_2D:
+    case EdgePosition::D1_2D:
       return false;
     default:
       break;
@@ -1120,21 +1120,21 @@ int ImplicitTriangulation::getEdgeVertexInternal(const SimplexId &edgeId,
       return helper3d(0, vshift_[0] + vshift_[1]);
     CASE_EDGE_POSITION_D3_3D:
       return helper3d(1, vshift_[1]);
-      case EdgePositionFull::D4_3D:
+      case EdgePosition::D4_3D:
         return helper3d(1, vshift_[0] + vshift_[1]);
 
       CASE_EDGE_POSITION_L_2D:
         return helper2d(0, 1);
       CASE_EDGE_POSITION_H_2D:
         return helper2d(0, vshift_[0]);
-      case EdgePositionFull::D1_2D:
+      case EdgePosition::D1_2D:
         return helper2d(1, vshift_[0]);
 
-      case EdgePositionFull::FIRST_EDGE_1D:
+      case EdgePosition::FIRST_EDGE_1D:
         return localVertexId == 0 ? 0 : 1;
-      case EdgePositionFull::LAST_EDGE_1D:
+      case EdgePosition::LAST_EDGE_1D:
         return localVertexId == 0 ? edgeNumber_ - 1 : edgeNumber_;
-      case EdgePositionFull::CENTER_1D:
+      case EdgePosition::CENTER_1D:
         return localVertexId == 0 ? edgeId : edgeId + 1;
     };
     return -1;
@@ -1175,54 +1175,54 @@ inline SimplexId ImplicitTriangulation::getEdgeTriangleNumberInternal(
 #endif
 
   switch(edgePositions_[edgeId]) {
-    case EdgePositionFull::L_xnn_3D:
-    case EdgePositionFull::H_nyn_3D:
-    case EdgePositionFull::P_nnz_3D:
-    case EdgePositionFull::D4_3D:
+    case EdgePosition::L_xnn_3D:
+    case EdgePosition::H_nyn_3D:
+    case EdgePosition::P_nnz_3D:
+    case EdgePosition::D4_3D:
       return 6;
-    case EdgePositionFull::L_x0n_3D:
-    case EdgePositionFull::L_xNn_3D:
-    case EdgePositionFull::L_xn0_3D:
-    case EdgePositionFull::L_xnN_3D:
-    case EdgePositionFull::H_ny0_3D:
-    case EdgePositionFull::H_nyN_3D:
-    case EdgePositionFull::H_0yn_3D:
-    case EdgePositionFull::H_Nyn_3D:
-    case EdgePositionFull::P_n0z_3D:
-    case EdgePositionFull::P_nNz_3D:
-    case EdgePositionFull::P_0nz_3D:
-    case EdgePositionFull::P_Nnz_3D:
-    case EdgePositionFull::D1_xyn_3D:
-    case EdgePositionFull::D2_nyz_3D:
-    case EdgePositionFull::D3_xnz_3D:
+    case EdgePosition::L_x0n_3D:
+    case EdgePosition::L_xNn_3D:
+    case EdgePosition::L_xn0_3D:
+    case EdgePosition::L_xnN_3D:
+    case EdgePosition::H_ny0_3D:
+    case EdgePosition::H_nyN_3D:
+    case EdgePosition::H_0yn_3D:
+    case EdgePosition::H_Nyn_3D:
+    case EdgePosition::P_n0z_3D:
+    case EdgePosition::P_nNz_3D:
+    case EdgePosition::P_0nz_3D:
+    case EdgePosition::P_Nnz_3D:
+    case EdgePosition::D1_xyn_3D:
+    case EdgePosition::D2_nyz_3D:
+    case EdgePosition::D3_xnz_3D:
       return 4;
-    case EdgePositionFull::L_x00_3D:
-    case EdgePositionFull::L_xNN_3D:
-    case EdgePositionFull::H_0yN_3D:
-    case EdgePositionFull::H_Ny0_3D:
-    case EdgePositionFull::P_0Nz_3D:
-    case EdgePositionFull::P_N0z_3D:
-    case EdgePositionFull::D1_xy0_3D:
-    case EdgePositionFull::D1_xyN_3D:
-    case EdgePositionFull::D2_0yz_3D:
-    case EdgePositionFull::D2_Nyz_3D:
-    case EdgePositionFull::D3_x0z_3D:
-    case EdgePositionFull::D3_xNz_3D:
+    case EdgePosition::L_x00_3D:
+    case EdgePosition::L_xNN_3D:
+    case EdgePosition::H_0yN_3D:
+    case EdgePosition::H_Ny0_3D:
+    case EdgePosition::P_0Nz_3D:
+    case EdgePosition::P_N0z_3D:
+    case EdgePosition::D1_xy0_3D:
+    case EdgePosition::D1_xyN_3D:
+    case EdgePosition::D2_0yz_3D:
+    case EdgePosition::D2_Nyz_3D:
+    case EdgePosition::D3_x0z_3D:
+    case EdgePosition::D3_xNz_3D:
       return 3;
-    case EdgePositionFull::L_xN0_3D:
-    case EdgePositionFull::L_x0N_3D:
-    case EdgePositionFull::H_0y0_3D:
-    case EdgePositionFull::H_NyN_3D:
-    case EdgePositionFull::P_00z_3D:
-    case EdgePositionFull::P_NNz_3D:
-    case EdgePositionFull::L_xn_2D:
-    case EdgePositionFull::H_ny_2D:
-    case EdgePositionFull::D1_2D:
+    case EdgePosition::L_xN0_3D:
+    case EdgePosition::L_x0N_3D:
+    case EdgePosition::H_0y0_3D:
+    case EdgePosition::H_NyN_3D:
+    case EdgePosition::P_00z_3D:
+    case EdgePosition::P_NNz_3D:
+    case EdgePosition::L_xn_2D:
+    case EdgePosition::H_ny_2D:
+    case EdgePosition::D1_2D:
       return 2;
-    case EdgePositionFull::L_x0_2D:
-    case EdgePositionFull::L_xN_2D:
-    case EdgePositionFull::H_0y_2D:
-    case EdgePositionFull::H_Ny_2D:
+    case EdgePosition::L_x0_2D:
+    case EdgePosition::L_xN_2D:
+    case EdgePosition::H_0y_2D:
+    case EdgePosition::H_Ny_2D:
       return 1;
 
     default: // 1D
@@ -1246,94 +1246,94 @@ int ImplicitTriangulation::getEdgeTriangleInternal(
 
   const auto dispatch = [&]() -> SimplexId {
     switch(edgePositions_[edgeId]) {
-      case EdgePositionFull::L_xnn_3D:
+      case EdgePosition::L_xnn_3D:
         return getEdgeTriangleL_xnn(p.data(), localTriangleId);
-      case EdgePositionFull::L_xn0_3D:
+      case EdgePosition::L_xn0_3D:
         return getEdgeTriangleL_xn0(p.data(), localTriangleId);
-      case EdgePositionFull::L_xnN_3D:
+      case EdgePosition::L_xnN_3D:
         return getEdgeTriangleL_xnN(p.data(), localTriangleId);
-      case EdgePositionFull::L_x0n_3D:
+      case EdgePosition::L_x0n_3D:
         return getEdgeTriangleL_x0n(p.data(), localTriangleId);
-      case EdgePositionFull::L_x00_3D:
+      case EdgePosition::L_x00_3D:
         return getEdgeTriangleL_x00(p.data(), localTriangleId);
-      case EdgePositionFull::L_x0N_3D:
+      case EdgePosition::L_x0N_3D:
         return getEdgeTriangleL_x0N(p.data(), localTriangleId);
-      case EdgePositionFull::L_xNn_3D:
+      case EdgePosition::L_xNn_3D:
         return getEdgeTriangleL_xNn(p.data(), localTriangleId);
-      case EdgePositionFull::L_xN0_3D:
+      case EdgePosition::L_xN0_3D:
         return getEdgeTriangleL_xN0(p.data(), localTriangleId);
-      case EdgePositionFull::L_xNN_3D:
+      case EdgePosition::L_xNN_3D:
         return getEdgeTriangleL_xNN(p.data(), localTriangleId);
-      case EdgePositionFull::H_nyn_3D:
+      case EdgePosition::H_nyn_3D:
         return getEdgeTriangleH_nyn(p.data(), localTriangleId);
-      case EdgePositionFull::H_ny0_3D:
+      case EdgePosition::H_ny0_3D:
         return getEdgeTriangleH_ny0(p.data(), localTriangleId);
-      case EdgePositionFull::H_nyN_3D:
+      case EdgePosition::H_nyN_3D:
         return getEdgeTriangleH_nyN(p.data(), localTriangleId);
-      case EdgePositionFull::H_0yn_3D:
+      case EdgePosition::H_0yn_3D:
         return getEdgeTriangleH_0yn(p.data(), localTriangleId);
-      case EdgePositionFull::H_0y0_3D:
+      case EdgePosition::H_0y0_3D:
         return getEdgeTriangleH_0y0(p.data(), localTriangleId);
-      case EdgePositionFull::H_0yN_3D:
+      case EdgePosition::H_0yN_3D:
         return getEdgeTriangleH_0yN(p.data(), localTriangleId);
-      case EdgePositionFull::H_Nyn_3D:
+      case EdgePosition::H_Nyn_3D:
         return getEdgeTriangleH_Nyn(p.data(), localTriangleId);
-      case EdgePositionFull::H_Ny0_3D:
+      case EdgePosition::H_Ny0_3D:
         return getEdgeTriangleH_Ny0(p.data(), localTriangleId);
-      case EdgePositionFull::H_NyN_3D:
+      case EdgePosition::H_NyN_3D:
         return getEdgeTriangleH_NyN(p.data(), localTriangleId);
-      case EdgePositionFull::P_nnz_3D:
+      case EdgePosition::P_nnz_3D:
         return getEdgeTriangleP_nnz(p.data(), localTriangleId);
-      case EdgePositionFull::P_n0z_3D:
+      case EdgePosition::P_n0z_3D:
         return getEdgeTriangleP_n0z(p.data(), localTriangleId);
-      case EdgePositionFull::P_nNz_3D:
+      case EdgePosition::P_nNz_3D:
         return getEdgeTriangleP_nNz(p.data(), localTriangleId);
-      case EdgePositionFull::P_0nz_3D:
+      case EdgePosition::P_0nz_3D:
         return getEdgeTriangleP_0nz(p.data(), localTriangleId);
-      case EdgePositionFull::P_00z_3D:
+      case EdgePosition::P_00z_3D:
         return getEdgeTriangleP_00z(p.data(), localTriangleId);
-      case EdgePositionFull::P_0Nz_3D:
+      case EdgePosition::P_0Nz_3D:
         return getEdgeTriangleP_0Nz(p.data(), localTriangleId);
-      case EdgePositionFull::P_Nnz_3D:
+      case EdgePosition::P_Nnz_3D:
         return getEdgeTriangleP_Nnz(p.data(), localTriangleId);
-      case EdgePositionFull::P_N0z_3D:
+      case EdgePosition::P_N0z_3D:
         return getEdgeTriangleP_N0z(p.data(), localTriangleId);
-      case EdgePositionFull::P_NNz_3D:
+      case EdgePosition::P_NNz_3D:
         return getEdgeTriangleP_NNz(p.data(), localTriangleId);
-      case EdgePositionFull::D1_xyn_3D:
+      case EdgePosition::D1_xyn_3D:
         return getEdgeTriangleD1_xyn(p.data(), localTriangleId);
-      case EdgePositionFull::D1_xy0_3D:
+      case EdgePosition::D1_xy0_3D:
         return getEdgeTriangleD1_xy0(p.data(), localTriangleId);
-      case EdgePositionFull::D1_xyN_3D:
+      case EdgePosition::D1_xyN_3D:
         return getEdgeTriangleD1_xyN(p.data(), localTriangleId);
-      case EdgePositionFull::D2_nyz_3D:
+      case EdgePosition::D2_nyz_3D:
         return getEdgeTriangleD2_nyz(p.data(), localTriangleId);
-      case EdgePositionFull::D2_0yz_3D:
+      case EdgePosition::D2_0yz_3D:
         return getEdgeTriangleD2_0yz(p.data(), localTriangleId);
-      case EdgePositionFull::D2_Nyz_3D:
+      case EdgePosition::D2_Nyz_3D:
         return getEdgeTriangleD2_Nyz(p.data(), localTriangleId);
-      case EdgePositionFull::D3_xnz_3D:
+      case EdgePosition::D3_xnz_3D:
         return getEdgeTriangleD3_xnz(p.data(), localTriangleId);
-      case EdgePositionFull::D3_x0z_3D:
+      case EdgePosition::D3_x0z_3D:
         return getEdgeTriangleD3_x0z(p.data(), localTriangleId);
-      case EdgePositionFull::D3_xNz_3D:
+      case EdgePosition::D3_xNz_3D:
         return getEdgeTriangleD3_xNz(p.data(), localTriangleId);
-      case EdgePositionFull::D4_3D:
+      case EdgePosition::D4_3D:
         return getEdgeTriangleD4_xyz(p.data(), localTriangleId);
 
-      case EdgePositionFull::L_xn_2D:
+      case EdgePosition::L_xn_2D:
         return getEdgeTriangleL_xn(p.data(), localTriangleId);
-      case EdgePositionFull::L_x0_2D:
+      case EdgePosition::L_x0_2D:
         return getEdgeTriangleL_x0(p.data(), localTriangleId);
-      case EdgePositionFull::L_xN_2D:
+      case EdgePosition::L_xN_2D:
         return getEdgeTriangleL_xN(p.data(), localTriangleId);
-      case EdgePositionFull::H_ny_2D:
+      case EdgePosition::H_ny_2D:
         return getEdgeTriangleH_ny(p.data(), localTriangleId);
-      case EdgePositionFull::H_0y_2D:
+      case EdgePosition::H_0y_2D:
         return getEdgeTriangleH_0y(p.data(), localTriangleId);
-      case EdgePositionFull::H_Ny_2D:
+      case EdgePosition::H_Ny_2D:
         return getEdgeTriangleH_Ny(p.data(), localTriangleId);
-      case EdgePositionFull::D1_2D:
+      case EdgePosition::D1_2D:
         return getEdgeTriangleD1_xy(p.data(), localTriangleId);
 
       default: // 1D
@@ -1394,14 +1394,14 @@ int ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getEdgeLink)(
       return getEdgeLinkD2(p.data(), localLinkId);
     CASE_EDGE_POSITION_D3_3D:
       return getEdgeLinkD3(p.data(), localLinkId);
-      case EdgePositionFull::D4_3D:
+      case EdgePosition::D4_3D:
         return getEdgeLinkD4(p.data(), localLinkId);
 
       CASE_EDGE_POSITION_L_2D:
         return getEdgeLink2dL(p.data(), localLinkId);
       CASE_EDGE_POSITION_H_2D:
         return getEdgeLink2dH(p.data(), localLinkId);
-      case EdgePositionFull::D1_2D:
+      case EdgePosition::D1_2D:
         return getEdgeLink2dD1(p.data(), localLinkId);
 
       default: // 1D
@@ -1444,54 +1444,54 @@ inline SimplexId ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(
 #endif
 
   switch(edgePositions_[edgeId]) {
-    case EdgePositionFull::L_xnn_3D:
-    case EdgePositionFull::H_nyn_3D:
-    case EdgePositionFull::P_nnz_3D:
-    case EdgePositionFull::D4_3D:
+    case EdgePosition::L_xnn_3D:
+    case EdgePosition::H_nyn_3D:
+    case EdgePosition::P_nnz_3D:
+    case EdgePosition::D4_3D:
       return 6;
-    case EdgePositionFull::D1_xyn_3D:
-    case EdgePositionFull::D2_nyz_3D:
-    case EdgePositionFull::D3_xnz_3D:
+    case EdgePosition::D1_xyn_3D:
+    case EdgePosition::D2_nyz_3D:
+    case EdgePosition::D3_xnz_3D:
       return 4;
-    case EdgePositionFull::L_x0n_3D:
-    case EdgePositionFull::L_xNn_3D:
-    case EdgePositionFull::L_xn0_3D:
-    case EdgePositionFull::L_xnN_3D:
-    case EdgePositionFull::H_ny0_3D:
-    case EdgePositionFull::H_nyN_3D:
-    case EdgePositionFull::H_0yn_3D:
-    case EdgePositionFull::H_Nyn_3D:
-    case EdgePositionFull::P_n0z_3D:
-    case EdgePositionFull::P_nNz_3D:
-    case EdgePositionFull::P_0nz_3D:
-    case EdgePositionFull::P_Nnz_3D:
+    case EdgePosition::L_x0n_3D:
+    case EdgePosition::L_xNn_3D:
+    case EdgePosition::L_xn0_3D:
+    case EdgePosition::L_xnN_3D:
+    case EdgePosition::H_ny0_3D:
+    case EdgePosition::H_nyN_3D:
+    case EdgePosition::H_0yn_3D:
+    case EdgePosition::H_Nyn_3D:
+    case EdgePosition::P_n0z_3D:
+    case EdgePosition::P_nNz_3D:
+    case EdgePosition::P_0nz_3D:
+    case EdgePosition::P_Nnz_3D:
       return 3;
-    case EdgePositionFull::L_x00_3D:
-    case EdgePositionFull::L_xNN_3D:
-    case EdgePositionFull::H_0yN_3D:
-    case EdgePositionFull::H_Ny0_3D:
-    case EdgePositionFull::P_0Nz_3D:
-    case EdgePositionFull::P_N0z_3D:
-    case EdgePositionFull::D1_xy0_3D:
-    case EdgePositionFull::D1_xyN_3D:
-    case EdgePositionFull::D2_0yz_3D:
-    case EdgePositionFull::D2_Nyz_3D:
-    case EdgePositionFull::D3_x0z_3D:
-    case EdgePositionFull::D3_xNz_3D:
-    case EdgePositionFull::L_xn_2D:
-    case EdgePositionFull::H_ny_2D:
-    case EdgePositionFull::D1_2D:
+    case EdgePosition::L_x00_3D:
+    case EdgePosition::L_xNN_3D:
+    case EdgePosition::H_0yN_3D:
+    case EdgePosition::H_Ny0_3D:
+    case EdgePosition::P_0Nz_3D:
+    case EdgePosition::P_N0z_3D:
+    case EdgePosition::D1_xy0_3D:
+    case EdgePosition::D1_xyN_3D:
+    case EdgePosition::D2_0yz_3D:
+    case EdgePosition::D2_Nyz_3D:
+    case EdgePosition::D3_x0z_3D:
+    case EdgePosition::D3_xNz_3D:
+    case EdgePosition::L_xn_2D:
+    case EdgePosition::H_ny_2D:
+    case EdgePosition::D1_2D:
       return 2;
-    case EdgePositionFull::L_xN0_3D:
-    case EdgePositionFull::L_x0N_3D:
-    case EdgePositionFull::H_0y0_3D:
-    case EdgePositionFull::H_NyN_3D:
-    case EdgePositionFull::P_00z_3D:
-    case EdgePositionFull::P_NNz_3D:
-    case EdgePositionFull::L_x0_2D:
-    case EdgePositionFull::L_xN_2D:
-    case EdgePositionFull::H_0y_2D:
-    case EdgePositionFull::H_Ny_2D:
+    case EdgePosition::L_xN0_3D:
+    case EdgePosition::L_x0N_3D:
+    case EdgePosition::H_0y0_3D:
+    case EdgePosition::H_NyN_3D:
+    case EdgePosition::P_00z_3D:
+    case EdgePosition::P_NNz_3D:
+    case EdgePosition::L_x0_2D:
+    case EdgePosition::L_xN_2D:
+    case EdgePosition::H_0y_2D:
+    case EdgePosition::H_Ny_2D:
       return 1;
 
     default: // 1D
@@ -1524,7 +1524,7 @@ int ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getEdgeStar)(
       return getEdgeStarD2(p.data(), localStarId);
     CASE_EDGE_POSITION_D3_3D:
       return getEdgeStarD3(p.data(), localStarId);
-      case EdgePositionFull::D4_3D:
+      case EdgePosition::D4_3D:
         return p[2] * tetshift_[1] + p[1] * tetshift_[0] + p[0] * 6
                + localStarId;
 
@@ -1532,7 +1532,7 @@ int ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getEdgeStar)(
         return getEdgeStar2dL(p.data(), localStarId);
       CASE_EDGE_POSITION_H_2D:
         return getEdgeStar2dH(p.data(), localStarId);
-      case EdgePositionFull::D1_2D:
+      case EdgePosition::D1_2D:
         return p[0] * 2 + p[1] * tshift_[0] + localStarId;
 
       default: // 1D

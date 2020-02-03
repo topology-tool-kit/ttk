@@ -520,107 +520,107 @@ namespace ttk {
             edgeToPosition(i, 0, p.data());
             if(p[1] > 0 and p[1] < nbvoxels_[1]) {
               if(p[2] > 0 and p[2] < nbvoxels_[2])
-                edgePositions_[i] = EdgePositionFull::L_xnn_3D;
+                edgePositions_[i] = EdgePosition::L_xnn_3D;
               else if(p[2] == 0)
-                edgePositions_[i] = EdgePositionFull::L_xn0_3D;
+                edgePositions_[i] = EdgePosition::L_xn0_3D;
               else
-                edgePositions_[i] = EdgePositionFull::L_xnN_3D;
+                edgePositions_[i] = EdgePosition::L_xnN_3D;
             } else if(p[1] == 0) {
               if(p[2] > 0 and p[2] < nbvoxels_[2])
-                edgePositions_[i] = EdgePositionFull::L_x0n_3D;
+                edgePositions_[i] = EdgePosition::L_x0n_3D;
               else if(p[2] == 0)
-                edgePositions_[i] = EdgePositionFull::L_x00_3D;
+                edgePositions_[i] = EdgePosition::L_x00_3D;
               else
-                edgePositions_[i] = EdgePositionFull::L_x0N_3D;
+                edgePositions_[i] = EdgePosition::L_x0N_3D;
             } else {
               if(p[2] > 0 and p[2] < nbvoxels_[2])
-                edgePositions_[i] = EdgePositionFull::L_xNn_3D;
+                edgePositions_[i] = EdgePosition::L_xNn_3D;
               else if(p[2] == 0)
-                edgePositions_[i] = EdgePositionFull::L_xN0_3D;
+                edgePositions_[i] = EdgePosition::L_xN0_3D;
               else
-                edgePositions_[i] = EdgePositionFull::L_xNN_3D;
+                edgePositions_[i] = EdgePosition::L_xNN_3D;
             }
 
           } else if(i < esetshift_[1]) {
             edgeToPosition(i, 1, p.data());
             if(p[0] > 0 and p[0] < nbvoxels_[0]) {
               if(p[2] > 0 and p[2] < nbvoxels_[2])
-                edgePositions_[i] = EdgePositionFull::H_nyn_3D;
+                edgePositions_[i] = EdgePosition::H_nyn_3D;
               else if(p[2] == 0)
-                edgePositions_[i] = EdgePositionFull::H_ny0_3D;
+                edgePositions_[i] = EdgePosition::H_ny0_3D;
               else
-                edgePositions_[i] = EdgePositionFull::H_nyN_3D;
+                edgePositions_[i] = EdgePosition::H_nyN_3D;
             } else if(p[0] == 0) {
               if(p[2] > 0 and p[2] < nbvoxels_[2])
-                edgePositions_[i] = EdgePositionFull::H_0yn_3D;
+                edgePositions_[i] = EdgePosition::H_0yn_3D;
               else if(p[2] == 0)
-                edgePositions_[i] = EdgePositionFull::H_0y0_3D;
+                edgePositions_[i] = EdgePosition::H_0y0_3D;
               else
-                edgePositions_[i] = EdgePositionFull::H_0yN_3D;
+                edgePositions_[i] = EdgePosition::H_0yN_3D;
             } else {
               if(p[2] > 0 and p[2] < nbvoxels_[2])
-                edgePositions_[i] = EdgePositionFull::H_Nyn_3D;
+                edgePositions_[i] = EdgePosition::H_Nyn_3D;
               else if(p[2] == 0)
-                edgePositions_[i] = EdgePositionFull::H_Ny0_3D;
+                edgePositions_[i] = EdgePosition::H_Ny0_3D;
               else
-                edgePositions_[i] = EdgePositionFull::H_NyN_3D;
+                edgePositions_[i] = EdgePosition::H_NyN_3D;
             }
 
           } else if(i < esetshift_[2]) {
             edgeToPosition(i, 2, p.data());
             if(p[0] > 0 and p[0] < nbvoxels_[0]) {
               if(p[1] > 0 and p[1] < nbvoxels_[1])
-                edgePositions_[i] = EdgePositionFull::P_nnz_3D;
+                edgePositions_[i] = EdgePosition::P_nnz_3D;
               else if(p[1] == 0)
-                edgePositions_[i] = EdgePositionFull::P_n0z_3D;
+                edgePositions_[i] = EdgePosition::P_n0z_3D;
               else
-                edgePositions_[i] = EdgePositionFull::P_nNz_3D;
+                edgePositions_[i] = EdgePosition::P_nNz_3D;
             } else if(p[0] == 0) {
               if(p[1] > 0 and p[1] < nbvoxels_[1])
-                edgePositions_[i] = EdgePositionFull::P_0nz_3D;
+                edgePositions_[i] = EdgePosition::P_0nz_3D;
               else if(p[1] == 0)
-                edgePositions_[i] = EdgePositionFull::P_00z_3D;
+                edgePositions_[i] = EdgePosition::P_00z_3D;
               else
-                edgePositions_[i] = EdgePositionFull::P_0Nz_3D;
+                edgePositions_[i] = EdgePosition::P_0Nz_3D;
             } else {
               if(p[1] > 0 and p[1] < nbvoxels_[1])
-                edgePositions_[i] = EdgePositionFull::P_Nnz_3D;
+                edgePositions_[i] = EdgePosition::P_Nnz_3D;
               else if(p[1] == 0)
-                edgePositions_[i] = EdgePositionFull::P_N0z_3D;
+                edgePositions_[i] = EdgePosition::P_N0z_3D;
               else
-                edgePositions_[i] = EdgePositionFull::P_NNz_3D;
+                edgePositions_[i] = EdgePosition::P_NNz_3D;
             }
 
           } else if(i < esetshift_[3]) {
             edgeToPosition(i, 3, p.data());
             if(p[2] > 0 and p[2] < nbvoxels_[2])
-              edgePositions_[i] = EdgePositionFull::D1_xyn_3D;
+              edgePositions_[i] = EdgePosition::D1_xyn_3D;
             else if(p[2] == 0)
-              edgePositions_[i] = EdgePositionFull::D1_xy0_3D;
+              edgePositions_[i] = EdgePosition::D1_xy0_3D;
             else
-              edgePositions_[i] = EdgePositionFull::D1_xyN_3D;
+              edgePositions_[i] = EdgePosition::D1_xyN_3D;
 
           } else if(i < esetshift_[4]) {
             edgeToPosition(i, 4, p.data());
             if(p[0] > 0 and p[0] < nbvoxels_[0])
-              edgePositions_[i] = EdgePositionFull::D2_nyz_3D;
+              edgePositions_[i] = EdgePosition::D2_nyz_3D;
             else if(p[0] == 0)
-              edgePositions_[i] = EdgePositionFull::D2_0yz_3D;
+              edgePositions_[i] = EdgePosition::D2_0yz_3D;
             else
-              edgePositions_[i] = EdgePositionFull::D2_Nyz_3D;
+              edgePositions_[i] = EdgePosition::D2_Nyz_3D;
 
           } else if(i < esetshift_[5]) {
             edgeToPosition(i, 5, p.data());
             if(p[1] > 0 and p[1] < nbvoxels_[1])
-              edgePositions_[i] = EdgePositionFull::D3_xnz_3D;
+              edgePositions_[i] = EdgePosition::D3_xnz_3D;
             else if(p[1] == 0)
-              edgePositions_[i] = EdgePositionFull::D3_x0z_3D;
+              edgePositions_[i] = EdgePosition::D3_x0z_3D;
             else
-              edgePositions_[i] = EdgePositionFull::D3_xNz_3D;
+              edgePositions_[i] = EdgePosition::D3_xNz_3D;
 
           } else if(i < esetshift_[6]) {
             edgeToPosition(i, 6, p.data());
-            edgePositions_[i] = EdgePositionFull::D4_3D;
+            edgePositions_[i] = EdgePosition::D4_3D;
           }
           edgeCoords_[i] = std::move(p);
         }
@@ -635,37 +635,37 @@ namespace ttk {
           if(i < esetshift_[0]) {
             edgeToPosition2d(i, 0, p.data());
             if(p[1] > 0 and p[1] < nbvoxels_[Dj_])
-              edgePositions_[i] = EdgePositionFull::L_xn_2D;
+              edgePositions_[i] = EdgePosition::L_xn_2D;
             else if(p[1] == 0)
-              edgePositions_[i] = EdgePositionFull::L_x0_2D;
+              edgePositions_[i] = EdgePosition::L_x0_2D;
             else
-              edgePositions_[i] = EdgePositionFull::L_xN_2D;
+              edgePositions_[i] = EdgePosition::L_xN_2D;
 
           } else if(i < esetshift_[1]) {
             edgeToPosition2d(i, 1, p.data());
             if(p[0] > 0 and p[0] < nbvoxels_[Di_])
-              edgePositions_[i] = EdgePositionFull::H_ny_2D;
+              edgePositions_[i] = EdgePosition::H_ny_2D;
             else if(p[0] == 0)
-              edgePositions_[i] = EdgePositionFull::H_0y_2D;
+              edgePositions_[i] = EdgePosition::H_0y_2D;
             else
-              edgePositions_[i] = EdgePositionFull::H_Ny_2D;
+              edgePositions_[i] = EdgePosition::H_Ny_2D;
 
           } else if(i < esetshift_[2]) {
             edgeToPosition2d(i, 2, p.data());
-            edgePositions_[i] = EdgePositionFull::D1_2D;
+            edgePositions_[i] = EdgePosition::D1_2D;
           }
           edgeCoords_[i] = std::move(p);
         }
 
       } else if(dimensionality_ == 1) {
-        edgePositions_[0] = EdgePositionFull::FIRST_EDGE_1D;
+        edgePositions_[0] = EdgePosition::FIRST_EDGE_1D;
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
         for(SimplexId i = 1; i < edgeNumber_ - 1; ++i) {
-          edgePositions_[i] = EdgePositionFull::CENTER_1D;
+          edgePositions_[i] = EdgePosition::CENTER_1D;
         }
-        edgePositions_[edgeNumber_ - 1] = EdgePositionFull::LAST_EDGE_1D;
+        edgePositions_[edgeNumber_ - 1] = EdgePosition::LAST_EDGE_1D;
       }
       return 0;
     }
@@ -833,7 +833,7 @@ namespace ttk {
     // if above vectors have already been filled
     bool hasPreconditionedVertices_{false};
 
-    enum class EdgePositionFull : char {
+    enum class EdgePosition : char {
       //    e--------f
       //   /|       /|
       //  / |      / |
@@ -904,26 +904,8 @@ namespace ttk {
       CENTER_1D,
     };
 
-    enum class EdgePosition : char {
-      L_3D, // length (ab)
-      H_3D, // height (ac)
-      P_3D, // depth (ae)
-      D1_3D, // diagonal1 (bc)
-      D2_3D, // diagonal2 (ag)
-      D3_3D, // diagonal3 (be)
-      D4_3D, // diagonal4 (bg)
-
-      L_2D, // length (ab)
-      H_2D, // height (ac)
-      D1_2D, // diagonal1 (bc)
-
-      FIRST_EDGE_1D,
-      LAST_EDGE_1D,
-      CENTER_1D,
-    };
-
     // for every edge, its position on the grid
-    std::vector<EdgePositionFull> edgePositions_{};
+    std::vector<EdgePosition> edgePositions_{};
     // for every edge, its coordinates on the grid
     std::vector<std::array<SimplexId, 3>> edgeCoords_{};
 
