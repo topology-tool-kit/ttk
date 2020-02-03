@@ -1545,65 +1545,49 @@ int ImplicitTriangulation::getTriangleVertexInternal(
   // D2: diagonale2 (type abg/bgh)
   // D3: diagonale3 (type bcg/bfg)
 
-  vertexId = -1;
+  const auto &p = triangleCoords_[triangleId];
 
-  if(dimensionality_ == 3) {
-    const auto p = triangleCoords_[triangleId].data();
+  const auto dispatch = [&]() -> SimplexId {
+    switch(trianglePositions_[triangleId]) {
+      case TrianglePosition::F_3D:
+        return getTriangleVertexF(p.data(), localVertexId);
+      case TrianglePosition::H_3D:
+        return getTriangleVertexH(p.data(), localVertexId);
+      case TrianglePosition::C_3D:
+        return getTriangleVertexC(p.data(), localVertexId);
+      case TrianglePosition::D1_3D:
+        return getTriangleVertexD1(p.data(), localVertexId);
+      case TrianglePosition::D2_3D:
+        return getTriangleVertexD2(p.data(), localVertexId);
+      case TrianglePosition::D3_3D:
+        return getTriangleVertexD3(p.data(), localVertexId);
+      case TrianglePosition::TOP_2D:
+        switch(localVertexId) {
+          case 0:
+            return p[0] / 2 + p[1] * vshift_[0];
+          case 1:
+            return p[0] / 2 + p[1] * vshift_[0] + 1;
+          case 2:
+            return p[0] / 2 + p[1] * vshift_[0] + vshift_[0];
+          default:
+            return -1;
+        }
+      case TrianglePosition::BOTTOM_2D:
+        switch(localVertexId) {
+          case 0:
+            return p[0] / 2 + p[1] * vshift_[0] + 1;
+          case 1:
+            return p[0] / 2 + p[1] * vshift_[0] + vshift_[0] + 1;
+          case 2:
+            return p[0] / 2 + p[1] * vshift_[0] + vshift_[0];
+          default:
+            return -1;
+        }
+    }
+    return -1;
+  };
 
-    // F
-    if(triangleId < tsetshift_[0]) {
-      vertexId = getTriangleVertexF(p, localVertexId);
-    }
-    // H
-    else if(triangleId < tsetshift_[1]) {
-      vertexId = getTriangleVertexH(p, localVertexId);
-    }
-    // C
-    else if(triangleId < tsetshift_[2]) {
-      vertexId = getTriangleVertexC(p, localVertexId);
-    }
-    // D1
-    else if(triangleId < tsetshift_[3]) {
-      vertexId = getTriangleVertexD1(p, localVertexId);
-    }
-    // D2
-    else if(triangleId < tsetshift_[4]) {
-      vertexId = getTriangleVertexD2(p, localVertexId);
-    }
-    // D3
-    else if(triangleId < tsetshift_[5]) {
-      vertexId = getTriangleVertexD3(p, localVertexId);
-    }
-  } else if(dimensionality_ == 2) {
-    const auto p = triangleCoords_[triangleId].data();
-    const SimplexId id = triangleId % 2;
-
-    if(id == 0) {
-      switch(localVertexId) {
-        case 0:
-          vertexId = p[0] / 2 + p[1] * vshift_[0];
-          break;
-        case 1:
-          vertexId = p[0] / 2 + p[1] * vshift_[0] + 1;
-          break;
-        case 2:
-          vertexId = p[0] / 2 + p[1] * vshift_[0] + vshift_[0];
-          break;
-      }
-    } else {
-      switch(localVertexId) {
-        case 0:
-          vertexId = p[0] / 2 + p[1] * vshift_[0] + 1;
-          break;
-        case 1:
-          vertexId = p[0] / 2 + p[1] * vshift_[0] + vshift_[0] + 1;
-          break;
-        case 2:
-          vertexId = p[0] / 2 + p[1] * vshift_[0] + vshift_[0];
-          break;
-      }
-    }
-  }
+  vertexId = dispatch();
 
   return 0;
 }
