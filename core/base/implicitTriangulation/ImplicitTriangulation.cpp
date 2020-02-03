@@ -1056,8 +1056,7 @@ int ImplicitTriangulation::getEdgeVertexInternal(const SimplexId &edgeId,
       }
     };
 
-    const auto it = compressEdgePosition_.find(edgePositions_[edgeId]);
-    switch(it->second) {
+    switch(compressEdgePosition(edgePositions_[edgeId])) {
       case EdgePosition::L_3D:
         return helper3d(0, 1);
       case EdgePosition::H_3D:
@@ -1331,8 +1330,7 @@ int ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getEdgeLink)(
 
   const auto dispatch = [&]() -> SimplexId {
     const auto &p = edgeCoords_[edgeId];
-    const auto it = compressEdgePosition_.find(edgePositions_[edgeId]);
-    switch(it->second) {
+    switch(compressEdgePosition(edgePositions_[edgeId])) {
       case EdgePosition::L_3D:
         return getEdgeLinkL(p.data(), localLinkId);
       case EdgePosition::H_3D:
@@ -1462,8 +1460,7 @@ int ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getEdgeStar)(
 
   const auto dispatch = [&]() -> SimplexId {
     const auto &p = edgeCoords_[edgeId];
-    const auto it = compressEdgePosition_.find(edgePositions_[edgeId]);
-    switch(it->second) {
+    switch(compressEdgePosition(edgePositions_[edgeId])) {
       case EdgePosition::L_3D:
         return getEdgeStarL(p.data(), localStarId);
       case EdgePosition::H_3D:
