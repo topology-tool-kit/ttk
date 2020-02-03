@@ -919,75 +919,60 @@ namespace ttk {
       CENTER_1D,
     };
 
-    inline EdgePosition
-      compressEdgePosition(const EdgePositionFull p) const {
-      switch(p) {
-        case EdgePositionFull::L_xnn_3D:
-        case EdgePositionFull::L_xn0_3D:
-        case EdgePositionFull::L_xnN_3D:
-        case EdgePositionFull::L_x0n_3D:
-        case EdgePositionFull::L_x00_3D:
-        case EdgePositionFull::L_x0N_3D:
-        case EdgePositionFull::L_xNn_3D:
-        case EdgePositionFull::L_xN0_3D:
-        case EdgePositionFull::L_xNN_3D:
-          return EdgePosition::L_3D;
-        case EdgePositionFull::H_nyn_3D:
-        case EdgePositionFull::H_ny0_3D:
-        case EdgePositionFull::H_nyN_3D:
-        case EdgePositionFull::H_0yn_3D:
-        case EdgePositionFull::H_0y0_3D:
-        case EdgePositionFull::H_0yN_3D:
-        case EdgePositionFull::H_Nyn_3D:
-        case EdgePositionFull::H_Ny0_3D:
-        case EdgePositionFull::H_NyN_3D:
-          return EdgePosition::H_3D;
-        case EdgePositionFull::P_nnz_3D:
-        case EdgePositionFull::P_n0z_3D:
-        case EdgePositionFull::P_nNz_3D:
-        case EdgePositionFull::P_0nz_3D:
-        case EdgePositionFull::P_00z_3D:
-        case EdgePositionFull::P_0Nz_3D:
-        case EdgePositionFull::P_Nnz_3D:
-        case EdgePositionFull::P_N0z_3D:
-        case EdgePositionFull::P_NNz_3D:
-          return EdgePosition::P_3D;
-        case EdgePositionFull::D1_xyn_3D:
-        case EdgePositionFull::D1_xy0_3D:
-        case EdgePositionFull::D1_xyN_3D:
-          return EdgePosition::D1_3D;
-        case EdgePositionFull::D2_nyz_3D:
-        case EdgePositionFull::D2_0yz_3D:
-        case EdgePositionFull::D2_Nyz_3D:
-          return EdgePosition::D2_3D;
-        case EdgePositionFull::D3_xnz_3D:
-        case EdgePositionFull::D3_x0z_3D:
-        case EdgePositionFull::D3_xNz_3D:
-          return EdgePosition::D3_3D;
-        case EdgePositionFull::D4_3D:
-          return EdgePosition::D4_3D;
+    std::map<EdgePositionFull, EdgePosition> compressEdgePosition_{
+      {EdgePositionFull::L_xnn_3D, EdgePosition::L_3D},
+      {EdgePositionFull::L_xn0_3D, EdgePosition::L_3D},
+      {EdgePositionFull::L_xnN_3D, EdgePosition::L_3D},
+      {EdgePositionFull::L_x0n_3D, EdgePosition::L_3D},
+      {EdgePositionFull::L_x00_3D, EdgePosition::L_3D},
+      {EdgePositionFull::L_x0N_3D, EdgePosition::L_3D},
+      {EdgePositionFull::L_xNn_3D, EdgePosition::L_3D},
+      {EdgePositionFull::L_xN0_3D, EdgePosition::L_3D},
+      {EdgePositionFull::L_xNN_3D, EdgePosition::L_3D},
 
-        case EdgePositionFull::L_xn_2D:
-        case EdgePositionFull::L_x0_2D:
-        case EdgePositionFull::L_xN_2D:
-          return EdgePosition::L_2D;
-        case EdgePositionFull::H_ny_2D:
-        case EdgePositionFull::H_0y_2D:
-        case EdgePositionFull::H_Ny_2D:
-          return EdgePosition::H_2D;
-        case EdgePositionFull::D1_2D:
-          return EdgePosition::D1_2D;
+      {EdgePositionFull::H_nyn_3D, EdgePosition::H_3D},
+      {EdgePositionFull::H_ny0_3D, EdgePosition::H_3D},
+      {EdgePositionFull::H_nyN_3D, EdgePosition::H_3D},
+      {EdgePositionFull::H_0yn_3D, EdgePosition::H_3D},
+      {EdgePositionFull::H_0y0_3D, EdgePosition::H_3D},
+      {EdgePositionFull::H_0yN_3D, EdgePosition::H_3D},
+      {EdgePositionFull::H_Nyn_3D, EdgePosition::H_3D},
+      {EdgePositionFull::H_Ny0_3D, EdgePosition::H_3D},
+      {EdgePositionFull::H_NyN_3D, EdgePosition::H_3D},
 
-        case EdgePositionFull::FIRST_EDGE_1D:
-          return EdgePosition::FIRST_EDGE_1D;
-        case EdgePositionFull::LAST_EDGE_1D:
-          return EdgePosition::LAST_EDGE_1D;
-        case EdgePositionFull::CENTER_1D:
-          return EdgePosition::CENTER_1D;
-      }
-      // avoid -Wreturn-type
-      return EdgePosition::CENTER_1D;
-    }
+      {EdgePositionFull::P_nnz_3D, EdgePosition::P_3D},
+      {EdgePositionFull::P_n0z_3D, EdgePosition::P_3D},
+      {EdgePositionFull::P_nNz_3D, EdgePosition::P_3D},
+      {EdgePositionFull::P_0nz_3D, EdgePosition::P_3D},
+      {EdgePositionFull::P_00z_3D, EdgePosition::P_3D},
+      {EdgePositionFull::P_0Nz_3D, EdgePosition::P_3D},
+      {EdgePositionFull::P_Nnz_3D, EdgePosition::P_3D},
+      {EdgePositionFull::P_N0z_3D, EdgePosition::P_3D},
+      {EdgePositionFull::P_NNz_3D, EdgePosition::P_3D},
+
+      {EdgePositionFull::D1_xyn_3D, EdgePosition::D1_3D},
+      {EdgePositionFull::D1_xy0_3D, EdgePosition::D1_3D},
+      {EdgePositionFull::D1_xyN_3D, EdgePosition::D1_3D},
+      {EdgePositionFull::D2_nyz_3D, EdgePosition::D2_3D},
+      {EdgePositionFull::D2_0yz_3D, EdgePosition::D2_3D},
+      {EdgePositionFull::D2_Nyz_3D, EdgePosition::D2_3D},
+      {EdgePositionFull::D3_xnz_3D, EdgePosition::D3_3D},
+      {EdgePositionFull::D3_x0z_3D, EdgePosition::D3_3D},
+      {EdgePositionFull::D3_xNz_3D, EdgePosition::D3_3D},
+      {EdgePositionFull::D4_3D, EdgePosition::D4_3D},
+
+      {EdgePositionFull::L_xn_2D, EdgePosition::L_2D},
+      {EdgePositionFull::L_x0_2D, EdgePosition::L_2D},
+      {EdgePositionFull::L_xN_2D, EdgePosition::L_2D},
+      {EdgePositionFull::H_ny_2D, EdgePosition::H_2D},
+      {EdgePositionFull::H_0y_2D, EdgePosition::H_2D},
+      {EdgePositionFull::H_Ny_2D, EdgePosition::H_2D},
+      {EdgePositionFull::D1_2D, EdgePosition::D1_2D},
+
+      {EdgePositionFull::FIRST_EDGE_1D, EdgePosition::FIRST_EDGE_1D},
+      {EdgePositionFull::LAST_EDGE_1D, EdgePosition::LAST_EDGE_1D},
+      {EdgePositionFull::CENTER_1D, EdgePosition::CENTER_1D},
+    };
 
     // for every edge, its position on the grid
     std::vector<EdgePositionFull> edgePositions_{};
