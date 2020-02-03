@@ -12,7 +12,7 @@
 #define _IMPLICITTRIANGULATION_H
 
 #include <array>
-#include <map>
+#include <unordered_map>
 
 // base code includes
 #include <AbstractTriangulation.h>
@@ -437,7 +437,7 @@ namespace ttk {
         }
       }
 
-      std::map<VertexPosition, SimplexId> neighborNumber{
+      std::unordered_map<VertexPosition, SimplexId> neighborNumber{
         {VertexPosition::CENTER_3D, 14},
         {VertexPosition::FRONT_FACE_3D, 10},
         {VertexPosition::BACK_FACE_3D, 10},
@@ -828,7 +828,7 @@ namespace ttk {
     // if above vectors have already been filled
     bool hasPreconditionedVertices_{false};
     // number of neighbors per vertex position
-    std::map<VertexPosition, SimplexId> vertexNeighborNumber_{};
+    std::unordered_map<VertexPosition, SimplexId> vertexNeighborNumber_{};
 
     enum class EdgePositionFull : char {
       //    e--------f
