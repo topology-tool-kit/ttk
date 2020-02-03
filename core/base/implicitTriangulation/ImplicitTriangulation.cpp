@@ -3,6 +3,57 @@
 using namespace std;
 using namespace ttk;
 
+#define CASE_EDGE_POSITION_L_3D    \
+  case EdgePositionFull::L_xnn_3D: \
+  case EdgePositionFull::L_xn0_3D: \
+  case EdgePositionFull::L_xnN_3D: \
+  case EdgePositionFull::L_x0n_3D: \
+  case EdgePositionFull::L_x00_3D: \
+  case EdgePositionFull::L_x0N_3D: \
+  case EdgePositionFull::L_xNn_3D: \
+  case EdgePositionFull::L_xN0_3D: \
+  case EdgePositionFull::L_xNN_3D
+#define CASE_EDGE_POSITION_H_3D    \
+  case EdgePositionFull::H_nyn_3D: \
+  case EdgePositionFull::H_ny0_3D: \
+  case EdgePositionFull::H_nyN_3D: \
+  case EdgePositionFull::H_0yn_3D: \
+  case EdgePositionFull::H_0y0_3D: \
+  case EdgePositionFull::H_0yN_3D: \
+  case EdgePositionFull::H_Nyn_3D: \
+  case EdgePositionFull::H_Ny0_3D: \
+  case EdgePositionFull::H_NyN_3D
+#define CASE_EDGE_POSITION_P_3D    \
+  case EdgePositionFull::P_nnz_3D: \
+  case EdgePositionFull::P_n0z_3D: \
+  case EdgePositionFull::P_nNz_3D: \
+  case EdgePositionFull::P_0nz_3D: \
+  case EdgePositionFull::P_00z_3D: \
+  case EdgePositionFull::P_0Nz_3D: \
+  case EdgePositionFull::P_Nnz_3D: \
+  case EdgePositionFull::P_N0z_3D: \
+  case EdgePositionFull::P_NNz_3D
+#define CASE_EDGE_POSITION_D1_3D    \
+  case EdgePositionFull::D1_xyn_3D: \
+  case EdgePositionFull::D1_xy0_3D: \
+  case EdgePositionFull::D1_xyN_3D
+#define CASE_EDGE_POSITION_D2_3D    \
+  case EdgePositionFull::D2_nyz_3D: \
+  case EdgePositionFull::D2_0yz_3D: \
+  case EdgePositionFull::D2_Nyz_3D
+#define CASE_EDGE_POSITION_D3_3D    \
+  case EdgePositionFull::D3_xnz_3D: \
+  case EdgePositionFull::D3_x0z_3D: \
+  case EdgePositionFull::D3_xNz_3D
+#define CASE_EDGE_POSITION_L_2D   \
+  case EdgePositionFull::L_xn_2D: \
+  case EdgePositionFull::L_x0_2D: \
+  case EdgePositionFull::L_xN_2D
+#define CASE_EDGE_POSITION_H_2D   \
+  case EdgePositionFull::H_ny_2D: \
+  case EdgePositionFull::H_0y_2D: \
+  case EdgePositionFull::H_Ny_2D
+
 ImplicitTriangulation::ImplicitTriangulation()
   : dimensionality_{-1}, cellNumber_{}, vertexNumber_{}, edgeNumber_{},
     triangleNumber_{}, tetrahedronNumber_{}, isAccelerated_{} {
@@ -1056,34 +1107,34 @@ int ImplicitTriangulation::getEdgeVertexInternal(const SimplexId &edgeId,
       }
     };
 
-    switch(compressEdgePosition(edgePositions_[edgeId])) {
-      case EdgePosition::L_3D:
-        return helper3d(0, 1);
-      case EdgePosition::H_3D:
-        return helper3d(0, vshift_[0]);
-      case EdgePosition::P_3D:
-        return helper3d(0, vshift_[1]);
-      case EdgePosition::D1_3D:
-        return helper3d(1, vshift_[0]);
-      case EdgePosition::D2_3D:
-        return helper3d(0, vshift_[0] + vshift_[1]);
-      case EdgePosition::D3_3D:
-        return helper3d(1, vshift_[1]);
-      case EdgePosition::D4_3D:
+    switch(edgePositions_[edgeId]) {
+    CASE_EDGE_POSITION_L_3D:
+      return helper3d(0, 1);
+    CASE_EDGE_POSITION_H_3D:
+      return helper3d(0, vshift_[0]);
+    CASE_EDGE_POSITION_P_3D:
+      return helper3d(0, vshift_[1]);
+    CASE_EDGE_POSITION_D1_3D:
+      return helper3d(1, vshift_[0]);
+    CASE_EDGE_POSITION_D2_3D:
+      return helper3d(0, vshift_[0] + vshift_[1]);
+    CASE_EDGE_POSITION_D3_3D:
+      return helper3d(1, vshift_[1]);
+      case EdgePositionFull::D4_3D:
         return helper3d(1, vshift_[0] + vshift_[1]);
 
-      case EdgePosition::L_2D:
+      CASE_EDGE_POSITION_L_2D:
         return helper2d(0, 1);
-      case EdgePosition::H_2D:
+      CASE_EDGE_POSITION_H_2D:
         return helper2d(0, vshift_[0]);
-      case EdgePosition::D1_2D:
+      case EdgePositionFull::D1_2D:
         return helper2d(1, vshift_[0]);
 
-      case EdgePosition::FIRST_EDGE_1D:
+      case EdgePositionFull::FIRST_EDGE_1D:
         return localVertexId == 0 ? 0 : 1;
-      case EdgePosition::LAST_EDGE_1D:
+      case EdgePositionFull::LAST_EDGE_1D:
         return localVertexId == 0 ? edgeNumber_ - 1 : edgeNumber_;
-      case EdgePosition::CENTER_1D:
+      case EdgePositionFull::CENTER_1D:
         return localVertexId == 0 ? edgeId : edgeId + 1;
     };
     return -1;
@@ -1330,27 +1381,27 @@ int ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getEdgeLink)(
 
   const auto dispatch = [&]() -> SimplexId {
     const auto &p = edgeCoords_[edgeId];
-    switch(compressEdgePosition(edgePositions_[edgeId])) {
-      case EdgePosition::L_3D:
-        return getEdgeLinkL(p.data(), localLinkId);
-      case EdgePosition::H_3D:
-        return getEdgeLinkH(p.data(), localLinkId);
-      case EdgePosition::P_3D:
-        return getEdgeLinkP(p.data(), localLinkId);
-      case EdgePosition::D1_3D:
-        return getEdgeLinkD1(p.data(), localLinkId);
-      case EdgePosition::D2_3D:
-        return getEdgeLinkD2(p.data(), localLinkId);
-      case EdgePosition::D3_3D:
-        return getEdgeLinkD3(p.data(), localLinkId);
-      case EdgePosition::D4_3D:
+    switch(edgePositions_[edgeId]) {
+    CASE_EDGE_POSITION_L_3D:
+      return getEdgeLinkL(p.data(), localLinkId);
+    CASE_EDGE_POSITION_H_3D:
+      return getEdgeLinkH(p.data(), localLinkId);
+    CASE_EDGE_POSITION_P_3D:
+      return getEdgeLinkP(p.data(), localLinkId);
+    CASE_EDGE_POSITION_D1_3D:
+      return getEdgeLinkD1(p.data(), localLinkId);
+    CASE_EDGE_POSITION_D2_3D:
+      return getEdgeLinkD2(p.data(), localLinkId);
+    CASE_EDGE_POSITION_D3_3D:
+      return getEdgeLinkD3(p.data(), localLinkId);
+      case EdgePositionFull::D4_3D:
         return getEdgeLinkD4(p.data(), localLinkId);
 
-      case EdgePosition::L_2D:
+      CASE_EDGE_POSITION_L_2D:
         return getEdgeLink2dL(p.data(), localLinkId);
-      case EdgePosition::H_2D:
+      CASE_EDGE_POSITION_H_2D:
         return getEdgeLink2dH(p.data(), localLinkId);
-      case EdgePosition::D1_2D:
+      case EdgePositionFull::D1_2D:
         return getEdgeLink2dD1(p.data(), localLinkId);
 
       default: // 1D
@@ -1460,28 +1511,28 @@ int ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getEdgeStar)(
 
   const auto dispatch = [&]() -> SimplexId {
     const auto &p = edgeCoords_[edgeId];
-    switch(compressEdgePosition(edgePositions_[edgeId])) {
-      case EdgePosition::L_3D:
-        return getEdgeStarL(p.data(), localStarId);
-      case EdgePosition::H_3D:
-        return getEdgeStarH(p.data(), localStarId);
-      case EdgePosition::P_3D:
-        return getEdgeStarP(p.data(), localStarId);
-      case EdgePosition::D1_3D:
-        return getEdgeStarD1(p.data(), localStarId);
-      case EdgePosition::D2_3D:
-        return getEdgeStarD2(p.data(), localStarId);
-      case EdgePosition::D3_3D:
-        return getEdgeStarD3(p.data(), localStarId);
-      case EdgePosition::D4_3D:
+    switch(edgePositions_[edgeId]) {
+    CASE_EDGE_POSITION_L_3D:
+      return getEdgeStarL(p.data(), localStarId);
+    CASE_EDGE_POSITION_H_3D:
+      return getEdgeStarH(p.data(), localStarId);
+    CASE_EDGE_POSITION_P_3D:
+      return getEdgeStarP(p.data(), localStarId);
+    CASE_EDGE_POSITION_D1_3D:
+      return getEdgeStarD1(p.data(), localStarId);
+    CASE_EDGE_POSITION_D2_3D:
+      return getEdgeStarD2(p.data(), localStarId);
+    CASE_EDGE_POSITION_D3_3D:
+      return getEdgeStarD3(p.data(), localStarId);
+      case EdgePositionFull::D4_3D:
         return p[2] * tetshift_[1] + p[1] * tetshift_[0] + p[0] * 6
                + localStarId;
 
-      case EdgePosition::L_2D:
+      CASE_EDGE_POSITION_L_2D:
         return getEdgeStar2dL(p.data(), localStarId);
-      case EdgePosition::H_2D:
+      CASE_EDGE_POSITION_H_2D:
         return getEdgeStar2dH(p.data(), localStarId);
-      case EdgePosition::D1_2D:
+      case EdgePositionFull::D1_2D:
         return p[0] * 2 + p[1] * tshift_[0] + localStarId;
 
       default: // 1D
