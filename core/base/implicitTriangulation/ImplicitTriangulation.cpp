@@ -1769,42 +1769,22 @@ inline SimplexId ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(
     return -1;
 #endif
 
-  if(dimensionality_ == 3) {
-    const auto p = triangleCoords_[triangleId].data();
+  const auto p = triangleCoords_[triangleId];
 
-    // F
-    if(triangleId < tsetshift_[0]) {
-      if(p[2] > 0 and p[2] < nbvoxels_[2])
-        return 2;
-      else
-        return 1;
-    }
-    // H
-    else if(triangleId < tsetshift_[1]) {
-      if(p[1] > 0 and p[1] < nbvoxels_[1])
-        return 2;
-      else
-        return 1;
-    }
-    // C
-    else if(triangleId < tsetshift_[2]) {
-      if(p[0] < 2 or p[0] >= (dimensions_[0] * 2 - 2))
-        return 1;
-      else
-        return 2;
-    }
-    // D1
-    else if(triangleId < tsetshift_[3]) {
+  switch(trianglePositions_[triangleId]) {
+    case TrianglePosition::F_3D:
+      return (p[2] > 0 and p[2] < nbvoxels_[2]) ? 2 : 1;
+    case TrianglePosition::H_3D:
+      return (p[1] > 0 and p[1] < nbvoxels_[1]) ? 2 : 1;
+    case TrianglePosition::C_3D:
+      return (p[0] < 2 or p[0] >= (dimensions_[0] * 2 - 2)) ? 1 : 2;
+
+    case TrianglePosition::D1_3D:
+    case TrianglePosition::D2_3D:
+    case TrianglePosition::D3_3D:
       return 2;
-    }
-    // D2
-    else if(triangleId < tsetshift_[4]) {
-      return 2;
-    }
-    // D3
-    else if(triangleId < tsetshift_[5]) {
-      return 2;
-    }
+    default: // 2D
+      break;
   }
   return 0;
 }
