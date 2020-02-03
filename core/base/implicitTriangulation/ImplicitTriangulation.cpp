@@ -1711,36 +1711,29 @@ int ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getTriangleLink)(
     return -1;
 #endif
 
-  linkId = -1;
+  const auto p = triangleCoords_[triangleId];
 
-  if(dimensionality_ == 3) {
-    const auto p = triangleCoords_[triangleId].data();
+  const auto dispatch = [&]() -> SimplexId {
+    switch(trianglePositions_[triangleId]) {
+      case TrianglePosition::F_3D:
+        return getTriangleLinkF(p.data(), localLinkId);
+      case TrianglePosition::H_3D:
+        return getTriangleLinkH(p.data(), localLinkId);
+      case TrianglePosition::C_3D:
+        return getTriangleLinkC(p.data(), localLinkId);
+      case TrianglePosition::D1_3D:
+        return getTriangleLinkD1(p.data(), localLinkId);
+      case TrianglePosition::D2_3D:
+        return getTriangleLinkD2(p.data(), localLinkId);
+      case TrianglePosition::D3_3D:
+        return getTriangleLinkD3(p.data(), localLinkId);
+      default: // 2D
+        break;
+    }
+    return -1;
+  };
 
-    // F
-    if(triangleId < tsetshift_[0]) {
-      linkId = getTriangleLinkF(p, localLinkId);
-    }
-    // H
-    else if(triangleId < tsetshift_[1]) {
-      linkId = getTriangleLinkH(p, localLinkId);
-    }
-    // C
-    else if(triangleId < tsetshift_[2]) {
-      linkId = getTriangleLinkC(p, localLinkId);
-    }
-    // D1
-    else if(triangleId < tsetshift_[3]) {
-      linkId = getTriangleLinkD1(p, localLinkId);
-    }
-    // D2
-    else if(triangleId < tsetshift_[4]) {
-      linkId = getTriangleLinkD2(p, localLinkId);
-    }
-    // D3
-    else if(triangleId < tsetshift_[5]) {
-      linkId = getTriangleLinkD3(p, localLinkId);
-    }
-  }
+  linkId = dispatch();
 
   return 0;
 }
