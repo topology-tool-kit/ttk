@@ -1602,84 +1602,56 @@ int ImplicitTriangulation::getTriangleEdgeInternal(const SimplexId &triangleId,
     return -2;
 #endif
 
-  edgeId = -1;
+  const auto &p = triangleCoords_[triangleId];
+  const auto par = triangleId % 2;
 
-  if(dimensionality_ == 3) {
-    const auto p = triangleCoords_[triangleId].data();
-    const SimplexId id = triangleId % 2;
+  const auto dispatch = [&]() -> SimplexId {
+    switch(trianglePositions_[triangleId]) {
+      case TrianglePosition::F_3D:
+        return (par == 1) ? getTriangleEdgeF_1(p.data(), localEdgeId)
+                          : getTriangleEdgeF_0(p.data(), localEdgeId);
+      case TrianglePosition::H_3D:
+        return (par == 1) ? getTriangleEdgeH_1(p.data(), localEdgeId)
+                          : getTriangleEdgeH_0(p.data(), localEdgeId);
+      case TrianglePosition::C_3D:
+        return (par == 1) ? getTriangleEdgeC_1(p.data(), localEdgeId)
+                          : getTriangleEdgeC_0(p.data(), localEdgeId);
+      case TrianglePosition::D1_3D:
+        return (par == 1) ? getTriangleEdgeD1_1(p.data(), localEdgeId)
+                          : getTriangleEdgeD1_0(p.data(), localEdgeId);
+      case TrianglePosition::D2_3D:
+        return (par == 1) ? getTriangleEdgeD2_1(p.data(), localEdgeId)
+                          : getTriangleEdgeD2_0(p.data(), localEdgeId);
+      case TrianglePosition::D3_3D:
+        return (par == 1) ? getTriangleEdgeD3_1(p.data(), localEdgeId)
+                          : getTriangleEdgeD3_0(p.data(), localEdgeId);
+      case TrianglePosition::TOP_2D:
+        switch(localEdgeId) {
+          case 0:
+            return p[0] / 2 + p[1] * eshift_[0];
+          case 1:
+            return esetshift_[0] + p[0] / 2 + p[1] * eshift_[2];
+          case 2:
+            return esetshift_[1] + p[0] / 2 + p[1] * eshift_[4];
+          default:
+            return -1;
+        }
+      case TrianglePosition::BOTTOM_2D:
+        switch(localEdgeId) {
+          case 0:
+            return p[0] / 2 + (p[1] + 1) * eshift_[0];
+          case 1:
+            return esetshift_[0] + (p[0] + 1) / 2 + p[1] * eshift_[2];
+          case 2:
+            return esetshift_[1] + p[0] / 2 + p[1] * eshift_[4];
+          default:
+            return -1;
+        }
+    }
+    return -1;
+  };
 
-    // F
-    if(triangleId < tsetshift_[0]) {
-      if(id)
-        edgeId = getTriangleEdgeF_1(p, localEdgeId);
-      else
-        edgeId = getTriangleEdgeF_0(p, localEdgeId);
-    }
-    // H
-    else if(triangleId < tsetshift_[1]) {
-      if(id)
-        edgeId = getTriangleEdgeH_1(p, localEdgeId);
-      else
-        edgeId = getTriangleEdgeH_0(p, localEdgeId);
-    }
-    // C
-    else if(triangleId < tsetshift_[2]) {
-      if(id)
-        edgeId = getTriangleEdgeC_1(p, localEdgeId);
-      else
-        edgeId = getTriangleEdgeC_0(p, localEdgeId);
-    }
-    // D1
-    else if(triangleId < tsetshift_[3]) {
-      if(id)
-        edgeId = getTriangleEdgeD1_1(p, localEdgeId);
-      else
-        edgeId = getTriangleEdgeD1_0(p, localEdgeId);
-    }
-    // D2
-    else if(triangleId < tsetshift_[4]) {
-      if(id)
-        edgeId = getTriangleEdgeD2_1(p, localEdgeId);
-      else
-        edgeId = getTriangleEdgeD2_0(p, localEdgeId);
-    }
-    // D3
-    else if(triangleId < tsetshift_[5]) {
-      if(id)
-        edgeId = getTriangleEdgeD3_1(p, localEdgeId);
-      else
-        edgeId = getTriangleEdgeD3_0(p, localEdgeId);
-    }
-  } else if(dimensionality_ == 2) {
-    const auto p = triangleCoords_[triangleId].data();
-    const SimplexId id = triangleId % 2;
-
-    if(id == 0) {
-      switch(localEdgeId) {
-        case 0:
-          edgeId = p[0] / 2 + p[1] * eshift_[0];
-          break;
-        case 1:
-          edgeId = esetshift_[0] + p[0] / 2 + p[1] * eshift_[2];
-          break;
-        case 2:
-          edgeId = esetshift_[1] + p[0] / 2 + p[1] * eshift_[4];
-          break;
-      }
-    } else {
-      switch(localEdgeId) {
-        case 0:
-          edgeId = p[0] / 2 + (p[1] + 1) * eshift_[0];
-          break;
-        case 1:
-          edgeId = esetshift_[0] + (p[0] + 1) / 2 + p[1] * eshift_[2];
-          break;
-        case 2:
-          edgeId = esetshift_[1] + p[0] / 2 + p[1] * eshift_[4];
-          break;
-      }
-    }
-  }
+  edgeId = dispatch();
 
   return 0;
 }
