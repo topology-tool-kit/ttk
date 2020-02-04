@@ -40,13 +40,8 @@ if(VTK_WRAP_PYTHON)
     "Build the python module"
     )
   if(NOT DEFINED TTK_PYTHON_MODULE_DIR)
-    file(RELATIVE_PATH
-      PYTHON_SITE_PACKAGES_SUFFIX
-      ${VTK_PREFIX_PATH}
-      ${VTK_PYTHONPATH}
-      )
     set(TTK_PYTHON_MODULE_DIR
-      ${PYTHON_SITE_PACKAGES_SUFFIX}
+      ${VTK_PYTHONPATH}
       CACHE
       PATH
       "Where the TTK python module in installed"
