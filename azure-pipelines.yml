@@ -82,10 +82,10 @@ jobs:
     workingDirectory: 'build/'
     displayName: 'Build and install TTK'
 
-  - script: |
-      ./bin/ttkBlankCmd -i $(Build.SourcesDirectory)/examples/data/inputData.vtu
-    workingDirectory: '$(Build.ArtifactStagingDirectory)/ttk-install/'
-    displayName: 'Test TTK command line'
+#  - script: |
+#      ./bin/ttkBlankCmd -i $(Build.SourcesDirectory)/examples/data/inputData.vtu
+#    workingDirectory: '$(Build.ArtifactStagingDirectory)/ttk-install/'
+#    displayName: 'Test TTK command line'
 
 # ParaView
 
@@ -153,10 +153,10 @@ jobs:
     workingDirectory: 'build/'
     displayName: 'Build and install TTK'
 
-  - script: |
-      ./bin/ttkBlankCmd -i $(Build.SourcesDirectory)/examples/data/inputData.vtu
-    workingDirectory: '$(Build.ArtifactStagingDirectory)/ttk-install/'
-    displayName: 'Test TTK Command line'
+#  - script: |
+#      ./bin/ttkBlankCmd -i $(Build.SourcesDirectory)/examples/data/inputData.vtu
+#    workingDirectory: '$(Build.ArtifactStagingDirectory)/ttk-install/'
+#    displayName: 'Test TTK Command line'
 
 # ------------------------------
 # Mac OS build
