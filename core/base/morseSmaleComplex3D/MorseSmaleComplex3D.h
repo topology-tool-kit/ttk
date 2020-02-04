@@ -217,7 +217,20 @@ int ttk::MorseSmaleComplex3D::setSaddleConnectors(
         + 1;
   }
 
-  for(const Separatrix &separatrix : separatrices) {
+  size_t npoints{};
+
+  // count total number of points and cells
+  for(const auto &sep : separatrices) {
+    if(!sep.isValid_ || sep.geometry_.empty()) {
+      continue;
+    }
+    for(const auto geomId : sep.geometry_) {
+      npoints += separatricesGeometry[geomId].size();
+    }
+  }
+
+  for(size_t i = 0; i < separatrices.size(); ++i) {
+    const auto &separatrix = separatrices[i];
     if(!separatrix.isValid_)
       continue;
     if(!separatrix.geometry_.size())
@@ -246,9 +259,9 @@ int ttk::MorseSmaleComplex3D::setSaddleConnectors(
     bool isFirst = true;
     for(const SimplexId geometryId : separatrix.geometry_) {
       SimplexId oldPointId = -1;
-      for(auto cellIte = separatricesGeometry[geometryId].begin();
-          cellIte != separatricesGeometry[geometryId].end(); ++cellIte) {
-        const dcg::Cell &cell = *cellIte;
+      const auto &sepGeom = separatricesGeometry[geometryId];
+      for(size_t k = 0; k < sepGeom.size(); ++k) {
+        const dcg::Cell &cell = sepGeom[k];
         float point[3];
         discreteGradient_.getCellIncenter(cell, point);
 
@@ -257,8 +270,7 @@ int ttk::MorseSmaleComplex3D::setSaddleConnectors(
         outputSeparatrices1_points_->push_back(point[2]);
 
         if(outputSeparatrices1_points_smoothingMask_) {
-          if(cellIte == separatricesGeometry[geometryId].begin()
-             or cellIte == separatricesGeometry[geometryId].end() - 1)
+          if(k == 0 or k == sepGeom.size() - 1)
             outputSeparatrices1_points_smoothingMask_->push_back(0);
           else
             outputSeparatrices1_points_smoothingMask_->push_back(1);
