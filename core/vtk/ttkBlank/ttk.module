@@ -6,4 +6,5 @@ HEADERS
   ttkBlank.h
 DEPENDS
   blank
+  ttkAlgorithm
   ttkTriangulationAlgorithm

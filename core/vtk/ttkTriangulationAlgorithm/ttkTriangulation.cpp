@@ -199,13 +199,12 @@ int ttkTriangulation::setInputData(vtkDataSet *dataSet) {
         case VTK_FLOAT:
           triangulation_->setInputPoints(
             vtuDataSet->GetNumberOfPoints(),
-            vtuDataSet->GetPoints()->GetVoidPointer(0));
+            ttkUtils::GetVoidPointer(vtuDataSet->GetPoints()->GetData()));
           break;
         case VTK_DOUBLE:
           triangulation_->setInputPoints(
             vtuDataSet->GetNumberOfPoints(),
-            vtuDataSet->GetPoints()->GetVoidPointer(0),
-            true);
+            ttkUtils::GetVoidPointer(vtuDataSet->GetPoints()->GetData()), true);
         default:
           stringstream msg;
           msg << "[ttkTriangulation] Unsupported precision for input points!"
@@ -239,12 +238,12 @@ int ttkTriangulation::setInputData(vtkDataSet *dataSet) {
         case VTK_FLOAT:
           triangulation_->setInputPoints(
             vtpDataSet->GetNumberOfPoints(),
-            vtpDataSet->GetPoints()->GetVoidPointer(0));
+            ttkUtils::GetVoidPointer(vtpDataSet->GetPoints()->GetData()));
           break;
         case VTK_DOUBLE:
           triangulation_->setInputPoints(
             vtpDataSet->GetNumberOfPoints(),
-            vtpDataSet->GetPoints()->GetVoidPointer(0), true);
+            ttkUtils::GetVoidPointer(vtpDataSet->GetPoints()->GetData()), true);
           break;
         default:
           stringstream msg;
