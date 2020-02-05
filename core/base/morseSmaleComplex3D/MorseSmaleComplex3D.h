@@ -217,17 +217,56 @@ int ttk::MorseSmaleComplex3D::setSaddleConnectors(
         + 1;
   }
 
-  size_t npoints{};
+  // total number of separatrices points
+  auto npoints{static_cast<size_t>(*outputSeparatrices1_numberOfPoints_)};
+  // total number of separatrices cells
+  auto ncells{static_cast<size_t>(*outputSeparatrices1_numberOfCells_)};
+  // list of valid geometryId to flatten loops
+  std::vector<SimplexId> validGeomIds{};
+  // corresponding separatrix Id
+  std::vector<SimplexId> geomIdSepIds{};
 
-  // count total number of points and cells
-  for(const auto &sep : separatrices) {
+  // count total number of points and cells, flatten geometryId loops
+  for(size_t i = 0; i < separatrices.size(); ++i) {
+    const auto &sep = separatrices[i];
     if(!sep.isValid_ || sep.geometry_.empty()) {
       continue;
     }
     for(const auto geomId : sep.geometry_) {
-      npoints += separatricesGeometry[geomId].size();
+      const auto sepSize = separatricesGeometry[geomId].size();
+      npoints += sepSize;
+      ncells += sepSize - 1;
+      validGeomIds.emplace_back(geomId);
+      geomIdSepIds.emplace_back(i);
     }
   }
+
+  // realloc point data vectors
+  outputSeparatrices1_points->resize(3 * npoints);
+  if(outputSeparatrices1_points_smoothingMask_ != nullptr)
+    outputSeparatrices1_points_smoothingMask_->resize(npoints);
+  if(outputSeparatrices1_points_cellDimensions_ != nullptr)
+    outputSeparatrices1_points_cellDimensions_->resize(npoints);
+  if(outputSeparatrices1_points_cellIds_ != nullptr)
+    outputSeparatrices1_points_cellIds_->resize(npoints);
+  // realloc cell data vectors
+  outputSeparatrices1_cells_->resize(3 * ncells);
+  if(outputSeparatrices1_cells_sourceIds_ != nullptr)
+    outputSeparatrices1_cells_sourceIds_->resize(ncells);
+  if(outputSeparatrices1_cells_destinationIds_ != nullptr)
+    outputSeparatrices1_cells_destinationIds_->resize(ncells);
+  if(outputSeparatrices1_cells_separatrixIds_ != nullptr)
+    outputSeparatrices1_cells_separatrixIds_->resize(ncells);
+  if(outputSeparatrices1_cells_separatrixTypes_ != nullptr)
+    outputSeparatrices1_cells_separatrixTypes_->resize(ncells);
+  if(outputSeparatrices1_cells_separatrixFunctionMaxima != nullptr)
+    outputSeparatrices1_cells_separatrixFunctionMaxima->resize(ncells);
+  if(outputSeparatrices1_cells_separatrixFunctionMinima != nullptr)
+    outputSeparatrices1_cells_separatrixFunctionMinima->resize(ncells);
+  if(outputSeparatrices1_cells_separatrixFunctionDiffs != nullptr)
+    outputSeparatrices1_cells_separatrixFunctionDiffs->resize(ncells);
+  if(outputSeparatrices1_cells_isOnBoundary_ != nullptr)
+    outputSeparatrices1_cells_isOnBoundary_->resize(ncells);
 
   for(size_t i = 0; i < separatrices.size(); ++i) {
     const auto &separatrix = separatrices[i];
@@ -318,6 +357,10 @@ int ttk::MorseSmaleComplex3D::setSaddleConnectors(
     if(!isFirst)
       ++separatrixId;
   }
+
+  // update pointers
+  *outputSeparatrices1_numberOfPoints_ = npoints;
+  *outputSeparatrices1_numberOfCells_ = ncells;
 
   (*outputSeparatrices1_numberOfPoints_) = pointId;
   (*outputSeparatrices1_numberOfCells_) = cellId;
