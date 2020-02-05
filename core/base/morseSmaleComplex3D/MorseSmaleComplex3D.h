@@ -303,6 +303,7 @@ int ttk::MorseSmaleComplex3D::setSaddleConnectors(
       std::array<float, 3> point{};
       discreteGradient_.getCellIncenter(cell, point.data());
 
+      // index of current point in point data arrays
       const auto k = geomPointsBegId[i] + j;
 
       (*outputSeparatrices1_points_)[3 * k + 0] = point[0];
@@ -322,6 +323,7 @@ int ttk::MorseSmaleComplex3D::setSaddleConnectors(
       if(j == 0)
         continue;
 
+      // index of current cell in cell data arrays
       const auto l = geomCellsBegId[i] + j - 1;
 
       (*outputSeparatrices1_cells_)[3 * l + 0] = 2;
