@@ -194,15 +194,14 @@ int ttk::MorseSmaleComplex3D::setSaddleConnectors(
     return -1;
   }
 #endif
-  const dataType *const scalars
-    = static_cast<const dataType *>(inputScalarField_);
-  std::vector<dataType> *outputSeparatrices1_cells_separatrixFunctionMaxima
+  const auto scalars = static_cast<const dataType *>(inputScalarField_);
+  auto outputSeparatrices1_cells_separatrixFunctionMaxima
     = static_cast<std::vector<dataType> *>(
       outputSeparatrices1_cells_separatrixFunctionMaxima_);
-  std::vector<dataType> *outputSeparatrices1_cells_separatrixFunctionMinima
+  auto outputSeparatrices1_cells_separatrixFunctionMinima
     = static_cast<std::vector<dataType> *>(
       outputSeparatrices1_cells_separatrixFunctionMinima_);
-  std::vector<dataType> *outputSeparatrices1_cells_separatrixFunctionDiffs
+  auto outputSeparatrices1_cells_separatrixFunctionDiffs
     = static_cast<std::vector<dataType> *>(
       outputSeparatrices1_cells_separatrixFunctionDiffs_);
 
@@ -298,8 +297,9 @@ int ttk::MorseSmaleComplex3D::setSaddleConnectors(
     const auto sepFuncDiff = sepFuncMax - sepFuncMin;
 
     // get boundary condition
-    const char isOnBoundary = (discreteGradient_.isBoundary(saddle1)
-                               and discreteGradient_.isBoundary(saddle2));
+    const auto isOnBoundary
+      = static_cast<char>(discreteGradient_.isBoundary(saddle1)
+                          and discreteGradient_.isBoundary(saddle2));
 
     for(size_t j = 0; j < sepGeom.size(); ++j) {
       const auto &cell = sepGeom[j];
