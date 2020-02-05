@@ -322,26 +322,28 @@ int ttk::MorseSmaleComplex3D::setSaddleConnectors(
       if(j == 0)
         continue;
 
-      outputSeparatrices1_cells_->at(3 * k + 0) = 2;
-      outputSeparatrices1_cells_->at(3 * k + 1) = k - 1;
-      outputSeparatrices1_cells_->at(3 * k + 2) = k;
+      const auto l = geomCellsBegId[i] + j - 1;
+
+      outputSeparatrices1_cells_->at(3 * l + 0) = 2;
+      outputSeparatrices1_cells_->at(3 * l + 1) = k - 1;
+      outputSeparatrices1_cells_->at(3 * l + 2) = k;
 
       if(outputSeparatrices1_cells_sourceIds_)
-        outputSeparatrices1_cells_sourceIds_->at(k) = saddle1.id_;
+        outputSeparatrices1_cells_sourceIds_->at(l) = saddle1.id_;
       if(outputSeparatrices1_cells_destinationIds_)
-        outputSeparatrices1_cells_destinationIds_->at(k) = saddle2.id_;
+        outputSeparatrices1_cells_destinationIds_->at(l) = saddle2.id_;
       if(outputSeparatrices1_cells_separatrixIds_)
-        outputSeparatrices1_cells_separatrixIds_->at(k) = sepId;
+        outputSeparatrices1_cells_separatrixIds_->at(l) = sepId;
       if(outputSeparatrices1_cells_separatrixTypes_)
-        outputSeparatrices1_cells_separatrixTypes_->at(k) = sepType;
+        outputSeparatrices1_cells_separatrixTypes_->at(l) = sepType;
       if(outputSeparatrices1_cells_separatrixFunctionMaxima)
-        outputSeparatrices1_cells_separatrixFunctionMaxima->at(k) = sepFuncMax;
+        outputSeparatrices1_cells_separatrixFunctionMaxima->at(l) = sepFuncMax;
       if(outputSeparatrices1_cells_separatrixFunctionMinima)
-        outputSeparatrices1_cells_separatrixFunctionMinima->at(k) = sepFuncMin;
+        outputSeparatrices1_cells_separatrixFunctionMinima->at(l) = sepFuncMin;
       if(outputSeparatrices1_cells_separatrixFunctionDiffs)
-        outputSeparatrices1_cells_separatrixFunctionDiffs->at(k) = sepFuncDiff;
+        outputSeparatrices1_cells_separatrixFunctionDiffs->at(l) = sepFuncDiff;
       if(outputSeparatrices1_cells_isOnBoundary_)
-        outputSeparatrices1_cells_isOnBoundary_->at(k) = isOnBoundary;
+        outputSeparatrices1_cells_isOnBoundary_->at(l) = isOnBoundary;
     }
   }
 
