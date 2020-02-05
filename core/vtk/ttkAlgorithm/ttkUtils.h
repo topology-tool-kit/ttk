@@ -33,7 +33,11 @@ namespace ttkUtils {
 
   vtkSmartPointer<vtkDoubleArray> csvToDoubleArray(std::string line);
 
-  void *GetVoidPointer(vtkDataArray *array, int start = 0);
+  // Emultate old VTK functions
+
+  void *GetVoidPointer(vtkDataArray *array, vtkIdType start = 0);
+
+  void *WritePointer(vtkDataArray *array, vtkIdType start, vtkIdType numValues);
 }; // namespace ttkUtils
 
 #include <limits>
@@ -203,7 +207,7 @@ vtkSmartPointer<vtkAbstractArray> ttkUtils::csvToVtkArray(std::string line) {
     array->SetName(arrayName.data());
     array->SetNumberOfComponents(1);
     array->SetNumberOfTuples(nValues);
-    auto arrayData = (double *)array->GetVoidPointer(0);
+    auto arrayData = reinterpret_cast<double *>(GetVoidPointer(array));
     // try {
     for(size_t i = 0; i < nValues; i++)
       arrayData[i] = std::stod(valuesAsString[i]);
@@ -238,7 +242,7 @@ vtkSmartPointer<vtkDoubleArray> ttkUtils::csvToDoubleArray(std::string line) {
   array->SetName(arrayName.data());
   array->SetNumberOfComponents(1);
   array->SetNumberOfTuples(n);
-  auto arrayData = (double *)array->GetVoidPointer(0);
+  auto arrayData = reinterpret_cast<double *>(GetVoidPointer(array));
   for(size_t i = 0; i < n; i++)
     arrayData[i] = values[i];
 
@@ -248,7 +252,7 @@ vtkSmartPointer<vtkDoubleArray> ttkUtils::csvToDoubleArray(std::string line) {
 /// Retrieve pointer to the internal data
 /// This method is a workaround to emulate
 /// the old GetVoidPointer in vtkDataArray
-void *ttkUtils::GetVoidPointer(vtkDataArray *array, int start) {
+void *ttkUtils::GetVoidPointer(vtkDataArray *array, vtkIdType start) {
   void *outPtr = nullptr;
   switch(array->GetDataType()) {
     vtkTemplateMacro(
@@ -258,3 +262,14 @@ void *ttkUtils::GetVoidPointer(vtkDataArray *array, int start) {
   return outPtr;
 }
 
+void *ttkUtils::WritePointer(vtkDataArray *array,
+                             vtkIdType start,
+                             vtkIdType numValues) {
+  void *outPtr = nullptr;
+  switch(array->GetDataType()) {
+    vtkTemplateMacro(
+      auto *aosArray = vtkAOSDataArrayTemplate<VTK_TT>::FastDownCast(array);
+      if(aosArray) { outPtr = aosArray->WritePointer(start, numValues); });
+  }
+  return outPtr;
+}
