@@ -223,8 +223,14 @@ int ttk::MorseSmaleComplex3D::setSaddleConnectors(
   auto ncells{static_cast<size_t>(*outputSeparatrices1_numberOfCells_)};
   // list of valid geometryId to flatten loops
   std::vector<SimplexId> validGeomIds{};
-  // corresponding separatrix Id
+  // corresponding separatrix index in separatrices array
+  std::vector<SimplexId> geomIdSep{};
+  // corresponding *new* separatrix Id
   std::vector<SimplexId> geomIdSepIds{};
+  // points beginning id for each separatrix geometry
+  std::vector<size_t> geomPointsBegId{npoints};
+  // cells beginning id for each separatrix geometry
+  std::vector<size_t> geomCellsBegId{ncells};
 
   // count total number of points and cells, flatten geometryId loops
   for(size_t i = 0; i < separatrices.size(); ++i) {
@@ -236,13 +242,16 @@ int ttk::MorseSmaleComplex3D::setSaddleConnectors(
       const auto sepSize = separatricesGeometry[geomId].size();
       npoints += sepSize;
       ncells += sepSize - 1;
+      geomPointsBegId.emplace_back(npoints);
+      geomCellsBegId.emplace_back(ncells);
       validGeomIds.emplace_back(geomId);
-      geomIdSepIds.emplace_back(i);
+      geomIdSep.emplace_back(i);
+      geomIdSepIds.emplace_back(separatrixId + i);
     }
   }
 
   // realloc point data vectors
-  outputSeparatrices1_points->resize(3 * npoints);
+  outputSeparatrices1_points_->resize(3 * npoints);
   if(outputSeparatrices1_points_smoothingMask_ != nullptr)
     outputSeparatrices1_points_smoothingMask_->resize(npoints);
   if(outputSeparatrices1_points_cellDimensions_ != nullptr)
@@ -267,6 +276,78 @@ int ttk::MorseSmaleComplex3D::setSaddleConnectors(
     outputSeparatrices1_cells_separatrixFunctionDiffs->resize(ncells);
   if(outputSeparatrices1_cells_isOnBoundary_ != nullptr)
     outputSeparatrices1_cells_isOnBoundary_->resize(ncells);
+
+  for(size_t i = 0; i < validGeomIds.size(); ++i) {
+    const auto &sep = separatrices[geomIdSep[i]];
+    const auto &sepGeom = separatricesGeometry[validGeomIds[i]];
+    const auto sepId = geomIdSepIds[i];
+    const dcg::Cell &saddle1 = sep.source_;
+    const dcg::Cell &saddle2 = sep.destination_;
+
+    // get separatrix type : saddle-connector
+    const char sepType = 1;
+
+    // compute separatrix function diff
+    const auto sepFuncMax
+      = std::max(discreteGradient_.scalarMax<dataType>(saddle1, scalars),
+                 discreteGradient_.scalarMax<dataType>(saddle2, scalars));
+    const auto sepFuncMin
+      = std::min(discreteGradient_.scalarMin<dataType>(saddle1, scalars),
+                 discreteGradient_.scalarMin<dataType>(saddle2, scalars));
+    const auto sepFuncDiff = sepFuncMax - sepFuncMin;
+
+    // get boundary condition
+    const char isOnBoundary = (discreteGradient_.isBoundary(saddle1)
+                               and discreteGradient_.isBoundary(saddle2));
+    // enter a new separatrix?
+    const bool isFirst = (i == 0 || geomIdSep[i - 1] != geomIdSep[i]);
+
+    for(size_t j = 0; j < sepGeom.size(); ++j) {
+      const auto &cell = sepGeom[j];
+      std::array<float, 3> point{};
+      discreteGradient_.getCellIncenter(cell, point.data());
+
+      const auto k = geomPointsBegId[i] + j;
+
+      outputSeparatrices1_points_->at(3 * k + 0) = point[0];
+      outputSeparatrices1_points_->at(3 * k + 1) = point[1];
+      outputSeparatrices1_points_->at(3 * k + 2) = point[2];
+
+      if(outputSeparatrices1_points_smoothingMask_)
+        outputSeparatrices1_points_smoothingMask_->at(k)
+          = (j == 0 || j == sepGeom.size() - 1) ? 0 : 1;
+
+      if(outputSeparatrices1_points_cellDimensions_)
+        outputSeparatrices1_points_cellDimensions_->at(k) = cell.dim_;
+      if(outputSeparatrices1_points_cellIds_)
+        outputSeparatrices1_points_cellIds_->at(k) = cell.id_;
+
+      // skip filling cell data for first geometry point
+      if(j == 0)
+        continue;
+
+      outputSeparatrices1_cells_->at(3 * k + 0) = 2;
+      outputSeparatrices1_cells_->at(3 * k + 1) = k - 1;
+      outputSeparatrices1_cells_->at(3 * k + 2) = k;
+
+      if(outputSeparatrices1_cells_sourceIds_)
+        outputSeparatrices1_cells_sourceIds_->at(k) = saddle1.id_;
+      if(outputSeparatrices1_cells_destinationIds_)
+        outputSeparatrices1_cells_destinationIds_->at(k) = saddle2.id_;
+      if(outputSeparatrices1_cells_separatrixIds_)
+        outputSeparatrices1_cells_separatrixIds_->at(k) = sepId;
+      if(outputSeparatrices1_cells_separatrixTypes_)
+        outputSeparatrices1_cells_separatrixTypes_->at(k) = sepType;
+      if(outputSeparatrices1_cells_separatrixFunctionMaxima)
+        outputSeparatrices1_cells_separatrixFunctionMaxima->at(k) = sepFuncMax;
+      if(outputSeparatrices1_cells_separatrixFunctionMinima)
+        outputSeparatrices1_cells_separatrixFunctionMinima->at(k) = sepFuncMin;
+      if(outputSeparatrices1_cells_separatrixFunctionDiffs)
+        outputSeparatrices1_cells_separatrixFunctionDiffs->at(k) = sepFuncDiff;
+      if(outputSeparatrices1_cells_isOnBoundary_)
+        outputSeparatrices1_cells_isOnBoundary_->at(k) = isOnBoundary;
+    }
+  }
 
   for(size_t i = 0; i < separatrices.size(); ++i) {
     const auto &separatrix = separatrices[i];
