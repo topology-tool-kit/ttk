@@ -75,40 +75,37 @@ int MorseSmaleComplex3D::getSaddleConnectors(
   vector<Separatrix> &separatrices,
   vector<vector<Cell>> &separatricesGeometry) const {
 
-  const SimplexId numberOfTriangles
-    = inputTriangulation_->getNumberOfTriangles();
-  wallId_t descendingWallId = 1;
-  vector<wallId_t> isVisited(numberOfTriangles, 0);
+  const auto nTriangles = inputTriangulation_->getNumberOfTriangles();
+  // visited triangles (global array, overwritten at every iteration)
+  std::vector<wallId_t> isVisited(nTriangles, -1);
+  // list of 2-saddles
+  std::vector<Cell> saddles2{};
+  // copy cells instead of taking a reference?
+  std::copy_if(criticalPoints.begin(), criticalPoints.end(),
+               std::back_inserter(saddles2),
+               [](const Cell &c) -> bool { return c.dim_ == 2; });
 
-  const SimplexId numberOfCriticalPoints = criticalPoints.size();
-  for(SimplexId i = 0; i < numberOfCriticalPoints; ++i) {
-    const Cell &criticalPoint = criticalPoints[i];
+  using Vpath = std::vector<Cell>;
 
-    if(criticalPoint.dim_ == 2) {
-      const Cell &saddle2 = criticalPoint;
+  for(size_t i = 0; i < saddles2.size(); ++i) {
+    const auto &s2{saddles2[i]};
 
-      set<SimplexId> saddles1;
-      const wallId_t savedDescendingWallId = descendingWallId;
-      discreteGradient_.getDescendingWall(
-        descendingWallId, saddle2, isVisited, nullptr, &saddles1);
-      ++descendingWallId;
+    std::set<SimplexId> saddles1{};
+    discreteGradient_.getDescendingWall(i, s2, isVisited, nullptr, &saddles1);
 
-      for(const SimplexId saddle1Id : saddles1) {
-        const Cell &saddle1 = Cell(1, saddle1Id);
+    for(const auto saddle1Id : saddles1) {
+      const Cell s1{1, saddle1Id};
 
-        vector<Cell> vpath;
-        const bool isMultiConnected
-          = discreteGradient_.getAscendingPathThroughWall(
-            savedDescendingWallId, saddle1, saddle2, isVisited, &vpath);
+      Vpath vpath;
+      const bool isMultiConnected
+        = discreteGradient_.getAscendingPathThroughWall(
+          i, s1, s2, isVisited, &vpath);
+      const auto &last = vpath.back();
 
-        const Cell &lastCell = vpath.back();
-        if(!isMultiConnected and lastCell.dim_ == saddle2.dim_
-           and lastCell.id_ == saddle2.id_) {
-          const SimplexId separatrixIndex = separatrices.size();
-          separatricesGeometry.push_back(std::move(vpath));
-          separatrices.push_back(
-            Separatrix(true, saddle1, saddle2, false, separatrixIndex));
-        }
+      if(!isMultiConnected && last.dim_ == s2.dim_ && last.id_ == s2.id_) {
+        const auto sepId = separatrices.size();
+        separatricesGeometry.emplace_back(std::move(vpath));
+        separatrices.emplace_back(true, s1, s2, false, sepId);
       }
     }
   }
