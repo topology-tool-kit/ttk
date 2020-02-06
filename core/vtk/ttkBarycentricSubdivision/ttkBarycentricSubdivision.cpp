@@ -1,4 +1,5 @@
 #include <ttkBarycentricSubdivision.h>
+#include <ttkUtils.h>
 
 #define MODULE_S "[ttkBarycentricSubdivision] "
 #define MODULE_ERROR_S MODULE_S "Error: "
@@ -203,13 +204,13 @@ int ttkBarycentricSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
   // cell id
   auto cellId = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
   cellId->SetName("CellId");
-  cellId->SetVoidArray(pointId_.data(), pointId_.size(), 1);
+  ttkUtils::SetVoidArray(cellId, pointId_.data(), pointId_.size(), 1);
   output->GetPointData()->AddArray(cellId);
 
   // cell dimension
   auto cellDim = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
   cellDim->SetName("CellDimension");
-  cellDim->SetVoidArray(pointDim_.data(), pointDim_.size(), 1);
+  ttkUtils::SetVoidArray(cellDim, pointDim_.data(), pointDim_.size(), 1);
   output->GetPointData()->AddArray(cellDim);
 
   {

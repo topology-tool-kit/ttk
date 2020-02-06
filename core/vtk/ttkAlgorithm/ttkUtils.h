@@ -37,7 +37,10 @@ namespace ttkUtils {
 
   void *GetVoidPointer(vtkDataArray *array, vtkIdType start = 0);
 
+  void *WriteVoidPointer(vtkDataArray *array, vtkIdType start, vtkIdType numValues);
   void *WritePointer(vtkDataArray *array, vtkIdType start, vtkIdType numValues);
+
+  void SetVoidArray(vtkDataArray *array, void* data, vtkIdType size, int save);
 }; // namespace ttkUtils
 
 #include <limits>
@@ -262,6 +265,17 @@ void *ttkUtils::GetVoidPointer(vtkDataArray *array, vtkIdType start) {
   return outPtr;
 }
 
+void *ttkUtils::WriteVoidPointer(vtkDataArray *array, vtkIdType start,
+                             vtkIdType numValues) {
+  void *outPtr = nullptr;
+  switch(array->GetDataType()) {
+    vtkTemplateMacro(
+      auto *aosArray = vtkAOSDataArrayTemplate<VTK_TT>::FastDownCast(array);
+      if(aosArray) { outPtr = aosArray->WriteVoidPointer(start, numValues); });
+  }
+  return outPtr;
+}
+
 void *ttkUtils::WritePointer(vtkDataArray *array,
                              vtkIdType start,
                              vtkIdType numValues) {
@@ -272,4 +286,20 @@ void *ttkUtils::WritePointer(vtkDataArray *array,
       if(aosArray) { outPtr = aosArray->WritePointer(start, numValues); });
   }
   return outPtr;
+}
+
+void ttkUtils::SetVoidArray(vtkDataArray *array,
+                            void *data,
+                            vtkIdType size,
+                            int save) {
+  switch(array->GetDataType()) {
+    vtkTemplateMacro(
+      auto *aosArray = vtkAOSDataArrayTemplate<VTK_TT>::FastDownCast(array);
+      if(aosArray) {
+        aosArray->SetVoidArray(data, size, save);
+      } else {
+        std::cerr << "SetVoidArray on incompatible vtkDataArray:" << endl;
+        array->Print(std::cerr);
+      });
+  }
 }
