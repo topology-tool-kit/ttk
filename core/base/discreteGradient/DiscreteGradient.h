@@ -986,6 +986,7 @@ in the gradient.
                                        const Cell &saddle1,
                                        const std::vector<wallId_t> &isVisited,
                                        std::vector<Cell> *const vpath,
+                                       const bool stopIfMultiConnected = false,
                                        const bool enableCycleDetector
                                        = false) const;
 
@@ -998,6 +999,7 @@ in the gradient.
                                        const Cell &saddle2,
                                        const std::vector<wallId_t> &isVisited,
                                        std::vector<Cell> *const vpath,
+                                       const bool stopIfMultiConnected = false,
                                        const bool enableCycleDetector
                                        = false) const;
 

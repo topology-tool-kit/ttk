@@ -465,6 +465,7 @@ int DiscreteGradient::getDescendingPathThroughWall(
   const Cell &saddle1,
   const vector<wallId_t> &isVisited,
   vector<Cell> *const vpath,
+  const bool stopIfMultiConnected,
   const bool enableCycleDetector) const {
   // debug
   const SimplexId numberOfEdges = inputTriangulation_->getNumberOfEdges();
@@ -498,7 +499,7 @@ int DiscreteGradient::getDescendingPathThroughWall(
           ++nconnections;
         }
       }
-      if(nconnections > 1) {
+      if(stopIfMultiConnected && nconnections > 1) {
         return 1;
       }
     }
@@ -552,7 +553,7 @@ int DiscreteGradient::getDescendingPathThroughWall(
           ++nconnections;
         }
       }
-      if(nconnections > 1) {
+      if(stopIfMultiConnected && nconnections > 1) {
         return 1;
       }
 
@@ -685,6 +686,7 @@ bool DiscreteGradient::getAscendingPathThroughWall(
   const Cell &saddle2,
   const vector<wallId_t> &isVisited,
   vector<Cell> *const vpath,
+  const bool stopIfMultiConnected,
   const bool enableCycleDetector) const {
   // debug
   const SimplexId numberOfTriangles
@@ -721,7 +723,7 @@ bool DiscreteGradient::getAscendingPathThroughWall(
           ++nconnections;
         }
       }
-      if(nconnections > 1) {
+      if(stopIfMultiConnected && nconnections > 1) {
         return true;
       }
     }
@@ -777,7 +779,7 @@ bool DiscreteGradient::getAscendingPathThroughWall(
           ++nconnections;
         }
       }
-      if(nconnections > 1) {
+      if(stopIfMultiConnected && nconnections > 1) {
         return true;
       }
 
