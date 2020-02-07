@@ -1,4 +1,8 @@
 NAME
   ttkCinemaImaging
 DEPENDS
+  VTK::FiltersCore
+  VTK::RenderingOpenGL2
+PRIVATE_DEPENDS
+  VTK::CommonCore
   ttkAlgorithm

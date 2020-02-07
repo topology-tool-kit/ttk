@@ -21,24 +21,27 @@ jobs:
 
 - job:
   displayName: Ubuntu-VTK-Python3-OpenMP-Ninja
-  pool:
-    vmImage: 'ubuntu-latest'
-
   strategy:
     matrix:
-      GCC-6 Release:
+      GCC-6-Release:
+        imageName: 'ubuntu-18.04'
         CC: gcc-6
         CXX: g++-6
         BuildType: Release
         SelfHost: false
         CMakeArgs: ''
 
-      GCC-7 Release:
+      GCC-7-Debug:
+        imageName: 'ubuntu-18.04'
         CC: gcc-7
         CXX: g++-7
         BuildType: Debug
         SelfHost: false
         CMakeArgs: ''
+  pool:
+    vmImage: $(imageName)
+  variables:
+    LD_LIBRARY_PATH: $(Build.ArtifactStagingDirectory)/vtk-install/lib/
 
   steps:
   - script: |
@@ -74,7 +77,7 @@ jobs:
   - task: CMake@1
     inputs:
       workingDirectory: 'build/'
-      cmakeArgs: '.. $(CMakeArgs) -GNinja -DCMAKE_INSTALL_PREFIX=$(Build.ArtifactStagingDirectory)/ttk-install -DCMAKE_BUILD_TYPE=$(BuildType) -DVTK_DIR=$(Build.ArtifactStagingDirectory)/vtk-install/lib/cmake/vtk-8.90 -DTTK_BUILD_PARAVIEW_PLUGINS=OFF -DVTK_MODULE_ENABLE_ttkAddFieldData=NO -DVTK_MODULE_ENABLE_ttkCinemaWriter=NO -DVTK_MODULE_ENABLE_ttkCinemaReader=NO -DVTK_MODULE_ENABLE_ttkCinemaQuery=NO -DVTK_MODULE_ENABLE_ttkCinemaImaging=NO -DVTK_MODULE_ENABLE_ttkUserInterfaceBase=NO -DVTK_MODULE_ENABLE_ttkWRLExporter=NO'
+      cmakeArgs: '.. $(CMakeArgs) -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -GNinja -DCMAKE_INSTALL_PREFIX=$(Build.ArtifactStagingDirectory)/ttk-install -DCMAKE_BUILD_TYPE=$(BuildType) -DVTK_DIR=$(Build.ArtifactStagingDirectory)/vtk-install/lib/cmake/vtk-8.90 -DTTK_BUILD_PARAVIEW_PLUGINS=OFF -DVTK_MODULE_ENABLE_ttkAddFieldData=NO -DVTK_MODULE_ENABLE_ttkCinemaWriter=NO -DVTK_MODULE_ENABLE_ttkCinemaReader=NO -DVTK_MODULE_ENABLE_ttkCinemaQuery=NO -DVTK_MODULE_ENABLE_ttkCinemaImaging=NO -DVTK_MODULE_ENABLE_ttkUserInterfaceBase=NO -DVTK_MODULE_ENABLE_ttkWRLExporter=NO'
     displayName: 'Configure TTK'
 
   - script: |
@@ -82,10 +85,10 @@ jobs:
     workingDirectory: 'build/'
     displayName: 'Build and install TTK'
 
-#  - script: |
-#      ./bin/ttkBlankCmd -i $(Build.SourcesDirectory)/examples/data/inputData.vtu
-#    workingDirectory: '$(Build.ArtifactStagingDirectory)/ttk-install/'
-#    displayName: 'Test TTK command line'
+  - script: |
+      ./bin/ttkBlankCmd -i $(Build.SourcesDirectory)/examples/data/inputData.vtu
+    workingDirectory: '$(Build.ArtifactStagingDirectory)/ttk-install/'
+    displayName: 'Test TTK command line'
 
 # ParaView
 
@@ -93,7 +96,7 @@ jobs:
   displayName: Ubuntu-PV-Python3-Eigen-Make
   timeoutInMinutes: 180
   pool:
-    vmImage: 'ubuntu-latest'
+    vmImage: 'ubuntu-18.04'
 
   strategy:
     matrix:
@@ -153,10 +156,10 @@ jobs:
     workingDirectory: 'build/'
     displayName: 'Build and install TTK'
 
-#  - script: |
-#      ./bin/ttkBlankCmd -i $(Build.SourcesDirectory)/examples/data/inputData.vtu
-#    workingDirectory: '$(Build.ArtifactStagingDirectory)/ttk-install/'
-#    displayName: 'Test TTK Command line'
+  - script: |
+      ./bin/ttkBlankCmd -i $(Build.SourcesDirectory)/examples/data/inputData.vtu
+    workingDirectory: '$(Build.ArtifactStagingDirectory)/ttk-install/'
+    displayName: 'Test TTK Command line'
 
 # ------------------------------
 # Mac OS build
@@ -222,10 +225,10 @@ jobs:
   strategy:
     matrix:
       Windows:
-          imageName: 'vs2017-win2016'
-          cCompiler: cl.exe
-          cxxCompiler: cl.exe
-          compilerInitialization: 'call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\VC\Auxiliary\Build\vcvars64.bat"'
+        imageName: 'vs2017-win2016'
+        cCompiler: cl.exe
+        cxxCompiler: cl.exe
+        compilerInitialization: 'call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\VC\Auxiliary\Build\vcvars64.bat"'
   pool:
     vmImage: $(imageName)
 
