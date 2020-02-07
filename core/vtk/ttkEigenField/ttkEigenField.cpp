@@ -101,9 +101,9 @@ int ttkEigenField::RequestData(vtkInformation *request,
       break;
     case FieldType::DOUBLE:
       res += this->execute<double>(
-        *triangulation, static_cast<double *>(eigenFunctions->GetVoidPointer(0)),
-        EigenNumber, ComputeStatistics,
-        static_cast<double *>(stats->GetVoidPointer(0)));
+        *triangulation,
+        static_cast<double *>(eigenFunctions->GetVoidPointer(0)), EigenNumber,
+        ComputeStatistics, static_cast<double *>(stats->GetVoidPointer(0)));
       break;
     default:
       break;

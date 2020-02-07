@@ -40,7 +40,7 @@ int Debug::dMsg(ostream &stream, string msg, const int &debugLevel) const {
 
 int Debug::welcomeMsg(ostream &stream) {
 
-  int priorityAsInt = static_cast<int>(debug::Priority::PERFORMANCE);
+  int priorityAsInt = (int)debug::Priority::PERFORMANCE;
 
   if((ttk::welcomeMsg_) && (debugLevel_ > priorityAsInt)) {
     ttk::welcomeMsg_ = false;

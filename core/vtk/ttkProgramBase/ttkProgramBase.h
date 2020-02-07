@@ -58,6 +58,12 @@ public:
       return -1;
     }
 
+    if(!ttkModule_)
+      return -2;
+
+    ttkModule_->setDebugLevel(debugLevel_);
+    ttkModule_->setThreadNumber(threadNumber_);
+
     return execute();
   }
 

@@ -111,7 +111,7 @@ namespace ttk {
     CommandLineParser() {
       setArgument("d", &(ttk::globalDebugLevel_), "Global debug level", true);
       setArgument("t", &ttk::globalThreadNumber_, "Global thread number", true);
-      debugLevel_ = static_cast<int>(debug::Priority::INFO);
+      debugLevel_ = (int)(debug::Priority::INFO);
       setDebugMsgPrefix("CMD");
     };
 

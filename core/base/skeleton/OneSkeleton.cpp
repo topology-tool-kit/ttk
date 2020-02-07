@@ -198,7 +198,7 @@ int OneSkeleton::buildEdgeList(
         // end of edge processing
       }
     }
-    if(debugLevel_ >= static_cast<int>(debug::Priority::INFO)) {
+    if(debugLevel_ >= (int)(debug::Priority::INFO)) {
       if(!(i % ((cellNumber) / timeBuckets)))
         printMsg("Building edges", (i / (float)cellNumber), t.getElapsedTime(),
                  1, debug::LineMode::REPLACE);
@@ -291,7 +291,7 @@ int OneSkeleton::buildEdgeLists(
   printMsg("Built " + to_string(edgeLists.size()) + " edge lists", 1,
            t.getElapsedTime(), threadNumber_);
 
-  if(debugLevel_ >= static_cast<int>(debug::Priority::DETAIL)) {
+  if(debugLevel_ >= (int)(debug::Priority::DETAIL)) {
     for(SimplexId i = 0; i < (SimplexId)edgeLists.size(); i++) {
       {
         stringstream stringStream;
