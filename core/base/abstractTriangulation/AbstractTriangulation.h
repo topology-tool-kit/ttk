@@ -19,6 +19,12 @@
 #include <array>
 #include <ostream>
 
+#ifdef TTK_ENABLE_KAMIKAZE
+#define TTK_TRIANGULATION_INTERNAL(NAME) NAME
+#else
+#define TTK_TRIANGULATION_INTERNAL(NAME) NAME##Internal
+#endif // TTK_ENABLE_KAMIKAZE
+
 #define ttkTemplateMacroCase(triangulationType, triangulationClass, call) \
   case triangulationType: {                                               \
     typedef triangulationClass TTK_TT;                                    \
