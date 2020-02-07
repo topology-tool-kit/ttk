@@ -459,7 +459,7 @@ int DiscreteGradient::getDescendingPath(const Cell &cell,
   return 0;
 }
 
-int DiscreteGradient::getDescendingPathThroughWall(
+bool DiscreteGradient::getDescendingPathThroughWall(
   const wallId_t wallId,
   const Cell &saddle2,
   const Cell &saddle1,
@@ -500,7 +500,7 @@ int DiscreteGradient::getDescendingPathThroughWall(
         }
       }
       if(stopIfMultiConnected && nconnections > 1) {
-        return 1;
+        return true;
       }
     }
 
@@ -554,14 +554,14 @@ int DiscreteGradient::getDescendingPathThroughWall(
         }
       }
       if(stopIfMultiConnected && nconnections > 1) {
-        return 1;
+        return true;
       }
 
       // stop at convergence caused by boundary effect
     } while(currentId != oldId);
   }
 
-  return 0;
+  return false;
 }
 
 int DiscreteGradient::getAscendingPath(const Cell &cell,
