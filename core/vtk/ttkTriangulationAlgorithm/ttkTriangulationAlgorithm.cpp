@@ -49,31 +49,29 @@ int ttkTriangulationAlgorithm::RequestDataObject(
 
       TTK_UNSTRUCTURED_GRID_NEW(i, outputInformation, dataType);
 
-      TTK_IMAGE_DATA_NEW(i, outputInformation, dataType);
-
       // NOTE:
       // We do not allocate a ttkImageData here because paraview seems to be
       // confused by them (no PointData or CellData to refer to).
       // this is not a problem since everything is implicit here anyway.
       // (but we do need to allocate a ttkImageData in the input of TTK filters
       // to access the triangulation data-structure).
-      //       if(dataType == "vtkImageData") {
-      //         ttkImageData *data = ttkImageData::SafeDownCast(
-      //           outputInformation->Get(vtkDataObject::DATA_OBJECT()));
-      //
-      //         if(!data) {
-      //           data = ttkImageData::New();
-      //           outputInformation->Set(vtkDataObject::DATA_OBJECT(), data);
-      //           data->FastDelete();
-      //           data->CopyInformationFromPipeline(outputInformation);
-      //           GetOutputPortInformation(i)->Set(
-      //             vtkDataObject::DATA_EXTENT_TYPE(), data->GetExtentType());
-      //         }
-      //
-      //         if((data) && (!data->getTriangulation())) {
-      //           data->allocate();
-      //         }
-      //       }
+      if(dataType == "vtkImageData") {
+        ttkImageData *data = ttkImageData::SafeDownCast(
+          outputInformation->Get(vtkDataObject::DATA_OBJECT()));
+
+        if(!data) {
+          data = ttkImageData::New();
+          outputInformation->Set(vtkDataObject::DATA_OBJECT(), data);
+          data->FastDelete();
+          data->CopyInformationFromPipeline(outputInformation);
+          GetOutputPortInformation(i)->Set(
+            vtkDataObject::DATA_EXTENT_TYPE(), data->GetExtentType());
+        }
+
+        if((data) && (!data->getTriangulation())) {
+          data->allocate();
+        }
+      }
     }
   }
 

@@ -171,7 +171,6 @@ protected:                                                             \
                                                                        \
         TTK_POLY_DATA_NEW(i, outputInformation, dataType);             \
                                                                        \
-        TTK_IMAGE_DATA_NEW(i, outputInformation, dataType);            \
       }                                                                \
     }                                                                  \
                                                                        \
