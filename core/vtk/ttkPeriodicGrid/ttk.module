@@ -5,6 +5,5 @@ SOURCES
 HEADERS
   ttkPeriodicGrid.h
 DEPENDS
-  periodicGrid
   ttkAlgorithm
   ttkTriangulationAlgorithm

@@ -1,26 +1,14 @@
-/// TODO 4: Provide your information
 ///
 /// \ingroup vtk
 /// \class ttkPeriodicGrid
-/// \author Your Name Here <Your Email Address Here>
-/// \date The Date Here.
+/// \author Julien Tierny <julien.tierny@sorbonne-universite.fr>
+/// \date February 2020.
 ///
-/// \brief TTK VTK-filter that wraps the ttk::PeriodicGrid module.
+/// \brief TTK VTK-filter set the periodicity (in all dimensions) of a regular
+/// grid.
 ///
-/// This VTK filter uses the ttk::PeriodicGrid module to compute the bounding
-/// box of a vtkDataSet, which is returned as a vtkUnstructuredGrid.
 ///
-/// \param Input vtkDataSet whose bounding box will be computed.
-/// \param Output vtkUnstructuredGrid that corresponds to bounding box of the
-/// input.
-///
-/// This filter can be used as any other VTK filter (for instance, by using the
-/// sequence of calls SetInputData(), Update(), GetOutputDataObject()).
-///
-/// See the related ParaView example state files for usage examples within a
-/// VTK pipeline.
-///
-/// \sa ttk::PeriodicGrid
+/// \sa ttk::Triangulation
 /// \sa ttkAlgorithm
 
 #pragma once
@@ -32,28 +20,19 @@
 #include <ttkAlgorithm.h>
 #include <ttkTriangulation.h>
 
-// TTK Base Includes
-#include <PeriodicGrid.h>
-
 class TTKPERIODICGRID_EXPORT ttkPeriodicGrid
   : public ttkAlgorithm // we inherit from the generic ttkAlgorithm class
-  ,
-    protected ttk::PeriodicGrid // and we inherit from the base class
 {
 private:
-  /**
-   * TODO 5: Add all filter parameters only as private member variables and
-   *         initialize them here.
-   */
-  std::string OutputArrayName{"AveragedScalarField"};
+  bool Periodicity;
 
 public:
   /**
    * TODO 6: Automatically generate getters and setters of filter
    *         parameters via vtkMacros.
    */
-  vtkSetMacro(OutputArrayName, std::string);
-  vtkGetMacro(OutputArrayName, std::string);
+  vtkSetMacro(Periodicity, bool);
+  vtkGetMacro(Periodicity, bool);
 
   /**
    * This static method and the macro below are VTK conventions on how to

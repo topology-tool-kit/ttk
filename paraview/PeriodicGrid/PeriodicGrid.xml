@@ -29,7 +29,7 @@ periodic regular grid (vtkImageData), in all dimensions.
 
                 <IntVectorProperty
                   name="SetPeriodicity"
-                  label="Set Periodicity"
+                  label="Periodicity in all dimensions"
                   command="SetPeriodicity"
                   number_of_elements="1"
                   default_values="1">

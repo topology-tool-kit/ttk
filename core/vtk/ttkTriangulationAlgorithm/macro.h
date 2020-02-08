@@ -83,6 +83,27 @@ using ttkSimplexIdTypeArray = vtkIntArray;
 //------------------------------------------------------------------
 
 // Macros for vtkWrappers
+#define TTK_IMAGE_DATA_NEW(i, ouputInformation, dataType)          \
+  if(dataType == "vtkImageData") {                                 \
+    ttkImageData *data = ttkImageData::SafeDownCast(               \
+      outputInformation->Get(vtkDataObject::DATA_OBJECT()));       \
+                                                                   \
+    if(!data) {                                                    \
+      data = ttkImageData::New();                                  \
+      outputInformation->Set(vtkDataObject::DATA_OBJECT(), data);  \
+      data->FastDelete();                                          \
+      data->CopyInformationFromPipeline(outputInformation);        \
+      GetOutputPortInformation(i)->Set(                            \
+        vtkDataObject::DATA_EXTENT_TYPE(), data->GetExtentType()); \
+    }                                                              \
+                                                                   \
+    if((data) && (!data->getTriangulation())) {                    \
+      data->allocate();                                            \
+    }                                                              \
+  }
+
+//------------------------------------------------------------------
+
 #define TTK_POLY_DATA_NEW(i, ouputInformation, dataType)           \
   if(dataType == "vtkPolyData") {                                  \
     ttkPolyData *data = ttkPolyData::SafeDownCast(                 \
@@ -146,10 +167,11 @@ protected:                                                             \
       if(output) {                                                     \
                                                                        \
         std::string dataType = output->GetClassName();                 \
-                                                                       \
         TTK_UNSTRUCTURED_GRID_NEW(i, outputInformation, dataType);     \
                                                                        \
         TTK_POLY_DATA_NEW(i, outputInformation, dataType);             \
+                                                                       \
+        TTK_IMAGE_DATA_NEW(i, outputInformation, dataType);            \
       }                                                                \
     }                                                                  \
                                                                        \

@@ -7,6 +7,7 @@ PeriodicImplicitTriangulation::PeriodicImplicitTriangulation()
   : dimensionality_{-1}, cellNumber_{}, vertexNumber_{}, edgeNumber_{},
     triangleNumber_{}, tetrahedronNumber_{}, isAccelerated_{} {
   setDebugMsgPrefix("PeriodicImplicitTriangulation");
+  hasPeriodicBoundaries_ = true;
 }
 
 PeriodicImplicitTriangulation::~PeriodicImplicitTriangulation() {
