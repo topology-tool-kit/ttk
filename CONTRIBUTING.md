@@ -20,9 +20,9 @@ For this, we recommend to use scripts such as [this one](https://github.com/bari
   - To make your life easier, we recommend that you sign up for this (free) service and that you connect your TTK github fork to it. This will run the build tests upon each of your commits to your local TTK repository.
 
 
-# 4. Submitting a new module
-  - **Before submitting a new module**, we invite you to read our [Guidelines for Developing a New TTK Module](https://github.com/topology-tool-kit/ttk/wiki/Guidelines-for-Developing-a-New-TTK-Module). 
-  - Prepare your pull-request to the **dev** branch of [TTK](https://github.com/topology-tool-kit/ttk/tree/dev)). Before submitting it, please make sure that your fork is in sync with the latest version of TTK's source tree (typically by entering a command like <code>git pull ttk-public dev</code>, where <code>ttk-public</code> is the name of your remote pointing to TTK's public source tree).
+# 4. Submitting code
+  - If you plan to submit a **new module**, we invite you to read our [Guidelines for Developing a New TTK Module](https://github.com/topology-tool-kit/ttk/wiki/Guidelines-for-Developing-a-New-TTK-Module). 
+  - Prepare your pull-request to the **dev** branch of [TTK](https://github.com/topology-tool-kit/ttk/tree/dev)). **Before** submitting it, please make sure that your fork is in sync with the latest version of TTK's source tree (typically by entering a command like <code>git pull ttk-public dev</code>, where <code>ttk-public</code> is the name of your remote pointing to TTK's public source tree). Please make sure that your new code runs fine with TTK's performance mode turned on <code>TTK\_ENABLE\_KAMIKAZE=ON</code> (OFF by default on the **dev** branch).
   - Please submit a pull-request with an example to the **dev** branch of [ttk-data](https://github.com/topology-tool-kit/ttk-data/tree/dev):
     - Provide a ParaView state file (*.pvsm) in the [<code>states/</code>](https://github.com/topology-tool-kit/ttk-data/tree/dev/states) directory which runs your new module. This example will be used to both test and demo your module.
     - Provide new data sets if needed. For new data sets, please update the [README](https://github.com/topology-tool-kit/ttk-data/blob/dev/README) file to include the corresponding references.
