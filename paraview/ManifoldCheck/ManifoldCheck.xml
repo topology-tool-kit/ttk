@@ -83,7 +83,7 @@ indicate a non-manifold simplex.
       </PropertyGroup>
       
       <Hints>
-        <ShowInMenu category="TTK - Misc" />
+        <ShowInMenu category="TTK - Domain" />
       </Hints>
    </SourceProxy>
  </ProxyGroup>

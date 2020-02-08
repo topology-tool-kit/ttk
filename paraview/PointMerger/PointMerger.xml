@@ -111,7 +111,7 @@ a user defined threshold.
       </PropertyGroup>
       
       <Hints>
-        <ShowInMenu category="TTK - Misc" />
+        <ShowInMenu category="TTK - Domain" />
       </Hints>
    </SourceProxy>
  </ProxyGroup>
