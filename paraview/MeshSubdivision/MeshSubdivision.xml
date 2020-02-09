@@ -114,7 +114,7 @@ fact with "Clean to Grid" under ParaView or vtkMergePoints for instance.
       </PropertyGroup>
       
       <Hints>
-        <ShowInMenu category="TTK - Misc" />
+        <ShowInMenu category="TTK - Domain" />
       </Hints>
    </SourceProxy>
  </ProxyGroup>

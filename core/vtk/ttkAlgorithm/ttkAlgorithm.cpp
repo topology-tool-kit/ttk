@@ -181,10 +181,21 @@ ttk::Triangulation *ttkAlgorithm::GetTriangulation(vtkDataSet *dataSet) {
       auto dataSetAsID = (vtkImageData *)dataSet;
 
       // check if triangulation already exists
-      auto it
-        = ttkAlgorithm::DataSetToTriangulationMap.find((void *)dataSetAsID);
+      auto it = ttkAlgorithm::DataSetToTriangulationMap.find(
+        (void *)dataSetAsID->GetScalarPointer());
       if(it != ttkAlgorithm::DataSetToTriangulationMap.end()) {
-        if(it->second.second == dataSetAsID->GetMTime()) {
+
+        std::vector<int> ttkDimensions;
+        auto fetchedTriangulation = (ttk::Triangulation *)it->second.first;
+        fetchedTriangulation->getGridDimensions(ttkDimensions);
+
+        int vtkDimensions[3];
+        dataSetAsID->GetDimensions(vtkDimensions);
+        if((vtkDimensions[0] == ttkDimensions[0])
+           && (vtkDimensions[1] == ttkDimensions[1])
+           && (vtkDimensions[2] == ttkDimensions[2])) {
+
+          // we assume this is the regular grid we are looking for.
           this->printMsg("Returning already initilized triangulation",
                          ttk::debug::Priority::DETAIL);
           return it->second.first;
@@ -192,6 +203,16 @@ ttk::Triangulation *ttkAlgorithm::GetTriangulation(vtkDataSet *dataSet) {
           this->printMsg("Chached triangulation no longer valid",
                          ttk::debug::Priority::DETAIL);
         }
+
+        //         if(it->second.second == dataSetAsID->GetMTime()) {
+        //           this->printMsg("Returning already initilized
+        //           triangulation",
+        //                          ttk::debug::Priority::DETAIL);
+        //           return it->second.first;
+        //         } else {
+        //           this->printMsg("Chached triangulation no longer valid",
+        //                          ttk::debug::Priority::DETAIL);
+        //         }
       }
 
       this->printMsg(
@@ -220,7 +241,8 @@ ttk::Triangulation *ttkAlgorithm::GetTriangulation(vtkDataSet *dataSet) {
         spacing[2], gridDimensions[0], gridDimensions[1], gridDimensions[2]);
 
       ttkAlgorithm::DataSetToTriangulationMap.insert(
-        {(void *)dataSetAsID, {newTriangulation, dataSetAsID->GetMTime()}});
+        {(void *)dataSetAsID->GetScalarPointer(),
+         {newTriangulation, dataSetAsID->GetMTime()}});
 
       this->printMsg("Initializing Implicit Triangulation", 1,
                      ttk::debug::LineMode::REPLACE,

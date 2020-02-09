@@ -15,6 +15,7 @@ AbstractTriangulation::~AbstractTriangulation() {
 
 int AbstractTriangulation::clear() {
 
+  hasPeriodicBoundaries_ = false;
   hasPreconditionedBoundaryEdges_ = false;
   hasPreconditionedBoundaryTriangles_ = false;
   hasPreconditionedBoundaryVertices_ = false;

@@ -91,28 +91,28 @@ int ttk::ScalarFieldCriticalPoints<dataType>::execute() {
             oneSaddleNumber = 0, twoSaddleNumber = 0, monkeySaddleNumber = 0;
 
   // debug msg
-  if(debugLevel_ >= (int) debug::Priority::INFO) {
+  if(debugLevel_ >= (int)debug::Priority::INFO) {
     if(dimension_ == 3) {
       for(SimplexId i = 0; i < vertexNumber_; i++) {
         switch(vertexTypes[i]) {
 
-          case (char) (CriticalType::Local_minimum):
+          case(char)(CriticalType::Local_minimum):
             minimumNumber++;
             break;
 
-          case (char) (CriticalType::Saddle1):
+          case(char)(CriticalType::Saddle1):
             oneSaddleNumber++;
             break;
 
-          case (char) (CriticalType::Saddle2):
+          case(char)(CriticalType::Saddle2):
             twoSaddleNumber++;
             break;
 
-          case (char) (CriticalType::Local_maximum):
+          case(char)(CriticalType::Local_maximum):
             maximumNumber++;
             break;
 
-          case (char) (CriticalType::Degenerate):
+          case(char)(CriticalType::Degenerate):
             monkeySaddleNumber++;
             break;
         }
@@ -121,19 +121,19 @@ int ttk::ScalarFieldCriticalPoints<dataType>::execute() {
       for(SimplexId i = 0; i < vertexNumber_; i++) {
         switch(vertexTypes[i]) {
 
-          case (char) (CriticalType::Local_minimum):
+          case(char)(CriticalType::Local_minimum):
             minimumNumber++;
             break;
 
-          case (char) (CriticalType::Saddle1):
+          case(char)(CriticalType::Saddle1):
             saddleNumber++;
             break;
 
-          case (char) (CriticalType::Local_maximum):
+          case(char)(CriticalType::Local_maximum):
             maximumNumber++;
             break;
 
-          case (char) (CriticalType::Degenerate):
+          case(char)(CriticalType::Degenerate):
             monkeySaddleNumber++;
             break;
         }
@@ -313,7 +313,7 @@ std::pair<ttk::SimplexId, ttk::SimplexId>
   it = unique(upperList.begin(), upperList.end());
   upperList.resize(distance(upperList.begin(), it));
 
-  if(debugLevel_ >= (int) (debug::Priority::VERBOSE)) {
+  if(debugLevel_ >= (int)(debug::Priority::VERBOSE)) {
     printMsg("Vertex #" + std::to_string(vertexId)
                + ": lowerLink-#CC=" + std::to_string(lowerList.size())
                + " upperLink-#CC=" + std::to_string(upperList.size()),
@@ -332,12 +332,12 @@ char ttk::ScalarFieldCriticalPoints<dataType>::getCriticalType(
     = getNumberOfLowerUpperComponents(vertexId, triangulation);
 
   if(downValence == 0 && upValence == 1) {
-    return (char) (CriticalType::Local_minimum);
+    return (char)(CriticalType::Local_minimum);
   } else if(downValence == 1 && upValence == 0) {
-    return (char) (CriticalType::Local_maximum);
+    return (char)(CriticalType::Local_maximum);
   } else if(downValence == 1 && upValence == 1) {
     // regular point
-    return (char) (CriticalType::Regular);
+    return (char)(CriticalType::Regular);
   } else {
     // saddles
     if(dimension_ == 2) {
@@ -345,10 +345,10 @@ char ttk::ScalarFieldCriticalPoints<dataType>::getCriticalType(
          || (downValence == 1 && upValence == 2)
          || (downValence == 2 && upValence == 2)) {
         // regular saddle
-        return (char) (CriticalType::Saddle1);
+        return (char)(CriticalType::Saddle1);
       } else {
         // monkey saddle, saddle + extremum
-        return (char) (CriticalType::Degenerate);
+        return (char)(CriticalType::Degenerate);
         // NOTE: you may have multi-saddles on the boundary in that
         // configuration
         // to make this computation 100% correct, one would need to
@@ -356,19 +356,19 @@ char ttk::ScalarFieldCriticalPoints<dataType>::getCriticalType(
       }
     } else if(dimension_ == 3) {
       if(downValence == 2 && upValence == 1) {
-        return (char) (CriticalType::Saddle1);
+        return (char)(CriticalType::Saddle1);
       } else if(downValence == 1 && upValence == 2) {
-        return (char) (CriticalType::Saddle2);
+        return (char)(CriticalType::Saddle2);
       } else {
         // monkey saddle, saddle + extremum
-        return (char) (CriticalType::Degenerate);
+        return (char)(CriticalType::Degenerate);
         // NOTE: we may have a similar effect in 3D (TODO)
       }
     }
   }
 
   // -2: regular points
-  return (char) (CriticalType::Regular);
+  return (char)(CriticalType::Regular);
 }
 
 template <class dataType>
@@ -438,7 +438,7 @@ char ttk::ScalarFieldCriticalPoints<dataType>::getCriticalType(
     }
   }
 
-  if(debugLevel_ >= (int) (debug::Priority::VERBOSE)) {
+  if(debugLevel_ >= (int)(debug::Priority::VERBOSE)) {
     printMsg("Vertex #" + std::to_string(vertexId) + " lower link ("
                + std::to_string(lowerCount) + " vertices)",
              debug::Priority::VERBOSE);
@@ -449,11 +449,11 @@ char ttk::ScalarFieldCriticalPoints<dataType>::getCriticalType(
 
   if(!lowerCount) {
     // minimum
-    return (char) (CriticalType::Local_minimum);
+    return (char)(CriticalType::Local_minimum);
   }
   if(!upperCount) {
     // maximum
-    return (char) (CriticalType::Local_maximum);
+    return (char)(CriticalType::Local_maximum);
   }
 
   // so far 40% of the computation, that's ok.
@@ -528,7 +528,7 @@ char ttk::ScalarFieldCriticalPoints<dataType>::getCriticalType(
   it = unique(upperList.begin(), upperList.end());
   upperList.resize(distance(upperList.begin(), it));
 
-  if(debugLevel_ >= (int) (debug::Priority::VERBOSE)) {
+  if(debugLevel_ >= (int)(debug::Priority::VERBOSE)) {
     printMsg("Vertex #" + std::to_string(vertexId)
                + ": lowerLink-#CC=" + std::to_string(lowerList.size())
                + " upperLink-#CC=" + std::to_string(upperList.size()),
@@ -537,16 +537,16 @@ char ttk::ScalarFieldCriticalPoints<dataType>::getCriticalType(
 
   if((lowerList.size() == 1) && (upperList.size() == 1))
     // regular point
-    return (char) (CriticalType::Regular);
+    return (char)(CriticalType::Regular);
   else {
     // saddles
     if(dimension_ == 2) {
       if((lowerList.size() > 2) || (upperList.size() > 2)) {
         // monkey saddle
-        return (char) (CriticalType::Degenerate);
+        return (char)(CriticalType::Degenerate);
       } else {
         // regular saddle
-        return (char) (CriticalType::Saddle1);
+        return (char)(CriticalType::Saddle1);
         // NOTE: you may have multi-saddles on the boundary in that
         // configuration
         // to make this computation 100% correct, one would need to disambiguate
@@ -554,19 +554,19 @@ char ttk::ScalarFieldCriticalPoints<dataType>::getCriticalType(
       }
     } else if(dimension_ == 3) {
       if((lowerList.size() == 2) && (upperList.size() == 1)) {
-        return (char) (CriticalType::Saddle1);
+        return (char)(CriticalType::Saddle1);
       } else if((lowerList.size() == 1) && (upperList.size() == 2)) {
-        return (char) (CriticalType::Saddle2);
+        return (char)(CriticalType::Saddle2);
       } else {
         // monkey saddle
-        return (char) (CriticalType::Degenerate);
+        return (char)(CriticalType::Degenerate);
         // NOTE: we may have a similar effect in 3D (TODO)
       }
     }
   }
 
   // -2: regular points
-  return (char) (CriticalType::Regular);
+  return (char)(CriticalType::Regular);
 }
 
 #endif /* end of include guard: SCALARFIELDCRITICALPOINTS_INL */
