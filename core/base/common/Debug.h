@@ -418,6 +418,9 @@ namespace ttk {
       std::string combinedMsg = msg;
 
       if(filler.length() > 0) {
+        if(msg.length() > 0)
+          combinedMsg += " ";
+
         int gapWidth = debug::LINEWIDTH - this->debugMsgPrefix_.length()
                        - combinedMsg.length() - right.length();
         gapWidth = std::max(gapWidth / filler.length(), (size_t)1);
