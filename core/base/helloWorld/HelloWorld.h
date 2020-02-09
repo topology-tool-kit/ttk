@@ -106,7 +106,7 @@ namespace ttk {
           }
 
           // devide by neighbor number
-          outputData[i] /= nNeighbors;
+          outputData[i] /= (nNeighbors + 1);
         }
 
         // print the progress of the current subprocedure with elapsed time

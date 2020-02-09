@@ -36,14 +36,19 @@ class TTKALGORITHM_EXPORT ttkAlgorithm : public vtkAlgorithm,
 private:
   /**
    * A static registry that maps owners (e.g. vtkCellArrays or vtkImageData
-   * objects) to a ttk::Triangulation object. The registry also stores a
-   * modified timestamp of the owner to check if it triangulation needs to be
-   * updated, and it stores an event listener that automatically deletes a
-   * triangulation if its corresponding owner is deleted.
+   * objects) to a ttk::Triangulation object. The registry also checks if a
+   * triangulation needs to be updated in case the owner was modified since
+   * initialization, and it also stores an event listener that automatically
+   * deletes a triangulation if its corresponding owner is deleted.
    */
   static std::unordered_map<
-    void *,
-    std::tuple<ttk::Triangulation, vtkMTimeType, vtkSmartPointer<vtkCommand>>>
+    void*,
+    std::tuple<
+        ttk::Triangulation,
+        vtkObject*,
+        vtkSmartPointer<vtkCommand>,
+        vtkMTimeType
+    >>
     DataSetToTriangulationMap;
 
   int ThreadNumber{1};
@@ -55,7 +60,7 @@ private:
    * case the triangulation and its auxiliary objects are deleted from the
    * registry (now a new triangulation can be recreated from scratch).
    */
-  ttk::Triangulation *FindTriangulation(vtkObject *owner);
+  ttk::Triangulation *FindTriangulation(void* key);
 
   /**
    * This function creates a ttk::Triangulation object for a given.
@@ -63,7 +68,8 @@ private:
    * points and cells are provided), or an implicit triangulation (in case owner
    * is a vtkImageData object).
    */
-  ttk::Triangulation *InitTriangulation(vtkObject *owner,
+  ttk::Triangulation *InitTriangulation(void* key,
+                                        vtkObject *owner,
                                         vtkPoints *points = nullptr,
                                         vtkCellArray *cells = nullptr);
 
