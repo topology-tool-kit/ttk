@@ -125,7 +125,7 @@ int ttkDepthImageBasedGeometryApproximation::RequestData(
 
           // Output
           (float *)points->GetVoidPointer(0),
-          (vtkIdType *)ttkUtils::WritePointer(cells->GetData(), nTriangles, nTriangles * 4),
+          cells->WritePointer(nTriangles, nTriangles * 4),
           (double *)triangleDistortions->GetVoidPointer(0));
       });
     }

@@ -265,25 +265,25 @@ void *ttkUtils::GetVoidPointer(vtkDataArray *array, vtkIdType start) {
   return outPtr;
 }
 
-void *ttkUtils::WriteVoidPointer(vtkDataArray *array, vtkIdType start,
+void *ttkUtils::WriteVoidPointer(vtkDataArray *array, vtkIdType valueIdx,
                              vtkIdType numValues) {
   void *outPtr = nullptr;
   switch(array->GetDataType()) {
     vtkTemplateMacro(
       auto *aosArray = vtkAOSDataArrayTemplate<VTK_TT>::FastDownCast(array);
-      if(aosArray) { outPtr = aosArray->WriteVoidPointer(start, numValues); });
+      if(aosArray) { outPtr = aosArray->WriteVoidPointer(valueIdx, numValues); });
   }
   return outPtr;
 }
 
 void *ttkUtils::WritePointer(vtkDataArray *array,
-                             vtkIdType start,
+                             vtkIdType valueIdx,
                              vtkIdType numValues) {
   void *outPtr = nullptr;
   switch(array->GetDataType()) {
     vtkTemplateMacro(
       auto *aosArray = vtkAOSDataArrayTemplate<VTK_TT>::FastDownCast(array);
-      if(aosArray) { outPtr = aosArray->WritePointer(start, numValues); });
+      if(aosArray) { outPtr = aosArray->WritePointer(valueIdx, numValues); });
   }
   return outPtr;
 }
