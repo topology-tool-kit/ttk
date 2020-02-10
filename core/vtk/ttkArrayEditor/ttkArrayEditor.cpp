@@ -146,8 +146,8 @@ void ttkArrayEditor::ClearSourceFieldDataArrays() {
 
 template <typename VTK_T1, typename VTK_T2>
 int copyArrayData(vtkDataArray *target, vtkDataArray *copy) {
-  auto targetData = (VTK_T1 *)target->GetVoidPointer(0);
-  auto copyData = (VTK_T2 *)copy->GetVoidPointer(0);
+  auto targetData = (VTK_T1 *)ttkUtils::GetVoidPointer(target);
+  auto copyData = (VTK_T2 *)ttkUtils::GetVoidPointer(copy);
   for(size_t i = 0, n = target->GetNumberOfValues(); i < n; i++)
     copyData[i] = (VTK_T2)(targetData[i]);
   return 1;

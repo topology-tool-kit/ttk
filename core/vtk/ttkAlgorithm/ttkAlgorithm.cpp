@@ -152,7 +152,7 @@ ttk::Triangulation *ttkAlgorithm::InitTriangulation(void *key,
         return nullptr;
       }
 
-      void *pointDataArray = ttkUtils::GetVoidPointer(points->GetData());
+      void *pointDataArray = ttkUtils::GetVoidPointer(points);
       triangulation->setInputPoints(points->GetNumberOfPoints(), pointDataArray,
                                     pointDataType == VTK_DOUBLE);
     }

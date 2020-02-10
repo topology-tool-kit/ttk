@@ -5,4 +5,5 @@ SOURCES
 HEADERS
   ttkCellDataConverter.h
 DEPENDS
+  ttkAlgorithm
   common

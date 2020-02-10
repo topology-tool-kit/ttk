@@ -10,6 +10,7 @@
 #include <vtkAbstractArray.h>
 #include <vtkDoubleArray.h>
 #include <vtkFieldData.h>
+#include <vtkPoints.h>
 #include <vtkSmartPointer.h>
 
 namespace ttkUtils {
@@ -36,6 +37,7 @@ namespace ttkUtils {
   // Emultate old VTK functions
 
   void *GetVoidPointer(vtkDataArray *array, vtkIdType start = 0);
+  void *GetVoidPointer(vtkPoints *points, vtkIdType start = 0);
 
   void *WriteVoidPointer(vtkDataArray *array, vtkIdType start, vtkIdType numValues);
   void *WritePointer(vtkDataArray *array, vtkIdType start, vtkIdType numValues);
@@ -263,6 +265,9 @@ void *ttkUtils::GetVoidPointer(vtkDataArray *array, vtkIdType start) {
       if(aosArray) { outPtr = aosArray->GetVoidPointer(start); });
   }
   return outPtr;
+}
+void *ttkUtils::GetVoidPointer(vtkPoints *points, vtkIdType start) {
+  return GetVoidPointer(points->GetData(), start);
 }
 
 void *ttkUtils::WriteVoidPointer(vtkDataArray *array, vtkIdType valueIdx,
