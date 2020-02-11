@@ -1,5 +1,7 @@
-#include <regex>
 #include <ttkDimensionReduction.h>
+#include <ttkUtils.h>
+
+#include <regex>
 
 using namespace std;
 using namespace ttk;
@@ -84,7 +86,7 @@ vtkStandardNewMacro(ttkDimensionReduction)
         string s = "Component_" + to_string(i);
         vtkSmartPointer<vtkDoubleArray> arr
           = vtkSmartPointer<vtkDoubleArray>::New();
-        arr->SetVoidArray(outputData_[i].data(), numberOfRows, 1);
+        ttkUtils::SetVoidArray(arr, outputData_[i].data(), numberOfRows, 1);
         arr->SetName(s.data());
         output->AddColumn(arr);
       }

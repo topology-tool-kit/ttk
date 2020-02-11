@@ -1,4 +1,5 @@
 #include <ttkFTMTree.h>
+#include <ttkUtils.h>
 
 // only used on the cpp
 #include <vtkConnectivityFilter.h>
@@ -369,7 +370,8 @@ int ttkFTMTree::doIt(vector<vtkDataSet *> &inputs,
 
   // Build tree
   for(int cc = 0; cc < nbCC_; cc++) {
-    ftmTree_[cc].tree.setVertexScalars(inputScalars_[cc]->GetVoidPointer(0));
+    ftmTree_[cc].tree.setVertexScalars(
+      ttkUtils::GetVoidPointer(inputScalars_[cc]));
     ftmTree_[cc].tree.setVertexSoSoffsets(offsets_[cc].data());
     ftmTree_[cc].tree.setTreeType(GetTreeType());
     ftmTree_[cc].tree.setSegmentation(GetWithSegmentation());

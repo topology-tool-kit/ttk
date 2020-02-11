@@ -12,3 +12,4 @@ HEADERS
   macro.h
 DEPENDS
   triangulation
+  ttkAlgorithm
