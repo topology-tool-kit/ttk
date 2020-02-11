@@ -26,7 +26,7 @@ ttkEigenField::ttkEigenField() {
 
 int ttkEigenField::FillInputPortInformation(int port, vtkInformation *info) {
   if(port == 0) {
-    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataSet");
+    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
     return 1;
   }
   return 0;
