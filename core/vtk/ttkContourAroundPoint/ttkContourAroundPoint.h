@@ -42,11 +42,10 @@ class TTKCONTOURAROUNDPOINT_EXPORT ttkContourAroundPoint
 
 public:
   static ttkContourAroundPoint *New();
-  vtkTypeMacro(ttkContourAroundPoint, vtkDataSetAlgorithm)
+  vtkTypeMacro(ttkContourAroundPoint, vtkDataSetAlgorithm);
 
-    // BEGIN default ttk setters
-
-    void SetDebugLevel(int debugLevel) {
+  // BEGIN default ttk setters
+  void SetDebugLevel(int debugLevel) {
     setDebugLevel(debugLevel);
     Modified();
   }
@@ -63,21 +62,21 @@ public:
 
   // BEGIN set-getters macros for each parameter from the
   // ServerManagerConfiguration XML file.
-  vtkSetMacro(ui_sizeFilter, double) vtkGetMacro(ui_sizeFilter, double)
+  vtkSetMacro(ui_sizeFilter, double) vtkGetMacro(ui_sizeFilter, double);
 
-    vtkSetMacro(ui_extension, double) vtkGetMacro(ui_extension, double)
+  vtkSetMacro(ui_extension, double) vtkGetMacro(ui_extension, double);
 
-      vtkSetMacro(ui_scalars, std::string) vtkGetMacro(ui_scalars, std::string)
-    // END set-getters macros
+  vtkSetMacro(ui_scalars, std::string) vtkGetMacro(ui_scalars, std::string);
+  // END set-getters macros
 
-    // By default, this filter has one input and one output, of the same type.
-    // Here, you can override the number of input/output ports and their
-    // respective type. Make sure this is consistent with the
-    // ServerManagerConfiguration XML file and the
-    // `SetNumberOfInputPorts`/`SetNumberOfOutputPorts` argument (used in the
-    // constructor). The return value is interpreted as
-    // "PORT_REQUIREMENTS_FILLED" in vtkAlgorithm.cxx
-    int FillInputPortInformation(int port, vtkInformation *info) override {
+  // By default, this filter has one input and one output, of the same type.
+  // Here, you can override the number of input/output ports and their
+  // respective type. Make sure this is consistent with the
+  // ServerManagerConfiguration XML file and the
+  // `SetNumberOfInputPorts`/`SetNumberOfOutputPorts` argument (used in the
+  // constructor). The return value is interpreted as
+  // "PORT_REQUIREMENTS_FILLED" in vtkAlgorithm.cxx
+  int FillInputPortInformation(int port, vtkInformation *info) override {
     switch(port) {
       case 0:
         info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataSet");

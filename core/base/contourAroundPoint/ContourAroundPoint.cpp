@@ -38,20 +38,17 @@ int ttk::ContourAroundPoint::setupDomain(Triangulation *triangulation,
   }
 
   // Call all the required precondition functions here!
-  triangulation->preconditionVertexStars(); // for findCell --> getVertexStar
-  triangulation
-    ->preconditionCellNeighbors(); // for compOneContour --> getCellNeighbor
-  triangulation->preconditionCellEdges(); // for addOutput --> getCellEdge
-  triangulation->preconditionEdges(); //  i.a. for addOutput --> getEdgeVertex
+  triangulation->preconditionVertexStars(); // findCell-getVertexStar
+  triangulation->preconditionCellNeighbors(); // compOneContour-getCellNeighbor
+  triangulation->preconditionCellEdges(); // addOutput-getCellEdge
+  triangulation->preconditionEdges(); // i.a. addOutput-getEdgeVertex
   return 0;
 }
 
 //------------------------------------------------------------------------------------------------//
 
-int ttk::ContourAroundPoint::setupConstraints(float *coords,
-                                              float *isovalues,
-                                              std::size_t np,
-                                              int *flags) {
+int ttk::ContourAroundPoint::setupConstraints(float *coords, float *isovalues,
+                                              std::size_t np, int *flags) {
   _inpPointCoords = coords;
   _inpPointIsovals = isovalues;
   _np = np;

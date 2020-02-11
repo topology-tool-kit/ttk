@@ -24,16 +24,13 @@
 #include <cassert>
 #include <type_traits>
 
-vtkStandardNewMacro(ttkContourAroundPoint)
+vtkStandardNewMacro(ttkContourAroundPoint);
 
-  int ttkContourAroundPoint::doIt(std::vector<vtkDataSet *> &inputs,
-                                  std::vector<vtkDataSet *> &outputs) {
+int ttkContourAroundPoint::doIt(std::vector<vtkDataSet *> &inputs,
+                                std::vector<vtkDataSet *> &outputs) {
   ttk::Memory memUseObj;
   _out = static_cast<vtkUnstructuredGrid *>(outputs[0]);
 
-#if 0
-  makeDummyOutput();
-#else
   if(!preprocessDomain(inputs[0]))
     return 0;
   if(!preconditionConstraints(static_cast<vtkUnstructuredGrid *>(inputs[1]),
@@ -43,7 +40,6 @@ vtkStandardNewMacro(ttkContourAroundPoint)
     return 0;
   if(!postprocess())
     return 0;
-#endif
 
   std::ostringstream memUseStream;
   memUseStream << std::fixed << std::setprecision(3)
@@ -78,12 +74,10 @@ bool ttkContourAroundPoint::preprocessDomain(vtkDataSet *dataset) {
   }
 
   _scalarTypeCode = scalars->GetDataType();
-#ifndef NDEBUG
   std::ostringstream stream;
   stream << "Scalar type: " << scalars->GetDataTypeAsString() << " (code "
          << _scalarTypeCode << ")";
   dMsg(std::cout, stream.str().c_str());
-#endif
 
   double *bounds = dataset->GetBounds();
   double size = 1.;
@@ -119,14 +113,16 @@ bool ttkContourAroundPoint::preconditionConstraints(vtkUnstructuredGrid *nodes,
 
   // ---- Cell data ---- //
 
+#ifndef NDEBUG // each arc should of course be defined by exactly 2 vertices
   auto cells = arcs->GetCells();
-  const auto maxNvPerC
-    = cells->GetMaxCellSize(); // NOTE There is no equivalent for min :-(
+  const auto maxNvPerC = cells->GetMaxCellSize();
   if(maxNvPerC != 2) {
     vtkErrorMacro(
       "The points must come in pairs but there is at least one cell with "
       + std::to_string(maxNvPerC) + " points") return false;
   }
+  // TODO Check for minNvPerC != 2
+#endif
 
   auto cData = arcs->GetCellData();
   auto c2p = getBuffer<int>(cData, "upNodeId", VTK_INT, "int");
@@ -218,7 +214,6 @@ bool ttkContourAroundPoint::process() {
     vtkErrorMacro("_wrappedModule.execute failed with code "
                   << errorCode) return false;
   }
-
   return true;
 }
 

@@ -156,8 +156,8 @@ protected:
 };
 }
 
-//------------------------------------------------------------------------------------------------//
-//------------------------------------------------------------------------------------------------//
+//----------------------------------------------------------------------------//
+//----------------------------------------------------------------------------//
 template<class scalarT>
 int ttk::ContourAroundPoint::execute() const
 {
@@ -176,7 +176,8 @@ int ttk::ContourAroundPoint::execute() const
 
   Timer timUseObj;
 
-  // The following open-mp processing is only relevant for embarrassingly parallel algorithms.
+  // The following open-mp processing is only relevant for
+  // embarrassingly parallel algorithms.
 //#ifdef TTK_ENABLE_OPENMP
 //#pragma omp parallel for num_threads(threadNumber_)
 //#endif
