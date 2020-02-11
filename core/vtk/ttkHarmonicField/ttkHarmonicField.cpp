@@ -26,11 +26,13 @@ ttkHarmonicField::ttkHarmonicField() {
 
 int ttkHarmonicField::FillInputPortInformation(int port, vtkInformation *info) {
   if(port == 0) {
-    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataSet");
+    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
+    return 1;
   } else if(port == 1) {
-    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkPointSet");
+    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkPointSet");
+    return 1;
   }
-  return 1;
+  return 0;
 }
 
 int ttkHarmonicField::FillOutputPortInformation(int port,
