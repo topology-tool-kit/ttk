@@ -19,6 +19,12 @@
 #include <array>
 #include <ostream>
 
+#ifdef TTK_ENABLE_KAMIKAZE
+#define TTK_TRIANGULATION_INTERNAL(NAME) NAME
+#else
+#define TTK_TRIANGULATION_INTERNAL(NAME) NAME##Internal
+#endif // TTK_ENABLE_KAMIKAZE
+
 #define ttkTemplateMacroCase(triangulationType, triangulationClass, call) \
   case triangulationType: {                                               \
     typedef triangulationClass TTK_TT;                                    \
@@ -1753,7 +1759,7 @@ namespace ttk {
 
     /// Check if the data structure is empty or not.
     /// \return Returns true if empty, false otherwise.
-    virtual inline bool isEmpty() {
+    virtual inline bool isEmpty() const {
       return true;
     };
 
