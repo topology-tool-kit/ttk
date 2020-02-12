@@ -77,7 +77,7 @@ bool ttkContourAroundPoint::preprocessDomain(vtkDataSet *dataset) {
   std::ostringstream stream;
   stream << "Scalar type: " << scalars->GetDataTypeAsString() << " (code "
          << _scalarTypeCode << ")";
-  dMsg(std::cout, stream.str().c_str());
+  dMsg(std::cout, stream.str().c_str(), detailedInfoMsg);
 
   double *bounds = dataset->GetBounds();
   double size = 1.;
@@ -193,7 +193,7 @@ bool ttkContourAroundPoint::preconditionConstraints(vtkUnstructuredGrid *nodes,
   }
 
   const auto errorCode = _wrappedModule.setupConstraints(
-    _coords.data(), _isovals.data(), _isovals.size(), _flags.data());
+    _coords.data(), _isovals.data(), _flags.data(), _isovals.size());
   if(errorCode < 0) {
     vtkErrorMacro("setInputPoints failed with code " << errorCode);
     return false;
@@ -220,53 +220,17 @@ bool ttkContourAroundPoint::process() {
 //------------------------------------------------------------------------------------------------//
 
 bool ttkContourAroundPoint::postprocess() {
-  float *coordsBuf;
-  ttk::SimplexId nv;
   ttk::SimplexId *cinfosBuf;
   ttk::SimplexId nc;
+  float *coordsBuf;
   float *scalarsBuf;
   int *flagsBuf;
-  _wrappedModule.getOutputField(
-    coordsBuf, nv, cinfosBuf, nc, scalarsBuf, flagsBuf);
-  if(nv == 0) // very fine area filter
+  ttk::SimplexId nv;
+  _wrappedModule.getOutputField(cinfosBuf, nc,
+                                coordsBuf, scalarsBuf, flagsBuf, nv);
+  if(nc == 0) // very fine area filter
     return true;
-
-  const auto nvPerC = cinfosBuf[0];
-  if(!(nvPerC == 2 || nvPerC == 3)) {
-    vtkErrorMacro("Invalid number of vertices per cell: "
-                  + std::to_string(nvPerC) + ". Must be 2 or 3") return false;
-  }
-  const auto cellType = nvPerC == 2 ? VTK_LINE : VTK_TRIANGLE;
-
-#ifndef NDEBUG
-  if(vtkSmartPointer<vtkPoints>::New()->GetDataType() != VTK_FLOAT) {
-    vtkErrorMacro("The API has changed! We have expected the default "
-                  "coordinate type to be float");
-    return false;
-  }
-
-  for(ttk::SimplexId c = 0, i = 0; c < nc; ++c) {
-    const auto n = cinfosBuf[i];
-    if(n != nvPerC) {
-      vtkErrorMacro("Output cell " + std::to_string(c) + " has "
-                    + std::to_string(n) + " vertices. " + "Expected "
-                    + std::to_string(nvPerC));
-      return false;
-    }
-    i += n + 1;
-  }
-#endif
-
-  const std::size_t nEntriesPerC = nvPerC + 1;
-  auto cinfosBufVtk = reinterpret_cast<vtkIdType *>(cinfosBuf);
-  if(!std::is_same<ttk::SimplexId, vtkIdType>::value) {
-    const std::size_t n = nc * nEntriesPerC;
-    cinfosBufVtk = new vtkIdType[n];
-    for(std::size_t i = 0; i < n; ++i)
-      cinfosBufVtk[i] = vtkIdType(cinfosBuf[i]);
-    delete[] cinfosBuf;
-  }
-
+  
   // Pass ownership of the heap-allocated raw array to the respective
   // vtkDataArray.
   const int wantSave = 0;
@@ -274,19 +238,51 @@ bool ttkContourAroundPoint::postprocess() {
   // (The enum is independent of the template type - just use float.)
   const int delMethod
     = VTK_AOS_DATA_ARRAY_TEMPLATE<float>::DeleteMethod::VTK_DATA_ARRAY_DELETE;
+  
+  
+  // ---- Cell data ---- //
+  
+  int *ctypes = new int[nc];
 
+  vtkIdType cinfoCounter = 0;
+  for(std::size_t c = 0; c < nc; ++c) {
+    const auto nvOfCell = cinfosBuf[cinfoCounter];
+    assert(nvOfCell >= 2 && nvOfCell <= 3); // ensured in _wrappedModule
+    ctypes[c] = nvOfCell == 2 ? VTK_LINE : VTK_TRIANGLE;
+    cinfoCounter += nvOfCell + 1;
+  }
+  const vtkIdType cinfosSize = cinfoCounter;
+
+  auto cinfosBufVtk = reinterpret_cast<vtkIdType *>(cinfosBuf);
+  if(!std::is_same<ttk::SimplexId, vtkIdType>::value) { // unlikely
+    // Actually a warning would be in order- 
+    // what if conversion is not possible (e.g. too large indices)?
+    cinfosBufVtk = new vtkIdType[cinfosSize];
+    for(std::size_t i = 0; i < cinfosSize; ++i)
+      cinfosBufVtk[i] = vtkIdType(cinfosBuf[i]);
+    delete[] cinfosBuf;
+  }
+  
+  auto cells = vtkSmartPointer<vtkCellArray>::New();
+  auto cinfoArr = vtkSmartPointer<vtkIdTypeArray>::New();
+  cinfoArr->SetArray(cinfosBufVtk, cinfosSize, wantSave, delMethod);
+  cells->SetCells(nc, cinfoArr);
+  _out->SetCells(ctypes, cells);
+  
+  
+  // ---- Point data ---- //
+  
+  if(vtkSmartPointer<vtkPoints>::New()->GetDataType() != VTK_FLOAT) {
+    vtkErrorMacro("The API has changed! We have expected the default "
+                  "coordinate type to be float") return false;
+  }
+  
   auto points = vtkSmartPointer<vtkPoints>::New();
   auto coordArr = vtkSmartPointer<vtkFloatArray>::New();
   coordArr->SetNumberOfComponents(3);
   coordArr->SetArray(coordsBuf, nv * 3, wantSave, delMethod);
   points->SetData(coordArr);
   _out->SetPoints(points);
-
-  auto cells = vtkSmartPointer<vtkCellArray>::New();
-  auto cinfoArr = vtkSmartPointer<vtkIdTypeArray>::New();
-  cinfoArr->SetArray(cinfosBufVtk, nc * nEntriesPerC, wantSave, delMethod);
-  cells->SetCells(nc, cinfoArr);
-  _out->SetCells(cellType, cells);
 
   auto scalarArr = vtkFloatArray::New();
   scalarArr->SetArray(scalarsBuf, nv, wantSave, delMethod);
