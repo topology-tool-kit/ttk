@@ -151,10 +151,12 @@ vtkStandardNewMacro(ttkTriangulationRequest)
       break;
 
     case Tetra:
-      if(dimensionality == 3)
+      if(dimensionality == 3) {
+        triangulation->preconditionCells();
         if(SimplexIdentifier < 0
            or SimplexIdentifier >= triangulation->getNumberOfCells())
           return -1;
+      }
       break;
   }
 
