@@ -64,10 +64,6 @@ macro(ttk_add_vtk_module)
       DESTINATION
         "${TTK_INSTALL_PLUGIN_DIR}/TopologyToolKit"
       )
-    set_target_properties(${TTK_NAME}
-      PROPERTIES INSTALL_RPATH
-        "${TTK_INSTALL_PLUGIN_DIR}/TopologyToolKit"
-      )
   endif()
 
   # Fix a race condition in the VTK's CMake:

@@ -168,7 +168,7 @@ int ThreeSkeleton::buildCellNeighborsFromTriangles(
       }
 
       // update the progress bar of the wrapping code -- to adapt
-      if(debugLevel_ >= static_cast<int>(debug::Priority::INFO)) {
+      if(debugLevel_ >= (int)(debug::Priority::INFO)) {
 
         if(!(i % ((localTriangleStars->size()) / timeBuckets))) {
           printMsg("Building triangles",

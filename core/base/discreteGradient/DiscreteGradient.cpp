@@ -459,12 +459,13 @@ int DiscreteGradient::getDescendingPath(const Cell &cell,
   return 0;
 }
 
-int DiscreteGradient::getDescendingPathThroughWall(
+bool DiscreteGradient::getDescendingPathThroughWall(
   const wallId_t wallId,
   const Cell &saddle2,
   const Cell &saddle1,
   const vector<wallId_t> &isVisited,
   vector<Cell> *const vpath,
+  const bool stopIfMultiConnected,
   const bool enableCycleDetector) const {
   // debug
   const SimplexId numberOfEdges = inputTriangulation_->getNumberOfEdges();
@@ -481,6 +482,7 @@ int DiscreteGradient::getDescendingPathThroughWall(
 
     SimplexId currentId = -1;
     {
+      int nconnections = 0;
       for(int i = 0; i < 3; ++i) {
         SimplexId edgeId;
         inputTriangulation_->getTriangleEdge(saddle2.id_, i, edgeId);
@@ -494,7 +496,11 @@ int DiscreteGradient::getDescendingPathThroughWall(
           }
 
           currentId = edgeId;
+          ++nconnections;
         }
+      }
+      if(stopIfMultiConnected && nconnections > 1) {
+        return true;
       }
     }
 
@@ -537,20 +543,25 @@ int DiscreteGradient::getDescendingPathThroughWall(
         break;
       }
 
+      int nconnections = 0;
       for(int i = 0; i < 3; ++i) {
         SimplexId edgeId;
         inputTriangulation_->getTriangleEdge(connectedTriangleId, i, edgeId);
 
         if(isVisited[edgeId] == wallId and edgeId != oldId) {
           currentId = edgeId;
+          ++nconnections;
         }
+      }
+      if(stopIfMultiConnected && nconnections > 1) {
+        return true;
       }
 
       // stop at convergence caused by boundary effect
     } while(currentId != oldId);
   }
 
-  return 0;
+  return false;
 }
 
 int DiscreteGradient::getAscendingPath(const Cell &cell,
@@ -675,6 +686,7 @@ bool DiscreteGradient::getAscendingPathThroughWall(
   const Cell &saddle2,
   const vector<wallId_t> &isVisited,
   vector<Cell> *const vpath,
+  const bool stopIfMultiConnected,
   const bool enableCycleDetector) const {
   // debug
   const SimplexId numberOfTriangles
@@ -692,6 +704,7 @@ bool DiscreteGradient::getAscendingPathThroughWall(
 
     SimplexId currentId = -1;
     {
+      int nconnections = 0;
       const SimplexId triangleNumber
         = inputTriangulation_->getEdgeTriangleNumber(saddle1.id_);
       for(SimplexId i = 0; i < triangleNumber; ++i) {
@@ -707,7 +720,11 @@ bool DiscreteGradient::getAscendingPathThroughWall(
           }
 
           currentId = triangleId;
+          ++nconnections;
         }
+      }
+      if(stopIfMultiConnected && nconnections > 1) {
+        return true;
       }
     }
 
@@ -750,6 +767,7 @@ bool DiscreteGradient::getAscendingPathThroughWall(
         break;
       }
 
+      int nconnections = 0;
       const SimplexId triangleNumber
         = inputTriangulation_->getEdgeTriangleNumber(connectedEdgeId);
       for(SimplexId i = 0; i < triangleNumber; ++i) {
@@ -758,7 +776,11 @@ bool DiscreteGradient::getAscendingPathThroughWall(
 
         if(isVisited[triangleId] == wallId and triangleId != oldId) {
           currentId = triangleId;
+          ++nconnections;
         }
+      }
+      if(stopIfMultiConnected && nconnections > 1) {
+        return true;
       }
 
       // stop at convergence caused by boundary effect

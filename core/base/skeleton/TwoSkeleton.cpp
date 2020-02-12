@@ -390,7 +390,7 @@ int TwoSkeleton::buildTriangleList(
         }
 
         // update the progress bar of the wrapping code -- to adapt
-        if(debugLevel_ >= static_cast<int>(debug::Priority::INFO)) {
+        if(debugLevel_ >= (int)(debug::Priority::INFO)) {
 
           if(!(i % ((cellNumber) / timeBuckets))) {
             printMsg("Building triangles", (i / (float)cellNumber),
@@ -835,7 +835,7 @@ int TwoSkeleton::buildVertexTriangles(
         vertexTriangleList[triangleList[i][j]].push_back(i);
       }
 
-      if(debugLevel_ >= static_cast<int>(debug::Priority::INFO)) {
+      if(debugLevel_ >= (int)(debug::Priority::INFO)) {
         if(!(i % ((triangleList.size()) / timeBuckets))) {
           printMsg("Building vertex triangles",
                    (i / (float)triangleList.size()), t.getElapsedTime(),

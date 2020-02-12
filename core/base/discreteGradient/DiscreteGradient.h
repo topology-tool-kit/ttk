@@ -981,13 +981,14 @@ in the gradient.
        * Return the VPath terminating at the given 2-saddle restricted to the
 2-separatrice of the 1-saddle.
        */
-      int getDescendingPathThroughWall(const wallId_t wallId,
-                                       const Cell &saddle2,
-                                       const Cell &saddle1,
-                                       const std::vector<wallId_t> &isVisited,
-                                       std::vector<Cell> *const vpath,
-                                       const bool enableCycleDetector
-                                       = false) const;
+      bool getDescendingPathThroughWall(const wallId_t wallId,
+                                        const Cell &saddle2,
+                                        const Cell &saddle1,
+                                        const std::vector<wallId_t> &isVisited,
+                                        std::vector<Cell> *const vpath,
+                                        const bool stopIfMultiConnected = false,
+                                        const bool enableCycleDetector
+                                        = false) const;
 
       /**
        * Return the VPath coming from the given 1-saddle restricted to the
@@ -998,6 +999,7 @@ in the gradient.
                                        const Cell &saddle2,
                                        const std::vector<wallId_t> &isVisited,
                                        std::vector<Cell> *const vpath,
+                                       const bool stopIfMultiConnected = false,
                                        const bool enableCycleDetector
                                        = false) const;
 

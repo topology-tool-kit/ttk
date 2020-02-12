@@ -19,6 +19,12 @@
 #include <array>
 #include <ostream>
 
+#ifdef TTK_ENABLE_KAMIKAZE
+#define TTK_TRIANGULATION_INTERNAL(NAME) NAME
+#else
+#define TTK_TRIANGULATION_INTERNAL(NAME) NAME##Internal
+#endif // TTK_ENABLE_KAMIKAZE
+
 #define ttkTemplateMacroCase(triangulationType, triangulationClass, call) \
   case triangulationType: {                                               \
     typedef triangulationClass TTK_TT;                                    \
@@ -1719,6 +1725,11 @@ namespace ttk {
       return getVertexTrianglesInternal();
     };
 
+    /// Returns true if the grid uses period boundary conditions.
+    inline bool hasPeriodicBoundaries() const {
+      return hasPeriodicBoundaries_;
+    }
+
     /// Check if the edge with global identifier \p edgeId is on the boundary
     /// of the domain.
     ///
@@ -1748,7 +1759,7 @@ namespace ttk {
 
     /// Check if the data structure is empty or not.
     /// \return Returns true if empty, false otherwise.
-    virtual inline bool isEmpty() {
+    virtual inline bool isEmpty() const {
       return true;
     };
 
@@ -3138,16 +3149,16 @@ namespace ttk {
       return 0;
     };
 
-    bool hasPreconditionedBoundaryEdges_, hasPreconditionedBoundaryTriangles_,
-      hasPreconditionedBoundaryVertices_, hasPreconditionedCellEdges_,
-      hasPreconditionedCellNeighbors_, hasPreconditionedCellTriangles_,
-      hasPreconditionedEdges_, hasPreconditionedEdgeLinks_,
-      hasPreconditionedEdgeStars_, hasPreconditionedEdgeTriangles_,
-      hasPreconditionedTriangles_, hasPreconditionedTriangleEdges_,
-      hasPreconditionedTriangleLinks_, hasPreconditionedTriangleStars_,
-      hasPreconditionedVertexEdges_, hasPreconditionedVertexLinks_,
-      hasPreconditionedVertexNeighbors_, hasPreconditionedVertexStars_,
-      hasPreconditionedVertexTriangles_;
+    bool hasPeriodicBoundaries_, hasPreconditionedBoundaryEdges_,
+      hasPreconditionedBoundaryTriangles_, hasPreconditionedBoundaryVertices_,
+      hasPreconditionedCellEdges_, hasPreconditionedCellNeighbors_,
+      hasPreconditionedCellTriangles_, hasPreconditionedEdges_,
+      hasPreconditionedEdgeLinks_, hasPreconditionedEdgeStars_,
+      hasPreconditionedEdgeTriangles_, hasPreconditionedTriangles_,
+      hasPreconditionedTriangleEdges_, hasPreconditionedTriangleLinks_,
+      hasPreconditionedTriangleStars_, hasPreconditionedVertexEdges_,
+      hasPreconditionedVertexLinks_, hasPreconditionedVertexNeighbors_,
+      hasPreconditionedVertexStars_, hasPreconditionedVertexTriangles_;
 
     std::array<int, 3> gridDimensions_;
 

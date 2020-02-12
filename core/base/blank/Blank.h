@@ -156,6 +156,9 @@ int ttk::blank::Blank::execute(const triangulationType *triangulation,
     outputData[i] = inputData[i];
   }
 
+  printMsg("Processing " + std::to_string(vertexNumber) + " vertices", 0, 0,
+           threadNumber_, ttk::debug::LineMode::REPLACE);
+
   // the following open-mp processing is only relevant for embarrassingly
   // parallel algorithms (such as smoothing) -- to adapt
 #ifdef TTK_ENABLE_OPENMP
@@ -167,13 +170,8 @@ int ttk::blank::Blank::execute(const triangulationType *triangulation,
     // end of TODO-2
   }
 
-  {
-    std::stringstream msg;
-    msg << "[Blank] Data-set (" << vertexNumber << " points) processed in "
-        << t.getElapsedTime() << " s. (" << threadNumber_ << " thread(s))."
-        << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
-  }
+  printMsg("Processed " + std::to_string(vertexNumber) + " vertices", 1,
+           t.getElapsedTime(), threadNumber_);
 
   return 0;
 }

@@ -43,7 +43,7 @@ int ZeroSkeleton::buildVertexEdges(
       vertexEdges[edgeList[i].first].push_back(i);
       vertexEdges[edgeList[i].second].push_back(i);
 
-      if(debugLevel_ >= static_cast<int>(debug::Priority::INFO)) {
+      if(debugLevel_ >= (int)(debug::Priority::INFO)) {
         if(!(i % ((edgeList.size()) / timeBuckets))) {
           printMsg("Building vertex edges", (i / (float)edgeList.size()),
                    t.getElapsedTime(), threadNumber_, debug::LineMode::REPLACE);
@@ -347,7 +347,7 @@ int ZeroSkeleton::buildVertexLinks(
     }
   }
 
-  if(debugLevel_ >= static_cast<int>(debug::Priority::DETAIL)) {
+  if(debugLevel_ >= (int)(debug::Priority::DETAIL)) {
     for(SimplexId i = 0; i < (SimplexId)vertexLinks.size(); i++) {
       stringstream msg;
       msg << "Vertex #" << i << " ("
@@ -588,7 +588,7 @@ int ZeroSkeleton::buildVertexStars(
         .push_back(i);
     }
 
-    if(debugLevel_ >= static_cast<int>(debug::Priority::INFO)) {
+    if(debugLevel_ >= (int)(debug::Priority::INFO)) {
       if(!(i % ((cellNumber) / timeBuckets))) {
         printMsg("Building vertex stars", (i / (float)cellNumber),
                  t.getElapsedTime(), threadNumber_, debug::LineMode::REPLACE);

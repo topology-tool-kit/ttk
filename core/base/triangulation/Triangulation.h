@@ -2350,7 +2350,7 @@ namespace ttk {
                                                     xSpacing, ySpacing,
                                                     zSpacing, xDim, yDim, zDim);
 
-      if(usePeriodicBoundaries_) {
+      if(hasPeriodicBoundaries_) {
         abstractTriangulation_ = &periodicImplicitTriangulation_;
         return retPeriodic;
       } else {
@@ -2369,22 +2369,16 @@ namespace ttk {
 
       if((abstractTriangulation_ == &implicitTriangulation_)
          || (abstractTriangulation_ == &periodicImplicitTriangulation_)) {
-        if(usePeriodicBoundaries == usePeriodicBoundaries_) {
+        if(usePeriodicBoundaries == hasPeriodicBoundaries_) {
           return;
         }
-        usePeriodicBoundaries_ = usePeriodicBoundaries;
-        if(usePeriodicBoundaries_) {
+        hasPeriodicBoundaries_ = usePeriodicBoundaries;
+        if(hasPeriodicBoundaries_) {
           abstractTriangulation_ = &periodicImplicitTriangulation_;
         } else {
           abstractTriangulation_ = &implicitTriangulation_;
         }
       }
-    }
-
-    /// Returns true if the grid uses period boundary conditions.
-    /// \see setPeriodicBoundaryConditions
-    bool usesPeriodicBoundaryConditions() const {
-      return usePeriodicBoundaries_;
     }
 
     /// Set the input 3D points of the triangulation.
@@ -2434,10 +2428,7 @@ namespace ttk {
   protected:
     inline bool isEmptyCheck() const {
       if(!abstractTriangulation_) {
-        std::stringstream msg;
-        msg << "[Triangulation] Trying to access an empty data-structure!"
-            << std::endl;
-        dMsg(std::cerr, msg.str(), fatalMsg);
+        printErr("Trying to access an empty data-structure!");
         return true;
       }
       return false;
@@ -2447,7 +2438,6 @@ namespace ttk {
     ExplicitTriangulation explicitTriangulation_;
     ImplicitTriangulation implicitTriangulation_;
     PeriodicImplicitTriangulation periodicImplicitTriangulation_;
-    bool usePeriodicBoundaries_;
   };
 } // namespace ttk
 

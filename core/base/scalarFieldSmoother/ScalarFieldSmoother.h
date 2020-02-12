@@ -153,7 +153,7 @@ int ttk::ScalarFieldSmoother::smooth(const TriangulationType *triangulation,
       }
     }
 
-    if(debugLevel_ >= static_cast<int>(debug::Priority::INFO)) {
+    if(debugLevel_ >= (int)(debug::Priority::INFO)) {
       if(!(it % ((numberOfIterations) / timeBuckets))) {
         printMsg("Smoothing " + std::to_string(vertexNumber) + " vertices",
                  (it / (float)numberOfIterations), t.getElapsedTime(),
