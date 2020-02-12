@@ -322,34 +322,3 @@ bool ttkContourAroundPoint::postprocess() {
   
   return true;
 }
-
-//------------------------------------------------------------------------------------------------//
-
-void ttkContourAroundPoint::makeDummyOutput() {
-  auto points = vtkSmartPointer<vtkPoints>::New();
-  // longitude (x) in [0,360), latitude (y) in (-90,90) (the poles are
-  // singularites)
-  points->InsertNextPoint(180, 45, 0); // north center
-  points->InsertNextPoint(90, -45, 0); // south east
-  points->InsertNextPoint(270, -45, 0); // south west
-  _outFld->SetPoints(points);
-
-  auto cells = vtkSmartPointer<vtkCellArray>::New();
-  // Anonymous arrays (passed directly to the function) would only be possible
-  // if `InsertNextCell` were overloaded with an
-  // std::initializer_list<vtkIdType> argument :-(
-  const vtkIdType c0[] = {0, 1};
-  cells->InsertNextCell(2, c0);
-  const vtkIdType c1[] = {1, 2};
-  cells->InsertNextCell(2, c1);
-  const vtkIdType c2[] = {2, 0};
-  cells->InsertNextCell(2, c2);
-  _outFld->SetCells(VTK_LINE, cells);
-
-  auto scalarArr = vtkFloatArray::New();
-  static constexpr float placeholder = 0.1337;
-  for(int i = 0; i < 3; ++i)
-    scalarArr->InsertNextValue(placeholder);
-  scalarArr->SetName(ui_scalars.c_str());
-  _outFld->GetPointData()->AddArray(scalarArr);
-}

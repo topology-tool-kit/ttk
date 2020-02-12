@@ -154,10 +154,6 @@ protected:
   /// Assemble the output object from the results of the TTK module.
   bool postprocess();
 
-  /// For testing the general pipeline stuff, without having to execute the
-  /// wrapped module.
-  void makeDummyOutput();
-
   template <typename T>
   T *getBuffer(vtkFieldData *data,
                const std::string &varName,
