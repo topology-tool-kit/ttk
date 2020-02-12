@@ -387,6 +387,15 @@ namespace ttk {
     virtual inline int getCellVertex(const SimplexId &cellId,
                                      const int &localVertexId,
                                      SimplexId &vertexId) const {
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(getDimensionality() == 1) {
+        return -1;
+      }
+
+      if(!hasPreconditionedCells()) {
+        return -2;
+      }
+#endif // TTK_ENABLE_KAMIKAZE
 
       return getCellVertexInternal(cellId, localVertexId, vertexId);
     };
@@ -1876,6 +1885,34 @@ namespace ttk {
       return 0;
     }
 
+    /// Pre-process the cells.
+    ///
+    /// This function should ONLY be called as a pre-condition to the
+    /// following functions:
+    ///   - getCells()
+    ///   - getCellVertex()
+    ///
+    /// \pre This function should be called prior to any traversal, in a
+    /// clearly distinct pre-processing step that involves no traversal at
+    /// all. An error will be returned otherwise.
+    /// \note It is recommended to exclude this pre-processing function from
+    /// any time performance measurement.
+    /// \return Returns 0 upon success, negative values otherwise.
+    /// \sa getCells()
+    /// \sa getCellVertex()
+    virtual inline int preconditionCells() {
+      hasPreconditionedCells_ = true;
+
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(getDimensionality() == 1)
+        return -1;
+#endif
+
+      preconditionCellsInternal();
+
+      return 0;
+    }
+
     /// Pre-process the cell edges.
     ///
     /// This function should ONLY be called as a pre-condition to the
@@ -1898,6 +1935,7 @@ namespace ttk {
       if(getDimensionality() == 1)
         return preconditionCellNeighbors();
 
+      preconditionCells();
       preconditionEdges();
       preconditionCellEdgesInternal();
 
@@ -1925,6 +1963,7 @@ namespace ttk {
 
       hasPreconditionedCellNeighbors_ = true;
 
+      preconditionCells();
       preconditionCellNeighborsInternal();
 
       return 0;
@@ -1958,6 +1997,7 @@ namespace ttk {
       if(getDimensionality() == 2)
         return preconditionCellNeighbors();
 
+      preconditionCells();
       preconditionTriangles();
       preconditionCellTrianglesInternal();
 
@@ -2810,6 +2850,20 @@ namespace ttk {
       return hasPreconditionedBoundaryVertices_;
     }
 
+    inline bool hasPreconditionedCells() const {
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(!hasPreconditionedCells_) {
+        printMsg("Cell query without pre-process!", debug::Priority::ERROR,
+                 debug::LineMode::NEW, std::cerr);
+        printMsg("Please call preconditionCells() in a pre-process.",
+                 debug::Priority::ERROR, debug::LineMode::NEW, std::cerr);
+        return false;
+      }
+#endif
+
+      return true;
+    }
+
     inline bool hasPreconditionedCellEdges() const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -3061,6 +3115,10 @@ namespace ttk {
       return 0;
     }
 
+    virtual inline int preconditionCellsInternal() {
+      return 0;
+    }
+
     virtual inline int preconditionCellEdgesInternal() {
       return 0;
     }
@@ -3151,14 +3209,15 @@ namespace ttk {
 
     bool hasPeriodicBoundaries_, hasPreconditionedBoundaryEdges_,
       hasPreconditionedBoundaryTriangles_, hasPreconditionedBoundaryVertices_,
-      hasPreconditionedCellEdges_, hasPreconditionedCellNeighbors_,
-      hasPreconditionedCellTriangles_, hasPreconditionedEdges_,
-      hasPreconditionedEdgeLinks_, hasPreconditionedEdgeStars_,
-      hasPreconditionedEdgeTriangles_, hasPreconditionedTriangles_,
-      hasPreconditionedTriangleEdges_, hasPreconditionedTriangleLinks_,
-      hasPreconditionedTriangleStars_, hasPreconditionedVertexEdges_,
-      hasPreconditionedVertexLinks_, hasPreconditionedVertexNeighbors_,
-      hasPreconditionedVertexStars_, hasPreconditionedVertexTriangles_;
+      hasPreconditionedCells_, hasPreconditionedCellEdges_,
+      hasPreconditionedCellNeighbors_, hasPreconditionedCellTriangles_,
+      hasPreconditionedEdges_, hasPreconditionedEdgeLinks_,
+      hasPreconditionedEdgeStars_, hasPreconditionedEdgeTriangles_,
+      hasPreconditionedTriangles_, hasPreconditionedTriangleEdges_,
+      hasPreconditionedTriangleLinks_, hasPreconditionedTriangleStars_,
+      hasPreconditionedVertexEdges_, hasPreconditionedVertexLinks_,
+      hasPreconditionedVertexNeighbors_, hasPreconditionedVertexStars_,
+      hasPreconditionedVertexTriangles_;
 
     std::array<int, 3> gridDimensions_;
 
