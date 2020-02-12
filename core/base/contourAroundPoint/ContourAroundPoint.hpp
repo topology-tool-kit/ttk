@@ -194,7 +194,7 @@ int ttk::ContourAroundPoint::execute() const
     const auto isoval = _inpPointIsovals[p];
     std::ostringstream msgStream;
     msgStream << pStr << " isoval="<<std::setw(7)<<isoval;
-    msg(msgStream.str().c_str(), detailedInfoMsg);
+    msg(msgStream.str().c_str(), advancedInfoMsg);
 
     handleOneInpPt<scalarT>(findInpVert(p), isoval, _inpPointFlags[p]);
     // TODO check ret val
@@ -263,6 +263,9 @@ int ttk::ContourAroundPoint::handleOneInpPt(SimplexId vBeg,
   
   addOutput<scalarT>(xEdges, isovalue, flag);
   // TODO make second output
+//  std::ostringstream out;
+//  out << "num. inner vertices: " << innerVerts.size();
+//  msg(out.str().c_str());
   return 0;
 }
 
@@ -334,7 +337,8 @@ void ttk::ContourAroundPoint::addOutput(const std::set<SimplexId> &inpEdges,
         continue;
       
       handledTris.insert(tGlo);
-      for(SimplexId eLoc = 0; e < 3; ++eLoc) {
+      // Find the other edge that contains the isovalue
+      for(SimplexId eLoc = 0; eLoc < 3; ++eLoc) {
         SimplexId eGlo; triangu->getTriangleEdge(tGlo, eLoc, eGlo);
         if(eGlo == e || !inpEdges.count(eGlo))
           continue;
