@@ -103,14 +103,8 @@ public:
   
 protected:
 
-//  /**
-//   * Given one of the input points, find the containing cell in the input field.
-//   * The point is given by its index, and the cell is also returned by
-//   * its index. If `p` happens to be one of the vertices, the first cell of
-//   * its star is returned. If `p` is outside of the domain of the field,
-//   * the nearest cell is returned.
-//   */
-//  SimplexId findCell(std::size_t p) const;
+  /// Given one of the input points, find the nearest vertex in the input field.
+  /// N.B.: Typically, the points are actually vertices of the input field.
   SimplexId findInpVert(SimplexId p) const;
 
   /// Compute the squared distance between input field vertex v and
@@ -119,19 +113,6 @@ protected:
 
   template<typename scalarT>
   int handleOneInpPt(SimplexId cCenter, float isovalue, int flag) const;
-
-//  /// Does cell `c` contain the `isovalue`?
-//  template<typename scalarT>
-//  bool checkContains(SimplexId c, float isovalue) const;
-
-//  /// Enqueue the neighbors of cell `c` into the queue `q` that have not yet
-//  /// been visited.
-//  void enqueueNeighbors(SimplexId c, std::stack<SimplexId>& q,
-//                        const std::set<SimplexId>& visited) const;
-
-//  /// For testing: Add the cells that contain the isovalue for one point.
-//  template<typename scalarT>
-//  void addRoughOutput(const std::vector<SimplexId>& cellIds) const;
 
   /// Exctract the contour from the input edges that intersect it.
   template<typename scalarT>
@@ -352,121 +333,3 @@ void ttk::ContourAroundPoint::addOutput(const std::set<SimplexId> &inpEdges,
     } // END triangle
   } // END source edge
 }
-#if 0 // TODO remove old code
-//------------------------------------------------------------------------------------------------//
-template<typename scalarT>
-bool ttk::ContourAroundPoint::checkContains(SimplexId c, float isovalue) const
-{
-  auto inpFieldScalars = reinterpret_cast<const scalarT*>(_inpFieldScalars);
-  // BEGIN debug
-//  std::ostringstream stream;
-//  stream << "c=" << c << " iso=" << isovalue << ": ";
-//  for(SimplexId i = 0; i < _inpFieldTriangulation->getCellVertexNumber(c); ++i)
-//  {
-//    SimplexId v; _inpFieldTriangulation->getCellVertex(c, i, v);
-//    stream << inpFieldScalars[v] << " | ";
-//  }
-//  msg(stream.str().c_str());
-  // END debug
-  SimplexId v0; _inpFieldTriangulation->getCellVertex(c, 0, v0);
-  // If true, imagine a "-" on the vertex v0.
-  const bool hasBelow = inpFieldScalars[v0] < isovalue;
-  const SimplexId lnv = _inpFieldTriangulation->getCellVertexNumber(c);
-  for(SimplexId i = 1; i < lnv; ++i)
-  {
-    SimplexId v;
-#ifndef NDEBUG
-    const auto errCode =
-#endif
-    _inpFieldTriangulation->getCellVertex(c, i, v);
-    assert(errCode == 0);
-    // If true, imagine the opoosite sign on the vertex v.
-    if((inpFieldScalars[v] < isovalue) != hasBelow) {
-      return true; // We don't have to look at any other vertices of `c`, we have a "-+ edge".
-    }
-  }
-  return false;
-}
-
-//------------------------------------------------------------------------------------------------//
-template<typename scalarT>
-void ttk::ContourAroundPoint::addRoughOutput(const std::vector<SimplexId>& cellIds) const
-{
-  _outNvPerC = _inpNvPerC;
-  auto vinp2vout = _inpVert2outVert;
-  auto inpScalars = reinterpret_cast<const scalarT*>(_inpFieldScalars);
-  float vx, vy, vz;
-
-  for(const auto c : cellIds)
-  {
-    const auto lnv = _inpFieldTriangulation->getCellVertexNumber(c);
-    for(SimplexId i = 0; i < lnv; ++i)
-    {
-      SimplexId vinp; _inpFieldTriangulation->getCellVertex(c, i, vinp);
-      if(vinp2vout.count(vinp) == 0) // new output vertex
-      {
-        const SimplexId vout = _outFieldScalars.size();
-        vinp2vout[vinp] = vout;
-        _outFieldCinfos.push_back(vout);
-        _outFieldScalars.push_back(inpScalars[vinp]);
-        _inpFieldTriangulation->getVertexPoint(vinp, vx, vy, vz);
-        _outFieldCoords.push_back(vx);
-        _outFieldCoords.push_back(vy);
-        _outFieldCoords.push_back(vz);
-      }
-      else // scalars and coords for this vertex are already set
-      {
-        _outFieldCinfos.push_back(vinp2vout[vinp]);
-      }
-    }
-  }
-}
-
-//------------------------------------------------------------------------------------------------//
-template<typename scalarT>
-void ttk::ContourAroundPoint::addOutput(const std::vector<SimplexId>& cellIds, float isoval,
-                                        int flag) const
-{
-  _outNvPerC = _inpNvPerC - 1;
-  const SimplexId inpNePerC = _inpNvPerC == 3 ? 3 : 6;
-  std::map<SimplexId, SimplexId> e2v;
-  // NOTE We simply create line segments when it would be better to create line strips.
-
-  auto inpScalars = reinterpret_cast<const scalarT*>(_inpFieldScalars);
-
-  for(const auto c : cellIds)
-  {
-    for(SimplexId i = 0; i < inpNePerC; ++i)
-    {
-      SimplexId e; _inpFieldTriangulation->getCellEdge(c, i, e);
-      if(e2v.count(e) != 0) {
-        _outFieldCinfos.push_back(e2v[e]);
-        continue;
-      }
-
-      SimplexId p; _inpFieldTriangulation->getEdgeVertex(e, 0, p);
-      SimplexId q; _inpFieldTriangulation->getEdgeVertex(e, 1, q);
-      const float pVal = static_cast<float>(inpScalars[p]);
-      const float qVal = static_cast<float>(inpScalars[q]);
-      if((pVal < isoval && qVal > isoval) || (pVal > isoval && qVal < isoval))
-      {
-        const SimplexId v = _outFieldScalars.size();
-        e2v[e] = v;
-        float px, py, pz; _inpFieldTriangulation->getVertexPoint(p, px, py, pz);
-        float qx, qy, qz; _inpFieldTriangulation->getVertexPoint(q, qx, qy, qz);
-        const double pFac = (qVal - isoval) / (qVal - pVal);
-        const double qFac = 1 - pFac;
-        const float x = px * pFac + qx * qFac;
-        const float y = py * pFac + qy * qFac;
-        const float z = pz * pFac + qz * qFac;
-        _outFieldCoords.push_back(x);
-        _outFieldCoords.push_back(y);
-        _outFieldCoords.push_back(z);
-        _outFieldCinfos.push_back(v);
-        _outFieldScalars.push_back(isoval);
-        _outFieldFlags.push_back(flag);
-      }
-    }
-  }
-}
-#endif // old

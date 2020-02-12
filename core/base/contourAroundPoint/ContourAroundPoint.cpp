@@ -50,31 +50,6 @@ int ttk::ContourAroundPoint::setupConstraints(float *coords, float *isovalues,
 
 //----------------------------------------------------------------------------//
 
-//ttk::SimplexId ttk::ContourAroundPoint::findCell(std::size_t p) const {
-//  // NOTE This whole method is just a hack. Eventually, the best solution would
-//  // probably be to use a `vtkAbstractCellLocator` in the wrapped algorithm and
-//  // pass an array with the cell index for each point to this module. This
-//  // implementation is based on a naive nearest neighbor search.
-//  SimplexId minv = 0;
-//  float mind = compDist2(minv, p);
-//  const auto nv = _inpFieldTriangulation->getNumberOfVertices();
-//  for(SimplexId v = 1; v < nv; ++v) {
-//    const auto d = compDist2(v, p);
-//    if(d < mind) {
-//      minv = v;
-//      mind = d;
-//    }
-//  }
-
-//  SimplexId c;
-//#ifndef NDEBUG
-//  const auto errCode =
-//#endif
-//    _inpFieldTriangulation->getVertexStar(minv, 0, c);
-//  assert(errCode == 0);
-//  return c;
-//}
-
 ttk::SimplexId ttk::ContourAroundPoint::findInpVert(SimplexId p) const {
   // This implementation is based on a naive nearest neighbor search
   SimplexId minv = 0;
@@ -101,25 +76,6 @@ float ttk::ContourAroundPoint::compDist2(SimplexId v, SimplexId p) const {
   const float dz = pCoords[2] - vz;
   return dx * dx + dy * dy + dz * dz;
 }
-
-//------------------------------------------------------------------------------------------------//
-
-//void ttk::ContourAroundPoint::enqueueNeighbors(
-//  SimplexId c,
-//  std::stack<SimplexId> &q,
-//  const std::set<SimplexId> &visited) const {
-//  const SimplexId numNei = _inpFieldTriangulation->getCellNeighborNumber(c);
-//  for(SimplexId i = 0; i < numNei; ++i) {
-//    SimplexId nei;
-//#ifndef NDEBUG
-//    const auto errCode =
-//#endif
-//      _inpFieldTriangulation->getCellNeighbor(c, i, nei);
-//    assert(errCode == 0);
-//    if(visited.count(nei) == 0)
-//      q.push(nei);
-//  }
-//}
 
 //------------------------------------------------------------------------------------------------//
 
