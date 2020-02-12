@@ -29,7 +29,8 @@ vtkStandardNewMacro(ttkContourAroundPoint);
 int ttkContourAroundPoint::doIt(std::vector<vtkDataSet *> &inputs,
                                 std::vector<vtkDataSet *> &outputs) {
   ttk::Memory memUseObj;
-  _out = static_cast<vtkUnstructuredGrid *>(outputs[0]);
+  _outFld = static_cast<vtkUnstructuredGrid *>(outputs[0]);
+  _outPts = static_cast<vtkUnstructuredGrid *>(outputs[1]);
 
   if(!preprocessDomain(inputs[0]))
     return 0;
@@ -240,10 +241,10 @@ bool ttkContourAroundPoint::postprocess() {
     = VTK_AOS_DATA_ARRAY_TEMPLATE<float>::DeleteMethod::VTK_DATA_ARRAY_DELETE;
   
   
-  // ---- Cell data ---- //
+  // ---- Cell data (output 0) ---- //
   
   int *ctypes = new int[nc];
-
+  
   vtkIdType cinfoCounter = 0;
   for(std::size_t c = 0; c < nc; ++c) {
     const auto nvOfCell = cinfosBuf[cinfoCounter];
@@ -267,10 +268,10 @@ bool ttkContourAroundPoint::postprocess() {
   auto cinfoArr = vtkSmartPointer<vtkIdTypeArray>::New();
   cinfoArr->SetArray(cinfosBufVtk, cinfosSize, wantSave, delMethod);
   cells->SetCells(nc, cinfoArr);
-  _out->SetCells(ctypes, cells);
+  _outFld->SetCells(ctypes, cells);
   
   
-  // ---- Point data ---- //
+  // ---- Point data (output 0) ---- //
   
   if(vtkSmartPointer<vtkPoints>::New()->GetDataType() != VTK_FLOAT) {
     vtkErrorMacro("The API has changed! We have expected the default "
@@ -282,18 +283,43 @@ bool ttkContourAroundPoint::postprocess() {
   coordArr->SetNumberOfComponents(3);
   coordArr->SetArray(coordsBuf, nv * 3, wantSave, delMethod);
   points->SetData(coordArr);
-  _out->SetPoints(points);
-
+  _outFld->SetPoints(points);
+  
   auto scalarArr = vtkFloatArray::New();
   scalarArr->SetArray(scalarsBuf, nv, wantSave, delMethod);
   scalarArr->SetName(ui_scalars.c_str());
-  _out->GetPointData()->AddArray(scalarArr);
-
+  _outFld->GetPointData()->AddArray(scalarArr);
+  
   auto flagArr = vtkIntArray::New();
   flagArr->SetArray(flagsBuf, nv, wantSave, delMethod);
   flagArr->SetName("isMax");
-  _out->GetPointData()->AddArray(flagArr);
-
+  _outFld->GetPointData()->AddArray(flagArr);
+  
+  
+  // ---- Output 1 (added in a later revision of the algo) ---- //
+  
+  // re-using the variables from above
+  _wrappedModule.getOutputPoints(coordsBuf, scalarsBuf, nv);
+  
+  points = vtkSmartPointer<vtkPoints>::New();
+  coordArr = vtkSmartPointer<vtkFloatArray>::New();
+  coordArr->SetNumberOfComponents(3);
+  coordArr->SetArray(coordsBuf, nv * 3, wantSave, delMethod);
+  points->SetData(coordArr);
+  _outPts->SetPoints(points);
+  
+  scalarArr = vtkFloatArray::New();
+  scalarArr->SetArray(scalarsBuf, nv, wantSave, delMethod);
+  scalarArr->SetName(ui_scalars.c_str());
+  _outPts->GetPointData()->AddArray(scalarArr);
+  
+  assert(nv == _flags.size());
+  flagArr = vtkIntArray::New();
+  flagArr->SetArray(_flags.data(), nv, 1);
+  flagArr->SetName("isMax");
+  _outPts->GetPointData()->AddArray(flagArr);
+  
+  
   return true;
 }
 
@@ -306,7 +332,7 @@ void ttkContourAroundPoint::makeDummyOutput() {
   points->InsertNextPoint(180, 45, 0); // north center
   points->InsertNextPoint(90, -45, 0); // south east
   points->InsertNextPoint(270, -45, 0); // south west
-  _out->SetPoints(points);
+  _outFld->SetPoints(points);
 
   auto cells = vtkSmartPointer<vtkCellArray>::New();
   // Anonymous arrays (passed directly to the function) would only be possible
@@ -318,12 +344,12 @@ void ttkContourAroundPoint::makeDummyOutput() {
   cells->InsertNextCell(2, c1);
   const vtkIdType c2[] = {2, 0};
   cells->InsertNextCell(2, c2);
-  _out->SetCells(VTK_LINE, cells);
+  _outFld->SetCells(VTK_LINE, cells);
 
   auto scalarArr = vtkFloatArray::New();
   static constexpr float placeholder = 0.1337;
   for(int i = 0; i < 3; ++i)
     scalarArr->InsertNextValue(placeholder);
   scalarArr->SetName(ui_scalars.c_str());
-  _out->GetPointData()->AddArray(scalarArr);
+  _outFld->GetPointData()->AddArray(scalarArr);
 }

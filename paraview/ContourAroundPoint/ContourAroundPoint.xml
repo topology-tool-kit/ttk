@@ -174,6 +174,9 @@
             <Property name="DebugLevel" />
          </PropertyGroup>
 
+         <OutputPort name="Contours" index="0" id="port0" />
+         <OutputPort name="Centroids" index="1" id="port1" />
+
          <Hints>
             <ShowInMenu category="TTK - Scalar Data" />
          </Hints>

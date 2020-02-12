@@ -123,17 +123,19 @@ protected:
   float compDist2(SimplexId v, SimplexId p) const;
 
   template<typename scalarT>
-  int handleOneInpPt(SimplexId cCenter, float isovalue, int flag) const;
+  void handleOneInpPt(SimplexId cCenter, float isovalue, int flag) const;
 
   /// Exctract the contour from the input edges that intersect it.
+  /// `inpEdges` may be empty.
   template<typename scalarT>
-  void extendOutField(const std::set<SimplexId>& inpEdges,
-                 float isoval, int flag) const;
+  void extendOutFld(const std::set<SimplexId>& inpEdges,
+                    float isoval, int flag) const;
   
   /// Compute one point based on the vertices within one contoured region.
+  /// `vertices` must contain at least one vertex.
   template<typename scalarT>
-  void extendOutPoints(const std::vector<SimplexId> &vertices,
-                       float isoval, int flag) const;
+  void extendOutPts(const std::vector<SimplexId> &vertices,
+                    float isoval, int flag) const;
   
   
   /* Input data */
@@ -206,7 +208,6 @@ int ttk::ContourAroundPoint::execute() const
     msg(msgStream.str().c_str(), advancedInfoMsg);
 
     handleOneInpPt<scalarT>(findInpVert(p), isoval, _inpPointFlags[p]);
-    // TODO check ret val
   }
    
   std::ostringstream timUseStream;
@@ -218,7 +219,7 @@ int ttk::ContourAroundPoint::execute() const
 
 //----------------------------------------------------------------------------//
 template<typename scalarT>
-int ttk::ContourAroundPoint::handleOneInpPt(SimplexId vBeg,
+void ttk::ContourAroundPoint::handleOneInpPt(SimplexId vBeg,
                                             float isovalue, int flag) const
 {
   auto triangu = _inpFieldTriangulation; // just a short alias
@@ -270,14 +271,13 @@ int ttk::ContourAroundPoint::handleOneInpPt(SimplexId vBeg,
     }
   }
   
-  extendOutField<scalarT>(xEdges, isovalue, flag);
-  extendOutPoints<scalarT>(innerVerts, isovalue, flag);
-  return 0;
+  extendOutFld<scalarT>(xEdges, isovalue, flag);
+  extendOutPts<scalarT>(innerVerts, isovalue, flag);
 }
 
 //----------------------------------------------------------------------------//
 template<typename scalarT>
-void ttk::ContourAroundPoint::extendOutField(
+void ttk::ContourAroundPoint::extendOutFld(
     const std::set<SimplexId> &inpEdges, float isoval, int flag) const
 {
   auto triangu = _inpFieldTriangulation; // just a short alias
@@ -361,7 +361,7 @@ void ttk::ContourAroundPoint::extendOutField(
 
 //----------------------------------------------------------------------------//
 template<typename scalarT>
-void ttk::ContourAroundPoint::extendOutPoints(
+void ttk::ContourAroundPoint::extendOutPts(
     const std::vector<SimplexId> &vertices, float isoval, int flag) const {
 //  std::ostringstream out;
 //  out << "num. inner vertices: " << vertices.size();

@@ -95,6 +95,9 @@ public:
       case 0:
         info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
         return 1;
+      case 1:
+        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
+        return 1;
     }
     return 0;
   }
@@ -130,7 +133,7 @@ protected:
     debugLevel_ = 3;
 
     SetNumberOfInputPorts(3);
-    SetNumberOfOutputPorts(1);
+    SetNumberOfOutputPorts(2);
   }
 
   ~ttkContourAroundPoint() override {
@@ -183,10 +186,14 @@ private:
 
   int _scalarTypeCode; // VTK type of the scalars defined on the Domain
   double _domainBbSize; // size of the bounding box of the domain
+  
+  // referring to the input points
   std::vector<float> _coords;
   std::vector<float> _isovals;
   std::vector<int> _flags;
-  vtkSmartPointer<vtkUnstructuredGrid> _out;
+  
+  vtkSmartPointer<vtkUnstructuredGrid> _outFld;
+  vtkSmartPointer<vtkUnstructuredGrid> _outPts;
 
   ttk::ContourAroundPoint _wrappedModule;
 };
