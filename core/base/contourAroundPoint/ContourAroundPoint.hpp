@@ -5,8 +5,8 @@
  *
  * \brief TTK %contourAroundPoint processing package.
  *
- * %ContourAroundPoint is a TTK processing package that takes a scalar field on the input
- * and produces a scalar field on the output.
+ * %ContourAroundPoint is a TTK processing package that takes a scalar field
+ * on the input and produces a scalar field on the output.
  *
  * \sa ttk::Triangulation
  * \sa ttkContourAroundPoint.cpp %for a usage example.
@@ -15,6 +15,7 @@
 
 #include <Triangulation.h>
 
+#include <cassert>
 #include <set>
 #include <vector>
 
@@ -70,15 +71,25 @@ public:
    * Get the output field data (e.g. for the wrapped algorithm).
    * To be called after a successful `execute`.
    * The ownership of the pointers moves to the caller.
-   * @param coords 3D Vertex coordinates as interleaved array.
-   * @param nv Number of vertices.
-   * @param cinfos Sequence of cell infos like `n v0 ... vn-1`.
    * @param nc Number of cells.
+   * @param cinfos Sequence of cell infos like `n v0 ... vn-1`.
+   * @param coords 3D Vertex coordinates as interleaved array.
    * @param scalars Scalar value for each vertex.
+   * @param nv Number of vertices.
    */
   void getOutputField(
       SimplexId* &cinfos, SimplexId &nc,
-      float* &coords, float* &scalars, int* &flags, SimplexId &nv);
+      float* &coords, float* &scalars, int* &flags, SimplexId &nv) const;
+  
+  /**
+   * Get the output point data (e.g. for the wrapped algorithm).
+   * To be called after a successful `execute`.
+   * The ownership of the pointers moves to the caller.
+   * @param coords 3D Vertex coordinates as interleaved array.
+   * @param scalars Scalar value for each vertex.
+   * @param nv Number of vertices.
+   */
+  void getOutputPoints(float* &coords, float* &scalars, SimplexId &nv) const;
 
   // NOTE code-clone from vtk/ttkContourAroundPoint
   /// Override this method in order to always prepend a class- and
@@ -116,9 +127,17 @@ protected:
 
   /// Exctract the contour from the input edges that intersect it.
   template<typename scalarT>
-  void addOutput(const std::set<SimplexId>& inpEdges,
+  void extendOutField(const std::set<SimplexId>& inpEdges,
                  float isoval, int flag) const;
-
+  
+  /// Compute one point based on the vertices within one contoured region.
+  template<typename scalarT>
+  void extendOutPoints(const std::vector<SimplexId> &vertices,
+                       float isoval, int flag) const;
+  
+  
+  /* Input data */
+  
   /// 3D positions of the points (as interleaved array)
   float *_inpPointCoords  = nullptr;
   /// scalar value of the points
@@ -134,13 +153,19 @@ protected:
   // up to _inpDimMax-dimensional cells appear in _inpFieldTriangulation;
   // lower-dimensional cells may appear too.
   SimplexId _inpDimMax = 0;
-
-  // (Re)computed in every call to `execute`
+  
+  
+  /* Output data (recomputed in every call to `execute`) */
+  
   mutable std::vector<SimplexId> _outFieldCinfos;
   mutable SimplexId _outNc = 0;
   mutable std::vector<float> _outFieldCoords;
   mutable std::vector<float> _outFieldScalars;
   mutable std::vector<int> _outFieldFlags;
+  
+  mutable std::vector<float> _outPointCoords;
+  mutable std::vector<float> _outPointScalars;
+  // The flags are the same as for the input points
 };
 }
 
@@ -154,6 +179,9 @@ int ttk::ContourAroundPoint::execute() const
   _outFieldCoords.resize(0);
   _outFieldScalars.resize(0);
   _outFieldFlags.resize(0);
+  
+  _outPointCoords.resize(0);
+  _outPointScalars.resize(0);
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!_inpPointCoords) return -1;
@@ -242,18 +270,15 @@ int ttk::ContourAroundPoint::handleOneInpPt(SimplexId vBeg,
     }
   }
   
-  addOutput<scalarT>(xEdges, isovalue, flag);
-  // TODO make second output
-//  std::ostringstream out;
-//  out << "num. inner vertices: " << innerVerts.size();
-//  msg(out.str().c_str());
+  extendOutField<scalarT>(xEdges, isovalue, flag);
+  extendOutPoints<scalarT>(innerVerts, isovalue, flag);
   return 0;
 }
 
 //----------------------------------------------------------------------------//
 template<typename scalarT>
-void ttk::ContourAroundPoint::addOutput(const std::set<SimplexId> &inpEdges,
-                                        float isoval, int flag) const
+void ttk::ContourAroundPoint::extendOutField(
+    const std::set<SimplexId> &inpEdges, float isoval, int flag) const
 {
   auto triangu = _inpFieldTriangulation; // just a short alias
   auto inpScalars = reinterpret_cast<const scalarT*>(_inpFieldScalars);
@@ -332,4 +357,52 @@ void ttk::ContourAroundPoint::addOutput(const std::set<SimplexId> &inpEdges,
       } // END target edge
     } // END triangle
   } // END source edge
+}
+
+//----------------------------------------------------------------------------//
+template<typename scalarT>
+void ttk::ContourAroundPoint::extendOutPoints(
+    const std::vector<SimplexId> &vertices, float isoval, int flag) const {
+//  std::ostringstream out;
+//  out << "num. inner vertices: " << vertices.size();
+//  msg(out.str().c_str());
+  
+  auto inpScalars = reinterpret_cast<const scalarT*>(_inpFieldScalars);
+  const bool isovalIsMin = flag == 0;
+  
+  // do the computation in double precision
+  double wSum = 0.;
+  double outX = 0.;
+  double outY = 0.;
+  double outZ = 0.;
+  double outSca = 0.;
+  // There are several imaginable ways to compute the scalar value at the
+  // output point. We choose the weighted mean, where the weights are the same
+  // as for the output coordinates.
+  
+  for(const auto v : vertices) {
+    const scalarT sca = inpScalars[v];
+    // Vertices that are close to the boundary of the region
+    // (scalar value-wise) have little weight
+    const double w = isovalIsMin ? sca - isoval : isoval - sca;
+    wSum += w;
+    
+    float x, y, z;
+    _inpFieldTriangulation->getVertexPoint(v, x, y, z);
+    outX += x * w;
+    outY += y * w;
+    outZ += z * w;
+    
+    outSca += sca * w;
+  }
+  assert(wSum != 0.);
+  outX /= wSum;
+  outY /= wSum;
+  outZ /= wSum;
+  outSca /= wSum;
+  
+  _outPointCoords.push_back(static_cast<float>(outX));
+  _outPointCoords.push_back(static_cast<float>(outY));
+  _outPointCoords.push_back(static_cast<float>(outZ));
+  _outPointScalars.push_back(static_cast<float>(outSca));
 }

@@ -65,7 +65,7 @@ ttk::SimplexId ttk::ContourAroundPoint::findInpVert(SimplexId p) const {
   return minv;
 }
 
-//------------------------------------------------------------------------------------------------//
+//----------------------------------------------------------------------------//
 
 float ttk::ContourAroundPoint::compDist2(SimplexId v, SimplexId p) const {
   float vx, vy, vz;
@@ -77,11 +77,11 @@ float ttk::ContourAroundPoint::compDist2(SimplexId v, SimplexId p) const {
   return dx * dx + dy * dy + dz * dz;
 }
 
-//------------------------------------------------------------------------------------------------//
+//----------------------------------------------------------------------------//
 
 void ttk::ContourAroundPoint::getOutputField(
     SimplexId* &cinfos, SimplexId &nc,
-    float* &coords, float* &scalars, int* &flags, SimplexId &nv) {
+    float* &coords, float* &scalars, int* &flags, SimplexId &nv) const {
   
   nc = _outNc;
   
@@ -96,4 +96,17 @@ void ttk::ContourAroundPoint::getOutputField(
   std::copy(_outFieldScalars.begin(), _outFieldScalars.end(), scalars);
   flags = new int[nv];
   std::copy(_outFieldFlags.begin(), _outFieldFlags.end(), flags);
+}
+
+//----------------------------------------------------------------------------//
+
+void ttk::ContourAroundPoint::getOutputPoints(
+    float* &coords, float* &scalars, SimplexId &nv) const {
+  
+  nv = _outPointScalars.size();
+  
+  coords = new float[nv * 3];
+  std::copy(_outPointCoords.begin(), _outPointCoords.end(), coords);
+  scalars = new float[nv];
+  std::copy(_outPointScalars.begin(), _outPointScalars.end(), scalars);
 }
