@@ -357,7 +357,7 @@ int ttkTriangulation::setInputData(vtkDataSet *dataSet) {
       auto polysData = static_cast<LongSimplexId *>(
         ttkUtils::GetVoidPointer(vtpDataSet->GetPolys()->GetData(), 0));
       auto linesData = static_cast<LongSimplexId *>(
-        ttkUtils::GetVoidPointer(vtpDataSet->GetPolys()->GetData(), 0));
+        ttkUtils::GetVoidPointer(vtpDataSet->GetLines()->GetData(), 0));
 #if !defined(_WIN32) || defined(_WIN32) && defined(VTK_USE_64BIT_IDS)
       if(polysData) { // have 2D
         ret = vtkSmartPointer<CellChecker>::New()->check2d(vtpDataSet);
