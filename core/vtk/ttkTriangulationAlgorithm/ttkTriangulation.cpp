@@ -353,7 +353,7 @@ int ttkTriangulation::setInputData(vtkDataSet *dataSet) {
     //      ; // add some 0D simplices to this ttkTriangulation
     //    if(polyData->GetNumberOfStrips())
     //      ; // add more 2D simplices to this ttkTriangulation (de-strip)
-    if(vtpDataSet->GetPolys()) {
+    if(vtpDataSet->GetNumberOfPolys() || vtpDataSet->GetNumberOfLines()) {
       auto polysData = static_cast<LongSimplexId *>(
         ttkUtils::GetVoidPointer(vtpDataSet->GetPolys()->GetData(), 0));
       auto linesData = static_cast<LongSimplexId *>(
