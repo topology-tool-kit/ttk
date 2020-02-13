@@ -276,7 +276,8 @@ int ttkExtract::RequestData(vtkInformation *request,
 
     // Input Topo
     size_t nInCells = inputAsUG->GetNumberOfCells();
-    auto inTopologyData = inputAsUG->GetCells()->GetPointer();
+    auto inTopologyData = static_cast<vtkIdType *>(
+      ttkUtils::GetVoidPointer(inputAsUG->GetCells()->GetData()));
 
     // Marked Points:
     //     -1: does not satisfy condition

@@ -1,5 +1,6 @@
 #include <ttkTriangulation.h>
 #include <ttkTriangulationAlgorithm.h>
+#include <ttkUtils.h>
 
 using namespace std;
 using namespace ttk;
@@ -244,37 +245,45 @@ int ttkTriangulation::setInputData(vtkDataSet *dataSet) {
     allocate();
   }
 
-  if((dataSet->GetDataObjectType() == VTK_UNSTRUCTURED_GRID)) {
+  if(dataSet->GetDataObjectType() == VTK_UNSTRUCTURED_GRID) {
 
-    const auto grid = static_cast<vtkUnstructuredGrid *>(dataSet);
-    if(grid->GetPoints()) {
-      if(grid->GetPoints()->GetDataType() == VTK_FLOAT) {
-        triangulation_->setInputPoints(
-          dataSet->GetNumberOfPoints(), grid->GetPoints()->GetVoidPointer(0));
-      } else if(grid->GetPoints()->GetDataType() == VTK_DOUBLE) {
-        triangulation_->setInputPoints(dataSet->GetNumberOfPoints(),
-                                       grid->GetPoints()->GetVoidPointer(0),
-                                       true);
-      } else {
-        stringstream msg;
-        msg << "[ttkTriangulation] Unsupported precision for input points!"
-            << endl;
-        dMsg(cerr, msg.str(), Debug::fatalMsg);
+    auto vtuDataSet = vtkUnstructuredGrid::SafeDownCast(dataSet);
+
+    // Points
+    if(vtuDataSet->GetPoints()) {
+      switch(vtuDataSet->GetPoints()->GetDataType()) {
+        case VTK_FLOAT:
+          triangulation_->setInputPoints(
+            vtuDataSet->GetNumberOfPoints(),
+            ttkUtils::GetVoidPointer(vtuDataSet->GetPoints()->GetData()));
+          break;
+        case VTK_DOUBLE:
+          triangulation_->setInputPoints(
+            vtuDataSet->GetNumberOfPoints(),
+            ttkUtils::GetVoidPointer(vtuDataSet->GetPoints()->GetData()), true);
+        default:
+          stringstream msg;
+          msg << "[ttkTriangulation] Unsupported precision for input points!"
+              << endl;
+          dMsg(cerr, msg.str(), Debug::fatalMsg);
+          break;
       }
     }
-    if(grid->GetCells()) {
+
+    // Cells
+    if(vtuDataSet->GetCells()) {
       // As the documentation of this method says, we expect a triangulation
       // (simplicial complex in kD)
       std::string errMsg;
 
       // NOTE A mix of different simplices should theoretically be supported
-      // but this appears to not hold up (yet) in practice. Current discussion:
-      // https://github.com/topology-tool-kit/ttk/pull/323
-      // maybe in the future:
-//      ret = vtkSmartPointer<CellChecker>::New()->check3d(grid);
+      // throughout TTK but this appears to not hold up (yet) in practice.
+      // Some more notes: https://github.com/topology-tool-kit/ttk/pull/323
+      // maybe in the future instead of the current checks:
+//      ret = vtkSmartPointer<CellChecker>::New()->check3d(vtuDataSet);
 
-      if(grid->IsHomogeneous()) {
-        const auto type = grid->GetCellType(0);
+      if(vtuDataSet->IsHomogeneous()) {
+        const auto type = vtuDataSet->GetCellType(0);
         if(type != VTK_TETRA && type != VTK_TRIANGLE && type != VTK_LINE) {
           errMsg = "Input explicit mesh is not simplicial (at all). ";
           ret = -1;
@@ -287,7 +296,7 @@ int ttkTriangulation::setInputData(vtkDataSet *dataSet) {
       if(ret != 0) {
         // NOTE In the long run it would be nice to not only detect this but
         // also fix it, for an improved user-experience. Maybe not at this place
-        // though (or adapt doc) but earlier like the macro
+        // though (or adapt doc) but earlier, like the macro
         // TTK_UNSTRUCTURED_GRID_NEW in ttkWrapper.h?
 
         // This class does not inherit from vtkObject, so the vtkErrorMacro does
@@ -300,59 +309,65 @@ int ttkTriangulation::setInputData(vtkDataSet *dataSet) {
         vtkErrorWithObjectMacro(nullptr, << errMsg)
       }
 
+      auto cellsData = static_cast<LongSimplexId *>(
+        ttkUtils::GetVoidPointer(vtuDataSet->GetCells()->GetData(), 0));
 #if !defined(_WIN32) || defined(_WIN32) && defined(VTK_USE_64BIT_IDS)
-      triangulation_->setInputCells(
-        dataSet->GetNumberOfCells(), grid->GetCells()->GetPointer());
+      triangulation_->setInputCells(vtuDataSet->GetNumberOfCells(), cellsData);
 #else
-      int *pt = grid->GetCells()->GetPointer();
-      long long extra_pt = *pt;
-      triangulation_->setInputCells(dataSet->GetNumberOfCells(), &extra_pt);
+      auto extra_pt = reinterpret_cast<long long*>(cellsData);
+      triangulation_->setInputCells(dataSet->GetNumberOfCells(), extra_pt);
 #endif
     }
-    inputDataSet_ = dataSet;
-  } else if((dataSet->GetDataObjectType() == VTK_POLY_DATA)) {
+    inputDataSet_ = vtuDataSet;
 
-    const auto polyData = static_cast<vtkPolyData *>(dataSet);
-    if(polyData->GetPoints()) {
-      if(polyData->GetPoints()->GetDataType() == VTK_FLOAT) {
-        triangulation_->setInputPoints(
-          dataSet->GetNumberOfPoints(),
-          polyData->GetPoints()->GetVoidPointer(0));
-      } else if(polyData->GetPoints()->GetDataType() == VTK_DOUBLE) {
-        triangulation_->setInputPoints(dataSet->GetNumberOfPoints(),
-                                       polyData->GetPoints()->GetVoidPointer(0),
-                                       true);
-      } else {
-        stringstream msg;
-        msg << "[ttkTriangulation] Unsupported precision for input points!"
-            << endl;
-        dMsg(cerr, msg.str(), Debug::fatalMsg);
+  } else if(dataSet->GetDataObjectType() == VTK_POLY_DATA) {
+
+    auto vtpDataSet = vtkPolyData::SafeDownCast(dataSet);
+
+    // Points
+    if(vtpDataSet->GetPoints()) {
+      switch(vtpDataSet->GetPoints()->GetDataType()) {
+        case VTK_FLOAT:
+          triangulation_->setInputPoints(
+            vtpDataSet->GetNumberOfPoints(),
+            ttkUtils::GetVoidPointer(vtpDataSet->GetPoints()->GetData()));
+          break;
+        case VTK_DOUBLE:
+          triangulation_->setInputPoints(
+            vtpDataSet->GetNumberOfPoints(),
+            ttkUtils::GetVoidPointer(vtpDataSet->GetPoints()->GetData()), true);
+          break;
+        default:
+          stringstream msg;
+          msg << "[ttkTriangulation] Unsupported precision for input points!"
+              << endl;
+          dMsg(cerr, msg.str(), Debug::fatalMsg);
+          break;
       }
-      triangulation_->setInputPoints(
-        dataSet->GetNumberOfPoints(),
-        (float *)polyData->GetPoints()->GetVoidPointer(0));
     }
 
+    // Cells
     // NOTE Currently we do not handle vtkPolyData instances whose cells include
     // unconnected vertices or triangle strips
     //    if(polyData->GetNumberOfVerts())
-    //      ;
+    //      ; // add some 0D simplices to this ttkTriangulation
     //    if(polyData->GetNumberOfStrips())
-    //      ;
-
-    if(polyData->GetPolys()) {
+    //      ; // add more 2D simplices to this ttkTriangulation (de-strip)
+    if(vtpDataSet->GetPolys()) {
+      auto polysData = static_cast<LongSimplexId *>(
+        ttkUtils::GetVoidPointer(vtpDataSet->GetPolys()->GetData(), 0));
+      auto linesData = static_cast<LongSimplexId *>(
+        ttkUtils::GetVoidPointer(vtpDataSet->GetPolys()->GetData(), 0));
 #if !defined(_WIN32) || defined(_WIN32) && defined(VTK_USE_64BIT_IDS)
-      // does never return a null pointer, only an empty array
-      //      if(polyData->GetPolys()->GetPointer()) {
-      if(polyData->GetNumberOfPolys()) { // have 2D
-        ret = vtkSmartPointer<CellChecker>::New()->check2d(polyData);
+      if(polysData) { // have 2D
+        ret = vtkSmartPointer<CellChecker>::New()->check2d(vtpDataSet);
         // NOTE If there are any 1D cells, we just ignore them
         triangulation_->setInputCells(
-          dataSet->GetNumberOfCells(), polyData->GetPolys()->GetPointer());
-      } else if(polyData->GetNumberOfLines()) { // have 1D
-        ret = vtkSmartPointer<CellChecker>::New()->check1d(polyData);
+          vtpDataSet->GetNumberOfCells(), polysData);
+      } else if(linesData) { // have 1D
+        ret = vtkSmartPointer<CellChecker>::New()->check1d(vtpDataSet);
         triangulation_->setInputCells(
-          dataSet->GetNumberOfCells(), polyData->GetLines()->GetPointer());
+          vtpDataSet->GetNumberOfCells(), linesData);
       }
 #else
       int *pt = polyData->GetPolys()->GetPointer();
@@ -360,25 +375,28 @@ int ttkTriangulation::setInputData(vtkDataSet *dataSet) {
         // 1D
         pt = polyData->GetLines()->GetPointer();
       }
-      long long extra_pt = *pt;
-      triangulation_->setInputCells(dataSet->GetNumberOfCells(), &extra_pt);
+      auto extra_pt
+        = reinterpret_cast<long long *>(polysData ? polysData : linesData);
+      triangulation_->setInputCells(dataSet->GetNumberOfCells(), extra_pt);
 #endif
     }
-    inputDataSet_ = dataSet;
+    inputDataSet_ = vtpDataSet;
+
   } else if((dataSet->GetDataObjectType() == VTK_IMAGE_DATA)) {
-    vtkImageData *imageData = (vtkImageData *)dataSet;
+
+    auto vtiData = vtkImageData::SafeDownCast(dataSet);
 
     int extents[6];
-    imageData->GetExtent(extents);
+    vtiData->GetExtent(extents);
 
     double origin[3];
-    imageData->GetOrigin(origin);
+    vtiData->GetOrigin(origin);
 
     double spacing[3];
-    imageData->GetSpacing(spacing);
+    vtiData->GetSpacing(spacing);
 
     int gridDimensions[3];
-    imageData->GetDimensions(gridDimensions);
+    vtiData->GetDimensions(gridDimensions);
 
     double firstPoint[3];
     firstPoint[0] = origin[0] + extents[0] * spacing[0];

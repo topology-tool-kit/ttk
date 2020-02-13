@@ -1,4 +1,5 @@
 #include <ttkBarycentricSubdivision.h>
+#include <ttkUtils.h>
 
 #define MODULE_S "[ttkBarycentricSubdivision] "
 #define MODULE_ERROR_S MODULE_S "Error: "
@@ -22,22 +23,12 @@ vtkSmartPointer<vtkDataArray> ttkBarycentricSubdivision::AllocateScalarField(
   // allocate the memory for the output scalar field
   switch(inputScalarField->GetDataType()) {
     case VTK_CHAR:
-      res = vtkSmartPointer<vtkCharArray>::New();
-      break;
     case VTK_DOUBLE:
-      res = vtkSmartPointer<vtkDoubleArray>::New();
-      break;
     case VTK_FLOAT:
-      res = vtkSmartPointer<vtkFloatArray>::New();
-      break;
     case VTK_INT:
-      res = vtkSmartPointer<vtkIntArray>::New();
-      break;
     case VTK_ID_TYPE:
-      res = vtkSmartPointer<vtkIdTypeArray>::New();
-      break;
     case VTK_LONG:
-      res = vtkSmartPointer<vtkLongArray>::New();
+      res = inputScalarField->NewInstance();
       break;
     default:
       std::stringstream msg;
@@ -65,17 +56,17 @@ int ttkBarycentricSubdivision::InterpolateScalarFields(
       return -2;
     }
 
-#define DISPATCH_INTERPOLATE_DIS(CASE, TYPE)                      \
-  case CASE:                                                      \
-    baseWorker_.interpolateDiscreteScalarField<TYPE>(             \
-      static_cast<TYPE *>(inputScalarField->GetVoidPointer(0)),   \
-      static_cast<TYPE *>(outputScalarField->GetVoidPointer(0))); \
+#define DISPATCH_INTERPOLATE_DIS(CASE, TYPE)                             \
+  case CASE:                                                             \
+    baseWorker_.interpolateDiscreteScalarField<TYPE>(                    \
+      static_cast<TYPE *>(ttkUtils::GetVoidPointer(inputScalarField)),   \
+      static_cast<TYPE *>(ttkUtils::GetVoidPointer(outputScalarField))); \
     break
-#define DISPATCH_INTERPOLATE_CONT(CASE, TYPE)                     \
-  case CASE:                                                      \
-    baseWorker_.interpolateContinuousScalarField<TYPE>(           \
-      static_cast<TYPE *>(inputScalarField->GetVoidPointer(0)),   \
-      static_cast<TYPE *>(outputScalarField->GetVoidPointer(0))); \
+#define DISPATCH_INTERPOLATE_CONT(CASE, TYPE)                            \
+  case CASE:                                                             \
+    baseWorker_.interpolateContinuousScalarField<TYPE>(                  \
+      static_cast<TYPE *>(ttkUtils::GetVoidPointer(inputScalarField)),   \
+      static_cast<TYPE *>(ttkUtils::GetVoidPointer(outputScalarField))); \
     break
 
     auto outputScalarField
@@ -113,8 +104,8 @@ int ttkBarycentricSubdivision::InterpolateScalarFields(
     // only for scalar fields
     switch(inputScalarField->GetDataType()) {
       vtkTemplateMacro(baseWorker_.interpolateCellDataField<VTK_TT>(
-        static_cast<VTK_TT *>(inputScalarField->GetVoidPointer(0)),
-        static_cast<VTK_TT *>(outputScalarField->GetVoidPointer(0))));
+        static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(inputScalarField)),
+        static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(outputScalarField))));
     }
     output->GetCellData()->AddArray(outputScalarField);
   }
@@ -148,7 +139,7 @@ int ttkBarycentricSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
   baseWorker_.setupTriangulation(triangulation);
   baseWorker_.setWrapper(this);
   baseWorker_.setOutputTriangulation(&triangulationSubdivision);
-  baseWorker_.setInputPoints(input->GetPoints()->GetVoidPointer(0));
+  baseWorker_.setInputPoints(ttkUtils::GetVoidPointer(input->GetPoints()));
 
   // first iteration: generate the new triangulation
   baseWorker_.execute();
@@ -203,13 +194,13 @@ int ttkBarycentricSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
   // cell id
   auto cellId = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
   cellId->SetName("CellId");
-  cellId->SetVoidArray(pointId_.data(), pointId_.size(), 1);
+  ttkUtils::SetVoidArray(cellId, pointId_.data(), pointId_.size(), 1);
   output->GetPointData()->AddArray(cellId);
 
   // cell dimension
   auto cellDim = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
   cellDim->SetName("CellDimension");
-  cellDim->SetVoidArray(pointDim_.data(), pointDim_.size(), 1);
+  ttkUtils::SetVoidArray(cellDim, pointDim_.data(), pointDim_.size(), 1);
   output->GetPointData()->AddArray(cellDim);
 
   {

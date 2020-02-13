@@ -1,4 +1,5 @@
 #include <ttkDepthImageBasedGeometryApproximation.h>
+#include <ttkUtils.h>
 
 #include <vtkObjectFactory.h> // for new macro
 
@@ -124,7 +125,7 @@ int ttkDepthImageBasedGeometryApproximation::RequestData(
 
           // Output
           (float *)points->GetVoidPointer(0),
-          (vtkIdType *)cells->WritePointer(nTriangles, nTriangles * 4),
+          cells->WritePointer(nTriangles, nTriangles * 4),
           (double *)triangleDistortions->GetVoidPointer(0));
       });
     }
