@@ -22,8 +22,8 @@ struct CellChecker : public vtkObject // inherit to be able to use vtkErrorMacro
     getErrMsg() // in C++ > 11: static constexpr errMsg = "foo";
   {
     return "Input explicit mesh is not (completely) simplicial. "
-           "Please apply the Tetrahedralize filter before any TTK filter. "
-           "The application may now crash anytime or produce false results.";
+           "Please apply the Tetrahedralize filter before proceeding with TTK. "
+           "The application behavior may be unspecified otherwise.";
   }
 
   int check1d(vtkDataSet *ds) {
@@ -303,9 +303,9 @@ int ttkTriangulation::setInputData(vtkDataSet *dataSet) {
         // not work. But no problem: `this` is only used to call GetClassName
         // which is not a virtual function so it would just return "vtkObject"
         // anyway.
-        errMsg
-          += "Please apply the Tetrahedralize filter before any TTK filter. "
-             "The application may now crash anytime or produce false results.";
+        errMsg += "Please apply the Tetrahedralize filter before proceeding "
+                  "with TTK. "
+                  "The application behavior may be unspecified otherwise.";
         vtkErrorWithObjectMacro(nullptr, << errMsg)
       }
 
