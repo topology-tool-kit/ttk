@@ -5,6 +5,61 @@
 using namespace std;
 using namespace ttk;
 
+/**
+ * @brief Auxiliary struct to check if VTK cells are simplices.
+ */
+struct CellChecker : public vtkObject // inherit to be able to use vtkErrorMacro
+{
+  vtkTypeMacro(CellChecker, vtkObject)
+
+    CellChecker()
+    = default;
+  static CellChecker *New() {
+    return new CellChecker;
+  }
+
+  static std::string
+    getErrMsg() // in C++ > 11: static constexpr errMsg = "foo";
+  {
+    return "Input explicit mesh is not (completely) simplicial. "
+           "Please apply the Tetrahedralize filter before any TTK filter. "
+           "The application may now crash anytime or produce false results.";
+  }
+
+  int check1d(vtkDataSet *ds) {
+    // e.g. VTK_POLY_LINE is not supported (as from vtkPolyData::GetLines)
+    const vtkIdType nc = ds->GetNumberOfCells();
+    for(vtkIdType c = 0; c < nc; ++c) {
+      if(ds->GetCellType(c) != VTK_LINE) {
+        vtkErrorMacro(<< getErrMsg()) return -1;
+      }
+    }
+    return 0;
+  }
+
+  int check2d(vtkDataSet *ds) {
+    const vtkIdType nc = ds->GetNumberOfCells();
+    for(vtkIdType c = 0; c < nc; ++c) {
+      const auto type = ds->GetCellType(c);
+      if(type != VTK_TRIANGLE && type != VTK_LINE) {
+        vtkErrorMacro(<< getErrMsg()) return -1;
+      }
+    }
+    return 0;
+  }
+
+  int check3d(vtkDataSet *ds) {
+    const vtkIdType nc = ds->GetNumberOfCells();
+    for(vtkIdType c = 0; c < nc; ++c) {
+      const auto type = ds->GetCellType(c);
+      if(type != VTK_TETRA && type != VTK_TRIANGLE && type != VTK_LINE) {
+        vtkErrorMacro(<< getErrMsg()) return -1;
+      }
+    }
+    return 0;
+  }
+};
+
 ttkTriangulation::ttkTriangulation() {
 
   inputDataSet_ = NULL;
@@ -185,6 +240,7 @@ bool ttkTriangulation::hasChangedConnectivity(Triangulation *triangulation,
 
 int ttkTriangulation::setInputData(vtkDataSet *dataSet) {
 
+  int ret = 0;
   if(!triangulation_) {
     allocate();
   }
@@ -216,6 +272,42 @@ int ttkTriangulation::setInputData(vtkDataSet *dataSet) {
 
     // Cells
     if(vtuDataSet->GetCells()) {
+      // As the documentation of this method says, we expect a triangulation
+      // (simplicial complex in kD)
+      std::string errMsg;
+
+      // NOTE A mix of different simplices should theoretically be supported
+      // throughout TTK but this appears to not hold up (yet) in practice.
+      // Some more notes: https://github.com/topology-tool-kit/ttk/pull/323
+      // maybe in the future instead of the current checks:
+//      ret = vtkSmartPointer<CellChecker>::New()->check3d(vtuDataSet);
+
+      if(vtuDataSet->IsHomogeneous()) {
+        const auto type = vtuDataSet->GetCellType(0);
+        if(type != VTK_TETRA && type != VTK_TRIANGLE && type != VTK_LINE) {
+          errMsg = "Input explicit mesh is not simplicial (at all). ";
+          ret = -1;
+        }
+      } else {
+        errMsg = "Input explicit mesh has different cell types. ";
+        ret = -1;
+      }
+
+      if(ret != 0) {
+        // NOTE In the long run it would be nice to not only detect this but
+        // also fix it, for an improved user-experience. Maybe not at this place
+        // though (or adapt doc) but earlier, like the macro
+        // TTK_UNSTRUCTURED_GRID_NEW in ttkWrapper.h?
+
+        // This class does not inherit from vtkObject, so the vtkErrorMacro does
+        // not work. But no problem: `this` is only used to call GetClassName
+        // which is not a virtual function so it would just return "vtkObject"
+        // anyway.
+        errMsg
+          += "Please apply the Tetrahedralize filter before any TTK filter. "
+             "The application may now crash anytime or produce false results.";
+        vtkErrorWithObjectMacro(nullptr, << errMsg)
+      }
 
       auto cellsData = static_cast<LongSimplexId *>(
         ttkUtils::GetVoidPointer(vtuDataSet->GetCells()->GetData(), 0));
@@ -255,26 +347,33 @@ int ttkTriangulation::setInputData(vtkDataSet *dataSet) {
     }
 
     // Cells
-    if(vtpDataSet->GetPolys()) {
+    // NOTE Currently we do not handle vtkPolyData instances whose cells include
+    // unconnected vertices or triangle strips
+    //    if(polyData->GetNumberOfVerts())
+    //      ; // add some 0D simplices to this ttkTriangulation
+    //    if(polyData->GetNumberOfStrips())
+    //      ; // add more 2D simplices to this ttkTriangulation (de-strip)
+    if(vtpDataSet->GetNumberOfPolys() || vtpDataSet->GetNumberOfLines()) {
       auto polysData = static_cast<LongSimplexId *>(
         ttkUtils::GetVoidPointer(vtpDataSet->GetPolys()->GetData(), 0));
       auto linesData = static_cast<LongSimplexId *>(
-        ttkUtils::GetVoidPointer(vtpDataSet->GetPolys()->GetData(), 0));
+        ttkUtils::GetVoidPointer(vtpDataSet->GetLines()->GetData(), 0));
 #if !defined(_WIN32) || defined(_WIN32) && defined(VTK_USE_64BIT_IDS)
-      if(polysData) {
-        // 2D
+      if(polysData) { // have 2D
+        ret = vtkSmartPointer<CellChecker>::New()->check2d(vtpDataSet);
+        // NOTE If there are any 1D cells, we just ignore them
         triangulation_->setInputCells(
           vtpDataSet->GetNumberOfCells(), polysData);
-      } else if(linesData) {
-        // 1D
+      } else if(linesData) { // have 1D
+        ret = vtkSmartPointer<CellChecker>::New()->check1d(vtpDataSet);
         triangulation_->setInputCells(
           vtpDataSet->GetNumberOfCells(), linesData);
       }
 #else
-      int *pt = ((vtkPolyData *)dataSet)->GetPolys()->GetPointer();
+      int *pt = polyData->GetPolys()->GetPointer();
       if(!pt) {
         // 1D
-        pt = ((vtkPolyData *)dataSet)->GetLines()->GetPointer();
+        pt = polyData->GetLines()->GetPointer();
       }
       auto extra_pt
         = reinterpret_cast<long long *>(polysData ? polysData : linesData);
@@ -318,7 +417,7 @@ int ttkTriangulation::setInputData(vtkDataSet *dataSet) {
     dMsg(cerr, msg.str(), Debug::fatalMsg);
   }
 
-  return 0;
+  return ret;
 }
 
 int ttkTriangulation::shallowCopy(vtkDataObject *other) {
