@@ -1,6 +1,5 @@
 #include "ContourAroundPoint.hpp"
 
-
 int ttk::ContourAroundPoint::setupDomain(Triangulation *triangulation,
                                          void *scalars) {
   msg(std::string(60, '-').c_str());
@@ -16,8 +15,8 @@ int ttk::ContourAroundPoint::setupDomain(Triangulation *triangulation,
     return -3;
 
   // Call all the required precondition functions here!
-  
-  //for getVertexEdgeNumber, getVertexEdge
+
+  // for getVertexEdgeNumber, getVertexEdge
   triangulation->preconditionVertexEdges();
   // for getVertexNeighbor
   triangulation->preconditionVertexNeighbors();
@@ -27,14 +26,16 @@ int ttk::ContourAroundPoint::setupDomain(Triangulation *triangulation,
   triangulation->preconditionEdgeTriangles();
   // for getTriangleEdge
   triangulation->preconditionTriangleEdges();
-  
+
   return 0;
 }
 
 //----------------------------------------------------------------------------//
 
-int ttk::ContourAroundPoint::setupConstraints(float *coords, float *isovalues,
-                                              int *flags, std::size_t np) {
+int ttk::ContourAroundPoint::setupConstraints(float *coords,
+                                              float *isovalues,
+                                              int *flags,
+                                              std::size_t np) {
   _inpPointCoords = coords;
   _inpPointIsovals = isovalues;
   _inpPointFlags = flags;
@@ -79,17 +80,20 @@ float ttk::ContourAroundPoint::compDist2(SimplexId v, SimplexId p) const {
 
 //----------------------------------------------------------------------------//
 
-void ttk::ContourAroundPoint::getOutputField(
-    SimplexId* &cinfos, SimplexId &nc,
-    float* &coords, float* &scalars, int* &flags, SimplexId &nv) const {
-  
+void ttk::ContourAroundPoint::getOutputField(SimplexId *&cinfos,
+                                             SimplexId &nc,
+                                             float *&coords,
+                                             float *&scalars,
+                                             int *&flags,
+                                             SimplexId &nv) const {
+
   nc = _outNc;
-  
+
   cinfos = new SimplexId[_outFieldCinfos.size()];
   std::copy(_outFieldCinfos.begin(), _outFieldCinfos.end(), cinfos);
-  
+
   nv = _outFieldScalars.size();
-  
+
   coords = new float[nv * 3];
   std::copy(_outFieldCoords.begin(), _outFieldCoords.end(), coords);
   scalars = new float[nv];
@@ -100,11 +104,12 @@ void ttk::ContourAroundPoint::getOutputField(
 
 //----------------------------------------------------------------------------//
 
-void ttk::ContourAroundPoint::getOutputPoints(
-    float* &coords, float* &scalars, SimplexId &nv) const {
-  
+void ttk::ContourAroundPoint::getOutputPoints(float *&coords,
+                                              float *&scalars,
+                                              SimplexId &nv) const {
+
   nv = _outPointScalars.size();
-  
+
   coords = new float[nv * 3];
   std::copy(_outPointCoords.begin(), _outPointCoords.end(), coords);
   scalars = new float[nv];

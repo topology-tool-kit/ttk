@@ -49,7 +49,7 @@ int ttkContourAroundPoint::doIt(std::vector<vtkDataSet *> &inputs,
   return 1;
 }
 
-//------------------------------------------------------------------------------------------------//
+//----------------------------------------------------------------------------//
 
 bool ttkContourAroundPoint::preprocessDomain(vtkDataSet *dataset) {
   if(ui_scalars == "") {
@@ -91,7 +91,7 @@ bool ttkContourAroundPoint::preprocessDomain(vtkDataSet *dataset) {
   return true;
 }
 
-//------------------------------------------------------------------------------------------------//
+//----------------------------------------------------------------------------//
 
 bool ttkContourAroundPoint::preconditionConstraints(vtkUnstructuredGrid *nodes,
                                                     vtkUnstructuredGrid *arcs) {
@@ -112,7 +112,7 @@ bool ttkContourAroundPoint::preconditionConstraints(vtkUnstructuredGrid *nodes,
   if(!sizeBuf || !codeBuf || !scalarBuf)
     return false;
 
-  // ---- Cell data ---- //
+    // ---- Cell data ---- //
 
 #ifndef NDEBUG // each arc should of course be defined by exactly 2 vertices
   auto cells = arcs->GetCells();
@@ -203,7 +203,7 @@ bool ttkContourAroundPoint::preconditionConstraints(vtkUnstructuredGrid *nodes,
   return true;
 }
 
-//------------------------------------------------------------------------------------------------//
+//----------------------------------------------------------------------------//
 
 bool ttkContourAroundPoint::process() {
   _wrappedModule.setWrapper(this);
@@ -218,7 +218,7 @@ bool ttkContourAroundPoint::process() {
   return true;
 }
 
-//------------------------------------------------------------------------------------------------//
+//----------------------------------------------------------------------------//
 
 bool ttkContourAroundPoint::postprocess() {
   ttk::SimplexId *cinfosBuf;
@@ -227,11 +227,11 @@ bool ttkContourAroundPoint::postprocess() {
   float *scalarsBuf;
   int *flagsBuf;
   ttk::SimplexId nv;
-  _wrappedModule.getOutputField(cinfosBuf, nc,
-                                coordsBuf, scalarsBuf, flagsBuf, nv);
+  _wrappedModule.getOutputField(
+    cinfosBuf, nc, coordsBuf, scalarsBuf, flagsBuf, nv);
   if(nc == 0) // very fine area filter
     return true;
-  
+
   // Pass ownership of the heap-allocated raw array to the respective
   // vtkDataArray.
   const int wantSave = 0;
@@ -239,12 +239,11 @@ bool ttkContourAroundPoint::postprocess() {
   // (The enum is independent of the template type - just use float.)
   const int delMethod
     = VTK_AOS_DATA_ARRAY_TEMPLATE<float>::DeleteMethod::VTK_DATA_ARRAY_DELETE;
-  
-  
+
   // ---- Cell data (output 0) ---- //
-  
+
   int *ctypes = new int[nc];
-  
+
   vtkIdType cinfoCounter = 0;
   for(std::size_t c = 0; c < nc; ++c) {
     const auto nvOfCell = cinfosBuf[cinfoCounter];
@@ -256,69 +255,66 @@ bool ttkContourAroundPoint::postprocess() {
 
   auto cinfosBufVtk = reinterpret_cast<vtkIdType *>(cinfosBuf);
   if(!std::is_same<ttk::SimplexId, vtkIdType>::value) { // unlikely
-    // Actually a warning would be in order- 
+    // Actually a warning would be in order-
     // what if conversion is not possible (e.g. too large indices)?
     cinfosBufVtk = new vtkIdType[cinfosSize];
     for(std::size_t i = 0; i < cinfosSize; ++i)
       cinfosBufVtk[i] = vtkIdType(cinfosBuf[i]);
     delete[] cinfosBuf;
   }
-  
+
   auto cells = vtkSmartPointer<vtkCellArray>::New();
   auto cinfoArr = vtkSmartPointer<vtkIdTypeArray>::New();
   cinfoArr->SetArray(cinfosBufVtk, cinfosSize, wantSave, delMethod);
   cells->SetCells(nc, cinfoArr);
   _outFld->SetCells(ctypes, cells);
-  
-  
+
   // ---- Point data (output 0) ---- //
-  
+
   if(vtkSmartPointer<vtkPoints>::New()->GetDataType() != VTK_FLOAT) {
     vtkErrorMacro("The API has changed! We have expected the default "
                   "coordinate type to be float") return false;
   }
-  
+
   auto points = vtkSmartPointer<vtkPoints>::New();
   auto coordArr = vtkSmartPointer<vtkFloatArray>::New();
   coordArr->SetNumberOfComponents(3);
   coordArr->SetArray(coordsBuf, nv * 3, wantSave, delMethod);
   points->SetData(coordArr);
   _outFld->SetPoints(points);
-  
+
   auto scalarArr = vtkFloatArray::New();
   scalarArr->SetArray(scalarsBuf, nv, wantSave, delMethod);
   scalarArr->SetName(ui_scalars.c_str());
   _outFld->GetPointData()->AddArray(scalarArr);
-  
+
   auto flagArr = vtkIntArray::New();
   flagArr->SetArray(flagsBuf, nv, wantSave, delMethod);
   flagArr->SetName("isMax");
   _outFld->GetPointData()->AddArray(flagArr);
-  
-  
+
   // ---- Output 1 (added in a later revision of the algo) ---- //
-  
+
   // re-using the variables from above
   _wrappedModule.getOutputPoints(coordsBuf, scalarsBuf, nv);
-  
+
   points = vtkSmartPointer<vtkPoints>::New();
   coordArr = vtkSmartPointer<vtkFloatArray>::New();
   coordArr->SetNumberOfComponents(3);
   coordArr->SetArray(coordsBuf, nv * 3, wantSave, delMethod);
   points->SetData(coordArr);
   _outPts->SetPoints(points);
-  
+
   scalarArr = vtkFloatArray::New();
   scalarArr->SetArray(scalarsBuf, nv, wantSave, delMethod);
   scalarArr->SetName(ui_scalars.c_str());
   _outPts->GetPointData()->AddArray(scalarArr);
-  
+
   assert(nv == _flags.size());
   flagArr = vtkIntArray::New();
   flagArr->SetArray(_flags.data(), nv, 1);
   flagArr->SetName("isMax");
   _outPts->GetPointData()->AddArray(flagArr);
-  
-  
+
   return true;
 }
