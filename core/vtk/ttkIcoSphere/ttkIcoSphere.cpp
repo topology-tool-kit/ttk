@@ -55,7 +55,8 @@ int ttkIcoSphere::RequestData(vtkInformation *request,
        nSpheres, nSubdivisions, radius, centers,
        (float *)points->GetVoidPointer(0),
        cells->WritePointer(nSpheres * nTriangles, nSpheres * nTriangles * 4)))
-       // (vtkIdType*)ttkUtils::WritePointer(cells->GetData(),nSpheres * nTriangles, nSpheres * nTriangles * 4)))
+    // (vtkIdType*)ttkUtils::WritePointer(cells->GetData(),nSpheres *
+    // nTriangles, nSpheres * nTriangles * 4)))
     return 0;
 
   // finalize output

@@ -195,8 +195,10 @@ int ttkContinuousScatterPlot::doIt(vector<vtkDataSet *> &inputs,
   continuousScatterPlot.setTriangulation(triangulation_);
   continuousScatterPlot.setResolutions(
     ScatterplotResolution[0], ScatterplotResolution[1]);
-  continuousScatterPlot.setInputScalarField1(ttkUtils::GetVoidPointer(inputScalars1_));
-  continuousScatterPlot.setInputScalarField2(ttkUtils::GetVoidPointer(inputScalars2_));
+  continuousScatterPlot.setInputScalarField1(
+    ttkUtils::GetVoidPointer(inputScalars1_));
+  continuousScatterPlot.setInputScalarField2(
+    ttkUtils::GetVoidPointer(inputScalars2_));
   continuousScatterPlot.setScalarMin(scalarMin_);
   continuousScatterPlot.setScalarMax(scalarMax_);
   continuousScatterPlot.setOutputDensity(&density_);

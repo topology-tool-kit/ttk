@@ -194,7 +194,8 @@ int ttkQuadrangulationSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
 
     auto diagsRatio = vtkSmartPointer<vtkFloatArray>::New();
     diagsRatio->SetName("Diagonals Ratio");
-    ttkUtils::SetVoidArray(diagsRatio, baseWorker_.quadDiagsRatio_.data(), baseWorker_.quadDiagsRatio_.size(), 1);
+    ttkUtils::SetVoidArray(diagsRatio, baseWorker_.quadDiagsRatio_.data(),
+                           baseWorker_.quadDiagsRatio_.size(), 1);
     output->GetCellData()->AddArray(diagsRatio);
 
     auto edgesRatio = vtkSmartPointer<vtkFloatArray>::New();

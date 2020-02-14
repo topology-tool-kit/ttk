@@ -39,10 +39,11 @@ namespace ttkUtils {
   void *GetVoidPointer(vtkDataArray *array, vtkIdType start = 0);
   void *GetVoidPointer(vtkPoints *points, vtkIdType start = 0);
 
-  void *WriteVoidPointer(vtkDataArray *array, vtkIdType start, vtkIdType numValues);
+  void *
+    WriteVoidPointer(vtkDataArray *array, vtkIdType start, vtkIdType numValues);
   void *WritePointer(vtkDataArray *array, vtkIdType start, vtkIdType numValues);
 
-  void SetVoidArray(vtkDataArray *array, void* data, vtkIdType size, int save);
+  void SetVoidArray(vtkDataArray *array, void *data, vtkIdType size, int save);
 }; // namespace ttkUtils
 
 #include <limits>
@@ -270,13 +271,16 @@ void *ttkUtils::GetVoidPointer(vtkPoints *points, vtkIdType start) {
   return GetVoidPointer(points->GetData(), start);
 }
 
-void *ttkUtils::WriteVoidPointer(vtkDataArray *array, vtkIdType valueIdx,
-                             vtkIdType numValues) {
+void *ttkUtils::WriteVoidPointer(vtkDataArray *array,
+                                 vtkIdType valueIdx,
+                                 vtkIdType numValues) {
   void *outPtr = nullptr;
   switch(array->GetDataType()) {
-    vtkTemplateMacro(
-      auto *aosArray = vtkAOSDataArrayTemplate<VTK_TT>::FastDownCast(array);
-      if(aosArray) { outPtr = aosArray->WriteVoidPointer(valueIdx, numValues); });
+    vtkTemplateMacro(auto *aosArray
+                     = vtkAOSDataArrayTemplate<VTK_TT>::FastDownCast(array);
+                     if(aosArray) {
+                       outPtr = aosArray->WriteVoidPointer(valueIdx, numValues);
+                     });
   }
   return outPtr;
 }
@@ -300,9 +304,7 @@ void ttkUtils::SetVoidArray(vtkDataArray *array,
   switch(array->GetDataType()) {
     vtkTemplateMacro(
       auto *aosArray = vtkAOSDataArrayTemplate<VTK_TT>::FastDownCast(array);
-      if(aosArray) {
-        aosArray->SetVoidArray(data, size, save);
-      } else {
+      if(aosArray) { aosArray->SetVoidArray(data, size, save); } else {
         std::cerr << "SetVoidArray on incompatible vtkDataArray:" << endl;
         array->Print(std::cerr);
       });

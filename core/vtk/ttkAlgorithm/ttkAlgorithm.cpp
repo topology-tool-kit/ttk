@@ -20,14 +20,12 @@
 
 // TODO: use a class here to add semantic about the four fields
 // and clear access methods
-typedef std::unordered_map<
-  void*,
-  std::tuple<
-    ttk::Triangulation,
-    vtkObject*,
-    vtkSmartPointer<vtkCommand>,
-    vtkMTimeType>
-  > DataSetToTriangulationMapType;
+typedef std::unordered_map<void *,
+                           std::tuple<ttk::Triangulation,
+                                      vtkObject *,
+                                      vtkSmartPointer<vtkCommand>,
+                                      vtkMTimeType>>
+  DataSetToTriangulationMapType;
 DataSetToTriangulationMapType ttkAlgorithm::DataSetToTriangulationMap;
 
 struct ttkOnDeleteCommand : public vtkCommand {
@@ -52,7 +50,7 @@ struct ttkOnDeleteCommand : public vtkCommand {
   void Execute(vtkObject *, unsigned long eventId, void *callData) {
     this->deleteEventFired = true;
 
-    void* key = this->owner;
+    void *key = this->owner;
     if(this->owner->IsA("vtkImageData"))
       key = vtkImageData::SafeDownCast(owner)->GetScalarPointer();
 
@@ -74,7 +72,7 @@ ttkAlgorithm::ttkAlgorithm() {
 ttkAlgorithm::~ttkAlgorithm() {
 }
 
-ttk::Triangulation *ttkAlgorithm::FindTriangulation(void* key) {
+ttk::Triangulation *ttkAlgorithm::FindTriangulation(void *key) {
   auto it = ttkAlgorithm::DataSetToTriangulationMap.find(key);
   if(it != ttkAlgorithm::DataSetToTriangulationMap.end()) {
     auto triangulation = &std::get<0>(it->second);
@@ -119,13 +117,8 @@ ttk::Triangulation *ttkAlgorithm::InitTriangulation(void *key,
                                                     vtkCellArray *cells) {
   ttkAlgorithm::DataSetToTriangulationMap.insert(
     {key,
-     {ttk::Triangulation(),
-      owner,
-      vtkSmartPointer<ttkOnDeleteCommand>::New(),
-      owner->GetMTime()
-     }
-    }
-  );
+     {ttk::Triangulation(), owner, vtkSmartPointer<ttkOnDeleteCommand>::New(),
+      owner->GetMTime()}});
 
   auto it = ttkAlgorithm::DataSetToTriangulationMap.find(key);
   auto triangulation = &std::get<0>(it->second);
@@ -247,10 +240,10 @@ ttk::Triangulation *ttkAlgorithm::GetTriangulation(vtkDataSet *dataSet) {
 
       // if not create triangulation
       if(!triangulation) {
-        vtkCellArray* cellArray = nullptr;
-        if (polyCells->GetNumberOfCells() > 0)
+        vtkCellArray *cellArray = nullptr;
+        if(polyCells->GetNumberOfCells() > 0)
           cellArray = polyCells;
-        else if (lineCells->GetNumberOfCells() > 0)
+        else if(lineCells->GetNumberOfCells() > 0)
           cellArray = lineCells;
 
         if(cellArray != nullptr) {

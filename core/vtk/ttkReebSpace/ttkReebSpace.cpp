@@ -693,7 +693,8 @@ int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
   //     vtkSmartPointer<vtkFloatArray>::New();
   //   pointData->SetNumberOfComponents(3);
   //   ttkUtils::SetVoidArray(
-  //     pointData, triangulationPoints->data(), triangulationPoints->size(), 1);
+  //     pointData, triangulationPoints->data(), triangulationPoints->size(),
+  //     1);
   //   sheet3Points->SetData(pointData);
   //   sheet3->SetPoints(sheet3Points);
   //

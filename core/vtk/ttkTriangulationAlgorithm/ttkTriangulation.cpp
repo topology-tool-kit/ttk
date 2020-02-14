@@ -280,7 +280,7 @@ int ttkTriangulation::setInputData(vtkDataSet *dataSet) {
       // throughout TTK but this appears to not hold up (yet) in practice.
       // Some more notes: https://github.com/topology-tool-kit/ttk/pull/323
       // maybe in the future instead of the current checks:
-//      ret = vtkSmartPointer<CellChecker>::New()->check3d(vtuDataSet);
+      //      ret = vtkSmartPointer<CellChecker>::New()->check3d(vtuDataSet);
 
       if(vtuDataSet->IsHomogeneous()) {
         const auto type = vtuDataSet->GetCellType(0);
@@ -314,7 +314,7 @@ int ttkTriangulation::setInputData(vtkDataSet *dataSet) {
 #if !defined(_WIN32) || defined(_WIN32) && defined(VTK_USE_64BIT_IDS)
       triangulation_->setInputCells(vtuDataSet->GetNumberOfCells(), cellsData);
 #else
-      auto extra_pt = reinterpret_cast<long long*>(cellsData);
+      auto extra_pt = reinterpret_cast<long long *>(cellsData);
       triangulation_->setInputCells(dataSet->GetNumberOfCells(), extra_pt);
 #endif
     }
