@@ -145,13 +145,7 @@ endfunction()
 function(ttk_set_compile_options library)
 
   # compilation flags
-  if (NOT MSVC)
-    # GCC and Clang
-    target_compile_options(${library} PRIVATE -Wall -Wshadow)
-  else()
-    # MSVC
-    target_compile_options(${library} PRIVATE /W4)
-  endif()
+  target_compile_options(${library} PRIVATE ${COMPILER_FLAGS})
 
   if(Boost_FOUND)
     target_link_libraries(${library} PUBLIC Boost::boost)
@@ -163,19 +157,6 @@ function(ttk_set_compile_options library)
 
   if (TTK_ENABLE_KAMIKAZE)
     target_compile_definitions(${library} PUBLIC TTK_ENABLE_KAMIKAZE)
-  endif()
-
-  if(NOT MSVC)
-    if (TTK_ENABLE_CPU_OPTIMIZATION)
-      target_compile_options(${library}
-        PRIVATE $<$<CONFIG:Release>:-march=native -O3 -Wfatal-errors>)
-    endif()
-
-    target_compile_options(${library} PRIVATE $<$<CONFIG:Debug>:-O0 -g -pg>)
-  endif()
-  if(MSVC)
-    # disable warnings
-    target_compile_options(${library} PUBLIC /bigobj /wd4005 /wd4061 /wd4100 /wd4146 /wd4221 /wd4242 /wd4244 /wd4245 /wd4263 /wd4264 /wd4267 /wd4273 /wd4275 /wd4296 /wd4305 /wd4365 /wd4371 /wd4435 /wd4456 /wd4457 /wd4514 /wd4619 /wd4625 /wd4626 /wd4628 /wd4668 /wd4701 /wd4702 /wd4710 /wd4800 /wd4820 /wd4996 /wd5027 /wd5029 /wd5031)
   endif()
 
   if (TTK_ENABLE_OPENMP)

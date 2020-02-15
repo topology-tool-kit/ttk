@@ -41,6 +41,7 @@ endif()
 # Base code
 # ---------
 
+include(CMake/CompilerFlags.cmake)
 include(CMake/BaseCode.cmake)
 add_subdirectory(core)
 
