@@ -1,4 +1,5 @@
 #include <ttkBlank.h>
+#include <ttkUtils.h>
 
 using namespace std;
 using namespace ttk;
@@ -98,11 +99,12 @@ vtkStandardNewMacro(ttkBlank)
   output->GetPointData()->AddArray(outputScalarField_);
 
   // calling the executing package
-  blank_.setInputDataPointer(inputScalarField->GetVoidPointer(0));
-  blank_.setOutputDataPointer(outputScalarField_->GetVoidPointer(0));
+  blank_.setInputDataPointer(ttkUtils::GetVoidPointer(inputScalarField));
+  blank_.setOutputDataPointer(ttkUtils::GetVoidPointer(outputScalarField_));
 
-  ttk::Triangulation::Type triangulationType = triangulation->getType();
-  int dataType = inputScalarField->GetDataType();
+  // scalar type
+  // ttk::Triangulation::Type triangulationType = triangulation->getType();
+  // int dataType = inputScalarField->GetDataType();
 
   ttkVtkTemplateMacro(
     triangulation->getType(), inputScalarField->GetDataType(),

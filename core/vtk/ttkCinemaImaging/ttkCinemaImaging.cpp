@@ -1,4 +1,5 @@
 #include <ttkCinemaImaging.h>
+#include <ttkUtils.h>
 
 #include <vtkVersion.h>
 
@@ -289,7 +290,7 @@ int ttkCinemaImaging::RequestData(vtkInformation *request,
         fakeArray->SetName("Fake");
         fakeArray->SetNumberOfComponents(1);
         fakeArray->SetNumberOfTuples(nP);
-        auto fakeArrayData = (signed char *)fakeArray->GetVoidPointer(0);
+        auto fakeArrayData = (signed char *)ttkUtils::GetVoidPointer(fakeArray);
         for(size_t i = 0; i < nP; i++)
           fakeArrayData[i] = 0;
         pd->AddArray(fakeArray);
@@ -370,7 +371,7 @@ int ttkCinemaImaging::RequestData(vtkInformation *request,
                 + "' is not a vtkDoubleArray with three components.");
               return 0;
             }
-            data = (double *)field->GetVoidPointer(0);
+            data = (double *)ttkUtils::GetVoidPointer(field);
             gridFieldNames += " '" + name + "'";
           }
           return 1;

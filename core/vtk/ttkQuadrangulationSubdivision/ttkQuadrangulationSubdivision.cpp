@@ -1,4 +1,5 @@
 #include <ttkQuadrangulationSubdivision.h>
+#include <ttkUtils.h>
 
 #define MODULE_S "[ttkQuadrangulationSubdivision] "
 #define MODULE_ERROR_S MODULE_S "Error: "
@@ -149,18 +150,20 @@ int ttkQuadrangulationSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
   // add data array of points valences
   auto valences = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
   valences->SetName("Valence");
-  valences->SetVoidArray(outVertexValences.data(), outVertexValences.size(), 1);
+  ttkUtils::SetVoidArray(
+    valences, outVertexValences.data(), outVertexValences.size(), 1);
   output->GetPointData()->AddArray(valences);
 
   // add data array of points infos
   auto infos = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
   infos->SetName("Type");
-  infos->SetVoidArray(outVertexType.data(), outVertexType.size(), 1);
+  ttkUtils::SetVoidArray(infos, outVertexType.data(), outVertexType.size(), 1);
   output->GetPointData()->AddArray(infos);
 
   auto subd = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
   subd->SetName("Subdivision");
-  subd->SetVoidArray(outSubdvisionLevel.data(), outSubdvisionLevel.size(), 1);
+  ttkUtils::SetVoidArray(
+    subd, outSubdvisionLevel.data(), outSubdvisionLevel.size(), 1);
   output->GetPointData()->AddArray(subd);
 
   if(RelaxationIterations > 0) {
@@ -170,46 +173,47 @@ int ttkQuadrangulationSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
     // add data array of number of triangles checked
     auto trChecked = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
     trChecked->SetName("Triangles checked");
-    trChecked->SetVoidArray(
-      trianglesChecked.data(), trianglesChecked.size(), 1);
+    ttkUtils::SetVoidArray(
+      trChecked, trianglesChecked.data(), trianglesChecked.size(), 1);
     output->GetPointData()->AddArray(trChecked);
 
     // add data array of projection success
     auto projSucc = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
     projSucc->SetName("Projection");
-    projSucc->SetVoidArray(projSucceeded.data(), projSucceeded.size(), 1);
+    ttkUtils::SetVoidArray(
+      projSucc, projSucceeded.data(), projSucceeded.size(), 1);
     output->GetPointData()->AddArray(projSucc);
   }
 
   if(QuadStatistics) {
     auto quadArea = vtkSmartPointer<vtkFloatArray>::New();
     quadArea->SetName("Quad Area");
-    quadArea->SetVoidArray(
-      baseWorker_.quadArea_.data(), baseWorker_.quadArea_.size(), 1);
+    ttkUtils::SetVoidArray(
+      quadArea, baseWorker_.quadArea_.data(), baseWorker_.quadArea_.size(), 1);
     output->GetCellData()->AddArray(quadArea);
 
     auto diagsRatio = vtkSmartPointer<vtkFloatArray>::New();
     diagsRatio->SetName("Diagonals Ratio");
-    diagsRatio->SetVoidArray(baseWorker_.quadDiagsRatio_.data(),
-                             baseWorker_.quadDiagsRatio_.size(), 1);
+    ttkUtils::SetVoidArray(diagsRatio, baseWorker_.quadDiagsRatio_.data(),
+                           baseWorker_.quadDiagsRatio_.size(), 1);
     output->GetCellData()->AddArray(diagsRatio);
 
     auto edgesRatio = vtkSmartPointer<vtkFloatArray>::New();
     edgesRatio->SetName("Edges Ratio");
-    edgesRatio->SetVoidArray(baseWorker_.quadEdgesRatio_.data(),
-                             baseWorker_.quadEdgesRatio_.size(), 1);
+    ttkUtils::SetVoidArray(edgesRatio, baseWorker_.quadEdgesRatio_.data(),
+                           baseWorker_.quadEdgesRatio_.size(), 1);
     output->GetCellData()->AddArray(edgesRatio);
 
     auto anglesRatio = vtkSmartPointer<vtkFloatArray>::New();
     anglesRatio->SetName("Angles Ratio");
-    anglesRatio->SetVoidArray(baseWorker_.quadAnglesRatio_.data(),
-                              baseWorker_.quadAnglesRatio_.size(), 1);
+    ttkUtils::SetVoidArray(anglesRatio, baseWorker_.quadAnglesRatio_.data(),
+                           baseWorker_.quadAnglesRatio_.size(), 1);
     output->GetCellData()->AddArray(anglesRatio);
 
     auto hausDist = vtkSmartPointer<vtkFloatArray>::New();
     hausDist->SetName("Hausdorff");
-    hausDist->SetVoidArray(
-      baseWorker_.hausdorff_.data(), baseWorker_.hausdorff_.size(), 1);
+    ttkUtils::SetVoidArray(hausDist, baseWorker_.hausdorff_.data(),
+                           baseWorker_.hausdorff_.size(), 1);
     output->GetPointData()->AddArray(hausDist);
   }
 

@@ -1,4 +1,5 @@
 #include <ttkCellDataConverter.h>
+#include <ttkUtils.h>
 
 #ifdef _WIN32
 #include <ciso646>
@@ -39,7 +40,7 @@ int ttkCellDataConverter::updateProgress(const float &progress) {
 
 template <typename A, typename B, typename C>
 int ttkCellDataConverter::convert(vtkDataArray *inputData, vtkDataSet *output) {
-  A *input_ptr = static_cast<A *>(inputData->GetVoidPointer(0));
+  A *input_ptr = static_cast<A *>(ttkUtils::GetVoidPointer(inputData));
   int n = inputData->GetNumberOfComponents();
   vtkIdType N = inputData->GetNumberOfTuples();
   B *output_ptr = new B[N * n];
