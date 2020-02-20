@@ -68,7 +68,7 @@ bool ttkContourAroundPoint::preprocessDomain(vtkDataSet *dataset) {
   auto scalars = dataset->GetPointData()->GetAbstractArray(ui_scalars.c_str());
   assert(scalars);
   const auto errorCode
-    = _wrappedModule.setupDomain(triangulation, scalars->GetVoidPointer(0));
+    = _wrappedModule.setInputField(triangulation, scalars->GetVoidPointer(0));
   if(errorCode < 0) {
     vtkErrorMacro("_wrappedModule.setupDomain failed with code " << errorCode);
     return false;
@@ -193,7 +193,7 @@ bool ttkContourAroundPoint::preconditionConstraints(vtkUnstructuredGrid *nodes,
     }
   }
 
-  const auto errorCode = _wrappedModule.setupConstraints(
+  const auto errorCode = _wrappedModule.setInputPoints(
     _coords.data(), _isovals.data(), _flags.data(), _isovals.size());
   if(errorCode < 0) {
     vtkErrorMacro("setInputPoints failed with code " << errorCode);
@@ -227,7 +227,7 @@ bool ttkContourAroundPoint::postprocess() {
   float *scalarsBuf;
   int *flagsBuf;
   ttk::SimplexId nv;
-  _wrappedModule.getOutputField(
+  _wrappedModule.getOutputContours(
     cinfosBuf, nc, coordsBuf, scalarsBuf, flagsBuf, nv);
   if(nc == 0) // very fine area filter
     return true;
@@ -296,7 +296,7 @@ bool ttkContourAroundPoint::postprocess() {
   // ---- Output 1 (added in a later revision of the algo) ---- //
 
   // re-using the variables from above
-  _wrappedModule.getOutputPoints(coordsBuf, scalarsBuf, nv);
+  _wrappedModule.getOutputCentroids(coordsBuf, scalarsBuf, nv);
 
   points = vtkSmartPointer<vtkPoints>::New();
   coordArr = vtkSmartPointer<vtkFloatArray>::New();

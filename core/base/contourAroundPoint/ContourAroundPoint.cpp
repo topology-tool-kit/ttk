@@ -1,7 +1,9 @@
 #include "ContourAroundPoint.hpp"
 
-int ttk::ContourAroundPoint::setupDomain(Triangulation *triangulation,
-                                         void *scalars) {
+using module = ttk::ContourAroundPoint;
+
+
+int module::setInputField(Triangulation *triangulation, void *scalars) {
   msg(std::string(60, '-').c_str());
 
   _inpFieldTriangulation = triangulation;
@@ -32,10 +34,8 @@ int ttk::ContourAroundPoint::setupDomain(Triangulation *triangulation,
 
 //----------------------------------------------------------------------------//
 
-int ttk::ContourAroundPoint::setupConstraints(float *coords,
-                                              float *isovalues,
-                                              int *flags,
-                                              std::size_t np) {
+int module::setInputPoints(float *coords, float *isovalues, int *flags,
+                           std::size_t np) {
   _inpPointCoords = coords;
   _inpPointIsovals = isovalues;
   _inpPointFlags = flags;
@@ -51,7 +51,7 @@ int ttk::ContourAroundPoint::setupConstraints(float *coords,
 
 //----------------------------------------------------------------------------//
 
-ttk::SimplexId ttk::ContourAroundPoint::findInpVert(SimplexId p) const {
+ttk::SimplexId module::findInpVert(SimplexId p) const {
   // This implementation is based on a naive nearest neighbor search
   SimplexId minv = 0;
   float mind = compDist2(minv, p);
@@ -68,7 +68,7 @@ ttk::SimplexId ttk::ContourAroundPoint::findInpVert(SimplexId p) const {
 
 //----------------------------------------------------------------------------//
 
-float ttk::ContourAroundPoint::compDist2(SimplexId v, SimplexId p) const {
+float module::compDist2(SimplexId v, SimplexId p) const {
   float vx, vy, vz;
   _inpFieldTriangulation->getVertexPoint(v, vx, vy, vz);
   const auto pCoords = &(_inpPointCoords[p * 3]);
@@ -80,12 +80,9 @@ float ttk::ContourAroundPoint::compDist2(SimplexId v, SimplexId p) const {
 
 //----------------------------------------------------------------------------//
 
-void ttk::ContourAroundPoint::getOutputField(SimplexId *&cinfos,
-                                             SimplexId &nc,
-                                             float *&coords,
-                                             float *&scalars,
-                                             int *&flags,
-                                             SimplexId &nv) const {
+void module::getOutputContours(
+    SimplexId *&cinfos, SimplexId &nc,
+    float *&coords, float *&scalars, int *&flags, SimplexId &nv) const {
 
   nc = _outNc;
 
@@ -104,9 +101,8 @@ void ttk::ContourAroundPoint::getOutputField(SimplexId *&cinfos,
 
 //----------------------------------------------------------------------------//
 
-void ttk::ContourAroundPoint::getOutputPoints(float *&coords,
-                                              float *&scalars,
-                                              SimplexId &nv) const {
+void module::getOutputCentroids(float *&coords, float *&scalars,
+                                SimplexId &nv) const {
 
   nv = _outPointScalars.size();
 

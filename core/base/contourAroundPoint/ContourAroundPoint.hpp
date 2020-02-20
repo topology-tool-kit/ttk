@@ -48,7 +48,7 @@ public:
    * \return 0 upon success, negative values otherwise.
    * \sa ttk::Triangulation
    */
-  int setupDomain(Triangulation *triangulation, void *scalars);
+  int setInputField(Triangulation *triangulation, void *scalars);
 
   /**
    * Pass the point input data (e.g. from the wrapped algorithm).
@@ -56,8 +56,8 @@ public:
    * @param isovalues Isovalue for each contour.
    * @return 0 upon success, negative values otherwise.
    */
-  int setupConstraints(float *coords, float *isovalues, int *flags,
-                       std::size_t np);
+  int setInputPoints(float *coords, float *isovalues, int *flags,
+                     std::size_t np);
 
   /**
    * Execute the package.
@@ -77,7 +77,7 @@ public:
    * @param scalars Scalar value for each vertex.
    * @param nv Number of vertices.
    */
-  void getOutputField(
+  void getOutputContours(
       SimplexId* &cinfos, SimplexId &nc,
       float* &coords, float* &scalars, int* &flags, SimplexId &nv) const;
   
@@ -89,7 +89,7 @@ public:
    * @param scalars Scalar value for each vertex.
    * @param nv Number of vertices.
    */
-  void getOutputPoints(float* &coords, float* &scalars, SimplexId &nv) const;
+  void getOutputCentroids(float* &coords, float* &scalars, SimplexId &nv) const;
 
   // NOTE code-clone from vtk/ttkContourAroundPoint
   /// Override this method in order to always prepend a class- and
@@ -149,7 +149,7 @@ protected:
   int *_inpPointFlags = nullptr;
   /// number of input points
   std::size_t _np = 0;
-
+  
   Triangulation *_inpFieldTriangulation = nullptr; // scalar field domain
   void *_inpFieldScalars = nullptr; // scalar field image
   // up to _inpDimMax-dimensional cells appear in _inpFieldTriangulation;
@@ -234,7 +234,7 @@ void ttk::ContourAroundPoint::handleOneInpPt(SimplexId vBeg,
   // the actual isocontour (that intersects these edges).
   
   auto innerVerts = std::vector<SimplexId>{vBeg};
-  std::set<SimplexId> xEdges; // set data structure is needed in addOutput
+  std::set<SimplexId> xEdges; // set data-structure is needed in addOutput
   
   struct VertEdge {
     SimplexId v; // where am i
