@@ -368,7 +368,7 @@ void ttk::ContourAroundPoint::extendOutPts(
 //  msg(out.str().c_str());
   
   auto inpScalars = reinterpret_cast<const scalarT*>(_inpFieldScalars);
-  const bool isovalIsMin = flag == 0;
+//  const bool isovalIsMin = flag == 0;
   
   // do the computation in double precision
   double wSum = 0.;
@@ -384,7 +384,9 @@ void ttk::ContourAroundPoint::extendOutPts(
     const scalarT sca = inpScalars[v];
     // Vertices that are close to the boundary of the region
     // (scalar value-wise) have little weight
-    const double w = isovalIsMin ? sca - isoval : isoval - sca;
+//    const double w = isovalIsMin ? sca - isoval : isoval - sca;
+    const double diffSca = sca - isoval;
+    const double w = diffSca * diffSca;
     wSum += w;
     
     float x, y, z;
