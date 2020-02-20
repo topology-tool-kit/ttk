@@ -3,18 +3,23 @@
 using module = ttk::ContourAroundPoint;
 
 
-int module::setInputField(Triangulation *triangulation, void *scalars) {
+int module::setInputField(Triangulation *triangulation, void *scalars,
+                          double sizeFilter) {
   msg(std::string(60, '-').c_str());
-
-  _inpFieldTriangulation = triangulation;
-  _inpFieldScalars = scalars;
-  _inpDimMax = triangulation->getDimensionality();
+  
   if(!triangulation)
     return -1;
   if(!scalars)
     return -2;
+  _inpFieldTriangulation = triangulation;
+  _inpFieldScalars = scalars;
+  
+  _inpDimMax = triangulation->getDimensionality();
   if(_inpDimMax < 2 || _inpDimMax > 3)
     return -3;
+  
+  _sizeMin = _inpFieldTriangulation->getNumberOfVertices()
+      * sizeFilter / 10000. + 1;
 
   // Call all the required precondition functions here!
 
@@ -101,8 +106,8 @@ void module::getOutputContours(
 
 //----------------------------------------------------------------------------//
 
-void module::getOutputCentroids(float *&coords, float *&scalars,
-                                SimplexId &nv) const {
+void module::getOutputCentroids(
+    float *&coords, float *&scalars, int* &flags, SimplexId &nv) const {
 
   nv = _outPointScalars.size();
 
@@ -110,4 +115,6 @@ void module::getOutputCentroids(float *&coords, float *&scalars,
   std::copy(_outPointCoords.begin(), _outPointCoords.end(), coords);
   scalars = new float[nv];
   std::copy(_outPointScalars.begin(), _outPointScalars.end(), scalars);
+  flags = new int[nv];
+  std::copy(_outPointFlags.begin(), _outPointFlags.end(), flags);
 }

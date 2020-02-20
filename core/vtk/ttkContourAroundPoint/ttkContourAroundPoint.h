@@ -176,12 +176,17 @@ protected:
   }
 
 private:
-  double ui_sizeFilter; // 10000 [c%] --> keep everything
-  double ui_extension; // 100 [%] --> maximum contour size
-  std::string ui_scalars; // name of the scalar variable of the Domain
+  // minimum required output region size,
+  // in centi-percent of the number of input field vertices:
+  // 0 --> all pass, 10000 none pass
+  double ui_sizeFilter;
+  // output region size, in percent of the maximum overlap-free size:
+  // 0 --> single point, 100 --> touching neighbor regions
+  double ui_extension;
+  // name of the scalar variable of the input field
+  std::string ui_scalars;
 
   int _scalarTypeCode; // VTK type of the scalars defined on the Domain
-  double _domainBbSize; // size of the bounding box of the domain
 
   // referring to the input points
   std::vector<float> _coords;

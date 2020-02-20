@@ -67,11 +67,11 @@ bool ttkContourAroundPoint::preprocessDomain(vtkDataSet *dataset) {
   triangulation->setWrapper(this);
   auto scalars = dataset->GetPointData()->GetAbstractArray(ui_scalars.c_str());
   assert(scalars);
-  const auto errorCode
-    = _wrappedModule.setInputField(triangulation, scalars->GetVoidPointer(0));
+  const auto errorCode = _wrappedModule.setInputField(
+        triangulation, scalars->GetVoidPointer(0), ui_sizeFilter);
   if(errorCode < 0) {
-    vtkErrorMacro("_wrappedModule.setupDomain failed with code " << errorCode);
-    return false;
+    vtkErrorMacro("_wrappedModule.setInputField failed with code "
+                  << errorCode) return false;
   }
 
   _scalarTypeCode = scalars->GetDataType();
@@ -79,15 +79,6 @@ bool ttkContourAroundPoint::preprocessDomain(vtkDataSet *dataset) {
   stream << "Scalar type: " << scalars->GetDataTypeAsString() << " (code "
          << _scalarTypeCode << ")";
   dMsg(std::cout, stream.str().c_str(), detailedInfoMsg);
-
-  double *bounds = dataset->GetBounds();
-  double size = 1.;
-  for(std::size_t dim = 0; dim < 3; ++dim) {
-    const double range = bounds[dim * 2 + 1] - bounds[dim * 2];
-    size *= range == 0 ? 1 : range;
-  }
-  _domainBbSize = size;
-
   return true;
 }
 
@@ -104,15 +95,12 @@ bool ttkContourAroundPoint::preconditionConstraints(vtkUnstructuredGrid *nodes,
   auto coords = reinterpret_cast<float *>(points->GetData()->GetVoidPointer(0));
 
   auto pData = nodes->GetPointData();
-  //  auto sizeBuf = getBuffer<float>(pData, "RegionSize", VTK_FLOAT, "float");
-  auto sizeBuf = getBuffer<int>(
-    pData, "RegionSize", VTK_INT, "int"); // TODO Document precise meaning
   auto codeBuf = getBuffer<int>(pData, "CriticalType", VTK_INT, "int");
   auto scalarBuf = getBuffer<float>(pData, "Scalar", VTK_FLOAT, "float");
-  if(!sizeBuf || !codeBuf || !scalarBuf)
+  if(!codeBuf || !scalarBuf)
     return false;
 
-    // ---- Cell data ---- //
+  // ---- Cell data ---- //
 
 #ifndef NDEBUG // each arc should of course be defined by exactly 2 vertices
   auto cells = arcs->GetCells();
@@ -138,7 +126,6 @@ bool ttkContourAroundPoint::preconditionConstraints(vtkUnstructuredGrid *nodes,
   const double sadFac
     = ui_extension * 0.01; // factor for the saddle or mean of min and max
   const double extFac = 1 - sadFac; // factor for the extreme point
-  const double minSize = _domainBbSize * ui_sizeFilter * 0.0001;
 
   _isovals.resize(0);
   _coords.resize(0);
@@ -159,8 +146,6 @@ bool ttkContourAroundPoint::preconditionConstraints(vtkUnstructuredGrid *nodes,
       // extremum and saddle
       const auto ext = pIsSad ? q : p;
       const auto sad = pIsSad ? p : q;
-      if(sizeBuf[ext] < minSize)
-        continue;
       _isovals.push_back(scalarBuf[ext] * extFac + scalarBuf[sad] * sadFac);
       const auto point = &coords[ext * 3];
       _coords.push_back(point[0]);
@@ -171,10 +156,9 @@ bool ttkContourAroundPoint::preconditionConstraints(vtkUnstructuredGrid *nodes,
     {
       const auto pVal = scalarBuf[p];
       const auto qVal = scalarBuf[q];
-      vtkWarningMacro(<< "Arc " << c << " joins a minimum and a maximum")
-        const auto cVal
-        = (pVal + qVal) / 2;
-      if(sizeBuf[p] >= minSize) {
+      vtkWarningMacro(<< "Arc " << c << " joins a minimum and a maximum");
+      const auto cVal = (pVal + qVal) / 2;
+      {
         _isovals.push_back(pVal * extFac + cVal * sadFac);
         const auto point = &coords[p * 3];
         _coords.push_back(point[0]);
@@ -182,7 +166,7 @@ bool ttkContourAroundPoint::preconditionConstraints(vtkUnstructuredGrid *nodes,
         _coords.push_back(point[2]);
         _flags.push_back(pCode == minCode ? 0 : 1);
       }
-      if(sizeBuf[q] >= minSize) {
+      {
         _isovals.push_back(qVal * extFac + cVal * sadFac);
         const auto point = &coords[q * 3];
         _coords.push_back(point[0]);
@@ -199,7 +183,6 @@ bool ttkContourAroundPoint::preconditionConstraints(vtkUnstructuredGrid *nodes,
     vtkErrorMacro("setInputPoints failed with code " << errorCode);
     return false;
   }
-
   return true;
 }
 
@@ -296,7 +279,7 @@ bool ttkContourAroundPoint::postprocess() {
   // ---- Output 1 (added in a later revision of the algo) ---- //
 
   // re-using the variables from above
-  _wrappedModule.getOutputCentroids(coordsBuf, scalarsBuf, nv);
+  _wrappedModule.getOutputCentroids(coordsBuf, scalarsBuf, flagsBuf, nv);
 
   points = vtkSmartPointer<vtkPoints>::New();
   coordArr = vtkSmartPointer<vtkFloatArray>::New();
@@ -310,9 +293,8 @@ bool ttkContourAroundPoint::postprocess() {
   scalarArr->SetName(ui_scalars.c_str());
   _outPts->GetPointData()->AddArray(scalarArr);
 
-  assert(nv == _flags.size());
   flagArr = vtkIntArray::New();
-  flagArr->SetArray(_flags.data(), nv, 1);
+  flagArr->SetArray(flagsBuf, nv, wantSave, delMethod);
   flagArr->SetName("isMax");
   _outPts->GetPointData()->AddArray(flagArr);
 

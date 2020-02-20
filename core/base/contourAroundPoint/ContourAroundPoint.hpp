@@ -45,15 +45,18 @@ public:
    *
    * \param triangulation Pointer to a valid triangulation.
    * \param scalars Scalar for each vertex.
+   * \param sizeFilter 0 --> all pass, 10000 none pass.
    * \return 0 upon success, negative values otherwise.
    * \sa ttk::Triangulation
    */
-  int setInputField(Triangulation *triangulation, void *scalars);
+  int setInputField(Triangulation *triangulation, void *scalars,
+                    double sizeFilter);
 
   /**
    * Pass the point input data (e.g. from the wrapped algorithm).
    * @param coords 3D point coordinates in an interleaved array.
-   * @param isovalues Isovalue for each contour.
+   * @param isovalues Isovalue corresponding to each point.
+   * @param flags isMax-flag for each point.
    * @return 0 upon success, negative values otherwise.
    */
   int setInputPoints(float *coords, float *isovalues, int *flags,
@@ -71,9 +74,10 @@ public:
    * Get the output field data (e.g. for the wrapped algorithm).
    * To be called after a successful `execute`.
    * The ownership of the pointers moves to the caller.
-   * @param nc Number of cells.
    * @param cinfos Sequence of cell infos like `n v0 ... vn-1`.
+   * @param nc Number of cells.
    * @param coords 3D Vertex coordinates as interleaved array.
+   * @param flags isMax-flag for each vertex.
    * @param scalars Scalar value for each vertex.
    * @param nv Number of vertices.
    */
@@ -85,11 +89,13 @@ public:
    * Get the output point data (e.g. for the wrapped algorithm).
    * To be called after a successful `execute`.
    * The ownership of the pointers moves to the caller.
-   * @param coords 3D Vertex coordinates as interleaved array.
-   * @param scalars Scalar value for each vertex.
+   * @param coords 3D point coordinates as interleaved array.
+   * @param scalars Scalar value for each point.
+   * @param flags isMax-flag for each point.
    * @param nv Number of vertices.
    */
-  void getOutputCentroids(float* &coords, float* &scalars, SimplexId &nv) const;
+  void getOutputCentroids(
+      float* &coords, float* &scalars, int* &flags, SimplexId &nv) const;
 
   // NOTE code-clone from vtk/ttkContourAroundPoint
   /// Override this method in order to always prepend a class- and
@@ -155,6 +161,9 @@ protected:
   // up to _inpDimMax-dimensional cells appear in _inpFieldTriangulation;
   // lower-dimensional cells may appear too.
   SimplexId _inpDimMax = 0;
+  // minimum required output region size,
+  // in number of contained input field vertices
+  std::size_t _sizeMin = 0;
   
   
   /* Output data (recomputed in every call to `execute`) */
@@ -167,7 +176,7 @@ protected:
   
   mutable std::vector<float> _outPointCoords;
   mutable std::vector<float> _outPointScalars;
-  // The flags are the same as for the input points
+  mutable std::vector<int> _outPointFlags;
 };
 }
 
@@ -184,6 +193,7 @@ int ttk::ContourAroundPoint::execute() const
   
   _outPointCoords.resize(0);
   _outPointScalars.resize(0);
+  _outPointFlags.resize(0);
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!_inpPointCoords) return -1;
@@ -271,6 +281,8 @@ void ttk::ContourAroundPoint::handleOneInpPt(SimplexId vBeg,
     }
   }
   
+  if(innerVerts.size() < _sizeMin)
+    return;
   extendOutFld<scalarT>(xEdges, isovalue, flag);
   extendOutPts<scalarT>(innerVerts, isovalue, flag);
 }
@@ -363,9 +375,6 @@ void ttk::ContourAroundPoint::extendOutFld(
 template<typename scalarT>
 void ttk::ContourAroundPoint::extendOutPts(
     const std::vector<SimplexId> &vertices, float isoval, int flag) const {
-//  std::ostringstream out;
-//  out << "num. inner vertices: " << vertices.size();
-//  msg(out.str().c_str());
   
   auto inpScalars = reinterpret_cast<const scalarT*>(_inpFieldScalars);
 //  const bool isovalIsMin = flag == 0;
@@ -407,4 +416,5 @@ void ttk::ContourAroundPoint::extendOutPts(
   _outPointCoords.push_back(static_cast<float>(outY));
   _outPointCoords.push_back(static_cast<float>(outZ));
   _outPointScalars.push_back(static_cast<float>(outSca));
+  _outPointFlags.push_back(flag);
 }
