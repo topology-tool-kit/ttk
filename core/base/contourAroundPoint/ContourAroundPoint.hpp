@@ -16,6 +16,8 @@
 #include <Triangulation.h>
 
 #include <cassert>
+#include <cmath>
+#include <functional> // see comment below
 #include <set>
 #include <vector>
 
@@ -53,13 +55,14 @@ public:
                     double sizeFilter);
 
   /**
-   * Pass the point input data (e.g. from the wrapped algorithm).
+   * Input the point data (e.g. from the wrapped algorithm).
    * @param coords 3D point coordinates in an interleaved array.
-   * @param isovalues Isovalue corresponding to each point.
+   * @param scalars Scalar value for each point.
+   * @param isovals Isovalue corresponding to each point.
    * @param flags isMax-flag for each point.
    * @return 0 upon success, negative values otherwise.
    */
-  int setInputPoints(float *coords, float *isovalues, int *flags,
+  int setInputPoints(float *coords, float *scalars, float *isovals, int *flags,
                      std::size_t np);
 
   /**
@@ -117,19 +120,46 @@ public:
     return res;
   }
   
+  // This static function might as well go into some kind of utility file.
+  // In C++>11 auto return type is possible (for a function returning a lambda).
+  /**
+   * @brief Get a sigmoid function.
+   * @param lox Small x-value (e.g. the expected minimum input); default 0.
+   * @param hix Large x-value (e.g. the expected maximum input); default 1.
+   * @param slopeFac Factor to multiply with the default slope
+   *        (hiy-loy)/(hix-lox); a negative value creates a "zee" function that
+   *        goes from hiy to loy.
+   * @param loy Infimum  y-value; default 0.
+   * @param hiy Supremum y-value; default 1.
+   */
+  static std::function<double(double)> getSigmoidFunc(
+      double lox=0., double hix=1., double slopeFac=1.,
+      double loy=0., double hiy=1.) {
+    const double ry = hiy - loy;
+    // inflection position where y = loy + ry/2
+    const double midx = (lox + hix)/2.;
+    const double slope = slopeFac * ry / (hix - lox);
+    const double mulWithX = -slope;
+    const double addToScaledX = slope * midx;
+    return [mulWithX, addToScaledX, ry, loy](double x) {
+      return ry / (1. + std::exp(mulWithX*x + addToScaledX)) + loy;
+    };
+  }
+  
   
 protected:
 
   /// Given one of the input points, find the nearest vertex in the input field.
   /// N.B.: Typically, the points are actually vertices of the input field.
-  SimplexId findInpVert(SimplexId p) const;
+  SimplexId findInpFldVert(SimplexId p) const;
 
   /// Compute the squared distance between input field vertex v and
   /// input point p.
   float compDist2(SimplexId v, SimplexId p) const;
 
   template<typename scalarT>
-  void handleOneInpPt(SimplexId cCenter, float isovalue, int flag) const;
+  void handleOneInpPt(
+      SimplexId vBeg, float isoval, int flag, float scalar) const;
 
   /// Exctract the contour from the input edges that intersect it.
   /// `inpEdges` may be empty.
@@ -141,42 +171,40 @@ protected:
   /// `vertices` must contain at least one vertex.
   template<typename scalarT>
   void extendOutPts(const std::vector<SimplexId> &vertices,
-                    float isoval, int flag) const;
+                    float isoval, int flag, float scalar) const;
   
   
-  /* Input data */
+  /* Input data (field and points) */
   
-  /// 3D positions of the points (as interleaved array)
-  float *_inpPointCoords  = nullptr;
-  /// scalar value of the points
-  float *_inpPointIsovals = nullptr;
-  /// 0 if the isovalue for a point is above the point's value;
-  /// "point is a minimum is default"
-  int *_inpPointFlags = nullptr;
-  /// number of input points
-  std::size_t _np = 0;
-  
-  Triangulation *_inpFieldTriangulation = nullptr; // scalar field domain
-  void *_inpFieldScalars = nullptr; // scalar field image
-  // up to _inpDimMax-dimensional cells appear in _inpFieldTriangulation;
+  Triangulation *_inpFldTriang = nullptr;
+  void *_inpFldScalars = nullptr; // scalar field image
+  // up to _inpDimMax-dimensional cells appear in _inpFldTriang;
   // lower-dimensional cells may appear too.
   SimplexId _inpDimMax = 0;
   // minimum required output region size,
   // in number of contained input field vertices
   std::size_t _sizeMin = 0;
   
+  float *_inpPtsCoords  = nullptr;
+  float *_inpPtsScalars = nullptr;
+  float *_inpPtsIsovals = nullptr;
+  // 0 if the isovalue for a point is above the point's value;
+  // "point is a minimum is default"
+  int *_inpPtsFlags = nullptr;
+  std::size_t _inpPtsNum = 0;
   
-  /* Output data (recomputed in every call to `execute`) */
   
-  mutable std::vector<SimplexId> _outFieldCinfos;
-  mutable SimplexId _outNc = 0;
-  mutable std::vector<float> _outFieldCoords;
-  mutable std::vector<float> _outFieldScalars;
-  mutable std::vector<int> _outFieldFlags;
+  /* Output data (contours and centroids) */
   
-  mutable std::vector<float> _outPointCoords;
-  mutable std::vector<float> _outPointScalars;
-  mutable std::vector<int> _outPointFlags;
+  mutable std::vector<SimplexId> _outContoursCinfos;
+  mutable SimplexId _outContoursNc = 0;
+  mutable std::vector<float> _outContoursCoords;
+  mutable std::vector<float> _outContoursScalars;
+  mutable std::vector<int> _outContoursFlags;
+  
+  mutable std::vector<float> _outCentroidsCoords;
+  mutable std::vector<float> _outCentroidsScalars;
+  mutable std::vector<int> _outCentroidsFlags;
 };
 }
 
@@ -185,21 +213,23 @@ protected:
 template<class scalarT>
 int ttk::ContourAroundPoint::execute() const
 {
-  _outFieldCinfos.resize(0);
-  _outNc = 0;
-  _outFieldCoords.resize(0);
-  _outFieldScalars.resize(0);
-  _outFieldFlags.resize(0);
+  _outContoursCinfos.resize(0);
+  _outContoursNc = 0;
+  _outContoursCoords.resize(0);
+  _outContoursScalars.resize(0);
+  _outContoursFlags.resize(0);
   
-  _outPointCoords.resize(0);
-  _outPointScalars.resize(0);
-  _outPointFlags.resize(0);
+  _outCentroidsCoords.resize(0);
+  _outCentroidsScalars.resize(0);
+  _outCentroidsFlags.resize(0);
 
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(!_inpPointCoords) return -1;
-  if(!_inpPointIsovals) return -2;
-  if(!_inpFieldTriangulation) return -3;
-  if(!_inpFieldScalars) return -4;
+  if(!_inpFldTriang) return -1;
+  if(!_inpFldScalars) return -2;
+  if(!_inpPtsCoords) return -3;
+  if(!_inpPtsScalars) return -4;
+  if(!_inpPtsIsovals) return -5;
+  if(!_inpPtsFlags) return -6;
 #endif
 
   Timer timUseObj;
@@ -209,31 +239,26 @@ int ttk::ContourAroundPoint::execute() const
 //#ifdef TTK_ENABLE_OPENMP
 //#pragma omp parallel for num_threads(threadNumber_)
 //#endif
-  for(SimplexId p = 0; p < _np; ++p)
+  for(SimplexId p = 0; p < _inpPtsNum; ++p)
   {
-    const auto pStr = "p" + std::to_string(p);
-    const auto isoval = _inpPointIsovals[p];
-    std::ostringstream msgStream;
-    msgStream << pStr << " isoval="<<std::setw(7)<<isoval;
-    msg(msgStream.str().c_str(), advancedInfoMsg);
-
-    handleOneInpPt<scalarT>(findInpVert(p), isoval, _inpPointFlags[p]);
+    handleOneInpPt<scalarT>(findInpFldVert(p), _inpPtsIsovals[p],
+                            _inpPtsFlags[p], _inpPtsScalars[p]);
   }
    
   std::ostringstream timUseStream;
   timUseStream<< std::fixed<< std::setprecision(3)<< timUseObj.getElapsedTime()
-              << " s  ("<< _np<< " points using "<< threadNumber_<< " threads)";
+              << " s  ("<< _inpPtsNum<< " points using "<< threadNumber_<< " threads)";
   dMsg(std::cout, timUseStream.str(), timeMsg);
   return 0;
 }
 
 //----------------------------------------------------------------------------//
 template<typename scalarT>
-void ttk::ContourAroundPoint::handleOneInpPt(SimplexId vBeg,
-                                            float isovalue, int flag) const
+void ttk::ContourAroundPoint::handleOneInpPt(
+    SimplexId vBeg, float isoval, int flag, float scalar) const
 {
-  auto triangu = _inpFieldTriangulation; // just a short alias
-  auto inpScalars = reinterpret_cast<const scalarT*>(_inpFieldScalars);
+  auto triangu = _inpFldTriang; // just a short alias
+  auto inpScalars = reinterpret_cast<const scalarT*>(_inpFldScalars);
   const bool vBegIsMin = flag == 0;
   
   // The general idea of the algorithm is to start a (breadth-first) search
@@ -272,7 +297,7 @@ void ttk::ContourAroundPoint::handleOneInpPt(SimplexId vBeg,
   {
     const auto ve = q.back(); q.pop_back();
     const auto v = ve.v;
-    const bool vIsAboveIso = inpScalars[v] > isovalue;
+    const bool vIsAboveIso = inpScalars[v] > isoval;
     if(vBegIsMin == vIsAboveIso) { // crossed the contour
       xEdges.insert(ve.e);
      } else {
@@ -283,8 +308,8 @@ void ttk::ContourAroundPoint::handleOneInpPt(SimplexId vBeg,
   
   if(innerVerts.size() < _sizeMin)
     return;
-  extendOutFld<scalarT>(xEdges, isovalue, flag);
-  extendOutPts<scalarT>(innerVerts, isovalue, flag);
+  extendOutFld<scalarT>(xEdges, isoval, flag);
+  extendOutPts<scalarT>(innerVerts, isoval, flag, scalar);
 }
 
 //----------------------------------------------------------------------------//
@@ -292,8 +317,8 @@ template<typename scalarT>
 void ttk::ContourAroundPoint::extendOutFld(
     const std::set<SimplexId> &inpEdges, float isoval, int flag) const
 {
-  auto triangu = _inpFieldTriangulation; // just a short alias
-  auto inpScalars = reinterpret_cast<const scalarT*>(_inpFieldScalars);
+  auto triangu = _inpFldTriang; // just a short alias
+  auto inpScalars = reinterpret_cast<const scalarT*>(_inpFldScalars);
   
   // Every edge e of the given edges maps to one output vertex v;
   // v is connected to a number of other such vertices.
@@ -309,7 +334,7 @@ void ttk::ContourAroundPoint::extendOutFld(
       return inpe2outv[e];
       
     // geometry of the vertex (linear interpolation on e)
-    const SimplexId v = _outFieldScalars.size();
+    const SimplexId v = _outContoursScalars.size();
     inpe2outv[e] = v;
     
     SimplexId p; triangu->getEdgeVertex(e, 0, p);
@@ -325,12 +350,12 @@ void ttk::ContourAroundPoint::extendOutFld(
     const float x = px * pFac + qx * qFac;
     const float y = py * pFac + qy * qFac;
     const float z = pz * pFac + qz * qFac;
-    _outFieldCoords.push_back(x);
-    _outFieldCoords.push_back(y);
-    _outFieldCoords.push_back(z);
+    _outContoursCoords.push_back(x);
+    _outContoursCoords.push_back(y);
+    _outContoursCoords.push_back(z);
     
-    _outFieldScalars.push_back(isoval);
-    _outFieldFlags.push_back(flag);
+    _outContoursScalars.push_back(isoval);
+    _outContoursFlags.push_back(flag);
     return v;
   };
   
@@ -362,10 +387,10 @@ void ttk::ContourAroundPoint::extendOutFld(
           continue;
         
         // new output edge from v(e) to v(eGlo)
-        _outFieldCinfos.push_back(2);
-        _outFieldCinfos.push_back(v);
-        _outFieldCinfos.push_back(getOrMakeOutVert(eGlo));
-        ++_outNc;
+        _outContoursCinfos.push_back(2);
+        _outContoursCinfos.push_back(v);
+        _outContoursCinfos.push_back(getOrMakeOutVert(eGlo));
+        ++_outContoursNc;
       } // END target edge
     } // END triangle
   } // END source edge
@@ -374,10 +399,14 @@ void ttk::ContourAroundPoint::extendOutFld(
 //----------------------------------------------------------------------------//
 template<typename scalarT>
 void ttk::ContourAroundPoint::extendOutPts(
-    const std::vector<SimplexId> &vertices, float isoval, int flag) const {
+    const std::vector<SimplexId> &vertices,
+    float isoval, int flag, float scalar) const {
   
-  auto inpScalars = reinterpret_cast<const scalarT*>(_inpFieldScalars);
-//  const bool isovalIsMin = flag == 0;
+  auto inpScalars = reinterpret_cast<const scalarT*>(_inpFldScalars);
+  // Vertices that are close to the isovalue have little weight.
+  using ScaPair = std::pair<float,float>;
+  auto scaMinMax = flag ? ScaPair{isoval, scalar} : ScaPair{scalar, isoval};
+  auto wOfSca = getSigmoidFunc(scaMinMax.first, scaMinMax.second, -1.);
   
   // do the computation in double precision
   double wSum = 0.;
@@ -391,15 +420,14 @@ void ttk::ContourAroundPoint::extendOutPts(
   
   for(const auto v : vertices) {
     const scalarT sca = inpScalars[v];
-    // Vertices that are close to the boundary of the region
-    // (scalar value-wise) have little weight
-//    const double w = isovalIsMin ? sca - isoval : isoval - sca;
-    const double diffSca = sca - isoval;
-    const double w = diffSca * diffSca;
+//    const double w = flag ? sca - isoval : isoval - sca;
+//    const double diffSca = sca - isoval;
+//    const double w = diffSca * diffSca;
+    const double w = wOfSca(sca);
     wSum += w;
     
     float x, y, z;
-    _inpFieldTriangulation->getVertexPoint(v, x, y, z);
+    _inpFldTriang->getVertexPoint(v, x, y, z);
     outX += x * w;
     outY += y * w;
     outZ += z * w;
@@ -412,9 +440,9 @@ void ttk::ContourAroundPoint::extendOutPts(
   outZ /= wSum;
   outSca /= wSum;
   
-  _outPointCoords.push_back(static_cast<float>(outX));
-  _outPointCoords.push_back(static_cast<float>(outY));
-  _outPointCoords.push_back(static_cast<float>(outZ));
-  _outPointScalars.push_back(static_cast<float>(outSca));
-  _outPointFlags.push_back(flag);
+  _outCentroidsCoords.push_back(static_cast<float>(outX));
+  _outCentroidsCoords.push_back(static_cast<float>(outY));
+  _outCentroidsCoords.push_back(static_cast<float>(outZ));
+  _outCentroidsScalars.push_back(static_cast<float>(outSca));
+  _outCentroidsFlags.push_back(flag);
 }

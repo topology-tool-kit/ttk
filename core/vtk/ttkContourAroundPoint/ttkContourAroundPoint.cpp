@@ -2,7 +2,7 @@
 
 #include <vtkVersion.h>
 
-#include <vtkProbeFilter.h>
+#include <vtkProbeFilter.h> // TODO can be removed?
 
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
@@ -32,10 +32,10 @@ int ttkContourAroundPoint::doIt(std::vector<vtkDataSet *> &inputs,
   _outFld = static_cast<vtkUnstructuredGrid *>(outputs[0]);
   _outPts = static_cast<vtkUnstructuredGrid *>(outputs[1]);
 
-  if(!preprocessDomain(inputs[0]))
+  if(!preprocessFld(inputs[0]))
     return 0;
-  if(!preconditionConstraints(static_cast<vtkUnstructuredGrid *>(inputs[1]),
-                              static_cast<vtkUnstructuredGrid *>(inputs[2])))
+  if(!preprocessPts(static_cast<vtkUnstructuredGrid *>(inputs[1]),
+                    static_cast<vtkUnstructuredGrid *>(inputs[2])))
     return 0;
   if(!process())
     return 0;
@@ -51,7 +51,7 @@ int ttkContourAroundPoint::doIt(std::vector<vtkDataSet *> &inputs,
 
 //----------------------------------------------------------------------------//
 
-bool ttkContourAroundPoint::preprocessDomain(vtkDataSet *dataset) {
+bool ttkContourAroundPoint::preprocessFld(vtkDataSet *dataset) {
   if(ui_scalars == "") {
     vtkErrorMacro(
       "A scalar variable needs to be defined on the Domain") return false;
@@ -84,8 +84,8 @@ bool ttkContourAroundPoint::preprocessDomain(vtkDataSet *dataset) {
 
 //----------------------------------------------------------------------------//
 
-bool ttkContourAroundPoint::preconditionConstraints(vtkUnstructuredGrid *nodes,
-                                                    vtkUnstructuredGrid *arcs) {
+bool ttkContourAroundPoint::preprocessPts(vtkUnstructuredGrid *nodes,
+                                          vtkUnstructuredGrid *arcs) {
   // ---- Point data ---- //
 
   auto points = nodes->GetPoints();
@@ -95,14 +95,14 @@ bool ttkContourAroundPoint::preconditionConstraints(vtkUnstructuredGrid *nodes,
   auto coords = reinterpret_cast<float *>(points->GetData()->GetVoidPointer(0));
 
   auto pData = nodes->GetPointData();
-  auto codeBuf = getBuffer<int>(pData, "CriticalType", VTK_INT, "int");
   auto scalarBuf = getBuffer<float>(pData, "Scalar", VTK_FLOAT, "float");
-  if(!codeBuf || !scalarBuf)
+  auto codeBuf = getBuffer<int>(pData, "CriticalType", VTK_INT, "int");
+  if(!scalarBuf || !codeBuf)
     return false;
 
   // ---- Cell data ---- //
 
-#ifndef NDEBUG // each arc should of course be defined by exactly 2 vertices
+#ifndef NDEBUG // each arc should of course be defined by exactly two vertices
   auto cells = arcs->GetCells();
   const auto maxNvPerC = cells->GetMaxCellSize();
   if(maxNvPerC != 2) {
@@ -123,14 +123,25 @@ bool ttkContourAroundPoint::preconditionConstraints(vtkUnstructuredGrid *nodes,
 
   static constexpr int minCode = 0;
   static constexpr int maxCode = 3;
-  const double sadFac
-    = ui_extension * 0.01; // factor for the saddle or mean of min and max
+  const double sadFac = ui_extension * 0.01; // saddle or mean of min and max
   const double extFac = 1 - sadFac; // factor for the extreme point
 
-  _isovals.resize(0);
   _coords.resize(0);
+  _scalars.resize(0);
+  _isovals.resize(0);
   _flags.resize(0);
-
+  
+  auto addPoint =
+      [this, coords, scalarBuf, codeBuf](int p, float isoval, int code) {
+    const auto point = &coords[p * 3];
+    _coords.push_back(point[0]);
+    _coords.push_back(point[1]);
+    _coords.push_back(point[2]);
+    _scalars.push_back(scalarBuf[p]);
+    _isovals.push_back(isoval);
+    _flags.push_back(code == minCode ? 0 : 1);
+  };
+  
   const vtkIdType nc = arcs->GetNumberOfCells();
   for(vtkIdType c = 0; c < nc; ++c) {
     const auto p = c2p[c];
@@ -146,39 +157,21 @@ bool ttkContourAroundPoint::preconditionConstraints(vtkUnstructuredGrid *nodes,
       // extremum and saddle
       const auto ext = pIsSad ? q : p;
       const auto sad = pIsSad ? p : q;
-      _isovals.push_back(scalarBuf[ext] * extFac + scalarBuf[sad] * sadFac);
-      const auto point = &coords[ext * 3];
-      _coords.push_back(point[0]);
-      _coords.push_back(point[1]);
-      _coords.push_back(point[2]);
-      _flags.push_back(codeBuf[ext] == minCode ? 0 : 1);
-    } else // min-max pair
-    {
+      const float isoval = scalarBuf[ext] * extFac + scalarBuf[sad] * sadFac;
+      addPoint(ext, isoval, codeBuf[ext]);
+    } else { // min-max pair
+      vtkWarningMacro(<< "Arc " << c << " joins a minimum and a maximum");
       const auto pVal = scalarBuf[p];
       const auto qVal = scalarBuf[q];
-      vtkWarningMacro(<< "Arc " << c << " joins a minimum and a maximum");
       const auto cVal = (pVal + qVal) / 2;
-      {
-        _isovals.push_back(pVal * extFac + cVal * sadFac);
-        const auto point = &coords[p * 3];
-        _coords.push_back(point[0]);
-        _coords.push_back(point[1]);
-        _coords.push_back(point[2]);
-        _flags.push_back(pCode == minCode ? 0 : 1);
-      }
-      {
-        _isovals.push_back(qVal * extFac + cVal * sadFac);
-        const auto point = &coords[q * 3];
-        _coords.push_back(point[0]);
-        _coords.push_back(point[1]);
-        _coords.push_back(point[2]);
-        _flags.push_back(qCode == minCode ? 0 : 1);
-      }
+      addPoint(p, pVal * extFac + cVal * sadFac, pCode);
+      addPoint(q, qVal * extFac + cVal * sadFac, qCode);
     }
   }
 
+  auto np = _scalars.size();
   const auto errorCode = _wrappedModule.setInputPoints(
-    _coords.data(), _isovals.data(), _flags.data(), _isovals.size());
+    _coords.data(), _scalars.data(), _isovals.data(), _flags.data(), np);
   if(errorCode < 0) {
     vtkErrorMacro("setInputPoints failed with code " << errorCode);
     return false;

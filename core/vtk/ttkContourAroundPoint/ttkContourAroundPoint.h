@@ -44,7 +44,7 @@ public:
   static ttkContourAroundPoint *New();
   vtkTypeMacro(ttkContourAroundPoint, vtkDataSetAlgorithm);
 
-  // BEGIN default ttk setters
+  // BEGIN default TTK setters
   void SetDebugLevel(int debugLevel) {
     setDebugLevel(debugLevel);
     Modified();
@@ -58,7 +58,7 @@ public:
     UseAllCores = onOff;
     SetThreads();
   }
-  // END default ttk setters
+  // END default TTK setters
 
   // BEGIN set-getters macros for each parameter from the
   // ServerManagerConfiguration XML file.
@@ -142,11 +142,10 @@ protected:
   TTK_SETUP();
 
   /// @return Went well?
-  bool preprocessDomain(vtkDataSet *dataset);
+  bool preprocessFld(vtkDataSet *dataset);
 
   /// @return Went well?
-  bool preconditionConstraints(vtkUnstructuredGrid *nodes,
-                               vtkUnstructuredGrid *arcs);
+  bool preprocessPts(vtkUnstructuredGrid *nodes, vtkUnstructuredGrid *arcs);
 
   /// @return Went well?
   bool process();
@@ -186,10 +185,11 @@ private:
   // name of the scalar variable of the input field
   std::string ui_scalars;
 
-  int _scalarTypeCode; // VTK type of the scalars defined on the Domain
+  int _scalarTypeCode; // VTK type of the scalars defined on the input field
 
   // referring to the input points
   std::vector<float> _coords;
+  std::vector<float> _scalars;
   std::vector<float> _isovals;
   std::vector<int> _flags;
 
