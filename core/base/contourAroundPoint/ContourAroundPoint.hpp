@@ -403,10 +403,13 @@ void ttk::ContourAroundPoint::extendOutPts(
     float isoval, int flag, float scalar) const {
   
   auto inpScalars = reinterpret_cast<const scalarT*>(_inpFldScalars);
-  // Vertices that are close to the isovalue have little weight.
-  using ScaPair = std::pair<float,float>;
-  auto scaMinMax = flag ? ScaPair{isoval, scalar} : ScaPair{scalar, isoval};
-  auto wOfSca = getSigmoidFunc(scaMinMax.first, scaMinMax.second, -1.);
+  // Vertices that are close to the isovalue get little weight.
+  using Triplet = std::tuple<float,float,double>;
+  auto minMaxFac = flag ? // scalar is max?
+        Triplet{isoval, scalar, 1.} : Triplet{scalar, isoval, -1.};
+  auto wOfSca = getSigmoidFunc(std::get<0>(minMaxFac),
+                               std::get<1>(minMaxFac),
+                               std::get<2>(minMaxFac));
   
   // do the computation in double precision
   double wSum = 0.;
@@ -420,10 +423,10 @@ void ttk::ContourAroundPoint::extendOutPts(
   
   for(const auto v : vertices) {
     const scalarT sca = inpScalars[v];
-//    const double w = flag ? sca - isoval : isoval - sca;
+//    const double w = flag ? sca - isoval : isoval - sca; // linear
 //    const double diffSca = sca - isoval;
-//    const double w = diffSca * diffSca;
-    const double w = wOfSca(sca);
+//    const double w = diffSca * diffSca; // quadratic
+    const double w = wOfSca(sca); // sigmoid
     wSum += w;
     
     float x, y, z;
