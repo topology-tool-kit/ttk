@@ -797,10 +797,9 @@ in the gradient.
        * Return the VPath terminating at the given 2-saddle restricted to the
 2-separatrice of the 1-saddle.
        */
-      bool getDescendingPathThroughWall(const wallId_t wallId,
-                                        const Cell &saddle2,
+      bool getDescendingPathThroughWall(const Cell &saddle2,
                                         const Cell &saddle1,
-                                        const std::vector<wallId_t> &isVisited,
+                                        const std::vector<bool> &isVisited,
                                         std::vector<Cell> *const vpath,
                                         const bool stopIfMultiConnected = false,
                                         const bool enableCycleDetector
@@ -810,10 +809,9 @@ in the gradient.
        * Return the VPath coming from the given 1-saddle restricted to the
 2-separatrice of the 2-saddle.
        */
-      bool getAscendingPathThroughWall(const wallId_t wallId,
-                                       const Cell &saddle1,
+      bool getAscendingPathThroughWall(const Cell &saddle1,
                                        const Cell &saddle2,
-                                       const std::vector<wallId_t> &isVisited,
+                                       const std::vector<bool> &isVisited,
                                        std::vector<Cell> *const vpath,
                                        const bool stopIfMultiConnected = false,
                                        const bool enableCycleDetector
@@ -822,18 +820,16 @@ in the gradient.
       /**
        * Return the 2-separatrice terminating at the given 2-saddle.
        */
-      int getDescendingWall(const wallId_t wallId,
-                            const Cell &cell,
-                            std::vector<wallId_t> &isVisited,
+      int getDescendingWall(const Cell &cell,
+                            std::vector<bool> &isVisited,
                             std::vector<Cell> *const wall = nullptr,
                             std::set<SimplexId> *const saddles = nullptr) const;
 
       /**
        * Return the 2-separatrice coming from the given 1-saddle.
        */
-      int getAscendingWall(const wallId_t wallId,
-                           const Cell &cell,
-                           std::vector<wallId_t> &isVisited,
+      int getAscendingWall(const Cell &cell,
+                           std::vector<bool> &isVisited,
                            std::vector<Cell> *const wall = nullptr,
                            std::set<SimplexId> *const saddles = nullptr) const;
 

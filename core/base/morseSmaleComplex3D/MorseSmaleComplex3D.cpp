@@ -77,7 +77,7 @@ int MorseSmaleComplex3D::getSaddleConnectors(
 
   const auto nTriangles = inputTriangulation_->getNumberOfTriangles();
   // visited triangles (global array, overwritten at every iteration)
-  std::vector<wallId_t> isVisited(nTriangles, -1);
+  std::vector<bool> isVisited(nTriangles, false);
   // list of 2-saddles
   std::vector<Cell> saddles2{};
   // copy cells instead of taking a reference?
@@ -91,7 +91,7 @@ int MorseSmaleComplex3D::getSaddleConnectors(
     const auto &s2{saddles2[i]};
 
     std::set<SimplexId> saddles1{};
-    discreteGradient_.getDescendingWall(i, s2, isVisited, nullptr, &saddles1);
+    discreteGradient_.getDescendingWall(s2, isVisited, nullptr, &saddles1);
 
     for(const auto saddle1Id : saddles1) {
       const Cell s1{1, saddle1Id};
@@ -99,7 +99,7 @@ int MorseSmaleComplex3D::getSaddleConnectors(
       Vpath vpath;
       const bool isMultiConnected
         = discreteGradient_.getAscendingPathThroughWall(
-          i, s1, s2, isVisited, &vpath);
+          s1, s2, isVisited, &vpath);
       const auto &last = vpath.back();
 
       if(!isMultiConnected && last.dim_ == s2.dim_ && last.id_ == s2.id_) {
@@ -138,7 +138,7 @@ int MorseSmaleComplex3D::getAscendingSeparatrices2(
   separatricesSaddles.resize(numberOfSeparatrices);
 
   const SimplexId numberOfEdges = inputTriangulation_->getNumberOfEdges();
-  vector<wallId_t> isVisited(numberOfEdges, 0);
+  vector<bool> isVisited(numberOfEdges, false);
 
   // apriori: by default construction, the separatrices are not valid
   for(SimplexId i = 0; i < numberOfSaddles; ++i) {
@@ -147,7 +147,7 @@ int MorseSmaleComplex3D::getAscendingSeparatrices2(
 
     vector<Cell> wall;
     discreteGradient_.getAscendingWall(
-      saddle1.id_, saddle1, isVisited, &wall, &separatricesSaddles[i]);
+      saddle1, isVisited, &wall, &separatricesSaddles[i]);
 
     separatricesGeometry[i] = std::move(wall);
     separatrices[i] = Separatrix(true, saddle1, emptyCell, false, i);
@@ -182,7 +182,7 @@ int MorseSmaleComplex3D::getDescendingSeparatrices2(
 
   const SimplexId numberOfTriangles
     = inputTriangulation_->getNumberOfTriangles();
-  vector<wallId_t> isVisited(numberOfTriangles, 0);
+  std::vector<bool> isVisited(numberOfTriangles, false);
 
   // apriori: by default construction, the separatrices are not valid
   for(SimplexId i = 0; i < numberOfSaddles; ++i) {
@@ -191,7 +191,7 @@ int MorseSmaleComplex3D::getDescendingSeparatrices2(
 
     vector<Cell> wall;
     discreteGradient_.getDescendingWall(
-      saddle2.id_, saddle2, isVisited, &wall, &separatricesSaddles[i]);
+      saddle2, isVisited, &wall, &separatricesSaddles[i]);
 
     separatricesGeometry[i] = std::move(wall);
     separatrices[i] = Separatrix(true, saddle2, emptyCell, false, i);
