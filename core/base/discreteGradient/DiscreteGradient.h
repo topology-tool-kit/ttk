@@ -43,13 +43,6 @@ namespace ttk {
 
   namespace dcg {
     /**
-     * Type of the identifiers of the 2-separatrices.
-     * Must be the biggest integer type because it will provide more identifiers
-     * for 2-separatrices.
-     */
-    using wallId_t = unsigned long long int;
-
-    /**
      * Basic concept of cell, so it must be able to identify any cell of any
      * dimension.
      */
