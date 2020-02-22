@@ -108,6 +108,9 @@ int MorseSmaleComplex3D::getSaddleConnectors(
         separatrices.emplace_back(true, s1, s2, false, sepId);
       }
     }
+
+    // clean vector at the end of every iteration
+    isVisited.assign(isVisited.size(), false);
   }
 
   return 0;

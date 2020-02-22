@@ -624,6 +624,9 @@ int DiscreteGradient::initializeSaddleSaddleConnections1(
       const bool isMultiConnected
         = getAscendingPathThroughWall(saddle1, saddle2, isVisited, &path, true);
 
+      // clean mask vector
+      isVisited.assign(isVisited.size(), false);
+
       if(!isMultiConnected) {
         const SimplexId sourceIndex = saddle1Index[saddle1Id];
         CriticalPoint &source = criticalPoints[sourceIndex];
@@ -775,6 +778,10 @@ int DiscreteGradient::processSaddleSaddleConnections1(
       std::vector<Cell> path;
       const bool isMultiConnected = getAscendingPathThroughWall(
         minSaddle1, minSaddle2, isVisited, &path, true);
+
+      // clean mask vector
+      isVisited.assign(isVisited.size(), false);
+
       if(isMultiConnected) {
         ++numberOfIterations;
         continue;
@@ -986,6 +993,10 @@ int DiscreteGradient::processSaddleSaddleConnections1(
           std::vector<Cell> path;
           const bool isMultiConnected = getAscendingPathThroughWall(
             saddle1, saddle2, isVisited, &path, true);
+
+          // clean mask vector
+          isVisited.assign(isVisited.size(), false);
+
           if(isMultiConnected) {
             continue;
           }
@@ -1038,6 +1049,10 @@ int DiscreteGradient::processSaddleSaddleConnections1(
           std::vector<Cell> path;
           const bool isMultiConnected = getDescendingPathThroughWall(
             saddle2, saddle1, isVisited, &path, true);
+
+          // clean mask vector
+          isVisited.assign(isVisited.size(), false);
+
           if(isMultiConnected) {
             continue;
           }
@@ -1222,6 +1237,9 @@ int DiscreteGradient::initializeSaddleSaddleConnections2(
       const bool isMultiConnected = getDescendingPathThroughWall(
         saddle2, saddle1, isVisited, &path, true);
 
+      // clean mask vector
+      isVisited.assign(isVisited.size(), false);
+
       if(!isMultiConnected) {
         const SimplexId destinationIndex = saddle2Index[saddle2Id];
         CriticalPoint &destination = criticalPoints[destinationIndex];
@@ -1379,6 +1397,10 @@ int DiscreteGradient::processSaddleSaddleConnections2(
       std::vector<Cell> path;
       const bool isMultiConnected = getDescendingPathThroughWall(
         minSaddle2, minSaddle1, isVisited, &path, true);
+
+      // clean mask vector
+      isVisited.assign(isVisited.size(), false);
+
       if(isMultiConnected) {
         ++numberOfIterations;
         continue;
@@ -1587,6 +1609,10 @@ int DiscreteGradient::processSaddleSaddleConnections2(
 
           const bool isMultiConnected = getDescendingPathThroughWall(
             saddle2, saddle1, isVisited, nullptr, true);
+
+          // clean mask vector
+          isVisited.assign(isVisited.size(), false);
+
           if(isMultiConnected) {
             continue;
           }
@@ -1640,6 +1666,10 @@ int DiscreteGradient::processSaddleSaddleConnections2(
           std::vector<Cell> path;
           const bool isMultiConnected = getAscendingPathThroughWall(
             saddle1, saddle2, isVisited, &path, true);
+
+          // clean mask vector
+          isVisited.assign(isVisited.size(), false);
+
           if(isMultiConnected) {
             continue;
           }
