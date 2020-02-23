@@ -92,6 +92,10 @@ int MorseSmaleComplex3D::getSaddleConnectors(
                [](const Cell &c) -> bool { return c.dim_ == 2; });
 
   using Vpath = std::vector<Cell>;
+  using SepSads = std::pair<Cell, Cell>;
+
+  std::vector<std::vector<SepSads>> sepsByThread(this->threadNumber_);
+  std::vector<std::vector<Vpath>> sepsGeomByThread(this->threadNumber_);
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
@@ -120,15 +124,38 @@ int MorseSmaleComplex3D::getSaddleConnectors(
       const auto &last = vpath.back();
 
       if(!isMultiConnected && last.dim_ == s2.dim_ && last.id_ == s2.id_) {
-        const auto sepId = separatrices.size();
-        separatricesGeometry.emplace_back(std::move(vpath));
-        separatrices.emplace_back(true, s1, s2, false, sepId);
+        sepsGeomByThread[tid].emplace_back(std::move(vpath));
+        sepsByThread[tid].emplace_back(s1, s2);
       }
     }
 
     // clean vector at the end of every iteration
     for(const auto t : visitedTriangles) {
       isVisited[tid][t] = false;
+    }
+  }
+
+  // count total number of separatrices in sepsByThread
+  std::vector<size_t> partialSepsId(sepsByThread.size() + 1, 0);
+
+  for(size_t i = 0; i < sepsByThread.size(); ++i) {
+    partialSepsId[i + 1] = partialSepsId[i] + sepsByThread[i].size();
+  }
+
+  // pre-allocate output vectors
+  separatrices.resize(partialSepsId.back());
+  separatricesGeometry.resize(partialSepsId.back());
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+  for(size_t i = 0; i < sepsByThread.size(); ++i) {
+    for(size_t j = 0; j < sepsByThread[i].size(); ++j) {
+      const auto &sads = sepsByThread[i][j];
+      const size_t k = partialSepsId[i] + j;
+      separatrices[k] = Separatrix{
+        true, sads.first, sads.second, false, static_cast<SimplexId>(k)};
+      separatricesGeometry[k] = std::move(sepsGeomByThread[i][j]);
     }
   }
 
