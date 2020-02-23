@@ -816,7 +816,9 @@ in the gradient.
       int getDescendingWall(const Cell &cell,
                             std::vector<bool> &isVisited,
                             std::vector<Cell> *const wall = nullptr,
-                            std::set<SimplexId> *const saddles = nullptr) const;
+                            std::set<SimplexId> *const saddles = nullptr,
+                            std::vector<SimplexId> *const visitedTriangles
+                            = nullptr) const;
 
       /**
        * Return the 2-separatrice coming from the given 1-saddle.

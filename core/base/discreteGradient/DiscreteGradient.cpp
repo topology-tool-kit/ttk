@@ -1185,10 +1185,12 @@ bool DiscreteGradient::getAscendingPathThroughWall(
   return false;
 }
 
-int DiscreteGradient::getDescendingWall(const Cell &cell,
-                                        vector<bool> &isVisited,
-                                        vector<Cell> *const wall,
-                                        set<SimplexId> *const saddles) const {
+int DiscreteGradient::getDescendingWall(
+  const Cell &cell,
+  vector<bool> &isVisited,
+  vector<Cell> *const wall,
+  set<SimplexId> *const saddles,
+  std::vector<SimplexId> *const visitedTriangles) const {
   if(dimensionality_ == 3) {
     if(cell.dim_ == 2) {
       // assume that cellId is a triangle
@@ -1204,6 +1206,9 @@ int DiscreteGradient::getDescendingWall(const Cell &cell,
 
         if(!isVisited[triangleId]) {
           isVisited[triangleId] = true;
+
+          if(visitedTriangles != nullptr)
+            visitedTriangles->emplace_back(triangleId);
 
           // add the triangle
           if(wall != nullptr) {
