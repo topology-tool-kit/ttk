@@ -76,8 +76,14 @@ int MorseSmaleComplex3D::getSaddleConnectors(
   vector<vector<Cell>> &separatricesGeometry) const {
 
   const auto nTriangles = inputTriangulation_->getNumberOfTriangles();
-  // visited triangles (global array, overwritten at every iteration)
-  std::vector<bool> isVisited(nTriangles, false);
+  // visited triangles (one vector per thread)
+  std::vector<std::vector<bool>> isVisited(this->threadNumber_);
+
+  for(auto &vec : isVisited) {
+    // resize threads outside of main loop
+    vec.resize(nTriangles, false);
+  }
+
   // list of 2-saddles
   std::vector<Cell> saddles2{};
   // copy cells instead of taking a reference?
@@ -87,13 +93,22 @@ int MorseSmaleComplex3D::getSaddleConnectors(
 
   using Vpath = std::vector<Cell>;
 
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
   for(size_t i = 0; i < saddles2.size(); ++i) {
     std::vector<SimplexId> visitedTriangles{};
     const auto &s2{saddles2[i]};
 
+#ifdef TTK_ENABLE_OPENMP
+    const size_t tid = omp_get_thread_num();
+#else
+    const size_t tid = 0;
+#endif // TTK_ENABLE_OPENMP
+
     std::set<SimplexId> saddles1{};
     discreteGradient_.getDescendingWall(
-      s2, isVisited, nullptr, &saddles1, &visitedTriangles);
+      s2, isVisited[tid], nullptr, &saddles1, &visitedTriangles);
 
     for(const auto saddle1Id : saddles1) {
       const Cell s1{1, saddle1Id};
@@ -101,7 +116,7 @@ int MorseSmaleComplex3D::getSaddleConnectors(
       Vpath vpath;
       const bool isMultiConnected
         = discreteGradient_.getAscendingPathThroughWall(
-          s1, s2, isVisited, &vpath);
+          s1, s2, isVisited[tid], &vpath);
       const auto &last = vpath.back();
 
       if(!isMultiConnected && last.dim_ == s2.dim_ && last.id_ == s2.id_) {
@@ -113,7 +128,7 @@ int MorseSmaleComplex3D::getSaddleConnectors(
 
     // clean vector at the end of every iteration
     for(const auto t : visitedTriangles) {
-      isVisited[t] = false;
+      isVisited[tid][t] = false;
     }
   }
 
