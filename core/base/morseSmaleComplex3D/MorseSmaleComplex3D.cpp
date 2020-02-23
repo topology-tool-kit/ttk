@@ -88,10 +88,12 @@ int MorseSmaleComplex3D::getSaddleConnectors(
   using Vpath = std::vector<Cell>;
 
   for(size_t i = 0; i < saddles2.size(); ++i) {
+    std::vector<SimplexId> visitedTriangles{};
     const auto &s2{saddles2[i]};
 
     std::set<SimplexId> saddles1{};
-    discreteGradient_.getDescendingWall(s2, isVisited, nullptr, &saddles1);
+    discreteGradient_.getDescendingWall(
+      s2, isVisited, nullptr, &saddles1, &visitedTriangles);
 
     for(const auto saddle1Id : saddles1) {
       const Cell s1{1, saddle1Id};
@@ -110,7 +112,9 @@ int MorseSmaleComplex3D::getSaddleConnectors(
     }
 
     // clean vector at the end of every iteration
-    isVisited.assign(isVisited.size(), false);
+    for(const auto t : visitedTriangles) {
+      isVisited[t] = false;
+    }
   }
 
   return 0;
