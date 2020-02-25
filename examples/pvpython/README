@@ -21,7 +21,7 @@ Next, before launching the script, make sure that you properly define the follow
 - PYTHONPATH (where ParaView python modules are installed)
 
 For instance, under Linux, with Python 3.6, this can be done as follows, assuming that you installed ParaView and TTK to /usr/local:
-$ export PV_PLUGIN_PATH="/usr/local/lib/ttk/paraview-plugin/"
+$ export PV_PLUGIN_PATH="/usr/local/bin/plugins/"
 $ export PYTHONPATH="/usr/local/lib/python3.6/site-packages/"
 
 Then, from the current directory, enter the following command (omit the '$' character):
