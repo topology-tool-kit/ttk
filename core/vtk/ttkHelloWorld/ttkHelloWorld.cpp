@@ -159,8 +159,8 @@ int ttkHelloWorld::RequestData(vtkInformation *request,
   int status = 0; // this integer checks if the base code returns an error
   ttkVtkTemplateMacro(triangulation->getType(), inputArray->GetDataType(),
                       (status = this->computeAverages<VTK_TT, TTK_TT>(
-                         (VTK_TT *)outputArray->GetVoidPointer(0),
-                         (VTK_TT *)inputArray->GetVoidPointer(0),
+                         (VTK_TT *)ttkUtils::GetVoidPointer(outputArray),
+                         (VTK_TT *)ttkUtils::GetVoidPointer(inputArray),
                          (TTK_TT *)triangulation->getData())));
 
   // On error cancel filter execution
