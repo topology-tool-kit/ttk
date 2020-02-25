@@ -48,7 +48,7 @@ jobs:
       echo "Configure distribution"
       sudo add-apt-repository ppa:ubuntu-toolchain-r/test
       sudo apt-get update
-      sudo apt-get install -y ninja-build libc++-dev libc++abi-dev libc++abi1 libstdc++-7-dev libboost-all-dev gcc-7 g++-7 gcc-6 g++-6 python3 libomp-dev
+      sudo apt-get install -y ninja-build libc++-dev libc++abi-dev libc++abi1 libstdc++-7-dev libboost-all-dev gcc-7 g++-7 gcc-6 g++-6 python3 libomp-dev libomp5
       sudo update-alternatives --install /usr/bin/cc cc /usr/bin/$(CC) 100
       sudo update-alternatives --set cc /usr/bin/$(CC)
       sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/$(CXX) 100
