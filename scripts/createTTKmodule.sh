@@ -8,7 +8,7 @@ if [ -z "${Name}" ]; then
   echo "Usage:"
   echo "  $0 <Name, first letter in uppercase, no space>"
   echo "Example:"
-  echo "  $0 HelloWorld"
+  echo "  $0 MyNewModule"
  exit 1
 fi
 
@@ -27,4 +27,4 @@ fi
 
 echo "Creating TTK module ${Name}..."
 
-scripts/cloneTTKmodule.sh Blank "${Name}"
+scripts/cloneTTKmodule.sh HelloWorld "${Name}"
