@@ -327,11 +327,6 @@ int OneSkeleton::buildEdgeStars(const SimplexId &vertexNumber,
     return -1;
 #endif
 
-  Timer t;
-
-  printMsg(
-    "Building edge stars", 0, 0, threadNumber_, debug::LineMode::REPLACE);
-
   auto localEdgeList = edgeList;
   vector<pair<SimplexId, SimplexId>> defaultEdgeList{};
   if(!localEdgeList) {
@@ -358,6 +353,11 @@ int OneSkeleton::buildEdgeStars(const SimplexId &vertexNumber,
     zeroSkeleton.buildVertexStars(
       vertexNumber, cellNumber, cellArray, *localVertexStars);
   }
+
+  Timer t;
+
+  printMsg(
+    "Building edge stars", 0, 0, threadNumber_, debug::LineMode::REPLACE);
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
