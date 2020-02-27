@@ -46,39 +46,16 @@ vtkStandardNewMacro(ttkBlank)
   // allocate the memory for the output scalar field
   if(!outputScalarField_) {
     switch(inputScalarField->GetDataType()) {
-
       case VTK_CHAR:
-        outputScalarField_ = vtkCharArray::New();
-        break;
-
       case VTK_DOUBLE:
-        outputScalarField_ = vtkDoubleArray::New();
-        break;
-
       case VTK_FLOAT:
-        outputScalarField_ = vtkFloatArray::New();
-        break;
-
-      case VTK_INT:
-        outputScalarField_ = vtkIntArray::New();
-        break;
-
       case VTK_ID_TYPE:
-        outputScalarField_ = vtkIdTypeArray::New();
-        break;
-
+      case VTK_INT:
       case VTK_SHORT:
-        outputScalarField_ = vtkShortArray::New();
-        break;
-
       case VTK_UNSIGNED_CHAR:
-        outputScalarField_ = vtkUnsignedCharArray::New();
-        break;
-
       case VTK_UNSIGNED_SHORT:
-        outputScalarField_ = vtkUnsignedShortArray::New();
+        outputScalarField_ = inputScalarField->NewInstance();
         break;
-
       default:
         stringstream msg;
         msg << "[ttkBlank] Unsupported data type :(" << endl;
