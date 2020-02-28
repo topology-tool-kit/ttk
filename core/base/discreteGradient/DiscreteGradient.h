@@ -423,10 +423,7 @@ function value.
        * @return Lower star as 4 sets of cells (0-cells, 1-cells, 2-cells and
        * 3-cells)
        */
-      template <typename dataType, typename idType>
-      inline lowerStarType lowerStar(const SimplexId a,
-                                     const dataType *const scalars,
-                                     const idType *const offsets) const {
+      inline lowerStarType lowerStar(const SimplexId a) const {
         lowerStarType res{};
 
         // a belongs to its lower star
@@ -674,8 +671,7 @@ function value.
        * Grayscale Digital Images", V. Robins, P. J. Wood,
        * A. P. Sheppard
        */
-      template <typename dataType, typename idType>
-      int processLowerStars(const dataType *scalars, const idType *offsets);
+      int processLowerStars();
 
     public:
       /**
