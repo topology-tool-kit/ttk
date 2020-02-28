@@ -432,15 +432,6 @@ function value.
         // a belongs to its lower star
         res[0].emplace_back(CellExt{0, a});
 
-        const auto sosGreaterThan
-          = [&scalars, &offsets](const SimplexId m, const SimplexId n) {
-              if(scalars[m] != scalars[n]) {
-                return scalars[m] > scalars[n];
-              } else {
-                return offsets[m] > offsets[n];
-              }
-            };
-
         // store lower edges
         const auto nedges = inputTriangulation_->getVertexEdgeNumber(a);
         res[1].reserve(nedges);
@@ -452,7 +443,7 @@ function value.
           if(vertexId == a) {
             inputTriangulation_->getEdgeVertex(edgeId, 1, vertexId);
           }
-          if(!sosGreaterThan(vertexId, a)) {
+          if(vertsOrder_[vertexId] < vertsOrder_[a]) {
             res[1].emplace_back(CellExt{1, edgeId, {vertexId}, {}});
           }
         }
@@ -462,35 +453,36 @@ function value.
           return res;
         }
 
-        const auto processTriangle = [&](const SimplexId triangleId,
-                                         const SimplexId v0, const SimplexId v1,
-                                         const SimplexId v2) {
-          std::array<SimplexId, 3> lowVerts{};
-          if(v0 == a) {
-            lowVerts[0] = v1;
-            lowVerts[1] = v2;
-          } else if(v1 == a) {
-            lowVerts[0] = v0;
-            lowVerts[1] = v2;
-          } else if(v2 == a) {
-            lowVerts[0] = v0;
-            lowVerts[1] = v1;
-          }
-          if(sosGreaterThan(a, lowVerts[0]) && sosGreaterThan(a, lowVerts[1])) {
-            uint8_t j{}, k{};
-            // store edges indices of current triangle
-            std::array<uint8_t, 3> faces{};
-            for(const auto &e : res[1]) {
-              if(e.lowVerts_[0] == lowVerts[0]
-                 || e.lowVerts_[0] == lowVerts[1]) {
-                faces[k++] = j;
+        const auto processTriangle
+          = [&](const SimplexId triangleId, const SimplexId v0,
+                const SimplexId v1, const SimplexId v2) {
+              std::array<SimplexId, 3> lowVerts{};
+              if(v0 == a) {
+                lowVerts[0] = v1;
+                lowVerts[1] = v2;
+              } else if(v1 == a) {
+                lowVerts[0] = v0;
+                lowVerts[1] = v2;
+              } else if(v2 == a) {
+                lowVerts[0] = v0;
+                lowVerts[1] = v1;
               }
-              j++;
-            }
-            res[2].emplace_back(
-              CellExt{2, triangleId, std::move(lowVerts), std::move(faces)});
-          }
-        };
+              if(vertsOrder_[a] > vertsOrder_[lowVerts[0]]
+                 && vertsOrder_[a] > vertsOrder_[lowVerts[1]]) {
+                uint8_t j{}, k{};
+                // store edges indices of current triangle
+                std::array<uint8_t, 3> faces{};
+                for(const auto &e : res[1]) {
+                  if(e.lowVerts_[0] == lowVerts[0]
+                     || e.lowVerts_[0] == lowVerts[1]) {
+                    faces[k++] = j;
+                  }
+                  j++;
+                }
+                res[2].emplace_back(CellExt{
+                  2, triangleId, std::move(lowVerts), std::move(faces)});
+              }
+            };
 
         if(dimensionality_ == 2) {
           // store lower triangles
@@ -554,9 +546,9 @@ function value.
                 lowVerts[1] = v1;
                 lowVerts[2] = v2;
               }
-              if(sosGreaterThan(a, lowVerts[0])
-                 && sosGreaterThan(a, lowVerts[1])
-                 && sosGreaterThan(a, lowVerts[2])) {
+              if(vertsOrder_[a] > vertsOrder_[lowVerts[0]]
+                 && vertsOrder_[a] > vertsOrder_[lowVerts[1]]
+                 && vertsOrder_[a] > vertsOrder_[lowVerts[2]]) {
                 uint8_t j{}, k{};
                 // store triangles indices of current tetra
                 std::array<uint8_t, 3> faces{};

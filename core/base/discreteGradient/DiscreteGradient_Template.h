@@ -208,22 +208,13 @@ int DiscreteGradient::processLowerStars(const dataType *const scalars,
 #endif // TTK_ENABLE_OPENMP
   for(SimplexId x = 0; x < nverts; x++) {
 
-    const auto sosGreaterThan
-      = [&](const SimplexId a, const SimplexId b) -> bool {
-      if(scalars[a] != scalars[b]) {
-        return scalars[a] > scalars[b];
-      } else {
-        return offsets[a] > offsets[b];
-      }
-    };
-
     // Comparison function for Cells inside priority queues
     const auto orderCells = [&](const CellExt &a, const CellExt &b) -> bool {
       if(a.dim_ == b.dim_) {
         // there should be a shared facet between the two cells
         // compare the vertices not in the shared facet
         if(a.dim_ == 1) {
-          return sosGreaterThan(a.lowVerts_[0], b.lowVerts_[0]);
+          return vertsOrder_[a.lowVerts_[0]] >vertsOrder_[b.lowVerts_[0]];
 
         } else if(a.dim_ == 2) {
           const auto &m0 = a.lowVerts_[0];
@@ -232,13 +223,13 @@ int DiscreteGradient::processLowerStars(const dataType *const scalars,
           const auto &n1 = b.lowVerts_[1];
 
           if(m0 == n0) {
-            return sosGreaterThan(m1, n1);
+            return vertsOrder_[m1] > vertsOrder_[n1];
           } else if(m0 == n1) {
-            return sosGreaterThan(m1, n0);
+            return vertsOrder_[m1] > vertsOrder_[n0];
           } else if(m1 == n0) {
-            return sosGreaterThan(m0, n1);
+            return vertsOrder_[m0] > vertsOrder_[n1];
           } else if(m1 == n1) {
-            return sosGreaterThan(m0, n0);
+            return vertsOrder_[m0] > vertsOrder_[n0];
           }
 
         } else if(a.dim_ == 3) {
@@ -269,7 +260,7 @@ int DiscreteGradient::processLowerStars(const dataType *const scalars,
             n = n2;
           }
 
-          return sosGreaterThan(m, n);
+          return vertsOrder_[m] > vertsOrder_[n];
         }
       } else {
         // the cell of greater dimension should contain the cell of
@@ -328,8 +319,7 @@ int DiscreteGradient::processLowerStars(const dataType *const scalars,
       for(size_t i = 1; i < Lx[1].size(); ++i) {
         const auto &a = Lx[1][minId].lowVerts_[0];
         const auto &b = Lx[1][i].lowVerts_[0];
-        if(scalars[a] > scalars[b]
-           || (scalars[a] == scalars[b] && offsets[a] > offsets[b])) {
+        if(vertsOrder_[a] > vertsOrder_[b]) {
           // edge[i] < edge[0]
           minId = i;
         }
