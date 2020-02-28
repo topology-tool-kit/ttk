@@ -37,6 +37,23 @@
 namespace ttk {
 
   /**
+   * @brief Persistence pair type (with persistence in double)
+   */
+  using PersistencePair = std::tuple<
+    /** first (lower) vertex id */
+    ttk::SimplexId,
+    /** first vertex type */
+    ttk::CriticalType,
+    /** second (higher) vertex id */
+    ttk::SimplexId,
+    /** second vertex type */
+    ttk::CriticalType,
+    /** persistence value (scalars[second] - scalars[first]) */
+    double,
+    /** pair type (min-saddle: 0, saddle-saddle: 1, saddle-max: 2) */
+    ttk::SimplexId>;
+
+  /**
    * Compute the persistence diagram of a function on a triangulation.
    * TTK assumes that the input dataset is made of only one connected component.
    */
