@@ -223,10 +223,11 @@ int DiscreteGradient::buildGradient() {
   }
 
   std::vector<SimplexId> sortedVertices{};
-  sortVertices(numberOfCells[0], sortedVertices, vertsOrder_, scalars, offsets);
+  std::vector<size_t> vertsOrder{};
+  sortVertices(numberOfCells[0], sortedVertices, vertsOrder, scalars, offsets);
 
   // compute gradient pairs
-  processLowerStars();
+  processLowerStars(vertsOrder);
 
   {
     std::stringstream msg;

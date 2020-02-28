@@ -50,7 +50,7 @@ SimplexId DiscreteGradient::getNumberOfCells(const int dimension) const {
   return -1;
 }
 
-int DiscreteGradient::processLowerStars() {
+int DiscreteGradient::processLowerStars(const std::vector<size_t> &vertsOrder) {
 
   /* Compute gradient */
 
@@ -67,7 +67,7 @@ int DiscreteGradient::processLowerStars() {
         // there should be a shared facet between the two cells
         // compare the vertices not in the shared facet
         if(a.dim_ == 1) {
-          return vertsOrder_[a.lowVerts_[0]] > vertsOrder_[b.lowVerts_[0]];
+          return vertsOrder[a.lowVerts_[0]] > vertsOrder[b.lowVerts_[0]];
 
         } else if(a.dim_ == 2) {
           const auto &m0 = a.lowVerts_[0];
@@ -76,13 +76,13 @@ int DiscreteGradient::processLowerStars() {
           const auto &n1 = b.lowVerts_[1];
 
           if(m0 == n0) {
-            return vertsOrder_[m1] > vertsOrder_[n1];
+            return vertsOrder[m1] > vertsOrder[n1];
           } else if(m0 == n1) {
-            return vertsOrder_[m1] > vertsOrder_[n0];
+            return vertsOrder[m1] > vertsOrder[n0];
           } else if(m1 == n0) {
-            return vertsOrder_[m0] > vertsOrder_[n1];
+            return vertsOrder[m0] > vertsOrder[n1];
           } else if(m1 == n1) {
-            return vertsOrder_[m0] > vertsOrder_[n0];
+            return vertsOrder[m0] > vertsOrder[n0];
           }
 
         } else if(a.dim_ == 3) {
@@ -113,7 +113,7 @@ int DiscreteGradient::processLowerStars() {
             n = n2;
           }
 
-          return vertsOrder_[m] > vertsOrder_[n];
+          return vertsOrder[m] > vertsOrder[n];
         }
       } else {
         // the cell of greater dimension should contain the cell of
@@ -162,7 +162,7 @@ int DiscreteGradient::processLowerStars() {
       }
     };
 
-    auto Lx = lowerStar(x);
+    auto Lx = lowerStar(x, vertsOrder);
 
     // Lx[1] empty => x is a local minimum
 
@@ -172,7 +172,7 @@ int DiscreteGradient::processLowerStars() {
       for(size_t i = 1; i < Lx[1].size(); ++i) {
         const auto &a = Lx[1][minId].lowVerts_[0];
         const auto &b = Lx[1][i].lowVerts_[0];
-        if(vertsOrder_[a] > vertsOrder_[b]) {
+        if(vertsOrder[a] > vertsOrder[b]) {
           // edge[i] < edge[0]
           minId = i;
         }

@@ -375,14 +375,12 @@ function value.
                               const dataType *scalars) const;
 
     private:
-      std::vector<size_t> vertsOrder_{};
-
       template <typename scalarType, typename offsetType>
       void sortVertices(const SimplexId vertexNumber,
                         std::vector<SimplexId> &sortedVertices,
                         std::vector<size_t> &vertsOrder,
                         const scalarType *const scalarField,
-                        const offsetType *const offsetField) {
+                        const offsetType *const offsetField) const {
 
         sortedVertices.resize(vertexNumber);
         vertsOrder.resize(vertexNumber);
@@ -423,7 +421,9 @@ function value.
        * @return Lower star as 4 sets of cells (0-cells, 1-cells, 2-cells and
        * 3-cells)
        */
-      inline lowerStarType lowerStar(const SimplexId a) const {
+      inline lowerStarType
+        lowerStar(const SimplexId a,
+                  const std::vector<size_t> &vertsOrder) const {
         lowerStarType res{};
 
         // a belongs to its lower star
@@ -440,7 +440,7 @@ function value.
           if(vertexId == a) {
             inputTriangulation_->getEdgeVertex(edgeId, 1, vertexId);
           }
-          if(vertsOrder_[vertexId] < vertsOrder_[a]) {
+          if(vertsOrder[vertexId] < vertsOrder[a]) {
             res[1].emplace_back(CellExt{1, edgeId, {vertexId}, {}});
           }
         }
@@ -464,8 +464,8 @@ function value.
                 lowVerts[0] = v0;
                 lowVerts[1] = v1;
               }
-              if(vertsOrder_[a] > vertsOrder_[lowVerts[0]]
-                 && vertsOrder_[a] > vertsOrder_[lowVerts[1]]) {
+              if(vertsOrder[a] > vertsOrder[lowVerts[0]]
+                 && vertsOrder[a] > vertsOrder[lowVerts[1]]) {
                 uint8_t j{}, k{};
                 // store edges indices of current triangle
                 std::array<uint8_t, 3> faces{};
@@ -543,9 +543,9 @@ function value.
                 lowVerts[1] = v1;
                 lowVerts[2] = v2;
               }
-              if(vertsOrder_[a] > vertsOrder_[lowVerts[0]]
-                 && vertsOrder_[a] > vertsOrder_[lowVerts[1]]
-                 && vertsOrder_[a] > vertsOrder_[lowVerts[2]]) {
+              if(vertsOrder[a] > vertsOrder[lowVerts[0]]
+                 && vertsOrder[a] > vertsOrder[lowVerts[1]]
+                 && vertsOrder[a] > vertsOrder[lowVerts[2]]) {
                 uint8_t j{}, k{};
                 // store triangles indices of current tetra
                 std::array<uint8_t, 3> faces{};
@@ -671,7 +671,7 @@ function value.
        * Grayscale Digital Images", V. Robins, P. J. Wood,
        * A. P. Sheppard
        */
-      int processLowerStars();
+      int processLowerStars(const std::vector<size_t> &vertsOrder);
 
     public:
       /**
