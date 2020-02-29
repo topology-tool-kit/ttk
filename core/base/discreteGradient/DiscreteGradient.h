@@ -882,8 +882,7 @@ tetra identifier.
        * Get the vertex id of with the maximum scalar field value on
        * the given cell. Compare offsets if scalar field is constant.
        */
-      template <typename dataType, typename idType>
-      inline SimplexId getCellGreaterVertex(const Cell c) const;
+      SimplexId getCellGreaterVertex(const Cell c) const;
 
       /**
        * Build the geometric embedding of the given STL vector of cells.

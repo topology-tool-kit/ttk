@@ -1458,6 +1458,68 @@ int DiscreteGradient::getCriticalPointMap(
   return 0;
 }
 
+ttk::SimplexId DiscreteGradient::getCellGreaterVertex(const Cell c) const {
+
+  auto cellDim = c.dim_;
+  auto cellId = c.id_;
+
+  SimplexId vertexId = -1;
+  if(cellDim == 0) {
+    vertexId = cellId;
+  }
+
+  else if(cellDim == 1) {
+    SimplexId v0;
+    SimplexId v1;
+    inputTriangulation_->getEdgeVertex(cellId, 0, v0);
+    inputTriangulation_->getEdgeVertex(cellId, 1, v1);
+
+    if(vertsOrder_[v0] > vertsOrder_[v1]) {
+      vertexId = v0;
+    } else {
+      vertexId = v1;
+    }
+  }
+
+  else if(cellDim == 2) {
+    SimplexId v0{}, v1{}, v2{};
+    inputTriangulation_->getTriangleVertex(cellId, 0, v0);
+    inputTriangulation_->getTriangleVertex(cellId, 1, v1);
+    inputTriangulation_->getTriangleVertex(cellId, 2, v2);
+    if(vertsOrder_[v0] > vertsOrder_[v1] && vertsOrder_[v0] > vertsOrder_[v2]) {
+      vertexId = v0;
+    } else if(vertsOrder_[v1] > vertsOrder_[v0]
+              && vertsOrder_[v1] > vertsOrder_[v2]) {
+      vertexId = v1;
+    } else {
+      vertexId = v2;
+    }
+  }
+
+  else if(cellDim == 3) {
+    SimplexId v0{}, v1{}, v2{}, v3{};
+    inputTriangulation_->getCellVertex(cellId, 0, v0);
+    inputTriangulation_->getCellVertex(cellId, 1, v1);
+    inputTriangulation_->getCellVertex(cellId, 2, v2);
+    inputTriangulation_->getCellVertex(cellId, 3, v3);
+    if(vertsOrder_[v0] > vertsOrder_[v1] && vertsOrder_[v0] > vertsOrder_[v2]
+       && vertsOrder_[v0] > vertsOrder_[v3]) {
+      vertexId = v0;
+    } else if(vertsOrder_[v1] > vertsOrder_[v0]
+              && vertsOrder_[v1] > vertsOrder_[v2]
+              && vertsOrder_[v1] > vertsOrder_[v3]) {
+      vertexId = v1;
+    } else if(vertsOrder_[v2] > vertsOrder_[v0]
+              && vertsOrder_[v2] > vertsOrder_[v1]
+              && vertsOrder_[v2] > vertsOrder_[v3]) {
+      vertexId = v2;
+    } else {
+      vertexId = v3;
+    }
+  }
+  return vertexId;
+}
+
 int DiscreteGradient::setManifoldSize(
   const std::vector<Cell> &criticalPoints,
   const std::vector<size_t> &nCriticalPointsByDim,
