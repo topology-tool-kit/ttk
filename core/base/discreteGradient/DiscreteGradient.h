@@ -377,12 +377,11 @@ function value.
     private:
       template <typename scalarType, typename offsetType>
       void sortVertices(const SimplexId vertexNumber,
-                        std::vector<SimplexId> &sortedVertices,
                         std::vector<size_t> &vertsOrder,
                         const scalarType *const scalarField,
                         const offsetType *const offsetField) const {
 
-        sortedVertices.resize(vertexNumber);
+        std::vector<SimplexId> sortedVertices(vertexNumber);
         vertsOrder.resize(vertexNumber);
 
         // fill with numbers from 0 to vertexNumber - 1
@@ -952,6 +951,9 @@ tetra identifier.
       std::vector<SimplexId> *outputCriticalPoints_points_manifoldSize_{};
 
       std::vector<std::tuple<Cell, Cell>> *outputPersistencePairs_{};
+
+      // index of vertices sorted by ascending order
+      std::vector<size_t> vertsOrder_{};
     };
 
   } // namespace dcg
