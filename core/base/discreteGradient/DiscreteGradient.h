@@ -892,7 +892,7 @@ tetra identifier.
        * outputCriticalPoints_points_
        * inputScalarField_
        */
-      template <typename dataType, typename idType>
+      template <typename dataType>
       int setCriticalPoints(const std::vector<Cell> &criticalPoints,
                             std::vector<size_t> &nCriticalPointsByDim) const;
 
@@ -900,7 +900,7 @@ tetra identifier.
        * Detect the critical points and build their geometric embedding.
        * The output data pointers are modified accordingly.
        */
-      template <typename dataType, typename idType>
+      template <typename dataType>
       int setCriticalPoints() const;
 
       /**

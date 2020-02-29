@@ -190,10 +190,7 @@ int ttkDiscreteGradient::dispatch(vtkUnstructuredGrid *outputCriticalPoints) {
 
   // critical points
   {
-    if(inputOffsets_->GetDataType() == VTK_INT)
-      discreteGradient_.setCriticalPoints<VTK_TT, int>();
-    if(inputOffsets_->GetDataType() == VTK_ID_TYPE)
-      discreteGradient_.setCriticalPoints<VTK_TT, vtkIdType>();
+    discreteGradient_.setCriticalPoints<VTK_TT>();
 
     vtkNew<vtkPoints> points{};
 #ifndef TTK_ENABLE_KAMIKAZE

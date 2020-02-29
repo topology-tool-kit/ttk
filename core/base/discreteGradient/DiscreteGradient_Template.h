@@ -247,7 +247,7 @@ int DiscreteGradient::buildGradient() {
   return 0;
 }
 
-template <typename dataType, typename idType>
+template <typename dataType>
 int DiscreteGradient::setCriticalPoints(
   const std::vector<Cell> &criticalPoints,
   std::vector<size_t> &nCriticalPointsByDim) const {
@@ -354,12 +354,12 @@ int DiscreteGradient::setCriticalPoints(
   return 0;
 }
 
-template <typename dataType, typename idType>
+template <typename dataType>
 int DiscreteGradient::setCriticalPoints() const {
   std::vector<Cell> criticalPoints;
   getCriticalPoints(criticalPoints);
   std::vector<size_t> nCriticalPointsByDim{};
-  setCriticalPoints<dataType, idType>(criticalPoints, nCriticalPointsByDim);
+  setCriticalPoints<dataType>(criticalPoints, nCriticalPointsByDim);
 
   return 0;
 }
