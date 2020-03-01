@@ -51,8 +51,7 @@ SimplexId DiscreteGradient::getNumberOfCells(const int dimension) const {
 }
 
 inline DiscreteGradient::lowerStarType
-  DiscreteGradient::lowerStar(const SimplexId a,
-                              const std::vector<size_t> &vertsOrder) const {
+  DiscreteGradient::lowerStar(const SimplexId a) const {
   lowerStarType res{};
 
   // a belongs to its lower star
@@ -69,7 +68,7 @@ inline DiscreteGradient::lowerStarType
     if(vertexId == a) {
       inputTriangulation_->getEdgeVertex(edgeId, 1, vertexId);
     }
-    if(vertsOrder[vertexId] < vertsOrder[a]) {
+    if(vertsOrder_[vertexId] < vertsOrder_[a]) {
       res[1].emplace_back(CellExt{1, edgeId, {vertexId}, {}});
     }
   }
@@ -93,8 +92,8 @@ inline DiscreteGradient::lowerStarType
           lowVerts[0] = v0;
           lowVerts[1] = v1;
         }
-        if(vertsOrder[a] > vertsOrder[lowVerts[0]]
-           && vertsOrder[a] > vertsOrder[lowVerts[1]]) {
+        if(vertsOrder_[a] > vertsOrder_[lowVerts[0]]
+           && vertsOrder_[a] > vertsOrder_[lowVerts[1]]) {
           uint8_t j{}, k{};
           // store edges indices of current triangle
           std::array<uint8_t, 3> faces{};
@@ -171,9 +170,9 @@ inline DiscreteGradient::lowerStarType
           lowVerts[1] = v1;
           lowVerts[2] = v2;
         }
-        if(vertsOrder[a] > vertsOrder[lowVerts[0]]
-           && vertsOrder[a] > vertsOrder[lowVerts[1]]
-           && vertsOrder[a] > vertsOrder[lowVerts[2]]) {
+        if(vertsOrder_[a] > vertsOrder_[lowVerts[0]]
+           && vertsOrder_[a] > vertsOrder_[lowVerts[1]]
+           && vertsOrder_[a] > vertsOrder_[lowVerts[2]]) {
           uint8_t j{}, k{};
           // store triangles indices of current tetra
           std::array<uint8_t, 3> faces{};
@@ -260,7 +259,7 @@ inline void DiscreteGradient::pairCells(CellExt &alpha, CellExt &beta) {
   beta.paired_ = true;
 }
 
-int DiscreteGradient::processLowerStars(const std::vector<size_t> &vertsOrder) {
+int DiscreteGradient::processLowerStars() {
 
   /* Compute gradient */
 
@@ -277,7 +276,7 @@ int DiscreteGradient::processLowerStars(const std::vector<size_t> &vertsOrder) {
         // there should be a shared facet between the two cells
         // compare the vertices not in the shared facet
         if(a.dim_ == 1) {
-          return vertsOrder[a.lowVerts_[0]] > vertsOrder[b.lowVerts_[0]];
+          return vertsOrder_[a.lowVerts_[0]] > vertsOrder_[b.lowVerts_[0]];
 
         } else if(a.dim_ == 2) {
           const auto &m0 = a.lowVerts_[0];
@@ -286,13 +285,13 @@ int DiscreteGradient::processLowerStars(const std::vector<size_t> &vertsOrder) {
           const auto &n1 = b.lowVerts_[1];
 
           if(m0 == n0) {
-            return vertsOrder[m1] > vertsOrder[n1];
+            return vertsOrder_[m1] > vertsOrder_[n1];
           } else if(m0 == n1) {
-            return vertsOrder[m1] > vertsOrder[n0];
+            return vertsOrder_[m1] > vertsOrder_[n0];
           } else if(m1 == n0) {
-            return vertsOrder[m0] > vertsOrder[n1];
+            return vertsOrder_[m0] > vertsOrder_[n1];
           } else if(m1 == n1) {
-            return vertsOrder[m0] > vertsOrder[n0];
+            return vertsOrder_[m0] > vertsOrder_[n0];
           }
 
         } else if(a.dim_ == 3) {
@@ -323,7 +322,7 @@ int DiscreteGradient::processLowerStars(const std::vector<size_t> &vertsOrder) {
             n = n2;
           }
 
-          return vertsOrder[m] > vertsOrder[n];
+          return vertsOrder_[m] > vertsOrder_[n];
         }
       } else {
         // the cell of greater dimension should contain the cell of
@@ -372,7 +371,7 @@ int DiscreteGradient::processLowerStars(const std::vector<size_t> &vertsOrder) {
       }
     };
 
-    auto Lx = lowerStar(x, vertsOrder);
+    auto Lx = lowerStar(x);
 
     // Lx[1] empty => x is a local minimum
 
@@ -382,7 +381,7 @@ int DiscreteGradient::processLowerStars(const std::vector<size_t> &vertsOrder) {
       for(size_t i = 1; i < Lx[1].size(); ++i) {
         const auto &a = Lx[1][minId].lowVerts_[0];
         const auto &b = Lx[1][i].lowVerts_[0];
-        if(vertsOrder[a] > vertsOrder[b]) {
+        if(vertsOrder_[a] > vertsOrder_[b]) {
           // edge[i] < edge[0]
           minId = i;
         }

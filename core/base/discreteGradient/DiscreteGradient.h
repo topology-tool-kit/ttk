@@ -413,16 +413,11 @@ function value.
        * at vertex is maximum
        *
        * @param[in] a Vertex Id
-       * @param[in] scalars Scalar field
-       * @param[in] offset Offset field (for comparing vertices when on a scalar
-       * field plateau)
        *
        * @return Lower star as 4 sets of cells (0-cells, 1-cells, 2-cells and
        * 3-cells)
        */
-      inline lowerStarType
-        lowerStar(const SimplexId a,
-                  const std::vector<size_t> &vertsOrder) const;
+      inline lowerStarType lowerStar(const SimplexId a) const;
 
       /**
        * @brief Return the number of unpaired faces of a given cell in
@@ -461,7 +456,7 @@ function value.
        * Grayscale Digital Images", V. Robins, P. J. Wood,
        * A. P. Sheppard
        */
-      int processLowerStars(const std::vector<size_t> &vertsOrder);
+      int processLowerStars();
 
     public:
       /**

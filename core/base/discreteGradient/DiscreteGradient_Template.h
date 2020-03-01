@@ -225,7 +225,7 @@ int DiscreteGradient::buildGradient() {
   sortVertices(numberOfCells[0], vertsOrder_, scalars, offsets);
 
   // compute gradient pairs
-  processLowerStars(vertsOrder_);
+  processLowerStars();
 
   {
     std::stringstream msg;
