@@ -14,6 +14,7 @@
 
 #include <ttkOFFWriterModule.h>
 
+#include <iostream>
 #include <string>
 #include <vector>
 
@@ -38,7 +39,7 @@ protected:
   virtual void WriteData() override;
 
   char *Filename;
-  ofstream Stream{};
+  std::ofstream Stream{};
 
 private:
   ttkOFFWriter(const ttkOFFWriter &) = delete;

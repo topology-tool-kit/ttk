@@ -24,7 +24,11 @@ void vtkVRMLExporter::WriteAnActor(vtkActor *anActor, FILE *fp) {
   double *tempd;
   vtkCellArray *cells;
   vtkIdType npts = 0;
-  vtkIdType *indx = 0;
+#if VTK_MAJOR_VERSION > 8 || (VTK_MAJOR_VERSION == 8 && VTK_MINOR_VERSION > 2)
+  vtkIdType const *indx = NULL;
+#else
+  vtkIdType *indx = NULL;
+#endif
   int pointDataWritten = 0;
   vtkPolyDataMapper *pm;
   vtkUnsignedCharArray *colors;
@@ -454,7 +458,11 @@ void vtkVRMLExporter::WritePointData(vtkPoints *points,
       fprintf(fp, "          texCoordIndex[\n");
       vtkCellArray *cells = ttkWRLExporterPolyData_->GetPolys();
       vtkIdType npts = 0;
+#if VTK_MAJOR_VERSION > 8 || (VTK_MAJOR_VERSION == 8 && VTK_MINOR_VERSION > 2)
+      vtkIdType const *indx = NULL;
+#else
       vtkIdType *indx = NULL;
+#endif
       for(cells->InitTraversal(); cells->GetNextCell(npts, indx);) {
         fprintf(fp, "            ");
         for(int i = 0; i < npts; i++) {
