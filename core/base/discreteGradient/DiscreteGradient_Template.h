@@ -196,206 +196,6 @@ dataType DiscreteGradient::getPersistence(const Cell &up,
 }
 
 template <typename dataType, typename idType>
-int DiscreteGradient::processLowerStars(const dataType *const scalars,
-                                        const idType *const offsets) {
-
-  /* Compute gradient */
-
-  auto nverts = inputTriangulation_->getNumberOfVertices();
-
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
-#endif // TTK_ENABLE_OPENMP
-  for(SimplexId x = 0; x < nverts; x++) {
-
-    const auto sosGreaterThan
-      = [&](const SimplexId a, const SimplexId b) -> bool {
-      if(scalars[a] != scalars[b]) {
-        return scalars[a] > scalars[b];
-      } else {
-        return offsets[a] > offsets[b];
-      }
-    };
-
-    // Comparison function for Cells inside priority queues
-    const auto orderCells = [&](const CellExt &a, const CellExt &b) -> bool {
-      if(a.dim_ == b.dim_) {
-        // there should be a shared facet between the two cells
-        // compare the vertices not in the shared facet
-        if(a.dim_ == 1) {
-          return sosGreaterThan(a.lowVerts_[0], b.lowVerts_[0]);
-
-        } else if(a.dim_ == 2) {
-          const auto &m0 = a.lowVerts_[0];
-          const auto &m1 = a.lowVerts_[1];
-          const auto &n0 = b.lowVerts_[0];
-          const auto &n1 = b.lowVerts_[1];
-
-          if(m0 == n0) {
-            return sosGreaterThan(m1, n1);
-          } else if(m0 == n1) {
-            return sosGreaterThan(m1, n0);
-          } else if(m1 == n0) {
-            return sosGreaterThan(m0, n1);
-          } else if(m1 == n1) {
-            return sosGreaterThan(m0, n0);
-          }
-
-        } else if(a.dim_ == 3) {
-          SimplexId m{-1}, n{-1};
-
-          const auto &m0 = a.lowVerts_[0];
-          const auto &m1 = a.lowVerts_[1];
-          const auto &m2 = a.lowVerts_[2];
-          const auto &n0 = b.lowVerts_[0];
-          const auto &n1 = b.lowVerts_[1];
-          const auto &n2 = b.lowVerts_[2];
-
-          // extract vertex of a not in b
-          if(m0 != n0 && m0 != n1 && m0 != n2) {
-            m = m0;
-          } else if(m1 != n0 && m1 != n1 && m1 != n2) {
-            m = m1;
-          } else if(m2 != n0 && m2 != n1 && m2 != n2) {
-            m = m2;
-          }
-
-          // extract vertex of b not in a
-          if(n0 != m0 && n0 != m1 && n0 != m2) {
-            n = n0;
-          } else if(n1 != m0 && n1 != m1 && n1 != m2) {
-            n = n1;
-          } else if(n2 != m0 && n2 != m1 && n2 != m2) {
-            n = n2;
-          }
-
-          return sosGreaterThan(m, n);
-        }
-      } else {
-        // the cell of greater dimension should contain the cell of
-        // smaller dimension
-        return a.dim_ > b.dim_;
-      }
-
-      return false;
-    };
-
-    // Type alias for priority queues
-    using pqType
-      = std::priority_queue<std::reference_wrapper<CellExt>,
-                            std::vector<std::reference_wrapper<CellExt>>,
-                            decltype(orderCells)>;
-
-    // Priority queues are pushed at the beginning and popped at the
-    // end. To pop the minimum, elements should be sorted in a
-    // decreasing order.
-    pqType pqZero(orderCells), pqOne(orderCells);
-
-    // Insert into pqOne cofacets of cell c_alpha such as numUnpairedFaces == 1
-    const auto insertCofacets = [&](const CellExt &ca, lowerStarType &ls) {
-      if(ca.dim_ == 1) {
-        for(auto &beta : ls[2]) {
-          if(ls[1][beta.faces_[0]].id_ == ca.id_
-             || ls[1][beta.faces_[1]].id_ == ca.id_) {
-            // edge ca belongs to triangle beta
-            if(numUnpairedFacesTriangle(beta, ls).first == 1) {
-              pqOne.push(beta);
-            }
-          }
-        }
-
-      } else if(ca.dim_ == 2) {
-        for(auto &beta : ls[3]) {
-          if(ls[2][beta.faces_[0]].id_ == ca.id_
-             || ls[2][beta.faces_[1]].id_ == ca.id_
-             || ls[2][beta.faces_[2]].id_ == ca.id_) {
-            // triangle ca belongs to tetra beta
-            if(numUnpairedFacesTetra(beta, ls).first == 1) {
-              pqOne.push(beta);
-            }
-          }
-        }
-      }
-    };
-
-    auto Lx = lowerStar(x, scalars, offsets);
-
-    // Lx[1] empty => x is a local minimum
-
-    if(!Lx[1].empty()) {
-      // get delta: 1-cell (edge) with minimal G value (steeper gradient)
-      size_t minId = 0;
-      for(size_t i = 1; i < Lx[1].size(); ++i) {
-        const auto &a = Lx[1][minId].lowVerts_[0];
-        const auto &b = Lx[1][i].lowVerts_[0];
-        if(scalars[a] > scalars[b]
-           || (scalars[a] == scalars[b] && offsets[a] > offsets[b])) {
-          // edge[i] < edge[0]
-          minId = i;
-        }
-      }
-
-      auto &c_delta = Lx[1][minId];
-
-      // store x (0-cell) -> delta (1-cell) V-path
-      pairCells(Lx[0][0], c_delta);
-
-      // push every 1-cell in Lx that is not delta into pqZero
-      for(auto &alpha : Lx[1]) {
-        if(alpha.id_ != c_delta.id_) {
-          pqZero.push(alpha);
-        }
-      }
-
-      // push into pqOne every coface of delta in Lx (2-cells only,
-      // 3-cells have not any facet paired yet) such that
-      // numUnpairedFaces == 1
-      insertCofacets(c_delta, Lx);
-
-      while(!pqOne.empty() || !pqZero.empty()) {
-        while(!pqOne.empty()) {
-          auto &c_alpha = pqOne.top().get();
-          pqOne.pop();
-          auto unpairedFaces = numUnpairedFaces(c_alpha, Lx);
-          if(unpairedFaces.first == 0) {
-            pqZero.push(c_alpha);
-          } else {
-            auto &c_pair_alpha = Lx[c_alpha.dim_ - 1][unpairedFaces.second];
-
-            // store (pair_alpha) -> (alpha) V-path
-            pairCells(c_pair_alpha, c_alpha);
-
-            // add cofaces of c_alpha and c_pair_alpha to pqOne
-            insertCofacets(c_alpha, Lx);
-            insertCofacets(c_pair_alpha, Lx);
-          }
-        }
-
-        // skip pair_alpha from pqZero:
-        // cells in pqZero are not critical if already paired
-        while(!pqZero.empty() && pqZero.top().get().paired_) {
-          pqZero.pop();
-        }
-
-        if(!pqZero.empty()) {
-          auto &c_gamma = pqZero.top().get();
-          pqZero.pop();
-
-          // gamma is a critical cell
-          // mark gamma as paired
-          c_gamma.paired_ = true;
-
-          // add cofacets of c_gamma to pqOne
-          insertCofacets(c_gamma, Lx);
-        }
-      }
-    }
-  }
-
-  return 0;
-}
-
-template <typename dataType, typename idType>
 int DiscreteGradient::buildGradient() {
   Timer t;
 
@@ -422,8 +222,10 @@ int DiscreteGradient::buildGradient() {
     gradient_[i][i + 1].resize(numberOfCells[i + 1], -1);
   }
 
+  sortVertices(numberOfCells[0], vertsOrder_, scalars, offsets);
+
   // compute gradient pairs
-  processLowerStars<dataType, idType>(scalars, offsets);
+  processLowerStars();
 
   {
     std::stringstream msg;
@@ -445,80 +247,7 @@ int DiscreteGradient::buildGradient() {
   return 0;
 }
 
-template <typename dataType, typename idType>
-inline ttk::SimplexId
-  DiscreteGradient::getCellGreaterVertex(const Cell c) const {
-
-  const auto *const scalars = static_cast<const dataType *>(inputScalarField_);
-  const auto *const offsets = static_cast<const idType *>(inputOffsets_);
-
-  const auto sosGreaterThan
-    = [&scalars, &offsets](const SimplexId a, const SimplexId b) -> bool {
-    if(scalars[a] != scalars[b]) {
-      return scalars[a] > scalars[b];
-    } else {
-      return offsets[a] > offsets[b];
-    }
-  };
-
-  auto cellDim = c.dim_;
-  auto cellId = c.id_;
-
-  SimplexId vertexId = -1;
-  if(cellDim == 0) {
-    vertexId = cellId;
-  }
-
-  else if(cellDim == 1) {
-    SimplexId v0;
-    SimplexId v1;
-    inputTriangulation_->getEdgeVertex(cellId, 0, v0);
-    inputTriangulation_->getEdgeVertex(cellId, 1, v1);
-
-    if(sosGreaterThan(v0, v1)) {
-      vertexId = v0;
-    } else {
-      vertexId = v1;
-    }
-  }
-
-  else if(cellDim == 2) {
-    SimplexId v0{}, v1{}, v2{};
-    inputTriangulation_->getTriangleVertex(cellId, 0, v0);
-    inputTriangulation_->getTriangleVertex(cellId, 1, v1);
-    inputTriangulation_->getTriangleVertex(cellId, 2, v2);
-    if(sosGreaterThan(v0, v1) && sosGreaterThan(v0, v2)) {
-      vertexId = v0;
-    } else if(sosGreaterThan(v1, v0) && sosGreaterThan(v1, v2)) {
-      vertexId = v1;
-    } else {
-      vertexId = v2;
-    }
-  }
-
-  else if(cellDim == 3) {
-    SimplexId v0{}, v1{}, v2{}, v3{};
-    inputTriangulation_->getCellVertex(cellId, 0, v0);
-    inputTriangulation_->getCellVertex(cellId, 1, v1);
-    inputTriangulation_->getCellVertex(cellId, 2, v2);
-    inputTriangulation_->getCellVertex(cellId, 3, v3);
-    if(sosGreaterThan(v0, v1) && sosGreaterThan(v0, v2)
-       && sosGreaterThan(v0, v3)) {
-      vertexId = v0;
-    } else if(sosGreaterThan(v1, v0) && sosGreaterThan(v1, v2)
-              && sosGreaterThan(v1, v3)) {
-      vertexId = v1;
-    } else if(sosGreaterThan(v2, v0) && sosGreaterThan(v2, v1)
-              && sosGreaterThan(v2, v3)) {
-      vertexId = v2;
-    } else {
-      vertexId = v3;
-    }
-  }
-  return vertexId;
-}
-
-template <typename dataType, typename idType>
+template <typename dataType>
 int DiscreteGradient::setCriticalPoints(
   const std::vector<Cell> &criticalPoints,
   std::vector<size_t> &nCriticalPointsByDim) const {
@@ -608,7 +337,7 @@ int DiscreteGradient::setCriticalPoints(
       (*outputCriticalPoints_points_isOnBoundary_)[i] = isOnBoundary;
     }
     if(outputCriticalPoints_points_PLVertexIdentifiers_) {
-      auto vertId = getCellGreaterVertex<dataType, idType>(cell);
+      auto vertId = getCellGreaterVertex(cell);
       (*outputCriticalPoints_points_PLVertexIdentifiers_)[i] = vertId;
     }
   }
@@ -625,12 +354,12 @@ int DiscreteGradient::setCriticalPoints(
   return 0;
 }
 
-template <typename dataType, typename idType>
+template <typename dataType>
 int DiscreteGradient::setCriticalPoints() const {
   std::vector<Cell> criticalPoints;
   getCriticalPoints(criticalPoints);
   std::vector<size_t> nCriticalPointsByDim{};
-  setCriticalPoints<dataType, idType>(criticalPoints, nCriticalPointsByDim);
+  setCriticalPoints<dataType>(criticalPoints, nCriticalPointsByDim);
 
   return 0;
 }
@@ -2133,7 +1862,7 @@ int DiscreteGradient::reverseGradient(bool detectCriticalPoints) {
       criticalCells.begin(), criticalCells.end(), criticalPoints.begin(),
       [&](const Cell &c) {
         const auto cellType = criticalTypeFromCellDimension(c.dim_);
-        const auto vertexId = getCellGreaterVertex<dataType, idType>(c);
+        const auto vertexId = getCellGreaterVertex(c);
         return std::make_pair(vertexId, static_cast<char>(cellType));
       });
 

@@ -50,6 +50,403 @@ SimplexId DiscreteGradient::getNumberOfCells(const int dimension) const {
   return -1;
 }
 
+inline DiscreteGradient::lowerStarType
+  DiscreteGradient::lowerStar(const SimplexId a) const {
+  lowerStarType res{};
+
+  // a belongs to its lower star
+  res[0].emplace_back(CellExt{0, a});
+
+  // store lower edges
+  const auto nedges = inputTriangulation_->getVertexEdgeNumber(a);
+  res[1].reserve(nedges);
+  for(SimplexId i = 0; i < nedges; i++) {
+    SimplexId edgeId;
+    inputTriangulation_->getVertexEdge(a, i, edgeId);
+    SimplexId vertexId;
+    inputTriangulation_->getEdgeVertex(edgeId, 0, vertexId);
+    if(vertexId == a) {
+      inputTriangulation_->getEdgeVertex(edgeId, 1, vertexId);
+    }
+    if(vertsOrder_[vertexId] < vertsOrder_[a]) {
+      res[1].emplace_back(CellExt{1, edgeId, {vertexId}, {}});
+    }
+  }
+
+  if(res[1].size() < 2) {
+    // at least two edges in the lower star for one triangle
+    return res;
+  }
+
+  const auto processTriangle
+    = [&](const SimplexId triangleId, const SimplexId v0, const SimplexId v1,
+          const SimplexId v2) {
+        std::array<SimplexId, 3> lowVerts{};
+        if(v0 == a) {
+          lowVerts[0] = v1;
+          lowVerts[1] = v2;
+        } else if(v1 == a) {
+          lowVerts[0] = v0;
+          lowVerts[1] = v2;
+        } else if(v2 == a) {
+          lowVerts[0] = v0;
+          lowVerts[1] = v1;
+        }
+        if(vertsOrder_[a] > vertsOrder_[lowVerts[0]]
+           && vertsOrder_[a] > vertsOrder_[lowVerts[1]]) {
+          uint8_t j{}, k{};
+          // store edges indices of current triangle
+          std::array<uint8_t, 3> faces{};
+          for(const auto &e : res[1]) {
+            if(e.lowVerts_[0] == lowVerts[0] || e.lowVerts_[0] == lowVerts[1]) {
+              faces[k++] = j;
+            }
+            j++;
+          }
+          res[2].emplace_back(
+            CellExt{2, triangleId, std::move(lowVerts), std::move(faces)});
+        }
+      };
+
+  if(dimensionality_ == 2) {
+    // store lower triangles
+
+    // use optimised triangulation methods:
+    // getVertexStar instead of getVertexTriangle
+    // getCellVertex instead of getTriangleVertex
+    const auto ncells = inputTriangulation_->getVertexStarNumber(a);
+    res[2].reserve(ncells);
+    for(SimplexId i = 0; i < ncells; ++i) {
+      SimplexId cellId;
+      inputTriangulation_->getVertexStar(a, i, cellId);
+      SimplexId v0{}, v1{}, v2{};
+      inputTriangulation_->getCellVertex(cellId, 0, v0);
+      inputTriangulation_->getCellVertex(cellId, 1, v1);
+      inputTriangulation_->getCellVertex(cellId, 2, v2);
+      processTriangle(cellId, v0, v1, v2);
+    }
+  } else if(dimensionality_ == 3) {
+    // store lower triangles
+    const auto ntri = inputTriangulation_->getVertexTriangleNumber(a);
+    res[2].reserve(ntri);
+    for(SimplexId i = 0; i < ntri; i++) {
+      SimplexId triangleId;
+      inputTriangulation_->getVertexTriangle(a, i, triangleId);
+      SimplexId v0{}, v1{}, v2{};
+      inputTriangulation_->getTriangleVertex(triangleId, 0, v0);
+      inputTriangulation_->getTriangleVertex(triangleId, 1, v1);
+      inputTriangulation_->getTriangleVertex(triangleId, 2, v2);
+      processTriangle(triangleId, v0, v1, v2);
+    }
+
+    // at least three triangles in the lower star for one tetra
+    if(res[2].size() >= 3) {
+      // store lower tetra
+      const auto ncells = inputTriangulation_->getVertexStarNumber(a);
+      res[3].reserve(ncells);
+      for(SimplexId i = 0; i < ncells; ++i) {
+        SimplexId cellId;
+        inputTriangulation_->getVertexStar(a, i, cellId);
+        std::array<SimplexId, 3> lowVerts{};
+        SimplexId v0{}, v1{}, v2{}, v3{};
+        inputTriangulation_->getCellVertex(cellId, 0, v0);
+        inputTriangulation_->getCellVertex(cellId, 1, v1);
+        inputTriangulation_->getCellVertex(cellId, 2, v2);
+        inputTriangulation_->getCellVertex(cellId, 3, v3);
+        if(v0 == a) {
+          lowVerts[0] = v1;
+          lowVerts[1] = v2;
+          lowVerts[2] = v3;
+        } else if(v1 == a) {
+          lowVerts[0] = v0;
+          lowVerts[1] = v2;
+          lowVerts[2] = v3;
+        } else if(v2 == a) {
+          lowVerts[0] = v0;
+          lowVerts[1] = v1;
+          lowVerts[2] = v3;
+        } else if(v3 == a) {
+          lowVerts[0] = v0;
+          lowVerts[1] = v1;
+          lowVerts[2] = v2;
+        }
+        if(vertsOrder_[a] > vertsOrder_[lowVerts[0]]
+           && vertsOrder_[a] > vertsOrder_[lowVerts[1]]
+           && vertsOrder_[a] > vertsOrder_[lowVerts[2]]) {
+          uint8_t j{}, k{};
+          // store triangles indices of current tetra
+          std::array<uint8_t, 3> faces{};
+          for(const auto &t : res[2]) {
+            if((t.lowVerts_[0] == lowVerts[0] || t.lowVerts_[0] == lowVerts[1]
+                || t.lowVerts_[0] == lowVerts[2])
+               && (t.lowVerts_[1] == lowVerts[0]
+                   || t.lowVerts_[1] == lowVerts[1]
+                   || t.lowVerts_[1] == lowVerts[2])) {
+              faces[k++] = j;
+            }
+            j++;
+          }
+
+          res[3].emplace_back(
+            CellExt{3, cellId, std::move(lowVerts), std::move(faces)});
+        }
+      }
+    }
+  }
+
+  return res;
+}
+
+inline void DiscreteGradient::pairCells(CellExt &alpha, CellExt &beta) {
+#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
+  char localBId{0}, localAId{0};
+  SimplexId a{}, b{};
+
+  if(beta.dim_ == 1) {
+
+    for(SimplexId i = 0; i < 2; ++i) {
+      inputTriangulation_->getEdgeVertex(beta.id_, i, a);
+      if(a == alpha.id_) {
+        localAId = i;
+        break;
+      }
+    }
+    const auto nedges = inputTriangulation_->getVertexEdgeNumber(alpha.id_);
+    for(SimplexId i = 0; i < nedges; ++i) {
+      inputTriangulation_->getVertexEdge(alpha.id_, i, b);
+      if(b == beta.id_) {
+        localBId = i;
+      }
+    }
+  } else if(beta.dim_ == 2) {
+    for(SimplexId i = 0; i < 3; ++i) {
+      inputTriangulation_->getTriangleEdge(beta.id_, i, a);
+      if(a == alpha.id_) {
+        localAId = i;
+        break;
+      }
+    }
+    const auto ntri = inputTriangulation_->getEdgeTriangleNumber(alpha.id_);
+    for(SimplexId i = 0; i < ntri; ++i) {
+      inputTriangulation_->getEdgeTriangle(alpha.id_, i, b);
+      if(b == beta.id_) {
+        localBId = i;
+      }
+    }
+  } else {
+    for(SimplexId i = 0; i < 4; ++i) {
+      inputTriangulation_->getCellTriangle(beta.id_, i, a);
+      if(a == alpha.id_) {
+        localAId = i;
+        break;
+      }
+    }
+    const auto ntetra = inputTriangulation_->getTriangleStarNumber(alpha.id_);
+    for(SimplexId i = 0; i < ntetra; ++i) {
+      inputTriangulation_->getTriangleStar(alpha.id_, i, b);
+      if(b == beta.id_) {
+        localBId = i;
+      }
+    }
+  }
+  gradient_[alpha.dim_][alpha.dim_][alpha.id_] = localBId;
+  gradient_[alpha.dim_][alpha.dim_ + 1][beta.id_] = localAId;
+#else
+  gradient_[alpha.dim_][alpha.dim_][alpha.id_] = beta.id_;
+  gradient_[alpha.dim_][alpha.dim_ + 1][beta.id_] = alpha.id_;
+#endif // TTK_ENABLE_DCG_OPTIMIZE_MEMORY
+  alpha.paired_ = true;
+  beta.paired_ = true;
+}
+
+int DiscreteGradient::processLowerStars() {
+
+  /* Compute gradient */
+
+  auto nverts = inputTriangulation_->getNumberOfVertices();
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+  for(SimplexId x = 0; x < nverts; x++) {
+
+    // Comparison function for Cells inside priority queues
+    const auto orderCells = [&](const CellExt &a, const CellExt &b) -> bool {
+      if(a.dim_ == b.dim_) {
+        // there should be a shared facet between the two cells
+        // compare the vertices not in the shared facet
+        if(a.dim_ == 1) {
+          return vertsOrder_[a.lowVerts_[0]] > vertsOrder_[b.lowVerts_[0]];
+
+        } else if(a.dim_ == 2) {
+          const auto &m0 = a.lowVerts_[0];
+          const auto &m1 = a.lowVerts_[1];
+          const auto &n0 = b.lowVerts_[0];
+          const auto &n1 = b.lowVerts_[1];
+
+          if(m0 == n0) {
+            return vertsOrder_[m1] > vertsOrder_[n1];
+          } else if(m0 == n1) {
+            return vertsOrder_[m1] > vertsOrder_[n0];
+          } else if(m1 == n0) {
+            return vertsOrder_[m0] > vertsOrder_[n1];
+          } else if(m1 == n1) {
+            return vertsOrder_[m0] > vertsOrder_[n0];
+          }
+
+        } else if(a.dim_ == 3) {
+          SimplexId m{-1}, n{-1};
+
+          const auto &m0 = a.lowVerts_[0];
+          const auto &m1 = a.lowVerts_[1];
+          const auto &m2 = a.lowVerts_[2];
+          const auto &n0 = b.lowVerts_[0];
+          const auto &n1 = b.lowVerts_[1];
+          const auto &n2 = b.lowVerts_[2];
+
+          // extract vertex of a not in b
+          if(m0 != n0 && m0 != n1 && m0 != n2) {
+            m = m0;
+          } else if(m1 != n0 && m1 != n1 && m1 != n2) {
+            m = m1;
+          } else if(m2 != n0 && m2 != n1 && m2 != n2) {
+            m = m2;
+          }
+
+          // extract vertex of b not in a
+          if(n0 != m0 && n0 != m1 && n0 != m2) {
+            n = n0;
+          } else if(n1 != m0 && n1 != m1 && n1 != m2) {
+            n = n1;
+          } else if(n2 != m0 && n2 != m1 && n2 != m2) {
+            n = n2;
+          }
+
+          return vertsOrder_[m] > vertsOrder_[n];
+        }
+      } else {
+        // the cell of greater dimension should contain the cell of
+        // smaller dimension
+        return a.dim_ > b.dim_;
+      }
+
+      return false;
+    };
+
+    // Type alias for priority queues
+    using pqType
+      = std::priority_queue<std::reference_wrapper<CellExt>,
+                            std::vector<std::reference_wrapper<CellExt>>,
+                            decltype(orderCells)>;
+
+    // Priority queues are pushed at the beginning and popped at the
+    // end. To pop the minimum, elements should be sorted in a
+    // decreasing order.
+    pqType pqZero(orderCells), pqOne(orderCells);
+
+    // Insert into pqOne cofacets of cell c_alpha such as numUnpairedFaces == 1
+    const auto insertCofacets = [&](const CellExt &ca, lowerStarType &ls) {
+      if(ca.dim_ == 1) {
+        for(auto &beta : ls[2]) {
+          if(ls[1][beta.faces_[0]].id_ == ca.id_
+             || ls[1][beta.faces_[1]].id_ == ca.id_) {
+            // edge ca belongs to triangle beta
+            if(numUnpairedFacesTriangle(beta, ls).first == 1) {
+              pqOne.push(beta);
+            }
+          }
+        }
+
+      } else if(ca.dim_ == 2) {
+        for(auto &beta : ls[3]) {
+          if(ls[2][beta.faces_[0]].id_ == ca.id_
+             || ls[2][beta.faces_[1]].id_ == ca.id_
+             || ls[2][beta.faces_[2]].id_ == ca.id_) {
+            // triangle ca belongs to tetra beta
+            if(numUnpairedFacesTetra(beta, ls).first == 1) {
+              pqOne.push(beta);
+            }
+          }
+        }
+      }
+    };
+
+    auto Lx = lowerStar(x);
+
+    // Lx[1] empty => x is a local minimum
+
+    if(!Lx[1].empty()) {
+      // get delta: 1-cell (edge) with minimal G value (steeper gradient)
+      size_t minId = 0;
+      for(size_t i = 1; i < Lx[1].size(); ++i) {
+        const auto &a = Lx[1][minId].lowVerts_[0];
+        const auto &b = Lx[1][i].lowVerts_[0];
+        if(vertsOrder_[a] > vertsOrder_[b]) {
+          // edge[i] < edge[0]
+          minId = i;
+        }
+      }
+
+      auto &c_delta = Lx[1][minId];
+
+      // store x (0-cell) -> delta (1-cell) V-path
+      pairCells(Lx[0][0], c_delta);
+
+      // push every 1-cell in Lx that is not delta into pqZero
+      for(auto &alpha : Lx[1]) {
+        if(alpha.id_ != c_delta.id_) {
+          pqZero.push(alpha);
+        }
+      }
+
+      // push into pqOne every coface of delta in Lx (2-cells only,
+      // 3-cells have not any facet paired yet) such that
+      // numUnpairedFaces == 1
+      insertCofacets(c_delta, Lx);
+
+      while(!pqOne.empty() || !pqZero.empty()) {
+        while(!pqOne.empty()) {
+          auto &c_alpha = pqOne.top().get();
+          pqOne.pop();
+          auto unpairedFaces = numUnpairedFaces(c_alpha, Lx);
+          if(unpairedFaces.first == 0) {
+            pqZero.push(c_alpha);
+          } else {
+            auto &c_pair_alpha = Lx[c_alpha.dim_ - 1][unpairedFaces.second];
+
+            // store (pair_alpha) -> (alpha) V-path
+            pairCells(c_pair_alpha, c_alpha);
+
+            // add cofaces of c_alpha and c_pair_alpha to pqOne
+            insertCofacets(c_alpha, Lx);
+            insertCofacets(c_pair_alpha, Lx);
+          }
+        }
+
+        // skip pair_alpha from pqZero:
+        // cells in pqZero are not critical if already paired
+        while(!pqZero.empty() && pqZero.top().get().paired_) {
+          pqZero.pop();
+        }
+
+        if(!pqZero.empty()) {
+          auto &c_gamma = pqZero.top().get();
+          pqZero.pop();
+
+          // gamma is a critical cell
+          // mark gamma as paired
+          c_gamma.paired_ = true;
+
+          // add cofacets of c_gamma to pqOne
+          insertCofacets(c_gamma, Lx);
+        }
+      }
+    }
+  }
+
+  return 0;
+}
+
 std::pair<size_t, SimplexId>
   DiscreteGradient::numUnpairedFaces(const CellExt &c,
                                      const lowerStarType &ls) const {
@@ -1058,6 +1455,68 @@ int DiscreteGradient::getCriticalPointMap(
   }
 
   return 0;
+}
+
+ttk::SimplexId DiscreteGradient::getCellGreaterVertex(const Cell c) const {
+
+  auto cellDim = c.dim_;
+  auto cellId = c.id_;
+
+  SimplexId vertexId = -1;
+  if(cellDim == 0) {
+    vertexId = cellId;
+  }
+
+  else if(cellDim == 1) {
+    SimplexId v0;
+    SimplexId v1;
+    inputTriangulation_->getEdgeVertex(cellId, 0, v0);
+    inputTriangulation_->getEdgeVertex(cellId, 1, v1);
+
+    if(vertsOrder_[v0] > vertsOrder_[v1]) {
+      vertexId = v0;
+    } else {
+      vertexId = v1;
+    }
+  }
+
+  else if(cellDim == 2) {
+    SimplexId v0{}, v1{}, v2{};
+    inputTriangulation_->getTriangleVertex(cellId, 0, v0);
+    inputTriangulation_->getTriangleVertex(cellId, 1, v1);
+    inputTriangulation_->getTriangleVertex(cellId, 2, v2);
+    if(vertsOrder_[v0] > vertsOrder_[v1] && vertsOrder_[v0] > vertsOrder_[v2]) {
+      vertexId = v0;
+    } else if(vertsOrder_[v1] > vertsOrder_[v0]
+              && vertsOrder_[v1] > vertsOrder_[v2]) {
+      vertexId = v1;
+    } else {
+      vertexId = v2;
+    }
+  }
+
+  else if(cellDim == 3) {
+    SimplexId v0{}, v1{}, v2{}, v3{};
+    inputTriangulation_->getCellVertex(cellId, 0, v0);
+    inputTriangulation_->getCellVertex(cellId, 1, v1);
+    inputTriangulation_->getCellVertex(cellId, 2, v2);
+    inputTriangulation_->getCellVertex(cellId, 3, v3);
+    if(vertsOrder_[v0] > vertsOrder_[v1] && vertsOrder_[v0] > vertsOrder_[v2]
+       && vertsOrder_[v0] > vertsOrder_[v3]) {
+      vertexId = v0;
+    } else if(vertsOrder_[v1] > vertsOrder_[v0]
+              && vertsOrder_[v1] > vertsOrder_[v2]
+              && vertsOrder_[v1] > vertsOrder_[v3]) {
+      vertexId = v1;
+    } else if(vertsOrder_[v2] > vertsOrder_[v0]
+              && vertsOrder_[v2] > vertsOrder_[v1]
+              && vertsOrder_[v2] > vertsOrder_[v3]) {
+      vertexId = v2;
+    } else {
+      vertexId = v3;
+    }
+  }
+  return vertexId;
 }
 
 int DiscreteGradient::setManifoldSize(

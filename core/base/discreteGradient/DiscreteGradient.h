@@ -28,7 +28,19 @@
 #include <set>
 #include <utility>
 
+#if defined(__GNUC__) && !defined(__clang__)
+#include <parallel/algorithm>
+#endif
+
 namespace ttk {
+#if defined(_GLIBCXX_PARALLEL_FEATURES_H) && defined(TTK_ENABLE_OPENMP)
+#define PSORT                               \
+  omp_set_num_threads(this->threadNumber_); \
+  __gnu_parallel::sort
+#else
+#define PSORT std::sort
+#endif // _GLIBCXX_PARALLEL_FEATURES_H && TTK_ENABLE_OPENMP
+
   namespace dcg {
     /**
      * Type of the identifiers of the 2-separatrices.
@@ -363,6 +375,34 @@ function value.
                               const dataType *scalars) const;
 
     private:
+      template <typename scalarType, typename offsetType>
+      void sortVertices(const SimplexId vertexNumber,
+                        std::vector<size_t> &vertsOrder,
+                        const scalarType *const scalarField,
+                        const offsetType *const offsetField) const {
+
+        std::vector<SimplexId> sortedVertices(vertexNumber);
+        vertsOrder.resize(vertexNumber);
+
+        // fill with numbers from 0 to vertexNumber - 1
+        std::iota(sortedVertices.begin(), sortedVertices.end(), 0);
+
+        // sort vertices in ascending order following scalarfield / offsets
+        PSORT(sortedVertices.begin(), sortedVertices.end(),
+              [&](const SimplexId a, const SimplexId b) {
+                return (scalarField[a] < scalarField[b])
+                       || (scalarField[a] == scalarField[b]
+                           && offsetField[a] < offsetField[b]);
+              });
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+        for(size_t i = 0; i < vertsOrder.size(); ++i) {
+          vertsOrder[sortedVertices[i]] = i;
+        }
+      }
+
       /**
        * Type alias for lower stars of a given cell
        */
@@ -373,171 +413,11 @@ function value.
        * at vertex is maximum
        *
        * @param[in] a Vertex Id
-       * @param[in] scalars Scalar field
-       * @param[in] offset Offset field (for comparing vertices when on a scalar
-       * field plateau)
        *
        * @return Lower star as 4 sets of cells (0-cells, 1-cells, 2-cells and
        * 3-cells)
        */
-      template <typename dataType, typename idType>
-      inline lowerStarType lowerStar(const SimplexId a,
-                                     const dataType *const scalars,
-                                     const idType *const offsets) const {
-        lowerStarType res{};
-
-        // a belongs to its lower star
-        res[0].emplace_back(CellExt{0, a});
-
-        const auto sosGreaterThan
-          = [&scalars, &offsets](const SimplexId m, const SimplexId n) {
-              if(scalars[m] != scalars[n]) {
-                return scalars[m] > scalars[n];
-              } else {
-                return offsets[m] > offsets[n];
-              }
-            };
-
-        // store lower edges
-        const auto nedges = inputTriangulation_->getVertexEdgeNumber(a);
-        res[1].reserve(nedges);
-        for(SimplexId i = 0; i < nedges; i++) {
-          SimplexId edgeId;
-          inputTriangulation_->getVertexEdge(a, i, edgeId);
-          SimplexId vertexId;
-          inputTriangulation_->getEdgeVertex(edgeId, 0, vertexId);
-          if(vertexId == a) {
-            inputTriangulation_->getEdgeVertex(edgeId, 1, vertexId);
-          }
-          if(!sosGreaterThan(vertexId, a)) {
-            res[1].emplace_back(CellExt{1, edgeId, {vertexId}, {}});
-          }
-        }
-
-        if(res[1].size() < 2) {
-          // at least two edges in the lower star for one triangle
-          return res;
-        }
-
-        const auto processTriangle = [&](const SimplexId triangleId,
-                                         const SimplexId v0, const SimplexId v1,
-                                         const SimplexId v2) {
-          std::array<SimplexId, 3> lowVerts{};
-          if(v0 == a) {
-            lowVerts[0] = v1;
-            lowVerts[1] = v2;
-          } else if(v1 == a) {
-            lowVerts[0] = v0;
-            lowVerts[1] = v2;
-          } else if(v2 == a) {
-            lowVerts[0] = v0;
-            lowVerts[1] = v1;
-          }
-          if(sosGreaterThan(a, lowVerts[0]) && sosGreaterThan(a, lowVerts[1])) {
-            uint8_t j{}, k{};
-            // store edges indices of current triangle
-            std::array<uint8_t, 3> faces{};
-            for(const auto &e : res[1]) {
-              if(e.lowVerts_[0] == lowVerts[0]
-                 || e.lowVerts_[0] == lowVerts[1]) {
-                faces[k++] = j;
-              }
-              j++;
-            }
-            res[2].emplace_back(
-              CellExt{2, triangleId, std::move(lowVerts), std::move(faces)});
-          }
-        };
-
-        if(dimensionality_ == 2) {
-          // store lower triangles
-
-          // use optimised triangulation methods:
-          // getVertexStar instead of getVertexTriangle
-          // getCellVertex instead of getTriangleVertex
-          const auto ncells = inputTriangulation_->getVertexStarNumber(a);
-          res[2].reserve(ncells);
-          for(SimplexId i = 0; i < ncells; ++i) {
-            SimplexId cellId;
-            inputTriangulation_->getVertexStar(a, i, cellId);
-            SimplexId v0{}, v1{}, v2{};
-            inputTriangulation_->getCellVertex(cellId, 0, v0);
-            inputTriangulation_->getCellVertex(cellId, 1, v1);
-            inputTriangulation_->getCellVertex(cellId, 2, v2);
-            processTriangle(cellId, v0, v1, v2);
-          }
-        } else if(dimensionality_ == 3) {
-          // store lower triangles
-          const auto ntri = inputTriangulation_->getVertexTriangleNumber(a);
-          res[2].reserve(ntri);
-          for(SimplexId i = 0; i < ntri; i++) {
-            SimplexId triangleId;
-            inputTriangulation_->getVertexTriangle(a, i, triangleId);
-            SimplexId v0{}, v1{}, v2{};
-            inputTriangulation_->getTriangleVertex(triangleId, 0, v0);
-            inputTriangulation_->getTriangleVertex(triangleId, 1, v1);
-            inputTriangulation_->getTriangleVertex(triangleId, 2, v2);
-            processTriangle(triangleId, v0, v1, v2);
-          }
-
-          // at least three triangles in the lower star for one tetra
-          if(res[2].size() >= 3) {
-            // store lower tetra
-            const auto ncells = inputTriangulation_->getVertexStarNumber(a);
-            res[3].reserve(ncells);
-            for(SimplexId i = 0; i < ncells; ++i) {
-              SimplexId cellId;
-              inputTriangulation_->getVertexStar(a, i, cellId);
-              std::array<SimplexId, 3> lowVerts{};
-              SimplexId v0{}, v1{}, v2{}, v3{};
-              inputTriangulation_->getCellVertex(cellId, 0, v0);
-              inputTriangulation_->getCellVertex(cellId, 1, v1);
-              inputTriangulation_->getCellVertex(cellId, 2, v2);
-              inputTriangulation_->getCellVertex(cellId, 3, v3);
-              if(v0 == a) {
-                lowVerts[0] = v1;
-                lowVerts[1] = v2;
-                lowVerts[2] = v3;
-              } else if(v1 == a) {
-                lowVerts[0] = v0;
-                lowVerts[1] = v2;
-                lowVerts[2] = v3;
-              } else if(v2 == a) {
-                lowVerts[0] = v0;
-                lowVerts[1] = v1;
-                lowVerts[2] = v3;
-              } else if(v3 == a) {
-                lowVerts[0] = v0;
-                lowVerts[1] = v1;
-                lowVerts[2] = v2;
-              }
-              if(sosGreaterThan(a, lowVerts[0])
-                 && sosGreaterThan(a, lowVerts[1])
-                 && sosGreaterThan(a, lowVerts[2])) {
-                uint8_t j{}, k{};
-                // store triangles indices of current tetra
-                std::array<uint8_t, 3> faces{};
-                for(const auto &t : res[2]) {
-                  if((t.lowVerts_[0] == lowVerts[0]
-                      || t.lowVerts_[0] == lowVerts[1]
-                      || t.lowVerts_[0] == lowVerts[2])
-                     && (t.lowVerts_[1] == lowVerts[0]
-                         || t.lowVerts_[1] == lowVerts[1]
-                         || t.lowVerts_[1] == lowVerts[2])) {
-                    faces[k++] = j;
-                  }
-                  j++;
-                }
-
-                res[3].emplace_back(
-                  CellExt{3, cellId, std::move(lowVerts), std::move(faces)});
-              }
-            }
-          }
-        }
-
-        return res;
-      }
+      inline lowerStarType lowerStar(const SimplexId a) const;
 
       /**
        * @brief Return the number of unpaired faces of a given cell in
@@ -568,70 +448,7 @@ function value.
        * @param[in] alpha Cell of lower dimension
        * @param[in] beta Cell of higher dimension
        */
-      inline void pairCells(CellExt &alpha, CellExt &beta) {
-#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
-        char localBId{0}, localAId{0};
-        SimplexId a{}, b{};
-
-        if(beta.dim_ == 1) {
-
-          for(SimplexId i = 0; i < 2; ++i) {
-            inputTriangulation_->getEdgeVertex(beta.id_, i, a);
-            if(a == alpha.id_) {
-              localAId = i;
-              break;
-            }
-          }
-          const auto nedges
-            = inputTriangulation_->getVertexEdgeNumber(alpha.id_);
-          for(SimplexId i = 0; i < nedges; ++i) {
-            inputTriangulation_->getVertexEdge(alpha.id_, i, b);
-            if(b == beta.id_) {
-              localBId = i;
-            }
-          }
-        } else if(beta.dim_ == 2) {
-          for(SimplexId i = 0; i < 3; ++i) {
-            inputTriangulation_->getTriangleEdge(beta.id_, i, a);
-            if(a == alpha.id_) {
-              localAId = i;
-              break;
-            }
-          }
-          const auto ntri
-            = inputTriangulation_->getEdgeTriangleNumber(alpha.id_);
-          for(SimplexId i = 0; i < ntri; ++i) {
-            inputTriangulation_->getEdgeTriangle(alpha.id_, i, b);
-            if(b == beta.id_) {
-              localBId = i;
-            }
-          }
-        } else {
-          for(SimplexId i = 0; i < 4; ++i) {
-            inputTriangulation_->getCellTriangle(beta.id_, i, a);
-            if(a == alpha.id_) {
-              localAId = i;
-              break;
-            }
-          }
-          const auto ntetra
-            = inputTriangulation_->getTriangleStarNumber(alpha.id_);
-          for(SimplexId i = 0; i < ntetra; ++i) {
-            inputTriangulation_->getTriangleStar(alpha.id_, i, b);
-            if(b == beta.id_) {
-              localBId = i;
-            }
-          }
-        }
-        gradient_[alpha.dim_][alpha.dim_][alpha.id_] = localBId;
-        gradient_[alpha.dim_][alpha.dim_ + 1][beta.id_] = localAId;
-#else
-        gradient_[alpha.dim_][alpha.dim_][alpha.id_] = beta.id_;
-        gradient_[alpha.dim_][alpha.dim_ + 1][beta.id_] = alpha.id_;
-#endif // TTK_ENABLE_DCG_OPTIMIZE_MEMORY
-        alpha.paired_ = true;
-        beta.paired_ = true;
-      }
+      inline void pairCells(CellExt &alpha, CellExt &beta);
 
       /**
        * Implements the ProcessLowerStars algorithm from "Theory and
@@ -639,8 +456,7 @@ function value.
        * Grayscale Digital Images", V. Robins, P. J. Wood,
        * A. P. Sheppard
        */
-      template <typename dataType, typename idType>
-      int processLowerStars(const dataType *scalars, const idType *offsets);
+      int processLowerStars();
 
     public:
       /**
@@ -1061,8 +877,7 @@ tetra identifier.
        * Get the vertex id of with the maximum scalar field value on
        * the given cell. Compare offsets if scalar field is constant.
        */
-      template <typename dataType, typename idType>
-      inline SimplexId getCellGreaterVertex(const Cell c) const;
+      SimplexId getCellGreaterVertex(const Cell c) const;
 
       /**
        * Build the geometric embedding of the given STL vector of cells.
@@ -1072,7 +887,7 @@ tetra identifier.
        * outputCriticalPoints_points_
        * inputScalarField_
        */
-      template <typename dataType, typename idType>
+      template <typename dataType>
       int setCriticalPoints(const std::vector<Cell> &criticalPoints,
                             std::vector<size_t> &nCriticalPointsByDim) const;
 
@@ -1080,7 +895,7 @@ tetra identifier.
        * Detect the critical points and build their geometric embedding.
        * The output data pointers are modified accordingly.
        */
-      template <typename dataType, typename idType>
+      template <typename dataType>
       int setCriticalPoints() const;
 
       /**
@@ -1130,6 +945,9 @@ tetra identifier.
       std::vector<SimplexId> *outputCriticalPoints_points_manifoldSize_{};
 
       std::vector<std::tuple<Cell, Cell>> *outputPersistencePairs_{};
+
+      // index of vertices sorted by ascending order
+      std::vector<size_t> vertsOrder_{};
     };
 
   } // namespace dcg
