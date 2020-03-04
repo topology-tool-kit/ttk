@@ -1,22 +1,22 @@
-#include <JacobiSet.h>
+#include "JacobiSet.h"
 
 template <class dataTypeU, class dataTypeV>
 ttk::JacobiSet<dataTypeU, dataTypeV>::JacobiSet() {
 
   vertexNumber_ = 0;
 
-  uField_ = NULL;
-  vField_ = NULL;
+  uField_ = nullptr;
+  vField_ = nullptr;
 
-  tetList_ = NULL;
+  tetList_ = nullptr;
 
-  edgeList_ = NULL;
-  edgeFanLinkEdgeLists_ = NULL;
-  edgeFans_ = NULL;
-  sosOffsetsU_ = NULL;
-  sosOffsetsV_ = NULL;
+  edgeList_ = nullptr;
+  edgeFanLinkEdgeLists_ = nullptr;
+  edgeFans_ = nullptr;
+  sosOffsetsU_ = nullptr;
+  sosOffsetsV_ = nullptr;
 
-  triangulation_ = NULL;
+  triangulation_ = nullptr;
 }
 
 template <class dataTypeU, class dataTypeV>

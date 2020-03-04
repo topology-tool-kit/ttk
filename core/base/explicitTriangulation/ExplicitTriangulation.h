@@ -17,6 +17,8 @@
 #include <TwoSkeleton.h>
 #include <ZeroSkeleton.h>
 
+#include <memory>
+
 namespace ttk {
 
   class ExplicitTriangulation final : public AbstractTriangulation {
@@ -24,7 +26,7 @@ namespace ttk {
   public:
     ExplicitTriangulation();
 
-    ~ExplicitTriangulation();
+    virtual ~ExplicitTriangulation();
 
     int clear();
 
@@ -125,24 +127,20 @@ namespace ttk {
       const int &localVertexId,
       SimplexId &vertexId) const override {
 #ifndef TTK_ENABLE_KAMIKAZE
-      if((cellId < 0) || (cellId >= cellNumber_))
+      if((!cellArray_) || (!cellNumber_))
         return -1;
-      if((localVertexId < 0) || (localVertexId >= cellArray_[0]))
-        return -2;
 #endif
-      vertexId = cellArray_[(cellArray_[0] + 1) * cellId + localVertexId + 1];
+      vertexId = cellArray_->getCellVertex(cellId, localVertexId);
       return 0;
     }
 
     inline SimplexId TTK_TRIANGULATION_INTERNAL(getCellVertexNumber)(
       const SimplexId &cellId) const override {
 #ifndef TTK_ENABLE_KAMIKAZE
-      if((cellId < 0) || (cellId >= cellNumber_))
-        return -1;
       if((!cellArray_) || (!cellNumber_))
-        return -2;
+        return -1;
 #endif
-      return cellArray_[0];
+      return cellArray_->getCellVertexNumber(cellId);
     }
 
     int TTK_TRIANGULATION_INTERNAL(getDimensionality)() const override {
@@ -150,7 +148,7 @@ namespace ttk {
       if(!((cellArray_) && (cellNumber_)))
         return -1;
 #endif
-      return cellArray_[0] - 1;
+      return cellArray_->getDimension();
     }
 
     inline const std::vector<std::pair<SimplexId, SimplexId>> *
@@ -724,9 +722,8 @@ namespace ttk {
         ThreeSkeleton threeSkeleton;
         threeSkeleton.setWrapper(this);
 
-        threeSkeleton.buildCellEdges(vertexNumber_, cellNumber_, cellArray_,
-                                     cellEdgeList_, &edgeList_,
-                                     &vertexEdgeList_);
+        threeSkeleton.buildCellEdges(vertexNumber_, *cellArray_, cellEdgeList_,
+                                     &edgeList_, &vertexEdgeList_);
       }
 
       return 0;
@@ -740,8 +737,7 @@ namespace ttk {
 
         // choice here (for the more likely)
         threeSkeleton.buildCellNeighborsFromVertices(
-          vertexNumber_, cellNumber_, cellArray_, cellNeighborList_,
-          &vertexStarList_);
+          vertexNumber_, *cellArray_, cellNeighborList_, &vertexStarList_);
       }
 
       return 0;
@@ -757,28 +753,27 @@ namespace ttk {
         if(triangleList_.size()) {
           // we already computed this guy, let's just get the cell triangles
           if(triangleStarList_.size()) {
-            return twoSkeleton.buildTriangleList(vertexNumber_, cellNumber_,
-                                                 cellArray_, NULL, NULL,
+            return twoSkeleton.buildTriangleList(
+              vertexNumber_, *cellArray_, nullptr, nullptr, &cellTriangleList_);
+          } else {
+            // let's compute the triangle star while we're at it...
+            // it's just a tiny overhead.
+            return twoSkeleton.buildTriangleList(vertexNumber_, *cellArray_,
+                                                 nullptr, &triangleStarList_,
+                                                 &cellTriangleList_);
+          }
+        } else {
+          // we have not computed this guy, let's do it while we're at it
+          if(triangleStarList_.size()) {
+            return twoSkeleton.buildTriangleList(vertexNumber_, *cellArray_,
+                                                 &triangleList_, nullptr,
                                                  &cellTriangleList_);
           } else {
             // let's compute the triangle star while we're at it...
             // it's just a tiny overhead.
             return twoSkeleton.buildTriangleList(
-              vertexNumber_, cellNumber_, cellArray_, NULL, &triangleStarList_,
+              vertexNumber_, *cellArray_, &triangleList_, &triangleStarList_,
               &cellTriangleList_);
-          }
-        } else {
-          // we have not computed this guy, let's do it while we're at it
-          if(triangleStarList_.size()) {
-            return twoSkeleton.buildTriangleList(vertexNumber_, cellNumber_,
-                                                 cellArray_, &triangleList_,
-                                                 NULL, &cellTriangleList_);
-          } else {
-            // let's compute the triangle star while we're at it...
-            // it's just a tiny overhead.
-            return twoSkeleton.buildTriangleList(
-              vertexNumber_, cellNumber_, cellArray_, &triangleList_,
-              &triangleStarList_, &cellTriangleList_);
           }
         }
       }
@@ -791,8 +786,7 @@ namespace ttk {
       if(!edgeList_.size()) {
         OneSkeleton oneSkeleton;
         oneSkeleton.setWrapper(this);
-        return oneSkeleton.buildEdgeList(
-          vertexNumber_, cellNumber_, cellArray_, edgeList_);
+        return oneSkeleton.buildEdgeList(vertexNumber_, *cellArray_, edgeList_);
       }
 
       return 0;
@@ -809,7 +803,7 @@ namespace ttk {
           OneSkeleton oneSkeleton;
           oneSkeleton.setWrapper(this);
           return oneSkeleton.buildEdgeLinks(
-            edgeList_, edgeStarList_, cellArray_, edgeLinkList_);
+            edgeList_, edgeStarList_, *cellArray_, edgeLinkList_);
         } else if(getDimensionality() == 3) {
           preconditionEdgesInternal();
           preconditionEdgeStarsInternal();
@@ -834,8 +828,8 @@ namespace ttk {
       if(!edgeStarList_.size()) {
         OneSkeleton oneSkeleton;
         oneSkeleton.setWrapper(this);
-        return oneSkeleton.buildEdgeStars(vertexNumber_, cellNumber_,
-                                          cellArray_, edgeStarList_, &edgeList_,
+        return oneSkeleton.buildEdgeStars(vertexNumber_, *cellArray_,
+                                          edgeStarList_, &edgeList_,
                                           &vertexStarList_);
       }
       return 0;
@@ -848,14 +842,14 @@ namespace ttk {
         // WARNING
         // here vertexStarList and triangleStarList will be computed (for
         // free) although they are not requireed to get the edgeTriangleList.
-        // if memory usage is an issue, please change these pointers by NULL.
+        // if memory usage is an issue, please change these pointers by nullptr.
 
         TwoSkeleton twoSkeleton;
         twoSkeleton.setWrapper(this);
         return twoSkeleton.buildEdgeTriangles(
-          vertexNumber_, cellNumber_, cellArray_, edgeTriangleList_,
-          &vertexStarList_, &edgeList_, &edgeStarList_, &triangleList_,
-          &triangleStarList_, &cellTriangleList_);
+          vertexNumber_, *cellArray_, edgeTriangleList_, &vertexStarList_,
+          &edgeList_, &edgeStarList_, &triangleList_, &triangleStarList_,
+          &cellTriangleList_);
       }
 
       return 0;
@@ -868,7 +862,7 @@ namespace ttk {
         TwoSkeleton twoSkeleton;
         twoSkeleton.setWrapper(this);
 
-        twoSkeleton.buildTriangleList(vertexNumber_, cellNumber_, cellArray_,
+        twoSkeleton.buildTriangleList(vertexNumber_, *cellArray_,
                                       &triangleList_, &triangleStarList_,
                                       &cellTriangleList_);
       }
@@ -883,15 +877,14 @@ namespace ttk {
         // WARNING
         // here triangleStarList and cellTriangleList will be computed (for
         // free) although they are not requireed to get the edgeTriangleList.
-        // if memory usage is an issue, please change these pointers by NULL.
+        // if memory usage is an issue, please change these pointers by nullptr.
 
         TwoSkeleton twoSkeleton;
         twoSkeleton.setWrapper(this);
 
         return twoSkeleton.buildTriangleEdgeList(
-          vertexNumber_, cellNumber_, cellArray_, triangleEdgeList_,
-          &vertexEdgeList_, &edgeList_, &triangleList_, &triangleStarList_,
-          &cellTriangleList_);
+          vertexNumber_, *cellArray_, triangleEdgeList_, &vertexEdgeList_,
+          &edgeList_, &triangleList_, &triangleStarList_, &cellTriangleList_);
       }
 
       return 0;
@@ -906,7 +899,7 @@ namespace ttk {
         TwoSkeleton twoSkeleton;
         twoSkeleton.setWrapper(this);
         return twoSkeleton.buildTriangleLinks(
-          triangleList_, triangleStarList_, cellArray_, triangleLinkList_);
+          triangleList_, triangleStarList_, *cellArray_, triangleLinkList_);
       }
 
       return 0;
@@ -918,9 +911,8 @@ namespace ttk {
 
         TwoSkeleton twoSkeleton;
         twoSkeleton.setWrapper(this);
-        return twoSkeleton.buildTriangleList(vertexNumber_, cellNumber_,
-                                             cellArray_, &triangleList_,
-                                             &triangleStarList_);
+        return twoSkeleton.buildTriangleList(
+          vertexNumber_, *cellArray_, &triangleList_, &triangleStarList_);
       }
 
       return 0;
@@ -934,8 +926,7 @@ namespace ttk {
         if(!edgeList_.size()) {
           OneSkeleton oneSkeleton;
           oneSkeleton.setWrapper(this);
-          oneSkeleton.buildEdgeList(
-            vertexNumber_, cellNumber_, cellArray_, edgeList_);
+          oneSkeleton.buildEdgeList(vertexNumber_, *cellArray_, edgeList_);
         }
 
         zeroSkeleton.setWrapper(this);
@@ -980,8 +971,7 @@ namespace ttk {
         ZeroSkeleton zeroSkeleton;
         zeroSkeleton.setWrapper(this);
         return zeroSkeleton.buildVertexNeighbors(
-          vertexNumber_, cellNumber_, cellArray_, vertexNeighborList_,
-          &edgeList_);
+          vertexNumber_, *cellArray_, vertexNeighborList_, &edgeList_);
       }
       return 0;
     }
@@ -993,7 +983,7 @@ namespace ttk {
         zeroSkeleton.setWrapper(this);
 
         return zeroSkeleton.buildVertexStars(
-          vertexNumber_, cellNumber_, cellArray_, vertexStarList_);
+          vertexNumber_, *cellArray_, vertexStarList_);
       }
       return 0;
     }
@@ -1021,7 +1011,9 @@ namespace ttk {
         clear();
 
       cellNumber_ = cellNumber;
-      cellArray_ = cellArray;
+
+      // TODO: ASSUME Regular Mesh Here to compute dimension!
+      cellArray_ = std::make_shared<CellArray>(cellArray, cellNumber, cellArray[0] - 1);
 
       return 0;
     }
@@ -1043,11 +1035,8 @@ namespace ttk {
     bool doublePrecision_;
     SimplexId cellNumber_, vertexNumber_;
     const void *pointSet_;
-    const LongSimplexId *cellArray_;
+    std::shared_ptr<CellArray> cellArray_;
   };
 } // namespace ttk
-
-// if the package is not a template, comment the following line
-// #include                  <ExplicitTriangulation.cpp>
 
 #endif // _EXPLICITTRIANGULATION_H

@@ -5,7 +5,6 @@ using namespace std;
 using namespace ttk;
 
 ZeroSkeleton::ZeroSkeleton() {
-
   setDebugMsgPrefix("ZeroSkeleton");
 }
 
@@ -104,71 +103,70 @@ int ZeroSkeleton::buildVertexEdges(
 }
 
 int ZeroSkeleton::buildVertexLink(const SimplexId &vertexId,
-                                  const SimplexId &cellNumber,
-                                  const LongSimplexId *cellArray,
+                                  const CellArray &cellArray,
                                   vector<LongSimplexId> &vertexLink) const {
 
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(!cellArray)
-    return -1;
-#endif
-
-  SimplexId verticesPerCell = cellArray[0];
-
+  const LongSimplexId cellNumber = cellArray.getNbCells();
+  LongSimplexId totalLinkSize = 0;
   vector<SimplexId> vertexStar;
-  for(SimplexId i = 0; i < cellNumber; i++) {
-    for(SimplexId j = 1; j < verticesPerCell; j++) {
-      if(cellArray[(verticesPerCell + 1) * i + j] == vertexId) {
-        vertexStar.push_back(i);
+  for(SimplexId cid = 0; cid < cellNumber; cid++) {
+    const SimplexId nbVertCell = cellArray.getCellVertexNumber(cid);
+    for(SimplexId j = 1; j < nbVertCell; j++) {
+      if(cellArray.getCellVertex(cid, j) == vertexId) {
+        vertexStar.emplace_back(cid);
+        totalLinkSize += cellArray.getCellVertexNumber(cid);
         break;
       }
     }
   }
 
-  vertexLink.resize(vertexStar.size() * verticesPerCell);
-  vector<SimplexId> faceIds(verticesPerCell);
-  faceIds[0] = verticesPerCell - 1;
+  vertexLink.resize(totalLinkSize);
+  vector<SimplexId> faceIds;
+  const SimplexId nbCellInStar = vertexStar.size();
 
   // construct the link
-  for(SimplexId i = 0; i < (SimplexId)vertexStar.size(); i++) {
-    SimplexId cellId = vertexStar[i];
+  for(SimplexId i = 0; i < nbCellInStar; i++) {
+    const SimplexId cellId = vertexStar[i];
+    const SimplexId nbVertCell = cellArray.getCellVertexNumber(cellId);
+    faceIds.resize(nbVertCell);
+    faceIds[0] = nbVertCell; // first entry is number of vertices
 
     bool hasPivotVertex = false;
 
     // iterate on the cell's faces
     for(int k = 0; k < 2; k++) {
-      faceIds[1] = cellArray[(verticesPerCell + 1) * cellId + 1 + k];
+      faceIds[1] = cellArray.getCellVertex(cellId, k);
 
       if(faceIds[1] != vertexId) {
 
-        if(verticesPerCell > 2) {
+        if(nbVertCell > 2) {
 
-          for(SimplexId l = k + 1; l <= verticesPerCell - 1; l++) {
-            faceIds[2] = cellArray[(verticesPerCell + 1) * cellId + 1 + l];
+          for(SimplexId l = k + 1; l <= nbVertCell - 1; l++) {
+            faceIds[2] = cellArray.getCellVertex(cellId, l);
 
             if(faceIds[2] != vertexId) {
 
-              if(verticesPerCell == 4) {
+              if(nbVertCell == 4) {
                 // tet case, faceIds has 4 entries to fill
-                for(SimplexId m = l + 1; m < verticesPerCell; m++) {
-                  faceIds[3] = cellArray[(verticesPerCell + 1) * cellId + m];
+                for(SimplexId m = l + 1; m < nbVertCell; m++) {
+                  faceIds[3] = cellArray.getCellVertex(cellId, m);
 
                   if(faceIds[3] != vertexId) {
 
                     // all the vertices of the face are different from our
                     // vertex. let's add that face to the link
                     for(SimplexId n = 0; n < (SimplexId)faceIds.size(); n++) {
-                      vertexLink[i * (verticesPerCell) + n] = faceIds[n];
+                      vertexLink[i * (nbVertCell) + n] = faceIds[n];
                     }
                     hasPivotVertex = true;
                     break;
                   }
                 }
-              } else if(verticesPerCell == 3) {
+              } else if(nbVertCell == 3) {
                 // triangle case
                 // we're holding to an edge that does not contain our vertex
                 for(SimplexId n = 0; n < (SimplexId)faceIds.size(); n++) {
-                  vertexLink[i * (verticesPerCell) + n] = faceIds[n];
+                  vertexLink[i * (nbVertCell) + n] = faceIds[n];
                 }
                 hasPivotVertex = true;
                 break;
@@ -177,11 +175,11 @@ int ZeroSkeleton::buildVertexLink(const SimplexId &vertexId,
                 break;
             }
           }
-        } else if(verticesPerCell == 2) {
+        } else if(nbVertCell == 2) {
           // edge-mesh case
           // we're holding a neighbor different from our vertex
           for(SimplexId n = 0; n < (SimplexId)faceIds.size(); n++) {
-            vertexLink[i * (verticesPerCell) + n] = faceIds[n];
+            vertexLink[i * (nbVertCell) + n] = faceIds[n];
           }
           break;
         }
@@ -196,15 +194,9 @@ int ZeroSkeleton::buildVertexLink(const SimplexId &vertexId,
 
 int ZeroSkeleton::buildVertexLinks(
   const SimplexId &vertexNumber,
-  const SimplexId &cellNumber,
-  const LongSimplexId *cellArray,
+  const CellArray &cellArray,
   vector<vector<LongSimplexId>> &vertexLinks,
   vector<vector<SimplexId>> *vertexStars) const {
-
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(!cellArray)
-    return -1;
-#endif
 
   auto localVertexStars = vertexStars;
   vector<vector<SimplexId>> defaultVertexStars{};
@@ -216,8 +208,7 @@ int ZeroSkeleton::buildVertexLinks(
     ZeroSkeleton zeroSkeleton;
     zeroSkeleton.setDebugLevel(debugLevel_);
     zeroSkeleton.setThreadNumber(threadNumber_);
-    zeroSkeleton.buildVertexStars(
-      vertexNumber, cellNumber, cellArray, *localVertexStars);
+    zeroSkeleton.buildVertexStars(vertexNumber, cellArray, *localVertexStars);
   }
 
   Timer t;
@@ -225,24 +216,21 @@ int ZeroSkeleton::buildVertexLinks(
   printMsg("Building vertex links", 0, 0, threadNumber_,
            ttk::debug::LineMode::REPLACE);
 
-  // WARNING
-  // assuming triangulations
-  int verticesPerCell = cellArray[0];
-
-  if((SimplexId)vertexLinks.size() != vertexNumber) {
+  const SimplexId nbVertLinks = vertexLinks.size();
+  if(nbVertLinks != vertexNumber) {
     vertexLinks.resize(vertexNumber);
-    for(SimplexId i = 0; i < (SimplexId)vertexLinks.size(); i++) {
-      vertexLinks[i].resize((*localVertexStars)[i].size() * verticesPerCell);
+    for(SimplexId i = 0; i < nbVertLinks; i++) {
+      SimplexId nbVertsInLinkI = 0;
+      for(auto cid : (*localVertexStars)[i]) {
+        nbVertsInLinkI += cellArray.getCellVertexNumber(cid);
+      }
+      vertexLinks[i].resize(nbVertsInLinkI);
     }
   }
 
   vector<vector<SimplexId>> faceIds(threadNumber_);
   for(ThreadId i = 0; i < threadNumber_; i++) {
-    faceIds[i].resize(verticesPerCell);
-    // the first entry should be the number of vertices
-    // tet-mesh (4) => link made of triangles (3)
-    // triangle-mesh (3) => link made of edges (2)
-    faceIds[i][0] = verticesPerCell - 1;
+    faceIds[i].reserve(cellArray.getDimension() + 1);
   }
   // NOTE:
   // 1-thread:
@@ -261,9 +249,17 @@ int ZeroSkeleton::buildVertexLinks(
     threadId = omp_get_thread_num();
 #endif
 
-    for(SimplexId j = 0; j < (SimplexId)(*localVertexStars)[i].size(); j++) {
+    const SimplexId nbCellInStarI = (*localVertexStars)[i].size();
+    for(SimplexId j = 0; j < nbCellInStarI; j++) {
 
-      SimplexId cellId = (*localVertexStars)[i][j];
+      const SimplexId cellId = (*localVertexStars)[i][j];
+      const SimplexId nbVertCell = cellArray.getCellVertexNumber(cellId);
+
+      faceIds[threadId].resize(nbVertCell); // no realloc here
+      // the first entry should be the number of vertices
+      // tetrahedra (4) => link made of triangles (3)
+      // triangle (3) => link made of edges (2)
+      faceIds[threadId][0] = nbVertCell - 1;
 
       // tet case (4)
       // 0 - 1 - 2
@@ -282,24 +278,21 @@ int ZeroSkeleton::buildVertexLinks(
       // iterate on the cell's faces
       for(int k = 0; k < 2; k++) {
 
-        faceIds[threadId][1]
-          = cellArray[(verticesPerCell + 1) * cellId + 1 + k];
+        faceIds[threadId][1] = cellArray.getCellVertex(cellId, k);
 
         if(faceIds[threadId][1] != i) {
 
-          if(verticesPerCell > 2) {
+          if(nbVertCell > 2) {
 
-            for(SimplexId l = k + 1; l <= verticesPerCell - 1; l++) {
-              faceIds[threadId][2]
-                = cellArray[(verticesPerCell + 1) * cellId + 1 + l];
+            for(SimplexId l = k + 1; l <= nbVertCell - 1; l++) {
+              faceIds[threadId][2] = cellArray.getCellVertex(cellId, l);
 
               if(faceIds[threadId][2] != i) {
 
-                if(verticesPerCell == 4) {
+                if(nbVertCell == 4) {
                   // tet case, faceIds[threadId] has 4 entries to fill
-                  for(SimplexId m = l + 1; m < verticesPerCell; m++) {
-                    faceIds[threadId][3]
-                      = cellArray[(verticesPerCell + 1) * cellId + 1 + m];
+                  for(SimplexId m = l + 1; m < nbVertCell; m++) {
+                    faceIds[threadId][3] = cellArray.getCellVertex(cellId, m);
 
                     // now test if this face contains our vertex or not
                     // there's should be only one face
@@ -307,22 +300,20 @@ int ZeroSkeleton::buildVertexLinks(
                       // all the vertices of the face are different from our
                       // pivot vertex.
                       // let's add that face to the link
-                      for(SimplexId n = 0;
-                          n < (SimplexId)faceIds[threadId].size(); n++) {
-                        vertexLinks[i][j * (verticesPerCell) + n]
+                      for(SimplexId n = 0; n < 4; n++) {
+                        // TODO: ASSUME Regular Mesh Here !
+                        vertexLinks[i][j * nbVertCell + n]
                           = faceIds[threadId][n];
                       }
                       hasPivotVertex = true;
                       break;
                     }
                   }
-                } else if(verticesPerCell == 3) {
+                } else if(nbVertCell == 3) {
                   // triangle case
                   // we're holding to an edge that does not contain our vertex
-                  for(SimplexId n = 0; n < (SimplexId)faceIds[threadId].size();
-                      n++) {
-                    vertexLinks[i][j * (verticesPerCell) + n]
-                      = faceIds[threadId][n];
+                  for(SimplexId n = 0; n < 3; n++) {
+                    vertexLinks[i][j * nbVertCell + n] = faceIds[threadId][n];
                   }
                   hasPivotVertex = true;
                   break;
@@ -331,11 +322,11 @@ int ZeroSkeleton::buildVertexLinks(
                   break;
               }
             }
-          } else if(verticesPerCell == 2) {
+          } else if(nbVertCell == 2) {
             // edge-mesh case
             // we holding a neighbor different from us
-            for(SimplexId n = 0; n < (SimplexId)faceIds[threadId].size(); n++) {
-              vertexLinks[i][j * (verticesPerCell) + n] = faceIds[threadId][n];
+            for(SimplexId n = 0; n < 2; n++) {
+              vertexLinks[i][j * nbVertCell + n] = faceIds[threadId][n];
             }
             hasPivotVertex = true;
             break;
@@ -350,6 +341,7 @@ int ZeroSkeleton::buildVertexLinks(
   if(debugLevel_ >= (int)(debug::Priority::DETAIL)) {
     for(SimplexId i = 0; i < (SimplexId)vertexLinks.size(); i++) {
       stringstream msg;
+      // TODO: ASSUME Regular Mesh Here!
       msg << "Vertex #" << i << " ("
           << vertexLinks[i].size() / (vertexLinks[i][0] + 1)
           << " items, length: " << vertexLinks[i].size() << "): ";
@@ -358,8 +350,10 @@ int ZeroSkeleton::buildVertexLinks(
           j < (SimplexId)vertexLinks[i].size() / (vertexLinks[i][0] + 1); j++) {
         stringstream msgLine;
         msgLine << "  - " << j << ":";
-        for(SimplexId k = 0; k < verticesPerCell; k++) {
-          msgLine << " " << vertexLinks[i][j * (verticesPerCell) + k];
+        const SimplexId nbVertCell = cellArray.getCellVertexNumber(j);
+        for(SimplexId k = 0; k < nbVertCell; k++) {
+          // TODO: ASSUME Regular Mesh Here!
+          msgLine << " " << vertexLinks[i][j * nbVertCell + k];
         }
         printMsg(msgLine.str(), debug::Priority::DETAIL);
       }
@@ -479,15 +473,9 @@ int ZeroSkeleton::buildVertexLinks(
 
 int ZeroSkeleton::buildVertexNeighbors(
   const SimplexId &vertexNumber,
-  const SimplexId &cellNumber,
-  const LongSimplexId *cellArray,
+  const CellArray &cellArray,
   vector<vector<SimplexId>> &oneSkeleton,
   vector<pair<SimplexId, SimplexId>> *edgeList) const {
-
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(!cellArray)
-    return -1;
-#endif
 
   oneSkeleton.resize(vertexNumber);
 
@@ -501,7 +489,7 @@ int ZeroSkeleton::buildVertexNeighbors(
     OneSkeleton osk;
     osk.setDebugLevel(debugLevel_);
     osk.setThreadNumber(threadNumber_);
-    osk.buildEdgeList(vertexNumber, cellNumber, cellArray, *localEdgeList);
+    osk.buildEdgeList(vertexNumber, cellArray, *localEdgeList);
   }
 
   Timer t;
@@ -509,10 +497,11 @@ int ZeroSkeleton::buildVertexNeighbors(
   printMsg("Building vertex neighbors", 0, 0, threadNumber_,
            ttk::debug::LineMode::REPLACE);
 
-  for(SimplexId i = 0; i < (SimplexId)localEdgeList->size(); i++) {
-    oneSkeleton[(*localEdgeList)[i].first].push_back(
+  const SimplexId nbEdge = localEdgeList->size();
+  for(SimplexId i = 0; i < nbEdge; i++) {
+    oneSkeleton[(*localEdgeList)[i].first].emplace_back(
       (*localEdgeList)[i].second);
-    oneSkeleton[(*localEdgeList)[i].second].push_back(
+    oneSkeleton[(*localEdgeList)[i].second].emplace_back(
       (*localEdgeList)[i].first);
   }
 
@@ -529,14 +518,8 @@ int ZeroSkeleton::buildVertexNeighbors(
 
 int ZeroSkeleton::buildVertexStars(
   const SimplexId &vertexNumber,
-  const SimplexId &cellNumber,
-  const LongSimplexId *cellArray,
+  const CellArray &cellArray,
   vector<vector<SimplexId>> &vertexStars) const {
-
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(!cellArray)
-    return -1;
-#endif
 
   // NOTE: parallel implementation not efficient (see bench at the bottom)
   // let's force the usage of only 1 thread.
@@ -566,31 +549,28 @@ int ZeroSkeleton::buildVertexStars(
     }
   }
 
-  SimplexId vertexNumberPerCell = cellArray[0];
-
-  int timeBuckets = 10;
-  if(cellNumber < timeBuckets)
-    timeBuckets = cellNumber;
+  const SimplexId cellNumber = cellArray.getNbCells();
+  const SimplexId timeBuckets = std::min(10, cellNumber);
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
-  for(SimplexId i = 0; i < cellNumber; i++) {
+  for(SimplexId cid = 0; cid < cellNumber; cid++) {
 
     ThreadId threadId = 0;
 #ifdef TTK_ENABLE_OPENMP
     threadId = omp_get_thread_num();
 #endif
 
-    for(SimplexId j = 0; j < vertexNumberPerCell; j++) {
-      (*threadedZeroSkeleton[threadId])[cellArray[(vertexNumberPerCell + 1) * i
-                                                  + 1 + j]]
-        .push_back(i);
+    const SimplexId nbVertCell = cellArray.getCellVertexNumber(cid);
+    for(SimplexId j = 0; j < nbVertCell; j++) {
+      (*threadedZeroSkeleton[threadId])[cellArray.getCellVertex(cid, j)]
+        .emplace_back(cid);
     }
 
     if(debugLevel_ >= (int)(debug::Priority::INFO)) {
-      if(!(i % ((cellNumber) / timeBuckets))) {
-        printMsg("Building vertex stars", (i / (float)cellNumber),
+      if(!(cid % ((cellNumber) / timeBuckets))) {
+        printMsg("Building vertex stars", (cid / (float)cellNumber),
                  t.getElapsedTime(), threadNumber_, debug::LineMode::REPLACE);
       }
     }
@@ -601,12 +581,12 @@ int ZeroSkeleton::buildVertexStars(
     for(ThreadId i = 0; i < threadNumber_; i++) {
 
       // looping on vertices
-      for(SimplexId j = 0; j < (SimplexId)threadedZeroSkeleton[i]->size();
-          j++) {
+      const LongSimplexId nbVertsI = threadedZeroSkeleton[i]->size();
+      for(SimplexId j = 0; j < nbVertsI; j++) {
 
         // looping on the vertex star
-        for(SimplexId k = 0;
-            k < (SimplexId)(*threadedZeroSkeleton[i])[j].size(); k++) {
+        const SimplexId nbVertsStarJ = (*threadedZeroSkeleton[i])[j].size();
+        for(SimplexId k = 0; k < nbVertsStarJ; k++) {
 
           bool hasFound = false;
           if(threadNumber_) {
@@ -618,7 +598,7 @@ int ZeroSkeleton::buildVertexStars(
             }
           }
           if(!hasFound)
-            vertexStars[j].push_back((*threadedZeroSkeleton[i])[j][k]);
+            vertexStars[j].emplace_back((*threadedZeroSkeleton[i])[j][k]);
         }
       }
     }
