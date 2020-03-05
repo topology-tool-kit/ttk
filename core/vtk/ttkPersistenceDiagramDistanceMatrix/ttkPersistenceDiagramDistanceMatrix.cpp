@@ -3,9 +3,9 @@
 using namespace std;
 using namespace ttk;
 
-vtkStandardNewMacro(ttkPersistenceDiagramDistanceMatrix)
+vtkStandardNewMacro(ttkPersistenceDiagramDistanceMatrix);
 
-  ttkPersistenceDiagramDistanceMatrix::ttkPersistenceDiagramDistanceMatrix() {
+ttkPersistenceDiagramDistanceMatrix::ttkPersistenceDiagramDistanceMatrix() {
   SetNumberOfInputPorts(1);
   SetNumberOfOutputPorts(4);
 }
@@ -188,24 +188,20 @@ int ttkPersistenceDiagramDistanceMatrix::doIt(
 
 int ttkPersistenceDiagramDistanceMatrix::FillInputPortInformation(
   int port, vtkInformation *info) {
-  if(!this->Superclass::FillInputPortInformation(port, info)) {
-    return 0;
+  if(port == 0) {
+    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkMultiBlockDataSet");
+    return 1;
   }
-  info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkMultiBlockDataSet");
-  return 1;
+  return 0;
 }
 
 int ttkPersistenceDiagramDistanceMatrix::FillOutputPortInformation(
   int port, vtkInformation *info) {
-  if(!this->Superclass::FillOutputPortInformation(port, info)) {
-    return 0;
-  }
-  if(port == 0 || port == 1 || port == 2)
-    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
-  if(port == 3) {
+  if(port == 0) {
     info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkTable");
+    return 1;
   }
-  return 1;
+  return 0;
 }
 
 // to adapt if your wrapper does not inherit from vtkDataSetAlgorithm
@@ -234,18 +230,11 @@ int ttkPersistenceDiagramDistanceMatrix::RequestData(
     }
   }
 
-  // Set outputs
-  auto output_clusters = vtkUnstructuredGrid::SafeDownCast(
+  // Set output
+  auto output_matrix = vtkTable::SafeDownCast(
     outputVector->GetInformationObject(0)->Get(vtkDataObject::DATA_OBJECT()));
-  auto output_centroids = vtkUnstructuredGrid::SafeDownCast(
-    outputVector->GetInformationObject(1)->Get(vtkDataObject::DATA_OBJECT()));
-  auto output_matchings = vtkUnstructuredGrid::SafeDownCast(
-    outputVector->GetInformationObject(2)->Get(vtkDataObject::DATA_OBJECT()));
-  auto output_diagrams_matrix = vtkTable::SafeDownCast(
-    outputVector->GetInformationObject(3)->Get(vtkDataObject::DATA_OBJECT()));
 
-  doIt(input, output_clusters, output_centroids, output_matchings,
-       output_diagrams_matrix, numInputs);
+  doIt(input, nullptr, nullptr, nullptr, output_matrix, numInputs);
 
   {
     stringstream msg;
