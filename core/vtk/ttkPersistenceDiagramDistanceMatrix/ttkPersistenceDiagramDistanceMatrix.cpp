@@ -7,7 +7,7 @@ vtkStandardNewMacro(ttkPersistenceDiagramDistanceMatrix);
 
 ttkPersistenceDiagramDistanceMatrix::ttkPersistenceDiagramDistanceMatrix() {
   SetNumberOfInputPorts(1);
-  SetNumberOfOutputPorts(4);
+  SetNumberOfOutputPorts(1);
 }
 
 // transmit abort signals -- to copy paste in other wrappers
@@ -207,8 +207,7 @@ int ttkPersistenceDiagramDistanceMatrix::RequestData(
   }
 
   // Set output
-  auto output_matrix = vtkTable::SafeDownCast(
-    outputVector->GetInformationObject(0)->Get(vtkDataObject::DATA_OBJECT()));
+  auto output_matrix = vtkTable::GetData(outputVector);
 
   doIt(input, output_matrix, numInputs);
 
