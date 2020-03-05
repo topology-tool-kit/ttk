@@ -15,8 +15,7 @@
 ///
 /// \sa PersistenceDiagramDistanceMatrix
 
-#ifndef _TTK_PERSISTENCEDIAGRAMSCLUSTERING_H
-#define _TTK_PERSISTENCEDIAGRAMSCLUSTERING_H
+#pragma once
 
 #ifndef diagramTuple
 #define diagramTuple                                                       \
@@ -262,26 +261,12 @@ public:
   }
   vtkGetMacro(Method, double);
 
-  void SetOutputDistanceMatrix(const bool arg) {
-    OutputDistanceMatrix = arg;
-    needUpdate_ = true;
-    Modified();
-  }
-  vtkGetMacro(OutputDistanceMatrix, bool);
-
   void SetUseFullDiagrams(const bool arg) {
     UseFullDiagrams = arg;
     needUpdate_ = true;
     Modified();
   }
   vtkGetMacro(UseFullDiagrams, bool);
-
-  void SetPerClusterDistanceMatrix(const bool arg) {
-    PerClusterDistanceMatrix = arg;
-    needUpdate_ = true;
-    Modified();
-  }
-  vtkGetMacro(PerClusterDistanceMatrix, bool);
 
 protected:
   ttkPersistenceDiagramDistanceMatrix();
@@ -366,5 +351,3 @@ private:
 
   int updateProgress(const float &progress) override;
 };
-
-#endif // _TTK_PERSISTENCEDIAGRAMSCLUSTERING_H
