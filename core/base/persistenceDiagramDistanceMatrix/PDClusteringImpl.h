@@ -565,66 +565,6 @@ std::vector<int> PDClustering<dataType>::execute(
       centroids_sizes_[c][2] = centroids_max_[c].size();
   }
 
-  for(int c = 0; c < k_; ++c) {
-    if(do_min_) {
-      for(int i = 0; i < centroids_min_[c].size(); ++i) {
-        Good<dataType> &g = centroids_min_[c].get(i);
-        std::tuple<float, float, float> critCoords = g.GetCriticalCoordinates();
-        float x = std::get<0>(critCoords);
-        float y = std::get<1>(critCoords);
-        float z = std::get<2>(critCoords);
-        diagramTuple t = std::make_tuple(
-          0, ttk::CriticalType::Local_minimum, 0, ttk::CriticalType::Saddle1,
-          g.getPersistence(), 0, g.x_, x, y, z, g.y_, x, y, z);
-        final_centroids[c].push_back(t);
-        if(g.getPersistence() > 1000) {
-          std::cout << "huho grosse persistence min" << std::endl;
-        }
-      }
-    }
-
-    if(do_sad_) {
-      for(int i = 0; i < centroids_saddle_[c].size(); ++i) {
-        Good<dataType> &g = centroids_saddle_[c].get(i);
-        std::tuple<float, float, float> critCoords = g.GetCriticalCoordinates();
-        float x = std::get<0>(critCoords);
-        float y = std::get<1>(critCoords);
-        float z = std::get<2>(critCoords);
-        diagramTuple t = std::make_tuple(
-          0, ttk::CriticalType::Saddle1, 0, ttk::CriticalType::Saddle2,
-          g.getPersistence(), 1, g.x_, x, y, z, g.y_, x, y, z);
-        final_centroids[c].push_back(t);
-        if(g.getPersistence() > 1000) {
-          std::cout << "huho grosse persistence sad" << std::endl;
-        }
-      }
-    }
-
-    if(do_max_) {
-      for(int i = 0; i < centroids_max_[c].size(); ++i) {
-        Good<dataType> &g = centroids_max_[c].get(i);
-        std::tuple<float, float, float> critCoords = g.GetCriticalCoordinates();
-        float y = std::get<1>(critCoords);
-        float x = std::get<0>(critCoords);
-        float z = std::get<2>(critCoords);
-        ttk::CriticalType saddle_type;
-
-        if(do_sad_)
-          saddle_type = ttk::CriticalType::Saddle2;
-        else
-          saddle_type = ttk::CriticalType::Saddle1;
-
-        diagramTuple t = std::make_tuple(
-          0, saddle_type, 0, ttk::CriticalType::Local_maximum,
-          g.getPersistence(), 2, g.x_, x, y, z, g.y_, x, y, z);
-        final_centroids[c].push_back(t);
-        if(g.getPersistence() > 1000) {
-          std::cout << "huho grosse persistence max" << std::endl;
-        }
-      }
-    }
-  }
-
   computeDiagramsDistanceMatrix();
 
   return inv_clustering_;
