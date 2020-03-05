@@ -625,20 +625,8 @@ std::vector<int> PDClustering<dataType>::execute(
     }
   }
 
-  if(outputDistanceMatrix_) {
-    computeDistanceToCentroid();
-    computeDiagramsDistanceMatrix();
-    getCentroidDistanceMatrix();
-  }
+  computeDiagramsDistanceMatrix();
 
-  if(distanceWritingOptions_ == 1) {
-    printDistancesToFile();
-  } else if(distanceWritingOptions_ == 2) {
-    printRealDistancesToFile();
-  }
-
-  // cout<<" final EPSILONS "<<epsilon_[0]<<" "<<epsilon_[1]<<"
-  // "<<epsilon_[2]<<endl;
   return inv_clustering_;
 }
 
