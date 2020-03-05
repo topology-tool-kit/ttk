@@ -187,15 +187,15 @@ int ttkPersistenceDiagramDistanceMatrix::RequestData(
     diagramsDistTable->AddColumn(col);
   }
 
-  // aggregate input field data into diagrams distance matrix output field data
-  auto fd = diagramsDistTable->GetFieldData();
+  // aggregate input field data
+  vtkNew<vtkFieldData> fd{};
   fd->CopyStructure(inputDiagrams[0]->GetFieldData());
   fd->SetNumberOfTuples(inputDiagrams.size());
   for(size_t i = 0; i < inputDiagrams.size(); ++i) {
     fd->SetTuple(i, 0, inputDiagrams[i]->GetFieldData());
   }
 
-  // also copy field data arrays to row data
+  // copy input field data to output row data
   for(int i = 0; i < fd->GetNumberOfArrays(); ++i) {
     diagramsDistTable->AddColumn(fd->GetAbstractArray(i));
   }
