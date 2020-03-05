@@ -1,31 +1,34 @@
-
 <ServerManagerConfiguration>
-  <!-- This is the server manager configuration XML. It defines the interface to
-       our new filter. As a rule of thumb, try to locate the configuration for
-       a filter already in ParaView (in Servers/ServerManager/Resources/*.xml)
-       that matches your filter and then model your xml on it -->
   <ProxyGroup name="filters">
    <SourceProxy
      name="PersistenceDiagramDistanceMatrix"
      class="ttkPersistenceDiagramDistanceMatrix"
      label="TTK PersistenceDiagramDistanceMatrix">
      <Documentation
-       long_help="TTK plugin for the computation of distances, barycenters and clustering within a set of persistence diagrams."
-       shorthelp="TTK plugin for the computation of distances, barycenters and clustering within a set of persistence diagrams."
+       long_help="Computes distance matrix between persistence diagrams."
+       shorthelp="Persistence Diagrams Distance Matrix."
        >
-       Given an input set of persistence diagrams and a number of clusters, this plugin computes a clustering of the 
-       persistence diagrams using a progressive and interruptible K-Means approach. The result of the clustering is printed in the console. 
-       The clustered diagrams and the corresponding centroid diagrams are produced, as well as the assignment between the critical points. 
+       Given an input set of persistence diagrams and a number of
+       clusters, this plugin computes a clustering of the persistence
+       diagrams using a progressive and interruptible K-Means
+       approach. The result of the clustering is printed in the
+       console.  The clustered diagrams and the corresponding centroid
+       diagrams are produced, as well as the assignment between the
+       critical points.
 
-       If the number of clusters is set to 1 (default value), the Wasserstein barycenter of the set is computed using the same algorithm. 
+       If the number of clusters is set to 1 (default value), the
+       Wasserstein barycenter of the set is computed using the same
+       algorithm.
 
-       If the number of clusters is set to 1 and there are only two input diagrams, by default their Wasserstein distance is computed with 
-       the Auction algorithm, and the barycenter is deduced from the assignments. The use of the progressive approach can nevertheless be toggled 
-       in the Properties menu. 
+       If the number of clusters is set to 1 and there are only two
+       input diagrams, by default their Wasserstein distance is
+       computed with the Auction algorithm, and the barycenter is
+       deduced from the assignments. The use of the progressive
+       approach can nevertheless be toggled in the Properties menu.
 
-       Related publication: "Progressive Wasserstein Barycenters of Persistence Diagrams" 
-       Jules Vidal, Joseph Budin, Julien Tierny 
-       IEEE Transactions on Visualization and Computer Graphics. 
+       Related publication: "Progressive Wasserstein Barycenters of Persistence Diagrams"
+       Jules Vidal, Joseph Budin, Julien Tierny
+       IEEE Transactions on Visualization and Computer Graphics.
        Proceedings of IEEE VIS 2019.
 
        See also PersistenceDiagram, BottleneckDistance
@@ -49,22 +52,21 @@
         </Documentation>
       </InputProperty>
 
-
        <IntVectorProperty
           name="Method"
           label="Algorithm"
           command="SetMethod"
           number_of_elements="1"
-         default_values="0" 
+         default_values="0"
          panel_visibility="advanced" >
-		 <EnumerationDomain name="enum">
+         <EnumerationDomain name="enum">
           <Entry value="0" text="Progressive approach"/>
           <Entry value="1" text="Classical Auction approach (one cluster only, SLOW)"/>
         </EnumerationDomain>
         <Documentation>
           Type of algorithm for the computation of the barycenter.
-		  The Auction algorithm is computationally more expensive than
-		  the progressive approach.
+          The Auction algorithm is computationally more expensive than
+          the progressive approach.
         </Documentation>
       </IntVectorProperty>
 
@@ -84,10 +86,13 @@
         <!-- enable this widget when <property> equals <value> -->
       </Hints>
       <Documentation>
-        When there are only two input diagrams and one cluster, the progressive approach is not used by default to compute the barycenter.
-          Instead, the Auction Algorithm is used to compute the Wasserstein distance between the two diagrams, and the barycenter is deduced from
-          the corresponding assignments without additional computationnal cost.
-          This option forces the use of the progressive approach to compute the barycenter.
+        When there are only two input diagrams and one cluster, the
+        progressive approach is not used by default to compute the
+        barycenter.  Instead, the Auction Algorithm is used to compute
+        the Wasserstein distance between the two diagrams, and the
+        barycenter is deduced from the corresponding assignments
+        without additional computationnal cost.  This option forces
+        the use of the progressive approach to compute the barycenter.
       </Documentation>
 
       </IntVectorProperty>
@@ -140,7 +145,7 @@
           label="p parameter"
           command="SetWassersteinMetric"
           number_of_elements="1"
-          default_values="2" 
+          default_values="2"
           panel_visibility="advanced">
         <Documentation>
           Value of the parameter p for the Wp (p-th Wasserstein) distance
@@ -178,9 +183,11 @@ computation (type "inf" for the Bottleneck distance).
           <!-- enable this widget when <property> equals <value> -->
         </Hints>
         <Documentation>
-          If set to true, the barycenter is computed progressively (starting with most persistent pairs).
-		  The option may turn useful coupled with Interruptible Algorithm since the Barycenter will be computed with only a portion of the
-		  input points if computation time gets too important.
+          If set to true, the barycenter is computed progressively
+          (starting with most persistent pairs).  The option may turn
+          useful coupled with Interruptible Algorithm since the
+          Barycenter will be computed with only a portion of the input
+          points if computation time gets too important.
         </Documentation>
 
         </IntVectorProperty>
@@ -204,7 +211,7 @@ computation (type "inf" for the Bottleneck distance).
         </Documentation>
       </IntVectorProperty>
 
-	  <DoubleVectorProperty
+      <DoubleVectorProperty
           name="TimeLimit"
           label="Maximal computation time (s)"
           command="SetTimeLimit"
@@ -220,7 +227,7 @@ computation (type "inf" for the Bottleneck distance).
         </Hints>
         <Documentation>
           Maximal time of computation for the computation of the barycenter.
-		  A low value of Time Limit will yield approximate results.
+          A low value of Time Limit will yield approximate results.
         </Documentation>
 
       </DoubleVectorProperty>
@@ -238,7 +245,7 @@ computation (type "inf" for the Bottleneck distance).
         </Documentation>
       </IntVectorProperty>
 
-	  <DoubleVectorProperty
+      <DoubleVectorProperty
           name="DeltaLim"
           label="Minimal relative precision"
           command="SetDeltaLim"
@@ -253,11 +260,12 @@ computation (type "inf" for the Bottleneck distance).
           <!-- enable this widget when <property> equals <value> -->
         </Hints>
         <Documentation>
-        Minimal precision for the approximation of the Wasserstein distance used in the assignment between diagrams.
+        Minimal precision for the approximation of the Wasserstein
+        distance used in the assignment between diagrams.
         </Documentation>
 
         </DoubleVectorProperty>
-        
+
       <IntVectorProperty
         name="DisplayMethod"
         command="SetDisplayMethod"
@@ -265,7 +273,7 @@ computation (type "inf" for the Bottleneck distance).
         number_of_elements="1"
         default_values="0"
         >
-		 <EnumerationDomain name="enum">
+         <EnumerationDomain name="enum">
           <Entry value="0" text="Compact"/>
           <Entry value="1" text="Clusters as stars"/>
           <Entry value="2" text="Inspect matchings"/>
@@ -304,40 +312,38 @@ computation (type "inf" for the Bottleneck distance).
         </Documentation>
       </DoubleVectorProperty>
 
-	  <IntVectorProperty
+      <IntVectorProperty
          name="UseAccelerated"
          label="Use Accelerated KMeans"
          command="SetUseAccelerated"
             number_of_elements="1"
-            default_values="1" 
+            default_values="1"
             panel_visibility="advanced">
         <BooleanDomain name="bool"/>
          <Documentation>
-          Whether or not to use the triangular inequality too fasten the computation of the
-		  clustering. If activated, the option saves time. However it may lead to slightly
-		  inaccurate classification due to the approximations made during the computation of distance.
+          Whether or not to use the triangular inequality too fasten
+          the computation of the clustering. If activated, the option
+          saves time. However it may lead to slightly inaccurate
+          classification due to the approximations made during the
+          computation of distance.
          </Documentation>
       </IntVectorProperty>
 
-	  <IntVectorProperty
+      <IntVectorProperty
          name="UseKmeansppInit"
          label="KMeanspp Initialization"
          command="SetUseKmeansppInit"
          number_of_elements="1"
-            default_values="1" 
+            default_values="1"
             panel_visibility="advanced">
         <BooleanDomain name="bool"/>
          <Documentation>
-          If activated, the clustering is initialized cleverly. The option may avoid local minima at the cost
-		  of some initial computations proportionnal to the product of the number of clusters and the number of diagrams.
+          If activated, the clustering is initialized cleverly. The
+          option may avoid local minima at the cost of some initial
+          computations proportionnal to the product of the number of
+          clusters and the number of diagrams.
          </Documentation>
       </IntVectorProperty>
-
-      <!-- <PropertyGroup panel_widget="Line" label="Geometric Lifting"> -->
-      <!--   <Property name="Alpha" /> -->
-      <!--   <Property name="Lambda" /> -->
-      <!-- </PropertyGroup> -->
-
 
       <DoubleVectorProperty
           name="AntiAlpha"
@@ -374,20 +380,6 @@ between matched critical points.
       </DoubleVectorProperty>
 
       <IntVectorProperty
-          name="OutputDistanceMatrix"
-          label="Output a Distance Matrix"
-          command="SetOutputDistanceMatrix"
-          number_of_elements="1"
-          default_values="0"
-          panel_visibility="advanced">
-        <BooleanDomain name="bool"/>
-        <Documentation>
-          Output the distance matrix between all input persistence
-          diagrams.
-        </Documentation>
-      </IntVectorProperty>
-
-      <IntVectorProperty
           name="UseFullDiagrams"
           label="Use Full Diagrams (SLOW!)"
           command="SetUseFullDiagrams"
@@ -407,91 +399,7 @@ between matched critical points.
         </Documentation>
       </IntVectorProperty>
 
-      <IntVectorProperty
-          name="PerClusterDistanceMatrix"
-          label="Per Cluster Distance Matrix"
-          command="SetPerClusterDistanceMatrix"
-          number_of_elements="1"
-          default_values="0"
-          panel_visibility="advanced">
-        <BooleanDomain name="bool"/>
-        <Hints>
-          <PropertyWidgetDecorator
-              type="GenericDecorator"
-              mode="visibility"
-              property="OutputDistanceMatrix"
-              value="1" />
-        </Hints>
-        <Documentation>
-          Restrict the distance matrix computation to persistence
-          diagrams sharing the same cluster. Persistence diagrams in
-          different clusters will have a distance set to +infinity.
-        </Documentation>
-      </IntVectorProperty>
-
-      <IntVectorProperty
-         name="UseAllCores"
-         label="Use All Cores"
-         command="SetUseAllCores"
-         number_of_elements="1"
-        default_values="1"
-        panel_visibility="advanced">
-        <BooleanDomain name="bool"/>
-         <Documentation>
-          Use all available cores.
-         </Documentation>
-      </IntVectorProperty>
-
-      <IntVectorProperty
-         name="ThreadNumber"
-         label="Thread Number"
-         command="SetThreadNumber"
-         number_of_elements="1"
-        default_values="1"
-        panel_visibility="advanced">
-        <IntRangeDomain name="range" min="1" max="100" />
-        <Hints>
-          <PropertyWidgetDecorator
-              type="GenericDecorator"
-              mode="visibility"
-              property="UseAllCores"
-              value="0" />
-        </Hints>
-        <Documentation>
-          Thread number.
-        </Documentation>
-      </IntVectorProperty>
-
-      <IntVectorProperty
-         name="DebugLevel"
-         label="Debug Level"
-         command="SetDebugLevel"
-         number_of_elements="1"
-         default_values="3"
-         panel_visibility="advanced">
-        <IntRangeDomain name="range" min="0" max="100" />
-         <Documentation>
-           Debug level.
-         </Documentation>
-       </IntVectorProperty>
-
-      <PropertyGroup panel_widget="Line" label="Distance Matrix">
-        <Property name="OutputDistanceMatrix" />
-        <Property name="UseFullDiagrams" />
-        <Property name="PerClusterDistanceMatrix" />
-      </PropertyGroup>
-
-      <PropertyGroup panel_widget="Line" label="Testing">
-        <Property name="UseAllCores" />
-        <Property name="ThreadNumber" />
-        <Property name="DebugLevel" />
-      </PropertyGroup>
-
-      <OutputPort name="Clustered Diagrams" index="0" id="port0" />
-      <OutputPort name="Cluster Centroids" index="1" id="port1" />
-      <OutputPort name="Matchings" index="2" id="port2" />
-      <OutputPort name="Diagrams Distance" index="3" id="port3" />
-
+       ${DEBUG_WIDGETS}
 
       <Hints>
         <ShowInMenu category="TTK - Scalar Data" />
