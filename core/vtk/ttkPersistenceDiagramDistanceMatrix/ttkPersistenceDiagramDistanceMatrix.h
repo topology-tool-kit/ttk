@@ -342,11 +342,6 @@ private:
   std::vector<double> distanceToCentroid{};
   std::vector<std::vector<double>> centroidsDistMat{};
 
-  // base code features
-  int doIt(const std::vector<vtkUnstructuredGrid *> &input,
-           vtkTable *diagramsDistTable,
-           int numInputs);
-
   bool needsToAbort() override;
 
   int updateProgress(const float &progress) override;

@@ -28,12 +28,53 @@ int ttkPersistenceDiagramDistanceMatrix::updateProgress(const float &progress) {
   return 0;
 }
 
-int ttkPersistenceDiagramDistanceMatrix::doIt(
-  const std::vector<vtkUnstructuredGrid *> &inputDiagram,
-  vtkTable *diagramsDistTable,
-  int numInputs) {
+int ttkPersistenceDiagramDistanceMatrix::FillInputPortInformation(
+  int port, vtkInformation *info) {
+  if(port == 0) {
+    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkMultiBlockDataSet");
+    return 1;
+  }
+  return 0;
+}
 
-  int ret{};
+int ttkPersistenceDiagramDistanceMatrix::FillOutputPortInformation(
+  int port, vtkInformation *info) {
+  if(port == 0) {
+    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkTable");
+    return 1;
+  }
+  return 0;
+}
+
+// to adapt if your wrapper does not inherit from vtkDataSetAlgorithm
+int ttkPersistenceDiagramDistanceMatrix::RequestData(
+  vtkInformation * /*request*/,
+  vtkInformationVector **inputVector,
+  vtkInformationVector *outputVector) {
+  Memory m;
+
+  // Number of input files
+  int numInputs = numberOfInputsFromCommandLine;
+
+  // Get input data
+  std::vector<vtkUnstructuredGrid *> inputDiagrams;
+
+  auto blocks = vtkMultiBlockDataSet::GetData(inputVector[0], 0);
+
+  if(blocks != nullptr) {
+    numInputs = blocks->GetNumberOfBlocks();
+    inputDiagrams.resize(numInputs);
+    for(int i = 0; i < numInputs; ++i) {
+      inputDiagrams[i] = vtkUnstructuredGrid::SafeDownCast(blocks->GetBlock(i));
+      if(this->GetMTime() < inputDiagrams[i]->GetMTime()) {
+        needUpdate_ = true;
+      }
+    }
+  }
+
+  // Set output
+  auto diagramsDistTable = vtkTable::GetData(outputVector);
+
   if(needUpdate_) {
     intermediateDiagrams_.resize(numInputs);
     all_matchings_.resize(3);
@@ -41,7 +82,7 @@ int ttkPersistenceDiagramDistanceMatrix::doIt(
     max_dimension_total_ = 0;
     for(int i = 0; i < numInputs; i++) {
       double max_dimension
-        = getPersistenceDiagram(intermediateDiagrams_[i], inputDiagram[i]);
+        = getPersistenceDiagram(intermediateDiagrams_[i], inputDiagrams[i]);
       if(max_dimension_total_ < max_dimension) {
         max_dimension_total_ = max_dimension;
       }
@@ -148,68 +189,16 @@ int ttkPersistenceDiagramDistanceMatrix::doIt(
 
   // aggregate input field data into diagrams distance matrix output field data
   auto fd = diagramsDistTable->GetFieldData();
-  fd->CopyStructure(inputDiagram[0]->GetFieldData());
-  fd->SetNumberOfTuples(inputDiagram.size());
-  for(size_t i = 0; i < inputDiagram.size(); ++i) {
-    fd->SetTuple(i, 0, inputDiagram[i]->GetFieldData());
+  fd->CopyStructure(inputDiagrams[0]->GetFieldData());
+  fd->SetNumberOfTuples(inputDiagrams.size());
+  for(size_t i = 0; i < inputDiagrams.size(); ++i) {
+    fd->SetTuple(i, 0, inputDiagrams[i]->GetFieldData());
   }
 
   // also copy field data arrays to row data
   for(int i = 0; i < fd->GetNumberOfArrays(); ++i) {
     diagramsDistTable->AddColumn(fd->GetAbstractArray(i));
   }
-
-  return ret;
-}
-
-int ttkPersistenceDiagramDistanceMatrix::FillInputPortInformation(
-  int port, vtkInformation *info) {
-  if(port == 0) {
-    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkMultiBlockDataSet");
-    return 1;
-  }
-  return 0;
-}
-
-int ttkPersistenceDiagramDistanceMatrix::FillOutputPortInformation(
-  int port, vtkInformation *info) {
-  if(port == 0) {
-    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkTable");
-    return 1;
-  }
-  return 0;
-}
-
-// to adapt if your wrapper does not inherit from vtkDataSetAlgorithm
-int ttkPersistenceDiagramDistanceMatrix::RequestData(
-  vtkInformation * /*request*/,
-  vtkInformationVector **inputVector,
-  vtkInformationVector *outputVector) {
-  Memory m;
-
-  // Number of input files
-  int numInputs = numberOfInputsFromCommandLine;
-
-  // Get input data
-  std::vector<vtkUnstructuredGrid *> input;
-
-  auto blocks = vtkMultiBlockDataSet::GetData(inputVector[0], 0);
-
-  if(blocks != nullptr) {
-    numInputs = blocks->GetNumberOfBlocks();
-    input.resize(numInputs);
-    for(int i = 0; i < numInputs; ++i) {
-      input[i] = vtkUnstructuredGrid::SafeDownCast(blocks->GetBlock(i));
-      if(this->GetMTime() < input[i]->GetMTime()) {
-        needUpdate_ = true;
-      }
-    }
-  }
-
-  // Set output
-  auto output_matrix = vtkTable::GetData(outputVector);
-
-  doIt(input, output_matrix, numInputs);
 
   {
     stringstream msg;
