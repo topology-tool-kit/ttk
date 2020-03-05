@@ -64,9 +64,9 @@
 // data-set on the output - to adapt.
 // see the documentation of the vtkAlgorithm class to decide from which VTK
 // class your wrapper should inherit.
-class TTKPERSISTENCEDIAGRAMDISTANCEMATRIX_EXPORT ttkPersistenceDiagramDistanceMatrix
-  : public vtkMultiBlockDataSetAlgorithm,
-    protected ttk::Wrapper {
+class TTKPERSISTENCEDIAGRAMDISTANCEMATRIX_EXPORT
+  ttkPersistenceDiagramDistanceMatrix : public vtkMultiBlockDataSetAlgorithm,
+                                        protected ttk::Wrapper {
 
 public:
   void setNumberOfInputsFromCommandLine(int number) {
@@ -75,7 +75,8 @@ public:
   }
   static ttkPersistenceDiagramDistanceMatrix *New();
 
-  vtkTypeMacro(ttkPersistenceDiagramDistanceMatrix, vtkMultiBlockDataSetAlgorithm);
+  vtkTypeMacro(ttkPersistenceDiagramDistanceMatrix,
+               vtkMultiBlockDataSetAlgorithm);
 
   // default ttk setters
   void SetDebugLevel(int debugLevel) {
@@ -308,10 +309,6 @@ protected:
   int FillInputPortInformation(int port, vtkInformation *info) override;
   int FillOutputPortInformation(int port, vtkInformation *info) override;
 
-  vtkSmartPointer<vtkUnstructuredGrid> createMatchings();
-  vtkSmartPointer<vtkUnstructuredGrid> createOutputClusteredDiagrams();
-  vtkSmartPointer<vtkUnstructuredGrid> createOutputCentroids();
-
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;
@@ -322,9 +319,6 @@ private:
   std::vector<std::vector<diagramType>> final_centroids_{};
 
   std::vector<int> inv_clustering_{};
-
-  // vtkUnstructuredGrid* output_clusters_;
-  // vtkUnstructuredGrid* output_centroids_;
 
   int numberOfInputsFromCommandLine{1};
   int PairTypeClustering{-1};
@@ -365,9 +359,6 @@ private:
 
   // base code features
   int doIt(const std::vector<vtkUnstructuredGrid *> &input,
-           vtkUnstructuredGrid *outputClusters,
-           vtkUnstructuredGrid *outputCentroids,
-           vtkUnstructuredGrid *outputMatchings,
            vtkTable *diagramsDistTable,
            int numInputs);
 
