@@ -124,20 +124,28 @@ public:
   // In C++>11 auto return type is possible (for a function returning a lambda).
   /**
    * @brief Get a sigmoid function.
+   * It is important that the lo* args are in fact less than the hi* args.
    * @param lox Small x-value (e.g. the expected minimum input); default 0.
    * @param hix Large x-value (e.g. the expected maximum input); default 1.
    * @param slopeFac Factor to multiply with the default slope
-   *        (hiy-loy)/(hix-lox); a negative value creates a "zee" function that
-   *        goes from hiy to loy.
+   *        (hiy-loy)/(hix-lox); a one leads to a function that is effectively
+   *        linear on [lox, hix]; a negative value creates a "zee" function that
+   *        goes from hiy to loy; default 8.
+   * @param midxFac Determines the inflection position midx where y=loy+ry/2;
+   *        0=>midx=lox, 1=>midx=hix; a value less than 0.5 leads to faster
+   *        increase in the "left" part; default 0.5.
    * @param loy Infimum  y-value; default 0.
    * @param hiy Supremum y-value; default 1.
    */
   static std::function<double(double)> getSigmoidFunc(
-      double lox=0., double hix=1., double slopeFac=1.,
+      double lox=0., double hix=1., double slopeFac=8., double midxFac=0.5,
       double loy=0., double hiy=1.) {
+    assert(lox < hix);
+    assert(loy < hiy);
+    assert(midxFac >= 0.);
+    assert(midxFac <= 1.);
     const double ry = hiy - loy;
-    // inflection position where y = loy + ry/2
-    const double midx = (lox + hix)/2.;
+    const double midx = lox*(1.-midxFac) + hix*midxFac;
     const double slope = slopeFac * ry / (hix - lox);
     const double mulWithX = -slope;
     const double addToScaledX = slope * midx;
@@ -246,8 +254,9 @@ int ttk::ContourAroundPoint::execute() const
   }
    
   std::ostringstream timUseStream;
-  timUseStream<< std::fixed<< std::setprecision(3)<< timUseObj.getElapsedTime()
-              << " s  ("<< _inpPtsNum<< " points using "<< threadNumber_<< " threads)";
+  timUseStream << std::fixed << std::setprecision(3)
+               << timUseObj.getElapsedTime() << " s  (" << _inpPtsNum
+               << " points using " << threadNumber_ << " threads)";
   dMsg(std::cout, timUseStream.str(), timeMsg);
   return 0;
 }
@@ -404,12 +413,12 @@ void ttk::ContourAroundPoint::extendOutPts(
   
   auto inpScalars = reinterpret_cast<const scalarT*>(_inpFldScalars);
   // Vertices that are close to the isovalue get little weight.
-  using Triplet = std::tuple<float,float,double>;
-  auto minMaxFac = flag ? // scalar is max?
-        Triplet{isoval, scalar, 1.} : Triplet{scalar, isoval, -1.};
-  auto wOfSca = getSigmoidFunc(std::get<0>(minMaxFac),
-                               std::get<1>(minMaxFac),
-                               std::get<2>(minMaxFac));
+  using Tuple4 = std::tuple<float,float,double,double>;
+  auto minMaxSlopeMid = flag ? // scalar is max?
+        Tuple4{isoval, scalar, 9., 0.6} : Tuple4{scalar, isoval, -9., 0.4};
+  auto wOfSca = getSigmoidFunc(
+        std::get<0>(minMaxSlopeMid), std::get<1>(minMaxSlopeMid),
+        std::get<2>(minMaxSlopeMid), std::get<3>(minMaxSlopeMid));
   
   // do the computation in double precision
   double wSum = 0.;
