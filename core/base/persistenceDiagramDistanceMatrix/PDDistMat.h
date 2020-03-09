@@ -1,5 +1,5 @@
 /// \ingroup base
-/// \class ttk::PDClustering
+/// \class ttk::PDDistMat
 /// \author Jules Vidal <jules.vidal@lip6.fr>
 /// \author Joseph Budin <joseph.budin@polytechnique.edu>
 /// \date September 2019
@@ -30,10 +30,10 @@ using namespace ttk;
 
 namespace ttk {
   template <typename dataType>
-  class PDClustering : public Debug {
+  class PDDistMat : public Debug {
 
   public:
-    PDClustering() {
+    PDDistMat() {
       wasserstein_ = 2;
       geometrical_factor_ = 1;
       threadNumber_ = 1;
@@ -54,7 +54,7 @@ namespace ttk {
       distanceWritingOptions_ = 0;
     };
 
-    ~PDClustering(){};
+    ~PDDistMat(){};
 
     std::vector<int>
       execute(std::vector<std::vector<diagramTuple>> &final_centroids,
@@ -367,5 +367,5 @@ namespace ttk {
   };
 } // namespace ttk
 
-#include <PDClusteringImpl.h>
+#include <PDDistMat.hxx>
 #endif

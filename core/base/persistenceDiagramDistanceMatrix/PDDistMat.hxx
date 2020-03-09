@@ -1,5 +1,5 @@
 /// \ingroup base
-/// \class ttk::PDClustering
+/// \class ttk::PDDistMat
 /// \author Jules Vidal <jules.vidal@lip6.fr>
 /// \author Joseph Budin <joseph.budin@polytechnique.edu>
 /// \date September 2019
@@ -12,8 +12,7 @@
 ///
 /// \sa PersistenceDiagramClustering
 
-#ifndef _PDCLUSTERINGIMPL_H
-#define _PDCLUSTERINGIMPL_H
+#pragma once
 
 #define BLocalMax ttk::CriticalType::Local_maximum
 #define BLocalMin ttk::CriticalType::Local_minimum
@@ -34,12 +33,12 @@
 //
 #include <random>
 
-#include <PDClustering.h>
+#include <PDDistMat.h>
 
 using namespace ttk;
 
 template <typename dataType>
-std::vector<int> PDClustering<dataType>::execute(
+std::vector<int> PDDistMat<dataType>::execute(
   std::vector<std::vector<diagramTuple>> &final_centroids,
   vector<vector<vector<vector<matchingTuple>>>>
     &all_matchings_per_type_and_cluster) {
@@ -571,7 +570,7 @@ std::vector<int> PDClustering<dataType>::execute(
 }
 
 template <typename dataType>
-void PDClustering<dataType>::correctMatchings(
+void PDDistMat<dataType>::correctMatchings(
   vector<vector<vector<vector<matchingTuple>>>> &previous_matchings) {
   for(int c = 0; c < k_; c++) {
     for(unsigned int i = 0; i < clustering_[c].size(); i++) {
@@ -677,7 +676,7 @@ void PDClustering<dataType>::correctMatchings(
 }
 
 template <typename dataType>
-void PDClustering<dataType>::printMatchings(
+void PDDistMat<dataType>::printMatchings(
   vector<vector<vector<matchingTuple>>> matchings) {
   cout << "\n MATCHINGS : " << endl;
   for(int d = 0; d < 3; d++) {
@@ -697,12 +696,12 @@ void PDClustering<dataType>::printMatchings(
 }
 
 template <typename dataType>
-vector<vector<int>> PDClustering<dataType>::get_centroids_sizes() {
+vector<vector<int>> PDDistMat<dataType>::get_centroids_sizes() {
   return centroids_sizes_;
 }
 
 template <typename dataType>
-dataType PDClustering<dataType>::getMostPersistent(int type) {
+dataType PDDistMat<dataType>::getMostPersistent(int type) {
   dataType max_persistence = 0;
   // std::cout << "type = " << type << std::endl;
   if(do_min_ && (type == -1 || type == 0)) {
@@ -744,7 +743,7 @@ dataType PDClustering<dataType>::getMostPersistent(int type) {
 }
 
 template <typename dataType>
-dataType PDClustering<dataType>::getLessPersistent(int type) {
+dataType PDDistMat<dataType>::getLessPersistent(int type) {
   // type == -1 : query the min of all the types of diagrams.
   // type = 0 : min,  1 : sad,   2 : max
   // std::cout << "type = " << type << std::endl;
@@ -788,7 +787,7 @@ dataType PDClustering<dataType>::getLessPersistent(int type) {
 }
 
 template <typename dataType>
-std::vector<std::vector<dataType>> PDClustering<dataType>::getMinPrices() {
+std::vector<std::vector<dataType>> PDDistMat<dataType>::getMinPrices() {
   std::vector<std::vector<dataType>> min_prices(3);
   // cout<<"dos : "<<original_dos[0]<<original_dos[1]<<original_dos[2]<<endl;
   if(original_dos[0]) {
@@ -835,7 +834,7 @@ std::vector<std::vector<dataType>> PDClustering<dataType>::getMinPrices() {
 
 template <typename dataType>
 std::vector<std::vector<dataType>>
-  PDClustering<dataType>::getMinDiagonalPrices() {
+  PDDistMat<dataType>::getMinDiagonalPrices() {
   std::vector<std::vector<dataType>> min_prices(3);
   if(original_dos[0]) {
     for(int i = 0; i < numberOfInputs_; ++i) {
@@ -889,7 +888,7 @@ std::vector<std::vector<dataType>>
 
 template <typename dataType>
 dataType
-  PDClustering<dataType>::computeDistance(const BidderDiagram<dataType> &D1,
+  PDDistMat<dataType>::computeDistance(const BidderDiagram<dataType> &D1,
                                           const BidderDiagram<dataType> &D2,
                                           const double delta_lim) {
   GoodDiagram<dataType> D2_bis = diagramToCentroid(D2);
@@ -898,7 +897,7 @@ dataType
 
 template <typename dataType>
 dataType
-  PDClustering<dataType>::computeDistance(const BidderDiagram<dataType> D1,
+  PDDistMat<dataType>::computeDistance(const BidderDiagram<dataType> D1,
                                           const GoodDiagram<dataType> D2,
                                           const double delta_lim) {
   std::vector<matchingTuple> matchings;
@@ -912,7 +911,7 @@ dataType
 
 template <typename dataType>
 dataType
-  PDClustering<dataType>::computeDistance(BidderDiagram<dataType> *const D1,
+  PDDistMat<dataType>::computeDistance(BidderDiagram<dataType> *const D1,
                                           const GoodDiagram<dataType> *const D2,
                                           const double delta_lim) {
   std::vector<matchingTuple> matchings;
@@ -929,7 +928,7 @@ dataType
 
 template <typename dataType>
 dataType
-  PDClustering<dataType>::computeDistance(const GoodDiagram<dataType> &D1,
+  PDDistMat<dataType>::computeDistance(const GoodDiagram<dataType> &D1,
                                           const GoodDiagram<dataType> &D2,
                                           const double delta_lim) {
   BidderDiagram<dataType> D1_bis = centroidToDiagram(D1);
@@ -937,7 +936,7 @@ dataType
 }
 
 template <typename dataType>
-GoodDiagram<dataType> PDClustering<dataType>::centroidWithZeroPrices(
+GoodDiagram<dataType> PDDistMat<dataType>::centroidWithZeroPrices(
   const GoodDiagram<dataType> centroid) {
   GoodDiagram<dataType> GD = GoodDiagram<dataType>();
   for(int i = 0; i < centroid.size(); i++) {
@@ -949,7 +948,7 @@ GoodDiagram<dataType> PDClustering<dataType>::centroidWithZeroPrices(
 }
 
 template <typename dataType>
-BidderDiagram<dataType> PDClustering<dataType>::diagramWithZeroPrices(
+BidderDiagram<dataType> PDDistMat<dataType>::diagramWithZeroPrices(
   const BidderDiagram<dataType> diagram) {
   BidderDiagram<dataType> BD = BidderDiagram<dataType>();
   for(int i = 0; i < diagram.size(); i++) {
@@ -961,7 +960,7 @@ BidderDiagram<dataType> PDClustering<dataType>::diagramWithZeroPrices(
 }
 
 template <typename dataType>
-BidderDiagram<dataType> PDClustering<dataType>::centroidToDiagram(
+BidderDiagram<dataType> PDDistMat<dataType>::centroidToDiagram(
   const GoodDiagram<dataType> centroid) {
   BidderDiagram<dataType> BD = BidderDiagram<dataType>();
   for(int i = 0; i < centroid.size(); i++) {
@@ -977,7 +976,7 @@ BidderDiagram<dataType> PDClustering<dataType>::centroidToDiagram(
 }
 
 template <typename dataType>
-GoodDiagram<dataType> PDClustering<dataType>::diagramToCentroid(
+GoodDiagram<dataType> PDDistMat<dataType>::diagramToCentroid(
   const BidderDiagram<dataType> diagram) {
   GoodDiagram<dataType> GD = GoodDiagram<dataType>();
   for(int i = 0; i < diagram.size(); i++) {
@@ -991,12 +990,12 @@ GoodDiagram<dataType> PDClustering<dataType>::diagramToCentroid(
 }
 
 template <typename dataType>
-void PDClustering<dataType>::initializeEmptyClusters() {
+void PDDistMat<dataType>::initializeEmptyClusters() {
   clustering_ = std::vector<std::vector<int>>(k_);
 }
 
 template <typename dataType>
-void PDClustering<dataType>::initializeCentroids() {
+void PDDistMat<dataType>::initializeCentroids() {
   std::vector<int> idx(numberOfInputs_);
   // To perform a random draw with replacement, the vector {1, 2, ...,
   // numberOfInputs_} is shuffled, and we consider its k_ first elements to be
@@ -1027,7 +1026,7 @@ void PDClustering<dataType>::initializeCentroids() {
 }
 
 template <typename dataType>
-void PDClustering<dataType>::initializeCentroidsKMeanspp() {
+void PDDistMat<dataType>::initializeCentroidsKMeanspp() {
   std::vector<int> indexes_clusters;
   int random_idx = deterministic_ ? 0 : rand() % numberOfInputs_;
   indexes_clusters.push_back(random_idx);
@@ -1141,7 +1140,7 @@ void PDClustering<dataType>::initializeCentroidsKMeanspp() {
 }
 
 template <typename dataType>
-void PDClustering<dataType>::initializeAcceleratedKMeans() {
+void PDDistMat<dataType>::initializeAcceleratedKMeans() {
   // r_ is a vector stating for each diagram if its distance to its centroid is
   // up to date (false) or needs to be recomputed (true)
   r_ = std::vector<bool>(numberOfInputs_);
@@ -1174,7 +1173,7 @@ void PDClustering<dataType>::initializeAcceleratedKMeans() {
 }
 
 template <typename dataType>
-std::vector<std::vector<dataType>> PDClustering<dataType>::getDistanceMatrix() {
+std::vector<std::vector<dataType>> PDDistMat<dataType>::getDistanceMatrix() {
   std::vector<std::vector<dataType>> D(numberOfInputs_);
 
   for(int i = 0; i < numberOfInputs_; ++i) {
@@ -1210,7 +1209,7 @@ std::vector<std::vector<dataType>> PDClustering<dataType>::getDistanceMatrix() {
 }
 
 template <typename dataType>
-void PDClustering<dataType>::getCentroidDistanceMatrix() {
+void PDDistMat<dataType>::getCentroidDistanceMatrix() {
   for(int i = 0; i < k_; ++i) {
     GoodDiagram<dataType> D1_min, D1_sad, D1_max;
     if(do_min_) {
@@ -1246,7 +1245,7 @@ void PDClustering<dataType>::getCentroidDistanceMatrix() {
 }
 
 template <typename dataType>
-void PDClustering<dataType>::computeDiagramsDistanceMatrix() {
+void PDDistMat<dataType>::computeDiagramsDistanceMatrix() {
 
   diagramsDistanceMatrix_.resize(numberOfInputs_);
   double delta_lim{0.01};
@@ -1308,7 +1307,7 @@ void PDClustering<dataType>::computeDiagramsDistanceMatrix() {
 }
 
 template <typename dataType>
-void PDClustering<dataType>::computeDistanceToCentroid() {
+void PDDistMat<dataType>::computeDistanceToCentroid() {
   distanceToCentroid_.resize(numberOfInputs_);
 
   for(int i = 0; i < numberOfInputs_; ++i) {
@@ -1341,7 +1340,7 @@ void PDClustering<dataType>::computeDistanceToCentroid() {
 }
 
 template <typename dataType>
-void PDClustering<dataType>::updateClusters() {
+void PDDistMat<dataType>::updateClusters() {
   if(k_ > 1) {
     std::vector<std::vector<dataType>> distance_matrix = getDistanceMatrix();
     old_clustering_ = clustering_;
@@ -1414,7 +1413,7 @@ void PDClustering<dataType>::updateClusters() {
 }
 
 template <typename dataType>
-void PDClustering<dataType>::invertClusters() {
+void PDDistMat<dataType>::invertClusters() {
   /// Converts the clustering (vector of vector of diagram's id) into
   /// a vector of size numberOfInputs_ containg the cluster of each input
   /// diagram.
@@ -1435,7 +1434,7 @@ void PDClustering<dataType>::invertClusters() {
 }
 
 template <typename dataType>
-void PDClustering<dataType>::invertInverseClusters() {
+void PDDistMat<dataType>::invertInverseClusters() {
   clustering_ = std::vector<std::vector<int>>(k_);
   for(int i = 0; i < numberOfInputs_; ++i) {
     clustering_[inv_clustering_[i]].push_back(i);
@@ -1451,7 +1450,7 @@ void PDClustering<dataType>::invertInverseClusters() {
 }
 
 template <typename dataType>
-void PDClustering<dataType>::acceleratedUpdateClusters() {
+void PDDistMat<dataType>::acceleratedUpdateClusters() {
   // Step 1
   getCentroidDistanceMatrix();
   old_clustering_ = clustering_;
@@ -1685,7 +1684,7 @@ void PDClustering<dataType>::acceleratedUpdateClusters() {
 }
 
 template <typename dataType>
-std::vector<dataType> PDClustering<dataType>::updateCentroidsPosition(
+std::vector<dataType> PDDistMat<dataType>::updateCentroidsPosition(
   std::vector<std::vector<dataType>> *min_price,
   std::vector<std::vector<dataType>> *min_diag_price,
   std::vector<std::vector<std::vector<std::vector<matchingTuple>>>>
@@ -2298,7 +2297,7 @@ std::vector<dataType> PDClustering<dataType>::updateCentroidsPosition(
 }
 
 template <typename dataType>
-void PDClustering<dataType>::setBidderDiagrams() {
+void PDDistMat<dataType>::setBidderDiagrams() {
   for(int i = 0; i < numberOfInputs_; i++) {
     if(do_min_) {
       std::vector<diagramTuple> *CTDiagram = &((*inputDiagramsMin_)[i]);
@@ -2375,7 +2374,7 @@ void PDClustering<dataType>::setBidderDiagrams() {
 }
 
 template <typename dataType>
-std::vector<dataType> PDClustering<dataType>::enrichCurrentBidderDiagrams(
+std::vector<dataType> PDDistMat<dataType>::enrichCurrentBidderDiagrams(
   std::vector<dataType> previous_min_persistence,
   std::vector<dataType> min_persistence,
   std::vector<std::vector<dataType>> initial_diagonal_prices,
@@ -2778,7 +2777,7 @@ std::vector<dataType> PDClustering<dataType>::enrichCurrentBidderDiagrams(
 }
 
 template <typename dataType>
-void PDClustering<dataType>::initializeBarycenterComputers(
+void PDDistMat<dataType>::initializeBarycenterComputers(
   vector<dataType> /*min_persistence*/) {
   // cout<<" initialize barycenter computers "<<geometrical_factor_<<endl;
   if(do_min_) {
@@ -2886,7 +2885,7 @@ void PDClustering<dataType>::initializeBarycenterComputers(
 }
 
 template <typename dataType>
-void PDClustering<dataType>::printDistancesToFile() {
+void PDDistMat<dataType>::printDistancesToFile() {
   ofstream ufile("u_vec.txt");
   ofstream lfile("l_mat.txt");
   ofstream approx_file("a_mat.txt");
@@ -2912,7 +2911,7 @@ void PDClustering<dataType>::printDistancesToFile() {
 }
 
 template <typename dataType>
-void PDClustering<dataType>::printRealDistancesToFile() {
+void PDDistMat<dataType>::printRealDistancesToFile() {
   cout << "Computing real distances to every clusters" << endl;
   ofstream file("a_real_mat.txt");
   if(file.is_open()) {
@@ -2929,7 +2928,7 @@ void PDClustering<dataType>::printRealDistancesToFile() {
 }
 
 template <typename dataType>
-void PDClustering<dataType>::printPricesToFile(int iteration) {
+void PDDistMat<dataType>::printPricesToFile(int iteration) {
   ofstream file(
     "prices_evolution.txt", std::ofstream::out | std::ofstream::app);
   if(file.is_open()) {
@@ -2947,7 +2946,7 @@ void PDClustering<dataType>::printPricesToFile(int iteration) {
 }
 
 template <typename dataType>
-dataType PDClustering<dataType>::computeRealCost() {
+dataType PDDistMat<dataType>::computeRealCost() {
   dataType total_real_cost_min = 0;
   dataType total_real_cost_max = 0;
   dataType total_real_cost_sad = 0;
@@ -3003,7 +3002,7 @@ dataType PDClustering<dataType>::computeRealCost() {
 }
 
 template <typename dataType>
-void PDClustering<dataType>::computeBarycenterForTwo(
+void PDDistMat<dataType>::computeBarycenterForTwo(
   vector<vector<vector<vector<matchingTuple>>>>
     &all_matchings_per_type_and_cluster) {
 
@@ -3175,5 +3174,3 @@ void PDClustering<dataType>::computeBarycenterForTwo(
     }
   }
 }
-
-#endif

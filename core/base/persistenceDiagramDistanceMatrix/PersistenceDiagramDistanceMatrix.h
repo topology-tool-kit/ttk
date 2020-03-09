@@ -15,8 +15,7 @@
 ///
 /// \sa ttkPersistenceDiagramDistanceMatrix
 
-#ifndef _PERSISTENCEDIAGRAMSCLUSTERING_H
-#define _PERSISTENCEDIAGRAMSCLUSTERING_H
+#pragma once
 
 #ifndef diagramTuple
 #define diagramTuple                                                       \
@@ -44,7 +43,7 @@
 //
 #include <limits>
 //
-#include <PDClustering.h>
+#include <PDDistMat.h>
 //
 
 using namespace std;
@@ -293,7 +292,7 @@ namespace ttk {
 
     vector<vector<vector<vector<matchingTuple>>>>
       all_matchings_per_type_and_cluster;
-    PDClustering<dataType> KMeans = PDClustering<dataType>();
+    PDDistMat<dataType> KMeans = PDDistMat<dataType>();
     KMeans.setWasserstein(wasserstein_);
     KMeans.setThreadNumber(threadNumber_);
     KMeans.setNumberOfInputs(numberOfInputs_);
@@ -359,5 +358,3 @@ namespace ttk {
     return inv_clustering;
   }
 } // namespace ttk
-
-#endif
