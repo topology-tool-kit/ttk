@@ -137,14 +137,16 @@ int ttk::JacobiSet<dataTypeU, dataTypeV>::connectivityPreprocessing(
         }
       }
 
+      // Wrap edgeFans data in cellArray
+      CellArray edgeFansCells(edgeFans[i].data(), edgeFans[i].size() / 4, 3);
+
       // set-up the link of the edge fan
       threadedLinkers[threadId].buildVertexLink(
-        pivotVertexId, edgeFans[i].size() / 4, edgeFans[i].data(),
-        threadedLinks[threadId]);
+        pivotVertexId, edgeFansCells, threadedLinks[threadId]);
 
       // now compute the edge list of the link
       threadedEdgeListers[threadId].buildEdgeSubList(
-        edgeFans[i].size() / 4, edgeFans[i].data(), edgeFanLinkEdgeLists[i]);
+        edgeFansCells, edgeFanLinkEdgeLists[i]);
 
       // update the progress bar of the wrapping code -- to adapt
       if(debugLevel_ > advancedInfoMsg) {
