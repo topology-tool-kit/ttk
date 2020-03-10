@@ -1,11 +1,5 @@
 #include <ttkWRLExporter.h>
 
-#ifdef TTK_BUILD_PARAVIEW_PLUGINS
-#include <vtkPVConfig.h>
-#else
-#include <vtkVersion.h>
-#endif
-
 using namespace std;
 using namespace ttk;
 
