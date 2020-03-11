@@ -318,6 +318,9 @@ void MergeTree::processVertex(const SimplexId &currentVertex,
 
     // Union correspond to the merge
     seed = ExtendedUnionFind::makeUnion(vect_neighUF);
+    if(seed == nullptr) {
+      return;
+    }
     seed->setOrigin(farOrigin);
     getNode(closingNode)->setOrigin(getCorrespondingNodeId(farOrigin));
 
