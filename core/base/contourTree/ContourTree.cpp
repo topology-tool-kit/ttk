@@ -33,7 +33,7 @@ struct MyCmp {
 
 struct filtrationCtCmp {
   bool operator()(const pair<bool, pair<double, pair<int, int>>> &v0,
-                  const pair<bool, pair<double, pair<int, int>>> &v1) {
+                  const pair<bool, pair<double, pair<int, int>>> &v1) const {
 
     if(v0.first) {
       return ((v0.second.first < v1.second.first)
