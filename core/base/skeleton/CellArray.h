@@ -38,27 +38,45 @@ namespace ttk {
     }
 
     /// Retrieve the dimension
-    const unsigned char getDimension() const {
+    inline const unsigned char getDimension() const {
       return dimension_;
     }
 
     /// Get the number of cells in the array
-    LongSimplexId getNbCells() const {
+    inline LongSimplexId getNbCells() const {
       return nbCells_;
     }
 
     /// Get the number of vertices in the cell with the id: cellid
     /// \param cellid global id of the cell
     /// \return dimension + 1 for now as we only accept regular meshes
-    SimplexId getCellVertexNumber(const LongSimplexId cellid) const;
-
+    inline SimplexId getCellVertexNumber(const LongSimplexId cellId) const {
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(cellId >= this->nbCells_) {
+        std::cerr << "TTK: access to cell " << cellId << " on "
+                  << this->nbCells_ << std::endl;
+      }
+#endif
+      // WARNING: ASSUME Regular Mesh here
+      return this->dimension_ + 1;
+    }
     /// Get the vertex id of the "localVertId"'nt vertex of the cell.
     /// \param cellId global id of the cell
     /// \param localVertId id of the vertex local to the cell,
     /// usually lower than 4 in 3D and lower than 3 in 2D.
     /// \return the global id of the vertex
-    LongSimplexId getCellVertex(const LongSimplexId cellId,
-                                const SimplexId localVertId) const;
+    inline LongSimplexId getCellVertex(const LongSimplexId cellId,
+                                       const SimplexId localVertId) const {
+      const SimplexId locNbVert = this->getCellVertexNumber(cellId);
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(localVertId >= locNbVert) {
+        std::cerr << "TTK: access to local vert " << localVertId << " on "
+                  << locNbVert << std::endl;
+      }
+#endif
+      // Assume VTK < 9 layout
+      return this->cellArray_[(locNbVert + 1) * cellId + 1 + localVertId];
+    }
 
   protected:
     const LongSimplexId *cellArray_;
