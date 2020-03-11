@@ -50,8 +50,12 @@ struct ttkOnDeleteCommand : public vtkCommand {
     this->deleteEventFired = true;
 
     void *key = this->owner_;
-    if(this->owner_->IsA("vtkImageData"))
-      key = vtkImageData::SafeDownCast(owner_)->GetScalarPointer();
+    if(this->owner_->IsA("vtkImageData")) {
+      const auto id = vtkImageData::SafeDownCast(owner_);
+      if(id != nullptr) {
+        key = id->GetScalarPointer();
+      }
+    }
 
     auto it = this->dataSetToTriangulationMap_->find(key);
     if(it != this->dataSetToTriangulationMap_->end())
@@ -125,8 +129,10 @@ ttk::Triangulation *ttkAlgorithm::InitTriangulation(void *key,
 
   // Delete callback
   {
-    ttkOnDeleteCommand::SafeDownCast(std::get<2>(it->second))
-      ->Init(owner, &ttkAlgorithm::DataSetToTriangulationMap);
+    const auto itsec = it->second;
+    const auto odc = ttkOnDeleteCommand::SafeDownCast(std::get<2>(itsec));
+    if(odc != nullptr)
+      odc->Init(owner, &ttkAlgorithm::DataSetToTriangulationMap);
   }
 
   // Initialize Explicit Triangulation
@@ -174,6 +180,10 @@ ttk::Triangulation *ttkAlgorithm::InitTriangulation(void *key,
                    ttk::debug::LineMode::REPLACE, ttk::debug::Priority::DETAIL);
 
     auto ownerAsID = vtkImageData::SafeDownCast(owner);
+
+    if(ownerAsID == nullptr) {
+      return nullptr;
+    }
 
     int extents[6];
     ownerAsID->GetExtent(extents);
@@ -280,6 +290,9 @@ ttk::Triangulation *ttkAlgorithm::GetTriangulation(vtkDataSet *dataSet) {
     // =========================================================================
     case VTK_UNSTRUCTURED_GRID: {
       auto dataSetAsUG = vtkUnstructuredGrid::SafeDownCast(dataSet);
+      if(dataSetAsUG == nullptr) {
+        return nullptr;
+      }
       auto points = dataSetAsUG->GetPoints();
       auto cells = dataSetAsUG->GetCells();
 
@@ -308,6 +321,9 @@ ttk::Triangulation *ttkAlgorithm::GetTriangulation(vtkDataSet *dataSet) {
     // =========================================================================
     case VTK_POLY_DATA: {
       auto dataSetAsPD = vtkPolyData::SafeDownCast(dataSet);
+      if(dataSetAsPD == nullptr) {
+        return nullptr;
+      }
       auto points = dataSetAsPD->GetPoints();
       auto polyCells = dataSetAsPD->GetPolys();
       auto lineCells = dataSetAsPD->GetLines();
@@ -358,6 +374,9 @@ ttk::Triangulation *ttkAlgorithm::GetTriangulation(vtkDataSet *dataSet) {
     // =========================================================================
     case VTK_IMAGE_DATA: {
       auto dataSetAsID = vtkImageData::SafeDownCast(dataSet);
+      if(dataSetAsID == nullptr) {
+        return nullptr;
+      }
 
       // check if triangulation already exists or has to be updated
       ttk::Triangulation *triangulation
