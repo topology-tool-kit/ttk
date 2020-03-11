@@ -263,6 +263,7 @@ int ttkTriangulation::setInputData(vtkDataSet *dataSet) {
           triangulation_->setInputPoints(
             vtuDataSet->GetNumberOfPoints(),
             ttkUtils::GetVoidPointer(vtuDataSet->GetPoints()->GetData()), true);
+          break;
         default:
           stringstream msg;
           msg << "[ttkTriangulation] Unsupported precision for input points!"
