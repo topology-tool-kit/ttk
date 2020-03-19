@@ -83,12 +83,15 @@ int ttkStringArrayConverter::RequestData(vtkInformation *request,
   // shallow-copy input
   output->ShallowCopy(input);
 
-  // filter output point data
   const auto pdo = output->GetPointData();
-  pdo->RemoveArray(this->InputStringArray.data());
+
+  // array of indices
   vtkNew<vtkIdTypeArray> ia{};
-  ia->SetName(this->InputStringArray.data());
+  // array name
+  std::string colname = this->InputStringArray + "Int";
+  ia->SetName(colname.data());
   ia->SetNumberOfTuples(nvalues);
+  // fill array with corresponding string values indices
   for(vtkIdType i = 0; i < nvalues; ++i) {
     ia->SetValue(i, valInd[sa->GetValue(i)]);
   }
