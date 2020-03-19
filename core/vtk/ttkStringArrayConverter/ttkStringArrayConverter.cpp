@@ -98,22 +98,5 @@ int ttkStringArrayConverter::RequestData(vtkInformation *request,
 
   pdo->AddArray(ia);
 
-  // store correspondance map in output field data
-  vtkNew<vtkStringArray> strArray{};
-  vtkNew<vtkIdTypeArray> indArray{};
-  strArray->SetName("String Values");
-  indArray->SetName("Replacement Values");
-  strArray->SetNumberOfComponents(1);
-  indArray->SetNumberOfComponents(1);
-
-  for(const auto &cpl : valInd) {
-    strArray->InsertNextValue(cpl.first.data());
-    indArray->InsertNextValue(cpl.second);
-  }
-
-  const auto fd = output->GetFieldData();
-  fd->AddArray(strArray);
-  fd->AddArray(indArray);
-
   return 1;
 }
