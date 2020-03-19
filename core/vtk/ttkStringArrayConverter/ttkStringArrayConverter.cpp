@@ -3,14 +3,14 @@
 #include <vtkDataObject.h> // For port info
 #include <vtkObjectFactory.h> // for new macro
 
-#include <vtkDelimitedTextReader.h>
 #include <vtkFieldData.h>
 #include <vtkPointData.h>
-#include <vtkSmartPointer.h>
 #include <vtkStringArray.h>
-#include <vtkTable.h>
 
 #include <ttkUtils.h>
+
+#include <map>
+#include <set>
 
 vtkStandardNewMacro(ttkStringArrayConverter);
 
@@ -42,8 +42,6 @@ int ttkStringArrayConverter::FillOutputPortInformation(int port,
 int ttkStringArrayConverter::RequestData(vtkInformation *request,
                                          vtkInformationVector **inputVector,
                                          vtkInformationVector *outputVector) {
-  ttk::Timer timer;
-
   const auto input = vtkDataSet::GetData(inputVector[0]);
   auto output = vtkDataSet::GetData(outputVector);
 
@@ -55,24 +53,64 @@ int ttkStringArrayConverter::RequestData(vtkInformation *request,
   // point data
   const auto pd = input->GetPointData();
   // string array
-  const auto sa = pd->GetAbstractArray(this->InputStringArray.data());
+  const auto sa = vtkStringArray::SafeDownCast(
+    pd->GetAbstractArray(this->InputStringArray.data()));
 
-  if(sa == nullptr || !sa->IsA("vtkStringArray")) {
+  if(sa == nullptr) {
     this->printErr("Cannot find any string array with the name "
                    + this->InputStringArray);
     return 0;
   }
 
   const auto nvalues = sa->GetNumberOfTuples();
-  const auto saIt = sa->NewIterator();
+
+  std::set<std::string> values{};
 
   for(vtkIdType i = 0; i < nvalues; ++i) {
+    values.emplace(sa->GetValue(i));
   }
 
-  // print stats
-  this->printMsg(ttk::debug::Separator::L2);
-  this->printMsg("Complete (#rows: )", 1, timer.getElapsedTime());
-  this->printMsg(ttk::debug::Separator::L1);
+  std::map<std::string, size_t> valInd{};
+
+  {
+    size_t i = 0;
+    for(const auto &el : values) {
+      valInd[el] = i;
+      i++;
+    }
+  }
+
+  // shallow-copy input
+  output->ShallowCopy(input);
+
+  // filter output point data
+  const auto pdo = output->GetPointData();
+  pdo->RemoveArray(this->InputStringArray.data());
+  vtkNew<vtkIdTypeArray> ia{};
+  ia->SetName(this->InputStringArray.data());
+  ia->SetNumberOfTuples(nvalues);
+  for(vtkIdType i = 0; i < nvalues; ++i) {
+    ia->SetValue(i, valInd[sa->GetValue(i)]);
+  }
+
+  pdo->AddArray(ia);
+
+  // store correspondance map in output field data
+  vtkNew<vtkStringArray> strArray{};
+  vtkNew<vtkIdTypeArray> indArray{};
+  strArray->SetName("String Values");
+  indArray->SetName("Replacement Values");
+  strArray->SetNumberOfComponents(1);
+  indArray->SetNumberOfComponents(1);
+
+  for(const auto &cpl : valInd) {
+    strArray->InsertNextValue(cpl.first.data());
+    indArray->InsertNextValue(cpl.second);
+  }
+
+  const auto fd = output->GetFieldData();
+  fd->AddArray(strArray);
+  fd->AddArray(indArray);
 
   return 1;
 }
