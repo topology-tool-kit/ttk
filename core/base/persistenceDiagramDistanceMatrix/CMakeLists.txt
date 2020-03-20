@@ -1,6 +1,6 @@
 ttk_add_base_library(persistenceDiagramDistanceMatrix
-    SOURCES PersistenceDiagramDistanceMatrix.cpp PersistenceDiagramBarycenter.cpp
-    HEADERS PersistenceDiagramDistanceMatrix.h PersistenceDiagramBarycenter.h
+    SOURCES PersistenceDiagramDistanceMatrix.cpp
+    HEADERS PersistenceDiagramDistanceMatrix.h
 	LINK common auction persistenceDiagram bottleneckDistance kdTree)
 
 # if (NOT (CMAKE_BUILD_TYPE MATCHES Debug))

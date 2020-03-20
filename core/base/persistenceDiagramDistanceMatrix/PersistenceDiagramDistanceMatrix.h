@@ -39,8 +39,6 @@
 //
 #include <PersistenceDiagram.h>
 //
-#include <PersistenceDiagramBarycenter.h>
-//
 #include <limits>
 //
 #include <PDDistMat.h>
