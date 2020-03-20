@@ -3,9 +3,10 @@
 #include <vtkDataObject.h> // For port info
 #include <vtkObjectFactory.h> // for new macro
 
-#include <vtkFieldData.h>
 #include <vtkPointData.h>
+#include <vtkPointSet.h>
 #include <vtkStringArray.h>
+#include <vtkUnstructuredGrid.h>
 
 #include <ttkUtils.h>
 
@@ -21,29 +22,38 @@ ttkPointsToLine::ttkPointsToLine() {
   this->SetNumberOfOutputPorts(1);
 }
 
-int ttkPointsToLine::FillInputPortInformation(int port,
-                                                      vtkInformation *info) {
+int ttkPointsToLine::FillInputPortInformation(int port, vtkInformation *info) {
   if(port == 0) {
-    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataSet");
+    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkPointSet");
     return 1;
   }
   return 0;
 }
 
-int ttkPointsToLine::FillOutputPortInformation(int port,
-                                                       vtkInformation *info) {
+int ttkPointsToLine::FillOutputPortInformation(int port, vtkInformation *info) {
   if(port == 0) {
-    info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
+    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
     return 1;
   }
   return 0;
+}
+
+template <typename VTK_TT>
+void ttkPointsToLine::dispatch(
+  std::vector<std::pair<vtkIdType, double>> &storage,
+  const VTK_TT *const values,
+  const size_t nvalues) {
+
+  for(size_t i = 0; i < nvalues; ++i) {
+    storage.emplace_back(i, static_cast<double>(values[i]));
+  }
 }
 
 int ttkPointsToLine::RequestData(vtkInformation *request,
-                                         vtkInformationVector **inputVector,
-                                         vtkInformationVector *outputVector) {
-  const auto input = vtkDataSet::GetData(inputVector[0]);
-  auto output = vtkDataSet::GetData(outputVector);
+                                 vtkInformationVector **inputVector,
+                                 vtkInformationVector *outputVector) {
+  const auto input = vtkPointSet::GetData(inputVector[0]);
+  auto output = vtkUnstructuredGrid::GetData(outputVector);
 
   if(input == nullptr || output == nullptr) {
     this->printErr("Null input data, aborting");
@@ -52,51 +62,46 @@ int ttkPointsToLine::RequestData(vtkInformation *request,
 
   // point data
   const auto pd = input->GetPointData();
-  // string array
-  const auto sa = vtkStringArray::SafeDownCast(
-    pd->GetAbstractArray(this->InputStringArray.data()));
+  // ordering array
+  const auto oa = pd->GetAbstractArray(this->InputOrderingArray.data());
 
-  if(sa == nullptr) {
-    this->printErr("Cannot find any string array with the name "
-                   + this->InputStringArray);
+  if(oa == nullptr) {
+    this->printErr("Cannot find any data array with the name "
+                   + this->InputOrderingArray);
     return 0;
   }
 
-  const auto nvalues = sa->GetNumberOfTuples();
+  const auto nvalues = oa->GetNumberOfTuples();
 
-  std::set<std::string> values{};
+  // store point index <-> ordering value in vector
+  std::vector<std::pair<vtkIdType, double>> orderedValues{};
 
-  for(vtkIdType i = 0; i < nvalues; ++i) {
-    values.emplace(sa->GetValue(i));
+  switch(oa->GetDataType()) {
+    vtkTemplateMacro(dispatch(
+      orderedValues, static_cast<VTK_TT *>(oa->GetVoidPointer(0)), nvalues));
   }
 
-  std::map<std::string, size_t> valInd{};
+  // compare two pairs of index/value according to their values
+  const auto cmp
+    = [](const std::pair<vtkIdType, double> &a,
+         const std::pair<vtkIdType, double> &b) { return a.second < b.second; };
 
-  {
-    size_t i = 0;
-    for(const auto &el : values) {
-      valInd[el] = i;
-      i++;
-    }
-  }
+  // sort the vector of indices/values in ascending order
+  std::sort(orderedValues.begin(), orderedValues.end(), cmp);
 
-  // shallow-copy input
+  // shallow-copy input into output
   output->ShallowCopy(input);
 
-  const auto pdo = output->GetPointData();
+  // output cell array
+  vtkNew<vtkCellArray> cells{};
 
-  // array of indices
-  vtkNew<vtkIdTypeArray> ia{};
-  // array name
-  std::string colname = this->InputStringArray + "Int";
-  ia->SetName(colname.data());
-  ia->SetNumberOfTuples(nvalues);
-  // fill array with corresponding string values indices
-  for(vtkIdType i = 0; i < nvalues; ++i) {
-    ia->SetValue(i, valInd[sa->GetValue(i)]);
+  for(size_t i = 1; i < orderedValues.size(); ++i) {
+    std::array<vtkIdType, 2> linePoints{
+      orderedValues[i - 1].first, orderedValues[i].first};
+    cells->InsertNextCell(2, linePoints.data());
   }
 
-  pdo->AddArray(ia);
+  output->SetCells(VTK_LINE, cells);
 
   return 1;
 }

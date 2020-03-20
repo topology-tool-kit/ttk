@@ -26,8 +26,8 @@ public:
   static ttkPointsToLine *New();
   vtkTypeMacro(ttkPointsToLine, ttkAlgorithm);
 
-  vtkSetMacro(InputStringArray, std::string);
-  vtkGetMacro(InputStringArray, std::string);
+  vtkSetMacro(InputOrderingArray, std::string);
+  vtkGetMacro(InputOrderingArray, std::string);
 
 protected:
   ttkPointsToLine();
@@ -39,7 +39,11 @@ protected:
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;
+  template <typename VTK_TT>
+  void dispatch(std::vector<std::pair<vtkIdType, double>> &storage,
+                const VTK_TT *const values,
+                const size_t nvalues);
 
 private:
-  std::string InputStringArray{};
+  std::string InputOrderingArray{};
 };
