@@ -42,16 +42,7 @@ std::vector<int> PDDistMat<dataType>::execute(
   std::vector<std::vector<diagramTuple>> &final_centroids,
   vector<vector<vector<vector<matchingTuple>>>>
     &all_matchings_per_type_and_cluster) {
-  // std::vector<std::vector<std::vector<matchingTuple>>> all_matchings;
-  //
-  /* if(numberOfInputs_==2 and k_==1){ */
-  /*   if(do_min_){ */
-  /*     computeDistanceAndMatchings(bidder_diagrams_min_[0],
-   * bidder_diagrams_max_[1]); */
-  /*   } */
-  /*   std::vector<int> result(2,0); */
-  /*   return result; */
-  /* } */
+
   all_matchings_per_type_and_cluster.resize(k_);
   for(int c = 0; c < k_; c++) {
     all_matchings_per_type_and_cluster[c].resize(3);
@@ -350,22 +341,6 @@ std::vector<int> PDDistMat<dataType>::execute(
         } else {
           // updateClusters();
         }
-        // printClustering();
-        // std::cout<<"clusters updated"<<std::endl;
-        // if(cost_<min_cost && n_iterations_>2 && epsilon_<epsilon0/1000.){
-        //     min_cost=cost_;
-        // }
-        // else if(n_iterations_>2 && epsilon_<epsilon0/1000. &&
-        // cost_>min_cost){
-        //     converged=true;
-        // }
-
-        // bool precision_criterion_reached = ( !(original_dos[0]) ||
-        // (epsilon_[0]<epsilon0[0]/500.) ) /* && ( !(original_dos[1]) ||
-        // (epsilon_[1]<epsilon0[1]/500.) ) */ && ( !(original_dos[2])
-        // && (epsilon_[2]<epsilon0[2]/500.) ); bool precision_criterion_reached
-        // = epsilon_[0]<epsilon0[0]/500. && epsilon_[2]<epsilon0[2]/500.;
-        //
         precision_criterion_
           = precision_min_ && precision_sad_ && precision_max_;
         bool precision_criterion_reached = precision_criterion_;
@@ -377,41 +352,18 @@ std::vector<int> PDDistMat<dataType>::execute(
           std::cout << " complete ? :  " << diagrams_complete[0] << " "
                     << diagrams_complete[1] << " " << diagrams_complete[2]
                     << " " << std::endl;
-          // std::cout << "global precison criterion : " <<
-          // precision_criterion_reached << std::endl;
           std::cout << " precision ? :  " << precision_min_ << " "
                     << precision_sad_ << " " << precision_max_ << " "
                     << std::endl;
-          // std::cout<< " epsilons ? :  "<< epsilon0[0]/500. <<" " <<
-          // epsilon0[1]/500. <<" " << epsilon0[2]/500. <<" " << std::endl;
           std::cout << " all complete ? :  " << all_diagrams_complete
                     << "   useprog ? " << use_progressive_ << "  and DOs ? "
                     << do_min_ << do_sad_ << do_max_ << endl;
-          // << "  and cDOs ? " << *(current_dos[0]) << *(current_dos[1]) <<
-          // *(current_dos[2])
-          // << std::endl;  // (epsilon_[0]<epsilon0[0]/500.) <<" " <<
-          // (epsilon_[1]<epsilon0[1]/500.) <<" " <<
-          // (epsilon_[2]<epsilon0[2]/500.) <<" " << std::endl;
-          // std::cout << "  original DOs ? " << original_dos[0] <<
-          // original_dos[1] << original_dos[2]
-          // << std::endl;  // (epsilon_[0]<epsilon0[0]/500.) <<" " <<
-          // (epsilon_[1]<epsilon0[1]/500.) <<" " <<
-          // (epsilon_[2]<epsilon0[2]/500.) <<" " << std::endl;
           std::cout << "                 costmin : " << cost_min_
                     << " , min_cost_min : " << min_cost_min << std::endl;
           std::cout << "                 costsad : " << cost_sad_
                     << " , min_cost_sad : " << min_cost_sad << std::endl;
           std::cout << "                 costmax : " << cost_max_
                     << " , min_cost_max : " << min_cost_max << std::endl;
-          // std::cout << " sizes of barycenter : "<<centroids_min_.size()<<"
-          // "<<centroids_saddle_.size()<<"
-          // "<<centroids_max_[0].size()<<std::endl; for(int
-          // i_input=0;i_input<numberOfInputs_;i_input++){
-          //     std::cout << "   sizes of bidder "<<i_input<<" :
-          //     "<<current_bidder_diagrams_min_.size()<<"
-          //     "<<current_bidder_diagrams_saddle_.size()<<"
-          //     "<<current_bidder_diagrams_max_[i_input].size()<<std::endl;
-          // }
         }
 
         if(cost_min_ < min_cost_min && n_iterations_ > 2
@@ -457,15 +409,9 @@ std::vector<int> PDDistMat<dataType>::execute(
         // cout<<"\nconverged ? : "<<converged<<"\n"<<endl;
       }
 
-      // dataType real_cost = 0;
-      // Timer t_real_cost;
-      // real_cost = computeRealCost();
       total_time
         += t_inside.getElapsedTime(); // - t_real_cost.getElapsedTime();
-      // cout<<"SO FAR TIME : "<<total_time<<endl;
-      // cout<<"SO FAR REAL COST : "<<real_cost<<endl;
-      // std::cout<<"total_cost_ "<<cost_<<"times "<<total_time<<"
-      // "<<t_inside.getElapsedTime()<<" "<<time_limit_<<std::endl;
+
       if(total_time + t_inside.getElapsedTime() > 0.9 * time_limit_) {
         min_cost_min = cost_min_;
         min_cost_sad = cost_sad_;
@@ -484,11 +430,6 @@ std::vector<int> PDDistMat<dataType>::execute(
                   << " == complete : " << all_diagrams_complete
                   << " , progressive : " << use_progressive_
                   << " , converged : " << converged << std::endl;
-        // std::cout<<"                 min_persistence : "<<min_persistence<<"
-        // , epsilon0 : "<<epsilon0<<std::endl; std::cout<<" lowest_persistence
-        // : "<<lowest_persistence<<std::endl; std::cout<<"                 time
-        // limit passed ?  : "<< (bool)(total_time>time_limit_) <<" , eps min
-        // passed? : "<<(bool)(epsilon_<epsilon0/500.)<<std::endl;
       }
     }
     resetDosToOriginalValues();
@@ -503,10 +444,7 @@ std::vector<int> PDDistMat<dataType>::execute(
       }
       dMsg(std::cout, msg.str(), infoMsg);
     }
-    // cout<<"TOTAL ELAPSED "<<total_time<<endl;
-    // dataType real_cost=0;
-    // real_cost=computeRealCost();
-    // cout<<"REAL COST : "<<real_cost<<endl;
+
     if(!use_progressive_ && k_ > 1) {
       clustering_ = old_clustering_; // reverting to last clustering
     }
