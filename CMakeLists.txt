@@ -84,6 +84,7 @@ install(
 
 if(TTK_BUILD_PARAVIEW_PLUGINS)
   include(CMake/ParaViewFilter.cmake)
+  add_compile_definitions("TTK_BUILD_PARAVIEW_PLUGINS")
 
   # Install location
   if(NOT "$ENV{PV_PLUGIN_PATH}" STREQUAL "")

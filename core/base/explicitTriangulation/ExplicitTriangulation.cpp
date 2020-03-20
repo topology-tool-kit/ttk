@@ -23,6 +23,7 @@ int ExplicitTriangulation::clear() {
 
   printMsg(
     "[ExplicitTriangulation] Triangulation cleared.", debug::Priority::DETAIL);
+  // clear twice ??
 
   return AbstractTriangulation::clear();
 }

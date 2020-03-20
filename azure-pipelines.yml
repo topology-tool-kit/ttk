@@ -20,6 +20,7 @@ jobs:
 # VTK
 
 - job:
+  condition: true
   displayName: Ubuntu-VTK-Python3-OpenMP-Ninja
   strategy:
     matrix:
@@ -58,7 +59,7 @@ jobs:
   - script: |
       git clone --quiet https://gitlab.kitware.com/vtk/vtk.git
       cd vtk
-      git checkout 2c04a6b393
+      git checkout e4e8a4df9cc67fd2bb3dbb3b1c50a25177cbfe68
       git submodule update --init --recursive
     displayName: 'Clone VTK'
 
@@ -93,6 +94,7 @@ jobs:
 # ParaView
 
 - job:
+  condition: true
   displayName: Ubuntu-PV-Python3-Eigen-Make
   timeoutInMinutes: 180
   pool:
@@ -166,6 +168,7 @@ jobs:
 # ------------------------------
 
 - job:
+  condition: true
   displayName: MacOS-PV-Python3-OpenMP-Make (no install)
   timeoutInMinutes: 180
   pool:
@@ -173,7 +176,7 @@ jobs:
   steps:
   - script: |
       brew cask install xquartz
-      brew install wget python ffmpeg libomp mesa glew boost
+      brew install wget python libomp mesa glew boost vtk
     displayName: 'Install dependencies'
 
   - script: |
@@ -201,7 +204,6 @@ jobs:
     displayName: 'Configure TTK'
 
   - script: |
-      # cmake --build . --target ttkAlgorithm-hierarchy ttkIcoSphere-hierarchy ttkTopologicalCompressionWriter-hierarchy ttkTopologicalCompressionReader-hierarchy # TODO UGLY HOT FIX
       cmake --build . --target install -- -j 4
     workingDirectory: 'build/'
     displayName: 'Build and install TTK'
@@ -212,15 +214,16 @@ jobs:
       otool -L ./bin/ttkBlankCmd
       echo "otoo l"
       otool -l ./bin/ttkBlankCmd
-#      DYLD_PRINT_LIBRARIES=1 ./bin/ttkBlankCmd -i $(Build.SourcesDirectory)/examples/data/inputData.vtu
+      # DYLD_PRINT_LIBRARIES=1 ./bin/ttkBlankCmd -i $(Build.SourcesDirectory)/examples/data/inputData.vtu
     workingDirectory: '$(Build.ArtifactStagingDirectory)/ttk-install/'
-    displayName: 'Test TTK Command line'
+    displayName: 'Test TTK Command line (DISABLED FOR NOW)'
 
 # ------------------------------
 # Windows build
 # ------------------------------
 
 - job:
+  condition: true
   displayName: Windows-VTK
   strategy:
     matrix:
@@ -254,7 +257,7 @@ jobs:
   - bash: |
       git clone --quiet https://gitlab.kitware.com/vtk/vtk.git
       cd vtk
-      git checkout 2c04a6b393
+      git checkout e4e8a4df9cc67fd2bb3dbb3b1c50a25177cbfe68
       git submodule update --init --recursive
       mkdir build
     displayName: 'Clone VTK'

@@ -3,7 +3,7 @@
 using namespace std;
 using namespace ttk;
 
-vtkPolyData *ttkWRLExporterPolyData_ = NULL;
+vtkPolyData *ttkWRLExporterPolyData_ = nullptr;
 
 // Over-ride the appropriate functions of the vtkVRMLExporter class.
 void vtkVRMLExporter::WriteAnActor(vtkActor *anActor, FILE *fp) {
@@ -18,13 +18,26 @@ void vtkVRMLExporter::WriteAnActor(vtkActor *anActor, FILE *fp) {
   vtkSmartPointer<vtkPolyData> pd;
   vtkPointData *pntData;
   vtkPoints *points;
-  vtkDataArray *normals = NULL;
-  vtkDataArray *tcoords = NULL;
+  vtkDataArray *normals = nullptr;
+  vtkDataArray *tcoords = nullptr;
   int i, i1, i2;
   double *tempd;
   vtkCellArray *cells;
   vtkIdType npts = 0;
-  vtkIdType *indx = 0;
+#ifdef PARAVIEW_VERSION_MAJOR
+#if PARAVIEW_VERSION_MAJOR > 5 \
+  || (PARAVIEW_VERSION_MAJOR == 5 && PARAVIEW_VERSION_MINOR > 7)
+  vtkIdType const *indx = nullptr;
+#else
+  vtkIdType *indx = nullptr;
+#endif
+#else
+#if VTK_VERSION_MAJOR > 8
+  vtkIdType const *indx = nullptr;
+#else
+  vtkIdType *indx = nullptr;
+#endif
+#endif
   int pointDataWritten = 0;
   vtkPolyDataMapper *pm;
   vtkUnsignedCharArray *colors;
@@ -33,7 +46,7 @@ void vtkVRMLExporter::WriteAnActor(vtkActor *anActor, FILE *fp) {
   vtkTransform *trans;
 
   // see if the actor has a mapper. it could be an assembly
-  if(anActor->GetMapper() == NULL) {
+  if(anActor->GetMapper() == nullptr) {
     return;
   }
 
@@ -58,7 +71,7 @@ void vtkVRMLExporter::WriteAnActor(vtkActor *anActor, FILE *fp) {
 
   vtkDataObject *inputDO = anActor->GetMapper()->GetInputDataObject(0, 0);
 
-  if(inputDO == NULL) {
+  if(inputDO == nullptr) {
     return;
   }
 
@@ -209,7 +222,7 @@ void vtkVRMLExporter::WriteAnActor(vtkActor *anActor, FILE *fp) {
     fprintf(fp, "          geometry IndexedLineSet {\n");
 
     if(!pointDataWritten) {
-      this->WritePointData(points, NULL, NULL, colors, fp);
+      this->WritePointData(points, nullptr, nullptr, colors, fp);
     } else {
       fprintf(fp, "            coord  USE VTKcoordinates\n");
 
@@ -298,7 +311,7 @@ void vtkVRMLExporter::WriteData() {
   FILE *fp;
 
   // make sure the user specified a FileName or FilePointer
-  if(!this->FilePointer && (this->FileName == NULL)) {
+  if(!this->FilePointer && (this->FileName == nullptr)) {
     vtkErrorMacro(<< "Please specify FileName to use");
     return;
   }
@@ -454,7 +467,20 @@ void vtkVRMLExporter::WritePointData(vtkPoints *points,
       fprintf(fp, "          texCoordIndex[\n");
       vtkCellArray *cells = ttkWRLExporterPolyData_->GetPolys();
       vtkIdType npts = 0;
-      vtkIdType *indx = NULL;
+#ifdef PARAVIEW_VERSION_MAJOR
+#if PARAVIEW_VERSION_MAJOR > 5 \
+  || (PARAVIEW_VERSION_MAJOR == 5 && PARAVIEW_VERSION_MINOR > 7)
+      vtkIdType const *indx = nullptr;
+#else
+      vtkIdType *indx = nullptr;
+#endif
+#else
+#if VTK_VERSION_MAJOR > 8
+      vtkIdType const *indx = nullptr;
+#else
+      vtkIdType *indx = nullptr;
+#endif
+#endif
       for(cells->InitTraversal(); cells->GetNextCell(npts, indx);) {
         fprintf(fp, "            ");
         for(int i = 0; i < npts; i++) {

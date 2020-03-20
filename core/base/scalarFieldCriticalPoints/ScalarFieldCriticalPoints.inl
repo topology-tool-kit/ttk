@@ -1,7 +1,7 @@
 #ifndef SCALARFIELDCRITICALPOINTS_INL
 #define SCALARFIELDCRITICALPOINTS_INL
 
-#include <ScalarFieldCriticalPoints.h>
+#include "ScalarFieldCriticalPoints.h"
 
 template <class dataType>
 ttk::ScalarFieldCriticalPoints<dataType>::ScalarFieldCriticalPoints() {

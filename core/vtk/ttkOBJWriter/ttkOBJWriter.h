@@ -15,6 +15,7 @@
 // VTK Module
 #include <ttkOBJWriterModule.h>
 
+#include <iostream>
 #include <string>
 #include <vector>
 
@@ -39,7 +40,7 @@ protected:
   virtual void WriteData() override;
 
   char *Filename;
-  ofstream Stream{};
+  std::ofstream Stream{};
 
 private:
   ttkOBJWriter(const ttkOBJWriter &) = delete;

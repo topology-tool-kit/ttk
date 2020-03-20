@@ -1,22 +1,22 @@
-#include <JacobiSet.h>
+#include "JacobiSet.h"
 
 template <class dataTypeU, class dataTypeV>
 ttk::JacobiSet<dataTypeU, dataTypeV>::JacobiSet() {
 
   vertexNumber_ = 0;
 
-  uField_ = NULL;
-  vField_ = NULL;
+  uField_ = nullptr;
+  vField_ = nullptr;
 
-  tetList_ = NULL;
+  tetList_ = nullptr;
 
-  edgeList_ = NULL;
-  edgeFanLinkEdgeLists_ = NULL;
-  edgeFans_ = NULL;
-  sosOffsetsU_ = NULL;
-  sosOffsetsV_ = NULL;
+  edgeList_ = nullptr;
+  edgeFanLinkEdgeLists_ = nullptr;
+  edgeFans_ = nullptr;
+  sosOffsetsU_ = nullptr;
+  sosOffsetsV_ = nullptr;
 
-  triangulation_ = NULL;
+  triangulation_ = nullptr;
 }
 
 template <class dataTypeU, class dataTypeV>
@@ -137,14 +137,16 @@ int ttk::JacobiSet<dataTypeU, dataTypeV>::connectivityPreprocessing(
         }
       }
 
+      // Wrap edgeFans data in cellArray
+      CellArray edgeFansCells(edgeFans[i].data(), edgeFans[i].size() / 4, 3);
+
       // set-up the link of the edge fan
       threadedLinkers[threadId].buildVertexLink(
-        pivotVertexId, edgeFans[i].size() / 4, edgeFans[i].data(),
-        threadedLinks[threadId]);
+        pivotVertexId, edgeFansCells, threadedLinks[threadId]);
 
       // now compute the edge list of the link
       threadedEdgeListers[threadId].buildEdgeSubList(
-        edgeFans[i].size() / 4, edgeFans[i].data(), edgeFanLinkEdgeLists[i]);
+        edgeFansCells, edgeFanLinkEdgeLists[i]);
 
       // update the progress bar of the wrapping code -- to adapt
       if(debugLevel_ > advancedInfoMsg) {

@@ -12,8 +12,15 @@ endif()
 # Find Paraview OR VTK if needed
 if(TTK_BUILD_PARAVIEW_PLUGINS)
   find_package(ParaView REQUIRED)
+  # hande version manually so we do not have to include
+  # files from VTK / ParaView in the code.
+  # this is necessary to work with build folder directly (MacOS)
+  add_definitions(-DPARAVIEW_VERSION_MAJOR=${ParaView_VERSION_MAJOR})
+  add_definitions(-DPARAVIEW_VERSION_MINOR=${ParaView_VERSION_MINOR})
 elseif(TTK_BUILD_VTK_WRAPPERS)
   find_package(VTK REQUIRED)
+  add_definitions(-DVTK_VERSION_MAJOR=${VTK_VERSION_MAJOR})
+  add_definitions(-DVTK_VERSION_MINOR=${VTK_VERSION_MINOR})
 endif()
 
 option(TTK_ENABLE_64BIT_IDS "Enable processing on large datasets" OFF)

@@ -1,10 +1,12 @@
 ttk_add_base_library(skeleton
   SOURCES
+    CellArray.cpp
     ZeroSkeleton.cpp
     OneSkeleton.cpp
     TwoSkeleton.cpp
     ThreeSkeleton.cpp
   HEADERS
+    CellArray.h
     ZeroSkeleton.h
     OneSkeleton.h
     TwoSkeleton.h
