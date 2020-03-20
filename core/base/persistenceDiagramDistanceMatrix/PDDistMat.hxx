@@ -50,21 +50,9 @@ std::vector<int> PDDistMat<dataType>::execute(
       all_matchings_per_type_and_cluster[c][i].resize(numberOfInputs_);
     }
   }
-  int matchings_only = false;
+
   Timer tm;
   {
-    // PARTICULARITIES FOR THE CASE OF ONE UNIQUE CLUSTER
-    if(k_ <= 1) {
-      use_accelerated_ = false;
-      use_kmeanspp_ = false;
-      if(numberOfInputs_ == 2 and forceUseOfAlgorithm_ == false) {
-        use_progressive_ = false;
-        deterministic_ = true;
-        matchings_only = true;
-        time_limit_ = 99999999999;
-      }
-    }
-
     std::vector<bool *> current_prec;
     current_prec.push_back(&precision_min_);
     current_prec.push_back(&precision_sad_);
@@ -345,27 +333,6 @@ std::vector<int> PDDistMat<dataType>::execute(
           = precision_min_ && precision_sad_ && precision_max_;
         bool precision_criterion_reached = precision_criterion_;
 
-        if(debugLevel_ > 3) {
-          std::cout << "Iteration " << n_iterations_
-                    << ", Epsilon = " << epsilon_[0] << " " << epsilon_[1]
-                    << " " << epsilon_[2] << std::endl;
-          std::cout << " complete ? :  " << diagrams_complete[0] << " "
-                    << diagrams_complete[1] << " " << diagrams_complete[2]
-                    << " " << std::endl;
-          std::cout << " precision ? :  " << precision_min_ << " "
-                    << precision_sad_ << " " << precision_max_ << " "
-                    << std::endl;
-          std::cout << " all complete ? :  " << all_diagrams_complete
-                    << "   useprog ? " << use_progressive_ << "  and DOs ? "
-                    << do_min_ << do_sad_ << do_max_ << endl;
-          std::cout << "                 costmin : " << cost_min_
-                    << " , min_cost_min : " << min_cost_min << std::endl;
-          std::cout << "                 costsad : " << cost_sad_
-                    << " , min_cost_sad : " << min_cost_sad << std::endl;
-          std::cout << "                 costmax : " << cost_max_
-                    << " , min_cost_max : " << min_cost_max << std::endl;
-        }
-
         if(cost_min_ < min_cost_min && n_iterations_ > 2
            && diagrams_complete[0] /*&& precision_min_*/) {
           min_cost_min = cost_min_;
@@ -399,10 +366,6 @@ std::vector<int> PDDistMat<dataType>::execute(
           }
         }
 
-        if(debugLevel_ > 3) {
-          // std::cout << "Cost = " << cost_ << std::endl;
-          printClustering();
-        }
         converged = converged
                     || (all_diagrams_complete && !do_min_ && !do_sad_
                         && !do_max_ && (precision_criterion_reached));
@@ -425,60 +388,10 @@ std::vector<int> PDDistMat<dataType>::execute(
         diagrams_complete[2] = true;
         use_progressive_ = false;
       }
-      if(debugLevel_ > 4) {
-        std::cout << "== Iteration " << n_iterations_
-                  << " == complete : " << all_diagrams_complete
-                  << " , progressive : " << use_progressive_
-                  << " , converged : " << converged << std::endl;
-      }
     }
     resetDosToOriginalValues();
-    {
-      std::stringstream msg;
-      if(matchings_only) {
-        msg << "[PersistenceDiagramClustering] Wasserstein distance: "
-            << cost_min_ + cost_sad_ + cost_max_ << std::endl;
-      } else {
-        msg << "[PersistenceDiagramClustering] Final Cost: "
-            << min_cost_min + min_cost_sad + min_cost_max << std::endl;
-      }
-      dMsg(std::cout, msg.str(), infoMsg);
-    }
 
-    if(!use_progressive_ && k_ > 1) {
-      clustering_ = old_clustering_; // reverting to last clustering
-    }
-    invertClusters(); // this is to pass the old inverse clustering to the VTK
-                      // wrapper
-    if(debugLevel_ > 0 && k_ > 1) {
-      printClustering();
-    }
   } // End of timer
-
-  // CORRECT MATCHINGS :
-  // correctMatchings(all_matchings);
-  // cout<<"\n current bidder ids \n"<<endl;
-  // for(int i=0; i<current_bidder_ids_min_[0].size(); i++){
-  //     cout<<i<<" "<<current_bidder_ids_min_[0][i]<<endl;
-  // }
-  // printMatchings(all_matchings_per_type_and_cluster[0]);
-  if(matchings_only) {
-    computeBarycenterForTwo(all_matchings_per_type_and_cluster);
-  }
-  correctMatchings(all_matchings_per_type_and_cluster);
-  // Filling the final centroids for output
-
-  final_centroids.resize(k_);
-  centroids_sizes_.resize(k_);
-  for(int c = 0; c < k_; c++) {
-    centroids_sizes_[c].resize(3);
-    if(do_min_)
-      centroids_sizes_[c][0] = centroids_min_[c].size();
-    if(do_sad_)
-      centroids_sizes_[c][1] = centroids_saddle_[c].size();
-    if(do_max_)
-      centroids_sizes_[c][2] = centroids_max_[c].size();
-  }
 
   computeDiagramsDistanceMatrix();
 
