@@ -23,8 +23,6 @@
 #include <limits>
 //
 
-#include <PDBarycenter.h>
-
 using namespace std;
 using namespace ttk;
 
@@ -96,7 +94,6 @@ namespace ttk {
     void initializeCentroids();
     void initializeCentroidsKMeanspp();
     void initializeAcceleratedKMeans();
-    void initializeBarycenterComputers(vector<dataType> min_persistence);
     void printDistancesToFile();
     void printMatchings(std::vector<std::vector<std::vector<matchingTuple>>>);
     void printRealDistancesToFile();
@@ -123,12 +120,6 @@ namespace ttk {
       computeBarycenterForTwo(vector<vector<vector<vector<matchingTuple>>>> &);
 
     void acceleratedUpdateClusters();
-    std::vector<dataType> updateCentroidsPosition(
-      std::vector<std::vector<dataType>> *min_price,
-      std::vector<std::vector<dataType>> *min_diag_price,
-      std::vector<std::vector<std::vector<std::vector<matchingTuple>>>>
-        &all_matchings,
-      int only_matchings);
 
     inline void resetDosToOriginalValues() {
       do_min_ = original_dos[0];
@@ -281,10 +272,6 @@ namespace ttk {
     }
 
   protected:
-    std::vector<PDBarycenter<dataType>> barycenter_computer_min_;
-    std::vector<PDBarycenter<dataType>> barycenter_computer_sad_;
-    std::vector<PDBarycenter<dataType>> barycenter_computer_max_;
-
     bool barycenter_inputs_reset_flag;
     bool precision_criterion_;
     bool precision_max_;

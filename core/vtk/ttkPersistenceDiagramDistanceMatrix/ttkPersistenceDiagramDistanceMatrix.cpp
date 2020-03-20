@@ -91,80 +91,46 @@ int ttkPersistenceDiagramDistanceMatrix::RequestData(
       }
     }
 
-    if(Method == 0) {
-      // Progressive approach
-      PersistenceDiagramDistanceMatrix<double> persistenceDiagramsClustering;
-      persistenceDiagramsClustering.setWrapper(this);
+    // if(Method == 0) {
+    // Progressive approach
+    PersistenceDiagramDistanceMatrix<double> persistenceDiagramsClustering;
+    persistenceDiagramsClustering.setWrapper(this);
 
-      string wassersteinMetric = WassersteinMetric;
+    string wassersteinMetric = WassersteinMetric;
 
-      if(!UseInterruptible) {
-        TimeLimit = 999999999;
-      }
-      persistenceDiagramsClustering.setWasserstein(wassersteinMetric);
-      persistenceDiagramsClustering.setDeterministic(Deterministic);
-      persistenceDiagramsClustering.setForceUseOfAlgorithm(ForceUseOfAlgorithm);
-      persistenceDiagramsClustering.setPairTypeClustering(PairTypeClustering);
-      persistenceDiagramsClustering.setNumberOfInputs(numInputs);
-      persistenceDiagramsClustering.setDebugLevel(debugLevel_);
-      persistenceDiagramsClustering.setTimeLimit(TimeLimit);
-      persistenceDiagramsClustering.setUseProgressive(UseProgressive);
-      persistenceDiagramsClustering.setThreadNumber(threadNumber_);
-      persistenceDiagramsClustering.setAlpha(Alpha);
-      persistenceDiagramsClustering.setDeltaLim(DeltaLim);
-      persistenceDiagramsClustering.setUseDeltaLim(UseAdditionalPrecision);
-      persistenceDiagramsClustering.setLambda(Lambda);
-      persistenceDiagramsClustering.setNumberOfClusters(NumberOfClusters);
-      persistenceDiagramsClustering.setUseAccelerated(UseAccelerated);
-      persistenceDiagramsClustering.setUseKmeansppInit(UseKmeansppInit);
-      persistenceDiagramsClustering.setDistanceWritingOptions(
-        DistanceWritingOptions);
-      persistenceDiagramsClustering.setOutputDistanceMatrix(
-        OutputDistanceMatrix);
-      persistenceDiagramsClustering.setUseFullDiagrams(UseFullDiagrams);
-      persistenceDiagramsClustering.setPerClusterDistanceMatrix(
-        PerClusterDistanceMatrix);
-
-      inv_clustering_ = persistenceDiagramsClustering.execute(
-        intermediateDiagrams_, final_centroids_, all_matchings_);
-
-      diagramsDistMat = persistenceDiagramsClustering.getDiagramsDistMat();
-      distanceToCentroid
-        = persistenceDiagramsClustering.getDistanceToCentroid();
-
-      needUpdate_ = false;
+    if(!UseInterruptible) {
+      TimeLimit = 999999999;
     }
+    persistenceDiagramsClustering.setWasserstein(wassersteinMetric);
+    persistenceDiagramsClustering.setDeterministic(Deterministic);
+    persistenceDiagramsClustering.setForceUseOfAlgorithm(ForceUseOfAlgorithm);
+    persistenceDiagramsClustering.setPairTypeClustering(PairTypeClustering);
+    persistenceDiagramsClustering.setNumberOfInputs(numInputs);
+    persistenceDiagramsClustering.setDebugLevel(debugLevel_);
+    persistenceDiagramsClustering.setTimeLimit(TimeLimit);
+    persistenceDiagramsClustering.setUseProgressive(UseProgressive);
+    persistenceDiagramsClustering.setThreadNumber(threadNumber_);
+    persistenceDiagramsClustering.setAlpha(Alpha);
+    persistenceDiagramsClustering.setDeltaLim(DeltaLim);
+    persistenceDiagramsClustering.setUseDeltaLim(UseAdditionalPrecision);
+    persistenceDiagramsClustering.setLambda(Lambda);
+    persistenceDiagramsClustering.setNumberOfClusters(NumberOfClusters);
+    persistenceDiagramsClustering.setUseAccelerated(UseAccelerated);
+    persistenceDiagramsClustering.setUseKmeansppInit(UseKmeansppInit);
+    persistenceDiagramsClustering.setDistanceWritingOptions(
+      DistanceWritingOptions);
+    persistenceDiagramsClustering.setOutputDistanceMatrix(OutputDistanceMatrix);
+    persistenceDiagramsClustering.setUseFullDiagrams(UseFullDiagrams);
+    persistenceDiagramsClustering.setPerClusterDistanceMatrix(
+      PerClusterDistanceMatrix);
 
-    else {
-      // AUCTION APPROACH
-      final_centroids_.resize(1);
-      inv_clustering_.resize(numInputs);
-      for(int i_input = 0; i_input < numInputs; i_input++) {
-        inv_clustering_[i_input] = 0;
-      }
-      PersistenceDiagramBarycenter<double> persistenceDiagramsBarycenter;
-      persistenceDiagramsBarycenter.setWrapper(this);
+    inv_clustering_ = persistenceDiagramsClustering.execute(
+      intermediateDiagrams_, final_centroids_, all_matchings_);
 
-      string wassersteinMetric = WassersteinMetric;
-      persistenceDiagramsBarycenter.setWasserstein(wassersteinMetric);
-      persistenceDiagramsBarycenter.setMethod(2);
-      persistenceDiagramsBarycenter.setNumberOfInputs(numInputs);
-      persistenceDiagramsBarycenter.setTimeLimit(TimeLimit);
-      persistenceDiagramsBarycenter.setDeterministic(Deterministic);
-      persistenceDiagramsBarycenter.setUseProgressive(UseProgressive);
-      persistenceDiagramsBarycenter.setDebugLevel(debugLevel_);
-      persistenceDiagramsBarycenter.setThreadNumber(threadNumber_);
-      persistenceDiagramsBarycenter.setAlpha(Alpha);
-      persistenceDiagramsBarycenter.setLambda(Lambda);
-      // persistenceDiagramsBarycenter.setReinitPrices(ReinitPrices);
-      // persistenceDiagramsBarycenter.setEpsilonDecreases(EpsilonDecreases);
-      // persistenceDiagramsBarycenter.setEarlyStoppage(EarlyStoppage);
+    diagramsDistMat = persistenceDiagramsClustering.getDiagramsDistMat();
+    distanceToCentroid = persistenceDiagramsClustering.getDistanceToCentroid();
 
-      persistenceDiagramsBarycenter.execute(
-        intermediateDiagrams_, final_centroids_[0], all_matchings_);
-
-      needUpdate_ = false;
-    }
+    needUpdate_ = false;
   }
 
   // zero-padd column name to keep Row Data columns ordered

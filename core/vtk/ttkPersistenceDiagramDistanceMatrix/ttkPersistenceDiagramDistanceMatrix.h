@@ -55,8 +55,6 @@
 // ttk code includes
 #include <PersistenceDiagramDistanceMatrix.h>
 //
-#include <PersistenceDiagramBarycenter.h>
-//
 #include <ttkTriangulationAlgorithm.h>
 
 // in this example, this wrapper takes a data-set on the input and produces a

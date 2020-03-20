@@ -205,7 +205,6 @@ std::vector<int> PDDistMat<dataType>::execute(
       printClustering();
       // std::cout<<std::endl;
     }
-    initializeBarycenterComputers(min_persistence);
     // cout<<"barycenter size : "<<centroids_max_[0].size()<<endl;
     // std::cout<<"entering the loop"<<std::endl;
     // cout<<"initial epsilons : "<<epsilon_[0]<<" "<<epsilon_[1]<<"
@@ -302,9 +301,6 @@ std::vector<int> PDDistMat<dataType>::execute(
 
         // cout<<" update centroid "<<endl;
         // cout<<"EPSILON FOR MATCHINGS : "<<epsilon_[2]<<endl;
-        std::vector<dataType> max_shift_vec = updateCentroidsPosition(
-          &min_off_diag_price, &min_diag_price,
-          all_matchings_per_type_and_cluster, matchings_only);
         // cout<<" update centroid done"<<endl;
         if(do_min_ && !UseDeltaLim_) {
           precision_min_ = (epsilon_[0] < epsilon0[0] / 500.);
@@ -314,24 +310,6 @@ std::vector<int> PDDistMat<dataType>::execute(
         }
         if(do_max_ && !UseDeltaLim_) {
           precision_max_ = (epsilon_[2] < epsilon0[2] / 500.);
-        }
-
-        for(int i_crit = 0; i_crit < 3; i_crit++) {
-          if(*(current_dos[i_crit]) /*&& (!*(current_prec[i_crit]) || !diagrams_complete[i_crit] ) */) {
-            // cout<<"maxshift : "<<max_shift_vec[2]<<endl;
-            epsilon_candidate[i_crit] = std::min(
-              std::max(max_shift_vec[i_crit] / 8., epsilon_[i_crit] / 5.),
-              epsilon0[i_crit] / pow(n_iterations_, 2));
-
-            if(epsilon_candidate[i_crit] < epsilon_[i_crit]
-               && (!diagrams_complete[i_crit])) {
-              epsilon_[i_crit] = epsilon_candidate[i_crit];
-            } else if(diagrams_complete[i_crit]) {
-              epsilon_[i_crit] = epsilon_candidate[i_crit];
-            } else {
-              epsilon_[i_crit] *= 0.95;
-            }
-          }
         }
 
         if(epsilon_[0] < epsilon_min_ /*&& diagrams_complete[0]*/) {
@@ -833,8 +811,7 @@ std::vector<std::vector<dataType>> PDDistMat<dataType>::getMinPrices() {
 }
 
 template <typename dataType>
-std::vector<std::vector<dataType>>
-  PDDistMat<dataType>::getMinDiagonalPrices() {
+std::vector<std::vector<dataType>> PDDistMat<dataType>::getMinDiagonalPrices() {
   std::vector<std::vector<dataType>> min_prices(3);
   if(original_dos[0]) {
     for(int i = 0; i < numberOfInputs_; ++i) {
@@ -887,19 +864,17 @@ std::vector<std::vector<dataType>>
 }
 
 template <typename dataType>
-dataType
-  PDDistMat<dataType>::computeDistance(const BidderDiagram<dataType> &D1,
-                                          const BidderDiagram<dataType> &D2,
-                                          const double delta_lim) {
+dataType PDDistMat<dataType>::computeDistance(const BidderDiagram<dataType> &D1,
+                                              const BidderDiagram<dataType> &D2,
+                                              const double delta_lim) {
   GoodDiagram<dataType> D2_bis = diagramToCentroid(D2);
   return computeDistance(D1, D2_bis, delta_lim);
 }
 
 template <typename dataType>
-dataType
-  PDDistMat<dataType>::computeDistance(const BidderDiagram<dataType> D1,
-                                          const GoodDiagram<dataType> D2,
-                                          const double delta_lim) {
+dataType PDDistMat<dataType>::computeDistance(const BidderDiagram<dataType> D1,
+                                              const GoodDiagram<dataType> D2,
+                                              const double delta_lim) {
   std::vector<matchingTuple> matchings;
   const auto D2_bis = centroidWithZeroPrices(D2);
   Auction<dataType> auction(
@@ -912,8 +887,8 @@ dataType
 template <typename dataType>
 dataType
   PDDistMat<dataType>::computeDistance(BidderDiagram<dataType> *const D1,
-                                          const GoodDiagram<dataType> *const D2,
-                                          const double delta_lim) {
+                                       const GoodDiagram<dataType> *const D2,
+                                       const double delta_lim) {
   std::vector<matchingTuple> matchings;
   Auction<dataType> auction(
     wasserstein_, geometrical_factor_, lambda_, delta_lim, use_kdtree_);
@@ -927,10 +902,9 @@ dataType
 }
 
 template <typename dataType>
-dataType
-  PDDistMat<dataType>::computeDistance(const GoodDiagram<dataType> &D1,
-                                          const GoodDiagram<dataType> &D2,
-                                          const double delta_lim) {
+dataType PDDistMat<dataType>::computeDistance(const GoodDiagram<dataType> &D1,
+                                              const GoodDiagram<dataType> &D2,
+                                              const double delta_lim) {
   BidderDiagram<dataType> D1_bis = centroidToDiagram(D1);
   return computeDistance(D1_bis, D2, delta_lim);
 }
@@ -960,8 +934,8 @@ BidderDiagram<dataType> PDDistMat<dataType>::diagramWithZeroPrices(
 }
 
 template <typename dataType>
-BidderDiagram<dataType> PDDistMat<dataType>::centroidToDiagram(
-  const GoodDiagram<dataType> centroid) {
+BidderDiagram<dataType>
+  PDDistMat<dataType>::centroidToDiagram(const GoodDiagram<dataType> centroid) {
   BidderDiagram<dataType> BD = BidderDiagram<dataType>();
   for(int i = 0; i < centroid.size(); i++) {
     Good<dataType> g = centroid.get(i);
@@ -1684,619 +1658,6 @@ void PDDistMat<dataType>::acceleratedUpdateClusters() {
 }
 
 template <typename dataType>
-std::vector<dataType> PDDistMat<dataType>::updateCentroidsPosition(
-  std::vector<std::vector<dataType>> *min_price,
-  std::vector<std::vector<dataType>> *min_diag_price,
-  std::vector<std::vector<std::vector<std::vector<matchingTuple>>>>
-    &all_matchings_per_type_and_cluster,
-  int only_matchings) {
-  barycenter_inputs_reset_flag = true;
-  std::vector<dataType> max_shift_vector(3);
-  max_shift_vector[0] = 0;
-  max_shift_vector[1] = 0;
-  max_shift_vector[2] = 0;
-  dataType max_shift_c_min = 0;
-  dataType max_shift_c_sad = 0;
-  dataType max_shift_c_max = 0;
-  dataType max_wasserstein_shift = 0;
-  bool precision_min = true;
-  bool precision_sad = true;
-  bool precision_max = true;
-  cost_ = 0;
-  dataType sq_dist_min = cost_min_;
-  dataType sq_dist_sad = cost_sad_;
-  dataType sq_dist_max = cost_max_;
-  if(do_min_) {
-    cost_min_ = 0;
-  }
-  if(do_sad_) {
-    cost_sad_ = 0;
-  }
-  if(do_max_) {
-    cost_max_ = 0;
-  }
-  // std::cout<<"here 1"<<std::endl;
-  for(int c = 0; c < k_; ++c) {
-    if(clustering_[c].size() > 0) {
-      std::vector<GoodDiagram<dataType>> centroids_with_price_min,
-        centroids_with_price_sad, centroids_with_price_max;
-      int count = 0;
-      for(int idx : clustering_[c]) {
-        // Timer time_first_thing;
-        int number_of_points_min = 0;
-        int number_of_points_max = 0;
-        int number_of_points_sad = 0;
-        // Find the position of diagrams[idx] in old cluster c
-        vector<int>::iterator i = std::find(
-          old_clustering_[c].begin(), old_clustering_[c].end(), idx);
-        int pos = (i == old_clustering_[c].end())
-                    ? -1
-                    : std::distance(old_clustering_[c].begin(), i);
-        if(pos >= 0) {
-          // Diagram was already linked to this centroid before
-          if(do_min_) {
-            centroids_with_price_min.push_back(centroids_with_price_min_[idx]);
-            number_of_points_min += centroids_with_price_min_[idx].size()
-                                    + current_bidder_diagrams_min_[idx].size();
-          }
-          if(do_sad_) {
-            centroids_with_price_sad.push_back(
-              centroids_with_price_saddle_[idx]);
-            number_of_points_sad
-              += centroids_with_price_saddle_[idx].size()
-                 + current_bidder_diagrams_saddle_[idx].size();
-          }
-          if(do_max_) {
-            centroids_with_price_max.push_back(centroids_with_price_max_[idx]);
-            number_of_points_max += centroids_with_price_max_[idx].size()
-                                    + current_bidder_diagrams_max_[idx].size();
-          }
-        } else {
-          // Otherwise, centroid is given 0 prices and the diagram is given 0
-          // diagonal-prices
-          if(do_min_) {
-            centroids_with_price_min.push_back(
-              centroidWithZeroPrices(centroids_min_[c]));
-            current_bidder_diagrams_min_[idx]
-              = diagramWithZeroPrices(current_bidder_diagrams_min_[idx]);
-            number_of_points_min += centroids_with_price_min_[idx].size()
-                                    + current_bidder_diagrams_min_[idx].size();
-          }
-          if(do_sad_) {
-            centroids_with_price_sad.push_back(
-              centroidWithZeroPrices(centroids_saddle_[c]));
-            current_bidder_diagrams_saddle_[idx]
-              = diagramWithZeroPrices(current_bidder_diagrams_saddle_[idx]);
-            number_of_points_sad
-              += centroids_with_price_saddle_[idx].size()
-                 + current_bidder_diagrams_saddle_[idx].size();
-          }
-          if(do_max_) {
-            centroids_with_price_max.push_back(
-              centroidWithZeroPrices(centroids_max_[c]));
-            current_bidder_diagrams_max_[idx]
-              = diagramWithZeroPrices(current_bidder_diagrams_max_[idx]);
-            number_of_points_max += centroids_with_price_max_[idx].size()
-                                    + current_bidder_diagrams_max_[idx].size();
-          }
-
-          if(n_iterations_ > 1) {
-            // If diagram new to cluster and we're not at first iteration,
-            // precompute prices for the objects via compute_distance()
-            // number_of_points /= (int)do_min_ + (int)do_sad_ + (int)do_max_;
-            // dataType d_estimated = pow(cost_ / numberOfInputs_, 1. /
-            // wasserstein_) + 1e-7; We use pointer in the auction in order to
-            // keep the prices at the end
-
-            if(do_min_) {
-              // dataType estimated_delta_lim = number_of_points_min *
-              // epsilon_[0] / (2*sq_dist_min) ;
-              dataType estimated_delta_lim
-                = 1.
-                    / sqrt(1 - number_of_points_min * epsilon_[0] / sq_dist_min)
-                  - 1;
-              if(estimated_delta_lim > 1) {
-                estimated_delta_lim = 1;
-              }
-              computeDistance(&(current_bidder_diagrams_min_[idx]),
-                              &(centroids_with_price_min[count]),
-                              estimated_delta_lim);
-            }
-            if(do_sad_) {
-              // dataType estimated_delta_lim = number_of_points_sad *
-              // epsilon_[1] / (2*sq_dist_sad);
-              dataType estimated_delta_lim
-                = 1.
-                    / sqrt(1 - number_of_points_sad * epsilon_[1] / sq_dist_sad)
-                  - 1;
-              if(estimated_delta_lim > 1) {
-                estimated_delta_lim = 1;
-              }
-              computeDistance(&(current_bidder_diagrams_saddle_[idx]),
-                              &(centroids_with_price_sad[count]),
-                              estimated_delta_lim);
-            }
-            if(do_max_) {
-              // dataType estimated_delta_lim = number_of_points_max *
-              // epsilon_[2] / (2*sq_dist_max);
-              dataType estimated_delta_lim
-                = 1.
-                    / sqrt(1 - number_of_points_max * epsilon_[2] / sq_dist_max)
-                  - 1;
-              if(estimated_delta_lim > 1) {
-                estimated_delta_lim = 1;
-              }
-              computeDistance(&(current_bidder_diagrams_max_[idx]),
-                              &(centroids_with_price_max[count]),
-                              estimated_delta_lim);
-            }
-          }
-        }
-        count++;
-        // cout<<"time first_thing "<<time_first_thing.getElapsedTime()<<endl;
-      }
-      // std::cout<<"here 2"<<std::endl;
-      dataType total_cost = 0;
-      dataType wasserstein_shift = 0;
-
-      if(do_min_) {
-        std::vector<std::vector<matchingTuple>> all_matchings;
-        // cout<<"do_min"<<endl;
-        // cout<<"size of bidder array min :
-        // "<<current_bidder_diagrams_min_.size()<<endl; cout << "starting
-        // bullshit before matchings computations"
-        // << endl;
-        std::vector<int> sizes;
-        Timer time_preprocess_bary;
-        std::vector<BidderDiagram<dataType>> diagrams_c_min;
-        if(barycenter_inputs_reset_flag) {
-          // cout<<"resetting inputs bec of flag"<<endl;
-          for(int idx : clustering_[c]) {
-            diagrams_c_min.push_back(current_bidder_diagrams_min_[idx]);
-          }
-          sizes.resize(diagrams_c_min.size());
-          for(unsigned int i = 0; i < diagrams_c_min.size(); i++) {
-            sizes[i] = diagrams_c_min[i].size();
-          }
-          barycenter_computer_min_[c].setNumberOfInputs(diagrams_c_min.size());
-          barycenter_computer_min_[c].setCurrentBidders(diagrams_c_min);
-
-          vector<GoodDiagram<dataType>> barycenter_goods(clustering_[c].size());
-          for(unsigned int i_diagram = 0; i_diagram < clustering_[c].size();
-              i_diagram++) {
-            barycenter_goods[i_diagram]
-              = centroids_with_price_min_[clustering_[c][i_diagram]];
-          }
-          barycenter_computer_min_[c].setCurrentBarycenter(barycenter_goods);
-          all_matchings.resize(diagrams_c_min.size());
-          // cout << "all done" << endl;
-        } else {
-          // cout << "keeping same inputs" << endl;
-          sizes.resize(barycenter_computer_min_[c].getCurrentBidders().size());
-          for(unsigned int i = 0;
-              i < barycenter_computer_min_[c].getCurrentBidders().size(); i++) {
-            sizes[i]
-              = barycenter_computer_min_[c].getCurrentBidders().at(i).size();
-          }
-          diagrams_c_min.resize(
-            barycenter_computer_min_[c].getCurrentBidders().size());
-          all_matchings.resize(
-            barycenter_computer_min_[c].getCurrentBidders().size());
-          // cout<<"all done : size of diagmin :"<<diagrams_c_min.size()<<endl;
-        }
-        // cout << "more bs" << endl;
-        // std::vector<dataType>
-        // min_diag_price(barycenter_computer_min_[c].getCurrentBidders().size());
-        // std::vector<dataType>
-        // min_price(barycenter_computer_min_[c].getCurrentBidders().size());
-        // for (unsigned int i = 0; i <
-        // barycenter_computer_min_[c].getCurrentBidders().size(); i++) {
-        //     min_diag_price[i] = 0;
-        //     min_price[i] = 0;
-        // }
-        // cout << "min diag prices and all done" << endl;
-        std::pair<KDTree<dataType> *, std::vector<KDTree<dataType> *>> pair;
-        bool use_kdt = false;
-        if(barycenter_computer_min_[c].getCurrentBarycenter()[0].size() > 0) {
-          pair = barycenter_computer_min_[c].getKDTree();
-          use_kdt = true;
-        }
-        KDTree<dataType> *kdt = pair.first;
-        std::vector<KDTree<dataType> *> &correspondance_kdt_map = pair.second;
-
-        // cout<<"size of bidders :
-        // "<<barycenter_computer_min_[c].getCurrentBidders().size()<<endl;
-        // std::cout << "min : run matchings" << std::endl;
-        // cout<<"min time_preprocess_bary
-        // "<<time_preprocess_bary.getElapsedTime()<<endl; cout<<"time_matchings
-        // min "; cout<<"run matchings "<<endl;
-        barycenter_computer_min_[c].runMatching(
-          &total_cost, epsilon_[0], sizes, kdt, &correspondance_kdt_map,
-          &(min_diag_price->at(0)), &(min_price->at(0)), &(all_matchings),
-          use_kdt, only_matchings);
-        for(unsigned int ii = 0; ii < all_matchings.size(); ii++) {
-          all_matchings_per_type_and_cluster[c][0][ii].resize(
-            all_matchings[ii].size());
-          all_matchings_per_type_and_cluster[c][0][ii] = all_matchings[ii];
-        }
-        for(int ii = all_matchings.size(); ii < numberOfInputs_; ii++) {
-          all_matchings_per_type_and_cluster[c][0][ii].resize(0);
-        }
-        // cout<<"matchings done"<<endl;
-        // std::cout<<"min : runned, now updating barycenter"<<std::endl;
-        precision_min
-          = barycenter_computer_min_[c].isPrecisionObjectiveMet(deltaLim_, 0);
-        cost_min_ += sqrt(total_cost);
-        Timer time_update;
-        if(!only_matchings) {
-          max_shift_c_min
-            = barycenter_computer_min_[c].updateBarycenter(all_matchings);
-        }
-        // cout<<"time update min "<<time_update.getElapsedTime()<<endl;
-        // std::cout<<"min : barycenter updated"<<std::endl;
-        if(max_shift_c_min > max_shift_vector[0]) {
-          max_shift_vector[0] = max_shift_c_min;
-        }
-
-        // Now that barycenters and diagrams are updated in
-        // PDBarycenter class, we import the results here.
-        diagrams_c_min = barycenter_computer_min_[c].getCurrentBidders();
-        centroids_with_price_min
-          = barycenter_computer_min_[c].getCurrentBarycenter();
-        int i = 0;
-        // cout<<"stuff here"<<endl;
-        // cout<<"cluster "<<c<<endl;
-        // for(int ic=0;ic<clustering_[c].size();ic++){
-        // cout<<" "<<clustering_[c][ic];}
-        // cout<<endl;
-        for(int idx : clustering_[c]) {
-          // cout<<"test "<<i<<" "<<current_bidder_diagrams_min_.size()<<"
-          // "<<diagrams_c_min.size()<<endl;
-          current_bidder_diagrams_min_[idx] = diagrams_c_min[i];
-          // cout<<"test "<<i<<endl;
-          centroids_with_price_min_[idx] = centroids_with_price_min[i];
-          // cout<<"test "<<i<<endl;
-          i++;
-        }
-        // cout<<"stuff done"<<endl;
-
-        GoodDiagram<dataType> old_centroid = centroids_min_[c];
-        centroids_min_[c] = centroidWithZeroPrices(
-          centroids_with_price_min_[clustering_[c][0]]);
-        // std::cout<<"yo"<<std::endl;
-        // cout<<"here"<<endl;
-        if(use_accelerated_) {
-          wasserstein_shift
-            += computeDistance(old_centroid, centroids_min_[c], 0.01);
-        }
-        // cout<<"heredend"<<endl;
-
-        delete kdt;
-      }
-
-      // std::cout<<"here 3"<<std::endl;
-      if(do_sad_) {
-        std::vector<std::vector<matchingTuple>> all_matchings;
-        total_cost = 0;
-        std::vector<int> sizes;
-
-        std::vector<BidderDiagram<dataType>> diagrams_c_min;
-        if(barycenter_inputs_reset_flag) {
-          for(int idx : clustering_[c]) {
-            diagrams_c_min.push_back(current_bidder_diagrams_saddle_[idx]);
-          }
-          sizes.resize(diagrams_c_min.size());
-          for(unsigned int i = 0; i < diagrams_c_min.size(); i++) {
-            sizes[i] = diagrams_c_min[i].size();
-          }
-          barycenter_computer_sad_[c].setNumberOfInputs(diagrams_c_min.size());
-          barycenter_computer_sad_[c].setCurrentBidders(diagrams_c_min);
-          vector<GoodDiagram<dataType>> barycenter_goods(clustering_[c].size());
-          for(unsigned int i_diagram = 0; i_diagram < clustering_[c].size();
-              i_diagram++) {
-            barycenter_goods[i_diagram]
-              = centroids_with_price_saddle_[clustering_[c][i_diagram]];
-          }
-          barycenter_computer_sad_[c].setCurrentBarycenter(barycenter_goods);
-          all_matchings.resize(diagrams_c_min.size());
-        } else {
-          sizes.resize(barycenter_computer_sad_[c].getCurrentBidders().size());
-          for(unsigned int i = 0;
-              i < barycenter_computer_sad_[c].getCurrentBidders().size(); i++) {
-            sizes[i]
-              = barycenter_computer_sad_[c].getCurrentBidders().at(i).size();
-          }
-          all_matchings.resize(
-            barycenter_computer_sad_[c].getCurrentBidders().size());
-          diagrams_c_min.resize(
-            barycenter_computer_sad_[c].getCurrentBidders().size());
-        }
-
-        // std::vector<dataType>
-        // min_diag_price(barycenter_computer_sad_[c].getCurrentBidders().size());
-        // std::vector<dataType>
-        // min_price(barycenter_computer_sad_[c].getCurrentBidders().size());
-        // for (unsigned int i = 0; i <
-        // barycenter_computer_sad_[c].getCurrentBidders().size(); i++) {
-        //     min_diag_price[i] = 0;
-        //     min_price[i] = 0;
-        // }
-
-        std::pair<KDTree<dataType> *, std::vector<KDTree<dataType> *>> pair;
-        bool use_kdt = false;
-        if(barycenter_computer_sad_[c].getCurrentBarycenter()[0].size() > 0) {
-          pair = barycenter_computer_sad_[c].getKDTree();
-          use_kdt = true;
-        }
-        KDTree<dataType> *kdt = pair.first;
-        std::vector<KDTree<dataType> *> &correspondance_kdt_map = pair.second;
-
-        // std::cout<<"sad : run matchings"<<std::endl;
-        barycenter_computer_sad_[c].runMatching(
-          &total_cost, epsilon_[1], sizes, kdt, &correspondance_kdt_map,
-          &(min_diag_price->at(1)), &(min_price->at(1)), &(all_matchings),
-          use_kdt, only_matchings);
-        for(unsigned int ii = 0; ii < all_matchings.size(); ii++) {
-          all_matchings_per_type_and_cluster[c][1][ii].resize(
-            all_matchings[ii].size());
-          all_matchings_per_type_and_cluster[c][1][ii] = all_matchings[ii];
-        }
-        for(int ii = all_matchings.size(); ii < numberOfInputs_; ii++) {
-          all_matchings_per_type_and_cluster[c][1][ii].resize(0);
-        }
-
-        precision_sad
-          = barycenter_computer_sad_[c].isPrecisionObjectiveMet(deltaLim_, 0);
-        if(!only_matchings) {
-          max_shift_c_sad
-            = barycenter_computer_sad_[c].updateBarycenter(all_matchings);
-        }
-        // std::cout<<"sad : runned, now updating barycenter"<<std::endl;
-        cost_sad_ += sqrt(total_cost);
-        // std::cout<<"sad : barycenter updated"<<std::endl;
-        if(max_shift_c_sad > max_shift_vector[1]) {
-          max_shift_vector[1] = max_shift_c_sad;
-        }
-
-        // Now that barycenters and diagrams are updated in PDBarycenter class,
-        // we import the results here.
-        diagrams_c_min = barycenter_computer_sad_[c].getCurrentBidders();
-        centroids_with_price_sad
-          = barycenter_computer_sad_[c].getCurrentBarycenter();
-        int i = 0;
-        for(int idx : clustering_[c]) {
-          current_bidder_diagrams_saddle_[idx] = diagrams_c_min[i];
-          centroids_with_price_saddle_[idx] = centroids_with_price_sad[i];
-          i++;
-        }
-        GoodDiagram<dataType> old_centroid = centroids_saddle_[c];
-        centroids_saddle_[c] = centroidWithZeroPrices(
-          centroids_with_price_saddle_[clustering_[c][0]]);
-        if(use_accelerated_)
-          wasserstein_shift
-            += computeDistance(old_centroid, centroids_saddle_[c], 0.01);
-
-        delete kdt;
-      }
-
-      if(do_max_) {
-        // cout<<"size of bidder array max :
-        // "<<current_bidder_diagrams_max_.size()<<endl;
-        std::vector<std::vector<matchingTuple>> all_matchings;
-        // std::cout<<"here 4"<<std::endl;
-        // cout<<"do_max"<<endl;
-        Timer time_preprocess_bary;
-        total_cost = 0;
-        std::vector<int> sizes;
-        std::vector<BidderDiagram<dataType>> diagrams_c_min;
-        if(barycenter_inputs_reset_flag) {
-          for(int idx : clustering_[c]) {
-            diagrams_c_min.push_back(current_bidder_diagrams_max_[idx]);
-          }
-          sizes.resize(diagrams_c_min.size());
-          for(unsigned int i = 0; i < diagrams_c_min.size(); i++) {
-            sizes[i] = diagrams_c_min[i].size();
-          }
-          barycenter_computer_max_[c].setNumberOfInputs(diagrams_c_min.size());
-          barycenter_computer_max_[c].setCurrentBidders(diagrams_c_min);
-          vector<GoodDiagram<dataType>> barycenter_goods(clustering_[c].size());
-          for(unsigned int i_diagram = 0; i_diagram < clustering_[c].size();
-              i_diagram++) {
-            barycenter_goods[i_diagram]
-              = centroids_with_price_max_[clustering_[c][i_diagram]];
-          }
-          // cout<<"BARYCENTER SIZE "<<barycenter_goods[0].size()<<endl;
-          barycenter_computer_max_[c].setCurrentBarycenter(barycenter_goods);
-          all_matchings.resize(diagrams_c_min.size());
-          // cout<<"SIZE OF diagrams_min "<<diagrams_c_min.size()<<endl;
-        } else {
-          sizes.resize(barycenter_computer_max_[c].getCurrentBidders().size());
-          for(unsigned int i = 0;
-              i < barycenter_computer_max_[c].getCurrentBidders().size(); i++) {
-            sizes[i]
-              = barycenter_computer_max_[c].getCurrentBidders().at(i).size();
-          }
-
-          diagrams_c_min.resize(
-            barycenter_computer_max_[c].getCurrentBidders().size());
-          all_matchings.resize(
-            barycenter_computer_max_[c].getCurrentBidders().size());
-        }
-
-        // std::vector<dataType>
-        // min_diag_price(barycenter_computer_max_[c].getCurrentBidders().size());
-        // std::vector<dataType>
-        // min_price(barycenter_computer_max_[c].getCurrentBidders().size());
-        // for (unsigned int i = 0; i <
-        // barycenter_computer_max_[c].getCurrentBidders().size(); i++) {
-        //     min_diag_price[i] = 0;
-        //     min_price[i] = 0;
-        // }
-        // cout<<"one more test  :  centroids max size
-        // "<<centroids_with_price_max.size()<<"
-        // "<<centroids_with_price_max[0].size()<<endl;
-
-        std::pair<KDTree<dataType> *, std::vector<KDTree<dataType> *>> pair;
-        bool use_kdt = false;
-        if(barycenter_computer_max_[c].getCurrentBarycenter()[0].size() > 0) {
-          pair = barycenter_computer_max_[c].getKDTree();
-          use_kdt = true;
-        }
-        // cout<<"here?"<<endl;
-        KDTree<dataType> *kdt = pair.first;
-        std::vector<KDTree<dataType> *> &correspondance_kdt_map = pair.second;
-
-        // cout<<"max time_preprocess_bary
-        // "<<time_preprocess_bary.getElapsedTime()<<endl; std::cout<<"max : run
-        // matchings"<<std::endl;
-
-        // cout<<" FUCKIN BARYCENTER "<<endl;
-        // vector<GoodDiagram<dataType>> barycenterde =
-        // barycenter_computer_max_[c].getCurrentBarycenter(); for(int i2 = 0;
-        // i2 < barycenterde.size(); i2++) {
-        //     Good<dataType> g = barycenterde[0].get(i2);
-        //     cout << " good " << i2 << " " << g.x_ << " " << g.y_ << " " <<
-        //     g.id_ << endl;
-        // }
-
-        // cout<<" FUCKIN DIAGRAMS "<<endl;
-        // for(int i1 = 0; i1<diagrams_c_min.size(); i1++){
-        //     for(int i2 = 0; i2<diagrams_c_min[i1].size(); i2++){
-        //         Bidder<dataType> b = diagrams_c_min[i1].get(i2);
-        //         cout << " bidder " << i1 << " " << i2 << " " << b.x_ << " "
-        //         << b.y_ << " "<<b.id_ << endl;
-        //     }
-        // }
-
-        // cout<<"sizes :"<<endl;
-        // for(int ii=0;ii<sizes.size();ii++){
-        // cout<<" "<<sizes[ii];}
-        // cout<<"\n"<<endl;
-        // // cout<<"time_matchings max ";
-        // // cout<<" size bidders :
-        // "<<current_bidder_diagrams_max_[0].size()<<"
-        // "<<current_bidder_diagrams_max_[1].size()<<endl;
-        // // cout<<"use kdt : "<<use_kdt<<endl;
-
-        // cout<<"min price "<<endl;
-        // for(int ii=0; ii<min_price->at(2).size(); ii++){
-        //     cout<<" "<<(*min_price)[2][ii];
-        // }
-        // cout<<"min diag price ";
-        // for(int ii=0; ii<min_diag_price->at(2).size(); ii++){
-        //     cout<<" "<<(*min_diag_price)[2][ii];
-        // }
-        // cout<<endl;
-        // // cout<<"running matchings max"<<endl;
-        // cout<<"size centroid "<<centroids_with_price_max[c].size()<<endl;
-        barycenter_computer_max_[c].runMatching(
-          &total_cost, epsilon_[2], sizes, kdt, &correspondance_kdt_map,
-          &(min_diag_price->at(2)), &(min_price->at(2)), &(all_matchings),
-          use_kdt, only_matchings);
-        for(unsigned int ii = 0; ii < all_matchings.size(); ii++) {
-          all_matchings_per_type_and_cluster[c][2][ii].resize(
-            all_matchings[ii].size());
-          all_matchings_per_type_and_cluster[c][2][ii] = all_matchings[ii];
-        }
-        for(int ii = all_matchings.size(); ii < numberOfInputs_; ii++) {
-          all_matchings_per_type_and_cluster[c][2][ii].resize(0);
-        }
-        precision_max
-          = barycenter_computer_max_[c].isPrecisionObjectiveMet(deltaLim_, 0);
-
-        // std::cout<<"max : runned, now updating barycenter"<<std::endl;
-        // cout<<" COST FROM MATCHINGS "<<sqrt(total_cost)<<endl;
-        cost_max_ += sqrt(total_cost);
-        Timer time_update;
-        // for(int iii=0; iii<centroids_with_price_max.size(); iii++){
-        //     cout<<"BARYCENTER SIZE BEFORE UPDATE
-        //     "<<centroids_with_price_max[iii].size()<<endl;
-        // }
-        if(!only_matchings) {
-          max_shift_c_max
-            = barycenter_computer_max_[c].updateBarycenter(all_matchings);
-        }
-        // cout<<"time update max "<<time_update.getElapsedTime()<<endl;
-        // std::cout<<"max: barycenter updated"<<std::endl;
-        if(max_shift_c_max > max_shift_vector[2]) {
-          max_shift_vector[2] = max_shift_c_max;
-        }
-
-        // Now that barycenters and diagrams are updated in PDBarycenter class,
-        // we import the results here.
-        diagrams_c_min = barycenter_computer_max_[c].getCurrentBidders();
-        centroids_with_price_max
-          = barycenter_computer_max_[c].getCurrentBarycenter();
-        // for(int iii=0; iii<centroids_with_price_max.size(); iii++){
-        //     cout<<"BARYCENTER SIZE AFTER UPDATE
-        //     "<<centroids_with_price_max[iii].size()<<endl;
-        // }
-        int i = 0;
-        for(int idx : clustering_[c]) {
-          current_bidder_diagrams_max_[idx] = diagrams_c_min[i];
-          centroids_with_price_max_[idx] = centroids_with_price_max[i];
-          i++;
-        }
-        GoodDiagram<dataType> old_centroid = centroids_max_[c];
-        centroids_max_[c] = centroidWithZeroPrices(
-          centroids_with_price_max_[clustering_[c][0]]);
-        if(use_accelerated_) {
-          // cout<<"here"<<endl;
-          wasserstein_shift
-            += computeDistance(old_centroid, centroids_max_[c], 0.01);
-          // cout<<"here end"<<endl;
-        }
-        delete kdt;
-        // for(unsigned int i_kdt=0; i_kdt<correspondance_kdt_map.size();
-        // i_kdt++){
-        //     delete correspondance_kdt_map[i_kdt];
-        // }
-      }
-
-      cost_ = cost_min_ + cost_sad_ + cost_max_;
-      // std::cout<<"here"<<std::endl;
-      if(wasserstein_shift > max_wasserstein_shift) {
-        max_wasserstein_shift = wasserstein_shift;
-      }
-      // std::cout<<"there"<<std::endl;
-      if(use_accelerated_) {
-        for(int i = 0; i < numberOfInputs_; ++i) {
-          // Step 5 of Accelerated KMeans: Update the lower bound on distance
-          // thanks to the triangular inequality
-          l_[i][c] = pow(pow(l_[i][c], 1. / wasserstein_)
-                           - pow(wasserstein_shift, 1. / wasserstein_),
-                         wasserstein_);
-          if(l_[i][c] < 0) {
-            l_[i][c] = 0;
-          }
-        }
-        for(int idx : clustering_[c]) {
-          // Step 6, update the upper bound on the distance to the centroid
-          // thanks to the triangle inequality
-          u_[idx] = pow(pow(u_[idx], 1. / wasserstein_)
-                          + pow(wasserstein_shift, 1. / wasserstein_),
-                        wasserstein_);
-          r_[idx] = true;
-        }
-      }
-      // cout<<"there end"<<endl;
-    }
-  }
-  // Normally return max_shift, but it seems there is a bug
-  // yielding max_shift > 100 * max_wasserstein_shift
-  // which should logically not really happen...
-  // This is supposed to be only a temporary patch...
-  // std::cout<<"shifts : "<<max_shift<<" "<<max_wasserstein_shift<<std::endl;
-  precision_min_ = precision_min;
-  precision_sad_ = precision_sad;
-  precision_max_ = precision_max;
-  precision_criterion_ = precision_min && precision_sad && precision_max;
-  barycenter_inputs_reset_flag = false;
-  // cout<<"leaving updatecentroids"<<endl;
-  return max_shift_vector; // std::min(max_shift, max_wasserstein_shift);
-}
-
-template <typename dataType>
 void PDDistMat<dataType>::setBidderDiagrams() {
   for(int i = 0; i < numberOfInputs_; i++) {
     if(do_min_) {
@@ -2774,114 +2135,6 @@ std::vector<dataType> PDDistMat<dataType>::enrichCurrentBidderDiagrams(
   }
 
   return new_min_persistence;
-}
-
-template <typename dataType>
-void PDDistMat<dataType>::initializeBarycenterComputers(
-  vector<dataType> /*min_persistence*/) {
-  // cout<<" initialize barycenter computers "<<geometrical_factor_<<endl;
-  if(do_min_) {
-    // cout << "here0" << endl;
-    barycenter_computer_min_.resize(k_);
-    for(int c = 0; c < k_; c++) {
-      std::vector<BidderDiagram<dataType>> diagrams_c;
-      // cout << "here1" << endl;
-      for(int idx : clustering_[c]) {
-        diagrams_c.push_back(current_bidder_diagrams_min_[idx]);
-      }
-      // cout << "here2" << endl;
-      barycenter_computer_min_[c] = PDBarycenter<dataType>();
-      barycenter_computer_min_[c].setThreadNumber(threadNumber_);
-      barycenter_computer_min_[c].setWasserstein(wasserstein_);
-      barycenter_computer_min_[c].setDiagramType(0);
-      barycenter_computer_min_[c].setUseProgressive(false);
-      barycenter_computer_min_[c].setDeterministic(true);
-      barycenter_computer_min_[c].setGeometricalFactor(geometrical_factor_);
-      barycenter_computer_min_[c].setDebugLevel(debugLevel_);
-      // cout << "here3" << endl;
-      barycenter_computer_min_[c].setNumberOfInputs(diagrams_c.size());
-      // cout << "here4" << endl;
-      barycenter_computer_min_[c].setCurrentBidders(diagrams_c);
-      // cout << "here5" << endl;
-      // vector<GoodDiagram<dataType>> barycenter_goods(clustering_[c].size());
-      // for(int i_diagram = 0; i_diagram<clustering_[c].size(); i_diagram++){
-      //     barycenter_goods[i_diagram] =
-      //     centroids_with_price_min_[clustering_[c][i_diagram]];
-      // }
-      // barycenter_computer_min_[c].setCurrentBarycenter(barycenter_goods);
-      // cout << "here6" << endl;
-      // barycenter_computer_min_[c].setNumberOfInputs(diagrams_c_min.size());
-      // barycenter_computer_min_[c].setCurrentBidders(diagrams_c_min);
-      // barycenter_computer_min_[c].setCurrentBarycenter(centroids_with_price_min);
-    }
-  }
-  if(do_sad_) {
-    barycenter_computer_sad_.resize(k_);
-    for(int c = 0; c < k_; c++) {
-      std::vector<BidderDiagram<dataType>> diagrams_c;
-      for(int idx : clustering_[c]) {
-        diagrams_c.push_back(current_bidder_diagrams_saddle_[idx]);
-      }
-      barycenter_computer_sad_[c] = PDBarycenter<dataType>();
-      barycenter_computer_sad_[c].setThreadNumber(threadNumber_);
-      barycenter_computer_sad_[c].setWasserstein(wasserstein_);
-      barycenter_computer_sad_[c].setDiagramType(1);
-      barycenter_computer_sad_[c].setUseProgressive(false);
-      barycenter_computer_sad_[c].setDeterministic(true);
-      barycenter_computer_sad_[c].setGeometricalFactor(geometrical_factor_);
-      barycenter_computer_sad_[c].setDebugLevel(debugLevel_);
-      barycenter_computer_sad_[c].setNumberOfInputs(diagrams_c.size());
-      barycenter_computer_sad_[c].setCurrentBidders(diagrams_c);
-
-      vector<GoodDiagram<dataType>> barycenter_goods(clustering_[c].size());
-      for(unsigned int i_diagram = 0; i_diagram < clustering_[c].size();
-          i_diagram++) {
-        barycenter_goods[i_diagram]
-          = centroids_with_price_saddle_[clustering_[c][i_diagram]];
-      }
-      barycenter_computer_sad_[c].setCurrentBarycenter(barycenter_goods);
-      // barycenter_computer_sad_[c].setInitialBarycenter(0);
-      // barycenter_computer_sad_[c].setNumberOfInputs(diagrams_c_min.size());
-      // barycenter_computer_sad_[c].setCurrentBidders(diagrams_c_min);
-      // barycenter_computer_sad_[c].setCurrentBarycenter(centroids_with_price_min);
-    }
-  }
-  if(do_max_) {
-    barycenter_computer_max_.resize(k_);
-    for(int c = 0; c < k_; c++) {
-      std::vector<BidderDiagram<dataType>> diagrams_c;
-      for(int idx : clustering_[c]) {
-        diagrams_c.push_back(current_bidder_diagrams_max_[idx]);
-      }
-      barycenter_computer_max_[c] = PDBarycenter<dataType>();
-      barycenter_computer_max_[c].setDiagrams(inputDiagramsMax_);
-      barycenter_computer_max_[c].setThreadNumber(threadNumber_);
-      barycenter_computer_max_[c].setWasserstein(wasserstein_);
-      barycenter_computer_max_[c].setDiagramType(2);
-      barycenter_computer_max_[c].setUseProgressive(false);
-      barycenter_computer_max_[c].setDeterministic(true);
-      barycenter_computer_max_[c].setGeometricalFactor(geometrical_factor_);
-      barycenter_computer_max_[c].setDebugLevel(debugLevel_);
-      barycenter_computer_max_[c].setNumberOfInputs(diagrams_c.size());
-      barycenter_computer_max_[c].setCurrentBidders(diagrams_c);
-
-      // barycenter_computer_max_[c].setInitialBarycenter(min_persistence[2]);
-      vector<GoodDiagram<dataType>> barycenter_goods(clustering_[c].size());
-      for(unsigned int i_diagram = 0; i_diagram < clustering_[c].size();
-          i_diagram++) {
-        barycenter_goods[i_diagram]
-          = centroids_with_price_max_[clustering_[c][i_diagram]];
-      }
-      barycenter_computer_max_[c].setCurrentBarycenter(barycenter_goods);
-      // cout<<" BARYCENTER SIZE "<<barycenter_goods[0].size()<<endl;
-      // barycenter_computer_max_[c].setInitialBarycenter(0);
-      // barycenter_computer_max_[c].setNumberOfInputs(diagrams_c_min.size());
-      // barycenter_computer_max_[c].setCurrentBidders(diagrams_c_min);
-      // barycenter_computer_max_[c].setCurrentBarycenter(centroids_with_price_min);
-    }
-  }
-  // barycenter_inputs_reset_flag = true;
-  // cout<<" initialize barycenter computers done"<<endl;
 }
 
 template <typename dataType>
