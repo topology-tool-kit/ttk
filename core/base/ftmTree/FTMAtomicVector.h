@@ -145,6 +145,10 @@ namespace ttk {
       return this->begin() + nextId;
     }
 
+    const_iterator end() const {
+      return this->begin() + nextId;
+    }
+
     const_iterator cend() const {
       return this->cbegin() + nextId;
     }
