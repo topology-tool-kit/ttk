@@ -1219,39 +1219,6 @@ void PDDistMat<dataType>::computeDiagramsDistanceMatrix() {
 }
 
 template <typename dataType>
-void PDDistMat<dataType>::computeDistanceToCentroid() {
-  distanceToCentroid_.resize(numberOfInputs_);
-
-  for(int i = 0; i < numberOfInputs_; ++i) {
-    double delta_lim{0.01};
-    double distance{};
-    auto c = inv_clustering_[i];
-    if(original_dos[0]) {
-      GoodDiagram<dataType> centroid_min
-        = centroidWithZeroPrices(centroids_min_[c]);
-      BidderDiagram<dataType> bidder_diag
-        = diagramWithZeroPrices(current_bidder_diagrams_min_[i]);
-      distance += computeDistance(bidder_diag, centroid_min, delta_lim);
-    }
-    if(original_dos[1]) {
-      GoodDiagram<dataType> centroid_saddle
-        = centroidWithZeroPrices(centroids_saddle_[c]);
-      BidderDiagram<dataType> bidder_diag
-        = diagramWithZeroPrices(current_bidder_diagrams_saddle_[i]);
-      distance += computeDistance(bidder_diag, centroid_saddle, delta_lim);
-    }
-    if(original_dos[2]) {
-      GoodDiagram<dataType> centroid_max
-        = centroidWithZeroPrices(centroids_max_[c]);
-      BidderDiagram<dataType> bidder_diag
-        = diagramWithZeroPrices(current_bidder_diagrams_max_[i]);
-      distance += computeDistance(bidder_diag, centroid_max, delta_lim);
-    }
-    distanceToCentroid_[i] = distance;
-  }
-}
-
-template <typename dataType>
 void PDDistMat<dataType>::updateClusters() {
   if(k_ > 1) {
     std::vector<std::vector<dataType>> distance_matrix = getDistanceMatrix();

@@ -111,7 +111,6 @@ namespace ttk {
     std::vector<std::vector<dataType>> getDistanceMatrix();
     void getCentroidDistanceMatrix();
     void computeDiagramsDistanceMatrix();
-    void computeDistanceToCentroid();
 
     void updateClusters();
     void invertClusters();
