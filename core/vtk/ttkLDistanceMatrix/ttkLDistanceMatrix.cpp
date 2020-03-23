@@ -1,5 +1,6 @@
 #include <LDistance.h>
 #include <ttkLDistanceMatrix.h>
+#include <vtkStreamingDemandDrivenPipeline.h>
 
 using namespace std;
 using namespace ttk;
@@ -45,6 +46,8 @@ int ttkLDistanceMatrix::RequestData(vtkInformation * /*request*/,
   }
 
   const size_t nInputs{blocks->GetNumberOfBlocks()};
+  const int nIn{static_cast<int>(nInputs)};
+  std::array<int, 6> extent{0, nIn, 0, nIn, 0, 0};
 
   // Get input data
   std::vector<vtkImageData *> inputData(nInputs);
@@ -55,7 +58,13 @@ int ttkLDistanceMatrix::RequestData(vtkInformation * /*request*/,
 
   // Get output
   auto DistTable = vtkTable::GetData(outputVector, 0);
+  auto outInfo = outputVector->GetInformationObject(1);
   auto HeatMap = vtkImageData::GetData(outputVector, 1);
+
+  // Set output information
+  outInfo->Set(
+    vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(), extent.data(), 6);
+  HeatMap->SetExtent(extent.data());
 
   std::vector<std::vector<double>> distMatrix(nInputs);
 
@@ -125,8 +134,6 @@ int ttkLDistanceMatrix::RequestData(vtkInformation * /*request*/,
       dists->InsertValue(i * nInputs + j, distMatrix[i][j]);
     }
   }
-  HeatMap->SetDimensions(nInputs + 1, nInputs + 1, 1);
-  HeatMap->SetSpacing(1, 1, 1);
   HeatMap->GetCellData()->AddArray(dists);
 
   // aggregate input field data
