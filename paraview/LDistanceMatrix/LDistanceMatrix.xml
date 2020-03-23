@@ -28,6 +28,9 @@
         </Documentation>
       </InputProperty>
 
+      <OutputPort name="Distance Matrix" index="0" id="port0" />
+      <OutputPort name="Heat Map" index="1" id="port1" />
+
       <StringVectorProperty
         name="ScalarField"
         command="SetScalarField"

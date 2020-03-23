@@ -1,5 +1,5 @@
-#include <ttkLDistanceMatrix.h>
 #include <LDistance.h>
+#include <ttkLDistanceMatrix.h>
 
 using namespace std;
 using namespace ttk;
@@ -8,7 +8,7 @@ vtkStandardNewMacro(ttkLDistanceMatrix);
 
 ttkLDistanceMatrix::ttkLDistanceMatrix() {
   SetNumberOfInputPorts(1);
-  SetNumberOfOutputPorts(1);
+  SetNumberOfOutputPorts(2);
 }
 
 int ttkLDistanceMatrix::FillInputPortInformation(int port,
@@ -24,6 +24,9 @@ int ttkLDistanceMatrix::FillOutputPortInformation(int port,
                                                   vtkInformation *info) {
   if(port == 0) {
     info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkTable");
+    return 1;
+  } else if(port == 1) {
+    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkImageData");
     return 1;
   }
   return 0;
@@ -51,7 +54,8 @@ int ttkLDistanceMatrix::RequestData(vtkInformation * /*request*/,
   }
 
   // Get output
-  auto DistTable = vtkTable::GetData(outputVector);
+  auto DistTable = vtkTable::GetData(outputVector, 0);
+  auto HeatMap = vtkImageData::GetData(outputVector, 1);
 
   std::vector<std::vector<double>> distMatrix(nInputs);
 
@@ -97,7 +101,7 @@ int ttkLDistanceMatrix::RequestData(vtkInformation * /*request*/,
         colName.append(zer).append(cur);
       };
 
-  // copy diagrams distance matrix to output
+  // copy distance matrix to output
   for(size_t i = 0; i < nInputs; ++i) {
     std::string name{"Dataset"};
     zeroPad(name, distMatrix.size(), i);
@@ -110,6 +114,20 @@ int ttkLDistanceMatrix::RequestData(vtkInformation * /*request*/,
     }
     DistTable->AddColumn(col);
   }
+
+  // copy distance matrix to heat map cell data
+  vtkNew<vtkDoubleArray> dists{};
+  dists->SetNumberOfComponents(1);
+  dists->SetNumberOfTuples(nInputs * nInputs);
+  dists->SetName("Distances");
+  for(size_t i = 0; i < nInputs; ++i) {
+    for(size_t j = 0; j < nInputs; ++j) {
+      dists->InsertValue(i * nInputs + j, distMatrix[i][j]);
+    }
+  }
+  HeatMap->SetDimensions(nInputs + 1, nInputs + 1, 1);
+  HeatMap->SetSpacing(1, 1, 1);
+  HeatMap->GetCellData()->AddArray(dists);
 
   // aggregate input field data
   vtkNew<vtkFieldData> fd{};
