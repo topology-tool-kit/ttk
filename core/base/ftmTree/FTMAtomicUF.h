@@ -77,7 +77,7 @@ namespace ttk {
         return data_.states[id];
       }
 
-      inline AtomicVector<CurrentState *> &getStates(void) {
+      inline FTMAtomicVector<CurrentState *> &getStates(void) {
         return data_.states;
       }
 
@@ -85,7 +85,7 @@ namespace ttk {
         return data_.states.size();
       }
 
-      inline AtomicVector<idSuperArc> &getOpenedArcs(void) {
+      inline FTMAtomicVector<idSuperArc> &getOpenedArcs(void) {
         return data_.openedArcs;
       }
 

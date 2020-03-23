@@ -37,9 +37,9 @@ namespace ttk {
     class Graph : public Allocable {
     private:
       // update operator =
-      AtomicVector<std::tuple<idVertex, bool>> leaves_;
-      AtomicVector<Node> nodes_;
-      AtomicVector<SuperArc> arcs_;
+      FTRAtomicVector<std::tuple<idVertex, bool>> leaves_;
+      FTRAtomicVector<Node> nodes_;
+      FTRAtomicVector<SuperArc> arcs_;
 
       std::vector<SegmInfo> segmentation_;
 
