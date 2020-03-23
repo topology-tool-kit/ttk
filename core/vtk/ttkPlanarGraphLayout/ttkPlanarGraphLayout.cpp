@@ -107,7 +107,7 @@ int ttkPlanarGraphLayout::RequestData(vtkInformation *request,
          // Output
          (float *)outputArray->GetVoidPointer(0),
          // Input
-         (VTK_T1 *)output->GetCells()->GetPointer(), nPoints, nEdges,
+         (VTK_T1 *)output->GetCells()->GetData()->GetPointer(0), nPoints, nEdges,
          !this->GetUseSequences() ? nullptr
                                   : (VTK_T2 *)sequenceArray->GetVoidPointer(0),
          !this->GetUseSizes() ? nullptr : (float *)sizeArray->GetVoidPointer(0),

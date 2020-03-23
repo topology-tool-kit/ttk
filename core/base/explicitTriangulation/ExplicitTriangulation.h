@@ -144,11 +144,7 @@ namespace ttk {
     }
 
     int TTK_TRIANGULATION_INTERNAL(getDimensionality)() const override {
-#ifndef TTK_ENABLE_KAMIKAZE
-      if(!((cellArray_) && (cellNumber_)))
-        return -1;
-#endif
-      return cellArray_->getDimension();
+      return maxCellDim_;
     }
 
     inline const std::vector<std::pair<SimplexId, SimplexId>> *
@@ -1004,20 +1000,47 @@ namespace ttk {
       return 0;
     }
 
+#ifdef CELL_ARRAY_NEW
+    // Layout with connectivity + offset array (new)
     inline int setInputCells(const SimplexId &cellNumber,
-                             const LongSimplexId *cellArray) {
-
+                             const LongSimplexId *connectivity,
+                             const LongSimplexId *offset) {
       if(cellNumber_)
         clear();
 
       cellNumber_ = cellNumber;
 
-      // TODO: ASSUME Regular Mesh Here to compute dimension!
       cellArray_
-        = std::make_shared<CellArray>(cellArray, cellNumber, cellArray[0] - 1);
+        = std::make_shared<CellArray>(connectivity, offset, cellNumber);
 
+      // TODO: ASSUME Regular Mesh Here to compute dimension!
+      if(cellNumber) {
+        if(cellArray_->getCellVertexNumber(0) == 3) {
+          maxCellDim_ = 2;
+        } else {
+          maxCellDim_ = 3;
+        }
+      }
       return 0;
     }
+#else
+    // Flat layout with a single array (legacy & default one)
+    inline int setInputCells(const SimplexId &cellNumber,
+                             const LongSimplexId *cellArray) {
+      if(cellNumber_)
+        clear();
+
+      cellNumber_ = cellNumber;
+
+      if(cellNumber) {
+        // assume regular mesh here to compute dimension
+        cellArray_ = std::make_shared<CellArray>(
+          cellArray, cellNumber, cellArray[0] - 1);
+        maxCellDim_ = cellArray[0] - 1;
+      }
+      return 0;
+    }
+#endif
 
     inline int setInputPoints(const SimplexId &pointNumber,
                               const void *pointSet,
@@ -1036,8 +1059,9 @@ namespace ttk {
     bool doublePrecision_;
     SimplexId cellNumber_, vertexNumber_;
     const void *pointSet_;
+    int maxCellDim_;
     std::shared_ptr<CellArray> cellArray_;
-  };
+  }; // namespace ttk
 } // namespace ttk
 
 #endif // _EXPLICITTRIANGULATION_H

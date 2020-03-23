@@ -207,7 +207,7 @@ int ttkCinemaWriter::ProcessDataProduct(vtkDataObject *input) {
       this->printMsg("Creating data.csv file", 0, ttk::debug::LineMode::REPLACE,
                      ttk::debug::Priority::DETAIL);
 
-      ofstream csvFile;
+      std::ofstream csvFile;
       csvFile.open(csvPath.data());
       if(!csvFile.is_open()) {
         this->printErr("Unable to create 'data.csv' file.");

@@ -60,7 +60,7 @@ vtkSmartPointer<vtkDataObject>
     return readFileLocal_(pathToFile, this->tiffReader);
   } else {
     // Check if dataset is XML encoded
-    ifstream is(pathToFile.data());
+    std::ifstream is(pathToFile.data());
     char prefix[9] = "";
     is.get(prefix, 10);
     bool isXML = std::string(prefix).compare("<VTKFile ") == 0

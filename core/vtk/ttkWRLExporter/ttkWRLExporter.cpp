@@ -24,19 +24,12 @@ void vtkVRMLExporter::WriteAnActor(vtkActor *anActor, FILE *fp) {
   double *tempd;
   vtkCellArray *cells;
   vtkIdType npts = 0;
-#ifdef PARAVIEW_VERSION_MAJOR
-#if PARAVIEW_VERSION_MAJOR > 5 \
-  || (PARAVIEW_VERSION_MAJOR == 5 && PARAVIEW_VERSION_MINOR > 7)
+#if PARAVIEW_VERSION_MAJOR > 5                                   \
+  || (PARAVIEW_VERSION_MAJOR == 5 && PARAVIEW_VERSION_MINOR > 7) \
+  || VTK_VERSION_MAJOR > 8
   vtkIdType const *indx = nullptr;
 #else
   vtkIdType *indx = nullptr;
-#endif
-#else
-#if VTK_VERSION_MAJOR > 8
-  vtkIdType const *indx = nullptr;
-#else
-  vtkIdType *indx = nullptr;
-#endif
 #endif
   int pointDataWritten = 0;
   vtkPolyDataMapper *pm;

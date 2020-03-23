@@ -85,7 +85,7 @@ endmacro()
 # empty otherwise
 function(ttk_get_target ttk_module ttk_target)
   if(NOT DEFINED VTK_MODULE_ENABLE_${ttk_module})
-    set(VTK_MODULE_ENABLE_${ttk_module} ${TTK_ENABLE_FILTER_DEFAULT} CACHE BOOL "Enable the ${ttk_module} module.")
+    set(VTK_MODULE_ENABLE_${ttk_module} "${TTK_ENABLE_FILTER_DEFAULT}" CACHE STRING "Enable the ${ttk_module} module.")
     mark_as_advanced(VTK_MODULE_ENABLE_${ttk_module})
   endif()
 

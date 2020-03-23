@@ -230,7 +230,7 @@ int ZeroSkeleton::buildVertexLinks(
 
   vector<vector<SimplexId>> faceIds(threadNumber_);
   for(ThreadId i = 0; i < threadNumber_; i++) {
-    faceIds[i].reserve(cellArray.getDimension() + 1);
+    faceIds[i].reserve(cellArray.getCellVertexNumber(i));
   }
   // NOTE:
   // 1-thread:

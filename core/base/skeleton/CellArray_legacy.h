@@ -7,6 +7,10 @@
 ///
 /// %CellArray is a generic container that allows to deal with various cell
 /// layouts in memory \sa Triangulation \sa ttkTriangulation
+/// This version assume the cell data to be given a unique array.
+/// This array contain for each cell the number of points in the cell then the
+/// point ids of the cell. See VTK 8.2 vtkCellArray documentation for more
+/// details about this layout.
 
 #ifndef _CELLARRAY_H
 #define _CELLARRAY_H
@@ -24,7 +28,9 @@ namespace ttk {
   public:
     CellArray(const LongSimplexId *cellArray,
               const LongSimplexId nbCells,
-              const unsigned char dimension);
+              const unsigned char dimension)
+      : cellArray_{cellArray}, nbCells_{nbCells}, dimension_{dimension} {
+    }
 
     virtual ~CellArray() {
       if(ownerShip_) {
@@ -74,7 +80,7 @@ namespace ttk {
                   << locNbVert << std::endl;
       }
 #endif
-      // Assume VTK < 9 layout
+      // Assume VTK < 9 layout and uniform mesh (only one type of cells)
       return this->cellArray_[(locNbVert + 1) * cellId + 1 + localVertId];
     }
 

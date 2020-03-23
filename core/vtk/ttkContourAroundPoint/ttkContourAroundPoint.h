@@ -165,14 +165,15 @@ protected:
     const std::string dataKind
       = dynamic_cast<vtkPointData *>(data) ? "point" : "cell";
     if(!vtkArr) {
-      vtkErrorMacro("The " + dataKind + "s must have data named "
-                    + varName) return nullptr;
+      vtkErrorMacro("The " + dataKind + "s must have data named " + varName);
+      return nullptr;
     }
     if(vtkArr->GetDataType() != typeCode) {
       vtkErrorMacro(<< "The " + dataKind + " data " + varName
                          + " must be of type "
                     << typeName << " but it is "
-                    << vtkArr->GetDataTypeAsString()) return nullptr;
+                    << vtkArr->GetDataTypeAsString());
+      return nullptr;
     }
     return reinterpret_cast<T *>(vtkArr->GetVoidPointer(0));
   }
