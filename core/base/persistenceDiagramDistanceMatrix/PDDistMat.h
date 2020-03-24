@@ -12,11 +12,9 @@
 ///
 /// \sa PersistenceDiagramClustering
 
-#ifndef _PDCLUSTERING_H
-#define _PDCLUSTERING_H
+#pragma once
 
 #include <Auction.h>
-//
 #include <KDTree.h>
 //
 #include <array>
@@ -24,10 +22,25 @@
 //
 
 using namespace std;
-using namespace ttk;
 
 namespace ttk {
-  template <typename dataType>
+
+  using DiagramTuple = std::tuple<ttk::SimplexId,
+                                  ttk::CriticalType,
+                                  ttk::SimplexId,
+                                  ttk::CriticalType,
+                                  double,
+                                  ttk::SimplexId,
+                                  double,
+                                  float,
+                                  float,
+                                  float,
+                                  double,
+                                  float,
+                                  float,
+                                  float>;
+  using MatchingTuple = std::tuple<ttk::SimplexId, ttk::SimplexId, double>;
+
   class PDDistMat : public Debug {
 
   public:
@@ -52,42 +65,33 @@ namespace ttk {
       distanceWritingOptions_ = 0;
     };
 
-    ~PDDistMat(){};
+    std::vector<int> execute();
 
-    std::vector<int>
-      execute(std::vector<std::vector<diagramTuple>> &final_centroids,
-              vector<vector<vector<vector<matchingTuple>>>> &all_matchings);
-
-    dataType getMostPersistent(int type = -1);
+    double getMostPersistent(int type = -1);
     vector<vector<int>> get_centroids_sizes();
-    dataType getLessPersistent(int type = -1);
-    std::vector<std::vector<dataType>> getMinDiagonalPrices();
-    std::vector<std::vector<dataType>> getMinPrices();
+    double getLessPersistent(int type = -1);
+    std::vector<std::vector<double>> getMinDiagonalPrices();
+    std::vector<std::vector<double>> getMinPrices();
 
-    void correctMatchings(
-      vector<vector<vector<vector<matchingTuple>>>> &previous_matchings);
+    double computeDistance(const BidderDiagram<double> &D1,
+                           const BidderDiagram<double> &D2,
+                           const double delta_lim);
+    double computeDistance(const BidderDiagram<double> D1,
+                           const GoodDiagram<double> D2,
+                           const double delta_lim);
+    double computeDistance(BidderDiagram<double> *const D1,
+                           const GoodDiagram<double> *const D2,
+                           const double delta_lim);
+    double computeDistance(const GoodDiagram<double> &D1,
+                           const GoodDiagram<double> &D2,
+                           const double delta_lim);
 
-    dataType computeDistance(const BidderDiagram<dataType> &D1,
-                             const BidderDiagram<dataType> &D2,
-                             const double delta_lim);
-    dataType computeDistance(const BidderDiagram<dataType> D1,
-                             const GoodDiagram<dataType> D2,
-                             const double delta_lim);
-    dataType computeDistance(BidderDiagram<dataType> *const D1,
-                             const GoodDiagram<dataType> *const D2,
-                             const double delta_lim);
-    dataType computeDistance(const GoodDiagram<dataType> &D1,
-                             const GoodDiagram<dataType> &D2,
-                             const double delta_lim);
-
-    GoodDiagram<dataType>
-      centroidWithZeroPrices(const GoodDiagram<dataType> centroid);
-    BidderDiagram<dataType>
-      centroidToDiagram(const GoodDiagram<dataType> centroid);
-    GoodDiagram<dataType>
-      diagramToCentroid(const BidderDiagram<dataType> diagram);
-    BidderDiagram<dataType>
-      diagramWithZeroPrices(const BidderDiagram<dataType> diagram);
+    GoodDiagram<double>
+      centroidWithZeroPrices(const GoodDiagram<double> centroid);
+    BidderDiagram<double> centroidToDiagram(const GoodDiagram<double> centroid);
+    GoodDiagram<double> diagramToCentroid(const BidderDiagram<double> diagram);
+    BidderDiagram<double>
+      diagramWithZeroPrices(const BidderDiagram<double> diagram);
 
     void setBidderDiagrams();
     void initializeEmptyClusters();
@@ -95,28 +99,23 @@ namespace ttk {
     void initializeCentroidsKMeanspp();
     void initializeAcceleratedKMeans();
     void printDistancesToFile();
-    void printMatchings(std::vector<std::vector<std::vector<matchingTuple>>>);
-    void printRealDistancesToFile();
-    void printPricesToFile(int);
-    dataType computeRealCost();
+    double computeRealCost();
 
-    std::vector<dataType> enrichCurrentBidderDiagrams(
-      std::vector<dataType> previous_min_persistence,
-      std::vector<dataType> min_persistence,
-      std::vector<std::vector<dataType>> initial_diagonal_prices,
-      std::vector<std::vector<dataType>> initial_off_diagonal_points,
+    std::vector<double> enrichCurrentBidderDiagrams(
+      std::vector<double> previous_min_persistence,
+      std::vector<double> min_persistence,
+      std::vector<std::vector<double>> initial_diagonal_prices,
+      std::vector<std::vector<double>> initial_off_diagonal_points,
       std::vector<int> min_points_to_add,
       bool add_points_to_barycenter);
 
-    std::vector<std::vector<dataType>> getDistanceMatrix();
+    std::vector<std::vector<double>> getDistanceMatrix();
     void getCentroidDistanceMatrix();
     void computeDiagramsDistanceMatrix();
 
     void updateClusters();
     void invertClusters();
     void invertInverseClusters();
-    void
-      computeBarycenterForTwo(vector<vector<vector<vector<matchingTuple>>>> &);
 
     void acceleratedUpdateClusters();
 
@@ -125,9 +124,10 @@ namespace ttk {
       do_sad_ = original_dos[1];
       do_max_ = original_dos[2];
     }
-    inline int setDiagrams(std::vector<std::vector<diagramTuple>> *data_min,
-                           std::vector<std::vector<diagramTuple>> *data_saddle,
-                           std::vector<std::vector<diagramTuple>> *data_max) {
+    inline int
+      setDiagrams(std::vector<std::vector<DiagramTuple>> *data_min,
+                  std::vector<std::vector<DiagramTuple>> *data_saddle,
+                  std::vector<std::vector<DiagramTuple>> *data_max) {
       inputDiagramsMin_ = data_min;
       inputDiagramsSaddle_ = data_saddle;
       inputDiagramsMax_ = data_max;
@@ -301,37 +301,37 @@ namespace ttk {
 
     double epsilon_min_;
     std::vector<double> epsilon_;
-    dataType cost_;
-    dataType cost_min_;
-    dataType cost_sad_;
-    dataType cost_max_;
+    double cost_;
+    double cost_min_;
+    double cost_sad_;
+    double cost_max_;
 
     std::vector<std::vector<int>> current_bidder_ids_min_;
     std::vector<std::vector<int>> current_bidder_ids_sad_;
     std::vector<std::vector<int>> current_bidder_ids_max_;
-    std::vector<std::vector<diagramTuple>> *inputDiagramsMin_;
-    std::vector<std::vector<diagramTuple>> *inputDiagramsSaddle_;
-    std::vector<std::vector<diagramTuple>> *inputDiagramsMax_;
+    std::vector<std::vector<DiagramTuple>> *inputDiagramsMin_;
+    std::vector<std::vector<DiagramTuple>> *inputDiagramsSaddle_;
+    std::vector<std::vector<DiagramTuple>> *inputDiagramsMax_;
 
     std::array<bool, 3> original_dos;
 
     bool do_min_;
-    std::vector<BidderDiagram<dataType>> bidder_diagrams_min_;
-    std::vector<BidderDiagram<dataType>> current_bidder_diagrams_min_;
-    std::vector<GoodDiagram<dataType>> centroids_min_;
-    std::vector<GoodDiagram<dataType>> centroids_with_price_min_;
+    std::vector<BidderDiagram<double>> bidder_diagrams_min_;
+    std::vector<BidderDiagram<double>> current_bidder_diagrams_min_;
+    std::vector<GoodDiagram<double>> centroids_min_;
+    std::vector<GoodDiagram<double>> centroids_with_price_min_;
 
     bool do_sad_;
-    std::vector<BidderDiagram<dataType>> bidder_diagrams_saddle_;
-    std::vector<BidderDiagram<dataType>> current_bidder_diagrams_saddle_;
-    std::vector<GoodDiagram<dataType>> centroids_saddle_;
-    std::vector<GoodDiagram<dataType>> centroids_with_price_saddle_;
+    std::vector<BidderDiagram<double>> bidder_diagrams_saddle_;
+    std::vector<BidderDiagram<double>> current_bidder_diagrams_saddle_;
+    std::vector<GoodDiagram<double>> centroids_saddle_;
+    std::vector<GoodDiagram<double>> centroids_with_price_saddle_;
 
     bool do_max_;
-    std::vector<BidderDiagram<dataType>> bidder_diagrams_max_;
-    std::vector<BidderDiagram<dataType>> current_bidder_diagrams_max_;
-    std::vector<GoodDiagram<dataType>> centroids_max_;
-    std::vector<GoodDiagram<dataType>> centroids_with_price_max_;
+    std::vector<BidderDiagram<double>> bidder_diagrams_max_;
+    std::vector<BidderDiagram<double>> current_bidder_diagrams_max_;
+    std::vector<GoodDiagram<double>> centroids_max_;
+    std::vector<GoodDiagram<double>> centroids_with_price_max_;
 
     std::vector<std::vector<int>> clustering_;
     std::vector<std::vector<int>> old_clustering_;
@@ -340,8 +340,8 @@ namespace ttk {
     std::vector<std::vector<int>> centroids_sizes_;
 
     std::vector<bool> r_;
-    std::vector<dataType> u_;
-    std::vector<std::vector<dataType>> l_;
+    std::vector<double> u_;
+    std::vector<std::vector<double>> l_;
     std::vector<std::vector<double>> centroidsDistanceMatrix_{};
     std::vector<std::vector<double>> diagramsDistanceMatrix_{};
     bool outputDistanceMatrix_{false};
@@ -352,6 +352,3 @@ namespace ttk {
     int n_iterations_;
   };
 } // namespace ttk
-
-#include <PDDistMat.hxx>
-#endif

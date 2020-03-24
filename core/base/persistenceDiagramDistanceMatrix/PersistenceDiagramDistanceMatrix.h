@@ -290,7 +290,7 @@ namespace ttk {
 
     vector<vector<vector<vector<matchingTuple>>>>
       all_matchings_per_type_and_cluster;
-    PDDistMat<dataType> KMeans = PDDistMat<dataType>();
+    PDDistMat KMeans{};
     KMeans.setWasserstein(wasserstein_);
     KMeans.setThreadNumber(threadNumber_);
     KMeans.setNumberOfInputs(numberOfInputs_);
@@ -313,8 +313,7 @@ namespace ttk {
     KMeans.setOutputDistanceMatrix(outputDistanceMatrix_);
     KMeans.setUseFullDiagrams(useFullDiagrams_);
     KMeans.setPerClusterDistanceMatrix(perClusterDistanceMatrix_);
-    inv_clustering
-      = KMeans.execute(final_centroids, all_matchings_per_type_and_cluster);
+    inv_clustering = KMeans.execute();
     vector<vector<int>> centroids_sizes = KMeans.get_centroids_sizes();
 
     centroidsDistMat_ = KMeans.getCentroidsDistanceMatrix();
