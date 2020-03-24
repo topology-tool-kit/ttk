@@ -105,7 +105,7 @@ int ttkPersistenceDiagramDistanceMatrix::RequestData(
 
     // if(Method == 0) {
     // Progressive approach
-    PersistenceDiagramDistanceMatrix<double> persistenceDiagramsClustering;
+    PersistenceDiagramDistanceMatrix persistenceDiagramsClustering{};
     persistenceDiagramsClustering.setWrapper(this);
 
     string wassersteinMetric = WassersteinMetric;
@@ -137,7 +137,7 @@ int ttkPersistenceDiagramDistanceMatrix::RequestData(
       PerClusterDistanceMatrix);
 
     inv_clustering_ = persistenceDiagramsClustering.execute(
-      intermediateDiagrams_, final_centroids_, all_matchings_);
+      intermediateDiagrams_, all_matchings_);
 
     diagramsDistMat = persistenceDiagramsClustering.getDiagramsDistMat();
     distanceToCentroid = persistenceDiagramsClustering.getDistanceToCentroid();
