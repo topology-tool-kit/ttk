@@ -14,23 +14,11 @@
 
 #pragma once
 
-#define BLocalMax ttk::CriticalType::Local_maximum
-#define BLocalMin ttk::CriticalType::Local_minimum
-#define BSaddle1 ttk::CriticalType::Saddle1
-#define BSaddle2 ttk::CriticalType::Saddle2
-
-//
-#include <cstdlib> /* srand, rand */
-//
-#include <cmath>
-//
-
 #include <algorithm>
-//
+#include <cmath>
+#include <cstdlib> /* srand, rand */
 #include <iostream>
-//
 #include <iterator>
-//
 #include <random>
 
 #include <PDDistMat.h>
@@ -43,485 +31,291 @@ std::vector<int> PDDistMat<dataType>::execute(
   vector<vector<vector<vector<matchingTuple>>>>
     &all_matchings_per_type_and_cluster) {
 
-  all_matchings_per_type_and_cluster.resize(k_);
-  for(int c = 0; c < k_; c++) {
-    all_matchings_per_type_and_cluster[c].resize(3);
-    for(int i = 0; i < 3; i++) {
-      all_matchings_per_type_and_cluster[c][i].resize(numberOfInputs_);
+  std::vector<bool *> current_prec{
+    &precision_min_, &precision_sad_, &precision_max_};
+  std::vector<bool *> current_dos{&do_min_, &do_sad_, &do_max_};
+
+  bool converged = false;
+  std::vector<bool> diagrams_complete(3);
+  for(int c = 0; c < 3; c++) {
+    diagrams_complete[c] = (!use_progressive_) || (!original_dos[c]);
+  }
+  bool all_diagrams_complete
+    = diagrams_complete[0] && diagrams_complete[1] && diagrams_complete[2];
+  n_iterations_ = 0;
+  double total_time = 0;
+
+  // dataType cost = std::numeric_limits<dataType>::max();
+  setBidderDiagrams();
+  cost_ = std::numeric_limits<dataType>::max();
+  dataType min_cost_min = std::numeric_limits<dataType>::max();
+  dataType min_cost_max = std::numeric_limits<dataType>::max();
+  dataType min_cost_sad = std::numeric_limits<dataType>::max();
+  // dataType last_min_cost_obtained = -1;
+  dataType last_min_cost_obtained_min = -1;
+  dataType last_min_cost_obtained_sad = -1;
+  dataType last_min_cost_obtained_max = -1;
+  std::vector<dataType> epsilon0(3);
+  std::vector<dataType> epsilon_candidate(3);
+  std::vector<dataType> rho(3);
+
+  // std::cout<<"checkpoint"<<std::endl;
+  // Getting current diagrams (with only at most min_points_to_add points)
+  std::vector<dataType> max_persistence(3);
+  std::vector<dataType> lowest_persistence(3);
+  std::vector<dataType> min_persistence(3);
+
+  // std::cout<<"checkpoint"<<std::endl;
+  for(int i_crit = 0; i_crit < 3; i_crit++) {
+    // std::cout<<"checkpoint"<<i_crit<<std::endl;
+    max_persistence[i_crit] = 2 * getMostPersistent(i_crit);
+    lowest_persistence[i_crit] = getLessPersistent(i_crit);
+    min_persistence[i_crit] = 0;
+    // std::cout<<"size eps "<<epsilon_.size()<<std::endl;
+    epsilon_[i_crit] = pow(0.5 * max_persistence[i_crit], 2)
+                       / 8.; // max_persistence actually holds 2 times the
+                             // highest persistence
+    epsilon0[i_crit] = epsilon_[i_crit];
+  }
+  // std::cout<<"checkpoint"<<std::endl;
+  std::vector<int> min_points_to_add(3);
+  min_points_to_add[0] = 10;
+  min_points_to_add[1] = 10;
+  min_points_to_add[2] = 10;
+
+  if(use_progressive_) {
+    // min_persistence = max_persistence/2.;
+    // min_persistence = 0;
+  } else {
+    min_points_to_add[0] = std::numeric_limits<int>::max();
+    min_points_to_add[1] = std::numeric_limits<int>::max();
+    min_points_to_add[2] = std::numeric_limits<int>::max();
+  }
+  std::vector<std::vector<dataType>> min_diag_price(3);
+  std::vector<std::vector<dataType>> min_off_diag_price(3);
+  for(int c = 0; c < 3; ++c) {
+    for(int i = 0; i < numberOfInputs_; i++) {
+      min_diag_price[c].push_back(0);
+      min_off_diag_price[c].push_back(0);
+    }
+  }
+  // std::cout << "firstinrich" << std::endl;
+  if(debugLevel_ > 5) {
+    cout << "enrich with rho : " << min_persistence[2]
+         << " and initial epsilon " << epsilon_[2]
+         << endl; //"  and barycenter size : "<<centroids_max_[0].size()<<endl;
+  }
+  min_persistence = enrichCurrentBidderDiagrams(
+    max_persistence, min_persistence, min_diag_price, min_off_diag_price,
+    min_points_to_add, false);
+  if(debugLevel_ > 5) {
+    std::cout << "first enrich done" << std::endl;
+  }
+
+  for(int c = 0; c < 3; c++) {
+    if(min_persistence[c] <= lowest_persistence[c]) {
+      diagrams_complete[c] = true;
+    } // max_persistence actually holds 2 times the highest persistence
+  }
+  all_diagrams_complete
+    = diagrams_complete[0] && diagrams_complete[1] && diagrams_complete[2];
+  if(all_diagrams_complete) {
+    use_progressive_ = false;
+  }
+
+  // Initializing centroids and clusters
+  if(use_kmeanspp_) {
+    initializeCentroidsKMeanspp();
+  } else {
+    initializeCentroids();
+  }
+
+  initializeEmptyClusters();
+
+  if(use_accelerated_) {
+    initializeAcceleratedKMeans();
+    getCentroidDistanceMatrix();
+    acceleratedUpdateClusters();
+  } else {
+    updateClusters();
+    old_clustering_ = clustering_;
+  }
+
+  if(debugLevel_ > 3 && k_ > 1) {
+    std::cout << "Initial Clustering : " << std::endl;
+    printClustering();
+  }
+
+  while(!converged || (!all_diagrams_complete && use_progressive_)) {
+    Timer t_inside;
+
+    n_iterations_++;
+
+    for(int i_crit = 0; i_crit < 3; i_crit++) {
+      if(*(current_dos[i_crit])) {
+        rho[i_crit] = min_persistence[i_crit] > 0
+                        ? std::sqrt(8.0 * epsilon_[i_crit])
+                        : -1;
+      }
+    }
+
+    if(use_progressive_ && n_iterations_ > 1) {
+      do_min_ = do_min_ && (min_persistence[0] > rho[0]);
+      do_sad_ = do_sad_ && (min_persistence[1] > rho[1]);
+      do_max_ = do_max_ && (min_persistence[2] > rho[2]);
+
+      for(int i_crit = 0; i_crit < 3; i_crit++) {
+        if(*(current_dos[i_crit])) {
+          epsilon_candidate[i_crit] = pow(min_persistence[i_crit], 2) / 8.;
+          if(epsilon_candidate[i_crit] > epsilon_[i_crit]) {
+            // Should always be the case except if min_persistence is
+            // equal to zero
+            epsilon_[i_crit] = epsilon_candidate[i_crit];
+          }
+        }
+      }
+
+      if(epsilon_[0] < 5e-5) {
+        // Add all remaining points for final convergence.
+        min_persistence[0] = 0;
+        min_points_to_add[0] = std::numeric_limits<int>::max();
+      }
+      if(epsilon_[1] < 5e-5) {
+        // Add all remaining points for final convergence.
+        min_persistence[1] = 0;
+        min_points_to_add[1] = std::numeric_limits<int>::max();
+      }
+      if(epsilon_[2] < 5e-5) {
+        // Add all remaining points for final convergence.
+        min_persistence[2] = 0;
+        min_points_to_add[2] = std::numeric_limits<int>::max();
+      }
+
+      if(do_min_ || do_sad_ || do_max_) {
+        min_persistence = enrichCurrentBidderDiagrams(
+          min_persistence, rho, min_diag_price, min_off_diag_price,
+          min_points_to_add, true);
+      }
+      barycenter_inputs_reset_flag = true;
+
+      for(int i_crit = 0; i_crit < 3; i_crit++) {
+        if(*(current_dos[i_crit])) {
+          if(min_persistence[i_crit] <= lowest_persistence[i_crit]) {
+            diagrams_complete[i_crit] = true;
+          }
+        }
+      }
+
+      if(diagrams_complete[0] && diagrams_complete[1] && diagrams_complete[2]) {
+        use_progressive_ = false;
+        all_diagrams_complete = true;
+      }
+
+      resetDosToOriginalValues();
+    }
+
+    if(do_min_ && !UseDeltaLim_) {
+      precision_min_ = (epsilon_[0] < epsilon0[0] / 500.);
+    }
+    if(do_sad_ && !UseDeltaLim_) {
+      precision_sad_ = (epsilon_[1] < epsilon0[1] / 500.);
+    }
+    if(do_max_ && !UseDeltaLim_) {
+      precision_max_ = (epsilon_[2] < epsilon0[2] / 500.);
+    }
+
+    if(epsilon_[0] < epsilon_min_ /*&& diagrams_complete[0]*/) {
+      if(debugLevel_ > 4) {
+        cout << "[min barycenter] epsilon under minimal value " << endl;
+      }
+      do_min_ = false;
+      epsilon_[0] = epsilon_min_;
+      diagrams_complete[0] = true;
+    }
+    if(epsilon_[1] < epsilon_min_ /*&& diagrams_complete[1]*/) {
+      if(debugLevel_ > 4) {
+        cout << "[sad barycenter] epsilon under minimal value " << endl;
+      }
+      do_sad_ = false;
+      epsilon_[1] = epsilon_min_;
+      diagrams_complete[1] = true;
+    }
+    if(epsilon_[2] < epsilon_min_ /*&& diagrams_complete[2]*/) {
+      if(debugLevel_ > 4) {
+        cout << "[max barycenter] epsilon under minimal value " << endl;
+      }
+      do_max_ = false;
+      epsilon_[2] = epsilon_min_;
+      diagrams_complete[2] = true;
+    }
+
+    if(diagrams_complete[0] && diagrams_complete[1] && diagrams_complete[2]) {
+      use_progressive_ = false;
+      all_diagrams_complete = true;
+    }
+
+    precision_criterion_ = precision_min_ && precision_sad_ && precision_max_;
+    bool precision_criterion_reached = precision_criterion_;
+
+    if(cost_min_ < min_cost_min && n_iterations_ > 2
+       && diagrams_complete[0] /*&& precision_min_*/) {
+      min_cost_min = cost_min_;
+      last_min_cost_obtained_min = 0;
+    } else if(n_iterations_ > 2 && precision_min_ && diagrams_complete[0]) {
+      last_min_cost_obtained_min += 1;
+      if(last_min_cost_obtained_min > 1) {
+        do_min_ = false;
+      }
+    }
+
+    if(cost_sad_ < min_cost_sad && n_iterations_ > 2
+       && diagrams_complete[1] /*&& precision_sad_*/) {
+      min_cost_sad = cost_sad_;
+      last_min_cost_obtained_sad = 0;
+    } else if(n_iterations_ > 2 && precision_sad_ && diagrams_complete[1]) {
+      last_min_cost_obtained_sad += 1;
+      if(last_min_cost_obtained_sad > 1 && diagrams_complete[1]) {
+        do_sad_ = false;
+      }
+    }
+
+    if(cost_max_ < min_cost_max && n_iterations_ > 2
+       && diagrams_complete[2] /*&& precision_max_*/) {
+      min_cost_max = cost_max_;
+      last_min_cost_obtained_max = 0;
+    } else if(n_iterations_ > 2 && precision_max_ && diagrams_complete[2]) {
+      last_min_cost_obtained_max += 1;
+      if(last_min_cost_obtained_max > 1 && diagrams_complete[2]) {
+        do_max_ = false;
+      }
+    }
+
+    converged = converged
+                || (all_diagrams_complete && !do_min_ && !do_sad_ && !do_max_
+                    && (precision_criterion_reached));
+
+    total_time += t_inside.getElapsedTime(); // - t_real_cost.getElapsedTime();
+
+    if(total_time + t_inside.getElapsedTime() > 0.9 * time_limit_) {
+      min_cost_min = cost_min_;
+      min_cost_sad = cost_sad_;
+      min_cost_max = cost_max_;
+      converged = true;
+    }
+    if(total_time > 0.1 * time_limit_) {
+      all_diagrams_complete = true;
+      diagrams_complete[0] = true;
+      diagrams_complete[1] = true;
+      diagrams_complete[2] = true;
+      use_progressive_ = false;
     }
   }
 
-  Timer tm;
-  {
-    std::vector<bool *> current_prec;
-    current_prec.push_back(&precision_min_);
-    current_prec.push_back(&precision_sad_);
-    current_prec.push_back(&precision_max_);
-
-    std::vector<bool *> current_dos;
-    current_dos.push_back(&do_min_);
-    current_dos.push_back(&do_sad_);
-    current_dos.push_back(&do_max_);
-    bool converged = false;
-    std::vector<bool> diagrams_complete(3);
-    for(int c = 0; c < 3; c++) {
-      diagrams_complete[c] = (!use_progressive_) || (!original_dos[c]);
-    }
-    bool all_diagrams_complete
-      = diagrams_complete[0] && diagrams_complete[1] && diagrams_complete[2];
-    n_iterations_ = 0;
-    double total_time = 0;
-
-    // dataType cost = std::numeric_limits<dataType>::max();
-    setBidderDiagrams();
-    cost_ = std::numeric_limits<dataType>::max();
-    dataType min_cost_min = std::numeric_limits<dataType>::max();
-    dataType min_cost_max = std::numeric_limits<dataType>::max();
-    dataType min_cost_sad = std::numeric_limits<dataType>::max();
-    // dataType last_min_cost_obtained = -1;
-    dataType last_min_cost_obtained_min = -1;
-    dataType last_min_cost_obtained_sad = -1;
-    dataType last_min_cost_obtained_max = -1;
-    std::vector<dataType> epsilon0(3);
-    std::vector<dataType> epsilon_candidate(3);
-    std::vector<dataType> rho(3);
-
-    // std::cout<<"checkpoint"<<std::endl;
-    // Getting current diagrams (with only at most min_points_to_add points)
-    std::vector<dataType> max_persistence(3);
-    std::vector<dataType> lowest_persistence(3);
-    std::vector<dataType> min_persistence(3);
-
-    // std::cout<<"checkpoint"<<std::endl;
-    for(int i_crit = 0; i_crit < 3; i_crit++) {
-      // std::cout<<"checkpoint"<<i_crit<<std::endl;
-      max_persistence[i_crit] = 2 * getMostPersistent(i_crit);
-      lowest_persistence[i_crit] = getLessPersistent(i_crit);
-      min_persistence[i_crit] = 0;
-      // std::cout<<"size eps "<<epsilon_.size()<<std::endl;
-      epsilon_[i_crit] = pow(0.5 * max_persistence[i_crit], 2)
-                         / 8.; // max_persistence actually holds 2 times the
-                               // highest persistence
-      epsilon0[i_crit] = epsilon_[i_crit];
-    }
-    // std::cout<<"checkpoint"<<std::endl;
-    std::vector<int> min_points_to_add(3);
-    min_points_to_add[0] = 10;
-    min_points_to_add[1] = 10;
-    min_points_to_add[2] = 10;
-
-    if(use_progressive_) {
-      // min_persistence = max_persistence/2.;
-      // min_persistence = 0;
-    } else {
-      min_points_to_add[0] = std::numeric_limits<int>::max();
-      min_points_to_add[1] = std::numeric_limits<int>::max();
-      min_points_to_add[2] = std::numeric_limits<int>::max();
-    }
-    std::vector<std::vector<dataType>> min_diag_price(3);
-    std::vector<std::vector<dataType>> min_off_diag_price(3);
-    for(int c = 0; c < 3; ++c) {
-      for(int i = 0; i < numberOfInputs_; i++) {
-        min_diag_price[c].push_back(0);
-        min_off_diag_price[c].push_back(0);
-      }
-    }
-    // std::cout << "firstinrich" << std::endl;
-    if(debugLevel_ > 5) {
-      cout
-        << "enrich with rho : " << min_persistence[2] << " and initial epsilon "
-        << epsilon_[2]
-        << endl; //"  and barycenter size : "<<centroids_max_[0].size()<<endl;
-    }
-    min_persistence = enrichCurrentBidderDiagrams(
-      max_persistence, min_persistence, min_diag_price, min_off_diag_price,
-      min_points_to_add, false);
-    if(debugLevel_ > 5) {
-      std::cout << "first enrich done" << std::endl;
-    }
-
-    // min_points_to_add[0] = 10;
-    // min_points_to_add[1] = 10;
-    // min_points_to_add[2] = 10;
-
-    for(int c = 0; c < 3; c++) {
-      if(min_persistence[c] <= lowest_persistence[c]) {
-        diagrams_complete[c] = true;
-      } // max_persistence actually holds 2 times the highest persistence
-    }
-    all_diagrams_complete
-      = diagrams_complete[0] && diagrams_complete[1] && diagrams_complete[2];
-    if(all_diagrams_complete) {
-      use_progressive_ = false;
-    }
-
-    // Initializing centroids and clusters
-    if(use_kmeanspp_) {
-      // std::cout << "kmeans pp" << std::endl;
-      initializeCentroidsKMeanspp();
-      // std::cout << "kmeans pp done " << std::endl;
-    } else {
-      initializeCentroids();
-      // cout << "here" << endl;
-    }
-    initializeEmptyClusters();
-    if(use_accelerated_) {
-      // std::cout<<"acceleratedMkneans, update clusters"<<std::endl;
-      initializeAcceleratedKMeans();
-      // cout<<"1"<<endl;
-      getCentroidDistanceMatrix();
-      // cout<<"2"<<endl;
-      acceleratedUpdateClusters();
-      // std::cout<<"acceleratedMkneans, update clusters done"<<std::endl;
-    } else {
-      // std::cout<<"update Clusters"<<std::endl;
-      updateClusters();
-      old_clustering_ = clustering_;
-      // std::cout<<"initialized"<<std::endl;
-    }
-    if(debugLevel_ > 3 && k_ > 1) {
-      std::cout << "Initial Clustering : " << std::endl;
-      printClustering();
-      // std::cout<<std::endl;
-    }
-    // cout<<"barycenter size : "<<centroids_max_[0].size()<<endl;
-    // std::cout<<"entering the loop"<<std::endl;
-    // cout<<"initial epsilons : "<<epsilon_[0]<<" "<<epsilon_[1]<<"
-    // "<<epsilon_[2]<<endl;
-    while(!converged || (!all_diagrams_complete && use_progressive_)) {
-      Timer t_inside;
-      {
-        n_iterations_++;
-        // printPricesToFile(n_iterations_);
-        // cout << "pdate centroids" << endl;
-        // cout << "update centroids done" << endl;
-
-        for(int i_crit = 0; i_crit < 3; i_crit++) {
-          if(*(current_dos[i_crit])) {
-            rho[i_crit] = min_persistence[i_crit] > 0
-                            ? std::sqrt(8.0 * epsilon_[i_crit])
-                            : -1;
-          }
-        }
-        // bool permission_to_enrich = ((min_persistence[0]>rho[0]) ||
-        // (!do_min_) && ((min_persistence[1]>rho[1]) || (!do_sad_))) &&
-        // ((min_persistence[2]>rho[2]) || (!do_max_));
-        // cout<<"permission_to_enrich "<<permission_to_enrich<<endl;
-
-        if(use_progressive_ && n_iterations_ > 1) {
-          // cout<<"getminprices"<<endl;
-          // min_diag_price = getMinDiagonalPrices();
-          // min_off_diag_price = getMinPrices();
-
-          do_min_ = do_min_ && (min_persistence[0] > rho[0]);
-          do_sad_ = do_sad_ && (min_persistence[1] > rho[1]);
-          do_max_ = do_max_ && (min_persistence[2] > rho[2]);
-
-          for(int i_crit = 0; i_crit < 3; i_crit++) {
-            if(*(current_dos[i_crit])) {
-              epsilon_candidate[i_crit] = pow(min_persistence[i_crit], 2) / 8.;
-              if(epsilon_candidate[i_crit] > epsilon_[i_crit]) {
-                // Should always be the case except if min_persistence is
-                // equal to zero
-                epsilon_[i_crit] = epsilon_candidate[i_crit];
-              }
-            }
-          }
-
-          if(epsilon_[0] < 5e-5) {
-            // Add all remaining points for final convergence.
-            // rho[0] = 0;
-            min_persistence[0] = 0;
-            min_points_to_add[0] = std::numeric_limits<int>::max();
-          }
-          if(epsilon_[1] < 5e-5) {
-            // Add all remaining points for final convergence.
-            // rho[1] = 0;
-            min_persistence[1] = 0;
-            min_points_to_add[1] = std::numeric_limits<int>::max();
-          }
-          if(epsilon_[2] < 5e-5) {
-            // Add all remaining points for final convergence.
-            // rho[2] = 0;
-            min_persistence[2] = 0;
-            min_points_to_add[2] = std::numeric_limits<int>::max();
-          }
-
-          // std::cout << "enrich :" << std::endl;
-
-          // cout<<"enrich with rho : "<<rho[2]<<"  and barycenter size :
-          // "<<centroids_max_[0].size()<<endl;
-          if(do_min_ || do_sad_ || do_max_) {
-            min_persistence = enrichCurrentBidderDiagrams(
-              min_persistence, rho, min_diag_price, min_off_diag_price,
-              min_points_to_add, true);
-          }
-          barycenter_inputs_reset_flag = true;
-
-          // std::cout << "enrich done" << std::endl;
-
-          for(int i_crit = 0; i_crit < 3; i_crit++) {
-            if(*(current_dos[i_crit])) {
-              if(min_persistence[i_crit] <= lowest_persistence[i_crit]) {
-                diagrams_complete[i_crit] = true;
-              }
-            }
-          }
-
-          if(diagrams_complete[0] && diagrams_complete[1]
-             && diagrams_complete[2]) {
-            use_progressive_ = false;
-            all_diagrams_complete = true;
-          }
-
-          resetDosToOriginalValues();
-        }
-        // std::cout <<"out  DOs ? " << do_min_ << do_sad_ << do_max_<<endl;
-
-        // cout<<" update centroid "<<endl;
-        // cout<<"EPSILON FOR MATCHINGS : "<<epsilon_[2]<<endl;
-        // cout<<" update centroid done"<<endl;
-        if(do_min_ && !UseDeltaLim_) {
-          precision_min_ = (epsilon_[0] < epsilon0[0] / 500.);
-        }
-        if(do_sad_ && !UseDeltaLim_) {
-          precision_sad_ = (epsilon_[1] < epsilon0[1] / 500.);
-        }
-        if(do_max_ && !UseDeltaLim_) {
-          precision_max_ = (epsilon_[2] < epsilon0[2] / 500.);
-        }
-
-        if(epsilon_[0] < epsilon_min_ /*&& diagrams_complete[0]*/) {
-          if(debugLevel_ > 4) {
-            cout << "[min barycenter] epsilon under minimal value " << endl;
-          }
-          do_min_ = false;
-          epsilon_[0] = epsilon_min_;
-          diagrams_complete[0] = true;
-        }
-        if(epsilon_[1] < epsilon_min_ /*&& diagrams_complete[1]*/) {
-          if(debugLevel_ > 4) {
-            cout << "[sad barycenter] epsilon under minimal value " << endl;
-          }
-          do_sad_ = false;
-          epsilon_[1] = epsilon_min_;
-          diagrams_complete[1] = true;
-        }
-        if(epsilon_[2] < epsilon_min_ /*&& diagrams_complete[2]*/) {
-          if(debugLevel_ > 4) {
-            cout << "[max barycenter] epsilon under minimal value " << endl;
-          }
-          do_max_ = false;
-          epsilon_[2] = epsilon_min_;
-          diagrams_complete[2] = true;
-        }
-
-        if(diagrams_complete[0] && diagrams_complete[1]
-           && diagrams_complete[2]) {
-          use_progressive_ = false;
-          all_diagrams_complete = true;
-        }
-        // std::cout<<"going to NOT update clusters"<<std::endl;
-        if(use_accelerated_) {
-          // std::cout<<"update clusters"<<std::endl;
-          acceleratedUpdateClusters();
-          // std::cout<<"update clusters done"<<std::endl;
-        } else {
-          // updateClusters();
-        }
-        precision_criterion_
-          = precision_min_ && precision_sad_ && precision_max_;
-        bool precision_criterion_reached = precision_criterion_;
-
-        if(cost_min_ < min_cost_min && n_iterations_ > 2
-           && diagrams_complete[0] /*&& precision_min_*/) {
-          min_cost_min = cost_min_;
-          last_min_cost_obtained_min = 0;
-        } else if(n_iterations_ > 2 && precision_min_ && diagrams_complete[0]) {
-          last_min_cost_obtained_min += 1;
-          if(last_min_cost_obtained_min > 1) {
-            do_min_ = false;
-          }
-        }
-
-        if(cost_sad_ < min_cost_sad && n_iterations_ > 2
-           && diagrams_complete[1] /*&& precision_sad_*/) {
-          min_cost_sad = cost_sad_;
-          last_min_cost_obtained_sad = 0;
-        } else if(n_iterations_ > 2 && precision_sad_ && diagrams_complete[1]) {
-          last_min_cost_obtained_sad += 1;
-          if(last_min_cost_obtained_sad > 1 && diagrams_complete[1]) {
-            do_sad_ = false;
-          }
-        }
-
-        if(cost_max_ < min_cost_max && n_iterations_ > 2
-           && diagrams_complete[2] /*&& precision_max_*/) {
-          min_cost_max = cost_max_;
-          last_min_cost_obtained_max = 0;
-        } else if(n_iterations_ > 2 && precision_max_ && diagrams_complete[2]) {
-          last_min_cost_obtained_max += 1;
-          if(last_min_cost_obtained_max > 1 && diagrams_complete[2]) {
-            do_max_ = false;
-          }
-        }
-
-        converged = converged
-                    || (all_diagrams_complete && !do_min_ && !do_sad_
-                        && !do_max_ && (precision_criterion_reached));
-        // cout<<"\nconverged ? : "<<converged<<"\n"<<endl;
-      }
-
-      total_time
-        += t_inside.getElapsedTime(); // - t_real_cost.getElapsedTime();
-
-      if(total_time + t_inside.getElapsedTime() > 0.9 * time_limit_) {
-        min_cost_min = cost_min_;
-        min_cost_sad = cost_sad_;
-        min_cost_max = cost_max_;
-        converged = true;
-      }
-      if(total_time > 0.1 * time_limit_) {
-        all_diagrams_complete = true;
-        diagrams_complete[0] = true;
-        diagrams_complete[1] = true;
-        diagrams_complete[2] = true;
-        use_progressive_ = false;
-      }
-    }
-    resetDosToOriginalValues();
-
-  } // End of timer
+  resetDosToOriginalValues();
 
   computeDiagramsDistanceMatrix();
 
   return inv_clustering_;
-}
-
-template <typename dataType>
-void PDDistMat<dataType>::correctMatchings(
-  vector<vector<vector<vector<matchingTuple>>>> &previous_matchings) {
-  for(int c = 0; c < k_; c++) {
-    for(unsigned int i = 0; i < clustering_[c].size(); i++) {
-      int diagram_id = clustering_[c][i];
-      if(original_dos[0]) {
-        // 1. Invert the current_bidder_ids_ vector
-        std::vector<int> new_to_old_id(
-          current_bidder_diagrams_min_[diagram_id].size(), -1);
-        for(unsigned int j = 0; j < current_bidder_ids_min_[diagram_id].size();
-            j++) {
-          int new_id = current_bidder_ids_min_[diagram_id][j];
-          if(new_id >= 0) {
-            new_to_old_id[new_id] = j;
-          }
-        }
-        // 2. Reconstruct the matchings
-        // cout<<"new to old "<<new_to_old_id.size()<<endl;
-        // for(int ii=0; ii<new_to_old_id.size();ii++){
-        // cout<<ii<<" "<<new_to_old_id[ii]<<endl;
-        // }
-        std::vector<matchingTuple> matchings_diagram_i;
-        for(unsigned int j = 0; j < previous_matchings[c][0][i].size(); j++) {
-          matchingTuple m = previous_matchings[c][0][i][j];
-          int new_id = std::get<0>(m);
-          if(new_id >= 0 && std::get<1>(m) >= 0) {
-            std::get<0>(m) = new_to_old_id[new_id];
-            matchings_diagram_i.push_back(m);
-          }
-        }
-        previous_matchings[c][0][i].resize(matchings_diagram_i.size());
-        previous_matchings[c][0][i] = matchings_diagram_i;
-      }
-      if(original_dos[1]) {
-        // 1. Invert the current_bidder_ids_ vector
-        std::vector<int> new_to_old_id(
-          current_bidder_diagrams_saddle_[diagram_id].size());
-        for(unsigned int j = 0; j < current_bidder_ids_sad_[diagram_id].size();
-            j++) {
-          int new_id = current_bidder_ids_sad_[diagram_id][j];
-          if(new_id >= 0) {
-            new_to_old_id[new_id] = j;
-          }
-        }
-        // 2. Reconstruct the matchings
-        int zero_done = 0;
-        std::vector<matchingTuple> matchings_diagram_i;
-        for(unsigned int j = 0; j < previous_matchings[c][1][i].size(); j++) {
-          matchingTuple m = previous_matchings[c][1][i][j];
-          int new_id = std::get<0>(m);
-          if(new_id >= 0 && std::get<1>(m) >= 0) {
-            int old_id = new_to_old_id[new_id];
-            if(old_id > 0) {
-              std::get<0>(m) = old_id;
-              matchings_diagram_i.push_back(m);
-            } else {
-              if(!zero_done) {
-                zero_done = 1;
-                std::get<0>(m) = old_id;
-                matchings_diagram_i.push_back(m);
-              }
-            }
-          }
-        }
-        previous_matchings[c][1][i].resize(matchings_diagram_i.size());
-        previous_matchings[c][1][i] = matchings_diagram_i;
-      }
-      if(original_dos[2]) {
-        // 1. Invert the current_bidder_ids_ vector
-        std::vector<int> new_to_old_id(
-          current_bidder_diagrams_max_[diagram_id].size());
-        for(unsigned int j = 0; j < current_bidder_ids_max_[diagram_id].size();
-            j++) {
-          int new_id = current_bidder_ids_max_[diagram_id][j];
-          if(new_id >= 0) {
-            new_to_old_id[new_id] = j;
-          }
-        }
-        // 2. Reconstruct the matchings
-        int zero_done = 0;
-        std::vector<matchingTuple> matchings_diagram_i;
-        for(unsigned int j = 0; j < previous_matchings[c][2][i].size(); j++) {
-          matchingTuple m = previous_matchings[c][2][i][j];
-          int new_id = std::get<0>(m);
-          if(new_id >= 0 && std::get<1>(m) >= 0) {
-            int old_id = new_to_old_id[new_id];
-            if(old_id > 0) {
-              std::get<0>(m) = old_id;
-              matchings_diagram_i.push_back(m);
-            } else {
-              if(!zero_done) {
-                zero_done = 1;
-                std::get<0>(m) = old_id;
-                matchings_diagram_i.push_back(m);
-              }
-            }
-          }
-        }
-        previous_matchings[c][2][i].resize(matchings_diagram_i.size());
-        previous_matchings[c][2][i] = matchings_diagram_i;
-      }
-    }
-  }
-}
-
-template <typename dataType>
-void PDDistMat<dataType>::printMatchings(
-  vector<vector<vector<matchingTuple>>> matchings) {
-  cout << "\n MATCHINGS : " << endl;
-  for(int d = 0; d < 3; d++) {
-    if(original_dos[d]) {
-      cout << "\n Diagram type : " << d << endl;
-      for(size_t i = 0; i < matchings[d].size(); i++) {
-        cout << " diagram " << i << " : ";
-        for(size_t j = 0; j < matchings[d][i].size(); j++) {
-          std::cout << get<0>(matchings[d][i][j]) << " ";
-          std::cout << get<1>(matchings[d][i][j]) << " ";
-          std::cout << get<2>(matchings[d][i][j]) << "  |   ";
-        }
-        cout << "\n";
-      }
-    }
-  }
 }
 
 template <typename dataType>
@@ -1169,14 +963,6 @@ void PDDistMat<dataType>::updateClusters() {
         inv_clustering_[i] = cluster;
       }
     }
-    // for(int c=0; c<k_; ++c){
-    // 	if(clustering_[c].size()==0){
-    // 	    // int candidate_tmp = deterministic_ ? 0 : rand() %
-    // numberOfInputs_; 	    int candidate_tmp = std::distance(u_.begin(),
-    // std::max_element(u_.begin(), u_.end())); 		clustering_[c].push_back(
-    // candidate_tmp );
-    // 	}
-    // }
   } else {
     old_clustering_ = clustering_;
     invertClusters();
@@ -1390,32 +1176,15 @@ void PDDistMat<dataType>::acceleratedUpdateClusters() {
       while(!idx_acceptable) {
         auto argMax = std::max_element(copy_of_u.begin(), copy_of_u.end());
         idx = std::distance(copy_of_u.begin(), argMax);
-        // cout<<idx<<" "<<inv_clustering_.size()<<" "<<copy_of_u.size()<<endl;
-        // idx = deterministic_ ? idx+1 : rand() % k_;
         if(inv_clustering_[idx] < k_ && inv_clustering_[idx] >= 0
            && clustering_[inv_clustering_[idx]].size() > 1) {
           idx_acceptable = true;
           int cluster_removal = inv_clustering_[idx];
-          // Removing the index to remove
-          // std::cout<<"\n c : "<<c<< " , idx : "<<idx<<" , cluster removal =
-          // "<<cluster_removal<<std::endl; std::cout<<" chosen idx : "<<idx<<"
-          // and its distance : "<<u_[idx]<<std::endl; std::cout<<" [ "; for(int
-          // iter=0;iter<clustering_[cluster_removal].size(); iter++){
-          //     std::cout<<" "<<clustering_[cluster_removal][iter]<<" ";
-          // }
-          // std::cout<<" ]"<<std::endl;
-          // cout<<" "<<clustering_.size()<<" "<<cluster_removal<<endl;
           clustering_[cluster_removal].erase(
             std::remove(clustering_[cluster_removal].begin(),
                         clustering_[cluster_removal].end(), idx),
             clustering_[cluster_removal].end());
-          // std::cout<<"[ ";
-          // for(int iter=0;iter<clustering_[cluster_removal].size(); iter++){
-          //     std::cout<<" "<<clustering_[cluster_removal][iter]<<" ";
-          // }
-          // std::cout<<" ]"<<std::endl;
         } else {
-          // cout<<"test"<<endl;
           if(copy_of_u.size() > (size_t)idx) {
             copy_of_u.erase(argMax);
           } else {
@@ -1436,12 +1205,6 @@ void PDDistMat<dataType>::acceleratedUpdateClusters() {
                           clustering_[cluster_removal].end(), idx),
               clustering_[cluster_removal].end());
           }
-          // cout<<"test done"<<endl;
-          // std::cout<< " copy_of_u : [ ";
-          // for(int i=0; i<copy_of_u.size(); i++){
-          //         std::cout<<" "<<copy_of_u[i];
-          //         }
-          //         std::cout<<" ] "<<std::endl;
         }
         increment += 1;
       }
@@ -1471,7 +1234,6 @@ void PDDistMat<dataType>::acceleratedUpdateClusters() {
       barycenter_inputs_reset_flag = true;
     }
   }
-  // cout<<"accelerated update cluster done"<<endl;
   return;
 }
 
@@ -1561,12 +1323,6 @@ std::vector<dataType> PDDistMat<dataType>::enrichCurrentBidderDiagrams(
   std::vector<int> min_points_to_add,
   bool add_points_to_barycenter) {
 
-  // for(int i=0; i<initial_diagonal_prices.size();i++){
-  //     for(int j=0; j<initial_off_diagonal_prices[i].size();j++){
-  //         cout<<i<<" min prices "<<initial_off_diagonal_prices[i][j]<<endl;
-  //         cout<<i<<" min diag prices "<<initial_diagonal_prices[i][j]<<endl;
-  //     }
-  // }
   std::vector<dataType> new_min_persistence = min_persistence;
 
   if(!do_min_) {
@@ -1953,295 +1709,4 @@ std::vector<dataType> PDDistMat<dataType>::enrichCurrentBidderDiagrams(
   }
 
   return new_min_persistence;
-}
-
-template <typename dataType>
-void PDDistMat<dataType>::printDistancesToFile() {
-  ofstream ufile("u_vec.txt");
-  ofstream lfile("l_mat.txt");
-  ofstream approx_file("a_mat.txt");
-  if(ufile.is_open() && lfile.is_open()) {
-    for(int i = 0; i < numberOfInputs_; i++) {
-      ufile << u_[i] << " ";
-      for(int j = 0; j < k_; j++) {
-        lfile << l_[i][j] << " ";
-      }
-      lfile << "\n";
-    }
-  }
-
-  for(int c = 0; c < k_; c++) {
-    for(int i : clustering_[c]) {
-      approx_file << (u_[i] + l_[i][c]) / 2 << " ";
-    }
-    approx_file << "\n";
-  }
-  lfile.close();
-  ufile.close();
-  approx_file.close();
-}
-
-template <typename dataType>
-void PDDistMat<dataType>::printRealDistancesToFile() {
-  cout << "Computing real distances to every clusters" << endl;
-  ofstream file("a_real_mat.txt");
-  if(file.is_open()) {
-    for(int c = 0; c < k_; c++) {
-      for(int i : clustering_[c]) {
-        file << distanceToCentroid_[i] << " ";
-      }
-      file << "\n";
-    }
-    file.close();
-  } else {
-    cout << "file not open" << endl;
-  }
-}
-
-template <typename dataType>
-void PDDistMat<dataType>::printPricesToFile(int iteration) {
-  ofstream file(
-    "prices_evolution.txt", std::ofstream::out | std::ofstream::app);
-  if(file.is_open()) {
-    file << "\nITERATION " << iteration << "\n" << endl;
-    for(int i = 0; i < k_; i++) {
-      file << "\ncentroid " << i << endl;
-
-      for(int j = 0; j < centroids_with_price_max_[i].size(); j++) {
-        Good<dataType> g = centroids_with_price_max_[i].get(j);
-        file << g.getPrice() << " ";
-      }
-    }
-  }
-  file.close();
-}
-
-template <typename dataType>
-dataType PDDistMat<dataType>::computeRealCost() {
-  dataType total_real_cost_min = 0;
-  dataType total_real_cost_max = 0;
-  dataType total_real_cost_sad = 0;
-  dataType sq_distance;
-  // for(int j=0; j<barycenter_goods_[0].size(); j++){
-  //     Good<dataType> good_tmp = barycenter_goods_[0].get(j).copy();
-  //     good_tmp.setPrice(0);
-  //     current_barycenter.addGood(good_tmp);
-  // }
-  if(original_dos[0]) {
-    for(int c = 0; c < k_; c++) {
-      dataType real_cost_cluster = 0;
-      for(int i = 0; i < numberOfInputs_; i++) {
-        GoodDiagram<dataType> current_barycenter
-          = centroidWithZeroPrices(centroids_min_[c]);
-        sq_distance
-          = computeDistance(bidder_diagrams_min_[i], current_barycenter, 0.01);
-        real_cost_cluster += sq_distance;
-      }
-      total_real_cost_min += real_cost_cluster;
-    }
-    cout << "SO FAR REAL COST MIN : " << total_real_cost_min << endl;
-  }
-  if(original_dos[1]) {
-    for(int c = 0; c < k_; c++) {
-      dataType real_cost_cluster = 0;
-      for(int i = 0; i < numberOfInputs_; i++) {
-        GoodDiagram<dataType> current_barycenter
-          = centroidWithZeroPrices(centroids_saddle_[c]);
-        sq_distance = computeDistance(
-          bidder_diagrams_saddle_[i], current_barycenter, 0.01);
-        real_cost_cluster += sq_distance;
-      }
-      total_real_cost_sad += real_cost_cluster;
-    }
-    // cout<<"SO FAR REAL COST SAD : "<<total_real_cost_sad<<endl;
-  }
-  if(original_dos[2]) {
-    for(int c = 0; c < k_; c++) {
-      dataType real_cost_cluster = 0;
-      for(int i = 0; i < numberOfInputs_; i++) {
-        GoodDiagram<dataType> current_barycenter
-          = centroidWithZeroPrices(centroids_max_[c]);
-        sq_distance
-          = computeDistance(bidder_diagrams_max_[i], current_barycenter, 0.01);
-        real_cost_cluster += sq_distance;
-      }
-      total_real_cost_max += real_cost_cluster;
-    }
-    // cout<<"SO FAR REAL COST MAX : "<<total_real_cost_max<<endl;
-  }
-  return total_real_cost_min + total_real_cost_sad + total_real_cost_max;
-}
-
-template <typename dataType>
-void PDDistMat<dataType>::computeBarycenterForTwo(
-  vector<vector<vector<vector<matchingTuple>>>>
-    &all_matchings_per_type_and_cluster) {
-
-  if(do_min_) {
-    std::vector<int> new_to_old_id(current_bidder_diagrams_min_[1].size());
-    // 1. Invert the current_bidder_ids_ vector
-    for(unsigned int j = 0; j < current_bidder_ids_min_[1].size(); j++) {
-      int new_id = current_bidder_ids_min_[1][j];
-      if(new_id >= 0) {
-        new_to_old_id[new_id] = j;
-      }
-    }
-    vector<matchingTuple> matching_to_add(0);
-    for(unsigned int i = 0;
-        i < all_matchings_per_type_and_cluster[0][0][1].size(); i++) {
-      matchingTuple t = all_matchings_per_type_and_cluster[0][0][1][i];
-      int bidderId = get<0>(t);
-      int goodId = get<1>(t);
-      if(bidderId >= 0) {
-        Bidder<dataType> b
-          = bidder_diagrams_min_[1].get(new_to_old_id[bidderId]);
-        dataType bx = b.x_;
-        dataType by = b.y_;
-        if(goodId >= 0) {
-          Good<dataType> g = centroids_min_[0].get(goodId);
-          dataType gx = g.x_;
-          dataType gy = g.y_;
-          centroids_min_[0].get(goodId).x_ = (bx + gx) / 2;
-          centroids_min_[0].get(goodId).y_ = (by + gy) / 2;
-        } else {
-          dataType gx = (bx + by) / 2;
-          dataType gy = (bx + by) / 2;
-          gx = (gx + bx) / 2;
-          gy = (gy + by) / 2;
-          dataType cost
-            = pow((gx - bx), wasserstein_) + pow((gy - by), wasserstein_);
-          Good<dataType> g
-            = Good<dataType>(gx, gy, false, centroids_min_[0].size());
-          // g.SetCriticalCoordinates(b.coords_x_, b.coords_y_, b.coords_z_);
-          matchingTuple t2
-            = make_tuple(bidderId, centroids_min_[0].size(), cost);
-          centroids_min_[0].addGood(g);
-          matching_to_add.push_back(t2);
-        }
-      } else {
-        if(goodId >= 0) {
-          Good<dataType> g = centroids_min_[0].get(goodId);
-          dataType gx = (g.x_ + g.y_) / 2;
-          dataType gy = (g.x_ + g.y_) / 2;
-          centroids_min_[0].get(goodId).x_ = (gx + g.x_) / 2;
-          centroids_min_[0].get(goodId).y_ = (gy + g.y_) / 2;
-        }
-      }
-    }
-    for(unsigned int j = 0; j < matching_to_add.size(); j++) {
-      all_matchings_per_type_and_cluster[0][0][1].push_back(matching_to_add[j]);
-    }
-  }
-
-  if(do_sad_) {
-    std::vector<int> new_to_old_id(current_bidder_diagrams_saddle_[1].size());
-    // 1. Invert the current_bidder_ids_ vector
-    for(unsigned int j = 0; j < current_bidder_ids_sad_[1].size(); j++) {
-      int new_id = current_bidder_ids_sad_[1][j];
-      if(new_id >= 0) {
-        new_to_old_id[new_id] = j;
-      }
-    }
-    vector<matchingTuple> matching_to_add(0);
-    for(unsigned int i = 0;
-        i < all_matchings_per_type_and_cluster[0][1][1].size(); i++) {
-      matchingTuple t = all_matchings_per_type_and_cluster[0][1][1][i];
-      int bidderId = get<0>(t);
-      int goodId = get<1>(t);
-      if(bidderId >= 0) {
-        Bidder<dataType> b
-          = bidder_diagrams_saddle_[1].get(new_to_old_id[bidderId]);
-        dataType bx = b.x_;
-        dataType by = b.y_;
-        if(goodId >= 0) {
-          Good<dataType> g = centroids_saddle_[0].get(goodId);
-          dataType gx = g.x_;
-          dataType gy = g.y_;
-          centroids_saddle_[0].get(goodId).x_ = (bx + gx) / 2;
-          centroids_saddle_[0].get(goodId).y_ = (by + gy) / 2;
-        } else {
-          dataType gx = (bx + by) / 2;
-          dataType gy = (bx + by) / 2;
-          gx = (gx + bx) / 2;
-          gy = (gy + by) / 2;
-          dataType cost
-            = pow((gx - bx), wasserstein_) + pow((gy - by), wasserstein_);
-          matchingTuple t2
-            = make_tuple(bidderId, centroids_saddle_[0].size(), cost);
-          Good<dataType> g
-            = Good<dataType>(gx, gy, false, centroids_saddle_[0].size());
-          // g.SetCriticalCoordinates(b.coords_x_, b.coords_y_, b.coords_z_);
-          centroids_saddle_[0].addGood(g);
-          matching_to_add.push_back(t2);
-        }
-      } else {
-        if(goodId >= 0) {
-          Good<dataType> g = centroids_saddle_[0].get(goodId);
-          dataType gx = (g.x_ + g.y_) / 2;
-          dataType gy = (g.x_ + g.y_) / 2;
-          centroids_saddle_[0].get(goodId).x_ = (gx + g.x_) / 2;
-          centroids_saddle_[0].get(goodId).y_ = (gy + g.y_) / 2;
-        }
-      }
-    }
-    for(unsigned int j = 0; j < matching_to_add.size(); j++) {
-      all_matchings_per_type_and_cluster[0][1][1].push_back(matching_to_add[j]);
-    }
-  }
-
-  if(do_max_) {
-    std::vector<int> new_to_old_id(current_bidder_diagrams_max_[1].size());
-    // 1. Invert the current_bidder_ids_ vector
-    for(unsigned int j = 0; j < current_bidder_ids_max_[1].size(); j++) {
-      int new_id = current_bidder_ids_max_[1][j];
-      if(new_id >= 0) {
-        new_to_old_id[new_id] = j;
-      }
-    }
-    vector<matchingTuple> matching_to_add(0);
-    for(unsigned int i = 0;
-        i < all_matchings_per_type_and_cluster[0][2][1].size(); i++) {
-      matchingTuple t = all_matchings_per_type_and_cluster[0][2][1][i];
-      int bidderId = get<0>(t);
-      int goodId = get<1>(t);
-      if(bidderId >= 0) {
-        Bidder<dataType> b
-          = bidder_diagrams_max_[1].get(new_to_old_id[bidderId]);
-        dataType bx = b.x_;
-        dataType by = b.y_;
-        if(goodId >= 0) {
-          Good<dataType> g = centroids_max_[0].get(goodId);
-          dataType gx = g.x_;
-          dataType gy = g.y_;
-          centroids_max_[0].get(goodId).x_ = (bx + gx) / 2;
-          centroids_max_[0].get(goodId).y_ = (by + gy) / 2;
-        } else {
-          dataType gx = (bx + by) / 2;
-          dataType gy = (bx + by) / 2;
-          gx = (gx + bx) / 2;
-          gy = (gy + by) / 2;
-          dataType cost
-            = pow((gx - bx), wasserstein_) + pow((gy - by), wasserstein_);
-          matchingTuple t2
-            = make_tuple(bidderId, centroids_max_[0].size(), cost);
-          Good<dataType> g
-            = Good<dataType>(gx, gy, false, centroids_max_[0].size());
-          // g.SetCriticalCoordinates(b.coords_x_, b.coords_y_, b.coords_z_);
-          centroids_max_[0].addGood(g);
-          matching_to_add.push_back(t2);
-        }
-      } else {
-        if(goodId >= 0) {
-          Good<dataType> g = centroids_max_[0].get(goodId);
-          dataType gx = (g.x_ + g.y_) / 2;
-          dataType gy = (g.x_ + g.y_) / 2;
-          centroids_max_[0].get(goodId).x_ = (gx + g.x_) / 2;
-          centroids_max_[0].get(goodId).y_ = (gy + g.y_) / 2;
-        }
-      }
-    }
-    for(unsigned int j = 0; j < matching_to_add.size(); j++) {
-      all_matchings_per_type_and_cluster[0][2][1].push_back(matching_to_add[j]);
-    }
-  }
 }
