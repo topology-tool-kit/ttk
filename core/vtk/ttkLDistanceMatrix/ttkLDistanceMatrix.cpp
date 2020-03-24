@@ -142,7 +142,8 @@ int ttkLDistanceMatrix::RequestData(vtkInformation * /*request*/,
   dists->SetName("Distances");
   for(size_t i = 0; i < nInputs; ++i) {
     for(size_t j = 0; j < nInputs; ++j) {
-      dists->InsertValue(i * nInputs + j, distMatrix[i][j]);
+      const auto invdist = distMatrix[i][j] == 0 ? 0.0 : 1.0 / distMatrix[i][j];
+      dists->InsertValue(i * nInputs + j, invdist);
     }
   }
   HeatMap->GetCellData()->AddArray(dists);
