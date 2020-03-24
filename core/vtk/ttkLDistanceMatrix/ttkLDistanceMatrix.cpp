@@ -1,6 +1,17 @@
 #include <LDistance.h>
 #include <ttkLDistanceMatrix.h>
+
+#include <vtkCellData.h>
+#include <vtkDataArray.h>
+#include <vtkDoubleArray.h>
+#include <vtkImageData.h>
+#include <vtkInformationVector.h>
+#include <vtkMultiBlockDataSet.h>
+#include <vtkNew.h>
+#include <vtkObjectFactory.h>
+#include <vtkPointData.h>
 #include <vtkStreamingDemandDrivenPipeline.h>
+#include <vtkTable.h>
 
 using namespace std;
 using namespace ttk;

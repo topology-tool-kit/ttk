@@ -11,23 +11,8 @@
 #pragma once
 
 // VTK includes -- to adapt
-#include <vtkCellData.h>
-#include <vtkCharArray.h>
-#include <vtkDataArray.h>
-#include <vtkDataSet.h>
-#include <vtkDoubleArray.h>
-#include <vtkFiltersCoreModule.h>
-#include <vtkFloatArray.h>
 #include <vtkInformation.h>
-#include <vtkInformationVector.h>
-#include <vtkIntArray.h>
-#include <vtkMultiBlockDataSet.h>
 #include <vtkMultiBlockDataSetAlgorithm.h>
-#include <vtkNew.h>
-#include <vtkObjectFactory.h>
-#include <vtkPointData.h>
-#include <vtkTable.h>
-#include <vtkUnstructuredGrid.h>
 
 // VTK Module
 #include <ttkLDistanceMatrixModule.h>
