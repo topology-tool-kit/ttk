@@ -192,9 +192,6 @@ namespace ttk {
     inline void setUseFullDiagrams(const bool arg) {
       useFullDiagrams_ = arg;
     }
-    inline void setPerClusterDistanceMatrix(const bool arg) {
-      perClusterDistanceMatrix_ = arg;
-    }
 
     inline void printClustering() {
       std::stringstream msg;
@@ -229,14 +226,6 @@ namespace ttk {
     inline const std::vector<std::vector<double>> &&
       getDiagramsDistanceMatrix() {
       return std::move(diagramsDistanceMatrix_);
-    }
-    inline const std::vector<std::vector<double>> &&
-      getCentroidsDistanceMatrix() {
-      return std::move(centroidsDistanceMatrix_);
-    }
-
-    inline const std::vector<double> &&getDistanceToCentroid() {
-      return std::move(distanceToCentroid_);
     }
 
     template <typename type>
@@ -320,8 +309,6 @@ namespace ttk {
     std::vector<std::vector<double>> diagramsDistanceMatrix_{};
     bool outputDistanceMatrix_{false};
     bool useFullDiagrams_{false};
-    bool perClusterDistanceMatrix_{false};
-    std::vector<double> distanceToCentroid_{};
 
     int n_iterations_;
   };

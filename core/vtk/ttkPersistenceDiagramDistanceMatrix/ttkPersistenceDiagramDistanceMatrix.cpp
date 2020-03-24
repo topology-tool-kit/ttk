@@ -140,7 +140,6 @@ int ttkPersistenceDiagramDistanceMatrix::RequestData(
       intermediateDiagrams_, all_matchings_);
 
     diagramsDistMat = persistenceDiagramsClustering.getDiagramsDistMat();
-    distanceToCentroid = persistenceDiagramsClustering.getDistanceToCentroid();
 
     needUpdate_ = false;
   }

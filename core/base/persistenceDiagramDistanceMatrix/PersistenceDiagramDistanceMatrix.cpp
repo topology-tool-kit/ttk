@@ -116,13 +116,10 @@ std::vector<int> PersistenceDiagramDistanceMatrix::execute(
   KMeans.setDos(do_min, do_sad, do_max);
   KMeans.setOutputDistanceMatrix(outputDistanceMatrix_);
   KMeans.setUseFullDiagrams(useFullDiagrams_);
-  KMeans.setPerClusterDistanceMatrix(perClusterDistanceMatrix_);
   inv_clustering = KMeans.execute();
   vector<vector<int>> centroids_sizes = KMeans.get_centroids_sizes();
 
-  centroidsDistMat_ = KMeans.getCentroidsDistanceMatrix();
   diagramsDistMat_ = KMeans.getDiagramsDistanceMatrix();
-  distanceToCentroid_ = KMeans.getDistanceToCentroid();
 
   /// Reconstruct matchings
   //

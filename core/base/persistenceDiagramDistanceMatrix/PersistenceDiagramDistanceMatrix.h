@@ -135,12 +135,6 @@ namespace ttk {
     inline const std::vector<std::vector<double>> &&getDiagramsDistMat() {
       return std::move(diagramsDistMat_);
     }
-    inline const std::vector<std::vector<double>> &&getCentroidsDistMat() {
-      return std::move(centroidsDistMat_);
-    }
-    inline const std::vector<double> &&getDistanceToCentroid() {
-      return std::move(distanceToCentroid_);
-    }
 
   protected:
     // Critical pairs used for clustering
@@ -173,8 +167,6 @@ namespace ttk {
     bool outputDistanceMatrix_{false};
     bool useFullDiagrams_{false};
     bool perClusterDistanceMatrix_{false};
-    std::vector<std::vector<double>> centroidsDistMat_{};
     std::vector<std::vector<double>> diagramsDistMat_{};
-    std::vector<double> distanceToCentroid_{};
   };
 } // namespace ttk

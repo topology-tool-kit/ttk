@@ -337,8 +337,6 @@ private:
   bool UseFullDiagrams{false};
   bool PerClusterDistanceMatrix{false};
   std::vector<std::vector<double>> diagramsDistMat{};
-  std::vector<double> distanceToCentroid{};
-  std::vector<std::vector<double>> centroidsDistMat{};
 
   bool needsToAbort() override;
 

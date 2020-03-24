@@ -861,14 +861,6 @@ void PDDistMat::computeDiagramsDistanceMatrix() {
     for(int j = i + 1; j < numberOfInputs_; ++j) {
       double distance{};
 
-      if(perClusterDistanceMatrix_) {
-        // skip computation if i and j are not in the same cluster
-        // (distance is set to +inf)
-        if(inv_clustering_[i] != inv_clustering_[j]) {
-          continue;
-        }
-      }
-
       if(original_dos[0]) {
         auto &dimin = diags_min[i];
         auto &djmin = diags_min[j];
