@@ -103,17 +103,15 @@ namespace ttk {
       do_sad_ = original_dos[1];
       do_max_ = original_dos[2];
     }
-    inline int
-      setDiagrams(std::vector<std::vector<DiagramTuple>> *data_min,
-                  std::vector<std::vector<DiagramTuple>> *data_saddle,
-                  std::vector<std::vector<DiagramTuple>> *data_max) {
+    inline void setDiagrams(std::vector<std::vector<DiagramTuple>> *data_min,
+                            std::vector<std::vector<DiagramTuple>> *data_saddle,
+                            std::vector<std::vector<DiagramTuple>> *data_max) {
       inputDiagramsMin_ = data_min;
       inputDiagramsSaddle_ = data_saddle;
       inputDiagramsMax_ = data_max;
-      return 0;
     }
 
-    inline int setDos(bool doMin, bool doSad, bool doMax) {
+    inline void setDos(bool doMin, bool doSad, bool doMax) {
       do_min_ = doMin;
       do_sad_ = doSad;
       do_max_ = doMax;
@@ -121,17 +119,14 @@ namespace ttk {
       original_dos[0] = do_min_;
       original_dos[1] = do_sad_;
       original_dos[2] = do_max_;
-      return 0;
     }
 
-    inline int setNumberOfInputs(int numberOfInputs) {
+    inline void setNumberOfInputs(int numberOfInputs) {
       numberOfInputs_ = numberOfInputs;
-      return 0;
     }
 
-    inline int setK(const int k) {
+    inline void setK(const int k) {
       k_ = k;
-      return 0;
     }
 
     inline void setWasserstein(const int &wasserstein) {
