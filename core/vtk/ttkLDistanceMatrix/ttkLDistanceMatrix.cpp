@@ -13,6 +13,8 @@
 #include <vtkStreamingDemandDrivenPipeline.h>
 #include <vtkTable.h>
 
+#include <set>
+
 using namespace std;
 using namespace ttk;
 
@@ -65,6 +67,23 @@ int ttkLDistanceMatrix::RequestData(vtkInformation * /*request*/,
 
   for(size_t i = 0; i < nInputs; ++i) {
     inputData[i] = vtkImageData::SafeDownCast(blocks->GetBlock(i));
+  }
+
+  // sanity check: data non null and same data size
+  {
+    std::set<vtkIdType> sizes{};
+    for(size_t i = 0; i < nInputs; ++i) {
+      if(inputData[i] == nullptr) {
+        std::cout << "Some input block is not a vtkImageData" << std::endl;
+        return 0;
+      }
+      sizes.emplace(inputData[i]->GetNumberOfPoints());
+    }
+    if(sizes.size() > 1) {
+      std::cout << "Input blocks do not have the same number of points"
+                << std::endl;
+      return 0;
+    }
   }
 
   // Get output
