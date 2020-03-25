@@ -15,9 +15,6 @@
 #include <vtkStreamingDemandDrivenPipeline.h>
 #include <vtkTable.h>
 
-using namespace std;
-using namespace ttk;
-
 vtkStandardNewMacro(ttkPersistenceDiagramDistanceMatrix);
 
 ttkPersistenceDiagramDistanceMatrix::ttkPersistenceDiagramDistanceMatrix() {
@@ -33,7 +30,7 @@ bool ttkPersistenceDiagramDistanceMatrix::needsToAbort() {
 // transmit progress status -- to copy paste in other wrappers
 int ttkPersistenceDiagramDistanceMatrix::updateProgress(const float &progress) {
   {
-    stringstream msg;
+    std::stringstream msg;
     msg << "[ttkPersistenceDiagramDistanceMatrix] " << progress * 100
         << "% processed...." << endl;
     dMsg(cout, msg.str(), advancedInfoMsg);
@@ -69,7 +66,7 @@ int ttkPersistenceDiagramDistanceMatrix::RequestData(
   vtkInformation * /*request*/,
   vtkInformationVector **inputVector,
   vtkInformationVector *outputVector) {
-  Memory m;
+  ttk::Memory m;
 
   // hard-coded number of clusters
   this->NumberOfClusters = 4;
@@ -111,10 +108,10 @@ int ttkPersistenceDiagramDistanceMatrix::RequestData(
 
     // if(Method == 0) {
     // Progressive approach
-    PersistenceDiagramDistanceMatrix persistenceDiagramsClustering{};
+    ttk::PersistenceDiagramDistanceMatrix persistenceDiagramsClustering{};
     persistenceDiagramsClustering.setWrapper(this);
 
-    string wassersteinMetric = WassersteinMetric;
+    std::string wassersteinMetric = WassersteinMetric;
 
     if(!UseInterruptible) {
       TimeLimit = 999999999;
@@ -210,7 +207,7 @@ int ttkPersistenceDiagramDistanceMatrix::RequestData(
   }
 
   {
-    stringstream msg;
+    std::stringstream msg;
     msg << "[ttkPersistenceDiagramDistanceMatrix] Memory usage: "
         << m.getElapsedUsage() << " MB." << endl;
     dMsg(cout, msg.str(), memoryMsg);
@@ -313,13 +310,13 @@ double ttkPersistenceDiagramDistanceMatrix::getPersistenceDiagram(
         max_dimension = persistence;
 
         diagram[0] = std::make_tuple(
-          vertexId1, CriticalType::Local_minimum, vertexId2,
-          CriticalType::Saddle1, persistence, pairType, birth, coordsBirth[0],
-          coordsBirth[1], coordsBirth[2], death, coordsDeath[0], coordsDeath[1],
-          coordsDeath[2]);
+          vertexId1, ttk::CriticalType::Local_minimum, vertexId2,
+          ttk::CriticalType::Saddle1, persistence, pairType, birth,
+          coordsBirth[0], coordsBirth[1], coordsBirth[2], death, coordsDeath[0],
+          coordsDeath[1], coordsDeath[2]);
         diagram[pairingsSize] = std::make_tuple(
-          vertexId1, CriticalType::Saddle1, vertexId2,
-          CriticalType::Local_maximum, persistence, pairType, birth,
+          vertexId1, ttk::CriticalType::Saddle1, vertexId2,
+          ttk::CriticalType::Local_maximum, persistence, pairType, birth,
           coordsBirth[0], coordsBirth[1], coordsBirth[2], death, coordsDeath[0],
           coordsDeath[1], coordsDeath[2]);
 
