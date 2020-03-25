@@ -162,13 +162,12 @@ int ttkLDistanceMatrix::RequestData(vtkInformation * /*request*/,
   dists->SetName("Proximity");
   for(size_t i = 0; i < nInputs; ++i) {
     for(size_t j = 0; j < nInputs; ++j) {
-      const auto invdist = distMatrix[i][j] == 0 ? 0.0 : 1.0 / distMatrix[i][j];
       const auto nptrow{static_cast<vtkIdType>(nInputs + 1)};
       const auto curr{static_cast<vtkIdType>(i * nptrow + j)};
       std::array<vtkIdType, 4> ptIds{
         curr, curr + nptrow, curr + nptrow + 1, curr + 1};
       cells->InsertNextCell(4, ptIds.data());
-      dists->InsertNextValue(invdist);
+      dists->InsertNextValue(std::exp(-distMatrix[i][j]));
     }
   }
   HeatMap->SetCells(VTK_QUAD, cells);
