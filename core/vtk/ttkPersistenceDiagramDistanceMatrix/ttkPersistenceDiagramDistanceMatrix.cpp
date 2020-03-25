@@ -171,14 +171,12 @@ int ttkPersistenceDiagramDistanceMatrix::RequestData(
   dists->SetName("Proximity");
   for(int i = 0; i < numInputs; ++i) {
     for(int j = 0; j < numInputs; ++j) {
-      const auto invdist
-        = diagramsDistMat[i][j] == 0 ? 0.0 : 1.0 / diagramsDistMat[i][j];
       const vtkIdType nptrow{numInputs + 1};
       const vtkIdType curr{i * nptrow + j};
       std::array<vtkIdType, 4> ptIds{
         curr, curr + nptrow, curr + nptrow + 1, curr + 1};
       cells->InsertNextCell(4, ptIds.data());
-      dists->InsertNextValue(invdist);
+      dists->InsertNextValue(std::exp(-diagramsDistMat[i][j]));
     }
   }
   HeatMap->SetCells(VTK_QUAD, cells);
