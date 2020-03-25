@@ -17,15 +17,6 @@
 
 #pragma once
 
-#ifndef BNodeType
-#define BNodeType ttk::CriticalType
-#define BLocalMax ttk::CriticalType::Local_maximum
-#define BLocalMin ttk::CriticalType::Local_minimum
-#define BSaddle1 ttk::CriticalType::Saddle1
-#define BSaddle2 ttk::CriticalType::Saddle2
-#define BIdVertex ttk::SimplexId
-#endif
-
 // base code includes
 //
 #include <Wrapper.h>

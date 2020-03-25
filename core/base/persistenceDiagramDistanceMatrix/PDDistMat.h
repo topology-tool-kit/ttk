@@ -44,7 +44,8 @@ namespace ttk {
   class PDDistMat : public Debug {
 
   public:
-    std::vector<int> execute();
+    std::vector<int>
+      execute(std::vector<std::vector<DiagramTuple>> &intermediateDiagrams);
 
     double getMostPersistent(int type = -1);
     vector<vector<int>> get_centroids_sizes();
@@ -103,23 +104,6 @@ namespace ttk {
       do_sad_ = original_dos[1];
       do_max_ = original_dos[2];
     }
-    inline void setDiagrams(std::vector<std::vector<DiagramTuple>> *data_min,
-                            std::vector<std::vector<DiagramTuple>> *data_saddle,
-                            std::vector<std::vector<DiagramTuple>> *data_max) {
-      inputDiagramsMin_ = data_min;
-      inputDiagramsSaddle_ = data_saddle;
-      inputDiagramsMax_ = data_max;
-    }
-
-    inline void setDos(bool doMin, bool doSad, bool doMax) {
-      do_min_ = doMin;
-      do_sad_ = doSad;
-      do_max_ = doMax;
-
-      original_dos[0] = do_min_;
-      original_dos[1] = do_sad_;
-      original_dos[2] = do_max_;
-    }
 
     inline void setNumberOfInputs(int numberOfInputs) {
       numberOfInputs_ = numberOfInputs;
@@ -155,6 +139,10 @@ namespace ttk {
 
     inline void setTimeLimit(const double time_limit) {
       time_limit_ = time_limit;
+    }
+
+    inline void setPairTypeClustering(const int pairTypeClustering) {
+      pairTypeClustering_ = pairTypeClustering;
     }
 
     inline void setGeometricalFactor(const double geometrical_factor) {
@@ -254,7 +242,7 @@ namespace ttk {
     bool use_progressive_{true};
     bool use_accelerated_;
     bool use_kmeanspp_;
-    bool use_kdtree_;
+    bool use_kdtree_{true};
     double time_limit_{std::numeric_limits<double>::max()};
 
     double epsilon_min_{1e-8};
@@ -267,9 +255,9 @@ namespace ttk {
     std::vector<std::vector<int>> current_bidder_ids_min_;
     std::vector<std::vector<int>> current_bidder_ids_sad_;
     std::vector<std::vector<int>> current_bidder_ids_max_;
-    std::vector<std::vector<DiagramTuple>> *inputDiagramsMin_;
-    std::vector<std::vector<DiagramTuple>> *inputDiagramsSaddle_;
-    std::vector<std::vector<DiagramTuple>> *inputDiagramsMax_;
+    std::vector<std::vector<DiagramTuple>> inputDiagramsMin_;
+    std::vector<std::vector<DiagramTuple>> inputDiagramsSaddle_;
+    std::vector<std::vector<DiagramTuple>> inputDiagramsMax_;
 
     std::array<bool, 3> original_dos;
 
@@ -306,5 +294,6 @@ namespace ttk {
     bool useFullDiagrams_{false};
 
     int n_iterations_;
+    int pairTypeClustering_;
   };
 } // namespace ttk

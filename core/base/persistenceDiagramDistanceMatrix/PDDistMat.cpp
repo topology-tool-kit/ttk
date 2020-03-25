@@ -23,7 +23,93 @@
 
 using namespace ttk;
 
-std::vector<int> PDDistMat::execute() {
+std::vector<int> PDDistMat::execute(
+  std::vector<std::vector<DiagramTuple>> &intermediateDiagrams) {
+
+  Timer tm{};
+
+  inputDiagramsMin_.resize(numberOfInputs_);
+  inputDiagramsMax_.resize(numberOfInputs_);
+  inputDiagramsSaddle_.resize(numberOfInputs_);
+
+  {
+    std::stringstream msg;
+    msg << "[PersistenceDiagramDistanceMatrix] Clustering " << numberOfInputs_
+        << " diagrams in " << k_ << " cluster(s)." << std::endl;
+    dMsg(std::cout, msg.str(), infoMsg);
+  }
+
+  std::vector<int> inv_clustering(numberOfInputs_);
+
+  // Create diagrams for min, saddle and max persistence pairs
+  for(int i = 0; i < numberOfInputs_; i++) {
+    std::vector<DiagramTuple> &CTDiagram = intermediateDiagrams[i];
+
+    for(size_t j = 0; j < CTDiagram.size(); ++j) {
+      DiagramTuple t = CTDiagram[j];
+
+      ttk::CriticalType nt1 = std::get<1>(t);
+      ttk::CriticalType nt2 = std::get<3>(t);
+
+      double dt = std::get<4>(t);
+      // if (abs<double>(dt) < zeroThresh) continue;
+      if(dt > 0) {
+        if(nt1 == CriticalType::Local_minimum
+           && nt2 == CriticalType::Local_maximum) {
+          inputDiagramsMax_[i].push_back(t);
+          do_max_ = true;
+        } else {
+          if(nt1 == CriticalType::Local_maximum
+             || nt2 == CriticalType::Local_maximum) {
+            inputDiagramsMax_[i].push_back(t);
+            do_max_ = true;
+          }
+          if(nt1 == CriticalType::Local_minimum
+             || nt2 == CriticalType::Local_minimum) {
+            inputDiagramsMin_[i].push_back(t);
+            do_min_ = true;
+          }
+          if((nt1 == CriticalType::Saddle1 && nt2 == CriticalType::Saddle2)
+             || (nt1 == CriticalType::Saddle2
+                 && nt2 == CriticalType::Saddle1)) {
+            inputDiagramsSaddle_[i].push_back(t);
+            do_sad_ = true;
+          }
+        }
+      }
+    }
+  }
+
+  {
+    std::stringstream msg;
+    switch(pairTypeClustering_) {
+      case(0):
+        msg << "[PersistenceDiagramDistanceMatrix] Only MIN-SAD Pairs";
+        do_max_ = false;
+        do_sad_ = false;
+        break;
+      case(1):
+        msg << "[PersistenceDiagramDistanceMatrix] Only SAD-SAD Pairs";
+        do_max_ = false;
+        do_min_ = false;
+        break;
+      case(2):
+        msg << "[PersistenceDiagramDistanceMatrix] Only SAD-MAX Pairs";
+        do_min_ = false;
+        do_sad_ = false;
+        break;
+      default:
+        msg << "[PersistenceDiagramDistanceMatrix] All critical pairs: "
+               "global clustering";
+        break;
+    }
+    msg << std::endl;
+    dMsg(std::cout, msg.str(), advancedInfoMsg);
+  }
+
+  original_dos[0] = do_min_;
+  original_dos[1] = do_sad_;
+  original_dos[2] = do_max_;
 
   std::vector<bool *> current_prec{
     &precision_min_, &precision_sad_, &precision_max_};
@@ -308,6 +394,14 @@ std::vector<int> PDDistMat::execute() {
   resetDosToOriginalValues();
 
   computeDiagramsDistanceMatrix();
+
+  {
+    std::stringstream msg;
+    msg << "[PersistenceDiagramDistanceMatrix] Processed in "
+        << tm.getElapsedTime() << " s. (" << threadNumber_ << " thread(s))."
+        << std::endl;
+    dMsg(std::cout, msg.str(), infoMsg);
+  }
 
   return inv_clustering_;
 }
@@ -1200,7 +1294,7 @@ void PDDistMat::acceleratedUpdateClusters() {
 void PDDistMat::setBidderDiagrams() {
   for(int i = 0; i < numberOfInputs_; i++) {
     if(do_min_) {
-      std::vector<DiagramTuple> *CTDiagram = &((*inputDiagramsMin_)[i]);
+      std::vector<DiagramTuple> *CTDiagram = &(inputDiagramsMin_[i]);
       BidderDiagram<double> bidders;
       for(unsigned int j = 0; j < CTDiagram->size(); j++) {
         // Add bidder to bidders
@@ -1223,7 +1317,7 @@ void PDDistMat::setBidderDiagrams() {
     }
 
     if(do_sad_) {
-      std::vector<DiagramTuple> *CTDiagram = &((*inputDiagramsSaddle_)[i]);
+      std::vector<DiagramTuple> *CTDiagram = &(inputDiagramsSaddle_[i]);
 
       BidderDiagram<double> bidders;
       for(unsigned int j = 0; j < CTDiagram->size(); j++) {
@@ -1247,7 +1341,7 @@ void PDDistMat::setBidderDiagrams() {
     }
 
     if(do_max_) {
-      std::vector<DiagramTuple> *CTDiagram = &((*inputDiagramsMax_)[i]);
+      std::vector<DiagramTuple> *CTDiagram = &(inputDiagramsMax_[i]);
 
       BidderDiagram<double> bidders;
       for(unsigned int j = 0; j < CTDiagram->size(); j++) {
