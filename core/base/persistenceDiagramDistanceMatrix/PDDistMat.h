@@ -228,11 +228,6 @@ namespace ttk {
       return std::move(diagramsDistanceMatrix_);
     }
 
-    template <typename type>
-    static type abs(const type var) {
-      return (var >= 0) ? var : -var;
-    }
-
   protected:
     bool barycenter_inputs_reset_flag;
     bool precision_criterion_{false};

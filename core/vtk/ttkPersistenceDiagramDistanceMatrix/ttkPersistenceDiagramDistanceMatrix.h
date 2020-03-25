@@ -298,10 +298,6 @@ protected:
 
 private:
   std::vector<std::vector<diagramType>> intermediateDiagrams_{};
-  std::vector<std::vector<std::vector<matchingType>>> all_matchings_{};
-  std::vector<std::vector<diagramType>> final_centroids_{};
-
-  std::vector<int> inv_clustering_{};
 
   int numberOfInputsFromCommandLine{1};
   int PairTypeClustering{-1};

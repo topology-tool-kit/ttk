@@ -1,8 +1,7 @@
 #include <PersistenceDiagramDistanceMatrix.h>
 
-std::vector<int> PersistenceDiagramDistanceMatrix::execute(
-  std::vector<std::vector<DiagramTuple>> &intermediateDiagrams,
-  std::vector<std::vector<std::vector<MatchingTuple>>> &all_matchings) {
+void PersistenceDiagramDistanceMatrix::execute(
+  std::vector<std::vector<DiagramTuple>> &intermediateDiagrams) {
 
   Timer tm;
   {
@@ -92,8 +91,6 @@ std::vector<int> PersistenceDiagramDistanceMatrix::execute(
     dMsg(std::cout, msg.str(), advancedInfoMsg);
   }
 
-  vector<vector<vector<vector<MatchingTuple>>>>
-    all_matchings_per_type_and_cluster;
   PDDistMat KMeans{};
   KMeans.setWasserstein(wasserstein_);
   KMeans.setThreadNumber(threadNumber_);
@@ -116,35 +113,9 @@ std::vector<int> PersistenceDiagramDistanceMatrix::execute(
   KMeans.setDos(do_min, do_sad, do_max);
   KMeans.setOutputDistanceMatrix(outputDistanceMatrix_);
   KMeans.setUseFullDiagrams(useFullDiagrams_);
-  inv_clustering = KMeans.execute();
-  vector<vector<int>> centroids_sizes = KMeans.get_centroids_sizes();
+  KMeans.execute();
 
   diagramsDistMat_ = KMeans.getDiagramsDistanceMatrix();
-
-  /// Reconstruct matchings
-  //
-  std::vector<int> cluster_size;
-  std::vector<int> idxInCluster(numberOfInputs_);
-
-  for(int j = 0; j < numberOfInputs_; ++j) {
-    unsigned int c = inv_clustering[j];
-    if(c + 1 > cluster_size.size()) {
-      cluster_size.resize(c + 1);
-      cluster_size[c] = 1;
-      idxInCluster[j] = 0;
-    } else {
-      cluster_size[c]++;
-      idxInCluster[j] = cluster_size[c] - 1;
-    }
-    if(debugLevel_ > 20) {
-      cout << "id in cluster " << idxInCluster[j] << endl;
-    }
-  }
-
-  all_matchings.resize(n_clusters_);
-  for(int c = 0; c < n_clusters_; c++) {
-    all_matchings[c].resize(numberOfInputs_);
-  }
 
   {
     std::stringstream msg;
@@ -153,5 +124,4 @@ std::vector<int> PersistenceDiagramDistanceMatrix::execute(
         << std::endl;
     dMsg(std::cout, msg.str(), infoMsg);
   }
-  return inv_clustering;
 }

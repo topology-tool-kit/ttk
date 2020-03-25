@@ -85,7 +85,6 @@ int ttkPersistenceDiagramDistanceMatrix::RequestData(
 
   if(needUpdate_) {
     intermediateDiagrams_.resize(numInputs);
-    all_matchings_.resize(3);
 
     max_dimension_total_ = 0;
     for(int i = 0; i < numInputs; i++) {
@@ -129,8 +128,7 @@ int ttkPersistenceDiagramDistanceMatrix::RequestData(
     persistenceDiagramsClustering.setPerClusterDistanceMatrix(
       PerClusterDistanceMatrix);
 
-    inv_clustering_ = persistenceDiagramsClustering.execute(
-      intermediateDiagrams_, all_matchings_);
+    persistenceDiagramsClustering.execute(intermediateDiagrams_);
 
     diagramsDistMat = persistenceDiagramsClustering.getDiagramsDistMat();
 

@@ -1319,15 +1319,12 @@ std::vector<double> PDDistMat::enrichCurrentBidderDiagrams(
       }
     }
   }
-  int max_points_to_add_min
-    = std::max(min_points_to_add[0],
-               min_points_to_add[0] + (int)(max_diagram_size_min / 10));
-  int max_points_to_add_sad
-    = std::max(min_points_to_add[1],
-               min_points_to_add[1] + (int)(max_diagram_size_sad / 10));
-  int max_points_to_add_max
-    = std::max(min_points_to_add[2],
-               min_points_to_add[2] + (int)(max_diagram_size_max / 10));
+  int max_points_to_add_min = std::max(
+    min_points_to_add[0], min_points_to_add[0] + max_diagram_size_min / 10);
+  int max_points_to_add_sad = std::max(
+    min_points_to_add[1], min_points_to_add[1] + max_diagram_size_sad / 10);
+  int max_points_to_add_max = std::max(
+    min_points_to_add[2], min_points_to_add[2] + max_diagram_size_max / 10);
   // cout<<"\n max points to add for first min bidder
   // "<<max_points_to_add_max<<endl;
   // 2. Get which points can be added, deduce the new minimal persistence

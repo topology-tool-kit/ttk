@@ -55,9 +55,7 @@ namespace ttk {
 
     ~PersistenceDiagramDistanceMatrix(){};
 
-    std::vector<int> execute(
-      std::vector<std::vector<DiagramTuple>> &intermediateDiagrams,
-      std::vector<std::vector<std::vector<MatchingTuple>>> &all_matchings);
+    void execute(std::vector<std::vector<DiagramTuple>> &intermediateDiagrams);
 
     inline void setNumberOfInputs(int numberOfInputs) {
       numberOfInputs_ = numberOfInputs;
@@ -126,10 +124,6 @@ namespace ttk {
     }
     inline void setPerClusterDistanceMatrix(const bool arg) {
       perClusterDistanceMatrix_ = arg;
-    }
-    template <typename type>
-    static type abs(const type var) {
-      return (var >= 0) ? var : -var;
     }
 
     inline const std::vector<std::vector<double>> &&getDiagramsDistMat() {
