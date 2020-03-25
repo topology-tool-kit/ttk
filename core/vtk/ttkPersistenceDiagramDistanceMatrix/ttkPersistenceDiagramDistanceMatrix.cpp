@@ -123,7 +123,6 @@ int ttkPersistenceDiagramDistanceMatrix::RequestData(
     persistenceDiagramsClustering.setUseKmeansppInit(UseKmeansppInit);
     persistenceDiagramsClustering.setDistanceWritingOptions(
       DistanceWritingOptions);
-    persistenceDiagramsClustering.setOutputDistanceMatrix(OutputDistanceMatrix);
     persistenceDiagramsClustering.setUseFullDiagrams(UseFullDiagrams);
 
     persistenceDiagramsClustering.execute(intermediateDiagrams_);
@@ -209,7 +208,7 @@ int ttkPersistenceDiagramDistanceMatrix::RequestData(
 }
 
 double ttkPersistenceDiagramDistanceMatrix::getPersistenceDiagram(
-  std::vector<diagramType> &diagram,
+  std::vector<ttk::DiagramTuple> &diagram,
   vtkUnstructuredGrid *CTPersistenceDiagram_) {
   vtkIntArray *vertexIdentifierScalars
     = vtkIntArray::SafeDownCast(CTPersistenceDiagram_->GetPointData()->GetArray(

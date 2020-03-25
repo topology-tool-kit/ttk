@@ -41,8 +41,7 @@ namespace ttk {
   class PersistenceDiagramDistanceMatrix : public Debug {
 
   public:
-    std::vector<int>
-      execute(std::vector<std::vector<DiagramTuple>> &intermediateDiagrams);
+    void execute(std::vector<std::vector<DiagramTuple>> &intermediateDiagrams);
 
     double getMostPersistent(int type = -1);
     vector<vector<int>> get_centroids_sizes();
@@ -171,41 +170,8 @@ namespace ttk {
       deltaLim_ = deltaLim;
     }
 
-    inline void setOutputDistanceMatrix(const bool arg) {
-      outputDistanceMatrix_ = arg;
-    }
     inline void setUseFullDiagrams(const bool arg) {
       useFullDiagrams_ = arg;
-    }
-
-    inline void printClustering() {
-      std::stringstream msg;
-      for(int c = 0; c < k_; ++c) {
-        msg << "[PersistenceDiagramClustering] Cluster " << c << " = {";
-        for(unsigned int idx = 0; idx < clustering_[c].size(); ++idx) {
-          if(idx == clustering_[c].size() - 1) {
-            msg << clustering_[c][idx] << "}" << std::endl;
-          } else {
-            msg << clustering_[c][idx] << ", ";
-          }
-        }
-      }
-      dMsg(std::cout, msg.str(), infoMsg);
-    }
-
-    inline void printOldClustering() {
-      std::stringstream msg;
-      for(int c = 0; c < k_; ++c) {
-        msg << "Cluster " << c << " = {";
-        for(unsigned int idx = 0; idx < old_clustering_[c].size(); ++idx) {
-          if(idx == old_clustering_[c].size() - 1) {
-            msg << old_clustering_[c][idx] << "}" << std::endl;
-          } else {
-            msg << old_clustering_[c][idx] << ", ";
-          }
-        }
-      }
-      dMsg(std::cout, msg.str(), infoMsg);
     }
 
     inline const std::vector<std::vector<double>> &&getDiagramsDistMat() {
@@ -286,7 +252,6 @@ namespace ttk {
     std::vector<std::vector<double>> l_;
     std::vector<std::vector<double>> centroidsDistanceMatrix_{};
     std::vector<std::vector<double>> diagramsDistanceMatrix_{};
-    bool outputDistanceMatrix_{false};
     bool useFullDiagrams_{false};
 
     int n_iterations_;

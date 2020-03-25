@@ -10,7 +10,7 @@
 
 using namespace ttk;
 
-std::vector<int> PersistenceDiagramDistanceMatrix::execute(
+void PersistenceDiagramDistanceMatrix::execute(
   std::vector<std::vector<DiagramTuple>> &intermediateDiagrams) {
 
   Timer tm{};
@@ -25,8 +25,6 @@ std::vector<int> PersistenceDiagramDistanceMatrix::execute(
         << " diagrams in " << k_ << " cluster(s)." << std::endl;
     dMsg(std::cout, msg.str(), infoMsg);
   }
-
-  std::vector<int> inv_clustering(numberOfInputs_);
 
   // Create diagrams for min, saddle and max persistence pairs
   for(int i = 0; i < numberOfInputs_; i++) {
@@ -208,11 +206,6 @@ std::vector<int> PersistenceDiagramDistanceMatrix::execute(
     old_clustering_ = clustering_;
   }
 
-  if(debugLevel_ > 3 && k_ > 1) {
-    std::cout << "Initial Clustering : " << std::endl;
-    printClustering();
-  }
-
   while(!converged || (!all_diagrams_complete && use_progressive_)) {
     Timer t_inside;
 
@@ -389,8 +382,6 @@ std::vector<int> PersistenceDiagramDistanceMatrix::execute(
         << std::endl;
     dMsg(std::cout, msg.str(), infoMsg);
   }
-
-  return inv_clustering_;
 }
 
 vector<vector<int>> PersistenceDiagramDistanceMatrix::get_centroids_sizes() {

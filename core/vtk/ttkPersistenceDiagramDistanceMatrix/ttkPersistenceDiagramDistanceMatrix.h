@@ -269,24 +269,7 @@ public:
 protected:
   ttkPersistenceDiagramDistanceMatrix();
 
-  using diagramType = std::tuple<ttk::SimplexId,
-                                 ttk::CriticalType,
-                                 ttk::SimplexId,
-                                 ttk::CriticalType,
-                                 double,
-                                 ttk::SimplexId,
-                                 double,
-                                 float,
-                                 float,
-                                 float,
-                                 double,
-                                 float,
-                                 float,
-                                 float>;
-
-  using matchingType = std::tuple<ttk::SimplexId, ttk::SimplexId, double>;
-
-  double getPersistenceDiagram(std::vector<diagramType> &diagram,
+  double getPersistenceDiagram(std::vector<ttk::DiagramTuple> &diagram,
                                vtkUnstructuredGrid *CTPersistenceDiagram_);
 
   int FillInputPortInformation(int port, vtkInformation *info) override;
@@ -297,7 +280,7 @@ protected:
                   vtkInformationVector *outputVector) override;
 
 private:
-  std::vector<std::vector<diagramType>> intermediateDiagrams_{};
+  std::vector<std::vector<ttk::DiagramTuple>> intermediateDiagrams_{};
 
   int numberOfInputsFromCommandLine{1};
   int PairTypeClustering{-1};
@@ -329,7 +312,6 @@ private:
 
   bool UseProgressive{true};
   double TimeLimit{9999999};
-  bool OutputDistanceMatrix{false};
   bool UseFullDiagrams{false};
   std::vector<std::vector<double>> diagramsDistMat{};
 
