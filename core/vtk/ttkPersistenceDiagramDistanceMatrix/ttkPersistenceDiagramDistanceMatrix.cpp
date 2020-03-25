@@ -222,29 +222,31 @@ int ttkPersistenceDiagramDistanceMatrix::RequestData(
 double ttkPersistenceDiagramDistanceMatrix::getPersistenceDiagram(
   std::vector<ttk::DiagramTuple> &diagram,
   vtkUnstructuredGrid *CTPersistenceDiagram_) {
-  vtkIntArray *vertexIdentifierScalars
-    = vtkIntArray::SafeDownCast(CTPersistenceDiagram_->GetPointData()->GetArray(
-      ttk::VertexScalarFieldName));
 
-  vtkIntArray *nodeTypeScalars = vtkIntArray::SafeDownCast(
-    CTPersistenceDiagram_->GetPointData()->GetArray("CriticalType"));
-
-  vtkIntArray *pairIdentifierScalars = vtkIntArray::SafeDownCast(
-    CTPersistenceDiagram_->GetCellData()->GetArray("PairIdentifier"));
-
-  vtkIntArray *extremumIndexScalars = vtkIntArray::SafeDownCast(
-    CTPersistenceDiagram_->GetCellData()->GetArray("PairType"));
-
-  const auto persistenceScalars = vtkDoubleArray::SafeDownCast(
-    CTPersistenceDiagram_->GetCellData()->GetArray("Persistence"));
-  const auto birthScalars = vtkDoubleArray::SafeDownCast(
-    CTPersistenceDiagram_->GetPointData()->GetArray("Birth"));
-  const auto deathScalars = vtkDoubleArray::SafeDownCast(
-    CTPersistenceDiagram_->GetPointData()->GetArray("Death"));
-
-  const auto critCoordinates = vtkFloatArray::SafeDownCast(
-    CTPersistenceDiagram_->GetPointData()->GetArray("Coordinates"));
+  const auto pd = CTPersistenceDiagram_->GetPointData();
+  const auto cd = CTPersistenceDiagram_->GetCellData();
   const auto points = CTPersistenceDiagram_->GetPoints();
+
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(pd == nullptr || points == nullptr) {
+    return -2;
+  }
+#endif // TTK_ENABLE_KAMIKAZE
+
+  const auto vertexIdentifierScalars
+    = vtkIntArray::SafeDownCast(pd->GetArray(ttk::VertexScalarFieldName));
+  const auto nodeTypeScalars
+    = vtkIntArray::SafeDownCast(pd->GetArray("CriticalType"));
+  const auto pairIdentifierScalars
+    = vtkIntArray::SafeDownCast(cd->GetArray("PairIdentifier"));
+  const auto extremumIndexScalars
+    = vtkIntArray::SafeDownCast(cd->GetArray("PairType"));
+  const auto persistenceScalars
+    = vtkDoubleArray::SafeDownCast(cd->GetArray("Persistence"));
+  const auto birthScalars = vtkDoubleArray::SafeDownCast(pd->GetArray("Birth"));
+  const auto deathScalars = vtkDoubleArray::SafeDownCast(pd->GetArray("Death"));
+  const auto critCoordinates
+    = vtkFloatArray::SafeDownCast(pd->GetArray("Coordinates"));
 
   const bool embed = birthScalars != nullptr && deathScalars != nullptr;
 
