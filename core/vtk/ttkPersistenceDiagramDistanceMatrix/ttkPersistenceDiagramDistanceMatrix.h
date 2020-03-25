@@ -1,8 +1,8 @@
 /// \ingroup base
-/// \class ttk::ttkPersistenceDiagramBarycenter
+/// \class ttkPersistenceDiagramDistanceMatrix
 /// \author Jules Vidal <jules.vidal@lip6.fr>
-/// \author Joseph Budin <joseph.budin@polytechnique.edu>
-/// \date September 2019
+/// \author Pierre Guillou <pierre.guillou@lip6.fr>
+/// \date March 2020
 ///
 /// \brief TTK processing package for the computation of Wasserstein barycenters
 /// and K-Means clusterings of a set of persistence diagrams.
@@ -17,36 +17,10 @@
 
 #pragma once
 
-#ifndef diagramTuple
-#define diagramTuple                                                       \
-  std::tuple<ttk::SimplexId, ttk::CriticalType, ttk::SimplexId,            \
-             ttk::CriticalType, dataType, ttk::SimplexId, dataType, float, \
-             float, float, dataType, float, float, float>
-#endif
-
-#define BLocalMax ttk::CriticalType::Local_maximum
-#define BLocalMin ttk::CriticalType::Local_minimum
-#define BSaddle1 ttk::CriticalType::Saddle1
-#define BSaddle2 ttk::CriticalType::Saddle2
-
-// VTK includes -- to adapt
-#include <vtkCellData.h>
-#include <vtkCharArray.h>
-#include <vtkDataArray.h>
-#include <vtkDataSet.h>
-#include <vtkDoubleArray.h>
-#include <vtkFiltersCoreModule.h>
-#include <vtkFloatArray.h>
+// VTK includes
 #include <vtkInformation.h>
 #include <vtkInformationVector.h>
-#include <vtkIntArray.h>
-#include <vtkMultiBlockDataSet.h>
 #include <vtkMultiBlockDataSetAlgorithm.h>
-#include <vtkNew.h>
-#include <vtkObjectFactory.h>
-#include <vtkPointData.h>
-#include <vtkSmartPointer.h>
-#include <vtkTable.h>
 #include <vtkUnstructuredGrid.h>
 
 // VTK Module
@@ -54,22 +28,13 @@
 
 // ttk code includes
 #include <PersistenceDiagramDistanceMatrix.h>
-//
 #include <ttkTriangulationAlgorithm.h>
 
-// in this example, this wrapper takes a data-set on the input and produces a
-// data-set on the output - to adapt.
-// see the documentation of the vtkAlgorithm class to decide from which VTK
-// class your wrapper should inherit.
 class TTKPERSISTENCEDIAGRAMDISTANCEMATRIX_EXPORT
   ttkPersistenceDiagramDistanceMatrix : public vtkMultiBlockDataSetAlgorithm,
                                         protected ttk::Wrapper {
 
 public:
-  void setNumberOfInputsFromCommandLine(int number) {
-    numberOfInputsFromCommandLine = number;
-    SetNumberOfInputPorts(number);
-  }
   static ttkPersistenceDiagramDistanceMatrix *New();
 
   vtkTypeMacro(ttkPersistenceDiagramDistanceMatrix,
