@@ -1,8 +1,8 @@
 /// \ingroup base
 /// \class ttk::PersistenceDiagramDistanceMatrix
 /// \author Jules Vidal <jules.vidal@lip6.fr>
-/// \author Joseph Budin <joseph.budin@polytechnique.edu>
-/// \date September 2019
+/// \author Pierre Guillou <pierre.guillou@lip6.fr>
+/// \date March 2020
 ///
 /// \b Related \b publication \n
 /// "Progressive Wasserstein Barycenters of Persistence Diagrams" \n
@@ -14,14 +14,11 @@
 
 #pragma once
 
-#include <Auction.h>
-#include <KDTree.h>
-//
 #include <array>
 #include <limits>
-//
 
-using namespace std;
+#include <Auction.h>
+#include <Wrapper.h>
 
 namespace ttk {
 
