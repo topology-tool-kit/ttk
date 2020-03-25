@@ -1,5 +1,5 @@
 ttk_add_base_library(persistenceDiagramDistanceMatrix
-  SOURCES PersistenceDiagramDistanceMatrix.cpp PDDistMat.cpp
+  SOURCES PersistenceDiagramDistanceMatrix.cpp
   HEADERS PersistenceDiagramDistanceMatrix.h
-  LINK common auction persistenceDiagram bottleneckDistance kdTree
+  LINK common auction persistenceDiagram kdTree
   )
