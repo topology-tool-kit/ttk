@@ -109,12 +109,12 @@ namespace ttk {
       numberOfInputs_ = numberOfInputs;
     }
 
-    inline void setK(const int k) {
+    inline void setNumberOfClusters(const int k) {
       k_ = k;
     }
 
-    inline void setWasserstein(const int &wasserstein) {
-      wasserstein_ = wasserstein;
+    inline void setWasserstein(const std::string &wasserstein) {
+      wasserstein_ = (wasserstein == "inf") ? -1 : stoi(wasserstein);
     }
 
     inline void setThreadNumber(const int &threadNumber) {
@@ -125,7 +125,7 @@ namespace ttk {
       use_progressive_ = use_progressive;
     }
 
-    inline void setKMeanspp(const bool use_kmeanspp) {
+    inline void setUseKmeansppInit(const bool use_kmeanspp) {
       use_kmeanspp_ = use_kmeanspp;
     }
 
@@ -133,7 +133,7 @@ namespace ttk {
       use_kdtree_ = use_kdtree;
     }
 
-    inline void setAccelerated(const bool use_accelerated) {
+    inline void setUseAccelerated(const bool use_accelerated) {
       use_accelerated_ = use_accelerated;
     }
 
@@ -145,8 +145,8 @@ namespace ttk {
       pairTypeClustering_ = pairTypeClustering;
     }
 
-    inline void setGeometricalFactor(const double geometrical_factor) {
-      geometrical_factor_ = geometrical_factor;
+    inline void setAlpha(const double alpha) {
+      geometrical_factor_ = alpha;
     }
     inline void setLambda(const double lambda) {
       lambda_ = lambda;
@@ -211,8 +211,7 @@ namespace ttk {
       dMsg(std::cout, msg.str(), infoMsg);
     }
 
-    inline const std::vector<std::vector<double>> &&
-      getDiagramsDistanceMatrix() {
+    inline const std::vector<std::vector<double>> &&getDiagramsDistMat() {
       return std::move(diagramsDistanceMatrix_);
     }
 

@@ -331,7 +331,6 @@ private:
   double TimeLimit{9999999};
   bool OutputDistanceMatrix{false};
   bool UseFullDiagrams{false};
-  bool PerClusterDistanceMatrix{false};
   std::vector<std::vector<double>> diagramsDistMat{};
 
   bool needsToAbort() override;

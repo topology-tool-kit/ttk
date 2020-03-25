@@ -125,8 +125,6 @@ int ttkPersistenceDiagramDistanceMatrix::RequestData(
       DistanceWritingOptions);
     persistenceDiagramsClustering.setOutputDistanceMatrix(OutputDistanceMatrix);
     persistenceDiagramsClustering.setUseFullDiagrams(UseFullDiagrams);
-    persistenceDiagramsClustering.setPerClusterDistanceMatrix(
-      PerClusterDistanceMatrix);
 
     persistenceDiagramsClustering.execute(intermediateDiagrams_);
 
