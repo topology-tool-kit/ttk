@@ -68,76 +68,68 @@ int ttkPersistenceDiagramDistanceMatrix::RequestData(
   vtkInformationVector *outputVector) {
   ttk::Memory m;
 
-  // Number of input files
-  int numInputs = numberOfInputsFromCommandLine;
-
   // Get input data
   std::vector<vtkUnstructuredGrid *> inputDiagrams;
 
   auto blocks = vtkMultiBlockDataSet::GetData(inputVector[0], 0);
 
   if(blocks != nullptr) {
-    numInputs = blocks->GetNumberOfBlocks();
-    inputDiagrams.resize(numInputs);
-    for(int i = 0; i < numInputs; ++i) {
+    inputDiagrams.resize(blocks->GetNumberOfBlocks());
+    for(size_t i = 0; i < inputDiagrams.size(); ++i) {
       inputDiagrams[i] = vtkUnstructuredGrid::SafeDownCast(blocks->GetBlock(i));
-      if(this->GetMTime() < inputDiagrams[i]->GetMTime()) {
-        needUpdate_ = true;
-      }
     }
   }
+
+  const int numInputs = inputDiagrams.size();
 
   // Set output
   auto diagramsDistTable = vtkTable::GetData(outputVector, 0);
   auto HeatMap = vtkUnstructuredGrid::GetData(outputVector, 1);
 
-  if(needUpdate_) {
-    intermediateDiagrams_.resize(numInputs);
+  std::vector<std::vector<ttk::DiagramTuple>> intermediateDiagrams(numInputs);
 
-    max_dimension_total_ = 0;
-    for(int i = 0; i < numInputs; i++) {
-      double max_dimension
-        = getPersistenceDiagram(intermediateDiagrams_[i], inputDiagrams[i]);
-      if(max_dimension_total_ < max_dimension) {
-        max_dimension_total_ = max_dimension;
-      }
+  double max_dimension_total = 0.0;
+  for(int i = 0; i < numInputs; i++) {
+    double max_dimension
+      = getPersistenceDiagram(intermediateDiagrams[i], inputDiagrams[i]);
+    if(max_dimension_total < max_dimension) {
+      max_dimension_total = max_dimension;
     }
-
-    // if(Method == 0) {
-    // Progressive approach
-    ttk::PersistenceDiagramDistanceMatrix persistenceDiagramsClustering{};
-    persistenceDiagramsClustering.setWrapper(this);
-
-    std::string wassersteinMetric = WassersteinMetric;
-
-    if(!UseInterruptible) {
-      TimeLimit = 999999999;
-    }
-    persistenceDiagramsClustering.setWasserstein(wassersteinMetric);
-    persistenceDiagramsClustering.setDeterministic(Deterministic);
-    persistenceDiagramsClustering.setForceUseOfAlgorithm(ForceUseOfAlgorithm);
-    persistenceDiagramsClustering.setPairTypeClustering(PairTypeClustering);
-    persistenceDiagramsClustering.setNumberOfInputs(numInputs);
-    persistenceDiagramsClustering.setDebugLevel(debugLevel_);
-    persistenceDiagramsClustering.setTimeLimit(TimeLimit);
-    persistenceDiagramsClustering.setUseProgressive(true);
-    persistenceDiagramsClustering.setThreadNumber(threadNumber_);
-    persistenceDiagramsClustering.setAlpha(Alpha);
-    persistenceDiagramsClustering.setDeltaLim(DeltaLim);
-    persistenceDiagramsClustering.setUseDeltaLim(UseAdditionalPrecision);
-    persistenceDiagramsClustering.setLambda(Lambda);
-    persistenceDiagramsClustering.setNumberOfClusters(4);
-    persistenceDiagramsClustering.setUseAccelerated(UseAccelerated);
-    persistenceDiagramsClustering.setUseKmeansppInit(UseKmeansppInit);
-    persistenceDiagramsClustering.setDistanceWritingOptions(0);
-    persistenceDiagramsClustering.setUseFullDiagrams(UseFullDiagrams);
-
-    persistenceDiagramsClustering.execute(intermediateDiagrams_);
-
-    diagramsDistMat = persistenceDiagramsClustering.getDiagramsDistMat();
-
-    needUpdate_ = false;
   }
+
+  // if(Method == 0) {
+  // Progressive approach
+  ttk::PersistenceDiagramDistanceMatrix persistenceDiagramsClustering{};
+  persistenceDiagramsClustering.setWrapper(this);
+
+  std::string wassersteinMetric = WassersteinMetric;
+
+  if(!UseInterruptible) {
+    TimeLimit = 999999999;
+  }
+  persistenceDiagramsClustering.setWasserstein(wassersteinMetric);
+  persistenceDiagramsClustering.setDeterministic(Deterministic);
+  persistenceDiagramsClustering.setForceUseOfAlgorithm(ForceUseOfAlgorithm);
+  persistenceDiagramsClustering.setPairTypeClustering(PairTypeClustering);
+  persistenceDiagramsClustering.setNumberOfInputs(numInputs);
+  persistenceDiagramsClustering.setDebugLevel(debugLevel_);
+  persistenceDiagramsClustering.setTimeLimit(TimeLimit);
+  persistenceDiagramsClustering.setUseProgressive(true);
+  persistenceDiagramsClustering.setThreadNumber(threadNumber_);
+  persistenceDiagramsClustering.setAlpha(Alpha);
+  persistenceDiagramsClustering.setDeltaLim(DeltaLim);
+  persistenceDiagramsClustering.setUseDeltaLim(UseAdditionalPrecision);
+  persistenceDiagramsClustering.setLambda(Lambda);
+  persistenceDiagramsClustering.setNumberOfClusters(4);
+  persistenceDiagramsClustering.setUseAccelerated(UseAccelerated);
+  persistenceDiagramsClustering.setUseKmeansppInit(UseKmeansppInit);
+  persistenceDiagramsClustering.setDistanceWritingOptions(0);
+  persistenceDiagramsClustering.setUseFullDiagrams(UseFullDiagrams);
+
+  persistenceDiagramsClustering.execute(intermediateDiagrams);
+
+  const auto diagramsDistMat
+    = persistenceDiagramsClustering.getDiagramsDistMat();
 
   // zero-padd column name to keep Row Data columns ordered
   const auto zeroPad

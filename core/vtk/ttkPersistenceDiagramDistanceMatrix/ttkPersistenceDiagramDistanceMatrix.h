@@ -138,9 +138,6 @@ protected:
                   vtkInformationVector *outputVector) override;
 
 private:
-  std::vector<std::vector<ttk::DiagramTuple>> intermediateDiagrams_{};
-
-  int numberOfInputsFromCommandLine{1};
   int PairTypeClustering{-1};
   bool ForceUseOfAlgorithm{false};
   bool Deterministic{true};
@@ -151,9 +148,6 @@ private:
   double DeltaLim{0.01};
   double Lambda{1.0};
   bool UseInterruptible{true};
-  double max_dimension_total_{};
-
-  bool needUpdate_{true};
 
   bool UseAccelerated{false};
   bool UseKmeansppInit{false};
@@ -161,9 +155,7 @@ private:
 
   double TimeLimit{9999999};
   bool UseFullDiagrams{false};
-  std::vector<std::vector<double>> diagramsDistMat{};
 
   bool needsToAbort() override;
-
   int updateProgress(const float &progress) override;
 };
