@@ -68,9 +68,6 @@ int ttkPersistenceDiagramDistanceMatrix::RequestData(
   vtkInformationVector *outputVector) {
   ttk::Memory m;
 
-  // hard-coded number of clusters
-  this->NumberOfClusters = 4;
-
   // Number of input files
   int numInputs = numberOfInputsFromCommandLine;
 
@@ -123,13 +120,13 @@ int ttkPersistenceDiagramDistanceMatrix::RequestData(
     persistenceDiagramsClustering.setNumberOfInputs(numInputs);
     persistenceDiagramsClustering.setDebugLevel(debugLevel_);
     persistenceDiagramsClustering.setTimeLimit(TimeLimit);
-    persistenceDiagramsClustering.setUseProgressive(UseProgressive);
+    persistenceDiagramsClustering.setUseProgressive(true);
     persistenceDiagramsClustering.setThreadNumber(threadNumber_);
     persistenceDiagramsClustering.setAlpha(Alpha);
     persistenceDiagramsClustering.setDeltaLim(DeltaLim);
     persistenceDiagramsClustering.setUseDeltaLim(UseAdditionalPrecision);
     persistenceDiagramsClustering.setLambda(Lambda);
-    persistenceDiagramsClustering.setNumberOfClusters(NumberOfClusters);
+    persistenceDiagramsClustering.setNumberOfClusters(4);
     persistenceDiagramsClustering.setUseAccelerated(UseAccelerated);
     persistenceDiagramsClustering.setUseKmeansppInit(UseKmeansppInit);
     persistenceDiagramsClustering.setDistanceWritingOptions(

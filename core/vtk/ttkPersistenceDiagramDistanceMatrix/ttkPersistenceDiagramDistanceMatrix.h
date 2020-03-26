@@ -71,18 +71,8 @@ public:
   // set-getters macros to define from each variable you want to access from
   // the outside (in particular from paraview) - to adapt.
 
-  vtkSetMacro(ScalarField, std::string);
-  vtkGetMacro(ScalarField, std::string);
-
   vtkSetMacro(WassersteinMetric, std::string);
   vtkGetMacro(WassersteinMetric, std::string);
-
-  void SetUseProgressive(int data) {
-    UseProgressive = data;
-    Modified();
-    needUpdate_ = true;
-  }
-  vtkGetMacro(UseProgressive, int);
 
   void SetTimeLimit(double data) {
     TimeLimit = data;
@@ -90,9 +80,6 @@ public:
     needUpdate_ = true;
   }
   vtkGetMacro(TimeLimit, double);
-
-  vtkSetMacro(UseOutputMatching, int);
-  vtkGetMacro(UseOutputMatching, int);
 
   void SetThreadNumber(int data) {
     ThreadNumber = data;
@@ -135,13 +122,6 @@ public:
   }
   vtkGetMacro(Lambda, double);
 
-  void SetNumberOfClusters(int data) {
-    NumberOfClusters = data;
-    Modified();
-    needUpdate_ = true;
-  }
-  vtkGetMacro(NumberOfClusters, int);
-
   void SetUseAccelerated(bool data) {
     UseAccelerated = data;
     Modified();
@@ -177,25 +157,6 @@ public:
   }
   vtkGetMacro(PairTypeClustering, int);
 
-  void SetSpacing(double spacing) {
-    Spacing = spacing;
-    oldSpacing = spacing;
-    Modified();
-  }
-  vtkGetMacro(Spacing, double);
-
-  void SetDisplayMethod(int displayMethod) {
-    DisplayMethod = displayMethod;
-    if(displayMethod == 0) { // compact display
-      Spacing = 0;
-    } else {
-      Spacing = oldSpacing;
-    }
-    Modified();
-  }
-
-  vtkGetMacro(DisplayMethod, bool);
-
   void SetUseAdditionalPrecision(bool data) {
     UseAdditionalPrecision = data;
     Modified();
@@ -216,13 +177,6 @@ public:
     needUpdate_ = true;
   }
   vtkGetMacro(UseInterruptible, bool);
-
-  void SetMethod(int method) {
-    Method = method;
-    needUpdate_ = true;
-    Modified();
-  }
-  vtkGetMacro(Method, double);
 
   void SetUseFullDiagrams(const bool arg) {
     UseFullDiagrams = arg;
@@ -253,29 +207,20 @@ private:
   bool Deterministic{true};
   bool UseAllCores{false};
   int ThreadNumber{1};
-  bool UseOutputMatching{true};
   bool UseAdditionalPrecision{false};
   int DistanceWritingOptions{0};
   double Alpha{1.0};
   double DeltaLim{0.01};
   double Lambda{1.0};
-  double Spacing{1.0};
-  double oldSpacing{1.0};
-  int DisplayMethod{0};
   bool UseInterruptible{true};
-  int Method{0}; // 0 = progressive approach, 1 = Auction approach
   double max_dimension_total_{};
 
   bool needUpdate_{true};
 
-  int NumberOfClusters{1};
   bool UseAccelerated{false};
   bool UseKmeansppInit{false};
-
-  std::string ScalarField{};
   std::string WassersteinMetric{"2"};
 
-  bool UseProgressive{true};
   double TimeLimit{9999999};
   bool UseFullDiagrams{false};
   std::vector<std::vector<double>> diagramsDistMat{};
