@@ -44,7 +44,6 @@ public:
   void SetDebugLevel(int debugLevel) {
     setDebugLevel(debugLevel);
     Modified();
-    needUpdate_ = true;
   }
 
   void SetThreads() {
@@ -54,7 +53,6 @@ public:
       threadNumber_ = ttk::OsCall::getNumberOfCores();
     }
     Modified();
-    needUpdate_ = true;
   }
 
   /*void SetThreadNumber(int threadNumber){
@@ -74,23 +72,18 @@ public:
   vtkSetMacro(WassersteinMetric, std::string);
   vtkGetMacro(WassersteinMetric, std::string);
 
-  void SetTimeLimit(double data) {
-    TimeLimit = data;
-    Modified();
-    needUpdate_ = true;
-  }
+  vtkSetMacro(TimeLimit, double);
   vtkGetMacro(TimeLimit, double);
 
   void SetThreadNumber(int data) {
     ThreadNumber = data;
     Modified();
-    needUpdate_ = true;
   }
   vtkGetMacro(ThreadNumber, int);
 
-  void SetAlpha(double data) {
+  void SetAntiAlpha(double data) {
+    data = 1 - data;
     if(data > 0 && data <= 1) {
-
       Alpha = data;
     } else if(data > 1) {
       Alpha = 1;
@@ -98,91 +91,37 @@ public:
       Alpha = 0.001;
     }
     Modified();
-    needUpdate_ = true;
   }
   vtkGetMacro(Alpha, double);
 
-  void SetAntiAlpha(double data) {
-    double alpha = 1 - data;
-    SetAlpha(alpha);
-  }
-
-  void SetDeltaLim(double data) {
-    DeltaLim = data;
-    Modified();
-    needUpdate_ = true;
-  }
-
+  vtkSetMacro(DeltaLim, double);
   vtkGetMacro(DeltaLim, double);
 
-  void SetLambda(double data) {
-    Lambda = data;
-    Modified();
-    needUpdate_ = true;
-  }
+  vtkSetMacro(Lambda, double);
   vtkGetMacro(Lambda, double);
 
-  void SetUseAccelerated(bool data) {
-    UseAccelerated = data;
-    Modified();
-    needUpdate_ = true;
-  }
+  vtkSetMacro(UseAccelerated, bool);
   vtkGetMacro(UseAccelerated, bool);
 
-  void SetUseKmeansppInit(bool data) {
-    UseKmeansppInit = data;
-    Modified();
-    needUpdate_ = true;
-  }
+  vtkSetMacro(UseKmeansppInit, bool);
   vtkGetMacro(UseKmeansppInit, bool);
 
-  void SetForceUseOfAlgorithm(bool data) {
-    ForceUseOfAlgorithm = data;
-    Modified();
-    needUpdate_ = true;
-  }
+  vtkSetMacro(ForceUseOfAlgorithm, bool);
   vtkGetMacro(ForceUseOfAlgorithm, bool);
 
-  void SetDeterministic(bool data) {
-    Deterministic = data;
-    Modified();
-    needUpdate_ = true;
-  }
+  vtkSetMacro(Deterministic, bool);
   vtkGetMacro(Deterministic, bool);
 
-  void SetPairTypeClustering(int data) {
-    PairTypeClustering = data;
-    Modified();
-    needUpdate_ = true;
-  }
+  vtkSetMacro(PairTypeClustering, int);
   vtkGetMacro(PairTypeClustering, int);
 
-  void SetUseAdditionalPrecision(bool data) {
-    UseAdditionalPrecision = data;
-    Modified();
-    needUpdate_ = true;
-  }
+  vtkSetMacro(UseAdditionalPrecision, bool);
   vtkGetMacro(UseAdditionalPrecision, bool);
 
-  void SetDistanceWritingOptions(int data) {
-    DistanceWritingOptions = data;
-    Modified();
-    needUpdate_ = true;
-  }
-  vtkGetMacro(DistanceWritingOptions, int);
-
-  void SetUseInterruptible(bool data) {
-    UseInterruptible = data;
-    Modified();
-    needUpdate_ = true;
-  }
+  vtkSetMacro(UseInterruptible, bool);
   vtkGetMacro(UseInterruptible, bool);
 
-  void SetUseFullDiagrams(const bool arg) {
-    UseFullDiagrams = arg;
-    needUpdate_ = true;
-    Modified();
-  }
+  vtkSetMacro(UseFullDiagrams, bool);
   vtkGetMacro(UseFullDiagrams, bool);
 
 protected:
@@ -208,7 +147,6 @@ private:
   bool UseAllCores{false};
   int ThreadNumber{1};
   bool UseAdditionalPrecision{false};
-  int DistanceWritingOptions{0};
   double Alpha{1.0};
   double DeltaLim{0.01};
   double Lambda{1.0};

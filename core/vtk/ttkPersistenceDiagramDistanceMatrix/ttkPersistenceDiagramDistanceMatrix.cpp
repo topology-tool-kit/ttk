@@ -129,8 +129,7 @@ int ttkPersistenceDiagramDistanceMatrix::RequestData(
     persistenceDiagramsClustering.setNumberOfClusters(4);
     persistenceDiagramsClustering.setUseAccelerated(UseAccelerated);
     persistenceDiagramsClustering.setUseKmeansppInit(UseKmeansppInit);
-    persistenceDiagramsClustering.setDistanceWritingOptions(
-      DistanceWritingOptions);
+    persistenceDiagramsClustering.setDistanceWritingOptions(0);
     persistenceDiagramsClustering.setUseFullDiagrams(UseFullDiagrams);
 
     persistenceDiagramsClustering.execute(intermediateDiagrams_);
