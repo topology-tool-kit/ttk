@@ -41,7 +41,8 @@ namespace ttk {
   class PersistenceDiagramDistanceMatrix : public Debug {
 
   public:
-    void execute(std::vector<std::vector<DiagramTuple>> &intermediateDiagrams);
+    std::vector<std::vector<double>>
+      execute(std::vector<std::vector<DiagramTuple>> &intermediateDiagrams);
 
     double getMostPersistent(const int type = -1) const;
     double getLessPersistent(const int type = -1) const;
@@ -50,7 +51,15 @@ namespace ttk {
                            const BidderDiagram<double> &D2,
                            const double delta_lim) const;
 
-    std::vector<std::vector<double>> getDiagramsDistMat();
+    std::vector<std::vector<double>> getDiagramsDistMat(
+      const size_t nInputs,
+      const bool useFullDiagrams,
+      const std::vector<BidderDiagram<double>> &bidder_diags_min,
+      const std::vector<BidderDiagram<double>> &bidder_diags_sad,
+      const std::vector<BidderDiagram<double>> &bidder_diags_max,
+      const std::vector<BidderDiagram<double>> &current_bidder_diags_min,
+      const std::vector<BidderDiagram<double>> &current_bidder_diags_sad,
+      const std::vector<BidderDiagram<double>> &current_bidder_diags_max) const;
 
     void setBidderDiagrams(
       std::vector<std::vector<DiagramTuple>> &inputDiagramsMin,

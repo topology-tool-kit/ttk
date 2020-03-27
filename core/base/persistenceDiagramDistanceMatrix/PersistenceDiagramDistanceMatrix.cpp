@@ -10,7 +10,7 @@
 
 using namespace ttk;
 
-void PersistenceDiagramDistanceMatrix::execute(
+std::vector<std::vector<double>> PersistenceDiagramDistanceMatrix::execute(
   std::vector<std::vector<DiagramTuple>> &intermediateDiagrams) {
 
   Timer tm{};
@@ -334,6 +334,11 @@ void PersistenceDiagramDistanceMatrix::execute(
 
   resetDosToOriginalValues();
 
+  const auto distMat = getDiagramsDistMat(
+    numberOfInputs_, useFullDiagrams_, bidder_diagrams_min_,
+    bidder_diagrams_saddle_, bidder_diagrams_max_, current_bidder_diagrams_min_,
+    current_bidder_diagrams_saddle_, current_bidder_diagrams_max_);
+
   {
     std::stringstream msg;
     msg << "[PersistenceDiagramDistanceMatrix] Processed in "
@@ -341,6 +346,8 @@ void PersistenceDiagramDistanceMatrix::execute(
         << std::endl;
     dMsg(std::cout, msg.str(), infoMsg);
   }
+
+  return distMat;
 }
 
 double
@@ -428,29 +435,36 @@ double PersistenceDiagramDistanceMatrix::computeDistance(
 }
 
 std::vector<std::vector<double>>
-  PersistenceDiagramDistanceMatrix::getDiagramsDistMat() {
+  PersistenceDiagramDistanceMatrix::getDiagramsDistMat(
+    const size_t nInputs,
+    const bool useFullDiagrams,
+    const std::vector<BidderDiagram<double>> &bidder_diags_min,
+    const std::vector<BidderDiagram<double>> &bidder_diags_sad,
+    const std::vector<BidderDiagram<double>> &bidder_diags_max,
+    const std::vector<BidderDiagram<double>> &current_bidder_diags_min,
+    const std::vector<BidderDiagram<double>> &current_bidder_diags_sad,
+    const std::vector<BidderDiagram<double>> &current_bidder_diags_max) const {
 
-  std::vector<std::vector<double>> diagramsDistanceMatrix(numberOfInputs_);
+  std::vector<std::vector<double>> distanceMatrix(nInputs);
   double delta_lim{0.01};
 
   const auto &diags_min
-    = useFullDiagrams_ ? bidder_diagrams_min_ : current_bidder_diagrams_min_;
-  const auto &diags_saddle = useFullDiagrams_ ? bidder_diagrams_saddle_
-                                              : current_bidder_diagrams_saddle_;
+    = useFullDiagrams ? bidder_diags_min : current_bidder_diags_min;
+  const auto &diags_saddle
+    = useFullDiagrams ? bidder_diags_sad : current_bidder_diags_sad;
   const auto &diags_max
-    = useFullDiagrams_ ? bidder_diagrams_max_ : current_bidder_diagrams_max_;
+    = useFullDiagrams ? bidder_diags_max : current_bidder_diags_max;
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for schedule(dynamic) num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
-  for(int i = 0; i < numberOfInputs_; ++i) {
-    diagramsDistanceMatrix[i].resize(
-      numberOfInputs_, std::numeric_limits<float>::max());
+  for(size_t i = 0; i < nInputs; ++i) {
+    distanceMatrix[i].resize(nInputs, std::numeric_limits<float>::max());
 
     // matrix diagonal
-    diagramsDistanceMatrix[i][i] = 0.0;
+    distanceMatrix[i][i] = 0.0;
 
-    for(int j = i + 1; j < numberOfInputs_; ++j) {
+    for(size_t j = i + 1; j < nInputs; ++j) {
       double distance{};
 
       if(original_dos[0]) {
@@ -469,18 +483,18 @@ std::vector<std::vector<double>>
         distance += computeDistance(dimax, djmax, delta_lim);
       }
 
-      diagramsDistanceMatrix[i][j] = distance;
+      distanceMatrix[i][j] = distance;
     }
   }
 
   // distance matrix is symmetric
-  for(int i = 0; i < numberOfInputs_; ++i) {
-    for(int j = i + 1; j < numberOfInputs_; ++j) {
-      diagramsDistanceMatrix[j][i] = diagramsDistanceMatrix[i][j];
+  for(size_t i = 0; i < nInputs; ++i) {
+    for(size_t j = i + 1; j < nInputs; ++j) {
+      distanceMatrix[j][i] = distanceMatrix[i][j];
     }
   }
 
-  return diagramsDistanceMatrix;
+  return distanceMatrix;
 }
 
 void PersistenceDiagramDistanceMatrix::setBidderDiagrams(

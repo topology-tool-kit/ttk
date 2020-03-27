@@ -113,9 +113,7 @@ int ttkPersistenceDiagramDistanceMatrix::RequestData(
   worker.setUseDeltaLim(UseAdditionalPrecision);
   worker.setLambda(Lambda);
   worker.setUseFullDiagrams(UseFullDiagrams);
-  worker.execute(intermediateDiagrams);
-
-  const auto diagramsDistMat = worker.getDiagramsDistMat();
+  const auto diagramsDistMat = worker.execute(intermediateDiagrams);
 
   // zero-padd column name to keep Row Data columns ordered
   const auto zeroPad
