@@ -96,18 +96,6 @@ public:
   vtkSetMacro(Lambda, double);
   vtkGetMacro(Lambda, double);
 
-  vtkSetMacro(UseAccelerated, bool);
-  vtkGetMacro(UseAccelerated, bool);
-
-  vtkSetMacro(UseKmeansppInit, bool);
-  vtkGetMacro(UseKmeansppInit, bool);
-
-  vtkSetMacro(ForceUseOfAlgorithm, bool);
-  vtkGetMacro(ForceUseOfAlgorithm, bool);
-
-  vtkSetMacro(Deterministic, bool);
-  vtkGetMacro(Deterministic, bool);
-
   vtkSetMacro(PairTypeClustering, int);
   vtkGetMacro(PairTypeClustering, int);
 
@@ -138,15 +126,11 @@ private:
   int ThreadNumber{1};
 
   int PairTypeClustering{-1};
-  bool ForceUseOfAlgorithm{false};
-  bool Deterministic{true};
   bool UseAdditionalPrecision{false};
   double Alpha{1.0};
   double DeltaLim{0.01};
   double Lambda{1.0};
   bool UseInterruptible{true};
-  bool UseAccelerated{false};
-  bool UseKmeansppInit{false};
   std::string WassersteinMetric{"2"};
   double TimeLimit{9999999};
   bool UseFullDiagrams{false};

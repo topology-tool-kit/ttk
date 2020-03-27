@@ -86,28 +86,12 @@ namespace ttk {
       numberOfInputs_ = numberOfInputs;
     }
 
-    inline void setNumberOfClusters(const int k) {
-      k_ = k;
-    }
-
     inline void setWasserstein(const std::string &wasserstein) {
       wasserstein_ = (wasserstein == "inf") ? -1 : stoi(wasserstein);
     }
 
-    inline void setUseProgressive(const bool use_progressive) {
-      use_progressive_ = use_progressive;
-    }
-
-    inline void setUseKmeansppInit(const bool use_kmeanspp) {
-      use_kmeanspp_ = use_kmeanspp;
-    }
-
     inline void setUseKDTree(const bool use_kdtree) {
       use_kdtree_ = use_kdtree;
-    }
-
-    inline void setUseAccelerated(const bool use_accelerated) {
-      use_accelerated_ = use_accelerated;
     }
 
     inline void setTimeLimit(const double time_limit) {
@@ -124,13 +108,6 @@ namespace ttk {
     inline void setLambda(const double lambda) {
       lambda_ = lambda;
     }
-    inline void setForceUseOfAlgorithm(const bool forceUseOfAlgorithm) {
-      forceUseOfAlgorithm_ = forceUseOfAlgorithm;
-    }
-    inline void setDeterministic(const bool deterministic) {
-      deterministic_ = deterministic;
-    }
-
     inline void setUseDeltaLim(const bool UseDeltaLim) {
       UseDeltaLim_ = UseDeltaLim;
       if(UseDeltaLim_) {
@@ -140,9 +117,6 @@ namespace ttk {
       }
     }
 
-    inline void setDistanceWritingOptions(const int distanceWritingOptions) {
-      distanceWritingOptions_ = distanceWritingOptions;
-    }
     inline void setDeltaLim(const double deltaLim) {
       deltaLim_ = deltaLim;
     }
@@ -154,18 +128,14 @@ namespace ttk {
     std::vector<std::vector<double>> getDiagramsDistMat();
 
   protected:
-    bool barycenter_inputs_reset_flag;
     bool precision_criterion_{false};
     bool precision_max_{false};
     bool precision_min_{false};
     bool precision_sad_{false};
-    bool forceUseOfAlgorithm_{false};
-    bool deterministic_{true};
     int wasserstein_{2};
     double geometrical_factor_{1};
     double deltaLim_;
     bool UseDeltaLim_{false};
-    int distanceWritingOptions_{0};
     // lambda : 0<=lambda<=1
     // parametrizes the point used for the physical (critical) coordinates of
     // the persistence paired lambda = 1 : extremum (min if pair min-sad, max if
@@ -173,11 +143,7 @@ namespace ttk {
     // of the 2 critical points of the pair
     double lambda_;
 
-    int k_;
     int numberOfInputs_;
-    bool use_progressive_{true};
-    bool use_accelerated_;
-    bool use_kmeanspp_;
     bool use_kdtree_{true};
     double time_limit_{std::numeric_limits<double>::max()};
 
@@ -188,9 +154,6 @@ namespace ttk {
     double cost_sad_{0};
     double cost_max_{0};
 
-    std::vector<std::vector<int>> current_bidder_ids_min_;
-    std::vector<std::vector<int>> current_bidder_ids_sad_;
-    std::vector<std::vector<int>> current_bidder_ids_max_;
     std::vector<std::vector<DiagramTuple>> inputDiagramsMin_;
     std::vector<std::vector<DiagramTuple>> inputDiagramsSaddle_;
     std::vector<std::vector<DiagramTuple>> inputDiagramsMax_;
@@ -200,31 +163,15 @@ namespace ttk {
     bool do_min_;
     std::vector<BidderDiagram<double>> bidder_diagrams_min_;
     std::vector<BidderDiagram<double>> current_bidder_diagrams_min_;
-    std::vector<GoodDiagram<double>> centroids_min_;
-    std::vector<GoodDiagram<double>> centroids_with_price_min_;
 
     bool do_sad_;
     std::vector<BidderDiagram<double>> bidder_diagrams_saddle_;
     std::vector<BidderDiagram<double>> current_bidder_diagrams_saddle_;
-    std::vector<GoodDiagram<double>> centroids_saddle_;
-    std::vector<GoodDiagram<double>> centroids_with_price_saddle_;
 
     bool do_max_;
     std::vector<BidderDiagram<double>> bidder_diagrams_max_;
     std::vector<BidderDiagram<double>> current_bidder_diagrams_max_;
-    std::vector<GoodDiagram<double>> centroids_max_;
-    std::vector<GoodDiagram<double>> centroids_with_price_max_;
 
-    std::vector<std::vector<int>> clustering_;
-    std::vector<std::vector<int>> old_clustering_;
-    std::vector<int> inv_clustering_;
-
-    std::vector<std::vector<int>> centroids_sizes_;
-
-    std::vector<bool> r_;
-    std::vector<double> u_;
-    std::vector<std::vector<double>> l_;
-    std::vector<std::vector<double>> centroidsDistanceMatrix_{};
     bool useFullDiagrams_{false};
 
     int n_iterations_;

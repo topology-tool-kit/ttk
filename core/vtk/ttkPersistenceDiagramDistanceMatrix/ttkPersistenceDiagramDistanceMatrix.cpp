@@ -105,20 +105,13 @@ int ttkPersistenceDiagramDistanceMatrix::RequestData(
   worker.setWrapper(this);
 
   worker.setWasserstein(WassersteinMetric);
-  worker.setDeterministic(Deterministic);
-  worker.setForceUseOfAlgorithm(ForceUseOfAlgorithm);
   worker.setPairTypeClustering(PairTypeClustering);
   worker.setNumberOfInputs(numInputs);
   worker.setTimeLimit(TimeLimit);
-  worker.setUseProgressive(true);
   worker.setAlpha(Alpha);
   worker.setDeltaLim(DeltaLim);
   worker.setUseDeltaLim(UseAdditionalPrecision);
   worker.setLambda(Lambda);
-  worker.setNumberOfClusters(4);
-  worker.setUseAccelerated(UseAccelerated);
-  worker.setUseKmeansppInit(UseKmeansppInit);
-  worker.setDistanceWritingOptions(0);
   worker.setUseFullDiagrams(UseFullDiagrams);
   worker.execute(intermediateDiagrams);
 

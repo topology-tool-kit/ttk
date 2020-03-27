@@ -56,33 +56,6 @@
       <OutputPort name="Heat Map" index="1" id="port1" />
 
       <IntVectorProperty
-      name="ForceUseOfAlgorithm"
-      command="SetForceUseOfAlgorithm"
-      label="Force the progressive approach if 2 inputs"
-      number_of_elements="1"
-      default_values="0"
-      panel_visibility="advanced">
-      <BooleanDomain name="bool"/>
-        <Hints>
-        <PropertyWidgetDecorator type="GenericDecorator"
-                                  mode="visibility"
-                                  property="Method"
-                                  value="0" />
-        <!-- enable this widget when <property> equals <value> -->
-      </Hints>
-      <Documentation>
-        When there are only two input diagrams and one cluster, the
-        progressive approach is not used by default to compute the
-        barycenter.  Instead, the Auction Algorithm is used to compute
-        the Wasserstein distance between the two diagrams, and the
-        barycenter is deduced from the corresponding assignments
-        without additional computationnal cost.  This option forces
-        the use of the progressive approach to compute the barycenter.
-      </Documentation>
-
-      </IntVectorProperty>
-
-      <IntVectorProperty
       name="Critical pairs"
       label="Critical pairs used for the clustering"
       command="SetPairTypeClustering"
@@ -112,19 +85,6 @@
 computation (type "inf" for the Bottleneck distance).
         </Documentation>
       </StringVectorProperty>
-
-      <IntVectorProperty
-          name="Deterministic"
-          label="Deterministic algorithm"
-          command="SetDeterministic"
-          number_of_elements="1"
-          default_values="1"
-         panel_visibility = "advanced" >
-        <BooleanDomain name="bool"/>
-         <Documentation>
-                 Removes any randomness in the initialization of barycenters.
-         </Documentation>
-      </IntVectorProperty>
 
         <IntVectorProperty
         name="UseInterruptible"
@@ -199,39 +159,6 @@ computation (type "inf" for the Bottleneck distance).
         </Documentation>
 
         </DoubleVectorProperty>
-
-      <IntVectorProperty
-         name="UseAccelerated"
-         label="Use Accelerated KMeans"
-         command="SetUseAccelerated"
-            number_of_elements="1"
-            default_values="1"
-            panel_visibility="advanced">
-        <BooleanDomain name="bool"/>
-         <Documentation>
-          Whether or not to use the triangular inequality too fasten
-          the computation of the clustering. If activated, the option
-          saves time. However it may lead to slightly inaccurate
-          classification due to the approximations made during the
-          computation of distance.
-         </Documentation>
-      </IntVectorProperty>
-
-      <IntVectorProperty
-         name="UseKmeansppInit"
-         label="KMeanspp Initialization"
-         command="SetUseKmeansppInit"
-         number_of_elements="1"
-            default_values="1"
-            panel_visibility="advanced">
-        <BooleanDomain name="bool"/>
-         <Documentation>
-          If activated, the clustering is initialized cleverly. The
-          option may avoid local minima at the cost of some initial
-          computations proportionnal to the product of the number of
-          clusters and the number of diagrams.
-         </Documentation>
-      </IntVectorProperty>
 
       <DoubleVectorProperty
           name="AntiAlpha"

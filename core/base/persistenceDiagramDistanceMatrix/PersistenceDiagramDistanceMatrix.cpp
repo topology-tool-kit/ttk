@@ -19,13 +19,6 @@ void PersistenceDiagramDistanceMatrix::execute(
   inputDiagramsMax_.resize(numberOfInputs_);
   inputDiagramsSaddle_.resize(numberOfInputs_);
 
-  {
-    std::stringstream msg;
-    msg << "[PersistenceDiagramDistanceMatrix] Clustering " << numberOfInputs_
-        << " diagrams in " << k_ << " cluster(s)." << std::endl;
-    dMsg(std::cout, msg.str(), infoMsg);
-  }
-
   // Create diagrams for min, saddle and max persistence pairs
   for(int i = 0; i < numberOfInputs_; i++) {
     std::vector<DiagramTuple> &CTDiagram = intermediateDiagrams[i];
@@ -103,7 +96,7 @@ void PersistenceDiagramDistanceMatrix::execute(
   bool converged = false;
   std::vector<bool> diagrams_complete(3);
   for(int c = 0; c < 3; c++) {
-    diagrams_complete[c] = (!use_progressive_) || (!original_dos[c]);
+    diagrams_complete[c] = !original_dos[c];
   }
   bool all_diagrams_complete
     = diagrams_complete[0] && diagrams_complete[1] && diagrams_complete[2];
@@ -148,14 +141,6 @@ void PersistenceDiagramDistanceMatrix::execute(
   min_points_to_add[1] = 10;
   min_points_to_add[2] = 10;
 
-  if(use_progressive_) {
-    // min_persistence = max_persistence/2.;
-    // min_persistence = 0;
-  } else {
-    min_points_to_add[0] = std::numeric_limits<int>::max();
-    min_points_to_add[1] = std::numeric_limits<int>::max();
-    min_points_to_add[2] = std::numeric_limits<int>::max();
-  }
   std::vector<std::vector<double>> min_diag_price(3);
   for(int c = 0; c < 3; ++c) {
     for(int i = 0; i < numberOfInputs_; i++) {
@@ -181,11 +166,8 @@ void PersistenceDiagramDistanceMatrix::execute(
   }
   all_diagrams_complete
     = diagrams_complete[0] && diagrams_complete[1] && diagrams_complete[2];
-  if(all_diagrams_complete) {
-    use_progressive_ = false;
-  }
 
-  while(!converged || (!all_diagrams_complete && use_progressive_)) {
+  while(!converged || !all_diagrams_complete) {
     Timer t_inside;
 
     n_iterations_++;
@@ -198,7 +180,7 @@ void PersistenceDiagramDistanceMatrix::execute(
       }
     }
 
-    if(use_progressive_ && n_iterations_ > 1) {
+    if(n_iterations_ > 1) {
       do_min_ = do_min_ && (min_persistence[0] > rho[0]);
       do_sad_ = do_sad_ && (min_persistence[1] > rho[1]);
       do_max_ = do_max_ && (min_persistence[2] > rho[2]);
@@ -234,7 +216,6 @@ void PersistenceDiagramDistanceMatrix::execute(
         min_persistence = enrichCurrentBidderDiagrams(
           min_persistence, rho, min_diag_price, min_points_to_add);
       }
-      barycenter_inputs_reset_flag = true;
 
       for(int i_crit = 0; i_crit < 3; i_crit++) {
         if(*(current_dos[i_crit])) {
@@ -245,7 +226,6 @@ void PersistenceDiagramDistanceMatrix::execute(
       }
 
       if(diagrams_complete[0] && diagrams_complete[1] && diagrams_complete[2]) {
-        use_progressive_ = false;
         all_diagrams_complete = true;
       }
 
@@ -288,7 +268,6 @@ void PersistenceDiagramDistanceMatrix::execute(
     }
 
     if(diagrams_complete[0] && diagrams_complete[1] && diagrams_complete[2]) {
-      use_progressive_ = false;
       all_diagrams_complete = true;
     }
 
@@ -345,7 +324,6 @@ void PersistenceDiagramDistanceMatrix::execute(
       diagrams_complete[0] = true;
       diagrams_complete[1] = true;
       diagrams_complete[2] = true;
-      use_progressive_ = false;
     }
   }
 
@@ -611,12 +589,10 @@ void PersistenceDiagramDistanceMatrix::setBidderDiagrams() {
       }
       bidder_diagrams_min_.push_back(bidders);
       current_bidder_diagrams_min_.push_back(BidderDiagram<double>());
-      centroids_with_price_min_.push_back(GoodDiagram<double>());
       std::vector<int> ids(bidders.size());
       for(unsigned int j = 0; j < ids.size(); j++) {
         ids[j] = -1;
       }
-      current_bidder_ids_min_.push_back(ids);
     }
 
     if(do_sad_) {
@@ -635,12 +611,10 @@ void PersistenceDiagramDistanceMatrix::setBidderDiagrams() {
       }
       bidder_diagrams_saddle_.push_back(bidders);
       current_bidder_diagrams_saddle_.push_back(BidderDiagram<double>());
-      centroids_with_price_saddle_.push_back(GoodDiagram<double>());
       std::vector<int> ids(bidders.size());
       for(unsigned int j = 0; j < ids.size(); j++) {
         ids[j] = -1;
       }
-      current_bidder_ids_sad_.push_back(ids);
     }
 
     if(do_max_) {
@@ -659,12 +633,10 @@ void PersistenceDiagramDistanceMatrix::setBidderDiagrams() {
       }
       bidder_diagrams_max_.push_back(bidders);
       current_bidder_diagrams_max_.push_back(BidderDiagram<double>());
-      centroids_with_price_max_.push_back(GoodDiagram<double>());
       std::vector<int> ids(bidders.size());
       for(unsigned int j = 0; j < ids.size(); j++) {
         ids[j] = -1;
       }
-      current_bidder_ids_max_.push_back(ids);
     }
   }
   return;
@@ -851,9 +823,6 @@ std::vector<double>
           b.setPositionInAuction(current_bidder_diagrams_min_[i].size());
           b.setDiagonalPrice(initial_diagonal_prices[0][i]);
           current_bidder_diagrams_min_[i].addBidder(b);
-          current_bidder_ids_min_[i]
-                                 [candidates_to_be_added_min[i][idx_min[i][j]]]
-            = current_bidder_diagrams_min_[i].size() - 1;
         }
       }
     }
@@ -870,9 +839,6 @@ std::vector<double>
           b.setPositionInAuction(current_bidder_diagrams_saddle_[i].size());
           b.setDiagonalPrice(initial_diagonal_prices[1][i]);
           current_bidder_diagrams_saddle_[i].addBidder(b);
-          current_bidder_ids_sad_[i]
-                                 [candidates_to_be_added_sad[i][idx_sad[i][j]]]
-            = current_bidder_diagrams_saddle_[i].size() - 1;
         }
       }
     }
@@ -889,9 +855,6 @@ std::vector<double>
           b.setPositionInAuction(current_bidder_diagrams_max_[i].size());
           b.setDiagonalPrice(initial_diagonal_prices[2][i]);
           current_bidder_diagrams_max_[i].addBidder(b);
-          current_bidder_ids_max_[i]
-                                 [candidates_to_be_added_max[i][idx_max[i][j]]]
-            = current_bidder_diagrams_max_[i].size() - 1;
         }
       }
     }
