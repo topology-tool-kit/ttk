@@ -5,7 +5,6 @@
 #include <iterator>
 #include <random>
 
-#include <KDTree.h>
 #include <PersistenceDiagramDistanceMatrix.h>
 
 using namespace ttk;
