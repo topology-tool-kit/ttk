@@ -50,6 +50,8 @@ namespace ttk {
                            const BidderDiagram<double> &D2,
                            const double delta_lim) const;
 
+    std::vector<std::vector<double>> getDiagramsDistMat();
+
     void setBidderDiagrams();
 
     std::vector<double> enrichCurrentBidderDiagrams(
@@ -57,8 +59,6 @@ namespace ttk {
       std::vector<double> min_persistence,
       std::vector<std::vector<double>> initial_diagonal_prices,
       std::vector<int> min_points_to_add);
-
-    std::vector<std::vector<double>> getDistanceMatrix();
 
     inline void resetDosToOriginalValues() {
       do_min_ = original_dos[0];
@@ -108,8 +108,6 @@ namespace ttk {
     inline void setUseFullDiagrams(const bool arg) {
       useFullDiagrams_ = arg;
     }
-
-    std::vector<std::vector<double>> getDiagramsDistMat();
 
   protected:
     bool precision_criterion_{false};
