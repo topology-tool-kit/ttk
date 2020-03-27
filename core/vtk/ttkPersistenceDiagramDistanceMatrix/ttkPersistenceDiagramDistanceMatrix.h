@@ -55,15 +55,17 @@ public:
     Modified();
   }
 
-  /*void SetThreadNumber(int threadNumber){
+  void SetThreadNumber(int threadNumber) {
     ThreadNumber = threadNumber;
     SetThreads();
-  }*/
+  }
+  vtkGetMacro(ThreadNumber, int);
 
   void SetUseAllCores(bool onOff) {
     UseAllCores = onOff;
     SetThreads();
   }
+  vtkGetMacro(UseAllCores, bool);
   // end of default ttk setters
 
   // set-getters macros to define from each variable you want to access from
@@ -74,12 +76,6 @@ public:
 
   vtkSetMacro(TimeLimit, double);
   vtkGetMacro(TimeLimit, double);
-
-  void SetThreadNumber(int data) {
-    ThreadNumber = data;
-    Modified();
-  }
-  vtkGetMacro(ThreadNumber, int);
 
   void SetAntiAlpha(double data) {
     data = 1 - data;
@@ -138,21 +134,20 @@ protected:
                   vtkInformationVector *outputVector) override;
 
 private:
+  bool UseAllCores{false};
+  int ThreadNumber{1};
+
   int PairTypeClustering{-1};
   bool ForceUseOfAlgorithm{false};
   bool Deterministic{true};
-  bool UseAllCores{false};
-  int ThreadNumber{1};
   bool UseAdditionalPrecision{false};
   double Alpha{1.0};
   double DeltaLim{0.01};
   double Lambda{1.0};
   bool UseInterruptible{true};
-
   bool UseAccelerated{false};
   bool UseKmeansppInit{false};
   std::string WassersteinMetric{"2"};
-
   double TimeLimit{9999999};
   bool UseFullDiagrams{false};
 
