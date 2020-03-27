@@ -338,86 +338,62 @@ void PersistenceDiagramDistanceMatrix::execute(
   }
 }
 
-double PersistenceDiagramDistanceMatrix::getMostPersistent(int type) {
+double
+  PersistenceDiagramDistanceMatrix::getMostPersistent(const int type) const {
   double max_persistence = 0;
-  // std::cout << "type = " << type << std::endl;
+
+  const auto maxPersistence
+    = [&](const std::vector<BidderDiagram<double>> bidder_diags) {
+        for(unsigned int i = 0; i < bidder_diags.size(); ++i) {
+          for(int j = 0; j < bidder_diags[i].size(); ++j) {
+            const double persistence = bidder_diags[i].get(j).getPersistence();
+            if(persistence > max_persistence) {
+              max_persistence = persistence;
+            }
+          }
+        }
+      };
+
   if(do_min_ && (type == -1 || type == 0)) {
-    for(unsigned int i = 0; i < bidder_diagrams_min_.size(); ++i) {
-      for(int j = 0; j < bidder_diagrams_min_[i].size(); ++j) {
-        Bidder<double> b = bidder_diagrams_min_[i].get(j);
-        double persistence = b.getPersistence();
-        if(persistence > max_persistence) {
-          max_persistence = persistence;
-        }
-      }
-    }
+    maxPersistence(bidder_diagrams_min_);
   }
-
   if(do_sad_ && (type == -1 || type == 1)) {
-    for(unsigned int i = 0; i < bidder_diagrams_saddle_.size(); ++i) {
-      for(int j = 0; j < bidder_diagrams_saddle_[i].size(); ++j) {
-        Bidder<double> b = bidder_diagrams_saddle_[i].get(j);
-        double persistence = b.getPersistence();
-        if(persistence > max_persistence) {
-          max_persistence = persistence;
-        }
-      }
-    }
+    maxPersistence(bidder_diagrams_saddle_);
   }
-
   if(do_max_ && (type == -1 || type == 2)) {
-    for(unsigned int i = 0; i < bidder_diagrams_max_.size(); ++i) {
-      for(int j = 0; j < bidder_diagrams_max_[i].size(); ++j) {
-        Bidder<double> b = bidder_diagrams_max_[i].get(j);
-        double persistence = b.getPersistence();
-        if(persistence > max_persistence) {
-          max_persistence = persistence;
-        }
-      }
-    }
+    maxPersistence(bidder_diagrams_max_);
   }
   return max_persistence;
 }
 
-double PersistenceDiagramDistanceMatrix::getLessPersistent(int type) {
+double
+  PersistenceDiagramDistanceMatrix::getLessPersistent(const int type) const {
   // type == -1 : query the min of all the types of diagrams.
   // type = 0 : min,  1 : sad,   2 : max
   // std::cout << "type = " << type << std::endl;
+
   double min_persistence = std::numeric_limits<double>::max();
+
+  const auto minPersistence
+    = [&](const std::vector<BidderDiagram<double>> bidder_diags) {
+        for(unsigned int i = 0; i < bidder_diags.size(); ++i) {
+          for(int j = 0; j < bidder_diags[i].size(); ++j) {
+            const double persistence = bidder_diags[i].get(j).getPersistence();
+            if(persistence < min_persistence) {
+              min_persistence = persistence;
+            }
+          }
+        }
+      };
+
   if(do_min_ && (type == -1 || type == 0)) {
-    for(unsigned int i = 0; i < bidder_diagrams_min_.size(); ++i) {
-      for(int j = 0; j < bidder_diagrams_min_[i].size(); ++j) {
-        Bidder<double> b = bidder_diagrams_min_[i].get(j);
-        double persistence = b.getPersistence();
-        if(persistence < min_persistence) {
-          min_persistence = persistence;
-        }
-      }
-    }
+    minPersistence(bidder_diagrams_min_);
   }
-
   if(do_sad_ && (type == -1 || type == 1)) {
-    for(unsigned int i = 0; i < bidder_diagrams_saddle_.size(); ++i) {
-      for(int j = 0; j < bidder_diagrams_saddle_[i].size(); ++j) {
-        Bidder<double> b = bidder_diagrams_saddle_[i].get(j);
-        double persistence = b.getPersistence();
-        if(persistence < min_persistence) {
-          min_persistence = persistence;
-        }
-      }
-    }
+    minPersistence(bidder_diagrams_saddle_);
   }
-
   if(do_max_ && (type == -1 || type == 2)) {
-    for(unsigned int i = 0; i < bidder_diagrams_max_.size(); ++i) {
-      for(int j = 0; j < bidder_diagrams_max_[i].size(); ++j) {
-        Bidder<double> b = bidder_diagrams_max_[i].get(j);
-        double persistence = b.getPersistence();
-        if(persistence < min_persistence) {
-          min_persistence = persistence;
-        }
-      }
-    }
+    minPersistence(bidder_diagrams_max_);
   }
   return min_persistence;
 }

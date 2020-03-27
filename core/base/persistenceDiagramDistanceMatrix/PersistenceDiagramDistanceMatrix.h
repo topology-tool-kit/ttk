@@ -43,8 +43,8 @@ namespace ttk {
   public:
     void execute(std::vector<std::vector<DiagramTuple>> &intermediateDiagrams);
 
-    double getMostPersistent(int type = -1);
-    double getLessPersistent(int type = -1);
+    double getMostPersistent(const int type = -1) const;
+    double getLessPersistent(const int type = -1) const;
 
     double computeDistance(const BidderDiagram<double> &D1,
                            const BidderDiagram<double> &D2,
