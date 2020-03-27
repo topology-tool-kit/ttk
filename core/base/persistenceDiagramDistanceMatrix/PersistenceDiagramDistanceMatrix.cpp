@@ -195,7 +195,7 @@ void PersistenceDiagramDistanceMatrix::execute(
     initializeCentroids();
   }
 
-  initializeEmptyClusters();
+  clustering_.resize(k_);
 
   if(use_accelerated_) {
     initializeAcceleratedKMeans();
@@ -663,10 +663,6 @@ GoodDiagram<double> PersistenceDiagramDistanceMatrix::diagramToCentroid(
   return GD;
 }
 
-void PersistenceDiagramDistanceMatrix::initializeEmptyClusters() {
-  clustering_ = std::vector<std::vector<int>>(k_);
-}
-
 void PersistenceDiagramDistanceMatrix::initializeCentroids() {
   std::vector<int> idx(numberOfInputs_);
   // To perform a random draw with replacement, the vector {1, 2, ...,
@@ -974,7 +970,7 @@ void PersistenceDiagramDistanceMatrix::updateClusters() {
     std::vector<std::vector<double>> distance_matrix = getDistanceMatrix();
     old_clustering_ = clustering_;
     invertClusters();
-    initializeEmptyClusters();
+    clustering_.resize(k_);
 
     for(int i = 0; i < numberOfInputs_; ++i) {
       double min_distance_to_centroid = std::numeric_limits<double>::max();
@@ -1009,7 +1005,7 @@ void PersistenceDiagramDistanceMatrix::updateClusters() {
   } else {
     old_clustering_ = clustering_;
     invertClusters();
-    initializeEmptyClusters();
+    clustering_.resize(k_);
 
     for(int i = 0; i < numberOfInputs_; i++) {
       clustering_[0].push_back(i);
@@ -1074,7 +1070,7 @@ void PersistenceDiagramDistanceMatrix::acceleratedUpdateClusters() {
   old_clustering_ = clustering_;
   // self.old_clusters = copy.copy(self.clusters)
   invertClusters();
-  initializeEmptyClusters();
+  clustering_.resize(k_);
   bool do_min = original_dos[0];
   bool do_sad = original_dos[1];
   bool do_max = original_dos[2];

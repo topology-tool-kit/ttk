@@ -70,7 +70,6 @@ namespace ttk {
       diagramWithZeroPrices(const BidderDiagram<double> diagram);
 
     void setBidderDiagrams();
-    void initializeEmptyClusters();
     void initializeCentroids();
     void initializeCentroidsKMeanspp();
     void initializeAcceleratedKMeans();
