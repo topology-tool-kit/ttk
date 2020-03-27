@@ -89,12 +89,10 @@ std::vector<std::vector<double>> PersistenceDiagramDistanceMatrix::execute(
   original_dos[1] = do_sad_;
   original_dos[2] = do_max_;
 
-  std::vector<bool *> current_prec{
-    &precision_min_, &precision_sad_, &precision_max_};
-  std::vector<bool *> current_dos{&do_min_, &do_sad_, &do_max_};
+  std::array<bool *, 3> current_dos{&do_min_, &do_sad_, &do_max_};
 
   bool converged = false;
-  std::vector<bool> diagrams_complete(3);
+  std::array<bool, 3> diagrams_complete{};
   for(int c = 0; c < 3; c++) {
     diagrams_complete[c] = !original_dos[c];
   }
@@ -118,15 +116,15 @@ std::vector<std::vector<double>> PersistenceDiagramDistanceMatrix::execute(
   double last_min_cost_obtained_min = -1;
   double last_min_cost_obtained_sad = -1;
   double last_min_cost_obtained_max = -1;
-  std::vector<double> epsilon0(3);
-  std::vector<double> epsilon_candidate(3);
-  std::vector<double> rho(3);
+  std::array<double, 3> epsilon0{};
+  std::array<double, 3> epsilon_candidate{};
+  std::array<double, 3> rho{};
 
   // std::cout<<"checkpoint"<<std::endl;
   // Getting current diagrams (with only at most min_points_to_add points)
-  std::vector<double> max_persistence(3);
-  std::vector<double> lowest_persistence(3);
-  std::vector<double> min_persistence(3);
+  std::array<double, 3> max_persistence{};
+  std::array<double, 3> lowest_persistence{};
+  std::array<double, 3> min_persistence{};
 
   // std::cout<<"checkpoint"<<std::endl;
   for(int i_crit = 0; i_crit < 3; i_crit++) {
@@ -146,16 +144,14 @@ std::vector<std::vector<double>> PersistenceDiagramDistanceMatrix::execute(
     epsilon0[i_crit] = epsilon_[i_crit];
   }
   // std::cout<<"checkpoint"<<std::endl;
-  std::vector<int> min_points_to_add(3);
+  std::array<int, 3> min_points_to_add{};
   min_points_to_add[0] = 10;
   min_points_to_add[1] = 10;
   min_points_to_add[2] = 10;
 
-  std::vector<std::vector<double>> min_diag_price(3);
-  for(int c = 0; c < 3; ++c) {
-    for(int i = 0; i < numberOfInputs_; i++) {
-      min_diag_price[c].push_back(0);
-    }
+  std::array<std::vector<double>, 3> min_diag_price{};
+  for(auto &arr : min_diag_price) {
+    arr.resize(numberOfInputs_, 0);
   }
   // std::cout << "firstinrich" << std::endl;
   if(debugLevel_ > 5) {
@@ -556,12 +552,12 @@ void PersistenceDiagramDistanceMatrix::setBidderDiagrams(
   }
 }
 
-std::vector<double>
+std::array<double, 3>
   PersistenceDiagramDistanceMatrix::enrichCurrentBidderDiagrams(
-    std::vector<double> previous_min_persistence,
-    std::vector<double> min_persistence,
-    std::vector<std::vector<double>> initial_diagonal_prices,
-    std::vector<int> min_points_to_add) {
+    const std::array<double, 3> &previous_min_persistence,
+    const std::array<double, 3> &min_persistence,
+    const std::array<std::vector<double>, 3> initial_diagonal_prices,
+    const std::array<int, 3> min_points_to_add) {
 
   const auto enrich
     = [&](const double curr_min_persistence, const double prev_min_persistence,
@@ -637,7 +633,7 @@ std::vector<double>
         return new_min_persistence;
       };
 
-  std::vector<double> new_min_persistence = {
+  const std::array<double, 3> new_min_persistence = {
     do_min_ ? enrich(min_persistence[0], previous_min_persistence[0],
                      initial_diagonal_prices[0], min_points_to_add[0],
                      bidder_diagrams_min_, current_bidder_diagrams_min_)
