@@ -97,39 +97,34 @@ int ttkPersistenceDiagramDistanceMatrix::RequestData(
     }
   }
 
-  // if(Method == 0) {
-  // Progressive approach
-  ttk::PersistenceDiagramDistanceMatrix persistenceDiagramsClustering{};
-  persistenceDiagramsClustering.setWrapper(this);
-
-  std::string wassersteinMetric = WassersteinMetric;
-
   if(!UseInterruptible) {
     TimeLimit = 999999999;
   }
-  persistenceDiagramsClustering.setWasserstein(wassersteinMetric);
-  persistenceDiagramsClustering.setDeterministic(Deterministic);
-  persistenceDiagramsClustering.setForceUseOfAlgorithm(ForceUseOfAlgorithm);
-  persistenceDiagramsClustering.setPairTypeClustering(PairTypeClustering);
-  persistenceDiagramsClustering.setNumberOfInputs(numInputs);
-  persistenceDiagramsClustering.setDebugLevel(debugLevel_);
-  persistenceDiagramsClustering.setTimeLimit(TimeLimit);
-  persistenceDiagramsClustering.setUseProgressive(true);
-  persistenceDiagramsClustering.setThreadNumber(threadNumber_);
-  persistenceDiagramsClustering.setAlpha(Alpha);
-  persistenceDiagramsClustering.setDeltaLim(DeltaLim);
-  persistenceDiagramsClustering.setUseDeltaLim(UseAdditionalPrecision);
-  persistenceDiagramsClustering.setLambda(Lambda);
-  persistenceDiagramsClustering.setNumberOfClusters(4);
-  persistenceDiagramsClustering.setUseAccelerated(UseAccelerated);
-  persistenceDiagramsClustering.setUseKmeansppInit(UseKmeansppInit);
-  persistenceDiagramsClustering.setDistanceWritingOptions(0);
-  persistenceDiagramsClustering.setUseFullDiagrams(UseFullDiagrams);
 
-  persistenceDiagramsClustering.execute(intermediateDiagrams);
+  ttk::PersistenceDiagramDistanceMatrix worker{};
+  worker.setWrapper(this);
+  worker.setDebugLevel(debugLevel_);
+  worker.setThreadNumber(threadNumber_);
 
-  const auto diagramsDistMat
-    = persistenceDiagramsClustering.getDiagramsDistMat();
+  worker.setWasserstein(WassersteinMetric);
+  worker.setDeterministic(Deterministic);
+  worker.setForceUseOfAlgorithm(ForceUseOfAlgorithm);
+  worker.setPairTypeClustering(PairTypeClustering);
+  worker.setNumberOfInputs(numInputs);
+  worker.setTimeLimit(TimeLimit);
+  worker.setUseProgressive(true);
+  worker.setAlpha(Alpha);
+  worker.setDeltaLim(DeltaLim);
+  worker.setUseDeltaLim(UseAdditionalPrecision);
+  worker.setLambda(Lambda);
+  worker.setNumberOfClusters(4);
+  worker.setUseAccelerated(UseAccelerated);
+  worker.setUseKmeansppInit(UseKmeansppInit);
+  worker.setDistanceWritingOptions(0);
+  worker.setUseFullDiagrams(UseFullDiagrams);
+  worker.execute(intermediateDiagrams);
+
+  const auto diagramsDistMat = worker.getDiagramsDistMat();
 
   // zero-padd column name to keep Row Data columns ordered
   const auto zeroPad
