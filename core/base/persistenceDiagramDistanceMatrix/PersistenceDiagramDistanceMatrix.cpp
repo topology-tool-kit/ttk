@@ -160,7 +160,11 @@ std::vector<std::vector<double>> PersistenceDiagramDistanceMatrix::execute(
          << endl; //"  and barycenter size : "<<centroids_max_[0].size()<<endl;
   }
   min_persistence = enrichCurrentBidderDiagrams(
-    max_persistence, min_persistence, min_diag_price, min_points_to_add);
+    max_persistence, min_persistence, min_diag_price, min_points_to_add,
+    bidder_diagrams_min_, bidder_diagrams_saddle_, bidder_diagrams_max_,
+    current_bidder_diagrams_min_, current_bidder_diagrams_saddle_,
+    current_bidder_diagrams_max_);
+
   if(debugLevel_ > 5) {
     std::cout << "first enrich done" << std::endl;
   }
@@ -220,7 +224,10 @@ std::vector<std::vector<double>> PersistenceDiagramDistanceMatrix::execute(
 
       if(do_min_ || do_sad_ || do_max_) {
         min_persistence = enrichCurrentBidderDiagrams(
-          min_persistence, rho, min_diag_price, min_points_to_add);
+          min_persistence, rho, min_diag_price, min_points_to_add,
+          bidder_diagrams_min_, bidder_diagrams_saddle_, bidder_diagrams_max_,
+          current_bidder_diagrams_min_, current_bidder_diagrams_saddle_,
+          current_bidder_diagrams_max_);
       }
 
       for(int i_crit = 0; i_crit < 3; i_crit++) {
@@ -557,7 +564,13 @@ std::array<double, 3>
     const std::array<double, 3> &previous_min_persistence,
     const std::array<double, 3> &min_persistence,
     const std::array<std::vector<double>, 3> initial_diagonal_prices,
-    const std::array<int, 3> min_points_to_add) {
+    const std::array<int, 3> min_points_to_add,
+    const std::vector<BidderDiagram<double>> &bidder_diags_min,
+    const std::vector<BidderDiagram<double>> &bidder_diags_sad,
+    const std::vector<BidderDiagram<double>> &bidder_diags_max,
+    std::vector<BidderDiagram<double>> &current_bidder_diags_min,
+    std::vector<BidderDiagram<double>> &current_bidder_diags_sad,
+    std::vector<BidderDiagram<double>> &current_bidder_diags_max) const {
 
   const auto enrich
     = [&](const double curr_min_persistence, const double prev_min_persistence,
@@ -633,19 +646,19 @@ std::array<double, 3>
         return new_min_persistence;
       };
 
-  const std::array<double, 3> new_min_persistence = {
-    do_min_ ? enrich(min_persistence[0], previous_min_persistence[0],
-                     initial_diagonal_prices[0], min_points_to_add[0],
-                     bidder_diagrams_min_, current_bidder_diagrams_min_)
-            : previous_min_persistence[0],
-    do_sad_ ? enrich(min_persistence[1], previous_min_persistence[1],
-                     initial_diagonal_prices[1], min_points_to_add[1],
-                     bidder_diagrams_saddle_, current_bidder_diagrams_saddle_)
-            : previous_min_persistence[1],
-    do_max_ ? enrich(min_persistence[2], previous_min_persistence[2],
-                     initial_diagonal_prices[2], min_points_to_add[2],
-                     bidder_diagrams_max_, current_bidder_diagrams_max_)
-            : previous_min_persistence[2]};
+  const std::array<double, 3> new_min_persistence
+    = {do_min_ ? enrich(min_persistence[0], previous_min_persistence[0],
+                        initial_diagonal_prices[0], min_points_to_add[0],
+                        bidder_diags_min, current_bidder_diags_min)
+               : previous_min_persistence[0],
+       do_sad_ ? enrich(min_persistence[1], previous_min_persistence[1],
+                        initial_diagonal_prices[1], min_points_to_add[1],
+                        bidder_diags_sad, current_bidder_diags_sad)
+               : previous_min_persistence[1],
+       do_max_ ? enrich(min_persistence[2], previous_min_persistence[2],
+                        initial_diagonal_prices[2], min_points_to_add[2],
+                        bidder_diags_max, current_bidder_diags_max)
+               : previous_min_persistence[2]};
 
   return new_min_persistence;
 }

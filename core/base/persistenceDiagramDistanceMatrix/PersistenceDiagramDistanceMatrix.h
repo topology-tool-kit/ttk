@@ -130,7 +130,13 @@ namespace ttk {
       const std::array<double, 3> &previous_min_persistence,
       const std::array<double, 3> &min_persistence,
       const std::array<std::vector<double>, 3> initial_diagonal_prices,
-      const std::array<int, 3> min_points_to_add);
+      const std::array<int, 3> min_points_to_add,
+      const std::vector<BidderDiagram<double>> &bidder_diags_min,
+      const std::vector<BidderDiagram<double>> &bidder_diags_sad,
+      const std::vector<BidderDiagram<double>> &bidder_diags_max,
+      std::vector<BidderDiagram<double>> &current_bidder_diags_min,
+      std::vector<BidderDiagram<double>> &current_bidder_diags_sad,
+      std::vector<BidderDiagram<double>> &current_bidder_diags_max) const;
 
     bool precision_criterion_{false};
     bool precision_max_{false};
