@@ -103,8 +103,6 @@ int ttkPersistenceDiagramDistanceMatrix::RequestData(
 
   ttk::PersistenceDiagramDistanceMatrix worker{};
   worker.setWrapper(this);
-  worker.setDebugLevel(debugLevel_);
-  worker.setThreadNumber(threadNumber_);
 
   worker.setWasserstein(WassersteinMetric);
   worker.setDeterministic(Deterministic);
