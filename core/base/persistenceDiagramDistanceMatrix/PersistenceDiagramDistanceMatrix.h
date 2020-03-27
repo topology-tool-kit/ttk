@@ -94,8 +94,16 @@ namespace ttk {
     }
 
   protected:
-    double getMostPersistent(const int type = -1) const;
-    double getLessPersistent(const int type = -1) const;
+    double getMostPersistent(
+      const int type,
+      const std::vector<BidderDiagram<double>> &bidder_diags_min,
+      const std::vector<BidderDiagram<double>> &bidder_diags_sad,
+      const std::vector<BidderDiagram<double>> &bidder_diags_max) const;
+    double getLessPersistent(
+      const int type,
+      const std::vector<BidderDiagram<double>> &bidder_diags_min,
+      const std::vector<BidderDiagram<double>> &bidder_diags_sad,
+      const std::vector<BidderDiagram<double>> &bidder_diags_max) const;
     double computeDistance(const BidderDiagram<double> &D1,
                            const BidderDiagram<double> &D2,
                            const double delta_lim) const;

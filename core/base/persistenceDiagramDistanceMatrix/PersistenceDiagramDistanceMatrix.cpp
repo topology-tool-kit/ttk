@@ -131,8 +131,13 @@ std::vector<std::vector<double>> PersistenceDiagramDistanceMatrix::execute(
   // std::cout<<"checkpoint"<<std::endl;
   for(int i_crit = 0; i_crit < 3; i_crit++) {
     // std::cout<<"checkpoint"<<i_crit<<std::endl;
-    max_persistence[i_crit] = 2 * getMostPersistent(i_crit);
-    lowest_persistence[i_crit] = getLessPersistent(i_crit);
+    max_persistence[i_crit]
+      = 2
+        * getMostPersistent(i_crit, bidder_diagrams_min_,
+                            bidder_diagrams_saddle_, bidder_diagrams_max_);
+    lowest_persistence[i_crit]
+      = getLessPersistent(i_crit, bidder_diagrams_min_, bidder_diagrams_saddle_,
+                          bidder_diagrams_max_);
     min_persistence[i_crit] = 0;
     // std::cout<<"size eps "<<epsilon_.size()<<std::endl;
     epsilon_[i_crit] = pow(0.5 * max_persistence[i_crit], 2)
@@ -350,8 +355,11 @@ std::vector<std::vector<double>> PersistenceDiagramDistanceMatrix::execute(
   return distMat;
 }
 
-double
-  PersistenceDiagramDistanceMatrix::getMostPersistent(const int type) const {
+double PersistenceDiagramDistanceMatrix::getMostPersistent(
+  const int type,
+  const std::vector<BidderDiagram<double>> &bidder_diags_min,
+  const std::vector<BidderDiagram<double>> &bidder_diags_sad,
+  const std::vector<BidderDiagram<double>> &bidder_diags_max) const {
   double max_persistence = 0;
 
   const auto maxPersistence
@@ -367,19 +375,22 @@ double
       };
 
   if(do_min_ && (type == -1 || type == 0)) {
-    maxPersistence(bidder_diagrams_min_);
+    maxPersistence(bidder_diags_min);
   }
   if(do_sad_ && (type == -1 || type == 1)) {
-    maxPersistence(bidder_diagrams_saddle_);
+    maxPersistence(bidder_diags_sad);
   }
   if(do_max_ && (type == -1 || type == 2)) {
-    maxPersistence(bidder_diagrams_max_);
+    maxPersistence(bidder_diags_max);
   }
   return max_persistence;
 }
 
-double
-  PersistenceDiagramDistanceMatrix::getLessPersistent(const int type) const {
+double PersistenceDiagramDistanceMatrix::getLessPersistent(
+  const int type,
+  const std::vector<BidderDiagram<double>> &bidder_diags_min,
+  const std::vector<BidderDiagram<double>> &bidder_diags_sad,
+  const std::vector<BidderDiagram<double>> &bidder_diags_max) const {
   // type == -1 : query the min of all the types of diagrams.
   // type = 0 : min,  1 : sad,   2 : max
   // std::cout << "type = " << type << std::endl;
@@ -399,13 +410,13 @@ double
       };
 
   if(do_min_ && (type == -1 || type == 0)) {
-    minPersistence(bidder_diagrams_min_);
+    minPersistence(bidder_diags_min);
   }
   if(do_sad_ && (type == -1 || type == 1)) {
-    minPersistence(bidder_diagrams_saddle_);
+    minPersistence(bidder_diags_sad);
   }
   if(do_max_ && (type == -1 || type == 2)) {
-    minPersistence(bidder_diagrams_max_);
+    minPersistence(bidder_diags_max);
   }
   return min_persistence;
 }
