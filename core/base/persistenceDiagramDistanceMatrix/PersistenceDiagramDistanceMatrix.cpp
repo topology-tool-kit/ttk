@@ -24,7 +24,6 @@ std::vector<std::vector<double>> PersistenceDiagramDistanceMatrix::execute(
       ttk::CriticalType nt2 = std::get<3>(t);
 
       double dt = std::get<4>(t);
-      // if (abs<double>(dt) < zeroThresh) continue;
       if(dt > 0) {
         if(nt1 == CriticalType::Local_minimum
            && nt2 == CriticalType::Local_maximum) {
@@ -95,7 +94,6 @@ std::vector<std::vector<double>> PersistenceDiagramDistanceMatrix::execute(
   n_iterations_ = 0;
   double total_time = 0;
 
-  // double cost = std::numeric_limits<double>::max();
   setBidderDiagrams(inputDiagramsMin_, inputDiagramsSaddle_, inputDiagramsMax_,
                     bidder_diagrams_min_, bidder_diagrams_saddle_,
                     bidder_diagrams_max_, current_bidder_diagrams_min_,
@@ -106,7 +104,6 @@ std::vector<std::vector<double>> PersistenceDiagramDistanceMatrix::execute(
   double min_cost_min = std::numeric_limits<double>::max();
   double min_cost_max = std::numeric_limits<double>::max();
   double min_cost_sad = std::numeric_limits<double>::max();
-  // double last_min_cost_obtained = -1;
   double last_min_cost_obtained_min = -1;
   double last_min_cost_obtained_sad = -1;
   double last_min_cost_obtained_max = -1;
@@ -114,15 +111,12 @@ std::vector<std::vector<double>> PersistenceDiagramDistanceMatrix::execute(
   std::array<double, 3> epsilon_candidate{};
   std::array<double, 3> rho{};
 
-  // std::cout<<"checkpoint"<<std::endl;
   // Getting current diagrams (with only at most min_points_to_add points)
   std::array<double, 3> max_persistence{};
   std::array<double, 3> lowest_persistence{};
   std::array<double, 3> min_persistence{};
 
-  // std::cout<<"checkpoint"<<std::endl;
   for(int i_crit = 0; i_crit < 3; i_crit++) {
-    // std::cout<<"checkpoint"<<i_crit<<std::endl;
     max_persistence[i_crit]
       = 2
         * getMostPersistent(i_crit, bidder_diagrams_min_,
@@ -131,13 +125,12 @@ std::vector<std::vector<double>> PersistenceDiagramDistanceMatrix::execute(
       = getLessPersistent(i_crit, bidder_diagrams_min_, bidder_diagrams_saddle_,
                           bidder_diagrams_max_);
     min_persistence[i_crit] = 0;
-    // std::cout<<"size eps "<<epsilon_.size()<<std::endl;
-    epsilon_[i_crit] = pow(0.5 * max_persistence[i_crit], 2)
-                       / 8.; // max_persistence actually holds 2 times the
-                             // highest persistence
+
+    // max_persistence actually holds 2 times the highest persistence
+    epsilon_[i_crit] = pow(0.5 * max_persistence[i_crit], 2) / 8.;
     epsilon0[i_crit] = epsilon_[i_crit];
   }
-  // std::cout<<"checkpoint"<<std::endl;
+
   std::array<int, 3> min_points_to_add{};
   min_points_to_add[0] = 10;
   min_points_to_add[1] = 10;
@@ -147,21 +140,13 @@ std::vector<std::vector<double>> PersistenceDiagramDistanceMatrix::execute(
   for(auto &arr : min_diag_price) {
     arr.resize(numberOfInputs_, 0);
   }
-  // std::cout << "firstinrich" << std::endl;
-  if(debugLevel_ > 5) {
-    cout << "enrich with rho : " << min_persistence[2]
-         << " and initial epsilon " << epsilon_[2]
-         << endl; //"  and barycenter size : "<<centroids_max_[0].size()<<endl;
-  }
+
   min_persistence = enrichCurrentBidderDiagrams(
     max_persistence, min_persistence, min_diag_price, min_points_to_add,
     bidder_diagrams_min_, bidder_diagrams_saddle_, bidder_diagrams_max_,
     current_bidder_diagrams_min_, current_bidder_diagrams_saddle_,
     current_bidder_diagrams_max_);
 
-  if(debugLevel_ > 5) {
-    std::cout << "first enrich done" << std::endl;
-  }
 
   for(int c = 0; c < 3; c++) {
     if(min_persistence[c] <= lowest_persistence[c]) {
@@ -249,26 +234,17 @@ std::vector<std::vector<double>> PersistenceDiagramDistanceMatrix::execute(
       precision_max_ = (epsilon_[2] < epsilon0[2] / 500.);
     }
 
-    if(epsilon_[0] < epsilon_min_ /*&& diagrams_complete[0]*/) {
-      if(debugLevel_ > 4) {
-        cout << "[min barycenter] epsilon under minimal value " << endl;
-      }
+    if(epsilon_[0] < epsilon_min_) {
       do_min_ = false;
       epsilon_[0] = epsilon_min_;
       diagrams_complete[0] = true;
     }
-    if(epsilon_[1] < epsilon_min_ /*&& diagrams_complete[1]*/) {
-      if(debugLevel_ > 4) {
-        cout << "[sad barycenter] epsilon under minimal value " << endl;
-      }
+    if(epsilon_[1] < epsilon_min_) {
       do_sad_ = false;
       epsilon_[1] = epsilon_min_;
       diagrams_complete[1] = true;
     }
-    if(epsilon_[2] < epsilon_min_ /*&& diagrams_complete[2]*/) {
-      if(debugLevel_ > 4) {
-        cout << "[max barycenter] epsilon under minimal value " << endl;
-      }
+    if(epsilon_[2] < epsilon_min_) {
       do_max_ = false;
       epsilon_[2] = epsilon_min_;
       diagrams_complete[2] = true;
@@ -281,8 +257,7 @@ std::vector<std::vector<double>> PersistenceDiagramDistanceMatrix::execute(
     precision_criterion_ = precision_min_ && precision_sad_ && precision_max_;
     bool precision_criterion_reached = precision_criterion_;
 
-    if(cost_min_ < min_cost_min && n_iterations_ > 2
-       && diagrams_complete[0] /*&& precision_min_*/) {
+    if(cost_min_ < min_cost_min && n_iterations_ > 2 && diagrams_complete[0]) {
       min_cost_min = cost_min_;
       last_min_cost_obtained_min = 0;
     } else if(n_iterations_ > 2 && precision_min_ && diagrams_complete[0]) {
@@ -292,8 +267,7 @@ std::vector<std::vector<double>> PersistenceDiagramDistanceMatrix::execute(
       }
     }
 
-    if(cost_sad_ < min_cost_sad && n_iterations_ > 2
-       && diagrams_complete[1] /*&& precision_sad_*/) {
+    if(cost_sad_ < min_cost_sad && n_iterations_ > 2 && diagrams_complete[1]) {
       min_cost_sad = cost_sad_;
       last_min_cost_obtained_sad = 0;
     } else if(n_iterations_ > 2 && precision_sad_ && diagrams_complete[1]) {
@@ -303,8 +277,7 @@ std::vector<std::vector<double>> PersistenceDiagramDistanceMatrix::execute(
       }
     }
 
-    if(cost_max_ < min_cost_max && n_iterations_ > 2
-       && diagrams_complete[2] /*&& precision_max_*/) {
+    if(cost_max_ < min_cost_max && n_iterations_ > 2 && diagrams_complete[2]) {
       min_cost_max = cost_max_;
       last_min_cost_obtained_max = 0;
     } else if(n_iterations_ > 2 && precision_max_ && diagrams_complete[2]) {
