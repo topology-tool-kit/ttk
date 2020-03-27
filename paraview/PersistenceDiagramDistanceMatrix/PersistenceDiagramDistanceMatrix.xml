@@ -1,42 +1,42 @@
 <ServerManagerConfiguration>
   <ProxyGroup name="filters">
-   <SourceProxy
-     name="PersistenceDiagramDistanceMatrix"
-     class="ttkPersistenceDiagramDistanceMatrix"
-     label="TTK PersistenceDiagramDistanceMatrix">
-     <Documentation
-       long_help="Computes distance matrix between persistence diagrams."
-       shorthelp="Persistence Diagrams Distance Matrix."
-       >
-       Given an input set of persistence diagrams and a number of
-       clusters, this plugin computes a clustering of the persistence
-       diagrams using a progressive and interruptible K-Means
-       approach. The result of the clustering is printed in the
-       console.  The clustered diagrams and the corresponding centroid
-       diagrams are produced, as well as the assignment between the
-       critical points.
+    <SourceProxy
+        name="PersistenceDiagramDistanceMatrix"
+        class="ttkPersistenceDiagramDistanceMatrix"
+        label="TTK PersistenceDiagramDistanceMatrix">
+      <Documentation
+          long_help="Computes distance matrix between persistence diagrams."
+          shorthelp="Persistence Diagrams Distance Matrix."
+          >
+        Given an input set of persistence diagrams and a number of
+        clusters, this plugin computes a clustering of the persistence
+        diagrams using a progressive and interruptible K-Means
+        approach. The result of the clustering is printed in the
+        console.  The clustered diagrams and the corresponding centroid
+        diagrams are produced, as well as the assignment between the
+        critical points.
 
-       If the number of clusters is set to 1 (default value), the
-       Wasserstein barycenter of the set is computed using the same
-       algorithm.
+        If the number of clusters is set to 1 (default value), the
+        Wasserstein barycenter of the set is computed using the same
+        algorithm.
 
-       If the number of clusters is set to 1 and there are only two
-       input diagrams, by default their Wasserstein distance is
-       computed with the Auction algorithm, and the barycenter is
-       deduced from the assignments. The use of the progressive
-       approach can nevertheless be toggled in the Properties menu.
+        If the number of clusters is set to 1 and there are only two
+        input diagrams, by default their Wasserstein distance is
+        computed with the Auction algorithm, and the barycenter is
+        deduced from the assignments. The use of the progressive
+        approach can nevertheless be toggled in the Properties menu.
 
-       Related publication: "Progressive Wasserstein Barycenters of Persistence Diagrams"
-       Jules Vidal, Joseph Budin, Julien Tierny
-       IEEE Transactions on Visualization and Computer Graphics.
-       Proceedings of IEEE VIS 2019.
+        Related publication: "Progressive Wasserstein Barycenters of Persistence Diagrams"
+        Jules Vidal, Joseph Budin, Julien Tierny
+        IEEE Transactions on Visualization and Computer Graphics.
+        Proceedings of IEEE VIS 2019.
 
-       See also PersistenceDiagram, BottleneckDistance
-    </Documentation>
+        See also PersistenceDiagram, BottleneckDistance
+      </Documentation>
 
-     <InputProperty
-        name="Input"
-        command="SetInputConnection">
+      <InputProperty
+          name="Input"
+          command="SetInputConnection">
         <ProxyGroupDomain name="groups">
           <Group name="sources"/>
           <Group name="filters"/>
@@ -56,11 +56,11 @@
       <OutputPort name="Heat Map" index="1" id="port1" />
 
       <IntVectorProperty
-      name="Critical pairs"
-      label="Critical pairs used for the clustering"
-      command="SetPairTypeClustering"
-      number_of_elements="1"
-      default_values="-1" >
+          name="Critical pairs"
+          label="Critical pairs used for the clustering"
+          command="SetPairTypeClustering"
+          number_of_elements="1"
+          default_values="-1" >
         <EnumerationDomain name="enum">
           <Entry value="-1" text="All pairs : global clustering"/>
           <Entry value="0" text="min-saddle pairs"/>
@@ -69,11 +69,11 @@
           <!-- <Entry value="1" text="legacy: doubleMunkres (Wasserstein, Bottleneck)"/> -->
         </EnumerationDomain>
         <Documentation>
-            Specify the types of critical pairs to be taken into account for the clustering.
+          Specify the types of critical pairs to be taken into account for the clustering.
         </Documentation>
       </IntVectorProperty>
 
-        <StringVectorProperty
+      <StringVectorProperty
           name="n"
           label="p parameter"
           command="SetWassersteinMetric"
@@ -82,7 +82,7 @@
           panel_visibility="advanced">
         <Documentation>
           Value of the parameter p for the Wp (p-th Wasserstein) distance
-computation (type "inf" for the Bottleneck distance).
+          computation (type "inf" for the Bottleneck distance).
         </Documentation>
       </StringVectorProperty>
 
@@ -93,16 +93,15 @@ computation (type "inf" for the Bottleneck distance).
           number_of_elements="1"
           default_values="0.01"
           >
-          <Hints>
+        <Hints>
           <PropertyWidgetDecorator type="GenericDecorator"
                                    mode="visibility"
                                    property="UseAdditionalPrecision"
                                    value="1" />
-          <!-- enable this widget when <property> equals <value> -->
         </Hints>
         <Documentation>
-        Minimal precision for the approximation of the Wasserstein
-        distance used in the assignment between diagrams.
+          Minimal precision for the approximation of the Wasserstein
+          distance used in the assignment between diagrams.
         </Documentation>
       </DoubleVectorProperty>
 
@@ -116,10 +115,10 @@ computation (type "inf" for the Bottleneck distance).
         <DoubleRangeDomain name="alpha" min="0.0" max="1.0"/>
         <Documentation>
           Blending coefficient for the cost evaluation of each critical point
-matching. By default (1), only distances  in
-the persistence diagrams are considered between matched critical points. When
-set to 0, only distances in the original 3D domain are considered
-between matched critical points.
+          matching. By default (1), only distances  in
+          the persistence diagrams are considered between matched critical points. When
+          set to 0, only distances in the original 3D domain are considered
+          between matched critical points.
         </Documentation>
       </DoubleVectorProperty>
 
@@ -160,11 +159,11 @@ between matched critical points.
         </Documentation>
       </IntVectorProperty>
 
-       ${DEBUG_WIDGETS}
+      ${DEBUG_WIDGETS}
 
       <Hints>
         <ShowInMenu category="TTK - Scalar Data" />
       </Hints>
-   </SourceProxy>
- </ProxyGroup>
+    </SourceProxy>
+  </ProxyGroup>
 </ServerManagerConfiguration>
