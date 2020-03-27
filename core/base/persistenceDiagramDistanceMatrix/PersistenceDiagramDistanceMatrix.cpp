@@ -425,95 +425,25 @@ double PersistenceDiagramDistanceMatrix::getLessPersistent(int type) {
 double PersistenceDiagramDistanceMatrix::computeDistance(
   const BidderDiagram<double> &D1,
   const BidderDiagram<double> &D2,
-  const double delta_lim) {
-  GoodDiagram<double> D2_bis = diagramToCentroid(D2);
-  return computeDistance(D1, D2_bis, delta_lim);
-}
+  const double delta_lim) const {
 
-double PersistenceDiagramDistanceMatrix::computeDistance(
-  const BidderDiagram<double> D1,
-  const GoodDiagram<double> D2,
-  const double delta_lim) {
-  std::vector<MatchingTuple> matchings;
-  const auto D2_bis = centroidWithZeroPrices(D2);
+  GoodDiagram<double> D2_bis{};
+  for(int i = 0; i < D2.size(); i++) {
+    const Bidder<double> &b = D2.get(i);
+    Good<double> g(b.x_, b.y_, b.isDiagonal(), D2_bis.size());
+    g.SetCriticalCoordinates(b.coords_x_, b.coords_y_, b.coords_z_);
+    g.setPrice(0);
+    D2_bis.addGood(g);
+  }
+
   Auction<double> auction(
     wasserstein_, geometrical_factor_, lambda_, delta_lim, use_kdtree_);
   auction.BuildAuctionDiagrams(&D1, &D2_bis);
-  double cost = auction.run(&matchings);
-  return cost;
-}
 
-double PersistenceDiagramDistanceMatrix::computeDistance(
-  BidderDiagram<double> *const D1,
-  const GoodDiagram<double> *const D2,
-  const double delta_lim) {
   std::vector<MatchingTuple> matchings;
-  Auction<double> auction(
-    wasserstein_, geometrical_factor_, lambda_, delta_lim, use_kdtree_);
-  int size1 = D1->size();
-  auction.BuildAuctionDiagrams(D1, D2);
   double cost = auction.run(&matchings);
-  // Diagonal Points were added in the original diagram. The following line
-  // removes them.
-  D1->bidders_.resize(size1);
+
   return cost;
-}
-
-double PersistenceDiagramDistanceMatrix::computeDistance(
-  const GoodDiagram<double> &D1,
-  const GoodDiagram<double> &D2,
-  const double delta_lim) {
-  BidderDiagram<double> D1_bis = centroidToDiagram(D1);
-  return computeDistance(D1_bis, D2, delta_lim);
-}
-
-GoodDiagram<double> PersistenceDiagramDistanceMatrix::centroidWithZeroPrices(
-  const GoodDiagram<double> centroid) {
-  GoodDiagram<double> GD = GoodDiagram<double>();
-  for(int i = 0; i < centroid.size(); i++) {
-    Good<double> g = centroid.get(i);
-    g.setPrice(0);
-    GD.addGood(g);
-  }
-  return GD;
-}
-
-BidderDiagram<double> PersistenceDiagramDistanceMatrix::diagramWithZeroPrices(
-  const BidderDiagram<double> diagram) {
-  BidderDiagram<double> BD = BidderDiagram<double>();
-  for(int i = 0; i < diagram.size(); i++) {
-    Bidder<double> b = diagram.get(i);
-    b.setDiagonalPrice(0);
-    BD.addBidder(b);
-  }
-  return BD;
-}
-
-BidderDiagram<double> PersistenceDiagramDistanceMatrix::centroidToDiagram(
-  const GoodDiagram<double> centroid) {
-  BidderDiagram<double> BD = BidderDiagram<double>();
-  for(int i = 0; i < centroid.size(); i++) {
-    Good<double> g = centroid.get(i);
-
-    Bidder<double> b = Bidder<double>(g.x_, g.y_, g.isDiagonal(), BD.size());
-    b.SetCriticalCoordinates(g.coords_x_, g.coords_y_, g.coords_z_);
-    b.setPositionInAuction(BD.size());
-    BD.addBidder(b);
-  }
-  return BD;
-}
-
-GoodDiagram<double> PersistenceDiagramDistanceMatrix::diagramToCentroid(
-  const BidderDiagram<double> diagram) {
-  GoodDiagram<double> GD = GoodDiagram<double>();
-  for(int i = 0; i < diagram.size(); i++) {
-    Bidder<double> b = diagram.get(i);
-
-    Good<double> g = Good<double>(b.x_, b.y_, b.isDiagonal(), GD.size());
-    g.SetCriticalCoordinates(b.coords_x_, b.coords_y_, b.coords_z_);
-    GD.addGood(g);
-  }
-  return GD;
 }
 
 std::vector<std::vector<double>>

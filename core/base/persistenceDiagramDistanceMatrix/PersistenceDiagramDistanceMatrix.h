@@ -48,23 +48,7 @@ namespace ttk {
 
     double computeDistance(const BidderDiagram<double> &D1,
                            const BidderDiagram<double> &D2,
-                           const double delta_lim);
-    double computeDistance(const BidderDiagram<double> D1,
-                           const GoodDiagram<double> D2,
-                           const double delta_lim);
-    double computeDistance(BidderDiagram<double> *const D1,
-                           const GoodDiagram<double> *const D2,
-                           const double delta_lim);
-    double computeDistance(const GoodDiagram<double> &D1,
-                           const GoodDiagram<double> &D2,
-                           const double delta_lim);
-
-    GoodDiagram<double>
-      centroidWithZeroPrices(const GoodDiagram<double> centroid);
-    BidderDiagram<double> centroidToDiagram(const GoodDiagram<double> centroid);
-    GoodDiagram<double> diagramToCentroid(const BidderDiagram<double> diagram);
-    BidderDiagram<double>
-      diagramWithZeroPrices(const BidderDiagram<double> diagram);
+                           const double delta_lim) const;
 
     void setBidderDiagrams();
 
