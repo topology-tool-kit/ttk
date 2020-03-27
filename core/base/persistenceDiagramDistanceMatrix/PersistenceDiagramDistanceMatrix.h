@@ -87,7 +87,6 @@ namespace ttk {
 
     std::vector<std::vector<double>> getDistanceMatrix();
     void getCentroidDistanceMatrix();
-    void computeDiagramsDistanceMatrix();
 
     void updateClusters();
     void invertClusters();
@@ -170,9 +169,7 @@ namespace ttk {
       useFullDiagrams_ = arg;
     }
 
-    inline const std::vector<std::vector<double>> &&getDiagramsDistMat() {
-      return std::move(diagramsDistanceMatrix_);
-    }
+    std::vector<std::vector<double>> getDiagramsDistMat();
 
   protected:
     bool barycenter_inputs_reset_flag;
@@ -246,7 +243,6 @@ namespace ttk {
     std::vector<double> u_;
     std::vector<std::vector<double>> l_;
     std::vector<std::vector<double>> centroidsDistanceMatrix_{};
-    std::vector<std::vector<double>> diagramsDistanceMatrix_{};
     bool useFullDiagrams_{false};
 
     int n_iterations_;

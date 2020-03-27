@@ -373,8 +373,6 @@ void PersistenceDiagramDistanceMatrix::execute(
 
   resetDosToOriginalValues();
 
-  computeDiagramsDistanceMatrix();
-
   {
     std::stringstream msg;
     msg << "[PersistenceDiagramDistanceMatrix] Processed in "
@@ -915,9 +913,10 @@ void PersistenceDiagramDistanceMatrix::getCentroidDistanceMatrix() {
   return;
 }
 
-void PersistenceDiagramDistanceMatrix::computeDiagramsDistanceMatrix() {
+std::vector<std::vector<double>>
+  PersistenceDiagramDistanceMatrix::getDiagramsDistMat() {
 
-  diagramsDistanceMatrix_.resize(numberOfInputs_);
+  std::vector<std::vector<double>> diagramsDistanceMatrix(numberOfInputs_);
   double delta_lim{0.01};
 
   const auto &diags_min
@@ -931,11 +930,11 @@ void PersistenceDiagramDistanceMatrix::computeDiagramsDistanceMatrix() {
 #pragma omp parallel for schedule(dynamic)
 #endif // TTK_ENABLE_OPENMP
   for(int i = 0; i < numberOfInputs_; ++i) {
-    diagramsDistanceMatrix_[i].resize(
+    diagramsDistanceMatrix[i].resize(
       numberOfInputs_, std::numeric_limits<float>::max());
 
     // matrix diagonal
-    diagramsDistanceMatrix_[i][i] = 0.0;
+    diagramsDistanceMatrix[i][i] = 0.0;
 
     for(int j = i + 1; j < numberOfInputs_; ++j) {
       double distance{};
@@ -956,16 +955,18 @@ void PersistenceDiagramDistanceMatrix::computeDiagramsDistanceMatrix() {
         distance += computeDistance(dimax, djmax, delta_lim);
       }
 
-      diagramsDistanceMatrix_[i][j] = distance;
+      diagramsDistanceMatrix[i][j] = distance;
     }
   }
 
   // distance matrix is symmetric
   for(int i = 0; i < numberOfInputs_; ++i) {
     for(int j = i + 1; j < numberOfInputs_; ++j) {
-      diagramsDistanceMatrix_[j][i] = diagramsDistanceMatrix_[i][j];
+      diagramsDistanceMatrix[j][i] = diagramsDistanceMatrix[i][j];
     }
   }
+
+  return diagramsDistanceMatrix;
 }
 
 void PersistenceDiagramDistanceMatrix::updateClusters() {
