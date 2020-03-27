@@ -44,10 +44,7 @@ namespace ttk {
     void execute(std::vector<std::vector<DiagramTuple>> &intermediateDiagrams);
 
     double getMostPersistent(int type = -1);
-    vector<vector<int>> get_centroids_sizes();
     double getLessPersistent(int type = -1);
-    std::vector<std::vector<double>> getMinDiagonalPrices();
-    std::vector<std::vector<double>> getMinPrices();
 
     double computeDistance(const BidderDiagram<double> &D1,
                            const BidderDiagram<double> &D2,
@@ -70,11 +67,6 @@ namespace ttk {
       diagramWithZeroPrices(const BidderDiagram<double> diagram);
 
     void setBidderDiagrams();
-    void initializeCentroids();
-    void initializeCentroidsKMeanspp();
-    void initializeAcceleratedKMeans();
-    void printDistancesToFile();
-    double computeRealCost();
 
     std::vector<double> enrichCurrentBidderDiagrams(
       std::vector<double> previous_min_persistence,
@@ -85,13 +77,6 @@ namespace ttk {
       bool add_points_to_barycenter);
 
     std::vector<std::vector<double>> getDistanceMatrix();
-    void getCentroidDistanceMatrix();
-
-    void updateClusters();
-    void invertClusters();
-    void invertInverseClusters();
-
-    void acceleratedUpdateClusters();
 
     inline void resetDosToOriginalValues() {
       do_min_ = original_dos[0];
