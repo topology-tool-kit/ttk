@@ -52,7 +52,16 @@ namespace ttk {
 
     std::vector<std::vector<double>> getDiagramsDistMat();
 
-    void setBidderDiagrams();
+    void setBidderDiagrams(
+      std::vector<std::vector<DiagramTuple>> &inputDiagramsMin,
+      std::vector<std::vector<DiagramTuple>> &inputDiagramsSad,
+      std::vector<std::vector<DiagramTuple>> &inputDiagramsMax,
+      std::vector<BidderDiagram<double>> &bidder_diags_min,
+      std::vector<BidderDiagram<double>> &bidder_diags_sad,
+      std::vector<BidderDiagram<double>> &bidder_diags_max,
+      std::vector<BidderDiagram<double>> &current_bidder_diags_min,
+      std::vector<BidderDiagram<double>> &current_bidder_diags_sad,
+      std::vector<BidderDiagram<double>> &current_bidder_diags_max) const;
 
     std::vector<double> enrichCurrentBidderDiagrams(
       std::vector<double> previous_min_persistence,

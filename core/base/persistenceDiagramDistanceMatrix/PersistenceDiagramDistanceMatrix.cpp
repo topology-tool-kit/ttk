@@ -104,7 +104,12 @@ void PersistenceDiagramDistanceMatrix::execute(
   double total_time = 0;
 
   // double cost = std::numeric_limits<double>::max();
-  setBidderDiagrams();
+  setBidderDiagrams(inputDiagramsMin_, inputDiagramsSaddle_, inputDiagramsMax_,
+                    bidder_diagrams_min_, bidder_diagrams_saddle_,
+                    bidder_diagrams_max_, current_bidder_diagrams_min_,
+                    current_bidder_diagrams_saddle_,
+                    current_bidder_diagrams_max_);
+
   cost_ = std::numeric_limits<double>::max();
   double min_cost_min = std::numeric_limits<double>::max();
   double min_cost_max = std::numeric_limits<double>::max();
@@ -478,74 +483,52 @@ std::vector<std::vector<double>>
   return diagramsDistanceMatrix;
 }
 
-void PersistenceDiagramDistanceMatrix::setBidderDiagrams() {
+void PersistenceDiagramDistanceMatrix::setBidderDiagrams(
+  std::vector<std::vector<DiagramTuple>> &inputDiagramsMin,
+  std::vector<std::vector<DiagramTuple>> &inputDiagramsSad,
+  std::vector<std::vector<DiagramTuple>> &inputDiagramsMax,
+  std::vector<BidderDiagram<double>> &bidder_diags_min,
+  std::vector<BidderDiagram<double>> &bidder_diags_sad,
+  std::vector<BidderDiagram<double>> &bidder_diags_max,
+  std::vector<BidderDiagram<double>> &current_bidder_diags_min,
+  std::vector<BidderDiagram<double>> &current_bidder_diags_sad,
+  std::vector<BidderDiagram<double>> &current_bidder_diags_max) const {
+
+  const auto setBidderDiag
+    = [&](const size_t i, std::vector<std::vector<DiagramTuple>> &inputDiagrams,
+          std::vector<BidderDiagram<double>> &bidder_diags,
+          std::vector<BidderDiagram<double>> &current_bidder_diags) {
+        bidder_diags.emplace_back();
+        current_bidder_diags.emplace_back();
+
+        auto &diag = inputDiagrams[i];
+        auto &bidders = bidder_diags.back();
+
+        for(size_t j = 0; j < diag.size(); j++) {
+          // Add bidder to bidders
+          Bidder<double> b(diag[j], j, lambda_);
+          b.setPositionInAuction(bidders.size());
+          bidders.addBidder(b);
+          if(b.isDiagonal() || b.x_ == b.y_) {
+            std::cout << "Diagonal point in diagram !!!" << std::endl;
+          }
+        }
+      };
+
   for(int i = 0; i < numberOfInputs_; i++) {
     if(do_min_) {
-      std::vector<DiagramTuple> *CTDiagram = &(inputDiagramsMin_[i]);
-      BidderDiagram<double> bidders;
-      for(unsigned int j = 0; j < CTDiagram->size(); j++) {
-        // Add bidder to bidders
-        Bidder<double> b((*CTDiagram)[j], j, lambda_);
-
-        b.setPositionInAuction(bidders.size());
-        bidders.addBidder(b);
-        if(b.isDiagonal() || b.x_ == b.y_) {
-          std::cout << "Diagonal point in diagram !!!" << std::endl;
-        }
-      }
-      bidder_diagrams_min_.push_back(bidders);
-      current_bidder_diagrams_min_.push_back(BidderDiagram<double>());
-      std::vector<int> ids(bidders.size());
-      for(unsigned int j = 0; j < ids.size(); j++) {
-        ids[j] = -1;
-      }
+      setBidderDiag(
+        i, inputDiagramsMin, bidder_diags_min, current_bidder_diags_min);
     }
-
     if(do_sad_) {
-      std::vector<DiagramTuple> *CTDiagram = &(inputDiagramsSaddle_[i]);
-
-      BidderDiagram<double> bidders;
-      for(unsigned int j = 0; j < CTDiagram->size(); j++) {
-        // Add bidder to bidders
-        Bidder<double> b((*CTDiagram)[j], j, lambda_);
-
-        b.setPositionInAuction(bidders.size());
-        bidders.addBidder(b);
-        if(b.isDiagonal() || b.x_ == b.y_) {
-          std::cout << "Diagonal point in diagram !!!" << std::endl;
-        }
-      }
-      bidder_diagrams_saddle_.push_back(bidders);
-      current_bidder_diagrams_saddle_.push_back(BidderDiagram<double>());
-      std::vector<int> ids(bidders.size());
-      for(unsigned int j = 0; j < ids.size(); j++) {
-        ids[j] = -1;
-      }
+      setBidderDiag(
+        i, inputDiagramsSad, bidder_diags_sad, current_bidder_diags_sad);
     }
-
     if(do_max_) {
-      std::vector<DiagramTuple> *CTDiagram = &(inputDiagramsMax_[i]);
-
-      BidderDiagram<double> bidders;
-      for(unsigned int j = 0; j < CTDiagram->size(); j++) {
-        // Add bidder to bidders
-        Bidder<double> b((*CTDiagram)[j], j, lambda_);
-
-        b.setPositionInAuction(bidders.size());
-        bidders.addBidder(b);
-        if(b.isDiagonal() || b.x_ == b.y_) {
-          std::cout << "Diagonal point in diagram !!!" << std::endl;
-        }
-      }
-      bidder_diagrams_max_.push_back(bidders);
-      current_bidder_diagrams_max_.push_back(BidderDiagram<double>());
-      std::vector<int> ids(bidders.size());
-      for(unsigned int j = 0; j < ids.size(); j++) {
-        ids[j] = -1;
-      }
+      setBidderDiag(
+        i, inputDiagramsMax, bidder_diags_max, current_bidder_diags_max);
     }
   }
-  return;
 }
 
 std::vector<double>
