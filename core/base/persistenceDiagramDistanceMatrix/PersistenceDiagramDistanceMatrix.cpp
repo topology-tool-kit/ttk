@@ -1,9 +1,4 @@
 #include <algorithm>
-#include <cmath>
-#include <cstdlib> /* srand, rand */
-#include <iostream>
-#include <iterator>
-#include <random>
 
 #include <PersistenceDiagramDistanceMatrix.h>
 
