@@ -563,216 +563,93 @@ std::vector<double>
     std::vector<std::vector<double>> initial_diagonal_prices,
     std::vector<int> min_points_to_add) {
 
-  std::vector<double> new_min_persistence = min_persistence;
+  const auto enrich
+    = [&](const double curr_min_persistence, const double prev_min_persistence,
+          const std::vector<double> &initial_diag_prices,
+          const size_t min_pts_to_add,
+          const std::vector<BidderDiagram<double>> &bidder_diags,
+          std::vector<BidderDiagram<double>> &current_bidder_diags) {
+        auto new_min_persistence = curr_min_persistence;
 
-  if(!do_min_) {
-    new_min_persistence[0] = previous_min_persistence[0];
-  }
-  if(!do_sad_) {
-    new_min_persistence[1] = previous_min_persistence[1];
-  }
-  if(!do_max_) {
-    new_min_persistence[2] = previous_min_persistence[2];
-  }
+        // 1. Get size of the largest current diagram, deduce the maximal number
+        // of points to append
+        const auto nInputs = current_bidder_diags.size();
+        size_t max_diagram_size = 0;
+        for(const auto &diag : current_bidder_diags) {
+          max_diagram_size
+            = std::max(static_cast<size_t>(diag.size()), max_diagram_size);
+        }
+        size_t max_points_to_add
+          = std::max(min_pts_to_add, min_pts_to_add + max_diagram_size / 10);
+        // 2. Get which points can be added, deduce the new minimal persistence
+        std::vector<std::vector<int>> candidates_to_be_added(nInputs);
+        std::vector<std::vector<size_t>> idx(nInputs);
 
-  // 1. Get size of the largest current diagram, deduce the maximal number of
-  // points to append
-  int max_diagram_size_min = 0;
-  int max_diagram_size_sad = 0;
-  int max_diagram_size_max = 0;
-  if(do_min_) {
-    for(int i = 0; i < numberOfInputs_; i++) {
-      if(current_bidder_diagrams_min_[i].size() > max_diagram_size_min) {
-        max_diagram_size_min = current_bidder_diagrams_min_[i].size();
-      }
-    }
-  }
-  if(do_sad_) {
-    for(int i = 0; i < numberOfInputs_; i++) {
-      if(current_bidder_diagrams_saddle_[i].size() > max_diagram_size_sad) {
-        max_diagram_size_sad = current_bidder_diagrams_saddle_[i].size();
-      }
-    }
-  }
-  if(do_max_) {
-    for(int i = 0; i < numberOfInputs_; i++) {
-      if(current_bidder_diagrams_max_[i].size() > max_diagram_size_max) {
-        max_diagram_size_max = current_bidder_diagrams_max_[i].size();
-      }
-    }
-  }
-  int max_points_to_add_min = std::max(
-    min_points_to_add[0], min_points_to_add[0] + max_diagram_size_min / 10);
-  int max_points_to_add_sad = std::max(
-    min_points_to_add[1], min_points_to_add[1] + max_diagram_size_sad / 10);
-  int max_points_to_add_max = std::max(
-    min_points_to_add[2], min_points_to_add[2] + max_diagram_size_max / 10);
-  // 2. Get which points can be added, deduce the new minimal persistence
-  std::vector<std::vector<int>> candidates_to_be_added_min(numberOfInputs_);
-  std::vector<std::vector<int>> candidates_to_be_added_sad(numberOfInputs_);
-  std::vector<std::vector<int>> candidates_to_be_added_max(numberOfInputs_);
-  std::vector<std::vector<int>> idx_min(numberOfInputs_);
-  std::vector<std::vector<int>> idx_sad(numberOfInputs_);
-  std::vector<std::vector<int>> idx_max(numberOfInputs_);
+        for(size_t i = 0; i < nInputs; i++) {
+          double local_min_persistence = std::numeric_limits<double>::min();
+          std::vector<double> persistences;
+          for(int j = 0; j < bidder_diags[i].size(); j++) {
+            Bidder<double> b = bidder_diags[i].get(j);
+            double persistence = b.getPersistence();
+            if(persistence >= curr_min_persistence
+               && persistence <= prev_min_persistence) {
+              candidates_to_be_added[i].push_back(j);
+              idx[i].push_back(idx[i].size());
+              persistences.push_back(persistence);
+            }
+          }
+          const auto cmp = [&persistences](const size_t a, const size_t b) {
+            return ((persistences[a] > persistences[b])
+                    || ((persistences[a] == persistences[b]) && (a > b)));
+          };
+          std::sort(idx[i].begin(), idx[i].end(), cmp);
+          const auto size = candidates_to_be_added[i].size();
+          if(size >= max_points_to_add) {
+            double last_persistence_added
+              = persistences[idx[i][max_points_to_add - 1]];
+            if(last_persistence_added > local_min_persistence) {
+              local_min_persistence = last_persistence_added;
+            }
+          }
+          if(i == 0) {
+            new_min_persistence = local_min_persistence;
+          } else {
+            if(local_min_persistence < new_min_persistence) {
+              new_min_persistence = local_min_persistence;
+            }
+          }
+        }
+        // 3. Add the points to the current diagrams
+        for(size_t i = 0; i < nInputs; i++) {
+          const auto s = candidates_to_be_added[i].size();
+          for(size_t j = 0; j < std::min(max_points_to_add, s); j++) {
+            Bidder<double> b
+              = bidder_diags[i].get(candidates_to_be_added[i][idx[i][j]]);
+            const double persistence = b.getPersistence();
+            if(persistence >= new_min_persistence) {
+              b.id_ = current_bidder_diags[i].size();
+              b.setPositionInAuction(current_bidder_diags[i].size());
+              b.setDiagonalPrice(initial_diag_prices[i]);
+              current_bidder_diags[i].addBidder(b);
+            }
+          }
+        }
+        return new_min_persistence;
+      };
 
-  if(do_min_) {
-    for(int i = 0; i < numberOfInputs_; i++) {
-      double local_min_persistence = std::numeric_limits<double>::min();
-      std::vector<double> persistences;
-      for(int j = 0; j < bidder_diagrams_min_[i].size(); j++) {
-        Bidder<double> b = bidder_diagrams_min_[i].get(j);
-        double persistence = b.getPersistence();
-        if(persistence >= min_persistence[0]
-           && persistence <= previous_min_persistence[0]) {
-          candidates_to_be_added_min[i].push_back(j);
-          idx_min[i].push_back(idx_min[i].size());
-          persistences.push_back(persistence);
-        }
-      }
-      sort(
-        idx_min[i].begin(), idx_min[i].end(), [&persistences](int &a, int &b) {
-          return ((persistences[a] > persistences[b])
-                  || ((persistences[a] == persistences[b]) && (a > b)));
-        });
-      int size = candidates_to_be_added_min[i].size();
-      if(size >= max_points_to_add_min) {
-        double last_persistence_added_min
-          = persistences[idx_min[i][max_points_to_add_min - 1]];
-        if(last_persistence_added_min > local_min_persistence) {
-          local_min_persistence = last_persistence_added_min;
-        }
-      }
-      if(i == 0) {
-        new_min_persistence[0] = local_min_persistence;
-      } else {
-        if(local_min_persistence < new_min_persistence[0]) {
-          new_min_persistence[0] = local_min_persistence;
-        }
-      }
-    }
-  }
-  if(do_sad_) {
-    for(int i = 0; i < numberOfInputs_; i++) {
-      double local_min_persistence = std::numeric_limits<double>::min();
-      std::vector<double> persistences;
-      for(int j = 0; j < bidder_diagrams_saddle_[i].size(); j++) {
-        Bidder<double> b = bidder_diagrams_saddle_[i].get(j);
-        double persistence = b.getPersistence();
-        if(persistence >= min_persistence[1]
-           && persistence <= previous_min_persistence[1]) {
-          candidates_to_be_added_sad[i].push_back(j);
-          idx_sad[i].push_back(idx_sad[i].size());
-          persistences.push_back(persistence);
-        }
-      }
-      sort(
-        idx_sad[i].begin(), idx_sad[i].end(), [&persistences](int &a, int &b) {
-          return ((persistences[a] > persistences[b])
-                  || ((persistences[a] == persistences[b]) && (a > b)));
-        });
-      int size = candidates_to_be_added_sad[i].size();
-      if(size >= max_points_to_add_sad) {
-        double last_persistence_added_sad
-          = persistences[idx_sad[i][max_points_to_add_sad - 1]];
-        if(last_persistence_added_sad > local_min_persistence) {
-          local_min_persistence = last_persistence_added_sad;
-        }
-      }
-      if(i == 0) {
-        new_min_persistence[1] = local_min_persistence;
-      } else {
-        if(local_min_persistence < new_min_persistence[1]) {
-          new_min_persistence[1] = local_min_persistence;
-        }
-      }
-    }
-  }
-  if(do_max_) {
-    for(int i = 0; i < numberOfInputs_; i++) {
-      double local_min_persistence = std::numeric_limits<double>::min();
-      std::vector<double> persistences;
-      for(int j = 0; j < bidder_diagrams_max_[i].size(); j++) {
-        Bidder<double> b = bidder_diagrams_max_[i].get(j);
-        double persistence = b.getPersistence();
-        if(persistence >= min_persistence[2]
-           && persistence <= previous_min_persistence[2]) {
-          candidates_to_be_added_max[i].push_back(j);
-          idx_max[i].push_back(idx_max[i].size());
-          persistences.push_back(persistence);
-        }
-      }
-      sort(
-        idx_max[i].begin(), idx_max[i].end(), [&persistences](int &a, int &b) {
-          return ((persistences[a] > persistences[b])
-                  || ((persistences[a] == persistences[b]) && (a > b)));
-        });
-      int size = candidates_to_be_added_max[i].size();
-      if(size >= max_points_to_add_max) {
-        double last_persistence_added_max
-          = persistences[idx_max[i][max_points_to_add_max - 1]];
-        if(last_persistence_added_max > local_min_persistence) {
-          local_min_persistence = last_persistence_added_max;
-        }
-      }
-      if(i == 0) {
-        new_min_persistence[2] = local_min_persistence;
-      } else {
-        if(local_min_persistence < new_min_persistence[2]) {
-          new_min_persistence[2] = local_min_persistence;
-        }
-      }
-    }
-  }
-
-  // 3. Add the points to the current diagrams
-  if(do_min_) {
-    for(int i = 0; i < numberOfInputs_; i++) {
-      int size = candidates_to_be_added_min[i].size();
-      for(int j = 0; j < std::min(max_points_to_add_min, size); j++) {
-        Bidder<double> b = bidder_diagrams_min_[i].get(
-          candidates_to_be_added_min[i][idx_min[i][j]]);
-        double persistence = b.getPersistence();
-        if(persistence >= new_min_persistence[0]) {
-          b.id_ = current_bidder_diagrams_min_[i].size();
-          b.setPositionInAuction(current_bidder_diagrams_min_[i].size());
-          b.setDiagonalPrice(initial_diagonal_prices[0][i]);
-          current_bidder_diagrams_min_[i].addBidder(b);
-        }
-      }
-    }
-  }
-  if(do_sad_) {
-    for(int i = 0; i < numberOfInputs_; i++) {
-      int size = candidates_to_be_added_sad[i].size();
-      for(int j = 0; j < std::min(max_points_to_add_sad, size); j++) {
-        Bidder<double> b = bidder_diagrams_saddle_[i].get(
-          candidates_to_be_added_sad[i][idx_sad[i][j]]);
-        double persistence = b.getPersistence();
-        if(persistence >= new_min_persistence[1]) {
-          b.id_ = current_bidder_diagrams_saddle_[i].size();
-          b.setPositionInAuction(current_bidder_diagrams_saddle_[i].size());
-          b.setDiagonalPrice(initial_diagonal_prices[1][i]);
-          current_bidder_diagrams_saddle_[i].addBidder(b);
-        }
-      }
-    }
-  }
-  if(do_max_) {
-    for(int i = 0; i < numberOfInputs_; i++) {
-      int size = candidates_to_be_added_max[i].size();
-      for(int j = 0; j < std::min(max_points_to_add_max, size); j++) {
-        Bidder<double> b = bidder_diagrams_max_[i].get(
-          candidates_to_be_added_max[i][idx_max[i][j]]);
-        double persistence = b.getPersistence();
-        if(persistence >= new_min_persistence[2]) {
-          b.id_ = current_bidder_diagrams_max_[i].size();
-          b.setPositionInAuction(current_bidder_diagrams_max_[i].size());
-          b.setDiagonalPrice(initial_diagonal_prices[2][i]);
-          current_bidder_diagrams_max_[i].addBidder(b);
-        }
-      }
-    }
-  }
+  std::vector<double> new_min_persistence = {
+    do_min_ ? enrich(min_persistence[0], previous_min_persistence[0],
+                     initial_diagonal_prices[0], min_points_to_add[0],
+                     bidder_diagrams_min_, current_bidder_diagrams_min_)
+            : previous_min_persistence[0],
+    do_sad_ ? enrich(min_persistence[1], previous_min_persistence[1],
+                     initial_diagonal_prices[1], min_points_to_add[1],
+                     bidder_diagrams_saddle_, current_bidder_diagrams_saddle_)
+            : previous_min_persistence[1],
+    do_max_ ? enrich(min_persistence[2], previous_min_persistence[2],
+                     initial_diagonal_prices[2], min_points_to_add[2],
+                     bidder_diagrams_max_, current_bidder_diagrams_max_)
+            : previous_min_persistence[2]};
 
   return new_min_persistence;
 }
