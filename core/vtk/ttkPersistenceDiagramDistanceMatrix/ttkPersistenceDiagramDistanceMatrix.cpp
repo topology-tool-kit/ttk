@@ -97,20 +97,14 @@ int ttkPersistenceDiagramDistanceMatrix::RequestData(
     }
   }
 
-  if(!UseInterruptible) {
-    TimeLimit = 999999999;
-  }
-
   ttk::PersistenceDiagramDistanceMatrix worker{};
   worker.setWrapper(this);
 
   worker.setWasserstein(WassersteinMetric);
   worker.setPairTypeClustering(PairTypeClustering);
   worker.setNumberOfInputs(numInputs);
-  worker.setTimeLimit(TimeLimit);
   worker.setAlpha(Alpha);
   worker.setDeltaLim(DeltaLim);
-  worker.setUseDeltaLim(UseAdditionalPrecision);
   worker.setLambda(Lambda);
   worker.setUseFullDiagrams(UseFullDiagrams);
   const auto diagramsDistMat = worker.execute(intermediateDiagrams);

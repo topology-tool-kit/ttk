@@ -78,38 +78,11 @@ std::vector<std::vector<double>> PersistenceDiagramDistanceMatrix::execute(
     dMsg(std::cout, msg.str(), advancedInfoMsg);
   }
 
-  original_dos[0] = do_min_;
-  original_dos[1] = do_sad_;
-  original_dos[2] = do_max_;
-
-  std::array<bool *, 3> current_dos{&do_min_, &do_sad_, &do_max_};
-
-  bool converged = false;
-  std::array<bool, 3> diagrams_complete{};
-  for(int c = 0; c < 3; c++) {
-    diagrams_complete[c] = !original_dos[c];
-  }
-  bool all_diagrams_complete
-    = diagrams_complete[0] && diagrams_complete[1] && diagrams_complete[2];
-  n_iterations_ = 0;
-  double total_time = 0;
-
   setBidderDiagrams(inputDiagramsMin_, inputDiagramsSaddle_, inputDiagramsMax_,
                     bidder_diagrams_min_, bidder_diagrams_saddle_,
                     bidder_diagrams_max_, current_bidder_diagrams_min_,
                     current_bidder_diagrams_saddle_,
                     current_bidder_diagrams_max_);
-
-  cost_ = std::numeric_limits<double>::max();
-  double min_cost_min = std::numeric_limits<double>::max();
-  double min_cost_max = std::numeric_limits<double>::max();
-  double min_cost_sad = std::numeric_limits<double>::max();
-  double last_min_cost_obtained_min = -1;
-  double last_min_cost_obtained_sad = -1;
-  double last_min_cost_obtained_max = -1;
-  std::array<double, 3> epsilon0{};
-  std::array<double, 3> epsilon_candidate{};
-  std::array<double, 3> rho{};
 
   // Getting current diagrams (with only at most min_points_to_add points)
   std::array<double, 3> max_persistence{};
@@ -125,17 +98,9 @@ std::vector<std::vector<double>> PersistenceDiagramDistanceMatrix::execute(
       = getLessPersistent(i_crit, bidder_diagrams_min_, bidder_diagrams_saddle_,
                           bidder_diagrams_max_);
     min_persistence[i_crit] = 0;
-
-    // max_persistence actually holds 2 times the highest persistence
-    epsilon_[i_crit] = pow(0.5 * max_persistence[i_crit], 2) / 8.;
-    epsilon0[i_crit] = epsilon_[i_crit];
   }
 
-  std::array<int, 3> min_points_to_add{};
-  min_points_to_add[0] = 10;
-  min_points_to_add[1] = 10;
-  min_points_to_add[2] = 10;
-
+  std::array<int, 3> min_points_to_add{10, 10, 10};
   std::array<std::vector<double>, 3> min_diag_price{};
   for(auto &arr : min_diag_price) {
     arr.resize(numberOfInputs_, 0);
@@ -146,168 +111,6 @@ std::vector<std::vector<double>> PersistenceDiagramDistanceMatrix::execute(
     bidder_diagrams_min_, bidder_diagrams_saddle_, bidder_diagrams_max_,
     current_bidder_diagrams_min_, current_bidder_diagrams_saddle_,
     current_bidder_diagrams_max_);
-
-
-  for(int c = 0; c < 3; c++) {
-    if(min_persistence[c] <= lowest_persistence[c]) {
-      diagrams_complete[c] = true;
-    } // max_persistence actually holds 2 times the highest persistence
-  }
-  all_diagrams_complete
-    = diagrams_complete[0] && diagrams_complete[1] && diagrams_complete[2];
-
-  while(!converged || !all_diagrams_complete) {
-    Timer t_inside;
-
-    n_iterations_++;
-
-    for(int i_crit = 0; i_crit < 3; i_crit++) {
-      if(*(current_dos[i_crit])) {
-        rho[i_crit] = min_persistence[i_crit] > 0
-                        ? std::sqrt(8.0 * epsilon_[i_crit])
-                        : -1;
-      }
-    }
-
-    if(n_iterations_ > 1) {
-      do_min_ = do_min_ && (min_persistence[0] > rho[0]);
-      do_sad_ = do_sad_ && (min_persistence[1] > rho[1]);
-      do_max_ = do_max_ && (min_persistence[2] > rho[2]);
-
-      for(int i_crit = 0; i_crit < 3; i_crit++) {
-        if(*(current_dos[i_crit])) {
-          epsilon_candidate[i_crit] = pow(min_persistence[i_crit], 2) / 8.;
-          if(epsilon_candidate[i_crit] > epsilon_[i_crit]) {
-            // Should always be the case except if min_persistence is
-            // equal to zero
-            epsilon_[i_crit] = epsilon_candidate[i_crit];
-          }
-        }
-      }
-
-      if(epsilon_[0] < 5e-5) {
-        // Add all remaining points for final convergence.
-        min_persistence[0] = 0;
-        min_points_to_add[0] = std::numeric_limits<int>::max();
-      }
-      if(epsilon_[1] < 5e-5) {
-        // Add all remaining points for final convergence.
-        min_persistence[1] = 0;
-        min_points_to_add[1] = std::numeric_limits<int>::max();
-      }
-      if(epsilon_[2] < 5e-5) {
-        // Add all remaining points for final convergence.
-        min_persistence[2] = 0;
-        min_points_to_add[2] = std::numeric_limits<int>::max();
-      }
-
-      if(do_min_ || do_sad_ || do_max_) {
-        min_persistence = enrichCurrentBidderDiagrams(
-          min_persistence, rho, min_diag_price, min_points_to_add,
-          bidder_diagrams_min_, bidder_diagrams_saddle_, bidder_diagrams_max_,
-          current_bidder_diagrams_min_, current_bidder_diagrams_saddle_,
-          current_bidder_diagrams_max_);
-      }
-
-      for(int i_crit = 0; i_crit < 3; i_crit++) {
-        if(*(current_dos[i_crit])) {
-          if(min_persistence[i_crit] <= lowest_persistence[i_crit]) {
-            diagrams_complete[i_crit] = true;
-          }
-        }
-      }
-
-      if(diagrams_complete[0] && diagrams_complete[1] && diagrams_complete[2]) {
-        all_diagrams_complete = true;
-      }
-
-      resetDosToOriginalValues();
-    }
-
-    if(do_min_ && !UseDeltaLim_) {
-      precision_min_ = (epsilon_[0] < epsilon0[0] / 500.);
-    }
-    if(do_sad_ && !UseDeltaLim_) {
-      precision_sad_ = (epsilon_[1] < epsilon0[1] / 500.);
-    }
-    if(do_max_ && !UseDeltaLim_) {
-      precision_max_ = (epsilon_[2] < epsilon0[2] / 500.);
-    }
-
-    if(epsilon_[0] < epsilon_min_) {
-      do_min_ = false;
-      epsilon_[0] = epsilon_min_;
-      diagrams_complete[0] = true;
-    }
-    if(epsilon_[1] < epsilon_min_) {
-      do_sad_ = false;
-      epsilon_[1] = epsilon_min_;
-      diagrams_complete[1] = true;
-    }
-    if(epsilon_[2] < epsilon_min_) {
-      do_max_ = false;
-      epsilon_[2] = epsilon_min_;
-      diagrams_complete[2] = true;
-    }
-
-    if(diagrams_complete[0] && diagrams_complete[1] && diagrams_complete[2]) {
-      all_diagrams_complete = true;
-    }
-
-    precision_criterion_ = precision_min_ && precision_sad_ && precision_max_;
-    bool precision_criterion_reached = precision_criterion_;
-
-    if(cost_min_ < min_cost_min && n_iterations_ > 2 && diagrams_complete[0]) {
-      min_cost_min = cost_min_;
-      last_min_cost_obtained_min = 0;
-    } else if(n_iterations_ > 2 && precision_min_ && diagrams_complete[0]) {
-      last_min_cost_obtained_min += 1;
-      if(last_min_cost_obtained_min > 1) {
-        do_min_ = false;
-      }
-    }
-
-    if(cost_sad_ < min_cost_sad && n_iterations_ > 2 && diagrams_complete[1]) {
-      min_cost_sad = cost_sad_;
-      last_min_cost_obtained_sad = 0;
-    } else if(n_iterations_ > 2 && precision_sad_ && diagrams_complete[1]) {
-      last_min_cost_obtained_sad += 1;
-      if(last_min_cost_obtained_sad > 1 && diagrams_complete[1]) {
-        do_sad_ = false;
-      }
-    }
-
-    if(cost_max_ < min_cost_max && n_iterations_ > 2 && diagrams_complete[2]) {
-      min_cost_max = cost_max_;
-      last_min_cost_obtained_max = 0;
-    } else if(n_iterations_ > 2 && precision_max_ && diagrams_complete[2]) {
-      last_min_cost_obtained_max += 1;
-      if(last_min_cost_obtained_max > 1 && diagrams_complete[2]) {
-        do_max_ = false;
-      }
-    }
-
-    converged = converged
-                || (all_diagrams_complete && !do_min_ && !do_sad_ && !do_max_
-                    && (precision_criterion_reached));
-
-    total_time += t_inside.getElapsedTime(); // - t_real_cost.getElapsedTime();
-
-    if(total_time + t_inside.getElapsedTime() > 0.9 * time_limit_) {
-      min_cost_min = cost_min_;
-      min_cost_sad = cost_sad_;
-      min_cost_max = cost_max_;
-      converged = true;
-    }
-    if(total_time > 0.1 * time_limit_) {
-      all_diagrams_complete = true;
-      diagrams_complete[0] = true;
-      diagrams_complete[1] = true;
-      diagrams_complete[2] = true;
-    }
-  }
-
-  resetDosToOriginalValues();
 
   const auto distMat = getDiagramsDistMat(
     numberOfInputs_, useFullDiagrams_, bidder_diagrams_min_,

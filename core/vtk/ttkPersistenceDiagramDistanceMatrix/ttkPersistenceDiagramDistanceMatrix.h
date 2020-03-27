@@ -74,9 +74,6 @@ public:
   vtkSetMacro(WassersteinMetric, std::string);
   vtkGetMacro(WassersteinMetric, std::string);
 
-  vtkSetMacro(TimeLimit, double);
-  vtkGetMacro(TimeLimit, double);
-
   void SetAntiAlpha(double data) {
     data = 1 - data;
     if(data > 0 && data <= 1) {
@@ -99,12 +96,6 @@ public:
   vtkSetMacro(PairTypeClustering, int);
   vtkGetMacro(PairTypeClustering, int);
 
-  vtkSetMacro(UseAdditionalPrecision, bool);
-  vtkGetMacro(UseAdditionalPrecision, bool);
-
-  vtkSetMacro(UseInterruptible, bool);
-  vtkGetMacro(UseInterruptible, bool);
-
   vtkSetMacro(UseFullDiagrams, bool);
   vtkGetMacro(UseFullDiagrams, bool);
 
@@ -126,13 +117,10 @@ private:
   int ThreadNumber{1};
 
   int PairTypeClustering{-1};
-  bool UseAdditionalPrecision{false};
   double Alpha{1.0};
   double DeltaLim{0.01};
   double Lambda{1.0};
-  bool UseInterruptible{true};
   std::string WassersteinMetric{"2"};
-  double TimeLimit{9999999};
   bool UseFullDiagrams{false};
 
   bool needsToAbort() override;

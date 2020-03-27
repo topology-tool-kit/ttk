@@ -86,59 +86,6 @@ computation (type "inf" for the Bottleneck distance).
         </Documentation>
       </StringVectorProperty>
 
-        <IntVectorProperty
-        name="UseInterruptible"
-        command="SetUseInterruptible"
-        label="Interruptible algorithm"
-        number_of_elements="1"
-        default_values="1"
-        >
-        <BooleanDomain name="bool"/>
-          <Hints>
-          <PropertyWidgetDecorator type="GenericDecorator"
-                                   mode="visibility"
-                                   property="Method"
-                                   value="0" />
-        </Hints>
-        <Documentation>
-            Enforce a time limit for the computation.
-        </Documentation>
-      </IntVectorProperty>
-
-      <DoubleVectorProperty
-          name="TimeLimit"
-          label="Maximal computation time (s)"
-          command="SetTimeLimit"
-          number_of_elements="1"
-          default_values="1"
-          >
-          <Hints>
-          <PropertyWidgetDecorator type="GenericDecorator"
-                                   mode="visibility"
-                                   property="UseInterruptible"
-                                   value="1" />
-          <!-- enable this widget when <property> equals <value> -->
-        </Hints>
-        <Documentation>
-          Maximal time of computation for the computation of the barycenter.
-          A low value of Time Limit will yield approximate results.
-        </Documentation>
-
-      </DoubleVectorProperty>
-
-        <IntVectorProperty
-        name="UseAdditionalPrecision"
-        command="SetUseAdditionalPrecision"
-        label="Force minimum precision on matchings"
-        number_of_elements="1"
-        default_values="0"
-        >
-        <BooleanDomain name="bool"/>
-        <Documentation>
-            Force the final matchings to respect a given relative precision.
-        </Documentation>
-      </IntVectorProperty>
-
       <DoubleVectorProperty
           name="DeltaLim"
           label="Minimal relative precision"
@@ -157,8 +104,7 @@ computation (type "inf" for the Bottleneck distance).
         Minimal precision for the approximation of the Wasserstein
         distance used in the assignment between diagrams.
         </Documentation>
-
-        </DoubleVectorProperty>
+      </DoubleVectorProperty>
 
       <DoubleVectorProperty
           name="AntiAlpha"
