@@ -5,16 +5,25 @@
 using namespace ttk;
 
 std::vector<std::vector<double>> PersistenceDiagramDistanceMatrix::execute(
-  std::vector<std::vector<DiagramTuple>> &intermediateDiagrams) {
+  std::vector<std::vector<DiagramTuple>> &intermediateDiagrams) const {
 
   Timer tm{};
 
-  inputDiagramsMin_.resize(numberOfInputs_);
-  inputDiagramsMax_.resize(numberOfInputs_);
-  inputDiagramsSaddle_.resize(numberOfInputs_);
+  const auto nInputs = intermediateDiagrams.size();
+
+  std::vector<std::vector<DiagramTuple>> inputDiagramsMin(nInputs);
+  std::vector<std::vector<DiagramTuple>> inputDiagramsSad(nInputs);
+  std::vector<std::vector<DiagramTuple>> inputDiagramsMax(nInputs);
+
+  std::vector<BidderDiagram<double>> bidder_diagrams_min{};
+  std::vector<BidderDiagram<double>> bidder_diagrams_sad{};
+  std::vector<BidderDiagram<double>> bidder_diagrams_max{};
+  std::vector<BidderDiagram<double>> current_bidder_diagrams_min{};
+  std::vector<BidderDiagram<double>> current_bidder_diagrams_sad{};
+  std::vector<BidderDiagram<double>> current_bidder_diagrams_max{};
 
   // Create diagrams for min, saddle and max persistence pairs
-  for(int i = 0; i < numberOfInputs_; i++) {
+  for(size_t i = 0; i < nInputs; i++) {
     std::vector<DiagramTuple> &CTDiagram = intermediateDiagrams[i];
 
     for(size_t j = 0; j < CTDiagram.size(); ++j) {
@@ -27,62 +36,30 @@ std::vector<std::vector<double>> PersistenceDiagramDistanceMatrix::execute(
       if(dt > 0) {
         if(nt1 == CriticalType::Local_minimum
            && nt2 == CriticalType::Local_maximum) {
-          inputDiagramsMax_[i].push_back(t);
-          do_max_ = true;
+          inputDiagramsMax[i].push_back(t);
         } else {
           if(nt1 == CriticalType::Local_maximum
              || nt2 == CriticalType::Local_maximum) {
-            inputDiagramsMax_[i].push_back(t);
-            do_max_ = true;
+            inputDiagramsMax[i].push_back(t);
           }
           if(nt1 == CriticalType::Local_minimum
              || nt2 == CriticalType::Local_minimum) {
-            inputDiagramsMin_[i].push_back(t);
-            do_min_ = true;
+            inputDiagramsMin[i].push_back(t);
           }
           if((nt1 == CriticalType::Saddle1 && nt2 == CriticalType::Saddle2)
              || (nt1 == CriticalType::Saddle2
                  && nt2 == CriticalType::Saddle1)) {
-            inputDiagramsSaddle_[i].push_back(t);
-            do_sad_ = true;
+            inputDiagramsSad[i].push_back(t);
           }
         }
       }
     }
   }
 
-  {
-    std::stringstream msg;
-    switch(pairTypeClustering_) {
-      case(0):
-        msg << "[PersistenceDiagramDistanceMatrix] Only MIN-SAD Pairs";
-        do_max_ = false;
-        do_sad_ = false;
-        break;
-      case(1):
-        msg << "[PersistenceDiagramDistanceMatrix] Only SAD-SAD Pairs";
-        do_max_ = false;
-        do_min_ = false;
-        break;
-      case(2):
-        msg << "[PersistenceDiagramDistanceMatrix] Only SAD-MAX Pairs";
-        do_min_ = false;
-        do_sad_ = false;
-        break;
-      default:
-        msg << "[PersistenceDiagramDistanceMatrix] All critical pairs: "
-               "global clustering";
-        break;
-    }
-    msg << std::endl;
-    dMsg(std::cout, msg.str(), advancedInfoMsg);
-  }
-
-  setBidderDiagrams(inputDiagramsMin_, inputDiagramsSaddle_, inputDiagramsMax_,
-                    bidder_diagrams_min_, bidder_diagrams_saddle_,
-                    bidder_diagrams_max_, current_bidder_diagrams_min_,
-                    current_bidder_diagrams_saddle_,
-                    current_bidder_diagrams_max_);
+  setBidderDiagrams(nInputs, inputDiagramsMin, inputDiagramsSad,
+                    inputDiagramsMax, bidder_diagrams_min, bidder_diagrams_sad,
+                    bidder_diagrams_max, current_bidder_diagrams_min,
+                    current_bidder_diagrams_sad, current_bidder_diagrams_max);
 
   // Getting current diagrams (with only at most min_points_to_add points)
   std::array<double, 3> max_persistence{};
@@ -92,30 +69,29 @@ std::vector<std::vector<double>> PersistenceDiagramDistanceMatrix::execute(
   for(int i_crit = 0; i_crit < 3; i_crit++) {
     max_persistence[i_crit]
       = 2
-        * getMostPersistent(i_crit, bidder_diagrams_min_,
-                            bidder_diagrams_saddle_, bidder_diagrams_max_);
-    lowest_persistence[i_crit]
-      = getLessPersistent(i_crit, bidder_diagrams_min_, bidder_diagrams_saddle_,
-                          bidder_diagrams_max_);
+        * getMostPersistent(i_crit, bidder_diagrams_min, bidder_diagrams_sad,
+                            bidder_diagrams_max);
+    lowest_persistence[i_crit] = getLessPersistent(
+      i_crit, bidder_diagrams_min, bidder_diagrams_sad, bidder_diagrams_max);
     min_persistence[i_crit] = 0;
   }
 
   std::array<int, 3> min_points_to_add{10, 10, 10};
   std::array<std::vector<double>, 3> min_diag_price{};
   for(auto &arr : min_diag_price) {
-    arr.resize(numberOfInputs_, 0);
+    arr.resize(nInputs, 0);
   }
 
   min_persistence = enrichCurrentBidderDiagrams(
     max_persistence, min_persistence, min_diag_price, min_points_to_add,
-    bidder_diagrams_min_, bidder_diagrams_saddle_, bidder_diagrams_max_,
-    current_bidder_diagrams_min_, current_bidder_diagrams_saddle_,
-    current_bidder_diagrams_max_);
+    bidder_diagrams_min, bidder_diagrams_sad, bidder_diagrams_max,
+    current_bidder_diagrams_min, current_bidder_diagrams_sad,
+    current_bidder_diagrams_max);
 
   const auto distMat = getDiagramsDistMat(
-    numberOfInputs_, useFullDiagrams_, bidder_diagrams_min_,
-    bidder_diagrams_saddle_, bidder_diagrams_max_, current_bidder_diagrams_min_,
-    current_bidder_diagrams_saddle_, current_bidder_diagrams_max_);
+    nInputs, useFullDiagrams_, bidder_diagrams_min, bidder_diagrams_sad,
+    bidder_diagrams_max, current_bidder_diagrams_min,
+    current_bidder_diagrams_sad, current_bidder_diagrams_max);
 
   {
     std::stringstream msg;
@@ -281,6 +257,7 @@ std::vector<std::vector<double>>
 }
 
 void PersistenceDiagramDistanceMatrix::setBidderDiagrams(
+  const size_t nInputs,
   std::vector<std::vector<DiagramTuple>> &inputDiagramsMin,
   std::vector<std::vector<DiagramTuple>> &inputDiagramsSad,
   std::vector<std::vector<DiagramTuple>> &inputDiagramsMax,
@@ -312,7 +289,7 @@ void PersistenceDiagramDistanceMatrix::setBidderDiagrams(
         }
       };
 
-  for(int i = 0; i < numberOfInputs_; i++) {
+  for(size_t i = 0; i < nInputs; i++) {
     if(do_min_) {
       setBidderDiag(
         i, inputDiagramsMin, bidder_diags_min, current_bidder_diags_min);

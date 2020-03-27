@@ -102,7 +102,6 @@ int ttkPersistenceDiagramDistanceMatrix::RequestData(
 
   worker.setWasserstein(WassersteinMetric);
   worker.setPairTypeClustering(PairTypeClustering);
-  worker.setNumberOfInputs(numInputs);
   worker.setAlpha(Alpha);
   worker.setDeltaLim(DeltaLim);
   worker.setLambda(Lambda);

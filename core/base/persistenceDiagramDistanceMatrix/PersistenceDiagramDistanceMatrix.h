@@ -41,12 +41,9 @@ namespace ttk {
   class PersistenceDiagramDistanceMatrix : public Debug {
 
   public:
-    std::vector<std::vector<double>>
-      execute(std::vector<std::vector<DiagramTuple>> &intermediateDiagrams);
+    std::vector<std::vector<double>> execute(
+      std::vector<std::vector<DiagramTuple>> &intermediateDiagrams) const;
 
-    inline void setNumberOfInputs(int numberOfInputs) {
-      numberOfInputs_ = numberOfInputs;
-    }
     inline void setWasserstein(const std::string &wasserstein) {
       wasserstein_ = (wasserstein == "inf") ? -1 : stoi(wasserstein);
     }
@@ -54,7 +51,29 @@ namespace ttk {
       use_kdtree_ = use_kdtree;
     }
     inline void setPairTypeClustering(const int pairTypeClustering) {
-      pairTypeClustering_ = pairTypeClustering;
+      std::stringstream msg;
+      switch(pairTypeClustering) {
+        case(0):
+          msg << "[PersistenceDiagramDistanceMatrix] Only MIN-SAD pairs";
+          do_max_ = false;
+          do_sad_ = false;
+          break;
+        case(1):
+          msg << "[PersistenceDiagramDistanceMatrix] Only SAD-SAD pairs";
+          do_max_ = false;
+          do_min_ = false;
+          break;
+        case(2):
+          msg << "[PersistenceDiagramDistanceMatrix] Only SAD-MAX pairs";
+          do_min_ = false;
+          do_sad_ = false;
+          break;
+        default:
+          msg << "[PersistenceDiagramDistanceMatrix] All critical pairs";
+          break;
+      }
+      msg << std::endl;
+      dMsg(std::cout, msg.str(), advancedInfoMsg);
     }
     inline void setAlpha(const double alpha) {
       geometrical_factor_ = alpha;
@@ -93,6 +112,7 @@ namespace ttk {
       const std::vector<BidderDiagram<double>> &current_bidder_diags_sad,
       const std::vector<BidderDiagram<double>> &current_bidder_diags_max) const;
     void setBidderDiagrams(
+      const size_t nInputs,
       std::vector<std::vector<DiagramTuple>> &inputDiagramsMin,
       std::vector<std::vector<DiagramTuple>> &inputDiagramsSad,
       std::vector<std::vector<DiagramTuple>> &inputDiagramsMax,
@@ -123,21 +143,8 @@ namespace ttk {
     // pair sad-max) lambda = 0 : saddle (bad stability) lambda = 1/2 : middle
     // of the 2 critical points of the pair
     double lambda_;
-    int pairTypeClustering_;
-    int numberOfInputs_;
     bool use_kdtree_{true};
     bool useFullDiagrams_{false};
     bool do_min_{true}, do_sad_{true}, do_max_{true};
-
-    std::vector<std::vector<DiagramTuple>> inputDiagramsMin_{};
-    std::vector<std::vector<DiagramTuple>> inputDiagramsSaddle_{};
-    std::vector<std::vector<DiagramTuple>> inputDiagramsMax_{};
-
-    std::vector<BidderDiagram<double>> bidder_diagrams_min_{};
-    std::vector<BidderDiagram<double>> bidder_diagrams_saddle_{};
-    std::vector<BidderDiagram<double>> bidder_diagrams_max_{};
-    std::vector<BidderDiagram<double>> current_bidder_diagrams_min_{};
-    std::vector<BidderDiagram<double>> current_bidder_diagrams_saddle_{};
-    std::vector<BidderDiagram<double>> current_bidder_diagrams_max_{};
   };
 } // namespace ttk
