@@ -927,7 +927,7 @@ std::vector<std::vector<double>>
     = useFullDiagrams_ ? bidder_diagrams_max_ : current_bidder_diagrams_max_;
 
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for schedule(dynamic)
+#pragma omp parallel for schedule(dynamic) num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
   for(int i = 0; i < numberOfInputs_; ++i) {
     diagramsDistanceMatrix[i].resize(
