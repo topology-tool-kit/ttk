@@ -427,7 +427,6 @@ std::vector<std::vector<double>>
     const std::vector<BidderDiagram<double>> &current_bidder_diags_max) const {
 
   std::vector<std::vector<double>> distanceMatrix(nInputs);
-  double delta_lim{0.01};
 
   const auto &diags_min
     = useFullDiagrams ? bidder_diags_min : current_bidder_diags_min;
@@ -448,20 +447,20 @@ std::vector<std::vector<double>>
     for(size_t j = i + 1; j < nInputs; ++j) {
       double distance{};
 
-      if(original_dos[0]) {
+      if(do_min_) {
         auto &dimin = diags_min[i];
         auto &djmin = diags_min[j];
-        distance += computeDistance(dimin, djmin, delta_lim);
+        distance += computeDistance(dimin, djmin, deltaLim_);
       }
-      if(original_dos[1]) {
+      if(do_sad_) {
         auto &disad = diags_saddle[i];
         auto &djsad = diags_saddle[j];
-        distance += computeDistance(disad, djsad, delta_lim);
+        distance += computeDistance(disad, djsad, deltaLim_);
       }
-      if(original_dos[2]) {
+      if(do_max_) {
         auto &dimax = diags_max[i];
         auto &djmax = diags_max[j];
-        distance += computeDistance(dimax, djmax, delta_lim);
+        distance += computeDistance(dimax, djmax, deltaLim_);
       }
 
       distanceMatrix[i][j] = distance;
