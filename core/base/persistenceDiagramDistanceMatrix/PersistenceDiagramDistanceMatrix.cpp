@@ -157,11 +157,9 @@ void PersistenceDiagramDistanceMatrix::execute(
     min_points_to_add[2] = std::numeric_limits<int>::max();
   }
   std::vector<std::vector<double>> min_diag_price(3);
-  std::vector<std::vector<double>> min_off_diag_price(3);
   for(int c = 0; c < 3; ++c) {
     for(int i = 0; i < numberOfInputs_; i++) {
       min_diag_price[c].push_back(0);
-      min_off_diag_price[c].push_back(0);
     }
   }
   // std::cout << "firstinrich" << std::endl;
@@ -171,8 +169,7 @@ void PersistenceDiagramDistanceMatrix::execute(
          << endl; //"  and barycenter size : "<<centroids_max_[0].size()<<endl;
   }
   min_persistence = enrichCurrentBidderDiagrams(
-    max_persistence, min_persistence, min_diag_price, min_off_diag_price,
-    min_points_to_add, false);
+    max_persistence, min_persistence, min_diag_price, min_points_to_add);
   if(debugLevel_ > 5) {
     std::cout << "first enrich done" << std::endl;
   }
@@ -235,8 +232,7 @@ void PersistenceDiagramDistanceMatrix::execute(
 
       if(do_min_ || do_sad_ || do_max_) {
         min_persistence = enrichCurrentBidderDiagrams(
-          min_persistence, rho, min_diag_price, min_off_diag_price,
-          min_points_to_add, false);
+          min_persistence, rho, min_diag_price, min_points_to_add);
       }
       barycenter_inputs_reset_flag = true;
 
@@ -679,9 +675,7 @@ std::vector<double>
     std::vector<double> previous_min_persistence,
     std::vector<double> min_persistence,
     std::vector<std::vector<double>> initial_diagonal_prices,
-    std::vector<std::vector<double>> initial_off_diagonal_prices,
-    std::vector<int> min_points_to_add,
-    bool add_points_to_barycenter) {
+    std::vector<int> min_points_to_add) {
 
   std::vector<double> new_min_persistence = min_persistence;
 
@@ -727,8 +721,6 @@ std::vector<double>
     min_points_to_add[1], min_points_to_add[1] + max_diagram_size_sad / 10);
   int max_points_to_add_max = std::max(
     min_points_to_add[2], min_points_to_add[2] + max_diagram_size_max / 10);
-  // cout<<"\n max points to add for first min bidder
-  // "<<max_points_to_add_max<<endl;
   // 2. Get which points can be added, deduce the new minimal persistence
   std::vector<std::vector<int>> candidates_to_be_added_min(numberOfInputs_);
   std::vector<std::vector<int>> candidates_to_be_added_sad(numberOfInputs_);
@@ -773,9 +765,6 @@ std::vector<double>
       }
     }
   }
-  // cout<<"candidates to be added to first diag :
-  // "<<candidates_to_be_added_min[0].size()<<endl;
-
   if(do_sad_) {
     for(int i = 0; i < numberOfInputs_; i++) {
       double local_min_persistence = std::numeric_limits<double>::min();
@@ -851,7 +840,6 @@ std::vector<double>
 
   // 3. Add the points to the current diagrams
   if(do_min_) {
-    int compteur_for_adding_points = 0;
     for(int i = 0; i < numberOfInputs_; i++) {
       int size = candidates_to_be_added_min[i].size();
       for(int j = 0; j < std::min(max_points_to_add_min, size); j++) {
@@ -862,74 +850,15 @@ std::vector<double>
           b.id_ = current_bidder_diagrams_min_[i].size();
           b.setPositionInAuction(current_bidder_diagrams_min_[i].size());
           b.setDiagonalPrice(initial_diagonal_prices[0][i]);
-          // cout<<"\n   size before adding to "<<i<<"th bidder:
-          // "<<current_bidder_diagrams_min_[i].size()<<endl;
           current_bidder_diagrams_min_[i].addBidder(b);
           current_bidder_ids_min_[i]
                                  [candidates_to_be_added_min[i][idx_min[i][j]]]
             = current_bidder_diagrams_min_[i].size() - 1;
-          // cout<<"   size after adding
-          // "<<current_bidder_diagrams_min_[i].size()<<endl;
-
-          if(use_accelerated_ && n_iterations_ > 0) {
-            for(int c = 0; c < k_; ++c) {
-              // Step 5 of Accelerated KMeans: Update the lower bound on
-              // distance thanks to the triangular inequality
-              l_[i][c] = pow(
-                pow(l_[i][c], 1. / wasserstein_) - persistence / pow(2, 0.5),
-                wasserstein_);
-              if(l_[i][c] < 0) {
-                l_[i][c] = 0;
-              }
-            }
-            // Step 6, update the upper bound on the distance to the centroid
-            // thanks to the triangle inequality
-            u_[i]
-              = pow(pow(u_[i], 1. / wasserstein_) + persistence / pow(2, 0.5),
-                    wasserstein_);
-            r_[i] = true;
-          }
-          int to_be_added_to_barycenter
-            = deterministic_ ? compteur_for_adding_points % numberOfInputs_
-                             : rand() % numberOfInputs_;
-          if(to_be_added_to_barycenter == 0 && add_points_to_barycenter) {
-            // std::cout << "here we are adding points to the centroid_min" <<
-            // std::endl;
-            for(int k = 0; k < numberOfInputs_; k++) {
-              if(inv_clustering_[i] == inv_clustering_[k]) {
-                // std::cout<< "index
-                // "<<centroids_with_price_min_[k].size()<<std::endl;
-                Good<double> g = Good<double>(
-                  b.x_, b.y_, false, centroids_with_price_min_[k].size());
-                g.setPrice(initial_off_diagonal_prices[0][k]);
-                g.SetCriticalCoordinates(b.coords_x_, b.coords_y_, b.coords_z_);
-                centroids_with_price_min_[k].addGood(g);
-                // std::cout<<"added for "<<k<<std::endl;
-              }
-            }
-            // std::cout<<"size of centroid
-            // "<<centroids_min_[inv_clustering_[i]].size()<<std::endl;
-            Good<double> g = Good<double>(
-              b.x_, b.y_, false, centroids_min_[inv_clustering_[i]].size());
-            g.SetCriticalCoordinates(b.coords_x_, b.coords_y_, b.coords_z_);
-            centroids_min_[inv_clustering_[i]].addGood(g);
-            // std::cout << "all added" << std::endl;
-          }
         }
-        compteur_for_adding_points++;
       }
-      if(debugLevel_ > 5)
-        std::cout << " Diagram " << i
-                  << " size : " << current_bidder_diagrams_min_[i].size()
-                  << std::endl;
-    }
-    if(debugLevel_ > 3) {
-      // cout<<" Added "<<compteur_for_adding_points<<" in min-sad
-      // diagram"<<endl;
     }
   }
   if(do_sad_) {
-    int compteur_for_adding_points = 0;
     for(int i = 0; i < numberOfInputs_; i++) {
       int size = candidates_to_be_added_sad[i].size();
       for(int j = 0; j < std::min(max_points_to_add_sad, size); j++) {
@@ -944,58 +873,11 @@ std::vector<double>
           current_bidder_ids_sad_[i]
                                  [candidates_to_be_added_sad[i][idx_sad[i][j]]]
             = current_bidder_diagrams_saddle_[i].size() - 1;
-
-          if(use_accelerated_ && n_iterations_ > 0) {
-            for(int c = 0; c < k_; ++c) {
-              // Step 5 of Accelerated KMeans: Update the lower bound on
-              // distance thanks to the triangular inequality
-              l_[i][c] = pow(
-                pow(l_[i][c], 1. / wasserstein_) - persistence / pow(2, 0.5),
-                wasserstein_);
-              if(l_[i][c] < 0) {
-                l_[i][c] = 0;
-              }
-            }
-            // Step 6, update the upper bound on the distance to the centroid
-            // thanks to the triangle inequality
-            u_[i]
-              = pow(pow(u_[i], 1. / wasserstein_) + persistence / pow(2, 0.5),
-                    wasserstein_);
-            r_[i] = true;
-          }
-          int to_be_added_to_barycenter
-            = deterministic_ ? compteur_for_adding_points % numberOfInputs_
-                             : rand() % numberOfInputs_;
-          if(to_be_added_to_barycenter == 0 && add_points_to_barycenter) {
-            // std::cout << "here we are adding points to the centroid_min" <<
-            // std::endl;
-            for(int k = 0; k < numberOfInputs_; k++) {
-              if(inv_clustering_[i] == inv_clustering_[k]) {
-                Good<double> g = Good<double>(
-                  b.x_, b.y_, false, centroids_with_price_saddle_[k].size());
-                g.setPrice(initial_off_diagonal_prices[1][k]);
-                g.SetCriticalCoordinates(b.coords_x_, b.coords_y_, b.coords_z_);
-                centroids_with_price_saddle_[k].addGood(g);
-                // std::cout<<"added for "<<k<<std::endl;
-              }
-            }
-            // std::cout << "all added" << std::endl;
-          }
         }
-        compteur_for_adding_points++;
       }
-      if(debugLevel_ > 5)
-        std::cout << " Diagram " << i
-                  << " size : " << current_bidder_diagrams_saddle_[i].size()
-                  << std::endl;
-    }
-    if(debugLevel_ > 3) {
-      cout << " Added " << compteur_for_adding_points << " in sad-sad diagram"
-           << endl;
     }
   }
   if(do_max_) {
-    int compteur_for_adding_points = 0;
     for(int i = 0; i < numberOfInputs_; i++) {
       int size = candidates_to_be_added_max[i].size();
       for(int j = 0; j < std::min(max_points_to_add_max, size); j++) {
@@ -1010,58 +892,8 @@ std::vector<double>
           current_bidder_ids_max_[i]
                                  [candidates_to_be_added_max[i][idx_max[i][j]]]
             = current_bidder_diagrams_max_[i].size() - 1;
-
-          if(use_accelerated_ && n_iterations_ > 0) {
-            for(int c = 0; c < k_; ++c) {
-              // Step 5 of Accelerated KMeans: Update the lower bound on
-              // distance thanks to the triangular inequality
-              l_[i][c] = pow(
-                pow(l_[i][c], 1. / wasserstein_) - persistence / pow(2, 0.5),
-                wasserstein_);
-              if(l_[i][c] < 0) {
-                l_[i][c] = 0;
-              }
-            }
-            // Step 6, update the upper bound on the distance to the centroid
-            // thanks to the triangle inequality
-            u_[i]
-              = pow(pow(u_[i], 1. / wasserstein_) + persistence / pow(2, 0.5),
-                    wasserstein_);
-            r_[i] = true;
-          }
-          int to_be_added_to_barycenter
-            = deterministic_ ? compteur_for_adding_points % numberOfInputs_
-                             : rand() % numberOfInputs_;
-          if(to_be_added_to_barycenter == 0 && add_points_to_barycenter) {
-            // std::cout << "here we are adding points to the centroid_max" <<
-            // std::endl;
-            for(int k = 0; k < numberOfInputs_; k++) {
-              if(inv_clustering_[i] == inv_clustering_[k]) {
-                Good<double> g = Good<double>(
-                  b.x_, b.y_, false, centroids_with_price_max_[k].size());
-                g.setPrice(initial_off_diagonal_prices[2][k]);
-                g.SetCriticalCoordinates(b.coords_x_, b.coords_y_, b.coords_z_);
-                centroids_with_price_max_[k].addGood(g);
-                // std::cout<<"added for "<<k<<std::endl;
-              }
-            }
-            Good<double> g = Good<double>(
-              b.x_, b.y_, false, centroids_max_[inv_clustering_[i]].size());
-            g.SetCriticalCoordinates(b.coords_x_, b.coords_y_, b.coords_z_);
-            centroids_max_[inv_clustering_[i]].addGood(g);
-            // std::cout << "all added" << std::endl;
-          }
         }
-        compteur_for_adding_points++;
       }
-      if(debugLevel_ > 5)
-        std::cout << " Diagram " << i
-                  << " size : " << current_bidder_diagrams_max_[i].size()
-                  << std::endl;
-    }
-    if(debugLevel_ > 3) {
-      cout << " Added " << compteur_for_adding_points << " in sad-max diagram"
-           << endl;
     }
   }
 

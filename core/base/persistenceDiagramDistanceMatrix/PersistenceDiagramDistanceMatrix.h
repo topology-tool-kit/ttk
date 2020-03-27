@@ -72,9 +72,7 @@ namespace ttk {
       std::vector<double> previous_min_persistence,
       std::vector<double> min_persistence,
       std::vector<std::vector<double>> initial_diagonal_prices,
-      std::vector<std::vector<double>> initial_off_diagonal_points,
-      std::vector<int> min_points_to_add,
-      bool add_points_to_barycenter);
+      std::vector<int> min_points_to_add);
 
     std::vector<std::vector<double>> getDistanceMatrix();
 
