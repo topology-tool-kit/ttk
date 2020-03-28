@@ -23,33 +23,35 @@ std::vector<std::vector<double>> PersistenceDiagramDistanceMatrix::execute(
   std::vector<BidderDiagram<double>> current_bidder_diagrams_max{};
 
   // Create diagrams for min, saddle and max persistence pairs
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
   for(size_t i = 0; i < nInputs; i++) {
     std::vector<DiagramTuple> &CTDiagram = intermediateDiagrams[i];
 
     for(size_t j = 0; j < CTDiagram.size(); ++j) {
-      DiagramTuple t = CTDiagram[j];
+      const DiagramTuple t = CTDiagram[j];
+      const ttk::CriticalType nt1 = std::get<1>(t);
+      const ttk::CriticalType nt2 = std::get<3>(t);
+      const double dt = std::get<4>(t);
 
-      ttk::CriticalType nt1 = std::get<1>(t);
-      ttk::CriticalType nt2 = std::get<3>(t);
-
-      double dt = std::get<4>(t);
       if(dt > 0) {
         if(nt1 == CriticalType::Local_minimum
            && nt2 == CriticalType::Local_maximum) {
-          inputDiagramsMax[i].push_back(t);
+          inputDiagramsMax[i].emplace_back(t);
         } else {
           if(nt1 == CriticalType::Local_maximum
              || nt2 == CriticalType::Local_maximum) {
-            inputDiagramsMax[i].push_back(t);
+            inputDiagramsMax[i].emplace_back(t);
           }
           if(nt1 == CriticalType::Local_minimum
              || nt2 == CriticalType::Local_minimum) {
-            inputDiagramsMin[i].push_back(t);
+            inputDiagramsMin[i].emplace_back(t);
           }
           if((nt1 == CriticalType::Saddle1 && nt2 == CriticalType::Saddle2)
              || (nt1 == CriticalType::Saddle2
                  && nt2 == CriticalType::Saddle1)) {
-            inputDiagramsSad[i].push_back(t);
+            inputDiagramsSad[i].emplace_back(t);
           }
         }
       }
@@ -340,6 +342,9 @@ std::array<double, 3>
         std::vector<std::vector<int>> candidates_to_be_added(nInputs);
         std::vector<std::vector<size_t>> idx(nInputs);
 
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
         for(size_t i = 0; i < nInputs; i++) {
           double local_min_persistence = std::numeric_limits<double>::min();
           std::vector<double> persistences;
@@ -348,9 +353,9 @@ std::array<double, 3>
             double persistence = b.getPersistence();
             if(persistence >= curr_min_persistence
                && persistence <= prev_min_persistence) {
-              candidates_to_be_added[i].push_back(j);
-              idx[i].push_back(idx[i].size());
-              persistences.push_back(persistence);
+              candidates_to_be_added[i].emplace_back(j);
+              idx[i].emplace_back(idx[i].size());
+              persistences.emplace_back(persistence);
             }
           }
           const auto cmp = [&persistences](const size_t a, const size_t b) {
@@ -373,9 +378,7 @@ std::array<double, 3>
               new_min_persistence = local_min_persistence;
             }
           }
-        }
-        // 3. Add the points to the current diagrams
-        for(size_t i = 0; i < nInputs; i++) {
+          // 3. Add the points to the current diagrams
           const auto s = candidates_to_be_added[i].size();
           for(size_t j = 0; j < std::min(max_points_to_add, s); j++) {
             Bidder<double> b
