@@ -1,7 +1,6 @@
 #include <LDistance.h>
 #include <ttkLDistanceMatrix.h>
 
-#include <vtkCellData.h>
 #include <vtkDataArray.h>
 #include <vtkDoubleArray.h>
 #include <vtkInformationVector.h>
@@ -9,9 +8,7 @@
 #include <vtkNew.h>
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
-#include <vtkStreamingDemandDrivenPipeline.h>
 #include <vtkTable.h>
-#include <vtkUnstructuredGrid.h>
 
 #include <set>
 
@@ -22,7 +19,7 @@ vtkStandardNewMacro(ttkLDistanceMatrix);
 
 ttkLDistanceMatrix::ttkLDistanceMatrix() {
   SetNumberOfInputPorts(1);
-  SetNumberOfOutputPorts(2);
+  SetNumberOfOutputPorts(1);
 }
 
 int ttkLDistanceMatrix::FillInputPortInformation(int port,
@@ -38,9 +35,6 @@ int ttkLDistanceMatrix::FillOutputPortInformation(int port,
                                                   vtkInformation *info) {
   if(port == 0) {
     info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkTable");
-    return 1;
-  } else if(port == 1) {
-    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
     return 1;
   }
   return 0;
@@ -85,8 +79,7 @@ int ttkLDistanceMatrix::RequestData(vtkInformation * /*request*/,
   }
 
   // Get output
-  auto DistTable = vtkTable::GetData(outputVector, 0);
-  auto HeatMap = vtkUnstructuredGrid::GetData(outputVector, 1);
+  auto DistTable = vtkTable::GetData(outputVector);
 
   std::vector<std::vector<double>> distMatrix(nInputs);
 
@@ -145,33 +138,6 @@ int ttkLDistanceMatrix::RequestData(vtkInformation * /*request*/,
     }
     DistTable->AddColumn(col);
   }
-
-  // insert points into heat map
-  vtkNew<vtkPoints> points{};
-  for(size_t i = 0; i < nInputs + 1; ++i) {
-    for(size_t j = 0; j < nInputs + 1; ++j) {
-      points->InsertNextPoint(i, j, 0.0);
-    }
-  }
-  HeatMap->SetPoints(points);
-
-  // copy distance matrix to heat map cell data
-  vtkNew<vtkDoubleArray> dists{};
-  vtkNew<vtkCellArray> cells{};
-  dists->SetNumberOfComponents(1);
-  dists->SetName("Proximity");
-  for(size_t i = 0; i < nInputs; ++i) {
-    for(size_t j = 0; j < nInputs; ++j) {
-      const auto nptrow{static_cast<vtkIdType>(nInputs + 1)};
-      const auto curr{static_cast<vtkIdType>(i * nptrow + j)};
-      std::array<vtkIdType, 4> ptIds{
-        curr, curr + nptrow, curr + nptrow + 1, curr + 1};
-      cells->InsertNextCell(4, ptIds.data());
-      dists->InsertNextValue(std::exp(-distMatrix[i][j]));
-    }
-  }
-  HeatMap->SetCells(VTK_QUAD, cells);
-  HeatMap->GetCellData()->AddArray(dists);
 
   // aggregate input field data
   vtkNew<vtkFieldData> fd{};
