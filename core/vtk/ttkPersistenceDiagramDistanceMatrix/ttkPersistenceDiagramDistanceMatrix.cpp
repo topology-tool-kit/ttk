@@ -12,14 +12,13 @@
 #include <vtkNew.h>
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
-#include <vtkStreamingDemandDrivenPipeline.h>
 #include <vtkTable.h>
 
 vtkStandardNewMacro(ttkPersistenceDiagramDistanceMatrix);
 
 ttkPersistenceDiagramDistanceMatrix::ttkPersistenceDiagramDistanceMatrix() {
   SetNumberOfInputPorts(1);
-  SetNumberOfOutputPorts(2);
+  SetNumberOfOutputPorts(1);
 }
 
 // transmit abort signals -- to copy paste in other wrappers
@@ -54,9 +53,6 @@ int ttkPersistenceDiagramDistanceMatrix::FillOutputPortInformation(
   if(port == 0) {
     info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkTable");
     return 1;
-  } else if(port == 1) {
-    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
-    return 1;
   }
   return 0;
 }
@@ -83,8 +79,7 @@ int ttkPersistenceDiagramDistanceMatrix::RequestData(
   const int numInputs = inputDiagrams.size();
 
   // Set output
-  auto diagramsDistTable = vtkTable::GetData(outputVector, 0);
-  auto HeatMap = vtkUnstructuredGrid::GetData(outputVector, 1);
+  auto diagramsDistTable = vtkTable::GetData(outputVector);
 
   std::vector<std::vector<ttk::DiagramTuple>> intermediateDiagrams(numInputs);
 
@@ -130,33 +125,6 @@ int ttkPersistenceDiagramDistanceMatrix::RequestData(
     }
     diagramsDistTable->AddColumn(col);
   }
-
-  // insert points into heat map
-  vtkNew<vtkPoints> points{};
-  for(int i = 0; i < numInputs + 1; ++i) {
-    for(int j = 0; j < numInputs + 1; ++j) {
-      points->InsertNextPoint(i, j, 0.0);
-    }
-  }
-  HeatMap->SetPoints(points);
-
-  // copy distance matrix to heat map cell data
-  vtkNew<vtkDoubleArray> dists{};
-  vtkNew<vtkCellArray> cells{};
-  dists->SetNumberOfComponents(1);
-  dists->SetName("Proximity");
-  for(int i = 0; i < numInputs; ++i) {
-    for(int j = 0; j < numInputs; ++j) {
-      const vtkIdType nptrow{numInputs + 1};
-      const vtkIdType curr{i * nptrow + j};
-      std::array<vtkIdType, 4> ptIds{
-        curr, curr + nptrow, curr + nptrow + 1, curr + 1};
-      cells->InsertNextCell(4, ptIds.data());
-      dists->InsertNextValue(std::exp(-diagramsDistMat[i][j]));
-    }
-  }
-  HeatMap->SetCells(VTK_QUAD, cells);
-  HeatMap->GetCellData()->AddArray(dists);
 
   // aggregate input field data
   vtkNew<vtkFieldData> fd{};
