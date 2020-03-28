@@ -32,7 +32,6 @@ public:
     ScalarFields.emplace_back(s);
     Modified();
   }
-
   void ClearScalarFields() {
     ScalarFields.clear();
     Modified();
@@ -46,6 +45,7 @@ public:
 
 protected:
   ttkMatrixToHeatMap();
+  ~ttkMatrixToHeatMap() = default;
 
   int FillInputPortInformation(int port, vtkInformation *info) override;
   int FillOutputPortInformation(int port, vtkInformation *info) override;
