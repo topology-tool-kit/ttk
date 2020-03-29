@@ -87,6 +87,9 @@ namespace ttk {
     inline void setUseFullDiagrams(const bool arg) {
       useFullDiagrams_ = arg;
     }
+    inline void setMinPointsToAdd(const size_t data) {
+      min_points_to_add_ = data;
+    }
 
   protected:
     double getMostPersistent(
@@ -120,6 +123,7 @@ namespace ttk {
     // pair sad-max) lambda = 0 : saddle (bad stability) lambda = 1/2 : middle
     // of the 2 critical points of the pair
     double lambda_;
+    size_t min_points_to_add_{10};
     bool use_kdtree_{true};
     bool useFullDiagrams_{false};
     bool do_min_{true}, do_sad_{true}, do_max_{true};

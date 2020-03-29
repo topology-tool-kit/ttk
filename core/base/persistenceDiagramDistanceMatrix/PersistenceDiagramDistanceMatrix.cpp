@@ -78,20 +78,18 @@ std::vector<std::vector<double>> PersistenceDiagramDistanceMatrix::execute(
     2 * getMostPersistent(bidder_diagrams_max),
   };
 
-  size_t min_points_to_add{10};
-
   if(do_min_) {
-    enrichCurrentBidderDiagrams(max_persistence[0], min_points_to_add,
+    enrichCurrentBidderDiagrams(max_persistence[0], min_points_to_add_,
                                 bidder_diagrams_min,
                                 current_bidder_diagrams_min);
   }
   if(do_sad_) {
-    enrichCurrentBidderDiagrams(max_persistence[1], min_points_to_add,
+    enrichCurrentBidderDiagrams(max_persistence[1], min_points_to_add_,
                                 bidder_diagrams_sad,
                                 current_bidder_diagrams_sad);
   }
   if(do_max_) {
-    enrichCurrentBidderDiagrams(max_persistence[2], min_points_to_add,
+    enrichCurrentBidderDiagrams(max_persistence[2], min_points_to_add_,
                                 bidder_diagrams_max,
                                 current_bidder_diagrams_max);
   }
