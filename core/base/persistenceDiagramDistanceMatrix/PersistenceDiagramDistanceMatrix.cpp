@@ -89,17 +89,17 @@ std::vector<std::vector<double>> PersistenceDiagramDistanceMatrix::execute(
   };
 
   if(this->do_min_) {
-    enrichCurrentBidderDiagrams(max_persistence[0], this->min_points_to_add_,
+    enrichCurrentBidderDiagrams(max_persistence[0], this->MinPointsToAdd,
                                 bidder_diagrams_min,
                                 current_bidder_diagrams_min);
   }
   if(this->do_sad_) {
-    enrichCurrentBidderDiagrams(max_persistence[1], this->min_points_to_add_,
+    enrichCurrentBidderDiagrams(max_persistence[1], this->MinPointsToAdd,
                                 bidder_diagrams_sad,
                                 current_bidder_diagrams_sad);
   }
   if(this->do_max_) {
-    enrichCurrentBidderDiagrams(max_persistence[2], this->min_points_to_add_,
+    enrichCurrentBidderDiagrams(max_persistence[2], this->MinPointsToAdd,
                                 bidder_diagrams_max,
                                 current_bidder_diagrams_max);
   }

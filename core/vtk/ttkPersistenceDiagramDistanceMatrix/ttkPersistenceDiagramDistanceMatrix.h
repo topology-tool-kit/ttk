@@ -99,6 +99,9 @@ public:
   vtkSetMacro(UseFullDiagrams, bool);
   vtkGetMacro(UseFullDiagrams, bool);
 
+  vtkSetMacro(MinPointsToAdd, unsigned int);
+  vtkGetMacro(MinPointsToAdd, unsigned int);
+
 protected:
   ttkPersistenceDiagramDistanceMatrix();
   ~ttkPersistenceDiagramDistanceMatrix() override = default;

@@ -136,6 +136,27 @@
       </DoubleVectorProperty>
 
       <IntVectorProperty
+          name="MinPointsToAdd"
+          command="SetMinPointsToAdd"
+          label="Number of Pairs"
+          number_of_elements="1"
+          default_values="10"
+          panel_visibility="advanced"
+          >
+        <Hints>
+          <PropertyWidgetDecorator
+              type="GenericDecorator"
+              mode="visibility"
+              property="UseFullDiagrams"
+              value="0" />
+        </Hints>
+        <Documentation>
+          Number of high-persistence diagrams pairs to take into
+          account to compute distance.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
           name="UseFullDiagrams"
           label="Use Full Diagrams (SLOW!)"
           command="SetUseFullDiagrams"
@@ -143,13 +164,6 @@
           default_values="0"
           panel_visibility="advanced">
         <BooleanDomain name="bool"/>
-        <Hints>
-          <PropertyWidgetDecorator
-              type="GenericDecorator"
-              mode="visibility"
-              property="OutputDistanceMatrix"
-              value="1" />
-        </Hints>
         <Documentation>
           Compute the distance matrix between the full diagrams.
         </Documentation>
