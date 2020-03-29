@@ -38,9 +38,13 @@ namespace ttk {
                                   float>;
   using MatchingTuple = std::tuple<ttk::SimplexId, ttk::SimplexId, double>;
 
-  class PersistenceDiagramDistanceMatrix : public Debug {
+  class PersistenceDiagramDistanceMatrix : virtual public Debug {
 
   public:
+    PersistenceDiagramDistanceMatrix() {
+      this->setDebugMsgPrefix("PersistenceDiagramDistanceMatrix");
+    }
+
     std::vector<std::vector<double>> execute(
       std::vector<std::vector<DiagramTuple>> &intermediateDiagrams) const;
 
@@ -51,29 +55,26 @@ namespace ttk {
       use_kdtree_ = use_kdtree;
     }
     inline void setPairTypeClustering(const int pairTypeClustering) {
-      std::stringstream msg;
       switch(pairTypeClustering) {
         case(0):
-          msg << "[PersistenceDiagramDistanceMatrix] Only MIN-SAD pairs";
+          this->printMsg("Process only MIN-SAD pairs");
           do_max_ = false;
           do_sad_ = false;
           break;
         case(1):
-          msg << "[PersistenceDiagramDistanceMatrix] Only SAD-SAD pairs";
+          this->printMsg("Process only SAD-SAD pairs");
           do_max_ = false;
           do_min_ = false;
           break;
         case(2):
-          msg << "[PersistenceDiagramDistanceMatrix] Only SAD-MAX pairs";
+          this->printMsg("Process only SAD-MAX pairs");
           do_min_ = false;
           do_sad_ = false;
           break;
         default:
-          msg << "[PersistenceDiagramDistanceMatrix] All critical pairs";
+          this->printMsg("Process all critical pairs");
           break;
       }
-      msg << std::endl;
-      dMsg(std::cout, msg.str(), advancedInfoMsg);
     }
     inline void setAlpha(const double alpha) {
       geometrical_factor_ = alpha;

@@ -104,13 +104,7 @@ std::vector<std::vector<double>> PersistenceDiagramDistanceMatrix::execute(
                        current_bidder_diagrams_max);
   }
 
-  {
-    std::stringstream msg;
-    msg << "[PersistenceDiagramDistanceMatrix] Processed in "
-        << tm.getElapsedTime() << " s. (" << threadNumber_ << " thread(s))."
-        << std::endl;
-    dMsg(std::cout, msg.str(), infoMsg);
-  }
+  this->printMsg("Complete", 1.0, tm.getElapsedTime(), this->threadNumber_);
 
   return distMat;
 }
@@ -224,7 +218,7 @@ void PersistenceDiagramDistanceMatrix::setBidderDiagrams(
       b.setPositionInAuction(bidders.size());
       bidders.addBidder(b);
       if(b.isDiagonal() || b.x_ == b.y_) {
-        std::cout << "Diagonal point in diagram !!!" << std::endl;
+        this->printWrn("Diagonal point in diagram!");
       }
     }
   }
