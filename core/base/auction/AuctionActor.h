@@ -76,6 +76,22 @@ namespace ttk {
       return (var >= 0) ? var : -var;
     }
 
+    inline dataType pow(const dataType var, int n) {
+      if(n < 0) {
+        return 1.0 / this->pow(var, -n);
+      } else if(n == 0) {
+        return 1;
+      } else if(n == 1) {
+        return var;
+      } else if(n == 2) {
+        return var * var;
+      } else if(n == 3) {
+        return var * var * var;
+      } else {
+        return this->pow(var, n - 1) * var;
+      }
+    }
+
     dataType
       cost(const AuctionActor &g, int &wasserstein, double &geometricalFactor);
 
@@ -148,23 +164,24 @@ namespace ttk {
       return 0;
     } else if(is_diagonal_) {
       return geometricalFactor
-               * (2 * std::pow(abs<dataType>(g.y_ / 2 - g.x_ / 2), wasserstein))
+               * (2
+                  * this->pow(abs<dataType>(g.y_ / 2 - g.x_ / 2), wasserstein))
              + (1 - geometricalFactor) * getPairGeometricalLength(wasserstein);
     } else if(g.isDiagonal()) {
       return geometricalFactor
-               * (2 * std::pow(abs<dataType>(y_ / 2 - x_ / 2), wasserstein))
+               * (2 * this->pow(abs<dataType>(y_ / 2 - x_ / 2), wasserstein))
              + (1 - geometricalFactor)
                  * g.getPairGeometricalLength(wasserstein);
     } else {
       return geometricalFactor
-               * (std::pow(abs<dataType>(x_ - g.x_), wasserstein)
-                  + std::pow(abs<dataType>(y_ - g.y_), wasserstein))
+               * (this->pow(abs<dataType>(x_ - g.x_), wasserstein)
+                  + this->pow(abs<dataType>(y_ - g.y_), wasserstein))
              + (1 - geometricalFactor)
-                 * (std::pow(
+                 * (this->pow(
                       abs<dataType>(coords_x_ - g.coords_x_), wasserstein)
-                    + std::pow(
+                    + this->pow(
                       abs<dataType>(coords_y_ - g.coords_y_), wasserstein)
-                    + std::pow(
+                    + this->pow(
                       abs<dataType>(coords_z_ - g.coords_z_), wasserstein));
     }
   }
