@@ -54,8 +54,8 @@
 
       <IntVectorProperty
           name="Critical pairs"
-          label="Critical pairs used for the clustering"
-          command="SetPairTypeClustering"
+          label="Critical pairs used"
+          command="SetPairType"
           number_of_elements="1"
           default_values="-1" >
         <EnumerationDomain name="enum">
@@ -63,7 +63,6 @@
           <Entry value="0" text="min-saddle pairs"/>
           <Entry value="1" text="saddle-saddle pairs"/>
           <Entry value="2" text="saddle-max pairs"/>
-          <!-- <Entry value="1" text="legacy: doubleMunkres (Wasserstein, Bottleneck)"/> -->
         </EnumerationDomain>
         <Documentation>
           Specify the types of critical pairs to be taken into account for the clustering.

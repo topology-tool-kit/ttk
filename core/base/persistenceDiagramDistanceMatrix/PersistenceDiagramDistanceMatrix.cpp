@@ -11,6 +11,16 @@ std::vector<std::vector<double>> PersistenceDiagramDistanceMatrix::execute(
 
   const auto nInputs = intermediateDiagrams.size();
 
+  if(do_min_ && do_sad_ && do_max_) {
+    this->printMsg("Process all critical pairs");
+  } else if(do_min_) {
+    this->printMsg("Process only MIN-SAD pairs");
+  } else if(do_sad_) {
+    this->printMsg("Process only SAD-SAD pairs");
+  } else if(do_max_) {
+    this->printMsg("Process only SAD-MAX pairs");
+  }
+
   std::vector<std::vector<DiagramTuple>> inputDiagramsMin(nInputs);
   std::vector<std::vector<DiagramTuple>> inputDiagramsSad(nInputs);
   std::vector<std::vector<DiagramTuple>> inputDiagramsMax(nInputs);
@@ -95,7 +105,7 @@ std::vector<std::vector<double>> PersistenceDiagramDistanceMatrix::execute(
   }
 
   std::vector<std::vector<double>> distMat(nInputs);
-  if(this->useFullDiagrams_) {
+  if(this->UseFullDiagrams) {
     getDiagramsDistMat(nInputs, distMat, bidder_diagrams_min,
                        bidder_diagrams_sad, bidder_diagrams_max);
   } else {
@@ -138,8 +148,8 @@ double PersistenceDiagramDistanceMatrix::computeDistance(
     D2_bis.addGood(g);
   }
 
-  Auction<double> auction(this->wasserstein_, this->geometrical_factor_,
-                          this->lambda_, this->deltaLim_, this->use_kdtree_);
+  Auction<double> auction(
+    this->Wasserstein, this->Alpha, this->Lambda, this->DeltaLim, true);
   auction.BuildAuctionDiagrams(&D1, &D2_bis);
 
   std::vector<MatchingTuple> matchings;
@@ -212,7 +222,7 @@ void PersistenceDiagramDistanceMatrix::setBidderDiagrams(
 
     for(size_t j = 0; j < diag.size(); j++) {
       // Add bidder to bidders
-      Bidder<double> b(diag[j], j, this->lambda_);
+      Bidder<double> b(diag[j], j, this->Lambda);
       b.setPositionInAuction(bidders.size());
       bidders.addBidder(b);
       if(b.isDiagonal() || b.x_ == b.y_) {

@@ -74,12 +74,6 @@ int ttkPersistenceDiagramDistanceMatrix::RequestData(
     }
   }
 
-  this->setWasserstein(WassersteinMetric);
-  this->setPairTypeClustering(PairTypeClustering);
-  this->setAlpha(Alpha);
-  this->setDeltaLim(DeltaLim);
-  this->setLambda(Lambda);
-  this->setUseFullDiagrams(UseFullDiagrams);
   const auto diagramsDistMat = this->execute(intermediateDiagrams);
 
   // zero-padd column name to keep Row Data columns ordered

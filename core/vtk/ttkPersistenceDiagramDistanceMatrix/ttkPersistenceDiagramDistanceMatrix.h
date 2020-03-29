@@ -39,8 +39,13 @@ public:
 
   vtkTypeMacro(ttkPersistenceDiagramDistanceMatrix, ttkAlgorithm);
 
-  vtkSetMacro(WassersteinMetric, std::string);
-  vtkGetMacro(WassersteinMetric, std::string);
+  void SetWassersteinMetric(const std::string &data) {
+    Wasserstein = (data == "inf") ? -1 : stoi(data);
+    Modified();
+  }
+  std::string GetWassersteinMetric() {
+    return Wasserstein == -1 ? "inf" : std::to_string(Wasserstein);
+  }
 
   void SetAntiAlpha(double data) {
     data = 1 - data;
@@ -61,8 +66,35 @@ public:
   vtkSetMacro(Lambda, double);
   vtkGetMacro(Lambda, double);
 
-  vtkSetMacro(PairTypeClustering, int);
-  vtkGetMacro(PairTypeClustering, int);
+  void SetPairType(const int data) {
+    switch(data) {
+      case(0):
+        this->setDos(true, false, false);
+        break;
+      case(1):
+        this->setDos(false, true, false);
+        break;
+      case(2):
+        this->setDos(false, false, true);
+        break;
+      default:
+        this->setDos(true, true, true);
+        break;
+    }
+    Modified();
+  }
+  int GetPairType() {
+    if(do_min_ && do_sad_ && do_max_) {
+      return -1;
+    } else if(do_min_) {
+      return 0;
+    } else if(do_sad_) {
+      return 1;
+    } else if(do_max_) {
+      return 2;
+    }
+    return -1;
+  }
 
   vtkSetMacro(UseFullDiagrams, bool);
   vtkGetMacro(UseFullDiagrams, bool);
@@ -80,12 +112,4 @@ protected:
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;
-
-private:
-  int PairTypeClustering{-1};
-  double Alpha{1.0};
-  double DeltaLim{0.01};
-  double Lambda{1.0};
-  std::string WassersteinMetric{"2"};
-  bool UseFullDiagrams{false};
 };
