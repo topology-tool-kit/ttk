@@ -90,49 +90,26 @@ namespace ttk {
 
   protected:
     double getMostPersistent(
-      const int type,
-      const std::vector<BidderDiagram<double>> &bidder_diags_min,
-      const std::vector<BidderDiagram<double>> &bidder_diags_sad,
-      const std::vector<BidderDiagram<double>> &bidder_diags_max) const;
-    double getLessPersistent(
-      const int type,
-      const std::vector<BidderDiagram<double>> &bidder_diags_min,
-      const std::vector<BidderDiagram<double>> &bidder_diags_sad,
-      const std::vector<BidderDiagram<double>> &bidder_diags_max) const;
+      const std::vector<BidderDiagram<double>> &bidder_diags) const;
     double computeDistance(const BidderDiagram<double> &D1,
                            const BidderDiagram<double> &D2,
                            const double delta_lim) const;
-    std::vector<std::vector<double>> getDiagramsDistMat(
+    void getDiagramsDistMat(
       const size_t nInputs,
-      const bool useFullDiagrams,
-      const std::vector<BidderDiagram<double>> &bidder_diags_min,
-      const std::vector<BidderDiagram<double>> &bidder_diags_sad,
-      const std::vector<BidderDiagram<double>> &bidder_diags_max,
-      const std::vector<BidderDiagram<double>> &current_bidder_diags_min,
-      const std::vector<BidderDiagram<double>> &current_bidder_diags_sad,
-      const std::vector<BidderDiagram<double>> &current_bidder_diags_max) const;
+      std::vector<std::vector<double>> &distanceMatrix,
+      const std::vector<BidderDiagram<double>> &diags_min,
+      const std::vector<BidderDiagram<double>> &diags_sad,
+      const std::vector<BidderDiagram<double>> &diags_max) const;
     void setBidderDiagrams(
       const size_t nInputs,
-      std::vector<std::vector<DiagramTuple>> &inputDiagramsMin,
-      std::vector<std::vector<DiagramTuple>> &inputDiagramsSad,
-      std::vector<std::vector<DiagramTuple>> &inputDiagramsMax,
-      std::vector<BidderDiagram<double>> &bidder_diags_min,
-      std::vector<BidderDiagram<double>> &bidder_diags_sad,
-      std::vector<BidderDiagram<double>> &bidder_diags_max,
-      std::vector<BidderDiagram<double>> &current_bidder_diags_min,
-      std::vector<BidderDiagram<double>> &current_bidder_diags_sad,
-      std::vector<BidderDiagram<double>> &current_bidder_diags_max) const;
-    std::array<double, 3> enrichCurrentBidderDiagrams(
-      const std::array<double, 3> &previous_min_persistence,
-      const std::array<double, 3> &min_persistence,
-      const std::array<std::vector<double>, 3> initial_diagonal_prices,
-      const std::array<int, 3> min_points_to_add,
-      const std::vector<BidderDiagram<double>> &bidder_diags_min,
-      const std::vector<BidderDiagram<double>> &bidder_diags_sad,
-      const std::vector<BidderDiagram<double>> &bidder_diags_max,
-      std::vector<BidderDiagram<double>> &current_bidder_diags_min,
-      std::vector<BidderDiagram<double>> &current_bidder_diags_sad,
-      std::vector<BidderDiagram<double>> &current_bidder_diags_max) const;
+      std::vector<std::vector<DiagramTuple>> &inputDiagrams,
+      std::vector<BidderDiagram<double>> &bidder_diags,
+      std::vector<BidderDiagram<double>> &current_bidder_diags) const;
+    double enrichCurrentBidderDiagrams(
+      const double prev_min_persistence,
+      const size_t min_points_to_add,
+      const std::vector<BidderDiagram<double>> &bidder_diags,
+      std::vector<BidderDiagram<double>> &current_bidder_diags) const;
 
     int wasserstein_{2};
     double geometrical_factor_{1};
