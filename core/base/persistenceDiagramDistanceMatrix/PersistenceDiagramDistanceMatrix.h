@@ -96,8 +96,7 @@ namespace ttk {
     double getMostPersistent(
       const std::vector<BidderDiagram<double>> &bidder_diags) const;
     double computeDistance(const BidderDiagram<double> &D1,
-                           const BidderDiagram<double> &D2,
-                           const double delta_lim) const;
+                           const BidderDiagram<double> &D2) const;
     void getDiagramsDistMat(
       const size_t nInputs,
       std::vector<std::vector<double>> &distanceMatrix,

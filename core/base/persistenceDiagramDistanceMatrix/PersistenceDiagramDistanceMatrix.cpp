@@ -58,15 +58,15 @@ std::vector<std::vector<double>> PersistenceDiagramDistanceMatrix::execute(
     }
   }
 
-  if(do_min_) {
+  if(this->do_min_) {
     setBidderDiagrams(nInputs, inputDiagramsMin, bidder_diagrams_min,
                       current_bidder_diagrams_min);
   }
-  if(do_sad_) {
+  if(this->do_sad_) {
     setBidderDiagrams(nInputs, inputDiagramsSad, bidder_diagrams_sad,
                       current_bidder_diagrams_sad);
   }
-  if(do_max_) {
+  if(this->do_max_) {
     setBidderDiagrams(nInputs, inputDiagramsMax, bidder_diagrams_max,
                       current_bidder_diagrams_max);
   }
@@ -78,24 +78,24 @@ std::vector<std::vector<double>> PersistenceDiagramDistanceMatrix::execute(
     2 * getMostPersistent(bidder_diagrams_max),
   };
 
-  if(do_min_) {
-    enrichCurrentBidderDiagrams(max_persistence[0], min_points_to_add_,
+  if(this->do_min_) {
+    enrichCurrentBidderDiagrams(max_persistence[0], this->min_points_to_add_,
                                 bidder_diagrams_min,
                                 current_bidder_diagrams_min);
   }
-  if(do_sad_) {
-    enrichCurrentBidderDiagrams(max_persistence[1], min_points_to_add_,
+  if(this->do_sad_) {
+    enrichCurrentBidderDiagrams(max_persistence[1], this->min_points_to_add_,
                                 bidder_diagrams_sad,
                                 current_bidder_diagrams_sad);
   }
-  if(do_max_) {
-    enrichCurrentBidderDiagrams(max_persistence[2], min_points_to_add_,
+  if(this->do_max_) {
+    enrichCurrentBidderDiagrams(max_persistence[2], this->min_points_to_add_,
                                 bidder_diagrams_max,
                                 current_bidder_diagrams_max);
   }
 
   std::vector<std::vector<double>> distMat(nInputs);
-  if(useFullDiagrams_) {
+  if(this->useFullDiagrams_) {
     getDiagramsDistMat(nInputs, distMat, bidder_diagrams_min,
                        bidder_diagrams_sad, bidder_diagrams_max);
   } else {
@@ -127,9 +127,7 @@ double PersistenceDiagramDistanceMatrix::getMostPersistent(
 }
 
 double PersistenceDiagramDistanceMatrix::computeDistance(
-  const BidderDiagram<double> &D1,
-  const BidderDiagram<double> &D2,
-  const double delta_lim) const {
+  const BidderDiagram<double> &D1, const BidderDiagram<double> &D2) const {
 
   GoodDiagram<double> D2_bis{};
   for(int i = 0; i < D2.size(); i++) {
@@ -140,8 +138,8 @@ double PersistenceDiagramDistanceMatrix::computeDistance(
     D2_bis.addGood(g);
   }
 
-  Auction<double> auction(
-    wasserstein_, geometrical_factor_, lambda_, delta_lim, use_kdtree_);
+  Auction<double> auction(this->wasserstein_, this->geometrical_factor_,
+                          this->lambda_, this->deltaLim_, this->use_kdtree_);
   auction.BuildAuctionDiagrams(&D1, &D2_bis);
 
   std::vector<MatchingTuple> matchings;
@@ -160,10 +158,10 @@ void PersistenceDiagramDistanceMatrix::getDiagramsDistMat(
   distanceMatrix.resize(nInputs);
 
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for schedule(dynamic) num_threads(threadNumber_)
+#pragma omp parallel for schedule(dynamic) num_threads(this->threadNumber_)
 #endif // TTK_ENABLE_OPENMP
   for(size_t i = 0; i < nInputs; ++i) {
-    distanceMatrix[i].resize(nInputs, std::numeric_limits<float>::max());
+    distanceMatrix[i].resize(nInputs);
 
     // matrix diagonal
     distanceMatrix[i][i] = 0.0;
@@ -171,20 +169,20 @@ void PersistenceDiagramDistanceMatrix::getDiagramsDistMat(
     for(size_t j = i + 1; j < nInputs; ++j) {
       double distance{};
 
-      if(do_min_) {
+      if(this->do_min_) {
         auto &dimin = diags_min[i];
         auto &djmin = diags_min[j];
-        distance += computeDistance(dimin, djmin, deltaLim_);
+        distance += computeDistance(dimin, djmin);
       }
-      if(do_sad_) {
+      if(this->do_sad_) {
         auto &disad = diags_sad[i];
         auto &djsad = diags_sad[j];
-        distance += computeDistance(disad, djsad, deltaLim_);
+        distance += computeDistance(disad, djsad);
       }
-      if(do_max_) {
+      if(this->do_max_) {
         auto &dimax = diags_max[i];
         auto &djmax = diags_max[j];
-        distance += computeDistance(dimax, djmax, deltaLim_);
+        distance += computeDistance(dimax, djmax);
       }
 
       distanceMatrix[i][j] = distance;
@@ -214,7 +212,7 @@ void PersistenceDiagramDistanceMatrix::setBidderDiagrams(
 
     for(size_t j = 0; j < diag.size(); j++) {
       // Add bidder to bidders
-      Bidder<double> b(diag[j], j, lambda_);
+      Bidder<double> b(diag[j], j, this->lambda_);
       b.setPositionInAuction(bidders.size());
       bidders.addBidder(b);
       if(b.isDiagonal() || b.x_ == b.y_) {
