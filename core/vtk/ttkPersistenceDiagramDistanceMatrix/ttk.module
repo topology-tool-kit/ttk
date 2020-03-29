@@ -6,4 +6,4 @@ HEADERS
   ttkPersistenceDiagramDistanceMatrix.h
 DEPENDS
   persistenceDiagramDistanceMatrix
-  ttkTriangulationAlgorithm
+  ttkAlgorithm

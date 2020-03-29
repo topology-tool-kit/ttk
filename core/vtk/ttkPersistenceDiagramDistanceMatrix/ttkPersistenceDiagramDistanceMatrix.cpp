@@ -21,28 +21,10 @@ ttkPersistenceDiagramDistanceMatrix::ttkPersistenceDiagramDistanceMatrix() {
   SetNumberOfOutputPorts(1);
 }
 
-// transmit abort signals -- to copy paste in other wrappers
-bool ttkPersistenceDiagramDistanceMatrix::needsToAbort() {
-  return GetAbortExecute();
-}
-
-// transmit progress status -- to copy paste in other wrappers
-int ttkPersistenceDiagramDistanceMatrix::updateProgress(const float &progress) {
-  {
-    std::stringstream msg;
-    msg << "[ttkPersistenceDiagramDistanceMatrix] " << progress * 100
-        << "% processed...." << endl;
-    dMsg(cout, msg.str(), advancedInfoMsg);
-  }
-
-  UpdateProgress(progress);
-  return 0;
-}
-
 int ttkPersistenceDiagramDistanceMatrix::FillInputPortInformation(
   int port, vtkInformation *info) {
   if(port == 0) {
-    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkMultiBlockDataSet");
+    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkMultiBlockDataSet");
     return 1;
   }
   return 0;
@@ -92,16 +74,13 @@ int ttkPersistenceDiagramDistanceMatrix::RequestData(
     }
   }
 
-  ttk::PersistenceDiagramDistanceMatrix worker{};
-  worker.setWrapper(this);
-
-  worker.setWasserstein(WassersteinMetric);
-  worker.setPairTypeClustering(PairTypeClustering);
-  worker.setAlpha(Alpha);
-  worker.setDeltaLim(DeltaLim);
-  worker.setLambda(Lambda);
-  worker.setUseFullDiagrams(UseFullDiagrams);
-  const auto diagramsDistMat = worker.execute(intermediateDiagrams);
+  this->setWasserstein(WassersteinMetric);
+  this->setPairTypeClustering(PairTypeClustering);
+  this->setAlpha(Alpha);
+  this->setDeltaLim(DeltaLim);
+  this->setLambda(Lambda);
+  this->setUseFullDiagrams(UseFullDiagrams);
+  const auto diagramsDistMat = this->execute(intermediateDiagrams);
 
   // zero-padd column name to keep Row Data columns ordered
   const auto zeroPad

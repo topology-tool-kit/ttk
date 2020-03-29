@@ -20,7 +20,6 @@
 // VTK includes
 #include <vtkInformation.h>
 #include <vtkInformationVector.h>
-#include <vtkMultiBlockDataSetAlgorithm.h>
 #include <vtkUnstructuredGrid.h>
 
 // VTK Module
@@ -28,48 +27,17 @@
 
 // ttk code includes
 #include <PersistenceDiagramDistanceMatrix.h>
-#include <ttkTriangulationAlgorithm.h>
+#include <ttkAlgorithm.h>
 
 class TTKPERSISTENCEDIAGRAMDISTANCEMATRIX_EXPORT
-  ttkPersistenceDiagramDistanceMatrix : public vtkMultiBlockDataSetAlgorithm,
-                                        protected ttk::Wrapper {
+  ttkPersistenceDiagramDistanceMatrix
+  : public ttkAlgorithm,
+    protected ttk::PersistenceDiagramDistanceMatrix {
 
 public:
   static ttkPersistenceDiagramDistanceMatrix *New();
 
-  vtkTypeMacro(ttkPersistenceDiagramDistanceMatrix,
-               vtkMultiBlockDataSetAlgorithm);
-
-  // default ttk setters
-  void SetDebugLevel(int debugLevel) {
-    setDebugLevel(debugLevel);
-    Modified();
-  }
-
-  void SetThreads() {
-    if(!UseAllCores)
-      threadNumber_ = ThreadNumber;
-    else {
-      threadNumber_ = ttk::OsCall::getNumberOfCores();
-    }
-    Modified();
-  }
-
-  void SetThreadNumber(int threadNumber) {
-    ThreadNumber = threadNumber;
-    SetThreads();
-  }
-  vtkGetMacro(ThreadNumber, int);
-
-  void SetUseAllCores(bool onOff) {
-    UseAllCores = onOff;
-    SetThreads();
-  }
-  vtkGetMacro(UseAllCores, bool);
-  // end of default ttk setters
-
-  // set-getters macros to define from each variable you want to access from
-  // the outside (in particular from paraview) - to adapt.
+  vtkTypeMacro(ttkPersistenceDiagramDistanceMatrix, ttkAlgorithm);
 
   vtkSetMacro(WassersteinMetric, std::string);
   vtkGetMacro(WassersteinMetric, std::string);
@@ -101,6 +69,7 @@ public:
 
 protected:
   ttkPersistenceDiagramDistanceMatrix();
+  ~ttkPersistenceDiagramDistanceMatrix() override = default;
 
   double getPersistenceDiagram(std::vector<ttk::DiagramTuple> &diagram,
                                vtkUnstructuredGrid *CTPersistenceDiagram_);
@@ -113,16 +82,10 @@ protected:
                   vtkInformationVector *outputVector) override;
 
 private:
-  bool UseAllCores{false};
-  int ThreadNumber{1};
-
   int PairTypeClustering{-1};
   double Alpha{1.0};
   double DeltaLim{0.01};
   double Lambda{1.0};
   std::string WassersteinMetric{"2"};
   bool UseFullDiagrams{false};
-
-  bool needsToAbort() override;
-  int updateProgress(const float &progress) override;
 };
