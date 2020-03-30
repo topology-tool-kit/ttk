@@ -36,7 +36,6 @@ namespace ttk {
                                   float,
                                   float,
                                   float>;
-  using MatchingTuple = std::tuple<ttk::SimplexId, ttk::SimplexId, double>;
 
   class PersistenceDiagramDistanceMatrix : virtual public Debug {
 

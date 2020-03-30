@@ -151,11 +151,7 @@ double PersistenceDiagramDistanceMatrix::computeDistance(
   Auction<double> auction(
     this->Wasserstein, this->Alpha, this->Lambda, this->DeltaLim, true);
   auction.BuildAuctionDiagrams(&D1, &D2_bis);
-
-  std::vector<MatchingTuple> matchings;
-  double cost = auction.run(&matchings);
-
-  return cost;
+  return auction.run();
 }
 
 void PersistenceDiagramDistanceMatrix::getDiagramsDistMat(
