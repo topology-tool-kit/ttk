@@ -119,6 +119,10 @@ namespace ttk {
     dataType getMatchingsAndDistance(std::vector<matchingTuple> *matchings,
                                      bool get_diagonal_matches = false);
     dataType run(std::vector<matchingTuple> *matchings);
+    dataType run() {
+      std::vector<matchingTuple> matchings{};
+      return this->run(&matchings);
+    }
     dataType getMaximalPrice();
 
     void BuildAuctionDiagrams(const BidderDiagram<dataType> *BD,
