@@ -71,37 +71,20 @@ std::vector<std::vector<double>> PersistenceDiagramDistanceMatrix::execute(
   if(this->do_min_) {
     setBidderDiagrams(nInputs, inputDiagramsMin, bidder_diagrams_min,
                       current_bidder_diagrams_min);
+    enrichCurrentBidderDiagrams(
+      this->MinPointsToAdd, bidder_diagrams_min, current_bidder_diagrams_min);
   }
   if(this->do_sad_) {
     setBidderDiagrams(nInputs, inputDiagramsSad, bidder_diagrams_sad,
                       current_bidder_diagrams_sad);
+    enrichCurrentBidderDiagrams(
+      this->MinPointsToAdd, bidder_diagrams_sad, current_bidder_diagrams_sad);
   }
   if(this->do_max_) {
     setBidderDiagrams(nInputs, inputDiagramsMax, bidder_diagrams_max,
                       current_bidder_diagrams_max);
-  }
-
-  // Getting current diagrams (with only at most min_points_to_add points)
-  std::array<double, 3> max_persistence{
-    2 * getMostPersistent(bidder_diagrams_min),
-    2 * getMostPersistent(bidder_diagrams_sad),
-    2 * getMostPersistent(bidder_diagrams_max),
-  };
-
-  if(this->do_min_) {
-    enrichCurrentBidderDiagrams(max_persistence[0], this->MinPointsToAdd,
-                                bidder_diagrams_min,
-                                current_bidder_diagrams_min);
-  }
-  if(this->do_sad_) {
-    enrichCurrentBidderDiagrams(max_persistence[1], this->MinPointsToAdd,
-                                bidder_diagrams_sad,
-                                current_bidder_diagrams_sad);
-  }
-  if(this->do_max_) {
-    enrichCurrentBidderDiagrams(max_persistence[2], this->MinPointsToAdd,
-                                bidder_diagrams_max,
-                                current_bidder_diagrams_max);
+    enrichCurrentBidderDiagrams(
+      this->MinPointsToAdd, bidder_diagrams_max, current_bidder_diagrams_max);
   }
 
   std::vector<std::vector<double>> distMat(nInputs);
@@ -229,11 +212,11 @@ void PersistenceDiagramDistanceMatrix::setBidderDiagrams(
 }
 
 double PersistenceDiagramDistanceMatrix::enrichCurrentBidderDiagrams(
-  const double prev_min_persistence,
   const size_t min_points_to_add,
   const std::vector<BidderDiagram<double>> &bidder_diags,
   std::vector<BidderDiagram<double>> &current_bidder_diags) const {
 
+  const double prev_min_persistence = 2.0 * getMostPersistent(bidder_diags);
   double new_min_persistence = 0.0;
 
   // 1. Get size of the largest current diagram, deduce the maximal number
