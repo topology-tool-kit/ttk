@@ -112,13 +112,6 @@ int ttkPersistenceDiagramDistanceMatrix::RequestData(
     diagramsDistTable->AddColumn(fd->GetAbstractArray(i));
   }
 
-  {
-    std::stringstream msg;
-    msg << "[ttkPersistenceDiagramDistanceMatrix] Memory usage: "
-        << m.getElapsedUsage() << " MB." << endl;
-    dMsg(cout, msg.str(), memoryMsg);
-  }
-
   return 1;
 }
 
@@ -237,21 +230,15 @@ double ttkPersistenceDiagramDistanceMatrix::getPersistenceDiagram(
     if(pairIdentifier >= pairingsSize) {
       nbNonCompact++;
       if(nbNonCompact == 0) {
-        std::stringstream msg;
-        msg << "[TTKPersistenceDiagramDistanceMatrix] Diagram pair identifiers "
-            << "must be compact (not exceed the diagram size). " << std::endl;
-        dMsg(std::cout, msg.str(), timeMsg);
+        this->printWrn("Diagram pair identifiers must be compact (not exceed "
+                       "the diagram size).");
       }
     }
   }
 
   if(nbNonCompact > 0) {
-    {
-      std::stringstream msg;
-      msg << "[TTKPersistenceDiagramDistanceMatrix] Missed " << nbNonCompact
-          << " pairs due to non-compactness." << std::endl;
-      dMsg(std::cout, msg.str(), timeMsg);
-    }
+    this->printWrn("Missed " + std::to_string(nbNonCompact)
+                   + " pairs due to non-compactness.");
   }
 
   return max_dimension;
