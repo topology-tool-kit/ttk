@@ -172,8 +172,8 @@ namespace ttk {
 
     struct SharedData {
       SimplexId extrema;
-      AtomicVector<CurrentState *> states;
-      AtomicVector<idSuperArc> openedArcs;
+      FTMAtomicVector<CurrentState *> states;
+      FTMAtomicVector<idSuperArc> openedArcs;
 
       explicit SharedData(SimplexId e)
         : extrema(e), states(50), openedArcs(50) {

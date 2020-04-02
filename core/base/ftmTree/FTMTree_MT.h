@@ -63,9 +63,9 @@ namespace ttk {
       TreeType treeType;
 
       // components : tree / nodes / extrema
-      AtomicVector<SuperArc> *superArcs;
-      AtomicVector<Node> *nodes;
-      AtomicVector<idNode> *roots;
+      FTMAtomicVector<SuperArc> *superArcs;
+      FTMAtomicVector<Node> *nodes;
+      FTMAtomicVector<idNode> *roots;
       std::vector<idNode> *leaves;
 
       // vertex 2 node / superarc
@@ -75,7 +75,7 @@ namespace ttk {
 
       // Track informations
       std::vector<UF> *ufs, *propagation;
-      AtomicVector<CurrentState> *states;
+      FTMAtomicVector<CurrentState> *states;
       // valences
       std::vector<valence> *valences;
       // opened nodes
@@ -227,7 +227,7 @@ namespace ttk {
       void initVectStates(const SimplexId nbLeaves) {
         if(!mt_data_.states) {
           mt_data_.states
-            = new AtomicVector<CurrentState>(nbLeaves, comp_.vertHigher);
+            = new FTMAtomicVector<CurrentState>(nbLeaves, comp_.vertHigher);
         }
         mt_data_.states->clear();
         mt_data_.states->reserve(nbLeaves);
@@ -694,9 +694,9 @@ namespace ttk {
       }
 
       template <typename type>
-      void createAtomicVector(AtomicVector<type> *&ptr) {
+      void createAtomicVector(FTMAtomicVector<type> *&ptr) {
         if(!ptr)
-          ptr = new AtomicVector<type>;
+          ptr = new FTMAtomicVector<type>;
         ptr->clear();
       }
 

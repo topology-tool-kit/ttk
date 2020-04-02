@@ -32,7 +32,7 @@ namespace ttk {
 
     // Split in one up one down ?
     class Propagations : public Allocable {
-      AtomicVector<Propagation *> propagations_;
+      FTRAtomicVector<Propagation *> propagations_;
       Visits visits_;
 
     public:

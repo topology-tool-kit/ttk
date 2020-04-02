@@ -1,12 +1,12 @@
 /// \ingroup base
-/// \class ttk::AtomicVector
+/// \class ttk::FTMAtomicVector
 /// \author Charles Gueunet <charles.gueunet@lip6.fr>
 /// \date 2017-02-09
 ///
 ///\brief TTK processing package that manage a paralle vecrion of vector
 
-#ifndef ATOMICVECTOR_H
-#define ATOMICVECTOR_H
+#ifndef FTMATOMICVECTOR_H
+#define FTMATOMICVECTOR_H
 
 #ifdef TTK_ENABLE_OPENMP
 #include <omp.h>
@@ -21,14 +21,14 @@
 
 namespace ttk {
   template <typename type>
-  class AtomicVector : public std::vector<type> {
+  class FTMAtomicVector : public std::vector<type> {
   private:
     std::size_t nextId;
     // for initialization
     const type defaultValue;
 
   public:
-    AtomicVector(const std::size_t initSize = 1, const type &dv = type{})
+    FTMAtomicVector(const std::size_t initSize = 1, const type &dv = type{})
       : std::vector<type>(), nextId(0), defaultValue{dv} {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(!initSize) {
@@ -43,7 +43,7 @@ namespace ttk {
     }
 
     // copy constructor
-    AtomicVector(const AtomicVector &other)
+    FTMAtomicVector(const FTMAtomicVector &other)
       : std::vector<type>(other), nextId(other.nextId) {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(!std::vector<type>::size()) {
@@ -52,9 +52,9 @@ namespace ttk {
 #endif
     }
 
-    AtomicVector(AtomicVector &&other) = default;
+    FTMAtomicVector(FTMAtomicVector &&other) = default;
 
-    virtual ~AtomicVector() = default;
+    virtual ~FTMAtomicVector() = default;
 
     // ---
     // STL
@@ -128,7 +128,7 @@ namespace ttk {
     // OPERATOR
     // --------
 
-    AtomicVector<type> &operator=(const AtomicVector<type> &other) {
+    FTMAtomicVector<type> &operator=(const FTMAtomicVector<type> &other) {
       std::vector<type>::operator=(other);
       nextId = other.nextId;
     }
@@ -162,4 +162,4 @@ namespace ttk {
   };
 } // namespace ttk
 
-#endif /* end of include guard: ATOMICVECTOR_H */
+#endif /* end of include guard: FTMATOMICVECTOR_H */
