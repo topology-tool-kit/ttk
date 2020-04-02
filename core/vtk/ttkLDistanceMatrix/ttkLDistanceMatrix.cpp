@@ -44,7 +44,7 @@ int ttkLDistanceMatrix::FillOutputPortInformation(int port,
 int ttkLDistanceMatrix::RequestData(vtkInformation * /*request*/,
                                     vtkInformationVector **inputVector,
                                     vtkInformationVector *outputVector) {
-  Memory m;
+  Timer tm{};
 
   const auto blocks = vtkMultiBlockDataSet::GetData(inputVector[0], 0);
 
@@ -66,14 +66,13 @@ int ttkLDistanceMatrix::RequestData(vtkInformation * /*request*/,
     std::set<vtkIdType> sizes{};
     for(size_t i = 0; i < nInputs; ++i) {
       if(inputData[i] == nullptr) {
-        std::cout << "Some input block is not a vtkImageData" << std::endl;
+        this->printErr("Some input block is not a vtkImageData");
         return 0;
       }
       sizes.emplace(inputData[i]->GetNumberOfPoints());
     }
     if(sizes.size() > 1) {
-      std::cout << "Input blocks do not have the same number of points"
-                << std::endl;
+      this->printErr("Input blocks do not have the same number of points");
       return 0;
     }
   }
@@ -152,12 +151,7 @@ int ttkLDistanceMatrix::RequestData(vtkInformation * /*request*/,
     DistTable->AddColumn(fd->GetAbstractArray(i));
   }
 
-  {
-    stringstream msg;
-    msg << "[ttkLDistanceMatrix] Memory usage: " << m.getElapsedUsage()
-        << " MB." << endl;
-    dMsg(cout, msg.str(), memoryMsg);
-  }
+  this->printMsg("Complete", 1.0, tm.getElapsedTime(), this->threadNumber_);
 
   return 1;
 }
