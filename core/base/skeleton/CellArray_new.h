@@ -13,6 +13,7 @@
 /// * Offsets, containing the beginning and end position of each cell in the
 /// Connectivity array See VTK 9 vtkCellArray documentation for more details
 /// about this layout.
+/// This file will be installed by CMake as CellArray.h if the TTK_CELL_ARRAY_LAYOUT is set to OffsetAndConnectivity
 
 #ifndef _CELLARRAY_H
 #define _CELLARRAY_H

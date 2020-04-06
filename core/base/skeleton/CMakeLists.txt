@@ -1,10 +1,13 @@
-if ("${ParaView_VERSION}" VERSION_GREATER_EQUAL "5.8.0" OR "${VTK_VERSION}" VERSION_GREATER_EQUAL "9.0.0")
+if ("${TTK_CELL_ARRAY_LAYOUT}" STREQUAL "OffsetAndConnectivity")
   set(CellArrayHeader "CellArray_new.h")
   set(CellArrayDefine "CELL_ARRAY_NEW")
-else()
+elseif("${TTK_CELL_ARRAY_LAYOUT}" STREQUAL "SingleArray")
   set(CellArrayHeader "CellArray_legacy.h")
   set(CellArrayDefine "CELL_ARRAY_LEGACY")
+else()
+  message(FATAL_ERROR "Invalid TTK_CELL_ARRAY_LAYOUT.")
 endif()
+
 configure_file(${CellArrayHeader} CellArray.h COPYONLY)
 
 ttk_add_base_library(skeleton

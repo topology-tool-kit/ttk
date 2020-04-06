@@ -11,6 +11,7 @@
 /// This array contain for each cell the number of points in the cell then the
 /// point ids of the cell. See VTK 8.2 vtkCellArray documentation for more
 /// details about this layout.
+/// This file will be installed by CMake as CellArray.h if the TTK_CELL_ARRAY_LAYOUT is set to SingleArray
 
 #ifndef _CELLARRAY_H
 #define _CELLARRAY_H
