@@ -1061,7 +1061,7 @@ namespace ttk {
     const void *pointSet_;
     int maxCellDim_;
     std::shared_ptr<CellArray> cellArray_;
-  }; // namespace ttk
+  };
 } // namespace ttk
 
 #endif // _EXPLICITTRIANGULATION_H

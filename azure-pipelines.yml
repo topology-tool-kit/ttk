@@ -43,6 +43,10 @@ jobs:
     vmImage: $(imageName)
   variables:
     LD_LIBRARY_PATH: $(Build.ArtifactStagingDirectory)/vtk-install/lib/
+    # depends on graphics
+    CMAKE_DISABLE: "-DVTK_MODULE_ENABLE_ttkAddFieldData=NO -DVTK_MODULE_ENABLE_ttkCinemaWriter=NO -DVTK_MODULE_ENABLE_ttkCinemaReader=NO -DVTK_MODULE_ENABLE_ttkCinemaQuery=NO -DVTK_MODULE_ENABLE_ttkCinemaImaging=NO -DVTK_MODULE_ENABLE_ttkUserInterfaceBase=NO -DVTK_MODULE_ENABLE_ttkWRLExporter=NO"
+    # used for dev
+    CMAKE_TEST: "-DVTK_MODULE_ENABLE_ttkMorseSmaleQuadrangulation=NO -DVTK_MODULE_ENABLE_ttkBarycentricSubdivision=NO"
 
   steps:
   - script: |
@@ -78,7 +82,7 @@ jobs:
   - task: CMake@1
     inputs:
       workingDirectory: 'build/'
-      cmakeArgs: '.. $(CMakeArgs) -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -GNinja -DCMAKE_INSTALL_PREFIX=$(Build.ArtifactStagingDirectory)/ttk-install -DCMAKE_BUILD_TYPE=$(BuildType) -DVTK_DIR=$(Build.ArtifactStagingDirectory)/vtk-install/lib/cmake/vtk-8.90 -DTTK_BUILD_PARAVIEW_PLUGINS=OFF -DVTK_MODULE_ENABLE_ttkAddFieldData=NO -DVTK_MODULE_ENABLE_ttkCinemaWriter=NO -DVTK_MODULE_ENABLE_ttkCinemaReader=NO -DVTK_MODULE_ENABLE_ttkCinemaQuery=NO -DVTK_MODULE_ENABLE_ttkCinemaImaging=NO -DVTK_MODULE_ENABLE_ttkUserInterfaceBase=NO -DVTK_MODULE_ENABLE_ttkWRLExporter=NO'
+      cmakeArgs: '.. $(CMakeArgs) -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -GNinja -DCMAKE_INSTALL_PREFIX=$(Build.ArtifactStagingDirectory)/ttk-install -DCMAKE_BUILD_TYPE=$(BuildType) -DVTK_DIR=$(Build.ArtifactStagingDirectory)/vtk-install/lib/cmake/vtk-8.90 -DTTK_BUILD_PARAVIEW_PLUGINS=OFF $(CMAKE_DISABLE) $(CMAKE_TEST)'
     displayName: 'Configure TTK'
 
   - script: |
