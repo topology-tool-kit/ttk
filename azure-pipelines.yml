@@ -41,6 +41,7 @@ jobs:
         CMakeArgs: ''
   pool:
     vmImage: $(imageName)
+
   variables:
     LD_LIBRARY_PATH: $(Build.ArtifactStagingDirectory)/vtk-install/lib/
     # depends on graphics
@@ -104,6 +105,12 @@ jobs:
   pool:
     vmImage: 'ubuntu-18.04'
 
+  variables:
+    # depends on graphics
+    CMAKE_DISABLE: ""
+    # used for dev
+    CMAKE_TEST: "-DVTK_MODULE_ENABLE_ttkMorseSmaleQuadrangulation=NO -DVTK_MODULE_ENABLE_ttkBarycentricSubdivision=NO"
+
   strategy:
     matrix:
       GCC-7 Release:
@@ -112,7 +119,7 @@ jobs:
         BuildType: Release
         SelfHost: false
         CMakeArgs: ''
-        PV_VERSION: 'v5.7.0'
+        PV_VERSION: 'v5.8.0'
 
   steps:
   - script: |
@@ -127,16 +134,16 @@ jobs:
       sudo update-alternatives --set c++ /usr/bin/$(CXX)
     displayName: 'Install dependencies'
 
-    # becareful of the URL when changing the paraview version (/v5.7 part)
+    # becareful of the URL when changing the paraview version (/v5.8 part)
   - script: |
-      wget https://www.paraview.org/files/v5.7/ParaView-$(PV_VERSION).tar.xz
+      wget https://www.paraview.org/files/v5.8/ParaView-$(PV_VERSION).tar.xz
       xz -d ParaView-$(PV_VERSION).tar.xz
       tar xvf ParaView-$(PV_VERSION).tar
       mkdir ParaView-$(PV_VERSION)/build
     displayName: 'Download and extract ParaView $(PV_VERSION)'
 
   - script: |
-      ./patch-paraview-5.7.0.sh ../../ParaView-$(PV_VERSION)
+      ./patch-paraview-5.8.0.sh ../../ParaView-$(PV_VERSION)
     workingDirectory: 'paraview/patch'
     displayName: 'Patch ParaView $(PV_VERSION)'
 
@@ -204,7 +211,7 @@ jobs:
   - task: CMake@1
     inputs:
       workingDirectory: 'build/'
-      cmakeArgs: '.. -DCMAKE_INSTALL_PREFIX=$(Build.ArtifactStagingDirectory)/ttk-install -DCMAKE_BUILD_TYPE=Release -DParaView_DIR=./ParaView-v5.7.0/build/'
+      cmakeArgs: '.. -DCMAKE_INSTALL_PREFIX=$(Build.ArtifactStagingDirectory)/ttk-install -DCMAKE_BUILD_TYPE=Release -DParaView_DIR=./ParaView-v5.7.0/build/ $(CMAKE_DISABLE) $(CMAKE_TEST)'
     displayName: 'Configure TTK'
 
   - script: |
