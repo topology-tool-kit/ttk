@@ -5,19 +5,19 @@
        a filter already in ParaView (in Servers/ServerManager/Resources/*.xml)
        that matches your filter and then model your xml on it -->
   <ProxyGroup name="filters">
-    <SourceProxy 
-	name="CellDataConverter" 
-	class="ttkCellDataConverter" 
+    <SourceProxy
+	name="CellDataConverter"
+	class="ttkCellDataConverter"
 	label="TTK CellDataConverter">
       <Documentation
-          long_help="TTK plugin that converts data types for cell-based 
-scalar fields (for instance, from double to float).CellDataConverter plugin 
+          long_help="TTK plugin that converts data types for cell-based
+scalar fields (for instance, from double to float).CellDataConverter plugin
 short help."
-          short_help="TTK plugin that converts data types for cell-based 
-scalar fields (for instance, from double to float).CellDataConverter plugin 
+          short_help="TTK plugin that converts data types for cell-based
+scalar fields (for instance, from double to float).CellDataConverter plugin
 short help.">
-        TTK plugin that converts data types for cell-based 
-scalar fields (for instance, from double to float).CellDataConverter plugin 
+        TTK plugin that converts data types for cell-based
+scalar fields (for instance, from double to float).CellDataConverter plugin
 short help.
       </Documentation>
 
@@ -57,7 +57,7 @@ short help.
           Select the point data scalar field to process.
         </Documentation>
       </StringVectorProperty>
-      
+
       <IntVectorProperty name="OutputType" command="SetOutputType"
        number_of_elements="1" default_values="0">
   <EnumerationDomain name="enum">
@@ -83,13 +83,13 @@ short help.
           default_values="0">
         <BooleanDomain name="bool"/>
         <Documentation>
-          Normalizes the values to the data type range extent (useful for light 
+          Normalizes the values to the data type range extent (useful for light
 data types such as char or unsigned chars).
         </Documentation>
       </IntVectorProperty>
-      
-      
-      
+
+
+
       <IntVectorProperty
           name="UseAllCores"
           label="Use All Cores"
@@ -101,7 +101,7 @@ data types such as char or unsigned chars).
           Use all available cores.
         </Documentation>
       </IntVectorProperty>
-      
+
       <IntVectorProperty
           name="ThreadNumber"
           label="Thread Number"
@@ -120,7 +120,7 @@ data types such as char or unsigned chars).
           Thread number.
         </Documentation>
       </IntVectorProperty>
-      
+
       <IntVectorProperty
           name="DebugLevel"
           label="Debug Level"
@@ -132,22 +132,22 @@ data types such as char or unsigned chars).
           Debug level.
         </Documentation>
       </IntVectorProperty>
-      
+
       <PropertyGroup panel_widget="Line" label="Input options">
         <Property name="CellDataScalarField" />
       </PropertyGroup>
-      
+
       <PropertyGroup panel_widget="Line" label="Output options">
         <Property name="OutputType" />
         <Property name="NormalizeToRange" />
       </PropertyGroup>
-      
+
       <PropertyGroup panel_widget="Line" label="Testing">
         <Property name="UseAllCores" />
         <Property name="ThreadNumber" />
         <Property name="DebugLevel" />
       </PropertyGroup>
-      
+
       <Hints>
         <ShowInMenu category="TTK - Misc" />
       </Hints>

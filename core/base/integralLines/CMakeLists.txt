@@ -7,4 +7,3 @@ ttk_add_base_library(integralLines
     geometry
     triangulation
     )
-

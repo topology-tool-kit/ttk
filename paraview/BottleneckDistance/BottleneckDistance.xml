@@ -14,10 +14,10 @@
       long_help="TTK bottleneckDistance plugin."
       short_help="TTK bottleneckDistance plugin.">
         TTK bottleneckDistance plugin documentation.
-        
+
         Related publication:
         'Lifted Wasserstein Matcher for Fast and Robust Topology Tracking'
-        Maxime Soler, Melanie Plainchault, Bruno Conche, Julien Tierny 
+        Maxime Soler, Melanie Plainchault, Bruno Conche, Julien Tierny
         Proc. of IEEE Symposium on Large Data Analysis and Visualization 2018.
       </Documentation>
 
@@ -133,7 +133,7 @@
       default_values="0"
       panel_visibility="advanced">
         <DoubleRangeDomain name="spx" min="0.0" max="1.0"/>
-        <Documentation>Importance weight for the X component of 
+        <Documentation>Importance weight for the X component of
 the extremum</Documentation>
       </DoubleVectorProperty>
 
@@ -146,7 +146,7 @@ the extremum</Documentation>
       panel_visibility="advanced"
       >
         <DoubleRangeDomain name="spy" min="0.0" max="1.0"/>
-        <Documentation>Importance weight for the Y component of 
+        <Documentation>Importance weight for the Y component of
 the extremum</Documentation>
       </DoubleVectorProperty>
 
@@ -158,7 +158,7 @@ the extremum</Documentation>
       default_values="0"
       panel_visibility="advanced">
         <DoubleRangeDomain name="spz" min="0.0" max="1.0"/>
-        <Documentation>Importance weight for the Z component of 
+        <Documentation>Importance weight for the Z component of
 the extremum</Documentation>
       </DoubleVectorProperty>
 

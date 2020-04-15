@@ -6,4 +6,3 @@ DEPENDS
   VTK::IOLegacy
 PRIVATE_DEPENDS
   VTK::CommonCore
-

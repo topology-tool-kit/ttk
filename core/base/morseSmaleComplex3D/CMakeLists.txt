@@ -6,4 +6,3 @@ ttk_add_base_library(morseSmaleComplex3D
   LINK
     abstractMorseSmaleComplex
     )
-

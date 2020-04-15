@@ -5,23 +5,23 @@
        a filter already in ParaView (in Servers/ServerManager/Resources/*.xml)
        that matches your filter and then model your xml on it -->
   <ProxyGroup name="filters">
-   <SourceProxy 
-     name="Fiber" 
-     class="ttkFiber" 
+   <SourceProxy
+     name="Fiber"
+     class="ttkFiber"
      label="TTK Fiber">
      <Documentation
-        long_help="TTK plugin for fiber computation on bivariate volumetric 
+        long_help="TTK plugin for fiber computation on bivariate volumetric
 data."
-        short_help="TTK plugin for fiber computation on bivariate volumetric 
+        short_help="TTK plugin for fiber computation on bivariate volumetric
 data.">
-       Given a point in the range, this plugin computes its fiber (i.e. 
-pre-image) on bivariate volumetric data. The bivariate input data must be 
-provided as two independent scalar fields attached as point data to the 
+       Given a point in the range, this plugin computes its fiber (i.e.
+pre-image) on bivariate volumetric data. The bivariate input data must be
+provided as two independent scalar fields attached as point data to the
 input geometry.
 
 Related publication:
 "Fast and Exact Fiber Surface Extraction for Tetrahedral Meshes",
-Pavol Klacansky, Julien Tierny, Hamish Carr, Zhao Geng 
+Pavol Klacansky, Julien Tierny, Hamish Carr, Zhao Geng
 IEEE Transactions on Visualization and Computer Graphics, 2016.
      </Documentation>
      <InputProperty
@@ -60,7 +60,7 @@ IEEE Transactions on Visualization and Computer Graphics, 2016.
           Select the U component of the bivariate field.
         </Documentation>
       </StringVectorProperty>
-     
+
       <StringVectorProperty
         name="Vcomponent"
         command="SetVcomponent"
@@ -79,7 +79,7 @@ IEEE Transactions on Visualization and Computer Graphics, 2016.
           Select the V component of the bivariate field.
         </Documentation>
       </StringVectorProperty>
-      
+
       <DoubleVectorProperty name="Uvalue"
         label="U coordinate"
         command="SetUvalue"
@@ -89,7 +89,7 @@ IEEE Transactions on Visualization and Computer Graphics, 2016.
           U coordinate of the fiber.
         </Documentation>
       </DoubleVectorProperty>
-      
+
       <DoubleVectorProperty name="Vvalue"
         label="V coordinate"
         command="SetVvalue"
@@ -99,7 +99,7 @@ IEEE Transactions on Visualization and Computer Graphics, 2016.
           V coordinate of the fiber.
         </Documentation>
       </DoubleVectorProperty>
-      
+
       <IntVectorProperty
          name="UseAllCores"
          label="Use All Cores"
@@ -111,7 +111,7 @@ IEEE Transactions on Visualization and Computer Graphics, 2016.
           Use all available cores.
          </Documentation>
       </IntVectorProperty>
-      
+
       <IntVectorProperty
          name="ThreadNumber"
          label="Thread Number"
@@ -130,7 +130,7 @@ IEEE Transactions on Visualization and Computer Graphics, 2016.
           Thread number.
          </Documentation>
       </IntVectorProperty>
-      
+
       <IntVectorProperty
          name="DebugLevel"
          label="Debug Level"
@@ -142,20 +142,20 @@ IEEE Transactions on Visualization and Computer Graphics, 2016.
            Debug level.
          </Documentation>
       </IntVectorProperty>
-     
+
       <PropertyGroup panel_widget="Line" label="Input options">
         <Property name="Ucomponent" />
         <Property name="Vcomponent" />
         <Property name="Uvalue" />
         <Property name="Vvalue" />
       </PropertyGroup>
-      
+
       <PropertyGroup panel_widget="Line" label="Testing">
         <Property name="UseAllCores" />
         <Property name="ThreadNumber" />
         <Property name="DebugLevel" />
       </PropertyGroup>
-      
+
       <Hints>
         <ShowInMenu category="TTK - Bivariate Scalar Data" />
       </Hints>

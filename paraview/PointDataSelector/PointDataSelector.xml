@@ -5,9 +5,9 @@
        a filter already in ParaView (in Servers/ServerManager/Resources/*.xml)
        that matches your filter and then model your xml on it -->
   <ProxyGroup name="filters">
-    <SourceProxy 
-      name="PointDataSelector" 
-      class="ttkPointDataSelector" 
+    <SourceProxy
+      name="PointDataSelector"
+      class="ttkPointDataSelector"
       label="TTK PointDataSelector">
       <Documentation
         long_help="TTK fieldSelector plugin."

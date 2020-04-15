@@ -17,4 +17,3 @@ ttk_add_base_library(contourForestsTree
     triangulation
     geometry
     )
-

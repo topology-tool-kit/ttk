@@ -8,4 +8,3 @@ ttk_add_base_library(mandatoryCriticalPoints
     contourTree
     lowestCommonAncestor
     )
-

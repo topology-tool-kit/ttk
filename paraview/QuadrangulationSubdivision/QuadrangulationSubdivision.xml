@@ -71,7 +71,7 @@
             name="array_list"
             default_values="0"
             >
-            <RequiredProperties> 
+            <RequiredProperties>
               <Property name="quadrangles" function="Input" />
             </RequiredProperties>
         </ArrayListDomain>

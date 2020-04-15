@@ -21,4 +21,3 @@ if(TARGET ttkGeometrySmoother)
       ${TTK_INSTALL_BINARY_DIR}
     )
 endif()
-

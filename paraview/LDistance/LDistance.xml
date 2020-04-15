@@ -5,17 +5,17 @@
        a filter already in ParaView (in Servers/ServerManager/Resources/*.xml)
        that matches your filter and then model your xml on it -->
   <ProxyGroup name="filters">
-   <SourceProxy 
-     name="LDistance" 
-     class="ttkLDistance" 
+   <SourceProxy
+     name="LDistance"
+     class="ttkLDistance"
      label="TTK LDistance">
-     
+
      <Documentation
         long_help="TTK lDistance plugin."
         short_help="TTK lDistance plugin.">
           TTK lDistance plugin documentation.
      </Documentation>
-     
+
      <InputProperty
         name="Input"
         command="SetInputConnection">
@@ -52,7 +52,7 @@
           Select the first scalar field to process.
         </Documentation>
       </StringVectorProperty>
-      
+
      <StringVectorProperty
         name="ScalarField2"
         command="SetScalarField2"
@@ -79,7 +79,7 @@
          number_of_elements="1"
          default_values="2" >
          <Documentation>
-          Value of the parameter p for the Lp distance computation (type "inf" 
+          Value of the parameter p for the Lp distance computation (type "inf"
 for the L-infinity distance).
          </Documentation>
      </StringVectorProperty>
@@ -94,7 +94,7 @@ for the L-infinity distance).
          Name of the output distance field.
        </Documentation>
      </StringVectorProperty>
-     
+
       <IntVectorProperty
          name="UseAllCores"
          label="Use All Cores"
@@ -106,7 +106,7 @@ for the L-infinity distance).
           Use all available cores.
          </Documentation>
       </IntVectorProperty>
-      
+
       <IntVectorProperty
          name="ThreadNumber"
          label="Thread Number"
@@ -124,7 +124,7 @@ for the L-infinity distance).
           Thread number.
          </Documentation>
       </IntVectorProperty>
-      
+
       <IntVectorProperty
          name="DebugLevel"
          label="Debug Level"
@@ -136,23 +136,23 @@ for the L-infinity distance).
            Debug level.
          </Documentation>
       </IntVectorProperty>
-      
+
       <PropertyGroup panel_widget="Line" label="Input options">
         <Property name="ScalarField1" />
         <Property name="ScalarField2" />
       </PropertyGroup>
-      
+
       <PropertyGroup panel_widget="Line" label="Output options">
         <Property name="n" />
         <Property name="name" />
       </PropertyGroup>
-      
+
       <PropertyGroup panel_widget="Line" label="Testing">
         <Property name="UseAllCores" />
         <Property name="ThreadNumber" />
         <Property name="DebugLevel" />
       </PropertyGroup>
-      
+
       <Hints>
         <ShowInMenu category="TTK - Scalar Data" />
       </Hints>

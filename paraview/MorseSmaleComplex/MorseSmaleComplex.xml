@@ -13,8 +13,8 @@
         long_help="TTK morseSmaleComplex plugin."
         short_help="TTK morseSmaleComplex plugin.">
         TTK plugin for the computation of Morse-Smale complexes.
-          
-          Morse-Smale complexes are useful topological abstractions of scalar 
+
+          Morse-Smale complexes are useful topological abstractions of scalar
 fields for data segmentation, feature extraction, etc.
 
 Related publication:
@@ -128,7 +128,7 @@ Computer Graphics Forum, 2012.
          <Documentation>
            Documentation.
          </Documentation>
-       </IntVectorProperty> 
+       </IntVectorProperty>
 
        <IntVectorProperty name="ComputeAscendingSeparatrices1"
          label="Ascending 1-Separatrices"
@@ -140,7 +140,7 @@ Computer Graphics Forum, 2012.
          <Documentation>
            Documentation.
          </Documentation>
-       </IntVectorProperty> 
+       </IntVectorProperty>
 
        <IntVectorProperty name="ComputeDescendingSeparatrices1"
          label="Descending 1-Separatrices"
@@ -152,7 +152,7 @@ Computer Graphics Forum, 2012.
          <Documentation>
            Documentation.
          </Documentation>
-       </IntVectorProperty> 
+       </IntVectorProperty>
 
        <IntVectorProperty name="ComputeSaddleConnectors"
          label="Saddle Connectors"
@@ -164,7 +164,7 @@ Computer Graphics Forum, 2012.
          <Documentation>
            Documentation.
          </Documentation>
-       </IntVectorProperty> 
+       </IntVectorProperty>
 
        <IntVectorProperty name="ComputeAscendingSeparatrices2"
          label="Ascending 2-Separatrices"
@@ -176,7 +176,7 @@ Computer Graphics Forum, 2012.
          <Documentation>
            Documentation.
          </Documentation>
-       </IntVectorProperty> 
+       </IntVectorProperty>
 
        <IntVectorProperty name="ComputeDescendingSeparatrices2"
          label="Descending 2-Separatrices"
@@ -188,7 +188,7 @@ Computer Graphics Forum, 2012.
          <Documentation>
            Documentation.
          </Documentation>
-       </IntVectorProperty> 
+       </IntVectorProperty>
 
        <IntVectorProperty name="ComputeAscendingSegmentation"
          label="Ascending Segmentation"

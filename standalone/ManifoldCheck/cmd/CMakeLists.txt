@@ -21,4 +21,3 @@ if(TARGET ttkManifoldCheck)
       ${TTK_INSTALL_BINARY_DIR}
     )
 endif()
-

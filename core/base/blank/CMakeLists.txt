@@ -6,4 +6,3 @@ ttk_add_base_library(blank
   LINK
     triangulation
     )
-

@@ -35,4 +35,3 @@ ninja install
 popd
 
 rm -rf $BUILD_DIR
-

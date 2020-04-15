@@ -15,4 +15,3 @@
  #ifdef HAVE_LSEEK64
  # ifdef _WIN32
     typedef __int64 file_offset_t;
-

@@ -12,4 +12,3 @@ ttk_add_base_library(common
         ProgramBase.h
         Wrapper.h
         )
-

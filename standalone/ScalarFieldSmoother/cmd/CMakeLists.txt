@@ -21,4 +21,3 @@ if(TARGET ttkScalarFieldSmoother)
       ${TTK_INSTALL_BINARY_DIR}
     )
 endif()
-

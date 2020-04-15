@@ -3,14 +3,14 @@
 @@ -128,6 +128,41 @@
    return 1;
  }
- 
+
 +static void vtkExtractSelectedIdsCopyPointsNonSorted(vtkDataSet *input,
 +  vtkDataSet *output, vtkIdTypeArray *idArray, vtkIdType *pointMap){
 +
 +  vtkPoints* newPts = vtkPoints::New();
 +
 +  vtkIdType i, numPts = input->GetNumberOfPoints();
-+  
++
 +  vtkIdTypeArray* originalPtIds = vtkIdTypeArray::New();
 +  originalPtIds->SetNumberOfComponents(1);
 +  originalPtIds->SetName("vtkOriginalPointIds");
@@ -45,7 +45,7 @@
 @@ -569,6 +604,49 @@
      }
    }
- 
+
 +  void vtkExtractSelectedIdsExtractPointsvtkIdType(
 +    vtkExtractSelectedIds *self,
 +    int passThrough, int invert, int containingCells,
@@ -70,7 +70,7 @@
 +        input->GetPointCells(ptId, ptCells);
 +        for(vtkIdType j = 0; j < ptCells->GetNumberOfIds(); ++j){
 +          vtkIdType cellId = ptCells->GetId(j);
-+          if((!passThrough) 
++          if((!passThrough)
 +            &&(!invert)&&(cellInArray->GetValue(cellId) != flag)){
 +
 +            input->GetCellPoints(cellId, cellPts);
@@ -95,7 +95,7 @@
 @@ -588,6 +666,32 @@
      }
    }
- 
+
 +  void vtkExtractSelectedIdsExtractPointsT1vtkIdType(
 +    vtkExtractSelectedIds *self,
 +    int passThrough, int invert, int containingCells,
@@ -123,7 +123,7 @@
 +  }
 +
  } // end anonymous namespace
- 
+
  //----------------------------------------------------------------------------
 @@ -924,7 +1028,6 @@
    vtkAbstractArray* sortedArray =
@@ -131,7 +131,7 @@
    sortedArray->DeepCopy(idArray);
 -  vtkSortDataArray::SortArrayByComponent(sortedArray, 0);
    idArray = sortedArray;
- 
+
    void *idVoid = idArray->GetVoidPointer(0);
 @@ -935,10 +1038,19 @@
    switch (idArrayType)
@@ -160,7 +160,7 @@
 @@ -947,15 +1059,17 @@
          static_cast<vtkStdString *>(labelVoid));
    }
- 
+
 -  idArray->Delete();
 -  idxArray->Delete();
 -  labelArray->Delete();

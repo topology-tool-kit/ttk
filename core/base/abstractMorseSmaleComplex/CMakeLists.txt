@@ -7,4 +7,3 @@ ttk_add_base_library(abstractMorseSmaleComplex
     triangulation
     discreteGradient
     )
-

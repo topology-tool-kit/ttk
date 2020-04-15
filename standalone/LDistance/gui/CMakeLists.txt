@@ -21,4 +21,3 @@ if(TARGET ttkLDistance)
       ${TTK_INSTALL_BINARY_DIR}
     )
 endif()
-

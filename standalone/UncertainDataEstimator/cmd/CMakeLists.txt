@@ -25,4 +25,3 @@ if(TARGET ttkUncertainDataEstimator)
       ${TTK_INSTALL_BINARY_DIR}
     )
 endif()
-

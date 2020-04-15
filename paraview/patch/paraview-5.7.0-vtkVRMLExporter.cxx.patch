@@ -3,9 +3,9 @@ index 27de079ba7..aa950f2450 100644
 --- a/IO/Export/vtkVRMLExporter.cxx
 +++ b/IO/Export/vtkVRMLExporter.cxx
 @@ -45,6 +45,8 @@ namespace {
- 
+
  vtkStandardNewMacro(vtkVRMLExporter);
- 
+
 +vtkPolyData *exportPolyData_ = NULL;
 +
  vtkVRMLExporter::vtkVRMLExporter()
@@ -20,12 +20,12 @@ index 27de079ba7..aa950f2450 100644
 +//  vtkCamera *cam;
 +//  double *tempd;
    FILE *fp;
- 
+
    // make sure the user specified a FileName or FilePointer
 @@ -129,32 +131,34 @@ void vtkVRMLExporter::WriteData()
    fprintf(fp,"    }\n ");
    // End of Background
- 
+
 -  // do the camera
 -  cam = ren->GetActiveCamera();
 -  fprintf(fp,"    Viewpoint\n      {\n      fieldOfView %f\n",
@@ -84,7 +84,7 @@ index 27de079ba7..aa950f2450 100644
      "    DirectionalLight { ambientIntensity 1 intensity 0 # ambient light\n");
    fprintf(fp,"      color %f %f %f }\n\n", ren->GetAmbient()[0],
 @@ -239,6 +243,9 @@ void vtkVRMLExporter::WriteALight(vtkLight *aLight, FILE *fp)
- 
+
  void vtkVRMLExporter::WriteAnActor(vtkActor *anActor, FILE *fp)
  {
 +
@@ -96,7 +96,7 @@ index 27de079ba7..aa950f2450 100644
 @@ -328,6 +335,10 @@ void vtkVRMLExporter::WriteAnActor(vtkActor *anActor, FILE *fp)
    fprintf(fp,"      children [\n");
    trans->Delete();
- 
+
 +  // BUG fix
 +  exportPolyData_ = static_cast<vtkPolyData *>(pd);
 +  // end of BUG fix
@@ -107,7 +107,7 @@ index 27de079ba7..aa950f2450 100644
 @@ -755,6 +766,23 @@ void vtkVRMLExporter::WritePointData(vtkPoints *points, vtkDataArray *normals,
      fprintf(fp,"          }\n");
    }
- 
+
 +  // BUG fix here.
 +  if(exportPolyData_){
 +    fprintf(fp,"          texCoordIndex[\n");
