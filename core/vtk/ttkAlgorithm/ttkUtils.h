@@ -8,6 +8,7 @@
 #pragma once
 
 #include <vtkAbstractArray.h>
+#include <vtkCellArray.h>
 #include <vtkDoubleArray.h>
 #include <vtkFieldData.h>
 #include <vtkPoints.h>
@@ -39,11 +40,13 @@ namespace ttkUtils {
   void *GetVoidPointer(vtkDataArray *array, vtkIdType start = 0);
   void *GetVoidPointer(vtkPoints *points, vtkIdType start = 0);
 
-  void *
-    WriteVoidPointer(vtkDataArray *array, vtkIdType start, vtkIdType numValues);
+  void *WriteVoidPointer(vtkDataArray *array, vtkIdType start, vtkIdType numValues);
   void *WritePointer(vtkDataArray *array, vtkIdType start, vtkIdType numValues);
 
   void SetVoidArray(vtkDataArray *array, void *data, vtkIdType size, int save);
+
+  // Fill Cell array using a pointer with the old memory layout
+  void FillCellArrayFromSingle(vtkIdType const * cells, vtkIdType ncells, vtkCellArray* cellArray);
 }; // namespace ttkUtils
 
 #include <limits>
@@ -308,5 +311,23 @@ void ttkUtils::SetVoidArray(vtkDataArray *array,
         std::cerr << "SetVoidArray on incompatible vtkDataArray:" << endl;
         array->Print(std::cerr);
       });
+  }
+}
+
+[[deprecated]]
+void ttkUtils::FillCellArrayFromSingle(vtkIdType const * cells, vtkIdType ncells, vtkCellArray* cellArray) {
+
+  size_t curPos = 0;
+  vtkNew<vtkIdList> verts;
+  for(size_t cid = 0; cid < ncells; cid++) {
+
+    const vtkIdType nbVerts = cells[curPos];
+    verts->SetNumberOfIds(nbVerts);
+    curPos++;
+    for(vtkIdType v = 0; v < nbVerts; v++) {
+      verts->SetId(v, cells[curPos]);
+      curPos++;
+    }
+    cellArray->InsertNextCell(verts);
   }
 }

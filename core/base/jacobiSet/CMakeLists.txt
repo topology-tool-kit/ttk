@@ -1,9 +1,9 @@
-# ttk_add_base_template_library(jacobiSet
-#   SOURCES
-#     JacobiSet.h
-#     JacobiSet.inl
-#   LINK
-#     scalarFieldCriticalPoints
-#     triangulation
-#     unionFind
-#     )
+ttk_add_base_template_library(jacobiSet
+  SOURCES
+    JacobiSet.h
+    JacobiSet.inl
+  LINK
+    scalarFieldCriticalPoints
+    triangulation
+    unionFind
+    )

@@ -20,6 +20,8 @@
 
 #include <DataTypes.h>
 
+#include <vector>
+
 #ifndef TTK_ENABLE_KAMIKAZE
 #include <iostream>
 #endif
@@ -82,6 +84,9 @@ namespace ttk {
 #endif
       return connectivity_[offset_[cellId] + localVertId];
     }
+
+    /// Helper fonction to transform an array from the SingleArray layout to the OffsetAndConnectivity one.
+    static void SingleToOffsetAndCo(const LongSimplexId* singleArray, size_t nbCells, std::vector<LongSimplexId>& connectivity, std::vector<LongSimplexId>& offset);
 
   protected:
     const LongSimplexId *connectivity_;

@@ -60,6 +60,38 @@ int ttkIcoSphere::RequestData(vtkInformation *request,
   auto cells = vtkSmartPointer<vtkCellArray>::New();
 
   // execute base code
+  // TODO: Improve here
+#ifdef CELL_ARRAY_NEW
+  vtkIdType *cellArray = (vtkIdType *)ttkUtils::WritePointer(
+    cells->GetData(), nSpheres * nTriangles, nSpheres * nTriangles * 4);
+  if(useDoublePrecision) {
+    if(!this->computeIcoSpheres<double, vtkIdType>(
+         (double *)ttkUtils::GetVoidPointer(points),
+         cellArray,
+
+         nSpheres, nSubdivisions, radius,
+         this->Centers ? (double *)ttkUtils::GetVoidPointer(this->Centers)
+                       : this->Center,
+         this->ComputeNormals ? (float *)ttkUtils::GetVoidPointer(normals)
+                              : nullptr)) {
+      return 0;
+    }
+  } else {
+    float centerFloat[3]{
+      (float)this->Center[0], (float)this->Center[1], (float)this->Center[2]};
+    if(!this->computeIcoSpheres<float, vtkIdType>(
+         (float *)ttkUtils::GetVoidPointer(points),
+         cellArray,
+
+         nSpheres, nSubdivisions, radius,
+         this->Centers ? (float *)ttkUtils::GetVoidPointer(this->Centers)
+                       : centerFloat,
+         this->ComputeNormals ? (float *)ttkUtils::GetVoidPointer(normals)
+                              : nullptr))
+      return 0;
+  }
+  ttkUtils::FillCellArrayFromSingle(cellArray, nSpheres * nTriangles, cells);
+#else
   if(useDoublePrecision) {
     if(!this->computeIcoSpheres<double, vtkIdType>(
          (double *)ttkUtils::GetVoidPointer(points),
@@ -87,8 +119,8 @@ int ttkIcoSphere::RequestData(vtkInformation *request,
                               : nullptr))
       return 0;
   }
-
-  // finalize output
+#endif
+  // module easily finalize output
   {
     auto output = vtkUnstructuredGrid::GetData(outputVector);
     output->SetPoints(points);
