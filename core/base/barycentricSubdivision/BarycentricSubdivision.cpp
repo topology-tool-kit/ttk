@@ -137,7 +137,13 @@ int ttk::BarycentricSubdivision::buildOutputTriangulation() {
   }
 
   outputTriangl_->setInputPoints(points_.size() / 3, points_.data());
+#ifdef CELL_ARRAY_NEW
+  std::vector<LongSimplexId> co, offset;
+  CellArray::SingleToOffsetAndCo(cells_.data(), cells_.size() / 4, co, offset);
+  outputTriangl_->setInputCells(offset.size() - 1, co.data(), offset.data());
+#else
   outputTriangl_->setInputCells(cells_.size() / 4, cells_.data());
+#endif
 
   return 0;
 }
