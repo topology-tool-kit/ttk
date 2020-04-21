@@ -3,6 +3,6 @@ ttk_add_base_library(uncertainDataEstimator
     UncertainDataEstimator.cpp
   HEADERS
     UncertainDataEstimator.h
-  LINK
+  DEPENDS
     common
     )

@@ -5,30 +5,42 @@
 # ttk_add_base_library(<library_name>
 #     SOURCES <source list>
 #     HEADERS <headers to install>
-#     LINK <libraries to link>)
+#     DEPENDS <libraries to link>)
 #
 function(ttk_add_base_library library)
-  cmake_parse_arguments(ARG "" "" "SOURCES;HEADERS;LINK" ${ARGN})
+  cmake_parse_arguments(ARG "" "" "SOURCES;HEADERS;DEPENDS" ${ARGN})
 
-  add_library(${library} STATIC ${ARG_SOURCES} ${ARG_HEADERS})
-  set_target_properties(${library} PROPERTIES
-    POSITION_INDEPENDENT_CODE TRUE)
+  add_library(${library}
+    STATIC
+      ${ARG_SOURCES}
+      ${ARG_HEADERS}
+    )
+  set_target_properties(${library}
+    PROPERTIES
+      POSITION_INDEPENDENT_CODE TRUE
+    )
+  target_include_directories(${library}
+    PUBLIC
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+      $<INSTALL_INTERFACE:include/ttk/base>
+    )
 
-  target_include_directories(${library} PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-    $<INSTALL_INTERFACE:include/ttk/base>)
-
-  if(ARG_LINK)
-    target_link_libraries(${library} PUBLIC ${ARG_LINK})
+  if(ARG_DEPENDS)
+    target_link_libraries(${library} PUBLIC ${ARG_DEPENDS})
   endif()
 
   ttk_set_compile_options(${library})
 
   install(TARGETS ${library}
-    EXPORT TTKBaseTargets
-    RUNTIME DESTINATION bin/ttk
-    ARCHIVE DESTINATION lib/ttk
-    LIBRARY DESTINATION lib/ttk)
+    EXPORT
+      TTKBaseTargets
+    RUNTIME DESTINATION
+      ${CMAKE_INSTALL_BINDIR}/ttk
+    ARCHIVE DESTINATION
+      ${CMAKE_INSTALL_LIBDIR}/ttk
+    LIBRARY DESTINATION
+      ${CMAKE_INSTALL_LIBDIR}/ttk
+    )
 
   if(ARG_HEADERS)
     install(FILES ${ARG_HEADERS} DESTINATION include/ttk/base)
@@ -43,16 +55,19 @@ endfunction()
 #
 # Usage:
 # ttk_add_base_template_library(<library_name>
-#     SOURCES <headers list>
-#     LINK <libraries to link>)
+#     HEADERS <headers list>
+#     DEPENDS <libraries to link>)
 #
 function(ttk_add_base_template_library library)
-  cmake_parse_arguments(ARG "" "" "SOURCES;LINK" ${ARGN})
+  cmake_parse_arguments(ARG "" "" "HEADERS;DEPENDS" ${ARGN})
 
   add_library(${library} INTERFACE)
-  target_include_directories(${library} INTERFACE
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-    $<INSTALL_INTERFACE:include/ttk/base>)
+
+  target_include_directories(${library}
+    INTERFACE
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+      $<INSTALL_INTERFACE:include/ttk/base>
+    )
 
   if(Boost_FOUND)
     target_link_libraries(${library} INTERFACE Boost::boost)
@@ -74,8 +89,8 @@ function(ttk_add_base_template_library library)
     target_compile_options(${library} INTERFACE ${OpenMP_CXX_FLAGS})
   endif()
 
-  if(ARG_LINK)
-    target_link_libraries(${library} INTERFACE ${ARG_LINK})
+  if(ARG_DEPENDS)
+    target_link_libraries(${library} INTERFACE ${ARG_DEPENDS})
   endif()
 
   if(TTK_ENABLE_MPI)
@@ -129,11 +144,15 @@ function(ttk_add_base_template_library library)
 
   install(TARGETS ${library}
     EXPORT TTKBaseTargets
-    RUNTIME DESTINATION bin/ttk
-    ARCHIVE DESTINATION lib/ttk
-    LIBRARY DESTINATION lib/ttk)
+    RUNTIME DESTINATION
+      ${CMAKE_INSTALL_BINDIR}/ttk
+    ARCHIVE DESTINATION
+      ${CMAKE_INSTALL_LIBDIR}/ttk
+    LIBRARY DESTINATION
+      ${CMAKE_INSTALL_LIBDIR}/ttk
+    )
 
-  install(FILES ${ARG_SOURCES} DESTINATION include/ttk/base)
+  install(FILES ${ARG_HEADERS} DESTINATION include/ttk/base)
 endfunction()
 
 # Add compile flags and defintions to the target
@@ -147,6 +166,7 @@ function(ttk_set_compile_options library)
   # compilation flags
   target_compile_options(${library} PRIVATE ${TTK_COMPILER_FLAGS})
 
+  # TODO: per target
   if(Boost_FOUND)
     target_link_libraries(${library} PUBLIC Boost::boost)
   endif()
@@ -175,11 +195,13 @@ function(ttk_set_compile_options library)
     target_link_libraries(${library} PUBLIC ${MPI_CXX_LIBRARIES})
   endif()
 
+  # TODO per module
   if (TTK_ENABLE_ZFP)
     target_compile_definitions(${library} PUBLIC TTK_ENABLE_ZFP)
     target_link_libraries(${library} PUBLIC zfp::zfp)
   endif()
 
+  # TODO per module
   if(TTK_ENABLE_EIGEN)
     target_compile_definitions(${library} PUBLIC TTK_ENABLE_EIGEN)
     # eigen change their cmake 3.2 -> 3.3
@@ -191,12 +213,14 @@ function(ttk_set_compile_options library)
     endif()
   endif()
 
+  # TODO per module
   if (TTK_ENABLE_ZLIB)
     target_compile_definitions(${library} PUBLIC TTK_ENABLE_ZLIB)
     target_include_directories(${library} PUBLIC ${ZLIB_INCLUDE_DIR})
     target_link_libraries(${library} PUBLIC ${ZLIB_LIBRARY})
   endif()
 
+  # TODO per module
   if (TTK_ENABLE_GRAPHVIZ AND GRAPHVIZ_FOUND)
     target_compile_definitions(${library} PUBLIC TTK_ENABLE_GRAPHVIZ)
     target_include_directories(${library} PUBLIC ${GRAPHVIZ_INCLUDE_DIR})
@@ -206,10 +230,12 @@ function(ttk_set_compile_options library)
     target_link_libraries(${library} PUBLIC ${GRAPHVIZ_PATHPLAN_LIBRARY})
   endif()
 
+  # TODO per module
   if (TTK_ENABLE_SCIKIT_LEARN)
     target_compile_definitions(${library} PUBLIC TTK_ENABLE_SCIKIT_LEARN)
   endif()
 
+  # TODO per module
   if (TTK_ENABLE_SQLITE3)
     target_compile_definitions(${library} PUBLIC TTK_ENABLE_SQLITE3)
     target_include_directories(${library} PUBLIC ${SQLITE3_INCLUDE_DIR})

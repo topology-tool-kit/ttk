@@ -13,7 +13,7 @@ ttk_add_base_library(contourForestsTree
     DeprecatedSegmentation.h
     DeprecatedStructures.h
     DeprecatedSuperArc.h
-  LINK
+  DEPENDS
     triangulation
     geometry
     )

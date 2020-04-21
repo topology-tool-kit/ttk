@@ -17,7 +17,7 @@ ttk_add_base_library(ftmTree
       FTMSegmentation.h
       FTMStructures.h
       FTMSuperArc.h
-  LINK
+  DEPENDS
     triangulation
     geometry
     )

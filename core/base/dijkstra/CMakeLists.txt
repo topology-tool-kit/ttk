@@ -3,7 +3,7 @@ ttk_add_base_library(dijkstra
     Dijkstra.cpp
   HEADERS
     Dijkstra.h
-  LINK
+  DEPENDS
     geometry
     triangulation
     )

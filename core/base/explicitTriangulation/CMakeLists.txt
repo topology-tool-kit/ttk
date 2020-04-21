@@ -3,7 +3,7 @@ ttk_add_base_library(explicitTriangulation
     ExplicitTriangulation.cpp
   HEADERS
     ExplicitTriangulation.h
-  LINK
+  DEPENDS
     abstractTriangulation
     skeleton
     )

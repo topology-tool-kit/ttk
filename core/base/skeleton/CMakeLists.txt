@@ -23,7 +23,7 @@ ttk_add_base_library(skeleton
     OneSkeleton.h
     TwoSkeleton.h
     ThreeSkeleton.h
-  LINK
+  DEPENDS
     common
   )
 

@@ -4,7 +4,7 @@
       BarycentricSubdivision.cpp
     HEADERS
       BarycentricSubdivision.h
-    LINK
+    DEPENDS
       triangulation
       geometry
     )

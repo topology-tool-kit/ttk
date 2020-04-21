@@ -4,7 +4,7 @@ if ("${TTK_CELL_ARRAY_LAYOUT}" STREQUAL "SingleArray")
       MorseSmaleQuadrangulation.cpp
     HEADERS
       MorseSmaleQuadrangulation.h
-    LINK
+    DEPENDS
       barycentricSubdivision
       dijkstra
       geometry

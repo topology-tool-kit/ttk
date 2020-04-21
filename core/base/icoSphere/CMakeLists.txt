@@ -3,6 +3,6 @@ ttk_add_base_library(icoSphere
     IcoSphere.cpp
   HEADERS
     IcoSphere.h
-  LINK
+  DEPENDS
     triangulation
     )

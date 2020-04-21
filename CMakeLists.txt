@@ -31,13 +31,6 @@ endif()
 # find dependencies
 include(config.cmake)
 
-# Functiond to read ttk.module files
-if(VTK_FOUND)
-  # required for both wrappers and paraview
-  # Note, may also use it for basecode it we want a base.module file
-  include(CMake/VTKModule.cmake)
-endif()
-
 # Use folder as configured by the distribution
 include(GNUInstallDirs)
 
@@ -46,10 +39,10 @@ include(GNUInstallDirs)
 
 include(CMake/CompilerFlags.cmake)
 include(CMake/BaseCode.cmake)
+
 add_subdirectory(core)
 
 add_library(baseAll INTERFACE)
-
 target_link_libraries(baseAll INTERFACE ${TTK_BASECODES})
 
 install(
@@ -81,6 +74,13 @@ install(
   DESTINATION
     lib/cmake/ttk
   )
+
+# Functiond to read ttk.module files
+if(VTK_FOUND)
+  # required for both wrappers and paraview
+  # Note, may also use it for basecode it we want a base.module file
+  include(CMake/VTKModule.cmake)
+endif()
 
 # Paraview plugin
 # ---------------

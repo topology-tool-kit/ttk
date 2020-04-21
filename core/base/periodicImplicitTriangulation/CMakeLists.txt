@@ -1,4 +1,4 @@
 ttk_add_base_library(periodicImplicitTriangulation
   SOURCES PeriodicImplicitTriangulation.cpp
   HEADERS PeriodicImplicitTriangulation.h
-  LINK abstractTriangulation)
+  DEPENDS abstractTriangulation)

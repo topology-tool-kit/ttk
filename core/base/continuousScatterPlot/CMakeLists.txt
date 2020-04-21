@@ -3,7 +3,7 @@ ttk_add_base_library(continuousScatterPlot
     ContinuousScatterPlot.cpp
   HEADERS
     ContinuousScatterPlot.h
-  LINK
+  DEPENDS
     triangulation
     geometry
     )

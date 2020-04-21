@@ -5,7 +5,7 @@ ttk_add_base_library(dimensionReduction
     DimensionReduction.cpp
   HEADERS
     DimensionReduction.h
-  LINK
+  DEPENDS
     triangulation
     )
 

@@ -3,7 +3,7 @@ ttk_add_base_library(harmonicField
     HarmonicField.cpp
   HEADERS
     HarmonicField.h
-  LINK
+  DEPENDS
     geometry
     laplacian
     triangulation

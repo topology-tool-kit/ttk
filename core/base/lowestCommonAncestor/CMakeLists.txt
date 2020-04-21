@@ -3,7 +3,7 @@ ttk_add_base_library(lowestCommonAncestor
     LowestCommonAncestor.cpp
   HEADERS
     LowestCommonAncestor.h
-  LINK
+  DEPENDS
     rangeMinimumQuery
     common
     )

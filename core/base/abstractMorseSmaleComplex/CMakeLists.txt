@@ -3,7 +3,7 @@ ttk_add_base_library(abstractMorseSmaleComplex
     AbstractMorseSmaleComplex.cpp
   HEADERS
     AbstractMorseSmaleComplex.h
-  LINK
+  DEPENDS
     triangulation
     discreteGradient
     )

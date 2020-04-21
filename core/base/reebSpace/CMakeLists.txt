@@ -4,7 +4,7 @@ if ("${TTK_CELL_ARRAY_LAYOUT}" STREQUAL "SingleArray")
       ReebSpace.cpp
     HEADERS
       ReebSpace.h
-    LINK
+    DEPENDS
       fiberSurface
       geometry
       jacobiSet

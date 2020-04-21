@@ -3,6 +3,6 @@ ttk_add_base_library(blank
     Blank.cpp
   HEADERS
     Blank.h
-  LINK
+  DEPENDS
     triangulation
     )

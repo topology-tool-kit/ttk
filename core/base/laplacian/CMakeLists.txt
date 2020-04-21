@@ -3,7 +3,7 @@ ttk_add_base_library(laplacian
     Laplacian.cpp
   HEADERS
     Laplacian.h
-  LINK
+  DEPENDS
     geometry
     triangulation
     )

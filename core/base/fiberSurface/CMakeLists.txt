@@ -12,7 +12,7 @@ ttk_add_base_library(fiberSurface
     FiberSurface.cpp
   HEADERS
     FiberSurface.h
-  LINK
+  DEPENDS
     ${DEPS}
     )
 

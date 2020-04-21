@@ -5,7 +5,7 @@ ttk_add_base_library(topologicalCompression
     TopologicalCompression.h
     PersistenceDiagramCompression.h
     OtherCompression.h
-  LINK
+  DEPENDS
     triangulation
     persistenceDiagram
     topologicalSimplification

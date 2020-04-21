@@ -9,7 +9,7 @@ ttk_add_base_library(bottleneckDistance
     GabowTarjan.h
     GabowTarjanImpl.h
     MatchingGraph.h
-  LINK
+  DEPENDS
     triangulation
     persistenceDiagram
     )

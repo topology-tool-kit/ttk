@@ -1,8 +1,8 @@
 ttk_add_base_template_library(scalarFieldCriticalPoints
-  SOURCES
+  HEADERS
     ScalarFieldCriticalPoints.h
     ScalarFieldCriticalPoints.inl
-  LINK
+  DEPENDS
     triangulation
     unionFind
     )

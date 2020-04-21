@@ -1,8 +1,8 @@
 ttk_add_base_template_library(jacobiSet
-  SOURCES
+  HEADERS
     JacobiSet.h
     JacobiSet.inl
-  LINK
+  DEPENDS
     scalarFieldCriticalPoints
     triangulation
     unionFind

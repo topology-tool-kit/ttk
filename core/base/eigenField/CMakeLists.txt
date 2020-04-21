@@ -3,7 +3,7 @@ ttk_add_base_library(eigenField
     EigenField.cpp
   HEADERS
     EigenField.h
-  LINK
+  DEPENDS
     geometry
     laplacian
     triangulation

@@ -4,7 +4,7 @@ if ("${TTK_CELL_ARRAY_LAYOUT}" STREQUAL "SingleArray")
       DepthImageBasedGeometryApproximation.cpp
     HEADERS
       DepthImageBasedGeometryApproximation.h
-    LINK
+    DEPENDS
       triangulation
       )
 else()
