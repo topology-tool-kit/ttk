@@ -107,10 +107,6 @@ function(ttk_add_base_template_library library)
     endif()
   endif()
 
-  if(TTK_ENABLE_ZFP)
-    target_link_libraries(${library} INTERFACE zfp::zfp)
-  endif()
-
   if(TTK_ENABLE_GRAPHVIZ)
     target_compile_definitions(${library} INTERFACE TTK_ENABLE_GRAPHVIZ)
     target_include_directories(${library} INTERFACE ${GRAPHVIZ_INCLUDE_DIR})
@@ -166,15 +162,6 @@ function(ttk_set_compile_options library)
   # compilation flags
   target_compile_options(${library} PRIVATE ${TTK_COMPILER_FLAGS})
 
-  # TODO: per target
-  if(Boost_FOUND)
-    target_link_libraries(${library} PUBLIC Boost::boost)
-  endif()
-
-  if(Boost_LIBRARIES)
-    target_link_libraries(${library} PUBLIC Boost::system)
-  endif()
-
   if (TTK_ENABLE_KAMIKAZE)
     target_compile_definitions(${library} PUBLIC TTK_ENABLE_KAMIKAZE)
   endif()
@@ -193,12 +180,6 @@ function(ttk_set_compile_options library)
     target_compile_definitions(${library} PUBLIC TTK_ENABLE_MPI)
     target_include_directories(${library} PUBLIC ${MPI_CXX_INCLUDE_PATH})
     target_link_libraries(${library} PUBLIC ${MPI_CXX_LIBRARIES})
-  endif()
-
-  # TODO per module
-  if (TTK_ENABLE_ZFP)
-    target_compile_definitions(${library} PUBLIC TTK_ENABLE_ZFP)
-    target_link_libraries(${library} PUBLIC zfp::zfp)
   endif()
 
   # TODO per module
