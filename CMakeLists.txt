@@ -38,6 +38,9 @@ if(VTK_FOUND)
   include(CMake/VTKModule.cmake)
 endif()
 
+# Use folder as configured by the distribution
+include(GNUInstallDirs)
+
 # Base code
 # ---------
 
@@ -46,7 +49,6 @@ include(CMake/BaseCode.cmake)
 add_subdirectory(core)
 
 add_library(baseAll INTERFACE)
-add_library(ttkAll INTERFACE)
 
 target_link_libraries(baseAll INTERFACE ${TTK_BASECODES})
 
@@ -56,11 +58,11 @@ install(
   EXPORT
     TTKBaseTargets
   RUNTIME DESTINATION
-    bin/ttk
+    ${CMAKE_INSTALL_BINDIR}/ttk
   ARCHIVE DESTINATION
-    lib/ttk
+    ${CMAKE_INSTALL_LIBDIR}/ttk
   LIBRARY DESTINATION
-    lib/ttk
+    ${CMAKE_INSTALL_LIBDIR}/ttk
   )
 
 install(
@@ -113,13 +115,14 @@ endif()
 if(TTK_BUILD_VTK_WRAPPERS)
   add_subdirectory(core/vtk)
 
+  add_library(ttkAll INTERFACE)
+
   target_link_libraries(ttkAll INTERFACE ${TTK_ENABLED_MODULES})
 
-  # Use folder as configured by the distribution
-  include(GNUInstallDirs)
+  add_dependencies(ttkAll baseAll)
+
   install(
     TARGETS
-      baseAll
       ttkAll
     EXPORT
       TTKVTKTargets

@@ -78,7 +78,7 @@ jobs:
   - task: CMake@1
     inputs:
       workingDirectory: 'build/'
-      cmakeArgs: '.. $(CMakeArgs) -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -GNinja -DCMAKE_INSTALL_PREFIX=$(Build.ArtifactStagingDirectory)/ttk-install -DCMAKE_BUILD_TYPE=$(BuildType) -DVTK_DIR=$(Build.ArtifactStagingDirectory)/vtk-install/lib/cmake/vtk-8.90 -DTTK_BUILD_PARAVIEW_PLUGINS=OFF $(CMAKE_DISABLE) $(CMAKE_TEST)'
+      cmakeArgs: '.. $(CMakeArgs) -GNinja -DCMAKE_INSTALL_PREFIX=$(Build.ArtifactStagingDirectory)/ttk-install -DCMAKE_BUILD_TYPE=$(BuildType) -DVTK_DIR=$(Build.ArtifactStagingDirectory)/vtk-install/lib/cmake/vtk-8.90 -DTTK_BUILD_PARAVIEW_PLUGINS=OFF -DTTK_BUILD_STANDALONE_APPS=ON $(CMAKE_DISABLE) $(CMAKE_TEST)'
     displayName: 'Configure TTK'
 
   - script: |
@@ -155,7 +155,7 @@ jobs:
   - task: CMake@1
     inputs:
       workingDirectory: 'build/'
-      cmakeArgs: '.. -DCMAKE_BUILD_TYPE=$(BuildType) -DCMAKE_INSTALL_PREFIX=$(Build.ArtifactStagingDirectory)/ttk-install -DParaView_DIR=$(Build.ArtifactStagingDirectory)/pv-install/lib/cmake/paraview-$(PV_V) $(CMAKE_DISABLE) $(CMAKE_TEST)'
+      cmakeArgs: '.. -DCMAKE_BUILD_TYPE=$(BuildType) -DCMAKE_INSTALL_PREFIX=$(Build.ArtifactStagingDirectory)/ttk-install -DParaView_DIR=$(Build.ArtifactStagingDirectory)/pv-install/lib/cmake/paraview-$(PV_V) -DTTK_BUILD_STANDALONE_APPS=ON $(CMAKE_DISABLE) $(CMAKE_TEST)'
     displayName: 'Configure TTK'
 
   - script: |
@@ -215,7 +215,7 @@ jobs:
   - task: CMake@1
     inputs:
       workingDirectory: 'build/'
-      cmakeArgs: '.. -DCMAKE_INSTALL_PREFIX=$(Build.ArtifactStagingDirectory)/ttk-install -DCMAKE_BUILD_TYPE=Release -DParaView_DIR=./ParaView-$(PV_VERSION)/build/ $(CMAKE_DISABLE) $(CMAKE_TEST)'
+      cmakeArgs: '.. -DCMAKE_INSTALL_PREFIX=$(Build.ArtifactStagingDirectory)/ttk-install -DCMAKE_BUILD_TYPE=Release -DParaView_DIR=./ParaView-$(PV_VERSION)/build/ -DTTK_BUILD_STANDALONE_APPS=ON $(CMAKE_DISABLE) $(CMAKE_TEST)'
     displayName: 'Configure TTK'
 
   - script: |
