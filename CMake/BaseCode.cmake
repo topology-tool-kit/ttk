@@ -8,7 +8,7 @@
 #     DEPENDS <libraries to link>)
 #
 function(ttk_add_base_library library)
-  cmake_parse_arguments(ARG "" "" "SOURCES;HEADERS;DEPENDS" ${ARGN})
+  cmake_parse_arguments(ARG "" "" "SOURCES;HEADERS;DEPENDS;OPTIONAL_DEPENDS" ${ARGN})
 
   add_library(${library}
     STATIC
@@ -29,6 +29,14 @@ function(ttk_add_base_library library)
     target_link_libraries(${library} PUBLIC ${ARG_DEPENDS})
   endif()
 
+  if(ARG_OPTIONAL_DEPENDS)
+    foreach(OPT_DEP IN LISTS ARG_OPTIONAL_DEPENDS)
+      if(TARGET ${OPT_DEP})
+       target_link_libraries(${library} PUBLIC ${OPT_DEP})
+      endif()
+    endforeach()
+  endif()
+ 
   ttk_set_compile_options(${library})
 
   install(TARGETS ${library}
@@ -153,6 +161,8 @@ endfunction()
 
 # Add compile flags and defintions to the target
 # according to the options selected by the user.
+# Only options and defintions common to all modules
+# should be here.
 #
 # Usage:
 # ttk_set_compile_options(<library_name>)
@@ -182,6 +192,18 @@ function(ttk_set_compile_options library)
     target_link_libraries(${library} PUBLIC ${MPI_CXX_LIBRARIES})
   endif()
 
+  if (TTK_ENABLE_SCIKIT_LEARN)
+    target_compile_definitions(${library} PUBLIC TTK_ENABLE_SCIKIT_LEARN)
+  endif()
+
+  if(TTK_ENABLE_ZFP)
+    target_compile_definitions(${library} PUBLIC TTK_ENABLE_ZFP)
+  endif()
+
+  if (TTK_ENABLE_ZLIB)
+    target_compile_definitions(${library} PUBLIC TTK_ENABLE_ZLIB)
+  endif()
+
   # TODO per module
   if(TTK_ENABLE_EIGEN)
     target_compile_definitions(${library} PUBLIC TTK_ENABLE_EIGEN)
@@ -195,13 +217,6 @@ function(ttk_set_compile_options library)
   endif()
 
   # TODO per module
-  if (TTK_ENABLE_ZLIB)
-    target_compile_definitions(${library} PUBLIC TTK_ENABLE_ZLIB)
-    target_include_directories(${library} PUBLIC ${ZLIB_INCLUDE_DIR})
-    target_link_libraries(${library} PUBLIC ${ZLIB_LIBRARY})
-  endif()
-
-  # TODO per module
   if (TTK_ENABLE_GRAPHVIZ AND GRAPHVIZ_FOUND)
     target_compile_definitions(${library} PUBLIC TTK_ENABLE_GRAPHVIZ)
     target_include_directories(${library} PUBLIC ${GRAPHVIZ_INCLUDE_DIR})
@@ -209,11 +224,6 @@ function(ttk_set_compile_options library)
     target_link_libraries(${library} PUBLIC ${GRAPHVIZ_GVC_LIBRARY})
     target_link_libraries(${library} PUBLIC ${GRAPHVIZ_CGRAPH_LIBRARY})
     target_link_libraries(${library} PUBLIC ${GRAPHVIZ_PATHPLAN_LIBRARY})
-  endif()
-
-  # TODO per module
-  if (TTK_ENABLE_SCIKIT_LEARN)
-    target_compile_definitions(${library} PUBLIC TTK_ENABLE_SCIKIT_LEARN)
   endif()
 
   # TODO per module
