@@ -74,7 +74,6 @@ jobs:
     workingDirectory: 'vtk/build'
     displayName: 'Build and install VTK (No rendering)'
 
-    # need to disable filters linked to rendering (especially vtkDelimitedTextReader.h)
   - task: CMake@1
     inputs:
       workingDirectory: 'build/'

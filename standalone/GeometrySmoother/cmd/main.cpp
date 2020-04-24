@@ -91,9 +91,15 @@ public:
 
     ScalarFieldSmoother *smoother
       = (ScalarFieldSmoother *)Program<ttkModule>::ttkModule_;
-
     triangleMesh_.setInputPoints(vertexNumber, pointSet_.data());
+#ifdef CELL_ARRAY_NEW
+    std::vector<LongSimplexId> conn, off;
+    CellArray::SingleToOffsetAndCo(triangleSet_.data(), triangleNumber, conn, off);
+    triangleMesh_.setInputCells(triangleNumber, conn.data(), off.data());
+#else
     triangleMesh_.setInputCells(triangleNumber, triangleSet_.data());
+#endif
+
     smoother->setupTriangulation(&triangleMesh_);
 
     {
