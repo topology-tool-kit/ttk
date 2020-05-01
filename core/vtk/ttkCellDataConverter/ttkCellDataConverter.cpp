@@ -46,8 +46,8 @@ int ttkCellDataConverter::convert(vtkDataArray *inputData, vtkDataSet *output) {
   B *output_ptr = new B[N * n];
 
   if(UseNormalization) {
-    double type_min = numeric_limits<B>::min();
-    double type_max = numeric_limits<B>::max();
+    auto type_min = static_cast<double>(numeric_limits<B>::min());
+    auto type_max = static_cast<double>(numeric_limits<B>::max());
 
     for(int k = 0; k < n; ++k) {
       double *input_limits = inputData->GetRange();

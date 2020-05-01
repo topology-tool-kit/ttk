@@ -13,7 +13,6 @@ int main(int argc, char **argv) {
 
   // specify local parameters to the TTK module with default values.
   double timeLimit = -1;
-  int numberOfInputs = 1;
   int numberOfClusters = 1;
   double geometry_penalization = 1.;
   int kmeanspp = 1;
