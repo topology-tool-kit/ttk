@@ -53,6 +53,20 @@
         </Documentation>
       </StringVectorProperty>
 
+      <IntVectorProperty
+          name="CloseCurve"
+          label="Close Curve"
+          command="SetCloseCurve"
+          number_of_elements="1"
+          default_values="0"
+          panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Close the curve by generating a line cell between the last
+          point and the first point of the point set.
+        </Documentation>
+      </IntVectorProperty>
+
       <PropertyGroup panel_widget="Line" label="Input options">
         <Property name="InputOrderingArray" />
       </PropertyGroup>

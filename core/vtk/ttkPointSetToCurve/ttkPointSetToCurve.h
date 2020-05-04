@@ -29,6 +29,9 @@ public:
   vtkSetMacro(InputOrderingArray, std::string);
   vtkGetMacro(InputOrderingArray, std::string);
 
+  vtkSetMacro(CloseCurve, bool);
+  vtkGetMacro(CloseCurve, bool);
+
 protected:
   ttkPointSetToCurve();
   ~ttkPointSetToCurve() = default;
@@ -46,4 +49,5 @@ protected:
 
 private:
   std::string InputOrderingArray{};
+  bool CloseCurve{false};
 };

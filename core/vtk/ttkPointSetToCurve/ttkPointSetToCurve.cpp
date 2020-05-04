@@ -103,6 +103,12 @@ int ttkPointSetToCurve::RequestData(vtkInformation *request,
     cells->InsertNextCell(2, linePoints.data());
   }
 
+  if(CloseCurve) {
+    std::array<vtkIdType, 2> linePoints{
+      orderedValues.back().first, orderedValues.front().first};
+    cells->InsertNextCell(2, linePoints.data());
+  }
+
   output->SetCells(VTK_LINE, cells);
 
   return 1;
