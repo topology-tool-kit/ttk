@@ -2,9 +2,6 @@
 
 #include <algorithm>
 
-// TODO:
-// for faster computations, remove all pow10
-
 using namespace std;
 using namespace ttk;
 
@@ -27,11 +24,11 @@ bool Geometry::areVectorsColinear(const T *vA0,
   vector<T> a(3), b(3);
   for(int i = 0; i < 3; i++) {
     a[i] = vA1[i] - vA0[i];
-    if(fabs(a[i]) < pow10(-FLT_DIG)) {
+    if(fabs(a[i]) < powIntTen<float>(-FLT_DIG)) {
       aNullComponents++;
     }
     b[i] = vB1[i] - vB0[i];
-    if(fabs(b[i]) < pow10(-FLT_DIG)) {
+    if(fabs(b[i]) < powIntTen<float>(-FLT_DIG)) {
       bNullComponents++;
     }
   }
@@ -64,13 +61,13 @@ bool Geometry::areVectorsColinear(const T *vA0,
   int isNan = -1, maximizer = 0;
   for(int i = 0; i < 3; i++) {
     if(useDenominatorA) {
-      if(fabs(a[i]) > pow10(-FLT_DIG)) {
+      if(fabs(a[i]) > powIntTen<float>(-FLT_DIG)) {
         k[i] = b[i] / a[i];
       } else {
         isNan = i;
       }
     } else {
-      if(fabs(b[i]) > pow10(-FLT_DIG)) {
+      if(fabs(b[i]) > powIntTen<float>(-FLT_DIG)) {
         k[i] = a[i] / b[i];
       } else {
         isNan = i;
@@ -90,7 +87,7 @@ bool Geometry::areVectorsColinear(const T *vA0,
 
   T colinearityThreshold;
 
-  colinearityThreshold = pow10(-FLT_DIG);
+  colinearityThreshold = powIntTen<float>(-FLT_DIG);
   if(tolerance) {
     colinearityThreshold = *tolerance;
   }
@@ -156,8 +153,8 @@ int Geometry::computeBarycentricCoordinates(const T *p0,
     test[i] = baryCentrics[0] * p0[i] + baryCentrics[1] * p1[i];
   }
 
-  if((!((fabs(test[0] - p[0]) < pow(10, -FLT_DIG + 1))
-        && (fabs(test[1] - p[1]) < pow(10, -FLT_DIG + 1))))) {
+  if((!((fabs(test[0] - p[0]) < powIntTen<float>(-FLT_DIG + 1))
+        && (fabs(test[1] - p[1]) < powIntTen<float>(-FLT_DIG + 1))))) {
     for(int i = 0; i < 2; i++) {
       baryCentrics[i] = -baryCentrics[i];
     }
@@ -236,7 +233,7 @@ bool Geometry::computeSegmentIntersection(const T &xA,
 
   T d = (xA - xB) * (yC - yD) - (yA - yB) * (xC - xD);
 
-  if(fabs(d) < pow(10, -DBL_DIG)) {
+  if(fabs(d) < powIntTen(-DBL_DIG)) {
     return false;
   }
 
@@ -244,13 +241,13 @@ bool Geometry::computeSegmentIntersection(const T &xA,
 
   y = ((yC - yD) * (xA * yB - yA * xB) - (yA - yB) * (xC * yD - yC * xD)) / d;
 
-  if((x < std::min(xA, xB) - pow10(-FLT_DIG))
-     || (x > std::max(xA, xB) + pow10(-FLT_DIG))) {
+  if((x < std::min(xA, xB) - powIntTen<float>(-FLT_DIG))
+     || (x > std::max(xA, xB) + powIntTen<float>(-FLT_DIG))) {
     return false;
   }
 
-  if((x < std::min(xC, xD) - pow10(-FLT_DIG))
-     || (x > std::max(xC, xD) + pow10(-FLT_DIG))) {
+  if((x < std::min(xC, xD) - powIntTen<float>(-FLT_DIG))
+     || (x > std::max(xC, xD) + powIntTen<float>(-FLT_DIG))) {
     return false;
   }
 
@@ -392,10 +389,10 @@ bool Geometry::isPointInTriangle(const T *p0,
   Geometry::computeBarycentricCoordinates(p0, p1, p2, p, barycentrics);
 
   for(int i = 0; i < static_cast<int>(barycentrics.size()); i++) {
-    if(barycentrics[i] < -pow10(-DBL_DIG)) {
+    if(barycentrics[i] < -powIntTen(-DBL_DIG)) {
       return false;
     }
-    if(barycentrics[i] > 1 + pow10(-DBL_DIG)) {
+    if(barycentrics[i] > 1 + powIntTen(-DBL_DIG)) {
       return false;
     }
   }
@@ -431,10 +428,10 @@ bool Geometry::isPointOnSegment(const T *p,
 
   Geometry::computeBarycentricCoordinates(pA, pB, p, baryCentrics, dimension);
 
-  return (((baryCentrics[0] > -pow10(-DBL_DIG))
-           && (baryCentrics[0] < 1 + pow10(-DBL_DIG)))
-          && ((baryCentrics[1] > -pow10(-DBL_DIG))
-              && (baryCentrics[1] < 1 + pow10(-DBL_DIG))));
+  return (((baryCentrics[0] > -powIntTen(-DBL_DIG))
+           && (baryCentrics[0] < 1 + powIntTen(-DBL_DIG)))
+          && ((baryCentrics[1] > -powIntTen(-DBL_DIG))
+              && (baryCentrics[1] < 1 + powIntTen(-DBL_DIG))));
 }
 
 template <typename T>
@@ -502,6 +499,28 @@ T Geometry::magnitude(const T *o, const T *d) {
   }
 
   return sqrt(mag);
+}
+
+template <typename T>
+T Geometry::powInt(const T val, const int n) {
+  if(n < 0) {
+    return 1.0 / powInt(val, -n);
+  } else if(n == 0) {
+    return 1;
+  } else if(n == 1) {
+    return val;
+  } else if(n == 2) {
+    return val * val;
+  } else if(n == 3) {
+    return val * val * val;
+  } else {
+    return powInt(val, n - 1) * val;
+  }
+}
+
+template <typename T>
+T Geometry::powIntTen(const int n) {
+  return powInt(static_cast<T>(10), n);
 }
 
 // explicit instantiations for double
@@ -586,6 +605,8 @@ template bool Geometry::isTriangleColinear<double>(double const *,
                                                    double const *);
 template double Geometry::magnitude<double>(double const *);
 template double Geometry::magnitude<double>(double const *, double const *);
+template double Geometry::powInt<double>(const double, const int);
+template double Geometry::powIntTen<double>(const int);
 
 // explicit instantiations for float
 
@@ -669,3 +690,5 @@ template bool Geometry::isTriangleColinear<float>(float const *,
                                                   float const *);
 template float Geometry::magnitude<float>(float const *);
 template float Geometry::magnitude<float>(float const *, float const *);
+template float Geometry::powInt<float>(const float, const int);
+template float Geometry::powIntTen<float>(const int);

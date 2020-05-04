@@ -258,6 +258,15 @@ namespace ttk {
     template <typename T>
     T magnitude(const T *o, const T *d);
 
+    /// Compute the integer power of a floating-point value
+    /// (std::pow is optimised for floating-point exponents)
+    template <typename T>
+    T powInt(const T val, const int n);
+
+    /// Compute the nth power of ten
+    template<typename T = double>
+    T powIntTen(const int n);
+
   } // namespace Geometry
 } // namespace ttk
 
