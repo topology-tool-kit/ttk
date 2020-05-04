@@ -1,9 +1,9 @@
 <ServerManagerConfiguration>
   <ProxyGroup name="filters">
     <SourceProxy
-        name="PointsToLine"
-        class="ttkPointsToLine"
-        label="TTK PointsToLine">
+        name="PointSetToCurve"
+        class="ttkPointSetToCurve"
+        label="TTK PointSetToCurve">
       <Documentation
           long_help="TTK filter converting string arrays into int arrays"
           short_help="Converts string arrays into int arrays.">

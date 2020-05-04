@@ -1,4 +1,4 @@
-#include <ttkPointsToLine.h>
+#include <ttkPointSetToCurve.h>
 
 #include <vtkDataObject.h> // For port info
 #include <vtkObjectFactory.h> // for new macro
@@ -13,16 +13,17 @@
 #include <map>
 #include <set>
 
-vtkStandardNewMacro(ttkPointsToLine);
+vtkStandardNewMacro(ttkPointSetToCurve);
 
-ttkPointsToLine::ttkPointsToLine() {
-  this->setDebugMsgPrefix("PointsToLine");
+ttkPointSetToCurve::ttkPointSetToCurve() {
+  this->setDebugMsgPrefix("PointSetToCurve");
 
   this->SetNumberOfInputPorts(1);
   this->SetNumberOfOutputPorts(1);
 }
 
-int ttkPointsToLine::FillInputPortInformation(int port, vtkInformation *info) {
+int ttkPointSetToCurve::FillInputPortInformation(int port,
+                                                 vtkInformation *info) {
   if(port == 0) {
     info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkPointSet");
     return 1;
@@ -30,7 +31,8 @@ int ttkPointsToLine::FillInputPortInformation(int port, vtkInformation *info) {
   return 0;
 }
 
-int ttkPointsToLine::FillOutputPortInformation(int port, vtkInformation *info) {
+int ttkPointSetToCurve::FillOutputPortInformation(int port,
+                                                  vtkInformation *info) {
   if(port == 0) {
     info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
     return 1;
@@ -39,7 +41,7 @@ int ttkPointsToLine::FillOutputPortInformation(int port, vtkInformation *info) {
 }
 
 template <typename VTK_TT>
-void ttkPointsToLine::dispatch(
+void ttkPointSetToCurve::dispatch(
   std::vector<std::pair<vtkIdType, double>> &storage,
   const VTK_TT *const values,
   const size_t nvalues) {
@@ -49,9 +51,9 @@ void ttkPointsToLine::dispatch(
   }
 }
 
-int ttkPointsToLine::RequestData(vtkInformation *request,
-                                 vtkInformationVector **inputVector,
-                                 vtkInformationVector *outputVector) {
+int ttkPointSetToCurve::RequestData(vtkInformation *request,
+                                    vtkInformationVector **inputVector,
+                                    vtkInformationVector *outputVector) {
   const auto input = vtkPointSet::GetData(inputVector[0]);
   auto output = vtkUnstructuredGrid::GetData(outputVector);
 

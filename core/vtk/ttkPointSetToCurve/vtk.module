@@ -1,4 +1,4 @@
 NAME
-  ttkPointsToLine
+  ttkPointSetToCurve
 DEPENDS
   ttkAlgorithm

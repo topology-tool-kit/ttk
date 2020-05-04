@@ -1,4 +1,4 @@
-/// \class ttkPointsToLine
+/// \class ttkPointSetToCurve
 /// \ingroup vtk
 /// \author Jonas Lukasczyk <jl@jluk.de>
 /// \date 01.09.2018
@@ -14,24 +14,24 @@
 #pragma once
 
 // Module include
-#include <ttkPointsToLineModule.h>
+#include <ttkPointSetToCurveModule.h>
 
 // VTK includes
 #include <ttkAlgorithm.h>
 #include <vtkInformation.h>
 
-class TTKPOINTSTOLINE_EXPORT ttkPointsToLine : public ttkAlgorithm {
+class TTKPOINTSETTOCURVE_EXPORT ttkPointSetToCurve : public ttkAlgorithm {
 
 public:
-  static ttkPointsToLine *New();
-  vtkTypeMacro(ttkPointsToLine, ttkAlgorithm);
+  static ttkPointSetToCurve *New();
+  vtkTypeMacro(ttkPointSetToCurve, ttkAlgorithm);
 
   vtkSetMacro(InputOrderingArray, std::string);
   vtkGetMacro(InputOrderingArray, std::string);
 
 protected:
-  ttkPointsToLine();
-  ~ttkPointsToLine() = default;
+  ttkPointSetToCurve();
+  ~ttkPointSetToCurve() = default;
 
   int FillInputPortInformation(int port, vtkInformation *info) override;
   int FillOutputPortInformation(int port, vtkInformation *info) override;
