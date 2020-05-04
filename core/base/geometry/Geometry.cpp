@@ -5,6 +5,10 @@
 using namespace std;
 using namespace ttk;
 
+static const double PREC_DBL{std::pow(10.0, -DBL_DIG)};
+static const float PREC_FLT{powf(10.0F, -FLT_DIG)};
+static const float PREC_FLT_1{powf(10.0F, -FLT_DIG + 1)};
+
 template <typename T>
 T Geometry::angle(const T *vA0, const T *vA1, const T *vB0, const T *vB1) {
   return M_PI
@@ -24,11 +28,11 @@ bool Geometry::areVectorsColinear(const T *vA0,
   vector<T> a(3), b(3);
   for(int i = 0; i < 3; i++) {
     a[i] = vA1[i] - vA0[i];
-    if(fabs(a[i]) < powIntTen<float>(-FLT_DIG)) {
+    if(fabs(a[i]) < PREC_FLT) {
       aNullComponents++;
     }
     b[i] = vB1[i] - vB0[i];
-    if(fabs(b[i]) < powIntTen<float>(-FLT_DIG)) {
+    if(fabs(b[i]) < PREC_FLT) {
       bNullComponents++;
     }
   }
@@ -61,13 +65,13 @@ bool Geometry::areVectorsColinear(const T *vA0,
   int isNan = -1, maximizer = 0;
   for(int i = 0; i < 3; i++) {
     if(useDenominatorA) {
-      if(fabs(a[i]) > powIntTen<float>(-FLT_DIG)) {
+      if(fabs(a[i]) > PREC_FLT) {
         k[i] = b[i] / a[i];
       } else {
         isNan = i;
       }
     } else {
-      if(fabs(b[i]) > powIntTen<float>(-FLT_DIG)) {
+      if(fabs(b[i]) > PREC_FLT) {
         k[i] = a[i] / b[i];
       } else {
         isNan = i;
@@ -87,7 +91,7 @@ bool Geometry::areVectorsColinear(const T *vA0,
 
   T colinearityThreshold;
 
-  colinearityThreshold = powIntTen<float>(-FLT_DIG);
+  colinearityThreshold = PREC_FLT;
   if(tolerance) {
     colinearityThreshold = *tolerance;
   }
@@ -153,8 +157,8 @@ int Geometry::computeBarycentricCoordinates(const T *p0,
     test[i] = baryCentrics[0] * p0[i] + baryCentrics[1] * p1[i];
   }
 
-  if((!((fabs(test[0] - p[0]) < powIntTen<float>(-FLT_DIG + 1))
-        && (fabs(test[1] - p[1]) < powIntTen<float>(-FLT_DIG + 1))))) {
+  if((!((fabs(test[0] - p[0]) < PREC_FLT_1)
+        && (fabs(test[1] - p[1]) < PREC_FLT_1)))) {
     for(int i = 0; i < 2; i++) {
       baryCentrics[i] = -baryCentrics[i];
     }
@@ -233,7 +237,7 @@ bool Geometry::computeSegmentIntersection(const T &xA,
 
   T d = (xA - xB) * (yC - yD) - (yA - yB) * (xC - xD);
 
-  if(fabs(d) < powIntTen(-DBL_DIG)) {
+  if(fabs(d) < PREC_DBL) {
     return false;
   }
 
@@ -241,13 +245,11 @@ bool Geometry::computeSegmentIntersection(const T &xA,
 
   y = ((yC - yD) * (xA * yB - yA * xB) - (yA - yB) * (xC * yD - yC * xD)) / d;
 
-  if((x < std::min(xA, xB) - powIntTen<float>(-FLT_DIG))
-     || (x > std::max(xA, xB) + powIntTen<float>(-FLT_DIG))) {
+  if((x < std::min(xA, xB) - PREC_FLT) || (x > std::max(xA, xB) + PREC_FLT)) {
     return false;
   }
 
-  if((x < std::min(xC, xD) - powIntTen<float>(-FLT_DIG))
-     || (x > std::max(xC, xD) + powIntTen<float>(-FLT_DIG))) {
+  if((x < std::min(xC, xD) - PREC_FLT) || (x > std::max(xC, xD) + PREC_FLT)) {
     return false;
   }
 
@@ -389,10 +391,10 @@ bool Geometry::isPointInTriangle(const T *p0,
   Geometry::computeBarycentricCoordinates(p0, p1, p2, p, barycentrics);
 
   for(int i = 0; i < static_cast<int>(barycentrics.size()); i++) {
-    if(barycentrics[i] < -powIntTen(-DBL_DIG)) {
+    if(barycentrics[i] < -PREC_DBL) {
       return false;
     }
-    if(barycentrics[i] > 1 + powIntTen(-DBL_DIG)) {
+    if(barycentrics[i] > 1 + PREC_DBL) {
       return false;
     }
   }
@@ -428,10 +430,9 @@ bool Geometry::isPointOnSegment(const T *p,
 
   Geometry::computeBarycentricCoordinates(pA, pB, p, baryCentrics, dimension);
 
-  return (((baryCentrics[0] > -powIntTen(-DBL_DIG))
-           && (baryCentrics[0] < 1 + powIntTen(-DBL_DIG)))
-          && ((baryCentrics[1] > -powIntTen(-DBL_DIG))
-              && (baryCentrics[1] < 1 + powIntTen(-DBL_DIG))));
+  return (
+    ((baryCentrics[0] > -PREC_DBL) && (baryCentrics[0] < 1 + PREC_DBL))
+    && ((baryCentrics[1] > -PREC_DBL) && (baryCentrics[1] < 1 + PREC_DBL)));
 }
 
 template <typename T>
