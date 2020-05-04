@@ -137,28 +137,9 @@ namespace ttk {
     inline void setDeltaLim(const double deltaLim) {
       deltaLim_ = deltaLim;
     }
-    inline void setOutputDistanceMatrix(const bool arg) {
-      outputDistanceMatrix_ = arg;
-    }
-    inline void setUseFullDiagrams(const bool arg) {
-      useFullDiagrams_ = arg;
-    }
-    inline void setPerClusterDistanceMatrix(const bool arg) {
-      perClusterDistanceMatrix_ = arg;
-    }
     template <typename type>
     static type abs(const type var) {
       return (var >= 0) ? var : -var;
-    }
-
-    inline const std::vector<std::vector<double>> &&getDiagramsDistMat() {
-      return std::move(diagramsDistMat_);
-    }
-    inline const std::vector<std::vector<double>> &&getCentroidsDistMat() {
-      return std::move(centroidsDistMat_);
-    }
-    inline const std::vector<double> &&getDistanceToCentroid() {
-      return std::move(distanceToCentroid_);
     }
 
   protected:
@@ -189,12 +170,6 @@ namespace ttk {
     std::vector<BidderDiagram<dataType>> bidder_diagrams_;
     std::vector<GoodDiagram<dataType>> barycenter_goods_;
 
-    bool outputDistanceMatrix_{false};
-    bool useFullDiagrams_{false};
-    bool perClusterDistanceMatrix_{false};
-    std::vector<std::vector<double>> centroidsDistMat_{};
-    std::vector<std::vector<double>> diagramsDistMat_{};
-    std::vector<double> distanceToCentroid_{};
   };
 
   template <typename dataType>
@@ -313,16 +288,9 @@ namespace ttk {
     KMeans.setK(n_clusters_);
     KMeans.setDiagrams(&data_min, &data_sad, &data_max);
     KMeans.setDos(do_min, do_sad, do_max);
-    KMeans.setOutputDistanceMatrix(outputDistanceMatrix_);
-    KMeans.setUseFullDiagrams(useFullDiagrams_);
-    KMeans.setPerClusterDistanceMatrix(perClusterDistanceMatrix_);
     inv_clustering
       = KMeans.execute(final_centroids, all_matchings_per_type_and_cluster);
     vector<vector<int>> centroids_sizes = KMeans.get_centroids_sizes();
-
-    centroidsDistMat_ = KMeans.getCentroidsDistanceMatrix();
-    diagramsDistMat_ = KMeans.getDiagramsDistanceMatrix();
-    distanceToCentroid_ = KMeans.getDistanceToCentroid();
 
     /// Reconstruct matchings
     //

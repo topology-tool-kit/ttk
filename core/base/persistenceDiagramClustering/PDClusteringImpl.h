@@ -625,12 +625,6 @@ std::vector<int> PDClustering<dataType>::execute(
     }
   }
 
-  if(outputDistanceMatrix_) {
-    computeDistanceToCentroid();
-    computeDiagramsDistanceMatrix();
-    getCentroidDistanceMatrix();
-  }
-
   if(distanceWritingOptions_ == 1) {
     printDistancesToFile();
   } else if(distanceWritingOptions_ == 2) {
@@ -1315,68 +1309,6 @@ void PDClustering<dataType>::getCentroidDistanceMatrix() {
     }
   }
   return;
-}
-
-template <typename dataType>
-void PDClustering<dataType>::computeDiagramsDistanceMatrix() {
-
-  diagramsDistanceMatrix_.resize(numberOfInputs_);
-  double delta_lim{0.01};
-
-  const auto &diags_min
-    = useFullDiagrams_ ? bidder_diagrams_min_ : current_bidder_diagrams_min_;
-  const auto &diags_saddle = useFullDiagrams_ ? bidder_diagrams_saddle_
-                                              : current_bidder_diagrams_saddle_;
-  const auto &diags_max
-    = useFullDiagrams_ ? bidder_diagrams_max_ : current_bidder_diagrams_max_;
-
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for schedule(dynamic)
-#endif // TTK_ENABLE_OPENMP
-  for(int i = 0; i < numberOfInputs_; ++i) {
-    diagramsDistanceMatrix_[i].resize(
-      numberOfInputs_, std::numeric_limits<float>::max());
-
-    // matrix diagonal
-    diagramsDistanceMatrix_[i][i] = 0.0;
-
-    for(int j = i + 1; j < numberOfInputs_; ++j) {
-      double distance{};
-
-      if(perClusterDistanceMatrix_) {
-        // skip computation if i and j are not in the same cluster
-        // (distance is set to +inf)
-        if(inv_clustering_[i] != inv_clustering_[j]) {
-          continue;
-        }
-      }
-
-      if(original_dos[0]) {
-        auto &dimin = diags_min[i];
-        auto &djmin = diags_min[j];
-        distance += computeDistance(dimin, djmin, delta_lim);
-      }
-      if(original_dos[1]) {
-        auto &disad = diags_saddle[i];
-        auto &djsad = diags_saddle[j];
-        distance += computeDistance(disad, djsad, delta_lim);
-      }
-      if(original_dos[2]) {
-        auto &dimax = diags_max[i];
-        auto &djmax = diags_max[j];
-        distance += computeDistance(dimax, djmax, delta_lim);
-      }
-
-      diagramsDistanceMatrix_[i][j] = distance;
-    }
-  }
-
-  // distance matrix is symmetric
-  for(int i = 0; i < numberOfInputs_; ++i) {
-    for(int j = i + 1; j < numberOfInputs_; ++j) {
-      diagramsDistanceMatrix_[j][i] = diagramsDistanceMatrix_[i][j];
-    }
-  }
 }
 
 template <typename dataType>

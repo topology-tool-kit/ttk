@@ -47,7 +47,6 @@
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
 #include <vtkSmartPointer.h>
-#include <vtkTable.h>
 #include <vtkUnstructuredGrid.h>
 
 // VTK Module
@@ -261,27 +260,6 @@ public:
   }
   vtkGetMacro(Method, double);
 
-  void SetOutputDistanceMatrix(const bool arg) {
-    OutputDistanceMatrix = arg;
-    needUpdate_ = true;
-    Modified();
-  }
-  vtkGetMacro(OutputDistanceMatrix, bool);
-
-  void SetUseFullDiagrams(const bool arg) {
-    UseFullDiagrams = arg;
-    needUpdate_ = true;
-    Modified();
-  }
-  vtkGetMacro(UseFullDiagrams, bool);
-
-  void SetPerClusterDistanceMatrix(const bool arg) {
-    PerClusterDistanceMatrix = arg;
-    needUpdate_ = true;
-    Modified();
-  }
-  vtkGetMacro(PerClusterDistanceMatrix, bool);
-
 protected:
   ttkPersistenceDiagramClustering();
 
@@ -356,19 +334,12 @@ private:
 
   bool UseProgressive{true};
   double TimeLimit{9999999};
-  bool OutputDistanceMatrix{false};
-  bool UseFullDiagrams{false};
-  bool PerClusterDistanceMatrix{false};
-  std::vector<std::vector<double>> diagramsDistMat{};
-  std::vector<double> distanceToCentroid{};
-  std::vector<std::vector<double>> centroidsDistMat{};
 
   // base code features
   int doIt(const std::vector<vtkUnstructuredGrid *> &input,
            vtkUnstructuredGrid *outputClusters,
            vtkUnstructuredGrid *outputCentroids,
            vtkUnstructuredGrid *outputMatchings,
-           vtkTable *diagramsDistTable,
            int numInputs);
 
   bool needsToAbort() override;
