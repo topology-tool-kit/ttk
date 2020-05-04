@@ -13,6 +13,7 @@
 
 // base code includes
 #include <Debug.h>
+#include <Geometry.h> // for powInt
 #include <algorithm>
 #include <cmath>
 #include <iostream>
@@ -130,21 +131,6 @@ namespace ttk {
     template <typename type>
     inline static type abs(const type var) {
       return (var > 0) ? var : -var;
-    }
-    inline double pow(const double var, int n) {
-      if(n < 0) {
-        return 1.0 / this->pow(var, -n);
-      } else if(n == 0) {
-        return 1;
-      } else if(n == 1) {
-        return var;
-      } else if(n == 2) {
-        return var * var;
-      } else if(n == 3) {
-        return var * var * var;
-      } else {
-        return this->pow(var, n - 1) * var;
-      }
     }
 
   protected:
@@ -433,7 +419,7 @@ namespace ttk {
   dataType KDTree<dataType>::cost(const std::vector<dataType> &coordinates) {
     dataType cost = 0;
     for(size_t i = 0; i < coordinates.size(); i++) {
-      cost += this->pow(abs(coordinates[i] - coordinates_[i]), p_);
+      cost += Geometry::powInt(abs(coordinates[i] - coordinates_[i]), p_);
     }
     return cost;
   }
@@ -445,9 +431,11 @@ namespace ttk {
     dataType d_min = 0;
     for(size_t axis = 0; axis < coordinates.size(); axis++) {
       if(subtree->coords_min_[axis] > coordinates[axis]) {
-        d_min += this->pow(subtree->coords_min_[axis] - coordinates[axis], p_);
+        d_min += Geometry::powInt(
+          subtree->coords_min_[axis] - coordinates[axis], p_);
       } else if(subtree->coords_max_[axis] < coordinates[axis]) {
-        d_min += this->pow(coordinates[axis] - subtree->coords_max_[axis], p_);
+        d_min += Geometry::powInt(
+          coordinates[axis] - subtree->coords_max_[axis], p_);
       }
     }
     return d_min;
