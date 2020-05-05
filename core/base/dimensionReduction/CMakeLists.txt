@@ -16,5 +16,4 @@ install(
     ${CMAKE_INSTALL_PREFIX}/share/scripts/ttk
   )
 
-# TODO: that is nasty, use target version instead
-add_definitions(-DTTK_SCRIPTS_PATH=${CMAKE_INSTALL_PREFIX}/share/scripts/ttk)
+target_compile_definitions(dimensionReduction PUBLIC -DTTK_SCRIPTS_PATH=${CMAKE_INSTALL_PREFIX}/share/scripts/ttk)

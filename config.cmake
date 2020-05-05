@@ -201,7 +201,7 @@ else()
   option(TTK_ENABLE_ZFP "Enable ZFP support" ON)
 endif()
 
-find_package(Eigen3 NO_MODULE)
+find_package(Eigen3 3.3 NO_MODULE)
 if(EIGEN3_FOUND)
   option(TTK_ENABLE_EIGEN "Enable Eigen3 support" ON)
 else()

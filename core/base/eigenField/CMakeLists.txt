@@ -7,9 +7,12 @@ ttk_add_base_library(eigenField
     geometry
     laplacian
     triangulation
+  OPTIONAL_DEPENDS
+    Eigen3::Eigen
     )
 
 if (EIGEN3_FOUND)
+  target_compile_definitions(eigenField PUBLIC TTK_ENABLE_EIGEN)
   find_path(SPECTRA_INCLUDE_DIR Spectra/SymEigsSolver.h)
   if(SPECTRA_INCLUDE_DIR STREQUAL "SPECTRA_INCLUDE_DIR-NOTFOUND")
     option(TTK_ENABLE_SPECTRA "Enable Spectra support" OFF)

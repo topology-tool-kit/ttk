@@ -162,7 +162,6 @@ int ttkBarycentricSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
     decltype(triangulationSubdivision) tmpTr{};
     std::swap(triangulationSubdivision, tmpTr);
 
-    std::cout << tmpCells.size() << " < --- " << std::endl;
 #ifdef CELL_ARRAY_NEW
     std::vector<ttk::LongSimplexId> co, offset;
     ttk::CellArray::SingleToOffsetAndCo(tmpCells.data(), tmpCells.size() / 4, co, offset);

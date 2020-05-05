@@ -105,16 +105,6 @@ function(ttk_add_base_template_library library)
     target_link_libraries(${library} INTERFACE ${MPI_CXX_LIBRARIES})
   endif()
 
-  if(TTK_ENABLE_EIGEN)
-    # eigen change their cmake 3.2 -> 3.3
-    if (TARGET Eigen3::Eigen)
-      target_link_libraries(${library} INTERFACE Eigen3::Eigen)
-    else()
-      target_compile_definitions(${library} INTERFACE ${EIGEN3_DEFINITIONS})
-      target_include_directories(${library} INTERFACE ${EIGEN3_INCLUDE_DIRS})
-    endif()
-  endif()
-
   if(TTK_ENABLE_GRAPHVIZ)
     target_compile_definitions(${library} INTERFACE TTK_ENABLE_GRAPHVIZ)
     target_include_directories(${library} INTERFACE ${GRAPHVIZ_INCLUDE_DIR})
@@ -205,18 +195,6 @@ function(ttk_set_compile_options library)
   endif()
 
   # TODO per module
-  if(TTK_ENABLE_EIGEN)
-    target_compile_definitions(${library} PUBLIC TTK_ENABLE_EIGEN)
-    # eigen change their cmake 3.2 -> 3.3
-    if (TARGET Eigen3::Eigen)
-      target_link_libraries(${library} PUBLIC Eigen3::Eigen)
-    else()
-      target_compile_definitions(${library} PUBLIC ${EIGEN3_DEFINITIONS})
-      target_include_directories(${library} PUBLIC ${EIGEN3_INCLUDE_DIRS})
-    endif()
-  endif()
-
-  # TODO per module
   if (TTK_ENABLE_GRAPHVIZ AND GRAPHVIZ_FOUND)
     target_compile_definitions(${library} PUBLIC TTK_ENABLE_GRAPHVIZ)
     target_include_directories(${library} PUBLIC ${GRAPHVIZ_INCLUDE_DIR})
@@ -247,14 +225,13 @@ function(ttk_find_python)
   if(PYTHON_INCLUDE_DIRS)
     include_directories(SYSTEM ${PYTHON_INCLUDE_DIRS})
 
-    #     if (${CMAKE_VERSION} VERSION_GREATER "3.12"
-    #       OR ${CMAKE_VERSION} VERSION_EQUAL "3.12")
-    #       string(REPLACE \".\" \" \"
-    #         PYTHON_VERSION_LIST ${PYTHONLIBS_VERSION_STRING})
-    #     else()
-    string(REPLACE "." " "
-      PYTHON_VERSION_LIST ${PYTHONLIBS_VERSION_STRING})
-    #     endif()
+    if (${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.12")
+      string(REPLACE \".\" \" \"
+        PYTHON_VERSION_LIST ${PYTHONLIBS_VERSION_STRING})
+    else()
+      string(REPLACE "." " "
+        PYTHON_VERSION_LIST ${PYTHONLIBS_VERSION_STRING})
+    endif()
     separate_arguments(PYTHON_VERSION_LIST)
     list(GET PYTHON_VERSION_LIST 0 PYTHON_MAJOR_VERSION)
     list(GET PYTHON_VERSION_LIST 1 PYTHON_MINOR_VERSION)
