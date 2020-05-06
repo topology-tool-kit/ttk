@@ -379,14 +379,6 @@ namespace ttk {
     ///
     /// Here the notion of cell refers to the simplicices of maximal
     /// dimension (3D: tetrahedra, 2D: triangles, 1D: edges).
-
-    /// \pre For this function to behave correctly,
-    /// preconditionCells() needs to be called on this object prior to
-    /// any traversal, in a clearly distinct pre-processing step that
-    /// involves no traversal at all. An error will be returned
-    /// otherwise.
-    /// \note It is recommended to exclude such a pre-processing step
-    /// from any time performance measurement.
     /// \param cellId Input global cell identifier.
     /// \param localVertexId Input local vertex identifier,
     /// in [0, getCellVertexNumber()].
@@ -1857,30 +1849,6 @@ namespace ttk {
         return -1;
 #endif
       return abstractTriangulation_->preconditionBoundaryVertices();
-    }
-
-    /// Pre-process the cells.
-    ///
-    /// This function should ONLY be called as a pre-condition to the
-    /// following functions:
-    ///   - getCells()
-    ///   - getCellVertex()
-    ///
-    /// \pre This function should be called prior to any traversal, in a
-    /// clearly distinct pre-processing step that involves no traversal at
-    /// all. An error will be returned otherwise.
-    /// \note It is recommended to exclude this pre-processing function from
-    /// any time performance measurement.
-    /// \return Returns 0 upon success, negative values otherwise.
-    /// \sa getCells()
-    /// \sa getCellVertex()
-    inline int preconditionCells() {
-#ifndef TTK_ENABLE_KAMIKAZE
-      if(isEmptyCheck())
-        return -1;
-#endif
-
-      return abstractTriangulation_->preconditionCells();
     }
 
     /// Pre-process the cell edges.
