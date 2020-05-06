@@ -348,6 +348,11 @@ namespace ttk {
                      const SimplexId &zDim);
 
     inline int preconditionVerticesInternal() {
+      // skip if already preconditionned?
+      if(this->hasPreconditionedVertices_) {
+        return 0;
+      }
+
       vertexPositions_.resize(vertexNumber_);
       vertexCoords_.resize(vertexNumber_);
 
@@ -485,6 +490,7 @@ namespace ttk {
           vertexCoords_[i] = std::move(p);
         }
       }
+      this->hasPreconditionedVertices_ = true;
       return 0;
     }
 
@@ -719,7 +725,7 @@ namespace ttk {
       return 0;
     }
 
-    inline int preconditionCellsInternal() override {
+    inline int preconditionCellsInternal() {
       if(dimensionality_ == 3 && !hasPreconditionedTetrahedrons_) {
         hasPreconditionedTetrahedrons_ = true;
         return this->preconditionTetrahedronsInternal();
