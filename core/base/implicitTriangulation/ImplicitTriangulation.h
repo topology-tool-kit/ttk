@@ -488,23 +488,6 @@ namespace ttk {
       return 0;
     }
 
-    // ensure all preconditionVertex functions call
-    // preconditionVertices() once
-#define PRECONDITION_VERTEX(NAME)                            \
-  inline int preconditionVertex##NAME##Internal() override { \
-    if(!hasPreconditionedVertices_) {                        \
-      hasPreconditionedVertices_ = true;                     \
-      return this->preconditionVerticesInternal();           \
-    }                                                        \
-    return 0;                                                \
-  }
-
-    PRECONDITION_VERTEX(Edges)
-    PRECONDITION_VERTEX(Links)
-    PRECONDITION_VERTEX(Neighbors)
-    PRECONDITION_VERTEX(Stars)
-    PRECONDITION_VERTEX(Triangles)
-
     inline int preconditionEdgesInternal() override {
       edgePositions_.resize(edgeNumber_);
       edgeCoords_.resize(edgeNumber_);

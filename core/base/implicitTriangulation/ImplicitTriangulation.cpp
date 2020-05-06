@@ -224,6 +224,10 @@ int ImplicitTriangulation::setInputGrid(const float &xOrigin,
     cellNumber_ = edgeNumber_;
   }
 
+  // ensure preconditionned vertices and cells
+  this->preconditionVerticesInternal();
+  this->preconditionCellsInternal();
+
   return 0;
 }
 
