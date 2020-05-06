@@ -19,7 +19,6 @@ int AbstractTriangulation::clear() {
   hasPreconditionedBoundaryEdges_ = false;
   hasPreconditionedBoundaryTriangles_ = false;
   hasPreconditionedBoundaryVertices_ = false;
-  hasPreconditionedCells_ = false;
   hasPreconditionedCellEdges_ = false;
   hasPreconditionedCellNeighbors_ = false;
   hasPreconditionedCellTriangles_ = false;
