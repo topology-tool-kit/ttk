@@ -495,7 +495,9 @@ int ttkCinemaWriter::RequestData(vtkInformation *request,
   auto input = vtkDataObject::GetData(inputVector[0]);
   auto output = vtkDataObject::GetData(outputVector);
 
-  output->ShallowCopy(input);
+  if(this->ForwardInput) {
+    output->ShallowCopy(input);
+  }
 
   // -------------------------------------------------------------------------
   // Prepare Database
