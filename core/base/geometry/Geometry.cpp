@@ -520,9 +520,6 @@ template int
                                                   double const *,
                                                   std::vector<double> &,
                                                   int const &);
-// template int Geometry::computeBarycentricCoordinates<double>(
-//     double const &, double const &, double const &, double const &,
-//     double const &, double const &, std::vector<double> &);
 template int
   Geometry::computeBarycentricCoordinates<double>(double const *,
                                                   double const *,
@@ -603,9 +600,6 @@ template int
                                                  float const *,
                                                  std::vector<float> &,
                                                  int const &);
-// template int Geometry::computeBarycentricCoordinates<float>(
-//     float const &, float const &, float const &, float const &,
-//     float const &, float const &, std::vector<float> &);
 template int
   Geometry::computeBarycentricCoordinates<float>(float const *,
                                                  float const *,

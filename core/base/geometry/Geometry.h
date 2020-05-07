@@ -57,26 +57,6 @@ namespace ttk {
                                       std::vector<T> &baryCentrics,
                                       const int &dimension = 3);
 
-    /// Compute the barycentric coordinates of point \p xyz with regard to
-    /// the edge defined by the points \p xy0 and \p xy1.
-    /// \param x0 x coordinate of the first vertex of the edge
-    /// \param y0 y coordinate of the first vertex of the edge
-    /// \param x1 x coordinate of the second vertex of the edge
-    /// \param y1 y coordinate of the second vertex of the edge
-    /// \param x x coordinate of the queried point
-    /// \param y y coordinate of the queried point
-    /// \param baryCentrics Output barycentric coordinates (all in [0, 1] if
-    /// \p p belongs to the edge).
-    /// \return Returns 0 upon success, negative values otherwise.
-    template <typename T>
-    int computeBarycentricCoordinates(const T &x0,
-                                      const T &y0,
-                                      const T &x1,
-                                      const T &y1,
-                                      const T &x,
-                                      const T &y,
-                                      std::vector<T> &baryCentrics);
-
     /// Compute the barycentric coordinates of point \p p with regard to the
     /// triangle defined by the 3D points \p p0, \p p1, and \p p2.
     /// \param p0 xyz coordinates of the first vertex of the triangle
