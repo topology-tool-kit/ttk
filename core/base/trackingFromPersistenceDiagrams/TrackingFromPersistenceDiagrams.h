@@ -390,8 +390,9 @@ int ttk::TrackingFromPersistenceDiagrams::performPostProcess(
         double dist = 0;
         bool hasMatched = false;
         if(doMatch1 && ((t3Max && t1Max) || (t3Min && t1Min))) {
-          double dist13 = sqrt(std::pow(x1 - x3, 2) + std::pow(y1 - y3, 2)
-                               + std::pow(z1 - z3, 2));
+          double dist13
+            = sqrt(Geometry::powInt(x1 - x3, 2) + Geometry::powInt(y1 - y3, 2)
+                   + Geometry::powInt(z1 - z3, 2));
           dist = dist13;
           if(dist13 >= postProcThresh)
             continue;
@@ -399,8 +400,9 @@ int ttk::TrackingFromPersistenceDiagrams::performPostProcess(
         }
 
         if(doMatch2 && ((t3Max && t2Max) || (t3Min && t2Min))) {
-          double dist23 = sqrt(std::pow(x2 - x3, 2) + std::pow(y2 - y3, 2)
-                               + std::pow(z2 - z3, 2));
+          double dist23
+            = sqrt(Geometry::powInt(x2 - x3, 2) + Geometry::powInt(y2 - y3, 2)
+                   + Geometry::powInt(z2 - z3, 2));
           dist = dist23;
           if(dist23 >= postProcThresh)
             continue;

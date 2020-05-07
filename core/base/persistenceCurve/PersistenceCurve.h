@@ -114,7 +114,7 @@ int ttk::PersistenceCurve::computePersistencePlot(
 
   // build curve
   const scalarType epsilon
-    = static_cast<scalarType>(pow(10, -REAL_SIGNIFICANT_DIGITS));
+    = static_cast<scalarType>(Geometry::powIntTen(-REAL_SIGNIFICANT_DIGITS));
   for(SimplexId i = 0; i < nbElmnt; ++i) {
     plot[i].first = std::max(std::get<2>(pairs[i]), epsilon);
     plot[i].second = pairs.size() - i;

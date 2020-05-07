@@ -4,6 +4,5 @@ ttk_add_base_library(lDistance
   HEADERS
     LDistance.h
   LINK
-    triangulation
+    geometry
     )
-
