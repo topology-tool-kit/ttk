@@ -20,7 +20,7 @@ public:
   int execute() {
 
     ScalarFieldSmoother *smoother
-      = (ScalarFieldSmoother *)Program<ttkModule>::ttkModule_;
+      = dynamic_cast<ScalarFieldSmoother *>(Program<ttkModule>::ttkModule_);
 
     smoother->setDimensionNumber(3);
     smoother->setInputDataPointer(pointSet_.data());
@@ -90,7 +90,7 @@ public:
     f.close();
 
     ScalarFieldSmoother *smoother
-      = (ScalarFieldSmoother *)Program<ttkModule>::ttkModule_;
+      = dynamic_cast<ScalarFieldSmoother *>(Program<ttkModule>::ttkModule_);
 
     triangleMesh_.setInputPoints(vertexNumber, pointSet_.data());
     triangleMesh_.setInputCells(triangleNumber, triangleSet_.data());
