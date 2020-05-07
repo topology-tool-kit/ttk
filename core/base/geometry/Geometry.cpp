@@ -502,11 +502,6 @@ T Geometry::magnitude(const T *o, const T *d) {
   return sqrt(mag);
 }
 
-template <typename T>
-T Geometry::powIntTen(const int n) {
-  return powInt(static_cast<T>(10), n);
-}
-
 // explicit instantiations for double
 
 template double Geometry::angle<double>(double const *,
@@ -589,7 +584,6 @@ template bool Geometry::isTriangleColinear<double>(double const *,
                                                    double const *);
 template double Geometry::magnitude<double>(double const *);
 template double Geometry::magnitude<double>(double const *, double const *);
-template double Geometry::powIntTen<double>(const int);
 
 // explicit instantiations for float
 
@@ -673,4 +667,3 @@ template bool Geometry::isTriangleColinear<float>(float const *,
                                                   float const *);
 template float Geometry::magnitude<float>(float const *);
 template float Geometry::magnitude<float>(float const *, float const *);
-template float Geometry::powIntTen<float>(const int);

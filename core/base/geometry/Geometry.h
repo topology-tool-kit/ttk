@@ -279,7 +279,9 @@ namespace ttk {
 
     /// Compute the nth power of ten
     template <typename T = double>
-    T powIntTen(const int n);
+    inline T powIntTen(const int n) {
+      return powInt(static_cast<T>(10), n);
+    }
 
   } // namespace Geometry
 } // namespace ttk
