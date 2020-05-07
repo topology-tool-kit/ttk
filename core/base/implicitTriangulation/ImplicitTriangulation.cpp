@@ -2666,11 +2666,6 @@ const vector<vector<SimplexId>> *
 }
 
 int ImplicitTriangulation::preconditionVerticesInternal() {
-  // skip if already preconditionned?
-  if(this->hasPreconditionedVertices_) {
-    return 0;
-  }
-
   vertexPositions_.resize(vertexNumber_);
   vertexCoords_.resize(vertexNumber_);
 
@@ -2803,7 +2798,6 @@ int ImplicitTriangulation::preconditionVerticesInternal() {
       vertexCoords_[i] = std::move(p);
     }
   }
-  this->hasPreconditionedVertices_ = true;
   return 0;
 }
 

@@ -352,8 +352,7 @@ namespace ttk {
     int preconditionTetrahedronsInternal();
 
     inline int preconditionCellsInternal() {
-      if(dimensionality_ == 3 && !hasPreconditionedTetrahedrons_) {
-        hasPreconditionedTetrahedrons_ = true;
+      if(dimensionality_ == 3) {
         return this->preconditionTetrahedronsInternal();
       } else if(dimensionality_ == 2 && !hasPreconditionedTriangles_) {
         hasPreconditionedTriangles_ = true;
@@ -438,8 +437,6 @@ namespace ttk {
     std::vector<VertexPosition> vertexPositions_{};
     // for  every vertex, its coordinates on the grid
     std::vector<std::array<SimplexId, 3>> vertexCoords_{};
-    // if above vectors have already been filled
-    bool hasPreconditionedVertices_{false};
 
     enum class EdgePosition : char {
       //    e--------f
@@ -545,8 +542,6 @@ namespace ttk {
 
     // for every tetrahedron, its coordinates on the grid
     std::vector<std::array<SimplexId, 3>> tetrahedronCoords_{};
-    // if above vectors have already been filled
-    bool hasPreconditionedTetrahedrons_{false};
 
     int dimensionality_; //
     float origin_[3]; //
