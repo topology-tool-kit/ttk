@@ -76,9 +76,11 @@ int ttkIcoSphereFromPoint::RequestData(vtkInformation *request,
     for(size_t i = 0, n = inputPD->GetNumberOfArrays(); i < n; i++) {
       auto oldArray = vtkDataArray::SafeDownCast(inputPD->GetAbstractArray(i));
       std::string oldArrayName(oldArray->GetName());
-      if(!oldArray || (this->GetComputeNormals() && oldArrayName.compare("Normals")==0))
+      if(!oldArray
+         || (this->GetComputeNormals() && oldArrayName.compare("Normals") == 0))
         continue;
-      auto newArray = vtkSmartPointer<vtkDataArray>::Take(oldArray->NewInstance());
+      auto newArray
+        = vtkSmartPointer<vtkDataArray>::Take(oldArray->NewInstance());
       size_t nComponents = oldArray->GetNumberOfComponents();
       newArray->SetName(oldArray->GetName());
       newArray->SetNumberOfComponents(nComponents);

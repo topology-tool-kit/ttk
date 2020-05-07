@@ -21,14 +21,14 @@
 
 #pragma once
 
-#include <ttkIdentifiersModule.h>
 #include <ttkAlgorithm.h>
+#include <ttkIdentifiersModule.h>
 
 class TTKIDENTIFIERS_EXPORT ttkIdentifiers : public ttkAlgorithm {
 
 private:
-    std::string VertexFieldName{ttk::VertexScalarFieldName};
-    std::string CellFieldName{"CellIdentifiers"};
+  std::string VertexFieldName{ttk::VertexScalarFieldName};
+  std::string CellFieldName{"CellIdentifiers"};
 
 public:
   vtkSetMacro(CellFieldName, std::string);

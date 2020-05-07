@@ -93,8 +93,10 @@ namespace ttk {
     ///  of vertex identifiers).
     /// \return Returns 0 upon success, negative values otherwise.
     // int
-    //   buildEdgeLists(const std::vector<std::vector<LongSimplexId>> &cellArrays,
-    //                  std::vector<std::vector<std::pair<SimplexId, SimplexId>>>
+    //   buildEdgeLists(const std::vector<std::vector<LongSimplexId>>
+    //   &cellArrays,
+    //                  std::vector<std::vector<std::pair<SimplexId,
+    //                  SimplexId>>>
     //                    &edgeLists) const;
     // Need to change to be compatible with CellArray, but not used in TTK...
 

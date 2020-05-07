@@ -2,7 +2,7 @@
 
 vtkStandardNewMacro(ttkBottleneckDistance);
 
-ttkBottleneckDistance::ttkBottleneckDistance(){
+ttkBottleneckDistance::ttkBottleneckDistance() {
   // settings
   this->SetNumberOfInputPorts(2);
   this->SetNumberOfOutputPorts(3);
@@ -32,7 +32,8 @@ ttkBottleneckDistance::ttkBottleneckDistance(){
 }
 ttkBottleneckDistance::~ttkBottleneckDistance(){};
 
-int ttkBottleneckDistance::FillInputPortInformation(int port, vtkInformation *info) {
+int ttkBottleneckDistance::FillInputPortInformation(int port,
+                                                    vtkInformation *info) {
   if(port == 0 || port == 1)
     info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkUnstructuredGrid");
   else
@@ -41,7 +42,8 @@ int ttkBottleneckDistance::FillInputPortInformation(int port, vtkInformation *in
   return 1;
 }
 
-int ttkBottleneckDistance::FillOutputPortInformation(int port, vtkInformation *info) {
+int ttkBottleneckDistance::FillOutputPortInformation(int port,
+                                                     vtkInformation *info) {
   if(port == 0 || port == 1 || port == 2)
     info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
   else
@@ -97,11 +99,9 @@ int ttkBottleneckDistance::doBenchmark() {
   return 0;
 }
 
-int ttkBottleneckDistance::RequestData(
-  vtkInformation *request,
-  vtkInformationVector **inputVector,
-  vtkInformationVector *outputVector
-){
+int ttkBottleneckDistance::RequestData(vtkInformation *request,
+                                       vtkInformationVector **inputVector,
+                                       vtkInformationVector *outputVector) {
 
   using dataType = double;
 
@@ -114,9 +114,9 @@ int ttkBottleneckDistance::RequestData(
   // Prepare IO
   auto CTPersistenceDiagram1_ = vtkUnstructuredGrid::GetData(inputVector[0]);
   auto CTPersistenceDiagram2_ = vtkUnstructuredGrid::GetData(inputVector[1]);
-  auto outputCT1 = vtkUnstructuredGrid::GetData(outputVector,0);
-  auto outputCT2 = vtkUnstructuredGrid::GetData(outputVector,1);
-  auto outputCT3 = vtkUnstructuredGrid::GetData(outputVector,2);
+  auto outputCT1 = vtkUnstructuredGrid::GetData(outputVector, 0);
+  auto outputCT2 = vtkUnstructuredGrid::GetData(outputVector, 1);
+  auto outputCT3 = vtkUnstructuredGrid::GetData(outputVector, 2);
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!CTPersistenceDiagram1_ || !CTPersistenceDiagram2_) {
@@ -129,7 +129,8 @@ int ttkBottleneckDistance::RequestData(
     return -1;
   }
 
-  if(CTPersistenceDiagram1_->GetNumberOfPoints() == 0 || CTPersistenceDiagram2_->GetNumberOfPoints() == 0) {
+  if(CTPersistenceDiagram1_->GetNumberOfPoints() == 0
+     || CTPersistenceDiagram2_->GetNumberOfPoints() == 0) {
     this->printErr("Input has no points.");
     return -1;
   }

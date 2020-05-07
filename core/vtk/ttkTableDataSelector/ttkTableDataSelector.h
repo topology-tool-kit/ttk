@@ -15,19 +15,19 @@
 /// VTK pipeline.
 #pragma once
 
-#include <ttkTableDataSelectorModule.h>
 #include <ttkAlgorithm.h>
+#include <ttkTableDataSelectorModule.h>
 
-#include <vtkTable.h>
-#include <vtkDataArraySelection.h>
 #include <limits>
+#include <vtkDataArraySelection.h>
+#include <vtkTable.h>
 
 class TTKTABLEDATASELECTOR_EXPORT ttkTableDataSelector : public ttkAlgorithm {
 private:
   std::vector<std::string> SelectedCols;
   std::vector<std::string> AvailableCols;
   std::string RegexpString{".*"};
-  int RangeId[2]{0,std::numeric_limits<int>::max()};
+  int RangeId[2]{0, std::numeric_limits<int>::max()};
 
 public:
   vtkSetMacro(RegexpString, std::string);
@@ -72,5 +72,4 @@ protected:
                   vtkInformationVector *outputVector) override;
 
   void FillAvailableCols(vtkTable *input);
-
 };

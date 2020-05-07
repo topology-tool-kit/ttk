@@ -28,8 +28,8 @@
 ///
 #pragma once
 
-#include <ttkFiberModule.h>
 #include <ttkAlgorithm.h>
+#include <ttkFiberModule.h>
 
 class TTKFIBER_EXPORT ttkFiber : public ttkAlgorithm {
 

@@ -35,7 +35,7 @@ namespace ttk {
                            std::vector<SimplexId> &pointId,
                            std::vector<SimplexId> &pointDim)
       : points_{points}, cells_{cells}, pointId_{pointId}, pointDim_{pointDim} {
-          this->setDebugMsgPrefix("BarycentricSubdivision");
+      this->setDebugMsgPrefix("BarycentricSubdivision");
     }
 
     inline void setOutputTriangulation(Triangulation *const triangulation) {

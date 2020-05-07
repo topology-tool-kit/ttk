@@ -20,10 +20,11 @@
 ///
 #pragma once
 
-#include <ttkProjectionFromFieldModule.h>
 #include <ttkAlgorithm.h>
+#include <ttkProjectionFromFieldModule.h>
 
-class TTKPROJECTIONFROMFIELD_EXPORT ttkProjectionFromField : public ttkAlgorithm {
+class TTKPROJECTIONFROMFIELD_EXPORT ttkProjectionFromField
+  : public ttkAlgorithm {
 private:
   bool UseTextureCoordinates;
 
@@ -33,7 +34,6 @@ public:
 
   static ttkProjectionFromField *New();
   vtkTypeMacro(ttkProjectionFromField, ttkAlgorithm);
-
 
 protected:
   ttkProjectionFromField();

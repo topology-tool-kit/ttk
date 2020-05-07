@@ -5,15 +5,14 @@
 vtkStandardNewMacro(ttkFiber);
 
 ttkFiber::ttkFiber() {
-    this->setDebugMsgPrefix("Fiber");
+  this->setDebugMsgPrefix("Fiber");
 
-    this->SetNumberOfInputPorts(1);
-    this->SetNumberOfOutputPorts(1);
+  this->SetNumberOfInputPorts(1);
+  this->SetNumberOfOutputPorts(1);
 }
 
 ttkFiber::~ttkFiber() {
 }
-
 
 int ttkFiber::FillInputPortInformation(int port, vtkInformation *info) {
   if(port == 0) {
@@ -25,7 +24,7 @@ int ttkFiber::FillInputPortInformation(int port, vtkInformation *info) {
 }
 
 int ttkFiber::FillOutputPortInformation(int port, vtkInformation *info) {
-  if(port == 0){
+  if(port == 0) {
     info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkPolyData");
     return 1;
   }
@@ -33,55 +32,47 @@ int ttkFiber::FillOutputPortInformation(int port, vtkInformation *info) {
   return 0;
 }
 
-int ttkFiber::RequestData(
-  vtkInformation *request,
-  vtkInformationVector **inputVector,
-  vtkInformationVector *outputVector
-){
+int ttkFiber::RequestData(vtkInformation *request,
+                          vtkInformationVector **inputVector,
+                          vtkInformationVector *outputVector) {
   ttk::Timer t;
 
-  this->printMsg(
-    "Computing Fiber",
-    0,0,
-    ttk::debug::LineMode::REPLACE
-  );
+  this->printMsg("Computing Fiber", 0, 0, ttk::debug::LineMode::REPLACE);
 
-  auto input = vtkDataSet::GetData( inputVector[0] );
-  auto output = vtkPolyData::GetData( outputVector );
+  auto input = vtkDataSet::GetData(inputVector[0]);
+  auto output = vtkPolyData::GetData(outputVector);
 
   auto uArray = this->GetInputArrayToProcess(0, inputVector);
   if(!uArray) {
-    this->printErr( "Unable to retrieve input array 0." );
+    this->printErr("Unable to retrieve input array 0.");
     return 0;
   }
-  std::string uArrayName( uArray->GetName() );
+  std::string uArrayName(uArray->GetName());
 
   auto vArray = this->GetInputArrayToProcess(1, inputVector);
   if(!vArray) {
-    this->printErr( "Unable to retrieve input array 1." );
+    this->printErr("Unable to retrieve input array 1.");
     return 0;
   }
-  std::string vArrayName( vArray->GetName() );
+  std::string vArrayName(vArray->GetName());
 
-  this->printMsg(
-    "Computing Fiber ("+uArrayName+": "+std::to_string(UValue)+", "+vArrayName+": "+std::to_string(VValue)+")",
-    0.1,t.getElapsedTime(),
-    ttk::debug::LineMode::REPLACE
-  );
+  this->printMsg("Computing Fiber (" + uArrayName + ": "
+                   + std::to_string(UValue) + ", " + vArrayName + ": "
+                   + std::to_string(VValue) + ")",
+                 0.1, t.getElapsedTime(), ttk::debug::LineMode::REPLACE);
 
   auto isoSurface = vtkSmartPointer<vtkContourFilter>::New();
   isoSurface->SetInputData(input);
   isoSurface->SetComputeScalars(true);
   isoSurface->SetInputArrayToProcess(
-    0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_POINTS, uArray->GetName()
-  );
+    0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_POINTS, uArray->GetName());
   isoSurface->SetGenerateTriangles(true);
   isoSurface->SetNumberOfContours(1);
   isoSurface->SetValue(0, UValue);
   isoSurface->Update();
 
   auto isoLine = vtkSmartPointer<vtkContourFilter>::New();
-  isoLine->SetInputData( isoSurface->GetOutput() );
+  isoLine->SetInputData(isoSurface->GetOutput());
   isoLine->SetComputeScalars(true);
   isoLine->SetInputArrayToProcess(
     0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_POINTS, vArray->GetName());
@@ -91,10 +82,10 @@ int ttkFiber::RequestData(
 
   output->ShallowCopy(isoLine->GetOutput());
 
-  this->printMsg(
-    "Computing Fiber ("+uArrayName+": "+std::to_string(UValue)+", "+vArrayName+": "+std::to_string(VValue)+")",
-    1,t.getElapsedTime()
-  );
+  this->printMsg("Computing Fiber (" + uArrayName + ": "
+                   + std::to_string(UValue) + ", " + vArrayName + ": "
+                   + std::to_string(VValue) + ")",
+                 1, t.getElapsedTime());
 
   return 1;
 }

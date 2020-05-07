@@ -19,19 +19,21 @@ ttkImportEmbeddingFromTable::ttkImportEmbeddingFromTable() {
 ttkImportEmbeddingFromTable::~ttkImportEmbeddingFromTable() {
 }
 
-int ttkImportEmbeddingFromTable::FillInputPortInformation(int port, vtkInformation *info) {
-  if(port == 0){
+int ttkImportEmbeddingFromTable::FillInputPortInformation(
+  int port, vtkInformation *info) {
+  if(port == 0) {
     info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
     return 1;
-  } else if (port == 1){
+  } else if(port == 1) {
     info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkTable");
     return 1;
   }
   return 0;
 }
 
-int ttkImportEmbeddingFromTable::FillOutputPortInformation(int port, vtkInformation *info) {
-  if(port == 0){
+int ttkImportEmbeddingFromTable::FillOutputPortInformation(
+  int port, vtkInformation *info) {
+  if(port == 0) {
     info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
     return 1;
   }
@@ -53,17 +55,14 @@ inline void setPointFromData(vtkSmartPointer<vtkPoints> points,
   }
 }
 
-int ttkImportEmbeddingFromTable::RequestData(vtkInformation *request,
-                               vtkInformationVector **inputVector,
-                               vtkInformationVector *outputVector) {
+int ttkImportEmbeddingFromTable::RequestData(
+  vtkInformation *request,
+  vtkInformationVector **inputVector,
+  vtkInformationVector *outputVector) {
 
   ttk::Timer t;
 
-  this->printMsg(
-    "Apply Embedding",
-    0, 0,
-    ttk::debug::LineMode::REPLACE
-  );
+  this->printMsg("Apply Embedding", 0, 0, ttk::debug::LineMode::REPLACE);
 
   auto inputDataSet = vtkPointSet::GetData(inputVector[0]);
   auto inputTable = vtkTable::GetData(inputVector[1]);
@@ -104,23 +103,15 @@ int ttkImportEmbeddingFromTable::RequestData(vtkInformation *request,
 
   switch(xarr->GetDataType()) {
     vtkTemplateMacro(
-      setPointFromData(
-        points,
-        (VTK_TT *) ttkUtils::GetVoidPointer(xarr),
-        (VTK_TT *) ttkUtils::GetVoidPointer(yarr),
-        (VTK_TT *) ttkUtils::GetVoidPointer(zarr),
-        Embedding2D
-      )
-    );
+      setPointFromData(points, (VTK_TT *)ttkUtils::GetVoidPointer(xarr),
+                       (VTK_TT *)ttkUtils::GetVoidPointer(yarr),
+                       (VTK_TT *)ttkUtils::GetVoidPointer(zarr), Embedding2D));
   }
 
   outputDataSet->ShallowCopy(inputDataSet);
   outputDataSet->SetPoints(points);
 
-  this->printMsg(
-    "Apply Embedding",
-    1, t.getElapsedTime()
-  );
+  this->printMsg("Apply Embedding", 1, t.getElapsedTime());
 
   return 1;
 }

@@ -1,10 +1,10 @@
 #include <ttkMeshSubdivision.h>
 
-#include <vtkUnstructuredGrid.h>
-#include <vtkPointData.h>
 #include <vtkCellData.h>
-#include <vtkGenericCell.h>
 #include <vtkDoubleArray.h>
+#include <vtkGenericCell.h>
+#include <vtkPointData.h>
+#include <vtkUnstructuredGrid.h>
 
 vtkStandardNewMacro(ttkMeshSubdivision);
 
@@ -18,16 +18,18 @@ ttkMeshSubdivision::ttkMeshSubdivision() {
 ttkMeshSubdivision::~ttkMeshSubdivision() {
 }
 
-int ttkMeshSubdivision::FillInputPortInformation(int port, vtkInformation *info) {
-  if(port == 0){
+int ttkMeshSubdivision::FillInputPortInformation(int port,
+                                                 vtkInformation *info) {
+  if(port == 0) {
     info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkUnstructuredGrid");
     return 1;
   }
   return 0;
 }
 
-int ttkMeshSubdivision::FillOutputPortInformation(int port, vtkInformation *info) {
-  if(port == 0){
+int ttkMeshSubdivision::FillOutputPortInformation(int port,
+                                                  vtkInformation *info) {
+  if(port == 0) {
     info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
     return 1;
   }
@@ -35,15 +37,12 @@ int ttkMeshSubdivision::FillOutputPortInformation(int port, vtkInformation *info
 }
 
 int ttkMeshSubdivision::RequestData(vtkInformation *request,
-                               vtkInformationVector **inputVector,
-                               vtkInformationVector *outputVector) {
+                                    vtkInformationVector **inputVector,
+                                    vtkInformationVector *outputVector) {
   ttk::Timer t;
 
-  this->printMsg(
-    "Subdividing Mesh",
-    0, 0,
-    this->threadNumber_, ttk::debug::LineMode::REPLACE
-  );
+  this->printMsg("Subdividing Mesh", 0, 0, this->threadNumber_,
+                 ttk::debug::LineMode::REPLACE);
 
   auto input = vtkUnstructuredGrid::GetData(inputVector[0]);
   auto output = vtkUnstructuredGrid::GetData(outputVector);
@@ -57,11 +56,14 @@ int ttkMeshSubdivision::RequestData(vtkInformation *request,
 
     std::vector<std::vector<vtkSmartPointer<vtkIdList>>> newCells(
       tmpGrid->GetNumberOfCells());
-    std::vector<std::vector<std::vector<double>>> newPoints(tmpGrid->GetNumberOfCells());
+    std::vector<std::vector<std::vector<double>>> newPoints(
+      tmpGrid->GetNumberOfCells());
 
     // for each cell, for each point, several scalar fields
-    std::vector<std::vector<std::vector<double>>> newPointData(tmpGrid->GetNumberOfCells());
-    std::vector<std::vector<std::vector<double>>> newCellData(tmpGrid->GetNumberOfCells());
+    std::vector<std::vector<std::vector<double>>> newPointData(
+      tmpGrid->GetNumberOfCells());
+    std::vector<std::vector<std::vector<double>>> newCellData(
+      tmpGrid->GetNumberOfCells());
 
     // make the call thread-safe
     vtkSmartPointer<vtkGenericCell> threadCell
@@ -82,13 +84,15 @@ int ttkMeshSubdivision::RequestData(vtkInformation *request,
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
-    for(ttk::SimplexId j = 0; j < (ttk::SimplexId)tmpGrid->GetNumberOfCells(); j++) {
+    for(ttk::SimplexId j = 0; j < (ttk::SimplexId)tmpGrid->GetNumberOfCells();
+        j++) {
 
       vtkSmartPointer<vtkGenericCell> cell
         = vtkSmartPointer<vtkGenericCell>::New();
       tmpGrid->GetCell(j, cell);
 
-      std::vector<double> cellValues(tmpGrid->GetCellData()->GetNumberOfArrays());
+      std::vector<double> cellValues(
+        tmpGrid->GetCellData()->GetNumberOfArrays());
       for(int k = 0; k < (int)cellValues.size(); k++) {
         if(tmpGrid->GetCellData()->GetArray(k)->GetNumberOfComponents() == 1) {
           tmpGrid->GetCellData()->GetArray(k)->GetTuple(j, &(cellValues[k]));
@@ -354,7 +358,8 @@ int ttkMeshSubdivision::RequestData(vtkInformation *request,
             // check if this edge belongs to the face identified right before
             bool vertex0In = false;
             bool vertex1In = false;
-            for(ttk::SimplexId m = 0; m < (ttk::SimplexId)firstFaceVertices.size(); m++) {
+            for(ttk::SimplexId m = 0;
+                m < (ttk::SimplexId)firstFaceVertices.size(); m++) {
               if(firstFaceVertices[m] == vertexId0)
                 vertex0In = true;
               if(firstFaceVertices[m] == vertexId1)
@@ -394,15 +399,16 @@ int ttkMeshSubdivision::RequestData(vtkInformation *request,
           // take care of the second face
           ttk::SimplexId secondFace = -1;
           // take care of the faces
-          for(ttk::SimplexId l = (ttk::SimplexId)faceMap.size() - 1; l >= 0; l--) {
+          for(ttk::SimplexId l = (ttk::SimplexId)faceMap.size() - 1; l >= 0;
+              l--) {
             vtkCell *face = cell->GetFace(l);
 
             if(l != firstFace) {
 
               bool vertex0In = false;
               bool vertex1In = false;
-              for(ttk::SimplexId m = 0; m < (ttk::SimplexId)face->GetNumberOfPoints();
-                  m++) {
+              for(ttk::SimplexId m = 0;
+                  m < (ttk::SimplexId)face->GetNumberOfPoints(); m++) {
                 if(face->GetPointId(m) == thirdEdgeVertices.first) {
                   vertex0In = true;
                 }
@@ -506,9 +512,7 @@ int ttkMeshSubdivision::RequestData(vtkInformation *request,
   }
 
   this->printMsg(
-    "Subdividing Mesh",
-    1, t.getElapsedTime(), this->threadNumber_
-  );
+    "Subdividing Mesh", 1, t.getElapsedTime(), this->threadNumber_);
 
   return 1;
 }

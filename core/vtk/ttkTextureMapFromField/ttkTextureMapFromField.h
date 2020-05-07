@@ -22,10 +22,11 @@
 ///
 #pragma once
 
-#include <ttkTextureMapFromFieldModule.h>
 #include <ttkAlgorithm.h>
+#include <ttkTextureMapFromFieldModule.h>
 
-class TTKTEXTUREMAPFROMFIELD_EXPORT ttkTextureMapFromField : public ttkAlgorithm{
+class TTKTEXTUREMAPFROMFIELD_EXPORT ttkTextureMapFromField
+  : public ttkAlgorithm {
 private:
   bool OnlyUComponent{true};
   bool OnlyVComponent{false};

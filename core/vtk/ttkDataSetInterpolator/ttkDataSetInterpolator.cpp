@@ -1,17 +1,19 @@
 #include <ttkDataSetInterpolator.h>
-#include <vtkProbeFilter.h>
 #include <vtkPointData.h>
+#include <vtkProbeFilter.h>
 
 vtkStandardNewMacro(ttkDataSetInterpolator);
 
-ttkDataSetInterpolator::ttkDataSetInterpolator(){
-    this->setDebugMsgPrefix("DataSetInterpolator");
-    this->SetNumberOfInputPorts(2);
-    this->SetNumberOfOutputPorts(1);
+ttkDataSetInterpolator::ttkDataSetInterpolator() {
+  this->setDebugMsgPrefix("DataSetInterpolator");
+  this->SetNumberOfInputPorts(2);
+  this->SetNumberOfOutputPorts(1);
 }
-ttkDataSetInterpolator::~ttkDataSetInterpolator(){}
+ttkDataSetInterpolator::~ttkDataSetInterpolator() {
+}
 
-int ttkDataSetInterpolator::FillInputPortInformation(int port, vtkInformation *info) {
+int ttkDataSetInterpolator::FillInputPortInformation(int port,
+                                                     vtkInformation *info) {
   if(port == 0 || port == 1)
     info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
   else
@@ -20,7 +22,8 @@ int ttkDataSetInterpolator::FillInputPortInformation(int port, vtkInformation *i
   return 1;
 }
 
-int ttkDataSetInterpolator::FillOutputPortInformation(int port, vtkInformation *info) {
+int ttkDataSetInterpolator::FillOutputPortInformation(int port,
+                                                      vtkInformation *info) {
   if(port == 0)
     info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
   else
@@ -29,21 +32,17 @@ int ttkDataSetInterpolator::FillOutputPortInformation(int port, vtkInformation *
   return 1;
 }
 
-int ttkDataSetInterpolator::RequestData(
-  vtkInformation *request,
-  vtkInformationVector **inputVector,
-  vtkInformationVector *outputVector
-){
+int ttkDataSetInterpolator::RequestData(vtkInformation *request,
+                                        vtkInformationVector **inputVector,
+                                        vtkInformationVector *outputVector) {
   ttk::Timer t;
 
   auto source = vtkDataSet::GetData(inputVector[1]);
   auto target = vtkDataSet::GetData(inputVector[0]);
 
   this->printMsg(
-    "Computing "+std::to_string(target->GetNumberOfPoints())+" locations",
-    0,0,
-    ttk::debug::LineMode::REPLACE
-  );
+    "Computing " + std::to_string(target->GetNumberOfPoints()) + " locations",
+    0, 0, ttk::debug::LineMode::REPLACE);
 
   auto output = vtkDataSet::GetData(outputVector);
 
@@ -70,9 +69,8 @@ int ttkDataSetInterpolator::RequestData(
     outputPointData->AddArray(inputPointData->GetArray(i));
 
   this->printMsg(
-    "Computing "+std::to_string(target->GetNumberOfPoints())+" locations",
-    1,t.getElapsedTime()
-  );
+    "Computing " + std::to_string(target->GetNumberOfPoints()) + " locations",
+    1, t.getElapsedTime());
 
   return 1;
 }

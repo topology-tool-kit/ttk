@@ -1,7 +1,7 @@
 #include <ttkTableDataSelector.h>
 
-#include <vtkFieldData.h>
 #include <vtkDataSetAttributes.h>
+#include <vtkFieldData.h>
 
 #include <regex>
 
@@ -17,16 +17,18 @@ ttkTableDataSelector::ttkTableDataSelector() {
 ttkTableDataSelector::~ttkTableDataSelector() {
 }
 
-int ttkTableDataSelector::FillInputPortInformation(int port, vtkInformation *info) {
-  if(port == 0){
+int ttkTableDataSelector::FillInputPortInformation(int port,
+                                                   vtkInformation *info) {
+  if(port == 0) {
     info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkTable");
     return 1;
   }
   return 0;
 }
 
-int ttkTableDataSelector::FillOutputPortInformation(int port, vtkInformation *info) {
-  if(port == 0){
+int ttkTableDataSelector::FillOutputPortInformation(int port,
+                                                    vtkInformation *info) {
+  if(port == 0) {
     info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
     return 1;
   }
@@ -34,16 +36,12 @@ int ttkTableDataSelector::FillOutputPortInformation(int port, vtkInformation *in
 }
 
 int ttkTableDataSelector::RequestData(vtkInformation *request,
-                               vtkInformationVector **inputVector,
-                               vtkInformationVector *outputVector) {
+                                      vtkInformationVector **inputVector,
+                                      vtkInformationVector *outputVector) {
 
   ttk::Timer t;
 
-  this->printMsg(
-    "Selecting Columns",
-    0, 0,
-    ttk::debug::LineMode::REPLACE
-  );
+  this->printMsg("Selecting Columns", 0, 0, ttk::debug::LineMode::REPLACE);
 
   auto input = vtkTable::GetData(inputVector[0]);
   auto output = vtkTable::GetData(outputVector);
@@ -53,7 +51,7 @@ int ttkTableDataSelector::RequestData(vtkInformation *request,
   vtkFieldData *inputRowData = input->GetRowData();
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!inputRowData) {
-      this->printErr("Input has no row data.");
+    this->printErr("Input has no row data.");
     return -1;
   }
 #endif
@@ -88,10 +86,7 @@ int ttkTableDataSelector::RequestData(vtkInformation *request,
 
   output->GetRowData()->ShallowCopy(outputRowData);
 
-  this->printMsg(
-    "Selecting Columns",
-    1, t.getElapsedTime()
-  );
+  this->printMsg("Selecting Columns", 1, t.getElapsedTime());
 
   return 1;
 }
@@ -103,8 +98,7 @@ int ttkTableDataSelector::RequestInformation(
 
   vtkTable *input = vtkTable::GetData(inputVector[0]);
   FillAvailableCols(input);
-  return ttkAlgorithm::RequestInformation(
-    request, inputVector, outputVector);
+  return ttkAlgorithm::RequestInformation(request, inputVector, outputVector);
 }
 
 void ttkTableDataSelector::FillAvailableCols(vtkTable *input) {

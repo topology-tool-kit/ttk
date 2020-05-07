@@ -17,8 +17,8 @@
 /// \sa ttk::IdentifierRandomizer
 #pragma once
 
-#include <ttkIdentifierRandomizerModule.h>
 #include <ttkAlgorithm.h>
+#include <ttkIdentifierRandomizerModule.h>
 
 class TTKIDENTIFIERRANDOMIZER_EXPORT ttkIdentifierRandomizer
   : public ttkAlgorithm {

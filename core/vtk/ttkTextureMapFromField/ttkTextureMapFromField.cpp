@@ -17,16 +17,18 @@ ttkTextureMapFromField::ttkTextureMapFromField() {
 ttkTextureMapFromField::~ttkTextureMapFromField() {
 }
 
-int ttkTextureMapFromField::FillInputPortInformation(int port, vtkInformation *info) {
-  if(port == 0){
+int ttkTextureMapFromField::FillInputPortInformation(int port,
+                                                     vtkInformation *info) {
+  if(port == 0) {
     info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
     return 1;
   }
   return 0;
 }
 
-int ttkTextureMapFromField::FillOutputPortInformation(int port, vtkInformation *info) {
-  if(port == 0){
+int ttkTextureMapFromField::FillOutputPortInformation(int port,
+                                                      vtkInformation *info) {
+  if(port == 0) {
     info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
     return 1;
   }
@@ -34,16 +36,12 @@ int ttkTextureMapFromField::FillOutputPortInformation(int port, vtkInformation *
 }
 
 int ttkTextureMapFromField::RequestData(vtkInformation *request,
-                               vtkInformationVector **inputVector,
-                               vtkInformationVector *outputVector) {
+                                        vtkInformationVector **inputVector,
+                                        vtkInformationVector *outputVector) {
 
   ttk::Timer t;
 
-  this->printMsg(
-    "Computing Texture Map",
-    0, 0,
-    ttk::debug::LineMode::REPLACE
-  );
+  this->printMsg("Computing Texture Map", 0, 0, ttk::debug::LineMode::REPLACE);
 
   auto input = vtkDataSet::GetData(inputVector[0]);
   auto output = vtkDataSet::GetData(outputVector);
@@ -79,33 +77,30 @@ int ttkTextureMapFromField::RequestData(vtkInformation *request,
     threadId = omp_get_thread_num();
 #endif
 
-      coordinates[threadId][0] = coordinates[threadId][1] = 0;
+    coordinates[threadId][0] = coordinates[threadId][1] = 0;
 
-      if(!OnlyVComponent) {
-        inputScalarFieldU->GetTuple(i, &(coordinates[threadId][0]));
-        if(!RepeatUTexture) {
-          coordinates[threadId][0]
-            = (coordinates[threadId][0] - uRange[0]) / (uRange[1] - uRange[0]);
-        }
+    if(!OnlyVComponent) {
+      inputScalarFieldU->GetTuple(i, &(coordinates[threadId][0]));
+      if(!RepeatUTexture) {
+        coordinates[threadId][0]
+          = (coordinates[threadId][0] - uRange[0]) / (uRange[1] - uRange[0]);
       }
+    }
 
-      if(!OnlyUComponent) {
-        inputScalarFieldV->GetTuple(i, &(coordinates[threadId][1]));
-        if(!RepeatVTexture) {
-          coordinates[threadId][1]
-            = (coordinates[threadId][1] - vRange[0]) / (vRange[1] - vRange[0]);
-        }
+    if(!OnlyUComponent) {
+      inputScalarFieldV->GetTuple(i, &(coordinates[threadId][1]));
+      if(!RepeatVTexture) {
+        coordinates[threadId][1]
+          = (coordinates[threadId][1] - vRange[0]) / (vRange[1] - vRange[0]);
       }
+    }
 
-      textureCoordinates->SetTuple(i, coordinates[threadId].data());
+    textureCoordinates->SetTuple(i, coordinates[threadId].data());
   }
 
   output->GetPointData()->SetTCoords(textureCoordinates);
 
-  this->printMsg(
-    "Computing Texture Map",
-    1, t.getElapsedTime()
-  );
+  this->printMsg("Computing Texture Map", 1, t.getElapsedTime());
 
   return 1;
 }

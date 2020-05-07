@@ -31,9 +31,8 @@
 #include <BarycentricSubdivision.h>
 
 class TTKBARYCENTRICSUBDIVISION_EXPORT ttkBarycentricSubdivision
-  : public ttkAlgorithm
-  , protected ttk::BarycentricSubdivision
-{
+  : public ttkAlgorithm,
+    protected ttk::BarycentricSubdivision {
 
 private:
   // number of subdivisions

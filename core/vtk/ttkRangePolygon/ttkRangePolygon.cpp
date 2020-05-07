@@ -1,10 +1,10 @@
 #include <ttkRangePolygon.h>
 
-#include <vtkPointData.h>
-#include <vtkDataSetSurfaceFilter.h>
 #include <vtkCleanPolyData.h>
-#include <vtkFeatureEdges.h>
+#include <vtkDataSetSurfaceFilter.h>
 #include <vtkDataSetTriangleFilter.h>
+#include <vtkFeatureEdges.h>
+#include <vtkPointData.h>
 
 vtkStandardNewMacro(ttkRangePolygon);
 
@@ -19,7 +19,7 @@ ttkRangePolygon::~ttkRangePolygon() {
 }
 
 int ttkRangePolygon::FillInputPortInformation(int port, vtkInformation *info) {
-  if(port == 0){
+  if(port == 0) {
     info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkUnstructuredGrid");
     return 1;
   }
@@ -27,16 +27,15 @@ int ttkRangePolygon::FillInputPortInformation(int port, vtkInformation *info) {
 }
 
 int ttkRangePolygon::FillOutputPortInformation(int port, vtkInformation *info) {
-  if(port == 0){
+  if(port == 0) {
     info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
     return 1;
   }
   return 0;
-
 }
 int ttkRangePolygon::RequestData(vtkInformation *request,
-                               vtkInformationVector **inputVector,
-                               vtkInformationVector *outputVector) {
+                                 vtkInformationVector **inputVector,
+                                 vtkInformationVector *outputVector) {
   auto input = vtkUnstructuredGrid::GetData(inputVector[0]);
   auto output = vtkUnstructuredGrid::GetData(outputVector);
 
@@ -51,7 +50,6 @@ int ttkRangePolygon::RequestData(vtkInformation *request,
   }
 
   return 1;
-
 }
 int ttkRangePolygon::processPoints(vtkUnstructuredGrid *input,
                                    vtkUnstructuredGrid *output) {
@@ -140,8 +138,7 @@ int ttkRangePolygon::processTriangles(vtkUnstructuredGrid *input,
     this->setupTriangulation(triangulation);
 
     switch(output->GetPoints()->GetDataType()) {
-      vtkTemplateMacro(
-        this->smooth<VTK_TT>(triangulation, NumberOfIterations));
+      vtkTemplateMacro(this->smooth<VTK_TT>(triangulation, NumberOfIterations));
     }
 
     for(int i = 0; i < output->GetPointData()->GetNumberOfArrays(); i++) {

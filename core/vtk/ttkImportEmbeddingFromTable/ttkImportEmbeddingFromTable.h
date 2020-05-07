@@ -16,8 +16,8 @@
 /// VTK pipeline.
 #pragma once
 
-#include <ttkImportEmbeddingFromTableModule.h>
 #include <ttkAlgorithm.h>
+#include <ttkImportEmbeddingFromTableModule.h>
 
 class TTKIMPORTEMBEDDINGFROMTABLE_EXPORT ttkImportEmbeddingFromTable
   : public ttkAlgorithm {

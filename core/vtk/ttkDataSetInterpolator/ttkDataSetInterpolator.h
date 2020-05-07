@@ -25,14 +25,14 @@
 // TTK Includes
 #include <ttkAlgorithm.h>
 
-class TTKDATASETINTERPOLATOR_EXPORT ttkDataSetInterpolator :public ttkAlgorithm{
+class TTKDATASETINTERPOLATOR_EXPORT ttkDataSetInterpolator
+  : public ttkAlgorithm {
 
 public:
   static ttkDataSetInterpolator *New();
   vtkTypeMacro(ttkDataSetInterpolator, ttkAlgorithm)
 
-protected:
-  ttkDataSetInterpolator();
+    protected : ttkDataSetInterpolator();
   ~ttkDataSetInterpolator();
 
   int FillInputPortInformation(int port, vtkInformation *info) override;

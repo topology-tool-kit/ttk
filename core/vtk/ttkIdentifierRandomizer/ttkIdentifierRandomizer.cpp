@@ -1,44 +1,44 @@
 #include <ttkIdentifierRandomizer.h>
 
-#include <vtkPointData.h>
 #include <vtkCellData.h>
+#include <vtkPointData.h>
 
 vtkStandardNewMacro(ttkIdentifierRandomizer);
 
-ttkIdentifierRandomizer::ttkIdentifierRandomizer(){
-    this->setDebugMsgPrefix("IdentifierRandomizer");
+ttkIdentifierRandomizer::ttkIdentifierRandomizer() {
+  this->setDebugMsgPrefix("IdentifierRandomizer");
 
-    this->SetNumberOfInputPorts(1);
-    this->SetNumberOfOutputPorts(1);
+  this->SetNumberOfInputPorts(1);
+  this->SetNumberOfOutputPorts(1);
 }
-ttkIdentifierRandomizer::~ttkIdentifierRandomizer(){
+ttkIdentifierRandomizer::~ttkIdentifierRandomizer() {
 }
 
-int ttkIdentifierRandomizer::FillInputPortInformation(int port, vtkInformation *info) {
-  if(port == 0){
+int ttkIdentifierRandomizer::FillInputPortInformation(int port,
+                                                      vtkInformation *info) {
+  if(port == 0) {
     info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
     return 1;
   }
   return 0;
 }
 
-int ttkIdentifierRandomizer::FillOutputPortInformation(int port, vtkInformation *info) {
-  if(port == 0){
+int ttkIdentifierRandomizer::FillOutputPortInformation(int port,
+                                                       vtkInformation *info) {
+  if(port == 0) {
     info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
     return 1;
   }
   return 0;
 }
 
-int ttkIdentifierRandomizer::RequestData(
-    vtkInformation *request,
-    vtkInformationVector **inputVector,
-    vtkInformationVector *outputVector
-) {
+int ttkIdentifierRandomizer::RequestData(vtkInformation *request,
+                                         vtkInformationVector **inputVector,
+                                         vtkInformationVector *outputVector) {
   ttk::Timer t;
 
-  this->printMsg("Randomizing Identifiers",0,0,
-    this->threadNumber_, ttk::debug::LineMode::REPLACE);
+  this->printMsg("Randomizing Identifiers", 0, 0, this->threadNumber_,
+                 ttk::debug::LineMode::REPLACE);
 
   auto input = vtkDataSet::GetData(inputVector[0]);
   auto output = vtkDataSet::GetData(outputVector);
@@ -50,20 +50,21 @@ int ttkIdentifierRandomizer::RequestData(
   // if your wrapper produces an output of the same type of the input, you
   // should proceed in the same way.
   auto inputArray = this->GetInputArrayToProcess(0, inputVector);
-  if(!inputArray){
+  if(!inputArray) {
     this->printErr("Unable to retrieve input array 0.");
     return 0;
   }
 
   auto inputArrayAssociation = this->GetInputArrayAssociation(0, inputVector);
 
-  auto outputArray = vtkSmartPointer<vtkDataArray>::Take( inputArray->NewInstance() );
+  auto outputArray
+    = vtkSmartPointer<vtkDataArray>::Take(inputArray->NewInstance());
   outputArray->SetNumberOfTuples(inputArray->GetNumberOfTuples());
   outputArray->SetName(inputArray->GetName());
 
   // on the output, replace the field array by a pointer to its processed
   // version
-  if(inputArrayAssociation==0) {
+  if(inputArrayAssociation == 0) {
     output->GetPointData()->AddArray(outputArray);
   } else {
     output->GetCellData()->AddArray(outputArray);
@@ -139,7 +140,7 @@ int ttkIdentifierRandomizer::RequestData(
     outputArray->SetTuple(i, &outputIdentifier);
   }
 
-  this->printMsg("Randomizing Identifiers",1,t.getElapsedTime());
+  this->printMsg("Randomizing Identifiers", 1, t.getElapsedTime());
 
   return 1;
 }

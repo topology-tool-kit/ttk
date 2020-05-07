@@ -19,8 +19,8 @@
 /// \sa vtkScalarFieldSmoother
 #pragma once
 
-#include <ttkScalarFieldNormalizerModule.h>
 #include <ttkAlgorithm.h>
+#include <ttkScalarFieldNormalizerModule.h>
 
 // in this example, this wrapper takes a data-set on the input and produces a
 // data-set on the output - to adapt.

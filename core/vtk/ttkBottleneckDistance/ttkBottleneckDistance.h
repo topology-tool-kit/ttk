@@ -27,11 +27,10 @@
 #include <ttkMacros.h>
 
 // VTK includes
-#include <vtkUnstructuredGrid.h>
-#include <vtkPointData.h>
 #include <vtkCellData.h>
 #include <vtkDoubleArray.h>
-#include <vtkCellData.h>
+#include <vtkPointData.h>
+#include <vtkUnstructuredGrid.h>
 
 // TTK Base includes
 #include <BottleneckDistance.h>
@@ -42,9 +41,8 @@
 #include <random>
 
 class TTKBOTTLENECKDISTANCE_EXPORT ttkBottleneckDistance
-  : public ttkAlgorithm
-  , protected ttk::BottleneckDistance
-{
+  : public ttkAlgorithm,
+    protected ttk::BottleneckDistance {
 
 private:
   int BenchmarkSize;
@@ -73,7 +71,6 @@ private:
   vtkSmartPointer<vtkUnstructuredGrid> CTPersistenceDiagram3_;
 
 public:
-
   // Getters and Setters
   vtkSetMacro(Alpha, double);
   vtkGetMacro(Alpha, double);
@@ -160,7 +157,6 @@ public:
   int doBenchmark();
 
 protected:
-
   ttkBottleneckDistance();
   ~ttkBottleneckDistance();
 

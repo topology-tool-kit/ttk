@@ -20,8 +20,8 @@
 /// \sa ttk::IdentifyByScalarField
 #pragma once
 
-#include <ttkIdentifyByScalarFieldModule.h>
 #include <ttkAlgorithm.h>
+#include <ttkIdentifyByScalarFieldModule.h>
 
 class TTKIDENTIFYBYSCALARFIELD_EXPORT ttkIdentifyByScalarField
   : public ttkAlgorithm {

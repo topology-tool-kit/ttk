@@ -23,14 +23,13 @@
 
 #pragma once
 
-#include <ttkGeometrySmootherModule.h>
-#include <ttkAlgorithm.h>
 #include <ScalarFieldSmoother.h>
+#include <ttkAlgorithm.h>
+#include <ttkGeometrySmootherModule.h>
 
 class TTKGEOMETRYSMOOTHER_EXPORT ttkGeometrySmoother
   : public ttkAlgorithm,
-    protected ttk::ScalarFieldSmoother
-{
+    protected ttk::ScalarFieldSmoother {
 
 private:
   int NumberOfIterations{1};

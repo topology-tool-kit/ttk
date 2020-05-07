@@ -24,10 +24,10 @@ int ttk::CinemaQuery::execute(
   {
     std::vector<std::string> sqlLines;
     {
-        std::stringstream ss(sqlQuery);
-        std::string line;
-        while(std::getline(ss, line))
-            sqlLines.push_back(line);
+      std::stringstream ss(sqlQuery);
+      std::string line;
+      while(std::getline(ss, line))
+        sqlLines.push_back(line);
     }
     this->printMsg(ttk::debug::Separator::L1);
     this->printMsg(sqlLines);

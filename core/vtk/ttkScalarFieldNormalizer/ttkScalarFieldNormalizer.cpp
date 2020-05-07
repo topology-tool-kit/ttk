@@ -1,7 +1,7 @@
 #include <ttkScalarFieldNormalizer.h>
 
-#include <vtkPointData.h>
 #include <vtkCellData.h>
+#include <vtkPointData.h>
 
 vtkStandardNewMacro(ttkScalarFieldNormalizer);
 
@@ -15,16 +15,18 @@ ttkScalarFieldNormalizer::ttkScalarFieldNormalizer() {
 ttkScalarFieldNormalizer::~ttkScalarFieldNormalizer() {
 }
 
-int ttkScalarFieldNormalizer::FillInputPortInformation(int port, vtkInformation *info) {
-  if(port == 0){
+int ttkScalarFieldNormalizer::FillInputPortInformation(int port,
+                                                       vtkInformation *info) {
+  if(port == 0) {
     info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
     return 1;
   }
   return 0;
 }
 
-int ttkScalarFieldNormalizer::FillOutputPortInformation(int port, vtkInformation *info) {
-  if(port == 0){
+int ttkScalarFieldNormalizer::FillOutputPortInformation(int port,
+                                                        vtkInformation *info) {
+  if(port == 0) {
     info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
     return 1;
   }
@@ -63,19 +65,16 @@ int ttkScalarFieldNormalizer::normalize(vtkDataArray *input,
 }
 
 int ttkScalarFieldNormalizer::RequestData(vtkInformation *request,
-                               vtkInformationVector **inputVector,
-                               vtkInformationVector *outputVector) {
+                                          vtkInformationVector **inputVector,
+                                          vtkInformationVector *outputVector) {
 
   ttk::Timer t;
 
-  this->printMsg(
-    "Normalizing Scalar Field",
-    0, 0, this->threadNumber_,
-    ttk::debug::LineMode::REPLACE
-  );
+  this->printMsg("Normalizing Scalar Field", 0, 0, this->threadNumber_,
+                 ttk::debug::LineMode::REPLACE);
 
-  auto input = vtkDataSet::GetData( inputVector[0] );
-  auto output = vtkDataSet::GetData( outputVector );
+  auto input = vtkDataSet::GetData(inputVector[0]);
+  auto output = vtkDataSet::GetData(outputVector);
 
   // test
   //   ttkTriangulation myTriangulation;
@@ -188,7 +187,8 @@ int ttkScalarFieldNormalizer::RequestData(vtkInformation *request,
   }
 #endif
 
-  auto outputScalarField = vtkSmartPointer<vtkDataArray>::Take( inputScalarField->NewInstance() );
+  auto outputScalarField
+    = vtkSmartPointer<vtkDataArray>::Take(inputScalarField->NewInstance());
   outputScalarField->SetNumberOfTuples(input->GetNumberOfPoints());
   outputScalarField->SetName(inputScalarField->GetName());
 
@@ -196,18 +196,16 @@ int ttkScalarFieldNormalizer::RequestData(vtkInformation *request,
   normalize(inputScalarField, outputScalarField);
 
   auto inputArrayAssociation = this->GetInputArrayAssociation(0, inputVector);
-  if(inputArrayAssociation==0){
+  if(inputArrayAssociation == 0) {
     output->GetPointData()->AddArray(outputScalarField);
-  } else if(inputArrayAssociation==1) {
+  } else if(inputArrayAssociation == 1) {
     output->GetCellData()->AddArray(outputScalarField);
   } else {
     output->GetFieldData()->AddArray(outputScalarField);
   }
 
   this->printMsg(
-    "Normalizing Scalar Field",
-    1, t.getElapsedTime(), this->threadNumber_
-  );
+    "Normalizing Scalar Field", 1, t.getElapsedTime(), this->threadNumber_);
 
   return 1;
 }

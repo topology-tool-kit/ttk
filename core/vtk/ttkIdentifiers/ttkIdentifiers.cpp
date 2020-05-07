@@ -2,23 +2,23 @@
 
 #include <ttkMacros.h>
 
-#include <vtkPointData.h>
 #include <vtkCellData.h>
+#include <vtkPointData.h>
 
 vtkStandardNewMacro(ttkIdentifiers);
 
 ttkIdentifiers::ttkIdentifiers() {
-    this->setDebugMsgPrefix("Identifiers");
+  this->setDebugMsgPrefix("Identifiers");
 
-    this->SetNumberOfInputPorts(1);
-    this->SetNumberOfOutputPorts(1);
+  this->SetNumberOfInputPorts(1);
+  this->SetNumberOfOutputPorts(1);
 }
 
 ttkIdentifiers::~ttkIdentifiers() {
 }
 
 int ttkIdentifiers::FillInputPortInformation(int port, vtkInformation *info) {
-  if(port == 0){
+  if(port == 0) {
     info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
     return 1;
   }
@@ -26,29 +26,24 @@ int ttkIdentifiers::FillInputPortInformation(int port, vtkInformation *info) {
 }
 
 int ttkIdentifiers::FillOutputPortInformation(int port, vtkInformation *info) {
-  if(port == 0){
+  if(port == 0) {
     info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
     return 1;
   }
   return 0;
 }
 
-int ttkIdentifiers::RequestData(
-    vtkInformation *request,
-                               vtkInformationVector **inputVector,
-                               vtkInformationVector *outputVector
-) {
+int ttkIdentifiers::RequestData(vtkInformation *request,
+                                vtkInformationVector **inputVector,
+                                vtkInformationVector *outputVector) {
 
   ttk::Timer t;
 
-  this->printMsg(
-    "Computing Identifiers",
-    0, 0, this->threadNumber_,
-    ttk::debug::LineMode::REPLACE
-  );
+  this->printMsg("Computing Identifiers", 0, 0, this->threadNumber_,
+                 ttk::debug::LineMode::REPLACE);
 
-  auto input = vtkDataSet::GetData( inputVector[0] );
-  auto output = vtkDataSet::GetData( outputVector );
+  auto input = vtkDataSet::GetData(inputVector[0]);
+  auto output = vtkDataSet::GetData(outputVector);
 
   // use a pointer-base copy for the input data -- to adapt if your wrapper does
   // not produce an output of the type of the input.
@@ -122,9 +117,7 @@ int ttkIdentifiers::RequestData(
   output->GetCellData()->AddArray(cellIdentifiers);
 
   this->printMsg(
-    "Computing Identifiers",
-    1, t.getElapsedTime(), this->threadNumber_
-  );
+    "Computing Identifiers", 1, t.getElapsedTime(), this->threadNumber_);
 
   return 1;
 }

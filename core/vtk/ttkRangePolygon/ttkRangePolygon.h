@@ -49,12 +49,14 @@
 ///
 #pragma once
 
+#include <ScalarFieldSmoother.h>
+#include <ttkAlgorithm.h>
 #include <ttkRangePolygonModule.h>
 #include <vtkUnstructuredGrid.h>
-#include <ttkAlgorithm.h>
-#include <ScalarFieldSmoother.h>
 
-class TTKRANGEPOLYGON_EXPORT ttkRangePolygon : public ttkAlgorithm, protected ttk::ScalarFieldSmoother {
+class TTKRANGEPOLYGON_EXPORT ttkRangePolygon
+  : public ttkAlgorithm,
+    protected ttk::ScalarFieldSmoother {
 private:
   bool ClosedLoop{false};
   int NumberOfIterations{0};

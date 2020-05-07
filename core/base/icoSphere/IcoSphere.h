@@ -30,11 +30,9 @@ namespace ttk {
      * Efficiently computes for a given subdivision level the number of
      * resulting vertices and triangles.
      */
-    int computeNumberOfVerticesAndTriangles(
-        size_t &nVertices,
-        size_t &nTriangles,
-        const size_t nSubdivisions
-    ) const {
+    int computeNumberOfVerticesAndTriangles(size_t &nVertices,
+                                            size_t &nTriangles,
+                                            const size_t nSubdivisions) const {
       nVertices = 12;
       nTriangles = 20;
 
@@ -56,8 +54,7 @@ namespace ttk {
       const size_t &icoSphereIndex,
       const size_t &nVerticesPerIcoSphere,
       const size_t &nTrianglesPerIcoSphere,
-      const float *centers
-    ) const;
+      const float *centers) const;
 
     /**
      * Computes an icosphere for a given subdivision level, radius, and center.
@@ -70,11 +67,11 @@ namespace ttk {
 
       // Input
       const size_t &nSubdivisions,
-      const float &radius
-    ) const;
+      const float &radius) const;
 
     /**
-     * Computes normals for multiple icospheres with the same subdivision level, radius, and center.
+     * Computes normals for multiple icospheres with the same subdivision level,
+     * radius, and center.
      */
     template <class idType>
     int computeIcoSphereNormals(
@@ -84,8 +81,7 @@ namespace ttk {
       // Input
       const size_t &nSpheres,
       const size_t &nSubdivisions,
-      const float &radius
-    ) const;
+      const float &radius) const;
 
     /**
      * Computes an icosphere for a given subdivision level, radius, and center.
@@ -100,8 +96,7 @@ namespace ttk {
       const size_t &nSpheres,
       const size_t &nSubdivisions,
       const float &radius,
-      const float *center
-    ) const;
+      const float *center) const;
 
   private:
     /**
@@ -201,14 +196,15 @@ int ttk::IcoSphere::computeIcoSphere(
 
   // Input
   const size_t &nSubdivisions,
-  const float &radius
-) const {
+  const float &radius) const {
 
   // initialize timer and memory
   Timer timer;
 
   // print status
-  this->printMsg("Computing Icosphere (r:"+std::to_string(radius)+", s:"+std::to_string(nSubdivisions)+")", 0, 0, this->threadNumber_, ttk::debug::LineMode::REPLACE);
+  this->printMsg("Computing Icosphere (r:" + std::to_string(radius)
+                   + ", s:" + std::to_string(nSubdivisions) + ")",
+                 0, 0, this->threadNumber_, ttk::debug::LineMode::REPLACE);
 
   idType vertexIndex = 0;
   idType triangleIndex = 0;
@@ -303,8 +299,9 @@ int ttk::IcoSphere::computeIcoSphere(
       }
 
       // print progress
-      this->printMsg("Computing Icosphere (r:"+std::to_string(radius)+", s:"+std::to_string(nSubdivisions)+")", ((float)s) / nSubdivisions,
-                     ttk::debug::LineMode::REPLACE);
+      this->printMsg("Computing Icosphere (r:" + std::to_string(radius)
+                       + ", s:" + std::to_string(nSubdivisions) + ")",
+                     ((float)s) / nSubdivisions, ttk::debug::LineMode::REPLACE);
     }
 
     // if uneven number of nSubdivisions then copy temp buffer to output buffer
@@ -316,20 +313,20 @@ int ttk::IcoSphere::computeIcoSphere(
   }
 
   // print progress
-  this->printMsg("Computing Icosphere (r:"+std::to_string(radius)+", s:"+std::to_string(nSubdivisions)+")", 1, timer.getElapsedTime(), this->threadNumber_);
+  this->printMsg("Computing Icosphere (r:" + std::to_string(radius)
+                   + ", s:" + std::to_string(nSubdivisions) + ")",
+                 1, timer.getElapsedTime(), this->threadNumber_);
 
   return 1;
 };
 
 template <class idType>
-int ttk::IcoSphere::translateIcoSphere(
-                                       float *vertexCoords,
+int ttk::IcoSphere::translateIcoSphere(float *vertexCoords,
                                        idType *connectivityList,
-    const size_t &icoSphereIndex,
-    const size_t &nVerticesPerIcoSphere,
-    const size_t &nTrianglesPerIcoSphere,
-    const float *centers
-) const {
+                                       const size_t &icoSphereIndex,
+                                       const size_t &nVerticesPerIcoSphere,
+                                       const size_t &nTrianglesPerIcoSphere,
+                                       const float *centers) const {
   size_t vertexCoordOffset = icoSphereIndex * nVerticesPerIcoSphere * 3;
   size_t connectivityListOffset = icoSphereIndex * nTrianglesPerIcoSphere * 4;
   size_t temp = icoSphereIndex * 3;
@@ -367,11 +364,11 @@ int ttk::IcoSphere::computeIcoSphereNormals(
   // Input
   const size_t &nSpheres,
   const size_t &nSubdivisions,
-  const float &radius
-) const {
+  const float &radius) const {
 
   ttk::Timer timer;
-  this->printMsg("Computing Normals", 0, 0, this->threadNumber_, ttk::debug::LineMode::REPLACE);
+  this->printMsg("Computing Normals", 0, 0, this->threadNumber_,
+                 ttk::debug::LineMode::REPLACE);
 
   size_t nVerticesPerIcoSphere, nTrianglesPerIcoSphere;
   if(!this->computeNumberOfVerticesAndTriangles(
@@ -379,34 +376,33 @@ int ttk::IcoSphere::computeIcoSphereNormals(
     return 0;
 
   std::vector<vtkIdType> normalConnectivity(nTrianglesPerIcoSphere * 4);
-  std::vector<float> normalCenter = {0,0,0};
+  std::vector<float> normalCenter = {0, 0, 0};
 
   auto debugLevel = this->debugLevel_;
   this->debugLevel_ = 0;
-  int status = this->computeIcoSpheres<idType>(
-     normals,
-     normalConnectivity.data(),
-     1, nSubdivisions, 1, normalCenter.data()
-  );
+  int status
+    = this->computeIcoSpheres<idType>(normals, normalConnectivity.data(), 1,
+                                      nSubdivisions, 1, normalCenter.data());
   this->debugLevel_ = debugLevel;
   if(!status)
     return 0;
 
-  // copy normals
-  #ifdef TTK_ENABLE_OPENMP
-  #pragma omp parallel for num_threads(threadNumber_)
-  #endif
+// copy normals
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif
   for(size_t i = 1; i < nSpheres; i++) {
     size_t offset = nVerticesPerIcoSphere * i * 3;
     size_t offset2 = 0;
-    for(size_t v=0; v<nVerticesPerIcoSphere; v++){
+    for(size_t v = 0; v < nVerticesPerIcoSphere; v++) {
       normals[offset++] = normals[offset2++];
       normals[offset++] = normals[offset2++];
       normals[offset++] = normals[offset2++];
     }
   }
 
-  this->printMsg("Computing Normals", 1, timer.getElapsedTime(), this->threadNumber_);
+  this->printMsg(
+    "Computing Normals", 1, timer.getElapsedTime(), this->threadNumber_);
   return 1;
 }
 
@@ -420,8 +416,7 @@ int ttk::IcoSphere::computeIcoSpheres(
   const size_t &nSpheres,
   const size_t &nSubdivisions,
   const float &radius,
-  const float *centers
-) const {
+  const float *centers) const {
 
   if(nSpheres < 1) {
     this->printWrn("Number of input points smaller than 1.");
@@ -441,29 +436,28 @@ int ttk::IcoSphere::computeIcoSpheres(
 
   // translate remaining spheres
   ttk::Timer timer;
-  this->printMsg("Translating "+std::to_string(nSpheres)+" Icosphere(s)", 0, 0, this->threadNumber_, ttk::debug::LineMode::REPLACE);
+  this->printMsg("Translating " + std::to_string(nSpheres) + " Icosphere(s)", 0,
+                 0, this->threadNumber_, ttk::debug::LineMode::REPLACE);
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(size_t i = 1; i < nSpheres; i++) {
     this->translateIcoSphere(
-                             vertexCoords, connectivityList,
+      vertexCoords, connectivityList,
 
-        i, nVerticesPerIcoSphere, nTrianglesPerIcoSphere,
-                             centers
+      i, nVerticesPerIcoSphere, nTrianglesPerIcoSphere, centers
 
-                             );
+    );
   }
 
   // translate first ico sphere
-  this->translateIcoSphere(
-                           vertexCoords, connectivityList,
-      0, nVerticesPerIcoSphere, nTrianglesPerIcoSphere,
-                           centers
-                           );
+  this->translateIcoSphere(vertexCoords, connectivityList, 0,
+                           nVerticesPerIcoSphere, nTrianglesPerIcoSphere,
+                           centers);
   // print status
-  this->printMsg("Translating "+std::to_string(nSpheres)+" Icosphere(s)", 1, timer.getElapsedTime(), this->threadNumber_);
+  this->printMsg("Translating " + std::to_string(nSpheres) + " Icosphere(s)", 1,
+                 timer.getElapsedTime(), this->threadNumber_);
 
   return 1;
 }

@@ -1,16 +1,15 @@
 #include <ttkBarycentricSubdivision.h>
 
-#include <ttkUtils.h>
 #include <ttkMacros.h>
+#include <ttkUtils.h>
 
-#include <vtkPointData.h>
 #include <vtkCellData.h>
+#include <vtkPointData.h>
 
 vtkStandardNewMacro(ttkBarycentricSubdivision);
 
 ttkBarycentricSubdivision::ttkBarycentricSubdivision()
-  : BarycentricSubdivision( points_, cells_, pointId_, pointDim_ )
-{
+  : BarycentricSubdivision(points_, cells_, pointId_, pointDim_) {
   this->SetNumberOfInputPorts(1);
   this->SetNumberOfOutputPorts(1);
 }
@@ -18,7 +17,8 @@ ttkBarycentricSubdivision::ttkBarycentricSubdivision()
 ttkBarycentricSubdivision::~ttkBarycentricSubdivision() {
 }
 
-int ttkBarycentricSubdivision::FillInputPortInformation(int port, vtkInformation *info) {
+int ttkBarycentricSubdivision::FillInputPortInformation(int port,
+                                                        vtkInformation *info) {
   if(port == 0)
     info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkUnstructuredGrid");
   else
@@ -27,7 +27,8 @@ int ttkBarycentricSubdivision::FillInputPortInformation(int port, vtkInformation
   return 1;
 }
 
-int ttkBarycentricSubdivision::FillOutputPortInformation(int port, vtkInformation *info) {
+int ttkBarycentricSubdivision::FillOutputPortInformation(int port,
+                                                         vtkInformation *info) {
   if(port == 0)
     info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
   else
@@ -77,13 +78,13 @@ int ttkBarycentricSubdivision::InterpolateScalarFields(
 
 #define DISPATCH_INTERPOLATE_DIS(CASE, TYPE)                             \
   case CASE:                                                             \
-    this->interpolateDiscreteScalarField<TYPE>(                    \
+    this->interpolateDiscreteScalarField<TYPE>(                          \
       static_cast<TYPE *>(ttkUtils::GetVoidPointer(inputScalarField)),   \
       static_cast<TYPE *>(ttkUtils::GetVoidPointer(outputScalarField))); \
     break
 #define DISPATCH_INTERPOLATE_CONT(CASE, TYPE)                            \
   case CASE:                                                             \
-    this->interpolateContinuousScalarField<TYPE>(                  \
+    this->interpolateContinuousScalarField<TYPE>(                        \
       static_cast<TYPE *>(ttkUtils::GetVoidPointer(inputScalarField)),   \
       static_cast<TYPE *>(ttkUtils::GetVoidPointer(outputScalarField))); \
     break
@@ -133,14 +134,14 @@ int ttkBarycentricSubdivision::InterpolateScalarFields(
 }
 
 int ttkBarycentricSubdivision::RequestData(vtkInformation *request,
-                               vtkInformationVector **inputVector,
-                               vtkInformationVector *outputVector) {
+                                           vtkInformationVector **inputVector,
+                                           vtkInformationVector *outputVector) {
 
   ttk::Memory m;
   ttk::Timer t;
 
-  auto input = vtkUnstructuredGrid::GetData( inputVector[0] );
-  auto output = vtkUnstructuredGrid::GetData( outputVector );
+  auto input = vtkUnstructuredGrid::GetData(inputVector[0]);
+  auto output = vtkUnstructuredGrid::GetData(outputVector);
 
   // early return: copy input if no subdivision
   if(SubdivisionLevel == 0) {
@@ -157,14 +158,14 @@ int ttkBarycentricSubdivision::RequestData(vtkInformation *request,
   ttk::Triangulation triangulationSubdivision;
   this->setOutputTriangulation(&triangulationSubdivision);
 
-  this->setInputPoints( ttkUtils::GetVoidPointer(input->GetPoints()) );
+  this->setInputPoints(ttkUtils::GetVoidPointer(input->GetPoints()));
 
   // first iteration: generate the new triangulation
   this->execute();
 
   // first iteration: interpolate input scalar fields
   int ret = InterpolateScalarFields(input, output);
-  if(ret < 0){
+  if(ret < 0) {
     this->printErr("Error interpolating input data array(s)");
     return -1;
   }
@@ -226,8 +227,8 @@ int ttkBarycentricSubdivision::RequestData(vtkInformation *request,
 
   // {
   //   std::stringstream msg;
-  //   msg << MODULE_S "Memory usage: " << m.getElapsedUsage() << " MB." << endl;
-  //   dMsg(std::cout, msg.str(), memoryMsg);
+  //   msg << MODULE_S "Memory usage: " << m.getElapsedUsage() << " MB." <<
+  //   endl; dMsg(std::cout, msg.str(), memoryMsg);
   // }
 
   return 1;

@@ -16,16 +16,18 @@ ttkProjectionFromField::ttkProjectionFromField() {
 ttkProjectionFromField::~ttkProjectionFromField() {
 }
 
-int ttkProjectionFromField::FillInputPortInformation(int port, vtkInformation *info) {
-  if(port == 0){
+int ttkProjectionFromField::FillInputPortInformation(int port,
+                                                     vtkInformation *info) {
+  if(port == 0) {
     info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkPointSet");
     return 1;
   }
   return 0;
 }
 
-int ttkProjectionFromField::FillOutputPortInformation(int port, vtkInformation *info) {
-  if(port == 0){
+int ttkProjectionFromField::FillOutputPortInformation(int port,
+                                                      vtkInformation *info) {
+  if(port == 0) {
     info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
     return 1;
   }
@@ -33,18 +35,15 @@ int ttkProjectionFromField::FillOutputPortInformation(int port, vtkInformation *
 }
 
 int ttkProjectionFromField::RequestData(vtkInformation *request,
-                               vtkInformationVector **inputVector,
-                               vtkInformationVector *outputVector) {
+                                        vtkInformationVector **inputVector,
+                                        vtkInformationVector *outputVector) {
   ttk::Timer t;
 
-  this->printMsg(
-    "Projecting Points",
-    0, 0,
-    this->threadNumber_, ttk::debug::LineMode::REPLACE
-  );
+  this->printMsg("Projecting Points", 0, 0, this->threadNumber_,
+                 ttk::debug::LineMode::REPLACE);
 
-  auto input = vtkPointSet::GetData( inputVector[0] );
-  auto output = vtkPointSet::GetData( outputVector );
+  auto input = vtkPointSet::GetData(inputVector[0]);
+  auto output = vtkPointSet::GetData(outputVector);
   output->ShallowCopy(input);
 
   vtkDataArray *inputScalarFieldU = NULL;
@@ -53,20 +52,20 @@ int ttkProjectionFromField::RequestData(vtkInformation *request,
 
   if(UseTextureCoordinates) {
     textureCoordinates = input->GetPointData()->GetTCoords();
-    if(!textureCoordinates){
-        this->printErr("Unable to retrieve texture coordinates.");
+    if(!textureCoordinates) {
+      this->printErr("Unable to retrieve texture coordinates.");
       return 0;
     }
   } else {
     inputScalarFieldU = this->GetInputArrayToProcess(0, inputVector);
-    if(!inputScalarFieldU){
-        this->printErr("Unable to retrieve input array 0 (U).");
+    if(!inputScalarFieldU) {
+      this->printErr("Unable to retrieve input array 0 (U).");
       return 0;
     }
 
     inputScalarFieldV = this->GetInputArrayToProcess(1, inputVector);
-    if(!inputScalarFieldV){
-        this->printErr("Unable to retrieve input array 1 (V).");
+    if(!inputScalarFieldV) {
+      this->printErr("Unable to retrieve input array 1 (V).");
       return 0;
     }
   }
@@ -107,9 +106,7 @@ int ttkProjectionFromField::RequestData(vtkInformation *request,
   output->SetPoints(points_);
 
   this->printMsg(
-    "Projecting Points",
-    1, t.getElapsedTime(), this->threadNumber_
-  );
+    "Projecting Points", 1, t.getElapsedTime(), this->threadNumber_);
 
   return 1;
 }

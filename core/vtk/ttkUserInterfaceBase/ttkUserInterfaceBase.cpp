@@ -277,10 +277,11 @@ int ttkUserInterfaceBase::updateScalarFieldTexture() {
     if((boundaryFilters_[i]->GetOutput()->GetPointData())
        && (boundaryFilters_[i]->GetOutput()->GetPointData()->GetArray(0))) {
 
-      textureMapFromFields_[i]->SetInputDataObject(boundaryFilters_[i]->GetOutput());
+      textureMapFromFields_[i]->SetInputDataObject(
+        boundaryFilters_[i]->GetOutput());
       textureMapFromFields_[i]->Update();
-      surfaces_[i]
-        = vtkPolyData::SafeDownCast(textureMapFromFields_[i]->GetOutputDataObject(0));
+      surfaces_[i] = vtkPolyData::SafeDownCast(
+        textureMapFromFields_[i]->GetOutputDataObject(0));
 
       texture_->SetInputConnection(pngReader_->GetOutputPort());
 

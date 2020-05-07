@@ -19,8 +19,8 @@
 ///
 #pragma once
 
-#include <ttkPointMergerModule.h>
 #include <ttkAlgorithm.h>
+#include <ttkPointMergerModule.h>
 
 // in this example, this wrapper takes a data-set on the input and produces a
 // data-set on the output - to adapt.

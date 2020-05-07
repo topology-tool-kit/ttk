@@ -2,12 +2,11 @@
 
 #include <Geometry.h>
 
-#include <vtkUnstructuredGrid.h>
-#include <vtkDoubleArray.h>
-#include <vtkPointData.h>
 #include <vtkCellData.h>
+#include <vtkDoubleArray.h>
 #include <vtkGenericCell.h>
-
+#include <vtkPointData.h>
+#include <vtkUnstructuredGrid.h>
 
 vtkStandardNewMacro(ttkPointMerger);
 
@@ -22,7 +21,7 @@ ttkPointMerger::~ttkPointMerger() {
 }
 
 int ttkPointMerger::FillInputPortInformation(int port, vtkInformation *info) {
-  if(port == 0){
+  if(port == 0) {
     info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkUnstructuredGrid");
     return 1;
   }
@@ -30,7 +29,7 @@ int ttkPointMerger::FillInputPortInformation(int port, vtkInformation *info) {
 }
 
 int ttkPointMerger::FillOutputPortInformation(int port, vtkInformation *info) {
-  if(port == 0){
+  if(port == 0) {
     info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
     return 1;
   }
@@ -38,8 +37,8 @@ int ttkPointMerger::FillOutputPortInformation(int port, vtkInformation *info) {
 }
 
 int ttkPointMerger::RequestData(vtkInformation *request,
-                               vtkInformationVector **inputVector,
-                               vtkInformationVector *outputVector) {
+                                vtkInformationVector **inputVector,
+                                vtkInformationVector *outputVector) {
 
   auto input = vtkUnstructuredGrid::GetData(inputVector[0]);
   auto output = vtkUnstructuredGrid::GetData(outputVector);
@@ -71,11 +70,9 @@ int ttkPointMerger::RequestData(vtkInformation *request,
 
   std::vector<std::vector<ttk::SimplexId>> closePoints(vertexNumber);
 
-  this->printMsg(
-    "Computing pointwise distances (" + std::to_string(candidateVertices.size()) +  " candidates)",
-    0, 0, this->threadNumber_,
-    ttk::debug::LineMode::REPLACE
-  );
+  this->printMsg("Computing pointwise distances ("
+                   + std::to_string(candidateVertices.size()) + " candidates)",
+                 0, 0, this->threadNumber_, ttk::debug::LineMode::REPLACE);
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
@@ -87,7 +84,8 @@ int ttkPointMerger::RequestData(vtkInformation *request,
     ttk::SimplexId vertexId0 = candidateVertices[i];
 
     input->GetPoint(vertexId0, p0.data());
-    for(ttk::SimplexId j = 0; j < (ttk::SimplexId)candidateVertices.size(); j++) {
+    for(ttk::SimplexId j = 0; j < (ttk::SimplexId)candidateVertices.size();
+        j++) {
       if(i != j) {
         std::vector<double> p1(3);
         ttk::SimplexId vertexId1 = candidateVertices[j];
@@ -100,17 +98,13 @@ int ttkPointMerger::RequestData(vtkInformation *request,
     }
   }
 
-  this->printMsg(
-    "Computing pointwise distances (" + std::to_string(candidateVertices.size()) +  " candidates)",
-    1, t.getElapsedTime(), this->threadNumber_
-  );
+  this->printMsg("Computing pointwise distances ("
+                   + std::to_string(candidateVertices.size()) + " candidates)",
+                 1, t.getElapsedTime(), this->threadNumber_);
 
   t.reStart();
   this->printMsg(
-    "Merging Points",
-    0, 0, this->threadNumber_,
-    ttk::debug::LineMode::REPLACE
-  );
+    "Merging Points", 0, 0, this->threadNumber_, ttk::debug::LineMode::REPLACE);
 
   std::vector<double> minMergeDistance(vertexNumber, -1);
   std::vector<double> maxMergeDistance(vertexNumber, -1);
@@ -123,8 +117,8 @@ int ttkPointMerger::RequestData(vtkInformation *request,
       ttk::SimplexId targetVertexId = i;
       do {
         ttk::SimplexId nextTargetVertexId = targetVertexId;
-        for(ttk::SimplexId j = 0; j < (ttk::SimplexId)closePoints[targetVertexId].size();
-            j++) {
+        for(ttk::SimplexId j = 0;
+            j < (ttk::SimplexId)closePoints[targetVertexId].size(); j++) {
           if(closePoints[targetVertexId][j] < nextTargetVertexId)
             nextTargetVertexId = closePoints[targetVertexId][j];
         }
@@ -274,7 +268,9 @@ int ttkPointMerger::RequestData(vtkInformation *request,
       if(newVertexIds.size() == 8) {
         cellId = output->InsertNextCell(VTK_HEXAHEDRON, idList);
       } else {
-        this->printWrn("Ill-defined cell type for cell #" + std::to_string(i) + " (" + std::to_string(newVertexIds.size()) + " vertices)");
+        this->printWrn("Ill-defined cell type for cell #" + std::to_string(i)
+                       + " (" + std::to_string(newVertexIds.size())
+                       + " vertices)");
       }
     }
 
@@ -290,10 +286,7 @@ int ttkPointMerger::RequestData(vtkInformation *request,
   for(int i = 0; i < (int)cellData.size(); i++)
     output->GetCellData()->AddArray(cellData[i]);
 
-  this->printMsg(
-    "Merging Points",
-    1, t.getElapsedTime(), this->threadNumber_
-  );
+  this->printMsg("Merging Points", 1, t.getElapsedTime(), this->threadNumber_);
 
   return 1;
 }
