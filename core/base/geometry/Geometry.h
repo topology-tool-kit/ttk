@@ -261,10 +261,24 @@ namespace ttk {
     /// Compute the integer power of a floating-point value
     /// (std::pow is optimised for floating-point exponents)
     template <typename T>
-    T powInt(const T val, const int n);
+    inline T powInt(const T val, const int n) {
+      if(n < 0) {
+        return 1.0 / powInt(val, -n);
+      } else if(n == 0) {
+        return 1;
+      } else if(n == 1) {
+        return val;
+      } else if(n == 2) {
+        return val * val;
+      } else if(n == 3) {
+        return val * val * val;
+      } else {
+        return powInt(val, n - 1) * val;
+      }
+    }
 
     /// Compute the nth power of ten
-    template<typename T = double>
+    template <typename T = double>
     T powIntTen(const int n);
 
   } // namespace Geometry

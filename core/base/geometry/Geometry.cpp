@@ -503,23 +503,6 @@ T Geometry::magnitude(const T *o, const T *d) {
 }
 
 template <typename T>
-T Geometry::powInt(const T val, const int n) {
-  if(n < 0) {
-    return 1.0 / powInt(val, -n);
-  } else if(n == 0) {
-    return 1;
-  } else if(n == 1) {
-    return val;
-  } else if(n == 2) {
-    return val * val;
-  } else if(n == 3) {
-    return val * val * val;
-  } else {
-    return powInt(val, n - 1) * val;
-  }
-}
-
-template <typename T>
 T Geometry::powIntTen(const int n) {
   return powInt(static_cast<T>(10), n);
 }
@@ -606,7 +589,6 @@ template bool Geometry::isTriangleColinear<double>(double const *,
                                                    double const *);
 template double Geometry::magnitude<double>(double const *);
 template double Geometry::magnitude<double>(double const *, double const *);
-template double Geometry::powInt<double>(const double, const int);
 template double Geometry::powIntTen<double>(const int);
 
 // explicit instantiations for float
@@ -691,5 +673,4 @@ template bool Geometry::isTriangleColinear<float>(float const *,
                                                   float const *);
 template float Geometry::magnitude<float>(float const *);
 template float Geometry::magnitude<float>(float const *, float const *);
-template float Geometry::powInt<float>(const float, const int);
 template float Geometry::powIntTen<float>(const int);
