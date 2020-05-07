@@ -135,7 +135,7 @@ int ttk::HarmonicField::execute(const TriangulationType &triangulation,
   // penalty matrix
   SpMat penalty(vertexNumber, vertexNumber);
   // penalty value
-  const T alpha = pow10(logAlpha);
+  const T alpha = Geometry::powIntTen(logAlpha);
 
   std::vector<TripletType> triplets;
   triplets.reserve(uniqueConstraintNumber);

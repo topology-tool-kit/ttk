@@ -114,8 +114,8 @@ FiberSurface::FiberSurface() {
   edgeImplicitEncoding_[11] = 3;
 
   pointSnapping_ = false;
-  pointSnappingThreshold_ = pow10(-FLT_DIG + 1);
-  edgeCollapseThreshold_ = pow10(-FLT_DIG + 2);
+  pointSnappingThreshold_ = Geometry::powIntTen(-FLT_DIG + 1);
+  edgeCollapseThreshold_ = Geometry::powIntTen(-FLT_DIG + 2);
 }
 
 FiberSurface::~FiberSurface() {
@@ -145,7 +145,7 @@ int FiberSurface::getNumberOfCommonVertices(
       for(int k = 0; k < 3; k++) {
         p1[k] = tetIntersections[tetId][triangleId1].p_[j][k];
 
-        if(fabs(p0[k] - p1[k]) > pow10(-FLT_DIG)) {
+        if(fabs(p0[k] - p1[k]) > Geometry::powIntTen(-FLT_DIG)) {
           isTheSame = false;
           break;
         }
@@ -176,16 +176,16 @@ int FiberSurface::computeTriangleFiber(
   for(int i = 0; i < 3; i++) {
     if((fabs(intersection.first
              - tetIntersections[tetId][triangleId].uv_[i].first)
-        < pow10(-DBL_DIG + 4))
+        < Geometry::powIntTen(-DBL_DIG + 4))
        && fabs(intersection.second
                - tetIntersections[tetId][triangleId].uv_[i].second)
-            < pow10(-DBL_DIG + 4)
+            < Geometry::powIntTen(-DBL_DIG + 4)
        && fabs(intersection.first
                - tetIntersections[tetId][triangleId].uv_[(i + 1) % 3].first)
-            < pow10(-DBL_DIG + 4)
+            < Geometry::powIntTen(-DBL_DIG + 4)
        && fabs(intersection.second
                - tetIntersections[tetId][triangleId].uv_[(i + 1) % 3].second)
-            < pow10(-DBL_DIG + 4)) {
+            < Geometry::powIntTen(-DBL_DIG + 4)) {
       // edge 0 - 1 is on the fiber. the pivot is 2
       pivotVertexId = (i + 2) % 3;
       edgeFiber = true;
@@ -383,9 +383,9 @@ int FiberSurface::computeTriangleIntersection(
       foundA = true;
     } else if(!foundB) {
       // check it's far enough from pA
-      if((fabs(pA[0] - p1a[0]) > pow10(-DBL_DIG + 4))
-         || (fabs(pA[1] - p1a[1]) > pow10(-DBL_DIG + 4))
-         || (fabs(pA[2] - p1a[2]) > pow10(-DBL_DIG + 4))) {
+      if((fabs(pA[0] - p1a[0]) > Geometry::powIntTen(-DBL_DIG + 4))
+         || (fabs(pA[1] - p1a[1]) > Geometry::powIntTen(-DBL_DIG + 4))
+         || (fabs(pA[2] - p1a[2]) > Geometry::powIntTen(-DBL_DIG + 4))) {
         pB = p1a;
         foundB = true;
       }
@@ -399,9 +399,9 @@ int FiberSurface::computeTriangleIntersection(
       foundA = true;
     } else if(!foundB) {
       // check it's far enough from pA
-      if((fabs(pA[0] - p0b[0]) > pow10(-DBL_DIG + 4))
-         || (fabs(pA[1] - p0b[1]) > pow10(-DBL_DIG + 4))
-         || (fabs(pA[2] - p0b[2]) > pow10(-DBL_DIG + 4))) {
+      if((fabs(pA[0] - p0b[0]) > Geometry::powIntTen(-DBL_DIG + 4))
+         || (fabs(pA[1] - p0b[1]) > Geometry::powIntTen(-DBL_DIG + 4))
+         || (fabs(pA[2] - p0b[2]) > Geometry::powIntTen(-DBL_DIG + 4))) {
         pB = p0b;
         foundB = true;
       }
@@ -414,9 +414,9 @@ int FiberSurface::computeTriangleIntersection(
       pA = p1b;
     } else if(!foundB) {
       // check it's far enough from pA
-      if((fabs(pA[0] - p1b[0]) > pow10(-DBL_DIG + 4))
-         || (fabs(pA[1] - p1b[1]) > pow10(-DBL_DIG + 4))
-         || (fabs(pA[2] - p1b[2]) > pow10(-DBL_DIG + 4))) {
+      if((fabs(pA[0] - p1b[0]) > Geometry::powIntTen(-DBL_DIG + 4))
+         || (fabs(pA[1] - p1b[1]) > Geometry::powIntTen(-DBL_DIG + 4))
+         || (fabs(pA[2] - p1b[2]) > Geometry::powIntTen(-DBL_DIG + 4))) {
         pB = p1b;
       }
     }
@@ -456,10 +456,10 @@ int FiberSurface::computeTriangleIntersection(
   // check if the triangle has already been intersected on that fiber
   if((fabs(tetIntersections[tetId][triangleId].intersection_.first
            - intersection.first)
-      < pow10(-FLT_DIG))
+      < Geometry::powIntTen(-FLT_DIG))
      && (fabs(tetIntersections[tetId][triangleId].intersection_.second
               - intersection.second)
-         < pow10(-FLT_DIG))) {
+         < Geometry::powIntTen(-FLT_DIG))) {
 
     return -2;
   }
@@ -468,16 +468,16 @@ int FiberSurface::computeTriangleIntersection(
   for(int i = 0; i < 3; i++) {
     if((fabs(intersection.first
              - tetIntersections[tetId][triangleId].uv_[i].first)
-        < pow10(-FLT_DIG))
+        < Geometry::powIntTen(-FLT_DIG))
        && fabs(intersection.second
                - tetIntersections[tetId][triangleId].uv_[i].second)
-            < pow10(-FLT_DIG)
+            < Geometry::powIntTen(-FLT_DIG)
        && fabs(intersection.first
                - tetIntersections[tetId][triangleId].uv_[(i + 1) % 3].first)
-            < pow10(-FLT_DIG)
+            < Geometry::powIntTen(-FLT_DIG)
        && fabs(intersection.second
                - tetIntersections[tetId][triangleId].uv_[(i + 1) % 3].second)
-            < pow10(-FLT_DIG)) {
+            < Geometry::powIntTen(-FLT_DIG)) {
       return -3;
     }
   }
@@ -510,14 +510,14 @@ int FiberSurface::computeTriangleIntersection(
 
   bool isAVertex = false;
   for(int i = 0; i < 3; i++) {
-    if(fabs(baryA[i] - 1) < pow10(-DBL_DIG)) {
+    if(fabs(baryA[i] - 1) < Geometry::powIntTen(-DBL_DIG)) {
       isAVertex = true;
       break;
     }
   }
   bool isBVertex = false;
   for(int i = 0; i < 3; i++) {
-    if(fabs(baryB[i] - 1) < pow10(-DBL_DIG)) {
+    if(fabs(baryB[i] - 1) < Geometry::powIntTen(-DBL_DIG)) {
       isBVertex = true;
       break;
     }
@@ -1004,8 +1004,8 @@ int FiberSurface::getTriangleRangeExtremities(
     p1[0] = tetIntersections[tetId][triangleId].uv_[(i + 2) % 3].first;
     p1[1] = tetIntersections[tetId][triangleId].uv_[(i + 2) % 3].second;
 
-    if((fabs(p0[0] - p1[0]) < pow10(-FLT_DIG))
-       && (fabs(p0[1] - p1[1]) < pow10(-FLT_DIG))) {
+    if((fabs(p0[0] - p1[0]) < Geometry::powIntTen(-FLT_DIG))
+       && (fabs(p0[1] - p1[1]) < Geometry::powIntTen(-FLT_DIG))) {
       // one edge of the triangle projects to a point
       extremity0.first = p[0];
       extremity0.second = p[1];
@@ -1034,8 +1034,8 @@ int FiberSurface::getTriangleRangeExtremities(
     isInBetween = true;
     for(int j = 0; j < 2; j++) {
 
-      if((baryCentrics[j] < -pow10(-FLT_DIG))
-         || (baryCentrics[j] > 1 + pow10(-FLT_DIG))) {
+      if((baryCentrics[j] < -Geometry::powIntTen(-FLT_DIG))
+         || (baryCentrics[j] > 1 + Geometry::powIntTen(-FLT_DIG))) {
         isInBetween = false;
         break;
       }
@@ -1735,11 +1735,12 @@ int FiberSurface::snapVertexBarycentrics(
         }
       }
 
-      if((minimum != -DBL_MAX) && (minimum < pow10(-FLT_DIG + 2))) {
+      if((minimum != -DBL_MAX)
+         && (minimum < Geometry::powIntTen(-FLT_DIG + 2))) {
         double sum = 0;
         int numberOfZeros = 0;
         for(int k = 0; k < 3; k++) {
-          if(minBarycentrics[k] < pow10(-FLT_DIG + 2)) {
+          if(minBarycentrics[k] < Geometry::powIntTen(-FLT_DIG + 2)) {
             minBarycentrics[k] = 0;
             numberOfZeros++;
           }
@@ -1749,7 +1750,7 @@ int FiberSurface::snapVertexBarycentrics(
         sum = (1 - sum) / numberOfZeros;
 
         for(int k = 0; k < 3; k++) {
-          if(minBarycentrics[k] >= pow10(-FLT_DIG + 2)) {
+          if(minBarycentrics[k] >= Geometry::powIntTen(-FLT_DIG + 2)) {
             minBarycentrics[k] += sum;
           }
         }

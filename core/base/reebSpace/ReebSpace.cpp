@@ -1730,7 +1730,7 @@ int ReebSpace::simplifySheets(
 //           double distance = Geometry::distance(
 //             fiberSurfaceVertexList_[globalVertexId].p_,
 //             tetPoint.data());
-//           if(distance < pow10(-FLT_DIG)){
+//           if(distance < Geometry::powIntTen(-FLT_DIG)){
 //             localId = k;
 //             tetVertex = true;
 //             break;

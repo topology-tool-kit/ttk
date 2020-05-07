@@ -2232,7 +2232,8 @@ inline int ttk::FiberSurface::processTetrahedron(
               }
             }
           }
-          if((minDistance != -1) && (minDistance < pow10(-DBL_DIG))) {
+          if((minDistance != -1)
+             && (minDistance < Geometry::powIntTen(-DBL_DIG))) {
             //           if((minDistance != -1)&&(minDistance <
             //           pointSnappingThreshold_)){
             // snap them to another colinear vertex
