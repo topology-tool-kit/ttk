@@ -8,8 +8,7 @@
 /// manifolds represented by regular grids.
 /// \sa Triangulation
 
-#ifndef _IMPLICITTRIANGULATION_H
-#define _IMPLICITTRIANGULATION_H
+#pragma once
 
 #include <array>
 
@@ -7977,5 +7976,3 @@ inline ttk::SimplexId ttk::ImplicitTriangulation::getTetrahedronNeighborBDGH(
   }
   return -1;
 }
-
-#endif // _IMPLICITTRIANGULATION_H
