@@ -1,80 +1,98 @@
 #include <ttkPointMerger.h>
 
-using namespace std;
-using namespace ttk;
+#include <Geometry.h>
 
-vtkStandardNewMacro(ttkPointMerger)
+#include <vtkUnstructuredGrid.h>
+#include <vtkDoubleArray.h>
+#include <vtkPointData.h>
+#include <vtkCellData.h>
+#include <vtkGenericCell.h>
 
-  int ttkPointMerger::doIt(vector<vtkDataSet *> &inputs,
-                           vector<vtkDataSet *> &outputs) {
 
-  Timer t;
-  Memory m;
+vtkStandardNewMacro(ttkPointMerger);
 
-  string dataType = inputs[0]->GetClassName();
-  if(dataType != "vtkUnstructuredGrid") {
-    stringstream msg;
-    msg << "[ttkPointMerger] The input is not a 'vtkUnstructuredGrid'!" << endl;
-    msg << "[ttkPointMerger] Doing nothing..." << endl;
-    dMsg(cerr, msg.str(), Debug::infoMsg);
+ttkPointMerger::ttkPointMerger() {
+  this->setDebugMsgPrefix("PointMerger");
 
-    outputs[0]->ShallowCopy(inputs[0]);
+  this->SetNumberOfInputPorts(1);
+  this->SetNumberOfOutputPorts(1);
+}
 
-    return 0;
+ttkPointMerger::~ttkPointMerger() {
+}
+
+int ttkPointMerger::FillInputPortInformation(int port, vtkInformation *info) {
+  if(port == 0){
+    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkUnstructuredGrid");
+    return 1;
   }
+  return 0;
+}
 
-  vtkUnstructuredGrid *input = vtkUnstructuredGrid::SafeDownCast(inputs[0]);
-  vtkUnstructuredGrid *output = vtkUnstructuredGrid::SafeDownCast(outputs[0]);
+int ttkPointMerger::FillOutputPortInformation(int port, vtkInformation *info) {
+  if(port == 0){
+    info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
+    return 1;
+  }
+  return 0;
+}
 
-  Triangulation *triangulation = ttkTriangulation::getTriangulation(input);
+int ttkPointMerger::RequestData(vtkInformation *request,
+                               vtkInformationVector **inputVector,
+                               vtkInformationVector *outputVector) {
+
+  auto input = vtkUnstructuredGrid::GetData(inputVector[0]);
+  auto output = vtkUnstructuredGrid::GetData(outputVector);
+
+  ttk::Timer t;
+
+  auto triangulation = ttkAlgorithm::GetTriangulation(input);
 
   if(!triangulation)
     return -1;
 
-  triangulation->setWrapper(this);
   if(BoundaryOnly)
     triangulation->preconditionBoundaryVertices();
 
-  SimplexId vertexNumber = input->GetNumberOfPoints();
-  vector<SimplexId> candidateVertices;
+  ttk::SimplexId vertexNumber = input->GetNumberOfPoints();
+  std::vector<ttk::SimplexId> candidateVertices;
 
   if(BoundaryOnly) {
-    for(SimplexId i = 0; i < vertexNumber; i++) {
+    for(ttk::SimplexId i = 0; i < vertexNumber; i++) {
       if(triangulation->isVertexOnBoundary(i)) {
         candidateVertices.push_back(i);
       }
     }
   } else {
     candidateVertices.resize(vertexNumber);
-    for(SimplexId i = 0; i < vertexNumber; i++)
+    for(ttk::SimplexId i = 0; i < vertexNumber; i++)
       candidateVertices[i] = i;
   }
 
-  vector<vector<SimplexId>> closePoints(vertexNumber);
+  std::vector<std::vector<ttk::SimplexId>> closePoints(vertexNumber);
 
-  {
-    stringstream msg;
-    msg << "[ttkPointMerger] Computing pointwise distances ("
-        << candidateVertices.size() << " candidates)..." << endl;
-    dMsg(cout, msg.str(), Debug::timeMsg);
-  }
+  this->printMsg(
+    "Computing pointwise distances (" + std::to_string(candidateVertices.size()) +  " candidates)",
+    0, 0, this->threadNumber_,
+    ttk::debug::LineMode::REPLACE
+  );
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
-  for(SimplexId i = 0; i < (SimplexId)candidateVertices.size(); i++) {
+  for(ttk::SimplexId i = 0; i < (ttk::SimplexId)candidateVertices.size(); i++) {
     double distance = -1;
-    vector<double> p0(3);
+    std::vector<double> p0(3);
 
-    SimplexId vertexId0 = candidateVertices[i];
+    ttk::SimplexId vertexId0 = candidateVertices[i];
 
     input->GetPoint(vertexId0, p0.data());
-    for(SimplexId j = 0; j < (SimplexId)candidateVertices.size(); j++) {
+    for(ttk::SimplexId j = 0; j < (ttk::SimplexId)candidateVertices.size(); j++) {
       if(i != j) {
-        vector<double> p1(3);
-        SimplexId vertexId1 = candidateVertices[j];
+        std::vector<double> p1(3);
+        ttk::SimplexId vertexId1 = candidateVertices[j];
         input->GetPoint(vertexId1, p1.data());
-        distance = Geometry::distance(p0.data(), p1.data());
+        distance = ttk::Geometry::distance(p0.data(), p1.data());
         if(distance < DistanceThreshold) {
           closePoints[vertexId0].push_back(vertexId1);
         }
@@ -82,24 +100,30 @@ vtkStandardNewMacro(ttkPointMerger)
     }
   }
 
-  {
-    stringstream msg;
-    msg << "[ttkPointMerger] Merging points..." << endl;
-    dMsg(cout, msg.str(), Debug::timeMsg);
-  }
+  this->printMsg(
+    "Computing pointwise distances (" + std::to_string(candidateVertices.size()) +  " candidates)",
+    1, t.getElapsedTime(), this->threadNumber_
+  );
 
-  vector<double> minMergeDistance(vertexNumber, -1);
-  vector<double> maxMergeDistance(vertexNumber, -1);
-  vector<SimplexId> mergeCount(vertexNumber, 0);
-  vector<SimplexId> mergeMap(vertexNumber, -1);
+  t.reStart();
+  this->printMsg(
+    "Merging Points",
+    0, 0, this->threadNumber_,
+    ttk::debug::LineMode::REPLACE
+  );
 
-  for(SimplexId i = 0; i < vertexNumber; i++) {
+  std::vector<double> minMergeDistance(vertexNumber, -1);
+  std::vector<double> maxMergeDistance(vertexNumber, -1);
+  std::vector<ttk::SimplexId> mergeCount(vertexNumber, 0);
+  std::vector<ttk::SimplexId> mergeMap(vertexNumber, -1);
+
+  for(ttk::SimplexId i = 0; i < vertexNumber; i++) {
     if(closePoints[i].size()) {
 
-      SimplexId targetVertexId = i;
+      ttk::SimplexId targetVertexId = i;
       do {
-        SimplexId nextTargetVertexId = targetVertexId;
-        for(SimplexId j = 0; j < (SimplexId)closePoints[targetVertexId].size();
+        ttk::SimplexId nextTargetVertexId = targetVertexId;
+        for(ttk::SimplexId j = 0; j < (ttk::SimplexId)closePoints[targetVertexId].size();
             j++) {
           if(closePoints[targetVertexId][j] < nextTargetVertexId)
             nextTargetVertexId = closePoints[targetVertexId][j];
@@ -110,10 +134,10 @@ vtkStandardNewMacro(ttkPointMerger)
       mergeCount[targetVertexId]++;
 
       if(i != targetVertexId) {
-        vector<double> p0(3), p1(3);
+        std::vector<double> p0(3), p1(3);
         input->GetPoint(i, p0.data());
         input->GetPoint(targetVertexId, p1.data());
-        double distance = Geometry::distance(p0.data(), p1.data());
+        double distance = ttk::Geometry::distance(p0.data(), p1.data());
         if((minMergeDistance[targetVertexId] == -1)
            || (distance < minMergeDistance[targetVertexId])) {
           minMergeDistance[targetVertexId] = distance;
@@ -128,10 +152,10 @@ vtkStandardNewMacro(ttkPointMerger)
     }
   }
 
-  SimplexId vertexIdGen = 0;
-  vector<SimplexId> old2new(vertexNumber, 0);
-  vector<SimplexId> new2old;
-  for(SimplexId i = 0; i < vertexNumber; i++) {
+  ttk::SimplexId vertexIdGen = 0;
+  std::vector<ttk::SimplexId> old2new(vertexNumber, 0);
+  std::vector<ttk::SimplexId> new2old;
+  for(ttk::SimplexId i = 0; i < vertexNumber; i++) {
     if(mergeMap[i] == i) {
       old2new[i] = vertexIdGen;
       vertexIdGen++;
@@ -160,7 +184,7 @@ vtkStandardNewMacro(ttkPointMerger)
   maxDistanceArray->SetNumberOfTuples(vertexIdGen);
   maxDistanceArray->SetName("MaxMergeDistance");
 
-  vector<vtkSmartPointer<vtkDoubleArray>> pointData;
+  std::vector<vtkSmartPointer<vtkDoubleArray>> pointData;
   pointData.resize(input->GetPointData()->GetNumberOfArrays());
   for(int i = 0; i < (int)pointData.size(); i++) {
     pointData[i] = vtkSmartPointer<vtkDoubleArray>::New();
@@ -173,8 +197,8 @@ vtkStandardNewMacro(ttkPointMerger)
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
-  for(SimplexId i = 0; i < vertexIdGen; i++) {
-    vector<double> p(3);
+  for(ttk::SimplexId i = 0; i < vertexIdGen; i++) {
+    std::vector<double> p(3);
     input->GetPoint(new2old[i], p.data());
     pointSet->SetPoint(i, p.data());
 
@@ -183,7 +207,7 @@ vtkStandardNewMacro(ttkPointMerger)
     maxDistanceArray->SetTuple1(i, maxMergeDistance[new2old[i]]);
 
     for(int j = 0; j < (int)pointData.size(); j++) {
-      vector<double> data(pointData[j]->GetNumberOfComponents());
+      std::vector<double> data(pointData[j]->GetNumberOfComponents());
       input->GetPointData()->GetArray(j)->GetTuple(new2old[i], data.data());
       pointData[j]->SetTuple(i, data.data());
     }
@@ -199,7 +223,7 @@ vtkStandardNewMacro(ttkPointMerger)
 
   // now do the cells
   output->Allocate();
-  vector<vtkSmartPointer<vtkDoubleArray>> cellData;
+  std::vector<vtkSmartPointer<vtkDoubleArray>> cellData;
   cellData.resize(input->GetCellData()->GetNumberOfArrays());
   for(int i = 0; i < (int)cellData.size(); i++) {
     cellData[i] = vtkSmartPointer<vtkDoubleArray>::New();
@@ -207,16 +231,16 @@ vtkStandardNewMacro(ttkPointMerger)
     cellData[i]->SetNumberOfComponents(
       input->GetCellData()->GetArray(i)->GetNumberOfComponents());
   }
-  for(SimplexId i = 0; i < input->GetNumberOfCells(); i++) {
+  for(ttk::SimplexId i = 0; i < input->GetNumberOfCells(); i++) {
 
     vtkSmartPointer<vtkGenericCell> c = vtkSmartPointer<vtkGenericCell>::New();
     input->GetCell(i, c);
 
-    vector<SimplexId> newVertexIds;
+    std::vector<ttk::SimplexId> newVertexIds;
     for(int j = 0; j < c->GetNumberOfPoints(); j++) {
-      SimplexId vertexId = old2new[c->GetPointId(j)];
+      ttk::SimplexId vertexId = old2new[c->GetPointId(j)];
       bool isIn = false;
-      for(SimplexId k = 0; k < (SimplexId)newVertexIds.size(); k++) {
+      for(ttk::SimplexId k = 0; k < (ttk::SimplexId)newVertexIds.size(); k++) {
         if(newVertexIds[k] == vertexId) {
           isIn = true;
           break;
@@ -229,7 +253,7 @@ vtkStandardNewMacro(ttkPointMerger)
 
     vtkSmartPointer<vtkIdList> idList = vtkSmartPointer<vtkIdList>::New();
     idList->SetNumberOfIds(newVertexIds.size());
-    for(SimplexId j = 0; j < (SimplexId)newVertexIds.size(); j++) {
+    for(ttk::SimplexId j = 0; j < (ttk::SimplexId)newVertexIds.size(); j++) {
       idList->SetId(j, newVertexIds[j]);
     }
 
@@ -250,17 +274,14 @@ vtkStandardNewMacro(ttkPointMerger)
       if(newVertexIds.size() == 8) {
         cellId = output->InsertNextCell(VTK_HEXAHEDRON, idList);
       } else {
-        stringstream msg;
-        msg << "[ttkPointMerger] Ill-defined cell type for cell #" << i << " ("
-            << newVertexIds.size() << " vertices)" << endl;
-        dMsg(cerr, msg.str(), Debug::infoMsg);
+        this->printWrn("Ill-defined cell type for cell #" + std::to_string(i) + " (" + std::to_string(newVertexIds.size()) + " vertices)");
       }
     }
 
     if(cellId != -1) {
       // insert the cell data
       for(int j = 0; j < (int)cellData.size(); j++) {
-        vector<double> data(cellData[j]->GetNumberOfComponents());
+        std::vector<double> data(cellData[j]->GetNumberOfComponents());
         input->GetCellData()->GetArray(j)->GetTuple(i, data.data());
         cellData[j]->InsertNextTuple(data.data());
       }
@@ -269,14 +290,10 @@ vtkStandardNewMacro(ttkPointMerger)
   for(int i = 0; i < (int)cellData.size(); i++)
     output->GetCellData()->AddArray(cellData[i]);
 
-  {
-    stringstream msg;
-    msg << "[ttkPointMerger] Merge performed in " << t.getElapsedTime() << " s."
-        << endl;
-    msg << "[ttkPointMerger] Memory usage: " << m.getElapsedUsage() << " MB."
-        << endl;
-    dMsg(cout, msg.str(), memoryMsg);
-  }
+  this->printMsg(
+    "Merging Points",
+    1, t.getElapsedTime(), this->threadNumber_
+  );
 
-  return 0;
+  return 1;
 }

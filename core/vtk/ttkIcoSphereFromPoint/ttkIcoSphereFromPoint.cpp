@@ -65,7 +65,7 @@ int ttkIcoSphereFromPoint::RequestData(vtkInformation *request,
   size_t nVertices = 0;
   size_t nTriangles = 0;
   this->computeNumberOfVerticesAndTriangles(
-    this->GetNumberOfSubdivisions(), nVertices, nTriangles);
+    nVertices, nTriangles, this->GetNumberOfSubdivisions());
 
   auto output = vtkUnstructuredGrid::GetData(outputVector);
   auto outputPD = output->GetPointData();
@@ -75,10 +75,10 @@ int ttkIcoSphereFromPoint::RequestData(vtkInformation *request,
     auto inputPD = input->GetPointData();
     for(size_t i = 0, n = inputPD->GetNumberOfArrays(); i < n; i++) {
       auto oldArray = vtkDataArray::SafeDownCast(inputPD->GetAbstractArray(i));
-      if(!oldArray)
+      std::string oldArrayName(oldArray->GetName());
+      if(!oldArray || (this->GetComputeNormals() && oldArrayName.compare("Normals")==0))
         continue;
-      auto newArray
-        = vtkSmartPointer<vtkDataArray>::Take(oldArray->NewInstance());
+      auto newArray = vtkSmartPointer<vtkDataArray>::Take(oldArray->NewInstance());
       size_t nComponents = oldArray->GetNumberOfComponents();
       newArray->SetName(oldArray->GetName());
       newArray->SetNumberOfComponents(nComponents);

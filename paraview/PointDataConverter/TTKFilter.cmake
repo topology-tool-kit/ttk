@@ -1,1 +1,0 @@
-ttk_register_pv_filter(ttkPointDataConverter PointDataConverter.xml)

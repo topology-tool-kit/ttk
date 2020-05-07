@@ -1,54 +1,64 @@
 #include <ttkTableDataSelector.h>
 
+#include <vtkFieldData.h>
+#include <vtkDataSetAttributes.h>
+
 #include <regex>
 
-using namespace std;
-using namespace ttk;
+vtkStandardNewMacro(ttkTableDataSelector);
 
-vtkStandardNewMacro(ttkTableDataSelector)
+ttkTableDataSelector::ttkTableDataSelector() {
+  this->setDebugMsgPrefix("TableDataSelector");
 
-  // transmit abort signals
-  bool ttkTableDataSelector::needsToAbort() {
-  return GetAbortExecute();
+  this->SetNumberOfInputPorts(1);
+  this->SetNumberOfOutputPorts(1);
 }
 
-// transmit progress status
-int ttkTableDataSelector::updateProgress(const float &progress) {
+ttkTableDataSelector::~ttkTableDataSelector() {
+}
 
-  {
-    stringstream msg;
-    msg << "[ttkTableDataSelector] " << progress * 100 << "% processed...."
-        << endl;
-    dMsg(cout, msg.str(), advancedInfoMsg);
+int ttkTableDataSelector::FillInputPortInformation(int port, vtkInformation *info) {
+  if(port == 0){
+    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkTable");
+    return 1;
   }
-
-  UpdateProgress(progress);
   return 0;
 }
 
-int ttkTableDataSelector::doIt(vtkTable *input, vtkTable *output) {
-  Memory m;
+int ttkTableDataSelector::FillOutputPortInformation(int port, vtkInformation *info) {
+  if(port == 0){
+    info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
+    return 1;
+  }
+  return 0;
+}
+
+int ttkTableDataSelector::RequestData(vtkInformation *request,
+                               vtkInformationVector **inputVector,
+                               vtkInformationVector *outputVector) {
+
+  ttk::Timer t;
+
+  this->printMsg(
+    "Selecting Columns",
+    0, 0,
+    ttk::debug::LineMode::REPLACE
+  );
+
+  auto input = vtkTable::GetData(inputVector[0]);
+  auto output = vtkTable::GetData(outputVector);
 
   output->ShallowCopy(input);
 
   vtkFieldData *inputRowData = input->GetRowData();
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!inputRowData) {
-    cerr << "[ttkTableDataSelector] Error: input has no row data." << endl;
+      this->printErr("Input has no row data.");
     return -1;
   }
 #endif
 
-  vtkSmartPointer<vtkFieldData> outputRowData
-    = vtkSmartPointer<vtkFieldData>::New();
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(!outputRowData) {
-    cerr
-      << "[ttkTableDataSelector] Error: vtkFieldData memory allocation problem."
-      << endl;
-    return -1;
-  }
-#endif
+  auto outputRowData = vtkSmartPointer<vtkFieldData>::New();
 
   if(AvailableCols.empty()) {
     // loading from states
@@ -67,7 +77,7 @@ int ttkTableDataSelector::doIt(vtkTable *input, vtkTable *output) {
       continue;
     }
     // filter by regex
-    if(!regex_match(col, regex(RegexpString))) {
+    if(!std::regex_match(col, std::regex(RegexpString))) {
       continue;
     }
     // add the attay
@@ -78,14 +88,12 @@ int ttkTableDataSelector::doIt(vtkTable *input, vtkTable *output) {
 
   output->GetRowData()->ShallowCopy(outputRowData);
 
-  {
-    stringstream msg;
-    msg << "[ttkTableDataSelector] Memory usage: " << m.getElapsedUsage()
-        << " MB." << endl;
-    dMsg(cout, msg.str(), memoryMsg);
-  }
+  this->printMsg(
+    "Selecting Columns",
+    1, t.getElapsedTime()
+  );
 
-  return 0;
+  return 1;
 }
 
 int ttkTableDataSelector::RequestInformation(
@@ -95,28 +103,8 @@ int ttkTableDataSelector::RequestInformation(
 
   vtkTable *input = vtkTable::GetData(inputVector[0]);
   FillAvailableCols(input);
-  return vtkTableAlgorithm::RequestInformation(
+  return ttkAlgorithm::RequestInformation(
     request, inputVector, outputVector);
-}
-
-int ttkTableDataSelector::RequestData(vtkInformation *request,
-                                      vtkInformationVector **inputVector,
-                                      vtkInformationVector *outputVector) {
-  Memory m;
-
-  vtkTable *input = vtkTable::GetData(inputVector[0]);
-  vtkTable *output = vtkTable::GetData(outputVector);
-
-  doIt(input, output);
-
-  {
-    stringstream msg;
-    msg << "[ttkTableDataSelector] Memory usage: " << m.getElapsedUsage()
-        << " MB." << endl;
-    dMsg(cout, msg.str(), memoryMsg);
-  }
-
-  return 1;
 }
 
 void ttkTableDataSelector::FillAvailableCols(vtkTable *input) {

@@ -5,16 +5,16 @@
        a filter already in ParaView (in Servers/ServerManager/Resources/*.xml)
        that matches your filter and then model your xml on it -->
   <ProxyGroup name="filters">
-   <SourceProxy 
-     name="ProjectionFromField" 
-     class="ttkProjectionFromField" 
+   <SourceProxy
+     name="ProjectionFromField"
+     class="ttkProjectionFromField"
      label="TTK ProjectionFromField">
      <Documentation
-        long_help="TTK plugin which projects a data-set to 2D given two 
+        long_help="TTK plugin which projects a data-set to 2D given two
 point-data scalar fields to be used as 2D coordinates."
-        short_help="TTK plugin which projects a data-set to 2D given two 
+        short_help="TTK plugin which projects a data-set to 2D given two
 point-data scalar fields to be used as 2D coordinates.">
-         TTK plugin which projects a data-set to 2D given two 
+         TTK plugin which projects a data-set to 2D given two
 point-data scalar fields to be used as 2D coordinates.
      </Documentation>
      <InputProperty
@@ -27,14 +27,12 @@ point-data scalar fields to be used as 2D coordinates.
         <DataTypeDomain name="input_type">
           <DataType value="vtkPointSet"/>
         </DataTypeDomain>
-<!--         <InputArrayDomain name="input_scalars" number_of_components="1"> -->
-<!--           <Property name="Input" function="FieldDataSelection" /> -->
-<!--         </InputArrayDomain> -->
+        <InputArrayDomain name="input_array" attribute_type="point" number_of_components="1" />
         <Documentation>
           Data-set to texture map.
         </Documentation>
       </InputProperty>
-      
+
       <IntVectorProperty name="UseTextureCoordinates"
                      command="SetUseTextureCoordinates"
                      label="Use Texture Coordinates"
@@ -43,104 +41,36 @@ point-data scalar fields to be used as 2D coordinates.
         <BooleanDomain name="bool"/>
       </IntVectorProperty>
 
-      <StringVectorProperty
-        name="U Component"
-        command="SetUComponent"
-        number_of_elements="1"
-        animateable="0"
-        label="U Component"
-        >
-        <ArrayListDomain
-          name="array_list"
-          default_values="0">
-          <RequiredProperties>
-            <Property name="Input" function="Input" />
-          </RequiredProperties>
-        </ArrayListDomain>
-        <Documentation>
-          Select the scalar field to use as the U component.
-        </Documentation>
-      </StringVectorProperty>
+      <StringVectorProperty name="UComponent" label="U Component" command="SetInputArrayToProcess" element_types="0 0 0 0 2" number_of_elements="5" default_values="0">
+            <ArrayListDomain name="array_list" number_of_components="1">
+                <RequiredProperties>
+                    <Property function="Input" name="Input" />
+                </RequiredProperties>
+            </ArrayListDomain>
+            <Documentation>U component of the bivariate field.</Documentation>
+        </StringVectorProperty>
 
-      <StringVectorProperty
-        name="V Component"
-        command="SetVComponent"
-        number_of_elements="1"
-        animateable="0"
-        label="V Component"
-        >
-        <ArrayListDomain
-          name="array_list"
-          default_values="0">
-          <RequiredProperties>
-            <Property name="Input" function="Input" />
-          </RequiredProperties>
-        </ArrayListDomain>
-        <Documentation>
-          Select the scalar field to use as the V component.
-        </Documentation>
-      </StringVectorProperty> 
-   
-      
-      <IntVectorProperty
-         name="UseAllCores"
-         label="Use All Cores"
-         command="SetUseAllCores"
-         number_of_elements="1"
-         default_values="1" panel_visibility="advanced">
-        <BooleanDomain name="bool"/>
-         <Documentation>
-          Use all available cores.
-         </Documentation>
-      </IntVectorProperty>
-      
-      <IntVectorProperty
-         name="ThreadNumber"
-         label="Thread Number"
-         command="SetThreadNumber"
-         number_of_elements="1"
-         default_values="1" panel_visibility="advanced">
-        <IntRangeDomain name="range" min="1" max="100" />
-        <Hints>
-          <PropertyWidgetDecorator type="GenericDecorator"
-            mode="visibility"
-            property="UseAllCores"
-            value="0" />
-        </Hints>
+        <StringVectorProperty name="VComponent" label="V Component" command="SetInputArrayToProcess" element_types="0 0 0 0 2" number_of_elements="5" default_values="1">
+            <ArrayListDomain name="array_list" number_of_components="1">
+                <RequiredProperties>
+                    <Property function="Input" name="Input" />
+                </RequiredProperties>
+            </ArrayListDomain>
+            <Documentation>V component of the bivariate field.</Documentation>
+        </StringVectorProperty>
 
-         <Documentation>
-          Thread number.
-         </Documentation>
-      </IntVectorProperty>
-      
-      <IntVectorProperty
-         name="DebugLevel"
-         label="Debug Level"
-         command="SetDebugLevel"
-         number_of_elements="1"
-         default_values="3" panel_visibility="advanced">
-        <IntRangeDomain name="range" min="0" max="100" />
-         <Documentation>
-           Debug level.
-         </Documentation>
-      </IntVectorProperty>
-      
-      <PropertyGroup panel_widget="Line" label="Testing">
-        <Property name="UseAllCores" />
-        <Property name="ThreadNumber" />
-        <Property name="DebugLevel" />
-      </PropertyGroup>      
-      
       <PropertyGroup panel_widget="Line" label="Input options">
         <Property name="UseTextureCoordinates" />
-        <Property name="U Component" />
-        <Property name="V Component" />
-      </PropertyGroup>      
-      
+        <Property name="UComponent" />
+        <Property name="VComponent" />
+      </PropertyGroup>
+
+      ${DEBUG_WIDGETS}
+
       <Hints>
         <ShowInMenu category="TTK - Misc" />
       </Hints>
-      
+
    </SourceProxy>
  </ProxyGroup>
 </ServerManagerConfiguration>

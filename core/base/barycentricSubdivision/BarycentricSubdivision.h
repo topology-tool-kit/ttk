@@ -27,7 +27,7 @@
 
 namespace ttk {
 
-  class BarycentricSubdivision : public Debug {
+  class BarycentricSubdivision : virtual public Debug {
 
   public:
     BarycentricSubdivision(std::vector<float> &points,
@@ -35,6 +35,7 @@ namespace ttk {
                            std::vector<SimplexId> &pointId,
                            std::vector<SimplexId> &pointDim)
       : points_{points}, cells_{cells}, pointId_{pointId}, pointDim_{pointDim} {
+          this->setDebugMsgPrefix("BarycentricSubdivision");
     }
 
     inline void setOutputTriangulation(Triangulation *const triangulation) {

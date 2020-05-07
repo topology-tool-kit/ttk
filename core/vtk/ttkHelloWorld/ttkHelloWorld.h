@@ -30,16 +30,13 @@
 
 // VTK Includes
 #include <ttkAlgorithm.h>
-#include <ttkTriangulation.h>
-#include <ttkUtils.h>
 
 // TTK Base Includes
 #include <HelloWorld.h>
 
 class TTKHELLOWORLD_EXPORT ttkHelloWorld
   : public ttkAlgorithm // we inherit from the generic ttkAlgorithm class
-  ,
-    protected ttk::HelloWorld // and we inherit from the base class
+  , protected ttk::HelloWorld // and we inherit from the base class
 {
 private:
   /**

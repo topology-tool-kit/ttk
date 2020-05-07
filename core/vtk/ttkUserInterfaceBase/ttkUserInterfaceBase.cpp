@@ -3,6 +3,8 @@
 
 #include <vtkTexture.h>
 
+#include <vtkPointData.h>
+
 #ifndef TTK_INSTALL_ASSETS_DIR
 #define TTK_INSTALL_ASSETS_DIR "."
 #endif // TTK_INSTALL_ASSETS_DIR
@@ -275,10 +277,10 @@ int ttkUserInterfaceBase::updateScalarFieldTexture() {
     if((boundaryFilters_[i]->GetOutput()->GetPointData())
        && (boundaryFilters_[i]->GetOutput()->GetPointData()->GetArray(0))) {
 
-      textureMapFromFields_[i]->SetInputData(boundaryFilters_[i]->GetOutput());
+      textureMapFromFields_[i]->SetInputDataObject(boundaryFilters_[i]->GetOutput());
       textureMapFromFields_[i]->Update();
       surfaces_[i]
-        = vtkPolyData::SafeDownCast(textureMapFromFields_[i]->GetOutput());
+        = vtkPolyData::SafeDownCast(textureMapFromFields_[i]->GetOutputDataObject(0));
 
       texture_->SetInputConnection(pngReader_->GetOutputPort());
 

@@ -5,5 +5,4 @@ SOURCES
 HEADERS
   ttkScalarFieldNormalizer.h
 DEPENDS
-  common
-  ttkTriangulationAlgorithm
+  ttkAlgorithm

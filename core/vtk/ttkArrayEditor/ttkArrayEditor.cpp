@@ -54,7 +54,7 @@ void ttkArrayEditor::AddArray(const int fieldType,
                               const int targetOrSource) {
   std::string n(name);
   if(n.compare("") == 0) {
-    this->printErr("Array name can not be ''");
+    this->printErr("Invalid Array Name ''");
     return;
   }
 
@@ -64,6 +64,7 @@ void ttkArrayEditor::AddArray(const int fieldType,
     this->SourceArraySelection.push_back(make_pair(fieldType, n));
   this->Modified();
 }
+
 void ttkArrayEditor::AddTargetPointDataArray(const char *name) {
   this->AddArray(vtkDataObject::POINT, name, 0);
 }
@@ -105,6 +106,7 @@ void ttkArrayEditor::RemoveArray(const int fieldType,
     }
   }
 }
+
 void ttkArrayEditor::RemoveTargetPointDataArray(const char *name) {
   this->RemoveArray(vtkDataObject::POINT, name, false, 0);
 }
@@ -264,7 +266,11 @@ int ttkArrayEditor::RequestData(vtkInformation *request,
              || !checkData(outputArraysByAttributeType, "Target",
                            targetAttributeType, outputAsDS, array, this))
             return 0;
-          outputArraysByAttributeType[targetAttributeType]->AddArray(array);
+
+          if(this->ReplaceExistingArrays
+             || !outputArraysByAttributeType[targetAttributeType]->HasArray(
+               array->GetName()))
+            outputArraysByAttributeType[targetAttributeType]->AddArray(array);
         }
       }
 

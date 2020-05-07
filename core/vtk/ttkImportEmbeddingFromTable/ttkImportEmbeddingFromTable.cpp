@@ -1,28 +1,40 @@
-#include <iso646.h>
-#include <regex>
 #include <ttkImportEmbeddingFromTable.h>
 
-using namespace std;
-using namespace ttk;
+#include <ttkUtils.h>
+#include <vtkPointSet.h>
+#include <vtkTable.h>
 
-vtkStandardNewMacro(ttkImportEmbeddingFromTable)
+#include <iso646.h>
+#include <regex>
 
-  // transmit abort signals
-  bool ttkImportEmbeddingFromTable::needsToAbort() {
-  return GetAbortExecute();
+vtkStandardNewMacro(ttkImportEmbeddingFromTable);
+
+ttkImportEmbeddingFromTable::ttkImportEmbeddingFromTable() {
+  this->setDebugMsgPrefix("EmbeddingFromTable");
+
+  this->SetNumberOfInputPorts(2);
+  this->SetNumberOfOutputPorts(1);
 }
 
-// transmit progress status
-int ttkImportEmbeddingFromTable::updateProgress(const float &progress) {
+ttkImportEmbeddingFromTable::~ttkImportEmbeddingFromTable() {
+}
 
-  {
-    stringstream msg;
-    msg << "[ttkImportEmbeddingFromTable] " << progress * 100
-        << "% processed...." << endl;
-    dMsg(cout, msg.str(), advancedInfoMsg);
+int ttkImportEmbeddingFromTable::FillInputPortInformation(int port, vtkInformation *info) {
+  if(port == 0){
+    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
+    return 1;
+  } else if (port == 1){
+    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkTable");
+    return 1;
   }
+  return 0;
+}
 
-  UpdateProgress(progress);
+int ttkImportEmbeddingFromTable::FillOutputPortInformation(int port, vtkInformation *info) {
+  if(port == 0){
+    info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
+    return 1;
+  }
   return 0;
 }
 
@@ -32,7 +44,7 @@ inline void setPointFromData(vtkSmartPointer<vtkPoints> points,
                              VTK_TT *ydata,
                              VTK_TT *zdata,
                              const bool Embedding2D) {
-  for(SimplexId i = 0; i < points->GetNumberOfPoints(); ++i) {
+  for(size_t i = 0; i < points->GetNumberOfPoints(); ++i) {
     double p[3];
     p[0] = xdata[i];
     p[1] = ydata[i];
@@ -41,90 +53,74 @@ inline void setPointFromData(vtkSmartPointer<vtkPoints> points,
   }
 }
 
-int ttkImportEmbeddingFromTable::doIt(vtkPointSet *inputDataSet,
-                                      vtkTable *inputTable,
-                                      vtkPointSet *output) {
-  Memory m;
+int ttkImportEmbeddingFromTable::RequestData(vtkInformation *request,
+                               vtkInformationVector **inputVector,
+                               vtkInformationVector *outputVector) {
 
-  const SimplexId numberOfPoints = inputDataSet->GetNumberOfPoints();
+  ttk::Timer t;
+
+  this->printMsg(
+    "Apply Embedding",
+    0, 0,
+    ttk::debug::LineMode::REPLACE
+  );
+
+  auto inputDataSet = vtkPointSet::GetData(inputVector[0]);
+  auto inputTable = vtkTable::GetData(inputVector[1]);
+  auto outputDataSet = vtkPointSet::GetData(outputVector);
+
+  const size_t numberOfPoints = inputDataSet->GetNumberOfPoints();
 #ifndef TTK_ENABLE_KAMIKAZE
   if(numberOfPoints <= 0) {
-    cerr << "[ttkImportEmbeddingFromTable] Error: input has no point." << endl;
-    return -1;
+    this->printErr("Input has no points.");
+    return 0;
   }
 #endif
 
-  vtkAbstractArray *xarr
-    = XColumn.empty() ? nullptr : inputTable->GetColumnByName(XColumn.data());
-  vtkAbstractArray *yarr
-    = YColumn.empty() ? nullptr : inputTable->GetColumnByName(YColumn.data());
-  vtkAbstractArray *zarr
-    = ZColumn.empty() ? nullptr : inputTable->GetColumnByName(ZColumn.data());
+  auto xarr = this->GetInputArrayToProcess(0, inputVector);
+  auto yarr = this->GetInputArrayToProcess(1, inputVector);
+  auto zarr = this->GetInputArrayToProcess(2, inputVector);
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(xarr == nullptr or yarr == nullptr or zarr == nullptr) {
-    cerr << "[ttkImportEmbeddingFromTable] Error: invalid input columns."
-         << endl;
-    return -1;
+    this->printErr("Invalid input columns.");
+    return 0;
   }
   if(xarr->GetNumberOfTuples() != numberOfPoints
      or yarr->GetNumberOfTuples() != numberOfPoints
      or zarr->GetNumberOfTuples() != numberOfPoints) {
-    cerr << "[ttkImportEmbeddingFromTable] Error: number of points on inputs "
-            "mismatch."
-         << endl;
-    return -1;
+    this->printErr("Number of points on inputs mismatch.");
+    return 0;
   }
   if(xarr->GetDataType() != yarr->GetDataType()
      or xarr->GetDataType() != zarr->GetDataType()) {
-    cerr << "[ttkImportEmbeddingFromTable] Error: input columns has different "
-            "data types."
-         << endl;
-    return -1;
+    this->printErr("Input columns has different data types.");
+    return 0;
   }
 #endif
 
-  vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+  auto points = vtkSmartPointer<vtkPoints>::New();
   points->SetNumberOfPoints(numberOfPoints);
 
   switch(xarr->GetDataType()) {
-    vtkTemplateMacro(setPointFromData(
-      points, static_cast<VTK_TT *>(xarr->GetVoidPointer(0)),
-      static_cast<VTK_TT *>(yarr->GetVoidPointer(0)),
-      static_cast<VTK_TT *>(zarr->GetVoidPointer(0)), Embedding2D));
+    vtkTemplateMacro(
+      setPointFromData(
+        points,
+        (VTK_TT *) ttkUtils::GetVoidPointer(xarr),
+        (VTK_TT *) ttkUtils::GetVoidPointer(yarr),
+        (VTK_TT *) ttkUtils::GetVoidPointer(zarr),
+        Embedding2D
+      )
+    );
   }
 
-  output->ShallowCopy(inputDataSet);
-  output->SetPoints(points);
+  outputDataSet->ShallowCopy(inputDataSet);
+  outputDataSet->SetPoints(points);
 
-  {
-    stringstream msg;
-    msg << "[ttkImportEmbeddingFromTable] Memory usage: " << m.getElapsedUsage()
-        << " MB." << endl;
-    dMsg(cout, msg.str(), memoryMsg);
-  }
-
-  return 0;
-}
-
-int ttkImportEmbeddingFromTable::RequestData(
-  vtkInformation *request,
-  vtkInformationVector **inputVector,
-  vtkInformationVector *outputVector) {
-  Memory m;
-
-  vtkPointSet *inputDataSet = vtkPointSet::GetData(inputVector[0]);
-  vtkTable *inputTable = vtkTable::GetData(inputVector[1]);
-  vtkPointSet *output = vtkPointSet::GetData(outputVector);
-
-  doIt(inputDataSet, inputTable, output);
-
-  {
-    stringstream msg;
-    msg << "[ttkImportEmbeddingFromTable] Memory usage: " << m.getElapsedUsage()
-        << " MB." << endl;
-    dMsg(cout, msg.str(), memoryMsg);
-  }
+  this->printMsg(
+    "Apply Embedding",
+    1, t.getElapsedTime()
+  );
 
   return 1;
 }

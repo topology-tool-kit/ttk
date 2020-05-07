@@ -1,4 +1,6 @@
 #include <ttkHelloWorld.h>
+#include <ttkUtils.h>
+#include <ttkMacros.h>
 
 #include <vtkDataObject.h> // For port information
 #include <vtkObjectFactory.h> // for new macro
@@ -40,12 +42,11 @@ ttkHelloWorld::~ttkHelloWorld() {
  * the port information.
  */
 int ttkHelloWorld::FillInputPortInformation(int port, vtkInformation *info) {
-  if(port == 0)
+  if(port == 0){
     info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
-  else
-    return 0;
-
-  return 1;
+    return 1;
+  }
+  return 0;
 }
 
 /**
@@ -64,12 +65,11 @@ int ttkHelloWorld::FillInputPortInformation(int port, vtkInformation *info) {
  * initialize empty output data objects based on this information.
  */
 int ttkHelloWorld::FillOutputPortInformation(int port, vtkInformation *info) {
-  if(port == 0)
+  if(port == 0){
     info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
-  else
-    return 0;
-
-  return 1;
+    return 1;
+  }
+  return 0;
 }
 
 /**

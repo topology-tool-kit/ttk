@@ -19,28 +19,22 @@
 /// \sa ttk::BottleneckDistance
 #pragma once
 
+// Module
+#include <ttkBottleneckDistanceModule.h>
+
 // TTK includes
-#include <BottleneckDistance.h>
-#include <ttkTriangulationAlgorithm.h>
+#include <ttkAlgorithm.h>
+#include <ttkMacros.h>
 
 // VTK includes
-#include <vtkCellData.h>
-#include <vtkCharArray.h>
-#include <vtkDataArray.h>
-#include <vtkDataSet.h>
-#include <vtkDataSetAlgorithm.h>
-#include <vtkDoubleArray.h>
-#include <vtkFiltersCoreModule.h>
-#include <vtkFloatArray.h>
-#include <vtkInformation.h>
-#include <vtkIntArray.h>
-#include <vtkObjectFactory.h>
-#include <vtkPointData.h>
-#include <vtkSmartPointer.h>
 #include <vtkUnstructuredGrid.h>
+#include <vtkPointData.h>
+#include <vtkCellData.h>
+#include <vtkDoubleArray.h>
+#include <vtkCellData.h>
 
-// VTK Module
-#include <ttkBottleneckDistanceModule.h>
+// TTK Base includes
+#include <BottleneckDistance.h>
 
 // Misc.
 #include <cstdlib>
@@ -48,31 +42,39 @@
 #include <random>
 
 class TTKBOTTLENECKDISTANCE_EXPORT ttkBottleneckDistance
-  : public vtkDataSetAlgorithm,
-    protected ttk::Wrapper {
+  : public ttkAlgorithm
+  , protected ttk::BottleneckDistance
+{
+
+private:
+  int BenchmarkSize;
+
+  bool UseOutputMatching;
+  bool Is3D;
+  double Spacing;
+  double Alpha;
+  double Tolerance;
+  double PX;
+  double PY;
+  double PZ;
+  double PE;
+  double PS;
+
+  std::string DistanceAlgorithm;
+
+  std::string WassersteinMetric;
+  bool UsePersistenceMetric;
+  bool UseGeometricSpacing;
+  int PVAlgorithm;
+  double result;
+
+  vtkSmartPointer<vtkUnstructuredGrid> CTPersistenceDiagram1_;
+  vtkSmartPointer<vtkUnstructuredGrid> CTPersistenceDiagram2_;
+  vtkSmartPointer<vtkUnstructuredGrid> CTPersistenceDiagram3_;
 
 public:
-  static ttkBottleneckDistance *New();
 
-  vtkTypeMacro(ttkBottleneckDistance, vtkDataSetAlgorithm);
-
-  // Default ttk setters
-  void SetDebugLevel(int debugLevel) {
-    setDebugLevel(debugLevel);
-    Modified();
-  }
-
-  void SetThreadNumber(int threadNumber) {
-    ThreadNumber = threadNumber;
-    SetThreads();
-  }
-
-  void SetUseAllCores(bool onOff) {
-    UseAllCores = onOff;
-    SetThreads();
-  }
-  // end of default ttk setters
-
+  // Getters and Setters
   vtkSetMacro(Alpha, double);
   vtkGetMacro(Alpha, double);
 
@@ -120,38 +122,9 @@ public:
 
   vtkGetMacro(result, double);
 
-  // Override input types.
-  int FillInputPortInformation(int port, vtkInformation *info) override {
-    switch(port) {
-      case 0:
-        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
-        break;
-      case 1:
-        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
-        break;
-      default:
-        break;
-    }
-    return 1;
-  }
-
-  // Override output types.
-  int FillOutputPortInformation(int port, vtkInformation *info) override {
-    switch(port) {
-      case 0:
-        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
-        break;
-      case 1:
-        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
-        break;
-      case 2:
-        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
-        break;
-      default:
-        break;
-    }
-    return 1;
-  }
+  // VTK Macros
+  vtkTypeMacro(ttkBottleneckDistance, ttkAlgorithm);
+  static ttkBottleneckDistance *New();
 
   // Warn: this is duplicated in ttkTrackingFromPersistenceDiagrams
   template <typename dataType>
@@ -187,67 +160,15 @@ public:
   int doBenchmark();
 
 protected:
-  ttkBottleneckDistance() {
-    // settings
-    UseAllCores = false;
-    SetNumberOfInputPorts(2);
-    SetNumberOfOutputPorts(3);
 
-    // inputs
-    BenchmarkSize = -1;
-    UseOutputMatching = false;
-    UsePersistenceMetric = false;
-    UseGeometricSpacing = false;
-    WassersteinMetric = "2";
-    Alpha = 1.0;
-    Tolerance = 1.0;
-    PX = 0;
-    PY = 0;
-    PZ = 0;
-    PE = 1;
-    PS = 1;
-    Spacing = 0.0;
-    Is3D = false;
-    PVAlgorithm = -1;
+  ttkBottleneckDistance();
+  ~ttkBottleneckDistance();
 
-    // outputs
-    result = -1.;
-    CTPersistenceDiagram1_ = vtkSmartPointer<vtkUnstructuredGrid>::New();
-    CTPersistenceDiagram2_ = vtkSmartPointer<vtkUnstructuredGrid>::New();
-    CTPersistenceDiagram3_ = vtkSmartPointer<vtkUnstructuredGrid>::New();
-  }
-
-  ~ttkBottleneckDistance() override{};
-
-  TTK_SETUP();
-
-private:
-  int BenchmarkSize;
-
-  bool UseOutputMatching;
-  bool Is3D;
-  double Spacing;
-  double Alpha;
-  double Tolerance;
-  double PX;
-  double PY;
-  double PZ;
-  double PE;
-  double PS;
-
-  std::string DistanceAlgorithm;
-
-  std::string WassersteinMetric;
-  bool UsePersistenceMetric;
-  bool UseGeometricSpacing;
-  int PVAlgorithm;
-  double result;
-
-  vtkSmartPointer<vtkUnstructuredGrid> CTPersistenceDiagram1_;
-  vtkSmartPointer<vtkUnstructuredGrid> CTPersistenceDiagram2_;
-  vtkSmartPointer<vtkUnstructuredGrid> CTPersistenceDiagram3_;
-
-  ttk::BottleneckDistance bottleneckDistance_;
+  int FillInputPortInformation(int port, vtkInformation *info) override;
+  int FillOutputPortInformation(int port, vtkInformation *info) override;
+  int RequestData(vtkInformation *request,
+                  vtkInformationVector **inputVector,
+                  vtkInformationVector *outputVector) override;
 };
 
 template <typename dataType>

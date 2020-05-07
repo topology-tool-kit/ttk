@@ -20,63 +20,19 @@
 ///
 /// \sa vtkProjectionFromField
 ///
-#ifndef _TTK_TEXTURE_MAP_FROM_FIELD_H
-#define _TTK_TEXTURE_MAP_FROM_FIELD_H
+#pragma once
 
-// VTK includes
-#include <vtkCharArray.h>
-#include <vtkDataArray.h>
-#include <vtkDataSet.h>
-#include <vtkDataSetAlgorithm.h>
-#include <vtkDoubleArray.h>
-#include <vtkFiltersCoreModule.h>
-#include <vtkFloatArray.h>
-#include <vtkInformation.h>
-#include <vtkIntArray.h>
-#include <vtkObjectFactory.h>
-#include <vtkPointData.h>
-
-// VTK Module
 #include <ttkTextureMapFromFieldModule.h>
+#include <ttkAlgorithm.h>
 
-// ttk code includes
-#include <ttkTriangulationAlgorithm.h>
-
-class TTKTEXTUREMAPFROMFIELD_EXPORT ttkTextureMapFromField
-  : public vtkDataSetAlgorithm,
-    protected ttk::Wrapper {
+class TTKTEXTUREMAPFROMFIELD_EXPORT ttkTextureMapFromField : public ttkAlgorithm{
+private:
+  bool OnlyUComponent{true};
+  bool OnlyVComponent{false};
+  bool RepeatUTexture{false};
+  bool RepeatVTexture{false};
 
 public:
-  static ttkTextureMapFromField *New();
-
-  vtkTypeMacro(ttkTextureMapFromField, vtkDataSetAlgorithm);
-
-  // default ttk setters
-  void SetDebugLevel(int debugLevel) {
-    setDebugLevel(debugLevel);
-    Modified();
-  }
-
-  void SetThreads() {
-    if(!UseAllCores)
-      threadNumber_ = ThreadNumber;
-    else {
-      threadNumber_ = ttk::OsCall::getNumberOfCores();
-    }
-    Modified();
-  }
-
-  void SetThreadNumber(int threadNumber) {
-    ThreadNumber = threadNumber;
-    SetThreads();
-  }
-
-  void SetUseAllCores(bool onOff) {
-    UseAllCores = onOff;
-    SetThreads();
-  }
-  // end of default ttk setters
-
   vtkSetMacro(OnlyUComponent, bool);
   vtkGetMacro(OnlyUComponent, bool);
 
@@ -89,34 +45,17 @@ public:
   vtkSetMacro(RepeatVTexture, bool);
   vtkGetMacro(RepeatVTexture, bool);
 
-  vtkSetMacro(UComponent, std::string);
-  vtkGetMacro(UComponent, std::string);
-
-  vtkSetMacro(VComponent, std::string);
-  vtkGetMacro(VComponent, std::string);
+  static ttkTextureMapFromField *New();
+  vtkTypeMacro(ttkTextureMapFromField, ttkAlgorithm);
 
 protected:
   ttkTextureMapFromField();
+  ~ttkTextureMapFromField();
 
-  ~ttkTextureMapFromField() override;
+  int FillInputPortInformation(int port, vtkInformation *info) override;
+  int FillOutputPortInformation(int port, vtkInformation *info) override;
 
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;
-
-private:
-  bool UseAllCores;
-  int ThreadNumber;
-  bool OnlyUComponent, OnlyVComponent, RepeatUTexture, RepeatVTexture;
-  std::string UComponent, VComponent;
-  vtkFloatArray *textureCoordinates_;
-
-  // base code features
-  int doIt(vtkDataSet *input, vtkDataSet *output);
-
-  bool needsToAbort() override;
-
-  int updateProgress(const float &progress) override;
 };
-
-#endif // _TTK_TEXTURE_MAP_FROM_FIELD_H

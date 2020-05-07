@@ -1,3 +1,6 @@
+#include <vtkIdTypeArray.h>
+#include <vtkIntArray.h>
+
 #define ttkTemplate2IdMacro(call)                                           \
   vtkTemplate2MacroCase1(VTK_LONG_LONG, long long, call);                   \
   vtkTemplate2MacroCase1(VTK_UNSIGNED_LONG_LONG, unsigned long long, call); \
@@ -35,4 +38,27 @@
     typedef type2 VTK_T2;                                          \
     call;                                                          \
   }; break
+#endif
+
+#define ttkVtkTemplateMacroCase(                         \
+  dataType, triangulationType, triangulationClass, call) \
+  case triangulationType: {                              \
+    typedef triangulationClass TTK_TT;                   \
+    switch(dataType) { vtkTemplateMacro((call)); };      \
+  }; break;
+
+#define ttkVtkTemplateMacro(triangulationType, dataType, call)            \
+  switch(triangulationType) {                                             \
+    ttkVtkTemplateMacroCase(dataType, ttk::Triangulation::Type::EXPLICIT, \
+                            ttk::ExplicitTriangulation, call);            \
+    ttkVtkTemplateMacroCase(dataType, ttk::Triangulation::Type::IMPLICIT, \
+                            ttk::ImplicitTriangulation, call);            \
+    ttkVtkTemplateMacroCase(dataType, ttk::Triangulation::Type::PERIODIC, \
+                            ttk::PeriodicImplicitTriangulation, call);    \
+  }
+
+#ifdef TTK_ENABLE_64BIT_IDS
+using ttkSimplexIdTypeArray = vtkIdTypeArray;
+#else
+using ttkSimplexIdTypeArray = vtkIntArray;
 #endif

@@ -1,19 +1,40 @@
 #include <ttkBarycentricSubdivision.h>
-#include <ttkUtils.h>
 
-#define MODULE_S "[ttkBarycentricSubdivision] "
-#define MODULE_ERROR_S MODULE_S "Error: "
-#ifndef TTK_ENABLE_KAMIKAZE
-#define TTK_ABORT_KK(COND, MSG, RET)    \
-  if(COND) {                            \
-    cerr << MODULE_ERROR_S MSG << endl; \
-    return RET;                         \
-  }
-#else // TTK_ENABLE_KAMIKAZE
-#define TTK_ABORT_KK(COND, MSG, RET)
-#endif // TTK_ENABLE_KAMIKAZE
+#include <ttkUtils.h>
+#include <ttkMacros.h>
+
+#include <vtkPointData.h>
+#include <vtkCellData.h>
 
 vtkStandardNewMacro(ttkBarycentricSubdivision);
+
+ttkBarycentricSubdivision::ttkBarycentricSubdivision()
+  : BarycentricSubdivision( points_, cells_, pointId_, pointDim_ )
+{
+  this->SetNumberOfInputPorts(1);
+  this->SetNumberOfOutputPorts(1);
+}
+
+ttkBarycentricSubdivision::~ttkBarycentricSubdivision() {
+}
+
+int ttkBarycentricSubdivision::FillInputPortInformation(int port, vtkInformation *info) {
+  if(port == 0)
+    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkUnstructuredGrid");
+  else
+    return 0;
+
+  return 1;
+}
+
+int ttkBarycentricSubdivision::FillOutputPortInformation(int port, vtkInformation *info) {
+  if(port == 0)
+    info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
+  else
+    return 0;
+
+  return 1;
+}
 
 vtkSmartPointer<vtkDataArray> ttkBarycentricSubdivision::AllocateScalarField(
   vtkDataArray *const inputScalarField, int ntuples) const {
@@ -31,9 +52,7 @@ vtkSmartPointer<vtkDataArray> ttkBarycentricSubdivision::AllocateScalarField(
       res = inputScalarField->NewInstance();
       break;
     default:
-      std::stringstream msg;
-      msg << MODULE_S "Unsupported data array type" << endl;
-      dMsg(std::cout, msg.str(), fatalMsg);
+      this->printErr("Unsupported data array type");
       break;
   }
   res->SetNumberOfComponents(1);
@@ -48,7 +67,7 @@ int ttkBarycentricSubdivision::InterpolateScalarFields(
   const size_t npointdata = input->GetPointData()->GetNumberOfArrays();
   const size_t ncelldata = input->GetCellData()->GetNumberOfArrays();
 
-  const auto outPointsNumber = baseWorker_.getNumberOfVertices();
+  const auto outPointsNumber = this->getNumberOfVertices();
 
   for(size_t i = 0; i < npointdata; ++i) {
     auto inputScalarField = input->GetPointData()->GetArray(i);
@@ -58,13 +77,13 @@ int ttkBarycentricSubdivision::InterpolateScalarFields(
 
 #define DISPATCH_INTERPOLATE_DIS(CASE, TYPE)                             \
   case CASE:                                                             \
-    baseWorker_.interpolateDiscreteScalarField<TYPE>(                    \
+    this->interpolateDiscreteScalarField<TYPE>(                    \
       static_cast<TYPE *>(ttkUtils::GetVoidPointer(inputScalarField)),   \
       static_cast<TYPE *>(ttkUtils::GetVoidPointer(outputScalarField))); \
     break
 #define DISPATCH_INTERPOLATE_CONT(CASE, TYPE)                            \
   case CASE:                                                             \
-    baseWorker_.interpolateContinuousScalarField<TYPE>(                  \
+    this->interpolateContinuousScalarField<TYPE>(                  \
       static_cast<TYPE *>(ttkUtils::GetVoidPointer(inputScalarField)),   \
       static_cast<TYPE *>(ttkUtils::GetVoidPointer(outputScalarField))); \
     break
@@ -87,7 +106,7 @@ int ttkBarycentricSubdivision::InterpolateScalarFields(
     output->GetPointData()->AddArray(outputScalarField);
   }
 
-  const auto outCellsNumber = baseWorker_.getNumberOfTriangles();
+  const auto outCellsNumber = this->getNumberOfTriangles();
 
   for(size_t i = 0; i < ncelldata; ++i) {
     auto inputScalarField = input->GetCellData()->GetArray(i);
@@ -103,7 +122,7 @@ int ttkBarycentricSubdivision::InterpolateScalarFields(
 
     // only for scalar fields
     switch(inputScalarField->GetDataType()) {
-      vtkTemplateMacro(baseWorker_.interpolateCellDataField<VTK_TT>(
+      vtkTemplateMacro(this->interpolateCellDataField<VTK_TT>(
         static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(inputScalarField)),
         static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(outputScalarField))));
     }
@@ -113,22 +132,15 @@ int ttkBarycentricSubdivision::InterpolateScalarFields(
   return 0;
 }
 
-int ttkBarycentricSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
-                                    std::vector<vtkDataSet *> &outputs) {
+int ttkBarycentricSubdivision::RequestData(vtkInformation *request,
+                               vtkInformationVector **inputVector,
+                               vtkInformationVector *outputVector) {
 
   ttk::Memory m;
+  ttk::Timer t;
 
-  auto input = vtkUnstructuredGrid::SafeDownCast(inputs[0]);
-  auto output = vtkUnstructuredGrid::SafeDownCast(outputs[0]);
-
-  auto triangulation = ttkTriangulation::getTriangulation(input);
-  ttk::Triangulation triangulationSubdivision;
-
-  if(triangulation == nullptr) {
-    return -1;
-  }
-
-  triangulation->setWrapper(this);
+  auto input = vtkUnstructuredGrid::GetData( inputVector[0] );
+  auto output = vtkUnstructuredGrid::GetData( outputVector );
 
   // early return: copy input if no subdivision
   if(SubdivisionLevel == 0) {
@@ -136,23 +148,32 @@ int ttkBarycentricSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
     return 0;
   }
 
-  baseWorker_.setupTriangulation(triangulation);
-  baseWorker_.setWrapper(this);
-  baseWorker_.setOutputTriangulation(&triangulationSubdivision);
-  baseWorker_.setInputPoints(ttkUtils::GetVoidPointer(input->GetPoints()));
+  auto triangulation = ttkAlgorithm::GetTriangulation(input);
+  if(triangulation == nullptr) {
+    return -1;
+  }
+  this->setupTriangulation(triangulation);
+
+  ttk::Triangulation triangulationSubdivision;
+  this->setOutputTriangulation(&triangulationSubdivision);
+
+  this->setInputPoints( ttkUtils::GetVoidPointer(input->GetPoints()) );
 
   // first iteration: generate the new triangulation
-  baseWorker_.execute();
+  this->execute();
 
   // first iteration: interpolate input scalar fields
   int ret = InterpolateScalarFields(input, output);
-  TTK_ABORT_KK(ret < 0, "Error interpolating input data array(s)", -1);
+  if(ret < 0){
+    this->printErr("Error interpolating input data array(s)");
+    return -1;
+  }
 
   for(unsigned int i = 1; i < SubdivisionLevel; ++i) {
     // move previous points to temp vector
     decltype(points_) tmpPoints{};
     std::swap(points_, tmpPoints);
-    baseWorker_.setInputPoints(tmpPoints.data());
+    this->setInputPoints(tmpPoints.data());
 
     // move previous triangulation cells to temp vector
     decltype(cells_) tmpCells{};
@@ -164,11 +185,11 @@ int ttkBarycentricSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
 
     tmpTr.setInputCells(tmpCells.size() / 4, tmpCells.data());
     tmpTr.setInputPoints(tmpPoints.size() / 3, tmpPoints.data());
-    baseWorker_.setupTriangulation(&tmpTr);
-    baseWorker_.setOutputTriangulation(&triangulationSubdivision);
+    this->setupTriangulation(&tmpTr);
+    this->setOutputTriangulation(&triangulationSubdivision);
 
     // generate the new triangulation
-    baseWorker_.execute();
+    this->execute();
 
     // temporary vtkUnstructuredGrid moved from output
     vtkSmartPointer<vtkUnstructuredGrid> tmp(std::move(output));
@@ -203,11 +224,11 @@ int ttkBarycentricSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
   ttkUtils::SetVoidArray(cellDim, pointDim_.data(), pointDim_.size(), 1);
   output->GetPointData()->AddArray(cellDim);
 
-  {
-    std::stringstream msg;
-    msg << MODULE_S "Memory usage: " << m.getElapsedUsage() << " MB." << endl;
-    dMsg(std::cout, msg.str(), memoryMsg);
-  }
+  // {
+  //   std::stringstream msg;
+  //   msg << MODULE_S "Memory usage: " << m.getElapsedUsage() << " MB." << endl;
+  //   dMsg(std::cout, msg.str(), memoryMsg);
+  // }
 
-  return ret;
+  return 1;
 }

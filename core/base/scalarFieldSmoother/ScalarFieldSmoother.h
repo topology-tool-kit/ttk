@@ -23,11 +23,10 @@
 
 namespace ttk {
 
-  class ScalarFieldSmoother : public Debug {
+  class ScalarFieldSmoother : virtual public Debug {
 
   public:
     ScalarFieldSmoother();
-
     ~ScalarFieldSmoother();
 
     int setDimensionNumber(const int &dimensionNumber) {
@@ -50,8 +49,7 @@ namespace ttk {
       return 0;
     }
 
-    inline int setupTriangulation(AbstractTriangulation *triangulation) {
-
+    int setupTriangulation(AbstractTriangulation *triangulation) {
       // Pre-condition functions.
       if(triangulation) {
         triangulation->preconditionVertexNeighbors();

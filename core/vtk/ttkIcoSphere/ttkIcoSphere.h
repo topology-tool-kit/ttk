@@ -27,6 +27,7 @@ class TTKICOSPHERE_EXPORT ttkIcoSphere : public ttkAlgorithm,
 private:
   int NumberOfSubdivisions{0};
   float Radius{1};
+  bool ComputeNormals{false};
 
   // single ico sphere
   float Center[3]{0, 0, 0};
@@ -47,6 +48,9 @@ public:
 
   vtkSetMacro(Radius, float);
   vtkGetMacro(Radius, float);
+
+  vtkSetMacro(ComputeNormals, bool);
+  vtkGetMacro(ComputeNormals, bool);
 
   vtkSetMacro(NumberOfIcoSpheres, int);
   vtkGetMacro(NumberOfIcoSpheres, int);

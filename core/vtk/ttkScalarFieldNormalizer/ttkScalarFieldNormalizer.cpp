@@ -1,53 +1,45 @@
 #include <ttkScalarFieldNormalizer.h>
 
-using namespace std;
-using namespace ttk;
+#include <vtkPointData.h>
+#include <vtkCellData.h>
 
-vtkStandardNewMacro(ttkScalarFieldNormalizer)
+vtkStandardNewMacro(ttkScalarFieldNormalizer);
 
-  ttkScalarFieldNormalizer::ttkScalarFieldNormalizer() {
+ttkScalarFieldNormalizer::ttkScalarFieldNormalizer() {
+  this->setDebugMsgPrefix("ScalarFieldNormalizer");
 
-  // init
-  outputScalarField_ = NULL;
-
-  UseAllCores = true;
+  this->SetNumberOfInputPorts(1);
+  this->SetNumberOfOutputPorts(1);
 }
 
 ttkScalarFieldNormalizer::~ttkScalarFieldNormalizer() {
-
-  if(outputScalarField_)
-    outputScalarField_->Delete();
 }
 
-// transmit abort signals -- to copy paste in other wrappers
-bool ttkScalarFieldNormalizer::needsToAbort() {
-  return GetAbortExecute();
-}
-
-// transmit progress status -- to copy paste in other wrappers
-int ttkScalarFieldNormalizer::updateProgress(const float &progress) {
-
-  {
-    stringstream msg;
-    msg << "[ttkScalarFieldNormalizer] " << progress * 100 << "% processed...."
-        << endl;
-    dMsg(cout, msg.str(), advancedInfoMsg);
+int ttkScalarFieldNormalizer::FillInputPortInformation(int port, vtkInformation *info) {
+  if(port == 0){
+    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
+    return 1;
   }
+  return 0;
+}
 
-  UpdateProgress(progress);
+int ttkScalarFieldNormalizer::FillOutputPortInformation(int port, vtkInformation *info) {
+  if(port == 0){
+    info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
+    return 1;
+  }
   return 0;
 }
 
 int ttkScalarFieldNormalizer::normalize(vtkDataArray *input,
                                         vtkDataArray *output) const {
-
   if(!output)
     return -1;
   if(!input)
     return -2;
 
   double min = 0, max = 0;
-  for(SimplexId i = 0; i < input->GetNumberOfTuples(); i++) {
+  for(ttk::SimplexId i = 0; i < input->GetNumberOfTuples(); i++) {
 
     double value = input->GetTuple1(i);
 
@@ -59,7 +51,7 @@ int ttkScalarFieldNormalizer::normalize(vtkDataArray *input,
     }
   }
 
-  for(SimplexId i = 0; i < input->GetNumberOfTuples(); i++) {
+  for(ttk::SimplexId i = 0; i < input->GetNumberOfTuples(); i++) {
     double value = input->GetTuple1(i);
 
     value = (value - min) / (max - min) + pow10(-FLT_DIG);
@@ -70,7 +62,20 @@ int ttkScalarFieldNormalizer::normalize(vtkDataArray *input,
   return 0;
 }
 
-int ttkScalarFieldNormalizer::doIt(vtkDataSet *input, vtkDataSet *output) {
+int ttkScalarFieldNormalizer::RequestData(vtkInformation *request,
+                               vtkInformationVector **inputVector,
+                               vtkInformationVector *outputVector) {
+
+  ttk::Timer t;
+
+  this->printMsg(
+    "Normalizing Scalar Field",
+    0, 0, this->threadNumber_,
+    ttk::debug::LineMode::REPLACE
+  );
+
+  auto input = vtkDataSet::GetData( inputVector[0] );
+  auto output = vtkDataSet::GetData( outputVector );
 
   // test
   //   ttkTriangulation myTriangulation;
@@ -156,13 +161,12 @@ int ttkScalarFieldNormalizer::doIt(vtkDataSet *input, vtkDataSet *output) {
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!input) {
-    cerr << "[ttkScalarFieldNormalizer] Error: not enough input information."
-         << endl;
+    this->printErr("Not enough input information.");
     return -1;
   }
 
   if(!input->GetNumberOfPoints()) {
-    cerr << "[ttkScalarFieldNormalizer] Error: input has no point." << endl;
+    this->printErr("Input has no point.");
     return -1;
   }
 #endif
@@ -175,96 +179,35 @@ int ttkScalarFieldNormalizer::doIt(vtkDataSet *input, vtkDataSet *output) {
   // variable 'output' with the result of the computation.
   // if your wrapper produces an output of the same type of the input, you
   // should proceed in the same way.
-  vtkDataArray *inputScalarField = NULL;
-
-  if(ScalarField.length()) {
-    inputScalarField = input->GetPointData()->GetArray(ScalarField.data());
-  } else {
-    inputScalarField = input->GetPointData()->GetArray(0);
-  }
+  auto inputScalarField = this->GetInputArrayToProcess(0, inputVector);
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!inputScalarField) {
-    cerr
-      << "[ttkScalarFieldNormalizer] Error: input scalar field pointer is NULL."
-      << endl;
+    this->printErr("Input scalar field pointer is NULL.");
     return -1;
   }
 #endif
 
-  if(outputScalarField_) {
-    outputScalarField_->Delete();
-    outputScalarField_ = NULL;
-  }
-
-  // allocate the memory for the output scalar field
-  if(!outputScalarField_) {
-    switch(inputScalarField->GetDataType()) {
-
-      case VTK_CHAR:
-        outputScalarField_ = vtkCharArray::New();
-        break;
-
-      case VTK_DOUBLE:
-        outputScalarField_ = vtkDoubleArray::New();
-        break;
-
-      case VTK_FLOAT:
-        outputScalarField_ = vtkFloatArray::New();
-        break;
-
-      case VTK_INT:
-        outputScalarField_ = vtkIntArray::New();
-        break;
-
-      case VTK_ID_TYPE:
-        outputScalarField_ = vtkIdTypeArray::New();
-        break;
-
-      default:
-        stringstream msg;
-        msg << "[ttkScalarFieldNormalizer] Unsupported data type :(" << endl;
-        dMsg(cerr, msg.str(), fatalMsg);
-        return -2;
-    }
-    outputScalarField_->SetNumberOfTuples(input->GetNumberOfPoints());
-    outputScalarField_->SetName(inputScalarField->GetName());
-  }
+  auto outputScalarField = vtkSmartPointer<vtkDataArray>::Take( inputScalarField->NewInstance() );
+  outputScalarField->SetNumberOfTuples(input->GetNumberOfPoints());
+  outputScalarField->SetName(inputScalarField->GetName());
 
   // calling the executing package
-  normalize(inputScalarField, outputScalarField_);
+  normalize(inputScalarField, outputScalarField);
 
-  // on the output, replace the field array by a pointer to its processed
-  // version
-  if(ScalarField.length()) {
-    output->GetPointData()->RemoveArray(ScalarField.data());
+  auto inputArrayAssociation = this->GetInputArrayAssociation(0, inputVector);
+  if(inputArrayAssociation==0){
+    output->GetPointData()->AddArray(outputScalarField);
+  } else if(inputArrayAssociation==1) {
+    output->GetCellData()->AddArray(outputScalarField);
   } else {
-    output->GetPointData()->RemoveArray(0);
+    output->GetFieldData()->AddArray(outputScalarField);
   }
-  output->GetPointData()->AddArray(outputScalarField_);
 
-  return 0;
-}
-
-// to adapt if your wrapper does not inherit from vtkDataSetAlgorithm
-int ttkScalarFieldNormalizer::RequestData(vtkInformation *request,
-                                          vtkInformationVector **inputVector,
-                                          vtkInformationVector *outputVector) {
-
-  Memory m;
-
-  // here the vtkDataSet type should be changed to whatever type you consider.
-  vtkDataSet *input = vtkDataSet::GetData(inputVector[0]);
-  vtkDataSet *output = vtkDataSet::GetData(outputVector);
-
-  doIt(input, output);
-
-  {
-    stringstream msg;
-    msg << "[ttkScalarFieldNormalizer] Memory usage: " << m.getElapsedUsage()
-        << " MB." << endl;
-    dMsg(cout, msg.str(), memoryMsg);
-  }
+  this->printMsg(
+    "Normalizing Scalar Field",
+    1, t.getElapsedTime(), this->threadNumber_
+  );
 
   return 1;
 }

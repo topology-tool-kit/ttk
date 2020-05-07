@@ -1,13 +1,13 @@
 #include <ttkIcoSphere.h>
-#include <ttkUtils.h>
 
-#include <vtkDataObject.h> // For port info
-#include <vtkObjectFactory.h> // for new macro
+#include <ttkUtils.h>
 
 #include <vtkCellArray.h>
 #include <vtkMultiBlockDataSet.h>
 #include <vtkSmartPointer.h>
 #include <vtkUnstructuredGrid.h>
+#include <vtkFloatArray.h>
+#include <vtkPointData.h>
 
 vtkStandardNewMacro(ttkIcoSphere);
 
@@ -42,8 +42,7 @@ int ttkIcoSphere::RequestData(vtkInformation *request,
   // prepare the output buffers
   size_t nVertices = 0;
   size_t nTriangles = 0;
-  this->computeNumberOfVerticesAndTriangles(
-    nSubdivisions, nVertices, nTriangles);
+  this->computeNumberOfVerticesAndTriangles(nVertices, nTriangles, nSubdivisions);
 
   auto points = vtkSmartPointer<vtkPoints>::New();
   points->SetNumberOfPoints(nSpheres * nVertices);
@@ -52,11 +51,12 @@ int ttkIcoSphere::RequestData(vtkInformation *request,
 
   // execute base code
   if(!this->computeIcoSpheres<vtkIdType>(
-       nSpheres, nSubdivisions, radius, centers,
-       (float *)points->GetVoidPointer(0),
-       cells->WritePointer(nSpheres * nTriangles, nSpheres * nTriangles * 4)))
-    // (vtkIdType*)ttkUtils::WritePointer(cells->GetData(),nSpheres *
-    // nTriangles, nSpheres * nTriangles * 4)))
+       (float *) ttkUtils::GetVoidPointer(points),
+       cells->WritePointer(nSpheres * nTriangles, nSpheres * nTriangles * 4),
+
+       nSpheres, nSubdivisions, radius, centers
+    )
+  )
     return 0;
 
   // finalize output
@@ -64,6 +64,25 @@ int ttkIcoSphere::RequestData(vtkInformation *request,
     auto output = vtkUnstructuredGrid::GetData(outputVector);
     output->SetPoints(points);
     output->SetCells(VTK_TRIANGLE, cells);
+  }
+
+  // optionally compute normals
+  if(this->ComputeNormals){
+    auto normals = vtkSmartPointer<vtkFloatArray>::New();
+    normals->SetName("Normals");
+    normals->SetNumberOfComponents(3);
+    normals->SetNumberOfTuples( nVertices * nSpheres );
+
+    auto normalsData = (float *) ttkUtils::GetVoidPointer(normals);
+    if(!this->computeIcoSphereNormals<vtkIdType>(
+         (float *) ttkUtils::GetVoidPointer(normals),
+         nSpheres, nSubdivisions, radius
+      )
+    )
+      return 0;
+
+    auto output = vtkUnstructuredGrid::GetData(outputVector);
+    output->GetPointData()->SetNormals(normals);
   }
 
   return 1;

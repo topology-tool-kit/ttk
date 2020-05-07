@@ -1,8 +1,56 @@
 #include "ttkBottleneckDistance.h"
 
-vtkStandardNewMacro(ttkBottleneckDistance)
+vtkStandardNewMacro(ttkBottleneckDistance);
 
-  int ttkBottleneckDistance::doBenchmark() {
+ttkBottleneckDistance::ttkBottleneckDistance(){
+  // settings
+  this->SetNumberOfInputPorts(2);
+  this->SetNumberOfOutputPorts(3);
+
+  // inputs
+  this->BenchmarkSize = -1;
+  this->UseOutputMatching = false;
+  this->UsePersistenceMetric = false;
+  this->UseGeometricSpacing = false;
+  this->WassersteinMetric = "2";
+  this->Alpha = 1.0;
+  this->Tolerance = 1.0;
+  this->PX = 0;
+  this->PY = 0;
+  this->PZ = 0;
+  this->PE = 1;
+  this->PS = 1;
+  this->Spacing = 0.0;
+  this->Is3D = false;
+  this->PVAlgorithm = -1;
+
+  // outputs
+  this->result = -1.;
+  this->CTPersistenceDiagram1_ = vtkSmartPointer<vtkUnstructuredGrid>::New();
+  this->CTPersistenceDiagram2_ = vtkSmartPointer<vtkUnstructuredGrid>::New();
+  this->CTPersistenceDiagram3_ = vtkSmartPointer<vtkUnstructuredGrid>::New();
+}
+ttkBottleneckDistance::~ttkBottleneckDistance(){};
+
+int ttkBottleneckDistance::FillInputPortInformation(int port, vtkInformation *info) {
+  if(port == 0 || port == 1)
+    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkUnstructuredGrid");
+  else
+    return 0;
+
+  return 1;
+}
+
+int ttkBottleneckDistance::FillOutputPortInformation(int port, vtkInformation *info) {
+  if(port == 0 || port == 1 || port == 2)
+    info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
+  else
+    return 0;
+
+  return 1;
+}
+
+int ttkBottleneckDistance::doBenchmark() {
   using dataType = double;
 
   std::vector<diagramTuple> CTDiagram1;
@@ -17,31 +65,30 @@ vtkStandardNewMacro(ttkBottleneckDistance)
   if(status < 0)
     return status;
 
-  bottleneckDistance_.setPersistencePercentThreshold(Tolerance);
-  bottleneckDistance_.setPX(PX);
-  bottleneckDistance_.setPY(PY);
-  bottleneckDistance_.setPZ(PZ);
-  bottleneckDistance_.setPE(PE);
-  bottleneckDistance_.setPS(PS);
-  bottleneckDistance_.setCTDiagram1(&CTDiagram1);
-  bottleneckDistance_.setCTDiagram2(&CTDiagram2);
+  this->setPersistencePercentThreshold(Tolerance);
+  this->setPX(PX);
+  this->setPY(PY);
+  this->setPZ(PZ);
+  this->setPE(PE);
+  this->setPS(PS);
+  this->setCTDiagram1(&CTDiagram1);
+  this->setCTDiagram2(&CTDiagram2);
 
   std::string wassersteinMetric = WassersteinMetric;
-  bottleneckDistance_.setWasserstein(wassersteinMetric);
+  this->setWasserstein(wassersteinMetric);
   std::string algorithm = DistanceAlgorithm;
-  bottleneckDistance_.setAlgorithm(algorithm);
+  this->setAlgorithm(algorithm);
   int pvAlgorithm = PVAlgorithm;
-  bottleneckDistance_.setPVAlgorithm(pvAlgorithm);
-  bottleneckDistance_.setThreadNumber(ThreadNumber);
+  this->setPVAlgorithm(pvAlgorithm);
 
   // Empty matchings.
   auto matchings = new std::vector<diagramTuple>();
-  bottleneckDistance_.setOutputMatchings(matchings);
+  this->setOutputMatchings(matchings);
 
   // Exec.
   bool usePersistenceMetric = UsePersistenceMetric;
   // double alpha = Alpha;
-  status = bottleneckDistance_.execute<dataType>(usePersistenceMetric);
+  status = this->execute<dataType>(usePersistenceMetric);
 
   if(status != 0) {
     return status;
@@ -50,8 +97,12 @@ vtkStandardNewMacro(ttkBottleneckDistance)
   return 0;
 }
 
-int ttkBottleneckDistance::doIt(std::vector<vtkDataSet *> &inputs,
-                                std::vector<vtkDataSet *> &outputs) {
+int ttkBottleneckDistance::RequestData(
+  vtkInformation *request,
+  vtkInformationVector **inputVector,
+  vtkInformationVector *outputVector
+){
+
   using dataType = double;
 
   int benchmarkSize = BenchmarkSize;
@@ -61,44 +112,35 @@ int ttkBottleneckDistance::doIt(std::vector<vtkDataSet *> &inputs,
   }
 
   // Prepare IO
-  vtkDataSet *input1 = inputs[0];
-  vtkDataSet *input2 = inputs[1];
-  vtkDataSet *output1 = outputs[0];
-  vtkDataSet *output2 = outputs[1];
-  vtkDataSet *output3 = outputs[2];
+  auto CTPersistenceDiagram1_ = vtkUnstructuredGrid::GetData(inputVector[0]);
+  auto CTPersistenceDiagram2_ = vtkUnstructuredGrid::GetData(inputVector[1]);
+  auto outputCT1 = vtkUnstructuredGrid::GetData(outputVector,0);
+  auto outputCT2 = vtkUnstructuredGrid::GetData(outputVector,1);
+  auto outputCT3 = vtkUnstructuredGrid::GetData(outputVector,2);
 
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(!input1 || !input2) {
-    cerr << "[ttkBottleneckDistance] Error: input pointer is NULL." << endl;
+  if(!CTPersistenceDiagram1_ || !CTPersistenceDiagram2_) {
+    this->printErr("Input pointer is NULL.");
     return -1;
   }
 
-  if(!output1 || !output2 || !output3) {
-    cerr << "[ttkBottleneckDistance] Error: output pointer is NULL." << endl;
+  if(!outputCT1 || !outputCT2 || !outputCT3) {
+    this->printErr("Output pointer is NULL.");
     return -1;
   }
 
-  if(input1->GetNumberOfPoints() == 0 || input2->GetNumberOfPoints() == 0) {
-    cerr << "[ttkBottleneckDistance] Error: input has no points." << endl;
+  if(CTPersistenceDiagram1_->GetNumberOfPoints() == 0 || CTPersistenceDiagram2_->GetNumberOfPoints() == 0) {
+    this->printErr("Input has no points.");
     return -1;
   }
 #endif
 
-  vtkUnstructuredGrid *outputCT1 = vtkUnstructuredGrid::SafeDownCast(output1);
-  vtkUnstructuredGrid *outputCT2 = vtkUnstructuredGrid::SafeDownCast(output2);
-  vtkUnstructuredGrid *outputCT3 = vtkUnstructuredGrid::SafeDownCast(output3);
-
-  // Wrap
-  bottleneckDistance_.setWrapper(this);
-  bottleneckDistance_.setPersistencePercentThreshold(Tolerance);
-  bottleneckDistance_.setPX(PX);
-  bottleneckDistance_.setPY(PY);
-  bottleneckDistance_.setPZ(PZ);
-  bottleneckDistance_.setPE(PE);
-  bottleneckDistance_.setPS(PS);
-
-  CTPersistenceDiagram1_ = vtkUnstructuredGrid::SafeDownCast(input1);
-  CTPersistenceDiagram2_ = vtkUnstructuredGrid::SafeDownCast(input2);
+  this->setPersistencePercentThreshold(Tolerance);
+  this->setPX(PX);
+  this->setPY(PY);
+  this->setPZ(PZ);
+  this->setPE(PE);
+  this->setPS(PS);
 
   if(!CTPersistenceDiagram1_ || !CTPersistenceDiagram2_ || !outputCT3)
     return -1;
@@ -147,24 +189,24 @@ int ttkBottleneckDistance::doIt(std::vector<vtkDataSet *> &inputs,
     return -2;
   }
 
-  bottleneckDistance_.setCTDiagram1(&CTDiagram1);
-  bottleneckDistance_.setCTDiagram2(&CTDiagram2);
+  this->setCTDiagram1(&CTDiagram1);
+  this->setCTDiagram2(&CTDiagram2);
 
   std::string wassersteinMetric = WassersteinMetric;
-  bottleneckDistance_.setWasserstein(wassersteinMetric);
+  this->setWasserstein(wassersteinMetric);
   std::string algorithm = DistanceAlgorithm;
-  bottleneckDistance_.setAlgorithm(algorithm);
+  this->setAlgorithm(algorithm);
   int pvAlgorithm = PVAlgorithm;
-  bottleneckDistance_.setPVAlgorithm(pvAlgorithm);
+  this->setPVAlgorithm(pvAlgorithm);
 
   // Empty matchings.
   std::vector<matchingTuple> matchings;
-  bottleneckDistance_.setOutputMatchings(&matchings);
+  this->setOutputMatchings(&matchings);
 
   // Exec.
   bool usePersistenceMetric = UsePersistenceMetric;
   // double alpha = Alpha;
-  status = bottleneckDistance_.execute<dataType>(usePersistenceMetric);
+  status = this->execute<dataType>(usePersistenceMetric);
   if(status != 0)
     return status;
 

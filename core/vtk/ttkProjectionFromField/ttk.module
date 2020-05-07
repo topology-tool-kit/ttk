@@ -5,5 +5,4 @@ SOURCES
 HEADERS
   ttkProjectionFromField.h
 DEPENDS
-  common
-  ttkTriangulationAlgorithm
+  ttkAlgorithm

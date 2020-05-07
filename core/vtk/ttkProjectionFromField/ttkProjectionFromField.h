@@ -18,92 +18,31 @@
 ///
 /// \sa vtkTextureMapFromField
 ///
-#ifndef _TTK_PROJECTION_FROM_FIELD_H
-#define _TTK_PROJECTION_FROM_FIELD_H
+#pragma once
 
-// VTK includes
-#include <vtkDataArray.h>
-#include <vtkFiltersCoreModule.h>
-#include <vtkInformation.h>
-#include <vtkObjectFactory.h>
-#include <vtkPointData.h>
-#include <vtkPointSet.h>
-#include <vtkPointSetAlgorithm.h>
-#include <vtkPoints.h>
-#include <vtkSmartPointer.h>
-
-// VTK Module
 #include <ttkProjectionFromFieldModule.h>
+#include <ttkAlgorithm.h>
 
-// ttk code includes
-#include <ttkTriangulationAlgorithm.h>
-
-class TTKPROJECTIONFROMFIELD_EXPORT ttkProjectionFromField
-  : public vtkPointSetAlgorithm,
-    protected ttk::Wrapper {
+class TTKPROJECTIONFROMFIELD_EXPORT ttkProjectionFromField : public ttkAlgorithm {
+private:
+  bool UseTextureCoordinates;
 
 public:
-  static ttkProjectionFromField *New();
-
-  vtkTypeMacro(ttkProjectionFromField, vtkPointSetAlgorithm);
-
-  // default ttk setters
-  void SetDebugLevel(int debugLevel) {
-    setDebugLevel(debugLevel);
-    Modified();
-  }
-
-  void SetThreads() {
-    if(!UseAllCores)
-      threadNumber_ = ThreadNumber;
-    else {
-      threadNumber_ = ttk::OsCall::getNumberOfCores();
-    }
-    Modified();
-  }
-
-  void SetThreadNumber(int threadNumber) {
-    ThreadNumber = threadNumber;
-    SetThreads();
-  }
-
-  void SetUseAllCores(bool onOff) {
-    UseAllCores = onOff;
-    SetThreads();
-  }
-  // end of default ttk setters
-
-  vtkSetMacro(UComponent, std::string);
-  vtkGetMacro(UComponent, std::string);
-
-  vtkSetMacro(VComponent, std::string);
-  vtkGetMacro(VComponent, std::string);
-
   vtkSetMacro(UseTextureCoordinates, bool);
   vtkGetMacro(UseTextureCoordinates, bool);
 
+  static ttkProjectionFromField *New();
+  vtkTypeMacro(ttkProjectionFromField, ttkAlgorithm);
+
+
 protected:
   ttkProjectionFromField();
+  ~ttkProjectionFromField();
 
-  ~ttkProjectionFromField() override;
+  int FillInputPortInformation(int port, vtkInformation *info) override;
+  int FillOutputPortInformation(int port, vtkInformation *info) override;
 
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;
-
-private:
-  bool UseAllCores;
-  ttk::ThreadId ThreadNumber;
-  bool UseTextureCoordinates;
-  std::string UComponent, VComponent;
-  vtkSmartPointer<vtkPoints> pointSet_;
-
-  // base code features
-  int doIt(vtkPointSet *input, vtkPointSet *output);
-
-  bool needsToAbort() override;
-
-  int updateProgress(const float &progress) override;
 };
-
-#endif // _TTK_PROJECTION_FROM_FIELD_H

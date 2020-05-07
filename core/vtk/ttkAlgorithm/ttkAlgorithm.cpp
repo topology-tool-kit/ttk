@@ -100,6 +100,7 @@ ttk::Triangulation *ttkAlgorithm::FindTriangulation(void *key) {
       this->printMsg("Returning already initilized triangulation",
                      ttk::debug::Priority::DETAIL);
       triangulation->setDebugLevel(this->debugLevel_);
+      triangulation->setThreadNumber(this->threadNumber_);
       return triangulation;
     } else {
       this->printMsg(
@@ -123,6 +124,7 @@ ttk::Triangulation *ttkAlgorithm::InitTriangulation(void *key,
   auto it = ttkAlgorithm::DataSetToTriangulationMap.find(key);
   auto triangulation = &std::get<0>(it->second);
   triangulation->setDebugLevel(this->debugLevel_);
+  triangulation->setThreadNumber(this->threadNumber_);
 
   // Delete callback
   {

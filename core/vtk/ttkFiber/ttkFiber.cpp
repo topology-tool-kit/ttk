@@ -1,128 +1,100 @@
 #include <ttkFiber.h>
 
-using namespace std;
-using namespace ttk;
+#include <vtkContourFilter.h>
 
-vtkStandardNewMacro(ttkFiber)
+vtkStandardNewMacro(ttkFiber);
 
-  ttkFiber::ttkFiber() {
-  Uvalue = 0;
-  Vvalue = 0;
+ttkFiber::ttkFiber() {
+    this->setDebugMsgPrefix("Fiber");
 
-  UseAllCores = true;
+    this->SetNumberOfInputPorts(1);
+    this->SetNumberOfOutputPorts(1);
 }
 
 ttkFiber::~ttkFiber() {
 }
 
-// transmit abort signals -- to copy paste in other wrappers
-bool ttkFiber::needsToAbort() {
-  return GetAbortExecute();
-}
 
-// transmit progress status -- to copy paste in other wrappers
-int ttkFiber::updateProgress(const float &progress) {
-
-  {
-    stringstream msg;
-    msg << "[ttkFiber] " << progress * 100 << "% processed...." << endl;
-    dMsg(cout, msg.str(), advancedInfoMsg);
+int ttkFiber::FillInputPortInformation(int port, vtkInformation *info) {
+  if(port == 0) {
+    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
+    return 1;
   }
 
-  UpdateProgress(progress);
   return 0;
 }
 
-int ttkFiber::doIt(vtkDataSet *input, vtkPolyData *output) {
-
-  Timer t;
-
-  vtkDataArray *uField = input->GetPointData()->GetArray(Ucomponent.data());
-
-  if(!uField) {
-    stringstream msg;
-    msg << "[ttkFiber] Error: cannot find field '" << Ucomponent << "'!"
-        << endl;
-    dMsg(cerr, msg.str(), Debug::fatalMsg);
-    return -1;
+int ttkFiber::FillOutputPortInformation(int port, vtkInformation *info) {
+  if(port == 0){
+    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkPolyData");
+    return 1;
   }
 
-  vtkDataArray *vField = input->GetPointData()->GetArray(Vcomponent.data());
+  return 0;
+}
 
-  if(!vField) {
-    stringstream msg;
-    msg << "[ttkFiber] Error: cannot find field '" << Vcomponent << "'!"
-        << endl;
-    dMsg(cerr, msg.str(), Debug::fatalMsg);
-    return -2;
+int ttkFiber::RequestData(
+  vtkInformation *request,
+  vtkInformationVector **inputVector,
+  vtkInformationVector *outputVector
+){
+  ttk::Timer t;
+
+  this->printMsg(
+    "Computing Fiber",
+    0,0,
+    ttk::debug::LineMode::REPLACE
+  );
+
+  auto input = vtkDataSet::GetData( inputVector[0] );
+  auto output = vtkPolyData::GetData( outputVector );
+
+  auto uArray = this->GetInputArrayToProcess(0, inputVector);
+  if(!uArray) {
+    this->printErr( "Unable to retrieve input array 0." );
+    return 0;
   }
+  std::string uArrayName( uArray->GetName() );
 
-  vtkSmartPointer<vtkContourFilter> isoSurface
-    = vtkSmartPointer<vtkContourFilter>::New();
+  auto vArray = this->GetInputArrayToProcess(1, inputVector);
+  if(!vArray) {
+    this->printErr( "Unable to retrieve input array 1." );
+    return 0;
+  }
+  std::string vArrayName( vArray->GetName() );
 
+  this->printMsg(
+    "Computing Fiber ("+uArrayName+": "+std::to_string(UValue)+", "+vArrayName+": "+std::to_string(VValue)+")",
+    0.1,t.getElapsedTime(),
+    ttk::debug::LineMode::REPLACE
+  );
+
+  auto isoSurface = vtkSmartPointer<vtkContourFilter>::New();
   isoSurface->SetInputData(input);
   isoSurface->SetComputeScalars(true);
   isoSurface->SetInputArrayToProcess(
-    0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_POINTS, Ucomponent.data());
+    0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_POINTS, uArray->GetName()
+  );
   isoSurface->SetGenerateTriangles(true);
   isoSurface->SetNumberOfContours(1);
-  isoSurface->SetValue(0, Uvalue);
+  isoSurface->SetValue(0, UValue);
   isoSurface->Update();
 
-  vtkDataSet *surface = isoSurface->GetOutput();
-
-  vField = surface->GetPointData()->GetArray(Vcomponent.data());
-
-  if(!vField) {
-    stringstream msg;
-    msg << "[ttkFiber] Error: cannot find field '" << Vcomponent << "'!"
-        << endl;
-    msg << "[ttkFiber] U-coordinate may be out of bounds..." << endl;
-    dMsg(cerr, msg.str(), Debug::fatalMsg);
-    return -3;
-  }
-
-  vtkSmartPointer<vtkContourFilter> isoLine
-    = vtkSmartPointer<vtkContourFilter>::New();
-
-  isoLine->SetInputData(surface);
+  auto isoLine = vtkSmartPointer<vtkContourFilter>::New();
+  isoLine->SetInputData( isoSurface->GetOutput() );
   isoLine->SetComputeScalars(true);
   isoLine->SetInputArrayToProcess(
-    0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_POINTS, Vcomponent.data());
+    0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_POINTS, vArray->GetName());
   isoLine->SetNumberOfContours(1);
-  isoLine->SetValue(0, Vvalue);
+  isoLine->SetValue(0, VValue);
   isoLine->Update();
 
   output->ShallowCopy(isoLine->GetOutput());
 
-  {
-    stringstream msg;
-    msg << "[ttkFiber] Fiber extracted in " << t.getElapsedTime() << " s. ("
-        << output->GetNumberOfCells() << " edge(s))" << endl;
-    dMsg(cout, msg.str(), timeMsg);
-  }
-
-  return 0;
-}
-
-// to adapt if your wrapper does not inherit from vtkDataSetAlgorithm
-int ttkFiber::RequestData(vtkInformation *request,
-                          vtkInformationVector **inputVector,
-                          vtkInformationVector *outputVector) {
-
-  Memory m;
-
-  // here the vtkDataSet type should be changed to whatever type you consider.
-  vtkDataSet *input = vtkDataSet::GetData(inputVector[0]);
-  vtkPolyData *output = vtkPolyData::GetData(outputVector);
-
-  doIt(input, output);
-
-  {
-    stringstream msg;
-    msg << "[ttkFiber] Memory usage: " << m.getElapsedUsage() << " MB." << endl;
-    dMsg(cout, msg.str(), memoryMsg);
-  }
+  this->printMsg(
+    "Computing Fiber ("+uArrayName+": "+std::to_string(UValue)+", "+vArrayName+": "+std::to_string(VValue)+")",
+    1,t.getElapsedTime()
+  );
 
   return 1;
 }

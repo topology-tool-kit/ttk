@@ -1,8 +1,0 @@
-NAME
-  ttkPointDataConverter
-SOURCES
-  ttkPointDataConverter.cpp
-HEADERS
-  ttkPointDataConverter.h
-DEPENDS
-  common

@@ -1,84 +1,66 @@
-#include <array>
 #include <ttkTextureMapFromField.h>
 
-using namespace std;
-using namespace ttk;
+#include <vtkFloatArray.h>
+#include <vtkPointData.h>
 
-vtkStandardNewMacro(ttkTextureMapFromField)
+#include <array>
 
-  ttkTextureMapFromField::ttkTextureMapFromField() {
+vtkStandardNewMacro(ttkTextureMapFromField);
 
-  // init
-  OnlyUComponent = true;
-  OnlyVComponent = false;
+ttkTextureMapFromField::ttkTextureMapFromField() {
+  this->setDebugMsgPrefix("TextureMapFromField");
 
-  RepeatUTexture = RepeatVTexture = false;
-  textureCoordinates_ = NULL;
-
-  UseAllCores = true;
+  this->SetNumberOfInputPorts(1);
+  this->SetNumberOfOutputPorts(1);
 }
 
 ttkTextureMapFromField::~ttkTextureMapFromField() {
-
-  if(textureCoordinates_)
-    textureCoordinates_->Delete();
 }
 
-// transmit abort signals -- to copy paste in other wrappers
-bool ttkTextureMapFromField::needsToAbort() {
-  return GetAbortExecute();
-}
-
-// transmit progress status -- to copy paste in other wrappers
-int ttkTextureMapFromField::updateProgress(const float &progress) {
-
-  {
-    stringstream msg;
-    msg << "[ttkTextureMapFromField] " << progress * 100 << "% processed...."
-        << endl;
-    dMsg(cout, msg.str(), advancedInfoMsg);
+int ttkTextureMapFromField::FillInputPortInformation(int port, vtkInformation *info) {
+  if(port == 0){
+    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
+    return 1;
   }
-
-  UpdateProgress(progress);
   return 0;
 }
 
-int ttkTextureMapFromField::doIt(vtkDataSet *input, vtkDataSet *output) {
+int ttkTextureMapFromField::FillOutputPortInformation(int port, vtkInformation *info) {
+  if(port == 0){
+    info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
+    return 1;
+  }
+  return 0;
+}
 
-  Timer t;
+int ttkTextureMapFromField::RequestData(vtkInformation *request,
+                               vtkInformationVector **inputVector,
+                               vtkInformationVector *outputVector) {
+
+  ttk::Timer t;
+
+  this->printMsg(
+    "Computing Texture Map",
+    0, 0,
+    ttk::debug::LineMode::REPLACE
+  );
+
+  auto input = vtkDataSet::GetData(inputVector[0]);
+  auto output = vtkDataSet::GetData(outputVector);
 
   output->ShallowCopy(input);
 
-  vtkDataArray *inputScalarFieldU = NULL;
-  vtkDataArray *inputScalarFieldV = NULL;
-
-  if(UComponent.length()) {
-    inputScalarFieldU = input->GetPointData()->GetArray(UComponent.data());
-  } else {
-    inputScalarFieldU = input->GetPointData()->GetArray(0);
-  }
-
+  auto inputScalarFieldU = this->GetInputArrayToProcess(0, inputVector);
   if(!inputScalarFieldU)
     return -1;
-
-  if(VComponent.length()) {
-    inputScalarFieldV = input->GetPointData()->GetArray(VComponent.data());
-  } else {
-    inputScalarFieldV = input->GetPointData()->GetArray(0);
-  }
-
+  auto inputScalarFieldV = this->GetInputArrayToProcess(1, inputVector);
   if(!inputScalarFieldV)
     return -2;
 
-  if(!textureCoordinates_) {
-    textureCoordinates_ = vtkFloatArray::New();
-    textureCoordinates_->SetNumberOfComponents(2);
-    textureCoordinates_->SetName("UV coordinates from field");
-  }
-
-  if(textureCoordinates_->GetNumberOfTuples() != output->GetNumberOfPoints()) {
-    textureCoordinates_->SetNumberOfTuples(output->GetNumberOfPoints());
-  }
+  auto textureCoordinates = vtkSmartPointer<vtkFloatArray>::New();
+  textureCoordinates->SetNumberOfComponents(2);
+  textureCoordinates->SetName("UV coordinates from field");
+  textureCoordinates->SetNumberOfTuples(output->GetNumberOfPoints());
 
   double uRange[2], vRange[2];
   inputScalarFieldU->GetRange(uRange);
@@ -86,20 +68,16 @@ int ttkTextureMapFromField::doIt(vtkDataSet *input, vtkDataSet *output) {
 
   std::vector<std::array<double, 2>> coordinates(threadNumber_);
 
-  SimplexId count = 0;
-
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
-  for(SimplexId i = 0; i < output->GetNumberOfPoints(); i++) {
+  for(ttk::SimplexId i = 0; i < output->GetNumberOfPoints(); i++) {
 
-    ThreadId threadId = 0;
+    ttk::ThreadId threadId = 0;
 
 #ifdef TTK_ENABLE_OPENMP
     threadId = omp_get_thread_num();
 #endif
-
-    if(!needsToAbort()) {
 
       coordinates[threadId][0] = coordinates[threadId][1] = 0;
 
@@ -119,53 +97,15 @@ int ttkTextureMapFromField::doIt(vtkDataSet *input, vtkDataSet *output) {
         }
       }
 
-      textureCoordinates_->SetTuple(i, coordinates[threadId].data());
-
-      if(debugLevel_ > 3) {
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp critical
-#endif
-        {
-          if(!(count % (output->GetNumberOfPoints() / 10))) {
-            updateProgress((count + 1.0) / output->GetNumberOfPoints());
-          }
-
-          count++;
-        }
-      }
-    }
+      textureCoordinates->SetTuple(i, coordinates[threadId].data());
   }
 
-  output->GetPointData()->SetTCoords(textureCoordinates_);
+  output->GetPointData()->SetTCoords(textureCoordinates);
 
-  {
-    stringstream msg;
-    msg << "[ttkTextureMapFromField] Texture map computed in "
-        << t.getElapsedTime() << " s." << endl;
-    dMsg(cout, msg.str(), timeMsg);
-  }
-  return 0;
-}
-
-// to adapt if your wrapper does not inherit from vtkDataSetAlgorithm
-int ttkTextureMapFromField::RequestData(vtkInformation *request,
-                                        vtkInformationVector **inputVector,
-                                        vtkInformationVector *outputVector) {
-
-  Memory m;
-
-  // here the vtkDataSet type should be changed to whatever type you consider.
-  vtkDataSet *input = vtkDataSet::GetData(inputVector[0]);
-  vtkDataSet *output = vtkDataSet::GetData(outputVector);
-
-  doIt(input, output);
-
-  {
-    stringstream msg;
-    msg << "[ttkTextureMapFromField] Memory usage: " << m.getElapsedUsage()
-        << " MB." << endl;
-    dMsg(cout, msg.str(), memoryMsg);
-  }
+  this->printMsg(
+    "Computing Texture Map",
+    1, t.getElapsedTime()
+  );
 
   return 1;
 }

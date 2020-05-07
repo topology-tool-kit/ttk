@@ -47,79 +47,39 @@
 /// \sa ttk::FiberSurface
 /// \sa vtkReebSpace
 ///
-#ifndef _TTK_RANGEPOLYGON_H
-#define _TTK_RANGEPOLYGON_H
+#pragma once
 
-// VTK includes -- to adapt
-#include <vtkCleanPolyData.h>
-#include <vtkDataSetAlgorithm.h>
-#include <vtkDataSetSurfaceFilter.h>
-#include <vtkDataSetTriangleFilter.h>
-#include <vtkFeatureEdges.h>
-#include <vtkFiltersCoreModule.h>
-#include <vtkInformation.h>
-#include <vtkObjectFactory.h>
-#include <vtkPointData.h>
-#include <vtkSmartPointer.h>
-#include <vtkUnstructuredGrid.h>
-
-// VTK Module
 #include <ttkRangePolygonModule.h>
-
-// ttk code includes
+#include <vtkUnstructuredGrid.h>
+#include <ttkAlgorithm.h>
 #include <ScalarFieldSmoother.h>
-#include <ttkTriangulationAlgorithm.h>
 
-class TTKRANGEPOLYGON_EXPORT ttkRangePolygon : public vtkDataSetAlgorithm,
-                                               protected ttk::Wrapper {
+class TTKRANGEPOLYGON_EXPORT ttkRangePolygon : public ttkAlgorithm, protected ttk::ScalarFieldSmoother {
+private:
+  bool ClosedLoop{false};
+  int NumberOfIterations{0};
 
 public:
-  static ttkRangePolygon *New();
-
-  vtkTypeMacro(ttkRangePolygon, vtkDataSetAlgorithm);
-
-  // default ttk setters
-  void SetDebugLevel(int debugLevel) {
-    setDebugLevel(debugLevel);
-    Modified();
-  }
-
-  void SetThreadNumber(int threadNumber) {
-    ThreadNumber = threadNumber;
-    SetThreads();
-  }
-
-  void SetUseAllCores(bool onOff) {
-    UseAllCores = onOff;
-    SetThreads();
-  }
-  // end of default ttk setters
-
   vtkGetMacro(ClosedLoop, bool);
   vtkSetMacro(ClosedLoop, bool);
 
   vtkGetMacro(NumberOfIterations, int);
   vtkSetMacro(NumberOfIterations, int);
 
-  int FillOutputPortInformation(int port, vtkInformation *info) override {
-    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
-    return 1;
-  }
+  static ttkRangePolygon *New();
+  vtkTypeMacro(ttkRangePolygon, ttkAlgorithm);
 
 protected:
   ttkRangePolygon();
-
-  ~ttkRangePolygon() override;
-
-  TTK_SETUP();
-
-private:
-  bool ClosedLoop;
-  int NumberOfIterations;
+  ~ttkRangePolygon();
 
   int processPoints(vtkUnstructuredGrid *input, vtkUnstructuredGrid *output);
-
   int processTriangles(vtkUnstructuredGrid *input, vtkUnstructuredGrid *output);
-};
 
-#endif // _TTK_RANGEPOLYGON_H
+  int FillInputPortInformation(int port, vtkInformation *info) override;
+  int FillOutputPortInformation(int port, vtkInformation *info) override;
+
+  int RequestData(vtkInformation *request,
+                  vtkInformationVector **inputVector,
+                  vtkInformationVector *outputVector) override;
+};

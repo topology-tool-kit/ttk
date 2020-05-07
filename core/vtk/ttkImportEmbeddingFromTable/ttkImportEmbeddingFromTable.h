@@ -16,107 +16,30 @@
 /// VTK pipeline.
 #pragma once
 
-// VTK includes
-#include <vtkCharArray.h>
-#include <vtkDataArray.h>
-#include <vtkDoubleArray.h>
-#include <vtkFiltersCoreModule.h>
-#include <vtkFloatArray.h>
-#include <vtkInformation.h>
-#include <vtkIntArray.h>
-#include <vtkObjectFactory.h>
-#include <vtkPointData.h>
-#include <vtkPointSet.h>
-#include <vtkPointSetAlgorithm.h>
-#include <vtkSmartPointer.h>
-#include <vtkTable.h>
-
-// VTK Module
 #include <ttkImportEmbeddingFromTableModule.h>
-
-// ttk code includes
-#include <Wrapper.h>
+#include <ttkAlgorithm.h>
 
 class TTKIMPORTEMBEDDINGFROMTABLE_EXPORT ttkImportEmbeddingFromTable
-  : public vtkPointSetAlgorithm,
-    protected ttk::Wrapper {
+  : public ttkAlgorithm {
+
+private:
+  bool Embedding2D;
 
 public:
-  static ttkImportEmbeddingFromTable *New();
-  vtkTypeMacro(ttkImportEmbeddingFromTable, vtkPointSetAlgorithm)
-
-    // default ttk setters
-    void SetDebugLevel(int debugLevel) {
-    setDebugLevel(debugLevel);
-    Modified();
-  }
-
-  void SetThreads() {
-    if(!UseAllCores)
-      threadNumber_ = ThreadNumber;
-    else {
-      threadNumber_ = ttk::OsCall::getNumberOfCores();
-    }
-    Modified();
-  }
-
-  void SetThreadNumber(int threadNumber) {
-    ThreadNumber = threadNumber;
-    SetThreads();
-  }
-
-  void SetUseAllCores(bool onOff) {
-    UseAllCores = onOff;
-    SetThreads();
-  }
-  // end of default ttk setters
-
-  vtkSetMacro(XColumn, std::string);
-  vtkGetMacro(XColumn, std::string);
-
-  vtkSetMacro(YColumn, std::string);
-  vtkGetMacro(YColumn, std::string);
-
-  vtkSetMacro(ZColumn, std::string);
-  vtkGetMacro(ZColumn, std::string);
-
   vtkSetMacro(Embedding2D, bool);
   vtkGetMacro(Embedding2D, bool);
 
-  int FillInputPortInformation(int port, vtkInformation *info) override {
-    if(port == 0)
-      info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkPointSet");
-    if(port == 1)
-      info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkTable");
-
-    return 1;
-  }
+  static ttkImportEmbeddingFromTable *New();
+  vtkTypeMacro(ttkImportEmbeddingFromTable, ttkAlgorithm);
 
 protected:
-  ttkImportEmbeddingFromTable() {
-    UseAllCores = true;
+  ttkImportEmbeddingFromTable();
+  ~ttkImportEmbeddingFromTable();
 
-    SetNumberOfInputPorts(2);
-  }
-
-  ~ttkImportEmbeddingFromTable() override{};
+  int FillInputPortInformation(int port, vtkInformation *info) override;
+  int FillOutputPortInformation(int port, vtkInformation *info) override;
 
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;
-
-private:
-  std::string XColumn;
-  std::string YColumn;
-  std::string ZColumn;
-  bool Embedding2D;
-
-  bool UseAllCores;
-  int ThreadNumber;
-
-  int doIt(vtkPointSet *inputDataSet,
-           vtkTable *inputTable,
-           vtkPointSet *output);
-  bool needsToAbort() override;
-  int updateProgress(const float &progress) override;
 };

@@ -5,5 +5,4 @@ SOURCES
 HEADERS
   ttkFiber.h
 DEPENDS
-  common
-  ttkTriangulationAlgorithm
+  ttkAlgorithm

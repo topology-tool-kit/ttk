@@ -1,123 +1,82 @@
 #include <ttkIdentifierRandomizer.h>
 
-using namespace std;
-using namespace ttk;
+#include <vtkPointData.h>
+#include <vtkCellData.h>
 
-vtkStandardNewMacro(ttkIdentifierRandomizer)
+vtkStandardNewMacro(ttkIdentifierRandomizer);
 
-  int ttkIdentifierRandomizer::doIt(vector<vtkDataSet *> &inputs,
-                                    vector<vtkDataSet *> &outputs) {
+ttkIdentifierRandomizer::ttkIdentifierRandomizer(){
+    this->setDebugMsgPrefix("IdentifierRandomizer");
 
-  Memory m;
+    this->SetNumberOfInputPorts(1);
+    this->SetNumberOfOutputPorts(1);
+}
+ttkIdentifierRandomizer::~ttkIdentifierRandomizer(){
+}
 
-  bool isPointData = true;
+int ttkIdentifierRandomizer::FillInputPortInformation(int port, vtkInformation *info) {
+  if(port == 0){
+    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
+    return 1;
+  }
+  return 0;
+}
 
-  vtkDataSet *input = inputs[0];
-  vtkDataSet *output = outputs[0];
+int ttkIdentifierRandomizer::FillOutputPortInformation(int port, vtkInformation *info) {
+  if(port == 0){
+    info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
+    return 1;
+  }
+  return 0;
+}
 
-  // use a pointer-base copy for the input data -- to adapt if your wrapper does
-  // not produce an output of the type of the input.
+int ttkIdentifierRandomizer::RequestData(
+    vtkInformation *request,
+    vtkInformationVector **inputVector,
+    vtkInformationVector *outputVector
+) {
+  ttk::Timer t;
+
+  this->printMsg("Randomizing Identifiers",0,0,
+    this->threadNumber_, ttk::debug::LineMode::REPLACE);
+
+  auto input = vtkDataSet::GetData(inputVector[0]);
+  auto output = vtkDataSet::GetData(outputVector);
+
   output->ShallowCopy(input);
 
   // in the following, the target scalar field of the input is replaced in the
   // variable 'output' with the result of the computation.
   // if your wrapper produces an output of the same type of the input, you
   // should proceed in the same way.
-  vtkDataArray *inputScalarField = NULL;
-
-  if(ScalarField.length()) {
-    inputScalarField = input->GetPointData()->GetArray(ScalarField.data());
-  } else {
-    inputScalarField = input->GetPointData()->GetArray(0);
+  auto inputArray = this->GetInputArrayToProcess(0, inputVector);
+  if(!inputArray){
+    this->printErr("Unable to retrieve input array 0.");
+    return 0;
   }
 
-  if(!inputScalarField) {
-    // it may be a cell data field
-    if(ScalarField.length()) {
-      inputScalarField = input->GetCellData()->GetArray(ScalarField.data());
-    } else {
-      inputScalarField = input->GetCellData()->GetArray(0);
-    }
-    if(inputScalarField)
-      isPointData = false;
-  }
+  auto inputArrayAssociation = this->GetInputArrayAssociation(0, inputVector);
 
-  if(!inputScalarField)
-    return -2;
-
-  {
-    stringstream msg;
-    msg << "[ttkIdentifierRandomizer] Shuffling ";
-    if(isPointData)
-      msg << "vertex";
-    else
-      msg << "cell";
-    msg << " field `" << inputScalarField->GetName() << "'..." << endl;
-    dMsg(cout, msg.str(), infoMsg);
-  }
-
-  // allocate the memory for the output scalar field
-  if(outputScalarField_) {
-    outputScalarField_->Delete();
-  }
-
-  switch(inputScalarField->GetDataType()) {
-
-    case VTK_CHAR:
-      outputScalarField_ = vtkCharArray::New();
-      break;
-
-    case VTK_DOUBLE:
-      outputScalarField_ = vtkDoubleArray::New();
-      break;
-
-    case VTK_FLOAT:
-      outputScalarField_ = vtkFloatArray::New();
-      break;
-
-    case VTK_INT:
-      outputScalarField_ = vtkIntArray::New();
-      break;
-
-    case VTK_ID_TYPE:
-      outputScalarField_ = vtkIdTypeArray::New();
-      break;
-
-    default:
-      stringstream msg;
-      msg << "[ttkIdentifierRandomizer] Unsupported data type :(" << endl;
-      dMsg(cerr, msg.str(), fatalMsg);
-      return -1;
-  }
-  outputScalarField_->SetNumberOfTuples(inputScalarField->GetNumberOfTuples());
-  outputScalarField_->SetName(inputScalarField->GetName());
+  auto outputArray = vtkSmartPointer<vtkDataArray>::Take( inputArray->NewInstance() );
+  outputArray->SetNumberOfTuples(inputArray->GetNumberOfTuples());
+  outputArray->SetName(inputArray->GetName());
 
   // on the output, replace the field array by a pointer to its processed
   // version
-  if(isPointData) {
-    if(ScalarField.length()) {
-      output->GetPointData()->RemoveArray(ScalarField.data());
-    } else {
-      output->GetPointData()->RemoveArray(0);
-    }
-    output->GetPointData()->AddArray(outputScalarField_);
+  if(inputArrayAssociation==0) {
+    output->GetPointData()->AddArray(outputArray);
   } else {
-    if(ScalarField.length()) {
-      output->GetCellData()->RemoveArray(ScalarField.data());
-    } else {
-      output->GetCellData()->RemoveArray(0);
-    }
-    output->GetCellData()->AddArray(outputScalarField_);
+    output->GetCellData()->AddArray(outputArray);
   }
 
-  vector<pair<SimplexId, SimplexId>> identifierMap;
+  std::vector<std::pair<ttk::SimplexId, ttk::SimplexId>> identifierMap;
 
-  for(SimplexId i = 0; i < inputScalarField->GetNumberOfTuples(); i++) {
+  for(ttk::SimplexId i = 0; i < inputArray->GetNumberOfTuples(); i++) {
     double inputIdentifier = -1;
-    inputScalarField->GetTuple(i, &inputIdentifier);
+    inputArray->GetTuple(i, &inputIdentifier);
 
     bool isIn = false;
-    for(SimplexId j = 0; j < (SimplexId)identifierMap.size(); j++) {
+    for(ttk::SimplexId j = 0; j < (ttk::SimplexId)identifierMap.size(); j++) {
       if(identifierMap[j].first == inputIdentifier) {
         isIn = true;
         break;
@@ -126,23 +85,23 @@ vtkStandardNewMacro(ttkIdentifierRandomizer)
 
     if(!isIn) {
       identifierMap.push_back(
-        pair<SimplexId, SimplexId>(inputIdentifier, -INT_MAX));
+        std::pair<ttk::SimplexId, ttk::SimplexId>(inputIdentifier, -INT_MAX));
     }
   }
 
   // now let's shuffle things around
-  SimplexId freeIdentifiers = identifierMap.size();
-  SimplexId randomIdentifier = -1;
+  ttk::SimplexId freeIdentifiers = identifierMap.size();
+  ttk::SimplexId randomIdentifier = -1;
 
-  for(SimplexId i = 0; i < (SimplexId)identifierMap.size(); i++) {
+  for(ttk::SimplexId i = 0; i < (ttk::SimplexId)identifierMap.size(); i++) {
 
     randomIdentifier = drand48() * (freeIdentifiers);
 
-    SimplexId freeCounter = -1;
-    for(SimplexId j = 0; j < (SimplexId)identifierMap.size(); j++) {
+    ttk::SimplexId freeCounter = -1;
+    for(ttk::SimplexId j = 0; j < (ttk::SimplexId)identifierMap.size(); j++) {
 
       bool isFound = false;
-      for(SimplexId k = 0; k < (SimplexId)identifierMap.size(); k++) {
+      for(ttk::SimplexId k = 0; k < (ttk::SimplexId)identifierMap.size(); k++) {
 
         if(identifierMap[k].second == identifierMap[j].first) {
           isFound = true;
@@ -164,28 +123,23 @@ vtkStandardNewMacro(ttkIdentifierRandomizer)
   }
 
   // now populate the output scalar field.
-  for(SimplexId i = 0; i < inputScalarField->GetNumberOfTuples(); i++) {
+  for(ttk::SimplexId i = 0; i < inputArray->GetNumberOfTuples(); i++) {
     double inputIdentifier = -1;
     double outputIdentifier = -1;
 
-    inputScalarField->GetTuple(i, &inputIdentifier);
+    inputArray->GetTuple(i, &inputIdentifier);
 
-    for(SimplexId j = 0; j < (SimplexId)identifierMap.size(); j++) {
+    for(ttk::SimplexId j = 0; j < (ttk::SimplexId)identifierMap.size(); j++) {
       if(inputIdentifier == identifierMap[j].first) {
         outputIdentifier = identifierMap[j].second;
         break;
       }
     }
 
-    outputScalarField_->SetTuple(i, &outputIdentifier);
+    outputArray->SetTuple(i, &outputIdentifier);
   }
 
-  {
-    stringstream msg;
-    msg << "[ttkIdentifierRandomizer] Memory usage: " << m.getElapsedUsage()
-        << " MB." << endl;
-    dMsg(cout, msg.str(), memoryMsg);
-  }
+  this->printMsg("Randomizing Identifiers",1,t.getElapsedTime());
 
-  return 0;
+  return 1;
 }

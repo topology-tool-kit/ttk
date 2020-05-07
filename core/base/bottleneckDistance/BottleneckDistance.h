@@ -41,7 +41,7 @@
 
 namespace ttk {
 
-  class BottleneckDistance : public Debug {
+  class BottleneckDistance : virtual public Debug {
 
   public:
     BottleneckDistance()

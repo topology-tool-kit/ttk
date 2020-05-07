@@ -106,6 +106,13 @@
                     <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="EditorMode" value="1" />
                 </Hints>
             </StringVectorProperty>
+            <IntVectorProperty name="ReplaceExistingArrays" label="Replace Existing Arrays" number_of_elements="1" default_values="1" command="SetReplaceExistingArrays" >
+                <BooleanDomain name="bool" />
+                <Documentation>Replace arrays with the same name if they already exist.</Documentation>
+                <Hints>
+                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="EditorMode" value="0" />
+                </Hints>
+            </IntVectorProperty>
 
             <!-- Target Fields -->
             <StringVectorProperty name="TargetPointDataArrays" label="Point Data Array" command="AddTargetPointDataArray" clean_command="ClearTargetPointDataArrays" number_of_elements_per_command="1" repeat_command="1">
@@ -204,6 +211,7 @@
                 <Property name="SourcePointDataArrays" />
                 <Property name="SourceCellDataArrays" />
                 <Property name="SourceFieldDataArrays" />
+                <Property name="ReplaceExistingArrays" />
             </PropertyGroup>
 
             ${DEBUG_WIDGETS}

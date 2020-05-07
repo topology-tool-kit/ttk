@@ -6,4 +6,4 @@ HEADERS
   ttkRangePolygon.h
 DEPENDS
   scalarFieldSmoother
-  ttkTriangulationAlgorithm
+  ttkAlgorithm
