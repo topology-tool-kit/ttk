@@ -77,10 +77,14 @@ ttk::SimplexId ttk::QuadrangulationSubdivision::findQuadBary(
   for(size_t i = 0; i < sum.size(); ++i) {
 
     // skip following computation if too far from any parent quad vertex
-    bool skip = std::any_of(
-      quadVertices.begin(), quadVertices.end(), [&](const size_t &a) {
-        return vertexDistance_[a][i] == std::numeric_limits<float>::infinity();
-      });
+    bool skip = false;
+
+    for(const auto vert : quadVertices) {
+      if(vertexDistance_[vert][i] == std::numeric_limits<float>::infinity()) {
+        skip = true;
+        break;
+      }
+    }
 
     if(skip) {
       continue;
