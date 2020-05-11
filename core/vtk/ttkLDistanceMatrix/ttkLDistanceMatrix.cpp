@@ -1,4 +1,5 @@
 #include <ttkLDistanceMatrix.h>
+#include <ttkUtils.h>
 
 #include <vtkDataArray.h>
 #include <vtkDoubleArray.h>
@@ -80,10 +81,8 @@ int ttkLDistanceMatrix::RequestData(vtkInformation * /*request*/,
 
   std::vector<void *> inputPtrs(nInputs);
   for(size_t i = 0; i < nInputs; ++i) {
-    inputPtrs[i] = inputData[i]
-                     ->GetPointData()
-                     ->GetArray(this->ScalarField.data())
-                     ->GetVoidPointer(0);
+    inputPtrs[i] = ttkUtils::GetVoidPointer(
+      inputData[i]->GetPointData()->GetArray(this->ScalarField.data()));
   }
 
   const auto firstField
