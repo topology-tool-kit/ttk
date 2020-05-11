@@ -16,8 +16,10 @@
 
 // VTK Module
 #include <ttkLDistanceMatrixModule.h>
-//
-#include <ttkTriangulationAlgorithm.h>
+
+// TTK code includes
+#include <LDistanceMatrix.h>
+#include <ttkAlgorithm.h>
 
 // in this example, this wrapper takes a data-set on the input and produces a
 // data-set on the output - to adapt.
@@ -25,38 +27,12 @@
 // class your wrapper should inherit.
 class TTKLDISTANCEMATRIX_EXPORT ttkLDistanceMatrix
   : public vtkMultiBlockDataSetAlgorithm,
-    protected ttk::Wrapper {
+    protected ttk::LDistanceMatrix {
 
 public:
   static ttkLDistanceMatrix *New();
 
   vtkTypeMacro(ttkLDistanceMatrix, vtkMultiBlockDataSetAlgorithm);
-
-  // default ttk setters
-  void SetDebugLevel(int debugLevel) {
-    setDebugLevel(debugLevel);
-    Modified();
-  }
-
-  void SetThreads() {
-    if(!UseAllCores)
-      threadNumber_ = ThreadNumber;
-    else {
-      threadNumber_ = ttk::OsCall::getNumberOfCores();
-    }
-    Modified();
-  }
-
-  void SetUseAllCores(bool onOff) {
-    UseAllCores = onOff;
-    SetThreads();
-  }
-
-  void SetThreadNumber(int data) {
-    ThreadNumber = data;
-    Modified();
-  }
-  // end of default ttk setters
 
   vtkSetMacro(ScalarField, std::string);
   vtkGetMacro(ScalarField, std::string);
@@ -73,16 +49,7 @@ protected:
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;
-  bool needsToAbort() override {
-    return GetAbortExecute();
-  }
-  int updateProgress(const float &progress) override {
-    return 0;
-  }
 
 private:
-  std::string DistanceType{};
   std::string ScalarField{};
-  int ThreadNumber{1};
-  bool UseAllCores{true};
 };

@@ -22,7 +22,7 @@ namespace ttk {
     std::vector<std::vector<double>> execute(const std::vector<void *> &inputs,
                                              const size_t nPoints) const;
 
-  private:
+  protected:
     std::string DistanceType{};
   };
 } // namespace ttk

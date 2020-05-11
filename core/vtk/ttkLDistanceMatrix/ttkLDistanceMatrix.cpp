@@ -80,39 +80,23 @@ int ttkLDistanceMatrix::RequestData(vtkInformation * /*request*/,
   // Get output
   auto DistTable = vtkTable::GetData(outputVector);
 
-  std::vector<std::vector<double>> distMatrix(nInputs);
+  std::vector<std::vector<double>> distMatrix{};
 
-  LDistance worker{};
-  worker.setWrapper(this);
-  worker.setNumberOfPoints(inputData[0]->GetNumberOfPoints());
-
-  // compute matrix upper triangle
+  std::vector<void *> inputPtrs(nInputs);
   for(size_t i = 0; i < nInputs; ++i) {
-    auto &distCol = distMatrix[i];
-    distCol.resize(nInputs);
-    // get pointer to scalar field of input i
-    const auto inputScalarFieldi
-      = inputData[i]->GetPointData()->GetArray(this->ScalarField.data());
-    worker.setInputDataPointer1(inputScalarFieldi->GetVoidPointer(0));
-    for(size_t j = i + 1; j < nInputs; ++j) {
-      // get pointer to scalar field of input jc
-      const auto inputScalarFieldj
-        = inputData[j]->GetPointData()->GetArray(this->ScalarField.data());
-      worker.setInputDataPointer2(inputScalarFieldj->GetVoidPointer(0));
-      // call execute
-      switch(inputScalarFieldj->GetDataType()) {
-        vtkTemplateMacro(worker.execute<VTK_TT>(this->DistanceType));
-      }
-      // store result
-      distMatrix[i][j] = worker.getResult();
-    }
+    inputPtrs[i] = inputData[i]
+                     ->GetPointData()
+                     ->GetArray(this->ScalarField.data())
+                     ->GetVoidPointer(0);
   }
 
-  // distance matrix is symmetric
-  for(size_t i = 0; i < nInputs; ++i) {
-    for(size_t j = i + 1; j < nInputs; ++j) {
-      distMatrix[j][i] = distMatrix[i][j];
-    }
+  const auto firstField
+    = inputData[0]->GetPointData()->GetArray(this->ScalarField.data());
+  const auto dataType = firstField->GetDataType();
+  const size_t nPoints = firstField->GetNumberOfTuples();
+
+  switch(dataType) {
+    vtkTemplateMacro(distMatrix = this->execute<VTK_TT>(inputPtrs, nPoints));
   }
 
   // zero-padd column name to keep Row Data columns ordered

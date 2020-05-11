@@ -5,5 +5,5 @@ SOURCES
 HEADERS
   ttkLDistanceMatrix.h
 DEPENDS
-  lDistance
+  lDistanceMatrix
   ttkTriangulationAlgorithm
