@@ -9,6 +9,8 @@
 
 #define MODULE_S "[QuadrangulationSubdivision] "
 
+static const float PREC_FLT{powf(10, -FLT_DIG)};
+
 ttk::SimplexId
   ttk::QuadrangulationSubdivision::findEdgeMiddle(const size_t a,
                                                   const size_t b) const {
@@ -268,7 +270,7 @@ ttk::QuadrangulationSubdivision::Point
     // magnitude
     auto mag = Geometry::magnitude(&crossP.x);
     // ensure normal not null
-    if(mag > powf(10, -FLT_DIG)) {
+    if(mag > PREC_FLT) {
       // unitary normal vector
       normals.emplace_back(crossP / mag);
     }
@@ -378,7 +380,7 @@ std::tuple<ttk::QuadrangulationSubdivision::Point,
       auto denom = Geometry::dotProduct(&normalsMean.x, &normTri.x);
 
       // check if triangle plane is parallel to quad normal
-      if(std::abs(denom) < powf(10, -FLT_DIG)) {
+      if(std::abs(denom) < PREC_FLT) {
         // skip this iteration after filling pipeline
         trianglesTested[i] = true;
         // fill pipeline with neighboring triangles
@@ -419,10 +421,10 @@ std::tuple<ttk::QuadrangulationSubdivision::Point,
     // check if projection in triangle
     bool inTriangle = true;
     for(auto &coord : baryCoords) {
-      if(coord < powf(10, -FLT_DIG)) {
+      if(coord < PREC_FLT) {
         inTriangle = false;
       }
-      if(coord > 1 + powf(10, -FLT_DIG)) {
+      if(coord > 1 + PREC_FLT) {
         inTriangle = false;
       }
     }
