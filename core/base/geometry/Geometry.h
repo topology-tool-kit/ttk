@@ -253,7 +253,11 @@ namespace ttk {
       } else if(n == 3) {
         return val * val * val;
       } else {
-        return powInt(val, n - 1) * val;
+        T ret = val;
+        for(int i = 0; i < n - 1; ++i) {
+          ret *= val;
+        }
+        return ret;
       }
     }
 
