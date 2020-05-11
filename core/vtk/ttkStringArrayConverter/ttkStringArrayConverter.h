@@ -1,7 +1,7 @@
 /// \class ttkStringArrayConverter
 /// \ingroup vtk
-/// \author Jonas Lukasczyk <jl@jluk.de>
-/// \date 01.09.2018
+/// \author Pierre Guillou <pierre.guillou@lip6.fr>
+/// \date March 2020
 ///
 /// \brief TTK VTK-filter that reads a Cinema Spec D Database.
 ///
