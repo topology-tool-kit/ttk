@@ -238,21 +238,7 @@ jobs:
   steps:
   - script: |
       mkdir build
-      SET "FILENAME=%~dp0\boost.zip"
-      bitsadmin /transfer myDownloadJob /download /priority normal "https://dl.bintray.com/boostorg/release/1.67.0/source/boost_1_67_0.zip" "%FILENAME%"
-      move  "%FILENAME%" boost.zip
-      unzip boost.zip
-    displayName: 'Download and extract Boost'
-
-  - script: |
-      echo "compiler initialization"
-      $(compilerInitialization)
-      echo "bootstrap"
-      bootstrap
-      echo "b2"
-      .\b2
-    workingDirectory: 'boost_1_67_0'
-    displayName: 'Build boost'
+    displayName: 'Create build directory'
 
   - bash: |
       git clone --quiet https://gitlab.kitware.com/vtk/vtk.git
@@ -277,7 +263,8 @@ jobs:
     # need to disable filters linked to rendering
   - script: |
       $(compilerInitialization)
-      cmake -DCMAKE_C_COMPILER:FILEPATH="$(cCompiler)" -DBUILD_SHARED_LIBS:BOOL=ON -DCMAKE_CXX_COMPILER="$(cxxCompiler)" -DCMAKE_INSTALL_PREFIX="$(Build.ArtifactStagingDirectory)/ttk-install" -DVTK_DIR=$(Build.ArtifactStagingDirectory)/vtk-install/lib/cmake/vtk-8.90 -DCMAKE_BUILD_TYPE:STRING=Release -DTTK_BUILD_PARAVIEW_PLUGINS=OFF -DVTK_MODULE_ENABLE_ttkAddFieldData=NO -DVTK_MODULE_ENABLE_ttkWRLExporter=NO -DVTK_MODULE_ENABLE_ttkCinemaWriter=NO -DVTK_MODULE_ENABLE_ttkCinemaReader=NO -DVTK_MODULE_ENABLE_ttkCinemaQuery=NO -DVTK_MODULE_ENABLE_ttkCinemaImaging=NO -DVTK_MODULE_ENABLE_ttkUserInterfaceBase=NO -GNinja ..
+      set BOOST_ROOT=$(BOOST_ROOT_1_69_0)
+      cmake -DBoost_NO_BOOST_CMAKE=ON -DCMAKE_POLICY_DEFAULT_CMP0074=NEW -DCMAKE_C_COMPILER:FILEPATH="$(cCompiler)" -DBUILD_SHARED_LIBS:BOOL=ON -DCMAKE_CXX_COMPILER="$(cxxCompiler)" -DCMAKE_INSTALL_PREFIX="$(Build.ArtifactStagingDirectory)/ttk-install" -DVTK_DIR=$(Build.ArtifactStagingDirectory)/vtk-install/lib/cmake/vtk-8.90 -DCMAKE_BUILD_TYPE:STRING=Release -DTTK_BUILD_PARAVIEW_PLUGINS=OFF -DVTK_MODULE_ENABLE_ttkAddFieldData=NO -DVTK_MODULE_ENABLE_ttkWRLExporter=NO -DVTK_MODULE_ENABLE_ttkCinemaWriter=NO -DVTK_MODULE_ENABLE_ttkCinemaReader=NO -DVTK_MODULE_ENABLE_ttkCinemaQuery=NO -DVTK_MODULE_ENABLE_ttkCinemaImaging=NO -DVTK_MODULE_ENABLE_ttkUserInterfaceBase=NO -GNinja ..
       ninja
     workingDirectory: build/
     displayName: 'Configure TTK'
