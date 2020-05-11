@@ -15,7 +15,8 @@ ttk::SimplexId
   ttk::QuadrangulationSubdivision::findEdgeMiddle(const size_t a,
                                                   const size_t b) const {
 
-  std::vector<float> sum(vertexDistance_[a].size());
+  std::vector<SimplexId> midId(this->threadNumber_);
+  std::vector<float> minValue(this->threadNumber_, std::numeric_limits<float>::infinity());
 
   // euclidian barycenter of a and b
   Point edgeEuclBary = (outputPoints_[a] + outputPoints_[b]) * 0.5F;
@@ -23,25 +24,45 @@ ttk::SimplexId
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
-  for(size_t i = 0; i < sum.size(); ++i) {
+  for(size_t i = 0; i < vertexDistance_[a].size(); ++i) {
+#ifdef TTK_ENABLE_OPENMP
+    const auto tid = omp_get_thread_num();
+#else
+    const auto tid = 0;
+#endif // TTK_ENABLE_OPENMP
     float m = vertexDistance_[a][i];
     float n = vertexDistance_[b][i];
     // stay on the shortest path between a and b
-    sum[i] = m + n;
+    float sum = m + n;
     if(m != std::numeric_limits<float>::infinity()
        && n != std::numeric_limits<float>::infinity()) {
       // try to get the middle of the shortest path
-      sum[i] += std::abs(m - n);
+      sum += std::abs(m - n);
     }
 
     // get the euclidian distance to AB
     Point curr{};
     triangulation_->getVertexPoint(i, curr.x, curr.y, curr.z);
     // try to minimize the euclidian distance to AB too
-    sum[i] += Geometry::distance(&curr.x, &edgeEuclBary.x);
+    sum += Geometry::distance(&curr.x, &edgeEuclBary.x);
+
+    // search for the minimizing index
+    if(sum < minValue[tid]) {
+      minValue[tid] = sum;
+      midId[tid] = i;
+    }
   }
 
-  return std::min_element(sum.begin(), sum.end()) - sum.begin();
+#ifdef TTK_ENABLE_OPENMP
+  for(int i = 1; i < this->threadNumber_; ++i) {
+    if (minValue[i] < minValue[0]) {
+      minValue[0] = minValue[i];
+      midId[0] = midId[i];
+    }
+  }
+#endif // TTK_ENABLE_OPENMP
+
+  return midId[0];
 }
 
 ttk::SimplexId ttk::QuadrangulationSubdivision::findQuadBary(
