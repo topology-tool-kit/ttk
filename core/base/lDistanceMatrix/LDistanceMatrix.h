@@ -14,6 +14,10 @@
 namespace ttk {
   class LDistanceMatrix : virtual public Debug {
   public:
+    LDistanceMatrix() {
+      this->setDebugMsgPrefix("LDistanceMatrix");
+    }
+
     void setDistanceType(const std::string &val) {
       DistanceType = val;
     }
@@ -37,7 +41,6 @@ std::vector<std::vector<double>>
 
   LDistance worker{};
   worker.setNumberOfPoints(nPoints);
-  worker.setDebugLevel(this->debugLevel_);
   worker.setThreadNumber(this->threadNumber_);
 
   // compute matrix upper triangle

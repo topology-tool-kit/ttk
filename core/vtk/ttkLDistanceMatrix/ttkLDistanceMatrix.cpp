@@ -131,7 +131,9 @@ int ttkLDistanceMatrix::RequestData(vtkInformation * /*request*/,
     DistTable->AddColumn(fd->GetAbstractArray(i));
   }
 
-  this->printMsg("Complete", 1.0, tm.getElapsedTime(), this->threadNumber_);
+  this->printMsg("Complete (#datasets: " + std::to_string(nInputs)
+                   + ", #points: " + std::to_string(nPoints) + ")",
+                 1.0, tm.getElapsedTime(), this->threadNumber_);
 
   return 1;
 }
