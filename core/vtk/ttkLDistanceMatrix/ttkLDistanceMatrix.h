@@ -4,7 +4,7 @@
 /// \date March 2020
 ///
 /// \brief Computes a distance matrix using LDistance between several
-/// same-dimensions input datasets
+/// input datasets with the same number of points
 ///
 /// \sa LDistanceMatrix
 
@@ -21,18 +21,14 @@
 #include <LDistanceMatrix.h>
 #include <ttkAlgorithm.h>
 
-// in this example, this wrapper takes a data-set on the input and produces a
-// data-set on the output - to adapt.
-// see the documentation of the vtkAlgorithm class to decide from which VTK
-// class your wrapper should inherit.
 class TTKLDISTANCEMATRIX_EXPORT ttkLDistanceMatrix
-  : public vtkMultiBlockDataSetAlgorithm,
+  : public ttkAlgorithm,
     protected ttk::LDistanceMatrix {
 
 public:
   static ttkLDistanceMatrix *New();
 
-  vtkTypeMacro(ttkLDistanceMatrix, vtkMultiBlockDataSetAlgorithm);
+  vtkTypeMacro(ttkLDistanceMatrix, ttkAlgorithm);
 
   vtkSetMacro(ScalarField, std::string);
   vtkGetMacro(ScalarField, std::string);
@@ -42,6 +38,7 @@ public:
 
 protected:
   ttkLDistanceMatrix();
+  ~ttkLDistanceMatrix() override = default;
 
   int FillInputPortInformation(int port, vtkInformation *info) override;
   int FillOutputPortInformation(int port, vtkInformation *info) override;

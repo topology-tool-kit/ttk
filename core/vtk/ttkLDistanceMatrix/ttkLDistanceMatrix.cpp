@@ -1,4 +1,3 @@
-#include <LDistance.h>
 #include <ttkLDistanceMatrix.h>
 
 #include <vtkDataArray.h>
@@ -11,9 +10,6 @@
 #include <vtkTable.h>
 
 #include <set>
-
-using namespace std;
-using namespace ttk;
 
 vtkStandardNewMacro(ttkLDistanceMatrix);
 
@@ -44,7 +40,7 @@ int ttkLDistanceMatrix::FillOutputPortInformation(int port,
 int ttkLDistanceMatrix::RequestData(vtkInformation * /*request*/,
                                     vtkInformationVector **inputVector,
                                     vtkInformationVector *outputVector) {
-  Timer tm{};
+  ttk::Timer tm{};
 
   const auto blocks = vtkMultiBlockDataSet::GetData(inputVector[0], 0);
 

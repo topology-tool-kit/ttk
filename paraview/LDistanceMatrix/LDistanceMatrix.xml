@@ -5,7 +5,7 @@
      class="ttkLDistanceMatrix"
      label="TTK LDistanceMatrix">
      <Documentation
-       long_help="Computes distance matrix between same dimension regular grids."
+       long_help="Computes distance matrix between datasets with the same number of points."
        shorthelp="LDiagrams Distance Matrix."
        >
     </Documentation>
