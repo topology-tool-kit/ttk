@@ -55,10 +55,10 @@ int ttkLDistanceMatrix::RequestData(vtkInformation * /*request*/,
   const size_t nInputs{blocks->GetNumberOfBlocks()};
 
   // Get input data
-  std::vector<vtkImageData *> inputData(nInputs);
+  std::vector<vtkDataSet *> inputData(nInputs);
 
   for(size_t i = 0; i < nInputs; ++i) {
-    inputData[i] = vtkImageData::SafeDownCast(blocks->GetBlock(i));
+    inputData[i] = vtkDataSet::SafeDownCast(blocks->GetBlock(i));
   }
 
   // sanity check: data non null and same data size
@@ -66,7 +66,7 @@ int ttkLDistanceMatrix::RequestData(vtkInformation * /*request*/,
     std::set<vtkIdType> sizes{};
     for(size_t i = 0; i < nInputs; ++i) {
       if(inputData[i] == nullptr) {
-        this->printErr("Some input block is not a vtkImageData");
+        this->printErr("One input block is not a vtkDataSet");
         return 0;
       }
       sizes.emplace(inputData[i]->GetNumberOfPoints());
