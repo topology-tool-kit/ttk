@@ -330,6 +330,8 @@ std::tuple<ttk::QuadrangulationSubdivision::Point,
   // (takes more memory to reduce computation time)
   std::vector<bool> trianglesTested(
     triangulation_->getNumberOfTriangles(), false);
+  // number of triangles tested
+  size_t trChecked{0};
   // vertex in triangle with highest barycentric coordinate
   SimplexId nearestVertex = nearestVertexIdentifier_[a];
 
@@ -431,6 +433,7 @@ std::tuple<ttk::QuadrangulationSubdivision::Point,
 
     // mark triangle as tested
     trianglesTested[i] = true;
+    trChecked++;
 
     if(inTriangle) {
       success = true;
@@ -487,8 +490,6 @@ std::tuple<ttk::QuadrangulationSubdivision::Point,
     }
   }
 
-  size_t trChecked
-    = std::count(trianglesTested.begin(), trianglesTested.end(), true);
   const size_t maxTrChecked = 100;
 
   if(success && trChecked > maxTrChecked) {
