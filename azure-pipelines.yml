@@ -256,10 +256,6 @@ jobs:
     vmImage: $(imageName)
 
   steps:
-  - script: |
-      mkdir build
-    displayName: 'Create build directory'
-
   - bash: |
       git clone --quiet https://gitlab.kitware.com/vtk/vtk.git
       cd vtk
@@ -280,11 +276,15 @@ jobs:
     workingDirectory: vtk/build
     displayName: 'Build and install VTK'
 
+  - script: |
+      mkdir build
+    displayName: 'Create build directory'
+
     # need to disable filters linked to rendering
   - script: |
       $(compilerInitialization)
       set BOOST_ROOT=$(BOOST_ROOT_1_69_0)
-      cmake -DBoost_NO_BOOST_CMAKE=ON -DCMAKE_POLICY_DEFAULT_CMP0074=NEW -DCMAKE_POLICY_DEFAULT_CMP0092=NEW -DCMAKE_C_COMPILER:FILEPATH="$(cCompiler)" -DBUILD_SHARED_LIBS:BOOL=ON -DCMAKE_CXX_COMPILER="$(cxxCompiler)" -DCMAKE_INSTALL_PREFIX="$(Build.ArtifactStagingDirectory)/ttk-install" -DVTK_DIR=$(Build.ArtifactStagingDirectory)/vtk-install/lib/cmake/vtk-8.90 -DCMAKE_BUILD_TYPE:STRING=Release -DTTK_BUILD_PARAVIEW_PLUGINS=OFF
+      cmake -DBoost_NO_BOOST_CMAKE=ON -DCMAKE_POLICY_DEFAULT_CMP0074=NEW -DCMAKE_POLICY_DEFAULT_CMP0092=NEW -DCMAKE_C_COMPILER:FILEPATH="$(cCompiler)" -DBUILD_SHARED_LIBS:BOOL=ON -DCMAKE_CXX_COMPILER="$(cxxCompiler)" -DCMAKE_INSTALL_PREFIX="$(Build.ArtifactStagingDirectory)/ttk-install" -DVTK_DIR=$(Build.ArtifactStagingDirectory)/vtk-install/lib/cmake/vtk-8.90 -DCMAKE_BUILD_TYPE:STRING=Release -DTTK_BUILD_PARAVIEW_PLUGINS=OFF $(CMAKE_DISABLE) $(CMAKE_TEST) -GNinja ..
     workingDirectory: build/
     displayName: 'Configure TTK'
 
