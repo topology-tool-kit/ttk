@@ -34,6 +34,12 @@ ttk::SimplexId
     float n = vertexDistance_[b][i];
     // stay on the shortest path between a and b
     float sum = m + n;
+
+    // skip further computation
+    if(sum > minValue[tid]) {
+      continue;
+    }
+
     if(m != std::numeric_limits<float>::infinity()
        && n != std::numeric_limits<float>::infinity()) {
       // try to get the middle of the shortest path
