@@ -24,9 +24,7 @@ void vtkVRMLExporter::WriteAnActor(vtkActor *anActor, FILE *fp) {
   double *tempd;
   vtkCellArray *cells;
   vtkIdType npts = 0;
-#if PARAVIEW_VERSION_MAJOR > 5                                   \
-  || (PARAVIEW_VERSION_MAJOR == 5 && PARAVIEW_VERSION_MINOR > 7) \
-  || VTK_VERSION_MAJOR > 8
+#ifdef VTK_CELL_ARRAY_V2
   vtkIdType const *indx = nullptr;
 #else
   vtkIdType *indx = nullptr;
@@ -460,19 +458,10 @@ void vtkVRMLExporter::WritePointData(vtkPoints *points,
       fprintf(fp, "          texCoordIndex[\n");
       vtkCellArray *cells = ttkWRLExporterPolyData_->GetPolys();
       vtkIdType npts = 0;
-#ifdef PARAVIEW_VERSION_MAJOR
-#if PARAVIEW_VERSION_MAJOR > 5 \
-  || (PARAVIEW_VERSION_MAJOR == 5 && PARAVIEW_VERSION_MINOR > 7)
+#ifdef VTK_CELL_ARRAY_V2
       vtkIdType const *indx = nullptr;
 #else
       vtkIdType *indx = nullptr;
-#endif
-#else
-#if VTK_VERSION_MAJOR > 8
-      vtkIdType const *indx = nullptr;
-#else
-      vtkIdType *indx = nullptr;
-#endif
 #endif
       for(cells->InitTraversal(); cells->GetNextCell(npts, indx);) {
         fprintf(fp, "            ");

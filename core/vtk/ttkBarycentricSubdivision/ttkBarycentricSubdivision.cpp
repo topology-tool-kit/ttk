@@ -125,6 +125,7 @@ int ttkBarycentricSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
   ttk::Triangulation triangulationSubdivision;
 
   if(triangulation == nullptr) {
+    printMsg("Error, internal triangulation is empty.");
     return -1;
   }
 
@@ -155,18 +156,23 @@ int ttkBarycentricSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
     baseWorker_.setInputPoints(tmpPoints.data());
 
     // move previous triangulation cells to temp vector
-    decltype(cells_) tmpCells{};
-    std::swap(cells_, tmpCells);
+    decltype(cells_connectivity_) tmpCellsCo{};
+    std::swap(cells_connectivity_, tmpCellsCo);
+    decltype(cells_offsets_) tmpCellsOff{};
+    std::swap(cells_offsets_, tmpCellsOff);
 
     // move previous triangulation to temp triangulation
     decltype(triangulationSubdivision) tmpTr{};
     std::swap(triangulationSubdivision, tmpTr);
 
 #ifdef CELL_ARRAY_NEW
-    std::vector<ttk::LongSimplexId> co, offset;
-    ttk::CellArray::SingleToOffsetAndCo(tmpCells.data(), tmpCells.size() / 4, co, offset);
-    tmpTr.setInputCells(offset.size() - 1, co.data(), offset.data());
+    tmpTr.setInputCells(
+      tmpCellsOff.size() - 1, tmpCellsCo.data(), tmpCellsOff.data());
 #else
+    // TODO: use other translator
+    std::vector<ttk::LongSimplexId> co, offset;
+    ttk::CellArray::SingleToOffsetAndCo(
+      tmpCells.data(), tmpCells.size() / 4, co, offset);
     tmpTr.setInputCells(tmpCells.size() / 4, tmpCells.data());
 #endif
     tmpTr.setInputPoints(tmpPoints.size() / 3, tmpPoints.data());
@@ -190,10 +196,9 @@ int ttkBarycentricSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
   output->SetPoints(points);
 
   // generated triangles
-  const size_t dataPerCell = 4;
   auto cells = vtkSmartPointer<vtkCellArray>::New();
-  for(size_t i = 0; i < cells_.size() / dataPerCell; i++) {
-    cells->InsertNextCell(3, &cells_[dataPerCell * i + 1]);
+  for(size_t i = 0; i < cells_offsets_.size() - 1; i++) {
+    cells->InsertNextCell(3, &cells_connectivity_[cells_offsets_[i]]);
   }
   output->SetCells(VTK_TRIANGLE, cells);
 

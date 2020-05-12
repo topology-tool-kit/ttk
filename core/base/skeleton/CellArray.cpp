@@ -3,6 +3,7 @@
 using namespace ttk;
 
 #ifdef CELL_ARRAY_NEW
+// TODO: Remove as it should not be used anymore
 void CellArray::SingleToOffsetAndCo(const LongSimplexId *singleArray,
                                     size_t nbCells,
                                     std::vector<LongSimplexId> &connectivity,
@@ -23,5 +24,26 @@ void CellArray::SingleToOffsetAndCo(const LongSimplexId *singleArray,
   }
   // last one
   offset[nbCells] = connectivity.size();
+}
+#endif
+
+#ifdef CELL_ARRAY_LEGACY
+void CellArray::TranslateToFlatLayout(std::vector<LongSimplexId> &connectivity,
+                                      std::vector<LongSimplexId> &offset,
+                                      LongSimplexId *&singleArray) {
+  const size_t coSize = connectivity.size();
+  const size_t ofSize = offset.size();
+  const size_t totalSize = coSize + ofSize - 1;
+  singleArray = new LongSimplexId[totalSize];
+
+  size_t off = 0;
+  size_t single = 0;
+  for(size_t con = 0; con < coSize - 1; con++) {
+    const LongSimplexId nbVerts = connectivity[con + 1] - connectivity[con];
+    singleArray[single++] = nbVerts;
+    for(int i = 0; i < nbVerts; i++) {
+      singleArray[single++] = offset[off++];
+    }
+  }
 }
 #endif

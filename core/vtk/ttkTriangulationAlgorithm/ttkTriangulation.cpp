@@ -64,10 +64,9 @@ struct CellChecker : public vtkObject // inherit to be able to use vtkErrorMacro
 
 ttkTriangulation::ttkTriangulation() {
 
-  inputDataSet_ = NULL;
-
+  inputDataSet_ = nullptr;
   hasAllocated_ = false;
-  triangulation_ = NULL;
+  triangulation_ = nullptr;
 }
 
 ttkTriangulation::~ttkTriangulation() {
