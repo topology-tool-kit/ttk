@@ -39,6 +39,7 @@ int ttkMatrixToHeatMap::FillOutputPortInformation(int port,
 int ttkMatrixToHeatMap::RequestData(vtkInformation * /*request*/,
                                     vtkInformationVector **inputVector,
                                     vtkInformationVector *outputVector) {
+  ttk::Timer tm{};
 
   const auto input = vtkTable::GetData(inputVector[0]);
   const auto output = vtkUnstructuredGrid::GetData(outputVector);
@@ -102,6 +103,9 @@ int ttkMatrixToHeatMap::RequestData(vtkInformation * /*request*/,
   output->SetCells(VTK_QUAD, cells);
   output->GetCellData()->AddArray(dist);
   output->GetCellData()->AddArray(prox);
+
+  this->printMsg("Complete (#inputs: " + std::to_string(nInputs) + ")", 1.0,
+                 tm.getElapsedTime(), 1);
 
   return 1;
 }

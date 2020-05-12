@@ -92,6 +92,8 @@
         <Property name="Regexp" />
       </PropertyGroup>
 
+      ${DEBUG_WIDGETS}
+
       <Hints>
         <ShowInMenu category="TTK - High Dimension / Point Cloud Data" />
       </Hints>
