@@ -14,11 +14,9 @@
 namespace ttk {
   class LDistanceMatrix : virtual public Debug {
   public:
-    LDistanceMatrix() {
-      this->setDebugMsgPrefix("LDistanceMatrix");
-    }
+    LDistanceMatrix();
 
-    void setDistanceType(const std::string &val) {
+    inline void setDistanceType(const std::string &val) {
       DistanceType = val;
     }
 
