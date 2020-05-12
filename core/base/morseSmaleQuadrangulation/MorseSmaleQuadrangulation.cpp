@@ -106,15 +106,15 @@ int ttk::MorseSmaleQuadrangulation::detectCellSeps() {
     prev = curr;
   }
 
-  // store saddle points id in the subdivised triangulation
-  std::set<SimplexId> saddlesId{};
+  // if vertex is saddle in the subdivised triangulation
+  std::vector<bool> isSaddle(newT.getNumberOfVertices(), false);
 
   for(SimplexId i = 0; i < criticalPointsNumber_; ++i) {
     // keep only saddle points
     if(criticalPointsType_[i] != 1) {
       continue;
     }
-    saddlesId.emplace(verticesNumber_ + criticalPointsCellIds_[i]);
+    isSaddle[verticesNumber_ + criticalPointsCellIds_[i]] = true;
   }
 
   auto getTriangleEdges
@@ -149,9 +149,7 @@ int ttk::MorseSmaleQuadrangulation::detectCellSeps() {
     newT.getTriangleVertex(tr, 0, a);
     newT.getTriangleVertex(tr, 1, b);
     newT.getTriangleVertex(tr, 2, c);
-    return (saddlesId.find(a) != saddlesId.end()
-            || saddlesId.find(b) != saddlesId.end()
-            || saddlesId.find(c) != saddlesId.end());
+    return (isSaddle[a] || isSaddle[b] || isSaddle[c]);
   };
 
   // propagate from triangles around saddle
