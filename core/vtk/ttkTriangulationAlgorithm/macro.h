@@ -153,7 +153,7 @@ protected:                                                             \
                         vtkInformationVector **inputVector,            \
                         vtkInformationVector *outputVector) override { \
                                                                        \
-    vtkDataSetAlgorithm::RequestDataObject(                            \
+    int ret = vtkDataSetAlgorithm::RequestDataObject(                  \
       request, inputVector, outputVector);                             \
                                                                        \
     for(int i = 0; i < GetNumberOfOutputPorts(); i++) {                \
@@ -167,13 +167,13 @@ protected:                                                             \
       if(output) {                                                     \
                                                                        \
         std::string dataType = output->GetClassName();                 \
-        TTK_UNSTRUCTURED_GRID_NEW(i, outputInformation, dataType);     \
                                                                        \
+        TTK_UNSTRUCTURED_GRID_NEW(i, outputInformation, dataType);     \
         TTK_POLY_DATA_NEW(i, outputInformation, dataType);             \
       }                                                                \
     }                                                                  \
                                                                        \
-    return 1;                                                          \
+    return ret;                                                        \
   }                                                                    \
                                                                        \
 public:
@@ -195,8 +195,8 @@ protected:                                                                     \
       }                                                                        \
     }                                                                          \
                                                                                \
-    std::vector<vtkDataSet *> inputs(GetNumberOfInputPorts(), NULL);           \
-    std::vector<vtkDataSet *> outputs(GetNumberOfOutputPorts(), NULL);         \
+    std::vector<vtkDataSet *> inputs(GetNumberOfInputPorts(), nullptr);        \
+    std::vector<vtkDataSet *> outputs(GetNumberOfOutputPorts(), nullptr);      \
                                                                                \
     for(int i = 0; i < GetNumberOfInputPorts(); i++) {                         \
       vtkDataSet *input = vtkDataSet::GetData(inputVector[i]);                 \
@@ -213,11 +213,12 @@ protected:                                                                     \
           vtkDataObject::DATA_OBJECT()));                                      \
     }                                                                          \
                                                                                \
+    int ret = 1;                                                               \
     if(((int)inputs.size() == GetNumberOfInputPorts())                         \
        && ((int)outputs.size() == GetNumberOfOutputPorts()))                   \
-      doIt(inputs, outputs);                                                   \
+      ret = doIt(inputs, outputs);                                             \
                                                                                \
-    return 1;                                                                  \
+    return ret;                                                                \
   }
 
 //-------------------------------------------------------------------------------

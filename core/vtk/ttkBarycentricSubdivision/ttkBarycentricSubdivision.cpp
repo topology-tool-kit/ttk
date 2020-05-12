@@ -18,7 +18,7 @@ vtkStandardNewMacro(ttkBarycentricSubdivision);
 vtkSmartPointer<vtkDataArray> ttkBarycentricSubdivision::AllocateScalarField(
   vtkDataArray *const inputScalarField, int ntuples) const {
 
-  vtkSmartPointer<vtkDataArray> res{};
+  vtkSmartPointer<vtkDataArray> res;
 
   // allocate the memory for the output scalar field
   switch(inputScalarField->GetDataType()) {
