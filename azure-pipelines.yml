@@ -265,12 +265,12 @@ jobs:
       $(compilerInitialization)
       set BOOST_ROOT=$(BOOST_ROOT_1_69_0)
       cmake -DBoost_NO_BOOST_CMAKE=ON -DCMAKE_POLICY_DEFAULT_CMP0074=NEW -DCMAKE_C_COMPILER:FILEPATH="$(cCompiler)" -DBUILD_SHARED_LIBS:BOOL=ON -DCMAKE_CXX_COMPILER="$(cxxCompiler)" -DCMAKE_INSTALL_PREFIX="$(Build.ArtifactStagingDirectory)/ttk-install" -DVTK_DIR=$(Build.ArtifactStagingDirectory)/vtk-install/lib/cmake/vtk-8.90 -DCMAKE_BUILD_TYPE:STRING=Release -DTTK_BUILD_PARAVIEW_PLUGINS=OFF -DVTK_MODULE_ENABLE_ttkAddFieldData=NO -DVTK_MODULE_ENABLE_ttkWRLExporter=NO -DVTK_MODULE_ENABLE_ttkCinemaWriter=NO -DVTK_MODULE_ENABLE_ttkCinemaReader=NO -DVTK_MODULE_ENABLE_ttkCinemaQuery=NO -DVTK_MODULE_ENABLE_ttkCinemaImaging=NO -DVTK_MODULE_ENABLE_ttkUserInterfaceBase=NO -GNinja ..
-      ninja
     workingDirectory: build/
     displayName: 'Configure TTK'
 
   - script: |
       $(compilerInitialization)
+      ninja
       cmake --build . --target install
     workingDirectory: build/
     displayName: 'Build and install TTK'
