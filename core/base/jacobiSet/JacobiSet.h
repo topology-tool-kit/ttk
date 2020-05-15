@@ -30,6 +30,8 @@
 #include <UnionFind.h>
 #include <Wrapper.h>
 
+#include <vector>
+
 namespace ttk {
 
   template <class dataTypeU, class dataTypeV>

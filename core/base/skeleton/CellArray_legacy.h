@@ -11,12 +11,15 @@
 /// This array contain for each cell the number of points in the cell then the
 /// point ids of the cell. See VTK 8.2 vtkCellArray documentation for more
 /// details about this layout.
-/// This file will be installed by CMake as CellArray.h if the TTK_CELL_ARRAY_LAYOUT is set to SingleArray
+/// This file will be installed by CMake as CellArray.h if the
+/// TTK_CELL_ARRAY_LAYOUT is set to SingleArray
 
 #ifndef _CELLARRAY_H
 #define _CELLARRAY_H
 
 #include <DataTypes.h>
+
+#include <vector>
 
 #ifndef TTK_ENABLE_KAMIKAZE
 #include <iostream>
@@ -84,6 +87,10 @@ namespace ttk {
       // Assume VTK < 9 layout and uniform mesh (only one type of cells)
       return this->cellArray_[(locNbVert + 1) * cellId + 1 + localVertId];
     }
+
+    static void TranslateToFlatLayout(std::vector<LongSimplexId> &connectivity,
+                                      std::vector<LongSimplexId> &offset,
+                                      LongSimplexId *&singleArray);
 
   protected:
     const LongSimplexId *cellArray_;

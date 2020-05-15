@@ -36,13 +36,13 @@ void CellArray::TranslateToFlatLayout(std::vector<LongSimplexId> &connectivity,
   const size_t totalSize = coSize + ofSize - 1;
   singleArray = new LongSimplexId[totalSize];
 
-  size_t off = 0;
+  size_t con = 0;
   size_t single = 0;
-  for(size_t con = 0; con < coSize - 1; con++) {
-    const LongSimplexId nbVerts = connectivity[con + 1] - connectivity[con];
+  for(size_t off = 0; off < ofSize - 1; off++) {
+    const LongSimplexId nbVerts = offset[off + 1] - offset[off];
     singleArray[single++] = nbVerts;
     for(int i = 0; i < nbVerts; i++) {
-      singleArray[single++] = offset[off++];
+      singleArray[single++] = connectivity[con++];
     }
   }
 }

@@ -169,11 +169,9 @@ int ttkBarycentricSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
     tmpTr.setInputCells(
       tmpCellsOff.size() - 1, tmpCellsCo.data(), tmpCellsOff.data());
 #else
-    // TODO: use other translator
-    std::vector<ttk::LongSimplexId> co, offset;
-    ttk::CellArray::SingleToOffsetAndCo(
-      tmpCells.data(), tmpCells.size() / 4, co, offset);
-    tmpTr.setInputCells(tmpCells.size() / 4, tmpCells.data());
+    ttk::LongSimplexId* tmpCells = nullptr;
+    ttk::CellArray::TranslateToFlatLayout(tmpCellsCo, tmpCellsOff, tmpCells);
+    tmpTr.setInputCells(tmpCellsCo.size() - 1, tmpCells);
 #endif
     tmpTr.setInputPoints(tmpPoints.size() / 3, tmpPoints.data());
     baseWorker_.setupTriangulation(&tmpTr);
@@ -220,5 +218,5 @@ int ttkBarycentricSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
     dMsg(std::cout, msg.str(), memoryMsg);
   }
 
-  return ret;
+  return !ret; // VTK norm is 0 for error
 }

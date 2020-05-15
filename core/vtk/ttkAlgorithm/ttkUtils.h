@@ -40,13 +40,23 @@ namespace ttkUtils {
   void *GetVoidPointer(vtkDataArray *array, vtkIdType start = 0);
   void *GetVoidPointer(vtkPoints *points, vtkIdType start = 0);
 
-  void *WriteVoidPointer(vtkDataArray *array, vtkIdType start, vtkIdType numValues);
+  void *
+    WriteVoidPointer(vtkDataArray *array, vtkIdType start, vtkIdType numValues);
   void *WritePointer(vtkDataArray *array, vtkIdType start, vtkIdType numValues);
 
   void SetVoidArray(vtkDataArray *array, void *data, vtkIdType size, int save);
 
   // Fill Cell array using a pointer with the old memory layout
-  void FillCellArrayFromSingle(vtkIdType const * cells, vtkIdType ncells, vtkCellArray* cellArray);
+  // DEPRECTAED
+  void FillCellArrayFromSingle(vtkIdType const *cells,
+                               vtkIdType ncells,
+                               vtkCellArray *cellArray);
+
+  // Fill Cell array using a pointer with the new memory layout
+  void FillCellArrayFromDual(vtkIdType const *cells_co,
+                             vtkIdType const *cells_off,
+                             vtkIdType ncells,
+                             vtkCellArray *cellArray);
 }; // namespace ttkUtils
 
 #include <limits>
@@ -315,17 +325,34 @@ void ttkUtils::SetVoidArray(vtkDataArray *array,
 }
 
 [[deprecated]]
-void ttkUtils::FillCellArrayFromSingle(vtkIdType const * cells, vtkIdType ncells, vtkCellArray* cellArray) {
-
+void ttkUtils::FillCellArrayFromSingle(vtkIdType const *cells,
+                                       vtkIdType ncells,
+                                       vtkCellArray *cellArray) {
   size_t curPos = 0;
   vtkNew<vtkIdList> verts;
   for(size_t cid = 0; cid < ncells; cid++) {
-
     const vtkIdType nbVerts = cells[curPos];
     verts->SetNumberOfIds(nbVerts);
     curPos++;
     for(vtkIdType v = 0; v < nbVerts; v++) {
       verts->SetId(v, cells[curPos]);
+      curPos++;
+    }
+    cellArray->InsertNextCell(verts);
+  }
+}
+
+void ttkUtils::FillCellArrayFromDual(vtkIdType const *cells_co,
+                                     vtkIdType const *cells_off,
+                                     vtkIdType ncells,
+                                     vtkCellArray *cellArray) {
+  size_t curPos = 0;
+  vtkNew<vtkIdList> verts;
+  for(size_t cid = 0; cid < ncells; cid++) {
+    const vtkIdType nbVerts = cells_off[cid + 1] - cells_off[cid];
+    verts->SetNumberOfIds(nbVerts);
+    for(vtkIdType v = 0; v < nbVerts; v++) {
+      verts->SetId(v, cells_co[curPos]);
       curPos++;
     }
     cellArray->InsertNextCell(verts);

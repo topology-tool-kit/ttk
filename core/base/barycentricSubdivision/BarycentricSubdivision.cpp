@@ -1,5 +1,6 @@
 #include "BarycentricSubdivision.h"
 #include "Geometry.h"
+
 #include <array>
 
 #define MODULE_S "[BarycentricSubdivision] "
@@ -153,9 +154,9 @@ int ttk::BarycentricSubdivision::buildOutputTriangulation() {
                                 cells_offsets_.data());
 #else
   // TODO use revert translator
-  std::vector<LongSimplexId> co, offset;
-  CellArray::SingleToOffsetAndCo(cells_.data(), cells_.size() / 4, co, offset);
-  outputTriangl_->setInputCells(cells_.size() / 4, cells_.data());
+  LongSimplexId* cells = nullptr;
+  CellArray::TranslateToFlatLayout(cells_connectivity_, cells_offsets_, cells);
+  outputTriangl_->setInputCells(cells_offsets_.size() - 1, cells);
 #endif
 
   return 0;

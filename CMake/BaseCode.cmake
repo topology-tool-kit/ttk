@@ -77,10 +77,6 @@ function(ttk_add_base_template_library library)
       $<INSTALL_INTERFACE:include/ttk/base>
     )
 
-  if(Boost_FOUND)
-    target_link_libraries(${library} INTERFACE Boost::boost)
-  endif()
-
   if(TTK_ENABLE_KAMIKAZE)
     target_compile_definitions(${library} INTERFACE TTK_ENABLE_KAMIKAZE)
   endif()
@@ -103,33 +99,6 @@ function(ttk_add_base_template_library library)
 
   if(TTK_ENABLE_MPI)
     target_link_libraries(${library} INTERFACE ${MPI_CXX_LIBRARIES})
-  endif()
-
-  if(TTK_ENABLE_GRAPHVIZ)
-    target_compile_definitions(${library} INTERFACE TTK_ENABLE_GRAPHVIZ)
-    target_include_directories(${library} INTERFACE ${GRAPHVIZ_INCLUDE_DIR})
-  endif()
-
-  if(TTK_ENABLE_SCIKIT_LEARN)
-    target_compile_definitions(${library} INTERFACE TTK_ENABLE_SCIKIT_LEARN)
-  endif()
-
-  if(TTK_ENABLE_SQLITE3)
-    target_compile_definitions(${library} INTERFACE TTK_ENABLE_SQLITE3)
-    target_include_directories(${library} INTERFACE ${SQLITE3_INCLUDE_DIR})
-  endif()
-
-  if(GRAPHVIZ_INCLUDE_DIR)
-    target_compile_definitions(${library} INTERFACE TTK_ENABLE_GRAPHVIZ)
-    target_link_libraries(${library} INTERFACE ${GRAPHVIZ_CDT_LIBRARY})
-    target_link_libraries(${library} INTERFACE ${GRAPHVIZ_GVC_LIBRARY})
-    target_link_libraries(${library} INTERFACE ${GRAPHVIZ_CGRAPH_LIBRARY})
-    target_link_libraries(${library} INTERFACE ${GRAPHVIZ_PATHPLAN_LIBRARY})
-  endif()
-
-  if(TTK_ENABLE_ZLIB)
-    target_compile_definitions(${library} INTERFACE TTK_ENABLE_ZLIB)
-    target_include_directories(${library} INTERFACE ${ZLIB_INCLUDE_DIR})
   endif()
 
   if(TTK_ENABLE_64BIT_IDS)
