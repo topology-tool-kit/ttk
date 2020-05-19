@@ -126,7 +126,7 @@ int ttkBarycentricSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
 
   if(triangulation == nullptr) {
     printMsg("Error, internal triangulation is empty.");
-    return -1;
+    return 0;
   }
 
   triangulation->setWrapper(this);
@@ -134,7 +134,7 @@ int ttkBarycentricSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
   // early return: copy input if no subdivision
   if(SubdivisionLevel == 0) {
     output->ShallowCopy(input);
-    return 0;
+    return 1;
   }
 
   baseWorker_.setupTriangulation(triangulation);

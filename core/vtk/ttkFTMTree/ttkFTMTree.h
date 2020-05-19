@@ -1,6 +1,6 @@
 /// \sa ttk::ftm::FTMTree
-#ifndef _VTK_CONTOURFORESTS_H
-#define _VTK_CONTOURFORESTS_H
+#ifndef _VTK_FTMTREE__H
+#define _VTK_FTMTREE__H
 
 // VTK includes
 #include <vtkCellData.h>
@@ -185,4 +185,4 @@ private:
   bool hasUpdatedMesh_;
 };
 
-#endif // _VTK_CONTOURFORESTS_H
+#endif // _VTK_FTMTREE__H

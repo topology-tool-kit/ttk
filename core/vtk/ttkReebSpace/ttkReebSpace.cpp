@@ -3,9 +3,8 @@
 using namespace std;
 using namespace ttk;
 
-vtkStandardNewMacro(ttkReebSpace)
-
-  ttkReebSpace::ttkReebSpace() {
+vtkStandardNewMacro(ttkReebSpace);
+ttkReebSpace::ttkReebSpace() {
 
   // init
   SetNumberOfOutputPorts(4);
@@ -129,10 +128,10 @@ int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
   Memory m;
 
   if(inputs.size() != 1)
-    return -1;
+    return 0;
 
   if(outputs.size() != 4)
-    return -2;
+    return 0;
 
   vtkDataSet *input = inputs[0];
   vtkUnstructuredGrid *sheet0 = vtkUnstructuredGrid::SafeDownCast(outputs[0]);
@@ -154,7 +153,7 @@ int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
     uComponent_ = input->GetPointData()->GetArray(UcomponentId);
   }
   if(!uComponent_)
-    return -1;
+    return 0;
 
   if(Vcomponent.length()) {
     string oldName = Vcomponent;
@@ -169,7 +168,7 @@ int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
     vComponent_ = input->GetPointData()->GetArray(VcomponentId);
   }
   if(!vComponent_)
-    return -2;
+    return 0;
 
   if(ForceInputOffsetScalarField) {
     if(OffsetFieldU.length()) {
@@ -244,7 +243,7 @@ int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
   Triangulation *triangulation = ttkTriangulation::getTriangulation(input);
 
   if(!triangulation)
-    return -3;
+    return 0;
 
   // 0-sheets -
   // Optional additional fields:
@@ -310,7 +309,7 @@ int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
   }
 
   vertexNumber = 0;
-  double *p = NULL;
+  double *p = nullptr;
   for(SimplexId i = 0; i < (SimplexId)sheet0segmentation->size(); i++) {
     SimplexId sheet0Id = (*sheet0segmentation)[i];
     if(sheet0Id != -1) {
@@ -835,7 +834,6 @@ int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
     }
   }
   sheet3->GetCellData()->AddArray(tetSegmentation);
-
   {
     stringstream msg;
     msg << "[ttkReebSpace] Memory usage: " << m.getElapsedUsage() << " MB."
@@ -843,5 +841,5 @@ int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
     dMsg(cout, msg.str(), memoryMsg);
   }
 
-  return 0;
+  return 1;
 }

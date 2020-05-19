@@ -142,7 +142,7 @@ int ttkJacobiSet::doIt(vector<vtkDataSet *> &inputs,
     uComponent = input->GetPointData()->GetArray(UcomponentId);
   }
   if(!uComponent)
-    return -1;
+    return 0;
 
   if(Vcomponent.length()) {
     vComponent = input->GetPointData()->GetArray(Vcomponent.data());
@@ -151,7 +151,7 @@ int ttkJacobiSet::doIt(vector<vtkDataSet *> &inputs,
     vComponent = input->GetPointData()->GetArray(VcomponentId);
   }
   if(!vComponent)
-    return -2;
+    return 0;
 
   {
     stringstream msg;
@@ -186,7 +186,7 @@ int ttkJacobiSet::doIt(vector<vtkDataSet *> &inputs,
 
   Triangulation *triangulation = ttkTriangulation::getTriangulation(input);
   if(!triangulation)
-    return -3;
+    return 0;
 
   SimplexId pointCount = 0;
   double p[3];
@@ -309,5 +309,5 @@ int ttkJacobiSet::doIt(vector<vtkDataSet *> &inputs,
     dMsg(cout, msg.str(), memoryMsg);
   }
 
-  return 0;
+  return 1;
 }

@@ -32,7 +32,7 @@ int ttkGeometrySmoother::doIt(vector<vtkDataSet *> &inputs,
   Triangulation *triangulation = ttkTriangulation::getTriangulation(input);
 
   if(!triangulation)
-    return -1;
+    return 0;
 
   triangulation->setWrapper(this);
   smoother_.setupTriangulation(triangulation);
@@ -92,5 +92,5 @@ int ttkGeometrySmoother::doIt(vector<vtkDataSet *> &inputs,
     dMsg(cout, msg.str(), memoryMsg);
   }
 
-  return 0;
+  return 1;
 }
