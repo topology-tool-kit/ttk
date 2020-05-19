@@ -9,7 +9,7 @@ if(NOT TARGET ttkUserInterfaceBase)
   set(gui_dirs "")
 endif()
 
-add_compile_options(${COMPILER_FLAGS})
+add_compile_options(${TTK_COMPILER_FLAGS})
 
 file(GLOB STANDALONE_DIRS ${cmd_dirs} ${gui_dirs})
 foreach(STANDALONE ${STANDALONE_DIRS})

@@ -37,7 +37,7 @@ macro(ttk_add_vtk_module)
         ${TTK_HEADERS}
       )
 
-    vtk_module_compile_options(${TTK_NAME} PRIVATE ${COMPILER_FLAGS})
+    vtk_module_compile_options(${TTK_NAME} PRIVATE ${TTK_COMPILER_FLAGS})
 
     vtk_module_link(${TTK_NAME}
       PUBLIC

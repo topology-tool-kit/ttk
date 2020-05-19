@@ -145,7 +145,7 @@ endfunction()
 function(ttk_set_compile_options library)
 
   # compilation flags
-  target_compile_options(${library} PRIVATE ${COMPILER_FLAGS})
+  target_compile_options(${library} PRIVATE ${TTK_COMPILER_FLAGS})
 
   if(Boost_FOUND)
     target_link_libraries(${library} PUBLIC Boost::boost)
