@@ -37,6 +37,11 @@ int ttkPersistenceDiagramClustering::doIt(
 
   int ret{};
   if(needUpdate_) {
+    // clear data before computation
+    intermediateDiagrams_ = {};
+    all_matchings_ = {};
+    final_centroids_ = {};
+
     intermediateDiagrams_.resize(numInputs);
     all_matchings_.resize(3);
 
