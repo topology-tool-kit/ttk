@@ -7,7 +7,8 @@ if (NOT MSVC) # GCC and Clang
 
   # performance and debug flags
   if(TTK_ENABLE_CPU_OPTIMIZATION AND CMAKE_BUILD_TYPE MATCHES Release)
-    list(APPEND COMPILER_FLAGS -march=native -O3 -Wfatal-errors)
+    # -O3 already enabled by CMake's Release configuration
+    list(APPEND COMPILER_FLAGS -march=native -Wfatal-errors)
   endif()
 
   if(CMAKE_BUILD_TYPE MATCHES Debug)
