@@ -1,4 +1,5 @@
 #include <ttkHelloWorld.h>
+#include <ttkUtils.h>
 
 #include <vtkDataObject.h> // For port information
 #include <vtkObjectFactory.h> // for new macro
