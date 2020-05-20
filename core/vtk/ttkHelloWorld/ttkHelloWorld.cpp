@@ -1,12 +1,12 @@
 #include <ttkHelloWorld.h>
 
-#include <vtkDataObject.h> // For port information
-#include <vtkObjectFactory.h> // for new macro
-
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
 #include <vtkPointData.h>
 #include <vtkSmartPointer.h>
+
+#include <ttkMacros.h>
+#include <ttkUtils.h>
 
 // A VTK macro that enables the instantiation of this class via ::New()
 // You do not have to modify this

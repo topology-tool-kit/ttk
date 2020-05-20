@@ -28,13 +28,9 @@
 // VTK Module
 #include <ttkHelloWorldModule.h>
 
-// VTK Includes
-#include <ttkAlgorithm.h>
-#include <ttkTriangulation.h>
-#include <ttkUtils.h>
-
-// TTK Base Includes
+// TTK Includes
 #include <HelloWorld.h>
+#include <ttkAlgorithm.h>
 
 class TTKHELLOWORLD_EXPORT ttkHelloWorld
   : public ttkAlgorithm // we inherit from the generic ttkAlgorithm class
