@@ -32,8 +32,7 @@ namespace ttk {
   public:
     HelloWorld() {
       this->setDebugMsgPrefix(
-        "HelloWorld"); // inherited from Debug: prefix will be printed at the
-      // beginning of every msg
+        "HelloWorld"); // prefix printed at the beginning of every debug msg
     };
     ~HelloWorld(){};
 
@@ -68,7 +67,7 @@ namespace ttk {
       // print horizontal separator
       this->printMsg(ttk::debug::Separator::L1); // L1 is the '=' separator
 
-      // print input parameters
+      // print input parameters as table
       this->printMsg({
         {"#Threads", std::to_string(this->threadNumber_)},
         {"#Vertices", std::to_string(triangulation->getNumberOfVertices())},
@@ -86,7 +85,10 @@ namespace ttk {
         this->printMsg("Computing Averages",
                        0, // progress form 0-1
                        0, // elapsed time so far
-                       this->threadNumber_, ttk::debug::LineMode::REPLACE);
+                       this->threadNumber_, // print thread number
+                       ttk::debug::LineMode::REPLACE // replace this line with
+                                                     // next print statement
+        );
 
         // compute the average of each vertex in parallel
         size_t nVertices = triangulation->getNumberOfVertices();
@@ -112,7 +114,8 @@ namespace ttk {
         // print the progress of the current subprocedure with elapsed time
         this->printMsg("Computing Averages",
                        1, // progress
-                       localTimer.getElapsedTime(), this->threadNumber_);
+                       localTimer.getElapsedTime(), // elapsed time so far
+                       this->threadNumber_);
       }
 
       // ---------------------------------------------------------------------

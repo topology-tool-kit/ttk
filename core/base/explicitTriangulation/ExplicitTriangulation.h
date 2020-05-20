@@ -1013,7 +1013,8 @@ namespace ttk {
       cellNumber_ = cellNumber;
 
       // TODO: ASSUME Regular Mesh Here to compute dimension!
-      cellArray_ = std::make_shared<CellArray>(cellArray, cellNumber, cellArray[0] - 1);
+      cellArray_
+        = std::make_shared<CellArray>(cellArray, cellNumber, cellArray[0] - 1);
 
       return 0;
     }

@@ -1,10 +1,11 @@
 NAME
   ttkAlgorithm
 SOURCES
+  ttkUtils.cpp
   ttkAlgorithm.cpp
 HEADERS
-  ttkAlgorithm.h
   ttkUtils.h
   ttkMacros.h
+  ttkAlgorithm.h
 DEPENDS
   triangulation

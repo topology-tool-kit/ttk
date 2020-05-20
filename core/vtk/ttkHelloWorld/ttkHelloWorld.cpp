@@ -137,6 +137,10 @@ int ttkHelloWorld::RequestData(vtkInformation *request,
   //       call SetInputArrayToProcess (see HelloWorld.xml file).
   //
   vtkDataArray *inputArray = this->GetInputArrayToProcess(0, inputVector);
+  if(!inputArray) {
+    this->printErr("Unable to retrieve input array.");
+    return 0;
+  }
 
   // Create an output array that has the same data type as the input array
   // Note: vtkSmartPointers are well documented
