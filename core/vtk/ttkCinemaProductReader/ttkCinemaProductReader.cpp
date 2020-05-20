@@ -159,7 +159,9 @@ int ttkCinemaProductReader::RequestData(vtkInformation *request,
         for(size_t j = 0; j < m; j++) {
           auto columnName = inputTable->GetColumnName(j);
 
-          if(!fieldData->HasArray(columnName)) {
+          // always write FILE column
+          if(!fieldData->HasArray(columnName)
+             || columnName == this->FilepathColumnName) {
             if(inputTable->GetColumn(j)->IsNumeric()) {
               auto c = vtkSmartPointer<vtkDoubleArray>::New();
               c->SetName(columnName);
