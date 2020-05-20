@@ -13,35 +13,40 @@
 #include <vtkPoints.h>
 #include <vtkSmartPointer.h>
 
-namespace ttkUtils {
-  int replaceVariable(const std::string &iString,
+class ttkUtils {
+  public:
+
+  ttkUtils();
+  ~ttkUtils();
+
+  static int replaceVariable(const std::string &iString,
                       vtkFieldData *fieldData,
                       std::string &oString,
                       std::string &errorMsg);
 
-  int replaceVariables(const std::string &iString,
+  static int replaceVariables(const std::string &iString,
                        vtkFieldData *fieldData,
                        std::string &oString,
                        std::string &errorMsg);
 
-  int stringListToVector(const std::string &iString,
+  static int stringListToVector(const std::string &iString,
                          std::vector<std::string> &v);
 
-  int stringListToDoubleVector(const std::string &iString,
+  static int stringListToDoubleVector(const std::string &iString,
                                std::vector<double> &v);
 
-  vtkSmartPointer<vtkAbstractArray> csvToVtkArray(std::string line);
+  static vtkSmartPointer<vtkAbstractArray> csvToVtkArray(std::string line);
 
-  vtkSmartPointer<vtkDoubleArray> csvToDoubleArray(std::string line);
+  static vtkSmartPointer<vtkDoubleArray> csvToDoubleArray(std::string line);
 
   // Emultate old VTK functions
 
-  void *GetVoidPointer(vtkDataArray *array, vtkIdType start = 0);
-  void *GetVoidPointer(vtkPoints *points, vtkIdType start = 0);
+  static void *GetVoidPointer(vtkDataArray *array, vtkIdType start = 0);
+  static void *GetVoidPointer(vtkPoints *points, vtkIdType start = 0);
 
-  void *
+  static void *
     WriteVoidPointer(vtkDataArray *array, vtkIdType start, vtkIdType numValues);
-  void *WritePointer(vtkDataArray *array, vtkIdType start, vtkIdType numValues);
+  static void *WritePointer(vtkDataArray *array, vtkIdType start, vtkIdType numValues);
 
-  void SetVoidArray(vtkDataArray *array, void *data, vtkIdType size, int save);
-}; // namespace ttkUtils
+  static void SetVoidArray(vtkDataArray *array, void *data, vtkIdType size, int save);
+};

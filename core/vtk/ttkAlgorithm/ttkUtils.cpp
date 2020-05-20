@@ -3,6 +3,9 @@
 #include <limits>
 #include <vtkStringArray.h>
 
+ttkUtils::ttkUtils(){}
+ttkUtils::~ttkUtils(){}
+
 int ttkUtils::replaceVariable(const std::string &iString,
                               vtkFieldData *fieldData,
                               std::string &oString,
