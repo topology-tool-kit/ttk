@@ -40,6 +40,9 @@ public:
   vtkSetMacro(IterateMultiBlock, bool);
   vtkGetMacro(IterateMultiBlock, bool);
 
+  vtkSetMacro(ForwardInput, bool);
+  vtkGetMacro(ForwardInput, bool);
+
   int DeleteDatabase();
 
   // TopologicalCompressionWriter options
@@ -83,6 +86,7 @@ private:
   std::string DatabasePath{""};
   int CompressionLevel{5};
   bool IterateMultiBlock{true};
+  bool ForwardInput{true};
   int Mode{0};
   vtkNew<ttkTopologicalCompressionWriter> topologicalCompressionWriter{};
 };
