@@ -19,7 +19,7 @@ int main(int argc, char **argv) {
   std::string inputScalarFieldName{""};
   int debugLevel{0};
   int threadNumber{1};
-  std::string outputFileName;
+  std::string outputFileName{""};
 
   // ---------------------------------------------------------------------------
   // Set Program Variables based on Command Line Arguments
@@ -56,17 +56,21 @@ int main(int argc, char **argv) {
   // Execute Test
   // ---------------------------------------------------------------------------
   {
+    // set global debug level
     ttk::globalDebugLevel_ = debugLevel;
 
+    // init a reader that can parse any vtkDataObject stored in xml format
     auto reader = vtkSmartPointer<vtkXMLGenericDataObjectReader>::New();
     reader->SetFileName(inputFileName.data());
 
+    // init the helloWorld module and set its parameters
     auto helloWorld = vtkSmartPointer<ttkHelloWorld>::New();
     helloWorld->SetInputConnection(0, reader->GetOutputPort(0));
     helloWorld->SetInputArrayToProcess(0, 0, 0, 0, inputScalarFieldName.data());
     helloWorld->SetUseAllCores(false);
     helloWorld->SetThreadNumber(threadNumber);
 
+    // init a writer that stores any vtkDataSet in xml format
     auto writer = vtkSmartPointer<vtkXMLDataSetWriter>::New();
     writer->SetInputConnection(0, helloWorld->GetOutputPort(0));
     writer->SetFileName(outputFileName.data());
