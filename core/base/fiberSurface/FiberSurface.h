@@ -1850,6 +1850,8 @@ inline int ttk::FiberSurface::processTetrahedron(
   rangeNormal[0] = -rangeEdge[1];
   rangeNormal[1] = rangeEdge[0];
 
+  const double prec_dbl = Geometry::powInt(10.0, -DBL_DIG);
+
   // 1. compute the distance to the range line carrying the saddleEdge
   SimplexId upperNumber = 0;
   SimplexId lowerNumber = 0;
@@ -1875,7 +1877,7 @@ inline int ttk::FiberSurface::processTetrahedron(
     d[i] = vertexRangeEdge[0] * rangeNormal[0]
            + vertexRangeEdge[1] * rangeNormal[1];
 
-    if(fabs(d[i]) < Geometry::powIntTen(-DBL_DIG))
+    if(fabs(d[i]) < prec_dbl)
       d[i] = 0;
 
     if(d[i] > 0)
@@ -2232,8 +2234,7 @@ inline int ttk::FiberSurface::processTetrahedron(
               }
             }
           }
-          if((minDistance != -1)
-             && (minDistance < Geometry::powIntTen(-DBL_DIG))) {
+          if((minDistance != -1) && (minDistance < prec_dbl)) {
             //           if((minDistance != -1)&&(minDistance <
             //           pointSnappingThreshold_)){
             // snap them to another colinear vertex
