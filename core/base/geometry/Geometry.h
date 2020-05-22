@@ -267,6 +267,22 @@ namespace ttk {
       return powInt(static_cast<T>(10), n);
     }
 
+    /// Compute the power of an arithmetic value
+    /// (redirect to std::pow with a floating-point exponent and to
+    /// Geometry::powInt with an integer exponent)
+    template <typename T1, typename T2>
+    inline T1 pow(const T1 val, const T2 n) {
+      static_assert(
+        std::is_arithmetic<T1>::value && std::is_arithmetic<T2>::value,
+        "pow can only be applied on arithmetic values");
+
+      if(std::is_integral<T2>::value) {
+        return powInt(val, n);
+      } else if(std::is_floating_point<T2>::value) {
+        return std::pow(val, n);
+      }
+    }
+
   } // namespace Geometry
 } // namespace ttk
 
