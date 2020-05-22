@@ -113,7 +113,6 @@ namespace ttk {
 
     std::vector<std::vector<dataType>> getDistanceMatrix();
     void getCentroidDistanceMatrix();
-    void computeDiagramsDistanceMatrix();
     void computeDistanceToCentroid();
 
     void updateClusters();
@@ -222,16 +221,6 @@ namespace ttk {
       deltaLim_ = deltaLim;
     }
 
-    inline void setOutputDistanceMatrix(const bool arg) {
-      outputDistanceMatrix_ = arg;
-    }
-    inline void setUseFullDiagrams(const bool arg) {
-      useFullDiagrams_ = arg;
-    }
-    inline void setPerClusterDistanceMatrix(const bool arg) {
-      perClusterDistanceMatrix_ = arg;
-    }
-
     inline void printClustering() {
       std::stringstream msg;
       for(int c = 0; c < k_; ++c) {
@@ -260,19 +249,6 @@ namespace ttk {
         }
       }
       dMsg(std::cout, msg.str(), infoMsg);
-    }
-
-    inline const std::vector<std::vector<double>> &&
-      getDiagramsDistanceMatrix() {
-      return std::move(diagramsDistanceMatrix_);
-    }
-    inline const std::vector<std::vector<double>> &&
-      getCentroidsDistanceMatrix() {
-      return std::move(centroidsDistanceMatrix_);
-    }
-
-    inline const std::vector<double> &&getDistanceToCentroid() {
-      return std::move(distanceToCentroid_);
     }
 
     template <typename type>
@@ -357,10 +333,6 @@ namespace ttk {
     std::vector<dataType> u_;
     std::vector<std::vector<dataType>> l_;
     std::vector<std::vector<double>> centroidsDistanceMatrix_{};
-    std::vector<std::vector<double>> diagramsDistanceMatrix_{};
-    bool outputDistanceMatrix_{false};
-    bool useFullDiagrams_{false};
-    bool perClusterDistanceMatrix_{false};
     std::vector<double> distanceToCentroid_{};
 
     int n_iterations_;

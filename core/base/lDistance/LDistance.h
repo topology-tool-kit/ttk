@@ -109,7 +109,7 @@ int ttk::LDistance::execute(const std::string &distanceType) {
 
 // Check variables consistency
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(!inputData1_ || !inputData2_ || !outputData_)
+  if(!inputData1_ || !inputData2_)
     return -1;
 #endif
 

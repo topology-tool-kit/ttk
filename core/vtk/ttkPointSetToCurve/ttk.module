@@ -1,0 +1,8 @@
+NAME
+  ttkPointSetToCurve
+SOURCES
+  ttkPointSetToCurve.cpp
+HEADERS
+  ttkPointSetToCurve.h
+DEPENDS
+  ttkAlgorithm
