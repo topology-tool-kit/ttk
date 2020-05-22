@@ -117,33 +117,33 @@ int BottleneckDistance::computeBottleneck(const std::vector<diagramTuple> &d1,
     dataType cX = std::get<6>(b);
     dataType cY = std::get<10>(b);
     dataType x = ((isMin1 && !isMax1) ? pe : ps)
-                 * Geometry::powInt(abs_diff<dataType>(rX, cX), w);
+                 * Geometry::pow(abs_diff<dataType>(rX, cX), w);
     dataType y
-      = (isMax1 ? pe : ps) * Geometry::powInt(abs_diff<dataType>(rY, cY), w);
+      = (isMax1 ? pe : ps) * Geometry::pow(abs_diff<dataType>(rY, cY), w);
     double geoDistance
       = isMax1
-          ? (px * Geometry::powInt(abs(std::get<11>(a) - std::get<11>(b)), w)
-             + py * Geometry::powInt(abs(std::get<12>(a) - std::get<12>(b)), w)
-             + pz * Geometry::powInt(abs(std::get<13>(a) - std::get<13>(b)), w))
-          : isMin1 ? (
-              px * Geometry::powInt(abs(std::get<7>(a) - std::get<7>(b)), w)
-              + py * Geometry::powInt(abs(std::get<8>(a) - std::get<8>(b)), w)
-              + pz * Geometry::powInt(abs(std::get<9>(a) - std::get<9>(b)), w))
-                   : (px
-                        * Geometry::powInt(
-                          abs(std::get<7>(a) + std::get<11>(a)) / 2
-                            - abs(std::get<7>(b) + std::get<11>(b)) / 2,
-                          w)
-                      + py
-                          * Geometry::powInt(
-                            abs(std::get<8>(a) + std::get<12>(a)) / 2
-                              - abs(std::get<8>(b) + std::get<12>(b)) / 2,
-                            w)
-                      + pz
-                          * Geometry::powInt(
-                            abs(std::get<9>(a) + std::get<13>(a)) / 2
-                              - abs(std::get<9>(b) + std::get<13>(b)) / 2,
-                            w));
+          ? (px * Geometry::pow(abs(std::get<11>(a) - std::get<11>(b)), w)
+             + py * Geometry::pow(abs(std::get<12>(a) - std::get<12>(b)), w)
+             + pz * Geometry::pow(abs(std::get<13>(a) - std::get<13>(b)), w))
+          : isMin1
+              ? (px * Geometry::pow(abs(std::get<7>(a) - std::get<7>(b)), w)
+                 + py * Geometry::pow(abs(std::get<8>(a) - std::get<8>(b)), w)
+                 + pz * Geometry::pow(abs(std::get<9>(a) - std::get<9>(b)), w))
+              : (
+                px
+                  * Geometry::pow(abs(std::get<7>(a) + std::get<11>(a)) / 2
+                                    - abs(std::get<7>(b) + std::get<11>(b)) / 2,
+                                  w)
+                + py
+                    * Geometry::pow(
+                      abs(std::get<8>(a) + std::get<12>(a)) / 2
+                        - abs(std::get<8>(b) + std::get<12>(b)) / 2,
+                      w)
+                + pz
+                    * Geometry::pow(
+                      abs(std::get<9>(a) + std::get<13>(a)) / 2
+                        - abs(std::get<9>(b) + std::get<13>(b)) / 2,
+                      w));
 
     double persDistance = x + y;
     double val = persDistance + geoDistance;
@@ -169,10 +169,10 @@ int BottleneckDistance::computeBottleneck(const std::vector<diagramTuple> &d1,
     double z2 = std::get<13>(a);
 
     double infDistance = (isMin1 || isMax1 ? pe : ps)
-                         * Geometry::powInt(abs_diff<dataType>(rX, rY), w);
-    double geoDistance = (px * Geometry::powInt(abs(x2 - x1), w)
-                          + py * Geometry::powInt(abs(y2 - y1), w)
-                          + pz * Geometry::powInt(abs(z2 - z1), w));
+                         * Geometry::pow(abs_diff<dataType>(rX, rY), w);
+    double geoDistance = (px * Geometry::pow(abs(x2 - x1), w)
+                          + py * Geometry::pow(abs(y2 - y1), w)
+                          + pz * Geometry::pow(abs(z2 - z1), w));
     double val = infDistance + geoDistance;
     return Geometry::pow(val, 1.0 / w);
   };

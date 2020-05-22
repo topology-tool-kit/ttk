@@ -134,9 +134,9 @@ namespace ttk {
   template <typename dataType>
   double AuctionActor<dataType>::getPairGeometricalLength(
     const int wasserstein) const {
-    return Geometry::powInt(geom_pair_length_[0], wasserstein)
-           + Geometry::powInt(geom_pair_length_[1], wasserstein)
-           + Geometry::powInt(geom_pair_length_[2], wasserstein);
+    return Geometry::pow(geom_pair_length_[0], wasserstein)
+           + Geometry::pow(geom_pair_length_[1], wasserstein)
+           + Geometry::pow(geom_pair_length_[2], wasserstein);
   }
 
   template <typename dataType>
@@ -148,26 +148,25 @@ namespace ttk {
     } else if(is_diagonal_) {
       return geometricalFactor
                * (2
-                  * Geometry::powInt(
+                  * Geometry::pow(
                     abs<dataType>(g.y_ / 2 - g.x_ / 2), wasserstein))
              + (1 - geometricalFactor) * getPairGeometricalLength(wasserstein);
     } else if(g.isDiagonal()) {
       return geometricalFactor
                * (2
-                  * Geometry::powInt(
-                    abs<dataType>(y_ / 2 - x_ / 2), wasserstein))
+                  * Geometry::pow(abs<dataType>(y_ / 2 - x_ / 2), wasserstein))
              + (1 - geometricalFactor)
                  * g.getPairGeometricalLength(wasserstein);
     } else {
       return geometricalFactor
-               * (Geometry::powInt(abs<dataType>(x_ - g.x_), wasserstein)
-                  + Geometry::powInt(abs<dataType>(y_ - g.y_), wasserstein))
+               * (Geometry::pow(abs<dataType>(x_ - g.x_), wasserstein)
+                  + Geometry::pow(abs<dataType>(y_ - g.y_), wasserstein))
              + (1 - geometricalFactor)
-                 * (Geometry::powInt(
+                 * (Geometry::pow(
                       abs<dataType>(coords_x_ - g.coords_x_), wasserstein)
-                    + Geometry::powInt(
+                    + Geometry::pow(
                       abs<dataType>(coords_y_ - g.coords_y_), wasserstein)
-                    + Geometry::powInt(
+                    + Geometry::pow(
                       abs<dataType>(coords_z_ - g.coords_z_), wasserstein));
     }
   }

@@ -174,9 +174,8 @@ double BottleneckDistance::computeGeometricalRange(
   minZ = std::min(minZ1, minZ2);
   maxZ = std::max(maxZ1, maxZ2);
 
-  return sqrt(Geometry::powInt(maxX - minX, 2)
-              + Geometry::powInt(maxY - minY, 2)
-              + Geometry::powInt(maxZ - minZ, 2));
+  return sqrt(Geometry::pow(maxX - minX, 2) + Geometry::pow(maxY - minY, 2)
+              + Geometry::pow(maxZ - minZ, 2));
 }
 
 template <typename dataType>

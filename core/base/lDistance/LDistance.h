@@ -155,7 +155,7 @@ int ttk::LDistance::computeLn(dataType *input1,
 #endif
   for(ttk::SimplexId i = 0; i < vertexNumber; ++i) {
     const dataType diff = abs_diff<dataType>(input1[i], input2[i]);
-    const dataType power = Geometry::powInt(diff, n);
+    const dataType power = Geometry::pow(diff, n);
 
     // Careful: huge dataset + huge values
     // may exceed double capacity.

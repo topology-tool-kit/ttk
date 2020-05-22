@@ -317,8 +317,8 @@ dataType PDBarycenter<dataType>::updateBarycenter(
       // TODO adjust shift with geometrical_factor_
       dataType dx = barycenter_goods_[0].get(i).x_ - new_x;
       dataType dy = barycenter_goods_[0].get(i).y_ - new_y;
-      dataType shift = Geometry::powInt(abs(dx), wasserstein_)
-                       + Geometry::powInt(abs(dy), wasserstein_);
+      dataType shift = Geometry::pow(abs(dx), wasserstein_)
+                       + Geometry::pow(abs(dy), wasserstein_);
       if(shift > max_shift) {
         max_shift = shift;
       }
@@ -349,7 +349,7 @@ dataType PDBarycenter<dataType>::updateBarycenter(
       points_deleted_ += 1;
       dataType shift
         = 2
-          * Geometry::powInt(
+          * Geometry::pow(
             barycenter_goods_[0].get(i).getPersistence() / 2., wasserstein_);
       if(shift > max_shift) {
         max_shift = shift;
@@ -380,10 +380,10 @@ dataType PDBarycenter<dataType>::updateBarycenter(
                                  std::get<2>(critical_coordinates));
       }
       barycenter_goods_[j].addGood(g);
-      dataType shift = 2
-                       * Geometry::powInt(
-                         barycenter_goods_[j].get(g.id_).getPersistence() / 2.,
-                         wasserstein_);
+      dataType shift
+        = 2
+          * Geometry::pow(barycenter_goods_[j].get(g.id_).getPersistence() / 2.,
+                          wasserstein_);
       if(shift > max_shift) {
         max_shift = shift;
       }
