@@ -2270,8 +2270,8 @@ std::vector<dataType> PDClustering<dataType>::updateCentroidsPosition(
           // Step 5 of Accelerated KMeans: Update the lower bound on distance
           // thanks to the triangular inequality
           l_[i][c] = Geometry::powInt(
-            std::pow(l_[i][c], 1. / wasserstein_)
-              - std::pow(wasserstein_shift, 1. / wasserstein_),
+            Geometry::pow(l_[i][c], 1. / wasserstein_)
+              - Geometry::pow(wasserstein_shift, 1. / wasserstein_),
             wasserstein_);
           if(l_[i][c] < 0) {
             l_[i][c] = 0;
@@ -2281,8 +2281,8 @@ std::vector<dataType> PDClustering<dataType>::updateCentroidsPosition(
           // Step 6, update the upper bound on the distance to the centroid
           // thanks to the triangle inequality
           u_[idx] = Geometry::powInt(
-            std::pow(u_[idx], 1. / wasserstein_)
-              + std::pow(wasserstein_shift, 1. / wasserstein_),
+            Geometry::pow(u_[idx], 1. / wasserstein_)
+              + Geometry::pow(wasserstein_shift, 1. / wasserstein_),
             wasserstein_);
           r_[idx] = true;
         }
@@ -2591,9 +2591,10 @@ std::vector<dataType> PDClustering<dataType>::enrichCurrentBidderDiagrams(
             for(int c = 0; c < k_; ++c) {
               // Step 5 of Accelerated KMeans: Update the lower bound on
               // distance thanks to the triangular inequality
-              l_[i][c] = Geometry::powInt(
-                std::pow(l_[i][c], 1. / wasserstein_) - persistence / sqrt(2),
-                wasserstein_);
+              l_[i][c]
+                = Geometry::powInt(Geometry::pow(l_[i][c], 1. / wasserstein_)
+                                     - persistence / sqrt(2),
+                                   wasserstein_);
               if(l_[i][c] < 0) {
                 l_[i][c] = 0;
               }
@@ -2601,7 +2602,7 @@ std::vector<dataType> PDClustering<dataType>::enrichCurrentBidderDiagrams(
             // Step 6, update the upper bound on the distance to the centroid
             // thanks to the triangle inequality
             u_[i] = Geometry::powInt(
-              std::pow(u_[i], 1. / wasserstein_) + persistence / sqrt(2),
+              Geometry::pow(u_[i], 1. / wasserstein_) + persistence / sqrt(2),
               wasserstein_);
             r_[i] = true;
           }
@@ -2665,9 +2666,10 @@ std::vector<dataType> PDClustering<dataType>::enrichCurrentBidderDiagrams(
             for(int c = 0; c < k_; ++c) {
               // Step 5 of Accelerated KMeans: Update the lower bound on
               // distance thanks to the triangular inequality
-              l_[i][c] = Geometry::powInt(
-                std::pow(l_[i][c], 1. / wasserstein_) - persistence / sqrt(2),
-                wasserstein_);
+              l_[i][c]
+                = Geometry::powInt(Geometry::pow(l_[i][c], 1. / wasserstein_)
+                                     - persistence / sqrt(2),
+                                   wasserstein_);
               if(l_[i][c] < 0) {
                 l_[i][c] = 0;
               }
@@ -2675,7 +2677,7 @@ std::vector<dataType> PDClustering<dataType>::enrichCurrentBidderDiagrams(
             // Step 6, update the upper bound on the distance to the centroid
             // thanks to the triangle inequality
             u_[i] = Geometry::powInt(
-              std::pow(u_[i], 1. / wasserstein_) + persistence / sqrt(2),
+              Geometry::pow(u_[i], 1. / wasserstein_) + persistence / sqrt(2),
               wasserstein_);
             r_[i] = true;
           }
@@ -2731,9 +2733,10 @@ std::vector<dataType> PDClustering<dataType>::enrichCurrentBidderDiagrams(
             for(int c = 0; c < k_; ++c) {
               // Step 5 of Accelerated KMeans: Update the lower bound on
               // distance thanks to the triangular inequality
-              l_[i][c] = Geometry::powInt(
-                std::pow(l_[i][c], 1. / wasserstein_) - persistence / sqrt(2),
-                wasserstein_);
+              l_[i][c]
+                = Geometry::powInt(Geometry::pow(l_[i][c], 1. / wasserstein_)
+                                     - persistence / sqrt(2),
+                                   wasserstein_);
               if(l_[i][c] < 0) {
                 l_[i][c] = 0;
               }
@@ -2741,7 +2744,7 @@ std::vector<dataType> PDClustering<dataType>::enrichCurrentBidderDiagrams(
             // Step 6, update the upper bound on the distance to the centroid
             // thanks to the triangle inequality
             u_[i] = Geometry::powInt(
-              std::pow(u_[i], 1. / wasserstein_) + persistence / sqrt(2),
+              Geometry::pow(u_[i], 1. / wasserstein_) + persistence / sqrt(2),
               wasserstein_);
             r_[i] = true;
           }

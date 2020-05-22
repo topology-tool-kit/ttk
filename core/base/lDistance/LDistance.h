@@ -166,7 +166,7 @@ int ttk::LDistance::computeLn(dataType *input1,
       output[i] = power;
   }
 
-  sum = std::pow(sum, 1.0 / (double)n);
+  sum = Geometry::pow(sum, 1.0 / (double)n);
 
   // Affect result.
   result = (double)sum;

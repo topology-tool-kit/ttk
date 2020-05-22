@@ -147,7 +147,7 @@ int BottleneckDistance::computeBottleneck(const std::vector<diagramTuple> &d1,
 
     double persDistance = x + y;
     double val = persDistance + geoDistance;
-    val = std::pow(val, 1.0 / w);
+    val = Geometry::pow(val, 1.0 / w);
     return val;
   };
 
@@ -174,7 +174,7 @@ int BottleneckDistance::computeBottleneck(const std::vector<diagramTuple> &d1,
                           + py * Geometry::powInt(abs(y2 - y1), w)
                           + pz * Geometry::powInt(abs(z2 - z1), w));
     double val = infDistance + geoDistance;
-    return std::pow(val, 1.0 / w);
+    return Geometry::pow(val, 1.0 / w);
   };
 
   const bool transposeMin = nbRowMin > nbColMin;
@@ -313,7 +313,7 @@ int BottleneckDistance::computeBottleneck(const std::vector<diagramTuple> &d1,
 
   dataType affectationD = d;
   d = wasserstein > 0
-        ? std::pow(
+        ? Geometry::pow(
           d + addedMaxPersistence + addedMinPersistence + addedSadPersistence,
           (1.0 / (double)wasserstein))
         : std::max(

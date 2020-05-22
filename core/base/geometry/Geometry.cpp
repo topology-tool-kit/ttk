@@ -5,7 +5,7 @@
 using namespace std;
 using namespace ttk;
 
-static const double PREC_DBL{std::pow(10.0, -DBL_DIG)};
+static const double PREC_DBL{Geometry::pow(10.0, -DBL_DIG)};
 static const float PREC_FLT{powf(10.0F, -FLT_DIG)};
 static const float PREC_FLT_1{powf(10.0F, -FLT_DIG + 1)};
 

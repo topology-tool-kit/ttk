@@ -5,8 +5,8 @@ using namespace ttk;
 
 static const float PREC_FLT{powf(10.F, -FLT_DIG)};
 static const float PREC_FLT_2{powf(10.F, -FLT_DIG + 2)};
-static const double PREC_DBL{std::pow(10.0, -DBL_DIG)};
-static const double PREC_DBL_4{std::pow(10.0, -DBL_DIG + 4)};
+static const double PREC_DBL{Geometry::pow(10.0, -DBL_DIG)};
+static const double PREC_DBL_4{Geometry::pow(10.0, -DBL_DIG + 4)};
 
 struct _fiberSurfaceVertexCmpX {
 

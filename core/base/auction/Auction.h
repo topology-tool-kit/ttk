@@ -295,7 +295,7 @@ namespace ttk {
       if(denominator <= 0) {
         return 1;
       } else {
-        return std::pow(d / denominator, 1 / ((float)wasserstein_)) - 1;
+        return Geometry::pow(d / denominator, 1 / ((float)wasserstein_)) - 1;
       }
     }
 
