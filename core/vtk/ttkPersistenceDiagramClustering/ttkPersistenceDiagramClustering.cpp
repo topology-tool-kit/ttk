@@ -762,75 +762,74 @@ vtkSmartPointer<vtkUnstructuredGrid>
       ids[0] = 2 * count;
       ids[1] = 2 * count + 1;
       matchingType m = matchings_j[i];
-      int bidder_id = std::get<0>(m);
-      int good_id = std::get<1>(m);
-      if(NumberOfClusters == 1 && good_id > -1) {
+      const size_t bidder_id = std::get<0>(m);
+      const size_t good_id = std::get<1>(m);
+
+      // avoid out-of-bound accesses
+      if(good_id >= matchings_count.size() || bidder_id >= diagram.size()) {
+        continue;
+      }
+
+      if(NumberOfClusters == 1) {
         matchings_count[good_id] += 1;
         count_to_good.push_back(good_id);
       }
-
-      // avoid a weird out-of-bound access
-      good_id
-        = std::min(good_id, static_cast<int>(final_centroids_[c].size() - 1));
 
       diagramType t1 = final_centroids_[c][good_id];
       double x1 = std::get<6>(t1);
       double y1 = std::get<10>(t1);
       double z1 = 0;
 
-      // endl;
-      if(bidder_id < (int)diagram.size()) {
-        diagramType t2 = diagram[bidder_id];
-        double x2 = std::get<6>(t2);
-        double y2 = std::get<10>(t2);
-        double z2 = 0; // Change 1 to j if you want to isolate the diagrams
+      diagramType t2 = diagram[bidder_id];
+      double x2 = std::get<6>(t2);
+      double y2 = std::get<10>(t2);
+      double z2 = 0; // Change 1 to j if you want to isolate the diagrams
 
-        if(DisplayMethod == 1 && Spacing > 0) {
-          double angle
-            = 2 * 3.1415926 * (double)(idxInCluster[j]) / cluster_size[c];
-          x1 += (abs(Spacing) + .2) * 3 * max_dimension_total_ * c;
-          x2 += (abs(Spacing) + .2) * 3 * max_dimension_total_ * c
-                + Spacing * max_dimension_total_ * cos(angle);
-          y2 += Spacing * max_dimension_total_ * sin(angle);
-        } else if(DisplayMethod == 2) {
-          z2 = Spacing;
-          if(intermediateDiagrams_.size() == 2 and j == 0) {
-            z2 = -Spacing;
-          }
-        }
-        if(good_id > -1) {
-          matchingPoints->InsertNextPoint(x1, y1, z1);
-          matchingPoints->InsertNextPoint(x2, y2, z2);
-          matchingMesh->InsertNextCell(VTK_LINE, 2, ids);
-          idOfDiagramMatching->InsertTuple1(count, j);
-          idOfCluster->InsertTuple1(count, inv_clustering_[j]);
-          cost->InsertTuple1(count, std::get<2>(m));
-          idOfDiagramMatchingPoint->InsertTuple1(2 * count, j);
-          idOfDiagramMatchingPoint->InsertTuple1(2 * count + 1, j);
-          idOfPoint->InsertTuple1(2 * count, good_id);
-          idOfPoint->InsertTuple1(2 * count + 1, bidder_id);
-
-          const ttk::SimplexId type = std::get<5>(t2);
-          switch(type) {
-            case 0:
-              pairType->InsertTuple1(count, 0);
-              break;
-
-            case 1:
-              pairType->InsertTuple1(count, 1);
-              break;
-
-            case 2:
-              pairType->InsertTuple1(count, 2);
-              break;
-            default:
-              pairType->InsertTuple1(count, 0);
-          }
-          count++;
+      if(DisplayMethod == 1 && Spacing > 0) {
+        double angle
+          = 2 * 3.1415926 * (double)(idxInCluster[j]) / cluster_size[c];
+        x1 += (abs(Spacing) + .2) * 3 * max_dimension_total_ * c;
+        x2 += (abs(Spacing) + .2) * 3 * max_dimension_total_ * c
+              + Spacing * max_dimension_total_ * cos(angle);
+        y2 += Spacing * max_dimension_total_ * sin(angle);
+      } else if(DisplayMethod == 2) {
+        z2 = Spacing;
+        if(intermediateDiagrams_.size() == 2 and j == 0) {
+          z2 = -Spacing;
         }
       }
+
+      matchingPoints->InsertNextPoint(x1, y1, z1);
+      matchingPoints->InsertNextPoint(x2, y2, z2);
+      matchingMesh->InsertNextCell(VTK_LINE, 2, ids);
+      idOfDiagramMatching->InsertTuple1(count, j);
+      idOfCluster->InsertTuple1(count, inv_clustering_[j]);
+      cost->InsertTuple1(count, std::get<2>(m));
+      idOfDiagramMatchingPoint->InsertTuple1(2 * count, j);
+      idOfDiagramMatchingPoint->InsertTuple1(2 * count + 1, j);
+      idOfPoint->InsertTuple1(2 * count, good_id);
+      idOfPoint->InsertTuple1(2 * count + 1, bidder_id);
+
+      const ttk::SimplexId type = std::get<5>(t2);
+      switch(type) {
+        case 0:
+          pairType->InsertTuple1(count, 0);
+          break;
+
+        case 1:
+          pairType->InsertTuple1(count, 1);
+          break;
+
+        case 2:
+          pairType->InsertTuple1(count, 2);
+          break;
+        default:
+          pairType->InsertTuple1(count, 0);
+      }
+      count++;
     }
   }
+
   if(NumberOfClusters == 1 and intermediateDiagrams_.size() == 2) {
     for(int i = 0; i < count; i++) {
       matchingCount->InsertTuple1(i, matchings_count[count_to_good[i]]);
