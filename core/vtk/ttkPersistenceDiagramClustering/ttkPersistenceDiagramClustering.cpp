@@ -1,4 +1,5 @@
 #include <ttkPersistenceDiagramClustering.h>
+#include <vtkFieldData.h>
 
 using namespace std;
 using namespace ttk;
@@ -124,6 +125,22 @@ int ttkPersistenceDiagramClustering::doIt(
   outputMatchings->ShallowCopy(createMatchings());
   outputClusters->ShallowCopy(createOutputClusteredDiagrams());
   outputCentroids->ShallowCopy(createOutputCentroids());
+
+  // collect input FieldData to annotate outputClusters
+  auto fd = outputClusters->GetFieldData();
+  bool hasStructure{false};
+  for(const auto diag : inputDiagram) {
+    if(diag->GetFieldData() != nullptr) {
+      // ensure fd has the same structure as the first non-null input
+      // FieldData
+      if(!hasStructure) {
+        fd->CopyStructure(diag->GetFieldData());
+        hasStructure = true;
+      }
+      // copy data
+      fd->InsertNextTuple(0, diag->GetFieldData());
+    }
+  }
 
   return ret;
 }
