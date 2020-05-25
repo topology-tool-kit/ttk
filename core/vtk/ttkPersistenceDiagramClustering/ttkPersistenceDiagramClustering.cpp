@@ -142,6 +142,14 @@ int ttkPersistenceDiagramClustering::doIt(
     }
   }
 
+  // add clusterId to outputClusters FieldData
+  vtkNew<vtkIntArray> cid{};
+  cid->SetName("ClusterId");
+  for(const auto c : this->inv_clustering_) {
+    cid->InsertNextValue(c);
+  }
+  fd->AddArray(cid);
+
   return ret;
 }
 
