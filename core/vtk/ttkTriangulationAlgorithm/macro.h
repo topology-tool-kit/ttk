@@ -218,7 +218,7 @@ protected:                                                                     \
        && ((int)outputs.size() == GetNumberOfOutputPorts()))                   \
       ret = doIt(inputs, outputs);                                             \
                                                                                \
-    return ret;                                                                \
+    return !ret;                                                               \
   }
 
 //-------------------------------------------------------------------------------

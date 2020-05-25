@@ -127,7 +127,7 @@ int ttkIdentifiers::doIt(vtkDataSet *input, vtkDataSet *output) {
     dMsg(cout, msg.str(), timeMsg);
   }
 
-  return 0;
+  return 1;
 }
 
 // to adapt if your wrapper does not inherit from vtkDataSetAlgorithm

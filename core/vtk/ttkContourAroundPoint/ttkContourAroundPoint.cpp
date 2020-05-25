@@ -24,10 +24,9 @@
 #include <cassert>
 #include <type_traits>
 
-vtkStandardNewMacro(ttkContourAroundPoint)
-
-  int ttkContourAroundPoint::doIt(std::vector<vtkDataSet *> &inputs,
-                                  std::vector<vtkDataSet *> &outputs) {
+vtkStandardNewMacro(ttkContourAroundPoint);
+int ttkContourAroundPoint::doIt(std::vector<vtkDataSet *> &inputs,
+                                std::vector<vtkDataSet *> &outputs) {
   ttk::Memory memUseObj;
   _out = static_cast<vtkUnstructuredGrid *>(outputs[0]);
 

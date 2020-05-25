@@ -48,13 +48,13 @@ int ttkBlockAggregator::FillInputPortInformation(int port,
   info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataObject");
   if(port > 0)
     info->Set(vtkAlgorithm::INPUT_IS_OPTIONAL(), 1);
-  return 1;
+  return this->Superclass::FillInputPortInformation(port, info);
 }
 
 int ttkBlockAggregator::FillOutputPortInformation(int port,
                                                   vtkInformation *info) {
   info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkMultiBlockDataSet");
-  return 1;
+  return this->Superclass::FillInputPortInformation(port, info);
 }
 
 int ttkBlockAggregator::RequestData(vtkInformation *request,

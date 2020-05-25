@@ -43,7 +43,7 @@ vtkStandardNewMacro(ttkIdentifierRandomizer)
   }
 
   if(!inputScalarField)
-    return -2;
+    return 0;
 
   {
     stringstream msg;
@@ -87,7 +87,7 @@ vtkStandardNewMacro(ttkIdentifierRandomizer)
       stringstream msg;
       msg << "[ttkIdentifierRandomizer] Unsupported data type :(" << endl;
       dMsg(cerr, msg.str(), fatalMsg);
-      return -1;
+      return 0;
   }
   outputScalarField_->SetNumberOfTuples(inputScalarField->GetNumberOfTuples());
   outputScalarField_->SetName(inputScalarField->GetName());
@@ -187,5 +187,5 @@ vtkStandardNewMacro(ttkIdentifierRandomizer)
     dMsg(cout, msg.str(), memoryMsg);
   }
 
-  return 0;
+  return 1;
 }

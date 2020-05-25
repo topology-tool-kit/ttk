@@ -44,7 +44,7 @@ int ttkCinemaWriter::FillInputPortInformation(int port, vtkInformation *info) {
     info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataObject");
   else
     return 0;
-  return 1;
+  return Superclass::FillInputPortInformation(port, info);
 }
 
 int ttkCinemaWriter::FillOutputPortInformation(int port, vtkInformation *info) {
@@ -52,7 +52,7 @@ int ttkCinemaWriter::FillOutputPortInformation(int port, vtkInformation *info) {
     info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
   else
     return 0;
-  return 1;
+  return Superclass::FillOutputPortInformation(port, info);
 }
 
 int ensureFolder(std::string path) {
@@ -124,13 +124,13 @@ int ttkCinemaWriter::ProcessDataProduct(vtkDataObject *input) {
     std::vector<std::string> toIgnore;
 
     // ignore file column
-    toIgnore.push_back("FILE");
+    toIgnore.emplace_back("FILE");
 
     // remove temporary columns
     for(size_t i = 0; i < nFields; i++) {
       std::string name(inputFD->GetArrayName(i));
       if(name.substr(0, 4).compare("_ttk") == 0)
-        toIgnore.push_back(name);
+        toIgnore.emplace_back(name);
     }
 
     // delete columns from fd
@@ -171,8 +171,8 @@ int ttkCinemaWriter::ProcessDataProduct(vtkDataObject *input) {
           value = value.substr(0, value.size() - 1);
         }
 
-        fields.push_back(array->GetName());
-        values.push_back(value);
+        fields.emplace_back(array->GetName());
+        values.emplace_back(value);
       }
 
       productId = values[0];
@@ -335,7 +335,7 @@ int ttkCinemaWriter::ProcessDataProduct(vtkDataObject *input) {
           if(values[j].compare(fieldToCSVColumnMap[j]->GetValue(i)) != 0)
             equal = false;
         if(equal)
-          rowsToDelete.push_back(i);
+          rowsToDelete.emplace_back(i);
       }
 
       if(rowsToDelete.size() > 0) {

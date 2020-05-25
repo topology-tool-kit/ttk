@@ -8,9 +8,8 @@
 using namespace std;
 using namespace ttk;
 
-vtkStandardNewMacro(ttkCellDataConverter)
-
-  ttkCellDataConverter::ttkCellDataConverter() {
+vtkStandardNewMacro(ttkCellDataConverter);
+ttkCellDataConverter::ttkCellDataConverter() {
   OutputType = 0;
   UseNormalization = false;
   UseAllCores = true;
@@ -94,6 +93,7 @@ int ttkCellDataConverter::doIt(vtkDataSet *input, vtkDataSet *output) {
   if(OutputType == SupportedType::Float or OutputType == SupportedType::Double)
     UseNormalization = false;
 
+  // TODO use switch case here
   if(InputType == VTK_CHAR) {
     if(OutputType == SupportedType::Double)
       convert<char, double, vtkDoubleArray>(inputScalarField, output);
@@ -269,7 +269,7 @@ int ttkCellDataConverter::RequestData(vtkInformation *request,
   vtkDataSet *input = vtkDataSet::GetData(inputVector[0]);
   vtkDataSet *output = vtkDataSet::GetData(outputVector);
 
-  doIt(input, output);
+  int status = doIt(input, output);
 
   {
     stringstream msg;
@@ -278,5 +278,5 @@ int ttkCellDataConverter::RequestData(vtkInformation *request,
     dMsg(cout, msg.str(), memoryMsg);
   }
 
-  return 1;
+  return !status; // VTK use true/false
 }

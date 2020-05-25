@@ -7,10 +7,10 @@
 using namespace std;
 using namespace ttk;
 
-vtkStandardNewMacro(ttkCellDataSelector)
+vtkStandardNewMacro(ttkCellDataSelector);
 
-  // transmit abort signals
-  bool ttkCellDataSelector::needsToAbort() {
+// transmit abort signals
+bool ttkCellDataSelector::needsToAbort() {
   return GetAbortExecute();
 }
 
@@ -85,7 +85,7 @@ int ttkCellDataSelector::doIt(vtkDataSet *input, vtkDataSet *output) {
         if(RenameSelected) {
           if(SelectedFieldName.size() != 1 && RangeId[1] - RangeId[0] != 0) {
             vtkErrorMacro("Can't rename more than one field.");
-            return 0;
+            return -2;
           }
 
           if(localFieldCopy_) {
@@ -128,8 +128,7 @@ int ttkCellDataSelector::RequestInformation(
 
   vtkDataSet *input = vtkDataSet::GetData(inputVector[0]);
   FillAvailableFields(input);
-  return vtkDataSetAlgorithm::RequestInformation(
-    request, inputVector, outputVector);
+  return Superclass::RequestInformation(request, inputVector, outputVector);
 }
 
 int ttkCellDataSelector::RequestData(vtkInformation *request,
@@ -141,7 +140,7 @@ int ttkCellDataSelector::RequestData(vtkInformation *request,
   vtkDataSet *input = vtkDataSet::GetData(inputVector[0]);
   vtkDataSet *output = vtkDataSet::GetData(outputVector);
 
-  doIt(input, output);
+  int status = doIt(input, output);
 
   {
     stringstream msg;
@@ -150,7 +149,7 @@ int ttkCellDataSelector::RequestData(vtkInformation *request,
     dMsg(cout, msg.str(), memoryMsg);
   }
 
-  return 1;
+  return !status; // VTK uses true/false
 }
 
 void ttkCellDataSelector::FillAvailableFields(vtkDataSet *input) {

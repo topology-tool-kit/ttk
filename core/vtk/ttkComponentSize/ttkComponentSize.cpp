@@ -3,9 +3,8 @@
 using namespace std;
 using namespace ttk;
 
-vtkStandardNewMacro(ttkComponentSize)
-
-  ttkComponentSize::ttkComponentSize() {
+vtkStandardNewMacro(ttkComponentSize);
+ttkComponentSize::ttkComponentSize() {
   UseAllCores = true;
 
   connectivityFilter_ = vtkSmartPointer<vtkConnectivityFilter>::New();
@@ -58,9 +57,7 @@ int ttkComponentSize::doIt(vtkPointSet *input, vtkUnstructuredGrid *output) {
   for(SimplexId i = 0; i < output->GetNumberOfPoints(); i++) {
 
     double regionId = 0;
-
     vertexIds->GetTuple(i, &regionId);
-
     vertexNumbers[(SimplexId)regionId]++;
   }
 
@@ -75,7 +72,6 @@ int ttkComponentSize::doIt(vtkPointSet *input, vtkUnstructuredGrid *output) {
 
     double regionId = 0;
     vertexIds->GetTuple(i, &regionId);
-
     vertexNumbers_->SetTuple1(i, vertexNumbers[(SimplexId)regionId]);
   }
   output->GetPointData()->AddArray(vertexNumbers_);
@@ -86,9 +82,7 @@ int ttkComponentSize::doIt(vtkPointSet *input, vtkUnstructuredGrid *output) {
   for(SimplexId i = 0; i < output->GetNumberOfCells(); i++) {
 
     double regionId = 0;
-
     cellIds->GetTuple(i, &regionId);
-
     cellNumbers[(SimplexId)regionId]++;
   }
 
@@ -103,7 +97,6 @@ int ttkComponentSize::doIt(vtkPointSet *input, vtkUnstructuredGrid *output) {
 
     double regionId = 0;
     cellIds->GetTuple(i, &regionId);
-
     cellNumbers_->SetTuple1(i, cellNumbers[(SimplexId)regionId]);
   }
   output->GetCellData()->AddArray(cellNumbers_);
@@ -115,7 +108,7 @@ int ttkComponentSize::doIt(vtkPointSet *input, vtkUnstructuredGrid *output) {
         << " points)." << endl;
     dMsg(cout, msg.str(), timeMsg);
   }
-  return 0;
+  return 1;
 }
 
 // to adapt if your wrapper does not inherit from vtkDataSetAlgorithm
@@ -129,7 +122,7 @@ int ttkComponentSize::RequestData(vtkInformation *request,
   vtkPointSet *input = vtkPointSet::GetData(inputVector[0]);
   vtkUnstructuredGrid *output = vtkUnstructuredGrid::GetData(outputVector);
 
-  doIt(input, output);
+  int status = doIt(input, output);
 
   {
     stringstream msg;
@@ -138,5 +131,5 @@ int ttkComponentSize::RequestData(vtkInformation *request,
     dMsg(cout, msg.str(), memoryMsg);
   }
 
-  return 1;
+  return !status; // VTK uses true/false
 }

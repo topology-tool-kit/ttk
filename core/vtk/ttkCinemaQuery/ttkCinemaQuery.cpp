@@ -33,7 +33,7 @@ int ttkCinemaQuery::FillInputPortInformation(int port, vtkInformation *info) {
 
     return 1;
   }
-  return 0;
+  return Superclass::FillInputPortInformation(port, info);
 }
 
 int ttkCinemaQuery::FillOutputPortInformation(int port, vtkInformation *info) {
@@ -41,7 +41,7 @@ int ttkCinemaQuery::FillOutputPortInformation(int port, vtkInformation *info) {
     info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkTable");
   else
     return 0;
-  return 1;
+  return Superclass::FillOutputPortInformation(port, info);
 }
 
 int ttkCinemaQuery::RequestData(vtkInformation *request,
@@ -105,7 +105,7 @@ int ttkCinemaQuery::RequestData(vtkInformation *request,
         }
       }
       sqlTableDefinition += ")";
-      sqlTableDefinitions.push_back(sqlTableDefinition);
+      sqlTableDefinitions.emplace_back(sqlTableDefinition);
 
       // -----------------------------------------------------------------------
       // Insert Statements
@@ -133,7 +133,7 @@ int ttkCinemaQuery::RequestData(vtkInformation *request,
           sqlInsertStatement += ")";
           q++;
         }
-        sqlInsertStatements.push_back(sqlInsertStatement);
+        sqlInsertStatements.emplace_back(sqlInsertStatement);
       }
     }
 

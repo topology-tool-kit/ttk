@@ -285,7 +285,7 @@ int ttkSphereFromPoint::doIt(vtkDataSet *input, vtkPolyData *output) {
         << " s." << endl;
     dMsg(cout, msg.str(), timeMsg);
   }
-  return 0;
+  return 1;
 }
 
 // to adapt if your wrapper does not inherit from vtkDataSetAlgorithm

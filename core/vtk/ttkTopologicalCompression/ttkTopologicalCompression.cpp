@@ -11,7 +11,7 @@ vtkStandardNewMacro(ttkTopologicalCompression)
   if(!inputs.size()) {
     cerr << "[ttkTopologicalCompression] Error: not enough input information."
          << endl;
-    return -1;
+    return 0;
   }
 #endif
 
@@ -22,24 +22,24 @@ vtkStandardNewMacro(ttkTopologicalCompression)
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!input1) {
     cerr << "[ttkTopologicalCompression] Error: input pointer is NULL." << endl;
-    return -1;
+    return 0;
   }
 
   if(!input1->GetNumberOfPoints()) {
     cerr << "[ttkTopologicalCompression] Error: input has no point." << endl;
-    return -1;
+    return 0;
   }
 
   if(!input1->GetPointData()) {
     cerr << "[ttkTopologicalCompression] Error: input has no point data."
          << endl;
-    return -1;
+    return 0;
   }
 
   if(!output1) {
     cerr << "[ttkTopologicalCompression] Error: output pointer is NULL."
          << endl;
-    return -1;
+    return 0;
   }
 #endif
 
@@ -76,7 +76,7 @@ vtkStandardNewMacro(ttkTopologicalCompression)
     cerr << "[ttkTopologicalCompression] Error: input scalar field pointer is "
             "NULL."
          << endl;
-    return -1;
+    return 0;
   }
 #endif
 
@@ -106,7 +106,7 @@ vtkStandardNewMacro(ttkTopologicalCompression)
             << std::endl;
         dMsg(std::cerr, msg.str(), fatalMsg);
       }
-        return -1;
+        return 0;
     }
   }
 
@@ -146,5 +146,5 @@ vtkStandardNewMacro(ttkTopologicalCompression)
   output1->GetPointData()->AddArray(outputScalarField_);
   output1->GetPointData()->AddArray(outputOffsetField_);
 
-  return 0;
+  return 1;
 }
