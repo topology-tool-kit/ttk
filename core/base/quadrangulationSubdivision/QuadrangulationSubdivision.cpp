@@ -9,11 +9,14 @@
 
 #define MODULE_S "[QuadrangulationSubdivision] "
 
+static const float PREC_FLT{powf(10, -FLT_DIG)};
+
 ttk::SimplexId
   ttk::QuadrangulationSubdivision::findEdgeMiddle(const size_t a,
                                                   const size_t b) const {
 
-  std::vector<float> sum(vertexDistance_[a].size());
+  std::vector<SimplexId> midId(this->threadNumber_);
+  std::vector<float> minValue(this->threadNumber_, std::numeric_limits<float>::infinity());
 
   // euclidian barycenter of a and b
   Point edgeEuclBary = (outputPoints_[a] + outputPoints_[b]) * 0.5F;
@@ -21,25 +24,51 @@ ttk::SimplexId
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
-  for(size_t i = 0; i < sum.size(); ++i) {
+  for(size_t i = 0; i < vertexDistance_[a].size(); ++i) {
+#ifdef TTK_ENABLE_OPENMP
+    const auto tid = omp_get_thread_num();
+#else
+    const auto tid = 0;
+#endif // TTK_ENABLE_OPENMP
     float m = vertexDistance_[a][i];
     float n = vertexDistance_[b][i];
     // stay on the shortest path between a and b
-    sum[i] = m + n;
+    float sum = m + n;
+
+    // skip further computation
+    if(sum > minValue[tid]) {
+      continue;
+    }
+
     if(m != std::numeric_limits<float>::infinity()
        && n != std::numeric_limits<float>::infinity()) {
       // try to get the middle of the shortest path
-      sum[i] += std::abs(m - n);
+      sum += std::abs(m - n);
     }
 
     // get the euclidian distance to AB
     Point curr{};
     triangulation_->getVertexPoint(i, curr.x, curr.y, curr.z);
     // try to minimize the euclidian distance to AB too
-    sum[i] += Geometry::distance(&curr.x, &edgeEuclBary.x);
+    sum += Geometry::distance(&curr.x, &edgeEuclBary.x);
+
+    // search for the minimizing index
+    if(sum < minValue[tid]) {
+      minValue[tid] = sum;
+      midId[tid] = i;
+    }
   }
 
-  return std::min_element(sum.begin(), sum.end()) - sum.begin();
+#ifdef TTK_ENABLE_OPENMP
+  for(int i = 1; i < this->threadNumber_; ++i) {
+    if (minValue[i] < minValue[0]) {
+      minValue[0] = minValue[i];
+      midId[0] = midId[i];
+    }
+  }
+#endif // TTK_ENABLE_OPENMP
+
+  return midId[0];
 }
 
 ttk::SimplexId ttk::QuadrangulationSubdivision::findQuadBary(
@@ -54,10 +83,14 @@ ttk::SimplexId ttk::QuadrangulationSubdivision::findQuadBary(
   for(size_t i = 0; i < sum.size(); ++i) {
 
     // skip following computation if too far from any parent quad vertex
-    bool skip = std::any_of(
-      quadVertices.begin(), quadVertices.end(), [&](const size_t &a) {
-        return vertexDistance_[a][i] == std::numeric_limits<float>::infinity();
-      });
+    bool skip = false;
+
+    for(const auto vert : quadVertices) {
+      if(vertexDistance_[vert][i] == std::numeric_limits<float>::infinity()) {
+        skip = true;
+        break;
+      }
+    }
 
     if(skip) {
       continue;
@@ -268,7 +301,7 @@ ttk::QuadrangulationSubdivision::Point
     // magnitude
     auto mag = Geometry::magnitude(&crossP.x);
     // ensure normal not null
-    if(mag > powf(10, -FLT_DIG)) {
+    if(mag > PREC_FLT) {
       // unitary normal vector
       normals.emplace_back(crossP / mag);
     }
@@ -328,6 +361,8 @@ std::tuple<ttk::QuadrangulationSubdivision::Point,
   // (takes more memory to reduce computation time)
   std::vector<bool> trianglesTested(
     triangulation_->getNumberOfTriangles(), false);
+  // number of triangles tested
+  size_t trChecked{0};
   // vertex in triangle with highest barycentric coordinate
   SimplexId nearestVertex = nearestVertexIdentifier_[a];
 
@@ -378,7 +413,7 @@ std::tuple<ttk::QuadrangulationSubdivision::Point,
       auto denom = Geometry::dotProduct(&normalsMean.x, &normTri.x);
 
       // check if triangle plane is parallel to quad normal
-      if(std::abs(denom) < powf(10, -FLT_DIG)) {
+      if(std::abs(denom) < PREC_FLT) {
         // skip this iteration after filling pipeline
         trianglesTested[i] = true;
         // fill pipeline with neighboring triangles
@@ -419,16 +454,17 @@ std::tuple<ttk::QuadrangulationSubdivision::Point,
     // check if projection in triangle
     bool inTriangle = true;
     for(auto &coord : baryCoords) {
-      if(coord < powf(10, -FLT_DIG)) {
+      if(coord < PREC_FLT) {
         inTriangle = false;
       }
-      if(coord > 1 + powf(10, -FLT_DIG)) {
+      if(coord > 1 + PREC_FLT) {
         inTriangle = false;
       }
     }
 
     // mark triangle as tested
     trianglesTested[i] = true;
+    trChecked++;
 
     if(inTriangle) {
       success = true;
@@ -485,8 +521,6 @@ std::tuple<ttk::QuadrangulationSubdivision::Point,
     }
   }
 
-  size_t trChecked
-    = std::count(trianglesTested.begin(), trianglesTested.end(), true);
   const size_t maxTrChecked = 100;
 
   if(success && trChecked > maxTrChecked) {

@@ -1850,6 +1850,8 @@ inline int ttk::FiberSurface::processTetrahedron(
   rangeNormal[0] = -rangeEdge[1];
   rangeNormal[1] = rangeEdge[0];
 
+  const double prec_dbl = Geometry::powInt(10.0, -DBL_DIG);
+
   // 1. compute the distance to the range line carrying the saddleEdge
   SimplexId upperNumber = 0;
   SimplexId lowerNumber = 0;
@@ -1875,7 +1877,7 @@ inline int ttk::FiberSurface::processTetrahedron(
     d[i] = vertexRangeEdge[0] * rangeNormal[0]
            + vertexRangeEdge[1] * rangeNormal[1];
 
-    if(fabs(d[i]) < pow(10, -DBL_DIG))
+    if(fabs(d[i]) < prec_dbl)
       d[i] = 0;
 
     if(d[i] > 0)
@@ -2232,7 +2234,7 @@ inline int ttk::FiberSurface::processTetrahedron(
               }
             }
           }
-          if((minDistance != -1) && (minDistance < pow10(-DBL_DIG))) {
+          if((minDistance != -1) && (minDistance < prec_dbl)) {
             //           if((minDistance != -1)&&(minDistance <
             //           pointSnappingThreshold_)){
             // snap them to another colinear vertex
@@ -2481,13 +2483,13 @@ inline int ttk::FiberSurface::remeshIntersections() const {
             // check if that intersection has been registered before
             // in the end, only one intersection per triangle, no matter what
             /*&&(((fabs(tetIntersections[tetId][j].intersection_.first 
-              - intersection.first) > pow(10, -FLT_DIG))
+              - intersection.first) > Geometry::powIntTen(-FLT_DIG))
             ||(fabs(tetIntersections[tetId][j].intersection_.second
-              - intersection.second) > pow(10, -FLT_DIG)))
+              - intersection.second) > Geometry::powIntTen(-FLT_DIG)))
             &&((fabs(tetIntersections[tetId][k].intersection_.first 
-              - intersection.first) > pow(10, -FLT_DIG))
+              - intersection.first) > Geometry::powIntTen(-FLT_DIG))
             ||(fabs(tetIntersections[tetId][k].intersection_.second
-              - intersection.second) > pow(10, -FLT_DIG))))*/){
+              - intersection.second) > Geometry::powIntTen(-FLT_DIG))))*/){
 
             computeTriangleIntersection(tetId, j, k, polygonEdgeId0,
                                         polygonEdgeId1, intersection,

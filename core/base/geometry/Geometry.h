@@ -57,26 +57,6 @@ namespace ttk {
                                       std::vector<T> &baryCentrics,
                                       const int &dimension = 3);
 
-    /// Compute the barycentric coordinates of point \p xyz with regard to
-    /// the edge defined by the points \p xy0 and \p xy1.
-    /// \param x0 x coordinate of the first vertex of the edge
-    /// \param y0 y coordinate of the first vertex of the edge
-    /// \param x1 x coordinate of the second vertex of the edge
-    /// \param y1 y coordinate of the second vertex of the edge
-    /// \param x x coordinate of the queried point
-    /// \param y y coordinate of the queried point
-    /// \param baryCentrics Output barycentric coordinates (all in [0, 1] if
-    /// \p p belongs to the edge).
-    /// \return Returns 0 upon success, negative values otherwise.
-    template <typename T>
-    int computeBarycentricCoordinates(const T &x0,
-                                      const T &y0,
-                                      const T &x1,
-                                      const T &y1,
-                                      const T &x,
-                                      const T &y,
-                                      std::vector<T> &baryCentrics);
-
     /// Compute the barycentric coordinates of point \p p with regard to the
     /// triangle defined by the 3D points \p p0, \p p1, and \p p2.
     /// \param p0 xyz coordinates of the first vertex of the triangle
@@ -257,6 +237,51 @@ namespace ttk {
     /// \param d xyz coordinates of the std::vector's destination
     template <typename T>
     T magnitude(const T *o, const T *d);
+
+    /// Compute the integer power of a floating-point value
+    /// (std::pow is optimised for floating-point exponents)
+    template <typename T>
+    inline T powInt(const T val, const int n) {
+      if(n < 0) {
+        return 1.0 / powInt(val, -n);
+      } else if(n == 0) {
+        return 1;
+      } else if(n == 1) {
+        return val;
+      } else if(n == 2) {
+        return val * val;
+      } else if(n == 3) {
+        return val * val * val;
+      } else {
+        T ret = val;
+        for(int i = 0; i < n - 1; ++i) {
+          ret *= val;
+        }
+        return ret;
+      }
+    }
+
+    /// Compute the nth power of ten
+    template <typename T = double>
+    inline T powIntTen(const int n) {
+      return powInt(static_cast<T>(10), n);
+    }
+
+    /// Compute the power of an arithmetic value
+    /// (redirect to std::pow with a floating-point exponent and to
+    /// Geometry::powInt with an integer exponent)
+    template <typename T1, typename T2>
+    inline T1 pow(const T1 val, const T2 n) {
+      static_assert(
+        std::is_arithmetic<T1>::value && std::is_arithmetic<T2>::value,
+        "pow can only be applied on arithmetic values");
+
+      if(std::is_integral<T2>::value) {
+        return powInt(val, n);
+      } else if(std::is_floating_point<T2>::value) {
+        return std::pow(val, n);
+      }
+    }
 
   } // namespace Geometry
 } // namespace ttk

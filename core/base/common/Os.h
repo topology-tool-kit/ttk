@@ -29,8 +29,6 @@
 #include <string>
 #include <vector>
 
-#define pow10(x) pow(10, x)
-
 //#define SINGLE_PRECISION
 
 #ifdef SINGLE_PRECISION

@@ -62,7 +62,7 @@ int ttkScalarFieldNormalizer::normalize(vtkDataArray *input,
   for(SimplexId i = 0; i < input->GetNumberOfTuples(); i++) {
     double value = input->GetTuple1(i);
 
-    value = (value - min) / (max - min) + pow10(-FLT_DIG);
+    value = (value - min) / (max - min) + Geometry::powIntTen(-FLT_DIG);
 
     output->SetTuple1(i, value);
   }

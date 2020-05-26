@@ -317,7 +317,8 @@ dataType PDBarycenter<dataType>::updateBarycenter(
       // TODO adjust shift with geometrical_factor_
       dataType dx = barycenter_goods_[0].get(i).x_ - new_x;
       dataType dy = barycenter_goods_[0].get(i).y_ - new_y;
-      dataType shift = pow(abs(dx), wasserstein_) + pow(abs(dy), wasserstein_);
+      dataType shift = Geometry::pow(abs(dx), wasserstein_)
+                       + Geometry::pow(abs(dy), wasserstein_);
       if(shift > max_shift) {
         max_shift = shift;
       }
@@ -346,9 +347,10 @@ dataType PDBarycenter<dataType>::updateBarycenter(
   for(unsigned int i = 0; i < n_goods; i++) {
     if(count_diag_matchings[i] == n_diagrams) {
       points_deleted_ += 1;
-      dataType shift = 2
-                       * pow(barycenter_goods_[0].get(i).getPersistence() / 2.,
-                             wasserstein_);
+      dataType shift
+        = 2
+          * Geometry::pow(
+            barycenter_goods_[0].get(i).getPersistence() / 2., wasserstein_);
       if(shift > max_shift) {
         max_shift = shift;
       }
@@ -380,8 +382,8 @@ dataType PDBarycenter<dataType>::updateBarycenter(
       barycenter_goods_[j].addGood(g);
       dataType shift
         = 2
-          * pow(barycenter_goods_[j].get(g.id_).getPersistence() / 2.,
-                wasserstein_);
+          * Geometry::pow(barycenter_goods_[j].get(g.id_).getPersistence() / 2.,
+                          wasserstein_);
       if(shift > max_shift) {
         max_shift = shift;
       }
@@ -412,7 +414,7 @@ dataType PDBarycenter<dataType>::updateBarycenter(
 
 template <typename dataType>
 dataType PDBarycenter<dataType>::getEpsilon(dataType rho) {
-  return pow(rho, 2) / 8.0;
+  return rho * rho / 8.0;
 }
 
 template <typename dataType>
@@ -954,7 +956,7 @@ dataType PDBarycenter<dataType>::computeRealCost() {
     dataType cost = auction.run(&fake_matchings);
     total_real_cost += cost * cost;
   }
-  return pow(total_real_cost, 1. / 2);
+  return sqrt(total_real_cost);
 }
 
 template <typename dataType>

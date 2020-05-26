@@ -1,4 +1,3 @@
-
 #ifndef _AUCTIONACTOR_H
 #define _AUCTIONACTOR_H
 
@@ -135,9 +134,9 @@ namespace ttk {
   template <typename dataType>
   double AuctionActor<dataType>::getPairGeometricalLength(
     const int wasserstein) const {
-    return std::pow(geom_pair_length_[0], wasserstein)
-           + std::pow(geom_pair_length_[1], wasserstein)
-           + std::pow(geom_pair_length_[2], wasserstein);
+    return Geometry::pow(geom_pair_length_[0], wasserstein)
+           + Geometry::pow(geom_pair_length_[1], wasserstein)
+           + Geometry::pow(geom_pair_length_[2], wasserstein);
   }
 
   template <typename dataType>
@@ -148,23 +147,26 @@ namespace ttk {
       return 0;
     } else if(is_diagonal_) {
       return geometricalFactor
-               * (2 * std::pow(abs<dataType>(g.y_ / 2 - g.x_ / 2), wasserstein))
+               * (2
+                  * Geometry::pow(
+                    abs<dataType>(g.y_ / 2 - g.x_ / 2), wasserstein))
              + (1 - geometricalFactor) * getPairGeometricalLength(wasserstein);
     } else if(g.isDiagonal()) {
       return geometricalFactor
-               * (2 * std::pow(abs<dataType>(y_ / 2 - x_ / 2), wasserstein))
+               * (2
+                  * Geometry::pow(abs<dataType>(y_ / 2 - x_ / 2), wasserstein))
              + (1 - geometricalFactor)
                  * g.getPairGeometricalLength(wasserstein);
     } else {
       return geometricalFactor
-               * (std::pow(abs<dataType>(x_ - g.x_), wasserstein)
-                  + std::pow(abs<dataType>(y_ - g.y_), wasserstein))
+               * (Geometry::pow(abs<dataType>(x_ - g.x_), wasserstein)
+                  + Geometry::pow(abs<dataType>(y_ - g.y_), wasserstein))
              + (1 - geometricalFactor)
-                 * (std::pow(
+                 * (Geometry::pow(
                       abs<dataType>(coords_x_ - g.coords_x_), wasserstein)
-                    + std::pow(
+                    + Geometry::pow(
                       abs<dataType>(coords_y_ - g.coords_y_), wasserstein)
-                    + std::pow(
+                    + Geometry::pow(
                       abs<dataType>(coords_z_ - g.coords_z_), wasserstein));
     }
   }
@@ -399,7 +401,7 @@ namespace ttk {
       this->SetCriticalCoordinates(coords_x, coords_y, coords_z);
 
       if(std::abs(static_cast<double>(x) - static_cast<double>(y))
-         < std::pow(10, -12)) {
+         < Geometry::powIntTen<double>(-12)) {
         AuctionActor<dataType>::is_diagonal_ = true;
       } else {
         AuctionActor<dataType>::is_diagonal_ = false;

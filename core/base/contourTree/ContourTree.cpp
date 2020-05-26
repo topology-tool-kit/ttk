@@ -1495,8 +1495,8 @@ int SubLevelSetTree::getPersistencePlot(
 
   for(int i = 0; i < (int)plot.size(); i++) {
     plot[i].first = (*persistencePairs)[i].second;
-    if(plot[i].first < pow(10, -REAL_SIGNIFICANT_DIGITS)) {
-      plot[i].first = pow(10, -REAL_SIGNIFICANT_DIGITS);
+    if(plot[i].first < Geometry::powIntTen(-REAL_SIGNIFICANT_DIGITS)) {
+      plot[i].first = Geometry::powIntTen(-REAL_SIGNIFICANT_DIGITS);
     }
     plot[i].second = persistencePairs->size() - i;
   }
@@ -2923,8 +2923,8 @@ int ContourTree::getPersistencePlot(
 
   for(int i = 0; i < (int)plot.size(); i++) {
     plot[i].first = (*pairs)[i].second;
-    if(plot[i].first < pow(10, -REAL_SIGNIFICANT_DIGITS)) {
-      plot[i].first = pow(10, -REAL_SIGNIFICANT_DIGITS);
+    if(plot[i].first < Geometry::powIntTen(-REAL_SIGNIFICANT_DIGITS)) {
+      plot[i].first = Geometry::powIntTen(-REAL_SIGNIFICANT_DIGITS);
     }
     plot[i].second = pairs->size() - i;
   }

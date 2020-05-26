@@ -255,7 +255,7 @@ namespace ttk {
           max_persistence = persistence;
         }
       }
-      this->epsilon_ = 5 / 4 * pow(max_persistence, wasserstein_);
+      this->epsilon_ = 5 / 4 * Geometry::pow(max_persistence, wasserstein_);
     }
 
     void buildUnassignedBidders() {
@@ -295,7 +295,7 @@ namespace ttk {
       if(denominator <= 0) {
         return 1;
       } else {
-        return pow(d / denominator, 1 / ((float)wasserstein_)) - 1;
+        return Geometry::pow(d / denominator, 1 / ((float)wasserstein_)) - 1;
       }
     }
 

@@ -13,6 +13,7 @@
 
 // base code includes
 #include <Debug.h>
+#include <Geometry.h> // for pow
 #include <algorithm>
 #include <cmath>
 #include <iostream>
@@ -417,8 +418,8 @@ namespace ttk {
   template <typename dataType>
   dataType KDTree<dataType>::cost(const std::vector<dataType> &coordinates) {
     dataType cost = 0;
-    for(unsigned int i = 0; i < coordinates.size(); i++) {
-      cost += pow(abs(coordinates[i] - coordinates_[i]), p_);
+    for(size_t i = 0; i < coordinates.size(); i++) {
+      cost += Geometry::pow(abs(coordinates[i] - coordinates_[i]), p_);
     }
     return cost;
   }
@@ -428,11 +429,13 @@ namespace ttk {
     KDTree<dataType>::distanceToBox(KDTree<dataType> *subtree,
                                     const std::vector<dataType> &coordinates) {
     dataType d_min = 0;
-    for(unsigned int axis = 0; axis < coordinates.size(); axis++) {
+    for(size_t axis = 0; axis < coordinates.size(); axis++) {
       if(subtree->coords_min_[axis] > coordinates[axis]) {
-        d_min += pow(subtree->coords_min_[axis] - coordinates[axis], p_);
+        d_min
+          += Geometry::pow(subtree->coords_min_[axis] - coordinates[axis], p_);
       } else if(subtree->coords_max_[axis] < coordinates[axis]) {
-        d_min += pow(coordinates[axis] - subtree->coords_max_[axis], p_);
+        d_min
+          += Geometry::pow(coordinates[axis] - subtree->coords_max_[axis], p_);
       }
     }
     return d_min;
