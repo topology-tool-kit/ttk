@@ -9,6 +9,8 @@ if(NOT TARGET ttkUserInterfaceBase)
   set(gui_dirs "")
 endif()
 
+# warning: use deprecated `add_compile_option` here to avoid modifying
+# every standalone CMakeLists.txt
 add_compile_options(${TTK_COMPILER_FLAGS})
 
 file(GLOB STANDALONE_DIRS ${cmd_dirs} ${gui_dirs})
