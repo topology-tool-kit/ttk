@@ -8,8 +8,9 @@
 /// manifolds represented by regular grids.
 /// \sa Triangulation
 
-#ifndef _IMPLICITTRIANGULATION_H
-#define _IMPLICITTRIANGULATION_H
+#pragma once
+
+#include <array>
 
 // base code includes
 #include <AbstractTriangulation.h>
@@ -49,8 +50,8 @@ namespace ttk {
                                 const int &id,
                                 SimplexId &triangleId) const override;
 
-    SimplexId
-      getCellTriangleNumberInternal(const SimplexId &cellId) const override {
+    SimplexId getCellTriangleNumberInternal(
+      const SimplexId & /*cellId*/) const override {
       // NOTE: the output is always 4 here. let's keep the function in there
       // in case of further generalization to CW-complexes
       return 4;
@@ -156,7 +157,7 @@ namespace ttk {
                                 SimplexId &edgeId) const override;
 
     SimplexId getTriangleEdgeNumberInternal(
-      const SimplexId &triangleId) const override {
+      const SimplexId & /*triangleId*/) const override {
       // NOTE: the output is always 3 here. let's keep the function in there
       // in case of further generalization to CW-complexes
       return 3;
@@ -239,105 +240,55 @@ namespace ttk {
         return -1;
 #endif // !TTK_ENABLE_KAMIKAZE
 
-      if(dimensionality_ == 3) {
-        SimplexId p[3];
-        vertexToPosition(vertexId, p);
-
-        if(0 < p[0] and p[0] < nbvoxels_[0]) {
-          if(0 < p[1] and p[1] < nbvoxels_[1]) {
-            if(0 < p[2] and p[2] < nbvoxels_[2])
-              return 14; // abcdefgh
-            else
-              return 10; // abdc ou efhg
-          } else if(p[1] == 0) {
-            if(0 < p[2] and p[2] < nbvoxels_[2])
-              return 10; // aefb
-            else if(p[2] == 0)
-              return 8; // ab
-            else
-              return 6; // ef
-          } else {
-            if(0 < p[2] and p[2] < nbvoxels_[2])
-              return 10; // ghdc
-            else if(p[2] == 0)
-              return 6; // cd
-            else
-              return 8; // gh
-          }
-        } else if(p[0] == 0) {
-          if(0 < p[1] and p[1] < nbvoxels_[1]) {
-            if(0 < p[2] and p[2] < nbvoxels_[2])
-              return 10; // aegc
-            else if(p[2] == 0)
-              return 6; // ac
-            else
-              return 8; // eg
-          } else if(p[1] == 0) {
-            if(0 < p[2] and p[2] < nbvoxels_[2])
-              return 6; // ae
-            else
-              return 4; // a ou e
-          } else {
-            if(0 < p[2] and p[2] < nbvoxels_[2])
-              return 8; // cg
-            else if(p[2] == 0)
-              return 4; // c
-            else
-              return 7; // g
-          }
-        } else {
-          if(0 < p[1] and p[1] < nbvoxels_[1]) {
-            if(0 < p[2] and p[2] < nbvoxels_[2])
-              return 10; // bfhd
-            else if(p[2] == 0)
-              return 8; // bd
-            else
-              return 6; // fh
-          } else if(p[1] == 0) {
-            if(0 < p[2] and p[2] < nbvoxels_[2])
-              return 8; // bf
-            else if(p[2] == 0)
-              return 7; // b
-            else
-              return 4; // f
-          } else {
-            if(0 < p[2] and p[2] < nbvoxels_[2])
-              return 6; // dh
-            else
-              return 4; // d ou h
-          }
-        }
-      } else if(dimensionality_ == 2) {
-        SimplexId p[2];
-        vertexToPosition2d(vertexId, p);
-
-        if(0 < p[0] and p[0] < nbvoxels_[Di_]) {
-          if(0 < p[1] and p[1] < nbvoxels_[Dj_])
-            return 6; // abcd
-          else if(p[1] == 0)
-            return 4; // ab
-          else
-            return 4; // cd
-        } else if(p[0] == 0) {
-          if(0 < p[1] and p[1] < nbvoxels_[Dj_])
-            return 4; // ac
-          else if(p[1] == 0)
-            return 2; // a
-          else
-            return 3; // c
-        } else {
-          if(0 < p[1] and p[1] < nbvoxels_[Dj_])
-            return 4; // bd
-          else if(p[1] == 0)
-            return 3; // b
-          else
-            return 2; // d
-        }
-      } else if(dimensionality_ == 1) {
-        if(vertexId > 0 and vertexId < nbvoxels_[Di_])
-          return 2; // ab
-        else
-          return 1; // a ou b
+      switch(vertexPositions_[vertexId]) {
+        case VertexPosition::CENTER_3D:
+          return 14;
+        case VertexPosition::FRONT_FACE_3D:
+        case VertexPosition::BACK_FACE_3D:
+        case VertexPosition::TOP_FACE_3D:
+        case VertexPosition::BOTTOM_FACE_3D:
+        case VertexPosition::LEFT_FACE_3D:
+        case VertexPosition::RIGHT_FACE_3D:
+          return 10;
+        case VertexPosition::TOP_FRONT_EDGE_3D: // ab
+        case VertexPosition::RIGHT_FRONT_EDGE_3D: // bd
+        case VertexPosition::BOTTOM_BACK_EDGE_3D: // gh
+        case VertexPosition::LEFT_BACK_EDGE_3D: // eg
+        case VertexPosition::BOTTOM_LEFT_EDGE_3D: // cg
+        case VertexPosition::TOP_RIGHT_EDGE_3D: // bf
+          return 8;
+        case VertexPosition::TOP_RIGHT_FRONT_CORNER_3D: // b
+        case VertexPosition::BOTTOM_LEFT_BACK_CORNER_3D: // g
+          return 7;
+        case VertexPosition::TOP_BACK_EDGE_3D: // ef
+        case VertexPosition::BOTTOM_FRONT_EDGE_3D: // cd
+        case VertexPosition::LEFT_FRONT_EDGE_3D: // ac
+        case VertexPosition::TOP_LEFT_EDGE_3D: // ae
+        case VertexPosition::RIGHT_BACK_EDGE_3D: // fh
+        case VertexPosition::BOTTOM_RIGHT_EDGE_3D: // dh
+        case VertexPosition::CENTER_2D:
+          return 6;
+        case VertexPosition::TOP_LEFT_FRONT_CORNER_3D: // a
+        case VertexPosition::BOTTOM_LEFT_FRONT_CORNER_3D: // c
+        case VertexPosition::BOTTOM_RIGHT_FRONT_CORNER_3D: // d
+        case VertexPosition::TOP_LEFT_BACK_CORNER_3D: // e
+        case VertexPosition::TOP_RIGHT_BACK_CORNER_3D: // f
+        case VertexPosition::BOTTOM_RIGHT_BACK_CORNER_3D: // h
+        case VertexPosition::TOP_EDGE_2D:
+        case VertexPosition::BOTTOM_EDGE_2D:
+        case VertexPosition::LEFT_EDGE_2D:
+        case VertexPosition::RIGHT_EDGE_2D:
+          return 4;
+        case VertexPosition::TOP_RIGHT_CORNER_2D: // b
+        case VertexPosition::BOTTOM_LEFT_CORNER_2D: // c
+          return 3;
+        case VertexPosition::TOP_LEFT_CORNER_2D: // a
+        case VertexPosition::BOTTOM_RIGHT_CORNER_2D: // d
+        case VertexPosition::CENTER_1D:
+          return 2;
+        case VertexPosition::LEFT_CORNER_1D:
+        case VertexPosition::RIGHT_CORNER_1D:
+          return 1;
       }
 
       return -1;
@@ -395,7 +346,203 @@ namespace ttk {
                      const SimplexId &yDim,
                      const SimplexId &zDim);
 
+    int preconditionVerticesInternal();
+    int preconditionEdgesInternal() override;
+    int preconditionTrianglesInternal() override;
+    int preconditionTetrahedronsInternal();
+
+    inline int preconditionCellsInternal() {
+      if(dimensionality_ == 3) {
+        return this->preconditionTetrahedronsInternal();
+      } else if(dimensionality_ == 2 && !hasPreconditionedTriangles_) {
+        hasPreconditionedTriangles_ = true;
+        return this->preconditionTrianglesInternal();
+      }
+      return 0;
+    }
+
   protected:
+    enum class VertexPosition : char {
+      // a--------b
+
+      LEFT_CORNER_1D, // a
+      RIGHT_CORNER_1D, // b
+      CENTER_1D,
+      // total: 3 1D cases
+
+      // a--------b
+      // |        |
+      // |        |
+      // |        |
+      // c--------d
+
+      // 2D corners
+      TOP_LEFT_CORNER_2D, // a
+      TOP_RIGHT_CORNER_2D, // b
+      BOTTOM_LEFT_CORNER_2D, // c
+      BOTTOM_RIGHT_CORNER_2D, // d
+      // 2D edges
+      TOP_EDGE_2D, // ab
+      BOTTOM_EDGE_2D, // cd
+      LEFT_EDGE_2D, // ac
+      RIGHT_EDGE_2D, // bd
+      // 2D central strip
+      CENTER_2D,
+      // total: 9 2D cases
+
+      //    e--------f
+      //   /|       /|
+      //  / |      / |
+      // a--------b  |
+      // |  g-----|--h
+      // | /      | /
+      // |/       |/
+      // c--------d
+
+      // 3D corners
+      TOP_LEFT_FRONT_CORNER_3D, // a
+      TOP_RIGHT_FRONT_CORNER_3D, // b
+      BOTTOM_LEFT_FRONT_CORNER_3D, // c
+      BOTTOM_RIGHT_FRONT_CORNER_3D, // d
+      TOP_LEFT_BACK_CORNER_3D, // e
+      TOP_RIGHT_BACK_CORNER_3D, // f
+      BOTTOM_LEFT_BACK_CORNER_3D, // g
+      BOTTOM_RIGHT_BACK_CORNER_3D, // h
+      // 3D edges
+      TOP_FRONT_EDGE_3D, // ab
+      BOTTOM_FRONT_EDGE_3D, // cd
+      LEFT_FRONT_EDGE_3D, // ac
+      RIGHT_FRONT_EDGE_3D, // bd
+      TOP_BACK_EDGE_3D, // ef
+      BOTTOM_BACK_EDGE_3D, // gh
+      LEFT_BACK_EDGE_3D, // eg
+      RIGHT_BACK_EDGE_3D, // fh
+      TOP_LEFT_EDGE_3D, // ae
+      TOP_RIGHT_EDGE_3D, // bf
+      BOTTOM_LEFT_EDGE_3D, // cg
+      BOTTOM_RIGHT_EDGE_3D, // dh
+      // 3D faces
+      FRONT_FACE_3D, // abcd
+      BACK_FACE_3D, // efgh
+      TOP_FACE_3D, // abef
+      BOTTOM_FACE_3D, // cdgh
+      LEFT_FACE_3D, // aceg
+      RIGHT_FACE_3D, // bdfh
+      // 3D central part
+      CENTER_3D,
+      // total: 27 3D cases
+    };
+
+    // for every vertex, its position on the grid
+    std::vector<VertexPosition> vertexPositions_{};
+    // for  every vertex, its coordinates on the grid
+    std::vector<std::array<SimplexId, 3>> vertexCoords_{};
+
+    enum class EdgePosition : char {
+      //    e--------f
+      //   /|       /|
+      //  / |      / |
+      // a--------b  |
+      // |  g-----|--h
+      // | /      | /
+      // |/       |/
+      // c--------d
+
+      // length (ab)
+      L_xnn_3D,
+      L_xn0_3D,
+      L_xnN_3D,
+      L_x0n_3D,
+      L_x00_3D,
+      L_x0N_3D,
+      L_xNn_3D,
+      L_xN0_3D,
+      L_xNN_3D,
+      // height (ac)
+      H_nyn_3D,
+      H_ny0_3D,
+      H_nyN_3D,
+      H_0yn_3D,
+      H_0y0_3D,
+      H_0yN_3D,
+      H_Nyn_3D,
+      H_Ny0_3D,
+      H_NyN_3D,
+      // depth (ae)
+      P_nnz_3D,
+      P_n0z_3D,
+      P_nNz_3D,
+      P_0nz_3D,
+      P_00z_3D,
+      P_0Nz_3D,
+      P_Nnz_3D,
+      P_N0z_3D,
+      P_NNz_3D,
+      // diagonal1 (bc)
+      D1_xyn_3D,
+      D1_xy0_3D,
+      D1_xyN_3D,
+      // diagonal2 (ag)
+      D2_nyz_3D,
+      D2_0yz_3D,
+      D2_Nyz_3D,
+      // diagonal3 (be)
+      D3_xnz_3D,
+      D3_x0z_3D,
+      D3_xNz_3D,
+      // diagonal4 (bg)
+      D4_3D,
+
+      // length (ab)
+      L_xn_2D,
+      L_x0_2D,
+      L_xN_2D,
+      // height (ac)
+      H_ny_2D,
+      H_0y_2D,
+      H_Ny_2D,
+      // diagonal1 (bc)
+      D1_2D,
+
+      FIRST_EDGE_1D,
+      LAST_EDGE_1D,
+      CENTER_1D,
+    };
+
+    // for every edge, its position on the grid
+    std::vector<EdgePosition> edgePositions_{};
+    // for every edge, its coordinates on the grid
+    std::vector<std::array<SimplexId, 3>> edgeCoords_{};
+
+    enum class TrianglePosition : char {
+      //    e--------f
+      //   /|       /|
+      //  / |      / |
+      // a--------b  |
+      // |  g-----|--h
+      // | /      | /
+      // |/       |/
+      // c--------d
+
+      F_3D, // face (abc, bcd)
+      C_3D, // side (abe, bef)
+      H_3D, // top (acg, aeg)
+      D1_3D, // diagonal1 (bdg, beg)
+      D2_3D, // diagonal2 (abg, bgh)
+      D3_3D, // diagonal3 (bcg, bfg)
+
+      TOP_2D, // abc
+      BOTTOM_2D, // bcd
+    };
+
+    // for every triangle, its position on the grid
+    std::vector<TrianglePosition> trianglePositions_{};
+    // for every triangle, its coordinates on the grid
+    std::vector<std::array<SimplexId, 3>> triangleCoords_{};
+
+    // for every tetrahedron, its coordinates on the grid
+    std::vector<std::array<SimplexId, 3>> tetrahedronCoords_{};
+
     int dimensionality_; //
     float origin_[3]; //
     float spacing_[3]; //
@@ -1117,7 +1264,7 @@ inline ttk::SimplexId
 
 inline ttk::SimplexId
   ttk::ImplicitTriangulation::getVertexStar2dA(const SimplexId p[2],
-                                               const int id) const {
+                                               const int /*id*/) const {
   return p[0] * 2 + p[1] * tshift_[0];
 }
 
@@ -1147,7 +1294,7 @@ inline ttk::SimplexId
 
 inline ttk::SimplexId
   ttk::ImplicitTriangulation::getVertexStar2dD(const SimplexId p[2],
-                                               const int id) const {
+                                               const int /*id*/) const {
   return (p[0] - 1) * 2 + (p[1] - 1) * tshift_[0] + 1;
 }
 
@@ -1229,7 +1376,7 @@ inline ttk::SimplexId
 
 inline ttk::SimplexId
   ttk::ImplicitTriangulation::getVertexLink2dA(const SimplexId p[2],
-                                               const int id) const {
+                                               const int /*id*/) const {
   return esetshift_[1] + p[0] + p[1] * eshift_[4]; // D1::bc
 }
 
@@ -1259,7 +1406,7 @@ inline ttk::SimplexId
 
 inline ttk::SimplexId
   ttk::ImplicitTriangulation::getVertexLink2dD(const SimplexId p[2],
-                                               const int id) const {
+                                               const int /*id*/) const {
   return esetshift_[1] + p[0] + (p[1] - 1) * eshift_[4] - 1; // D1::bc
 }
 
@@ -2959,7 +3106,7 @@ inline ttk::SimplexId
 }
 
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexTriangleA(const SimplexId p[3],
+  ttk::ImplicitTriangulation::getVertexTriangleA(const SimplexId /*p*/[3],
                                                  const int id) const {
   switch(id) {
     case 0:
@@ -7824,5 +7971,3 @@ inline ttk::SimplexId ttk::ImplicitTriangulation::getTetrahedronNeighborBDGH(
   }
   return -1;
 }
-
-#endif // _IMPLICITTRIANGULATION_H

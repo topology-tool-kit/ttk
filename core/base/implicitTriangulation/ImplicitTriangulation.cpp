@@ -3,6 +3,57 @@
 using namespace std;
 using namespace ttk;
 
+#define CASE_EDGE_POSITION_L_3D \
+  case EdgePosition::L_xnn_3D:  \
+  case EdgePosition::L_xn0_3D:  \
+  case EdgePosition::L_xnN_3D:  \
+  case EdgePosition::L_x0n_3D:  \
+  case EdgePosition::L_x00_3D:  \
+  case EdgePosition::L_x0N_3D:  \
+  case EdgePosition::L_xNn_3D:  \
+  case EdgePosition::L_xN0_3D:  \
+  case EdgePosition::L_xNN_3D
+#define CASE_EDGE_POSITION_H_3D \
+  case EdgePosition::H_nyn_3D:  \
+  case EdgePosition::H_ny0_3D:  \
+  case EdgePosition::H_nyN_3D:  \
+  case EdgePosition::H_0yn_3D:  \
+  case EdgePosition::H_0y0_3D:  \
+  case EdgePosition::H_0yN_3D:  \
+  case EdgePosition::H_Nyn_3D:  \
+  case EdgePosition::H_Ny0_3D:  \
+  case EdgePosition::H_NyN_3D
+#define CASE_EDGE_POSITION_P_3D \
+  case EdgePosition::P_nnz_3D:  \
+  case EdgePosition::P_n0z_3D:  \
+  case EdgePosition::P_nNz_3D:  \
+  case EdgePosition::P_0nz_3D:  \
+  case EdgePosition::P_00z_3D:  \
+  case EdgePosition::P_0Nz_3D:  \
+  case EdgePosition::P_Nnz_3D:  \
+  case EdgePosition::P_N0z_3D:  \
+  case EdgePosition::P_NNz_3D
+#define CASE_EDGE_POSITION_D1_3D \
+  case EdgePosition::D1_xyn_3D:  \
+  case EdgePosition::D1_xy0_3D:  \
+  case EdgePosition::D1_xyN_3D
+#define CASE_EDGE_POSITION_D2_3D \
+  case EdgePosition::D2_nyz_3D:  \
+  case EdgePosition::D2_0yz_3D:  \
+  case EdgePosition::D2_Nyz_3D
+#define CASE_EDGE_POSITION_D3_3D \
+  case EdgePosition::D3_xnz_3D:  \
+  case EdgePosition::D3_x0z_3D:  \
+  case EdgePosition::D3_xNz_3D
+#define CASE_EDGE_POSITION_L_2D \
+  case EdgePosition::L_xn_2D:   \
+  case EdgePosition::L_x0_2D:   \
+  case EdgePosition::L_xN_2D
+#define CASE_EDGE_POSITION_H_2D \
+  case EdgePosition::H_ny_2D:   \
+  case EdgePosition::H_0y_2D:   \
+  case EdgePosition::H_Ny_2D
+
 ImplicitTriangulation::ImplicitTriangulation()
   : dimensionality_{-1}, cellNumber_{}, vertexNumber_{}, edgeNumber_{},
     triangleNumber_{}, tetrahedronNumber_{}, isAccelerated_{} {
@@ -173,6 +224,10 @@ int ImplicitTriangulation::setInputGrid(const float &xOrigin,
     cellNumber_ = edgeNumber_;
   }
 
+  // ensure preconditionned vertices and cells
+  this->preconditionVerticesInternal();
+  this->preconditionCellsInternal();
+
   return 0;
 }
 
@@ -231,21 +286,14 @@ bool ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(isVertexOnBoundary)(
     return false;
 #endif // !TTK_ENABLE_KAMIKAZE
 
-  if(dimensionality_ == 3) {
-    SimplexId p[3];
-    vertexToPosition(vertexId, p);
-
-    return (p[0] == 0 or p[1] == 0 or p[2] == 0 or p[0] == nbvoxels_[0]
-            or p[1] == nbvoxels_[1] or p[2] == nbvoxels_[2]);
-  } else if(dimensionality_ == 2) {
-    SimplexId p[2];
-    vertexToPosition2d(vertexId, p);
-
-    return (p[0] == 0 or p[1] == 0 or p[0] == nbvoxels_[Di_]
-            or p[1] == nbvoxels_[Dj_]);
+  switch(vertexPositions_[vertexId]) {
+    case VertexPosition::CENTER_3D:
+    case VertexPosition::CENTER_2D:
+    case VertexPosition::CENTER_1D:
+      return false;
+    default:
+      return true;
   }
-
-  return false;
 }
 
 bool ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(isEdgeOnBoundary)(
@@ -256,47 +304,22 @@ bool ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(isEdgeOnBoundary)(
     return false;
 #endif // !TTK_ENABLE_KAMIKAZE
 
-  if(dimensionality_ == 3) {
-    SimplexId p[3];
-
-    // L
-    if(edgeId < esetshift_[0]) {
-      edgeToPosition(edgeId, 0, p);
-      return (p[1] == 0 or p[1] == nbvoxels_[1] or p[2] == 0
-              or p[2] == nbvoxels_[2]);
-    }
-    // H
-    else if(edgeId < esetshift_[1]) {
-      edgeToPosition(edgeId, 1, p);
-      return (p[0] == 0 or p[0] == nbvoxels_[0] or p[2] == 0
-              or p[2] == nbvoxels_[2]);
-    }
-    // P
-    else if(edgeId < esetshift_[2]) {
-      edgeToPosition(edgeId, 2, p);
-      return (p[0] == 0 or p[1] == 0 or p[0] == nbvoxels_[0]
-              or p[1] == nbvoxels_[1]);
-    }
-    // D1
-    else if(edgeId < esetshift_[3]) {
-      edgeToPosition(edgeId, 3, p);
-      return (p[2] == 0 or p[2] == nbvoxels_[2]);
-    }
-    // D2
-    else if(edgeId < esetshift_[4]) {
-      edgeToPosition(edgeId, 4, p);
-      return (p[0] == 0 or p[0] == nbvoxels_[0]);
-    }
-    // D3
-    else if(edgeId < esetshift_[5]) {
-      edgeToPosition(edgeId, 5, p);
-      return (p[1] == 0 or p[1] == nbvoxels_[1]);
-    } else
+  switch(edgePositions_[edgeId]) {
+    case EdgePosition::L_xnn_3D:
+    case EdgePosition::H_nyn_3D:
+    case EdgePosition::P_nnz_3D:
+    case EdgePosition::D1_xyn_3D:
+    case EdgePosition::D2_nyz_3D:
+    case EdgePosition::D3_xnz_3D:
+    case EdgePosition::D4_3D:
+    case EdgePosition::L_xn_2D:
+    case EdgePosition::H_ny_2D:
+    case EdgePosition::D1_2D:
       return false;
-  } else if(dimensionality_ == 2)
-    return (getEdgeStarNumber(edgeId) == 1);
-
-  return false;
+    default:
+      break;
+  }
+  return true;
 }
 
 bool ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(isTriangleOnBoundary)(
@@ -324,120 +347,127 @@ int ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getVertexNeighbor)(
     return -1;
 #endif // !TTK_ENABLE_KAMIKAZE
 
-  neighborId = -1;
-
-  if(dimensionality_ == 3) {
-    SimplexId p[3];
-    vertexToPosition(vertexId, p);
-
-    if(0 < p[0] and p[0] < nbvoxels_[0]) {
-      if(0 < p[1] and p[1] < nbvoxels_[1]) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          neighborId
-            = getVertexNeighborABCDEFGH(vertexId, localNeighborId); // abcdefgh
-        else if(p[2] == 0)
-          neighborId = getVertexNeighborABDC(vertexId, localNeighborId); // abdc
-        else
-          neighborId = getVertexNeighborEFHG(vertexId, localNeighborId); // efhg
-      } else if(p[1] == 0) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          neighborId = getVertexNeighborAEFB(vertexId, localNeighborId); // aefb
-        else if(p[2] == 0)
-          neighborId = getVertexNeighborAB(vertexId, localNeighborId); // ab
-        else
-          neighborId = getVertexNeighborEF(vertexId, localNeighborId); // ef
-      } else {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          neighborId = getVertexNeighborGHDC(vertexId, localNeighborId); // ghdc
-        else if(p[2] == 0)
-          neighborId = getVertexNeighborCD(vertexId, localNeighborId); // cd
-        else
-          neighborId = getVertexNeighborGH(vertexId, localNeighborId); // gh
-      }
-    } else if(p[0] == 0) {
-      if(0 < p[1] and p[1] < nbvoxels_[1]) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          neighborId = getVertexNeighborAEGC(vertexId, localNeighborId); // aegc
-        else if(p[2] == 0)
-          neighborId = getVertexNeighborAC(vertexId, localNeighborId); // ac
-        else
-          neighborId = getVertexNeighborEG(vertexId, localNeighborId); // eg
-      } else if(p[1] == 0) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          neighborId = getVertexNeighborAE(vertexId, localNeighborId); // ae
-        else if(p[2] == 0)
-          neighborId = getVertexNeighborA(vertexId, localNeighborId); // a
-        else
-          neighborId = getVertexNeighborE(vertexId, localNeighborId); // e
-      } else {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          neighborId = getVertexNeighborCG(vertexId, localNeighborId); // cg
-        else if(p[2] == 0)
-          neighborId = getVertexNeighborC(vertexId, localNeighborId); // c
-        else
-          neighborId = getVertexNeighborG(vertexId, localNeighborId); // g
-      }
-    } else {
-      if(0 < p[1] and p[1] < nbvoxels_[1]) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          neighborId = getVertexNeighborBFHD(vertexId, localNeighborId); // bfhd
-        else if(p[2] == 0)
-          neighborId = getVertexNeighborBD(vertexId, localNeighborId); // bd
-        else
-          neighborId = getVertexNeighborFH(vertexId, localNeighborId); // fh
-      } else if(p[1] == 0) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          neighborId = getVertexNeighborBF(vertexId, localNeighborId); // bf
-        else if(p[2] == 0)
-          neighborId = getVertexNeighborB(vertexId, localNeighborId); // b
-        else
-          neighborId = getVertexNeighborF(vertexId, localNeighborId); // f
-      } else {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          neighborId = getVertexNeighborDH(vertexId, localNeighborId); // dh
-        else if(p[2] == 0)
-          neighborId = getVertexNeighborD(vertexId, localNeighborId); // d
-        else
-          neighborId = getVertexNeighborH(vertexId, localNeighborId); // h
-      }
-    }
-  } else if(dimensionality_ == 2) {
-    SimplexId p[2];
-    vertexToPosition2d(vertexId, p);
-
-    if(0 < p[0] and p[0] < nbvoxels_[Di_]) {
-      if(0 < p[1] and p[1] < nbvoxels_[Dj_])
-        neighborId = getVertexNeighbor2dABCD(vertexId, localNeighborId); // abcd
-      else if(p[1] == 0)
-        neighborId = getVertexNeighbor2dAB(vertexId, localNeighborId); // ab
-      else
-        neighborId = getVertexNeighbor2dCD(vertexId, localNeighborId); // cd
-    } else if(p[0] == 0) {
-      if(0 < p[1] and p[1] < nbvoxels_[Dj_])
-        neighborId = getVertexNeighbor2dAC(vertexId, localNeighborId); // ac
-      else if(p[1] == 0)
-        neighborId = getVertexNeighbor2dA(vertexId, localNeighborId); // a
-      else
-        neighborId = getVertexNeighbor2dC(vertexId, localNeighborId); // c
-    } else {
-      if(0 < p[1] and p[1] < nbvoxels_[Dj_])
-        neighborId = getVertexNeighbor2dBD(vertexId, localNeighborId); // bd
-      else if(p[1] == 0)
-        neighborId = getVertexNeighbor2dB(vertexId, localNeighborId); // b
-      else
-        neighborId = getVertexNeighbor2dD(vertexId, localNeighborId); // d
-    }
-  } else if(dimensionality_ == 1) {
-    // ab
-    if(vertexId > 0 and vertexId < nbvoxels_[Di_]) {
-      if(localNeighborId == 0)
-        neighborId = vertexId + 1;
-      else
-        neighborId = vertexId - 1;
-    } else if(vertexId == 0)
-      neighborId = vertexId + 1; // a
-    else
-      neighborId = vertexId - 1; // b
+  switch(vertexPositions_[vertexId]) {
+    case VertexPosition::CENTER_3D:
+      neighborId = getVertexNeighborABCDEFGH(vertexId, localNeighborId);
+      break;
+    case VertexPosition::FRONT_FACE_3D:
+      neighborId = getVertexNeighborABDC(vertexId, localNeighborId);
+      break;
+    case VertexPosition::BACK_FACE_3D:
+      neighborId = getVertexNeighborEFHG(vertexId, localNeighborId);
+      break;
+    case VertexPosition::TOP_FACE_3D:
+      neighborId = getVertexNeighborAEFB(vertexId, localNeighborId);
+      break;
+    case VertexPosition::BOTTOM_FACE_3D:
+      neighborId = getVertexNeighborGHDC(vertexId, localNeighborId);
+      break;
+    case VertexPosition::LEFT_FACE_3D:
+      neighborId = getVertexNeighborAEGC(vertexId, localNeighborId);
+      break;
+    case VertexPosition::RIGHT_FACE_3D:
+      neighborId = getVertexNeighborBFHD(vertexId, localNeighborId);
+      break;
+    case VertexPosition::TOP_FRONT_EDGE_3D: // ab
+      neighborId = getVertexNeighborAB(vertexId, localNeighborId);
+      break;
+    case VertexPosition::BOTTOM_FRONT_EDGE_3D: // cd
+      neighborId = getVertexNeighborCD(vertexId, localNeighborId);
+      break;
+    case VertexPosition::LEFT_FRONT_EDGE_3D: // ac
+      neighborId = getVertexNeighborAC(vertexId, localNeighborId);
+      break;
+    case VertexPosition::RIGHT_FRONT_EDGE_3D: // bd
+      neighborId = getVertexNeighborBD(vertexId, localNeighborId);
+      break;
+    case VertexPosition::TOP_BACK_EDGE_3D: // ef
+      neighborId = getVertexNeighborEF(vertexId, localNeighborId);
+      break;
+    case VertexPosition::BOTTOM_BACK_EDGE_3D: // gh
+      neighborId = getVertexNeighborGH(vertexId, localNeighborId);
+      break;
+    case VertexPosition::LEFT_BACK_EDGE_3D: // eg
+      neighborId = getVertexNeighborEG(vertexId, localNeighborId);
+      break;
+    case VertexPosition::RIGHT_BACK_EDGE_3D: // fh
+      neighborId = getVertexNeighborFH(vertexId, localNeighborId);
+      break;
+    case VertexPosition::TOP_LEFT_EDGE_3D: // ae
+      neighborId = getVertexNeighborAE(vertexId, localNeighborId);
+      break;
+    case VertexPosition::TOP_RIGHT_EDGE_3D: // bf
+      neighborId = getVertexNeighborBF(vertexId, localNeighborId);
+      break;
+    case VertexPosition::BOTTOM_LEFT_EDGE_3D: // cg
+      neighborId = getVertexNeighborCG(vertexId, localNeighborId);
+      break;
+    case VertexPosition::BOTTOM_RIGHT_EDGE_3D: // dh
+      neighborId = getVertexNeighborDH(vertexId, localNeighborId);
+      break;
+    case VertexPosition::TOP_LEFT_FRONT_CORNER_3D: // a
+      neighborId = getVertexNeighborA(vertexId, localNeighborId);
+      break;
+    case VertexPosition::TOP_RIGHT_FRONT_CORNER_3D: // b
+      neighborId = getVertexNeighborB(vertexId, localNeighborId);
+      break;
+    case VertexPosition::BOTTOM_LEFT_FRONT_CORNER_3D: // c
+      neighborId = getVertexNeighborC(vertexId, localNeighborId);
+      break;
+    case VertexPosition::BOTTOM_RIGHT_FRONT_CORNER_3D: // d
+      neighborId = getVertexNeighborD(vertexId, localNeighborId);
+      break;
+    case VertexPosition::TOP_LEFT_BACK_CORNER_3D: // e
+      neighborId = getVertexNeighborE(vertexId, localNeighborId);
+      break;
+    case VertexPosition::TOP_RIGHT_BACK_CORNER_3D: // f
+      neighborId = getVertexNeighborF(vertexId, localNeighborId);
+      break;
+    case VertexPosition::BOTTOM_LEFT_BACK_CORNER_3D: // g
+      neighborId = getVertexNeighborG(vertexId, localNeighborId);
+      break;
+    case VertexPosition::BOTTOM_RIGHT_BACK_CORNER_3D: // h
+      neighborId = getVertexNeighborH(vertexId, localNeighborId);
+      break;
+    case VertexPosition::CENTER_2D:
+      neighborId = getVertexNeighbor2dABCD(vertexId, localNeighborId);
+      break;
+    case VertexPosition::TOP_EDGE_2D:
+      neighborId = getVertexNeighbor2dAB(vertexId, localNeighborId);
+      break;
+    case VertexPosition::BOTTOM_EDGE_2D:
+      neighborId = getVertexNeighbor2dCD(vertexId, localNeighborId);
+      break;
+    case VertexPosition::LEFT_EDGE_2D:
+      neighborId = getVertexNeighbor2dAC(vertexId, localNeighborId);
+      break;
+    case VertexPosition::RIGHT_EDGE_2D:
+      neighborId = getVertexNeighbor2dBD(vertexId, localNeighborId);
+      break;
+    case VertexPosition::TOP_LEFT_CORNER_2D: // a
+      neighborId = getVertexNeighbor2dA(vertexId, localNeighborId);
+      break;
+    case VertexPosition::TOP_RIGHT_CORNER_2D: // b
+      neighborId = getVertexNeighbor2dB(vertexId, localNeighborId);
+      break;
+    case VertexPosition::BOTTOM_LEFT_CORNER_2D: // c
+      neighborId = getVertexNeighbor2dC(vertexId, localNeighborId);
+      break;
+    case VertexPosition::BOTTOM_RIGHT_CORNER_2D: // d
+      neighborId = getVertexNeighbor2dD(vertexId, localNeighborId);
+      break;
+    case VertexPosition::CENTER_1D:
+      neighborId = (localNeighborId == 0 ? vertexId + 1 : vertexId - 1);
+      break;
+    case VertexPosition::LEFT_CORNER_1D:
+      neighborId = vertexId + 1;
+      break;
+    case VertexPosition::RIGHT_CORNER_1D:
+      neighborId = vertexId - 1;
+      break;
+    default:
+      neighborId = -1;
+      break;
   }
 
   return 0;
@@ -490,119 +520,128 @@ int ImplicitTriangulation::getVertexEdgeInternal(const SimplexId &vertexId,
   // D3: diagonale3 (type be)
   // D4: diagonale4 (type bg)
 
-  edgeId = -1;
+  const auto &p = vertexCoords_[vertexId];
 
-  if(dimensionality_ == 3) {
-    SimplexId p[3];
-    vertexToPosition(vertexId, p);
-
-    if(0 < p[0] and p[0] < nbvoxels_[0]) {
-      if(0 < p[1] and p[1] < nbvoxels_[1]) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          edgeId = getVertexEdgeABCDEFGH(p, localEdgeId); // abcdefgh
-        else if(p[2] == 0)
-          edgeId = getVertexEdgeABDC(p, localEdgeId); // abdc
-        else
-          edgeId = getVertexEdgeEFHG(p, localEdgeId); // efhg
-      } else if(p[1] == 0) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          edgeId = getVertexEdgeAEFB(p, localEdgeId); // aefb
-        else if(p[2] == 0)
-          edgeId = getVertexEdgeAB(p, localEdgeId); // ab
-        else
-          edgeId = getVertexEdgeEF(p, localEdgeId); // ef
-      } else {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          edgeId = getVertexEdgeGHDC(p, localEdgeId); // ghdc
-        else if(p[2] == 0)
-          edgeId = getVertexEdgeCD(p, localEdgeId); // cd
-        else
-          edgeId = getVertexEdgeGH(p, localEdgeId); // gh
-      }
-    } else if(p[0] == 0) {
-      if(0 < p[1] and p[1] < nbvoxels_[1]) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          edgeId = getVertexEdgeAEGC(p, localEdgeId); // aegc
-        else if(p[2] == 0)
-          edgeId = getVertexEdgeAC(p, localEdgeId); // ac
-        else
-          edgeId = getVertexEdgeEG(p, localEdgeId); // eg
-      } else if(p[1] == 0) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          edgeId = getVertexEdgeAE(p, localEdgeId); // ae
-        else if(p[2] == 0)
-          edgeId = getVertexEdgeA(p, localEdgeId); // a
-        else
-          edgeId = getVertexEdgeE(p, localEdgeId); // e
-      } else {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          edgeId = getVertexEdgeCG(p, localEdgeId); // cg
-        else if(p[2] == 0)
-          edgeId = getVertexEdgeC(p, localEdgeId); // c
-        else
-          edgeId = getVertexEdgeG(p, localEdgeId); // g
-      }
-    } else {
-      if(0 < p[1] and p[1] < nbvoxels_[1]) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          edgeId = getVertexEdgeBFHD(p, localEdgeId); // bfhd
-        else if(p[2] == 0)
-          edgeId = getVertexEdgeBD(p, localEdgeId); // bd
-        else
-          edgeId = getVertexEdgeFH(p, localEdgeId); // fh
-      } else if(p[1] == 0) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          edgeId = getVertexEdgeBF(p, localEdgeId); // bf
-        else if(p[2] == 0)
-          edgeId = getVertexEdgeB(p, localEdgeId); // b
-        else
-          edgeId = getVertexEdgeF(p, localEdgeId); // f
-      } else {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          edgeId = getVertexEdgeDH(p, localEdgeId); // dh
-        else if(p[2] == 0)
-          edgeId = getVertexEdgeD(p, localEdgeId); // d
-        else
-          edgeId = getVertexEdgeH(p, localEdgeId); // h
-      }
-    }
-  } else if(dimensionality_ == 2) {
-    SimplexId p[2];
-    vertexToPosition2d(vertexId, p);
-
-    if(0 < p[0] and p[0] < nbvoxels_[Di_]) {
-      if(0 < p[1] and p[1] < nbvoxels_[Dj_])
-        edgeId = getVertexEdge2dABCD(p, localEdgeId); // abcd
-      else if(p[1] == 0)
-        edgeId = getVertexEdge2dAB(p, localEdgeId); // ab
-      else
-        edgeId = getVertexEdge2dCD(p, localEdgeId); // cd
-    } else if(p[0] == 0) {
-      if(0 < p[1] and p[1] < nbvoxels_[Dj_])
-        edgeId = getVertexEdge2dAC(p, localEdgeId); // ac
-      else if(p[1] == 0)
-        edgeId = getVertexEdge2dA(p, localEdgeId); // a
-      else
-        edgeId = getVertexEdge2dC(p, localEdgeId); // c
-    } else {
-      if(0 < p[1] and p[1] < nbvoxels_[Dj_])
-        edgeId = getVertexEdge2dBD(p, localEdgeId); // bd
-      else if(p[1] == 0)
-        edgeId = getVertexEdge2dB(p, localEdgeId); // b
-      else
-        edgeId = getVertexEdge2dD(p, localEdgeId); // d
-    }
-  } else if(dimensionality_ == 1) {
-    // ab
-    if(vertexId > 0 and vertexId < nbvoxels_[Di_]) {
-      if(localEdgeId == 0)
-        edgeId = vertexId;
-      else
-        edgeId = vertexId - 1;
-    } else if(vertexId == 0)
-      edgeId = vertexId; // a
-    else
-      edgeId = vertexId - 1; // b
+  switch(vertexPositions_[vertexId]) {
+    case VertexPosition::CENTER_3D:
+      edgeId = getVertexEdgeABCDEFGH(p.data(), localEdgeId);
+      break;
+    case VertexPosition::FRONT_FACE_3D:
+      edgeId = getVertexEdgeABDC(p.data(), localEdgeId);
+      break;
+    case VertexPosition::BACK_FACE_3D:
+      edgeId = getVertexEdgeEFHG(p.data(), localEdgeId);
+      break;
+    case VertexPosition::TOP_FACE_3D:
+      edgeId = getVertexEdgeAEFB(p.data(), localEdgeId);
+      break;
+    case VertexPosition::BOTTOM_FACE_3D:
+      edgeId = getVertexEdgeGHDC(p.data(), localEdgeId);
+      break;
+    case VertexPosition::LEFT_FACE_3D:
+      edgeId = getVertexEdgeAEGC(p.data(), localEdgeId);
+      break;
+    case VertexPosition::RIGHT_FACE_3D:
+      edgeId = getVertexEdgeBFHD(p.data(), localEdgeId);
+      break;
+    case VertexPosition::TOP_FRONT_EDGE_3D: // ab
+      edgeId = getVertexEdgeAB(p.data(), localEdgeId);
+      break;
+    case VertexPosition::BOTTOM_FRONT_EDGE_3D: // cd
+      edgeId = getVertexEdgeCD(p.data(), localEdgeId);
+      break;
+    case VertexPosition::LEFT_FRONT_EDGE_3D: // ac
+      edgeId = getVertexEdgeAC(p.data(), localEdgeId);
+      break;
+    case VertexPosition::RIGHT_FRONT_EDGE_3D: // bd
+      edgeId = getVertexEdgeBD(p.data(), localEdgeId);
+      break;
+    case VertexPosition::TOP_BACK_EDGE_3D: // ef
+      edgeId = getVertexEdgeEF(p.data(), localEdgeId);
+      break;
+    case VertexPosition::BOTTOM_BACK_EDGE_3D: // gh
+      edgeId = getVertexEdgeGH(p.data(), localEdgeId);
+      break;
+    case VertexPosition::LEFT_BACK_EDGE_3D: // eg
+      edgeId = getVertexEdgeEG(p.data(), localEdgeId);
+      break;
+    case VertexPosition::RIGHT_BACK_EDGE_3D: // fh
+      edgeId = getVertexEdgeFH(p.data(), localEdgeId);
+      break;
+    case VertexPosition::TOP_LEFT_EDGE_3D: // ae
+      edgeId = getVertexEdgeAE(p.data(), localEdgeId);
+      break;
+    case VertexPosition::TOP_RIGHT_EDGE_3D: // bf
+      edgeId = getVertexEdgeBF(p.data(), localEdgeId);
+      break;
+    case VertexPosition::BOTTOM_LEFT_EDGE_3D: // cg
+      edgeId = getVertexEdgeCG(p.data(), localEdgeId);
+      break;
+    case VertexPosition::BOTTOM_RIGHT_EDGE_3D: // dh
+      edgeId = getVertexEdgeDH(p.data(), localEdgeId);
+      break;
+    case VertexPosition::TOP_LEFT_FRONT_CORNER_3D: // a
+      edgeId = getVertexEdgeA(p.data(), localEdgeId);
+      break;
+    case VertexPosition::TOP_RIGHT_FRONT_CORNER_3D: // b
+      edgeId = getVertexEdgeB(p.data(), localEdgeId);
+      break;
+    case VertexPosition::BOTTOM_LEFT_FRONT_CORNER_3D: // c
+      edgeId = getVertexEdgeC(p.data(), localEdgeId);
+      break;
+    case VertexPosition::BOTTOM_RIGHT_FRONT_CORNER_3D: // d
+      edgeId = getVertexEdgeD(p.data(), localEdgeId);
+      break;
+    case VertexPosition::TOP_LEFT_BACK_CORNER_3D: // e
+      edgeId = getVertexEdgeE(p.data(), localEdgeId);
+      break;
+    case VertexPosition::TOP_RIGHT_BACK_CORNER_3D: // f
+      edgeId = getVertexEdgeF(p.data(), localEdgeId);
+      break;
+    case VertexPosition::BOTTOM_LEFT_BACK_CORNER_3D: // g
+      edgeId = getVertexEdgeG(p.data(), localEdgeId);
+      break;
+    case VertexPosition::BOTTOM_RIGHT_BACK_CORNER_3D: // h
+      edgeId = getVertexEdgeH(p.data(), localEdgeId);
+      break;
+    case VertexPosition::CENTER_2D:
+      edgeId = getVertexEdge2dABCD(p.data(), localEdgeId);
+      break;
+    case VertexPosition::TOP_EDGE_2D:
+      edgeId = getVertexEdge2dAB(p.data(), localEdgeId);
+      break;
+    case VertexPosition::BOTTOM_EDGE_2D:
+      edgeId = getVertexEdge2dCD(p.data(), localEdgeId);
+      break;
+    case VertexPosition::LEFT_EDGE_2D:
+      edgeId = getVertexEdge2dAC(p.data(), localEdgeId);
+      break;
+    case VertexPosition::RIGHT_EDGE_2D:
+      edgeId = getVertexEdge2dBD(p.data(), localEdgeId);
+      break;
+    case VertexPosition::TOP_LEFT_CORNER_2D: // a
+      edgeId = getVertexEdge2dA(p.data(), localEdgeId);
+      break;
+    case VertexPosition::TOP_RIGHT_CORNER_2D: // b
+      edgeId = getVertexEdge2dB(p.data(), localEdgeId);
+      break;
+    case VertexPosition::BOTTOM_LEFT_CORNER_2D: // c
+      edgeId = getVertexEdge2dC(p.data(), localEdgeId);
+      break;
+    case VertexPosition::BOTTOM_RIGHT_CORNER_2D: // d
+      edgeId = getVertexEdge2dD(p.data(), localEdgeId);
+      break;
+    case VertexPosition::CENTER_1D:
+      edgeId = (localEdgeId == 0 ? vertexId : vertexId - 1);
+      break;
+    case VertexPosition::LEFT_CORNER_1D:
+      edgeId = vertexId;
+      break;
+    case VertexPosition::RIGHT_CORNER_1D:
+      edgeId = vertexId - 1;
+      break;
+    default:
+      edgeId = -1;
   }
 
   return 0;
@@ -634,74 +673,42 @@ inline SimplexId ImplicitTriangulation::getVertexTriangleNumberInternal(
     return -1;
 #endif
 
-  if(dimensionality_ == 3) {
-    SimplexId p[3];
-    vertexToPosition(vertexId, p);
-
-    if(0 < p[0] and p[0] < nbvoxels_[0]) {
-      if(0 < p[1] and p[1] < nbvoxels_[1]) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          return 36; // abcdefgh
-        else
-          return 21; // abdc ou efhg
-      } else if(p[1] == 0) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          return 21; // aefb
-        else if(p[2] == 0)
-          return 15; // ab
-        else
-          return 9; // ef
-      } else {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          return 21; // ghdc
-        else if(p[2] == 0)
-          return 9; // cd
-        else
-          return 15; // gh
-      }
-    } else if(p[0] == 0) {
-      if(0 < p[1] and p[1] < nbvoxels_[1]) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          return 21; // aegc
-        else if(p[2] == 0)
-          return 9; // ac
-        else
-          return 15; // eg
-      } else if(p[1] == 0) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          return 9; // ae
-        else
-          return 5; // a ou e
-      } else {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          return 15; // cg
-        else if(p[2] == 0)
-          return 5; // c
-        else
-          return 12; // g
-      }
-    } else {
-      if(0 < p[1] and p[1] < nbvoxels_[1]) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          return 21; // bfhd
-        else if(p[2] == 0)
-          return 15; // bd
-        else
-          return 9; // fh
-      } else if(p[1] == 0) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          return 15; // bf
-        else if(p[2] == 0)
-          return 12; // b
-        else
-          return 5; // f
-      } else {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          return 9; // dh
-        else
-          return 5; // d ou h
-      }
-    }
+  switch(vertexPositions_[vertexId]) {
+    case VertexPosition::CENTER_3D:
+      return 36;
+    case VertexPosition::FRONT_FACE_3D:
+    case VertexPosition::BACK_FACE_3D:
+    case VertexPosition::TOP_FACE_3D:
+    case VertexPosition::BOTTOM_FACE_3D:
+    case VertexPosition::LEFT_FACE_3D:
+    case VertexPosition::RIGHT_FACE_3D:
+      return 21;
+    case VertexPosition::TOP_FRONT_EDGE_3D: // ab
+    case VertexPosition::RIGHT_FRONT_EDGE_3D: // bd
+    case VertexPosition::BOTTOM_BACK_EDGE_3D: // gh
+    case VertexPosition::LEFT_BACK_EDGE_3D: // eg
+    case VertexPosition::BOTTOM_LEFT_EDGE_3D: // cg
+    case VertexPosition::TOP_RIGHT_EDGE_3D: // bf
+      return 15;
+    case VertexPosition::TOP_RIGHT_FRONT_CORNER_3D: // b
+    case VertexPosition::BOTTOM_LEFT_BACK_CORNER_3D: // g
+      return 12;
+    case VertexPosition::TOP_BACK_EDGE_3D: // ef
+    case VertexPosition::BOTTOM_FRONT_EDGE_3D: // cd
+    case VertexPosition::LEFT_FRONT_EDGE_3D: // ac
+    case VertexPosition::TOP_LEFT_EDGE_3D: // ae
+    case VertexPosition::RIGHT_BACK_EDGE_3D: // fh
+    case VertexPosition::BOTTOM_RIGHT_EDGE_3D: // dh
+      return 9;
+    case VertexPosition::TOP_LEFT_FRONT_CORNER_3D: // a
+    case VertexPosition::BOTTOM_LEFT_FRONT_CORNER_3D: // c
+    case VertexPosition::BOTTOM_RIGHT_FRONT_CORNER_3D: // d
+    case VertexPosition::TOP_LEFT_BACK_CORNER_3D: // e
+    case VertexPosition::TOP_RIGHT_BACK_CORNER_3D: // f
+    case VertexPosition::BOTTOM_RIGHT_BACK_CORNER_3D: // h
+      return 5;
+    default: // 1D + 2D
+      break;
   }
 
   return 0;
@@ -716,83 +723,94 @@ int ImplicitTriangulation::getVertexTriangleInternal(
      or localTriangleId >= getVertexTriangleNumberInternal(vertexId))
     return -1;
 #endif
-  triangleId = -1;
 
-  if(dimensionality_ == 3) {
-    SimplexId p[3];
-    vertexToPosition(vertexId, p);
+  const auto &p = vertexCoords_[vertexId];
 
-    if(0 < p[0] and p[0] < nbvoxels_[0]) {
-      if(0 < p[1] and p[1] < nbvoxels_[1]) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          triangleId
-            = getVertexTriangleABCDEFGH(p, localTriangleId); // abcdefgh
-        else if(p[2] == 0)
-          triangleId = getVertexTriangleABDC(p, localTriangleId); // abdc
-        else
-          triangleId = getVertexTriangleEFHG(p, localTriangleId); // efhg
-      } else if(p[1] == 0) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          triangleId = getVertexTriangleAEFB(p, localTriangleId); // aefb
-        else if(p[2] == 0)
-          triangleId = getVertexTriangleAB(p, localTriangleId); // ab
-        else
-          triangleId = getVertexTriangleEF(p, localTriangleId); // ef
-      } else {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          triangleId = getVertexTriangleGHDC(p, localTriangleId); // ghdc
-        else if(p[2] == 0)
-          triangleId = getVertexTriangleCD(p, localTriangleId); // cd
-        else
-          triangleId = getVertexTriangleGH(p, localTriangleId); // gh
-      }
-    } else if(p[0] == 0) {
-      if(0 < p[1] and p[1] < nbvoxels_[1]) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          triangleId = getVertexTriangleAEGC(p, localTriangleId); // aegc
-        else if(p[2] == 0)
-          triangleId = getVertexTriangleAC(p, localTriangleId); // ac
-        else
-          triangleId = getVertexTriangleEG(p, localTriangleId); // eg
-      } else if(p[1] == 0) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          triangleId = getVertexTriangleAE(p, localTriangleId); // ae
-        else if(p[2] == 0)
-          triangleId = getVertexTriangleA(p, localTriangleId); // a
-        else
-          triangleId = getVertexTriangleE(p, localTriangleId); // e
-      } else {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          triangleId = getVertexTriangleCG(p, localTriangleId); // cg
-        else if(p[2] == 0)
-          triangleId = getVertexTriangleC(p, localTriangleId); // c
-        else
-          triangleId = getVertexTriangleG(p, localTriangleId); // g
-      }
-    } else {
-      if(0 < p[1] and p[1] < nbvoxels_[1]) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          triangleId = getVertexTriangleBFHD(p, localTriangleId); // bfhd
-        else if(p[2] == 0)
-          triangleId = getVertexTriangleBD(p, localTriangleId); // bd
-        else
-          triangleId = getVertexTriangleFH(p, localTriangleId); // fh
-      } else if(p[1] == 0) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          triangleId = getVertexTriangleBF(p, localTriangleId); // bf
-        else if(p[2] == 0)
-          triangleId = getVertexTriangleB(p, localTriangleId); // b
-        else
-          triangleId = getVertexTriangleF(p, localTriangleId); // f
-      } else {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          triangleId = getVertexTriangleDH(p, localTriangleId); // dh
-        else if(p[2] == 0)
-          triangleId = getVertexTriangleD(p, localTriangleId); // d
-        else
-          triangleId = getVertexTriangleH(p, localTriangleId); // h
-      }
-    }
+  switch(vertexPositions_[vertexId]) {
+    case VertexPosition::CENTER_3D:
+      triangleId = getVertexTriangleABCDEFGH(p.data(), localTriangleId);
+      break;
+    case VertexPosition::FRONT_FACE_3D:
+      triangleId = getVertexTriangleABDC(p.data(), localTriangleId);
+      break;
+    case VertexPosition::BACK_FACE_3D:
+      triangleId = getVertexTriangleEFHG(p.data(), localTriangleId);
+      break;
+    case VertexPosition::TOP_FACE_3D:
+      triangleId = getVertexTriangleAEFB(p.data(), localTriangleId);
+      break;
+    case VertexPosition::BOTTOM_FACE_3D:
+      triangleId = getVertexTriangleGHDC(p.data(), localTriangleId);
+      break;
+    case VertexPosition::LEFT_FACE_3D:
+      triangleId = getVertexTriangleAEGC(p.data(), localTriangleId);
+      break;
+    case VertexPosition::RIGHT_FACE_3D:
+      triangleId = getVertexTriangleBFHD(p.data(), localTriangleId);
+      break;
+    case VertexPosition::TOP_FRONT_EDGE_3D: // ab
+      triangleId = getVertexTriangleAB(p.data(), localTriangleId);
+      break;
+    case VertexPosition::BOTTOM_FRONT_EDGE_3D: // cd
+      triangleId = getVertexTriangleCD(p.data(), localTriangleId);
+      break;
+    case VertexPosition::LEFT_FRONT_EDGE_3D: // ac
+      triangleId = getVertexTriangleAC(p.data(), localTriangleId);
+      break;
+    case VertexPosition::RIGHT_FRONT_EDGE_3D: // bd
+      triangleId = getVertexTriangleBD(p.data(), localTriangleId);
+      break;
+    case VertexPosition::TOP_BACK_EDGE_3D: // ef
+      triangleId = getVertexTriangleEF(p.data(), localTriangleId);
+      break;
+    case VertexPosition::BOTTOM_BACK_EDGE_3D: // gh
+      triangleId = getVertexTriangleGH(p.data(), localTriangleId);
+      break;
+    case VertexPosition::LEFT_BACK_EDGE_3D: // eg
+      triangleId = getVertexTriangleEG(p.data(), localTriangleId);
+      break;
+    case VertexPosition::RIGHT_BACK_EDGE_3D: // fh
+      triangleId = getVertexTriangleFH(p.data(), localTriangleId);
+      break;
+    case VertexPosition::TOP_LEFT_EDGE_3D: // ae
+      triangleId = getVertexTriangleAE(p.data(), localTriangleId);
+      break;
+    case VertexPosition::TOP_RIGHT_EDGE_3D: // bf
+      triangleId = getVertexTriangleBF(p.data(), localTriangleId);
+      break;
+    case VertexPosition::BOTTOM_LEFT_EDGE_3D: // cg
+      triangleId = getVertexTriangleCG(p.data(), localTriangleId);
+      break;
+    case VertexPosition::BOTTOM_RIGHT_EDGE_3D: // dh
+      triangleId = getVertexTriangleDH(p.data(), localTriangleId);
+      break;
+    case VertexPosition::TOP_LEFT_FRONT_CORNER_3D: // a
+      triangleId = getVertexTriangleA(p.data(), localTriangleId);
+      break;
+    case VertexPosition::TOP_RIGHT_FRONT_CORNER_3D: // b
+      triangleId = getVertexTriangleB(p.data(), localTriangleId);
+      break;
+    case VertexPosition::BOTTOM_LEFT_FRONT_CORNER_3D: // c
+      triangleId = getVertexTriangleC(p.data(), localTriangleId);
+      break;
+    case VertexPosition::BOTTOM_RIGHT_FRONT_CORNER_3D: // d
+      triangleId = getVertexTriangleD(p.data(), localTriangleId);
+      break;
+    case VertexPosition::TOP_LEFT_BACK_CORNER_3D: // e
+      triangleId = getVertexTriangleE(p.data(), localTriangleId);
+      break;
+    case VertexPosition::TOP_RIGHT_BACK_CORNER_3D: // f
+      triangleId = getVertexTriangleF(p.data(), localTriangleId);
+      break;
+    case VertexPosition::BOTTOM_LEFT_BACK_CORNER_3D: // g
+      triangleId = getVertexTriangleG(p.data(), localTriangleId);
+      break;
+    case VertexPosition::BOTTOM_RIGHT_BACK_CORNER_3D: // h
+      triangleId = getVertexTriangleH(p.data(), localTriangleId);
+      break;
+    default: // 1D + 2D
+      triangleId = -1;
+      break;
   }
 
   return 0;
@@ -830,109 +848,121 @@ int ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getVertexLink)(
     return -1;
 #endif // !TTK_ENABLE_KAMIKAZE
 
-  linkId = -1;
+  const auto &p = vertexCoords_[vertexId];
 
-  if(dimensionality_ == 3) {
-    SimplexId p[3];
-    vertexToPosition(vertexId, p);
-
-    if(0 < p[0] and p[0] < nbvoxels_[0]) {
-      if(0 < p[1] and p[1] < nbvoxels_[1]) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          linkId = getVertexLinkABCDEFGH(p, localLinkId); // abcdefgh
-        else if(p[2] == 0)
-          linkId = getVertexLinkABDC(p, localLinkId); // abdc
-        else
-          linkId = getVertexLinkEFHG(p, localLinkId); // efhg
-      } else if(p[1] == 0) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          linkId = getVertexLinkAEFB(p, localLinkId); // aefb
-        else if(p[2] == 0)
-          linkId = getVertexLinkAB(p, localLinkId); // ab
-        else
-          linkId = getVertexLinkEF(p, localLinkId); // ef
-      } else {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          linkId = getVertexLinkGHDC(p, localLinkId); // ghdc
-        else if(p[2] == 0)
-          linkId = getVertexLinkCD(p, localLinkId); // cd
-        else
-          linkId = getVertexLinkGH(p, localLinkId); // gh
-      }
-    } else if(p[0] == 0) {
-      if(0 < p[1] and p[1] < nbvoxels_[1]) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          linkId = getVertexLinkAEGC(p, localLinkId); // aegc
-        else if(p[2] == 0)
-          linkId = getVertexLinkAC(p, localLinkId); // ac
-        else
-          linkId = getVertexLinkEG(p, localLinkId); // eg
-      } else if(p[1] == 0) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          linkId = getVertexLinkAE(p, localLinkId); // ae
-        else if(p[2] == 0)
-          linkId = getVertexLinkA(p, localLinkId); // a
-        else
-          linkId = getVertexLinkE(p, localLinkId); // e
-      } else {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          linkId = getVertexLinkCG(p, localLinkId); // cg
-        else if(p[2] == 0)
-          linkId = getVertexLinkC(p, localLinkId); // c
-        else
-          linkId = getVertexLinkG(p, localLinkId); // g
-      }
-    } else {
-      if(0 < p[1] and p[1] < nbvoxels_[1]) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          linkId = getVertexLinkBFHD(p, localLinkId); // bfhd
-        else if(p[2] == 0)
-          linkId = getVertexLinkBD(p, localLinkId); // bd
-        else
-          linkId = getVertexLinkFH(p, localLinkId); // fh
-      } else if(p[1] == 0) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          linkId = getVertexLinkBF(p, localLinkId); // bf
-        else if(p[2] == 0)
-          linkId = getVertexLinkB(p, localLinkId); // b
-        else
-          linkId = getVertexLinkF(p, localLinkId); // f
-      } else {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          linkId = getVertexLinkDH(p, localLinkId); // dh
-        else if(p[2] == 0)
-          linkId = getVertexLinkD(p, localLinkId); // d
-        else
-          linkId = getVertexLinkH(p, localLinkId); // h
-      }
-    }
-  } else if(dimensionality_ == 2) {
-    SimplexId p[2];
-    vertexToPosition2d(vertexId, p);
-
-    if(0 < p[0] and p[0] < nbvoxels_[Di_]) {
-      if(0 < p[1] and p[1] < nbvoxels_[Dj_])
-        linkId = getVertexLink2dABCD(p, localLinkId); // abcd
-      else if(p[1] == 0)
-        linkId = getVertexLink2dAB(p, localLinkId); // ab
-      else
-        linkId = getVertexLink2dCD(p, localLinkId); // cd
-    } else if(p[0] == 0) {
-      if(0 < p[1] and p[1] < nbvoxels_[Dj_])
-        linkId = getVertexLink2dAC(p, localLinkId); // ac
-      else if(p[1] == 0)
-        linkId = getVertexLink2dA(p, localLinkId); // a
-      else
-        linkId = getVertexLink2dC(p, localLinkId); // c
-    } else {
-      if(0 < p[1] and p[1] < nbvoxels_[Dj_])
-        linkId = getVertexLink2dBD(p, localLinkId); // bd
-      else if(p[1] == 0)
-        linkId = getVertexLink2dB(p, localLinkId); // b
-      else
-        linkId = getVertexLink2dD(p, localLinkId); // d
-    }
-  }
+  switch(vertexPositions_[vertexId]) {
+    case VertexPosition::CENTER_3D:
+      linkId = getVertexLinkABCDEFGH(p.data(), localLinkId);
+      break;
+    case VertexPosition::FRONT_FACE_3D:
+      linkId = getVertexLinkABDC(p.data(), localLinkId);
+      break;
+    case VertexPosition::BACK_FACE_3D:
+      linkId = getVertexLinkEFHG(p.data(), localLinkId);
+      break;
+    case VertexPosition::TOP_FACE_3D:
+      linkId = getVertexLinkAEFB(p.data(), localLinkId);
+      break;
+    case VertexPosition::BOTTOM_FACE_3D:
+      linkId = getVertexLinkGHDC(p.data(), localLinkId);
+      break;
+    case VertexPosition::LEFT_FACE_3D:
+      linkId = getVertexLinkAEGC(p.data(), localLinkId);
+      break;
+    case VertexPosition::RIGHT_FACE_3D:
+      linkId = getVertexLinkBFHD(p.data(), localLinkId);
+      break;
+    case VertexPosition::TOP_FRONT_EDGE_3D: // ab
+      linkId = getVertexLinkAB(p.data(), localLinkId);
+      break;
+    case VertexPosition::BOTTOM_FRONT_EDGE_3D: // cd
+      linkId = getVertexLinkCD(p.data(), localLinkId);
+      break;
+    case VertexPosition::LEFT_FRONT_EDGE_3D: // ac
+      linkId = getVertexLinkAC(p.data(), localLinkId);
+      break;
+    case VertexPosition::RIGHT_FRONT_EDGE_3D: // bd
+      linkId = getVertexLinkBD(p.data(), localLinkId);
+      break;
+    case VertexPosition::TOP_BACK_EDGE_3D: // ef
+      linkId = getVertexLinkEF(p.data(), localLinkId);
+      break;
+    case VertexPosition::BOTTOM_BACK_EDGE_3D: // gh
+      linkId = getVertexLinkGH(p.data(), localLinkId);
+      break;
+    case VertexPosition::LEFT_BACK_EDGE_3D: // eg
+      linkId = getVertexLinkEG(p.data(), localLinkId);
+      break;
+    case VertexPosition::RIGHT_BACK_EDGE_3D: // fh
+      linkId = getVertexLinkFH(p.data(), localLinkId);
+      break;
+    case VertexPosition::TOP_LEFT_EDGE_3D: // ae
+      linkId = getVertexLinkAE(p.data(), localLinkId);
+      break;
+    case VertexPosition::TOP_RIGHT_EDGE_3D: // bf
+      linkId = getVertexLinkBF(p.data(), localLinkId);
+      break;
+    case VertexPosition::BOTTOM_LEFT_EDGE_3D: // cg
+      linkId = getVertexLinkCG(p.data(), localLinkId);
+      break;
+    case VertexPosition::BOTTOM_RIGHT_EDGE_3D: // dh
+      linkId = getVertexLinkDH(p.data(), localLinkId);
+      break;
+    case VertexPosition::TOP_LEFT_FRONT_CORNER_3D: // a
+      linkId = getVertexLinkA(p.data(), localLinkId);
+      break;
+    case VertexPosition::TOP_RIGHT_FRONT_CORNER_3D: // b
+      linkId = getVertexLinkB(p.data(), localLinkId);
+      break;
+    case VertexPosition::BOTTOM_LEFT_FRONT_CORNER_3D: // c
+      linkId = getVertexLinkC(p.data(), localLinkId);
+      break;
+    case VertexPosition::BOTTOM_RIGHT_FRONT_CORNER_3D: // d
+      linkId = getVertexLinkD(p.data(), localLinkId);
+      break;
+    case VertexPosition::TOP_LEFT_BACK_CORNER_3D: // e
+      linkId = getVertexLinkE(p.data(), localLinkId);
+      break;
+    case VertexPosition::TOP_RIGHT_BACK_CORNER_3D: // f
+      linkId = getVertexLinkF(p.data(), localLinkId);
+      break;
+    case VertexPosition::BOTTOM_LEFT_BACK_CORNER_3D: // g
+      linkId = getVertexLinkG(p.data(), localLinkId);
+      break;
+    case VertexPosition::BOTTOM_RIGHT_BACK_CORNER_3D: // h
+      linkId = getVertexLinkH(p.data(), localLinkId);
+      break;
+    case VertexPosition::CENTER_2D:
+      linkId = getVertexLink2dABCD(p.data(), localLinkId);
+      break;
+    case VertexPosition::TOP_EDGE_2D:
+      linkId = getVertexLink2dAB(p.data(), localLinkId);
+      break;
+    case VertexPosition::BOTTOM_EDGE_2D:
+      linkId = getVertexLink2dCD(p.data(), localLinkId);
+      break;
+    case VertexPosition::LEFT_EDGE_2D:
+      linkId = getVertexLink2dAC(p.data(), localLinkId);
+      break;
+    case VertexPosition::RIGHT_EDGE_2D:
+      linkId = getVertexLink2dBD(p.data(), localLinkId);
+      break;
+    case VertexPosition::TOP_LEFT_CORNER_2D: // a
+      linkId = getVertexLink2dA(p.data(), localLinkId);
+      break;
+    case VertexPosition::TOP_RIGHT_CORNER_2D: // b
+      linkId = getVertexLink2dB(p.data(), localLinkId);
+      break;
+    case VertexPosition::BOTTOM_LEFT_CORNER_2D: // c
+      linkId = getVertexLink2dC(p.data(), localLinkId);
+      break;
+    case VertexPosition::BOTTOM_RIGHT_CORNER_2D: // d
+      linkId = getVertexLink2dD(p.data(), localLinkId);
+      break;
+    default: // 1D
+      linkId = -1;
+      break;
+  };
 
   return 0;
 }
@@ -964,100 +994,53 @@ inline SimplexId ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(
     return -1;
 #endif // !TTK_ENABLE_KAMIKAZE
 
-  if(dimensionality_ == 3) {
-    SimplexId p[3];
-    vertexToPosition(vertexId, p);
-
-    if(0 < p[0] and p[0] < nbvoxels_[0]) {
-      if(0 < p[1] and p[1] < nbvoxels_[1]) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          return 24; // abcdefgh
-        else
-          return 12; // abdc ou efhg
-      } else if(p[1] == 0) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          return 12; // aefb
-        else if(p[2] == 0)
-          return 8; // ab
-        else
-          return 4; // ef
-      } else {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          return 12; // ghdc
-        else if(p[2] == 0)
-          return 4; // cd
-        else
-          return 8; // gh
-      }
-    } else if(p[0] == 0) {
-      if(0 < p[1] and p[1] < nbvoxels_[1]) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          return 12; // aegc
-        else if(p[2] == 0)
-          return 4; // ac
-        else
-          return 8; // eg
-      } else if(p[1] == 0) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          return 4; // ae
-        else
-          return 2; // a ou e
-      } else {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          return 8; // cg
-        else if(p[2] == 0)
-          return 2; // c
-        else
-          return 6; // g
-      }
-    } else {
-      if(0 < p[1] and p[1] < nbvoxels_[1]) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          return 12; // bfhd
-        else if(p[2] == 0)
-          return 8; // bd
-        else
-          return 4; // fh
-      } else if(p[1] == 0) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          return 8; // bf
-        else if(p[2] == 0)
-          return 6; // b
-        else
-          return 2; // f
-      } else {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          return 4; // dh
-        else
-          return 2; // d ou h
-      }
-    }
-  } else if(dimensionality_ == 2) {
-    SimplexId p[2];
-    vertexToPosition2d(vertexId, p);
-
-    if(0 < p[0] and p[0] < nbvoxels_[Di_]) {
-      if(0 < p[1] and p[1] < nbvoxels_[Dj_])
-        return 6; // abcd
-      else if(p[1] == 0)
-        return 3; // ab
-      else
-        return 3; // cd
-    } else if(p[0] == 0) {
-      if(0 < p[1] and p[1] < nbvoxels_[Dj_])
-        return 3; // ac
-      else if(p[1] == 0)
-        return 1; // a
-      else
-        return 2; // c
-    } else {
-      if(0 < p[1] and p[1] < nbvoxels_[Dj_])
-        return 3; // bd
-      else if(p[1] == 0)
-        return 2; // b
-      else
-        return 1; // d
-    }
+  switch(vertexPositions_[vertexId]) {
+    case VertexPosition::CENTER_3D:
+      return 24;
+    case VertexPosition::FRONT_FACE_3D:
+    case VertexPosition::BACK_FACE_3D:
+    case VertexPosition::TOP_FACE_3D:
+    case VertexPosition::BOTTOM_FACE_3D:
+    case VertexPosition::LEFT_FACE_3D:
+    case VertexPosition::RIGHT_FACE_3D:
+      return 12;
+    case VertexPosition::TOP_FRONT_EDGE_3D: // ab
+    case VertexPosition::RIGHT_FRONT_EDGE_3D: // bd
+    case VertexPosition::BOTTOM_BACK_EDGE_3D: // gh
+    case VertexPosition::LEFT_BACK_EDGE_3D: // eg
+    case VertexPosition::BOTTOM_LEFT_EDGE_3D: // cg
+    case VertexPosition::TOP_RIGHT_EDGE_3D: // bf
+      return 8;
+    case VertexPosition::TOP_RIGHT_FRONT_CORNER_3D: // b
+    case VertexPosition::BOTTOM_LEFT_BACK_CORNER_3D: // g
+    case VertexPosition::CENTER_2D:
+      return 6;
+    case VertexPosition::TOP_BACK_EDGE_3D: // ef
+    case VertexPosition::BOTTOM_FRONT_EDGE_3D: // cd
+    case VertexPosition::LEFT_FRONT_EDGE_3D: // ac
+    case VertexPosition::TOP_LEFT_EDGE_3D: // ae
+    case VertexPosition::RIGHT_BACK_EDGE_3D: // fh
+    case VertexPosition::BOTTOM_RIGHT_EDGE_3D: // dh
+      return 4;
+    case VertexPosition::TOP_EDGE_2D: // ab
+    case VertexPosition::BOTTOM_EDGE_2D: // cd
+    case VertexPosition::LEFT_EDGE_2D: // ac
+    case VertexPosition::RIGHT_EDGE_2D: // bd
+      return 3;
+    case VertexPosition::TOP_LEFT_FRONT_CORNER_3D: // a
+    case VertexPosition::BOTTOM_LEFT_FRONT_CORNER_3D: // c
+    case VertexPosition::BOTTOM_RIGHT_FRONT_CORNER_3D: // d
+    case VertexPosition::TOP_LEFT_BACK_CORNER_3D: // e
+    case VertexPosition::TOP_RIGHT_BACK_CORNER_3D: // f
+    case VertexPosition::BOTTOM_RIGHT_BACK_CORNER_3D: // h
+    case VertexPosition::TOP_RIGHT_CORNER_2D: // b
+    case VertexPosition::BOTTOM_LEFT_CORNER_2D: // c
+      return 2;
+    case VertexPosition::TOP_LEFT_CORNER_2D: // a
+    case VertexPosition::BOTTOM_RIGHT_CORNER_2D: // d
+      return 1;
+    default: // 1D
+      break;
   }
 
   return 0;
@@ -1071,108 +1054,120 @@ int ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getVertexStar)(
     return -1;
 #endif // !TTK_ENABLE_KAMIKAZE
 
-  starId = -1;
+  const auto &p = vertexCoords_[vertexId];
 
-  if(dimensionality_ == 3) {
-    SimplexId p[3];
-    vertexToPosition(vertexId, p);
-
-    if(0 < p[0] and p[0] < nbvoxels_[0]) {
-      if(0 < p[1] and p[1] < nbvoxels_[1]) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          starId = getVertexStarABCDEFGH(p, localStarId); // abcdefgh
-        else if(p[2] == 0)
-          starId = getVertexStarABDC(p, localStarId); // abdc
-        else
-          starId = getVertexStarEFHG(p, localStarId); // efhg
-      } else if(p[1] == 0) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          starId = getVertexStarAEFB(p, localStarId); // aefb
-        else if(p[2] == 0)
-          starId = getVertexStarAB(p, localStarId); // ab
-        else
-          starId = getVertexStarEF(p, localStarId); // ef
-      } else {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          starId = getVertexStarGHDC(p, localStarId); // ghdc
-        else if(p[2] == 0)
-          starId = getVertexStarCD(p, localStarId); // cd
-        else
-          starId = getVertexStarGH(p, localStarId); // gh
-      }
-    } else if(p[0] == 0) {
-      if(0 < p[1] and p[1] < nbvoxels_[1]) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          starId = getVertexStarAEGC(p, localStarId); // aegc
-        else if(p[2] == 0)
-          starId = getVertexStarAC(p, localStarId); // ac
-        else
-          starId = getVertexStarEG(p, localStarId); // eg
-      } else if(p[1] == 0) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          starId = getVertexStarAE(p, localStarId); // ae
-        else if(p[2] == 0)
-          starId = getVertexStarA(p, localStarId); // a
-        else
-          starId = getVertexStarE(p, localStarId); // e
-      } else {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          starId = getVertexStarCG(p, localStarId); // cg
-        else if(p[2] == 0)
-          starId = getVertexStarC(p, localStarId); // c
-        else
-          starId = getVertexStarG(p, localStarId); // g
-      }
-    } else {
-      if(0 < p[1] and p[1] < nbvoxels_[1]) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          starId = getVertexStarBFHD(p, localStarId); // bfhd
-        else if(p[2] == 0)
-          starId = getVertexStarBD(p, localStarId); // bd
-        else
-          starId = getVertexStarFH(p, localStarId); // fh
-      } else if(p[1] == 0) {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          starId = getVertexStarBF(p, localStarId); // bf
-        else if(p[2] == 0)
-          starId = getVertexStarB(p, localStarId); // b
-        else
-          starId = getVertexStarF(p, localStarId); // f
-      } else {
-        if(0 < p[2] and p[2] < nbvoxels_[2])
-          starId = getVertexStarDH(p, localStarId); // dh
-        else if(p[2] == 0)
-          starId = getVertexStarD(p, localStarId); // d
-        else
-          starId = getVertexStarH(p, localStarId); // h
-      }
-    }
-  } else if(dimensionality_ == 2) {
-    SimplexId p[2];
-    vertexToPosition2d(vertexId, p);
-
-    if(0 < p[0] and p[0] < nbvoxels_[Di_]) {
-      if(0 < p[1] and p[1] < nbvoxels_[Dj_])
-        starId = getVertexStar2dABCD(p, localStarId); // abcd
-      else if(p[1] == 0)
-        starId = getVertexStar2dAB(p, localStarId); // ab
-      else
-        starId = getVertexStar2dCD(p, localStarId); // cd
-    } else if(p[0] == 0) {
-      if(0 < p[1] and p[1] < nbvoxels_[Dj_])
-        starId = getVertexStar2dAC(p, localStarId); // ac
-      else if(p[1] == 0)
-        starId = getVertexStar2dA(p, localStarId); // a
-      else
-        starId = getVertexStar2dC(p, localStarId); // c
-    } else {
-      if(0 < p[1] and p[1] < nbvoxels_[Dj_])
-        starId = getVertexStar2dBD(p, localStarId); // bd
-      else if(p[1] == 0)
-        starId = getVertexStar2dB(p, localStarId); // b
-      else
-        starId = getVertexStar2dD(p, localStarId); // d
-    }
+  switch(vertexPositions_[vertexId]) {
+    case VertexPosition::CENTER_3D:
+      starId = getVertexStarABCDEFGH(p.data(), localStarId);
+      break;
+    case VertexPosition::FRONT_FACE_3D:
+      starId = getVertexStarABDC(p.data(), localStarId);
+      break;
+    case VertexPosition::BACK_FACE_3D:
+      starId = getVertexStarEFHG(p.data(), localStarId);
+      break;
+    case VertexPosition::TOP_FACE_3D:
+      starId = getVertexStarAEFB(p.data(), localStarId);
+      break;
+    case VertexPosition::BOTTOM_FACE_3D:
+      starId = getVertexStarGHDC(p.data(), localStarId);
+      break;
+    case VertexPosition::LEFT_FACE_3D:
+      starId = getVertexStarAEGC(p.data(), localStarId);
+      break;
+    case VertexPosition::RIGHT_FACE_3D:
+      starId = getVertexStarBFHD(p.data(), localStarId);
+      break;
+    case VertexPosition::TOP_FRONT_EDGE_3D: // ab
+      starId = getVertexStarAB(p.data(), localStarId);
+      break;
+    case VertexPosition::BOTTOM_FRONT_EDGE_3D: // cd
+      starId = getVertexStarCD(p.data(), localStarId);
+      break;
+    case VertexPosition::LEFT_FRONT_EDGE_3D: // ac
+      starId = getVertexStarAC(p.data(), localStarId);
+      break;
+    case VertexPosition::RIGHT_FRONT_EDGE_3D: // bd
+      starId = getVertexStarBD(p.data(), localStarId);
+      break;
+    case VertexPosition::TOP_BACK_EDGE_3D: // ef
+      starId = getVertexStarEF(p.data(), localStarId);
+      break;
+    case VertexPosition::BOTTOM_BACK_EDGE_3D: // gh
+      starId = getVertexStarGH(p.data(), localStarId);
+      break;
+    case VertexPosition::LEFT_BACK_EDGE_3D: // eg
+      starId = getVertexStarEG(p.data(), localStarId);
+      break;
+    case VertexPosition::RIGHT_BACK_EDGE_3D: // fh
+      starId = getVertexStarFH(p.data(), localStarId);
+      break;
+    case VertexPosition::TOP_LEFT_EDGE_3D: // ae
+      starId = getVertexStarAE(p.data(), localStarId);
+      break;
+    case VertexPosition::TOP_RIGHT_EDGE_3D: // bf
+      starId = getVertexStarBF(p.data(), localStarId);
+      break;
+    case VertexPosition::BOTTOM_LEFT_EDGE_3D: // cg
+      starId = getVertexStarCG(p.data(), localStarId);
+      break;
+    case VertexPosition::BOTTOM_RIGHT_EDGE_3D: // dh
+      starId = getVertexStarDH(p.data(), localStarId);
+      break;
+    case VertexPosition::TOP_LEFT_FRONT_CORNER_3D: // a
+      starId = getVertexStarA(p.data(), localStarId);
+      break;
+    case VertexPosition::TOP_RIGHT_FRONT_CORNER_3D: // b
+      starId = getVertexStarB(p.data(), localStarId);
+      break;
+    case VertexPosition::BOTTOM_LEFT_FRONT_CORNER_3D: // c
+      starId = getVertexStarC(p.data(), localStarId);
+      break;
+    case VertexPosition::BOTTOM_RIGHT_FRONT_CORNER_3D: // d
+      starId = getVertexStarD(p.data(), localStarId);
+      break;
+    case VertexPosition::TOP_LEFT_BACK_CORNER_3D: // e
+      starId = getVertexStarE(p.data(), localStarId);
+      break;
+    case VertexPosition::TOP_RIGHT_BACK_CORNER_3D: // f
+      starId = getVertexStarF(p.data(), localStarId);
+      break;
+    case VertexPosition::BOTTOM_LEFT_BACK_CORNER_3D: // g
+      starId = getVertexStarG(p.data(), localStarId);
+      break;
+    case VertexPosition::BOTTOM_RIGHT_BACK_CORNER_3D: // h
+      starId = getVertexStarH(p.data(), localStarId);
+      break;
+    case VertexPosition::CENTER_2D:
+      starId = getVertexStar2dABCD(p.data(), localStarId);
+      break;
+    case VertexPosition::TOP_EDGE_2D:
+      starId = getVertexStar2dAB(p.data(), localStarId);
+      break;
+    case VertexPosition::BOTTOM_EDGE_2D:
+      starId = getVertexStar2dCD(p.data(), localStarId);
+      break;
+    case VertexPosition::LEFT_EDGE_2D:
+      starId = getVertexStar2dAC(p.data(), localStarId);
+      break;
+    case VertexPosition::RIGHT_EDGE_2D:
+      starId = getVertexStar2dBD(p.data(), localStarId);
+      break;
+    case VertexPosition::TOP_LEFT_CORNER_2D: // a
+      starId = getVertexStar2dA(p.data(), localStarId);
+      break;
+    case VertexPosition::TOP_RIGHT_CORNER_2D: // b
+      starId = getVertexStar2dB(p.data(), localStarId);
+      break;
+    case VertexPosition::BOTTOM_LEFT_CORNER_2D: // c
+      starId = getVertexStar2dC(p.data(), localStarId);
+      break;
+    case VertexPosition::BOTTOM_RIGHT_CORNER_2D: // d
+      starId = getVertexStar2dD(p.data(), localStarId);
+      break;
+    default: // 1D
+      starId = -1;
+      break;
   }
 
   return 0;
@@ -1201,15 +1196,13 @@ int ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getVertexPoint)(
   const SimplexId &vertexId, float &x, float &y, float &z) const {
 
   if(dimensionality_ == 3) {
-    SimplexId p[3];
-    vertexToPosition(vertexId, p);
+    const auto &p = vertexCoords_[vertexId];
 
     x = origin_[0] + spacing_[0] * p[0];
     y = origin_[1] + spacing_[1] * p[1];
     z = origin_[2] + spacing_[2] * p[2];
   } else if(dimensionality_ == 2) {
-    SimplexId p[2];
-    vertexToPosition2d(vertexId, p);
+    const auto &p = vertexCoords_[vertexId];
 
     if(dimensions_[0] > 1 and dimensions_[1] > 1) {
       x = origin_[0] + spacing_[0] * p[0];
@@ -1253,187 +1246,70 @@ int ImplicitTriangulation::getEdgeVertexInternal(const SimplexId &edgeId,
     return -2;
 #endif
 
-  vertexId = -1;
+  const auto &p = edgeCoords_[edgeId];
 
-  if(dimensionality_ == 3) {
-    SimplexId p[3];
-
-    // L
-    if(edgeId < esetshift_[0]) {
-      edgeToPosition(edgeId, 0, p);
-      if(isAccelerated_) {
-        if(localVertexId == 0)
-          vertexId = p[0] + (p[1] << div_[0]) + (p[2] << div_[1]);
-        else
-          vertexId = p[0] + (p[1] << div_[0]) + (p[2] << div_[1]) + 1;
-      } else {
-        if(localVertexId == 0)
-          vertexId = p[0] + p[1] * vshift_[0] + p[2] * vshift_[1];
-        else
-          vertexId = p[0] + p[1] * vshift_[0] + p[2] * vshift_[1] + 1;
-      }
-    }
-    // H
-    else if(edgeId < esetshift_[1]) {
-      edgeToPosition(edgeId, 1, p);
-      if(isAccelerated_) {
-        if(localVertexId == 0)
-          vertexId = p[0] + (p[1] << div_[0]) + (p[2] << div_[1]);
-        else
-          vertexId = p[0] + (p[1] << div_[0]) + (p[2] << div_[1]) + vshift_[0];
-      } else {
-        if(localVertexId == 0)
-          vertexId = p[0] + p[1] * vshift_[0] + p[2] * vshift_[1];
-        else
-          vertexId = p[0] + p[1] * vshift_[0] + p[2] * vshift_[1] + vshift_[0];
-      }
-    }
-    // P
-    else if(edgeId < esetshift_[2]) {
-      edgeToPosition(edgeId, 2, p);
-      if(isAccelerated_) {
-        if(localVertexId == 0)
-          vertexId = p[0] + (p[1] << div_[0]) + (p[2] << div_[1]);
-        else
-          vertexId = p[0] + (p[1] << div_[0]) + (p[2] << div_[1]) + vshift_[1];
-      } else {
-        if(localVertexId == 0)
-          vertexId = p[0] + p[1] * vshift_[0] + p[2] * vshift_[1];
-        else
-          vertexId = p[0] + p[1] * vshift_[0] + p[2] * vshift_[1] + vshift_[1];
-      }
-    }
-    // D1
-    else if(edgeId < esetshift_[3]) {
-      edgeToPosition(edgeId, 3, p);
-      if(isAccelerated_) {
-        if(localVertexId == 0)
-          vertexId = p[0] + (p[1] << div_[0]) + (p[2] << div_[1]) + 1;
-        else
-          vertexId = p[0] + (p[1] << div_[0]) + (p[2] << div_[1]) + vshift_[0];
-      } else {
-        if(localVertexId == 0)
-          vertexId = p[0] + p[1] * vshift_[0] + p[2] * vshift_[1] + 1;
-        else
-          vertexId = p[0] + p[1] * vshift_[0] + p[2] * vshift_[1] + vshift_[0];
-      }
-    }
-    // D2
-    else if(edgeId < esetshift_[4]) {
-      edgeToPosition(edgeId, 4, p);
-      if(isAccelerated_) {
-        if(localVertexId == 0)
-          vertexId = p[0] + (p[1] << div_[0]) + (p[2] << div_[1]);
-        else
-          vertexId = p[0] + (p[1] << div_[0]) + (p[2] << div_[1]) + vshift_[0]
-                     + vshift_[1];
-      } else {
-        if(localVertexId == 0)
-          vertexId = p[0] + p[1] * vshift_[0] + p[2] * vshift_[1];
-        else
-          vertexId = p[0] + p[1] * vshift_[0] + p[2] * vshift_[1] + vshift_[0]
-                     + vshift_[1];
-      }
-    }
-    // D3
-    else if(edgeId < esetshift_[5]) {
-      edgeToPosition(edgeId, 5, p);
-      if(isAccelerated_) {
-        if(localVertexId == 0)
-          vertexId = p[0] + (p[1] << div_[0]) + (p[2] << div_[1]) + 1;
-        else
-          vertexId = p[0] + (p[1] << div_[0]) + (p[2] << div_[1]) + vshift_[1];
-
-      } else {
-        if(localVertexId == 0)
-          vertexId = p[0] + p[1] * vshift_[0] + p[2] * vshift_[1] + 1;
-        else
-          vertexId = p[0] + p[1] * vshift_[0] + p[2] * vshift_[1] + vshift_[1];
-      }
-    }
-    // D4
-    else if(edgeId < esetshift_[6]) {
-      edgeToPosition(edgeId, 6, p);
-      if(isAccelerated_) {
-        if(localVertexId == 0)
-          vertexId = p[0] + (p[1] << div_[0]) + (p[2] << div_[1]) + 1;
-        else
-          vertexId = p[0] + (p[1] << div_[0]) + (p[2] << div_[1]) + vshift_[0]
-                     + vshift_[1];
-
-      } else {
-        if(localVertexId == 0)
-          vertexId = p[0] + p[1] * vshift_[0] + p[2] * vshift_[1] + 1;
-        else
-          vertexId = p[0] + p[1] * vshift_[0] + p[2] * vshift_[1] + vshift_[0]
-                     + vshift_[1];
-      }
-    }
-  } else if(dimensionality_ == 2) {
-    SimplexId p[2];
-
-    // L
-    if(edgeId < esetshift_[0]) {
-      edgeToPosition2d(edgeId, 0, p);
-      if(isAccelerated_) {
-        if(localVertexId == 0)
-          vertexId = p[0] + (p[1] << div_[0]);
-        else
-          vertexId = p[0] + (p[1] << div_[0]) + 1;
-      } else {
-        if(localVertexId == 0)
-          vertexId = p[0] + p[1] * vshift_[0];
-        else
-          vertexId = p[0] + p[1] * vshift_[0] + 1;
-      }
-    }
-    // H
-    else if(edgeId < esetshift_[1]) {
-      edgeToPosition2d(edgeId, 1, p);
-      if(isAccelerated_) {
-        if(localVertexId == 0)
-          vertexId = p[0] + (p[1] << div_[0]);
-        else
-          vertexId = p[0] + (p[1] << div_[0]) + vshift_[0];
-      } else {
-        if(localVertexId == 0)
-          vertexId = p[0] + p[1] * vshift_[0];
-        else
-          vertexId = p[0] + p[1] * vshift_[0] + vshift_[0];
-      }
-    }
-    // D1
-    else if(edgeId < esetshift_[2]) {
-      edgeToPosition2d(edgeId, 2, p);
-      if(isAccelerated_) {
-        if(localVertexId == 0)
-          vertexId = p[0] + (p[1] << div_[0]) + 1;
-        else
-          vertexId = p[0] + (p[1] << div_[0]) + vshift_[0];
-      } else {
-        if(localVertexId == 0)
-          vertexId = p[0] + p[1] * vshift_[0] + 1;
-        else
-          vertexId = p[0] + p[1] * vshift_[0] + vshift_[0];
-      }
-    }
-  } else if(dimensionality_ == 1) {
-    if(edgeId > 0 and edgeId < (edgeNumber_ - 1)) {
-      if(localVertexId == 0)
-        vertexId = edgeId;
-      else
-        vertexId = edgeId + 1;
-    } else if(edgeId == 0) {
-      if(localVertexId == 0)
-        vertexId = 0;
-      else
-        vertexId = 1;
+  const auto helper3d = [&](const SimplexId a, const SimplexId b) -> SimplexId {
+    if(isAccelerated_) {
+      const auto tmp = p[0] + (p[1] << div_[0]) + (p[2] << div_[1]);
+      return (localVertexId == 0) ? tmp + a : tmp + b;
     } else {
-      if(localVertexId == 0)
-        vertexId = edgeNumber_ - 1;
-      else
-        vertexId = edgeNumber_;
+      const auto tmp = p[0] + (p[1] * vshift_[0]) + (p[2] * vshift_[1]);
+      return (localVertexId == 0) ? tmp + a : tmp + b;
     }
+  };
+
+  const auto helper2d = [&](const SimplexId a, const SimplexId b) -> SimplexId {
+    if(isAccelerated_) {
+      const auto tmp = p[0] + (p[1] << div_[0]);
+      return localVertexId == 0 ? tmp + a : tmp + b;
+    } else {
+      const auto tmp = p[0] + (p[1] * vshift_[0]);
+      return localVertexId == 0 ? tmp + a : tmp + b;
+    }
+  };
+
+  switch(edgePositions_[edgeId]) {
+  CASE_EDGE_POSITION_L_3D:
+    vertexId = helper3d(0, 1);
+    break;
+  CASE_EDGE_POSITION_H_3D:
+    vertexId = helper3d(0, vshift_[0]);
+    break;
+  CASE_EDGE_POSITION_P_3D:
+    vertexId = helper3d(0, vshift_[1]);
+    break;
+  CASE_EDGE_POSITION_D1_3D:
+    vertexId = helper3d(1, vshift_[0]);
+    break;
+  CASE_EDGE_POSITION_D2_3D:
+    vertexId = helper3d(0, vshift_[0] + vshift_[1]);
+    break;
+  CASE_EDGE_POSITION_D3_3D:
+    vertexId = helper3d(1, vshift_[1]);
+    break;
+    case EdgePosition::D4_3D:
+      vertexId = helper3d(1, vshift_[0] + vshift_[1]);
+      break;
+
+    CASE_EDGE_POSITION_L_2D:
+      vertexId = helper2d(0, 1);
+      break;
+    CASE_EDGE_POSITION_H_2D:
+      vertexId = helper2d(0, vshift_[0]);
+      break;
+    case EdgePosition::D1_2D:
+      vertexId = helper2d(1, vshift_[0]);
+      break;
+
+    case EdgePosition::FIRST_EDGE_1D:
+      vertexId = localVertexId == 0 ? 0 : 1;
+      break;
+    case EdgePosition::LAST_EDGE_1D:
+      vertexId = localVertexId == 0 ? edgeNumber_ - 1 : edgeNumber_;
+      break;
+    case EdgePosition::CENTER_1D:
+      vertexId = localVertexId == 0 ? edgeId : edgeId + 1;
+      break;
   }
 
   return 0;
@@ -1468,144 +1344,59 @@ inline SimplexId ImplicitTriangulation::getEdgeTriangleNumberInternal(
     return -1;
 #endif
 
-  if(dimensionality_ == 3) {
-    SimplexId p[3];
-
-    // L
-    if(edgeId < esetshift_[0]) {
-      edgeToPosition(edgeId, 0, p);
-
-      if(p[2] > 0 and p[2] < nbvoxels_[2]) {
-        if(p[1] > 0 and p[1] < nbvoxels_[1])
-          return 6;
-        else if(p[1] == 0)
-          return 4;
-        else
-          return 4;
-      } else if(p[2] == 0) {
-        if(p[1] > 0 and p[1] < nbvoxels_[1])
-          return 4;
-        else if(p[1] == 0)
-          return 3;
-        else
-          return 2;
-      } else {
-        if(p[1] > 0 and p[1] < nbvoxels_[1])
-          return 4;
-        else if(p[1] == 0)
-          return 2;
-        else
-          return 3;
-      }
-    }
-    // H
-    else if(edgeId < esetshift_[1]) {
-      edgeToPosition(edgeId, 1, p);
-
-      if(p[0] > 0 and p[0] < nbvoxels_[0]) {
-        if(p[2] > 0 and p[2] < nbvoxels_[2])
-          return 6;
-        else if(p[2] == 0)
-          return 4;
-        else
-          return 4;
-      } else if(p[0] == 0) {
-        if(p[2] > 0 and p[2] < nbvoxels_[2])
-          return 4;
-        else if(p[2] == 0)
-          return 2;
-        else
-          return 3;
-      } else {
-        if(p[2] > 0 and p[2] < nbvoxels_[2])
-          return 4;
-        else if(p[2] == 0)
-          return 3;
-        else
-          return 2;
-      }
-    }
-    // P
-    else if(edgeId < esetshift_[2]) {
-      edgeToPosition(edgeId, 2, p);
-
-      if(p[0] > 0 and p[0] < nbvoxels_[0]) {
-        if(p[1] > 0 and p[1] < nbvoxels_[1])
-          return 6;
-        else if(p[1] == 0)
-          return 4;
-        else
-          return 4;
-      } else if(p[0] == 0) {
-        if(p[1] > 0 and p[1] < nbvoxels_[1])
-          return 4;
-        else if(p[1] == 0)
-          return 2;
-        else
-          return 3;
-      } else {
-        if(p[1] > 0 and p[1] < nbvoxels_[1])
-          return 4;
-        else if(p[1] == 0)
-          return 3;
-        else
-          return 2;
-      }
-    }
-    // D1
-    else if(edgeId < esetshift_[3]) {
-      edgeToPosition(edgeId, 3, p);
-
-      if(p[2] > 0 and p[2] < nbvoxels_[2])
-        return 4;
-      else
-        return 3;
-    }
-    // D2
-    else if(edgeId < esetshift_[4]) {
-      edgeToPosition(edgeId, 4, p);
-
-      if(p[0] > 0 and p[0] < nbvoxels_[0])
-        return 4;
-      else
-        return 3;
-    }
-    // D3
-    else if(edgeId < esetshift_[5]) {
-      edgeToPosition(edgeId, 5, p);
-
-      if(p[1] > 0 and p[1] < nbvoxels_[1])
-        return 4;
-      else
-        return 3;
-    }
-    // D4
-    else if(edgeId < esetshift_[6])
+  switch(edgePositions_[edgeId]) {
+    case EdgePosition::L_xnn_3D:
+    case EdgePosition::H_nyn_3D:
+    case EdgePosition::P_nnz_3D:
+    case EdgePosition::D4_3D:
       return 6;
-  } else if(dimensionality_ == 2) {
-    SimplexId p[2];
-
-    // L
-    if(edgeId < esetshift_[0]) {
-      edgeToPosition2d(edgeId, 0, p);
-
-      if(p[1] > 0 and p[1] < nbvoxels_[Dj_])
-        return 2;
-      else
-        return 1;
-    }
-    // H
-    else if(edgeId < esetshift_[1]) {
-      edgeToPosition2d(edgeId, 1, p);
-
-      if(p[0] > 0 and p[0] < nbvoxels_[Di_])
-        return 2;
-      else
-        return 1;
-    }
-    // D1
-    else if(edgeId < esetshift_[2])
+    case EdgePosition::L_x0n_3D:
+    case EdgePosition::L_xNn_3D:
+    case EdgePosition::L_xn0_3D:
+    case EdgePosition::L_xnN_3D:
+    case EdgePosition::H_ny0_3D:
+    case EdgePosition::H_nyN_3D:
+    case EdgePosition::H_0yn_3D:
+    case EdgePosition::H_Nyn_3D:
+    case EdgePosition::P_n0z_3D:
+    case EdgePosition::P_nNz_3D:
+    case EdgePosition::P_0nz_3D:
+    case EdgePosition::P_Nnz_3D:
+    case EdgePosition::D1_xyn_3D:
+    case EdgePosition::D2_nyz_3D:
+    case EdgePosition::D3_xnz_3D:
+      return 4;
+    case EdgePosition::L_x00_3D:
+    case EdgePosition::L_xNN_3D:
+    case EdgePosition::H_0yN_3D:
+    case EdgePosition::H_Ny0_3D:
+    case EdgePosition::P_0Nz_3D:
+    case EdgePosition::P_N0z_3D:
+    case EdgePosition::D1_xy0_3D:
+    case EdgePosition::D1_xyN_3D:
+    case EdgePosition::D2_0yz_3D:
+    case EdgePosition::D2_Nyz_3D:
+    case EdgePosition::D3_x0z_3D:
+    case EdgePosition::D3_xNz_3D:
+      return 3;
+    case EdgePosition::L_xN0_3D:
+    case EdgePosition::L_x0N_3D:
+    case EdgePosition::H_0y0_3D:
+    case EdgePosition::H_NyN_3D:
+    case EdgePosition::P_00z_3D:
+    case EdgePosition::P_NNz_3D:
+    case EdgePosition::L_xn_2D:
+    case EdgePosition::H_ny_2D:
+    case EdgePosition::D1_2D:
       return 2;
+    case EdgePosition::L_x0_2D:
+    case EdgePosition::L_xN_2D:
+    case EdgePosition::H_0y_2D:
+    case EdgePosition::H_Ny_2D:
+      return 1;
+
+    default: // 1D
+      break;
   }
 
   return 0;
@@ -1621,162 +1412,146 @@ int ImplicitTriangulation::getEdgeTriangleInternal(
     return -1;
 #endif
 
-  triangleId = -1;
+  const auto &p = edgeCoords_[edgeId];
 
-  if(dimensionality_ == 3) {
-    SimplexId p[3];
+  switch(edgePositions_[edgeId]) {
+    case EdgePosition::L_xnn_3D:
+      triangleId = getEdgeTriangleL_xnn(p.data(), localTriangleId);
+      break;
+    case EdgePosition::L_xn0_3D:
+      triangleId = getEdgeTriangleL_xn0(p.data(), localTriangleId);
+      break;
+    case EdgePosition::L_xnN_3D:
+      triangleId = getEdgeTriangleL_xnN(p.data(), localTriangleId);
+      break;
+    case EdgePosition::L_x0n_3D:
+      triangleId = getEdgeTriangleL_x0n(p.data(), localTriangleId);
+      break;
+    case EdgePosition::L_x00_3D:
+      triangleId = getEdgeTriangleL_x00(p.data(), localTriangleId);
+      break;
+    case EdgePosition::L_x0N_3D:
+      triangleId = getEdgeTriangleL_x0N(p.data(), localTriangleId);
+      break;
+    case EdgePosition::L_xNn_3D:
+      triangleId = getEdgeTriangleL_xNn(p.data(), localTriangleId);
+      break;
+    case EdgePosition::L_xN0_3D:
+      triangleId = getEdgeTriangleL_xN0(p.data(), localTriangleId);
+      break;
+    case EdgePosition::L_xNN_3D:
+      triangleId = getEdgeTriangleL_xNN(p.data(), localTriangleId);
+      break;
+    case EdgePosition::H_nyn_3D:
+      triangleId = getEdgeTriangleH_nyn(p.data(), localTriangleId);
+      break;
+    case EdgePosition::H_ny0_3D:
+      triangleId = getEdgeTriangleH_ny0(p.data(), localTriangleId);
+      break;
+    case EdgePosition::H_nyN_3D:
+      triangleId = getEdgeTriangleH_nyN(p.data(), localTriangleId);
+      break;
+    case EdgePosition::H_0yn_3D:
+      triangleId = getEdgeTriangleH_0yn(p.data(), localTriangleId);
+      break;
+    case EdgePosition::H_0y0_3D:
+      triangleId = getEdgeTriangleH_0y0(p.data(), localTriangleId);
+      break;
+    case EdgePosition::H_0yN_3D:
+      triangleId = getEdgeTriangleH_0yN(p.data(), localTriangleId);
+      break;
+    case EdgePosition::H_Nyn_3D:
+      triangleId = getEdgeTriangleH_Nyn(p.data(), localTriangleId);
+      break;
+    case EdgePosition::H_Ny0_3D:
+      triangleId = getEdgeTriangleH_Ny0(p.data(), localTriangleId);
+      break;
+    case EdgePosition::H_NyN_3D:
+      triangleId = getEdgeTriangleH_NyN(p.data(), localTriangleId);
+      break;
+    case EdgePosition::P_nnz_3D:
+      triangleId = getEdgeTriangleP_nnz(p.data(), localTriangleId);
+      break;
+    case EdgePosition::P_n0z_3D:
+      triangleId = getEdgeTriangleP_n0z(p.data(), localTriangleId);
+      break;
+    case EdgePosition::P_nNz_3D:
+      triangleId = getEdgeTriangleP_nNz(p.data(), localTriangleId);
+      break;
+    case EdgePosition::P_0nz_3D:
+      triangleId = getEdgeTriangleP_0nz(p.data(), localTriangleId);
+      break;
+    case EdgePosition::P_00z_3D:
+      triangleId = getEdgeTriangleP_00z(p.data(), localTriangleId);
+      break;
+    case EdgePosition::P_0Nz_3D:
+      triangleId = getEdgeTriangleP_0Nz(p.data(), localTriangleId);
+      break;
+    case EdgePosition::P_Nnz_3D:
+      triangleId = getEdgeTriangleP_Nnz(p.data(), localTriangleId);
+      break;
+    case EdgePosition::P_N0z_3D:
+      triangleId = getEdgeTriangleP_N0z(p.data(), localTriangleId);
+      break;
+    case EdgePosition::P_NNz_3D:
+      triangleId = getEdgeTriangleP_NNz(p.data(), localTriangleId);
+      break;
+    case EdgePosition::D1_xyn_3D:
+      triangleId = getEdgeTriangleD1_xyn(p.data(), localTriangleId);
+      break;
+    case EdgePosition::D1_xy0_3D:
+      triangleId = getEdgeTriangleD1_xy0(p.data(), localTriangleId);
+      break;
+    case EdgePosition::D1_xyN_3D:
+      triangleId = getEdgeTriangleD1_xyN(p.data(), localTriangleId);
+      break;
+    case EdgePosition::D2_nyz_3D:
+      triangleId = getEdgeTriangleD2_nyz(p.data(), localTriangleId);
+      break;
+    case EdgePosition::D2_0yz_3D:
+      triangleId = getEdgeTriangleD2_0yz(p.data(), localTriangleId);
+      break;
+    case EdgePosition::D2_Nyz_3D:
+      triangleId = getEdgeTriangleD2_Nyz(p.data(), localTriangleId);
+      break;
+    case EdgePosition::D3_xnz_3D:
+      triangleId = getEdgeTriangleD3_xnz(p.data(), localTriangleId);
+      break;
+    case EdgePosition::D3_x0z_3D:
+      triangleId = getEdgeTriangleD3_x0z(p.data(), localTriangleId);
+      break;
+    case EdgePosition::D3_xNz_3D:
+      triangleId = getEdgeTriangleD3_xNz(p.data(), localTriangleId);
+      break;
+    case EdgePosition::D4_3D:
+      triangleId = getEdgeTriangleD4_xyz(p.data(), localTriangleId);
+      break;
 
-    // L
-    if(edgeId < esetshift_[0]) {
-      edgeToPosition(edgeId, 0, p);
+    case EdgePosition::L_xn_2D:
+      triangleId = getEdgeTriangleL_xn(p.data(), localTriangleId);
+      break;
+    case EdgePosition::L_x0_2D:
+      triangleId = getEdgeTriangleL_x0(p.data(), localTriangleId);
+      break;
+    case EdgePosition::L_xN_2D:
+      triangleId = getEdgeTriangleL_xN(p.data(), localTriangleId);
+      break;
+    case EdgePosition::H_ny_2D:
+      triangleId = getEdgeTriangleH_ny(p.data(), localTriangleId);
+      break;
+    case EdgePosition::H_0y_2D:
+      triangleId = getEdgeTriangleH_0y(p.data(), localTriangleId);
+      break;
+    case EdgePosition::H_Ny_2D:
+      triangleId = getEdgeTriangleH_Ny(p.data(), localTriangleId);
+      break;
+    case EdgePosition::D1_2D:
+      triangleId = getEdgeTriangleD1_xy(p.data(), localTriangleId);
+      break;
 
-      if(p[1] > 0 and p[1] < nbvoxels_[1]) {
-        if(p[2] > 0 and p[2] < nbvoxels_[2])
-          triangleId = getEdgeTriangleL_xnn(p, localTriangleId);
-        else if(p[2] == 0)
-          triangleId = getEdgeTriangleL_xn0(p, localTriangleId);
-        else
-          triangleId = getEdgeTriangleL_xnN(p, localTriangleId);
-      } else if(p[1] == 0) {
-        if(p[2] > 0 and p[2] < nbvoxels_[2])
-          triangleId = getEdgeTriangleL_x0n(p, localTriangleId);
-        else if(p[2] == 0)
-          triangleId = getEdgeTriangleL_x00(p, localTriangleId);
-        else
-          triangleId = getEdgeTriangleL_x0N(p, localTriangleId);
-      } else {
-        if(p[2] > 0 and p[2] < nbvoxels_[2])
-          triangleId = getEdgeTriangleL_xNn(p, localTriangleId);
-        else if(p[2] == 0)
-          triangleId = getEdgeTriangleL_xN0(p, localTriangleId);
-        else
-          triangleId = getEdgeTriangleL_xNN(p, localTriangleId);
-      }
-    }
-    // H
-    else if(edgeId < esetshift_[1]) {
-      edgeToPosition(edgeId, 1, p);
-
-      if(p[0] > 0 and p[0] < nbvoxels_[0]) {
-        if(p[2] > 0 and p[2] < nbvoxels_[2])
-          triangleId = getEdgeTriangleH_nyn(p, localTriangleId);
-        else if(p[2] == 0)
-          triangleId = getEdgeTriangleH_ny0(p, localTriangleId);
-        else
-          triangleId = getEdgeTriangleH_nyN(p, localTriangleId);
-      } else if(p[0] == 0) {
-        if(p[2] > 0 and p[2] < nbvoxels_[2])
-          triangleId = getEdgeTriangleH_0yn(p, localTriangleId);
-        else if(p[2] == 0)
-          triangleId = getEdgeTriangleH_0y0(p, localTriangleId);
-        else
-          triangleId = getEdgeTriangleH_0yN(p, localTriangleId);
-      } else {
-        if(p[2] > 0 and p[2] < nbvoxels_[2])
-          triangleId = getEdgeTriangleH_Nyn(p, localTriangleId);
-        else if(p[2] == 0)
-          triangleId = getEdgeTriangleH_Ny0(p, localTriangleId);
-        else
-          triangleId = getEdgeTriangleH_NyN(p, localTriangleId);
-      }
-    }
-    // P
-    else if(edgeId < esetshift_[2]) {
-      edgeToPosition(edgeId, 2, p);
-
-      if(p[0] > 0 and p[0] < nbvoxels_[0]) {
-        if(p[1] > 0 and p[1] < nbvoxels_[1])
-          triangleId = getEdgeTriangleP_nnz(p, localTriangleId);
-        else if(p[1] == 0)
-          triangleId = getEdgeTriangleP_n0z(p, localTriangleId);
-        else
-          triangleId = getEdgeTriangleP_nNz(p, localTriangleId);
-      } else if(p[0] == 0) {
-        if(p[1] > 0 and p[1] < nbvoxels_[1])
-          triangleId = getEdgeTriangleP_0nz(p, localTriangleId);
-        else if(p[1] == 0)
-          triangleId = getEdgeTriangleP_00z(p, localTriangleId);
-        else
-          triangleId = getEdgeTriangleP_0Nz(p, localTriangleId);
-      } else {
-        if(p[1] > 0 and p[1] < nbvoxels_[1])
-          triangleId = getEdgeTriangleP_Nnz(p, localTriangleId);
-        else if(p[1] == 0)
-          triangleId = getEdgeTriangleP_N0z(p, localTriangleId);
-        else
-          triangleId = getEdgeTriangleP_NNz(p, localTriangleId);
-      }
-    }
-    // D1
-    else if(edgeId < esetshift_[3]) {
-      edgeToPosition(edgeId, 3, p);
-
-      if(p[2] > 0 and p[2] < nbvoxels_[2])
-        triangleId = getEdgeTriangleD1_xyn(p, localTriangleId);
-      else if(p[2] == 0)
-        triangleId = getEdgeTriangleD1_xy0(p, localTriangleId);
-      else
-        triangleId = getEdgeTriangleD1_xyN(p, localTriangleId);
-    }
-    // D2
-    else if(edgeId < esetshift_[4]) {
-      edgeToPosition(edgeId, 4, p);
-
-      if(p[0] > 0 and p[0] < nbvoxels_[0])
-        triangleId = getEdgeTriangleD2_nyz(p, localTriangleId);
-      else if(p[0] == 0)
-        triangleId = getEdgeTriangleD2_0yz(p, localTriangleId);
-      else
-        triangleId = getEdgeTriangleD2_Nyz(p, localTriangleId);
-    }
-    // D3
-    else if(edgeId < esetshift_[5]) {
-      edgeToPosition(edgeId, 5, p);
-
-      if(p[1] > 0 and p[1] < nbvoxels_[1])
-        triangleId = getEdgeTriangleD3_xnz(p, localTriangleId);
-      else if(p[1] == 0)
-        triangleId = getEdgeTriangleD3_x0z(p, localTriangleId);
-      else
-        triangleId = getEdgeTriangleD3_xNz(p, localTriangleId);
-    }
-    // D4
-    else if(edgeId < esetshift_[6]) {
-      edgeToPosition(edgeId, 6, p);
-
-      triangleId = getEdgeTriangleD4_xyz(p, localTriangleId);
-    }
-  } else if(dimensionality_ == 2) {
-    SimplexId p[2];
-
-    // L
-    if(edgeId < esetshift_[0]) {
-      edgeToPosition2d(edgeId, 0, p);
-
-      if(p[1] > 0 and p[1] < nbvoxels_[Dj_])
-        triangleId = getEdgeTriangleL_xn(p, localTriangleId);
-      else if(p[1] == 0)
-        triangleId = getEdgeTriangleL_x0(p, localTriangleId);
-      else
-        triangleId = getEdgeTriangleL_xN(p, localTriangleId);
-    }
-    // H
-    else if(edgeId < esetshift_[1]) {
-      edgeToPosition2d(edgeId, 1, p);
-
-      if(p[0] > 0 and p[0] < nbvoxels_[Di_])
-        triangleId = getEdgeTriangleH_ny(p, localTriangleId);
-      else if(p[0] == 0)
-        triangleId = getEdgeTriangleH_0y(p, localTriangleId);
-      else
-        triangleId = getEdgeTriangleH_Ny(p, localTriangleId);
-    }
-    // D1
-    else if(edgeId < esetshift_[2]) {
-      edgeToPosition2d(edgeId, 2, p);
-
-      triangleId = getEdgeTriangleD1_xy(p, localTriangleId);
-    }
+    default: // 1D
+      triangleId = -1;
+      break;
   }
 
   return 0;
@@ -1814,51 +1589,44 @@ int ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getEdgeLink)(
     return -1;
 #endif
 
-  linkId = -1;
+  const auto &p = edgeCoords_[edgeId];
 
-  if(dimensionality_ == 3) {
-    SimplexId p[3];
+  switch(edgePositions_[edgeId]) {
+  CASE_EDGE_POSITION_L_3D:
+    linkId = getEdgeLinkL(p.data(), localLinkId);
+    break;
+  CASE_EDGE_POSITION_H_3D:
+    linkId = getEdgeLinkH(p.data(), localLinkId);
+    break;
+  CASE_EDGE_POSITION_P_3D:
+    linkId = getEdgeLinkP(p.data(), localLinkId);
+    break;
+  CASE_EDGE_POSITION_D1_3D:
+    linkId = getEdgeLinkD1(p.data(), localLinkId);
+    break;
+  CASE_EDGE_POSITION_D2_3D:
+    linkId = getEdgeLinkD2(p.data(), localLinkId);
+    break;
+  CASE_EDGE_POSITION_D3_3D:
+    linkId = getEdgeLinkD3(p.data(), localLinkId);
+    break;
+    case EdgePosition::D4_3D:
+      linkId = getEdgeLinkD4(p.data(), localLinkId);
+      break;
 
-    if(edgeId < esetshift_[0]) {
-      edgeToPosition(edgeId, 0, p);
-      linkId = getEdgeLinkL(p, localLinkId); // L
-    } else if(edgeId < esetshift_[1]) {
-      edgeToPosition(edgeId, 1, p);
-      linkId = getEdgeLinkH(p, localLinkId); // H
-    } else if(edgeId < esetshift_[2]) {
-      edgeToPosition(edgeId, 2, p);
-      linkId = getEdgeLinkP(p, localLinkId); // P
-    } else if(edgeId < esetshift_[3]) {
-      edgeToPosition(edgeId, 3, p);
-      linkId = getEdgeLinkD1(p, localLinkId); // D1
-    } else if(edgeId < esetshift_[4]) {
-      edgeToPosition(edgeId, 4, p);
-      linkId = getEdgeLinkD2(p, localLinkId); // D2
-    } else if(edgeId < esetshift_[5]) {
-      edgeToPosition(edgeId, 5, p);
-      linkId = getEdgeLinkD3(p, localLinkId); // D3
-    } else if(edgeId < esetshift_[6]) {
-      edgeToPosition(edgeId, 6, p);
-      linkId = getEdgeLinkD4(p, localLinkId); // D4
-    }
-  } else if(dimensionality_ == 2) {
-    SimplexId p[2];
+    CASE_EDGE_POSITION_L_2D:
+      linkId = getEdgeLink2dL(p.data(), localLinkId);
+      break;
+    CASE_EDGE_POSITION_H_2D:
+      linkId = getEdgeLink2dH(p.data(), localLinkId);
+      break;
+    case EdgePosition::D1_2D:
+      linkId = getEdgeLink2dD1(p.data(), localLinkId);
+      break;
 
-    // L
-    if(edgeId < esetshift_[0]) {
-      edgeToPosition2d(edgeId, 0, p);
-      linkId = getEdgeLink2dL(p, localLinkId);
-    }
-    // H
-    else if(edgeId < esetshift_[1]) {
-      edgeToPosition2d(edgeId, 1, p);
-      linkId = getEdgeLink2dH(p, localLinkId);
-    }
-    // D1
-    else if(edgeId < esetshift_[2]) {
-      edgeToPosition2d(edgeId, 2, p);
-      linkId = getEdgeLink2dD1(p, localLinkId);
-    }
+    default: // 1D
+      linkId = -1;
+      break;
   }
 
   return 0;
@@ -1892,142 +1660,59 @@ inline SimplexId ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(
     return -1;
 #endif
 
-  if(dimensionality_ == 3) {
-    SimplexId p[3];
-
-    // L
-    if(edgeId < esetshift_[0]) {
-      edgeToPosition(edgeId, 0, p);
-
-      if(p[2] > 0 and p[2] < nbvoxels_[2]) {
-        if(p[1] > 0 and p[1] < nbvoxels_[1])
-          return 6; // ABCG,ABEG,BCDG,BEFG,BFGH,BDGH
-        else
-          return 3; // BCDG,BFGH,BDGH or ABCG,ABEG,BEFG
-      } else if(p[2] == 0) {
-        if(p[1] > 0 and p[1] < nbvoxels_[1])
-          return 3; // ABCG,ABEG,BCDG
-        else if(p[1] == 0)
-          return 2; // ABCG,ABEG
-        else
-          return 1; // BCDG
-      } else {
-        if(p[1] > 0 and p[1] < nbvoxels_[1])
-          return 3; // BEFG,BFGH,BDGH
-        else if(p[1] == 0)
-          return 1; // BEFG
-        else
-          return 2; // BFGH,BDGH
-      }
-    }
-    // H
-    else if(edgeId < esetshift_[1]) {
-      edgeToPosition(edgeId, 1, p);
-
-      if(p[0] > 0 and p[0] < nbvoxels_[0]) {
-        if(p[2] > 0 and p[2] < nbvoxels_[2])
-          return 6; // ABCG,ABEG,BEFG,BFGH,BCDG,BDGH
-        else if(p[2] == 0)
-          return 3; // BCDG,BDGH,ABCG
-        else
-          return 3; // ABEG,BEFG,BFGH
-      } else if(p[0] == 0) {
-        if(p[2] > 0 and p[2] < nbvoxels_[2])
-          return 3; // ABEG,BEFG,ABCG
-        else if(p[2] == 0)
-          return 1; // ABCG
-        else
-          return 2; // ABEG,BEFG
-      } else {
-        if(p[2] > 0 and p[2] < nbvoxels_[2])
-          return 3; // BCDG,BDGH,BFGH
-        else if(p[2] == 0)
-          return 2; // BCDG,BDGH
-        else
-          return 1; // BFGH
-      }
-    }
-    // P
-    else if(edgeId < esetshift_[2]) {
-      edgeToPosition(edgeId, 2, p);
-
-      if(p[0] > 0 and p[0] < nbvoxels_[0]) {
-        if(p[1] > 0 and p[1] < nbvoxels_[1])
-          return 6; // BDGH,ABCG,BCDG,ABEG,BEFG,BFGH
-        else if(p[1] == 0)
-          return 3; // BEFG,BFGH,ABEG
-        else
-          return 3; // ABCG,BCDG,BDGH
-      } else if(p[0] == 0) {
-        if(p[1] > 0 and p[1] < nbvoxels_[1])
-          return 3; // ABCG,BCDG,ABEG
-        else if(p[1] == 0)
-          return 1; // ABEG
-        else
-          return 2; // ABCG,BCDG
-      } else {
-        if(p[1] > 0 and p[1] < nbvoxels_[1])
-          return 3; // BEFG,BFGH,BDGH
-        else if(p[1] == 0)
-          return 2; // BEFG,BFGH
-        else
-          return 1; // BDGH
-      }
-    }
-    // D1
-    else if(edgeId < esetshift_[3]) {
-      edgeToPosition(edgeId, 3, p);
-
-      if(p[2] > 0 and p[2] < nbvoxels_[2])
-        return 4; // ABCG,BCDG,BEFG,BFGH
-      else
-        return 2; // ABCG,BCDG ou BEFG,BFGH
-    }
-    // D2
-    else if(edgeId < esetshift_[4]) {
-      edgeToPosition(edgeId, 4, p);
-
-      if(p[0] > 0 and p[0] < nbvoxels_[0])
-        return 4; // ABCG,ABEG,BDGH,BFGH
-      else
-        return 2; // ABCG,ABEG ou BDGH,BFGH
-    }
-    // D3
-    else if(edgeId < esetshift_[5]) {
-      edgeToPosition(edgeId, 5, p);
-
-      if(p[1] > 0 and p[1] < nbvoxels_[1])
-        return 4; // ABEG,BEFG,BCDG,BDGH
-      else
-        return 2; // ABEG,BEFG ou BCDG,BDGH
-    }
-    // D4
-    else if(edgeId < esetshift_[6])
+  switch(edgePositions_[edgeId]) {
+    case EdgePosition::L_xnn_3D:
+    case EdgePosition::H_nyn_3D:
+    case EdgePosition::P_nnz_3D:
+    case EdgePosition::D4_3D:
       return 6;
-  } else if(dimensionality_ == 2) {
-    SimplexId p[2];
-
-    // L
-    if(edgeId < esetshift_[0]) {
-      edgeToPosition2d(edgeId, 0, p);
-
-      if(p[1] > 0 and p[1] < nbvoxels_[Dj_])
-        return 2;
-      else
-        return 1;
-    }
-    // H
-    else if(edgeId < esetshift_[1]) {
-      edgeToPosition2d(edgeId, 1, p);
-
-      if(p[0] > 0 and p[0] < nbvoxels_[Di_])
-        return 2;
-      else
-        return 1;
-    }
-    // D1
-    else if(edgeId < esetshift_[2])
+    case EdgePosition::D1_xyn_3D:
+    case EdgePosition::D2_nyz_3D:
+    case EdgePosition::D3_xnz_3D:
+      return 4;
+    case EdgePosition::L_x0n_3D:
+    case EdgePosition::L_xNn_3D:
+    case EdgePosition::L_xn0_3D:
+    case EdgePosition::L_xnN_3D:
+    case EdgePosition::H_ny0_3D:
+    case EdgePosition::H_nyN_3D:
+    case EdgePosition::H_0yn_3D:
+    case EdgePosition::H_Nyn_3D:
+    case EdgePosition::P_n0z_3D:
+    case EdgePosition::P_nNz_3D:
+    case EdgePosition::P_0nz_3D:
+    case EdgePosition::P_Nnz_3D:
+      return 3;
+    case EdgePosition::L_x00_3D:
+    case EdgePosition::L_xNN_3D:
+    case EdgePosition::H_0yN_3D:
+    case EdgePosition::H_Ny0_3D:
+    case EdgePosition::P_0Nz_3D:
+    case EdgePosition::P_N0z_3D:
+    case EdgePosition::D1_xy0_3D:
+    case EdgePosition::D1_xyN_3D:
+    case EdgePosition::D2_0yz_3D:
+    case EdgePosition::D2_Nyz_3D:
+    case EdgePosition::D3_x0z_3D:
+    case EdgePosition::D3_xNz_3D:
+    case EdgePosition::L_xn_2D:
+    case EdgePosition::H_ny_2D:
+    case EdgePosition::D1_2D:
       return 2;
+    case EdgePosition::L_xN0_3D:
+    case EdgePosition::L_x0N_3D:
+    case EdgePosition::H_0y0_3D:
+    case EdgePosition::H_NyN_3D:
+    case EdgePosition::P_00z_3D:
+    case EdgePosition::P_NNz_3D:
+    case EdgePosition::L_x0_2D:
+    case EdgePosition::L_xN_2D:
+    case EdgePosition::H_0y_2D:
+    case EdgePosition::H_Ny_2D:
+      return 1;
+
+    default: // 1D
+      break;
   }
 
   return 0;
@@ -2041,52 +1726,45 @@ int ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getEdgeStar)(
     return -1;
 #endif
 
-  starId = -1;
+  const auto &p = edgeCoords_[edgeId];
 
-  if(dimensionality_ == 3) {
-    SimplexId p[3];
+  switch(edgePositions_[edgeId]) {
+  CASE_EDGE_POSITION_L_3D:
+    starId = getEdgeStarL(p.data(), localStarId);
+    break;
+  CASE_EDGE_POSITION_H_3D:
+    starId = getEdgeStarH(p.data(), localStarId);
+    break;
+  CASE_EDGE_POSITION_P_3D:
+    starId = getEdgeStarP(p.data(), localStarId);
+    break;
+  CASE_EDGE_POSITION_D1_3D:
+    starId = getEdgeStarD1(p.data(), localStarId);
+    break;
+  CASE_EDGE_POSITION_D2_3D:
+    starId = getEdgeStarD2(p.data(), localStarId);
+    break;
+  CASE_EDGE_POSITION_D3_3D:
+    starId = getEdgeStarD3(p.data(), localStarId);
+    break;
+    case EdgePosition::D4_3D:
+      starId
+        = p[2] * tetshift_[1] + p[1] * tetshift_[0] + p[0] * 6 + localStarId;
+      break;
 
-    if(edgeId < esetshift_[0]) {
-      edgeToPosition(edgeId, 0, p);
-      starId = getEdgeStarL(p, localStarId); // L
-    } else if(edgeId < esetshift_[1]) {
-      edgeToPosition(edgeId, 1, p);
-      starId = getEdgeStarH(p, localStarId); // H
-    } else if(edgeId < esetshift_[2]) {
-      edgeToPosition(edgeId, 2, p);
-      starId = getEdgeStarP(p, localStarId); // P
-    } else if(edgeId < esetshift_[3]) {
-      edgeToPosition(edgeId, 3, p);
-      starId = getEdgeStarD1(p, localStarId); // D1
-    } else if(edgeId < esetshift_[4]) {
-      edgeToPosition(edgeId, 4, p);
-      starId = getEdgeStarD2(p, localStarId); // D2
-    } else if(edgeId < esetshift_[5]) {
-      edgeToPosition(edgeId, 5, p);
-      starId = getEdgeStarD3(p, localStarId); // D3
-    } else if(edgeId < esetshift_[6]) {
-      edgeToPosition(edgeId, 6, p);
-      starId = p[2] * tetshift_[1] + p[1] * tetshift_[0] + p[0] * 6
-               + localStarId; // D4
-    }
-  } else if(dimensionality_ == 2) {
-    SimplexId p[2];
+    CASE_EDGE_POSITION_L_2D:
+      starId = getEdgeStar2dL(p.data(), localStarId);
+      break;
+    CASE_EDGE_POSITION_H_2D:
+      starId = getEdgeStar2dH(p.data(), localStarId);
+      break;
+    case EdgePosition::D1_2D:
+      starId = p[0] * 2 + p[1] * tshift_[0] + localStarId;
+      break;
 
-    // L
-    if(edgeId < esetshift_[0]) {
-      edgeToPosition2d(edgeId, 0, p);
-      starId = getEdgeStar2dL(p, localStarId); // L
-    }
-    // H
-    else if(edgeId < esetshift_[1]) {
-      edgeToPosition2d(edgeId, 1, p);
-      starId = getEdgeStar2dH(p, localStarId); // L
-    }
-    // D1
-    else if(edgeId < esetshift_[2]) {
-      edgeToPosition2d(edgeId, 2, p);
-      starId = p[0] * 2 + p[1] * tshift_[0] + localStarId; // D1
-    }
+    default: // 1D
+      starId = -1;
+      break;
   }
 
   return 0;
@@ -2139,48 +1817,31 @@ int ImplicitTriangulation::getTriangleVertexInternal(
   // D2: diagonale2 (type abg/bgh)
   // D3: diagonale3 (type bcg/bfg)
 
+  const auto &p = triangleCoords_[triangleId];
   vertexId = -1;
 
-  if(dimensionality_ == 3) {
-    SimplexId p[3];
-
-    // F
-    if(triangleId < tsetshift_[0]) {
-      triangleToPosition(triangleId, 0, p);
-      vertexId = getTriangleVertexF(p, localVertexId);
-    }
-    // H
-    else if(triangleId < tsetshift_[1]) {
-      triangleToPosition(triangleId, 1, p);
-      vertexId = getTriangleVertexH(p, localVertexId);
-    }
-    // C
-    else if(triangleId < tsetshift_[2]) {
-      triangleToPosition(triangleId, 2, p);
-      vertexId = getTriangleVertexC(p, localVertexId);
-    }
-    // D1
-    else if(triangleId < tsetshift_[3]) {
-      triangleToPosition(triangleId, 3, p);
-      vertexId = getTriangleVertexD1(p, localVertexId);
-    }
-    // D2
-    else if(triangleId < tsetshift_[4]) {
-      triangleToPosition(triangleId, 4, p);
-      vertexId = getTriangleVertexD2(p, localVertexId);
-    }
-    // D3
-    else if(triangleId < tsetshift_[5]) {
-      triangleToPosition(triangleId, 5, p);
-      vertexId = getTriangleVertexD3(p, localVertexId);
-    }
-  } else if(dimensionality_ == 2) {
-    SimplexId p[2];
-    triangleToPosition2d(triangleId, p);
-    const SimplexId id = triangleId % 2;
-
-    if(id == 0) {
+  switch(trianglePositions_[triangleId]) {
+    case TrianglePosition::F_3D:
+      vertexId = getTriangleVertexF(p.data(), localVertexId);
+      break;
+    case TrianglePosition::H_3D:
+      vertexId = getTriangleVertexH(p.data(), localVertexId);
+      break;
+    case TrianglePosition::C_3D:
+      vertexId = getTriangleVertexC(p.data(), localVertexId);
+      break;
+    case TrianglePosition::D1_3D:
+      vertexId = getTriangleVertexD1(p.data(), localVertexId);
+      break;
+    case TrianglePosition::D2_3D:
+      vertexId = getTriangleVertexD2(p.data(), localVertexId);
+      break;
+    case TrianglePosition::D3_3D:
+      vertexId = getTriangleVertexD3(p.data(), localVertexId);
+      break;
+    case TrianglePosition::TOP_2D:
       switch(localVertexId) {
+        break;
         case 0:
           vertexId = p[0] / 2 + p[1] * vshift_[0];
           break;
@@ -2191,8 +1852,10 @@ int ImplicitTriangulation::getTriangleVertexInternal(
           vertexId = p[0] / 2 + p[1] * vshift_[0] + vshift_[0];
           break;
       }
-    } else {
+      break;
+    case TrianglePosition::BOTTOM_2D:
       switch(localVertexId) {
+        break;
         case 0:
           vertexId = p[0] / 2 + p[1] * vshift_[0] + 1;
           break;
@@ -2203,7 +1866,6 @@ int ImplicitTriangulation::getTriangleVertexInternal(
           vertexId = p[0] / 2 + p[1] * vshift_[0] + vshift_[0];
           break;
       }
-    }
   }
 
   return 0;
@@ -2219,73 +1881,38 @@ int ImplicitTriangulation::getTriangleEdgeInternal(const SimplexId &triangleId,
     return -2;
 #endif
 
+  const auto &p = triangleCoords_[triangleId];
+  const auto par = triangleId % 2;
   edgeId = -1;
 
-  if(dimensionality_ == 3) {
-    SimplexId p[3];
-    const SimplexId id = triangleId % 2;
-
-    // F
-    if(triangleId < tsetshift_[0]) {
-      triangleToPosition(triangleId, 0, p);
-
-      if(id)
-        edgeId = getTriangleEdgeF_1(p, localEdgeId);
-      else
-        edgeId = getTriangleEdgeF_0(p, localEdgeId);
-    }
-    // H
-    else if(triangleId < tsetshift_[1]) {
-      triangleToPosition(triangleId, 1, p);
-
-      if(id)
-        edgeId = getTriangleEdgeH_1(p, localEdgeId);
-      else
-        edgeId = getTriangleEdgeH_0(p, localEdgeId);
-    }
-    // C
-    else if(triangleId < tsetshift_[2]) {
-      triangleToPosition(triangleId, 2, p);
-
-      if(id)
-        edgeId = getTriangleEdgeC_1(p, localEdgeId);
-      else
-        edgeId = getTriangleEdgeC_0(p, localEdgeId);
-    }
-    // D1
-    else if(triangleId < tsetshift_[3]) {
-      triangleToPosition(triangleId, 3, p);
-
-      if(id)
-        edgeId = getTriangleEdgeD1_1(p, localEdgeId);
-      else
-        edgeId = getTriangleEdgeD1_0(p, localEdgeId);
-    }
-    // D2
-    else if(triangleId < tsetshift_[4]) {
-      triangleToPosition(triangleId, 4, p);
-
-      if(id)
-        edgeId = getTriangleEdgeD2_1(p, localEdgeId);
-      else
-        edgeId = getTriangleEdgeD2_0(p, localEdgeId);
-    }
-    // D3
-    else if(triangleId < tsetshift_[5]) {
-      triangleToPosition(triangleId, 5, p);
-
-      if(id)
-        edgeId = getTriangleEdgeD3_1(p, localEdgeId);
-      else
-        edgeId = getTriangleEdgeD3_0(p, localEdgeId);
-    }
-  } else if(dimensionality_ == 2) {
-    SimplexId p[2];
-    const SimplexId id = triangleId % 2;
-    triangleToPosition2d(triangleId, p);
-
-    if(id == 0) {
+  switch(trianglePositions_[triangleId]) {
+    case TrianglePosition::F_3D:
+      edgeId = (par == 1) ? getTriangleEdgeF_1(p.data(), localEdgeId)
+                          : getTriangleEdgeF_0(p.data(), localEdgeId);
+      break;
+    case TrianglePosition::H_3D:
+      edgeId = (par == 1) ? getTriangleEdgeH_1(p.data(), localEdgeId)
+                          : getTriangleEdgeH_0(p.data(), localEdgeId);
+      break;
+    case TrianglePosition::C_3D:
+      edgeId = (par == 1) ? getTriangleEdgeC_1(p.data(), localEdgeId)
+                          : getTriangleEdgeC_0(p.data(), localEdgeId);
+      break;
+    case TrianglePosition::D1_3D:
+      edgeId = (par == 1) ? getTriangleEdgeD1_1(p.data(), localEdgeId)
+                          : getTriangleEdgeD1_0(p.data(), localEdgeId);
+      break;
+    case TrianglePosition::D2_3D:
+      edgeId = (par == 1) ? getTriangleEdgeD2_1(p.data(), localEdgeId)
+                          : getTriangleEdgeD2_0(p.data(), localEdgeId);
+      break;
+    case TrianglePosition::D3_3D:
+      edgeId = (par == 1) ? getTriangleEdgeD3_1(p.data(), localEdgeId)
+                          : getTriangleEdgeD3_0(p.data(), localEdgeId);
+      break;
+    case TrianglePosition::TOP_2D:
       switch(localEdgeId) {
+        break;
         case 0:
           edgeId = p[0] / 2 + p[1] * eshift_[0];
           break;
@@ -2296,8 +1923,10 @@ int ImplicitTriangulation::getTriangleEdgeInternal(const SimplexId &triangleId,
           edgeId = esetshift_[1] + p[0] / 2 + p[1] * eshift_[4];
           break;
       }
-    } else {
+      break;
+    case TrianglePosition::BOTTOM_2D:
       switch(localEdgeId) {
+        break;
         case 0:
           edgeId = p[0] / 2 + (p[1] + 1) * eshift_[0];
           break;
@@ -2308,7 +1937,6 @@ int ImplicitTriangulation::getTriangleEdgeInternal(const SimplexId &triangleId,
           edgeId = esetshift_[1] + p[0] / 2 + p[1] * eshift_[4];
           break;
       }
-    }
   }
 
   return 0;
@@ -2369,41 +1997,30 @@ int ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getTriangleLink)(
     return -1;
 #endif
 
-  linkId = -1;
+  const auto p = triangleCoords_[triangleId];
 
-  if(dimensionality_ == 3) {
-    SimplexId p[3];
-
-    // F
-    if(triangleId < tsetshift_[0]) {
-      triangleToPosition(triangleId, 0, p);
-      linkId = getTriangleLinkF(p, localLinkId);
-    }
-    // H
-    else if(triangleId < tsetshift_[1]) {
-      triangleToPosition(triangleId, 1, p);
-      linkId = getTriangleLinkH(p, localLinkId);
-    }
-    // C
-    else if(triangleId < tsetshift_[2]) {
-      triangleToPosition(triangleId, 2, p);
-      linkId = getTriangleLinkC(p, localLinkId);
-    }
-    // D1
-    else if(triangleId < tsetshift_[3]) {
-      triangleToPosition(triangleId, 3, p);
-      linkId = getTriangleLinkD1(p, localLinkId);
-    }
-    // D2
-    else if(triangleId < tsetshift_[4]) {
-      triangleToPosition(triangleId, 4, p);
-      linkId = getTriangleLinkD2(p, localLinkId);
-    }
-    // D3
-    else if(triangleId < tsetshift_[5]) {
-      triangleToPosition(triangleId, 5, p);
-      linkId = getTriangleLinkD3(p, localLinkId);
-    }
+  switch(trianglePositions_[triangleId]) {
+    case TrianglePosition::F_3D:
+      linkId = getTriangleLinkF(p.data(), localLinkId);
+      break;
+    case TrianglePosition::H_3D:
+      linkId = getTriangleLinkH(p.data(), localLinkId);
+      break;
+    case TrianglePosition::C_3D:
+      linkId = getTriangleLinkC(p.data(), localLinkId);
+      break;
+    case TrianglePosition::D1_3D:
+      linkId = getTriangleLinkD1(p.data(), localLinkId);
+      break;
+    case TrianglePosition::D2_3D:
+      linkId = getTriangleLinkD2(p.data(), localLinkId);
+      break;
+    case TrianglePosition::D3_3D:
+      linkId = getTriangleLinkD3(p.data(), localLinkId);
+      break;
+    default: // 2D
+      linkId = -1;
+      break;
   }
 
   return 0;
@@ -2440,47 +2057,22 @@ inline SimplexId ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(
     return -1;
 #endif
 
-  if(dimensionality_ == 3) {
-    SimplexId p[3];
+  const auto p = triangleCoords_[triangleId];
 
-    // F
-    if(triangleId < tsetshift_[0]) {
-      triangleToPosition(triangleId, 0, p);
-      if(p[2] > 0 and p[2] < nbvoxels_[2])
-        return 2;
-      else
-        return 1;
-    }
-    // H
-    else if(triangleId < tsetshift_[1]) {
-      triangleToPosition(triangleId, 1, p);
-      if(p[1] > 0 and p[1] < nbvoxels_[1])
-        return 2;
-      else
-        return 1;
-    }
-    // C
-    else if(triangleId < tsetshift_[2]) {
-      triangleToPosition(triangleId, 2, p);
-      if(p[0] < 2 or p[0] >= (dimensions_[0] * 2 - 2))
-        return 1;
-      else
-        return 2;
-    }
-    // D1
-    else if(triangleId < tsetshift_[3]) {
+  switch(trianglePositions_[triangleId]) {
+    case TrianglePosition::F_3D:
+      return (p[2] > 0 and p[2] < nbvoxels_[2]) ? 2 : 1;
+    case TrianglePosition::H_3D:
+      return (p[1] > 0 and p[1] < nbvoxels_[1]) ? 2 : 1;
+    case TrianglePosition::C_3D:
+      return (p[0] < 2 or p[0] >= (dimensions_[0] * 2 - 2)) ? 1 : 2;
+
+    case TrianglePosition::D1_3D:
+    case TrianglePosition::D2_3D:
+    case TrianglePosition::D3_3D:
       return 2;
-    }
-    // D2
-    else if(triangleId < tsetshift_[4]) {
-      triangleToPosition(triangleId, 4, p);
-      return 2;
-    }
-    // D3
-    else if(triangleId < tsetshift_[5]) {
-      triangleToPosition(triangleId, 5, p);
-      return 2;
-    }
+    default: // 2D
+      break;
   }
   return 0;
 }
@@ -2495,41 +2087,32 @@ int ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getTriangleStar)(
     return -1;
 #endif
 
-  starId = -1;
-  if(dimensionality_ == 3) {
-    SimplexId p[3];
+  const auto p = triangleCoords_[triangleId];
 
-    // F
-    if(triangleId < tsetshift_[0]) {
-      triangleToPosition(triangleId, 0, p);
-      starId = getTriangleStarF(p, localStarId);
-    }
-    // H
-    else if(triangleId < tsetshift_[1]) {
-      triangleToPosition(triangleId, 1, p);
-      starId = getTriangleStarH(p, localStarId);
-    }
-    // C
-    else if(triangleId < tsetshift_[2]) {
-      triangleToPosition(triangleId, 2, p);
-      starId = getTriangleStarC(p, localStarId);
-    }
-    // D1
-    else if(triangleId < tsetshift_[3]) {
-      triangleToPosition(triangleId, 3, p);
-      starId = getTriangleStarD1(p, localStarId);
-    }
-    // D2
-    else if(triangleId < tsetshift_[4]) {
-      triangleToPosition(triangleId, 4, p);
-      starId = getTriangleStarD2(p, localStarId);
-    }
-    // D3
-    else if(triangleId < tsetshift_[5]) {
-      triangleToPosition(triangleId, 5, p);
-      starId = getTriangleStarD3(p, localStarId);
-    }
+  switch(trianglePositions_[triangleId]) {
+    case TrianglePosition::F_3D:
+      starId = getTriangleStarF(p.data(), localStarId);
+      break;
+    case TrianglePosition::H_3D:
+      starId = getTriangleStarH(p.data(), localStarId);
+      break;
+    case TrianglePosition::C_3D:
+      starId = getTriangleStarC(p.data(), localStarId);
+      break;
+    case TrianglePosition::D1_3D:
+      starId = getTriangleStarD1(p.data(), localStarId);
+      break;
+    case TrianglePosition::D2_3D:
+      starId = getTriangleStarD2(p.data(), localStarId);
+      break;
+    case TrianglePosition::D3_3D:
+      starId = getTriangleStarD3(p.data(), localStarId);
+      break;
+    default: // 2D
+      starId = -1;
+      break;
   }
+
   return 0;
 }
 
@@ -2560,8 +2143,7 @@ inline SimplexId ImplicitTriangulation::getTriangleNeighborNumber(
 #endif
 
   if(dimensionality_ == 2) {
-    SimplexId p[2];
-    triangleToPosition2d(triangleId, p);
+    const auto p = triangleCoords_[triangleId];
     const SimplexId id = triangleId % 2;
 
     if(id) {
@@ -2596,8 +2178,7 @@ int ImplicitTriangulation::getTriangleNeighbor(const SimplexId &triangleId,
   neighborId = -1;
 
   if(dimensionality_ == 2) {
-    SimplexId p[2];
-    triangleToPosition2d(triangleId, p);
+    const auto p = triangleCoords_[triangleId].data();
     const SimplexId id = triangleId % 2;
 
     if(id) {
@@ -2698,9 +2279,8 @@ int ImplicitTriangulation::getTetrahedronVertex(const SimplexId &tetId,
   vertexId = -1;
 
   if(dimensionality_ == 3) {
-    SimplexId p[3];
-    tetrahedronToPosition(tetId, p);
     const SimplexId id = tetId % 6;
+    const auto p = tetrahedronCoords_[tetId].data();
 
     switch(id) {
       case 0:
@@ -2739,9 +2319,8 @@ int ImplicitTriangulation::getTetrahedronEdge(const SimplexId &tetId,
   edgeId = -1;
 
   if(dimensionality_ == 3) {
-    SimplexId p[3];
-    tetrahedronToPosition(tetId, p);
     const SimplexId id = tetId % 6;
+    const auto p = tetrahedronCoords_[tetId].data();
 
     switch(id) {
       case 0:
@@ -2793,9 +2372,8 @@ int ImplicitTriangulation::getTetrahedronTriangle(const SimplexId &tetId,
   triangleId = -1;
 
   if(dimensionality_ == 3) {
-    SimplexId p[3];
-    tetrahedronToPosition(tetId, p);
     const SimplexId id = tetId % 6;
+    const auto p = tetrahedronCoords_[tetId].data();
 
     switch(id) {
       case 0:
@@ -2843,8 +2421,7 @@ SimplexId ImplicitTriangulation::getTetrahedronNeighborNumber(
 
   if(dimensionality_ == 3) {
     const SimplexId id = tetId % 6;
-    SimplexId p[3];
-    tetrahedronToPosition(tetId, p);
+    const auto p = tetrahedronCoords_[tetId].data();
 
     switch(id) {
       case 0: // ABCG
@@ -2914,8 +2491,7 @@ int ImplicitTriangulation::getTetrahedronNeighbor(const SimplexId &tetId,
 
   if(dimensionality_ == 3) {
     const SimplexId id = tetId % 6;
-    SimplexId p[3];
-    tetrahedronToPosition(tetId, p);
+    const auto p = tetrahedronCoords_[tetId].data();
 
     switch(id) {
       case 0:
@@ -2955,7 +2531,7 @@ int ImplicitTriangulation::getTetrahedronNeighbors(
 }
 
 SimplexId ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(
-  getCellVertexNumber)(const SimplexId &cellId) const {
+  getCellVertexNumber)(const SimplexId & /*cellId*/) const {
   return dimensionality_ + 1;
 }
 
@@ -2975,7 +2551,7 @@ int ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getCellVertex)(
 }
 
 SimplexId ImplicitTriangulation::getCellEdgeNumberInternal(
-  const SimplexId &cellId) const {
+  const SimplexId & /*cellId*/) const {
   if(dimensionality_ == 3)
     return 6;
   else if(dimensionality_ == 2)
@@ -3087,4 +2663,371 @@ const vector<vector<SimplexId>> *
   }
 
   return &cellNeighborList_;
+}
+
+int ImplicitTriangulation::preconditionVerticesInternal() {
+  vertexPositions_.resize(vertexNumber_);
+  vertexCoords_.resize(vertexNumber_);
+
+  if(dimensionality_ == 1) {
+    vertexPositions_[0] = VertexPosition::LEFT_CORNER_1D;
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+    for(SimplexId i = 1; i < vertexNumber_ - 1; ++i) {
+      vertexPositions_[i] = VertexPosition::CENTER_1D;
+    }
+    vertexPositions_[vertexNumber_ - 1] = VertexPosition::RIGHT_CORNER_1D;
+
+  } else if(dimensionality_ == 2) {
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+    for(SimplexId i = 0; i < vertexNumber_; ++i) {
+      std::array<SimplexId, 3> p{};
+      vertexToPosition2d(i, p.data());
+
+      if(0 < p[0] and p[0] < nbvoxels_[Di_]) {
+        if(0 < p[1] and p[1] < nbvoxels_[Dj_])
+          vertexPositions_[i] = VertexPosition::CENTER_2D;
+        else if(p[1] == 0)
+          vertexPositions_[i] = VertexPosition::TOP_EDGE_2D; // ab
+        else
+          vertexPositions_[i] = VertexPosition::BOTTOM_EDGE_2D; // cd
+      } else if(p[0] == 0) {
+        if(0 < p[1] and p[1] < nbvoxels_[Dj_])
+          vertexPositions_[i] = VertexPosition::LEFT_EDGE_2D; // ac
+        else if(p[1] == 0)
+          vertexPositions_[i] = VertexPosition::TOP_LEFT_CORNER_2D; // a
+        else
+          vertexPositions_[i] = VertexPosition::BOTTOM_LEFT_CORNER_2D; // c
+      } else {
+        if(0 < p[1] and p[1] < nbvoxels_[Dj_])
+          vertexPositions_[i] = VertexPosition::RIGHT_EDGE_2D; // bd
+        else if(p[1] == 0)
+          vertexPositions_[i] = VertexPosition::TOP_RIGHT_CORNER_2D; // b
+        else
+          vertexPositions_[i] = VertexPosition::BOTTOM_RIGHT_CORNER_2D; // d
+      }
+      vertexCoords_[i] = std::move(p);
+    }
+
+  } else if(dimensionality_ == 3) {
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+    for(SimplexId i = 0; i < vertexNumber_; ++i) {
+      std::array<SimplexId, 3> p{};
+      vertexToPosition(i, p.data());
+
+      if(0 < p[0] and p[0] < nbvoxels_[0]) {
+        if(0 < p[1] and p[1] < nbvoxels_[1]) {
+          if(0 < p[2] and p[2] < nbvoxels_[2])
+            vertexPositions_[i] = VertexPosition::CENTER_3D;
+          else if(p[2] == 0)
+            vertexPositions_[i] = VertexPosition::FRONT_FACE_3D; // abcd
+          else
+            vertexPositions_[i] = VertexPosition::BACK_FACE_3D; // efgh
+        } else if(p[1] == 0) {
+          if(0 < p[2] and p[2] < nbvoxels_[2])
+            vertexPositions_[i] = VertexPosition::TOP_FACE_3D; // abef
+          else if(p[2] == 0)
+            vertexPositions_[i] = VertexPosition::TOP_FRONT_EDGE_3D; // ab
+          else
+            vertexPositions_[i] = VertexPosition::TOP_BACK_EDGE_3D; // ef
+        } else {
+          if(0 < p[2] and p[2] < nbvoxels_[2])
+            vertexPositions_[i] = VertexPosition::BOTTOM_FACE_3D; // cdgh
+          else if(p[2] == 0)
+            vertexPositions_[i] = VertexPosition::BOTTOM_FRONT_EDGE_3D; // cd
+          else
+            vertexPositions_[i] = VertexPosition::BOTTOM_BACK_EDGE_3D; // gh
+        }
+      } else if(p[0] == 0) {
+        if(0 < p[1] and p[1] < nbvoxels_[1]) {
+          if(0 < p[2] and p[2] < nbvoxels_[2])
+            vertexPositions_[i] = VertexPosition::LEFT_FACE_3D; // aceg
+          else if(p[2] == 0)
+            vertexPositions_[i] = VertexPosition::LEFT_FRONT_EDGE_3D; // ac
+          else
+            vertexPositions_[i] = VertexPosition::LEFT_BACK_EDGE_3D; // eg
+        } else if(p[1] == 0) {
+          if(0 < p[2] and p[2] < nbvoxels_[2])
+            vertexPositions_[i] = VertexPosition::TOP_LEFT_EDGE_3D; // ae
+          else if(p[2] == 0)
+            vertexPositions_[i] = VertexPosition::TOP_LEFT_FRONT_CORNER_3D; // a
+          else
+            vertexPositions_[i] = VertexPosition::TOP_LEFT_BACK_CORNER_3D; // e
+        } else {
+          if(0 < p[2] and p[2] < nbvoxels_[2])
+            vertexPositions_[i] = VertexPosition::BOTTOM_LEFT_EDGE_3D; // cg
+          else if(p[2] == 0)
+            vertexPositions_[i]
+              = VertexPosition::BOTTOM_LEFT_FRONT_CORNER_3D; // c
+          else
+            vertexPositions_[i]
+              = VertexPosition::BOTTOM_LEFT_BACK_CORNER_3D; // g
+        }
+      } else {
+        if(0 < p[1] and p[1] < nbvoxels_[1]) {
+          if(0 < p[2] and p[2] < nbvoxels_[2])
+            vertexPositions_[i] = VertexPosition::RIGHT_FACE_3D; // bdfh
+          else if(p[2] == 0)
+            vertexPositions_[i] = VertexPosition::RIGHT_FRONT_EDGE_3D; // bd
+          else
+            vertexPositions_[i] = VertexPosition::RIGHT_BACK_EDGE_3D; // fh
+        } else if(p[1] == 0) {
+          if(0 < p[2] and p[2] < nbvoxels_[2])
+            vertexPositions_[i] = VertexPosition::TOP_RIGHT_EDGE_3D; // bf
+          else if(p[2] == 0)
+            vertexPositions_[i]
+              = VertexPosition::TOP_RIGHT_FRONT_CORNER_3D; // b
+          else
+            vertexPositions_[i] = VertexPosition::TOP_RIGHT_BACK_CORNER_3D; // f
+        } else {
+          if(0 < p[2] and p[2] < nbvoxels_[2])
+            vertexPositions_[i] = VertexPosition::BOTTOM_RIGHT_EDGE_3D; // dh
+          else if(p[2] == 0)
+            vertexPositions_[i]
+              = VertexPosition::BOTTOM_RIGHT_FRONT_CORNER_3D; // d
+          else
+            vertexPositions_[i]
+              = VertexPosition::BOTTOM_RIGHT_BACK_CORNER_3D; // h
+        }
+      }
+      vertexCoords_[i] = std::move(p);
+    }
+  }
+  return 0;
+}
+
+int ImplicitTriangulation::preconditionEdgesInternal() {
+  edgePositions_.resize(edgeNumber_);
+  edgeCoords_.resize(edgeNumber_);
+
+  if(dimensionality_ == 3) {
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+    for(SimplexId i = 0; i < edgeNumber_; ++i) {
+      std::array<SimplexId, 3> p{};
+
+      if(i < esetshift_[0]) {
+        edgeToPosition(i, 0, p.data());
+        if(p[1] > 0 and p[1] < nbvoxels_[1]) {
+          if(p[2] > 0 and p[2] < nbvoxels_[2])
+            edgePositions_[i] = EdgePosition::L_xnn_3D;
+          else if(p[2] == 0)
+            edgePositions_[i] = EdgePosition::L_xn0_3D;
+          else
+            edgePositions_[i] = EdgePosition::L_xnN_3D;
+        } else if(p[1] == 0) {
+          if(p[2] > 0 and p[2] < nbvoxels_[2])
+            edgePositions_[i] = EdgePosition::L_x0n_3D;
+          else if(p[2] == 0)
+            edgePositions_[i] = EdgePosition::L_x00_3D;
+          else
+            edgePositions_[i] = EdgePosition::L_x0N_3D;
+        } else {
+          if(p[2] > 0 and p[2] < nbvoxels_[2])
+            edgePositions_[i] = EdgePosition::L_xNn_3D;
+          else if(p[2] == 0)
+            edgePositions_[i] = EdgePosition::L_xN0_3D;
+          else
+            edgePositions_[i] = EdgePosition::L_xNN_3D;
+        }
+
+      } else if(i < esetshift_[1]) {
+        edgeToPosition(i, 1, p.data());
+        if(p[0] > 0 and p[0] < nbvoxels_[0]) {
+          if(p[2] > 0 and p[2] < nbvoxels_[2])
+            edgePositions_[i] = EdgePosition::H_nyn_3D;
+          else if(p[2] == 0)
+            edgePositions_[i] = EdgePosition::H_ny0_3D;
+          else
+            edgePositions_[i] = EdgePosition::H_nyN_3D;
+        } else if(p[0] == 0) {
+          if(p[2] > 0 and p[2] < nbvoxels_[2])
+            edgePositions_[i] = EdgePosition::H_0yn_3D;
+          else if(p[2] == 0)
+            edgePositions_[i] = EdgePosition::H_0y0_3D;
+          else
+            edgePositions_[i] = EdgePosition::H_0yN_3D;
+        } else {
+          if(p[2] > 0 and p[2] < nbvoxels_[2])
+            edgePositions_[i] = EdgePosition::H_Nyn_3D;
+          else if(p[2] == 0)
+            edgePositions_[i] = EdgePosition::H_Ny0_3D;
+          else
+            edgePositions_[i] = EdgePosition::H_NyN_3D;
+        }
+
+      } else if(i < esetshift_[2]) {
+        edgeToPosition(i, 2, p.data());
+        if(p[0] > 0 and p[0] < nbvoxels_[0]) {
+          if(p[1] > 0 and p[1] < nbvoxels_[1])
+            edgePositions_[i] = EdgePosition::P_nnz_3D;
+          else if(p[1] == 0)
+            edgePositions_[i] = EdgePosition::P_n0z_3D;
+          else
+            edgePositions_[i] = EdgePosition::P_nNz_3D;
+        } else if(p[0] == 0) {
+          if(p[1] > 0 and p[1] < nbvoxels_[1])
+            edgePositions_[i] = EdgePosition::P_0nz_3D;
+          else if(p[1] == 0)
+            edgePositions_[i] = EdgePosition::P_00z_3D;
+          else
+            edgePositions_[i] = EdgePosition::P_0Nz_3D;
+        } else {
+          if(p[1] > 0 and p[1] < nbvoxels_[1])
+            edgePositions_[i] = EdgePosition::P_Nnz_3D;
+          else if(p[1] == 0)
+            edgePositions_[i] = EdgePosition::P_N0z_3D;
+          else
+            edgePositions_[i] = EdgePosition::P_NNz_3D;
+        }
+
+      } else if(i < esetshift_[3]) {
+        edgeToPosition(i, 3, p.data());
+        if(p[2] > 0 and p[2] < nbvoxels_[2])
+          edgePositions_[i] = EdgePosition::D1_xyn_3D;
+        else if(p[2] == 0)
+          edgePositions_[i] = EdgePosition::D1_xy0_3D;
+        else
+          edgePositions_[i] = EdgePosition::D1_xyN_3D;
+
+      } else if(i < esetshift_[4]) {
+        edgeToPosition(i, 4, p.data());
+        if(p[0] > 0 and p[0] < nbvoxels_[0])
+          edgePositions_[i] = EdgePosition::D2_nyz_3D;
+        else if(p[0] == 0)
+          edgePositions_[i] = EdgePosition::D2_0yz_3D;
+        else
+          edgePositions_[i] = EdgePosition::D2_Nyz_3D;
+
+      } else if(i < esetshift_[5]) {
+        edgeToPosition(i, 5, p.data());
+        if(p[1] > 0 and p[1] < nbvoxels_[1])
+          edgePositions_[i] = EdgePosition::D3_xnz_3D;
+        else if(p[1] == 0)
+          edgePositions_[i] = EdgePosition::D3_x0z_3D;
+        else
+          edgePositions_[i] = EdgePosition::D3_xNz_3D;
+
+      } else if(i < esetshift_[6]) {
+        edgeToPosition(i, 6, p.data());
+        edgePositions_[i] = EdgePosition::D4_3D;
+      }
+      edgeCoords_[i] = std::move(p);
+    }
+
+  } else if(dimensionality_ == 2) {
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+    for(SimplexId i = 0; i < edgeNumber_; ++i) {
+      std::array<SimplexId, 3> p{};
+
+      if(i < esetshift_[0]) {
+        edgeToPosition2d(i, 0, p.data());
+        if(p[1] > 0 and p[1] < nbvoxels_[Dj_])
+          edgePositions_[i] = EdgePosition::L_xn_2D;
+        else if(p[1] == 0)
+          edgePositions_[i] = EdgePosition::L_x0_2D;
+        else
+          edgePositions_[i] = EdgePosition::L_xN_2D;
+
+      } else if(i < esetshift_[1]) {
+        edgeToPosition2d(i, 1, p.data());
+        if(p[0] > 0 and p[0] < nbvoxels_[Di_])
+          edgePositions_[i] = EdgePosition::H_ny_2D;
+        else if(p[0] == 0)
+          edgePositions_[i] = EdgePosition::H_0y_2D;
+        else
+          edgePositions_[i] = EdgePosition::H_Ny_2D;
+
+      } else if(i < esetshift_[2]) {
+        edgeToPosition2d(i, 2, p.data());
+        edgePositions_[i] = EdgePosition::D1_2D;
+      }
+      edgeCoords_[i] = std::move(p);
+    }
+
+  } else if(dimensionality_ == 1) {
+    edgePositions_[0] = EdgePosition::FIRST_EDGE_1D;
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+    for(SimplexId i = 1; i < edgeNumber_ - 1; ++i) {
+      edgePositions_[i] = EdgePosition::CENTER_1D;
+    }
+    edgePositions_[edgeNumber_ - 1] = EdgePosition::LAST_EDGE_1D;
+  }
+  return 0;
+}
+
+int ImplicitTriangulation::preconditionTrianglesInternal() {
+  trianglePositions_.resize(triangleNumber_);
+  triangleCoords_.resize(triangleNumber_);
+  if(dimensionality_ == 3) {
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+    for(SimplexId i = 0; i < triangleNumber_; ++i) {
+      std::array<SimplexId, 3> p{};
+      if(i < tsetshift_[0]) {
+        triangleToPosition(i, 0, p.data());
+        trianglePositions_[i] = TrianglePosition::F_3D;
+      } else if(i < tsetshift_[1]) {
+        triangleToPosition(i, 1, p.data());
+        trianglePositions_[i] = TrianglePosition::H_3D;
+      } else if(i < tsetshift_[2]) {
+        triangleToPosition(i, 2, p.data());
+        trianglePositions_[i] = TrianglePosition::C_3D;
+      } else if(i < tsetshift_[3]) {
+        triangleToPosition(i, 3, p.data());
+        trianglePositions_[i] = TrianglePosition::D1_3D;
+      } else if(i < tsetshift_[4]) {
+        triangleToPosition(i, 4, p.data());
+        trianglePositions_[i] = TrianglePosition::D2_3D;
+      } else if(i < tsetshift_[5]) {
+        triangleToPosition(i, 5, p.data());
+        trianglePositions_[i] = TrianglePosition::D3_3D;
+      }
+      triangleCoords_[i] = std::move(p);
+    }
+
+  } else if(dimensionality_ == 2) {
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+    for(SimplexId i = 0; i < triangleNumber_; ++i) {
+      std::array<SimplexId, 3> p{};
+      triangleToPosition2d(i, p.data());
+      triangleCoords_[i] = std::move(p);
+      if(i % 2 == 0) {
+        trianglePositions_[i] = TrianglePosition::TOP_2D;
+      } else {
+        trianglePositions_[i] = TrianglePosition::BOTTOM_2D;
+      }
+    }
+  }
+  return 0;
+}
+
+int ImplicitTriangulation::preconditionTetrahedronsInternal() {
+  if(dimensionality_ != 3) {
+    return 1;
+  }
+  tetrahedronCoords_.resize(tetrahedronNumber_);
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+  for(SimplexId i = 0; i < tetrahedronNumber_; ++i) {
+    std::array<SimplexId, 3> p{};
+    tetrahedronToPosition(i, p.data());
+    tetrahedronCoords_[i] = std::move(p);
+  }
+  return 0;
 }
