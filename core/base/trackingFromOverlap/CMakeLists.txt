@@ -5,4 +5,6 @@ ttk_add_base_library(trackingFromOverlap
     TrackingFromOverlap.h
   DEPENDS
     triangulation
+    Boost::boost
+    Boost::system
     )

@@ -233,7 +233,7 @@ int ttkPersistenceDiagram::doIt(vector<vtkDataSet *> &inputs,
   if(!inputs.size()) {
     cerr << "[ttkPersistenceDiagram] Error: not enough input information."
          << endl;
-    return 0;
+    return -1;
   }
 #endif
 
@@ -244,17 +244,17 @@ int ttkPersistenceDiagram::doIt(vector<vtkDataSet *> &inputs,
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!input) {
     cerr << "[ttkPersistenceDiagram] Error: input is NULL." << endl;
-    return 0;
+    return -1;
   }
 
   if(!input->GetNumberOfPoints()) {
     cerr << "[ttkPersistenceDiagram] Error: input has no point." << endl;
-    return 0;
+    return -1;
   }
 
   if(!outputCTPersistenceDiagram) {
     cerr << "[ttkPersistenceDiagram] Error: output is NULL." << endl;
-    return 0;
+    return -1;
   }
 #endif
 
@@ -266,7 +266,7 @@ int ttkPersistenceDiagram::doIt(vector<vtkDataSet *> &inputs,
 #ifndef TTK_ENABLE_KAMIKAZE
   if(ret) {
     cerr << "[ttkPersistenceDiagram] Error : wrong scalars." << endl;
-    return 0;
+    return -1;
   }
 #endif
 
@@ -274,7 +274,7 @@ int ttkPersistenceDiagram::doIt(vector<vtkDataSet *> &inputs,
 #ifndef TTK_ENABLE_KAMIKAZE
   if(ret) {
     cerr << "[ttkPersistenceDiagram] Error : wrong triangulation." << endl;
-    return 0;
+    return -2;
   }
 #endif
 
@@ -282,14 +282,14 @@ int ttkPersistenceDiagram::doIt(vector<vtkDataSet *> &inputs,
 #ifndef TTK_ENABLE_KAMIKAZE
   if(ret) {
     cerr << "[ttkPersistenceDiagram] Error : wrong offsets." << endl;
-    return 0;
+    return -3;
   }
   if(inputOffsets_->GetDataType() != VTK_INT
      and inputOffsets_->GetDataType() != VTK_ID_TYPE) {
     cerr << "[ttkPersistenceDiagram] Error : input offset field type not "
             "supported."
          << endl;
-    return 0;
+    return -3;
   }
 #endif
 
@@ -317,5 +317,5 @@ int ttkPersistenceDiagram::doIt(vector<vtkDataSet *> &inputs,
     dMsg(cout, msg.str(), memoryMsg);
   }
 
-  return !ret; // Return true if everything went all right
+  return ret;
 }

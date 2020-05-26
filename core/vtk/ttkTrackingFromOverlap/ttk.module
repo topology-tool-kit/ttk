@@ -7,3 +7,5 @@ HEADERS
 DEPENDS
   trackingFromOverlap
   ttkTriangulationAlgorithm
+  Boost::boost
+  Boost::system

@@ -7,3 +7,5 @@ HEADERS
 DEPENDS
   cinemaQuery
   ttkAlgorithm
+  Boost::boost
+  Boost::system

@@ -36,7 +36,7 @@ int ttkMorseSmaleComplex::FillInputPortInformation(int port,
       break;
   }
 
-  return 1;
+  return Superclass::FillInputPortInformation(port, info);
 }
 
 int ttkMorseSmaleComplex::FillOutputPortInformation(int port,
@@ -54,7 +54,7 @@ int ttkMorseSmaleComplex::FillOutputPortInformation(int port,
       break;
   }
 
-  return 1;
+  return Superclass::FillOutputPortInformation(port, info);
 }
 
 int ttkMorseSmaleComplex::setupTriangulation(vtkDataSet *input) {
@@ -781,7 +781,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
   if(!inputs.size()) {
     cerr << "[ttkMorseSmaleComplex] Error: not enough input information."
          << endl;
-    return 0;
+    return -1;
   }
 #endif
 
@@ -799,18 +799,18 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!input) {
     cerr << "[ttkMorseSmaleComplex] Error: input pointer is NULL." << endl;
-    return 0;
+    return -1;
   }
 
   if(!input->GetNumberOfPoints()) {
     cerr << "[ttkMorseSmaleComplex] Error: input has no point." << endl;
-    return 0;
+    return -1;
   }
 
   if(!outputCriticalPoints or !outputSeparatrices1 or !outputSeparatrices2
      or !outputMorseComplexes) {
     cerr << "[ttkMorseSmaleComplex] Error: output pointer is NULL." << endl;
-    return 0;
+    return -1;
   }
 #endif
 
@@ -818,7 +818,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
 #ifndef TTK_ENABLE_KAMIKAZE
   if(ret) {
     cerr << "[ttkMorseSmaleComplex] Error : wrong triangulation." << endl;
-    return 0;
+    return -1;
   }
 #endif
 
@@ -826,7 +826,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!inputScalars) {
     cerr << "[ttkMorseSmaleComplex] Error : wrong scalars." << endl;
-    return 0;
+    return -1;
   }
 #endif
 
@@ -834,14 +834,14 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!inputOffsets) {
     cerr << "[ttkMorseSmaleComplex] Error : wrong offsets." << endl;
-    return 0;
+    return -1;
   }
   if(inputOffsets->GetDataType() != VTK_INT
      and inputOffsets->GetDataType() != VTK_ID_TYPE) {
     cerr
       << "[ttkMorseSmaleComplex] Error : input offset field type not supported."
       << endl;
-    return 0;
+    return -1;
   }
 #endif
 
@@ -890,7 +890,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!numberOfVertices) {
     cerr << "[ttkMorseSmaleComplex] Error : input has no vertices." << endl;
-    return 0;
+    return -1;
   }
 #endif
 
@@ -901,7 +901,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
     cerr << "[ttkMorseSmaleComplex] Error : ttkSimplexIdTypeArray allocation "
             "problem."
          << endl;
-    return 0;
+    return -1;
   }
 #endif
   ascendingManifold->SetNumberOfComponents(1);
@@ -915,7 +915,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
     cerr << "[ttkMorseSmaleComplex] Error : ttkSimplexIdTypeArray allocation "
             "problem."
          << endl;
-    return 0;
+    return -1;
   }
 #endif
   descendingManifold->SetNumberOfComponents(1);
@@ -929,7 +929,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
     cerr << "[ttkMorseSmaleComplex] Error : ttkSimplexIdTypeArray allocation "
             "problem."
          << endl;
-    return 0;
+    return -1;
   }
 #endif
   morseSmaleManifold->SetNumberOfComponents(1);
@@ -976,6 +976,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
 
   switch(inputScalars->GetDataType()) {
     vtkTemplateMacro(
+      // O.o there is 32 args for this method.
       ret = dispatch<VTK_TT>(
         inputScalars, inputOffsets, outputCriticalPoints, outputSeparatrices1,
         outputSeparatrices2, criticalPoints_numberOfPoints,
@@ -996,7 +997,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(ret != 0) {
-    return 0;
+    return -1;
   }
 #endif // TTK_ENABLE_KAMIKAZE
 
@@ -1009,7 +1010,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
       cerr
         << "[ttkMorseSmaleComplex] Error : outputMorseComplexes has no point "
         << "data." << endl;
-      return 0;
+      return -1;
     }
 #endif
 
@@ -1029,5 +1030,5 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
     dMsg(cout, msg.str(), memoryMsg);
   }
 
-  return !ret; // Return true if everything was right
+  return ret;
 }

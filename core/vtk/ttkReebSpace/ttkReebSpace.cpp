@@ -128,10 +128,10 @@ int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
   Memory m;
 
   if(inputs.size() != 1)
-    return 0;
+    return -1;
 
   if(outputs.size() != 4)
-    return 0;
+    return -2;
 
   vtkDataSet *input = inputs[0];
   vtkUnstructuredGrid *sheet0 = vtkUnstructuredGrid::SafeDownCast(outputs[0]);
@@ -153,7 +153,7 @@ int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
     uComponent_ = input->GetPointData()->GetArray(UcomponentId);
   }
   if(!uComponent_)
-    return 0;
+    return -1;
 
   if(Vcomponent.length()) {
     string oldName = Vcomponent;
@@ -168,7 +168,7 @@ int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
     vComponent_ = input->GetPointData()->GetArray(VcomponentId);
   }
   if(!vComponent_)
-    return 0;
+    return -2;
 
   if(ForceInputOffsetScalarField) {
     if(OffsetFieldU.length()) {
@@ -243,7 +243,7 @@ int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
   Triangulation *triangulation = ttkTriangulation::getTriangulation(input);
 
   if(!triangulation)
-    return 0;
+    return -3;
 
   // 0-sheets -
   // Optional additional fields:
@@ -841,5 +841,5 @@ int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
     dMsg(cout, msg.str(), memoryMsg);
   }
 
-  return 1;
+  return 0;
 }

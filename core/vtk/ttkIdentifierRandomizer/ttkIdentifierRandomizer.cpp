@@ -3,10 +3,9 @@
 using namespace std;
 using namespace ttk;
 
-vtkStandardNewMacro(ttkIdentifierRandomizer)
-
-  int ttkIdentifierRandomizer::doIt(vector<vtkDataSet *> &inputs,
-                                    vector<vtkDataSet *> &outputs) {
+vtkStandardNewMacro(ttkIdentifierRandomizer);
+int ttkIdentifierRandomizer::doIt(vector<vtkDataSet *> &inputs,
+                                  vector<vtkDataSet *> &outputs) {
 
   Memory m;
 
@@ -23,7 +22,7 @@ vtkStandardNewMacro(ttkIdentifierRandomizer)
   // variable 'output' with the result of the computation.
   // if your wrapper produces an output of the same type of the input, you
   // should proceed in the same way.
-  vtkDataArray *inputScalarField = NULL;
+  vtkDataArray *inputScalarField = nullptr;
 
   if(ScalarField.length()) {
     inputScalarField = input->GetPointData()->GetArray(ScalarField.data());
@@ -43,7 +42,7 @@ vtkStandardNewMacro(ttkIdentifierRandomizer)
   }
 
   if(!inputScalarField)
-    return 0;
+    return -2;
 
   {
     stringstream msg;
@@ -87,7 +86,7 @@ vtkStandardNewMacro(ttkIdentifierRandomizer)
       stringstream msg;
       msg << "[ttkIdentifierRandomizer] Unsupported data type :(" << endl;
       dMsg(cerr, msg.str(), fatalMsg);
-      return 0;
+      return -1;
   }
   outputScalarField_->SetNumberOfTuples(inputScalarField->GetNumberOfTuples());
   outputScalarField_->SetName(inputScalarField->GetName());
@@ -187,5 +186,5 @@ vtkStandardNewMacro(ttkIdentifierRandomizer)
     dMsg(cout, msg.str(), memoryMsg);
   }
 
-  return 1;
+  return 0;
 }

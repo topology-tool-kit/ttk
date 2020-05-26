@@ -127,7 +127,7 @@ int ttkIdentifiers::doIt(vtkDataSet *input, vtkDataSet *output) {
     dMsg(cout, msg.str(), timeMsg);
   }
 
-  return 1;
+  return 0;
 }
 
 // to adapt if your wrapper does not inherit from vtkDataSetAlgorithm
@@ -141,7 +141,7 @@ int ttkIdentifiers::RequestData(vtkInformation *request,
   vtkDataSet *input = vtkDataSet::GetData(inputVector[0]);
   vtkDataSet *output = vtkDataSet::GetData(outputVector);
 
-  doIt(input, output);
+  int ret = doIt(input, output);
 
   {
     stringstream msg;
@@ -150,5 +150,5 @@ int ttkIdentifiers::RequestData(vtkInformation *request,
     dMsg(cout, msg.str(), memoryMsg);
   }
 
-  return 1;
+  return !ret; // VTK uses true/false
 }

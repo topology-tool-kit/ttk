@@ -7,3 +7,5 @@ HEADERS
 DEPENDS
   ttkAlgorithm
   ttkTopologicalCompressionWriter
+  Boost::boost
+  Boost::system

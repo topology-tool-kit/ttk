@@ -160,91 +160,16 @@ int ttkSphereFromPoint::doIt(vtkDataSet *input, vtkPolyData *output) {
         if(array != nullptr && array->GetNumberOfComponents() == 1) {
 
           double value = 0;
+          array->GetTuple(i, &value);
 
-          switch(array->GetDataType()) {
-
-            case VTK_CHAR: {
-              array->GetTuple(i, &value);
-
-              vtkCharArray *charArray = vtkCharArray::New();
-
-              charArray->SetName(array->GetName());
-              charArray->SetNumberOfTuples(sphereSurface->GetNumberOfPoints());
-              for(SimplexId k = 0; k < sphereSurface->GetNumberOfPoints();
-                  k++) {
-                charArray->SetTuple(k, &value);
-              }
-              sphereSurface->GetPointData()->AddArray(charArray);
-              dataArrayList_[threadId].push_back(charArray);
-            } break;
-
-            case VTK_DOUBLE: {
-              array->GetTuple(i, &value);
-
-              vtkDoubleArray *doubleArray = vtkDoubleArray::New();
-
-              doubleArray->SetName(array->GetName());
-              doubleArray->SetNumberOfTuples(
-                sphereSurface->GetNumberOfPoints());
-              for(SimplexId k = 0; k < sphereSurface->GetNumberOfPoints();
-                  k++) {
-                doubleArray->SetTuple(k, &value);
-              }
-              sphereSurface->GetPointData()->AddArray(doubleArray);
-              dataArrayList_[threadId].push_back(doubleArray);
-            } break;
-
-            case VTK_FLOAT: {
-              array->GetTuple(i, &value);
-
-              vtkFloatArray *floatArray = vtkFloatArray::New();
-
-              floatArray->SetName(array->GetName());
-              floatArray->SetNumberOfTuples(sphereSurface->GetNumberOfPoints());
-              for(SimplexId k = 0; k < sphereSurface->GetNumberOfPoints();
-                  k++) {
-                floatArray->SetTuple(k, &value);
-              }
-              sphereSurface->GetPointData()->AddArray(floatArray);
-              dataArrayList_[threadId].push_back(floatArray);
-            } break;
-
-            case VTK_INT: {
-              array->GetTuple(i, &value);
-
-              vtkIntArray *intArray = vtkIntArray::New();
-
-              intArray->SetName(array->GetName());
-              intArray->SetNumberOfTuples(sphereSurface->GetNumberOfPoints());
-              for(SimplexId k = 0; k < sphereSurface->GetNumberOfPoints();
-                  k++) {
-                intArray->SetTuple(k, &value);
-              }
-              sphereSurface->GetPointData()->AddArray(intArray);
-              dataArrayList_[threadId].push_back(intArray);
-            } break;
-
-            case VTK_ID_TYPE: {
-              array->GetTuple(i, &value);
-
-              vtkIdTypeArray *intArray = vtkIdTypeArray::New();
-
-              intArray->SetName(array->GetName());
-              intArray->SetNumberOfTuples(sphereSurface->GetNumberOfPoints());
-              for(SimplexId k = 0; k < sphereSurface->GetNumberOfPoints();
-                  k++) {
-                intArray->SetTuple(k, &value);
-              }
-              sphereSurface->GetPointData()->AddArray(intArray);
-              dataArrayList_[threadId].push_back(intArray);
-            } break;
-
-            default: {
-              stringstream msg;
-              msg << "[ttkSphereFromPoint] Unsupported data type :(" << endl;
-              dMsg(cerr, msg.str(), detailedInfoMsg);
-            } break;
+          vtkDataArray *dataArray = array->NewInstance();
+          dataArray->SetName(array->GetName());
+          dataArray->SetNumberOfTuples(sphereSurface->GetNumberOfPoints());
+          for(SimplexId k = 0; k < sphereSurface->GetNumberOfPoints(); k++) {
+            dataArray->SetTuple(k, &value);
           }
+          sphereSurface->GetPointData()->AddArray(dataArray);
+          dataArrayList_[threadId].emplace_back(dataArray);
         } else {
           stringstream msg;
           msg << "[ttkSphereFromPoint] Unsupported number of components :("

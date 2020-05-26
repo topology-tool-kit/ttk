@@ -40,13 +40,13 @@ jobs:
     CMakeArgs: ''
     LD_LIBRARY_PATH: $(Build.ArtifactStagingDirectory)/vtk-install/lib/
     # depends on graphics
-    CMAKE_DISABLE: "-DVTK_MODULE_ENABLE_ttkAddFieldData=NO -DVTK_MODULE_ENABLE_ttkCinemaWriter=NO -DVTK_MODULE_ENABLE_ttkCinemaReader=NO -DVTK_MODULE_ENABLE_ttkCinemaQuery=NO -DVTK_MODULE_ENABLE_ttkCinemaImaging=NO -DVTK_MODULE_ENABLE_ttkUserInterfaceBase=NO -DVTK_MODULE_ENABLE_ttkWRLExporter=NO"
+    CMAKE_DISABLE: '-DVTK_MODULE_ENABLE_ttkAddFieldData=NO -DVTK_MODULE_ENABLE_ttkCinemaWriter=NO -DVTK_MODULE_ENABLE_ttkCinemaReader=NO -DVTK_MODULE_ENABLE_ttkCinemaQuery=NO -DVTK_MODULE_ENABLE_ttkCinemaImaging=NO -DVTK_MODULE_ENABLE_ttkUserInterfaceBase=NO -DVTK_MODULE_ENABLE_ttkWRLExporter=NO'
     # used for dev
-    CMAKE_TEST: "-DVTK_MODULE_ENABLE_ttkBarycentricSubdivision=NO -DVTK_MODULE_ENABLE_ttkJacobiSet=NO -DVTK_MODULE_ENABLE_ttkMorseSmaleQuadrangulation=NO -DVTK_MODULE_ENABLE_ttkReebSpace=NO"
+    CMAKE_TEST: ''
 
   steps:
   - script: |
-      echo "Configure distribution"
+      echo 'Configure distribution'
       sudo add-apt-repository ppa:ubuntu-toolchain-r/test
       sudo apt-get update
       sudo apt-get install -y ninja-build libc++-dev libc++abi-dev libc++abi1 libstdc++-7-dev libboost-all-dev gcc-7 g++-7 gcc-6 g++-6 python3 libomp-dev libomp5
@@ -105,7 +105,7 @@ jobs:
     PV_V: '5.8'
     CMAKE_DISABLE: ''
     # used for dev
-    CMAKE_TEST: '-DVTK_MODULE_ENABLE_ttkBarycentricSubdivision=NO -DVTK_MODULE_ENABLE_ttkDepthImageBasedGeometryApproximation=NO -DVTK_MODULE_ENABLE_ttkDimensionReduction=NO -DVTK_MODULE_ENABLE_ttkIcoSphereFromObject=NO -DVTK_MODULE_ENABLE_ttkIcoSphereFromPoint=NO -DVTK_MODULE_ENABLE_ttkIcoSphere=NO -DVTK_MODULE_ENABLE_ttkJacobiSet=NO -DVTK_MODULE_ENABLE_ttkMorseSmaleQuadrangulation=NO -DVTK_MODULE_ENABLE_ttkReebSpace=NO -DVTK_MODULE_ENABLE_ttkWRLExporter=NO'
+    CMAKE_TEST: ''
 
   strategy:
     matrix:
@@ -182,7 +182,7 @@ jobs:
     PV_V: '5.8'
     CMAKE_DISABLE: ''
     # used for dev
-    CMAKE_TEST: '-DVTK_MODULE_ENABLE_ttkBarycentricSubdivision=NO -DVTK_MODULE_ENABLE_ttkDepthImageBasedGeometryApproximation=NO -DVTK_MODULE_ENABLE_ttkDimensionReduction=NO -DVTK_MODULE_ENABLE_ttkIcoSphereFromObject=NO -DVTK_MODULE_ENABLE_ttkIcoSphereFromPoint=NO -DVTK_MODULE_ENABLE_ttkIcoSphere=NO -DVTK_MODULE_ENABLE_ttkJacobiSet=NO -DVTK_MODULE_ENABLE_ttkMorseSmaleQuadrangulation=NO -DVTK_MODULE_ENABLE_ttkReebSpace=NO -DVTK_MODULE_ENABLE_ttkWRLExporter=NO'
+    CMAKE_TEST: ''
 
   pool:
     vmImage: 'macOS-latest'
@@ -250,7 +250,7 @@ jobs:
   variables:
     CMAKE_DISABLE: '-DVTK_MODULE_ENABLE_ttkAddFieldData=NO -DVTK_MODULE_ENABLE_ttkWRLExporter=NO -DVTK_MODULE_ENABLE_ttkCinemaWriter=NO -DVTK_MODULE_ENABLE_ttkCinemaReader=NO -DVTK_MODULE_ENABLE_ttkCinemaQuery=NO -DVTK_MODULE_ENABLE_ttkCinemaImaging=NO -DVTK_MODULE_ENABLE_ttkUserInterfaceBase=NO'
     # used for dev
-    CMAKE_TEST: "-DVTK_MODULE_ENABLE_ttkBarycentricSubdivision=NO -DVTK_MODULE_ENABLE_ttkJacobiSet=NO -DVTK_MODULE_ENABLE_ttkMorseSmaleQuadrangulation=NO -DVTK_MODULE_ENABLE_ttkReebSpace=NO"
+    CMAKE_TEST: ''
 
   pool:
     vmImage: $(imageName)

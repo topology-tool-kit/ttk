@@ -62,7 +62,7 @@ int ttkScalarFieldCriticalPoints::doIt(vector<vtkDataSet *> &inputs,
     cerr
       << "[ttkScalarFieldCriticalPoints] Error: not enough input information."
       << endl;
-    return 0;
+    return -1;
   }
 #endif
 
@@ -73,12 +73,12 @@ int ttkScalarFieldCriticalPoints::doIt(vector<vtkDataSet *> &inputs,
   if(!input) {
     cerr << "[ttkScalarFieldCriticalPoints] Error: input pointer is NULL."
          << endl;
-    return 0;
+    return -1;
   }
 
   if(!input->GetNumberOfPoints()) {
     cerr << "[ttkScalarFieldCriticalPoints] Error: input has no point." << endl;
-    return 0;
+    return -1;
   }
 #endif
 
@@ -87,7 +87,7 @@ int ttkScalarFieldCriticalPoints::doIt(vector<vtkDataSet *> &inputs,
   if(!triangulation) {
     cerr << "[ttkScalarFieldCriticalPoints] Error: input triangulation is NULL."
          << endl;
-    return 0;
+    return -1;
   }
 #endif
 
@@ -98,8 +98,8 @@ int ttkScalarFieldCriticalPoints::doIt(vector<vtkDataSet *> &inputs,
   // variable 'output' with the result of the computation.
   // if your wrapper produces an output of the same type of the input, you
   // should proceed in the same way.
-  vtkDataArray *inputScalarField = NULL;
-  vtkDataArray *offsetField = NULL;
+  vtkDataArray *inputScalarField = nullptr;
+  vtkDataArray *offsetField = nullptr;
 
   if(ScalarField.length()) {
     inputScalarField = input->GetPointData()->GetArray(ScalarField.data());
@@ -108,7 +108,7 @@ int ttkScalarFieldCriticalPoints::doIt(vector<vtkDataSet *> &inputs,
   }
 
   if(!inputScalarField)
-    return 0;
+    return -1;
 
   {
     stringstream msg;
@@ -272,5 +272,5 @@ int ttkScalarFieldCriticalPoints::doIt(vector<vtkDataSet *> &inputs,
     dMsg(cout, msg.str(), 2);
   }
 
-  return 1;
+  return 0;
 }

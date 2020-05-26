@@ -258,7 +258,7 @@ int ttkFTMTree::doIt(vector<vtkDataSet *> &inputs,
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!inputs.size()) {
     cerr << "[ttkFTMTree] Error: not enough input information." << endl;
-    return 0;
+    return -1;
   }
 #endif
 
@@ -271,17 +271,17 @@ int ttkFTMTree::doIt(vector<vtkDataSet *> &inputs,
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!inputs[0]) {
     cerr << "[ttkFTMTree] Error: input pointer is NULL." << endl;
-    return 0;
+    return -1;
   }
 
   if(!inputs[0]->GetNumberOfPoints()) {
     cerr << "[ttkFTMTree] Error: input has no point." << endl;
-    return 0;
+    return -1;
   }
 
   if(!outputSkeletonNodes || !outputSkeletonArcs || !outputSegmentation) {
     cerr << "[ttkFTMTree] Error: output pointer is NULL." << endl;
-    return 0;
+    return -1;
   }
 #endif
 
@@ -347,7 +347,7 @@ int ttkFTMTree::doIt(vector<vtkDataSet *> &inputs,
   if(setupTriangulation()) {
 #ifndef TTK_ENABLE_KAMIKAZE
     cerr << "[ttkFTMTree] Error : wrong triangulation." << endl;
-    return 0;
+    return -2;
 #endif
   }
 
@@ -355,7 +355,7 @@ int ttkFTMTree::doIt(vector<vtkDataSet *> &inputs,
   if(getScalars()) {
 #ifndef TTK_ENABLE_KAMIKAZE
     cerr << "[ttkFTMTree] Error : wrong input scalars." << endl;
-    return 0;
+    return -3;
 #endif
   }
   getOffsets();
@@ -391,14 +391,14 @@ int ttkFTMTree::doIt(vector<vtkDataSet *> &inputs,
   if(getSkeletonNodes(outputSkeletonNodes)) {
 #ifndef TTK_ENABLE_KAMIKAZE
     cerr << "[ttkFTMTree] Error : wrong properties on skeleton nodes." << endl;
-    return 0;
+    return -7;
 #endif
   }
 
   if(getSkeletonArcs(outputSkeletonArcs)) {
 #ifndef TTK_ENABLE_KAMIKAZE
     cerr << "[ttkFTMTree] Error : wrong properties on skeleton arcs." << endl;
-    return 0;
+    return -8;
 #endif
   }
 
@@ -407,7 +407,7 @@ int ttkFTMTree::doIt(vector<vtkDataSet *> &inputs,
     if(getSegmentation(outputSegmentation)) {
 #ifndef TTK_ENABLE_KAMIKAZE
       cerr << "[ttkFTMTree] Error : wrong properties on segmentation." << endl;
-      return 0;
+      return -9;
 #endif
     }
   }
@@ -425,7 +425,7 @@ int ttkFTMTree::doIt(vector<vtkDataSet *> &inputs,
     dMsg(cout, msg.str(), memoryMsg);
   }
 
-  return 1;
+  return 0;
 }
 
 int ttkFTMTree::getOffsets() {

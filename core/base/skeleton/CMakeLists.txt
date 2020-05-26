@@ -9,6 +9,14 @@ else()
 endif()
 
 configure_file(${CellArrayHeader} CellArray.h COPYONLY)
+install(
+  FILES
+   "${CMAKE_CURRENT_BINARY_DIR}/CellArray.h"
+  DESTINATION
+    "include/ttk/base"
+  )
+
+message(STATUS "Dest: ${CMAKE_INSTALL_LIBDIR}/ttk")
 
 ttk_add_base_library(skeleton
   SOURCES

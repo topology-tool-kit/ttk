@@ -43,11 +43,11 @@ function(ttk_add_base_library library)
     EXPORT
       TTKBaseTargets
     RUNTIME DESTINATION
-      ${CMAKE_INSTALL_BINDIR}/ttk
+      "${CMAKE_INSTALL_BINDIR}/ttk"
     ARCHIVE DESTINATION
-      ${CMAKE_INSTALL_LIBDIR}/ttk
+      "${CMAKE_INSTALL_LIBDIR}/ttk"
     LIBRARY DESTINATION
-      ${CMAKE_INSTALL_LIBDIR}/ttk
+      "${CMAKE_INSTALL_LIBDIR}/ttk"
     )
 
   if(ARG_HEADERS)
@@ -108,11 +108,11 @@ function(ttk_add_base_template_library library)
   install(TARGETS ${library}
     EXPORT TTKBaseTargets
     RUNTIME DESTINATION
-      ${CMAKE_INSTALL_BINDIR}/ttk
+      "${CMAKE_INSTALL_BINDIR}/ttk"
     ARCHIVE DESTINATION
-      ${CMAKE_INSTALL_LIBDIR}/ttk
+      "${CMAKE_INSTALL_LIBDIR}/ttk"
     LIBRARY DESTINATION
-      ${CMAKE_INSTALL_LIBDIR}/ttk
+      "${CMAKE_INSTALL_LIBDIR}/ttk"
     )
 
   install(FILES ${ARG_HEADERS} DESTINATION include/ttk/base)
