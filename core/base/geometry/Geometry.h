@@ -281,6 +281,9 @@ namespace ttk {
       } else if(std::is_floating_point<T2>::value) {
         return std::pow(val, n);
       }
+      // this return statement should be unreachable thanks to the
+      // static_assert
+      return T1{};
     }
 
   } // namespace Geometry
