@@ -233,9 +233,6 @@ double PersistenceDiagramDistanceMatrix::enrichCurrentBidderDiagrams(
   std::vector<std::vector<int>> candidates_to_be_added(nInputs);
   std::vector<std::vector<size_t>> idx(nInputs);
 
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
-#endif // TTK_ENABLE_OPENMP
   for(size_t i = 0; i < nInputs; i++) {
     double local_min_persistence = std::numeric_limits<double>::min();
     std::vector<double> persistences;
