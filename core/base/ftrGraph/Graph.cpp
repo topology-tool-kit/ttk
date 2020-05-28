@@ -28,7 +28,7 @@ std::string Graph::print(const int verbosity) const {
 
   if(verbosity >= 3) {
     res << "Leaves: " << endl;
-    for(const auto v : leaves_) {
+    for(const auto &v : leaves_) {
       res << get<0>(v) << " ";
     }
     res << endl;

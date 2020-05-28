@@ -270,7 +270,7 @@ int ttk::IcoSphere::computeIcoSphere(
       idType nOldTriangles = triangleIndex;
       triangleIndex = 0;
 
-      for(size_t i = 0; i < nOldTriangles; i++) {
+      for(idType i = 0; i < nOldTriangles; i++) {
         idType offset = i * 4;
 
         // compute mid points

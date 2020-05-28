@@ -30,33 +30,33 @@ DataSetToTriangulationMapType ttkAlgorithm::DataSetToTriangulationMap;
 
 struct ttkOnDeleteCommand : public vtkCommand {
   bool deleteEventFired{false};
-  vtkObject *owner;
-  DataSetToTriangulationMapType *dataSetToTriangulationMap;
+  vtkObject *owner_;
+  DataSetToTriangulationMapType *dataSetToTriangulationMap_;
 
   static ttkOnDeleteCommand *New();
   vtkTypeMacro(ttkOnDeleteCommand, vtkCommand);
 
   void Init(vtkObject *owner,
             DataSetToTriangulationMapType *dataSetToTriangulationMap) {
-    this->owner = owner;
-    this->owner->AddObserver(vtkCommand::DeleteEvent, this, 1);
-    this->dataSetToTriangulationMap = dataSetToTriangulationMap;
+    this->owner_ = owner;
+    this->owner_->AddObserver(vtkCommand::DeleteEvent, this, 1);
+    this->dataSetToTriangulationMap_ = dataSetToTriangulationMap;
   }
   ~ttkOnDeleteCommand() {
     if(!this->deleteEventFired)
-      this->owner->RemoveObserver(this);
+      this->owner_->RemoveObserver(this);
   }
 
-  void Execute(vtkObject *, unsigned long eventId, void *callData) {
+  void Execute(vtkObject *, unsigned long eventId, void *callData) override {
     this->deleteEventFired = true;
 
-    void *key = this->owner;
-    if(this->owner->IsA("vtkImageData"))
-      key = vtkImageData::SafeDownCast(owner)->GetScalarPointer();
+    void *key = this->owner_;
+    if(this->owner_->IsA("vtkImageData"))
+      key = vtkImageData::SafeDownCast(owner_)->GetScalarPointer();
 
-    auto it = this->dataSetToTriangulationMap->find(key);
-    if(it != this->dataSetToTriangulationMap->end())
-      this->dataSetToTriangulationMap->erase(it);
+    auto it = this->dataSetToTriangulationMap_->find(key);
+    if(it != this->dataSetToTriangulationMap_->end())
+      this->dataSetToTriangulationMap_->erase(it);
   }
 };
 vtkStandardNewMacro(ttkOnDeleteCommand);

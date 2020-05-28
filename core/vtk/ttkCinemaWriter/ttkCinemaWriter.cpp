@@ -154,15 +154,15 @@ int ttkCinemaWriter::ProcessDataProduct(vtkDataObject *input) {
     } else {
       for(size_t i = 0; i < nFields; i++) {
         auto array = inputFD->GetAbstractArray(i);
-        size_t n = array->GetNumberOfTuples();
-        size_t m = array->GetNumberOfComponents();
+        auto n = array->GetNumberOfTuples();
+        auto m = array->GetNumberOfComponents();
         std::string value;
         if(n < 0) {
           value = "null";
         } else {
           value = "";
-          for(size_t j = 0; j < n; j++) {
-            for(size_t k = 0; k < m; k++) {
+          for(int j = 0; j < n; j++) {
+            for(int k = 0; k < m; k++) {
               value += array->GetVariantValue(j * m + k).ToString() + ";";
             }
             if(j < n - 1)

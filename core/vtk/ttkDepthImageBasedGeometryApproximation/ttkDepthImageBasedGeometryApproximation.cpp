@@ -142,7 +142,7 @@ int ttkDepthImageBasedGeometryApproximation::RequestData(
     {
       auto meshPD = mesh->GetPointData();
       auto inputPD = inputImage->GetPointData();
-      for(size_t p = 0; p < inputPD->GetNumberOfArrays(); p++)
+      for(int p = 0; p < inputPD->GetNumberOfArrays(); p++)
         meshPD->AddArray(inputPD->GetAbstractArray(p));
 
       outputMBD->SetBlock(i, mesh);

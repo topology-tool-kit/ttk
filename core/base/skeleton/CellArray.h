@@ -38,7 +38,7 @@ namespace ttk {
     }
 
     /// Retrieve the dimension
-    inline const unsigned char getDimension() const {
+    inline unsigned char getDimension() const {
       return dimension_;
     }
 

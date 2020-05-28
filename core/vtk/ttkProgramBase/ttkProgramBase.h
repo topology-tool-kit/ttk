@@ -40,7 +40,7 @@ public:
   ~ttkProgramBase() override{};
 
   /// Set the arguments of your ttk module and execute it here.
-  int execute();
+  int execute() override;
 
   vtkDataSet *getInput(const int &inputId) {
     if((inputId < 0) || (inputId >= (int)inputs_.size()))
@@ -52,7 +52,7 @@ public:
     return inputs_.size();
   };
 
-  virtual int run() {
+  virtual int run() override {
 
     if(!vtkWrapper_) {
       return -1;
@@ -68,7 +68,7 @@ public:
   }
 
   /// Save the output(s) of the TTK module.
-  virtual int save() const;
+  virtual int save() const override;
 
   virtual int setTTKmodule(vtkDataSetAlgorithm *ttkModule) {
 
@@ -91,7 +91,7 @@ protected:
            std::vector<vtkSmartPointer<vtkReaderClass>> &readerList);
 
   /// Load a sequence of input data-sets.
-  virtual int load(const std::vector<std::string> &inputPaths);
+  virtual int load(const std::vector<std::string> &inputPaths) override;
 
   template <class vtkWriterClass>
   int save(const int &outputPortId) const;

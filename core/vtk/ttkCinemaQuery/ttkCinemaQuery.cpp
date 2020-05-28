@@ -66,7 +66,7 @@ int ttkCinemaQuery::RequestData(vtkInformation *request,
     this->printMsg("Converting input VTK tables to SQL tables", 0,
                    ttk::debug::LineMode::REPLACE);
 
-    for(size_t i = 0; i < nTables; i++) {
+    for(int i = 0; i < nTables; i++) {
       auto inTable = inTables[i];
 
       size_t nc = inTable->GetNumberOfColumns();
@@ -77,11 +77,11 @@ int ttkCinemaQuery::RequestData(vtkInformation *request,
       // Table Definition
       std::string sqlTableDefinition
         = "CREATE TABLE InputTable" + std::to_string(i) + " (";
-      for(size_t i = 0; i < nc; i++) {
-        auto c = inTable->GetColumn(i);
-        isNumeric[i] = c->IsNumeric();
-        sqlTableDefinition += (i > 0 ? "," : "") + std::string(c->GetName())
-                              + " " + (isNumeric[i] ? "REAL" : "TEXT");
+      for(size_t j = 0; j < nc; j++) {
+        auto c = inTable->GetColumn(j);
+        isNumeric[j] = c->IsNumeric();
+        sqlTableDefinition += (j > 0 ? "," : "") + std::string(c->GetName())
+                              + " " + (isNumeric[j] ? "REAL" : "TEXT");
       }
       sqlTableDefinition += ")";
       sqlTableDefinitions.push_back(sqlTableDefinition);
@@ -97,14 +97,14 @@ int ttkCinemaQuery::RequestData(vtkInformation *request,
             sqlInsertStatement += ",";
 
           sqlInsertStatement += "(";
-          for(size_t i = 0; i < nc; i++) {
-            if(i > 0)
+          for(size_t k = 0; k < nc; k++) {
+            if(k > 0)
               sqlInsertStatement += ",";
-            if(isNumeric[i])
-              sqlInsertStatement += inTable->GetValue(q, i).ToString();
+            if(isNumeric[k])
+              sqlInsertStatement += inTable->GetValue(q, k).ToString();
             else
               sqlInsertStatement
-                += "'" + inTable->GetValue(q, i).ToString() + "'";
+                += "'" + inTable->GetValue(q, k).ToString() + "'";
           }
           sqlInsertStatement += ")";
           q++;
