@@ -16,7 +16,8 @@ ttk::SimplexId
                                                   const size_t b) const {
 
   std::vector<SimplexId> midId(this->threadNumber_);
-  std::vector<float> minValue(this->threadNumber_, std::numeric_limits<float>::infinity());
+  std::vector<float> minValue(
+    this->threadNumber_, std::numeric_limits<float>::infinity());
 
   // euclidian barycenter of a and b
   Point edgeEuclBary = (outputPoints_[a] + outputPoints_[b]) * 0.5F;
@@ -61,7 +62,7 @@ ttk::SimplexId
 
 #ifdef TTK_ENABLE_OPENMP
   for(int i = 1; i < this->threadNumber_; ++i) {
-    if (minValue[i] < minValue[0]) {
+    if(minValue[i] < minValue[0]) {
       minValue[0] = minValue[i];
       midId[0] = midId[i];
     }

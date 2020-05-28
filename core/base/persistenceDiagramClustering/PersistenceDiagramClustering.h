@@ -169,7 +169,6 @@ namespace ttk {
 
     std::vector<BidderDiagram<dataType>> bidder_diagrams_;
     std::vector<GoodDiagram<dataType>> barycenter_goods_;
-
   };
 
   template <typename dataType>

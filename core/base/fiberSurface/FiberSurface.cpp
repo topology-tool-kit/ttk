@@ -356,13 +356,11 @@ int FiberSurface::computeTriangleIntersection(
   // we need to make sure p0a and p1a are not the same (vertex case)
   bool vertexA = false;
   bool vertexB = false;
-  if((fabs(p0a[0] - p1a[0]) < PREC_DBL)
-     && (fabs(p0a[1] - p1a[1]) < PREC_DBL)
+  if((fabs(p0a[0] - p1a[0]) < PREC_DBL) && (fabs(p0a[1] - p1a[1]) < PREC_DBL)
      && (fabs(p0a[2] - p1a[2]) < PREC_DBL)) {
     vertexA = true;
   }
-  if((fabs(p0b[0] - p1b[0]) < PREC_DBL)
-     && (fabs(p0b[1] - p1b[1]) < PREC_DBL)
+  if((fabs(p0b[0] - p1b[0]) < PREC_DBL) && (fabs(p0b[1] - p1b[1]) < PREC_DBL)
      && (fabs(p0b[2] - p1b[2]) < PREC_DBL)) {
     vertexB = true;
   }

@@ -330,8 +330,7 @@ int OneSkeleton::buildEdgeStars(const SimplexId &vertexNumber,
     ZeroSkeleton zeroSkeleton;
     zeroSkeleton.setThreadNumber(threadNumber_);
     zeroSkeleton.setDebugLevel(debugLevel_);
-    zeroSkeleton.buildVertexStars(
-      vertexNumber, cellArray, *localVertexStars);
+    zeroSkeleton.buildVertexStars(vertexNumber, cellArray, *localVertexStars);
   }
 
   Timer t;

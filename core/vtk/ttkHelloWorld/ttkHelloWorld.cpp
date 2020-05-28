@@ -5,8 +5,8 @@
 #include <vtkPointData.h>
 #include <vtkSmartPointer.h>
 
-#include <ttkUtils.h>
 #include <ttkMacros.h>
+#include <ttkUtils.h>
 
 // A VTK macro that enables the instantiation of this class via ::New()
 // You do not have to modify this

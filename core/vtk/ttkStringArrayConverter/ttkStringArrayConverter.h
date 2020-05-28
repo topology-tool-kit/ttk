@@ -20,7 +20,8 @@
 #include <ttkAlgorithm.h>
 #include <vtkInformation.h>
 
-class TTKSTRINGARRAYCONVERTER_EXPORT ttkStringArrayConverter : public ttkAlgorithm {
+class TTKSTRINGARRAYCONVERTER_EXPORT ttkStringArrayConverter
+  : public ttkAlgorithm {
 
 public:
   static ttkStringArrayConverter *New();
