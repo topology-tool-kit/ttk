@@ -1,11 +1,15 @@
 #include <ttkScalarFieldCriticalPoints.h>
 
+#include <vtkCharArray.h>
+#include <vtkDoubleArray.h>
+#include <vtkFloatArray.h>
+#include <vtkIntArray.h>
+
 using namespace std;
 using namespace ttk;
 
-vtkStandardNewMacro(ttkScalarFieldCriticalPoints)
-
-  ttkScalarFieldCriticalPoints::ttkScalarFieldCriticalPoints() {
+vtkStandardNewMacro(ttkScalarFieldCriticalPoints);
+ttkScalarFieldCriticalPoints::ttkScalarFieldCriticalPoints() {
 
   // init
   ForceInputOffsetScalarField = false;

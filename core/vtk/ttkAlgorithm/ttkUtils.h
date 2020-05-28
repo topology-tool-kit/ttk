@@ -330,7 +330,7 @@ void ttkUtils::FillCellArrayFromSingle(vtkIdType const *cells,
                                        vtkCellArray *cellArray) {
   size_t curPos = 0;
   vtkNew<vtkIdList> verts;
-  for(size_t cid = 0; cid < ncells; cid++) {
+  for(vtkIdType cid = 0; cid < ncells; cid++) {
     const vtkIdType nbVerts = cells[curPos];
     verts->SetNumberOfIds(nbVerts);
     curPos++;
@@ -348,7 +348,7 @@ void ttkUtils::FillCellArrayFromDual(vtkIdType const *cells_co,
                                      vtkCellArray *cellArray) {
   size_t curPos = 0;
   vtkNew<vtkIdList> verts;
-  for(size_t cid = 0; cid < ncells; cid++) {
+  for(vtkIdType cid = 0; cid < ncells; cid++) {
     const vtkIdType nbVerts = cells_off[cid + 1] - cells_off[cid];
     verts->SetNumberOfIds(nbVerts);
     for(vtkIdType v = 0; v < nbVerts; v++) {

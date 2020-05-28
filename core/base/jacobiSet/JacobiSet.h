@@ -25,11 +25,11 @@
 #define _JACOBISET_H
 
 // base code includes
+#include <Debug.h>
 #include <ScalarFieldCriticalPoints.h>
 #include <Triangulation.h>
 #include <UnionFind.h>
 #include <Wrapper.h>
-
 #include <vector>
 
 namespace ttk {
@@ -141,6 +141,6 @@ namespace ttk {
 } // namespace ttk
 
 // if the package is not a template, comment the following line
-#include <JacobiSet.inl>
+#include "JacobiSet.inl"
 
 #endif // JACOBISET_H

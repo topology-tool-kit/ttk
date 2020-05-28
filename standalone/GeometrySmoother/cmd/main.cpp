@@ -77,15 +77,30 @@ public:
     f >> keyword;
 
     pointSet_.resize(3 * vertexNumber);
-    triangleSet_.resize(4 * triangleNumber);
+    triangleSetOff_.resize(triangleNumber + 1);
+    triangleSetCo_.resize(3 * triangleNumber);
 
     for(int i = 0; i < 3 * vertexNumber; i++) {
       f >> pointSet_[i];
     }
 
-    for(int i = 0; i < 4 * triangleNumber; i++) {
-      f >> triangleSet_[i];
+    int offId = 0;
+    int coId = 0;
+    for(int i = 0; i < triangleNumber; i++) {
+      int cellSize;
+      f >> cellSize;
+      if(cellSize != 3) {
+        std::cerr << "cell size " << cellSize << " != 3" << std::endl;
+        return -3;
+      }
+      triangleSetOff_[offId++] = coId;
+      for(int j = 0; j < 3; j++) {
+        int cellId;
+        f >> cellId;
+        triangleSetCo_[coId++] = cellId;
+      }
     }
+    triangleSetOff_[offId] = coId; // the last one
 
     f.close();
 
@@ -93,11 +108,13 @@ public:
       = (ScalarFieldSmoother *)Program<ttkModule>::ttkModule_;
     triangleMesh_.setInputPoints(vertexNumber, pointSet_.data());
 #ifdef CELL_ARRAY_NEW
-    std::vector<LongSimplexId> conn, off;
-    CellArray::SingleToOffsetAndCo(triangleSet_.data(), triangleNumber, conn, off);
-    triangleMesh_.setInputCells(triangleNumber, conn.data(), off.data());
+    triangleMesh_.setInputCells(
+      triangleNumber, triangleSetCo_.data(), triangleSetOff_.data());
 #else
-    triangleMesh_.setInputCells(triangleNumber, triangleSet_.data());
+    LongSimplexId *triangleSet;
+    CellArray::TranslateToFlatLayout(
+      triangleSetCo_, triangleSetOff_, triangleSet);
+    triangleMesh_.setInputCells(triangleNumber, triangleSet);
 #endif
 
     smoother->setupTriangulation(&triangleMesh_);
@@ -127,7 +144,8 @@ public:
     }
 
     f << "OFF" << endl;
-    f << pointSet_.size() / 3 << " " << triangleSet_.size() / 4 << " 0" << endl;
+    f << pointSet_.size() / 3 << " " << triangleSetOff_.size() - 1 << " 0"
+      << endl;
 
     for(int i = 0; i < (int)pointSet_.size() / 3; i++) {
       for(int j = 0; j < 3; j++) {
@@ -137,10 +155,10 @@ public:
       f << endl;
     }
 
-    for(int i = 0; i < (int)triangleSet_.size() / 4; i++) {
-      for(int j = 0; j < 4; j++) {
-        f << triangleSet_[4 * i + j];
-        f << " ";
+    for(int i = 0; i < (int)triangleSetOff_.size() - 1; i++) {
+      f << "3 ";
+      for(int j = 0; j < 3; j++) {
+        f << triangleSetCo_[triangleSetOff_[i] + j] << " ";
       }
       f << endl;
     }
@@ -152,7 +170,8 @@ public:
 
 protected:
   vector<float> pointSet_;
-  vector<long long int> triangleSet_;
+  vector<long long int> triangleSetCo_;
+  vector<long long int> triangleSetOff_;
   Triangulation triangleMesh_;
 };
 
