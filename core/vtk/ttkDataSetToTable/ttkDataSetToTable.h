@@ -41,7 +41,7 @@ class TTKDATASETTOTABLE_EXPORT ttkDataSetToTable : public vtkDataSetAlgorithm,
                                                    protected ttk::Wrapper {
 
 public:
-  enum AssociationType { Point = 0, Cell };
+  enum class AssociationType { Point = 0, Cell, Field };
 
   static ttkDataSetToTable *New();
   vtkTypeMacro(ttkDataSetToTable, vtkDataSetAlgorithm)

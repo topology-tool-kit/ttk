@@ -36,6 +36,12 @@ public:
   vtkSetMacro(SQLStatement, std::string);
   vtkGetMacro(SQLStatement, std::string);
 
+  vtkSetMacro(ExcludeColumnsWithRegexp, bool);
+  vtkGetMacro(ExcludeColumnsWithRegexp, bool);
+
+  vtkSetMacro(RegexpString, std::string);
+  vtkGetMacro(RegexpString, std::string);
+
 protected:
   ttkCinemaQuery();
   ~ttkCinemaQuery();
@@ -49,4 +55,6 @@ protected:
 
 private:
   std::string SQLStatement{"SELECT * FROM InputTable0"};
+  bool ExcludeColumnsWithRegexp{false};
+  std::string RegexpString{".*"};
 };

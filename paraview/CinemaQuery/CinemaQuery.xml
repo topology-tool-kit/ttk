@@ -22,9 +22,43 @@
                 </Hints>
             </StringVectorProperty>
 
-            <PropertyGroup panel_widget="Line" label="Output Options">
-                <Property name="SQLStatement" />
-            </PropertyGroup>
+      <IntVectorProperty
+        name="ExcludeColumnsWithRegexp"
+        label="Exclude columns with a Regexp"
+        command="SetExcludeColumnsWithRegexp"
+        number_of_elements="1"
+        default_values="0">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Allow to exclude selected table columns from being used by
+          the query. The intended use case is when the input table has
+          more columns than allowed by SQLite.
+        </Documentation>
+      </IntVectorProperty>
+
+      <StringVectorProperty
+         name="Regexp"
+         command="SetRegexpString"
+         number_of_elements="1"
+         default_values=".*"
+         panel_visibility="advanced">
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="ExcludeColumnsWithRegexp"
+                                   value="1" />
+        </Hints>
+         <Documentation>
+            This regexp will be used to filter the chosen
+            columns. Only matching ones will be selected.
+         </Documentation>
+      </StringVectorProperty>
+
+      <PropertyGroup panel_widget="Line" label="Output Options">
+        <Property name="SQLStatement" />
+        <Property name="ExcludeColumnsWithRegexp" />
+        <Property name="Regexp" />
+      </PropertyGroup>
 
             ${DEBUG_WIDGETS}
 

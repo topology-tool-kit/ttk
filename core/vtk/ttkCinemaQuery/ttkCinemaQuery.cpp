@@ -11,6 +11,9 @@
 
 #include <ttkUtils.h>
 
+#include <numeric>
+#include <regex>
+
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/replace.hpp>
 
@@ -73,15 +76,33 @@ int ttkCinemaQuery::RequestData(vtkInformation *request,
       size_t nr = inTable->GetNumberOfRows();
       std::vector<bool> isNumeric(nc);
 
+      // select all input columns whose name is NOT matching the regexp
+      std::vector<size_t> includeColumns{};
+      if(this->ExcludeColumnsWithRegexp) {
+        for(size_t j = 0; j < nc; ++j) {
+          const auto &name = inTable->GetColumnName(j);
+          if(!std::regex_match(name, std::regex(RegexpString))) {
+            includeColumns.emplace_back(j);
+          }
+        }
+      } else {
+        includeColumns.resize(nc);
+        std::iota(includeColumns.begin(), includeColumns.end(), 0);
+      }
+
       // -----------------------------------------------------------------------
       // Table Definition
       std::string sqlTableDefinition
         = "CREATE TABLE InputTable" + std::to_string(i) + " (";
-      for(size_t j = 0; j < nc; j++) {
+      bool firstCol{true};
+      for(const auto j : includeColumns) {
         auto c = inTable->GetColumn(j);
         isNumeric[j] = c->IsNumeric();
-        sqlTableDefinition += (j > 0 ? "," : "") + std::string(c->GetName())
+        sqlTableDefinition += (firstCol ? "" : ",") + std::string(c->GetName())
                               + " " + (isNumeric[j] ? "REAL" : "TEXT");
+        if(firstCol) {
+          firstCol = false;
+        }
       }
       sqlTableDefinition += ")";
       sqlTableDefinitions.push_back(sqlTableDefinition);
@@ -97,9 +118,12 @@ int ttkCinemaQuery::RequestData(vtkInformation *request,
             sqlInsertStatement += ",";
 
           sqlInsertStatement += "(";
-          for(size_t k = 0; k < nc; k++) {
-            if(k > 0)
-              sqlInsertStatement += ",";
+          firstCol = true;
+          for(const auto k : includeColumns) {
+            sqlInsertStatement += (firstCol ? "" : ",");
+            if(firstCol) {
+              firstCol = false;
+            }
             if(isNumeric[k])
               sqlInsertStatement += inTable->GetValue(q, k).ToString();
             else
