@@ -1,8 +1,5 @@
 #include <ttkIcoSphereFromObject.h>
 
-#include <vtkDataObject.h> // For port info
-#include <vtkObjectFactory.h> // for new macro
-
 #include <vtkDataSet.h>
 #include <vtkMultiBlockDataSet.h>
 
@@ -48,13 +45,13 @@ int ttkIcoSphereFromObject::RequestData(vtkInformation *request,
   double dx = bounds[1] - bounds[0];
   double dy = bounds[3] - bounds[2];
   double dz = bounds[5] - bounds[4];
-  float center[3]
-    = {(float)(bounds[0] + dx * 0.5), (float)(bounds[2] + dy * 0.5),
-       (float)(bounds[4] + dz * 0.5)};
-
-  this->SetCenter(center);
 
   this->SetRadius(this->Scale * std::sqrt(dx * dx + dy * dy + dz * dz) / 2.0);
+  this->SetCenter(
+      bounds[0] + dx * 0.5,
+      bounds[2] + dy * 0.5,
+      bounds[4] + dz * 0.5
+  );
 
   return this->ttkIcoSphere::RequestData(request, inputVector, outputVector);
 }

@@ -4,9 +4,7 @@
 /// \date 01.09.2019
 ///
 /// This filter creates an IcoSphere with a specified radius, center, and number
-/// of subdivisions. Alternatively, by providing an optional input, the filter
-/// will automatically determine the radius and center such that the resulting
-/// IcoSphere encapsulates the input object.
+/// of subdivisions.
 ///
 /// \sa ttk::IcoSphere
 /// \sa ttk::ttkAlgorithm
@@ -26,14 +24,14 @@ class TTKICOSPHERE_EXPORT ttkIcoSphere : public ttkAlgorithm,
                                          protected ttk::IcoSphere {
 private:
   int NumberOfSubdivisions{0};
-  float Radius{1};
+  double Radius{1};
+  bool ComputeNormals{false};
 
   // single ico sphere
-  float Center[3]{0, 0, 0};
+  double Center[3]{0, 0, 0};
 
-  // alternatively: multiple ico spheres
-  int NumberOfIcoSpheres{1};
-  float *Centers{nullptr};
+  // alternatvely create a sphere at each point
+  vtkPoints* Centers{nullptr};
 
 public:
   static ttkIcoSphere *New();
@@ -42,17 +40,17 @@ public:
   vtkSetMacro(NumberOfSubdivisions, int);
   vtkGetMacro(NumberOfSubdivisions, int);
 
-  vtkSetVector3Macro(Center, float);
-  vtkGetVector3Macro(Center, float);
+  vtkSetVector3Macro(Center, double);
+  vtkGetVector3Macro(Center, double);
 
-  vtkSetMacro(Radius, float);
-  vtkGetMacro(Radius, float);
+  vtkSetMacro(Radius, double);
+  vtkGetMacro(Radius, double);
 
-  vtkSetMacro(NumberOfIcoSpheres, int);
-  vtkGetMacro(NumberOfIcoSpheres, int);
+  vtkSetMacro(ComputeNormals, bool);
+  vtkGetMacro(ComputeNormals, bool);
 
-  vtkSetMacro(Centers, float *);
-  vtkGetMacro(Centers, float *);
+  vtkSetMacro(Centers, vtkPoints*);
+  vtkGetMacro(Centers, vtkPoints*);
 
 protected:
   ttkIcoSphere();

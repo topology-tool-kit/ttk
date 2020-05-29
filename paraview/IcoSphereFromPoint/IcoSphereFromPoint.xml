@@ -27,11 +27,16 @@
                 <BooleanDomain name="bool" />
                 <Documentation>Add every point data array of the input to the output.</Documentation>
             </IntVectorProperty>
+            <IntVectorProperty name="ComputeNormals" label="Compute Normals" number_of_elements="1" default_values="0" command="SetComputeNormals" >
+                <BooleanDomain name="bool" />
+                <Documentation>Controls if the output contains normals at the vertices.</Documentation>
+            </IntVectorProperty>
 
             <PropertyGroup panel_widget="Line" label="Output Options">
                 <Property name="NumberOfSubdivisions" />
                 <Property name="Radius" />
                 <Property name="CopyPointData" />
+                <Property name="ComputeNormals" />
             </PropertyGroup>
 
             ${DEBUG_WIDGETS}

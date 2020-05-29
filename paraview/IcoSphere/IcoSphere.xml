@@ -26,11 +26,16 @@
             <DoubleVectorProperty name="Center" label="Center" command="SetCenter" number_of_elements="3" default_values="0 0 0">
                 <Documentation>Center of the icosphere. If an input is provided this parameter will be overwritten.</Documentation>
             </DoubleVectorProperty>
+            <IntVectorProperty name="ComputeNormals" label="Compute Normals" number_of_elements="1" default_values="0" command="SetComputeNormals" >
+                <BooleanDomain name="bool" />
+                <Documentation>Controls if the output contains normals at the vertices.</Documentation>
+            </IntVectorProperty>
 
             <PropertyGroup panel_widget="Line" label="Output Options">
                 <Property name="NumberOfSubdivisions" />
                 <Property name="Radius" />
                 <Property name="Center" />
+                <Property name="ComputeNormals" />
             </PropertyGroup>
 
             ${DEBUG_WIDGETS}
