@@ -47,7 +47,6 @@ int ttk::TopologicalCompression::WritePersistenceTopology(FILE *fm) {
 
   int numberOfVertices = getNbVertices();
   int numberOfSegments = getNbSegments();
-  std::vector<int> segmentation = getSegmentation();
 
   // Test arguments.
   if(numberOfSegments < 1)
@@ -60,7 +59,7 @@ int ttk::TopologicalCompression::WritePersistenceTopology(FILE *fm) {
   WriteInt(fm, numberOfSegments);
 
   numberOfBytesWritten += WriteCompactSegmentation(
-    fm, segmentation.data(), numberOfVertices, numberOfSegments);
+    fm, getSegmentation(), numberOfVertices, numberOfSegments);
 
   rawFileLength += numberOfBytesWritten;
 

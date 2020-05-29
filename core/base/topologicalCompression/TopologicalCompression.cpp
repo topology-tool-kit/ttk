@@ -398,7 +398,10 @@ int ttk::TopologicalCompression::ReadCompactSegmentation(
 
 // Returns number of bytes written.
 int ttk::TopologicalCompression::WriteCompactSegmentation(
-  FILE *fm, int *segmentation, int numberOfVertices, int numberOfSegments) {
+  FILE *fm,
+  const std::vector<int> &segmentation,
+  int numberOfVertices,
+  int numberOfSegments) {
   auto WriteInt = ttk::TopologicalCompression::WriteInt;
 
   int numberOfBytesWritten = 0;

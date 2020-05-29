@@ -255,7 +255,7 @@ namespace ttk {
     static void
       WriteConstCharArray(FILE *fm, const char *buffer, size_t length);
     static int WriteCompactSegmentation(FILE *fm,
-                                        int *segmentation,
+                                        const std::vector<int> &segmentation,
                                         int numberOfVertices,
                                         int numberOfSegments);
     static int WritePersistenceIndex(
