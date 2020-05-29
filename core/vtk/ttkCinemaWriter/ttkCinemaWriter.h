@@ -45,28 +45,23 @@ public:
 
   int DeleteDatabase();
 
-  // TopologicalCompressionWriter options
-#define TopoCompWriterGetSetMacro(NAME, TYPE)               \
-  void Set##NAME(const TYPE _arg) {                         \
-    this->topologicalCompressionWriter->Set##NAME(_arg);    \
-    this->Modified();                                       \
-  }                                                         \
-  TYPE Get##NAME() {                                        \
-    return this->topologicalCompressionWriter->Get##NAME(); \
-  }
-
-  TopoCompWriterGetSetMacro(ScalarField, std::string);
-  TopoCompWriterGetSetMacro(Tolerance, double);
-  TopoCompWriterGetSetMacro(MaximumError, double);
-  TopoCompWriterGetSetMacro(ZFPBitBudget, double);
-  TopoCompWriterGetSetMacro(ZFPOnly, bool);
-  TopoCompWriterGetSetMacro(CompressionType, int);
-  TopoCompWriterGetSetMacro(Subdivide, bool);
-  TopoCompWriterGetSetMacro(UseTopologicalSimplification, bool);
-
-  void SetSQMethodPV(const int arg) {
-    this->topologicalCompressionWriter->SetSQMethodPV(arg);
-  }
+  vtkGetMacro(ScalarField, std::string);
+  vtkSetMacro(ScalarField, std::string);
+  vtkGetMacro(Tolerance, double);
+  vtkSetMacro(Tolerance, double);
+  vtkGetMacro(MaximumError, double);
+  vtkSetMacro(MaximumError, double);
+  vtkGetMacro(ZFPBitBudget, double);
+  vtkSetMacro(ZFPBitBudget, double);
+  vtkGetMacro(ZFPOnly, bool);
+  vtkSetMacro(ZFPOnly, bool);
+  vtkGetMacro(CompressionType, int);
+  vtkSetMacro(CompressionType, int);
+  vtkGetMacro(Subdivide, bool);
+  vtkSetMacro(Subdivide, bool);
+  vtkGetMacro(UseTopologicalSimplification, bool);
+  vtkSetMacro(UseTopologicalSimplification, bool);
+  vtkSetMacro(SQMethodPV, int);
 
 protected:
   ttkCinemaWriter();
@@ -88,5 +83,15 @@ private:
   bool IterateMultiBlock{true};
   bool ForwardInput{true};
   int Mode{0};
-  vtkNew<ttkTopologicalCompressionWriter> topologicalCompressionWriter{};
+
+  // topological compression
+  std::string ScalarField{};
+  double Tolerance{1.0};
+  double MaximumError{};
+  double ZFPBitBudget{0};
+  int CompressionType{static_cast<int>(ttk::CompressionType::PersistenceDiagram)};
+  int SQMethodPV{};
+  bool ZFPOnly{false};
+  bool Subdivide{false};
+  bool UseTopologicalSimplification{true};
 };
