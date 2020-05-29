@@ -52,9 +52,7 @@ int ttkIcoSphereFromPoint::RequestData(vtkInformation *request,
                                        vtkInformationVector **inputVector,
                                        vtkInformationVector *outputVector) {
   auto input = vtkPointSet::GetData(inputVector[0], 0);
-  size_t nPoints = input->GetNumberOfPoints();
-  this->SetNumberOfIcoSpheres(nPoints);
-  this->SetCenters((float *)(input->GetPoints()->GetVoidPointer(0)));
+  this->SetCenters( input->GetPoints() );
 
   // compute spheres
   int status
@@ -65,17 +63,21 @@ int ttkIcoSphereFromPoint::RequestData(vtkInformation *request,
   size_t nVertices = 0;
   size_t nTriangles = 0;
   this->computeNumberOfVerticesAndTriangles(
-    this->GetNumberOfSubdivisions(), nVertices, nTriangles);
+    nVertices, nTriangles, this->GetNumberOfSubdivisions());
 
   auto output = vtkUnstructuredGrid::GetData(outputVector);
   auto outputPD = output->GetPointData();
 
+  // copy point data
   if(this->CopyPointData) {
-    // copy point data
+    size_t nPoints = input->GetNumberOfPoints();
+
     auto inputPD = input->GetPointData();
     for(size_t i = 0, n = inputPD->GetNumberOfArrays(); i < n; i++) {
       auto oldArray = vtkDataArray::SafeDownCast(inputPD->GetAbstractArray(i));
-      if(!oldArray)
+      std::string oldArrayName(oldArray->GetName());
+      if(!oldArray
+         || (this->GetComputeNormals() && oldArrayName.compare("Normals") == 0))
         continue;
       auto newArray
         = vtkSmartPointer<vtkDataArray>::Take(oldArray->NewInstance());

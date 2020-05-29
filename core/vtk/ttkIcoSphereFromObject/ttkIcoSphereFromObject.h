@@ -3,10 +3,8 @@
 /// \author Jonas Lukasczyk (jl@jluk.de)
 /// \date 01.09.2019
 ///
-/// This filter creates an IcoSphere with a specified radius, center, and number
-/// of subdivisions. Alternatively, by providing an optional input, the filter
-/// will automatically determine the radius and center such that the resulting
-/// IcoSphere encapsulates the input object.
+/// This filter creates an IcoSphere that encapsulates an input data object. The
+/// icosphere can optionally be scaled.
 ///
 /// \sa ttk::IcoSphere
 /// \sa ttk::ttkAlgorithm
