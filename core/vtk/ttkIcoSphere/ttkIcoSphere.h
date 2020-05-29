@@ -31,7 +31,7 @@ private:
   double Center[3]{0, 0, 0};
 
   // alternatvely create a sphere at each point
-  vtkPoints* Centers{nullptr};
+  vtkPoints *Centers{nullptr};
 
 public:
   static ttkIcoSphere *New();
@@ -49,8 +49,8 @@ public:
   vtkSetMacro(ComputeNormals, bool);
   vtkGetMacro(ComputeNormals, bool);
 
-  vtkSetMacro(Centers, vtkPoints*);
-  vtkGetMacro(Centers, vtkPoints*);
+  vtkSetMacro(Centers, vtkPoints *);
+  vtkGetMacro(Centers, vtkPoints *);
 
 protected:
   ttkIcoSphere();

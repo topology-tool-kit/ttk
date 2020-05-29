@@ -85,8 +85,7 @@ namespace ttk {
       const dataType *center,
 
       // Optional Output
-      float* normals = nullptr
-    ) const;
+      float *normals = nullptr) const;
 
   private:
     /**
@@ -169,8 +168,8 @@ namespace ttk {
         dataType mz
           = (vertexCoords[aOffset + 2] + vertexCoords[bOffset + 2]) / 2.0;
 
-        idType mIndex
-          = this->addVertex<dataType,idType>(mx, my, mz, radius, vertexCoords, vertexIndex);
+        idType mIndex = this->addVertex<dataType, idType>(
+          mx, my, mz, radius, vertexCoords, vertexIndex);
         processedEdges.insert({{a, b}, mIndex});
         return mIndex;
       }
@@ -203,20 +202,32 @@ int ttk::IcoSphere::computeIcoSphere(
   {
     // create 12 vertices
     dataType t = (1.0 + sqrt(5.0)) / 2.0;
-    this->addVertex<dataType,idType>(-1, t, 0, radius, vertexCoords, vertexIndex);
-    this->addVertex<dataType,idType>(1, t, 0, radius, vertexCoords, vertexIndex);
-    this->addVertex<dataType,idType>(-1, -t, 0, radius, vertexCoords, vertexIndex);
-    this->addVertex<dataType,idType>(1, -t, 0, radius, vertexCoords, vertexIndex);
+    this->addVertex<dataType, idType>(
+      -1, t, 0, radius, vertexCoords, vertexIndex);
+    this->addVertex<dataType, idType>(
+      1, t, 0, radius, vertexCoords, vertexIndex);
+    this->addVertex<dataType, idType>(
+      -1, -t, 0, radius, vertexCoords, vertexIndex);
+    this->addVertex<dataType, idType>(
+      1, -t, 0, radius, vertexCoords, vertexIndex);
 
-    this->addVertex<dataType,idType>(0, -1, t, radius, vertexCoords, vertexIndex);
-    this->addVertex<dataType,idType>(0, 1, t, radius, vertexCoords, vertexIndex);
-    this->addVertex<dataType,idType>(0, -1, -t, radius, vertexCoords, vertexIndex);
-    this->addVertex<dataType,idType>(0, 1, -t, radius, vertexCoords, vertexIndex);
+    this->addVertex<dataType, idType>(
+      0, -1, t, radius, vertexCoords, vertexIndex);
+    this->addVertex<dataType, idType>(
+      0, 1, t, radius, vertexCoords, vertexIndex);
+    this->addVertex<dataType, idType>(
+      0, -1, -t, radius, vertexCoords, vertexIndex);
+    this->addVertex<dataType, idType>(
+      0, 1, -t, radius, vertexCoords, vertexIndex);
 
-    this->addVertex<dataType,idType>(t, 0, -1, radius, vertexCoords, vertexIndex);
-    this->addVertex<dataType,idType>(t, 0, 1, radius, vertexCoords, vertexIndex);
-    this->addVertex<dataType,idType>(-t, 0, -1, radius, vertexCoords, vertexIndex);
-    this->addVertex<dataType,idType>(-t, 0, 1, radius, vertexCoords, vertexIndex);
+    this->addVertex<dataType, idType>(
+      t, 0, -1, radius, vertexCoords, vertexIndex);
+    this->addVertex<dataType, idType>(
+      t, 0, 1, radius, vertexCoords, vertexIndex);
+    this->addVertex<dataType, idType>(
+      -t, 0, -1, radius, vertexCoords, vertexIndex);
+    this->addVertex<dataType, idType>(
+      -t, 0, 1, radius, vertexCoords, vertexIndex);
 
     // create 20 triangles
     this->addTriangle<idType>(0, 11, 5, connectivityList, triangleIndex);
@@ -291,7 +302,8 @@ int ttk::IcoSphere::computeIcoSphere(
       // print progress
       this->printMsg("Computing Icosphere (r:" + std::to_string(radius)
                        + ", s:" + std::to_string(nSubdivisions) + ")",
-                     ((dataType)s) / nSubdivisions, ttk::debug::LineMode::REPLACE);
+                     ((dataType)s) / nSubdivisions,
+                     ttk::debug::LineMode::REPLACE);
     }
 
     // if uneven number of nSubdivisions then copy temp buffer to output buffer
@@ -359,8 +371,7 @@ int ttk::IcoSphere::computeIcoSpheres(
   const dataType *centers,
 
   // Optional Output
-  float* normals
-) const {
+  float *normals) const {
 
   if(nSpheres < 1) {
     this->printWrn("Number of input points smaller than 1.");
@@ -379,21 +390,22 @@ int ttk::IcoSphere::computeIcoSpheres(
     return 0;
 
   // store normals if requested
-  if(normals!=nullptr){
+  if(normals != nullptr) {
     ttk::Timer t;
-    this->printMsg("Computing Normals", 0,
-                     0, this->threadNumber_, ttk::debug::LineMode::REPLACE);
+    this->printMsg("Computing Normals", 0, 0, this->threadNumber_,
+                   ttk::debug::LineMode::REPLACE);
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
     for(size_t i = 0; i < nSpheres; i++) {
-        size_t offset = i * nVerticesPerIcoSphere * 3;
-        size_t n = nVerticesPerIcoSphere*3;
-        for(size_t j=0; j<n; j++)
-            normals[offset++] = vertexCoords[j];
+      size_t offset = i * nVerticesPerIcoSphere * 3;
+      size_t n = nVerticesPerIcoSphere * 3;
+      for(size_t j = 0; j < n; j++)
+        normals[offset++] = vertexCoords[j];
     }
-    this->printMsg("Computing Normals", 1, t.getElapsedTime(), this->threadNumber_);
+    this->printMsg(
+      "Computing Normals", 1, t.getElapsedTime(), this->threadNumber_);
   }
 
   // translate remaining spheres
@@ -405,10 +417,9 @@ int ttk::IcoSphere::computeIcoSpheres(
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(size_t i = 1; i < nSpheres; i++) {
-    this->translateIcoSphere(
-      vertexCoords, connectivityList,
-      i, nVerticesPerIcoSphere, nTrianglesPerIcoSphere, centers
-    );
+    this->translateIcoSphere(vertexCoords, connectivityList, i,
+                             nVerticesPerIcoSphere, nTrianglesPerIcoSphere,
+                             centers);
   }
 
   // translate first ico sphere

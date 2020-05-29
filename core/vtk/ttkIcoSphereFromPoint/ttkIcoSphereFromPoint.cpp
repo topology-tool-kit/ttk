@@ -52,7 +52,7 @@ int ttkIcoSphereFromPoint::RequestData(vtkInformation *request,
                                        vtkInformationVector **inputVector,
                                        vtkInformationVector *outputVector) {
   auto input = vtkPointSet::GetData(inputVector[0], 0);
-  this->SetCenters( input->GetPoints() );
+  this->SetCenters(input->GetPoints());
 
   // compute spheres
   int status

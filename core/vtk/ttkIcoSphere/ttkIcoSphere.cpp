@@ -37,7 +37,8 @@ int ttkIcoSphere::RequestData(vtkInformation *request,
   int nSubdivisions = this->GetNumberOfSubdivisions();
   double radius = this->GetRadius();
 
-  bool useDoublePrecision = this->Centers ? this->Centers->GetDataType()==VTK_DOUBLE : false;
+  bool useDoublePrecision
+    = this->Centers ? this->Centers->GetDataType() == VTK_DOUBLE : false;
 
   // prepare the output buffers
   size_t nVertices = 0;
@@ -46,11 +47,11 @@ int ttkIcoSphere::RequestData(vtkInformation *request,
     nVertices, nTriangles, nSubdivisions);
 
   auto points = vtkSmartPointer<vtkPoints>::New();
-  points->SetDataType( useDoublePrecision ? VTK_DOUBLE : VTK_FLOAT );
+  points->SetDataType(useDoublePrecision ? VTK_DOUBLE : VTK_FLOAT);
   points->SetNumberOfPoints(nSpheres * nVertices);
 
   auto normals = vtkSmartPointer<vtkFloatArray>::New();
-  if(this->ComputeNormals){
+  if(this->ComputeNormals) {
     normals->SetName("Normals");
     normals->SetNumberOfComponents(3);
     normals->SetNumberOfTuples(nVertices * nSpheres);
@@ -59,37 +60,32 @@ int ttkIcoSphere::RequestData(vtkInformation *request,
   auto cells = vtkSmartPointer<vtkCellArray>::New();
 
   // execute base code
-  if(useDoublePrecision){
-      if(!this->computeIcoSpheres<double,vtkIdType>(
-           (double *)ttkUtils::GetVoidPointer(points),
-           (vtkIdType *)cells->WritePointer(nSpheres * nTriangles, nSpheres * nTriangles * 4),
+  if(useDoublePrecision) {
+    if(!this->computeIcoSpheres<double, vtkIdType>(
+         (double *)ttkUtils::GetVoidPointer(points),
+         (vtkIdType *)cells->WritePointer(
+           nSpheres * nTriangles, nSpheres * nTriangles * 4),
 
-           nSpheres, nSubdivisions, radius,
-           this->Centers
-            ? (double *)ttkUtils::GetVoidPointer(this->Centers)
-            : this->Center,
-           this->ComputeNormals
-            ? (float* )ttkUtils::GetVoidPointer(normals)
-            : nullptr
-           )
-       )
-        return 0;
+         nSpheres, nSubdivisions, radius,
+         this->Centers ? (double *)ttkUtils::GetVoidPointer(this->Centers)
+                       : this->Center,
+         this->ComputeNormals ? (float *)ttkUtils::GetVoidPointer(normals)
+                              : nullptr))
+      return 0;
   } else {
-      float centerFloat[3]{(float)this->Center[0],(float)this->Center[1],(float)this->Center[2]};
-      if(!this->computeIcoSpheres<float,vtkIdType>(
-           (float *)ttkUtils::GetVoidPointer(points),
-           (vtkIdType *)cells->WritePointer(nSpheres * nTriangles, nSpheres * nTriangles * 4),
+    float centerFloat[3]{
+      (float)this->Center[0], (float)this->Center[1], (float)this->Center[2]};
+    if(!this->computeIcoSpheres<float, vtkIdType>(
+         (float *)ttkUtils::GetVoidPointer(points),
+         (vtkIdType *)cells->WritePointer(
+           nSpheres * nTriangles, nSpheres * nTriangles * 4),
 
-           nSpheres, nSubdivisions, radius,
-           this->Centers
-            ? (float *)ttkUtils::GetVoidPointer(this->Centers)
-            : centerFloat,
-           this->ComputeNormals
-            ? (float* )ttkUtils::GetVoidPointer(normals)
-            : nullptr
-           )
-       )
-        return 0;
+         nSpheres, nSubdivisions, radius,
+         this->Centers ? (float *)ttkUtils::GetVoidPointer(this->Centers)
+                       : centerFloat,
+         this->ComputeNormals ? (float *)ttkUtils::GetVoidPointer(normals)
+                              : nullptr))
+      return 0;
   }
 
   // finalize output

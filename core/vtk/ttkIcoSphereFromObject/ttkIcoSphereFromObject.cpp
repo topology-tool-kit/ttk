@@ -48,10 +48,7 @@ int ttkIcoSphereFromObject::RequestData(vtkInformation *request,
 
   this->SetRadius(this->Scale * std::sqrt(dx * dx + dy * dy + dz * dz) / 2.0);
   this->SetCenter(
-      bounds[0] + dx * 0.5,
-      bounds[2] + dy * 0.5,
-      bounds[4] + dz * 0.5
-  );
+    bounds[0] + dx * 0.5, bounds[2] + dy * 0.5, bounds[4] + dz * 0.5);
 
   return this->ttkIcoSphere::RequestData(request, inputVector, outputVector);
 }
