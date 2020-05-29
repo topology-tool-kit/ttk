@@ -477,6 +477,7 @@ int ttkCinemaWriter::ProcessDataProduct(vtkDataObject *input) {
     this->printMsg("Writing data product to disk", 1, t.getElapsedTime(),
                    ttk::debug::LineMode::NEW, ttk::debug::Priority::DETAIL);
   }
+  this->printMsg("Wrote " + productId + "." + productExtension);
   this->printMsg(ttk::debug::Separator::L2, ttk::debug::Priority::DETAIL);
   return 1;
 }
