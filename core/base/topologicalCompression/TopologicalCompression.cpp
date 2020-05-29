@@ -427,6 +427,8 @@ int ttk::TopologicalCompression::WriteCompactSegmentation(
     // two containers.
     while(offset + numberOfBitsPerSegment <= 32) {
 
+      // out-of-bounds here if segmentation.size() == numberOfVertices
+      // (segmentation allocated in compressForPersistenceDiagram)
       int currentSegment = segmentation[currentCell];
 
       // If applicable, fill last part of current segment.

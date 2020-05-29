@@ -765,7 +765,11 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
   }
 
   // 4. Affect segment value to all points.
-  segmentation_.resize(vertexNumber);
+
+  // (pad buffer to avoid an out-of-bounds access/buffer overflow in
+  // WriteCompactSegmentation while loop)
+  segmentation_.resize(vertexNumber + 32);
+
   std::sort(segments.begin(), segments.end(), cmp);
   for(int i = 0; i < vertexNumber; ++i) {
     dataType scalar = inputData[i];
