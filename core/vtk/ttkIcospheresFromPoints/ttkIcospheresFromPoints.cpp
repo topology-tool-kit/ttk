@@ -1,23 +1,20 @@
-#include <ttkIcoSphereFromPoint.h>
-
-#include <vtkDataObject.h> // For port info
-#include <vtkObjectFactory.h> // for new macro
+#include <ttkIcospheresFromPoints.h>
 
 #include <vtkPointData.h>
 #include <vtkPointSet.h>
 #include <vtkUnstructuredGrid.h>
 
-vtkStandardNewMacro(ttkIcoSphereFromPoint);
+vtkStandardNewMacro(ttkIcospheresFromPoints);
 
-ttkIcoSphereFromPoint::ttkIcoSphereFromPoint() : ttkIcoSphere() {
-  this->setDebugMsgPrefix("IcoSphereFromPoint");
+ttkIcospheresFromPoints::ttkIcospheresFromPoints() : ttkIcosphere() {
+  this->setDebugMsgPrefix("IcospheresFromPoints");
   this->SetNumberOfInputPorts(1);
 }
-ttkIcoSphereFromPoint::~ttkIcoSphereFromPoint() {
+ttkIcospheresFromPoints::~ttkIcospheresFromPoints() {
 }
 
-int ttkIcoSphereFromPoint::FillInputPortInformation(int port,
-                                                    vtkInformation *info) {
+int ttkIcospheresFromPoints::FillInputPortInformation(int port,
+                                                      vtkInformation *info) {
   if(port == 0)
     info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkPointSet");
   else
@@ -48,15 +45,15 @@ int copyArrayData(vtkDataArray *oldArray,
   return 1;
 }
 
-int ttkIcoSphereFromPoint::RequestData(vtkInformation *request,
-                                       vtkInformationVector **inputVector,
-                                       vtkInformationVector *outputVector) {
+int ttkIcospheresFromPoints::RequestData(vtkInformation *request,
+                                         vtkInformationVector **inputVector,
+                                         vtkInformationVector *outputVector) {
   auto input = vtkPointSet::GetData(inputVector[0], 0);
   this->SetCenters(input->GetPoints());
 
   // compute spheres
   int status
-    = this->ttkIcoSphere::RequestData(request, inputVector, outputVector);
+    = this->ttkIcosphere::RequestData(request, inputVector, outputVector);
   if(!status)
     return 0;
 

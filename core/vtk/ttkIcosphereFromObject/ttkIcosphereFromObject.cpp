@@ -1,21 +1,18 @@
-#include <ttkIcoSphereFromObject.h>
+#include <ttkIcosphereFromObject.h>
 
 #include <vtkDataSet.h>
 #include <vtkMultiBlockDataSet.h>
 
-using namespace std;
-using namespace ttk;
+vtkStandardNewMacro(ttkIcosphereFromObject);
 
-vtkStandardNewMacro(ttkIcoSphereFromObject);
-
-ttkIcoSphereFromObject::ttkIcoSphereFromObject() : ttkIcoSphere() {
-  this->setDebugMsgPrefix("IcoSphereFromObject");
+ttkIcosphereFromObject::ttkIcosphereFromObject() : ttkIcosphere() {
+  this->setDebugMsgPrefix("IcosphereFromObject");
   this->SetNumberOfInputPorts(1);
 }
-ttkIcoSphereFromObject::~ttkIcoSphereFromObject() {
+ttkIcosphereFromObject::~ttkIcosphereFromObject() {
 }
 
-int ttkIcoSphereFromObject::FillInputPortInformation(int port,
+int ttkIcosphereFromObject::FillInputPortInformation(int port,
                                                      vtkInformation *info) {
   if(port == 0)
     info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataObject");
@@ -24,7 +21,7 @@ int ttkIcoSphereFromObject::FillInputPortInformation(int port,
   return 1;
 }
 
-int ttkIcoSphereFromObject::RequestData(vtkInformation *request,
+int ttkIcosphereFromObject::RequestData(vtkInformation *request,
                                         vtkInformationVector **inputVector,
                                         vtkInformationVector *outputVector) {
   auto input = vtkDataObject::GetData(inputVector[0], 0);
@@ -38,7 +35,7 @@ int ttkIcoSphereFromObject::RequestData(vtkInformation *request,
     inputAsDS->GetBounds(bounds);
   } else {
     this->printErr("Unable to compute bounding box of "
-                   + string(input->GetClassName()));
+                   + std::string(input->GetClassName()));
     return 0;
   }
 
@@ -50,5 +47,5 @@ int ttkIcoSphereFromObject::RequestData(vtkInformation *request,
   this->SetCenter(
     bounds[0] + dx * 0.5, bounds[2] + dy * 0.5, bounds[4] + dz * 0.5);
 
-  return this->ttkIcoSphere::RequestData(request, inputVector, outputVector);
+  return this->ttkIcosphere::RequestData(request, inputVector, outputVector);
 }

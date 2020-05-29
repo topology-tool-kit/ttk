@@ -1,8 +1,0 @@
-NAME
-  ttkIcoSphereFromPoint
-SOURCES
-  ttkIcoSphereFromPoint.cpp
-HEADERS
-  ttkIcoSphereFromPoint.h
-DEPENDS
-  ttkIcoSphere
