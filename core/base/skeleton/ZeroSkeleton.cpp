@@ -540,10 +540,8 @@ int ZeroSkeleton::buildVertexStars(
     threadedZeroSkeleton[0] = &vertexStars;
   } else {
     for(ThreadId i = 0; i < threadNumber_; i++) {
-      threadedZeroSkeleton[i] = new vector<vector<SimplexId>>();
-      threadedZeroSkeleton[i]->resize(vertexNumber);
-      for(SimplexId j = 0; j < (SimplexId)threadedZeroSkeleton[i]->size();
-          j++) {
+      threadedZeroSkeleton[i] = new vector<vector<SimplexId>>(vertexNumber);
+      for(size_t j = 0; j < threadedZeroSkeleton[i]->size(); j++) {
         (*threadedZeroSkeleton[i])[j].reserve(32);
       }
     }
@@ -578,27 +576,27 @@ int ZeroSkeleton::buildVertexStars(
 
   if(threadNumber_ > 1) {
     // now merge the thing
-    for(ThreadId i = 0; i < threadNumber_; i++) {
+    for(size_t i = 0; i < threadedZeroSkeleton.size(); i++) {
+      const auto &vi = threadedZeroSkeleton[i];
 
       // looping on vertices
-      const LongSimplexId nbVertsI = threadedZeroSkeleton[i]->size();
-      for(SimplexId j = 0; j < nbVertsI; j++) {
+      for(size_t j = 0; j < vi->size(); j++) {
+        const auto &vij = (*vi)[j];
 
         // looping on the vertex star
-        const SimplexId nbVertsStarJ = (*threadedZeroSkeleton[i])[j].size();
-        for(SimplexId k = 0; k < nbVertsStarJ; k++) {
+        for(size_t k = 0; k < vij.size(); k++) {
 
           bool hasFound = false;
           if(threadNumber_) {
             for(SimplexId l = 0; l < (SimplexId)vertexStars[j].size(); l++) {
-              if(vertexStars[j][l] == (*threadedZeroSkeleton[i])[j][k]) {
+              if(vertexStars[j][l] == vij[k]) {
                 hasFound = true;
                 break;
               }
             }
           }
           if(!hasFound)
-            vertexStars[j].emplace_back((*threadedZeroSkeleton[i])[j][k]);
+            vertexStars[j].emplace_back(vij[k]);
         }
       }
     }
