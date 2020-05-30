@@ -1845,6 +1845,9 @@ std::vector<dataType> PDClustering<dataType>::updateCentroidsPosition(
       dataType total_cost = 0;
       dataType wasserstein_shift = 0;
 
+      using KDTreePair = std::pair<typename KDTree<dataType>::KDTreeRoot,
+                                   typename KDTree<dataType>::KDTreeMap>;
+
       if(do_min_) {
         std::vector<std::vector<matchingTuple>> all_matchings;
         // cout<<"do_min"<<endl;
@@ -1901,9 +1904,7 @@ std::vector<dataType> PDClustering<dataType>::updateCentroidsPosition(
         //     min_price[i] = 0;
         // }
         // cout << "min diag prices and all done" << endl;
-        std::pair<std::unique_ptr<KDTree<dataType>>,
-                  std::vector<KDTree<dataType> *>>
-          pair;
+        KDTreePair pair;
         bool use_kdt = false;
         if(barycenter_computer_min_[c].getCurrentBarycenter()[0].size() > 0) {
           pair = barycenter_computer_min_[c].getKDTree();
@@ -2026,9 +2027,7 @@ std::vector<dataType> PDClustering<dataType>::updateCentroidsPosition(
         //     min_price[i] = 0;
         // }
 
-        std::pair<std::unique_ptr<KDTree<dataType>>,
-                  std::vector<KDTree<dataType> *>>
-          pair;
+        KDTreePair pair;
         bool use_kdt = false;
         if(barycenter_computer_sad_[c].getCurrentBarycenter()[0].size() > 0) {
           pair = barycenter_computer_sad_[c].getKDTree();
@@ -2138,9 +2137,7 @@ std::vector<dataType> PDClustering<dataType>::updateCentroidsPosition(
         // "<<centroids_with_price_max.size()<<"
         // "<<centroids_with_price_max[0].size()<<endl;
 
-        std::pair<std::unique_ptr<KDTree<dataType>>,
-                  std::vector<KDTree<dataType> *>>
-          pair;
+        KDTreePair pair;
         bool use_kdt = false;
         if(barycenter_computer_max_[c].getCurrentBarycenter()[0].size() > 0) {
           pair = barycenter_computer_max_[c].getKDTree();

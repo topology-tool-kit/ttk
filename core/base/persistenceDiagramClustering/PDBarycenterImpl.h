@@ -652,7 +652,7 @@ void PDBarycenter<dataType>::setInitialBarycenter(dataType min_persistence) {
 }
 
 template <typename dataType>
-std::pair<std::unique_ptr<KDTree<dataType>>, std::vector<KDTree<dataType> *>>
+typename PDBarycenter<dataType>::KDTreePair
   PDBarycenter<dataType>::getKDTree() const {
   Timer tm;
   auto kdt = std::unique_ptr<KDTree<dataType>>(
@@ -684,7 +684,7 @@ std::pair<std::unique_ptr<KDTree<dataType>>, std::vector<KDTree<dataType> *>>
   }
   // Correspondance map : position in barycenter_goods_ --> KDT node
 
-  std::vector<KDTree<dataType> *> correspondance_kdt_map
+  auto correspondance_kdt_map
     = kdt->build(coordinates.data(), barycenter_goods_[0].size(), dimension,
                  weights, barycenter_goods_.size());
   if(debugLevel_ > 3)

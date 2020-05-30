@@ -36,8 +36,11 @@ namespace ttk {
     bool include_weights_{false};
 
   public:
-    std::unique_ptr<KDTree> left_{}; // Lower half for the coordinate specified
-    std::unique_ptr<KDTree> right_{}; // Higher half
+    using KDTreeRoot = std::unique_ptr<KDTree>;
+    using KDTreeMap = std::vector<KDTree *>;
+
+    KDTreeRoot left_{}; // Lower half for the coordinate specified
+    KDTreeRoot right_{}; // Higher half
     KDTree *parent_{};
     // ID of the object saved here. The whole object is not kept in the KDTree
     // Users should keep track of them in a table for instance
@@ -60,23 +63,22 @@ namespace ttk {
         include_weights_{father->include_weights_}, parent_{father} {
     }
 
-    std::vector<KDTree<dataType> *> build(dataType *coordinates,
-                                          const int &ptNumber,
-                                          const int &dimension,
-                                          const int weight_number = 1);
-    std::vector<KDTree<dataType> *>
-      build(dataType *coordinates,
-            const int &ptNumber,
-            const int &dimension,
-            std::vector<std::vector<dataType>> &weights,
-            const int weight_number = 1);
+    KDTreeMap build(dataType *coordinates,
+                    const int &ptNumber,
+                    const int &dimension,
+                    const int weight_number = 1);
+    KDTreeMap build(dataType *coordinates,
+                    const int &ptNumber,
+                    const int &dimension,
+                    std::vector<std::vector<dataType>> &weights,
+                    const int weight_number = 1);
 
     void buildRecursive(dataType *coordinates,
                         std::vector<int> indexes,
                         const int &ptNumber,
                         const int &dimension,
                         KDTree<dataType> *parent,
-                        std::vector<KDTree<dataType> *> &correspondance_map,
+                        KDTreeMap &correspondance_map,
                         std::vector<std::vector<dataType>> &weights,
                         const int weight_number = 1);
     void buildRecursive(dataType *coordinates,
@@ -84,19 +86,19 @@ namespace ttk {
                         const int &ptNumber,
                         const int &dimension,
                         KDTree<dataType> *parent,
-                        std::vector<KDTree<dataType> *> &correspondance_map,
+                        KDTreeMap &correspondance_map,
                         const int weight_number = 1);
 
     void updateWeight(dataType new_weight, const int weight_index = 0);
     void updateMinSubweight(const int weight_index = 0);
     void getKClosest(const unsigned int k,
                      const std::vector<dataType> &coordinates,
-                     std::vector<KDTree<dataType> *> &neighbours,
+                     KDTreeMap &neighbours,
                      std::vector<dataType> &costs,
                      const int weight_index = 0);
     void recursiveGetKClosest(const unsigned int k,
                               const std::vector<dataType> &coordinates,
-                              std::vector<KDTree<dataType> *> &neighbours,
+                              KDTreeMap &neighbours,
                               std::vector<dataType> &costs,
                               const int weight_index = 0);
 
@@ -132,12 +134,12 @@ namespace ttk {
   }
 
   template <typename dataType>
-  std::vector<KDTree<dataType> *>
+  typename KDTree<dataType>::KDTreeMap
     KDTree<dataType>::build(dataType *data,
                             const int &ptNumber,
                             const int &dimension,
                             const int weight_number) {
-    std::vector<KDTree<dataType> *> correspondance_map(ptNumber);
+    KDTreeMap correspondance_map(ptNumber);
     // First, perform a argsort on the data
     // initialize original index locations
     for(int axis = 0; axis < dimension; axis++) {
@@ -197,14 +199,13 @@ namespace ttk {
   }
 
   template <typename dataType>
-  void KDTree<dataType>::buildRecursive(
-    dataType *data,
-    std::vector<int> idx_side,
-    const int &ptNumber,
-    const int &dimension,
-    KDTree<dataType> *parent,
-    std::vector<KDTree<dataType> *> &correspondance_map,
-    const int weight_number) {
+  void KDTree<dataType>::buildRecursive(dataType *data,
+                                        std::vector<int> idx_side,
+                                        const int &ptNumber,
+                                        const int &dimension,
+                                        KDTree<dataType> *parent,
+                                        KDTreeMap &correspondance_map,
+                                        const int weight_number) {
 
     // First, perform a argsort on the data
     sort(idx_side.begin(), idx_side.end(), [&](int i1, int i2) {
@@ -300,12 +301,11 @@ namespace ttk {
   }
 
   template <typename dataType>
-  void
-    KDTree<dataType>::getKClosest(const unsigned int k,
-                                  const std::vector<dataType> &coordinates,
-                                  std::vector<KDTree<dataType> *> &neighbours,
-                                  std::vector<dataType> &costs,
-                                  const int weight_index) {
+  void KDTree<dataType>::getKClosest(const unsigned int k,
+                                     const std::vector<dataType> &coordinates,
+                                     KDTreeMap &neighbours,
+                                     std::vector<dataType> &costs,
+                                     const int weight_index) {
     /// Puts the k closest points to the given coordinates in the "neighbours"
     /// vector along with their costs in the "costs" vector The output is not
     /// sorted, if you are interested in the k nearest neighbours in the order,
@@ -327,7 +327,7 @@ namespace ttk {
   void KDTree<dataType>::recursiveGetKClosest(
     const unsigned int k,
     const std::vector<dataType> &coordinates,
-    std::vector<KDTree<dataType> *> &neighbours,
+    KDTreeMap &neighbours,
     std::vector<dataType> &costs,
     const int weight_index) {
     // 1- Look wether or not to include the current point in the nearest
