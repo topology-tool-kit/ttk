@@ -68,7 +68,8 @@ namespace ttk {
     dataType getMaxPersistence();
     dataType getLowestPersistence();
     dataType getMinimalPrice(int i);
-    std::pair<KDTree<dataType> *, std::vector<KDTree<dataType> *>>
+    std::pair<std::unique_ptr<KDTree<dataType>>,
+              std::vector<KDTree<dataType> *>>
       getKDTree() const;
 
     void runMatching(dataType *total_cost,

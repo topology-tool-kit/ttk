@@ -652,10 +652,11 @@ void PDBarycenter<dataType>::setInitialBarycenter(dataType min_persistence) {
 }
 
 template <typename dataType>
-std::pair<KDTree<dataType> *, std::vector<KDTree<dataType> *>>
+std::pair<std::unique_ptr<KDTree<dataType>>, std::vector<KDTree<dataType> *>>
   PDBarycenter<dataType>::getKDTree() const {
   Timer tm;
-  KDTree<dataType> *kdt = new KDTree<dataType>(true, wasserstein_);
+  auto kdt = std::unique_ptr<KDTree<dataType>>(
+    new KDTree<dataType>{true, wasserstein_});
 
   const int dimension = geometrical_factor_ >= 1 ? 2 : 5;
 
@@ -689,7 +690,7 @@ std::pair<KDTree<dataType> *, std::vector<KDTree<dataType> *>>
   if(debugLevel_ > 3)
     std::cout << "[Building KD-Tree] Time elapsed : " << tm.getElapsedTime()
               << " s." << std::endl;
-  return std::make_pair(kdt, correspondance_kdt_map);
+  return std::make_pair(std::move(kdt), correspondance_kdt_map);
 }
 
 // template <typename dataType>
@@ -843,7 +844,9 @@ std::vector<std::vector<matchingTuple>>
 
     n_iterations += 1;
 
-    std::pair<KDTree<dataType> *, std::vector<KDTree<dataType> *>> pair;
+    std::pair<std::unique_ptr<KDTree<dataType>>,
+              std::vector<KDTree<dataType> *>>
+      pair;
     bool use_kdt = false;
     // If the barycenter is empty, do not compute the kdt (or it will crash :/)
     // TODO Fix KDTree to handle empty inputs...
@@ -851,8 +854,6 @@ std::vector<std::vector<matchingTuple>>
       pair = this->getKDTree();
       use_kdt = true;
     }
-    KDTree<dataType> *kdt = pair.first;
-    std::vector<KDTree<dataType> *> &correspondance_kdt_map = pair.second;
 
     std::vector<std::vector<matchingTuple>> all_matchings(numberOfInputs_);
     std::vector<int> sizes(numberOfInputs_);
@@ -871,7 +872,7 @@ std::vector<std::vector<matchingTuple>>
       barycenter.push_back(t);
     }
 
-    runMatchingAuction(&total_cost, sizes, kdt, &correspondance_kdt_map,
+    runMatchingAuction(&total_cost, sizes, pair.first.get(), &pair.second,
                        &min_diag_price, &all_matchings, use_kdt);
 
     std::cout << "[PersistenceDiagramsBarycenter] Barycenter cost : "
