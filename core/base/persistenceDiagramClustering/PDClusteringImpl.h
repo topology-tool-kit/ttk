@@ -2246,10 +2246,6 @@ std::vector<dataType> PDClustering<dataType>::updateCentroidsPosition(
             += computeDistance(old_centroid, centroids_max_[c], 0.01);
           // cout<<"here end"<<endl;
         }
-        // for(unsigned int i_kdt=0; i_kdt<correspondance_kdt_map.size();
-        // i_kdt++){
-        //     delete correspondance_kdt_map[i_kdt];
-        // }
       }
 
       cost_ = cost_min_ + cost_sad_ + cost_max_;
