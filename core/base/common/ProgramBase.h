@@ -83,15 +83,11 @@ namespace ttk {
 
   template <class ttkModule>
   class Program : public ProgramBase {
+    ttkModule module_{};
 
   public:
     Program() {
-      ttkModule_ = new ttkModule;
-    }
-
-    ~Program() {
-      if(ttkModule_)
-        delete ttkModule_;
+      ttkModule_ = &module_;
     }
   };
 } // namespace ttk
