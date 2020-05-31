@@ -564,7 +564,7 @@ int ZeroSkeleton::buildVertexStars(
       zeroSkelThr[threadId][cellArray.getCellVertex(cid, j)].emplace_back(cid);
     }
 
-    if(debugLevel_ >= (int)(debug::Priority::INFO)) {
+    if(debugLevel_ >= (int)(debug::Priority::INFO) && threadNumber_ == 1) {
       if(!(cid % ((cellNumber) / timeBuckets))) {
         printMsg("Building vertex stars", (cid / (float)cellNumber),
                  t.getElapsedTime(), threadNumber_, debug::LineMode::REPLACE);
@@ -574,26 +574,19 @@ int ZeroSkeleton::buildVertexStars(
 
   if(threadNumber_ > 1) {
     // now merge the thing
-    for(const auto &vi : zeroSkelThr) {
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif
+    for(size_t j = 0; j < vertexStars.size(); j++) {
+      auto &dst = vertexStars[j];
 
-      // looping on vertices
-      for(size_t j = 0; j < vi.size(); j++) {
-        const auto &vij = vi[j];
+      for(size_t i = 0; i < zeroSkelThr.size(); ++i) {
+        const auto &vij = zeroSkelThr[i][j];
 
         // looping on the vertex star
         for(size_t k = 0; k < vij.size(); k++) {
-
-          bool hasFound = false;
-          if(threadNumber_) {
-            for(size_t l = 0; l < vertexStars[j].size(); l++) {
-              if(vertexStars[j][l] == vij[k]) {
-                hasFound = true;
-                break;
-              }
-            }
-          }
-          if(!hasFound)
-            vertexStars[j].emplace_back(vij[k]);
+          if(std::find(dst.begin(), dst.end(), vij[k]) == dst.end())
+            dst.emplace_back(vij[k]);
         }
       }
     }
