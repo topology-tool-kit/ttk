@@ -205,7 +205,8 @@ void PersistenceDiagramDistanceMatrix::setBidderDiagrams(
       b.setPositionInAuction(bidders.size());
       bidders.addBidder(b);
       if(b.isDiagonal() || b.x_ == b.y_) {
-        this->printWrn("Diagonal point in diagram!");
+        this->printMsg("Diagonal point in diagram " + std::to_string(i) + "!",
+                       ttk::debug::Priority::DETAIL);
       }
     }
   }
