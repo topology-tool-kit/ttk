@@ -1918,7 +1918,7 @@ std::vector<dataType> PDClustering<dataType>::updateCentroidsPosition(
         // "<<time_preprocess_bary.getElapsedTime()<<endl; cout<<"time_matchings
         // min "; cout<<"run matchings "<<endl;
         barycenter_computer_min_[c].runMatching(
-          &total_cost, epsilon_[0], sizes, pair.first.get(), &pair.second,
+          &total_cost, epsilon_[0], sizes, *pair.first, pair.second,
           &(min_diag_price->at(0)), &(min_price->at(0)), &(all_matchings),
           use_kdt, only_matchings);
         for(unsigned int ii = 0; ii < all_matchings.size(); ii++) {
@@ -2036,7 +2036,7 @@ std::vector<dataType> PDClustering<dataType>::updateCentroidsPosition(
 
         // std::cout<<"sad : run matchings"<<std::endl;
         barycenter_computer_sad_[c].runMatching(
-          &total_cost, epsilon_[1], sizes, pair.first.get(), &pair.second,
+          &total_cost, epsilon_[1], sizes, *pair.first, pair.second,
           &(min_diag_price->at(1)), &(min_price->at(1)), &(all_matchings),
           use_kdt, only_matchings);
         for(unsigned int ii = 0; ii < all_matchings.size(); ii++) {
@@ -2190,7 +2190,7 @@ std::vector<dataType> PDClustering<dataType>::updateCentroidsPosition(
         // // cout<<"running matchings max"<<endl;
         // cout<<"size centroid "<<centroids_with_price_max[c].size()<<endl;
         barycenter_computer_max_[c].runMatching(
-          &total_cost, epsilon_[2], sizes, pair.first.get(), &pair.second,
+          &total_cost, epsilon_[2], sizes, *pair.first, pair.second,
           &(min_diag_price->at(2)), &(min_price->at(2)), &(all_matchings),
           use_kdt, only_matchings);
         for(unsigned int ii = 0; ii < all_matchings.size(); ii++) {

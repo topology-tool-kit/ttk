@@ -50,8 +50,8 @@ void PDBarycenter<dataType>::runMatching(
   dataType *total_cost,
   dataType epsilon,
   std::vector<int> sizes,
-  KDTree<dataType> *kdt,
-  std::vector<KDTree<dataType> *> *correspondance_kdt_map,
+  KDTree<dataType> &kdt,
+  std::vector<KDTree<dataType> *> &correspondance_kdt_map,
   std::vector<dataType> *min_diag_price,
   std::vector<dataType> *min_price,
   std::vector<std::vector<matchingTuple>> *all_matchings,
@@ -68,8 +68,8 @@ void PDBarycenter<dataType>::runMatching(
     // "<<barycenter_goods_.size()<<" "<<min_diag_price->size()<<endl;
     Auction<dataType> auction = Auction<dataType>(
       current_bidder_diagrams_[i], barycenter_goods_[i], wasserstein_,
-      geometrical_factor_, lambda_, 0.01, *kdt, *correspondance_kdt_map,
-      epsilon, min_diag_price->at(i), use_kdt);
+      geometrical_factor_, lambda_, 0.01, kdt, correspondance_kdt_map, epsilon,
+      min_diag_price->at(i), use_kdt);
     // cout<<"\n RUN MATCHINGS : "<<i<<endl;
     // cout<<use_kdt<<endl;
     // cout<<epsilon<<endl;
