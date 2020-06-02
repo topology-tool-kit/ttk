@@ -24,7 +24,7 @@ namespace ttk {
     IcoSphere() {
       this->setDebugMsgPrefix("IcoSphere");
     };
-    ~IcoSphere(){};
+    ~IcoSphere() override {};
 
     /**
      * Efficiently computes for a given subdivision level the number of
