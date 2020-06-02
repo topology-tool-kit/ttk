@@ -8,6 +8,7 @@
 #include <vtkInformationVector.h>
 #include <vtkSmartPointer.h>
 #include <vtkTable.h>
+#include <vtkVersionMacros.h>
 
 #include <ttkUtils.h>
 
@@ -33,15 +34,16 @@ int ttkCinemaQuery::FillInputPortInformation(int port, vtkInformation *info) {
 
     return 1;
   }
-  return Superclass::FillInputPortInformation(port, info);
+  return 1;
 }
 
 int ttkCinemaQuery::FillOutputPortInformation(int port, vtkInformation *info) {
-  if(port == 0)
+  if(port == 0) {
     info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkTable");
-  else
+  } else {
     return 0;
-  return Superclass::FillOutputPortInformation(port, info);
+  }
+  return 1;
 }
 
 int ttkCinemaQuery::RequestData(vtkInformation *request,

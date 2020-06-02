@@ -297,7 +297,7 @@ int ttkFTRGraph::doIt(std::vector<vtkDataSet *> &inputs,
   if(setupTriangulation()) {
 #ifndef TTK_ENABLE_KAMIKAZE
     cerr << "[ttkFTRGraph] Error : wrong triangulation." << endl;
-    return 0;
+    return -1;
 #endif
   }
 
@@ -320,21 +320,21 @@ int ttkFTRGraph::doIt(std::vector<vtkDataSet *> &inputs,
   if(getSkeletonNodes(graph, outputSkeletonNodes)) {
 #ifndef TTK_ENABLE_KAMIKAZE
     cerr << "[ttkFTRGraph] Error : wrong properties on skeleton nodes." << endl;
-    return 0;
+    return -7;
 #endif
   }
 
   if(getSkeletonArcs(graph, outputSkeletonArcs)) {
 #ifndef TTK_ENABLE_KAMIKAZE
     cerr << "[ttkFTRGraph] Error : wrong properties on skeleton arcs." << endl;
-    return 0;
+    return -8;
 #endif
   }
 
   if(GetWithSegmentation() && getSegmentation(graph, outputSegmentation)) {
 #ifndef TTK_ENABLE_KAMIKAZE
     cerr << "[ttkFTRGraph] Error : wrong properties on segmentation." << endl;
-    return 0;
+    return -9;
 #endif
   }
 
@@ -347,7 +347,7 @@ int ttkFTRGraph::doIt(std::vector<vtkDataSet *> &inputs,
     dMsg(cout, msg.str(), memoryMsg);
   }
 
-  return 1;
+  return 0;
 }
 
 int ttkFTRGraph::getOffsets() {

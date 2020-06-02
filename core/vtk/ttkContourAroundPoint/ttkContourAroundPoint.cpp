@@ -34,21 +34,21 @@ int ttkContourAroundPoint::doIt(std::vector<vtkDataSet *> &inputs,
   makeDummyOutput();
 #else
   if(!preprocessDomain(inputs[0]))
-    return 0;
+    return -1;
   if(!preconditionConstraints(static_cast<vtkUnstructuredGrid *>(inputs[1]),
                               static_cast<vtkUnstructuredGrid *>(inputs[2])))
-    return 0;
+    return -1;
   if(!process())
-    return 0;
+    return -1;
   if(!postprocess())
-    return 0;
+    return -1;
 #endif
 
   std::ostringstream memUseStream;
   memUseStream << std::fixed << std::setprecision(3)
                << memUseObj.getElapsedUsage() << " MB";
   dMsg(cout, memUseStream.str(), memoryMsg);
-  return 1;
+  return 0;
 }
 
 //------------------------------------------------------------------------------------------------//

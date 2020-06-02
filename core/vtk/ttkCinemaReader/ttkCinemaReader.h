@@ -33,7 +33,7 @@ public:
 
 protected:
   ttkCinemaReader();
-  ~ttkCinemaReader();
+  ~ttkCinemaReader() override;
 
   int validateDatabasePath();
 

@@ -28,7 +28,7 @@ int ttkCinemaReader::FillOutputPortInformation(int port, vtkInformation *info) {
     info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkTable");
   else
     return 0;
-  return Superclass::FillOutputPortInformation(port, info);
+  return 1;
 }
 
 int ttkCinemaReader::validateDatabasePath() {

@@ -108,7 +108,7 @@ int ttkComponentSize::doIt(vtkPointSet *input, vtkUnstructuredGrid *output) {
         << " points)." << endl;
     dMsg(cout, msg.str(), timeMsg);
   }
-  return 1;
+  return 0;
 }
 
 // to adapt if your wrapper does not inherit from vtkDataSetAlgorithm

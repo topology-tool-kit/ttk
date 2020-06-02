@@ -16,8 +16,6 @@ install(
     "include/ttk/base"
   )
 
-message(STATUS "Dest: ${CMAKE_INSTALL_LIBDIR}/ttk")
-
 ttk_add_base_library(skeleton
   SOURCES
     CellArray.cpp

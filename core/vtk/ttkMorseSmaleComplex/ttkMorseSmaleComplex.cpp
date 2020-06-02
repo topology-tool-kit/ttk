@@ -36,7 +36,7 @@ int ttkMorseSmaleComplex::FillInputPortInformation(int port,
       break;
   }
 
-  return Superclass::FillInputPortInformation(port, info);
+  return 1;
 }
 
 int ttkMorseSmaleComplex::FillOutputPortInformation(int port,
@@ -54,7 +54,7 @@ int ttkMorseSmaleComplex::FillOutputPortInformation(int port,
       break;
   }
 
-  return Superclass::FillOutputPortInformation(port, info);
+  return 1;
 }
 
 int ttkMorseSmaleComplex::setupTriangulation(vtkDataSet *input) {

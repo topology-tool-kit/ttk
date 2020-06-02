@@ -40,19 +40,21 @@ ttkCinemaWriter::~ttkCinemaWriter() {
 }
 
 int ttkCinemaWriter::FillInputPortInformation(int port, vtkInformation *info) {
-  if(port == 0)
+  if(port == 0) {
     info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataObject");
-  else
+  } else {
     return 0;
-  return Superclass::FillInputPortInformation(port, info);
+  }
+  return 1;
 }
 
 int ttkCinemaWriter::FillOutputPortInformation(int port, vtkInformation *info) {
-  if(port == 0)
+  if(port == 0) {
     info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
-  else
+  } else {
     return 0;
-  return Superclass::FillOutputPortInformation(port, info);
+  }
+  return 1;
 }
 
 int ensureFolder(std::string path) {

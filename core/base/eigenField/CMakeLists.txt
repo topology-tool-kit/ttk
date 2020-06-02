@@ -13,16 +13,6 @@ ttk_add_base_library(eigenField
 
 if (EIGEN3_FOUND)
   target_compile_definitions(eigenField PUBLIC TTK_ENABLE_EIGEN)
-  find_path(SPECTRA_INCLUDE_DIR Spectra/SymEigsSolver.h)
-  if(SPECTRA_INCLUDE_DIR STREQUAL "SPECTRA_INCLUDE_DIR-NOTFOUND")
-    option(TTK_ENABLE_SPECTRA "Enable Spectra support" OFF)
-    message(STATUS "Spectra not found, disabling Spectra support in TTK.")
-  else()
-    option(TTK_ENABLE_SPECTRA "Enable Spectra support" ON)
-  endif()
-else()
-  option(TTK_ENABLE_SPECTRA "Enable Spectra support" OFF)
-  message(STATUS "Spectra not found, disabling Spectra support in TTK.")
 endif()
 
 if(TTK_ENABLE_SPECTRA)

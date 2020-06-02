@@ -204,9 +204,20 @@ endif()
 find_package(Eigen3 3.3 NO_MODULE)
 if(EIGEN3_FOUND)
   option(TTK_ENABLE_EIGEN "Enable Eigen3 support" ON)
+
+  find_path(SPECTRA_INCLUDE_DIR Spectra/SymEigsSolver.h)
+  if(SPECTRA_INCLUDE_DIR STREQUAL "SPECTRA_INCLUDE_DIR-NOTFOUND")
+    option(TTK_ENABLE_SPECTRA "Enable Spectra support" OFF)
+    message(STATUS "Spectra not found, disabling Spectra support in TTK.")
+  else()
+    option(TTK_ENABLE_SPECTRA "Enable Spectra support" ON)
+  endif()
 else()
   option(TTK_ENABLE_EIGEN "Enable Eigen3 support" OFF)
   message(STATUS "Eigen not found, disabling Eigen support in TTK.")
+
+  option(TTK_ENABLE_SPECTRA "Enable Spectra support" OFF)
+  message(STATUS "Spectra not found, disabling Spectra support in TTK.")
 endif()
 
 # scikit-learn support is disabled by default for now under MacOs

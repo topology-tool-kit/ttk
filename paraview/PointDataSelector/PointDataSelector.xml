@@ -56,7 +56,6 @@
 
       <StringVectorProperty name="NbScalarRange"
         command="GetRangeIds"
-        number_of_elements_per_command="0"
         information_only="1"
         si_class="vtkSIDataArraySelectionProperty" />
 
@@ -81,7 +80,8 @@
          name="RegexFilter"
          command="SetRegexpString"
          number_of_elements="1"
-         default_values=".*" panel_visibility="advanced">
+         default_values=".*"
+         panel_visibility="advanced">
          <Documentation>
             This regexp will be used to filter the chosen fields. Only matching ones will be selected.
          </Documentation>

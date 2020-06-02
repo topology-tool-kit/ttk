@@ -28,19 +28,19 @@ ttkContinuousScatterPlot::~ttkContinuousScatterPlot() {
 int ttkContinuousScatterPlot::FillInputPortInformation(int port,
                                                        vtkInformation *info) {
 
-  if(port == 0)
+  if(port == 0) {
     info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataSet");
-
-  return Superclass::FillInputPortInformation(port, info);
+  }
+  return 1;
 }
 
 int ttkContinuousScatterPlot::FillOutputPortInformation(int port,
                                                         vtkInformation *info) {
 
-  if(port == 0)
+  if(port == 0) {
     info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
-
-  return Superclass::FillInputPortInformation(port, info);
+  }
+  return 1;
 }
 
 int ttkContinuousScatterPlot::getScalars(vtkDataSet *input) {
