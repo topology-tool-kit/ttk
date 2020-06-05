@@ -611,7 +611,8 @@ int DiscreteGradient::initializeSaddleSaddleConnections1(
     const Cell &saddle2 = destination.cell_;
 
     std::set<SimplexId> saddles1;
-    getDescendingWall(saddle2, isVisited, nullptr, &saddles1);
+    std::vector<SimplexId> visitedTri{};
+    getDescendingWall(saddle2, isVisited, visitedTri, nullptr, &saddles1);
 
     for(auto &saddle1Id : saddles1) {
       if(!isRemovableSaddle1[saddle1Id]) {
@@ -765,7 +766,8 @@ int DiscreteGradient::processSaddleSaddleConnections1(
       const Cell &minSaddle2 = criticalPoints[vpath.destination_].cell_;
 
       std::set<SimplexId> saddles1;
-      getDescendingWall(minSaddle2, isVisited, nullptr, &saddles1);
+      std::vector<SimplexId> visitedTri{};
+      getDescendingWall(minSaddle2, isVisited, visitedTri, nullptr, &saddles1);
 
       // check if at least one connection exists
       auto isFound = saddles1.find(minSaddle1.id_);
@@ -985,7 +987,8 @@ int DiscreteGradient::processSaddleSaddleConnections1(
         const Cell &saddle2 = newDestination.cell_;
 
         std::set<SimplexId> saddles1;
-        getDescendingWall(saddle2, isVisited, nullptr, &saddles1);
+        std::vector<SimplexId> visitedTri{};
+        getDescendingWall(saddle2, isVisited, visitedTri, nullptr, &saddles1);
 
         for(auto &saddle1Id : saddles1) {
           const Cell saddle1(1, saddle1Id);
@@ -1041,7 +1044,8 @@ int DiscreteGradient::processSaddleSaddleConnections1(
         const Cell &saddle1 = newSource.cell_;
 
         std::set<SimplexId> saddles2;
-        getAscendingWall(saddle1, isVisited, nullptr, &saddles2);
+        std::vector<SimplexId> visitedEdges{};
+        getAscendingWall(saddle1, isVisited, visitedEdges, nullptr, &saddles2);
 
         for(auto &saddle2Id : saddles2) {
           const Cell saddle2(2, saddle2Id);
@@ -1224,7 +1228,8 @@ int DiscreteGradient::initializeSaddleSaddleConnections2(
     const Cell &saddle1 = source.cell_;
 
     std::set<SimplexId> saddles2;
-    getAscendingWall(saddle1, isVisited, nullptr, &saddles2);
+    std::vector<SimplexId> visitedEdges{};
+    getAscendingWall(saddle1, isVisited, visitedEdges, nullptr, &saddles2);
 
     for(auto &saddle2Id : saddles2) {
       if(!isRemovableSaddle2[saddle2Id]) {
@@ -1384,7 +1389,8 @@ int DiscreteGradient::processSaddleSaddleConnections2(
       const Cell &minSaddle2 = criticalPoints[vpath.destination_].cell_;
 
       std::set<SimplexId> saddles2;
-      getAscendingWall(minSaddle1, isVisited, nullptr, &saddles2);
+      std::vector<SimplexId> visitedEdges{};
+      getAscendingWall(minSaddle1, isVisited, visitedEdges, nullptr, &saddles2);
 
       // check if at least one connection exists
       auto isFound = saddles2.find(minSaddle2.id_);
@@ -1602,7 +1608,8 @@ int DiscreteGradient::processSaddleSaddleConnections2(
         const Cell &saddle1 = newSource.cell_;
 
         std::set<SimplexId> saddles2;
-        getAscendingWall(saddle1, isVisited, nullptr, &saddles2);
+        std::vector<SimplexId> visitedEdges{};
+        getAscendingWall(saddle1, isVisited, visitedEdges, nullptr, &saddles2);
 
         for(auto &saddle2Id : saddles2) {
           const Cell saddle2(2, saddle2Id);
@@ -1658,7 +1665,8 @@ int DiscreteGradient::processSaddleSaddleConnections2(
         const Cell &saddle2 = newDestination.cell_;
 
         std::set<SimplexId> saddles1;
-        getDescendingWall(saddle2, isVisited, nullptr, &saddles1);
+        std::vector<SimplexId> visitedTri{};
+        getDescendingWall(saddle2, isVisited, visitedTri, nullptr, &saddles1);
 
         for(auto &saddle1Id : saddles1) {
           const Cell saddle1(1, saddle1Id);
