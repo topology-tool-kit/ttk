@@ -287,6 +287,24 @@ namespace ttk {
       };
     };
 
+    struct VisitedMask {
+      std::vector<bool> &isVisited_;
+      std::vector<SimplexId> &visitedIds_;
+
+      VisitedMask(std::vector<bool> &isVisited,
+                  std::vector<SimplexId> &visitedIds)
+        : isVisited_{isVisited}, visitedIds_{visitedIds} {
+      }
+      ~VisitedMask() {
+        // use RAII to clean & reset referenced vectors
+        for(const auto id : this->visitedIds_) {
+          this->isVisited_[id] = false;
+        }
+        // set size to 0 but keep allocated memory
+        this->visitedIds_.clear();
+      }
+    };
+
 #ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
     using gradientType = std::vector<std::vector<std::vector<char>>>;
 #else
@@ -814,8 +832,7 @@ in the gradient.
        * Return the 2-separatrice terminating at the given 2-saddle.
        */
       int getDescendingWall(const Cell &cell,
-                            std::vector<bool> &isVisited,
-                            std::vector<SimplexId> &visitedTriangles,
+                            VisitedMask &mask,
                             std::vector<Cell> *const wall = nullptr,
                             std::set<SimplexId> *const saddles = nullptr) const;
 
@@ -823,8 +840,7 @@ in the gradient.
        * Return the 2-separatrice coming from the given 1-saddle.
        */
       int getAscendingWall(const Cell &cell,
-                           std::vector<bool> &isVisited,
-                           std::vector<SimplexId> &visitedEdges,
+                           VisitedMask &mask,
                            std::vector<Cell> *const wall = nullptr,
                            std::set<SimplexId> *const saddles = nullptr) const;
 

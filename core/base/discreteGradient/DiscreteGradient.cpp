@@ -1185,12 +1185,10 @@ bool DiscreteGradient::getAscendingPathThroughWall(
   return false;
 }
 
-int DiscreteGradient::getDescendingWall(
-  const Cell &cell,
-  vector<bool> &isVisited,
-  std::vector<SimplexId> &visitedTriangles,
-  vector<Cell> *const wall,
-  set<SimplexId> *const saddles) const {
+int DiscreteGradient::getDescendingWall(const Cell &cell,
+                                        VisitedMask &mask,
+                                        vector<Cell> *const wall,
+                                        set<SimplexId> *const saddles) const {
   if(dimensionality_ == 3) {
     if(cell.dim_ == 2) {
       // assume that cellId is a triangle
@@ -1204,9 +1202,9 @@ int DiscreteGradient::getDescendingWall(
         const SimplexId triangleId = bfs.front();
         bfs.pop();
 
-        if(!isVisited[triangleId]) {
-          isVisited[triangleId] = true;
-          visitedTriangles.emplace_back(triangleId);
+        if(!mask.isVisited_[triangleId]) {
+          mask.isVisited_[triangleId] = true;
+          mask.visitedIds_.emplace_back(triangleId);
 
           // add the triangle
           if(wall != nullptr) {
@@ -1236,8 +1234,7 @@ int DiscreteGradient::getDescendingWall(
 }
 
 int DiscreteGradient::getAscendingWall(const Cell &cell,
-                                       vector<bool> &isVisited,
-                                       std::vector<SimplexId> &visitedEdges,
+                                       VisitedMask &mask,
                                        vector<Cell> *const wall,
                                        set<SimplexId> *const saddles) const {
   if(dimensionality_ == 3) {
@@ -1253,9 +1250,9 @@ int DiscreteGradient::getAscendingWall(const Cell &cell,
         const SimplexId edgeId = bfs.front();
         bfs.pop();
 
-        if(!isVisited[edgeId]) {
-          isVisited[edgeId] = true;
-          visitedEdges.emplace_back(edgeId);
+        if(!mask.isVisited_[edgeId]) {
+          mask.isVisited_[edgeId] = true;
+          mask.visitedIds_.emplace_back(edgeId);
 
           // add the edge
           if(wall != nullptr) {

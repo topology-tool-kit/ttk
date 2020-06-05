@@ -605,14 +605,16 @@ int DiscreteGradient::initializeSaddleSaddleConnections1(
   // Part 2 : update the structures
   // apriori: by default construction, the vpaths and segments are not valid
   std::vector<bool> isVisited(numberOfSaddle2Candidates, false);
+  std::vector<SimplexId> visitedTriangles{};
+
   for(SimplexId i = 0; i < numberOf2Saddles; ++i) {
     const SimplexId destinationIndex = i;
     CriticalPoint &destination = criticalPoints[destinationIndex];
     const Cell &saddle2 = destination.cell_;
+    VisitedMask mask{isVisited, visitedTriangles};
 
     std::set<SimplexId> saddles1;
-    std::vector<SimplexId> visitedTri{};
-    getDescendingWall(saddle2, isVisited, visitedTri, nullptr, &saddles1);
+    getDescendingWall(saddle2, mask, nullptr, &saddles1);
 
     for(auto &saddle1Id : saddles1) {
       if(!isRemovableSaddle1[saddle1Id]) {
@@ -624,9 +626,6 @@ int DiscreteGradient::initializeSaddleSaddleConnections1(
       std::vector<Cell> path;
       const bool isMultiConnected
         = getAscendingPathThroughWall(saddle1, saddle2, isVisited, &path, true);
-
-      // clean mask vector
-      isVisited.assign(isVisited.size(), false);
 
       if(!isMultiConnected) {
         const SimplexId sourceIndex = saddle1Index[saddle1Id];
@@ -742,6 +741,7 @@ int DiscreteGradient::processSaddleSaddleConnections1(
     = inputTriangulation_->getNumberOfTriangles();
   const SimplexId optimizedSize = std::max(numberOfEdges, numberOfTriangles);
   std::vector<bool> isVisited(optimizedSize, false);
+  std::vector<SimplexId> visitedCells{};
 
   int numberOfIterations{};
   while(!S.empty()) {
@@ -766,8 +766,8 @@ int DiscreteGradient::processSaddleSaddleConnections1(
       const Cell &minSaddle2 = criticalPoints[vpath.destination_].cell_;
 
       std::set<SimplexId> saddles1;
-      std::vector<SimplexId> visitedTri{};
-      getDescendingWall(minSaddle2, isVisited, visitedTri, nullptr, &saddles1);
+      VisitedMask mask{isVisited, visitedCells};
+      getDescendingWall(minSaddle2, mask, nullptr, &saddles1);
 
       // check if at least one connection exists
       auto isFound = saddles1.find(minSaddle1.id_);
@@ -780,9 +780,6 @@ int DiscreteGradient::processSaddleSaddleConnections1(
       std::vector<Cell> path;
       const bool isMultiConnected = getAscendingPathThroughWall(
         minSaddle1, minSaddle2, isVisited, &path, true);
-
-      // clean mask vector
-      isVisited.assign(isVisited.size(), false);
 
       if(isMultiConnected) {
         ++numberOfIterations;
@@ -987,8 +984,8 @@ int DiscreteGradient::processSaddleSaddleConnections1(
         const Cell &saddle2 = newDestination.cell_;
 
         std::set<SimplexId> saddles1;
-        std::vector<SimplexId> visitedTri{};
-        getDescendingWall(saddle2, isVisited, visitedTri, nullptr, &saddles1);
+        VisitedMask mask{isVisited, visitedCells};
+        getDescendingWall(saddle2, mask, nullptr, &saddles1);
 
         for(auto &saddle1Id : saddles1) {
           const Cell saddle1(1, saddle1Id);
@@ -996,9 +993,6 @@ int DiscreteGradient::processSaddleSaddleConnections1(
           std::vector<Cell> path;
           const bool isMultiConnected = getAscendingPathThroughWall(
             saddle1, saddle2, isVisited, &path, true);
-
-          // clean mask vector
-          isVisited.assign(isVisited.size(), false);
 
           if(isMultiConnected) {
             continue;
@@ -1044,8 +1038,8 @@ int DiscreteGradient::processSaddleSaddleConnections1(
         const Cell &saddle1 = newSource.cell_;
 
         std::set<SimplexId> saddles2;
-        std::vector<SimplexId> visitedEdges{};
-        getAscendingWall(saddle1, isVisited, visitedEdges, nullptr, &saddles2);
+        VisitedMask mask{isVisited, visitedCells};
+        getAscendingWall(saddle1, mask, nullptr, &saddles2);
 
         for(auto &saddle2Id : saddles2) {
           const Cell saddle2(2, saddle2Id);
@@ -1053,9 +1047,6 @@ int DiscreteGradient::processSaddleSaddleConnections1(
           std::vector<Cell> path;
           const bool isMultiConnected = getDescendingPathThroughWall(
             saddle2, saddle1, isVisited, &path, true);
-
-          // clean mask vector
-          isVisited.assign(isVisited.size(), false);
 
           if(isMultiConnected) {
             continue;
@@ -1222,14 +1213,15 @@ int DiscreteGradient::initializeSaddleSaddleConnections2(
   // Part 2 : update the structures
   // apriori: by default construction, the vpaths and segments are not valid
   std::vector<bool> isVisited(numberOfSaddle1Candidates, false);
+  std::vector<SimplexId> visitedEdges{};
   for(SimplexId i = 0; i < numberOf1Saddles; ++i) {
     const SimplexId sourceIndex = i;
     CriticalPoint &source = criticalPoints[sourceIndex];
     const Cell &saddle1 = source.cell_;
 
     std::set<SimplexId> saddles2;
-    std::vector<SimplexId> visitedEdges{};
-    getAscendingWall(saddle1, isVisited, visitedEdges, nullptr, &saddles2);
+    VisitedMask mask{isVisited, visitedEdges};
+    getAscendingWall(saddle1, mask, nullptr, &saddles2);
 
     for(auto &saddle2Id : saddles2) {
       if(!isRemovableSaddle2[saddle2Id]) {
@@ -1241,9 +1233,6 @@ int DiscreteGradient::initializeSaddleSaddleConnections2(
       std::vector<Cell> path;
       const bool isMultiConnected = getDescendingPathThroughWall(
         saddle2, saddle1, isVisited, &path, true);
-
-      // clean mask vector
-      isVisited.assign(isVisited.size(), false);
 
       if(!isMultiConnected) {
         const SimplexId destinationIndex = saddle2Index[saddle2Id];
@@ -1365,6 +1354,7 @@ int DiscreteGradient::processSaddleSaddleConnections2(
     = inputTriangulation_->getNumberOfTriangles();
   const SimplexId optimizedSize = std::max(numberOfEdges, numberOfTriangles);
   std::vector<bool> isVisited(optimizedSize, false);
+  std::vector<SimplexId> visitedIds{};
 
   int numberOfIterations{};
   while(!S.empty()) {
@@ -1389,8 +1379,8 @@ int DiscreteGradient::processSaddleSaddleConnections2(
       const Cell &minSaddle2 = criticalPoints[vpath.destination_].cell_;
 
       std::set<SimplexId> saddles2;
-      std::vector<SimplexId> visitedEdges{};
-      getAscendingWall(minSaddle1, isVisited, visitedEdges, nullptr, &saddles2);
+      VisitedMask mask{isVisited, visitedIds};
+      getAscendingWall(minSaddle1, mask, nullptr, &saddles2);
 
       // check if at least one connection exists
       auto isFound = saddles2.find(minSaddle2.id_);
@@ -1403,9 +1393,6 @@ int DiscreteGradient::processSaddleSaddleConnections2(
       std::vector<Cell> path;
       const bool isMultiConnected = getDescendingPathThroughWall(
         minSaddle2, minSaddle1, isVisited, &path, true);
-
-      // clean mask vector
-      isVisited.assign(isVisited.size(), false);
 
       if(isMultiConnected) {
         ++numberOfIterations;
@@ -1608,17 +1595,14 @@ int DiscreteGradient::processSaddleSaddleConnections2(
         const Cell &saddle1 = newSource.cell_;
 
         std::set<SimplexId> saddles2;
-        std::vector<SimplexId> visitedEdges{};
-        getAscendingWall(saddle1, isVisited, visitedEdges, nullptr, &saddles2);
+        VisitedMask mask{isVisited, visitedIds};
+        getAscendingWall(saddle1, mask, nullptr, &saddles2);
 
         for(auto &saddle2Id : saddles2) {
           const Cell saddle2(2, saddle2Id);
 
           const bool isMultiConnected = getDescendingPathThroughWall(
             saddle2, saddle1, isVisited, nullptr, true);
-
-          // clean mask vector
-          isVisited.assign(isVisited.size(), false);
 
           if(isMultiConnected) {
             continue;
@@ -1665,8 +1649,8 @@ int DiscreteGradient::processSaddleSaddleConnections2(
         const Cell &saddle2 = newDestination.cell_;
 
         std::set<SimplexId> saddles1;
-        std::vector<SimplexId> visitedTri{};
-        getDescendingWall(saddle2, isVisited, visitedTri, nullptr, &saddles1);
+        VisitedMask mask{isVisited, visitedIds};
+        getDescendingWall(saddle2, mask, nullptr, &saddles1);
 
         for(auto &saddle1Id : saddles1) {
           const Cell saddle1(1, saddle1Id);
@@ -1674,9 +1658,6 @@ int DiscreteGradient::processSaddleSaddleConnections2(
           std::vector<Cell> path;
           const bool isMultiConnected = getAscendingPathThroughWall(
             saddle1, saddle2, isVisited, &path, true);
-
-          // clean mask vector
-          isVisited.assign(isVisited.size(), false);
 
           if(isMultiConnected) {
             continue;
