@@ -78,6 +78,7 @@ int MorseSmaleComplex3D::getSaddleConnectors(
   const auto nTriangles = inputTriangulation_->getNumberOfTriangles();
   // visited triangles (one vector per thread)
   std::vector<std::vector<bool>> isVisited(this->threadNumber_);
+  std::vector<std::vector<SimplexId>> visitedTriangles(this->threadNumber_);
 
   for(auto &vec : isVisited) {
     // resize threads outside of main loop
@@ -101,7 +102,6 @@ int MorseSmaleComplex3D::getSaddleConnectors(
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
   for(size_t i = 0; i < saddles2.size(); ++i) {
-    std::vector<SimplexId> visitedTriangles{};
     const auto &s2{saddles2[i]};
 
 #ifdef TTK_ENABLE_OPENMP
@@ -111,8 +111,8 @@ int MorseSmaleComplex3D::getSaddleConnectors(
 #endif // TTK_ENABLE_OPENMP
 
     std::set<SimplexId> saddles1{};
-    discreteGradient_.getDescendingWall(
-      s2, isVisited[tid], nullptr, &saddles1, &visitedTriangles);
+    VisitedMask mask{isVisited[tid], visitedTriangles[tid]};
+    discreteGradient_.getDescendingWall(s2, mask, nullptr, &saddles1);
 
     for(const auto saddle1Id : saddles1) {
       const Cell s1{1, saddle1Id};
@@ -127,11 +127,6 @@ int MorseSmaleComplex3D::getSaddleConnectors(
         sepsGeomByThread[tid].emplace_back(std::move(vpath));
         sepsByThread[tid].emplace_back(s1, s2);
       }
-    }
-
-    // clean vector at the end of every iteration
-    for(const auto t : visitedTriangles) {
-      isVisited[tid][t] = false;
     }
   }
 
@@ -188,6 +183,7 @@ int MorseSmaleComplex3D::getAscendingSeparatrices2(
 
   const SimplexId numberOfEdges = inputTriangulation_->getNumberOfEdges();
   vector<bool> isVisited(numberOfEdges, false);
+  std::vector<SimplexId> visitedEdges{};
 
   // apriori: by default construction, the separatrices are not valid
   for(SimplexId i = 0; i < numberOfSaddles; ++i) {
@@ -195,8 +191,9 @@ int MorseSmaleComplex3D::getAscendingSeparatrices2(
     const Cell &saddle1 = criticalPoints[saddleIndex];
 
     vector<Cell> wall;
+    VisitedMask mask{isVisited, visitedEdges};
     discreteGradient_.getAscendingWall(
-      saddle1, isVisited, &wall, &separatricesSaddles[i]);
+      saddle1, mask, &wall, &separatricesSaddles[i]);
 
     separatricesGeometry[i] = std::move(wall);
     separatrices[i] = Separatrix(true, saddle1, emptyCell, false, i);
@@ -232,6 +229,7 @@ int MorseSmaleComplex3D::getDescendingSeparatrices2(
   const SimplexId numberOfTriangles
     = inputTriangulation_->getNumberOfTriangles();
   std::vector<bool> isVisited(numberOfTriangles, false);
+  std::vector<SimplexId> visitedTriangles{};
 
   // apriori: by default construction, the separatrices are not valid
   for(SimplexId i = 0; i < numberOfSaddles; ++i) {
@@ -239,8 +237,9 @@ int MorseSmaleComplex3D::getDescendingSeparatrices2(
     const Cell &saddle2 = criticalPoints[saddleIndex];
 
     vector<Cell> wall;
+    VisitedMask mask{isVisited, visitedTriangles};
     discreteGradient_.getDescendingWall(
-      saddle2, isVisited, &wall, &separatricesSaddles[i]);
+      saddle2, mask, &wall, &separatricesSaddles[i]);
 
     separatricesGeometry[i] = std::move(wall);
     separatrices[i] = Separatrix(true, saddle2, emptyCell, false, i);
