@@ -134,6 +134,17 @@ int AbstractMorseSmaleComplex::setAscendingSegmentation(
   const SimplexId numberOfSeeds = maxSeeds.size();
   numberOfMaxima = numberOfSeeds;
 
+  // Triangulation method pointers for 3D
+  auto getCellFace = &Triangulation::getCellTriangle;
+  auto getFaceStarNumber = &Triangulation::getTriangleStarNumber;
+  auto getFaceStar = &Triangulation::getTriangleStar;
+  if(cellDim == 2) {
+    // Triangulation method pointers for 2D
+    getCellFace = &Triangulation::getCellEdge;
+    getFaceStarNumber = &Triangulation::getEdgeStarNumber;
+    getFaceStar = &Triangulation::getEdgeStar;
+  }
+
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
@@ -156,22 +167,13 @@ int AbstractMorseSmaleComplex::setAscendingSegmentation(
 
         for(int j = 0; j < (cellDim + 1); ++j) {
           SimplexId facetId = -1;
-          if(cellDim == 2)
-            inputTriangulation_->getCellEdge(cofacetId, j, facetId);
-          else if(cellDim == 3)
-            inputTriangulation_->getCellTriangle(cofacetId, j, facetId);
+          (inputTriangulation_->*getCellFace)(cofacetId, j, facetId);
 
-          SimplexId starNumber = 0;
-          if(cellDim == 2)
-            starNumber = inputTriangulation_->getEdgeStarNumber(facetId);
-          else if(cellDim == 3)
-            starNumber = inputTriangulation_->getTriangleStarNumber(facetId);
+          SimplexId starNumber
+            = (inputTriangulation_->*getFaceStarNumber)(facetId);
           for(SimplexId k = 0; k < starNumber; ++k) {
             SimplexId neighborId = -1;
-            if(cellDim == 2)
-              inputTriangulation_->getEdgeStar(facetId, k, neighborId);
-            else if(cellDim == 3)
-              inputTriangulation_->getTriangleStar(facetId, k, neighborId);
+            (inputTriangulation_->*getFaceStar)(facetId, k, neighborId);
 
             const SimplexId pairedCellId = discreteGradient_.getPairedCell(
               Cell(cellDim, neighborId), true);
