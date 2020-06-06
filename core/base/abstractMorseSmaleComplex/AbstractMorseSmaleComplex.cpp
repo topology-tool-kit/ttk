@@ -276,35 +276,22 @@ int AbstractMorseSmaleComplex::setFinalSegmentation(
   const SimplexId *const ascendingManifold,
   const SimplexId *const descendingManifold,
   SimplexId *const morseSmaleManifold) const {
-  vector<vector<pair<SimplexId, SimplexId>>> minTable(numberOfMinima);
 
-  SimplexId id{};
-  const SimplexId numberOfVertices = inputTriangulation_->getNumberOfVertices();
-  for(SimplexId i = 0; i < numberOfVertices; ++i) {
-    const SimplexId d = ascendingManifold[i];
-    const SimplexId a = descendingManifold[i];
+  const size_t nVerts = inputTriangulation_->getNumberOfVertices();
 
-    if(a == -1 or d == -1) {
+  // associate a unique "sparse region id" to each (ascending, descending) pair
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+  for(size_t i = 0; i < nVerts; ++i) {
+    const auto d = ascendingManifold[i];
+    const auto a = descendingManifold[i];
+    if(a == -1 || d == -1) {
       morseSmaleManifold[i] = -1;
-      continue;
+    } else {
+      morseSmaleManifold[i] = a * numberOfMaxima + d;
     }
-
-    vector<pair<SimplexId, SimplexId>> &table = minTable[a];
-    SimplexId foundId = -1;
-    for(const pair<SimplexId, SimplexId> &p : table) {
-      if(p.first == d)
-        foundId = p.second;
-    }
-
-    // add new association (a,d)
-    if(foundId == -1) {
-      table.push_back(make_pair(d, id));
-      morseSmaleManifold[i] = id;
-      ++id;
-    }
-    // update to saved associationId
-    else
-      morseSmaleManifold[i] = foundId;
   }
 
   return 0;
