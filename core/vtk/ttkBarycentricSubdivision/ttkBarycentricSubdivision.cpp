@@ -169,7 +169,7 @@ int ttkBarycentricSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
     tmpTr.setInputCells(
       tmpCellsOff.size() - 1, tmpCellsCo.data(), tmpCellsOff.data());
 #else
-    ttk::LongSimplexId* tmpCells = nullptr;
+    ttk::LongSimplexId *tmpCells = nullptr;
     ttk::CellArray::TranslateToFlatLayout(tmpCellsCo, tmpCellsOff, tmpCells);
     tmpTr.setInputCells(tmpCellsCo.size() - 1, tmpCells);
 #endif

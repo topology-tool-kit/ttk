@@ -108,5 +108,6 @@ private:
   std::vector<ttk::SimplexId> pointDim_{};
 
   // base worker
-  ttk::BarycentricSubdivision baseWorker_{points_, cells_connectivity_, cells_offsets_, pointId_, pointDim_};
+  ttk::BarycentricSubdivision baseWorker_{
+    points_, cells_connectivity_, cells_offsets_, pointId_, pointDim_};
 };

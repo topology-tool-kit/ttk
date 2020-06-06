@@ -324,10 +324,9 @@ void ttkUtils::SetVoidArray(vtkDataArray *array,
   }
 }
 
-[[deprecated]]
-void ttkUtils::FillCellArrayFromSingle(vtkIdType const *cells,
-                                       vtkIdType ncells,
-                                       vtkCellArray *cellArray) {
+[[deprecated]] void ttkUtils::FillCellArrayFromSingle(vtkIdType const *cells,
+                                                      vtkIdType ncells,
+                                                      vtkCellArray *cellArray) {
   size_t curPos = 0;
   vtkNew<vtkIdList> verts;
   for(vtkIdType cid = 0; cid < ncells; cid++) {

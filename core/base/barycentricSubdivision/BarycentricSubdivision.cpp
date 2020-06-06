@@ -154,7 +154,7 @@ int ttk::BarycentricSubdivision::buildOutputTriangulation() {
                                 cells_offsets_.data());
 #else
   // TODO use revert translator
-  LongSimplexId* cells = nullptr;
+  LongSimplexId *cells = nullptr;
   CellArray::TranslateToFlatLayout(cells_connectivity_, cells_offsets_, cells);
   outputTriangl_->setInputCells(cells_offsets_.size() - 1, cells);
 #endif

@@ -15,7 +15,8 @@
 /// about this layout.
 /// This class is more a view on data than a complete container. It does
 /// not support memory reloated operations.
-/// This file will be installed by CMake as CellArray.h if the TTK_CELL_ARRAY_LAYOUT is set to OffsetAndConnectivity
+/// This file will be installed by CMake as CellArray.h if the
+/// TTK_CELL_ARRAY_LAYOUT is set to OffsetAndConnectivity
 
 #ifndef _CELLARRAY_H
 #define _CELLARRAY_H
