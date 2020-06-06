@@ -16,7 +16,7 @@ fi
 
 PATCH_DIR=$(pwd)
 
-if [ ! -f ${PATCH_DIR}/paraview-5.7.0-CMakeLists.txt.patch ]; then
+if [ ! -f ${PATCH_DIR}/paraview-5.8.0-CMakeLists.txt.patch ]; then
   echo "You should run this script directly from the paraview/patch folder"
   exit 3
 fi

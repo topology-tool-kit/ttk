@@ -14,7 +14,7 @@
 /// Connectivity array See VTK 9 vtkCellArray documentation for more details
 /// about this layout.
 /// This class is more a view on data than a complete container. It does
-/// not support memory reloated operations.
+/// not support memory modification operations.
 /// This file will be installed by CMake as CellArray.h if the
 /// TTK_CELL_ARRAY_LAYOUT is set to OffsetAndConnectivity
 
