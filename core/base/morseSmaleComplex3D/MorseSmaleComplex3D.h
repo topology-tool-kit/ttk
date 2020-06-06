@@ -247,32 +247,24 @@ int ttk::MorseSmaleComplex3D::setSaddleConnectors(
     }
   }
 
-  // realloc point data vectors
   outputSeparatrices1_points_->resize(3 * npoints);
-  if(outputSeparatrices1_points_smoothingMask_ != nullptr)
-    outputSeparatrices1_points_smoothingMask_->resize(npoints);
-  if(outputSeparatrices1_points_cellDimensions_ != nullptr)
-    outputSeparatrices1_points_cellDimensions_->resize(npoints);
-  if(outputSeparatrices1_points_cellIds_ != nullptr)
-    outputSeparatrices1_points_cellIds_->resize(npoints);
-  // realloc cell data vectors
+  auto &points = *outputSeparatrices1_points_;
   outputSeparatrices1_cells_->resize(3 * ncells);
-  if(outputSeparatrices1_cells_sourceIds_ != nullptr)
-    outputSeparatrices1_cells_sourceIds_->resize(ncells);
-  if(outputSeparatrices1_cells_destinationIds_ != nullptr)
-    outputSeparatrices1_cells_destinationIds_->resize(ncells);
-  if(outputSeparatrices1_cells_separatrixIds_ != nullptr)
-    outputSeparatrices1_cells_separatrixIds_->resize(ncells);
-  if(outputSeparatrices1_cells_separatrixTypes_ != nullptr)
-    outputSeparatrices1_cells_separatrixTypes_->resize(ncells);
-  if(outputSeparatrices1_cells_separatrixFunctionMaxima != nullptr)
-    outputSeparatrices1_cells_separatrixFunctionMaxima->resize(ncells);
-  if(outputSeparatrices1_cells_separatrixFunctionMinima != nullptr)
-    outputSeparatrices1_cells_separatrixFunctionMinima->resize(ncells);
-  if(outputSeparatrices1_cells_separatrixFunctionDiffs != nullptr)
-    outputSeparatrices1_cells_separatrixFunctionDiffs->resize(ncells);
-  if(outputSeparatrices1_cells_isOnBoundary_ != nullptr)
-    outputSeparatrices1_cells_isOnBoundary_->resize(ncells);
+  auto &cells = *outputSeparatrices1_cells_;
+
+  // stack-allocate data vectors before loop to avoid pointer checks (vectors
+  // content will be moved to member pointers at the end of the function)
+  std::vector<char> smoothingMask(npoints);
+  std::vector<char> cellDimensions(npoints);
+  std::vector<SimplexId> cellIds(npoints);
+  std::vector<SimplexId> sourceIds(ncells);
+  std::vector<SimplexId> destinationIds(ncells);
+  std::vector<SimplexId> separatrixIds(ncells);
+  std::vector<char> separatrixTypes(ncells);
+  std::vector<dataType> separatrixFunctionMaxima(ncells);
+  std::vector<dataType> separatrixFunctionMinima(ncells);
+  std::vector<dataType> separatrixFunctionDiffs(ncells);
+  std::vector<char> isOnBoundary(ncells);
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
@@ -297,30 +289,25 @@ int ttk::MorseSmaleComplex3D::setSaddleConnectors(
     const auto sepFuncDiff = sepFuncMax - sepFuncMin;
 
     // get boundary condition
-    const auto isOnBoundary
+    const auto onBoundary
       = static_cast<char>(discreteGradient_.isBoundary(saddle1)
                           and discreteGradient_.isBoundary(saddle2));
 
     for(size_t j = 0; j < sepGeom.size(); ++j) {
       const auto &cell = sepGeom[j];
-      std::array<float, 3> point{};
-      discreteGradient_.getCellIncenter(cell, point.data());
+      std::array<float, 3> pt{};
+      discreteGradient_.getCellIncenter(cell, pt.data());
 
       // index of current point in point data arrays
       const auto k = geomPointsBegId[i] + j;
 
-      (*outputSeparatrices1_points_)[3 * k + 0] = point[0];
-      (*outputSeparatrices1_points_)[3 * k + 1] = point[1];
-      (*outputSeparatrices1_points_)[3 * k + 2] = point[2];
+      points[3 * k + 0] = pt[0];
+      points[3 * k + 1] = pt[1];
+      points[3 * k + 2] = pt[2];
 
-      if(outputSeparatrices1_points_smoothingMask_)
-        (*outputSeparatrices1_points_smoothingMask_)[k]
-          = (j == 0 || j == sepGeom.size() - 1) ? 0 : 1;
-
-      if(outputSeparatrices1_points_cellDimensions_)
-        (*outputSeparatrices1_points_cellDimensions_)[k] = cell.dim_;
-      if(outputSeparatrices1_points_cellIds_)
-        (*outputSeparatrices1_points_cellIds_)[k] = cell.id_;
+      smoothingMask[k] = (j == 0 || j == sepGeom.size() - 1) ? 0 : 1;
+      cellDimensions[k] = cell.dim_;
+      cellIds[k] = cell.id_;
 
       // skip filling cell data for first geometry point
       if(j == 0)
@@ -329,32 +316,50 @@ int ttk::MorseSmaleComplex3D::setSaddleConnectors(
       // index of current cell in cell data arrays
       const auto l = geomCellsBegId[i] + j - 1;
 
-      (*outputSeparatrices1_cells_)[3 * l + 0] = 2;
-      (*outputSeparatrices1_cells_)[3 * l + 1] = k - 1;
-      (*outputSeparatrices1_cells_)[3 * l + 2] = k;
+      cells[3 * l + 0] = 2;
+      cells[3 * l + 1] = k - 1;
+      cells[3 * l + 2] = k;
 
-      if(outputSeparatrices1_cells_sourceIds_)
-        (*outputSeparatrices1_cells_sourceIds_)[l] = saddle1.id_;
-      if(outputSeparatrices1_cells_destinationIds_)
-        (*outputSeparatrices1_cells_destinationIds_)[l] = saddle2.id_;
-      if(outputSeparatrices1_cells_separatrixIds_)
-        (*outputSeparatrices1_cells_separatrixIds_)[l] = sepId;
-      if(outputSeparatrices1_cells_separatrixTypes_)
-        (*outputSeparatrices1_cells_separatrixTypes_)[l] = sepType;
-      if(outputSeparatrices1_cells_separatrixFunctionMaxima)
-        (*outputSeparatrices1_cells_separatrixFunctionMaxima)[l] = sepFuncMax;
-      if(outputSeparatrices1_cells_separatrixFunctionMinima)
-        (*outputSeparatrices1_cells_separatrixFunctionMinima)[l] = sepFuncMin;
-      if(outputSeparatrices1_cells_separatrixFunctionDiffs)
-        (*outputSeparatrices1_cells_separatrixFunctionDiffs)[l] = sepFuncDiff;
-      if(outputSeparatrices1_cells_isOnBoundary_)
-        (*outputSeparatrices1_cells_isOnBoundary_)[l] = isOnBoundary;
+      sourceIds[l] = saddle1.id_;
+      destinationIds[l] = saddle2.id_;
+      separatrixIds[l] = sepId;
+      separatrixTypes[l] = sepType;
+      separatrixFunctionMaxima[l] = sepFuncMax;
+      separatrixFunctionMinima[l] = sepFuncMin;
+      separatrixFunctionDiffs[l] = sepFuncDiff;
+      isOnBoundary[l] = onBoundary;
     }
   }
 
   // update pointers
   *outputSeparatrices1_numberOfPoints_ = npoints;
   *outputSeparatrices1_numberOfCells_ = ncells;
+
+  if(outputSeparatrices1_points_smoothingMask_ != nullptr)
+    *outputSeparatrices1_points_smoothingMask_ = std::move(smoothingMask);
+  if(outputSeparatrices1_points_cellDimensions_ != nullptr)
+    *outputSeparatrices1_points_cellDimensions_ = std::move(cellDimensions);
+  if(outputSeparatrices1_points_cellIds_ != nullptr)
+    *outputSeparatrices1_points_cellIds_ = std::move(cellIds);
+  if(outputSeparatrices1_cells_sourceIds_ != nullptr)
+    *outputSeparatrices1_cells_sourceIds_ = std::move(sourceIds);
+  if(outputSeparatrices1_cells_destinationIds_ != nullptr)
+    *outputSeparatrices1_cells_destinationIds_ = std::move(destinationIds);
+  if(outputSeparatrices1_cells_separatrixIds_ != nullptr)
+    *outputSeparatrices1_cells_separatrixIds_ = std::move(separatrixIds);
+  if(outputSeparatrices1_cells_separatrixTypes_ != nullptr)
+    *outputSeparatrices1_cells_separatrixTypes_ = std::move(separatrixTypes);
+  if(outputSeparatrices1_cells_separatrixFunctionMaxima != nullptr)
+    *outputSeparatrices1_cells_separatrixFunctionMaxima
+      = std::move(separatrixFunctionMaxima);
+  if(outputSeparatrices1_cells_separatrixFunctionMinima != nullptr)
+    *outputSeparatrices1_cells_separatrixFunctionMinima
+      = std::move(separatrixFunctionMinima);
+  if(outputSeparatrices1_cells_separatrixFunctionDiffs != nullptr)
+    *outputSeparatrices1_cells_separatrixFunctionDiffs
+      = std::move(separatrixFunctionDiffs);
+  if(outputSeparatrices1_cells_isOnBoundary_ != nullptr)
+    *outputSeparatrices1_cells_isOnBoundary_ = std::move(isOnBoundary);
 
   return 0;
 }
