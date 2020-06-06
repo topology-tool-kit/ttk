@@ -165,7 +165,7 @@ int ttkBarycentricSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
     decltype(triangulationSubdivision) tmpTr{};
     std::swap(triangulationSubdivision, tmpTr);
 
-#ifdef CELL_ARRAY_NEW
+#ifdef TTK_CELL_ARRAY_NEW
     tmpTr.setInputCells(
       tmpCellsOff.size() - 1, tmpCellsCo.data(), tmpCellsOff.data());
 #else

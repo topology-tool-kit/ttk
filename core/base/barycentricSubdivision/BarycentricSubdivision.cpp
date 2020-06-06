@@ -148,7 +148,7 @@ int ttk::BarycentricSubdivision::buildOutputTriangulation() {
   }
 
   outputTriangl_->setInputPoints(points_.size() / 3, points_.data());
-#ifdef CELL_ARRAY_NEW
+#ifdef TTK_CELL_ARRAY_NEW
   outputTriangl_->setInputCells(cells_offsets_.size() - 1,
                                 cells_connectivity_.data(),
                                 cells_offsets_.data());

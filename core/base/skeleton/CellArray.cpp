@@ -2,7 +2,7 @@
 
 using namespace ttk;
 
-#ifdef CELL_ARRAY_LEGACY
+#ifdef TTK_CELL_ARRAY_LEGACY
 void CellArray::TranslateToFlatLayout(std::vector<LongSimplexId> &connectivity,
                                       std::vector<LongSimplexId> &offset,
                                       LongSimplexId *&singleArray) {

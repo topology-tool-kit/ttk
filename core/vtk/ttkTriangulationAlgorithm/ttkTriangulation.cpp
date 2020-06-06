@@ -310,7 +310,7 @@ int ttkTriangulation::setInputData(vtkDataSet *dataSet) {
         vtkErrorWithObjectMacro(nullptr, << errMsg);
       }
 
-#ifdef CELL_ARRAY_NEW
+#ifdef TTK_CELL_ARRAY_NEW
       auto cellsConnectivity
         = static_cast<LongSimplexId *>(ttkUtils::GetVoidPointer(
           vtuDataSet->GetCells()->GetConnectivityArray(), 0));
@@ -378,7 +378,7 @@ int ttkTriangulation::setInputData(vtkDataSet *dataSet) {
 
         ret = vtkSmartPointer<CellChecker>::New()->check2d(vtpDataSet);
         // NOTE If there are any 1D cells, we just ignore them
-#ifdef CELL_ARRAY_NEW
+#ifdef TTK_CELL_ARRAY_NEW
         auto polyDataConnect
           = static_cast<LongSimplexId *>(ttkUtils::GetVoidPointer(
             vtpDataSet->GetPolys()->GetConnectivityArray(), 0));
@@ -397,7 +397,7 @@ int ttkTriangulation::setInputData(vtkDataSet *dataSet) {
       } else if(vtpDataSet->GetNumberOfLines() > 0) { // have 1D
 
         ret = vtkSmartPointer<CellChecker>::New()->check1d(vtpDataSet);
-#ifdef CELL_ARRAY_NEW
+#ifdef TTK_CELL_ARRAY_NEW
         auto lineDataConnect
           = static_cast<LongSimplexId *>(ttkUtils::GetVoidPointer(
             vtpDataSet->GetLines()->GetConnectivityArray(), 0));

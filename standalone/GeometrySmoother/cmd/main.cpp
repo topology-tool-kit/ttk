@@ -107,7 +107,7 @@ public:
     ScalarFieldSmoother *smoother
       = (ScalarFieldSmoother *)Program<ttkModule>::ttkModule_;
     triangleMesh_.setInputPoints(vertexNumber, pointSet_.data());
-#ifdef CELL_ARRAY_NEW
+#ifdef TTK_CELL_ARRAY_NEW
     triangleMesh_.setInputCells(
       triangleNumber, triangleSetCo_.data(), triangleSetOff_.data());
 #else

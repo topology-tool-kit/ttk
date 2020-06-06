@@ -2280,7 +2280,7 @@ namespace ttk {
       return 0;
     }
 
-#ifdef CELL_ARRAY_NEW
+#ifdef TTK_CELL_ARRAY_NEW
     /// Here the notion of cell refers to the simplicices of maximal
     /// dimension (3D: tetrahedra, 2D: triangles, 1D: edges).
     ///
