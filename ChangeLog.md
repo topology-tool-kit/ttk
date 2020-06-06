@@ -1,6 +1,7 @@
 ## TTK - ChangeLog
 =
 ### ttk.git
+- Migration to VTK9/ParaView-5.8.0 \0/ clap! clap! clap! \0/
 - Support for ParaView-5.7.0 \0/
 - New branching management
 - New templated triangulation API (up to x2 speedup)
