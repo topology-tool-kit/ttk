@@ -7,7 +7,7 @@
 ///
 /// %CellArray is a generic container that allows to deal with various cell
 /// layouts in memory \sa Triangulation \sa ttkTriangulation
-/// This version assume the cell data to be given by two
+/// This version assumes the cell data to be given by two
 /// arrays:
 /// * Connectivity, containing the list of point ids of each cells
 /// * Offsets, containing the beginning and end position of each cell in the
