@@ -175,6 +175,10 @@ int AbstractMorseSmaleComplex::setAscendingSegmentation(
             SimplexId neighborId = -1;
             (inputTriangulation_->*getFaceStar)(facetId, k, neighborId);
 
+            if(neighborId == cofacetId) {
+              continue;
+            }
+
             const SimplexId pairedCellId = discreteGradient_.getPairedCell(
               Cell(cellDim, neighborId), true);
 
@@ -247,6 +251,10 @@ int AbstractMorseSmaleComplex::setDescendingSegmentation(
           for(int k = 0; k < 2; ++k) {
             SimplexId neighborId;
             inputTriangulation_->getEdgeVertex(edgeId, k, neighborId);
+
+            if(neighborId == vertexId) {
+              continue;
+            }
 
             const SimplexId pairedCellId
               = discreteGradient_.getPairedCell(Cell(0, neighborId));
