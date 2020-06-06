@@ -61,7 +61,7 @@ int ttkIcoSphere::RequestData(vtkInformation *request,
 
   // execute base code
   // TODO: Improve here
-#ifdef CELL_ARRAY_NEW
+#ifdef TTK_CELL_ARRAY_NEW
   std::vector<vtkIdType> cellArray;
   cellArray.resize(nSpheres * nTriangles * 4);
   if(useDoublePrecision) {

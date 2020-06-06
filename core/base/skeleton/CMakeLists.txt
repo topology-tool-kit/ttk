@@ -1,6 +1,6 @@
 if ("${TTK_CELL_ARRAY_LAYOUT}" STREQUAL "OffsetAndConnectivity")
   set(CellArrayHeader "CellArray_new.h")
-  set(CellArrayDefine "CELL_ARRAY_NEW")
+  set(CellArrayDefine "TTK_CELL_ARRAY_NEW")
 elseif("${TTK_CELL_ARRAY_LAYOUT}" STREQUAL "SingleArray")
   set(CellArrayHeader "CellArray_legacy.h")
   set(CellArrayDefine "CELL_ARRAY_LEGACY")

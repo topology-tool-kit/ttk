@@ -1000,7 +1000,7 @@ namespace ttk {
       return 0;
     }
 
-#ifdef CELL_ARRAY_NEW
+#ifdef TTK_CELL_ARRAY_NEW
     // Layout with connectivity + offset array (new)
     inline int setInputCells(const SimplexId &cellNumber,
                              const LongSimplexId *connectivity,

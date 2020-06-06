@@ -152,7 +152,7 @@ ttk::Triangulation *ttkAlgorithm::InitTriangulation(void *key,
 
     // Cells
     if(cells->GetNumberOfCells() > 0) {
-#ifdef CELL_ARRAY_NEW
+#ifdef TTK_CELL_ARRAY_NEW
       auto connectivity
         = (vtkIdType *)ttkUtils::GetVoidPointer(cells->GetConnectivityArray());
       auto offsets
