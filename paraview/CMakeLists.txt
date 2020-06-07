@@ -60,4 +60,3 @@ install(
   DESTINATION
     "${TTK_INSTALL_PLUGIN_DIR}"
   )
-

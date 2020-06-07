@@ -5,21 +5,21 @@
        a filter already in ParaView (in Servers/ServerManager/Resources/*.xml)
        that matches your filter and then model your xml on it -->
   <ProxyGroup name="filters">
-   <SourceProxy 
-     name="ReebSpace" 
-     class="ttkReebSpace" 
+   <SourceProxy
+     name="ReebSpace"
+     class="ttkReebSpace"
      label="TTK ReebSpace">
      <Documentation
-        long_help="TTK plugin that efficiently computes the Reeb space of 
+        long_help="TTK plugin that efficiently computes the Reeb space of
 bivariate volumetric data."
-        short_help="TTK plugin that efficiently computes the Reeb space of 
+        short_help="TTK plugin that efficiently computes the Reeb space of
 bivariate volumetric data.">
-       
-The Reeb space is a useful topological abstraction of bivariate scalar 
-fields for data segmentation purposes. Intuitively, it allows the automatic 
-separation of volumetric regions that project to the same areas in the 
+
+The Reeb space is a useful topological abstraction of bivariate scalar
+fields for data segmentation purposes. Intuitively, it allows the automatic
+separation of volumetric regions that project to the same areas in the
 range. This class also implements a simplification heuristic for progressive
-coarsening. Used in conjunction with continuous scatterplots, this class 
+coarsening. Used in conjunction with continuous scatterplots, this class
 enables continuous scattterplot peeling for instance.
 
 The input data must be provided as two independent point data scalar fields
@@ -32,9 +32,9 @@ Julien Tierny, Hamish Carr
 Proc. of IEEE VIS 2016.
 IEEE Transactions on Visualization and Computer Graphics, 2016.
 
-See also ContinuousScatterplot, JacobiSet, Fiber, FiberSurface, 
+See also ContinuousScatterplot, JacobiSet, Fiber, FiberSurface,
 ProjectionFromField, RangePolygon.
-       
+
      </Documentation>
      <InputProperty
         name="Input"
@@ -72,7 +72,7 @@ ProjectionFromField, RangePolygon.
           Select the U component of the bivariate field.
         </Documentation>
       </StringVectorProperty>
-     
+
       <StringVectorProperty
         name="V Component"
         command="SetVcomponent"
@@ -91,7 +91,7 @@ ProjectionFromField, RangePolygon.
           Select the V component of the bivariate field.
         </Documentation>
       </StringVectorProperty>
-      
+
       <IntVectorProperty name="With predefined offset"
         label="Force Input Offset Field"
         command="SetForceInputOffsetScalarField"
@@ -104,7 +104,7 @@ ProjectionFromField, RangePolygon.
           as vertex offset (used to disambiguate flat plateaus).
         </Documentation>
       </IntVectorProperty>
-      
+
       <StringVectorProperty
         name="OffsetU"
         command="SetOffsetFieldU"
@@ -127,11 +127,11 @@ ProjectionFromField, RangePolygon.
             value="1" />
         </Hints>
         <Documentation>
-          Select the scalar field to use as a vertex offset for the 
+          Select the scalar field to use as a vertex offset for the
 u-coordinate (used to disambiguate collinear edges).
         </Documentation>
       </StringVectorProperty>
-      
+
       <StringVectorProperty
         name="OffsetV"
         command="SetOffsetFieldV"
@@ -154,12 +154,12 @@ u-coordinate (used to disambiguate collinear edges).
             value="1" />
         </Hints>
         <Documentation>
-          Select the scalar field to use as a vertex offset for the 
+          Select the scalar field to use as a vertex offset for the
 v-coordinate (used to disambiguate collinear edges).
         </Documentation>
       </StringVectorProperty>
-     
-      <IntVectorProperty name="SimplificationCriterion" 
+
+      <IntVectorProperty name="SimplificationCriterion"
         command="SetSimplificationCriterion"
         number_of_elements="1" default_values="1">
         <EnumerationDomain name="enum">
@@ -171,7 +171,7 @@ v-coordinate (used to disambiguate collinear edges).
           Set the simplification criterion.
         </Documentation>
       </IntVectorProperty>
-      
+
       <DoubleVectorProperty name="SimplificationThreshold"
         label="Simplification Threshold"
         command="SetSimplificationThreshold"
@@ -182,7 +182,7 @@ v-coordinate (used to disambiguate collinear edges).
           Threshold for the simplification of the Reeb space.
         </Documentation>
       </DoubleVectorProperty>
-      
+
       <IntVectorProperty
          name="OctreeAcceleration"
          label="With Range Query Acceleration"
@@ -194,7 +194,7 @@ v-coordinate (used to disambiguate collinear edges).
           Use range driven octree for range query accelerations.
          </Documentation>
       </IntVectorProperty>
-      
+
       <IntVectorProperty name="0-scalar"
         label="With field values"
         command="SetZeroSheetValue"
@@ -205,7 +205,7 @@ v-coordinate (used to disambiguate collinear edges).
           Check this box to save the input field values on the 0-sheets.
         </Documentation>
       </IntVectorProperty>
-      
+
       <IntVectorProperty name="0-vertexId"
         label="With vertex Ids"
         command="SetZeroSheetVertexId"
@@ -216,7 +216,7 @@ v-coordinate (used to disambiguate collinear edges).
           Check this box to save the vertex Ids on the 0-sheets.
         </Documentation>
       </IntVectorProperty>
-      
+
       <IntVectorProperty name="0-type"
         label="With sheet type"
         command="SetZeroSheetType"
@@ -227,7 +227,7 @@ v-coordinate (used to disambiguate collinear edges).
           Check this box to save the sheet type on the 0-sheets.
         </Documentation>
       </IntVectorProperty>
-      
+
       <IntVectorProperty name="0-sheetId"
         label="With sheet Ids"
         command="SetZeroSheetId"
@@ -238,7 +238,7 @@ v-coordinate (used to disambiguate collinear edges).
           Check this box to save the sheet Ids on the 0-sheets.
         </Documentation>
       </IntVectorProperty>
-      
+
       <IntVectorProperty name="1-scalar"
         label="With field values"
         command="SetOneSheetValue"
@@ -249,7 +249,7 @@ v-coordinate (used to disambiguate collinear edges).
           Check this box to save the input field values on the 1-sheets.
         </Documentation>
       </IntVectorProperty>
-      
+
       <IntVectorProperty name="1-vertexId"
         label="With vertex Ids"
         command="SetOneSheetVertexId"
@@ -260,7 +260,7 @@ v-coordinate (used to disambiguate collinear edges).
           Check this box to save the vertex Ids on the 1-sheets.
         </Documentation>
       </IntVectorProperty>
-      
+
       <IntVectorProperty name="1-edgeId"
         label="With edge Ids"
         command="SetOneSheetEdgeId"
@@ -271,8 +271,8 @@ v-coordinate (used to disambiguate collinear edges).
           Check this box to save the edge Ids on the 1-sheets.
         </Documentation>
       </IntVectorProperty>
-      
-      
+
+
       <IntVectorProperty name="1-type"
         label="With sheet type"
         command="SetOneSheetType"
@@ -283,7 +283,7 @@ v-coordinate (used to disambiguate collinear edges).
           Check this box to save the sheet type on the 1-sheets.
         </Documentation>
       </IntVectorProperty>
-      
+
       <IntVectorProperty name="1-sheetId"
         label="With sheet Ids"
         command="SetOneSheetId"
@@ -294,7 +294,7 @@ v-coordinate (used to disambiguate collinear edges).
           Check this box to save the sheet Ids on the 1-sheets.
         </Documentation>
       </IntVectorProperty>
-      
+
       <IntVectorProperty name="2-sheets"
         label="With 2-sheets"
         command="SetTwoSheets"
@@ -305,7 +305,7 @@ v-coordinate (used to disambiguate collinear edges).
           Check this box to visualize the 2-sheets.
         </Documentation>
       </IntVectorProperty>
-      
+
       <IntVectorProperty name="2-sheetValue"
         label="With field values"
         command="SetTwoSheetValue"
@@ -316,7 +316,7 @@ v-coordinate (used to disambiguate collinear edges).
           Check this box to save the input field values on the 2-sheets.
         </Documentation>
       </IntVectorProperty>
-      
+
       <IntVectorProperty name="2-sheetParameterization"
         label="With edge length parameterization"
         command="SetTwoSheetParameterization"
@@ -324,11 +324,11 @@ v-coordinate (used to disambiguate collinear edges).
         default_values="1" panel_visibility="advanced">
         <BooleanDomain name="bool"/>
         <Documentation>
-          Check this box to save the edge-length parameterization 
+          Check this box to save the edge-length parameterization
           on the 2-sheets.
         </Documentation>
       </IntVectorProperty>
-      
+
       <IntVectorProperty name="2-sheetId"
         label="With sheet Ids"
         command="SetTwoSheetId"
@@ -339,7 +339,7 @@ v-coordinate (used to disambiguate collinear edges).
           Check this box to save the sheet Ids on the 2-sheets.
         </Documentation>
       </IntVectorProperty>
-      
+
       <IntVectorProperty name="2-sheetEdgeId"
         label="With edge Ids"
         command="SetTwoSheetEdgeId"
@@ -350,7 +350,7 @@ v-coordinate (used to disambiguate collinear edges).
           Check this box to save the 1-sheet edgeIds on the 2-sheets.
         </Documentation>
       </IntVectorProperty>
-     
+
       <IntVectorProperty name="2-sheetTetId"
         label="With tet Ids"
         command="SetTwoSheetTetId"
@@ -361,7 +361,7 @@ v-coordinate (used to disambiguate collinear edges).
           Check this box to save the tetIds on the 2-sheets.
         </Documentation>
       </IntVectorProperty>
-      
+
       <IntVectorProperty name="2-sheetCaseId"
         label="With case Ids"
         command="SetTwoSheetCaseId"
@@ -372,7 +372,7 @@ v-coordinate (used to disambiguate collinear edges).
           Check this box to save the case Ids for each 2-sheet triangle.
         </Documentation>
       </IntVectorProperty>
-      
+
       <IntVectorProperty name="2-sheetEdgeType"
         label="With edge type"
         command="SetTwoSheetEdgeType"
@@ -380,11 +380,11 @@ v-coordinate (used to disambiguate collinear edges).
         default_values="1" panel_visibility="advanced">
         <BooleanDomain name="bool"/>
         <Documentation>
-          Check this box to save the edge type of the corresponding edge in the 
+          Check this box to save the edge type of the corresponding edge in the
           1-sheet.
         </Documentation>
       </IntVectorProperty>
-      
+
       <IntVectorProperty name="3-sheetVertexNumber"
         label="3-sheet vertex number"
         command="SetThreeSheetVertexNumber"
@@ -396,7 +396,7 @@ v-coordinate (used to disambiguate collinear edges).
           attribute field.
         </Documentation>
       </IntVectorProperty>
-      
+
       <IntVectorProperty name="3-sheetTetNumber"
         label="3-sheet tet number"
         command="SetThreeSheetTetNumber"
@@ -404,11 +404,11 @@ v-coordinate (used to disambiguate collinear edges).
         default_values="1" panel_visibility="advanced">
         <BooleanDomain name="bool"/>
         <Documentation>
-          Check this box to save the number of tetrahedra per 3-sheet as an 
+          Check this box to save the number of tetrahedra per 3-sheet as an
           extra attribute field.
         </Documentation>
       </IntVectorProperty>
-      
+
       <IntVectorProperty name="3-sheetExpansion"
         label="3-sheet expansion"
         command="SetThreeSheetExpansion"
@@ -416,11 +416,11 @@ v-coordinate (used to disambiguate collinear edges).
         default_values="1" panel_visibility="advanced">
         <BooleanDomain name="bool"/>
         <Documentation>
-          Check this box to trigger the expansion of the 3-sheets to their 
+          Check this box to trigger the expansion of the 3-sheets to their
           maximal extent.
         </Documentation>
       </IntVectorProperty>
-      
+
       <IntVectorProperty name="3-sheetDomainVolume"
         label="3-sheet domain volume"
         command="SetThreeSheetDomainVolume"
@@ -432,7 +432,7 @@ v-coordinate (used to disambiguate collinear edges).
           extra attribute field.
         </Documentation>
       </IntVectorProperty>
-      
+
       <IntVectorProperty name="3-sheetRangeArea"
         label="3-sheet range area"
         command="SetThreeSheetRangeArea"
@@ -444,7 +444,7 @@ v-coordinate (used to disambiguate collinear edges).
           extra attribute field.
         </Documentation>
       </IntVectorProperty>
-      
+
       <IntVectorProperty name="3-sheetHyperVolume"
         label="3-sheet hyper volume"
         command="SetThreeSheetHyperVolume"
@@ -456,7 +456,7 @@ v-coordinate (used to disambiguate collinear edges).
           extra attribute field.
         </Documentation>
       </IntVectorProperty>
-      
+
       <IntVectorProperty
          name="UseAllCores"
          label="Use All Cores"
@@ -468,7 +468,7 @@ v-coordinate (used to disambiguate collinear edges).
           Use all available cores.
          </Documentation>
       </IntVectorProperty>
-      
+
       <IntVectorProperty
          name="ThreadNumber"
          label="Thread Number"
@@ -487,7 +487,7 @@ v-coordinate (used to disambiguate collinear edges).
           Thread number.
          </Documentation>
       </IntVectorProperty>
-      
+
       <IntVectorProperty
          name="DebugLevel"
          label="Debug Level"
@@ -499,13 +499,13 @@ v-coordinate (used to disambiguate collinear edges).
            Debug level.
          </Documentation>
       </IntVectorProperty>
-      
+
       <PropertyGroup panel_widget="Line" label="Testing">
         <Property name="UseAllCores" />
         <Property name="ThreadNumber" />
         <Property name="DebugLevel" />
       </PropertyGroup>
-      
+
       <PropertyGroup panel_widget="Line" label="Input options">
         <Property name="U Component" />
         <Property name="V Component" />
@@ -516,14 +516,14 @@ v-coordinate (used to disambiguate collinear edges).
         <Property name="SimplificationThreshold" />
         <Property name="OctreeAcceleration" />
       </PropertyGroup>
-      
+
       <PropertyGroup panel_widget="Line" label="Output options - 0-sheets">
         <Property name="0-scalar" />
         <Property name="0-vertexId" />
         <Property name="0-type" />
         <Property name="0-sheetId" />
       </PropertyGroup>
-      
+
       <PropertyGroup panel_widget="Line" label="Output options - 1-sheets">
         <Property name="1-scalar" />
         <Property name="1-vertexId" />
@@ -531,7 +531,7 @@ v-coordinate (used to disambiguate collinear edges).
         <Property name="1-type" />
         <Property name="1-sheetId" />
       </PropertyGroup>
-      
+
       <PropertyGroup panel_widget="Line" label="Output options - 2-sheets">
         <Property name="2-sheets" />
         <Property name="2-sheetValue" />
@@ -542,7 +542,7 @@ v-coordinate (used to disambiguate collinear edges).
         <Property name="2-sheetCaseId" />
         <Property name="2-sheetEdgeType" />
       </PropertyGroup>
-      
+
       <PropertyGroup panel_widget="Line" label="Output options - 3-sheets">
         <Property name="3-sheetVertexNumber" />
         <Property name="3-sheetTetNumber" />
@@ -551,12 +551,12 @@ v-coordinate (used to disambiguate collinear edges).
         <Property name="3-sheetRangeArea" />
         <Property name="3-sheetHyperVolume" />
       </PropertyGroup>
-      
+
       <OutputPort name="0-sheets" index="0" id="port0" />
       <OutputPort name="1-sheets" index="1" id="port1"/>
       <OutputPort name="2-sheets" index="2" id="port2" default_values="0" />
       <OutputPort name="3-sheets" index="3" id="port3"/>
-      
+
       <Hints>
         <ShowInMenu category="TTK - Bivariate Scalar Data" />
       </Hints>

@@ -10,9 +10,9 @@ vtkStandardNewMacro(ttkUncertainDataEstimator)
   BinCount(10);
 
   // init
-  outputLowerBoundScalarField_ = NULL;
-  outputUpperBoundScalarField_ = NULL;
-  outputMeanField_ = NULL;
+  outputLowerBoundScalarField_ = nullptr;
+  outputUpperBoundScalarField_ = nullptr;
+  outputMeanField_ = nullptr;
 
   UseAllCores = true;
 
@@ -65,7 +65,7 @@ int ttkUncertainDataEstimator::doIt(const std::vector<vtkDataSet *> &input,
   outputProbability->ShallowCopy(input[0]);
   outputMean->ShallowCopy(input[0]);
   // Get arrays from input datas
-  // vtkDataArray* inputScalarField[numInputs] = { NULL };
+  // vtkDataArray* inputScalarField[numInputs] = { nullptr };
   int numFields = 0;
   int numArrays = 0;
 

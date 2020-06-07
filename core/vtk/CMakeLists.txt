@@ -125,14 +125,4 @@ else()
     )
 endif()
 
-# Add a bundle library that will just link all the TTK vtkWrappers
-add_library(ttkTMP INTERFACE)
-
-vtk_module_autoinit(
-  TARGETS
-    ttkTMP
-  MODULES
-    ${TTK_ENABLED_MODULES}
-  )
-
 set(TTK_ENABLED_MODULES ${TTK_ENABLED_MODULES} CACHE INTERNAL "")

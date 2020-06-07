@@ -1,9 +1,9 @@
 ttk_add_base_library(lDistanceMatrix
   SOURCES
-  LDistanceMatrix.cpp
+    LDistanceMatrix.cpp
   HEADERS
-  LDistanceMatrix.h
-  LINK
-  common
-  lDistance
+    LDistanceMatrix.h
+  DEPENDS
+    common
+    lDistance
   )

@@ -3,7 +3,7 @@ ttk_add_base_library(distanceField
     DistanceField.cpp
   HEADERS
     DistanceField.h
-  LINK
+  DEPENDS
     dijkstra
     triangulation
     )

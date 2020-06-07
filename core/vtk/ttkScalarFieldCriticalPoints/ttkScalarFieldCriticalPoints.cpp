@@ -1,11 +1,15 @@
 #include <ttkScalarFieldCriticalPoints.h>
 
+#include <vtkCharArray.h>
+#include <vtkDoubleArray.h>
+#include <vtkFloatArray.h>
+#include <vtkIntArray.h>
+
 using namespace std;
 using namespace ttk;
 
-vtkStandardNewMacro(ttkScalarFieldCriticalPoints)
-
-  ttkScalarFieldCriticalPoints::ttkScalarFieldCriticalPoints() {
+vtkStandardNewMacro(ttkScalarFieldCriticalPoints);
+ttkScalarFieldCriticalPoints::ttkScalarFieldCriticalPoints() {
 
   // init
   ForceInputOffsetScalarField = false;
@@ -98,8 +102,8 @@ int ttkScalarFieldCriticalPoints::doIt(vector<vtkDataSet *> &inputs,
   // variable 'output' with the result of the computation.
   // if your wrapper produces an output of the same type of the input, you
   // should proceed in the same way.
-  vtkDataArray *inputScalarField = NULL;
-  vtkDataArray *offsetField = NULL;
+  vtkDataArray *inputScalarField = nullptr;
+  vtkDataArray *offsetField = nullptr;
 
   if(ScalarField.length()) {
     inputScalarField = input->GetPointData()->GetArray(ScalarField.data());

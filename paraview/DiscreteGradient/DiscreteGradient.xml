@@ -62,7 +62,7 @@
         default_values="0">
         <BooleanDomain name="bool"/>
         <Documentation>
-          Check this box to force the usage of a specific input scalar field 
+          Check this box to force the usage of a specific input scalar field
           as vertex offset (used to disambiguate flat plateaus).
         </Documentation>
       </IntVectorProperty>

@@ -9,4 +9,3 @@ foreach(BASECODE ${BASECODE_DIRS})
 endforeach()
 
 set(TTK_BASECODES ${TTK_BASECODES} CACHE INTERNAL "")
-

@@ -13,19 +13,19 @@
         long_help="TTK plugin for the computation of persistence curves."
         short_help="TTK plugin for the computation of persistence curves.">
         TTK plugin for the computation of persistence curves.
-        
-        This plugin computes the list of extremum-saddle pairs and computes the 
-number of pairs as a function of persistence (i.e. the number of pairs 
-whose persistence is higher than a threshold). The plugin produces tables. 
 
-A good strategy to visualize these curves is to use the "Line Chart View" 
-rendering type of ParaView, and to use the field "Persistence" as an X axis, 
+        This plugin computes the list of extremum-saddle pairs and computes the
+number of pairs as a function of persistence (i.e. the number of pairs
+whose persistence is higher than a threshold). The plugin produces tables.
+
+A good strategy to visualize these curves is to use the "Line Chart View"
+rendering type of ParaView, and to use the field "Persistence" as an X axis,
 and only display the "Number of Pairs".
 
 Such curves provide useful visual clues in order to fine-tune persistence
 simplification thresholds.
 
-See also ContourForests, PersistenceDiagram, ScalarFieldCriticalPoints, 
+See also ContourForests, PersistenceDiagram, ScalarFieldCriticalPoints,
 TopologicalSimplification.
       </Documentation>
 
@@ -81,7 +81,7 @@ TopologicalSimplification.
           as vertex offset (used to disambiguate flat plateaus).
          </Documentation>
       </IntVectorProperty>
- 
+
        <StringVectorProperty
         name="InputOffsetScalarFieldName"
         command="SetInputOffsetScalarFieldName"
@@ -121,7 +121,7 @@ TopologicalSimplification.
           Add saddle-saddle pairs in the diagram (SLOW!).
          </Documentation>
       </IntVectorProperty>
-      
+
       <IntVectorProperty
         name="UseAllCores"
         label="Use All Cores"
@@ -164,7 +164,7 @@ TopologicalSimplification.
           Debug level.
         </Documentation>
       </IntVectorProperty>
-      
+
       <PropertyGroup panel_widget="Line" label="Input options">
         <Property name="ScalarField" />
         <Property name="ForceInputOffsetScalarField"/>
@@ -174,7 +174,7 @@ TopologicalSimplification.
       <PropertyGroup panel_widget="Line" label="Output options">
         <Property name="SaddleConnectors" />
       </PropertyGroup>
-      
+
       <PropertyGroup panel_widget="Line" label="Testing">
         <Property name="UseAllCores" />
         <Property name="ThreadNumber" />

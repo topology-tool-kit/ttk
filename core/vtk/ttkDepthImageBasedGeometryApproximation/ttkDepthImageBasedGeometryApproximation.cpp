@@ -110,25 +110,48 @@ int ttkDepthImageBasedGeometryApproximation::RequestData(
     triangleDistortions->SetNumberOfComponents(1);
     triangleDistortions->SetNumberOfTuples(nTriangles);
 
+    // retrieve the numerous input array of the method.
+    // TODO: use setter getter instead, 10 parameters is too much.
+    // Input
+    double *camPositionPtr
+      = static_cast<double *>(ttkUtils::GetVoidPointer(camPosition));
+    double *camDirectionPtr
+      = static_cast<double *>(ttkUtils::GetVoidPointer(camDirection));
+    double *camUpPtr = static_cast<double *>(ttkUtils::GetVoidPointer(camUp));
+    double *camNearFarPtr
+      = static_cast<double *>(ttkUtils::GetVoidPointer(camNearFar));
+    double *camHeightPtr
+      = static_cast<double *>(ttkUtils::GetVoidPointer(camHeight));
+    double *resolutionPtr
+      = static_cast<double *>(ttkUtils::GetVoidPointer(resolution));
+    // Output
+    float *pointsPtr // may be double, error then
+      = static_cast<float *>(ttkUtils::GetVoidPointer(points));
+    double *triangleDistortionsPtr
+      = static_cast<double *>(ttkUtils::GetVoidPointer(triangleDistortions));
+    // Cells output
+    std::vector<vtkIdType> cellsCo;
+    cellsCo.resize(nTriangles * 3);
+    std::vector<vtkIdType> cellsOff;
+    cellsOff.resize(nTriangles + 1);
+
     // Approximate geometry
     switch(depthArray->GetDataType()) {
       vtkTemplateMacro({
+        VTK_TT *depthArrayPtr
+          = static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(depthArray));
         this->execute(
           // Input
-          (VTK_TT *)depthArray->GetVoidPointer(0),
-          (double *)camPosition->GetVoidPointer(0),
-          (double *)camDirection->GetVoidPointer(0),
-          (double *)camUp->GetVoidPointer(0),
-          (double *)camNearFar->GetVoidPointer(0),
-          (double *)camHeight->GetVoidPointer(0),
-          (double *)resolution->GetVoidPointer(0),
+          depthArrayPtr, camPositionPtr, camDirectionPtr, camUpPtr,
+          camNearFarPtr, camHeightPtr, resolutionPtr,
 
           // Output
-          (float *)points->GetVoidPointer(0),
-          cells->WritePointer(nTriangles, nTriangles * 4),
-          (double *)triangleDistortions->GetVoidPointer(0));
+          pointsPtr, cellsCo.data(), cellsOff.data(), triangleDistortionsPtr);
       });
     }
+
+    ttkUtils::FillCellArrayFromDual(
+      cellsCo.data(), cellsOff.data(), nTriangles, cells);
 
     // Represent approximated geometry via VTK
     auto mesh = vtkSmartPointer<vtkUnstructuredGrid>::New();

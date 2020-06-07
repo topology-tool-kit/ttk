@@ -4,9 +4,8 @@
 using namespace std;
 using namespace ttk;
 
-vtkStandardNewMacro(ttkContinuousScatterPlot)
-
-  ttkContinuousScatterPlot::ttkContinuousScatterPlot()
+vtkStandardNewMacro(ttkContinuousScatterPlot);
+ttkContinuousScatterPlot::ttkContinuousScatterPlot()
   : inputScalars1_{}, inputScalars2_{} {
   SetNumberOfInputPorts(1);
   SetNumberOfOutputPorts(1);
@@ -19,7 +18,7 @@ vtkStandardNewMacro(ttkContinuousScatterPlot)
   DummyValue = 0;
   UcomponentId = 0;
   VcomponentId = 1;
-  triangulation_ = NULL;
+  triangulation_ = nullptr;
   UseAllCores = true;
 }
 
@@ -29,18 +28,18 @@ ttkContinuousScatterPlot::~ttkContinuousScatterPlot() {
 int ttkContinuousScatterPlot::FillInputPortInformation(int port,
                                                        vtkInformation *info) {
 
-  if(port == 0)
+  if(port == 0) {
     info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataSet");
-
+  }
   return 1;
 }
 
 int ttkContinuousScatterPlot::FillOutputPortInformation(int port,
                                                         vtkInformation *info) {
 
-  if(port == 0)
+  if(port == 0) {
     info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
-
+  }
   return 1;
 }
 

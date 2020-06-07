@@ -75,6 +75,6 @@ cmake -G Ninja \
 
 ninja install
 
-popd 
+popd
 
 rm -rf $BUILD_DIR

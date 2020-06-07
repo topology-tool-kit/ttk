@@ -23,10 +23,6 @@ ttkCinemaReader::ttkCinemaReader() {
 ttkCinemaReader::~ttkCinemaReader() {
 }
 
-int ttkCinemaReader::FillInputPortInformation(int port, vtkInformation *info) {
-  return 0;
-}
-
 int ttkCinemaReader::FillOutputPortInformation(int port, vtkInformation *info) {
   if(port == 0)
     info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkTable");

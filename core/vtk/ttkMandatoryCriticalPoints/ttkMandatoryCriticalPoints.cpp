@@ -11,13 +11,13 @@ vtkStandardNewMacro(ttkMandatoryCriticalPoints)
   SetSimplificationThreshold(0.0);
 
   // init
-  outputMandatoryMinimum_ = NULL;
-  outputMandatoryJoinSaddle_ = NULL;
-  outputMandatorySplitSaddle_ = NULL;
-  outputMandatoryMaximum_ = NULL;
+  outputMandatoryMinimum_ = nullptr;
+  outputMandatoryJoinSaddle_ = nullptr;
+  outputMandatorySplitSaddle_ = nullptr;
+  outputMandatoryMaximum_ = nullptr;
 
-  mandatoryJoinTreePoints_ = NULL;
-  mandatorySplitTreePoints_ = NULL;
+  mandatoryJoinTreePoints_ = nullptr;
+  mandatorySplitTreePoints_ = nullptr;
 
   UseAllCores = true;
 
@@ -26,18 +26,18 @@ vtkStandardNewMacro(ttkMandatoryCriticalPoints)
   computeSplitSaddleOutput_ = false;
   computeMaximumOutput_ = false;
 
-  mandatoryJoinTreePoints_ = NULL;
-  mdtJoinTreePointType_ = NULL;
-  mdtJoinTreePointLowInterval_ = NULL;
-  mdtJoinTreePointUpInterval_ = NULL;
-  mdtJoinTreePointComponentId_ = NULL;
-  mandatorySplitTreePoints_ = NULL;
-  mdtSplitTreePointType_ = NULL;
-  mdtSplitTreePointLowInterval_ = NULL;
-  mdtSplitTreePointUpInterval_ = NULL;
-  mdtSplitTreePointComponentId_ = NULL;
-  mdtJoinTreeEdgeSwitchable_ = NULL;
-  mdtSplitTreeEdgeSwitchable_ = NULL;
+  mandatoryJoinTreePoints_ = nullptr;
+  mdtJoinTreePointType_ = nullptr;
+  mdtJoinTreePointLowInterval_ = nullptr;
+  mdtJoinTreePointUpInterval_ = nullptr;
+  mdtJoinTreePointComponentId_ = nullptr;
+  mandatorySplitTreePoints_ = nullptr;
+  mdtSplitTreePointType_ = nullptr;
+  mdtSplitTreePointLowInterval_ = nullptr;
+  mdtSplitTreePointUpInterval_ = nullptr;
+  mdtSplitTreePointComponentId_ = nullptr;
+  mdtJoinTreeEdgeSwitchable_ = nullptr;
+  mdtSplitTreeEdgeSwitchable_ = nullptr;
 
   SetNumberOfInputPorts(1);
   SetNumberOfOutputPorts(6);
@@ -66,7 +66,7 @@ vtkStandardNewMacro(ttkMandatoryCriticalPoints)
   computeSplitSaddleOutput_ = true;
   computeMaximumOutput_ = true;
 
-  triangulation_ = NULL;
+  triangulation_ = nullptr;
 }
 
 ttkMandatoryCriticalPoints::~ttkMandatoryCriticalPoints() {
@@ -145,7 +145,7 @@ ttkMandatoryCriticalPoints::~ttkMandatoryCriticalPoints() {
 //   // Points
 //   mandatorySplitTreePoints_ = vtkPoints::New();
 //   // Edges
-//   mandatorySplitTreeEdge_.resize(mandatorySplitTree.getNumberOfEdges(),NULL);
+//   mandatorySplitTreeEdge_.resize(mandatorySplitTree.getNumberOfEdges(),nullptr);
 //   for(int i=0 ; i<(int)mandatorySplitTreeEdge_.size() ; i++)
 //     mandatorySplitTreeEdge_[i] = vtkIdList::New();
 //
@@ -326,25 +326,25 @@ int ttkMandatoryCriticalPoints::buildVtkTree(
         : &(mdtSplitTreeEdgeSwitchable_);
 
   /* Point datas */
-  if((*outputTreePointType) == NULL) {
+  if((*outputTreePointType) == nullptr) {
     (*outputTreePointType) = vtkIntArray::New();
     (*outputTreePointType)->SetName("Type");
   }
   (*outputTreePointType)->SetNumberOfTuples(numberOfPoints);
   outputTree->GetPointData()->AddArray(*outputTreePointType);
-  if((*outputTreePointLowInterval) == NULL) {
+  if((*outputTreePointLowInterval) == nullptr) {
     (*outputTreePointLowInterval) = vtkDoubleArray::New();
     (*outputTreePointLowInterval)->SetName("LowInterval");
   }
   (*outputTreePointLowInterval)->SetNumberOfTuples(numberOfPoints);
   outputTree->GetPointData()->AddArray(*outputTreePointLowInterval);
-  if((*outputTreePointUpInterval) == NULL) {
+  if((*outputTreePointUpInterval) == nullptr) {
     (*outputTreePointUpInterval) = vtkDoubleArray::New();
     (*outputTreePointUpInterval)->SetName("UpInterval");
   }
   (*outputTreePointUpInterval)->SetNumberOfTuples(numberOfPoints);
   outputTree->GetPointData()->AddArray(*outputTreePointUpInterval);
-  if((*outputTreePointComponentId) == NULL) {
+  if((*outputTreePointComponentId) == nullptr) {
     (*outputTreePointComponentId) = vtkIntArray::New();
     (*outputTreePointComponentId)->SetName("ComponentId");
   }
@@ -365,7 +365,7 @@ int ttkMandatoryCriticalPoints::buildVtkTree(
   }
 
   /* Cell datas */
-  if((*outputTreeEdgeSwitchable) == NULL) {
+  if((*outputTreeEdgeSwitchable) == nullptr) {
     (*outputTreeEdgeSwitchable) = vtkIntArray::New();
     (*outputTreeEdgeSwitchable)->SetName("Switchable");
   }
@@ -376,11 +376,11 @@ int ttkMandatoryCriticalPoints::buildVtkTree(
   }
 
   // Clear the VTK objects
-  if((*mdtTreePoints) != NULL)
+  if((*mdtTreePoints) != nullptr)
     (*mdtTreePoints)->Delete();
   if(mdtTreeEdge->size()) {
     for(size_t i = 0; i < mdtTreeEdge->size(); i++)
-      if((*mdtTreeEdge)[i] != NULL)
+      if((*mdtTreeEdge)[i] != nullptr)
         (*mdtTreeEdge)[i]->Delete();
     mdtTreeEdge->clear();
   }
@@ -390,7 +390,7 @@ int ttkMandatoryCriticalPoints::buildVtkTree(
   (*mdtTreePoints) = vtkPoints::New();
   outputTree->SetPoints((*mdtTreePoints));
   // Edges
-  mdtTreeEdge->resize(graph->getNumberOfEdges(), NULL);
+  mdtTreeEdge->resize(graph->getNumberOfEdges(), nullptr);
   for(size_t i = 0; i < mdtTreeEdge->size(); i++)
     (*mdtTreeEdge)[i] = vtkIdList::New();
   outputTree->Allocate(numberOfEdges);
@@ -433,7 +433,7 @@ int ttkMandatoryCriticalPoints::buildVtkTree(
 //   // Points
 //   mandatoryJoinTreePoints_ = vtkPoints::New();
 //   // Edges
-//   mandatoryJoinTreeEdge_.resize(mandatoryTree.getNumberOfEdges(),NULL);
+//   mandatoryJoinTreeEdge_.resize(mandatoryTree.getNumberOfEdges(),nullptr);
 //   for(int i=0 ; i<(int)mandatoryJoinTreeEdge_.size() ; i++)
 //     mandatoryJoinTreeEdge_[i] = vtkIdList::New();
 //
@@ -641,8 +641,8 @@ int ttkMandatoryCriticalPoints::doIt(vector<vtkDataSet *> &inputs,
   outputMaximum->ShallowCopy(input);
 
   // Input data arrays
-  vtkDataArray *inputLowerBoundField = NULL;
-  vtkDataArray *inputUpperBoundField = NULL;
+  vtkDataArray *inputLowerBoundField = nullptr;
+  vtkDataArray *inputUpperBoundField = nullptr;
 
   // Get the upper bound field array in the input data set
   if(upperBoundFiledName_.length()) {
@@ -834,16 +834,18 @@ int ttkMandatoryCriticalPoints::doIt(vector<vtkDataSet *> &inputs,
 
 int ttkMandatoryCriticalPoints::FillInputPortInformation(int port,
                                                          vtkInformation *info) {
-  if(!this->Superclass::FillInputPortInformation(port, info))
+  if(!this->Superclass::FillInputPortInformation(port, info)) {
     return 0;
+  }
   info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataSet");
   return 1;
 }
 
 int ttkMandatoryCriticalPoints::FillOutputPortInformation(
   int port, vtkInformation *info) {
-  if(!this->Superclass::FillOutputPortInformation(port, info))
+  if(!this->Superclass::FillOutputPortInformation(port, info)) {
     return 0;
+  }
   if(port >= 0 && port < 4)
     info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataSet");
   if((port == 4) || (port == 5))

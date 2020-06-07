@@ -5,9 +5,9 @@
        a filter already in ParaView (in Servers/ServerManager/Resources/*.xml)
        that matches your filter and then model your xml on it -->
   <ProxyGroup name="filters">
-   <SourceProxy 
-     name="Identifiers" 
-     class="ttkIdentifiers" 
+   <SourceProxy
+     name="Identifiers"
+     class="ttkIdentifiers"
      label="TTK Identifiers">
      <Documentation
         long_help="TTK plugin that computes the global identifiers for each vertex and each cell as point data and cell data scalar fields."
@@ -68,7 +68,7 @@
           Use all available cores.
          </Documentation>
       </IntVectorProperty>
-      
+
       <IntVectorProperty
          name="ThreadNumber"
          label="Thread Number"
@@ -87,7 +87,7 @@
           Thread number.
          </Documentation>
       </IntVectorProperty>
-      
+
       <IntVectorProperty
          name="DebugLevel"
          label="Debug Level"
@@ -99,22 +99,21 @@
            Debug level.
          </Documentation>
       </IntVectorProperty>
-     
+
       <PropertyGroup panel_widget="Line" label="Output options">
         <Property name="CellFieldName" />
         <Property name="VertexFieldName" />
       </PropertyGroup>
-      
+
       <PropertyGroup panel_widget="Line" label="Testing">
         <Property name="UseAllCores" />
         <Property name="ThreadNumber" />
         <Property name="DebugLevel" />
       </PropertyGroup>
-      
+
       <Hints>
         <ShowInMenu category="TTK - Misc" />
       </Hints>
    </SourceProxy>
  </ProxyGroup>
 </ServerManagerConfiguration>
-

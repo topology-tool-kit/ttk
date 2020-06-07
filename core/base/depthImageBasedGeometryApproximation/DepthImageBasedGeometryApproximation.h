@@ -52,7 +52,8 @@ namespace ttk {
 
       // output
       float *pointCoordinates,
-      idType *connectivityList,
+      idType *cells_co,
+      idType *cells_off,
       double *triangleDistortions) const;
   };
 } // namespace ttk
@@ -70,7 +71,8 @@ int ttk::DepthImageBasedGeometryApproximation::execute(
 
   // output
   float *pointCoordinates,
-  idType *connectivityList,
+  idType *cells_co,
+  idType *cells_off,
   double *triangleDistortions) const {
 
   this->printMsg(ttk::debug::Separator::L2, ttk::debug::LineMode::NEW,
@@ -204,7 +206,7 @@ int ttk::DepthImageBasedGeometryApproximation::execute(
 #endif
     for(size_t y = 0; y < yl; y++) {
       size_t yOffset = y * resolutionST[0];
-      size_t triangleIndexOffset = y * trianglesPerRow * 4;
+      size_t triangleIndexOffset = y * trianglesPerRow * 3;
       size_t triangleDistortionOffset = y * trianglesPerRow;
 
       for(size_t x = 0; x < xl; x++) {
@@ -213,21 +215,20 @@ int ttk::DepthImageBasedGeometryApproximation::execute(
         size_t i2 = i0 + resolutionST[0];
         size_t i3 = i2 + 1;
 
-        connectivityList[triangleIndexOffset++] = 3;
-        connectivityList[triangleIndexOffset++] = i0;
-        connectivityList[triangleIndexOffset++] = i2;
-        connectivityList[triangleIndexOffset++] = i1;
+        cells_co[triangleIndexOffset++] = i0;
+        cells_co[triangleIndexOffset++] = i2;
+        cells_co[triangleIndexOffset++] = i1;
 
-        connectivityList[triangleIndexOffset++] = 3;
-        connectivityList[triangleIndexOffset++] = i1;
-        connectivityList[triangleIndexOffset++] = i2;
-        connectivityList[triangleIndexOffset++] = i3;
+        cells_co[triangleIndexOffset++] = i1;
+        cells_co[triangleIndexOffset++] = i2;
+        cells_co[triangleIndexOffset++] = i3;
 
         double i0Depth = depthValues[i0];
         double i1Depth = depthValues[i1];
         double i2Depth = depthValues[i2];
         double i3Depth = depthValues[i3];
 
+        // wow
         triangleDistortions[triangleDistortionOffset++]
           = i0Depth > 0.98 || i2Depth > 0.98 || i1Depth > 0.98
               ? myNan
@@ -243,6 +244,18 @@ int ttk::DepthImageBasedGeometryApproximation::execute(
                 std::max(absDiff(i3Depth, i2Depth), absDiff(i2Depth, i1Depth)));
       }
     }
+
+    const auto nbTri = yl * trianglesPerRow;
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(this->threadNumber_)
+#endif
+    for(size_t i = 0; i < nbTri; i++) {
+      cells_off[i] = i * 3;
+    }
+
+    // offset cell array has one additional entry for last cell end:
+    cells_off[nbTri] = nbTri * 3;
   }
 
   // Print performance

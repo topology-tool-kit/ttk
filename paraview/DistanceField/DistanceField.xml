@@ -8,11 +8,11 @@
       <Documentation
         long_help="TTK plugin for distance field computations."
         short_help="TTK plugin for distance field computations.">
-        This plugin takes a list of sources (a set of points with their global 
+        This plugin takes a list of sources (a set of points with their global
 identifiers attached to them) and produces a distance field to the closest
-source. 
+source.
 
-Related publication: "A note on two problems in connexion with graphs", 
+Related publication: "A note on two problems in connexion with graphs",
 Edsger W. Dijkstra, Numerische Mathematik, 1959.
       </Documentation>
 
@@ -162,7 +162,7 @@ Edsger W. Dijkstra, Numerische Mathematik, 1959.
           Debug level.
         </Documentation>
       </IntVectorProperty>
-      
+
       <PropertyGroup panel_widget="Line" label="Testing">
         <Property name="UseAllCores" />
         <Property name="ThreadNumber" />

@@ -2482,11 +2482,11 @@ inline int ttk::FiberSurface::remeshIntersections() const {
           if((hasIntersection)
             // check if that intersection has been registered before
             // in the end, only one intersection per triangle, no matter what
-            /*&&(((fabs(tetIntersections[tetId][j].intersection_.first 
+            /*&&(((fabs(tetIntersections[tetId][j].intersection_.first
               - intersection.first) > Geometry::powIntTen(-FLT_DIG))
             ||(fabs(tetIntersections[tetId][j].intersection_.second
               - intersection.second) > Geometry::powIntTen(-FLT_DIG)))
-            &&((fabs(tetIntersections[tetId][k].intersection_.first 
+            &&((fabs(tetIntersections[tetId][k].intersection_.first
               - intersection.first) > Geometry::powIntTen(-FLT_DIG))
             ||(fabs(tetIntersections[tetId][k].intersection_.second
               - intersection.second) > Geometry::powIntTen(-FLT_DIG))))*/){

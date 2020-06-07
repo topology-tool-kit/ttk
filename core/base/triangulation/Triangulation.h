@@ -2280,6 +2280,35 @@ namespace ttk {
       return 0;
     }
 
+#ifdef TTK_CELL_ARRAY_NEW
+    /// Here the notion of cell refers to the simplicices of maximal
+    /// dimension (3D: tetrahedra, 2D: triangles, 1D: edges).
+    ///
+    /// \param cellNumber Number of input cells.
+    /// \param connectivity Pointer to an array of long long int. It contains
+    /// the list of point ids of each cell.
+    /// \param offsets Pointer to an array of long long int. It has a size of
+    /// cellNumber+1 and each cell contains the position of the first vertex id
+    /// of this cell in the connectivity array.
+    /// This corresponds to the default cell array representation in VTK 9.
+    /// \return Returns 0 upon success, negative values otherwise.
+    ///
+    /// \note This function does not need to be called if the current object
+    /// is a vtkTriangulation (this function is automatically called
+    /// if needed through vtkTriangulation::setInputData()).
+    ///
+    /// \warning If this ttk::Triangulation object is already representing a
+    /// valid triangulation, this information will be over-written (which
+    /// means that pre-processing functions should be called again).
+    inline int setInputCells(const SimplexId &cellNumber,
+                             const LongSimplexId *connectivity,
+                             const LongSimplexId *offset) {
+      abstractTriangulation_ = &explicitTriangulation_;
+      gridDimensions_[0] = gridDimensions_[1] = gridDimensions_[2] = -1;
+      return explicitTriangulation_.setInputCells(
+        cellNumber, connectivity, offset);
+    }
+#else
     /// Set the input cells for the triangulation.
     ///
     /// Here the notion of cell refers to the simplicices of maximal
@@ -2290,7 +2319,7 @@ namespace ttk {
     /// to an array of long long int where cells are stored one after the
     /// other. In particular, each cell starts by the number of vertices in
     /// it, followed by the identifiers of its vertices. This corresponds to
-    /// the default cell array representation in VTK.
+    /// the default cell array representation in VTK < 9.
     /// \return Returns 0 upon success, negative values otherwise.
     ///
     /// \note This function does not need to be called if the current object
@@ -2302,13 +2331,11 @@ namespace ttk {
     /// means that pre-processing functions should be called again).
     inline int setInputCells(const SimplexId &cellNumber,
                              const LongSimplexId *cellArray) {
-
       abstractTriangulation_ = &explicitTriangulation_;
       gridDimensions_[0] = gridDimensions_[1] = gridDimensions_[2] = -1;
-
       return explicitTriangulation_.setInputCells(cellNumber, cellArray);
     }
-
+#endif
     /// Set the specifications of the input grid to implicitly represent as a
     /// triangulation.
     /// \param xOrigin Input x coordinate of the grid origin.

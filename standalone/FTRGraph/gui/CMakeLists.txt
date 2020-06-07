@@ -21,4 +21,3 @@ if(TARGET ttkFTRGraph)
       ${TTK_INSTALL_BINARY_DIR}
     )
 endif()
-

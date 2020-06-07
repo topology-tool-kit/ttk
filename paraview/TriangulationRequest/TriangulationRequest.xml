@@ -5,9 +5,9 @@
        a filter already in ParaView (in Servers/ServerManager/Resources/*.xml)
        that matches your filter and then model your xml on it -->
   <ProxyGroup name="filters">
-    <SourceProxy 
-      name="TriangulationRequest" 
-      class="ttkTriangulationRequest" 
+    <SourceProxy
+      name="TriangulationRequest"
+      class="ttkTriangulationRequest"
       label="TTK TriangulationRequest">
       <Documentation
         long_help="TTK triangulationRequest plugin."

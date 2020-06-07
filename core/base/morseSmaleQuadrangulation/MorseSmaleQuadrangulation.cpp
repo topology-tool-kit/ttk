@@ -24,10 +24,12 @@ int ttk::MorseSmaleQuadrangulation::detectCellSeps() {
   Triangulation newT{};
 
   std::vector<float> points_{};
-  std::vector<ttk::LongSimplexId> cells_{};
+  std::vector<ttk::LongSimplexId> cells_co_{};
+  std::vector<ttk::LongSimplexId> cells_off_{};
   std::vector<ttk::SimplexId> pointId_{};
   std::vector<ttk::SimplexId> pointDim_{};
-  BarycentricSubdivision bs{points_, cells_, pointId_, pointDim_};
+  BarycentricSubdivision bs{
+    points_, cells_co_, cells_off_, pointId_, pointDim_};
 
   bs.setupTriangulation(triangulation_);
   bs.setOutputTriangulation(&newT);

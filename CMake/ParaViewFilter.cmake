@@ -1,3 +1,6 @@
+# fot the ttk_parse_module_file
+include(CMake/VTKModule.cmake)
+
 # register a new filter to build in the TTK plugin
 # deduce the location of the corresonding vtk.module file
 # also register the xml file if given

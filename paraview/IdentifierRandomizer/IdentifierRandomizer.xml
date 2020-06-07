@@ -5,9 +5,9 @@
        a filter already in ParaView (in Servers/ServerManager/Resources/*.xml)
        that matches your filter and then model your xml on it -->
   <ProxyGroup name="filters">
-   <SourceProxy 
-     name="IdentifierRandomizer" 
-     class="ttkIdentifierRandomizer" 
+   <SourceProxy
+     name="IdentifierRandomizer"
+     class="ttkIdentifierRandomizer"
      label="TTK IdentifierRandomizer">
      <Documentation
         long_help="TTK identifierRandomizer plugin."
@@ -51,7 +51,7 @@
           Select the scalar field to process.
         </Documentation>
       </StringVectorProperty>
-      
+
       <IntVectorProperty
          name="UseAllCores"
          label="Use All Cores"
@@ -63,7 +63,7 @@
           Use all available cores.
          </Documentation>
       </IntVectorProperty>
-      
+
       <IntVectorProperty
          name="ThreadNumber"
          label="Thread Number"
@@ -82,7 +82,7 @@
           Thread number.
          </Documentation>
       </IntVectorProperty>
-      
+
       <IntVectorProperty
          name="DebugLevel"
          label="Debug Level"
@@ -94,17 +94,17 @@
            Debug level.
          </Documentation>
       </IntVectorProperty>
-      
+
       <PropertyGroup panel_widget="Line" label="Input options">
         <Property name="ScalarField" />
       </PropertyGroup>
-     
+
       <PropertyGroup panel_widget="Line" label="Testing">
         <Property name="UseAllCores" />
         <Property name="ThreadNumber" />
         <Property name="DebugLevel" />
       </PropertyGroup>
-      
+
       <Hints>
         <ShowInMenu category="TTK - Misc" />
       </Hints>

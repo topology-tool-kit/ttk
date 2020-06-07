@@ -21,4 +21,3 @@ if(TARGET ttkMeshSubdivision)
       ${TTK_INSTALL_BINARY_DIR}
     )
 endif()
-

@@ -1,28 +1,28 @@
 <ServerManagerConfiguration>
 	<ProxyGroup name="filters">
-   <SourceProxy 
-     name="TopologicalSimplification" 
-		 class="ttkTopologicalSimplification" 
+   <SourceProxy
+     name="TopologicalSimplification"
+		 class="ttkTopologicalSimplification"
 		 label="TTK TopologicalSimplification">
 		 <Documentation
 			 long_help="TTK plugin for the topological simplification of scalar data."
-			 short_help="TTK plugin for the topological simplification of scalar 
+			 short_help="TTK plugin for the topological simplification of scalar
 data.">
-       
-       Given an input scalar field and a list of critical points to remove, 
-this plugin minimally edits the scalar field such that the listed critical 
-points disappear. This procedure is useful to speedup subsequent topological 
-data analysis when outlier critical points can be easily identified. It is 
+
+       Given an input scalar field and a list of critical points to remove,
+this plugin minimally edits the scalar field such that the listed critical
+points disappear. This procedure is useful to speedup subsequent topological
+data analysis when outlier critical points can be easily identified. It is
 also useful for data simplification.
 
 The list of critical points to remove must be associated with a point data
-scalar field that represent the vertex global identifiers in the input 
+scalar field that represent the vertex global identifiers in the input
 geometry.
- 
+
 Note that this plugin will also produce an output vertex offset scalar field
 that can be used for further topological data analysis tasks to disambiguate
-vertices on flat plateaus. For instance, this output vertex offset field 
-can specified to the ContourForests, IntegralLines, or 
+vertices on flat plateaus. For instance, this output vertex offset field
+can specified to the ContourForests, IntegralLines, or
 ScalarFieldCriticalPoints plugins.
 
 Also, this plugin can be given a specific input vertex offset.
@@ -34,7 +34,7 @@ Proc. of IEEE VIS 2012.
 IEEE Transactions on Visualization and Computer Graphics, 2012.
 
 See also ScalarFieldCriticalPoints, IntegralLines, ContourForests, Identifiers.
-       
+
 		 </Documentation>
 
 		 <InputProperty
@@ -75,7 +75,7 @@ See also ScalarFieldCriticalPoints, IntegralLines, ContourForests, Identifiers.
         </Documentation>
 			</InputProperty>
 
-			
+
       <StringVectorProperty
         name="ScalarField"
         command="SetScalarField"
@@ -108,7 +108,7 @@ See also ScalarFieldCriticalPoints, IntegralLines, ContourForests, Identifiers.
           as vertex offset (used to disambiguate flat plateaus).
          </Documentation>
       </IntVectorProperty>
- 
+
        <StringVectorProperty
         name="InputOffsetScalarFieldName"
         command="SetInputOffsetScalarFieldName"
@@ -196,7 +196,7 @@ See also ScalarFieldCriticalPoints, IntegralLines, ContourForests, Identifiers.
          default_values="0">
         <BooleanDomain name="bool"/>
          <Documentation>
-          Check this box to remove the selected extrema (instead of 
+          Check this box to remove the selected extrema (instead of
 removing all non-selected extrema).
          </Documentation>
 			 </IntVectorProperty>
@@ -209,7 +209,7 @@ removing all non-selected extrema).
          default_values="0">
         <BooleanDomain name="bool"/>
 				<Documentation>
-          Numerically perturb the output (to avoid the usage of an output 
+          Numerically perturb the output (to avoid the usage of an output
 offset field for flat plateau disambiguation).
          </Documentation>
       </IntVectorProperty>
@@ -236,7 +236,7 @@ offset field for flat plateau disambiguation).
           Use all available cores.
          </Documentation>
       </IntVectorProperty>
-      
+
       <IntVectorProperty
          name="ThreadNumber"
          command="SetThreadNumber"
@@ -255,7 +255,7 @@ offset field for flat plateau disambiguation).
           Thread number.
          </Documentation>
       </IntVectorProperty>
-      
+
       <IntVectorProperty
          name="DebugLevel"
          command="SetDebugLevel"
@@ -268,7 +268,7 @@ offset field for flat plateau disambiguation).
          </Documentation>
        </IntVectorProperty>
 
-      
+
       <PropertyGroup panel_widget="Line" label="Testing">
         <Property name="UseAllCores" />
         <Property name="ThreadNumber" />
@@ -286,7 +286,7 @@ offset field for flat plateau disambiguation).
 	<Property name="ConsiderIdentifierAsBlackList"/>
         <Property name="PeriodicBoundaryConditions"/>
       </PropertyGroup>
-      
+
       <PropertyGroup panel_widget="Line" label="Output options">
 	<Property name="OutputOffsetScalarFieldName"/>
 	<Property name="AddPerturbation"/>

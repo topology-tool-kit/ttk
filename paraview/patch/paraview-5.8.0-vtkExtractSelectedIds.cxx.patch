@@ -1,0 +1,155 @@
+diff --git a/Filters/Extraction/vtkExtractSelectedIds.cxx b/Filters/Extraction/vtkExtractSelectedIds.cxx
+index dfa737fc23..1b156fd9a1 100644
+--- a/Filters/Extraction/vtkExtractSelectedIds.cxx
++++ b/Filters/Extraction/vtkExtractSelectedIds.cxx
+@@ -121,6 +121,43 @@ int vtkExtractSelectedIds::RequestData(vtkInformation* vtkNotUsed(request),
+   return 1;
+ }
+
++static void vtkExtractSelectedIdsCopyPointsNonSorted(
++  vtkDataSet* input, vtkDataSet* output, signed char* idArray, vtkIdType* pointMap)
++{
++
++  vtkPoints* newPts = vtkPoints::New();
++
++  vtkIdType i, numPts = input->GetNumberOfPoints();
++
++  vtkIdTypeArray* originalPtIds = vtkIdTypeArray::New();
++  originalPtIds->SetNumberOfComponents(1);
++  originalPtIds->SetName("vtkOriginalPointIds");
++
++  vtkPointData* inPD = input->GetPointData();
++  vtkPointData* outPD = output->GetPointData();
++  outPD->SetCopyGlobalIds(1);
++  outPD->CopyAllocate(inPD);
++
++  for (i = 0; i < numPts; i++)
++    pointMap[i] = -1;
++
++  int id = -1;
++  for (i = 0; i < numPts; i++)
++  {
++    id = idArray[i];
++    pointMap[id] = newPts->InsertNextPoint(input->GetPoint(id));
++    outPD->CopyData(inPD, id, pointMap[id]);
++    originalPtIds->InsertNextValue(id);
++  }
++
++  outPD->AddArray(originalPtIds);
++  originalPtIds->Delete();
++
++  // outputDS must be either vtkPolyData or vtkUnstructuredGrid
++  vtkPointSet::SafeDownCast(output)->SetPoints(newPts);
++  newPts->Delete();
++}
++
+ // Copy the points marked as "in" and build a pointmap
+ static void vtkExtractSelectedIdsCopyPoints(
+   vtkDataSet* input, vtkDataSet* output, signed char* inArray, vtkIdType* pointMap)
+@@ -453,6 +490,11 @@ struct vtkExtractSelectedIdsExtractPoints
+   {
+     this->execute(id->GetPointer(0), label->GetPointer(0), std::forward<Args>(args)...);
+   }
++  template <typename... Args>
++  void operator()(vtkIdTypeArray* id, vtkIdTypeArray* label, Args&&... args) const
++  {
++    this->executeInOrder(id->GetPointer(0), label->GetPointer(0), std::forward<Args>(args)...);
++  }
+   template <typename ArrayT, typename ArrayU, typename... Args>
+   void operator()(ArrayT id, ArrayU label, Args&&... args) const
+   {
+@@ -567,6 +609,58 @@ struct vtkExtractSelectedIdsExtractPoints
+       cellPts->Delete();
+     }
+   }
++
++  template <typename IdIter, typename LabelIter>
++  void executeInOrder(IdIter id, LabelIter label, vtkExtractSelectedIds* self, int passThrough,
++    int invert, int containingCells, vtkDataSet* input, vtkIdTypeArray* idxArray,
++    vtkSignedCharArray* cellInArray, vtkSignedCharArray* pointInArray, vtkIdType numIds) const
++  {
++    using T1 = typename std::iterator_traits<IdIter>::value_type;
++    using T2 = typename std::iterator_traits<LabelIter>::value_type;
++
++    // Reverse the "in" flag
++    signed char flag = invert ? 1 : -1;
++    flag = -flag;
++
++    vtkIdList* ptCells = nullptr;
++    vtkIdList* cellPts = nullptr;
++    if (containingCells)
++    {
++      ptCells = vtkIdList::New();
++      cellPts = vtkIdList::New();
++    }
++
++    vtkIdType numPts = input->GetNumberOfPoints();
++    vtkIdType idArrayIndex = 0, labelArrayIndex = 0;
++    for (int i = 0; i < numIds; i++)
++    {
++      vtkIdType ptId = idxArray->GetValue(id[i]);
++      pointInArray->SetValue(ptId, flag);
++      if (containingCells)
++      {
++        input->GetPointCells(ptId, ptCells);
++        for (vtkIdType j = 0; j < ptCells->GetNumberOfIds(); ++j)
++        {
++          vtkIdType cellId = ptCells->GetId(j);
++          if ((!passThrough) && (!invert) && (cellInArray->GetValue(cellId) != flag))
++          {
++
++            input->GetCellPoints(cellId, cellPts);
++            for (vtkIdType k = 0; k < cellPts->GetNumberOfIds(); ++k)
++            {
++              pointInArray->SetValue(cellPts->GetId(k), flag);
++            }
++          }
++          cellInArray->SetValue(cellId, flag);
++        }
++      }
++    }
++    if (containingCells)
++    {
++      ptCells->Delete();
++      cellPts->Delete();
++    }
++  }
+ };
+
+ } // end anonymous namespace
+@@ -680,7 +774,7 @@ int vtkExtractSelectedIds::ExtractCells(
+     numIds = idArray->GetNumberOfTuples();
+     vtkAbstractArray* sortedArray = vtkAbstractArray::CreateArray(idArray->GetDataType());
+     sortedArray->DeepCopy(idArray);
+-    vtkSortDataArray::SortArrayByComponent(sortedArray, 0);
++    // vtkSortDataArray::SortArrayByComponent(sortedArray, 0);
+     idArray = sortedArray;
+   }
+
+@@ -722,14 +816,22 @@ int vtkExtractSelectedIds::ExtractCells(
+     }
+   }
+
+-  idArray->Delete();
+-  idxArray->Delete();
+-  labelArray->Delete();
++  // idArray->Delete();
++  // idxArray->Delete();
++  // labelArray->Delete();
+
+   if (!passThrough)
+   {
+     vtkIdType* pointMap = new vtkIdType[numPts]; // maps old point ids into new
+-    vtkExtractSelectedIdsCopyPoints(input, output, pointInArray->GetPointer(0), pointMap);
++    if (idArray->GetDataType() == VTK_ID_TYPE && labelArray->GetDataType() == VTK_ID_TYPE)
++    {
++      vtkExtractSelectedIdsCopyPointsNonSorted(
++        input, output, pointInArray->GetPointer(0), pointMap);
++    }
++    else
++    {
++      vtkExtractSelectedIdsCopyPoints(input, output, pointInArray->GetPointer(0), pointMap);
++    }
+     this->UpdateProgress(0.75);
+     if (output->GetDataObjectType() == VTK_POLY_DATA)
+     {

@@ -3,6 +3,6 @@ ttk_add_base_library(helloWorld
     HelloWorld.cpp
   HEADERS
     HelloWorld.h
-  LINK
+  DEPENDS
     triangulation
     )

@@ -21,4 +21,3 @@ if(TARGET ttkMandatoryCriticalPoints)
       ${TTK_INSTALL_BINARY_DIR}
     )
 endif()
-

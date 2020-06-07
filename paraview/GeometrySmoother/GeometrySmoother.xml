@@ -5,15 +5,15 @@
   a filter already in ParaView (in Servers/ServerManager/Resources/*.xml)
   that matches your filter and then model your xml on it -->
   <ProxyGroup name="filters">
-    <SourceProxy 
-      name="GeometrySmoother" 
-      class="ttkGeometrySmoother" 
+    <SourceProxy
+      name="GeometrySmoother"
+      class="ttkGeometrySmoother"
       label="TTK GeometrySmoother">
       <Documentation
         long_help="TTK plugin for geometry smoothing."
         short_help="TTK plugin for geometry smoothing.">
-        This filter is a dummy example for the development of TTK packages. It 
-        smooths an input mesh by average the vertex locations on the link of each 
+        This filter is a dummy example for the development of TTK packages. It
+        smooths an input mesh by average the vertex locations on the link of each
         vertex.
       </Documentation>
       <InputProperty

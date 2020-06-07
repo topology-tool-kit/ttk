@@ -2,7 +2,7 @@
 +++ b/Applications/ParaView/CMakeLists.txt	2018-04-16 15:23:18.818396875 +0200
 @@ -57,9 +57,9 @@
  set(SUPPORT_STATIC_PLUGINS TRUE)
- 
+
  if (PARAVIEW_VERSION_NICKNAME)
 -  set(title "ParaView ${PARAVIEW_VERSION_NICKNAME} ${PARAVIEW_BUILD_ARCHITECTURE}-bit")
 +  set(title "TTK 0.9.9 - ParaView ${PARAVIEW_VERSION_NICKNAME} ${PARAVIEW_BUILD_ARCHITECTURE}-bit")
@@ -10,7 +10,7 @@
 -  set(title "ParaView ${PARAVIEW_VERSION_FULL} ${PARAVIEW_BUILD_ARCHITECTURE}-bit")
 +  set(title "TTK 0.9.9 - ParaView ${PARAVIEW_VERSION_FULL} ${PARAVIEW_BUILD_ARCHITECTURE}-bit")
  endif()
- 
+
  #------------------------------------------------------------------------------
 @@ -67,7 +67,7 @@
  build_paraview_client(paraview

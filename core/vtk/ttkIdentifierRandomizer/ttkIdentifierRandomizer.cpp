@@ -3,10 +3,9 @@
 using namespace std;
 using namespace ttk;
 
-vtkStandardNewMacro(ttkIdentifierRandomizer)
-
-  int ttkIdentifierRandomizer::doIt(vector<vtkDataSet *> &inputs,
-                                    vector<vtkDataSet *> &outputs) {
+vtkStandardNewMacro(ttkIdentifierRandomizer);
+int ttkIdentifierRandomizer::doIt(vector<vtkDataSet *> &inputs,
+                                  vector<vtkDataSet *> &outputs) {
 
   Memory m;
 
@@ -23,7 +22,7 @@ vtkStandardNewMacro(ttkIdentifierRandomizer)
   // variable 'output' with the result of the computation.
   // if your wrapper produces an output of the same type of the input, you
   // should proceed in the same way.
-  vtkDataArray *inputScalarField = NULL;
+  vtkDataArray *inputScalarField = nullptr;
 
   if(ScalarField.length()) {
     inputScalarField = input->GetPointData()->GetArray(ScalarField.data());

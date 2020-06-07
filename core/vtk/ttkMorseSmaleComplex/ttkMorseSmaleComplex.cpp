@@ -976,6 +976,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
 
   switch(inputScalars->GetDataType()) {
     vtkTemplateMacro(
+      // O.o there is 32 args for this method.
       ret = dispatch<VTK_TT>(
         inputScalars, inputOffsets, outputCriticalPoints, outputSeparatrices1,
         outputSeparatrices2, criticalPoints_numberOfPoints,

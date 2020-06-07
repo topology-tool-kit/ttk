@@ -3,10 +3,9 @@
 using namespace std;
 using namespace ttk;
 
-vtkStandardNewMacro(ttkTriangulationRequest)
-
-  int ttkTriangulationRequest::doIt(vector<vtkDataSet *> &inputs,
-                                    vector<vtkDataSet *> &outputs) {
+vtkStandardNewMacro(ttkTriangulationRequest);
+int ttkTriangulationRequest::doIt(vector<vtkDataSet *> &inputs,
+                                  vector<vtkDataSet *> &outputs) {
 
   Memory m;
 

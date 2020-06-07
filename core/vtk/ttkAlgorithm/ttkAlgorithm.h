@@ -171,7 +171,7 @@ public:
 
 protected:
   ttkAlgorithm();
-  ~ttkAlgorithm();
+  virtual ~ttkAlgorithm();
 
   /**
    * This method is called during the first pipeline pass in

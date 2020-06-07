@@ -3,11 +3,16 @@ set(CMAKE_CXX_STANDARD 11)
 # Set a predefined build type
 if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
   message(STATUS "Setting build type to 'Release'.")
-  set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build." FORCE)
+  set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build." FORCE)
   set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release")
 endif()
 
 # Options & dependencies
+
+# CellArray use legacy single array by default
+set(TTK_CELL_ARRAY_LAYOUT "SingleArray" CACHE STRING "Layout for the cell array." FORCE)
+set_property(CACHE TTK_CELL_ARRAY_LAYOUT PROPERTY STRINGS "SingleArray" "OffsetAndConnectivity")
+mark_as_advanced(TTK_CELL_ARRAY_LAYOUT)
 
 # Find Paraview OR VTK if needed
 if(TTK_BUILD_PARAVIEW_PLUGINS)
@@ -17,10 +22,26 @@ if(TTK_BUILD_PARAVIEW_PLUGINS)
   # this is necessary to work with build folder directly (MacOS)
   add_definitions(-DPARAVIEW_VERSION_MAJOR=${ParaView_VERSION_MAJOR})
   add_definitions(-DPARAVIEW_VERSION_MINOR=${ParaView_VERSION_MINOR})
+  # Layout to use for the CellArray is driven by ParaView version:
+  if ("${ParaView_VERSION}" VERSION_GREATER_EQUAL "5.8.0")
+    set(TTK_CELL_ARRAY_LAYOUT "OffsetAndConnectivity" CACHE STRING "Layout for the cell array." FORCE)
+  else()
+    set(TTK_CELL_ARRAY_LAYOUT "SingleArray" CACHE STRING "Layout for the cell array." FORCE)
+  endif()
+  # TODO: we can even hide the option here as the user should not change it in this case.
+
 elseif(TTK_BUILD_VTK_WRAPPERS)
   find_package(VTK REQUIRED)
   add_definitions(-DVTK_VERSION_MAJOR=${VTK_VERSION_MAJOR})
   add_definitions(-DVTK_VERSION_MINOR=${VTK_VERSION_MINOR})
+
+  # Layout to use for the CellArray is driven by VTK version:
+  if ("${VTK_VERSION}" VERSION_GREATER_EQUAL "9.0.0")
+    set(TTK_CELL_ARRAY_LAYOUT "OffsetAndConnectivity" CACHE STRING "Layout for the cell array." FORCE)
+  else()
+    set(TTK_CELL_ARRAY_LAYOUT "SingleArray" CACHE STRING "Layout for the cell array." FORCE)
+  endif()
+  # TODO: we can even hide the option here as the user should not change it in this case.
 endif()
 
 option(TTK_ENABLE_64BIT_IDS "Enable processing on large datasets" OFF)
@@ -180,12 +201,23 @@ else()
   option(TTK_ENABLE_ZFP "Enable ZFP support" ON)
 endif()
 
-find_package(Eigen3 NO_MODULE)
+find_package(Eigen3 3.3 NO_MODULE)
 if(EIGEN3_FOUND)
   option(TTK_ENABLE_EIGEN "Enable Eigen3 support" ON)
+
+  find_path(SPECTRA_INCLUDE_DIR Spectra/SymEigsSolver.h)
+  if(SPECTRA_INCLUDE_DIR STREQUAL "SPECTRA_INCLUDE_DIR-NOTFOUND")
+    option(TTK_ENABLE_SPECTRA "Enable Spectra support" OFF)
+    message(STATUS "Spectra not found, disabling Spectra support in TTK.")
+  else()
+    option(TTK_ENABLE_SPECTRA "Enable Spectra support" ON)
+  endif()
 else()
   option(TTK_ENABLE_EIGEN "Enable Eigen3 support" OFF)
   message(STATUS "Eigen not found, disabling Eigen support in TTK.")
+
+  option(TTK_ENABLE_SPECTRA "Enable Spectra support" OFF)
+  message(STATUS "Spectra not found, disabling Spectra support in TTK.")
 endif()
 
 # scikit-learn support is disabled by default for now under MacOs

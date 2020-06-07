@@ -68,11 +68,11 @@
       <PropertyGroup panel_widget="Line" label="Input">
         <Property name="ScalarField" />
       </PropertyGroup>
-      
+
       <PropertyGroup panel_widget="Line" label="Output">
         <Property name="FileName" />
       </PropertyGroup>
-      
+
       <PropertyGroup panel_widget="double_range"
         label="Topology aware compression">
         <Property name="CompressionType" />

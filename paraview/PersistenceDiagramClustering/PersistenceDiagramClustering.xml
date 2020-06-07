@@ -13,19 +13,19 @@
        long_help="TTK plugin for the computation of distances, barycenters and clustering within a set of persistence diagrams."
        shorthelp="TTK plugin for the computation of distances, barycenters and clustering within a set of persistence diagrams."
        >
-       Given an input set of persistence diagrams and a number of clusters, this plugin computes a clustering of the 
-       persistence diagrams using a progressive and interruptible K-Means approach. The result of the clustering is printed in the console. 
-       The clustered diagrams and the corresponding centroid diagrams are produced, as well as the assignment between the critical points. 
+       Given an input set of persistence diagrams and a number of clusters, this plugin computes a clustering of the
+       persistence diagrams using a progressive and interruptible K-Means approach. The result of the clustering is printed in the console.
+       The clustered diagrams and the corresponding centroid diagrams are produced, as well as the assignment between the critical points.
 
-       If the number of clusters is set to 1 (default value), the Wasserstein barycenter of the set is computed using the same algorithm. 
+       If the number of clusters is set to 1 (default value), the Wasserstein barycenter of the set is computed using the same algorithm.
 
-       If the number of clusters is set to 1 and there are only two input diagrams, by default their Wasserstein distance is computed with 
-       the Auction algorithm, and the barycenter is deduced from the assignments. The use of the progressive approach can nevertheless be toggled 
-       in the Properties menu. 
+       If the number of clusters is set to 1 and there are only two input diagrams, by default their Wasserstein distance is computed with
+       the Auction algorithm, and the barycenter is deduced from the assignments. The use of the progressive approach can nevertheless be toggled
+       in the Properties menu.
 
-       Related publication: "Progressive Wasserstein Barycenters of Persistence Diagrams" 
-       Jules Vidal, Joseph Budin, Julien Tierny 
-       IEEE Transactions on Visualization and Computer Graphics. 
+       Related publication: "Progressive Wasserstein Barycenters of Persistence Diagrams"
+       Jules Vidal, Joseph Budin, Julien Tierny
+       IEEE Transactions on Visualization and Computer Graphics.
        Proceedings of IEEE VIS 2019.
 
        See also PersistenceDiagram, BottleneckDistance
@@ -55,7 +55,7 @@
           label="Algorithm"
           command="SetMethod"
           number_of_elements="1"
-         default_values="0" 
+         default_values="0"
          panel_visibility="advanced" >
 		 <EnumerationDomain name="enum">
           <Entry value="0" text="Progressive approach"/>
@@ -140,7 +140,7 @@
           label="p parameter"
           command="SetWassersteinMetric"
           number_of_elements="1"
-          default_values="2" 
+          default_values="2"
           panel_visibility="advanced">
         <Documentation>
           Value of the parameter p for the Wp (p-th Wasserstein) distance
@@ -257,7 +257,7 @@ computation (type "inf" for the Bottleneck distance).
         </Documentation>
 
         </DoubleVectorProperty>
-        
+
       <IntVectorProperty
         name="DisplayMethod"
         command="SetDisplayMethod"
@@ -309,7 +309,7 @@ computation (type "inf" for the Bottleneck distance).
          label="Use Accelerated KMeans"
          command="SetUseAccelerated"
             number_of_elements="1"
-            default_values="1" 
+            default_values="1"
             panel_visibility="advanced">
         <BooleanDomain name="bool"/>
          <Documentation>
@@ -324,7 +324,7 @@ computation (type "inf" for the Bottleneck distance).
          label="KMeanspp Initialization"
          command="SetUseKmeansppInit"
          number_of_elements="1"
-            default_values="1" 
+            default_values="1"
             panel_visibility="advanced">
         <BooleanDomain name="bool"/>
          <Documentation>

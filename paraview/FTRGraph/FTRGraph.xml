@@ -65,8 +65,8 @@
            default_values="0">
            <BooleanDomain name="bool"/>
            <Documentation>
-              Check this box to force the usage of a specific input 
-              scalar field as vertex offset (used to disambiguate flat 
+              Check this box to force the usage of a specific input
+              scalar field as vertex offset (used to disambiguate flat
               plateaus).
            </Documentation>
         </IntVectorProperty>
@@ -121,7 +121,7 @@
              Use the less efficient (but maybe more robust) single sweep version
            </Documentation>
         </IntVectorProperty>
-        
+
         <IntVectorProperty
            name="UseAllCores"
            label="Use All Cores"
@@ -170,7 +170,7 @@
            <Property name="InputOffsetScalarFieldName" />
            <Property name="ArcSampling" />
         </PropertyGroup>
-        
+
         <PropertyGroup panel_widget="Line" label="Output options">
           <Property name="ArcSampling" />
         </PropertyGroup>

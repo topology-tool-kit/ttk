@@ -5,9 +5,9 @@
   a filter already in ParaView (in Servers/ServerManager/Resources/*.xml)
   that matches your filter and then model your xml on it -->
   <ProxyGroup name="filters">
-    <SourceProxy 
-      name="ImportEmbeddingFromTable" 
-      class="ttkImportEmbeddingFromTable" 
+    <SourceProxy
+      name="ImportEmbeddingFromTable"
+      class="ttkImportEmbeddingFromTable"
       label="TTK ImportEmbeddingFromTable">
       <Documentation
         long_help="TTK fieldSelector plugin."

@@ -10,27 +10,27 @@
      class="ttkMandatoryCriticalPoints"
      label="TTK MandatoryCriticalPoints">
      <Documentation
-        long_help="TTK plugin for the computation of mandatory critical 
+        long_help="TTK plugin for the computation of mandatory critical
 points in uncertain scalar data."
-        short_help="TTK plugin for the computation of mandatory critical 
+        short_help="TTK plugin for the computation of mandatory critical
 points in uncertain scalar data.">
-       
-This filter computes the mandatory critical points of uncertain scalar 
+
+This filter computes the mandatory critical points of uncertain scalar
 fields defined on triangulations. The input uncertain data is represented
-by reliable bound fields for each vertex. In particular, the input geometry 
-(either 2D or 3D, either regular grids or triangulations) must be associated 
-with two point data scalar fields, representing the lower and upper bounds 
+by reliable bound fields for each vertex. In particular, the input geometry
+(either 2D or 3D, either regular grids or triangulations) must be associated
+with two point data scalar fields, representing the lower and upper bounds
 for each vertex.
 
-The output is a domain segmentation into the mandatory critical points. 
+The output is a domain segmentation into the mandatory critical points.
 
-Also, mandatory join and split trees are produced (to be visualized in a 2D 
+Also, mandatory join and split trees are produced (to be visualized in a 2D
 layout).
 
 Related publication:
-"Mandatory Critical Points of 2D Uncertain Scalar Fields" 
-David Guenther, Joseph Salmon, Julien Tierny 
-Proc. of EuroVis 2014. 
+"Mandatory Critical Points of 2D Uncertain Scalar Fields"
+David Guenther, Joseph Salmon, Julien Tierny
+Proc. of EuroVis 2014.
 Computer Graphics Forum, 2014.
      </Documentation>
      <InputProperty
@@ -53,7 +53,7 @@ Computer Graphics Forum, 2014.
 
 
 
-      
+
 
       <StringVectorProperty
         name="Lower Field"
@@ -73,7 +73,7 @@ Computer Graphics Forum, 2014.
           Select the lower bound field to process.
         </Documentation>
       </StringVectorProperty>
-      
+
       <StringVectorProperty
         name="Upper Field"
         command="SetUpperBoundFieldName"
@@ -122,11 +122,11 @@ Computer Graphics Forum, 2014.
          default_values="1">
         <BooleanDomain name="bool"/>
          <Documentation>
-          Check this box to display all mandatory minima. Otherwise, specify 
+          Check this box to display all mandatory minima. Otherwise, specify
           in the text box below which minimum to display.
          </Documentation>
       </IntVectorProperty>
-      
+
       <IntVectorProperty
          name="OutputMinmumComponentId"
          label="Only display minimum with Id"
@@ -147,7 +147,7 @@ Computer Graphics Forum, 2014.
          default_values="1">
         <BooleanDomain name="bool"/>
          <Documentation>
-          Check this box to display all mandatory join saddles. Otherwise, 
+          Check this box to display all mandatory join saddles. Otherwise,
 specify in the text box below which join saddles to display.
          </Documentation>
       </IntVectorProperty>
@@ -163,7 +163,7 @@ specify in the text box below which join saddles to display.
           Id of the mandatory join saddle to display.
          </Documentation>
       </IntVectorProperty>
-      
+
       <IntVectorProperty
          name="OutputAllSplitSaddleComponents"
          label="Display all split saddles"
@@ -172,11 +172,11 @@ specify in the text box below which join saddles to display.
          default_values="1">
         <BooleanDomain name="bool"/>
          <Documentation>
-           Check this box to display all mandatory split saddles. Otherwise, 
+           Check this box to display all mandatory split saddles. Otherwise,
 specify in the text box below which split saddles to display.
          </Documentation>
       </IntVectorProperty>
-      
+
       <IntVectorProperty
          name="OutputSplitSaddleComponentId"
          label="Only display split saddle with Id"
@@ -197,7 +197,7 @@ specify in the text box below which split saddles to display.
          default_values="1">
         <BooleanDomain name="bool"/>
          <Documentation>
-          Check this box to display all mandatory maxima. Otherwise, 
+          Check this box to display all mandatory maxima. Otherwise,
 specify in the text box below which maximum to display.
          </Documentation>
       </IntVectorProperty>
@@ -274,7 +274,7 @@ specify in the text box below which maximum to display.
         <Property name="ThreadNumber" />
         <Property name="DebugLevel" />
       </PropertyGroup>
-      
+
       <PropertyGroup panel_widget="Line" label="Input options">
         <Property name="SimplificationThreshold" />
         <Property name="Lower Field" />

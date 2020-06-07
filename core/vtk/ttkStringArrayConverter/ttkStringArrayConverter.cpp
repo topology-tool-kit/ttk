@@ -4,6 +4,7 @@
 #include <vtkObjectFactory.h> // for new macro
 
 #include <vtkFieldData.h>
+#include <vtkIdTypeArray.h>
 #include <vtkPointData.h>
 #include <vtkStringArray.h>
 

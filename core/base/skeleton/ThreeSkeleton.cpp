@@ -243,7 +243,8 @@ int ThreeSkeleton::buildCellNeighborsFromVertices(
   vector<vector<SimplexId>> &cellNeighbors,
   vector<vector<SimplexId>> *vertexStars) const {
 
-  if(cellArray.getDimension() == 2) {
+  // TODO: ASSUME uniform mesh here!
+  if(cellArray.getNbCells() && cellArray.getCellVertexNumber(0) == 3) {
     TwoSkeleton twoSkeleton;
     twoSkeleton.setDebugLevel(debugLevel_);
     twoSkeleton.setThreadNumber(threadNumber_);
@@ -251,7 +252,7 @@ int ThreeSkeleton::buildCellNeighborsFromVertices(
       vertexNumber, cellArray, cellNeighbors, vertexStars);
   }
 
-  if(cellArray.getDimension() == 1) {
+  if(cellArray.getNbCells() && cellArray.getCellVertexNumber(0) <= 2) {
     // 1D
     printErr("buildCellNeighbnorsFromVertices in 1D:");
     printErr("Not implemented! TODO?!");

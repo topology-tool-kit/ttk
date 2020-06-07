@@ -146,5 +146,5 @@ vtkStandardNewMacro(ttkTopologicalCompression)
   output1->GetPointData()->AddArray(outputScalarField_);
   output1->GetPointData()->AddArray(outputOffsetField_);
 
-  return 0;
+  return 1;
 }

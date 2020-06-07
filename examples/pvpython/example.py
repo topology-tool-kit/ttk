@@ -3,7 +3,7 @@
 #/// \ingroup examples
 #/// \author Julien Tierny <julien.tierny@lip6.fr>
 #/// \date October 2017.
-#/// 
+#///
 #/// \brief Minimalist python TTK example pipeline, including:
 #///  -# The computation of a persistence curve
 #///  -# The computation of a persistence diagram
@@ -23,7 +23,7 @@ if len(sys.argv) == 2:
     inputFilePath = sys.argv[1]
 else:
     print("Missing mandatory argument: Path to input VTU file")
-    sys.exit() 
+    sys.exit()
 
 
 # -- TTK pipeline

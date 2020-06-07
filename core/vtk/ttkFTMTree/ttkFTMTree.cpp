@@ -347,7 +347,7 @@ int ttkFTMTree::doIt(vector<vtkDataSet *> &inputs,
   if(setupTriangulation()) {
 #ifndef TTK_ENABLE_KAMIKAZE
     cerr << "[ttkFTMTree] Error : wrong triangulation." << endl;
-    return -1;
+    return -2;
 #endif
   }
 
@@ -355,7 +355,7 @@ int ttkFTMTree::doIt(vector<vtkDataSet *> &inputs,
   if(getScalars()) {
 #ifndef TTK_ENABLE_KAMIKAZE
     cerr << "[ttkFTMTree] Error : wrong input scalars." << endl;
-    return -1;
+    return -3;
 #endif
   }
   getOffsets();

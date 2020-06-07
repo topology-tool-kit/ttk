@@ -18,7 +18,7 @@ vtkStandardNewMacro(ttkBarycentricSubdivision);
 vtkSmartPointer<vtkDataArray> ttkBarycentricSubdivision::AllocateScalarField(
   vtkDataArray *const inputScalarField, int ntuples) const {
 
-  vtkSmartPointer<vtkDataArray> res{};
+  vtkSmartPointer<vtkDataArray> res;
 
   // allocate the memory for the output scalar field
   switch(inputScalarField->GetDataType()) {
@@ -125,6 +125,7 @@ int ttkBarycentricSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
   ttk::Triangulation triangulationSubdivision;
 
   if(triangulation == nullptr) {
+    printMsg("Error, internal triangulation is empty.");
     return -1;
   }
 
@@ -155,14 +156,23 @@ int ttkBarycentricSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
     baseWorker_.setInputPoints(tmpPoints.data());
 
     // move previous triangulation cells to temp vector
-    decltype(cells_) tmpCells{};
-    std::swap(cells_, tmpCells);
+    decltype(cells_connectivity_) tmpCellsCo{};
+    std::swap(cells_connectivity_, tmpCellsCo);
+    decltype(cells_offsets_) tmpCellsOff{};
+    std::swap(cells_offsets_, tmpCellsOff);
 
     // move previous triangulation to temp triangulation
     decltype(triangulationSubdivision) tmpTr{};
     std::swap(triangulationSubdivision, tmpTr);
 
-    tmpTr.setInputCells(tmpCells.size() / 4, tmpCells.data());
+#ifdef TTK_CELL_ARRAY_NEW
+    tmpTr.setInputCells(
+      tmpCellsOff.size() - 1, tmpCellsCo.data(), tmpCellsOff.data());
+#else
+    ttk::LongSimplexId *tmpCells = nullptr;
+    ttk::CellArray::TranslateToFlatLayout(tmpCellsCo, tmpCellsOff, tmpCells);
+    tmpTr.setInputCells(tmpCellsCo.size() - 1, tmpCells);
+#endif
     tmpTr.setInputPoints(tmpPoints.size() / 3, tmpPoints.data());
     baseWorker_.setupTriangulation(&tmpTr);
     baseWorker_.setOutputTriangulation(&triangulationSubdivision);
@@ -184,10 +194,9 @@ int ttkBarycentricSubdivision::doIt(std::vector<vtkDataSet *> &inputs,
   output->SetPoints(points);
 
   // generated triangles
-  const size_t dataPerCell = 4;
   auto cells = vtkSmartPointer<vtkCellArray>::New();
-  for(size_t i = 0; i < cells_.size() / dataPerCell; i++) {
-    cells->InsertNextCell(3, &cells_[dataPerCell * i + 1]);
+  for(size_t i = 0; i < cells_offsets_.size() - 1; i++) {
+    cells->InsertNextCell(3, &cells_connectivity_[cells_offsets_[i]]);
   }
   output->SetCells(VTK_TRIANGLE, cells);
 

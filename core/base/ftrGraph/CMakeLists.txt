@@ -46,9 +46,11 @@ ttk_add_base_library(ftrGraph
     FTRSegmentation.h
     FTRSuperArc.h
     FTRTasks.h
-  LINK
+  DEPENDS
     triangulation
     scalarFieldCriticalPoints
+    Boost::boost
+    Boost::system
     ${profiler_lib}
     )
 

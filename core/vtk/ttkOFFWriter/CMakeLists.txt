@@ -4,4 +4,3 @@ ttk_add_vtk_module()
 if(MSVC)
   target_compile_definitions(ttkOFFWriter PUBLIC vtkIOLegacy_EXPORTS)
 endif()
-

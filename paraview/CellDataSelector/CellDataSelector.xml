@@ -5,9 +5,9 @@
        a filter already in ParaView (in Servers/ServerManager/Resources/*.xml)
        that matches your filter and then model your xml on it -->
   <ProxyGroup name="filters">
-    <SourceProxy 
-      name="CellDataSelector" 
-      class="ttkCellDataSelector" 
+    <SourceProxy
+      name="CellDataSelector"
+      class="ttkCellDataSelector"
       label="TTK CellDataSelector">
       <Documentation
         long_help="TTK filter to select scalar/vector and tensor filed to keep on a data set"
@@ -95,7 +95,7 @@
         default_values="0" panel_visibility="advanced">
         <BooleanDomain name="bool"/>
         <Documentation>
-          Rename the output field if only one is selected (useful for 
+          Rename the output field if only one is selected (useful for
           animations).
         </Documentation>
       </IntVectorProperty>

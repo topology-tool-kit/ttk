@@ -61,7 +61,7 @@ mkdir -p $BUILD_DIR
 curl -kL "https://www.paraview.org/paraview-downloads/download.php?submit=Download&version=v${PARAVIEW_VERSION%.*}&type=source&os=Sources&downloadFile=ParaView-v${PARAVIEW_VERSION}.tar.xz" | \
   tar Jx -C $BUILD_DIR --strip-components 1
 
-# FIXME: hack to allow plugins built against ParaView to know about ospray targets 
+# FIXME: hack to allow plugins built against ParaView to know about ospray targets
 echo "include(@ospray_DIR@/osprayConfig.cmake)" >> ${BUILD_DIR}/VTK/CMake/VTKConfig.cmake.in
 
 # actually compile
@@ -94,6 +94,6 @@ cmake -G Ninja \
 
 ninja install
 
-popd 
+popd
 
 rm -rf $BUILD_DIR

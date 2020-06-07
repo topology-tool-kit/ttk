@@ -5,10 +5,9 @@ using namespace std;
 using namespace ttk;
 using namespace blank;
 
-vtkStandardNewMacro(ttkBlank)
-
-  int ttkBlank::doIt(vector<vtkDataSet *> &inputs,
-                     vector<vtkDataSet *> &outputs) {
+vtkStandardNewMacro(ttkBlank);
+int ttkBlank::doIt(vector<vtkDataSet *> &inputs,
+                   vector<vtkDataSet *> &outputs) {
 
   Memory m;
 
@@ -32,9 +31,9 @@ vtkStandardNewMacro(ttkBlank)
   // variable 'output' with the result of the computation.
   // if your wrapper produces an output of the same type of the input, you
   // should proceed in the same way.
-  vtkDataArray *inputScalarField = NULL;
+  vtkDataArray *inputScalarField = nullptr;
 
-  if(ScalarField.length()) {
+  if(!ScalarField.empty()) {
     inputScalarField = input->GetPointData()->GetArray(ScalarField.data());
   } else {
     inputScalarField = input->GetPointData()->GetArray(0);

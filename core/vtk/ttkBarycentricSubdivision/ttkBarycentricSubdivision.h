@@ -99,7 +99,8 @@ private:
   // middles, then triangle barycenters
   std::vector<float> points_{};
   // output triangles
-  std::vector<ttk::LongSimplexId> cells_{};
+  std::vector<ttk::LongSimplexId> cells_connectivity_;
+  std::vector<ttk::LongSimplexId> cells_offsets_;
   // generated point cell id
   std::vector<ttk::SimplexId> pointId_{};
   // generated points dimension: 0 vertex of parent triangulation, 1 edge
@@ -107,5 +108,6 @@ private:
   std::vector<ttk::SimplexId> pointDim_{};
 
   // base worker
-  ttk::BarycentricSubdivision baseWorker_{points_, cells_, pointId_, pointDim_};
+  ttk::BarycentricSubdivision baseWorker_{
+    points_, cells_connectivity_, cells_offsets_, pointId_, pointDim_};
 };

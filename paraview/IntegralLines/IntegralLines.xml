@@ -6,21 +6,21 @@
       class="ttkIntegralLines"
       label="TTK IntegralLines">
       <Documentation
-        long_help="TTK plugin for the computation of edge-based integral 
+        long_help="TTK plugin for the computation of edge-based integral
 lines of the gradient of an input scalar field."
-        short_help="TTK plugin for the computation of edge-based integral 
+        short_help="TTK plugin for the computation of edge-based integral
 lines of the gradient of an input scalar field.">
 
-The filter takes on its input a scalar field attached as point data to an 
-input geometry (either 2D or 3D, either regular grids or triangulations) 
+The filter takes on its input a scalar field attached as point data to an
+input geometry (either 2D or 3D, either regular grids or triangulations)
 and computes the forward or backward integral lines along the edges of the
-input mesh, given a list of input sources. 
+input mesh, given a list of input sources.
 
-The sources are specified with a vtkPointSet on which is attached as point 
-data a scalar field that represent the vertex identifiers of the sources in 
-the input geometry (use the Identifiers plugin prior to the selection of the 
+The sources are specified with a vtkPointSet on which is attached as point
+data a scalar field that represent the vertex identifiers of the sources in
+the input geometry (use the Identifiers plugin prior to the selection of the
 sources if necessary to create such an identifier field).
-        
+
       </Documentation>
 
       <InputProperty
@@ -171,7 +171,7 @@ sources if necessary to create such an identifier field).
             value="1" />
         </Hints>
         <Documentation>
-          Select the input offset field (to disambiguate flat 
+          Select the input offset field (to disambiguate flat
 plateaus).
         </Documentation>
       </StringVectorProperty>
@@ -218,7 +218,7 @@ plateaus).
           Debug level.
         </Documentation>
       </IntVectorProperty>
-      
+
       <PropertyGroup panel_widget="Line" label="Testing">
         <Property name="UseAllCores" />
         <Property name="ThreadNumber" />

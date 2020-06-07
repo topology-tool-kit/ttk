@@ -10,10 +10,9 @@ using namespace ttk;
  */
 struct CellChecker : public vtkObject // inherit to be able to use vtkErrorMacro
 {
-  vtkTypeMacro(CellChecker, vtkObject)
+  vtkTypeMacro(CellChecker, vtkObject);
 
-    CellChecker()
-    = default;
+  CellChecker() = default;
   static CellChecker *New() {
     return new CellChecker;
   }
@@ -31,7 +30,8 @@ struct CellChecker : public vtkObject // inherit to be able to use vtkErrorMacro
     const vtkIdType nc = ds->GetNumberOfCells();
     for(vtkIdType c = 0; c < nc; ++c) {
       if(ds->GetCellType(c) != VTK_LINE) {
-        vtkErrorMacro(<< getErrMsg()) return -1;
+        vtkErrorMacro(<< getErrMsg());
+        return -1;
       }
     }
     return 0;
@@ -42,7 +42,8 @@ struct CellChecker : public vtkObject // inherit to be able to use vtkErrorMacro
     for(vtkIdType c = 0; c < nc; ++c) {
       const auto type = ds->GetCellType(c);
       if(type != VTK_TRIANGLE && type != VTK_LINE) {
-        vtkErrorMacro(<< getErrMsg()) return -1;
+        vtkErrorMacro(<< getErrMsg());
+        return -1;
       }
     }
     return 0;
@@ -53,7 +54,8 @@ struct CellChecker : public vtkObject // inherit to be able to use vtkErrorMacro
     for(vtkIdType c = 0; c < nc; ++c) {
       const auto type = ds->GetCellType(c);
       if(type != VTK_TETRA && type != VTK_TRIANGLE && type != VTK_LINE) {
-        vtkErrorMacro(<< getErrMsg()) return -1;
+        vtkErrorMacro(<< getErrMsg());
+        return -1;
       }
     }
     return 0;
@@ -62,10 +64,9 @@ struct CellChecker : public vtkObject // inherit to be able to use vtkErrorMacro
 
 ttkTriangulation::ttkTriangulation() {
 
-  inputDataSet_ = NULL;
-
+  inputDataSet_ = nullptr;
   hasAllocated_ = false;
-  triangulation_ = NULL;
+  triangulation_ = nullptr;
 }
 
 ttkTriangulation::~ttkTriangulation() {
@@ -306,9 +307,26 @@ int ttkTriangulation::setInputData(vtkDataSet *dataSet) {
         errMsg += "Please apply the Tetrahedralize filter before proceeding "
                   "with TTK. "
                   "The application behavior may be unspecified otherwise.";
-        vtkErrorWithObjectMacro(nullptr, << errMsg)
+        vtkErrorWithObjectMacro(nullptr, << errMsg);
       }
 
+#ifdef TTK_CELL_ARRAY_NEW
+      auto cellsConnectivity
+        = static_cast<LongSimplexId *>(ttkUtils::GetVoidPointer(
+          vtuDataSet->GetCells()->GetConnectivityArray(), 0));
+      auto cellsOffsets = static_cast<LongSimplexId *>(
+        ttkUtils::GetVoidPointer(vtuDataSet->GetCells()->GetOffsetsArray(), 0));
+#if !defined(_WIN32) || defined(_WIN32) && defined(VTK_USE_64BIT_IDS)
+      triangulation_->setInputCells(
+        vtuDataSet->GetNumberOfCells(), cellsConnectivity, cellsOffsets);
+#else
+      auto extra_connectivity
+        = reinterpret_cast<long long *>(cellsConnectivity);
+      auto extra_offsets = reinterpret_cast<long long *>(cellsOffsets);
+      triangulation_->setInputCells(
+        dataSet->GetNumberOfCells(), extra_connectivity, extra_offsets);
+#endif
+#else
       auto cellsData = static_cast<LongSimplexId *>(
         ttkUtils::GetVoidPointer(vtuDataSet->GetCells()->GetData(), 0));
 #if !defined(_WIN32) || defined(_WIN32) && defined(VTK_USE_64BIT_IDS)
@@ -316,6 +334,7 @@ int ttkTriangulation::setInputData(vtkDataSet *dataSet) {
 #else
       auto extra_pt = reinterpret_cast<long long *>(cellsData);
       triangulation_->setInputCells(dataSet->GetNumberOfCells(), extra_pt);
+#endif
 #endif
     }
     inputDataSet_ = vtuDataSet;
@@ -354,20 +373,49 @@ int ttkTriangulation::setInputData(vtkDataSet *dataSet) {
     //    if(polyData->GetNumberOfStrips())
     //      ; // add more 2D simplices to this ttkTriangulation (de-strip)
     if(vtpDataSet->GetNumberOfPolys() || vtpDataSet->GetNumberOfLines()) {
-      auto polysData = static_cast<LongSimplexId *>(
-        ttkUtils::GetVoidPointer(vtpDataSet->GetPolys()->GetData(), 0));
-      auto linesData = static_cast<LongSimplexId *>(
-        ttkUtils::GetVoidPointer(vtpDataSet->GetLines()->GetData(), 0));
 #if !defined(_WIN32) || defined(_WIN32) && defined(VTK_USE_64BIT_IDS)
-      if(polysData) { // have 2D
+      if(vtpDataSet->GetNumberOfPolys() > 0) { // have 2D
+
         ret = vtkSmartPointer<CellChecker>::New()->check2d(vtpDataSet);
         // NOTE If there are any 1D cells, we just ignore them
+#ifdef TTK_CELL_ARRAY_NEW
+        auto polyDataConnect
+          = static_cast<LongSimplexId *>(ttkUtils::GetVoidPointer(
+            vtpDataSet->GetPolys()->GetConnectivityArray(), 0));
+        auto polyDataOffset
+          = static_cast<LongSimplexId *>(ttkUtils::GetVoidPointer(
+            vtpDataSet->GetPolys()->GetOffsetsArray(), 0));
+        triangulation_->setInputCells(
+          vtpDataSet->GetNumberOfCells(), polyDataConnect, polyDataOffset);
+#else
+        auto polysData = static_cast<LongSimplexId *>(
+          ttkUtils::GetVoidPointer(vtpDataSet->GetPolys()->GetData(), 0));
         triangulation_->setInputCells(
           vtpDataSet->GetNumberOfCells(), polysData);
-      } else if(linesData) { // have 1D
+#endif
+
+      } else if(vtpDataSet->GetNumberOfLines() > 0) { // have 1D
+
         ret = vtkSmartPointer<CellChecker>::New()->check1d(vtpDataSet);
+#ifdef TTK_CELL_ARRAY_NEW
+        auto lineDataConnect
+          = static_cast<LongSimplexId *>(ttkUtils::GetVoidPointer(
+            vtpDataSet->GetLines()->GetConnectivityArray(), 0));
+        auto lineDataOffset
+          = static_cast<LongSimplexId *>(ttkUtils::GetVoidPointer(
+            vtpDataSet->GetLines()->GetOffsetsArray(), 0));
+        triangulation_->setInputCells(
+          vtpDataSet->GetNumberOfCells(), lineDataConnect, lineDataOffset);
+#else
+        auto linesData = static_cast<LongSimplexId *>(
+          ttkUtils::GetVoidPointer(vtpDataSet->GetLines()->GetData(), 0));
         triangulation_->setInputCells(
           vtpDataSet->GetNumberOfCells(), linesData);
+#endif
+      } else {
+        stringstream msg;
+        msg << "[ttkTriangulation] empty polydata." << endl;
+        dMsg(cerr, msg.str(), Debug::fatalMsg);
       }
 #else
       int *pt = polyData->GetPolys()->GetPointer();

@@ -8,6 +8,7 @@
 #include <vtkInformationVector.h>
 #include <vtkSmartPointer.h>
 #include <vtkTable.h>
+#include <vtkVersionMacros.h>
 
 #include <ttkUtils.h>
 
@@ -33,14 +34,15 @@ int ttkCinemaQuery::FillInputPortInformation(int port, vtkInformation *info) {
 
     return 1;
   }
-  return 0;
+  return 1;
 }
 
 int ttkCinemaQuery::FillOutputPortInformation(int port, vtkInformation *info) {
-  if(port == 0)
+  if(port == 0) {
     info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkTable");
-  else
+  } else {
     return 0;
+  }
   return 1;
 }
 
@@ -105,7 +107,7 @@ int ttkCinemaQuery::RequestData(vtkInformation *request,
         }
       }
       sqlTableDefinition += ")";
-      sqlTableDefinitions.push_back(sqlTableDefinition);
+      sqlTableDefinitions.emplace_back(sqlTableDefinition);
 
       // -----------------------------------------------------------------------
       // Insert Statements
@@ -133,7 +135,7 @@ int ttkCinemaQuery::RequestData(vtkInformation *request,
           sqlInsertStatement += ")";
           q++;
         }
-        sqlInsertStatements.push_back(sqlInsertStatement);
+        sqlInsertStatements.emplace_back(sqlInsertStatement);
       }
     }
 

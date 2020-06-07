@@ -1,5 +1,6 @@
 #include "BarycentricSubdivision.h"
 #include "Geometry.h"
+
 #include <array>
 
 #define MODULE_S "[BarycentricSubdivision] "
@@ -20,10 +21,12 @@ int ttk::BarycentricSubdivision::subdiviseTriangulation() {
   points_.clear();
   points_.resize(newPoints * dataPerPoint);
 
-  const size_t dataPerCell{4};
+  const size_t dataPerCell{3};
   const size_t newTrianglesPerParent{6};
-  cells_.clear();
-  cells_.resize(nTriangles_ * dataPerCell * newTrianglesPerParent);
+  cells_connectivity_.clear();
+  cells_offsets_.clear();
+  cells_connectivity_.resize(nTriangles_ * newTrianglesPerParent * dataPerCell);
+  cells_offsets_.resize(nTriangles_ * newTrianglesPerParent + 1);
 
   pointId_.clear();
   pointId_.resize(newPoints);
@@ -91,6 +94,7 @@ int ttk::BarycentricSubdivision::subdiviseTriangulation() {
     pointDim_[nVertices_ + nEdges_ + i] = 2;
   }
 
+  LongSimplexId off_id = 0, co_id = 0;
   // subdivise every triangle
   for(SimplexId i = 0; i < nTriangles_; ++i) {
     // id of triangle barycenter
@@ -109,25 +113,32 @@ int ttk::BarycentricSubdivision::subdiviseTriangulation() {
       inputTriangl_->getEdgeVertex(e, 0, a);
       inputTriangl_->getEdgeVertex(e, 1, b);
 
-      // new triangles: a, em, bary & b, em, bary
-      const size_t offset = (i * newTrianglesPerParent + 2 * j) * dataPerCell;
-      cells_[offset + 0] = 3;
-      cells_[offset + 1] = a;
-      cells_[offset + 2] = em;
-      cells_[offset + 3] = bary;
-      cells_[offset + 4] = 3;
-      cells_[offset + 5] = b;
-      cells_[offset + 6] = em;
-      cells_[offset + 7] = bary;
+      // Ad triangle a - em - bary
+      cells_offsets_[off_id] = co_id;
+      off_id++;
+      cells_connectivity_[co_id + 0] = a;
+      cells_connectivity_[co_id + 1] = em;
+      cells_connectivity_[co_id + 2] = bary;
+      co_id += 3;
+
+      // Ad triangle b - em - bary
+      cells_offsets_[off_id] = co_id;
+      off_id++;
+      cells_connectivity_[co_id + 0] = b;
+      cells_connectivity_[co_id + 1] = em;
+      cells_connectivity_[co_id + 2] = bary;
+      co_id += 3;
     }
   }
+  // Last offset
+  cells_offsets_[off_id] = co_id;
 
   return 0;
 }
 
 int ttk::BarycentricSubdivision::buildOutputTriangulation() {
   // ensure subdivision is already performed
-  if(points_.empty() || cells_.empty()) {
+  if(points_.empty() || cells_connectivity_.empty()) {
     return 1;
   }
 
@@ -137,7 +148,16 @@ int ttk::BarycentricSubdivision::buildOutputTriangulation() {
   }
 
   outputTriangl_->setInputPoints(points_.size() / 3, points_.data());
-  outputTriangl_->setInputCells(cells_.size() / 4, cells_.data());
+#ifdef TTK_CELL_ARRAY_NEW
+  outputTriangl_->setInputCells(cells_offsets_.size() - 1,
+                                cells_connectivity_.data(),
+                                cells_offsets_.data());
+#else
+  // TODO use revert translator
+  LongSimplexId *cells = nullptr;
+  CellArray::TranslateToFlatLayout(cells_connectivity_, cells_offsets_, cells);
+  outputTriangl_->setInputCells(cells_offsets_.size() - 1, cells);
+#endif
 
   return 0;
 }

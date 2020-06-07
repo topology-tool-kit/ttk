@@ -92,7 +92,7 @@ int ttkMeshGraph::RequestData(vtkInformation *request,
 
            // Input
            (float *)input->GetPoints()->GetVoidPointer(0),
-           inputCells->GetPointer(), nInputPoints, nInputCells,
+           inputCells->GetData()->GetPointer(0), nInputPoints, nInputCells,
            this->GetUseVariableSize()
              ? (VTK_TT *)inputPointSizes->GetVoidPointer(0)
              : nullptr,
@@ -108,7 +108,7 @@ int ttkMeshGraph::RequestData(vtkInformation *request,
 
            // Input
            (float *)input->GetPoints()->GetVoidPointer(0),
-           inputCells->GetPointer(), nInputPoints, nInputCells,
+           inputCells->GetData()->GetPointer(0), nInputPoints, nInputCells,
            this->GetSubdivisions(),
            this->GetUseVariableSize()
              ? (VTK_TT *)inputPointSizes->GetVoidPointer(0)
@@ -151,7 +151,7 @@ int ttkMeshGraph::RequestData(vtkInformation *request,
       switch(iArray->GetDataType()) {
         vtkTemplateMacro(
           (status = this->mapInputPointDataToOutputPointData<vtkIdType, VTK_TT>(
-             inputCells->GetPointer(), nInputPoints, nInputCells,
+             inputCells->GetData()->GetPointer(0), nInputPoints, nInputCells,
 
              (VTK_TT *)iArray->GetVoidPointer(0),
              (VTK_TT *)oArray->GetVoidPointer(0),

@@ -3,7 +3,7 @@ ttk_add_base_library(persistenceDiagram
     PersistenceDiagram.cpp
   HEADERS
     PersistenceDiagram.h
-  LINK
+  DEPENDS
     discreteGradient
     triangulation
     morseSmaleComplex3D

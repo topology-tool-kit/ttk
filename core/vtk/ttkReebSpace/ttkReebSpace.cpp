@@ -3,9 +3,8 @@
 using namespace std;
 using namespace ttk;
 
-vtkStandardNewMacro(ttkReebSpace)
-
-  ttkReebSpace::ttkReebSpace() {
+vtkStandardNewMacro(ttkReebSpace);
+ttkReebSpace::ttkReebSpace() {
 
   // init
   SetNumberOfOutputPorts(4);
@@ -310,7 +309,7 @@ int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
   }
 
   vertexNumber = 0;
-  double *p = NULL;
+  double *p = nullptr;
   for(SimplexId i = 0; i < (SimplexId)sheet0segmentation->size(); i++) {
     SimplexId sheet0Id = (*sheet0segmentation)[i];
     if(sheet0Id != -1) {
@@ -835,7 +834,6 @@ int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
     }
   }
   sheet3->GetCellData()->AddArray(tetSegmentation);
-
   {
     stringstream msg;
     msg << "[ttkReebSpace] Memory usage: " << m.getElapsedUsage() << " MB."

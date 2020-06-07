@@ -7,28 +7,42 @@
 ///
 /// %CellArray is a generic container that allows to deal with various cell
 /// layouts in memory \sa Triangulation \sa ttkTriangulation
+/// This version assumes the cell data to be given by two
+/// arrays:
+/// * Connectivity, containing the list of point ids of each cells
+/// * Offsets, containing the beginning and end position of each cell in the
+/// Connectivity array See VTK 9 vtkCellArray documentation for more details
+/// about this layout.
+/// This class is more a view on data than a complete container. It does
+/// not support memory modification operations.
+/// This file will be installed by CMake as CellArray.h if the
+/// TTK_CELL_ARRAY_LAYOUT is set to OffsetAndConnectivity
 
 #ifndef _CELLARRAY_H
 #define _CELLARRAY_H
 
 #include <DataTypes.h>
 
+#include <vector>
+
 #ifndef TTK_ENABLE_KAMIKAZE
 #include <iostream>
 #endif
 
 namespace ttk {
-
   // This is not a Debug class as we want to keep it as light as possible
   class CellArray {
   public:
-    CellArray(const LongSimplexId *cellArray,
-              const LongSimplexId nbCells,
-              const unsigned char dimension);
+    CellArray(const LongSimplexId *connectivity,
+              const LongSimplexId *offset,
+              const LongSimplexId nbCells)
+      : connectivity_{connectivity}, offset_{offset}, nbCells_{nbCells} {
+    }
 
     virtual ~CellArray() {
       if(ownerShip_) {
-        delete[] cellArray_;
+        delete[] connectivity_;
+        delete[] offset_;
       }
     }
 
@@ -37,19 +51,15 @@ namespace ttk {
       ownerShip_ = o;
     }
 
-    /// Retrieve the dimension
-    inline unsigned char getDimension() const {
-      return dimension_;
-    }
-
     /// Get the number of cells in the array
     inline LongSimplexId getNbCells() const {
       return nbCells_;
     }
 
     /// Get the number of vertices in the cell with the id: cellid
+    /// Can deal with heterogeneous meshes
     /// \param cellid global id of the cell
-    /// \return dimension + 1 for now as we only accept regular meshes
+    /// \return the offset difference between this cell and next.
     inline SimplexId getCellVertexNumber(const LongSimplexId cellId) const {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(cellId >= this->nbCells_) {
@@ -57,31 +67,30 @@ namespace ttk {
                   << this->nbCells_ << std::endl;
       }
 #endif
-      // WARNING: ASSUME Regular Mesh here
-      return this->dimension_ + 1;
+      // Connectivity size is nbCell + 1 for last cell
+      return this->offset_[cellId + 1] - this->offset_[cellId];
     }
     /// Get the vertex id of the "localVertId"'nt vertex of the cell.
+    /// Can deal with heterogeneous meshes
     /// \param cellId global id of the cell
-    /// \param localVertId id of the vertex local to the cell,
-    /// usually lower than 4 in 3D and lower than 3 in 2D.
+    /// \param localVertId id of the vertex local to the cell
     /// \return the global id of the vertex
     inline LongSimplexId getCellVertex(const LongSimplexId cellId,
                                        const SimplexId localVertId) const {
-      const SimplexId locNbVert = this->getCellVertexNumber(cellId);
 #ifndef TTK_ENABLE_KAMIKAZE
+      const SimplexId locNbVert = this->getCellVertexNumber(cellId);
       if(localVertId >= locNbVert) {
         std::cerr << "TTK: access to local vert " << localVertId << " on "
                   << locNbVert << std::endl;
       }
 #endif
-      // Assume VTK < 9 layout
-      return this->cellArray_[(locNbVert + 1) * cellId + 1 + localVertId];
+      return connectivity_[offset_[cellId] + localVertId];
     }
 
   protected:
-    const LongSimplexId *cellArray_;
+    const LongSimplexId *connectivity_;
+    const LongSimplexId *offset_;
     const LongSimplexId nbCells_;
-    const unsigned char dimension_;
     bool ownerShip_ = false;
   };
 } // namespace ttk

@@ -24,10 +24,9 @@
 #include <cassert>
 #include <type_traits>
 
-vtkStandardNewMacro(ttkContourAroundPoint)
-
-  int ttkContourAroundPoint::doIt(std::vector<vtkDataSet *> &inputs,
-                                  std::vector<vtkDataSet *> &outputs) {
+vtkStandardNewMacro(ttkContourAroundPoint);
+int ttkContourAroundPoint::doIt(std::vector<vtkDataSet *> &inputs,
+                                std::vector<vtkDataSet *> &outputs) {
   ttk::Memory memUseObj;
   _out = static_cast<vtkUnstructuredGrid *>(outputs[0]);
 
@@ -35,36 +34,37 @@ vtkStandardNewMacro(ttkContourAroundPoint)
   makeDummyOutput();
 #else
   if(!preprocessDomain(inputs[0]))
-    return 0;
+    return -1;
   if(!preconditionConstraints(static_cast<vtkUnstructuredGrid *>(inputs[1]),
                               static_cast<vtkUnstructuredGrid *>(inputs[2])))
-    return 0;
+    return -1;
   if(!process())
-    return 0;
+    return -1;
   if(!postprocess())
-    return 0;
+    return -1;
 #endif
 
   std::ostringstream memUseStream;
   memUseStream << std::fixed << std::setprecision(3)
                << memUseObj.getElapsedUsage() << " MB";
   dMsg(cout, memUseStream.str(), memoryMsg);
-  return 1;
+  return 0;
 }
 
 //------------------------------------------------------------------------------------------------//
 
 bool ttkContourAroundPoint::preprocessDomain(vtkDataSet *dataset) {
   if(ui_scalars == "") {
-    vtkErrorMacro(
-      "A scalar variable needs to be defined on the Domain") return false;
+    vtkErrorMacro("A scalar variable needs to be defined on the Domain");
+    return false;
   }
 
   ttk::Triangulation *triangulation
     = ttkTriangulation::getTriangulation(dataset);
   if(!triangulation) {
     vtkErrorMacro("No ttk::Triangulation could be gained from the input "
-                  "field") return false;
+                  "field");
+    return false;
   }
 
   triangulation->setWrapper(this);
@@ -104,7 +104,8 @@ bool ttkContourAroundPoint::preconditionConstraints(vtkUnstructuredGrid *nodes,
 
   auto points = nodes->GetPoints();
   if(points->GetDataType() != VTK_FLOAT) {
-    vtkErrorMacro("The point coordinates must be of type float") return false;
+    vtkErrorMacro("The point coordinates must be of type float");
+    return false;
   }
   auto coords = reinterpret_cast<float *>(points->GetData()->GetVoidPointer(0));
 
@@ -125,7 +126,8 @@ bool ttkContourAroundPoint::preconditionConstraints(vtkUnstructuredGrid *nodes,
   if(maxNvPerC != 2) {
     vtkErrorMacro(
       "The points must come in pairs but there is at least one cell with "
-      + std::to_string(maxNvPerC) + " points") return false;
+      + std::to_string(maxNvPerC) + " points");
+    return false;
   }
 
   auto cData = arcs->GetCellData();
@@ -174,9 +176,8 @@ bool ttkContourAroundPoint::preconditionConstraints(vtkUnstructuredGrid *nodes,
     {
       const auto pVal = scalarBuf[p];
       const auto qVal = scalarBuf[q];
-      vtkWarningMacro(<< "Arc " << c << " joins a minimum and a maximum")
-        const auto cVal
-        = (pVal + qVal) / 2;
+      vtkWarningMacro(<< "Arc " << c << " joins a minimum and a maximum");
+      const auto cVal = (pVal + qVal) / 2;
       if(sizeBuf[p] >= minSize) {
         _isovals.push_back(pVal * extFac + cVal * sadFac);
         const auto point = &coords[p * 3];
@@ -215,8 +216,8 @@ bool ttkContourAroundPoint::process() {
     vtkTemplateMacro((errorCode = _wrappedModule.execute<VTK_TT>()));
   }
   if(errorCode < 0) {
-    vtkErrorMacro("_wrappedModule.execute failed with code "
-                  << errorCode) return false;
+    vtkErrorMacro("_wrappedModule.execute failed with code " << errorCode);
+    return false;
   }
 
   return true;
@@ -239,7 +240,8 @@ bool ttkContourAroundPoint::postprocess() {
   const auto nvPerC = cinfosBuf[0];
   if(!(nvPerC == 2 || nvPerC == 3)) {
     vtkErrorMacro("Invalid number of vertices per cell: "
-                  + std::to_string(nvPerC) + ". Must be 2 or 3") return false;
+                  + std::to_string(nvPerC) + ". Must be 2 or 3");
+    return false;
   }
   const auto cellType = nvPerC == 2 ? VTK_LINE : VTK_TRIANGLE;
 

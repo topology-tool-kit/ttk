@@ -29,16 +29,11 @@
 #define _TTK_SCALARFIELDCRITICALPOINTS_H
 
 // VTK includes -- to adapt
-#include <vtkCellArray.h>
-#include <vtkCharArray.h>
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
 #include <vtkDataSetAlgorithm.h>
-#include <vtkDoubleArray.h>
 #include <vtkFiltersCoreModule.h>
-#include <vtkFloatArray.h>
 #include <vtkInformation.h>
-#include <vtkIntArray.h>
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
 #include <vtkSmartPointer.h>
@@ -48,7 +43,9 @@
 #include <ttkScalarFieldCriticalPointsModule.h>
 
 // ttk baseCode includes
+#include <Debug.h>
 #include <ScalarFieldCriticalPoints.h>
+#include <Wrapper.h>
 #include <ttkTriangulationAlgorithm.h>
 
 // in this example, this wrapper takes a data-set on the input and produces a

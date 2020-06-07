@@ -25,10 +25,12 @@
 #define _JACOBISET_H
 
 // base code includes
+#include <Debug.h>
 #include <ScalarFieldCriticalPoints.h>
 #include <Triangulation.h>
 #include <UnionFind.h>
 #include <Wrapper.h>
+#include <vector>
 
 namespace ttk {
 
@@ -39,13 +41,6 @@ namespace ttk {
     JacobiSet();
 
     ~JacobiSet();
-
-    int connectivityPreprocessing(
-      const std::vector<std::vector<SimplexId>> &edgeStarList,
-      std::vector<std::vector<std::pair<SimplexId, SimplexId>>>
-        &edgeFanLinkEdgeLists,
-      std::vector<std::vector<LongSimplexId>> &edgeFans,
-      std::vector<SimplexId> &sosOffsets) const;
 
     int execute(std::vector<std::pair<SimplexId, char>> &jacobiSet);
 
@@ -139,6 +134,6 @@ namespace ttk {
 } // namespace ttk
 
 // if the package is not a template, comment the following line
-#include <JacobiSet.inl>
+#include "JacobiSet.inl"
 
 #endif // JACOBISET_H

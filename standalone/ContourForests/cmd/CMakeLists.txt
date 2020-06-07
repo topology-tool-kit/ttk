@@ -21,4 +21,3 @@ if(TARGET ttkContourForests)
       ${TTK_INSTALL_BINARY_DIR}
     )
 endif()
-

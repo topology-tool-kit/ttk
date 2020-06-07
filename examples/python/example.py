@@ -3,7 +3,7 @@
 #/// \ingroup examples
 #/// \author Lutz Hofmann <lutz.hofmann@iwr.uni-heidelberg.de>
 #/// \date August 2019.
-#/// 
+#///
 #/// \brief Minimalist python TTK example pipeline, including:
 #///  -# The computation of a persistence curve
 #///  -# The computation of a persistence diagram

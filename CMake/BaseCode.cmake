@@ -5,30 +5,50 @@
 # ttk_add_base_library(<library_name>
 #     SOURCES <source list>
 #     HEADERS <headers to install>
-#     LINK <libraries to link>)
+#     DEPENDS <libraries to link>)
 #
 function(ttk_add_base_library library)
-  cmake_parse_arguments(ARG "" "" "SOURCES;HEADERS;LINK" ${ARGN})
+  cmake_parse_arguments(ARG "" "" "SOURCES;HEADERS;DEPENDS;OPTIONAL_DEPENDS" ${ARGN})
 
-  add_library(${library} STATIC ${ARG_SOURCES} ${ARG_HEADERS})
-  set_target_properties(${library} PROPERTIES
-    POSITION_INDEPENDENT_CODE TRUE)
+  add_library(${library}
+    STATIC
+      ${ARG_SOURCES}
+      ${ARG_HEADERS}
+    )
+  set_target_properties(${library}
+    PROPERTIES
+      POSITION_INDEPENDENT_CODE TRUE
+    )
+  target_include_directories(${library}
+    PUBLIC
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+      $<INSTALL_INTERFACE:include/ttk/base>
+    )
 
-  target_include_directories(${library} PUBLIC
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-    $<INSTALL_INTERFACE:include/ttk/base>)
-
-  if(ARG_LINK)
-    target_link_libraries(${library} PUBLIC ${ARG_LINK})
+  if(ARG_DEPENDS)
+    target_link_libraries(${library} PUBLIC ${ARG_DEPENDS})
   endif()
 
+  if(ARG_OPTIONAL_DEPENDS)
+    foreach(OPT_DEP IN LISTS ARG_OPTIONAL_DEPENDS)
+      if(TARGET ${OPT_DEP})
+       target_link_libraries(${library} PUBLIC ${OPT_DEP})
+      endif()
+    endforeach()
+  endif()
+ 
   ttk_set_compile_options(${library})
 
   install(TARGETS ${library}
-    EXPORT TTKBaseTargets
-    RUNTIME DESTINATION bin/ttk
-    ARCHIVE DESTINATION lib/ttk
-    LIBRARY DESTINATION lib/ttk)
+    EXPORT
+      TTKBaseTargets
+    RUNTIME DESTINATION
+      "${CMAKE_INSTALL_BINDIR}/ttk"
+    ARCHIVE DESTINATION
+      "${CMAKE_INSTALL_LIBDIR}/ttk"
+    LIBRARY DESTINATION
+      "${CMAKE_INSTALL_LIBDIR}/ttk"
+    )
 
   if(ARG_HEADERS)
     install(FILES ${ARG_HEADERS} DESTINATION include/ttk/base)
@@ -43,20 +63,19 @@ endfunction()
 #
 # Usage:
 # ttk_add_base_template_library(<library_name>
-#     SOURCES <headers list>
-#     LINK <libraries to link>)
+#     HEADERS <headers list>
+#     DEPENDS <libraries to link>)
 #
 function(ttk_add_base_template_library library)
-  cmake_parse_arguments(ARG "" "" "SOURCES;LINK" ${ARGN})
+  cmake_parse_arguments(ARG "" "" "HEADERS;DEPENDS" ${ARGN})
 
   add_library(${library} INTERFACE)
-  target_include_directories(${library} INTERFACE
-    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-    $<INSTALL_INTERFACE:include/ttk/base>)
 
-  if(Boost_FOUND)
-    target_link_libraries(${library} INTERFACE Boost::boost)
-  endif()
+  target_include_directories(${library}
+    INTERFACE
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+      $<INSTALL_INTERFACE:include/ttk/base>
+    )
 
   if(TTK_ENABLE_KAMIKAZE)
     target_compile_definitions(${library} INTERFACE TTK_ENABLE_KAMIKAZE)
@@ -74,53 +93,12 @@ function(ttk_add_base_template_library library)
     target_compile_options(${library} INTERFACE ${OpenMP_CXX_FLAGS})
   endif()
 
-  if(ARG_LINK)
-    target_link_libraries(${library} INTERFACE ${ARG_LINK})
+  if(ARG_DEPENDS)
+    target_link_libraries(${library} INTERFACE ${ARG_DEPENDS})
   endif()
 
   if(TTK_ENABLE_MPI)
     target_link_libraries(${library} INTERFACE ${MPI_CXX_LIBRARIES})
-  endif()
-
-  if(TTK_ENABLE_EIGEN)
-    # eigen change their cmake 3.2 -> 3.3
-    if (TARGET Eigen3::Eigen)
-      target_link_libraries(${library} INTERFACE Eigen3::Eigen)
-    else()
-      target_compile_definitions(${library} INTERFACE ${EIGEN3_DEFINITIONS})
-      target_include_directories(${library} INTERFACE ${EIGEN3_INCLUDE_DIRS})
-    endif()
-  endif()
-
-  if(TTK_ENABLE_ZFP)
-    target_link_libraries(${library} INTERFACE zfp::zfp)
-  endif()
-
-  if(TTK_ENABLE_GRAPHVIZ)
-    target_compile_definitions(${library} INTERFACE TTK_ENABLE_GRAPHVIZ)
-    target_include_directories(${library} INTERFACE ${GRAPHVIZ_INCLUDE_DIR})
-  endif()
-
-  if(TTK_ENABLE_SCIKIT_LEARN)
-    target_compile_definitions(${library} INTERFACE TTK_ENABLE_SCIKIT_LEARN)
-  endif()
-
-  if(TTK_ENABLE_SQLITE3)
-    target_compile_definitions(${library} INTERFACE TTK_ENABLE_SQLITE3)
-    target_include_directories(${library} INTERFACE ${SQLITE3_INCLUDE_DIR})
-  endif()
-
-  if(GRAPHVIZ_INCLUDE_DIR)
-    target_compile_definitions(${library} INTERFACE TTK_ENABLE_GRAPHVIZ)
-    target_link_libraries(${library} INTERFACE ${GRAPHVIZ_CDT_LIBRARY})
-    target_link_libraries(${library} INTERFACE ${GRAPHVIZ_GVC_LIBRARY})
-    target_link_libraries(${library} INTERFACE ${GRAPHVIZ_CGRAPH_LIBRARY})
-    target_link_libraries(${library} INTERFACE ${GRAPHVIZ_PATHPLAN_LIBRARY})
-  endif()
-
-  if(TTK_ENABLE_ZLIB)
-    target_compile_definitions(${library} INTERFACE TTK_ENABLE_ZLIB)
-    target_include_directories(${library} INTERFACE ${ZLIB_INCLUDE_DIR})
   endif()
 
   if(TTK_ENABLE_64BIT_IDS)
@@ -129,15 +107,21 @@ function(ttk_add_base_template_library library)
 
   install(TARGETS ${library}
     EXPORT TTKBaseTargets
-    RUNTIME DESTINATION bin/ttk
-    ARCHIVE DESTINATION lib/ttk
-    LIBRARY DESTINATION lib/ttk)
+    RUNTIME DESTINATION
+      "${CMAKE_INSTALL_BINDIR}/ttk"
+    ARCHIVE DESTINATION
+      "${CMAKE_INSTALL_LIBDIR}/ttk"
+    LIBRARY DESTINATION
+      "${CMAKE_INSTALL_LIBDIR}/ttk"
+    )
 
-  install(FILES ${ARG_SOURCES} DESTINATION include/ttk/base)
+  install(FILES ${ARG_HEADERS} DESTINATION include/ttk/base)
 endfunction()
 
 # Add compile flags and defintions to the target
 # according to the options selected by the user.
+# Only options and defintions common to all modules
+# should be here.
 #
 # Usage:
 # ttk_set_compile_options(<library_name>)
@@ -146,14 +130,6 @@ function(ttk_set_compile_options library)
 
   # compilation flags
   target_compile_options(${library} PRIVATE ${TTK_COMPILER_FLAGS})
-
-  if(Boost_FOUND)
-    target_link_libraries(${library} PUBLIC Boost::boost)
-  endif()
-
-  if(Boost_LIBRARIES)
-    target_link_libraries(${library} PUBLIC Boost::system)
-  endif()
 
   if (TTK_ENABLE_KAMIKAZE)
     target_compile_definitions(${library} PUBLIC TTK_ENABLE_KAMIKAZE)
@@ -175,28 +151,19 @@ function(ttk_set_compile_options library)
     target_link_libraries(${library} PUBLIC ${MPI_CXX_LIBRARIES})
   endif()
 
-  if (TTK_ENABLE_ZFP)
-    target_compile_definitions(${library} PUBLIC TTK_ENABLE_ZFP)
-    target_link_libraries(${library} PUBLIC zfp::zfp)
+  if (TTK_ENABLE_SCIKIT_LEARN)
+    target_compile_definitions(${library} PUBLIC TTK_ENABLE_SCIKIT_LEARN)
   endif()
 
-  if(TTK_ENABLE_EIGEN)
-    target_compile_definitions(${library} PUBLIC TTK_ENABLE_EIGEN)
-    # eigen change their cmake 3.2 -> 3.3
-    if (TARGET Eigen3::Eigen)
-      target_link_libraries(${library} PUBLIC Eigen3::Eigen)
-    else()
-      target_compile_definitions(${library} PUBLIC ${EIGEN3_DEFINITIONS})
-      target_include_directories(${library} PUBLIC ${EIGEN3_INCLUDE_DIRS})
-    endif()
+  if(TTK_ENABLE_ZFP)
+    target_compile_definitions(${library} PUBLIC TTK_ENABLE_ZFP)
   endif()
 
   if (TTK_ENABLE_ZLIB)
     target_compile_definitions(${library} PUBLIC TTK_ENABLE_ZLIB)
-    target_include_directories(${library} PUBLIC ${ZLIB_INCLUDE_DIR})
-    target_link_libraries(${library} PUBLIC ${ZLIB_LIBRARY})
   endif()
 
+  # TODO per module
   if (TTK_ENABLE_GRAPHVIZ AND GRAPHVIZ_FOUND)
     target_compile_definitions(${library} PUBLIC TTK_ENABLE_GRAPHVIZ)
     target_include_directories(${library} PUBLIC ${GRAPHVIZ_INCLUDE_DIR})
@@ -206,10 +173,7 @@ function(ttk_set_compile_options library)
     target_link_libraries(${library} PUBLIC ${GRAPHVIZ_PATHPLAN_LIBRARY})
   endif()
 
-  if (TTK_ENABLE_SCIKIT_LEARN)
-    target_compile_definitions(${library} PUBLIC TTK_ENABLE_SCIKIT_LEARN)
-  endif()
-
+  # TODO per module
   if (TTK_ENABLE_SQLITE3)
     target_compile_definitions(${library} PUBLIC TTK_ENABLE_SQLITE3)
     target_include_directories(${library} PUBLIC ${SQLITE3_INCLUDE_DIR})
@@ -230,14 +194,13 @@ function(ttk_find_python)
   if(PYTHON_INCLUDE_DIRS)
     include_directories(SYSTEM ${PYTHON_INCLUDE_DIRS})
 
-    #     if (${CMAKE_VERSION} VERSION_GREATER "3.12"
-    #       OR ${CMAKE_VERSION} VERSION_EQUAL "3.12")
-    #       string(REPLACE \".\" \" \"
-    #         PYTHON_VERSION_LIST ${PYTHONLIBS_VERSION_STRING})
-    #     else()
-    string(REPLACE "." " "
-      PYTHON_VERSION_LIST ${PYTHONLIBS_VERSION_STRING})
-    #     endif()
+    if (${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.15")
+      string(REPLACE \".\" \" \"
+        PYTHON_VERSION_LIST ${PYTHONLIBS_VERSION_STRING})
+    else()
+      string(REPLACE "." " "
+        PYTHON_VERSION_LIST ${PYTHONLIBS_VERSION_STRING})
+    endif()
     separate_arguments(PYTHON_VERSION_LIST)
     list(GET PYTHON_VERSION_LIST 0 PYTHON_MAJOR_VERSION)
     list(GET PYTHON_VERSION_LIST 1 PYTHON_MINOR_VERSION)

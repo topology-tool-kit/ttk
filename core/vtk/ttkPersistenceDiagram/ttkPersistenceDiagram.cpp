@@ -289,7 +289,7 @@ int ttkPersistenceDiagram::doIt(vector<vtkDataSet *> &inputs,
     cerr << "[ttkPersistenceDiagram] Error : input offset field type not "
             "supported."
          << endl;
-    return -1;
+    return -3;
   }
 #endif
 
