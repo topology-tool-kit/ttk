@@ -1117,14 +1117,17 @@ int ttk::MorseSmaleComplex3D::execute() {
   std::vector<dcg::Cell> criticalPoints;
   discreteGradient_.getCriticalPoints(criticalPoints);
 
+  std::vector<std::vector<Separatrix>> separatrices1{};
+  std::vector<std::vector<std::vector<dcg::Cell>>> separatricesGeometry1;
+
   // 1-separatrices
   if(ComputeDescendingSeparatrices1) {
     Timer tmp;
-    std::vector<Separatrix> separatrices;
-    std::vector<std::vector<dcg::Cell>> separatricesGeometry;
+    separatrices1.emplace_back();
+    separatricesGeometry1.emplace_back();
+
     getDescendingSeparatrices1(
-      criticalPoints, separatrices, separatricesGeometry);
-    setSeparatrices1<dataType>(separatrices, separatricesGeometry);
+      criticalPoints, separatrices1.back(), separatricesGeometry1.back());
 
     {
       std::stringstream msg;
@@ -1136,11 +1139,11 @@ int ttk::MorseSmaleComplex3D::execute() {
 
   if(ComputeAscendingSeparatrices1) {
     Timer tmp;
-    std::vector<Separatrix> separatrices;
-    std::vector<std::vector<dcg::Cell>> separatricesGeometry;
+    separatrices1.emplace_back();
+    separatricesGeometry1.emplace_back();
+
     getAscendingSeparatrices1(
-      criticalPoints, separatrices, separatricesGeometry);
-    setSeparatrices1<dataType>(separatrices, separatricesGeometry);
+      criticalPoints, separatrices1.back(), separatricesGeometry1.back());
 
     {
       std::stringstream msg;
@@ -1153,14 +1156,51 @@ int ttk::MorseSmaleComplex3D::execute() {
   // saddle-connectors
   if(ComputeSaddleConnectors) {
     Timer tmp;
-    std::vector<Separatrix> separatrices;
-    std::vector<std::vector<dcg::Cell>> separatricesGeometry;
-    getSaddleConnectors(criticalPoints, separatrices, separatricesGeometry);
-    setSeparatrices1<dataType>(separatrices, separatricesGeometry);
+    separatrices1.emplace_back();
+    separatricesGeometry1.emplace_back();
+
+    getSaddleConnectors(
+      criticalPoints, separatrices1.back(), separatricesGeometry1.back());
 
     {
       std::stringstream msg;
       msg << "[MorseSmaleComplex3D] Saddle connectors computed in "
+          << tmp.getElapsedTime() << " s." << std::endl;
+      dMsg(std::cout, msg.str(), timeMsg);
+    }
+  }
+
+  if(ComputeDescendingSeparatrices1 || ComputeAscendingSeparatrices1
+     || ComputeSaddleConnectors) {
+    Timer tmp{};
+
+    for(size_t i = 1; i < separatrices1.size(); ++i) {
+      // shift separatrices geometry_
+      const auto offset = separatricesGeometry1[0].size();
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+      for(size_t j = 0; j < separatrices1[i].size(); ++j) {
+        for(size_t k = 0; k < separatrices1[i][j].geometry_.size(); ++k) {
+          separatrices1[i][j].geometry_[k] += offset;
+        }
+      }
+
+      // flatten separatrices1 and separatricesGeometry1
+      separatrices1[0].insert(separatrices1[0].end(),
+                              std::make_move_iterator(separatrices1[i].begin()),
+                              std::make_move_iterator(separatrices1[i].end()));
+      separatricesGeometry1[0].insert(
+        separatricesGeometry1[0].end(),
+        std::make_move_iterator(separatricesGeometry1[i].begin()),
+        std::make_move_iterator(separatricesGeometry1[i].end()));
+    }
+
+    setSeparatrices1<dataType>(separatrices1[0], separatricesGeometry1[0]);
+
+    {
+      std::stringstream msg;
+      msg << "[MorseSmaleComplex3D] 1-separatrices set in "
           << tmp.getElapsedTime() << " s." << std::endl;
       dMsg(std::cout, msg.str(), timeMsg);
     }
