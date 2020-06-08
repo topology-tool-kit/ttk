@@ -600,9 +600,10 @@ int ttk::AbstractMorseSmaleComplex::setSeparatrices1(
     const dcg::Cell &dst = sep.destination_;
 
     // get separatrix type
-    const char sepType = (src.dim_ == 1 && dst.dim_ == 2)
-                           ? 1 // saddle connector
-                           : std::min(dst.dim_, dimensionality - 1);
+    const auto saddleConnector
+      = dimensionality == 3 && src.dim_ == 1 && dst.dim_ == 2;
+    const char sepType
+      = saddleConnector ? 1 : std::min(dst.dim_, dimensionality - 1);
 
     // compute separatrix function diff
     const auto sepFuncMax
@@ -615,7 +616,7 @@ int ttk::AbstractMorseSmaleComplex::setSeparatrices1(
 
     // get boundary condition
     const auto onBoundary
-      = (sepType == 1)
+      = saddleConnector
           ? static_cast<char>(discreteGradient_.isBoundary(src)
                               && discreteGradient_.isBoundary(dst))
           : static_cast<char>(discreteGradient_.isBoundary(src))
