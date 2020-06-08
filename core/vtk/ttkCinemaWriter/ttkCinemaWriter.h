@@ -89,7 +89,8 @@ private:
   double Tolerance{1.0};
   double MaximumError{};
   double ZFPBitBudget{0};
-  int CompressionType{static_cast<int>(ttk::CompressionType::PersistenceDiagram)};
+  int CompressionType{
+    static_cast<int>(ttk::CompressionType::PersistenceDiagram)};
   int SQMethodPV{};
   bool ZFPOnly{false};
   bool Subdivide{false};
