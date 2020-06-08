@@ -2684,7 +2684,7 @@ int ImplicitTriangulation::preconditionVerticesInternal() {
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
     for(SimplexId i = 0; i < vertexNumber_; ++i) {
-      std::array<SimplexId, 3> p{};
+      auto &p = vertexCoords_[i];
       vertexToPosition2d(i, p.data());
 
       if(0 < p[0] and p[0] < nbvoxels_[Di_]) {
@@ -2709,7 +2709,6 @@ int ImplicitTriangulation::preconditionVerticesInternal() {
         else
           vertexPositions_[i] = VertexPosition::BOTTOM_RIGHT_CORNER_2D; // d
       }
-      vertexCoords_[i] = std::move(p);
     }
 
   } else if(dimensionality_ == 3) {
@@ -2717,7 +2716,7 @@ int ImplicitTriangulation::preconditionVerticesInternal() {
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
     for(SimplexId i = 0; i < vertexNumber_; ++i) {
-      std::array<SimplexId, 3> p{};
+      auto &p = vertexCoords_[i];
       vertexToPosition(i, p.data());
 
       if(0 < p[0] and p[0] < nbvoxels_[0]) {
@@ -2795,7 +2794,6 @@ int ImplicitTriangulation::preconditionVerticesInternal() {
               = VertexPosition::BOTTOM_RIGHT_BACK_CORNER_3D; // h
         }
       }
-      vertexCoords_[i] = std::move(p);
     }
   }
   return 0;
@@ -2810,7 +2808,7 @@ int ImplicitTriangulation::preconditionEdgesInternal() {
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
     for(SimplexId i = 0; i < edgeNumber_; ++i) {
-      std::array<SimplexId, 3> p{};
+      auto &p = edgeCoords_[i];
 
       if(i < esetshift_[0]) {
         edgeToPosition(i, 0, p.data());
@@ -2918,7 +2916,6 @@ int ImplicitTriangulation::preconditionEdgesInternal() {
         edgeToPosition(i, 6, p.data());
         edgePositions_[i] = EdgePosition::D4_3D;
       }
-      edgeCoords_[i] = std::move(p);
     }
 
   } else if(dimensionality_ == 2) {
@@ -2926,7 +2923,7 @@ int ImplicitTriangulation::preconditionEdgesInternal() {
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
     for(SimplexId i = 0; i < edgeNumber_; ++i) {
-      std::array<SimplexId, 3> p{};
+      auto &p = edgeCoords_[i];
 
       if(i < esetshift_[0]) {
         edgeToPosition2d(i, 0, p.data());
@@ -2950,7 +2947,6 @@ int ImplicitTriangulation::preconditionEdgesInternal() {
         edgeToPosition2d(i, 2, p.data());
         edgePositions_[i] = EdgePosition::D1_2D;
       }
-      edgeCoords_[i] = std::move(p);
     }
 
   } else if(dimensionality_ == 1) {
@@ -2974,27 +2970,25 @@ int ImplicitTriangulation::preconditionTrianglesInternal() {
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
     for(SimplexId i = 0; i < triangleNumber_; ++i) {
-      std::array<SimplexId, 3> p{};
       if(i < tsetshift_[0]) {
-        triangleToPosition(i, 0, p.data());
+        triangleToPosition(i, 0, triangleCoords_[i].data());
         trianglePositions_[i] = TrianglePosition::F_3D;
       } else if(i < tsetshift_[1]) {
-        triangleToPosition(i, 1, p.data());
+        triangleToPosition(i, 1, triangleCoords_[i].data());
         trianglePositions_[i] = TrianglePosition::H_3D;
       } else if(i < tsetshift_[2]) {
-        triangleToPosition(i, 2, p.data());
+        triangleToPosition(i, 2, triangleCoords_[i].data());
         trianglePositions_[i] = TrianglePosition::C_3D;
       } else if(i < tsetshift_[3]) {
-        triangleToPosition(i, 3, p.data());
+        triangleToPosition(i, 3, triangleCoords_[i].data());
         trianglePositions_[i] = TrianglePosition::D1_3D;
       } else if(i < tsetshift_[4]) {
-        triangleToPosition(i, 4, p.data());
+        triangleToPosition(i, 4, triangleCoords_[i].data());
         trianglePositions_[i] = TrianglePosition::D2_3D;
       } else if(i < tsetshift_[5]) {
-        triangleToPosition(i, 5, p.data());
+        triangleToPosition(i, 5, triangleCoords_[i].data());
         trianglePositions_[i] = TrianglePosition::D3_3D;
       }
-      triangleCoords_[i] = std::move(p);
     }
 
   } else if(dimensionality_ == 2) {
@@ -3002,9 +2996,7 @@ int ImplicitTriangulation::preconditionTrianglesInternal() {
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
     for(SimplexId i = 0; i < triangleNumber_; ++i) {
-      std::array<SimplexId, 3> p{};
-      triangleToPosition2d(i, p.data());
-      triangleCoords_[i] = std::move(p);
+      triangleToPosition2d(i, triangleCoords_[i].data());
       if(i % 2 == 0) {
         trianglePositions_[i] = TrianglePosition::TOP_2D;
       } else {
@@ -3025,9 +3017,7 @@ int ImplicitTriangulation::preconditionTetrahedronsInternal() {
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
   for(SimplexId i = 0; i < tetrahedronNumber_; ++i) {
-    std::array<SimplexId, 3> p{};
-    tetrahedronToPosition(i, p.data());
-    tetrahedronCoords_[i] = std::move(p);
+    tetrahedronToPosition(i, tetrahedronCoords_[i].data());
   }
   return 0;
 }

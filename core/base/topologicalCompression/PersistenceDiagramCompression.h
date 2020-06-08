@@ -47,7 +47,6 @@ int ttk::TopologicalCompression::WritePersistenceTopology(FILE *fm) {
 
   int numberOfVertices = getNbVertices();
   int numberOfSegments = getNbSegments();
-  std::vector<int> segmentation = getSegmentation();
 
   // Test arguments.
   if(numberOfSegments < 1)
@@ -60,7 +59,7 @@ int ttk::TopologicalCompression::WritePersistenceTopology(FILE *fm) {
   WriteInt(fm, numberOfSegments);
 
   numberOfBytesWritten += WriteCompactSegmentation(
-    fm, segmentation.data(), numberOfVertices, numberOfSegments);
+    fm, getSegmentation(), numberOfVertices, numberOfSegments);
 
   rawFileLength += numberOfBytesWritten;
 
@@ -766,7 +765,11 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
   }
 
   // 4. Affect segment value to all points.
-  segmentation_.resize(vertexNumber);
+
+  // (pad buffer to avoid an out-of-bounds access/buffer overflow in
+  // WriteCompactSegmentation while loop)
+  segmentation_.resize(vertexNumber + 32);
+
   std::sort(segments.begin(), segments.end(), cmp);
   for(int i = 0; i < vertexNumber; ++i) {
     dataType scalar = inputData[i];

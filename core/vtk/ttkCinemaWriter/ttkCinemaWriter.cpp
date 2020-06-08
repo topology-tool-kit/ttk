@@ -443,34 +443,41 @@ int ttkCinemaWriter::ProcessDataProduct(vtkDataObject *input) {
           "Cannot use Topological Compression without a vtkImageData");
         return 0;
       }
+      vtkNew<ttkTopologicalCompressionWriter> topologicalCompressionWriter{};
+      topologicalCompressionWriter->SetScalarField(this->ScalarField);
+      topologicalCompressionWriter->SetTolerance(this->Tolerance);
+      topologicalCompressionWriter->SetMaximumError(this->MaximumError);
+      topologicalCompressionWriter->SetZFPBitBudget(this->ZFPBitBudget);
+      topologicalCompressionWriter->SetCompressionType(this->CompressionType);
+      topologicalCompressionWriter->SetSQMethodPV(this->SQMethodPV);
+      topologicalCompressionWriter->SetZFPOnly(this->ZFPOnly);
+      topologicalCompressionWriter->SetSubdivide(this->Subdivide);
+      topologicalCompressionWriter->SetUseTopologicalSimplification(
+        this->UseTopologicalSimplification);
 
-      // Fetch the scalar field array on which to perform Topological
-      // Compression
-      const auto ScalarFieldName
-        = this->topologicalCompressionWriter->GetScalarField();
-      if(ScalarFieldName.empty()) {
+      if(ScalarField.empty()) {
         vtkErrorMacro("Need a scalar field for Topological Compression");
         return 0;
       }
       const auto inputData = vtkImageData::SafeDownCast(input);
-      const auto ScalarField
-        = inputData->GetPointData()->GetArray(ScalarFieldName.data());
+      const auto sf = inputData->GetPointData()->GetArray(ScalarField.data());
 
       // Check that input scalar field is indeed scalar
-      if(ScalarField->GetNumberOfComponents() != 1) {
+      if(sf->GetNumberOfComponents() != 1) {
         vtkErrorMacro("Input scalar field should have only 1 component");
         return 0;
       }
-      this->topologicalCompressionWriter->SetDebugLevel(this->debugLevel_);
-      this->topologicalCompressionWriter->SetFileName(
+      topologicalCompressionWriter->SetDebugLevel(this->debugLevel_);
+      topologicalCompressionWriter->SetFileName(
         (this->DatabasePath + "/" + rDataProductPath).data());
-      this->topologicalCompressionWriter->SetInputData(inputData);
-      this->topologicalCompressionWriter->WriteData();
+      topologicalCompressionWriter->SetInputData(inputData);
+      topologicalCompressionWriter->WriteData();
     }
 
     this->printMsg("Writing data product to disk", 1, t.getElapsedTime(),
                    ttk::debug::LineMode::NEW, ttk::debug::Priority::DETAIL);
   }
+  this->printMsg("Wrote " + productId + "." + productExtension);
   this->printMsg(ttk::debug::Separator::L2, ttk::debug::Priority::DETAIL);
   return 1;
 }

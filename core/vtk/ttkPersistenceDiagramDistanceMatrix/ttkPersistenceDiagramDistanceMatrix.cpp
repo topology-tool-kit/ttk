@@ -60,6 +60,14 @@ int ttkPersistenceDiagramDistanceMatrix::RequestData(
 
   const int numInputs = inputDiagrams.size();
 
+  // Sanity check
+  for(const auto vtu: inputDiagrams) {
+    if(vtu == nullptr) {
+      this->printErr("Input diagrams are not all vtkUnstructuredGrid");
+      return 0;
+    }
+  }
+
   // Set output
   auto diagramsDistTable = vtkTable::GetData(outputVector);
 

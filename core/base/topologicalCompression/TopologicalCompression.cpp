@@ -398,7 +398,10 @@ int ttk::TopologicalCompression::ReadCompactSegmentation(
 
 // Returns number of bytes written.
 int ttk::TopologicalCompression::WriteCompactSegmentation(
-  FILE *fm, int *segmentation, int numberOfVertices, int numberOfSegments) {
+  FILE *fm,
+  const std::vector<int> &segmentation,
+  int numberOfVertices,
+  int numberOfSegments) {
   auto WriteInt = ttk::TopologicalCompression::WriteInt;
 
   int numberOfBytesWritten = 0;
@@ -424,6 +427,8 @@ int ttk::TopologicalCompression::WriteCompactSegmentation(
     // two containers.
     while(offset + numberOfBitsPerSegment <= 32) {
 
+      // out-of-bounds here if segmentation.size() == numberOfVertices
+      // (segmentation allocated in compressForPersistenceDiagram)
       int currentSegment = segmentation[currentCell];
 
       // If applicable, fill last part of current segment.
