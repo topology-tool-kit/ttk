@@ -294,5 +294,30 @@ int AbstractMorseSmaleComplex::setFinalSegmentation(
     }
   }
 
+  // store the "sparse region ids" by copying the morseSmaleManifold output
+  std::vector<SimplexId> sparseRegionIds(
+    morseSmaleManifold, morseSmaleManifold + nVerts);
+
+  // get unique "sparse region ids"
+  PSORT(sparseRegionIds.begin(), sparseRegionIds.end());
+  const auto last = std::unique(sparseRegionIds.begin(), sparseRegionIds.end());
+  sparseRegionIds.erase(last, sparseRegionIds.end());
+
+  // "sparse region id" -> "dense region id"
+  std::map<SimplexId, size_t> sparseToDenseRegionId{};
+
+  for(size_t i = 0; i < sparseRegionIds.size(); ++i) {
+    sparseToDenseRegionId[sparseRegionIds[i]] = i;
+  }
+
+  // update region id on all vertices: "sparse id" -> "dense id"
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+  for(size_t i = 0; i < nVerts; ++i) {
+    morseSmaleManifold[i] = sparseToDenseRegionId[morseSmaleManifold[i]];
+  }
+
   return 0;
 }
