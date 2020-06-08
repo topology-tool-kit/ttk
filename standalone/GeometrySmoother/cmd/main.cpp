@@ -77,8 +77,8 @@ public:
     f >> keyword;
 
     pointSet_.resize(3 * vertexNumber);
-    triangleSetCo_.resize(3 * triangleNumber);
     triangleSetOff_.resize(triangleNumber + 1);
+    triangleSetCo_.resize(3 * triangleNumber);
 
     for(int i = 0; i < 3 * vertexNumber; i++) {
       f >> pointSet_[i];
