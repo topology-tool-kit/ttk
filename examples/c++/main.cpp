@@ -25,9 +25,12 @@
 #include <PersistenceDiagram.h>
 #include <TopologicalSimplification.h>
 
+#include <iostream>
+
 int load(const std::string &inputPath,
          std::vector<float> &pointSet,
-         std::vector<long long int> &triangleSet) {
+         std::vector<long long int> &triangleSetCo,
+         std::vector<long long int> &triangleSetOff) {
 
   // load some terrain from some OFF file.
 
@@ -73,15 +76,30 @@ int load(const std::string &inputPath,
   f >> keyword;
 
   pointSet.resize(3 * vertexNumber);
-  triangleSet.resize(4 * triangleNumber);
+  triangleSetCo.resize(3 * triangleNumber);
+  triangleSetOff.resize(triangleNumber + 1);
 
   for(int i = 0; i < 3 * vertexNumber; i++) {
     f >> pointSet[i];
   }
 
-  for(int i = 0; i < 4 * triangleNumber; i++) {
-    f >> triangleSet[i];
+  int offId = 0;
+  int coId = 0;
+  for(int i = 0; i < triangleNumber; i++) {
+    int cellSize;
+    f >> cellSize;
+    if(cellSize != 3) {
+      std::cerr << "cell size " << cellSize << " != 3" << std::endl;
+      return -3;
+    }
+    triangleSetOff[offId++] = coId;
+    for(int j = 0; j < 3; j++) {
+      int cellId;
+      f >> cellId;
+      triangleSetCo[coId++] = cellId;
+    }
   }
+  triangleSetOff[offId] = coId; // the last one
 
   f.close();
 
@@ -96,7 +114,8 @@ int load(const std::string &inputPath,
 }
 
 int save(const std::vector<float> &pointSet,
-         const std::vector<long long int> &triangleSet,
+         const std::vector<long long int> &triangleSetCo,
+         const std::vector<long long int> &triangleSetOff,
          const std::string &outputPath) {
 
   // save the simplified terrain in some OFF file
@@ -115,9 +134,10 @@ int save(const std::vector<float> &pointSet,
     return -1;
   }
 
+  const int nbTriangles = triangleSetOff.size() - 1;
+
   f << "OFF" << std::endl;
-  f << pointSet.size() / 3 << " " << triangleSet.size() / 4 << " 0"
-    << std::endl;
+  f << pointSet.size() / 3 << " " << nbTriangles / 4 << " 0" << std::endl;
 
   for(int i = 0; i < (int)pointSet.size() / 3; i++) {
     for(int j = 0; j < 3; j++) {
@@ -127,9 +147,12 @@ int save(const std::vector<float> &pointSet,
     f << std::endl;
   }
 
-  for(int i = 0; i < (int)triangleSet.size() / 4; i++) {
-    for(int j = 0; j < 4; j++) {
-      f << triangleSet[4 * i + j];
+  for(int i = 0; i < nbTriangles; i++) {
+    int cellSize = triangleSetOff[i+1] - triangleSetOff[i];
+    assert(cellSize == 3);
+    f << cellSize;
+    for(int j = triangleSetOff[i]; j < triangleSetOff[i+1]; j++) {
+      f << triangleSetCo[j];
       f << " ";
     }
     f << std::endl;
@@ -153,13 +176,21 @@ int main(int argc, char **argv) {
   parser.parse(argc, argv);
 
   std::vector<float> pointSet;
-  std::vector<long long int> triangleSet;
+  std::vector<long long int> triangleSetCo, triangleSetOff;
   ttk::Triangulation triangulation;
 
   // load the input
-  load(inputFilePath, pointSet, triangleSet);
+  load(inputFilePath, pointSet, triangleSetCo, triangleSetOff);
   triangulation.setInputPoints(pointSet.size() / 3, pointSet.data());
-  triangulation.setInputCells(triangleSet.size() / 4, triangleSet.data());
+  long long int triangleNumber = triangleSetOff.size() - 1;
+#ifdef TTK_CELL_ARRAY_NEW
+  triangulation.setInputCells(
+    triangleNumber, triangleSetCo.data(), triangleSetOff.data());
+#else
+  LongSimplexId *triangleSet;
+  CellArray::TranslateToFlatLayout(triangleSetCo, triangleSetOff, triangleSet);
+  triangulation.setInputCells(triangleNumber, triangleSet);
+#endif
 
   // NOW, do the TTK processing
 
@@ -283,7 +314,7 @@ int main(int argc, char **argv) {
   morseSmaleComplex.execute<float, ttk::SimplexId>();
 
   // save the output
-  save(pointSet, triangleSet, "output.off");
+  save(pointSet, triangleSetCo, triangleSetOff, "output.off");
 
   return 0;
 }
