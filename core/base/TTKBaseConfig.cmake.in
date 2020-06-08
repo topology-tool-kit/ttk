@@ -18,7 +18,8 @@ if (@TTK_ENABLE_OPENMP@)
 endif()
 
 if (@TTK_ENABLE_ZFP@)
-  find_dependency(ZFP REQUIRED)
+  set(ZFP_DIR "@ZFP_DIR@" CACHE PATH "Use TTK ZFP dir" FORCE)
+  find_dependency(ZFP REQUIRED @ZFP_DIR@)
 endif()
 
 if (@TTK_ENABLE_ZLIB@)
