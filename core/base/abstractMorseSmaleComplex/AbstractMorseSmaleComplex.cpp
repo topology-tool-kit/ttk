@@ -146,7 +146,7 @@ int AbstractMorseSmaleComplex::setAscendingSegmentation(
   }
 
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
+#pragma omp parallel for num_threads(threadNumber_) schedule(dynamic)
 #endif
   for(SimplexId i = 0; i < numberOfSeeds; ++i) {
     queue<SimplexId> bfs;
@@ -223,7 +223,7 @@ int AbstractMorseSmaleComplex::setDescendingSegmentation(
   numberOfMinima = numberOfSeeds;
 
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
+#pragma omp parallel for num_threads(threadNumber_) schedule(dynamic)
 #endif
   for(SimplexId i = 0; i < numberOfSeeds; ++i) {
     queue<SimplexId> bfs;

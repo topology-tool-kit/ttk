@@ -588,7 +588,7 @@ int ttk::AbstractMorseSmaleComplex::setSeparatrices1(
     outputSeparatrices1_cells_isOnBoundary_->resize(ncells);
 
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
+#pragma omp parallel for num_threads(threadNumber_) schedule(dynamic)
 #endif // TTK_ENABLE_OPENMP
   for(size_t i = 0; i < validGeomIds.size(); ++i) {
     const auto &sep = separatrices[geomIdSep[i]];
