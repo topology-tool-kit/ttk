@@ -9,7 +9,10 @@
 #include <ttkTriangulationAlgorithmModule.h>
 
 class TTKTRIANGULATIONALGORITHM_EXPORT ttkUnstructuredGrid
-  : public ttkTriangulation,
+  : 
+#ifndef __VTK_WRAP__
+    public ttkTriangulation,
+#endif
     public vtkUnstructuredGrid {
 
 public:

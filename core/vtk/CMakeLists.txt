@@ -81,9 +81,7 @@ if(VTK_WRAP_PYTHON)
   # Generate __init__.py
   set(InitContent "from __future__ import absolute_import\n")
   foreach(MODULE ${TTK_ENABLED_MODULES})
-    if (NOT "${MODULE}" STREQUAL "ttkTriangulationAlgorithm")
-      string(APPEND InitContent "from .${MODULE} import *\n")
-    endif()
+    string(APPEND InitContent "from .${MODULE} import *\n")
   endforeach()
   file(GENERATE
     OUTPUT
