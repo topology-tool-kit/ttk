@@ -8,12 +8,11 @@
 
 #include <ttkTriangulationAlgorithmModule.h>
 
-class TTKTRIANGULATIONALGORITHM_EXPORT ttkUnstructuredGrid
-  : 
+class TTKTRIANGULATIONALGORITHM_EXPORT ttkUnstructuredGrid :
 #ifndef __VTK_WRAP__
-    public ttkTriangulation,
+  public ttkTriangulation,
 #endif
-    public vtkUnstructuredGrid {
+  public vtkUnstructuredGrid {
 
 public:
   static ttkUnstructuredGrid *New();
