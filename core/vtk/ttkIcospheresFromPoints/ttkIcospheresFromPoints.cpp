@@ -14,7 +14,7 @@ ttkIcospheresFromPoints::~ttkIcospheresFromPoints() {
 }
 
 int ttkIcospheresFromPoints::FillInputPortInformation(int port,
-                                                    vtkInformation *info) {
+                                                      vtkInformation *info) {
   if(port == 0)
     info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkPointSet");
   else
@@ -46,8 +46,8 @@ int copyArrayData(vtkDataArray *oldArray,
 }
 
 int ttkIcospheresFromPoints::RequestData(vtkInformation *request,
-                                       vtkInformationVector **inputVector,
-                                       vtkInformationVector *outputVector) {
+                                         vtkInformationVector **inputVector,
+                                         vtkInformationVector *outputVector) {
   auto input = vtkPointSet::GetData(inputVector[0], 0);
   this->SetCenters(input->GetPoints());
 
