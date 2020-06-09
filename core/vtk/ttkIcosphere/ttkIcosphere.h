@@ -1,27 +1,27 @@
 /// \ingroup vtk
-/// \class ttkIcoSphere
+/// \class ttkIcosphere
 /// \author Jonas Lukasczyk (jl@jluk.de)
 /// \date 01.09.2019
 ///
-/// This filter creates an IcoSphere with a specified radius, center, and number
+/// This filter creates an Icosphere with a specified radius, center, and number
 /// of subdivisions.
 ///
-/// \sa ttk::IcoSphere
+/// \sa ttk::Icosphere
 /// \sa ttk::ttkAlgorithm
 
 #pragma once
 
 // VTK Module
-#include <ttkIcoSphereModule.h>
+#include <ttkIcosphereModule.h>
 
 // VTK Includes
 #include <ttkAlgorithm.h>
 
 // TTK Base Includes
-#include <IcoSphere.h>
+#include <Icosphere.h>
 
-class TTKICOSPHERE_EXPORT ttkIcoSphere : public ttkAlgorithm,
-                                         protected ttk::IcoSphere {
+class TTKICOSPHERE_EXPORT ttkIcosphere : public ttkAlgorithm,
+                                         protected ttk::Icosphere {
 private:
   int NumberOfSubdivisions{0};
   double Radius{1};
@@ -34,8 +34,8 @@ private:
   vtkPoints *Centers{nullptr};
 
 public:
-  static ttkIcoSphere *New();
-  vtkTypeMacro(ttkIcoSphere, ttkAlgorithm);
+  static ttkIcosphere *New();
+  vtkTypeMacro(ttkIcosphere, ttkAlgorithm);
 
   vtkSetMacro(NumberOfSubdivisions, int);
   vtkGetMacro(NumberOfSubdivisions, int);
@@ -53,8 +53,8 @@ public:
   vtkGetMacro(Centers, vtkPoints *);
 
 protected:
-  ttkIcoSphere();
-  ~ttkIcoSphere();
+  ttkIcosphere();
+  ~ttkIcosphere();
 
   int FillInputPortInformation(int port, vtkInformation *info) override;
   int FillOutputPortInformation(int port, vtkInformation *info) override;

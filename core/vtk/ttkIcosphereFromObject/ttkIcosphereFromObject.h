@@ -1,5 +1,5 @@
 /// \ingroup vtk
-/// \class ttkIcoSphereFromObject
+/// \class ttkIcosphereFromObject
 /// \author Jonas Lukasczyk (jl@jluk.de)
 /// \date 01.09.2019
 ///
@@ -12,27 +12,27 @@
 #pragma once
 
 // VTK Module
-#include <ttkIcoSphereFromObjectModule.h>
+#include <ttkIcosphereFromObjectModule.h>
 
 // VTK Includes
-#include <ttkIcoSphere.h>
+#include <ttkIcosphere.h>
 
-class TTKICOSPHEREFROMOBJECT_EXPORT ttkIcoSphereFromObject
-  : public ttkIcoSphere {
+class TTKICOSPHEREFROMOBJECT_EXPORT ttkIcosphereFromObject
+  : public ttkIcosphere {
 
 private:
   float Scale{1};
 
 public:
-  static ttkIcoSphereFromObject *New();
-  vtkTypeMacro(ttkIcoSphereFromObject, ttkIcoSphere);
+  static ttkIcosphereFromObject *New();
+  vtkTypeMacro(ttkIcosphereFromObject, ttkIcosphere);
 
   vtkSetMacro(Scale, float);
   vtkGetMacro(Scale, float);
 
 protected:
-  ttkIcoSphereFromObject();
-  ~ttkIcoSphereFromObject();
+  ttkIcosphereFromObject();
+  ~ttkIcosphereFromObject();
 
   int FillInputPortInformation(int port, vtkInformation *info) override;
 

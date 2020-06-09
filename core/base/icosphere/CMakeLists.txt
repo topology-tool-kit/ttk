@@ -1,8 +1,8 @@
-ttk_add_base_library(icoSphere
+ttk_add_base_library(icosphere
   SOURCES
-    IcoSphere.cpp
+    Icosphere.cpp
   HEADERS
-    IcoSphere.h
+    Icosphere.h
   DEPENDS
     triangulation
     Boost::boost

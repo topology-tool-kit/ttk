@@ -1,10 +1,10 @@
 /// \ingroup vtk
-/// \class ttkIcoSphereFromPoint
+/// \class ttkIcospheresFromPoints
 /// \author Jonas Lukasczyk (jl@jluk.de)
 /// \date 01.09.2019
 ///
 /// This filter creates an icosphere with a specified radius, center, and number
-/// of subdivisions at each vertex of an input vtkPointset.
+/// of subdivisions at each vertex of an input vtkPointSet.
 ///
 /// \sa ttk::IcoSphere
 /// \sa ttk::ttkAlgorithm
@@ -12,12 +12,13 @@
 #pragma once
 
 // VTK Module
-#include <ttkIcoSphereFromPointModule.h>
+#include <ttkIcospheresFromPointsModule.h>
 
 // VTK Includes
-#include <ttkIcoSphere.h>
+#include <ttkIcosphere.h>
 
-class TTKICOSPHEREFROMPOINT_EXPORT ttkIcoSphereFromPoint : public ttkIcoSphere {
+class TTKICOSPHERESFROMPOINTS_EXPORT ttkIcospheresFromPoints
+  : public ttkIcosphere {
 
 private:
   bool CopyPointData{true};
@@ -26,12 +27,12 @@ public:
   vtkSetMacro(CopyPointData, bool);
   vtkGetMacro(CopyPointData, bool);
 
-  static ttkIcoSphereFromPoint *New();
-  vtkTypeMacro(ttkIcoSphereFromPoint, ttkIcoSphere);
+  static ttkIcospheresFromPoints *New();
+  vtkTypeMacro(ttkIcospheresFromPoints, ttkIcosphere);
 
 protected:
-  ttkIcoSphereFromPoint();
-  ~ttkIcoSphereFromPoint();
+  ttkIcospheresFromPoints();
+  ~ttkIcospheresFromPoints();
 
   int FillInputPortInformation(int port, vtkInformation *info) override;
 

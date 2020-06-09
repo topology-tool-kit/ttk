@@ -1,4 +1,4 @@
-#include <ttkIcoSphere.h>
+#include <ttkIcosphere.h>
 
 #include <ttkUtils.h>
 
@@ -8,20 +8,20 @@
 #include <vtkSmartPointer.h>
 #include <vtkUnstructuredGrid.h>
 
-vtkStandardNewMacro(ttkIcoSphere);
+vtkStandardNewMacro(ttkIcosphere);
 
-ttkIcoSphere::ttkIcoSphere() {
+ttkIcosphere::ttkIcosphere() {
   this->SetNumberOfInputPorts(0);
   this->SetNumberOfOutputPorts(1);
 }
-ttkIcoSphere::~ttkIcoSphere() {
+ttkIcosphere::~ttkIcosphere() {
 }
 
-int ttkIcoSphere::FillInputPortInformation(int port, vtkInformation *info) {
+int ttkIcosphere::FillInputPortInformation(int port, vtkInformation *info) {
   return 0;
 }
 
-int ttkIcoSphere::FillOutputPortInformation(int port, vtkInformation *info) {
+int ttkIcosphere::FillOutputPortInformation(int port, vtkInformation *info) {
   if(port == 0)
     info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
   else
@@ -29,7 +29,7 @@ int ttkIcoSphere::FillOutputPortInformation(int port, vtkInformation *info) {
   return 1;
 }
 
-int ttkIcoSphere::RequestData(vtkInformation *request,
+int ttkIcosphere::RequestData(vtkInformation *request,
                               vtkInformationVector **inputVector,
                               vtkInformationVector *outputVector) {
   // get parameter
@@ -65,7 +65,7 @@ int ttkIcoSphere::RequestData(vtkInformation *request,
   std::vector<vtkIdType> cellArray;
   cellArray.resize(nSpheres * nTriangles * 4);
   if(useDoublePrecision) {
-    if(!this->computeIcoSpheres<double, vtkIdType>(
+    if(!this->computeIcospheres<double, vtkIdType>(
          (double *)ttkUtils::GetVoidPointer(points), cellArray.data(),
 
          nSpheres, nSubdivisions, radius,
@@ -78,7 +78,7 @@ int ttkIcoSphere::RequestData(vtkInformation *request,
   } else {
     float centerFloat[3]{
       (float)this->Center[0], (float)this->Center[1], (float)this->Center[2]};
-    if(!this->computeIcoSpheres<float, vtkIdType>(
+    if(!this->computeIcospheres<float, vtkIdType>(
          (float *)ttkUtils::GetVoidPointer(points), cellArray.data(),
 
          nSpheres, nSubdivisions, radius,
@@ -92,7 +92,7 @@ int ttkIcoSphere::RequestData(vtkInformation *request,
     cellArray.data(), nSpheres * nTriangles, cells);
 #else
   if(useDoublePrecision) {
-    if(!this->computeIcoSpheres<double, vtkIdType>(
+    if(!this->computeIcospheres<double, vtkIdType>(
          (double *)ttkUtils::GetVoidPointer(points),
          (vtkIdType *)cells->WritePointer(
            nSpheres * nTriangles, nSpheres * nTriangles * 4),
@@ -106,7 +106,7 @@ int ttkIcoSphere::RequestData(vtkInformation *request,
   } else {
     float centerFloat[3]{
       (float)this->Center[0], (float)this->Center[1], (float)this->Center[2]};
-    if(!this->computeIcoSpheres<float, vtkIdType>(
+    if(!this->computeIcospheres<float, vtkIdType>(
          (float *)ttkUtils::GetVoidPointer(points),
          (vtkIdType *)cells->WritePointer(
            nSpheres * nTriangles, nSpheres * nTriangles * 4),
