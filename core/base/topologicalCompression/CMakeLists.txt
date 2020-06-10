@@ -11,10 +11,14 @@ ttk_add_base_library(topologicalCompression
     topologicalSimplification
   OPTIONAL_DEPENDS
     zfp::zfp
-    ${ZLIB_LIBRARY}
+    ZLIB::ZLIB
   )
 
 if (TTK_ENABLE_ZLIB)
   target_include_directories(topologicalCompression PUBLIC ${ZLIB_INCLUDE_DIR})
+endif()
+
+if(TTK_ENABLE_ZFP)
+  target_compile_definitions(topologicalCompression PUBLIC TTK_ENABLE_ZFP)
 endif()
 
