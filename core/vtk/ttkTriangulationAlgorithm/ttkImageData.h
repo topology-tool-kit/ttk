@@ -8,8 +8,11 @@
 
 #include <ttkTriangulationAlgorithmModule.h>
 
-class TTKTRIANGULATIONALGORITHM_EXPORT ttkImageData : public ttkTriangulation,
-                                                      public vtkImageData {
+class TTKTRIANGULATIONALGORITHM_EXPORT ttkImageData :
+#ifndef __VTK_WRAP__
+  public ttkTriangulation,
+#endif
+  public vtkImageData {
 
 public:
   static ttkImageData *New();
