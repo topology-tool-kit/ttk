@@ -290,6 +290,21 @@ namespace ttk {
                      const int &yDim,
                      const int &zDim);
 
+    int preconditionVerticesInternal();
+    int preconditionEdgesInternal() override;
+    int preconditionTrianglesInternal() override;
+    int preconditionTetrahedronsInternal();
+
+    inline int preconditionCellsInternal() {
+      if(dimensionality_ == 3) {
+        return this->preconditionTetrahedronsInternal();
+      } else if(dimensionality_ == 2 && !hasPreconditionedTriangles_) {
+        hasPreconditionedTriangles_ = true;
+        return this->preconditionTrianglesInternal();
+      }
+      return 0;
+    }
+
     std::array<SimplexId, 3>
       vertexToPositionNd(const SimplexId vertexId) const {
       std::array<SimplexId, 3> p{};
@@ -467,6 +482,15 @@ namespace ttk {
     bool isAccelerated_;
     SimplexId mod_[2];
     SimplexId div_[2];
+
+    // for  every vertex, its coordinates on the grid
+    std::vector<std::array<SimplexId, 3>> vertexCoords_{};
+    // for every edge, its coordinates on the grid
+    std::vector<std::array<SimplexId, 3>> edgeCoords_{};
+    // for every triangle, its coordinates on the grid
+    std::vector<std::array<SimplexId, 3>> triangleCoords_{};
+    // for every tetrahedron, its coordinates on the grid
+    std::vector<std::array<SimplexId, 3>> tetrahedronCoords_{};
 
     // acceleration functions
     int checkAcceleration();

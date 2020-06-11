@@ -181,6 +181,61 @@ int PeriodicImplicitTriangulation::setInputGrid(const float &xOrigin,
     cellNumber_ = edgeNumber_;
   }
 
+  // ensure preconditionned vertices and cells
+  this->preconditionVerticesInternal();
+  this->preconditionCellsInternal();
+
+  return 0;
+}
+
+int PeriodicImplicitTriangulation::preconditionVerticesInternal() {
+  if(this->dimensionality_ != 2 && this->dimensionality_ != 3) {
+    return 1;
+  }
+  if(dimensionality_ == 2) {
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+    for(SimplexId i = 0; i < vertexNumber_; ++i) {
+      auto &p = vertexCoords_[i];
+      vertexToPosition2d(i, p.data());
+    }
+  } else if(dimensionality_ == 2) {
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+    for(SimplexId i = 0; i < vertexNumber_; ++i) {
+      auto &p = vertexCoords_[i];
+      vertexToPosition(i, p.data());
+    }
+  }
+  return 0;
+}
+int PeriodicImplicitTriangulation::preconditionEdgesInternal() {
+  if(this->dimensionality_ != 2 && this->dimensionality_ != 3) {
+    return 1;
+  }
+  return 0;
+}
+int PeriodicImplicitTriangulation::preconditionTrianglesInternal() {
+  if(this->dimensionality_ != 2 && this->dimensionality_ != 3) {
+    return 1;
+  }
+  return 0;
+}
+int PeriodicImplicitTriangulation::preconditionTetrahedronsInternal() {
+  if(this->dimensionality_ != 3) {
+    return 1;
+  }
+  tetrahedronCoords_.resize(tetrahedronNumber_);
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+  for(SimplexId i = 0; i < tetrahedronNumber_; ++i) {
+    tetrahedronToPosition(i, tetrahedronCoords_[i].data());
+  }
+
   return 0;
 }
 
