@@ -273,7 +273,7 @@ int ttkTriangulation::setInputData(vtkDataSet *dataSet) {
     }
 
     // Cells
-    if(vtuDataSet->GetCells()) {
+    if(vtuDataSet->GetNumberOfCells()) {
       // As the documentation of this method says, we expect a triangulation
       // (simplicial complex in kD)
       std::string errMsg;
