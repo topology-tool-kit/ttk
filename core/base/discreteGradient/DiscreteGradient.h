@@ -876,11 +876,6 @@ tetra identifier.
       int getTetraIncenter(SimplexId tetraId, float incenter[3]) const;
 
       /**
-       * Compute the geometric barycenter of a given cell.
-       */
-      int getCellIncenter(const Cell &cell, float incenter[3]) const;
-
-      /**
        * Get the vertex id of with the maximum scalar field value on
        * the given cell. Compare offsets if scalar field is constant.
        */
