@@ -1611,7 +1611,7 @@ int DiscreteGradient::setGradientGlyphs(
         const Cell pairedCell(pairedCellDim, pairedCellId);
 
         std::array<float, 3> p0{};
-        getCellIncenter(cell, p0.data());
+        inputTriangulation_->getCellIncenter(cell.id_, cell.dim_, p0.data());
 
         points.push_back(p0[0]);
         points.push_back(p0[1]);
@@ -1620,7 +1620,8 @@ int DiscreteGradient::setGradientGlyphs(
         points_pairOrigins.push_back(0);
 
         std::array<float, 3> p1{};
-        getCellIncenter(pairedCell, p1.data());
+        inputTriangulation_->getCellIncenter(
+          pairedCell.id_, pairedCell.dim_, p1.data());
 
         points.push_back(p1[0]);
         points.push_back(p1[1]);

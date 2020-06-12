@@ -315,7 +315,7 @@ int DiscreteGradient::setCriticalPoints(
     const SimplexId cellId = cell.id_;
 
     float incenter[3];
-    getCellIncenter(cell, incenter);
+    inputTriangulation_->getCellIncenter(cell.id_, cell.dim_, incenter);
 
     const auto scalar = scalarMax<dataType>(cell, scalars);
     const char isOnBoundary = isBoundary(cell);

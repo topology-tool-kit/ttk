@@ -290,7 +290,7 @@ int ttk::MorseSmaleComplex3D::omp_setAscendingSeparatrices2(
           for(SimplexId k = 0; k < vertexNumber; ++k) {
             const SimplexId tetraId = polygon[k];
             float point[3];
-            discreteGradient_.getCellIncenter(dcg::Cell(3, tetraId), point);
+            inputTriangulation_->getTetraIncenter(tetraId, point);
 
             separatrices2_points[threadId].push_back(point[0]);
             separatrices2_points[threadId].push_back(point[1]);
@@ -573,7 +573,7 @@ int ttk::MorseSmaleComplex3D::setAscendingSeparatrices2(
           float point[3];
           for(SimplexId j = 0; j < vertexNumber; ++j) {
             const SimplexId tetraId = polygon[j];
-            discreteGradient_.getCellIncenter(dcg::Cell(3, tetraId), point);
+            inputTriangulation_->getTetraIncenter(tetraId, point);
 
             if(isVisited[tetraId] == -1) {
               outputSeparatrices2_points_->push_back(point[0]);

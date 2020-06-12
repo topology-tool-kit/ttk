@@ -625,7 +625,7 @@ int ttk::AbstractMorseSmaleComplex::setSeparatrices1(
     for(size_t j = 0; j < sepGeom.size(); ++j) {
       const auto &cell = sepGeom[j];
       std::array<float, 3> pt{};
-      discreteGradient_.getCellIncenter(cell, pt.data());
+      inputTriangulation_->getCellIncenter(cell.id_, cell.dim_, pt.data());
 
       // index of current point in point data arrays
       const auto k = geomPointsBegId[i] + j;
