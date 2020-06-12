@@ -190,7 +190,7 @@ int MorseSmaleComplex3D::getAscendingSeparatrices2(
 
   // apriori: by default construction, the separatrices are not valid
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
+#pragma omp parallel for num_threads(threadNumber_) schedule(dynamic)
 #endif // TTK_ENABLE_OPENMP
   for(SimplexId i = 0; i < numberOfSaddles; ++i) {
     const SimplexId saddleIndex = saddleIndexes[i];
@@ -248,7 +248,7 @@ int MorseSmaleComplex3D::getDescendingSeparatrices2(
 
   // apriori: by default construction, the separatrices are not valid
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
+#pragma omp parallel for num_threads(threadNumber_) schedule(dynamic)
 #endif // TTK_ENABLE_OPENMP
   for(SimplexId i = 0; i < numberOfSaddles; ++i) {
     const SimplexId saddleIndex = saddleIndexes[i];
