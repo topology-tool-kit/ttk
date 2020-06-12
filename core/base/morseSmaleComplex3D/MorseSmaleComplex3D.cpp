@@ -228,16 +228,28 @@ int MorseSmaleComplex3D::getDescendingSeparatrices2(
 
   const SimplexId numberOfTriangles
     = inputTriangulation_->getNumberOfTriangles();
-  std::vector<bool> isVisited(numberOfTriangles, false);
-  std::vector<SimplexId> visitedTriangles{};
+  std::vector<std::vector<bool>> isVisited(this->threadNumber_);
+  for(auto &vec : isVisited) {
+    vec.resize(numberOfTriangles, false);
+  }
+  std::vector<std::vector<SimplexId>> visitedTriangles(this->threadNumber_);
 
   // apriori: by default construction, the separatrices are not valid
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
   for(SimplexId i = 0; i < numberOfSaddles; ++i) {
     const SimplexId saddleIndex = saddleIndexes[i];
     const Cell &saddle2 = criticalPoints[saddleIndex];
 
+#ifdef TTK_ENABLE_OPENMP
+    const size_t tid = omp_get_thread_num();
+#else
+    const size_t tid = 0;
+#endif // TTK_ENABLE_OPENMP
+
     vector<Cell> wall;
-    VisitedMask mask{isVisited, visitedTriangles};
+    VisitedMask mask{isVisited[tid], visitedTriangles[tid]};
     discreteGradient_.getDescendingWall(
       saddle2, mask, &wall, &separatricesSaddles[i]);
 
