@@ -8,7 +8,8 @@ using namespace ttk;
 /**
  * @brief Auxiliary struct to check if VTK cells are simplices.
  */
-struct CellChecker : public vtkObject // inherit to be able to use vtkErrorMacro
+struct CellChecker : public vtkObject
+// inherit to be able to use vtkWarningMacro
 {
   vtkTypeMacro(CellChecker, vtkObject);
 
@@ -30,7 +31,7 @@ struct CellChecker : public vtkObject // inherit to be able to use vtkErrorMacro
     const vtkIdType nc = ds->GetNumberOfCells();
     for(vtkIdType c = 0; c < nc; ++c) {
       if(ds->GetCellType(c) != VTK_LINE) {
-        vtkErrorMacro(<< getErrMsg());
+        vtkWarningMacro(<< getErrMsg());
         return -1;
       }
     }
@@ -42,7 +43,7 @@ struct CellChecker : public vtkObject // inherit to be able to use vtkErrorMacro
     for(vtkIdType c = 0; c < nc; ++c) {
       const auto type = ds->GetCellType(c);
       if(type != VTK_TRIANGLE && type != VTK_LINE) {
-        vtkErrorMacro(<< getErrMsg());
+        vtkWarningMacro(<< getErrMsg());
         return -1;
       }
     }
@@ -54,7 +55,7 @@ struct CellChecker : public vtkObject // inherit to be able to use vtkErrorMacro
     for(vtkIdType c = 0; c < nc; ++c) {
       const auto type = ds->GetCellType(c);
       if(type != VTK_TETRA && type != VTK_TRIANGLE && type != VTK_LINE) {
-        vtkErrorMacro(<< getErrMsg());
+        vtkWarningMacro(<< getErrMsg());
         return -1;
       }
     }
@@ -300,14 +301,14 @@ int ttkTriangulation::setInputData(vtkDataSet *dataSet) {
         // though (or adapt doc) but earlier, like the macro
         // TTK_UNSTRUCTURED_GRID_NEW in ttkWrapper.h?
 
-        // This class does not inherit from vtkObject, so the vtkErrorMacro does
-        // not work. But no problem: `this` is only used to call GetClassName
-        // which is not a virtual function so it would just return "vtkObject"
-        // anyway.
+        // This class does not inherit from vtkObject, so the vtkWarningMacro
+        // does not work. But no problem: `this` is only used to call
+        // GetClassName which is not a virtual function so it would just return
+        // "vtkObject" anyway.
         errMsg += "Please apply the Tetrahedralize filter before proceeding "
                   "with TTK. "
                   "The application behavior may be unspecified otherwise.";
-        vtkErrorWithObjectMacro(nullptr, << errMsg);
+        vtkWarningWithObjectMacro(nullptr, << errMsg);
       }
 
 #ifdef TTK_CELL_ARRAY_NEW
