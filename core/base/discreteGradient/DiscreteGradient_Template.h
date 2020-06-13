@@ -922,8 +922,7 @@ int DiscreteGradient::processSaddleSaddleConnections1(
       if(CollectPersistencePairs and outputPersistencePairs_) {
         const Cell &minSaddle1 = criticalPoints[vpath.source_].cell_;
         const Cell &minSaddle2 = criticalPoints[vpath.destination_].cell_;
-        outputPersistencePairs_->push_back(
-          std::make_tuple(minSaddle1, minSaddle2));
+        outputPersistencePairs_->push_back({minSaddle1, minSaddle2});
       }
 
       const SimplexId sourceId = vpath.source_;
@@ -1533,8 +1532,7 @@ int DiscreteGradient::processSaddleSaddleConnections2(
       if(CollectPersistencePairs and outputPersistencePairs_) {
         const Cell &minSaddle1 = criticalPoints[vpath.source_].cell_;
         const Cell &minSaddle2 = criticalPoints[vpath.destination_].cell_;
-        outputPersistencePairs_->push_back(
-          std::make_tuple(minSaddle1, minSaddle2));
+        outputPersistencePairs_->push_back({minSaddle1, minSaddle2});
       }
 
       const SimplexId sourceId = vpath.source_;

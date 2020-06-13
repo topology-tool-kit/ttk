@@ -358,7 +358,7 @@ saddle-connectors.
        * (collecting of persistence pairs must be enabled).
        */
       int setOutputPersistencePairs(
-        std::vector<std::tuple<Cell, Cell>> *const data) {
+        std::vector<std::array<Cell, 2>> *const data) {
         outputPersistencePairs_ = data;
         return 0;
       }
@@ -946,7 +946,7 @@ tetra identifier.
         *outputCriticalPoints_points_PLVertexIdentifiers_{};
       std::vector<SimplexId> *outputCriticalPoints_points_manifoldSize_{};
 
-      std::vector<std::tuple<Cell, Cell>> *outputPersistencePairs_{};
+      std::vector<std::array<Cell, 2>> *outputPersistencePairs_{};
 
       // index of vertices sorted by ascending order
       std::vector<size_t> vertsOrder_{};

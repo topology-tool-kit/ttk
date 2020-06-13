@@ -1303,7 +1303,7 @@ int ttk::MorseSmaleComplex3D::computePersistencePairs(
 
   const dataType *scalars = static_cast<const dataType *>(inputScalarField_);
 
-  std::vector<std::tuple<dcg::Cell, dcg::Cell>> dmt_pairs;
+  std::vector<std::array<dcg::Cell, 2>> dmt_pairs;
   {
     // simplify to be PL-conformant
     discreteGradient_.setDebugLevel(debugLevel_);
