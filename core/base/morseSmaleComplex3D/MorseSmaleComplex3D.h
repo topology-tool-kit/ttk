@@ -42,8 +42,6 @@ namespace ttk {
      */
     template <typename dataType, typename idType>
     int computePersistencePairs(
-      const std::vector<std::tuple<SimplexId, SimplexId, dataType>> &JTPairs,
-      const std::vector<std::tuple<SimplexId, SimplexId, dataType>> &STPairs,
       std::vector<std::tuple<SimplexId, SimplexId, dataType>>
         &pl_saddleSaddlePairs);
 
@@ -1296,8 +1294,6 @@ int ttk::MorseSmaleComplex3D::execute() {
 
 template <typename dataType, typename idType>
 int ttk::MorseSmaleComplex3D::computePersistencePairs(
-  const std::vector<std::tuple<SimplexId, SimplexId, dataType>> & /*JTPairs*/,
-  const std::vector<std::tuple<SimplexId, SimplexId, dataType>> & /*STPairs*/,
   std::vector<std::tuple<SimplexId, SimplexId, dataType>>
     &pl_saddleSaddlePairs) {
 

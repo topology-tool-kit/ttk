@@ -281,7 +281,7 @@ int ttk::PersistenceDiagram::execute() const {
     morseSmaleComplex.setInputScalarField(inputScalars_);
     morseSmaleComplex.setInputOffsets(inputOffsets_);
     morseSmaleComplex.computePersistencePairs<scalarType, idType>(
-      JTPairs, STPairs, pl_saddleSaddlePairs);
+      pl_saddleSaddlePairs);
   }
 
   // get persistence diagrams

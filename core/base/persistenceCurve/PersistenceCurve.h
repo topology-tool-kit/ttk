@@ -183,7 +183,7 @@ int ttk::PersistenceCurve::execute() const {
     morseSmaleComplex.setInputScalarField(inputScalars_);
     morseSmaleComplex.setInputOffsets(inputOffsets_);
     morseSmaleComplex.computePersistencePairs<scalarType, idType>(
-      JTPairs, STPairs, pl_saddleSaddlePairs);
+      pl_saddleSaddlePairs);
 
     // sort the saddle-saddle pairs by persistence value and compute curve
     {
