@@ -174,51 +174,50 @@ vtkDataArray *ttkMorseSmaleComplex::getOffsets(vtkDataSet *input) {
 }
 
 template <typename VTK_TT>
-int ttkMorseSmaleComplex::dispatch(
-  vtkDataArray *inputScalars,
-  vtkDataArray *inputOffsets,
-  vtkUnstructuredGrid *outputCriticalPoints,
-  vtkUnstructuredGrid *outputSeparatrices1,
-  vtkUnstructuredGrid *outputSeparatrices2,
-  SimplexId criticalPoints_numberOfPoints,
-  vector<float> &criticalPoints_points,
-  vector<char> &criticalPoints_points_cellDimensions,
-  vector<SimplexId> &criticalPoints_points_cellIds,
-  vector<char> &criticalPoints_points_isOnBoundary,
-  vector<SimplexId> &criticalPoints_points_PLVertexIdentifiers,
-  vector<SimplexId> &criticalPoints_points_manifoldSize,
-  SimplexId separatrices1_numberOfPoints,
-  vector<float> &separatrices1_points,
-  vector<char> &separatrices1_points_smoothingMask,
-  vector<char> &separatrices1_points_cellDimensions,
-  vector<SimplexId> separatrices1_points_cellIds,
-  SimplexId separatrices1_numberOfCells,
-  vector<SimplexId> &separatrices1_cells,
-  vector<SimplexId> &separatrices1_cells_sourceIds,
-  vector<SimplexId> &separatrices1_cells_destinationIds,
-  vector<SimplexId> &separatrices1_cells_separatrixIds,
-  vector<char> &separatrices1_cells_separatrixTypes,
-  vector<char> &separatrices1_cells_isOnBoundary,
-  SimplexId separatrices2_numberOfPoints,
-  vector<float> &separatrices2_points,
-  SimplexId separatrices2_numberOfCells,
-  vector<SimplexId> &separatrices2_cells,
-  vector<SimplexId> &separatrices2_cells_sourceIds,
-  vector<SimplexId> &separatrices2_cells_separatrixIds,
-  vector<char> &separatrices2_cells_separatrixTypes,
-  vector<char> &separatrices2_cells_isOnBoundary) {
+int ttkMorseSmaleComplex::dispatch(vtkDataArray *inputScalars,
+                                   vtkDataArray *inputOffsets,
+                                   vtkUnstructuredGrid *outputCriticalPoints,
+                                   vtkUnstructuredGrid *outputSeparatrices1,
+                                   vtkUnstructuredGrid *outputSeparatrices2) {
 
   const int dimensionality = triangulation_->getCellVertexNumber(0) - 1;
 
   // critical points
+  SimplexId criticalPoints_numberOfPoints{};
+  vector<float> criticalPoints_points;
+  vector<char> criticalPoints_points_cellDimensions;
   vector<VTK_TT> criticalPoints_points_cellScalars;
+  vector<SimplexId> criticalPoints_points_cellIds;
+  vector<char> criticalPoints_points_isOnBoundary;
+  vector<SimplexId> criticalPoints_points_PLVertexIdentifiers;
+  vector<SimplexId> criticalPoints_points_manifoldSize;
 
   // 1-separatrices
+  SimplexId separatrices1_numberOfPoints{};
+  vector<float> separatrices1_points;
+  vector<char> separatrices1_points_smoothingMask;
+  vector<char> separatrices1_points_cellDimensions;
+  vector<SimplexId> separatrices1_points_cellIds;
+  SimplexId separatrices1_numberOfCells{};
+  vector<SimplexId> separatrices1_cells;
+  vector<SimplexId> separatrices1_cells_sourceIds;
+  vector<SimplexId> separatrices1_cells_destinationIds;
+  vector<SimplexId> separatrices1_cells_separatrixIds;
+  vector<char> separatrices1_cells_separatrixTypes;
+  vector<char> separatrices1_cells_isOnBoundary;
   vector<VTK_TT> separatrices1_cells_separatrixFunctionMaxima;
   vector<VTK_TT> separatrices1_cells_separatrixFunctionMinima;
   vector<VTK_TT> separatrices1_cells_separatrixFunctionDiffs;
 
   // 2-separatrices
+  SimplexId separatrices2_numberOfPoints{};
+  vector<float> separatrices2_points;
+  SimplexId separatrices2_numberOfCells{};
+  vector<SimplexId> separatrices2_cells;
+  vector<SimplexId> separatrices2_cells_sourceIds;
+  vector<SimplexId> separatrices2_cells_separatrixIds;
+  vector<char> separatrices2_cells_separatrixTypes;
+  vector<char> separatrices2_cells_isOnBoundary;
   vector<VTK_TT> separatrices2_cells_separatrixFunctionMaxima;
   vector<VTK_TT> separatrices2_cells_separatrixFunctionMinima;
   vector<VTK_TT> separatrices2_cells_separatrixFunctionDiffs;
@@ -852,39 +851,6 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
     dMsg(cout, msg.str(), infoMsg);
   }
 
-  // critical points
-  SimplexId criticalPoints_numberOfPoints{};
-  vector<float> criticalPoints_points;
-  vector<char> criticalPoints_points_cellDimensions;
-  vector<SimplexId> criticalPoints_points_cellIds;
-  vector<char> criticalPoints_points_isOnBoundary;
-  vector<SimplexId> criticalPoints_points_PLVertexIdentifiers;
-  vector<SimplexId> criticalPoints_points_manifoldSize;
-
-  // 1-separatrices
-  SimplexId separatrices1_numberOfPoints{};
-  vector<float> separatrices1_points;
-  vector<char> separatrices1_points_smoothingMask;
-  vector<char> separatrices1_points_cellDimensions;
-  vector<SimplexId> separatrices1_points_cellIds;
-  SimplexId separatrices1_numberOfCells{};
-  vector<SimplexId> separatrices1_cells;
-  vector<SimplexId> separatrices1_cells_sourceIds;
-  vector<SimplexId> separatrices1_cells_destinationIds;
-  vector<SimplexId> separatrices1_cells_separatrixIds;
-  vector<char> separatrices1_cells_separatrixTypes;
-  vector<char> separatrices1_cells_isOnBoundary;
-
-  // 2-separatrices
-  SimplexId separatrices2_numberOfPoints{};
-  vector<float> separatrices2_points;
-  SimplexId separatrices2_numberOfCells{};
-  vector<SimplexId> separatrices2_cells;
-  vector<SimplexId> separatrices2_cells_sourceIds;
-  vector<SimplexId> separatrices2_cells_separatrixIds;
-  vector<char> separatrices2_cells_separatrixTypes;
-  vector<char> separatrices2_cells_isOnBoundary;
-
   // morse complexes
   const SimplexId numberOfVertices = triangulation_->getNumberOfVertices();
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -976,23 +942,8 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
 
   switch(inputScalars->GetDataType()) {
     vtkTemplateMacro(
-      // O.o there is 32 args for this method.
-      ret = dispatch<VTK_TT>(
-        inputScalars, inputOffsets, outputCriticalPoints, outputSeparatrices1,
-        outputSeparatrices2, criticalPoints_numberOfPoints,
-        criticalPoints_points, criticalPoints_points_cellDimensions,
-        criticalPoints_points_cellIds, criticalPoints_points_isOnBoundary,
-        criticalPoints_points_PLVertexIdentifiers,
-        criticalPoints_points_manifoldSize, separatrices1_numberOfPoints,
-        separatrices1_points, separatrices1_points_smoothingMask,
-        separatrices1_points_cellDimensions, separatrices1_points_cellIds,
-        separatrices1_numberOfCells, separatrices1_cells,
-        separatrices1_cells_sourceIds, separatrices1_cells_destinationIds,
-        separatrices1_cells_separatrixIds, separatrices1_cells_separatrixTypes,
-        separatrices1_cells_isOnBoundary, separatrices2_numberOfPoints,
-        separatrices2_points, separatrices2_numberOfCells, separatrices2_cells,
-        separatrices2_cells_sourceIds, separatrices2_cells_separatrixIds,
-        separatrices2_cells_separatrixTypes, separatrices2_cells_isOnBoundary));
+      ret = dispatch<VTK_TT>(inputScalars, inputOffsets, outputCriticalPoints,
+                             outputSeparatrices1, outputSeparatrices2));
   }
 
 #ifndef TTK_ENABLE_KAMIKAZE
