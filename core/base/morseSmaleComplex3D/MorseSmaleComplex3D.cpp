@@ -95,11 +95,11 @@ int MorseSmaleComplex3D::getSaddleConnectors(
   using Vpath = std::vector<Cell>;
   using SepSads = std::pair<Cell, Cell>;
 
-  std::vector<std::vector<SepSads>> sepsByThread(this->threadNumber_);
-  std::vector<std::vector<Vpath>> sepsGeomByThread(this->threadNumber_);
+  std::vector<std::vector<SepSads>> sepsByThread(saddles2.size());
+  std::vector<std::vector<Vpath>> sepsGeomByThread(saddles2.size());
 
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
+#pragma omp parallel for num_threads(threadNumber_) schedule(dynamic)
 #endif // TTK_ENABLE_OPENMP
   for(size_t i = 0; i < saddles2.size(); ++i) {
     const auto &s2{saddles2[i]};
@@ -124,8 +124,8 @@ int MorseSmaleComplex3D::getSaddleConnectors(
       const auto &last = vpath.back();
 
       if(!isMultiConnected && last.dim_ == s2.dim_ && last.id_ == s2.id_) {
-        sepsGeomByThread[tid].emplace_back(std::move(vpath));
-        sepsByThread[tid].emplace_back(s1, s2);
+        sepsGeomByThread[i].emplace_back(std::move(vpath));
+        sepsByThread[i].emplace_back(s1, s2);
       }
     }
   }
