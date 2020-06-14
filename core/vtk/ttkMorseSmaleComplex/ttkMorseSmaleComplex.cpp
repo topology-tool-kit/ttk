@@ -2,8 +2,6 @@
 #include <vtkNew.h>
 
 using namespace std;
-using namespace ttk;
-using namespace dcg;
 
 vtkStandardNewMacro(ttkMorseSmaleComplex)
 
@@ -758,7 +756,7 @@ int ttkMorseSmaleComplex::dispatch(vtkDataArray *inputScalars,
 
 int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
                                vector<vtkDataSet *> &outputs) {
-  Memory m;
+  ttk::Memory m;
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!inputs.size()) {
@@ -770,14 +768,11 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
 
   int ret{};
 
-  vtkDataSet *input = inputs[0];
-  vtkUnstructuredGrid *outputCriticalPoints
-    = vtkUnstructuredGrid::SafeDownCast(outputs[0]);
-  vtkUnstructuredGrid *outputSeparatrices1
-    = vtkUnstructuredGrid::SafeDownCast(outputs[1]);
-  vtkUnstructuredGrid *outputSeparatrices2
-    = vtkUnstructuredGrid::SafeDownCast(outputs[2]);
-  vtkDataSet *outputMorseComplexes = outputs[3];
+  const auto input = inputs[0];
+  auto outputCriticalPoints = vtkUnstructuredGrid::SafeDownCast(outputs[0]);
+  auto outputSeparatrices1 = vtkUnstructuredGrid::SafeDownCast(outputs[1]);
+  auto outputSeparatrices2 = vtkUnstructuredGrid::SafeDownCast(outputs[2]);
+  auto outputMorseComplexes = outputs[3];
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!input) {
