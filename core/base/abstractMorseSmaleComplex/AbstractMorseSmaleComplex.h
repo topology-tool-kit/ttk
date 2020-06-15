@@ -196,16 +196,6 @@ namespace ttk {
     }
 
     /**
-     * Enable/Disable compromise on memory allowing
-     * computation the geometry of the 2-separatrices
-     * in parallel.
-     */
-    int setPrioritizeSpeedOverMemory(const bool state) {
-      PrioritizeSpeedOverMemory = state;
-      return 0;
-    }
-
-    /**
      * Set the input triangulation and preprocess the needed
      * mesh traversal queries.
      */
@@ -422,7 +412,6 @@ namespace ttk {
     bool ComputeDescendingSeparatrices2;
     bool ReturnSaddleConnectors;
     double SaddleConnectorsPersistenceThreshold;
-    bool PrioritizeSpeedOverMemory;
 
     dcg::DiscreteGradient discreteGradient_;
 

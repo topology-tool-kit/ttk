@@ -138,9 +138,6 @@ public:
   vtkSetMacro(SaddleConnectorsPersistenceThreshold, double);
   vtkGetMacro(SaddleConnectorsPersistenceThreshold, double);
 
-  vtkSetMacro(PrioritizeSpeedOverMemory, bool);
-  vtkGetMacro(PrioritizeSpeedOverMemory, bool);
-
   int setupTriangulation(vtkDataSet *input);
   vtkDataArray *getScalars(vtkDataSet *input);
   vtkDataArray *getOffsets(vtkDataSet *input);
@@ -181,7 +178,6 @@ private:
   int OffsetFieldId;
   int ReturnSaddleConnectors;
   double SaddleConnectorsPersistenceThreshold;
-  bool PrioritizeSpeedOverMemory;
 
   ttk::MorseSmaleComplex morseSmaleComplex_;
   ttk::Triangulation *triangulation_;

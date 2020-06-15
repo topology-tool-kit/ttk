@@ -10,7 +10,6 @@ AbstractMorseSmaleComplex::AbstractMorseSmaleComplex()
     ComputeAscendingSeparatrices1{true}, ComputeDescendingSeparatrices1{true},
     ComputeSaddleConnectors{false}, ComputeAscendingSeparatrices2{false},
     ComputeDescendingSeparatrices2{false}, ReturnSaddleConnectors{false},
-    PrioritizeSpeedOverMemory{false},
 
     // other class members are value-initialized
     inputScalarField_{}, inputTriangulation_{}, inputOffsets_{},

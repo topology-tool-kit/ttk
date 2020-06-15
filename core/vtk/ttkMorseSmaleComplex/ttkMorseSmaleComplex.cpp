@@ -14,8 +14,8 @@ vtkStandardNewMacro(ttkMorseSmaleComplex)
     ComputeDescendingSeparatrices2{false}, ComputeAscendingSegmentation{true},
     ComputeDescendingSegmentation{true}, ComputeFinalSegmentation{true},
     ScalarFieldId{}, OffsetFieldId{-1}, ReturnSaddleConnectors{false},
-    SaddleConnectorsPersistenceThreshold{0}, PrioritizeSpeedOverMemory{false},
-    triangulation_{}, defaultOffsets_{}, hasUpdatedMesh_{} {
+    SaddleConnectorsPersistenceThreshold{0}, triangulation_{},
+    defaultOffsets_{}, hasUpdatedMesh_{} {
   UseAllCores = true;
   SetNumberOfInputPorts(1);
   SetNumberOfOutputPorts(4);
@@ -896,8 +896,6 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
   morseSmaleComplex_.setReturnSaddleConnectors(ReturnSaddleConnectors);
   morseSmaleComplex_.setSaddleConnectorsPersistenceThreshold(
     SaddleConnectorsPersistenceThreshold);
-
-  morseSmaleComplex_.setPrioritizeSpeedOverMemory(PrioritizeSpeedOverMemory);
 
   morseSmaleComplex_.setInputScalarField(inputScalars->GetVoidPointer(0));
   morseSmaleComplex_.setInputOffsets(inputOffsets->GetVoidPointer(0));
