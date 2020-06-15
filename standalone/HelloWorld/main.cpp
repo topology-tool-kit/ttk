@@ -21,34 +21,54 @@ int main(int argc, char **argv) {
   // ---------------------------------------------------------------------------
   std::vector<std::string> inputFilePaths;
   std::vector<std::string> inputArrayNames;
-  std::string outputPathPrefix{""};
-  int listArrays{0};
+  std::string outputArrayName{"AveragedArray"};
+  std::string outputPathPrefix{"output"};
+  bool listArrays{false};
 
   // ---------------------------------------------------------------------------
   // Set program variables based on command line arguments
   // ---------------------------------------------------------------------------
   {
     ttk::CommandLineParser parser;
+    
+    // -------------------------------------------------------------------------
+    // Standard options and arguments
+    // -------------------------------------------------------------------------
     parser.setArgument(
       "i", &inputFilePaths, "Input data-sets (*.vti, *vtu, *vtp)", false);
     parser.setArgument("a", &inputArrayNames, "Input array names", true);
     parser.setArgument(
       "o", &outputPathPrefix, "Output file prefix (no extension)", true);
-    parser.setArgument("l", &listArrays, "List available arrays", true);
-
+    parser.setOption("l", &listArrays, "List available arrays");
+    
+    // -------------------------------------------------------------------------
+    // TODO 1: Declare custom arguments and options 
+    // -------------------------------------------------------------------------
+    parser.setArgument("O", &outputArrayName, "Output array name", true);
+    
     parser.parse(argc, argv);
-    parser.printArgs();
   }
 
+  // ---------------------------------------------------------------------------
+  // Command line output messages.
+  // ---------------------------------------------------------------------------
+  ttk::Debug msg;
+  msg.setDebugMsgPrefix("HelloWorld");
+  
   // ---------------------------------------------------------------------------
   // Initialize ttkHelloWorld module (adjust parameters)
   // ---------------------------------------------------------------------------
   auto helloWorld = vtkSmartPointer<ttkHelloWorld>::New();
-  // helloWorld->SetOutputArrayName("AveragedArray");
+  
+  // ---------------------------------------------------------------------------
+  // TODO 2: Pass custom arguments and options to the module
+  // ---------------------------------------------------------------------------
+  // helloWorld->SetOutputArrayName(outputArrayName);
 
   // ---------------------------------------------------------------------------
   // Read input vtkDataObjects (optionally: print available arrays)
   // ---------------------------------------------------------------------------
+  vtkDataArray *defaultArray = nullptr;
   for(size_t i = 0; i < inputFilePaths.size(); i++) {
     // init a reader that can parse any vtkDataObject stored in xml format
     auto reader = vtkSmartPointer<vtkXMLGenericDataObjectReader>::New();
@@ -58,32 +78,42 @@ int main(int argc, char **argv) {
     // check if input vtkDataObject was successfully read
     auto inputDataObject = reader->GetOutput();
     if(!inputDataObject) {
-      std::cout << "ERROR: Unable to read input vtkDataObject " << i << "\n";
+      msg.printErr("Unable to read input file `" + inputFilePaths[i] + "' :(");
       return 0;
     }
+    
+    auto inputAsVtkDataSet = vtkDataSet::SafeDownCast(inputDataObject);
 
     // if requested print list of arrays, otherwise proceed with execution
     if(listArrays) {
-      std::cout << "vtkDataObject " << i << ":\n";
-      if(auto inputAsVtkDataSet = vtkDataSet::SafeDownCast(inputDataObject)) {
+      msg.printMsg(inputFilePaths[i] + ":");
+      if(inputAsVtkDataSet) {
         // Point Data
-        std::cout << "  PointData:\n";
+        msg.printMsg("  PointData:");
         auto pointData = inputAsVtkDataSet->GetPointData();
         for(int j = 0; j < pointData->GetNumberOfArrays(); j++)
-          std::cout << "    " << pointData->GetArrayName(j) << "\n";
+          msg.printMsg("    - " + std::string(pointData->GetArrayName(j)));
 
         // Cell Data
-        std::cout << "  CellData:\n";
+        msg.printMsg("  CellData:");
         auto cellData = inputAsVtkDataSet->GetCellData();
         for(int j = 0; j < cellData->GetNumberOfArrays(); j++)
-          std::cout << "    " << cellData->GetArrayName(j) << "\n";
+          msg.printMsg("    - " + std::string(cellData->GetArrayName(j)));
       } else {
-        std::cout << "ERROR: Unable to list arrays of non vtkDataSet input.";
+        msg.printErr("Unable to list arrays on file `" + inputFilePaths[i]
+          + "'");
         return 0;
       }
     } else {
       // feed input object to ttkHelloWorld filter
       helloWorld->SetInputDataObject(i, reader->GetOutput());
+      
+      // default arrays
+      if(!defaultArray){
+        defaultArray = inputAsVtkDataSet->GetPointData()->GetArray(0);
+        if(!defaultArray)
+          defaultArray = inputAsVtkDataSet->GetCellData()->GetArray(0);
+      }
     }
   }
 
@@ -95,9 +125,13 @@ int main(int argc, char **argv) {
   // ---------------------------------------------------------------------------
   // Specify which arrays of the input vtkDataObjects will be processed
   // ---------------------------------------------------------------------------
+  if(!inputArrayNames.size()){
+    if(defaultArray)
+      inputArrayNames.push_back(defaultArray->GetName());
+  }
   for(size_t i = 0; i < inputArrayNames.size(); i++)
     helloWorld->SetInputArrayToProcess(i, 0, 0, 0, inputArrayNames[i].data());
-
+  
   // ---------------------------------------------------------------------------
   // Execute ttkHelloWorld filter
   // ---------------------------------------------------------------------------

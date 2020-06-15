@@ -75,7 +75,7 @@ namespace ttk {
 
         if(isAnOption_) {
           s += " (default: ";
-          s += *boolValue_;
+          s += std::to_string(*boolValue_);
           s += ")";
         }
 
@@ -109,9 +109,12 @@ namespace ttk {
     };
 
     CommandLineParser() {
+      // running from the command line, add a default value.
+      ttk::globalDebugLevel_ = 3;
       setArgument("d", &(ttk::globalDebugLevel_), "Global debug level", true);
       setArgument("t", &ttk::globalThreadNumber_, "Global thread number", true);
       debugLevel_ = (int)(debug::Priority::INFO);
+      
       setDebugMsgPrefix("CMD");
     };
 
@@ -183,6 +186,8 @@ namespace ttk {
           }
         }
       }
+      
+      setDebugLevel(ttk::globalDebugLevel_);
 
       return 0;
     };
@@ -226,14 +231,14 @@ namespace ttk {
           if(!arguments_[i].isSet_) {
             s += "(not set)";
           } else {
-            s += *(arguments_[i].intValue_);
+            s += std::to_string(*(arguments_[i].intValue_));
           }
         } else if(arguments_[i].intValueList_) {
           if(!arguments_[i].isSet_) {
             s += "(not set)";
           } else {
             for(int j = 0; j < (int)arguments_[i].intValueList_->size(); j++) {
-              s += (*(arguments_[i].intValueList_))[j];
+              s += std::to_string((*(arguments_[i].intValueList_))[j]);
               s += " ";
             }
           }
@@ -241,7 +246,7 @@ namespace ttk {
           if(!arguments_[i].isSet_) {
             s += "(not set)";
           } else {
-            s += *(arguments_[i].doubleValue_);
+            s += std::to_string(*(arguments_[i].doubleValue_));
           }
         } else if(arguments_[i].doubleValueList_) {
           if(!arguments_[i].isSet_) {
@@ -249,7 +254,7 @@ namespace ttk {
           } else {
             for(int j = 0; j < (int)arguments_[i].doubleValueList_->size();
                 j++) {
-              s += (*(arguments_[i].doubleValueList_))[j];
+              s += std::to_string((*(arguments_[i].doubleValueList_))[j]);
               s += " ";
             }
           }

@@ -7,7 +7,6 @@ if(TARGET ttkHelloWorld)
   target_link_libraries(${PROJECT_NAME}
     PRIVATE
       ttkHelloWorld
-      ttkProgramBase
     )
   set_target_properties(${PROJECT_NAME}
     PROPERTIES
