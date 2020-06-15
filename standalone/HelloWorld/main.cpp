@@ -145,10 +145,13 @@ int main(int argc, char **argv) {
       auto output = helloWorld->GetOutputDataObject(i);
       auto writer
         = vtkXMLDataObjectWriter::NewWriter(output->GetDataObjectType());
+      
+      std::string outputFileName = outputPathPrefix 
+          + "_port_" + std::to_string(i) 
+          + "." + writer->GetDefaultFileExtension();
+      msg.printMsg("Writing output file `" + outputFileName + "'...");
       writer->SetInputDataObject(output);
-      writer->SetFileName((outputPathPrefix + "_port_" + std::to_string(i) + "."
-                           + writer->GetDefaultFileExtension())
-                            .data());
+      writer->SetFileName(outputFileName.data());
       writer->Update();
     }
   }
