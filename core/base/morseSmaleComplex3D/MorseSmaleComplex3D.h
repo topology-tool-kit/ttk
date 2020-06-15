@@ -352,7 +352,7 @@ int ttk::MorseSmaleComplex3D::setDescendingSeparatrices2(
     outputSeparatrices2_cells_separatrixFunctionDiffs_);
 
   // max existing separatrix id + 1 or 0 if no previous separatrices
-  /*const*/ SimplexId separatrixId
+  const SimplexId separatrixId
     = (outputSeparatrices2_cells_separatrixIds_ != nullptr
        && !outputSeparatrices2_cells_separatrixIds_->empty())
         ? *std::max_element(outputSeparatrices2_cells_separatrixIds_->begin(),
@@ -360,93 +360,162 @@ int ttk::MorseSmaleComplex3D::setDescendingSeparatrices2(
             + 1
         : 0;
 
-  SimplexId pointId = (*outputSeparatrices2_numberOfPoints_);
-  SimplexId cellId = (*outputSeparatrices2_numberOfCells_);
+  // total number of separatrices points
+  auto npoints{static_cast<size_t>(*outputSeparatrices2_numberOfPoints_)};
+  // total number of separatrices cells
+  auto ncells{static_cast<size_t>(*outputSeparatrices2_numberOfCells_)};
+  // old number of separatrices cells
+  const auto noldcells{ncells};
+  // index of last vertex of last old cell + 1
+  const auto firstCellId{outputSeparatrices2_cells_->size()};
+  // list of valid geometryId to flatten loops
+  std::vector<SimplexId> validGeomIds{};
+  // corresponding separatrix index in separatrices array
+  std::vector<SimplexId> geomIdSep{};
+  // cells beginning id for each separatrix geometry
+  std::vector<size_t> geomCellsBegId{ncells};
 
-  const SimplexId numberOfVertices = inputTriangulation_->getNumberOfVertices();
-  std::vector<SimplexId> isVisited(numberOfVertices, -1);
-
-  const SimplexId numberOfSeparatrices = separatrices.size();
-  for(SimplexId i = 0; i < numberOfSeparatrices; ++i) {
-    const Separatrix &separatrix = separatrices[i];
-    if(!separatrix.isValid_ || separatrix.geometry_.empty())
+  // count total number of cells, flatten geometryId loops
+  for(size_t i = 0; i < separatrices.size(); ++i) {
+    const auto &sep = separatrices[i];
+    if(!sep.isValid_ || sep.geometry_.empty()) {
       continue;
-
-    const dcg::Cell &saddle = separatrix.source_;
-    const char separatrixType = 2;
-    const SimplexId saddleId = saddle.id_;
-
-    const dataType sepFuncMax
-      = discreteGradient_.scalarMax<dataType>(saddle, scalars);
-
-    // get separatrix infos
-    const char isOnBoundary
-      = std::count_if(separatricesSaddles[i].begin(),
-                      separatricesSaddles[i].end(), [=](const SimplexId a) {
-                        return inputTriangulation_->isEdgeOnBoundary(a);
-                      });
-
-    const dataType sepFuncMin = *std::min_element(
-      separatricesSaddles[i].begin(), separatricesSaddles[i].end(),
-      [=](const SimplexId a, const SimplexId b) {
-        return discreteGradient_.scalarMin<dataType>(Cell{1, a}, scalars)
-               < discreteGradient_.scalarMin<dataType>(Cell{1, b}, scalars);
-      });
-
-    const dataType sepFuncDiff = sepFuncMax - sepFuncMin;
-
-    bool isFirst = true;
-    for(const SimplexId geometryId : separatrix.geometry_) {
-      for(const dcg::Cell &cell : separatricesGeometry[geometryId]) {
-        const SimplexId triangleId = cell.id_;
-
-        outputSeparatrices2_cells_->push_back(3);
-        float point[3];
-        for(int k = 0; k < 3; ++k) {
-          SimplexId vertexId;
-          inputTriangulation_->getTriangleVertex(triangleId, k, vertexId);
-
-          if(isVisited[vertexId] == -1) {
-            inputTriangulation_->getVertexPoint(
-              vertexId, point[0], point[1], point[2]);
-
-            outputSeparatrices2_points_->push_back(point[0]);
-            outputSeparatrices2_points_->push_back(point[1]);
-            outputSeparatrices2_points_->push_back(point[2]);
-
-            outputSeparatrices2_cells_->push_back(pointId);
-
-            isVisited[vertexId] = pointId;
-            ++pointId;
-          } else
-            outputSeparatrices2_cells_->push_back(isVisited[vertexId]);
-        }
-        if(outputSeparatrices2_cells_sourceIds_)
-          outputSeparatrices2_cells_sourceIds_->push_back(saddleId);
-        if(outputSeparatrices2_cells_separatrixIds_)
-          outputSeparatrices2_cells_separatrixIds_->push_back(separatrixId);
-        if(outputSeparatrices2_cells_separatrixTypes_)
-          outputSeparatrices2_cells_separatrixTypes_->push_back(separatrixType);
-        if(separatrixFunctionMaxima)
-          separatrixFunctionMaxima->push_back(sepFuncMax);
-        if(separatrixFunctionMinima)
-          separatrixFunctionMinima->push_back(sepFuncMin);
-        if(separatrixFunctionDiffs)
-          separatrixFunctionDiffs->push_back(sepFuncDiff);
-        if(outputSeparatrices2_cells_isOnBoundary_)
-          outputSeparatrices2_cells_isOnBoundary_->push_back(isOnBoundary);
-
-        ++cellId;
-        isFirst = false;
-      }
     }
-
-    if(!isFirst)
-      ++separatrixId;
+    for(const auto geomId : sep.geometry_) {
+      ncells += separatricesGeometry[geomId].size();
+      geomCellsBegId.emplace_back(ncells);
+      validGeomIds.emplace_back(geomId);
+      geomIdSep.emplace_back(i);
+    }
   }
 
-  (*outputSeparatrices2_numberOfPoints_) = pointId;
-  (*outputSeparatrices2_numberOfCells_) = cellId;
+  // resize arrays
+  outputSeparatrices2_cells_->resize(
+    firstCellId + 4 * (ncells - noldcells)); // triangles cells
+  auto cells = &outputSeparatrices2_cells_->at(firstCellId);
+  if(outputSeparatrices2_cells_sourceIds_ != nullptr)
+    outputSeparatrices2_cells_sourceIds_->resize(ncells);
+  if(outputSeparatrices2_cells_separatrixIds_ != nullptr)
+    outputSeparatrices2_cells_separatrixIds_->resize(ncells);
+  if(outputSeparatrices2_cells_separatrixTypes_ != nullptr)
+    outputSeparatrices2_cells_separatrixTypes_->resize(ncells);
+  if(separatrixFunctionMaxima != nullptr)
+    separatrixFunctionMaxima->resize(ncells);
+  if(separatrixFunctionMinima != nullptr)
+    separatrixFunctionMinima->resize(ncells);
+  if(separatrixFunctionDiffs != nullptr)
+    separatrixFunctionDiffs->resize(ncells);
+  if(outputSeparatrices2_cells_isOnBoundary_ != nullptr)
+    outputSeparatrices2_cells_isOnBoundary_->resize(ncells);
+
+  // store the cells/triangles vertices vertexId
+  std::vector<SimplexId> cellVertsIds(3 * (ncells - noldcells));
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+  for(size_t i = 0; i < validGeomIds.size(); ++i) {
+    const auto &sep = separatrices[geomIdSep[i]];
+    const auto &sepGeom = separatricesGeometry[validGeomIds[i]];
+    const auto &sepSaddles = separatricesSaddles[validGeomIds[i]];
+    const auto sepId = separatrixId + i;
+    const dcg::Cell &src = sep.source_; // saddle2
+    const char sepType = 2;
+
+    // compute separatrix function diff
+    const dataType sepFuncMax = discreteGradient_.scalarMax(src, scalars);
+    const auto minId = *std::min_element(
+      sepSaddles.begin(), sepSaddles.end(),
+      [=](const SimplexId a, const SimplexId b) {
+        return discreteGradient_.scalarMin(Cell{1, a}, scalars)
+               < discreteGradient_.scalarMin(Cell{1, b}, scalars);
+      });
+    const dataType sepFuncMin
+      = discreteGradient_.scalarMin(Cell{1, minId}, scalars);
+    const dataType sepFuncDiff = sepFuncMax - sepFuncMin;
+
+    // get boundary condition
+    const char onBoundary = std::count_if(
+      sepSaddles.begin(), sepSaddles.end(), [=](const SimplexId a) {
+        return inputTriangulation_->isEdgeOnBoundary(a);
+      });
+
+    for(size_t j = 0; j < sepGeom.size(); ++j) {
+      const auto &cell = sepGeom[j];
+
+      // first store the SimplexId of the cell/triangle vertices
+      SimplexId v0{}, v1{}, v2{};
+      inputTriangulation_->getTriangleVertex(cell.id_, 0, v0);
+      inputTriangulation_->getTriangleVertex(cell.id_, 1, v1);
+      inputTriangulation_->getTriangleVertex(cell.id_, 2, v2);
+
+      // index of current cell in cell data arrays
+      const auto l = geomCellsBegId[i] + j;
+      // index of current cell among all new cells
+      const auto m = l - noldcells;
+
+      cells[4 * m + 0] = 3;
+      cells[4 * m + 1] = v0;
+      cells[4 * m + 2] = v1;
+      cells[4 * m + 3] = v2;
+      cellVertsIds[3 * m + 0] = v0;
+      cellVertsIds[3 * m + 1] = v1;
+      cellVertsIds[3 * m + 2] = v2;
+
+      if(outputSeparatrices2_cells_sourceIds_ != nullptr)
+        (*outputSeparatrices2_cells_sourceIds_)[l] = src.id_;
+      if(outputSeparatrices2_cells_separatrixIds_ != nullptr)
+        (*outputSeparatrices2_cells_separatrixIds_)[l] = sepId;
+      if(outputSeparatrices2_cells_separatrixTypes_ != nullptr)
+        (*outputSeparatrices2_cells_separatrixTypes_)[l] = sepType;
+      if(separatrixFunctionMaxima != nullptr)
+        (*separatrixFunctionMaxima)[l] = sepFuncMax;
+      if(separatrixFunctionDiffs != nullptr)
+        (*separatrixFunctionMinima)[l] = sepFuncMin;
+      if(separatrixFunctionDiffs != nullptr)
+        (*separatrixFunctionDiffs)[l] = sepFuncDiff;
+      if(outputSeparatrices2_cells_isOnBoundary_ != nullptr)
+        (*outputSeparatrices2_cells_isOnBoundary_)[l] = onBoundary;
+    }
+  }
+
+  // reduce the cell vertices ids
+  // (cells are triangles sharing two vertices)
+  PSORT(cellVertsIds.begin(), cellVertsIds.end());
+  const auto last = std::unique(cellVertsIds.begin(), cellVertsIds.end());
+  cellVertsIds.erase(last, cellVertsIds.end());
+
+  // vertex Id to index in points array
+  std::vector<size_t> vertId2PointsId(
+    inputTriangulation_->getNumberOfVertices());
+
+  const auto noldpoints{npoints};
+  npoints += cellVertsIds.size();
+  outputSeparatrices2_points_->resize(3 * npoints);
+  auto points = &outputSeparatrices2_points_->at(3 * noldpoints);
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+  for(size_t i = 0; i < cellVertsIds.size(); ++i) {
+    // vertex 3D coords
+    inputTriangulation_->getVertexPoint(
+      cellVertsIds[i], points[3 * i + 0], points[3 * i + 1], points[3 * i + 2]);
+    // vertex index in cellVertsIds array (do not forget offset)
+    vertId2PointsId[cellVertsIds[i]] = i + noldpoints;
+  }
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+  for(size_t i = 0; i < ncells - noldcells; ++i) {
+    cells[4 * i + 1] = vertId2PointsId[cells[4 * i + 1]];
+    cells[4 * i + 2] = vertId2PointsId[cells[4 * i + 2]];
+    cells[4 * i + 3] = vertId2PointsId[cells[4 * i + 3]];
+  }
+
+  (*outputSeparatrices2_numberOfPoints_) = npoints;
+  (*outputSeparatrices2_numberOfCells_) = ncells;
 
   return 0;
 }
