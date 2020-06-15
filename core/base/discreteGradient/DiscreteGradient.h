@@ -64,8 +64,8 @@ namespace ttk {
       }
       explicit CellExt(const int dim,
                        const SimplexId id,
-                       const std::array<SimplexId, 3> &&lowVerts,
-                       const std::array<uint8_t, 3> &&faces)
+                       const std::array<SimplexId, 3> &lowVerts,
+                       const std::array<uint8_t, 3> &faces)
         : Cell{dim, id}, lowVerts_{lowVerts}, faces_{faces} {
       }
 

@@ -103,8 +103,7 @@ inline DiscreteGradient::lowerStarType
             }
             j++;
           }
-          res[2].emplace_back(
-            CellExt{2, triangleId, std::move(lowVerts), std::move(faces)});
+          res[2].emplace_back(CellExt{2, triangleId, lowVerts, faces});
         }
       };
 
@@ -187,8 +186,7 @@ inline DiscreteGradient::lowerStarType
             j++;
           }
 
-          res[3].emplace_back(
-            CellExt{3, cellId, std::move(lowVerts), std::move(faces)});
+          res[3].emplace_back(CellExt{3, cellId, lowVerts, faces});
         }
       }
     }
