@@ -311,31 +311,31 @@ int ttk::MorseSmaleComplex3D::setDescendingSeparatrices2(
   const std::vector<std::vector<dcg::Cell>> &separatricesGeometry,
   const std::vector<std::set<SimplexId>> &separatricesSaddles) const {
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(!outputSeparatrices2_numberOfPoints_) {
+  if(outputSeparatrices2_numberOfPoints_ == nullptr) {
     std::cerr << "[MorseSmaleComplex3D] 2-separatrices pointer to "
                  "numberOfPoints is null."
               << std::endl;
     return -1;
   }
-  if(!outputSeparatrices2_points_) {
+  if(outputSeparatrices2_points_ == nullptr) {
     std::cerr
       << "[MorseSmaleComplex3D] 2-separatrices pointer to points is null."
       << std::endl;
     return -1;
   }
-  if(!outputSeparatrices2_numberOfCells_) {
+  if(outputSeparatrices2_numberOfCells_ == nullptr) {
     std::cerr << "[MorseSmaleComplex3D] 2-separatrices pointer to "
                  "numberOfCells is null."
               << std::endl;
     return -1;
   }
-  if(!outputSeparatrices2_cells_) {
+  if(outputSeparatrices2_cells_ == nullptr) {
     std::cerr
       << "[MorseSmaleComplex3D] 2-separatrices pointer to cells is null."
       << std::endl;
     return -1;
   }
-  if(!inputScalarField_) {
+  if(inputScalarField_ == nullptr) {
     std::cerr << "[MorseSmaleComplex3D] 2-separatrices pointer to the input "
                  "scalar field is null."
               << std::endl;
@@ -343,28 +343,25 @@ int ttk::MorseSmaleComplex3D::setDescendingSeparatrices2(
   }
 #endif
 
-  const dataType *const scalars
-    = static_cast<const dataType *>(inputScalarField_);
-  std::vector<dataType> *outputSeparatrices2_cells_separatrixFunctionMaxima
-    = static_cast<std::vector<dataType> *>(
-      outputSeparatrices2_cells_separatrixFunctionMaxima_);
-  std::vector<dataType> *outputSeparatrices2_cells_separatrixFunctionMinima
-    = static_cast<std::vector<dataType> *>(
-      outputSeparatrices2_cells_separatrixFunctionMinima_);
-  std::vector<dataType> *outputSeparatrices2_cells_separatrixFunctionDiffs
-    = static_cast<std::vector<dataType> *>(
-      outputSeparatrices2_cells_separatrixFunctionDiffs_);
+  const auto scalars = static_cast<const dataType *>(inputScalarField_);
+  auto separatrixFunctionMaxima = static_cast<std::vector<dataType> *>(
+    outputSeparatrices2_cells_separatrixFunctionMaxima_);
+  auto separatrixFunctionMinima = static_cast<std::vector<dataType> *>(
+    outputSeparatrices2_cells_separatrixFunctionMinima_);
+  auto separatrixFunctionDiffs = static_cast<std::vector<dataType> *>(
+    outputSeparatrices2_cells_separatrixFunctionDiffs_);
+
+  // max existing separatrix id + 1 or 0 if no previous separatrices
+  /*const*/ SimplexId separatrixId
+    = (outputSeparatrices2_cells_separatrixIds_ != nullptr
+       && !outputSeparatrices2_cells_separatrixIds_->empty())
+        ? *std::max_element(outputSeparatrices2_cells_separatrixIds_->begin(),
+                            outputSeparatrices2_cells_separatrixIds_->end())
+            + 1
+        : 0;
 
   SimplexId pointId = (*outputSeparatrices2_numberOfPoints_);
   SimplexId cellId = (*outputSeparatrices2_numberOfCells_);
-  SimplexId separatrixId = 0;
-  if(outputSeparatrices2_cells_separatrixIds_
-     and outputSeparatrices2_cells_separatrixIds_->size()) {
-    separatrixId
-      = *std::max_element(outputSeparatrices2_cells_separatrixIds_->begin(),
-                          outputSeparatrices2_cells_separatrixIds_->end())
-        + 1;
-  }
 
   const SimplexId numberOfVertices = inputTriangulation_->getNumberOfVertices();
   std::vector<SimplexId> isVisited(numberOfVertices, -1);
@@ -372,41 +369,33 @@ int ttk::MorseSmaleComplex3D::setDescendingSeparatrices2(
   const SimplexId numberOfSeparatrices = separatrices.size();
   for(SimplexId i = 0; i < numberOfSeparatrices; ++i) {
     const Separatrix &separatrix = separatrices[i];
-    if(!separatrix.isValid_)
-      continue;
-    if(!separatrix.geometry_.size())
+    if(!separatrix.isValid_ || separatrix.geometry_.empty())
       continue;
 
     const dcg::Cell &saddle = separatrix.source_;
     const char separatrixType = 2;
     const SimplexId saddleId = saddle.id_;
 
-    const dataType separatrixFunctionMaximum
+    const dataType sepFuncMax
       = discreteGradient_.scalarMax<dataType>(saddle, scalars);
-    dataType separatrixFunctionMinimum{};
 
     // get separatrix infos
-    char isOnBoundary{};
+    const char isOnBoundary
+      = std::count_if(separatricesSaddles[i].begin(),
+                      separatricesSaddles[i].end(), [=](const SimplexId a) {
+                        return inputTriangulation_->isEdgeOnBoundary(a);
+                      });
+
+    const dataType sepFuncMin = *std::min_element(
+      separatricesSaddles[i].begin(), separatricesSaddles[i].end(),
+      [=](const SimplexId a, const SimplexId b) {
+        return discreteGradient_.scalarMin<dataType>(Cell{1, a}, scalars)
+               < discreteGradient_.scalarMin<dataType>(Cell{1, b}, scalars);
+      });
+
+    const dataType sepFuncDiff = sepFuncMax - sepFuncMin;
+
     bool isFirst = true;
-    for(const SimplexId saddle1Id : separatricesSaddles[i]) {
-      if(inputTriangulation_->isEdgeOnBoundary(saddle1Id))
-        ++isOnBoundary;
-
-      if(isFirst) {
-        separatrixFunctionMinimum = discreteGradient_.scalarMin<dataType>(
-          dcg::Cell(1, saddle1Id), scalars);
-        isFirst = false;
-      } else {
-        separatrixFunctionMinimum = std::min(
-          separatrixFunctionMinimum, discreteGradient_.scalarMin<dataType>(
-                                       dcg::Cell(1, saddle1Id), scalars));
-      }
-    }
-
-    const dataType separatrixFunctionDiff
-      = separatrixFunctionMaximum - separatrixFunctionMinimum;
-
-    isFirst = true;
     for(const SimplexId geometryId : separatrix.geometry_) {
       for(const dcg::Cell &cell : separatricesGeometry[geometryId]) {
         const SimplexId triangleId = cell.id_;
@@ -438,15 +427,12 @@ int ttk::MorseSmaleComplex3D::setDescendingSeparatrices2(
           outputSeparatrices2_cells_separatrixIds_->push_back(separatrixId);
         if(outputSeparatrices2_cells_separatrixTypes_)
           outputSeparatrices2_cells_separatrixTypes_->push_back(separatrixType);
-        if(outputSeparatrices2_cells_separatrixFunctionMaxima)
-          outputSeparatrices2_cells_separatrixFunctionMaxima->push_back(
-            separatrixFunctionMaximum);
-        if(outputSeparatrices2_cells_separatrixFunctionMinima)
-          outputSeparatrices2_cells_separatrixFunctionMinima->push_back(
-            separatrixFunctionMinimum);
-        if(outputSeparatrices2_cells_separatrixFunctionDiffs)
-          outputSeparatrices2_cells_separatrixFunctionDiffs->push_back(
-            separatrixFunctionDiff);
+        if(separatrixFunctionMaxima)
+          separatrixFunctionMaxima->push_back(sepFuncMax);
+        if(separatrixFunctionMinima)
+          separatrixFunctionMinima->push_back(sepFuncMin);
+        if(separatrixFunctionDiffs)
+          separatrixFunctionDiffs->push_back(sepFuncDiff);
         if(outputSeparatrices2_cells_isOnBoundary_)
           outputSeparatrices2_cells_isOnBoundary_->push_back(isOnBoundary);
 
