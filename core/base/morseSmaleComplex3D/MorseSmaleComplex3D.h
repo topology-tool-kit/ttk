@@ -94,9 +94,17 @@ namespace ttk {
       const std::vector<std::vector<dcg::Cell>> &separatricesGeometry,
       const std::vector<std::set<SimplexId>> &separatricesSaddles) const;
 
+    /**
+     * Find all tetras in the star of edgeId
+     *
+     * (primal: star of edgeId -> dual: vertices of polygon)
+     */
     int getDualPolygon(const SimplexId edgeId,
                        std::vector<SimplexId> &polygon) const;
 
+    /**
+     * Sort the polygon vertices to be clockwise
+     */
     int sortDualPolygonVertices(std::vector<SimplexId> &polygon) const;
 
     /**

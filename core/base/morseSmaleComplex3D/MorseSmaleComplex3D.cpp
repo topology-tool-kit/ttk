@@ -1,4 +1,5 @@
 #include <MorseSmaleComplex3D.h>
+#include <iterator>
 
 using namespace std;
 using namespace ttk;
@@ -274,15 +275,11 @@ int MorseSmaleComplex3D::getDescendingSeparatrices2(
 
 int MorseSmaleComplex3D::getDualPolygon(const SimplexId edgeId,
                                         vector<SimplexId> &polygon) const {
-  // primal: star of edgeId -> dual: vertices of polygon
 
-  // get the vertices of the polygon
-  const SimplexId starNumber = inputTriangulation_->getEdgeStarNumber(edgeId);
-  polygon.resize(starNumber);
-  for(SimplexId i = 0; i < starNumber; ++i) {
+  polygon.resize(inputTriangulation_->getEdgeStarNumber(edgeId));
+  for(size_t i = 0; i < polygon.size(); ++i) {
     SimplexId starId;
     inputTriangulation_->getEdgeStar(edgeId, i, starId);
-
     polygon[i] = starId;
   }
 
@@ -291,27 +288,20 @@ int MorseSmaleComplex3D::getDualPolygon(const SimplexId edgeId,
 
 int MorseSmaleComplex3D::sortDualPolygonVertices(
   vector<SimplexId> &polygon) const {
-  // sort the vertices of the polygon to be clockwise
-  const SimplexId vertexNumber = polygon.size();
-  for(SimplexId i = 1; i < vertexNumber; ++i) {
-    const SimplexId previousId = polygon[i - 1];
 
-    // find neighbor of previous one
+  for(size_t i = 1; i < polygon.size(); ++i) {
+
+    // find polygon[i - 1] neighboring tetra in polygon[i..]
     bool isFound = false;
-    SimplexId index = -1;
-    for(SimplexId j = i; j < vertexNumber; j++) {
-      const SimplexId currentId = polygon[j];
-
+    size_t j = i;
+    for(; j < polygon.size(); ++j) {
       // check if current is the neighbor
-      const SimplexId neighborNumber
-        = inputTriangulation_->getCellNeighborNumber(previousId);
-      for(SimplexId k = 0; k < neighborNumber; ++k) {
-        SimplexId neighborId;
-        inputTriangulation_->getCellNeighbor(previousId, k, neighborId);
-
-        if(neighborId == currentId) {
+      for(SimplexId k = 0;
+          k < inputTriangulation_->getCellNeighborNumber(polygon[i - 1]); ++k) {
+        SimplexId neighborId{};
+        inputTriangulation_->getCellNeighbor(polygon[i - 1], k, neighborId);
+        if(neighborId == polygon[j]) {
           isFound = true;
-          index = j;
           break;
         }
       }
@@ -319,11 +309,9 @@ int MorseSmaleComplex3D::sortDualPolygonVertices(
         break;
     }
 
-    // swap foundId and currentId
+    // place polygon[j] next to polygon[i - 1]
     if(isFound) {
-      const SimplexId tmpId = polygon[index];
-      polygon[index] = polygon[i];
-      polygon[i] = tmpId;
+      std::swap(polygon[j], polygon[i]);
     }
   }
 
