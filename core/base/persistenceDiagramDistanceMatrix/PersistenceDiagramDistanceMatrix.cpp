@@ -69,20 +69,17 @@ std::vector<std::vector<double>> PersistenceDiagramDistanceMatrix::execute(
   }
 
   if(this->do_min_) {
-    setBidderDiagrams(nInputs, inputDiagramsMin, bidder_diagrams_min,
-                      current_bidder_diagrams_min);
+    setBidderDiagrams(nInputs, inputDiagramsMin, bidder_diagrams_min);
     enrichCurrentBidderDiagrams(
       bidder_diagrams_min, current_bidder_diagrams_min);
   }
   if(this->do_sad_) {
-    setBidderDiagrams(nInputs, inputDiagramsSad, bidder_diagrams_sad,
-                      current_bidder_diagrams_sad);
+    setBidderDiagrams(nInputs, inputDiagramsSad, bidder_diagrams_sad);
     enrichCurrentBidderDiagrams(
       bidder_diagrams_sad, current_bidder_diagrams_sad);
   }
   if(this->do_max_) {
-    setBidderDiagrams(nInputs, inputDiagramsMax, bidder_diagrams_max,
-                      current_bidder_diagrams_max);
+    setBidderDiagrams(nInputs, inputDiagramsMax, bidder_diagrams_max);
     enrichCurrentBidderDiagrams(
       bidder_diagrams_max, current_bidder_diagrams_max);
   }
@@ -189,15 +186,13 @@ void PersistenceDiagramDistanceMatrix::getDiagramsDistMat(
 void PersistenceDiagramDistanceMatrix::setBidderDiagrams(
   const size_t nInputs,
   std::vector<std::vector<DiagramTuple>> &inputDiagrams,
-  std::vector<BidderDiagram<double>> &bidder_diags,
-  std::vector<BidderDiagram<double>> &current_bidder_diags) const {
+  std::vector<BidderDiagram<double>> &bidder_diags) const {
+
+  bidder_diags.resize(nInputs);
 
   for(size_t i = 0; i < nInputs; i++) {
-    bidder_diags.emplace_back();
-    current_bidder_diags.emplace_back();
-
     auto &diag = inputDiagrams[i];
-    auto &bidders = bidder_diags.back();
+    auto &bidders = bidder_diags[i];
 
     for(size_t j = 0; j < diag.size(); j++) {
       // Add bidder to bidders
@@ -215,6 +210,8 @@ void PersistenceDiagramDistanceMatrix::setBidderDiagrams(
 double PersistenceDiagramDistanceMatrix::enrichCurrentBidderDiagrams(
   const std::vector<BidderDiagram<double>> &bidder_diags,
   std::vector<BidderDiagram<double>> &current_bidder_diags) const {
+
+  current_bidder_diags.resize(bidder_diags.size());
 
   const double prev_min_persistence = 2.0 * getMostPersistent(bidder_diags);
   double new_min_persistence = 0.0;

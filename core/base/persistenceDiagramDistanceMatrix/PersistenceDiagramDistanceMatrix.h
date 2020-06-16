@@ -106,11 +106,10 @@ namespace ttk {
       const std::vector<BidderDiagram<double>> &diags_min,
       const std::vector<BidderDiagram<double>> &diags_sad,
       const std::vector<BidderDiagram<double>> &diags_max) const;
-    void setBidderDiagrams(
-      const size_t nInputs,
-      std::vector<std::vector<DiagramTuple>> &inputDiagrams,
-      std::vector<BidderDiagram<double>> &bidder_diags,
-      std::vector<BidderDiagram<double>> &current_bidder_diags) const;
+    void
+      setBidderDiagrams(const size_t nInputs,
+                        std::vector<std::vector<DiagramTuple>> &inputDiagrams,
+                        std::vector<BidderDiagram<double>> &bidder_diags) const;
     double enrichCurrentBidderDiagrams(
       const std::vector<BidderDiagram<double>> &bidder_diags,
       std::vector<BidderDiagram<double>> &current_bidder_diags) const;
