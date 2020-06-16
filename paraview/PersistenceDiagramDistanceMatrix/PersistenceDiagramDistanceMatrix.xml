@@ -125,7 +125,7 @@
           command="SetMinPointsToAdd"
           label="Number of Pairs"
           number_of_elements="1"
-          default_values="10"
+          default_values="20"
           panel_visibility="advanced"
           >
         <Hints>

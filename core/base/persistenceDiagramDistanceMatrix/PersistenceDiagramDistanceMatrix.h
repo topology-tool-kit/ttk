@@ -114,7 +114,7 @@ namespace ttk {
     // pair sad-max) lambda = 0 : saddle (bad stability) lambda = 1/2 : middle
     // of the 2 critical points of the pair
     double Lambda;
-    size_t MinPointsToAdd{10};
+    size_t MinPointsToAdd{20};
     bool UseFullDiagrams{false};
     bool do_min_{true}, do_sad_{true}, do_max_{true};
   };
