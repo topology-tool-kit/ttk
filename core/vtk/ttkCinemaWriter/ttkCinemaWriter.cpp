@@ -1,7 +1,6 @@
 #include <ttkCinemaWriter.h>
 
-#include <vtkDataObject.h> // For port info
-#include <vtkObjectFactory.h> // for new macro
+#include <vtkInformation.h>
 
 #include <vtkDirectory.h>
 #include <vtkFieldData.h>
