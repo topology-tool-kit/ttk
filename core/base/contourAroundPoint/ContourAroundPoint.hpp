@@ -17,7 +17,6 @@
 
 #include <cassert>
 #include <cmath>
-#include <functional> // see comment below
 #include <set>
 #include <vector>
 
@@ -48,11 +47,14 @@ public:
    * \param triangulation Pointer to a valid triangulation.
    * \param scalars Scalar for each vertex.
    * \param sizeFilter 0 --> all pass, 10000 none pass.
+   * \param radius If all vertices lie on a shpere and the output is supposed
+   *        to do so as well, pass the radius of the sphere here or -1 to have
+   *        it computed. The default 0 signals that the data is not spherical.
    * \return 0 upon success, negative values otherwise.
    * \sa ttk::Triangulation
    */
   int setInputField(Triangulation *triangulation, void *scalars,
-                    double sizeFilter);
+                    double sizeFilter, double radius=0.);
 
   /**
    * Input the point data (e.g. from the wrapped algorithm).
@@ -120,40 +122,6 @@ public:
     return res;
   }
   
-  // This static function might as well go into some kind of utility file.
-  // In C++>11 auto return type is possible (for a function returning a lambda).
-  /**
-   * @brief Get a sigmoid function.
-   * It is important that the lo* args are in fact less than the hi* args.
-   * @param lox Small x-value (e.g. the expected minimum input); default 0.
-   * @param hix Large x-value (e.g. the expected maximum input); default 1.
-   * @param slopeFac Factor to multiply with the default slope
-   *        (hiy-loy)/(hix-lox); a one leads to a function that is effectively
-   *        linear on [lox, hix]; a negative value creates a "zee" function that
-   *        goes from hiy to loy; default 8.
-   * @param midxFac Determines the inflection position midx where y=loy+ry/2;
-   *        0=>midx=lox, 1=>midx=hix; a value less than 0.5 leads to faster
-   *        increase in the "left" part; default 0.5.
-   * @param loy Infimum  y-value; default 0.
-   * @param hiy Supremum y-value; default 1.
-   */
-  static std::function<double(double)> getSigmoidFunc(
-      double lox=0., double hix=1., double slopeFac=8., double midxFac=0.5,
-      double loy=0., double hiy=1.) {
-    assert(lox < hix);
-    assert(loy < hiy);
-    assert(midxFac >= 0.);
-    assert(midxFac <= 1.);
-    const double ry = hiy - loy;
-    const double midx = lox*(1.-midxFac) + hix*midxFac;
-    const double slope = slopeFac * ry / (hix - lox);
-    const double mulWithX = -slope;
-    const double addToScaledX = slope * midx;
-    return [mulWithX, addToScaledX, ry, loy](double x) {
-      return ry / (1. + std::exp(mulWithX*x + addToScaledX)) + loy;
-    };
-  }
-  
   
 protected:
 
@@ -181,6 +149,13 @@ protected:
   void extendOutPts(const std::vector<SimplexId> &vertices,
                     float isoval, int flag, float scalar) const;
   
+  
+  /// Set and return _radius
+  double compRadius();
+  
+  /// If greater than 0, means the coordinates are supposed to lie on a sphere
+  /// with fixed radius.
+  double _radius = 0.;
   
   /* Input data (field and points) */
   
@@ -230,7 +205,7 @@ int ttk::ContourAroundPoint::execute() const
   _outCentroidsCoords.resize(0);
   _outCentroidsScalars.resize(0);
   _outCentroidsFlags.resize(0);
-
+  
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!_inpFldTriang) return -1;
   if(!_inpFldScalars) return -2;
@@ -239,9 +214,9 @@ int ttk::ContourAroundPoint::execute() const
   if(!_inpPtsIsovals) return -5;
   if(!_inpPtsFlags) return -6;
 #endif
-
+  
   Timer timUseObj;
-
+  
   // The following open-mp processing is only relevant for
   // embarrassingly parallel algorithms.
 //#ifdef TTK_ENABLE_OPENMP
@@ -409,16 +384,27 @@ void ttk::ContourAroundPoint::extendOutFld(
 template<typename scalarT>
 void ttk::ContourAroundPoint::extendOutPts(
     const std::vector<SimplexId> &vertices,
-    float isoval, int flag, float scalar) const {
+    float isoval, int flag, float extremeVal) const {
   
   auto inpScalars = reinterpret_cast<const scalarT*>(_inpFldScalars);
-  // Vertices that are close to the isovalue get little weight.
-  using Tuple4 = std::tuple<float,float,double,double>;
-  auto minMaxSlopeMid = flag ? // scalar is max?
-        Tuple4{isoval, scalar, 9., 0.6} : Tuple4{scalar, isoval, -9., 0.4};
-  auto wOfSca = getSigmoidFunc(
-        std::get<0>(minMaxSlopeMid), std::get<1>(minMaxSlopeMid),
-        std::get<2>(minMaxSlopeMid), std::get<3>(minMaxSlopeMid));
+  
+  // We weight the vertices based on the difference to the extreme value.
+  // Vertices that are close to the extreme value get much weight,
+  // vertices that are close to the isovalue get little weight.
+  
+  // Because we only use symmetric kernels for the weighting, the sign of
+  // the difference does not matter.
+  const double dMax = isoval - extremeVal;
+  
+  // For now, we use a "full cosine" kernel.
+  const double kernelInputScaler = M_PI / dMax;
+  // d=0 … cos(0)=1 … w=1, d=dMax … cos(pi)=-1 … w = 0
+  auto k_func = [dMax, kernelInputScaler](double d)
+  {
+    assert(d >= -dMax);
+    assert(d <=  dMax);
+    return (std::cos(d * kernelInputScaler) + 1. ) / 2.;
+  };
   
   // do the computation in double precision
   double wSum = 0.;
@@ -426,16 +412,10 @@ void ttk::ContourAroundPoint::extendOutPts(
   double outY = 0.;
   double outZ = 0.;
   double outSca = 0.;
-  // There are several imaginable ways to compute the scalar value at the
-  // output point. We choose the weighted mean, where the weights are the same
-  // as for the output coordinates.
   
   for(const auto v : vertices) {
-    const scalarT sca = inpScalars[v];
-//    const double w = flag ? sca - isoval : isoval - sca; // linear
-//    const double diffSca = sca - isoval;
-//    const double w = diffSca * diffSca; // quadratic
-    const double w = wOfSca(sca); // sigmoid
+    const scalarT vSca = inpScalars[v];
+    const double w = k_func(vSca - extremeVal);
     wSum += w;
     
     float x, y, z;
@@ -443,14 +423,21 @@ void ttk::ContourAroundPoint::extendOutPts(
     outX += x * w;
     outY += y * w;
     outZ += z * w;
-    
-    outSca += sca * w;
+    outSca += vSca * w;
   }
   assert(wSum != 0.);
   outX /= wSum;
   outY /= wSum;
   outZ /= wSum;
   outSca /= wSum;
+  
+  if(_radius > 0.) {
+    const double radiusCur = std::sqrt(outX*outX + outY*outY + outZ*outZ);
+    const double radiusScaler = _radius / radiusCur;
+    outX *= radiusScaler;
+    outY *= radiusScaler;
+    outZ *= radiusScaler;
+  }
   
   _outCentroidsCoords.push_back(static_cast<float>(outX));
   _outCentroidsCoords.push_back(static_cast<float>(outY));

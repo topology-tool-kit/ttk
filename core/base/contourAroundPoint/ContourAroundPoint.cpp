@@ -1,10 +1,12 @@
 #include "ContourAroundPoint.hpp"
 
+#include <limits> // for nan
+
 using module = ttk::ContourAroundPoint;
 
 
 int module::setInputField(Triangulation *triangulation, void *scalars,
-                          double sizeFilter) {
+                          double sizeFilter, double radius) {
   msg(std::string(60, '-').c_str());
   
   if(!triangulation) return -1;
@@ -17,9 +19,14 @@ int module::setInputField(Triangulation *triangulation, void *scalars,
     return -3;
   
   _sizeMin = _inpFldTriang->getNumberOfVertices() * sizeFilter / 10000. + 1;
-
+  
+  if(radius == -1.)
+    compRadius();
+  else
+    _radius = radius;
+  
   // Call all the required precondition functions here!
-
+  
   // for getVertexEdgeNumber, getVertexEdge
   triangulation->preconditionVertexEdges();
   // for getVertexNeighbor
@@ -30,7 +37,7 @@ int module::setInputField(Triangulation *triangulation, void *scalars,
   triangulation->preconditionEdgeTriangles();
   // for getTriangleEdge
   triangulation->preconditionTriangleEdges();
-
+  
   return 0;
 }
 
@@ -113,4 +120,16 @@ void module::getOutputCentroids(
   std::copy(_outCentroidsScalars.begin(), _outCentroidsScalars.end(), scalars);
   flags = new int[nv];
   std::copy(_outCentroidsFlags.begin(), _outCentroidsFlags.end(), flags);
+}
+
+//----------------------------------------------------------------------------//
+
+double module::compRadius() {
+  if(_inpFldTriang) {
+    float x, y, z;
+    _inpFldTriang->getVertexPoint(0, x, y, z);
+    _radius = std::sqrt(x*x + y*y + z*z);
+  } else
+    _radius = std::numeric_limits<double>::signaling_NaN();
+  return _radius;
 }

@@ -17,10 +17,7 @@
             Related publication: 'Topology-based Feature Detection in Climate
             Data', Christopher P Kappe, Michael Boettinger, Heike Leitte,
             Visualization in Environmental Sciences (EnvirVis), 2019 (accepted, yet
-            to be published).
-
-            If you get errors or strange results for netCDF lat-lon input data,
-            deselect 'Spherical Coordinates' and select 'Output Type' 'Image'."
+            to be published)."
             short_help="TTK contourAroundPoint plugin.">
             TTK contourAroundPoint plugin.
          </Documentation>
@@ -119,6 +116,19 @@
                Select the scalar variable to consider.
             </Documentation>
          </StringVectorProperty>
+
+         <IntVectorProperty
+            name="ui_spherical"
+            label="Domain is a sphere"
+            command="Setui_spherical"
+            number_of_elements="1"
+            default_values="0">
+            <BooleanDomain name="bool"/>
+            <Documentation>
+               Select this if both the scalar field and the points lie on a sphere and the output
+               shall lie on the same sphere.
+            </Documentation>
+         </IntVectorProperty>
 
          <IntVectorProperty
             name="UseAllCores"

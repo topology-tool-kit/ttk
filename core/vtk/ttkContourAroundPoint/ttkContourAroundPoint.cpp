@@ -67,8 +67,9 @@ bool ttkContourAroundPoint::preprocessFld(vtkDataSet *dataset) {
   triangulation->setWrapper(this);
   auto scalars = dataset->GetPointData()->GetAbstractArray(ui_scalars.c_str());
   assert(scalars);
+  const double radius = ui_spherical ? -1. : 0.;
   const auto errorCode = _wrappedModule.setInputField(
-        triangulation, scalars->GetVoidPointer(0), ui_sizeFilter);
+        triangulation, scalars->GetVoidPointer(0), ui_sizeFilter, radius);
   if(errorCode < 0) {
     vtkErrorMacro("_wrappedModule.setInputField failed with code "
                   << errorCode) return false;

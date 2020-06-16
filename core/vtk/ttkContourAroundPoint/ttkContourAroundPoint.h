@@ -67,6 +67,8 @@ public:
   vtkSetMacro(ui_extension, double) vtkGetMacro(ui_extension, double);
 
   vtkSetMacro(ui_scalars, std::string) vtkGetMacro(ui_scalars, std::string);
+  
+  vtkSetMacro(ui_spherical, bool) vtkGetMacro(ui_spherical, bool);
   // END set-getters macros
 
   // By default, this filter has one input and one output, of the same type.
@@ -184,6 +186,8 @@ private:
   double ui_extension;
   // name of the scalar variable of the input field
   std::string ui_scalars;
+  // domain is spherical?
+  bool ui_spherical;
 
   int _scalarTypeCode; // VTK type of the scalars defined on the input field
 
