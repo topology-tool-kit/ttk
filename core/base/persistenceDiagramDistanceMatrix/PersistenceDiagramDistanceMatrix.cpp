@@ -72,19 +72,19 @@ std::vector<std::vector<double>> PersistenceDiagramDistanceMatrix::execute(
     setBidderDiagrams(nInputs, inputDiagramsMin, bidder_diagrams_min,
                       current_bidder_diagrams_min);
     enrichCurrentBidderDiagrams(
-      this->MinPointsToAdd, bidder_diagrams_min, current_bidder_diagrams_min);
+      bidder_diagrams_min, current_bidder_diagrams_min);
   }
   if(this->do_sad_) {
     setBidderDiagrams(nInputs, inputDiagramsSad, bidder_diagrams_sad,
                       current_bidder_diagrams_sad);
     enrichCurrentBidderDiagrams(
-      this->MinPointsToAdd, bidder_diagrams_sad, current_bidder_diagrams_sad);
+      bidder_diagrams_sad, current_bidder_diagrams_sad);
   }
   if(this->do_max_) {
     setBidderDiagrams(nInputs, inputDiagramsMax, bidder_diagrams_max,
                       current_bidder_diagrams_max);
     enrichCurrentBidderDiagrams(
-      this->MinPointsToAdd, bidder_diagrams_max, current_bidder_diagrams_max);
+      bidder_diagrams_max, current_bidder_diagrams_max);
   }
 
   std::vector<std::vector<double>> distMat(nInputs);
@@ -213,7 +213,6 @@ void PersistenceDiagramDistanceMatrix::setBidderDiagrams(
 }
 
 double PersistenceDiagramDistanceMatrix::enrichCurrentBidderDiagrams(
-  const size_t min_points_to_add,
   const std::vector<BidderDiagram<double>> &bidder_diags,
   std::vector<BidderDiagram<double>> &current_bidder_diags) const {
 
@@ -228,8 +227,8 @@ double PersistenceDiagramDistanceMatrix::enrichCurrentBidderDiagrams(
     max_diagram_size
       = std::max(static_cast<size_t>(diag.size()), max_diagram_size);
   }
-  size_t max_points_to_add
-    = std::max(min_points_to_add, min_points_to_add + max_diagram_size / 10);
+  size_t max_points_to_add = std::max(
+    this->MinPointsToAdd, this->MinPointsToAdd + max_diagram_size / 10);
   // 2. Get which points can be added, deduce the new minimal persistence
   std::vector<std::vector<int>> candidates_to_be_added(nInputs);
   std::vector<std::vector<size_t>> idx(nInputs);

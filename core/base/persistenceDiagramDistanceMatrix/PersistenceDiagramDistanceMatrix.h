@@ -112,7 +112,6 @@ namespace ttk {
       std::vector<BidderDiagram<double>> &bidder_diags,
       std::vector<BidderDiagram<double>> &current_bidder_diags) const;
     double enrichCurrentBidderDiagrams(
-      const size_t min_points_to_add,
       const std::vector<BidderDiagram<double>> &bidder_diags,
       std::vector<BidderDiagram<double>> &current_bidder_diags) const;
 
