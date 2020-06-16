@@ -75,21 +75,32 @@ mv "core/vtk/ttk${NameDestination}/ttk${NameSource}.h" \
 replace "core/vtk/ttk${NameDestination}/ttk${NameDestination}.h"
 
 # 3) duplicate the source standalone modules
-if [ -d "standalone/${NameSource}/cmd" ]; then
-  echo "Creating command line standalone program 'standalone/${NameDestination}/cmd'..."
-  mkdir -p "standalone/${NameDestination}"
-  cp -R "standalone/${NameSource}/cmd/" \
-        "standalone/${NameDestination}/cmd"
-  replace "standalone/${NameDestination}/cmd/CMakeLists.txt"
-  replace "standalone/${NameDestination}/cmd/main.cpp"
-fi
-if [ -d "standalone/${NameSource}/gui" ]; then
-  echo "Creating GUI standalone program 'standalone/${NameDestination}/gui'..."
-  mkdir -p "standalone/${NameDestination}"
-  cp -R "standalone/${NameSource}/gui/" \
-        "standalone/${NameDestination}/gui"
-  replace "standalone/${NameDestination}/gui/CMakeLists.txt"
-  replace "standalone/${NameDestination}/gui/main.cpp"
+if [ -d "standalone/${NameSource}/" ]; then
+  if [ ! -d "standalone/${NameSource}/cmd" ] \
+    && [ ! -d "standalone/${NameSource}/gui" ]; then
+    # new standalone case
+    echo "Creating command line standalone program 'standalone/${NameDestination}'..."
+    cp -R "standalone/${NameSource}/" \
+          "standalone/${NameDestination}/"
+    replace "standalone/${NameDestination}/CMakeLists.txt"
+    replace "standalone/${NameDestination}/main.cpp"
+  fi
+  if [ -d "standalone/${NameSource}/cmd" ]; then
+    echo "Creating command line standalone program 'standalone/${NameDestination}/cmd'..."
+    mkdir -p "standalone/${NameDestination}"
+    cp -R "standalone/${NameSource}/cmd/" \
+          "standalone/${NameDestination}/cmd"
+    replace "standalone/${NameDestination}/cmd/CMakeLists.txt"
+    replace "standalone/${NameDestination}/cmd/main.cpp"
+  fi
+  if [ -d "standalone/${NameSource}/gui" ]; then
+    echo "Creating GUI standalone program 'standalone/${NameDestination}/gui'..."
+    mkdir -p "standalone/${NameDestination}"
+    cp -R "standalone/${NameSource}/gui/" \
+          "standalone/${NameDestination}/gui"
+    replace "standalone/${NameDestination}/gui/CMakeLists.txt"
+    replace "standalone/${NameDestination}/gui/main.cpp"
+  fi
 fi
 
 # 4) duplicate the source paraview filter

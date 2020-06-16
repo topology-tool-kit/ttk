@@ -13,9 +13,9 @@ endif()
 # every standalone CMakeLists.txt
 add_compile_options(${TTK_COMPILER_FLAGS})
 
-file(GLOB STANDALONE_DIRS ${cmd_dirs} ${gui_dirs})
+file(GLOB STANDALONE_DIRS ${cmd_dirs} ${gui_dirs} "./*")
 foreach(STANDALONE ${STANDALONE_DIRS})
-  if(IS_DIRECTORY ${STANDALONE})
+  if(IS_DIRECTORY ${STANDALONE} AND EXISTS ${STANDALONE}/CMakeLists.txt)
     add_subdirectory(${STANDALONE})
   endif()
 endforeach()
