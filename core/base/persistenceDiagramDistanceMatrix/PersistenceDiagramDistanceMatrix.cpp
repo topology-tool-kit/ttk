@@ -70,18 +70,12 @@ std::vector<std::vector<double>> PersistenceDiagramDistanceMatrix::execute(
 
   if(this->do_min_) {
     setBidderDiagrams(nInputs, inputDiagramsMin, bidder_diagrams_min);
-    enrichCurrentBidderDiagrams(
-      bidder_diagrams_min, current_bidder_diagrams_min);
   }
   if(this->do_sad_) {
     setBidderDiagrams(nInputs, inputDiagramsSad, bidder_diagrams_sad);
-    enrichCurrentBidderDiagrams(
-      bidder_diagrams_sad, current_bidder_diagrams_sad);
   }
   if(this->do_max_) {
     setBidderDiagrams(nInputs, inputDiagramsMax, bidder_diagrams_max);
-    enrichCurrentBidderDiagrams(
-      bidder_diagrams_max, current_bidder_diagrams_max);
   }
 
   std::vector<std::vector<double>> distMat(nInputs);
@@ -89,6 +83,18 @@ std::vector<std::vector<double>> PersistenceDiagramDistanceMatrix::execute(
     getDiagramsDistMat(nInputs, distMat, bidder_diagrams_min,
                        bidder_diagrams_sad, bidder_diagrams_max);
   } else {
+    if(this->do_min_) {
+      enrichCurrentBidderDiagrams(
+        bidder_diagrams_min, current_bidder_diagrams_min);
+    }
+    if(this->do_sad_) {
+      enrichCurrentBidderDiagrams(
+        bidder_diagrams_sad, current_bidder_diagrams_sad);
+    }
+    if(this->do_max_) {
+      enrichCurrentBidderDiagrams(
+        bidder_diagrams_max, current_bidder_diagrams_max);
+    }
     getDiagramsDistMat(nInputs, distMat, current_bidder_diagrams_min,
                        current_bidder_diagrams_sad,
                        current_bidder_diagrams_max);
