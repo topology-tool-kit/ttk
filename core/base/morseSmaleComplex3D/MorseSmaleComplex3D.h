@@ -232,13 +232,14 @@ int ttk::MorseSmaleComplex3D::setAscendingSeparatrices2(
     dataType sepFuncMax_{}, sepFuncMin_{};
     SimplexId sourceId_{}, sepId_{};
     char onBoundary_{};
+    bool valid_{false};
   };
 
   // store the polygonal cells tetras SimplexId
-  std::vector<std::vector<PolygonCell>> polygonTetras(this->threadNumber_);
+  std::vector<PolygonCell> polygonTetras(ncells - noldcells);
 
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
+#pragma omp parallel for num_threads(threadNumber_) schedule(dynamic)
 #endif // TTK_ENABLE_OPENMP
   for(size_t i = 0; i < validGeomIds.size(); ++i) {
     const auto &sep = separatrices[geomIdSep[i]];
@@ -246,12 +247,6 @@ int ttk::MorseSmaleComplex3D::setAscendingSeparatrices2(
     const auto &sepSaddles = separatricesSaddles[validGeomIds[i]];
     const auto sepId = separatrixId + i;
     const dcg::Cell &src = sep.source_; // saddle1
-
-#ifdef TTK_ENABLE_OPENMP
-    const size_t tid = omp_get_thread_num();
-#else
-    const size_t tid = 0;
-#endif // TTK_ENABLE_OPENMP
 
     // compute separatrix function diff
     const dataType sepFuncMin = discreteGradient_.scalarMin(src, scalars);
@@ -272,7 +267,10 @@ int ttk::MorseSmaleComplex3D::setAscendingSeparatrices2(
 
     for(size_t j = 0; j < sepGeom.size(); ++j) {
       const auto &cell = sepGeom[j];
-      PolygonCell polyCell{};
+      // index of current cell in cell data arrays
+      const auto k = geomCellsBegId[i] + j - noldcells;
+      auto &polyCell = polygonTetras[k];
+
       // Transform to dual : edge -> polygon
       getDualPolygon(cell.id_, polyCell.tetras_);
 
@@ -283,17 +281,19 @@ int ttk::MorseSmaleComplex3D::setAscendingSeparatrices2(
         polyCell.sourceId_ = src.id_;
         polyCell.sepId_ = sepId;
         polyCell.onBoundary_ = onBoundary;
-        polygonTetras[tid].emplace_back(polyCell);
+        polyCell.valid_ = true;
       }
     }
   }
 
-  for(SimplexId i = 1; i < this->threadNumber_; ++i) {
-    polygonTetras[0].insert(polygonTetras[0].end(),
-                            std::make_move_iterator(polygonTetras[i].begin()),
-                            std::make_move_iterator(polygonTetras[i].end()));
+  decltype(polygonTetras) flatTetras{};
+  flatTetras.reserve(polygonTetras.size());
+
+  for(auto &&polyCell : polygonTetras) {
+    if(polyCell.valid_) {
+      flatTetras.emplace_back(std::move(polyCell));
+    }
   }
-  const auto flatTetras = std::move(polygonTetras[0]);
 
   // count number of valid new cells and new points
   size_t nnewpoints{};
