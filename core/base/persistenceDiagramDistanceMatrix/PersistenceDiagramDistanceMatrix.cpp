@@ -32,6 +32,9 @@ std::vector<std::vector<double>> PersistenceDiagramDistanceMatrix::execute(
   std::vector<BidderDiagram<double>> current_bidder_diagrams_sad{};
   std::vector<BidderDiagram<double>> current_bidder_diagrams_max{};
 
+  // Store the persistence of the global min-max pair
+  std::vector<double> maxDiagPersistence(nInputs);
+
   // Create diagrams for min, saddle and max persistence pairs
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
@@ -40,12 +43,13 @@ std::vector<std::vector<double>> PersistenceDiagramDistanceMatrix::execute(
     std::vector<DiagramTuple> &CTDiagram = intermediateDiagrams[i];
 
     for(size_t j = 0; j < CTDiagram.size(); ++j) {
-      const DiagramTuple t = CTDiagram[j];
+      const DiagramTuple &t = CTDiagram[j];
       const ttk::CriticalType nt1 = std::get<1>(t);
       const ttk::CriticalType nt2 = std::get<3>(t);
-      const double dt = std::get<4>(t);
+      const double pers = std::get<4>(t);
+      maxDiagPersistence[i] = std::max(pers, maxDiagPersistence[i]);
 
-      if(dt > 0) {
+      if(pers > 0) {
         if(nt1 == CriticalType::Local_minimum
            && nt2 == CriticalType::Local_maximum) {
           inputDiagramsMax[i].emplace_back(t);
@@ -85,15 +89,15 @@ std::vector<std::vector<double>> PersistenceDiagramDistanceMatrix::execute(
   } else {
     if(this->do_min_) {
       enrichCurrentBidderDiagrams(
-        bidder_diagrams_min, current_bidder_diagrams_min);
+        bidder_diagrams_min, current_bidder_diagrams_min, maxDiagPersistence);
     }
     if(this->do_sad_) {
       enrichCurrentBidderDiagrams(
-        bidder_diagrams_sad, current_bidder_diagrams_sad);
+        bidder_diagrams_sad, current_bidder_diagrams_sad, maxDiagPersistence);
     }
     if(this->do_max_) {
       enrichCurrentBidderDiagrams(
-        bidder_diagrams_max, current_bidder_diagrams_max);
+        bidder_diagrams_max, current_bidder_diagrams_max, maxDiagPersistence);
     }
     getDiagramsDistMat(nInputs, distMat, current_bidder_diagrams_min,
                        current_bidder_diagrams_sad,
@@ -215,7 +219,8 @@ void PersistenceDiagramDistanceMatrix::setBidderDiagrams(
 
 double PersistenceDiagramDistanceMatrix::enrichCurrentBidderDiagrams(
   const std::vector<BidderDiagram<double>> &bidder_diags,
-  std::vector<BidderDiagram<double>> &current_bidder_diags) const {
+  std::vector<BidderDiagram<double>> &current_bidder_diags,
+  const std::vector<double> &maxDiagPersistence) const {
 
   current_bidder_diags.resize(bidder_diags.size());
 

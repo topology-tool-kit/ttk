@@ -112,7 +112,8 @@ namespace ttk {
                         std::vector<BidderDiagram<double>> &bidder_diags) const;
     double enrichCurrentBidderDiagrams(
       const std::vector<BidderDiagram<double>> &bidder_diags,
-      std::vector<BidderDiagram<double>> &current_bidder_diags) const;
+      std::vector<BidderDiagram<double>> &current_bidder_diags,
+      const std::vector<double> &maxDiagPersistence) const;
 
     int Wasserstein{2};
     double Alpha{1.0};
