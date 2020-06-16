@@ -26,99 +26,35 @@
 ///
 /// \sa ttkFiberSurface
 ///
-#ifndef _TTK_FIBER_H
-#define _TTK_FIBER_H
+#pragma once
 
-// VTK includes -- to adapt
-#include <vtkContourFilter.h>
-#include <vtkDataSet.h>
-#include <vtkDataSetAlgorithm.h>
-#include <vtkFiltersCoreModule.h>
-#include <vtkInformation.h>
-#include <vtkObjectFactory.h>
-#include <vtkPointData.h>
-#include <vtkPolyData.h>
-#include <vtkSmartPointer.h>
-
-// VTK Module
+#include <ttkAlgorithm.h>
 #include <ttkFiberModule.h>
 
-// ttk code includes
-#include <Wrapper.h>
+class TTKFIBER_EXPORT ttkFiber : public ttkAlgorithm {
 
-class TTKFIBER_EXPORT ttkFiber : public vtkDataSetAlgorithm,
-                                 protected ttk::Wrapper {
+private:
+  double UValue{0};
+  double VValue{0};
 
 public:
+  vtkGetMacro(UValue, double);
+  vtkSetMacro(UValue, double);
+
+  vtkGetMacro(VValue, double);
+  vtkSetMacro(VValue, double);
+
+  vtkTypeMacro(ttkFiber, ttkAlgorithm);
   static ttkFiber *New();
-
-  vtkTypeMacro(ttkFiber, vtkDataSetAlgorithm);
-
-  // default ttk setters
-  void SetDebugLevel(int debugLevel) {
-    setDebugLevel(debugLevel);
-    Modified();
-  }
-
-  void SetThreads() {
-    if(!UseAllCores)
-      threadNumber_ = ThreadNumber;
-    else {
-      threadNumber_ = ttk::OsCall::getNumberOfCores();
-    }
-    Modified();
-  }
-
-  void SetThreadNumber(int threadNumber) {
-    ThreadNumber = threadNumber;
-    SetThreads();
-  }
-
-  void SetUseAllCores(bool onOff) {
-    UseAllCores = onOff;
-    SetThreads();
-  }
-  // end of default ttk setters
-
-  vtkGetMacro(Ucomponent, std::string);
-  vtkSetMacro(Ucomponent, std::string);
-
-  vtkGetMacro(Uvalue, double);
-  vtkSetMacro(Uvalue, double);
-
-  vtkGetMacro(Vcomponent, std::string);
-  vtkSetMacro(Vcomponent, std::string);
-
-  vtkGetMacro(Vvalue, double);
-  vtkSetMacro(Vvalue, double);
-
-  int FillOutputPortInformation(int port, vtkInformation *info) override {
-    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkPolyData");
-    return 1;
-  }
 
 protected:
   ttkFiber();
+  ~ttkFiber();
 
-  ~ttkFiber() override;
+  int FillInputPortInformation(int port, vtkInformation *info) override;
+  int FillOutputPortInformation(int port, vtkInformation *info) override;
 
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;
-
-private:
-  bool UseAllCores;
-  int ThreadNumber;
-
-  double Uvalue, Vvalue;
-  std::string Ucomponent, Vcomponent;
-
-  // base code features
-  int doIt(vtkDataSet *input, vtkPolyData *output);
-
-  bool needsToAbort() override;
-
-  int updateProgress(const float &progress) override;
 };
-
-#endif // _TTK_RANGEPOLYGON_H
