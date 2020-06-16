@@ -4,7 +4,7 @@
         <SourceProxy name="Extract" class="ttkExtract" label="TTK Extract">
             <Documentation long_help="TTK Extract" short_help="TTK Extract">
 This filter uses a list of values to extract either blocks of a 'vtkMultiBlockDataSet' by interpreting the values as block indices, or the subset of a 'vtkDataObject' whose point/cell values are contained in that list.
-                </Documentation>
+            </Documentation>
 
             <InputProperty name="Input" port_index="0" command="SetInputConnection">
                 <ProxyGroupDomain name="groups">
@@ -12,31 +12,46 @@ This filter uses a list of values to extract either blocks of a 'vtkMultiBlockDa
                     <Group name="filters" />
                 </ProxyGroupDomain>
                 <DataTypeDomain name="input_type">
-                    <DataType value="vtkObject" />
+                    <DataType value="vtkDataObject" />
                 </DataTypeDomain>
-                <Documentation>'vtkMultiBlockDataSet' or 'vtkUnstructuredGrid'.</Documentation>
+                <Documentation>Input vtkDataObject.</Documentation>
             </InputProperty>
 
             <!-- Global Mode -->
-            <IntVectorProperty name="Mode" command="SetMode" number_of_elements="1" default_values="0">
+            <IntVectorProperty name="ExtractionMode" label="Extraction Mode" command="SetExtractionMode" number_of_elements="1" default_values="0">
                 <EnumerationDomain name="enum">
-                    <Entry value="0" text="Block"/>
-                    <Entry value="1" text="Geometry"/>
+                    <Entry value="0" text="Blocks"/>
+                    <Entry value="1" text="Rows"/>
+                    <Entry value="2" text="Geometry"/>
+                    <Entry value="3" text="Array Values"/>
+                    <Entry value="4" text="Arrays"/>
                 </EnumerationDomain>
-                <Documentation>Either extract a set of blocks from a 'vtkMultiBlockDataSet', or a geometry subset of a 'vtkDataSet'.</Documentation>
+                <Documentation>Extraction Mode.</Documentation>
             </IntVectorProperty>
 
             <StringVectorProperty name="ExpressionString" label="Expression" command="SetExpressionString" number_of_elements="1" default_values="">
-                <Documentation>List expression that is used to extract blocks/geometry (e.g., '0,1,3').</Documentation>
+                <Hints>
+                    <PropertyWidgetDecorator type="CompositeDecorator">
+                        <Expression type="or">
+                            <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="ExtractionMode" value="0"/>
+                            <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="ExtractionMode" value="1"/>
+                            <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="ExtractionMode" value="2"/>
+                            <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="ExtractionMode" value="4"/>
+                            <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="ExtractUniqueValues" value="0"/>
+                        </Expression>
+                    </PropertyWidgetDecorator>
+                </Hints>
+                <Documentation>List expression that is used to extract blocks/geometry/arrays (e.g., '0,1,3' or '{someFieldDataArrayName[0]}').</Documentation>
             </StringVectorProperty>
 
             <!-- Block Mode -->
-            <IntVectorProperty name="OutputType" label="Output Type" command="SetOutputType" number_of_elements="1" default_values="0">
+            <IntVectorProperty name="OutputType" label="Output Type" command="SetOutputType" number_of_elements="1" default_values="-1">
                 <EnumerationDomain name="enum">
-                    <Entry value="0" text="Auto"/>
+                    <Entry value="-1" text="Auto"/>
+                    <Entry value="13" text="vtkMultiBlockDataSet"/>
                     <Entry value="6" text="vtkImageData"/>
                     <Entry value="4" text="vtkUnstructuredGrid"/>
-                    <Entry value="13" text="vtkMultiBlockDataSet"/>
+                    <Entry value="19" text="vtkTable"/>
                 </EnumerationDomain>
                 <Documentation>If mode is set to 'Block', then this parameter is used to set the output type of the filter at the 'RequestInformation' pass.
 
@@ -53,7 +68,7 @@ vtkMultiBlockDataSet: If only one block is extracted and it is of type 'vtkMulti
 
 </Documentation>
                 <Hints>
-                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="Mode" value="0" />
+                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="ExtractionMode" value="0" />
                 </Hints>
             </IntVectorProperty>
             <DoubleVectorProperty command="SetImageBounds" default_values="0 1 0 1 0 1" name="ImageBounds" number_of_elements="6" panel_visibility="default">
@@ -64,9 +79,23 @@ vtkMultiBlockDataSet: If only one block is extracted and it is of type 'vtkMulti
                 </BoundsDomain>
                 <Documentation>The image bounds of the extracted block of type 'vtkImageData'. It is necessary to explicitly specify the bounds as currently the VTK pipeline is unable to automatically derive the image extent and bounds during the 'RequestInformation' pass.</Documentation>
                 <Hints>
-                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="OutputType" value="6" />
+                    <PropertyWidgetDecorator type="CompositeDecorator">
+                        <Expression type="and">
+                            <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="ExtractionMode" value="0"/>
+                            <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="OutputType" value="6"/>
+                        </Expression>
+                    </PropertyWidgetDecorator>
                 </Hints>
             </DoubleVectorProperty>
+
+            <!-- Array Mode -->
+            <IntVectorProperty name="ExtractUniqueValues" label="Extract unique values" number_of_elements="1" default_values="1" command="SetExtractUniqueValues" >
+                <BooleanDomain name="bool" />
+                <Documentation>Extract the set of all values in an array.</Documentation>
+                <Hints>
+                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="ExtractionMode" value="3" />
+                </Hints>
+            </IntVectorProperty>
 
             <!-- Geometry Mode -->
             <StringVectorProperty name="InputArray" label="Input Array" command="SetInputArrayToProcess" element_types="0 0 0 0 2" number_of_elements="5">
@@ -76,10 +105,29 @@ vtkMultiBlockDataSet: If only one block is extracted and it is of type 'vtkMulti
                     </RequiredProperties>
                 </ArrayListDomain>
                 <Hints>
-                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="Mode" value="1" />
+                    <PropertyWidgetDecorator type="CompositeDecorator">
+                        <Expression type="or">
+                            <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="ExtractionMode" value="2"/>
+                            <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="ExtractionMode" value="3"/>
+                        </Expression>
+                    </PropertyWidgetDecorator>
                 </Hints>
                 <Documentation>The array that will be used to determine which part of the geometry should be extracted.</Documentation>
             </StringVectorProperty>
+
+            <IntVectorProperty name="ValidationMode" command="SetValidationMode" number_of_elements="1" animateable="0" label="Validation Mode" default_values="2">
+                <EnumerationDomain name="enum">
+                    <Entry value="0" text="&lt;"/>
+                    <Entry value="1" text="&lt;="/>
+                    <Entry value="2" text="=="/>
+                    <Entry value="3" text="&gt;="/>
+                    <Entry value="4" text="&gt; "/>
+                </EnumerationDomain>
+                <Hints>
+                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="ExtractionMode" value="2" />
+                </Hints>
+                <Documentation>Determines how vertex values are compared agains each value of the expression.</Documentation>
+            </IntVectorProperty>
 
             <IntVectorProperty name="CellMode" command="SetCellMode" number_of_elements="1" animateable="0" label="Cell Mode" default_values="0">
                 <EnumerationDomain name="enum">
@@ -88,18 +136,43 @@ vtkMultiBlockDataSet: If only one block is extracted and it is of type 'vtkMulti
                     <Entry value="2" text="Sub"/>
                 </EnumerationDomain>
                 <Hints>
-                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="Mode" value="1" />
+                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="ExtractionMode" value="2" />
                 </Hints>
                 <Documentation>Determines if a complete cell is extracted if "All" or "Any" of its vertices fulfill the criterion. If mode is set to "Sub", cells are reduced to the vertices that fulfill the criterion (e.g., to an edge of a triangle/tetrahedron).</Documentation>
             </IntVectorProperty>
 
+            <IntVectorProperty name="ArrayAttributeType" label="Attribute" command="SetArrayAttributeType" number_of_elements="1" default_values="0">
+                <EnumerationDomain name="enum">
+                    <Entry value="0" text="Point Data"/>
+                    <Entry value="1" text="Cell Data"/>
+                    <Entry value="2" text="Field Data"/>
+                </EnumerationDomain>
+                <Hints>
+                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="ExtractionMode" value="4"/>
+                </Hints>
+                <Documentation>
+                    Specifies to extract point, cell, or field data arrays.
+                </Documentation>
+            </IntVectorProperty>
+
+            <StringVectorProperty name="OutputArrayName" label="Output Array Name" command="SetOutputArrayName" number_of_elements="1" default_values="Data">
+                <Hints>
+                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="ExtractionMode" value="4"/>
+                </Hints>
+                <Documentation>.</Documentation>
+            </StringVectorProperty>
+
+
             <PropertyGroup panel_widget="Line" label="Input Options">
-                <Property name="Mode" />
+                <Property name="ExtractionMode" />
                 <Property name="ExpressionString" />
                 <Property name="OutputType" />
                 <Property name="ImageBounds" />
                 <Property name="InputArray" />
+                <Property name="ExtractUniqueValues" />
+                <Property name="ValidationMode" />
                 <Property name="CellMode" />
+                <Property name="ArrayAttributeType" />
             </PropertyGroup>
 
             ${DEBUG_WIDGETS}
