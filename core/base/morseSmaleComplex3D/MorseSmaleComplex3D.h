@@ -190,7 +190,7 @@ int ttk::MorseSmaleComplex3D::setAscendingSeparatrices2(
     outputSeparatrices2_cells_separatrixFunctionDiffs_);
 
   // max existing separatrix id + 1 or 0 if no previous separatrices
-  /*const*/ SimplexId separatrixId
+  const SimplexId separatrixId
     = (outputSeparatrices2_cells_separatrixIds_ != nullptr
        && !outputSeparatrices2_cells_separatrixIds_->empty())
         ? *std::max_element(outputSeparatrices2_cells_separatrixIds_->begin(),
@@ -198,23 +198,60 @@ int ttk::MorseSmaleComplex3D::setAscendingSeparatrices2(
             + 1
         : 0;
 
+  // total number of separatrices points
+  auto npoints{static_cast<size_t>(*outputSeparatrices2_numberOfPoints_)};
+  // total number of separatrices cells
+  auto ncells{static_cast<size_t>(*outputSeparatrices2_numberOfCells_)};
+  // old number of separatrices cells
+  const auto noldcells{ncells};
+  // index of last vertex of last old cell + 1
+  const auto firstCellId{outputSeparatrices2_cells_->size()};
+  // list of valid geometryId to flatten loops
+  std::vector<SimplexId> validGeomIds{};
+  // corresponding separatrix index in separatrices array
+  std::vector<SimplexId> geomIdSep{};
+  // cells beginning id for each separatrix geometry
+  std::vector<size_t> geomCellsBegId{ncells};
 
-  SimplexId pointId = (*outputSeparatrices2_numberOfPoints_);
-  SimplexId cellId = (*outputSeparatrices2_numberOfCells_);
-
-  const SimplexId numberOfCells = inputTriangulation_->getNumberOfCells();
-  std::vector<SimplexId> isVisited(numberOfCells, -1);
-
-  const SimplexId numberOfSeparatrices = separatrices.size();
-  for(SimplexId i = 0; i < numberOfSeparatrices; ++i) {
-    const Separatrix &separatrix = separatrices[i];
-    if(!separatrix.isValid_ || separatrix.geometry_.empty())
+  // count total number of cells, flatten geometryId loops
+  for(size_t i = 0; i < separatrices.size(); ++i) {
+    const auto &sep = separatrices[i];
+    if(!sep.isValid_ || sep.geometry_.empty()) {
       continue;
+    }
+    for(const auto geomId : sep.geometry_) {
+      ncells += separatricesGeometry[geomId].size();
+      geomCellsBegId.emplace_back(ncells);
+      validGeomIds.emplace_back(geomId);
+      geomIdSep.emplace_back(i);
+    }
+  }
 
-    const dcg::Cell &src = separatrix.source_;
-    const char separatrixType = 1;
-    const SimplexId saddleId = src.id_;
-    const auto &sepSaddles = separatricesSaddles[i];
+  struct PolygonCell {
+    std::vector<SimplexId> tetras_{};
+    dataType sepFuncMax_{}, sepFuncMin_{};
+    SimplexId sourceId_{}, sepId_{};
+    char onBoundary_{};
+  };
+
+  // store the polygonal cells tetras SimplexId
+  std::vector<std::vector<PolygonCell>> polygonTetras(this->threadNumber_);
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+  for(size_t i = 0; i < validGeomIds.size(); ++i) {
+    const auto &sep = separatrices[geomIdSep[i]];
+    const auto &sepGeom = separatricesGeometry[validGeomIds[i]];
+    const auto &sepSaddles = separatricesSaddles[validGeomIds[i]];
+    const auto sepId = separatrixId + i;
+    const dcg::Cell &src = sep.source_; // saddle1
+
+#ifdef TTK_ENABLE_OPENMP
+    const size_t tid = omp_get_thread_num();
+#else
+    const size_t tid = 0;
+#endif // TTK_ENABLE_OPENMP
 
     // compute separatrix function diff
     const dataType sepFuncMin = discreteGradient_.scalarMin(src, scalars);
@@ -226,7 +263,6 @@ int ttk::MorseSmaleComplex3D::setAscendingSeparatrices2(
       });
     const dataType sepFuncMax
       = discreteGradient_.scalarMax(Cell{2, maxId}, scalars);
-    const dataType sepFuncDiff = sepFuncMax - sepFuncMin;
 
     // get boundary condition
     const char onBoundary = std::count_if(
@@ -234,68 +270,123 @@ int ttk::MorseSmaleComplex3D::setAscendingSeparatrices2(
         return inputTriangulation_->isEdgeOnBoundary(a);
       });
 
-    bool isFirst = true;
-    for(const SimplexId geometryId : separatrix.geometry_) {
-      for(const dcg::Cell &edge : separatricesGeometry[geometryId]) {
-        const SimplexId edgeId = edge.id_;
+    for(size_t j = 0; j < sepGeom.size(); ++j) {
+      const auto &cell = sepGeom[j];
+      PolygonCell polyCell{};
+      // Transform to dual : edge -> polygon
+      getDualPolygon(cell.id_, polyCell.tetras_);
 
-        // Transform to dual : edge -> polygon
-        std::vector<SimplexId> polygon;
-        getDualPolygon(edgeId, polygon);
-
-        const SimplexId vertexNumber = polygon.size();
-        if(vertexNumber > 2) {
-          sortDualPolygonVertices(polygon);
-
-          // add the polygon
-          outputSeparatrices2_cells_->push_back(vertexNumber);
-
-          float point[3];
-          for(SimplexId j = 0; j < vertexNumber; ++j) {
-            const SimplexId tetraId = polygon[j];
-            inputTriangulation_->getTetraIncenter(tetraId, point);
-
-            if(isVisited[tetraId] == -1) {
-              outputSeparatrices2_points_->push_back(point[0]);
-              outputSeparatrices2_points_->push_back(point[1]);
-              outputSeparatrices2_points_->push_back(point[2]);
-
-              outputSeparatrices2_cells_->push_back(pointId);
-
-              isVisited[tetraId] = pointId;
-              ++pointId;
-            } else
-              outputSeparatrices2_cells_->push_back(isVisited[tetraId]);
-          }
-
-          if(outputSeparatrices2_cells_sourceIds_)
-            outputSeparatrices2_cells_sourceIds_->push_back(saddleId);
-          if(outputSeparatrices2_cells_separatrixIds_)
-            outputSeparatrices2_cells_separatrixIds_->push_back(separatrixId);
-          if(outputSeparatrices2_cells_separatrixTypes_)
-            outputSeparatrices2_cells_separatrixTypes_->push_back(
-              separatrixType);
-          if(separatrixFunctionMaxima)
-            separatrixFunctionMaxima->push_back(sepFuncMax);
-          if(separatrixFunctionMinima)
-            separatrixFunctionMinima->push_back(sepFuncMin);
-          if(separatrixFunctionDiffs)
-            separatrixFunctionDiffs->push_back(sepFuncDiff);
-          if(outputSeparatrices2_cells_isOnBoundary_)
-            outputSeparatrices2_cells_isOnBoundary_->push_back(onBoundary);
-
-          ++cellId;
-          isFirst = false;
-        }
+      if(polyCell.tetras_.size() > 2) {
+        sortDualPolygonVertices(polyCell.tetras_);
+        polyCell.sepFuncMax_ = sepFuncMax;
+        polyCell.sepFuncMin_ = sepFuncMin;
+        polyCell.sourceId_ = src.id_;
+        polyCell.sepId_ = sepId;
+        polyCell.onBoundary_ = onBoundary;
+        polygonTetras[tid].emplace_back(polyCell);
       }
     }
-
-    if(!isFirst)
-      ++separatrixId;
   }
 
-  (*outputSeparatrices2_numberOfPoints_) = pointId;
-  (*outputSeparatrices2_numberOfCells_) = cellId;
+  for(SimplexId i = 1; i < this->threadNumber_; ++i) {
+    polygonTetras[0].insert(polygonTetras[0].end(),
+                            std::make_move_iterator(polygonTetras[i].begin()),
+                            std::make_move_iterator(polygonTetras[i].end()));
+  }
+  const auto flatTetras = std::move(polygonTetras[0]);
+
+  // count number of valid new cells and new points
+  size_t nnewpoints{};
+  std::vector<size_t> pointsPerCell(flatTetras.size() + 1);
+  for(size_t i = 0; i < flatTetras.size(); ++i) {
+    const auto &poly = flatTetras[i];
+    nnewpoints += poly.tetras_.size();
+    pointsPerCell[i + 1] = nnewpoints;
+  }
+
+  // reduce number of points to remove duplicates
+  std::vector<SimplexId> cellVertsIds(nnewpoints);
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+  for(size_t i = 0; i < flatTetras.size(); ++i) {
+    const auto &poly = flatTetras[i];
+    for(size_t j = 0; j < poly.tetras_.size(); ++j) {
+      cellVertsIds[pointsPerCell[i] + j] = poly.tetras_[j];
+    }
+  }
+
+  PSORT(cellVertsIds.begin(), cellVertsIds.end());
+  const auto last = std::unique(cellVertsIds.begin(), cellVertsIds.end());
+  cellVertsIds.erase(last, cellVertsIds.end());
+
+  // vertex Id to index in points array
+  std::vector<size_t> vertId2PointsId(inputTriangulation_->getNumberOfCells());
+
+  const auto noldpoints{npoints};
+  npoints += cellVertsIds.size();
+  ncells = noldcells + flatTetras.size();
+  const auto nnewcellids = pointsPerCell.back() + flatTetras.size();
+
+  // resize arrays
+  outputSeparatrices2_points_->resize(3 * npoints);
+  auto points = &outputSeparatrices2_points_->at(3 * noldpoints);
+  outputSeparatrices2_cells_->resize(firstCellId + nnewcellids);
+  auto cells = &outputSeparatrices2_cells_->at(firstCellId);
+  if(outputSeparatrices2_cells_sourceIds_ != nullptr)
+    outputSeparatrices2_cells_sourceIds_->resize(ncells);
+  if(outputSeparatrices2_cells_separatrixIds_ != nullptr)
+    outputSeparatrices2_cells_separatrixIds_->resize(ncells);
+  if(outputSeparatrices2_cells_separatrixTypes_ != nullptr)
+    outputSeparatrices2_cells_separatrixTypes_->resize(ncells);
+  if(separatrixFunctionMaxima != nullptr)
+    separatrixFunctionMaxima->resize(ncells);
+  if(separatrixFunctionMinima != nullptr)
+    separatrixFunctionMinima->resize(ncells);
+  if(separatrixFunctionDiffs != nullptr)
+    separatrixFunctionDiffs->resize(ncells);
+  if(outputSeparatrices2_cells_isOnBoundary_ != nullptr)
+    outputSeparatrices2_cells_isOnBoundary_->resize(ncells);
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+  for(size_t i = 0; i < cellVertsIds.size(); ++i) {
+    // vertex 3D coords
+    inputTriangulation_->getTetraIncenter(cellVertsIds[i], &points[3 * i]);
+    // vertex index in cellVertsIds array (do not forget offset)
+    vertId2PointsId[cellVertsIds[i]] = i + noldpoints;
+  }
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+  for(size_t i = 0; i < flatTetras.size(); ++i) {
+    const auto &poly = flatTetras[i];
+    const auto k = pointsPerCell[i] + i;
+    cells[k + 0] = poly.tetras_.size();
+    for(size_t j = 0; j < poly.tetras_.size(); ++j) {
+      cells[k + 1 + j] = vertId2PointsId[poly.tetras_[j]];
+    }
+    const auto l = i + noldcells;
+    if(outputSeparatrices2_cells_sourceIds_ != nullptr)
+      (*outputSeparatrices2_cells_sourceIds_)[l] = poly.sourceId_;
+    if(outputSeparatrices2_cells_separatrixIds_ != nullptr)
+      (*outputSeparatrices2_cells_separatrixIds_)[l] = poly.sepId_;
+    if(outputSeparatrices2_cells_separatrixTypes_ != nullptr)
+      (*outputSeparatrices2_cells_separatrixTypes_)[l] = 1;
+    if(separatrixFunctionMaxima != nullptr)
+      (*separatrixFunctionMaxima)[l] = poly.sepFuncMax_;
+    if(separatrixFunctionDiffs != nullptr)
+      (*separatrixFunctionMinima)[l] = poly.sepFuncMin_;
+    if(separatrixFunctionDiffs != nullptr)
+      (*separatrixFunctionDiffs)[l] = poly.sepFuncMax_ - poly.sepFuncMin_;
+    if(outputSeparatrices2_cells_isOnBoundary_ != nullptr)
+      (*outputSeparatrices2_cells_isOnBoundary_)[l] = poly.onBoundary_;
+  }
+
+  (*outputSeparatrices2_numberOfPoints_) = npoints;
+  (*outputSeparatrices2_numberOfCells_) = ncells;
 
   return 0;
 }
