@@ -1,9 +1,6 @@
 #include <ttkArrayEditor.h>
 
-#include <vtkDataObject.h> // For port info
-#include <vtkObjectFactory.h> // for new macro
-
-#include <vtkInformationVector.h>
+#include <vtkInformation.h>
 
 #include <vtkAbstractArray.h>
 #include <vtkDataArray.h>
@@ -11,6 +8,8 @@
 #include <vtkFieldData.h>
 #include <vtkSmartPointer.h>
 #include <vtkStringArray.h>
+
+#include <vtkDataArraySelection.h>
 
 #include <ttkUtils.h>
 
@@ -21,9 +20,27 @@ ttkArrayEditor::ttkArrayEditor() {
 
   this->SetNumberOfInputPorts(2);
   this->SetNumberOfOutputPorts(1);
+
+  for(int cc = 0; cc < vtkDataObject::NUMBER_OF_ASSOCIATIONS; ++cc) {
+    if(cc != vtkDataObject::FIELD_ASSOCIATION_POINTS_THEN_CELLS) {
+      this->ArraySelections[cc] = vtkSmartPointer<vtkDataArraySelection>::New();
+      this->ArraySelections[cc]->AddObserver(
+        vtkCommand::ModifiedEvent, this, &ttkArrayEditor::Modified);
+    } else {
+      this->ArraySelections[cc] = nullptr;
+    }
+  }
 }
 
 ttkArrayEditor::~ttkArrayEditor() {
+}
+
+vtkDataArraySelection *ttkArrayEditor::GetArraySelection(int association) {
+  if(association >= 0 && association < vtkDataObject::NUMBER_OF_ASSOCIATIONS) {
+    return this->ArraySelections[association];
+  }
+
+  return nullptr;
 }
 
 int ttkArrayEditor::FillInputPortInformation(int port, vtkInformation *info) {
@@ -31,117 +48,17 @@ int ttkArrayEditor::FillInputPortInformation(int port, vtkInformation *info) {
     info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataObject");
     if(port == 1)
       info->Set(vtkAlgorithm::INPUT_IS_OPTIONAL(), 1);
-  } else
-    return 0;
-  return 1;
+    return 1;
+  }
+  return 0;
 }
 
 int ttkArrayEditor::FillOutputPortInformation(int port, vtkInformation *info) {
-  if(port == 0)
+  if(port == 0) {
     info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
-  else
-    return 0;
-  return 1;
-}
-
-// =============================================================================
-// GUI functions to add/remove/clear array selections
-// =============================================================================
-
-// Add Array Selections
-void ttkArrayEditor::AddArray(const int fieldType,
-                              const char *name,
-                              const int targetOrSource) {
-  std::string n(name);
-  if(n.compare("") == 0) {
-    this->printErr("Array name can not be ''");
-    return;
+    return 1;
   }
-
-  if(targetOrSource == 0)
-    this->TargetArraySelection.push_back(make_pair(fieldType, n));
-  else
-    this->SourceArraySelection.push_back(make_pair(fieldType, n));
-  this->Modified();
-}
-void ttkArrayEditor::AddTargetPointDataArray(const char *name) {
-  this->AddArray(vtkDataObject::POINT, name, 0);
-}
-void ttkArrayEditor::AddTargetCellDataArray(const char *name) {
-  this->AddArray(vtkDataObject::CELL, name, 0);
-}
-void ttkArrayEditor::AddTargetFieldDataArray(const char *name) {
-  this->AddArray(vtkDataObject::FIELD, name, 0);
-}
-void ttkArrayEditor::AddSourcePointDataArray(const char *name) {
-  this->AddArray(vtkDataObject::POINT, name, 1);
-}
-void ttkArrayEditor::AddSourceCellDataArray(const char *name) {
-  this->AddArray(vtkDataObject::CELL, name, 1);
-}
-void ttkArrayEditor::AddSourceFieldDataArray(const char *name) {
-  this->AddArray(vtkDataObject::FIELD, name, 1);
-}
-
-// Remove Array Selections
-void ttkArrayEditor::RemoveArray(const int fieldType,
-                                 const char *name,
-                                 bool deleteType,
-                                 const int targetOrSource) {
-  auto &selection = targetOrSource == 0 ? this->TargetArraySelection
-                                        : this->SourceArraySelection;
-
-  bool found = true;
-  while(found) {
-    found = false;
-    auto iter = selection.begin();
-    while(iter != selection.end()) {
-      if(iter->first == fieldType && (deleteType || iter->second == name)) {
-        found = true;
-        iter = selection.erase(iter);
-        this->Modified();
-      } else
-        ++iter;
-    }
-  }
-}
-void ttkArrayEditor::RemoveTargetPointDataArray(const char *name) {
-  this->RemoveArray(vtkDataObject::POINT, name, false, 0);
-}
-void ttkArrayEditor::RemoveTargetCellDataArray(const char *name) {
-  this->RemoveArray(vtkDataObject::CELL, name, false, 0);
-}
-void ttkArrayEditor::RemoveTargetFieldDataArray(const char *name) {
-  this->RemoveArray(vtkDataObject::FIELD, name, false, 0);
-}
-void ttkArrayEditor::RemoveSourcePointDataArray(const char *name) {
-  this->RemoveArray(vtkDataObject::POINT, name, false, 1);
-}
-void ttkArrayEditor::RemoveSourceCellDataArray(const char *name) {
-  this->RemoveArray(vtkDataObject::CELL, name, false, 1);
-}
-void ttkArrayEditor::RemoveSourceFieldDataArray(const char *name) {
-  this->RemoveArray(vtkDataObject::FIELD, name, false, 1);
-}
-
-// Clear Array Selections
-void ttkArrayEditor::ClearTargetPointDataArrays() {
-  this->RemoveArray(vtkDataObject::POINT, "", true, 0);
-}
-void ttkArrayEditor::ClearTargetCellDataArrays() {
-  this->RemoveArray(vtkDataObject::CELL, "", true, 0);
-}
-void ttkArrayEditor::ClearTargetFieldDataArrays() {
-  this->RemoveArray(vtkDataObject::FIELD, "", true, 0);
-}
-void ttkArrayEditor::ClearSourcePointDataArrays() {
-  this->RemoveArray(vtkDataObject::POINT, "", true, 1);
-}
-void ttkArrayEditor::ClearSourceCellDataArrays() {
-  this->RemoveArray(vtkDataObject::CELL, "", true, 1);
-}
-void ttkArrayEditor::ClearSourceFieldDataArrays() {
-  this->RemoveArray(vtkDataObject::FIELD, "", true, 1);
+  return 0;
 }
 
 template <typename VTK_T1, typename VTK_T2>
@@ -159,86 +76,35 @@ int copyArrayData(vtkDataArray *target, vtkDataArray *copy) {
 int ttkArrayEditor::RequestData(vtkInformation *request,
                                 vtkInformationVector **inputVector,
                                 vtkInformationVector *outputVector) {
-  ttk::Timer globalTimer;
 
-  std::string attributeTypeNames[3] = {"point", "cell", "field"};
-
-  std::string modeString = this->EditorMode == 0
-                             ? std::string("Add arrays parsed from std::string")
-                             : this->EditorMode == 1
-                                 ? std::string("Add arrays from source")
-                                 : this->EditorMode == 2
-                                     ? std::string("Remove arrays")
-                                     : std::string("Edit Array");
-
-  // Print Mode
-  this->printMsg("Mode: " + modeString);
-  this->printMsg(ttk::debug::Separator::L1);
+  std::string associationNames[3] = {"point", "cell", "field"};
 
   // Pass Input to Output
   auto target = vtkDataObject::GetData(inputVector[0], 0);
-
   auto output = vtkDataObject::GetData(outputVector, 0);
-
   output->ShallowCopy(target);
-  auto outputAsDS = vtkDataSet::SafeDownCast(output);
-
-  // Get relevant array selections
-  auto &selection = this->EditorMode == 1 ? this->SourceArraySelection
-                                          : this->TargetArraySelection;
-
-  auto getarraysByAttributeType = [](vtkDataObject *object) {
-    std::vector<vtkFieldData *> arraysByAttributeType(3, nullptr);
-
-    auto objectAsDS = vtkDataSet::SafeDownCast(object);
-    if(objectAsDS) {
-      arraysByAttributeType[0] = (vtkFieldData *)objectAsDS->GetPointData();
-      arraysByAttributeType[1] = (vtkFieldData *)objectAsDS->GetCellData();
-    }
-    arraysByAttributeType[2] = object->GetFieldData();
-
-    return arraysByAttributeType;
-  };
-
-  auto checkData = [](std::vector<vtkFieldData *> &arraysByAttributeType,
-                      std::string objectName, int attributeType,
-                      vtkDataSet *objectAsDS, vtkAbstractArray *array,
-                      ttkArrayEditor *caller) {
-    if(!arraysByAttributeType[attributeType]) {
-      caller->printErr(objectName + " does not have specified attribute type");
-      return 0;
-    }
-
-    size_t n = attributeType == 0
-                 ? objectAsDS->GetNumberOfPoints()
-                 : attributeType == 1 ? objectAsDS->GetNumberOfCells() : 0;
-    size_t m = array->GetNumberOfTuples();
-    if(attributeType < 2 && n != m) {
-      caller->printErr("tuple number of added array (" + std::to_string(m)
-                       + ") != point/cell number of target ("
-                       + std::to_string(n) + ")");
-      return 0;
-    }
-
-    return 1;
-  };
-
-  // get output field type
-  auto outputArraysByAttributeType = getarraysByAttributeType(output);
 
   // switch based on mode
   if(this->EditorMode == 0) {
-    this->printMsg("Input std::string: '" + this->DataString + "'",
-                   ttk::debug::Priority::DETAIL);
+    this->printMsg(
+      "Input string: '" + this->DataString + "'", ttk::debug::Priority::DETAIL);
 
     // From Data std::string
     if(this->DataString.length() > 0) {
       ttk::Timer t;
+
+      // get target attribute
+      int targetAssociation
+        = this->TargetAssociation < 0 ? 2 : this->TargetAssociation;
+      auto outputAtt = output->GetAttributesAsFieldData(targetAssociation);
+      if(!outputAtt) {
+        this->printErr("Target does not have requested attribute type.");
+        return 0;
+      }
+
       // if set to automatic then add to field data
-      int targetAttributeType
-        = this->TargetAttributeType < 0 ? 2 : this->TargetAttributeType;
-      this->printMsg("Adding parsed arrays to "
-                       + attributeTypeNames[targetAttributeType] + " data",
+      this->printMsg("Adding parsed arrays from string to "
+                       + associationNames[targetAssociation] + " data",
                      0, ttk::debug::LineMode::REPLACE);
 
       std::string finalExpressionString;
@@ -252,131 +118,83 @@ int ttkArrayEditor::RequestData(vtkInformation *request,
         }
       }
 
+      // Convert each line to a vtkDataArray
       {
-        // For each line
         std::stringstream ss(finalExpressionString);
         std::string line;
         while(getline(ss, line, '\n')) {
-          vtkSmartPointer<vtkAbstractArray> array
-            = ttkUtils::csvToVtkArray(line);
-          if(!array
-             || !checkData(outputArraysByAttributeType, "Target",
-                           targetAttributeType, outputAsDS, array, this))
+          auto array = ttkUtils::csvToVtkArray(line);
+          if(!array)
             return 0;
-          outputArraysByAttributeType[targetAttributeType]->AddArray(array);
+
+          if(this->ReplaceExistingArrays
+             || !outputAtt->HasArray(array->GetName()))
+            outputAtt->AddArray(array);
         }
       }
 
-      this->printMsg("Adding parsed arrays to "
-                       + attributeTypeNames[targetAttributeType] + " data",
+      this->printMsg("Adding parsed arrays from string to "
+                       + associationNames[targetAssociation] + " data",
                      1, t.getElapsedTime());
     }
   } else if(this->EditorMode == 1) {
     ttk::Timer t;
-    this->printMsg("Adding " + std::to_string(selection.size())
-                     + " point/cell/field arrays from source",
-                   0, ttk::debug::LineMode::REPLACE);
+    this->printMsg("Adding point/cell/field arrays from source", 0,
+                   ttk::debug::LineMode::REPLACE);
 
-    if(inputVector[1]->GetNumberOfInformationObjects() == 1
-       && selection.size() > 0) {
-
-      auto source = inputVector[1]->GetInformationObject(0)->Get(
-        vtkDataObject::DATA_OBJECT());
-      auto sourcearraysByAttributeType = getarraysByAttributeType(source);
-
-      for(size_t i = 0; i < selection.size(); i++) {
-        auto &s = selection[i];
-
-        // Get source array
-        vtkFieldData *sourceFields = sourcearraysByAttributeType[s.first];
-        vtkAbstractArray *sourceField
-          = sourceFields ? vtkAbstractArray::SafeDownCast(
-              sourceFields->GetAbstractArray(s.second.data()))
-                         : nullptr;
-        if(!sourceField) {
-          this->printErr("Source does not have " + attributeTypeNames[s.first]
-                         + " data array '" + s.second + "'");
-          return 0;
-        }
-
-        // Copy source array
-        auto copy
-          = vtkSmartPointer<vtkAbstractArray>::Take(sourceField->NewInstance());
-        auto copyAsDA = vtkDataArray::SafeDownCast(copy);
-        auto copyAsSA = vtkStringArray::SafeDownCast(copy);
-
-        if(copyAsDA)
-          copyAsDA->ShallowCopy(vtkDataArray::SafeDownCast(sourceField));
-        else if(copyAsSA) {
-          copyAsSA->DeepCopy(vtkStringArray::SafeDownCast(sourceField));
-          copyAsSA->SetName(sourceField->GetName());
-        } else {
-          this->printErr("Source array '" + s.second
-                         + "' is not a 'vtkStringArray' nor a 'vtkDataArray'");
-          return 0;
-        }
-
-        // Check if array can be safely added to target
-        if(!checkData(outputArraysByAttributeType, "Target",
-                      this->TargetAttributeType < 0 ? s.first
-                                                    : this->TargetAttributeType,
-                      outputAsDS, copy, this))
-          return 0;
-        outputArraysByAttributeType[this->TargetAttributeType < 0
-                                      ? s.first
-                                      : this->TargetAttributeType]
-          ->AddArray(copy);
-      }
-    }
-
-    this->printMsg("Adding " + std::to_string(selection.size())
-                     + " point/cell/field arrays from source",
-                   1, t.getElapsedTime());
-  } else if(this->EditorMode == 2) {
-    ttk::Timer t;
-    this->printMsg("Removing " + std::to_string(selection.size())
-                     + " point/cell/field arrays",
-                   0, ttk::debug::LineMode::REPLACE);
-
-    if(selection.size() > 0) {
-      for(size_t i = 0; i < selection.size(); i++) {
-        auto &s = selection[i];
-
-        vtkFieldData *outputFields = outputArraysByAttributeType[s.first];
-        vtkAbstractArray *outputField
-          = outputFields ? outputFields->GetAbstractArray(s.second.data())
-                         : nullptr;
-        if(!outputField) {
-          this->printErr("Target does not have array '" + s.second
-                         + "' of type '" + std::to_string(s.first) + "'");
-          return 0;
-        }
-
-        outputFields->RemoveArray(s.second.data());
-      }
-    }
-
-    this->printMsg("Removing " + std::to_string(selection.size())
-                     + " point/cell/field arrays",
-                   1, t.getElapsedTime());
-  } else if(this->EditorMode == 3) {
-    ttk::Timer t;
-    this->printMsg("Editing '" + this->TargetArray.second + "' "
-                     + attributeTypeNames[this->TargetArray.first]
-                     + " data array",
-                   0, ttk::debug::LineMode::REPLACE);
-
-    auto targetArray = vtkDataArray::SafeDownCast(
-      outputArraysByAttributeType[this->TargetArray.first]->GetAbstractArray(
-        this->TargetArray.second.data()));
-    if(!targetArray) {
-      this->printErr("Only data arrays can be edited");
+    auto source = vtkDataObject::GetData(inputVector[1], 0);
+    if(!source) {
+      this->printErr("Unable to retrieve source vtkDataObject.");
       return 0;
     }
 
-    auto targetAttributeType = this->TargetAttributeType < 0
-                                 ? this->TargetArray.first
-                                 : this->TargetAttributeType;
+    for(int association = 0;
+        association < vtkDataObject::NUMBER_OF_ASSOCIATIONS; ++association) {
+      if(association == vtkDataObject::FIELD_ASSOCIATION_POINTS_THEN_CELLS)
+        continue;
+
+      // get source attributes and array selection
+      auto sourceFD = source->GetAttributesAsFieldData(association);
+      auto selection = this->GetArraySelection(association);
+      if(!sourceFD || !selection)
+        continue;
+
+      // get target attribute
+      int targetAssociation
+        = this->TargetAssociation < 0 ? association : this->TargetAssociation;
+      auto outputAtt = output->GetAttributesAsFieldData(targetAssociation);
+      if(!outputAtt) {
+        continue;
+      }
+
+      // add source arrays
+      for(int i = 0; i < sourceFD->GetNumberOfArrays(); i++) {
+        auto array = sourceFD->GetAbstractArray(i);
+
+        if(!selection->ArrayIsEnabled(array->GetName()))
+          continue;
+
+        outputAtt->AddArray(array);
+      }
+    }
+
+    this->printMsg(
+      "Adding point/cell/field arrays from source", 1, t.getElapsedTime());
+
+  } else if(this->EditorMode == 2) {
+    ttk::Timer t;
+
+    auto targetArray = this->GetInputArrayToProcess(0, inputVector);
+    if(!targetArray) {
+      this->printErr("Unable to retrieve input array.");
+      return 0;
+    }
+
+    int targetArrayAssociation = this->GetInputArrayAssociation(0, inputVector);
+
+    this->printMsg("Editing '" + std::string(targetArray->GetName()) + "' "
+                     + associationNames[targetArrayAssociation] + " data array",
+                   0, ttk::debug::LineMode::REPLACE);
 
     vtkSmartPointer<vtkDataArray> copy;
     // check if it is necessary to create a new array
@@ -409,22 +227,24 @@ int ttkArrayEditor::RequestData(vtkInformation *request,
                     ? targetArray->GetName()
                     : this->TargetArrayName.data());
 
-    // Check if array can be safely added to target
-    if(!checkData(outputArraysByAttributeType, "Target", targetAttributeType,
-                  outputAsDS, copy, this))
+    // get target attribute
+    int targetAssociation = this->TargetAssociation < 0
+                              ? targetArrayAssociation
+                              : this->TargetAssociation;
+    auto outputAtt = output->GetAttributesAsFieldData(targetAssociation);
+    if(!outputAtt) {
+      this->printErr("Target does not have requested attribute type.");
       return 0;
-    outputArraysByAttributeType[targetAttributeType]->AddArray(copy);
+    }
+    outputAtt->AddArray(copy);
 
-    this->printMsg("Editing '" + this->TargetArray.second + "' "
-                     + attributeTypeNames[this->TargetArray.first]
-                     + " data array",
+    this->printMsg("Editing '" + std::string(targetArray->GetName()) + "' "
+                     + associationNames[targetArrayAssociation] + " data array",
                    1, t.getElapsedTime());
+  } else {
+    this->printErr("Unsupported Editor Mode.");
+    return 0;
   }
-
-  // Output Performance
-  this->printMsg(ttk::debug::Separator::L2);
-  this->printMsg("Complete", 1, globalTimer.getElapsedTime());
-  this->printMsg(ttk::debug::Separator::L1);
 
   return 1;
 }
