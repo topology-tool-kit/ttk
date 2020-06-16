@@ -114,7 +114,7 @@ namespace ttk {
       setArgument("d", &(ttk::globalDebugLevel_), "Global debug level", true);
       setArgument("t", &ttk::globalThreadNumber_, "Global thread number", true);
       debugLevel_ = (int)(debug::Priority::INFO);
-      
+
       setDebugMsgPrefix("CMD");
     };
 
@@ -186,7 +186,7 @@ namespace ttk {
           }
         }
       }
-      
+
       setDebugLevel(ttk::globalDebugLevel_);
 
       return 0;

@@ -14,8 +14,7 @@
 ///
 /// \sa ttkScalarFieldSmoother.cpp %for a usage example.
 
-#ifndef _SCALAR_FIELD_SMOOTHER_H
-#define _SCALAR_FIELD_SMOOTHER_H
+#pragma once
 
 // base code includes
 #include <Triangulation.h>
@@ -23,11 +22,10 @@
 
 namespace ttk {
 
-  class ScalarFieldSmoother : public Debug {
+  class ScalarFieldSmoother : virtual public Debug {
 
   public:
     ScalarFieldSmoother();
-
     ~ScalarFieldSmoother();
 
     int setDimensionNumber(const int &dimensionNumber) {
@@ -50,8 +48,7 @@ namespace ttk {
       return 0;
     }
 
-    inline int setupTriangulation(AbstractTriangulation *triangulation) {
-
+    int setupTriangulation(AbstractTriangulation *triangulation) {
       // Pre-condition functions.
       if(triangulation) {
         triangulation->preconditionVertexNeighbors();
@@ -169,5 +166,3 @@ int ttk::ScalarFieldSmoother::smooth(const TriangulationType *triangulation,
 
   return 0;
 }
-
-#endif // _SCALAR_FIELD_SMOOTHER_H

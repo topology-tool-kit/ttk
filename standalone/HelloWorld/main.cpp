@@ -9,6 +9,8 @@
 
 // VTK Includes
 #include <vtkCellData.h>
+#include <vtkDataArray.h>
+#include <vtkDataSet.h>
 #include <vtkPointData.h>
 #include <vtkSmartPointer.h>
 #include <vtkXMLDataObjectWriter.h>

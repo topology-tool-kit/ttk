@@ -1,15 +1,13 @@
 #include <ScalarFieldSmoother.h>
 
-using namespace std;
-using namespace ttk;
+ttk::ScalarFieldSmoother::ScalarFieldSmoother() {
+  this->inputData_ = nullptr;
+  this->outputData_ = nullptr;
+  this->dimensionNumber_ = 1;
+  this->mask_ = nullptr;
 
-ScalarFieldSmoother::ScalarFieldSmoother() {
-  inputData_ = nullptr;
-  outputData_ = nullptr;
-  dimensionNumber_ = 1;
-  mask_ = nullptr;
-  setDebugMsgPrefix("ScalarFieldSmoother");
+  this->setDebugMsgPrefix("ScalarFieldSmoother");
 }
 
-ScalarFieldSmoother::~ScalarFieldSmoother() {
+ttk::ScalarFieldSmoother::~ScalarFieldSmoother() {
 }
