@@ -217,19 +217,42 @@ void PersistenceDiagramDistanceMatrix::setBidderDiagrams(
   }
 }
 
-double PersistenceDiagramDistanceMatrix::enrichCurrentBidderDiagrams(
+void PersistenceDiagramDistanceMatrix::enrichCurrentBidderDiagrams(
   const std::vector<BidderDiagram<double>> &bidder_diags,
   std::vector<BidderDiagram<double>> &current_bidder_diags,
   const std::vector<double> &maxDiagPersistence) const {
 
   current_bidder_diags.resize(bidder_diags.size());
+  const auto nInputs = current_bidder_diags.size();
+
+  if(this->Constraint == ConstraintType::ABSOLUTE_PERSISTENCE
+     || this->Constraint == ConstraintType::RELATIVE_PERSISTENCE) {
+    for(size_t i = 0; i < nInputs; ++i) {
+      for(int j = 0; j < bidder_diags[i].size(); ++j) {
+        auto b = bidder_diags[i].get(j);
+
+        if( // filter out pairs below absolute persistence threshold
+          (this->Constraint == ConstraintType::ABSOLUTE_PERSISTENCE
+           && b.getPersistence() > this->MinPersistence)
+          || // filter out pairs below persistence threshold relative to
+          // current diagram global min-max pair
+          (this->Constraint == ConstraintType::RELATIVE_PERSISTENCE
+           && b.getPersistence()
+                > this->MinPersistence * maxDiagPersistence[i])) {
+          b.id_ = current_bidder_diags[i].size();
+          b.setPositionInAuction(current_bidder_diags[i].size());
+          current_bidder_diags[i].addBidder(b);
+        }
+      }
+    }
+    return;
+  }
 
   const double prev_min_persistence = 2.0 * getMostPersistent(bidder_diags);
   double new_min_persistence = 0.0;
 
   // 1. Get size of the largest current diagram, deduce the maximal number
   // of points to append
-  const auto nInputs = current_bidder_diags.size();
   size_t max_diagram_size = 0;
   for(const auto &diag : current_bidder_diags) {
     max_diagram_size
@@ -286,5 +309,4 @@ double PersistenceDiagramDistanceMatrix::enrichCurrentBidderDiagrams(
       }
     }
   }
-  return new_min_persistence;
 }
