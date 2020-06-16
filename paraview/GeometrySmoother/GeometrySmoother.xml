@@ -58,7 +58,7 @@
         </Documentation>
       </IntVectorProperty>
 
-      <StringVectorProperty name="InputMask" label="Input Mask Field" command="SetInputArrayToProcess" element_types="0 0 0 0 2" number_of_elements="5" panel_visibility="advanced">
+      <StringVectorProperty name="InputMaskNew" name="Input Mask Field" command="SetInputArrayToProcess" element_types="0 0 0 0 2" number_of_elements="5" panel_visibility="advanced">
           <ArrayListDomain attribute_type="Scalars" name="array_list">
             <RequiredProperties>
               <Property function="Input" name="Input" />
@@ -77,7 +77,7 @@
         <Property name="Input" />
         <Property name="NumberOfIterations" />
         <Property name="ForceInputMaskScalarField" />
-        <Property name="InputMask" />
+        <Property name="InputMaskNew" />
       </PropertyGroup>
 
       ${DEBUG_WIDGETS}
