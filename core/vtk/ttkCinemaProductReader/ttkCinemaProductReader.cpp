@@ -1,5 +1,7 @@
 #include <ttkCinemaProductReader.h>
 
+#include <vtkInformation.h>
+
 #include <vtkDoubleArray.h>
 #include <vtkFieldData.h>
 #include <vtkMultiBlockDataSet.h>

@@ -22,16 +22,15 @@ int ttk::CinemaQuery::execute(
 #if TTK_ENABLE_SQLITE3
   // print input
   {
-    // Flatten sqlQuery
-    std::string sqlQuery_(sqlQuery);
-    size_t position = sqlQuery_.find("\n");
-    while(position != std::string::npos) {
-      sqlQuery_.replace(position, 1, " ");
-      position = sqlQuery_.find("\n", position + 1);
+    std::vector<std::string> sqlLines;
+    {
+      std::stringstream ss(sqlQuery);
+      std::string line;
+      while(std::getline(ss, line))
+        sqlLines.push_back(line);
     }
-
-    this->printMsg({{"#Tables", std::to_string(sqlTableDefinitions.size())},
-                    {"Query", sqlQuery_}});
+    this->printMsg(ttk::debug::Separator::L1);
+    this->printMsg(sqlLines);
     this->printMsg(ttk::debug::Separator::L1);
   }
 

@@ -1,6 +1,7 @@
 #include <ttkCinemaImaging.h>
 #include <ttkUtils.h>
 
+#include <vtkInformation.h>
 #include <vtkVersion.h>
 
 #include <vtkCellData.h>
@@ -100,9 +101,6 @@ void addValuePass(vtkDataSet *object,
 
     std::string name(field->GetName());
 
-    double minmax[2];
-    field->GetRange(minmax);
-
     size_t nComponents = field->GetNumberOfComponents();
     for(size_t c = 0; c < nComponents; c++) {
       auto valuePass = vtkSmartPointer<vtkValuePass>::New();
@@ -112,7 +110,6 @@ void addValuePass(vtkDataSet *object,
                                           : VTK_SCALAR_MODE_USE_CELL_FIELD_DATA,
                                         name.data());
       valuePass->SetInputComponentToProcess(c);
-      valuePass->SetScalarRange(minmax[0], minmax[1]);
 
       valuePassCollection->AddItem(valuePass);
       valuePassNames.push_back(
