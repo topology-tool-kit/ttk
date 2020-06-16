@@ -96,11 +96,29 @@ public:
     return -1;
   }
 
-  vtkSetMacro(UseFullDiagrams, bool);
-  vtkGetMacro(UseFullDiagrams, bool);
+  void SetConstraint(const int arg_) {
+    this->setConstraint(arg_);
+    this->Modified();
+  }
+  int GetConstraint() {
+    switch(this->Constraint) {
+      case ConstraintType::FULL_DIAGRAMS:
+        return 0;
+      case ConstraintType::NUMBER_PAIRS:
+        return 1;
+      case ConstraintType::ABSOLUTE_PERSISTENCE:
+        return 2;
+      case ConstraintType::RELATIVE_PERSISTENCE:
+        return 3;
+    }
+    return -1;
+  }
 
   vtkSetMacro(MinPointsToAdd, unsigned int);
   vtkGetMacro(MinPointsToAdd, unsigned int);
+
+  vtkSetMacro(MinPersistence, double);
+  vtkGetMacro(MinPersistence, double);
 
 protected:
   ttkPersistenceDiagramDistanceMatrix();

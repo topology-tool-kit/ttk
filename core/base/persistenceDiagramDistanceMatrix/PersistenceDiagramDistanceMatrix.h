@@ -77,11 +77,22 @@ namespace ttk {
     inline void setDeltaLim(const double deltaLim) {
       DeltaLim = deltaLim;
     }
-    inline void setUseFullDiagrams(const bool arg) {
-      UseFullDiagrams = arg;
-    }
     inline void setMinPointsToAdd(const size_t data) {
       MinPointsToAdd = data;
+    }
+    inline void setMinPersistence(const double data) {
+      MinPersistence = data;
+    }
+    inline void setConstraint(const int data) {
+      if(data == 0) {
+        this->Constraint = ConstraintType::FULL_DIAGRAMS;
+      } else if(data == 1) {
+        this->Constraint = ConstraintType::NUMBER_PAIRS;
+      } else if(data == 2) {
+        this->Constraint = ConstraintType::ABSOLUTE_PERSISTENCE;
+      } else if(data == 3) {
+        this->Constraint = ConstraintType::RELATIVE_PERSISTENCE;
+      }
     }
 
   protected:
@@ -115,7 +126,15 @@ namespace ttk {
     // of the 2 critical points of the pair
     double Lambda;
     size_t MinPointsToAdd{20};
-    bool UseFullDiagrams{false};
+    double MinPersistence{};
     bool do_min_{true}, do_sad_{true}, do_max_{true};
+
+    enum class ConstraintType {
+      FULL_DIAGRAMS,
+      NUMBER_PAIRS,
+      ABSOLUTE_PERSISTENCE,
+      RELATIVE_PERSISTENCE
+    };
+    ConstraintType Constraint{ConstraintType::NUMBER_PAIRS};
   };
 } // namespace ttk

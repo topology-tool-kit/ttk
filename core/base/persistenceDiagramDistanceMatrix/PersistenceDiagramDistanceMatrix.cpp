@@ -88,7 +88,7 @@ std::vector<std::vector<double>> PersistenceDiagramDistanceMatrix::execute(
   }
 
   std::vector<std::vector<double>> distMat(nInputs);
-  if(this->UseFullDiagrams) {
+  if(this->Constraint == ConstraintType::FULL_DIAGRAMS) {
     getDiagramsDistMat(nInputs, distMat, bidder_diagrams_min,
                        bidder_diagrams_sad, bidder_diagrams_max);
   } else {
