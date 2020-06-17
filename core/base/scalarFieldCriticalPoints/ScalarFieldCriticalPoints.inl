@@ -197,14 +197,16 @@ std::pair<ttk::SimplexId, ttk::SimplexId>
     SimplexId neighborId = 0;
     triangulation->getVertexNeighbor(vertexId, i, neighborId);
 
-    if(isSosLowerThan((*sosOffsets_)[neighborId], scalarValues_[neighborId],
+    if(isSosLowerThan<dataType>((*sosOffsets_)[neighborId], 
+scalarValues_[neighborId],
                       (*sosOffsets_)[vertexId], scalarValues_[vertexId])) {
 
       lowerNeighbors.push_back(neighborId);
     }
 
     // upper link
-    if(isSosHigherThan((*sosOffsets_)[neighborId], scalarValues_[neighborId],
+    if(isSosHigherThan<dataType>((*sosOffsets_)[neighborId], 
+scalarValues_[neighborId],
                        (*sosOffsets_)[vertexId], scalarValues_[vertexId])) {
 
       upperNeighbors.push_back(neighborId);
@@ -249,7 +251,7 @@ std::pair<ttk::SimplexId, ttk::SimplexId>
       if(neighborId0 != vertexId) {
         // we are on the link
 
-        bool lower0 = isSosLowerThan(
+        bool lower0 = isSosLowerThan<dataType>(
           (*sosOffsets_)[neighborId0], scalarValues_[neighborId0],
           (*sosOffsets_)[vertexId], scalarValues_[vertexId]);
 
@@ -261,7 +263,7 @@ std::pair<ttk::SimplexId, ttk::SimplexId>
 
           if((neighborId1 != neighborId0) && (neighborId1 != vertexId)) {
 
-            bool lower1 = isSosLowerThan(
+            bool lower1 = isSosLowerThan<dataType>(
               (*sosOffsets_)[neighborId1], scalarValues_[neighborId1],
               (*sosOffsets_)[vertexId], scalarValues_[vertexId]);
 
@@ -387,7 +389,8 @@ char ttk::ScalarFieldCriticalPoints<dataType>::getCriticalType(
 
     // first vertex
     // lower link search
-    if(isSosLowerThan((*sosOffsets_)[neighborId], scalarValues_[neighborId],
+    if(isSosLowerThan<dataType>((*sosOffsets_)[neighborId], 
+scalarValues_[neighborId],
                       (*sosOffsets_)[vertexId], scalarValues_[vertexId])) {
 
       neighborIt = global2LowerLink.find(neighborId);
@@ -399,7 +402,8 @@ char ttk::ScalarFieldCriticalPoints<dataType>::getCriticalType(
     }
 
     // upper link
-    if(isSosHigherThan((*sosOffsets_)[neighborId], scalarValues_[neighborId],
+    if(isSosHigherThan<dataType>((*sosOffsets_)[neighborId], 
+scalarValues_[neighborId],
                        (*sosOffsets_)[vertexId], scalarValues_[vertexId])) {
 
       neighborIt = global2UpperLink.find(neighborId);
@@ -414,7 +418,8 @@ char ttk::ScalarFieldCriticalPoints<dataType>::getCriticalType(
     neighborId = vertexLink[i].second;
 
     // lower link search
-    if(isSosLowerThan((*sosOffsets_)[neighborId], scalarValues_[neighborId],
+    if(isSosLowerThan<dataType>((*sosOffsets_)[neighborId], 
+scalarValues_[neighborId],
                       (*sosOffsets_)[vertexId], scalarValues_[vertexId])) {
 
       neighborIt = global2LowerLink.find(neighborId);
@@ -426,7 +431,8 @@ char ttk::ScalarFieldCriticalPoints<dataType>::getCriticalType(
     }
 
     // upper link
-    if(isSosHigherThan((*sosOffsets_)[neighborId], scalarValues_[neighborId],
+    if(isSosHigherThan<dataType>((*sosOffsets_)[neighborId], 
+scalarValues_[neighborId],
                        (*sosOffsets_)[vertexId], scalarValues_[vertexId])) {
 
       neighborIt = global2UpperLink.find(neighborId);
@@ -476,9 +482,10 @@ char ttk::ScalarFieldCriticalPoints<dataType>::getCriticalType(
     SimplexId neighborId1 = vertexLink[i].second;
 
     // process the lower link
-    if((isSosLowerThan((*sosOffsets_)[neighborId0], scalarValues_[neighborId0],
+    if((isSosLowerThan<dataType>((*sosOffsets_)[neighborId0], 
+scalarValues_[neighborId0],
                        (*sosOffsets_)[vertexId], scalarValues_[vertexId]))
-       && (isSosLowerThan((*sosOffsets_)[neighborId1],
+       && (isSosLowerThan<dataType>((*sosOffsets_)[neighborId1],
                           scalarValues_[neighborId1], (*sosOffsets_)[vertexId],
                           scalarValues_[vertexId]))) {
 
@@ -494,9 +501,10 @@ char ttk::ScalarFieldCriticalPoints<dataType>::getCriticalType(
     }
 
     // process the upper link
-    if((isSosHigherThan((*sosOffsets_)[neighborId0], scalarValues_[neighborId0],
+    if((isSosHigherThan<dataType>((*sosOffsets_)[neighborId0], 
+scalarValues_[neighborId0],
                         (*sosOffsets_)[vertexId], scalarValues_[vertexId]))
-       && (isSosHigherThan((*sosOffsets_)[neighborId1],
+       && (isSosHigherThan<dataType>((*sosOffsets_)[neighborId1],
                            scalarValues_[neighborId1], (*sosOffsets_)[vertexId],
                            scalarValues_[vertexId]))) {
 

@@ -60,18 +60,20 @@ namespace ttk {
                          const std::vector<std::pair<SimplexId, SimplexId>>
                            &vertexLinkEdgeList) const;
 
+    template <class localDataType>
     static bool isSosHigherThan(const SimplexId &offset0,
-                                const dataType &value0,
+                                const localDataType &value0,
                                 const SimplexId &offset1,
-                                const dataType &value1) {
+                                const localDataType &value1) {
 
       return ((value0 > value1) || ((value0 == value1) && (offset0 > offset1)));
     }
 
+    template <class localDataType>
     static bool isSosLowerThan(const SimplexId &offset0,
-                               const dataType &value0,
+                               const localDataType &value0,
                                const SimplexId &offset1,
-                               const dataType &value1) {
+                               const localDataType &value1) {
 
       return ((value0 < value1) || ((value0 == value1) && (offset0 < offset1)));
     }
