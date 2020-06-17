@@ -12,13 +12,13 @@ std::vector<std::vector<double>> PersistenceDiagramDistanceMatrix::execute(
   const auto nInputs = intermediateDiagrams.size();
 
   if(do_min_ && do_sad_ && do_max_) {
-    this->printMsg("Process all critical pairs");
+    this->printMsg("Processing all critical pairs types");
   } else if(do_min_) {
-    this->printMsg("Process only MIN-SAD pairs");
+    this->printMsg("Processing only MIN-SAD pairs");
   } else if(do_sad_) {
-    this->printMsg("Process only SAD-SAD pairs");
+    this->printMsg("Processing only SAD-SAD pairs");
   } else if(do_max_) {
-    this->printMsg("Process only SAD-MAX pairs");
+    this->printMsg("Processing only SAD-MAX pairs");
   }
 
   std::vector<std::vector<DiagramTuple>> inputDiagramsMin(nInputs);
@@ -80,6 +80,28 @@ std::vector<std::vector<double>> PersistenceDiagramDistanceMatrix::execute(
   }
   if(this->do_max_) {
     setBidderDiagrams(nInputs, inputDiagramsMax, bidder_diagrams_max);
+  }
+
+  switch(this->Constraint) {
+    case ConstraintType::FULL_DIAGRAMS:
+      this->printMsg("Using all diagram pairs");
+      break;
+    case ConstraintType::NUMBER_PAIRS:
+      this->printMsg("Using the " + std::to_string(this->MaxNumberOfPairs)
+                     + " most persistent pairs");
+      break;
+    case ConstraintType::ABSOLUTE_PERSISTENCE: {
+      std::stringstream pers{};
+      pers << std::fixed << std::setprecision(2) << this->MinPersistence;
+      this->printMsg("Using diagram pairs above a persistence threshold of "
+                     + pers.str());
+    } break;
+    case ConstraintType::RELATIVE_PERSISTENCE:
+      this->printMsg(
+        "Use the "
+        + std::to_string(static_cast<int>(100 * (1 - this->MinPersistence)))
+        + "% most persistent pairs of each diagram");
+      break;
   }
 
   std::vector<std::vector<double>> distMat(nInputs);
