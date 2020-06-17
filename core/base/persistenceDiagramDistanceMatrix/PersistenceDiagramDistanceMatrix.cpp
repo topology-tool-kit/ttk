@@ -269,25 +269,64 @@ void PersistenceDiagramDistanceMatrix::enrichCurrentBidderDiagrams(
         }
       }
     }
+    return;
+  }
 
-  } else if(this->Constraint == ConstraintType::NUMBER_PAIRS) {
-    for(size_t i = 0; i < nInputs; ++i) {
-      // index of pair in bidder_diags + corresponding persistence value
-      using PairIV = std::pair<size_t, double>;
-      std::vector<PairIV> pairs(bidder_diags[i].size());
-      for(int j = 0; j < bidder_diags[i].size(); ++j) {
-        pairs.emplace_back(j, bidder_diags[i].get(j).getPersistence());
+  const double prev_min_persistence = 2.0 * getMostPersistent(bidder_diags);
+  double new_min_persistence = 0.0;
+
+  // 1. Get size of the largest current diagram, deduce the maximal number
+  // of points to append
+  size_t max_diagram_size = 0;
+  for(const auto &diag : current_bidder_diags) {
+    max_diagram_size
+      = std::max(static_cast<size_t>(diag.size()), max_diagram_size);
+  }
+  size_t max_points_to_add = std::max(
+    this->MaxNumberOfPairs, this->MaxNumberOfPairs + max_diagram_size / 10);
+  // 2. Get which points can be added, deduce the new minimal persistence
+  std::vector<std::vector<int>> candidates_to_be_added(nInputs);
+  std::vector<std::vector<size_t>> idx(nInputs);
+
+  for(size_t i = 0; i < nInputs; i++) {
+    double local_min_persistence = std::numeric_limits<double>::min();
+    std::vector<double> persistences;
+    for(int j = 0; j < bidder_diags[i].size(); j++) {
+      Bidder<double> b = bidder_diags[i].get(j);
+      double persistence = b.getPersistence();
+      if(persistence >= 0.0 && persistence <= prev_min_persistence) {
+        candidates_to_be_added[i].emplace_back(j);
+        idx[i].emplace_back(idx[i].size());
+        persistences.emplace_back(persistence);
       }
-      // sort diagram pairs by persistence value
-      std::sort(
-        pairs.begin(), pairs.end(),
-        [](const PairIV &a, const PairIV &b) { return a.second < b.second; });
-      const auto firstId = pairs.size() > this->MaxNumberOfPairs
-                             ? pairs.size() - this->MaxNumberOfPairs
-                             : 0;
-      // take the last (most persistent) pairs
-      for(size_t j = firstId; j < pairs.size(); ++j) {
-        auto b = bidder_diags[i].get(pairs[j].first);
+    }
+    const auto cmp = [&persistences](const size_t a, const size_t b) {
+      return ((persistences[a] > persistences[b])
+              || ((persistences[a] == persistences[b]) && (a > b)));
+    };
+    std::sort(idx[i].begin(), idx[i].end(), cmp);
+    const auto size = candidates_to_be_added[i].size();
+    if(size >= max_points_to_add) {
+      double last_persistence_added
+        = persistences[idx[i][max_points_to_add - 1]];
+      if(last_persistence_added > local_min_persistence) {
+        local_min_persistence = last_persistence_added;
+      }
+    }
+    if(i == 0) {
+      new_min_persistence = local_min_persistence;
+    } else {
+      if(local_min_persistence < new_min_persistence) {
+        new_min_persistence = local_min_persistence;
+      }
+    }
+    // 3. Add the points to the current diagrams
+    const auto s = candidates_to_be_added[i].size();
+    for(size_t j = 0; j < std::min(max_points_to_add, s); j++) {
+      Bidder<double> b
+        = bidder_diags[i].get(candidates_to_be_added[i][idx[i][j]]);
+      const double persistence = b.getPersistence();
+      if(persistence >= new_min_persistence) {
         b.id_ = current_bidder_diags[i].size();
         b.setPositionInAuction(current_bidder_diags[i].size());
         current_bidder_diags[i].addBidder(b);
