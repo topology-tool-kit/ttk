@@ -12,10 +12,12 @@ jobs:
 # Linux build
 # ------------------------------
 
-# VTK
+# VTK: No OpenGL rendering on this pipeline
+# Test with GCC-6 and VTK 8.90 (Unofficial) Release
+# Test with GCC-7 and VTK 9.0 Debug
 
 - job:
-  condition: true
+  condition: true # can be used to disable this pipeline
   displayName: Ubuntu-VTK-Python3-OpenMP-Ninja
   strategy:
     matrix:
@@ -39,10 +41,22 @@ jobs:
   variables:
     CMakeArgs: ''
     LD_LIBRARY_PATH: $(Build.ArtifactStagingDirectory)/vtk-install/lib/
-    # depends on graphics
-    CMAKE_DISABLE: '-DVTK_MODULE_ENABLE_ttkAddFieldData=NO -DVTK_MODULE_ENABLE_ttkCinemaWriter=NO -DVTK_MODULE_ENABLE_ttkCinemaReader=NO -DVTK_MODULE_ENABLE_ttkCinemaQuery=NO -DVTK_MODULE_ENABLE_ttkCinemaImaging=NO -DVTK_MODULE_ENABLE_ttkUserInterfaceBase=NO -DVTK_MODULE_ENABLE_ttkWRLExporter=NO'
+    VTKVersion: v9.0.0
+    VTKVPath: 9.0
+    # cmake will compains about unused variables
+    VTK8_NO_RENDERING: '-DVTK_Group_Rendering=OFF
+                        -DVTK_RENDERING_BACKEND=None'
+    VTK9_NO_RENDERING: '-DVTK_GROUP_ENABLE_Rendering=NO'
+    # disable modules depending on rendering
+    TTK_MODULE_DISABLE: '-DVTK_MODULE_ENABLE_ttkAddFieldData=NO
+                         -DVTK_MODULE_ENABLE_ttkCinemaWriter=NO
+                         -DVTK_MODULE_ENABLE_ttkCinemaReader=NO
+                         -DVTK_MODULE_ENABLE_ttkCinemaQuery=NO
+                         -DVTK_MODULE_ENABLE_ttkCinemaImaging=NO
+                         -DVTK_MODULE_ENABLE_ttkUserInterfaceBase=NO
+                         -DVTK_MODULE_ENABLE_ttkWRLExporter=NO'
     # used for dev
-    CMAKE_TEST: ''
+    TTK_MODULE_TEST: ''
 
   steps:
   - script: |
@@ -59,15 +73,23 @@ jobs:
   - script: |
       git clone --quiet https://gitlab.kitware.com/vtk/vtk.git
       cd vtk
-      git checkout e4e8a4df9cc67fd2bb3dbb3b1c50a25177cbfe68
+      git checkout $(VTKVersion)
       git submodule update --init --recursive
-    displayName: 'Clone VTK'
+    displayName: 'Clone VTK $(VTKVPath)'
 
   - task: CMake@1
     inputs:
       workingDirectory: 'vtk/build'
-      cmakeArgs: '.. $(CMakeArgs) -GNinja -DCMAKE_INSTALL_PREFIX=$(Build.ArtifactStagingDirectory)/vtk-install -DCMAKE_BUILD_TYPE=$(BuildType) -DVTK_BUILD_TESTING=OFF -DVTK_GROUP_ENABLE_Rendering=NO -DVTK_WRAP_PYTHON=YES -DVTK_PYTHON_VERSION=3'
-    displayName: 'Configure VTK'
+      cmakeArgs: '.. $(CMakeArgs)
+                     $(VTK8_NO_RENDERING)
+                     $(VTK9_NO_RENDERING)
+                    -GNinja
+                    -DCMAKE_INSTALL_PREFIX=$(Build.ArtifactStagingDirectory)/vtk-install
+                    -DCMAKE_BUILD_TYPE=$(BuildType)
+                    -DVTK_BUILD_TESTING=OFF
+                    -DVTK_WRAP_PYTHON=YES
+                    -DVTK_PYTHON_VERSION=3'
+    displayName: 'Configure VTK $(VTKVPath)'
 
   - script: |
       cmake --build . --target install
@@ -77,7 +99,15 @@ jobs:
   - task: CMake@1
     inputs:
       workingDirectory: 'build/'
-      cmakeArgs: '.. $(CMakeArgs) -GNinja -DCMAKE_INSTALL_PREFIX=$(Build.ArtifactStagingDirectory)/ttk-install -DCMAKE_BUILD_TYPE=$(BuildType) -DVTK_DIR=$(Build.ArtifactStagingDirectory)/vtk-install/lib/cmake/vtk-8.90 -DTTK_BUILD_PARAVIEW_PLUGINS=OFF -DTTK_BUILD_STANDALONE_APPS=ON $(CMAKE_DISABLE) $(CMAKE_TEST)'
+      cmakeArgs: '.. $(CMakeArgs)
+                    -GNinja
+                    -DCMAKE_INSTALL_PREFIX=$(Build.ArtifactStagingDirectory)/ttk-install
+                    -DCMAKE_BUILD_TYPE=$(BuildType)
+                    -DVTK_DIR=$(Build.ArtifactStagingDirectory)/vtk-install/lib/cmake/vtk-$(VTKVPath)
+                    -DTTK_BUILD_PARAVIEW_PLUGINS=OFF
+                    -DTTK_BUILD_STANDALONE_APPS=ON
+                    $(TTK_MODULE_DISABLE)
+                    $(TTK_MODULE_TEST)'
     displayName: 'Configure TTK'
 
   - script: |
@@ -103,9 +133,9 @@ jobs:
     CMakeArgs: ''
     PV_VERSION: 'v5.8.0'
     PV_V: '5.8'
-    CMAKE_DISABLE: ''
+    TTK_MODULE_DISABLE: ''
     # used for dev
-    CMAKE_TEST: ''
+    TTK_MODULE_TEST: ''
 
   strategy:
     matrix:
@@ -143,7 +173,16 @@ jobs:
   - task: CMake@1
     inputs:
       workingDirectory: 'ParaView-$(PV_VERSION)/build'
-      cmakeArgs: '.. $(CMakeArgs) -DCMAKE_INSTALL_PREFIX=$(Build.ArtifactStagingDirectory)/pv-install -DCMAKE_BUILD_TYPE=$(BuildType) -DPARAVIEW_BUILD_TESTING=OFF -DPARAVIEW_ENABLE_PYTHON=ON -DVTK_PYTHON_VERSION=3 -DPARAVIEW_BUILD_QT_GUI=NO -DVTK_DEFAULT_RENDER_WINDOW_OFFSCREEN=ON -DVTK_USE_X=OFF -DVTK_MODULE_USE_EXTERNAL_VTK_glew=ON'
+      cmakeArgs: '.. $(CMakeArgs)
+                    -DCMAKE_INSTALL_PREFIX=$(Build.ArtifactStagingDirectory)/pv-install
+                    -DCMAKE_BUILD_TYPE=$(BuildType)
+                    -DPARAVIEW_BUILD_TESTING=OFF
+                    -DPARAVIEW_ENABLE_PYTHON=ON
+                    -DVTK_PYTHON_VERSION=3
+                    -DPARAVIEW_BUILD_QT_GUI=NO
+                    -DVTK_DEFAULT_RENDER_WINDOW_OFFSCREEN=ON
+                    -DVTK_USE_X=OFF
+                    -DVTK_MODULE_USE_EXTERNAL_VTK_glew=ON'
     displayName: 'Configure ParaView $(PV_VERSION)'
 
   - script: |
@@ -154,7 +193,7 @@ jobs:
   - task: CMake@1
     inputs:
       workingDirectory: 'build/'
-      cmakeArgs: '.. -DCMAKE_BUILD_TYPE=$(BuildType) -DCMAKE_INSTALL_PREFIX=$(Build.ArtifactStagingDirectory)/ttk-install -DParaView_DIR=$(Build.ArtifactStagingDirectory)/pv-install/lib/cmake/paraview-$(PV_V) -DTTK_BUILD_STANDALONE_APPS=ON $(CMAKE_DISABLE) $(CMAKE_TEST)'
+      cmakeArgs: '.. -DCMAKE_BUILD_TYPE=$(BuildType) -DCMAKE_INSTALL_PREFIX=$(Build.ArtifactStagingDirectory)/ttk-install -DParaView_DIR=$(Build.ArtifactStagingDirectory)/pv-install/lib/cmake/paraview-$(PV_V) -DTTK_BUILD_STANDALONE_APPS=ON $(TTK_MODULE_DISABLE) $(TTK_MODULE_TEST)'
     displayName: 'Configure TTK'
 
   - script: |
@@ -180,9 +219,9 @@ jobs:
     CMakeArgs: ''
     PV_VERSION: 'v5.8.0'
     PV_V: '5.8'
-    CMAKE_DISABLE: ''
+    TTK_MODULE_DISABLE: ''
     # used for dev
-    CMAKE_TEST: ''
+    TTK_MODULE_TEST: ''
 
   pool:
     vmImage: 'macOS-latest'
@@ -203,7 +242,12 @@ jobs:
   - task: CMake@1
     inputs:
       workingDirectory: 'ParaView-$(PV_VERSION)/build'
-      cmakeArgs: '.. -DCMAKE_BUILD_TYPE=Release -DPARAVIEW_BUILD_TESTING=OFF -DPARAVIEW_ENABLE_PYTHON=ON -DVTK_PYTHON_VERSION=3 -DPARAVIEW_BUILD_QT_GUI=NO'
+      cmakeArgs: '.. $(CMakeArgs)
+                    -DCMAKE_BUILD_TYPE=Release
+                    -DPARAVIEW_BUILD_TESTING=OFF
+                    -DPARAVIEW_ENABLE_PYTHON=ON
+                    -DVTK_PYTHON_VERSION=3
+                    -DPARAVIEW_BUILD_QT_GUI=NO'
     displayName: 'Configure ParaView'
 
   - script: |
@@ -214,7 +258,13 @@ jobs:
   - task: CMake@1
     inputs:
       workingDirectory: 'build/'
-      cmakeArgs: '.. -DCMAKE_INSTALL_PREFIX=$(Build.ArtifactStagingDirectory)/ttk-install -DCMAKE_BUILD_TYPE=Release -DParaView_DIR=./ParaView-$(PV_VERSION)/build/ -DTTK_BUILD_STANDALONE_APPS=ON $(CMAKE_DISABLE) $(CMAKE_TEST)'
+      cmakeArgs: '.. $(CMakeArgs)
+                     -DCMAKE_INSTALL_PREFIX=$(Build.ArtifactStagingDirectory)/ttk-install
+                     -DCMAKE_BUILD_TYPE=Release
+                     -DParaView_DIR=./ParaView-$(PV_VERSION)/build/
+                     -DTTK_BUILD_STANDALONE_APPS=ON
+                     $(TTK_MODULE_DISABLE)
+                     $(TTK_MODULE_TEST)'
     displayName: 'Configure TTK'
 
   - script: |
@@ -223,18 +273,16 @@ jobs:
     displayName: 'Build and install TTK'
 
   - script: |
-      ls -R .
-      echo "otoo L"
-      otool -L ./bin/ttkBlankCmd
-      echo "otoo l"
-      otool -l ./bin/ttkBlankCmd
       # DYLD_PRINT_LIBRARIES=1 ./bin/ttkBlankCmd -i $(Build.SourcesDirectory)/examples/data/inputData.vtu
+      echo "Need a fix"
     workingDirectory: '$(Build.ArtifactStagingDirectory)/ttk-install/'
     displayName: 'Test TTK Command line (DISABLED FOR NOW)'
 
 # ------------------------------
 # Windows build
 # ------------------------------
+
+# VTK 9, no rendering
 
 - job:
   condition: true
@@ -246,11 +294,19 @@ jobs:
         cCompiler: cl.exe
         cxxCompiler: cl.exe
         compilerInitialization: 'call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\VC\Auxiliary\Build\vcvars64.bat"'
+        VTKVersion: v9.0.0
+        VTKVPath: 9.0
 
   variables:
-    CMAKE_DISABLE: '-DVTK_MODULE_ENABLE_ttkAddFieldData=NO -DVTK_MODULE_ENABLE_ttkWRLExporter=NO -DVTK_MODULE_ENABLE_ttkCinemaWriter=NO -DVTK_MODULE_ENABLE_ttkCinemaReader=NO -DVTK_MODULE_ENABLE_ttkCinemaQuery=NO -DVTK_MODULE_ENABLE_ttkCinemaImaging=NO -DVTK_MODULE_ENABLE_ttkUserInterfaceBase=NO'
+    TTK_MODULE_DISABLE: '-DVTK_MODULE_ENABLE_ttkAddFieldData=NO
+                         -DVTK_MODULE_ENABLE_ttkWRLExporter=NO
+                         -DVTK_MODULE_ENABLE_ttkCinemaWriter=NO
+                         -DVTK_MODULE_ENABLE_ttkCinemaReader=NO
+                         -DVTK_MODULE_ENABLE_ttkCinemaQuery=NO
+                         -DVTK_MODULE_ENABLE_ttkCinemaImaging=NO
+                         -DVTK_MODULE_ENABLE_ttkUserInterfaceBase=NO'
     # used for dev
-    CMAKE_TEST: ''
+    TTK_MODULE_TEST: ''
 
   pool:
     vmImage: $(imageName)
@@ -259,16 +315,16 @@ jobs:
   - bash: |
       git clone --quiet https://gitlab.kitware.com/vtk/vtk.git
       cd vtk
-      git checkout e4e8a4df9cc67fd2bb3dbb3b1c50a25177cbfe68
+      git checkout $(VTKVersion)
       git submodule update --init --recursive
       mkdir build
-    displayName: 'Clone VTK'
+    displayName: 'Clone VTK $(VTKVPath)'
 
   - script: |
       $(compilerInitialization)
       cmake -DCMAKE_C_COMPILER:FILEPATH="$(cCompiler)" -DCMAKE_CXX_COMPILER="$(cxxCompiler)" -DBUILD_SHARED_LIBS:BOOL=ON -DCMAKE_INSTALL_PREFIX="$(Build.ArtifactStagingDirectory)/vtk-install" -DCMAKE_BUILD_TYPE:STRING=Release -DBUILD_TESTING:BOOL=OFF -DVTK_BUILD_TESTING=OFF -DVTK_GROUP_ENABLE_Rendering=NO -GNinja ..
     workingDirectory: vtk/build
-    displayName: 'Configure VTK'
+    displayName: 'Configure VTK $(VTKVPath)'
 
   - script: |
       $(compilerInitialization)
@@ -284,7 +340,7 @@ jobs:
   - script: |
       $(compilerInitialization)
       set BOOST_ROOT=$(BOOST_ROOT_1_69_0)
-      cmake -DBoost_NO_BOOST_CMAKE=ON -DCMAKE_POLICY_DEFAULT_CMP0074=NEW -DCMAKE_POLICY_DEFAULT_CMP0092=NEW -DCMAKE_C_COMPILER:FILEPATH="$(cCompiler)" -DBUILD_SHARED_LIBS:BOOL=ON -DCMAKE_CXX_COMPILER="$(cxxCompiler)" -DCMAKE_INSTALL_PREFIX="$(Build.ArtifactStagingDirectory)/ttk-install" -DVTK_DIR=$(Build.ArtifactStagingDirectory)/vtk-install/lib/cmake/vtk-8.90 -DCMAKE_BUILD_TYPE:STRING=Release -DTTK_BUILD_PARAVIEW_PLUGINS=OFF $(CMAKE_DISABLE) $(CMAKE_TEST) -GNinja ..
+      cmake -DBoost_NO_BOOST_CMAKE=ON -DCMAKE_POLICY_DEFAULT_CMP0074=NEW -DCMAKE_POLICY_DEFAULT_CMP0092=NEW -DCMAKE_C_COMPILER:FILEPATH="$(cCompiler)" -DBUILD_SHARED_LIBS:BOOL=ON -DCMAKE_CXX_COMPILER="$(cxxCompiler)" -DCMAKE_INSTALL_PREFIX="$(Build.ArtifactStagingDirectory)/ttk-install" -DVTK_DIR=$(Build.ArtifactStagingDirectory)/vtk-install/lib/cmake/vtk-$(VTKVPath) -DCMAKE_BUILD_TYPE:STRING=Release -DTTK_BUILD_PARAVIEW_PLUGINS=OFF $(TTK_MODULE_DISABLE) $(CMAKE_TEST) -GNinja ..
     workingDirectory: build/
     displayName: 'Configure TTK'
 
