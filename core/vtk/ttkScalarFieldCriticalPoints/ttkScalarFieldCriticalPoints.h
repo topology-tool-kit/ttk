@@ -106,10 +106,9 @@ public:
     return 1;
   }
 
-  template <typename VTK_TT>
-  int dispatch(ttk::Triangulation *triangulation,
-               VTK_TT *scalarValues,
-               const ttk::SimplexId vertexNumber);
+  template <typename VTK_TT,
+            class triangulationType = ttk::AbstractTriangulation>
+  int dispatch(VTK_TT *scalarValues, triangulationType *triangulation);
 
 protected:
   ttkScalarFieldCriticalPoints();

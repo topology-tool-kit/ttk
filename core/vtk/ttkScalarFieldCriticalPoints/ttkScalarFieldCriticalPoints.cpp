@@ -27,31 +27,22 @@ ttkScalarFieldCriticalPoints::ttkScalarFieldCriticalPoints() {
 ttkScalarFieldCriticalPoints::~ttkScalarFieldCriticalPoints() {
 }
 
-template <typename VTK_TT>
-int ttkScalarFieldCriticalPoints::dispatch(Triangulation *triangulation,
-                                           VTK_TT *scalarValues,
-                                           const SimplexId vertexNumber) {
-  ScalarFieldCriticalPoints<VTK_TT> criticalPoints;
+template <typename VTK_TT, class triangulationType>
+int ttkScalarFieldCriticalPoints::dispatch(VTK_TT *scalarValues,
+                                           triangulationType *triangulation) {
+
+  ttk::ScalarFieldCriticalPoints criticalPoints;
   criticalPoints.setupTriangulation(triangulation);
-  int domainDimension = triangulation->getCellVertexNumber(0) - 1;
 
   criticalPoints.setWrapper(this);
-  criticalPoints.setDomainDimension(domainDimension);
-  // set up input
-  // 1 -- vertex values
-  criticalPoints.setScalarValues(scalarValues);
-  criticalPoints.setVertexNumber(vertexNumber);
-
-  // 2 -- set offsets (here, let the baseCode class fill it for us)
+  // 1 -- set offsets (here, let the baseCode class fill it for us)
   criticalPoints.setSosOffsets(&sosOffsets_);
 
-  // 3 -- set the connectivity
-  criticalPoints.setupTriangulation(triangulation);
-
-  // set up output
+  // 2 -- set up output
   criticalPoints.setOutput(&criticalPoints_);
 
-  criticalPoints.execute(scalarValues);
+  criticalPoints.execute<VTK_TT, triangulationType>(
+    triangulation, scalarValues);
 
   return 0;
 }
@@ -153,11 +144,10 @@ int ttkScalarFieldCriticalPoints::doIt(vector<vtkDataSet *> &inputs,
     }
   }
 
-  switch(inputScalarField->GetDataType()) {
-    vtkTemplateMacro(dispatch<VTK_TT>(
-      triangulation, (VTK_TT *)inputScalarField->GetVoidPointer(0),
-      input->GetNumberOfPoints()));
-  }
+  ttkVtkTemplateMacro(
+    triangulation->getType(), inputScalarField->GetDataType(),
+    (dispatch<VTK_TT, TTK_TT>((VTK_TT *)inputScalarField->GetVoidPointer(0),
+                              (TTK_TT *)triangulation->getData())));
 
   // allocate the output
   vtkSmartPointer<vtkCharArray> vertexTypes

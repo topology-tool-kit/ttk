@@ -193,11 +193,10 @@ int ttk::JacobiSet<dataTypeU, dataTypeV>::executeLegacy(
     threadedDistanceField[i].resize(vertexNumber_);
   }
 
-  std::vector<ScalarFieldCriticalPoints<double>> threadedCriticalPoints(
+  std::vector<ScalarFieldCriticalPoints> threadedCriticalPoints(
     threadNumber_);
   for(ThreadId i = 0; i < threadNumber_; i++) {
     threadedCriticalPoints[i].setDomainDimension(2);
-    threadedCriticalPoints[i].setScalarValues(threadedDistanceField[i].data());
     threadedCriticalPoints[i].setVertexNumber(vertexNumber_);
     threadedCriticalPoints[i].setSosOffsets(sosOffsetsU_);
   }
@@ -266,7 +265,8 @@ int ttk::JacobiSet<dataTypeU, dataTypeV>::executeLegacy(
       // also, lots of things in there can be done out of the loop
 
       // in the loop
-      char type = threadedCriticalPoints[threadId].getCriticalType(
+      char type = 
+        threadedCriticalPoints[threadId].getCriticalType<double>(
         pivotVertexId, 
         threadedDistanceField[i].data(),
         (*edgeFanLinkEdgeLists_)[i]);
