@@ -72,6 +72,9 @@ std::vector<std::vector<double>> PersistenceDiagramDistanceMatrix::execute(
     }
   }
 
+  const auto maxPersistence
+    = *std::max_element(maxDiagPersistence.begin(), maxDiagPersistence.end());
+
   if(this->do_min_) {
     setBidderDiagrams(nInputs, inputDiagramsMin, bidder_diagrams_min);
   }
@@ -100,7 +103,7 @@ std::vector<std::vector<double>> PersistenceDiagramDistanceMatrix::execute(
       this->printMsg(
         "Use the "
         + std::to_string(static_cast<int>(100 * (1 - this->MinPersistence)))
-        + "% most persistent pairs of each diagram");
+        + "% most persistent pairs");
       break;
   }
 
@@ -111,15 +114,15 @@ std::vector<std::vector<double>> PersistenceDiagramDistanceMatrix::execute(
   } else {
     if(this->do_min_) {
       enrichCurrentBidderDiagrams(
-        bidder_diagrams_min, current_bidder_diagrams_min, maxDiagPersistence);
+        bidder_diagrams_min, current_bidder_diagrams_min, maxPersistence);
     }
     if(this->do_sad_) {
       enrichCurrentBidderDiagrams(
-        bidder_diagrams_sad, current_bidder_diagrams_sad, maxDiagPersistence);
+        bidder_diagrams_sad, current_bidder_diagrams_sad, maxPersistence);
     }
     if(this->do_max_) {
       enrichCurrentBidderDiagrams(
-        bidder_diagrams_max, current_bidder_diagrams_max, maxDiagPersistence);
+        bidder_diagrams_max, current_bidder_diagrams_max, maxPersistence);
     }
     getDiagramsDistMat(nInputs, distMat, current_bidder_diagrams_min,
                        current_bidder_diagrams_sad,
@@ -242,7 +245,7 @@ void PersistenceDiagramDistanceMatrix::setBidderDiagrams(
 void PersistenceDiagramDistanceMatrix::enrichCurrentBidderDiagrams(
   const std::vector<BidderDiagram<double>> &bidder_diags,
   std::vector<BidderDiagram<double>> &current_bidder_diags,
-  const std::vector<double> &maxDiagPersistence) const {
+  const double maxPersistence) const {
 
   current_bidder_diags.resize(bidder_diags.size());
   const auto nInputs = current_bidder_diags.size();
@@ -257,10 +260,9 @@ void PersistenceDiagramDistanceMatrix::enrichCurrentBidderDiagrams(
           (this->Constraint == ConstraintType::ABSOLUTE_PERSISTENCE
            && b.getPersistence() > this->MinPersistence)
           || // filter out pairs below persistence threshold relative to
-          // current diagram global min-max pair
+          // the most persistent pair in all diagrams
           (this->Constraint == ConstraintType::RELATIVE_PERSISTENCE
-           && b.getPersistence()
-                > this->MinPersistence * maxDiagPersistence[i])) {
+           && b.getPersistence() > this->MinPersistence * maxPersistence)) {
           b.id_ = current_bidder_diags[i].size();
           b.setPositionInAuction(current_bidder_diags[i].size());
           current_bidder_diags[i].addBidder(b);
