@@ -58,7 +58,10 @@
         </Documentation>
       </IntVectorProperty>
 
-      <StringVectorProperty name="InputMaskNew" name="Input Mask Field" command="SetInputArrayToProcess" element_types="0 0 0 0 2" number_of_elements="5" panel_visibility="advanced">
+      <StringVectorProperty name="InputMaskNew" 
+                            label="Input Mask Field" 
+command="SetInputArrayToProcess" element_types="0 0 0 0 2" 
+number_of_elements="5" panel_visibility="advanced">
           <ArrayListDomain attribute_type="Scalars" name="array_list">
             <RequiredProperties>
               <Property function="Input" name="Input" />
