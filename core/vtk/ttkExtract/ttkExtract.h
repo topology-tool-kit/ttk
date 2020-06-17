@@ -21,15 +21,19 @@
 class TTKEXTRACT_EXPORT ttkExtract : public ttkAlgorithm {
 
 private:
-  int Mode{0};
-  int OutputType{0};
+  int ExtractionMode{0};
+  int OutputType{-1};
+  bool ExtractUniqueValues{true};
   std::string ExpressionString{""};
+  int ValidationMode{0};
   int CellMode{0};
+  int ArrayAttributeType{0};
+  std::string OutputArrayName{"Data"};
   double ImageBounds[6]{0, 0, 0, 0, 0, 0};
 
 public:
-  vtkSetMacro(Mode, int);
-  vtkGetMacro(Mode, int);
+  vtkSetMacro(ExtractionMode, int);
+  vtkGetMacro(ExtractionMode, int);
 
   vtkSetMacro(OutputType, int);
   vtkGetMacro(OutputType, int);
@@ -37,13 +41,45 @@ public:
   vtkSetMacro(ExpressionString, std::string);
   vtkGetMacro(ExpressionString, std::string);
 
+  vtkSetMacro(ExtractUniqueValues, bool);
+  vtkGetMacro(ExtractUniqueValues, bool);
+
+  vtkSetMacro(ValidationMode, int);
+  vtkGetMacro(ValidationMode, int);
+
   vtkSetMacro(CellMode, int);
   vtkGetMacro(CellMode, int);
+
+  vtkSetMacro(ArrayAttributeType, int);
+  vtkGetMacro(ArrayAttributeType, int);
+
+  vtkSetMacro(OutputArrayName, std::string);
+  vtkGetMacro(OutputArrayName, std::string);
 
   vtkSetVector6Macro(ImageBounds, double);
   vtkGetVector6Macro(ImageBounds, double);
 
-  int GetVtkDataTypeName(int outputType, std::string &dataTypeName);
+  int GetVtkDataTypeName(std::string &dataTypeName, const int outputType) const;
+
+  int ExtractBlocks(vtkDataObject *output,
+                    vtkDataObject *input,
+                    const std::vector<double> &indices) const;
+
+  int ExtractRows(vtkDataObject *output,
+                  vtkDataObject *input,
+                  const std::vector<double> &indices) const;
+
+  int ExtractGeometry(vtkDataObject *output,
+                      vtkDataObject *input,
+                      const std::vector<double> &labels);
+
+  int ExtractArrayValues(vtkDataObject *output,
+                         vtkDataObject *input,
+                         const std::vector<double> &indices);
+
+  int ExtractArray(vtkDataObject *output,
+                   vtkDataObject *input,
+                   const std::vector<double> &indices);
 
   static ttkExtract *New();
   vtkTypeMacro(ttkExtract, ttkAlgorithm)

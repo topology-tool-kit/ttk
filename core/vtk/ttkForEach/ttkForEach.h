@@ -3,11 +3,11 @@
 /// \author Jonas Lukasczyk <jl@jluk.de>
 /// \date 01.01.2019
 ///
-/// \brief TTK VTK-filter that iterates over points, cells, blocks, rows, or
-/// field data arrays.
+/// \brief TTK VTK-filter that works in conjunction with the ttkEndFor filter to
+/// iterate over blocks, rows, array values, and arrays.
 ///
 /// This filter works in conjunction with the ttkEndFor filter to iterate over
-/// points, cells, blocks, rows, or field data arrays
+/// blocks, rows, array values, and arrays.
 ///
 /// \param Input vktObject either a vtkMultiBlockDataSet, vtkTable, or
 /// vtkDataSet \param Output vktObject one element of the input
@@ -18,29 +18,17 @@
 #include <ttkForEachModule.h>
 
 // TTK includes
-#include <ttkAlgorithm.h>
+#include <ttkExtract.h>
 
-class TTKFOREACH_EXPORT ttkForEach : public ttkAlgorithm {
-
-private:
-  int Mode{0};
-  std::string FieldDataName{""};
+class TTKFOREACH_EXPORT ttkForEach : public ttkExtract {
 
 public:
-  vtkSetMacro(Mode, int);
-  vtkGetMacro(Mode, int);
-
-  vtkSetMacro(FieldDataName, std::string);
-  vtkGetMacro(FieldDataName, std::string);
-
   static ttkForEach *New();
-  vtkTypeMacro(ttkForEach, ttkAlgorithm)
+  vtkTypeMacro(ttkForEach, ttkExtract);
 
-    protected : ttkForEach();
+protected:
+  ttkForEach();
   ~ttkForEach();
-
-  int FillInputPortInformation(int port, vtkInformation *info) override;
-  int FillOutputPortInformation(int port, vtkInformation *info) override;
 
   int RequestInformation(vtkInformation *request,
                          vtkInformationVector **inputVector,

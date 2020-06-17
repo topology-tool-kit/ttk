@@ -2,46 +2,92 @@
 <ServerManagerConfiguration>
     <ProxyGroup name="filters">
         <SourceProxy name="ForEach" class="ttkForEach" label="TTK ForEach">
-            <Documentation long_help="TTK ForEach" short_help="TTK ForEach">This filter works in conjunction with the ttkEndFor filter to iterate over points, cells, blocks, rows, or field data arrays.</Documentation>
+            <Documentation long_help="TTK ForEach" short_help="TTK ForEach">This filter works in conjunction with the ttkEndFor filter to iterate over blocks, rows, array values, and arrays.</Documentation>
 
             <InputProperty name="Input" command="SetInputConnection">
                 <ProxyGroupDomain name="groups">
                     <Group name="sources" />
                     <Group name="filters" />
                 </ProxyGroupDomain>
-                <InputArrayDomain name="input_array" attribute_type="field" optional="1" />
+                <DataTypeDomain name="input_type">
+                    <DataType value="vtkMultiBlockDataSet" />
+                    <DataType value="vtkTable" />
+                    <DataType value="vtkDataSet" />
+                </DataTypeDomain>
                 <Documentation>Iteration Source</Documentation>
             </InputProperty>
 
-            <IntVectorProperty name="Mode" command="SetMode" number_of_elements="1" default_values="0">
+            <IntVectorProperty name="IterationMode" command="SetExtractionMode" number_of_elements="1" default_values="-1">
                 <EnumerationDomain name="enum">
-                    <Entry value="0" text="Automatic"/>
-                    <Entry value="1" text="Block"/>
-                    <Entry value="2" text="Row"/>
-                    <!--<Entry value="3" text="Point"/>-->
-                    <!--<Entry value="4" text="Cell"/>-->
-                    <Entry value="5" text="Field"/>
+                    <Entry value="-1" text="Automatic"/>
+                    <Entry value="0" text="Block"/>
+                    <Entry value="1" text="Rows"/>
+                    <Entry value="3" text="Array Values"/>
+                    <Entry value="4" text="Arrays"/>
                 </EnumerationDomain>
                 <Documentation>
                     Iteration Mode.
                 </Documentation>
             </IntVectorProperty>
 
-            <StringVectorProperty name="FieldDataName" command="SetFieldDataName" number_of_elements="1" animateable="0" label="Field Data Array">
-                <ArrayListDomain name="array_list" default_values="Depth"  input_domain_name="input_array">
+            <StringVectorProperty name="InputArray" label="Input Array" command="SetInputArrayToProcess" element_types="0 0 0 0 2" number_of_elements="5">
+                <ArrayListDomain name="array_list">
                     <RequiredProperties>
-                        <Property name="Input" function="Input" />
+                        <Property function="Input" name="Input" />
                     </RequiredProperties>
                 </ArrayListDomain>
                 <Hints>
-                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="Mode" value="5" />
+                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="IterationMode" value="3"/>
                 </Hints>
-                <Documentation>Field data array that will be iterated over.</Documentation>
+                <Documentation>The field data array to iterate over.</Documentation>
             </StringVectorProperty>
 
+            <IntVectorProperty name="ArrayAttributeType" label="Attribute" command="SetArrayAttributeType" number_of_elements="1" default_values="0">
+                <EnumerationDomain name="enum">
+                    <Entry value="0" text="Point Data"/>
+                    <Entry value="1" text="Cell Data"/>
+                    <Entry value="2" text="Field Data"/>
+                </EnumerationDomain>
+                <Hints>
+                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="IterationMode" value="4"/>
+                </Hints>
+                <Documentation>
+                    Specifies to loop over point, cell, or field data arrays.
+                </Documentation>
+            </IntVectorProperty>
+
+            <IntVectorProperty name="OutputType" label="Output Type" command="SetOutputType" number_of_elements="1" default_values="-1">
+                <EnumerationDomain name="enum">
+                    <Entry value="-1" text="Auto"/>
+                    <Entry value="13" text="vtkMultiBlockDataSet"/>
+                    <!--<Entry value="6" text="vtkImageData"/>-->
+                    <Entry value="4" text="vtkUnstructuredGrid"/>
+                    <Entry value="19" text="vtkTable"/>
+                </EnumerationDomain>
+                <Documentation>If mode is set to 'Block', then this parameter is used to set the output type of the filter at the 'RequestInformation' pass.
+
+Auto: Extracted blocks (of any type) are appended to a new 'vtkMultiBlockDataSet'.
+
+
+vtkImageData: If only one block is extracted and it is of type 'vtkImageData', then this block is returned as the output.
+
+
+vtkUnstructuredGrid: If only one block is extracted and it is of type 'vtkUnstructuredGrid', then this block is returned as the output.
+
+
+vtkMultiBlockDataSet: If only one block is extracted and it is of type 'vtkMultiBlockDataSet', then this block is returned as the output.
+
+                </Documentation>
+                <Hints>
+                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="ExtractionMode" value="0" />
+                </Hints>
+            </IntVectorProperty>
+
             <PropertyGroup panel_widget="Line" label="Input Parameters">
-                <Property name="Mode" />
-                <Property name="FieldDataName" />
+                <Property name="IterationMode" />
+                <Property name="OutputType" />
+                <Property name="InputArray" />
+                <Property name="ArrayAttributeType" />
             </PropertyGroup>
 
             ${DEBUG_WIDGETS}

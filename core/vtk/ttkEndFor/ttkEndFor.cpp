@@ -1,12 +1,11 @@
 #include <ttkEndFor.h>
 
-#include <vtkDataObject.h> // For port info
-#include <vtkObjectFactory.h> // for new macro
-
+#include <vtkCompositeDataPipeline.h>
 #include <vtkDoubleArray.h>
 #include <vtkFieldData.h>
+#include <vtkInformation.h>
 #include <vtkInformationVector.h>
-#include <vtkStreamingDemandDrivenPipeline.h>
+#include <vtkMultiBlockDataSet.h>
 
 vtkStandardNewMacro(ttkEndFor);
 
@@ -20,36 +19,27 @@ ttkEndFor::ttkEndFor() {
 ttkEndFor::~ttkEndFor(){};
 
 int ttkEndFor::FillInputPortInformation(int port, vtkInformation *info) {
-  if(port == 0 || port == 1)
-    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataObject");
-  else
-    return 0;
-  return 1;
+  if(port == 0 || port == 1) {
+    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataObject", 1);
+    return 1;
+  }
+  return 0;
 }
 
 int ttkEndFor::FillOutputPortInformation(int port, vtkInformation *info) {
-  if(port == 0)
+  if(port == 0) {
     info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
-  else
-    return 0;
-  return 1;
-}
-
-int ttkEndFor::RequestInformation(vtkInformation *request,
-                                  vtkInformationVector **inputVector,
-                                  vtkInformationVector *outputVector) {
-  // Reset index
-  this->nextIndex = 0;
-  return 1;
+    return 1;
+  }
+  return 0;
 }
 
 int ttkEndFor::RequestUpdateExtent(vtkInformation *request,
                                    vtkInformationVector **inputVector,
                                    vtkInformationVector *outputVector) {
-  // Request next index
-  vtkInformation *inInfo = inputVector[0]->GetInformationObject(0);
-  inInfo->Set(
-    vtkStreamingDemandDrivenPipeline::UPDATE_TIME_STEP(), this->nextIndex);
+  // Request next index for data input
+  inputVector[0]->GetInformationObject(0)->Set(
+    vtkStreamingDemandDrivenPipeline::UPDATE_TIME_STEP(), this->Iteration);
 
   return 1;
 }
@@ -64,31 +54,28 @@ int ttkEndFor::RequestData(vtkInformation *request,
   auto inputFor = vtkDataObject::GetData(inputVector[1]);
 
   // Get iteration information from For
-  auto iterationInformationFor = vtkDoubleArray::SafeDownCast(
+  auto iterationInformation = vtkDoubleArray::SafeDownCast(
     inputFor->GetFieldData()->GetAbstractArray("_ttk_IterationInfo"));
-  if(!iterationInformationFor) {
+  if(!iterationInformation) {
     this->printErr(
       "Unable to retrieve iteration information from ForEach head");
     return 0;
   }
-  this->nextIndex = iterationInformationFor->GetValue(0) + 1;
-  int nIteration = iterationInformationFor->GetValue(1);
+  this->Iteration = iterationInformation->GetValue(0) + 1;
+  int nIterations = iterationInformation->GetValue(1);
 
-  if(this->nextIndex < nIteration) {
+  // Print status
+  this->printMsg("Iteration ( " + std::to_string(this->Iteration - 1) + " / "
+                   + std::to_string(nIterations - 1) + " ) complete ",
+                 ttk::debug::Separator::BACKSLASH);
+
+  if(this->Iteration < nIterations) {
     // Request Next Element
     request->Set(vtkStreamingDemandDrivenPipeline::CONTINUE_EXECUTING(), 1);
-
-    // Print status
-    this->printMsg("Next Iteration: ( " + std::to_string(this->nextIndex + 1)
-                     + " / " + std::to_string(nIteration) + " ) ",
-                   ttk::debug::Separator::BACKSLASH);
   } else {
     // Stop iterations
     request->Remove(vtkStreamingDemandDrivenPipeline::CONTINUE_EXECUTING());
-    this->nextIndex = 0;
-
-    // Print status
-    this->printMsg("Iterations complete ", ttk::debug::Separator::BACKSLASH);
+    this->Iteration = 0;
 
     // Copy Input to Output
     vtkInformation *outInfo = outputVector->GetInformationObject(0);
