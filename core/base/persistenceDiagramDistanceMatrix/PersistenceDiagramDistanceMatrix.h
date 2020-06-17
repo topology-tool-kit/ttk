@@ -77,8 +77,8 @@ namespace ttk {
     inline void setDeltaLim(const double deltaLim) {
       DeltaLim = deltaLim;
     }
-    inline void setMinPointsToAdd(const size_t data) {
-      MinPointsToAdd = data;
+    inline void setMaxNumberOfPairs(const size_t data) {
+      MaxNumberOfPairs = data;
     }
     inline void setMinPersistence(const double data) {
       MinPersistence = data;
@@ -124,7 +124,7 @@ namespace ttk {
     // pair sad-max) lambda = 0 : saddle (bad stability) lambda = 1/2 : middle
     // of the 2 critical points of the pair
     double Lambda;
-    size_t MinPointsToAdd{20};
+    size_t MaxNumberOfPairs{20};
     double MinPersistence{};
     bool do_min_{true}, do_sad_{true}, do_max_{true};
 

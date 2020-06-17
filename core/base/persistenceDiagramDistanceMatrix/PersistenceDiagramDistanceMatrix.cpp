@@ -258,8 +258,8 @@ void PersistenceDiagramDistanceMatrix::enrichCurrentBidderDiagrams(
       std::sort(
         pairs.begin(), pairs.end(),
         [](const PairIV &a, const PairIV &b) { return a.second < b.second; });
-      const auto firstId = pairs.size() > this->MinPointsToAdd
-                             ? pairs.size() - this->MinPointsToAdd
+      const auto firstId = pairs.size() > this->MaxNumberOfPairs
+                             ? pairs.size() - this->MaxNumberOfPairs
                              : 0;
       // take the last (most persistent) pairs
       for(size_t j = firstId; j < pairs.size(); ++j) {

@@ -114,8 +114,8 @@ public:
     return -1;
   }
 
-  vtkSetMacro(MinPointsToAdd, unsigned int);
-  vtkGetMacro(MinPointsToAdd, unsigned int);
+  vtkSetMacro(MaxNumberOfPairs, unsigned int);
+  vtkGetMacro(MaxNumberOfPairs, unsigned int);
 
   vtkSetMacro(MinPersistence, double);
   vtkGetMacro(MinPersistence, double);

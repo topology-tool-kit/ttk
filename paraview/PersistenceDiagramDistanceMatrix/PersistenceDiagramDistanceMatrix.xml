@@ -122,7 +122,7 @@
 
       <IntVectorProperty
           name="Constraint"
-          label="Constrain Pairs"
+          label="Filter Pairs"
           command="SetConstraint"
           number_of_elements="1"
           default_values="1"
@@ -140,8 +140,8 @@
       </IntVectorProperty>
 
       <IntVectorProperty
-          name="MinPointsToAdd"
-          command="SetMinPointsToAdd"
+          name="MaxNumberOfPairs"
+          command="SetMaxNumberOfPairs"
           label="Number Of Pairs"
           number_of_elements="1"
           default_values="20"
