@@ -267,7 +267,9 @@ int ttk::JacobiSet<dataTypeU, dataTypeV>::executeLegacy(
 
       // in the loop
       char type = threadedCriticalPoints[threadId].getCriticalType(
-        pivotVertexId, (*edgeFanLinkEdgeLists_)[i]);
+        pivotVertexId, 
+        threadedDistanceField[i].data(),
+        (*edgeFanLinkEdgeLists_)[i]);
 
       if(type != -2) {
         // -2: regular vertex

@@ -220,7 +220,7 @@ namespace ttk {
           for(idVertex v = lowerBound; v < upperBound; ++v) {
             std::tie(valences_.lower[v], valences_.upper[v])
               = critPoints.getNumberOfLowerUpperComponents(
-                v, mesh_.getTriangulation());
+                v, scalars_->getScalars(), mesh_.getTriangulation());
 
             // leaf cases
             if(addMin && valences_.lower[v] == 0) {

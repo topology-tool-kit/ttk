@@ -29,7 +29,7 @@ ttkScalarFieldCriticalPoints::~ttkScalarFieldCriticalPoints() {
 
 template <typename VTK_TT>
 int ttkScalarFieldCriticalPoints::dispatch(Triangulation *triangulation,
-                                           void *scalarValues,
+                                           VTK_TT *scalarValues,
                                            const SimplexId vertexNumber) {
   ScalarFieldCriticalPoints<VTK_TT> criticalPoints;
   criticalPoints.setupTriangulation(triangulation);
@@ -51,7 +51,7 @@ int ttkScalarFieldCriticalPoints::dispatch(Triangulation *triangulation,
   // set up output
   criticalPoints.setOutput(&criticalPoints_);
 
-  criticalPoints.execute();
+  criticalPoints.execute(scalarValues);
 
   return 0;
 }
@@ -154,9 +154,9 @@ int ttkScalarFieldCriticalPoints::doIt(vector<vtkDataSet *> &inputs,
   }
 
   switch(inputScalarField->GetDataType()) {
-    vtkTemplateMacro(dispatch<VTK_TT>(triangulation,
-                                      inputScalarField->GetVoidPointer(0),
-                                      input->GetNumberOfPoints()));
+    vtkTemplateMacro(dispatch<VTK_TT>(
+      triangulation, (VTK_TT *)inputScalarField->GetVoidPointer(0),
+      input->GetNumberOfPoints()));
   }
 
   // allocate the output

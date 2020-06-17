@@ -19,8 +19,7 @@
 ///
 /// \sa ttkScalarFieldCriticalPoints.cpp %for a usage example.
 
-#ifndef _SCALARFIELDCRITICALPOINTS_H
-#define _SCALARFIELDCRITICALPOINTS_H
+#pragma once
 
 #include <map>
 
@@ -42,21 +41,26 @@ namespace ttk {
     /// Execute the package.
     /// \param argment Dummy integer argument.
     /// \return Returns 0 upon success, negative values otherwise.
-    int execute();
+    int execute(const dataType *scalarValues);
 
+    //     template <class localDataType>
     std::pair<SimplexId, SimplexId>
       getNumberOfLowerUpperComponents(const SimplexId vertexId,
+                                      const dataType *scalarValues,
                                       Triangulation *triangulation) const;
 
-    char getCriticalType(const SimplexId &vertexId) const {
+    char getCriticalType(const dataType *scalarValues,
+                         const SimplexId &vertexId) const {
 
-      return getCriticalType(vertexId, triangulation_);
+      return getCriticalType(vertexId, scalarValues, triangulation_);
     }
 
     char getCriticalType(const SimplexId &vertexId,
+                         const dataType *scalarValues,
                          Triangulation *triangulation) const;
 
     char getCriticalType(const SimplexId &vertexId,
+                         const dataType *scalarValues,
                          const std::vector<std::pair<SimplexId, SimplexId>>
                            &vertexLinkEdgeList) const;
 
@@ -157,5 +161,3 @@ namespace ttk {
 
 // if the package is not a template, comment the following line
 #include <ScalarFieldCriticalPoints.inl>
-
-#endif // SCALARFIELDCRITICALPOINTS_H

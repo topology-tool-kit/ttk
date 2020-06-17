@@ -25,8 +25,7 @@
 ///
 /// \sa ttk::ScalarFieldCriticalPoints
 ///
-#ifndef _TTK_SCALARFIELDCRITICALPOINTS_H
-#define _TTK_SCALARFIELDCRITICALPOINTS_H
+#pragma once
 
 // VTK includes -- to adapt
 #include <vtkDataArray.h>
@@ -109,7 +108,7 @@ public:
 
   template <typename VTK_TT>
   int dispatch(ttk::Triangulation *triangulation,
-               void *scalarValues,
+               VTK_TT *scalarValues,
                const ttk::SimplexId vertexNumber);
 
 protected:
@@ -129,5 +128,3 @@ private:
   std::vector<std::pair<ttk::SimplexId, char>> criticalPoints_;
   std::vector<ttk::SimplexId> sosOffsets_;
 };
-
-#endif // _TTK_SCALARFIELDCRITICALPOINTS_H
