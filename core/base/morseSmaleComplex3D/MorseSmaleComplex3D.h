@@ -835,36 +835,9 @@ int ttk::MorseSmaleComplex3D::computePersistencePairs(
   }
 
   // transform DMT pairs into PL pairs
-  for(const auto &i : dmt_pairs) {
-    const dcg::Cell &saddle1 = std::get<0>(i);
-    const dcg::Cell &saddle2 = std::get<1>(i);
-
-    SimplexId v0 = -1;
-    dataType scalar0{};
-    for(int j = 0; j < 2; ++j) {
-      SimplexId vertexId;
-      inputTriangulation_->getEdgeVertex(saddle1.id_, j, vertexId);
-      const dataType vertexScalar = scalars[vertexId];
-      // get the max vertex of the edge
-      if(j == 0 || scalar0 > vertexScalar) {
-        v0 = vertexId;
-        scalar0 = vertexScalar;
-      }
-    }
-
-    SimplexId v1 = -1;
-    dataType scalar1{};
-    for(int j = 0; j < 3; ++j) {
-      SimplexId vertexId;
-      inputTriangulation_->getTriangleVertex(saddle2.id_, j, vertexId);
-      const dataType vertexScalar = scalars[vertexId];
-      // get the min vertex of the triangle
-      if(j == 0 || scalar1 < vertexScalar) {
-        v1 = vertexId;
-        scalar1 = vertexScalar;
-      }
-    }
-
+  for(const auto &pair : dmt_pairs) {
+    const SimplexId v0 = discreteGradient_.getCellGreaterVertex(pair[0]);
+    const SimplexId v1 = discreteGradient_.getCellGreaterVertex(pair[1]);
     const dataType persistence = scalars[v1] - scalars[v0];
 
     if(v0 != -1 and v1 != -1 and persistence >= 0) {
