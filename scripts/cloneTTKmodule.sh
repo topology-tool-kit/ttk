@@ -1,7 +1,7 @@
 #!/bin/bash
 # Copyright (C) Julien Tierny <julien.tierny@lip6.fr>
 
-# example: ScalarFieldSmoother HelloWorld
+# example: ScalarFieldSmoother MyNewModule
 NameSource=$1
 NameDestination=$2
 
@@ -16,7 +16,7 @@ if [ -z "${NameDestination}" ]; then
   echo "Usage:"
   echo "  $0 <SourceTTKmodule> <DestinationTTKmodule>"
   echo "Example:"
-  echo "  $0 ScalarFieldSmoother HelloWorld"
+  echo "  $0 ScalarFieldSmoother MyNewModule"
   exit 1
 fi
 
