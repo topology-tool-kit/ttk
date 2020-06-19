@@ -314,30 +314,27 @@ namespace ttk {
      * Compute the barycenter of the points of the given edge identifier.
      */
     virtual int getEdgeIncenter(SimplexId edgeId, float incenter[3]) const {
-      std::array<SimplexId, 2> vertexId;
-      for(int i = 0; i < (int)vertexId.size(); ++i) {
-        getEdgeVertexInternal(edgeId, i, vertexId[i]);
-      }
+      SimplexId v0{}, v1{};
+      getEdgeVertexInternal(edgeId, 0, v0);
+      getEdgeVertexInternal(edgeId, 1, v1);
 
-      std::array<std::array<float, 3>, vertexId.size()> p;
-      std::array<std::array<SimplexId, 3>, vertexId.size()> ind;
-      for(int i = 0; i < (int)vertexId.size(); ++i) {
-        for(int j = 0; j < 3; j++)
-          p[i][j] = 0;
-        getVertexPointInternal(vertexId[i], p[i][0], p[i][1], p[i][2]);
-        ind[i] = vertexToPositionNd(vertexId[i]);
-      }
+      std::array<float, 3> p0{}, p1{};
+      getVertexPointInternal(v0, p0[0], p0[1], p0[2]);
+      getVertexPointInternal(v1, p1[0], p1[1], p1[2]);
+
+      const auto &ind0 = vertexCoords_[v0];
+      const auto &ind1 = vertexCoords_[v1];
 
       for(int i = 0; i < dimensionality_; ++i) {
-        if(ind[1][i] == nbvoxels_[i]) {
-          p[0][i] += (ind[0][i] == 0) * dimensions_[i] * spacing_[i];
-        } else if(ind[0][i] == nbvoxels_[i]) {
-          p[1][i] += (ind[1][i] == 0) * dimensions_[i] * spacing_[i];
+        if(ind1[i] == nbvoxels_[i]) {
+          p0[i] += (ind0[i] == 0) * dimensions_[i] * spacing_[i];
+        } else if(ind0[i] == nbvoxels_[i]) {
+          p1[i] += (ind1[i] == 0) * dimensions_[i] * spacing_[i];
         }
       }
 
       for(int i = 0; i < 3; ++i) {
-        incenter[i] = 0.5f * (p[0][i] + p[1][i]);
+        incenter[i] = 0.5f * (p0[i] + p1[i]);
       }
 
       return 0;
