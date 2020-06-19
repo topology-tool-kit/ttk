@@ -217,22 +217,130 @@ int PeriodicImplicitTriangulation::preconditionVerticesInternal() {
   }
   return 0;
 }
+
 int PeriodicImplicitTriangulation::preconditionEdgesInternal() {
-  if(this->dimensionality_ != 2 && this->dimensionality_ != 3) {
-    return 1;
+  edgePositions_.resize(edgeNumber_);
+  edgeCoords_.resize(edgeNumber_);
+
+  if(dimensionality_ == 3) {
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+    for(SimplexId i = 0; i < edgeNumber_; ++i) {
+      auto &p = edgeCoords_[i];
+      if(i < esetshift_[0]) {
+        edgeToPosition(i, 0, p.data());
+        edgePositions_[i] = EdgePosition::L_3D;
+      } else if(i < esetshift_[1]) {
+        edgeToPosition(i, 1, p.data());
+        edgePositions_[i] = EdgePosition::H_3D;
+      } else if(i < esetshift_[2]) {
+        edgeToPosition(i, 2, p.data());
+        edgePositions_[i] = EdgePosition::P_3D;
+      } else if(i < esetshift_[3]) {
+        edgeToPosition(i, 3, p.data());
+        edgePositions_[i] = EdgePosition::D1_3D;
+      } else if(i < esetshift_[4]) {
+        edgeToPosition(i, 4, p.data());
+        edgePositions_[i] = EdgePosition::D2_3D;
+      } else if(i < esetshift_[5]) {
+        edgeToPosition(i, 5, p.data());
+        edgePositions_[i] = EdgePosition::D3_3D;
+      } else if(i < esetshift_[6]) {
+        edgeToPosition(i, 6, p.data());
+        edgePositions_[i] = EdgePosition::D4_3D;
+      }
+    }
+
+  } else if(this->dimensionality_ == 2) {
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+    for(SimplexId i = 0; i < edgeNumber_; ++i) {
+      auto &p = edgeCoords_[i];
+      if(i < esetshift_[0]) {
+        edgeToPosition2d(i, 0, p.data());
+        edgePositions_[i] = EdgePosition::L_2D;
+      } else if(i < esetshift_[1]) {
+        edgeToPosition2d(i, 1, p.data());
+        edgePositions_[i] = EdgePosition::H_2D;
+      } else if(i < esetshift_[2]) {
+        edgeToPosition2d(i, 2, p.data());
+        edgePositions_[i] = EdgePosition::D1_2D;
+      }
+    }
   }
+
+  else if(this->dimensionality_ == 1) {
+    edgePositions_[0] = EdgePosition::FIRST_EDGE_1D;
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+    for(SimplexId i = 1; i < edgeNumber_ - 1; ++i) {
+      edgePositions_[i] = EdgePosition::CENTER_1D;
+    }
+    edgePositions_[edgeNumber_ - 1] = EdgePosition::LAST_EDGE_1D;
+  }
+
   return 0;
 }
+
 int PeriodicImplicitTriangulation::preconditionTrianglesInternal() {
-  if(this->dimensionality_ != 2 && this->dimensionality_ != 3) {
+  if(this->dimensionality_ != 3 && this->dimensionality_ != 2) {
     return 1;
   }
+
+  trianglePositions_.resize(triangleNumber_);
+  triangleCoords_.resize(triangleNumber_);
+
+  if(dimensionality_ == 3) {
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+    for(SimplexId i = 0; i < triangleNumber_; ++i) {
+      if(i < tsetshift_[0]) {
+        triangleToPosition(i, 0, triangleCoords_[i].data());
+        trianglePositions_[i] = TrianglePosition::F_3D;
+      } else if(i < tsetshift_[1]) {
+        triangleToPosition(i, 1, triangleCoords_[i].data());
+        trianglePositions_[i] = TrianglePosition::H_3D;
+      } else if(i < tsetshift_[2]) {
+        triangleToPosition(i, 2, triangleCoords_[i].data());
+        trianglePositions_[i] = TrianglePosition::C_3D;
+      } else if(i < tsetshift_[3]) {
+        triangleToPosition(i, 3, triangleCoords_[i].data());
+        trianglePositions_[i] = TrianglePosition::D1_3D;
+      } else if(i < tsetshift_[4]) {
+        triangleToPosition(i, 4, triangleCoords_[i].data());
+        trianglePositions_[i] = TrianglePosition::D2_3D;
+      } else if(i < tsetshift_[5]) {
+        triangleToPosition(i, 5, triangleCoords_[i].data());
+        trianglePositions_[i] = TrianglePosition::D3_3D;
+      }
+    }
+
+  } else if(dimensionality_ == 2) {
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+    for(SimplexId i = 0; i < triangleNumber_; ++i) {
+      triangleToPosition2d(i, triangleCoords_[i].data());
+      if(i % 2 == 0) {
+        trianglePositions_[i] = TrianglePosition::TOP_2D;
+      } else {
+        trianglePositions_[i] = TrianglePosition::BOTTOM_2D;
+      }
+    }
+  }
+
   return 0;
 }
+
 int PeriodicImplicitTriangulation::preconditionTetrahedronsInternal() {
   if(this->dimensionality_ != 3) {
     return 1;
   }
+
   tetrahedronCoords_.resize(tetrahedronNumber_);
 
 #ifdef TTK_ENABLE_OPENMP

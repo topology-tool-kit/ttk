@@ -477,6 +477,69 @@ namespace ttk {
     // for every tetrahedron, its coordinates on the grid
     std::vector<std::array<SimplexId, 3>> tetrahedronCoords_{};
 
+    enum class EdgePosition : char {
+      //    e--------f
+      //   /|       /|
+      //  / |      / |
+      // a--------b  |
+      // |  g-----|--h
+      // | /      | /
+      // |/       |/
+      // c--------d
+
+      // length (ab)
+      L_3D,
+      // height (ac)
+      H_3D,
+      // depth (ae)
+      P_3D,
+      // diagonal1 (bc)
+      D1_3D,
+      // diagonal2 (ag)
+      D2_3D,
+      // diagonal3 (be)
+      D3_3D,
+      // diagonal4 (bg)
+      D4_3D,
+
+      // length (ab)
+      L_2D,
+      // height (ac)
+      H_2D,
+      // diagonal1 (bc)
+      D1_2D,
+
+      FIRST_EDGE_1D,
+      LAST_EDGE_1D,
+      CENTER_1D,
+    };
+
+    enum class TrianglePosition : char {
+      //    e--------f
+      //   /|       /|
+      //  / |      / |
+      // a--------b  |
+      // |  g-----|--h
+      // | /      | /
+      // |/       |/
+      // c--------d
+
+      F_3D, // face (abc, bcd)
+      C_3D, // side (abe, bef)
+      H_3D, // top (acg, aeg)
+      D1_3D, // diagonal1 (bdg, beg)
+      D2_3D, // diagonal2 (abg, bgh)
+      D3_3D, // diagonal3 (bcg, bfg)
+
+      TOP_2D, // abc
+      BOTTOM_2D, // bcd
+    };
+
+    // for every edge, its position on the grid
+    std::vector<EdgePosition> edgePositions_{};
+    // for every triangle, its position on the grid
+    std::vector<TrianglePosition> trianglePositions_{};
+
     // acceleration functions
     int checkAcceleration();
     bool isPowerOfTwo(unsigned long long int v, unsigned long long int &r);
