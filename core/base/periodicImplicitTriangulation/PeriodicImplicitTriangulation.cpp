@@ -410,22 +410,6 @@ int PeriodicImplicitTriangulation::getVertexEdgeInternal(
   if(localEdgeId < 0 or localEdgeId >= getVertexEdgeNumberInternal(vertexId))
     return -1;
 #endif
-  //    e--------f
-  //   /|       /|
-  //  / |      / |
-  // a--g-----b--h
-  // | /      | /
-  // |/       |/
-  // c--------d
-  //
-  // Classement des "Edges" et dans cet ordre:
-  // L: largeur (type ab)
-  // H: hauteur (type ac)
-  // P: profondeur (type ae)
-  // D1: diagonale1 (type bc)
-  // D2: diagonale2 (type ag)
-  // D3: diagonale3 (type be)
-  // D4: diagonale4 (type bg)
 
   edgeId = -1;
   const auto &p = vertexCoords_[vertexId];
@@ -1312,22 +1296,6 @@ int PeriodicImplicitTriangulation::getTriangleVertexInternal(
   if(localVertexId < 0 or localVertexId >= 3)
     return -2;
 #endif
-
-  //    e--------f
-  //   /|       /|
-  //  / |      / |
-  // a--g-----b--h
-  // | /      | /
-  // |/       |/
-  // c--------d
-  //
-  // Classement des "Triangles" et dans cet ordre:
-  // F: face (type abc/bcd)
-  // C: cote (type abe/bef)
-  // H: haut (type acg/aeg)
-  // D1: diagonale1 (type bdg/beg)
-  // D2: diagonale2 (type abg/bgh)
-  // D3: diagonale3 (type bcg/bfg)
 
   vertexId = -1;
 
