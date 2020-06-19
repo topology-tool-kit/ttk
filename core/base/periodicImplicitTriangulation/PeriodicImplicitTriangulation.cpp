@@ -1879,28 +1879,27 @@ int PeriodicImplicitTriangulation::getTetrahedronVertex(
   vertexId = -1;
 
   if(dimensionality_ == 3) {
-    SimplexId p[3];
-    tetrahedronToPosition(tetId, p);
+    const auto &p = tetrahedronCoords_[tetId];
     const SimplexId id = tetId % 6;
 
     switch(id) {
       case 0:
-        vertexId = getTetrahedronVertexABCG(p, localVertexId);
+        vertexId = getTetrahedronVertexABCG(p.data(), localVertexId);
         break;
       case 1:
-        vertexId = getTetrahedronVertexBCDG(p, localVertexId);
+        vertexId = getTetrahedronVertexBCDG(p.data(), localVertexId);
         break;
       case 2:
-        vertexId = getTetrahedronVertexABEG(p, localVertexId);
+        vertexId = getTetrahedronVertexABEG(p.data(), localVertexId);
         break;
       case 3:
-        vertexId = getTetrahedronVertexBEFG(p, localVertexId);
+        vertexId = getTetrahedronVertexBEFG(p.data(), localVertexId);
         break;
       case 4:
-        vertexId = getTetrahedronVertexBFGH(p, localVertexId);
+        vertexId = getTetrahedronVertexBFGH(p.data(), localVertexId);
         break;
       case 5:
-        vertexId = getTetrahedronVertexBDGH(p, localVertexId);
+        vertexId = getTetrahedronVertexBDGH(p.data(), localVertexId);
         break;
     }
   }
@@ -1920,28 +1919,27 @@ int PeriodicImplicitTriangulation::getTetrahedronEdge(const SimplexId &tetId,
   edgeId = -1;
 
   if(dimensionality_ == 3) {
-    SimplexId p[3];
-    tetrahedronToPosition(tetId, p);
+    const auto &p = tetrahedronCoords_[tetId];
     const SimplexId id = tetId % 6;
 
     switch(id) {
       case 0:
-        edgeId = getTetrahedronEdgeABCG(p, localEdgeId);
+        edgeId = getTetrahedronEdgeABCG(p.data(), localEdgeId);
         break;
       case 1:
-        edgeId = getTetrahedronEdgeBCDG(p, localEdgeId);
+        edgeId = getTetrahedronEdgeBCDG(p.data(), localEdgeId);
         break;
       case 2:
-        edgeId = getTetrahedronEdgeABEG(p, localEdgeId);
+        edgeId = getTetrahedronEdgeABEG(p.data(), localEdgeId);
         break;
       case 3:
-        edgeId = getTetrahedronEdgeBEFG(p, localEdgeId);
+        edgeId = getTetrahedronEdgeBEFG(p.data(), localEdgeId);
         break;
       case 4:
-        edgeId = getTetrahedronEdgeBFGH(p, localEdgeId);
+        edgeId = getTetrahedronEdgeBFGH(p.data(), localEdgeId);
         break;
       case 5:
-        edgeId = getTetrahedronEdgeBDGH(p, localEdgeId);
+        edgeId = getTetrahedronEdgeBDGH(p.data(), localEdgeId);
         break;
     }
   }
@@ -1975,28 +1973,27 @@ int PeriodicImplicitTriangulation::getTetrahedronTriangle(
   triangleId = -1;
 
   if(dimensionality_ == 3) {
-    SimplexId p[3];
-    tetrahedronToPosition(tetId, p);
+    const auto &p = tetrahedronCoords_[tetId];
     const SimplexId id = tetId % 6;
 
     switch(id) {
       case 0:
-        triangleId = getTetrahedronTriangleABCG(p, localTriangleId);
+        triangleId = getTetrahedronTriangleABCG(p.data(), localTriangleId);
         break;
       case 1:
-        triangleId = getTetrahedronTriangleBCDG(p, localTriangleId);
+        triangleId = getTetrahedronTriangleBCDG(p.data(), localTriangleId);
         break;
       case 2:
-        triangleId = getTetrahedronTriangleABEG(p, localTriangleId);
+        triangleId = getTetrahedronTriangleABEG(p.data(), localTriangleId);
         break;
       case 3:
-        triangleId = getTetrahedronTriangleBEFG(p, localTriangleId);
+        triangleId = getTetrahedronTriangleBEFG(p.data(), localTriangleId);
         break;
       case 4:
-        triangleId = getTetrahedronTriangleBFGH(p, localTriangleId);
+        triangleId = getTetrahedronTriangleBFGH(p.data(), localTriangleId);
         break;
       case 5:
-        triangleId = getTetrahedronTriangleBDGH(p, localTriangleId);
+        triangleId = getTetrahedronTriangleBDGH(p.data(), localTriangleId);
         break;
     }
   }
@@ -2043,28 +2040,33 @@ int PeriodicImplicitTriangulation::getTetrahedronNeighbor(
   neighborId = -1;
 
   if(dimensionality_ == 3) {
+    const auto &p = tetrahedronCoords_[tetId];
     const SimplexId id = tetId % 6;
-    SimplexId p[3];
-    tetrahedronToPosition(tetId, p);
 
     switch(id) {
       case 0:
-        neighborId = getTetrahedronNeighborABCG(tetId, p, localNeighborId);
+        neighborId
+          = getTetrahedronNeighborABCG(tetId, p.data(), localNeighborId);
         break;
       case 1:
-        neighborId = getTetrahedronNeighborBCDG(tetId, p, localNeighborId);
+        neighborId
+          = getTetrahedronNeighborBCDG(tetId, p.data(), localNeighborId);
         break;
       case 2:
-        neighborId = getTetrahedronNeighborABEG(tetId, p, localNeighborId);
+        neighborId
+          = getTetrahedronNeighborABEG(tetId, p.data(), localNeighborId);
         break;
       case 3:
-        neighborId = getTetrahedronNeighborBEFG(tetId, p, localNeighborId);
+        neighborId
+          = getTetrahedronNeighborBEFG(tetId, p.data(), localNeighborId);
         break;
       case 4:
-        neighborId = getTetrahedronNeighborBFGH(tetId, p, localNeighborId);
+        neighborId
+          = getTetrahedronNeighborBFGH(tetId, p.data(), localNeighborId);
         break;
       case 5:
-        neighborId = getTetrahedronNeighborBDGH(tetId, p, localNeighborId);
+        neighborId
+          = getTetrahedronNeighborBDGH(tetId, p.data(), localNeighborId);
         break;
     }
   }
