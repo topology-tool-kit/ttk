@@ -419,22 +419,15 @@ int PeriodicImplicitTriangulation::getVertexEdgeInternal(
   } else if(dimensionality_ == 2) {
     edgeId = getVertexEdge2d(p.data(), localEdgeId);
   } else if(dimensionality_ == 1) {
-    // ab
     if(vertexId > 0 and vertexId < nbvoxels_[Di_]) {
-      if(localEdgeId == 0)
-        edgeId = vertexId;
-      else
-        edgeId = vertexId - 1;
+      // ab
+      edgeId = localEdgeId == 0 ? vertexId : vertexId - 1;
     } else if(vertexId == 0) {
-      if(localEdgeId == 0)
-        edgeId = vertexId; // a
-      else
-        edgeId = 0;
+      // a
+      edgeId = localEdgeId == 0 ? vertexId : 0;
     } else {
-      if(localEdgeId == 0)
-        edgeId = 0;
-      else
-        edgeId = vertexId - 1; // b
+      // b
+      edgeId = localEdgeId == 0 ? 0 : vertexId - 1;
     }
   }
 
