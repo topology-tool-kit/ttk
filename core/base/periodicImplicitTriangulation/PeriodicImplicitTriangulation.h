@@ -391,41 +391,45 @@ namespace ttk {
      */
     virtual int getTetraIncenter(SimplexId tetraId, float incenter[3]) const {
 
-      std::array<SimplexId, 4> vertexId;
-      for(int i = 0; i < (int)vertexId.size(); ++i) {
-        vertexId[i] = -1;
-        getCellVertexInternal(tetraId, i, vertexId[i]);
-      }
+      SimplexId v0{}, v1{}, v2{}, v3{};
+      getCellVertexInternal(tetraId, 0, v0);
+      getCellVertexInternal(tetraId, 1, v1);
+      getCellVertexInternal(tetraId, 2, v2);
+      getCellVertexInternal(tetraId, 3, v3);
 
-      std::array<std::array<float, 3>, vertexId.size()> p;
-      std::array<std::array<SimplexId, 3>, vertexId.size()> ind;
-      for(int i = 0; i < (int)vertexId.size(); ++i) {
-        getVertexPointInternal(vertexId[i], p[i][0], p[i][1], p[i][2]);
-        ind[i] = vertexToPositionNd(vertexId[i]);
-      }
+      std::array<float, 3> p0{}, p1{}, p2{}, p3{};
+      getVertexPointInternal(v0, p0[0], p0[1], p0[2]);
+      getVertexPointInternal(v1, p1[0], p1[1], p1[2]);
+      getVertexPointInternal(v2, p2[0], p2[1], p2[2]);
+      getVertexPointInternal(v3, p3[0], p3[1], p3[2]);
+
+      const auto &ind0 = vertexCoords_[v0];
+      const auto &ind1 = vertexCoords_[v1];
+      const auto &ind2 = vertexCoords_[v2];
+      const auto &ind3 = vertexCoords_[v3];
 
       for(int i = 0; i < dimensionality_; ++i) {
-        if(ind[0][i] == nbvoxels_[i]) {
-          p[1][i] += (ind[1][i] == 0) * dimensions_[i] * spacing_[i];
-          p[2][i] += (ind[2][i] == 0) * dimensions_[i] * spacing_[i];
-          p[3][i] += (ind[3][i] == 0) * dimensions_[i] * spacing_[i];
-        } else if(ind[1][i] == nbvoxels_[i]) {
-          p[0][i] += (ind[0][i] == 0) * dimensions_[i] * spacing_[i];
-          p[2][i] += (ind[2][i] == 0) * dimensions_[i] * spacing_[i];
-          p[3][i] += (ind[3][i] == 0) * dimensions_[i] * spacing_[i];
-        } else if(ind[2][i] == nbvoxels_[i]) {
-          p[0][i] += (ind[0][i] == 0) * dimensions_[i] * spacing_[i];
-          p[1][i] += (ind[1][i] == 0) * dimensions_[i] * spacing_[i];
-          p[3][i] += (ind[3][i] == 0) * dimensions_[i] * spacing_[i];
-        } else if(ind[3][i] == nbvoxels_[i]) {
-          p[0][i] += (ind[0][i] == 0) * dimensions_[i] * spacing_[i];
-          p[1][i] += (ind[1][i] == 0) * dimensions_[i] * spacing_[i];
-          p[2][i] += (ind[2][i] == 0) * dimensions_[i] * spacing_[i];
+        if(ind0[i] == nbvoxels_[i]) {
+          p1[i] += (ind1[i] == 0) * dimensions_[i] * spacing_[i];
+          p2[i] += (ind2[i] == 0) * dimensions_[i] * spacing_[i];
+          p3[i] += (ind3[i] == 0) * dimensions_[i] * spacing_[i];
+        } else if(ind1[i] == nbvoxels_[i]) {
+          p0[i] += (ind0[i] == 0) * dimensions_[i] * spacing_[i];
+          p2[i] += (ind2[i] == 0) * dimensions_[i] * spacing_[i];
+          p3[i] += (ind3[i] == 0) * dimensions_[i] * spacing_[i];
+        } else if(ind2[i] == nbvoxels_[i]) {
+          p0[i] += (ind0[i] == 0) * dimensions_[i] * spacing_[i];
+          p1[i] += (ind1[i] == 0) * dimensions_[i] * spacing_[i];
+          p3[i] += (ind3[i] == 0) * dimensions_[i] * spacing_[i];
+        } else if(ind3[i] == nbvoxels_[i]) {
+          p0[i] += (ind0[i] == 0) * dimensions_[i] * spacing_[i];
+          p1[i] += (ind1[i] == 0) * dimensions_[i] * spacing_[i];
+          p2[i] += (ind2[i] == 0) * dimensions_[i] * spacing_[i];
         }
       }
 
       for(int i = 0; i < 3; ++i) {
-        incenter[i] = 0.25f * (p[0][i] + p[1][i] + p[2][i] + p[3][i]);
+        incenter[i] = 0.25f * (p0[i] + p1[i] + p2[i] + p3[i]);
       }
       return 0;
     }
