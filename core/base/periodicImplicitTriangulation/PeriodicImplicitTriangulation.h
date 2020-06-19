@@ -305,11 +305,6 @@ namespace ttk {
       return 0;
     }
 
-    std::array<SimplexId, 3>
-      vertexToPositionNd(const SimplexId vertexId) const {
-      return vertexCoords_[vertexId];
-    }
-
     /**
      * Compute the barycenter of the points of the given edge identifier.
      */
