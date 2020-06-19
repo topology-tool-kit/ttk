@@ -347,42 +347,39 @@ namespace ttk {
     virtual int getTriangleIncenter(SimplexId triangleId,
                                     float incenter[3]) const {
 
-      std::array<SimplexId, 3> vertexId;
-      for(int i = 0; i < (int)vertexId.size(); ++i) {
-        getTriangleVertexInternal(triangleId, i, vertexId[i]);
-      }
+      SimplexId v0{}, v1{}, v2{};
+      getTriangleVertexInternal(triangleId, 0, v0);
+      getTriangleVertexInternal(triangleId, 1, v1);
+      getTriangleVertexInternal(triangleId, 2, v2);
 
-      std::array<std::array<float, 3>, vertexId.size()> p;
-      std::array<std::array<SimplexId, 3>, vertexId.size()> ind;
-      for(int i = 0; i < (int)vertexId.size(); ++i) {
-        getVertexPointInternal(vertexId[i], p[i][0], p[i][1], p[i][2]);
-        ind[i] = vertexToPositionNd(vertexId[i]);
-      }
+      std::array<float, 3> p0{}, p1{}, p2{};
+      getVertexPointInternal(v0, p0[0], p0[1], p0[2]);
+      getVertexPointInternal(v1, p1[0], p1[1], p1[2]);
+      getVertexPointInternal(v2, p2[0], p2[1], p2[2]);
+
+      const auto &ind0 = vertexCoords_[v0];
+      const auto &ind1 = vertexCoords_[v1];
+      const auto &ind2 = vertexCoords_[v2];
 
       for(int i = 0; i < dimensionality_; ++i) {
-        if(ind[0][i] == nbvoxels_[i]) {
-          p[1][i] += (ind[1][i] == 0) * dimensions_[i] * spacing_[i];
-          p[2][i] += (ind[2][i] == 0) * dimensions_[i] * spacing_[i];
-        } else if(ind[1][i] == nbvoxels_[i]) {
-          p[0][i] += (ind[0][i] == 0) * dimensions_[i] * spacing_[i];
-          p[2][i] += (ind[2][i] == 0) * dimensions_[i] * spacing_[i];
-        } else if(ind[2][i] == nbvoxels_[i]) {
-          p[0][i] += (ind[0][i] == 0) * dimensions_[i] * spacing_[i];
-          p[1][i] += (ind[1][i] == 0) * dimensions_[i] * spacing_[i];
+        if(ind0[i] == nbvoxels_[i]) {
+          p1[i] += (ind1[i] == 0) * dimensions_[i] * spacing_[i];
+          p2[i] += (ind2[i] == 0) * dimensions_[i] * spacing_[i];
+        } else if(ind1[i] == nbvoxels_[i]) {
+          p0[i] += (ind0[i] == 0) * dimensions_[i] * spacing_[i];
+          p2[i] += (ind2[i] == 0) * dimensions_[i] * spacing_[i];
+        } else if(ind2[i] == nbvoxels_[i]) {
+          p0[i] += (ind0[i] == 0) * dimensions_[i] * spacing_[i];
+          p1[i] += (ind1[i] == 0) * dimensions_[i] * spacing_[i];
         }
       }
 
-      std::array<float, p.size()> d;
-      for(int i = 0; i < (int)d.size(); ++i) {
-        d[i] = Geometry::distance(p[(i + 1) % 3].data(), p[(i + 2) % 3].data());
-      }
+      std::array<float, 3> d{Geometry::distance(p1.data(), p2.data()),
+                             Geometry::distance(p2.data(), p0.data()),
+                             Geometry::distance(p0.data(), p1.data())};
       const float sum = d[0] + d[1] + d[2];
-      for(int i = 0; i < (int)d.size(); ++i) {
-        d[i] = d[i] / sum;
-      }
-
       for(int i = 0; i < 3; ++i) {
-        incenter[i] = d[0] * p[0][i] + d[1] * p[1][i] + d[2] * p[2][i];
+        incenter[i] = (d[0] * p0[i] + d[1] * p1[i] + d[2] * p2[i]) / sum;
       }
 
       return 0;
