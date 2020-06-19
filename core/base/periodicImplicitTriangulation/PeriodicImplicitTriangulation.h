@@ -307,15 +307,7 @@ namespace ttk {
 
     std::array<SimplexId, 3>
       vertexToPositionNd(const SimplexId vertexId) const {
-      std::array<SimplexId, 3> p{};
-      if(dimensionality_ == 1) {
-        p[0] = vertexId;
-      } else if(dimensionality_ == 2) {
-        vertexToPosition2d(vertexId, p.data());
-      } else if(dimensionality_ == 3) {
-        vertexToPosition(vertexId, p.data());
-      }
-      return p;
+      return vertexCoords_[vertexId];
     }
 
     /**

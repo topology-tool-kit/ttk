@@ -189,10 +189,16 @@ int PeriodicImplicitTriangulation::setInputGrid(const float &xOrigin,
 }
 
 int PeriodicImplicitTriangulation::preconditionVerticesInternal() {
-  if(this->dimensionality_ != 2 && this->dimensionality_ != 3) {
-    return 1;
-  }
-  if(dimensionality_ == 2) {
+  vertexCoords_.resize(vertexNumber_);
+
+  if(dimensionality_ == 1) {
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+    for(SimplexId i = 0; i < vertexNumber_; ++i) {
+      vertexCoords_[i][0] = i;
+    }
+  } else if(dimensionality_ == 2) {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
@@ -200,7 +206,7 @@ int PeriodicImplicitTriangulation::preconditionVerticesInternal() {
       auto &p = vertexCoords_[i];
       vertexToPosition2d(i, p.data());
     }
-  } else if(dimensionality_ == 2) {
+  } else if(dimensionality_ == 3) {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
@@ -345,15 +351,12 @@ int PeriodicImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(
 #endif
 
   neighborId = -1;
+  const auto &p = vertexCoords_[vertexId];
 
   if(dimensionality_ == 3) {
-    SimplexId p[3];
-    vertexToPosition(vertexId, p);
-    neighborId = getVertexNeighbor3d(p, vertexId, localNeighborId);
+    neighborId = getVertexNeighbor3d(p.data(), vertexId, localNeighborId);
   } else if(dimensionality_ == 2) {
-    SimplexId p[2];
-    vertexToPosition2d(vertexId, p);
-    neighborId = getVertexNeighbor2d(p, vertexId, localNeighborId);
+    neighborId = getVertexNeighbor2d(p.data(), vertexId, localNeighborId);
   } else if(dimensionality_ == 1) {
     // ab
     if(vertexId > 0 and vertexId < nbvoxels_[Di_]) {
@@ -425,15 +428,12 @@ int PeriodicImplicitTriangulation::getVertexEdgeInternal(
   // D4: diagonale4 (type bg)
 
   edgeId = -1;
+  const auto &p = vertexCoords_[vertexId];
 
   if(dimensionality_ == 3) {
-    SimplexId p[3];
-    vertexToPosition(vertexId, p);
-    edgeId = getVertexEdge3d(p, localEdgeId);
+    edgeId = getVertexEdge3d(p.data(), localEdgeId);
   } else if(dimensionality_ == 2) {
-    SimplexId p[2];
-    vertexToPosition2d(vertexId, p);
-    edgeId = getVertexEdge2d(p, localEdgeId);
+    edgeId = getVertexEdge2d(p.data(), localEdgeId);
   } else if(dimensionality_ == 1) {
     // ab
     if(vertexId > 0 and vertexId < nbvoxels_[Di_]) {
@@ -501,10 +501,10 @@ int PeriodicImplicitTriangulation::getVertexTriangleInternal(
 #endif
   triangleId = -1;
 
+  const auto &p = vertexCoords_[vertexId];
+
   if(dimensionality_ == 3) {
-    SimplexId p[3];
-    vertexToPosition(vertexId, p);
-    triangleId = getVertexTriangle3d(p, localTriangleId);
+    triangleId = getVertexTriangle3d(p.data(), localTriangleId);
   }
 
   return 0;
@@ -542,15 +542,12 @@ int PeriodicImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getVertexLink)(
 #endif
 
   linkId = -1;
+  const auto &p = vertexCoords_[vertexId];
 
   if(dimensionality_ == 3) {
-    SimplexId p[3];
-    vertexToPosition(vertexId, p);
-    linkId = getVertexLink3d(p, localLinkId);
+    linkId = getVertexLink3d(p.data(), localLinkId);
   } else if(dimensionality_ == 2) {
-    SimplexId p[2];
-    vertexToPosition2d(vertexId, p);
-    linkId = getVertexLink2d(p, localLinkId); // abcd
+    linkId = getVertexLink2d(p.data(), localLinkId); // abcd
   }
 
   return 0;
@@ -599,15 +596,12 @@ int PeriodicImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getVertexStar)(
 #endif
 
   starId = -1;
+  const auto &p = vertexCoords_[vertexId];
 
   if(dimensionality_ == 3) {
-    SimplexId p[3];
-    vertexToPosition(vertexId, p);
-    starId = getVertexStar3d(p, localStarId);
+    starId = getVertexStar3d(p.data(), localStarId);
   } else if(dimensionality_ == 2) {
-    SimplexId p[2];
-    vertexToPosition2d(vertexId, p);
-    starId = getVertexStar2d(p, localStarId);
+    starId = getVertexStar2d(p.data(), localStarId);
   }
 
   return 0;
@@ -639,15 +633,13 @@ int PeriodicImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getVertexPoint)(
 #endif
 
   if(dimensionality_ == 3) {
-    SimplexId p[3];
-    vertexToPosition(vertexId, p);
+    const auto &p = vertexCoords_[vertexId];
 
     x = origin_[0] + spacing_[0] * p[0];
     y = origin_[1] + spacing_[1] * p[1];
     z = origin_[2] + spacing_[2] * p[2];
   } else if(dimensionality_ == 2) {
-    SimplexId p[2];
-    vertexToPosition2d(vertexId, p);
+    const auto &p = vertexCoords_[vertexId];
 
     if(dimensions_[0] > 1 and dimensions_[1] > 1) {
       x = origin_[0] + spacing_[0] * p[0];
