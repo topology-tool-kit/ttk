@@ -36,7 +36,7 @@ elseif(TTK_BUILD_VTK_WRAPPERS)
   add_definitions(-DVTK_VERSION_MINOR=${VTK_VERSION_MINOR})
 
   # Layout to use for the CellArray is driven by VTK version:
-  if ("${VTK_VERSION}" VERSION_GREATER_EQUAL "9.0.0")
+  if ("${VTK_VERSION}" VERSION_GREATER_EQUAL "9.0")
     set(TTK_CELL_ARRAY_LAYOUT "OffsetAndConnectivity" CACHE STRING "Layout for the cell array." FORCE)
   else()
     set(TTK_CELL_ARRAY_LAYOUT "SingleArray" CACHE STRING "Layout for the cell array." FORCE)

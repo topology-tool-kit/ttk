@@ -33,7 +33,9 @@ struct ttkOnDeleteCommand : public vtkCommand {
   vtkObject *owner_;
   DataSetToTriangulationMapType *dataSetToTriangulationMap_;
 
-  static ttkOnDeleteCommand *New();
+  static ttkOnDeleteCommand *New() {
+    return new ttkOnDeleteCommand;
+  }
   vtkTypeMacro(ttkOnDeleteCommand, vtkCommand);
 
   void Init(vtkObject *owner,
@@ -59,7 +61,6 @@ struct ttkOnDeleteCommand : public vtkCommand {
       this->dataSetToTriangulationMap_->erase(it);
   }
 };
-vtkStandardNewMacro(ttkOnDeleteCommand);
 
 // Pass input type information key
 #include <vtkInformationKey.h>
