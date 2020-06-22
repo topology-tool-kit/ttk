@@ -4,27 +4,40 @@
 #include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
 #include <vtkIntArray.h>
+#include <vtkUnstructuredGrid.h>
 
 using namespace std;
 using namespace ttk;
 
 vtkStandardNewMacro(ttkScalarFieldCriticalPoints);
+
 ttkScalarFieldCriticalPoints::ttkScalarFieldCriticalPoints() {
-
-  // init
-  ForceInputOffsetScalarField = false;
-  VertexBoundary = true;
-  VertexIds = true;
-  VertexScalars = true;
-
-  ScalarFieldId = 0;
-  OffsetFieldId = -1;
-  OffsetField = ttk::OffsetScalarFieldName;
-
-  UseAllCores = true;
+  
+  this->SetNumberOfInputPorts(1);
+  this->SetNumberOfOutputPorts(1);
 }
 
 ttkScalarFieldCriticalPoints::~ttkScalarFieldCriticalPoints() {
+}
+
+int ttkScalarFieldCriticalPoints::FillInputPortInformation(
+  int port, vtkInformation *info) {
+  if(port == 0)
+    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
+  else
+    return 0;
+
+  return 1;
+}
+
+int ttkScalarFieldCriticalPoints::FillOutputPortInformation(
+  int port, vtkInformation *info) {
+  if(port == 0)
+    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
+  else
+    return 0;
+
+  return 1;
 }
 
 template <typename VTK_TT, class triangulationType>
@@ -47,22 +60,15 @@ int ttkScalarFieldCriticalPoints::dispatch(VTK_TT *scalarValues,
   return 0;
 }
 
-int ttkScalarFieldCriticalPoints::doIt(vector<vtkDataSet *> &inputs,
-                                       vector<vtkDataSet *> &outputs) {
-  Memory m;
+int ttkScalarFieldCriticalPoints::RequestData(vtkInformation 
+*request,vtkInformationVector **inputVector,vtkInformationVector *outputVector) 
+{
+  
+  vtkDataSet *input = vtkDataSet::GetData(inputVector[0]);
+  vtkUnstructuredGrid *output = 
+    vtkUnstructuredGrid::GetData(outputVector, 0);
+  
   Timer t;
-
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(!inputs.size()) {
-    cerr
-      << "[ttkScalarFieldCriticalPoints] Error: not enough input information."
-      << endl;
-    return -1;
-  }
-#endif
-
-  vtkDataSet *input = inputs[0];
-  vtkUnstructuredGrid *output = vtkUnstructuredGrid::SafeDownCast(outputs[0]);
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!input) {
@@ -259,12 +265,5 @@ int ttkScalarFieldCriticalPoints::doIt(vector<vtkDataSet *> &inputs,
     }
   }
 
-  {
-    stringstream msg;
-    msg << "[ttkScalarFieldCriticalPoints] Memory usage: "
-        << m.getElapsedUsage() << " MB." << endl;
-    dMsg(cout, msg.str(), 2);
-  }
-
-  return 0;
+  return 1;
 }

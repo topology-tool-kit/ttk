@@ -30,7 +30,7 @@
 
 namespace ttk {
 
-  class ScalarFieldCriticalPoints : public Debug {
+  class ScalarFieldCriticalPoints : public virtual Debug {
 
   public:
     ScalarFieldCriticalPoints();
