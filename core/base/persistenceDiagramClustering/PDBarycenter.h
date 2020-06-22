@@ -86,8 +86,8 @@ namespace ttk {
     void runMatchingAuction(
       dataType *total_cost,
       std::vector<int> sizes,
-      KDTree<dataType> *kdt,
-      std::vector<KDTree<dataType> *> *correspondance_kdt_map,
+      KDTree<dataType> &kdt,
+      std::vector<KDTree<dataType> *> &correspondance_kdt_map,
       std::vector<dataType> *min_diag_price,
       std::vector<std::vector<matchingTuple>> *all_matchings,
       bool use_kdt);

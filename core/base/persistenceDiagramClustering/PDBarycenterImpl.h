@@ -130,8 +130,8 @@ template <typename dataType>
 void PDBarycenter<dataType>::runMatchingAuction(
   dataType *total_cost,
   std::vector<int> sizes,
-  KDTree<dataType> *kdt,
-  std::vector<KDTree<dataType> *> *correspondance_kdt_map,
+  KDTree<dataType> &kdt,
+  std::vector<KDTree<dataType> *> &correspondance_kdt_map,
   std::vector<dataType> *min_diag_price,
   std::vector<std::vector<matchingTuple>> *all_matchings,
   bool use_kdt) {
@@ -142,7 +142,7 @@ void PDBarycenter<dataType>::runMatchingAuction(
   for(int i = 0; i < numberOfInputs_; i++) {
     Auction<dataType> auction = Auction<dataType>(
       current_bidder_diagrams_[i], barycenter_goods_[i], wasserstein_,
-      geometrical_factor_, lambda_, 0.01, *kdt, *correspondance_kdt_map,
+      geometrical_factor_, lambda_, 0.01, kdt, correspondance_kdt_map,
       (*min_diag_price)[i], use_kdt);
     std::vector<matchingTuple> matchings;
     dataType cost = auction.run(&matchings);
@@ -872,7 +872,7 @@ std::vector<std::vector<matchingTuple>>
       barycenter.push_back(t);
     }
 
-    runMatchingAuction(&total_cost, sizes, pair.first.get(), &pair.second,
+    runMatchingAuction(&total_cost, sizes, *pair.first, pair.second,
                        &min_diag_price, &all_matchings, use_kdt);
 
     std::cout << "[PersistenceDiagramsBarycenter] Barycenter cost : "
