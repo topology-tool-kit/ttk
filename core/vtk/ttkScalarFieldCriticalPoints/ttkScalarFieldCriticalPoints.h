@@ -76,10 +76,6 @@ protected:
 
 private:
   
-  template <typename VTK_TT,
-            class triangulationType = ttk::AbstractTriangulation>
-  int dispatch(VTK_TT *scalarValues, triangulationType *triangulation);
-  
   bool ForceInputOffsetScalarField{false};
   bool VertexIds{true}, VertexScalars{true}, VertexBoundary{true};
   

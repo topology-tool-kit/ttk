@@ -4,7 +4,11 @@
 #include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
 #include <vtkIntArray.h>
+#include <vtkPointData.h>
 #include <vtkUnstructuredGrid.h>
+
+#include <ttkMacros.h>
+#include <ttkUtils.h>
 
 using namespace std;
 using namespace ttk;
@@ -40,26 +44,6 @@ int ttkScalarFieldCriticalPoints::FillOutputPortInformation(
   return 1;
 }
 
-template <typename VTK_TT, class triangulationType>
-int ttkScalarFieldCriticalPoints::dispatch(VTK_TT *scalarValues,
-                                           triangulationType *triangulation) {
-
-  ttk::ScalarFieldCriticalPoints criticalPoints;
-  criticalPoints.setupTriangulation(triangulation);
-
-  criticalPoints.setWrapper(this);
-  // 1 -- set offsets (here, let the baseCode class fill it for us)
-  criticalPoints.setSosOffsets(&sosOffsets_);
-
-  // 2 -- set up output
-  criticalPoints.setOutput(&criticalPoints_);
-
-  criticalPoints.execute<VTK_TT, triangulationType>(
-    triangulation, scalarValues);
-
-  return 0;
-}
-
 int ttkScalarFieldCriticalPoints::RequestData(vtkInformation 
 *request,vtkInformationVector **inputVector,vtkInformationVector *outputVector) 
 {
@@ -72,22 +56,21 @@ int ttkScalarFieldCriticalPoints::RequestData(vtkInformation
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!input) {
-    cerr << "[ttkScalarFieldCriticalPoints] Error: input pointer is NULL."
-         << endl;
+    printErr("Input pointer is null :(");
     return -1;
   }
 
   if(!input->GetNumberOfPoints()) {
-    cerr << "[ttkScalarFieldCriticalPoints] Error: input has no point." << endl;
+    printErr("Input has no points :(");
     return -1;
   }
 #endif
 
-  Triangulation *triangulation = ttkTriangulation::getTriangulation(input);
+  ttk::Triangulation *triangulation = ttkAlgorithm::GetTriangulation(input);
+
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!triangulation) {
-    cerr << "[ttkScalarFieldCriticalPoints] Error: input triangulation is NULL."
-         << endl;
+    printErr("Input triangulation is nullptr :(");
     return -1;
   }
 #endif
@@ -99,62 +82,44 @@ int ttkScalarFieldCriticalPoints::RequestData(vtkInformation
   // variable 'output' with the result of the computation.
   // if your wrapper produces an output of the same type of the input, you
   // should proceed in the same way.
-  vtkDataArray *inputScalarField = nullptr;
-  vtkDataArray *offsetField = nullptr;
+  
 
-  if(ScalarField.length()) {
-    inputScalarField = input->GetPointData()->GetArray(ScalarField.data());
-  } else {
-    inputScalarField = input->GetPointData()->GetArray(ScalarFieldId);
+  vtkDataArray *inputScalarField = 
+    this->GetInputArrayToProcess(0, inputVector);
+  if(!inputScalarField) return 0;
+ 
+  vtkDataArray *offsetField =
+    this->GetInputArrayToProcess(1, inputVector);
+  
+  if(!offsetField){
+    offsetField = input->GetPointData()->GetArray(ttk::OffsetScalarFieldName);
   }
 
-  if(!inputScalarField)
-    return -1;
-
-  {
-    stringstream msg;
-    msg << "[ttkScalarFieldCriticalPoints] Starting computation on field `"
-        << inputScalarField->GetName() << "'..." << endl;
-    dMsg(cout, msg.str(), infoMsg);
-  }
-
-  if(OffsetFieldId != -1) {
-    offsetField = input->GetPointData()->GetArray(OffsetFieldId);
-    if(offsetField) {
-      ForceInputOffsetScalarField = true;
-      OffsetField = offsetField->GetName();
-    }
-  }
-
-  if(ForceInputOffsetScalarField) {
-    if(OffsetField.length()) {
-
-      offsetField = input->GetPointData()->GetArray(OffsetField.data());
-      // not good... in the future, we want to use the pointer itself...
-      sosOffsets_.resize(offsetField->GetNumberOfTuples());
-      for(SimplexId i = 0; i < offsetField->GetNumberOfTuples(); i++) {
-        SimplexId offset = 0;
-        offset = offsetField->GetTuple1(i);
-        sosOffsets_[i] = offset;
-      }
-    }
-  } else if(input->GetPointData()->GetArray(ttk::OffsetScalarFieldName)) {
-    offsetField = input->GetPointData()->GetArray(OffsetScalarFieldName);
-
-    // not good... in the future, we want to use the pointer itself...
-    sosOffsets_.resize(offsetField->GetNumberOfTuples());
-    for(SimplexId i = 0; i < offsetField->GetNumberOfTuples(); i++) {
-      SimplexId offset = 0;
+  sosOffsets_.resize(inputScalarField->GetNumberOfTuples());
+  for(SimplexId i = 0; i < inputScalarField->GetNumberOfTuples(); i++) {
+    SimplexId offset = i;
+    if(offsetField){
       offset = offsetField->GetTuple1(i);
-      sosOffsets_[i] = offset;
     }
+    sosOffsets_[i] = offset;
   }
+    
+  // setting up the base layer
+  this->setupTriangulation(triangulation);
+  this->setSosOffsets(&sosOffsets_);
+  this->setOutput(&criticalPoints_);
+    
+  printMsg("Starting computation on array `" 
+    + string(inputScalarField->GetName()) + "'...");
 
   ttkVtkTemplateMacro(
-    triangulation->getType(), inputScalarField->GetDataType(),
-    (dispatch<VTK_TT, TTK_TT>((VTK_TT *)inputScalarField->GetVoidPointer(0),
-                              (TTK_TT *)triangulation->getData())));
-
+    triangulation->getType(), 
+    inputScalarField->GetDataType(),
+    this->execute<VTK_TT, TTK_TT>(
+      (TTK_TT *) triangulation->getData(),
+      (VTK_TT *) ttkUtils::GetVoidPointer(inputScalarField))
+    );
+                      
   // allocate the output
   vtkSmartPointer<vtkCharArray> vertexTypes
     = vtkSmartPointer<vtkCharArray>::New();
