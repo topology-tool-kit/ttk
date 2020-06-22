@@ -108,8 +108,10 @@ public:
         return 1;
       case ConstraintType::ABSOLUTE_PERSISTENCE:
         return 2;
-      case ConstraintType::RELATIVE_PERSISTENCE:
+      case ConstraintType::RELATIVE_PERSISTENCE_PER_DIAG:
         return 3;
+      case ConstraintType::RELATIVE_PERSISTENCE_GLOBAL:
+        return 4;
     }
     return -1;
   }

@@ -91,7 +91,9 @@ namespace ttk {
       } else if(data == 2) {
         this->Constraint = ConstraintType::ABSOLUTE_PERSISTENCE;
       } else if(data == 3) {
-        this->Constraint = ConstraintType::RELATIVE_PERSISTENCE;
+        this->Constraint = ConstraintType::RELATIVE_PERSISTENCE_PER_DIAG;
+      } else if(data == 4) {
+        this->Constraint = ConstraintType::RELATIVE_PERSISTENCE_GLOBAL;
       }
     }
 
@@ -113,7 +115,7 @@ namespace ttk {
     void enrichCurrentBidderDiagrams(
       const std::vector<BidderDiagram<double>> &bidder_diags,
       std::vector<BidderDiagram<double>> &current_bidder_diags,
-      const double maxDiagPersistence) const;
+      const std::vector<double> &maxDiagPersistence) const;
 
     int Wasserstein{2};
     double Alpha{1.0};
@@ -132,7 +134,8 @@ namespace ttk {
       FULL_DIAGRAMS,
       NUMBER_PAIRS,
       ABSOLUTE_PERSISTENCE,
-      RELATIVE_PERSISTENCE
+      RELATIVE_PERSISTENCE_PER_DIAG,
+      RELATIVE_PERSISTENCE_GLOBAL,
     };
     ConstraintType Constraint{ConstraintType::NUMBER_PAIRS};
   };
