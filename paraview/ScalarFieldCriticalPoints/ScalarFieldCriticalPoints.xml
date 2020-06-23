@@ -54,6 +54,7 @@
           label="Scalar Field" 
           command="SetInputArrayToProcess" 
           element_types="0 0 0 0 2" 
+          default_values="0"
           number_of_elements="5">
         <ArrayListDomain
           name="array_list"
@@ -85,6 +86,7 @@
           label="Input Offset Field" 
           command="SetInputArrayToProcess" 
           element_types="0 0 0 0 2" 
+          default_values="1"
           number_of_elements="5">
         <ArrayListDomain
           name="array_list"

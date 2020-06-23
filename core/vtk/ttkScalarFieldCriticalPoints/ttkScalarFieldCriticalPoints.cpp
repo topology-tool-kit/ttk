@@ -93,7 +93,7 @@ int ttkScalarFieldCriticalPoints::RequestData(vtkInformation
   if(this->GetInputArrayInformation(1))
     offsetField = this->GetInputArrayToProcess(1, inputVector);
 
-  if(!offsetField){
+  if((!offsetField) || (!ForceInputOffsetScalarField)) {
     offsetField = input->GetPointData()->GetArray(ttk::OffsetScalarFieldName);
   }
 
