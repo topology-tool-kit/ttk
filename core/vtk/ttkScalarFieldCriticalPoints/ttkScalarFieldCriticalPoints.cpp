@@ -112,14 +112,17 @@ int ttkScalarFieldCriticalPoints::RequestData(vtkInformation
   printMsg("Starting computation on array `" 
     + string(inputScalarField->GetName()) + "'...");
 
+  int status = 0;
   ttkVtkTemplateMacro(
-    triangulation->getType(), 
+    triangulation->getType(),
     inputScalarField->GetDataType(),
-    this->execute<VTK_TT, TTK_TT>(
+    (status = this->execute<VTK_TT, TTK_TT>(
       (TTK_TT *) triangulation->getData(),
-      (VTK_TT *) ttkUtils::GetVoidPointer(inputScalarField))
-    );
-                      
+      (VTK_TT *) ttkUtils::GetVoidPointer(inputScalarField)
+    ))
+  );
+  if(!status) return 0;
+  
   // allocate the output
   vtkSmartPointer<vtkCharArray> vertexTypes
     = vtkSmartPointer<vtkCharArray>::New();
