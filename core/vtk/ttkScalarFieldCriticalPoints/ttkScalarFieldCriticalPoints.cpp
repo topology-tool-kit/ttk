@@ -87,10 +87,12 @@ int ttkScalarFieldCriticalPoints::RequestData(vtkInformation
   vtkDataArray *inputScalarField = 
     this->GetInputArrayToProcess(0, inputVector);
   if(!inputScalarField) return 0;
- 
-  vtkDataArray *offsetField =
-    this->GetInputArrayToProcess(1, inputVector);
-  
+
+  vtkDataArray *offsetField = nullptr;
+
+  if(this->GetInputArrayInformation(1))
+    offsetField = this->GetInputArrayToProcess(1, inputVector);
+
   if(!offsetField){
     offsetField = input->GetPointData()->GetArray(ttk::OffsetScalarFieldName);
   }
@@ -111,6 +113,10 @@ int ttkScalarFieldCriticalPoints::RequestData(vtkInformation
     
   printMsg("Starting computation on array `" 
     + string(inputScalarField->GetName()) + "'...");
+  if(offsetField) {
+    printMsg("  Using offset array `" + string(offsetField->GetName())
+             + "'...");
+  }
 
   int status = 0;
   ttkVtkTemplateMacro(
@@ -121,8 +127,9 @@ int ttkScalarFieldCriticalPoints::RequestData(vtkInformation
       (VTK_TT *) ttkUtils::GetVoidPointer(inputScalarField)
     ))
   );
-  if(!status) return 0;
-  
+  if(status < 0)
+    return 0;
+
   // allocate the output
   vtkSmartPointer<vtkCharArray> vertexTypes
     = vtkSmartPointer<vtkCharArray>::New();

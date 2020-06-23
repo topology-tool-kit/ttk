@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vtkIntArray.h>
+
 #define TTK_COMMA ,
 
 #ifdef TTK_ENABLE_64BIT_IDS
