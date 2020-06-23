@@ -127,7 +127,7 @@ namespace ttk {
     // of the 2 critical points of the pair
     double Lambda;
     size_t MaxNumberOfPairs{20};
-    double MinPersistence{};
+    double MinPersistence{0.1};
     bool do_min_{true}, do_sad_{true}, do_max_{true};
 
     enum class ConstraintType {
@@ -137,6 +137,6 @@ namespace ttk {
       RELATIVE_PERSISTENCE_PER_DIAG,
       RELATIVE_PERSISTENCE_GLOBAL,
     };
-    ConstraintType Constraint{ConstraintType::NUMBER_PAIRS};
+    ConstraintType Constraint{ConstraintType::RELATIVE_PERSISTENCE_GLOBAL};
   };
 } // namespace ttk
