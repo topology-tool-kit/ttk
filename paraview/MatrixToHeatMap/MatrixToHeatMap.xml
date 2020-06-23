@@ -72,8 +72,7 @@
          name="Regexp"
          command="SetRegexpString"
          number_of_elements="1"
-         default_values=".*"
-         panel_visibility="advanced">
+         default_values=".*">
         <Hints>
           <PropertyWidgetDecorator type="GenericDecorator"
                                    mode="visibility"
