@@ -34,7 +34,8 @@
         label="Select Fields with a Regexp"
         command="SetSelectFieldsWithRegexp"
         number_of_elements="1"
-        default_values="0">
+        default_values="0"
+        panel_visibility="advanced">
         <BooleanDomain name="bool"/>
         <Documentation>
           Select input scalar fields matching a regular expression.
