@@ -121,19 +121,39 @@
       </DoubleVectorProperty>
 
       <IntVectorProperty
-          name="MinPointsToAdd"
-          command="SetMinPointsToAdd"
-          label="Number of Pairs"
+          name="Constraint"
+          label="Filter Pairs"
+          command="SetConstraint"
           number_of_elements="1"
-          default_values="10"
+          default_values="4"
+          panel_visibility="advanced"
+          >
+        <EnumerationDomain name="enum">
+          <Entry value="0" text="Use Full Diagrams (SLOW!)"/>
+          <Entry value="1" text="Number Of Pairs"/>
+          <Entry value="2" text="Absolute Persistence"/>
+          <Entry value="3" text="Relative Persistence (Per Diagram)"/>
+          <Entry value="4" text="Relative Persistence (All Diagrams)"/>
+        </EnumerationDomain>
+        <Documentation>
+          Filter the input diagrams pairs.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+          name="MaxNumberOfPairs"
+          command="SetMaxNumberOfPairs"
+          label="Number Of Pairs"
+          number_of_elements="1"
+          default_values="20"
           panel_visibility="advanced"
           >
         <Hints>
           <PropertyWidgetDecorator
               type="GenericDecorator"
               mode="visibility"
-              property="UseFullDiagrams"
-              value="0" />
+              property="Constraint"
+              value="1" />
         </Hints>
         <Documentation>
           Number of high-persistence diagrams pairs to take into
@@ -141,18 +161,55 @@
         </Documentation>
       </IntVectorProperty>
 
-      <IntVectorProperty
-          name="UseFullDiagrams"
-          label="Use Full Diagrams (SLOW!)"
-          command="SetUseFullDiagrams"
+      <DoubleVectorProperty
+          name="MinAbsPersistence"
+          command="SetMinPersistence"
+          label="Minimum Absolute Persistence"
           number_of_elements="1"
-          default_values="0"
-          panel_visibility="advanced">
-        <BooleanDomain name="bool"/>
+          default_values="0.0"
+          panel_visibility="advanced"
+          >
+        <Hints>
+          <PropertyWidgetDecorator
+              type="GenericDecorator"
+              mode="visibility"
+              property="Constraint"
+              value="2" />
+        </Hints>
         <Documentation>
-          Compute the distance matrix between the full diagrams.
+          Minimum absolute persistence of diagram pairs to take into
+          account to compute distance.
         </Documentation>
-      </IntVectorProperty>
+      </DoubleVectorProperty>
+
+      <DoubleVectorProperty
+          name="MinRelPersistence"
+          command="SetMinPersistence"
+          label="Minimum Relative Persistence"
+          number_of_elements="1"
+          default_values="0.1"
+          panel_visibility="advanced"
+          >
+        <DoubleRangeDomain name="range" min="0.0" max="1.0" />
+        <Hints>
+          <Expression type="or">
+            <PropertyWidgetDecorator
+                type="GenericDecorator"
+                mode="visibility"
+                property="Constraint"
+                value="3" />
+            <PropertyWidgetDecorator
+                type="GenericDecorator"
+                mode="visibility"
+                property="Constraint"
+                value="4" />
+          </Expression>
+        </Hints>
+        <Documentation>
+          Minimum relative persistence of diagram pairs to take into
+          account to compute distance.
+        </Documentation>
+      </DoubleVectorProperty>
 
       ${DEBUG_WIDGETS}
 

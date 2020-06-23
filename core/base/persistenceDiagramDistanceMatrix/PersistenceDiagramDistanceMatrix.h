@@ -77,11 +77,24 @@ namespace ttk {
     inline void setDeltaLim(const double deltaLim) {
       DeltaLim = deltaLim;
     }
-    inline void setUseFullDiagrams(const bool arg) {
-      UseFullDiagrams = arg;
+    inline void setMaxNumberOfPairs(const size_t data) {
+      MaxNumberOfPairs = data;
     }
-    inline void setMinPointsToAdd(const size_t data) {
-      MinPointsToAdd = data;
+    inline void setMinPersistence(const double data) {
+      MinPersistence = data;
+    }
+    inline void setConstraint(const int data) {
+      if(data == 0) {
+        this->Constraint = ConstraintType::FULL_DIAGRAMS;
+      } else if(data == 1) {
+        this->Constraint = ConstraintType::NUMBER_PAIRS;
+      } else if(data == 2) {
+        this->Constraint = ConstraintType::ABSOLUTE_PERSISTENCE;
+      } else if(data == 3) {
+        this->Constraint = ConstraintType::RELATIVE_PERSISTENCE_PER_DIAG;
+      } else if(data == 4) {
+        this->Constraint = ConstraintType::RELATIVE_PERSISTENCE_GLOBAL;
+      }
     }
 
   protected:
@@ -95,15 +108,14 @@ namespace ttk {
       const std::vector<BidderDiagram<double>> &diags_min,
       const std::vector<BidderDiagram<double>> &diags_sad,
       const std::vector<BidderDiagram<double>> &diags_max) const;
-    void setBidderDiagrams(
-      const size_t nInputs,
-      std::vector<std::vector<DiagramTuple>> &inputDiagrams,
-      std::vector<BidderDiagram<double>> &bidder_diags,
-      std::vector<BidderDiagram<double>> &current_bidder_diags) const;
-    double enrichCurrentBidderDiagrams(
-      const size_t min_points_to_add,
+    void
+      setBidderDiagrams(const size_t nInputs,
+                        std::vector<std::vector<DiagramTuple>> &inputDiagrams,
+                        std::vector<BidderDiagram<double>> &bidder_diags) const;
+    void enrichCurrentBidderDiagrams(
       const std::vector<BidderDiagram<double>> &bidder_diags,
-      std::vector<BidderDiagram<double>> &current_bidder_diags) const;
+      std::vector<BidderDiagram<double>> &current_bidder_diags,
+      const std::vector<double> &maxDiagPersistence) const;
 
     int Wasserstein{2};
     double Alpha{1.0};
@@ -114,8 +126,17 @@ namespace ttk {
     // pair sad-max) lambda = 0 : saddle (bad stability) lambda = 1/2 : middle
     // of the 2 critical points of the pair
     double Lambda;
-    size_t MinPointsToAdd{10};
-    bool UseFullDiagrams{false};
+    size_t MaxNumberOfPairs{20};
+    double MinPersistence{0.1};
     bool do_min_{true}, do_sad_{true}, do_max_{true};
+
+    enum class ConstraintType {
+      FULL_DIAGRAMS,
+      NUMBER_PAIRS,
+      ABSOLUTE_PERSISTENCE,
+      RELATIVE_PERSISTENCE_PER_DIAG,
+      RELATIVE_PERSISTENCE_GLOBAL,
+    };
+    ConstraintType Constraint{ConstraintType::RELATIVE_PERSISTENCE_GLOBAL};
   };
 } // namespace ttk
