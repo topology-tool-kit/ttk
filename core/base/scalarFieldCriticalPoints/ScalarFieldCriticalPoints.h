@@ -30,7 +30,7 @@
 
 namespace ttk {
 
-  class ScalarFieldCriticalPoints : public Debug {
+  class ScalarFieldCriticalPoints : public virtual Debug {
 
   public:
     ScalarFieldCriticalPoints();
@@ -196,6 +196,8 @@ int ttk::ScalarFieldCriticalPoints::execute(
              preProcess.getElapsedTime(), 1);
   }
 
+  printMsg(ttk::debug::Separator::L1);
+
   printMsg("Extracting critical points...");
 
   Timer t;
@@ -316,6 +318,8 @@ int ttk::ScalarFieldCriticalPoints::execute(
 
   printMsg("Processed " + std::to_string(vertexNumber_) + " vertices", 1,
            t.getElapsedTime(), threadNumber_);
+
+  printMsg(ttk::debug::Separator::L1);
 
   return 0;
 }

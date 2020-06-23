@@ -1,6 +1,14 @@
 #pragma once
 
+#include <vtkIntArray.h>
+
 #define TTK_COMMA ,
+
+#ifdef TTK_ENABLE_64BIT_IDS
+using ttkSimplexIdTypeArray = vtkIdTypeArray;
+#else
+using ttkSimplexIdTypeArray = vtkIntArray;
+#endif
 
 #define ttkVtkTemplateMacroCase(                         \
   dataType, triangulationType, triangulationClass, call) \

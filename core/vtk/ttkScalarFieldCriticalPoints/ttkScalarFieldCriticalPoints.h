@@ -27,64 +27,27 @@
 ///
 #pragma once
 
-// VTK includes -- to adapt
-#include <vtkDataArray.h>
-#include <vtkDataSet.h>
-#include <vtkDataSetAlgorithm.h>
-#include <vtkFiltersCoreModule.h>
-#include <vtkInformation.h>
-#include <vtkObjectFactory.h>
-#include <vtkPointData.h>
-#include <vtkSmartPointer.h>
-#include <vtkUnstructuredGrid.h>
-
 // VTK Module
 #include <ttkScalarFieldCriticalPointsModule.h>
 
+// VTK Includes
+#include <ttkAlgorithm.h>
+
 // ttk baseCode includes
-#include <Debug.h>
 #include <ScalarFieldCriticalPoints.h>
-#include <Wrapper.h>
-#include <ttkTriangulationAlgorithm.h>
 
 // in this example, this wrapper takes a data-set on the input and produces a
 // data-set on the output - to adapt.
 // see the documentation of the vtkAlgorithm class to decide from which VTK
 // class your wrapper should inherit.
 class TTKSCALARFIELDCRITICALPOINTS_EXPORT ttkScalarFieldCriticalPoints
-  : public vtkDataSetAlgorithm,
-    protected ttk::Wrapper {
+  : public ttkAlgorithm,
+    protected ttk::ScalarFieldCriticalPoints {
 
 public:
   static ttkScalarFieldCriticalPoints *New();
 
-  vtkTypeMacro(ttkScalarFieldCriticalPoints, vtkDataSetAlgorithm);
-
-  // default ttk setters
-  void SetDebugLevel(int debugLevel) {
-    setDebugLevel(debugLevel);
-    Modified();
-  }
-
-  void SetThreadNumber(int threadNumber) {
-    ThreadNumber = threadNumber;
-    SetThreads();
-  }
-
-  void SetUseAllCores(bool onOff) {
-    UseAllCores = onOff;
-    SetThreads();
-  }
-  // end of default ttk setters
-
-  vtkSetMacro(ScalarField, std::string);
-  vtkGetMacro(ScalarField, std::string);
-
-  vtkSetMacro(ScalarFieldId, int);
-  vtkGetMacro(ScalarFieldId, int);
-
-  vtkSetMacro(OffsetFieldId, int);
-  vtkGetMacro(OffsetFieldId, int);
+  vtkTypeMacro(ttkScalarFieldCriticalPoints, ttkAlgorithm);
 
   vtkGetMacro(VertexBoundary, bool);
   vtkSetMacro(VertexBoundary, bool);
@@ -98,30 +61,24 @@ public:
   vtkGetMacro(ForceInputOffsetScalarField, bool);
   vtkSetMacro(ForceInputOffsetScalarField, bool);
 
-  vtkGetMacro(OffsetField, std::string);
-  vtkSetMacro(OffsetField, std::string);
-
-  int FillOutputPortInformation(int port, vtkInformation *info) override {
-    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
-    return 1;
-  }
-
-  template <typename VTK_TT,
-            class triangulationType = ttk::AbstractTriangulation>
-  int dispatch(VTK_TT *scalarValues, triangulationType *triangulation);
-
 protected:
   ttkScalarFieldCriticalPoints();
 
   ~ttkScalarFieldCriticalPoints() override;
-
-  TTK_SETUP();
+  
+  int FillInputPortInformation(int port, vtkInformation *info) override;
+  
+  int FillOutputPortInformation(int port, vtkInformation *info) override;
+  
+  int RequestData(vtkInformation *request,
+    vtkInformationVector **inputVector,
+    vtkInformationVector *outputVector) override;
 
 private:
-  bool ForceInputOffsetScalarField;
-  int ScalarFieldId, OffsetFieldId;
-  bool VertexIds, VertexScalars, VertexBoundary;
-  std::string ScalarField, OffsetField;
+  
+  bool ForceInputOffsetScalarField{false};
+  bool VertexIds{true}, VertexScalars{true}, VertexBoundary{true};
+  
   std::vector<std::vector<std::pair<ttk::SimplexId, ttk::SimplexId>>>
     vertexLinkEdgeList_;
   std::vector<std::pair<ttk::SimplexId, char>> criticalPoints_;

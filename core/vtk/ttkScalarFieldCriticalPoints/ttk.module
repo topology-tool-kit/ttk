@@ -6,4 +6,4 @@ HEADERS
   ttkScalarFieldCriticalPoints.h
 DEPENDS
   scalarFieldCriticalPoints
-  ttkTriangulationAlgorithm
+  ttkAlgorithm

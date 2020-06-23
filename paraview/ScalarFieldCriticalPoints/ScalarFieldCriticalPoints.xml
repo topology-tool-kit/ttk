@@ -49,13 +49,13 @@
         </Documentation>
       </InputProperty>
 
-      <StringVectorProperty
-        name="Scalar Field"
-        command="SetScalarField"
-        number_of_elements="1"
-        animateable="0"
-        label="Scalar Field"
-        >
+      <StringVectorProperty 
+          name="ScalarFieldNew" 
+          label="Scalar Field" 
+          command="SetInputArrayToProcess" 
+          element_types="0 0 0 0 2" 
+          default_values="0"
+          number_of_elements="5">
         <ArrayListDomain
           name="array_list"
           default_values="0">
@@ -81,14 +81,13 @@
         </Documentation>
       </IntVectorProperty>
 
-      <StringVectorProperty
-        name="Offset"
-        command="SetOffsetField"
-        number_of_elements="1"
-        animateable="0"
-        label="Input Offset field"
-        panel_visibility="advanced"
-        >
+      <StringVectorProperty 
+          name="OffsetNew" 
+          label="Input Offset Field" 
+          command="SetInputArrayToProcess" 
+          element_types="0 0 0 0 2" 
+          default_values="1"
+          number_of_elements="5">
         <ArrayListDomain
           name="array_list"
           default_values="0">
@@ -138,59 +137,10 @@ disambiguate flat plateaus).
         </Documentation>
       </IntVectorProperty>
 
-      <IntVectorProperty
-         name="UseAllCores"
-         label="Use All Cores"
-         command="SetUseAllCores"
-         number_of_elements="1"
-         default_values="1" panel_visibility="advanced">
-        <BooleanDomain name="bool"/>
-         <Documentation>
-          Use all available cores
-         </Documentation>
-      </IntVectorProperty>
-
-      <IntVectorProperty
-         name="ThreadNumber"
-         label="Thread Number"
-         command="SetThreadNumber"
-         number_of_elements="1"
-         default_values="1" panel_visibility="advanced">
-        <IntRangeDomain name="range" min="1" max="100" />
-        <Hints>
-          <PropertyWidgetDecorator type="GenericDecorator"
-            mode="visibility"
-            property="UseAllCores"
-            value="0" />
-        </Hints>
-
-         <Documentation>
-          Thread number
-         </Documentation>
-      </IntVectorProperty>
-
-      <IntVectorProperty
-         name="DebugLevel"
-         label="Debug Level"
-         command="SetDebugLevel"
-         number_of_elements="1"
-         default_values="3" panel_visibility="advanced">
-        <IntRangeDomain name="range" min="0" max="100" />
-         <Documentation>
-           Debug level
-         </Documentation>
-      </IntVectorProperty>
-
       <PropertyGroup panel_widget="Line" label="Input options">
-        <Property name="Scalar Field" />
+        <Property name="ScalarFieldNew" />
         <Property name="With predefined offset" />
-        <Property name="Offset" />
-      </PropertyGroup>
-
-      <PropertyGroup panel_widget="Line" label="Testing">
-        <Property name="UseAllCores" />
-        <Property name="ThreadNumber" />
-        <Property name="DebugLevel" />
+        <Property name="OffsetNew" />
       </PropertyGroup>
 
       <PropertyGroup panel_widget="Line" label="Output options">
@@ -199,6 +149,8 @@ disambiguate flat plateaus).
         <Property name="With vertex scalars" />
       </PropertyGroup>
 
+      ${DEBUG_WIDGETS}
+      
       <Hints>
         <ShowInMenu category="TTK - Scalar Data" />
       </Hints>
