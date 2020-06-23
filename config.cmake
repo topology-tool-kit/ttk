@@ -14,34 +14,53 @@ set(TTK_CELL_ARRAY_LAYOUT "SingleArray" CACHE STRING "Layout for the cell array.
 set_property(CACHE TTK_CELL_ARRAY_LAYOUT PROPERTY STRINGS "SingleArray" "OffsetAndConnectivity")
 mark_as_advanced(TTK_CELL_ARRAY_LAYOUT)
 
-# Find Paraview OR VTK if needed
-if(TTK_BUILD_PARAVIEW_PLUGINS)
-  find_package(ParaView REQUIRED)
+# Find ParaView, otherwise VTK
+find_package(ParaView)
+if(ParaView_FOUND)
   # hande version manually so we do not have to include
   # files from VTK / ParaView in the code.
   # this is necessary to work with build folder directly (MacOS)
   add_definitions(-DPARAVIEW_VERSION_MAJOR=${ParaView_VERSION_MAJOR})
   add_definitions(-DPARAVIEW_VERSION_MINOR=${ParaView_VERSION_MINOR})
   # Layout to use for the CellArray is driven by ParaView version:
+  # TODO: we can even hide the option here as the user should not change it in this case.
   if ("${ParaView_VERSION}" VERSION_GREATER_EQUAL "5.8.0")
     set(TTK_CELL_ARRAY_LAYOUT "OffsetAndConnectivity" CACHE STRING "Layout for the cell array." FORCE)
   else()
     set(TTK_CELL_ARRAY_LAYOUT "SingleArray" CACHE STRING "Layout for the cell array." FORCE)
   endif()
-  # TODO: we can even hide the option here as the user should not change it in this case.
+else()
+  find_package(VTK)
+  if(VTK_FOUND)
+    # hande version manually so we do not have to include
+    # files from VTK / ParaView in the code.
+    # this is necessary to work with build folder directly (MacOS)
+    add_definitions(-DVTK_VERSION_MAJOR=${VTK_VERSION_MAJOR})
+    add_definitions(-DVTK_VERSION_MINOR=${VTK_VERSION_MINOR})
 
-elseif(TTK_BUILD_VTK_WRAPPERS)
-  find_package(VTK REQUIRED)
-  add_definitions(-DVTK_VERSION_MAJOR=${VTK_VERSION_MAJOR})
-  add_definitions(-DVTK_VERSION_MINOR=${VTK_VERSION_MINOR})
-
-  # Layout to use for the CellArray is driven by VTK version:
-  if ("${VTK_VERSION}" VERSION_GREATER_EQUAL "9.0")
-    set(TTK_CELL_ARRAY_LAYOUT "OffsetAndConnectivity" CACHE STRING "Layout for the cell array." FORCE)
-  else()
-    set(TTK_CELL_ARRAY_LAYOUT "SingleArray" CACHE STRING "Layout for the cell array." FORCE)
+    # Layout to use for the CellArray is driven by VTK version:
+    # TODO: we can even hide the option here as the user should not change it in this case.
+    if ("${VTK_VERSION}" VERSION_GREATER_EQUAL "9.0")
+      set(TTK_CELL_ARRAY_LAYOUT "OffsetAndConnectivity" CACHE STRING "Layout for the cell array." FORCE)
+    else()
+      # VTK 8.2 is not supported, 8.90 is not official. Troubles incoming if you try this.
+      # this should only works with VTK version close to the PV 5.7 internal one:
+      # tag e4e8a4df9cc67fd2bb3dbb3b1c50a25177cbfe68
+      message(WARNING "This VTK version is not supported. You may have compilation error.")
+      set(TTK_CELL_ARRAY_LAYOUT "SingleArray" CACHE STRING "Layout for the cell array." FORCE)
+    endif()
   endif()
-  # TODO: we can even hide the option here as the user should not change it in this case.
+endif()
+
+
+if(TTK_BUILD_PARAVIEW_PLUGINS)
+  if(NOT ParaView_FOUND)
+    message(FATAL_ERROR "TTK_BUILD_PARAVIEW_PLUGINS requires ParaView.")
+  endif()
+elseif(TTK_BUILD_VTK_WRAPPERS)
+  if(NOT ParaView_FOUND AND NOT VTK_FOUND)
+    message(FATAL_ERROR "TTK_BUILD_VTK_WRAPPERS requires ParaView or VTK.")
+  endif()
 endif()
 
 option(TTK_ENABLE_64BIT_IDS "Enable processing on large datasets" OFF)
