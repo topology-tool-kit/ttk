@@ -263,15 +263,6 @@ namespace ttk {
         ->setSaddleConnectorsPersistenceThreshold(threshold);
     }
 
-    int setPrioritizeSpeedOverMemory(const bool state) {
-#ifndef TTK_ENABLE_KAMIKAZE
-      if(!abstractMorseSmaleComplex_) {
-        return -1;
-      }
-#endif
-      return abstractMorseSmaleComplex_->setPrioritizeSpeedOverMemory(state);
-    }
-
     int setupTriangulation(Triangulation *const data) {
       dimensionality_ = data->getCellVertexNumber(0) - 1;
 

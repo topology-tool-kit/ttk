@@ -256,18 +256,6 @@ Computer Graphics Forum, 2012.
          </Documentation>
        </DoubleVectorProperty>
 
-       <IntVectorProperty name="PrioritizeSpeedOverMemory"
-         label="Prioritize Speed Over Memory"
-         command="SetPrioritizeSpeedOverMemory"
-         number_of_elements="1"
-         default_values="0"
-         panel_visibility="advanced">
-         <BooleanDomain name="bool"/>
-         <Documentation>
-           Prioritize speed over memory.
-         </Documentation>
-       </IntVectorProperty>
-
       <IntVectorProperty
         name="UseAllCores"
         label="Use All Cores"
@@ -349,7 +337,6 @@ Computer Graphics Forum, 2012.
         <Property name="UseAllCores" />
         <Property name="ThreadNumber" />
         <Property name="DebugLevel" />
-        <Property name="PrioritizeSpeedOverMemory" />
 <!--        <Property name="IterationThreshold"/>-->
       </PropertyGroup>
 

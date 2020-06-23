@@ -43,13 +43,6 @@ namespace ttk {
 
   namespace dcg {
     /**
-     * Type of the identifiers of the 2-separatrices.
-     * Must be the biggest integer type because it will provide more identifiers
-     * for 2-separatrices.
-     */
-    using wallId_t = unsigned long long int;
-
-    /**
      * Basic concept of cell, so it must be able to identify any cell of any
      * dimension.
      */
@@ -71,8 +64,8 @@ namespace ttk {
       }
       explicit CellExt(const int dim,
                        const SimplexId id,
-                       const std::array<SimplexId, 3> &&lowVerts,
-                       const std::array<uint8_t, 3> &&faces)
+                       const std::array<SimplexId, 3> &lowVerts,
+                       const std::array<uint8_t, 3> &faces)
         : Cell{dim, id}, lowVerts_{lowVerts}, faces_{faces} {
       }
 
@@ -294,6 +287,24 @@ namespace ttk {
       };
     };
 
+    struct VisitedMask {
+      std::vector<bool> &isVisited_;
+      std::vector<SimplexId> &visitedIds_;
+
+      VisitedMask(std::vector<bool> &isVisited,
+                  std::vector<SimplexId> &visitedIds)
+        : isVisited_{isVisited}, visitedIds_{visitedIds} {
+      }
+      ~VisitedMask() {
+        // use RAII to clean & reset referenced vectors
+        for(const auto id : this->visitedIds_) {
+          this->isVisited_[id] = false;
+        }
+        // set size to 0 but keep allocated memory
+        this->visitedIds_.clear();
+      }
+    };
+
 #ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
     using gradientType = std::vector<std::vector<std::vector<char>>>;
 #else
@@ -347,7 +358,7 @@ saddle-connectors.
        * (collecting of persistence pairs must be enabled).
        */
       int setOutputPersistencePairs(
-        std::vector<std::tuple<Cell, Cell>> *const data) {
+        std::vector<std::array<Cell, 2>> *const data) {
         outputPersistencePairs_ = data;
         return 0;
       }
@@ -797,10 +808,9 @@ in the gradient.
        * Return the VPath terminating at the given 2-saddle restricted to the
 2-separatrice of the 1-saddle.
        */
-      bool getDescendingPathThroughWall(const wallId_t wallId,
-                                        const Cell &saddle2,
+      bool getDescendingPathThroughWall(const Cell &saddle2,
                                         const Cell &saddle1,
-                                        const std::vector<wallId_t> &isVisited,
+                                        const std::vector<bool> &isVisited,
                                         std::vector<Cell> *const vpath,
                                         const bool stopIfMultiConnected = false,
                                         const bool enableCycleDetector
@@ -810,10 +820,9 @@ in the gradient.
        * Return the VPath coming from the given 1-saddle restricted to the
 2-separatrice of the 2-saddle.
        */
-      bool getAscendingPathThroughWall(const wallId_t wallId,
-                                       const Cell &saddle1,
+      bool getAscendingPathThroughWall(const Cell &saddle1,
                                        const Cell &saddle2,
-                                       const std::vector<wallId_t> &isVisited,
+                                       const std::vector<bool> &isVisited,
                                        std::vector<Cell> *const vpath,
                                        const bool stopIfMultiConnected = false,
                                        const bool enableCycleDetector
@@ -822,18 +831,16 @@ in the gradient.
       /**
        * Return the 2-separatrice terminating at the given 2-saddle.
        */
-      int getDescendingWall(const wallId_t wallId,
-                            const Cell &cell,
-                            std::vector<wallId_t> &isVisited,
+      int getDescendingWall(const Cell &cell,
+                            VisitedMask &mask,
                             std::vector<Cell> *const wall = nullptr,
                             std::set<SimplexId> *const saddles = nullptr) const;
 
       /**
        * Return the 2-separatrice coming from the given 1-saddle.
        */
-      int getAscendingWall(const wallId_t wallId,
-                           const Cell &cell,
-                           std::vector<wallId_t> &isVisited,
+      int getAscendingWall(const Cell &cell,
+                           VisitedMask &mask,
                            std::vector<Cell> *const wall = nullptr,
                            std::set<SimplexId> *const saddles = nullptr) const;
 
@@ -867,11 +874,6 @@ in the gradient.
 tetra identifier.
        */
       int getTetraIncenter(SimplexId tetraId, float incenter[3]) const;
-
-      /**
-       * Compute the geometric barycenter of a given cell.
-       */
-      int getCellIncenter(const Cell &cell, float incenter[3]) const;
 
       /**
        * Get the vertex id of with the maximum scalar field value on
@@ -944,7 +946,7 @@ tetra identifier.
         *outputCriticalPoints_points_PLVertexIdentifiers_{};
       std::vector<SimplexId> *outputCriticalPoints_points_manifoldSize_{};
 
-      std::vector<std::tuple<Cell, Cell>> *outputPersistencePairs_{};
+      std::vector<std::array<Cell, 2>> *outputPersistencePairs_{};
 
       // index of vertices sorted by ascending order
       std::vector<size_t> vertsOrder_{};

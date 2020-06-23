@@ -10,7 +10,6 @@ AbstractMorseSmaleComplex::AbstractMorseSmaleComplex()
     ComputeAscendingSeparatrices1{true}, ComputeDescendingSeparatrices1{true},
     ComputeSaddleConnectors{false}, ComputeAscendingSeparatrices2{false},
     ComputeDescendingSeparatrices2{false}, ReturnSaddleConnectors{false},
-    PrioritizeSpeedOverMemory{false},
 
     // other class members are value-initialized
     inputScalarField_{}, inputTriangulation_{}, inputOffsets_{},
@@ -134,8 +133,19 @@ int AbstractMorseSmaleComplex::setAscendingSegmentation(
   const SimplexId numberOfSeeds = maxSeeds.size();
   numberOfMaxima = numberOfSeeds;
 
+  // Triangulation method pointers for 3D
+  auto getCellFace = &Triangulation::getCellTriangle;
+  auto getFaceStarNumber = &Triangulation::getTriangleStarNumber;
+  auto getFaceStar = &Triangulation::getTriangleStar;
+  if(cellDim == 2) {
+    // Triangulation method pointers for 2D
+    getCellFace = &Triangulation::getCellEdge;
+    getFaceStarNumber = &Triangulation::getEdgeStarNumber;
+    getFaceStar = &Triangulation::getEdgeStar;
+  }
+
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
+#pragma omp parallel for num_threads(threadNumber_) schedule(dynamic)
 #endif
   for(SimplexId i = 0; i < numberOfSeeds; ++i) {
     queue<SimplexId> bfs;
@@ -156,22 +166,17 @@ int AbstractMorseSmaleComplex::setAscendingSegmentation(
 
         for(int j = 0; j < (cellDim + 1); ++j) {
           SimplexId facetId = -1;
-          if(cellDim == 2)
-            inputTriangulation_->getCellEdge(cofacetId, j, facetId);
-          else if(cellDim == 3)
-            inputTriangulation_->getCellTriangle(cofacetId, j, facetId);
+          (inputTriangulation_->*getCellFace)(cofacetId, j, facetId);
 
-          SimplexId starNumber = 0;
-          if(cellDim == 2)
-            starNumber = inputTriangulation_->getEdgeStarNumber(facetId);
-          else if(cellDim == 3)
-            starNumber = inputTriangulation_->getTriangleStarNumber(facetId);
+          SimplexId starNumber
+            = (inputTriangulation_->*getFaceStarNumber)(facetId);
           for(SimplexId k = 0; k < starNumber; ++k) {
             SimplexId neighborId = -1;
-            if(cellDim == 2)
-              inputTriangulation_->getEdgeStar(facetId, k, neighborId);
-            else if(cellDim == 3)
-              inputTriangulation_->getTriangleStar(facetId, k, neighborId);
+            (inputTriangulation_->*getFaceStar)(facetId, k, neighborId);
+
+            if(neighborId == cofacetId) {
+              continue;
+            }
 
             const SimplexId pairedCellId = discreteGradient_.getPairedCell(
               Cell(cellDim, neighborId), true);
@@ -217,7 +222,7 @@ int AbstractMorseSmaleComplex::setDescendingSegmentation(
   numberOfMinima = numberOfSeeds;
 
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
+#pragma omp parallel for num_threads(threadNumber_) schedule(dynamic)
 #endif
   for(SimplexId i = 0; i < numberOfSeeds; ++i) {
     queue<SimplexId> bfs;
@@ -246,6 +251,10 @@ int AbstractMorseSmaleComplex::setDescendingSegmentation(
             SimplexId neighborId;
             inputTriangulation_->getEdgeVertex(edgeId, k, neighborId);
 
+            if(neighborId == vertexId) {
+              continue;
+            }
+
             const SimplexId pairedCellId
               = discreteGradient_.getPairedCell(Cell(0, neighborId));
 
@@ -266,35 +275,47 @@ int AbstractMorseSmaleComplex::setFinalSegmentation(
   const SimplexId *const ascendingManifold,
   const SimplexId *const descendingManifold,
   SimplexId *const morseSmaleManifold) const {
-  vector<vector<pair<SimplexId, SimplexId>>> minTable(numberOfMinima);
 
-  SimplexId id{};
-  const SimplexId numberOfVertices = inputTriangulation_->getNumberOfVertices();
-  for(SimplexId i = 0; i < numberOfVertices; ++i) {
-    const SimplexId d = ascendingManifold[i];
-    const SimplexId a = descendingManifold[i];
+  const size_t nVerts = inputTriangulation_->getNumberOfVertices();
 
-    if(a == -1 or d == -1) {
+  // associate a unique "sparse region id" to each (ascending, descending) pair
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+  for(size_t i = 0; i < nVerts; ++i) {
+    const auto d = ascendingManifold[i];
+    const auto a = descendingManifold[i];
+    if(a == -1 || d == -1) {
       morseSmaleManifold[i] = -1;
-      continue;
+    } else {
+      morseSmaleManifold[i] = a * numberOfMaxima + d;
     }
+  }
 
-    vector<pair<SimplexId, SimplexId>> &table = minTable[a];
-    SimplexId foundId = -1;
-    for(const pair<SimplexId, SimplexId> &p : table) {
-      if(p.first == d)
-        foundId = p.second;
-    }
+  // store the "sparse region ids" by copying the morseSmaleManifold output
+  std::vector<SimplexId> sparseRegionIds(
+    morseSmaleManifold, morseSmaleManifold + nVerts);
 
-    // add new association (a,d)
-    if(foundId == -1) {
-      table.push_back(make_pair(d, id));
-      morseSmaleManifold[i] = id;
-      ++id;
-    }
-    // update to saved associationId
-    else
-      morseSmaleManifold[i] = foundId;
+  // get unique "sparse region ids"
+  PSORT(sparseRegionIds.begin(), sparseRegionIds.end());
+  const auto last = std::unique(sparseRegionIds.begin(), sparseRegionIds.end());
+  sparseRegionIds.erase(last, sparseRegionIds.end());
+
+  // "sparse region id" -> "dense region id"
+  std::map<SimplexId, size_t> sparseToDenseRegionId{};
+
+  for(size_t i = 0; i < sparseRegionIds.size(); ++i) {
+    sparseToDenseRegionId[sparseRegionIds[i]] = i;
+  }
+
+  // update region id on all vertices: "sparse id" -> "dense id"
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+  for(size_t i = 0; i < nVerts; ++i) {
+    morseSmaleManifold[i] = sparseToDenseRegionId[morseSmaleManifold[i]];
   }
 
   return 0;

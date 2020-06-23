@@ -196,16 +196,6 @@ namespace ttk {
     }
 
     /**
-     * Enable/Disable compromise on memory allowing
-     * computation the geometry of the 2-separatrices
-     * in parallel.
-     */
-    int setPrioritizeSpeedOverMemory(const bool state) {
-      PrioritizeSpeedOverMemory = state;
-      return 0;
-    }
-
-    /**
      * Set the input triangulation and preprocess the needed
      * mesh traversal queries.
      */
@@ -422,7 +412,6 @@ namespace ttk {
     bool ComputeDescendingSeparatrices2;
     bool ReturnSaddleConnectors;
     double SaddleConnectorsPersistenceThreshold;
-    bool PrioritizeSpeedOverMemory;
 
     dcg::DiscreteGradient discreteGradient_;
 
@@ -478,157 +467,203 @@ int ttk::AbstractMorseSmaleComplex::setSeparatrices1(
   const std::vector<Separatrix> &separatrices,
   const std::vector<std::vector<dcg::Cell>> &separatricesGeometry) const {
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(!outputSeparatrices1_numberOfPoints_) {
+  if(outputSeparatrices1_numberOfPoints_ == nullptr) {
     std::cerr << "[AbstractMorseSmaleComplex] 1-separatrices pointer to "
                  "numberOfPoints is null."
               << std::endl;
     return -1;
   }
-  if(!outputSeparatrices1_points_) {
+  if(outputSeparatrices1_points_ == nullptr) {
     std::cerr
       << "[AbstractMorseSmaleComplex] 1-separatrices pointer to points is null."
       << std::endl;
     return -1;
   }
-  if(!outputSeparatrices1_numberOfCells_) {
+  if(outputSeparatrices1_numberOfCells_ == nullptr) {
     std::cerr << "[AbstractMorseSmaleComplex] 1-separatrices pointer to "
                  "numberOfCells is null."
               << std::endl;
     return -1;
   }
-  if(!outputSeparatrices1_cells_) {
+  if(outputSeparatrices1_cells_ == nullptr) {
     std::cerr
       << "[AbstractMorseSmaleComplex] 1-separatrices pointer to cells is null."
       << std::endl;
     return -1;
   }
-  if(!inputScalarField_) {
+  if(inputScalarField_ == nullptr) {
     std::cerr << "[AbstractMorseSmaleComplex] 1-separatrices pointer to the "
                  "input scalar field is null."
               << std::endl;
     return -1;
   }
 #endif
-  const dataType *const scalars
-    = static_cast<const dataType *>(inputScalarField_);
-  std::vector<dataType> *outputSeparatrices1_cells_separatrixFunctionMaxima
-    = static_cast<std::vector<dataType> *>(
-      outputSeparatrices1_cells_separatrixFunctionMaxima_);
-  std::vector<dataType> *outputSeparatrices1_cells_separatrixFunctionMinima
-    = static_cast<std::vector<dataType> *>(
-      outputSeparatrices1_cells_separatrixFunctionMinima_);
-  std::vector<dataType> *outputSeparatrices1_cells_separatrixFunctionDiffs
-    = static_cast<std::vector<dataType> *>(
-      outputSeparatrices1_cells_separatrixFunctionDiffs_);
 
-  SimplexId pointId = (*outputSeparatrices1_numberOfPoints_);
-  SimplexId cellId = (*outputSeparatrices1_numberOfCells_);
-  SimplexId separatrixId = 0;
-  if(outputSeparatrices1_cells_separatrixIds_
-     and outputSeparatrices1_cells_separatrixIds_->size()) {
-    separatrixId
-      = *std::max_element(outputSeparatrices1_cells_separatrixIds_->begin(),
-                          outputSeparatrices1_cells_separatrixIds_->end())
-        + 1;
+  const auto scalars = static_cast<const dataType *>(inputScalarField_);
+  auto separatrixFunctionMaxima = static_cast<std::vector<dataType> *>(
+    outputSeparatrices1_cells_separatrixFunctionMaxima_);
+  auto separatrixFunctionMinima = static_cast<std::vector<dataType> *>(
+    outputSeparatrices1_cells_separatrixFunctionMinima_);
+  auto separatrixFunctionDiffs = static_cast<std::vector<dataType> *>(
+    outputSeparatrices1_cells_separatrixFunctionDiffs_);
+
+  // max existing separatrix id + 1 or 0
+  const SimplexId separatrixId
+    = (outputSeparatrices1_cells_separatrixIds_ != nullptr
+       && !outputSeparatrices1_cells_separatrixIds_->empty())
+        ? *std::max_element(outputSeparatrices1_cells_separatrixIds_->begin(),
+                            outputSeparatrices1_cells_separatrixIds_->end())
+            + 1
+        : 0;
+
+  // total number of separatrices points
+  auto npoints{static_cast<size_t>(*outputSeparatrices1_numberOfPoints_)};
+  // total number of separatrices cells
+  auto ncells{static_cast<size_t>(*outputSeparatrices1_numberOfCells_)};
+  // list of valid geometryId to flatten loops
+  std::vector<SimplexId> validGeomIds{};
+  // corresponding separatrix index in separatrices array
+  std::vector<SimplexId> geomIdSep{};
+  // points beginning id for each separatrix geometry
+  std::vector<size_t> geomPointsBegId{npoints};
+  // cells beginning id for each separatrix geometry
+  std::vector<size_t> geomCellsBegId{ncells};
+
+  // count total number of points and cells, flatten geometryId loops
+  for(size_t i = 0; i < separatrices.size(); ++i) {
+    const auto &sep = separatrices[i];
+    if(!sep.isValid_ || sep.geometry_.empty()) {
+      continue;
+    }
+    for(const auto geomId : sep.geometry_) {
+      const auto sepSize = separatricesGeometry[geomId].size();
+      npoints += sepSize;
+      ncells += sepSize - 1;
+      geomPointsBegId.emplace_back(npoints);
+      geomCellsBegId.emplace_back(ncells);
+      validGeomIds.emplace_back(geomId);
+      geomIdSep.emplace_back(i);
+    }
   }
 
   const int dimensionality = inputTriangulation_->getCellVertexNumber(0) - 1;
 
-  for(const Separatrix &separatrix : separatrices) {
-    if(!separatrix.isValid_)
-      continue;
-    if(!separatrix.geometry_.size())
-      continue;
+  // resize arrays
+  outputSeparatrices1_points_->resize(3 * npoints);
+  auto &points = *outputSeparatrices1_points_;
+  outputSeparatrices1_cells_->resize(3 * ncells);
+  auto &cells = *outputSeparatrices1_cells_;
+  if(outputSeparatrices1_points_smoothingMask_ != nullptr)
+    outputSeparatrices1_points_smoothingMask_->resize(npoints);
+  if(outputSeparatrices1_points_cellDimensions_ != nullptr)
+    outputSeparatrices1_points_cellDimensions_->resize(npoints);
+  if(outputSeparatrices1_points_cellIds_ != nullptr)
+    outputSeparatrices1_points_cellIds_->resize(npoints);
+  if(outputSeparatrices1_cells_sourceIds_ != nullptr)
+    outputSeparatrices1_cells_sourceIds_->resize(ncells);
+  if(outputSeparatrices1_cells_destinationIds_ != nullptr)
+    outputSeparatrices1_cells_destinationIds_->resize(ncells);
+  if(outputSeparatrices1_cells_separatrixIds_ != nullptr)
+    outputSeparatrices1_cells_separatrixIds_->resize(ncells);
+  if(outputSeparatrices1_cells_separatrixTypes_ != nullptr)
+    outputSeparatrices1_cells_separatrixTypes_->resize(ncells);
+  if(separatrixFunctionMaxima != nullptr)
+    separatrixFunctionMaxima->resize(ncells);
+  if(separatrixFunctionMinima != nullptr)
+    separatrixFunctionMinima->resize(ncells);
+  if(separatrixFunctionDiffs != nullptr)
+    separatrixFunctionDiffs->resize(ncells);
+  if(outputSeparatrices1_cells_isOnBoundary_ != nullptr)
+    outputSeparatrices1_cells_isOnBoundary_->resize(ncells);
 
-    const dcg::Cell &saddle = separatrix.source_;
-    const dcg::Cell &extremum = separatrix.destination_;
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_) schedule(dynamic)
+#endif // TTK_ENABLE_OPENMP
+  for(size_t i = 0; i < validGeomIds.size(); ++i) {
+    const auto &sep = separatrices[geomIdSep[i]];
+    const auto &sepGeom = separatricesGeometry[validGeomIds[i]];
+    const auto sepId = separatrixId + i;
+    // saddle (asc/desc sep) or saddle1 (saddle connector)
+    const dcg::Cell &src = sep.source_;
+    // extremum (asc/desc sep) or saddle2 (saddle connector)
+    const dcg::Cell &dst = sep.destination_;
 
     // get separatrix type
-    const char separatrixType = std::min(extremum.dim_, dimensionality - 1);
+    const auto saddleConnector
+      = dimensionality == 3 && src.dim_ == 1 && dst.dim_ == 2;
+    const char sepType
+      = saddleConnector ? 1 : std::min(dst.dim_, dimensionality - 1);
 
     // compute separatrix function diff
-    const dataType separatrixFunctionMaximum
-      = std::max(discreteGradient_.scalarMax<dataType>(saddle, scalars),
-                 discreteGradient_.scalarMax<dataType>(extremum, scalars));
-    const dataType separatrixFunctionMinimum
-      = std::min(discreteGradient_.scalarMin<dataType>(saddle, scalars),
-                 discreteGradient_.scalarMin<dataType>(extremum, scalars));
-    const dataType separatrixFunctionDiff
-      = separatrixFunctionMaximum - separatrixFunctionMinimum;
+    const auto sepFuncMax
+      = std::max(discreteGradient_.scalarMax<dataType>(src, scalars),
+                 discreteGradient_.scalarMax<dataType>(dst, scalars));
+    const auto sepFuncMin
+      = std::min(discreteGradient_.scalarMin<dataType>(src, scalars),
+                 discreteGradient_.scalarMin<dataType>(dst, scalars));
+    const auto sepFuncDiff = sepFuncMax - sepFuncMin;
 
     // get boundary condition
-    const char isOnBoundary = (char)discreteGradient_.isBoundary(saddle)
-                              + (char)discreteGradient_.isBoundary(extremum);
+    const auto onBoundary
+      = saddleConnector
+          ? static_cast<char>(discreteGradient_.isBoundary(src)
+                              && discreteGradient_.isBoundary(dst))
+          : static_cast<char>(discreteGradient_.isBoundary(src))
+              + static_cast<char>(discreteGradient_.isBoundary(dst));
 
-    bool isFirst = true;
-    for(const SimplexId geometryId : separatrix.geometry_) {
-      SimplexId oldPointId = -1;
-      for(auto cellIte = separatricesGeometry[geometryId].begin();
-          cellIte != separatricesGeometry[geometryId].end(); ++cellIte) {
-        const dcg::Cell &cell = *cellIte;
+    for(size_t j = 0; j < sepGeom.size(); ++j) {
+      const auto &cell = sepGeom[j];
+      std::array<float, 3> pt{};
+      inputTriangulation_->getCellIncenter(cell.id_, cell.dim_, pt.data());
 
-        float point[3];
-        discreteGradient_.getCellIncenter(cell, point);
+      // index of current point in point data arrays
+      const auto k = geomPointsBegId[i] + j;
 
-        outputSeparatrices1_points_->push_back(point[0]);
-        outputSeparatrices1_points_->push_back(point[1]);
-        outputSeparatrices1_points_->push_back(point[2]);
+      points[3 * k + 0] = pt[0];
+      points[3 * k + 1] = pt[1];
+      points[3 * k + 2] = pt[2];
 
-        if(outputSeparatrices1_points_smoothingMask_) {
-          if(cellIte == separatricesGeometry[geometryId].begin()
-             or cellIte == separatricesGeometry[geometryId].end() - 1)
-            outputSeparatrices1_points_smoothingMask_->push_back(0);
-          else
-            outputSeparatrices1_points_smoothingMask_->push_back(1);
-        }
+      if(outputSeparatrices1_points_smoothingMask_ != nullptr)
+        (*outputSeparatrices1_points_smoothingMask_)[k]
+          = (j == 0 || j == sepGeom.size() - 1) ? 0 : 1;
+      if(outputSeparatrices1_points_cellDimensions_ != nullptr)
+        (*outputSeparatrices1_points_cellDimensions_)[k] = cell.dim_;
+      if(outputSeparatrices1_points_cellIds_ != nullptr)
+        (*outputSeparatrices1_points_cellIds_)[k] = cell.id_;
 
-        if(outputSeparatrices1_points_cellDimensions_)
-          outputSeparatrices1_points_cellDimensions_->push_back(cell.dim_);
+      // skip filling cell data for first geometry point
+      if(j == 0)
+        continue;
 
-        if(outputSeparatrices1_points_cellIds_)
-          outputSeparatrices1_points_cellIds_->push_back(cell.id_);
+      // index of current cell in cell data arrays
+      const auto l = geomCellsBegId[i] + j - 1;
 
-        if(oldPointId != -1) {
-          outputSeparatrices1_cells_->push_back(2);
-          outputSeparatrices1_cells_->push_back(oldPointId);
-          outputSeparatrices1_cells_->push_back(pointId);
+      cells[3 * l + 0] = 2;
+      cells[3 * l + 1] = k - 1;
+      cells[3 * l + 2] = k;
 
-          if(outputSeparatrices1_cells_sourceIds_)
-            outputSeparatrices1_cells_sourceIds_->push_back(saddle.id_);
-          if(outputSeparatrices1_cells_destinationIds_)
-            outputSeparatrices1_cells_destinationIds_->push_back(extremum.id_);
-          if(outputSeparatrices1_cells_separatrixIds_)
-            outputSeparatrices1_cells_separatrixIds_->push_back(separatrixId);
-          if(outputSeparatrices1_cells_separatrixTypes_)
-            outputSeparatrices1_cells_separatrixTypes_->push_back(
-              separatrixType);
-          if(outputSeparatrices1_cells_separatrixFunctionMaxima)
-            outputSeparatrices1_cells_separatrixFunctionMaxima->push_back(
-              separatrixFunctionMaximum);
-          if(outputSeparatrices1_cells_separatrixFunctionMinima)
-            outputSeparatrices1_cells_separatrixFunctionMinima->push_back(
-              separatrixFunctionMinimum);
-          if(outputSeparatrices1_cells_separatrixFunctionDiffs)
-            outputSeparatrices1_cells_separatrixFunctionDiffs->push_back(
-              separatrixFunctionDiff);
-          if(outputSeparatrices1_cells_isOnBoundary_)
-            outputSeparatrices1_cells_isOnBoundary_->push_back(isOnBoundary);
-
-          ++cellId;
-          isFirst = false;
-        }
-
-        oldPointId = pointId;
-        ++pointId;
-      }
+      if(outputSeparatrices1_cells_sourceIds_ != nullptr)
+        (*outputSeparatrices1_cells_sourceIds_)[l] = src.id_;
+      if(outputSeparatrices1_cells_destinationIds_ != nullptr)
+        (*outputSeparatrices1_cells_destinationIds_)[l] = dst.id_;
+      if(outputSeparatrices1_cells_separatrixIds_ != nullptr)
+        (*outputSeparatrices1_cells_separatrixIds_)[l] = sepId;
+      if(outputSeparatrices1_cells_separatrixTypes_ != nullptr)
+        (*outputSeparatrices1_cells_separatrixTypes_)[l] = sepType;
+      if(separatrixFunctionMaxima != nullptr)
+        (*separatrixFunctionMaxima)[l] = sepFuncMax;
+      if(separatrixFunctionDiffs != nullptr)
+        (*separatrixFunctionMinima)[l] = sepFuncMin;
+      if(separatrixFunctionDiffs != nullptr)
+        (*separatrixFunctionDiffs)[l] = sepFuncDiff;
+      if(outputSeparatrices1_cells_isOnBoundary_ != nullptr)
+        (*outputSeparatrices1_cells_isOnBoundary_)[l] = onBoundary;
     }
-
-    if(!isFirst)
-      ++separatrixId;
   }
 
-  (*outputSeparatrices1_numberOfPoints_) = pointId;
-  (*outputSeparatrices1_numberOfCells_) = cellId;
+  // update pointers
+  *outputSeparatrices1_numberOfPoints_ = npoints;
+  *outputSeparatrices1_numberOfCells_ = ncells;
 
   return 0;
 }

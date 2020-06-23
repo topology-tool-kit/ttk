@@ -138,48 +138,17 @@ public:
   vtkSetMacro(SaddleConnectorsPersistenceThreshold, double);
   vtkGetMacro(SaddleConnectorsPersistenceThreshold, double);
 
-  vtkSetMacro(PrioritizeSpeedOverMemory, bool);
-  vtkGetMacro(PrioritizeSpeedOverMemory, bool);
-
   int setupTriangulation(vtkDataSet *input);
   vtkDataArray *getScalars(vtkDataSet *input);
   vtkDataArray *getOffsets(vtkDataSet *input);
 
 protected:
   template <typename VTK_TT>
-  int dispatch(
-    vtkDataArray *inputScalars,
-    vtkDataArray *inputOffsets,
-    vtkUnstructuredGrid *outputCriticalPoints,
-    vtkUnstructuredGrid *outputSeparatrices1,
-    vtkUnstructuredGrid *outputSeparatrices2,
-    ttk::SimplexId criticalPoints_numberOfPoints,
-    std::vector<float> &criticalPoints_points,
-    std::vector<char> &criticalPoints_points_cellDimensions,
-    std::vector<ttk::SimplexId> &criticalPoints_points_cellIds,
-    std::vector<char> &criticalPoints_points_isOnBoundary,
-    std::vector<ttk::SimplexId> &criticalPoints_points_PLVertexIdentifiers,
-    std::vector<ttk::SimplexId> &criticalPoints_points_manifoldSize,
-    ttk::SimplexId separatrices1_numberOfPoints,
-    std::vector<float> &separatrices1_points,
-    std::vector<char> &separatrices1_points_smoothingMask,
-    std::vector<char> &separatrices1_points_cellDimensions,
-    std::vector<ttk::SimplexId> separatrices1_points_cellIds,
-    ttk::SimplexId separatrices1_numberOfCells,
-    std::vector<ttk::SimplexId> &separatrices1_cells,
-    std::vector<ttk::SimplexId> &separatrices1_cells_sourceIds,
-    std::vector<ttk::SimplexId> &separatrices1_cells_destinationIds,
-    std::vector<ttk::SimplexId> &separatrices1_cells_separatrixIds,
-    std::vector<char> &separatrices1_cells_separatrixTypes,
-    std::vector<char> &separatrices1_cells_isOnBoundary,
-    ttk::SimplexId separatrices2_numberOfPoints,
-    std::vector<float> &separatrices2_points,
-    ttk::SimplexId separatrices2_numberOfCells,
-    std::vector<ttk::SimplexId> &separatrices2_cells,
-    std::vector<ttk::SimplexId> &separatrices2_cells_sourceIds,
-    std::vector<ttk::SimplexId> &separatrices2_cells_separatrixIds,
-    std::vector<char> &separatrices2_cells_separatrixTypes,
-    std::vector<char> &separatrices2_cells_isOnBoundary);
+  int dispatch(vtkDataArray *inputScalars,
+               vtkDataArray *inputOffsets,
+               vtkUnstructuredGrid *outputCriticalPoints,
+               vtkUnstructuredGrid *outputSeparatrices1,
+               vtkUnstructuredGrid *outputSeparatrices2);
 
   ttkMorseSmaleComplex();
   ~ttkMorseSmaleComplex() override;
@@ -209,7 +178,6 @@ private:
   int OffsetFieldId;
   int ReturnSaddleConnectors;
   double SaddleConnectorsPersistenceThreshold;
-  bool PrioritizeSpeedOverMemory;
 
   ttk::MorseSmaleComplex morseSmaleComplex_;
   ttk::Triangulation *triangulation_;
