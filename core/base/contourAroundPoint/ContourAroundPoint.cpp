@@ -129,19 +129,19 @@ void ttk::ContourAroundPoint::enqueueNeighbors(
 
 //------------------------------------------------------------------------------------------------//
 
-void ttk::ContourAroundPoint::getOutputField(float *&coords,
+void ttk::ContourAroundPoint::getOutputField(std::vector<float> &coords,
                                              SimplexId &nv,
-                                             SimplexId *&cinfos,
+                                             std::vector<LongSimplexId> &cinfos,
                                              SimplexId &nc,
-                                             float *&scalars,
-                                             int *&flags) {
+                                             std::vector<float> &scalars,
+                                             std::vector<int> &flags) {
   nv = _outFieldScalars.size();
   assert(SimplexId(_outFieldCoords.size()) == nv * 3);
 
-  coords = new float[nv * 3];
-  std::copy(_outFieldCoords.begin(), _outFieldCoords.end(), coords);
-  scalars = new float[nv];
-  std::copy(_outFieldScalars.begin(), _outFieldScalars.end(), scalars);
+  coords.resize(nv * 3);
+  std::copy(_outFieldCoords.begin(), _outFieldCoords.end(), coords.begin());
+  scalars.resize(nv);
+  std::copy(_outFieldScalars.begin(), _outFieldScalars.end(), scalars.begin());
 
   const auto nvPerC = _outNvPerC;
   nc = _outFieldCinfos.size() / nvPerC;
@@ -151,13 +151,13 @@ void ttk::ContourAroundPoint::getOutputField(float *&coords,
            << "  number of vertices per cell: " << nvPerC;
     msg(stream.str().c_str());
   }
-  cinfos = new SimplexId[nc * (nvPerC + 1)];
+  cinfos.resize(nc * (nvPerC + 1));
   for(SimplexId c = 0, tgt = 0, src = 0; c < nc; ++c) {
     cinfos[tgt++] = nvPerC;
     for(SimplexId i = 0; i < nvPerC; ++i)
       cinfos[tgt++] = _outFieldCinfos[src++];
   }
 
-  flags = new int[nv];
-  std::copy(_outFieldFlags.begin(), _outFieldFlags.end(), flags);
+  flags.resize(nv);
+  std::copy(_outFieldFlags.begin(), _outFieldFlags.end(), flags.begin());
 }

@@ -1845,6 +1845,9 @@ std::vector<dataType> PDClustering<dataType>::updateCentroidsPosition(
       dataType total_cost = 0;
       dataType wasserstein_shift = 0;
 
+      using KDTreePair = std::pair<typename KDTree<dataType>::KDTreeRoot,
+                                   typename KDTree<dataType>::KDTreeMap>;
+
       if(do_min_) {
         std::vector<std::vector<matchingTuple>> all_matchings;
         // cout<<"do_min"<<endl;
@@ -1901,14 +1904,12 @@ std::vector<dataType> PDClustering<dataType>::updateCentroidsPosition(
         //     min_price[i] = 0;
         // }
         // cout << "min diag prices and all done" << endl;
-        std::pair<KDTree<dataType> *, std::vector<KDTree<dataType> *>> pair;
+        KDTreePair pair;
         bool use_kdt = false;
         if(barycenter_computer_min_[c].getCurrentBarycenter()[0].size() > 0) {
           pair = barycenter_computer_min_[c].getKDTree();
           use_kdt = true;
         }
-        KDTree<dataType> *kdt = pair.first;
-        std::vector<KDTree<dataType> *> &correspondance_kdt_map = pair.second;
 
         // cout<<"size of bidders :
         // "<<barycenter_computer_min_[c].getCurrentBidders().size()<<endl;
@@ -1917,7 +1918,7 @@ std::vector<dataType> PDClustering<dataType>::updateCentroidsPosition(
         // "<<time_preprocess_bary.getElapsedTime()<<endl; cout<<"time_matchings
         // min "; cout<<"run matchings "<<endl;
         barycenter_computer_min_[c].runMatching(
-          &total_cost, epsilon_[0], sizes, kdt, &correspondance_kdt_map,
+          &total_cost, epsilon_[0], sizes, *pair.first, pair.second,
           &(min_diag_price->at(0)), &(min_price->at(0)), &(all_matchings),
           use_kdt, only_matchings);
         for(unsigned int ii = 0; ii < all_matchings.size(); ii++) {
@@ -1976,8 +1977,6 @@ std::vector<dataType> PDClustering<dataType>::updateCentroidsPosition(
             += computeDistance(old_centroid, centroids_min_[c], 0.01);
         }
         // cout<<"heredend"<<endl;
-
-        delete kdt;
       }
 
       // std::cout<<"here 3"<<std::endl;
@@ -2028,18 +2027,16 @@ std::vector<dataType> PDClustering<dataType>::updateCentroidsPosition(
         //     min_price[i] = 0;
         // }
 
-        std::pair<KDTree<dataType> *, std::vector<KDTree<dataType> *>> pair;
+        KDTreePair pair;
         bool use_kdt = false;
         if(barycenter_computer_sad_[c].getCurrentBarycenter()[0].size() > 0) {
           pair = barycenter_computer_sad_[c].getKDTree();
           use_kdt = true;
         }
-        KDTree<dataType> *kdt = pair.first;
-        std::vector<KDTree<dataType> *> &correspondance_kdt_map = pair.second;
 
         // std::cout<<"sad : run matchings"<<std::endl;
         barycenter_computer_sad_[c].runMatching(
-          &total_cost, epsilon_[1], sizes, kdt, &correspondance_kdt_map,
+          &total_cost, epsilon_[1], sizes, *pair.first, pair.second,
           &(min_diag_price->at(1)), &(min_price->at(1)), &(all_matchings),
           use_kdt, only_matchings);
         for(unsigned int ii = 0; ii < all_matchings.size(); ii++) {
@@ -2081,8 +2078,6 @@ std::vector<dataType> PDClustering<dataType>::updateCentroidsPosition(
         if(use_accelerated_)
           wasserstein_shift
             += computeDistance(old_centroid, centroids_saddle_[c], 0.01);
-
-        delete kdt;
       }
 
       if(do_max_) {
@@ -2142,15 +2137,14 @@ std::vector<dataType> PDClustering<dataType>::updateCentroidsPosition(
         // "<<centroids_with_price_max.size()<<"
         // "<<centroids_with_price_max[0].size()<<endl;
 
-        std::pair<KDTree<dataType> *, std::vector<KDTree<dataType> *>> pair;
+        KDTreePair pair;
         bool use_kdt = false;
         if(barycenter_computer_max_[c].getCurrentBarycenter()[0].size() > 0) {
           pair = barycenter_computer_max_[c].getKDTree();
           use_kdt = true;
         }
+
         // cout<<"here?"<<endl;
-        KDTree<dataType> *kdt = pair.first;
-        std::vector<KDTree<dataType> *> &correspondance_kdt_map = pair.second;
 
         // cout<<"max time_preprocess_bary
         // "<<time_preprocess_bary.getElapsedTime()<<endl; std::cout<<"max : run
@@ -2196,7 +2190,7 @@ std::vector<dataType> PDClustering<dataType>::updateCentroidsPosition(
         // // cout<<"running matchings max"<<endl;
         // cout<<"size centroid "<<centroids_with_price_max[c].size()<<endl;
         barycenter_computer_max_[c].runMatching(
-          &total_cost, epsilon_[2], sizes, kdt, &correspondance_kdt_map,
+          &total_cost, epsilon_[2], sizes, *pair.first, pair.second,
           &(min_diag_price->at(2)), &(min_price->at(2)), &(all_matchings),
           use_kdt, only_matchings);
         for(unsigned int ii = 0; ii < all_matchings.size(); ii++) {
@@ -2252,11 +2246,6 @@ std::vector<dataType> PDClustering<dataType>::updateCentroidsPosition(
             += computeDistance(old_centroid, centroids_max_[c], 0.01);
           // cout<<"here end"<<endl;
         }
-        delete kdt;
-        // for(unsigned int i_kdt=0; i_kdt<correspondance_kdt_map.size();
-        // i_kdt++){
-        //     delete correspondance_kdt_map[i_kdt];
-        // }
       }
 
       cost_ = cost_min_ + cost_sad_ + cost_max_;

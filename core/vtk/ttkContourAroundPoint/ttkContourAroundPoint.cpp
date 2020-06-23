@@ -226,18 +226,14 @@ bool ttkContourAroundPoint::process() {
 //------------------------------------------------------------------------------------------------//
 
 bool ttkContourAroundPoint::postprocess() {
-  float *coordsBuf;
   ttk::SimplexId nv;
-  ttk::SimplexId *cinfosBuf;
   ttk::SimplexId nc;
-  float *scalarsBuf;
-  int *flagsBuf;
   _wrappedModule.getOutputField(
-    coordsBuf, nv, cinfosBuf, nc, scalarsBuf, flagsBuf);
+    coordsBuf_, nv, cinfosBuf_, nc, scalarsBuf_, flagsBuf_);
   if(nv == 0) // very fine area filter
     return true;
 
-  const auto nvPerC = cinfosBuf[0];
+  const auto nvPerC = cinfosBuf_[0];
   if(!(nvPerC == 2 || nvPerC == 3)) {
     vtkErrorMacro("Invalid number of vertices per cell: "
                   + std::to_string(nvPerC) + ". Must be 2 or 3");
@@ -253,7 +249,7 @@ bool ttkContourAroundPoint::postprocess() {
   }
 
   for(ttk::SimplexId c = 0, i = 0; c < nc; ++c) {
-    const auto n = cinfosBuf[i];
+    const auto n = cinfosBuf_[i];
     if(n != nvPerC) {
       vtkErrorMacro("Output cell " + std::to_string(c) + " has "
                     + std::to_string(n) + " vertices. " + "Expected "
@@ -265,43 +261,27 @@ bool ttkContourAroundPoint::postprocess() {
 #endif
 
   const std::size_t nEntriesPerC = nvPerC + 1;
-  auto cinfosBufVtk = reinterpret_cast<vtkIdType *>(cinfosBuf);
-  if(!std::is_same<ttk::SimplexId, vtkIdType>::value) {
-    const std::size_t n = nc * nEntriesPerC;
-    cinfosBufVtk = new vtkIdType[n];
-    for(std::size_t i = 0; i < n; ++i)
-      cinfosBufVtk[i] = vtkIdType(cinfosBuf[i]);
-    delete[] cinfosBuf;
-  }
-
-  // Pass ownership of the heap-allocated raw array to the respective
-  // vtkDataArray.
-  const int wantSave = 0;
-  // Use `delete[]` instead of the VTK default `free()`.
-  // (The enum is independent of the template type - just use float.)
-  const int delMethod
-    = VTK_AOS_DATA_ARRAY_TEMPLATE<float>::DeleteMethod::VTK_DATA_ARRAY_DELETE;
 
   auto points = vtkSmartPointer<vtkPoints>::New();
   auto coordArr = vtkSmartPointer<vtkFloatArray>::New();
   coordArr->SetNumberOfComponents(3);
-  coordArr->SetArray(coordsBuf, nv * 3, wantSave, delMethod);
+  coordArr->SetArray(coordsBuf_.data(), nv * 3, 1);
   points->SetData(coordArr);
   _out->SetPoints(points);
 
   auto cells = vtkSmartPointer<vtkCellArray>::New();
   auto cinfoArr = vtkSmartPointer<vtkIdTypeArray>::New();
-  cinfoArr->SetArray(cinfosBufVtk, nc * nEntriesPerC, wantSave, delMethod);
+  cinfoArr->SetArray(cinfosBuf_.data(), nc * nEntriesPerC, 1);
   cells->SetCells(nc, cinfoArr);
   _out->SetCells(cellType, cells);
 
   auto scalarArr = vtkFloatArray::New();
-  scalarArr->SetArray(scalarsBuf, nv, wantSave, delMethod);
+  scalarArr->SetArray(scalarsBuf_.data(), nv, 1);
   scalarArr->SetName(ui_scalars.c_str());
   _out->GetPointData()->AddArray(scalarArr);
 
   auto flagArr = vtkIntArray::New();
-  flagArr->SetArray(flagsBuf, nv, wantSave, delMethod);
+  flagArr->SetArray(flagsBuf_.data(), nv, 1);
   flagArr->SetName("isMax");
   _out->GetPointData()->AddArray(flagArr);
 

@@ -190,5 +190,10 @@ private:
   std::vector<int> _flags;
   vtkSmartPointer<vtkUnstructuredGrid> _out;
 
+  std::vector<float> coordsBuf_{};
+  std::vector<ttk::LongSimplexId> cinfosBuf_{};
+  std::vector<float> scalarsBuf_{};
+  std::vector<int> flagsBuf_{};
+
   ttk::ContourAroundPoint _wrappedModule;
 };

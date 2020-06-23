@@ -531,21 +531,18 @@ int ZeroSkeleton::buildVertexStars(
   printMsg("Building vertex stars", 0, 0, threadNumber_,
            ttk::debug::LineMode::REPLACE);
 
-  vertexStars.resize(vertexNumber);
-  for(SimplexId i = 0; i < vertexNumber; i++)
-    vertexStars[i].reserve(32);
+  std::vector<std::vector<std::vector<SimplexId>>> zeroSkelThr(threadNumber_);
+  for(auto &vi : zeroSkelThr) {
+    vi.resize(vertexNumber);
+    for(auto &vij : vi) {
+      vij.reserve(32);
+    }
+  }
 
-  vector<vector<vector<SimplexId>> *> threadedZeroSkeleton(threadNumber_);
-  if(threadNumber_ == 1) {
-    threadedZeroSkeleton[0] = &vertexStars;
-  } else {
-    for(ThreadId i = 0; i < threadNumber_; i++) {
-      threadedZeroSkeleton[i] = new vector<vector<SimplexId>>();
-      threadedZeroSkeleton[i]->resize(vertexNumber);
-      for(SimplexId j = 0; j < (SimplexId)threadedZeroSkeleton[i]->size();
-          j++) {
-        (*threadedZeroSkeleton[i])[j].reserve(32);
-      }
+  if(threadNumber_ > 1) {
+    vertexStars.resize(vertexNumber);
+    for(auto &vs : vertexStars) {
+      vs.reserve(32);
     }
   }
 
@@ -564,11 +561,10 @@ int ZeroSkeleton::buildVertexStars(
 
     const SimplexId nbVertCell = cellArray.getCellVertexNumber(cid);
     for(SimplexId j = 0; j < nbVertCell; j++) {
-      (*threadedZeroSkeleton[threadId])[cellArray.getCellVertex(cid, j)]
-        .emplace_back(cid);
+      zeroSkelThr[threadId][cellArray.getCellVertex(cid, j)].emplace_back(cid);
     }
 
-    if(debugLevel_ >= (int)(debug::Priority::INFO)) {
+    if(debugLevel_ >= (int)(debug::Priority::INFO) && threadNumber_ == 1) {
       if(!(cid % ((cellNumber) / timeBuckets))) {
         printMsg("Building vertex stars", (cid / (float)cellNumber),
                  t.getElapsedTime(), threadNumber_, debug::LineMode::REPLACE);
@@ -578,34 +574,24 @@ int ZeroSkeleton::buildVertexStars(
 
   if(threadNumber_ > 1) {
     // now merge the thing
-    for(ThreadId i = 0; i < threadNumber_; i++) {
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif
+    for(size_t j = 0; j < vertexStars.size(); j++) {
+      auto &dst = vertexStars[j];
 
-      // looping on vertices
-      const LongSimplexId nbVertsI = threadedZeroSkeleton[i]->size();
-      for(SimplexId j = 0; j < nbVertsI; j++) {
+      for(size_t i = 0; i < zeroSkelThr.size(); ++i) {
+        const auto &vij = zeroSkelThr[i][j];
 
         // looping on the vertex star
-        const SimplexId nbVertsStarJ = (*threadedZeroSkeleton[i])[j].size();
-        for(SimplexId k = 0; k < nbVertsStarJ; k++) {
-
-          bool hasFound = false;
-          if(threadNumber_) {
-            for(SimplexId l = 0; l < (SimplexId)vertexStars[j].size(); l++) {
-              if(vertexStars[j][l] == (*threadedZeroSkeleton[i])[j][k]) {
-                hasFound = true;
-                break;
-              }
-            }
-          }
-          if(!hasFound)
-            vertexStars[j].emplace_back((*threadedZeroSkeleton[i])[j][k]);
+        for(size_t k = 0; k < vij.size(); k++) {
+          if(std::find(dst.begin(), dst.end(), vij[k]) == dst.end())
+            dst.emplace_back(vij[k]);
         }
       }
     }
-
-    for(ThreadId i = 0; i < threadNumber_; i++) {
-      delete threadedZeroSkeleton[i];
-    }
+  } else {
+    vertexStars = std::move(zeroSkelThr[0]);
   }
 
   printMsg("Built " + std::to_string(vertexNumber) + " vertex stars", 1,

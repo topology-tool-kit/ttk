@@ -450,12 +450,6 @@ namespace ttk {
         }
       }
 
-      // 	for(int i=0; i<numberOfInputs_; i++){
-      // 		delete data_min[i];
-      // 		delete data_sad[i];
-      // 		delete data_max[i];
-      // 	}
-
       if(debugLevel_ > 0) {
         std::cout << "[PersistenceDiagramBarycenter] Total cost : "
                   << total_cost << std::endl;

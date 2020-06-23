@@ -58,9 +58,7 @@ namespace ttk {
       // geom_pair_length_[1] = 0;
       // geom_pair_length_[2] = 0;
     }
-    ~AuctionActor(){
-      // delete geom_pair_length_;
-    };
+    ~AuctionActor() = default;
 
     void SetCoordinates(dataType &x, dataType &y);
     void SetCriticalCoordinates(float coords_x, float coords_y, float coords_z);

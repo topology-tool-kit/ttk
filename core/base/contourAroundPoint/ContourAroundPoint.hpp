@@ -82,12 +82,12 @@ namespace ttk {
      * @param nc Number of cells.
      * @param scalars Scalar value for each vertex.
      */
-    void getOutputField(float *&coords,
+    void getOutputField(std::vector<float> &coords,
                         SimplexId &nv,
-                        SimplexId *&cinfos,
+                        std::vector<LongSimplexId> &cinfos,
                         SimplexId &nc,
-                        float *&scalars,
-                        int *&flags);
+                        std::vector<float> &scalars,
+                        std::vector<int> &flags);
 
     // NOTE code-clone from vtk/ttkContourAroundPoint
     /// Override this method in order to always prepend a class- and
