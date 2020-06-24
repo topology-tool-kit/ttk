@@ -349,112 +349,112 @@ int ImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getVertexNeighbor)(
 
   switch(vertexPositions_[vertexId]) {
     case VertexPosition::CENTER_3D:
-      neighborId = getVertexNeighborABCDEFGH(vertexId, localNeighborId);
+      neighborId = vertexId + this->vertexNeighborABCDEFGH_[localNeighborId];
       break;
     case VertexPosition::FRONT_FACE_3D:
-      neighborId = getVertexNeighborABDC(vertexId, localNeighborId);
+      neighborId = vertexId + this->vertexNeighborABCD_[localNeighborId];
       break;
     case VertexPosition::BACK_FACE_3D:
-      neighborId = getVertexNeighborEFHG(vertexId, localNeighborId);
+      neighborId = vertexId + this->vertexNeighborEFGH_[localNeighborId];
       break;
     case VertexPosition::TOP_FACE_3D:
-      neighborId = getVertexNeighborAEFB(vertexId, localNeighborId);
+      neighborId = vertexId + this->vertexNeighborAEFB_[localNeighborId];
       break;
     case VertexPosition::BOTTOM_FACE_3D:
-      neighborId = getVertexNeighborGHDC(vertexId, localNeighborId);
+      neighborId = vertexId + this->vertexNeighborGHDC_[localNeighborId];
       break;
     case VertexPosition::LEFT_FACE_3D:
-      neighborId = getVertexNeighborAEGC(vertexId, localNeighborId);
+      neighborId = vertexId + this->vertexNeighborAEGC_[localNeighborId];
       break;
     case VertexPosition::RIGHT_FACE_3D:
-      neighborId = getVertexNeighborBFHD(vertexId, localNeighborId);
+      neighborId = vertexId + this->vertexNeighborBFHD_[localNeighborId];
       break;
     case VertexPosition::TOP_FRONT_EDGE_3D: // ab
-      neighborId = getVertexNeighborAB(vertexId, localNeighborId);
+      neighborId = vertexId + this->vertexNeighborAB_[localNeighborId];
       break;
     case VertexPosition::BOTTOM_FRONT_EDGE_3D: // cd
-      neighborId = getVertexNeighborCD(vertexId, localNeighborId);
+      neighborId = vertexId + this->vertexNeighborCD_[localNeighborId];
       break;
     case VertexPosition::LEFT_FRONT_EDGE_3D: // ac
-      neighborId = getVertexNeighborAC(vertexId, localNeighborId);
+      neighborId = vertexId + this->vertexNeighborAC_[localNeighborId];
       break;
     case VertexPosition::RIGHT_FRONT_EDGE_3D: // bd
-      neighborId = getVertexNeighborBD(vertexId, localNeighborId);
+      neighborId = vertexId + this->vertexNeighborBD_[localNeighborId];
       break;
     case VertexPosition::TOP_BACK_EDGE_3D: // ef
-      neighborId = getVertexNeighborEF(vertexId, localNeighborId);
+      neighborId = vertexId + this->vertexNeighborEF_[localNeighborId];
       break;
     case VertexPosition::BOTTOM_BACK_EDGE_3D: // gh
-      neighborId = getVertexNeighborGH(vertexId, localNeighborId);
+      neighborId = vertexId + this->vertexNeighborGH_[localNeighborId];
       break;
     case VertexPosition::LEFT_BACK_EDGE_3D: // eg
-      neighborId = getVertexNeighborEG(vertexId, localNeighborId);
+      neighborId = vertexId + this->vertexNeighborEG_[localNeighborId];
       break;
     case VertexPosition::RIGHT_BACK_EDGE_3D: // fh
-      neighborId = getVertexNeighborFH(vertexId, localNeighborId);
+      neighborId = vertexId + this->vertexNeighborFH_[localNeighborId];
       break;
     case VertexPosition::TOP_LEFT_EDGE_3D: // ae
-      neighborId = getVertexNeighborAE(vertexId, localNeighborId);
+      neighborId = vertexId + this->vertexNeighborAE_[localNeighborId];
       break;
     case VertexPosition::TOP_RIGHT_EDGE_3D: // bf
-      neighborId = getVertexNeighborBF(vertexId, localNeighborId);
+      neighborId = vertexId + this->vertexNeighborBF_[localNeighborId];
       break;
     case VertexPosition::BOTTOM_LEFT_EDGE_3D: // cg
-      neighborId = getVertexNeighborCG(vertexId, localNeighborId);
+      neighborId = vertexId + this->vertexNeighborCG_[localNeighborId];
       break;
     case VertexPosition::BOTTOM_RIGHT_EDGE_3D: // dh
-      neighborId = getVertexNeighborDH(vertexId, localNeighborId);
+      neighborId = vertexId + this->vertexNeighborDH_[localNeighborId];
       break;
     case VertexPosition::TOP_LEFT_FRONT_CORNER_3D: // a
-      neighborId = getVertexNeighborA(vertexId, localNeighborId);
+      neighborId = vertexId + this->vertexNeighborA_[localNeighborId];
       break;
     case VertexPosition::TOP_RIGHT_FRONT_CORNER_3D: // b
-      neighborId = getVertexNeighborB(vertexId, localNeighborId);
+      neighborId = vertexId + this->vertexNeighborB_[localNeighborId];
       break;
     case VertexPosition::BOTTOM_LEFT_FRONT_CORNER_3D: // c
-      neighborId = getVertexNeighborC(vertexId, localNeighborId);
+      neighborId = vertexId + this->vertexNeighborC_[localNeighborId];
       break;
     case VertexPosition::BOTTOM_RIGHT_FRONT_CORNER_3D: // d
-      neighborId = getVertexNeighborD(vertexId, localNeighborId);
+      neighborId = vertexId + this->vertexNeighborD_[localNeighborId];
       break;
     case VertexPosition::TOP_LEFT_BACK_CORNER_3D: // e
-      neighborId = getVertexNeighborE(vertexId, localNeighborId);
+      neighborId = vertexId + this->vertexNeighborE_[localNeighborId];
       break;
     case VertexPosition::TOP_RIGHT_BACK_CORNER_3D: // f
-      neighborId = getVertexNeighborF(vertexId, localNeighborId);
+      neighborId = vertexId + this->vertexNeighborF_[localNeighborId];
       break;
     case VertexPosition::BOTTOM_LEFT_BACK_CORNER_3D: // g
-      neighborId = getVertexNeighborG(vertexId, localNeighborId);
+      neighborId = vertexId + this->vertexNeighborG_[localNeighborId];
       break;
     case VertexPosition::BOTTOM_RIGHT_BACK_CORNER_3D: // h
-      neighborId = getVertexNeighborH(vertexId, localNeighborId);
+      neighborId = vertexId + this->vertexNeighborH_[localNeighborId];
       break;
     case VertexPosition::CENTER_2D:
-      neighborId = getVertexNeighbor2dABCD(vertexId, localNeighborId);
+      neighborId = vertexId + this->vertexNeighbor2dABCD_[localNeighborId];
       break;
     case VertexPosition::TOP_EDGE_2D:
-      neighborId = getVertexNeighbor2dAB(vertexId, localNeighborId);
+      neighborId = vertexId + this->vertexNeighbor2dAB_[localNeighborId];
       break;
     case VertexPosition::BOTTOM_EDGE_2D:
-      neighborId = getVertexNeighbor2dCD(vertexId, localNeighborId);
+      neighborId = vertexId + this->vertexNeighbor2dCD_[localNeighborId];
       break;
     case VertexPosition::LEFT_EDGE_2D:
-      neighborId = getVertexNeighbor2dAC(vertexId, localNeighborId);
+      neighborId = vertexId + this->vertexNeighbor2dAC_[localNeighborId];
       break;
     case VertexPosition::RIGHT_EDGE_2D:
-      neighborId = getVertexNeighbor2dBD(vertexId, localNeighborId);
+      neighborId = vertexId + this->vertexNeighbor2dBD_[localNeighborId];
       break;
     case VertexPosition::TOP_LEFT_CORNER_2D: // a
-      neighborId = getVertexNeighbor2dA(vertexId, localNeighborId);
+      neighborId = vertexId + this->vertexNeighbor2dA_[localNeighborId];
       break;
     case VertexPosition::TOP_RIGHT_CORNER_2D: // b
-      neighborId = getVertexNeighbor2dB(vertexId, localNeighborId);
+      neighborId = vertexId + this->vertexNeighbor2dB_[localNeighborId];
       break;
     case VertexPosition::BOTTOM_LEFT_CORNER_2D: // c
-      neighborId = getVertexNeighbor2dC(vertexId, localNeighborId);
+      neighborId = vertexId + this->vertexNeighbor2dC_[localNeighborId];
       break;
     case VertexPosition::BOTTOM_RIGHT_CORNER_2D: // d
-      neighborId = getVertexNeighbor2dD(vertexId, localNeighborId);
+      neighborId = vertexId + this->vertexNeighbor2dD_[localNeighborId];
       break;
     case VertexPosition::CENTER_1D:
       neighborId = (localNeighborId == 0 ? vertexId + 1 : vertexId - 1);
@@ -2796,6 +2796,350 @@ int ImplicitTriangulation::preconditionVerticesInternal() {
       }
     }
   }
+  return 0;
+}
+
+int ImplicitTriangulation::preconditionVertexNeighborsInternal() {
+  // V(abcdefgh)=V(g)+V(d)::{g,h}+V(h)::{g}+V(b)::{c,d,g,h}
+  this->vertexNeighborABCDEFGH_ = {
+    -vshift_[0] - vshift_[1], // a
+    1 - vshift_[0] - vshift_[1], // b
+    -vshift_[1], // c
+    1 - vshift_[1], // d
+    -vshift_[0], // e
+    1 - vshift_[0], // f
+    1, // h
+    1 + vshift_[1], // V(d)::{g}
+    vshift_[1], // V(d)::{h}
+    -1, // V(h)::{g}
+    -1 + vshift_[0], // V(b)::{c}
+    vshift_[0], // V(b)::{d}
+    -1 + vshift_[0] + vshift_[1], // V(b)::{g}
+    vshift_[0] + vshift_[1] // V(b)::{h}
+  };
+
+  // V(abdc)=V(b)+V(d)::{b}+V(c)::{b}+V(a)::{b}
+  this->vertexNeighborABCD_ = {
+    -1, // a
+    -1 + vshift_[0], // c
+    vshift_[0], // d
+    -1 + vshift_[1], // e
+    vshift_[1], // f
+    -1 + vshift_[0] + vshift_[1], // g
+    vshift_[0] + vshift_[1], // h
+    -vshift_[0], // V(d)::{b}
+    1 - vshift_[0], // V(c)::{b}
+    1, // V(a)::{b}
+  };
+  // V(efhg)=V(g)+V(h)::{g}+V(f)::{g,h}
+  this->vertexNeighborEFGH_ = {
+    -vshift_[0] - vshift_[1], // a
+    1 - vshift_[0] - vshift_[1], // b
+    -vshift_[1], // c
+    1 - vshift_[1], // d
+    -vshift_[0], // e
+    1 - vshift_[0], // f
+    1, // h
+    -1, // V(h)::{g}
+    -1 + vshift_[0], // V(f)::{g}
+    vshift_[0], // V(f)::{h}
+  };
+  // V(aefb)=V(b)+V(a)::{b}+V(e)::{b}+V(f)::{b}
+  this->vertexNeighborAEFB_ = {
+    -1, // a
+    -1 + vshift_[0], // c
+    vshift_[0], // d
+    -1 + vshift_[1], // e
+    vshift_[1], // f
+    -1 + vshift_[0] + vshift_[1], // g
+    vshift_[0] + vshift_[1], // h
+    1, // V(a)::{b}
+    1 - vshift_[1], // V(e)::{b}
+    -vshift_[1], // V(f)::{b}
+  };
+  // V(ghdc)=V(g)+V(h)::{g}+V(d)::{g,h}
+  this->vertexNeighborGHDC_ = {
+    -vshift_[0] - vshift_[1], // a
+    1 - vshift_[0] - vshift_[1], // b
+    -vshift_[1], // c
+    1 - vshift_[1], // d
+    -vshift_[0], // e
+    1 - vshift_[0], // f
+    1, // h
+    -1, // V(h)::{g}
+    -1 + vshift_[1], // V(d)::{g}
+    vshift_[1] // V(d)::{h}
+  };
+  // V(aegc)=V(g)+V(a)::{c,g}+V(c)::{g}
+  this->vertexNeighborAEGC_ = {
+    -vshift_[0] - vshift_[1], // a
+    1 - vshift_[0] - vshift_[1], // b
+    -vshift_[1], // c
+    1 - vshift_[1], // d
+    -vshift_[0], // e
+    1 - vshift_[0], // f
+    1, // h
+    vshift_[0], // V(a)::{c}
+    vshift_[0] + vshift_[1], // V(a)::{g}
+    vshift_[1], // V(c)::{g}
+  };
+  // V(bfhd)=V(b)+V(f)::{b}+V(h)::{b}+V(d)::{b}
+  this->vertexNeighborBFHD_ = {
+    -1, // a
+    -1 + vshift_[0], // c
+    vshift_[0], // d
+    -1 + vshift_[1], // e
+    vshift_[1], // f
+    -1 + vshift_[0] + vshift_[1], // g
+    vshift_[0] + vshift_[1], // h
+    -vshift_[1], // V(f)::{b}
+    -vshift_[0] - vshift_[1], // V(h)::{b}
+    -vshift_[0], // V(d)::{b}
+  };
+
+  // V(ab)=V(b)+V(a)::{b}
+  this->vertexNeighborAB_ = {
+    -1, // a
+    -1 + vshift_[0], // c
+    vshift_[0], // d
+    -1 + vshift_[1], // e
+    vshift_[1], // f
+    -1 + vshift_[0] + vshift_[1], // g
+    vshift_[0] + vshift_[1], // h
+    1, // V(a)::{b}
+  };
+  // V(bd)=V(b)+V(d)::{b}
+  this->vertexNeighborBD_ = {
+    -1, // a
+    -1 + vshift_[0], // c
+    vshift_[0], // d
+    -1 + vshift_[1], // e
+    vshift_[1], // f
+    -1 + vshift_[0] + vshift_[1], // g
+    vshift_[0] + vshift_[1], // h
+    -vshift_[0], // V(d)::{b}
+  };
+  // V(gh)=V(g)+V(h)::{g}
+  this->vertexNeighborGH_ = {
+    -vshift_[0] - vshift_[1], // a
+    1 - vshift_[0] - vshift_[1], // b
+    -vshift_[1], // c
+    1 - vshift_[1], // d
+    -vshift_[0], // e
+    1 - vshift_[0], // f
+    1, // h
+    -1, // V(h)::{g}
+  };
+  // V(eg)=V(g)+V(e)::{g}
+  this->vertexNeighborEG_ = {
+    -vshift_[0] - vshift_[1], // a
+    1 - vshift_[0] - vshift_[1], // b
+    -vshift_[1], // c
+    1 - vshift_[1], // d
+    -vshift_[0], // e
+    1 - vshift_[0], // f
+    1, // h
+    vshift_[0], // V(e)::{g}
+  };
+  // V(cg)=V(g)+V(c)::{g}
+  this->vertexNeighborCG_ = {
+    -vshift_[0] - vshift_[1], // a
+    1 - vshift_[0] - vshift_[1], // b
+    -vshift_[1], // c
+    1 - vshift_[1], // d
+    -vshift_[0], // e
+    1 - vshift_[0], // f
+    1, // h
+    vshift_[1], // V(c)::{g}
+  };
+  // V(bf)=V(b)+V(f)::{b}
+  this->vertexNeighborBF_ = {
+    -1, // a
+    -1 + vshift_[0], // c
+    vshift_[0], // d
+    -1 + vshift_[1], // e
+    vshift_[1], // f
+    -1 + vshift_[0] + vshift_[1], // g
+    vshift_[0] + vshift_[1], // h
+    -vshift_[1], // V(f)::{b}
+  };
+
+  // V(b)={a,c,d,e,f,g,h}
+  this->vertexNeighborB_ = {
+    -1, // a
+    -1 + vshift_[0], // c
+    vshift_[0], // d
+    -1 + vshift_[1], // e
+    vshift_[1], // f
+    -1 + vshift_[0] + vshift_[1], // g
+    vshift_[0] + vshift_[1], // h
+  };
+  // V(g)={a,b,c,d,e,f,h}
+  this->vertexNeighborG_ = {
+    -vshift_[0] - vshift_[1], // a
+    1 - vshift_[0] - vshift_[1], // b
+    -vshift_[1], // c
+    1 - vshift_[1], // d
+    -vshift_[0], // e
+    1 - vshift_[0], // f
+    1, // h
+  };
+
+  // V(ef)=V(f)+V(e)::{b,f}
+  this->vertexNeighborEF_ = {
+    -vshift_[1], // b
+    -1, // e
+    -1 + vshift_[0], // g
+    vshift_[0], // h
+    1 - vshift_[1], // V(e)::{b}
+    1, // V(e)::{f}
+  };
+  // V(cd)=V(d)+V(c)::{b,d}
+  this->vertexNeighborCD_ = {
+    -vshift_[0], // b
+    -1, // c
+    -1 + vshift_[1], // g
+    vshift_[1], // h
+    1 - vshift_[0], // V(c)::{b}
+    1, // V(c)::{d}
+  };
+  // V(ac)=V(c)+V(a)::{c,g}
+  this->vertexNeighborAC_ = {
+    -vshift_[0], // a
+    1 - vshift_[0], // b
+    1, // d
+    vshift_[1], // g
+    vshift_[0], // V(a)::{c}
+    vshift_[0] + vshift_[1], // V(a)::{c}
+  };
+  // V(ae)=V(a)+V(e)::{a,b}
+  this->vertexNeighborAE_ = {
+    1, // b
+    vshift_[0], // c
+    vshift_[1], // e
+    vshift_[0] + vshift_[1], // g
+    -vshift_[1], // V(e)::{a}
+    1 - vshift_[1], // V(e)::{b}
+  };
+  // V(fh)=V(f)+V(h)::{b,f}
+  this->vertexNeighborFH_ = {
+    -vshift_[1], // b
+    -1, // e
+    -1 + vshift_[0], // g
+    vshift_[0], // h
+    -vshift_[0] - vshift_[1], // V(h)::{b}
+    -vshift_[0], // V(h)::{f}
+  };
+  // V(dh)=V(d)+V(h)::{b,d}
+  this->vertexNeighborDH_ = {
+    -vshift_[0], // b
+    -1, // c
+    -1 + vshift_[1], // g
+    vshift_[1], // h
+    -vshift_[0] - vshift_[1], // V(h)::{b}
+    -vshift_[1], // V(h)::{d}
+  };
+
+  // V(a)={b,c,e,g}
+  this->vertexNeighborA_ = {
+    1, // b
+    vshift_[0], // c
+    vshift_[1], // e
+    vshift_[0] + vshift_[1], // g
+  };
+  // V(c)={a,b,d,g}
+  this->vertexNeighborC_ = {
+    -vshift_[0], // a
+    1 - vshift_[0], // b
+    1, // d
+    +vshift_[1], // g
+  };
+  // V(d)={b,c,g,h}
+  this->vertexNeighborD_ = {
+    -vshift_[0], // b
+    -1, // c
+    -1 + vshift_[1], // g
+    vshift_[1], // h
+  };
+  // V(e)={a,b,f,g}
+  this->vertexNeighborE_ = {
+    -vshift_[1], // a
+    1 - vshift_[1], // b
+    1, // f
+    +vshift_[0], // g
+  };
+  // V(f)={b,e,g,h}
+  this->vertexNeighborF_ = {
+    -vshift_[1], // b
+    -1, // e
+    -1 + vshift_[0], // g
+    vshift_[0], // h
+  };
+  // V(h)={b,d,f,g}
+  this->vertexNeighborH_ = {
+    -vshift_[0] - vshift_[1], // b
+    -vshift_[1], // d
+    -vshift_[0], // f
+    -1, // g
+  };
+
+  // V(abcd)=V(d)::{b,c}+V(c)::{b,d}+V(a)::{b}+V(b)::{c}
+  this->vertexNeighbor2dABCD_ = {
+    -1, -vshift_[0], -vshift_[0] + 1, 1, vshift_[0], vshift_[0] - 1,
+  };
+  // V(ab)=V(b)::{a,c,d}+V(a)::{b}
+  this->vertexNeighbor2dAB_ = {
+    -1, // V(b)::a
+    vshift_[0] - 1, // V(b)::c
+    vshift_[0], // V(b)::d
+    +1, // V(a)::b
+  };
+  // V(cd)=V(c)::{a,b,d}+V(d)::{c}
+  this->vertexNeighbor2dCD_ = {
+    -1, // V(d)::c
+    -vshift_[0], // V(c)::a
+    -vshift_[0] + 1, // V(c)::b
+    1, // V(c)::d
+  };
+  // V(ac)=V(c)::{a,b,d}+V(a)::{c}
+  this->vertexNeighbor2dAC_ = {
+    -vshift_[0], // V(c)::{a}
+    -vshift_[0] + 1, // V(c)::{b}
+    1, // V(c)::{d}
+    vshift_[0], // V(a)::{c}
+  };
+  // V(bd)=V(b)::{c,d}+V(d)::{b,c}
+  this->vertexNeighbor2dBD_ = {
+    vshift_[0] - 1, // V(b)::{c}
+    vshift_[0], // V(b)::{d}
+    -vshift_[0], // V(d)::{b}
+    -1, // V(d)::{c}
+  };
+  // V(b)={a,c,d}
+  this->vertexNeighbor2dB_ = {
+    -1, // a
+    vshift_[0], // d
+    vshift_[0] - 1, // c
+  };
+  // V(c)={a,b,d}
+  this->vertexNeighbor2dC_ = {
+    1, // d
+    -vshift_[0], // a
+    -vshift_[0] + 1, // b
+  };
+  this->vertexNeighbor2dA_ = {};
+  // V(a)={b,c}
+  this->vertexNeighbor2dA_ = {
+    1, // b
+    vshift_[0] // c
+  };
+  // V(d)={c,b}
+  this->vertexNeighbor2dD_ = {
+    -1, // c
+    -vshift_[0], // b
+
+  };
+
   return 0;
 }
 
