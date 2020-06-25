@@ -101,14 +101,14 @@ public:
   vtkSetMacro(ScalarField, std::string);
   vtkGetMacro(ScalarField, std::string);
 
-  vtkSetMacro(ForceInputOffsetScalarField, int);
-  vtkGetMacro(ForceInputOffsetScalarField, int);
+  vtkSetMacro(ForceInputOffsetScalarField, bool);
+  vtkGetMacro(ForceInputOffsetScalarField, bool);
 
-  vtkSetMacro(ConsiderIdentifierAsBlackList, int);
-  vtkGetMacro(ConsiderIdentifierAsBlackList, int);
+  vtkSetMacro(ConsiderIdentifierAsBlackList, bool);
+  vtkGetMacro(ConsiderIdentifierAsBlackList, bool);
 
-  vtkSetMacro(AddPerturbation, int);
-  vtkGetMacro(AddPerturbation, int);
+  vtkSetMacro(AddPerturbation, bool);
+  vtkGetMacro(AddPerturbation, bool);
 
   vtkSetMacro(InputOffsetScalarFieldName, std::string);
   vtkGetMacro(InputOffsetScalarFieldName, std::string);
@@ -116,8 +116,8 @@ public:
   vtkSetMacro(OutputOffsetScalarFieldName, std::string);
   vtkGetMacro(OutputOffsetScalarFieldName, std::string);
 
-  vtkSetMacro(ForceInputVertexScalarField, int);
-  vtkGetMacro(ForceInputVertexScalarField, int);
+  vtkSetMacro(ForceInputVertexScalarField, bool);
+  vtkGetMacro(ForceInputVertexScalarField, bool);
 
   vtkSetMacro(InputVertexScalarFieldName, std::string);
   vtkGetMacro(InputVertexScalarFieldName, std::string);

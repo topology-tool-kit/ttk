@@ -230,8 +230,8 @@ namespace ttk {
   schedule(static, (numberOfBins_ * numberOfVertices_) / threadNumber_)
 #endif
 #endif
-      for(int i = 0; i < (int)numberOfBins_; i++) {
-        for(SimplexId j = 0; j < (SimplexId)numberOfVertices_; j++) {
+      for(int i = 0; i < numberOfBins_; i++) {
+        for(SimplexId j = 0; j < numberOfVertices_; j++) {
           probability_[i][j] *= normalization;
         }
       }

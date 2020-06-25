@@ -159,8 +159,7 @@ namespace ttk {
       }
       const size_t newTrianglesPerParent{6};
       const size_t nOutTriangles = this->getNumberOfTriangles();
-      if(nOutTriangles < 0
-         || nOutTriangles != newTrianglesPerParent * nTriangles_) {
+      if(nOutTriangles != newTrianglesPerParent * nTriangles_) {
         return 1;
       }
       for(SimplexId i = 0; i < nTriangles_; ++i) {
@@ -187,10 +186,6 @@ namespace ttk {
     Triangulation *inputTriangl_{};
     // array of input points coordinates
     const float *inputPoints_{};
-    // list of input point data
-    std::vector<void *> pointData_{};
-    // list of input cell data
-    std::vector<void *> cellData_{};
 
     // output 3D coordinates of generated points: old points first, then edge
     // middles, then triangle barycenters

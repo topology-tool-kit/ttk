@@ -2809,7 +2809,7 @@ int ImplicitTriangulation::preconditionVertexNeighborsInternal() {
     -vshift_[0], // e
     1 - vshift_[0], // f
     1, // h
-    1 + vshift_[1], // V(d)::{g}
+    -1 + vshift_[1], // V(d)::{g}
     vshift_[1], // V(d)::{h}
     -1, // V(h)::{g}
     -1 + vshift_[0], // V(b)::{c}

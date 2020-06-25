@@ -93,11 +93,11 @@ public:
   vtkSetMacro(VcomponentId, int);
   vtkGetMacro(VcomponentId, int);
 
-  vtkSetMacro(WithVaryingConnectivity, int);
-  vtkGetMacro(WithVaryingConnectivity, int);
+  vtkSetMacro(WithVaryingConnectivity, bool);
+  vtkGetMacro(WithVaryingConnectivity, bool);
 
-  vtkSetMacro(WithDummyValue, int);
-  vtkGetMacro(WithDummyValue, int);
+  vtkSetMacro(WithDummyValue, bool);
+  vtkGetMacro(WithDummyValue, bool);
 
   vtkSetMacro(DummyValue, double);
   vtkGetMacro(DummyValue, double);

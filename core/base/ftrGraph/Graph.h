@@ -25,6 +25,7 @@
 #include <iostream>
 #endif
 
+#include <random>
 #include <vector>
 
 namespace ttk {
@@ -317,7 +318,7 @@ namespace ttk {
       }
 
       void shuffleLeaves() {
-        std::random_shuffle(leaves_.begin(), leaves_.end());
+        std::shuffle(leaves_.begin(), leaves_.end(), std::random_device());
       }
 
       // some arc may be pending due to symbolic merge during computation

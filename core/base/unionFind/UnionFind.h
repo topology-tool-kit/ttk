@@ -95,8 +95,6 @@ namespace ttk {
       uf0->setRank(uf0->getRank() + 1);
       return uf0;
     }
-
-    return NULL;
   }
 
   static inline UnionFind *makeUnion(std::vector<UnionFind *> &sets) {

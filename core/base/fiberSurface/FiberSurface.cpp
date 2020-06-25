@@ -1496,7 +1496,7 @@ int FiberSurface::mergeVertices(const double &distanceThreshold) const {
             tmpList[i - 1].meshEdge_ = tmpList[i].meshEdge_;
           }
           if((tmpList[i].meshEdge_.first == -1)
-             && (tmpList[i].meshEdge_.first != -1)) {
+             && (tmpList[i - 1].meshEdge_.first != -1)) {
             tmpList[i].meshEdge_ = tmpList[i - 1].meshEdge_;
           }
         }
@@ -1684,7 +1684,7 @@ int FiberSurface::snapVertexBarycentrics(
     Triangle *t = &(
       (*polygonEdgeTriangleLists_[triangles[i].first])[triangles[i].second]);
 
-    for(int j = 0; j < (int)3; j++) {
+    for(int j = 0; j < 3; j++) {
       SimplexId vertexId = t->vertexIds_[j];
 
       // check for each triangle of the tet

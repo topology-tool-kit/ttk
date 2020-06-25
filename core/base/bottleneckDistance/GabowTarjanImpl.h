@@ -275,10 +275,10 @@ int GabowTarjan::run(std::vector<matchingTuple> &matchings) {
     int j = Pair[i] - MaxSize;
     if(j <= -1 || (j < (int)Size2 && Pair[j + MaxSize] != (int)i)) {
       std::stringstream msg;
-      ttk::Debug d;
+      ttk::Debug dbg;
       msg << "[Gabow-Tarjan] Hopcroft-Karp built an invalid matching."
           << std::endl;
-      d.dMsg(std::cout, msg.str(), ttk::Debug::timeMsg);
+      dbg.dMsg(std::cout, msg.str(), ttk::Debug::timeMsg);
       // return -1;
     }
 
@@ -298,10 +298,10 @@ int GabowTarjan::run(std::vector<matchingTuple> &matchings) {
     int i = Pair[j] - MaxSize - Size2;
     if(i > -1 && (i >= (int)Size1 || Pair[i + MaxSize + Size2] != (int)j)) {
       std::stringstream msg;
-      ttk::Debug d;
+      ttk::Debug dbg;
       msg << "[Gabow-Tarjan] Hopcroft-Karp built an invalid matching."
           << std::endl;
-      d.dMsg(std::cout, msg.str(), ttk::Debug::timeMsg);
+      dbg.dMsg(std::cout, msg.str(), ttk::Debug::timeMsg);
       // return -1;
     }
 

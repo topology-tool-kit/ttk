@@ -14,8 +14,8 @@ RangeDrivenOctree::RangeDrivenOctree() {
   triangulation_ = NULL;
 
   leafMinimumCellNumber_ = 6;
-  leafMinimumDomainVolumeRatio_ = 0.01;
-  leafMinimumRangeAreaRatio_ = 0.01;
+  leafMinimumDomainVolumeRatio_ = 0.01F;
+  leafMinimumRangeAreaRatio_ = 0.01F;
 
   pointList_ = NULL;
 

@@ -94,14 +94,14 @@ public:
   vtkSetMacro(PS, double);
   vtkGetMacro(PS, double);
 
-  vtkSetMacro(UseOutputMatching, int);
-  vtkGetMacro(UseOutputMatching, int);
+  vtkSetMacro(UseOutputMatching, bool);
+  vtkGetMacro(UseOutputMatching, bool);
 
   vtkSetMacro(BenchmarkSize, int);
   vtkGetMacro(BenchmarkSize, int);
 
-  vtkSetMacro(UsePersistenceMetric, int);
-  vtkGetMacro(UsePersistenceMetric, int);
+  vtkSetMacro(UsePersistenceMetric, bool);
+  vtkGetMacro(UsePersistenceMetric, bool);
 
   vtkSetMacro(WassersteinMetric, std::string);
   vtkGetMacro(WassersteinMetric, std::string);
@@ -112,8 +112,8 @@ public:
   vtkSetMacro(PVAlgorithm, int);
   vtkGetMacro(PVAlgorithm, int);
 
-  vtkSetMacro(UseGeometricSpacing, int);
-  vtkGetMacro(UseGeometricSpacing, int);
+  vtkSetMacro(UseGeometricSpacing, bool);
+  vtkGetMacro(UseGeometricSpacing, bool);
 
   vtkSetMacro(Spacing, double);
   vtkGetMacro(Spacing, double);

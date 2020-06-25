@@ -161,8 +161,6 @@ namespace ttk {
           uf0->data_.merge(uf1->data_);
           return uf0;
         }
-
-        return NULL;
       }
 
       static inline AtomicUF *makeUnion(std::vector<AtomicUF *> &sets) {
