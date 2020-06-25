@@ -287,7 +287,8 @@ int ttkTriangulation::setInputData(vtkDataSet *dataSet) {
 
       if(vtuDataSet->IsHomogeneous()) {
         const auto type = vtuDataSet->GetCellType(0);
-        if(type != VTK_TETRA && type != VTK_TRIANGLE && type != VTK_LINE) {
+        if(type != VTK_TETRA && type != VTK_TRIANGLE && type != VTK_LINE
+           && type != VTK_VERTEX) {
           errMsg = "Input explicit mesh is not simplicial (at all). ";
           ret = -1;
         }
