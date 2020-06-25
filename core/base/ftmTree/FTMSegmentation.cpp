@@ -194,7 +194,7 @@ void ArcRegion::createSegmentation(const Scalars *s) {
 
   while(added != -1) {
     added = -1;
-    SimplexId minVert;
+    SimplexId minVert = -1;
     for(idSegment i = 0; i < nbSegments; i++) {
       auto &headIt = heads[i];
       const auto &endIt = ends[i];

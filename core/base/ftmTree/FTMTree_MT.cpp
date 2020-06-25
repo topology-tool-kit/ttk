@@ -357,7 +357,7 @@ void FTMTree_MT::buildSegmentation() {
         = min(nbArcs, (arcChunkId + 1) * arcChunkSize);
       for(idSuperArc a = lowerBound; a < upperBound; ++a) {
         sizes[a]
-          = max((SimplexId)0, (*mt_data_.superArcs)[a].getNbVertSeen() - 1);
+          = max(SimplexId{0}, (*mt_data_.superArcs)[a].getNbVertSeen() - 1);
       }
     }
   }
@@ -552,12 +552,12 @@ void FTMTree_MT::closeOnBackBone(SimplexId saddleVert) {
 void FTMTree_MT::closeSuperArc(idSuperArc superArcId, idNode upNodeId) {
 #ifndef TTK_ENABLE_KAMIKAZE
 
-  if(superArcId < 0 || (size_t)superArcId >= getNumberOfSuperArcs()) {
+  if(superArcId >= getNumberOfSuperArcs()) {
     cout << "[Merge Tree] closeSuperArc on a inexisting arc !" << endl;
     return;
   }
 
-  if(upNodeId < 0 || (size_t)upNodeId >= getNumberOfNodes()) {
+  if(upNodeId >= getNumberOfNodes()) {
     cout << "[Merge Tree] closeOpenedArc on a inexisting node !" << endl;
     return;
   }
@@ -1010,7 +1010,7 @@ void FTMTree_MT::normalizeIds(void) {
 
 idSuperArc FTMTree_MT::openSuperArc(idNode downNodeId) {
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(downNodeId < 0 || (size_t)downNodeId >= getNumberOfNodes()) {
+  if(downNodeId >= getNumberOfNodes()) {
     cout << "[Merge Tree] openSuperArc on a inexisting node !" << endl;
     return -2;
   }
@@ -1287,7 +1287,7 @@ SimplexId FTMTree_MT::trunk(const bool ct) {
   const auto &nbScalars = scalars_->size;
 
   // trunkVerts
-  trunkVerts.reserve(max((SimplexId)10, nbScalars / 500));
+  trunkVerts.reserve(max(SimplexId{10}, nbScalars / 500));
   for(SimplexId v = 0; v < nbScalars; ++v) {
     if((*mt_data_.openedNodes)[v]) {
       trunkVerts.emplace_back(v);

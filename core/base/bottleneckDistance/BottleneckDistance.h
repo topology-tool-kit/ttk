@@ -14,11 +14,6 @@
 #define matchingTuple std::tuple<int, int, double>
 #endif
 
-#ifndef trackingTuple
-#define trackingTuple std::tuple<int, int, std::vector<int>>
-#endif
-// start ts, end ts or -1, list of indices for every ts
-
 #ifndef BNodeType
 #define BNodeType ttk::CriticalType
 #define BLocalMax ttk::CriticalType::Local_maximum
@@ -40,6 +35,8 @@
 #include <tuple>
 
 namespace ttk {
+
+  using trackingTuple = std::tuple<int, int, std::vector<int>>;
 
   class BottleneckDistance : public Debug {
 

@@ -98,13 +98,13 @@ public:
   vtkSetMacro(PVAlgorithm, int);
   vtkGetMacro(PVAlgorithm, int);
 
-  vtkSetMacro(UseGeometricSpacing, int);
-  vtkGetMacro(UseGeometricSpacing, int);
+  vtkSetMacro(UseGeometricSpacing, bool);
+  vtkGetMacro(UseGeometricSpacing, bool);
 
   vtkSetMacro(Spacing, double);
   vtkGetMacro(Spacing, double);
-  vtkSetMacro(DoPostProc, int);
-  vtkGetMacro(DoPostProc, int);
+  vtkSetMacro(DoPostProc, bool);
+  vtkGetMacro(DoPostProc, bool);
 
   vtkSetMacro(PostProcThresh, double);
   vtkGetMacro(PostProcThresh, double);
@@ -196,6 +196,8 @@ int ttkTrackingFromFields::trackWithPersistenceMatching(
   vtkUnstructuredGrid *output,
   std::vector<vtkDataArray *> inputScalarFields) {
   unsigned long fieldNumber = inputScalarFields.size();
+
+  using trackingTuple = ttk::trackingTuple;
 
   // 0. get data
   trackingF_.setThreadNumber(ThreadNumber);

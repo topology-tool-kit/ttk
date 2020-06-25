@@ -19,7 +19,7 @@ int ttk::PlanarGraphLayout::computeDotLayout(
   // Input
   const std::vector<size_t> &nodeIndicies,
   const std::string &dotString) const {
-#if TTK_ENABLE_GRAPHVIZ
+#ifdef TTK_ENABLE_GRAPHVIZ
   Timer t;
 
   this->printMsg("Computing layout", 0, debug::LineMode::REPLACE);

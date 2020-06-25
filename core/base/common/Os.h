@@ -57,9 +57,9 @@
 namespace ttk {
 
 #ifdef SINGLE_PRECISION
-  typedef float real;
+  using real = float;
 #else
-  typedef double real;
+  using real = double;
 #endif
 
   class OsCall {

@@ -94,8 +94,7 @@ int ttkIcosphere::RequestData(vtkInformation *request,
   if(useDoublePrecision) {
     if(!this->computeIcospheres<double, vtkIdType>(
          (double *)ttkUtils::GetVoidPointer(points),
-         (vtkIdType *)cells->WritePointer(
-           nSpheres * nTriangles, nSpheres * nTriangles * 4),
+         cells->WritePointer(nSpheres * nTriangles, nSpheres * nTriangles * 4),
 
          nSpheres, nSubdivisions, radius,
          this->Centers ? (double *)ttkUtils::GetVoidPointer(this->Centers)
@@ -108,8 +107,7 @@ int ttkIcosphere::RequestData(vtkInformation *request,
       (float)this->Center[0], (float)this->Center[1], (float)this->Center[2]};
     if(!this->computeIcospheres<float, vtkIdType>(
          (float *)ttkUtils::GetVoidPointer(points),
-         (vtkIdType *)cells->WritePointer(
-           nSpheres * nTriangles, nSpheres * nTriangles * 4),
+         cells->WritePointer(nSpheres * nTriangles, nSpheres * nTriangles * 4),
 
          nSpheres, nSubdivisions, radius,
          this->Centers ? (float *)ttkUtils::GetVoidPointer(this->Centers)

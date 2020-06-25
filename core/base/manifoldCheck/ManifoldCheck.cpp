@@ -96,7 +96,7 @@ int ManifoldCheck::vertexManifoldCheck(const SimplexId &vertexId) const {
     seedList[i] = &(seeds[i]);
   }
 
-  for(SimplexId i = 0; i < (SimplexId)linkSize; i++) {
+  for(SimplexId i = 0; i < linkSize; i++) {
 
     SimplexId linkId = -1;
     triangulation_->getVertexLink(vertexId, i, linkId);
@@ -219,7 +219,7 @@ int ManifoldCheck::edgeManifoldCheck(const SimplexId &edgeId) const {
     seedList[i] = &(seeds[i]);
   }
 
-  for(SimplexId i = 0; i < (SimplexId)linkSize; i++) {
+  for(SimplexId i = 0; i < linkSize; i++) {
 
     SimplexId linkId = -1;
     triangulation_->getEdgeLink(edgeId, i, linkId);

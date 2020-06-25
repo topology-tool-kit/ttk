@@ -1072,7 +1072,7 @@ void PDClustering<dataType>::initializeCentroids() {
     idx[i] = i;
   }
   if(!deterministic_)
-    std::random_shuffle(idx.begin(), idx.end());
+    std::shuffle(idx.begin(), idx.end(), std::random_device());
 
   for(int c = 0; c < k_; c++) {
     if(do_min_) {

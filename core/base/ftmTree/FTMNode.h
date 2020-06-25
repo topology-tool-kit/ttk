@@ -81,21 +81,20 @@ namespace ttk {
       // vector arcs
 
       inline idSuperArc getNumberOfDownSuperArcs() const {
-        return (idSuperArc)vect_downSuperArcList_.size();
+        return vect_downSuperArcList_.size();
       }
 
       inline idSuperArc getNumberOfUpSuperArcs() const {
-        return (idSuperArc)vect_upSuperArcList_.size();
+        return vect_upSuperArcList_.size();
       }
 
       inline idSuperArc getNumberOfSuperArcs() const {
-        return (idSuperArc)(vect_upSuperArcList_.size()
-                            + vect_downSuperArcList_.size());
+        return vect_upSuperArcList_.size() + vect_downSuperArcList_.size();
       }
 
       inline idSuperArc getDownSuperArcId(idSuperArc neighborId) const {
 #ifndef TTK_ENABLE_KAMIKAZE
-        if((size_t)neighborId >= vect_downSuperArcList_.size()) {
+        if(neighborId >= vect_downSuperArcList_.size()) {
           std::cerr << "[Merge Tree:Node] get down on bad neighbor !";
           std::cerr << std::endl;
           return 0;

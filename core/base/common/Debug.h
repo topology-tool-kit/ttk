@@ -326,7 +326,7 @@ namespace ttk {
           colSizes[j] = std::max(colSizes[j], rows[i][j].size());
 
       auto formatCell = [](const std::string &value, const size_t &width,
-                           const std::string &fillSymbol = " ") {
+                           const std::string &fillSymbol) {
         std::string cell = value;
         int diff = width - cell.size();
         for(int i = 0; i < diff; i++)
@@ -338,11 +338,12 @@ namespace ttk {
       int resultIndex = 0;
       for(int i = 0; i < nRows; i++) {
         auto &row = formatedRows[resultIndex++];
-        row = formatCell(rows[i][0], colSizes[0]) + (hasHeader ? ": " : "");
+        row
+          = formatCell(rows[i][0], colSizes[0], " ") + (hasHeader ? ": " : "");
         if(nCols > 1)
-          row += formatCell(rows[i][1], colSizes[1]);
+          row += formatCell(rows[i][1], colSizes[1], " ");
         for(int j = 2; j < nCols; j++)
-          row += "," + formatCell(rows[i][j], colSizes[j]);
+          row += "," + formatCell(rows[i][j], colSizes[j], " ");
       }
 
       return this->printMsg(formatedRows, priority, lineMode, stream);

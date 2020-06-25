@@ -372,7 +372,7 @@ namespace ttk {
 
       inline SuperArc *getSuperArc(idSuperArc i) {
 #ifndef TTK_ENABLE_KAMIKAZE
-        if((size_t)i >= mt_data_.superArcs->size()) {
+        if(i >= mt_data_.superArcs->size()) {
           std::cout << "[Merge Tree] get superArc on bad id :" << i;
           std::cout << " / " << mt_data_.superArcs->size() << std::endl;
           return nullptr;
@@ -383,7 +383,7 @@ namespace ttk {
 
       inline const SuperArc *getSuperArc(idSuperArc i) const {
 #ifndef TTK_ENABLE_KAMIKAZE
-        if((size_t)i >= mt_data_.superArcs->size()) {
+        if(i >= mt_data_.superArcs->size()) {
           std::cout << "[Merge Tree] get superArc on bad id :" << i;
           std::cout << " / " << mt_data_.superArcs->size() << std::endl;
           return nullptr;
@@ -419,7 +419,7 @@ namespace ttk {
 
       inline idNode getLeave(const idNode id) const {
 #ifndef TTK_ENABLE_KAMIKAZE
-        if((size_t)id > (mt_data_.leaves->size())) {
+        if(id > mt_data_.leaves->size()) {
           std::stringstream msg;
           msg << "[MergTree] getLeaves out of bounds : " << id << std::endl;
           err(msg.str(), fatalMsg);
@@ -516,11 +516,11 @@ namespace ttk {
 
       inline idCorresp idNode2corr(const idNode id) const {
         // transform idNode to special value for the array : -idNode -1
-        return -(idCorresp)(id + 1);
+        return -static_cast<idCorresp>(id + 1);
       }
 
       inline idNode corr2idNode(const idCorresp &corr) const {
-        return -(idNode)((*mt_data_.vert2tree)[corr] + 1);
+        return static_cast<idNode>(-((*mt_data_.vert2tree)[corr] + 1));
       }
 
       // --------------------------------

@@ -92,17 +92,19 @@ public:
   vtkSetMacro(PVAlgorithm, int);
   vtkGetMacro(PVAlgorithm, int);
 
-  vtkSetMacro(UseGeometricSpacing, int);
-  vtkGetMacro(UseGeometricSpacing, int);
+  vtkSetMacro(UseGeometricSpacing, bool);
+  vtkGetMacro(UseGeometricSpacing, bool);
 
   vtkSetMacro(Spacing, double);
   vtkGetMacro(Spacing, double);
 
-  vtkSetMacro(DoPostProc, int);
-  vtkGetMacro(DoPostProc, int);
+  vtkSetMacro(DoPostProc, bool);
+  vtkGetMacro(DoPostProc, bool);
 
   vtkSetMacro(PostProcThresh, double);
   vtkGetMacro(PostProcThresh, double);
+
+  using trackingTuple = ttk::trackingTuple;
 
   template <typename dataType>
   static int

@@ -565,7 +565,7 @@ int ttk::TopologicalCompression::WritePersistenceIndex(
     numberOfBytesWritten += sizeof(int);
     WriteInt(fm, idv);
 
-    auto value = (double)std::get<0>(t);
+    auto value = std::get<0>(t);
     numberOfBytesWritten += sizeof(double);
     WriteDouble(fm, value);
   }
@@ -577,7 +577,7 @@ int ttk::TopologicalCompression::WritePersistenceIndex(
   for(int i = 0; i < nbConstraints; ++i) {
     std::tuple<int, double, int> t = constraints[i];
     int idVertex = std::get<0>(t);
-    auto value = (double)std::get<1>(t);
+    auto value = std::get<1>(t);
     int vertexType = std::get<2>(t);
 
     numberOfBytesWritten += sizeof(int);
