@@ -1460,113 +1460,90 @@ int PeriodicImplicitTriangulation::getTriangleNeighbor(
 #endif
 
   neighborId = -1;
+  const auto &p = triangleCoords_[triangleId];
 
-  if(dimensionality_ == 2) {
-    SimplexId p[2];
-    triangleToPosition2d(triangleId, p);
-    const SimplexId id = triangleId % 2;
+  switch(trianglePositions_[triangleId]) {
+    case TrianglePosition::BOTTOM_2D:
 
-    if(id) {
       if(p[0] / 2 == nbvoxels_[Di_] and p[1] == nbvoxels_[Dj_]) {
-        switch(localNeighborId) {
-          case 0:
-            neighborId = triangleId - 1;
-            break;
-          case 1:
-            neighborId = triangleId + 1 - wrap_[0] * 2;
-            break;
-          case 2:
-            neighborId = triangleId + tshift_[0] - 1 - wrap_[1] * 2;
-            break;
+        if(localNeighborId == 0) {
+          neighborId = triangleId - 1;
+        } else if(localNeighborId == 1) {
+          neighborId = triangleId + 1 - wrap_[0] * 2;
+        } else if(localNeighborId == 2) {
+          neighborId = triangleId + tshift_[0] - 1 - wrap_[1] * 2;
         }
+
       } else if(p[0] / 2 == nbvoxels_[Di_]) {
-        switch(localNeighborId) {
-          case 0:
-            neighborId = triangleId - 1;
-            break;
-          case 1:
-            neighborId = triangleId + 1 - wrap_[0] * 2;
-            break;
-          case 2:
-            neighborId = triangleId + tshift_[0] - 1;
-            break;
+        if(localNeighborId == 0) {
+          neighborId = triangleId - 1;
+        } else if(localNeighborId == 1) {
+          neighborId = triangleId + 1 - wrap_[0] * 2;
+        } else if(localNeighborId == 2) {
+          neighborId = triangleId + tshift_[0] - 1;
         }
+
       } else if(p[1] == nbvoxels_[Dj_]) {
-        switch(localNeighborId) {
-          case 0:
-            neighborId = triangleId - 1;
-            break;
-          case 1:
-            neighborId = triangleId + 1;
-            break;
-          case 2:
-            neighborId = triangleId + tshift_[0] - 1 - wrap_[1] * 2;
-            break;
+        if(localNeighborId == 0) {
+          neighborId = triangleId - 1;
+        } else if(localNeighborId == 1) {
+          neighborId = triangleId + 1;
+        } else if(localNeighborId == 2) {
+          neighborId = triangleId + tshift_[0] - 1 - wrap_[1] * 2;
         }
+
       } else {
-        switch(localNeighborId) {
-          case 0:
-            neighborId = triangleId - 1;
-            break;
-          case 1:
-            neighborId = triangleId + 1;
-            break;
-          case 2:
-            neighborId = triangleId + tshift_[0] - 1;
-            break;
+        if(localNeighborId == 0) {
+          neighborId = triangleId - 1;
+        } else if(localNeighborId == 1) {
+          neighborId = triangleId + 1;
+        } else if(localNeighborId == 2) {
+          neighborId = triangleId + tshift_[0] - 1;
         }
       }
-    } else {
+      break;
+
+    case TrianglePosition::TOP_2D:
+
       if(p[0] / 2 == 0 and p[1] == 0) {
-        switch(localNeighborId) {
-          case 0:
-            neighborId = triangleId + 1;
-            break;
-          case 1:
-            neighborId = triangleId - 1 + wrap_[0] * 2;
-            break;
-          case 2:
-            neighborId = triangleId - tshift_[0] + 1 + wrap_[1] * 2;
-            break;
+        if(localNeighborId == 0) {
+          neighborId = triangleId + 1;
+        } else if(localNeighborId == 1) {
+          neighborId = triangleId - 1 + wrap_[0] * 2;
+        } else if(localNeighborId == 2) {
+          neighborId = triangleId - tshift_[0] + 1 + wrap_[1] * 2;
         }
+
       } else if(p[0] / 2 == 0) {
-        switch(localNeighborId) {
-          case 0:
-            neighborId = triangleId + 1;
-            break;
-          case 1:
-            neighborId = triangleId - 1 + wrap_[0] * 2;
-            break;
-          case 2:
-            neighborId = triangleId - tshift_[0] + 1;
-            break;
+        if(localNeighborId == 0) {
+          neighborId = triangleId + 1;
+        } else if(localNeighborId == 1) {
+          neighborId = triangleId - 1 + wrap_[0] * 2;
+        } else if(localNeighborId == 2) {
+          neighborId = triangleId - tshift_[0] + 1;
         }
+
       } else if(p[1] == 0) {
-        switch(localNeighborId) {
-          case 0:
-            neighborId = triangleId + 1;
-            break;
-          case 1:
-            neighborId = triangleId - 1;
-            break;
-          case 2:
-            neighborId = triangleId - tshift_[0] + 1 + wrap_[1] * 2;
-            break;
+        if(localNeighborId == 0) {
+          neighborId = triangleId + 1;
+        } else if(localNeighborId == 1) {
+          neighborId = triangleId - 1;
+        } else if(localNeighborId == 2) {
+          neighborId = triangleId - tshift_[0] + 1 + wrap_[1] * 2;
         }
+
       } else {
-        switch(localNeighborId) {
-          case 0:
-            neighborId = triangleId + 1;
-            break;
-          case 1:
-            neighborId = triangleId - 1;
-            break;
-          case 2:
-            neighborId = triangleId - tshift_[0] + 1;
-            break;
+        if(localNeighborId == 0) {
+          neighborId = triangleId + 1;
+        } else if(localNeighborId == 1) {
+          neighborId = triangleId - 1;
+        } else if(localNeighborId == 2) {
+          neighborId = triangleId - tshift_[0] + 1;
         }
       }
-    }
+      break;
+    default:
+      break;
   }
 
   return 0;
