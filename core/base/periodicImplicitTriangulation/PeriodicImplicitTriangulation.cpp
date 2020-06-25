@@ -969,50 +969,41 @@ int PeriodicImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getEdgeLink)(
 #endif
 
   linkId = -1;
+  const auto &p = edgeCoords_[edgeId];
 
-  if(dimensionality_ == 3) {
-    SimplexId p[3];
-
-    if(edgeId < esetshift_[0]) {
-      edgeToPosition(edgeId, 0, p);
-      linkId = getEdgeLinkL(p, localLinkId); // L
-    } else if(edgeId < esetshift_[1]) {
-      edgeToPosition(edgeId, 1, p);
-      linkId = getEdgeLinkH(p, localLinkId); // H
-    } else if(edgeId < esetshift_[2]) {
-      edgeToPosition(edgeId, 2, p);
-      linkId = getEdgeLinkP(p, localLinkId); // P
-    } else if(edgeId < esetshift_[3]) {
-      edgeToPosition(edgeId, 3, p);
-      linkId = getEdgeLinkD1(p, localLinkId); // D1
-    } else if(edgeId < esetshift_[4]) {
-      edgeToPosition(edgeId, 4, p);
-      linkId = getEdgeLinkD2(p, localLinkId); // D2
-    } else if(edgeId < esetshift_[5]) {
-      edgeToPosition(edgeId, 5, p);
-      linkId = getEdgeLinkD3(p, localLinkId); // D3
-    } else if(edgeId < esetshift_[6]) {
-      edgeToPosition(edgeId, 6, p);
-      linkId = getEdgeLinkD4(p, localLinkId); // D4
-    }
-  } else if(dimensionality_ == 2) {
-    SimplexId p[2];
-
-    // L
-    if(edgeId < esetshift_[0]) {
-      edgeToPosition2d(edgeId, 0, p);
-      linkId = getEdgeLink2dL(p, localLinkId);
-    }
-    // H
-    else if(edgeId < esetshift_[1]) {
-      edgeToPosition2d(edgeId, 1, p);
-      linkId = getEdgeLink2dH(p, localLinkId);
-    }
-    // D1
-    else if(edgeId < esetshift_[2]) {
-      edgeToPosition2d(edgeId, 2, p);
-      linkId = getEdgeLink2dD1(p, localLinkId);
-    }
+  switch(edgePositions_[edgeId]) {
+    case EdgePosition::L_3D:
+      linkId = getEdgeLinkL(p.data(), localLinkId);
+      break;
+    case EdgePosition::H_3D:
+      linkId = getEdgeLinkH(p.data(), localLinkId);
+      break;
+    case EdgePosition::P_3D:
+      linkId = getEdgeLinkP(p.data(), localLinkId);
+      break;
+    case EdgePosition::D1_3D:
+      linkId = getEdgeLinkD1(p.data(), localLinkId);
+      break;
+    case EdgePosition::D2_3D:
+      linkId = getEdgeLinkD2(p.data(), localLinkId);
+      break;
+    case EdgePosition::D3_3D:
+      linkId = getEdgeLinkD3(p.data(), localLinkId);
+      break;
+    case EdgePosition::D4_3D:
+      linkId = getEdgeLinkD4(p.data(), localLinkId);
+      break;
+    case EdgePosition::L_2D:
+      linkId = getEdgeLink2dL(p.data(), localLinkId);
+      break;
+    case EdgePosition::H_2D:
+      linkId = getEdgeLink2dH(p.data(), localLinkId);
+      break;
+    case EdgePosition::D1_2D:
+      linkId = getEdgeLink2dD1(p.data(), localLinkId);
+      break;
+    default:
+      break;
   }
 
   return 0;
