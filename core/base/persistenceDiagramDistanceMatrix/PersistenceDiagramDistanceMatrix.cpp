@@ -98,13 +98,13 @@ std::vector<std::vector<double>> PersistenceDiagramDistanceMatrix::execute(
     } break;
     case ConstraintType::RELATIVE_PERSISTENCE_PER_DIAG:
       this->printMsg(
-        "Use the "
+        "Using the "
         + std::to_string(static_cast<int>(100 * (1 - this->MinPersistence)))
         + "% most persistent pairs of every diagram");
       break;
     case ConstraintType::RELATIVE_PERSISTENCE_GLOBAL:
       this->printMsg(
-        "Use the "
+        "Using the "
         + std::to_string(static_cast<int>(100 * (1 - this->MinPersistence)))
         + "% most persistent pairs of all diagrams");
       break;
