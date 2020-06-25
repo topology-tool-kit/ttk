@@ -866,39 +866,23 @@ inline SimplexId PeriodicImplicitTriangulation::getEdgeTriangleNumberInternal(
     return -1;
 #endif
 
-  if(dimensionality_ == 3) {
-    // L
-    if(edgeId < esetshift_[0]) {
+  switch(edgePositions_[edgeId]) {
+    case EdgePosition::L_3D:
+    case EdgePosition::H_3D:
+    case EdgePosition::P_3D:
+    case EdgePosition::D4_3D:
       return 6;
-    }
-    // H
-    else if(edgeId < esetshift_[1]) {
-      return 6;
-    }
-    // P
-    else if(edgeId < esetshift_[2]) {
-      return 6;
-    }
-    // D1
-    else if(edgeId < esetshift_[3]) {
+    case EdgePosition::D1_3D:
+    case EdgePosition::D2_3D:
+    case EdgePosition::D3_3D:
       return 4;
-    }
-    // D2
-    else if(edgeId < esetshift_[4]) {
-      return 4;
-    }
-    // D3
-    else if(edgeId < esetshift_[5]) {
-      return 4;
-    }
-    // D4
-    else if(edgeId < esetshift_[6])
-      return 6;
-  } else if(dimensionality_ == 2) {
-    return 2;
+    case EdgePosition::L_2D:
+    case EdgePosition::H_2D:
+    case EdgePosition::D1_2D:
+      return 2;
+    default:
+      return 0;
   }
-
-  return 0;
 }
 
 int PeriodicImplicitTriangulation::getEdgeTriangleInternal(
