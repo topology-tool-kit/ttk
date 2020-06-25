@@ -1310,40 +1310,29 @@ int PeriodicImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getTriangleLink)(
 #endif
 
   linkId = -1;
+  const auto &p = triangleCoords_[triangleId];
 
-  if(dimensionality_ == 3) {
-    SimplexId p[3];
-
-    // F
-    if(triangleId < tsetshift_[0]) {
-      triangleToPosition(triangleId, 0, p);
-      linkId = getTriangleLinkF(p, localLinkId);
-    }
-    // H
-    else if(triangleId < tsetshift_[1]) {
-      triangleToPosition(triangleId, 1, p);
-      linkId = getTriangleLinkH(p, localLinkId);
-    }
-    // C
-    else if(triangleId < tsetshift_[2]) {
-      triangleToPosition(triangleId, 2, p);
-      linkId = getTriangleLinkC(p, localLinkId);
-    }
-    // D1
-    else if(triangleId < tsetshift_[3]) {
-      triangleToPosition(triangleId, 3, p);
-      linkId = getTriangleLinkD1(p, localLinkId);
-    }
-    // D2
-    else if(triangleId < tsetshift_[4]) {
-      triangleToPosition(triangleId, 4, p);
-      linkId = getTriangleLinkD2(p, localLinkId);
-    }
-    // D3
-    else if(triangleId < tsetshift_[5]) {
-      triangleToPosition(triangleId, 5, p);
-      linkId = getTriangleLinkD3(p, localLinkId);
-    }
+  switch(trianglePositions_[triangleId]) {
+    case TrianglePosition::F_3D:
+      linkId = getTriangleLinkF(p.data(), localLinkId);
+      break;
+    case TrianglePosition::H_3D:
+      linkId = getTriangleLinkH(p.data(), localLinkId);
+      break;
+    case TrianglePosition::C_3D:
+      linkId = getTriangleLinkC(p.data(), localLinkId);
+      break;
+    case TrianglePosition::D1_3D:
+      linkId = getTriangleLinkD1(p.data(), localLinkId);
+      break;
+    case TrianglePosition::D2_3D:
+      linkId = getTriangleLinkD2(p.data(), localLinkId);
+      break;
+    case TrianglePosition::D3_3D:
+      linkId = getTriangleLinkD3(p.data(), localLinkId);
+      break;
+    default:
+      break;
   }
 
   return 0;
