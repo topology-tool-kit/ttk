@@ -1387,40 +1387,31 @@ int PeriodicImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getTriangleStar)(
 #endif
 
   starId = -1;
-  if(dimensionality_ == 3) {
-    SimplexId p[3];
+  const auto &p = triangleCoords_[triangleId];
 
-    // F
-    if(triangleId < tsetshift_[0]) {
-      triangleToPosition(triangleId, 0, p);
-      starId = getTriangleStarF(p, localStarId);
-    }
-    // H
-    else if(triangleId < tsetshift_[1]) {
-      triangleToPosition(triangleId, 1, p);
-      starId = getTriangleStarH(p, localStarId);
-    }
-    // C
-    else if(triangleId < tsetshift_[2]) {
-      triangleToPosition(triangleId, 2, p);
-      starId = getTriangleStarC(p, localStarId);
-    }
-    // D1
-    else if(triangleId < tsetshift_[3]) {
-      triangleToPosition(triangleId, 3, p);
-      starId = getTriangleStarD1(p, localStarId);
-    }
-    // D2
-    else if(triangleId < tsetshift_[4]) {
-      triangleToPosition(triangleId, 4, p);
-      starId = getTriangleStarD2(p, localStarId);
-    }
-    // D3
-    else if(triangleId < tsetshift_[5]) {
-      triangleToPosition(triangleId, 5, p);
-      starId = getTriangleStarD3(p, localStarId);
-    }
+  switch(trianglePositions_[triangleId]) {
+    case TrianglePosition::F_3D:
+      starId = getTriangleStarF(p.data(), localStarId);
+      break;
+    case TrianglePosition::H_3D:
+      starId = getTriangleStarH(p.data(), localStarId);
+      break;
+    case TrianglePosition::C_3D:
+      starId = getTriangleStarC(p.data(), localStarId);
+      break;
+    case TrianglePosition::D1_3D:
+      starId = getTriangleStarD1(p.data(), localStarId);
+      break;
+    case TrianglePosition::D2_3D:
+      starId = getTriangleStarD2(p.data(), localStarId);
+      break;
+    case TrianglePosition::D3_3D:
+      starId = getTriangleStarD3(p.data(), localStarId);
+      break;
+    default:
+      break;
   }
+
   return 0;
 }
 
