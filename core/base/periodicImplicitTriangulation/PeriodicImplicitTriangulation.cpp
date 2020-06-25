@@ -1138,77 +1138,50 @@ int PeriodicImplicitTriangulation::getTriangleVertexInternal(
 #endif
 
   vertexId = -1;
+  const auto &p = triangleCoords_[triangleId];
+  const SimplexId wrapXRight = (p[0] / 2 == nbvoxels_[Di_]) ? -wrap_[0] : 0;
+  const SimplexId wrapYBottom = (p[1] == nbvoxels_[Dj_]) ? -wrap_[1] : 0;
 
-  if(dimensionality_ == 3) {
-    SimplexId p[3];
-
-    // F
-    if(triangleId < tsetshift_[0]) {
-      triangleToPosition(triangleId, 0, p);
-      vertexId = getTriangleVertexF(p, localVertexId);
-    }
-    // H
-    else if(triangleId < tsetshift_[1]) {
-      triangleToPosition(triangleId, 1, p);
-      vertexId = getTriangleVertexH(p, localVertexId);
-    }
-    // C
-    else if(triangleId < tsetshift_[2]) {
-      triangleToPosition(triangleId, 2, p);
-      vertexId = getTriangleVertexC(p, localVertexId);
-    }
-    // D1
-    else if(triangleId < tsetshift_[3]) {
-      triangleToPosition(triangleId, 3, p);
-      vertexId = getTriangleVertexD1(p, localVertexId);
-    }
-    // D2
-    else if(triangleId < tsetshift_[4]) {
-      triangleToPosition(triangleId, 4, p);
-      vertexId = getTriangleVertexD2(p, localVertexId);
-    }
-    // D3
-    else if(triangleId < tsetshift_[5]) {
-      triangleToPosition(triangleId, 5, p);
-      vertexId = getTriangleVertexD3(p, localVertexId);
-    }
-  } else if(dimensionality_ == 2) {
-    SimplexId p[2];
-    triangleToPosition2d(triangleId, p);
-    const SimplexId id = triangleId % 2;
-
-    SimplexId wrapXRight = 0;
-    SimplexId wrapYBottom = 0;
-    if(p[0] / 2 == nbvoxels_[Di_])
-      wrapXRight = -wrap_[0];
-    if(p[1] == nbvoxels_[Dj_])
-      wrapYBottom = -wrap_[1];
-    if(id == 0) {
-      switch(localVertexId) {
-        case 0:
-          vertexId = p[0] / 2 + p[1] * vshift_[0];
-          break;
-        case 1:
-          vertexId = p[0] / 2 + p[1] * vshift_[0] + 1 + wrapXRight;
-          break;
-        case 2:
-          vertexId = p[0] / 2 + p[1] * vshift_[0] + vshift_[0] + wrapYBottom;
-          break;
+  switch(trianglePositions_[triangleId]) {
+    case TrianglePosition::F_3D:
+      vertexId = getTriangleVertexF(p.data(), localVertexId);
+      break;
+    case TrianglePosition::H_3D:
+      vertexId = getTriangleVertexH(p.data(), localVertexId);
+      break;
+    case TrianglePosition::C_3D:
+      vertexId = getTriangleVertexC(p.data(), localVertexId);
+      break;
+    case TrianglePosition::D1_3D:
+      vertexId = getTriangleVertexD1(p.data(), localVertexId);
+      break;
+    case TrianglePosition::D2_3D:
+      vertexId = getTriangleVertexD2(p.data(), localVertexId);
+      break;
+    case TrianglePosition::D3_3D:
+      vertexId = getTriangleVertexD3(p.data(), localVertexId);
+      break;
+    case TrianglePosition::TOP_2D:
+      if(localVertexId == 0) {
+        vertexId = p[0] / 2 + p[1] * vshift_[0];
+      } else if(localVertexId == 1) {
+        vertexId = p[0] / 2 + p[1] * vshift_[0] + 1 + wrapXRight;
+      } else if(localVertexId == 2) {
+        vertexId = p[0] / 2 + p[1] * vshift_[0] + vshift_[0] + wrapYBottom;
       }
-    } else {
-      switch(localVertexId) {
-        case 0:
-          vertexId = p[0] / 2 + p[1] * vshift_[0] + 1 + wrapXRight;
-          break;
-        case 1:
-          vertexId = p[0] / 2 + p[1] * vshift_[0] + vshift_[0] + 1 + wrapXRight
-                     + wrapYBottom;
-          break;
-        case 2:
-          vertexId = p[0] / 2 + p[1] * vshift_[0] + vshift_[0] + wrapYBottom;
-          break;
+      break;
+    case TrianglePosition::BOTTOM_2D:
+      if(localVertexId == 0) {
+        vertexId = p[0] / 2 + p[1] * vshift_[0] + 1 + wrapXRight;
+      } else if(localVertexId == 1) {
+        vertexId = p[0] / 2 + p[1] * vshift_[0] + vshift_[0] + 1 + wrapXRight
+                   + wrapYBottom;
+      } else if(localVertexId == 2) {
+        vertexId = p[0] / 2 + p[1] * vshift_[0] + vshift_[0] + wrapYBottom;
       }
-    }
+      break;
+    default:
+      break;
   }
 
   return 0;
