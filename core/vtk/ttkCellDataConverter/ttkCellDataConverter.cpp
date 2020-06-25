@@ -1,4 +1,5 @@
 #include <ttkCellDataConverter.h>
+#include <ttkUtils.h>
 
 #ifdef _WIN32
 #include <ciso646>
@@ -7,9 +8,8 @@
 using namespace std;
 using namespace ttk;
 
-vtkStandardNewMacro(ttkCellDataConverter)
-
-  ttkCellDataConverter::ttkCellDataConverter() {
+vtkStandardNewMacro(ttkCellDataConverter);
+ttkCellDataConverter::ttkCellDataConverter() {
   OutputType = 0;
   UseNormalization = false;
   UseAllCores = true;
@@ -39,14 +39,14 @@ int ttkCellDataConverter::updateProgress(const float &progress) {
 
 template <typename A, typename B, typename C>
 int ttkCellDataConverter::convert(vtkDataArray *inputData, vtkDataSet *output) {
-  A *input_ptr = static_cast<A *>(inputData->GetVoidPointer(0));
+  A *input_ptr = static_cast<A *>(ttkUtils::GetVoidPointer(inputData));
   int n = inputData->GetNumberOfComponents();
   vtkIdType N = inputData->GetNumberOfTuples();
   B *output_ptr = new B[N * n];
 
   if(UseNormalization) {
-    double type_min = numeric_limits<B>::min();
-    double type_max = numeric_limits<B>::max();
+    auto type_min = static_cast<double>(numeric_limits<B>::min());
+    auto type_max = static_cast<double>(numeric_limits<B>::max());
 
     for(int k = 0; k < n; ++k) {
       double *input_limits = inputData->GetRange();
@@ -93,6 +93,7 @@ int ttkCellDataConverter::doIt(vtkDataSet *input, vtkDataSet *output) {
   if(OutputType == SupportedType::Float or OutputType == SupportedType::Double)
     UseNormalization = false;
 
+  // TODO use switch case here
   if(InputType == VTK_CHAR) {
     if(OutputType == SupportedType::Double)
       convert<char, double, vtkDoubleArray>(inputScalarField, output);
@@ -268,7 +269,7 @@ int ttkCellDataConverter::RequestData(vtkInformation *request,
   vtkDataSet *input = vtkDataSet::GetData(inputVector[0]);
   vtkDataSet *output = vtkDataSet::GetData(outputVector);
 
-  doIt(input, output);
+  int status = doIt(input, output);
 
   {
     stringstream msg;
@@ -277,5 +278,5 @@ int ttkCellDataConverter::RequestData(vtkInformation *request,
     dMsg(cout, msg.str(), memoryMsg);
   }
 
-  return 1;
+  return !status; // VTK use true/false
 }

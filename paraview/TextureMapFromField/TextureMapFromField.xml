@@ -5,16 +5,16 @@
        a filter already in ParaView (in Servers/ServerManager/Resources/*.xml)
        that matches your filter and then model your xml on it -->
   <ProxyGroup name="filters">
-   <SourceProxy 
-     name="TextureMapFromField" 
-     class="ttkTextureMapFromField" 
+   <SourceProxy
+     name="TextureMapFromField"
+     class="ttkTextureMapFromField"
      label="TTK TextureMapFromField">
      <Documentation
-        long_help="TTK plugin which generates a texture map from one or two 
+        long_help="TTK plugin which generates a texture map from one or two
 point data scalar fields."
-        short_help="TTK plugin which generates a texture map from one or two 
+        short_help="TTK plugin which generates a texture map from one or two
 point data scalar fields.">
-          This plugin is useful to convert scalar fields to texture coordinates 
+          This plugin is useful to convert scalar fields to texture coordinates
 or to generate texture-based level lines out of a single scalar fields.
      </Documentation>
      <InputProperty
@@ -36,7 +36,7 @@ or to generate texture-based level lines out of a single scalar fields.
       </InputProperty>
 
 
-      
+
       <IntVectorProperty
          name="OnlyUComponent"
          label="Only U Component"
@@ -48,7 +48,7 @@ or to generate texture-based level lines out of a single scalar fields.
           Define only the U component (set the V component to 0).
          </Documentation>
       </IntVectorProperty>
-     
+
       <IntVectorProperty
          name="RepeatUTexture"
          label="Repeat U Texture"
@@ -60,7 +60,7 @@ or to generate texture-based level lines out of a single scalar fields.
           Repeat texture on the U component.
          </Documentation>
       </IntVectorProperty>
-      
+
       <StringVectorProperty
         name="U Component"
         command="SetUComponent"
@@ -91,7 +91,7 @@ or to generate texture-based level lines out of a single scalar fields.
           Define only the V component (set the U component to 0).
          </Documentation>
       </IntVectorProperty>
-     
+
       <IntVectorProperty
          name="RepeatVTexture"
          label="Repeat V Texture"
@@ -103,7 +103,7 @@ or to generate texture-based level lines out of a single scalar fields.
           Repeat texture on the V component.
          </Documentation>
       </IntVectorProperty>
-      
+
       <StringVectorProperty
         name="V Component"
         command="SetVComponent"
@@ -121,7 +121,7 @@ or to generate texture-based level lines out of a single scalar fields.
         <Documentation>
           Select the scalar field to use as the V component.
         </Documentation>
-      </StringVectorProperty> 
+      </StringVectorProperty>
 
       <IntVectorProperty
          name="UseAllCores"
@@ -134,7 +134,7 @@ or to generate texture-based level lines out of a single scalar fields.
           Use all available cores.
          </Documentation>
       </IntVectorProperty>
-      
+
       <IntVectorProperty
          name="ThreadNumber"
          label="Thread Number"
@@ -153,11 +153,11 @@ or to generate texture-based level lines out of a single scalar fields.
           Thread number.
          </Documentation>
       </IntVectorProperty>
-      
+
       <IntVectorProperty
          name="DebugLevel"
          label="Debug Level"
-         command="SetdebugLevel_"
+         command="SetDebugLevel"
          number_of_elements="1"
          default_values="3" panel_visibility="advanced">
         <IntRangeDomain name="range" min="0" max="100" />
@@ -165,13 +165,13 @@ or to generate texture-based level lines out of a single scalar fields.
            Debug level.
          </Documentation>
       </IntVectorProperty>
-      
+
       <PropertyGroup panel_widget="Line" label="Testing">
         <Property name="UseAllCores" />
         <Property name="ThreadNumber" />
         <Property name="DebugLevel" />
-      </PropertyGroup>      
-     
+      </PropertyGroup>
+
       <PropertyGroup panel_widget="Line" label="Input options">
         <Property name="OnlyUComponent" />
         <Property name="RepeatUTexture" />
@@ -179,12 +179,12 @@ or to generate texture-based level lines out of a single scalar fields.
         <Property name="OnlyVComponent" />
         <Property name="RepeatVTexture" />
         <Property name="V Component" />
-      </PropertyGroup>     
-      
+      </PropertyGroup>
+
       <Hints>
         <ShowInMenu category="TTK - Misc" />
       </Hints>
-      
+
    </SourceProxy>
  </ProxyGroup>
 </ServerManagerConfiguration>

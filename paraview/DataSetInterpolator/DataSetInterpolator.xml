@@ -5,9 +5,9 @@
   a filter already in ParaView (in Servers/ServerManager/Resources/*.xml)
   that matches your filter and then model your xml on it -->
   <ProxyGroup name="filters">
-    <SourceProxy 
-      name="DataSetInterpolator" 
-      class="ttkDataSetInterpolator" 
+    <SourceProxy
+      name="DataSetInterpolator"
+      class="ttkDataSetInterpolator"
       label="TTK DataSetInterpolator">
       <Documentation
         long_help="TTK dataSetInterpolator plugin."
@@ -83,7 +83,7 @@
       <IntVectorProperty
         name="DebugLevel"
         label="Debug Level"
-        command="SetdebugLevel_"
+        command="SetDebugLevel"
         number_of_elements="1"
         default_values="3" panel_visibility="advanced">
         <IntRangeDomain name="range" min="0" max="100" />

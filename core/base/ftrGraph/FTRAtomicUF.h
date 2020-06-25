@@ -97,8 +97,6 @@ namespace ttk {
           uf0->setRank(uf0->getRank() + 1);
           return uf0;
         }
-
-        return NULL;
       }
 
       static inline AtomicUF *makeUnion(std::vector<AtomicUF *> &sets) {

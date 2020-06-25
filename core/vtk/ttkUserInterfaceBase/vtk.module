@@ -1,0 +1,6 @@
+NAME
+ ttkUserInterfaceBase
+DEPENDS
+  VTK::FiltersCore
+PRIVATE_DEPENDS
+  VTK::CommonCore

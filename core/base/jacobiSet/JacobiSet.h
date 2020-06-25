@@ -25,10 +25,12 @@
 #define _JACOBISET_H
 
 // base code includes
+#include <Debug.h>
 #include <ScalarFieldCriticalPoints.h>
 #include <Triangulation.h>
 #include <UnionFind.h>
 #include <Wrapper.h>
+#include <vector>
 
 namespace ttk {
 
@@ -40,19 +42,13 @@ namespace ttk {
 
     ~JacobiSet();
 
-    int connectivityPreprocessing(
-      const std::vector<std::vector<SimplexId>> &edgeStarList,
-      std::vector<std::vector<std::pair<SimplexId, SimplexId>>>
-        &edgeFanLinkEdgeLists,
-      std::vector<std::vector<LongSimplexId>> &edgeFans,
-      std::vector<SimplexId> &sosOffsets) const;
-
     int execute(std::vector<std::pair<SimplexId, char>> &jacobiSet);
 
     char getCriticalType(const SimplexId &edgeId);
 
-    int perturbate(const dataTypeU &uEpsilon = pow(10, -DBL_DIG),
-                   const dataTypeV &vEpsilon = pow(10, -DBL_DIG)) const;
+    int perturbate(const dataTypeU &uEpsilon = Geometry::powIntTen(-DBL_DIG),
+                   const dataTypeV &vEpsilon
+                   = Geometry::powIntTen(-DBL_DIG)) const;
 
     int setEdgeFans(const std::vector<std::vector<SimplexId>> *edgeFans) {
       edgeFans_ = edgeFans;
@@ -112,8 +108,8 @@ namespace ttk {
 
       // pre-condition functions
       if(triangulation_) {
-        triangulation_->preprocessEdges();
-        triangulation_->preprocessEdgeStars();
+        triangulation_->preconditionEdges();
+        triangulation_->preconditionEdgeStars();
       }
 
       return 0;
@@ -138,6 +134,6 @@ namespace ttk {
 } // namespace ttk
 
 // if the package is not a template, comment the following line
-#include <JacobiSet.inl>
+#include "JacobiSet.inl"
 
 #endif // JACOBISET_H

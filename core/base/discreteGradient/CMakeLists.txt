@@ -4,10 +4,8 @@ ttk_add_base_library(discreteGradient
   HEADERS
     DiscreteGradient.h
     DiscreteGradient_Template.h
-  LINK
+  DEPENDS
     triangulation
-    geometry
-    scalarFieldCriticalPoints
     ftmTree
     )
 
@@ -17,4 +15,3 @@ mark_as_advanced(TTK_ENABLE_DCG_OPTIMIZE_MEMORY)
 if (TTK_ENABLE_DCG_OPTIMIZE_MEMORY)
   target_compile_definitions(discreteGradient PUBLIC TTK_ENABLE_DCG_OPTIMIZE_MEMORY)
 endif()
-

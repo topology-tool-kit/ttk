@@ -1,6 +1,6 @@
 /// \sa ttk::ftm::FTMTree
-#ifndef _VTK_CONTOURFORESTS_H
-#define _VTK_CONTOURFORESTS_H
+#ifndef _VTK_FTMTREE__H
+#define _VTK_FTMTREE__H
 
 // VTK includes
 #include <vtkCellData.h>
@@ -24,26 +24,26 @@
 #include <vtkType.h>
 #include <vtkUnstructuredGrid.h>
 
+// VTK module
+#include <ttkFTMTreeModule.h>
+
 // ttk code includes
 #include <FTMTree.h>
 #include <ttkFTMStructures.h>
-#include <ttkWrapper.h>
+#include <ttkTriangulationAlgorithm.h>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkFTMTree : public vtkDataSetAlgorithm,
-                                         public ttk::Wrapper
-#else
-class ttkFTMTree : public vtkDataSetAlgorithm,
-                   public ttk::Wrapper
-#endif
-{
+class TTKFTMTREE_EXPORT ttkFTMTree : public vtkDataSetAlgorithm,
+                                     protected ttk::Wrapper {
 public:
   static ttkFTMTree *New();
 
   vtkTypeMacro(ttkFTMTree, vtkDataSetAlgorithm);
 
   // default ttk setters
-  vtkSetMacro(debugLevel_, int);
+  void SetDebugLevel(int debugLevel) {
+    setDebugLevel(debugLevel);
+    Modified();
+  }
 
   void SetThreadNumber(int threadNumber) {
     ThreadNumber = threadNumber;
@@ -59,8 +59,8 @@ public:
   vtkSetMacro(ScalarField, std::string);
   vtkGetMacro(ScalarField, std::string);
 
-  vtkSetMacro(ForceInputOffsetScalarField, int);
-  vtkGetMacro(ForceInputOffsetScalarField, int);
+  vtkSetMacro(ForceInputOffsetScalarField, bool);
+  vtkGetMacro(ForceInputOffsetScalarField, bool);
 
   vtkSetMacro(InputOffsetScalarFieldName, std::string);
   vtkGetMacro(InputOffsetScalarFieldName, std::string);
@@ -155,7 +155,7 @@ public:
 
 protected:
   ttkFTMTree();
-  ~ttkFTMTree();
+  ~ttkFTMTree() override;
 
   TTK_SETUP();
 
@@ -185,4 +185,4 @@ private:
   bool hasUpdatedMesh_;
 };
 
-#endif // _VTK_CONTOURFORESTS_H
+#endif // _VTK_FTMTREE__H

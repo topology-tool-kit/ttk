@@ -12,11 +12,10 @@ ttk_add_base_library(fiberSurface
     FiberSurface.cpp
   HEADERS
     FiberSurface.h
-  LINK
+  DEPENDS
     ${DEPS}
     )
 
 if (TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE)
   target_compile_definitions(fiberSurface PUBLIC TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE)
 endif()
-

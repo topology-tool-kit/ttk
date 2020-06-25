@@ -5,9 +5,9 @@
   a filter already in ParaView (in Servers/ServerManager/Resources/*.xml)
   that matches your filter and then model your xml on it -->
   <ProxyGroup name="filters">
-    <SourceProxy 
-      name="DataSetToTable" 
-      class="ttkDataSetToTable" 
+    <SourceProxy
+      name="DataSetToTable"
+      class="ttkDataSetToTable"
       label="TTK DataSetToTable">
       <Documentation
         long_help="TTK fieldSelector plugin."
@@ -42,9 +42,10 @@
         <EnumerationDomain name="enum">
           <Entry value="0" text="Point"/>
           <Entry value="1" text="Cell"/>
+          <Entry value="2" text="Field"/>
         </EnumerationDomain>
         <Documentation>
-          Set the input data association (point or cell).
+          Set the input data association (point, cell or field data).
         </Documentation>
       </IntVectorProperty>
 
@@ -75,7 +76,7 @@
       <IntVectorProperty
         name="DebugLevel"
         label="Debug Level"
-        command="SetdebugLevel_"
+        command="SetDebugLevel"
         number_of_elements="1"
         default_values="3" panel_visibility="advanced">
         <IntRangeDomain name="range" min="0" max="100" />

@@ -13,17 +13,14 @@
 #include "vtkPoints.h"
 #include "vtkSmartPointer.h"
 #include "vtkUnstructuredGridAlgorithm.h"
-#include <vtkFiltersCoreModule.h>
+
+#include <ttkOFFReaderModule.h>
+#include <vtkDataSetReader.h>
 
 #include <string>
 #include <vector>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkOFFReader
-#else
-class ttkOFFReader
-#endif
-  : public vtkUnstructuredGridAlgorithm {
+class TTKOFFREADER_EXPORT ttkOFFReader : public vtkUnstructuredGridAlgorithm {
 public:
   vtkTypeMacro(ttkOFFReader, vtkUnstructuredGridAlgorithm);
   void PrintSelf(ostream &os, vtkIndent indent) override;
@@ -37,7 +34,7 @@ public:
 
 protected:
   ttkOFFReader();
-  ~ttkOFFReader() = default;
+  ~ttkOFFReader() override = default;
 
   int RequestData(vtkInformation *,
                   vtkInformationVector **,

@@ -64,9 +64,12 @@
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnstructuredGrid.h>
 
+// VTK Module
+#include <ttkMandatoryCriticalPointsModule.h>
+
 // ttk code includes
 #include <MandatoryCriticalPoints.h>
-#include <ttkWrapper.h>
+#include <ttkTriangulationAlgorithm.h>
 
 #include <queue>
 #include <utility>
@@ -76,13 +79,9 @@
 // data-set on the output - to adapt.
 // see the documentation of the vtkAlgorithm class to decide from which VTK
 // class your wrapper should inherit.
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkMandatoryCriticalPoints
-#else
-class ttkMandatoryCriticalPoints
-#endif
+class TTKMANDATORYCRITICALPOINTS_EXPORT ttkMandatoryCriticalPoints
   : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+    protected ttk::Wrapper {
 
 public:
   static ttkMandatoryCriticalPoints *New();
@@ -98,7 +97,7 @@ public:
 
   void SetDebugLevel(int debugLevel) {
     if(debugLevel != debugLevel_) {
-      debugLevel_ = debugLevel;
+      setDebugLevel(debugLevel);
       computeAll_ = true;
       Modified();
     }
@@ -207,7 +206,7 @@ public:
 protected:
   ttkMandatoryCriticalPoints();
 
-  ~ttkMandatoryCriticalPoints();
+  ~ttkMandatoryCriticalPoints() override;
 
   int FillInputPortInformation(int port, vtkInformation *info) override;
   int FillOutputPortInformation(int port, vtkInformation *info) override;

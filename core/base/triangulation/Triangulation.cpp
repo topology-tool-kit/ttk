@@ -4,18 +4,20 @@ using namespace std;
 using namespace ttk;
 
 Triangulation::Triangulation()
-  : AbstractTriangulation{}, gridDimensions_{-1, -1, -1},
-    abstractTriangulation_{nullptr}, usePeriodicBoundaries_{false} {
+  : AbstractTriangulation{}, abstractTriangulation_{nullptr} {
   debugLevel_ = 0; // overrides the global debug level.
+  gridDimensions_ = {-1, -1, -1};
+  hasPeriodicBoundaries_ = false;
 }
 
 Triangulation::Triangulation(const Triangulation &rhs)
-  : AbstractTriangulation(rhs), gridDimensions_{rhs.gridDimensions_},
-    abstractTriangulation_{nullptr},
+  : AbstractTriangulation(rhs), abstractTriangulation_{nullptr},
     explicitTriangulation_{rhs.explicitTriangulation_},
     implicitTriangulation_{rhs.implicitTriangulation_},
-    periodicImplicitTriangulation_{rhs.periodicImplicitTriangulation_},
-    usePeriodicBoundaries_{rhs.usePeriodicBoundaries_} {
+    periodicImplicitTriangulation_{rhs.periodicImplicitTriangulation_} {
+
+  gridDimensions_ = rhs.gridDimensions_;
+  hasPeriodicBoundaries_ = rhs.hasPeriodicBoundaries_;
 
   if(rhs.abstractTriangulation_ == &rhs.explicitTriangulation_) {
     abstractTriangulation_ = &explicitTriangulation_;
@@ -27,14 +29,14 @@ Triangulation::Triangulation(const Triangulation &rhs)
 }
 
 Triangulation::Triangulation(Triangulation &&rhs)
-  : AbstractTriangulation(std::move(rhs)), gridDimensions_{std::move(
-                                             rhs.gridDimensions_)},
-    abstractTriangulation_{nullptr}, explicitTriangulation_{std::move(
-                                       rhs.explicitTriangulation_)},
+  : AbstractTriangulation(std::move(rhs)), abstractTriangulation_{nullptr},
+    explicitTriangulation_{std::move(rhs.explicitTriangulation_)},
     implicitTriangulation_{std::move(rhs.implicitTriangulation_)},
     periodicImplicitTriangulation_{
-      std::move(rhs.periodicImplicitTriangulation_)},
-    usePeriodicBoundaries_{std::move(rhs.usePeriodicBoundaries_)} {
+      std::move(rhs.periodicImplicitTriangulation_)} {
+
+  gridDimensions_ = std::move(rhs.gridDimensions_);
+  hasPeriodicBoundaries_ = rhs.hasPeriodicBoundaries_;
 
   if(rhs.abstractTriangulation_ == &rhs.explicitTriangulation_) {
     abstractTriangulation_ = &explicitTriangulation_;
@@ -53,7 +55,7 @@ Triangulation &Triangulation::operator=(const Triangulation &rhs) {
     explicitTriangulation_ = rhs.explicitTriangulation_;
     implicitTriangulation_ = rhs.implicitTriangulation_;
     periodicImplicitTriangulation_ = rhs.periodicImplicitTriangulation_;
-    usePeriodicBoundaries_ = rhs.usePeriodicBoundaries_;
+    hasPeriodicBoundaries_ = rhs.hasPeriodicBoundaries_;
 
     if(rhs.abstractTriangulation_ == &rhs.explicitTriangulation_) {
       abstractTriangulation_ = &explicitTriangulation_;
@@ -76,7 +78,7 @@ Triangulation &Triangulation::operator=(Triangulation &&rhs) {
     implicitTriangulation_ = std::move(rhs.implicitTriangulation_);
     periodicImplicitTriangulation_
       = std::move(rhs.periodicImplicitTriangulation_);
-    usePeriodicBoundaries_ = std::move(rhs.usePeriodicBoundaries_);
+    hasPeriodicBoundaries_ = std::move(rhs.hasPeriodicBoundaries_);
 
     if(rhs.abstractTriangulation_ == &rhs.explicitTriangulation_) {
       abstractTriangulation_ = &explicitTriangulation_;

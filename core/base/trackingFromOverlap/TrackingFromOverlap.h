@@ -30,24 +30,23 @@
 
 using namespace std;
 
-typedef unsigned char topologyType;
-typedef long long int idType;
+using topologyType = unsigned char;
+using idType = long long int;
 
-typedef boost::variant<double,
-                       float,
-                       long long,
-                       unsigned long long,
-                       long,
-                       unsigned long,
-                       int,
-                       unsigned int,
-                       short,
-                       unsigned short,
-                       char,
-                       signed char,
-                       unsigned char>
-  labelTypeVariant;
-typedef float sizeType;
+using labelTypeVariant = boost::variant<double,
+                                        float,
+                                        long long,
+                                        unsigned long long,
+                                        long,
+                                        unsigned long,
+                                        int,
+                                        unsigned int,
+                                        short,
+                                        unsigned short,
+                                        char,
+                                        signed char,
+                                        unsigned char>;
+using sizeType = float;
 
 struct Node {
   labelTypeVariant label{};
@@ -63,8 +62,8 @@ struct Node {
   Node() = default;
 };
 
-typedef vector<idType> Edges; // [index0, index1, overlap, branch,...]
-typedef vector<Node> Nodes;
+using Edges = vector<idType>; // [index0, index1, overlap, branch,...]
+using Nodes = vector<Node>;
 
 struct CoordinateComparator {
   const float *coordinates;

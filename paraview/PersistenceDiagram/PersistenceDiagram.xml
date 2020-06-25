@@ -13,26 +13,26 @@
         long_help="TTK plugin for the computation of persistence diagrams."
         short_help="TTK plugin for the computation of persistence diagrams.">
         TTK plugin for the computation of persistence diagrams.
-        
-This plugin computes the persistence diagram of the extremum-saddle pairs 
+
+This plugin computes the persistence diagram of the extremum-saddle pairs
 of an input scalar field. The X-coordinate of each pair corresponds to its
 birth, while its smallest and highest Y-coordinates correspond to its birth
-and death respectively. 
+and death respectively.
 
-In practice, the diagram is represented by a vtkUnstructuredGrid. Each 
-vertex of this mesh represent a critical point of the input data. It is 
+In practice, the diagram is represented by a vtkUnstructuredGrid. Each
+vertex of this mesh represent a critical point of the input data. It is
 associated with point data (vertexId, critical type). Each vertical edge
 of this mesh represent a persistence pair. It is associated with cell data
 (persistence of the pair, critical index of the extremum of the pair).
-The diagonal of the diagram can be filtered out by considering its 
+The diagonal of the diagram can be filtered out by considering its
 PairIdentifier value (set at -1).
 
-Persistence diagrams are useful and stable concise representations of the 
-topological features of a data-set. It is useful to fine-tune persistence 
-thresholds for topological simplification or for fast similarity 
-estimations for instance. 
+Persistence diagrams are useful and stable concise representations of the
+topological features of a data-set. It is useful to fine-tune persistence
+thresholds for topological simplification or for fast similarity
+estimations for instance.
 
-See also ContourForests, PersistenceCurve, ScalarFieldCriticalPoints, 
+See also ContourForests, PersistenceCurve, ScalarFieldCriticalPoints,
 TopologicalSimplification.
       </Documentation>
 
@@ -84,11 +84,11 @@ TopologicalSimplification.
          default_values="0">
         <BooleanDomain name="bool"/>
          <Documentation>
-          Check this box to force the usage of a specific input scalar field 
+          Check this box to force the usage of a specific input scalar field
           as vertex offset (used to disambiguate flat plateaus).
          </Documentation>
       </IntVectorProperty>
- 
+
        <StringVectorProperty
         name="InputOffsetScalarFieldName"
         command="SetInputOffsetScalarFieldName"
@@ -188,16 +188,16 @@ TopologicalSimplification.
       <IntVectorProperty
         name="DebugLevel"
         label="Debug Level"
-        command="SetdebugLevel_"
+        command="SetDebugLevel"
         number_of_elements="1"
-        default_values="3" panel_visibility="advanced">
+        default_values='3' panel_visibility="advanced">
         <IntRangeDomain name="range" min="0" max="100" />
         <Documentation>
           Debug level.
         </Documentation>
       </IntVectorProperty>
 
-      
+
 
       <PropertyGroup panel_widget="Line" label="Input options">
         <Property name="ScalarField" />
@@ -210,12 +210,12 @@ TopologicalSimplification.
         <Property name="SaddleConnectors" />
         <Property name="ShowInsideDomain" />
       </PropertyGroup>
-      
+
       <PropertyGroup panel_widget="Line" label="Testing">
         <Property name="UseAllCores" />
         <Property name="ThreadNumber" />
         <Property name="DebugLevel" />
-        
+
       </PropertyGroup>
 <!--       <OutputPort name="Persistence Diagram" index="2" id="port2"/> -->
 

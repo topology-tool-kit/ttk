@@ -5,9 +5,9 @@
        a filter already in ParaView (in Servers/ServerManager/Resources/*.xml)
        that matches your filter and then model your xml on it -->
   <ProxyGroup name="filters">
-   <SourceProxy 
-     name="ScalarFieldCriticalPoints" 
-     class="ttkScalarFieldCriticalPoints" 
+   <SourceProxy
+     name="ScalarFieldCriticalPoints"
+     class="ttkScalarFieldCriticalPoints"
      label="TTK ScalarFieldCriticalPoints">
      <Documentation
        long_help="TTK plugin for the computation of critical points in PL
@@ -15,12 +15,12 @@
        short_help="TTK plugin for the computation of critical points in PL
        scalar fields defined on PL manifolds.">
 
-       This plugin computes the list of critical points of the input scalar field 
+       This plugin computes the list of critical points of the input scalar field
        and classify them according to their type.
 
        Related publication:
        "Critical points and curvature for embedded polyhedral surfaces"
-       Thomas Banchoff 
+       Thomas Banchoff
        American Mathematical Monthly, 1970.
 
        CriticalType:
@@ -49,13 +49,13 @@
         </Documentation>
       </InputProperty>
 
-      <StringVectorProperty
-        name="Scalar Field"
-        command="SetScalarField"
-        number_of_elements="1"
-        animateable="0"
-        label="Scalar Field"
-        >
+      <StringVectorProperty 
+          name="ScalarFieldNew" 
+          label="Scalar Field" 
+          command="SetInputArrayToProcess" 
+          element_types="0 0 0 0 2" 
+          default_values="0"
+          number_of_elements="5">
         <ArrayListDomain
           name="array_list"
           default_values="0">
@@ -67,7 +67,7 @@
           Select the scalar field to process
         </Documentation>
       </StringVectorProperty>
-     
+
       <IntVectorProperty name="With predefined offset"
         label="Force Input Offset Field"
         command="SetForceInputOffsetScalarField"
@@ -80,15 +80,14 @@
           as vertex offset (used to disambiguate flat plateaus).
         </Documentation>
       </IntVectorProperty>
-      
-      <StringVectorProperty
-        name="Offset"
-        command="SetOffsetField"
-        number_of_elements="1"
-        animateable="0"
-        label="Input Offset field"
-        panel_visibility="advanced"
-        >
+
+      <StringVectorProperty 
+          name="OffsetNew" 
+          label="Input Offset Field" 
+          command="SetInputArrayToProcess" 
+          element_types="0 0 0 0 2" 
+          default_values="1"
+          number_of_elements="5">
         <ArrayListDomain
           name="array_list"
           default_values="0">
@@ -103,11 +102,11 @@
             value="1" />
         </Hints>
         <Documentation>
-          Select the scalar field to use as a vertex offset (used to 
+          Select the scalar field to use as a vertex offset (used to
 disambiguate flat plateaus).
         </Documentation>
       </StringVectorProperty>
-      
+
       <IntVectorProperty name="With boundary mask"
        command="SetVertexBoundary"
        number_of_elements="1"
@@ -117,7 +116,7 @@ disambiguate flat plateaus).
           Indicate if a critical point is on the boundary or not.
         </Documentation>
       </IntVectorProperty>
-      
+
       <IntVectorProperty name="With vertex identifiers"
        command="SetVertexIds"
        number_of_elements="1"
@@ -137,76 +136,29 @@ disambiguate flat plateaus).
           Add vertex scalars on the output.
         </Documentation>
       </IntVectorProperty>
-      
-      <IntVectorProperty
-         name="UseAllCores"
-         label="Use All Cores"
-         command="SetUseAllCores"
-         number_of_elements="1"
-         default_values="1" panel_visibility="advanced">
-        <BooleanDomain name="bool"/>
-         <Documentation>
-          Use all available cores
-         </Documentation>
-      </IntVectorProperty>
-      
-      <IntVectorProperty
-         name="ThreadNumber"
-         label="Thread Number"
-         command="SetThreadNumber"
-         number_of_elements="1"
-         default_values="1" panel_visibility="advanced">
-        <IntRangeDomain name="range" min="1" max="100" />
-        <Hints>
-          <PropertyWidgetDecorator type="GenericDecorator"
-            mode="visibility"
-            property="UseAllCores"
-            value="0" />
-        </Hints>
 
-         <Documentation>
-          Thread number
-         </Documentation>
-      </IntVectorProperty>
-      
-      <IntVectorProperty
-         name="DebugLevel"
-         label="Debug Level"
-         command="SetdebugLevel_"
-         number_of_elements="1"
-         default_values="3" panel_visibility="advanced">
-        <IntRangeDomain name="range" min="0" max="100" />
-         <Documentation>
-           Debug level
-         </Documentation>
-      </IntVectorProperty>
-      
       <PropertyGroup panel_widget="Line" label="Input options">
-        <Property name="Scalar Field" />
+        <Property name="ScalarFieldNew" />
         <Property name="With predefined offset" />
-        <Property name="Offset" />
+        <Property name="OffsetNew" />
       </PropertyGroup>
-      
-      <PropertyGroup panel_widget="Line" label="Testing">
-        <Property name="UseAllCores" />
-        <Property name="ThreadNumber" />
-        <Property name="DebugLevel" />
-      </PropertyGroup>
-      
+
       <PropertyGroup panel_widget="Line" label="Output options">
         <Property name="With boundary mask" />
         <Property name="With vertex identifiers" />
         <Property name="With vertex scalars" />
       </PropertyGroup>
 
+      ${DEBUG_WIDGETS}
+      
       <Hints>
         <ShowInMenu category="TTK - Scalar Data" />
       </Hints>
-      
+
       <Hints>
         <Visibility replace_input="0" />
       </Hints>
-      
+
    </SourceProxy>
  </ProxyGroup>
 </ServerManagerConfiguration>

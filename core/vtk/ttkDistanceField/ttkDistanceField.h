@@ -44,27 +44,27 @@
 #include <vtkPointSet.h>
 #include <vtkSmartPointer.h>
 
+// VTK Module
+#include <ttkDistanceFieldModule.h>
+
 // ttk code includes
 #include <DistanceField.h>
-#include <ttkWrapper.h>
+#include <ttkTriangulationAlgorithm.h>
 
 enum DistanceType { Float = 0, Double };
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkDistanceField
-#else
-class ttkDistanceField
-#endif
-  : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+class TTKDISTANCEFIELD_EXPORT ttkDistanceField : public vtkDataSetAlgorithm,
+                                                 protected ttk::Wrapper {
 
 public:
   static ttkDistanceField *New();
 
   vtkTypeMacro(ttkDistanceField, vtkDataSetAlgorithm);
 
-  vtkSetMacro(debugLevel_, int);
-
+  void SetDebugLevel(int debugLevel) {
+    setDebugLevel(debugLevel);
+    Modified();
+  }
   void SetThreadNumber(int threadNumber) {
     ThreadNumber = threadNumber;
     SetThreads();
@@ -81,8 +81,8 @@ public:
   vtkSetMacro(OutputScalarFieldName, std::string);
   vtkGetMacro(OutputScalarFieldName, std::string);
 
-  vtkSetMacro(ForceInputVertexScalarField, int);
-  vtkGetMacro(ForceInputVertexScalarField, int);
+  vtkSetMacro(ForceInputVertexScalarField, bool);
+  vtkGetMacro(ForceInputVertexScalarField, bool);
 
   vtkSetMacro(InputVertexScalarFieldName, std::string);
   vtkGetMacro(InputVertexScalarFieldName, std::string);
@@ -92,7 +92,7 @@ public:
 
 protected:
   ttkDistanceField();
-  ~ttkDistanceField();
+  ~ttkDistanceField() override;
 
   TTK_SETUP();
 

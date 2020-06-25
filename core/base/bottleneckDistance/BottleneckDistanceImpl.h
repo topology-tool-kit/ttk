@@ -1,7 +1,7 @@
 #ifndef _BOTTLENECKDISTANCEIMPL_H
 #define _BOTTLENECKDISTANCEIMPL_H
 
-constexpr unsigned int str2int(const char *str, int h = 0) {
+constexpr unsigned long long str2int(const char *str, int h = 0) {
   return !str[h] ? 5381 : (str2int(str, h + 1) * 33) ^ str[h];
 }
 
@@ -174,7 +174,8 @@ double BottleneckDistance::computeGeometricalRange(
   minZ = std::min(minZ1, minZ2);
   maxZ = std::max(maxZ1, maxZ2);
 
-  return sqrt(pow(maxX - minX, 2) + pow(maxY - minY, 2) + pow(maxZ - minZ, 2));
+  return sqrt(Geometry::pow(maxX - minX, 2) + Geometry::pow(maxY - minY, 2)
+              + Geometry::pow(maxZ - minZ, 2));
 }
 
 template <typename dataType>

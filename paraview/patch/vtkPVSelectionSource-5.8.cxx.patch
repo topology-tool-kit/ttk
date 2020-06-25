@@ -1,0 +1,52 @@
+diff --git a/VTKExtensions/Extraction/vtkPVSelectionSource.cxx b/VTKExtensions/Extraction/vtkPVSelectionSource.cxx
+index d7f44d32e0..7eb2861193 100644
+--- a/VTKExtensions/Extraction/vtkPVSelectionSource.cxx
++++ b/VTKExtensions/Extraction/vtkPVSelectionSource.cxx
+@@ -138,7 +138,7 @@ public:
+   };
+
+   typedef std::set<vtkIdType> SetOfIDs;
+-  typedef std::set<IDType> SetOfIDType;
++  typedef std::vector<IDType> SetOfIDType;
+   typedef std::set<CompositeIDType> SetOfCompositeIDType;
+   typedef std::set<HierarchicalIDType> SetOfHierarchicalIDType;
+   typedef std::set<PedigreeIDType> SetOfPedigreeIDType;
+@@ -248,7 +248,18 @@ void vtkPVSelectionSource::AddID(vtkIdType piece, vtkIdType id)
+     piece = -1;
+   }
+   this->Mode = ID;
+-  this->Internal->IDs.insert(vtkInternal::IDType(piece, id));
++
++  bool inThere = false;
++  for(int i = 0; i < (int) this->Internal->IDs.size(); i++){
++    if(this->Internal->IDs[i].ID == vtkInternal::IDType(piece, id).ID){
++      inThere = true;
++      break;
++    }
++  }
++  if(!inThere){
++    // no duplicated entry
++    this->Internal->IDs.push_back(vtkInternal::IDType(piece, id));
++  }
+   this->Modified();
+ }
+
+@@ -268,7 +279,18 @@ void vtkPVSelectionSource::AddValue(vtkIdType piece, vtkIdType value)
+     piece = -1;
+   }
+   this->Mode = VALUES;
+-  this->Internal->Values.insert(vtkInternal::IDType(piece, value));
++  bool inThere = false;
++  for(int i = 0; i < (int) this->Internal->Values.size(); i++){
++    if(this->Internal->Values[i].ID == vtkInternal::IDType(piece, value).ID){
++      inThere = true;
++      break;
++    }
++  }
++  if(!inThere){
++    // no duplicated entry
++    this->Internal->Values.push_back(vtkInternal::IDType(piece, value));
++  }
++
+   this->Modified();
+ }

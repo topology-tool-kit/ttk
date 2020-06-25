@@ -6,19 +6,19 @@
       class="ttkContinuousScatterPlot"
       label="TTK ContinuousScatterPlot">
       <Documentation
-        long_help="TTK plugin that computes the continuous scatterplot of 
+        long_help="TTK plugin that computes the continuous scatterplot of
 bivariate volumetric data."
-        short_help="TTK plugin that computes the continuous scatterplot of 
+        short_help="TTK plugin that computes the continuous scatterplot of
 bivariate volumetric data.">
-        This plugin produces a 2D vtkUnstructuredGrid with a scalar 
-field (named 'Density') representing the continuous scatter plot (attached 
-to the 2D geometry as point data). A point mask is also attached to the 2D 
-geometry as point data. The components of the input bivariate data must be 
-specified as independent scalar fields attached to the input geometry as 
+        This plugin produces a 2D vtkUnstructuredGrid with a scalar
+field (named 'Density') representing the continuous scatter plot (attached
+to the 2D geometry as point data). A point mask is also attached to the 2D
+geometry as point data. The components of the input bivariate data must be
+specified as independent scalar fields attached to the input geometry as
 point data.
 
-Related publication: 'Continuous Scatterplots', Sven Bachthaler, 
-Daniel Weiskopf, Proc. of IEEE VIS 2008, IEEE Transactions on Visualization and 
+Related publication: 'Continuous Scatterplots', Sven Bachthaler,
+Daniel Weiskopf, Proc. of IEEE VIS 2008, IEEE Transactions on Visualization and
 Computer Graphics, 2008.
       </Documentation>
 
@@ -55,7 +55,7 @@ Computer Graphics, 2008.
           </RequiredProperties>
         </ArrayListDomain>
         <Documentation>
-          Scalar field to be used as first component of the 
+          Scalar field to be used as first component of the
 input bivariate data.
         </Documentation>
       </StringVectorProperty>
@@ -100,11 +100,11 @@ bivariate data.
         default_values="1">
         <BooleanDomain name="bool"/>
         <Documentation>
-          Uncheck this box to normalize the dimensions of the continuous 
+          Uncheck this box to normalize the dimensions of the continuous
 scatterplot to the unit square.
         </Documentation>
       </IntVectorProperty>
-      
+
       <IntVectorProperty
         name="WithDummyValue"
         label="With Ignored Value"
@@ -128,7 +128,7 @@ scatterplot to the unit square.
           Value to ignore.
         </Documentation>
       </DoubleVectorProperty>
-      
+
       <IntVectorProperty
         name="UseAllCores"
         label="Use All Cores"
@@ -163,7 +163,7 @@ scatterplot to the unit square.
       <IntVectorProperty
         name="DebugLevel"
         label="Debug Level"
-        command="SetdebugLevel_"
+        command="SetDebugLevel"
         number_of_elements="1"
         default_values="3" panel_visibility="advanced">
         <IntRangeDomain name="range" min="0" max="100" />
@@ -182,7 +182,7 @@ scatterplot to the unit square.
         <Property name="WithDummyValue" />
         <Property name="DummyValue" />
       </PropertyGroup>
-      
+
       <PropertyGroup panel_widget="Line" label="Testing">
         <Property name="UseAllCores" />
         <Property name="ThreadNumber" />

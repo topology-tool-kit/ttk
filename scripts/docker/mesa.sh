@@ -22,7 +22,7 @@ build_pkgs \
 runtime_pkgs \
 	libstdc++6	\
 	libllvm8	\
-	zlib1g		
+	zlib1g
 
 BUILD_DIR=/root/mesa-build
 

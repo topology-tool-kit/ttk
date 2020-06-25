@@ -6,6 +6,7 @@
         <Documentation
           long_help="Export a VTK Unstructured Grid into an Object Filed Format mesh."
           short_help="Write an .off file.">
+          Export a VTK Unstructured Grid into an Object Filed Format mesh.
         </Documentation>
         <InputProperty name="Input" command="SetInputConnection">
           <ProxyGroupDomain name="groups">

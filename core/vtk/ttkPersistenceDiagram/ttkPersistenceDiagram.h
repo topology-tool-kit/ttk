@@ -60,25 +60,26 @@
 #include <vtkSmartPointer.h>
 #include <vtkTable.h>
 
+// VTK Module
+#include <ttkPersistenceDiagramModule.h>
+
 // ttk code includes
 #include <PersistenceDiagram.h>
-#include <ttkWrapper.h>
+#include <ttkTriangulationAlgorithm.h>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkPersistenceDiagram
-#else
-class ttkPersistenceDiagram
-#endif
+class TTKPERSISTENCEDIAGRAM_EXPORT ttkPersistenceDiagram
   : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+    protected ttk::Wrapper {
 
 public:
   static ttkPersistenceDiagram *New();
 
   vtkTypeMacro(ttkPersistenceDiagram, vtkDataSetAlgorithm);
 
-  // default ttk setters
-  vtkSetMacro(debugLevel_, int);
+  void SetDebugLevel(int debugLevel) {
+    setDebugLevel(debugLevel);
+    Modified();
+  }
 
   void SetThreadNumber(int threadNumber) {
     ThreadNumber = threadNumber;
@@ -211,7 +212,7 @@ public:
 
 protected:
   ttkPersistenceDiagram();
-  ~ttkPersistenceDiagram();
+  ~ttkPersistenceDiagram() override;
 
   int FillOutputPortInformation(int port, vtkInformation *info) override;
 

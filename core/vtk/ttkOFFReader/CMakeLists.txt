@@ -1,6 +1,1 @@
-ttk_add_vtk_library(ttkOFFReader
-  SOURCES
-    ttkOFFReader.cpp
-  HEADERS
-    ttkOFFReader.h
-    )
+ttk_add_vtk_module()

@@ -1,0 +1,6 @@
+NAME
+ ttkCellDataSelector
+DEPENDS
+  VTK::FiltersCore
+PRIVATE_DEPENDS
+  VTK::CommonCore

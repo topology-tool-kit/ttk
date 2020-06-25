@@ -289,7 +289,7 @@ int ttkPersistenceDiagram::doIt(vector<vtkDataSet *> &inputs,
     cerr << "[ttkPersistenceDiagram] Error : input offset field type not "
             "supported."
          << endl;
-    return -1;
+    return -3;
   }
 #endif
 
@@ -305,6 +305,10 @@ int ttkPersistenceDiagram::doIt(vector<vtkDataSet *> &inputs,
 
   outputCTPersistenceDiagram->ShallowCopy(CTPersistenceDiagram_);
   computeDiagram_ = false;
+
+  // shallow copy input Field Data
+  outputCTPersistenceDiagram->GetFieldData()->ShallowCopy(
+    input->GetFieldData());
 
   {
     stringstream msg;

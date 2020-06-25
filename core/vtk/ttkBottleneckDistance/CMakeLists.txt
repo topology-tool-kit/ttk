@@ -1,9 +1,1 @@
-ttk_add_vtk_library(ttkBottleneckDistance
-  SOURCES
-    ttkBottleneckDistance.cpp
-  HEADERS
-    ttkBottleneckDistance.h
-  LINK
-    bottleneckDistance
-    ttkTriangulation
-    )
+ttk_add_vtk_module()

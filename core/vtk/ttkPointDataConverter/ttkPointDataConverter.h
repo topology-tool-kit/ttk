@@ -39,18 +39,17 @@
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnsignedShortArray.h>
 
+// VTK Module
+#include <ttkPointDataConverterModule.h>
+
 // ttk code includes
 #include <Wrapper.h>
 
 #include <limits>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkPointDataConverter
-#else
-class ttkPointDataConverter
-#endif
+class TTKPOINTDATACONVERTER_EXPORT ttkPointDataConverter
   : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+    protected ttk::Wrapper {
 
   enum SupportedType {
     Char = 0,
@@ -69,7 +68,10 @@ public:
   vtkTypeMacro(ttkPointDataConverter, vtkDataSetAlgorithm);
 
   // default ttk setters
-  vtkSetMacro(debugLevel_, int);
+  void SetDebugLevel(int debugLevel) {
+    setDebugLevel(debugLevel);
+    Modified();
+  }
 
   void SetThreads() {
     if(!UseAllCores)
@@ -108,7 +110,7 @@ public:
 
 protected:
   ttkPointDataConverter();
-  ~ttkPointDataConverter();
+  ~ttkPointDataConverter() override;
 
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,

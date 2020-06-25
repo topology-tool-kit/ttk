@@ -1,0 +1,9 @@
+NAME
+  ttkCellDataConverter
+SOURCES
+  ttkCellDataConverter.cpp
+HEADERS
+  ttkCellDataConverter.h
+DEPENDS
+  ttkAlgorithm
+  common

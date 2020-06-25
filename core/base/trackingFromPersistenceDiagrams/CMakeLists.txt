@@ -3,6 +3,6 @@ ttk_add_base_library(trackingFromPersistenceDiagrams
     TrackingFromPersistenceDiagrams.cpp
   HEADERS
     TrackingFromPersistenceDiagrams.h
-  LINK
+  DEPENDS
     persistenceDiagram bottleneckDistance
     )

@@ -8,8 +8,9 @@
 /// manifolds represented by regular grids.
 /// \sa Triangulation
 
-#ifndef _IMPLICITTRIANGULATION_H
-#define _IMPLICITTRIANGULATION_H
+#pragma once
+
+#include <array>
 
 // base code includes
 #include <AbstractTriangulation.h>
@@ -26,87 +27,103 @@ namespace ttk {
     ImplicitTriangulation();
     ~ImplicitTriangulation();
 
-    int getCellEdge(const SimplexId &cellId,
-                    const int &id,
-                    SimplexId &edgeId) const override;
+    int getCellEdgeInternal(const SimplexId &cellId,
+                            const int &id,
+                            SimplexId &edgeId) const override;
 
-    SimplexId getCellEdgeNumber(const SimplexId &cellId) const override;
+    SimplexId getCellEdgeNumberInternal(const SimplexId &cellId) const override;
 
-    const std::vector<std::vector<SimplexId>> *getCellEdges() override;
+    const std::vector<std::vector<SimplexId>> *getCellEdgesInternal() override;
 
-    int getCellNeighbor(const SimplexId &cellId,
-                        const int &localNeighborId,
-                        SimplexId &neighborId) const override;
+    int TTK_TRIANGULATION_INTERNAL(getCellNeighbor)(
+      const SimplexId &cellId,
+      const int &localNeighborId,
+      SimplexId &neighborId) const override;
 
-    SimplexId getCellNeighborNumber(const SimplexId &cellId) const override;
+    SimplexId TTK_TRIANGULATION_INTERNAL(getCellNeighborNumber)(
+      const SimplexId &cellId) const override;
 
-    const std::vector<std::vector<SimplexId>> *getCellNeighbors() override;
+    const std::vector<std::vector<SimplexId>> *
+      TTK_TRIANGULATION_INTERNAL(getCellNeighbors)() override;
 
-    int getCellTriangle(const SimplexId &cellId,
-                        const int &id,
-                        SimplexId &triangleId) const override;
+    int getCellTriangleInternal(const SimplexId &cellId,
+                                const int &id,
+                                SimplexId &triangleId) const override;
 
-    SimplexId getCellTriangleNumber(const SimplexId &cellId) const override {
+    SimplexId getCellTriangleNumberInternal(
+      const SimplexId & /*cellId*/) const override {
       // NOTE: the output is always 4 here. let's keep the function in there
       // in case of further generalization to CW-complexes
       return 4;
     };
 
-    const std::vector<std::vector<SimplexId>> *getCellTriangles() override;
+    const std::vector<std::vector<SimplexId>> *
+      getCellTrianglesInternal() override;
 
-    int getCellVertex(const SimplexId &cellId,
-                      const int &localVertexId,
-                      SimplexId &vertexId) const override;
+    int TTK_TRIANGULATION_INTERNAL(getCellVertex)(
+      const SimplexId &cellId,
+      const int &localVertexId,
+      SimplexId &vertexId) const override;
 
-    SimplexId getCellVertexNumber(const SimplexId &cellId) const override;
+    SimplexId TTK_TRIANGULATION_INTERNAL(getCellVertexNumber)(
+      const SimplexId &cellId) const override;
 
-    int getDimensionality() const override {
+    int TTK_TRIANGULATION_INTERNAL(getDimensionality)() const override {
       return dimensionality_;
     };
 
-    int getEdgeLink(const SimplexId &edgeId,
-                    const int &localLinkId,
-                    SimplexId &linkId) const override;
+    int
+      TTK_TRIANGULATION_INTERNAL(getEdgeLink)(const SimplexId &edgeId,
+                                              const int &localLinkId,
+                                              SimplexId &linkId) const override;
 
-    SimplexId getEdgeLinkNumber(const SimplexId &edgeId) const override;
+    SimplexId TTK_TRIANGULATION_INTERNAL(getEdgeLinkNumber)(
+      const SimplexId &edgeId) const override;
 
-    const std::vector<std::vector<SimplexId>> *getEdgeLinks() override;
+    const std::vector<std::vector<SimplexId>> *
+      TTK_TRIANGULATION_INTERNAL(getEdgeLinks)() override;
 
-    int getEdgeStar(const SimplexId &edgeId,
-                    const int &localStarId,
-                    SimplexId &starId) const override;
+    int
+      TTK_TRIANGULATION_INTERNAL(getEdgeStar)(const SimplexId &edgeId,
+                                              const int &localStarId,
+                                              SimplexId &starId) const override;
 
-    SimplexId getEdgeStarNumber(const SimplexId &edgeId) const override;
+    SimplexId TTK_TRIANGULATION_INTERNAL(getEdgeStarNumber)(
+      const SimplexId &edgeId) const override;
 
-    const std::vector<std::vector<SimplexId>> *getEdgeStars() override;
+    const std::vector<std::vector<SimplexId>> *
+      TTK_TRIANGULATION_INTERNAL(getEdgeStars)() override;
 
-    int getEdgeTriangle(const SimplexId &edgeId,
-                        const int &id,
-                        SimplexId &triangleId) const override;
+    int getEdgeTriangleInternal(const SimplexId &edgeId,
+                                const int &id,
+                                SimplexId &triangleId) const override;
 
-    SimplexId getEdgeTriangleNumber(const SimplexId &edgeId) const override;
+    SimplexId
+      getEdgeTriangleNumberInternal(const SimplexId &edgeId) const override;
 
-    const std::vector<std::vector<SimplexId>> *getEdgeTriangles() override;
+    const std::vector<std::vector<SimplexId>> *
+      getEdgeTrianglesInternal() override;
 
-    int getEdgeVertex(const SimplexId &edgeId,
-                      const int &localVertexId,
-                      SimplexId &vertexId) const override;
+    int getEdgeVertexInternal(const SimplexId &edgeId,
+                              const int &localVertexId,
+                              SimplexId &vertexId) const override;
 
-    const std::vector<std::pair<SimplexId, SimplexId>> *getEdges() override;
+    const std::vector<std::pair<SimplexId, SimplexId>> *
+      TTK_TRIANGULATION_INTERNAL(getEdges)() override;
 
-    SimplexId getNumberOfCells() const override {
+    SimplexId TTK_TRIANGULATION_INTERNAL(getNumberOfCells)() const override {
       return cellNumber_;
     };
 
-    SimplexId getNumberOfEdges() const override {
+    SimplexId getNumberOfEdgesInternal() const override {
       return edgeNumber_;
     };
 
-    SimplexId getNumberOfTriangles() const override {
+    SimplexId getNumberOfTrianglesInternal() const override {
       return triangleNumber_;
     };
 
-    SimplexId getNumberOfVertices() const override {
+    SimplexId TTK_TRIANGULATION_INTERNAL(getNumberOfVertices)() const override {
       return vertexNumber_;
     };
 
@@ -135,28 +152,33 @@ namespace ttk {
                              const int &localVertexId,
                              SimplexId &vertexId) const;
 
-    int getTriangleEdge(const SimplexId &triangleId,
-                        const int &id,
-                        SimplexId &edgeId) const override;
+    int getTriangleEdgeInternal(const SimplexId &triangleId,
+                                const int &id,
+                                SimplexId &edgeId) const override;
 
-    SimplexId
-      getTriangleEdgeNumber(const SimplexId &triangleId) const override {
+    SimplexId getTriangleEdgeNumberInternal(
+      const SimplexId & /*triangleId*/) const override {
       // NOTE: the output is always 3 here. let's keep the function in there
       // in case of further generalization to CW-complexes
       return 3;
     }
 
-    const std::vector<std::vector<SimplexId>> *getTriangleEdges() override;
+    const std::vector<std::vector<SimplexId>> *
+      getTriangleEdgesInternal() override;
 
-    int getTriangleEdges(std::vector<std::vector<SimplexId>> &edges) const;
+    int getTriangleEdgesInternal(
+      std::vector<std::vector<SimplexId>> &edges) const;
 
-    int getTriangleLink(const SimplexId &triangleId,
-                        const int &localLinkId,
-                        SimplexId &linkId) const override;
+    int TTK_TRIANGULATION_INTERNAL(getTriangleLink)(
+      const SimplexId &triangleId,
+      const int &localLinkId,
+      SimplexId &linkId) const override;
 
-    SimplexId getTriangleLinkNumber(const SimplexId &triangleId) const override;
+    SimplexId TTK_TRIANGULATION_INTERNAL(getTriangleLinkNumber)(
+      const SimplexId &triangleId) const override;
 
-    const std::vector<std::vector<SimplexId>> *getTriangleLinks() override;
+    const std::vector<std::vector<SimplexId>> *
+      TTK_TRIANGULATION_INTERNAL(getTriangleLinks)() override;
 
     int getTriangleNeighbor(const SimplexId &triangleId,
                             const int &localNeighborId,
@@ -166,74 +188,153 @@ namespace ttk {
 
     int getTriangleNeighbors(std::vector<std::vector<SimplexId>> &neighbors);
 
-    int getTriangleStar(const SimplexId &triangleId,
-                        const int &localStarId,
-                        SimplexId &starId) const override;
+    int TTK_TRIANGULATION_INTERNAL(getTriangleStar)(
+      const SimplexId &triangleId,
+      const int &localStarId,
+      SimplexId &starId) const override;
 
-    SimplexId getTriangleStarNumber(const SimplexId &triangleId) const override;
+    SimplexId TTK_TRIANGULATION_INTERNAL(getTriangleStarNumber)(
+      const SimplexId &triangleId) const override;
 
-    const std::vector<std::vector<SimplexId>> *getTriangleStars() override;
+    const std::vector<std::vector<SimplexId>> *
+      TTK_TRIANGULATION_INTERNAL(getTriangleStars)() override;
 
-    int getTriangleVertex(const SimplexId &triangleId,
-                          const int &localVertexId,
-                          SimplexId &vertexId) const override;
+    int getTriangleVertexInternal(const SimplexId &triangleId,
+                                  const int &localVertexId,
+                                  SimplexId &vertexId) const override;
 
-    const std::vector<std::vector<SimplexId>> *getTriangles() override;
+    const std::vector<std::vector<SimplexId>> *
+      TTK_TRIANGULATION_INTERNAL(getTriangles)() override;
 
-    int getVertexEdge(const SimplexId &vertexId,
-                      const int &id,
-                      SimplexId &edgeId) const override;
+    int getVertexEdgeInternal(const SimplexId &vertexId,
+                              const int &id,
+                              SimplexId &edgeId) const override;
 
-    SimplexId getVertexEdgeNumber(const SimplexId &vertexId) const override;
+    SimplexId
+      getVertexEdgeNumberInternal(const SimplexId &vertexId) const override;
 
-    const std::vector<std::vector<SimplexId>> *getVertexEdges() override;
+    const std::vector<std::vector<SimplexId>> *
+      getVertexEdgesInternal() override;
 
-    int getVertexLink(const SimplexId &vertexId,
-                      const int &localLinkId,
-                      SimplexId &linkId) const override;
+    int TTK_TRIANGULATION_INTERNAL(getVertexLink)(
+      const SimplexId &vertexId,
+      const int &localLinkId,
+      SimplexId &linkId) const override;
 
-    SimplexId getVertexLinkNumber(const SimplexId &vertexId) const override;
+    SimplexId TTK_TRIANGULATION_INTERNAL(getVertexLinkNumber)(
+      const SimplexId &vertexId) const override;
 
-    const std::vector<std::vector<SimplexId>> *getVertexLinks() override;
+    const std::vector<std::vector<SimplexId>> *
+      TTK_TRIANGULATION_INTERNAL(getVertexLinks)() override;
 
-    int getVertexNeighbor(const SimplexId &vertexId,
-                          const int &localNeighborId,
-                          SimplexId &neighborId) const override;
+    int TTK_TRIANGULATION_INTERNAL(getVertexNeighbor)(
+      const SimplexId &vertexId,
+      const int &localNeighborId,
+      SimplexId &neighborId) const override;
 
-    SimplexId getVertexNeighborNumber(const SimplexId &vertexId) const override;
+    inline SimplexId TTK_TRIANGULATION_INTERNAL(getVertexNeighborNumber)(
+      const SimplexId &vertexId) const override {
 
-    const std::vector<std::vector<SimplexId>> *getVertexNeighbors() override;
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(vertexId < 0 or vertexId >= vertexNumber_)
+        return -1;
+#endif // !TTK_ENABLE_KAMIKAZE
 
-    int getVertexPoint(const SimplexId &vertexId,
-                       float &x,
-                       float &y,
-                       float &z) const override;
+      switch(vertexPositions_[vertexId]) {
+        case VertexPosition::CENTER_3D:
+          return 14;
+        case VertexPosition::FRONT_FACE_3D:
+        case VertexPosition::BACK_FACE_3D:
+        case VertexPosition::TOP_FACE_3D:
+        case VertexPosition::BOTTOM_FACE_3D:
+        case VertexPosition::LEFT_FACE_3D:
+        case VertexPosition::RIGHT_FACE_3D:
+          return 10;
+        case VertexPosition::TOP_FRONT_EDGE_3D: // ab
+        case VertexPosition::RIGHT_FRONT_EDGE_3D: // bd
+        case VertexPosition::BOTTOM_BACK_EDGE_3D: // gh
+        case VertexPosition::LEFT_BACK_EDGE_3D: // eg
+        case VertexPosition::BOTTOM_LEFT_EDGE_3D: // cg
+        case VertexPosition::TOP_RIGHT_EDGE_3D: // bf
+          return 8;
+        case VertexPosition::TOP_RIGHT_FRONT_CORNER_3D: // b
+        case VertexPosition::BOTTOM_LEFT_BACK_CORNER_3D: // g
+          return 7;
+        case VertexPosition::TOP_BACK_EDGE_3D: // ef
+        case VertexPosition::BOTTOM_FRONT_EDGE_3D: // cd
+        case VertexPosition::LEFT_FRONT_EDGE_3D: // ac
+        case VertexPosition::TOP_LEFT_EDGE_3D: // ae
+        case VertexPosition::RIGHT_BACK_EDGE_3D: // fh
+        case VertexPosition::BOTTOM_RIGHT_EDGE_3D: // dh
+        case VertexPosition::CENTER_2D:
+          return 6;
+        case VertexPosition::TOP_LEFT_FRONT_CORNER_3D: // a
+        case VertexPosition::BOTTOM_LEFT_FRONT_CORNER_3D: // c
+        case VertexPosition::BOTTOM_RIGHT_FRONT_CORNER_3D: // d
+        case VertexPosition::TOP_LEFT_BACK_CORNER_3D: // e
+        case VertexPosition::TOP_RIGHT_BACK_CORNER_3D: // f
+        case VertexPosition::BOTTOM_RIGHT_BACK_CORNER_3D: // h
+        case VertexPosition::TOP_EDGE_2D:
+        case VertexPosition::BOTTOM_EDGE_2D:
+        case VertexPosition::LEFT_EDGE_2D:
+        case VertexPosition::RIGHT_EDGE_2D:
+          return 4;
+        case VertexPosition::TOP_RIGHT_CORNER_2D: // b
+        case VertexPosition::BOTTOM_LEFT_CORNER_2D: // c
+          return 3;
+        case VertexPosition::TOP_LEFT_CORNER_2D: // a
+        case VertexPosition::BOTTOM_RIGHT_CORNER_2D: // d
+        case VertexPosition::CENTER_1D:
+          return 2;
+        case VertexPosition::LEFT_CORNER_1D:
+        case VertexPosition::RIGHT_CORNER_1D:
+          return 1;
+      }
 
-    int getVertexStar(const SimplexId &vertexId,
-                      const int &localStarId,
-                      SimplexId &starId) const override;
+      return -1;
+    }
 
-    SimplexId getVertexStarNumber(const SimplexId &vertexId) const override;
+    const std::vector<std::vector<SimplexId>> *
+      TTK_TRIANGULATION_INTERNAL(getVertexNeighbors)() override;
 
-    const std::vector<std::vector<SimplexId>> *getVertexStars() override;
+    int TTK_TRIANGULATION_INTERNAL(getVertexPoint)(const SimplexId &vertexId,
+                                                   float &x,
+                                                   float &y,
+                                                   float &z) const override;
 
-    int getVertexTriangle(const SimplexId &vertexId,
-                          const int &id,
-                          SimplexId &triangleId) const override;
+    int TTK_TRIANGULATION_INTERNAL(getVertexStar)(
+      const SimplexId &vertexId,
+      const int &localStarId,
+      SimplexId &starId) const override;
 
-    SimplexId getVertexTriangleNumber(const SimplexId &vertexId) const override;
+    SimplexId TTK_TRIANGULATION_INTERNAL(getVertexStarNumber)(
+      const SimplexId &vertexId) const override;
 
-    const std::vector<std::vector<SimplexId>> *getVertexTriangles() override;
+    const std::vector<std::vector<SimplexId>> *
+      TTK_TRIANGULATION_INTERNAL(getVertexStars)() override;
 
-    bool isEdgeOnBoundary(const SimplexId &edgeId) const override;
+    int getVertexTriangleInternal(const SimplexId &vertexId,
+                                  const int &id,
+                                  SimplexId &triangleId) const override;
 
-    bool isEmpty() const override {
+    SimplexId
+      getVertexTriangleNumberInternal(const SimplexId &vertexId) const override;
+
+    const std::vector<std::vector<SimplexId>> *
+      getVertexTrianglesInternal() override;
+
+    bool TTK_TRIANGULATION_INTERNAL(isEdgeOnBoundary)(
+      const SimplexId &edgeId) const override;
+
+    bool isEmptyInternal() const {
       return !vertexNumber_;
     };
 
-    bool isTriangleOnBoundary(const SimplexId &triangleId) const override;
+    bool TTK_TRIANGULATION_INTERNAL(isTriangleOnBoundary)(
+      const SimplexId &triangleId) const override;
 
-    bool isVertexOnBoundary(const SimplexId &vertexId) const override;
+    bool TTK_TRIANGULATION_INTERNAL(isVertexOnBoundary)(
+      const SimplexId &vertexId) const override;
 
     int setInputGrid(const float &xOrigin,
                      const float &yOrigin,
@@ -245,7 +346,248 @@ namespace ttk {
                      const SimplexId &yDim,
                      const SimplexId &zDim);
 
+    int preconditionVerticesInternal();
+    int preconditionVertexNeighborsInternal() override;
+    int preconditionEdgesInternal() override;
+    int preconditionTrianglesInternal() override;
+    int preconditionTetrahedronsInternal();
+
+    inline int preconditionCellsInternal() {
+      if(dimensionality_ == 3) {
+        return this->preconditionTetrahedronsInternal();
+      } else if(dimensionality_ == 2 && !hasPreconditionedTriangles_) {
+        hasPreconditionedTriangles_ = true;
+        return this->preconditionTrianglesInternal();
+      }
+      return 0;
+    }
+
   protected:
+    enum class VertexPosition : char {
+      // a--------b
+
+      LEFT_CORNER_1D, // a
+      RIGHT_CORNER_1D, // b
+      CENTER_1D,
+      // total: 3 1D cases
+
+      // a--------b
+      // |        |
+      // |        |
+      // |        |
+      // c--------d
+
+      // 2D corners
+      TOP_LEFT_CORNER_2D, // a
+      TOP_RIGHT_CORNER_2D, // b
+      BOTTOM_LEFT_CORNER_2D, // c
+      BOTTOM_RIGHT_CORNER_2D, // d
+      // 2D edges
+      TOP_EDGE_2D, // ab
+      BOTTOM_EDGE_2D, // cd
+      LEFT_EDGE_2D, // ac
+      RIGHT_EDGE_2D, // bd
+      // 2D central strip
+      CENTER_2D,
+      // total: 9 2D cases
+
+      //    e--------f
+      //   /|       /|
+      //  / |      / |
+      // a--------b  |
+      // |  g-----|--h
+      // | /      | /
+      // |/       |/
+      // c--------d
+
+      // 3D corners
+      TOP_LEFT_FRONT_CORNER_3D, // a
+      TOP_RIGHT_FRONT_CORNER_3D, // b
+      BOTTOM_LEFT_FRONT_CORNER_3D, // c
+      BOTTOM_RIGHT_FRONT_CORNER_3D, // d
+      TOP_LEFT_BACK_CORNER_3D, // e
+      TOP_RIGHT_BACK_CORNER_3D, // f
+      BOTTOM_LEFT_BACK_CORNER_3D, // g
+      BOTTOM_RIGHT_BACK_CORNER_3D, // h
+      // 3D edges
+      TOP_FRONT_EDGE_3D, // ab
+      BOTTOM_FRONT_EDGE_3D, // cd
+      LEFT_FRONT_EDGE_3D, // ac
+      RIGHT_FRONT_EDGE_3D, // bd
+      TOP_BACK_EDGE_3D, // ef
+      BOTTOM_BACK_EDGE_3D, // gh
+      LEFT_BACK_EDGE_3D, // eg
+      RIGHT_BACK_EDGE_3D, // fh
+      TOP_LEFT_EDGE_3D, // ae
+      TOP_RIGHT_EDGE_3D, // bf
+      BOTTOM_LEFT_EDGE_3D, // cg
+      BOTTOM_RIGHT_EDGE_3D, // dh
+      // 3D faces
+      FRONT_FACE_3D, // abcd
+      BACK_FACE_3D, // efgh
+      TOP_FACE_3D, // abef
+      BOTTOM_FACE_3D, // cdgh
+      LEFT_FACE_3D, // aceg
+      RIGHT_FACE_3D, // bdfh
+      // 3D central part
+      CENTER_3D,
+      // total: 27 3D cases
+    };
+
+    // for every vertex, its position on the grid
+    std::vector<VertexPosition> vertexPositions_{};
+    // for  every vertex, its coordinates on the grid
+    std::vector<std::array<SimplexId, 3>> vertexCoords_{};
+
+    // vertex neighbor shifts
+    std::array<SimplexId, 14> vertexNeighborABCDEFGH_{};
+
+    std::array<SimplexId, 10> vertexNeighborABCD_{};
+    std::array<SimplexId, 10> vertexNeighborEFGH_{};
+    std::array<SimplexId, 10> vertexNeighborAEFB_{};
+    std::array<SimplexId, 10> vertexNeighborGHDC_{};
+    std::array<SimplexId, 10> vertexNeighborAEGC_{};
+    std::array<SimplexId, 10> vertexNeighborBFHD_{};
+
+    std::array<SimplexId, 8> vertexNeighborAB_{};
+    std::array<SimplexId, 8> vertexNeighborBD_{};
+    std::array<SimplexId, 8> vertexNeighborGH_{};
+    std::array<SimplexId, 8> vertexNeighborEG_{};
+    std::array<SimplexId, 8> vertexNeighborCG_{};
+    std::array<SimplexId, 8> vertexNeighborBF_{};
+
+    std::array<SimplexId, 7> vertexNeighborB_{};
+    std::array<SimplexId, 7> vertexNeighborG_{};
+
+    std::array<SimplexId, 6> vertexNeighborEF_{};
+    std::array<SimplexId, 6> vertexNeighborCD_{};
+    std::array<SimplexId, 6> vertexNeighborAC_{};
+    std::array<SimplexId, 6> vertexNeighborAE_{};
+    std::array<SimplexId, 6> vertexNeighborFH_{};
+    std::array<SimplexId, 6> vertexNeighborDH_{};
+
+    std::array<SimplexId, 4> vertexNeighborA_{};
+    std::array<SimplexId, 4> vertexNeighborC_{};
+    std::array<SimplexId, 4> vertexNeighborD_{};
+    std::array<SimplexId, 4> vertexNeighborE_{};
+    std::array<SimplexId, 4> vertexNeighborF_{};
+    std::array<SimplexId, 4> vertexNeighborH_{};
+
+    std::array<SimplexId, 6> vertexNeighbor2dABCD_{};
+    std::array<SimplexId, 4> vertexNeighbor2dAB_{};
+    std::array<SimplexId, 4> vertexNeighbor2dCD_{};
+    std::array<SimplexId, 4> vertexNeighbor2dAC_{};
+    std::array<SimplexId, 4> vertexNeighbor2dBD_{};
+    std::array<SimplexId, 3> vertexNeighbor2dB_{};
+    std::array<SimplexId, 3> vertexNeighbor2dC_{};
+    std::array<SimplexId, 2> vertexNeighbor2dA_{};
+    std::array<SimplexId, 2> vertexNeighbor2dD_{};
+
+    enum class EdgePosition : char {
+      //    e--------f
+      //   /|       /|
+      //  / |      / |
+      // a--------b  |
+      // |  g-----|--h
+      // | /      | /
+      // |/       |/
+      // c--------d
+
+      // length (ab)
+      L_xnn_3D,
+      L_xn0_3D,
+      L_xnN_3D,
+      L_x0n_3D,
+      L_x00_3D,
+      L_x0N_3D,
+      L_xNn_3D,
+      L_xN0_3D,
+      L_xNN_3D,
+      // height (ac)
+      H_nyn_3D,
+      H_ny0_3D,
+      H_nyN_3D,
+      H_0yn_3D,
+      H_0y0_3D,
+      H_0yN_3D,
+      H_Nyn_3D,
+      H_Ny0_3D,
+      H_NyN_3D,
+      // depth (ae)
+      P_nnz_3D,
+      P_n0z_3D,
+      P_nNz_3D,
+      P_0nz_3D,
+      P_00z_3D,
+      P_0Nz_3D,
+      P_Nnz_3D,
+      P_N0z_3D,
+      P_NNz_3D,
+      // diagonal1 (bc)
+      D1_xyn_3D,
+      D1_xy0_3D,
+      D1_xyN_3D,
+      // diagonal2 (ag)
+      D2_nyz_3D,
+      D2_0yz_3D,
+      D2_Nyz_3D,
+      // diagonal3 (be)
+      D3_xnz_3D,
+      D3_x0z_3D,
+      D3_xNz_3D,
+      // diagonal4 (bg)
+      D4_3D,
+
+      // length (ab)
+      L_xn_2D,
+      L_x0_2D,
+      L_xN_2D,
+      // height (ac)
+      H_ny_2D,
+      H_0y_2D,
+      H_Ny_2D,
+      // diagonal1 (bc)
+      D1_2D,
+
+      FIRST_EDGE_1D,
+      LAST_EDGE_1D,
+      CENTER_1D,
+    };
+
+    // for every edge, its position on the grid
+    std::vector<EdgePosition> edgePositions_{};
+    // for every edge, its coordinates on the grid
+    std::vector<std::array<SimplexId, 3>> edgeCoords_{};
+
+    enum class TrianglePosition : char {
+      //    e--------f
+      //   /|       /|
+      //  / |      / |
+      // a--------b  |
+      // |  g-----|--h
+      // | /      | /
+      // |/       |/
+      // c--------d
+
+      F_3D, // face (abc, bcd)
+      C_3D, // side (abe, bef)
+      H_3D, // top (acg, aeg)
+      D1_3D, // diagonal1 (bdg, beg)
+      D2_3D, // diagonal2 (abg, bgh)
+      D3_3D, // diagonal3 (bcg, bfg)
+
+      TOP_2D, // abc
+      BOTTOM_2D, // bcd
+    };
+
+    // for every triangle, its position on the grid
+    std::vector<TrianglePosition> trianglePositions_{};
+    // for every triangle, its coordinates on the grid
+    std::vector<std::array<SimplexId, 3>> triangleCoords_{};
+
+    // for every tetrahedron, its coordinates on the grid
+    std::vector<std::array<SimplexId, 3>> tetrahedronCoords_{};
+
     int dimensionality_; //
     float origin_[3]; //
     float spacing_[3]; //
@@ -293,16 +635,6 @@ namespace ttk {
     void
       edgeToPosition2d(const SimplexId edge, const int k, SimplexId p[2]) const;
     void triangleToPosition2d(const SimplexId triangle, SimplexId p[2]) const;
-
-    SimplexId getVertexNeighbor2dA(const SimplexId v, const int id) const;
-    SimplexId getVertexNeighbor2dB(const SimplexId v, const int id) const;
-    SimplexId getVertexNeighbor2dC(const SimplexId v, const int id) const;
-    SimplexId getVertexNeighbor2dD(const SimplexId v, const int id) const;
-    SimplexId getVertexNeighbor2dAB(const SimplexId v, const int id) const;
-    SimplexId getVertexNeighbor2dCD(const SimplexId v, const int id) const;
-    SimplexId getVertexNeighbor2dAC(const SimplexId v, const int id) const;
-    SimplexId getVertexNeighbor2dBD(const SimplexId v, const int id) const;
-    SimplexId getVertexNeighbor2dABCD(const SimplexId v, const int id) const;
 
     SimplexId getVertexEdge2dA(const SimplexId p[2], const int id) const;
     SimplexId getVertexEdge2dB(const SimplexId p[2], const int id) const;
@@ -358,34 +690,6 @@ namespace ttk {
                             SimplexId p[3]) const;
     void tetrahedronToPosition(const SimplexId tetrahedron,
                                SimplexId p[3]) const;
-
-    SimplexId getVertexNeighborA(const SimplexId v, const int id) const;
-    SimplexId getVertexNeighborB(const SimplexId v, const int id) const;
-    SimplexId getVertexNeighborC(const SimplexId v, const int id) const;
-    SimplexId getVertexNeighborD(const SimplexId v, const int id) const;
-    SimplexId getVertexNeighborE(const SimplexId v, const int id) const;
-    SimplexId getVertexNeighborF(const SimplexId v, const int id) const;
-    SimplexId getVertexNeighborG(const SimplexId v, const int id) const;
-    SimplexId getVertexNeighborH(const SimplexId v, const int id) const;
-    SimplexId getVertexNeighborAB(const SimplexId v, const int id) const;
-    SimplexId getVertexNeighborCD(const SimplexId v, const int id) const;
-    SimplexId getVertexNeighborEF(const SimplexId v, const int id) const;
-    SimplexId getVertexNeighborGH(const SimplexId v, const int id) const;
-    SimplexId getVertexNeighborAC(const SimplexId v, const int id) const;
-    SimplexId getVertexNeighborBD(const SimplexId v, const int id) const;
-    SimplexId getVertexNeighborEG(const SimplexId v, const int id) const;
-    SimplexId getVertexNeighborFH(const SimplexId v, const int id) const;
-    SimplexId getVertexNeighborAE(const SimplexId v, const int id) const;
-    SimplexId getVertexNeighborBF(const SimplexId v, const int id) const;
-    SimplexId getVertexNeighborCG(const SimplexId v, const int id) const;
-    SimplexId getVertexNeighborDH(const SimplexId v, const int id) const;
-    SimplexId getVertexNeighborABDC(const SimplexId v, const int id) const;
-    SimplexId getVertexNeighborEFHG(const SimplexId v, const int id) const;
-    SimplexId getVertexNeighborAEGC(const SimplexId v, const int id) const;
-    SimplexId getVertexNeighborBFHD(const SimplexId v, const int id) const;
-    SimplexId getVertexNeighborAEFB(const SimplexId v, const int id) const;
-    SimplexId getVertexNeighborGHDC(const SimplexId v, const int id) const;
-    SimplexId getVertexNeighborABCDEFGH(const SimplexId v, const int id) const;
 
     SimplexId getVertexEdgeA(const SimplexId p[3], const int id) const;
     SimplexId getVertexEdgeB(const SimplexId p[3], const int id) const;
@@ -676,151 +980,6 @@ inline void
 }
 
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexNeighbor2dA(const SimplexId v,
-                                                   const int id) const {
-  // V(a)={b,c}
-  switch(id) {
-    case 0:
-      return v + 1; // b
-    case 1:
-      return v + vshift_[0]; // c
-  }
-  return -1;
-}
-
-inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexNeighbor2dB(const SimplexId v,
-                                                   const int id) const {
-  // V(b)={a,c,d}
-  switch(id) {
-    case 0:
-      return v - 1; // a
-    case 1:
-      return v + vshift_[0]; // d
-    case 2:
-      return v + vshift_[0] - 1; // c
-  }
-  return -1;
-}
-
-inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexNeighbor2dC(const SimplexId v,
-                                                   const int id) const {
-  // V(c)={a,b,d}
-  switch(id) {
-    case 0:
-      return v + 1; // d
-    case 1:
-      return v - vshift_[0]; // a
-    case 2:
-      return v - vshift_[0] + 1; // b
-  }
-  return -1;
-}
-
-inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexNeighbor2dD(const SimplexId v,
-                                                   const int id) const {
-  // V(d)={c,b}
-  switch(id) {
-    case 0:
-      return v - 1; // c
-    case 1:
-      return v - vshift_[0]; // b
-  }
-  return -1;
-}
-
-inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexNeighbor2dAB(const SimplexId v,
-                                                    const int id) const {
-  // V(ab)=V(b)::{a,c,d}+V(a)::{b}
-  switch(id) {
-    case 0:
-      return v - 1; // V(b)::a
-    case 1:
-      return v + vshift_[0] - 1; // V(b)::c
-    case 2:
-      return v + vshift_[0]; // V(b)::d
-    case 3:
-      return v + 1; // V(a)::b
-  }
-  return -1;
-}
-
-inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexNeighbor2dCD(const SimplexId v,
-                                                    const int id) const {
-  // V(cd)=V(c)::{a,b,d}+V(d)::{c}
-  switch(id) {
-    case 0:
-      return v - 1; // V(d)::c
-    case 1:
-      return v - vshift_[0]; // V(c)::a
-    case 2:
-      return v - vshift_[0] + 1; // V(c)::b
-    case 3:
-      return v + 1; // V(c)::d
-  }
-  return -1;
-}
-
-inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexNeighbor2dAC(const SimplexId v,
-                                                    const int id) const {
-  // V(ac)=V(c)::{a,b,d}+V(a)::{c}
-  switch(id) {
-    case 0:
-      return v - vshift_[0]; // V(c)::{a}
-    case 1:
-      return v - vshift_[0] + 1; // V(c)::{b}
-    case 2:
-      return v + 1; // V(c)::{d}
-    case 3:
-      return v + vshift_[0]; // V(a)::{c}
-  }
-  return -1;
-}
-
-inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexNeighbor2dBD(const SimplexId v,
-                                                    const int id) const {
-  // V(bd)=V(b)::{c,d}+V(d)::{b,c}
-  switch(id) {
-    case 0:
-      return v + vshift_[0] - 1; // V(b)::{c}
-    case 1:
-      return v + vshift_[0]; // V(b)::{d}
-    case 2:
-      return v - vshift_[0]; // V(d)::{b}
-    case 3:
-      return v - 1; // V(d)::{c}
-  }
-  return -1;
-}
-
-inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexNeighbor2dABCD(const SimplexId v,
-                                                      const int id) const {
-  // V(abcd)=V(d)::{b,c}+V(c)::{b,d}+V(a)::{b}+V(b)::{c}
-  switch(id) {
-    case 0:
-      return v - 1;
-    case 1:
-      return v - vshift_[0];
-    case 2:
-      return v - vshift_[0] + 1;
-    case 3:
-      return v + 1;
-    case 4:
-      return v + vshift_[0];
-    case 5:
-      return v + vshift_[0] - 1;
-  }
-  return -1;
-}
-
-inline ttk::SimplexId
   ttk::ImplicitTriangulation::getVertexEdge2dA(const SimplexId p[2],
                                                const int id) const {
   // V(a)={b,c}
@@ -967,7 +1126,7 @@ inline ttk::SimplexId
 
 inline ttk::SimplexId
   ttk::ImplicitTriangulation::getVertexStar2dA(const SimplexId p[2],
-                                               const int id) const {
+                                               const int /*id*/) const {
   return p[0] * 2 + p[1] * tshift_[0];
 }
 
@@ -997,7 +1156,7 @@ inline ttk::SimplexId
 
 inline ttk::SimplexId
   ttk::ImplicitTriangulation::getVertexStar2dD(const SimplexId p[2],
-                                               const int id) const {
+                                               const int /*id*/) const {
   return (p[0] - 1) * 2 + (p[1] - 1) * tshift_[0] + 1;
 }
 
@@ -1079,7 +1238,7 @@ inline ttk::SimplexId
 
 inline ttk::SimplexId
   ttk::ImplicitTriangulation::getVertexLink2dA(const SimplexId p[2],
-                                               const int id) const {
+                                               const int /*id*/) const {
   return esetshift_[1] + p[0] + p[1] * eshift_[4]; // D1::bc
 }
 
@@ -1109,7 +1268,7 @@ inline ttk::SimplexId
 
 inline ttk::SimplexId
   ttk::ImplicitTriangulation::getVertexLink2dD(const SimplexId p[2],
-                                               const int id) const {
+                                               const int /*id*/) const {
   return esetshift_[1] + p[0] + (p[1] - 1) * eshift_[4] - 1; // D1::bc
 }
 
@@ -1323,8 +1482,6 @@ inline ttk::SimplexId
     return p[0] * 2 + p[1] * tshift_[0];
   else
     return p[0] * 2 + (p[1] - 1) * tshift_[0] + 1;
-
-  return -1;
 }
 
 inline ttk::SimplexId
@@ -1339,7 +1496,6 @@ inline ttk::SimplexId
     return p[0] * 2 + p[1] * tshift_[0];
   else
     return (p[0] - 1) * 2 + p[1] * tshift_[0] + 1;
-  return -1;
 }
 
 inline void ttk::ImplicitTriangulation::vertexToPosition(const SimplexId vertex,
@@ -1378,642 +1534,6 @@ inline void
   p[0] = (tetrahedron % tetshift_[0]) / 6;
   p[1] = (tetrahedron % tetshift_[1]) / tetshift_[0];
   p[2] = tetrahedron / tetshift_[1];
-}
-
-inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexNeighborA(const SimplexId v,
-                                                 const int id) const {
-  // V(a)={b,c,e,g}
-  switch(id) {
-    case 0:
-      return v + 1; // b
-    case 1:
-      return v + vshift_[0]; // c
-    case 2:
-      return v + vshift_[1]; // e
-    case 3:
-      return v + vshift_[0] + vshift_[1]; // g
-  }
-  return -1;
-}
-
-inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexNeighborB(const SimplexId v,
-                                                 const int id) const {
-  // V(b)={a,c,d,e,f,g,h}
-  switch(id) {
-    case 0:
-      return v - 1; // a
-    case 1:
-      return v - 1 + vshift_[0]; // c
-    case 2:
-      return v + vshift_[0]; // d
-    case 3:
-      return v - 1 + vshift_[1]; // e
-    case 4:
-      return v + vshift_[1]; // f
-    case 5:
-      return v - 1 + vshift_[0] + vshift_[1]; // g
-    case 6:
-      return v + vshift_[0] + vshift_[1]; // h
-  }
-  return -1;
-}
-
-inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexNeighborC(const SimplexId v,
-                                                 const int id) const {
-  // V(c)={a,b,d,g}
-  switch(id) {
-    case 0:
-      return v - vshift_[0]; // a
-    case 1:
-      return v + 1 - vshift_[0]; // b
-    case 2:
-      return v + 1; // d
-    case 3:
-      return v + vshift_[1]; // g
-  }
-  return -1;
-}
-
-inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexNeighborD(const SimplexId v,
-                                                 const int id) const {
-  // V(d)={b,c,g,h}
-  switch(id) {
-    case 0:
-      return v - vshift_[0]; // b
-    case 1:
-      return v - 1; // c
-    case 2:
-      return v - 1 + vshift_[1]; // g
-    case 3:
-      return v + vshift_[1]; // h
-  }
-  return -1;
-}
-
-inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexNeighborE(const SimplexId v,
-                                                 const int id) const {
-  // V(e)={a,b,f,g}
-  switch(id) {
-    case 0:
-      return v - vshift_[1]; // a
-    case 1:
-      return v + 1 - vshift_[1]; // b
-    case 2:
-      return v + 1; // f
-    case 3:
-      return v + vshift_[0]; // g
-  }
-  return -1;
-}
-
-inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexNeighborF(const SimplexId v,
-                                                 const int id) const {
-  // V(f)={b,e,g,h}
-  switch(id) {
-    case 0:
-      return v - vshift_[1]; // b
-    case 1:
-      return v - 1; // e
-    case 2:
-      return v - 1 + vshift_[0]; // g
-    case 3:
-      return v + vshift_[0]; // h
-  }
-  return -1;
-}
-
-inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexNeighborG(const SimplexId v,
-                                                 const int id) const {
-  // V(g)={a,b,c,d,e,f,h}
-  switch(id) {
-    case 0:
-      return v - vshift_[0] - vshift_[1]; // a
-    case 1:
-      return v + 1 - vshift_[0] - vshift_[1]; // b
-    case 2:
-      return v - vshift_[1]; // c
-    case 3:
-      return v + 1 - vshift_[1]; // d
-    case 4:
-      return v - vshift_[0]; // e
-    case 5:
-      return v + 1 - vshift_[0]; // f
-    case 6:
-      return v + 1; // h
-  }
-  return -1;
-}
-
-inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexNeighborH(const SimplexId v,
-                                                 const int id) const {
-  // V(h)={b,d,f,g}
-  switch(id) {
-    case 0:
-      return v - vshift_[0] - vshift_[1]; // b
-    case 1:
-      return v - vshift_[1]; // d
-    case 2:
-      return v - vshift_[0]; // f
-    case 3:
-      return v - 1; // g
-  }
-  return -1;
-}
-
-inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexNeighborAB(const SimplexId v,
-                                                  const int id) const {
-  // V(ab)=V(b)+V(a)::{b}
-  switch(id) {
-    case 0:
-      return v - 1; // a
-    case 1:
-      return v - 1 + vshift_[0]; // c
-    case 2:
-      return v + vshift_[0]; // d
-    case 3:
-      return v - 1 + vshift_[1]; // e
-    case 4:
-      return v + vshift_[1]; // f
-    case 5:
-      return v - 1 + vshift_[0] + vshift_[1]; // g
-    case 6:
-      return v + vshift_[0] + vshift_[1]; // h
-    case 7:
-      return v + 1; // V(a)::{b}
-  }
-  return -1;
-}
-
-inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexNeighborCD(const SimplexId v,
-                                                  const int id) const {
-  // V(cd)=V(d)+V(c)::{b,d}
-  switch(id) {
-    case 0:
-      return v - vshift_[0]; // b
-    case 1:
-      return v - 1; // c
-    case 2:
-      return v - 1 + vshift_[1]; // g
-    case 3:
-      return v + vshift_[1]; // h
-    case 4:
-      return v + 1 - vshift_[0]; // V(c)::{b}
-    case 5:
-      return v + 1; // V(c)::{d}
-  }
-  return -1;
-}
-
-inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexNeighborEF(const SimplexId v,
-                                                  const int id) const {
-  // V(ef)=V(f)+V(e)::{b,f}
-  switch(id) {
-    case 0:
-      return v - vshift_[1]; // b
-    case 1:
-      return v - 1; // e
-    case 2:
-      return v - 1 + vshift_[0]; // g
-    case 3:
-      return v + vshift_[0]; // h
-    case 4:
-      return v + 1 - vshift_[1]; // V(e)::{b}
-    case 5:
-      return v + 1; // V(e)::{f}
-  }
-  return -1;
-}
-
-inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexNeighborGH(const SimplexId v,
-                                                  const int id) const {
-  // V(gh)=V(g)+V(h)::{g}
-  switch(id) {
-    case 0:
-      return v - vshift_[0] - vshift_[1]; // a
-    case 1:
-      return v + 1 - vshift_[0] - vshift_[1]; // b
-    case 2:
-      return v - vshift_[1]; // c
-    case 3:
-      return v + 1 - vshift_[1]; // d
-    case 4:
-      return v - vshift_[0]; // e
-    case 5:
-      return v + 1 - vshift_[0]; // f
-    case 6:
-      return v + 1; // h
-    case 7:
-      return v - 1; // V(h)::{g}
-  }
-
-  return -1;
-}
-
-inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexNeighborAC(const SimplexId v,
-                                                  const int id) const {
-  // V(ac)=V(c)+V(a)::{c,g}
-  switch(id) {
-    case 0:
-      return v - vshift_[0]; // a
-    case 1:
-      return v + 1 - vshift_[0]; // b
-    case 2:
-      return v + 1; // d
-    case 3:
-      return v + vshift_[1]; // g
-    case 4:
-      return v + vshift_[0]; // V(a)::{c}
-    case 5:
-      return v + vshift_[0] + vshift_[1]; // V(a)::{c}
-  }
-  return -1;
-}
-
-inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexNeighborBD(const SimplexId v,
-                                                  const int id) const {
-  // V(bd)=V(b)+V(d)::{b}
-  switch(id) {
-    case 0:
-      return v - 1; // a
-    case 1:
-      return v - 1 + vshift_[0]; // c
-    case 2:
-      return v + vshift_[0]; // d
-    case 3:
-      return v - 1 + vshift_[1]; // e
-    case 4:
-      return v + vshift_[1]; // f
-    case 5:
-      return v - 1 + vshift_[0] + vshift_[1]; // g
-    case 6:
-      return v + vshift_[0] + vshift_[1]; // h
-    case 7:
-      return v - vshift_[0]; // V(d)::{b}
-  }
-  return -1;
-}
-
-inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexNeighborEG(const SimplexId v,
-                                                  const int id) const {
-  // V(eg)=V(g)+V(e)::{g}
-  switch(id) {
-    case 0:
-      return v - vshift_[0] - vshift_[1]; // a
-    case 1:
-      return v + 1 - vshift_[0] - vshift_[1]; // b
-    case 2:
-      return v - vshift_[1]; // c
-    case 3:
-      return v + 1 - vshift_[1]; // d
-    case 4:
-      return v - vshift_[0]; // e
-    case 5:
-      return v + 1 - vshift_[0]; // f
-    case 6:
-      return v + 1; // h
-    case 7:
-      return v + vshift_[0]; // V(e)::{g}
-  }
-  return -1;
-}
-
-inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexNeighborFH(const SimplexId v,
-                                                  const int id) const {
-  // V(fh)=V(f)+V(h)::{b,f}
-  switch(id) {
-    case 0:
-      return v - vshift_[1]; // b
-    case 1:
-      return v - 1; // e
-    case 2:
-      return v - 1 + vshift_[0]; // g
-    case 3:
-      return v + vshift_[0]; // h
-    case 4:
-      return v - vshift_[0] - vshift_[1]; // V(h)::{b}
-    case 5:
-      return v - vshift_[0]; // V(h)::{f}
-  }
-  return -1;
-}
-
-inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexNeighborAE(const SimplexId v,
-                                                  const int id) const {
-  // V(ae)=V(a)+V(e)::{a,b}
-  switch(id) {
-    case 0:
-      return v + 1; // b
-    case 1:
-      return v + vshift_[0]; // c
-    case 2:
-      return v + vshift_[1]; // e
-    case 3:
-      return v + vshift_[0] + vshift_[1]; // g
-    case 4:
-      return v - vshift_[1]; // V(e)::{a}
-    case 5:
-      return v + 1 - vshift_[1]; // V(e)::{b}
-  }
-  return -1;
-}
-
-inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexNeighborBF(const SimplexId v,
-                                                  const int id) const {
-  // V(bf)=V(b)+V(f)::{b}
-  switch(id) {
-    case 0:
-      return v - 1; // a
-    case 1:
-      return v - 1 + vshift_[0]; // c
-    case 2:
-      return v + vshift_[0]; // d
-    case 3:
-      return v - 1 + vshift_[1]; // e
-    case 4:
-      return v + vshift_[1]; // f
-    case 5:
-      return v - 1 + vshift_[0] + vshift_[1]; // g
-    case 6:
-      return v + vshift_[0] + vshift_[1]; // h
-    case 7:
-      return v - vshift_[1]; // V(f)::{b}
-  }
-  return -1;
-}
-
-inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexNeighborCG(const SimplexId v,
-                                                  const int id) const {
-  // V(cg)=V(g)+V(c)::{g}
-  switch(id) {
-    case 0:
-      return v - vshift_[0] - vshift_[1]; // a
-    case 1:
-      return v + 1 - vshift_[0] - vshift_[1]; // b
-    case 2:
-      return v - vshift_[1]; // c
-    case 3:
-      return v + 1 - vshift_[1]; // d
-    case 4:
-      return v - vshift_[0]; // e
-    case 5:
-      return v + 1 - vshift_[0]; // f
-    case 6:
-      return v + 1; // h
-    case 7:
-      return v + vshift_[1]; // V(c)::{g}
-  }
-  return -1;
-}
-
-inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexNeighborDH(const SimplexId v,
-                                                  const int id) const {
-  // V(dh)=V(d)+V(h)::{b,d}
-  switch(id) {
-    case 0:
-      return v - vshift_[0]; // b
-    case 1:
-      return v - 1; // c
-    case 2:
-      return v - 1 + vshift_[1]; // g
-    case 3:
-      return v + vshift_[1]; // h
-    case 4:
-      return v - vshift_[0] - vshift_[1]; // V(h)::{b}
-    case 5:
-      return v - vshift_[1]; // V(h)::{d}
-  }
-  return -1;
-}
-
-inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexNeighborABDC(const SimplexId v,
-                                                    const int id) const {
-  // V(abdc)=V(b)+V(d)::{b}+V(c)::{b}+V(a)::{b}
-  switch(id) {
-    case 0:
-      return v - 1; // a
-    case 1:
-      return v - 1 + vshift_[0]; // c
-    case 2:
-      return v + vshift_[0]; // d
-    case 3:
-      return v - 1 + vshift_[1]; // e
-    case 4:
-      return v + vshift_[1]; // f
-    case 5:
-      return v - 1 + vshift_[0] + vshift_[1]; // g
-    case 6:
-      return v + vshift_[0] + vshift_[1]; // h
-    case 7:
-      return v - vshift_[0]; // V(d)::{b}
-    case 8:
-      return v + 1 - vshift_[0]; // V(c)::{b}
-    case 9:
-      return v + 1; // V(a)::{b}
-  }
-  return -1;
-}
-
-inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexNeighborEFHG(const SimplexId v,
-                                                    const int id) const {
-  // V(efhg)=V(g)+V(h)::{g}+V(f)::{g,h}
-  switch(id) {
-    case 0:
-      return v - vshift_[0] - vshift_[1]; // a
-    case 1:
-      return v + 1 - vshift_[0] - vshift_[1]; // b
-    case 2:
-      return v - vshift_[1]; // c
-    case 3:
-      return v + 1 - vshift_[1]; // d
-    case 4:
-      return v - vshift_[0]; // e
-    case 5:
-      return v + 1 - vshift_[0]; // f
-    case 6:
-      return v + 1; // h
-    case 7:
-      return v - 1; // V(h)::{g}
-    case 8:
-      return v - 1 + vshift_[0]; // V(f)::{g}
-    case 9:
-      return v + vshift_[0]; // V(f)::{h}
-  }
-  return -1;
-}
-
-inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexNeighborAEGC(const SimplexId v,
-                                                    const int id) const {
-  // V(aegc)=V(g)+V(a)::{c,g}+V(c)::{g}
-  switch(id) {
-    case 0:
-      return v - vshift_[0] - vshift_[1]; // a
-    case 1:
-      return v + 1 - vshift_[0] - vshift_[1]; // b
-    case 2:
-      return v - vshift_[1]; // c
-    case 3:
-      return v + 1 - vshift_[1]; // d
-    case 4:
-      return v - vshift_[0]; // e
-    case 5:
-      return v + 1 - vshift_[0]; // f
-    case 6:
-      return v + 1; // h
-    case 7:
-      return v + vshift_[0]; // V(a)::{c}
-    case 8:
-      return v + vshift_[0] + vshift_[1]; // V(a)::{g}
-    case 9:
-      return v + vshift_[1]; // V(c)::{g}
-  }
-  return -1;
-}
-
-inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexNeighborBFHD(const SimplexId v,
-                                                    const int id) const {
-  // V(bfhd)=V(b)+V(f)::{b}+V(h)::{b}+V(d)::{b}
-  switch(id) {
-    case 0:
-      return v - 1; // a
-    case 1:
-      return v - 1 + vshift_[0]; // c
-    case 2:
-      return v + vshift_[0]; // d
-    case 3:
-      return v - 1 + vshift_[1]; // e
-    case 4:
-      return v + vshift_[1]; // f
-    case 5:
-      return v - 1 + vshift_[0] + vshift_[1]; // g
-    case 6:
-      return v + vshift_[0] + vshift_[1]; // h
-    case 7:
-      return v - vshift_[1]; // V(f)::{b}
-    case 8:
-      return v - vshift_[0] - vshift_[1]; // V(h)::{b}
-    case 9:
-      return v - vshift_[0]; // V(d)::{b}
-  }
-  return -1;
-}
-
-inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexNeighborAEFB(const SimplexId v,
-                                                    const int id) const {
-  // V(aefb)=V(b)+V(a)::{b}+V(e)::{b}+V(f)::{b}
-  switch(id) {
-    case 0:
-      return v - 1; // a
-    case 1:
-      return v - 1 + vshift_[0]; // c
-    case 2:
-      return v + vshift_[0]; // d
-    case 3:
-      return v - 1 + vshift_[1]; // e
-    case 4:
-      return v + vshift_[1]; // f
-    case 5:
-      return v - 1 + vshift_[0] + vshift_[1]; // g
-    case 6:
-      return v + vshift_[0] + vshift_[1]; // h
-    case 7:
-      return v + 1; // V(a)::{b}
-    case 8:
-      return v + 1 - vshift_[1]; // V(e)::{b}
-    case 9:
-      return v - vshift_[1]; // V(f)::{b}
-  }
-  return -1;
-}
-
-inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexNeighborGHDC(const SimplexId v,
-                                                    const int id) const {
-  // V(ghdc)=V(g)+V(h)::{g}+V(d)::{g,h}
-  switch(id) {
-    case 0:
-      return v - vshift_[0] - vshift_[1]; // a
-    case 1:
-      return v + 1 - vshift_[0] - vshift_[1]; // b
-    case 2:
-      return v - vshift_[1]; // c
-    case 3:
-      return v + 1 - vshift_[1]; // d
-    case 4:
-      return v - vshift_[0]; // e
-    case 5:
-      return v + 1 - vshift_[0]; // f
-    case 6:
-      return v + 1; // h
-    case 7:
-      return v - 1; // V(h)::{g}
-    case 8:
-      return v - 1 + vshift_[1]; // V(d)::{g}
-    case 9:
-      return v + vshift_[1]; // V(d)::{h}
-  }
-  return -1;
-}
-
-inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexNeighborABCDEFGH(const SimplexId v,
-                                                        const int id) const {
-  // V(abcdefgh)=V(g)+V(d)::{g,h}+V(h)::{g}+V(b)::{c,d,g,h}
-  switch(id) {
-    case 0:
-      return v - vshift_[0] - vshift_[1]; // a
-    case 1:
-      return v + 1 - vshift_[0] - vshift_[1]; // b
-    case 2:
-      return v - vshift_[1]; // c
-    case 3:
-      return v + 1 - vshift_[1]; // d
-    case 4:
-      return v - vshift_[0]; // e
-    case 5:
-      return v + 1 - vshift_[0]; // f
-    case 6:
-      return v + 1; // h
-    case 7:
-      return v - 1 + vshift_[1]; // V(d)::{g}
-    case 8:
-      return v + vshift_[1]; // V(d)::{h}
-    case 9:
-      return v - 1; // V(h)::{g}
-    case 10:
-      return v - 1 + vshift_[0]; // V(b)::{c}
-    case 11:
-      return v + vshift_[0]; // V(b)::{d}
-    case 12:
-      return v - 1 + vshift_[0] + vshift_[1]; // V(b)::{g}
-    case 13:
-      return v + vshift_[0] + vshift_[1]; // V(b)::{h}
-  }
-  return -1;
 }
 
 inline ttk::SimplexId
@@ -2812,7 +2332,7 @@ inline ttk::SimplexId
 }
 
 inline ttk::SimplexId
-  ttk::ImplicitTriangulation::getVertexTriangleA(const SimplexId p[3],
+  ttk::ImplicitTriangulation::getVertexTriangleA(const SimplexId /*p*/[3],
                                                  const int id) const {
   switch(id) {
     case 0:
@@ -6618,7 +6138,6 @@ inline ttk::SimplexId
     else
       return p[0] / 2 + p[1] * vshift_[0] + p[2] * vshift_[1] + vshift_[0];
   }
-  return -1;
 }
 
 inline ttk::SimplexId
@@ -6639,7 +6158,6 @@ inline ttk::SimplexId
     else
       return p[0] / 2 + p[1] * vshift_[0] + p[2] * vshift_[1] + vshift_[1];
   }
-  return -1;
 }
 
 inline ttk::SimplexId
@@ -6662,7 +6180,6 @@ inline ttk::SimplexId
       return (p[0] / 2) + p[1] * vshift_[0] + p[2] * vshift_[1] + vshift_[1]
              + vshift_[0];
   }
-  return -1;
 }
 
 inline ttk::SimplexId
@@ -6685,7 +6202,6 @@ inline ttk::SimplexId
       return p[0] / 2 + p[1] * vshift_[0] + p[2] * vshift_[1] + vshift_[1]
              + vshift_[0];
   }
-  return -1;
 }
 
 inline ttk::SimplexId
@@ -6709,7 +6225,6 @@ inline ttk::SimplexId
       return p[0] / 2 + p[1] * vshift_[0] + p[2] * vshift_[1] + vshift_[0]
              + vshift_[1];
   }
-  return -1;
 }
 
 inline ttk::SimplexId
@@ -6732,7 +6247,6 @@ inline ttk::SimplexId
       return p[0] / 2 + p[1] * vshift_[0] + p[2] * vshift_[1] + vshift_[0]
              + vshift_[1];
   }
-  return -1;
 }
 
 inline ttk::SimplexId
@@ -7683,5 +7197,3 @@ inline ttk::SimplexId ttk::ImplicitTriangulation::getTetrahedronNeighborBDGH(
   }
   return -1;
 }
-
-#endif // _IMPLICITTRIANGULATION_H

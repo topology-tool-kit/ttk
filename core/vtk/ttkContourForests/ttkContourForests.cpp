@@ -1,5 +1,7 @@
 #include "ttkContourForests.h"
 
+#include <ttkUtils.h>
+
 using namespace std;
 using namespace ttk;
 using namespace cf;
@@ -51,6 +53,9 @@ ttkContourForests::ttkContourForests()
   SetNumberOfOutputPorts(3);
 
   triangulation_ = NULL;
+
+  vtkWarningMacro(
+    "Contour Forests is deprecated, please use FTM Tree instead.");
 }
 
 ttkContourForests::~ttkContourForests() {
@@ -1394,7 +1399,7 @@ void ttkContourForests::getTree() {
   // sequential params
   contourTree_.setDebugLevel(debugLevel_);
   contourTree_.setupTriangulation(triangulation_);
-  contourTree_.setVertexScalars(vtkInputScalars_->GetVoidPointer(0));
+  contourTree_.setVertexScalars(ttkUtils::GetVoidPointer(vtkInputScalars_));
   if(!vertexSoSoffsets_.empty()) {
     contourTree_.setVertexSoSoffsets(vertexSoSoffsets_);
   }

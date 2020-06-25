@@ -32,27 +32,29 @@
 #include <vtkPointData.h>
 #include <vtkSmartPointer.h>
 
+// VTK Module
+#include <ttkIdentifierRandomizerModule.h>
+
 // ttk code includes
-#include <ttkWrapper.h>
+#include <ttkTriangulationAlgorithm.h>
 
 // in this example, this wrapper takes a data-set on the input and produces a
 // data-set on the output - to adapt.
 // see the documentation of the vtkAlgorithm class to decide from which VTK
 // class your wrapper should inherit.
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkIdentifierRandomizer
-#else
-class ttkIdentifierRandomizer
-#endif
+class TTKIDENTIFIERRANDOMIZER_EXPORT ttkIdentifierRandomizer
   : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+    protected ttk::Wrapper {
 
 public:
   static ttkIdentifierRandomizer *New();
   vtkTypeMacro(ttkIdentifierRandomizer, vtkDataSetAlgorithm)
 
     // default ttk setters
-    vtkSetMacro(debugLevel_, int);
+    void SetDebugLevel(int debugLevel) {
+    setDebugLevel(debugLevel);
+    Modified();
+  }
 
   void SetThreadNumber(int threadNumber) {
     ThreadNumber = threadNumber;
@@ -76,7 +78,7 @@ protected:
     UseAllCores = true;
   }
 
-  ~ttkIdentifierRandomizer() {
+  ~ttkIdentifierRandomizer() override {
     if(outputScalarField_) {
       outputScalarField_->Delete();
     }

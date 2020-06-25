@@ -1,0 +1,6 @@
+NAME
+ ttkFTMTree
+DEPENDS
+  VTK::FiltersCore
+PRIVATE_DEPENDS
+  VTK::CommonCore

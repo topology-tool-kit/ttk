@@ -25,6 +25,7 @@
 #include <iostream>
 #endif
 
+#include <random>
 #include <vector>
 
 namespace ttk {
@@ -37,9 +38,9 @@ namespace ttk {
     class Graph : public Allocable {
     private:
       // update operator =
-      AtomicVector<std::tuple<idVertex, bool>> leaves_;
-      AtomicVector<Node> nodes_;
-      AtomicVector<SuperArc> arcs_;
+      FTRAtomicVector<std::tuple<idVertex, bool>> leaves_;
+      FTRAtomicVector<Node> nodes_;
+      FTRAtomicVector<SuperArc> arcs_;
 
       std::vector<SegmInfo> segmentation_;
 
@@ -317,7 +318,7 @@ namespace ttk {
       }
 
       void shuffleLeaves() {
-        std::random_shuffle(leaves_.begin(), leaves_.end());
+        std::shuffle(leaves_.begin(), leaves_.end(), std::random_device());
       }
 
       // some arc may be pending due to symbolic merge during computation

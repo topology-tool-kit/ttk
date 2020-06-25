@@ -19,6 +19,7 @@
 #include <string>
 
 // Base code.
+#include <Geometry.h>
 #include <Wrapper.h>
 
 namespace ttk {
@@ -109,7 +110,7 @@ int ttk::LDistance::execute(const std::string &distanceType) {
 
 // Check variables consistency
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(!inputData1_ || !inputData2_ || !outputData_)
+  if(!inputData1_ || !inputData2_)
     return -1;
 #endif
 
@@ -154,7 +155,7 @@ int ttk::LDistance::computeLn(dataType *input1,
 #endif
   for(ttk::SimplexId i = 0; i < vertexNumber; ++i) {
     const dataType diff = abs_diff<dataType>(input1[i], input2[i]);
-    const dataType power = pow(diff, (double)n);
+    const dataType power = Geometry::pow(diff, n);
 
     // Careful: huge dataset + huge values
     // may exceed double capacity.
@@ -165,7 +166,7 @@ int ttk::LDistance::computeLn(dataType *input1,
       output[i] = power;
   }
 
-  sum = pow(sum, 1.0 / (double)n);
+  sum = Geometry::pow(sum, 1.0 / (double)n);
 
   // Affect result.
   result = (double)sum;

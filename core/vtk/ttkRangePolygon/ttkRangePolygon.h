@@ -63,17 +63,15 @@
 #include <vtkSmartPointer.h>
 #include <vtkUnstructuredGrid.h>
 
+// VTK Module
+#include <ttkRangePolygonModule.h>
+
 // ttk code includes
 #include <ScalarFieldSmoother.h>
-#include <ttkWrapper.h>
+#include <ttkTriangulationAlgorithm.h>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkRangePolygon
-#else
-class ttkRangePolygon
-#endif
-  : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+class TTKRANGEPOLYGON_EXPORT ttkRangePolygon : public vtkDataSetAlgorithm,
+                                               protected ttk::Wrapper {
 
 public:
   static ttkRangePolygon *New();
@@ -81,7 +79,10 @@ public:
   vtkTypeMacro(ttkRangePolygon, vtkDataSetAlgorithm);
 
   // default ttk setters
-  vtkSetMacro(debugLevel_, int);
+  void SetDebugLevel(int debugLevel) {
+    setDebugLevel(debugLevel);
+    Modified();
+  }
 
   void SetThreadNumber(int threadNumber) {
     ThreadNumber = threadNumber;
@@ -108,7 +109,7 @@ public:
 protected:
   ttkRangePolygon();
 
-  ~ttkRangePolygon();
+  ~ttkRangePolygon() override;
 
   TTK_SETUP();
 

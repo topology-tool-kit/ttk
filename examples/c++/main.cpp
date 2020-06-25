@@ -25,9 +25,12 @@
 #include <PersistenceDiagram.h>
 #include <TopologicalSimplification.h>
 
+#include <iostream>
+
 int load(const std::string &inputPath,
          std::vector<float> &pointSet,
-         std::vector<long long int> &triangleSet) {
+         std::vector<long long int> &triangleSetCo,
+         std::vector<long long int> &triangleSetOff) {
 
   // load some terrain from some OFF file.
 
@@ -35,6 +38,7 @@ int load(const std::string &inputPath,
     return -1;
 
   ttk::Debug d;
+  d.setDebugLevel(ttk::globalDebugLevel_);
 
   {
     std::stringstream msg;
@@ -72,15 +76,30 @@ int load(const std::string &inputPath,
   f >> keyword;
 
   pointSet.resize(3 * vertexNumber);
-  triangleSet.resize(4 * triangleNumber);
+  triangleSetCo.resize(3 * triangleNumber);
+  triangleSetOff.resize(triangleNumber + 1);
 
   for(int i = 0; i < 3 * vertexNumber; i++) {
     f >> pointSet[i];
   }
 
-  for(int i = 0; i < 4 * triangleNumber; i++) {
-    f >> triangleSet[i];
+  int offId = 0;
+  int coId = 0;
+  for(int i = 0; i < triangleNumber; i++) {
+    int cellSize;
+    f >> cellSize;
+    if(cellSize != 3) {
+      std::cerr << "cell size " << cellSize << " != 3" << std::endl;
+      return -3;
+    }
+    triangleSetOff[offId++] = coId;
+    for(int j = 0; j < 3; j++) {
+      int cellId;
+      f >> cellId;
+      triangleSetCo[coId++] = cellId;
+    }
   }
+  triangleSetOff[offId] = coId; // the last one
 
   f.close();
 
@@ -95,11 +114,13 @@ int load(const std::string &inputPath,
 }
 
 int save(const std::vector<float> &pointSet,
-         const std::vector<long long int> &triangleSet,
+         const std::vector<long long int> &triangleSetCo,
+         const std::vector<long long int> &triangleSetOff,
          const std::string &outputPath) {
 
   // save the simplified terrain in some OFF file
   ttk::Debug d;
+  d.setDebugLevel(ttk::globalDebugLevel_);
 
   std::string fileName(outputPath);
 
@@ -113,9 +134,10 @@ int save(const std::vector<float> &pointSet,
     return -1;
   }
 
+  const int nbTriangles = triangleSetOff.size() - 1;
+
   f << "OFF" << std::endl;
-  f << pointSet.size() / 3 << " " << triangleSet.size() / 4 << " 0"
-    << std::endl;
+  f << pointSet.size() / 3 << " " << nbTriangles << " 0" << std::endl;
 
   for(int i = 0; i < (int)pointSet.size() / 3; i++) {
     for(int j = 0; j < 3; j++) {
@@ -125,9 +147,12 @@ int save(const std::vector<float> &pointSet,
     f << std::endl;
   }
 
-  for(int i = 0; i < (int)triangleSet.size() / 4; i++) {
-    for(int j = 0; j < 4; j++) {
-      f << triangleSet[4 * i + j];
+  for(int i = 0; i < nbTriangles; i++) {
+    int cellSize = triangleSetOff[i+1] - triangleSetOff[i];
+    assert(cellSize == 3);
+    f << cellSize << " ";
+    for(int j = triangleSetOff[i]; j < triangleSetOff[i+1]; j++) {
+      f << triangleSetCo[j];
       f << " ";
     }
     f << std::endl;
@@ -151,19 +176,27 @@ int main(int argc, char **argv) {
   parser.parse(argc, argv);
 
   std::vector<float> pointSet;
-  std::vector<long long int> triangleSet;
+  std::vector<long long int> triangleSetCo, triangleSetOff;
   ttk::Triangulation triangulation;
 
   // load the input
-  load(inputFilePath, pointSet, triangleSet);
+  load(inputFilePath, pointSet, triangleSetCo, triangleSetOff);
   triangulation.setInputPoints(pointSet.size() / 3, pointSet.data());
-  triangulation.setInputCells(triangleSet.size() / 4, triangleSet.data());
+  long long int triangleNumber = triangleSetOff.size() - 1;
+#ifdef TTK_CELL_ARRAY_NEW
+  triangulation.setInputCells(
+    triangleNumber, triangleSetCo.data(), triangleSetOff.data());
+#else
+  LongSimplexId *triangleSet;
+  CellArray::TranslateToFlatLayout(triangleSetCo, triangleSetOff, triangleSet);
+  triangulation.setInputCells(triangleNumber, triangleSet);
+#endif
 
   // NOW, do the TTK processing
 
   // computing some elevation
   std::vector<float> height(pointSet.size() / 3);
-  std::vector<int> offsets(height.size());
+  std::vector<ttk::SimplexId> offsets(height.size());
   int vertexId = 0;
   // use the z-coordinate here
   for(int i = 2; i < (int)pointSet.size(); i += 3) {
@@ -179,7 +212,7 @@ int main(int argc, char **argv) {
   curve.setInputScalars(height.data());
   curve.setInputOffsets(offsets.data());
   curve.setOutputCTPlot(&outputCurve);
-  curve.execute<float, int>();
+  curve.execute<float, ttk::SimplexId>();
 
   // 3. computing the persitence diagram
   ttk::PersistenceDiagram diagram;
@@ -190,11 +223,12 @@ int main(int argc, char **argv) {
   diagram.setInputScalars(height.data());
   diagram.setInputOffsets(offsets.data());
   diagram.setOutputCTDiagram(&diagramOutput);
-  diagram.execute<float, int>();
+  diagram.execute<float, ttk::SimplexId>();
 
   // 4. selecting the critical point pairs
   std::vector<float> simplifiedHeight = height;
-  std::vector<int> authorizedCriticalPoints, simplifiedOffsets = offsets;
+  std::vector<ttk::SimplexId> authorizedCriticalPoints,
+    simplifiedOffsets = offsets;
   for(int i = 0; i < (int)diagramOutput.size(); i++) {
     double persistence = std::get<4>(diagramOutput[i]);
     if(persistence > 0.05) {
@@ -214,7 +248,7 @@ int main(int argc, char **argv) {
   simplification.setConstraintNumber(authorizedCriticalPoints.size());
   simplification.setVertexIdentifierScalarFieldPointer(
     authorizedCriticalPoints.data());
-  simplification.execute<float, int>();
+  simplification.execute<float, ttk::SimplexId>();
 
   // assign the simplified values to the input mesh
   for(int i = 0; i < (int)simplifiedHeight.size(); i++) {
@@ -224,32 +258,32 @@ int main(int argc, char **argv) {
   // 7. computing the Morse-Smale complex
   ttk::MorseSmaleComplex morseSmaleComplex;
   // critical points
-  int criticalPoints_numberOfPoints{};
+  ttk::SimplexId criticalPoints_numberOfPoints{};
   std::vector<float> criticalPoints_points;
   std::vector<char> criticalPoints_points_cellDimensions;
-  std::vector<int> criticalPoints_points_cellIds;
+  std::vector<ttk::SimplexId> criticalPoints_points_cellIds;
   std::vector<char> criticalPoints_points_isOnBoundary;
   std::vector<float> criticalPoints_points_cellScalars;
-  std::vector<int> criticalPoints_points_PLVertexIdentifiers;
-  std::vector<int> criticalPoints_points_manifoldSize;
+  std::vector<ttk::SimplexId> criticalPoints_points_PLVertexIdentifiers;
+  std::vector<ttk::SimplexId> criticalPoints_points_manifoldSize;
   // 1-separatrices
-  int separatrices1_numberOfPoints{};
+  ttk::SimplexId separatrices1_numberOfPoints{};
   std::vector<float> separatrices1_points;
   std::vector<char> separatrices1_points_smoothingMask;
   std::vector<char> separatrices1_points_cellDimensions;
-  std::vector<int> separatrices1_points_cellIds;
-  int separatrices1_numberOfCells{};
-  std::vector<int> separatrices1_cells;
-  std::vector<int> separatrices1_cells_sourceIds;
-  std::vector<int> separatrices1_cells_destinationIds;
-  std::vector<int> separatrices1_cells_separatrixIds;
+  std::vector<ttk::SimplexId> separatrices1_points_cellIds;
+  ttk::SimplexId separatrices1_numberOfCells{};
+  std::vector<ttk::SimplexId> separatrices1_cells;
+  std::vector<ttk::SimplexId> separatrices1_cells_sourceIds;
+  std::vector<ttk::SimplexId> separatrices1_cells_destinationIds;
+  std::vector<ttk::SimplexId> separatrices1_cells_separatrixIds;
   std::vector<char> separatrices1_cells_separatrixTypes;
   std::vector<char> separatrices1_cells_isOnBoundary;
   std::vector<float> separatrices1_cells_separatrixFunctionMaxima;
   std::vector<float> separatrices1_cells_separatrixFunctionMinima;
   std::vector<float> separatrices1_cells_separatrixFunctionDiffs;
   // segmentation
-  std::vector<int> ascendingSegmentation(
+  std::vector<ttk::SimplexId> ascendingSegmentation(
     triangulation.getNumberOfVertices(), -1),
     descendingSegmentation(triangulation.getNumberOfVertices(), -1),
     mscSegmentation(triangulation.getNumberOfVertices(), -1);
@@ -277,10 +311,10 @@ int main(int argc, char **argv) {
     &separatrices1_cells_separatrixFunctionDiffs,
     &separatrices1_cells_isOnBoundary);
 
-  morseSmaleComplex.execute<float, int>();
+  morseSmaleComplex.execute<float, ttk::SimplexId>();
 
   // save the output
-  save(pointSet, triangleSet, "output.off");
+  save(pointSet, triangleSetCo, triangleSetOff, "output.off");
 
   return 0;
 }

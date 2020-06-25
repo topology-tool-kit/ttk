@@ -13,4 +13,3 @@ COPY ttk.sh /root/
 RUN  /root/build /root/ttk.sh
 
 USER paraview
-

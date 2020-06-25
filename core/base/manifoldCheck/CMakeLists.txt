@@ -3,8 +3,7 @@ ttk_add_base_library(manifoldCheck
     ManifoldCheck.cpp
   HEADERS
     ManifoldCheck.h
-  LINK
+  DEPENDS
     triangulation
     unionFind
     )
-

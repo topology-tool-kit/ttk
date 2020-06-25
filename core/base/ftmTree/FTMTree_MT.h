@@ -63,9 +63,9 @@ namespace ttk {
       TreeType treeType;
 
       // components : tree / nodes / extrema
-      AtomicVector<SuperArc> *superArcs;
-      AtomicVector<Node> *nodes;
-      AtomicVector<idNode> *roots;
+      FTMAtomicVector<SuperArc> *superArcs;
+      FTMAtomicVector<Node> *nodes;
+      FTMAtomicVector<idNode> *roots;
       std::vector<idNode> *leaves;
 
       // vertex 2 node / superarc
@@ -75,7 +75,7 @@ namespace ttk {
 
       // Track informations
       std::vector<UF> *ufs, *propagation;
-      AtomicVector<CurrentState> *states;
+      FTMAtomicVector<CurrentState> *states;
       // valences
       std::vector<valence> *valences;
       // opened nodes
@@ -227,7 +227,7 @@ namespace ttk {
       void initVectStates(const SimplexId nbLeaves) {
         if(!mt_data_.states) {
           mt_data_.states
-            = new AtomicVector<CurrentState>(nbLeaves, comp_.vertHigher);
+            = new FTMAtomicVector<CurrentState>(nbLeaves, comp_.vertHigher);
         }
         mt_data_.states->clear();
         mt_data_.states->reserve(nbLeaves);
@@ -316,7 +316,7 @@ namespace ttk {
         mesh_ = m;
         if(mesh_ && preproc) {
           // propage through vertices (build)
-          mesh_->preprocessVertexNeighbors();
+          mesh_->preconditionVertexNeighbors();
         }
       }
 
@@ -372,7 +372,7 @@ namespace ttk {
 
       inline SuperArc *getSuperArc(idSuperArc i) {
 #ifndef TTK_ENABLE_KAMIKAZE
-        if((size_t)i >= mt_data_.superArcs->size()) {
+        if(i >= mt_data_.superArcs->size()) {
           std::cout << "[Merge Tree] get superArc on bad id :" << i;
           std::cout << " / " << mt_data_.superArcs->size() << std::endl;
           return nullptr;
@@ -383,7 +383,7 @@ namespace ttk {
 
       inline const SuperArc *getSuperArc(idSuperArc i) const {
 #ifndef TTK_ENABLE_KAMIKAZE
-        if((size_t)i >= mt_data_.superArcs->size()) {
+        if(i >= mt_data_.superArcs->size()) {
           std::cout << "[Merge Tree] get superArc on bad id :" << i;
           std::cout << " / " << mt_data_.superArcs->size() << std::endl;
           return nullptr;
@@ -419,7 +419,7 @@ namespace ttk {
 
       inline idNode getLeave(const idNode id) const {
 #ifndef TTK_ENABLE_KAMIKAZE
-        if((size_t)id > (mt_data_.leaves->size())) {
+        if(id > mt_data_.leaves->size()) {
           std::stringstream msg;
           msg << "[MergTree] getLeaves out of bounds : " << id << std::endl;
           err(msg.str(), fatalMsg);
@@ -516,11 +516,11 @@ namespace ttk {
 
       inline idCorresp idNode2corr(const idNode id) const {
         // transform idNode to special value for the array : -idNode -1
-        return -(idCorresp)(id + 1);
+        return -static_cast<idCorresp>(id + 1);
       }
 
       inline idNode corr2idNode(const idCorresp &corr) const {
-        return -(idNode)((*mt_data_.vert2tree)[corr] + 1);
+        return static_cast<idNode>(-((*mt_data_.vert2tree)[corr] + 1));
       }
 
       // --------------------------------
@@ -694,9 +694,9 @@ namespace ttk {
       }
 
       template <typename type>
-      void createAtomicVector(AtomicVector<type> *&ptr) {
+      void createAtomicVector(FTMAtomicVector<type> *&ptr) {
         if(!ptr)
-          ptr = new AtomicVector<type>;
+          ptr = new FTMAtomicVector<type>;
         ptr->clear();
       }
 

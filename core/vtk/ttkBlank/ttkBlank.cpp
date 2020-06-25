@@ -1,13 +1,13 @@
 #include <ttkBlank.h>
+#include <ttkUtils.h>
 
 using namespace std;
 using namespace ttk;
 using namespace blank;
 
-vtkStandardNewMacro(ttkBlank)
-
-  int ttkBlank::doIt(vector<vtkDataSet *> &inputs,
-                     vector<vtkDataSet *> &outputs) {
+vtkStandardNewMacro(ttkBlank);
+int ttkBlank::doIt(vector<vtkDataSet *> &inputs,
+                   vector<vtkDataSet *> &outputs) {
 
   Memory m;
 
@@ -31,9 +31,9 @@ vtkStandardNewMacro(ttkBlank)
   // variable 'output' with the result of the computation.
   // if your wrapper produces an output of the same type of the input, you
   // should proceed in the same way.
-  vtkDataArray *inputScalarField = NULL;
+  vtkDataArray *inputScalarField = nullptr;
 
-  if(ScalarField.length()) {
+  if(!ScalarField.empty()) {
     inputScalarField = input->GetPointData()->GetArray(ScalarField.data());
   } else {
     inputScalarField = input->GetPointData()->GetArray(0);
@@ -45,39 +45,16 @@ vtkStandardNewMacro(ttkBlank)
   // allocate the memory for the output scalar field
   if(!outputScalarField_) {
     switch(inputScalarField->GetDataType()) {
-
       case VTK_CHAR:
-        outputScalarField_ = vtkCharArray::New();
-        break;
-
       case VTK_DOUBLE:
-        outputScalarField_ = vtkDoubleArray::New();
-        break;
-
       case VTK_FLOAT:
-        outputScalarField_ = vtkFloatArray::New();
-        break;
-
-      case VTK_INT:
-        outputScalarField_ = vtkIntArray::New();
-        break;
-
       case VTK_ID_TYPE:
-        outputScalarField_ = vtkIdTypeArray::New();
-        break;
-
+      case VTK_INT:
       case VTK_SHORT:
-        outputScalarField_ = vtkShortArray::New();
-        break;
-
       case VTK_UNSIGNED_CHAR:
-        outputScalarField_ = vtkUnsignedCharArray::New();
-        break;
-
       case VTK_UNSIGNED_SHORT:
-        outputScalarField_ = vtkUnsignedShortArray::New();
+        outputScalarField_ = inputScalarField->NewInstance();
         break;
-
       default:
         stringstream msg;
         msg << "[ttkBlank] Unsupported data type :(" << endl;
@@ -98,11 +75,17 @@ vtkStandardNewMacro(ttkBlank)
   output->GetPointData()->AddArray(outputScalarField_);
 
   // calling the executing package
-  blank_.setInputDataPointer(inputScalarField->GetVoidPointer(0));
-  blank_.setOutputDataPointer(outputScalarField_->GetVoidPointer(0));
-  switch(inputScalarField->GetDataType()) {
-    vtkTemplateMacro(blank_.execute<VTK_TT>(SomeIntegerArgument));
-  }
+  blank_.setInputDataPointer(ttkUtils::GetVoidPointer(inputScalarField));
+  blank_.setOutputDataPointer(ttkUtils::GetVoidPointer(outputScalarField_));
+
+  // scalar type
+  // ttk::Triangulation::Type triangulationType = triangulation->getType();
+  // int dataType = inputScalarField->GetDataType();
+
+  ttkVtkTemplateMacro(
+    triangulation->getType(), inputScalarField->GetDataType(),
+    (blank_.execute<VTK_TT, TTK_TT>(
+      (TTK_TT *)triangulation->getData(), SomeIntegerArgument)));
 
   {
     stringstream msg;

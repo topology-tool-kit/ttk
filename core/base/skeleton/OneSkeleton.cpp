@@ -4,6 +4,7 @@ using namespace std;
 using namespace ttk;
 
 OneSkeleton::OneSkeleton() {
+  setDebugMsgPrefix("OneSkeleton");
 }
 
 OneSkeleton::~OneSkeleton() {
@@ -12,52 +13,47 @@ OneSkeleton::~OneSkeleton() {
 int OneSkeleton::buildEdgeLinks(
   const vector<pair<SimplexId, SimplexId>> &edgeList,
   const vector<vector<SimplexId>> &edgeStars,
-  const LongSimplexId *cellArray,
+  const CellArray &cellArray,
   vector<vector<SimplexId>> &edgeLinks) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(edgeList.empty())
     return -1;
-  if((edgeStars.empty()) || (edgeStars.size() != edgeList.size()))
+  if(edgeStars.size() != edgeList.size())
     return -2;
-  if(!cellArray)
-    return -3;
 #endif
 
   Timer t;
 
+  printMsg(
+    "Building edge links", 0, 0, threadNumber_, ttk::debug::LineMode::REPLACE);
+
   edgeLinks.resize(edgeList.size());
 
-  SimplexId verticesPerCell = cellArray[0];
-
+  const SimplexId nbEdges = edgeLinks.size();
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
-  for(SimplexId i = 0; i < (SimplexId)edgeLinks.size(); i++) {
-    for(SimplexId j = 0; j < (SimplexId)edgeStars[i].size(); j++) {
+  for(SimplexId i = 0; i < nbEdges; i++) {
+    const SimplexId localNbTriangle = edgeStars[i].size();
+    for(SimplexId j = 0; j < localNbTriangle; j++) {
 
-      SimplexId vertexId = -1;
+      // Look for the right vertex in each triangle
       for(int k = 0; k < 3; k++) {
-        if((cellArray[(verticesPerCell + 1) * edgeStars[i][j] + 1 + k]
-            != edgeList[i].first)
-           && (cellArray[(verticesPerCell + 1) * edgeStars[i][j] + 1 + k]
-               != edgeList[i].second)) {
-          vertexId = cellArray[(verticesPerCell + 1) * edgeStars[i][j] + 1 + k];
+        const SimplexId tmpVertexId
+          = cellArray.getCellVertex(edgeStars[i][j], k);
+        if(tmpVertexId != edgeList[i].first
+           && tmpVertexId != edgeList[i].second) {
+          // found the vertex in the triangle
+          edgeLinks[i].push_back(tmpVertexId);
           break;
         }
-      }
-      if(vertexId != -1) {
-        edgeLinks[i].push_back(vertexId);
       }
     }
   }
 
-  {
-    stringstream msg;
-    msg << "[OneSkeleton] Edge links built in " << t.getElapsedTime() << " s. ("
-        << threadNumber_ << " thread(s))." << endl;
-    dMsg(cout, msg.str(), timeMsg);
-  }
+  printMsg("Built " + to_string(edgeLinks.size()) + " edge links", 1,
+           t.getElapsedTime(), threadNumber_);
 
   return 0;
 }
@@ -78,6 +74,9 @@ int OneSkeleton::buildEdgeLinks(
 #endif
 
   Timer t;
+
+  printMsg(
+    "Building edge links", 0, 0, threadNumber_, debug::LineMode::REPLACE);
 
   edgeLinks.resize(edgeList.size());
 
@@ -109,55 +108,53 @@ int OneSkeleton::buildEdgeLinks(
     }
   }
 
-  {
-    stringstream msg;
-    msg << "[OneSkeleton] Edge links built in " << t.getElapsedTime() << " s. ("
-        << threadNumber_ << " thread(s))." << endl;
-    dMsg(cout, msg.str(), timeMsg);
-  }
+  printMsg("Built " + to_string(edgeLinks.size()) + " edge links", 1,
+           t.getElapsedTime(), threadNumber_);
 
   return 0;
 }
 
 int OneSkeleton::buildEdgeList(
   const SimplexId &vertexNumber,
-  const SimplexId &cellNumber,
-  const LongSimplexId *cellArray,
+  const CellArray &cellArray,
   vector<pair<SimplexId, SimplexId>> &edgeList) const {
 
   ThreadId oldThreadNumber = threadNumber_;
 
   // NOTE: parallel implementation not efficient (see bench at the bottom)
   // let's force the usage of only 1 thread.
+  // TODO: we should remove parallel part, only dead code.
   threadNumber_ = 1;
-
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(!cellArray)
-    return -1;
-#endif
 
   Timer t;
 
+  // TODO: describe the content of this complex container
+  // for each thread
+  // - a vector of size nb vertices containing
+  // - -
   vector<vector<vector<SimplexId>>> threadedEdgeTable(threadNumber_);
 
-  for(SimplexId i = 0; i < (SimplexId)threadedEdgeTable.size(); i++) {
-    threadedEdgeTable[i].resize(vertexNumber);
+  for(auto &vect : threadedEdgeTable) {
+    vect.resize(vertexNumber);
   }
 
-  // WARNING!
-  // assuming triangulations here
-  SimplexId verticesPerCell = cellArray[0];
+  printMsg("Building edges", 0, 0, 1, ttk::debug::LineMode::REPLACE);
+
+  const SimplexId cellNumber = cellArray.getNbCells();
+  const int timeBuckets = std::min(10, cellNumber);
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
-  for(SimplexId i = 0; i < cellNumber; i++) {
+  for(SimplexId cid = 0; cid < cellNumber; cid++) {
 
-    ThreadId threadId = 0, tmpVertexId = 0;
+    ThreadId threadId = 0;
     pair<SimplexId, SimplexId> edgeIds;
 #ifdef TTK_ENABLE_OPENMP
     threadId = omp_get_thread_num();
 #endif
+
+    const SimplexId nbVertsInCell = cellArray.getCellVertexNumber(cid);
 
     // tet case
     // 0 - 1
@@ -166,32 +163,35 @@ int OneSkeleton::buildEdgeList(
     // 1 - 2
     // 1 - 3
     // 2 - 3
-    for(SimplexId j = 0; j <= verticesPerCell - 2; j++) {
-      for(SimplexId k = j + 1; k <= verticesPerCell - 1; k++) {
+    for(SimplexId j = 0; j <= nbVertsInCell - 2; j++) {
+      for(SimplexId k = j + 1; k <= nbVertsInCell - 1; k++) {
         // edge processing
-        edgeIds.first = cellArray[(verticesPerCell + 1) * i + 1 + j];
-        edgeIds.second = cellArray[(verticesPerCell + 1) * i + 1 + k];
+        edgeIds.first = cellArray.getCellVertex(cid, j);
+        edgeIds.second = cellArray.getCellVertex(cid, k);
 
         if(edgeIds.first > edgeIds.second) {
-          tmpVertexId = edgeIds.first;
-          edgeIds.first = edgeIds.second;
-          edgeIds.second = tmpVertexId;
+          std::swap(edgeIds.first, edgeIds.second);
         }
 
         bool hasFound = false;
-        for(SimplexId l = 0;
-            l < (SimplexId)threadedEdgeTable[threadId][edgeIds.first].size();
-            l++) {
-          if(edgeIds.second == threadedEdgeTable[threadId][edgeIds.first][l]) {
+        // TODO Traversing the list each time is suboptimal. Sort + uniq
+        for(const auto &l : threadedEdgeTable[threadId][edgeIds.first]) {
+          if(edgeIds.second == l) {
             hasFound = true;
             break;
           }
         }
         if(!hasFound) {
-          threadedEdgeTable[threadId][edgeIds.first].push_back(edgeIds.second);
+          threadedEdgeTable[threadId][edgeIds.first].emplace_back(
+            edgeIds.second);
         }
         // end of edge processing
       }
+    }
+    if(debugLevel_ >= (int)(debug::Priority::INFO)) {
+      if(!(cid % ((cellNumber) / timeBuckets)))
+        printMsg("Building edges", (cid / (float)cellNumber),
+                 t.getElapsedTime(), 1, debug::LineMode::REPLACE);
     }
   }
 
@@ -201,25 +201,29 @@ int OneSkeleton::buildEdgeList(
 
   if(threadNumber_ > 1) {
     edgeTable.resize(vertexNumber);
-    for(SimplexId i = 0; i < (SimplexId)threadedEdgeTable.size(); i++) {
+    // All these .size are recomputed each time. Us
+    const SimplexId nbThreads = threadedEdgeTable.size();
+    for(SimplexId i = 0; i < nbThreads; i++) {
 
-      for(SimplexId j = 0; j < (SimplexId)threadedEdgeTable[i].size(); j++) {
+      const LongSimplexId nbVertThreadI = threadedEdgeTable[i].size();
+      for(LongSimplexId j = 0; j < nbVertThreadI; j++) {
 
-        for(SimplexId k = 0; k < (SimplexId)threadedEdgeTable[i][j].size();
-            k++) {
+        const LongSimplexId nbAttachedVertsJ = threadedEdgeTable[i][j].size();
+        for(LongSimplexId k = 0; k < nbAttachedVertsJ; k++) {
 
           // search if it already exists
           bool hasFound = false;
 
-          for(SimplexId l = 0; l < (SimplexId)edgeTable[j].size(); l++) {
-
+          // TODO here again, linear search is not optimal.
+          const LongSimplexId nbVertEdgeJ = edgeTable[j].size();
+          for(SimplexId l = 0; l < nbVertEdgeJ; l++) {
             if(edgeTable[j][l] == threadedEdgeTable[i][j][k]) {
               hasFound = true;
               break;
             }
           }
           if(!hasFound) {
-            edgeTable[j].push_back(threadedEdgeTable[i][j][k]);
+            edgeTable[j].emplace_back(threadedEdgeTable[i][j][k]);
             edgeCount++;
           }
         }
@@ -247,13 +251,8 @@ int OneSkeleton::buildEdgeList(
     }
   }
 
-  {
-    stringstream msg;
-    msg << "[OneSkeleton] Edge-list built in " << t.getElapsedTime() << " s. ("
-        << edgeList.size() << " edges, " << threadNumber_ << " thread(s))."
-        << endl;
-    dMsg(cout, msg.str(), timeMsg);
-  }
+  printMsg(
+    "Built " + to_string(edgeList.size()) + " edges", 1, t.getElapsedTime(), 1);
 
   threadNumber_ = oldThreadNumber;
 
@@ -264,62 +263,49 @@ int OneSkeleton::buildEdgeList(
   return 0;
 }
 
-int OneSkeleton::buildEdgeLists(
-  const vector<vector<LongSimplexId>> &cellArrays,
-  vector<vector<pair<SimplexId, SimplexId>>> &edgeLists) const {
-
-  Timer t;
-
-  edgeLists.resize(cellArrays.size());
-
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
-#endif
-  for(SimplexId i = 0; i < (SimplexId)cellArrays.size(); i++) {
-    buildEdgeSubList(cellArrays[i].size() / (cellArrays[i][0] + 1),
-                     cellArrays[i].data(), edgeLists[i]);
-  }
-
-  {
-    stringstream msg;
-    msg << "[OneSkeleton] Multiple edge-lists built in " << t.getElapsedTime()
-        << " s. (" << edgeLists.size() << " meshes)" << endl;
-    dMsg(cout, msg.str(), timeMsg);
-  }
-
-  if(debugLevel_ >= Debug::advancedInfoMsg) {
-    stringstream msg;
-    for(SimplexId i = 0; i < (SimplexId)edgeLists.size(); i++) {
-      msg << "[OneSkeleton] Surface #" << i << " (" << edgeLists[i].size()
-          << " edges):" << endl;
-      for(SimplexId j = 0; j < (SimplexId)edgeLists[i].size(); j++) {
-        msg << "[OneSkeleton] - [" << edgeLists[i][j].first << " - "
-            << edgeLists[i][j].second << "]" << endl;
-      }
-    }
-    dMsg(cout, msg.str(), Debug::advancedInfoMsg);
-  }
-
-  // computing the edge list of each vertex link:
-  // 24 threads (12 cores): 1.69s.
-  // 1 thread: 7.2 (> x4)
-
-  return 0;
-}
+// int OneSkeleton::buildEdgeLists(
+//   const vector<vector<LongSimplexId>> &cellArrays,
+//   vector<vector<pair<SimplexId, SimplexId>>> &edgeLists) const {
+//   Timer t;
+//   printMsg(
+//     "Building edge lists", 0, 0, threadNumber_, debug::LineMode::REPLACE);
+//   edgeLists.resize(cellArrays.size());
+// #ifdef TTK_ENABLE_OPENMP
+// #pragma omp parallel for num_threads(threadNumber_)
+// #endif
+//   for(SimplexId i = 0; i < (SimplexId)cellArrays.size(); i++) {
+//     buildEdgeSubList(cellArrays[i].size() / (cellArrays[i][0] + 1),
+//                      cellArrays[i].data(), edgeLists[i]);
+//   }
+//   printMsg("Built " + to_string(edgeLists.size()) + " edge lists", 1,
+//            t.getElapsedTime(), threadNumber_);
+//   if(debugLevel_ >= (int)(debug::Priority::DETAIL)) {
+//     for(SimplexId i = 0; i < (SimplexId)edgeLists.size(); i++) {
+//       {
+//         stringstream stringStream;
+//         stringStream << "Surface #" << i << " (" << edgeLists[i].size()
+//                      << " edges):";
+//         printMsg(stringStream.str(), debug::Priority::DETAIL);
+//       }
+//       for(SimplexId j = 0; j < (SimplexId)edgeLists[i].size(); j++) {
+//         stringstream stringStream;
+//         stringStream << "- [" << edgeLists[i][j].first << " - "
+//                      << edgeLists[i][j].second << "]";
+//         printMsg(stringStream.str(), debug::Priority::DETAIL);
+//       }
+//     }
+//   }
+//   // computing the edge list of each vertex link:
+//   // 24 threads (12 cores): 1.69s.
+//   // 1 thread: 7.2 (> x4)
+//   return 0;
+// }
 
 int OneSkeleton::buildEdgeStars(const SimplexId &vertexNumber,
-                                const SimplexId &cellNumber,
-                                const LongSimplexId *cellArray,
+                                const CellArray &cellArray,
                                 vector<vector<SimplexId>> &starList,
                                 vector<pair<SimplexId, SimplexId>> *edgeList,
                                 vector<vector<SimplexId>> *vertexStars) const {
-
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(!cellArray)
-    return -1;
-#endif
-
-  Timer t;
 
   auto localEdgeList = edgeList;
   vector<pair<SimplexId, SimplexId>> defaultEdgeList{};
@@ -328,7 +314,7 @@ int OneSkeleton::buildEdgeStars(const SimplexId &vertexNumber,
   }
 
   if(!localEdgeList->size()) {
-    buildEdgeList(vertexNumber, cellNumber, cellArray, *localEdgeList);
+    buildEdgeList(vertexNumber, cellArray, *localEdgeList);
   }
 
   starList.resize(localEdgeList->size());
@@ -344,9 +330,13 @@ int OneSkeleton::buildEdgeStars(const SimplexId &vertexNumber,
     ZeroSkeleton zeroSkeleton;
     zeroSkeleton.setThreadNumber(threadNumber_);
     zeroSkeleton.setDebugLevel(debugLevel_);
-    zeroSkeleton.buildVertexStars(
-      vertexNumber, cellNumber, cellArray, *localVertexStars);
+    zeroSkeleton.buildVertexStars(vertexNumber, cellArray, *localVertexStars);
   }
+
+  Timer t;
+
+  printMsg(
+    "Building edge stars", 0, 0, threadNumber_, debug::LineMode::REPLACE);
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
@@ -375,13 +365,8 @@ int OneSkeleton::buildEdgeStars(const SimplexId &vertexNumber,
     }
   }
 
-  {
-    stringstream msg;
-    msg << "[OneSkeleton] Edge stars built in " << t.getElapsedTime() << " s. ("
-        << starList.size() << " edges, " << threadNumber_ << " thread(s))"
-        << endl;
-    dMsg(cout, msg.str(), timeMsg);
-  }
+  printMsg("Built " + to_string(starList.size()) + " edge stars", 1,
+           t.getElapsedTime(), threadNumber_);
 
   // ethaneDiolMedium.vtu, 70Mtets, hal9000 (12coresHT)
   // with edge list and vertex stars
@@ -392,8 +377,7 @@ int OneSkeleton::buildEdgeStars(const SimplexId &vertexNumber,
 }
 
 int OneSkeleton::buildEdgeSubList(
-  const SimplexId &cellNumber,
-  const LongSimplexId *cellArray,
+  const CellArray &cellArray,
   vector<pair<SimplexId, SimplexId>> &edgeList) const {
 
   // NOTE: here we're dealing with a subportion of the mesh.
@@ -406,8 +390,9 @@ int OneSkeleton::buildEdgeSubList(
   map<pair<SimplexId, SimplexId>, bool> edgeMap;
   edgeList.clear();
 
-  SimplexId verticesPerCell = cellArray[0];
-  for(SimplexId i = 0; i < cellNumber; i++) {
+  const SimplexId cellNumber = cellArray.getNbCells();
+  for(SimplexId cid = 0; cid < cellNumber; cid++) {
+    const SimplexId nbVertCell = cellArray.getCellVertexNumber(cid);
 
     pair<SimplexId, SimplexId> edgeIds;
     int tmpVertexId;
@@ -418,11 +403,11 @@ int OneSkeleton::buildEdgeSubList(
     // 1 - 2
     // 1 - 3
     // 2 - 3
-    for(SimplexId j = 0; j <= verticesPerCell - 2; j++) {
-      for(SimplexId k = j + 1; k <= verticesPerCell - 1; k++) {
+    for(SimplexId j = 0; j <= nbVertCell - 2; j++) {
+      for(SimplexId k = j + 1; k <= nbVertCell - 1; k++) {
 
-        edgeIds.first = cellArray[(verticesPerCell + 1) * i + 1 + j];
-        edgeIds.second = cellArray[(verticesPerCell + 1) * i + 1 + k];
+        edgeIds.first = cellArray.getCellVertex(cid, j);
+        edgeIds.second = cellArray.getCellVertex(cid, k);
 
         if(edgeIds.first > edgeIds.second) {
           tmpVertexId = edgeIds.first;

@@ -33,7 +33,7 @@ struct MyCmp {
 
 struct filtrationCtCmp {
   bool operator()(const pair<bool, pair<double, pair<int, int>>> &v0,
-                  const pair<bool, pair<double, pair<int, int>>> &v1) {
+                  const pair<bool, pair<double, pair<int, int>>> &v1) const {
 
     if(v0.first) {
       return ((v0.second.first < v1.second.first)
@@ -1495,8 +1495,8 @@ int SubLevelSetTree::getPersistencePlot(
 
   for(int i = 0; i < (int)plot.size(); i++) {
     plot[i].first = (*persistencePairs)[i].second;
-    if(plot[i].first < pow(10, -REAL_SIGNIFICANT_DIGITS)) {
-      plot[i].first = pow(10, -REAL_SIGNIFICANT_DIGITS);
+    if(plot[i].first < Geometry::powIntTen(-REAL_SIGNIFICANT_DIGITS)) {
+      plot[i].first = Geometry::powIntTen(-REAL_SIGNIFICANT_DIGITS);
     }
     plot[i].second = persistencePairs->size() - i;
   }
@@ -2923,8 +2923,8 @@ int ContourTree::getPersistencePlot(
 
   for(int i = 0; i < (int)plot.size(); i++) {
     plot[i].first = (*pairs)[i].second;
-    if(plot[i].first < pow(10, -REAL_SIGNIFICANT_DIGITS)) {
-      plot[i].first = pow(10, -REAL_SIGNIFICANT_DIGITS);
+    if(plot[i].first < Geometry::powIntTen(-REAL_SIGNIFICANT_DIGITS)) {
+      plot[i].first = Geometry::powIntTen(-REAL_SIGNIFICANT_DIGITS);
     }
     plot[i].second = pairs->size() - i;
   }

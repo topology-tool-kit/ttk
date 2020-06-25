@@ -5,16 +5,16 @@
        a filter already in ParaView (in Servers/ServerManager/Resources/*.xml)
        that matches your filter and then model your xml on it -->
   <ProxyGroup name="filters">
-   <SourceProxy 
-     name="ProjectionFromField" 
-     class="ttkProjectionFromField" 
+   <SourceProxy
+     name="ProjectionFromField"
+     class="ttkProjectionFromField"
      label="TTK ProjectionFromField">
      <Documentation
-        long_help="TTK plugin which projects a data-set to 2D given two 
+        long_help="TTK plugin which projects a data-set to 2D given two
 point-data scalar fields to be used as 2D coordinates."
-        short_help="TTK plugin which projects a data-set to 2D given two 
+        short_help="TTK plugin which projects a data-set to 2D given two
 point-data scalar fields to be used as 2D coordinates.">
-         TTK plugin which projects a data-set to 2D given two 
+         TTK plugin which projects a data-set to 2D given two
 point-data scalar fields to be used as 2D coordinates.
      </Documentation>
      <InputProperty
@@ -34,7 +34,7 @@ point-data scalar fields to be used as 2D coordinates.
           Data-set to texture map.
         </Documentation>
       </InputProperty>
-      
+
       <IntVectorProperty name="UseTextureCoordinates"
                      command="SetUseTextureCoordinates"
                      label="Use Texture Coordinates"
@@ -79,9 +79,9 @@ point-data scalar fields to be used as 2D coordinates.
         <Documentation>
           Select the scalar field to use as the V component.
         </Documentation>
-      </StringVectorProperty> 
-   
-      
+      </StringVectorProperty>
+
+
       <IntVectorProperty
          name="UseAllCores"
          label="Use All Cores"
@@ -93,7 +93,7 @@ point-data scalar fields to be used as 2D coordinates.
           Use all available cores.
          </Documentation>
       </IntVectorProperty>
-      
+
       <IntVectorProperty
          name="ThreadNumber"
          label="Thread Number"
@@ -112,11 +112,11 @@ point-data scalar fields to be used as 2D coordinates.
           Thread number.
          </Documentation>
       </IntVectorProperty>
-      
+
       <IntVectorProperty
          name="DebugLevel"
          label="Debug Level"
-         command="SetdebugLevel_"
+         command="SetDebugLevel"
          number_of_elements="1"
          default_values="3" panel_visibility="advanced">
         <IntRangeDomain name="range" min="0" max="100" />
@@ -124,23 +124,23 @@ point-data scalar fields to be used as 2D coordinates.
            Debug level.
          </Documentation>
       </IntVectorProperty>
-      
+
       <PropertyGroup panel_widget="Line" label="Testing">
         <Property name="UseAllCores" />
         <Property name="ThreadNumber" />
         <Property name="DebugLevel" />
-      </PropertyGroup>      
-      
+      </PropertyGroup>
+
       <PropertyGroup panel_widget="Line" label="Input options">
         <Property name="UseTextureCoordinates" />
         <Property name="U Component" />
         <Property name="V Component" />
-      </PropertyGroup>      
-      
+      </PropertyGroup>
+
       <Hints>
         <ShowInMenu category="TTK - Misc" />
       </Hints>
-      
+
    </SourceProxy>
  </ProxyGroup>
 </ServerManagerConfiguration>

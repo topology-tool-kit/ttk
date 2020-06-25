@@ -5,7 +5,7 @@
 
 #include <TrackingFromPersistenceDiagrams.h>
 #include <Wrapper.h>
-#include <ttkWrapper.h>
+#include <ttkTriangulationAlgorithm.h>
 
 #include <vtkCellData.h>
 #include <vtkCellType.h>
@@ -26,20 +26,17 @@
 #include <vtkTable.h>
 #include <vtkUnstructuredGrid.h>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkTrackingFromPersistenceDiagrams
-#else
-class ttkTrackingFromPersistenceDiagrams
-#endif
-  : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+// VTK Module
+#include <ttkTrackingFromPersistenceDiagramsModule.h>
+
+class TTKTRACKINGFROMPERSISTENCEDIAGRAMS_EXPORT
+  ttkTrackingFromPersistenceDiagrams : public vtkDataSetAlgorithm,
+                                       protected ttk::Wrapper {
 
 public:
   static ttkTrackingFromPersistenceDiagrams *New();
 
   vtkTypeMacro(ttkTrackingFromPersistenceDiagrams, vtkDataSetAlgorithm);
-
-  vtkSetMacro(debugLevel_, int);
 
   void SetThreads() {
     if(!UseAllCores)
@@ -58,6 +55,11 @@ public:
   void SetUseAllCores(bool onOff) {
     UseAllCores = onOff;
     SetThreads();
+  }
+
+  void SetDebugLevel(int debugLevel) {
+    setDebugLevel(debugLevel);
+    Modified();
   }
 
   vtkSetMacro(Tolerance, double);
@@ -90,17 +92,19 @@ public:
   vtkSetMacro(PVAlgorithm, int);
   vtkGetMacro(PVAlgorithm, int);
 
-  vtkSetMacro(UseGeometricSpacing, int);
-  vtkGetMacro(UseGeometricSpacing, int);
+  vtkSetMacro(UseGeometricSpacing, bool);
+  vtkGetMacro(UseGeometricSpacing, bool);
 
   vtkSetMacro(Spacing, double);
   vtkGetMacro(Spacing, double);
 
-  vtkSetMacro(DoPostProc, int);
-  vtkGetMacro(DoPostProc, int);
+  vtkSetMacro(DoPostProc, bool);
+  vtkGetMacro(DoPostProc, bool);
 
   vtkSetMacro(PostProcThresh, double);
   vtkGetMacro(PostProcThresh, double);
+
+  using trackingTuple = ttk::trackingTuple;
 
   template <typename dataType>
   static int
@@ -124,7 +128,7 @@ public:
 protected:
   ttkTrackingFromPersistenceDiagrams();
 
-  ~ttkTrackingFromPersistenceDiagrams();
+  ~ttkTrackingFromPersistenceDiagrams() override;
 
   int FillInputPortInformation(int port, vtkInformation *info) override;
   int FillOutputPortInformation(int port, vtkInformation *info) override;

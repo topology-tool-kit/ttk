@@ -11,7 +11,7 @@
 
 // TTK
 #include <TopologicalCompression.h>
-#include <ttkWrapper.h>
+#include <ttkTriangulationAlgorithm.h>
 
 // VTK
 #include <vtkAlgorithm.h>
@@ -36,17 +36,16 @@
 #include <vtkSmartPointer.h>
 #include <vtkStreamingDemandDrivenPipeline.h>
 
+// VTK Module
+#include <ttkTopologicalCompressionReaderModule.h>
+
 // STD
 #include <fstream>
 #include <iostream>
 #include <limits.h>
 #include <string>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkTopologicalCompressionReader
-#else
-class ttkTopologicalCompressionReader
-#endif
+class TTKTOPOLOGICALCOMPRESSIONREADER_EXPORT ttkTopologicalCompressionReader
   : public vtkImageAlgorithm {
 
 public:
@@ -60,10 +59,14 @@ public:
   vtkSetMacro(DataScalarType, int);
   vtkGetMacro(DataScalarType, int);
 
+  void SetDebugLevel(const int val) {
+    this->topologicalCompression.setDebugLevel(val);
+  }
+
 protected:
   // Regular ImageData reader management.
   ttkTopologicalCompressionReader();
-  ~ttkTopologicalCompressionReader() = default;
+  ~ttkTopologicalCompressionReader() override = default;
   int FillOutputPortInformation(int, vtkInformation *) override;
   int RequestData(vtkInformation *,
                   vtkInformationVector **,

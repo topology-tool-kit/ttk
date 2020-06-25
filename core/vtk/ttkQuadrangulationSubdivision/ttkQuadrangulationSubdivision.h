@@ -43,25 +43,27 @@
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnsignedShortArray.h>
 
+// VTK Module
+#include <ttkQuadrangulationSubdivisionModule.h>
+
 // ttk code includes
 #include <QuadrangulationSubdivision.h>
-#include <ttkWrapper.h>
+#include <ttkTriangulationAlgorithm.h>
 
 #include <ttkTriangulation.h>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkQuadrangulationSubdivision
-#else
-class ttkQuadrangulationSubdivision
-#endif
+class TTKQUADRANGULATIONSUBDIVISION_EXPORT ttkQuadrangulationSubdivision
   : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+    protected ttk::Wrapper {
 
 public:
   static ttkQuadrangulationSubdivision *New();
   vtkTypeMacro(ttkQuadrangulationSubdivision, vtkDataSetAlgorithm);
 
-  vtkSetMacro(debugLevel_, int);
+  void SetDebugLevel(int debugLevel) {
+    setDebugLevel(debugLevel);
+    Modified();
+  }
 
   void SetThreadNumber(int threadNumber) {
     ThreadNumber = threadNumber;

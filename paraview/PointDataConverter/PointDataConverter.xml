@@ -4,16 +4,16 @@
        a filter already in ParaView (in Servers/ServerManager/Resources/*.xml)
        that matches your filter and then model your xml on it -->
   <ProxyGroup name="filters">
-    <SourceProxy 
-	name="PointDataConverter" 
-	class="ttkPointDataConverter" 
+    <SourceProxy
+	name="PointDataConverter"
+	class="ttkPointDataConverter"
 	label="TTK PointDataConverter">
       <Documentation
-          long_help="TTK plugin that converts data types for point-based 
+          long_help="TTK plugin that converts data types for point-based
 scalar fields (for instance, from double to float)."
-          short_help="TTK plugin that converts data types for point-based 
+          short_help="TTK plugin that converts data types for point-based
 scalar fields (for instance, from double to float).">
-        TTK plugin that converts data types for point-based 
+        TTK plugin that converts data types for point-based
 scalar fields (for instance, from double to float).
       </Documentation>
 
@@ -53,7 +53,7 @@ scalar fields (for instance, from double to float).
           Select the point data scalar field to process.
         </Documentation>
       </StringVectorProperty>
-      
+
       <IntVectorProperty name="Output Type" command="SetOutputType"
 			 number_of_elements="1" default_values="0">
 	<EnumerationDomain name="enum">
@@ -79,11 +79,11 @@ scalar fields (for instance, from double to float).
           default_values="0">
         <BooleanDomain name="bool"/>
         <Documentation>
-          Normalizes the values to the data type range extent (useful for light 
+          Normalizes the values to the data type range extent (useful for light
 data types such as char or unsigned chars).
         </Documentation>
       </IntVectorProperty>
-      
+
       <IntVectorProperty
           name="UseAllCores"
           label="Use All Cores"
@@ -95,7 +95,7 @@ data types such as char or unsigned chars).
           Use all available cores.
         </Documentation>
       </IntVectorProperty>
-      
+
       <IntVectorProperty
           name="ThreadNumber"
           label="Thread Number"
@@ -114,11 +114,11 @@ data types such as char or unsigned chars).
           Thread number.
         </Documentation>
       </IntVectorProperty>
-      
+
       <IntVectorProperty
           name="DebugLevel"
           label="Debug Level"
-          command="SetdebugLevel_"
+          command="SetDebugLevel"
           number_of_elements="1"
           default_values="3" panel_visibility="advanced">
         <IntRangeDomain name="range" min="0" max="100" />
@@ -126,22 +126,22 @@ data types such as char or unsigned chars).
           Debug level.
         </Documentation>
       </IntVectorProperty>
-      
+
       <PropertyGroup panel_widget="Line" label="Input options">
         <Property name="PointDataScalarField" />
       </PropertyGroup>
-        
+
       <PropertyGroup panel_widget="Line" label="Output options">
         <Property name="Output Type" />
         <Property name="NormalizeToRange" />
       </PropertyGroup>
-      
+
       <PropertyGroup panel_widget="Line" label="Testing">
         <Property name="UseAllCores" />
         <Property name="ThreadNumber" />
         <Property name="DebugLevel" />
       </PropertyGroup>
-      
+
       <Hints>
         <ShowInMenu category="TTK - Misc" />
       </Hints>

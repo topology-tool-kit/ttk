@@ -33,54 +33,23 @@
 
 #pragma once
 
-// VTK includes -- to adapt
-#include <vtkCharArray.h>
-#include <vtkDataArray.h>
-#include <vtkDataSet.h>
-#include <vtkDataSetAlgorithm.h>
-#include <vtkDoubleArray.h>
-#include <vtkFiltersCoreModule.h>
-#include <vtkFloatArray.h>
-#include <vtkInformation.h>
-#include <vtkIntArray.h>
-#include <vtkObjectFactory.h>
-#include <vtkPointData.h>
-#include <vtkShortArray.h>
-#include <vtkSmartPointer.h>
-#include <vtkUnsignedCharArray.h>
-#include <vtkUnsignedShortArray.h>
+// VTK Module
+#include <ttkHarmonicFieldModule.h>
+
+// VTK Includes
+#include <ttkAlgorithm.h>
+#include <vtkPointSet.h>
 
 // ttk code includes
 #include <HarmonicField.h>
-#include <ttkWrapper.h>
 
-#include <ttkTriangulation.h>
-
-enum HarmonicFieldType { Float = 0, Double };
-
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkHarmonicField
-#else
-class ttkHarmonicField
-#endif
-  : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+class TTKHARMONICFIELD_EXPORT ttkHarmonicField : public ttkAlgorithm,
+                                                 protected ttk::HarmonicField {
 
 public:
   static ttkHarmonicField *New();
-  vtkTypeMacro(ttkHarmonicField, vtkDataSetAlgorithm);
 
-  vtkSetMacro(debugLevel_, int);
-
-  void SetThreadNumber(int threadNumber) {
-    ThreadNumber = threadNumber;
-    SetThreads();
-  }
-
-  void SetUseAllCores(bool onOff) {
-    UseAllCores = onOff;
-    SetThreads();
-  }
+  vtkTypeMacro(ttkHarmonicField, ttkAlgorithm);
 
   vtkSetMacro(InputScalarFieldName, std::string);
   vtkGetMacro(InputScalarFieldName, std::string);
@@ -97,61 +66,68 @@ public:
   vtkSetMacro(UseCotanWeights, bool);
   vtkGetMacro(UseCotanWeights, bool);
 
-  vtkSetMacro(SolvingMethod, int);
-  vtkGetMacro(SolvingMethod, int);
+  void SetSolvingMethod(const int arg_) {
+    if(arg_ == 0) {
+      this->SolvingMethod = SolvingMethodUserType::AUTO;
+    } else if(arg_ == 1) {
+      this->SolvingMethod = SolvingMethodUserType::CHOLESKY;
+    } else if(arg_ == 2) {
+      this->SolvingMethod = SolvingMethodUserType::ITERATIVE;
+    }
+    this->Modified();
+  }
+  virtual int GetSolvingMethod() {
+    switch(SolvingMethod) {
+      case SolvingMethodUserType::AUTO:
+        return 0;
+      case SolvingMethodUserType::CHOLESKY:
+        return 1;
+      case SolvingMethodUserType::ITERATIVE:
+        return 2;
+    }
+    return -1;
+  }
 
   vtkSetMacro(LogAlpha, double);
   vtkGetMacro(LogAlpha, double);
 
-  // get mesh from VTK
-  int getTriangulation(vtkDataSet *input);
   // get array of identifiers on the mesh
   int getIdentifiers(vtkPointSet *input);
   // get constraint values on identifiers
   int getConstraints(vtkPointSet *input);
 
-  // default copy constructor
-  ttkHarmonicField(const ttkHarmonicField &) = delete;
-  // default move constructor
-  ttkHarmonicField(ttkHarmonicField &&) = delete;
-  // default copy assignment operator
-  ttkHarmonicField &operator=(const ttkHarmonicField &) = delete;
-  // default move assignment operator
-  ttkHarmonicField &operator=(ttkHarmonicField &&) = delete;
-
 protected:
   ttkHarmonicField();
-
   ~ttkHarmonicField() override = default;
 
-  TTK_SETUP();
-
   int FillInputPortInformation(int port, vtkInformation *info) override;
+  int FillOutputPortInformation(int port, vtkInformation *info) override;
+  int RequestData(vtkInformation *request,
+                  vtkInformationVector **inputVector,
+                  vtkInformationVector *outputVector) override;
 
 private:
   // user-defined input constraints (float) scalar field name
-  std::string InputScalarFieldName;
+  std::string InputScalarFieldName{};
   // output scalar field
-  std::string OutputScalarFieldName;
+  std::string OutputScalarFieldName{"OutputHarmonicField"};
   // let the user choose a different identifier scalar field
-  bool ForceConstraintIdentifiers;
+  bool ForceConstraintIdentifiers{false};
   // graph laplacian variant
-  bool UseCotanWeights;
+  bool UseCotanWeights{true};
   // user-defined input identifier (SimplexId) scalar field name
-  std::string InputIdentifiersFieldName;
+  std::string InputIdentifiersFieldName{ttk::VertexScalarFieldName};
   // user-selected solving method
-  int SolvingMethod;
+  SolvingMethodUserType SolvingMethod{SolvingMethodUserType::AUTO};
   // penalty value
-  double LogAlpha;
+  double LogAlpha{5.0};
 
   // enum: float or double
-  int OutputScalarFieldType;
-  // worker object
-  ttk::HarmonicField harmonicField_;
-  // teh mesh
-  ttk::Triangulation *triangulation_;
+  enum class FieldType { FLOAT, DOUBLE };
+  FieldType OutputScalarFieldType{FieldType::FLOAT};
+
   // points on the mesh where constraints_ are set
-  vtkDataArray *identifiers_;
+  vtkDataArray *identifiers_{};
   // scalar field constraint values on identifiers_
-  vtkDataArray *constraints_;
+  vtkDataArray *constraints_{};
 };

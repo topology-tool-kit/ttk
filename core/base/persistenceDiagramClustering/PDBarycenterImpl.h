@@ -50,8 +50,8 @@ void PDBarycenter<dataType>::runMatching(
   dataType *total_cost,
   dataType epsilon,
   std::vector<int> sizes,
-  KDTree<dataType> *kdt,
-  std::vector<KDTree<dataType> *> *correspondance_kdt_map,
+  KDTree<dataType> &kdt,
+  std::vector<KDTree<dataType> *> &correspondance_kdt_map,
   std::vector<dataType> *min_diag_price,
   std::vector<dataType> *min_price,
   std::vector<std::vector<matchingTuple>> *all_matchings,
@@ -67,8 +67,8 @@ void PDBarycenter<dataType>::runMatching(
     // cout<<"input "<<i<<" sizes : "<<current_bidder_diagrams_.size()<<"
     // "<<barycenter_goods_.size()<<" "<<min_diag_price->size()<<endl;
     Auction<dataType> auction = Auction<dataType>(
-      &current_bidder_diagrams_.at(i), &barycenter_goods_.at(i), wasserstein_,
-      geometrical_factor_, lambda_, 0.01, kdt, *correspondance_kdt_map, epsilon,
+      current_bidder_diagrams_[i], barycenter_goods_[i], wasserstein_,
+      geometrical_factor_, lambda_, 0.01, kdt, correspondance_kdt_map, epsilon,
       min_diag_price->at(i), use_kdt);
     // cout<<"\n RUN MATCHINGS : "<<i<<endl;
     // cout<<use_kdt<<endl;
@@ -130,8 +130,8 @@ template <typename dataType>
 void PDBarycenter<dataType>::runMatchingAuction(
   dataType *total_cost,
   std::vector<int> sizes,
-  KDTree<dataType> *kdt,
-  std::vector<KDTree<dataType> *> *correspondance_kdt_map,
+  KDTree<dataType> &kdt,
+  std::vector<KDTree<dataType> *> &correspondance_kdt_map,
   std::vector<dataType> *min_diag_price,
   std::vector<std::vector<matchingTuple>> *all_matchings,
   bool use_kdt) {
@@ -141,8 +141,8 @@ void PDBarycenter<dataType>::runMatchingAuction(
 #endif
   for(int i = 0; i < numberOfInputs_; i++) {
     Auction<dataType> auction = Auction<dataType>(
-      &current_bidder_diagrams_[i], &barycenter_goods_[i], wasserstein_,
-      geometrical_factor_, lambda_, 0.01, kdt, *correspondance_kdt_map,
+      current_bidder_diagrams_[i], barycenter_goods_[i], wasserstein_,
+      geometrical_factor_, lambda_, 0.01, kdt, correspondance_kdt_map,
       (*min_diag_price)[i], use_kdt);
     std::vector<matchingTuple> matchings;
     dataType cost = auction.run(&matchings);
@@ -317,7 +317,8 @@ dataType PDBarycenter<dataType>::updateBarycenter(
       // TODO adjust shift with geometrical_factor_
       dataType dx = barycenter_goods_[0].get(i).x_ - new_x;
       dataType dy = barycenter_goods_[0].get(i).y_ - new_y;
-      dataType shift = pow(abs(dx), wasserstein_) + pow(abs(dy), wasserstein_);
+      dataType shift = Geometry::pow(abs(dx), wasserstein_)
+                       + Geometry::pow(abs(dy), wasserstein_);
       if(shift > max_shift) {
         max_shift = shift;
       }
@@ -346,9 +347,10 @@ dataType PDBarycenter<dataType>::updateBarycenter(
   for(unsigned int i = 0; i < n_goods; i++) {
     if(count_diag_matchings[i] == n_diagrams) {
       points_deleted_ += 1;
-      dataType shift = 2
-                       * pow(barycenter_goods_[0].get(i).getPersistence() / 2.,
-                             wasserstein_);
+      dataType shift
+        = 2
+          * Geometry::pow(
+            barycenter_goods_[0].get(i).getPersistence() / 2., wasserstein_);
       if(shift > max_shift) {
         max_shift = shift;
       }
@@ -380,8 +382,8 @@ dataType PDBarycenter<dataType>::updateBarycenter(
       barycenter_goods_[j].addGood(g);
       dataType shift
         = 2
-          * pow(barycenter_goods_[j].get(g.id_).getPersistence() / 2.,
-                wasserstein_);
+          * Geometry::pow(barycenter_goods_[j].get(g.id_).getPersistence() / 2.,
+                          wasserstein_);
       if(shift > max_shift) {
         max_shift = shift;
       }
@@ -412,7 +414,7 @@ dataType PDBarycenter<dataType>::updateBarycenter(
 
 template <typename dataType>
 dataType PDBarycenter<dataType>::getEpsilon(dataType rho) {
-  return pow(rho, 2) / 8.0;
+  return rho * rho / 8.0;
 }
 
 template <typename dataType>
@@ -650,10 +652,11 @@ void PDBarycenter<dataType>::setInitialBarycenter(dataType min_persistence) {
 }
 
 template <typename dataType>
-std::pair<KDTree<dataType> *, std::vector<KDTree<dataType> *>>
-  PDBarycenter<dataType>::getKDTree() {
+typename PDBarycenter<dataType>::KDTreePair
+  PDBarycenter<dataType>::getKDTree() const {
   Timer tm;
-  KDTree<dataType> *kdt = new KDTree<dataType>(true, wasserstein_);
+  auto kdt = std::unique_ptr<KDTree<dataType>>(
+    new KDTree<dataType>{true, wasserstein_});
 
   const int dimension = geometrical_factor_ >= 1 ? 2 : 5;
 
@@ -661,7 +664,7 @@ std::pair<KDTree<dataType> *, std::vector<KDTree<dataType> *>>
   std::vector<std::vector<dataType>> weights;
 
   for(int i = 0; i < barycenter_goods_[0].size(); i++) {
-    Good<dataType> &g = barycenter_goods_[0].get(i);
+    const Good<dataType> &g = barycenter_goods_[0].get(i);
     coordinates.push_back(geometrical_factor_ * g.x_);
     coordinates.push_back(geometrical_factor_ * g.y_);
     if(geometrical_factor_ < 1) {
@@ -675,19 +678,19 @@ std::pair<KDTree<dataType> *, std::vector<KDTree<dataType> *>>
     std::vector<dataType> empty_weights;
     weights.push_back(empty_weights);
     for(int i = 0; i < barycenter_goods_[idx].size(); i++) {
-      Good<dataType> &g = barycenter_goods_[idx].get(i);
+      const Good<dataType> &g = barycenter_goods_[idx].get(i);
       weights[idx].push_back(g.getPrice());
     }
   }
   // Correspondance map : position in barycenter_goods_ --> KDT node
 
-  std::vector<KDTree<dataType> *> correspondance_kdt_map
+  auto correspondance_kdt_map
     = kdt->build(coordinates.data(), barycenter_goods_[0].size(), dimension,
                  weights, barycenter_goods_.size());
   if(debugLevel_ > 3)
     std::cout << "[Building KD-Tree] Time elapsed : " << tm.getElapsedTime()
               << " s." << std::endl;
-  return std::make_pair(kdt, correspondance_kdt_map);
+  return std::make_pair(std::move(kdt), correspondance_kdt_map);
 }
 
 // template <typename dataType>
@@ -841,7 +844,9 @@ std::vector<std::vector<matchingTuple>>
 
     n_iterations += 1;
 
-    std::pair<KDTree<dataType> *, std::vector<KDTree<dataType> *>> pair;
+    std::pair<std::unique_ptr<KDTree<dataType>>,
+              std::vector<KDTree<dataType> *>>
+      pair;
     bool use_kdt = false;
     // If the barycenter is empty, do not compute the kdt (or it will crash :/)
     // TODO Fix KDTree to handle empty inputs...
@@ -849,8 +854,6 @@ std::vector<std::vector<matchingTuple>>
       pair = this->getKDTree();
       use_kdt = true;
     }
-    KDTree<dataType> *kdt = pair.first;
-    std::vector<KDTree<dataType> *> &correspondance_kdt_map = pair.second;
 
     std::vector<std::vector<matchingTuple>> all_matchings(numberOfInputs_);
     std::vector<int> sizes(numberOfInputs_);
@@ -869,7 +872,7 @@ std::vector<std::vector<matchingTuple>>
       barycenter.push_back(t);
     }
 
-    runMatchingAuction(&total_cost, sizes, kdt, &correspondance_kdt_map,
+    runMatchingAuction(&total_cost, sizes, *pair.first, pair.second,
                        &min_diag_price, &all_matchings, use_kdt);
 
     std::cout << "[PersistenceDiagramsBarycenter] Barycenter cost : "
@@ -954,7 +957,7 @@ dataType PDBarycenter<dataType>::computeRealCost() {
     dataType cost = auction.run(&fake_matchings);
     total_real_cost += cost * cost;
   }
-  return pow(total_real_cost, 1. / 2);
+  return sqrt(total_real_cost);
 }
 
 template <typename dataType>

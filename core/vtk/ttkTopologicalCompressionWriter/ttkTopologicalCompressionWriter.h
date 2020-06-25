@@ -11,7 +11,7 @@
 
 // TTK
 #include <TopologicalCompression.h>
-#include <ttkWrapper.h>
+#include <ttkTriangulationAlgorithm.h>
 
 // VTK
 #include <vtkCellData.h>
@@ -30,17 +30,16 @@
 #include <vtkSmartPointer.h>
 #include <vtkWriter.h>
 
+// VTK Module
+#include <ttkTopologicalCompressionWriterModule.h>
+
 // STD
 #include <fstream>
 #include <iostream>
 #include <limits.h>
 #include <string>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkTopologicalCompressionWriter
-#else
-class ttkTopologicalCompressionWriter
-#endif
+class TTKTOPOLOGICALCOMPRESSIONWRITER_EXPORT ttkTopologicalCompressionWriter
   : public vtkWriter {
 
 public:
@@ -106,6 +105,10 @@ public:
   vtkSetMacro(UseTopologicalSimplification, bool);
   vtkGetMacro(UseTopologicalSimplification, bool);
 
+  void SetDebugLevel(int debugLevel) {
+    d.setDebugLevel(debugLevel);
+  }
+
   inline void SetSQMethodPV(int c) {
     switch(c) {
       case 1:
@@ -163,9 +166,15 @@ private:
   int ThreadNumber;
   bool UseAllCores;
 
+  ttk::Debug d;
+
   // Whatever.
   ttkTopologicalCompressionWriter(const ttkTopologicalCompressionWriter &);
   void operator=(const ttkTopologicalCompressionWriter &);
+
+  // give ttkCinemaWriter access to ttkTopologicalCompressionWriter
+  // protected member functions
+  friend class ttkCinemaWriter;
 };
 
 #endif // _VTK_TOPOLOGICALCOMPRESSIONWRITER_H

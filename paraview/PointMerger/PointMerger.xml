@@ -5,14 +5,14 @@
        a filter already in ParaView (in Servers/ServerManager/Resources/*.xml)
        that matches your filter and then model your xml on it -->
   <ProxyGroup name="filters">
-   <SourceProxy 
-     name="PointMerger" 
-     class="ttkPointMerger" 
+   <SourceProxy
+     name="PointMerger"
+     class="ttkPointMerger"
      label="TTK PointMerger">
      <Documentation
         long_help="TTK plugin for point merging."
         short_help="TTK plugin for point merging.">
-          This plugin merges the points of a mesh whose distance is lower than 
+          This plugin merges the points of a mesh whose distance is lower than
 a user defined threshold.
      </Documentation>
      <InputProperty
@@ -41,7 +41,7 @@ a user defined threshold.
           Only merge points on the boundary.
         </Documentation>
       </IntVectorProperty>
-      
+
       <DoubleVectorProperty
          name="DistanceThreshold"
          label="Distance threshold"
@@ -53,9 +53,9 @@ a user defined threshold.
           Distance threshold for point merging.
          </Documentation>
       </DoubleVectorProperty>
-      
-      
-     
+
+
+
       <IntVectorProperty
          name="UseAllCores"
          label="Use All Cores"
@@ -67,7 +67,7 @@ a user defined threshold.
           Use all available cores.
          </Documentation>
       </IntVectorProperty>
-      
+
       <IntVectorProperty
          name="ThreadNumber"
          label="Thread Number"
@@ -86,11 +86,11 @@ a user defined threshold.
           Thread number.
          </Documentation>
       </IntVectorProperty>
-      
+
       <IntVectorProperty
          name="DebugLevel"
          label="Debug Level"
-         command="SetdebugLevel_"
+         command="SetDebugLevel"
          number_of_elements="1"
          default_values="3" panel_visibility="advanced">
         <IntRangeDomain name="range" min="0" max="100" />
@@ -98,20 +98,20 @@ a user defined threshold.
            Debug level.
          </Documentation>
       </IntVectorProperty>
-      
+
       <PropertyGroup panel_widget="Line" label="Input options">
         <Property name="BoundaryOnly" />
         <Property name="DistanceThreshold" />
       </PropertyGroup>
-     
+
       <PropertyGroup panel_widget="Line" label="Testing">
         <Property name="UseAllCores" />
         <Property name="ThreadNumber" />
         <Property name="DebugLevel" />
       </PropertyGroup>
-      
+
       <Hints>
-        <ShowInMenu category="TTK - Misc" />
+        <ShowInMenu category="TTK - Domain" />
       </Hints>
    </SourceProxy>
  </ProxyGroup>

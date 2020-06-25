@@ -1,4 +1,3 @@
-
 <ServerManagerConfiguration>
   <!-- This is the server manager configuration XML. It defines the interface to
        our new filter. As a rule of thumb, try to locate the configuration for
@@ -83,7 +82,7 @@
       <IntVectorProperty
          name="DebugLevel"
          label="Debug Level"
-         command="SetdebugLevel_"
+         command="SetDebugLevel"
          number_of_elements="1"
          default_values="3" panel_visibility="advanced">
         <IntRangeDomain name="range" min="0" max="100" />
@@ -103,7 +102,7 @@
       </PropertyGroup>
 
       <Hints>
-        <ShowInMenu category="TTK - Misc" />
+        <ShowInMenu category="TTK - Domain" />
       </Hints>
    </SourceProxy>
  </ProxyGroup>

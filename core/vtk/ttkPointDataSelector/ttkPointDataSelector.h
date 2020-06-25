@@ -15,9 +15,13 @@
 /// VTK pipeline.
 #pragma once
 
+#include <limits>
+#include <string>
+
 // VTK includes
 #include <vtkCharArray.h>
 #include <vtkDataArray.h>
+#include <vtkDataArraySelection.h>
 #include <vtkDataSet.h>
 #include <vtkDataSetAlgorithm.h>
 #include <vtkDoubleArray.h>
@@ -31,24 +35,29 @@
 #include <vtkSmartPointer.h>
 #include <vtkUnsignedShortArray.h>
 
+// VTK Module
+#include <ttkPointDataSelectorModule.h>
+
 // ttk code includes
 #include <Wrapper.h>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkPointDataSelector
-#else
-class ttkPointDataSelector
-#endif
+class TTKPOINTDATASELECTOR_EXPORT ttkPointDataSelector
   : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+    protected ttk::Wrapper {
 
 public:
   static ttkPointDataSelector *New();
-  vtkTypeMacro(ttkPointDataSelector, vtkDataSetAlgorithm)
+  vtkTypeMacro(ttkPointDataSelector, vtkDataSetAlgorithm);
 
-    // default ttk setters
-    vtkSetMacro(debugLevel_, int);
+  // default ttk setters
+  void SetDebugLevel(int debugLevel) {
+    setDebugLevel(debugLevel);
+    Modified();
+  }
   vtkSetMacro(RegexpString, std::string);
+
+  vtkGetVector2Macro(RangeId, int);
+  vtkSetVector2Macro(RangeId, int);
 
   vtkSetMacro(RenameSelected, bool);
   vtkGetMacro(RenameSelected, bool);
@@ -75,39 +84,22 @@ public:
   }
   // end of default ttk setters
 
-  void SetScalarFields(std::string s) {
-    ScalarFields.push_back(s);
+  void AddScalarField(std::string s) {
+    SelectedFields.emplace_back(s);
     Modified();
   }
 
   void ClearScalarFields() {
-    ScalarFields.clear();
+    SelectedFields.clear();
     Modified();
   }
 
-  int FillInputPortInformation(int port, vtkInformation *info) override {
-    switch(port) {
-      case 0:
-        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataSet");
-        break;
-      default:
-        break;
-    }
-
-    return 1;
-  }
-
-  int FillOutputPortInformation(int port, vtkInformation *info) override {
-
-    switch(port) {
-      case 0:
-        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataSet");
-        break;
-      default:
-        break;
-    }
-
-    return 1;
+  vtkDataArraySelection *GetRangeIds() {
+    vtkDataArraySelection *arr = vtkDataArraySelection::New();
+    arr->SetArraySetting("0", true);
+    arr->SetArraySetting(
+      std::to_string(AvailableFields.size() - 1).c_str(), true);
+    return arr;
   }
 
 protected:
@@ -121,25 +113,36 @@ protected:
     SetNumberOfOutputPorts(1);
 
     localFieldCopy_ = NULL;
+
+    RangeId[0] = 0;
+    RangeId[1] = std::numeric_limits<int>::max();
   }
 
-  ~ttkPointDataSelector() {
+  ~ttkPointDataSelector() override {
     if(localFieldCopy_)
       localFieldCopy_->Delete();
   };
 
+  int RequestInformation(vtkInformation *request,
+                         vtkInformationVector **inputVector,
+                         vtkInformationVector *outputVector) override;
+
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;
+
+  void FillAvailableFields(vtkDataSet *input);
 
 private:
   bool UseAllCores;
   int ThreadNumber;
   bool RenameSelected;
   std::string SelectedFieldName;
-  std::vector<std::string> ScalarFields;
+  std::vector<std::string> SelectedFields;
+  std::vector<std::string> AvailableFields;
   std::string RegexpString;
   vtkDataArray *localFieldCopy_;
+  int RangeId[2];
 
   int doIt(vtkDataSet *input, vtkDataSet *output);
   bool needsToAbort() override;

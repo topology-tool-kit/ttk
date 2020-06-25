@@ -3,9 +3,9 @@
 using namespace std;
 using namespace ttk;
 
-vtkStandardNewMacro(ttkScalarFieldSmoother)
+vtkStandardNewMacro(ttkScalarFieldSmoother);
 
-  ttkScalarFieldSmoother::ttkScalarFieldSmoother() {
+ttkScalarFieldSmoother::ttkScalarFieldSmoother() {
 
   // init
   NumberOfIterations = 1;
@@ -90,21 +90,26 @@ int ttkScalarFieldSmoother::doIt(vector<vtkDataSet *> &inputs,
     inputScalarField = input->GetPointData()->GetArray(ScalarFieldIdentifier);
   }
 
-#ifndef TTK_ENABLE_KAMIKAZE
   if(!inputScalarField) {
     cerr << "[ttkScalarFieldSmoother] Error: input scalar field poiner is NULL."
          << endl;
     return -2;
   }
-#endif
+
+  if(inputScalarField->GetNumberOfComponents() != 1) {
+    cerr
+      << "[ttkScalarFieldSmoother] Error: input field has multiple components."
+      << endl;
+    return -3;
+  }
 
   if(inputScalarField->GetName())
     ScalarField = inputScalarField->GetName();
 
   {
     stringstream msg;
-    msg << "[ScalarFieldSmoother] Using field `" << inputScalarField->GetName()
-        << "'..." << endl;
+    msg << "[ttkScalarFieldSmoother] Using field `"
+        << inputScalarField->GetName() << "'..." << endl;
     dMsg(cout, msg.str(), infoMsg);
   }
 
@@ -122,8 +127,8 @@ int ttkScalarFieldSmoother::doIt(vector<vtkDataSet *> &inputs,
 
     {
       stringstream msg;
-      msg << "[ScalarFieldSmoother] Using mask `" << inputMaskField->GetName()
-          << "'..." << endl;
+      msg << "[ttkScalarFieldSmoother] Using mask `"
+          << inputMaskField->GetName() << "'..." << endl;
       dMsg(cout, msg.str(), infoMsg);
     }
   } else if(input->GetPointData()->GetArray(ttk::MaskScalarFieldName)) {
@@ -198,9 +203,10 @@ int ttkScalarFieldSmoother::doIt(vector<vtkDataSet *> &inputs,
   smoother_.setMaskDataPointer(inputMaskPtr);
 
   // calling the smoothing package
-  switch(inputScalarField->GetDataType()) {
-    vtkTemplateMacro(smoother_.smooth<VTK_TT>(NumberOfIterations));
-  }
+  ttkVtkTemplateMacro(
+    triangulation->getType(), inputScalarField->GetDataType(),
+    (smoother_.smooth<VTK_TT, TTK_TT>(
+      (TTK_TT *)triangulation->getData(), NumberOfIterations)));
 
   {
     stringstream msg;

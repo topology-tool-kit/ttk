@@ -138,11 +138,13 @@ namespace ttk {
     HANDLE hFind
       = FindFirstFile(toWString(directoryName).c_str(), &FindFileData);
     if(hFind == INVALID_HANDLE_VALUE) {
-      std::stringstream msg;
-      msg << "[Os] Could not open directory `" << directoryName
-          << "'. Error: " << GetLastError() << std::endl;
+      std::string s;
+      s = "Could not open directory `";
+      s += directoryName;
+      s += "'. Error: ";
+      s += GetLastError();
       Debug d;
-      d.dMsg(std::cerr, msg.str(), 0);
+      d.printErr(s);
     } else {
       const std::string filename = toString(FindFileData.cFileName);
 
@@ -172,11 +174,12 @@ namespace ttk {
 #else
     DIR *d = opendir((directoryName + "/").data());
     if(!d) {
-      std::stringstream msg;
-      msg << "[Os] Could not open directory `" << directoryName << "'..."
-          << std::endl;
+      std::string msg;
+      msg = "Could not open directory `";
+      msg += directoryName;
+      msg += "'...";
       Debug dbg;
-      dbg.dMsg(std::cerr, msg.str(), 0);
+      dbg.printErr(msg);
     } else {
       struct dirent *dirEntry;
       while((dirEntry = readdir(d)) != NULL) {
@@ -223,36 +226,11 @@ namespace ttk {
   }
 
   int OsCall::rmDir(const std::string &directoryName) {
-
-#ifdef _WIN32
-    // NOTE:
-    // the directory will be deleted with this call
-    // only if it's empty...
-    return _rmdir(directoryName.data());
-#else
-    std::stringstream cmd;
-    cmd << "rm -R " << directoryName << " 2> /dev/null";
-    return system(cmd.str().data());
-#endif
+    return std::remove(directoryName.c_str());
   }
 
   int OsCall::rmFile(const std::string &fileName) {
-
-    std::stringstream cmd;
-
-#ifdef _WIN32
-    cmd << "del";
-#else
-    cmd << "rm";
-#endif
-
-    cmd << " " << fileName;
-
-#ifndef _WIN32
-    cmd << " 2> /dev/null";
-#endif
-
-    return system(cmd.str().data());
+    return std::remove(fileName.c_str());
   }
 
 } // namespace ttk

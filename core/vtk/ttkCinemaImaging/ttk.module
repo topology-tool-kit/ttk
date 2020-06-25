@@ -1,0 +1,8 @@
+NAME
+  ttkCinemaImaging
+SOURCES
+  ttkCinemaImaging.cpp
+HEADERS
+  ttkCinemaImaging.h
+DEPENDS
+  ttkAlgorithm

@@ -1,0 +1,8 @@
+NAME
+  ttkGridLayout
+SOURCES
+  ttkGridLayout.cpp
+HEADERS
+  ttkGridLayout.h
+DEPENDS
+  ttkAlgorithm

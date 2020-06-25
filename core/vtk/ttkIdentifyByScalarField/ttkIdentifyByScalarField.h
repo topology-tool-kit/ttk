@@ -34,23 +34,25 @@
 #include <vtkPointData.h>
 #include <vtkSmartPointer.h>
 
-// ttk code includes
-#include <ttkWrapper.h>
+// VTK Module
+#include <ttkIdentifyByScalarFieldModule.h>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkIdentifyByScalarField
-#else
-class ttkIdentifyByScalarField
-#endif
+// ttk code includes
+#include <ttkTriangulationAlgorithm.h>
+
+class TTKIDENTIFYBYSCALARFIELD_EXPORT ttkIdentifyByScalarField
   : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+    protected ttk::Wrapper {
 
 public:
   static ttkIdentifyByScalarField *New();
   vtkTypeMacro(ttkIdentifyByScalarField, vtkDataSetAlgorithm)
 
     // default ttk setters
-    vtkSetMacro(debugLevel_, int);
+    void SetDebugLevel(int debugLevel) {
+    setDebugLevel(debugLevel);
+    Modified();
+  }
 
   void SetThreadNumber(int threadNumber) {
     ThreadNumber = threadNumber;
@@ -111,7 +113,7 @@ protected:
     SetNumberOfOutputPorts(1);
   }
 
-  ~ttkIdentifyByScalarField(){};
+  ~ttkIdentifyByScalarField() override{};
 
   TTK_SETUP();
 

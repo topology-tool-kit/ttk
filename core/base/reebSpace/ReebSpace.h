@@ -203,8 +203,10 @@ namespace ttk {
     //       }
 
     template <class dataTypeU, class dataTypeV>
-    inline int perturbate(const dataTypeU &uEpsilon = pow(10, -DBL_DIG),
-                          const dataTypeV &vEpsilon = pow(10, -DBL_DIG)) const;
+    inline int perturbate(const dataTypeU &uEpsilon
+                          = Geometry::powIntTen(-DBL_DIG),
+                          const dataTypeV &vEpsilon
+                          = Geometry::powIntTen(-DBL_DIG)) const;
 
     inline int setExpand3Sheets(const bool &onOff) {
       expand3sheets_ = onOff;
@@ -266,9 +268,9 @@ namespace ttk {
 
       if(triangulation_) {
 
-        triangulation_->preprocessVertexStars();
-        triangulation_->preprocessEdges();
-        triangulation_->preprocessVertexEdges();
+        triangulation_->preconditionVertexStars();
+        triangulation_->preconditionEdges();
+        triangulation_->preconditionVertexEdges();
 
         JacobiSet<dataTypeU, dataTypeV> jacobiSet;
         jacobiSet.setWrapper(wrapper_);

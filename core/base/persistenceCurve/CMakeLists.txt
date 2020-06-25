@@ -3,7 +3,7 @@ ttk_add_base_library(persistenceCurve
     PersistenceCurve.cpp
   HEADERS
     PersistenceCurve.h
-  LINK
+  DEPENDS
     discreteGradient
     triangulation
     morseSmaleComplex3D

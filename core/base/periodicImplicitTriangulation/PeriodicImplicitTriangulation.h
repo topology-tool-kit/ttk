@@ -30,87 +30,103 @@ namespace ttk {
     PeriodicImplicitTriangulation();
     ~PeriodicImplicitTriangulation();
 
-    int getCellEdge(const SimplexId &cellId,
-                    const int &id,
-                    SimplexId &edgeId) const override;
+    int getCellEdgeInternal(const SimplexId &cellId,
+                            const int &id,
+                            SimplexId &edgeId) const override;
 
-    SimplexId getCellEdgeNumber(const SimplexId &cellId) const override;
+    SimplexId getCellEdgeNumberInternal(const SimplexId &cellId) const override;
 
-    const std::vector<std::vector<SimplexId>> *getCellEdges() override;
+    const std::vector<std::vector<SimplexId>> *getCellEdgesInternal() override;
 
-    int getCellNeighbor(const SimplexId &cellId,
-                        const int &localNeighborId,
-                        SimplexId &neighborId) const override;
+    int TTK_TRIANGULATION_INTERNAL(getCellNeighbor)(
+      const SimplexId &cellId,
+      const int &localNeighborId,
+      SimplexId &neighborId) const override;
 
-    SimplexId getCellNeighborNumber(const SimplexId &cellId) const override;
+    SimplexId TTK_TRIANGULATION_INTERNAL(getCellNeighborNumber)(
+      const SimplexId &cellId) const override;
 
-    const std::vector<std::vector<SimplexId>> *getCellNeighbors() override;
+    const std::vector<std::vector<SimplexId>> *
+      TTK_TRIANGULATION_INTERNAL(getCellNeighbors)() override;
 
-    int getCellTriangle(const SimplexId &cellId,
-                        const int &id,
-                        SimplexId &triangleId) const override;
+    int getCellTriangleInternal(const SimplexId &cellId,
+                                const int &id,
+                                SimplexId &triangleId) const override;
 
-    SimplexId getCellTriangleNumber(const SimplexId &cellId) const override {
+    SimplexId
+      getCellTriangleNumberInternal(const SimplexId &cellId) const override {
       // NOTE: the output is always 4 here. let's keep the function in there
       // in case of further generalization to CW-complexes
       return 4;
     };
 
-    const std::vector<std::vector<SimplexId>> *getCellTriangles() override;
+    const std::vector<std::vector<SimplexId>> *
+      getCellTrianglesInternal() override;
 
-    int getCellVertex(const SimplexId &cellId,
-                      const int &localVertexId,
-                      SimplexId &vertexId) const override;
+    int TTK_TRIANGULATION_INTERNAL(getCellVertex)(
+      const SimplexId &cellId,
+      const int &localVertexId,
+      SimplexId &vertexId) const override;
 
-    SimplexId getCellVertexNumber(const SimplexId &cellId) const override;
+    SimplexId TTK_TRIANGULATION_INTERNAL(getCellVertexNumber)(
+      const SimplexId &cellId) const override;
 
-    int getDimensionality() const override {
+    int TTK_TRIANGULATION_INTERNAL(getDimensionality)() const override {
       return dimensionality_;
     };
 
-    int getEdgeLink(const SimplexId &edgeId,
-                    const int &localLinkId,
-                    SimplexId &linkId) const override;
+    int
+      TTK_TRIANGULATION_INTERNAL(getEdgeLink)(const SimplexId &edgeId,
+                                              const int &localLinkId,
+                                              SimplexId &linkId) const override;
 
-    SimplexId getEdgeLinkNumber(const SimplexId &edgeId) const override;
+    SimplexId TTK_TRIANGULATION_INTERNAL(getEdgeLinkNumber)(
+      const SimplexId &edgeId) const override;
 
-    const std::vector<std::vector<SimplexId>> *getEdgeLinks() override;
+    const std::vector<std::vector<SimplexId>> *
+      TTK_TRIANGULATION_INTERNAL(getEdgeLinks)() override;
 
-    int getEdgeStar(const SimplexId &edgeId,
-                    const int &localStarId,
-                    SimplexId &starId) const override;
+    int
+      TTK_TRIANGULATION_INTERNAL(getEdgeStar)(const SimplexId &edgeId,
+                                              const int &localStarId,
+                                              SimplexId &starId) const override;
 
-    SimplexId getEdgeStarNumber(const SimplexId &edgeId) const override;
+    SimplexId TTK_TRIANGULATION_INTERNAL(getEdgeStarNumber)(
+      const SimplexId &edgeId) const override;
 
-    const std::vector<std::vector<SimplexId>> *getEdgeStars() override;
+    const std::vector<std::vector<SimplexId>> *
+      TTK_TRIANGULATION_INTERNAL(getEdgeStars)() override;
 
-    int getEdgeTriangle(const SimplexId &edgeId,
-                        const int &id,
-                        SimplexId &triangleId) const override;
+    int getEdgeTriangleInternal(const SimplexId &edgeId,
+                                const int &id,
+                                SimplexId &triangleId) const override;
 
-    SimplexId getEdgeTriangleNumber(const SimplexId &edgeId) const override;
+    SimplexId
+      getEdgeTriangleNumberInternal(const SimplexId &edgeId) const override;
 
-    const std::vector<std::vector<SimplexId>> *getEdgeTriangles() override;
+    const std::vector<std::vector<SimplexId>> *
+      getEdgeTrianglesInternal() override;
 
-    int getEdgeVertex(const SimplexId &edgeId,
-                      const int &localVertexId,
-                      SimplexId &vertexId) const override;
+    int getEdgeVertexInternal(const SimplexId &edgeId,
+                              const int &localVertexId,
+                              SimplexId &vertexId) const override;
 
-    const std::vector<std::pair<SimplexId, SimplexId>> *getEdges() override;
+    const std::vector<std::pair<SimplexId, SimplexId>> *
+      TTK_TRIANGULATION_INTERNAL(getEdges)() override;
 
-    SimplexId getNumberOfCells() const override {
+    SimplexId TTK_TRIANGULATION_INTERNAL(getNumberOfCells)() const override {
       return cellNumber_;
     };
 
-    SimplexId getNumberOfEdges() const override {
+    SimplexId getNumberOfEdgesInternal() const override {
       return edgeNumber_;
     };
 
-    SimplexId getNumberOfTriangles() const override {
+    SimplexId getNumberOfTrianglesInternal() const override {
       return triangleNumber_;
     };
 
-    SimplexId getNumberOfVertices() const override {
+    SimplexId TTK_TRIANGULATION_INTERNAL(getNumberOfVertices)() const override {
       return vertexNumber_;
     };
 
@@ -139,28 +155,33 @@ namespace ttk {
                              const int &localVertexId,
                              SimplexId &vertexId) const;
 
-    int getTriangleEdge(const SimplexId &triangleId,
-                        const int &id,
-                        SimplexId &edgeId) const override;
+    int getTriangleEdgeInternal(const SimplexId &triangleId,
+                                const int &id,
+                                SimplexId &edgeId) const override;
 
-    SimplexId
-      getTriangleEdgeNumber(const SimplexId &triangleId) const override {
+    SimplexId getTriangleEdgeNumberInternal(
+      const SimplexId &triangleId) const override {
       // NOTE: the output is always 3 here. let's keep the function in there
       // in case of further generalization to CW-complexes
       return 3;
     }
 
-    const std::vector<std::vector<SimplexId>> *getTriangleEdges() override;
+    const std::vector<std::vector<SimplexId>> *
+      getTriangleEdgesInternal() override;
 
-    int getTriangleEdges(std::vector<std::vector<SimplexId>> &edges) const;
+    int getTriangleEdgesInternal(
+      std::vector<std::vector<SimplexId>> &edges) const;
 
-    int getTriangleLink(const SimplexId &triangleId,
-                        const int &localLinkId,
-                        SimplexId &linkId) const override;
+    int TTK_TRIANGULATION_INTERNAL(getTriangleLink)(
+      const SimplexId &triangleId,
+      const int &localLinkId,
+      SimplexId &linkId) const override;
 
-    SimplexId getTriangleLinkNumber(const SimplexId &triangleId) const override;
+    SimplexId TTK_TRIANGULATION_INTERNAL(getTriangleLinkNumber)(
+      const SimplexId &triangleId) const override;
 
-    const std::vector<std::vector<SimplexId>> *getTriangleLinks() override;
+    const std::vector<std::vector<SimplexId>> *
+      TTK_TRIANGULATION_INTERNAL(getTriangleLinks)() override;
 
     int getTriangleNeighbor(const SimplexId &triangleId,
                             const int &localNeighborId,
@@ -170,74 +191,94 @@ namespace ttk {
 
     int getTriangleNeighbors(std::vector<std::vector<SimplexId>> &neighbors);
 
-    int getTriangleStar(const SimplexId &triangleId,
-                        const int &localStarId,
-                        SimplexId &starId) const override;
+    int TTK_TRIANGULATION_INTERNAL(getTriangleStar)(
+      const SimplexId &triangleId,
+      const int &localStarId,
+      SimplexId &starId) const override;
 
-    SimplexId getTriangleStarNumber(const SimplexId &triangleId) const override;
+    SimplexId TTK_TRIANGULATION_INTERNAL(getTriangleStarNumber)(
+      const SimplexId &triangleId) const override;
 
-    const std::vector<std::vector<SimplexId>> *getTriangleStars() override;
+    const std::vector<std::vector<SimplexId>> *
+      TTK_TRIANGULATION_INTERNAL(getTriangleStars)() override;
 
-    int getTriangleVertex(const SimplexId &triangleId,
-                          const int &localVertexId,
-                          SimplexId &vertexId) const override;
+    int getTriangleVertexInternal(const SimplexId &triangleId,
+                                  const int &localVertexId,
+                                  SimplexId &vertexId) const override;
 
-    const std::vector<std::vector<SimplexId>> *getTriangles() override;
+    const std::vector<std::vector<SimplexId>> *
+      TTK_TRIANGULATION_INTERNAL(getTriangles)() override;
 
-    int getVertexEdge(const SimplexId &vertexId,
-                      const int &id,
-                      SimplexId &edgeId) const override;
+    int getVertexEdgeInternal(const SimplexId &vertexId,
+                              const int &id,
+                              SimplexId &edgeId) const override;
 
-    SimplexId getVertexEdgeNumber(const SimplexId &vertexId) const override;
+    SimplexId
+      getVertexEdgeNumberInternal(const SimplexId &vertexId) const override;
 
-    const std::vector<std::vector<SimplexId>> *getVertexEdges() override;
+    const std::vector<std::vector<SimplexId>> *
+      getVertexEdgesInternal() override;
 
-    int getVertexLink(const SimplexId &vertexId,
-                      const int &localLinkId,
-                      SimplexId &linkId) const override;
+    int TTK_TRIANGULATION_INTERNAL(getVertexLink)(
+      const SimplexId &vertexId,
+      const int &localLinkId,
+      SimplexId &linkId) const override;
 
-    SimplexId getVertexLinkNumber(const SimplexId &vertexId) const override;
+    SimplexId TTK_TRIANGULATION_INTERNAL(getVertexLinkNumber)(
+      const SimplexId &vertexId) const override;
 
-    const std::vector<std::vector<SimplexId>> *getVertexLinks() override;
+    const std::vector<std::vector<SimplexId>> *
+      TTK_TRIANGULATION_INTERNAL(getVertexLinks)() override;
 
-    int getVertexNeighbor(const SimplexId &vertexId,
-                          const int &localNeighborId,
-                          SimplexId &neighborId) const override;
+    int TTK_TRIANGULATION_INTERNAL(getVertexNeighbor)(
+      const SimplexId &vertexId,
+      const int &localNeighborId,
+      SimplexId &neighborId) const override;
 
-    SimplexId getVertexNeighborNumber(const SimplexId &vertexId) const override;
+    SimplexId TTK_TRIANGULATION_INTERNAL(getVertexNeighborNumber)(
+      const SimplexId &vertexId) const override;
 
-    const std::vector<std::vector<SimplexId>> *getVertexNeighbors() override;
+    const std::vector<std::vector<SimplexId>> *
+      TTK_TRIANGULATION_INTERNAL(getVertexNeighbors)() override;
 
-    int getVertexPoint(const SimplexId &vertexId,
-                       float &x,
-                       float &y,
-                       float &z) const override;
+    int TTK_TRIANGULATION_INTERNAL(getVertexPoint)(const SimplexId &vertexId,
+                                                   float &x,
+                                                   float &y,
+                                                   float &z) const override;
 
-    int getVertexStar(const SimplexId &vertexId,
-                      const int &localStarId,
-                      SimplexId &starId) const override;
+    int TTK_TRIANGULATION_INTERNAL(getVertexStar)(
+      const SimplexId &vertexId,
+      const int &localStarId,
+      SimplexId &starId) const override;
 
-    SimplexId getVertexStarNumber(const SimplexId &vertexId) const override;
+    SimplexId TTK_TRIANGULATION_INTERNAL(getVertexStarNumber)(
+      const SimplexId &vertexId) const override;
 
-    const std::vector<std::vector<SimplexId>> *getVertexStars() override;
+    const std::vector<std::vector<SimplexId>> *
+      TTK_TRIANGULATION_INTERNAL(getVertexStars)() override;
 
-    int getVertexTriangle(const SimplexId &vertexId,
-                          const int &id,
-                          SimplexId &triangleId) const override;
+    int getVertexTriangleInternal(const SimplexId &vertexId,
+                                  const int &id,
+                                  SimplexId &triangleId) const override;
 
-    SimplexId getVertexTriangleNumber(const SimplexId &vertexId) const override;
+    SimplexId
+      getVertexTriangleNumberInternal(const SimplexId &vertexId) const override;
 
-    const std::vector<std::vector<SimplexId>> *getVertexTriangles() override;
+    const std::vector<std::vector<SimplexId>> *
+      getVertexTrianglesInternal() override;
 
-    bool isEdgeOnBoundary(const SimplexId &edgeId) const override;
+    bool TTK_TRIANGULATION_INTERNAL(isEdgeOnBoundary)(
+      const SimplexId &edgeId) const override;
 
     bool isEmpty() const override {
       return !vertexNumber_;
     };
 
-    bool isTriangleOnBoundary(const SimplexId &triangleId) const override;
+    bool TTK_TRIANGULATION_INTERNAL(isTriangleOnBoundary)(
+      const SimplexId &triangleId) const override;
 
-    bool isVertexOnBoundary(const SimplexId &vertexId) const override;
+    bool TTK_TRIANGULATION_INTERNAL(isVertexOnBoundary)(
+      const SimplexId &vertexId) const override;
 
     int setInputGrid(const float &xOrigin,
                      const float &yOrigin,
@@ -265,17 +306,18 @@ namespace ttk {
     /**
      * Compute the barycenter of the points of the given edge identifier.
      */
-    virtual int getEdgeIncenter(SimplexId edgeId,
-                                float incenter[3]) const override {
+    virtual int getEdgeIncenter(SimplexId edgeId, float incenter[3]) const {
       std::array<SimplexId, 2> vertexId;
       for(int i = 0; i < (int)vertexId.size(); ++i) {
-        getEdgeVertex(edgeId, i, vertexId[i]);
+        getEdgeVertexInternal(edgeId, i, vertexId[i]);
       }
 
       std::array<std::array<float, 3>, vertexId.size()> p;
       std::array<std::array<SimplexId, 3>, vertexId.size()> ind;
       for(int i = 0; i < (int)vertexId.size(); ++i) {
-        getVertexPoint(vertexId[i], p[i][0], p[i][1], p[i][2]);
+        for(int j = 0; j < 3; j++)
+          p[i][j] = 0;
+        getVertexPointInternal(vertexId[i], p[i][0], p[i][1], p[i][2]);
         ind[i] = vertexToPositionNd(vertexId[i]);
       }
 
@@ -299,17 +341,17 @@ namespace ttk {
      * identifier.
      */
     virtual int getTriangleIncenter(SimplexId triangleId,
-                                    float incenter[3]) const override {
+                                    float incenter[3]) const {
 
       std::array<SimplexId, 3> vertexId;
       for(int i = 0; i < (int)vertexId.size(); ++i) {
-        getTriangleVertex(triangleId, i, vertexId[i]);
+        getTriangleVertexInternal(triangleId, i, vertexId[i]);
       }
 
       std::array<std::array<float, 3>, vertexId.size()> p;
       std::array<std::array<SimplexId, 3>, vertexId.size()> ind;
       for(int i = 0; i < (int)vertexId.size(); ++i) {
-        getVertexPoint(vertexId[i], p[i][0], p[i][1], p[i][2]);
+        getVertexPointInternal(vertexId[i], p[i][0], p[i][1], p[i][2]);
         ind[i] = vertexToPositionNd(vertexId[i]);
       }
 
@@ -346,18 +388,18 @@ namespace ttk {
      * Compute the barycenter of the incenters of the triangles of the
      * given tetra identifier.
      */
-    virtual int getTetraIncenter(SimplexId tetraId,
-                                 float incenter[3]) const override {
+    virtual int getTetraIncenter(SimplexId tetraId, float incenter[3]) const {
 
       std::array<SimplexId, 4> vertexId;
       for(int i = 0; i < (int)vertexId.size(); ++i) {
-        getCellVertex(tetraId, i, vertexId[i]);
+        vertexId[i] = -1;
+        getCellVertexInternal(tetraId, i, vertexId[i]);
       }
 
       std::array<std::array<float, 3>, vertexId.size()> p;
       std::array<std::array<SimplexId, 3>, vertexId.size()> ind;
       for(int i = 0; i < (int)vertexId.size(); ++i) {
-        getVertexPoint(vertexId[i], p[i][0], p[i][1], p[i][2]);
+        getVertexPointInternal(vertexId[i], p[i][0], p[i][1], p[i][2]);
         ind[i] = vertexToPositionNd(vertexId[i]);
       }
 

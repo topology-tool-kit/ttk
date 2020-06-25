@@ -71,7 +71,7 @@
             name="array_list"
             default_values="0"
             >
-            <RequiredProperties> 
+            <RequiredProperties>
               <Property name="quadrangles" function="Input" />
             </RequiredProperties>
         </ArrayListDomain>
@@ -212,7 +212,7 @@
 
       <IntVectorProperty
           name="DebugLevel"
-          command="SetdebugLevel_"
+          command="SetDebugLevel"
           label="Debug Level"
           number_of_elements="1"
           default_values="3" panel_visibility="advanced">
@@ -241,7 +241,7 @@
       </PropertyGroup>
 
       <Hints>
-        <ShowInMenu category="TTK - Misc" />
+        <ShowInMenu category="TTK - Domain" />
       </Hints>
     </SourceProxy>
   </ProxyGroup>

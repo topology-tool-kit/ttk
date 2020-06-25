@@ -23,7 +23,7 @@
 
 // ttk code includes
 #include <TopologicalCompression.h>
-#include <ttkWrapper.h>
+#include <ttkTriangulationAlgorithm.h>
 
 // VTK includes -- to adapt
 #include <vtkCellData.h>
@@ -42,24 +42,26 @@
 #include <vtkUnstructuredGrid.h>
 #include <vtkXMLImageDataWriter.h>
 
+// VTK Module
+#include <ttkTopologicalCompressionModule.h>
+
 // in this example, this wrapper takes a data-set on the input and produces a
 // data-set on the output - to adapt.
 // see the documentation of the vtkAlgorithm class to decide from which VTK
 // class your wrapper should inherit.
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkTopologicalCompression
-#else
-class ttkTopologicalCompression
-#endif
+class TTKTOPOLOGICALCOMPRESSION_EXPORT ttkTopologicalCompression
   : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+    protected ttk::Wrapper {
 
 public:
   static ttkTopologicalCompression *New();
 
   vtkTypeMacro(ttkTopologicalCompression, vtkDataSetAlgorithm);
 
-  vtkSetMacro(debugLevel_, int);
+  void SetDebugLevel(int debugLevel) {
+    setDebugLevel(debugLevel);
+    Modified();
+  }
 
   void SetThreadNumber(int threadNumber) {
     ThreadNumber = threadNumber;
@@ -124,7 +126,7 @@ protected:
     UseAllCores = true;
   }
 
-  ~ttkTopologicalCompression(){};
+  ~ttkTopologicalCompression() override{};
 
   TTK_SETUP();
 

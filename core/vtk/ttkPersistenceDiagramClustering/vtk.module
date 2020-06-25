@@ -1,0 +1,6 @@
+NAME
+ ttkPersistenceDiagramClustering
+DEPENDS
+  VTK::FiltersCore
+PRIVATE_DEPENDS
+  VTK::CommonCore

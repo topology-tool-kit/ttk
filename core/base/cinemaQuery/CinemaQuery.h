@@ -11,21 +11,24 @@
 #pragma once
 
 // base code includes
-#include <Wrapper.h>
-
-using namespace std;
+#include <Debug.h>
+#include <string>
+#include <vector>
 
 namespace ttk {
-  class CinemaQuery : public Debug {
+  class CinemaQuery : virtual public Debug {
   public:
     CinemaQuery();
     ~CinemaQuery();
 
-    // Creates a temporary database based on a SQL table definition and
-    // and table content to subsequentually return a query result.
-    int execute(const string &sqlTableDefinition,
-                const string &sqlTableRows,
-                const string &sqlQuery,
-                string &resultCSV) const;
+    /** Creates a temporary database based on a SQL table definition and
+     *  and table content to subsequentually return a query result.
+     */
+    int execute(const std::vector<std::string> &sqlTableDefinitions,
+                const std::vector<std::string> &sqlInsertStatements,
+                const std::string &sqlQuery,
+                std::stringstream &resultCSV,
+                int &csvNColumns,
+                int &csvNRows) const;
   };
 } // namespace ttk

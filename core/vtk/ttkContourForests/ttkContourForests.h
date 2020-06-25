@@ -59,8 +59,11 @@
 #include <vtkSphereSource.h>
 #include <vtkTable.h>
 
+// VTK Module
+#include <ttkContourForestsModule.h>
+
 // vtk wrapper includes
-#include <ttkWrapper.h>
+#include <ttkTriangulationAlgorithm.h>
 
 // base code includes
 #include <Geometry.h>
@@ -69,13 +72,8 @@
 #include "ContourForestsTree.h"
 #include "DeprecatedDataTypes.h"
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkContourForests
-#else
-class ttkContourForests
-#endif
-  : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+class TTKCONTOURFORESTS_EXPORT ttkContourForests : public vtkDataSetAlgorithm,
+                                                   protected ttk::Wrapper {
 
 public:
   static ttkContourForests *New();
@@ -83,8 +81,6 @@ public:
   vtkTypeMacro(ttkContourForests, vtkDataSetAlgorithm);
 
   // default ttk setters
-  vtkSetMacro(debugLevel_, int);
-
   vtkSetMacro(FieldId, int);
 
   void SetThreadNumber(int threadNumber);

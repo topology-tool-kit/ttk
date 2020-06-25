@@ -13,8 +13,8 @@
         long_help="TTK morseSmaleComplex plugin."
         short_help="TTK morseSmaleComplex plugin.">
         TTK plugin for the computation of Morse-Smale complexes.
-          
-          Morse-Smale complexes are useful topological abstractions of scalar 
+
+          Morse-Smale complexes are useful topological abstractions of scalar
 fields for data segmentation, feature extraction, etc.
 
 Related publication:
@@ -118,30 +118,6 @@ Computer Graphics Forum, 2012.
         </Documentation>
       </IntVectorProperty>
 
-      <IntVectorProperty name="ReverseSaddleMaximumConnection"
-        label="PL-compliant extrema"
-        command="SetReverseSaddleMaximumConnection"
-        number_of_elements="1"
-        default_values="1"
-        panel_visibility="advanced">
-        <BooleanDomain name="bool"/>
-        <Documentation>
-           Documentation.
-        </Documentation>
-      </IntVectorProperty>
-
-      <IntVectorProperty name="ReverseSaddleSaddleConnection"
-        label="PL-compliant saddles"
-        command="SetReverseSaddleSaddleConnection"
-        number_of_elements="1"
-        default_values="1"
-        panel_visibility="advanced">
-        <BooleanDomain name="bool"/>
-        <Documentation>
-           Documentation.
-        </Documentation>
-      </IntVectorProperty>
-
        <IntVectorProperty name="ComputeCriticalPoints"
          label="Critical Points"
          command="SetComputeCriticalPoints"
@@ -152,7 +128,7 @@ Computer Graphics Forum, 2012.
          <Documentation>
            Documentation.
          </Documentation>
-       </IntVectorProperty> 
+       </IntVectorProperty>
 
        <IntVectorProperty name="ComputeAscendingSeparatrices1"
          label="Ascending 1-Separatrices"
@@ -164,7 +140,7 @@ Computer Graphics Forum, 2012.
          <Documentation>
            Documentation.
          </Documentation>
-       </IntVectorProperty> 
+       </IntVectorProperty>
 
        <IntVectorProperty name="ComputeDescendingSeparatrices1"
          label="Descending 1-Separatrices"
@@ -176,7 +152,7 @@ Computer Graphics Forum, 2012.
          <Documentation>
            Documentation.
          </Documentation>
-       </IntVectorProperty> 
+       </IntVectorProperty>
 
        <IntVectorProperty name="ComputeSaddleConnectors"
          label="Saddle Connectors"
@@ -188,7 +164,7 @@ Computer Graphics Forum, 2012.
          <Documentation>
            Documentation.
          </Documentation>
-       </IntVectorProperty> 
+       </IntVectorProperty>
 
        <IntVectorProperty name="ComputeAscendingSeparatrices2"
          label="Ascending 2-Separatrices"
@@ -200,7 +176,7 @@ Computer Graphics Forum, 2012.
          <Documentation>
            Documentation.
          </Documentation>
-       </IntVectorProperty> 
+       </IntVectorProperty>
 
        <IntVectorProperty name="ComputeDescendingSeparatrices2"
          label="Descending 2-Separatrices"
@@ -212,7 +188,7 @@ Computer Graphics Forum, 2012.
          <Documentation>
            Documentation.
          </Documentation>
-       </IntVectorProperty> 
+       </IntVectorProperty>
 
        <IntVectorProperty name="ComputeAscendingSegmentation"
          label="Ascending Segmentation"
@@ -280,18 +256,6 @@ Computer Graphics Forum, 2012.
          </Documentation>
        </DoubleVectorProperty>
 
-       <IntVectorProperty name="PrioritizeSpeedOverMemory"
-         label="Prioritize Speed Over Memory"
-         command="SetPrioritizeSpeedOverMemory"
-         number_of_elements="1"
-         default_values="0"
-         panel_visibility="advanced">
-         <BooleanDomain name="bool"/>
-         <Documentation>
-           Prioritize speed over memory.
-         </Documentation>
-       </IntVectorProperty>
-
       <IntVectorProperty
         name="UseAllCores"
         label="Use All Cores"
@@ -326,7 +290,7 @@ Computer Graphics Forum, 2012.
       <IntVectorProperty
         name="DebugLevel"
         label="Debug Level"
-        command="SetdebugLevel_"
+        command="SetDebugLevel"
         number_of_elements="1"
         default_values="3" panel_visibility="advanced">
         <IntRangeDomain name="range" min="0" max="100" />
@@ -356,8 +320,6 @@ Computer Graphics Forum, 2012.
       </PropertyGroup>
 
       <PropertyGroup panel_widget="Line" label="Output options">
-        <Property name="ReverseSaddleMaximumConnection"/>
-        <Property name="ReverseSaddleSaddleConnection"/>
         <Property name="ComputeCriticalPoints"/>
         <Property name="ComputeAscendingSeparatrices1"/>
         <Property name="ComputeDescendingSeparatrices1"/>
@@ -375,7 +337,6 @@ Computer Graphics Forum, 2012.
         <Property name="UseAllCores" />
         <Property name="ThreadNumber" />
         <Property name="DebugLevel" />
-        <Property name="PrioritizeSpeedOverMemory" />
 <!--        <Property name="IterationThreshold"/>-->
       </PropertyGroup>
 

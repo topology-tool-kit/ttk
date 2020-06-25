@@ -5,17 +5,17 @@
        a filter already in ParaView (in Servers/ServerManager/Resources/*.xml)
        that matches your filter and then model your xml on it -->
   <ProxyGroup name="filters">
-   <SourceProxy 
-     name="ManifoldCheck" 
-     class="ttkManifoldCheck" 
+   <SourceProxy
+     name="ManifoldCheck"
+     class="ttkManifoldCheck"
      label="TTK ManifoldCheck">
      <Documentation
         long_help="TTK plugin for manifold check."
         short_help="TTK plugin for manifold check.">
-          This plugin performs a manifold check for each simplex, by counting 
-the number of connected components of link. On a d-dimensional triangulation, 
-this number should be equal to 1 for all but (d-1)-simplices, for which 
-it can be 1 (boundary simplices) or 2 (interior simplices). Other values 
+          This plugin performs a manifold check for each simplex, by counting
+the number of connected components of link. On a d-dimensional triangulation,
+this number should be equal to 1 for all but (d-1)-simplices, for which
+it can be 1 (boundary simplices) or 2 (interior simplices). Other values
 indicate a non-manifold simplex.
      </Documentation>
      <InputProperty
@@ -44,7 +44,7 @@ indicate a non-manifold simplex.
           Use all available cores.
          </Documentation>
       </IntVectorProperty>
-      
+
       <IntVectorProperty
          name="ThreadNumber"
          label="Thread Number"
@@ -63,11 +63,11 @@ indicate a non-manifold simplex.
           Thread number.
          </Documentation>
       </IntVectorProperty>
-      
+
       <IntVectorProperty
          name="DebugLevel"
          label="Debug Level"
-         command="SetdebugLevel_"
+         command="SetDebugLevel"
          number_of_elements="1"
          default_values="3" panel_visibility="advanced">
         <IntRangeDomain name="range" min="0" max="100" />
@@ -75,15 +75,15 @@ indicate a non-manifold simplex.
            Debug level.
          </Documentation>
       </IntVectorProperty>
-      
+
       <PropertyGroup panel_widget="Line" label="Testing">
         <Property name="UseAllCores" />
         <Property name="ThreadNumber" />
         <Property name="DebugLevel" />
       </PropertyGroup>
-      
+
       <Hints>
-        <ShowInMenu category="TTK - Misc" />
+        <ShowInMenu category="TTK - Domain" />
       </Hints>
    </SourceProxy>
  </ProxyGroup>

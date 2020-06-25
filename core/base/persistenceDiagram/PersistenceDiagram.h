@@ -95,7 +95,7 @@ namespace ttk {
         ftm::FTMTreePP contourTree;
         contourTree.setupTriangulation(triangulation_);
 
-        triangulation_->preprocessBoundaryVertices();
+        triangulation_->preconditionBoundaryVertices();
       }
       return 0;
     }
@@ -281,7 +281,7 @@ int ttk::PersistenceDiagram::execute() const {
     morseSmaleComplex.setInputScalarField(inputScalars_);
     morseSmaleComplex.setInputOffsets(inputOffsets_);
     morseSmaleComplex.computePersistencePairs<scalarType, idType>(
-      JTPairs, STPairs, pl_saddleSaddlePairs);
+      pl_saddleSaddlePairs);
   }
 
   // get persistence diagrams

@@ -3,9 +3,8 @@
 using namespace std;
 using namespace ttk;
 
-vtkStandardNewMacro(ttkReebSpace)
-
-  ttkReebSpace::ttkReebSpace() {
+vtkStandardNewMacro(ttkReebSpace);
+ttkReebSpace::ttkReebSpace() {
 
   // init
   SetNumberOfOutputPorts(4);
@@ -310,7 +309,7 @@ int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
   }
 
   vertexNumber = 0;
-  double *p = NULL;
+  double *p = nullptr;
   for(SimplexId i = 0; i < (SimplexId)sheet0segmentation->size(); i++) {
     SimplexId sheet0Id = (*sheet0segmentation)[i];
     if(sheet0Id != -1) {
@@ -692,8 +691,9 @@ int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
   //   pointData =
   //     vtkSmartPointer<vtkFloatArray>::New();
   //   pointData->SetNumberOfComponents(3);
-  //   pointData->SetVoidArray(
-  //     triangulationPoints->data(), triangulationPoints->size(), 1);
+  //   ttkUtils::SetVoidArray(
+  //     pointData, triangulationPoints->data(), triangulationPoints->size(),
+  //     1);
   //   sheet3Points->SetData(pointData);
   //   sheet3->SetPoints(sheet3Points);
   //
@@ -701,8 +701,8 @@ int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
   //     = vtkSmartPointer<vtkCellArray>::New();
   //   vtkSmartPointer<ttkSimplexIdTypeArray> idArray
   //     = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
-  //   idArray->SetVoidArray(
-  //     triangulationCells->data(), triangulationCells->size(), 1);
+  //   ttkUtils::SetVoidArray(
+  //     idArray, triangulationCells->data(), triangulationCells->size(), 1);
   //   sheet3Cells->SetCells(triangulationCells->size()/5, idArray);
   //   sheet3->SetCells(VTK_TETRA, sheet3Cells);
 
@@ -834,7 +834,6 @@ int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
     }
   }
   sheet3->GetCellData()->AddArray(tetSegmentation);
-
   {
     stringstream msg;
     msg << "[ttkReebSpace] Memory usage: " << m.getElapsedUsage() << " MB."

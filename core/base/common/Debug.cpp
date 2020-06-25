@@ -1,5 +1,7 @@
 #include <Debug.h>
 
+ttk::debug::LineMode ttk::Debug::lastLineMode = ttk::debug::LineMode::NEW;
+
 bool ttk::welcomeMsg_ = true;
 bool ttk::goodbyeMsg_ = true;
 int ttk::globalDebugLevel_ = 0;
@@ -8,6 +10,8 @@ using namespace std;
 using namespace ttk;
 
 Debug::Debug() {
+
+  setDebugMsgPrefix("Debug");
 
   debugLevel_ = ttk::globalDebugLevel_;
 
@@ -18,87 +22,86 @@ Debug::Debug() {
 
 Debug::~Debug() {
   if((lastObject_) && (ttk::goodbyeMsg_)) {
-    stringstream msg;
-    msg << "[Common] Goodbye :)" << endl;
-    dMsg(cout, msg.str(), 1);
+
+    printMsg(
+      "Goodbye :)", debug::Priority::PERFORMANCE, debug::LineMode::NEW, cout);
+
     ttk::goodbyeMsg_ = false;
   }
 }
 
 int Debug::dMsg(ostream &stream, string msg, const int &debugLevel) const {
 
-  if((ttk::welcomeMsg_) && (debugLevel_)) {
-    ttk::welcomeMsg_ = false;
-    stringstream s;
-
-    s << "[Common] "
-         " _____ _____ _  __                       __  __    ____   ___  _  ___"
-      << endl
-      << "[Common] "
-         "|_   _|_   _| |/ /                      / /__\\ \\  |___ \\ / _ \\/ "
-         "|/ _ \\"
-      //"|_   _|_   _| |/ /                      / /__\\ \\  |___ \\ / _ \\/ |(
-      //_ )"
-      << endl
-      << "[Common] "
-         "  | |   | | | ' /                      | |/ __| |   __) | | | | | "
-         "(_) |"
-      //"  | |   | | | ' /                      | |/ __| |   __) | | | | |/ _
-      //\\"
-      << endl
-      << "[Common] "
-         "  | |   | | | . \\                      | | (__| |  / __/| |_| | "
-         "|\\__, |"
-      //"  | |   | | | . \\                      | | (__| |  / __/| |_| | | (_)
-      //|"
-      << endl
-      << "[Common] "
-         "  |_|   |_| |_|\\_\\                     | |\\___| | "
-         "|_____|\\___/|_|  /_/"
-      //"  |_|   |_| |_|\\_\\                     | |\\___| |
-      //|_____|\\___/|_|\\___/"
-      << endl
-      << "[Common] "
-         "                                        \\_\\  /_/"
-      //"                                        \\_\\  /_/"
-      << endl;
-    s << "[Common] Welcome!" << endl;
-#ifndef NDEBUG
-    s << "[Common]" << endl;
-    s << "[Common] WARNING:" << endl;
-    s << "[Common] TTK has been built in debug mode! (developers only)" << endl;
-    s << "[Common] Expect important performance degradation." << endl;
-    s << "[Common]" << endl;
-#endif
-#ifndef TTK_ENABLE_KAMIKAZE
-    s << "[Common]" << endl;
-    s << "[Common] WARNING:" << endl;
-    s << "[Common] TTK has *NOT* been built in performance mode!"
-      << " (developers only)" << endl;
-    s << "[Common] Expect important performance degradation." << endl;
-    s << "[Common] " << endl;
-    s << "[Common] To enable the performance mode, rebuild TTK with:" << endl;
-    s << "[Common]   -DTTK_ENABLE_KAMIKAZE=ON" << endl;
-    s << "[Common]" << endl;
-#endif
-    dMsg(cout, s.str(), 1);
-  }
-
   if((debugLevel_ >= debugLevel) || (globalDebugLevel_ >= debugLevel))
     stream << msg.data() << flush;
+
+  return 0;
+}
+
+int Debug::welcomeMsg(ostream &stream) {
+
+  int priorityAsInt = (int)debug::Priority::PERFORMANCE;
+
+  if((ttk::welcomeMsg_) && (debugLevel_ > priorityAsInt)) {
+    ttk::welcomeMsg_ = false;
+
+    string currentPrefix = debugMsgPrefix_;
+    debugMsgPrefix_ = "[Common] ";
+
+#include <welcomeLogo.inl>
+#include <welcomeMsg.inl>
+
+#ifndef NDEBUG
+    printMsg("", debug::Priority::WARNING, debug::LineMode::NEW, stream);
+    printMsg(debug::output::YELLOW + "TTK has been built in debug mode!",
+             debug::Priority::WARNING, debug::LineMode::NEW, stream);
+    printMsg(debug::output::YELLOW + "DEVELOPERS ONLY!",
+             debug::Priority::WARNING, debug::LineMode::NEW, stream);
+    printMsg(
+      debug::output::YELLOW + "Expect important performance degradation.",
+      debug::Priority::WARNING, debug::LineMode::NEW, stream);
+    printMsg("", debug::Priority::WARNING, debug::LineMode::NEW, stream);
+#endif
+#ifndef TTK_ENABLE_KAMIKAZE
+    printMsg("", debug::Priority::WARNING, debug::LineMode::NEW, stream);
+    printMsg(
+      debug::output::YELLOW + "TTK has *NOT* been built in performance mode!",
+      debug::Priority::WARNING, debug::LineMode::NEW, stream);
+    printMsg(debug::output::YELLOW + "DEVELOPERS ONLY!",
+             debug::Priority::WARNING, debug::LineMode::NEW, stream);
+    printMsg(
+      debug::output::YELLOW + "Expect important performance degradation.",
+      debug::Priority::WARNING, debug::LineMode::NEW, stream);
+    printMsg("", debug::Priority::WARNING, debug::LineMode::NEW, stream);
+
+    printMsg(debug::output::YELLOW
+               + "To enable the performance mode, rebuild TTK with:",
+             debug::Priority::WARNING, debug::LineMode::NEW, stream);
+    printMsg(debug::output::YELLOW + "  -DTTK_ENABLE_KAMIKAZE=ON",
+             debug::Priority::WARNING, debug::LineMode::NEW, stream);
+    printMsg("", debug::Priority::WARNING, debug::LineMode::NEW, stream);
+#endif
+
+    debugMsgPrefix_ = currentPrefix;
+  }
+
   return 0;
 }
 
 int Debug::err(const string msg, const int &debugLevel) const {
-  return dMsg(cerr, msg, 0);
+  return printMsg(msg, debug::Priority::ERROR, debug::LineMode::NEW, cerr);
 }
 
 int Debug::msg(const char *msg, const int &debugLevel) const {
-  return dMsg(cout, string(msg), debugLevel);
+  return printMsg(
+    string(msg), debug::Priority::PERFORMANCE, debug::LineMode::NEW, cout);
 }
 
 int Debug::setDebugLevel(const int &debugLevel) {
   debugLevel_ = debugLevel;
+
+  welcomeMsg(cout);
+
   return 0;
 }
 

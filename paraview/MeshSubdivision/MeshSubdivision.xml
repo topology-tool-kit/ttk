@@ -5,32 +5,32 @@
        a filter already in ParaView (in Servers/ServerManager/Resources/*.xml)
        that matches your filter and then model your xml on it -->
   <ProxyGroup name="filters">
-   <SourceProxy 
-     name="MeshSubdivision" 
-     class="ttkMeshSubdivision" 
+   <SourceProxy
+     name="MeshSubdivision"
+     class="ttkMeshSubdivision"
      label="TTK MeshSubdivision">
      <Documentation
-        long_help="TTK plugin for the computation of mesh 
+        long_help="TTK plugin for the computation of mesh
 subdivisions (without vertex displacement)."
-        short_help="TTK plugin for the computation of mesh 
+        short_help="TTK plugin for the computation of mesh
 subdivisions (without vertex displacement).">
-This filter subdivides an input mesh with a strategy inspired by 
-Discrete Morse theory. It does not modify the position of the original 
+This filter subdivides an input mesh with a strategy inspired by
+Discrete Morse theory. It does not modify the position of the original
 vertices.
-  
-The filter inserts a new vertex at the barycenter of each d-cell C and 
-connects it with an edge to the new vertices inserted in the (d-1) and 
+
+The filter inserts a new vertex at the barycenter of each d-cell C and
+connects it with an edge to the new vertices inserted in the (d-1) and
 (d+1)-cells that are faces or co-faces of C.
 
 In practice, for surface meshes, this subdivision scheme corresponds to a
-Catmull-Clark subdivision (without vertex displacement). It will turn a 
-triangle-mesh into a quad mesh, a quad mesh into a (finer) quad-mesh, a 
+Catmull-Clark subdivision (without vertex displacement). It will turn a
+triangle-mesh into a quad mesh, a quad mesh into a (finer) quad-mesh, a
 tetrahedral mesh into a hexahedral mesh, a hexahedral mesh into a (finer)
-hexadrehal mesh, etc. Generally, it will turn any 2D mesh into a quad mesh 
+hexadrehal mesh, etc. Generally, it will turn any 2D mesh into a quad mesh
 and any 3D mesh into a hexadrehal mesh.
 
-This filter assumes that all the cells of the input mesh are of the same 
-type. Also, the filter creates duplicate points, to be merged after the 
+This filter assumes that all the cells of the input mesh are of the same
+type. Also, the filter creates duplicate points, to be merged after the
 fact with "Clean to Grid" under ParaView or vtkMergePoints for instance.
      </Documentation>
      <InputProperty
@@ -59,7 +59,7 @@ fact with "Clean to Grid" under ParaView or vtkMergePoints for instance.
           Set the number of iterations for the mesh subdivision.
          </Documentation>
       </IntVectorProperty>
-     
+
       <IntVectorProperty
          name="UseAllCores"
          label="Use All Cores"
@@ -71,7 +71,7 @@ fact with "Clean to Grid" under ParaView or vtkMergePoints for instance.
           Use all available cores.
          </Documentation>
       </IntVectorProperty>
-      
+
       <IntVectorProperty
          name="ThreadNumber"
          label="Thread Number"
@@ -90,11 +90,11 @@ fact with "Clean to Grid" under ParaView or vtkMergePoints for instance.
           Thread number.
          </Documentation>
       </IntVectorProperty>
-      
+
       <IntVectorProperty
          name="DebugLevel"
          label="Debug Level"
-         command="SetdebugLevel_"
+         command="SetDebugLevel"
          number_of_elements="1"
          default_values="3" panel_visibility="advanced">
         <IntRangeDomain name="range" min="0" max="100" />
@@ -102,19 +102,19 @@ fact with "Clean to Grid" under ParaView or vtkMergePoints for instance.
            Debug level.
          </Documentation>
       </IntVectorProperty>
-      
+
       <PropertyGroup panel_widget="Line" label="Input options">
         <Property name="IterationNumber" />
       </PropertyGroup>
-      
+
       <PropertyGroup panel_widget="Line" label="Testing">
         <Property name="UseAllCores" />
         <Property name="ThreadNumber" />
         <Property name="DebugLevel" />
       </PropertyGroup>
-      
+
       <Hints>
-        <ShowInMenu category="TTK - Misc" />
+        <ShowInMenu category="TTK - Domain" />
       </Hints>
    </SourceProxy>
  </ProxyGroup>

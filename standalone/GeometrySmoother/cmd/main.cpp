@@ -20,12 +20,16 @@ public:
   int execute() {
 
     ScalarFieldSmoother *smoother
-      = (ScalarFieldSmoother *)Program<ttkModule>::ttkModule_;
+      = dynamic_cast<ScalarFieldSmoother *>(Program<ttkModule>::ttkModule_);
 
     smoother->setDimensionNumber(3);
     smoother->setInputDataPointer(pointSet_.data());
     smoother->setOutputDataPointer(pointSet_.data());
-    smoother->smooth<float>(iterationNumber_);
+
+    // template call based on the triangulation type
+    ttkTemplateMacro(triangleMesh_.getType(),
+                     (smoother->smooth<float, TTK_TT>(
+                       (TTK_TT *)triangleMesh_.getData(), iterationNumber_)));
 
     return 0;
   }
@@ -73,23 +77,46 @@ public:
     f >> keyword;
 
     pointSet_.resize(3 * vertexNumber);
-    triangleSet_.resize(4 * triangleNumber);
+    triangleSetCo_.resize(3 * triangleNumber);
+    triangleSetOff_.resize(triangleNumber + 1);
 
     for(int i = 0; i < 3 * vertexNumber; i++) {
       f >> pointSet_[i];
     }
 
-    for(int i = 0; i < 4 * triangleNumber; i++) {
-      f >> triangleSet_[i];
+    int offId = 0;
+    int coId = 0;
+    for(int i = 0; i < triangleNumber; i++) {
+      int cellSize;
+      f >> cellSize;
+      if(cellSize != 3) {
+        std::cerr << "cell size " << cellSize << " != 3" << std::endl;
+        return -3;
+      }
+      triangleSetOff_[offId++] = coId;
+      for(int j = 0; j < 3; j++) {
+        int cellId;
+        f >> cellId;
+        triangleSetCo_[coId++] = cellId;
+      }
     }
+    triangleSetOff_[offId] = coId; // the last one
 
     f.close();
 
     ScalarFieldSmoother *smoother
-      = (ScalarFieldSmoother *)Program<ttkModule>::ttkModule_;
-
+      = dynamic_cast<ScalarFieldSmoother *>(Program<ttkModule>::ttkModule_);
     triangleMesh_.setInputPoints(vertexNumber, pointSet_.data());
-    triangleMesh_.setInputCells(triangleNumber, triangleSet_.data());
+#ifdef TTK_CELL_ARRAY_NEW
+    triangleMesh_.setInputCells(
+      triangleNumber, triangleSetCo_.data(), triangleSetOff_.data());
+#else
+    LongSimplexId *triangleSet;
+    CellArray::TranslateToFlatLayout(
+      triangleSetCo_, triangleSetOff_, triangleSet);
+    triangleMesh_.setInputCells(triangleNumber, triangleSet);
+#endif
+
     smoother->setupTriangulation(&triangleMesh_);
 
     {
@@ -117,7 +144,8 @@ public:
     }
 
     f << "OFF" << endl;
-    f << pointSet_.size() / 3 << " " << triangleSet_.size() / 4 << " 0" << endl;
+    f << pointSet_.size() / 3 << " " << triangleSetOff_.size() - 1 << " 0"
+      << endl;
 
     for(int i = 0; i < (int)pointSet_.size() / 3; i++) {
       for(int j = 0; j < 3; j++) {
@@ -127,10 +155,10 @@ public:
       f << endl;
     }
 
-    for(int i = 0; i < (int)triangleSet_.size() / 4; i++) {
-      for(int j = 0; j < 4; j++) {
-        f << triangleSet_[4 * i + j];
-        f << " ";
+    for(int i = 0; i < (int)triangleSetOff_.size() - 1; i++) {
+      f << "3 ";
+      for(int j = 0; j < 3; j++) {
+        f << triangleSetCo_[triangleSetOff_[i] + j] << " ";
       }
       f << endl;
     }
@@ -142,7 +170,8 @@ public:
 
 protected:
   vector<float> pointSet_;
-  vector<long long int> triangleSet_;
+  vector<long long int> triangleSetCo_;
+  vector<long long int> triangleSetOff_;
   Triangulation triangleMesh_;
 };
 

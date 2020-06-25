@@ -42,17 +42,16 @@
 #include <vtkSmartPointer.h>
 #include <vtkUnstructuredGridAlgorithm.h>
 
+// VTK Module
+#include <ttkTrackingFromOverlapModule.h>
+
 // TTK includes
 #include <TrackingFromOverlap.h>
-#include <ttkWrapper.h>
+#include <ttkTriangulationAlgorithm.h>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkTrackingFromOverlap
-#else
-class ttkTrackingFromOverlap
-#endif
+class TTKTRACKINGFROMOVERLAP_EXPORT ttkTrackingFromOverlap
   : public vtkUnstructuredGridAlgorithm,
-    public ttk::Wrapper {
+    protected ttk::Wrapper {
 
 public:
   static ttkTrackingFromOverlap *New();
@@ -62,7 +61,11 @@ public:
   vtkGetMacro(LabelFieldName, string);
 
   // default ttk setters
-  vtkSetMacro(debugLevel_, int);
+  void SetDebugLevel(int debugLevel) {
+    setDebugLevel(debugLevel);
+    Modified();
+  }
+
   void SetThreads() {
     threadNumber_
       = !UseAllCores ? ThreadNumber : ttk::OsCall::getNumberOfCores();
@@ -109,7 +112,7 @@ protected:
     SetNumberOfInputPorts(1);
     SetNumberOfOutputPorts(1);
   }
-  ~ttkTrackingFromOverlap(){};
+  ~ttkTrackingFromOverlap() override{};
 
   bool UseAllCores;
   int ThreadNumber;

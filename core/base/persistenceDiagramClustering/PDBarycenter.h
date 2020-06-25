@@ -68,13 +68,15 @@ namespace ttk {
     dataType getMaxPersistence();
     dataType getLowestPersistence();
     dataType getMinimalPrice(int i);
-    std::pair<KDTree<dataType> *, std::vector<KDTree<dataType> *>> getKDTree();
+    using KDTreePair = std::pair<typename KDTree<dataType>::KDTreeRoot,
+                                 typename KDTree<dataType>::KDTreeMap>;
+    KDTreePair getKDTree() const;
 
     void runMatching(dataType *total_cost,
                      dataType epsilon,
                      std::vector<int> sizes,
-                     KDTree<dataType> *kdt,
-                     std::vector<KDTree<dataType> *> *correspondance_kdt_map,
+                     KDTree<dataType> &kdt,
+                     std::vector<KDTree<dataType> *> &correspondance_kdt_map,
                      std::vector<dataType> *min_diag_price,
                      std::vector<dataType> *min_price,
                      std::vector<std::vector<matchingTuple>> *all_matchings,
@@ -84,8 +86,8 @@ namespace ttk {
     void runMatchingAuction(
       dataType *total_cost,
       std::vector<int> sizes,
-      KDTree<dataType> *kdt,
-      std::vector<KDTree<dataType> *> *correspondance_kdt_map,
+      KDTree<dataType> &kdt,
+      std::vector<KDTree<dataType> *> &correspondance_kdt_map,
       std::vector<dataType> *min_diag_price,
       std::vector<std::vector<matchingTuple>> *all_matchings,
       bool use_kdt);
@@ -115,9 +117,6 @@ namespace ttk {
     // 			}
     // 			return 0;
     // 		}
-    inline void setDebugLevel(const int debugLevel) {
-      debugLevel_ = debugLevel;
-    }
 
     inline void setDeterministic(const bool deterministic) {
       deterministic_ = deterministic;
@@ -250,7 +249,7 @@ namespace ttk {
     int threadNumber_;
     bool use_progressive_;
     double time_limit_;
-    float epsilon_min_;
+    double epsilon_min_;
     std::vector<std::vector<diagramTuple>> *inputDiagrams_;
 
     int points_added_;
@@ -266,7 +265,6 @@ namespace ttk {
     bool reinit_prices_;
     bool epsilon_decreases_;
     bool early_stoppage_;
-    int debugLevel_;
   };
 } // namespace ttk
 

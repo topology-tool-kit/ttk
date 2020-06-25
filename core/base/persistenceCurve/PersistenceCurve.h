@@ -56,7 +56,7 @@ namespace ttk {
         contourTree.setDebugLevel(debugLevel_);
         contourTree.setupTriangulation(triangulation_);
 
-        triangulation_->preprocessBoundaryVertices();
+        triangulation_->preconditionBoundaryVertices();
       }
       return 0;
     }
@@ -114,7 +114,7 @@ int ttk::PersistenceCurve::computePersistencePlot(
 
   // build curve
   const scalarType epsilon
-    = static_cast<scalarType>(pow(10, -REAL_SIGNIFICANT_DIGITS));
+    = static_cast<scalarType>(Geometry::powIntTen(-REAL_SIGNIFICANT_DIGITS));
   for(SimplexId i = 0; i < nbElmnt; ++i) {
     plot[i].first = std::max(std::get<2>(pairs[i]), epsilon);
     plot[i].second = pairs.size() - i;
@@ -183,7 +183,7 @@ int ttk::PersistenceCurve::execute() const {
     morseSmaleComplex.setInputScalarField(inputScalars_);
     morseSmaleComplex.setInputOffsets(inputOffsets_);
     morseSmaleComplex.computePersistencePairs<scalarType, idType>(
-      JTPairs, STPairs, pl_saddleSaddlePairs);
+      pl_saddleSaddlePairs);
 
     // sort the saddle-saddle pairs by persistence value and compute curve
     {

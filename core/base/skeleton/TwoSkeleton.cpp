@@ -4,6 +4,8 @@ using namespace std;
 using namespace ttk;
 
 TwoSkeleton::TwoSkeleton() {
+
+  setDebugMsgPrefix("TwoSkeleton");
 }
 
 TwoSkeleton::~TwoSkeleton() {
@@ -11,12 +13,9 @@ TwoSkeleton::~TwoSkeleton() {
 
 int TwoSkeleton::buildCellNeighborsFromVertices(
   const SimplexId &vertexNumber,
-  const SimplexId &cellNumber,
-  const LongSimplexId *cellArray,
+  const CellArray &cellArray,
   vector<vector<SimplexId>> &cellNeighbors,
   vector<vector<SimplexId>> *vertexStars) const {
-
-  Timer t;
 
   auto localVertexStars = vertexStars;
   vector<vector<SimplexId>> defaultVertexStars{};
@@ -26,21 +25,25 @@ int TwoSkeleton::buildCellNeighborsFromVertices(
   }
 
   if(!localVertexStars->size()) {
-
     ZeroSkeleton zeroSkeleton;
     zeroSkeleton.setThreadNumber(threadNumber_);
     zeroSkeleton.setDebugLevel(debugLevel_);
-    zeroSkeleton.buildVertexStars(
-      vertexNumber, cellNumber, cellArray, *localVertexStars);
+    zeroSkeleton.buildVertexStars(vertexNumber, cellArray, *localVertexStars);
   }
 
-  SimplexId vertexPerCell = cellArray[0];
+  Timer t;
 
+  printMsg(
+    "Building cell neighbors", 0, 0, threadNumber_, debug::LineMode::REPLACE);
+
+  const SimplexId cellNumber = cellArray.getNbCells();
   cellNeighbors.resize(cellNumber);
-  for(SimplexId i = 0; i < (SimplexId)cellNeighbors.size(); i++)
-    cellNeighbors[i].reserve(vertexPerCell);
+  for(SimplexId cid = 0; cid < cellNumber; cid++) {
+    const SimplexId nbVertCell = cellArray.getCellVertexNumber(cid);
+    cellNeighbors[cid].reserve(nbVertCell);
+  }
 
-    // pre-sort vertex stars
+  // pre-sort vertex stars
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
@@ -50,13 +53,13 @@ int TwoSkeleton::buildCellNeighborsFromVertices(
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
-  for(SimplexId i = 0; i < cellNumber; i++) {
+  for(SimplexId cid = 0; cid < cellNumber; cid++) {
+    const SimplexId nbVertCell = cellArray.getCellVertexNumber(cid);
 
-    for(SimplexId j = 0; j < vertexPerCell; j++) {
+    for(SimplexId j = 0; j < nbVertCell; j++) {
 
-      SimplexId v0 = cellArray[(vertexPerCell + 1) * i + 1 + j];
-      SimplexId v1
-        = cellArray[(vertexPerCell + 1) * i + 1 + (j + 1) % vertexPerCell];
+      SimplexId v0 = cellArray.getCellVertex(cid, j);
+      SimplexId v1 = cellArray.getCellVertex(cid, (j + 1) % nbVertCell);
 
       // perform an intersection of the 2 sorted star lists
       SimplexId pos0 = 0, pos1 = 0;
@@ -89,7 +92,7 @@ int TwoSkeleton::buildCellNeighborsFromVertices(
 
         if((*localVertexStars)[v0][pos0] == (*localVertexStars)[v1][pos1]) {
 
-          if((*localVertexStars)[v0][pos0] != i) {
+          if((*localVertexStars)[v0][pos0] != cid) {
             intersection = (*localVertexStars)[v0][pos0];
             break;
           }
@@ -100,26 +103,20 @@ int TwoSkeleton::buildCellNeighborsFromVertices(
       }
 
       if(intersection != -1) {
-        cellNeighbors[i].push_back(intersection);
+        cellNeighbors[cid].emplace_back(intersection);
       }
     }
   }
 
-  {
-    stringstream msg;
-    msg << "[TwoSkeleton] Cell neighbors (" << cellNumber
-        << " cells) computed in " << t.getElapsedTime() << " s. ("
-        << threadNumber_ << " thread(s))." << endl;
-    dMsg(cout, msg.str(), timeMsg);
-  }
+  printMsg("Built " + to_string(cellNumber) + " cell neighbors", 1,
+           t.getElapsedTime(), threadNumber_);
 
   return 0;
 }
 
 int TwoSkeleton::buildEdgeTriangles(
   const SimplexId &vertexNumber,
-  const SimplexId &cellNumber,
-  const LongSimplexId *cellArray,
+  const CellArray &cellArray,
   vector<vector<SimplexId>> &edgeTriangleList,
   vector<vector<SimplexId>> *vertexStarList,
   vector<pair<SimplexId, SimplexId>> *edgeList,
@@ -128,16 +125,10 @@ int TwoSkeleton::buildEdgeTriangles(
   vector<vector<SimplexId>> *triangleStarList,
   vector<vector<SimplexId>> *cellTriangleList) const {
 
-  Timer t;
-
   // check the consistency of the variables -- to adapt
 #ifndef TTK_ENABLE_KAMIKAZE
   if(vertexNumber <= 0)
     return -1;
-  if(cellNumber <= 0)
-    return -2;
-  if(!cellArray)
-    return -3;
 #endif
 
   // NOTE:
@@ -178,22 +169,25 @@ int TwoSkeleton::buildEdgeTriangles(
 
   // now do the pre-computation
   if(localEdgeList->empty()) {
-    oneSkeleton.buildEdgeList(
-      vertexNumber, cellNumber, cellArray, (*localEdgeList));
+    oneSkeleton.buildEdgeList(vertexNumber, cellArray, (*localEdgeList));
   }
 
   if(localEdgeStarList->empty()) {
-    oneSkeleton.buildEdgeStars(vertexNumber, cellNumber, cellArray,
-                               (*localEdgeStarList), localEdgeList,
-                               vertexStarList);
+    oneSkeleton.buildEdgeStars(vertexNumber, cellArray, (*localEdgeStarList),
+                               localEdgeList, vertexStarList);
   }
 
   if((localTriangleList->empty()) || (localCellTriangleList->empty())) {
-    buildTriangleList(vertexNumber, cellNumber, cellArray, localTriangleList,
+    buildTriangleList(vertexNumber, cellArray, localTriangleList,
                       triangleStarList, localCellTriangleList);
   }
 
   edgeTriangleList.resize(localEdgeList->size());
+
+  Timer t;
+
+  printMsg("Building edge triangles", 0, 0, threadNumber_,
+           ttk::debug::LineMode::REPLACE);
 
   // alright, let's get things done now.
 #ifdef TTK_ENABLE_OPENMP
@@ -254,23 +248,16 @@ int TwoSkeleton::buildEdgeTriangles(
   }
 
   SimplexId edgeNumber = localEdgeList->size();
-  SimplexId triangleNumber = localTriangleList->size();
 
-  {
-    stringstream msg;
-    msg << "[TwoSkeleton] Edge triangles (" << edgeNumber << " edge(s), "
-        << triangleNumber << " triangle(s)) computed in " << t.getElapsedTime()
-        << " s. (" << threadNumber_ << " thread(s))." << endl;
-    dMsg(cout, msg.str(), timeMsg);
-  }
+  printMsg("Built " + to_string(edgeNumber) + " edge triangles", 1,
+           t.getElapsedTime(), threadNumber_);
 
   return 0;
 }
 
 int TwoSkeleton::buildTriangleList(
   const SimplexId &vertexNumber,
-  const SimplexId &cellNumber,
-  const LongSimplexId *cellArray,
+  const CellArray &cellArray,
   vector<vector<SimplexId>> *triangleList,
   vector<vector<SimplexId>> *triangleStars,
   vector<vector<SimplexId>> *cellTriangleList) const {
@@ -288,16 +275,13 @@ int TwoSkeleton::buildTriangleList(
 #ifndef TTK_ENABLE_KAMIKAZE
   if(vertexNumber <= 0)
     return -1;
-  if(cellNumber <= 0)
-    return -2;
-  if(!cellArray)
-    return -3;
   if((!triangleList) && (!triangleStars) && (!cellTriangleList)) {
     // we've got nothing to do here.
-    return -4;
+    return -2;
   }
 #endif
 
+  const SimplexId cellNumber = cellArray.getNbCells();
   if(triangleList) {
     // NOTE: 9 is pretty empirical here...
     triangleList->clear();
@@ -314,6 +298,9 @@ int TwoSkeleton::buildTriangleList(
       (*cellTriangleList)[i].resize(4, -1);
   }
 
+  printMsg(
+    "Building triangles", 0, 0, threadNumber_, ttk::debug::LineMode::REPLACE);
+
   if(threadNumber_ == 1) {
 
     // for each vertex,
@@ -321,12 +308,15 @@ int TwoSkeleton::buildTriangleList(
     //    each triangle is a list vertex Id + a triangleId
     vector<vector<pair<vector<SimplexId>, SimplexId>>> triangleTable(
       vertexNumber);
+
+    const SimplexId timeBuckets = std::min(10, cellNumber);
+
     for(SimplexId i = 0; i < vertexNumber; i++)
       triangleTable[i].reserve(32);
 
-    for(SimplexId i = 0; i < cellNumber; i++) {
+    for(SimplexId cid = 0; cid < cellNumber; cid++) {
 
-      if((!wrapper_) || ((wrapper_) && (!wrapper_->needsToAbort()))) {
+      if(!wrapper_ || (wrapper_ && !wrapper_->needsToAbort())) {
 
         vector<SimplexId> triangle(3);
 
@@ -334,7 +324,8 @@ int TwoSkeleton::buildTriangleList(
           // doing triangle j
 
           for(int k = 0; k < 3; k++) {
-            triangle[k] = cellArray[5 * i + 1 + (j + k) % 4];
+            // TODO: ASSUME Regular Mesh Here!
+            triangle[k] = cellArray.getCellVertex(cid, (j + k) % 4);
           }
           sort(triangle.begin(), triangle.end());
 
@@ -364,20 +355,20 @@ int TwoSkeleton::buildTriangleList(
               triangleStars->resize(triangleStars->size() + 1);
               triangleStars->back().resize(1);
               // store the tet i in the triangleStars list
-              triangleStars->back().back() = i;
+              triangleStars->back().back() = cid;
             }
           } else {
             if(triangleStars) {
               // add tet i as a neighbor of triangleId
-              (*triangleStars)[triangleId].push_back(i);
+              (*triangleStars)[triangleId].push_back(cid);
             }
           }
 
           if(cellTriangleList) {
             // add the triangle to the cell
             for(int k = 0; k < 4; k++) {
-              if((*cellTriangleList)[i][k] == -1) {
-                (*cellTriangleList)[i][k] = triangleId;
+              if((*cellTriangleList)[cid][k] == -1) {
+                (*cellTriangleList)[cid][k] = triangleId;
                 break;
               }
             }
@@ -385,9 +376,15 @@ int TwoSkeleton::buildTriangleList(
         }
 
         // update the progress bar of the wrapping code -- to adapt
-        if(debugLevel_ > advancedInfoMsg) {
-          if((wrapper_) && (!(i % ((cellNumber) / 10)))) {
-            wrapper_->updateProgress((i + 1.0) / cellNumber);
+        if(debugLevel_ >= (int)(debug::Priority::INFO)) {
+
+          if(!(cid % ((cellNumber) / timeBuckets))) {
+            printMsg("Building triangles", (cid / (float)cellNumber),
+                     t.getElapsedTime(), threadNumber_,
+                     ttk::debug::LineMode::REPLACE);
+            if(wrapper_) {
+              wrapper_->updateProgress(cid / (float)cellNumber);
+            }
           }
         }
       }
@@ -413,12 +410,14 @@ int TwoSkeleton::buildTriangleList(
 
     int count = 0;
 
+    // TODO: duplicate code, almost same as above.
+
     // the following open-mp processing is only relevant for embarassingly
     // parallel algorithms (such as smoothing) -- to adapt
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
-    for(SimplexId i = 0; i < (SimplexId)cellNumber; i++) {
+    for(SimplexId cid = 0; cid < (SimplexId)cellNumber; cid++) {
 
       // avoid any processing if the abort signal is sent
       if((!wrapper_) || ((wrapper_) && (!wrapper_->needsToAbort()))) {
@@ -434,29 +433,24 @@ int TwoSkeleton::buildTriangleList(
           // doing triangle j
 
           for(int k = 0; k < 3; k++) {
-            triangle[k] = cellArray[5 * i + 1 + (j + k) % 4];
+            // TODO: ASSUME Regular Mesh Here!
+            triangle[k] = cellArray.getCellVertex(cid, (j + k) % 4);
           }
           sort(triangle.begin(), triangle.end());
 
           SimplexId triangleId = -1;
-          for(SimplexId k = 0;
-              k
-              < (SimplexId)threadedTriangleTable[threadId][triangle[0]].size();
-              k++) {
 
+          for(auto triVerts : threadedTriangleTable[threadId][triangle[0]]) {
             // processing a triangle stored for that vertex
-            if((threadedTriangleTable[threadId][triangle[0]][k].first[1]
-                == triangle[1])
-               && (threadedTriangleTable[threadId][triangle[0]][k].first[2]
-                   == triangle[2])) {
-              triangleId
-                = threadedTriangleTable[threadId][triangle[0]][k].second;
+            if(triVerts.first[1] == triangle[1]
+               && triVerts.first[2] == triangle[2]) {
+              triangleId = triVerts.second;
               break;
             }
           }
           if(triangleId == -1) {
             // not visited by this thread
-            threadedTriangleTable[threadId][triangle[0]].push_back(
+            threadedTriangleTable[threadId][triangle[0]].emplace_back(
               pair<vector<SimplexId>, SimplexId>(
                 triangle, triangleNumbers[threadId]));
             triangleNumbers[threadId]++;
@@ -465,11 +459,11 @@ int TwoSkeleton::buildTriangleList(
               threadedTriangleStars[threadId].resize(
                 threadedTriangleStars[threadId].size() + 1);
               threadedTriangleStars[threadId].back().resize(1);
-              threadedTriangleStars[threadId].back().back() = i;
+              threadedTriangleStars[threadId].back().back() = cid;
             }
           } else {
             if(triangleStars) {
-              threadedTriangleStars[threadId][triangleId].push_back(i);
+              threadedTriangleStars[threadId][triangleId].emplace_back(cid);
             }
           }
         }
@@ -579,48 +573,28 @@ int TwoSkeleton::buildTriangleList(
       }
     }
   }
-
-  {
-    stringstream msg;
-    msg << "[TwoSkeleton] Triangle list (" << triangleNumber
-        << " triangles) computed in " << t.getElapsedTime() << " s. ("
-        << threadNumber_ << " thread(s))." << endl;
-    dMsg(cout, msg.str(), timeMsg);
-  }
-
+  printMsg("Built " + to_string(triangleNumber) + " triangles", 1,
+           t.getElapsedTime(), threadNumber_);
   threadNumber_ = oldThreadNumber;
-
-  // ethaneDiolMedium.vtu, 70Mtets, hal9000 (12coresHT)
-  // 1 thread: 58.5631 s
-  // 24 threads: 87.5816 s (~)
-
-  // ethaneDiol.vtu, 8.7Mtets, vger (2coresHT) - no tet adj
-  // 1 thread: 5.7427 s
-  // 4 threads: 9.14764 s (~)
-
-  // ethaneDiol.vtu, 8.7Mtets, vger (2coresHT) - tet adjacency
-  // 1 thread: 8.59854 s
-  // 4 threads: 15.837 s (~)
-
-  // ethaneDiol.vtu, 8.7Mtets, vger (2coresHT) - tet adjacency only
-  // 1 thread: 6.85897 s
-  // 4 threads: 14.78 s (~)
-
+  // ethaneDiolMedium.vtu, 70Mtets, hal9000 (12coresHT)// 1 thread: 58.5631 s//
+  // 24 threads: 87.5816 s (~) ethaneDiol.vtu, 8.7Mtets, vger (2coresHT) - no
+  // tet adj// 1 thread: 5.7427 s// 4 threads: 9.14764 s (~)
+  // ethaneDiol.vtu, 8.7Mtets, vger (2coresHT) - tet adjacency// 1
+  // thread: 8.59854 s// 4 threads: 15.837 s
+  // (~) ethaneDiol.vtu, 8.7Mtets, vger (2coresHT) - tet adjacency only// 1
+  // thread: 6.85897 s// 4 threads: 14.78 s (~)
   return 0;
 }
 
 int TwoSkeleton::buildTriangleEdgeList(
   const SimplexId &vertexNumber,
-  const SimplexId &cellNumber,
-  const LongSimplexId *cellArray,
+  const CellArray &cellArray,
   vector<vector<SimplexId>> &triangleEdgeList,
   vector<vector<SimplexId>> *vertexEdgeList,
   vector<pair<SimplexId, SimplexId>> *edgeList,
   vector<vector<SimplexId>> *triangleList,
   vector<vector<SimplexId>> *triangleStarList,
   vector<vector<SimplexId>> *cellTriangleList) const {
-
-  Timer t;
 
   auto localEdgeList = edgeList;
   vector<pair<SimplexId, SimplexId>> defaultEdgeList{};
@@ -633,8 +607,7 @@ int TwoSkeleton::buildTriangleEdgeList(
     oneSkeleton.setDebugLevel(debugLevel_);
     oneSkeleton.setThreadNumber(threadNumber_);
 
-    oneSkeleton.buildEdgeList(
-      vertexNumber, cellNumber, cellArray, (*localEdgeList));
+    oneSkeleton.buildEdgeList(vertexNumber, cellArray, (*localEdgeList));
   }
 
   auto localVertexEdgeList = vertexEdgeList;
@@ -664,11 +637,16 @@ int TwoSkeleton::buildTriangleEdgeList(
   }
   if(!localTriangleList->size()) {
 
-    buildTriangleList(vertexNumber, cellNumber, cellArray, localTriangleList,
+    buildTriangleList(vertexNumber, cellArray, localTriangleList,
                       triangleStarList, cellTriangleList);
   }
 
   triangleEdgeList.resize(localTriangleList->size());
+
+  Timer t;
+
+  printMsg("Building triangle edges", 0, 0, threadNumber_,
+           ttk::debug::LineMode::REPLACE);
 
   // now for each triangle, grab its vertices, add the edges in the triangle
   // with no duplicate
@@ -717,16 +695,9 @@ int TwoSkeleton::buildTriangleEdgeList(
   }
 
   SimplexId triangleNumber = localTriangleList->size();
-  SimplexId edgeNumber = localEdgeList->size();
 
-  {
-    stringstream msg;
-    msg << "[TwoSkeleton] Triangle edge list (" << triangleNumber
-        << " triangle(s), " << edgeNumber << " edge(s)) computed in "
-        << t.getElapsedTime() << " s. (" << threadNumber_ << " thread(s))."
-        << endl;
-    dMsg(cout, msg.str(), timeMsg);
-  }
+  printMsg("Built " + to_string(triangleNumber) + " triangle edges", 1,
+           t.getElapsedTime(), threadNumber_);
 
   return 0;
 }
@@ -734,7 +705,7 @@ int TwoSkeleton::buildTriangleEdgeList(
 int TwoSkeleton::buildTriangleLinks(
   const vector<vector<SimplexId>> &triangleList,
   const vector<vector<SimplexId>> &triangleStars,
-  const LongSimplexId *cellArray,
+  const CellArray &cellArray,
   vector<vector<SimplexId>> &triangleLinks) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -742,11 +713,12 @@ int TwoSkeleton::buildTriangleLinks(
     return -1;
   if((triangleStars.empty()) || (triangleStars.size() != triangleList.size()))
     return -2;
-  if(!cellArray)
-    return -3;
 #endif
 
   Timer t;
+
+  printMsg("Building triangle links", 0, 0, threadNumber_,
+           ttk::debug::LineMode::REPLACE);
 
   triangleLinks.resize(triangleList.size());
 
@@ -758,7 +730,7 @@ int TwoSkeleton::buildTriangleLinks(
     for(SimplexId j = 0; j < (SimplexId)triangleStars[i].size(); j++) {
 
       for(int k = 0; k < 4; k++) {
-        SimplexId vertexId = cellArray[5 * triangleStars[i][j] + 1 + k];
+        SimplexId vertexId = cellArray.getCellVertex(triangleStars[i][j], k);
 
         if((vertexId != triangleList[i][0]) && (vertexId != triangleList[i][1])
            && (vertexId != triangleList[i][2])) {
@@ -769,12 +741,8 @@ int TwoSkeleton::buildTriangleLinks(
     }
   }
 
-  {
-    stringstream msg;
-    msg << "[TwoSkeleton] Triangle links built in " << t.getElapsedTime()
-        << " s. (" << threadNumber_ << " thread(s))." << endl;
-    dMsg(cout, msg.str(), timeMsg);
-  }
+  printMsg("Built " + std::to_string(triangleList.size()) + " triangle links",
+           1, t.getElapsedTime(), threadNumber_);
 
   return 0;
 }
@@ -785,6 +753,9 @@ int TwoSkeleton::buildVertexTriangles(
   vector<vector<SimplexId>> &vertexTriangleList) const {
 
   Timer t;
+
+  printMsg("Building vertex triangles", 0, 0, threadNumber_,
+           ttk::debug::LineMode::REPLACE);
 
   ThreadId oldThreadNumber = threadNumber_;
 
@@ -820,21 +791,29 @@ int TwoSkeleton::buildVertexTriangles(
       }
     }
   } else {
+
+    int timeBuckets = 10;
+    if(timeBuckets > (int)triangleList.size())
+      timeBuckets = triangleList.size();
+
     vertexTriangleList.resize(vertexNumber);
     for(SimplexId i = 0; i < (SimplexId)triangleList.size(); i++) {
       for(SimplexId j = 0; j < (SimplexId)triangleList[i].size(); j++) {
         vertexTriangleList[triangleList[i][j]].push_back(i);
       }
+
+      if(debugLevel_ >= (int)(debug::Priority::INFO)) {
+        if(!(i % ((triangleList.size()) / timeBuckets))) {
+          printMsg("Building vertex triangles",
+                   (i / (float)triangleList.size()), t.getElapsedTime(),
+                   threadNumber_, ttk::debug::LineMode::REPLACE);
+        }
+      }
     }
   }
 
-  {
-    stringstream msg;
-    msg << "[TwoSkeleton] Vertex triangle list (" << vertexNumber
-        << " vertices) computed in " << t.getElapsedTime() << " s. ("
-        << threadNumber_ << " thread(s))." << endl;
-    dMsg(cout, msg.str(), timeMsg);
-  }
+  printMsg("Built " + std::to_string(vertexNumber) + " vertex triangles", 1,
+           t.getElapsedTime(), threadNumber_);
 
   threadNumber_ = oldThreadNumber;
 

@@ -50,24 +50,26 @@
 #include <vtkSmartPointer.h>
 #include <vtkUnstructuredGrid.h>
 
+// VTK Module
+#include <ttkContinuousScatterPlotModule.h>
+
 // ttk baseCode includes
 #include <ContinuousScatterPlot.h>
-#include <ttkWrapper.h>
+#include <ttkTriangulationAlgorithm.h>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkContinuousScatterPlot
-#else
-class ttkContinuousScatterPlot
-#endif
+class TTKCONTINUOUSSCATTERPLOT_EXPORT ttkContinuousScatterPlot
   : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+    protected ttk::Wrapper {
 
 public:
   static ttkContinuousScatterPlot *New();
 
   vtkTypeMacro(ttkContinuousScatterPlot, vtkDataSetAlgorithm);
 
-  vtkSetMacro(debugLevel_, int);
+  void SetDebugLevel(int debugLevel) {
+    setDebugLevel(debugLevel);
+    Modified();
+  }
 
   void SetThreadNumber(int threadNumber) {
     ThreadNumber = threadNumber;
@@ -91,11 +93,11 @@ public:
   vtkSetMacro(VcomponentId, int);
   vtkGetMacro(VcomponentId, int);
 
-  vtkSetMacro(WithVaryingConnectivity, int);
-  vtkGetMacro(WithVaryingConnectivity, int);
+  vtkSetMacro(WithVaryingConnectivity, bool);
+  vtkGetMacro(WithVaryingConnectivity, bool);
 
-  vtkSetMacro(WithDummyValue, int);
-  vtkGetMacro(WithDummyValue, int);
+  vtkSetMacro(WithDummyValue, bool);
+  vtkGetMacro(WithDummyValue, bool);
 
   vtkSetMacro(DummyValue, double);
   vtkGetMacro(DummyValue, double);
@@ -115,7 +117,7 @@ public:
 
 protected:
   ttkContinuousScatterPlot();
-  ~ttkContinuousScatterPlot();
+  ~ttkContinuousScatterPlot() override;
 
   TTK_SETUP();
 

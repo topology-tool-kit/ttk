@@ -1,1 +1,4 @@
-ttk_add_base_template_library(rangeMinimumQuery SOURCES RangeMinimumQuery.h)
+ttk_add_base_template_library(rangeMinimumQuery
+  HEADERS
+    RangeMinimumQuery.h
+    )

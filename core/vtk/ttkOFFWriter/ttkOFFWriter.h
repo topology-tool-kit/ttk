@@ -12,15 +12,13 @@
 #include <vtkPoints.h>
 #include <vtkSmartPointer.h>
 
+#include <ttkOFFWriterModule.h>
+
+#include <iostream>
 #include <string>
 #include <vector>
 
-#ifndef TTK_PLUGIN
-class VTKIOLEGACY_EXPORT ttkOFFWriter
-#else
-class ttkOFFWriter
-#endif
-  : public vtkDataSetWriter {
+class TTKOFFWRITER_EXPORT ttkOFFWriter : public vtkDataSetWriter {
 
 public:
   vtkTypeMacro(ttkOFFWriter, vtkDataSetWriter);
@@ -41,7 +39,7 @@ protected:
   virtual void WriteData() override;
 
   char *Filename;
-  ofstream Stream{};
+  std::ofstream Stream{};
 
 private:
   ttkOFFWriter(const ttkOFFWriter &) = delete;

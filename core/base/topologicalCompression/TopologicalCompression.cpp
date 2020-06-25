@@ -398,7 +398,10 @@ int ttk::TopologicalCompression::ReadCompactSegmentation(
 
 // Returns number of bytes written.
 int ttk::TopologicalCompression::WriteCompactSegmentation(
-  FILE *fm, int *segmentation, int numberOfVertices, int numberOfSegments) {
+  FILE *fm,
+  const std::vector<int> &segmentation,
+  int numberOfVertices,
+  int numberOfSegments) {
   auto WriteInt = ttk::TopologicalCompression::WriteInt;
 
   int numberOfBytesWritten = 0;
@@ -424,6 +427,8 @@ int ttk::TopologicalCompression::WriteCompactSegmentation(
     // two containers.
     while(offset + numberOfBitsPerSegment <= 32) {
 
+      // out-of-bounds here if segmentation.size() == numberOfVertices
+      // (segmentation allocated in compressForPersistenceDiagram)
       int currentSegment = segmentation[currentCell];
 
       // If applicable, fill last part of current segment.
@@ -560,7 +565,7 @@ int ttk::TopologicalCompression::WritePersistenceIndex(
     numberOfBytesWritten += sizeof(int);
     WriteInt(fm, idv);
 
-    auto value = (double)std::get<0>(t);
+    auto value = std::get<0>(t);
     numberOfBytesWritten += sizeof(double);
     WriteDouble(fm, value);
   }
@@ -572,7 +577,7 @@ int ttk::TopologicalCompression::WritePersistenceIndex(
   for(int i = 0; i < nbConstraints; ++i) {
     std::tuple<int, double, int> t = constraints[i];
     int idVertex = std::get<0>(t);
-    auto value = (double)std::get<1>(t);
+    auto value = std::get<1>(t);
     int vertexType = std::get<2>(t);
 
     numberOfBytesWritten += sizeof(int);

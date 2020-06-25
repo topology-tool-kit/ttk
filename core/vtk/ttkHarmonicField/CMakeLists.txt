@@ -1,9 +1,1 @@
-ttk_add_vtk_library(ttkHarmonicField
-  SOURCES
-    ttkHarmonicField.cpp
-  HEADERS
-    ttkHarmonicField.h
-  LINK
-    harmonicField
-    ttkTriangulation
-    )
+ttk_add_vtk_module()

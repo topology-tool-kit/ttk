@@ -5,6 +5,8 @@ using namespace ttk;
 
 ExplicitTriangulation::ExplicitTriangulation() {
 
+  setDebugMsgPrefix("ExplicitTriangulation");
+
   clear();
 }
 
@@ -13,15 +15,15 @@ ExplicitTriangulation::~ExplicitTriangulation() {
 
 int ExplicitTriangulation::clear() {
 
+  AbstractTriangulation::clear();
+
   vertexNumber_ = 0;
   cellNumber_ = 0;
   doublePrecision_ = false;
 
-  {
-    stringstream msg;
-    msg << "[ExplicitTriangulation] Triangulation cleared." << endl;
-    dMsg(cout, msg.str(), detailedInfoMsg);
-  }
+  printMsg(
+    "[ExplicitTriangulation] Triangulation cleared.", debug::Priority::DETAIL);
+  // clear twice ??
 
   return AbstractTriangulation::clear();
 }

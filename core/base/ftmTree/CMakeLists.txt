@@ -6,20 +6,22 @@ ttk_add_base_library(ftmTree
     FTMSegmentation.cpp
   HEADERS
     FTMAtomicUF.h
-      FTMAtomicVector.h
-      FTMDataTypes.h
-      FTMTree.h
-      FTMTree_CT.h
-      FTMTree_MT.h
-      FTMTree_MT_Template.h
-      FTMTree_Template.h
-      FTMNode.h
-      FTMSegmentation.h
-      FTMStructures.h
-      FTMSuperArc.h
-  LINK
+    FTMAtomicVector.h
+    FTMDataTypes.h
+    FTMTree.h
+    FTMTree_CT.h
+    FTMTree_MT.h
+    FTMTree_MT_Template.h
+    FTMTree_Template.h
+    FTMNode.h
+    FTMSegmentation.h
+    FTMStructures.h
+    FTMSuperArc.h
+  DEPENDS
     triangulation
     geometry
+    Boost::boost
+    Boost::system
     )
 
 option(TTK_ENABLE_FTM_TREE_PROCESS_SPEED "Enable FTM tree process speed" OFF)
@@ -33,4 +35,3 @@ if (TTK_ENABLE_FTM_TREE_PROCESS_SPEED)
 endif()
 
 # target_compile_definitions(ftmTree PUBLIC TTK_ENABLE_FTM_TREE_STATS_TIME)
-

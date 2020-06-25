@@ -5,8 +5,20 @@ ttk_add_base_library(topologicalCompression
     TopologicalCompression.h
     PersistenceDiagramCompression.h
     OtherCompression.h
-  LINK
+  DEPENDS
     triangulation
     persistenceDiagram
     topologicalSimplification
-    )
+  OPTIONAL_DEPENDS
+    zfp::zfp
+    ZLIB::ZLIB
+  )
+
+if (TTK_ENABLE_ZLIB)
+  target_include_directories(topologicalCompression PUBLIC ${ZLIB_INCLUDE_DIR})
+endif()
+
+if(TTK_ENABLE_ZFP)
+  target_compile_definitions(topologicalCompression PUBLIC TTK_ENABLE_ZFP)
+endif()
+

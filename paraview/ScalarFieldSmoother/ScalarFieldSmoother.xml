@@ -5,14 +5,14 @@
   a filter already in ParaView (in Servers/ServerManager/Resources/*.xml)
   that matches your filter and then model your xml on it -->
   <ProxyGroup name="filters">
-    <SourceProxy 
-      name="ScalarFieldSmoother" 
-      class="ttkScalarFieldSmoother" 
+    <SourceProxy
+      name="ScalarFieldSmoother"
+      class="ttkScalarFieldSmoother"
       label="TTK ScalarFieldSmoother">
       <Documentation
         long_help="TTK plugin for scalar field smoothing."
         short_help="TTK plugin for scalar field smoothing.">
-        This class is a dummy example for the development of TTK filters. It 
+        This class is a dummy example for the development of TTK filters. It
         smooths an input scalar field by averaging the scalar values on the link
         of each vertex.
 
@@ -142,7 +142,7 @@
       <IntVectorProperty
         name="DebugLevel"
         label="Debug Level"
-        command="SetdebugLevel_"
+        command="SetDebugLevel"
         number_of_elements="1"
         default_values="3" panel_visibility="advanced">
         <IntRangeDomain name="range" min="0" max="100" />

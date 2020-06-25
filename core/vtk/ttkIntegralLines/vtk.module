@@ -1,0 +1,6 @@
+NAME
+ ttkIntegralLines
+DEPENDS
+  VTK::FiltersCore
+PRIVATE_DEPENDS
+  VTK::CommonCore

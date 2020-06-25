@@ -195,26 +195,6 @@ namespace ttk {
         iterationThreshold);
     }
 
-    int setReverseSaddleMaximumConnection(const bool state) {
-#ifndef TTK_ENABLE_KAMIKAZE
-      if(!abstractMorseSmaleComplex_) {
-        return -1;
-      }
-#endif
-      return abstractMorseSmaleComplex_->setReverveSaddleMaximumConnection(
-        state);
-    }
-
-    int setReverseSaddleSaddleConnection(const bool state) {
-#ifndef TTK_ENABLE_KAMIKAZE
-      if(!abstractMorseSmaleComplex_) {
-        return -1;
-      }
-#endif
-      return abstractMorseSmaleComplex_->setReverveSaddleSaddleConnection(
-        state);
-    }
-
     int setComputeAscendingSeparatrices1(const bool state) {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(!abstractMorseSmaleComplex_) {
@@ -281,15 +261,6 @@ namespace ttk {
 #endif
       return abstractMorseSmaleComplex_
         ->setSaddleConnectorsPersistenceThreshold(threshold);
-    }
-
-    int setPrioritizeSpeedOverMemory(const bool state) {
-#ifndef TTK_ENABLE_KAMIKAZE
-      if(!abstractMorseSmaleComplex_) {
-        return -1;
-      }
-#endif
-      return abstractMorseSmaleComplex_->setPrioritizeSpeedOverMemory(state);
     }
 
     int setupTriangulation(Triangulation *const data) {

@@ -515,7 +515,7 @@ namespace ttk {
     inline int setupTriangulation(Triangulation *triangulation) {
       triangulation_ = triangulation;
       if(triangulation_) {
-        triangulation_->preprocessVertexNeighbors();
+        triangulation_->preconditionVertexNeighbors();
       }
       return 0;
     }

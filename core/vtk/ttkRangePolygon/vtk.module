@@ -1,0 +1,6 @@
+NAME
+ ttkRangePolygon
+DEPENDS
+  VTK::FiltersCore
+PRIVATE_DEPENDS
+  VTK::CommonCore

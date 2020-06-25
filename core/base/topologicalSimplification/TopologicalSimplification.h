@@ -114,7 +114,7 @@ namespace ttk {
       triangulation_ = triangulation;
       if(triangulation_) {
         vertexNumber_ = triangulation_->getNumberOfVertices();
-        triangulation_->preprocessVertexNeighbors();
+        triangulation_->preconditionVertexNeighbors();
       }
       return 0;
     }
@@ -282,9 +282,9 @@ int ttk::TopologicalSimplification::addPerturbation(dataType *scalars,
   dataType epsilon{};
 
   if(std::is_same<dataType, double>::value)
-    epsilon = pow10(1 - DBL_DIG);
+    epsilon = Geometry::powIntTen<dataType>(1 - DBL_DIG);
   else if(std::is_same<dataType, float>::value)
-    epsilon = pow10(1 - FLT_DIG);
+    epsilon = Geometry::powIntTen<dataType>(1 - FLT_DIG);
   else
     return -1;
 

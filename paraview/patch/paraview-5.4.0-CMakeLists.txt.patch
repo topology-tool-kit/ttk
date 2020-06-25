@@ -3,7 +3,7 @@
 @@ -75,7 +75,7 @@
  # ParaView itself needs vtkPVStaticPluginsInit as well.
  set(SUPPORT_STATIC_PLUGINS TRUE)
- 
+
 -set(title "ParaView ${PARAVIEW_VERSION_FULL} ${PARAVIEW_BUILD_ARCHITECTURE}-bit")
 +set(title "TTK 0.9.4 - ParaView ${PARAVIEW_VERSION_FULL}")
  if("${VTK_RENDERING_BACKEND}" STREQUAL "OpenGL")

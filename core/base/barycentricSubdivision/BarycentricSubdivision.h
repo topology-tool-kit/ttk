@@ -31,10 +31,12 @@ namespace ttk {
 
   public:
     BarycentricSubdivision(std::vector<float> &points,
-                           std::vector<LongSimplexId> &cells,
+                           std::vector<LongSimplexId> &cells_co,
+                           std::vector<LongSimplexId> &cells_off,
                            std::vector<SimplexId> &pointId,
                            std::vector<SimplexId> &pointDim)
-      : points_{points}, cells_{cells}, pointId_{pointId}, pointDim_{pointDim} {
+      : points_{points}, cells_connectivity_{cells_co},
+        cells_offsets_{cells_off}, pointId_{pointId}, pointDim_{pointDim} {
     }
 
     inline void setOutputTriangulation(Triangulation *const triangulation) {
@@ -46,10 +48,10 @@ namespace ttk {
     inline void setupTriangulation(Triangulation *const triangulation) {
       inputTriangl_ = triangulation;
       if(inputTriangl_ != nullptr) {
-        inputTriangl_->preprocessVertexNeighbors();
-        inputTriangl_->preprocessEdges();
-        inputTriangl_->preprocessTriangles();
-        inputTriangl_->preprocessTriangleEdges();
+        inputTriangl_->preconditionVertexNeighbors();
+        inputTriangl_->preconditionEdges();
+        inputTriangl_->preconditionTriangles();
+        inputTriangl_->preconditionTriangleEdges();
       }
       nVertices_ = inputTriangl_->getNumberOfVertices();
       nEdges_ = inputTriangl_->getNumberOfEdges();
@@ -157,8 +159,7 @@ namespace ttk {
       }
       const size_t newTrianglesPerParent{6};
       const size_t nOutTriangles = this->getNumberOfTriangles();
-      if(nOutTriangles < 0
-         || nOutTriangles != newTrianglesPerParent * nTriangles_) {
+      if(nOutTriangles != newTrianglesPerParent * nTriangles_) {
         return 1;
       }
       for(SimplexId i = 0; i < nTriangles_; ++i) {
@@ -185,16 +186,13 @@ namespace ttk {
     Triangulation *inputTriangl_{};
     // array of input points coordinates
     const float *inputPoints_{};
-    // list of input point data
-    std::vector<void *> pointData_{};
-    // list of input cell data
-    std::vector<void *> cellData_{};
 
     // output 3D coordinates of generated points: old points first, then edge
     // middles, then triangle barycenters
     std::vector<float> &points_;
     // output triangles
-    std::vector<LongSimplexId> &cells_;
+    std::vector<LongSimplexId> &cells_connectivity_;
+    std::vector<LongSimplexId> &cells_offsets_;
     // generated point cell id
     std::vector<SimplexId> &pointId_;
     // generated points dimension: 0 vertex of parent triangulation, 1 edge

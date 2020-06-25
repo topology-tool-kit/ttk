@@ -149,7 +149,8 @@ int ttkFiberSurface::doIt(vector<vtkDataSet *> &inputs,
   inputPolygon_.clear();
 
 #if !defined(_WIN32) || defined(_WIN32) && defined(VTK_USE_64BIT_IDS)
-  const long long int *cellArray = polygon->GetCells()->GetPointer();
+  const long long int *cellArray
+    = polygon->GetCells()->GetData()->GetPointer(0);
 #else
   int *pt = polygon->GetCells()->GetPointer();
   long long extra_pt = *pt;

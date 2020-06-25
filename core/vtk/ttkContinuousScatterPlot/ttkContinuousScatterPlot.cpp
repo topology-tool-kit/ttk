@@ -1,11 +1,11 @@
 #include <ttkContinuousScatterPlot.h>
+#include <ttkUtils.h>
 
 using namespace std;
 using namespace ttk;
 
-vtkStandardNewMacro(ttkContinuousScatterPlot)
-
-  ttkContinuousScatterPlot::ttkContinuousScatterPlot()
+vtkStandardNewMacro(ttkContinuousScatterPlot);
+ttkContinuousScatterPlot::ttkContinuousScatterPlot()
   : inputScalars1_{}, inputScalars2_{} {
   SetNumberOfInputPorts(1);
   SetNumberOfOutputPorts(1);
@@ -18,7 +18,7 @@ vtkStandardNewMacro(ttkContinuousScatterPlot)
   DummyValue = 0;
   UcomponentId = 0;
   VcomponentId = 1;
-  triangulation_ = NULL;
+  triangulation_ = nullptr;
   UseAllCores = true;
 }
 
@@ -28,18 +28,18 @@ ttkContinuousScatterPlot::~ttkContinuousScatterPlot() {
 int ttkContinuousScatterPlot::FillInputPortInformation(int port,
                                                        vtkInformation *info) {
 
-  if(port == 0)
+  if(port == 0) {
     info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataSet");
-
+  }
   return 1;
 }
 
 int ttkContinuousScatterPlot::FillOutputPortInformation(int port,
                                                         vtkInformation *info) {
 
-  if(port == 0)
+  if(port == 0) {
     info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
-
+  }
   return 1;
 }
 
@@ -194,8 +194,10 @@ int ttkContinuousScatterPlot::doIt(vector<vtkDataSet *> &inputs,
   continuousScatterPlot.setTriangulation(triangulation_);
   continuousScatterPlot.setResolutions(
     ScatterplotResolution[0], ScatterplotResolution[1]);
-  continuousScatterPlot.setInputScalarField1(inputScalars1_->GetVoidPointer(0));
-  continuousScatterPlot.setInputScalarField2(inputScalars2_->GetVoidPointer(0));
+  continuousScatterPlot.setInputScalarField1(
+    ttkUtils::GetVoidPointer(inputScalars1_));
+  continuousScatterPlot.setInputScalarField2(
+    ttkUtils::GetVoidPointer(inputScalars2_));
   continuousScatterPlot.setScalarMin(scalarMin_);
   continuousScatterPlot.setScalarMax(scalarMax_);
   continuousScatterPlot.setOutputDensity(&density_);

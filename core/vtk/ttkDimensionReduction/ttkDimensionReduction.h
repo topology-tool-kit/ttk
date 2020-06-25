@@ -1,5 +1,5 @@
-/// \ingroup vtk
 /// \class ttkDimensionReduction
+/// \ingroup vtk
 /// \author Your Name Here <Your Email Address Here>
 /// \date The Date Here.
 ///
@@ -19,6 +19,7 @@
 /// \sa ttk::DimensionReduction
 #pragma once
 
+// VTK includes
 #include <vtkCharArray.h>
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
@@ -33,16 +34,16 @@
 #include <vtkTable.h>
 #include <vtkTableAlgorithm.h>
 
-#include <DimensionReduction.h>
-#include <ttkWrapper.h>
+// VTK Module
+#include <ttkDimensionReductionModule.h>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkDimensionReduction
-#else
-class ttkDimensionReduction
-#endif
+// TTK includes
+#include <DimensionReduction.h>
+#include <ttkTriangulationAlgorithm.h>
+
+class TTKDIMENSIONREDUCTION_EXPORT ttkDimensionReduction
   : public vtkTableAlgorithm,
-    public ttk::Wrapper {
+    protected ttk::Wrapper {
 public:
   enum Method {
     SpectralEmbedding = 0,
@@ -57,7 +58,10 @@ public:
   vtkTypeMacro(ttkDimensionReduction, vtkTableAlgorithm)
 
     // default ttk setters
-    vtkSetMacro(debugLevel_, int);
+    void SetDebugLevel(int debugLevel) {
+    setDebugLevel(debugLevel);
+    Modified();
+  }
 
   void SetThreadNumber(int threadNumber) {
     ThreadNumber = threadNumber;
@@ -90,6 +94,12 @@ public:
   }
 
   // default
+  vtkSetMacro(SelectFieldsWithRegexp, bool);
+  vtkGetMacro(SelectFieldsWithRegexp, bool);
+
+  vtkSetMacro(RegexpString, std::string);
+  vtkGetMacro(RegexpString, std::string);
+
   vtkSetMacro(NumberOfComponents, int);
   vtkGetMacro(NumberOfComponents, int);
 
@@ -102,8 +112,12 @@ public:
   vtkSetMacro(Method, int);
   vtkGetMacro(Method, int);
 
-  vtkSetMacro(KeepAllDataArrays, int);
-  vtkGetMacro(KeepAllDataArrays, int);
+  vtkSetMacro(KeepAllDataArrays, bool);
+  vtkGetMacro(KeepAllDataArrays, bool);
+
+  // SE && MDS
+  vtkSetMacro(InputIsADistanceMatrix, bool);
+  vtkGetMacro(InputIsADistanceMatrix, bool);
 
   // SE
   vtkSetMacro(se_Affinity, std::string);
@@ -155,9 +169,6 @@ public:
 
   vtkSetMacro(mds_Epsilon, float);
   vtkGetMacro(mds_Epsilon, float);
-
-  vtkSetMacro(mds_Dissimilarity, std::string);
-  vtkGetMacro(mds_Dissimilarity, std::string);
 
   // TSNE
   vtkSetMacro(tsne_Perplexity, float);
@@ -279,7 +290,6 @@ protected:
     mds_MaxIteration = 300;
     mds_Verbose = 0;
     mds_Epsilon = 0;
-    mds_Dissimilarity = "euclidean";
 
     tsne_Perplexity = 30;
     tsne_Exaggeration = 12;
@@ -308,7 +318,7 @@ protected:
     UseAllCores = true;
   }
 
-  ~ttkDimensionReduction() {
+  ~ttkDimensionReduction() override {
   }
 
   int RequestData(vtkInformation *request,
@@ -321,11 +331,16 @@ private:
   int updateProgress(const float &progress) override;
 
   // default
+  bool SelectFieldsWithRegexp{false};
+  std::string RegexpString{".*"};
   int NumberOfComponents;
   int NumberOfNeighbors;
   int Method;
   int IsDeterministic;
   bool KeepAllDataArrays;
+
+  // mds && se
+  bool InputIsADistanceMatrix{false};
 
   // se
   std::string se_Affinity;
@@ -348,7 +363,6 @@ private:
   int mds_MaxIteration;
   int mds_Verbose;
   float mds_Epsilon;
-  std::string mds_Dissimilarity;
 
   // tsne
   float tsne_Perplexity;

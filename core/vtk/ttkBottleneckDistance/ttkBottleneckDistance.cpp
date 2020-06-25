@@ -1,8 +1,10 @@
 #include "ttkBottleneckDistance.h"
 
-vtkStandardNewMacro(ttkBottleneckDistance)
+#include "vtkObjectFactory.h"
 
-  int ttkBottleneckDistance::doBenchmark() {
+vtkStandardNewMacro(ttkBottleneckDistance);
+
+int ttkBottleneckDistance::doBenchmark() {
   using dataType = double;
 
   std::vector<diagramTuple> CTDiagram1;
@@ -40,14 +42,9 @@ vtkStandardNewMacro(ttkBottleneckDistance)
 
   // Exec.
   bool usePersistenceMetric = UsePersistenceMetric;
-  // double alpha = Alpha;
   status = bottleneckDistance_.execute<dataType>(usePersistenceMetric);
 
-  if(status != 0) {
-    return status;
-  }
-
-  return 0;
+  return status;
 }
 
 int ttkBottleneckDistance::doIt(std::vector<vtkDataSet *> &inputs,
@@ -184,8 +181,6 @@ int ttkBottleneckDistance::doIt(std::vector<vtkDataSet *> &inputs,
 
   if(status != 0)
     return status;
-  //    }));
-  //  }
 
   // Set output.
   outputCT1->ShallowCopy(CTPersistenceDiagram1_);

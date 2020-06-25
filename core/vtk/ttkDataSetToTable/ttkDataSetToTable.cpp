@@ -29,7 +29,7 @@ int ttkDataSetToTable::doIt(vtkDataSet *input, vtkTable *output) {
 
   vtkSmartPointer<vtkTable> table = vtkSmartPointer<vtkTable>::New();
 
-  switch(DataAssociation) {
+  switch(static_cast<AssociationType>(DataAssociation)) {
     case AssociationType::Point: {
       vtkPointData *inputPointData = input->GetPointData();
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -68,6 +68,26 @@ int ttkDataSetToTable::doIt(vtkDataSet *input, vtkTable *output) {
 #endif
 
       table->GetRowData()->ShallowCopy(inputCellData);
+    } break;
+
+    case AssociationType::Field: {
+      vtkFieldData *inputFieldData = input->GetFieldData();
+#ifndef TTK_ENABLE_KAMIKAZE
+      if(!inputFieldData) {
+        cerr << "[ttkDataSetToTable] Error: input has no field data." << endl;
+        return -1;
+      }
+#endif
+
+#ifndef TTK_ENABLE_KAMIKAZE
+      const SimplexId numberOfArrays = inputFieldData->GetNumberOfArrays();
+      if(numberOfArrays <= 0) {
+        cerr << "[ttkDataSetToTable] Error: input field data is empty." << endl;
+        return -1;
+      }
+#endif
+
+      table->GetRowData()->ShallowCopy(inputFieldData);
     } break;
   }
 

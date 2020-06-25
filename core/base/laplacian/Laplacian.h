@@ -1,8 +1,6 @@
 #pragma once
 
-#include <Geometry.h>
 #include <Triangulation.h>
-#include <Wrapper.h>
 
 namespace ttk {
   namespace Laplacian {
@@ -15,9 +13,11 @@ namespace ttk {
      *
      * @return 0 in case of success
      */
-    template <typename T, typename SparseMatrixType>
+    template <typename T,
+              class TriangulationType = AbstractTriangulation,
+              typename SparseMatrixType>
     int discreteLaplacian(SparseMatrixType &output,
-                          const Triangulation &triangulation);
+                          const TriangulationType &triangulation);
 
     /**
      * @brief Compute the Laplacian matrix of the graph using the
@@ -29,9 +29,11 @@ namespace ttk {
      *
      * @return 0 in case of success
      */
-    template <typename T, typename SparseMatrixType>
+    template <typename T,
+              class TriangulationType = AbstractTriangulation,
+              typename SparseMatrixType>
     int cotanWeights(SparseMatrixType &output,
-                     const Triangulation &triangulation);
+                     const TriangulationType &triangulation);
 
   } // namespace Laplacian
 } // namespace ttk

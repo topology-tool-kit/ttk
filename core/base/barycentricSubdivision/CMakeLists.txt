@@ -3,7 +3,7 @@ ttk_add_base_library(barycentricSubdivision
     BarycentricSubdivision.cpp
   HEADERS
     BarycentricSubdivision.h
-  LINK
+  DEPENDS
     triangulation
     geometry
-    )
+  )

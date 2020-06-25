@@ -1,9 +1,1 @@
-ttk_add_vtk_library(ttkGeometrySmoother
-  SOURCES
-    ttkGeometrySmoother.cpp
-  HEADERS
-    ttkGeometrySmoother.h
-  LINK
-    scalarFieldSmoother
-    ttkTriangulation
-    )
+ttk_add_vtk_module()

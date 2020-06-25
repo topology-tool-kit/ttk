@@ -4,8 +4,9 @@
     <!-- ================================================================== -->
     <WriterProxy name="OBJWriter" class="ttkOBJWriter" label="OBJWriter">
         <Documentation
-          long_help="Export a VTK Unstructured Grid into a Wavefront OBJ file." 
+          long_help="Export a VTK Unstructured Grid into a Wavefront OBJ file."
           short_help="Write an .obj file.">
+          Export a VTK Unstructured Grid into a Wavefront OBJ file.
         </Documentation>
         <InputProperty name="Input" command="SetInputConnection">
           <ProxyGroupDomain name="groups">

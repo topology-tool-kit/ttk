@@ -3,9 +3,8 @@
 using namespace std;
 using namespace ttk;
 
-vtkStandardNewMacro(ttkJacobiSet)
-
-  ttkJacobiSet::ttkJacobiSet() {
+vtkStandardNewMacro(ttkJacobiSet);
+ttkJacobiSet::ttkJacobiSet() {
   ForceInputOffsetScalarField = false;
 
   // init
@@ -133,7 +132,7 @@ int ttkJacobiSet::doIt(vector<vtkDataSet *> &inputs,
   vtkDataSet *input = inputs[0];
   vtkUnstructuredGrid *output = vtkUnstructuredGrid::SafeDownCast(outputs[0]);
 
-  vtkDataArray *uComponent = NULL, *vComponent = NULL;
+  vtkDataArray *uComponent = nullptr, *vComponent = nullptr;
 
   if(Ucomponent.length()) {
     uComponent = input->GetPointData()->GetArray(Ucomponent.data());
@@ -186,7 +185,7 @@ int ttkJacobiSet::doIt(vector<vtkDataSet *> &inputs,
 
   Triangulation *triangulation = ttkTriangulation::getTriangulation(input);
   if(!triangulation)
-    return -3;
+    return -1;
 
   SimplexId pointCount = 0;
   double p[3];

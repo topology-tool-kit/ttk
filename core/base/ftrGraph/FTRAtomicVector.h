@@ -1,13 +1,13 @@
 /// \ingroup base
-/// \class ttk::AtomicVector
+/// \class ttk::FTRAtomicVector
 /// \author Charles Gueunet <charles.gueunet@lip6.fr>
 /// \date 2018-01-22
 ///
 ///\brief TTK processing package that manage a paralle version of vector *Same
 /// as in FTM: Common ?*
 
-#ifndef ATOMICVECTOR_H
-#define ATOMICVECTOR_H
+#ifndef FTRATOMICVECTOR_H
+#define FTRATOMICVECTOR_H
 
 #ifdef TTK_ENABLE_OPENMP
 #include <omp.h>
@@ -22,12 +22,12 @@
 
 namespace ttk {
   template <typename type>
-  class AtomicVector : public std::vector<type> {
+  class FTRAtomicVector : public std::vector<type> {
   private:
     std::size_t nextId;
 
   public:
-    explicit AtomicVector(const std::size_t initSize = 1)
+    explicit FTRAtomicVector(const std::size_t initSize = 1)
       : std::vector<type>(), nextId(0) {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(!initSize) {
@@ -42,7 +42,7 @@ namespace ttk {
     }
 
     // copy constructor
-    AtomicVector(const AtomicVector &other)
+    FTRAtomicVector(const FTRAtomicVector &other)
       : std::vector<type>(other), nextId(other.nextId) {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(!std::vector<type>::size()) {
@@ -52,9 +52,9 @@ namespace ttk {
     }
 
     // move constructor
-    AtomicVector(AtomicVector &&other) = default;
+    FTRAtomicVector(FTRAtomicVector &&other) = default;
 
-    virtual ~AtomicVector() = default;
+    virtual ~FTRAtomicVector() = default;
 
     // ---
     // STL
@@ -71,7 +71,7 @@ namespace ttk {
           {
             // if (fromOther)
             //    std::cout << " a function in the class ";
-            // std::cout << "call RE-Reserve in AtomicVector " << nextId;
+            // std::cout << "call RE-Reserve in FTRAtomicVector " << nextId;
             // std::cout << " ! Data Race may occurs ! " << typeid(this).name()
             // << std::endl;
 
@@ -148,13 +148,13 @@ namespace ttk {
     // OPERATOR
     // --------
 
-    AtomicVector<type> &operator=(const AtomicVector<type> &other) {
+    FTRAtomicVector<type> &operator=(const FTRAtomicVector<type> &other) {
       std::vector<type>::operator=(other);
       nextId = other.nextId;
       return *this;
     }
 
-    AtomicVector<type> &operator=(AtomicVector<type> &&other) {
+    FTRAtomicVector<type> &operator=(FTRAtomicVector<type> &&other) {
       std::vector<type>::operator=(std::move(other));
       nextId = std::move(other.nextId);
       return *this;
@@ -165,8 +165,8 @@ namespace ttk {
     // ---------
     // allow foreach on the vector
 
-    typedef typename std::vector<type>::iterator iterator;
-    typedef typename std::vector<type>::const_iterator const_iterator;
+    using iterator = typename std::vector<type>::iterator;
+    using const_iterator = typename std::vector<type>::const_iterator;
 
     iterator end() {
       return this->begin() + nextId;
@@ -180,8 +180,8 @@ namespace ttk {
       return this->cbegin() + nextId;
     }
 
-    typedef typename std::vector<type>::reverse_iterator riterator;
-    typedef typename std::vector<type>::const_reverse_iterator const_riterator;
+    using riterator = typename std::vector<type>::reverse_iterator;
+    using const_riterator = typename std::vector<type>::const_reverse_iterator;
 
     riterator rbegin() {
       return this->rend() - (nextId - 1);
@@ -197,4 +197,4 @@ namespace ttk {
   };
 } // namespace ttk
 
-#endif /* end of include guard: ATOMICVECTOR_H */
+#endif /* end of include guard: FTRATOMICVECTOR_H */

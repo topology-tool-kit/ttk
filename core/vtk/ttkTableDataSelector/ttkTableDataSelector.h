@@ -15,9 +15,12 @@
 /// VTK pipeline.
 #pragma once
 
+#include <limits>
+
 // VTK includes
 #include <vtkCharArray.h>
 #include <vtkDataArray.h>
+#include <vtkDataArraySelection.h>
 #include <vtkDataSet.h>
 #include <vtkDataSetAlgorithm.h>
 #include <vtkDoubleArray.h>
@@ -31,23 +34,30 @@
 #include <vtkTable.h>
 #include <vtkTableAlgorithm.h>
 
+// VTK Module
+#include <ttkTableDataSelectorModule.h>
+
 // ttk code includes
 #include <Wrapper.h>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkTableDataSelector
-#else
-class ttkTableDataSelector
-#endif
+class TTKTABLEDATASELECTOR_EXPORT ttkTableDataSelector
   : public vtkTableAlgorithm,
-    public ttk::Wrapper {
+    protected ttk::Wrapper {
 
 public:
   static ttkTableDataSelector *New();
-  vtkTypeMacro(ttkTableDataSelector, vtkTableAlgorithm)
+  vtkTypeMacro(ttkTableDataSelector, vtkTableAlgorithm);
 
-    // default ttk setters
-    vtkSetMacro(debugLevel_, int);
+  // default ttk setters
+  void SetDebugLevel(int debugLevel) {
+    setDebugLevel(debugLevel);
+    Modified();
+  }
+
+  vtkSetMacro(RegexpString, std::string);
+
+  vtkGetVector2Macro(RangeId, int);
+  vtkSetVector2Macro(RangeId, int);
 
   void SetThreads() {
     if(!UseAllCores)
@@ -69,59 +79,53 @@ public:
   }
   // end of default ttk setters
 
-  void SetScalarFields(std::string s) {
-    ScalarFields.push_back(s);
+  void AddCol(std::string s) {
+    SelectedCols.push_back(s);
     Modified();
   }
 
-  void ClearScalarFields() {
-    ScalarFields.clear();
+  void ClearCols() {
+    SelectedCols.clear();
     Modified();
   }
 
-  int FillInputPortInformation(int port, vtkInformation *info) override {
-    switch(port) {
-      case 0:
-        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkTable");
-        break;
-      default:
-        break;
-    }
-
-    return 1;
-  }
-
-  int FillOutputPortInformation(int port, vtkInformation *info) override {
-
-    switch(port) {
-      case 0:
-        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkTable");
-        break;
-      default:
-        break;
-    }
-
-    return 1;
+  vtkDataArraySelection *GetRangeIds() {
+    vtkDataArraySelection *arr = vtkDataArraySelection::New();
+    arr->SetArraySetting("0", true);
+    arr->SetArraySetting(
+      std::to_string(AvailableCols.size() - 1).c_str(), true);
+    return arr;
   }
 
 protected:
   ttkTableDataSelector() {
     UseAllCores = true;
 
-    SetNumberOfInputPorts(1);
-    SetNumberOfOutputPorts(1);
+    RegexpString = ".*";
+
+    RangeId[0] = 0;
+    RangeId[1] = std::numeric_limits<int>::max();
   }
 
-  ~ttkTableDataSelector(){};
+  ~ttkTableDataSelector() override{};
+
+  int RequestInformation(vtkInformation *request,
+                         vtkInformationVector **inputVector,
+                         vtkInformationVector *outputVector) override;
 
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;
 
+  void FillAvailableCols(vtkTable *input);
+
 private:
   bool UseAllCores;
   int ThreadNumber;
-  std::vector<std::string> ScalarFields;
+  std::vector<std::string> SelectedCols;
+  std::vector<std::string> AvailableCols;
+  std::string RegexpString;
+  int RangeId[2];
 
   int doIt(vtkTable *input, vtkTable *output);
   bool needsToAbort() override;

@@ -10,14 +10,14 @@
               short_help="TTK plugin that efficiently computes the contour tree of
               scalar data and more.">
               This plugin takes a scalar field attached as point data to a geometry
-              (either 2D or 3D, either regular grids or triangulations) and computes 
-              its contour tree. Several outputs are produced to encode the nodes of 
-              the tree (as points in 3D space), the arcs of the tree and the data 
+              (either 2D or 3D, either regular grids or triangulations) and computes
+              its contour tree. Several outputs are produced to encode the nodes of
+              the tree (as points in 3D space), the arcs of the tree and the data
               segmentation.
 
-              Related publication: 
+              Related publication:
               'Task-based Augmented Merge Trees with Fibonacci Heaps',
-              Charles Gueunet, Pierre Fortin, Julien Jomier, Julien Tierny, 
+              Charles Gueunet, Pierre Fortin, Julien Jomier, Julien Tierny,
               Proc. of IEEE LDAV 2017.
 
               CriticalType:
@@ -84,8 +84,8 @@
                 default_values="0">
                 <BooleanDomain name="bool"/>
                 <Documentation>
-                    Check this box to force the usage of a specific input 
-                    scalar field as vertex offset (used to disambiguate flat 
+                    Check this box to force the usage of a specific input
+                    scalar field as vertex offset (used to disambiguate flat
                     plateaus).
                 </Documentation>
             </IntVectorProperty>
@@ -163,7 +163,7 @@
                 panel_visibility="advanced">
                 <BooleanDomain name="bool"/>
                 <Documentation>
-                  Force the deterministic generation of 
+                  Force the deterministic generation of
 arc and node identifiers across distinct runs.
                 </Documentation>
             </IntVectorProperty>
@@ -177,7 +177,7 @@ arc and node identifiers across distinct runs.
                 panel_visibility="advanced">
                 <BooleanDomain name="bool"/>
                 <Documentation>
-                  Extra statistics on arcs and nodes (vertex numbers, distances 
+                  Extra statistics on arcs and nodes (vertex numbers, distances
 between nodes, ...)
                 </Documentation>
             </IntVectorProperty>
@@ -217,7 +217,7 @@ between nodes, ...)
 
             <IntVectorProperty
                 name="DebugLevel"
-                command="SetdebugLevel_"
+                command="SetDebugLevel"
                 label="Debug Level"
                 number_of_elements="1"
                 default_values="3" panel_visibility="advanced">

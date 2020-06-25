@@ -1,9 +1,1 @@
-ttk_add_vtk_library(ttkMeshGraph
-  SOURCES
-    ttkMeshGraph.cpp
-  HEADERS
-    ttkMeshGraph.h
-  LINK
-    meshGraph
-    ttkTriangulation
-    )
+ttk_add_vtk_module()

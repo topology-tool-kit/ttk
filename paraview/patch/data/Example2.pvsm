@@ -33896,7 +33896,7 @@
         <Element index="0" value="$PARAVIEW_EXAMPLES_DATA/Example2.vti"/>
         <Domain name="files" id="4443.FileName.files"/>
       </Property>
-      <Property name="FileNameInfo" id="4443.FileNameInfo" 
+      <Property name="FileNameInfo" id="4443.FileNameInfo"
 number_of_elements="1">
         <Element index="0" value="$PARAVIEW_EXAMPLES_DATA/Example2.vti"/>
       </Property>

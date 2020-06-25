@@ -1,0 +1,5 @@
+NAME
+  ttkCinemaProductReader
+DEPENDS
+  ttkAlgorithm
+  ttkTopologicalCompressionReader

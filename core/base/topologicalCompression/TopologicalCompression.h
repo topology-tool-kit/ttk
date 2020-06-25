@@ -135,7 +135,7 @@ namespace ttk {
     inline int setupTriangulation(Triangulation *triangulation) {
       triangulation_ = triangulation;
       if(triangulation_)
-        triangulation_->preprocessVertexNeighbors();
+        triangulation_->preconditionVertexNeighbors();
       return 0;
     }
 
@@ -255,7 +255,7 @@ namespace ttk {
     static void
       WriteConstCharArray(FILE *fm, const char *buffer, size_t length);
     static int WriteCompactSegmentation(FILE *fm,
-                                        int *segmentation,
+                                        const std::vector<int> &segmentation,
                                         int numberOfVertices,
                                         int numberOfSegments);
     static int WritePersistenceIndex(
@@ -566,10 +566,8 @@ int ttk::TopologicalCompression::WriteToFile(FILE *fp,
           << std::endl;
       dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
     }
-    if(fflush(fp))
-      fclose(fp);
-    else
-      fclose(fp);
+    fflush(fp);
+    fclose(fp);
     return -1;
   }
 
@@ -622,10 +620,8 @@ int ttk::TopologicalCompression::WriteToFile(FILE *fp,
   WriteUnsignedCharArray(fp, source, destLen);
 #endif
 
-  if(fflush(fp))
-    fclose(fp);
-  else
-    fclose(fp);
+  fflush(fp);
+  fclose(fp);
 
   return ret;
 }
@@ -857,7 +853,7 @@ int ttk::TopologicalCompression::ReadFromFile(FILE *fp) {
     }
   }
 
-  return 0;
+  return status;
 }
 
 template <typename T>

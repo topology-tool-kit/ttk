@@ -27,28 +27,31 @@
 #include <vtkInformation.h>
 #include <vtkPointData.h>
 
+// VTK Module
+#include <ttkContourAroundPointModule.h>
+
 // TTK includes
 #include <ContourAroundPoint.hpp>
-#include <ttkWrapper.h>
+#include <ttkTriangulationAlgorithm.h>
 
 // See the documentation of the vtkAlgorithm class to decide from which VTK
 // class your wrapper should inherit.
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkContourAroundPoint
-#else
-class ttkContourAroundPoint
-#endif
+class TTKCONTOURAROUNDPOINT_EXPORT ttkContourAroundPoint
   : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+    protected ttk::Wrapper {
 
 public:
   static ttkContourAroundPoint *New();
   vtkTypeMacro(ttkContourAroundPoint, vtkDataSetAlgorithm)
 
     // BEGIN default ttk setters
-    vtkSetMacro(debugLevel_, int)
 
-      void SetThreadNumber(int threadNumber) {
+    void SetDebugLevel(int debugLevel) {
+    setDebugLevel(debugLevel);
+    Modified();
+  }
+
+  void SetThreadNumber(int threadNumber) {
     ThreadNumber = threadNumber;
     SetThreads();
   }
@@ -131,7 +134,7 @@ protected:
     SetNumberOfOutputPorts(1);
   }
 
-  ~ttkContourAroundPoint() {
+  ~ttkContourAroundPoint() override {
   }
 
   TTK_SETUP();
@@ -140,8 +143,8 @@ protected:
   bool preprocessDomain(vtkDataSet *dataset);
 
   /// @return Went well?
-  bool preprocessConstraints(vtkUnstructuredGrid *nodes,
-                             vtkUnstructuredGrid *arcs);
+  bool preconditionConstraints(vtkUnstructuredGrid *nodes,
+                               vtkUnstructuredGrid *arcs);
 
   /// @return Went well?
   bool process();
@@ -162,14 +165,15 @@ protected:
     const std::string dataKind
       = dynamic_cast<vtkPointData *>(data) ? "point" : "cell";
     if(!vtkArr) {
-      vtkErrorMacro("The " + dataKind + "s must have data named "
-                    + varName) return nullptr;
+      vtkErrorMacro("The " + dataKind + "s must have data named " + varName);
+      return nullptr;
     }
     if(vtkArr->GetDataType() != typeCode) {
       vtkErrorMacro(<< "The " + dataKind + " data " + varName
                          + " must be of type "
                     << typeName << " but it is "
-                    << vtkArr->GetDataTypeAsString()) return nullptr;
+                    << vtkArr->GetDataTypeAsString());
+      return nullptr;
     }
     return reinterpret_cast<T *>(vtkArr->GetVoidPointer(0));
   }
@@ -185,6 +189,11 @@ private:
   std::vector<float> _isovals;
   std::vector<int> _flags;
   vtkSmartPointer<vtkUnstructuredGrid> _out;
+
+  std::vector<float> coordsBuf_{};
+  std::vector<ttk::LongSimplexId> cinfosBuf_{};
+  std::vector<float> scalarsBuf_{};
+  std::vector<int> flagsBuf_{};
 
   ttk::ContourAroundPoint _wrappedModule;
 };

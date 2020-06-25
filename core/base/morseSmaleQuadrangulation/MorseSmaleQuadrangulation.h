@@ -60,9 +60,9 @@ namespace ttk {
     inline void setupTriangulation(Triangulation *const triangl) {
       triangulation_ = triangl;
       if(triangulation_ != nullptr) {
-        triangulation_->preprocessVertexNeighbors();
-        triangulation_->preprocessVertexTriangles();
-        triangulation_->preprocessBoundaryVertices();
+        triangulation_->preconditionVertexNeighbors();
+        triangulation_->preconditionVertexTriangles();
+        triangulation_->preconditionBoundaryVertices();
       }
       verticesNumber_ = triangulation_->getNumberOfVertices();
     }
