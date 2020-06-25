@@ -37,7 +37,7 @@ int ttkTopologicalSimplification::FillInputPortInformation(
     info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataSet");
 
   if(port == 1)
-    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkPointSet");
+    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataSet");
 
   return 1;
 }
