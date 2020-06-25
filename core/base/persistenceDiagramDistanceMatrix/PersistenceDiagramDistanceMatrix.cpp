@@ -5,7 +5,7 @@
 using namespace ttk;
 
 std::vector<std::vector<double>> PersistenceDiagramDistanceMatrix::execute(
-  std::vector<std::vector<DiagramTuple>> &intermediateDiagrams) const {
+  const std::vector<Diagram> &intermediateDiagrams) const {
 
   Timer tm{};
 
@@ -21,9 +21,9 @@ std::vector<std::vector<double>> PersistenceDiagramDistanceMatrix::execute(
     this->printMsg("Processing only SAD-MAX pairs");
   }
 
-  std::vector<std::vector<DiagramTuple>> inputDiagramsMin(nInputs);
-  std::vector<std::vector<DiagramTuple>> inputDiagramsSad(nInputs);
-  std::vector<std::vector<DiagramTuple>> inputDiagramsMax(nInputs);
+  std::vector<Diagram> inputDiagramsMin(nInputs);
+  std::vector<Diagram> inputDiagramsSad(nInputs);
+  std::vector<Diagram> inputDiagramsMax(nInputs);
 
   std::vector<BidderDiagram<double>> bidder_diagrams_min{};
   std::vector<BidderDiagram<double>> bidder_diagrams_sad{};
@@ -40,7 +40,7 @@ std::vector<std::vector<double>> PersistenceDiagramDistanceMatrix::execute(
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
   for(size_t i = 0; i < nInputs; i++) {
-    std::vector<DiagramTuple> &CTDiagram = intermediateDiagrams[i];
+    const Diagram &CTDiagram = intermediateDiagrams[i];
 
     for(size_t j = 0; j < CTDiagram.size(); ++j) {
       const DiagramTuple &t = CTDiagram[j];
@@ -223,7 +223,7 @@ void PersistenceDiagramDistanceMatrix::getDiagramsDistMat(
 
 void PersistenceDiagramDistanceMatrix::setBidderDiagrams(
   const size_t nInputs,
-  std::vector<std::vector<DiagramTuple>> &inputDiagrams,
+  std::vector<Diagram> &inputDiagrams,
   std::vector<BidderDiagram<double>> &bidder_diags) const {
 
   bidder_diags.resize(nInputs);

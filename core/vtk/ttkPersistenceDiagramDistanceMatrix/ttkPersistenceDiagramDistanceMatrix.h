@@ -126,7 +126,7 @@ protected:
   ttkPersistenceDiagramDistanceMatrix();
   ~ttkPersistenceDiagramDistanceMatrix() override = default;
 
-  double getPersistenceDiagram(std::vector<ttk::DiagramTuple> &diagram,
+  double getPersistenceDiagram(ttk::Diagram &diagram,
                                vtkUnstructuredGrid *CTPersistenceDiagram_);
 
   int FillInputPortInformation(int port, vtkInformation *info) override;

@@ -50,6 +50,8 @@ namespace ttk {
     float,
     float>;
 
+  using Diagram = std::vector<DiagramTuple>;
+
   class PersistenceDiagramDistanceMatrix : virtual public Debug {
 
   public:
@@ -57,8 +59,8 @@ namespace ttk {
       this->setDebugMsgPrefix("PersistenceDiagramDistanceMatrix");
     }
 
-    std::vector<std::vector<double>> execute(
-      std::vector<std::vector<DiagramTuple>> &intermediateDiagrams) const;
+    std::vector<std::vector<double>>
+      execute(const std::vector<Diagram> &intermediateDiagrams) const;
 
     inline void setWasserstein(const int data) {
       Wasserstein = data;
@@ -110,7 +112,7 @@ namespace ttk {
       const std::vector<BidderDiagram<double>> &diags_max) const;
     void
       setBidderDiagrams(const size_t nInputs,
-                        std::vector<std::vector<DiagramTuple>> &inputDiagrams,
+                        std::vector<Diagram> &inputDiagrams,
                         std::vector<BidderDiagram<double>> &bidder_diags) const;
     void enrichCurrentBidderDiagrams(
       const std::vector<BidderDiagram<double>> &bidder_diags,

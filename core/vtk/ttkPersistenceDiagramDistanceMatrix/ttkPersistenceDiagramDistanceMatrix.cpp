@@ -71,7 +71,7 @@ int ttkPersistenceDiagramDistanceMatrix::RequestData(
   // Set output
   auto diagramsDistTable = vtkTable::GetData(outputVector);
 
-  std::vector<std::vector<ttk::DiagramTuple>> intermediateDiagrams(numInputs);
+  std::vector<ttk::Diagram> intermediateDiagrams(numInputs);
 
   double max_dimension_total = 0.0;
   for(int i = 0; i < numInputs; i++) {
@@ -124,8 +124,7 @@ int ttkPersistenceDiagramDistanceMatrix::RequestData(
 }
 
 double ttkPersistenceDiagramDistanceMatrix::getPersistenceDiagram(
-  std::vector<ttk::DiagramTuple> &diagram,
-  vtkUnstructuredGrid *CTPersistenceDiagram_) {
+  ttk::Diagram &diagram, vtkUnstructuredGrid *CTPersistenceDiagram_) {
 
   const auto pd = CTPersistenceDiagram_->GetPointData();
   const auto cd = CTPersistenceDiagram_->GetCellData();
