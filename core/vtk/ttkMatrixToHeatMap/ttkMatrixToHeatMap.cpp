@@ -57,15 +57,15 @@ int ttkMatrixToHeatMap::RequestData(vtkInformation * /*request*/,
   }
 
   const auto nInputs = ScalarFields.size();
-  if(nInputs != static_cast<size_t>(input->GetNumberOfRows())) {
-    this->printErr("Distance matrix is not square");
-    return 0;
+  const auto nRows = static_cast<size_t>(input->GetNumberOfRows());
+  if(nInputs != nRows) {
+    this->printWrn("Distance matrix is not square");
   }
 
   // generate heat map points
   vtkNew<vtkPoints> points{};
   for(size_t i = 0; i < nInputs + 1; ++i) {
-    for(size_t j = 0; j < nInputs + 1; ++j) {
+    for(size_t j = 0; j < nRows + 1; ++j) {
       points->InsertNextPoint(i, j, 0.0);
     }
   }
@@ -73,11 +73,11 @@ int ttkMatrixToHeatMap::RequestData(vtkInformation * /*request*/,
   // generate heat map cells
   vtkNew<vtkCellArray> cells{};
   for(size_t i = 0; i < nInputs; ++i) {
-    for(size_t j = 0; j < nInputs; ++j) {
-      const auto nptrow{static_cast<vtkIdType>(nInputs + 1)};
-      const auto curr{static_cast<vtkIdType>(i * nptrow + j)};
+    for(size_t j = 0; j < nRows; ++j) {
+      const auto nptline{static_cast<vtkIdType>(nRows + 1)};
+      const auto curr{static_cast<vtkIdType>(i * nptline + j)};
       std::array<vtkIdType, 4> ptIds{
-        curr, curr + nptrow, curr + nptrow + 1, curr + 1};
+        curr, curr + nptline, curr + nptline + 1, curr + 1};
       cells->InsertNextCell(4, ptIds.data());
     }
   }
@@ -90,7 +90,7 @@ int ttkMatrixToHeatMap::RequestData(vtkInformation * /*request*/,
   prox->SetNumberOfComponents(1);
   prox->SetName("Proximity");
   for(size_t i = 0; i < nInputs; ++i) {
-    for(size_t j = 0; j < nInputs; ++j) {
+    for(size_t j = 0; j < nRows; ++j) {
       const auto val = input->GetColumnByName(ScalarFields[i].data())
                          ->GetVariantValue(j)
                          .ToDouble();
