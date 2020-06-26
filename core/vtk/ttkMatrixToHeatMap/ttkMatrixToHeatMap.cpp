@@ -7,8 +7,11 @@
 #include <vtkObjectFactory.h>
 #include <vtkTable.h>
 #include <vtkUnstructuredGrid.h>
+#include <vtkInformation.h>
+#include <vtkInformationVector.h>
 
 #include <regex>
+#include <array>
 
 vtkStandardNewMacro(ttkMatrixToHeatMap);
 
