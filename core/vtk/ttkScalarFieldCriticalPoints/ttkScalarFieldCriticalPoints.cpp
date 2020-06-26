@@ -52,28 +52,9 @@ int ttkScalarFieldCriticalPoints::RequestData(vtkInformation
   vtkUnstructuredGrid *output = 
     vtkUnstructuredGrid::GetData(outputVector, 0);
   
-  Timer t;
-
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(!input) {
-    printErr("Input pointer is null :(");
-    return -1;
-  }
-
-  if(!input->GetNumberOfPoints()) {
-    printErr("Input has no points :(");
-    return -1;
-  }
-#endif
-
   ttk::Triangulation *triangulation = ttkAlgorithm::GetTriangulation(input);
-
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(!triangulation) {
-    printErr("Input triangulation is nullptr :(");
-    return -1;
-  }
-#endif
+  if(!triangulation)
+    return 0;
 
   if(VertexBoundary)
     triangulation->preconditionBoundaryVertices();
@@ -82,7 +63,6 @@ int ttkScalarFieldCriticalPoints::RequestData(vtkInformation
   // variable 'output' with the result of the computation.
   // if your wrapper produces an output of the same type of the input, you
   // should proceed in the same way.
-  
 
   vtkDataArray *inputScalarField = 
     this->GetInputArrayToProcess(0, inputVector);
@@ -226,10 +206,7 @@ int ttkScalarFieldCriticalPoints::RequestData(vtkInformation
           copyToScalarArray();
           break;
         default: {
-          stringstream msg;
-          msg << "[ttkScalarFieldCriticalPoints] Scalar attachment: "
-              << "unsupported data type :(" << endl;
-          dMsg(cerr, msg.str(), detailedInfoMsg);
+          printErr("Unsupported data type for scalar attachment :(");
         } break;
       }
     }
