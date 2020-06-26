@@ -540,6 +540,9 @@ namespace ttk {
     // for every triangle, its position on the grid
     std::vector<TrianglePosition> trianglePositions_{};
 
+    // cache some edge vertex computation wrt acceleration
+    std::vector<std::array<SimplexId, 2>> edgeVertexAccelerated_{};
+
     // acceleration functions
     int checkAcceleration();
     bool isPowerOfTwo(unsigned long long int v, unsigned long long int &r);

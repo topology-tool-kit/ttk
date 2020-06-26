@@ -282,6 +282,28 @@ int PeriodicImplicitTriangulation::preconditionEdgesInternal() {
     edgePositions_[edgeNumber_ - 1] = EdgePosition::LAST_EDGE_1D;
   }
 
+  edgeVertexAccelerated_.resize(edgeNumber_);
+
+  if(isAccelerated_) {
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+    for(SimplexId i = 0; i < edgeNumber_; ++i) {
+      const auto &p = edgeCoords_[i];
+      edgeVertexAccelerated_[i][0] = p[1] << div_[0];
+      edgeVertexAccelerated_[i][1] = p[2] << div_[1];
+    }
+  } else {
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+    for(SimplexId i = 0; i < edgeNumber_; ++i) {
+      const auto &p = edgeCoords_[i];
+      edgeVertexAccelerated_[i][0] = p[1] * vshift_[0];
+      edgeVertexAccelerated_[i][1] = p[2] * vshift_[1];
+    }
+  }
+
   return 0;
 }
 
@@ -774,9 +796,8 @@ int PeriodicImplicitTriangulation::getEdgeVertexInternal(
   const SimplexId wrapXRight = (p[0] == nbvoxels_[0] ? -wrap_[0] : 0);
   const SimplexId wrapYBottom = (p[1] == nbvoxels_[1] ? -wrap_[1] : 0);
   const SimplexId wrapZFront = (p[2] == nbvoxels_[2] ? -wrap_[2] : 0);
-  const auto a
-    = p[0] + (isAccelerated_ ? (p[1] << div_[0]) : (p[1] * vshift_[0]));
-  const auto b = a + (isAccelerated_ ? (p[2] << div_[1]) : (p[2] * vshift_[1]));
+  const auto a = p[0] + edgeVertexAccelerated_[edgeId][0];
+  const auto b = a + edgeVertexAccelerated_[edgeId][1];
 
   switch(edgePositions_[edgeId]) {
     case EdgePosition::L_3D:
