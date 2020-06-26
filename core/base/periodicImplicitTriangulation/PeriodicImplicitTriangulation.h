@@ -460,8 +460,8 @@ namespace ttk {
     SimplexId tetrahedronNumber_; // number of tetrahedra
 
     // 2d helpers
-    SimplexId Di_;
-    SimplexId Dj_;
+    SimplexId Di_{};
+    SimplexId Dj_{};
 
     // acceleration variables
     bool isAccelerated_;
