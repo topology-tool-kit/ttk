@@ -58,10 +58,10 @@ namespace ttk {
      *               preconditioned for the upcoming operations.
      */
     template <class dataType,
-              class TriangulationType = ttk::AbstractTriangulation>
+              class triangulationType = ttk::AbstractTriangulation>
     int computeAverages(dataType *outputData,
                         const dataType *inputData,
-                        const TriangulationType *triangulation) const {
+                        const triangulationType *triangulation) const {
       // start global timer
       ttk::Timer globalTimer;
 
