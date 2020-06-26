@@ -277,32 +277,19 @@ int ttk::ScalarFieldCriticalPoints::execute(
     }
 
     {
-      printMsg("  " + std::to_string(minimumNumber) + " minima.");
+      std::vector<std::vector<std::string>> stats;
+      stats.push_back({"  #Minima", std::to_string(minimumNumber)});
       if(dimension_ == 3) {
-        printMsg("  " + std::to_string(oneSaddleNumber) + " 1-saddle(s).");
-        printMsg("  " + std::to_string(twoSaddleNumber) + " 2-saddle(s).");
+        stats.push_back({"  #1-saddles", std::to_string(oneSaddleNumber)});
+        stats.push_back({"  #2-saddles", std::to_string(twoSaddleNumber)});
       }
       if(dimension_ == 2) {
-        printMsg("  " + std::to_string(saddleNumber) + " saddle(s).");
+        stats.push_back({"  #Saddles", std::to_string(saddleNumber)});
       }
-      printMsg("  " + std::to_string(monkeySaddleNumber) + " multi-saddle(s).");
-      printMsg("  " + std::to_string(maximumNumber) + " maxima.");
+      stats.push_back({"  #Multi-saddles", std::to_string(monkeySaddleNumber)});
+      stats.push_back({"  #Maxima", std::to_string(maximumNumber)});
 
-      //       msg << "[ScalarFieldCriticalPoints] Euler characteristic
-      // approximation:";
-      //       if(monkeySaddleNumber){
-      //         msg << " approximation";
-      //       }
-      //       msg << ": ";
-      //       if(dimension_ == 3){
-      //         msg
-      //           << minimumNumber - oneSaddleNumber + twoSaddleNumber -
-      // maximumNumber;
-      //       }
-      //       if(dimension_ == 2){
-      //         msg << minimumNumber - saddleNumber + maximumNumber;
-      //       }
-      //       msg << std::endl;
+      printMsg(stats);
     }
   }
 
