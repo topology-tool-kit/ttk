@@ -3,9 +3,11 @@
 // VTK includes
 #include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
-#include <vtkObjectFactory.h>
 #include <vtkPointData.h>
+#include <vtkPointSet.h>
 #include <vtkSmartPointer.h>
+
+#include <vtkInformation.h>
 
 #ifndef TTK_ENABLE_KAMIKAZE
 #define TTK_ABORT_KK(COND, MSG, RET) \

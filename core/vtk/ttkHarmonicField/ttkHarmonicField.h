@@ -38,7 +38,7 @@
 
 // VTK Includes
 #include <ttkAlgorithm.h>
-#include <vtkPointSet.h>
+class vtkPointSet;
 
 // ttk code includes
 #include <HarmonicField.h>

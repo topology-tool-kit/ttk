@@ -2,7 +2,9 @@
 #include <ttkUtils.h>
 
 #include <vtkDataArray.h>
+#include <vtkDataSet.h>
 #include <vtkDoubleArray.h>
+#include <vtkInformation.h>
 #include <vtkInformationVector.h>
 #include <vtkMultiBlockDataSet.h>
 #include <vtkNew.h>

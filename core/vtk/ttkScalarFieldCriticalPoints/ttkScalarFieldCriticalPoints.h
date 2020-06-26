@@ -80,20 +80,19 @@ protected:
   ttkScalarFieldCriticalPoints();
 
   ~ttkScalarFieldCriticalPoints() override;
-  
+
   int FillInputPortInformation(int port, vtkInformation *info) override;
-  
+
   int FillOutputPortInformation(int port, vtkInformation *info) override;
-  
+
   int RequestData(vtkInformation *request,
-    vtkInformationVector **inputVector,
-    vtkInformationVector *outputVector) override;
+                  vtkInformationVector **inputVector,
+                  vtkInformationVector *outputVector) override;
 
 private:
-  
   bool ForceInputOffsetScalarField{false};
   bool VertexIds{true}, VertexScalars{true}, VertexBoundary{true};
-  
+
   std::vector<std::vector<std::pair<ttk::SimplexId, ttk::SimplexId>>>
     vertexLinkEdgeList_;
   std::vector<std::pair<ttk::SimplexId, char>> criticalPoints_;

@@ -20,8 +20,8 @@
 
 // VTK Includes
 #include <ttkAlgorithm.h>
-#include <vtkMultiBlockDataSet.h>
 #include <vtkSmartPointer.h>
+class vtkMultiBlockDataSet;
 
 class TTKBLOCKAGGREGATOR_EXPORT ttkBlockAggregator : public ttkAlgorithm {
 private:

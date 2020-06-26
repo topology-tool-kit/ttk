@@ -1,5 +1,7 @@
 #include <ttkHelloWorld.h>
 
+#include <vtkInformation.h>
+
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
 #include <vtkPointData.h>
