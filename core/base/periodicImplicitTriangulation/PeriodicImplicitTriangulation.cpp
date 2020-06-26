@@ -290,8 +290,7 @@ int PeriodicImplicitTriangulation::preconditionEdgesInternal() {
 #endif // TTK_ENABLE_OPENMP
     for(SimplexId i = 0; i < edgeNumber_; ++i) {
       const auto &p = edgeCoords_[i];
-      edgeVertexAccelerated_[i][0] = p[1] << div_[0];
-      edgeVertexAccelerated_[i][1] = p[2] << div_[1];
+      edgeVertexAccelerated_[i] = (p[1] << div_[0]) + (p[2] << div_[1]);
     }
   } else {
 #ifdef TTK_ENABLE_OPENMP
@@ -299,8 +298,7 @@ int PeriodicImplicitTriangulation::preconditionEdgesInternal() {
 #endif // TTK_ENABLE_OPENMP
     for(SimplexId i = 0; i < edgeNumber_; ++i) {
       const auto &p = edgeCoords_[i];
-      edgeVertexAccelerated_[i][0] = p[1] * vshift_[0];
-      edgeVertexAccelerated_[i][1] = p[2] * vshift_[1];
+      edgeVertexAccelerated_[i] = p[1] * vshift_[0] + p[2] * vshift_[1];
     }
   }
 
@@ -796,37 +794,36 @@ int PeriodicImplicitTriangulation::getEdgeVertexInternal(
   const SimplexId wrapXRight = (p[0] == nbvoxels_[0] ? -wrap_[0] : 0);
   const SimplexId wrapYBottom = (p[1] == nbvoxels_[1] ? -wrap_[1] : 0);
   const SimplexId wrapZFront = (p[2] == nbvoxels_[2] ? -wrap_[2] : 0);
-  const auto a = p[0] + edgeVertexAccelerated_[edgeId][0];
-  const auto b = a + edgeVertexAccelerated_[edgeId][1];
+  const auto a = p[0] + edgeVertexAccelerated_[edgeId];
 
   switch(edgePositions_[edgeId]) {
     case EdgePosition::L_3D:
-      vertexId = b + (localVertexId == 0 ? 0 : (1 + wrapXRight));
+      vertexId = a + (localVertexId == 0 ? 0 : (1 + wrapXRight));
       break;
     case EdgePosition::H_3D:
-      vertexId = b + (localVertexId == 0 ? 0 : (vshift_[0] + wrapYBottom));
+      vertexId = a + (localVertexId == 0 ? 0 : (vshift_[0] + wrapYBottom));
       break;
     case EdgePosition::P_3D:
-      vertexId = b + (localVertexId == 0 ? 0 : (vshift_[1] + wrapZFront));
+      vertexId = a + (localVertexId == 0 ? 0 : (vshift_[1] + wrapZFront));
       break;
     case EdgePosition::D1_3D:
-      vertexId = b
+      vertexId = a
                  + (localVertexId == 0 ? (1 + wrapXRight)
                                        : (vshift_[0] + wrapYBottom));
       break;
     case EdgePosition::D2_3D:
-      vertexId = b
+      vertexId = a
                  + (localVertexId == 0
                       ? 0
                       : (vshift_[0] + wrapYBottom + vshift_[1] + wrapZFront));
       break;
     case EdgePosition::D3_3D:
       vertexId
-        = b
+        = a
           + (localVertexId == 0 ? (1 + wrapXRight) : (vshift_[1] + wrapZFront));
       break;
     case EdgePosition::D4_3D:
-      vertexId = b
+      vertexId = a
                  + (localVertexId == 0
                       ? (1 + wrapXRight)
                       : (vshift_[0] + wrapYBottom + vshift_[1] + wrapZFront));

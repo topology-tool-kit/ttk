@@ -541,7 +541,7 @@ namespace ttk {
     std::vector<TrianglePosition> trianglePositions_{};
 
     // cache some edge vertex computation wrt acceleration
-    std::vector<std::array<SimplexId, 2>> edgeVertexAccelerated_{};
+    std::vector<SimplexId> edgeVertexAccelerated_{};
 
     // acceleration functions
     int checkAcceleration();
