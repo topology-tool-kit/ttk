@@ -169,8 +169,7 @@ int ttk::ScalarFieldCriticalPoints::execute(
     return -2;
   if(!scalarValues)
     return -3;
-  if((!vertexLinkEdgeLists_)
-     && ((!triangulation) || (triangulation->isEmpty())))
+  if((!vertexLinkEdgeLists_) && (!triangulation))
     return -4;
   if(!criticalPoints_)
     return -5;
