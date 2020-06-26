@@ -155,8 +155,8 @@ int ttkHelloWorld::RequestData(vtkInformation *request,
   // Precondition the triangulation (e.g., enable fetching of vertex neighbors)
   this->preconditionTriangulation(triangulation); // implemented in base class
 
-  printMsg("Starting computation on array `"
-           + std::string(inputArray->GetName()) + "'...");
+  printMsg("Starting computation...");
+  printMsg("  Scalar Array: " + std::string(inputArray->GetName()));
   // Templatize over the different input array data types and call the base code
   int status = 0; // this integer checks if the base code returns an error
   ttkVtkTemplateMacro(triangulation->getType(), inputArray->GetDataType(),

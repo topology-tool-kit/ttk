@@ -277,16 +277,16 @@ int ttk::ScalarFieldCriticalPoints::execute(
     }
 
     {
-      printMsg(std::to_string(minimumNumber) + " minima.");
+      printMsg("  " + std::to_string(minimumNumber) + " minima.");
       if(dimension_ == 3) {
-        printMsg(std::to_string(oneSaddleNumber) + " 1-saddle(s).");
-        printMsg(std::to_string(twoSaddleNumber) + " 2-saddle(s).");
+        printMsg("  " + std::to_string(oneSaddleNumber) + " 1-saddle(s).");
+        printMsg("  " + std::to_string(twoSaddleNumber) + " 2-saddle(s).");
       }
       if(dimension_ == 2) {
-        printMsg(std::to_string(saddleNumber) + " saddle(s).");
+        printMsg("  " + std::to_string(saddleNumber) + " saddle(s).");
       }
-      printMsg(std::to_string(monkeySaddleNumber) + " multi-saddle(s).");
-      printMsg(std::to_string(maximumNumber) + " maxima.");
+      printMsg("  " + std::to_string(monkeySaddleNumber) + " multi-saddle(s).");
+      printMsg("  " + std::to_string(maximumNumber) + " maxima.");
 
       //       msg << "[ScalarFieldCriticalPoints] Euler characteristic
       // approximation:";

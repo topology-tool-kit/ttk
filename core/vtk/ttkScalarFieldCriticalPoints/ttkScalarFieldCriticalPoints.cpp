@@ -90,13 +90,10 @@ int ttkScalarFieldCriticalPoints::RequestData(vtkInformation
   this->setupTriangulation(triangulation);
   this->setSosOffsets(&sosOffsets_);
   this->setOutput(&criticalPoints_);
-    
-  printMsg("Starting computation on array `" 
-    + string(inputScalarField->GetName()) + "'...");
-  if(offsetField) {
-    printMsg("  Using offset array `" + string(offsetField->GetName())
-             + "'...");
-  }
+
+  printMsg("Starting computation...");
+  printMsg({{"  Scalar Array", inputScalarField->GetName()},
+            {"  Offset Array", offsetField ? offsetField->GetName() : "None"}});
 
   int status = 0;
   ttkVtkTemplateMacro(
@@ -206,7 +203,9 @@ int ttkScalarFieldCriticalPoints::RequestData(vtkInformation
           copyToScalarArray();
           break;
         default: {
-          printErr("Unsupported data type for scalar attachment :(");
+          printMsg("Unsupported data type for scalar attachment `"
+                     + std::string(scalarField->GetName()) + "' :(",
+                   ttk::debug::Priority::DETAIL);
         } break;
       }
     }
