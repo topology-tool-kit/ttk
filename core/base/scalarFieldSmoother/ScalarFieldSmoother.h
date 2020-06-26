@@ -18,7 +18,6 @@
 
 // base code includes
 #include <Triangulation.h>
-#include <Wrapper.h>
 
 namespace ttk {
 

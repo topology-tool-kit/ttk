@@ -26,7 +26,6 @@
 // base code includes
 #include <Triangulation.h>
 #include <UnionFind.h>
-#include <Wrapper.h>
 
 namespace ttk {
 

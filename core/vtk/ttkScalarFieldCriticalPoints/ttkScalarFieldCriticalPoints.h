@@ -15,6 +15,21 @@
 /// This filter can be used as any other VTK filter (for instance, by using the
 /// sequence of calls SetInputData(), Update(), GetOutput()).
 ///
+/// The name of the input scalar field to consider can be specified with the
+/// standard VTK call SetInputArrayToProcess(), with the following parameters:
+/// \param port 0
+/// \param connection 0
+/// \param fieldAssociation 0 (point data)
+/// \param arrayName (const char* string representing the name of the VTK array)
+///
+/// This module respects the following convention regarding the order of the
+/// input arrays to process (SetInputArrayToProcess()):
+/// \param idx 0: input scalar field
+/// \param idx 1 (optional): input offset scalar field
+///
+/// See the corresponding standalone program for a usage example:
+///   - standalone/ScalarFieldCriticalPoints/main.cpp
+///
 /// See the related ParaView example state files for usage examples within a
 /// VTK pipeline.
 ///
