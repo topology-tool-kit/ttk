@@ -18,7 +18,6 @@
 
 // VTK includes
 #include <ttkAlgorithm.h>
-#include <vtkInformation.h>
 
 class TTKPOINTSETTOCURVE_EXPORT ttkPointSetToCurve : public ttkAlgorithm {
 

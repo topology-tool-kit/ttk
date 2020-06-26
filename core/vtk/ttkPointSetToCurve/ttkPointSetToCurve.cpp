@@ -1,17 +1,18 @@
 #include <ttkPointSetToCurve.h>
 
-#include <vtkDataObject.h> // For port info
-#include <vtkObjectFactory.h> // for new macro
-
 #include <vtkPointData.h>
 #include <vtkPointSet.h>
 #include <vtkStringArray.h>
 #include <vtkUnstructuredGrid.h>
 
+#include <vtkInformation.h>
+#include <vtkInformationVector.h>
+
 #include <ttkUtils.h>
 
 #include <map>
 #include <set>
+#include <array>
 
 vtkStandardNewMacro(ttkPointSetToCurve);
 
