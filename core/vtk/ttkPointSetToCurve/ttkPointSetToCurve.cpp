@@ -10,9 +10,9 @@
 
 #include <ttkUtils.h>
 
+#include <array>
 #include <map>
 #include <set>
-#include <array>
 
 vtkStandardNewMacro(ttkPointSetToCurve);
 
