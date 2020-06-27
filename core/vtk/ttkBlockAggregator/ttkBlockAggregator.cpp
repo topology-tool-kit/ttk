@@ -1,11 +1,10 @@
 #include <ttkBlockAggregator.h>
 
-#include <vtkDataObject.h> // For port info
-#include <vtkObjectFactory.h> // for new macro
-
 #include <vtkDoubleArray.h>
 #include <vtkFieldData.h>
+#include <vtkInformation.h>
 #include <vtkInformationVector.h>
+#include <vtkMultiBlockDataSet.h>
 
 vtkStandardNewMacro(ttkBlockAggregator);
 

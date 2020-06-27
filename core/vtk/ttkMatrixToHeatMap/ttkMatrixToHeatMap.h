@@ -18,7 +18,6 @@
 #include <ttkMatrixToHeatMapModule.h>
 
 #include <ttkAlgorithm.h>
-#include <vtkInformation.h>
 
 #include <string>
 #include <vector>

@@ -2,6 +2,8 @@
 
 #include <ttkUtils.h>
 
+#include <vtkInformation.h>
+
 #include <vtkCellArray.h>
 #include <vtkFloatArray.h>
 #include <vtkPointData.h>

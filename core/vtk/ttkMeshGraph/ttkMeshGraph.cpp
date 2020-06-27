@@ -1,12 +1,11 @@
 #include <ttkMeshGraph.h>
 
-#include <vtkObjectFactory.h> // for new macro
-
 #include <vtkAbstractArray.h>
 #include <vtkCellArray.h>
 #include <vtkCellData.h>
 #include <vtkDataSetTriangleFilter.h>
 #include <vtkIdTypeArray.h>
+#include <vtkInformation.h>
 #include <vtkInformationVector.h>
 #include <vtkPointData.h>
 #include <vtkUnstructuredGrid.h>
@@ -17,23 +16,24 @@ ttkMeshGraph::ttkMeshGraph() {
   this->SetNumberOfInputPorts(1);
   this->SetNumberOfOutputPorts(1);
 }
+
 ttkMeshGraph::~ttkMeshGraph() {
 }
 
 int ttkMeshGraph::FillInputPortInformation(int port, vtkInformation *info) {
-  if(port == 0)
+  if(port == 0) {
     info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkUnstructuredGrid");
-  else
-    return 0;
-  return 1;
+    return 1;
+  }
+  return 0;
 }
 
 int ttkMeshGraph::FillOutputPortInformation(int port, vtkInformation *info) {
-  if(port == 0)
+  if(port == 0) {
     info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
-  else
-    return 0;
-  return 1;
+    return 1;
+  }
+  return 0;
 }
 
 int ttkMeshGraph::RequestData(vtkInformation *request,

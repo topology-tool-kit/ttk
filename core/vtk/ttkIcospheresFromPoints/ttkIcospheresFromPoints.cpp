@@ -1,5 +1,7 @@
 #include <ttkIcospheresFromPoints.h>
 
+#include <vtkInformation.h>
+
 #include <vtkPointData.h>
 #include <vtkPointSet.h>
 #include <vtkUnstructuredGrid.h>

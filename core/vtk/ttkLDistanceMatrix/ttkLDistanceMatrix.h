@@ -10,10 +10,6 @@
 
 #pragma once
 
-// VTK includes -- to adapt
-#include <vtkInformation.h>
-#include <vtkMultiBlockDataSetAlgorithm.h>
-
 // VTK Module
 #include <ttkLDistanceMatrixModule.h>
 

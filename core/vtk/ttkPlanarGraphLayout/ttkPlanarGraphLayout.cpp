@@ -1,12 +1,11 @@
 #include <ttkPlanarGraphLayout.h>
 
-#include <vtkObjectFactory.h> // for new macro
-
 #include <ttkMacros.h>
 
 #include <vtkAbstractArray.h>
 #include <vtkCellArray.h>
 #include <vtkFloatArray.h>
+#include <vtkInformation.h>
 #include <vtkPointData.h>
 #include <vtkSmartPointer.h>
 #include <vtkUnstructuredGrid.h>

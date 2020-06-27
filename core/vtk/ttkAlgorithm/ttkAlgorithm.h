@@ -11,25 +11,31 @@
 
 #pragma once
 
-// std includes
-#include <unordered_map>
-
 // VTK Module
 #include <ttkAlgorithmModule.h>
 
+// std includes
+#include <unordered_map>
+
 // VTK Includes
 #include <vtkAlgorithm.h>
-#include <vtkCellArray.h>
-#include <vtkCommand.h>
-#include <vtkDataSet.h>
-#include <vtkInformation.h>
-#include <vtkInformationIntegerKey.h>
-#include <vtkPoints.h>
-#include <vtkSmartPointer.h>
+class vtkCellArray;
+class vtkCommand;
+class vtkDataSet;
+class vtkInformation;
+class vtkInformationIntegerKey;
+class vtkPoints;
+
+template <class d0>
+class vtkSmartPointer;
 
 // Base Includes
 #include <Debug.h>
-#include <Triangulation.h>
+
+namespace ttk {
+  class Triangulation;
+}
+// #include <Triangulation.h>
 
 class TTKALGORITHM_EXPORT ttkAlgorithm : public vtkAlgorithm,
                                          virtual public ttk::Debug {

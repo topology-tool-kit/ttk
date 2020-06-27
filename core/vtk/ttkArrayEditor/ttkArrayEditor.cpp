@@ -9,6 +9,7 @@
 #include <vtkSmartPointer.h>
 #include <vtkStringArray.h>
 
+#include <vtkCommand.h>
 #include <vtkDataArraySelection.h>
 
 #include <ttkUtils.h>

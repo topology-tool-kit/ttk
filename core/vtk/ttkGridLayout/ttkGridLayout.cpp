@@ -1,7 +1,9 @@
 #include <ttkGridLayout.h>
 
+#include <vtkObjectFactory.h>
+
+#include <vtkInformation.h>
 #include <vtkInformationVector.h>
-#include <vtkObjectFactory.h> // for new macro
 
 #include <vtkSmartPointer.h>
 

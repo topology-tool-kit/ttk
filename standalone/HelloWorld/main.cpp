@@ -32,7 +32,7 @@ int main(int argc, char **argv) {
   // ---------------------------------------------------------------------------
   {
     ttk::CommandLineParser parser;
-    
+
     // -------------------------------------------------------------------------
     // Standard options and arguments
     // -------------------------------------------------------------------------
@@ -42,12 +42,12 @@ int main(int argc, char **argv) {
     parser.setArgument(
       "o", &outputPathPrefix, "Output file prefix (no extension)", true);
     parser.setOption("l", &listArrays, "List available arrays");
-    
+
     // -------------------------------------------------------------------------
-    // TODO 1: Declare custom arguments and options 
+    // TODO 1: Declare custom arguments and options
     // -------------------------------------------------------------------------
     parser.setArgument("O", &outputArrayName, "Output array name", true);
-    
+
     parser.parse(argc, argv);
   }
 
@@ -56,12 +56,12 @@ int main(int argc, char **argv) {
   // ---------------------------------------------------------------------------
   ttk::Debug msg;
   msg.setDebugMsgPrefix("HelloWorld");
-  
+
   // ---------------------------------------------------------------------------
   // Initialize ttkHelloWorld module (adjust parameters)
   // ---------------------------------------------------------------------------
   auto helloWorld = vtkSmartPointer<ttkHelloWorld>::New();
-  
+
   // ---------------------------------------------------------------------------
   // TODO 2: Pass custom arguments and options to the module
   // ---------------------------------------------------------------------------
@@ -83,7 +83,7 @@ int main(int argc, char **argv) {
       msg.printErr("Unable to read input file `" + inputFilePaths[i] + "' :(");
       return 0;
     }
-    
+
     auto inputAsVtkDataSet = vtkDataSet::SafeDownCast(inputDataObject);
 
     // if requested print list of arrays, otherwise proceed with execution
@@ -103,15 +103,15 @@ int main(int argc, char **argv) {
           msg.printMsg("    - " + std::string(cellData->GetArrayName(j)));
       } else {
         msg.printErr("Unable to list arrays on file `" + inputFilePaths[i]
-          + "'");
+                     + "'");
         return 0;
       }
     } else {
       // feed input object to ttkHelloWorld filter
       helloWorld->SetInputDataObject(i, reader->GetOutput());
-      
+
       // default arrays
-      if(!defaultArray){
+      if(!defaultArray) {
         defaultArray = inputAsVtkDataSet->GetPointData()->GetArray(0);
         if(!defaultArray)
           defaultArray = inputAsVtkDataSet->GetCellData()->GetArray(0);
@@ -127,13 +127,13 @@ int main(int argc, char **argv) {
   // ---------------------------------------------------------------------------
   // Specify which arrays of the input vtkDataObjects will be processed
   // ---------------------------------------------------------------------------
-  if(!inputArrayNames.size()){
+  if(!inputArrayNames.size()) {
     if(defaultArray)
       inputArrayNames.push_back(defaultArray->GetName());
   }
   for(size_t i = 0; i < inputArrayNames.size(); i++)
     helloWorld->SetInputArrayToProcess(i, 0, 0, 0, inputArrayNames[i].data());
-  
+
   // ---------------------------------------------------------------------------
   // Execute ttkHelloWorld filter
   // ---------------------------------------------------------------------------
@@ -147,10 +147,10 @@ int main(int argc, char **argv) {
       auto output = helloWorld->GetOutputDataObject(i);
       auto writer
         = vtkXMLDataObjectWriter::NewWriter(output->GetDataObjectType());
-      
-      std::string outputFileName = outputPathPrefix 
-          + "_port_" + std::to_string(i) 
-          + "." + writer->GetDefaultFileExtension();
+
+      std::string outputFileName = outputPathPrefix + "_port_"
+                                   + std::to_string(i) + "."
+                                   + writer->GetDefaultFileExtension();
       msg.printMsg("Writing output file `" + outputFileName + "'...");
       writer->SetInputDataObject(output);
       writer->SetFileName(outputFileName.data());

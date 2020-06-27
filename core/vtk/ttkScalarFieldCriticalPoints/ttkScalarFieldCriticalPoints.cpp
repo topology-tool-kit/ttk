@@ -1,5 +1,7 @@
 #include <ttkScalarFieldCriticalPoints.h>
 
+#include <vtkInformation.h>
+
 #include <vtkCharArray.h>
 #include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
@@ -16,7 +18,7 @@ using namespace ttk;
 vtkStandardNewMacro(ttkScalarFieldCriticalPoints);
 
 ttkScalarFieldCriticalPoints::ttkScalarFieldCriticalPoints() {
-  
+
   this->SetNumberOfInputPorts(1);
   this->SetNumberOfOutputPorts(1);
 }
@@ -44,14 +46,14 @@ int ttkScalarFieldCriticalPoints::FillOutputPortInformation(
   return 1;
 }
 
-int ttkScalarFieldCriticalPoints::RequestData(vtkInformation 
-*request,vtkInformationVector **inputVector,vtkInformationVector *outputVector) 
-{
-  
+int ttkScalarFieldCriticalPoints::RequestData(
+  vtkInformation *request,
+  vtkInformationVector **inputVector,
+  vtkInformationVector *outputVector) {
+
   vtkDataSet *input = vtkDataSet::GetData(inputVector[0]);
-  vtkUnstructuredGrid *output = 
-    vtkUnstructuredGrid::GetData(outputVector, 0);
-  
+  vtkUnstructuredGrid *output = vtkUnstructuredGrid::GetData(outputVector, 0);
+
   ttk::Triangulation *triangulation = ttkAlgorithm::GetTriangulation(input);
   if(!triangulation)
     return 0;
@@ -64,9 +66,9 @@ int ttkScalarFieldCriticalPoints::RequestData(vtkInformation
   // if your wrapper produces an output of the same type of the input, you
   // should proceed in the same way.
 
-  vtkDataArray *inputScalarField = 
-    this->GetInputArrayToProcess(0, inputVector);
-  if(!inputScalarField) return 0;
+  vtkDataArray *inputScalarField = this->GetInputArrayToProcess(0, inputVector);
+  if(!inputScalarField)
+    return 0;
 
   vtkDataArray *offsetField = nullptr;
 
@@ -80,12 +82,12 @@ int ttkScalarFieldCriticalPoints::RequestData(vtkInformation
   sosOffsets_.resize(inputScalarField->GetNumberOfTuples());
   for(SimplexId i = 0; i < inputScalarField->GetNumberOfTuples(); i++) {
     SimplexId offset = i;
-    if(offsetField){
+    if(offsetField) {
       offset = offsetField->GetTuple1(i);
     }
     sosOffsets_[i] = offset;
   }
-    
+
   // setting up the base layer
   this->setupTriangulation(triangulation);
   this->setSosOffsets(&sosOffsets_);
@@ -97,13 +99,10 @@ int ttkScalarFieldCriticalPoints::RequestData(vtkInformation
 
   int status = 0;
   ttkVtkTemplateMacro(
-    triangulation->getType(),
-    inputScalarField->GetDataType(),
+    triangulation->getType(), inputScalarField->GetDataType(),
     (status = this->execute<VTK_TT, TTK_TT>(
-      (TTK_TT *) triangulation->getData(),
-      (VTK_TT *) ttkUtils::GetVoidPointer(inputScalarField)
-    ))
-  );
+       (TTK_TT *)triangulation->getData(),
+       (VTK_TT *)ttkUtils::GetVoidPointer(inputScalarField))));
   if(status < 0)
     return 0;
 
