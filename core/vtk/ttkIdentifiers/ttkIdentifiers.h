@@ -32,8 +32,7 @@
 // data-set on the output - to adapt.
 // see the documentation of the vtkAlgorithm class to decide from which VTK
 // class your wrapper should inherit.
-class TTKIDENTIFIERS_EXPORT ttkIdentifiers : public ttkAlgorithm,
-                                             protected ttk::Debug {
+class TTKIDENTIFIERS_EXPORT ttkIdentifiers : public ttkAlgorithm {
 
 public:
   static ttkIdentifiers *New();
