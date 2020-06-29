@@ -7,7 +7,7 @@
 using namespace std;
 using namespace ttk;
 
-int ttkScalarFieldSmoother::FillInputPortInformation(int port, vtkInformation *info) {
+int ttkTableDataSelector::FillInputPortInformation(int port, vtkInformation *info) {
   if(port == 0){
     info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkTable");
     return 1;
@@ -15,7 +15,7 @@ int ttkScalarFieldSmoother::FillInputPortInformation(int port, vtkInformation *i
   return 0;
 }
 
-int ttkScalarFieldSmoother::FillOutputPortInformation(int port, vtkInformation *info) {
+int ttkTableDataSelector::FillOutputPortInformation(int port, vtkInformation *info) {
   if(port == 0){
     info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
     return 1;
@@ -30,7 +30,7 @@ int ttkTableDataSelector::RequestInformation(
 
   vtkTable *input = vtkTable::GetData(inputVector[0]);
   FillAvailableCols(input);
-  return vtkTableAlgorithm::RequestInformation(
+  return ttkAlgorithm::RequestInformation(
     request, inputVector, outputVector);
 }
 
@@ -44,7 +44,7 @@ int ttkTableDataSelector::RequestData(vtkInformation *request,
 
   output->ShallowCopy(input);
 
-  vtkFieldData *inputRowData = input->GetRowData();
+  vtkDataSetAttributes *inputRowData = input->GetRowData();
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!inputRowData) {
     this->printErr("Input has no row data.");
@@ -52,8 +52,8 @@ int ttkTableDataSelector::RequestData(vtkInformation *request,
   }
 #endif
 
-  vtkSmartPointer<vtkFieldData> outputRowData
-    = vtkSmartPointer<vtkFieldData>::New();
+  vtkSmartPointer<vtkDataSetAttributes> outputRowData
+    = vtkSmartPointer<vtkDataSetAttributes>::New();
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!outputRowData) {
     this->printErr("vtkFieldData memory allocation problem.");

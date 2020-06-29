@@ -24,6 +24,7 @@
 #include <vtkSmartPointer.h>
 #include <vtkTable.h>
 #include <vtkTableAlgorithm.h>
+#include <vtkDataSetAttributes.h>
 
 // VTK Module
 #include <ttkTableDataSelectorModule.h>
@@ -32,11 +33,11 @@
 #include <ttkAlgorithm.h>
 
 class TTKTABLEDATASELECTOR_EXPORT ttkTableDataSelector
-  : public ttkAlgorithm, vtkTableAlgorithm {
+  : public ttkAlgorithm {
 
 public:
   static ttkTableDataSelector *New();
-  vtkTypeMacro(ttkTableDataSelector, vtkTableAlgorithm);
+  vtkTypeMacro(ttkTableDataSelector, ttkAlgorithm);
 
   // default ttk setters
 
