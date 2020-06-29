@@ -79,7 +79,21 @@ int ttkQuadrangulationSubdivision::RequestData(
   this->setInputVertexIdentifiers(
     ttkUtils::GetVoidPointer(identifiers), identifiers->GetNumberOfTuples());
 
-  const auto res = this->execute();
+  int res{};
+  switch(triangulation->getType()) {
+    case ttk::Triangulation::Type::EXPLICIT:
+      res = this->execute(
+        static_cast<ttk::ExplicitTriangulation *>(triangulation->getData()));
+      break;
+    case ttk::Triangulation::Type::IMPLICIT:
+      res = this->execute(
+        static_cast<ttk::ImplicitTriangulation *>(triangulation->getData()));
+      break;
+    case ttk::Triangulation::Type::PERIODIC:
+      res = this->execute(static_cast<ttk::PeriodicImplicitTriangulation *>(
+        triangulation->getData()));
+      break;
+  }
 
   if(res != 0) {
     this->printWrn("Please increase the number of relaxation iterations, of "
