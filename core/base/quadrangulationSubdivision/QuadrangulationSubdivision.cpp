@@ -574,7 +574,7 @@ int ttk::QuadrangulationSubdivision::project(const std::set<size_t> &filtered,
     }
 
     // replace curr in outputPoints_ by its projection
-    auto res = findProjection(i, reverseProjection_);
+    auto res = findProjection(i, ReverseProjection);
 
     tmp[i] = std::get<0>(res);
     nearestVertexIdentifier_[i] = std::get<1>(res);
@@ -878,8 +878,8 @@ int ttk::QuadrangulationSubdivision::execute() {
 
   // vertices to filter from relaxation, projection
   std::set<size_t> filtered{};
-  if(!lockAllInputVertices) {
-    if(lockInputExtrema) {
+  if(!LockAllInputVertices) {
+    if(LockInputExtrema) {
       // get extraordinary vertices
       findExtraordinaryVertices(filtered);
     }
@@ -891,7 +891,7 @@ int ttk::QuadrangulationSubdivision::execute() {
   }
 
   // main loop
-  for(size_t i = 0; i < subdivisionLevel_; i++) {
+  for(size_t i = 0; i < SubdivisionLevel; i++) {
     // subdivise each quadrangle by creating five new points, at the
     // center of each edge (4) and at the barycenter of the four
     // vertices (1).
@@ -905,12 +905,12 @@ int ttk::QuadrangulationSubdivision::execute() {
 
   // "relax" the new points, i.e. replace it by the barycenter of its
   // four neighbors
-  for(size_t i = 0; i < relaxationIterations_; i++) {
+  for(size_t i = 0; i < RelaxationIterations; i++) {
     relax(filtered);
 
     // project all points on the nearest triangle (except MSC critical
     // points)
-    project(filtered, (i == relaxationIterations_ - 1));
+    project(filtered, (i == RelaxationIterations - 1));
   }
 
   // compute valence of every quadrangle vertex
@@ -926,7 +926,7 @@ int ttk::QuadrangulationSubdivision::execute() {
     if(outputValences_[i] > 4) {
       continue;
     }
-    if(hausdorff_[i] > hausdorffLevel_) {
+    if(hausdorff_[i] > HausdorffLevel) {
       criterion = true;
       break;
     }
@@ -936,7 +936,7 @@ int ttk::QuadrangulationSubdivision::execute() {
     // log, clean & early return
     this->printErr("The output quadrangulation exceeds the provided Haussdorff "
                    "distance tolerance");
-    if(!showResError_) {
+    if(!ShowResError) {
       clearData();
       return 1;
     }

@@ -29,25 +29,25 @@ namespace ttk {
     }
 
     inline void setSubdivisionLevel(const unsigned int value) {
-      subdivisionLevel_ = value;
+      SubdivisionLevel = value;
     }
     inline void setRelaxationIterations(const unsigned int value) {
-      relaxationIterations_ = value;
+      RelaxationIterations = value;
     }
     inline void setLockInputExtrema(const bool value) {
-      lockInputExtrema = value;
+      LockInputExtrema = value;
     }
     inline void setLockAllInputVertices(const bool value) {
-      lockAllInputVertices = value;
+      LockAllInputVertices = value;
     }
     inline void setReverseProjection(const bool value) {
-      reverseProjection_ = value;
+      ReverseProjection = value;
     }
     inline void setShowResError(const bool value) {
-      showResError_ = value;
+      ShowResError = value;
     }
     inline void setHausdorffLevel(const float value) {
-      hausdorffLevel_ = value;
+      HausdorffLevel = value;
     }
     inline void setInputQuads(void *const address, unsigned int size) {
       inputQuads_ = static_cast<Quad *>(address);
@@ -257,23 +257,24 @@ namespace ttk {
      */
     void clearData();
 
+  protected:
     // number of vertices in the mesh
     SimplexId vertexNumber_{};
 
-    // wanted number of subdivisions of the input quadrangles
-    unsigned int subdivisionLevel_{1};
+    // number of subdivisions of the input quadrangles
+    unsigned int SubdivisionLevel{1};
     // number of relaxation iterations
-    unsigned int relaxationIterations_{10};
+    unsigned int RelaxationIterations{10};
     // lock input extrema
-    bool lockInputExtrema{false};
+    bool LockInputExtrema{false};
     // lock all input vertices
-    bool lockAllInputVertices{false};
+    bool LockAllInputVertices{false};
     // projection method
-    bool reverseProjection_{false};
+    bool ReverseProjection{false};
     // display result despite error
-    bool showResError_{false};
+    bool ShowResError{false};
     // Hausdorff warning level
-    float hausdorffLevel_{200.F};
+    float HausdorffLevel{200.F};
 
     // number of input quadrangles
     unsigned int inputQuadNumber_{};
@@ -299,7 +300,6 @@ namespace ttk {
     // holds geodesic distance to every other quad vertex sharing a quad
     std::vector<std::vector<float>> vertexDistance_{};
 
-  public:
     // array of output quadrangle vertex valences
     std::vector<SimplexId> outputValences_{};
     // array of output quadrangle vertex type

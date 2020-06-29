@@ -87,20 +87,6 @@ protected:
                   vtkInformationVector *outputVector) override;
 
 private:
-  // number of subdivisions of the Morse-Smale Complex cells
-  unsigned int SubdivisionLevel{1};
-  // number of relaxation iterations
-  unsigned int RelaxationIterations{10};
-  // lock input extrema
-  bool LockInputExtrema{false};
-  // lock all input vertices
-  bool LockAllInputVertices{false};
-  // projection method
-  bool ReverseProjection{false};
-  // Hausdorff warning level
-  float HausdorffLevel{200.F};
-  // show result despite error
-  bool ShowResError{false};
   // display quadrangle statistics
   bool QuadStatistics{false};
 };
