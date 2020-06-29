@@ -186,7 +186,7 @@ int ttk::IntegralLines::execute(const triangulationType* triangulation) const {
 
   {
     std::stringstream msg;
-    msg << "[IntegralLines] Data-set (" << vertexNumber_
+    msg << "Data-set (" << vertexNumber_
         << " points) processed in " << t.getElapsedTime() << " s. ("
         << threadNumber_ << " thread(s)).";
     this->printMsg(msg.str());
@@ -278,7 +278,7 @@ int ttk::IntegralLines::execute(Compare cmp, const triangulationType* triangulat
 
   {
     std::stringstream msg;
-    msg << "[IntegralLines] Data-set (" << vertexNumber_
+    msg << "Data-set (" << vertexNumber_
         << " points) processed in " << t.getElapsedTime() << " s. ("
         << threadNumber_ << " thread(s)).";
     this->printMsg(msg.str());
