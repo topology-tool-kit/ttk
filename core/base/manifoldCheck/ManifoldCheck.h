@@ -82,6 +82,8 @@ namespace ttk {
         triangulation->preconditionVertexLinks();
         triangulation->preconditionEdgeLinks();
         triangulation->preconditionTriangleLinks();
+        triangulation->preconditionVertexEdges();
+        triangulation->preconditionVertexTriangles();
       }
 
       return 0;

@@ -48,8 +48,6 @@ int ttkManifoldCheck::RequestData(vtkInformation *request,
   if(!triangulation)
     return 0;
 
-  //   triangulation->preconditionVertexEdges();
-  //   triangulation->preconditionVertexTriangles();
   this->preconditionTriangulation(triangulation);
 
   // use a pointer-base copy for the input data -- to adapt if your wrapper does
@@ -61,8 +59,9 @@ int ttkManifoldCheck::RequestData(vtkInformation *request,
   this->setTriangleLinkComponentNumberVector(&triangleLinkComponentNumber_);
 
   int error = 0;
-  ttkTemplateMacro(triangulation->getType(),
-                   (error = this->execute<TTK_TT>((TTK_TT *)triangulation)));
+  ttkTemplateMacro(
+    triangulation->getType(),
+    (error = this->execute<TTK_TT>((TTK_TT *)triangulation->getData())));
   if(error)
     return error;
 
