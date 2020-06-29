@@ -56,7 +56,15 @@ int ttkScalarFieldSmoother::RequestData(vtkInformation *request,
   if(!inputScalarField)
     return 0;
 
+  if(inputScalarField->GetNumberOfComponents() != 1) {
+    printErr("Invalid scalar field ("
+             + std::to_string(inputScalarField->GetNumberOfComponents())
+             + " components)");
+    return 0;
+  }
+
   vtkDataArray *inputMaskField = nullptr;
+
   if(this->GetInputArrayInformation(1))
     inputMaskField = this->GetInputArrayToProcess(1, inputVector);
 
@@ -80,7 +88,8 @@ int ttkScalarFieldSmoother::RequestData(vtkInformation *request,
   printMsg("Starting computation...");
   printMsg(
     {{"  Scalar Array", inputScalarField->GetName()},
-     {"  Mask Array", inputMaskField ? inputMaskField->GetName() : "None"}});
+     {"  Mask Array", inputMaskField ? inputMaskField->GetName() : "None"},
+     {"  #iterations", std::to_string(NumberOfIterations)}});
 
   void *inputMaskPtr
     = (inputMaskField) ? ttkUtils::GetVoidPointer(inputMaskField) : nullptr;
