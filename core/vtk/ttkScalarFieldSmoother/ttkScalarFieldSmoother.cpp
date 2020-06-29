@@ -65,8 +65,10 @@ int ttkScalarFieldSmoother::RequestData(vtkInformation *request,
 
   vtkDataArray *inputMaskField = nullptr;
 
-  if(this->GetInputArrayInformation(1))
+  if(this->GetInputArrayInformation(1)) {
     inputMaskField = this->GetInputArrayToProcess(1, inputVector);
+    ForceInputMaskScalarField = true;
+  }
 
   if((!inputMaskField) || (!ForceInputMaskScalarField)) {
     inputMaskField = input->GetPointData()->GetArray(ttk::MaskScalarFieldName);
