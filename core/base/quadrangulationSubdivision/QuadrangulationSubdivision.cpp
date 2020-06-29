@@ -1,13 +1,12 @@
 #include <Dijkstra.h>
 #include <Geometry.h>
 #include <QuadrangulationSubdivision.h>
+
 #include <array>
 #include <cassert>
 #include <cmath>
 #include <numeric>
 #include <stack>
-
-#define MODULE_S "[QuadrangulationSubdivision] "
 
 static const float PREC_FLT{powf(10, -FLT_DIG)};
 
@@ -122,7 +121,7 @@ int ttk::QuadrangulationSubdivision::subdivise() {
   // temp storage for quad subdivision
   std::vector<Quad> tmp{};
 
-  Timer t;
+  Timer tm;
 
   // avoid reallocation in loop, causing invalid pointers
   outputPoints_.reserve(outputPoints_.size() * 5);
@@ -234,13 +233,11 @@ int ttk::QuadrangulationSubdivision::subdivise() {
   std::fill(
     outputSubdivision_.begin() + subdBeg, outputSubdivision_.end(), currSubd);
 
-  {
-    std::stringstream msg;
-    msg << MODULE_S "Subdivised " << outputQuads_.size() << " quads into "
-        << tmp.size() << " new quads (" << outputPoints_.size()
-        << " points) in " << t.getElapsedTime() << " s." << std::endl;
-    dMsg(std::cout, msg.str(), infoMsg);
-  }
+  this->printMsg("Subdivised " + std::to_string(outputQuads_.size())
+                   + " quads into " + std::to_string(tmp.size())
+                   + " new quads (" + std::to_string(outputPoints_.size())
+                   + " points)",
+                 1.0, tm.getElapsedTime(), this->threadNumber_);
 
   outputQuads_ = std::move(tmp);
 
@@ -552,7 +549,7 @@ std::tuple<ttk::QuadrangulationSubdivision::Point,
 
 int ttk::QuadrangulationSubdivision::project(const std::set<size_t> &filtered,
                                              const bool lastIter) {
-  Timer t;
+  Timer tm;
 
   if(lastIter) {
     trianglesChecked_.clear();
@@ -591,12 +588,10 @@ int ttk::QuadrangulationSubdivision::project(const std::set<size_t> &filtered,
 
   outputPoints_ = std::move(tmp);
 
-  {
-    std::stringstream msg;
-    msg << MODULE_S "Projected " << outputPoints_.size() - filtered.size()
-        << " points in " << t.getElapsedTime() << " s." << std::endl;
-    dMsg(std::cout, msg.str(), infoMsg);
-  }
+  this->printMsg("Projected "
+                   + std::to_string(outputPoints_.size() - filtered.size())
+                   + " points",
+                 1.0, tm.getElapsedTime(), this->threadNumber_);
 
   return 0;
 }
@@ -605,7 +600,7 @@ int ttk::QuadrangulationSubdivision::getQuadNeighbors(
   const std::vector<Quad> &quads,
   std::vector<std::set<size_t>> &neighbors,
   const bool secondNeighbors) const {
-  Timer t;
+  Timer tm;
 
   for(auto &q : quads) {
     auto i = static_cast<size_t>(q.i);
@@ -637,18 +632,16 @@ int ttk::QuadrangulationSubdivision::getQuadNeighbors(
     }
   }
 
-  {
-    std::stringstream msg;
-    msg << MODULE_S "Computed neighbors mapping of " << outputPoints_.size()
-        << " points in " << t.getElapsedTime() << " s." << std::endl;
-    dMsg(std::cout, msg.str(), detailedInfoMsg);
-  }
+  this->printMsg("Computed neighbors mapping of "
+                   + std::to_string(outputPoints_.size()) + " points",
+                 1.0, tm.getElapsedTime(), debug::LineMode::NEW,
+                 debug::Priority::DETAIL);
 
   return 0;
 }
 
 int ttk::QuadrangulationSubdivision::relax(const std::set<size_t> &filtered) {
-  Timer t;
+  Timer tm;
 
   // temp storage for relaxed points
   std::vector<Point> tmp(outputPoints_.size());
@@ -677,12 +670,10 @@ int ttk::QuadrangulationSubdivision::relax(const std::set<size_t> &filtered) {
 
   outputPoints_ = std::move(tmp);
 
-  {
-    std::stringstream msg;
-    msg << MODULE_S "Relaxed " << outputPoints_.size() - inputVertexNumber_
-        << " points in " << t.getElapsedTime() << " s." << std::endl;
-    dMsg(std::cout, msg.str(), detailedInfoMsg);
-  }
+  this->printMsg(
+    "Relaxed " + std::to_string(outputPoints_.size() - inputVertexNumber_)
+      + " points",
+    1.0, tm.getElapsedTime(), debug::LineMode::NEW, debug::Priority::DETAIL);
 
   return 0;
 }
@@ -714,7 +705,7 @@ int ttk::QuadrangulationSubdivision::findExtraordinaryVertices(
 }
 
 void ttk::QuadrangulationSubdivision::quadStatistics() {
-  Timer t;
+  Timer tm;
 
   quadArea_.clear();
   quadArea_.resize(outputQuads_.size());
@@ -842,10 +833,8 @@ void ttk::QuadrangulationSubdivision::quadStatistics() {
     hausdorff_[i] = maxDist / bboxDiag / vertexNumber_ * 1e8;
   }
 
-  std::stringstream msg;
-  msg << MODULE_S "Computed quad statistics in " << t.getElapsedTime() << " s."
-      << std::endl;
-  dMsg(std::cout, msg.str(), detailedInfoMsg);
+  this->printMsg("Computed quad statistics", 1.0, tm.getElapsedTime(),
+                 debug::LineMode::NEW, debug::Priority::DETAIL);
 }
 
 void ttk::QuadrangulationSubdivision::clearData() {
@@ -863,13 +852,8 @@ void ttk::QuadrangulationSubdivision::clearData() {
 // main routine
 int ttk::QuadrangulationSubdivision::execute() {
 
-  {
-    std::stringstream msg;
-    msg << MODULE_S "Beginning computation... " << std::endl;
-    dMsg(std::cout, msg.str(), infoMsg);
-  }
-
-  Timer t;
+  this->printMsg("Beginning computation...");
+  Timer tm;
 
   // clear output variables
   clearData();
@@ -950,23 +934,18 @@ int ttk::QuadrangulationSubdivision::execute() {
 
   if(criterion) {
     // log, clean & early return
-    std::stringstream msg;
-    msg << MODULE_S "Error: the output quadrangulation exceeds the provided"
-        << " Haussdorff distance tolerance." << std::endl;
-    dMsg(std::cout, msg.str(), infoMsg);
+    this->printErr("The output quadrangulation exceeds the provided Haussdorff "
+                   "distance tolerance");
     if(!showResError_) {
       clearData();
       return 1;
     }
   }
 
-  {
-    std::stringstream msg;
-    msg << MODULE_S "Produced " << outputQuads_.size() << " quadrangles with "
-        << outputPoints_.size() << " points in " << t.getElapsedTime()
-        << " s. (" << threadNumber_ << " thread(s))." << std::endl;
-    dMsg(std::cout, msg.str(), infoMsg);
-  }
+  this->printMsg("Produced " + std::to_string(outputQuads_.size())
+                   + " quadrangles with " + std::to_string(outputPoints_.size())
+                   + " points",
+                 1.0, tm.getElapsedTime(), this->threadNumber_);
 
   return 0;
 }
