@@ -105,11 +105,7 @@
         <Property name="VertexFieldName" />
       </PropertyGroup>
 
-      <PropertyGroup panel_widget="Line" label="Testing">
-        <Property name="UseAllCores" />
-        <Property name="ThreadNumber" />
-        <Property name="DebugLevel" />
-      </PropertyGroup>
+      ${DEBUG_WIDGETS}
 
       <Hints>
         <ShowInMenu category="TTK - Misc" />
