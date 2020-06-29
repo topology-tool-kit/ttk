@@ -90,8 +90,8 @@ namespace ttk {
      * @return 0
      */
     int findSepsVertices(const std::vector<size_t> &seps,
-                         std::vector<long long> &srcs,
-                         std::vector<long long> &dsts) const;
+                         std::vector<LongSimplexId> &srcs,
+                         std::vector<LongSimplexId> &dsts) const;
 
     /**
      * @brief Perform the quadrangulation
@@ -155,7 +155,7 @@ namespace ttk {
      *
      * @return 0
      */
-    int subdiviseDegenerateQuads(std::vector<long long> &outputSubd);
+    int subdiviseDegenerateQuads(std::vector<LongSimplexId> &outputSubd);
 
     Triangulation *triangulation_{};
     // number of vertices in triangulation
@@ -204,7 +204,7 @@ namespace ttk {
 
   public:
     // array of output polygons
-    std::vector<long long> outputCells_{};
+    std::vector<LongSimplexId> outputCells_{};
     // array of output vertices (generated middles of duplicated separatrices)
     std::vector<float> outputPoints_{};
     // array of output vertices identifiers

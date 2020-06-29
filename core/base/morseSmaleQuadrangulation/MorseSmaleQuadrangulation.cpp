@@ -12,11 +12,11 @@
 
 // ad-hoc quad data structure (see QuadrangulationSubdivision.h)
 struct Quad {
-  long long n;
-  long long i;
-  long long j;
-  long long k;
-  long long l;
+  ttk::LongSimplexId n;
+  ttk::LongSimplexId i;
+  ttk::LongSimplexId j;
+  ttk::LongSimplexId k;
+  ttk::LongSimplexId l;
 };
 
 int ttk::MorseSmaleQuadrangulation::detectCellSeps() {
@@ -331,14 +331,14 @@ int ttk::MorseSmaleQuadrangulation::quadrangulate(size_t &ndegen) {
 
   for(const auto &qs : quadSeps_) {
 
-    std::vector<long long> srcs{};
-    std::vector<long long> dsts{};
+    std::vector<LongSimplexId> srcs{};
+    std::vector<LongSimplexId> dsts{};
 
     findSepsVertices(qs, srcs, dsts);
 
     // remove duplicates
-    std::set<long long> srcs_set(srcs.begin(), srcs.end());
-    std::set<long long> dsts_set(dsts.begin(), dsts.end());
+    std::set<LongSimplexId> srcs_set(srcs.begin(), srcs.end());
+    std::set<LongSimplexId> dsts_set(dsts.begin(), dsts.end());
     srcs.assign(srcs_set.begin(), srcs_set.end());
     dsts.assign(dsts_set.begin(), dsts_set.end());
 
@@ -441,8 +441,8 @@ size_t ttk::MorseSmaleQuadrangulation::findSeparatrixMiddle(const size_t a,
 
 int ttk::MorseSmaleQuadrangulation::findSepsVertices(
   const std::vector<size_t> &seps,
-  std::vector<long long> &srcs,
-  std::vector<long long> &dsts) const {
+  std::vector<LongSimplexId> &srcs,
+  std::vector<LongSimplexId> &dsts) const {
 
   srcs.resize(seps.size());
   dsts.resize(seps.size());
@@ -452,7 +452,7 @@ int ttk::MorseSmaleQuadrangulation::findSepsVertices(
     auto dst = sepCellIds_[sepEnds_[seps[i]]];
     auto src_dim = sepCellDims_[sepBegs_[seps[i]]];
     auto dst_dim = sepCellDims_[sepEnds_[seps[i]]];
-    for(long long j = 0; j < criticalPointsNumber_; ++j) {
+    for(LongSimplexId j = 0; j < criticalPointsNumber_; ++j) {
       if(criticalPointsCellIds_[j] == src
          && criticalPointsType_[j] == src_dim) {
         srcs[i] = j;
@@ -468,7 +468,7 @@ int ttk::MorseSmaleQuadrangulation::findSepsVertices(
 }
 
 int ttk::MorseSmaleQuadrangulation::subdiviseDegenerateQuads(
-  std::vector<long long> &outputSubd) {
+  std::vector<LongSimplexId> &outputSubd) {
   auto quads = reinterpret_cast<std::vector<Quad> *>(&outputCells_);
   auto qsubd = reinterpret_cast<std::vector<Quad> *>(&outputSubd);
 
@@ -481,8 +481,8 @@ int ttk::MorseSmaleQuadrangulation::subdiviseDegenerateQuads(
       continue;
     }
 
-    std::vector<long long> srcs{};
-    std::vector<long long> dsts{};
+    std::vector<LongSimplexId> srcs{};
+    std::vector<LongSimplexId> dsts{};
 
     findSepsVertices(seps, srcs, dsts);
 
@@ -497,8 +497,8 @@ int ttk::MorseSmaleQuadrangulation::subdiviseDegenerateQuads(
       }
     }
     // extremum index
-    long long vert2Seps = count_vi > count_vk ? q.i : q.k;
-    long long vert1Sep = count_vi > count_vk ? q.k : q.i;
+    LongSimplexId vert2Seps = count_vi > count_vk ? q.i : q.k;
+    LongSimplexId vert1Sep = count_vi > count_vk ? q.k : q.i;
     // the two seps from j to vert2Seps
     std::vector<size_t> borderseps{};
     for(size_t j = 0; j < seps.size(); ++j) {
@@ -549,7 +549,7 @@ int ttk::MorseSmaleQuadrangulation::subdiviseDegenerateQuads(
         };
 
     auto v0 = std::min_element(sum.begin(), sum.end()) - sum.begin();
-    auto v0Pos = static_cast<long long>(insertNewPoint(v0, i, 3));
+    auto v0Pos = static_cast<LongSimplexId>(insertNewPoint(v0, i, 3));
 
     // find two other points
 
@@ -582,7 +582,7 @@ int ttk::MorseSmaleQuadrangulation::subdiviseDegenerateQuads(
     }
 
     auto v1 = std::min_element(sum.begin(), sum.end()) - sum.begin();
-    auto v1Pos = static_cast<long long>(insertNewPoint(v1, i, 4));
+    auto v1Pos = static_cast<LongSimplexId>(insertNewPoint(v1, i, 4));
     std::fill(sum.begin(), sum.end(), inf);
 
     for(size_t j = 0; j < sum.size(); ++j) {
@@ -597,7 +597,7 @@ int ttk::MorseSmaleQuadrangulation::subdiviseDegenerateQuads(
     }
 
     auto v2 = std::min_element(sum.begin(), sum.end()) - sum.begin();
-    auto v2Pos = static_cast<long long>(insertNewPoint(v2, i, 4));
+    auto v2Pos = static_cast<LongSimplexId>(insertNewPoint(v2, i, 4));
 
     qsubd->emplace_back(Quad{4, vert2Seps, m0Pos, v1Pos, v0Pos});
     qsubd->emplace_back(Quad{4, vert2Seps, m1Pos, v2Pos, v0Pos});
@@ -640,7 +640,7 @@ int ttk::MorseSmaleQuadrangulation::subdivise() {
       continue;
     }
 
-    std::vector<long long> sepMids(seps.size());
+    std::vector<LongSimplexId> sepMids(seps.size());
     std::vector<SimplexId> midsNearestVertex(seps.size());
     for(size_t j = 0; j < seps.size(); ++j) {
       sepMids[j] = sepMids_[seps[j]];
@@ -730,7 +730,7 @@ int ttk::MorseSmaleQuadrangulation::subdivise() {
       baryId = std::min_element(sum.begin(), sum.end()) - sum.begin();
     }
 
-    long long baryPos = outputPointsIds_.size();
+    LongSimplexId baryPos = outputPointsIds_.size();
     {
       float x, y, z;
       triangulation_->getVertexPoint(baryId, x, y, z);
@@ -742,8 +742,8 @@ int ttk::MorseSmaleQuadrangulation::subdivise() {
       outputPointsCells_.emplace_back(i);
     }
 
-    std::vector<long long> srcs{};
-    std::vector<long long> dsts{};
+    std::vector<LongSimplexId> srcs{};
+    std::vector<LongSimplexId> dsts{};
 
     findSepsVertices(seps, srcs, dsts);
 
@@ -780,11 +780,11 @@ int ttk::MorseSmaleQuadrangulation::dualQuadrangulate() {
   // them: the separatrix vertices and two barycenters
 
   auto quads = reinterpret_cast<std::vector<Quad> *>(&outputCells_);
-  std::vector<long long> dualQuads{};
+  std::vector<LongSimplexId> dualQuads{};
   auto dquads = reinterpret_cast<std::vector<Quad> *>(&dualQuads);
 
-  auto quadNeighbors = [&](const long long a) {
-    std::set<long long> neighs{};
+  auto quadNeighbors = [&](const LongSimplexId a) {
+    std::set<LongSimplexId> neighs{};
     for(const auto &q : *quads) {
       if(a == q.i || a == q.k) {
         neighs.emplace(q.j);
@@ -816,7 +816,7 @@ int ttk::MorseSmaleQuadrangulation::dualQuadrangulate() {
     // neighs should contain exactly 4 indices, two corresponding to
     // critical points, and two for generated points, mostly cell
     // barycenters
-    std::vector<long long> crit{}, gen{};
+    std::vector<LongSimplexId> crit{}, gen{};
     for(const auto n : neighs) {
       if(n < criticalPointsNumber_) {
         crit.emplace_back(n);
@@ -840,7 +840,7 @@ int ttk::MorseSmaleQuadrangulation::dualQuadrangulate() {
     // v0 has 3 neighbors: v1, v2 and the double extremum
 
     auto v0neighs = quadNeighbors(i);
-    std::vector<long long> crit{}, gen{};
+    std::vector<LongSimplexId> crit{}, gen{};
     for(const auto n : v0neighs) {
       if(n < criticalPointsNumber_) {
         crit.emplace_back(n);
@@ -853,7 +853,7 @@ int ttk::MorseSmaleQuadrangulation::dualQuadrangulate() {
 
     // follow v1 to get the single extremum
     auto v1neighs = quadNeighbors(gen[0]);
-    long long single{};
+    LongSimplexId single{};
     for(const auto n : v1neighs) {
       if(n < criticalPointsNumber_) {
         single = n;
@@ -888,7 +888,8 @@ bool ttk::MorseSmaleQuadrangulation::checkSurfaceCloseness() const {
     }
   }
   // quadrangles edges -> quadrangles
-  std::map<std::pair<long long, long long>, std::set<size_t>> quadEdges{};
+  std::map<std::pair<LongSimplexId, LongSimplexId>, std::set<size_t>>
+    quadEdges{};
 
   // sweep over quadrangulation edges
   auto quads = reinterpret_cast<const std::vector<Quad> *>(&outputCells_);
