@@ -22,11 +22,10 @@
 // base code includes
 #include <Triangulation.h>
 #include <UnionFind.h>
-#include <Wrapper.h>
 
 namespace ttk {
 
-  class ManifoldCheck : public Debug {
+  class ManifoldCheck : virtual public Debug {
 
   public:
     ManifoldCheck();
@@ -34,7 +33,8 @@ namespace ttk {
     ~ManifoldCheck();
 
     /// Execute the package.
-    int execute() const;
+    template <class triangulationType = AbstractTriangulation>
+    int execute(const triangulationType *triangulation) const;
 
     /// Register the output vector for vertex link component number
     inline int setVertexLinkComponentNumberVector(
@@ -76,26 +76,28 @@ namespace ttk {
     /// \return Returns 0 upon success, negative values otherwise.
     /// \sa ttk::Triangulation
     inline int setupTriangulation(Triangulation *triangulation) {
-      triangulation_ = triangulation;
 
-      if(triangulation_) {
+      if(triangulation) {
 
-        triangulation_->preconditionVertexLinks();
-        triangulation_->preconditionEdgeLinks();
-        triangulation_->preconditionTriangleLinks();
+        triangulation->preconditionVertexLinks();
+        triangulation->preconditionEdgeLinks();
+        triangulation->preconditionTriangleLinks();
       }
 
       return 0;
     }
 
   protected:
-    int vertexManifoldCheck(const ttk::SimplexId &vertexId) const;
+    template <class triangulationType = AbstractTriangulation>
+    int vertexManifoldCheck(const triangulationType *triangulation,
+                            const ttk::SimplexId &vertexId) const;
 
-    int edgeManifoldCheck(const ttk::SimplexId &edgeId) const;
+    template <class triangulationType = AbstractTriangulation>
+    int edgeManifoldCheck(const triangulationType *triangulation,
+                          const ttk::SimplexId &edgeId) const;
 
     std::vector<ttk::SimplexId> *vertexLinkComponentNumber_;
     std::vector<ttk::SimplexId> *edgeLinkComponentNumber_;
     std::vector<ttk::SimplexId> *triangleLinkComponentNumber_;
-    Triangulation *triangulation_;
   };
 } // namespace ttk
