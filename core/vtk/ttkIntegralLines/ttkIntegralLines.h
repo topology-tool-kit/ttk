@@ -19,6 +19,12 @@
 /// \param Input1 Input sources (vtkPointSet)
 /// \param Output Output integral lines (vtkUnstructuredGrid)
 ///
+/// This module respects the following convention regarding the order of the
+/// input arrays to process (SetInputArrayToProcess()):
+/// \param idx 0: input data array to average.
+/// \param idx 1: offset scalar field.
+/// \param idx 2: vertex identifiers.
+///
 /// This filter can be used as any other VTK filter (for instance, by using the
 /// sequence of calls SetInputData(), Update(), GetOutput()).
 ///
@@ -31,107 +37,53 @@
 #ifndef _TTK_DISCRETESTREAMLINE_H
 #define _TTK_DISCRETESTREAMLINE_H
 
-// VTK includes
-#include <vtkDataArray.h>
-#include <vtkDataSet.h>
-#include <vtkDataSetAlgorithm.h>
-#include <vtkDoubleArray.h>
-#include <vtkFiltersCoreModule.h>
-#include <vtkFloatArray.h>
-#include <vtkInformation.h>
-#include <vtkLine.h>
-#include <vtkObjectFactory.h>
-#include <vtkPointData.h>
-#include <vtkSmartPointer.h>
-
 // VTK Module
 #include <ttkIntegralLinesModule.h>
 
 // ttk code includes
 #include <IntegralLines.h>
-#include <ttkTriangulationAlgorithm.h>
+#include <ttkAlgorithm.h>
 
-class TTKINTEGRALLINES_EXPORT ttkIntegralLines : public vtkDataSetAlgorithm,
-                                                 protected ttk::Wrapper {
+class vtkUnstructuredGrid;
+
+class TTKINTEGRALLINES_EXPORT ttkIntegralLines : public ttkAlgorithm,
+                                                 protected ttk::IntegralLines {
 
 public:
   static ttkIntegralLines *New();
 
-  vtkTypeMacro(ttkIntegralLines, vtkDataSetAlgorithm);
-
-  void SetDebugLevel(int debugLevel) {
-    setDebugLevel(debugLevel);
-    Modified();
-  }
-
-  void SetThreadNumber(int threadNumber) {
-    ThreadNumber = threadNumber;
-    SetThreads();
-  }
-
-  void SetUseAllCores(bool onOff) {
-    UseAllCores = onOff;
-    SetThreads();
-  }
-
-  vtkSetMacro(ScalarField, std::string);
-  vtkGetMacro(ScalarField, std::string);
+  vtkTypeMacro(ttkIntegralLines, ttkAlgorithm);
 
   vtkGetMacro(Direction, int);
   vtkSetMacro(Direction, int);
 
-  vtkSetMacro(OutputScalarFieldType, int);
-  vtkGetMacro(OutputScalarFieldType, int);
-
   vtkSetMacro(ForceInputVertexScalarField, bool);
   vtkGetMacro(ForceInputVertexScalarField, bool);
-
-  vtkSetMacro(InputVertexScalarFieldName, std::string);
-  vtkGetMacro(InputVertexScalarFieldName, std::string);
 
   vtkSetMacro(ForceInputOffsetScalarField, bool);
   vtkGetMacro(ForceInputOffsetScalarField, bool);
 
-  vtkSetMacro(OffsetScalarFieldName, std::string);
-  vtkGetMacro(OffsetScalarFieldName, std::string);
-
-  int getTriangulation(vtkDataSet *input);
-  int getScalars(vtkDataSet *input);
-  int getOffsets(vtkDataSet *input);
-  int getIdentifiers(vtkPointSet *input);
   int getTrajectories(vtkDataSet *input,
+                      ttk::Triangulation *triangulation,
                       std::vector<std::vector<ttk::SimplexId>> &trajectories,
                       vtkUnstructuredGrid *output);
 
-  template <typename VTK_TT>
-  int dispatch();
+  template <typename VTK_TT, typename TTK_TT>
+  int dispatch(int, const TTK_TT*);
 
 protected:
   ttkIntegralLines();
   ~ttkIntegralLines() override;
 
-  TTK_SETUP();
-
   int FillInputPortInformation(int port, vtkInformation *info) override;
   int FillOutputPortInformation(int port, vtkInformation *info) override;
-
+  int RequestData(vtkInformation *request,
+                  vtkInformationVector **inputVector,
+                  vtkInformationVector *outputVector) override;
 private:
-  bool hasUpdatedMesh_;
-  std::string ScalarField;
-  int Direction;
-  int OutputScalarFieldType;
-  bool ForceInputVertexScalarField;
-  std::string InputVertexScalarFieldName;
-  int OffsetScalarFieldId;
-  bool ForceInputOffsetScalarField;
-  std::string OffsetScalarFieldName;
-
-  ttk::Triangulation *triangulation_;
-  ttk::IntegralLines integralLines_;
-  vtkDataArray *inputScalars_;
-  vtkDataArray *offsets_;
-  vtkDataArray *inputOffsets_;
-  vtkDataArray *identifiers_;
+  int Direction {0};
+  bool ForceInputVertexScalarField {false};
+  bool ForceInputOffsetScalarField {false};
 };
 
 #endif // _TTK_DISCRETESTREAMLINE_H
