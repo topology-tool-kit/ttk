@@ -1,29 +1,33 @@
+#include <ttkMacros.h>
 #include <ttkTriangulationRequest.h>
 #include <ttkUtils.h>
-#include <ttkMacros.h>
 
 using namespace std;
 using namespace ttk;
 
 vtkStandardNewMacro(ttkTriangulationRequest);
 
-int ttkTriangulationRequest::FillInputPortInformation(int port, vtkInformation *info) {
-  if(port == 0){
+int ttkTriangulationRequest::FillInputPortInformation(int port,
+                                                      vtkInformation *info) {
+  if(port == 0) {
     info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
     return 1;
   }
   return 0;
 }
 
-int ttkTriangulationRequest::FillOutputPortInformation(int port, vtkInformation *info) {
-  if(port == 0){
+int ttkTriangulationRequest::FillOutputPortInformation(int port,
+                                                       vtkInformation *info) {
+  if(port == 0) {
     info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
     return 1;
   }
   return 0;
 }
 
-int ttkTriangulationRequest::RequestData(vtkInformation *request, vtkInformationVector **inputVector, vtkInformationVector *outputVector) {
+int ttkTriangulationRequest::RequestData(vtkInformation *request,
+                                         vtkInformationVector **inputVector,
+                                         vtkInformationVector *outputVector) {
 
   Memory m;
   Timer timer;
@@ -453,7 +457,8 @@ int ttkTriangulationRequest::RequestData(vtkInformation *request, vtkInformation
     }
   }
 
-  this->printMsg("Complete", 1, timer.getElapsedTime(), this->threadNumber_, m.getElapsedUsage());
+  this->printMsg("Complete", 1, timer.getElapsedTime(), this->threadNumber_,
+                 m.getElapsedUsage());
 
   return 1;
 }

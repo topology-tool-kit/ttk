@@ -22,16 +22,16 @@
 #pragma once
 
 // ttk code includes
-#include <ttkAlgorithm.h>
 #include <Triangulation.h>
+#include <ttkAlgorithm.h>
 
 // VTK includes
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
-#include <vtkUnstructuredGrid.h>
 #include <vtkInformation.h>
 #include <vtkPointData.h>
 #include <vtkSmartPointer.h>
+#include <vtkUnstructuredGrid.h>
 
 // VTK Module
 #include <ttkTriangulationRequestModule.h>
@@ -53,7 +53,7 @@ public:
   static ttkTriangulationRequest *New();
   vtkTypeMacro(ttkTriangulationRequest, ttkAlgorithm)
 
-  vtkSetMacro(SimplexType, int);
+    vtkSetMacro(SimplexType, int);
   vtkGetMacro(SimplexType, int);
 
   vtkSetMacro(SimplexIdentifier, int);
@@ -84,7 +84,9 @@ protected:
 
   int FillOutputPortInformation(int port, vtkInformation *info) override;
 
-  int RequestData(vtkInformation *request,vtkInformationVector **inputVector,vtkInformationVector *outputVector) override;
+  int RequestData(vtkInformation *request,
+                  vtkInformationVector **inputVector,
+                  vtkInformationVector *outputVector) override;
 
 private:
   int SimplexType;
