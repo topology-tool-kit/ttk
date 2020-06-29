@@ -15,15 +15,19 @@
 
 // base code includes
 #include <Triangulation.h>
-#include <Wrapper.h>
+
 #include <set>
 #include <tuple>
 
 namespace ttk {
 
-  class QuadrangulationSubdivision : public Debug {
+  class QuadrangulationSubdivision : virtual public Debug {
 
   public:
+    QuadrangulationSubdivision() {
+      this->setDebugMsgPrefix("QuadrangulationSubdivision");
+    }
+
     inline void setSubdivisionLevel(const unsigned int value) {
       subdivisionLevel_ = value;
     }
