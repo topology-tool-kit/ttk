@@ -6,11 +6,6 @@ using namespace ttk;
 vtkStandardNewMacro(ttkIdentifiers)
 
   ttkIdentifiers::ttkIdentifiers() {
-
-  // init
-  CellFieldName = "CellIdentifiers";
-  VertexFieldName = ttk::VertexScalarFieldName;
-  UseAllCores = true;
 }
 
 ttkIdentifiers::~ttkIdentifiers() {
