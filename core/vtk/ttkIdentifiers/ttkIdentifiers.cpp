@@ -67,7 +67,6 @@ int ttkIdentifiers::RequestData(vtkInformation *request,
 
   SimplexId vertexNumber = input->GetNumberOfPoints();
   SimplexId cellNumber = input->GetNumberOfCells();
-  SimplexId count = 0;
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
@@ -88,7 +87,7 @@ int ttkIdentifiers::RequestData(vtkInformation *request,
   output->GetPointData()->AddArray(vertexIdentifiers);
   output->GetCellData()->AddArray(cellIdentifiers);
 
-  printMsg("Processed " + std::to_string(vertexNumber_) + " vertices and "
+  printMsg("Processed " + std::to_string(vertexNumber) + " vertices and "
              + std::to_string(cellNumber) + " cells",
            1, t.getElapsedTime(), threadNumber_);
 
