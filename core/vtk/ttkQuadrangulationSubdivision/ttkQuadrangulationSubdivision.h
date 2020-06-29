@@ -64,21 +64,8 @@ public:
   vtkSetMacro(QuadStatistics, bool);
   vtkGetMacro(QuadStatistics, bool);
 
-  // default copy constructor
-  ttkQuadrangulationSubdivision(const ttkQuadrangulationSubdivision &) = delete;
-  // default move constructor
-  ttkQuadrangulationSubdivision(ttkQuadrangulationSubdivision &&) = delete;
-  // default copy assignment operator
-  ttkQuadrangulationSubdivision &
-    operator=(const ttkQuadrangulationSubdivision &)
-    = delete;
-  // default move assignment operator
-  ttkQuadrangulationSubdivision &operator=(ttkQuadrangulationSubdivision &&)
-    = delete;
-
 protected:
   ttkQuadrangulationSubdivision();
-  ~ttkQuadrangulationSubdivision() override = default;
 
   int FillInputPortInformation(int port, vtkInformation *info) override;
   int FillOutputPortInformation(int port, vtkInformation *info) override;
