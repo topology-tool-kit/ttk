@@ -13,17 +13,17 @@
 
 #pragma once
 
-#include <set>
-
 // base code includes
 #include <Triangulation.h>
-#include <Wrapper.h>
 
 namespace ttk {
 
-  class MorseSmaleQuadrangulation : public Debug {
-
+  class MorseSmaleQuadrangulation : virtual public Debug {
   public:
+    MorseSmaleQuadrangulation() {
+      this->setDebugMsgPrefix("MorseSmaleQuadrangulation");
+    }
+
     inline void setCriticalPoints(const unsigned int number,
                                   void *const points,
                                   void *const ids,
@@ -57,14 +57,14 @@ namespace ttk {
     inline void setInputPoints(const void *const addr) {
       inputPoints_ = static_cast<const float *>(addr);
     }
-    inline void setupTriangulation(Triangulation *const triangl) {
+    inline void preconditionTriangulation(Triangulation *const triangl) {
       triangulation_ = triangl;
       if(triangulation_ != nullptr) {
-        triangulation_->preconditionVertexNeighbors();
-        triangulation_->preconditionVertexTriangles();
-        triangulation_->preconditionBoundaryVertices();
+        triangl->preconditionVertexNeighbors();
+        triangl->preconditionVertexTriangles();
+        triangl->preconditionBoundaryVertices();
       }
-      verticesNumber_ = triangulation_->getNumberOfVertices();
+      verticesNumber_ = triangl->getNumberOfVertices();
     }
 
     int execute();
@@ -202,7 +202,7 @@ namespace ttk {
     // indices of separatrices that border quads
     std::vector<std::vector<size_t>> quadSeps_{};
 
-  public:
+  protected:
     // array of output polygons
     std::vector<LongSimplexId> outputCells_{};
     // array of output vertices (generated middles of duplicated separatrices)

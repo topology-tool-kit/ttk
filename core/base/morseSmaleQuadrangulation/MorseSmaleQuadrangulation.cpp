@@ -7,8 +7,7 @@
 #include <cmath>
 #include <numeric>
 #include <queue>
-
-#define MODULE_S "[MorseSmaleQuadrangulation] "
+#include <set>
 
 // ad-hoc quad data structure (see QuadrangulationSubdivision.h)
 struct Quad {
@@ -361,10 +360,7 @@ int ttk::MorseSmaleQuadrangulation::quadrangulate(size_t &ndegen) {
     }
 
     if(!found) {
-      std::stringstream msg;
-      msg << MODULE_S "Missing quadrangle" << std::endl;
-      dMsg(std::cout, msg.str(), detailedInfoMsg);
-      return 1;
+      this->printMsg("Missing quadrangle", ttk::debug::Priority::DETAIL);
     }
   }
 
@@ -713,17 +709,12 @@ int ttk::MorseSmaleQuadrangulation::subdivise() {
 
     const size_t thresholdVertsInCell{50};
     if(verticesInCell <= thresholdVertsInCell) {
-      std::stringstream msg;
-      msg << MODULE_S "Small cell detected" << std::endl;
-      dMsg(std::cout, msg.str(), infoMsg);
+      this->printMsg("Small cell detected");
     }
 
     SimplexId baryId{};
     if(verticesInCell == 0) {
-      std::stringstream msg;
-      msg << MODULE_S "Barycenter in cell " << i << " not found." << std::endl;
-      dMsg(std::cout, msg.str(), infoMsg);
-
+      this->printMsg("Barycenter of cell " + std::to_string(i) + " not found");
       // snap bary on sepMids[0]
       baryId = outputPointsIds_[sepMids[0]];
     } else {
@@ -940,14 +931,11 @@ void ttk::MorseSmaleQuadrangulation::clearData() {
 // main routine
 int ttk::MorseSmaleQuadrangulation::execute() {
 
-  Timer t;
+  Timer tm;
 
   // sanity check
   if(separatriceNumber_ == 0) {
-    std::stringstream msg;
-    msg << MODULE_S "Error: cannot perform quadrangulation without separatrices"
-        << std::endl;
-    dMsg(std::cout, msg.str(), infoMsg);
+    this->printErr("Unable to perform quadrangulation without separatrices");
     return 1;
   }
 
@@ -979,11 +967,8 @@ int ttk::MorseSmaleQuadrangulation::execute() {
   } else {
     // clean, log & early return
     clearData();
-    std::stringstream msg;
-    msg << MODULE_S "Error: unable to generate quadrangulation from current "
-                    "Morse-Smale complex"
-        << std::endl;
-    dMsg(std::cout, msg.str(), infoMsg);
+    this->printErr("Unable to generate a quadrangulation from the given "
+                   "Morse-Smale complex");
     return 1;
   }
 
@@ -993,11 +978,7 @@ int ttk::MorseSmaleQuadrangulation::execute() {
 
   if(!checkSurfaceCloseness()) {
     // log, clean & early return
-    std::stringstream msg;
-    msg << MODULE_S
-      "Error: output surface does not match input surface closeness"
-        << std::endl;
-    dMsg(std::cout, msg.str(), infoMsg);
+    this->printErr("Output surface does not match input surface closeness");
     if(!showResError_) {
       clearData();
       return 1;
@@ -1007,19 +988,9 @@ int ttk::MorseSmaleQuadrangulation::execute() {
   // number of produced quads
   size_t quadNumber = outputCells_.size() / 5;
 
-  {
-    std::stringstream msg;
-    msg << MODULE_S "Produced " << quadNumber << " quadrangles after "
-        << t.getElapsedTime() << " s." << std::endl;
-    dMsg(std::cout, msg.str(), infoMsg);
-  }
-
-  {
-    std::stringstream msg;
-    msg << MODULE_S << quadNumber << " quads (" << ndegen << " degenerated)"
-        << std::endl;
-    dMsg(std::cout, msg.str(), detailedInfoMsg);
-  }
+  this->printMsg("Produced " + std::to_string(quadNumber) + " ("
+                   + std::to_string(ndegen) + " degenerated)",
+                 1.0, tm.getElapsedTime(), this->threadNumber_);
 
   return 0;
 }
