@@ -47,7 +47,7 @@ namespace ttk {
       return 0;
     }
 
-    int setupTriangulation(AbstractTriangulation *triangulation) {
+    int preconditionTriangulation(AbstractTriangulation *triangulation) {
       // Pre-condition functions.
       if(triangulation) {
         triangulation->preconditionVertexNeighbors();

@@ -45,17 +45,15 @@ int ttkGeometrySmoother::RequestData(vtkInformation *request,
   auto outputPointSet = vtkPointSet::GetData(outputVector);
 
   auto triangulation = ttkAlgorithm::GetTriangulation(inputPointSet);
-  this->setupTriangulation(triangulation);
+  this->preconditionTriangulation(triangulation);
 
   vtkDataArray *inputMaskField = nullptr;
-  if(this->ForceInputMaskScalarField) {
-    inputMaskField = this->GetInputArrayToProcess(0, inputVector);
-    if(!inputMaskField) {
-      return 0;
-    }
-  } else {
+  if(this->GetInputArrayInformation(1))
+    inputMaskField = this->GetInputArrayToProcess(1, inputVector);
+
+  if((!inputMaskField) || (!ForceInputMaskScalarField)) {
     inputMaskField
-      = inputPointSet->GetPointData()->GetArray("ttkMaskScalarField");
+      = inputPointSet->GetPointData()->GetArray(ttk::MaskScalarFieldName);
   }
 
   // This filter copies the input into a new data-set (smoothed)

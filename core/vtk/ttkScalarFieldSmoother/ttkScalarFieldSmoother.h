@@ -77,7 +77,6 @@ protected:
 private:
   int NumberOfIterations{1};
   bool ForceInputMaskScalarField{false};
-  vtkDataArray *outputScalarField_{nullptr};
 };
 
 #endif // _TTK_SCALAR_FIELD_SMOOTHER_H
