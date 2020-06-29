@@ -1,8 +1,6 @@
 #pragma once
 
-#include <Geometry.h>
 #include <Triangulation.h>
-#include <Wrapper.h>
 
 namespace ttk {
   namespace Dijkstra {
@@ -17,9 +15,9 @@ namespace ttk {
      *
      * @return 0 in case of success
      */
-    template <typename T>
+    template <typename T, typename triangulationType>
     int shortestPath(const SimplexId source,
-                     Triangulation &triangulation,
+                     const triangulationType &triangulation,
                      std::vector<T> &outputDists,
                      const std::vector<SimplexId> &bounds
                      = std::vector<SimplexId>(),

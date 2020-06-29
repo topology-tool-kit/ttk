@@ -1,11 +1,13 @@
 #include <Dijkstra.h>
+#include <Geometry.h>
+
 #include <array>
 #include <functional>
 #include <queue>
 
-template <typename T>
+template <typename T, typename triangulationType>
 int ttk::Dijkstra::shortestPath(const ttk::SimplexId source,
-                                ttk::Triangulation &triangulation,
+                                const triangulationType &triangulation,
                                 std::vector<T> &outputDists,
                                 const std::vector<ttk::SimplexId> &bounds,
                                 const std::vector<bool> &mask) {
@@ -91,16 +93,16 @@ int ttk::Dijkstra::shortestPath(const ttk::SimplexId source,
   return 0;
 }
 
-// explicit intantiations for floating-point types
-template int
-  ttk::Dijkstra::shortestPath<float>(const ttk::SimplexId source,
-                                     ttk::Triangulation &triangulation,
-                                     std::vector<float> &outputDists,
-                                     const std::vector<ttk::SimplexId> &bounds,
-                                     const std::vector<bool> &mask);
-template int
-  ttk::Dijkstra::shortestPath<double>(const ttk::SimplexId source,
-                                      ttk::Triangulation &triangulation,
-                                      std::vector<double> &outputDists,
-                                      const std::vector<ttk::SimplexId> &bounds,
-                                      const std::vector<bool> &mask);
+// explicit template specializations for floating-point types
+#define DIJKSTRA_SPECIALIZE(DATATYPE, TRIANGLTYPE)                 \
+  template int ttk::Dijkstra::shortestPath<DATATYPE, TRIANGLTYPE>( \
+    const ttk::SimplexId source, const TRIANGLTYPE &triangulation, \
+    std::vector<DATATYPE> &outputDists,                            \
+    const std::vector<ttk::SimplexId> &bounds, const std::vector<bool> &mask);
+
+DIJKSTRA_SPECIALIZE(float, ttk::ExplicitTriangulation)
+DIJKSTRA_SPECIALIZE(float, ttk::ImplicitTriangulation)
+DIJKSTRA_SPECIALIZE(float, ttk::PeriodicImplicitTriangulation)
+DIJKSTRA_SPECIALIZE(double, ttk::ExplicitTriangulation)
+DIJKSTRA_SPECIALIZE(double, ttk::ImplicitTriangulation)
+DIJKSTRA_SPECIALIZE(double, ttk::PeriodicImplicitTriangulation)
