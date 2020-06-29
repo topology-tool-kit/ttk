@@ -32,7 +32,10 @@
         </Documentation>
       </InputProperty>
 
-      <StringVectorProperty name="ScalarFieldNew" label="Scalar Field" command="SetInputArrayToProcess" element_types="0 0 0 0 2" number_of_elements="5" default_values="0">
+      <StringVectorProperty name="ScalarFieldNew" label="Scalar Field" 
+                            command="SetInputArrayToProcess" 
+                            element_types="0 0 0 0 2" 
+                            number_of_elements="5" default_values="0">
         <ArrayListDomain
           name="array_list"
           default_values="0">
