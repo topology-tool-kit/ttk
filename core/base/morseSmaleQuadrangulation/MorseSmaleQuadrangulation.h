@@ -77,7 +77,7 @@ namespace ttk {
     }
 
     template <typename triangulationType>
-    int execute(const triangulationType &triangulation);
+    int execute(triangulationType &triangulation);
 
   private:
     /**
@@ -116,7 +116,7 @@ namespace ttk {
      * @return 0 in case of success
      */
     template <typename triangulationType>
-    int quadrangulate(size_t &ndegen, const triangulationType &triangulation);
+    int quadrangulate(size_t &ndegen, triangulationType &triangulation);
 
     /**
      * @brief Perform the dual quadrangulation
@@ -149,7 +149,7 @@ namespace ttk {
      * @return 0
      */
     template <typename triangulationType>
-    int detectCellSeps(const triangulationType &triangulation);
+    int detectCellSeps(triangulationType &triangulation);
 
     /**
      * @brief Compare the closeness of the input triangulation and the
@@ -247,22 +247,14 @@ namespace ttk {
 
 template <typename triangulationType>
 int ttk::MorseSmaleQuadrangulation::detectCellSeps(
-  const triangulationType &triangulation) {
+  triangulationType &triangulation) {
 
-  Triangulation newT{};
+  ExplicitTriangulation newT{};
+  BarycentricSubdivision bs{};
 
-  std::vector<float> points_{};
-  std::vector<ttk::LongSimplexId> cells_co_{};
-  std::vector<ttk::LongSimplexId> cells_off_{};
-  std::vector<ttk::SimplexId> pointId_{};
-  std::vector<ttk::SimplexId> pointDim_{};
-  BarycentricSubdivision bs{
-    points_, cells_co_, cells_off_, pointId_, pointDim_};
-
-  bs.setupTriangulation(triangulation);
-  bs.setOutputTriangulation(&newT);
+  bs.preconditionTriangulation(&triangulation);
   bs.setInputPoints(inputPoints_);
-  bs.execute();
+  bs.execute(triangulation, newT);
 
   newT.preconditionVertexNeighbors();
   newT.preconditionVertexEdges();
@@ -523,7 +515,7 @@ int ttk::MorseSmaleQuadrangulation::detectCellSeps(
 
 template <typename triangulationType>
 int ttk::MorseSmaleQuadrangulation::quadrangulate(
-  size_t &ndegen, const triangulationType &triangulation) {
+  size_t &ndegen, triangulationType &triangulation) {
   // quadrangle vertices are either extrema or saddle points
 
   // separatrices bounds indices and cell ids
@@ -1031,8 +1023,7 @@ bool ttk::MorseSmaleQuadrangulation::checkSurfaceCloseness(
 
 // main routine
 template <typename triangulationType>
-int ttk::MorseSmaleQuadrangulation::execute(
-  const triangulationType &triangulation) {
+int ttk::MorseSmaleQuadrangulation::execute(triangulationType &triangulation) {
 
   Timer tm;
 
