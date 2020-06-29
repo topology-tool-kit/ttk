@@ -7,15 +7,6 @@ vtkStandardNewMacro(ttkScalarFieldSmoother);
 
 ttkScalarFieldSmoother::ttkScalarFieldSmoother() {
 
-  // init
-  NumberOfIterations = 1;
-  ScalarFieldIdentifier = 0;
-  MaskIdentifier = 0;
-  ForceInputMaskScalarField = false;
-  InputMask = ttk::MaskScalarFieldName;
-  outputScalarField_ = NULL;
-
-  UseAllCores = true;
 }
 
 ttkScalarFieldSmoother::~ttkScalarFieldSmoother() {
