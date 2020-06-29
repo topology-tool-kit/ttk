@@ -11,8 +11,7 @@
 ///
 /// \sa ttkIntegralLines.cpp %for a usage example.
 
-#ifndef _DISCRETESTREAMLINE_H
-#define _DISCRETESTREAMLINE_H
+#pragma once
 
 // base code includes
 #include <Geometry.h>
@@ -28,7 +27,7 @@ namespace ttk {
 
   public:
     IntegralLines();
-    ~IntegralLines();
+    ~IntegralLines() override;
 
     template <class triangulationType>
     inline float getDistance(const triangulationType* triangulation, const SimplexId &a, const SimplexId &b) const {
@@ -286,5 +285,3 @@ int ttk::IntegralLines::execute(Compare cmp, const triangulationType* triangulat
 
   return 0;
 }
-
-#endif // DISCRETESTREAMLINE_H

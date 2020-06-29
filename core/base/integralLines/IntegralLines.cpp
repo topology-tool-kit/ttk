@@ -9,5 +9,4 @@ IntegralLines::IntegralLines()
   this->setDebugMsgPrefix("IntegralLines");
 }
 
-IntegralLines::~IntegralLines() {
-}
+IntegralLines::~IntegralLines() = default;
