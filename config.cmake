@@ -76,12 +76,12 @@ option(TTK_BUILD_DOCUMENTATION "Build doxygen developer documentation" OFF)
 if(TTK_BUILD_DOCUMENTATION)
   find_package(Doxygen)
   if(DOXYGEN_FOUND)
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/ttk.doxygen
-      ${CMAKE_CURRENT_BINARY_DIR}/ttk.doxygen)
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/core/ttk.doxygen
+      ${CMAKE_CURRENT_BINARY_DIR}/core/ttk.doxygen)
     add_custom_target(doc
       ALL
         ${DOXYGEN_EXECUTABLE}
-        ${CMAKE_CURRENT_BINARY_DIR}/ttk.doxygen
+        ${CMAKE_CURRENT_BINARY_DIR}/core/ttk.doxygen
       WORKING_DIRECTORY
         ${CMAKE_CURRENT_BINARY_DIR}
       COMMENT

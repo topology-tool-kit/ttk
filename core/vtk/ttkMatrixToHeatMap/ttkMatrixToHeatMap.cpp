@@ -4,10 +4,13 @@
 #include <vtkDataObject.h>
 #include <vtkDoubleArray.h>
 #include <vtkFiltersCoreModule.h>
+#include <vtkInformation.h>
+#include <vtkInformationVector.h>
 #include <vtkObjectFactory.h>
 #include <vtkTable.h>
 #include <vtkUnstructuredGrid.h>
 
+#include <array>
 #include <regex>
 
 vtkStandardNewMacro(ttkMatrixToHeatMap);

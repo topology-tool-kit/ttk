@@ -1,4 +1,6 @@
-/// TODO 4: Provide your information
+/// TODO 4: Provide your information and **update** the documentation (in
+/// particular regarding the order convention if input arrays need to be
+/// specified with the standard VTK call SetInputArrayToProcess()).
 ///
 /// \ingroup vtk
 /// \class ttkHelloWorld
@@ -7,15 +9,29 @@
 ///
 /// \brief TTK VTK-filter that wraps the ttk::HelloWorld module.
 ///
-/// This VTK filter uses the ttk::HelloWorld module to compute the bounding box
-/// of a vtkDataSet, which is returned as a vtkUnstructuredGrid.
+/// This VTK filter uses the ttk::HelloWorld module to compute an averaging of
+/// the data values of an input point data array defined on the input
+/// vtkDataSet.
 ///
-/// \param Input vtkDataSet whose bounding box will be computed.
-/// \param Output vtkUnstructuredGrid that corresponds to bounding box of the
-/// input.
+/// \param Input vtkDataSet.
+/// \param Output vtkDataSet.
 ///
 /// This filter can be used as any other VTK filter (for instance, by using the
 /// sequence of calls SetInputData(), Update(), GetOutputDataObject()).
+///
+/// The name of the input data array to consider can be specified with the
+/// standard VTK call SetInputArrayToProcess(), with the following parameters:
+/// \param port 0
+/// \param connection 0
+/// \param fieldAssociation 0 (point data)
+/// \param arrayName (const char* string representing the name of the VTK array)
+///
+/// This module respects the following convention regarding the order of the
+/// input arrays to process (SetInputArrayToProcess()):
+/// \param idx 0: input data array to average.
+///
+/// See the corresponding standalone program for a usage example:
+///   - standalone/HelloWorld/main.cpp
 ///
 /// See the related ParaView example state files for usage examples within a
 /// VTK pipeline.

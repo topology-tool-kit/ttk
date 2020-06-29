@@ -17,6 +17,7 @@
 
 // VTK includes
 #include <ttkAlgorithm.h>
+#include <vtkDataObject.h>
 #include <vtkSmartPointer.h>
 
 class vtkDataArraySelection;

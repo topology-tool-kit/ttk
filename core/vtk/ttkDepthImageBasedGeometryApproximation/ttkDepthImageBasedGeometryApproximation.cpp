@@ -1,7 +1,6 @@
 #include <ttkDepthImageBasedGeometryApproximation.h>
+#include <ttkMacros.h>
 #include <ttkUtils.h>
-
-#include <vtkObjectFactory.h> // for new macro
 
 #include <vtkCellData.h>
 #include <vtkImageData.h>
@@ -13,9 +12,8 @@
 #include <vtkCellArray.h>
 #include <vtkDoubleArray.h>
 
-#include <vtkInformationVector.h>
-
-#include <vtkSetGet.h> // vtkTemplateMacro
+#include <vtkInformation.h>
+// #include <vtkInformationVector.h>
 
 vtkStandardNewMacro(ttkDepthImageBasedGeometryApproximation);
 

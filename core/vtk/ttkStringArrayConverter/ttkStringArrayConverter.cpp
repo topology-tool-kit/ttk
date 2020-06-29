@@ -1,8 +1,6 @@
 #include <ttkStringArrayConverter.h>
 
-#include <vtkDataObject.h> // For port info
-#include <vtkObjectFactory.h> // for new macro
-
+#include <vtkDataSet.h>
 #include <vtkFieldData.h>
 #include <vtkIdTypeArray.h>
 #include <vtkPointData.h>

@@ -1,5 +1,7 @@
 #include <ttkBarycentricSubdivision.h>
 #include <ttkUtils.h>
+#include <vtkCellData.h>
+#include <vtkPointData.h>
 
 #define MODULE_S "[ttkBarycentricSubdivision] "
 #define MODULE_ERROR_S MODULE_S "Error: "
