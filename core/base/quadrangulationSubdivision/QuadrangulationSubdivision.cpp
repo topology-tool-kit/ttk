@@ -858,6 +858,11 @@ int ttk::QuadrangulationSubdivision::execute() {
   // clear output variables
   clearData();
 
+  // ensure consistency of dependent options
+  if(LockAllInputVertices) {
+    LockInputExtrema = true;
+  }
+
   // store input points (MSC critical points)
   for(size_t i = 0; i < inputVertexNumber_; i++) {
     outputPoints_.emplace_back(inputVertices_[i]);

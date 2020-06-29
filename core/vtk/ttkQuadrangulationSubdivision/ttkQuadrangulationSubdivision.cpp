@@ -41,20 +41,6 @@ int ttkQuadrangulationSubdivision::RequestData(
   vtkInformationVector **inputVector,
   vtkInformationVector *outputVector) {
 
-  // ensure consistency of dependent options before passing them to
-  // base layer
-  if(LockAllInputVertices) {
-    LockInputExtrema = true;
-  }
-
-  setSubdivisionLevel(SubdivisionLevel);
-  setRelaxationIterations(RelaxationIterations);
-  setLockInputExtrema(LockInputExtrema);
-  setLockAllInputVertices(LockAllInputVertices);
-  setReverseProjection(ReverseProjection);
-  setShowResError(ShowResError);
-  setHausdorffLevel(HausdorffLevel);
-
   auto quads = vtkUnstructuredGrid::GetData(inputVector[0]);
   auto mesh = vtkUnstructuredGrid::GetData(inputVector[1]);
   auto output = vtkUnstructuredGrid::GetData(outputVector);
