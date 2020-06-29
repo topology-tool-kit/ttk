@@ -79,20 +79,23 @@ int ttkQuadrangulationSubdivision::RequestData(
   this->setInputVertexIdentifiers(
     ttkUtils::GetVoidPointer(identifiers), identifiers->GetNumberOfTuples());
 
-  int res{};
+#define QUADSUB_EXPLICIT_CALLS(TRIANGL_CASE, TRIANGL_TYPE)                  \
+  case TRIANGL_CASE: {                                                      \
+    const auto tri = static_cast<TRIANGL_TYPE *>(triangulation->getData()); \
+    if(tri != nullptr) {                                                    \
+      res = this->execute<TRIANGL_TYPE>(*tri);                              \
+    }                                                                       \
+    break;                                                                  \
+  }
+
+  int res{-1};
   switch(triangulation->getType()) {
-    case ttk::Triangulation::Type::EXPLICIT:
-      res = this->execute(
-        static_cast<ttk::ExplicitTriangulation *>(triangulation->getData()));
-      break;
-    case ttk::Triangulation::Type::IMPLICIT:
-      res = this->execute(
-        static_cast<ttk::ImplicitTriangulation *>(triangulation->getData()));
-      break;
-    case ttk::Triangulation::Type::PERIODIC:
-      res = this->execute(static_cast<ttk::PeriodicImplicitTriangulation *>(
-        triangulation->getData()));
-      break;
+    QUADSUB_EXPLICIT_CALLS(
+      ttk::Triangulation::Type::EXPLICIT, ttk::ExplicitTriangulation);
+    QUADSUB_EXPLICIT_CALLS(
+      ttk::Triangulation::Type::IMPLICIT, ttk::ImplicitTriangulation);
+    QUADSUB_EXPLICIT_CALLS(
+      ttk::Triangulation::Type::PERIODIC, ttk::PeriodicImplicitTriangulation);
   }
 
   if(res != 0) {
