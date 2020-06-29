@@ -42,7 +42,8 @@ int ttkTableDataSelector::RequestData(vtkInformation *request,
   vtkTable *input = vtkTable::GetData(inputVector[0]);
   vtkTable *output = vtkTable::GetData(outputVector);
 
-    Memory m;
+  Memory m;
+  Timer timer;
 
   output->ShallowCopy(input);
 
@@ -91,9 +92,7 @@ int ttkTableDataSelector::RequestData(vtkInformation *request,
 
   output->GetRowData()->ShallowCopy(outputRowData);
 
-  {
-    this->printMsg({"Memory usage: ", std::to_string(m.getElapsedUsage()), " MB."});
-  }
+  this->printMsg("Complete", 1, timer.getElapsedTime(), this->threadNumber_, m.getElapsedUsage());
 
   return 1;
 }

@@ -53,7 +53,7 @@
 
       <StringVectorProperty name="NbColumns"
         command="GetRangeIds"
-        number_of_elements_per_command="0"
+        number_of_elements_per_command="1"
         information_only="1"
         si_class="vtkSIDataArraySelectionProperty" />
 

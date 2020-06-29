@@ -23,7 +23,6 @@
 #include <vtkInformation.h>
 #include <vtkSmartPointer.h>
 #include <vtkTable.h>
-#include <vtkTableAlgorithm.h>
 #include <vtkDataSetAttributes.h>
 
 // VTK Module
@@ -69,6 +68,9 @@ public:
 protected:
   ttkTableDataSelector() {
     this->setDebugMsgPrefix("ttkTableDataSelector");
+
+    this->SetNumberOfInputPorts(1);
+    this->SetNumberOfOutputPorts(1);
 
     RegexpString = ".*";
 
