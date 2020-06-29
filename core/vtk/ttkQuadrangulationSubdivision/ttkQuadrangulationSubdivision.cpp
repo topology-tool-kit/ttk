@@ -9,16 +9,6 @@
 #include <vtkPointData.h>
 #include <vtkUnstructuredGrid.h>
 
-#ifndef TTK_ENABLE_KAMIKAZE
-#define TTK_ABORT_KK(COND, MSG, RET) \
-  if(COND) {                         \
-    this->printErr(MSG);             \
-    return RET;                      \
-  }
-#else // TTK_ENABLE_KAMIKAZE
-#define TTK_ABORT_KK(COND, MSG, RET)
-#endif // TTK_ENABLE_KAMIKAZE
-
 vtkStandardNewMacro(ttkQuadrangulationSubdivision);
 
 ttkQuadrangulationSubdivision::ttkQuadrangulationSubdivision() {
@@ -46,37 +36,6 @@ int ttkQuadrangulationSubdivision::FillOutputPortInformation(
   return 0;
 }
 
-int ttkQuadrangulationSubdivision::getQuadVertices(
-  vtkUnstructuredGrid *const input) {
-  auto cells = input->GetCells();
-
-  TTK_ABORT_KK(cells == nullptr, "invalid input quadrangle cells", -3);
-  TTK_ABORT_KK(
-    cells->GetData() == nullptr, "invalid input quadrangle cell data", -4);
-
-  auto points = input->GetPoints();
-
-  TTK_ABORT_KK(points == nullptr, "invalid input critical points", -5);
-  TTK_ABORT_KK(
-    points->GetData() == nullptr, "invalid input quadrangle cell data", -6);
-
-  auto pointData = input->GetPointData();
-  auto identifiers = pointData->GetArray(
-    static_cast<const char *>(ttk::VertexScalarFieldName));
-
-  TTK_ABORT_KK(pointData == nullptr, "invalid input quadrangle point data", -7);
-  TTK_ABORT_KK(identifiers == nullptr,
-               "invalid input quadrangle vertices identifiers", -8);
-
-  setInputQuads(cells->GetData()->GetVoidPointer(0), cells->GetNumberOfCells());
-  setInputVertices(
-    points->GetData()->GetVoidPointer(0), points->GetNumberOfPoints());
-  setInputVertexIdentifiers(
-    identifiers->GetVoidPointer(0), identifiers->GetNumberOfTuples());
-
-  return 0;
-}
-
 int ttkQuadrangulationSubdivision::RequestData(
   vtkInformation *request,
   vtkInformationVector **inputVector,
@@ -100,25 +59,47 @@ int ttkQuadrangulationSubdivision::RequestData(
   auto mesh = vtkUnstructuredGrid::GetData(inputVector[1]);
   auto output = vtkUnstructuredGrid::GetData(outputVector);
 
-  int res = 0;
-
   auto triangulation = ttkAlgorithm::GetTriangulation(mesh);
   if(triangulation == nullptr) {
     return 0;
   }
   this->setupTriangulation(triangulation);
 
-  res += getQuadVertices(quads);
-  TTK_ABORT_KK(res != 0, "Cannot get quad vertices", -2);
+  auto inputCells = quads->GetCells();
+  if(inputCells == nullptr || inputCells->GetData() == nullptr) {
+    this->printErr("Invalid input quadrangle cells");
+    return 0;
+  }
 
-  res += this->execute();
+  auto inputPoints = quads->GetPoints();
+  auto pointData = quads->GetPointData();
+  if(inputPoints == nullptr || inputPoints->GetData() == nullptr
+     || pointData == nullptr) {
+    this->printErr("Invalid input quadrangle points");
+    return 0;
+  }
+
+  auto identifiers = pointData->GetArray(
+    static_cast<const char *>(ttk::VertexScalarFieldName));
+  if(identifiers == nullptr) {
+    this->printErr("Invalid input quadrangle vertices identifiers field");
+  }
+
+  setInputQuads(
+    inputCells->GetData()->GetVoidPointer(0), inputCells->GetNumberOfCells());
+  setInputVertices(inputPoints->GetData()->GetVoidPointer(0),
+                   inputPoints->GetNumberOfPoints());
+  setInputVertexIdentifiers(
+    identifiers->GetVoidPointer(0), identifiers->GetNumberOfTuples());
+
+  const auto res = this->execute();
 
   if(res != 0) {
     this->printWrn("Please increase the number of relaxation iterations, of "
                    "subdivision levels or consider another function (higher "
                    "eigenfunctions).");
     if(!ShowResError) {
-      return res;
+      return 0;
     }
   }
 

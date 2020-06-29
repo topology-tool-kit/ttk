@@ -32,8 +32,6 @@
 #include <QuadrangulationSubdivision.h>
 #include <ttkAlgorithm.h>
 
-class vtkUnstructuredGrid;
-
 class TTKQUADRANGULATIONSUBDIVISION_EXPORT ttkQuadrangulationSubdivision
   : public ttkAlgorithm,
     protected ttk::QuadrangulationSubdivision {
@@ -87,8 +85,6 @@ protected:
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;
-
-  int getQuadVertices(vtkUnstructuredGrid *input);
 
 private:
   // number of subdivisions of the Morse-Smale Complex cells
