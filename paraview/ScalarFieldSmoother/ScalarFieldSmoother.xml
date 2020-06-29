@@ -80,14 +80,6 @@
         </Documentation>
       </IntVectorProperty>
 
-      <StringVectorProperty
-        name="InputMask"
-        command="SetInputMask"
-        label="Input Mask Field"
-        default_values="MaskField"
-        number_of_elements="1"
-        panel_visibility="advanced"
-        animateable="0">
       <StringVectorProperty 
           name="InputMaskNew" 
           label="Mask Field" 
@@ -114,10 +106,10 @@
       </StringVectorProperty>
 
       <PropertyGroup panel_widget="Line" label="Input options">
-        <Property name="Scalar Field" />
+        <Property name="ScalarFieldNew" />
         <Property name="NumberOfIterations" />
         <Property name="ForceInputMaskScalarField" />
-        <Property name="InputMask" />
+        <Property name="InputMaskNew" />
       </PropertyGroup>
 
       ${DEBUG_WIDGETS}
