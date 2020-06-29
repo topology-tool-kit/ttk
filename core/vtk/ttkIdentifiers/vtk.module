@@ -1,6 +1,4 @@
 NAME
- ttkIdentifiers
+  ttkIdentifiers
 DEPENDS
-  VTK::FiltersCore
-PRIVATE_DEPENDS
-  VTK::CommonCore
+  ttkAlgorithm

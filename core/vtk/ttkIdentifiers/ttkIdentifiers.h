@@ -18,39 +18,26 @@
 /// See the related ParaView example state files for usage examples within a
 /// VTK pipeline.
 ///
-#ifndef _TTK_IDENTIFIERS_H
-#define _TTK_IDENTIFIERS_H
+#pragma once
 
 // VTK includes -- to adapt
-#include <vtkCellData.h>
-#include <vtkDataArray.h>
-#include <vtkDataSet.h>
-#include <vtkDataSetAlgorithm.h>
-#include <vtkFiltersCoreModule.h>
-#include <vtkIdTypeArray.h>
-#include <vtkInformation.h>
-#include <vtkIntArray.h>
-#include <vtkObjectFactory.h>
-#include <vtkPointData.h>
-#include <vtkSmartPointer.h>
 
 // VTK Module
 #include <ttkIdentifiersModule.h>
 
 // ttk code includes
-#include <ttkTriangulationAlgorithm.h>
+#include <ttkAlgorithm.h>
 
 // in this example, this wrapper takes a data-set on the input and produces a
 // data-set on the output - to adapt.
 // see the documentation of the vtkAlgorithm class to decide from which VTK
 // class your wrapper should inherit.
-class TTKIDENTIFIERS_EXPORT ttkIdentifiers : public vtkDataSetAlgorithm,
-                                             protected ttk::Wrapper {
+class TTKIDENTIFIERS_EXPORT ttkIdentifiers : public ttkAlgorithm {
 
 public:
   static ttkIdentifiers *New();
 
-  vtkTypeMacro(ttkIdentifiers, vtkDataSetAlgorithm);
+  vtkTypeMacro(ttkIdentifiers, ttkAlgorithm);
 
   vtkSetMacro(CellFieldName, std::string);
   vtkGetMacro(CellFieldName, std::string);
@@ -58,52 +45,20 @@ public:
   vtkSetMacro(VertexFieldName, std::string);
   vtkGetMacro(VertexFieldName, std::string);
 
-  // default ttk setters
-  void SetDebugLevel(int debugLevel) {
-    setDebugLevel(debugLevel);
-    Modified();
-  }
-
-  void SetThreads() {
-    if(!UseAllCores)
-      threadNumber_ = ThreadNumber;
-    else {
-      threadNumber_ = ttk::OsCall::getNumberOfCores();
-    }
-    Modified();
-  }
-
-  void SetThreadNumber(int threadNumber) {
-    ThreadNumber = threadNumber;
-    SetThreads();
-  }
-
-  void SetUseAllCores(bool onOff) {
-    UseAllCores = onOff;
-    SetThreads();
-  }
-  // end of default ttk setters
-
 protected:
   ttkIdentifiers();
 
   ~ttkIdentifiers() override;
+
+  int FillInputPortInformation(int port, vtkInformation *info) override;
+
+  int FillOutputPortInformation(int port, vtkInformation *info) override;
 
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;
 
 private:
-  bool UseAllCores;
-  ttk::ThreadId ThreadNumber;
-  std::string CellFieldName, VertexFieldName;
-
-  // base code features
-  int doIt(vtkDataSet *input, vtkDataSet *output);
-
-  bool needsToAbort() override;
-
-  int updateProgress(const float &progress) override;
+  std::string CellFieldName{"CellIdentifiers"},
+    VertexFieldName{ttk::VertexScalarFieldName};
 };
-
-#endif // _TTK_IDENTIFIERS_H
