@@ -56,21 +56,21 @@ namespace ttk {
       return 0;
     }
 
-    template <class dataType, class TriangulationType = AbstractTriangulation>
-    int smooth(const TriangulationType *triangulation,
+    template <class dataType, class triangulationType = AbstractTriangulation>
+    int smooth(const triangulationType *triangulation,
                const int &numberOfIterations) const;
 
   protected:
-    int dimensionNumber_;
-    void *inputData_, *outputData_;
-    char *mask_;
+    int dimensionNumber_{1};
+    void *inputData_{nullptr}, *outputData_{nullptr};
+    char *mask_{nullptr};
   };
 
 } // namespace ttk
 
 // template functions
-template <class dataType, class TriangulationType>
-int ttk::ScalarFieldSmoother::smooth(const TriangulationType *triangulation,
+template <class dataType, class triangulationType>
+int ttk::ScalarFieldSmoother::smooth(const triangulationType *triangulation,
                                      const int &numberOfIterations) const {
 
   Timer t;
