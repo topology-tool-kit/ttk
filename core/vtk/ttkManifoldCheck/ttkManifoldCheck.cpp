@@ -2,6 +2,7 @@
 
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
+#include <vtkGenericCell.h>
 #include <vtkInformation.h>
 #include <vtkPointData.h>
 
