@@ -68,7 +68,8 @@ int ttkQuadrangulationSubdivision::RequestData(
   auto identifiers = pointData->GetArray(
     static_cast<const char *>(ttk::VertexScalarFieldName));
   if(identifiers == nullptr) {
-    this->printErr("Invalid input quadrangle vertices identifiers field");
+    this->printErr("Missing point data array named "
+                   + std::string(ttk::VertexScalarFieldName));
   }
 
   this->setInputQuads(ttkUtils::GetVoidPointer(inputCells->GetData()),
