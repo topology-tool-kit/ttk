@@ -54,10 +54,4 @@ protected:
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;
-
-private:
-  // if dual quadrangulation
-  bool DualQuadrangulation{false};
-  // show result despite error
-  bool ShowResError{false};
 };

@@ -87,10 +87,6 @@ int ttkMorseSmaleQuadrangulation::RequestData(
     ttkUtils::GetVoidPointer(seprsPoints));
 
   int res{-1};
-
-  this->setDualQuadrangulation(DualQuadrangulation);
-  this->setShowResError(ShowResError);
-
   res = this->execute();
 
   if(res != 0) {

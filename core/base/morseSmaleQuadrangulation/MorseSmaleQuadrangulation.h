@@ -49,10 +49,10 @@ namespace ttk {
     }
 
     inline void setDualQuadrangulation(const bool input) {
-      dualQuadrangulation_ = input;
+      DualQuadrangulation = input;
     }
     inline void setShowResError(const bool value) {
-      showResError_ = value;
+      ShowResError = value;
     }
     inline void setInputPoints(const void *const addr) {
       inputPoints_ = static_cast<const float *>(addr);
@@ -184,10 +184,6 @@ namespace ttk {
     unsigned char *sepCellDims_{};
     // separatrices points
     float *sepPoints_{};
-    // if dual quadrangulation
-    bool dualQuadrangulation_{false};
-    // display result despite error
-    bool showResError_{false};
 
     // index of separatrices beginnings in separatrices arrays
     std::vector<size_t> sepBegs_{};
@@ -214,5 +210,10 @@ namespace ttk {
     // for critical points, their id, for sep middles, the sep id and
     // for barycenters the parent quad id
     std::vector<SimplexId> outputPointsCells_{};
+
+    // if dual quadrangulation
+    bool DualQuadrangulation{false};
+    // display result despite error
+    bool ShowResError{false};
   };
 } // namespace ttk

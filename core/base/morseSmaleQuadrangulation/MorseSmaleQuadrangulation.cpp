@@ -972,14 +972,14 @@ int ttk::MorseSmaleQuadrangulation::execute() {
     return 1;
   }
 
-  if(dualQuadrangulation_) {
+  if(DualQuadrangulation) {
     dualQuadrangulate();
   }
 
   if(!checkSurfaceCloseness()) {
     // log, clean & early return
     this->printErr("Output surface does not match input surface closeness");
-    if(!showResError_) {
+    if(!ShowResError) {
       clearData();
       return 1;
     }
