@@ -25,6 +25,7 @@
 /// This module respects the following convention regarding the order of the
 /// input arrays to process (SetInputArrayToProcess()):
 /// \param idx 0: input scalar field
+/// \param idx 1 (optional): input mask scalar field
 ///
 /// See the corresponding standalone program for a usage example:
 ///   - standalone/ScalarFieldSmoother/main.cpp

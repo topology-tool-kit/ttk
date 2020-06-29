@@ -96,5 +96,5 @@ int ttkScalarFieldSmoother::RequestData(vtkInformation *request,
     (this->smooth<VTK_TT, TTK_TT>(
       (TTK_TT *)triangulation->getData(), NumberOfIterations)));
 
-  return 0;
+  return 1;
 }
