@@ -115,8 +115,8 @@ ttk::SimplexId ttk::QuadrangulationSubdivision::findQuadBary(
 
 int ttk::QuadrangulationSubdivision::subdivise() {
 
-  using edgeType = std::pair<long long, long long>;
-  using vertexType = std::pair<long long, Point>;
+  using edgeType = std::pair<LongSimplexId, LongSimplexId>;
+  using vertexType = std::pair<LongSimplexId, Point>;
   std::map<edgeType, vertexType> processedEdges;
 
   // temp storage for quad subdivision
@@ -190,19 +190,20 @@ int ttk::QuadrangulationSubdivision::subdivise() {
     auto kl = std::make_pair(std::min(q.k, q.l), std::max(q.k, q.l));
     auto li = std::make_pair(std::min(q.l, q.i), std::max(q.l, q.i));
 
-    auto process_edge_middle = [&](const std::pair<long long, long long> &pair,
-                                   const Point &pt, const SimplexId id) {
-      /* check if edge already processed by a neighbor quad */
-      if(processedEdges.find(pair) == processedEdges.end()) {
-        processedEdges[pair] = std::make_pair(outputPoints_.size(), pt);
-        /* add new point 3d coordinates to vector of output points */
-        outputPoints_.emplace_back(pt);
-        /* new point is an edge middle */
-        outputVertType_.emplace_back(1);
-        /* store also TTK identifier of triangular mesh vertex */
-        nearestVertexIdentifier_.emplace_back(id);
-      }
-    };
+    auto process_edge_middle
+      = [&](const std::pair<LongSimplexId, LongSimplexId> &pair,
+            const Point &pt, const SimplexId id) {
+          /* check if edge already processed by a neighbor quad */
+          if(processedEdges.find(pair) == processedEdges.end()) {
+            processedEdges[pair] = std::make_pair(outputPoints_.size(), pt);
+            /* add new point 3d coordinates to vector of output points */
+            outputPoints_.emplace_back(pt);
+            /* new point is an edge middle */
+            outputVertType_.emplace_back(1);
+            /* store also TTK identifier of triangular mesh vertex */
+            nearestVertexIdentifier_.emplace_back(id);
+          }
+        };
 
     process_edge_middle(ij, midij, ijid);
     process_edge_middle(jk, midjk, jkid);
@@ -210,7 +211,7 @@ int ttk::QuadrangulationSubdivision::subdivise() {
     process_edge_middle(li, midli, liid);
 
     // barycenter index in outputPoints_
-    auto baryIdx = static_cast<long long>(outputPoints_.size());
+    auto baryIdx = static_cast<LongSimplexId>(outputPoints_.size());
     outputPoints_.emplace_back(bary);
     outputVertType_.emplace_back(2);
     nearestVertexIdentifier_.emplace_back(baryid);
@@ -256,7 +257,7 @@ ttk::QuadrangulationSubdivision::Point
   // find all quads that have a as vertex
   std::vector<Quad> quads{};
   for(auto &q : outputQuads_) {
-    auto _a = static_cast<long long>(a);
+    auto _a = static_cast<LongSimplexId>(a);
     if(q.i == _a || q.j == _a || q.k == _a || q.l == _a) {
       quads.emplace_back(q);
     }
@@ -267,7 +268,7 @@ ttk::QuadrangulationSubdivision::Point
 
   // find couple of neighbors of a sharing a quad
   for(auto &q : quads) {
-    auto _a = static_cast<long long>(a);
+    auto _a = static_cast<LongSimplexId>(a);
     std::array<size_t, 2> tmp{};
     if(q.i == _a) {
       tmp[0] = static_cast<size_t>(q.l);

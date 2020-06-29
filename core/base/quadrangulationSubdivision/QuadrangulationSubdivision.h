@@ -71,8 +71,8 @@ namespace ttk {
     }
     int execute();
 
-    inline long long *getQuadBuf() {
-      return reinterpret_cast<long long *>(outputQuads_.data());
+    inline LongSimplexId *getQuadBuf() {
+      return reinterpret_cast<LongSimplexId *>(outputQuads_.data());
     }
     inline size_t getQuadNumber() const {
       return outputQuads_.size();
@@ -117,11 +117,11 @@ namespace ttk {
     };
     // VTK_QUAD representation with vtkIdType
     struct Quad {
-      long long n; // number of vertices, 4
-      long long i; // index of first vertex
-      long long j; // second vertex
-      long long k; // third vertex
-      long long l; // fourth vertex
+      LongSimplexId n; // number of vertices, 4
+      LongSimplexId i; // index of first vertex
+      LongSimplexId j; // second vertex
+      LongSimplexId k; // third vertex
+      LongSimplexId l; // fourth vertex
     };
 
     /**
