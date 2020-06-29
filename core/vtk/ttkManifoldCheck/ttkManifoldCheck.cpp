@@ -60,9 +60,11 @@ int ttkManifoldCheck::RequestData(vtkInformation *request,
   this->setEdgeLinkComponentNumberVector(&edgeLinkComponentNumber_);
   this->setTriangleLinkComponentNumberVector(&triangleLinkComponentNumber_);
 
-  int status = 0;
+  int error = 0;
   ttkTemplateMacro(triangulation->getType(),
-                   (status = this->execute((TTK_TT *)triangulation)));
+                   (error = this->execute<TTK_TT>((TTK_TT *)triangulation)));
+  if(error)
+    return error;
 
   printMsg("Preparing VTK output...");
 
@@ -286,5 +288,5 @@ int ttkManifoldCheck::RequestData(vtkInformation *request,
   output->GetPointData()->AddArray(trianglePointArray);
   output->GetCellData()->AddArray(triangleCellArray);
 
-  return 0;
+  return 1;
 }
