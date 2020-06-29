@@ -71,12 +71,12 @@ int ttkQuadrangulationSubdivision::RequestData(
     this->printErr("Invalid input quadrangle vertices identifiers field");
   }
 
-  setInputQuads(
-    inputCells->GetData()->GetVoidPointer(0), inputCells->GetNumberOfCells());
-  setInputVertices(inputPoints->GetData()->GetVoidPointer(0),
-                   inputPoints->GetNumberOfPoints());
-  setInputVertexIdentifiers(
-    identifiers->GetVoidPointer(0), identifiers->GetNumberOfTuples());
+  this->setInputQuads(ttkUtils::GetVoidPointer(inputCells->GetData()),
+                      inputCells->GetNumberOfCells());
+  this->setInputVertices(ttkUtils::GetVoidPointer(inputPoints->GetData()),
+                         inputPoints->GetNumberOfPoints());
+  this->setInputVertexIdentifiers(
+    ttkUtils::GetVoidPointer(identifiers), identifiers->GetNumberOfTuples());
 
   const auto res = this->execute();
 
