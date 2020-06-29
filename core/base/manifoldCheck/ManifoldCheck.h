@@ -57,7 +57,7 @@ namespace ttk {
       return 0;
     }
 
-    /// Setup a (valid) triangulation object for this TTK base object.
+    /// Precondition a (valid) triangulation object for this TTK base object.
     ///
     /// \pre This function should be called prior to any usage of this TTK
     /// object, in a clearly distinct pre-processing step that involves no
@@ -75,7 +75,7 @@ namespace ttk {
     /// \param triangulation Pointer to a valid triangulation.
     /// \return Returns 0 upon success, negative values otherwise.
     /// \sa ttk::Triangulation
-    inline int setupTriangulation(Triangulation *triangulation) {
+    inline int preconditionTriangulation(Triangulation *triangulation) {
 
       if(triangulation) {
 

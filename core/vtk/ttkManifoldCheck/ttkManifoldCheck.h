@@ -48,8 +48,9 @@ public:
   static ttkManifoldCheck *New();
   vtkTypeMacro(ttkManifoldCheck, ttkAlgorithm)
 
-    protected : ttkManifoldCheck() {
-  }
+    protected :
+
+    ttkManifoldCheck();
 
   ~ttkManifoldCheck() override{};
 
