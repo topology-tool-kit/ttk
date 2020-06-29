@@ -63,7 +63,7 @@ int ttkQuadrangulationSubdivision::RequestData(
   if(triangulation == nullptr) {
     return 0;
   }
-  this->setupTriangulation(triangulation);
+  this->preconditionTriangulation(triangulation);
 
   auto inputCells = quads->GetCells();
   if(inputCells == nullptr || inputCells->GetData() == nullptr) {

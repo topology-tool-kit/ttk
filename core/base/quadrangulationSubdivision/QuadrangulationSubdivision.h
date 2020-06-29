@@ -65,7 +65,7 @@ namespace ttk {
         nearestVertexIdentifier_[i] = inputVertexIdentifiers[i];
       }
     }
-    inline void setupTriangulation(Triangulation *const triangl) {
+    inline void preconditionTriangulation(Triangulation *const triangl) {
       triangulation_ = triangl;
       if(triangulation_ != nullptr) {
         vertexNumber_ = triangulation_->getNumberOfVertices();
