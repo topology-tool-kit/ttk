@@ -1,6 +1,6 @@
-#include <ttkUtils.h>
 #include <ttkMacros.h>
 #include <ttkTableDataSelector.h>
+#include <ttkUtils.h>
 
 #include <regex>
 
@@ -9,16 +9,18 @@ using namespace ttk;
 
 vtkStandardNewMacro(ttkTableDataSelector)
 
-int ttkTableDataSelector::FillInputPortInformation(int port, vtkInformation *info) {
-  if(port == 0){
+  int ttkTableDataSelector::FillInputPortInformation(int port,
+                                                     vtkInformation *info) {
+  if(port == 0) {
     info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkTable");
     return 1;
   }
   return 0;
 }
 
-int ttkTableDataSelector::FillOutputPortInformation(int port, vtkInformation *info) {
-  if(port == 0){
+int ttkTableDataSelector::FillOutputPortInformation(int port,
+                                                    vtkInformation *info) {
+  if(port == 0) {
     info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
     return 1;
   }
@@ -32,8 +34,7 @@ int ttkTableDataSelector::RequestInformation(
 
   vtkTable *input = vtkTable::GetData(inputVector[0]);
   FillAvailableCols(input);
-  return ttkAlgorithm::RequestInformation(
-    request, inputVector, outputVector);
+  return ttkAlgorithm::RequestInformation(request, inputVector, outputVector);
 }
 
 int ttkTableDataSelector::RequestData(vtkInformation *request,
@@ -92,7 +93,8 @@ int ttkTableDataSelector::RequestData(vtkInformation *request,
 
   output->GetRowData()->ShallowCopy(outputRowData);
 
-  this->printMsg("Complete", 1, timer.getElapsedTime(), this->threadNumber_, m.getElapsedUsage());
+  this->printMsg("Complete", 1, timer.getElapsedTime(), this->threadNumber_,
+                 m.getElapsedUsage());
 
   return 1;
 }

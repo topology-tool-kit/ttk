@@ -20,10 +20,10 @@
 // VTK includes
 #include <vtkDataArray.h>
 #include <vtkDataArraySelection.h>
+#include <vtkDataSetAttributes.h>
 #include <vtkInformation.h>
 #include <vtkSmartPointer.h>
 #include <vtkTable.h>
-#include <vtkDataSetAttributes.h>
 
 // VTK Module
 #include <ttkTableDataSelectorModule.h>
@@ -31,8 +31,7 @@
 // ttk code includes
 #include <ttkAlgorithm.h>
 
-class TTKTABLEDATASELECTOR_EXPORT ttkTableDataSelector
-  : public ttkAlgorithm {
+class TTKTABLEDATASELECTOR_EXPORT ttkTableDataSelector : public ttkAlgorithm {
 
 public:
   static ttkTableDataSelector *New();
