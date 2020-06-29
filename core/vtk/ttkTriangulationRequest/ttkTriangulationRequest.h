@@ -23,10 +23,12 @@
 
 // ttk code includes
 #include <ttkAlgorithm.h>
+#include <Triangulation.h>
 
 // VTK includes
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
+#include <vtkUnstructuredGrid.h>
 #include <vtkInformation.h>
 #include <vtkPointData.h>
 #include <vtkSmartPointer.h>
@@ -63,37 +65,8 @@ public:
   vtkSetMacro(KeepAllDataArrays, bool);
   vtkGetMacro(KeepAllDataArrays, bool);
 
-  int FillInputPortInformation(int port, vtkInformation *info) override {
-
-    switch(port) {
-      case 0:
-        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataSet");
-        break;
-
-      default:
-        break;
-    }
-
-    return 1;
-  }
-
-  int FillOutputPortInformation(int port, vtkInformation *info) override {
-
-    switch(port) {
-      case 0:
-        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
-        break;
-
-      default:
-        break;
-    }
-
-    return 1;
-  }
-
 protected:
   ttkTriangulationRequest() {
-    UseAllCores = true;
     SimplexType = 0;
     SimplexIdentifier = 0;
     RequestType = 0;
@@ -107,7 +80,11 @@ protected:
 
   ~ttkTriangulationRequest() override{};
 
-  TTK_SETUP();
+  int FillInputPortInformation(int port, vtkInformation *info) override;
+
+  int FillOutputPortInformation(int port, vtkInformation *info) override;
+
+  int RequestData(vtkInformation *request,vtkInformationVector **inputVector,vtkInformationVector *outputVector) override;
 
 private:
   int SimplexType;
