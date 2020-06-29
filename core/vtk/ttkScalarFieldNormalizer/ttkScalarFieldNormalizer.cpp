@@ -1,5 +1,7 @@
 #include <ttkScalarFieldNormalizer.h>
 
+#include <Geometry.h>
+
 #include <vtkDataSet.h>
 #include <vtkInformation.h>
 #include <vtkPointData.h>
@@ -14,6 +16,8 @@ vtkStandardNewMacro(ttkScalarFieldNormalizer);
 
 ttkScalarFieldNormalizer::ttkScalarFieldNormalizer() {
   // init
+  this->SetNumberOfInputPorts(1);
+  this->SetNumberOfOutputPorts(1);
   setDebugMsgPrefix("ScalarFieldNormalizer");
 }
 
@@ -93,5 +97,5 @@ int ttkScalarFieldNormalizer::RequestData(vtkInformation *request,
   output->ShallowCopy(input);
   output->GetPointData()->AddArray(outputArray);
 
-  return 0;
+  return 1;
 }
