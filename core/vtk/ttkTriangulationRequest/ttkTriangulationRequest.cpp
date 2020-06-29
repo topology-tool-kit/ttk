@@ -4,21 +4,18 @@ using namespace std;
 using namespace ttk;
 
 vtkStandardNewMacro(ttkTriangulationRequest);
-int ttkTriangulationRequest::doIt(vector<vtkDataSet *> &inputs,
-                                  vector<vtkDataSet *> &outputs) {
+
+int ttkTriangulationRequest::RequestData(vtkInformation *request, vtkInformationVector **inputVector, vtkInformationVector *outputVector){
 
   Memory m;
 
-  vtkDataSet *input = inputs[0];
-  vtkUnstructuredGrid *output = vtkUnstructuredGrid::SafeDownCast(outputs[0]);
+  vtkDataSet *input = vtkDataSet::GetData(inputVector[0]);
+  vtkUnstructuredGrid *output = vtkUnstructuredGrid::GetData(outputVector);
 
-  Triangulation *triangulation = ttkTriangulation::getTriangulation(input);
-
+  ttk::Triangulation *triangulation = ttkAlgorithm::GetTriangulation(inputDataSet);
   if(!triangulation)
-    return -1;
+    return 0;
 
-  triangulation->setPeriodicBoundaryConditions(PeriodicBoundaryConditions);
-  triangulation->setWrapper(this);
   const int dimensionality = triangulation->getDimensionality();
   const Request requestType = static_cast<Request>(RequestType);
   const Simplex simplexType = static_cast<Simplex>(SimplexType);
@@ -397,9 +394,8 @@ int ttkTriangulationRequest::doIt(vector<vtkDataSet *> &inputs,
     vtkPointData *inputPointData = input->GetPointData();
 #ifndef TTK_ENABLE_KAMIKAZE
     if(!inputPointData) {
-      cerr << "[ttkTriangulationRequest] Error: Input has no point data."
-           << endl;
-      return -1;
+      this->printErr("Input has no point data.");
+      return 0;
     }
 #endif
     const int numberOfInputArrays = inputPointData->GetNumberOfArrays();
@@ -407,9 +403,8 @@ int ttkTriangulationRequest::doIt(vector<vtkDataSet *> &inputs,
     vtkPointData *outputPointData = output->GetPointData();
 #ifndef TTK_ENABLE_KAMIKAZE
     if(!outputPointData) {
-      cerr << "[ttkTriangulationRequest] Error: Output has no point data."
-           << endl;
-      return -1;
+      this->printErr("Output has no point data.");
+      return 0;
     }
 #endif
 
@@ -429,12 +424,7 @@ int ttkTriangulationRequest::doIt(vector<vtkDataSet *> &inputs,
     }
   }
 
-  {
-    stringstream msg;
-    msg << "[ttkTriangulationRequest] Memory usage: " << m.getElapsedUsage()
-        << " MB." << endl;
-    dMsg(cout, msg.str(), memoryMsg);
-  }
+  this->printMsg({"Memory usage: ", std::to_string(m.getElapsedUsage()), " MB."},
 
   return 0;
 }

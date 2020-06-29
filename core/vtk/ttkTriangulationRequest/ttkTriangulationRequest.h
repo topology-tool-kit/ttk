@@ -22,19 +22,12 @@
 #pragma once
 
 // ttk code includes
-#include <ttkTriangulationAlgorithm.h>
+#include <ttkAlgorithm.h>
 
 // VTK includes
-#include <vtkCharArray.h>
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
-#include <vtkDataSetAlgorithm.h>
-#include <vtkDoubleArray.h>
-#include <vtkFiltersCoreModule.h>
-#include <vtkFloatArray.h>
 #include <vtkInformation.h>
-#include <vtkIntArray.h>
-#include <vtkObjectFactory.h>
 #include <vtkPointData.h>
 #include <vtkSmartPointer.h>
 
@@ -42,8 +35,7 @@
 #include <ttkTriangulationRequestModule.h>
 
 class TTKTRIANGULATIONREQUEST_EXPORT ttkTriangulationRequest
-  : public vtkDataSetAlgorithm,
-    protected ttk::Wrapper {
+  : public ttkAlgorithm {
 
 public:
   enum Simplex { Vertex = 0, Edge, Triangle, Tetra };
@@ -57,23 +49,7 @@ public:
   };
 
   static ttkTriangulationRequest *New();
-  vtkTypeMacro(ttkTriangulationRequest, vtkDataSetAlgorithm)
-
-    // default ttk setters
-    void SetDebugLevel(int debugLevel) {
-    setDebugLevel(debugLevel);
-    Modified();
-  }
-
-  void SetThreadNumber(int threadNumber) {
-    ThreadNumber = threadNumber;
-    SetThreads();
-  }
-  void SetUseAllCores(bool onOff) {
-    UseAllCores = onOff;
-    SetThreads();
-  }
-  // end of default ttk setters
+  vtkTypeMacro(ttkTriangulationRequest, ttkAlgorithm)
 
   vtkSetMacro(SimplexType, int);
   vtkGetMacro(SimplexType, int);
@@ -86,9 +62,6 @@ public:
 
   vtkSetMacro(KeepAllDataArrays, bool);
   vtkGetMacro(KeepAllDataArrays, bool);
-
-  vtkSetMacro(PeriodicBoundaryConditions, int);
-  vtkGetMacro(PeriodicBoundaryConditions, int);
 
   int FillInputPortInformation(int port, vtkInformation *info) override {
 
@@ -125,10 +98,11 @@ protected:
     SimplexIdentifier = 0;
     RequestType = 0;
     KeepAllDataArrays = true;
-    PeriodicBoundaryConditions = false;
 
     SetNumberOfInputPorts(1);
     SetNumberOfOutputPorts(1);
+
+    this->setDebugMsgPrefix("ttkTriangulationRequest");
   }
 
   ~ttkTriangulationRequest() override{};
@@ -140,5 +114,4 @@ private:
   int SimplexIdentifier;
   int RequestType;
   bool KeepAllDataArrays;
-  bool PeriodicBoundaryConditions;
 };
