@@ -69,7 +69,7 @@ public:
                       vtkUnstructuredGrid *output);
 
   template <typename VTK_TT, typename TTK_TT>
-  int dispatch(int, const TTK_TT*);
+  int dispatch(int, const TTK_TT *);
 
 protected:
   ttkIntegralLines();
@@ -80,10 +80,11 @@ protected:
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;
+
 private:
-  int Direction {0};
-  bool ForceInputVertexScalarField {false};
-  bool ForceInputOffsetScalarField {false};
+  int Direction{0};
+  bool ForceInputVertexScalarField{false};
+  bool ForceInputOffsetScalarField{false};
 };
 
 #endif // _TTK_DISCRETESTREAMLINE_H

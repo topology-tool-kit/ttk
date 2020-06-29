@@ -30,7 +30,9 @@ namespace ttk {
     ~IntegralLines() override;
 
     template <class triangulationType>
-    inline float getDistance(const triangulationType* triangulation, const SimplexId &a, const SimplexId &b) const {
+    inline float getDistance(const triangulationType *triangulation,
+                             const SimplexId &a,
+                             const SimplexId &b) const {
       float p0[3];
       triangulation->getVertexPoint(a, p0[0], p0[1], p0[2]);
       float p1[3];
@@ -40,18 +42,24 @@ namespace ttk {
     }
 
     template <typename dataType, class triangulationType>
-    inline float getGradient(const triangulationType* triangulation,
+    inline float getGradient(const triangulationType *triangulation,
                              const SimplexId &a,
                              const SimplexId &b,
                              dataType *scalars) const {
-      return fabs(scalars[b] - scalars[a]) / getDistance<triangulationType>(triangulation, a, b);
+      return fabs(scalars[b] - scalars[a])
+             / getDistance<triangulationType>(triangulation, a, b);
     }
 
-    template <typename dataType, typename idType, class triangulationType = ttk::AbstractTriangulation>
-    int execute(const triangulationType*) const;
+    template <typename dataType,
+              typename idType,
+              class triangulationType = ttk::AbstractTriangulation>
+    int execute(const triangulationType *) const;
 
-    template <typename dataType, typename idType, class Compare, class triangulationType = ttk::AbstractTriangulation>
-    int execute(Compare, const triangulationType*) const;
+    template <typename dataType,
+              typename idType,
+              class Compare,
+              class triangulationType = ttk::AbstractTriangulation>
+    int execute(Compare, const triangulationType *) const;
 
     inline int setVertexNumber(const SimplexId &vertexNumber) {
       vertexNumber_ = vertexNumber;
@@ -106,7 +114,7 @@ namespace ttk {
 } // namespace ttk
 
 template <typename dataType, typename idType, class triangulationType>
-int ttk::IntegralLines::execute(const triangulationType* triangulation) const {
+int ttk::IntegralLines::execute(const triangulationType *triangulation) const {
   idType *offsets = static_cast<idType *>(inputOffsets_);
   SimplexId *identifiers
     = static_cast<SimplexId *>(vertexIdentifierScalarField_);
@@ -147,7 +155,8 @@ int ttk::IntegralLines::execute(const triangulationType* triangulation) const {
 
         if((direction_ == static_cast<int>(Direction::Forward))
            xor (scalars[n] < scalars[v])) {
-          const float f = getGradient<dataType, triangulationType>(triangulation, v, n, scalars);
+          const float f = getGradient<dataType, triangulationType>(
+            triangulation, v, n, scalars);
           if(f > fnext) {
             vnext = n;
             fnext = f;
@@ -185,17 +194,20 @@ int ttk::IntegralLines::execute(const triangulationType* triangulation) const {
 
   {
     std::stringstream msg;
-    msg << "Data-set (" << vertexNumber_
-        << " points) processed in " << t.getElapsedTime() << " s. ("
-        << threadNumber_ << " thread(s)).";
+    msg << "Data-set (" << vertexNumber_ << " points) processed in "
+        << t.getElapsedTime() << " s. (" << threadNumber_ << " thread(s)).";
     this->printMsg(msg.str());
   }
 
   return 0;
 }
 
-template <typename dataType, typename idType, class Compare, class triangulationType>
-int ttk::IntegralLines::execute(Compare cmp, const triangulationType* triangulation) const {
+template <typename dataType,
+          typename idType,
+          class Compare,
+          class triangulationType>
+int ttk::IntegralLines::execute(Compare cmp,
+                                const triangulationType *triangulation) const {
   idType *offsets = static_cast<idType *>(inputOffsets_);
   SimplexId *identifiers
     = static_cast<SimplexId *>(vertexIdentifierScalarField_);
@@ -236,7 +248,8 @@ int ttk::IntegralLines::execute(Compare cmp, const triangulationType* triangulat
 
         if((direction_ == static_cast<int>(Direction::Forward))
            xor (scalars[n] < scalars[v])) {
-          const float f = getGradient<dataType, triangulationType>(v, n, scalars);
+          const float f
+            = getGradient<dataType, triangulationType>(v, n, scalars);
           if(f > fnext) {
             vnext = n;
             fnext = f;
@@ -277,9 +290,8 @@ int ttk::IntegralLines::execute(Compare cmp, const triangulationType* triangulat
 
   {
     std::stringstream msg;
-    msg << "Data-set (" << vertexNumber_
-        << " points) processed in " << t.getElapsedTime() << " s. ("
-        << threadNumber_ << " thread(s)).";
+    msg << "Data-set (" << vertexNumber_ << " points) processed in "
+        << t.getElapsedTime() << " s. (" << threadNumber_ << " thread(s)).";
     this->printMsg(msg.str());
   }
 

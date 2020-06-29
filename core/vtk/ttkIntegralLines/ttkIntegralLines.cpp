@@ -16,8 +16,7 @@ using namespace ttk;
 
 vtkStandardNewMacro(ttkIntegralLines)
 
-ttkIntegralLines::ttkIntegralLines()
-{
+  ttkIntegralLines::ttkIntegralLines() {
   this->SetNumberOfInputPorts(2);
   this->SetNumberOfOutputPorts(1);
 }
@@ -118,7 +117,8 @@ int ttkIntegralLines::getTrajectories(vtkDataSet *input,
 }
 
 template <typename VTK_TT, typename TTK_TT>
-int ttkIntegralLines::dispatch(int inputOffsetsDataType, const TTK_TT* triangulation) {
+int ttkIntegralLines::dispatch(int inputOffsetsDataType,
+                               const TTK_TT *triangulation) {
   int ret = 0;
   if(inputOffsetsDataType == VTK_INT) {
     ret = this->execute<VTK_TT, int, TTK_TT>(triangulation);
@@ -129,19 +129,20 @@ int ttkIntegralLines::dispatch(int inputOffsetsDataType, const TTK_TT* triangula
   return ret;
 }
 
-int ttkIntegralLines::RequestData(vtkInformation *request, vtkInformationVector **inputVector, vtkInformationVector *outputVector)
-{
+int ttkIntegralLines::RequestData(vtkInformation *request,
+                                  vtkInformationVector **inputVector,
+                                  vtkInformationVector *outputVector) {
   vtkDataSet *domain = vtkDataSet::GetData(inputVector[0], 0);
   vtkPointSet *seeds = vtkPointSet::GetData(inputVector[1], 0);
   vtkUnstructuredGrid *output = vtkUnstructuredGrid::GetData(outputVector, 0);
 
   ttk::Triangulation *triangulation = ttkAlgorithm::GetTriangulation(domain);
-  vtkDataArray* inputScalars = this->GetInputArrayToProcess(0, domain);
+  vtkDataArray *inputScalars = this->GetInputArrayToProcess(0, domain);
 
-  vtkDataArray* inputOffsets = nullptr;
-  if (this->GetInputArrayInformation(1))
+  vtkDataArray *inputOffsets = nullptr;
+  if(this->GetInputArrayInformation(1))
     inputOffsets = this->GetInputArrayToProcess(1, domain);
-  if (!inputOffsets && !ForceInputOffsetScalarField)
+  if(!inputOffsets && !ForceInputOffsetScalarField)
     inputOffsets = domain->GetPointData()->GetArray(ttk::OffsetScalarFieldName);
 
   if(!inputOffsets) {
@@ -154,18 +155,19 @@ int ttkIntegralLines::RequestData(vtkInformation *request, vtkInformationVector 
       inputOffsets->SetTuple1(i, i);
   }
 
-  vtkDataArray* inputIdentifiers = nullptr;
-  if (this->GetInputArrayInformation(2))
+  vtkDataArray *inputIdentifiers = nullptr;
+  if(this->GetInputArrayInformation(2))
     inputIdentifiers = this->GetInputArrayToProcess(2, seeds);
-  if (!inputIdentifiers && !ForceInputVertexScalarField)
-    inputIdentifiers = seeds->GetPointData()->GetArray(ttk::VertexScalarFieldName);
+  if(!inputIdentifiers && !ForceInputVertexScalarField)
+    inputIdentifiers
+      = seeds->GetPointData()->GetArray(ttk::VertexScalarFieldName);
 
   const SimplexId numberOfPointsInDomain = domain->GetNumberOfPoints();
   const SimplexId numberOfPointsInSeeds = seeds->GetNumberOfPoints();
 
 #ifndef TTK_ENABLE_KAMIKAZE
   // triangulation problem
-  if (!triangulation) {
+  if(!triangulation) {
     this->printErr("wrong triangulation.");
     return -1;
   }
@@ -176,7 +178,7 @@ int ttkIntegralLines::RequestData(vtkInformation *request, vtkInformationVector 
   }
   // field problem
   if(inputOffsets->GetDataType() != VTK_INT
-    and inputOffsets->GetDataType() != VTK_ID_TYPE) {
+     and inputOffsets->GetDataType() != VTK_ID_TYPE) {
     this->printErr("input offset field type not supported.");
     return -1;
   }
@@ -212,16 +214,12 @@ int ttkIntegralLines::RequestData(vtkInformation *request, vtkInformationVector 
 
   int status = 0;
   ttkVtkTemplateMacro(
-    triangulation->getType(),
-    inputScalars->GetDataType(),
+    triangulation->getType(), inputScalars->GetDataType(),
     (status = this->dispatch<VTK_TT, TTK_TT>(
-       inputOffsets->GetDataType(),
-       (TTK_TT*)(triangulation->getData())
-       ))
-    )
+       inputOffsets->GetDataType(), (TTK_TT *)(triangulation->getData()))))
 #ifndef TTK_ENABLE_KAMIKAZE
-  // something wrong in baseCode
-  if(status) {
+    // something wrong in baseCode
+    if(status) {
     std::stringstream msg;
     msg << "IntegralLines.execute() error code : " << status;
     this->printErr(msg.str());
