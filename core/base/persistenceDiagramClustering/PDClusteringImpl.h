@@ -290,13 +290,15 @@ std::vector<int> PDClustering<dataType>::execute(
         }
 
         if(epsilon_[0] < epsilon_min_ /*&& diagrams_complete[0]*/) {
-          this->printMsg("[min barycenter] epsilon under minimal value ", debug::Priority::VERBOSE);
+          this->printMsg("[min barycenter] epsilon under minimal value ",
+                         debug::Priority::VERBOSE);
           do_min_ = false;
           epsilon_[0] = epsilon_min_;
           diagrams_complete[0] = true;
         }
         if(epsilon_[1] < epsilon_min_ /*&& diagrams_complete[1]*/) {
-          this->printMsg("[sad barycenter] epsilon under minimal value ", debug::Priority::VERBOSE);
+          this->printMsg("[sad barycenter] epsilon under minimal value ",
+                         debug::Priority::VERBOSE);
           do_sad_ = false;
           epsilon_[1] = epsilon_min_;
           diagrams_complete[1] = true;
@@ -338,18 +340,23 @@ std::vector<int> PDClustering<dataType>::execute(
           = precision_min_ && precision_sad_ && precision_max_;
         bool precision_criterion_reached = precision_criterion_;
 
-        this->printMsg("Iteration " + std::to_string(n_iterations_) + " epsilon "
-                 + std::to_string(epsilon_[0]) + " "
-                 + std::to_string(epsilon_[1]) + " "
-                 + std::to_string(epsilon_[2]), debug::Priority::VERBOSE);
+        this->printMsg("Iteration " + std::to_string(n_iterations_)
+                         + " epsilon " + std::to_string(epsilon_[0]) + " "
+                         + std::to_string(epsilon_[1]) + " "
+                         + std::to_string(epsilon_[2]),
+                       debug::Priority::VERBOSE);
         this->printMsg(" complete " + std::to_string(diagrams_complete[0]) + " "
-                 + std::to_string(diagrams_complete[1]) + " "
-                 + std::to_string(diagrams_complete[2]), debug::Priority::VERBOSE);
+                         + std::to_string(diagrams_complete[1]) + " "
+                         + std::to_string(diagrams_complete[2]),
+                       debug::Priority::VERBOSE);
         this->printMsg(" precision " + std::to_string(precision_min_) + " "
-                 + std::to_string(precision_sad_) + " "
-                 + std::to_string(precision_max_), debug::Priority::VERBOSE);
+                         + std::to_string(precision_sad_) + " "
+                         + std::to_string(precision_max_),
+                       debug::Priority::VERBOSE);
         this->printMsg(" cost " + std::to_string(cost_min_) + " "
-                 + std::to_string(cost_sad_) + " " + std::to_string(cost_max_), debug::Priority::VERBOSE);
+                         + std::to_string(cost_sad_) + " "
+                         + std::to_string(cost_max_),
+                       debug::Priority::VERBOSE);
         // if(debugLevel_ > 3) {
         //   std::cout << "Iteration " << n_iterations_
         //             << ", Epsilon = " << epsilon_[0] << " " << epsilon_[1]
@@ -427,10 +434,10 @@ std::vector<int> PDClustering<dataType>::execute(
           }
         }
 
-          // std::cout << "Cost = " << cost_ << std::endl;
-        if(debugLevel_>5){
-        this->printMsg("Clustering result:", debug::Priority::DETAIL);
-        printClustering();
+        // std::cout << "Cost = " << cost_ << std::endl;
+        if(debugLevel_ > 5) {
+          this->printMsg("Clustering result:", debug::Priority::DETAIL);
+          printClustering();
         }
         converged = converged
                     || (all_diagrams_complete && !do_min_ && !do_sad_
@@ -536,7 +543,7 @@ std::vector<int> PDClustering<dataType>::execute(
         final_centroids[c].push_back(t);
         if(g.getPersistence() > 1000) {
           this->printMsg("Found a anormally high persistence in min diagram",
-                   debug::Priority::WARNING);
+                         debug::Priority::WARNING);
         }
       }
     }
@@ -554,7 +561,7 @@ std::vector<int> PDClustering<dataType>::execute(
         final_centroids[c].push_back(t);
         if(g.getPersistence() > 1000) {
           this->printMsg("Found a anormally high persistence in sad diagram",
-                   debug::Priority::WARNING);
+                         debug::Priority::WARNING);
         }
       }
     }
@@ -579,7 +586,7 @@ std::vector<int> PDClustering<dataType>::execute(
         final_centroids[c].push_back(t);
         if(g.getPersistence() > 1000) {
           this->printMsg("Found a anormally high persistence in min diagram",
-                   debug::Priority::WARNING);
+                         debug::Priority::WARNING);
         }
       }
     }
@@ -2404,7 +2411,6 @@ std::vector<dataType> PDClustering<dataType>::enrichCurrentBidderDiagrams(
 
   if(do_min_) {
     for(int i = 0; i < numberOfInputs_; i++) {
-      dataType local_min_persistence = std::numeric_limits<dataType>::min();
       std::vector<dataType> persistences;
       for(int j = 0; j < bidder_diagrams_min_[i].size(); j++) {
         Bidder<dataType> b = bidder_diagrams_min_[i].get(j);
@@ -2438,28 +2444,12 @@ std::vector<dataType> PDClustering<dataType>::enrichCurrentBidderDiagrams(
             new_min_persistence[0] = last_persistence_added_min;
           }
         }
-        // if(size >= max_points_to_add_min) {
-        //   dataType last_persistence_added_min
-        //     = persistences[idx_min[i][max_points_to_add_min - 1]];
-        //   if(last_persistence_added_min > local_min_persistence) {
-        //     local_min_persistence = last_persistence_added_min;
-        //   }
-        // }
-        // if(i == 0) {
-        //   new_min_persistence[0] = local_min_persistence;
-        // } else {
-        //   if(local_min_persistence < new_min_persistence[0]) {
-        //     new_min_persistence[0] = local_min_persistence;
-        //   }
       }
     }
   }
-  // cout<<"candidates to be added to first diag :
-  // "<<candidates_to_be_added_min[0].size()<<endl;
 
   if(do_sad_) {
     for(int i = 0; i < numberOfInputs_; i++) {
-      dataType local_min_persistence = std::numeric_limits<dataType>::min();
       std::vector<dataType> persistences;
       for(int j = 0; j < bidder_diagrams_saddle_[i].size(); j++) {
         Bidder<dataType> b = bidder_diagrams_saddle_[i].get(j);
@@ -2494,25 +2484,10 @@ std::vector<dataType> PDClustering<dataType>::enrichCurrentBidderDiagrams(
           }
         }
       }
-      // if(size >= max_points_to_add_sad) {
-      //   dataType last_persistence_added_sad
-      //     = persistences[idx_sad[i][max_points_to_add_sad - 1]];
-      //   if(last_persistence_added_sad > local_min_persistence) {
-      //     local_min_persistence = last_persistence_added_sad;
-      //   }
-      // }
-      // if(i == 0) {
-      //   new_min_persistence[1] = local_min_persistence;
-      // } else {
-      //   if(local_min_persistence < new_min_persistence[1]) {
-      //     new_min_persistence[1] = local_min_persistence;
-      //   }
-      // }
     }
   }
   if(do_max_) {
     for(int i = 0; i < numberOfInputs_; i++) {
-      dataType local_min_persistence = std::numeric_limits<dataType>::min();
       std::vector<dataType> persistences;
       for(int j = 0; j < bidder_diagrams_max_[i].size(); j++) {
         Bidder<dataType> b = bidder_diagrams_max_[i].get(j);
@@ -2530,16 +2505,9 @@ std::vector<dataType> PDClustering<dataType>::enrichCurrentBidderDiagrams(
                   || ((persistences[a] == persistences[b]) && (a > b)));
         });
       int size = candidates_to_be_added_max[i].size();
-      // cout << " size " << size << " ;ax_pointtoadd " << max_points_to_add_max
-      //      << endl;
-      // cout << "new min pers " << new_min_persistence[2] << endl;
       if(size >= max_points_to_add_max) {
         dataType last_persistence_added_max
           = persistences[idx_max[i][max_points_to_add_max - 1]];
-        // cout<<"last "<<last_persistence_added_max<<" local
-        // "<<local_min_persistence<<endl; if(last_persistence_added_max >
-        // local_min_persistence) { local_min_persistence =
-        // last_persistence_added_max;
         if(first_enrichment) { // a minima min_point_to_add (=max_point_to_add)
                                // added per diagram
           if(i == 0) {
@@ -2553,27 +2521,9 @@ std::vector<dataType> PDClustering<dataType>::enrichCurrentBidderDiagrams(
             new_min_persistence[2] = last_persistence_added_max;
           }
         }
-        // }
       }
-      // cout << "new min pers " << new_min_persistence[2] << endl;
     }
-
-    // if(size >= max_points_to_add_max) {
-    //   dataType last_persistence_added_max
-    //     = persistences[idx_max[i][max_points_to_add_max - 1]];
-    //   if(last_persistence_added_max > local_min_persistence) {
-    //     local_min_persistence = last_persistence_added_max;
-    //   }
-    // }
-    // if(i == 0) {
-    //   new_min_persistence[2] = local_min_persistence;
-    // } else {
-    //   if(local_min_persistence < new_min_persistence[2]) {
-    //     new_min_persistence[2] = local_min_persistence;
-    //   }
-    // }
   }
-  // }
 
   // 3. Add the points to the current diagrams
   if(do_min_) {

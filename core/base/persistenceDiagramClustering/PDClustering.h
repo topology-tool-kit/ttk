@@ -224,17 +224,17 @@ namespace ttk {
     }
 
     inline void printClustering() {
-      std::string msg="";
+      std::string msg = "";
       for(int c = 0; c < k_; ++c) {
         msg.append(" Cluster " + std::to_string(c) + " = {");
         for(unsigned int idx = 0; idx < clustering_[c].size(); ++idx) {
           if(idx == clustering_[c].size() - 1) {
-              msg.append(std::to_string(clustering_[c][idx]) + "}");
-              this->printMsg(msg);
-              msg="";
+            msg.append(std::to_string(clustering_[c][idx]) + "}");
+            this->printMsg(msg);
+            msg = "";
             // msg << clustering_[c][idx] << "}" << std::endl;
           } else {
-              msg.append(std::to_string(clustering_[c][idx]) + ", ");
+            msg.append(std::to_string(clustering_[c][idx]) + ", ");
             // msg << clustering_[c][idx] << ", ";
           }
         }

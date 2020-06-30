@@ -89,8 +89,6 @@ int ttkPersistenceDiagramClustering::RequestData(
       // PersistenceDiagramClustering persistenceDiagramsClustering;
       // persistenceDiagramsClustering.setWrapper(this);
 
-      int wassersteinMetric = WassersteinMetric;
-
       if(!UseInterruptible) {
         TimeLimit = 999999999;
       }
