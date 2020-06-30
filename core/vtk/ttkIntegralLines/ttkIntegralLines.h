@@ -34,8 +34,7 @@
 /// \sa ttk::IntegralLines
 /// \sa vtkIdentifiers
 
-#ifndef _TTK_DISCRETESTREAMLINE_H
-#define _TTK_DISCRETESTREAMLINE_H
+#pragma once
 
 // VTK Module
 #include <ttkIntegralLinesModule.h>
@@ -86,5 +85,3 @@ private:
   bool ForceInputVertexScalarField{false};
   bool ForceInputOffsetScalarField{false};
 };
-
-#endif // _TTK_DISCRETESTREAMLINE_H
