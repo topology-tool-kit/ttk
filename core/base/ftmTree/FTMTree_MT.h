@@ -49,7 +49,7 @@
 #include "FTMStructures.h"
 #include "FTMSuperArc.h"
 
-ttk::DebugTimer _launchGlobalTime;
+static ttk::DebugTimer _launchGlobalTime;
 
 namespace ttk {
   namespace ftm {
