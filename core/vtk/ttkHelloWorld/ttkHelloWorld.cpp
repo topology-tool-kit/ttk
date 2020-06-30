@@ -173,7 +173,7 @@ int ttkHelloWorld::RequestData(vtkInformation *request,
   printMsg("  Scalar Array: " + std::string(inputArray->GetName()));
   // Templatize over the different input array data types and call the base code
   int status = 0; // this integer checks if the base code returns an error
-  ttkVtkTemplateMacro(triangulation->getType(), inputArray->GetDataType(),
+  ttkVtkTemplateMacro(inputArray->GetDataType(), triangulation->getType(),
                       (status = this->computeAverages<VTK_TT, TTK_TT>(
                          (VTK_TT *)ttkUtils::GetVoidPointer(outputArray),
                          (VTK_TT *)ttkUtils::GetVoidPointer(inputArray),
