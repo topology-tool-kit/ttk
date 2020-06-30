@@ -182,7 +182,7 @@ std::vector<int> PDClustering<dataType>::execute(
       old_clustering_ = clustering_;
     }
     if(debugLevel_ > 3 && k_ > 1) {
-      std::cout << "Initial Clustering : " << std::endl;
+      printMsg("Initial Clustering: ");
       printClustering();
     }
     initializeBarycenterComputers(min_persistence);
@@ -290,19 +290,19 @@ std::vector<int> PDClustering<dataType>::execute(
         }
 
         if(epsilon_[0] < epsilon_min_ /*&& diagrams_complete[0]*/) {
-          printWrn("[min barycenter] epsilon under minimal value ");
+          this->printMsg("[min barycenter] epsilon under minimal value ", debug::Priority::VERBOSE);
           do_min_ = false;
           epsilon_[0] = epsilon_min_;
           diagrams_complete[0] = true;
         }
         if(epsilon_[1] < epsilon_min_ /*&& diagrams_complete[1]*/) {
-          printWrn("[sad barycenter] epsilon under minimal value ");
+          this->printMsg("[sad barycenter] epsilon under minimal value ", debug::Priority::VERBOSE);
           do_sad_ = false;
           epsilon_[1] = epsilon_min_;
           diagrams_complete[1] = true;
         }
         if(epsilon_[2] < epsilon_min_ /*&& diagrams_complete[2]*/) {
-          printWrn("[max barycenter] epsilon under minimal value ");
+          this->printWrn("[max barycenter] epsilon under minimal value ");
           do_max_ = false;
           epsilon_[2] = epsilon_min_;
           diagrams_complete[2] = true;
@@ -338,18 +338,18 @@ std::vector<int> PDClustering<dataType>::execute(
           = precision_min_ && precision_sad_ && precision_max_;
         bool precision_criterion_reached = precision_criterion_;
 
-        printMsg("Iteration " + std::to_string(n_iterations_) + " epsilon "
+        this->printMsg("Iteration " + std::to_string(n_iterations_) + " epsilon "
                  + std::to_string(epsilon_[0]) + " "
                  + std::to_string(epsilon_[1]) + " "
-                 + std::to_string(epsilon_[2]));
-        printMsg(" complete " + std::to_string(diagrams_complete[0]) + " "
+                 + std::to_string(epsilon_[2]), debug::Priority::VERBOSE);
+        this->printMsg(" complete " + std::to_string(diagrams_complete[0]) + " "
                  + std::to_string(diagrams_complete[1]) + " "
-                 + std::to_string(diagrams_complete[2]));
-        printMsg(" precision " + std::to_string(precision_min_) + " "
+                 + std::to_string(diagrams_complete[2]), debug::Priority::VERBOSE);
+        this->printMsg(" precision " + std::to_string(precision_min_) + " "
                  + std::to_string(precision_sad_) + " "
-                 + std::to_string(precision_max_));
-        printMsg(" cost " + std::to_string(cost_min_) + " "
-                 + std::to_string(cost_sad_) + " " + std::to_string(cost_max_));
+                 + std::to_string(precision_max_), debug::Priority::VERBOSE);
+        this->printMsg(" cost " + std::to_string(cost_min_) + " "
+                 + std::to_string(cost_sad_) + " " + std::to_string(cost_max_), debug::Priority::VERBOSE);
         // if(debugLevel_ > 3) {
         //   std::cout << "Iteration " << n_iterations_
         //             << ", Epsilon = " << epsilon_[0] << " " << epsilon_[1]
@@ -427,9 +427,10 @@ std::vector<int> PDClustering<dataType>::execute(
           }
         }
 
-        if(debugLevel_ > 3) {
           // std::cout << "Cost = " << cost_ << std::endl;
-          printClustering();
+        if(debugLevel_>5){
+        this->printMsg("Clustering result:", debug::Priority::DETAIL);
+        printClustering();
         }
         converged = converged
                     || (all_diagrams_complete && !do_min_ && !do_sad_
@@ -475,13 +476,11 @@ std::vector<int> PDClustering<dataType>::execute(
     {
       std::stringstream msg;
       if(matchings_only) {
-        msg << " Wasserstein distance: " << cost_min_ + cost_sad_ + cost_max_
-            << std::endl;
+        msg << " Wasserstein distance: " << cost_min_ + cost_sad_ + cost_max_;
       } else {
-        msg << " Final Cost: " << min_cost_min + min_cost_sad + min_cost_max
-            << std::endl;
+        msg << " Final Cost: " << min_cost_min + min_cost_sad + min_cost_max;
       }
-      printMsg(msg.str());
+      this->printMsg(msg.str());
     }
     // cout<<"TOTAL ELAPSED "<<total_time<<endl;
     // dataType real_cost=0;
@@ -492,7 +491,8 @@ std::vector<int> PDClustering<dataType>::execute(
     }
     invertClusters(); // this is to pass the old inverse clustering to the VTK
                       // wrapper
-    if(debugLevel_ > 0 && k_ > 1) {
+    if(k_ > 1) {
+      this->printMsg("Clustering result:");
       printClustering();
     }
   } // End of timer
@@ -535,7 +535,7 @@ std::vector<int> PDClustering<dataType>::execute(
           g.getPersistence(), 0, g.x_, x, y, z, g.y_, x, y, z);
         final_centroids[c].push_back(t);
         if(g.getPersistence() > 1000) {
-          printMsg("Found a anormally high persistence in min diagram",
+          this->printMsg("Found a anormally high persistence in min diagram",
                    debug::Priority::WARNING);
         }
       }
@@ -553,7 +553,7 @@ std::vector<int> PDClustering<dataType>::execute(
           g.getPersistence(), 1, g.x_, x, y, z, g.y_, x, y, z);
         final_centroids[c].push_back(t);
         if(g.getPersistence() > 1000) {
-          printMsg("Found a anormally high persistence in sad diagram",
+          this->printMsg("Found a anormally high persistence in sad diagram",
                    debug::Priority::WARNING);
         }
       }
@@ -578,7 +578,7 @@ std::vector<int> PDClustering<dataType>::execute(
           g.getPersistence(), 2, g.x_, x, y, z, g.y_, x, y, z);
         final_centroids[c].push_back(t);
         if(g.getPersistence() > 1000) {
-          printMsg("Found a anormally high persistence in min diagram",
+          this->printMsg("Found a anormally high persistence in min diagram",
                    debug::Priority::WARNING);
         }
       }

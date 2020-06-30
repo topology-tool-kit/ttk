@@ -201,8 +201,6 @@ namespace ttk {
                  "global clustering";
           break;
       }
-      msg << std::endl;
-      // dMsg(std::cout, msg.str(), advancedInfoMsg);
       printMsg(msg.str());
     }
 
@@ -219,7 +217,7 @@ namespace ttk {
     KMeans.setLambda(Lambda);
     KMeans.setDeterministic(Deterministic);
     KMeans.setForceUseOfAlgorithm(ForceUseOfAlgorithm);
-    // KMeans.setDebugLevel(debugLevel_);
+    KMeans.setDebugLevel(debugLevel_);
     KMeans.setDeltaLim(DeltaLim);
     KMeans.setUseDeltaLim(UseAdditionalPrecision);
     KMeans.setDistanceWritingOptions(DistanceWritingOptions);

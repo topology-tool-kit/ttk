@@ -30,7 +30,7 @@ using namespace ttk;
 
 namespace ttk {
   template <typename dataType>
-  class PDClustering : public Debug {
+  class PDClustering : virtual public Debug {
 
   public:
     PDClustering() {
@@ -224,18 +224,22 @@ namespace ttk {
     }
 
     inline void printClustering() {
-      std::stringstream msg;
+      std::string msg="";
       for(int c = 0; c < k_; ++c) {
-        msg << "[PersistenceDiagramClustering] Cluster " << c << " = {";
+        msg.append(" Cluster " + std::to_string(c) + " = {");
         for(unsigned int idx = 0; idx < clustering_[c].size(); ++idx) {
           if(idx == clustering_[c].size() - 1) {
-            msg << clustering_[c][idx] << "}" << std::endl;
+              msg.append(std::to_string(clustering_[c][idx]) + "}");
+              this->printMsg(msg);
+              msg="";
+            // msg << clustering_[c][idx] << "}" << std::endl;
           } else {
-            msg << clustering_[c][idx] << ", ";
+              msg.append(std::to_string(clustering_[c][idx]) + ", ");
+            // msg << clustering_[c][idx] << ", ";
           }
         }
       }
-      printMsg(msg.str());
+      // cout<<msg.str()<<endl;
     }
 
     inline void printOldClustering() {
@@ -250,7 +254,7 @@ namespace ttk {
           }
         }
       }
-      printMsg(msg.str());
+      this->printMsg(msg.str());
     }
 
     template <typename type>
