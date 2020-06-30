@@ -42,12 +42,11 @@ ttkHelloWorld::~ttkHelloWorld() {
  * the port information.
  */
 int ttkHelloWorld::FillInputPortInformation(int port, vtkInformation *info) {
-  if(port == 0)
+  if(port == 0){
     info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
-  else
-    return 0;
-
-  return 1;
+    return 1;
+  }
+  return 0;
 }
 
 /**
@@ -66,12 +65,11 @@ int ttkHelloWorld::FillInputPortInformation(int port, vtkInformation *info) {
  * initialize empty output data objects based on this information.
  */
 int ttkHelloWorld::FillOutputPortInformation(int port, vtkInformation *info) {
-  if(port == 0)
+  if(port == 0){
     info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
-  else
-    return 0;
-
-  return 1;
+    return 1;
+  }
+  return 0;
 }
 
 /**
@@ -143,6 +141,14 @@ int ttkHelloWorld::RequestData(vtkInformation *request,
   vtkDataArray *inputArray = this->GetInputArrayToProcess(0, inputVector);
   if(!inputArray)
     return 0;
+  if(this->GetInputArrayAssociation(0, inputVector) != 0) {
+    this->printErr("Input array needs to be a point data array.");
+    return 0;
+  }
+  if(inputArray->GetNumberOfComponents() != 1) {
+    this->printErr("Input array needs to be a scalar array.");
+    return 0;
+  }
 
   // Create an output array that has the same data type as the input array
   // Note: vtkSmartPointers are well documented
