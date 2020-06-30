@@ -7,5 +7,5 @@ HEADERS
   ttkFTMStructures.h
 DEPENDS
   ftmTree
+  ttkAlgorithm
   geometry
-  ttkTriangulationAlgorithm

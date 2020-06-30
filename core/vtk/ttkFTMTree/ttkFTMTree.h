@@ -16,63 +16,37 @@
 #include <vtkIntArray.h>
 
 // Unused ? (compile without these on my computer)
-#include <vtkFiltersCoreModule.h>
-#include <vtkInformation.h>
-#include <vtkInformationVector.h>
-#include <vtkLine.h>
-#include <vtkObjectFactory.h>
-#include <vtkType.h>
-#include <vtkUnstructuredGrid.h>
+// #include <vtkFiltersCoreModule.h>
+// #include <vtkInformation.h>
+// #include <vtkInformationVector.h>
+// #include <vtkLine.h>
+// #include <vtkObjectFactory.h>
+// #include <vtkType.h>
+// #include <vtkUnstructuredGrid.h>
 
 // VTK module
 #include <ttkFTMTreeModule.h>
 
 // ttk code includes
 #include <FTMTree.h>
+#include <ttkAlgorithm.h>
 #include <ttkFTMStructures.h>
-#include <ttkTriangulationAlgorithm.h>
 
-class TTKFTMTREE_EXPORT ttkFTMTree : public vtkDataSetAlgorithm,
-                                     protected ttk::Wrapper {
+class TTKFTMTREE_EXPORT ttkFTMTree : public ttkAlgorithm,
+                                     protected ttk::ftm::FTMTree {
+
 public:
   static ttkFTMTree *New();
 
-  vtkTypeMacro(ttkFTMTree, vtkDataSetAlgorithm);
+  vtkTypeMacro(ttkFTMTree, ttkAlgorithm);
 
-  // default ttk setters
-  void SetDebugLevel(int debugLevel) {
-    setDebugLevel(debugLevel);
-    Modified();
-  }
-
-  void SetThreadNumber(int threadNumber) {
-    ThreadNumber = threadNumber;
-    SetThreads();
-  }
-
-  void SetUseAllCores(bool onOff) {
-    UseAllCores = onOff;
-    SetThreads();
-  }
   // end of default ttk setters
 
-  vtkSetMacro(ScalarField, std::string);
-  vtkGetMacro(ScalarField, std::string);
-
-  vtkSetMacro(ForceInputOffsetScalarField, bool);
-  vtkGetMacro(ForceInputOffsetScalarField, bool);
-
-  vtkSetMacro(InputOffsetScalarFieldName, std::string);
-  vtkGetMacro(InputOffsetScalarFieldName, std::string);
-
+  // used by command line
   vtkSetMacro(ScalarFieldId, int);
   vtkGetMacro(ScalarFieldId, int);
-
   vtkSetMacro(OffsetFieldId, int);
   vtkGetMacro(OffsetFieldId, int);
-
-  vtkSetMacro(PeriodicBoundaryConditions, int);
-  vtkGetMacro(PeriodicBoundaryConditions, int);
 
   // Parameters uses a structure, we can't use vtkMacro on them
   void SetTreeType(const int type) {
@@ -153,25 +127,26 @@ public:
   void printCSVTree(const ttk::ftm::FTMTree_MT *const tree) const;
 #endif
 
+  // vtkDataSetAlgorithm methods
+
+  int FillInputPortInformation(int port, vtkInformation *info) override;
+  int FillOutputPortInformation(int port, vtkInformation *info) override;
+  int RequestData(vtkInformation *request,
+                  vtkInformationVector **inputVector,
+                  vtkInformationVector *outputVector) override;
+
 protected:
   ttkFTMTree();
-  ~ttkFTMTree() override;
-
-  TTK_SETUP();
+  ~ttkFTMTree() override = default;
 
   void identify(vtkDataSet *ds) const;
 
-  virtual int FillInputPortInformation(int port, vtkInformation *info) override;
-  virtual int FillOutputPortInformation(int port,
-                                        vtkInformation *info) override;
-
 private:
-  std::string ScalarField;
-  bool ForceInputOffsetScalarField;
+  bool ForceInputOffsetScalarField = false;
   std::string InputOffsetScalarFieldName;
-  int ScalarFieldId;
-  int OffsetFieldId;
-  bool PeriodicBoundaryConditions;
+  std::string ScalarFieldName;
+  int ScalarFieldId = -1;
+  int OffsetFieldId = -1;
 
   ttk::ftm::Params params_;
 
