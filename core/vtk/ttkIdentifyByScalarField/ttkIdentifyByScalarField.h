@@ -1,11 +1,12 @@
 /// \ingroup vtk
 /// \class ttkIdentifyByScalarField
-/// \author Your Name Here <Your Email Address Here>
-/// \date The Date Here.
+/// \author Guillaume Favelier <guillaume.favelier@lip6.fr>
+/// \author Florian Wetzels <f_wetzels13@cs.uni-kl.de>
+/// \date June 2020
 ///
 /// \brief TTK VTK-filter that computes a new scalar array based on a sorting of the input array.
 ///
-/// VTK code for computing a new scalar array from a specifiable point or cell data array. For a cell or a point
+/// VTK code for computing a new scalar array from a specifiable point or cell data array. For each cell or a point
 /// the new (integer) value is its index in a sorting of the input array.
 /// The name of the new array is "PointScalarFieldName" or "CellScalarFieldName".
 ///
@@ -15,19 +16,13 @@
 /// This filter can be used as any other VTK filter (for instance, by using the
 /// sequence of calls SetInputData(), Update(), GetOutput()).
 ///
-/// The name of the input scalar field to consider can be specified with the
+/// The input data array to be processed needs to be specified with the
 /// standard VTK call SetInputArrayToProcess(), with the following parameters:
-/// \param port 0
-/// \param connection 0
-/// \param fieldAssociation 0 or 1 (point data or cell data)
+/// \param idx 0 (the first array the algorithm requires)
+/// \param port 0 (first port)
+/// \param connection 0 (first connection)
+/// \param fieldAssociation 0 (point data) OR 1 (cell data)
 /// \param arrayName (const char* string representing the name of the VTK array)
-///
-/// This module respects the following convention regarding the order of the
-/// input arrays to process (SetInputArrayToProcess()):
-/// \param idx 0: input scalar field
-///
-/// See the related ParaView example state files for usage examples within a
-/// VTK pipeline.
 ///
 /// \sa ttk::IdentifyByScalarField
 #pragma once
