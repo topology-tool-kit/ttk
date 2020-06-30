@@ -159,22 +159,6 @@ public:
                      vtkInformationVector **inputVectors,
                      vtkInformationVector *outputVector) override;
 
-  /**
-   * Get the information object associated with an input port. There
-   * is one input port per kind of input to the algorithm. Each input
-   * port tells executives what kind of data and downstream requests
-   * this algorithm can handle for that input.
-   */
-  // vtkInformation* GetInputPortInformation(int port);
-
-  /**
-   * Get the information object associated with an output port. There
-   * is one output port per output from the algorithm. Each output
-   * port tells executives what kind of upstream requests this
-   * algorithm can handle for that output.
-   */
-  // vtkInformation* GetOutputPortInformation(int port);
-
 protected:
   ttkAlgorithm();
   virtual ~ttkAlgorithm();
