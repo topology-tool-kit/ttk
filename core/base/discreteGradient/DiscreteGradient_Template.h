@@ -247,20 +247,8 @@ int DiscreteGradient::buildGradient() {
 template <typename dataType>
 int DiscreteGradient::setCriticalPoints(
   const std::vector<Cell> &criticalPoints,
-  std::vector<size_t> &nCriticalPointsByDim) const {
+  std::vector<size_t> &nCriticalPointsByDim) {
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(!outputCriticalPoints_numberOfPoints_) {
-    std::cerr << "[DiscreteGradient] critical points' pointer to "
-                 "numberOfPoints is null."
-              << std::endl;
-    return -1;
-  }
-  if(!outputCriticalPoints_points_) {
-    std::cerr
-      << "[DiscreteGradient] critical points' pointer to points is null."
-      << std::endl;
-    return -1;
-  }
   if(!inputScalarField_) {
     this->printErr(
       "Critical points' pointer to the input scalar field is null.");
@@ -273,7 +261,7 @@ int DiscreteGradient::setCriticalPoints(
       outputCriticalPoints_points_cellScalars_);
 
   const auto nCritPoints = criticalPoints.size();
-  (*outputCriticalPoints_numberOfPoints_) = nCritPoints;
+  outputCriticalPoints_numberOfPoints_ = nCritPoints;
 
   const int numberOfDimensions = getNumberOfDimensions();
   nCriticalPointsByDim.resize(numberOfDimensions, 0);
@@ -284,22 +272,14 @@ int DiscreteGradient::setCriticalPoints(
     nCriticalPointsByDim[cell.dim_]++;
   }
 
-  outputCriticalPoints_points_->resize(3 * nCritPoints);
-  if(outputCriticalPoints_points_cellDimensions_) {
-    outputCriticalPoints_points_cellDimensions_->resize(nCritPoints);
-  }
-  if(outputCriticalPoints_points_cellIds_) {
-    outputCriticalPoints_points_cellIds_->resize(nCritPoints);
-  }
+  outputCriticalPoints_points_.resize(3 * nCritPoints);
+  outputCriticalPoints_points_cellDimensions_.resize(nCritPoints);
+  outputCriticalPoints_points_cellIds_.resize(nCritPoints);
   if(outputCriticalPoints_points_cellScalars) {
     outputCriticalPoints_points_cellScalars->resize(nCritPoints);
   }
-  if(outputCriticalPoints_points_isOnBoundary_) {
-    outputCriticalPoints_points_isOnBoundary_->resize(nCritPoints);
-  }
-  if(outputCriticalPoints_points_PLVertexIdentifiers_) {
-    outputCriticalPoints_points_PLVertexIdentifiers_->resize(nCritPoints);
-  }
+  outputCriticalPoints_points_isOnBoundary_.resize(nCritPoints);
+  outputCriticalPoints_points_PLVertexIdentifiers_.resize(nCritPoints);
 
   // for all critical cells
 #ifdef TTK_ENABLE_OPENMP
@@ -316,26 +296,18 @@ int DiscreteGradient::setCriticalPoints(
     const auto scalar = scalarMax<dataType>(cell, scalars);
     const char isOnBoundary = isBoundary(cell);
 
-    (*outputCriticalPoints_points_)[3 * i] = incenter[0];
-    (*outputCriticalPoints_points_)[3 * i + 1] = incenter[1];
-    (*outputCriticalPoints_points_)[3 * i + 2] = incenter[2];
+    outputCriticalPoints_points_[3 * i] = incenter[0];
+    outputCriticalPoints_points_[3 * i + 1] = incenter[1];
+    outputCriticalPoints_points_[3 * i + 2] = incenter[2];
 
-    if(outputCriticalPoints_points_cellDimensions_) {
-      (*outputCriticalPoints_points_cellDimensions_)[i] = cellDim;
-    }
-    if(outputCriticalPoints_points_cellIds_) {
-      (*outputCriticalPoints_points_cellIds_)[i] = cellId;
-    }
+    outputCriticalPoints_points_cellDimensions_[i] = cellDim;
+    outputCriticalPoints_points_cellIds_[i] = cellId;
     if(outputCriticalPoints_points_cellScalars) {
       (*outputCriticalPoints_points_cellScalars)[i] = scalar;
     }
-    if(outputCriticalPoints_points_isOnBoundary_) {
-      (*outputCriticalPoints_points_isOnBoundary_)[i] = isOnBoundary;
-    }
-    if(outputCriticalPoints_points_PLVertexIdentifiers_) {
-      auto vertId = getCellGreaterVertex(cell);
-      (*outputCriticalPoints_points_PLVertexIdentifiers_)[i] = vertId;
-    }
+    outputCriticalPoints_points_isOnBoundary_[i] = isOnBoundary;
+    auto vertId = getCellGreaterVertex(cell);
+    outputCriticalPoints_points_PLVertexIdentifiers_[i] = vertId;
   }
 
   std::vector<std::vector<std::string>> rows{};
@@ -350,7 +322,7 @@ int DiscreteGradient::setCriticalPoints(
 }
 
 template <typename dataType>
-int DiscreteGradient::setCriticalPoints() const {
+int DiscreteGradient::setCriticalPoints() {
   std::vector<Cell> criticalPoints;
   getCriticalPoints(criticalPoints);
   std::vector<size_t> nCriticalPointsByDim{};

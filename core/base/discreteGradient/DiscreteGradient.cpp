@@ -1514,16 +1514,12 @@ int DiscreteGradient::setManifoldSize(
   const std::vector<size_t> &nCriticalPointsByDim,
   const std::vector<SimplexId> &maxSeeds,
   const SimplexId *const ascendingManifold,
-  const SimplexId *const descendingManifold) const {
+  const SimplexId *const descendingManifold) {
 
   const auto nCritPoints = criticalPoints.size();
   const auto nDimensions = getNumberOfDimensions();
 
-  if(outputCriticalPoints_points_manifoldSize_ == nullptr) {
-    return 1;
-  }
-
-  outputCriticalPoints_points_manifoldSize_->resize(nCritPoints, 0);
+  outputCriticalPoints_points_manifoldSize_.resize(nCritPoints, 0);
 
   // pre-compute size of descending manifold cells
   std::map<SimplexId, size_t> descendingCellsSize{};
@@ -1539,7 +1535,7 @@ int DiscreteGradient::setManifoldSize(
     const Cell &cell = criticalPoints[i];
     const SimplexId seedId = descendingManifold[cell.id_];
     const SimplexId manifoldSize = descendingCellsSize[seedId];
-    (*outputCriticalPoints_points_manifoldSize_)[i] = manifoldSize;
+    outputCriticalPoints_points_manifoldSize_[i] = manifoldSize;
   }
 
   // index of first maximum in critical points array
@@ -1569,7 +1565,7 @@ int DiscreteGradient::setManifoldSize(
     if(seedsPos.find(cell.id_) != seedsPos.end()) {
       const auto seedId = seedsPos[cell.id_];
       const SimplexId manifoldSize = ascendingCellsSize[seedId];
-      (*outputCriticalPoints_points_manifoldSize_)[i] = manifoldSize;
+      outputCriticalPoints_points_manifoldSize_[i] = manifoldSize;
     }
   }
 

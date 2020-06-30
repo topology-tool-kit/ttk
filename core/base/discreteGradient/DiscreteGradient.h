@@ -700,34 +700,8 @@ according to them.
       /**
        * Set the output data pointer to the critical points.
        */
-      inline int setOutputCriticalPoints(
-        SimplexId *const criticalPoints_numberOfPoints,
-        std::vector<float> *const criticalPoints_points,
-        std::vector<char> *const criticalPoints_points_cellDimensons,
-        std::vector<SimplexId> *const criticalPoints_points_cellIds,
-        void *const criticalPoints_points_cellScalars,
-        std::vector<char> *const criticalPoints_points_isOnBoundary,
-        std::vector<SimplexId> *const criticalPoints_points_PLVertexIdentifiers,
-        std::vector<SimplexId> *const criticalPoints_points_manifoldSize) {
-        outputCriticalPoints_numberOfPoints_ = criticalPoints_numberOfPoints;
-        outputCriticalPoints_points_ = criticalPoints_points;
-
-        outputCriticalPoints_points_cellDimensions_
-          = criticalPoints_points_cellDimensons;
-        outputCriticalPoints_points_cellIds_ = criticalPoints_points_cellIds;
-
-        outputCriticalPoints_points_cellScalars_
-          = criticalPoints_points_cellScalars;
-
-        outputCriticalPoints_points_isOnBoundary_
-          = criticalPoints_points_isOnBoundary;
-
-        outputCriticalPoints_points_PLVertexIdentifiers_
-          = criticalPoints_points_PLVertexIdentifiers;
-
-        outputCriticalPoints_points_manifoldSize_
-          = criticalPoints_points_manifoldSize;
-        return 0;
+      inline void setOutputCriticalPoints(void *const cellScalars) {
+        outputCriticalPoints_points_cellScalars_ = cellScalars;
       }
 
       /**
@@ -892,14 +866,14 @@ tetra identifier.
        */
       template <typename dataType>
       int setCriticalPoints(const std::vector<Cell> &criticalPoints,
-                            std::vector<size_t> &nCriticalPointsByDim) const;
+                            std::vector<size_t> &nCriticalPointsByDim);
 
       /**
        * Detect the critical points and build their geometric embedding.
        * The output data pointers are modified accordingly.
        */
       template <typename dataType>
-      int setCriticalPoints() const;
+      int setCriticalPoints();
 
       /**
        * Compute manifold size for critical extrema
@@ -908,7 +882,7 @@ tetra identifier.
                           const std::vector<size_t> &nCriticalPointsByDim,
                           const std::vector<SimplexId> &maxSeeds,
                           const SimplexId *const ascendingManifold,
-                          const SimplexId *const descendingManifold) const;
+                          const SimplexId *const descendingManifold);
 
       /**
        * Build the glyphs representing the discrete gradient vector field.
@@ -937,15 +911,14 @@ tetra identifier.
       const void *inputOffsets_{};
       Triangulation *inputTriangulation_{};
 
-      SimplexId *outputCriticalPoints_numberOfPoints_{};
-      std::vector<float> *outputCriticalPoints_points_{};
-      std::vector<char> *outputCriticalPoints_points_cellDimensions_{};
-      std::vector<SimplexId> *outputCriticalPoints_points_cellIds_{};
+      SimplexId outputCriticalPoints_numberOfPoints_{};
+      std::vector<float> outputCriticalPoints_points_{};
+      std::vector<char> outputCriticalPoints_points_cellDimensions_{};
+      std::vector<SimplexId> outputCriticalPoints_points_cellIds_{};
       void *outputCriticalPoints_points_cellScalars_{};
-      std::vector<char> *outputCriticalPoints_points_isOnBoundary_{};
-      std::vector<SimplexId>
-        *outputCriticalPoints_points_PLVertexIdentifiers_{};
-      std::vector<SimplexId> *outputCriticalPoints_points_manifoldSize_{};
+      std::vector<char> outputCriticalPoints_points_isOnBoundary_{};
+      std::vector<SimplexId> outputCriticalPoints_points_PLVertexIdentifiers_{};
+      std::vector<SimplexId> outputCriticalPoints_points_manifoldSize_{};
 
       std::vector<std::array<Cell, 2>> *outputPersistencePairs_{};
 

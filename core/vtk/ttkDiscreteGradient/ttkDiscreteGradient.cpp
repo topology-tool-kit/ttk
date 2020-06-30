@@ -43,24 +43,10 @@ int ttkDiscreteGradient::dispatch(vtkUnstructuredGrid *outputCriticalPoints,
                                   vtkDataArray *inputOffsets) {
 
   // critical points
-  SimplexId criticalPoints_numberOfPoints{};
-  vector<float> criticalPoints_points;
-  vector<char> criticalPoints_points_cellDimensions;
-  vector<SimplexId> criticalPoints_points_cellIds;
-  vector<char> criticalPoints_points_isOnBoundary;
-  vector<SimplexId> criticalPoints_points_PLVertexIdentifiers;
-  vector<SimplexId> criticalPoints_points_manifoldSize;
+  std::vector<VTK_TT> criticalPoints_points_cellScalars;
+  this->setOutputCriticalPoints(&criticalPoints_points_cellScalars);
 
   int ret = 0;
-  vector<VTK_TT> criticalPoints_points_cellScalars;
-
-  this->setOutputCriticalPoints(
-    &criticalPoints_numberOfPoints, &criticalPoints_points,
-    &criticalPoints_points_cellDimensions, &criticalPoints_points_cellIds,
-    &criticalPoints_points_cellScalars, &criticalPoints_points_isOnBoundary,
-    &criticalPoints_points_PLVertexIdentifiers,
-    &criticalPoints_points_manifoldSize);
-
   if(inputOffsets->GetDataType() == VTK_INT)
     ret = this->buildGradient<VTK_TT, int>();
   if(inputOffsets->GetDataType() == VTK_ID_TYPE)
@@ -105,17 +91,19 @@ int ttkDiscreteGradient::dispatch(vtkUnstructuredGrid *outputCriticalPoints,
     PLVertexIdentifiers->SetNumberOfComponents(1);
     PLVertexIdentifiers->SetName(ttk::VertexScalarFieldName);
 
-    for(SimplexId i = 0; i < criticalPoints_numberOfPoints; ++i) {
-      points->InsertNextPoint(criticalPoints_points[3 * i],
-                              criticalPoints_points[3 * i + 1],
-                              criticalPoints_points[3 * i + 2]);
+    for(SimplexId i = 0; i < outputCriticalPoints_numberOfPoints_; ++i) {
+      points->InsertNextPoint(outputCriticalPoints_points_[3 * i],
+                              outputCriticalPoints_points_[3 * i + 1],
+                              outputCriticalPoints_points_[3 * i + 2]);
 
-      cellDimensions->InsertNextTuple1(criticalPoints_points_cellDimensions[i]);
-      cellIds->InsertNextTuple1(criticalPoints_points_cellIds[i]);
+      cellDimensions->InsertNextTuple1(
+        outputCriticalPoints_points_cellDimensions_[i]);
+      cellIds->InsertNextTuple1(outputCriticalPoints_points_cellIds_[i]);
       cellScalars->InsertNextTuple1(criticalPoints_points_cellScalars[i]);
-      isOnBoundary->InsertNextTuple1(criticalPoints_points_isOnBoundary[i]);
+      isOnBoundary->InsertNextTuple1(
+        outputCriticalPoints_points_isOnBoundary_[i]);
       PLVertexIdentifiers->InsertNextTuple1(
-        criticalPoints_points_PLVertexIdentifiers[i]);
+        outputCriticalPoints_points_PLVertexIdentifiers_[i]);
     }
     outputCriticalPoints->SetPoints(points);
 
