@@ -95,7 +95,7 @@ int ttkScalarFieldSmoother::RequestData(vtkInformation *request,
 
   // calling the smoothing package
   ttkVtkTemplateMacro(
-    triangulation->getType(), inputScalarField->GetDataType(),
+    inputScalarField->GetDataType(), triangulation->getType(),
     (this->smooth<VTK_TT, TTK_TT>(
       (TTK_TT *)triangulation->getData(), NumberOfIterations)));
 
