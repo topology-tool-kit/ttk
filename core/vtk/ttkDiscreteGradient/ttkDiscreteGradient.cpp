@@ -1,4 +1,5 @@
 #include <ttkDiscreteGradient.h>
+#include <ttkUtils.h>
 
 #include <vtkCellData.h>
 #include <vtkCharArray.h>
@@ -199,8 +200,8 @@ int ttkDiscreteGradient::RequestData(vtkInformation *request,
 #endif
 
   // baseCode processing
-  this->setInputScalarField(inputScalars->GetVoidPointer(0));
-  this->setInputOffsets(inputOffsets->GetVoidPointer(0));
+  this->setInputScalarField(ttkUtils::GetVoidPointer(inputScalars));
+  this->setInputOffsets(ttkUtils::GetVoidPointer(inputOffsets));
 
   switch(inputScalars->GetDataType()) {
     vtkTemplateMacro(
