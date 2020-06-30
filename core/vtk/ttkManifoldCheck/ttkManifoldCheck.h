@@ -29,67 +29,41 @@
 #pragma once
 
 // VTK includes -- to adapt
-#include <vtkCellData.h>
-#include <vtkDataArray.h>
-#include <vtkDataSet.h>
-#include <vtkDataSetAlgorithm.h>
-#include <vtkFiltersCoreModule.h>
-#include <vtkGenericCell.h>
-#include <vtkIdTypeArray.h>
-#include <vtkInformation.h>
-#include <vtkIntArray.h>
-#include <vtkObjectFactory.h>
-#include <vtkPointData.h>
-#include <vtkSmartPointer.h>
 
 // VTK Module
 #include <ttkManifoldCheckModule.h>
 
 // ttk code includes
 #include <ManifoldCheck.h>
-#include <ttkTriangulationAlgorithm.h>
+#include <ttkAlgorithm.h>
 
 // in this example, this wrapper takes a data-set on the input and produces a
 // data-set on the output - to adapt.
 // see the documentation of the vtkAlgorithm class to decide from which VTK
 // class your wrapper should inherit.
-class TTKMANIFOLDCHECK_EXPORT ttkManifoldCheck : public vtkDataSetAlgorithm,
-                                                 protected ttk::Wrapper {
+class TTKMANIFOLDCHECK_EXPORT ttkManifoldCheck : public ttkAlgorithm,
+                                                 protected ttk::ManifoldCheck {
 
 public:
   static ttkManifoldCheck *New();
-  vtkTypeMacro(ttkManifoldCheck, vtkDataSetAlgorithm)
+  vtkTypeMacro(ttkManifoldCheck, ttkAlgorithm)
 
-    // default ttk setters
-    void SetDebugLevel(int debugLevel) {
-    setDebugLevel(debugLevel);
-    Modified();
-  }
+    protected :
 
-  void SetThreadNumber(int threadNumber) {
-    ThreadNumber = threadNumber;
-    SetThreads();
-  }
-  void SetUseAllCores(bool onOff) {
-    UseAllCores = onOff;
-    SetThreads();
-  }
-  // end of default ttk setters
-
-protected:
-  ttkManifoldCheck() {
-
-    // init
-    UseAllCores = true;
-  }
+    ttkManifoldCheck();
 
   ~ttkManifoldCheck() override{};
 
-  TTK_SETUP();
+  int FillInputPortInformation(int port, vtkInformation *info) override;
+
+  int FillOutputPortInformation(int port, vtkInformation *info) override;
+
+  int RequestData(vtkInformation *request,
+                  vtkInformationVector **inputVector,
+                  vtkInformationVector *outputVector) override;
 
 private:
   std::vector<ttk::SimplexId> vertexLinkComponentNumber_;
   std::vector<ttk::SimplexId> edgeLinkComponentNumber_;
   std::vector<ttk::SimplexId> triangleLinkComponentNumber_;
-  ttk::ManifoldCheck manifoldCheck_;
 };

@@ -1,45 +1,71 @@
 #include <ttkManifoldCheck.h>
 
+#include <vtkCellData.h>
+#include <vtkDataSet.h>
+#include <vtkGenericCell.h>
+#include <vtkInformation.h>
+#include <vtkPointData.h>
+
+#include <ttkMacros.h>
+#include <ttkUtils.h>
+
 using namespace std;
 using namespace ttk;
 
-vtkStandardNewMacro(ttkManifoldCheck)
+vtkStandardNewMacro(ttkManifoldCheck);
 
-  int ttkManifoldCheck::doIt(vector<vtkDataSet *> &inputs,
-                             vector<vtkDataSet *> &outputs) {
+ttkManifoldCheck::ttkManifoldCheck() {
+  this->SetNumberOfInputPorts(1);
+  this->SetNumberOfOutputPorts(1);
+}
 
-  Memory mem;
+int ttkManifoldCheck::FillInputPortInformation(int port, vtkInformation *info) {
+  if(port == 0) {
+    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
+    return 1;
+  }
+  return 0;
+}
 
-  vtkDataSet *input = inputs[0];
-  vtkDataSet *output = outputs[0];
+int ttkManifoldCheck::FillOutputPortInformation(int port,
+                                                vtkInformation *info) {
+  if(port == 0) {
+    info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
+    return 1;
+  }
+  return 0;
+}
 
-  Triangulation *triangulation = ttkTriangulation::getTriangulation(input);
+int ttkManifoldCheck::RequestData(vtkInformation *request,
+                                  vtkInformationVector **inputVector,
+                                  vtkInformationVector *outputVector) {
+
+  vtkDataSet *input = vtkDataSet::GetData(inputVector[0]);
+  vtkDataSet *output = vtkDataSet::GetData(outputVector);
+
+  Triangulation *triangulation = ttkAlgorithm::GetTriangulation(input);
 
   if(!triangulation)
-    return -1;
+    return 0;
 
-  triangulation->setWrapper(this);
-  triangulation->preconditionVertexEdges();
-  triangulation->preconditionVertexTriangles();
-  manifoldCheck_.setupTriangulation(triangulation);
-  manifoldCheck_.setWrapper(this);
+  this->preconditionTriangulation(triangulation);
 
   // use a pointer-base copy for the input data -- to adapt if your wrapper does
   // not produce an output of the type of the input.
   output->ShallowCopy(input);
 
-  manifoldCheck_.setVertexLinkComponentNumberVector(
-    &vertexLinkComponentNumber_);
-  manifoldCheck_.setEdgeLinkComponentNumberVector(&edgeLinkComponentNumber_);
-  manifoldCheck_.setTriangleLinkComponentNumberVector(
-    &triangleLinkComponentNumber_);
-  manifoldCheck_.execute();
+  this->setVertexLinkComponentNumberVector(&vertexLinkComponentNumber_);
+  this->setEdgeLinkComponentNumberVector(&edgeLinkComponentNumber_);
+  this->setTriangleLinkComponentNumberVector(&triangleLinkComponentNumber_);
 
-  {
-    stringstream msg;
-    msg << "[ttkManifoldCheck] Preparing VTK output..." << endl;
-    dMsg(cout, msg.str(), Debug::timeMsg);
-  }
+  int error = 0;
+  ttkTemplateMacro(
+    triangulation->getType(),
+    (error = this->execute<TTK_TT>((TTK_TT *)triangulation->getData())));
+  if(error)
+    return error;
+
+  printMsg("Preparing VTK output...");
 
   vtkSmartPointer<ttkSimplexIdTypeArray> vertexPointArray
     = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
@@ -261,12 +287,5 @@ vtkStandardNewMacro(ttkManifoldCheck)
   output->GetPointData()->AddArray(trianglePointArray);
   output->GetCellData()->AddArray(triangleCellArray);
 
-  {
-    stringstream msg;
-    msg << "[ttkManifoldCheck] Memory usage: " << mem.getElapsedUsage()
-        << " MB." << endl;
-    dMsg(cout, msg.str(), memoryMsg);
-  }
-
-  return 0;
+  return 1;
 }
