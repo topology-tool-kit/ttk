@@ -2,8 +2,7 @@ NAME
   ttkIdentifiers
 SOURCES
   ttkIdentifiers.cpp
-  HEADERS
+HEADERS
   ttkIdentifiers.h
 DEPENDS
-  common
-  ttkTriangulationAlgorithm
+  ttkAlgorithm

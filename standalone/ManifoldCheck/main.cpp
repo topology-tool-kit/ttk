@@ -1,15 +1,14 @@
 /// \author Julien Tierny <julien.tierny@sorbonne-universite.fr>.
-/// \date February 2017.
+/// \date February 2018.
 ///
-/// \brief Command line program for critical point computation.
+/// \brief Manifold check program example.
 
 // TTK Includes
 #include <CommandLineParser.h>
-#include <ttkScalarFieldCriticalPoints.h>
+#include <ttkManifoldCheck.h>
 
 // VTK Includes
 #include <vtkCellData.h>
-#include <vtkDataArray.h>
 #include <vtkDataSet.h>
 #include <vtkPointData.h>
 #include <vtkSmartPointer.h>
@@ -22,10 +21,8 @@ int main(int argc, char **argv) {
   // Program variables
   // ---------------------------------------------------------------------------
   std::vector<std::string> inputFilePaths;
-  std::vector<std::string> inputArrayNames;
   std::string outputPathPrefix{"output"};
   bool listArrays{false};
-  bool forceOffset{false};
 
   // ---------------------------------------------------------------------------
   // Set program variables based on command line arguments
@@ -38,12 +35,9 @@ int main(int argc, char **argv) {
     // -------------------------------------------------------------------------
     parser.setArgument(
       "i", &inputFilePaths, "Input data-sets (*.vti, *vtu, *vtp)", false);
-    parser.setArgument("a", &inputArrayNames, "Input array names", true);
     parser.setArgument(
       "o", &outputPathPrefix, "Output file prefix (no extension)", true);
     parser.setOption("l", &listArrays, "List available arrays");
-
-    parser.setOption("F", &forceOffset, "Force custom offset field (array #1)");
 
     parser.parse(argc, argv);
   }
@@ -52,13 +46,12 @@ int main(int argc, char **argv) {
   // Command line output messages.
   // ---------------------------------------------------------------------------
   ttk::Debug msg;
-  msg.setDebugMsgPrefix("ScalarFieldCriticalPoints");
+  msg.setDebugMsgPrefix("ManifoldCheck");
 
   // ---------------------------------------------------------------------------
-  // Initialize ttkScalarFieldCriticalPoints module (adjust parameters)
+  // Initialize ttkManifoldCheck module (adjust parameters)
   // ---------------------------------------------------------------------------
-  auto scalarFieldCriticalPoints
-    = vtkSmartPointer<ttkScalarFieldCriticalPoints>::New();
+  auto manifoldCheck = vtkSmartPointer<ttkManifoldCheck>::New();
 
   // ---------------------------------------------------------------------------
   // Read input vtkDataObjects (optionally: print available arrays)
@@ -100,8 +93,8 @@ int main(int argc, char **argv) {
         return 0;
       }
     } else {
-      // feed input object to ttkScalarFieldCriticalPoints filter
-      scalarFieldCriticalPoints->SetInputDataObject(i, reader->GetOutput());
+      // feed input object to ttkManifoldCheck filter
+      manifoldCheck->SetInputDataObject(i, reader->GetOutput());
 
       // default arrays
       if(!defaultArray) {
@@ -118,29 +111,16 @@ int main(int argc, char **argv) {
   }
 
   // ---------------------------------------------------------------------------
-  // Specify which arrays of the input vtkDataObjects will be processed
+  // Execute ttkManifoldCheck filter
   // ---------------------------------------------------------------------------
-  if(!inputArrayNames.size()) {
-    if(defaultArray)
-      inputArrayNames.push_back(defaultArray->GetName());
-  }
-  for(size_t i = 0; i < inputArrayNames.size(); i++)
-    scalarFieldCriticalPoints->SetInputArrayToProcess(
-      i, 0, 0, 0, inputArrayNames[i].data());
-
-  // ---------------------------------------------------------------------------
-  // Execute ttkScalarFieldCriticalPoints filter
-  // ---------------------------------------------------------------------------
-  scalarFieldCriticalPoints->SetForceInputOffsetScalarField(forceOffset);
-  scalarFieldCriticalPoints->Update();
+  manifoldCheck->Update();
 
   // ---------------------------------------------------------------------------
   // If output prefix is specified then write all output objects to disk
   // ---------------------------------------------------------------------------
   if(!outputPathPrefix.empty()) {
-    for(int i = 0; i < scalarFieldCriticalPoints->GetNumberOfOutputPorts();
-        i++) {
-      auto output = scalarFieldCriticalPoints->GetOutputDataObject(i);
+    for(int i = 0; i < manifoldCheck->GetNumberOfOutputPorts(); i++) {
+      auto output = manifoldCheck->GetOutputDataObject(i);
       auto writer
         = vtkXMLDataObjectWriter::NewWriter(output->GetDataObjectType());
 

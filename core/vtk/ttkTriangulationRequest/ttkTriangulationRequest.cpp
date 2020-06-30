@@ -1,24 +1,43 @@
+#include <ttkMacros.h>
 #include <ttkTriangulationRequest.h>
+#include <ttkUtils.h>
 
 using namespace std;
 using namespace ttk;
 
 vtkStandardNewMacro(ttkTriangulationRequest);
-int ttkTriangulationRequest::doIt(vector<vtkDataSet *> &inputs,
-                                  vector<vtkDataSet *> &outputs) {
 
-  Memory m;
+int ttkTriangulationRequest::FillInputPortInformation(int port,
+                                                      vtkInformation *info) {
+  if(port == 0) {
+    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
+    return 1;
+  }
+  return 0;
+}
 
-  vtkDataSet *input = inputs[0];
-  vtkUnstructuredGrid *output = vtkUnstructuredGrid::SafeDownCast(outputs[0]);
+int ttkTriangulationRequest::FillOutputPortInformation(int port,
+                                                       vtkInformation *info) {
+  if(port == 0) {
+    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
+    return 1;
+  }
+  return 0;
+}
 
-  Triangulation *triangulation = ttkTriangulation::getTriangulation(input);
+int ttkTriangulationRequest::RequestData(vtkInformation *request,
+                                         vtkInformationVector **inputVector,
+                                         vtkInformationVector *outputVector) {
 
+  Timer timer;
+
+  vtkDataSet *input = vtkDataSet::GetData(inputVector[0]);
+  vtkUnstructuredGrid *output = vtkUnstructuredGrid::GetData(outputVector);
+
+  Triangulation *triangulation = ttkAlgorithm::GetTriangulation(input);
   if(!triangulation)
-    return -1;
+    return 0;
 
-  triangulation->setPeriodicBoundaryConditions(PeriodicBoundaryConditions);
-  triangulation->setWrapper(this);
   const int dimensionality = triangulation->getDimensionality();
   const Request requestType = static_cast<Request>(RequestType);
   const Simplex simplexType = static_cast<Simplex>(SimplexType);
@@ -30,6 +49,12 @@ int ttkTriangulationRequest::doIt(vector<vtkDataSet *> &inputs,
   vector<SimplexId> vertices;
   const SimplexId numberOfVertices = triangulation->getNumberOfVertices();
   vector<SimplexId> isVisited(numberOfVertices, -1);
+
+  this->printMsg(ttk::debug::Separator::L1);
+  this->printMsg({
+    {"#Threads", std::to_string(this->threadNumber_)},
+    {"#Vertices", std::to_string(numberOfVertices)},
+  });
 
   cells->Allocate();
 
@@ -125,35 +150,45 @@ int ttkTriangulationRequest::doIt(vector<vtkDataSet *> &inputs,
   // do minimum preprocess and put watchdog on SimplexIdentifier
   switch(simplexType) {
     case Vertex:
-      if(SimplexIdentifier < 0 or SimplexIdentifier >= numberOfVertices)
-        return -1;
+      if(SimplexIdentifier < 0 or SimplexIdentifier >= numberOfVertices) {
+        this->printErr("Vertex ID beyond the range.");
+        return 0;
+      }
       break;
 
     case Edge:
       triangulation->preconditionEdges();
       if(SimplexIdentifier < 0
-         or SimplexIdentifier >= triangulation->getNumberOfEdges())
-        return -1;
+         or SimplexIdentifier >= triangulation->getNumberOfEdges()) {
+        this->printErr("Edge ID beyond the range.");
+        return 0;
+      }
       break;
 
     case Triangle:
       if(dimensionality == 2) {
         if(SimplexIdentifier < 0
-           or SimplexIdentifier >= triangulation->getNumberOfCells())
-          return -1;
+           or SimplexIdentifier >= triangulation->getNumberOfCells()) {
+          this->printErr("Triangle ID beyond the range.");
+          return 0;
+        }
       } else if(dimensionality == 3) {
         triangulation->preconditionTriangles();
         if(SimplexIdentifier < 0
-           or SimplexIdentifier >= triangulation->getNumberOfTriangles())
-          return -1;
+           or SimplexIdentifier >= triangulation->getNumberOfTriangles()) {
+          this->printErr("Triangle ID beyond the range.");
+          return 0;
+        }
       }
       break;
 
     case Tetra:
       if(dimensionality == 3)
         if(SimplexIdentifier < 0
-           or SimplexIdentifier >= triangulation->getNumberOfCells())
-          return -1;
+           or SimplexIdentifier >= triangulation->getNumberOfCells()) {
+          this->printErr("Tetrahedron ID beyond the range.");
+          return 0;
+        }
       break;
   }
 
@@ -226,6 +261,7 @@ int ttkTriangulationRequest::doIt(vector<vtkDataSet *> &inputs,
     case ComputeCofacet:
       switch(simplexType) {
         case Vertex:
+          triangulation->preconditionVertexNeighbors();
           triangulation->preconditionVertexEdges();
           {
             const SimplexId edgeNumber
@@ -397,9 +433,8 @@ int ttkTriangulationRequest::doIt(vector<vtkDataSet *> &inputs,
     vtkPointData *inputPointData = input->GetPointData();
 #ifndef TTK_ENABLE_KAMIKAZE
     if(!inputPointData) {
-      cerr << "[ttkTriangulationRequest] Error: Input has no point data."
-           << endl;
-      return -1;
+      this->printErr("Input has no point data.");
+      return 0;
     }
 #endif
     const int numberOfInputArrays = inputPointData->GetNumberOfArrays();
@@ -407,9 +442,8 @@ int ttkTriangulationRequest::doIt(vector<vtkDataSet *> &inputs,
     vtkPointData *outputPointData = output->GetPointData();
 #ifndef TTK_ENABLE_KAMIKAZE
     if(!outputPointData) {
-      cerr << "[ttkTriangulationRequest] Error: Output has no point data."
-           << endl;
-      return -1;
+      this->printErr("Output has no point data.");
+      return 0;
     }
 #endif
 
@@ -430,11 +464,8 @@ int ttkTriangulationRequest::doIt(vector<vtkDataSet *> &inputs,
   }
 
   {
-    stringstream msg;
-    msg << "[ttkTriangulationRequest] Memory usage: " << m.getElapsedUsage()
-        << " MB." << endl;
-    dMsg(cout, msg.str(), memoryMsg);
+    this->printMsg("Complete", 1, timer.getElapsedTime());
+    this->printMsg(ttk::debug::Separator::L1);
   }
-
-  return 0;
+  return 1;
 }
