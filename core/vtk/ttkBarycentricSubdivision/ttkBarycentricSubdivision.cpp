@@ -17,7 +17,7 @@ ttkBarycentricSubdivision::ttkBarycentricSubdivision() {
 int ttkBarycentricSubdivision::FillInputPortInformation(int port,
                                                         vtkInformation *info) {
   if(port == 0) {
-    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkUnstructuredGrid");
+    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
     return 1;
   }
   return 0;
@@ -58,7 +58,7 @@ vtkSmartPointer<vtkDataArray> ttkBarycentricSubdivision::AllocateScalarField(
 }
 
 int ttkBarycentricSubdivision::InterpolateScalarFields(
-  vtkUnstructuredGrid *const input,
+  vtkDataSet *const input,
   vtkUnstructuredGrid *const output,
   ttk::Triangulation &inputTriangulation,
   ttk::ExplicitTriangulation &outputTriangulation) const {
@@ -154,7 +154,7 @@ int ttkBarycentricSubdivision::RequestData(vtkInformation *request,
 
   ttk::Timer tm;
 
-  auto input = vtkUnstructuredGrid::GetData(inputVector[0]);
+  auto input = vtkDataSet::GetData(inputVector[0]);
   auto output = vtkUnstructuredGrid::GetData(outputVector);
 
   auto triangulation = ttkAlgorithm::GetTriangulation(input);
@@ -172,7 +172,6 @@ int ttkBarycentricSubdivision::RequestData(vtkInformation *request,
   }
 
   this->preconditionTriangulation(triangulation);
-  this->setInputPoints(ttkUtils::GetVoidPointer(input->GetPoints()));
 
   // first iteration: generate the new triangulation
   this->execute(*triangulation, triangulationSubdivision);
@@ -189,7 +188,6 @@ int ttkBarycentricSubdivision::RequestData(vtkInformation *request,
     // move previous points to temp vector
     decltype(points_) tmpPoints{};
     std::swap(points_, tmpPoints);
-    this->setInputPoints(tmpPoints.data());
 
     // move previous triangulation cells to temp vector
     decltype(cells_connectivity_) tmpCellsCo{};

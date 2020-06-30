@@ -35,10 +35,6 @@ namespace ttk {
       this->setDebugMsgPrefix("BarycentricSubdivision");
     }
 
-    inline void setInputPoints(const void *const addr) {
-      inputPoints_ = static_cast<const float *>(addr);
-    }
-
     inline void
       preconditionTriangulation(AbstractTriangulation *const triangulation) {
       if(triangulation == nullptr) {
@@ -178,9 +174,6 @@ namespace ttk {
     SimplexId nEdges_{};
     SimplexId nTriangles_{};
 
-    // array of input points coordinates
-    const float *inputPoints_{};
-
   protected:
     // output 3D coordinates of generated points: old points first, then edge
     // middles, then triangle barycenters
@@ -224,12 +217,10 @@ int ttk::BarycentricSubdivision::subdiviseTriangulation(
   pointDim_.clear();
   pointDim_.resize(newPoints);
 
-  // copy input points
-  std::copy(
-    inputPoints_, inputPoints_ + nVertices_ * dataPerPoint, points_.begin());
-
-  // set input point ids
+  // set input point coordinates and ids
   for(SimplexId i = 0; i < nVertices_; ++i) {
+    inputTriangl.getVertexPoint(
+      i, points_[i + 0], points_[i + 1], points_[i + 2]);
     pointId_[i] = i;
   }
 

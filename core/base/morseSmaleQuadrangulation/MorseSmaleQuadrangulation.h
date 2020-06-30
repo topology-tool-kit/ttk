@@ -253,8 +253,6 @@ int ttk::MorseSmaleQuadrangulation::detectCellSeps(
   const triangulationType &triangulation) {
 
   ExplicitTriangulation newT{};
-
-  bs.setInputPoints(inputPoints_);
   bs.execute(triangulation, newT);
 
   newT.preconditionVertexNeighbors();
