@@ -76,13 +76,12 @@ protected:
 
 private:
   template <typename T>
-  int dispatch(vtkUnstructuredGrid *outputCriticalPoints, const char *sfName);
+  int dispatch(vtkUnstructuredGrid *outputCriticalPoints,
+               vtkDataArray *inputScalars,
+               vtkDataArray *inputOffsets);
 
   bool ForceInputOffsetScalarField{false};
   bool ComputeGradientGlyphs{true};
-  int IterationThreshold{-1};
 
-  vtkDataArray *inputScalars_{};
   vtkNew<ttkSimplexIdTypeArray> offsets_{};
-  vtkDataArray *inputOffsets_{};
 };

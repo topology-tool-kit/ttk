@@ -38,7 +38,8 @@ int ttkDiscreteGradient::FillOutputPortInformation(int port,
 
 template <typename VTK_TT>
 int ttkDiscreteGradient::dispatch(vtkUnstructuredGrid *outputCriticalPoints,
-                                  const char *sfName) {
+                                  vtkDataArray *inputScalars,
+                                  vtkDataArray *inputOffsets) {
 
   // critical points
   SimplexId criticalPoints_numberOfPoints{};
@@ -59,9 +60,9 @@ int ttkDiscreteGradient::dispatch(vtkUnstructuredGrid *outputCriticalPoints,
     &criticalPoints_points_PLVertexIdentifiers,
     &criticalPoints_points_manifoldSize);
 
-  if(inputOffsets_->GetDataType() == VTK_INT)
+  if(inputOffsets->GetDataType() == VTK_INT)
     ret = this->buildGradient<VTK_TT, int>();
-  if(inputOffsets_->GetDataType() == VTK_ID_TYPE)
+  if(inputOffsets->GetDataType() == VTK_ID_TYPE)
     ret = this->buildGradient<VTK_TT, vtkIdType>();
 #ifndef TTK_ENABLE_KAMIKAZE
   if(ret) {
@@ -85,7 +86,7 @@ int ttkDiscreteGradient::dispatch(vtkUnstructuredGrid *outputCriticalPoints,
     cellIds->SetNumberOfComponents(1);
     cellIds->SetName("CellId");
 
-    vtkDataArray *cellScalars = inputScalars_->NewInstance();
+    vtkDataArray *cellScalars = inputScalars->NewInstance();
 #ifndef TTK_ENABLE_KAMIKAZE
     if(!cellScalars) {
       this->printErr("vtkDataArray allocation problem.");
@@ -93,7 +94,7 @@ int ttkDiscreteGradient::dispatch(vtkUnstructuredGrid *outputCriticalPoints,
     }
 #endif
     cellScalars->SetNumberOfComponents(1);
-    cellScalars->SetName(sfName);
+    cellScalars->SetName(inputScalars->GetName());
 
     vtkNew<vtkCharArray> isOnBoundary{};
     isOnBoundary->SetNumberOfComponents(1);
@@ -148,12 +149,10 @@ int ttkDiscreteGradient::RequestData(vtkInformation *request,
     this->printErr("Input pointer is NULL.");
     return -1;
   }
-
   if(!outputCriticalPoints or !outputGradientGlyphs) {
     this->printErr("Output pointer is NULL.");
     return -1;
   }
-
   if(!input->GetNumberOfPoints()) {
     this->printErr("Input has no point.");
     return -1;
@@ -167,12 +166,12 @@ int ttkDiscreteGradient::RequestData(vtkInformation *request,
   }
   this->preconditionTriangulation(triangulation);
 
-  this->inputScalars_ = this->GetInputArrayToProcess(0, input);
-  this->inputOffsets_
+  const auto inputScalars = this->GetInputArrayToProcess(0, input);
+  auto inputOffsets
     = ttkAlgorithm::GetOptionalArray(this->ForceInputOffsetScalarField, 1,
                                      ttk::OffsetScalarFieldName, inputVector);
 
-  if(this->inputOffsets_ == nullptr) {
+  if(inputOffsets == nullptr) {
     // build a new offset field
     const SimplexId numberOfVertices = input->GetNumberOfPoints();
     offsets_->SetNumberOfComponents(1);
@@ -181,10 +180,10 @@ int ttkDiscreteGradient::RequestData(vtkInformation *request,
     for(SimplexId i = 0; i < numberOfVertices; ++i) {
       offsets_->SetTuple1(i, i);
     }
-    this->inputOffsets_ = offsets_;
+    inputOffsets = offsets_;
   }
 
-  if(this->inputScalars_ == nullptr || this->inputOffsets_ == nullptr) {
+  if(inputScalars == nullptr || inputOffsets == nullptr) {
     this->printErr("Input scalar arrays are NULL");
     return 0;
   }
@@ -192,21 +191,20 @@ int ttkDiscreteGradient::RequestData(vtkInformation *request,
   int ret{};
 
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(inputOffsets_->GetDataType() != VTK_INT
-     and inputOffsets_->GetDataType() != VTK_ID_TYPE) {
+  if(inputOffsets->GetDataType() != VTK_INT
+     and inputOffsets->GetDataType() != VTK_ID_TYPE) {
     this->printErr("input offset field type not supported.");
     return -1;
   }
 #endif
 
   // baseCode processing
-  this->setIterationThreshold(IterationThreshold);
-  this->setInputScalarField(inputScalars_->GetVoidPointer(0));
-  this->setInputOffsets(inputOffsets_->GetVoidPointer(0));
+  this->setInputScalarField(inputScalars->GetVoidPointer(0));
+  this->setInputOffsets(inputOffsets->GetVoidPointer(0));
 
-  switch(inputScalars_->GetDataType()) {
+  switch(inputScalars->GetDataType()) {
     vtkTemplateMacro(
-      ret = dispatch<VTK_TT>(outputCriticalPoints, inputScalars_->GetName()));
+      ret = dispatch<VTK_TT>(outputCriticalPoints, inputScalars, inputOffsets));
   }
 
 #ifndef TTK_ENABLE_KAMIKAZE
