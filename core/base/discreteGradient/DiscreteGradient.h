@@ -662,33 +662,31 @@ according to them.
       /**
        * Preprocess all the required connectivity requests on the triangulation.
        */
-      inline int setupTriangulation(Triangulation *const data) {
+      inline void preconditionTriangulation(Triangulation *const data) {
         inputTriangulation_ = data;
-        if(inputTriangulation_ != nullptr) {
-          dimensionality_ = inputTriangulation_->getCellVertexNumber(0) - 1;
-          numberOfVertices_ = inputTriangulation_->getNumberOfVertices();
+        if(data != nullptr) {
+          dimensionality_ = data->getCellVertexNumber(0) - 1;
+          numberOfVertices_ = data->getNumberOfVertices();
 
-          inputTriangulation_->preconditionBoundaryVertices();
-          inputTriangulation_->preconditionBoundaryEdges();
-          inputTriangulation_->preconditionVertexNeighbors();
-          inputTriangulation_->preconditionVertexEdges();
-          inputTriangulation_->preconditionVertexStars();
-          inputTriangulation_->preconditionEdges();
-          inputTriangulation_->preconditionEdgeStars();
+          data->preconditionBoundaryVertices();
+          data->preconditionBoundaryEdges();
+          data->preconditionVertexNeighbors();
+          data->preconditionVertexEdges();
+          data->preconditionVertexStars();
+          data->preconditionEdges();
+          data->preconditionEdgeStars();
           if(dimensionality_ == 2) {
-            inputTriangulation_->preconditionCellEdges();
+            data->preconditionCellEdges();
           } else if(dimensionality_ == 3) {
-            inputTriangulation_->preconditionBoundaryTriangles();
-            inputTriangulation_->preconditionVertexTriangles();
-            inputTriangulation_->preconditionEdgeTriangles();
-            inputTriangulation_->preconditionTriangles();
-            inputTriangulation_->preconditionTriangleEdges();
-            inputTriangulation_->preconditionTriangleStars();
-            inputTriangulation_->preconditionCellTriangles();
+            data->preconditionBoundaryTriangles();
+            data->preconditionVertexTriangles();
+            data->preconditionEdgeTriangles();
+            data->preconditionTriangles();
+            data->preconditionTriangleEdges();
+            data->preconditionTriangleStars();
+            data->preconditionCellTriangles();
           }
         }
-
-        return 0;
       }
 
       /**

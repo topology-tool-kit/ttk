@@ -201,7 +201,7 @@ namespace ttk {
      */
     inline int setupTriangulation(Triangulation *const data) {
       inputTriangulation_ = data;
-      discreteGradient_.setupTriangulation(inputTriangulation_);
+      discreteGradient_.preconditionTriangulation(inputTriangulation_);
 
       inputTriangulation_->preconditionCellEdges();
       inputTriangulation_->preconditionCellNeighbors();
