@@ -46,7 +46,7 @@ namespace ttk {
 
   public:
     PersistenceDiagram();
-    ~PersistenceDiagram();
+    ~PersistenceDiagram() override;
 
     inline int setComputeSaddleConnectors(bool state) {
       ComputeSaddleConnectors = state;
@@ -80,7 +80,7 @@ namespace ttk {
                              ttk::SimplexId>> &diagram,
       scalarType *scalars) const;
 
-    template <class scalarType, typename idType>
+    template <class scalarType, typename idType, class triangulationType = AbstractTriangulation>
     int execute() const;
 
     inline int
@@ -205,7 +205,7 @@ int ttk::PersistenceDiagram::computeCTPersistenceDiagram(
   return 0;
 }
 
-template <typename scalarType, typename idType>
+template <typename scalarType, typename idType, class triangulationType>
 int ttk::PersistenceDiagram::execute() const {
 
   // get data
@@ -232,7 +232,7 @@ int ttk::PersistenceDiagram::execute() const {
   contourTree.setThreadNumber(threadNumber_);
   contourTree.setDebugLevel(debugLevel_);
   contourTree.setSegmentation(false);
-  contourTree.build<scalarType, idType>();
+  contourTree.build<scalarType, idType, triangulationType>(triangulation_);
 
   // get persistence pairs
   std::vector<std::tuple<ttk::SimplexId, ttk::SimplexId, scalarType>> JTPairs;

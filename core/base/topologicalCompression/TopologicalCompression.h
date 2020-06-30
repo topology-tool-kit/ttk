@@ -63,7 +63,7 @@ namespace ttk {
     int execute(const double &tolerance);
 
     // Persistence compression methods.
-    template <class dataType>
+    template <class dataType, class triangulationType = AbstractTriangulation>
     int computePersistencePairs(
       std::vector<std::tuple<SimplexId, SimplexId, dataType>> &JTPairs,
       std::vector<std::tuple<SimplexId, SimplexId, dataType>> &STPairs,

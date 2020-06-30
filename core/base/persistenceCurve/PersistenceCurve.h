@@ -34,7 +34,7 @@ namespace ttk {
 
   public:
     PersistenceCurve();
-    ~PersistenceCurve();
+    ~PersistenceCurve() override;
 
     inline int setComputeSaddleConnectors(bool state) {
       ComputeSaddleConnectors = state;
@@ -46,7 +46,7 @@ namespace ttk {
       const std::vector<std::tuple<SimplexId, SimplexId, scalarType>> &pairs,
       std::vector<std::pair<scalarType, SimplexId>> &plot) const;
 
-    template <typename scalarType, typename idType>
+    template <typename scalarType, typename idType, class triangulationType = AbstractTriangulation>
     int execute() const;
 
     inline int setupTriangulation(Triangulation *data) {
@@ -123,7 +123,7 @@ int ttk::PersistenceCurve::computePersistencePlot(
   return 0;
 }
 
-template <typename scalarType, typename idType>
+template <typename scalarType, typename idType, class triangulationType>
 int ttk::PersistenceCurve::execute() const {
   // get data
   std::vector<std::pair<scalarType, SimplexId>> &JTPlot
@@ -150,7 +150,7 @@ int ttk::PersistenceCurve::execute() const {
   contourTree.setVertexSoSoffsets(voffsets.data());
   contourTree.setSegmentation(false);
   contourTree.setThreadNumber(threadNumber_);
-  contourTree.build<scalarType, idType>();
+  contourTree.build<scalarType, idType, triangulationType>(triangulation_);
 
   // get persistence pairs
   std::vector<std::tuple<SimplexId, SimplexId, scalarType>> JTPairs;

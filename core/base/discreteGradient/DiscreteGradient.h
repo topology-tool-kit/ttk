@@ -638,7 +638,7 @@ triangulation.
        * Process the saddle connectors by increasing value of persistence until
 a given threshold is met.
        */
-      template <typename dataType, typename idType>
+      template <typename dataType, typename idType, class triangulationType = AbstractTriangulation>
       int filterSaddleConnectors(const bool allowBoundary);
 
       /**

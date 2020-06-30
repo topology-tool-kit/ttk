@@ -6,8 +6,7 @@
 ///\brief TTK processing package that efficiently computes the
 /// contour tree of scalar data and more
 /// (data segmentation, topological simplification,
-/// p
-///  ersistence diagrams, persistence curves, etc.).
+/// persistence diagrams, persistence curves, etc.).
 ///
 ///\param dataType Data type of the input scalar field (char, float,
 /// etc.).
@@ -23,7 +22,6 @@ using namespace ttk;
 using namespace ftm;
 
 FTMTree_CT::FTMTree_CT(Params *const params,
-
                        Scalars *const scalars)
   : FTMTree_MT(params, scalars, TreeType::Contour),
     jt_(new FTMTree_MT(params, scalars, TreeType::Join)),
@@ -348,4 +346,3 @@ void FTMTree_CT::insertNodes(void) {
     st_->insertNode(jt_->getNode(t));
   }
 }
-

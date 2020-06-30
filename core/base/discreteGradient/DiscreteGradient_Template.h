@@ -1772,7 +1772,7 @@ int DiscreteGradient::simplifySaddleSaddleConnections2(
   return 0;
 }
 
-template <typename dataType, typename idType>
+template <typename dataType, typename idType, class triangulationType>
 int DiscreteGradient::filterSaddleConnectors(const bool allowBoundary) {
   const bool allowBruteForce = false;
   const bool returnSaddleConnectors = true;
@@ -1817,7 +1817,7 @@ int DiscreteGradient::filterSaddleConnectors(const bool allowBoundary) {
   contourTree.setVertexSoSoffsets(offsets);
   contourTree.setThreadNumber(threadNumber_);
   contourTree.setSegmentation(false);
-  contourTree.build<dataType, SimplexId>();
+  contourTree.build<dataType, SimplexId, triangulationType>(inputTriangulation_);
   ftm::FTMTree_MT *tree = contourTree.getTree(ftm::TreeType::Contour);
 
   const SimplexId numberOfNodes = tree->getNumberOfNodes();

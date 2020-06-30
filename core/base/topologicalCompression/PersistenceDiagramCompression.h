@@ -5,6 +5,8 @@
 #ifndef TTK_PERSISTENCEDIAGRAMCOMPRESSION_H
 #define TTK_PERSISTENCEDIAGRAMCOMPRESSION_H
 
+#include <TopologicalCompression.h>
+
 template <typename dataType>
 int ttk::TopologicalCompression::ComputeTotalSizeForPersistenceDiagram(
   std::vector<std::tuple<double, int>> &mapping,
@@ -434,7 +436,7 @@ void ttk::TopologicalCompression::CropIntervals(
   }
 }
 
-template <typename dataType>
+template <typename dataType, class triangulationType>
 int ttk::TopologicalCompression::computePersistencePairs(
   std::vector<std::tuple<SimplexId, SimplexId, dataType>> &JTPairs,
   std::vector<std::tuple<SimplexId, SimplexId, dataType>> &STPairs,
@@ -452,7 +454,7 @@ int ttk::TopologicalCompression::computePersistencePairs(
   ftmTreePP.setTreeType(ftm::TreeType::Join_Split);
   ftmTreePP.setVertexSoSoffsets(voffsets.data());
   ftmTreePP.setThreadNumber(threadNumber_);
-  ftmTreePP.build<dataType, SimplexId>();
+  ftmTreePP.build<dataType, SimplexId, triangulationType>(triangulation_);
   ftmTreePP.setSegmentation(false);
   ftmTreePP.computePersistencePairs<dataType>(JTPairs, true);
   ftmTreePP.computePersistencePairs<dataType>(STPairs, false);
