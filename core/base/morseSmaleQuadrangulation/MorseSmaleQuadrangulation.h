@@ -63,9 +63,6 @@ namespace ttk {
     inline void setShowResError(const bool value) {
       ShowResError = value;
     }
-    inline void setInputPoints(const void *const addr) {
-      inputPoints_ = static_cast<const float *>(addr);
-    }
     inline void
       preconditionTriangulation(AbstractTriangulation *const triangl) {
       if(triangl != nullptr) {
@@ -188,8 +185,6 @@ namespace ttk {
 
     // number of vertices in triangulation
     SimplexId verticesNumber_{};
-    // array of input points coordinates
-    const float *inputPoints_{};
 
     // number of critical points from the Morse-Smale complex
     SimplexId criticalPointsNumber_{};
