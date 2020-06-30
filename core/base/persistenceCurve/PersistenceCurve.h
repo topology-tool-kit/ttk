@@ -60,7 +60,7 @@ namespace ttk {
       if(triangulation) {
         ftm::FTMTreePP contourTree;
         contourTree.setDebugLevel(debugLevel_);
-        // contourTree.preconditionTriangulation(triangulation);
+        // TODO: contourTree.preconditionTriangulation(triangulation);
         triangulation->preconditionBoundaryVertices();
       }
       return 0;
@@ -82,7 +82,7 @@ namespace ttk {
   protected:
     bool ComputeSaddleConnectors{false};
 
-    // Remove when FTM and MSC are migrated
+    // TODO: Remove when FTM and MSC are migrated
     Triangulation *triangulation_;
   };
 } // namespace ttk
@@ -127,7 +127,7 @@ int ttk::PersistenceCurve::execute(
   std::vector<SimplexId> voffsets(numberOfVertices);
   std::copy(inputOffsets, inputOffsets + numberOfVertices, voffsets.begin());
 
-  // !!! Change the following to migrated code when FTM module is migrated
+  // TODO: Change the following to migrated code when FTM module is migrated
   // get contour tree
   ftm::FTMTreePP contourTree;
   contourTree.setDebugLevel(debugLevel_);
@@ -164,7 +164,7 @@ int ttk::PersistenceCurve::execute(
     pl_saddleSaddlePairs;
   const int dimensionality = triangulation->getDimensionality();
   if(dimensionality == 3 and ComputeSaddleConnectors) {
-    // !!! Change the following to migrated code when MorseComplex module is
+    // TODO: Change the following to migrated code when MorseComplex module is
     // migrated
     MorseSmaleComplex3D morseSmaleComplex;
     morseSmaleComplex.setDebugLevel(debugLevel_);

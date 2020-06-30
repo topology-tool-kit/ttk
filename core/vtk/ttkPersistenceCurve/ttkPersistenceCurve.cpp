@@ -139,7 +139,7 @@ int ttkPersistenceCurve::RequestData(vtkInformation *request,
     return 0;
   }
 #endif
-  // Remove when FTM and MSC are migrated
+  // TODO: Remove when FTM and MSC are migrated
   setupTriangulation(triangulation);
 
   vtkDataArray *inputScalars = this->GetInputArrayToProcess(0, inputVector);
@@ -157,7 +157,6 @@ int ttkPersistenceCurve::RequestData(vtkInformation *request,
     offsetField = pointData->GetArray(ttk::OffsetScalarFieldName);
   }
 
-  // Migration: Not sure if the following check is needed?
   if(!offsetField) {
     const SimplexId numberOfVertices = input->GetNumberOfPoints();
 
