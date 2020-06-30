@@ -454,7 +454,7 @@ namespace ttk {
       //     thread(s))."
       //     << std::endl;
       // dMsg(std::cout, msg.str(), timeMsg);
-      printMsg("", tm.getElapsedTime(), threadNumber_);
+      printMsg("Complete", 1, tm.getElapsedTime(), threadNumber_);
     }
   }
 

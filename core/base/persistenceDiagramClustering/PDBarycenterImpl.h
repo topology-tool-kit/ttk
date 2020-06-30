@@ -680,9 +680,8 @@ typename PDBarycenter<dataType>::KDTreePair
   auto correspondance_kdt_map
     = kdt->build(coordinates.data(), barycenter_goods_[0].size(), dimension,
                  weights, barycenter_goods_.size());
-  this->printMsg("[Building KD-Tree] Time elapsed : "
-                   + std::to_string(tm.getElapsedTime()) + " s.",
-                 debug::Priority::VERBOSE);
+  this->printMsg(" Building KDTree", 1, tm.getElapsedTime(),
+                 debug::LineMode::NEW, debug::Priority::VERBOSE);
   return std::make_pair(std::move(kdt), correspondance_kdt_map);
 }
 
@@ -887,8 +886,6 @@ std::vector<std::vector<matchingTuple>>
     previous_matchings = std::move(all_matchings);
     // END OF TIMER
     total_time += tm.getElapsedTime();
-    this->printMsg("Time elapsed so far : " + std::to_string(total_time),
-                   debug::Priority::DETAIL);
 
     for(unsigned int i = 0; i < barycenter_goods_.size(); ++i) {
       for(int j = 0; j < barycenter_goods_[i].size(); ++j) {

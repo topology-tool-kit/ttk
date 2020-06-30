@@ -330,7 +330,7 @@ namespace ttk {
       }
     }
 
-    { printMsg("", 1, tm.getElapsedTime(), threadNumber_); }
+    printMsg("Complete", 1, tm.getElapsedTime(), threadNumber_);
     return inv_clustering;
   }
 } // namespace ttk
