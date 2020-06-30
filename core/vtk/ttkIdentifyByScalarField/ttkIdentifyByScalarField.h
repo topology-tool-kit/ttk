@@ -3,10 +3,11 @@
 /// \author Your Name Here <Your Email Address Here>
 /// \date The Date Here.
 ///
-/// \brief TTK VTK-filter that wraps the identifyByScalarField processing
-/// package.
+/// \brief TTK VTK-filter that computes a new scalar array based on a sorting of the input array.
 ///
-/// VTK wrapping code for the @IdentifyByScalarField package.
+/// VTK code for computing a new scalar array from a specifiable point or cell data array. For a cell or a point
+/// the new (integer) value is its index in a sorting of the input array.
+/// The name of the new array is "PointScalarFieldName" or "CellScalarFieldName".
 ///
 /// \param Input Input scalar field (vtkDataSet)
 /// \param Output Output scalar field (vtkDataSet)
@@ -14,58 +15,35 @@
 /// This filter can be used as any other VTK filter (for instance, by using the
 /// sequence of calls SetInputData(), Update(), GetOutput()).
 ///
+/// The name of the input scalar field to consider can be specified with the
+/// standard VTK call SetInputArrayToProcess(), with the following parameters:
+/// \param port 0
+/// \param connection 0
+/// \param fieldAssociation 0 or 1 (point data or cell data)
+/// \param arrayName (const char* string representing the name of the VTK array)
+///
+/// This module respects the following convention regarding the order of the
+/// input arrays to process (SetInputArrayToProcess()):
+/// \param idx 0: input scalar field
+///
 /// See the related ParaView example state files for usage examples within a
 /// VTK pipeline.
 ///
 /// \sa ttk::IdentifyByScalarField
 #pragma once
 
-#include <vtkCellData.h>
-#include <vtkCharArray.h>
-#include <vtkDataArray.h>
-#include <vtkDataSet.h>
-#include <vtkDataSetAlgorithm.h>
-#include <vtkDoubleArray.h>
-#include <vtkFiltersCoreModule.h>
-#include <vtkFloatArray.h>
-#include <vtkInformation.h>
-#include <vtkIntArray.h>
-#include <vtkObjectFactory.h>
-#include <vtkPointData.h>
-#include <vtkSmartPointer.h>
-
 // VTK Module
 #include <ttkIdentifyByScalarFieldModule.h>
 
 // ttk code includes
-#include <ttkTriangulationAlgorithm.h>
+#include <ttkAlgorithm.h>
 
 class TTKIDENTIFYBYSCALARFIELD_EXPORT ttkIdentifyByScalarField
-  : public vtkDataSetAlgorithm,
-    protected ttk::Wrapper {
+  : public ttkAlgorithm {
 
 public:
   static ttkIdentifyByScalarField *New();
-  vtkTypeMacro(ttkIdentifyByScalarField, vtkDataSetAlgorithm)
-
-    // default ttk setters
-    void SetDebugLevel(int debugLevel) {
-    setDebugLevel(debugLevel);
-    Modified();
-  }
-
-  void SetThreadNumber(int threadNumber) {
-    ThreadNumber = threadNumber;
-    SetThreads();
-  }
-  void SetUseAllCores(bool onOff) {
-    UseAllCores = onOff;
-    SetThreads();
-  }
-  // end of default ttk setters
-
-  vtkSetMacro(ScalarField, std::string);
-  vtkGetMacro(ScalarField, std::string);
+  vtkTypeMacro(ttkIdentifyByScalarField, ttkAlgorithm)
 
   vtkSetMacro(IncreasingOrder, bool);
   vtkGetMacro(IncreasingOrder, bool);
@@ -73,55 +51,21 @@ public:
   vtkSetMacro(StartByOne, bool);
   vtkGetMacro(StartByOne, bool);
 
-  int FillInputPortInformation(int port, vtkInformation *info) override {
-    switch(port) {
-      case 0:
-        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataSet");
-        break;
-      default:
-        break;
-    }
-
-    return 1;
-  }
-
-  int FillOutputPortInformation(int port, vtkInformation *info) override {
-    switch(port) {
-      case 0:
-        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataSet");
-        break;
-      default:
-        break;
-    }
-
-    return 1;
-  }
-
-  int getScalars(vtkDataSet *input);
-
   template <typename VTK_TT>
   int dispatch(std::vector<ttk::SimplexId> &inputIds);
 
 protected:
-  ttkIdentifyByScalarField() {
-    UseAllCores = true;
-    IncreasingOrder = false;
-    StartByOne = false;
-    ScalarFieldId = 0;
-    inputScalars_ = nullptr;
-    SetNumberOfInputPorts(1);
-    SetNumberOfOutputPorts(1);
-  }
+  ttkIdentifyByScalarField();
 
   ~ttkIdentifyByScalarField() override{};
 
-  TTK_SETUP();
+  int FillInputPortInformation(int port, vtkInformation *info) override;
+  int FillOutputPortInformation(int port, vtkInformation *info) override;
+  int RequestData(vtkInformation *request,vtkInformationVector **inputVector,vtkInformationVector *outputVector) override;
 
 private:
-  int ScalarFieldId;
-  bool IncreasingOrder;
-  bool StartByOne;
-  std::string ScalarField;
+  bool IncreasingOrder{false};
+  bool StartByOne{false};
 
-  vtkDataArray *inputScalars_;
+  vtkDataArray *inputScalars_{nullptr};
 };
