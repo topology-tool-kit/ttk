@@ -41,17 +41,38 @@ template <typename VTK_TT>
 int ttkDiscreteGradient::dispatch(vtkUnstructuredGrid *outputCriticalPoints,
                                   vtkDataArray *inputScalars,
                                   vtkDataArray *inputOffsets,
-                                  const ttk::Triangulation &triangulation) {
+                                  ttk::Triangulation &triangulation) {
 
   // critical points
   std::vector<VTK_TT> criticalPoints_points_cellScalars;
   this->setOutputCriticalPoints(&criticalPoints_points_cellScalars);
 
+#define DG_EXPLICIT_CALLS(TRIANGL_CASE, TRIANGL_TYPE, OFFSET_TYPE)         \
+  case TRIANGL_CASE: {                                                     \
+    const auto tri = static_cast<TRIANGL_TYPE *>(triangulation.getData()); \
+    if(tri != nullptr) {                                                   \
+      ret = this->buildGradient<VTK_TT, OFFSET_TYPE>(*tri);                \
+    }                                                                      \
+    break;                                                                 \
+  }
+
+#define DG_SWITCH_TRIANGULATION(OFFSET_TYPE)                            \
+  switch(triangulation.getType()) {                                     \
+    DG_EXPLICIT_CALLS(ttk::Triangulation::Type::EXPLICIT,               \
+                      ttk::ExplicitTriangulation, OFFSET_TYPE);         \
+    DG_EXPLICIT_CALLS(ttk::Triangulation::Type::IMPLICIT,               \
+                      ttk::ImplicitTriangulation, OFFSET_TYPE);         \
+    DG_EXPLICIT_CALLS(ttk::Triangulation::Type::PERIODIC,               \
+                      ttk::PeriodicImplicitTriangulation, OFFSET_TYPE); \
+  }
+
   int ret = 0;
-  if(inputOffsets->GetDataType() == VTK_INT)
-    ret = this->buildGradient<VTK_TT, int>(triangulation);
-  if(inputOffsets->GetDataType() == VTK_ID_TYPE)
-    ret = this->buildGradient<VTK_TT, vtkIdType>(triangulation);
+  if(inputOffsets->GetDataType() == VTK_INT) {
+    DG_SWITCH_TRIANGULATION(int);
+  } else if(inputOffsets->GetDataType() == VTK_ID_TYPE) {
+    DG_SWITCH_TRIANGULATION(vtkIdType);
+  }
+
 #ifndef TTK_ENABLE_KAMIKAZE
   if(ret) {
     this->printErr("DiscreteGradient.buildGradient() error code: "
