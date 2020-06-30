@@ -96,7 +96,6 @@ protected:
 
 private:
   bool ForceInputOffsetScalarField{false};
-  bool ComputeSaddleConnectors{false};
 
   template <typename VTK_TT, typename TTK_TT>
   int dispatch(vtkTable *outputJTPersistenceCurve,

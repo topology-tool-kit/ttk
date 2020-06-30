@@ -60,16 +60,30 @@ namespace ttk {
       if(triangulation) {
         ftm::FTMTreePP contourTree;
         contourTree.setDebugLevel(debugLevel_);
-        // contourTree.setupTriangulation(triangulation);
-        // Change to:
         // contourTree.preconditionTriangulation(triangulation);
         triangulation->preconditionBoundaryVertices();
       }
       return 0;
     }
 
+    // Remove when FTM and MSC are migrated
+    inline int setupTriangulation(Triangulation *data) {
+      triangulation_ = data;
+      if(triangulation_) {
+        ftm::FTMTreePP contourTree;
+        contourTree.setDebugLevel(debugLevel_);
+        contourTree.setupTriangulation(triangulation_);
+
+        triangulation_->preconditionBoundaryVertices();
+      }
+      return 0;
+    }
+
   protected:
     bool ComputeSaddleConnectors{false};
+
+    // Remove when FTM and MSC are migrated
+    Triangulation *triangulation_;
   };
 } // namespace ttk
 
@@ -113,17 +127,18 @@ int ttk::PersistenceCurve::execute(
   std::vector<SimplexId> voffsets(numberOfVertices);
   std::copy(inputOffsets, inputOffsets + numberOfVertices, voffsets.begin());
 
+  // !!! Change the following to migrated code when FTM module is migrated
   // get contour tree
   ftm::FTMTreePP contourTree;
   contourTree.setDebugLevel(debugLevel_);
-  // contourTree.setupTriangulation(triangulation, false);
-  //
+  contourTree.setupTriangulation(triangulation_, false);
   contourTree.setVertexScalars(inputScalars);
   contourTree.setTreeType(ftm::TreeType::Join_Split);
   contourTree.setVertexSoSoffsets(voffsets.data());
   contourTree.setSegmentation(false);
   contourTree.setThreadNumber(threadNumber_);
   contourTree.build<scalarType, idType>();
+  // !!!
 
   // get persistence pairs
   std::vector<std::tuple<SimplexId, SimplexId, scalarType>> JTPairs;
@@ -149,16 +164,17 @@ int ttk::PersistenceCurve::execute(
     pl_saddleSaddlePairs;
   const int dimensionality = triangulation->getDimensionality();
   if(dimensionality == 3 and ComputeSaddleConnectors) {
+    // !!! Change the following to migrated code when MorseComplex module is
+    // migrated
     MorseSmaleComplex3D morseSmaleComplex;
     morseSmaleComplex.setDebugLevel(debugLevel_);
     morseSmaleComplex.setThreadNumber(threadNumber_);
-    // morseSmaleComplex.setupTriangulation(triangulation);
-    // Change to:
-    // morseSmaleComplex.preconditionTriangulation(triangulation);
+    morseSmaleComplex.setupTriangulation(triangulation_);
     morseSmaleComplex.setInputScalarField(inputScalars);
     morseSmaleComplex.setInputOffsets(inputOffsets);
     morseSmaleComplex.computePersistencePairs<scalarType, idType>(
       pl_saddleSaddlePairs);
+    // !!!
 
     // sort the saddle-saddle pairs by persistence value and compute curve
     {

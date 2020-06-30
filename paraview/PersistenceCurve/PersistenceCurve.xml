@@ -50,6 +50,13 @@ TopologicalSimplification.
       </InputProperty>
 
       <StringVectorProperty name="ScalarFieldNew" label="Scalar Field" command="SetInputArrayToProcess" element_types="0 0 0 0 2" number_of_elements="5" default_values="0">
+        <ArrayListDomain attribute_type="Scalars" name="array_list">
+            <RequiredProperties>
+                <Property function="Input" name="Input" />
+            </RequiredProperties>
+        </ArrayListDomain>
+        <Documentation>The scalar array that will be used to compute averages.</Documentation>
+      </StringVectorProperty>
 
       <IntVectorProperty
          name="ForceInputOffsetScalarField"
@@ -78,9 +85,7 @@ TopologicalSimplification.
       </IntVectorProperty>
 
       <PropertyGroup panel_widget="Line" label="Input options">
-        <Property name="ScalarField" />
         <Property name="ForceInputOffsetScalarField"/>
-        <Property name="InputOffsetScalarFieldName"/>
       </PropertyGroup>
 
       <PropertyGroup panel_widget="Line" label="Output options">
