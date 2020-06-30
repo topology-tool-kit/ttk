@@ -21,7 +21,6 @@
 // base code includes
 #include <Geometry.h>
 #include <Triangulation.h>
-#include <Wrapper.h>
 
 #include "FTMDataTypes.h"
 #include "FTMTree_MT.h"

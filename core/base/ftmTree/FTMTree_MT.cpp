@@ -43,28 +43,10 @@ FTMTree_MT::FTMTree_MT(Params *const params,
                        Scalars *const scalars,
                        TreeType type)
   : params_(params), mesh_(mesh), scalars_(scalars) {
+
+  this->setDebugMsgPrefix("FTMtree_MT");
+
   mt_data_.treeType = type;
-
-  mt_data_.superArcs = nullptr;
-  mt_data_.nodes = nullptr;
-  mt_data_.roots = nullptr;
-  mt_data_.leaves = nullptr;
-  mt_data_.vert2tree = nullptr;
-  mt_data_.trunkSegments = nullptr;
-  mt_data_.visitOrder = nullptr;
-  mt_data_.ufs = nullptr;
-  mt_data_.states = nullptr;
-  mt_data_.propagation = nullptr;
-  mt_data_.valences = nullptr;
-  mt_data_.openedNodes = nullptr;
-
-#ifdef TTK_ENABLE_FTM_TREE_STATS_TIME
-  mt_data_.activeTasksStats = nullptr;
-#endif
-
-#ifdef TTK_ENABLE_OMP_PRIORITY
-  mt_data_.prior = false;
-#endif
 }
 
 FTMTree_MT::~FTMTree_MT() {
@@ -305,7 +287,7 @@ void FTMTree_MT::build(const bool ct) {
   // Build Merge treeString using tasks
   DebugTimer precomputeTime;
   int alreadyDone = leafSearch();
-  printTime(precomputeTime, "[FTM] leafSearch " + treeString, scalars_->size,
+  printTime(precomputeTime, "leafSearch " + treeString, scalars_->size,
             3 + alreadyDone);
 
   DebugTimer buildTime;
@@ -318,17 +300,17 @@ void FTMTree_MT::build(const bool ct) {
       ++nbProcessed;
   }
 #endif
-  printTime(buildTime, "[FTM] leafGrowth " + treeString, nbProcessed, 3);
+  printTime(buildTime, "leafGrowth " + treeString, nbProcessed, 3);
 
   DebugTimer bbTime;
   SimplexId bbSize = trunk(ct);
-  printTime(bbTime, "[FTM] trunk " + treeString, bbSize, 3);
+  printTime(bbTime, "trunk " + treeString, bbSize, 3);
 
   // Segmentation
   if(ct && params_->segm) {
     DebugTimer segmTime;
     buildSegmentation();
-    printTime(segmTime, "[FTM] segment " + treeString, scalars_->size, 3);
+    printTime(segmTime, "segment " + treeString, scalars_->size, 3);
   }
 }
 
@@ -416,7 +398,7 @@ void FTMTree_MT::buildSegmentation() {
 #pragma omp taskwait
 #endif
 
-  printTime(segmentsSet, "[FTM] segmentation set vertices", -1, 4);
+  printTime(segmentsSet, "segmentation set vertices", -1, 4);
 
   if(mt_data_.trunkSegments->size() == 0) {
     // sort arc that have been filled by the trunk
@@ -433,7 +415,7 @@ void FTMTree_MT::buildSegmentation() {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp taskwait
 #endif
-    printTime(segmentsSortTime, "[FTM] segmentation sort vertices", -1, 4);
+    printTime(segmentsSortTime, "segmentation sort vertices", -1, 4);
   } else {
     // Contour tree: we create the arc segmentation for arcs in the trunk
     DebugTimer segmentsArcTime;
@@ -452,7 +434,7 @@ void FTMTree_MT::buildSegmentation() {
 #pragma omp taskwait
 #endif
 
-    printTime(segmentsArcTime, "[FTM] segmentation arcs lists", -1, 4);
+    printTime(segmentsArcTime, "segmentation arcs lists", -1, 4);
   }
 
   // Update SuperArc region
@@ -845,7 +827,7 @@ int FTMTree_MT::leafSearch() {
   std::iota(mt_data_.leaves->begin(), mt_data_.leaves->end(), 0);
 
   if(debugLevel_ >= 4) {
-    cout << "- [FTM] found " << nbLeaves << " leaves" << endl;
+    this->printMsg("found " + std::to_string(nbLeaves) + " leaves");
   }
 
   // Reserve Arcs
@@ -861,8 +843,9 @@ int FTMTree_MT::leafSearch() {
 idNode FTMTree_MT::makeNode(SimplexId vertexId, SimplexId term) {
 #ifndef TTK_ENABLE_KAMIKAZE
   if(vertexId < 0 || vertexId >= scalars_->size) {
-    cout << "[Merge Tree] make node, wrong vertex :" << vertexId << " on "
-         << scalars_->size << endl;
+    this->printMsg({{"make node, wrong vertex :", std::to_string(vertexId)},
+                    {" on ", std::to_string(scalars_->size)}},
+                   debug::Priority::ERROR);
     return -1;
   }
 #endif
@@ -1000,18 +983,19 @@ void FTMTree_MT::normalizeIds(void) {
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(std::abs((long)nIdMax - (long)nIdMin) > 1) {
-    cout << "[FTM] error during normalize, tree compromized: " << nIdMin << " "
-         << nIdMax << endl;
+    this->printMsg({"error during normalize, tree compromized: ",
+                    std::to_string(nIdMin), " ", std::to_string(nIdMax)},
+                   debug::Priority::ERROR);
   }
 #endif
 
-  printTime(normTime, "[FTM] normalize ids", -1, 4);
+  printTime(normTime, "normalize ids", -1, 4);
 }
 
 idSuperArc FTMTree_MT::openSuperArc(idNode downNodeId) {
 #ifndef TTK_ENABLE_KAMIKAZE
   if(downNodeId >= getNumberOfNodes()) {
-    cout << "[Merge Tree] openSuperArc on a inexisting node !" << endl;
+    this->printErr("openSuperArc on a inexisting node !");
     return -2;
   }
 #endif
@@ -1087,23 +1071,23 @@ string FTMTree_MT::printNode(idNode n) {
 void FTMTree_MT::printParams(void) const {
   if(debugLevel_ > 1) {
     if(debugLevel_ > 2) {
-      cout << "[FTM] ------------" << endl;
+      this->printMsg(ttk::debug::Separator::L1);
     }
-    cout << "[FTM] number of threads : " << threadNumber_ << endl;
+    this->printMsg("number of threads : " + std::to_string(threadNumber_));
     if(debugLevel_ > 2) {
-      cout << "[FTM] * debug lvl  : " << debugLevel_ << endl;
-      cout << "[FTM] * tree type  : ";
+      this->printMsg("* debug lvl  : " + std::to_string(debugLevel_));
+      string tt;
       if(params_->treeType == TreeType::Contour) {
-        cout << "Contour";
+        tt = "Contour";
       } else if(params_->treeType == TreeType::Join) {
-        cout << "Join";
+        tt = "Join";
       } else if(params_->treeType == TreeType::Split) {
-        cout << "Split";
+        tt = "Split";
       } else if(params_->treeType == TreeType::Join_Split) {
-        cout << "Join + Split";
+        tt = "Join + Split";
       }
-      cout << endl;
-      cout << "[FTM] ------------" << endl;
+      this->printMsg("* tree type  : " + tt);
+      this->printMsg(ttk::debug::Separator::L1);
     }
   }
 }
@@ -1113,35 +1097,22 @@ int FTMTree_MT::printTime(DebugTimer &t,
                           SimplexId nbScalars,
                           const int debugLevel) const {
 
-  if(debugLevel_ >= debugLevel) {
+  if(this->debugLevel_ >= debugLevel) {
     stringstream st;
+
+    for(int i = 3; i < debugLevel; i++)
+      st << "-";
+    st << s;
+
 #ifdef TTK_ENABLE_FTM_TREE_PROCESS_SPEED
     if(nbScalars == -1) {
       nbScalars = scalars_->size;
     }
     int speed = nbScalars / t.getElapsedTime();
-#endif
-    for(int i = 3; i < debugLevel; i++)
-      st << "-";
-    st << s << " in ";
-    st.seekg(0, ios::end);
-    while(st.tellg() < 25) {
-      st << " ";
-      st.seekg(0, ios::end);
-    }
-    st.seekg(0, ios::beg);
-    st << t.getElapsedTime();
-
-#ifdef TTK_ENABLE_FTM_TREE_PROCESS_SPEED
-    st.seekg(0, ios::end);
-    while(st.tellg() < 35) {
-      st << " ";
-      st.seekg(0, ios::end);
-    }
-    st.seekg(0, ios::beg);
     st << " at " << speed << " vert/s";
 #endif
-    cout << st.str() << endl;
+
+    this->printMsg(st.str(), 1, t.getElapsedTime(), this->threadNumber_);
   }
   return 1;
 }
@@ -1320,7 +1291,7 @@ SimplexId FTMTree_MT::trunk(const bool ct) {
   closeSuperArc(lastArc, rootNode);
   getSuperArc(lastArc)->setLastVisited(getNode(rootNode)->getVertexId());
 
-  printTime(bbTimer, "[FTM] trunk seq.", -1, 4);
+  printTime(bbTimer, "trunk seq.", -1, 4);
   bbTimer.reStart();
 
   // Segmentation
@@ -1331,7 +1302,7 @@ SimplexId FTMTree_MT::trunk(const bool ct) {
   } else {
     processed = trunkSegmentation(trunkVerts, begin, stop);
   }
-  printTime(bbTimer, "[FTM] trunk para.", -1, 4);
+  printTime(bbTimer, "trunk para.", -1, 4);
 
   return processed;
 }
