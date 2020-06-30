@@ -22,7 +22,6 @@
 #include <FTMTreePP.h>
 #include <MorseSmaleComplex3D.h>
 #include <Triangulation.h>
-#include <Wrapper.h>
 
 namespace ttk {
 
@@ -30,7 +29,7 @@ namespace ttk {
    * Compute the persistence curve of a function on a triangulation.
    * TTK assumes that the input dataset is made of only one connected component.
    */
-  class PersistenceCurve : public Debug {
+  class PersistenceCurve : virtual public Debug {
 
   public:
     PersistenceCurve();
@@ -46,61 +45,26 @@ namespace ttk {
       const std::vector<std::tuple<SimplexId, SimplexId, scalarType>> &pairs,
       std::vector<std::pair<scalarType, SimplexId>> &plot) const;
 
-    template <typename scalarType, typename idType>
-    int execute() const;
+    template <typename scalarType, typename idType, class triangulationType = AbstractTriangulation>
+    int execute(std::vector<std::pair<scalarType, SimplexId>> &JTPlot,
+      std::vector<std::pair<scalarType, SimplexId>> &STPlot,
+      std::vector<std::pair<scalarType, SimplexId>> &MSCPlot,
+      std::vector<std::pair<scalarType, SimplexId>> &CTPlot,
+      const dataType *inputScalars, const idType *inputOffsets,
+      const triangulationType *triangulation) const;
 
-    inline int setupTriangulation(Triangulation *data) {
-      triangulation_ = data;
-      if(triangulation_) {
+    inline int preconditionTriangulation(Triangulation *triangulation) {
+      if(triangulation) {
         ftm::FTMTreePP contourTree;
         contourTree.setDebugLevel(debugLevel_);
-        contourTree.setupTriangulation(triangulation_);
-
-        triangulation_->preconditionBoundaryVertices();
+        contourTree.setupTriangulation(triangulation);
+        triangulation->preconditionBoundaryVertices();
       }
       return 0;
     }
 
-    inline int setInputScalars(void *data) {
-      inputScalars_ = data;
-      return 0;
-    }
-
-    inline int setInputOffsets(void *data) {
-      inputOffsets_ = data;
-      return 0;
-    }
-
-    inline int setOutputJTPlot(void *data) {
-      JTPlot_ = data;
-      return 0;
-    }
-
-    inline int setOutputSTPlot(void *data) {
-      STPlot_ = data;
-      return 0;
-    }
-
-    inline int setOutputMSCPlot(void *data) {
-      MSCPlot_ = data;
-      return 0;
-    }
-
-    inline int setOutputCTPlot(void *data) {
-      CTPlot_ = data;
-      return 0;
-    }
-
   protected:
-    bool ComputeSaddleConnectors;
-
-    Triangulation *triangulation_;
-    void *inputScalars_;
-    void *inputOffsets_;
-    void *JTPlot_;
-    void *MSCPlot_;
-    void *STPlot_;
-    void *CTPlot_;
+    bool ComputeSaddleConnectors{false};
   };
 } // namespace ttk
 
@@ -123,29 +87,28 @@ int ttk::PersistenceCurve::computePersistencePlot(
   return 0;
 }
 
-template <typename scalarType, typename idType>
-int ttk::PersistenceCurve::execute() const {
-  // get data
-  std::vector<std::pair<scalarType, SimplexId>> &JTPlot
-    = *static_cast<std::vector<std::pair<scalarType, SimplexId>> *>(JTPlot_);
-  std::vector<std::pair<scalarType, SimplexId>> &STPlot
-    = *static_cast<std::vector<std::pair<scalarType, SimplexId>> *>(STPlot_);
-  std::vector<std::pair<scalarType, SimplexId>> &MSCPlot
-    = *static_cast<std::vector<std::pair<scalarType, SimplexId>> *>(MSCPlot_);
-  std::vector<std::pair<scalarType, SimplexId>> &CTPlot
-    = *static_cast<std::vector<std::pair<scalarType, SimplexId>> *>(CTPlot_);
-  SimplexId *offsets = static_cast<SimplexId *>(inputOffsets_);
+template <typename scalarType, typename idType, class triangulationType = AbstractTriangulation>
+int ttk::PersistenceCurve::execute(std::vector<std::pair<scalarType, SimplexId>> &JTPlot,
+  std::vector<std::pair<scalarType, SimplexId>> &STPlot,
+  std::vector<std::pair<scalarType, SimplexId>> &MSCPlot,
+  std::vector<std::pair<scalarType, SimplexId>> &CTPlot,
+  const dataType *inputScalars, const idType *inputOffsets,
+  const triangulationType *triangulation) const{
 
-  const SimplexId numberOfVertices = triangulation_->getNumberOfVertices();
+  printMsg(ttk::debug::Separator::L1);
+
+  Timer timer;
+
+  const SimplexId numberOfVertices = triangulation->getNumberOfVertices();
   // convert offsets into a valid format for contour tree
   std::vector<SimplexId> voffsets(numberOfVertices);
-  std::copy(offsets, offsets + numberOfVertices, voffsets.begin());
+  std::copy(inputOffsets, inputOffsets + numberOfVertices, voffsets.begin());
 
   // get contour tree
   ftm::FTMTreePP contourTree;
   contourTree.setDebugLevel(debugLevel_);
-  contourTree.setupTriangulation(triangulation_, false);
-  contourTree.setVertexScalars(inputScalars_);
+  contourTree.setupTriangulation(triangulation, false);
+  contourTree.setVertexScalars(inputScalars);
   contourTree.setTreeType(ftm::TreeType::Join_Split);
   contourTree.setVertexSoSoffsets(voffsets.data());
   contourTree.setSegmentation(false);
@@ -179,9 +142,9 @@ int ttk::PersistenceCurve::execute() const {
     MorseSmaleComplex3D morseSmaleComplex;
     morseSmaleComplex.setDebugLevel(debugLevel_);
     morseSmaleComplex.setThreadNumber(threadNumber_);
-    morseSmaleComplex.setupTriangulation(triangulation_);
-    morseSmaleComplex.setInputScalarField(inputScalars_);
-    morseSmaleComplex.setInputOffsets(inputOffsets_);
+    morseSmaleComplex.setupTriangulation(triangulation);
+    morseSmaleComplex.setInputScalarField(inputScalars);
+    morseSmaleComplex.setInputOffsets(inputOffsets);
     morseSmaleComplex.computePersistencePairs<scalarType, idType>(
       pl_saddleSaddlePairs);
 
@@ -205,19 +168,22 @@ int ttk::PersistenceCurve::execute() const {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp section
 #endif
-    if(JTPlot_)
+    if(JTPlot)
       computePersistencePlot<scalarType>(JTPairs, JTPlot);
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp section
 #endif
-    if(STPlot_)
+    if(STPlot)
       computePersistencePlot<scalarType>(STPairs, STPlot);
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp section
 #endif
-    if(CTPlot_)
+    if(CTPlot)
       computePersistencePlot<scalarType>(CTPairs, CTPlot);
   }
+
+  printMsg("Base execution completed", 1, timer.getElapsedTime(), threadNumber_);
+  printMsg(ttk::debug::Separator::L1);
 
   return 0;
 }
