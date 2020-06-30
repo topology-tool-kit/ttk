@@ -1,0 +1,9 @@
+NAME
+  ttkDilateErode
+SOURCES
+  ttkDilateErode.cpp
+HEADERS
+  ttkDilateErode.h
+DEPENDS
+  dilateErode
+  ttkAlgorithm
