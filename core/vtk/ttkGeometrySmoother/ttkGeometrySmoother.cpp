@@ -48,8 +48,10 @@ int ttkGeometrySmoother::RequestData(vtkInformation *request,
   this->preconditionTriangulation(triangulation);
 
   vtkDataArray *inputMaskField = nullptr;
-  if(this->GetInputArrayInformation(1))
+  if(this->GetInputArrayInformation(1)) {
     inputMaskField = this->GetInputArrayToProcess(1, inputVector);
+    ForceInputMaskScalarField = true;
+  }
 
   if((!inputMaskField) || (!ForceInputMaskScalarField)) {
     inputMaskField
@@ -75,7 +77,7 @@ int ttkGeometrySmoother::RequestData(vtkInformation *request,
 
   switch(outputPoints->GetDataType()) {
     vtkTemplateMacro(
-      this->smooth<VTK_TT>(triangulation, this->NumberOfIterations));
+      this->smooth<VTK_TT>(triangulation->getData(), this->NumberOfIterations));
   }
 
   return 1;

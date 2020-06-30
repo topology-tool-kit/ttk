@@ -118,21 +118,17 @@ int ttk::ScalarFieldSmoother::smooth(const triangulationType *triangulation,
       if(mask_ != nullptr && mask_[i] == 0)
         continue;
 
-      // avoid any processing if the abort signal is sent
-      if((!wrapper_) || ((wrapper_) && (!wrapper_->needsToAbort()))) {
+      for(int j = 0; j < dimensionNumber_; j++) {
+        tmpData[dimensionNumber_ * i + j] = 0;
 
-        for(int j = 0; j < dimensionNumber_; j++) {
-          tmpData[dimensionNumber_ * i + j] = 0;
-
-          SimplexId neighborNumber = triangulation->getVertexNeighborNumber(i);
-          for(SimplexId k = 0; k < neighborNumber; k++) {
-            SimplexId neighborId = -1;
-            triangulation->getVertexNeighbor(i, k, neighborId);
-            tmpData[dimensionNumber_ * i + j]
-              += outputData[dimensionNumber_ * (neighborId) + j];
-          }
-          tmpData[dimensionNumber_ * i + j] /= ((double)neighborNumber);
+        SimplexId neighborNumber = triangulation->getVertexNeighborNumber(i);
+        for(SimplexId k = 0; k < neighborNumber; k++) {
+          SimplexId neighborId = -1;
+          triangulation->getVertexNeighbor(i, k, neighborId);
+          tmpData[dimensionNumber_ * i + j]
+            += outputData[dimensionNumber_ * (neighborId) + j];
         }
+        tmpData[dimensionNumber_ * i + j] /= ((double)neighborNumber);
       }
     }
 
@@ -154,8 +150,6 @@ int ttk::ScalarFieldSmoother::smooth(const triangulationType *triangulation,
         printMsg("Smoothing " + std::to_string(vertexNumber) + " vertices",
                  (it / (float)numberOfIterations), t.getElapsedTime(),
                  threadNumber_, debug::LineMode::REPLACE);
-        if(wrapper_)
-          wrapper_->updateProgress((it / (float)numberOfIterations));
       }
     }
   }
