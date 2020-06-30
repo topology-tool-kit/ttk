@@ -140,9 +140,9 @@ int ttkIntegralLines::RequestData(vtkInformation *request,
   vtkDataArray *inputScalars = this->GetInputArrayToProcess(0, domain);
 
   vtkDataArray *inputOffsets = nullptr;
-  if (this->GetInputArrayInformation(1)) {
+  if(this->GetInputArrayInformation(1)) {
     inputOffsets = this->GetInputArrayToProcess(1, domain);
-  } else if (!ForceInputOffsetScalarField) {
+  } else if(!ForceInputOffsetScalarField) {
     inputOffsets = domain->GetPointData()->GetArray(ttk::OffsetScalarFieldName);
   }
 
@@ -159,7 +159,7 @@ int ttkIntegralLines::RequestData(vtkInformation *request,
   vtkDataArray *inputIdentifiers = nullptr;
   if(this->GetInputArrayInformation(2)) {
     inputIdentifiers = this->GetInputArrayToProcess(2, seeds);
-  } else if (!ForceInputVertexScalarField) {
+  } else if(!ForceInputVertexScalarField) {
     inputIdentifiers
       = seeds->GetPointData()->GetArray(ttk::VertexScalarFieldName);
   }
