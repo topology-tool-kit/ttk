@@ -10,6 +10,24 @@
 /// \param Input Input scalar field (vtkDataSet)
 /// \param Output Output scalar field (vtkDataSet)
 ///
+/// The input data array needs to be specified via the standard VTK call
+/// vtkAlgorithm::SetInputArrayToProcess() with the following parameters:
+/// \param idx 0 (FIXED: the first array the algorithm requires)
+/// \param port 0 (FIXED: first port)
+/// \param connection 0 (FIXED: first connection)
+/// \param fieldAssociation 0 (FIXED: point data)
+/// \param arrayName (DYNAMIC: string identifier of the input array)
+///
+/// The optional offset array can be specified via the standard VTK call
+/// vtkAlgorithm::SetInputArrayToProcess() with the following parameters:
+/// \param idx 1 (FIXED: the second array the algorithm requires)
+/// \param port 0 (FIXED: first port)
+/// \param connection 0 (FIXED: first connection)
+/// \param fieldAssociation 0 (FIXED: point data)
+/// \param arrayName (DYNAMIC: string identifier of the offset array)
+/// \note: To use this optional array, `ForceInputOffsetScalarField` needs to be
+/// enabled with the setter `setForceInputOffsetScalarField()'.
+///
 /// This filter can be used as any other VTK filter (for instance, by using the
 /// sequence of calls SetInputData(), Update(), GetOutput()).
 ///
@@ -38,14 +56,8 @@ public:
   static ttkDiscreteGradient *New();
   vtkTypeMacro(ttkDiscreteGradient, ttkAlgorithm);
 
-  vtkSetMacro(ScalarField, std::string);
-  vtkGetMacro(ScalarField, std::string);
-
   vtkSetMacro(ForceInputOffsetScalarField, bool);
   vtkGetMacro(ForceInputOffsetScalarField, bool);
-
-  vtkSetMacro(InputOffsetScalarFieldName, std::string);
-  vtkGetMacro(InputOffsetScalarFieldName, std::string);
 
   vtkSetMacro(ComputeGradientGlyphs, bool);
   vtkGetMacro(ComputeGradientGlyphs, bool);
@@ -53,18 +65,8 @@ public:
   vtkSetMacro(IterationThreshold, int);
   vtkGetMacro(IterationThreshold, int);
 
-  vtkSetMacro(ScalarFieldId, int);
-  vtkGetMacro(ScalarFieldId, int);
-
-  vtkSetMacro(OffsetFieldId, int);
-  vtkGetMacro(OffsetFieldId, int);
-
-  int getScalars(vtkDataSet *input);
-  int getOffsets(vtkDataSet *input);
-
 protected:
   ttkDiscreteGradient();
-  ~ttkDiscreteGradient() override;
 
   int FillInputPortInformation(int port, vtkInformation *info) override;
   int FillOutputPortInformation(int port, vtkInformation *info) override;
@@ -74,18 +76,13 @@ protected:
 
 private:
   template <typename T>
-  int dispatch(vtkUnstructuredGrid *outputCriticalPoints);
+  int dispatch(vtkUnstructuredGrid *outputCriticalPoints, const char *sfName);
 
-  std::string ScalarField{};
-  std::string InputOffsetScalarFieldName{};
   bool ForceInputOffsetScalarField{false};
   bool ComputeGradientGlyphs{true};
   int IterationThreshold{-1};
-  int ScalarFieldId{};
-  int OffsetFieldId{-1};
 
   vtkDataArray *inputScalars_{};
-  ttkSimplexIdTypeArray *offsets_{};
+  vtkNew<ttkSimplexIdTypeArray> offsets_{};
   vtkDataArray *inputOffsets_{};
-  bool hasUpdatedMesh_{};
 };

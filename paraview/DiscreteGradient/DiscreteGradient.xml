@@ -35,11 +35,12 @@
       </InputProperty>
 
       <StringVectorProperty
-        name="ScalarField"
-        command="SetScalarField"
-        number_of_elements="1"
+        name="Scalar Field"
+        command="SetInputArrayToProcess"
+        element_types="0 0 0 0 2"
+        number_of_elements="5"
+        default_values="0"
         animateable="0"
-        label="Scalar Field"
         >
         <ArrayListDomain
           name="array_list"
@@ -68,10 +69,11 @@
       </IntVectorProperty>
 
       <StringVectorProperty
-        name="InputOffsetScalarFieldName"
-        command="SetInputOffsetScalarFieldName"
-        label="Input Offset Field"
-        number_of_elements="1"
+        name="Offset Field"
+        command="SetInputArrayToProcess"
+        element_types="0 0 0 0 2"
+        number_of_elements="5"
+        default_values="1"
         animateable="0"
         panel_visibility="advanced"
         >
@@ -121,9 +123,9 @@
       ${DEBUG_WIDGETS}
 
       <PropertyGroup panel_widget="Line" label="Input options">
-        <Property name="ScalarField" />
+        <Property name="Scalar Field" />
         <Property name="ForceInputOffsetScalarField"/>
-        <Property name="InputOffsetScalarFieldName"/>
+        <Property name="Offset Field"/>
         <Property name="ComputeGradientGlyphs"/>
       </PropertyGroup>
 

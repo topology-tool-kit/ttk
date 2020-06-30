@@ -18,11 +18,6 @@ ttkDiscreteGradient::ttkDiscreteGradient() {
   SetNumberOfOutputPorts(2);
 }
 
-ttkDiscreteGradient::~ttkDiscreteGradient() {
-  if(offsets_)
-    offsets_->Delete();
-}
-
 int ttkDiscreteGradient::FillInputPortInformation(int port,
                                                   vtkInformation *info) {
   if(port == 0) {
@@ -41,85 +36,9 @@ int ttkDiscreteGradient::FillOutputPortInformation(int port,
   return 0;
 }
 
-int ttkDiscreteGradient::getScalars(vtkDataSet *input) {
-  vtkPointData *pointData = input->GetPointData();
-
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(!pointData) {
-    this->printErr("Input has no point data");
-    return -1;
-  }
-
-  if(!ScalarField.length()) {
-    this->printErr("Scalar field has no name");
-    return -2;
-  }
-#endif
-
-  if(ScalarField.length()) {
-    inputScalars_ = pointData->GetArray(ScalarField.data());
-  } else {
-    inputScalars_ = pointData->GetArray(ScalarFieldId);
-    if(inputScalars_)
-      ScalarField = inputScalars_->GetName();
-  }
-
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(!inputScalars_) {
-    this->printErr("Input scalar field pointer is null");
-    return -3;
-  }
-#endif
-
-  return 0;
-}
-
-int ttkDiscreteGradient::getOffsets(vtkDataSet *input) {
-  if(OffsetFieldId != -1) {
-    inputOffsets_ = input->GetPointData()->GetArray(OffsetFieldId);
-    if(inputOffsets_) {
-      InputOffsetScalarFieldName = inputOffsets_->GetName();
-      ForceInputOffsetScalarField = true;
-    }
-  }
-
-  if(ForceInputOffsetScalarField and InputOffsetScalarFieldName.length()) {
-    inputOffsets_
-      = input->GetPointData()->GetArray(InputOffsetScalarFieldName.data());
-  } else if(input->GetPointData()->GetArray(ttk::OffsetScalarFieldName)) {
-    inputOffsets_ = input->GetPointData()->GetArray(ttk::OffsetScalarFieldName);
-  } else {
-    if(hasUpdatedMesh_ and offsets_) {
-      offsets_->Delete();
-      offsets_ = nullptr;
-    }
-
-    if(!offsets_) {
-      const SimplexId numberOfVertices = input->GetNumberOfPoints();
-
-      offsets_ = ttkSimplexIdTypeArray::New();
-      offsets_->SetNumberOfComponents(1);
-      offsets_->SetNumberOfTuples(numberOfVertices);
-      offsets_->SetName(ttk::OffsetScalarFieldName);
-      for(SimplexId i = 0; i < numberOfVertices; ++i)
-        offsets_->SetTuple1(i, i);
-    }
-
-    inputOffsets_ = offsets_;
-  }
-
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(!inputOffsets_) {
-    this->printErr("wrong input offset scalar field");
-    return -1;
-  }
-#endif
-
-  return 0;
-}
-
 template <typename VTK_TT>
-int ttkDiscreteGradient::dispatch(vtkUnstructuredGrid *outputCriticalPoints) {
+int ttkDiscreteGradient::dispatch(vtkUnstructuredGrid *outputCriticalPoints,
+                                  const char *sfName) {
 
   // critical points
   SimplexId criticalPoints_numberOfPoints{};
@@ -174,7 +93,7 @@ int ttkDiscreteGradient::dispatch(vtkUnstructuredGrid *outputCriticalPoints) {
     }
 #endif
     cellScalars->SetNumberOfComponents(1);
-    cellScalars->SetName(ScalarField.data());
+    cellScalars->SetName(sfName);
 
     vtkNew<vtkCharArray> isOnBoundary{};
     isOnBoundary->SetNumberOfComponents(1);
@@ -248,23 +167,29 @@ int ttkDiscreteGradient::RequestData(vtkInformation *request,
   }
   this->preconditionTriangulation(triangulation);
 
+  this->inputScalars_ = this->GetInputArrayToProcess(0, input);
+  this->inputOffsets_
+    = ttkAlgorithm::GetOptionalArray(this->ForceInputOffsetScalarField, 1,
+                                     ttk::OffsetScalarFieldName, inputVector);
+
+  if(this->inputOffsets_ == nullptr) {
+    // build a new offset field
+    const SimplexId numberOfVertices = input->GetNumberOfPoints();
+    offsets_->SetNumberOfComponents(1);
+    offsets_->SetNumberOfTuples(numberOfVertices);
+    offsets_->SetName(ttk::OffsetScalarFieldName);
+    for(SimplexId i = 0; i < numberOfVertices; ++i) {
+      offsets_->SetTuple1(i, i);
+    }
+    this->inputOffsets_ = offsets_;
+  }
+
+  if(this->inputScalars_ == nullptr || this->inputOffsets_ == nullptr) {
+    this->printErr("Input scalar arrays are NULL");
+    return 0;
+  }
+
   int ret{};
-
-  ret = getScalars(input);
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(ret) {
-    this->printErr("wrong scalars");
-    return -1;
-  }
-#endif
-
-  ret = getOffsets(input);
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(ret) {
-    this->printErr("wrong offsets.");
-    return -1;
-  }
-#endif
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(inputOffsets_->GetDataType() != VTK_INT
@@ -280,7 +205,8 @@ int ttkDiscreteGradient::RequestData(vtkInformation *request,
   this->setInputOffsets(inputOffsets_->GetVoidPointer(0));
 
   switch(inputScalars_->GetDataType()) {
-    vtkTemplateMacro(ret = dispatch<VTK_TT>(outputCriticalPoints));
+    vtkTemplateMacro(
+      ret = dispatch<VTK_TT>(outputCriticalPoints, inputScalars_->GetName()));
   }
 
 #ifndef TTK_ENABLE_KAMIKAZE
