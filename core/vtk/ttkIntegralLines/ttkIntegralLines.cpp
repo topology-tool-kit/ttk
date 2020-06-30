@@ -140,10 +140,11 @@ int ttkIntegralLines::RequestData(vtkInformation *request,
   vtkDataArray *inputScalars = this->GetInputArrayToProcess(0, domain);
 
   vtkDataArray *inputOffsets = nullptr;
-  if(this->GetInputArrayInformation(1))
+  if (this->GetInputArrayInformation(1)) {
     inputOffsets = this->GetInputArrayToProcess(1, domain);
-  if(!inputOffsets && !ForceInputOffsetScalarField)
+  } else if (!ForceInputOffsetScalarField) {
     inputOffsets = domain->GetPointData()->GetArray(ttk::OffsetScalarFieldName);
+  }
 
   if(!inputOffsets) {
     const SimplexId numberOfPoints = domain->GetNumberOfPoints();
@@ -156,11 +157,12 @@ int ttkIntegralLines::RequestData(vtkInformation *request,
   }
 
   vtkDataArray *inputIdentifiers = nullptr;
-  if(this->GetInputArrayInformation(2))
+  if(this->GetInputArrayInformation(2)) {
     inputIdentifiers = this->GetInputArrayToProcess(2, seeds);
-  if(!inputIdentifiers && !ForceInputVertexScalarField)
+  } else if (!ForceInputVertexScalarField) {
     inputIdentifiers
       = seeds->GetPointData()->GetArray(ttk::VertexScalarFieldName);
+  }
 
   const SimplexId numberOfPointsInDomain = domain->GetNumberOfPoints();
   const SimplexId numberOfPointsInSeeds = seeds->GetNumberOfPoints();
