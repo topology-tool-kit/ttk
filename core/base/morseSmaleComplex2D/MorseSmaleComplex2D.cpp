@@ -51,7 +51,8 @@ int MorseSmaleComplex2D::getAscendingSeparatrices1(
 
         vector<Cell> vpath;
         vpath.push_back(saddle);
-        discreteGradient_.getAscendingPath(Cell(2, triangleId), vpath);
+        discreteGradient_.getAscendingPath(
+          Cell(2, triangleId), vpath, *inputTriangulation_);
 
         const Cell &lastCell = vpath.back();
         if(lastCell.dim_ == 2 and discreteGradient_.isCellCritical(lastCell)) {

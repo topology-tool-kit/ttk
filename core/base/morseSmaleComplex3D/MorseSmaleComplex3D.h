@@ -249,15 +249,18 @@ int ttk::MorseSmaleComplex3D::setAscendingSeparatrices2(
     const dcg::Cell &src = sep.source_; // saddle1
 
     // compute separatrix function diff
-    const dataType sepFuncMin = discreteGradient_.scalarMin(src, scalars);
-    const auto maxId = *std::max_element(
-      sepSaddles.begin(), sepSaddles.end(),
-      [=](const SimplexId a, const SimplexId b) {
-        return discreteGradient_.scalarMax(Cell{2, a}, scalars)
-               < discreteGradient_.scalarMax(Cell{2, b}, scalars);
-      });
-    const dataType sepFuncMax
-      = discreteGradient_.scalarMax(Cell{2, maxId}, scalars);
+    const dataType sepFuncMin
+      = discreteGradient_.scalarMin(src, scalars, *inputTriangulation_);
+    const auto maxId
+      = *std::max_element(sepSaddles.begin(), sepSaddles.end(),
+                          [=](const SimplexId a, const SimplexId b) {
+                            return discreteGradient_.scalarMax(
+                                     Cell{2, a}, scalars, *inputTriangulation_)
+                                   < discreteGradient_.scalarMax(
+                                     Cell{2, b}, scalars, *inputTriangulation_);
+                          });
+    const dataType sepFuncMax = discreteGradient_.scalarMax(
+      Cell{2, maxId}, scalars, *inputTriangulation_);
 
     // get boundary condition
     const char onBoundary = std::count_if(
@@ -509,15 +512,18 @@ int ttk::MorseSmaleComplex3D::setDescendingSeparatrices2(
     const char sepType = 2;
 
     // compute separatrix function diff
-    const dataType sepFuncMax = discreteGradient_.scalarMax(src, scalars);
-    const auto minId = *std::min_element(
-      sepSaddles.begin(), sepSaddles.end(),
-      [=](const SimplexId a, const SimplexId b) {
-        return discreteGradient_.scalarMin(Cell{1, a}, scalars)
-               < discreteGradient_.scalarMin(Cell{1, b}, scalars);
-      });
-    const dataType sepFuncMin
-      = discreteGradient_.scalarMin(Cell{1, minId}, scalars);
+    const dataType sepFuncMax
+      = discreteGradient_.scalarMax(src, scalars, *inputTriangulation_);
+    const auto minId
+      = *std::min_element(sepSaddles.begin(), sepSaddles.end(),
+                          [=](const SimplexId a, const SimplexId b) {
+                            return discreteGradient_.scalarMin(
+                                     Cell{1, a}, scalars, *inputTriangulation_)
+                                   < discreteGradient_.scalarMin(
+                                     Cell{1, b}, scalars, *inputTriangulation_);
+                          });
+    const dataType sepFuncMin = discreteGradient_.scalarMin(
+      Cell{1, minId}, scalars, *inputTriangulation_);
     const dataType sepFuncDiff = sepFuncMax - sepFuncMin;
 
     // get boundary condition
@@ -638,7 +644,7 @@ int ttk::MorseSmaleComplex3D::execute() {
   discreteGradient_.setDebugLevel(debugLevel_);
   {
     Timer tmp;
-    discreteGradient_.buildGradient<dataType, idType>();
+    discreteGradient_.buildGradient<dataType, idType>(*inputTriangulation_);
 
     {
       std::stringstream msg;
@@ -649,11 +655,11 @@ int ttk::MorseSmaleComplex3D::execute() {
   }
 
   if(ReturnSaddleConnectors) {
-    discreteGradient_.reverseGradient<dataType, idType>();
+    discreteGradient_.reverseGradient<dataType, idType>(*inputTriangulation_);
   }
 
   std::vector<dcg::Cell> criticalPoints;
-  discreteGradient_.getCriticalPoints(criticalPoints);
+  discreteGradient_.getCriticalPoints(criticalPoints, *inputTriangulation_);
 
   std::vector<std::vector<Separatrix>> separatrices1{};
   std::vector<std::vector<std::vector<dcg::Cell>>> separatricesGeometry1;
@@ -790,7 +796,7 @@ int ttk::MorseSmaleComplex3D::execute() {
   if(outputCriticalPoints_numberOfPoints_ and outputSeparatrices1_points_) {
     std::vector<size_t> nCriticalPointsByDim{};
     discreteGradient_.setCriticalPoints<dataType>(
-      criticalPoints, nCriticalPointsByDim);
+      criticalPoints, nCriticalPointsByDim, *inputTriangulation_);
 
     if(ascendingManifold and descendingManifold) {
       discreteGradient_.setManifoldSize(criticalPoints, nCriticalPointsByDim,
@@ -825,19 +831,22 @@ int ttk::MorseSmaleComplex3D::computePersistencePairs(
     discreteGradient_.setDebugLevel(debugLevel_);
     discreteGradient_.setThreadNumber(threadNumber_);
     discreteGradient_.setCollectPersistencePairs(false);
-    discreteGradient_.buildGradient<dataType, idType>();
-    discreteGradient_.reverseGradient<dataType, idType>();
+    discreteGradient_.buildGradient<dataType, idType>(*inputTriangulation_);
+    discreteGradient_.reverseGradient<dataType, idType>(*inputTriangulation_);
 
     // collect saddle-saddle connections
     discreteGradient_.setCollectPersistencePairs(true);
     discreteGradient_.setOutputPersistencePairs(&dmt_pairs);
-    discreteGradient_.reverseGradient<dataType, idType>(false);
+    discreteGradient_.reverseGradient<dataType, idType>(
+      *inputTriangulation_, false);
   }
 
   // transform DMT pairs into PL pairs
   for(const auto &pair : dmt_pairs) {
-    const SimplexId v0 = discreteGradient_.getCellGreaterVertex(pair[0]);
-    const SimplexId v1 = discreteGradient_.getCellGreaterVertex(pair[1]);
+    const SimplexId v0
+      = discreteGradient_.getCellGreaterVertex(pair[0], *inputTriangulation_);
+    const SimplexId v1
+      = discreteGradient_.getCellGreaterVertex(pair[1], *inputTriangulation_);
     const dataType persistence = scalars[v1] - scalars[v0];
 
     if(v0 != -1 and v1 != -1 and persistence >= 0) {

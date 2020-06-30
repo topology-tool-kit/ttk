@@ -595,21 +595,23 @@ int ttk::AbstractMorseSmaleComplex::setSeparatrices1(
       = saddleConnector ? 1 : std::min(dst.dim_, dimensionality - 1);
 
     // compute separatrix function diff
-    const auto sepFuncMax
-      = std::max(discreteGradient_.scalarMax<dataType>(src, scalars),
-                 discreteGradient_.scalarMax<dataType>(dst, scalars));
-    const auto sepFuncMin
-      = std::min(discreteGradient_.scalarMin<dataType>(src, scalars),
-                 discreteGradient_.scalarMin<dataType>(dst, scalars));
+    const auto sepFuncMax = std::max(
+      discreteGradient_.scalarMax(src, scalars, *inputTriangulation_),
+      discreteGradient_.scalarMax(dst, scalars, *inputTriangulation_));
+    const auto sepFuncMin = std::min(
+      discreteGradient_.scalarMin(src, scalars, *inputTriangulation_),
+      discreteGradient_.scalarMin(dst, scalars, *inputTriangulation_));
     const auto sepFuncDiff = sepFuncMax - sepFuncMin;
 
     // get boundary condition
     const auto onBoundary
-      = saddleConnector
-          ? static_cast<char>(discreteGradient_.isBoundary(src)
-                              && discreteGradient_.isBoundary(dst))
-          : static_cast<char>(discreteGradient_.isBoundary(src))
-              + static_cast<char>(discreteGradient_.isBoundary(dst));
+      = saddleConnector ? static_cast<char>(
+          discreteGradient_.isBoundary(src, *inputTriangulation_)
+          && discreteGradient_.isBoundary(dst, *inputTriangulation_))
+                        : static_cast<char>(discreteGradient_.isBoundary(
+                            src, *inputTriangulation_))
+                            + static_cast<char>(discreteGradient_.isBoundary(
+                              dst, *inputTriangulation_));
 
     for(size_t j = 0; j < sepGeom.size(); ++j) {
       const auto &cell = sepGeom[j];

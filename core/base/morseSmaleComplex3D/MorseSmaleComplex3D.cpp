@@ -54,7 +54,8 @@ int MorseSmaleComplex3D::getAscendingSeparatrices1(
 
         vector<Cell> vpath;
         vpath.push_back(saddle2);
-        discreteGradient_.getAscendingPath(Cell(3, tetraId), vpath);
+        discreteGradient_.getAscendingPath(
+          Cell(3, tetraId), vpath, *inputTriangulation_);
 
         const Cell &lastCell = vpath.back();
         if(lastCell.dim_ == 3 and discreteGradient_.isCellCritical(lastCell)) {
@@ -113,7 +114,8 @@ int MorseSmaleComplex3D::getSaddleConnectors(
 
     std::set<SimplexId> saddles1{};
     VisitedMask mask{isVisited[tid], visitedTriangles[tid]};
-    discreteGradient_.getDescendingWall(s2, mask, nullptr, &saddles1);
+    discreteGradient_.getDescendingWall(
+      s2, mask, *inputTriangulation_, nullptr, &saddles1);
 
     for(const auto saddle1Id : saddles1) {
       const Cell s1{1, saddle1Id};
@@ -121,7 +123,7 @@ int MorseSmaleComplex3D::getSaddleConnectors(
       Vpath vpath;
       const bool isMultiConnected
         = discreteGradient_.getAscendingPathThroughWall(
-          s1, s2, isVisited[tid], &vpath);
+          s1, s2, isVisited[tid], &vpath, *inputTriangulation_);
       const auto &last = vpath.back();
 
       if(!isMultiConnected && last.dim_ == s2.dim_ && last.id_ == s2.id_) {
@@ -206,7 +208,7 @@ int MorseSmaleComplex3D::getAscendingSeparatrices2(
     vector<Cell> wall;
     VisitedMask mask{isVisited[tid], visitedEdges[tid]};
     discreteGradient_.getAscendingWall(
-      saddle1, mask, &wall, &separatricesSaddles[i]);
+      saddle1, mask, *inputTriangulation_, &wall, &separatricesSaddles[i]);
 
     separatricesGeometry[i] = std::move(wall);
     separatrices[i] = Separatrix(true, saddle1, emptyCell, false, i);
@@ -264,7 +266,7 @@ int MorseSmaleComplex3D::getDescendingSeparatrices2(
     vector<Cell> wall;
     VisitedMask mask{isVisited[tid], visitedTriangles[tid]};
     discreteGradient_.getDescendingWall(
-      saddle2, mask, &wall, &separatricesSaddles[i]);
+      saddle2, mask, *inputTriangulation_, &wall, &separatricesSaddles[i]);
 
     separatricesGeometry[i] = std::move(wall);
     separatrices[i] = Separatrix(true, saddle2, emptyCell, false, i);

@@ -93,7 +93,8 @@ int AbstractMorseSmaleComplex::getDescendingSeparatrices1(
 
         vector<Cell> vpath;
         vpath.push_back(saddle1);
-        discreteGradient_.getDescendingPath(Cell(0, vertexId), vpath);
+        discreteGradient_.getDescendingPath(
+          Cell(0, vertexId), vpath, *inputTriangulation_);
 
         const Cell &lastCell = vpath.back();
         if(lastCell.dim_ == 0 and discreteGradient_.isCellCritical(lastCell)) {
@@ -179,7 +180,7 @@ int AbstractMorseSmaleComplex::setAscendingSegmentation(
             }
 
             const SimplexId pairedCellId = discreteGradient_.getPairedCell(
-              Cell(cellDim, neighborId), true);
+              Cell(cellDim, neighborId), *inputTriangulation_, true);
 
             if(pairedCellId == facetId)
               bfs.push(neighborId);
@@ -255,8 +256,8 @@ int AbstractMorseSmaleComplex::setDescendingSegmentation(
               continue;
             }
 
-            const SimplexId pairedCellId
-              = discreteGradient_.getPairedCell(Cell(0, neighborId));
+            const SimplexId pairedCellId = discreteGradient_.getPairedCell(
+              Cell(0, neighborId), *inputTriangulation_);
 
             if(pairedCellId == edgeId)
               bfs.push(neighborId);
