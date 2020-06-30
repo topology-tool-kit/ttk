@@ -7,12 +7,11 @@ if(TARGET ttkManifoldCheck)
   target_link_libraries(${PROJECT_NAME}
     PRIVATE
       ttkManifoldCheck
-      ttkProgramBase
     )
   set_target_properties(${PROJECT_NAME}
     PROPERTIES
       INSTALL_RPATH
-        "${CMAKE_INSTALL_PREFIX}/lib64/TopologyToolKit;${CMAKE_INSTALL_PREFIX}/lib/ttk"
+        "${CMAKE_INSTALL_RPATH}"
     )
   install(
     TARGETS
