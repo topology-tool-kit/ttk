@@ -45,21 +45,24 @@ namespace ttk {
       const std::vector<std::tuple<SimplexId, SimplexId, scalarType>> &pairs,
       std::vector<std::pair<scalarType, SimplexId>> &plot) const;
 
-    template <typename scalarType, typename idType, class triangulationType = ttk::AbstractTriangulation>
+    template <typename scalarType,
+              typename idType,
+              class triangulationType = ttk::AbstractTriangulation>
     int execute(std::vector<std::pair<scalarType, SimplexId>> &JTPlot,
-      std::vector<std::pair<scalarType, SimplexId>> &STPlot,
-      std::vector<std::pair<scalarType, SimplexId>> &MSCPlot,
-      std::vector<std::pair<scalarType, SimplexId>> &CTPlot,
-      const scalarType *inputScalars, const idType *inputOffsets,
-      const triangulationType *triangulation) const;
+                std::vector<std::pair<scalarType, SimplexId>> &STPlot,
+                std::vector<std::pair<scalarType, SimplexId>> &MSCPlot,
+                std::vector<std::pair<scalarType, SimplexId>> &CTPlot,
+                const scalarType *inputScalars,
+                const idType *inputOffsets,
+                const triangulationType *triangulation) const;
 
     inline int preconditionTriangulation(Triangulation *triangulation) {
       if(triangulation) {
         ftm::FTMTreePP contourTree;
         contourTree.setDebugLevel(debugLevel_);
-        //contourTree.setupTriangulation(triangulation);
+        // contourTree.setupTriangulation(triangulation);
         // Change to:
-        //contourTree.preconditionTriangulation(triangulation);
+        // contourTree.preconditionTriangulation(triangulation);
         triangulation->preconditionBoundaryVertices();
       }
       return 0;
@@ -89,13 +92,17 @@ int ttk::PersistenceCurve::computePersistencePlot(
   return 0;
 }
 
-template <typename scalarType, typename idType, class triangulationType = ttk::AbstractTriangulation>
-int ttk::PersistenceCurve::execute(std::vector<std::pair<scalarType, SimplexId>> &JTPlot,
+template <typename scalarType,
+          typename idType,
+          class triangulationType = ttk::AbstractTriangulation>
+int ttk::PersistenceCurve::execute(
+  std::vector<std::pair<scalarType, SimplexId>> &JTPlot,
   std::vector<std::pair<scalarType, SimplexId>> &STPlot,
   std::vector<std::pair<scalarType, SimplexId>> &MSCPlot,
   std::vector<std::pair<scalarType, SimplexId>> &CTPlot,
-  const scalarType *inputScalars, const idType *inputOffsets,
-  const triangulationType *triangulation) const{
+  const scalarType *inputScalars,
+  const idType *inputOffsets,
+  const triangulationType *triangulation) const {
 
   printMsg(ttk::debug::Separator::L1);
 
@@ -109,7 +116,7 @@ int ttk::PersistenceCurve::execute(std::vector<std::pair<scalarType, SimplexId>>
   // get contour tree
   ftm::FTMTreePP contourTree;
   contourTree.setDebugLevel(debugLevel_);
-  //contourTree.setupTriangulation(triangulation, false);
+  // contourTree.setupTriangulation(triangulation, false);
   //
   contourTree.setVertexScalars(inputScalars);
   contourTree.setTreeType(ftm::TreeType::Join_Split);
@@ -145,9 +152,9 @@ int ttk::PersistenceCurve::execute(std::vector<std::pair<scalarType, SimplexId>>
     MorseSmaleComplex3D morseSmaleComplex;
     morseSmaleComplex.setDebugLevel(debugLevel_);
     morseSmaleComplex.setThreadNumber(threadNumber_);
-    //morseSmaleComplex.setupTriangulation(triangulation);
+    // morseSmaleComplex.setupTriangulation(triangulation);
     // Change to:
-    //morseSmaleComplex.preconditionTriangulation(triangulation);
+    // morseSmaleComplex.preconditionTriangulation(triangulation);
     morseSmaleComplex.setInputScalarField(inputScalars);
     morseSmaleComplex.setInputOffsets(inputOffsets);
     morseSmaleComplex.computePersistencePairs<scalarType, idType>(
@@ -184,7 +191,8 @@ int ttk::PersistenceCurve::execute(std::vector<std::pair<scalarType, SimplexId>>
     computePersistencePlot<scalarType>(CTPairs, CTPlot);
   }
 
-  printMsg("Base execution completed", 1, timer.getElapsedTime(), threadNumber_);
+  printMsg(
+    "Base execution completed", 1, timer.getElapsedTime(), threadNumber_);
   printMsg(ttk::debug::Separator::L1);
 
   return 0;

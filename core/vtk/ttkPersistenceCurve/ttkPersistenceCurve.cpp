@@ -23,8 +23,9 @@ vtkTable *ttkPersistenceCurve::GetOutput(int port) {
   return vtkTable::SafeDownCast(this->GetOutputDataObject(port));
 }
 
-int ttkPersistenceCurve::FillInputPortInformation(int port, vtkInformation *info) {
-  if(port == 0){
+int ttkPersistenceCurve::FillInputPortInformation(int port,
+                                                  vtkInformation *info) {
+  if(port == 0) {
     info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
     return 1;
   }
@@ -47,11 +48,13 @@ int ttkPersistenceCurve::FillOutputPortInformation(int port,
 
 template <typename VTK_TT, typename TTK_TT>
 int ttkPersistenceCurve::dispatch(vtkTable *outputJTPersistenceCurve,
-  vtkTable *outputMSCPersistenceCurve,
-  vtkTable *outputSTPersistenceCurve,
-  vtkTable *outputCTPersistenceCurve,
-  const VTK_TT *inputScalars, int inputOffsetsDataType, const void *inputOffsets,
-  const TTK_TT *triangulation) {
+                                  vtkTable *outputMSCPersistenceCurve,
+                                  vtkTable *outputSTPersistenceCurve,
+                                  vtkTable *outputCTPersistenceCurve,
+                                  const VTK_TT *inputScalars,
+                                  int inputOffsetsDataType,
+                                  const void *inputOffsets,
+                                  const TTK_TT *triangulation) {
 
   int ret = 0;
   std::vector<std::pair<VTK_TT, SimplexId>> JTPlot{};
@@ -60,13 +63,18 @@ int ttkPersistenceCurve::dispatch(vtkTable *outputJTPersistenceCurve,
   std::vector<std::pair<VTK_TT, SimplexId>> CTPlot{};
 
   if(inputOffsetsDataType == VTK_INT) {
-    ret = this->execute<VTK_TT, int, TTK_TT>(JTPlot, STPlot, MSCPlot, CTPlot, inputScalars, (int *)inputOffsets, triangulation);
+    ret = this->execute<VTK_TT, int, TTK_TT>(JTPlot, STPlot, MSCPlot, CTPlot,
+                                             inputScalars, (int *)inputOffsets,
+                                             triangulation);
   }
   if(inputOffsetsDataType == VTK_ID_TYPE) {
-    ret = this->execute<VTK_TT, vtkIdType, TTK_TT>(JTPlot, STPlot, MSCPlot, CTPlot, inputScalars, (vtkIdType *)inputOffsets, triangulation);
+    ret = this->execute<VTK_TT, vtkIdType, TTK_TT>(
+      JTPlot, STPlot, MSCPlot, CTPlot, inputScalars, (vtkIdType *)inputOffsets,
+      triangulation);
   }
 
-  ret = getPersistenceCurve<vtkDoubleArray, VTK_TT>(outputJTPersistenceCurve, TreeType::Join, JTPlot);
+  ret = getPersistenceCurve<vtkDoubleArray, VTK_TT>(
+    outputJTPersistenceCurve, TreeType::Join, JTPlot);
 #ifndef TTK_ENABLE_KAMIKAZE
   if(ret) {
     this->printErr("build of join tree persistence curve has failed.");
@@ -74,7 +82,8 @@ int ttkPersistenceCurve::dispatch(vtkTable *outputJTPersistenceCurve,
   }
 #endif
 
-  ret = getMSCPersistenceCurve<vtkDoubleArray, VTK_TT>(outputMSCPersistenceCurve, MSCPlot);
+  ret = getMSCPersistenceCurve<vtkDoubleArray, VTK_TT>(
+    outputMSCPersistenceCurve, MSCPlot);
 #ifndef TTK_ENABLE_KAMIKAZE
   if(ret) {
     this->printErr("Build of saddle-saddle persistence curve has failed.");
@@ -82,7 +91,8 @@ int ttkPersistenceCurve::dispatch(vtkTable *outputJTPersistenceCurve,
   }
 #endif
 
-  ret = getPersistenceCurve<vtkDoubleArray, VTK_TT>(outputSTPersistenceCurve, TreeType::Split, STPlot);
+  ret = getPersistenceCurve<vtkDoubleArray, VTK_TT>(
+    outputSTPersistenceCurve, TreeType::Split, STPlot);
 #ifndef TTK_ENABLE_KAMIKAZE
   if(ret) {
     this->printErr("Build of split tree persistence curve has failed.");
@@ -90,7 +100,8 @@ int ttkPersistenceCurve::dispatch(vtkTable *outputJTPersistenceCurve,
   }
 #endif
 
-  ret = getPersistenceCurve<vtkDoubleArray, VTK_TT>(outputCTPersistenceCurve, TreeType::Contour, CTPlot);
+  ret = getPersistenceCurve<vtkDoubleArray, VTK_TT>(
+    outputCTPersistenceCurve, TreeType::Contour, CTPlot);
 #ifndef TTK_ENABLE_KAMIKAZE
   if(ret) {
     this->printErr("Build of contour tree persistence curve has failed.");
@@ -123,7 +134,7 @@ int ttkPersistenceCurve::RequestData(vtkInformation *request,
 
   ttk::Triangulation *triangulation = ttkAlgorithm::GetTriangulation(input);
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(!triangulation){
+  if(!triangulation) {
     this->printErr("Wrong triangulation");
     return 0;
   }
@@ -131,7 +142,7 @@ int ttkPersistenceCurve::RequestData(vtkInformation *request,
 
   vtkDataArray *inputScalars = this->GetInputArrayToProcess(0, inputVector);
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(!inputScalars){
+  if(!inputScalars) {
     this->printErr("Wrong input scalars");
     return 0;
   }
@@ -141,7 +152,7 @@ int ttkPersistenceCurve::RequestData(vtkInformation *request,
     ForceInputOffsetScalarField, 1, ttk::OffsetScalarFieldName, inputVector);
 
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(!offsetField){
+  if(!offsetField) {
     this->printErr("Wrong input offsets");
     return 0;
   }
@@ -156,14 +167,14 @@ int ttkPersistenceCurve::RequestData(vtkInformation *request,
   ttkVtkTemplateMacro(
     triangulation->getType(), inputScalars->GetDataType(),
     (status = this->dispatch<VTK_TT, TTK_TT>(
-      outputJTPersistenceCurve, outputMSCPersistenceCurve, outputSTPersistenceCurve, outputCTPersistenceCurve,
-      (VTK_TT *)ttkUtils::GetVoidPointer(inputScalars),
-      offsetField->GetDataType(),
-      ttkUtils::GetVoidPointer(offsetField),
-      (TTK_TT *)(triangulation->getData()))))
+       outputJTPersistenceCurve, outputMSCPersistenceCurve,
+       outputSTPersistenceCurve, outputCTPersistenceCurve,
+       (VTK_TT *)ttkUtils::GetVoidPointer(inputScalars),
+       offsetField->GetDataType(), ttkUtils::GetVoidPointer(offsetField),
+       (TTK_TT *)(triangulation->getData()))))
 #ifndef TTK_ENABLE_KAMIKAZE
-  // something wrong in baseCode
-  if(status) {
+    // something wrong in baseCode
+    if(status) {
     std::stringstream msg;
     msg << "PersistenceCurve::execute() error code : " << status;
     this->printErr(msg.str());

@@ -84,12 +84,14 @@ protected:
   int FillOutputPortInformation(int port, vtkInformation *info) override;
 
   template <typename vtkArrayType, typename scalarType>
-  int getPersistenceCurve(vtkTable *outputCurve,
+  int getPersistenceCurve(
+    vtkTable *outputCurve,
     ttk::ftm::TreeType treeType,
     const std::vector<std::pair<scalarType, ttk::SimplexId>> &plot);
 
   template <typename vtkArrayType, typename scalarType>
-  int getMSCPersistenceCurve(vtkTable *outputCurve,
+  int getMSCPersistenceCurve(
+    vtkTable *outputCurve,
     const std::vector<std::pair<scalarType, ttk::SimplexId>> &plot);
 
 private:
@@ -98,16 +100,19 @@ private:
 
   template <typename VTK_TT, typename TTK_TT>
   int dispatch(vtkTable *outputJTPersistenceCurve,
-  vtkTable *outputMSCPersistenceCurve,
-  vtkTable *outputSTPersistenceCurve,
-  vtkTable *outputCTPersistenceCurve,
-    const VTK_TT *inputScalars, int inputOffsetsDataType, const void *inputOffsets,
-    const TTK_TT *triangulation);
+               vtkTable *outputMSCPersistenceCurve,
+               vtkTable *outputSTPersistenceCurve,
+               vtkTable *outputCTPersistenceCurve,
+               const VTK_TT *inputScalars,
+               int inputOffsetsDataType,
+               const void *inputOffsets,
+               const TTK_TT *triangulation);
 };
 
 template <typename vtkArrayType, typename scalarType>
 int ttkPersistenceCurve::getPersistenceCurve(
-  vtkTable *outputCurve, ttk::ftm::TreeType treeType,
+  vtkTable *outputCurve,
+  ttk::ftm::TreeType treeType,
   const std::vector<std::pair<scalarType, ttk::SimplexId>> &plot) {
   const ttk::SimplexId numberOfPairs = plot.size();
 
@@ -170,7 +175,8 @@ int ttkPersistenceCurve::getPersistenceCurve(
 
 template <typename vtkArrayType, typename scalarType>
 int ttkPersistenceCurve::getMSCPersistenceCurve(
-  vtkTable *outputMSCPersistenceCurve, const std::vector<std::pair<scalarType, ttk::SimplexId>> &plot) {
+  vtkTable *outputMSCPersistenceCurve,
+  const std::vector<std::pair<scalarType, ttk::SimplexId>> &plot) {
   const ttk::SimplexId numberOfPairs = plot.size();
 
   vtkSmartPointer<vtkArrayType> persistenceScalars
