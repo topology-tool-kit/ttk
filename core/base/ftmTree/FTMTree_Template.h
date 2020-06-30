@@ -27,8 +27,8 @@
 // PROCESS
 // -------
 
-template <typename scalarType, typename idType>
-void ttk::ftm::FTMTree::build(void) {
+template <typename scalarType, typename idType, class triangulationType>
+void ttk::ftm::FTMTree::build(const triangulationType *mesh) {
   // -----
   // INPUT
   // -----
@@ -53,7 +53,7 @@ void ttk::ftm::FTMTree::build(void) {
   // ----
 
   setDebugLevel(debugLevel_);
-  initNbScalars();
+  initNbScalars(mesh);
 
   // This section is aimed to prevent un-deterministic results if the data-set
   // have NaN values in it.
@@ -131,7 +131,7 @@ void ttk::ftm::FTMTree::build(void) {
   // -----
 
   DebugTimer buildTime;
-  FTMTree_CT::build(params_->treeType);
+  FTMTree_CT::build(mesh, params_->treeType);
   printTime(buildTime, "build tree", -1, 3);
 
   printTime(startTime, "Total ", -1, 1);

@@ -38,7 +38,6 @@ namespace ttk {
       // -----------------
 
       FTMTree_CT(Params *const params,
-                 Triangulation *mesh,
                  Scalars *const scalars);
       virtual ~FTMTree_CT();
 
@@ -96,9 +95,12 @@ namespace ttk {
       // PROCESS
       // -----------------
 
-      int leafSearch();
 
-      void build(TreeType tt);
+      template<class triangulationType = AbstractTriangulation>
+      int leafSearch(const triangulationType* mesh);
+
+      template<class triangulationType = AbstractTriangulation>
+      void build(const triangulationType* mesh, TreeType tt);
 
       void insertNodes();
 
@@ -115,5 +117,7 @@ namespace ttk {
 
   } // namespace ftm
 } // namespace ttk
+
+#include <FTMTree_CT_Template.h>
 
 #endif // CONTOURTREE_H

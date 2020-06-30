@@ -45,8 +45,8 @@ namespace ttk {
 
       // Initialize structures then build tree
       // Need triangulation, scalars and all params set before call
-      template <typename scalarType, typename idType>
-      void build(void);
+      template <typename scalarType, typename idType, class triangulationType = AbstractTriangulation>
+      void build(const triangulationType *mesh);
     };
 
 #include "FTMTree_Template.h"
