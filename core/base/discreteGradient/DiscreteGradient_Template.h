@@ -227,22 +227,19 @@ int DiscreteGradient::buildGradient() {
   // compute gradient pairs
   processLowerStars();
 
-  {
-    std::stringstream msg;
-    msg << "[DiscreteGradient] Data-set: " << numberOfVertices_ << " v., "
-        << inputTriangulation_->getNumberOfEdges() << " e.";
-    if(inputTriangulation_->getDimensionality() == 3) {
-      msg << ", " << inputTriangulation_->getNumberOfTriangles() << " t., "
-          << inputTriangulation_->getNumberOfCells() << " T." << std::endl;
-    } else if(inputTriangulation_->getDimensionality() == 2) {
-      msg << ", " << inputTriangulation_->getNumberOfCells() << " t."
-          << std::endl;
-    }
+  std::vector<std::vector<std::string>> rows{
+    {"#Vertices", std::to_string(numberOfCells[0])},
+    {"#Edges", std::to_string(numberOfCells[1])},
+    {"#Triangles", std::to_string(numberOfCells[2])}};
 
-    msg << "[DiscreteGradient] Processed in " << t.getElapsedTime() << " s. ("
-        << threadNumber_ << " thread(s))." << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
+  if(dimensionality_ == 3) {
+    rows.emplace_back(
+      std::vector<std::string>{"#Tetras", std::to_string(numberOfCells[3])});
   }
+
+  this->printMsg(rows);
+  this->printMsg(
+    "Built discrete gradient", 1.0, t.getElapsedTime(), this->threadNumber_);
 
   return 0;
 }
@@ -265,9 +262,8 @@ int DiscreteGradient::setCriticalPoints(
     return -1;
   }
   if(!inputScalarField_) {
-    std::cerr << "[DiscreteGradient] critical points' pointer to the input "
-                 "scalar field is null."
-              << std::endl;
+    this->printErr(
+      "Critical points' pointer to the input scalar field is null.");
     return -1;
   }
 #endif
@@ -342,14 +338,13 @@ int DiscreteGradient::setCriticalPoints(
     }
   }
 
-  {
-    std::stringstream msg;
-    for(int i = 0; i < numberOfDimensions; ++i) {
-      msg << "[DiscreteGradient] " << nCriticalPointsByDim[i] << " " << i
-          << "-cell(s)." << std::endl;
-    }
-    dMsg(std::cout, msg.str(), infoMsg);
+  std::vector<std::vector<std::string>> rows{};
+  for(int i = 0; i < numberOfDimensions; ++i) {
+    rows.emplace_back(
+      std::vector<std::string>{"#" + std::to_string(i) + "-cell(s)",
+                               std::to_string(nCriticalPointsByDim[i])});
   }
+  this->printMsg(rows);
 
   return 0;
 }
@@ -677,12 +672,8 @@ int DiscreteGradient::initializeSaddleSaddleConnections1(
     }
   }
 
-  {
-    std::stringstream msg;
-    msg << "[DiscreteGradient]  Initialization step :\t" << t.getElapsedTime()
-        << " s." << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
-  }
+  this->printMsg(
+    " Initialization step", 1.0, t.getElapsedTime(), this->threadNumber_);
 
   return 0;
 }
@@ -705,12 +696,8 @@ int DiscreteGradient::orderSaddleSaddleConnections1(
     }
   }
 
-  {
-    std::stringstream msg;
-    msg << "[DiscreteGradient]  Ordering of the vpaths :\t"
-        << t.getElapsedTime() << " s." << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
-  }
+  this->printMsg(
+    " Ordering of the vpaths", 1.0, t.getElapsedTime(), this->threadNumber_);
 
   return 0;
 }
@@ -1098,12 +1085,9 @@ int DiscreteGradient::processSaddleSaddleConnections1(
     ++numberOfIterations;
   }
 
-  {
-    std::stringstream msg;
-    msg << "[DiscreteGradient]  Processing of the vpaths :\t"
-        << t.getElapsedTime() << " s." << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
-  }
+  this->printMsg(
+    " Processing of the vpaths", 1.0, t.getElapsedTime(), this->threadNumber_);
+
   return 0;
 }
 
@@ -1151,13 +1135,8 @@ int DiscreteGradient::simplifySaddleSaddleConnections1(
     isRemovableSaddle1, isRemovableSaddle2, vpaths, dmt_criticalPoints,
     saddle1Index, saddle2Index);
 
-  {
-    std::stringstream msg;
-    msg << "[DiscreteGradient] Saddle-Saddle pairs simplified in "
-        << t.getElapsedTime() << " s, " << threadNumber_ << " thread(s)."
-        << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
-  }
+  this->printMsg("Saddle-Saddle pairs simplified", 1.0, t.getElapsedTime(),
+                 this->threadNumber_);
 
   return 0;
 }
@@ -1283,12 +1262,9 @@ int DiscreteGradient::initializeSaddleSaddleConnections2(
     }
   }
 
-  {
-    std::stringstream msg;
-    msg << "[DiscreteGradient]  Initialization step :\t" << t.getElapsedTime()
-        << " s." << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
-  }
+  this->printMsg(
+    " Initialization step", 1.0, t.getElapsedTime(), this->threadNumber_);
+
   return 0;
 }
 
@@ -1310,12 +1286,8 @@ int DiscreteGradient::orderSaddleSaddleConnections2(
     }
   }
 
-  {
-    std::stringstream msg;
-    msg << "[DiscreteGradient]  Ordering of the vpaths :\t"
-        << t.getElapsedTime() << " s." << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
-  }
+  this->printMsg(
+    " Ordering of the vpaths", 1.0, t.getElapsedTime(), this->threadNumber_);
 
   return 0;
 }
@@ -1339,12 +1311,8 @@ int DiscreteGradient::processSaddleSaddleConnections2(
   std::vector<SimplexId> &saddle2Index) {
   Timer t;
 
-  {
-    std::stringstream msg;
-    msg << "[DiscreteGradient] Saddle connector persistence threshold: "
-        << SaddleConnectorsPersistenceThreshold << std::endl;
-    dMsg(std::cout, msg.str(), infoMsg);
-  }
+  this->printMsg("Saddle connector persistence threshold: "
+                 + std::to_string(this->SaddleConnectorsPersistenceThreshold));
 
   const auto *const scalars = static_cast<const dataType *>(inputScalarField_);
 
@@ -1707,12 +1675,8 @@ int DiscreteGradient::processSaddleSaddleConnections2(
     ++numberOfIterations;
   }
 
-  {
-    std::stringstream msg;
-    msg << "[DiscreteGradient]  Processing of the vpaths :\t"
-        << t.getElapsedTime() << " s." << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
-  }
+  this->printMsg(
+    " Processing of the vpaths", 1.0, t.getElapsedTime(), this->threadNumber_);
 
   return 0;
 }
@@ -1761,13 +1725,8 @@ int DiscreteGradient::simplifySaddleSaddleConnections2(
     isRemovableSaddle1, isRemovableSaddle2, vpaths, dmt_criticalPoints,
     saddle1Index, saddle2Index);
 
-  {
-    std::stringstream msg;
-    msg << "[DiscreteGradient] Saddle-Saddle pairs simplified in "
-        << t.getElapsedTime() << " s, " << threadNumber_ << " thread(s)."
-        << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
-  }
+  this->printMsg("Saddle-Saddle pairs simplified", 1.0, t.getElapsedTime(),
+                 this->threadNumber_);
 
   return 0;
 }
@@ -1879,17 +1838,14 @@ int DiscreteGradient::reverseGradient(bool detectCriticalPoints) {
         }
       }
 
-      {
-        std::stringstream msg;
-        for(int i = 0; i < numberOfDimensions; ++i) {
-          msg << "[DiscreteGradient] " << nDMTCriticalPoints[i] << " " << i
-              << "-cell(s)";
-          msg << " and " << nPLInteriorCriticalPoints[i] << " interior PL."
-              << std::endl;
-        }
-
-        dMsg(std::cout, msg.str(), infoMsg);
+      std::vector<std::vector<std::string>> rows{};
+      for(int i = 0; i < numberOfDimensions; ++i) {
+        rows.emplace_back(std::vector<std::string>{
+          "#" + std::to_string(i) + "-cell(s)",
+          std::to_string(nDMTCriticalPoints[i]) + " (with "
+            + std::to_string(nPLInteriorCriticalPoints[i]) + " interior PL)"});
       }
+      this->printMsg(rows);
     }
   }
 
@@ -1918,12 +1874,8 @@ int DiscreteGradient::reverseGradient(bool detectCriticalPoints) {
     filterSaddleConnectors<dataType, idType>(allowBoundary);
   }
 
-  {
-    std::stringstream msg;
-    msg << "[DiscreteGradient] Gradient reversed in " << t.getElapsedTime()
-        << " s. (" << threadNumber_ << " thread(s))." << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
-  }
+  this->printMsg(
+    "Gradient reversed", 1.0, t.getElapsedTime(), this->threadNumber_);
 
   return 0;
 }

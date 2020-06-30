@@ -19,7 +19,6 @@
 #include <FTMTree.h>
 #include <Geometry.h>
 #include <Triangulation.h>
-#include <Wrapper.h>
 
 #include <algorithm>
 #include <array>
@@ -316,9 +315,13 @@ namespace ttk {
      * TTK assumes that the input dataset is made of only one connected
      * component.
      */
-    class DiscreteGradient : public Debug {
+    class DiscreteGradient : virtual public Debug {
 
     public:
+      DiscreteGradient() {
+        this->setDebugMsgPrefix("DiscreteGradient");
+      }
+
       /**
        * Impose a threshold on the number of simplification passes.
        */
