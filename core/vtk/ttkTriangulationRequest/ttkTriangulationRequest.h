@@ -22,28 +22,22 @@
 #pragma once
 
 // ttk code includes
-#include <ttkTriangulationAlgorithm.h>
+#include <Triangulation.h>
+#include <ttkAlgorithm.h>
 
 // VTK includes
-#include <vtkCharArray.h>
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
-#include <vtkDataSetAlgorithm.h>
-#include <vtkDoubleArray.h>
-#include <vtkFiltersCoreModule.h>
-#include <vtkFloatArray.h>
 #include <vtkInformation.h>
-#include <vtkIntArray.h>
-#include <vtkObjectFactory.h>
 #include <vtkPointData.h>
 #include <vtkSmartPointer.h>
+#include <vtkUnstructuredGrid.h>
 
 // VTK Module
 #include <ttkTriangulationRequestModule.h>
 
 class TTKTRIANGULATIONREQUEST_EXPORT ttkTriangulationRequest
-  : public vtkDataSetAlgorithm,
-    protected ttk::Wrapper {
+  : public ttkAlgorithm {
 
 public:
   enum Simplex { Vertex = 0, Edge, Triangle, Tetra };
@@ -57,25 +51,9 @@ public:
   };
 
   static ttkTriangulationRequest *New();
-  vtkTypeMacro(ttkTriangulationRequest, vtkDataSetAlgorithm)
+  vtkTypeMacro(ttkTriangulationRequest, ttkAlgorithm)
 
-    // default ttk setters
-    void SetDebugLevel(int debugLevel) {
-    setDebugLevel(debugLevel);
-    Modified();
-  }
-
-  void SetThreadNumber(int threadNumber) {
-    ThreadNumber = threadNumber;
-    SetThreads();
-  }
-  void SetUseAllCores(bool onOff) {
-    UseAllCores = onOff;
-    SetThreads();
-  }
-  // end of default ttk setters
-
-  vtkSetMacro(SimplexType, int);
+    vtkSetMacro(SimplexType, int);
   vtkGetMacro(SimplexType, int);
 
   vtkSetMacro(SimplexIdentifier, int);
@@ -87,58 +65,26 @@ public:
   vtkSetMacro(KeepAllDataArrays, bool);
   vtkGetMacro(KeepAllDataArrays, bool);
 
-  vtkSetMacro(PeriodicBoundaryConditions, int);
-  vtkGetMacro(PeriodicBoundaryConditions, int);
-
-  int FillInputPortInformation(int port, vtkInformation *info) override {
-
-    switch(port) {
-      case 0:
-        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataSet");
-        break;
-
-      default:
-        break;
-    }
-
-    return 1;
-  }
-
-  int FillOutputPortInformation(int port, vtkInformation *info) override {
-
-    switch(port) {
-      case 0:
-        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
-        break;
-
-      default:
-        break;
-    }
-
-    return 1;
-  }
-
 protected:
   ttkTriangulationRequest() {
-    UseAllCores = true;
-    SimplexType = 0;
-    SimplexIdentifier = 0;
-    RequestType = 0;
-    KeepAllDataArrays = true;
-    PeriodicBoundaryConditions = false;
-
     SetNumberOfInputPorts(1);
     SetNumberOfOutputPorts(1);
+    this->setDebugMsgPrefix("TriangulationRequest");
   }
 
   ~ttkTriangulationRequest() override{};
 
-  TTK_SETUP();
+  int FillInputPortInformation(int port, vtkInformation *info) override;
+
+  int FillOutputPortInformation(int port, vtkInformation *info) override;
+
+  int RequestData(vtkInformation *request,
+                  vtkInformationVector **inputVector,
+                  vtkInformationVector *outputVector) override;
 
 private:
-  int SimplexType;
-  int SimplexIdentifier;
-  int RequestType;
-  bool KeepAllDataArrays;
-  bool PeriodicBoundaryConditions;
+  int SimplexType{0};
+  int SimplexIdentifier{0};
+  int RequestType{0};
+  bool KeepAllDataArrays{true};
 };

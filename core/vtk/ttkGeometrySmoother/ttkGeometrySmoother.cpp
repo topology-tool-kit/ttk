@@ -47,16 +47,8 @@ int ttkGeometrySmoother::RequestData(vtkInformation *request,
   auto triangulation = ttkAlgorithm::GetTriangulation(inputPointSet);
   this->preconditionTriangulation(triangulation);
 
-  vtkDataArray *inputMaskField = nullptr;
-  if(this->GetInputArrayInformation(1)) {
-    inputMaskField = this->GetInputArrayToProcess(1, inputVector);
-    ForceInputMaskScalarField = true;
-  }
-
-  if((!inputMaskField) || (!ForceInputMaskScalarField)) {
-    inputMaskField
-      = inputPointSet->GetPointData()->GetArray(ttk::MaskScalarFieldName);
-  }
+  vtkDataArray *inputMaskField = ttkAlgorithm::GetOptionalArray(
+    ForceInputMaskScalarField, 1, ttk::MaskScalarFieldName, inputVector);
 
   // This filter copies the input into a new data-set (smoothed)
   // let's use shallow copies, in order to only duplicate point positions
