@@ -685,8 +685,7 @@ according to them.
       /**
        * Preprocess all the required connectivity requests on the triangulation.
        */
-      inline void preconditionTriangulation(Triangulation *const data) {
-        inputTriangulation_ = data;
+      inline void preconditionTriangulation(AbstractTriangulation *const data) {
         if(data != nullptr) {
           dimensionality_ = data->getCellVertexNumber(0) - 1;
           numberOfVertices_ = data->getNumberOfVertices();
@@ -950,7 +949,6 @@ in the gradient.
 
       const void *inputScalarField_{};
       const void *inputOffsets_{};
-      Triangulation *inputTriangulation_{};
 
       SimplexId outputCriticalPoints_numberOfPoints_{};
       std::vector<float> outputCriticalPoints_points_{};
