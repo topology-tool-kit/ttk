@@ -45,19 +45,21 @@ namespace ttk {
       const std::vector<std::tuple<SimplexId, SimplexId, scalarType>> &pairs,
       std::vector<std::pair<scalarType, SimplexId>> &plot) const;
 
-    template <typename scalarType, typename idType, class triangulationType = AbstractTriangulation>
+    template <typename scalarType, typename idType, class triangulationType = ttk::AbstractTriangulation>
     int execute(std::vector<std::pair<scalarType, SimplexId>> &JTPlot,
       std::vector<std::pair<scalarType, SimplexId>> &STPlot,
       std::vector<std::pair<scalarType, SimplexId>> &MSCPlot,
       std::vector<std::pair<scalarType, SimplexId>> &CTPlot,
-      const dataType *inputScalars, const idType *inputOffsets,
+      const scalarType *inputScalars, const idType *inputOffsets,
       const triangulationType *triangulation) const;
 
     inline int preconditionTriangulation(Triangulation *triangulation) {
       if(triangulation) {
         ftm::FTMTreePP contourTree;
         contourTree.setDebugLevel(debugLevel_);
-        contourTree.setupTriangulation(triangulation);
+        //contourTree.setupTriangulation(triangulation);
+        // Change to:
+        //contourTree.preconditionTriangulation(triangulation);
         triangulation->preconditionBoundaryVertices();
       }
       return 0;
@@ -87,12 +89,12 @@ int ttk::PersistenceCurve::computePersistencePlot(
   return 0;
 }
 
-template <typename scalarType, typename idType, class triangulationType = AbstractTriangulation>
+template <typename scalarType, typename idType, class triangulationType = ttk::AbstractTriangulation>
 int ttk::PersistenceCurve::execute(std::vector<std::pair<scalarType, SimplexId>> &JTPlot,
   std::vector<std::pair<scalarType, SimplexId>> &STPlot,
   std::vector<std::pair<scalarType, SimplexId>> &MSCPlot,
   std::vector<std::pair<scalarType, SimplexId>> &CTPlot,
-  const dataType *inputScalars, const idType *inputOffsets,
+  const scalarType *inputScalars, const idType *inputOffsets,
   const triangulationType *triangulation) const{
 
   printMsg(ttk::debug::Separator::L1);
@@ -107,7 +109,8 @@ int ttk::PersistenceCurve::execute(std::vector<std::pair<scalarType, SimplexId>>
   // get contour tree
   ftm::FTMTreePP contourTree;
   contourTree.setDebugLevel(debugLevel_);
-  contourTree.setupTriangulation(triangulation, false);
+  //contourTree.setupTriangulation(triangulation, false);
+  //
   contourTree.setVertexScalars(inputScalars);
   contourTree.setTreeType(ftm::TreeType::Join_Split);
   contourTree.setVertexSoSoffsets(voffsets.data());
@@ -137,12 +140,14 @@ int ttk::PersistenceCurve::execute(std::vector<std::pair<scalarType, SimplexId>>
   // get the saddle-saddle pairs
   std::vector<std::tuple<SimplexId, SimplexId, scalarType>>
     pl_saddleSaddlePairs;
-  const int dimensionality = triangulation_->getDimensionality();
+  const int dimensionality = triangulation->getDimensionality();
   if(dimensionality == 3 and ComputeSaddleConnectors) {
     MorseSmaleComplex3D morseSmaleComplex;
     morseSmaleComplex.setDebugLevel(debugLevel_);
     morseSmaleComplex.setThreadNumber(threadNumber_);
-    morseSmaleComplex.setupTriangulation(triangulation);
+    //morseSmaleComplex.setupTriangulation(triangulation);
+    // Change to:
+    //morseSmaleComplex.preconditionTriangulation(triangulation);
     morseSmaleComplex.setInputScalarField(inputScalars);
     morseSmaleComplex.setInputOffsets(inputOffsets);
     morseSmaleComplex.computePersistencePairs<scalarType, idType>(
@@ -168,18 +173,15 @@ int ttk::PersistenceCurve::execute(std::vector<std::pair<scalarType, SimplexId>>
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp section
 #endif
-    if(JTPlot)
-      computePersistencePlot<scalarType>(JTPairs, JTPlot);
+    computePersistencePlot<scalarType>(JTPairs, JTPlot);
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp section
 #endif
-    if(STPlot)
-      computePersistencePlot<scalarType>(STPairs, STPlot);
+    computePersistencePlot<scalarType>(STPairs, STPlot);
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp section
 #endif
-    if(CTPlot)
-      computePersistencePlot<scalarType>(CTPairs, CTPlot);
+    computePersistencePlot<scalarType>(CTPairs, CTPlot);
   }
 
   printMsg("Base execution completed", 1, timer.getElapsedTime(), threadNumber_);

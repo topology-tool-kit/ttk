@@ -50,6 +50,8 @@
 // ttk code includes
 #include <PersistenceCurve.h>
 #include <ttkAlgorithm.h>
+#include <ttkMacros.h>
+#include <ttkUtils.h>
 
 class TTKPERSISTENCECURVE_EXPORT ttkPersistenceCurve
   : public ttkAlgorithm,
@@ -82,12 +84,12 @@ protected:
   int FillOutputPortInformation(int port, vtkInformation *info) override;
 
   template <typename vtkArrayType, typename scalarType>
-  int getPersistenceCurve(
+  int getPersistenceCurve(vtkTable *outputCurve,
     ttk::ftm::TreeType treeType,
     const std::vector<std::pair<scalarType, ttk::SimplexId>> &plot);
 
   template <typename vtkArrayType, typename scalarType>
-  int getMSCPersistenceCurve(
+  int getMSCPersistenceCurve(vtkTable *outputCurve,
     const std::vector<std::pair<scalarType, ttk::SimplexId>> &plot);
 
 private:
@@ -95,17 +97,17 @@ private:
   bool ComputeSaddleConnectors{false};
 
   template <typename VTK_TT, typename TTK_TT>
-  int dispatch(std::vector<std::pair<scalarType, SimplexId>> &JTPlot,
-    std::vector<std::pair<scalarType, SimplexId>> &STPlot,
-    std::vector<std::pair<scalarType, SimplexId>> &MSCPlot,
-    std::vector<std::pair<scalarType, SimplexId>> &CTPlot,
-    const VTK_TT *inputScalars, const void *inputOffsets,
+  int dispatch(vtkTable *outputJTPersistenceCurve,
+  vtkTable *outputMSCPersistenceCurve,
+  vtkTable *outputSTPersistenceCurve,
+  vtkTable *outputCTPersistenceCurve,
+    const VTK_TT *inputScalars, int inputOffsetsDataType, const void *inputOffsets,
     const TTK_TT *triangulation);
 };
 
 template <typename vtkArrayType, typename scalarType>
 int ttkPersistenceCurve::getPersistenceCurve(
-  ttk::ftm::TreeType treeType,
+  vtkTable *outputCurve, ttk::ftm::TreeType treeType,
   const std::vector<std::pair<scalarType, ttk::SimplexId>> &plot) {
   const ttk::SimplexId numberOfPairs = plot.size();
 
@@ -149,16 +151,16 @@ int ttkPersistenceCurve::getPersistenceCurve(
 
     switch(treeType) {
       case ttk::ftm::TreeType::Join:
-        JTPersistenceCurve_->ShallowCopy(persistenceCurve);
+        outputCurve->ShallowCopy(persistenceCurve);
         break;
 
       case ttk::ftm::TreeType::Split:
-        STPersistenceCurve_->ShallowCopy(persistenceCurve);
+        outputCurve->ShallowCopy(persistenceCurve);
         break;
 
       case ttk::ftm::TreeType::Join_Split:
       case ttk::ftm::TreeType::Contour:
-        CTPersistenceCurve_->ShallowCopy(persistenceCurve);
+        outputCurve->ShallowCopy(persistenceCurve);
         break;
     }
   }
@@ -168,7 +170,7 @@ int ttkPersistenceCurve::getPersistenceCurve(
 
 template <typename vtkArrayType, typename scalarType>
 int ttkPersistenceCurve::getMSCPersistenceCurve(
-  const std::vector<std::pair<scalarType, ttk::SimplexId>> &plot) {
+  vtkTable *outputMSCPersistenceCurve, const std::vector<std::pair<scalarType, ttk::SimplexId>> &plot) {
   const ttk::SimplexId numberOfPairs = plot.size();
 
   vtkSmartPointer<vtkArrayType> persistenceScalars
@@ -194,7 +196,7 @@ int ttkPersistenceCurve::getMSCPersistenceCurve(
     persistenceCurve->AddColumn(persistenceScalars);
     persistenceCurve->AddColumn(numberOfPairsScalars);
 
-    MSCPersistenceCurve_->ShallowCopy(persistenceCurve);
+    outputMSCPersistenceCurve->ShallowCopy(persistenceCurve);
   }
 
   return 0;
