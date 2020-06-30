@@ -94,6 +94,8 @@ int ttkHelloWorld::RequestData(vtkInformation *request,
   // Get input object from input vector
   // Note: has to be a vtkDataSet as required by FillInputPortInformation
   vtkDataSet *inputDataSet = vtkDataSet::GetData(inputVector[0]);
+  if(!inputDataSet)
+    return 0;
 
   // Get input array that will be processed
   //
@@ -139,6 +141,8 @@ int ttkHelloWorld::RequestData(vtkInformation *request,
   //       call SetInputArrayToProcess (see HelloWorld.xml file).
   //
   vtkDataArray *inputArray = this->GetInputArrayToProcess(0, inputVector);
+  if(!inputArray)
+    return 0;
 
   // Create an output array that has the same data type as the input array
   // Note: vtkSmartPointers are well documented
@@ -153,6 +157,8 @@ int ttkHelloWorld::RequestData(vtkInformation *request,
   // not exist already)
   ttk::Triangulation *triangulation
     = ttkAlgorithm::GetTriangulation(inputDataSet);
+  if(!triangulation)
+    return 0;
 
   // Precondition the triangulation (e.g., enable fetching of vertex neighbors)
   this->preconditionTriangulation(triangulation); // implemented in base class
@@ -168,7 +174,7 @@ int ttkHelloWorld::RequestData(vtkInformation *request,
                          (TTK_TT *)triangulation->getData())));
 
   // On error cancel filter execution
-  if(status == 0)
+  if(status != 1)
     return 0;
 
   // Get output vtkDataSet (which was already instantiated based on the
