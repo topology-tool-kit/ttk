@@ -29,7 +29,6 @@ int ttkTriangulationRequest::RequestData(vtkInformation *request,
                                          vtkInformationVector **inputVector,
                                          vtkInformationVector *outputVector) {
 
-  Memory m;
   Timer timer;
 
   vtkDataSet *input = vtkDataSet::GetData(inputVector[0]);
@@ -50,6 +49,12 @@ int ttkTriangulationRequest::RequestData(vtkInformation *request,
   vector<SimplexId> vertices;
   const SimplexId numberOfVertices = triangulation->getNumberOfVertices();
   vector<SimplexId> isVisited(numberOfVertices, -1);
+
+  this->printMsg(ttk::debug::Separator::L1);
+  this->printMsg({
+    {"#Threads", std::to_string(this->threadNumber_)},
+    {"#Vertices", std::to_string(numberOfVertices)},
+  });
 
   cells->Allocate();
 
@@ -256,6 +261,7 @@ int ttkTriangulationRequest::RequestData(vtkInformation *request,
     case ComputeCofacet:
       switch(simplexType) {
         case Vertex:
+          triangulation->preconditionVertexNeighbors();
           triangulation->preconditionVertexEdges();
           {
             const SimplexId edgeNumber
@@ -457,8 +463,9 @@ int ttkTriangulationRequest::RequestData(vtkInformation *request,
     }
   }
 
-  this->printMsg("Complete", 1, timer.getElapsedTime(), this->threadNumber_,
-                 m.getElapsedUsage());
-
+  {
+    this->printMsg("Complete", 1, timer.getElapsedTime());
+    this->printMsg(ttk::debug::Separator::L1);
+  }
   return 1;
 }

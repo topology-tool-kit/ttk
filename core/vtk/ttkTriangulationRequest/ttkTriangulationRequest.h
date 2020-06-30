@@ -75,7 +75,7 @@ protected:
     SetNumberOfInputPorts(1);
     SetNumberOfOutputPorts(1);
 
-    this->setDebugMsgPrefix("ttkTriangulationRequest");
+    this->setDebugMsgPrefix("TriangulationRequest");
   }
 
   ~ttkTriangulationRequest() override{};
