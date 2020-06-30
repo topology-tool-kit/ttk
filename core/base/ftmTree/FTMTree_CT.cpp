@@ -27,6 +27,7 @@ FTMTree_CT::FTMTree_CT(Params *const params,
   : FTMTree_MT(params, mesh, scalars, TreeType::Contour),
     jt_(new FTMTree_MT(params, mesh, scalars, TreeType::Join)),
     st_(new FTMTree_MT(params, mesh, scalars, TreeType::Split)) {
+  this->setDebugMsgPrefix("FTMTree_CT");
 }
 
 FTMTree_CT::~FTMTree_CT() {
@@ -60,7 +61,7 @@ void FTMTree_CT::build(TreeType tt) {
 #endif
       { leafSearch(); }
     }
-    printTime(precomputeTime, "[FTM] leafSearch", -1, 3);
+    printTime(precomputeTime, "leafSearch", -1, 3);
   }
 
 #ifdef TTK_ENABLE_OMP_PRIORITY
@@ -99,7 +100,7 @@ if(tt == TreeType::Split || bothMT) {
 #endif
 }
 
-printTime(mergeTreesTime, "[FTM] merge trees ", -1, 3);
+printTime(mergeTreesTime, "merge trees ", -1, 3);
 
 // Combine
 
@@ -110,14 +111,14 @@ if(tt == TreeType::Contour) {
 
   DebugTimer combineTime;
   combine();
-  printTime(combineTime, "[FTM] combine trees", -1, 4);
-  printTime(combineFullTime, "[FTM] combine full", -1, 3);
+  printTime(combineTime, "combine trees", -1, 4);
+  printTime(combineFullTime, "combine full", -1, 3);
 }
 
 // Debug
 
 if(debugLevel_ > 3) {
-  cout << "- [FTM] final number of nodes :";
+  cout << "- final number of nodes :";
   switch(tt) {
     case TreeType::Join:
       cout << jt_->getNumberOfNodes();
@@ -416,7 +417,7 @@ void FTMTree_CT::finalizeSegmentation(void) {
     getSuperArc(i)->createSegmentation(scalars_);
   }
 
-  printTime(finSegmTime, "[FTM] post-process segm", -1, 4);
+  printTime(finSegmTime, "post-process segm", -1, 4);
 }
 
 void FTMTree_CT::insertNodes(void) {

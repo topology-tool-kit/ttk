@@ -18,6 +18,7 @@ using namespace ttk;
 using namespace ftm;
 
 FTMTree::FTMTree() : FTMTree_CT(new Params, nullptr, new Scalars) {
+  this->setDebugMsgPrefix("FTMTree");
 }
 
 FTMTree::~FTMTree() {

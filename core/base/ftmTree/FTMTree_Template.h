@@ -92,7 +92,7 @@ void ttk::ftm::FTMTree::build(void) {
     default:
       break;
   }
-  printTime(initTime, "[FTM] alloc", -1, 3);
+  printTime(initTime, "alloc", -1, 3);
 
   DebugTimer startTime;
 
@@ -117,14 +117,14 @@ void ttk::ftm::FTMTree::build(void) {
     default:
       break;
   }
-  printTime(setTimer, "[FTM] init", -1, 3);
+  printTime(setTimer, "init", -1, 3);
 
   // for fast comparison
   // and regions / segmentation
   DebugTimer sortTime;
   initSoS<idType>();
   sortInput<scalarType, idType>();
-  printTime(sortTime, "[FTM] sort step", -1, 3);
+  printTime(sortTime, "sort step", -1, 3);
 
   // -----
   // BUILD
@@ -132,9 +132,9 @@ void ttk::ftm::FTMTree::build(void) {
 
   DebugTimer buildTime;
   FTMTree_CT::build(params_->treeType);
-  printTime(buildTime, "[FTM] build tree", -1, 3);
+  printTime(buildTime, "build tree", -1, 3);
 
-  printTime(startTime, "[FTM] Total ", -1, 1);
+  printTime(startTime, "Total ", -1, 1);
 
 #ifdef PERF_TESTS
   exit(0);

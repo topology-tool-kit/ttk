@@ -63,23 +63,24 @@ namespace ttk {
       TreeType treeType;
 
       // components : tree / nodes / extrema
-      FTMAtomicVector<SuperArc> *superArcs;
-      FTMAtomicVector<Node> *nodes;
-      FTMAtomicVector<idNode> *roots;
-      std::vector<idNode> *leaves;
+      FTMAtomicVector<SuperArc> *superArcs = nullptr;
+      FTMAtomicVector<Node> *nodes = nullptr;
+      FTMAtomicVector<idNode> *roots = nullptr;
+      std::vector<idNode> *leaves = nullptr;
 
       // vertex 2 node / superarc
-      std::vector<idCorresp> *vert2tree;
-      std::vector<SimplexId> *visitOrder;
-      std::vector<std::list<std::vector<SimplexId>>> *trunkSegments;
+      std::vector<idCorresp> *vert2tree = nullptr;
+      std::vector<SimplexId> *visitOrder = nullptr;
+      std::vector<std::list<std::vector<SimplexId>>> *trunkSegments = nullptr;
 
       // Track informations
-      std::vector<UF> *ufs, *propagation;
-      FTMAtomicVector<CurrentState> *states;
+      std::vector<UF> *ufs = nullptr;
+      std::vector<UF> *propagation = nullptr;
+      FTMAtomicVector<CurrentState> *states = nullptr;
       // valences
-      std::vector<valence> *valences;
+      std::vector<valence> *valences = nullptr;
       // opened nodes
-      std::vector<char> *openedNodes;
+      std::vector<char> *openedNodes = nullptr;
 
       // current nb of tasks
       idNode activeTasks;
@@ -89,12 +90,12 @@ namespace ttk {
       Segments segments_;
 
 #ifdef TTK_ENABLE_FTM_TREE_STATS_TIME
-      std::vector<ActiveTask> *activeTasksStats;
+      std::vector<ActiveTask> *activeTasksStats = nullptr;
 #endif
 
 #ifdef TTK_ENABLE_OMP_PRIORITY
       // Is this MT to be computed with greater task priority than others
-      bool prior;
+      bool prior = false;
 #endif
     };
 
