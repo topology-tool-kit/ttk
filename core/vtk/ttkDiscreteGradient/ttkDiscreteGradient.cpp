@@ -40,7 +40,8 @@ int ttkDiscreteGradient::FillOutputPortInformation(int port,
 template <typename VTK_TT>
 int ttkDiscreteGradient::dispatch(vtkUnstructuredGrid *outputCriticalPoints,
                                   vtkDataArray *inputScalars,
-                                  vtkDataArray *inputOffsets) {
+                                  vtkDataArray *inputOffsets,
+                                  const ttk::Triangulation &triangulation) {
 
   // critical points
   std::vector<VTK_TT> criticalPoints_points_cellScalars;
@@ -48,9 +49,9 @@ int ttkDiscreteGradient::dispatch(vtkUnstructuredGrid *outputCriticalPoints,
 
   int ret = 0;
   if(inputOffsets->GetDataType() == VTK_INT)
-    ret = this->buildGradient<VTK_TT, int>();
+    ret = this->buildGradient<VTK_TT, int>(triangulation);
   if(inputOffsets->GetDataType() == VTK_ID_TYPE)
-    ret = this->buildGradient<VTK_TT, vtkIdType>();
+    ret = this->buildGradient<VTK_TT, vtkIdType>(triangulation);
 #ifndef TTK_ENABLE_KAMIKAZE
   if(ret) {
     this->printErr("DiscreteGradient.buildGradient() error code: "
@@ -61,7 +62,7 @@ int ttkDiscreteGradient::dispatch(vtkUnstructuredGrid *outputCriticalPoints,
 
   // critical points
   {
-    this->setCriticalPoints<VTK_TT>();
+    this->setCriticalPoints<VTK_TT>(triangulation);
 
     vtkNew<vtkPoints> points{};
 
@@ -192,8 +193,8 @@ int ttkDiscreteGradient::RequestData(vtkInformation *request,
   this->setInputOffsets(ttkUtils::GetVoidPointer(inputOffsets));
 
   switch(inputScalars->GetDataType()) {
-    vtkTemplateMacro(
-      ret = dispatch<VTK_TT>(outputCriticalPoints, inputScalars, inputOffsets));
+    vtkTemplateMacro(ret = dispatch<VTK_TT>(outputCriticalPoints, inputScalars,
+                                            inputOffsets, *triangulation));
   }
 
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -216,7 +217,7 @@ int ttkDiscreteGradient::RequestData(vtkInformation *request,
     this->setGradientGlyphs(
       gradientGlyphs_numberOfPoints, gradientGlyphs_points,
       gradientGlyphs_points_pairOrigins, gradientGlyphs_numberOfCells,
-      gradientGlyphs_cells, gradientGlyphs_cells_pairTypes);
+      gradientGlyphs_cells, gradientGlyphs_cells_pairTypes, *triangulation);
 
     vtkNew<vtkPoints> points{};
     vtkNew<vtkCharArray> pairOrigins{};

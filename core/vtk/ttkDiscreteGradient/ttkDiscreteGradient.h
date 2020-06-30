@@ -78,7 +78,8 @@ private:
   template <typename T>
   int dispatch(vtkUnstructuredGrid *outputCriticalPoints,
                vtkDataArray *inputScalars,
-               vtkDataArray *inputOffsets);
+               vtkDataArray *inputOffsets,
+               const ttk::Triangulation &triangulation);
 
   bool ForceInputOffsetScalarField{false};
   bool ComputeGradientGlyphs{true};
