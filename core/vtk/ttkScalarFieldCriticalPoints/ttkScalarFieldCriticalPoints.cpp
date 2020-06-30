@@ -94,8 +94,8 @@ int ttkScalarFieldCriticalPoints::RequestData(
   int status = 0;
   ttkVtkTemplateMacro(inputScalarField->GetDataType(), triangulation->getType(),
                       (status = this->execute<VTK_TT, TTK_TT>(
-                         (VTK_TT *)ttkUtils::GetVoidPointer(inputScalarField))),
-                      (TTK_TT *)triangulation->getData());
+                         (VTK_TT *)ttkUtils::GetVoidPointer(inputScalarField),
+                         (TTK_TT *)triangulation->getData())));
   if(status < 0)
     return 0;
 

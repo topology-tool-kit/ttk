@@ -204,7 +204,7 @@ int ttkScalarFieldSmoother::doIt(vector<vtkDataSet *> &inputs,
 
   // calling the smoothing package
   ttkVtkTemplateMacro(
-    triangulation->getType(), inputScalarField->GetDataType(),
+    inputScalarField->GetDataType(), triangulation->getType(),
     (smoother_.smooth<VTK_TT, TTK_TT>(
       (TTK_TT *)triangulation->getData(), NumberOfIterations)));
 
