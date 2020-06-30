@@ -1418,21 +1418,6 @@ int DiscreteGradient::reverseDescendingPathOnWall(const vector<Cell> &vpath) {
   return 0;
 }
 
-int DiscreteGradient::getEdgeIncenter(const SimplexId edgeId,
-                                      float incenter[3]) const {
-  return inputTriangulation_->getEdgeIncenter(edgeId, incenter);
-}
-
-int DiscreteGradient::getTriangleIncenter(const SimplexId triangleId,
-                                          float incenter[3]) const {
-  return inputTriangulation_->getTriangleIncenter(triangleId, incenter);
-}
-
-int DiscreteGradient::getTetraIncenter(const SimplexId tetraId,
-                                       float incenter[3]) const {
-  return inputTriangulation_->getTetraIncenter(tetraId, incenter);
-}
-
 int DiscreteGradient::getCriticalPointMap(
   const vector<pair<SimplexId, char>> &criticalPoints, vector<char> &isPL) {
   isPL.resize(numberOfVertices_);

@@ -835,22 +835,6 @@ in the gradient.
       int reverseDescendingPathOnWall(const std::vector<Cell> &vpath);
 
       /**
-       * Compute the barycenter of the points of the given edge identifier.
-       */
-      int getEdgeIncenter(SimplexId edgeId, float incenter[3]) const;
-
-      /**
-       * Compute the incenter of the points of the given triangle identifier.
-       */
-      int getTriangleIncenter(SimplexId triangleId, float incenter[3]) const;
-
-      /**
-       * Compute the barycenter of the incenters of the triangles of the given
-tetra identifier.
-       */
-      int getTetraIncenter(SimplexId tetraId, float incenter[3]) const;
-
-      /**
        * Get the vertex id of with the maximum scalar field value on
        * the given cell. Compare offsets if scalar field is constant.
        */
