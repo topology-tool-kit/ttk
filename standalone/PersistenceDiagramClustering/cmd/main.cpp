@@ -77,8 +77,8 @@ int main(int argc, char **argv) {
   program.ttkObject_->SetNumberOfClusters(numberOfClusters);
   program.ttkObject_->SetDistanceWritingOptions(write_distances);
 
-  program.ttkObject_->setNumberOfInputsFromCommandLine(
-    program.getNumberOfInputs());
+  // program.ttkObject_->setNumberOfInputsFromCommandLine(
+  //   program.getNumberOfInputs());
   // program.ttkObject_->AddInputConnection(0,program.ttkObject_->GetInputAlgorithm(0,0));
 
   // execute data processing

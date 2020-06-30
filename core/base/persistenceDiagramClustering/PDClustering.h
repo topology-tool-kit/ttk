@@ -52,6 +52,7 @@ namespace ttk {
       cost_sad_ = 0;
       UseDeltaLim_ = false;
       distanceWritingOptions_ = 0;
+      this->setDebugMsgPrefix("PersistenceDiagramClustering");
     };
 
     ~PDClustering(){};
@@ -234,7 +235,7 @@ namespace ttk {
           }
         }
       }
-      dMsg(std::cout, msg.str(), infoMsg);
+      printMsg(msg.str());
     }
 
     inline void printOldClustering() {
@@ -249,7 +250,7 @@ namespace ttk {
           }
         }
       }
-      dMsg(std::cout, msg.str(), infoMsg);
+      printMsg(msg.str());
     }
 
     template <typename type>
