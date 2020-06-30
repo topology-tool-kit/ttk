@@ -252,12 +252,9 @@ namespace ttk {
         = criticalPoints_points_PLVertexIdentifiers;
       outputCriticalPoints_points_manifoldSize_
         = criticalPoints_points_manifoldSize;
+
       discreteGradient_.setOutputCriticalPoints(
-        criticalPoints_numberOfPoints, criticalPoints_points,
-        criticalPoints_points_cellDimensons, criticalPoints_points_cellIds,
-        criticalPoints_points_cellScalars, criticalPoints_points_isOnBoundary,
-        criticalPoints_points_PLVertexIdentifiers,
-        criticalPoints_points_manifoldSize);
+        criticalPoints_points_cellScalars);
       return 0;
     }
 

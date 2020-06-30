@@ -727,6 +727,32 @@ according to them.
       }
 
       /**
+       * Get back output critical points arrays from class members
+       */
+      inline void fetchOutputCriticalPoints(
+        SimplexId *const cp_numberOfPoints,
+        std::vector<float> *const cp_points,
+        std::vector<char> *const cp_points_cellDimensions,
+        std::vector<SimplexId> *const cp_points_cellIds,
+        std::vector<char> *const cp_points_isOnBoundary,
+        std::vector<SimplexId> *const cp_points_PLVertexIdentifiers) {
+
+        *cp_numberOfPoints = outputCriticalPoints_numberOfPoints_;
+        *cp_points = std::move(outputCriticalPoints_points_);
+        *cp_points_cellDimensions
+          = std::move(outputCriticalPoints_points_cellDimensions_);
+        *cp_points_cellIds = std::move(outputCriticalPoints_points_cellIds_);
+        *cp_points_isOnBoundary
+          = std::move(outputCriticalPoints_points_isOnBoundary_);
+        *cp_points_PLVertexIdentifiers
+          = std::move(outputCriticalPoints_points_PLVertexIdentifiers_);
+      }
+      inline void
+        fetchOutputManifoldSize(std::vector<SimplexId> *const manifoldSize) {
+        *manifoldSize = std::move(outputCriticalPoints_points_manifoldSize_);
+      }
+
+      /**
        * Get the dimensionality of the triangulation.
        */
       int getDimensionality() const;

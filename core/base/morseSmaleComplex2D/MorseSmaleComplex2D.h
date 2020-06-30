@@ -157,10 +157,19 @@ int ttk::MorseSmaleComplex2D::execute() {
     discreteGradient_.setCriticalPoints<dataType>(
       criticalPoints, nCriticalPointsByDim, *inputTriangulation_);
 
+    discreteGradient_.fetchOutputCriticalPoints(
+      outputCriticalPoints_numberOfPoints_, outputCriticalPoints_points_,
+      outputCriticalPoints_points_cellDimensions_,
+      outputCriticalPoints_points_cellIds_,
+      outputCriticalPoints_points_isOnBoundary_,
+      outputCriticalPoints_points_PLVertexIdentifiers_);
+
     if(ascendingManifold and descendingManifold) {
       discreteGradient_.setManifoldSize(criticalPoints, nCriticalPointsByDim,
                                         maxSeeds, ascendingManifold,
                                         descendingManifold);
+      discreteGradient_.fetchOutputManifoldSize(
+        outputCriticalPoints_points_manifoldSize_);
     }
   }
 
