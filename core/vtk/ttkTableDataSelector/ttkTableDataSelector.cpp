@@ -1,4 +1,6 @@
+#include <ttkMacros.h>
 #include <ttkTableDataSelector.h>
+#include <ttkUtils.h>
 
 #include <regex>
 
@@ -7,45 +9,57 @@ using namespace ttk;
 
 vtkStandardNewMacro(ttkTableDataSelector)
 
-  // transmit abort signals
-  bool ttkTableDataSelector::needsToAbort() {
-  return GetAbortExecute();
-}
-
-// transmit progress status
-int ttkTableDataSelector::updateProgress(const float &progress) {
-
-  {
-    stringstream msg;
-    msg << "[ttkTableDataSelector] " << progress * 100 << "% processed...."
-        << endl;
-    dMsg(cout, msg.str(), advancedInfoMsg);
+  int ttkTableDataSelector::FillInputPortInformation(int port,
+                                                     vtkInformation *info) {
+  if(port == 0) {
+    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkTable");
+    return 1;
   }
-
-  UpdateProgress(progress);
   return 0;
 }
 
-int ttkTableDataSelector::doIt(vtkTable *input, vtkTable *output) {
-  Memory m;
+int ttkTableDataSelector::FillOutputPortInformation(int port,
+                                                    vtkInformation *info) {
+  if(port == 0) {
+    info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
+    return 1;
+  }
+  return 0;
+}
+
+int ttkTableDataSelector::RequestInformation(
+  vtkInformation *request,
+  vtkInformationVector **inputVector,
+  vtkInformationVector *outputVector) {
+
+  vtkTable *input = vtkTable::GetData(inputVector[0]);
+  FillAvailableCols(input);
+  return ttkAlgorithm::RequestInformation(request, inputVector, outputVector);
+}
+
+int ttkTableDataSelector::RequestData(vtkInformation *request,
+                                      vtkInformationVector **inputVector,
+                                      vtkInformationVector *outputVector) {
+  vtkTable *input = vtkTable::GetData(inputVector[0]);
+  vtkTable *output = vtkTable::GetData(outputVector);
+
+  Timer timer;
 
   output->ShallowCopy(input);
 
-  vtkFieldData *inputRowData = input->GetRowData();
+  vtkDataSetAttributes *inputRowData = input->GetRowData();
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!inputRowData) {
-    cerr << "[ttkTableDataSelector] Error: input has no row data." << endl;
+    this->printErr("Input has no row data.");
     return -1;
   }
 #endif
 
-  vtkSmartPointer<vtkFieldData> outputRowData
-    = vtkSmartPointer<vtkFieldData>::New();
+  vtkSmartPointer<vtkDataSetAttributes> outputRowData
+    = vtkSmartPointer<vtkDataSetAttributes>::New();
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!outputRowData) {
-    cerr
-      << "[ttkTableDataSelector] Error: vtkFieldData memory allocation problem."
-      << endl;
+    this->printErr("vtkFieldData memory allocation problem.");
     return -1;
   }
 #endif
@@ -70,7 +84,7 @@ int ttkTableDataSelector::doIt(vtkTable *input, vtkTable *output) {
     if(!regex_match(col, regex(RegexpString))) {
       continue;
     }
-    // add the attay
+    // add the array
     vtkDataArray *arr = inputRowData->GetArray(col.c_str());
     if(arr)
       outputRowData->AddArray(arr);
@@ -79,41 +93,9 @@ int ttkTableDataSelector::doIt(vtkTable *input, vtkTable *output) {
   output->GetRowData()->ShallowCopy(outputRowData);
 
   {
-    stringstream msg;
-    msg << "[ttkTableDataSelector] Memory usage: " << m.getElapsedUsage()
-        << " MB." << endl;
-    dMsg(cout, msg.str(), memoryMsg);
-  }
-
-  return 0;
-}
-
-int ttkTableDataSelector::RequestInformation(
-  vtkInformation *request,
-  vtkInformationVector **inputVector,
-  vtkInformationVector *outputVector) {
-
-  vtkTable *input = vtkTable::GetData(inputVector[0]);
-  FillAvailableCols(input);
-  return vtkTableAlgorithm::RequestInformation(
-    request, inputVector, outputVector);
-}
-
-int ttkTableDataSelector::RequestData(vtkInformation *request,
-                                      vtkInformationVector **inputVector,
-                                      vtkInformationVector *outputVector) {
-  Memory m;
-
-  vtkTable *input = vtkTable::GetData(inputVector[0]);
-  vtkTable *output = vtkTable::GetData(outputVector);
-
-  doIt(input, output);
-
-  {
-    stringstream msg;
-    msg << "[ttkTableDataSelector] Memory usage: " << m.getElapsedUsage()
-        << " MB." << endl;
-    dMsg(cout, msg.str(), memoryMsg);
+    this->printMsg(ttk::debug::Separator::L1);
+    this->printMsg("Complete", 1, timer.getElapsedTime());
+    this->printMsg(ttk::debug::Separator::L1);
   }
 
   return 1;
