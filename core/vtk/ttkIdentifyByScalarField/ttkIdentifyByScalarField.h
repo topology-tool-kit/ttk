@@ -4,11 +4,13 @@
 /// \author Florian Wetzels <f_wetzels13@cs.uni-kl.de>
 /// \date June 2020
 ///
-/// \brief TTK VTK-filter that computes a new scalar array based on a sorting of the input array.
+/// \brief TTK VTK-filter that computes a new scalar array based on a sorting of
+/// the input array.
 ///
-/// VTK code for computing a new scalar array from a specifiable point or cell data array. For each cell or a point
-/// the new (integer) value is its index in a sorting of the input array.
-/// The name of the new array is "PointScalarFieldName" or "CellScalarFieldName".
+/// VTK code for computing a new scalar array from a specifiable point or cell
+/// data array. For each cell or a point the new (integer) value is its index in
+/// a sorting of the input array. The name of the new array is
+/// "PointScalarFieldName" or "CellScalarFieldName".
 ///
 /// \param Input Input scalar field (vtkDataSet)
 /// \param Output Output scalar field (vtkDataSet)
@@ -40,7 +42,7 @@ public:
   static ttkIdentifyByScalarField *New();
   vtkTypeMacro(ttkIdentifyByScalarField, ttkAlgorithm)
 
-  vtkSetMacro(IncreasingOrder, bool);
+    vtkSetMacro(IncreasingOrder, bool);
   vtkGetMacro(IncreasingOrder, bool);
 
   vtkSetMacro(StartByOne, bool);
@@ -56,7 +58,9 @@ protected:
 
   int FillInputPortInformation(int port, vtkInformation *info) override;
   int FillOutputPortInformation(int port, vtkInformation *info) override;
-  int RequestData(vtkInformation *request,vtkInformationVector **inputVector,vtkInformationVector *outputVector) override;
+  int RequestData(vtkInformation *request,
+                  vtkInformationVector **inputVector,
+                  vtkInformationVector *outputVector) override;
 
 private:
   bool IncreasingOrder{false};
