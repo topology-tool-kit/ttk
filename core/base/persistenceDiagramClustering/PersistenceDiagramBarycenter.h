@@ -179,7 +179,8 @@ namespace ttk {
 
     Timer tm;
     {
-      printMsg("Computing Barycenter of " + std::to_string(numberOfInputs_) + " diagrams.");
+      printMsg("Computing Barycenter of " + std::to_string(numberOfInputs_)
+               + " diagrams.");
 
       std::vector<std::vector<diagramTuple>> data_min(numberOfInputs_);
       std::vector<std::vector<diagramTuple>> data_sad(numberOfInputs_);
@@ -449,7 +450,8 @@ namespace ttk {
       printMsg("Total cost : " + std::to_string(total_cost));
       // std::stringstream msg;
       // msg << "[PersistenceDiagramBarycenter] processed in "
-      //     << tm.getElapsedTime() << " s. (" << threadNumber_ << " thread(s))."
+      //     << tm.getElapsedTime() << " s. (" << threadNumber_ << "
+      //     thread(s))."
       //     << std::endl;
       // dMsg(std::cout, msg.str(), timeMsg);
       printMsg("", tm.getElapsedTime(), threadNumber_);
@@ -457,4 +459,3 @@ namespace ttk {
   }
 
 } // namespace ttk
-

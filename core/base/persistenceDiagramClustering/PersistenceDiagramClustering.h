@@ -121,7 +121,8 @@ namespace ttk {
 
     Timer tm;
     {
-      printMsg("Clustering " + std::to_string(numberOfInputs_) + " diagrams in " + std::to_string(NumberOfClusters) + " cluster(s).");
+      printMsg("Clustering " + std::to_string(numberOfInputs_) + " diagrams in "
+               + std::to_string(NumberOfClusters) + " cluster(s).");
     }
 
     std::vector<std::vector<diagramTuple>> data_min(numberOfInputs_);
@@ -331,11 +332,7 @@ namespace ttk {
       }
     }
 
-    {
-
-      printMsg("",1,tm.getElapsedTime(),threadNumber_);
-    }
+    { printMsg("", 1, tm.getElapsedTime(), threadNumber_); }
     return inv_clustering;
   }
 } // namespace ttk
-

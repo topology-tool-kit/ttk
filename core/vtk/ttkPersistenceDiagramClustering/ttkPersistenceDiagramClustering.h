@@ -52,8 +52,8 @@
 #include <ttkPersistenceDiagramClusteringModule.h>
 
 // ttk code includes
-#include <PersistenceDiagramClustering.h>
 #include <PersistenceDiagramBarycenter.h>
+#include <PersistenceDiagramClustering.h>
 //
 //
 #include <ttkAlgorithm.h>
@@ -125,7 +125,6 @@ public:
     needUpdate_ = true;
   }
   vtkGetMacro(TimeLimit, double);
-
 
   // void SetThreadNumber(int data) {
   //   ThreadNumber = data;
@@ -319,4 +318,3 @@ private:
 
   // int updateProgress(const float &progress) override;
 };
-

@@ -1,7 +1,7 @@
-#include <ttkPersistenceDiagramClustering.h>
-#include <vtkFieldData.h>
-#include <ttkUtils.h>
 #include <ttkMacros.h>
+#include <ttkPersistenceDiagramClustering.h>
+#include <ttkUtils.h>
+#include <vtkFieldData.h>
 
 using namespace std;
 using namespace ttk;
@@ -64,7 +64,6 @@ int ttkPersistenceDiagramClustering::RequestData(
     outputVector->GetInformationObject(1)->Get(vtkDataObject::DATA_OBJECT()));
   auto output_matchings = vtkUnstructuredGrid::SafeDownCast(
     outputVector->GetInformationObject(2)->Get(vtkDataObject::DATA_OBJECT()));
-
 
   if(needUpdate_) {
     // clear data before computation

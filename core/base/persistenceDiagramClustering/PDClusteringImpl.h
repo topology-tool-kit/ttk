@@ -339,8 +339,9 @@ std::vector<int> PDClustering<dataType>::execute(
         bool precision_criterion_reached = precision_criterion_;
 
         printMsg("Iteration " + std::to_string(n_iterations_) + " epsilon "
-                 + std::to_string(epsilon_[0]) + " " + std::to_string(epsilon_[1])
-                 + " " + std::to_string(epsilon_[2]));
+                 + std::to_string(epsilon_[0]) + " "
+                 + std::to_string(epsilon_[1]) + " "
+                 + std::to_string(epsilon_[2]));
         printMsg(" complete " + std::to_string(diagrams_complete[0]) + " "
                  + std::to_string(diagrams_complete[1]) + " "
                  + std::to_string(diagrams_complete[2]));
@@ -348,8 +349,7 @@ std::vector<int> PDClustering<dataType>::execute(
                  + std::to_string(precision_sad_) + " "
                  + std::to_string(precision_max_));
         printMsg(" cost " + std::to_string(cost_min_) + " "
-                 + std::to_string(cost_sad_) + " "
-                 + std::to_string(cost_max_));
+                 + std::to_string(cost_sad_) + " " + std::to_string(cost_max_));
         // if(debugLevel_ > 3) {
         //   std::cout << "Iteration " << n_iterations_
         //             << ", Epsilon = " << epsilon_[0] << " " << epsilon_[1]
@@ -357,41 +357,41 @@ std::vector<int> PDClustering<dataType>::execute(
         //   std::cout << " complete ? :  " << diagrams_complete[0] << " "
         //             << diagrams_complete[1] << " " << diagrams_complete[2]
         //             << " " << std::endl;
-          // std::cout << "global precison criterion : " <<
-          // precision_criterion_reached << std::endl;
-          // std::cout << " precision ? :  " << precision_min_ << " "
-          //           << precision_sad_ << " " << precision_max_ << " "
-          //           << std::endl;
-          // std::cout<< " epsilons ? :  "<< epsilon0[0]/500. <<" " <<
-          // epsilon0[1]/500. <<" " << epsilon0[2]/500. <<" " << std::endl;
-          // std::cout << " all complete ? :  " << all_diagrams_complete
-          //           << "   useprog ? " << use_progressive_ << "  and DOs ? "
-          //           << do_min_ << do_sad_ << do_max_ << endl;
-          // << "  and cDOs ? " << *(current_dos[0]) << *(current_dos[1]) <<
-          // *(current_dos[2])
-          // << std::endl;  // (epsilon_[0]<epsilon0[0]/500.) <<" " <<
-          // (epsilon_[1]<epsilon0[1]/500.) <<" " <<
-          // (epsilon_[2]<epsilon0[2]/500.) <<" " << std::endl;
-          // std::cout << "  original DOs ? " << original_dos[0] <<
-          // original_dos[1] << original_dos[2]
-          // << std::endl;  // (epsilon_[0]<epsilon0[0]/500.) <<" " <<
-          // (epsilon_[1]<epsilon0[1]/500.) <<" " <<
-          // (epsilon_[2]<epsilon0[2]/500.) <<" " << std::endl;
-          // std::cout << "                 costmin : " << cost_min_
-          //           << " , min_cost_min : " << min_cost_min << std::endl;
-          // std::cout << "                 costsad : " << cost_sad_
-          //           << " , min_cost_sad : " << min_cost_sad << std::endl;
-          // std::cout << "                 costmax : " << cost_max_
-          //           << " , min_cost_max : " << min_cost_max << std::endl;
-          // std::cout << " sizes of barycenter : "<<centroids_min_.size()<<"
-          // "<<centroids_saddle_.size()<<"
-          // "<<centroids_max_[0].size()<<std::endl; for(int
-          // i_input=0;i_input<numberOfInputs_;i_input++){
-          //     std::cout << "   sizes of bidder "<<i_input<<" :
-          //     "<<current_bidder_diagrams_min_.size()<<"
-          //     "<<current_bidder_diagrams_saddle_.size()<<"
-          //     "<<current_bidder_diagrams_max_[i_input].size()<<std::endl;
-          // }
+        // std::cout << "global precison criterion : " <<
+        // precision_criterion_reached << std::endl;
+        // std::cout << " precision ? :  " << precision_min_ << " "
+        //           << precision_sad_ << " " << precision_max_ << " "
+        //           << std::endl;
+        // std::cout<< " epsilons ? :  "<< epsilon0[0]/500. <<" " <<
+        // epsilon0[1]/500. <<" " << epsilon0[2]/500. <<" " << std::endl;
+        // std::cout << " all complete ? :  " << all_diagrams_complete
+        //           << "   useprog ? " << use_progressive_ << "  and DOs ? "
+        //           << do_min_ << do_sad_ << do_max_ << endl;
+        // << "  and cDOs ? " << *(current_dos[0]) << *(current_dos[1]) <<
+        // *(current_dos[2])
+        // << std::endl;  // (epsilon_[0]<epsilon0[0]/500.) <<" " <<
+        // (epsilon_[1]<epsilon0[1]/500.) <<" " <<
+        // (epsilon_[2]<epsilon0[2]/500.) <<" " << std::endl;
+        // std::cout << "  original DOs ? " << original_dos[0] <<
+        // original_dos[1] << original_dos[2]
+        // << std::endl;  // (epsilon_[0]<epsilon0[0]/500.) <<" " <<
+        // (epsilon_[1]<epsilon0[1]/500.) <<" " <<
+        // (epsilon_[2]<epsilon0[2]/500.) <<" " << std::endl;
+        // std::cout << "                 costmin : " << cost_min_
+        //           << " , min_cost_min : " << min_cost_min << std::endl;
+        // std::cout << "                 costsad : " << cost_sad_
+        //           << " , min_cost_sad : " << min_cost_sad << std::endl;
+        // std::cout << "                 costmax : " << cost_max_
+        //           << " , min_cost_max : " << min_cost_max << std::endl;
+        // std::cout << " sizes of barycenter : "<<centroids_min_.size()<<"
+        // "<<centroids_saddle_.size()<<"
+        // "<<centroids_max_[0].size()<<std::endl; for(int
+        // i_input=0;i_input<numberOfInputs_;i_input++){
+        //     std::cout << "   sizes of bidder "<<i_input<<" :
+        //     "<<current_bidder_diagrams_min_.size()<<"
+        //     "<<current_bidder_diagrams_saddle_.size()<<"
+        //     "<<current_bidder_diagrams_max_[i_input].size()<<std::endl;
+        // }
         // }
 
         if(cost_min_ < min_cost_min && n_iterations_ > 2
@@ -475,11 +475,11 @@ std::vector<int> PDClustering<dataType>::execute(
     {
       std::stringstream msg;
       if(matchings_only) {
-        msg << " Wasserstein distance: "
-            << cost_min_ + cost_sad_ + cost_max_ << std::endl;
+        msg << " Wasserstein distance: " << cost_min_ + cost_sad_ + cost_max_
+            << std::endl;
       } else {
-        msg << " Final Cost: "
-            << min_cost_min + min_cost_sad + min_cost_max << std::endl;
+        msg << " Final Cost: " << min_cost_min + min_cost_sad + min_cost_max
+            << std::endl;
       }
       printMsg(msg.str());
     }
@@ -535,7 +535,8 @@ std::vector<int> PDClustering<dataType>::execute(
           g.getPersistence(), 0, g.x_, x, y, z, g.y_, x, y, z);
         final_centroids[c].push_back(t);
         if(g.getPersistence() > 1000) {
-          printMsg("Found a anormally high persistence in min diagram", debug::Priority::WARNING);
+          printMsg("Found a anormally high persistence in min diagram",
+                   debug::Priority::WARNING);
         }
       }
     }
@@ -552,7 +553,8 @@ std::vector<int> PDClustering<dataType>::execute(
           g.getPersistence(), 1, g.x_, x, y, z, g.y_, x, y, z);
         final_centroids[c].push_back(t);
         if(g.getPersistence() > 1000) {
-          printMsg("Found a anormally high persistence in sad diagram", debug::Priority::WARNING);
+          printMsg("Found a anormally high persistence in sad diagram",
+                   debug::Priority::WARNING);
         }
       }
     }
@@ -576,7 +578,8 @@ std::vector<int> PDClustering<dataType>::execute(
           g.getPersistence(), 2, g.x_, x, y, z, g.y_, x, y, z);
         final_centroids[c].push_back(t);
         if(g.getPersistence() > 1000) {
-          printMsg("Found a anormally high persistence in min diagram", debug::Priority::WARNING);
+          printMsg("Found a anormally high persistence in min diagram",
+                   debug::Priority::WARNING);
         }
       }
     }

@@ -110,7 +110,7 @@ namespace ttk {
       std::vector<std::vector<dataType>> initial_diagonal_prices,
       std::vector<std::vector<dataType>> initial_off_diagonal_points,
       std::vector<int> min_points_to_add,
-      bool add_points_to_barycenter, 
+      bool add_points_to_barycenter,
       bool first_enrichment);
 
     std::vector<std::vector<dataType>> getDistanceMatrix();
