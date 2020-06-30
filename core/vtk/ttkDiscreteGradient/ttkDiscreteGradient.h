@@ -17,57 +17,26 @@
 /// within a VTK pipeline.
 ///
 /// \sa ttk::DiscreteGradient
-#ifndef _TTK_DISCRETEGRADIENT_H
-#define _TTK_DISCRETEGRADIENT_H
 
-// VTK includes
-#include <vtkCellData.h>
-#include <vtkCharArray.h>
-#include <vtkDataArray.h>
-#include <vtkDataSet.h>
-#include <vtkDataSetAlgorithm.h>
-#include <vtkDoubleArray.h>
-#include <vtkFiltersCoreModule.h>
-#include <vtkFloatArray.h>
-#include <vtkInformation.h>
-#include <vtkInformationVector.h>
-#include <vtkIntArray.h>
-#include <vtkLine.h>
-#include <vtkNew.h>
-#include <vtkObjectFactory.h>
-#include <vtkPointData.h>
+#pragma once
 
 // VTK Module
 #include <ttkDiscreteGradientModule.h>
 
 // ttk code includes
 #include <DiscreteGradient.h>
-#include <ttkTriangulationAlgorithm.h>
+#include <ttkAlgorithm.h>
+#include <ttkMacros.h>
+
+class vtkUnstructuredGrid;
 
 class TTKDISCRETEGRADIENT_EXPORT ttkDiscreteGradient
-  : public vtkDataSetAlgorithm,
-    protected ttk::Wrapper {
+  : public ttkAlgorithm,
+    protected ttk::dcg::DiscreteGradient {
 
 public:
   static ttkDiscreteGradient *New();
-
-  vtkTypeMacro(ttkDiscreteGradient, vtkDataSetAlgorithm);
-
-  // default ttk setters
-  void SetDebugLevel(int debugLevel) {
-    setDebugLevel(debugLevel);
-    Modified();
-  }
-  void SetThreadNumber(int threadNumber) {
-    ThreadNumber = threadNumber;
-    SetThreads();
-  }
-
-  void SetUseAllCores(bool onOff) {
-    UseAllCores = onOff;
-    SetThreads();
-  }
-  // end of default ttk setters
+  vtkTypeMacro(ttkDiscreteGradient, ttkAlgorithm);
 
   vtkSetMacro(ScalarField, std::string);
   vtkGetMacro(ScalarField, std::string);
@@ -90,7 +59,6 @@ public:
   vtkSetMacro(OffsetFieldId, int);
   vtkGetMacro(OffsetFieldId, int);
 
-  int setupTriangulation(vtkDataSet *input);
   int getScalars(vtkDataSet *input);
   int getOffsets(vtkDataSet *input);
 
@@ -98,29 +66,26 @@ protected:
   ttkDiscreteGradient();
   ~ttkDiscreteGradient() override;
 
-  TTK_SETUP();
-
   int FillInputPortInformation(int port, vtkInformation *info) override;
   int FillOutputPortInformation(int port, vtkInformation *info) override;
+  int RequestData(vtkInformation *request,
+                  vtkInformationVector **inputVector,
+                  vtkInformationVector *outputVector) override;
 
 private:
   template <typename T>
   int dispatch(vtkUnstructuredGrid *outputCriticalPoints);
 
-  std::string ScalarField;
-  std::string InputOffsetScalarFieldName;
-  bool ForceInputOffsetScalarField;
-  bool ComputeGradientGlyphs;
-  int IterationThreshold;
-  int ScalarFieldId;
-  int OffsetFieldId;
+  std::string ScalarField{};
+  std::string InputOffsetScalarFieldName{};
+  bool ForceInputOffsetScalarField{false};
+  bool ComputeGradientGlyphs{true};
+  int IterationThreshold{-1};
+  int ScalarFieldId{};
+  int OffsetFieldId{-1};
 
-  ttk::Triangulation *triangulation_;
-  ttk::dcg::DiscreteGradient discreteGradient_;
-  vtkDataArray *inputScalars_;
-  ttkSimplexIdTypeArray *offsets_;
-  vtkDataArray *inputOffsets_;
-  bool hasUpdatedMesh_;
+  vtkDataArray *inputScalars_{};
+  ttkSimplexIdTypeArray *offsets_{};
+  vtkDataArray *inputOffsets_{};
+  bool hasUpdatedMesh_{};
 };
-
-#endif // _TTK_DISCRETEGRADIENT_H
