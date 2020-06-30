@@ -117,13 +117,14 @@ public:
     this->Modified();
   };
 
-  /// This method retrieves the optional array designated by \p arrayName.
+  /// This method retrieves an optional array to process.
   /// The logic of this method is as follows:
   ///   - if \p enforceArrayIndex is set to true, this method will try to
   ///   retrieve the optional array to process by its identifier \p arrayIndex
   ///   (see GetInputArrayToProcess() and SetInputArrayToProcess())
   ///   - if \p enforceArrayIndex is set to false, this method will try to
   ///   retrieve the optional array to process by its name \p arrayName.
+  ///
   /// In both cases, this information will be retrieved on port \p inputPort.
   ///
   vtkDataArray *GetOptionalArray(const bool &enforceArrayIndex,
