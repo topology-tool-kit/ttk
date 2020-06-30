@@ -221,6 +221,25 @@ ttk::Triangulation *ttkAlgorithm::InitTriangulation(void *key,
   return triangulation;
 }
 
+vtkDataArray *
+  ttkAlgorithm::GetOptionalArray(const bool &enforceArrayIndex,
+                                 const std::string &arrayName,
+                                 const int &arrayIndex,
+                                 vtkInformationVector **inputVectors,
+                                 const int &inputPort) {
+
+  vtkDataArray *optionalArray = nullptr;
+
+  if(enforceArrayIndex)
+    optionalArray = this->GetInputArrayToProcess(arrayIndex, inputVectors);
+
+  if(!optionalArray) {
+    this->SetInputArrayToProcess(arrayIndex, inputPort, 0, 0, arrayName.data());
+    optionalArray = this->GetInputArrayToProcess(arrayIndex, inputVectors);
+  }
+  return optionalArray;
+}
+
 ttk::Triangulation *ttkAlgorithm::GetTriangulation(vtkDataSet *dataSet) {
 
   this->printMsg("Requesting triangulation for '"
