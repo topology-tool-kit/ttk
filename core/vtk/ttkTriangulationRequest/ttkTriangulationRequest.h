@@ -67,14 +67,8 @@ public:
 
 protected:
   ttkTriangulationRequest() {
-    SimplexType = 0;
-    SimplexIdentifier = 0;
-    RequestType = 0;
-    KeepAllDataArrays = true;
-
     SetNumberOfInputPorts(1);
     SetNumberOfOutputPorts(1);
-
     this->setDebugMsgPrefix("TriangulationRequest");
   }
 
@@ -89,8 +83,8 @@ protected:
                   vtkInformationVector *outputVector) override;
 
 private:
-  int SimplexType;
-  int SimplexIdentifier;
-  int RequestType;
-  bool KeepAllDataArrays;
+  int SimplexType{0};
+  int SimplexIdentifier{0};
+  int RequestType{0};
+  bool KeepAllDataArrays{true};
 };
