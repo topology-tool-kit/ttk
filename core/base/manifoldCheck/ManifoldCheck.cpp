@@ -13,7 +13,3 @@ ManifoldCheck::ManifoldCheck() {
 
 ManifoldCheck::~ManifoldCheck() {
 }
-
-
-
-

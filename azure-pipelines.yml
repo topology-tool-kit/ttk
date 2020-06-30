@@ -17,7 +17,7 @@ jobs:
 # Test with GCC-7 and VTK 9.0 Debug
 
 - job:
-  condition: true # can be used to disable this pipeline
+  condition: false # can be used to disable this pipeline
   displayName: Ubuntu-VTK-Python3-OpenMP-Ninja
   strategy:
     matrix:
