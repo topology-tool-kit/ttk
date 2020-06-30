@@ -66,7 +66,7 @@ public:
 
 protected:
   ttkTableDataSelector() {
-    this->setDebugMsgPrefix("ttkTableDataSelector");
+    this->setDebugMsgPrefix("TableDataSelector");
 
     this->SetNumberOfInputPorts(1);
     this->SetNumberOfOutputPorts(1);

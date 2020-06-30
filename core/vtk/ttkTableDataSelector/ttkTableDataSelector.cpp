@@ -43,7 +43,6 @@ int ttkTableDataSelector::RequestData(vtkInformation *request,
   vtkTable *input = vtkTable::GetData(inputVector[0]);
   vtkTable *output = vtkTable::GetData(outputVector);
 
-  Memory m;
   Timer timer;
 
   output->ShallowCopy(input);
@@ -93,8 +92,11 @@ int ttkTableDataSelector::RequestData(vtkInformation *request,
 
   output->GetRowData()->ShallowCopy(outputRowData);
 
-  this->printMsg("Complete", 1, timer.getElapsedTime(), this->threadNumber_,
-                 m.getElapsedUsage());
+  {
+    this->printMsg(ttk::debug::Separator::L1);
+    this->printMsg("Complete", 1, timer.getElapsedTime());
+    this->printMsg(ttk::debug::Separator::L1);
+  }
 
   return 1;
 }
