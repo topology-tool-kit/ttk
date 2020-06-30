@@ -223,8 +223,8 @@ ttk::Triangulation *ttkAlgorithm::InitTriangulation(void *key,
 
 vtkDataArray *
   ttkAlgorithm::GetOptionalArray(const bool &enforceArrayIndex,
-                                 const std::string &arrayName,
                                  const int &arrayIndex,
+                                 const std::string &arrayName,
                                  vtkInformationVector **inputVectors,
                                  const int &inputPort) {
 

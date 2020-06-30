@@ -127,8 +127,8 @@ public:
   /// In both cases, this information will be retrieved on port \p inputPort.
   ///
   vtkDataArray *GetOptionalArray(const bool &enforceArrayIndex,
-                                 const std::string &arrayName,
                                  const int &arrayIndex,
+                                 const std::string &arrayName,
                                  vtkInformationVector **inputVectors,
                                  const int &inputPort = 0);
 
