@@ -139,13 +139,8 @@ int ttkIntegralLines::RequestData(vtkInformation *request,
   ttk::Triangulation *triangulation = ttkAlgorithm::GetTriangulation(domain);
   vtkDataArray *inputScalars = this->GetInputArrayToProcess(0, domain);
 
-  vtkDataArray *inputOffsets = nullptr;
-  if(this->GetInputArrayInformation(1)) {
-    inputOffsets = this->GetInputArrayToProcess(1, domain);
-  } else if(!ForceInputOffsetScalarField) {
-    inputOffsets = domain->GetPointData()->GetArray(ttk::OffsetScalarFieldName);
-  }
-
+  vtkDataArray *inputOffsets = this->GetOptionalArray(
+    ForceInputOffsetScalarField, 1, ttk::OffsetScalarFieldName, inputVector);
   if(!inputOffsets) {
     const SimplexId numberOfPoints = domain->GetNumberOfPoints();
     inputOffsets = ttkSimplexIdTypeArray::New();
@@ -156,13 +151,8 @@ int ttkIntegralLines::RequestData(vtkInformation *request,
       inputOffsets->SetTuple1(i, i);
   }
 
-  vtkDataArray *inputIdentifiers = nullptr;
-  if(this->GetInputArrayInformation(2)) {
-    inputIdentifiers = this->GetInputArrayToProcess(2, seeds);
-  } else if(!ForceInputVertexScalarField) {
-    inputIdentifiers
-      = seeds->GetPointData()->GetArray(ttk::VertexScalarFieldName);
-  }
+  vtkDataArray *inputIdentifiers = this->GetOptionalArray(
+    ForceInputVertexScalarField, 2, ttk::VertexScalarFieldName, inputVector);
 
   const SimplexId numberOfPointsInDomain = domain->GetNumberOfPoints();
   const SimplexId numberOfPointsInSeeds = seeds->GetNumberOfPoints();
