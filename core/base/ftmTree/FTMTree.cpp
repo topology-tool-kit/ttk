@@ -17,7 +17,7 @@ using namespace std;
 using namespace ttk;
 using namespace ftm;
 
-FTMTree::FTMTree() : FTMTree_CT(new Params, nullptr, new Scalars) {
+FTMTree::FTMTree() : FTMTree_CT(new Params, new Scalars) {
   this->setDebugMsgPrefix("FTMTree");
 }
 

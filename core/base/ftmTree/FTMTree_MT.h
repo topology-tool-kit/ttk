@@ -49,6 +49,8 @@
 #include "FTMStructures.h"
 #include "FTMSuperArc.h"
 
+ttk::DebugTimer _launchGlobalTime;
+
 namespace ttk {
   namespace ftm {
     using UF = AtomicUF *;
@@ -103,7 +105,6 @@ namespace ttk {
     protected:
       // global
       Params *const params_;
-      AbstractTriangulation *mesh_;
       Scalars *const scalars_;
 
       // local
@@ -116,10 +117,7 @@ namespace ttk {
       // -----------
 
       // Tree with global data and partition number
-      FTMTree_MT(Params *const params,
-                 AbstractTriangulation *mesh,
-                 Scalars *const scalars,
-                 TreeType type);
+      FTMTree_MT(Params *const params, Scalars *const scalars, TreeType type);
 
       virtual ~FTMTree_MT();
 
@@ -127,8 +125,9 @@ namespace ttk {
       // Init
       // --------------------
 
-      void initNbScalars(void) {
-        scalars_->size = mesh_->getNumberOfVertices();
+      template <class triangulationType = AbstractTriangulation>
+      void initNbScalars(const triangulationType *triangulation) {
+        scalars_->size = triangulation->getNumberOfVertices();
       }
 
       /// \brief init Simulation of Simplicity datastructure if not set
@@ -239,27 +238,40 @@ namespace ttk {
       // -------------------
 
       /// \brief Compute the merge
-      void build(const bool ct);
+      template <class triangulationType = AbstractTriangulation>
+      void build(const triangulationType *mesh, const bool ct);
 
       // extrema
 
-      virtual int leafSearch();
+      template <class triangulationType = AbstractTriangulation>
+      int leafSearch(const triangulationType *mesh);
 
       // skeleton
 
-      void leafGrowth();
+      template <class triangulationType = AbstractTriangulation>
+      void leafGrowth(const triangulationType *mesh);
 
-      void arcGrowth(const SimplexId startVert, const SimplexId orig);
+      template <class triangulationType = AbstractTriangulation>
+      void arcGrowth(const triangulationType *mesh,
+                     const SimplexId startVert,
+                     const SimplexId orig);
 
-      std::tuple<bool, bool> propage(CurrentState &currentState, UF curUF);
+      template <class triangulationType = AbstractTriangulation>
+      std::tuple<bool, bool> propage(const triangulationType *mesh,
+                                     CurrentState &currentState,
+                                     UF curUF);
 
-      void closeAndMergeOnSaddle(SimplexId saddleVert);
+      template <class triangulationType = AbstractTriangulation>
+      void closeAndMergeOnSaddle(const triangulationType *mesh,
+                                 SimplexId saddleVert);
 
-      void closeOnBackBone(SimplexId saddleVert);
+      template <class triangulationType = AbstractTriangulation>
+      void closeOnBackBone(const triangulationType *mesh, SimplexId saddleVert);
 
       void closeArcsUF(idNode closeNode, UF uf);
 
-      SimplexId trunk(const bool ct);
+      template <class triangulationType = AbstractTriangulation>
+      SimplexId trunk(const triangulationType *mesh, const bool ct);
 
       virtual SimplexId
         trunkSegmentation(const std::vector<SimplexId> &pendingNodesVerts,
@@ -314,10 +326,9 @@ namespace ttk {
 
       inline void setupTriangulation(AbstractTriangulation *m,
                                      const bool preproc = true) {
-        mesh_ = m;
-        if(mesh_ && preproc) {
+        if(t && preproc) {
           // propage through vertices (build)
-          mesh_->preconditionVertexNeighbors();
+          t->preconditionVertexNeighbors();
         }
       }
 

@@ -6,7 +6,8 @@
 ///\brief TTK processing package that efficiently computes the
 /// contour tree of scalar data and more
 /// (data segmentation, topological simplification,
-/// persistence diagrams, persistence curves, etc.).
+/// p
+///  ersistence diagrams, persistence curves, etc.).
 ///
 ///\param dataType Data type of the input scalar field (char, float,
 /// etc.).
@@ -22,11 +23,11 @@ using namespace ttk;
 using namespace ftm;
 
 FTMTree_CT::FTMTree_CT(Params *const params,
-                       Triangulation *mesh,
+
                        Scalars *const scalars)
-  : FTMTree_MT(params, mesh, scalars, TreeType::Contour),
-    jt_(new FTMTree_MT(params, mesh, scalars, TreeType::Join)),
-    st_(new FTMTree_MT(params, mesh, scalars, TreeType::Split)) {
+  : FTMTree_MT(params, scalars, TreeType::Contour),
+    jt_(new FTMTree_MT(params, scalars, TreeType::Join)),
+    st_(new FTMTree_MT(params, scalars, TreeType::Split)) {
   this->setDebugMsgPrefix("FTMTree_CT");
 }
 
@@ -39,101 +40,6 @@ FTMTree_CT::~FTMTree_CT() {
     delete st_;
     st_ = nullptr;
   }
-}
-
-void FTMTree_CT::build(TreeType tt) {
-  DebugTimer mergeTreesTime;
-
-  const bool bothMT = tt == TreeType::Contour || tt == TreeType::Join_Split;
-
-  initComp();
-
-  if(bothMT) {
-    // single leaf search for both tree
-    // When executed from CT, both minima and maxima are extracted
-    DebugTimer precomputeTime;
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel num_threads(threadNumber_)
-#endif
-    {
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp single nowait
-#endif
-      { leafSearch(); }
-    }
-    printTime(precomputeTime, "leafSearch", -1, 3);
-  }
-
-#ifdef TTK_ENABLE_OMP_PRIORITY
-  {
-    // Set priority
-    if(st_->getNumberOfLeaves() < jt_->getNumberOfLeaves())
-      st_->setPrior();
-    else
-      jt_->setPrior();
-  }
-#endif
-
-  // JT & ST
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel num_threads(threadNumber_)
-#endif
-  {
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp single nowait
-#endif
-    {if(tt == TreeType::Join || bothMT){
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp task untied if(threadNumber_ > 1)
-#endif
-      jt_->build(tt == TreeType::Contour);
-}
-if(tt == TreeType::Split || bothMT) {
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp task untied if(threadNumber_ > 1)
-#endif
-  st_->build(tt == TreeType::Contour);
-}
-}
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp taskwait
-#endif
-}
-
-printTime(mergeTreesTime, "merge trees ", -1, 3);
-
-// Combine
-
-if(tt == TreeType::Contour) {
-
-  DebugTimer combineFullTime;
-  insertNodes();
-
-  DebugTimer combineTime;
-  combine();
-  printTime(combineTime, "combine trees", -1, 4);
-  printTime(combineFullTime, "combine full", -1, 3);
-}
-
-// Debug
-
-if(debugLevel_ > 3) {
-  cout << "- final number of nodes :";
-  switch(tt) {
-    case TreeType::Join:
-      cout << jt_->getNumberOfNodes();
-      break;
-    case TreeType::Split:
-      cout << st_->getNumberOfNodes();
-      break;
-    case TreeType::Join_Split:
-      cout << jt_->getNumberOfNodes() + st_->getNumberOfNodes();
-      break;
-    default:
-      cout << getNumberOfNodes();
-  }
-  cout << endl;
-}
 }
 
 int FTMTree_CT::combine() {
@@ -443,50 +349,3 @@ void FTMTree_CT::insertNodes(void) {
   }
 }
 
-int FTMTree_CT::leafSearch() {
-  const auto nbScalars = scalars_->size;
-  const auto chunkSize = getChunkSize();
-  const auto chunkNb = getChunkCount();
-
-  // Extrema extract and launch tasks
-  for(SimplexId chunkId = 0; chunkId < chunkNb; ++chunkId) {
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp task firstprivate(chunkId)
-#endif
-    {
-      const SimplexId lowerBound = chunkId * chunkSize;
-      const SimplexId upperBound = min(nbScalars, (chunkId + 1) * chunkSize);
-      for(SimplexId v = lowerBound; v < upperBound; ++v) {
-        const auto &neighNumb = mesh_->getVertexNeighborNumber(v);
-        valence upval = 0;
-        valence downval = 0;
-
-        for(valence n = 0; n < neighNumb; ++n) {
-          SimplexId neigh;
-          mesh_->getVertexNeighbor(v, n, neigh);
-          if(scalars_->isLower(neigh, v)) {
-            ++downval;
-          } else {
-            ++upval;
-          }
-        }
-
-        jt_->setValence(v, downval);
-        st_->setValence(v, upval);
-
-        if(!downval) {
-          jt_->makeNode(v);
-        }
-
-        if(!upval) {
-          st_->makeNode(v);
-        }
-      }
-    }
-  }
-
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp taskwait
-#endif
-  return 0;
-}
