@@ -20,8 +20,11 @@ ttkQuadrangulationSubdivision::ttkQuadrangulationSubdivision() {
 
 int ttkQuadrangulationSubdivision::FillInputPortInformation(
   int port, vtkInformation *info) {
-  if(port == 0 || port == 1) {
+  if(port == 0) { // input quadrangulation
     info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkUnstructuredGrid");
+    return 1;
+  } else if(port == 1) { // triangulated domain
+    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
     return 1;
   }
   return 0;
@@ -42,7 +45,7 @@ int ttkQuadrangulationSubdivision::RequestData(
   vtkInformationVector *outputVector) {
 
   auto quads = vtkUnstructuredGrid::GetData(inputVector[0]);
-  auto mesh = vtkUnstructuredGrid::GetData(inputVector[1]);
+  auto mesh = vtkDataSet::GetData(inputVector[1]);
   auto output = vtkUnstructuredGrid::GetData(outputVector);
 
   auto triangulation = ttkAlgorithm::GetTriangulation(mesh);
