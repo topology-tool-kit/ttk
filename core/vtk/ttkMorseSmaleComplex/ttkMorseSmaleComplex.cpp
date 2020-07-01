@@ -3,7 +3,6 @@
 #include <ttkUtils.h>
 
 #include <vtkCellData.h>
-#include <vtkCharArray.h> // TODO -> (un)signed
 #include <vtkDataArray.h>
 #include <vtkDataObject.h>
 #include <vtkDataSet.h>
@@ -11,6 +10,7 @@
 #include <vtkNew.h>
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
+#include <vtkSignedCharArray.h>
 #include <vtkUnstructuredGrid.h>
 
 using namespace std;
@@ -172,10 +172,10 @@ int ttkMorseSmaleComplex::dispatch(vtkDataArray *inputScalars,
     }
 #endif
 
-    vtkNew<vtkCharArray> cellDimensions{};
+    vtkNew<vtkSignedCharArray> cellDimensions{};
 #ifndef TTK_ENABLE_KAMIKAZE
     if(!cellDimensions) {
-      cerr << "[ttkMorseSmaleComplex] Error : vtkCharArray allocation "
+      cerr << "[ttkMorseSmaleComplex] Error : vtkSignedCharArray allocation "
            << "problem." << endl;
       return -1;
     }
@@ -205,10 +205,10 @@ int ttkMorseSmaleComplex::dispatch(vtkDataArray *inputScalars,
     cellScalars->SetNumberOfComponents(1);
     cellScalars->SetName(inputScalars->GetName());
 
-    vtkNew<vtkCharArray> isOnBoundary{};
+    vtkNew<vtkSignedCharArray> isOnBoundary{};
 #ifndef TTK_ENABLE_KAMIKAZE
     if(!isOnBoundary) {
-      cerr << "[ttkMorseSmaleComplex] Error : vtkCharArray allocation "
+      cerr << "[ttkMorseSmaleComplex] Error : vtkSignedCharArray allocation "
            << "problem." << endl;
       return -1;
     }
@@ -289,10 +289,10 @@ int ttkMorseSmaleComplex::dispatch(vtkDataArray *inputScalars,
       return -1;
     }
 #endif
-    vtkNew<vtkCharArray> smoothingMask{};
+    vtkNew<vtkSignedCharArray> smoothingMask{};
 #ifndef TTK_ENABLE_KAMIKAZE
     if(!smoothingMask) {
-      cerr << "[ttkMorseSmaleComplex] Error : vtkCharArray allocation "
+      cerr << "[ttkMorseSmaleComplex] Error : vtkSignedCharArray allocation "
            << "problem." << endl;
       return -1;
     }
@@ -300,10 +300,10 @@ int ttkMorseSmaleComplex::dispatch(vtkDataArray *inputScalars,
     smoothingMask->SetNumberOfComponents(1);
     smoothingMask->SetName(ttk::MaskScalarFieldName);
 
-    vtkNew<vtkCharArray> cellDimensions{};
+    vtkNew<vtkSignedCharArray> cellDimensions{};
 #ifndef TTK_ENABLE_KAMIKAZE
     if(!cellDimensions) {
-      cerr << "[ttkMorseSmaleComplex] Error : vtkCharArray allocation "
+      cerr << "[ttkMorseSmaleComplex] Error : vtkSignedCharArray allocation "
            << "problem." << endl;
       return -1;
     }
@@ -355,10 +355,10 @@ int ttkMorseSmaleComplex::dispatch(vtkDataArray *inputScalars,
     separatrixIds->SetNumberOfComponents(1);
     separatrixIds->SetName("SeparatrixId");
 
-    vtkNew<vtkCharArray> separatrixTypes{};
+    vtkNew<vtkSignedCharArray> separatrixTypes{};
 #ifndef TTK_ENABLE_KAMIKAZE
     if(!separatrixTypes) {
-      cerr << "[ttkMorseSmaleComplex] Error : vtkCharArray allocation "
+      cerr << "[ttkMorseSmaleComplex] Error : vtkSignedCharArray allocation "
            << "problem." << endl;
       return -1;
     }
@@ -402,10 +402,10 @@ int ttkMorseSmaleComplex::dispatch(vtkDataArray *inputScalars,
     separatrixFunctionDiffs->SetNumberOfComponents(1);
     separatrixFunctionDiffs->SetName("SeparatrixFunctionDifference");
 
-    vtkNew<vtkCharArray> isOnBoundary{};
+    vtkNew<vtkSignedCharArray> isOnBoundary{};
 #ifndef TTK_ENABLE_KAMIKAZE
     if(!isOnBoundary) {
-      cerr << "[ttkMorseSmaleComplex] Error : vtkCharArray allocation "
+      cerr << "[ttkMorseSmaleComplex] Error : vtkSignedCharArray allocation "
            << "problem." << endl;
       return -1;
     }
@@ -523,10 +523,11 @@ int ttkMorseSmaleComplex::dispatch(vtkDataArray *inputScalars,
     separatrixIds->SetNumberOfComponents(1);
     separatrixIds->SetName("SeparatrixId");
 
-    vtkNew<vtkCharArray> separatrixTypes{};
+    vtkNew<vtkSignedCharArray> separatrixTypes{};
 #ifndef TTK_ENABLE_KAMIKAZE
     if(!separatrixTypes) {
-      cerr << "[ttkMorseSmaleComplex] Error : vtkCharArray allocation  problem."
+      cerr << "[ttkMorseSmaleComplex] Error : vtkSignedCharArray allocation  "
+              "problem."
            << endl;
       return -1;
     }
@@ -570,10 +571,11 @@ int ttkMorseSmaleComplex::dispatch(vtkDataArray *inputScalars,
     separatrixFunctionDiffs->SetNumberOfComponents(1);
     separatrixFunctionDiffs->SetName("SeparatrixFunctionDifference");
 
-    vtkNew<vtkCharArray> isOnBoundary{};
+    vtkNew<vtkSignedCharArray> isOnBoundary{};
 #ifndef TTK_ENABLE_KAMIKAZE
     if(!isOnBoundary) {
-      cerr << "[ttkMorseSmaleComplex] Error : vtkCharArray allocation problem."
+      cerr << "[ttkMorseSmaleComplex] Error : vtkSignedCharArray allocation "
+              "problem."
            << endl;
       return -1;
     }
