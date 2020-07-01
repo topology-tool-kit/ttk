@@ -5,5 +5,4 @@ SOURCES
 HEADERS
   ttkIdentifierRandomizer.h
 DEPENDS
-  common
-  ttkTriangulationAlgorithm
+  ttkAlgorithm
