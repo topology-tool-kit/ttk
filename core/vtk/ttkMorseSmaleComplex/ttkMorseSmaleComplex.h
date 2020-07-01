@@ -32,57 +32,26 @@
 ///
 /// \sa ttk::MorseSmaleComplex
 ///
-#ifndef _TTK_MORSESMALECOMPLEX_H
-#define _TTK_MORSESMALECOMPLEX_H
 
-// VTK includes -- to adapt
-#include <vtkCellData.h>
-#include <vtkCharArray.h>
-#include <vtkDataArray.h>
-#include <vtkDataSet.h>
-#include <vtkDataSetAlgorithm.h>
-#include <vtkDoubleArray.h>
-#include <vtkFiltersCoreModule.h>
-#include <vtkFloatArray.h>
-#include <vtkInformation.h>
-#include <vtkInformationVector.h>
-#include <vtkIntArray.h>
-#include <vtkObjectFactory.h>
-#include <vtkPointData.h>
-#include <vtkSmartPointer.h>
+#pragma once
 
 // VTK Module
 #include <ttkMorseSmaleComplexModule.h>
 
 // ttk code includes
 #include <MorseSmaleComplex.h>
-#include <ttkTriangulationAlgorithm.h>
+#include <ttkAlgorithm.h>
+
+class vtkUnstructuredGrid;
 
 class TTKMORSESMALECOMPLEX_EXPORT ttkMorseSmaleComplex
-  : public vtkDataSetAlgorithm,
-    protected ttk::Wrapper {
+  : public ttkAlgorithm,
+    protected ttk::MorseSmaleComplex {
 
 public:
   static ttkMorseSmaleComplex *New();
 
-  vtkTypeMacro(ttkMorseSmaleComplex, vtkDataSetAlgorithm);
-
-  // default ttk setters
-  void SetDebugLevel(int debugLevel) {
-    setDebugLevel(debugLevel);
-    Modified();
-  }
-
-  void SetThreadNumber(int threadNumber) {
-    ThreadNumber = threadNumber;
-    SetThreads();
-  }
-
-  void SetUseAllCores(bool onOff) {
-    UseAllCores = onOff;
-    SetThreads();
-  }
-  // end of default ttk setters
+  vtkTypeMacro(ttkMorseSmaleComplex, ttkAlgorithm);
 
   vtkSetMacro(ScalarField, std::string);
   vtkGetMacro(ScalarField, std::string);
@@ -145,16 +114,17 @@ protected:
                vtkDataArray *inputOffsets,
                vtkUnstructuredGrid *outputCriticalPoints,
                vtkUnstructuredGrid *outputSeparatrices1,
-               vtkUnstructuredGrid *outputSeparatrices2);
+               vtkUnstructuredGrid *outputSeparatrices2,
+               ttk::Triangulation &triangulation);
 
   ttkMorseSmaleComplex();
   ~ttkMorseSmaleComplex() override;
 
-  TTK_SETUP();
-
-  virtual int FillInputPortInformation(int port, vtkInformation *info) override;
-  virtual int FillOutputPortInformation(int port,
-                                        vtkInformation *info) override;
+  int FillInputPortInformation(int port, vtkInformation *info) override;
+  int FillOutputPortInformation(int port, vtkInformation *info) override;
+  int RequestData(vtkInformation *request,
+                  vtkInformationVector **inputVector,
+                  vtkInformationVector *outputVector) override;
 
 private:
   std::string ScalarField{};
@@ -180,5 +150,3 @@ private:
   vtkDataArray *defaultOffsets_{};
   bool hasUpdatedMesh_{};
 };
-
-#endif // _TTK_MORSESMALECOMPLEX_H

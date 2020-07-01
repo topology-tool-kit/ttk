@@ -1,5 +1,17 @@
+#include <ttkMacros.h>
 #include <ttkMorseSmaleComplex.h>
+#include <ttkUtils.h>
+
+#include <vtkCellData.h>
+#include <vtkCharArray.h> // TODO -> (un)signed
+#include <vtkDataArray.h>
+#include <vtkDataObject.h>
+#include <vtkDataSet.h>
+#include <vtkInformation.h>
 #include <vtkNew.h>
+#include <vtkObjectFactory.h>
+#include <vtkPointData.h>
+#include <vtkUnstructuredGrid.h>
 
 using namespace std;
 
@@ -17,38 +29,29 @@ ttkMorseSmaleComplex::~ttkMorseSmaleComplex() {
 
 int ttkMorseSmaleComplex::FillInputPortInformation(int port,
                                                    vtkInformation *info) {
-
-  switch(port) {
-    case 0:
-      info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataSet");
-      break;
+  if(port == 0) {
+    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
+    return 1;
   }
-
-  return 1;
+  return 0;
 }
 
 int ttkMorseSmaleComplex::FillOutputPortInformation(int port,
                                                     vtkInformation *info) {
-
-  switch(port) {
-    case 0:
-    case 1:
-    case 2:
-      info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
-      break;
-
-    case 3:
-      info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataSet");
-      break;
+  if(port == 0 || port == 1 || port == 2) {
+    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
+    return 1;
+  } else if(port == 3) {
+    info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
+    return 1;
   }
-
-  return 1;
+  return 0;
 }
 
 int ttkMorseSmaleComplex::setupTriangulation(vtkDataSet *input) {
   hasUpdatedMesh_ = false;
 
-  triangulation_ = ttkTriangulation::getTriangulation(input);
+  triangulation_ = ttkAlgorithm::GetTriangulation(input);
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!triangulation_) {
     cerr << "[ttkMorseSmaleComplex] Error : "
@@ -58,17 +61,9 @@ int ttkMorseSmaleComplex::setupTriangulation(vtkDataSet *input) {
   }
 #endif
 
-  triangulation_->setWrapper(this);
   // setupTriangulation() is called first to select the correct algorithm (2D or
   // 3D)
   morseSmaleComplex_.setupTriangulation(triangulation_);
-  morseSmaleComplex_.setWrapper(this);
-
-  if(triangulation_->isEmpty()
-     or ttkTriangulation::hasChangedConnectivity(triangulation_, input, this)) {
-    hasUpdatedMesh_ = true;
-    Modified();
-  }
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(triangulation_->isEmpty()) {
@@ -165,7 +160,8 @@ int ttkMorseSmaleComplex::dispatch(vtkDataArray *inputScalars,
                                    vtkDataArray *inputOffsets,
                                    vtkUnstructuredGrid *outputCriticalPoints,
                                    vtkUnstructuredGrid *outputSeparatrices1,
-                                   vtkUnstructuredGrid *outputSeparatrices2) {
+                                   vtkUnstructuredGrid *outputSeparatrices2,
+                                   ttk::Triangulation &triangulation) {
 
   const int dimensionality = triangulation_->getCellVertexNumber(0) - 1;
 
@@ -243,11 +239,32 @@ int ttkMorseSmaleComplex::dispatch(vtkDataArray *inputScalars,
     &separatrices2_cells_separatrixFunctionDiffs,
     &separatrices2_cells_isOnBoundary);
 
+#define MSC_EXPLICIT_CALLS(TRIANGL_CASE, TRIANGL_TYPE, OFFSET_TYPE)        \
+  case TRIANGL_CASE: {                                                     \
+    const auto tri = static_cast<TRIANGL_TYPE *>(triangulation.getData()); \
+    if(tri != nullptr) {                                                   \
+      ret = this->execute<VTK_TT, OFFSET_TYPE>(*tri);                      \
+    }                                                                      \
+    break;                                                                 \
+  }
+
+#define MSC_SWITCH_TRIANGULATION(OFFSET_TYPE)                            \
+  switch(triangulation.getType()) {                                      \
+    MSC_EXPLICIT_CALLS(ttk::Triangulation::Type::EXPLICIT,               \
+                       ttk::ExplicitTriangulation, OFFSET_TYPE);         \
+    MSC_EXPLICIT_CALLS(ttk::Triangulation::Type::IMPLICIT,               \
+                       ttk::ImplicitTriangulation, OFFSET_TYPE);         \
+    MSC_EXPLICIT_CALLS(ttk::Triangulation::Type::PERIODIC,               \
+                       ttk::PeriodicImplicitTriangulation, OFFSET_TYPE); \
+  }
+
   int ret = 0;
-  if(inputOffsets->GetDataType() == VTK_INT)
-    ret = morseSmaleComplex_.execute<VTK_TT, int>();
-  if(inputOffsets->GetDataType() == VTK_ID_TYPE)
-    ret = morseSmaleComplex_.execute<VTK_TT, vtkIdType>();
+  if(inputOffsets->GetDataType() == VTK_INT) {
+    MSC_SWITCH_TRIANGULATION(int);
+  } else if(inputOffsets->GetDataType() == VTK_ID_TYPE) {
+    MSC_SWITCH_TRIANGULATION(vtkIdType);
+  }
+
 #ifndef TTK_ENABLE_KAMIKAZE
   if(ret) {
     cerr << "[ttkMorseSmaleComplex] Error : MorseSmaleComplex.execute() "
@@ -742,25 +759,17 @@ int ttkMorseSmaleComplex::dispatch(vtkDataArray *inputScalars,
   return ret;
 }
 
-int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
-                               vector<vtkDataSet *> &outputs) {
-  ttk::Memory m;
-
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(!inputs.size()) {
-    cerr << "[ttkMorseSmaleComplex] Error: not enough input information."
-         << endl;
-    return -1;
-  }
-#endif
+int ttkMorseSmaleComplex::RequestData(vtkInformation *request,
+                                      vtkInformationVector **inputVector,
+                                      vtkInformationVector *outputVector) {
 
   int ret{};
 
-  const auto input = inputs[0];
-  auto outputCriticalPoints = vtkUnstructuredGrid::SafeDownCast(outputs[0]);
-  auto outputSeparatrices1 = vtkUnstructuredGrid::SafeDownCast(outputs[1]);
-  auto outputSeparatrices2 = vtkUnstructuredGrid::SafeDownCast(outputs[2]);
-  auto outputMorseComplexes = outputs[3];
+  const auto input = vtkDataSet::GetData(inputVector[0]);
+  auto outputCriticalPoints = vtkUnstructuredGrid::GetData(outputVector, 0);
+  auto outputSeparatrices1 = vtkUnstructuredGrid::GetData(outputVector, 1);
+  auto outputSeparatrices2 = vtkUnstructuredGrid::GetData(outputVector, 2);
+  auto outputMorseComplexes = vtkDataSet::GetData(outputVector, 3);
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!input) {
@@ -905,7 +914,8 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
   switch(inputScalars->GetDataType()) {
     vtkTemplateMacro(
       ret = dispatch<VTK_TT>(inputScalars, inputOffsets, outputCriticalPoints,
-                             outputSeparatrices1, outputSeparatrices2));
+                             outputSeparatrices1, outputSeparatrices2,
+                             *triangulation_));
   }
 
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -934,13 +944,6 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
     if(ComputeAscendingSegmentation and ComputeDescendingSegmentation
        and ComputeFinalSegmentation)
       pointData->AddArray(morseSmaleManifold);
-  }
-
-  {
-    stringstream msg;
-    msg << "[ttkMorseSmaleComplex] Memory usage: " << m.getElapsedUsage()
-        << " MB." << endl;
-    dMsg(cout, msg.str(), memoryMsg);
   }
 
   return ret;
