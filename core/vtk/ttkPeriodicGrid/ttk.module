@@ -6,4 +6,3 @@ HEADERS
   ttkPeriodicGrid.h
 DEPENDS
   ttkAlgorithm
-  ttkTriangulationAlgorithm
