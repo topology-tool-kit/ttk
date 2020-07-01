@@ -6,10 +6,6 @@ using namespace ttk;
 vtkStandardNewMacro(ttkRangePolygon)
 
   ttkRangePolygon::ttkRangePolygon() {
-
-  ClosedLoop = false;
-  NumberOfIterations = 0;
-  UseAllCores = true;
 }
 
 ttkRangePolygon::~ttkRangePolygon() {
