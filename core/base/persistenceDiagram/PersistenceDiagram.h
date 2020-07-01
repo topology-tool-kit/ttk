@@ -80,11 +80,15 @@ namespace ttk {
       const scalarType *scalars) const;
 
     template <typename scalarType, typename idType, class triangulationType>
-      int execute(std::vector<std::tuple<ttk::SimplexId, ttk::CriticalType, ttk::SimplexId,
-      ttk::CriticalType, scalarType, ttk::SimplexId>> &CTDiagram, 
-      const scalarType *inputScalars,
-      const idType *inputOffsets,
-      const triangulationType *triangulation) const;
+    int execute(std::vector<std::tuple<ttk::SimplexId,
+                                       ttk::CriticalType,
+                                       ttk::SimplexId,
+                                       ttk::CriticalType,
+                                       scalarType,
+                                       ttk::SimplexId>> &CTDiagram,
+                const scalarType *inputScalars,
+                const idType *inputOffsets,
+                const triangulationType *triangulation) const;
 
     inline int
       setDMTPairs(std::vector<std::tuple<dcg::Cell, dcg::Cell>> *data) {
@@ -115,7 +119,7 @@ namespace ttk {
 
   protected:
     std::vector<std::tuple<dcg::Cell, dcg::Cell>> *dmt_pairs;
-    
+
     bool ComputeSaddleConnectors{false};
 
     // TODO: Remove when FTM and MSC are migrated
@@ -202,8 +206,13 @@ int ttk::PersistenceDiagram::computeCTPersistenceDiagram(
 }
 
 template <typename scalarType, typename idType, class triangulationType>
-int ttk::PersistenceDiagram::execute(std::vector<std::tuple<ttk::SimplexId, ttk::CriticalType, ttk::SimplexId,
-  ttk::CriticalType, scalarType, ttk::SimplexId>> &CTDiagram, 
+int ttk::PersistenceDiagram::execute(
+  std::vector<std::tuple<ttk::SimplexId,
+                         ttk::CriticalType,
+                         ttk::SimplexId,
+                         ttk::CriticalType,
+                         scalarType,
+                         ttk::SimplexId>> &CTDiagram,
   const scalarType *inputScalars,
   const idType *inputOffsets,
   const triangulationType *triangulation) const {

@@ -49,13 +49,13 @@
 #include <vtkCellData.h>
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
+#include <vtkFloatArray.h>
 #include <vtkInformation.h>
 #include <vtkInformationVector.h>
 #include <vtkPointData.h>
 #include <vtkSmartPointer.h>
-#include <vtkUnstructuredGrid.h>
-#include <vtkFloatArray.h>
 #include <vtkTable.h>
+#include <vtkUnstructuredGrid.h>
 
 // VTK Module
 #include <ttkPersistenceDiagramModule.h>
@@ -68,7 +68,7 @@
 
 class TTKPERSISTENCEDIAGRAM_EXPORT ttkPersistenceDiagram
   : public ttkAlgorithm,
-    protected ttk::PersistenceDiagram  {
+    protected ttk::PersistenceDiagram {
 
 public:
   static ttkPersistenceDiagram *New();
@@ -108,8 +108,9 @@ public:
                                  scalarType,
                                  ttk::SimplexId>> &diagram,
     vtkSmartPointer<vtkPoints> points,
-    vtkIdType ids[3], vtkDataArray *inputScalars,
-  const triangulationType *triangulation);
+    vtkIdType ids[3],
+    vtkDataArray *inputScalars,
+    const triangulationType *triangulation);
 
   template <typename scalarType, class triangulationType>
   int getPersistenceDiagram(
@@ -120,8 +121,9 @@ public:
                                  ttk::SimplexId,
                                  ttk::CriticalType,
                                  scalarType,
-                                 ttk::SimplexId>> &diagram, vtkDataArray *inputScalars,
-  const triangulationType *triangulation);
+                                 ttk::SimplexId>> &diagram,
+    vtkDataArray *inputScalars,
+    const triangulationType *triangulation);
 
   template <typename scalarType, class triangulationType>
   int setPersistenceDiagramInfoInsideDomain(
@@ -137,8 +139,9 @@ public:
                                  scalarType,
                                  ttk::SimplexId>> &diagram,
     vtkSmartPointer<vtkPoints> points,
-    vtkIdType ids[3], vtkDataArray *inputScalars,
-  const triangulationType *triangulation);
+    vtkIdType ids[3],
+    vtkDataArray *inputScalars,
+    const triangulationType *triangulation);
 
   template <typename scalarType, class triangulationType>
   int getPersistenceDiagramInsideDomain(
@@ -149,20 +152,21 @@ public:
                                  ttk::SimplexId,
                                  ttk::CriticalType,
                                  scalarType,
-                                 ttk::SimplexId>> &diagram, vtkDataArray *inputScalars,
-  const triangulationType *triangulation);
+                                 ttk::SimplexId>> &diagram,
+    vtkDataArray *inputScalars,
+    const triangulationType *triangulation);
 
   template <typename VTK_TT, typename TTK_TT>
   int dispatch(vtkUnstructuredGrid *outputCTPersistenceDiagram,
-                                  vtkDataArray *inputScalarDataArray,
-                                  const VTK_TT *inputScalars,
-                                  int inputOffsetsDataType,
-                                  const void *inputOffsets,
-                                  const TTK_TT *triangulation);
+               vtkDataArray *inputScalarDataArray,
+               const VTK_TT *inputScalars,
+               int inputOffsetsDataType,
+               const void *inputOffsets,
+               const TTK_TT *triangulation);
 
   template <typename VTK_TT>
   int deleteDiagram();
-  
+
 protected:
   ttkPersistenceDiagram();
   ~ttkPersistenceDiagram() override;
@@ -178,7 +182,7 @@ protected:
 private:
   bool ForceInputOffsetScalarField{false};
   int ShowInsideDomain{false};
-  
+
   bool computeDiagram_{true};
   void *CTDiagram_{nullptr};
   int scalarDataType{0};
@@ -197,7 +201,8 @@ int ttkPersistenceDiagram::setPersistenceDiagramInfo(
                                scalarType,
                                ttk::SimplexId>> &diagram,
   vtkSmartPointer<vtkPoints> points,
-  vtkIdType ids[3], vtkDataArray *inputScalars,
+  vtkIdType ids[3],
+  vtkDataArray *inputScalars,
   const triangulationType *triangulation) {
   double p[3] = {0, 0, 0};
   const ttk::SimplexId a = std::get<0>(diagram[id]);
@@ -241,7 +246,7 @@ int ttkPersistenceDiagram::getPersistenceDiagram(
                                ttk::CriticalType,
                                scalarType,
                                ttk::SimplexId>> &diagram,
-                               vtkDataArray *inputScalars,
+  vtkDataArray *inputScalars,
   const triangulationType *triangulation) {
   vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
 
@@ -295,7 +300,8 @@ int ttkPersistenceDiagram::getPersistenceDiagram(
       maxPersistenceValue = std::max(persistenceValue, maxPersistenceValue);
 
       setPersistenceDiagramInfo(i, vertexIdentifierScalars, nodeTypeScalars,
-                                coordsScalars, diagram, points, ids, inputScalars, triangulation);
+                                coordsScalars, diagram, points, ids,
+                                inputScalars, triangulation);
 
       // add cell data
       persistenceDiagram->InsertNextCell(VTK_LINE, 2, ids);
@@ -355,7 +361,8 @@ int ttkPersistenceDiagram::setPersistenceDiagramInfoInsideDomain(
                                scalarType,
                                ttk::SimplexId>> &diagram,
   vtkSmartPointer<vtkPoints> points,
-  vtkIdType ids[3], vtkDataArray *inputScalars,
+  vtkIdType ids[3],
+  vtkDataArray *inputScalars,
   const triangulationType *triangulation) {
   float p[3];
   const ttk::SimplexId a = std::get<0>(diagram[id]);
@@ -394,7 +401,8 @@ int ttkPersistenceDiagram::getPersistenceDiagramInsideDomain(
                                ttk::SimplexId,
                                ttk::CriticalType,
                                scalarType,
-                               ttk::SimplexId>> &diagram, vtkDataArray *inputScalars,
+                               ttk::SimplexId>> &diagram,
+  vtkDataArray *inputScalars,
   const triangulationType *triangulation) {
   vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
 
@@ -448,9 +456,9 @@ int ttkPersistenceDiagram::getPersistenceDiagramInsideDomain(
       const ttk::SimplexId type = std::get<5>(diagram[i]);
       maxPersistenceValue = std::max(persistenceValue, maxPersistenceValue);
 
-      setPersistenceDiagramInfoInsideDomain(i, vertexIdentifierScalars,
-                                            nodeTypeScalars, birthScalars,
-                                            deathScalars, diagram, points, ids, inputScalars, triangulation);
+      setPersistenceDiagramInfoInsideDomain(
+        i, vertexIdentifierScalars, nodeTypeScalars, birthScalars, deathScalars,
+        diagram, points, ids, inputScalars, triangulation);
 
       // add cell data
       persistenceDiagram->InsertNextCell(VTK_LINE, 2, ids);

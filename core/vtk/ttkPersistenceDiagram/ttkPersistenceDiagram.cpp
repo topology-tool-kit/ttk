@@ -6,21 +6,19 @@ using namespace dcg;
 
 vtkStandardNewMacro(ttkPersistenceDiagram)
 
-ttkPersistenceDiagram::ttkPersistenceDiagram() {
+  ttkPersistenceDiagram::ttkPersistenceDiagram() {
   SetNumberOfInputPorts(1);
   SetNumberOfOutputPorts(1);
 }
 
 ttkPersistenceDiagram::~ttkPersistenceDiagram() {
   if(CTDiagram_) {
-    switch(scalarDataType) {
-      vtkTemplateMacro(deleteDiagram<VTK_TT>());
-    }
+    switch(scalarDataType) { vtkTemplateMacro(deleteDiagram<VTK_TT>()); }
   }
 }
 
 int ttkPersistenceDiagram::FillInputPortInformation(int port,
-                                                  vtkInformation *info) {
+                                                    vtkInformation *info) {
   if(port == 0) {
     info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
     return 1;
@@ -48,13 +46,14 @@ int ttkPersistenceDiagram::deleteDiagram() {
 }
 
 template <typename VTK_TT, typename TTK_TT>
-int ttkPersistenceDiagram::dispatch(vtkUnstructuredGrid *outputCTPersistenceDiagram,
-                                  vtkDataArray *inputScalarDataArray,
-                                  const VTK_TT *inputScalars,
-                                  int inputOffsetsDataType,
-                                  const void *inputOffsets,
-                                  const TTK_TT *triangulation) {
-                                  
+int ttkPersistenceDiagram::dispatch(
+  vtkUnstructuredGrid *outputCTPersistenceDiagram,
+  vtkDataArray *inputScalarDataArray,
+  const VTK_TT *inputScalars,
+  int inputOffsetsDataType,
+  const void *inputOffsets,
+  const TTK_TT *triangulation) {
+
   int ret = 0;
 
   using tuple_t = tuple<SimplexId, CriticalType, SimplexId, CriticalType,
@@ -73,13 +72,11 @@ int ttkPersistenceDiagram::dispatch(vtkUnstructuredGrid *outputCTPersistenceDiag
 
   if(computeDiagram_) {
     if(inputOffsetsDataType == VTK_INT)
-      ret = this->execute<VTK_TT, int, TTK_TT>(*CTDiagram, 
-        inputScalars, (int *)inputOffsets,
-        triangulation);
+      ret = this->execute<VTK_TT, int, TTK_TT>(
+        *CTDiagram, inputScalars, (int *)inputOffsets, triangulation);
     if(inputOffsetsDataType == VTK_ID_TYPE)
       ret = this->execute<VTK_TT, vtkIdType, TTK_TT>(
-        *CTDiagram, inputScalars, (vtkIdType *)inputOffsets,
-        triangulation);
+        *CTDiagram, inputScalars, (vtkIdType *)inputOffsets, triangulation);
 #ifndef TTK_ENABLE_KAMIKAZE
     if(ret) {
       std::stringstream msg;
@@ -91,10 +88,13 @@ int ttkPersistenceDiagram::dispatch(vtkUnstructuredGrid *outputCTPersistenceDiag
   }
 
   if(ShowInsideDomain)
-    ret = getPersistenceDiagramInsideDomain<VTK_TT>(outputCTPersistenceDiagram,
-      ftm::TreeType::Contour, *CTDiagram, inputScalarDataArray, triangulation);
+    ret = getPersistenceDiagramInsideDomain<VTK_TT>(
+      outputCTPersistenceDiagram, ftm::TreeType::Contour, *CTDiagram,
+      inputScalarDataArray, triangulation);
   else
-    ret = getPersistenceDiagram<VTK_TT>(outputCTPersistenceDiagram, ftm::TreeType::Contour, *CTDiagram, inputScalarDataArray, triangulation);
+    ret = getPersistenceDiagram<VTK_TT>(outputCTPersistenceDiagram,
+                                        ftm::TreeType::Contour, *CTDiagram,
+                                        inputScalarDataArray, triangulation);
 #ifndef TTK_ENABLE_KAMIKAZE
   if(ret) {
     this->printErr("Build of contour tree persistence diagram has failed.");
@@ -106,15 +106,15 @@ int ttkPersistenceDiagram::dispatch(vtkUnstructuredGrid *outputCTPersistenceDiag
 }
 
 int ttkPersistenceDiagram::RequestData(vtkInformation *request,
-                                     vtkInformationVector **inputVector,
-                                     vtkInformationVector *outputVector) {
+                                       vtkInformationVector **inputVector,
+                                       vtkInformationVector *outputVector) {
 
   Timer timer;
 
   vtkDataSet *input = vtkDataSet::GetData(inputVector[0]);
   vtkUnstructuredGrid *outputCTPersistenceDiagram
     = vtkUnstructuredGrid::GetData(outputVector, 0);
-  
+
   vtkPointData *pointData = input->GetPointData();
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!pointData) {
@@ -172,12 +172,12 @@ int ttkPersistenceDiagram::RequestData(vtkInformation *request,
 
   vector<tuple<Cell, Cell>> dmt_pairs_temp;
   setDMTPairs(&dmt_pairs_temp);
-  
+
   scalarDataType = inputScalars->GetDataType();
 
   int status = 0;
   ttkVtkTemplateMacro(
-    inputScalars->GetDataType(), triangulation->getType(), 
+    inputScalars->GetDataType(), triangulation->getType(),
     (status = this->dispatch<VTK_TT, TTK_TT>(
        outputCTPersistenceDiagram, inputScalars,
        (VTK_TT *)ttkUtils::GetVoidPointer(inputScalars),
