@@ -2,8 +2,8 @@
 #include <regex>
 #include <ttkImportEmbeddingFromTable.h>
 
-#include <ttkUtils.h>
 #include <ttkMacros.h>
+#include <ttkUtils.h>
 
 // VTK includes
 #include <vtkInformation.h>
@@ -20,25 +20,27 @@ vtkStandardNewMacro(ttkImportEmbeddingFromTable)
   return GetAbortExecute();
 }
 
-int ttkImportEmbeddingFromTable::FillInputPortInformation(int port, vtkInformation *info){
-    if(port == 0) {
-        info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkPointSet");
-        return 1;
-    }
-    if(port == 1) {
-        info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkTable");
-        return 1;
-    }
+int ttkImportEmbeddingFromTable::FillInputPortInformation(
+  int port, vtkInformation *info) {
+  if(port == 0) {
+    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkPointSet");
+    return 1;
+  }
+  if(port == 1) {
+    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkTable");
+    return 1;
+  }
 
-    return 0;
+  return 0;
 }
 
-int ttkImportEmbeddingFromTable::FillOutputPortInformation(int port, vtkInformation *info) {
-    if(port == 0){
-        info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
-        return 1;
-    }
-    return 0;
+int ttkImportEmbeddingFromTable::FillOutputPortInformation(
+  int port, vtkInformation *info) {
+  if(port == 0) {
+    info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
+    return 1;
+  }
+  return 0;
 }
 
 // transmit progress status
@@ -46,8 +48,7 @@ int ttkImportEmbeddingFromTable::updateProgress(const float &progress) {
 
   {
     stringstream msg;
-    msg << progress * 100
-        << "% processed....";
+    msg << progress * 100 << "% processed....";
     printMsg(msg.str(), debug::Priority::VERBOSE);
   }
 
@@ -79,51 +80,57 @@ int ttkImportEmbeddingFromTable::RequestData(
   vtkTable *inputTable = vtkTable::GetData(inputVector[1]);
   vtkPointSet *output = vtkPointSet::GetData(outputVector);
 
-    const SimplexId numberOfPoints = inputDataSet->GetNumberOfPoints();
+  const SimplexId numberOfPoints = inputDataSet->GetNumberOfPoints();
 #ifndef TTK_ENABLE_KAMIKAZE
-    if(numberOfPoints <= 0) {
-        printErr("input has no point.");
-        return -1;
-    }
+  if(numberOfPoints <= 0) {
+    printErr("input has no point.");
+    return -1;
+  }
 #endif
 
-    vtkDataArray *xarr
-            = XColumn.empty() ? nullptr : vtkDataArray::SafeDownCast(inputTable->GetColumnByName(XColumn.data()));
-    vtkDataArray *yarr
-            = YColumn.empty() ? nullptr : vtkDataArray::SafeDownCast(inputTable->GetColumnByName(YColumn.data()));
-    vtkDataArray *zarr
-            = ZColumn.empty() ? nullptr : vtkDataArray::SafeDownCast(inputTable->GetColumnByName(ZColumn.data()));
+  vtkDataArray *xarr = XColumn.empty()
+                         ? nullptr
+                         : vtkDataArray::SafeDownCast(
+                             inputTable->GetColumnByName(XColumn.data()));
+  vtkDataArray *yarr = YColumn.empty()
+                         ? nullptr
+                         : vtkDataArray::SafeDownCast(
+                             inputTable->GetColumnByName(YColumn.data()));
+  vtkDataArray *zarr = ZColumn.empty()
+                         ? nullptr
+                         : vtkDataArray::SafeDownCast(
+                             inputTable->GetColumnByName(ZColumn.data()));
 
 #ifndef TTK_ENABLE_KAMIKAZE
-    if(xarr == nullptr or yarr == nullptr or zarr == nullptr) {
-        printErr("invalid input columns.");
-        return -1;
-    }
-    if(xarr->GetNumberOfTuples() != numberOfPoints
-       or yarr->GetNumberOfTuples() != numberOfPoints
-       or zarr->GetNumberOfTuples() != numberOfPoints) {
-       printErr("number of points on inputs mismatch.");
-        return -1;
-    }
-    if(xarr->GetDataType() != yarr->GetDataType()
-       or xarr->GetDataType() != zarr->GetDataType()) {
-       printErr("input columns has different data types.");
-        return -1;
-    }
+  if(xarr == nullptr or yarr == nullptr or zarr == nullptr) {
+    printErr("invalid input columns.");
+    return -1;
+  }
+  if(xarr->GetNumberOfTuples() != numberOfPoints
+     or yarr->GetNumberOfTuples() != numberOfPoints
+     or zarr->GetNumberOfTuples() != numberOfPoints) {
+    printErr("number of points on inputs mismatch.");
+    return -1;
+  }
+  if(xarr->GetDataType() != yarr->GetDataType()
+     or xarr->GetDataType() != zarr->GetDataType()) {
+    printErr("input columns has different data types.");
+    return -1;
+  }
 #endif
 
-    vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
-    points->SetNumberOfPoints(numberOfPoints);
+  vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+  points->SetNumberOfPoints(numberOfPoints);
 
-    switch(xarr->GetDataType()) {
-        vtkTemplateMacro(setPointFromData(
-                points, static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(xarr)),
-                static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(yarr)),
-                static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(zarr)), Embedding2D));
-    }
+  switch(xarr->GetDataType()) {
+    vtkTemplateMacro(setPointFromData(
+      points, static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(xarr)),
+      static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(yarr)),
+      static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(zarr)), Embedding2D));
+  }
 
-    output->ShallowCopy(inputDataSet);
-    output->SetPoints(points);
+  output->ShallowCopy(inputDataSet);
+  output->SetPoints(points);
 
   return 1;
 }

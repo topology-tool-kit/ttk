@@ -23,13 +23,13 @@
 #include <ttkAlgorithm.h>
 
 class TTKIMPORTEMBEDDINGFROMTABLE_EXPORT ttkImportEmbeddingFromTable
-  : public ttkAlgorithm{
+  : public ttkAlgorithm {
 
 public:
   static ttkImportEmbeddingFromTable *New();
   vtkTypeMacro(ttkImportEmbeddingFromTable, ttkAlgorithm)
 
-  vtkSetMacro(XColumn, std::string);
+    vtkSetMacro(XColumn, std::string);
   vtkGetMacro(XColumn, std::string);
 
   vtkSetMacro(YColumn, std::string);
@@ -43,7 +43,7 @@ public:
 
 protected:
   ttkImportEmbeddingFromTable() {
-      this->setDebugMsgPrefix("ttkImportEmbeddingFromTable");
+    this->setDebugMsgPrefix("ttkImportEmbeddingFromTable");
     SetNumberOfInputPorts(2);
     SetNumberOfOutputPorts(1);
   }
@@ -54,8 +54,8 @@ protected:
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;
 
-    int FillInputPortInformation(int port, vtkInformation *info) override;
-    int FillOutputPortInformation(int port, vtkInformation *info) override;
+  int FillInputPortInformation(int port, vtkInformation *info) override;
+  int FillOutputPortInformation(int port, vtkInformation *info) override;
 
 private:
   std::string XColumn;
