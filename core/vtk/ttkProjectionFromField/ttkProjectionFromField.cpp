@@ -68,12 +68,16 @@ int ttkProjectionFromField::RequestData(vtkInformation *request,
 
     printMsg("Starting computation with texture coordinates...");
   } else {
+
     inputScalarFieldU = this->GetInputArrayToProcess(0, inputVector);
+    inputScalarFieldV = this->GetInputArrayToProcess(1, inputVector);
+
     if(!inputScalarFieldU)
       return -1;
-    inputScalarFieldV = this->GetInputArrayToProcess(1, inputVector);
+
     if(!inputScalarFieldV)
       return -2;
+
     printMsg("Starting computation...");
     printMsg({{"  U-component", inputScalarFieldU->GetName()},
               {"  V-component", inputScalarFieldV->GetName()}});
