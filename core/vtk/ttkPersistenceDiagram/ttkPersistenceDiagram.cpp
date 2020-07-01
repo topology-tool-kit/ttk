@@ -49,6 +49,7 @@ int ttkPersistenceDiagram::deleteDiagram() {
 
 template <typename VTK_TT, typename TTK_TT>
 int ttkPersistenceDiagram::dispatch(vtkUnstructuredGrid *outputCTPersistenceDiagram,
+                                  vtkDataArray *inputScalarDataArray,
                                   const VTK_TT *inputScalars,
                                   int inputOffsetsDataType,
                                   const void *inputOffsets,
@@ -91,9 +92,9 @@ int ttkPersistenceDiagram::dispatch(vtkUnstructuredGrid *outputCTPersistenceDiag
 
   if(ShowInsideDomain)
     ret = getPersistenceDiagramInsideDomain<VTK_TT>(outputCTPersistenceDiagram,
-      ftm::TreeType::Contour, *CTDiagram, inputScalars, triangulation);
+      ftm::TreeType::Contour, *CTDiagram, inputScalarDataArray, triangulation);
   else
-    ret = getPersistenceDiagram<VTK_TT>(outputCTPersistenceDiagram, ftm::TreeType::Contour, *CTDiagram, inputScalars, triangulation);
+    ret = getPersistenceDiagram<VTK_TT>(outputCTPersistenceDiagram, ftm::TreeType::Contour, *CTDiagram, inputScalarDataArray, triangulation);
 #ifndef TTK_ENABLE_KAMIKAZE
   if(ret) {
     this->printErr("Build of contour tree persistence diagram has failed.");
@@ -178,7 +179,7 @@ int ttkPersistenceDiagram::RequestData(vtkInformation *request,
   ttkVtkTemplateMacro(
     inputScalars->GetDataType(), triangulation->getType(), 
     (status = this->dispatch<VTK_TT, TTK_TT>(
-       outputCTPersistenceDiagram, 
+       outputCTPersistenceDiagram, inputScalars,
        (VTK_TT *)ttkUtils::GetVoidPointer(inputScalars),
        offsetField->GetDataType(), ttkUtils::GetVoidPointer(offsetField),
        (TTK_TT *)(triangulation->getData()))))

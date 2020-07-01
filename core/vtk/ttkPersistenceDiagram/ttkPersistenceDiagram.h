@@ -108,7 +108,7 @@ public:
                                  scalarType,
                                  ttk::SimplexId>> &diagram,
     vtkSmartPointer<vtkPoints> points,
-    vtkIdType ids[3], const scalarType *inputScalars,
+    vtkIdType ids[3], vtkDataArray *inputScalars,
   const triangulationType *triangulation);
 
   template <typename scalarType, class triangulationType>
@@ -120,7 +120,7 @@ public:
                                  ttk::SimplexId,
                                  ttk::CriticalType,
                                  scalarType,
-                                 ttk::SimplexId>> &diagram, const scalarType *inputScalars,
+                                 ttk::SimplexId>> &diagram, vtkDataArray *inputScalars,
   const triangulationType *triangulation);
 
   template <typename scalarType, class triangulationType>
@@ -137,7 +137,7 @@ public:
                                  scalarType,
                                  ttk::SimplexId>> &diagram,
     vtkSmartPointer<vtkPoints> points,
-    vtkIdType ids[3],const scalarType *inputScalars,
+    vtkIdType ids[3], vtkDataArray *inputScalars,
   const triangulationType *triangulation);
 
   template <typename scalarType, class triangulationType>
@@ -149,11 +149,12 @@ public:
                                  ttk::SimplexId,
                                  ttk::CriticalType,
                                  scalarType,
-                                 ttk::SimplexId>> &diagram, const scalarType *inputScalars,
+                                 ttk::SimplexId>> &diagram, vtkDataArray *inputScalars,
   const triangulationType *triangulation);
 
   template <typename VTK_TT, typename TTK_TT>
   int dispatch(vtkUnstructuredGrid *outputCTPersistenceDiagram,
+                                  vtkDataArray *inputScalarDataArray,
                                   const VTK_TT *inputScalars,
                                   int inputOffsetsDataType,
                                   const void *inputOffsets,
@@ -240,7 +241,7 @@ int ttkPersistenceDiagram::getPersistenceDiagram(
                                ttk::CriticalType,
                                scalarType,
                                ttk::SimplexId>> &diagram,
-                               const scalarType *inputScalars,
+                               vtkDataArray *inputScalars,
   const triangulationType *triangulation) {
   vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
 
@@ -354,7 +355,7 @@ int ttkPersistenceDiagram::setPersistenceDiagramInfoInsideDomain(
                                scalarType,
                                ttk::SimplexId>> &diagram,
   vtkSmartPointer<vtkPoints> points,
-  vtkIdType ids[3], const scalarType *inputScalars,
+  vtkIdType ids[3], vtkDataArray *inputScalars,
   const triangulationType *triangulation) {
   float p[3];
   const ttk::SimplexId a = std::get<0>(diagram[id]);
@@ -393,7 +394,7 @@ int ttkPersistenceDiagram::getPersistenceDiagramInsideDomain(
                                ttk::SimplexId,
                                ttk::CriticalType,
                                scalarType,
-                               ttk::SimplexId>> &diagram, const scalarType *inputScalars,
+                               ttk::SimplexId>> &diagram, vtkDataArray *inputScalars,
   const triangulationType *triangulation) {
   vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
 
