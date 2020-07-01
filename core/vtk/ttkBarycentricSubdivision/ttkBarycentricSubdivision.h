@@ -25,45 +25,29 @@
 
 // TTK code includes
 #include <BarycentricSubdivision.h>
-#include <ttkTriangulationAlgorithm.h>
+#include <ttkAlgorithm.h>
+
+class vtkUnstructuredGrid;
 
 class TTKBARYCENTRICSUBDIVISION_EXPORT ttkBarycentricSubdivision
-  : public vtkDataSetAlgorithm,
-    protected ttk::Wrapper {
+  : public ttkAlgorithm,
+    protected ttk::BarycentricSubdivision {
 
 public:
   static ttkBarycentricSubdivision *New();
-  vtkTypeMacro(ttkBarycentricSubdivision, vtkDataSetAlgorithm);
-
-  // default ttk setters
-  void SetDebugLevel(int debugLevel) {
-    setDebugLevel(debugLevel);
-    Modified();
-  }
   vtkGetMacro(SubdivisionLevel, unsigned int);
   vtkSetMacro(SubdivisionLevel, unsigned int);
 
-  void SetThreadNumber(int threadNumber) {
-    ThreadNumber = threadNumber;
-    SetThreads();
-  }
-  void SetUseAllCores(bool onOff) {
-    UseAllCores = onOff;
-    SetThreads();
-  }
-
-  int FillInputPortInformation(int /*port*/, vtkInformation *info) override {
-    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
-    return 1;
-  }
+  vtkTypeMacro(ttkBarycentricSubdivision, ttkAlgorithm);
 
 protected:
-  ttkBarycentricSubdivision() {
-    SetNumberOfInputPorts(1);
-    SetNumberOfOutputPorts(1);
-  }
+  ttkBarycentricSubdivision();
 
-  TTK_SETUP();
+  int FillInputPortInformation(int port, vtkInformation *info) override;
+  int FillOutputPortInformation(int port, vtkInformation *info) override;
+  int RequestData(vtkInformation *request,
+                  vtkInformationVector **inputVector,
+                  vtkInformationVector *outputVector) override;
 
   /**
    * @brief Allocate an output array of same type that input array
@@ -72,26 +56,13 @@ protected:
     AllocateScalarField(vtkDataArray *const inputScalarField,
                         int ntuples) const;
 
-  int InterpolateScalarFields(vtkUnstructuredGrid *const input,
-                              vtkUnstructuredGrid *const output) const;
+  int InterpolateScalarFields(
+    vtkDataSet *const input,
+    vtkUnstructuredGrid *const output,
+    ttk::Triangulation &inputTriangulation,
+    ttk::ExplicitTriangulation &outputTriangulation) const;
 
 private:
   // number of subdivisions
   unsigned int SubdivisionLevel{1};
-
-  // output 3D coordinates of generated points: old points first, then edge
-  // middles, then triangle barycenters
-  std::vector<float> points_{};
-  // output triangles
-  std::vector<ttk::LongSimplexId> cells_connectivity_;
-  std::vector<ttk::LongSimplexId> cells_offsets_;
-  // generated point cell id
-  std::vector<ttk::SimplexId> pointId_{};
-  // generated points dimension: 0 vertex of parent triangulation, 1 edge
-  // middle, 2 triangle barycenter
-  std::vector<ttk::SimplexId> pointDim_{};
-
-  // base worker
-  ttk::BarycentricSubdivision baseWorker_{
-    points_, cells_connectivity_, cells_offsets_, pointId_, pointDim_};
 };

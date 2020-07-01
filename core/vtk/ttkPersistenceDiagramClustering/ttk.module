@@ -5,5 +5,5 @@ SOURCES
 HEADERS
   ttkPersistenceDiagramClustering.h
 DEPENDS
+  ttkAlgorithm
   persistenceDiagramClustering
-  ttkTriangulationAlgorithm

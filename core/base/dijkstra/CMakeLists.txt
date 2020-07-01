@@ -1,6 +1,4 @@
-ttk_add_base_library(dijkstra
-  SOURCES
-    Dijkstra.cpp
+ttk_add_base_template_library(dijkstra
   HEADERS
     Dijkstra.h
   DEPENDS

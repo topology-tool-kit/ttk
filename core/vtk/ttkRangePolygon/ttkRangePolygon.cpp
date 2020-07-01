@@ -123,7 +123,7 @@ int ttkRangePolygon::processTriangles(vtkUnstructuredGrid *input,
     smoother.setDimensionNumber(3);
     smoother.setInputDataPointer(output->GetPoints()->GetVoidPointer(0));
     smoother.setOutputDataPointer(output->GetPoints()->GetVoidPointer(0));
-    smoother.setupTriangulation(triangulation);
+    smoother.preconditionTriangulation(triangulation);
 
     switch(output->GetPoints()->GetDataType()) {
       vtkTemplateMacro(
@@ -140,7 +140,7 @@ int ttkRangePolygon::processTriangles(vtkUnstructuredGrid *input,
       smoother.setInputDataPointer(field->GetVoidPointer(0));
 
       smoother.setOutputDataPointer(field->GetVoidPointer(0));
-      smoother.setupTriangulation(triangulation);
+      smoother.preconditionTriangulation(triangulation);
 
       switch(field->GetDataType()) {
         vtkTemplateMacro(

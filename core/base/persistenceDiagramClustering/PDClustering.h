@@ -30,7 +30,7 @@ using namespace ttk;
 
 namespace ttk {
   template <typename dataType>
-  class PDClustering : public Debug {
+  class PDClustering : virtual public Debug {
 
   public:
     PDClustering() {
@@ -52,6 +52,7 @@ namespace ttk {
       cost_sad_ = 0;
       UseDeltaLim_ = false;
       distanceWritingOptions_ = 0;
+      this->setDebugMsgPrefix("PersistenceDiagramClustering");
     };
 
     ~PDClustering(){};
@@ -109,7 +110,8 @@ namespace ttk {
       std::vector<std::vector<dataType>> initial_diagonal_prices,
       std::vector<std::vector<dataType>> initial_off_diagonal_points,
       std::vector<int> min_points_to_add,
-      bool add_points_to_barycenter);
+      bool add_points_to_barycenter,
+      bool first_enrichment);
 
     std::vector<std::vector<dataType>> getDistanceMatrix();
     void getCentroidDistanceMatrix();
@@ -222,18 +224,22 @@ namespace ttk {
     }
 
     inline void printClustering() {
-      std::stringstream msg;
+      std::string msg = "";
       for(int c = 0; c < k_; ++c) {
-        msg << "[PersistenceDiagramClustering] Cluster " << c << " = {";
+        msg.append(" Cluster " + std::to_string(c) + " = {");
         for(unsigned int idx = 0; idx < clustering_[c].size(); ++idx) {
           if(idx == clustering_[c].size() - 1) {
-            msg << clustering_[c][idx] << "}" << std::endl;
+            msg.append(std::to_string(clustering_[c][idx]) + "}");
+            this->printMsg(msg);
+            msg = "";
+            // msg << clustering_[c][idx] << "}" << std::endl;
           } else {
-            msg << clustering_[c][idx] << ", ";
+            msg.append(std::to_string(clustering_[c][idx]) + ", ");
+            // msg << clustering_[c][idx] << ", ";
           }
         }
       }
-      dMsg(std::cout, msg.str(), infoMsg);
+      // cout<<msg.str()<<endl;
     }
 
     inline void printOldClustering() {
@@ -248,7 +254,7 @@ namespace ttk {
           }
         }
       }
-      dMsg(std::cout, msg.str(), infoMsg);
+      this->printMsg(msg.str());
     }
 
     template <typename type>

@@ -15,8 +15,7 @@
 ///
 /// \sa PersistenceDiagramClustering
 
-#ifndef _TTK_PERSISTENCEDIAGRAMSCLUSTERING_H
-#define _TTK_PERSISTENCEDIAGRAMSCLUSTERING_H
+#pragma once
 
 #ifndef diagramTuple
 #define diagramTuple                                                       \
@@ -53,65 +52,65 @@
 #include <ttkPersistenceDiagramClusteringModule.h>
 
 // ttk code includes
+#include <PersistenceDiagramBarycenter.h>
 #include <PersistenceDiagramClustering.h>
 //
-#include <PersistenceDiagramBarycenter.h>
 //
-#include <ttkTriangulationAlgorithm.h>
+#include <ttkAlgorithm.h>
 
 // in this example, this wrapper takes a data-set on the input and produces a
 // data-set on the output - to adapt.
 // see the documentation of the vtkAlgorithm class to decide from which VTK
 // class your wrapper should inherit.
 class TTKPERSISTENCEDIAGRAMCLUSTERING_EXPORT ttkPersistenceDiagramClustering
-  : public vtkMultiBlockDataSetAlgorithm,
-    protected ttk::Wrapper {
+  : public ttkAlgorithm,
+    protected ttk::PersistenceDiagramClustering {
 
 public:
-  void setNumberOfInputsFromCommandLine(int number) {
-    numberOfInputsFromCommandLine = number;
-    SetNumberOfInputPorts(number);
-  }
+  // void setNumberOfInputsFromCommandLine(int number) {
+  //   numberOfInputsFromCommandLine = number;
+  //   SetNumberOfInputPorts(number);
+  // }
   static ttkPersistenceDiagramClustering *New();
 
-  vtkTypeMacro(ttkPersistenceDiagramClustering, vtkMultiBlockDataSetAlgorithm);
+  vtkTypeMacro(ttkPersistenceDiagramClustering, ttkAlgorithm);
 
   // default ttk setters
-  void SetDebugLevel(int debugLevel) {
-    setDebugLevel(debugLevel);
-    Modified();
-    needUpdate_ = true;
-  }
+  // void SetDebugLevel(int debugLevel) {
+  //   setDebugLevel(debugLevel);
+  //   Modified();
+  //   needUpdate_ = true;
+  // }
 
-  void SetThreads() {
-    if(!UseAllCores)
-      threadNumber_ = ThreadNumber;
-    else {
-      threadNumber_ = ttk::OsCall::getNumberOfCores();
-    }
-    Modified();
-    needUpdate_ = true;
-  }
+  // void SetThreads() {
+  //   if(!UseAllCores)
+  //     threadNumber_ = ThreadNumber;
+  //   else {
+  //     threadNumber_ = ttk::OsCall::getNumberOfCores();
+  //   }
+  //   Modified();
+  //   needUpdate_ = true;
+  // }
 
   /*void SetThreadNumber(int threadNumber){
     ThreadNumber = threadNumber;
     SetThreads();
   }*/
 
-  void SetUseAllCores(bool onOff) {
-    UseAllCores = onOff;
-    SetThreads();
-  }
-  // end of default ttk setters
+  // void SetUseAllCores(bool onOff) {
+  //   UseAllCores = onOff;
+  //   SetThreads();
+  // }
+  // // end of default ttk setters
 
   // set-getters macros to define from each variable you want to access from
   // the outside (in particular from paraview) - to adapt.
 
-  vtkSetMacro(ScalarField, std::string);
-  vtkGetMacro(ScalarField, std::string);
+  // vtkSetMacro(ScalarField, std::string);
+  // vtkGetMacro(ScalarField, std::string);
 
-  vtkSetMacro(WassersteinMetric, std::string);
-  vtkGetMacro(WassersteinMetric, std::string);
+  vtkSetMacro(WassersteinMetric, int);
+  vtkGetMacro(WassersteinMetric, int);
 
   void SetUseProgressive(int data) {
     UseProgressive = data;
@@ -127,15 +126,12 @@ public:
   }
   vtkGetMacro(TimeLimit, double);
 
-  vtkSetMacro(UseOutputMatching, int);
-  vtkGetMacro(UseOutputMatching, int);
-
-  void SetThreadNumber(int data) {
-    ThreadNumber = data;
-    Modified();
-    needUpdate_ = true;
-  }
-  vtkGetMacro(ThreadNumber, int);
+  // void SetThreadNumber(int data) {
+  //   ThreadNumber = data;
+  //   Modified();
+  //   needUpdate_ = true;
+  // }
+  // vtkGetMacro(ThreadNumber, int);
 
   void SetAlpha(double data) {
     if(data > 0 && data <= 1) {
@@ -298,53 +294,27 @@ private:
   std::vector<std::vector<diagramType>> intermediateDiagrams_{};
   std::vector<std::vector<std::vector<matchingType>>> all_matchings_{};
   std::vector<std::vector<diagramType>> final_centroids_{};
-
   std::vector<int> inv_clustering_{};
 
   // vtkUnstructuredGrid* output_clusters_;
   // vtkUnstructuredGrid* output_centroids_;
 
-  int numberOfInputsFromCommandLine{1};
-  int PairTypeClustering{-1};
-  bool ForceUseOfAlgorithm{false};
-  bool Deterministic{true};
-  bool UseAllCores{false};
-  int ThreadNumber{1};
-  bool UseOutputMatching{true};
-  bool UseAdditionalPrecision{false};
-  int DistanceWritingOptions{0};
-  double Alpha{1.0};
-  double DeltaLim{0.01};
-  double Lambda{1.0};
   double Spacing{1.0};
-  double oldSpacing{1.0};
   int DisplayMethod{0};
-  bool UseInterruptible{true};
-  int Method{0}; // 0 = progressive approach, 1 = Auction approach
-  double max_dimension_total_{};
+  double oldSpacing{1.0};
 
+  double max_dimension_total_{};
+  int Method{0}; // 0 = progressive approach, 1 = Auction approach
   bool needUpdate_{true};
 
-  int NumberOfClusters{1};
-  bool UseAccelerated{false};
-  bool UseKmeansppInit{false};
-
-  std::string ScalarField{};
-  std::string WassersteinMetric{"2"};
-
-  bool UseProgressive{true};
-  double TimeLimit{9999999};
-
   // base code features
-  int doIt(const std::vector<vtkUnstructuredGrid *> &input,
-           vtkUnstructuredGrid *outputClusters,
-           vtkUnstructuredGrid *outputCentroids,
-           vtkUnstructuredGrid *outputMatchings,
-           int numInputs);
+  // int doIt(const std::vector<vtkUnstructuredGrid *> &input,
+  //          vtkUnstructuredGrid *outputClusters,
+  //          vtkUnstructuredGrid *outputCentroids,
+  //          vtkUnstructuredGrid *outputMatchings,
+  //          int numInputs);
 
-  bool needsToAbort() override;
+  // bool needsToAbort() override;
 
-  int updateProgress(const float &progress) override;
+  // int updateProgress(const float &progress) override;
 };
-
-#endif // _TTK_PERSISTENCEDIAGRAMSCLUSTERING_H

@@ -43,6 +43,7 @@ namespace ttk {
       deterministic_ = false;
       epsilon_decreases_ = true;
       early_stoppage_ = true;
+      this->setDebugMsgPrefix("PersistenceDiagramBarycenter");
     };
 
     ~PDBarycenter(){};
