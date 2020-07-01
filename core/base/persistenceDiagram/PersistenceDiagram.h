@@ -86,6 +86,12 @@ namespace ttk {
       const idType *inputOffsets,
       const triangulationType *triangulation) const;
 
+    inline int
+      setDMTPairs(std::vector<std::tuple<dcg::Cell, dcg::Cell>> *data) {
+      dmt_pairs = data;
+      return 0;
+    }
+
     inline int preconditionTriangulation(Triangulation *triangulation) {
       if(triangulation) {
         ftm::FTMTreePP contourTree;
@@ -108,6 +114,8 @@ namespace ttk {
     }
 
   protected:
+    std::vector<std::tuple<dcg::Cell, dcg::Cell>> *dmt_pairs;
+    
     bool ComputeSaddleConnectors{false};
 
     // TODO: Remove when FTM and MSC are migrated
@@ -276,7 +284,7 @@ int ttk::PersistenceDiagram::execute(std::vector<std::tuple<ttk::SimplexId, ttk:
 
   // get persistence diagrams
   computeCTPersistenceDiagram<scalarType>(
-    contourTree, CTPairs, CTDiagram, scalars);
+    contourTree, CTPairs, CTDiagram, inputScalars);
 
   // add saddle-saddle pairs to the diagram if needed
   if(dimensionality == 3 and ComputeSaddleConnectors) {
@@ -301,7 +309,7 @@ int ttk::PersistenceDiagram::execute(std::vector<std::tuple<ttk::SimplexId, ttk:
   }
 
   // finally sort the diagram
-  sortPersistenceDiagram(CTDiagram, scalars, offsets);
+  sortPersistenceDiagram(CTDiagram, inputScalars, inputOffsets);
 
   printMsg(
     "Base execution completed", 1, timer.getElapsedTime(), threadNumber_);

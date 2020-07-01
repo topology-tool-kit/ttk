@@ -66,6 +66,8 @@
 // ttk code includes
 #include <PersistenceDiagram.h>
 #include <ttkAlgorithm.h>
+#include <ttkMacros.h>
+#include <ttkUtils.h>
 
 class TTKPERSISTENCEDIAGRAM_EXPORT ttkPersistenceDiagram
   : public ttkAlgorithm,
@@ -155,6 +157,9 @@ public:
                                   int inputOffsetsDataType,
                                   const void *inputOffsets,
                                   const TTK_TT *triangulation);
+
+  template <typename VTK_TT>
+  int deleteDiagram();
   
 protected:
   ttkPersistenceDiagram();
@@ -173,8 +178,8 @@ private:
   int ShowInsideDomain{false};
   
   bool computeDiagram_{true};
-  std::vector<std::tuple<ttk::SimplexId, ttk::CriticalType, ttk::SimplexId,
-      ttk::CriticalType, scalarType, ttk::SimplexId>> CTDiagram_{};
+  void *CTDiagram_{nullptr};
+  int scalarDataType{0};
 };
 
 template <typename scalarType>
