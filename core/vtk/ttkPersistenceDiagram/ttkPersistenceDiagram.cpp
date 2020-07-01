@@ -91,9 +91,9 @@ int ttkPersistenceCurve::dispatch(vtkUnstructuredGrid *outputCTPersistenceDiagra
 
   if(ShowInsideDomain)
     ret = getPersistenceDiagramInsideDomain<VTK_TT>(
-      ftm::TreeType::Contour, CTDiagram_);
+      ftm::TreeType::Contour, CTDiagram_, inputScalars, triangulation);
   else
-    ret = getPersistenceDiagram<VTK_TT>(ftm::TreeType::Contour, CTDiagram_);
+    ret = getPersistenceDiagram<VTK_TT>(ftm::TreeType::Contour, CTDiagram_, inputScalars, triangulation);
 #ifndef TTK_ENABLE_KAMIKAZE
   if(ret) {
     this->printErr("Build of contour tree persistence diagram has failed.");
@@ -171,7 +171,7 @@ int ttkPersistenceDiagram::RequestData(vtkInformation *request,
 
   vector<tuple<Cell, Cell>> dmt_pairs;
   setDMTPairs(&dmt_pairs);
-  
+
   int status = 0;
   ttkVtkTemplateMacro(
     inputScalars->GetDataType(), triangulation->getType(), 
