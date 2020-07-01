@@ -18,6 +18,8 @@
 #include <DiscreteGradient.h>
 #include <Triangulation.h>
 
+#include <queue>
+
 namespace ttk {
 
   /**
@@ -196,11 +198,13 @@ namespace ttk {
      * mesh traversal queries.
      */
     inline int setupTriangulation(Triangulation *const data) {
-      inputTriangulation_ = data;
-      discreteGradient_.preconditionTriangulation(inputTriangulation_);
+      // TODO
+      discreteGradient_.preconditionTriangulation(data);
 
-      inputTriangulation_->preconditionCellEdges();
-      inputTriangulation_->preconditionCellNeighbors();
+      data->preconditionCellEdges();
+      data->preconditionCellNeighbors();
+
+      inputTriangulation_ = data;
       return 0;
     }
 
@@ -351,10 +355,12 @@ namespace ttk {
      * Compute the descending 1-separatrices by reading into the discrete
      * gradient.
      */
+    template <typename triangulationType>
     int getDescendingSeparatrices1(
       const std::vector<dcg::Cell> &criticalPoints,
       std::vector<Separatrix> &separatrices,
-      std::vector<std::vector<dcg::Cell>> &separatricesGeometry) const;
+      std::vector<std::vector<dcg::Cell>> &separatricesGeometry,
+      const triangulationType &triangulation) const;
 
     /**
      * Compute the geometrical embedding of the 1-separatrices. This
@@ -365,35 +371,42 @@ namespace ttk {
      * outputSeparatrices1_cells_
      * inputScalarField_
      */
-    template <typename dataType>
+    template <typename dataType, typename triangulationType>
     int setSeparatrices1(
       const std::vector<Separatrix> &separatrices,
-      const std::vector<std::vector<dcg::Cell>> &separatricesGeometry) const;
+      const std::vector<std::vector<dcg::Cell>> &separatricesGeometry,
+      const triangulationType &triangulation) const;
 
     /**
      * Compute the ascending manifold of the maxima.
      */
+    template <typename triangulationType>
     int setAscendingSegmentation(const std::vector<dcg::Cell> &criticalPoints,
                                  std::vector<SimplexId> &maxSeeds,
                                  SimplexId *const morseSmaleManifold,
-                                 SimplexId &numberOfMaxima) const;
+                                 SimplexId &numberOfMaxima,
+                                 const triangulationType &triangulation) const;
 
     /**
      * Compute the descending manifold of the minima.
      */
+    template <typename triangulationType>
     int setDescendingSegmentation(const std::vector<dcg::Cell> &criticalPoints,
                                   SimplexId *const morseSmaleManifold,
-                                  SimplexId &numberOfMinima) const;
+                                  SimplexId &numberOfMinima,
+                                  const triangulationType &triangulation) const;
 
     /**
      * Compute the final combinatorial Morse-Smale complex
      * segmentation.
      */
+    template <typename triangulationType>
     int setFinalSegmentation(const SimplexId numberOfMaxima,
                              const SimplexId numberOfMinima,
                              const SimplexId *const ascendingManifold,
                              const SimplexId *const descendingManifold,
-                             SimplexId *const morseSmaleManifold) const;
+                             SimplexId *const morseSmaleManifold,
+                             const triangulationType &triangulation) const;
 
   protected:
     bool ReverveSaddleMaximumConnection{false};
@@ -455,10 +468,73 @@ namespace ttk {
   };
 } // namespace ttk
 
-template <typename dataType>
+template <typename triangulationType>
+int ttk::AbstractMorseSmaleComplex::getDescendingSeparatrices1(
+  const std::vector<Cell> &criticalPoints,
+  std::vector<Separatrix> &separatrices,
+  std::vector<std::vector<Cell>> &separatricesGeometry,
+  const triangulationType &triangulation) const {
+
+  std::vector<SimplexId> saddleIndexes;
+  const SimplexId numberOfCriticalPoints = criticalPoints.size();
+  for(SimplexId i = 0; i < numberOfCriticalPoints; ++i) {
+    const Cell &criticalPoint = criticalPoints[i];
+
+    if(criticalPoint.dim_ == 1)
+      saddleIndexes.push_back(i);
+  }
+  const SimplexId numberOfSaddles = saddleIndexes.size();
+
+  // estimation of the number of separatrices, apriori :
+  // numberOfAscendingPaths=2, numberOfDescendingPaths=2
+  const SimplexId numberOfSeparatrices = 4 * numberOfSaddles;
+  separatrices.resize(numberOfSeparatrices);
+  separatricesGeometry.resize(numberOfSeparatrices);
+
+  // apriori: by default construction, the separatrices are not valid
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif
+  for(SimplexId i = 0; i < numberOfSaddles; ++i) {
+    const SimplexId saddleIndex = saddleIndexes[i];
+    const Cell &saddle = criticalPoints[saddleIndex];
+
+    // add descending vpaths
+    {
+      const Cell &saddle1 = saddle;
+
+      for(int j = 0; j < 2; ++j) {
+        const int shift = j + 2;
+
+        SimplexId vertexId;
+        triangulation.getEdgeVertex(saddle1.id_, j, vertexId);
+
+        std::vector<Cell> vpath;
+        vpath.push_back(saddle1);
+        discreteGradient_.getDescendingPath(
+          Cell(0, vertexId), vpath, triangulation);
+
+        const Cell &lastCell = vpath.back();
+        if(lastCell.dim_ == 0 and discreteGradient_.isCellCritical(lastCell)) {
+          const SimplexId separatrixIndex = 4 * i + shift;
+
+          separatricesGeometry[separatrixIndex] = std::move(vpath);
+          separatrices[separatrixIndex]
+            = Separatrix(true, saddle, lastCell, false, separatrixIndex);
+        }
+      }
+    }
+  }
+
+  return 0;
+}
+
+template <typename dataType, typename triangulationType>
 int ttk::AbstractMorseSmaleComplex::setSeparatrices1(
   const std::vector<Separatrix> &separatrices,
-  const std::vector<std::vector<dcg::Cell>> &separatricesGeometry) const {
+  const std::vector<std::vector<dcg::Cell>> &separatricesGeometry,
+  const triangulationType &triangulation) const {
+
 #ifndef TTK_ENABLE_KAMIKAZE
   if(outputSeparatrices1_numberOfPoints_ == nullptr) {
     this->printErr("1-separatrices pointer to numberOfPoints is null.");
@@ -530,7 +606,7 @@ int ttk::AbstractMorseSmaleComplex::setSeparatrices1(
     }
   }
 
-  const int dimensionality = inputTriangulation_->getCellVertexNumber(0) - 1;
+  const int dimensionality = triangulation.getCellVertexNumber(0) - 1;
 
   // resize arrays
   outputSeparatrices1_points_->resize(3 * npoints);
@@ -579,28 +655,28 @@ int ttk::AbstractMorseSmaleComplex::setSeparatrices1(
       = saddleConnector ? 1 : std::min(dst.dim_, dimensionality - 1);
 
     // compute separatrix function diff
-    const auto sepFuncMax = std::max(
-      discreteGradient_.scalarMax(src, scalars, *inputTriangulation_),
-      discreteGradient_.scalarMax(dst, scalars, *inputTriangulation_));
-    const auto sepFuncMin = std::min(
-      discreteGradient_.scalarMin(src, scalars, *inputTriangulation_),
-      discreteGradient_.scalarMin(dst, scalars, *inputTriangulation_));
+    const auto sepFuncMax
+      = std::max(discreteGradient_.scalarMax(src, scalars, triangulation),
+                 discreteGradient_.scalarMax(dst, scalars, triangulation));
+    const auto sepFuncMin
+      = std::min(discreteGradient_.scalarMin(src, scalars, triangulation),
+                 discreteGradient_.scalarMin(dst, scalars, triangulation));
     const auto sepFuncDiff = sepFuncMax - sepFuncMin;
 
     // get boundary condition
     const auto onBoundary
-      = saddleConnector ? static_cast<char>(
-          discreteGradient_.isBoundary(src, *inputTriangulation_)
-          && discreteGradient_.isBoundary(dst, *inputTriangulation_))
-                        : static_cast<char>(discreteGradient_.isBoundary(
-                            src, *inputTriangulation_))
-                            + static_cast<char>(discreteGradient_.isBoundary(
-                              dst, *inputTriangulation_));
+      = saddleConnector
+          ? static_cast<char>(
+            discreteGradient_.isBoundary(src, triangulation)
+            && discreteGradient_.isBoundary(dst, triangulation))
+          : static_cast<char>(discreteGradient_.isBoundary(src, triangulation))
+              + static_cast<char>(
+                discreteGradient_.isBoundary(dst, triangulation));
 
     for(size_t j = 0; j < sepGeom.size(); ++j) {
       const auto &cell = sepGeom[j];
       std::array<float, 3> pt{};
-      inputTriangulation_->getCellIncenter(cell.id_, cell.dim_, pt.data());
+      triangulation.getCellIncenter(cell.id_, cell.dim_, pt.data());
 
       // index of current point in point data arrays
       const auto k = geomPointsBegId[i] + j;
@@ -650,6 +726,224 @@ int ttk::AbstractMorseSmaleComplex::setSeparatrices1(
   // update pointers
   *outputSeparatrices1_numberOfPoints_ = npoints;
   *outputSeparatrices1_numberOfCells_ = ncells;
+
+  return 0;
+}
+
+template <typename triangulationType>
+int ttk::AbstractMorseSmaleComplex::setAscendingSegmentation(
+  const std::vector<Cell> &criticalPoints,
+  std::vector<SimplexId> &maxSeeds,
+  SimplexId *const morseSmaleManifold,
+  SimplexId &numberOfMaxima,
+  const triangulationType &triangulation) const {
+
+  const SimplexId numberOfVertices = triangulation.getNumberOfVertices();
+  std::fill(morseSmaleManifold, morseSmaleManifold + numberOfVertices, -1);
+
+  const SimplexId numberOfCells = triangulation.getNumberOfCells();
+  std::vector<SimplexId> morseSmaleManifoldOnCells(numberOfCells, -1);
+  const int cellDim = triangulation.getDimensionality();
+
+  // get the seeds : maxima
+  const SimplexId numberOfCriticalPoints = criticalPoints.size();
+  for(SimplexId i = 0; i < numberOfCriticalPoints; ++i) {
+    const Cell &criticalPoint = criticalPoints[i];
+
+    if(criticalPoint.dim_ == cellDim)
+      maxSeeds.push_back(criticalPoint.id_);
+  }
+  const SimplexId numberOfSeeds = maxSeeds.size();
+  numberOfMaxima = numberOfSeeds;
+
+  // Triangulation method pointers for 3D
+  auto getCellFace = &triangulationType::getCellTriangle;
+  auto getFaceStarNumber = &triangulationType::getTriangleStarNumber;
+  auto getFaceStar = &triangulationType::getTriangleStar;
+  if(cellDim == 2) {
+    // Triangulation method pointers for 2D
+    getCellFace = &triangulationType::getCellEdge;
+    getFaceStarNumber = &triangulationType::getEdgeStarNumber;
+    getFaceStar = &triangulationType::getEdgeStar;
+  }
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_) schedule(dynamic)
+#endif
+  for(SimplexId i = 0; i < numberOfSeeds; ++i) {
+    std::queue<SimplexId> bfs;
+
+    // push the seed
+    {
+      const SimplexId seedId = maxSeeds[i];
+      bfs.push(seedId);
+    }
+
+    // BFS traversal
+    while(!bfs.empty()) {
+      const SimplexId cofacetId = bfs.front();
+      bfs.pop();
+
+      if(morseSmaleManifoldOnCells[cofacetId] == -1) {
+        morseSmaleManifoldOnCells[cofacetId] = i;
+
+        for(int j = 0; j < (cellDim + 1); ++j) {
+          SimplexId facetId = -1;
+          (triangulation.*getCellFace)(cofacetId, j, facetId);
+
+          SimplexId starNumber = (triangulation.*getFaceStarNumber)(facetId);
+          for(SimplexId k = 0; k < starNumber; ++k) {
+            SimplexId neighborId = -1;
+            (triangulation.*getFaceStar)(facetId, k, neighborId);
+
+            if(neighborId == cofacetId) {
+              continue;
+            }
+
+            const SimplexId pairedCellId = discreteGradient_.getPairedCell(
+              Cell(cellDim, neighborId), triangulation, true);
+
+            if(pairedCellId == facetId)
+              bfs.push(neighborId);
+          }
+        }
+      }
+    }
+  }
+
+  // put segmentation infos from cells to points
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif
+  for(SimplexId i = 0; i < numberOfVertices; ++i) {
+    SimplexId starId;
+    triangulation.getVertexStar(i, 0, starId);
+    morseSmaleManifold[i] = morseSmaleManifoldOnCells[starId];
+  }
+
+  return 0;
+}
+
+template <typename triangulationType>
+int ttk::AbstractMorseSmaleComplex::setDescendingSegmentation(
+  const std::vector<Cell> &criticalPoints,
+  SimplexId *const morseSmaleManifold,
+  SimplexId &numberOfMinima,
+  const triangulationType &triangulation) const {
+
+  const SimplexId numberOfVertices = triangulation.getNumberOfVertices();
+  std::fill(morseSmaleManifold, morseSmaleManifold + numberOfVertices, -1);
+
+  // get the seeds : minima
+  std::vector<SimplexId> seeds;
+  const SimplexId numberOfCriticalPoints = criticalPoints.size();
+  for(SimplexId i = 0; i < numberOfCriticalPoints; ++i) {
+    const Cell &criticalPoint = criticalPoints[i];
+
+    if(criticalPoint.dim_ == 0)
+      seeds.push_back(criticalPoint.id_);
+  }
+  const SimplexId numberOfSeeds = seeds.size();
+  numberOfMinima = numberOfSeeds;
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_) schedule(dynamic)
+#endif
+  for(SimplexId i = 0; i < numberOfSeeds; ++i) {
+    std::queue<SimplexId> bfs;
+
+    // push the seed
+    {
+      const SimplexId seedId = seeds[i];
+      bfs.push(seedId);
+    }
+
+    // BFS traversal
+    while(!bfs.empty()) {
+      const SimplexId vertexId = bfs.front();
+      bfs.pop();
+
+      if(morseSmaleManifold[vertexId] == -1) {
+        morseSmaleManifold[vertexId] = i;
+
+        const SimplexId edgeNumber
+          = triangulation.getVertexEdgeNumber(vertexId);
+        for(SimplexId j = 0; j < edgeNumber; ++j) {
+          SimplexId edgeId;
+          triangulation.getVertexEdge(vertexId, j, edgeId);
+
+          for(int k = 0; k < 2; ++k) {
+            SimplexId neighborId;
+            triangulation.getEdgeVertex(edgeId, k, neighborId);
+
+            if(neighborId == vertexId) {
+              continue;
+            }
+
+            const SimplexId pairedCellId = discreteGradient_.getPairedCell(
+              Cell(0, neighborId), triangulation);
+
+            if(pairedCellId == edgeId)
+              bfs.push(neighborId);
+          }
+        }
+      }
+    }
+  }
+
+  return 0;
+}
+
+template <typename triangulationType>
+int ttk::AbstractMorseSmaleComplex::setFinalSegmentation(
+  const SimplexId numberOfMaxima,
+  const SimplexId numberOfMinima,
+  const SimplexId *const ascendingManifold,
+  const SimplexId *const descendingManifold,
+  SimplexId *const morseSmaleManifold,
+  const triangulationType &triangulation) const {
+
+  const size_t nVerts = triangulation.getNumberOfVertices();
+
+  // associate a unique "sparse region id" to each (ascending, descending) pair
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+  for(size_t i = 0; i < nVerts; ++i) {
+    const auto d = ascendingManifold[i];
+    const auto a = descendingManifold[i];
+    if(a == -1 || d == -1) {
+      morseSmaleManifold[i] = -1;
+    } else {
+      morseSmaleManifold[i] = a * numberOfMaxima + d;
+    }
+  }
+
+  // store the "sparse region ids" by copying the morseSmaleManifold output
+  std::vector<SimplexId> sparseRegionIds(
+    morseSmaleManifold, morseSmaleManifold + nVerts);
+
+  // get unique "sparse region ids"
+  PSORT(sparseRegionIds.begin(), sparseRegionIds.end());
+  const auto last = std::unique(sparseRegionIds.begin(), sparseRegionIds.end());
+  sparseRegionIds.erase(last, sparseRegionIds.end());
+
+  // "sparse region id" -> "dense region id"
+  std::map<SimplexId, size_t> sparseToDenseRegionId{};
+
+  for(size_t i = 0; i < sparseRegionIds.size(); ++i) {
+    sparseToDenseRegionId[sparseRegionIds[i]] = i;
+  }
+
+  // update region id on all vertices: "sparse id" -> "dense id"
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+  for(size_t i = 0; i < nVerts; ++i) {
+    morseSmaleManifold[i] = sparseToDenseRegionId[morseSmaleManifold[i]];
+  }
 
   return 0;
 }
