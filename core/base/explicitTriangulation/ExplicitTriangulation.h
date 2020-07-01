@@ -1009,11 +1009,12 @@ namespace ttk {
       // Cell Check
       {
         if(cellNumber > 0) {
-          const auto &cellDimension = offset[1] - offset[0];
+          const auto &cellDimension = offset[1] - offset[0] - 1;
 
           if(cellDimension < 0 || cellDimension > 3) {
             this->printErr("Unable to create triangulation for cells of "
-                           "dimension 4 or higher.");
+                           "dimension 4 or higher ("
+                           + std::to_string(cellDimension) + ").");
             return -1;
           }
 
@@ -1023,7 +1024,7 @@ namespace ttk {
 #pragma omp parallel for num_threads(this->threadNumber_)
 #endif
           for(SimplexId i = 0; i < cellNumber; i++) {
-            if(offset[i + 1] - offset[i] != cellDimension) {
+            if(offset[i + 1] - offset[i] - 1 != cellDimension) {
 #pragma omp atomic write
               error = true;
             }
