@@ -5,4 +5,4 @@ SOURCES
 HEADERS
   ttkImportEmbeddingFromTable.h
 DEPENDS
-  common
+  ttkAlgorithm
