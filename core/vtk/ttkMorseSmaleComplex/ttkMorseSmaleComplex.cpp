@@ -22,11 +22,6 @@ ttkMorseSmaleComplex::ttkMorseSmaleComplex() {
   SetNumberOfOutputPorts(4);
 }
 
-ttkMorseSmaleComplex::~ttkMorseSmaleComplex() {
-  if(defaultOffsets_)
-    defaultOffsets_->Delete();
-}
-
 int ttkMorseSmaleComplex::FillInputPortInformation(int port,
                                                    vtkInformation *info) {
   if(port == 0) {
@@ -46,84 +41,6 @@ int ttkMorseSmaleComplex::FillOutputPortInformation(int port,
     return 1;
   }
   return 0;
-}
-
-vtkDataArray *ttkMorseSmaleComplex::getScalars(vtkDataSet *input) {
-  vtkDataArray *inputScalars{};
-
-  vtkPointData *pointData = input->GetPointData();
-
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(!pointData) {
-    cerr << "[ttkMorseSmaleComplex] Error : input has no point data." << endl;
-    return inputScalars;
-  }
-#endif
-
-  if(ScalarField.length()) {
-    inputScalars = pointData->GetArray(ScalarField.data());
-  } else {
-    inputScalars = pointData->GetArray(ScalarFieldId);
-    if(inputScalars)
-      ScalarField = inputScalars->GetName();
-  }
-
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(!inputScalars) {
-    cerr << "[ttkMorseSmaleComplex] Error : input scalar field pointer is null."
-         << endl;
-    return inputScalars;
-  }
-#endif
-
-  return inputScalars;
-}
-
-vtkDataArray *ttkMorseSmaleComplex::getOffsets(vtkDataSet *input) {
-  vtkDataArray *inputOffsets{};
-
-  if(OffsetFieldId != -1) {
-    inputOffsets = input->GetPointData()->GetArray(OffsetFieldId);
-    if(inputOffsets) {
-      InputOffsetScalarFieldName = inputOffsets->GetName();
-      ForceInputOffsetScalarField = true;
-    }
-  }
-
-  if(ForceInputOffsetScalarField and InputOffsetScalarFieldName.length()) {
-    inputOffsets
-      = input->GetPointData()->GetArray(InputOffsetScalarFieldName.data());
-  } else if(input->GetPointData()->GetArray(ttk::OffsetScalarFieldName)) {
-    inputOffsets = input->GetPointData()->GetArray(ttk::OffsetScalarFieldName);
-  } else {
-    if(hasUpdatedMesh_ and defaultOffsets_) {
-      defaultOffsets_->Delete();
-      defaultOffsets_ = nullptr;
-    }
-
-    if(!defaultOffsets_) {
-      const SimplexId numberOfVertices = input->GetNumberOfPoints();
-
-      defaultOffsets_ = ttkSimplexIdTypeArray::New();
-      defaultOffsets_->SetNumberOfComponents(1);
-      defaultOffsets_->SetNumberOfTuples(numberOfVertices);
-      defaultOffsets_->SetName(ttk::OffsetScalarFieldName);
-      for(SimplexId i = 0; i < numberOfVertices; ++i)
-        defaultOffsets_->SetTuple1(i, i);
-    }
-
-    inputOffsets = defaultOffsets_;
-  }
-
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(!inputOffsets) {
-    cerr << "[ttkMorseSmaleComplex] Error : wrong input offset scalar field."
-         << endl;
-    return inputOffsets;
-  }
-#endif
-
-  return inputOffsets;
 }
 
 template <typename VTK_TT>
@@ -286,7 +203,7 @@ int ttkMorseSmaleComplex::dispatch(vtkDataArray *inputScalars,
     }
 #endif
     cellScalars->SetNumberOfComponents(1);
-    cellScalars->SetName(ScalarField.data());
+    cellScalars->SetName(inputScalars->GetName());
 
     vtkNew<vtkCharArray> isOnBoundary{};
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -767,25 +684,41 @@ int ttkMorseSmaleComplex::RequestData(vtkInformation *request,
   }
   this->preconditionTriangulation(triangulation);
 
-  vtkDataArray *inputScalars = getScalars(input);
+  const auto inputScalars = this->GetInputArrayToProcess(0, inputVector);
+
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(!inputScalars) {
-    cerr << "[ttkMorseSmaleComplex] Error : wrong scalars." << endl;
+  if(inputScalars == nullptr) {
+    this->printErr("wrong scalars.");
     return -1;
   }
 #endif
 
-  vtkDataArray *inputOffsets = getOffsets(input);
+  auto inputOffsets
+    = ttkAlgorithm::GetOptionalArray(this->ForceInputOffsetScalarField, 1,
+                                     ttk::OffsetScalarFieldName, inputVector);
+
+  vtkNew<ttkSimplexIdTypeArray> offsets{};
+
+  if(inputOffsets == nullptr) {
+    // build a new offset field
+    const SimplexId numberOfVertices = input->GetNumberOfPoints();
+    offsets->SetNumberOfComponents(1);
+    offsets->SetNumberOfTuples(numberOfVertices);
+    offsets->SetName(ttk::OffsetScalarFieldName);
+    for(SimplexId i = 0; i < numberOfVertices; ++i) {
+      offsets->SetTuple1(i, i);
+    }
+    inputOffsets = offsets;
+  }
+
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(!inputOffsets) {
-    cerr << "[ttkMorseSmaleComplex] Error : wrong offsets." << endl;
+  if(inputOffsets == nullptr) {
+    this->printErr("wrong offsets.");
     return -1;
   }
   if(inputOffsets->GetDataType() != VTK_INT
      and inputOffsets->GetDataType() != VTK_ID_TYPE) {
-    cerr
-      << "[ttkMorseSmaleComplex] Error : input offset field type not supported."
-      << endl;
+    this->printErr("input offset field type not supported.");
     return -1;
   }
 #endif

@@ -53,20 +53,8 @@ public:
 
   vtkTypeMacro(ttkMorseSmaleComplex, ttkAlgorithm);
 
-  vtkSetMacro(ScalarField, std::string);
-  vtkGetMacro(ScalarField, std::string);
-
-  vtkSetMacro(ScalarFieldId, int);
-  vtkGetMacro(ScalarFieldId, int);
-
-  vtkSetMacro(OffsetFieldId, int);
-  vtkGetMacro(OffsetFieldId, int);
-
   vtkSetMacro(ForceInputOffsetScalarField, bool);
   vtkGetMacro(ForceInputOffsetScalarField, bool);
-
-  vtkSetMacro(InputOffsetScalarFieldName, std::string);
-  vtkGetMacro(InputOffsetScalarFieldName, std::string);
 
   vtkSetMacro(IterationThreshold, int);
   vtkGetMacro(IterationThreshold, int);
@@ -104,9 +92,6 @@ public:
   vtkSetMacro(SaddleConnectorsPersistenceThreshold, double);
   vtkGetMacro(SaddleConnectorsPersistenceThreshold, double);
 
-  vtkDataArray *getScalars(vtkDataSet *input);
-  vtkDataArray *getOffsets(vtkDataSet *input);
-
 protected:
   template <typename VTK_TT>
   int dispatch(vtkDataArray *inputScalars,
@@ -117,7 +102,6 @@ protected:
                ttk::Triangulation &triangulation);
 
   ttkMorseSmaleComplex();
-  ~ttkMorseSmaleComplex() override;
 
   int FillInputPortInformation(int port, vtkInformation *info) override;
   int FillOutputPortInformation(int port, vtkInformation *info) override;
@@ -126,8 +110,6 @@ protected:
                   vtkInformationVector *outputVector) override;
 
 private:
-  std::string ScalarField{};
-  std::string InputOffsetScalarFieldName{ttk::OffsetScalarFieldName};
   bool ForceInputOffsetScalarField{};
   int IterationThreshold{-1};
   bool ComputeCriticalPoints{true};
@@ -139,11 +121,6 @@ private:
   bool ComputeAscendingSegmentation{true};
   bool ComputeDescendingSegmentation{true};
   bool ComputeFinalSegmentation{true};
-  int ScalarFieldId{};
-  int OffsetFieldId{-1};
   int ReturnSaddleConnectors{false};
   double SaddleConnectorsPersistenceThreshold{0.0};
-
-  vtkDataArray *defaultOffsets_{};
-  bool hasUpdatedMesh_{};
 };
