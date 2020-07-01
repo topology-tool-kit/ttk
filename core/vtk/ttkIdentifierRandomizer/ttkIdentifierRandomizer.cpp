@@ -48,8 +48,6 @@ int ttkIdentifierRandomizer::RequestData(vtkInformation *request,
 
   Timer t;
 
-  printMsg(ttk::debug::Separator::L1);
-
   bool isPointData = false;
 
   vtkDataSet *input = vtkDataSet::GetData(inputVector[0]);
@@ -65,6 +63,11 @@ int ttkIdentifierRandomizer::RequestData(vtkInformation *request,
   // should proceed in the same way.
   vtkDataArray *inputScalarField = this->GetInputArrayToProcess(0, inputVector);
 
+  if(!inputScalarField) {
+    printErr("Could not retrieve mandatory input array :(");
+    return 0;
+  }
+
   if(input->GetPointData()->GetArray(inputScalarField->GetName())
      == inputScalarField) {
     isPointData = true;
@@ -77,7 +80,7 @@ int ttkIdentifierRandomizer::RequestData(vtkInformation *request,
       msg << "vertex";
     else
       msg << "cell";
-    msg << " field `" << inputScalarField->GetName() << "'..." << endl;
+    msg << " field `" << inputScalarField->GetName() << "'...";
     printMsg(msg.str());
   }
 
