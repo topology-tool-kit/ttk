@@ -47,7 +47,7 @@ namespace ttk {
   };
 } // namespace ttk
 
-template <class dataType, class triangulationType = ttk::AbstractTriangulation>
+template <class dataType, class triangulationType>
 int ttk::DilateErode::execute(
   // Output
   dataType *outputLabels,
@@ -103,7 +103,7 @@ int ttk::DilateErode::execute(
         SimplexId nIndex;
         for(SimplexId n = 0; n < nNeighbors; n++) {
           triangulation->getVertexNeighbor(i, n, nIndex);
-          if(inputLabels[nIndex] != pivotLabel) {
+          if(inputLabels[nIndex] != pivotLabel && outputLabels[i]<inputLabels[nIndex]) {
             outputLabels[i] = inputLabels[nIndex];
             break;
           }
