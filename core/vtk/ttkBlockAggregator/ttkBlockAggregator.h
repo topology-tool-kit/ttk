@@ -3,10 +3,10 @@
 /// \author Jonas Lukasczyk <jl@jluk.de>
 /// \date 01.11.2020
 ///
-/// \brief TTK VTK-filter that iteratively adds its input data objects as blocks
-/// to a vtkMultiBlockDataSet.
+/// \brief TTK VTK-filter that appends every input vtkDataObject as a block to
+/// an output vtkMultiBlockDataSet.
 ///
-/// This filter iteratively appends its input as a block to a
+/// This filter appends every input vtkDataObject as a block to an output
 /// vtkMultiBlockDataSet.
 ///
 /// \param Input vtkDataObject that will be added as a block.
@@ -21,6 +21,7 @@
 // VTK Includes
 #include <ttkAlgorithm.h>
 #include <vtkSmartPointer.h>
+
 class vtkMultiBlockDataSet;
 
 class TTKBLOCKAGGREGATOR_EXPORT ttkBlockAggregator : public ttkAlgorithm {
@@ -28,7 +29,6 @@ private:
   bool ForceReset{false};
   bool FlattenInput{true};
   vtkSmartPointer<vtkMultiBlockDataSet> AggregatedMultiBlockDataSet;
-  int Reset();
 
 public:
   vtkSetMacro(ForceReset, bool);
@@ -39,6 +39,8 @@ public:
   static ttkBlockAggregator *New();
   vtkTypeMacro(ttkBlockAggregator, ttkAlgorithm);
 
+  int Reset();
+
 protected:
   ttkBlockAggregator();
   ~ttkBlockAggregator() override;
@@ -48,5 +50,5 @@ protected:
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;
-  int AggregateBlock(vtkDataObject *dataObject, bool useShallowCopy);
+  int AggregateBlock(vtkDataObject *dataObject);
 };
