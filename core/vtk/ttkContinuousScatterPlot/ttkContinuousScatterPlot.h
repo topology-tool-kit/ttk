@@ -85,11 +85,13 @@ protected:
                   vtkInformationVector *outputVector) override;
 
 private:
-  bool WithDummyValue {false};
-  double DummyValue {0};
-  bool ProjectImageSupport {true};
-  int ScatterplotResolution[3] {1920, 1080, 0};
+  bool WithDummyValue{false};
+  double DummyValue{0};
+  bool ProjectImageSupport{true};
+  int ScatterplotResolution[3]{1920, 1080, 0};
 
   template <typename dataType1, class triangulationType>
-  int dispatch(const dataType1* scalars1, vtkDataArray* inputScalars2, const triangulationType* triangulation);
+  int dispatch(const dataType1 *scalars1,
+               vtkDataArray *inputScalars2,
+               const triangulationType *triangulation);
 };

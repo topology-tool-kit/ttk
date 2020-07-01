@@ -28,8 +28,12 @@ namespace ttk {
     ContinuousScatterPlot();
     ~ContinuousScatterPlot();
 
-    template <typename dataType1, typename dataType2, class triangulationType = AbstractTriangulation>
-    int execute(const dataType1*, const dataType2*, const triangulationType*) const;
+    template <typename dataType1,
+              typename dataType2,
+              class triangulationType = AbstractTriangulation>
+    int execute(const dataType1 *,
+                const dataType2 *,
+                const triangulationType *) const;
 
     inline int setVertexNumber(const SimplexId &vertexNumber) {
       vertexNumber_ = vertexNumber;
@@ -85,10 +89,9 @@ namespace ttk {
 
 template <typename dataType1, typename dataType2, class triangulationType>
 int ttk::ContinuousScatterPlot::execute(
-  const dataType1* scalars1,
-  const dataType2* scalars2,
-  const triangulationType* triangulation
-) const {
+  const dataType1 *scalars1,
+  const dataType2 *scalars2,
+  const triangulationType *triangulation) const {
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!scalars1)
     return -1;

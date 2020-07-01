@@ -1,6 +1,6 @@
 #include <ttkContinuousScatterPlot.h>
-#include <ttkUtils.h>
 #include <ttkMacros.h>
+#include <ttkUtils.h>
 
 #include <vtkCharArray.h>
 #include <vtkDataSet.h>
@@ -42,19 +42,25 @@ int ttkContinuousScatterPlot::FillOutputPortInformation(int port,
 }
 
 template <typename dataType1, class triangulationType>
-int ttkContinuousScatterPlot::dispatch(const dataType1* scalars1, vtkDataArray* inputScalars2, const triangulationType* triangulation) {
+int ttkContinuousScatterPlot::dispatch(const dataType1 *scalars1,
+                                       vtkDataArray *inputScalars2,
+                                       const triangulationType *triangulation) {
   int status = 0;
   switch(inputScalars2->GetDataType()) {
-    vtkTemplateMacro((status = this->execute<dataType1, VTK_TT, triangulationType>(
-                        scalars1, (VTK_TT*)ttkUtils::GetVoidPointer(inputScalars2), triangulation)));
+    vtkTemplateMacro(
+      (status = this->execute<dataType1, VTK_TT, triangulationType>(
+         scalars1, (VTK_TT *)ttkUtils::GetVoidPointer(inputScalars2),
+         triangulation)));
   };
   return status;
 }
 
-int ttkContinuousScatterPlot::RequestData(vtkInformation *request, vtkInformationVector **inputVector, vtkInformationVector *outputVector) {
+int ttkContinuousScatterPlot::RequestData(vtkInformation *request,
+                                          vtkInformationVector **inputVector,
+                                          vtkInformationVector *outputVector) {
   vtkDataSet *input = vtkDataSet::GetData(inputVector[0], 0);
   vtkDataSet *output = vtkDataSet::GetData(outputVector, 0);
-  if (!input || !output)
+  if(!input || !output)
     return 0;
 
   ttk::Triangulation *triangulation = ttkAlgorithm::GetTriangulation(input);
@@ -124,23 +130,17 @@ int ttkContinuousScatterPlot::RequestData(vtkInformation *request, vtkInformatio
   // calling the executing package
   this->setVertexNumber(numberOfPoints);
   this->setDummyValue(WithDummyValue, DummyValue);
-  this->setResolutions(
-    ScatterplotResolution[0], ScatterplotResolution[1]);
+  this->setResolutions(ScatterplotResolution[0], ScatterplotResolution[1]);
   this->setScalarMin(scalarMin);
   this->setScalarMax(scalarMax);
   this->setOutputDensity(&density);
   this->setOutputMask(&validPointMask);
 
   int status = 0;
-  ttkVtkTemplateMacro(
-    inputScalars1->GetDataType(),
-    triangulation->getType(),
-    (status = this->dispatch<VTK_TT, TTK_TT>(
-      (VTK_TT*)ttkUtils::GetVoidPointer(inputScalars1),
-       inputScalars2,
-      (TTK_TT*)triangulation->getData()
-       ))
-  );
+  ttkVtkTemplateMacro(inputScalars1->GetDataType(), triangulation->getType(),
+                      (status = this->dispatch<VTK_TT, TTK_TT>(
+                         (VTK_TT *)ttkUtils::GetVoidPointer(inputScalars1),
+                         inputScalars2, (TTK_TT *)triangulation->getData())));
 
 #ifndef TTK_ENABLE_KAMIKAZE
   // something wrong in baseCode
