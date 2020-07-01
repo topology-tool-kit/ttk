@@ -8,13 +8,8 @@
 
 // base code includes
 #include <BottleneckDistance.h>
-#include <Wrapper.h>
 
-#include <set>
-
-namespace ttk {
-
-  class TrackingFromPersistenceDiagrams : public Debug {
+  class TrackingFromPersistenceDiagrams : virtual public Debug {
 
   public:
     TrackingFromPersistenceDiagrams();
@@ -116,13 +111,7 @@ int ttk::TrackingFromPersistenceDiagrams::execute() {
   }
 #endif
 
-  {
-    std::stringstream msg;
-    msg << "[TrackingFromPersistenceDiagrams] Data-set "
-        << "processed in " << t.getElapsedTime() << " s. (" << threadNumber_
-        << " thread(s))." << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
-  }
+  this->printMsg("Complete", 1, t.getElapsedTime(), threadNumber_);
 
   return 0;
 }
@@ -415,9 +404,8 @@ int ttk::TrackingFromPersistenceDiagrams::performPostProcess(
 
         /// Merge!
         std::stringstream msg;
-        msg << "[ttkTrackingFromPersistenceDiagrams] Merged " << m << " with "
-            << k << ": d = " << dist << "." << std::endl;
-        dMsg(std::cout, msg.str(), timeMsg);
+        msg << "Merged " << m << " with " << k << ": d = " << dist << ".";
+        printMsg(msg.str());
 
         // Get every other tracking trajectory.
         std::set<int> &mergedM = trackingTupleToMerged[m];
