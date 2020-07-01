@@ -268,14 +268,12 @@ ttk::Triangulation *ttkAlgorithm::GetTriangulation(vtkDataSet *dataSet) {
       // check if cell types are simplices
       int cellTypeStatus = checkCellTypes(dataSetAsUG);
       if(cellTypeStatus == -1) {
-        this->printErr("Inhomogeneous cell dimensions are not supported.");
-        this->printErr(
-          "Run `ttkExtract` to extract cells of a certain dimension.");
-        break;
+        this->printWrn("Inhomogeneous cell dimensions detected.");
+        this->printWrn(
+          "Consider using `ttkExtract` to extract cells of a given dimension.");
       } else if(cellTypeStatus == -2) {
-        this->printErr("Cells are not simplices.");
-        this->printErr("Use `vtkTetrahedralize` to resolve the issue.");
-        break;
+        this->printWrn("Cells are not simplices.");
+        this->printWrn("Consider using `vtkTetrahedralize` in pre-processing.");
       }
 
       // check if triangulation already exists or has to be updated
@@ -318,14 +316,13 @@ ttk::Triangulation *ttkAlgorithm::GetTriangulation(vtkDataSet *dataSet) {
           // check if cell types are simplices
           int cellTypeStatus = checkCellTypes(dataSetAsPD);
           if(cellTypeStatus == -1) {
-            this->printErr("Inhomogeneous cell dimensions are not supported.");
-            this->printErr(
-              "Run `ttkExtract` to extract cells of a certain dimension.");
-            break;
+            this->printWrn("Inhomogeneous cell dimensions detected.");
+            this->printWrn("Consider using `ttkExtract` to extract cells of a "
+                           "given dimension.");
           } else if(cellTypeStatus == -2) {
-            this->printErr("Cells are not simplices.");
-            this->printErr("Use `vtkTetrahedralize` to resolve the issue.");
-            break;
+            this->printWrn("Cells are not simplices.");
+            this->printWrn(
+              "Consider using `vtkTetrahedralize` in pre-processing.");
           }
 
           // init triangulation
