@@ -27,6 +27,7 @@
 /// \param connection 0 (FIXED: first connection)
 /// \param fieldAssociation 0 (FIXED: point data)
 /// \param arrayName (DYNAMIC: string identifier of the offset array)
+/// NOTE: To use this array `ForceInputOffsetScalarField` needs to be enabled.
 ///
 /// This filter can be used as any other VTK filter (for instance, by using the
 /// sequence of calls SetInputData(), Update(), GetOutput()).
