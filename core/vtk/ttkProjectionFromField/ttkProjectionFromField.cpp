@@ -15,6 +15,11 @@ vtkStandardNewMacro(ttkProjectionFromField);
 ttkProjectionFromField::ttkProjectionFromField() {
   // init
   pointSet_ = vtkSmartPointer<vtkPoints>::New();
+
+  this->SetNumberOfInputPorts(1);
+  this->SetNumberOfOutputPorts(1);
+
+  setDebugMsgPrefix("ProjectionFromField");
 }
 
 ttkProjectionFromField::~ttkProjectionFromField() {
@@ -51,25 +56,27 @@ int ttkProjectionFromField::RequestData(vtkInformation *request,
 
   output->ShallowCopy(input);
 
-  vtkDataArray *inputScalarFieldU
-    = this->GetInputArrayToProcess(0, inputVector);
-
-  if(!inputScalarFieldU)
-    return -1;
-
-  vtkDataArray *inputScalarFieldV
-    = this->GetInputArrayToProcess(1, inputVector);
-
-  if(!inputScalarFieldV)
-    return -2;
-
-  vtkDataArray *textureCoordinates = NULL;
+  vtkDataArray *inputScalarFieldU = nullptr;
+  vtkDataArray *inputScalarFieldV = nullptr;
+  vtkDataArray *textureCoordinates = nullptr;
 
   if(UseTextureCoordinates) {
     textureCoordinates = input->GetPointData()->GetTCoords();
 
     if(!textureCoordinates)
       return -3;
+
+    printMsg("Starting computation with texture coordinates...");
+  } else {
+    inputScalarFieldU = this->GetInputArrayToProcess(0, inputVector);
+    if(!inputScalarFieldU)
+      return -1;
+    inputScalarFieldV = this->GetInputArrayToProcess(1, inputVector);
+    if(!inputScalarFieldV)
+      return -2;
+    printMsg("Starting computation...");
+    printMsg({{"  U-component", inputScalarFieldU->GetName()},
+              {"  V-component", inputScalarFieldV->GetName()}});
   }
 
   if(pointSet_->GetNumberOfPoints() != input->GetNumberOfPoints()) {
@@ -81,8 +88,6 @@ int ttkProjectionFromField::RequestData(vtkInformation *request,
     points[i].resize(3);
     points[i][2] = 0;
   }
-
-  SimplexId count = 0;
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
@@ -108,8 +113,10 @@ int ttkProjectionFromField::RequestData(vtkInformation *request,
 
   output->SetPoints(pointSet_);
 
-  printMsg(std::to_string(input->GetNumberOfPoints()) + " projected", 1,
-           t.getElapsedTime());
+  printMsg(std::to_string(input->GetNumberOfPoints()) + " points projected", 1,
+           t.getElapsedTime(), threadNumber_);
+
+  printMsg(ttk::debug::Separator::L1);
 
   return 1;
 }
