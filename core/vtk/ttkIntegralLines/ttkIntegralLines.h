@@ -38,7 +38,7 @@
 /// The vertex identifier array needs to be specified via the standard VTK call
 /// vtkAlgorithm::SetInputArrayToProcess() with the following parameters:
 /// \param idx 2 (FIXED: the third array the algorithm requires)
-/// \param port 0 (FIXED: first port)
+/// \param port 1 (FIXED: second port)
 /// \param connection 0 (FIXED: first connection)
 /// \param fieldAssociation 0 (FIXED: point data)
 /// \param arrayName (DYNAMIC: string identifier of the vertex identifier array)
