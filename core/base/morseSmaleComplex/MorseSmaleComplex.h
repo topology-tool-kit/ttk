@@ -20,8 +20,7 @@
 /// \sa ttk::Triangulation
 /// \sa ttkMorseSmaleComplex.cpp %for a usage example.
 
-#ifndef _MORSESMALECOMPLEX_H
-#define _MORSESMALECOMPLEX_H
+#pragma once
 
 // base code includes
 #include <MorseSmaleComplex2D.h>
@@ -437,11 +436,9 @@ namespace ttk {
     }
 
   protected:
-    int dimensionality_;
-    AbstractMorseSmaleComplex *abstractMorseSmaleComplex_;
-    MorseSmaleComplex2D morseSmaleComplex2D_;
-    MorseSmaleComplex3D morseSmaleComplex3D_;
+    int dimensionality_{};
+    AbstractMorseSmaleComplex *abstractMorseSmaleComplex_{};
+    MorseSmaleComplex2D morseSmaleComplex2D_{};
+    MorseSmaleComplex3D morseSmaleComplex3D_{};
   };
 } // namespace ttk
-
-#endif // MORSESMALECOMPLEX_H

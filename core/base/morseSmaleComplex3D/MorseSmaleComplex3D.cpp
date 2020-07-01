@@ -6,6 +6,7 @@ using namespace ttk;
 using namespace dcg;
 
 MorseSmaleComplex3D::MorseSmaleComplex3D() : AbstractMorseSmaleComplex() {
+  this->setDebugMsgPrefix("MorseSmaleComplex3D");
 }
 
 MorseSmaleComplex3D::~MorseSmaleComplex3D() {

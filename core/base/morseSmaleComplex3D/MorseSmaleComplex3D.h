@@ -12,8 +12,7 @@
 /// \sa ttk::Triangulation
 /// \sa ttkMorseSmaleComplex3D.cpp %for a usage example.
 
-#ifndef _MORSESMALECOMPLEX3D_H
-#define _MORSESMALECOMPLEX3D_H
+#pragma once
 
 // base code includes
 #include <AbstractMorseSmaleComplex.h>
@@ -150,33 +149,23 @@ int ttk::MorseSmaleComplex3D::setAscendingSeparatrices2(
   const std::vector<std::set<SimplexId>> &separatricesSaddles) const {
 #ifndef TTK_ENABLE_KAMIKAZE
   if(outputSeparatrices2_numberOfPoints_ == nullptr) {
-    std::cerr << "[MorseSmaleComplex3D] 2-separatrices pointer to "
-                 "numberOfPoints is null."
-              << std::endl;
+    this->printErr("2-separatrices pointer to numberOfPoints is null.");
     return -1;
   }
   if(outputSeparatrices2_points_ == nullptr) {
-    std::cerr
-      << "[MorseSmaleComplex3D] 2-separatrices pointer to points is null."
-      << std::endl;
+    this->printErr("2-separatrices pointer to points is null.");
     return -1;
   }
   if(outputSeparatrices2_numberOfCells_ == nullptr) {
-    std::cerr << "[MorseSmaleComplex3D] 2-separatrices pointer to "
-                 "numberOfCells is null."
-              << std::endl;
+    this->printErr("2-separatrices pointer to numberOfCells is null.");
     return -1;
   }
   if(outputSeparatrices2_cells_ == nullptr) {
-    std::cerr
-      << "[MorseSmaleComplex3D] 2-separatrices pointer to cells is null."
-      << std::endl;
+    this->printErr("2-separatrices pointer to cells is null.");
     return -1;
   }
   if(inputScalarField_ == nullptr) {
-    std::cerr << "[MorseSmaleComplex3D] 2-separatrices pointer to the input "
-                 "scalar field is null."
-              << std::endl;
+    this->printErr("2-separatrices pointer to the input scalar field is null.");
     return -1;
   }
 #endif
@@ -401,33 +390,23 @@ int ttk::MorseSmaleComplex3D::setDescendingSeparatrices2(
   const std::vector<std::set<SimplexId>> &separatricesSaddles) const {
 #ifndef TTK_ENABLE_KAMIKAZE
   if(outputSeparatrices2_numberOfPoints_ == nullptr) {
-    std::cerr << "[MorseSmaleComplex3D] 2-separatrices pointer to "
-                 "numberOfPoints is null."
-              << std::endl;
+    this->printErr("2-separatrices pointer to numberOfPoints is null.");
     return -1;
   }
   if(outputSeparatrices2_points_ == nullptr) {
-    std::cerr
-      << "[MorseSmaleComplex3D] 2-separatrices pointer to points is null."
-      << std::endl;
+    this->printErr("2-separatrices pointer to points is null.");
     return -1;
   }
   if(outputSeparatrices2_numberOfCells_ == nullptr) {
-    std::cerr << "[MorseSmaleComplex3D] 2-separatrices pointer to "
-                 "numberOfCells is null."
-              << std::endl;
+    this->printErr("2-separatrices pointer to numberOfCells is null.");
     return -1;
   }
   if(outputSeparatrices2_cells_ == nullptr) {
-    std::cerr
-      << "[MorseSmaleComplex3D] 2-separatrices pointer to cells is null."
-      << std::endl;
+    this->printErr("2-separatrices pointer to cells is null.");
     return -1;
   }
   if(inputScalarField_ == nullptr) {
-    std::cerr << "[MorseSmaleComplex3D] 2-separatrices pointer to the input "
-                 "scalar field is null."
-              << std::endl;
+    this->printErr("2-separatrices pointer to the input scalar field is null.");
     return -1;
   }
 #endif
@@ -616,16 +595,12 @@ template <typename dataType, typename idType>
 int ttk::MorseSmaleComplex3D::execute() {
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!inputScalarField_) {
-    std::cerr
-      << "[MorseSmaleComplex3D] Error: input scalar field pointer is null."
-      << std::endl;
+    this->printErr("Input scalar field pointer is null.");
     return -1;
   }
 
   if(!inputOffsets_) {
-    std::cerr
-      << "[MorseSmaleComplex3D] Error: input offset field pointer is null."
-      << std::endl;
+    this->printErr("Input offset field pointer is null.");
     return -1;
   }
 #endif
@@ -646,12 +621,8 @@ int ttk::MorseSmaleComplex3D::execute() {
     Timer tmp;
     discreteGradient_.buildGradient<dataType, idType>(*inputTriangulation_);
 
-    {
-      std::stringstream msg;
-      msg << "[MorseSmaleComplex3D] Discrete gradient overall computed in "
-          << tmp.getElapsedTime() << " s." << std::endl;
-      dMsg(std::cout, msg.str(), timeMsg);
-    }
+    this->printMsg("Discrete gradient computed", 1.0, tmp.getElapsedTime(),
+                   this->threadNumber_);
   }
 
   if(ReturnSaddleConnectors) {
@@ -673,12 +644,8 @@ int ttk::MorseSmaleComplex3D::execute() {
     getDescendingSeparatrices1(
       criticalPoints, separatrices1.back(), separatricesGeometry1.back());
 
-    {
-      std::stringstream msg;
-      msg << "[MorseSmaleComplex3D] Descending 1-separatrices computed in "
-          << tmp.getElapsedTime() << " s." << std::endl;
-      dMsg(std::cout, msg.str(), timeMsg);
-    }
+    this->printMsg("Descending 1-separatrices computed", 1.0,
+                   tmp.getElapsedTime(), this->threadNumber_);
   }
 
   if(ComputeAscendingSeparatrices1) {
@@ -689,12 +656,8 @@ int ttk::MorseSmaleComplex3D::execute() {
     getAscendingSeparatrices1(
       criticalPoints, separatrices1.back(), separatricesGeometry1.back());
 
-    {
-      std::stringstream msg;
-      msg << "[MorseSmaleComplex3D] Ascending 1-separatrices computed in "
-          << tmp.getElapsedTime() << " s." << std::endl;
-      dMsg(std::cout, msg.str(), timeMsg);
-    }
+    this->printMsg("Ascending 1-separatrices computed", 1.0,
+                   tmp.getElapsedTime(), this->threadNumber_);
   }
 
   // saddle-connectors
@@ -706,12 +669,8 @@ int ttk::MorseSmaleComplex3D::execute() {
     getSaddleConnectors(
       criticalPoints, separatrices1.back(), separatricesGeometry1.back());
 
-    {
-      std::stringstream msg;
-      msg << "[MorseSmaleComplex3D] Saddle connectors computed in "
-          << tmp.getElapsedTime() << " s." << std::endl;
-      dMsg(std::cout, msg.str(), timeMsg);
-    }
+    this->printMsg("Saddle connectors computed", 1.0, tmp.getElapsedTime(),
+                   this->threadNumber_);
   }
 
   if(ComputeDescendingSeparatrices1 || ComputeAscendingSeparatrices1
@@ -721,12 +680,8 @@ int ttk::MorseSmaleComplex3D::execute() {
     flattenSeparatricesVectors(separatrices1, separatricesGeometry1);
     setSeparatrices1<dataType>(separatrices1[0], separatricesGeometry1[0]);
 
-    {
-      std::stringstream msg;
-      msg << "[MorseSmaleComplex3D] 1-separatrices set in "
-          << tmp.getElapsedTime() << " s." << std::endl;
-      dMsg(std::cout, msg.str(), timeMsg);
-    }
+    this->printMsg(
+      "1-separatrices set", 1.0, tmp.getElapsedTime(), this->threadNumber_);
   }
 
   // 2-separatrices
@@ -740,12 +695,8 @@ int ttk::MorseSmaleComplex3D::execute() {
     setDescendingSeparatrices2<dataType>(
       separatrices, separatricesGeometry, separatricesSaddles);
 
-    {
-      std::stringstream msg;
-      msg << "[MorseSmaleComplex3D] Descending 2-separatrices computed in "
-          << tmp.getElapsedTime() << " s." << std::endl;
-      dMsg(std::cout, msg.str(), timeMsg);
-    }
+    this->printMsg("Descending 2-separatrices computed", 1.0,
+                   tmp.getElapsedTime(), this->threadNumber_);
   }
 
   if(ComputeAscendingSeparatrices2) {
@@ -758,12 +709,8 @@ int ttk::MorseSmaleComplex3D::execute() {
     setAscendingSeparatrices2<dataType>(
       separatrices, separatricesGeometry, separatricesSaddles);
 
-    {
-      std::stringstream msg;
-      msg << "[MorseSmaleComplex3D] Ascending 2-separatrices computed in "
-          << tmp.getElapsedTime() << " s." << std::endl;
-      dMsg(std::cout, msg.str(), timeMsg);
-    }
+    this->printMsg("Ascending 2-separatrices computed", 1.0,
+                   tmp.getElapsedTime(), this->threadNumber_);
   }
 
   std::vector<SimplexId> maxSeeds;
@@ -786,10 +733,8 @@ int ttk::MorseSmaleComplex3D::execute() {
                            descendingManifold, morseSmaleManifold);
 
     if(ascendingManifold or descendingManifold) {
-      std::stringstream msg;
-      msg << "[MorseSmaleComplex3D] Segmentation computed in "
-          << tmp.getElapsedTime() << " s." << std::endl;
-      dMsg(std::cout, msg.str(), timeMsg);
+      this->printMsg("Segmentation computed", 1.0, tmp.getElapsedTime(),
+                     this->threadNumber_);
     }
   }
 
@@ -814,15 +759,10 @@ int ttk::MorseSmaleComplex3D::execute() {
     }
   }
 
-  {
-    const SimplexId numberOfVertices
-      = inputTriangulation_->getNumberOfVertices();
-    std::stringstream msg;
-    msg << "[MorseSmaleComplex3D] Data-set (" << numberOfVertices
-        << " points) processed in " << t.getElapsedTime() << " s. ("
-        << threadNumber_ << " thread(s))." << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
-  }
+  this->printMsg("Data-set ("
+                   + std::to_string(inputTriangulation_->getNumberOfVertices())
+                   + " points) processed",
+                 1.0, t.getElapsedTime(), this->threadNumber_);
 
   return 0;
 }
@@ -867,5 +807,3 @@ int ttk::MorseSmaleComplex3D::computePersistencePairs(
   }
   return 0;
 }
-
-#endif // MORSESMALECOMPLEX3D_H

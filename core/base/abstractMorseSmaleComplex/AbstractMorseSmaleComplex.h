@@ -12,15 +12,11 @@
 ///
 /// \sa ttk::Triangulation
 
-#ifndef _ABSTRACTMORSESMALECOMPLEX_H
-#define _ABSTRACTMORSESMALECOMPLEX_H
+#pragma once
 
 // base code includes
 #include <DiscreteGradient.h>
 #include <Triangulation.h>
-#include <Wrapper.h>
-
-#include <queue>
 
 namespace ttk {
 
@@ -111,7 +107,7 @@ namespace ttk {
    * Parent class containing convenience functions shared between
    * Morse-Smale Complex algorithms for 2D and 3D domains.
    */
-  class AbstractMorseSmaleComplex : public Debug {
+  class AbstractMorseSmaleComplex : virtual public Debug {
 
   public:
     AbstractMorseSmaleComplex();
@@ -400,62 +396,62 @@ namespace ttk {
                              SimplexId *const morseSmaleManifold) const;
 
   protected:
-    bool ReverveSaddleMaximumConnection;
-    bool ReverveSaddleSaddleConnection;
-    bool ComputeAscendingSeparatrices1;
-    bool ComputeDescendingSeparatrices1;
-    bool ComputeSaddleConnectors;
-    bool ComputeAscendingSeparatrices2;
-    bool ComputeDescendingSeparatrices2;
-    bool ReturnSaddleConnectors;
-    double SaddleConnectorsPersistenceThreshold;
+    bool ReverveSaddleMaximumConnection{false};
+    bool ReverveSaddleSaddleConnection{false};
+    bool ComputeAscendingSeparatrices1{true};
+    bool ComputeDescendingSeparatrices1{true};
+    bool ComputeSaddleConnectors{false};
+    bool ComputeAscendingSeparatrices2{false};
+    bool ComputeDescendingSeparatrices2{false};
+    bool ReturnSaddleConnectors{false};
+    double SaddleConnectorsPersistenceThreshold{};
 
-    dcg::DiscreteGradient discreteGradient_;
+    dcg::DiscreteGradient discreteGradient_{};
 
-    const void *inputScalarField_;
-    Triangulation *inputTriangulation_;
-    const void *inputOffsets_;
+    const void *inputScalarField_{};
+    Triangulation *inputTriangulation_{};
+    const void *inputOffsets_{};
 
-    SimplexId *outputCriticalPoints_numberOfPoints_;
-    std::vector<float> *outputCriticalPoints_points_;
-    std::vector<char> *outputCriticalPoints_points_cellDimensions_;
-    std::vector<SimplexId> *outputCriticalPoints_points_cellIds_;
-    void *outputCriticalPoints_points_cellScalars_;
-    std::vector<char> *outputCriticalPoints_points_isOnBoundary_;
-    std::vector<SimplexId> *outputCriticalPoints_points_PLVertexIdentifiers_;
-    std::vector<SimplexId> *outputCriticalPoints_points_manifoldSize_;
+    SimplexId *outputCriticalPoints_numberOfPoints_{};
+    std::vector<float> *outputCriticalPoints_points_{};
+    std::vector<char> *outputCriticalPoints_points_cellDimensions_{};
+    std::vector<SimplexId> *outputCriticalPoints_points_cellIds_{};
+    void *outputCriticalPoints_points_cellScalars_{};
+    std::vector<char> *outputCriticalPoints_points_isOnBoundary_{};
+    std::vector<SimplexId> *outputCriticalPoints_points_PLVertexIdentifiers_{};
+    std::vector<SimplexId> *outputCriticalPoints_points_manifoldSize_{};
 
-    SimplexId *outputSeparatrices1_numberOfPoints_;
-    std::vector<float> *outputSeparatrices1_points_;
-    std::vector<char> *outputSeparatrices1_points_smoothingMask_;
-    std::vector<char> *outputSeparatrices1_points_cellDimensions_;
-    std::vector<SimplexId> *outputSeparatrices1_points_cellIds_;
-    SimplexId *outputSeparatrices1_numberOfCells_;
-    std::vector<SimplexId> *outputSeparatrices1_cells_;
-    std::vector<SimplexId> *outputSeparatrices1_cells_sourceIds_;
-    std::vector<SimplexId> *outputSeparatrices1_cells_destinationIds_;
-    std::vector<SimplexId> *outputSeparatrices1_cells_separatrixIds_;
-    std::vector<char> *outputSeparatrices1_cells_separatrixTypes_;
-    void *outputSeparatrices1_cells_separatrixFunctionMaxima_;
-    void *outputSeparatrices1_cells_separatrixFunctionMinima_;
-    void *outputSeparatrices1_cells_separatrixFunctionDiffs_;
-    std::vector<char> *outputSeparatrices1_cells_isOnBoundary_;
+    SimplexId *outputSeparatrices1_numberOfPoints_{};
+    std::vector<float> *outputSeparatrices1_points_{};
+    std::vector<char> *outputSeparatrices1_points_smoothingMask_{};
+    std::vector<char> *outputSeparatrices1_points_cellDimensions_{};
+    std::vector<SimplexId> *outputSeparatrices1_points_cellIds_{};
+    SimplexId *outputSeparatrices1_numberOfCells_{};
+    std::vector<SimplexId> *outputSeparatrices1_cells_{};
+    std::vector<SimplexId> *outputSeparatrices1_cells_sourceIds_{};
+    std::vector<SimplexId> *outputSeparatrices1_cells_destinationIds_{};
+    std::vector<SimplexId> *outputSeparatrices1_cells_separatrixIds_{};
+    std::vector<char> *outputSeparatrices1_cells_separatrixTypes_{};
+    void *outputSeparatrices1_cells_separatrixFunctionMaxima_{};
+    void *outputSeparatrices1_cells_separatrixFunctionMinima_{};
+    void *outputSeparatrices1_cells_separatrixFunctionDiffs_{};
+    std::vector<char> *outputSeparatrices1_cells_isOnBoundary_{};
 
-    SimplexId *outputSeparatrices2_numberOfPoints_;
-    std::vector<float> *outputSeparatrices2_points_;
-    SimplexId *outputSeparatrices2_numberOfCells_;
-    std::vector<SimplexId> *outputSeparatrices2_cells_;
-    std::vector<SimplexId> *outputSeparatrices2_cells_sourceIds_;
-    std::vector<SimplexId> *outputSeparatrices2_cells_separatrixIds_;
-    std::vector<char> *outputSeparatrices2_cells_separatrixTypes_;
-    void *outputSeparatrices2_cells_separatrixFunctionMaxima_;
-    void *outputSeparatrices2_cells_separatrixFunctionMinima_;
-    void *outputSeparatrices2_cells_separatrixFunctionDiffs_;
-    std::vector<char> *outputSeparatrices2_cells_isOnBoundary_;
+    SimplexId *outputSeparatrices2_numberOfPoints_{};
+    std::vector<float> *outputSeparatrices2_points_{};
+    SimplexId *outputSeparatrices2_numberOfCells_{};
+    std::vector<SimplexId> *outputSeparatrices2_cells_{};
+    std::vector<SimplexId> *outputSeparatrices2_cells_sourceIds_{};
+    std::vector<SimplexId> *outputSeparatrices2_cells_separatrixIds_{};
+    std::vector<char> *outputSeparatrices2_cells_separatrixTypes_{};
+    void *outputSeparatrices2_cells_separatrixFunctionMaxima_{};
+    void *outputSeparatrices2_cells_separatrixFunctionMinima_{};
+    void *outputSeparatrices2_cells_separatrixFunctionDiffs_{};
+    std::vector<char> *outputSeparatrices2_cells_isOnBoundary_{};
 
-    void *outputAscendingManifold_;
-    void *outputDescendingManifold_;
-    void *outputMorseSmaleManifold_;
+    void *outputAscendingManifold_{};
+    void *outputDescendingManifold_{};
+    void *outputMorseSmaleManifold_{};
   };
 } // namespace ttk
 
@@ -465,33 +461,24 @@ int ttk::AbstractMorseSmaleComplex::setSeparatrices1(
   const std::vector<std::vector<dcg::Cell>> &separatricesGeometry) const {
 #ifndef TTK_ENABLE_KAMIKAZE
   if(outputSeparatrices1_numberOfPoints_ == nullptr) {
-    std::cerr << "[AbstractMorseSmaleComplex] 1-separatrices pointer to "
-                 "numberOfPoints is null."
-              << std::endl;
+    this->printErr("1-separatrices pointer to numberOfPoints is null.");
     return -1;
   }
   if(outputSeparatrices1_points_ == nullptr) {
-    std::cerr
-      << "[AbstractMorseSmaleComplex] 1-separatrices pointer to points is null."
-      << std::endl;
+    this->printErr("1-separatrices pointer to points is null.");
     return -1;
   }
   if(outputSeparatrices1_numberOfCells_ == nullptr) {
-    std::cerr << "[AbstractMorseSmaleComplex] 1-separatrices pointer to "
-                 "numberOfCells is null."
-              << std::endl;
+    this->printErr("1-separatrices pointer to numberOfCells is null.");
     return -1;
   }
   if(outputSeparatrices1_cells_ == nullptr) {
-    std::cerr
-      << "[AbstractMorseSmaleComplex] 1-separatrices pointer to cells is null."
-      << std::endl;
+    this->printErr("1-separatrices pointer to cells is null.");
     return -1;
   }
   if(inputScalarField_ == nullptr) {
-    std::cerr << "[AbstractMorseSmaleComplex] 1-separatrices pointer to the "
-                 "input scalar field is null."
-              << std::endl;
+    this->printErr(
+      " 1-separatrices pointer to the input scalar field is null.");
     return -1;
   }
 #endif
@@ -666,5 +653,3 @@ int ttk::AbstractMorseSmaleComplex::setSeparatrices1(
 
   return 0;
 }
-
-#endif // ABSTRACTMORSESMALECOMPLEX_H
