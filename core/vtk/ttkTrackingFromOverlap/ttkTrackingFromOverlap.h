@@ -63,7 +63,8 @@ public:
   int FillInputPortInformation(int port, vtkInformation *info) override {
     switch(port) {
       case 0:
-        info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkMultiBlockDataSet");
+        info->Set(
+          vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkMultiBlockDataSet");
         break;
       default:
         return 0;

@@ -20,11 +20,11 @@
 
 #pragma once
 
+#include <Debug.h>
 #include <algorithm>
 #include <boost/variant.hpp>
 #include <map>
 #include <unordered_map>
-#include <Debug.h>
 
 using namespace std;
 
@@ -82,8 +82,8 @@ struct CoordinateComparator {
 namespace ttk {
   class TrackingFromOverlap : virtual public Debug {
   public:
-    TrackingFromOverlap(){
-        this->setDebugMsgPrefix("TrackingFromOverlap");
+    TrackingFromOverlap() {
+      this->setDebugMsgPrefix("TrackingFromOverlap");
     };
     ~TrackingFromOverlap(){};
 

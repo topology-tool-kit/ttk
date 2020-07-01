@@ -9,13 +9,13 @@
 #include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
 #include <vtkIdTypeArray.h>
-#include <vtkLongLongArray.h>
-#include <vtkPointData.h>
 #include <vtkInformation.h>
 #include <vtkInformationVector.h>
+#include <vtkLongLongArray.h>
+#include <vtkPointData.h>
 
-#include <ttkUtils.h>
 #include <ttkMacros.h>
+#include <ttkUtils.h>
 
 using namespace std;
 using namespace ttk;
@@ -233,7 +233,7 @@ int ttkTrackingFromOverlap::meshNestedTrackingGraph(
   Timer t;
 
   printMsg("=======================================================\n",
-       debug::Priority::INFO);
+           debug::Priority::INFO);
   printMsg("Meshing nested tracking graph\n", debug::Priority::INFO);
 
   switch(this->LabelDataType) {
@@ -245,9 +245,9 @@ int ttkTrackingFromOverlap::meshNestedTrackingGraph(
 
   printMsg("-------------------------------------------------------");
   stringstream msg;
-  msg << "Nested tracking graph meshed in "
-      << t.getElapsedTime() << " s. (" << threadNumber_ << " thread(s)).";
-  printMsg( msg.str(), debug::Priority::PERFORMANCE);
+  msg << "Nested tracking graph meshed in " << t.getElapsedTime() << " s. ("
+      << threadNumber_ << " thread(s)).";
+  printMsg(msg.str(), debug::Priority::PERFORMANCE);
 
   return 1;
 }
@@ -331,7 +331,7 @@ int ttkTrackingFromOverlap::packInputData(
 
   if(error) {
     printErr("Unable to convert input into "
-         "'vtkPointSet' collection.\n");
+             "'vtkPointSet' collection.\n");
     return 0;
   }
 
@@ -347,7 +347,7 @@ int ttkTrackingFromOverlap::checkData(vtkMultiBlockDataSet *data) {
 
   if(nL < 1) {
     printErr("Input must have at least one "
-         "vtkPointSet.\n");
+             "vtkPointSet.\n");
     return 0;
   }
 
@@ -356,7 +356,7 @@ int ttkTrackingFromOverlap::checkData(vtkMultiBlockDataSet *data) {
     size_t n = timesteps->GetNumberOfBlocks();
     if(n < 1) {
       printErr("Input must have at least one "
-           "vtkPointSet.\n");
+               "vtkPointSet.\n");
       return 0;
     }
     if(nT == 0)
@@ -373,8 +373,8 @@ int ttkTrackingFromOverlap::checkData(vtkMultiBlockDataSet *data) {
         this->GetLabelFieldName().data());
 
       if(nPoints > 0 && labels == nullptr) {
-        printErr("Point labels '"
-               + this->GetLabelFieldName() + "' not found.\n");
+        printErr("Point labels '" + this->GetLabelFieldName()
+                 + "' not found.\n");
         return 0;
       }
       if(labels == nullptr)
@@ -385,7 +385,7 @@ int ttkTrackingFromOverlap::checkData(vtkMultiBlockDataSet *data) {
         this->LabelDataType = labelDataType;
       if(this->LabelDataType != labelDataType) {
         printErr("Point labels do not have same "
-             "type across point sets.\n");
+                 "type across point sets.\n");
         return 0;
       }
     }
@@ -470,18 +470,18 @@ int ttkTrackingFromOverlap::computeNodes(vtkMultiBlockDataSet *data) {
   // Compute Nodes
   {
     printMsg("=======================================================\n",
-         debug::Priority::INFO);
-    printMsg( "Computing nodes\n", debug::Priority::INFO);
+             debug::Priority::INFO);
+    printMsg("Computing nodes\n", debug::Priority::INFO);
 
     if(this->levelTimeNodesMap.size() != nL)
       this->levelTimeNodesMap.resize(nL);
 
     for(size_t l = 0; l < nL; l++) {
       {
-          printMsg("-------------------------------------------------------");
+        printMsg("-------------------------------------------------------");
         stringstream msg;
         msg << "Level Index: " << l;
-        printMsg( msg.str(), debug::Priority::INFO);
+        printMsg(msg.str(), debug::Priority::INFO);
       }
 
       vector<Nodes> &timeNodesMap = this->levelTimeNodesMap[l];
@@ -505,12 +505,11 @@ int ttkTrackingFromOverlap::computeNodes(vtkMultiBlockDataSet *data) {
     }
 
     {
-        printMsg("-------------------------------------------------------");
+      printMsg("-------------------------------------------------------");
       stringstream msg;
-      msg << "Nodes computed in "
-          << timer.getElapsedTime() << " s. (" << threadNumber_
-          << " thread(s)).";
-      printMsg( msg.str(), debug::Priority::PERFORMANCE);
+      msg << "Nodes computed in " << timer.getElapsedTime() << " s. ("
+          << threadNumber_ << " thread(s)).";
+      printMsg(msg.str(), debug::Priority::PERFORMANCE);
     }
   }
 
@@ -537,18 +536,18 @@ int ttkTrackingFromOverlap::computeTrackingGraphs(vtkMultiBlockDataSet *data) {
   vtkDataArray *labels1 = nullptr;
 
   printMsg("=======================================================\n",
-       debug::Priority::INFO);
-  printMsg( "Computing tracking graphs\n", debug::Priority::INFO);
+           debug::Priority::INFO);
+  printMsg("Computing tracking graphs\n", debug::Priority::INFO);
 
   if(this->levelTimeEdgesTMap.size() != nL)
     this->levelTimeEdgesTMap.resize(nL);
 
   for(size_t l = 0; l < nL; l++) {
     {
-        printMsg("-------------------------------------------------------");
+      printMsg("-------------------------------------------------------");
       stringstream msg;
       msg << "Level Index: " << l;
-      printMsg( msg.str(), debug::Priority::INFO);
+      printMsg(msg.str(), debug::Priority::INFO);
     }
 
     vector<Edges> &timeEdgesTMap = this->levelTimeEdgesTMap[l];
@@ -576,11 +575,11 @@ int ttkTrackingFromOverlap::computeTrackingGraphs(vtkMultiBlockDataSet *data) {
   }
 
   {
-      printMsg("-------------------------------------------------------");
+    printMsg("-------------------------------------------------------");
     stringstream msg;
-    msg << "Tracking graphs computed in "
-        << timer.getElapsedTime() << " s. (" << threadNumber_ << " thread(s)).";
-    printMsg( msg.str(), debug::Priority::PERFORMANCE);
+    msg << "Tracking graphs computed in " << timer.getElapsedTime() << " s. ("
+        << threadNumber_ << " thread(s)).";
+    printMsg(msg.str(), debug::Priority::PERFORMANCE);
   }
   return 1;
 }
@@ -605,18 +604,18 @@ int ttkTrackingFromOverlap::computeNestingTrees(vtkMultiBlockDataSet *data) {
   vtkDataArray *labels1 = nullptr;
 
   printMsg("=======================================================\n",
-       debug::Priority::INFO);
-  printMsg( "Computing nesting trees\n", debug::Priority::INFO);
+           debug::Priority::INFO);
+  printMsg("Computing nesting trees\n", debug::Priority::INFO);
 
   size_t timeOffset = this->timeLevelEdgesNMap.size();
   this->timeLevelEdgesNMap.resize(timeOffset + nT);
 
   for(size_t t = 0; t < nT; t++) {
     {
-        printMsg("-------------------------------------------------------");
+      printMsg("-------------------------------------------------------");
       stringstream msg;
       msg << "Time Index: " << t;
-      printMsg( msg.str(), debug::Priority::INFO);
+      printMsg(msg.str(), debug::Priority::INFO);
     }
 
     vector<Edges> &levelEdgesNMap = this->timeLevelEdgesNMap[timeOffset + t];
@@ -643,11 +642,11 @@ int ttkTrackingFromOverlap::computeNestingTrees(vtkMultiBlockDataSet *data) {
   }
 
   {
-      printMsg("-------------------------------------------------------");
+    printMsg("-------------------------------------------------------");
     stringstream msg;
-    msg << "Nesting trees computed in "
-        << timer.getElapsedTime() << " s. (" << threadNumber_ << " thread(s)).";
-    printMsg( msg.str(), debug::Priority::PERFORMANCE);
+    msg << "Nesting trees computed in " << timer.getElapsedTime() << " s. ("
+        << threadNumber_ << " thread(s)).";
+    printMsg(msg.str(), debug::Priority::PERFORMANCE);
   }
 
   return 1;
@@ -677,8 +676,9 @@ int ttkTrackingFromOverlap::RequestData(vtkInformation *request,
 
   // Print Status
   {
-      printMsg("===================================================================");
-    printMsg( "RequestData", debug::Priority::INFO);
+    printMsg(
+      "===================================================================");
+    printMsg("RequestData", debug::Priority::INFO);
   }
 
   // Get Input Object
@@ -763,11 +763,11 @@ int ttkTrackingFromOverlap::RequestData(vtkInformation *request,
   // Print total performance
   // -------------------------------------------------------------------------
   if(!useStreamingOverTime) {
-      printMsg("=======================================================");
+    printMsg("=======================================================");
     stringstream msg;
-    msg << "Nested tracking graph generated in "
-        << timer.getElapsedTime() << " s. (" << threadNumber_ << " thread(s)).";
-    printMsg( msg.str(), debug::Priority::PERFORMANCE);
+    msg << "Nested tracking graph generated in " << timer.getElapsedTime()
+        << " s. (" << threadNumber_ << " thread(s)).";
+    printMsg(msg.str(), debug::Priority::PERFORMANCE);
   }
 
   return 1;
