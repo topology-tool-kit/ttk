@@ -16,15 +16,10 @@
 /// Numerische Mathematik, 1959.
 ///
 /// \sa ttkDistanceField.cpp %for a usage example.
-
-#ifndef _DISTANCEFIELD_H
-#define _DISTANCEFIELD_H
+#pragma once
 
 // base code includes
 #include <Dijkstra.h>
-#include <Geometry.h>
-#include <Triangulation.h>
-#include <Wrapper.h>
 
 // std includes
 #include <limits>
@@ -32,7 +27,7 @@
 
 namespace ttk {
 
-  class DistanceField : public Debug {
+  class DistanceField : virtual public Debug {
 
   public:
     DistanceField();
@@ -54,7 +49,8 @@ namespace ttk {
       return 0;
     }
 
-    inline int setupTriangulation(Triangulation *triangulation) {
+    template <class TriangulationType = AbstractTriangulation>
+    inline int setupTriangulation(TriangulationType *triangulation) {
       triangulation_ = triangulation;
       if(triangulation_) {
         triangulation_->preconditionVertexNeighbors();
@@ -142,11 +138,9 @@ int ttk::DistanceField::execute() const {
     std::stringstream msg;
     msg << "[DistanceField] Data-set (" << vertexNumber_
         << " points) processed in " << t.getElapsedTime() << " s. ("
-        << threadNumber_ << " thread(s))." << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
+        << threadNumber_ << " thread(s)." << std::endl;
+    printMsg(msg.str(), ttk::Debug::debugPriority::timeMsg);
   }
 
   return 0;
 }
-
-#endif // DISTANCEFIELD_H

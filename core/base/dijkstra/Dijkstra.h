@@ -1,8 +1,6 @@
 #pragma once
 
-#include <Geometry.h>
 #include <Triangulation.h>
-#include <Wrapper.h>
 
 namespace ttk {
   namespace Dijkstra {
