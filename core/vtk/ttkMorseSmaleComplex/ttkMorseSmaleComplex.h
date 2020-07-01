@@ -157,28 +157,28 @@ protected:
                                         vtkInformation *info) override;
 
 private:
-  std::string ScalarField;
-  std::string InputOffsetScalarFieldName;
-  bool ForceInputOffsetScalarField;
-  int IterationThreshold;
-  bool ComputeCriticalPoints;
-  bool ComputeAscendingSeparatrices1;
-  bool ComputeDescendingSeparatrices1;
-  bool ComputeSaddleConnectors;
-  bool ComputeAscendingSeparatrices2;
-  bool ComputeDescendingSeparatrices2;
-  bool ComputeAscendingSegmentation;
-  bool ComputeDescendingSegmentation;
-  bool ComputeFinalSegmentation;
-  int ScalarFieldId;
-  int OffsetFieldId;
-  int ReturnSaddleConnectors;
-  double SaddleConnectorsPersistenceThreshold;
+  std::string ScalarField{};
+  std::string InputOffsetScalarFieldName{ttk::OffsetScalarFieldName};
+  bool ForceInputOffsetScalarField{};
+  int IterationThreshold{-1};
+  bool ComputeCriticalPoints{true};
+  bool ComputeAscendingSeparatrices1{true};
+  bool ComputeDescendingSeparatrices1{true};
+  bool ComputeSaddleConnectors{true};
+  bool ComputeAscendingSeparatrices2{false};
+  bool ComputeDescendingSeparatrices2{false};
+  bool ComputeAscendingSegmentation{true};
+  bool ComputeDescendingSegmentation{true};
+  bool ComputeFinalSegmentation{true};
+  int ScalarFieldId{};
+  int OffsetFieldId{-1};
+  int ReturnSaddleConnectors{false};
+  double SaddleConnectorsPersistenceThreshold{0.0};
 
-  ttk::MorseSmaleComplex morseSmaleComplex_;
-  ttk::Triangulation *triangulation_;
-  vtkDataArray *defaultOffsets_;
-  bool hasUpdatedMesh_;
+  ttk::MorseSmaleComplex morseSmaleComplex_{};
+  ttk::Triangulation *triangulation_{};
+  vtkDataArray *defaultOffsets_{};
+  bool hasUpdatedMesh_{};
 };
 
 #endif // _TTK_MORSESMALECOMPLEX_H

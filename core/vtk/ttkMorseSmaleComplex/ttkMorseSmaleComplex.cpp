@@ -3,19 +3,9 @@
 
 using namespace std;
 
-vtkStandardNewMacro(ttkMorseSmaleComplex)
+vtkStandardNewMacro(ttkMorseSmaleComplex);
 
-  ttkMorseSmaleComplex::ttkMorseSmaleComplex()
-  : ScalarField{}, InputOffsetScalarFieldName{ttk::OffsetScalarFieldName},
-    ForceInputOffsetScalarField{}, IterationThreshold{-1},
-    ComputeCriticalPoints{true}, ComputeAscendingSeparatrices1{true},
-    ComputeDescendingSeparatrices1{true}, ComputeSaddleConnectors{true},
-    ComputeAscendingSeparatrices2{false}, ComputeDescendingSeparatrices2{false},
-    ComputeAscendingSegmentation{true}, ComputeDescendingSegmentation{true},
-    ComputeFinalSegmentation{true}, ScalarFieldId{}, OffsetFieldId{-1},
-    ReturnSaddleConnectors{false}, SaddleConnectorsPersistenceThreshold{0},
-    triangulation_{}, defaultOffsets_{}, hasUpdatedMesh_{} {
-  UseAllCores = true;
+ttkMorseSmaleComplex::ttkMorseSmaleComplex() {
   SetNumberOfInputPorts(1);
   SetNumberOfOutputPorts(4);
 }
