@@ -49,13 +49,22 @@ TopologicalSimplification.
         </Documentation>
       </InputProperty>
 
-      <StringVectorProperty name="ScalarFieldNew" label="Scalar Field" command="SetInputArrayToProcess" element_types="0 0 0 0 2" number_of_elements="5" default_values="0">
+      <StringVectorProperty
+        name="ScalarFieldNew"
+        label="Scalar Field"
+        command="SetInputArrayToProcess"
+        element_types="0 0 0 0 2"
+        number_of_elements="5"
+        default_values="0"
+        >
         <ArrayListDomain attribute_type="Scalars" name="array_list">
-            <RequiredProperties>
-                <Property function="Input" name="Input" />
-            </RequiredProperties>
+          <RequiredProperties>
+            <Property function="Input" name="Input" />
+          </RequiredProperties>
         </ArrayListDomain>
-        <Documentation>The scalar array that will be used to compute averages.</Documentation>
+        <Documentation>
+          Select the scalar field to process.
+        </Documentation>
       </StringVectorProperty>
 
       <IntVectorProperty
@@ -72,6 +81,34 @@ TopologicalSimplification.
          </Documentation>
       </IntVectorProperty>
 
+      <StringVectorProperty
+        name="InputOffsetScalarFieldNameNew"
+        label="Input Offset Field"
+        command="SetInputArrayToProcess"
+        element_types="0 0 0 0 2"
+        number_of_elements="5"
+        default_values="1"
+        panel_visibility="advanced"
+        >
+        <ArrayListDomain
+          name="array_list"
+          default_values="1"
+          >
+          <RequiredProperties>
+            <Property name="Input" function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="ForceInputOffsetScalarField"
+            value="1" />
+        </Hints>
+        <Documentation>
+          Select the input offset field (used to disambiguate flat plateaus).
+        </Documentation>
+      </StringVectorProperty>
+
       <IntVectorProperty
          name="SaddleConnectors"
          command="SetComputeSaddleConnectors"
@@ -85,7 +122,9 @@ TopologicalSimplification.
       </IntVectorProperty>
 
       <PropertyGroup panel_widget="Line" label="Input options">
+        <Property name="ScalarFieldNew" />
         <Property name="ForceInputOffsetScalarField"/>
+        <Property name="InputOffsetScalarFieldNameNew"/>
       </PropertyGroup>
 
       <PropertyGroup panel_widget="Line" label="Output options">

@@ -139,6 +139,7 @@ int ttkPersistenceCurve::RequestData(vtkInformation *request,
     return 0;
   }
 #endif
+  preconditionTriangulation(triangulation);
   // TODO: Remove when FTM and MSC are migrated
   setupTriangulation(triangulation);
 

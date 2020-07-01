@@ -66,7 +66,7 @@ namespace ttk {
       return 0;
     }
 
-    // Remove when FTM and MSC are migrated
+    // TODO: Remove when FTM and MSC are migrated
     inline int setupTriangulation(Triangulation *data) {
       triangulation_ = data;
       if(triangulation_) {
