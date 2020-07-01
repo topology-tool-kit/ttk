@@ -5,6 +5,7 @@
 
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
+#include <vtkInformation.h>
 #include <vtkPointData.h>
 #include <vtkSmartPointer.h>
 
@@ -16,7 +17,6 @@ ttkPeriodicGrid::ttkPeriodicGrid() {
   this->setDebugMsgPrefix("PeriodicGrid");
   this->SetNumberOfInputPorts(1);
   this->SetNumberOfOutputPorts(1);
-  Periodicity = true;
 }
 
 ttkPeriodicGrid::~ttkPeriodicGrid() {
