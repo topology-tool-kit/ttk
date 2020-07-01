@@ -57,7 +57,7 @@ int ttkHelloWorld::FillInputPortInformation(int port, vtkInformation *info) {
  * corresponding output objects. It is possible to either explicitly
  * specify a type by adding a vtkDataObject::DATA_TYPE_NAME() key:
  *
- *      info->Set( ttkAlgorithm::DATA_TYPE_NAME(), "vtkUnstructuredGrid" );
+ *      info->Set( vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid" );
  *
  * or to pass a type of an input port to an output port by adding the
  * ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT() key (see below).
