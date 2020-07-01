@@ -222,5 +222,5 @@ int ttkIntegralLines::RequestData(vtkInformation *request,
   // make the vtk trajectories
   getTrajectories(domain, triangulation, trajectories, output);
 
-  return (int)(status != 0);
+  return (int)(status == 0);
 }
