@@ -99,5 +99,3 @@ private:
 
   int processTriangles(vtkUnstructuredGrid *input, vtkUnstructuredGrid *output);
 };
-
-#endif // _TTK_RANGEPOLYGON_H
