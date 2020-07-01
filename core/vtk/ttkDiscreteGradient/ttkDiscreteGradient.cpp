@@ -1,4 +1,5 @@
 #include <ttkDiscreteGradient.h>
+#include <ttkMacros.h>
 #include <ttkUtils.h>
 
 #include <vtkCellData.h>
@@ -182,16 +183,18 @@ int ttkDiscreteGradient::RequestData(vtkInformation *request,
     = ttkAlgorithm::GetOptionalArray(this->ForceInputOffsetScalarField, 1,
                                      ttk::OffsetScalarFieldName, inputVector);
 
+  vtkNew<ttkSimplexIdTypeArray> offsets{};
+
   if(inputOffsets == nullptr) {
     // build a new offset field
     const SimplexId numberOfVertices = input->GetNumberOfPoints();
-    offsets_->SetNumberOfComponents(1);
-    offsets_->SetNumberOfTuples(numberOfVertices);
-    offsets_->SetName(ttk::OffsetScalarFieldName);
+    offsets->SetNumberOfComponents(1);
+    offsets->SetNumberOfTuples(numberOfVertices);
+    offsets->SetName(ttk::OffsetScalarFieldName);
     for(SimplexId i = 0; i < numberOfVertices; ++i) {
-      offsets_->SetTuple1(i, i);
+      offsets->SetTuple1(i, i);
     }
-    inputOffsets = offsets_;
+    inputOffsets = offsets;
   }
 
   if(inputScalars == nullptr || inputOffsets == nullptr) {

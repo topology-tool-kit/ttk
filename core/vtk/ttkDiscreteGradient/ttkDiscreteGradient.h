@@ -44,7 +44,6 @@
 // ttk code includes
 #include <DiscreteGradient.h>
 #include <ttkAlgorithm.h>
-#include <ttkMacros.h>
 
 class vtkUnstructuredGrid;
 
@@ -83,6 +82,4 @@ private:
 
   bool ForceInputOffsetScalarField{false};
   bool ComputeGradientGlyphs{true};
-
-  vtkNew<ttkSimplexIdTypeArray> offsets_{};
 };
