@@ -60,29 +60,6 @@ public:
     vtkSetMacro(LabelFieldName, string);
   vtkGetMacro(LabelFieldName, string);
 
-  int FillInputPortInformation(int port, vtkInformation *info) override {
-    switch(port) {
-      case 0:
-        info->Set(
-          vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkMultiBlockDataSet");
-        break;
-      default:
-        return 0;
-    }
-    return 1;
-  }
-
-  int FillOutputPortInformation(int port, vtkInformation *info) override {
-    switch(port) {
-      case 0:
-        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
-        break;
-      default:
-        return 0;
-    }
-    return 1;
-  }
-
 protected:
   ttkTrackingFromOverlap() {
     SetLabelFieldName("RegionId");
@@ -116,6 +93,31 @@ protected:
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;
+
+  int FillInputPortInformation(int port, vtkInformation *info) override {
+    switch(port) {
+      case 0:
+        info->Remove(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE());
+        info->Append(
+          vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkMultiBlockDataSet");
+        info->Append(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
+        break;
+      default:
+        return 0;
+    }
+    return 1;
+  }
+
+  int FillOutputPortInformation(int port, vtkInformation *info) override {
+    switch(port) {
+      case 0:
+        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
+        break;
+      default:
+        return 0;
+    }
+    return 1;
+  }
 
 private:
   int LabelDataType;

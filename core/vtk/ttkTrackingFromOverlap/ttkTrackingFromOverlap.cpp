@@ -373,8 +373,7 @@ int ttkTrackingFromOverlap::checkData(vtkMultiBlockDataSet *data) {
         this->GetLabelFieldName().data());
 
       if(nPoints > 0 && labels == nullptr) {
-        printErr("Point labels '" + this->GetLabelFieldName()
-                 + "' not found.");
+        printErr("Point labels '" + this->GetLabelFieldName() + "' not found.");
         return 0;
       }
       if(labels == nullptr)
