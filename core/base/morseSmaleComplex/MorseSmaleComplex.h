@@ -178,7 +178,7 @@
 
 namespace ttk {
 
-  class MorseSmaleComplex {
+  class MorseSmaleComplex : public virtual Debug {
 
   public:
     MorseSmaleComplex();
