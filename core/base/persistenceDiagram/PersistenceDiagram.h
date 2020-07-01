@@ -63,7 +63,7 @@ namespace ttk {
                                                       ttk::CriticalType,
                                                       scalarType,
                                                       ttk::SimplexId>> &diagram,
-                               scalarType *scalars,
+                               const scalarType *scalars,
                                SimplexId *offsets) const;
 
     template <typename scalarType>
@@ -77,7 +77,7 @@ namespace ttk {
                              ttk::CriticalType,
                              scalarType,
                              ttk::SimplexId>> &diagram,
-      scalarType *scalars) const;
+      const scalarType *scalars) const;
 
     template <typename scalarType, typename idType, class triangulationType>
       int execute(std::vector<std::tuple<ttk::SimplexId, ttk::CriticalType, ttk::SimplexId,
@@ -132,7 +132,7 @@ int ttk::PersistenceDiagram::sortPersistenceDiagram(
                          ttk::CriticalType,
                          scalarType,
                          ttk::SimplexId>> &diagram,
-  scalarType *scalars,
+  const scalarType *scalars,
   SimplexId *offsets) const {
   auto cmp
     = [scalars, offsets](
@@ -169,7 +169,7 @@ int ttk::PersistenceDiagram::computeCTPersistenceDiagram(
                          ttk::CriticalType,
                          scalarType,
                          ttk::SimplexId>> &diagram,
-  scalarType *scalars) const {
+  const scalarType *scalars) const {
   const ttk::SimplexId numberOfPairs = pairs.size();
   diagram.resize(numberOfPairs);
   for(ttk::SimplexId i = 0; i < numberOfPairs; ++i) {
@@ -309,7 +309,7 @@ int ttk::PersistenceDiagram::execute(std::vector<std::tuple<ttk::SimplexId, ttk:
   }
 
   // finally sort the diagram
-  sortPersistenceDiagram(CTDiagram, inputScalars, inputOffsets);
+  sortPersistenceDiagram(CTDiagram, inputScalars, voffsets.data());
 
   printMsg(
     "Base execution completed", 1, timer.getElapsedTime(), threadNumber_);

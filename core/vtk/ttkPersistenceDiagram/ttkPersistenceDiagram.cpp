@@ -48,7 +48,7 @@ int ttkPersistenceDiagram::deleteDiagram() {
 }
 
 template <typename VTK_TT, typename TTK_TT>
-int ttkPersistenceCurve::dispatch(vtkUnstructuredGrid *outputCTPersistenceDiagram,
+int ttkPersistenceDiagram::dispatch(vtkUnstructuredGrid *outputCTPersistenceDiagram,
                                   const VTK_TT *inputScalars,
                                   int inputOffsetsDataType,
                                   const void *inputOffsets,
@@ -71,13 +71,13 @@ int ttkPersistenceCurve::dispatch(vtkUnstructuredGrid *outputCTPersistenceDiagra
   vector<tuple_t> *CTDiagram = (vector<tuple_t> *)CTDiagram_;
 
   if(computeDiagram_) {
-    if(inputOffsets_->GetDataType() == VTK_INT)
-      ret = this->execute<VTK_TT, int, TTK_TT>(CTDiagram, 
+    if(inputOffsetsDataType == VTK_INT)
+      ret = this->execute<VTK_TT, int, TTK_TT>(*CTDiagram, 
         inputScalars, (int *)inputOffsets,
         triangulation);
-    if(inputOffsets_->GetDataType() == VTK_ID_TYPE)
+    if(inputOffsetsDataType == VTK_ID_TYPE)
       ret = this->execute<VTK_TT, vtkIdType, TTK_TT>(
-        CTDiagram, inputScalars, (vtkIdType *)inputOffsets,
+        *CTDiagram, inputScalars, (vtkIdType *)inputOffsets,
         triangulation);
 #ifndef TTK_ENABLE_KAMIKAZE
     if(ret) {
@@ -90,10 +90,10 @@ int ttkPersistenceCurve::dispatch(vtkUnstructuredGrid *outputCTPersistenceDiagra
   }
 
   if(ShowInsideDomain)
-    ret = getPersistenceDiagramInsideDomain<VTK_TT>(
-      ftm::TreeType::Contour, CTDiagram_, inputScalars, triangulation);
+    ret = getPersistenceDiagramInsideDomain<VTK_TT>(outputCTPersistenceDiagram,
+      ftm::TreeType::Contour, *CTDiagram, inputScalars, triangulation);
   else
-    ret = getPersistenceDiagram<VTK_TT>(ftm::TreeType::Contour, CTDiagram_, inputScalars, triangulation);
+    ret = getPersistenceDiagram<VTK_TT>(outputCTPersistenceDiagram, ftm::TreeType::Contour, *CTDiagram, inputScalars, triangulation);
 #ifndef TTK_ENABLE_KAMIKAZE
   if(ret) {
     this->printErr("Build of contour tree persistence diagram has failed.");
@@ -169,8 +169,10 @@ int ttkPersistenceDiagram::RequestData(vtkInformation *request,
   }
 #endif
 
-  vector<tuple<Cell, Cell>> dmt_pairs;
-  setDMTPairs(&dmt_pairs);
+  vector<tuple<Cell, Cell>> dmt_pairs_temp;
+  setDMTPairs(&dmt_pairs_temp);
+  
+  scalarDataType = inputScalars->GetDataType();
 
   int status = 0;
   ttkVtkTemplateMacro(
