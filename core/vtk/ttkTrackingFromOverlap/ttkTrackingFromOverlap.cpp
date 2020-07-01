@@ -232,9 +232,9 @@ int ttkTrackingFromOverlap::meshNestedTrackingGraph(
   vtkDataObject *trackingGraph) {
   Timer t;
 
-  printMsg("=======================================================\n",
+  printMsg("=======================================================",
            debug::Priority::INFO);
-  printMsg("Meshing nested tracking graph\n", debug::Priority::INFO);
+  printMsg("Meshing nested tracking graph", debug::Priority::INFO);
 
   switch(this->LabelDataType) {
     vtkTemplateMacro(
@@ -331,7 +331,7 @@ int ttkTrackingFromOverlap::packInputData(
 
   if(error) {
     printErr("Unable to convert input into "
-             "'vtkPointSet' collection.\n");
+             "'vtkPointSet' collection.");
     return 0;
   }
 
@@ -347,7 +347,7 @@ int ttkTrackingFromOverlap::checkData(vtkMultiBlockDataSet *data) {
 
   if(nL < 1) {
     printErr("Input must have at least one "
-             "vtkPointSet.\n");
+             "vtkPointSet.");
     return 0;
   }
 
@@ -356,13 +356,13 @@ int ttkTrackingFromOverlap::checkData(vtkMultiBlockDataSet *data) {
     size_t n = timesteps->GetNumberOfBlocks();
     if(n < 1) {
       printErr("Input must have at least one "
-               "vtkPointSet.\n");
+               "vtkPointSet.");
       return 0;
     }
     if(nT == 0)
       nT = n;
     if(nT != n) {
-      printErr("Timeseries have unequal length.\n");
+      printErr("Timeseries have unequal length.");
       return 0;
     }
 
@@ -374,7 +374,7 @@ int ttkTrackingFromOverlap::checkData(vtkMultiBlockDataSet *data) {
 
       if(nPoints > 0 && labels == nullptr) {
         printErr("Point labels '" + this->GetLabelFieldName()
-                 + "' not found.\n");
+                 + "' not found.");
         return 0;
       }
       if(labels == nullptr)
@@ -385,7 +385,7 @@ int ttkTrackingFromOverlap::checkData(vtkMultiBlockDataSet *data) {
         this->LabelDataType = labelDataType;
       if(this->LabelDataType != labelDataType) {
         printErr("Point labels do not have same "
-                 "type across point sets.\n");
+                 "type across point sets.");
         return 0;
       }
     }
@@ -402,7 +402,7 @@ int ttkTrackingFromOverlap::packStreamedData(vtkMultiBlockDataSet *streamedData,
   size_t nL_PI = this->previousIterationData->GetNumberOfBlocks();
   size_t nL_CI = streamedData->GetNumberOfBlocks();
   if(nL_PI != nL_CI) {
-    printErr("Number of levels differ over time.\n");
+    printErr("Number of levels differ over time.");
     return 0;
   }
   for(size_t l = 0; l < nL_PI; l++) {
@@ -469,9 +469,9 @@ int ttkTrackingFromOverlap::computeNodes(vtkMultiBlockDataSet *data) {
 
   // Compute Nodes
   {
-    printMsg("=======================================================\n",
+    printMsg("=======================================================",
              debug::Priority::INFO);
-    printMsg("Computing nodes\n", debug::Priority::INFO);
+    printMsg("Computing nodes", debug::Priority::INFO);
 
     if(this->levelTimeNodesMap.size() != nL)
       this->levelTimeNodesMap.resize(nL);
@@ -535,9 +535,9 @@ int ttkTrackingFromOverlap::computeTrackingGraphs(vtkMultiBlockDataSet *data) {
   vtkDataArray *labels0 = nullptr;
   vtkDataArray *labels1 = nullptr;
 
-  printMsg("=======================================================\n",
+  printMsg("=======================================================",
            debug::Priority::INFO);
-  printMsg("Computing tracking graphs\n", debug::Priority::INFO);
+  printMsg("Computing tracking graphs", debug::Priority::INFO);
 
   if(this->levelTimeEdgesTMap.size() != nL)
     this->levelTimeEdgesTMap.resize(nL);
@@ -603,9 +603,9 @@ int ttkTrackingFromOverlap::computeNestingTrees(vtkMultiBlockDataSet *data) {
   vtkDataArray *labels0 = nullptr;
   vtkDataArray *labels1 = nullptr;
 
-  printMsg("=======================================================\n",
+  printMsg("=======================================================",
            debug::Priority::INFO);
-  printMsg("Computing nesting trees\n", debug::Priority::INFO);
+  printMsg("Computing nesting trees", debug::Priority::INFO);
 
   size_t timeOffset = this->timeLevelEdgesNMap.size();
   this->timeLevelEdgesNMap.resize(timeOffset + nT);
