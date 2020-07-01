@@ -111,7 +111,7 @@ int ttk::MorseSmaleComplex3D::setAscendingSeparatrices2(
       = discreteGradient_.scalarMin(src, scalars, triangulation);
     const auto maxId = *std::max_element(
       sepSaddles.begin(), sepSaddles.end(),
-      [=](const SimplexId a, const SimplexId b) {
+      [&triangulation, scalars, this](const SimplexId a, const SimplexId b) {
         return discreteGradient_.scalarMax(Cell{2, a}, scalars, triangulation)
                < discreteGradient_.scalarMax(
                  Cell{2, b}, scalars, triangulation);
@@ -120,9 +120,11 @@ int ttk::MorseSmaleComplex3D::setAscendingSeparatrices2(
       = discreteGradient_.scalarMax(Cell{2, maxId}, scalars, triangulation);
 
     // get boundary condition
-    const char onBoundary = std::count_if(
-      sepSaddles.begin(), sepSaddles.end(),
-      [=](const SimplexId a) { return triangulation.isEdgeOnBoundary(a); });
+    const char onBoundary
+      = std::count_if(sepSaddles.begin(), sepSaddles.end(),
+                      [&triangulation](const SimplexId a) {
+                        return triangulation.isEdgeOnBoundary(a);
+                      });
 
     for(size_t j = 0; j < sepGeom.size(); ++j) {
       const auto &cell = sepGeom[j];
@@ -363,7 +365,7 @@ int ttk::MorseSmaleComplex3D::setDescendingSeparatrices2(
       = discreteGradient_.scalarMax(src, scalars, triangulation);
     const auto minId = *std::min_element(
       sepSaddles.begin(), sepSaddles.end(),
-      [=](const SimplexId a, const SimplexId b) {
+      [&triangulation, scalars, this](const SimplexId a, const SimplexId b) {
         return discreteGradient_.scalarMin(Cell{1, a}, scalars, triangulation)
                < discreteGradient_.scalarMin(
                  Cell{1, b}, scalars, triangulation);
@@ -373,9 +375,11 @@ int ttk::MorseSmaleComplex3D::setDescendingSeparatrices2(
     const dataType sepFuncDiff = sepFuncMax - sepFuncMin;
 
     // get boundary condition
-    const char onBoundary = std::count_if(
-      sepSaddles.begin(), sepSaddles.end(),
-      [=](const SimplexId a) { return triangulation.isEdgeOnBoundary(a); });
+    const char onBoundary
+      = std::count_if(sepSaddles.begin(), sepSaddles.end(),
+                      [&triangulation](const SimplexId a) {
+                        return triangulation.isEdgeOnBoundary(a);
+                      });
 
     for(size_t j = 0; j < sepGeom.size(); ++j) {
       const auto &cell = sepGeom[j];
