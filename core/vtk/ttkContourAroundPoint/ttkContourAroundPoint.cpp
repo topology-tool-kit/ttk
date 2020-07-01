@@ -1,8 +1,13 @@
 #include <ttkContourAroundPoint.h>
 
-#include <vtkVersion.h>
+#include <ttkMacros.h>
+#include <ttkUtils.h>
 
-#include <vtkProbeFilter.h> // TODO can be removed?
+#include <vtkVersion.h> // TODO needed?
+#include <vtkFieldData.h>
+#include <vtkInformation.h>
+#include <vtkInformationVector.h>
+
 
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
@@ -26,52 +31,77 @@
 
 vtkStandardNewMacro(ttkContourAroundPoint);
 
-int ttkContourAroundPoint::doIt(std::vector<vtkDataSet *> &inputs,
-                                std::vector<vtkDataSet *> &outputs) {
-  ttk::Memory memUseObj;
-  _outFld = static_cast<vtkUnstructuredGrid *>(outputs[0]);
-  _outPts = static_cast<vtkUnstructuredGrid *>(outputs[1]);
+using Class = ttkContourAroundPoint;
 
-  if(!preprocessFld(inputs[0]))
+//----------------------------------------------------------------------------//
+
+int Class::FillInputPortInformation(int port, vtkInformation *info) {
+  switch(port) {
+    case 0:
+      info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
+      return 1;
+    case 1:
+      info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkUnstructuredGrid");
+      return 1;
+    case 2:
+      info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkUnstructuredGrid");
+      return 1;
+  }
+  return 0;
+}
+
+
+int Class::FillOutputPortInformation(int port, vtkInformation *info) {
+  switch(port) {
+    case 0:
+      info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
+      return 1;
+    case 1:
+      info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
+      return 1;
+  }
+  return 0;
+}
+
+//----------------------------------------------------------------------------//
+
+int Class::RequestData(vtkInformation *request,
+    vtkInformationVector **iVec, vtkInformationVector *oVec) {
+
+  _outFld = vtkUnstructuredGrid::GetData(oVec, 0);
+  _outPts = vtkUnstructuredGrid::GetData(oVec, 1);
+
+  if(!preprocessFld(vtkDataSet::GetData(iVec[0])))
     return 0;
-  if(!preprocessPts(static_cast<vtkUnstructuredGrid *>(inputs[1]),
-                    static_cast<vtkUnstructuredGrid *>(inputs[2])))
+  if(!preprocessPts(vtkUnstructuredGrid::GetData(iVec[1]),
+                    vtkUnstructuredGrid::GetData(iVec[2])))
     return 0;
   if(!process())
     return 0;
   if(!postprocess())
     return 0;
 
-  std::ostringstream memUseStream;
-  memUseStream << std::fixed << std::setprecision(3)
-               << memUseObj.getElapsedUsage() << " MB";
-  dMsg(cout, memUseStream.str(), memoryMsg);
   return 1;
 }
 
 //----------------------------------------------------------------------------//
 
-bool ttkContourAroundPoint::preprocessFld(vtkDataSet *dataset) {
-  if(ui_scalars == "") {
-    vtkErrorMacro("A scalar variable needs to be defined on the Domain");
+bool Class::preprocessFld(vtkDataSet *dataset) {
+  ttk::Triangulation *triangulation = ttkAlgorithm::GetTriangulation(dataset);
+  if(!triangulation)
     return false;
-  }
 
-  ttk::Triangulation *triangulation
-    = ttkTriangulation::getTriangulation(dataset);
-  if(!triangulation) {
-    vtkErrorMacro("No ttk::Triangulation could be gained from the input field");
+  auto scalars = GetInputArrayToProcess(0, dataset);
+  if(!scalars)
     return false;
-  }
-
-  triangulation->setWrapper(this);
-  auto scalars = dataset->GetPointData()->GetAbstractArray(ui_scalars.c_str());
-  assert(scalars);
+  
   const double radius = ui_spherical ? -1. : 0.;
-  const auto errorCode = _wrappedModule.setInputField(
-        triangulation, scalars->GetVoidPointer(0), ui_sizeFilter, radius);
+  
+  _triangTypeCode = triangulation->getType();
+  const auto errorCode = this->setInputField(
+    triangulation, ttkUtils::GetVoidPointer(scalars), ui_sizeFilter, radius);
   if(errorCode < 0) {
-    vtkErrorMacro("_wrappedModule.setInputField failed with code " << errorCode);
+    vtkErrorMacro("super->setInputField failed with code " << errorCode);
     return false;
   }
 
@@ -85,7 +115,7 @@ bool ttkContourAroundPoint::preprocessFld(vtkDataSet *dataset) {
 
 //----------------------------------------------------------------------------//
 
-bool ttkContourAroundPoint::preprocessPts(vtkUnstructuredGrid *nodes,
+bool Class::preprocessPts(vtkUnstructuredGrid *nodes,
                                           vtkUnstructuredGrid *arcs) {
   // ---- Point data ---- //
 
@@ -94,7 +124,8 @@ bool ttkContourAroundPoint::preprocessPts(vtkUnstructuredGrid *nodes,
     vtkErrorMacro("The point coordinates must be of type float");
     return false;
   }
-  auto coords = reinterpret_cast<float *>(points->GetData()->GetVoidPointer(0));
+  auto coords = reinterpret_cast<float *>(
+    ttkUtils::GetVoidPointer(points->GetData()));
 
   auto pData = nodes->GetPointData();
   auto scalarBuf = getBuffer<float>(pData, "Scalar", VTK_FLOAT, "float");
@@ -173,7 +204,7 @@ bool ttkContourAroundPoint::preprocessPts(vtkUnstructuredGrid *nodes,
   }
 
   auto np = _scalars.size();
-  const auto errorCode = _wrappedModule.setInputPoints(
+  const auto errorCode = this->setInputPoints(
     _coords.data(), _scalars.data(), _isovals.data(), _flags.data(), np);
   if(errorCode < 0) {
     vtkErrorMacro("setInputPoints failed with code " << errorCode);
@@ -184,14 +215,17 @@ bool ttkContourAroundPoint::preprocessPts(vtkUnstructuredGrid *nodes,
 
 //----------------------------------------------------------------------------//
 
-bool ttkContourAroundPoint::process() {
-  _wrappedModule.setWrapper(this);
+bool Class::process() {
   int errorCode = 0; // In TTK, negative is bad.
-  switch(_scalarTypeCode) {
-    vtkTemplateMacro((errorCode = _wrappedModule.execute<VTK_TT>()));
-  }
+//   switch(_scalarTypeCode) {
+//     vtkTemplateMacro((errorCode = this->execute<VTK_TT>()));
+//   }
+  ttkVtkTemplateMacro(
+    _scalarTypeCode, static_cast<int>(_triangTypeCode),
+    (errorCode = this->execute<VTK_TT>())
+  )
   if(errorCode < 0) {
-    vtkErrorMacro("_wrappedModule.execute failed with code " << errorCode);
+    vtkErrorMacro("super->execute failed with code " << errorCode);
     return false;
   }
   return true;
@@ -199,15 +233,14 @@ bool ttkContourAroundPoint::process() {
 
 //----------------------------------------------------------------------------//
 
-bool ttkContourAroundPoint::postprocess() {
+bool Class::postprocess() {
   ttk::SimplexId *cinfosBuf;
   ttk::SimplexId nc;
   float *coordsBuf;
   float *scalarsBuf;
   int *flagsBuf;
   ttk::SimplexId nv;
-  _wrappedModule.getOutputContours(
-    cinfosBuf, nc, coordsBuf, scalarsBuf, flagsBuf, nv);
+  this->getOutputContours(cinfosBuf, nc, coordsBuf, scalarsBuf, flagsBuf, nv);
   if(nc == 0) // very fine area filter
     return true;
 
@@ -226,7 +259,7 @@ bool ttkContourAroundPoint::postprocess() {
   vtkIdType cinfoCounter = 0;
   for(std::size_t c = 0; c < nc; ++c) {
     const auto nvOfCell = cinfosBuf[cinfoCounter];
-    assert(nvOfCell >= 2 && nvOfCell <= 3); // ensured in _wrappedModule
+    assert(nvOfCell >= 2 && nvOfCell <= 3); // ensured in super class
     ctypes[c] = nvOfCell == 2 ? VTK_LINE : VTK_TRIANGLE;
     cinfoCounter += nvOfCell + 1;
   }
@@ -265,7 +298,7 @@ bool ttkContourAroundPoint::postprocess() {
 
   auto scalarArr = vtkFloatArray::New();
   scalarArr->SetArray(scalarsBuf, nv, wantSave, delMethod);
-  scalarArr->SetName(ui_scalars.c_str());
+//   scalarArr->SetName(ui_scalars.c_str()); // TODO copy input name
   _outFld->GetPointData()->AddArray(scalarArr);
 
   auto flagArr = vtkIntArray::New();
@@ -276,7 +309,7 @@ bool ttkContourAroundPoint::postprocess() {
   // ---- Output 1 (added in a later revision of the algo) ---- //
 
   // re-using the variables from above
-  _wrappedModule.getOutputCentroids(coordsBuf, scalarsBuf, flagsBuf, nv);
+  this->getOutputCentroids(coordsBuf, scalarsBuf, flagsBuf, nv);
 
   points = vtkSmartPointer<vtkPoints>::New();
   coordArr = vtkSmartPointer<vtkFloatArray>::New();
@@ -287,7 +320,7 @@ bool ttkContourAroundPoint::postprocess() {
 
   scalarArr = vtkFloatArray::New();
   scalarArr->SetArray(scalarsBuf, nv, wantSave, delMethod);
-  scalarArr->SetName(ui_scalars.c_str());
+//   scalarArr->SetName(ui_scalars.c_str()); // TODO copy input name
   _outPts->GetPointData()->AddArray(scalarArr);
 
   flagArr = vtkIntArray::New();

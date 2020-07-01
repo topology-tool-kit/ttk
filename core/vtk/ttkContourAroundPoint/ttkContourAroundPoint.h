@@ -21,119 +21,35 @@
  */
 #pragma once
 
-// VTK includes
-#include <vtkDataSetAlgorithm.h>
-#include <vtkFieldData.h>
-#include <vtkInformation.h>
+#include <vtkDataSetAlgorithm.h> // TODO still needed?
 #include <vtkPointData.h>
 
-// VTK Module
-#include <ttkContourAroundPointModule.h>
-
-// TTK includes
+#include <ttkAlgorithm.h>
 #include <ContourAroundPoint.hpp>
-#include <ttkTriangulationAlgorithm.h>
+#include <ttkContourAroundPointModule.h> // TODO still needed?
+#include <Triangulation.h> // for tk::Triangulation::Type
 
-// See the documentation of the vtkAlgorithm class to decide from which VTK
-// class your wrapper should inherit.
+class vtkFieldData;
+class vtkInformation;
+class vtkInformationVector;
+
+
 class TTKCONTOURAROUNDPOINT_EXPORT ttkContourAroundPoint
-  : public vtkDataSetAlgorithm,
-    protected ttk::Wrapper {
+  : public ttkAlgorithm,
+    protected ttk::ContourAroundPoint {
 
 public:
   static ttkContourAroundPoint *New();
-  vtkTypeMacro(ttkContourAroundPoint, vtkDataSetAlgorithm);
+  vtkTypeMacro(ttkContourAroundPoint, ttkAlgorithm);
 
-  // BEGIN default TTK setters
-  void SetDebugLevel(int debugLevel) {
-    setDebugLevel(debugLevel);
-    Modified();
-  }
-
-  void SetThreadNumber(int threadNumber) {
-    ThreadNumber = threadNumber;
-    SetThreads();
-  }
-  void SetUseAllCores(bool onOff) {
-    UseAllCores = onOff;
-    SetThreads();
-  }
-  // END default TTK setters
-
-  // BEGIN set-getters macros for each parameter from the
-  // ServerManagerConfiguration XML file.
+  // setter+getter macros for each parameter from the XML file
   vtkSetMacro(ui_sizeFilter, double) vtkGetMacro(ui_sizeFilter, double);
-
   vtkSetMacro(ui_extension, double) vtkGetMacro(ui_extension, double);
-
-  vtkSetMacro(ui_scalars, std::string) vtkGetMacro(ui_scalars, std::string);
-  
   vtkSetMacro(ui_spherical, bool) vtkGetMacro(ui_spherical, bool);
-  // END set-getters macros
 
-  // By default, this filter has one input and one output, of the same type.
-  // Here, you can override the number of input/output ports and their
-  // respective type. Make sure this is consistent with the
-  // ServerManagerConfiguration XML file and the
-  // `SetNumberOfInputPorts`/`SetNumberOfOutputPorts` argument (used in the
-  // constructor). The return value is interpreted as
-  // "PORT_REQUIREMENTS_FILLED" in vtkAlgorithm.cxx
-  int FillInputPortInformation(int port, vtkInformation *info) override {
-    switch(port) {
-      case 0:
-        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataSet");
-        return 1;
-      case 1:
-        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
-        return 1;
-      case 2:
-        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
-        return 1;
-    }
-    return 0;
-  }
-  int FillOutputPortInformation(int port, vtkInformation *info) override {
-    switch(port) {
-      case 0:
-        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
-        return 1;
-      case 1:
-        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
-        return 1;
-    }
-    return 0;
-  }
-
-  /// Override this method in order to always prepend a class- and
-  /// debugLevel-specific prefix and include a line end after the message.
-  virtual int dMsg(std::ostream &stream,
-                   std::string msg,
-                   const int &debugLevel = infoMsg) const override {
-    if(debugLevel > debugLevel_ && debugLevel > ttk::globalDebugLevel_)
-      return 0;
-    stream << "[ttkContourAroundPoint] ";
-    switch(debugLevel) {
-      case fatalMsg:
-        stream << "Error: ";
-        break; // something went wrong
-      case timeMsg:
-        stream << "Time consumption: ";
-        break; // x.yyy s
-      case memoryMsg:
-        stream << "Memory usage: ";
-        break; // x.yyy MB
-    }
-    const auto res = ttk::Debug::dMsg(stream, msg, debugLevel);
-    stream << std::endl;
-    return res;
-  }
 
 protected:
   ttkContourAroundPoint() {
-    UseAllCores = true;
-    ThreadNumber = 1;
-    debugLevel_ = 3;
-
     SetNumberOfInputPorts(3);
     SetNumberOfOutputPorts(2);
   }
@@ -141,7 +57,15 @@ protected:
   ~ttkContourAroundPoint() override {
   }
 
-  TTK_SETUP();
+  // Make sure this is consistent with the XML file and the
+  // `SetNumberOfInputPorts` and `SetNumberOfOutputPorts` argument
+  // (used in the constructor). The return value is interpreted as
+  // "PORT_REQUIREMENTS_FILLED" in vtkAlgorithm.cxx
+  int FillInputPortInformation(int port, vtkInformation *info) override;
+  int FillOutputPortInformation(int port, vtkInformation *info) override;
+  int RequestData(vtkInformation *request, vtkInformationVector **iVec,
+                  vtkInformationVector *oVec) override;
+
 
   /// @return Went well?
   bool preprocessFld(vtkDataSet *dataset);
@@ -186,10 +110,9 @@ private:
   // 0 --> single point, 100 --> touching neighbor regions
   double ui_extension;
   // name of the scalar variable of the input field
-  std::string ui_scalars;
-  // domain is spherical?
   bool ui_spherical;
 
+  ttk::Triangulation::Type _triangTypeCode; // triangulation->getType()
   int _scalarTypeCode; // VTK type of the scalars defined on the input field
 
   // referring to the input points
@@ -205,6 +128,4 @@ private:
   std::vector<ttk::LongSimplexId> cinfosBuf_{};
   std::vector<float> scalarsBuf_{};
   std::vector<int> flagsBuf_{};
-
-  ttk::ContourAroundPoint _wrappedModule;
 };
