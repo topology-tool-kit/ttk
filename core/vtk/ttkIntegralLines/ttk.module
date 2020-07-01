@@ -6,4 +6,4 @@ HEADERS
   ttkIntegralLines.h
 DEPENDS
   integralLines
-  ttkTriangulationAlgorithm
+  ttkAlgorithm

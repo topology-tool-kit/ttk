@@ -1,10 +1,8 @@
 #include <ttkAlgorithm.h>
 #include <ttkUtils.h>
 
-// #include <vtkDataObject.h> // For output port info
-// #include <vtkObjectFactory.h> // for new macro
-
 #include <Triangulation.h>
+#include <vtkCellTypes.h>
 #include <vtkCommand.h>
 #include <vtkImageData.h>
 #include <vtkInformation.h>
@@ -16,20 +14,6 @@
 #include <vtkUnstructuredGrid.h>
 
 #include <vtkCompositeDataPipeline.h>
-
-// #include <vtkSmartPointer.h>
-
-// #include <vtkInformationVector.h>
-
-// #include <vtkCompositeDataPipeline.h>
-
-// #include <vtkFieldData.h>
-
-// #include <vtkImageData.h>
-// #include <vtkMultiBlockDataSet.h>
-// #include <vtkPolyData.h>
-// #include <vtkTable.h>
-// #include <vtkUnstructuredGrid.h>
 
 // TODO: use a class here to add semantic about the four fields
 // and clear access methods
@@ -83,6 +67,7 @@ vtkStandardNewMacro(ttkAlgorithm);
 
 ttkAlgorithm::ttkAlgorithm() {
 }
+
 ttkAlgorithm::~ttkAlgorithm() {
 }
 
@@ -165,18 +150,20 @@ ttk::Triangulation *ttkAlgorithm::InitTriangulation(void *key,
     }
 
     // Cells
-    if(cells->GetNumberOfCells() > 0) {
-#ifdef TTK_CELL_ARRAY_NEW
+    int nCells = cells->GetNumberOfCells();
+    if(nCells > 0) {
       auto connectivity
         = (vtkIdType *)ttkUtils::GetVoidPointer(cells->GetConnectivityArray());
       auto offsets
         = (vtkIdType *)ttkUtils::GetVoidPointer(cells->GetOffsetsArray());
-      triangulation->setInputCells(
-        cells->GetNumberOfCells(), connectivity, offsets);
-#else
-      triangulation->setInputCells(
-        cells->GetNumberOfCells(), cells->GetData()->GetPointer(0));
-#endif
+      int status = triangulation->setInputCells(nCells, connectivity, offsets);
+
+      if(status != 0) {
+        this->printErr(
+          "Run the `vtkTetrahedralize` filter to resolve the issue.");
+        ttkAlgorithm::DataSetToTriangulationMap.erase(it);
+        return nullptr;
+      }
     }
 
     this->printMsg(
@@ -221,6 +208,31 @@ ttk::Triangulation *ttkAlgorithm::InitTriangulation(void *key,
   return triangulation;
 }
 
+int checkCellTypes(vtkDataSet *object) {
+  auto cellTypes = vtkSmartPointer<vtkCellTypes>::New();
+  object->GetCellTypes(cellTypes);
+
+  size_t nTypes = cellTypes->GetNumberOfTypes();
+
+  // if cells are empty
+  if(nTypes == 0)
+    return 1; // no error
+
+  // if cells are not homogeneous
+  if(nTypes > 1)
+    return -1;
+
+  // if cells are not simplices
+  if(nTypes == 1) {
+    const auto &cellType = cellTypes->GetCellType(0);
+    if(cellType != VTK_VERTEX && cellType != VTK_LINE
+       && cellType != VTK_TRIANGLE && cellType != VTK_TETRA)
+      return -2;
+  }
+
+  return 1;
+}
+
 vtkDataArray *
   ttkAlgorithm::GetOptionalArray(const bool &enforceArrayIndex,
                                  const int &arrayIndex,
@@ -253,6 +265,17 @@ ttk::Triangulation *ttkAlgorithm::GetTriangulation(vtkDataSet *dataSet) {
       auto points = dataSetAsUG->GetPoints();
       auto cells = dataSetAsUG->GetCells();
 
+      // check if cell types are simplices
+      int cellTypeStatus = checkCellTypes(dataSetAsUG);
+      if(cellTypeStatus == -1) {
+        this->printWrn("Inhomogeneous cell dimensions detected.");
+        this->printWrn(
+          "Consider using `ttkExtract` to extract cells of a given dimension.");
+      } else if(cellTypeStatus == -2) {
+        this->printWrn("Cells are not simplices.");
+        this->printWrn("Consider using `vtkTetrahedralize` in pre-processing.");
+      }
+
       // check if triangulation already exists or has to be updated
       ttk::Triangulation *triangulation = this->FindTriangulation(cells);
 
@@ -282,22 +305,34 @@ ttk::Triangulation *ttkAlgorithm::GetTriangulation(vtkDataSet *dataSet) {
 
       // if not create triangulation
       if(!triangulation) {
-        vtkCellArray *cellArray = nullptr;
+        vtkCellArray *cells = nullptr;
         if(polyCells->GetNumberOfCells() > 0)
-          cellArray = polyCells;
+          cells = polyCells;
         else if(lineCells->GetNumberOfCells() > 0)
-          cellArray = lineCells;
+          cells = lineCells;
 
-        if(cellArray != nullptr) {
-          triangulation
-            = this->InitTriangulation(cellArray, cellArray, points, cellArray);
+        if(cells != nullptr) {
+
+          // check if cell types are simplices
+          int cellTypeStatus = checkCellTypes(dataSetAsPD);
+          if(cellTypeStatus == -1) {
+            this->printWrn("Inhomogeneous cell dimensions detected.");
+            this->printWrn("Consider using `ttkExtract` to extract cells of a "
+                           "given dimension.");
+          } else if(cellTypeStatus == -2) {
+            this->printWrn("Cells are not simplices.");
+            this->printWrn(
+              "Consider using `vtkTetrahedralize` in pre-processing.");
+          }
+
+          // init triangulation
+          triangulation = this->InitTriangulation(cells, cells, points, cells);
         }
       }
 
-      if(!triangulation) {
+      if(!triangulation)
         this->printErr("Unable to initialize triangulation for vtkPolyData "
                        "without any cells.");
-      }
 
       return triangulation;
     }
@@ -348,17 +383,26 @@ int ttkAlgorithm::RequestDataObject(vtkInformation *request,
   // for each output
   for(int i = 0; i < this->GetNumberOfOutputPorts(); ++i) {
     auto outInfo = outputVector->GetInformationObject(i);
+    if(!outInfo) {
+      this->printErr("Unable to retrieve output vtkDataObject at port "
+                     + std::to_string(i));
+      return 0;
+    }
 
     auto outputPortInfo = this->GetOutputPortInformation(i);
 
     // always request output type again for dynamic filter outputs
-    this->FillOutputPortInformation(i, outputPortInfo);
+    if(!this->FillOutputPortInformation(i, outputPortInfo)) {
+      this->printErr("Unable to fill output port information at port "
+                     + std::to_string(i));
+      return 0;
+    }
 
     if(outputPortInfo->Has(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT())) {
       // Set output data type to input data type at specified port
       auto inPortIndex
         = outputPortInfo->Get(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT());
-      if(inPortIndex >= this->GetNumberOfInputPorts()) {
+      if(inPortIndex < 0 || inPortIndex >= this->GetNumberOfInputPorts()) {
         this->printErr("Input port index " + std::to_string(inPortIndex)
                        + " specified by 'SAME_DATA_TYPE_AS_INPUT_PORT' key of "
                          "output port is out of range ("

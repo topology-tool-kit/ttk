@@ -1,29 +1,27 @@
 #include <ttkIntegralLines.h>
+#include <ttkMacros.h>
+#include <ttkUtils.h>
+
+#include <vtkDataObject.h>
+#include <vtkDataSet.h>
+#include <vtkFloatArray.h>
+#include <vtkInformation.h>
+#include <vtkObjectFactory.h>
+#include <vtkPointData.h>
+#include <vtkPointSet.h>
+#include <vtkUnstructuredGrid.h>
 
 using namespace std;
 using namespace ttk;
 
 vtkStandardNewMacro(ttkIntegralLines)
 
-  ttkIntegralLines::ttkIntegralLines()
-  : hasUpdatedMesh_{false}, inputScalars_{nullptr}, offsets_{nullptr},
-    inputOffsets_{nullptr}, identifiers_{nullptr} {
-  Direction = 0;
-  SetNumberOfInputPorts(2);
-  triangulation_ = NULL;
-
-  OffsetScalarFieldId = -1;
-  ForceInputOffsetScalarField = false;
-  OffsetScalarFieldName = ttk::OffsetScalarFieldName;
-  ForceInputVertexScalarField = false;
-  InputVertexScalarFieldName = ttk::VertexScalarFieldName;
-  UseAllCores = true;
+  ttkIntegralLines::ttkIntegralLines() {
+  this->SetNumberOfInputPorts(2);
+  this->SetNumberOfOutputPorts(1);
 }
 
-ttkIntegralLines::~ttkIntegralLines() {
-  if(offsets_)
-    offsets_->Delete();
-}
+ttkIntegralLines::~ttkIntegralLines() = default;
 
 int ttkIntegralLines::FillInputPortInformation(int port, vtkInformation *info) {
   if(port == 0)
@@ -42,123 +40,8 @@ int ttkIntegralLines::FillOutputPortInformation(int port,
   return 1;
 }
 
-int ttkIntegralLines::getTriangulation(vtkDataSet *input) {
-
-  triangulation_ = ttkTriangulation::getTriangulation(input);
-
-  if(!triangulation_)
-    return -1;
-
-  triangulation_->setWrapper(this);
-  integralLines_.setWrapper(this);
-
-  integralLines_.setupTriangulation(triangulation_);
-  Modified();
-  hasUpdatedMesh_ = true;
-
-#ifndef TTK_ENABLE_KAMIKAZE
-  // allocation problem
-  if(triangulation_->isEmpty()) {
-    cerr << "[ttkIntegralLines] Error : ttkTriangulation allocation problem."
-         << endl;
-    return -1;
-  }
-#endif
-
-  return 0;
-}
-
-int ttkIntegralLines::getScalars(vtkDataSet *input) {
-  vtkPointData *pointData = input->GetPointData();
-
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(!pointData) {
-    cerr << "[ttkIntegralLines] Error : input has no point data." << endl;
-    return -1;
-  }
-
-  if(!ScalarField.length()) {
-    cerr << "[ttkIntegralLines] Error : scalar field has no name." << endl;
-    return -1;
-  }
-#endif
-
-  inputScalars_ = pointData->GetArray(ScalarField.data());
-
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(!inputScalars_) {
-    cerr << "[ttkIntegralLines] Error : input scalar field pointer is null."
-         << endl;
-    return -1;
-  }
-#endif
-
-  return 0;
-}
-
-int ttkIntegralLines::getOffsets(vtkDataSet *input) {
-  if(ForceInputOffsetScalarField and OffsetScalarFieldName.length()) {
-    inputOffsets_
-      = input->GetPointData()->GetArray(OffsetScalarFieldName.data());
-  } else if(OffsetScalarFieldId != -1
-            and input->GetPointData()->GetArray(OffsetScalarFieldId)) {
-    inputOffsets_ = input->GetPointData()->GetArray(OffsetScalarFieldId);
-  } else if(input->GetPointData()->GetArray(ttk::OffsetScalarFieldName)) {
-    inputOffsets_ = input->GetPointData()->GetArray(ttk::OffsetScalarFieldName);
-  } else {
-    if(hasUpdatedMesh_ and offsets_) {
-      offsets_->Delete();
-      offsets_ = nullptr;
-      hasUpdatedMesh_ = false;
-    }
-
-    if(!offsets_) {
-      const SimplexId numberOfPoints = input->GetNumberOfPoints();
-
-      offsets_ = ttkSimplexIdTypeArray::New();
-      offsets_->SetNumberOfComponents(1);
-      offsets_->SetNumberOfTuples(numberOfPoints);
-      offsets_->SetName(ttk::OffsetScalarFieldName);
-      for(SimplexId i = 0; i < numberOfPoints; ++i)
-        offsets_->SetTuple1(i, i);
-    }
-
-    inputOffsets_ = offsets_;
-  }
-
-#ifndef TTK_ENABLE_KAMIKAZE
-  // allocation problem
-  if(!inputOffsets_) {
-    cerr << "[ttkIntegralLines] Error : wrong input offset scalar field."
-         << endl;
-    return -1;
-  }
-#endif
-
-  return 0;
-}
-
-int ttkIntegralLines::getIdentifiers(vtkPointSet *input) {
-  if(ForceInputVertexScalarField and InputVertexScalarFieldName.length())
-    identifiers_
-      = input->GetPointData()->GetArray(InputVertexScalarFieldName.data());
-  else if(input->GetPointData()->GetArray(ttk::VertexScalarFieldName))
-    identifiers_ = input->GetPointData()->GetArray(ttk::VertexScalarFieldName);
-
-#ifndef TTK_ENABLE_KAMIKAZE
-  // allocation problem
-  if(!identifiers_) {
-    cerr << "[ttkIntegralLines] Error : wrong input vertex identifier scalar "
-            "field."
-         << endl;
-    return -1;
-  }
-#endif
-
-  return 0;
-}
-
 int ttkIntegralLines::getTrajectories(vtkDataSet *input,
+                                      ttk::Triangulation *triangulation,
                                       vector<vector<SimplexId>> &trajectories,
                                       vtkUnstructuredGrid *output) {
   vtkSmartPointer<vtkUnstructuredGrid> ug
@@ -193,7 +76,7 @@ int ttkIntegralLines::getTrajectories(vtkDataSet *input,
     if(trajectories[i].size()) {
       SimplexId vertex = trajectories[i][0];
       // init
-      triangulation_->getVertexPoint(vertex, p0[0], p0[1], p0[2]);
+      triangulation->getVertexPoint(vertex, p0[0], p0[1], p0[2]);
       ids[0] = pts->InsertNextPoint(p0);
       // distanceScalars
       float distanceFromSeed{};
@@ -204,7 +87,7 @@ int ttkIntegralLines::getTrajectories(vtkDataSet *input,
 
       for(SimplexId j = 1; j < (SimplexId)trajectories[i].size(); ++j) {
         vertex = trajectories[i][j];
-        triangulation_->getVertexPoint(vertex, p1[0], p1[1], p1[2]);
+        triangulation->getVertexPoint(vertex, p1[0], p1[1], p1[2]);
         ids[1] = pts->InsertNextPoint(p1);
         // distanceScalars
         distanceFromSeed += Geometry::distance(p0, p1, 3);
@@ -233,132 +116,111 @@ int ttkIntegralLines::getTrajectories(vtkDataSet *input,
   return 0;
 }
 
-template <typename VTK_TT>
-int ttkIntegralLines::dispatch() {
+template <typename VTK_TT, typename TTK_TT>
+int ttkIntegralLines::dispatch(int inputOffsetsDataType,
+                               const TTK_TT *triangulation) {
   int ret = 0;
-  if(inputOffsets_->GetDataType() == VTK_INT) {
-    ret = integralLines_.execute<VTK_TT, int>();
+  if(inputOffsetsDataType == VTK_INT) {
+    ret = this->execute<VTK_TT, int, TTK_TT>(triangulation);
   }
-  if(inputOffsets_->GetDataType() == VTK_ID_TYPE) {
-    ret = integralLines_.execute<VTK_TT, vtkIdType>();
+  if(inputOffsetsDataType == VTK_ID_TYPE) {
+    ret = this->execute<VTK_TT, vtkIdType, TTK_TT>(triangulation);
   }
   return ret;
 }
 
-int ttkIntegralLines::doIt(vector<vtkDataSet *> &inputs,
-                           vector<vtkDataSet *> &outputs) {
-  //                            vtkPointSet* seeds, vtkUnstructuredGrid*
-  //                            output){
+int ttkIntegralLines::RequestData(vtkInformation *request,
+                                  vtkInformationVector **inputVector,
+                                  vtkInformationVector *outputVector) {
+  vtkDataSet *domain = vtkDataSet::GetData(inputVector[0], 0);
+  vtkPointSet *seeds = vtkPointSet::GetData(inputVector[1], 0);
+  vtkUnstructuredGrid *output = vtkUnstructuredGrid::GetData(outputVector, 0);
 
-  Memory m;
+  ttk::Triangulation *triangulation = ttkAlgorithm::GetTriangulation(domain);
+  vtkDataArray *inputScalars = this->GetInputArrayToProcess(0, domain);
 
-  vtkDataSet *domain = inputs[0];
-  vtkPointSet *seeds = vtkPointSet::SafeDownCast(inputs[1]);
-  vtkUnstructuredGrid *output = vtkUnstructuredGrid::SafeDownCast(outputs[0]);
-
-  int ret{};
-
-  ret = getTriangulation(domain);
-#ifndef TTK_ENABLE_KAMIKAZE
-  // triangulation problem
-  if(ret) {
-    cerr << "[ttkIntegralLines] Error : wrong triangulation." << endl;
-    return -1;
-  }
-#endif
-
-  ret = getScalars(domain);
-#ifndef TTK_ENABLE_KAMIKAZE
-  // field problem
-  if(ret) {
-    cerr << "[ttkIntegralLines] Error : wrong scalar field." << endl;
-    return -1;
-  }
-#endif
-
-  ret = getOffsets(domain);
-#ifndef TTK_ENABLE_KAMIKAZE
-  // field problem
-  if(ret) {
-    cerr << "[ttkIntegralLines] Error : wrong offsets." << endl;
-    return -1;
+  vtkDataArray *inputOffsets = this->GetOptionalArray(
+    ForceInputOffsetScalarField, 1, ttk::OffsetScalarFieldName, inputVector);
+  if(!inputOffsets) {
+    const SimplexId numberOfPoints = domain->GetNumberOfPoints();
+    inputOffsets = ttkSimplexIdTypeArray::New();
+    inputOffsets->SetNumberOfComponents(1);
+    inputOffsets->SetNumberOfTuples(numberOfPoints);
+    inputOffsets->SetName(ttk::OffsetScalarFieldName);
+    for(SimplexId i = 0; i < numberOfPoints; ++i)
+      inputOffsets->SetTuple1(i, i);
   }
 
-  if(inputOffsets_->GetDataType() != VTK_INT
-     and inputOffsets_->GetDataType() != VTK_ID_TYPE) {
-    cerr << "[ttkIntegralLines] Error : input offset field type not supported."
-         << endl;
-    return -1;
-  }
-#endif
-
-  ret = getIdentifiers(seeds);
-#ifndef TTK_ENABLE_KAMIKAZE
-  // field problem
-  if(ret) {
-    cerr << "[ttkIntegralLines] Error : wrong identifiers." << endl;
-    return -1;
-  }
-#endif
+  vtkDataArray *inputIdentifiers = this->GetOptionalArray(
+    ForceInputVertexScalarField, 2, ttk::VertexScalarFieldName, inputVector, 1);
 
   const SimplexId numberOfPointsInDomain = domain->GetNumberOfPoints();
+  const SimplexId numberOfPointsInSeeds = seeds->GetNumberOfPoints();
+
 #ifndef TTK_ENABLE_KAMIKAZE
-  // no points.
-  if(numberOfPointsInDomain <= 0) {
-    cerr << "[ttkIntegralLines] Error : domain has no points." << endl;
+  // triangulation problem
+  if(!triangulation) {
+    this->printErr("wrong triangulation.");
     return -1;
   }
-#endif
-
-  const SimplexId numberOfPointsInSeeds = seeds->GetNumberOfPoints();
-#ifndef TTK_ENABLE_KAMIKAZE
+  // field problem
+  if(!inputScalars) {
+    this->printErr("wrong scalar field.");
+    return -1;
+  }
+  // field problem
+  if(inputOffsets->GetDataType() != VTK_INT
+     and inputOffsets->GetDataType() != VTK_ID_TYPE) {
+    this->printErr("input offset field type not supported.");
+    return -1;
+  }
+  // field problem
+  if(!inputIdentifiers) {
+    this->printErr("wrong identifiers.");
+    return -1;
+  }
+  // no points.
+  if(numberOfPointsInDomain <= 0) {
+    this->printErr("domain has no points.");
+    return -1;
+  }
   // no points.
   if(numberOfPointsInSeeds <= 0) {
-    cerr << "[ttkIntegralLines] Error : seeds have no points." << endl;
+    this->printErr("seeds have no points.");
     return -1;
   }
 #endif
 
   vector<vector<SimplexId>> trajectories;
 
-  integralLines_.setVertexNumber(numberOfPointsInDomain);
-  integralLines_.setSeedNumber(numberOfPointsInSeeds);
-  integralLines_.setDirection(Direction);
-  integralLines_.setInputScalarField(inputScalars_->GetVoidPointer(0));
-  integralLines_.setInputOffsets(inputOffsets_->GetVoidPointer(0));
+  this->setVertexNumber(numberOfPointsInDomain);
+  this->setSeedNumber(numberOfPointsInSeeds);
+  this->setDirection(Direction);
+  this->setInputScalarField(inputScalars->GetVoidPointer(0));
+  this->setInputOffsets(inputOffsets->GetVoidPointer(0));
 
-  integralLines_.setVertexIdentifierScalarField(
-    identifiers_->GetVoidPointer(0));
-  integralLines_.setOutputTrajectories(&trajectories);
+  this->setVertexIdentifierScalarField(inputIdentifiers->GetVoidPointer(0));
+  this->setOutputTrajectories(&trajectories);
 
-  switch(inputScalars_->GetDataType()) {
-    vtkTemplateMacro(ret = dispatch<VTK_TT>());
-  }
+  this->preconditionTriangulation(triangulation);
+
+  int status = 0;
+  ttkVtkTemplateMacro(
+    inputScalars->GetDataType(), triangulation->getType(),
+    (status = this->dispatch<VTK_TT, TTK_TT>(
+       inputOffsets->GetDataType(), (TTK_TT *)(triangulation->getData()))))
 #ifndef TTK_ENABLE_KAMIKAZE
-  // something wrong in baseCode
-  if(ret) {
-    cerr << "[ttkIntegralLines] IntegralLines.execute() error code : " << ret
-         << endl;
+    // something wrong in baseCode
+    if(status) {
+    std::stringstream msg;
+    msg << "IntegralLines.execute() error code : " << status;
+    this->printErr(msg.str());
     return -1;
   }
 #endif
 
   // make the vtk trajectories
-  ret = getTrajectories(domain, trajectories, output);
-#ifndef TTK_ENABLE_KAMIKAZE
-  // trajectories problem
-  if(ret) {
-    cerr << "[ttkIntegralLines] Error : wrong trajectories." << endl;
-    return -1;
-  }
-#endif
+  getTrajectories(domain, triangulation, trajectories, output);
 
-  {
-    stringstream msg;
-    msg << "[ttkIntegralLines] Memory usage: " << m.getElapsedUsage() << " MB."
-        << endl;
-    dMsg(cout, msg.str(), memoryMsg);
-  }
-
-  return ret;
+  return (int)(status == 0);
 }
