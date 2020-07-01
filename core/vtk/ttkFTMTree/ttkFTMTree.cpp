@@ -169,8 +169,8 @@ int ttkFTMTree::RequestData(vtkInformation *request,
     ftmTree_[cc].tree.setSegmentation(GetWithSegmentation());
     ftmTree_[cc].tree.setNormalizeIds(GetWithNormalize());
 
-    ttkVtkTemplateMacro(triangulation_[cc]->getType(),
-                        inputArray->GetDataType(),
+    ttkVtkTemplateMacro(inputArray->GetDataType(),
+                        triangulation_[cc]->getType(),
                         (ftmTree_[cc].tree.build<VTK_TT, SimplexId, TTK_TT>(
                           (TTK_TT *)triangulation_[cc]->getData())));
 
