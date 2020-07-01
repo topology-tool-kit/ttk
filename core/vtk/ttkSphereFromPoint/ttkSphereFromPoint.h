@@ -23,7 +23,10 @@
 #include <ttkSphereFromPointModule.h>
 
 // ttk code includes
-#include <ttkTriangulationAlgorithm.h>
+#include <ttkAlgorithm.h>
+
+class vtkAppendPolyData;
+class vtkSphereSource;
 
 class TTKSPHEREFROMPOINT_EXPORT ttkSphereFromPoint : public ttkAlgorithm {
 
