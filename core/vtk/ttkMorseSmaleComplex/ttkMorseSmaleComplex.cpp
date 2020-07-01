@@ -63,7 +63,7 @@ int ttkMorseSmaleComplex::setupTriangulation(vtkDataSet *input) {
 
   // setupTriangulation() is called first to select the correct algorithm (2D or
   // 3D)
-  this->setupTriangulation(triangulation_);
+  this->preconditionTriangulation(triangulation_);
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(triangulation_->isEmpty()) {

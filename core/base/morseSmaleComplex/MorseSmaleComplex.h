@@ -262,21 +262,15 @@ namespace ttk {
         ->setSaddleConnectorsPersistenceThreshold(threshold);
     }
 
-    int setupTriangulation(Triangulation *const data) {
+    inline void preconditionTriangulation(AbstractTriangulation *const data) {
       dimensionality_ = data->getCellVertexNumber(0) - 1;
-
-      switch(dimensionality_) {
-        case 2:
-          abstractMorseSmaleComplex_ = &morseSmaleComplex2D_;
-          break;
-
-        case 3:
-          abstractMorseSmaleComplex_ = &morseSmaleComplex3D_;
-          break;
+      if(dimensionality_ == 2) {
+        abstractMorseSmaleComplex_ = &morseSmaleComplex2D_;
+      } else if(dimensionality_ == 3) {
+        abstractMorseSmaleComplex_ = &morseSmaleComplex3D_;
       }
 
       abstractMorseSmaleComplex_->preconditionTriangulation(data);
-      return 0;
     }
 
     inline int setDebugLevel(const int &debugLevel) {
