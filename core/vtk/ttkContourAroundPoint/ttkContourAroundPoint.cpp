@@ -3,11 +3,9 @@
 #include <ttkMacros.h>
 #include <ttkUtils.h>
 
-#include <vtkVersion.h> // TODO needed?
-#include <vtkFieldData.h>
+// #include <vtkVersion.h>
 #include <vtkInformation.h>
 #include <vtkInformationVector.h>
-
 
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
@@ -23,8 +21,6 @@
 
 #include <vtkFloatArray.h>
 #include <vtkIdTypeArray.h>
-
-#include <vtkSmartPointer.h>
 
 #include <cassert>
 #include <type_traits>
@@ -97,31 +93,34 @@ bool Class::preprocessFld(vtkDataSet *dataset) {
   
   const double radius = ui_spherical ? -1. : 0.;
   
-  _triangTypeCode = triangulation->getType();
   const auto errorCode = this->setInputField(
     triangulation, ttkUtils::GetVoidPointer(scalars), ui_sizeFilter, radius);
   if(errorCode < 0) {
-    vtkErrorMacro("super->setInputField failed with code " << errorCode);
+    printErr("super->setInputField failed with code " + std::to_string(errorCode));
     return false;
   }
-
+  
+  _triangTypeCode = triangulation->getType();
   _scalarTypeCode = scalars->GetDataType();
+  _scalarsName = scalars->GetName();
+
   std::ostringstream stream;
   stream << "Scalar type: " << scalars->GetDataTypeAsString() << " (code "
          << _scalarTypeCode << ")";
-  dMsg(std::cout, stream.str().c_str(), detailedInfoMsg);
+  printMsg(stream.str().c_str());
+  
   return true;
 }
 
 //----------------------------------------------------------------------------//
 
-bool Class::preprocessPts(vtkUnstructuredGrid *nodes,
-                                          vtkUnstructuredGrid *arcs) {
+bool Class::preprocessPts(
+  vtkUnstructuredGrid *nodes, vtkUnstructuredGrid *arcs) {
   // ---- Point data ---- //
 
   auto points = nodes->GetPoints();
   if(points->GetDataType() != VTK_FLOAT) {
-    vtkErrorMacro("The point coordinates must be of type float");
+    printErr("The point coordinates must be of type float");
     return false;
   }
   auto coords = reinterpret_cast<float *>(
@@ -139,12 +138,12 @@ bool Class::preprocessPts(vtkUnstructuredGrid *nodes,
   auto cells = arcs->GetCells();
   const auto maxNvPerC = cells->GetMaxCellSize();
   if(maxNvPerC != 2) {
-    vtkErrorMacro(
+    printErr(
       "The points must come in pairs but there is at least one cell with "
       + std::to_string(maxNvPerC) + " points");
     return false;
   }
-  // TODO Check for minNvPerC != 2
+  // NOTE Ideally check for minNvPerC != 2
 #endif
 
   auto cData = arcs->GetCellData();
@@ -194,7 +193,7 @@ bool Class::preprocessPts(vtkUnstructuredGrid *nodes,
       const float isoval = scalarBuf[ext] * extFac + scalarBuf[sad] * sadFac;
       addPoint(ext, isoval, codeBuf[ext]);
     } else { // min-max pair
-      vtkWarningMacro(<< "Arc " << c << " joins a minimum and a maximum");
+      printWrn("Arc " + std::to_string(c) + " joins a minimum and a maximum");
       const auto pVal = scalarBuf[p];
       const auto qVal = scalarBuf[q];
       const auto cVal = (pVal + qVal) / 2;
@@ -207,7 +206,7 @@ bool Class::preprocessPts(vtkUnstructuredGrid *nodes,
   const auto errorCode = this->setInputPoints(
     _coords.data(), _scalars.data(), _isovals.data(), _flags.data(), np);
   if(errorCode < 0) {
-    vtkErrorMacro("setInputPoints failed with code " << errorCode);
+    printErr("setInputPoints failed with code " + std::to_string(errorCode));
     return false;
   }
   return true;
@@ -216,16 +215,16 @@ bool Class::preprocessPts(vtkUnstructuredGrid *nodes,
 //----------------------------------------------------------------------------//
 
 bool Class::process() {
-  int errorCode = 0; // In TTK, negative is bad.
-//   switch(_scalarTypeCode) {
-//     vtkTemplateMacro((errorCode = this->execute<VTK_TT>()));
-//   }
-  ttkVtkTemplateMacro(
-    _scalarTypeCode, static_cast<int>(_triangTypeCode),
-    (errorCode = this->execute<VTK_TT>())
-  )
-  if(errorCode < 0) {
-    vtkErrorMacro("super->execute failed with code " << errorCode);
+  int errorCode = 0;
+  switch(_scalarTypeCode) {
+    vtkTemplateMacro((errorCode = this->execute<VTK_TT>()));
+  }
+//   ttkVtkTemplateMacro(
+//     _scalarTypeCode, _triangTypeCode,
+//     (errorCode = this->execute<VTK_TT, TTK_TT>())
+//   )
+  if(errorCode < 0) { // In TTK, negative is bad.
+    printErr("super->execute failed with code " + std::to_string(errorCode));
     return false;
   }
   return true;
@@ -284,7 +283,7 @@ bool Class::postprocess() {
   // ---- Point data (output 0) ---- //
 
   if(vtkSmartPointer<vtkPoints>::New()->GetDataType() != VTK_FLOAT) {
-    vtkErrorMacro("The API has changed! We have expected the default "
+    printErr("The API has changed! We have expected the default "
                   "coordinate type to be float");
     return false;
   }
@@ -298,7 +297,7 @@ bool Class::postprocess() {
 
   auto scalarArr = vtkFloatArray::New();
   scalarArr->SetArray(scalarsBuf, nv, wantSave, delMethod);
-//   scalarArr->SetName(ui_scalars.c_str()); // TODO copy input name
+  scalarArr->SetName(_scalarsName);
   _outFld->GetPointData()->AddArray(scalarArr);
 
   auto flagArr = vtkIntArray::New();
@@ -320,7 +319,7 @@ bool Class::postprocess() {
 
   scalarArr = vtkFloatArray::New();
   scalarArr->SetArray(scalarsBuf, nv, wantSave, delMethod);
-//   scalarArr->SetName(ui_scalars.c_str()); // TODO copy input name
+  scalarArr->SetName(_scalarsName);
   _outPts->GetPointData()->AddArray(scalarArr);
 
   flagArr = vtkIntArray::New();

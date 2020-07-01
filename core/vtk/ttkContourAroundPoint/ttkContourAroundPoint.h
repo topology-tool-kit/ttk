@@ -11,9 +11,6 @@
  * \param Input Input scalar field (vtkDataSet)
  * \param Output Output scalar field (vtkDataSet)
  *
- * This filter can be used as any other VTK filter (for instance, by using the
- * sequence of calls SetInputData(), Update(), GetOutput()).
- *
  * See the related ParaView example state files for usage examples within a VTK
  * pipeline.
  *
@@ -21,17 +18,19 @@
  */
 #pragma once
 
-#include <vtkDataSetAlgorithm.h> // TODO still needed?
+#include <vtkFieldData.h>
 #include <vtkPointData.h>
+#include <vtkSmartPointer.h>
 
+#include <ttkContourAroundPointModule.h> // for TTKCONTOURAROUNDPOINT_EXPORT
 #include <ttkAlgorithm.h>
 #include <ContourAroundPoint.hpp>
-#include <ttkContourAroundPointModule.h> // TODO still needed?
+
 #include <Triangulation.h> // for tk::Triangulation::Type
 
-class vtkFieldData;
 class vtkInformation;
 class vtkInformationVector;
+class vtkUnstructuredGrid;
 
 
 class TTKCONTOURAROUNDPOINT_EXPORT ttkContourAroundPoint
@@ -46,7 +45,6 @@ public:
   vtkSetMacro(ui_sizeFilter, double) vtkGetMacro(ui_sizeFilter, double);
   vtkSetMacro(ui_extension, double) vtkGetMacro(ui_extension, double);
   vtkSetMacro(ui_spherical, bool) vtkGetMacro(ui_spherical, bool);
-
 
 protected:
   ttkContourAroundPoint() {
@@ -114,6 +112,7 @@ private:
 
   ttk::Triangulation::Type _triangTypeCode; // triangulation->getType()
   int _scalarTypeCode; // VTK type of the scalars defined on the input field
+  const char* _scalarsName = nullptr;
 
   // referring to the input points
   std::vector<float> _coords;
