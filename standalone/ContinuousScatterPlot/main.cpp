@@ -58,9 +58,9 @@ int main(int argc, char **argv) {
   vtkNew<ttkContinuousScatterPlot> csp;
 
   // ---------------------------------------------------------------------------
-  // TODO 2: Pass custom arguments and options to the module
+  // Pass custom arguments and options to the module
   // ---------------------------------------------------------------------------
-  // helloWorld->SetOutputArrayName(outputArrayName);
+  csp->SetScatterplotResolution(xRes, yRes);
 
   // ---------------------------------------------------------------------------
   // Read input vtkDataObjects (optionally: print available arrays)
