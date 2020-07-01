@@ -404,9 +404,6 @@ dataType PDBarycenter<dataType>::updateBarycenter(
     }
     barycenter_goods_[j] = new_barycenter;
   }
-  if(debugLevel_ > 5)
-    std::cout << "Points deleted : " << points_deleted_
-              << " Points added : " << points_added_ << std::endl;
 
   // std::cout<<"TIME OF UPDATE : "<< t_update.getElapsedTime()<<std::endl;
   return max_shift;
@@ -436,7 +433,7 @@ void PDBarycenter<dataType>::setBidderDiagrams() {
       b.setPositionInAuction(bidders.size());
       bidders.addBidder(b);
       if(b.isDiagonal() || b.x_ == b.y_) {
-        std::cout << "Diagonal point in diagram !!!" << std::endl;
+        this->printWrn("Diagonal point in diagram !!!");
       }
     }
     bidder_diagrams_.push_back(bidders);
@@ -537,10 +534,6 @@ dataType PDBarycenter<dataType>::enrichCurrentBidderDiagrams(
       }
       compteur_for_adding_points++;
     }
-    if(debugLevel_ > 6)
-      std::cout << " Diagram " << i
-                << " size : " << current_bidder_diagrams_[i].size()
-                << std::endl;
   }
   return new_min_persistence;
 }
@@ -687,9 +680,8 @@ typename PDBarycenter<dataType>::KDTreePair
   auto correspondance_kdt_map
     = kdt->build(coordinates.data(), barycenter_goods_[0].size(), dimension,
                  weights, barycenter_goods_.size());
-  if(debugLevel_ > 3)
-    std::cout << "[Building KD-Tree] Time elapsed : " << tm.getElapsedTime()
-              << " s." << std::endl;
+  this->printMsg(" Building KDTree", 1, tm.getElapsedTime(),
+                 debug::LineMode::NEW, debug::Priority::VERBOSE);
   return std::make_pair(std::move(kdt), correspondance_kdt_map);
 }
 
@@ -829,10 +821,6 @@ std::vector<std::vector<matchingTuple>>
     2 * max_persistence, min_persistence, min_diag_price, min_price,
     min_points_to_add, false);
 
-  if(debugLevel_ > 1)
-    std::cout << "Barycenter size : " << barycenter_goods_[0].size()
-              << std::endl;
-
   int n_iterations = 0;
 
   bool converged = false;
@@ -875,8 +863,8 @@ std::vector<std::vector<matchingTuple>>
     runMatchingAuction(&total_cost, sizes, *pair.first, pair.second,
                        &min_diag_price, &all_matchings, use_kdt);
 
-    std::cout << "[PersistenceDiagramsBarycenter] Barycenter cost : "
-              << total_cost << std::endl;
+    this->printMsg("Barycenter cost : " + std::to_string(total_cost),
+                   debug::Priority::DETAIL);
 
     if(converged) {
       finished = true;
@@ -884,9 +872,6 @@ std::vector<std::vector<matchingTuple>>
 
     if(!finished) {
       updateBarycenter(all_matchings);
-      if(debugLevel_ > 1)
-        std::cout << "Barycenter size : " << barycenter_goods_[0].size()
-                  << std::endl;
 
       if(min_cost > total_cost) {
         min_cost = total_cost;
@@ -901,7 +886,6 @@ std::vector<std::vector<matchingTuple>>
     previous_matchings = std::move(all_matchings);
     // END OF TIMER
     total_time += tm.getElapsedTime();
-    std::cout << "Time elapsed so far : " << total_time << std::endl;
 
     for(unsigned int i = 0; i < barycenter_goods_.size(); ++i) {
       for(int j = 0; j < barycenter_goods_[i].size(); ++j) {
@@ -930,11 +914,11 @@ std::vector<std::vector<matchingTuple>>
   cost_ = sqrt(total_cost);
   std::vector<std::vector<matchingTuple>> corrected_matchings
     = correctMatchings(previous_matchings);
-  for(unsigned int d = 0; d < current_bidder_diagrams_.size(); ++d) {
-    if(debugLevel_ > 1)
-      std::cout << "Size of diagram " << d << " : "
-                << current_bidder_diagrams_[d].size() << std::endl;
-  }
+  // for(unsigned int d = 0; d < current_bidder_diagrams_.size(); ++d) {
+  //   if(debugLevel_ > 1)
+  //     std::cout << "Size of diagram " << d << " : "
+  //               << current_bidder_diagrams_[d].size() << std::endl;
+  // }
   return corrected_matchings;
 }
 

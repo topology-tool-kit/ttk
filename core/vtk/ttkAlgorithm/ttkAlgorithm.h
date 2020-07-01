@@ -117,6 +117,22 @@ public:
     this->Modified();
   };
 
+  /// This method retrieves an optional array to process.
+  /// The logic of this method is as follows:
+  ///   - if \p enforceArrayIndex is set to true, this method will try to
+  ///   retrieve the optional array to process by its identifier \p arrayIndex
+  ///   (see GetInputArrayToProcess() and SetInputArrayToProcess())
+  ///   - if \p enforceArrayIndex is set to false, this method will try to
+  ///   retrieve the optional array to process by its name \p arrayName.
+  ///
+  /// In both cases, this information will be retrieved on port \p inputPort.
+  ///
+  vtkDataArray *GetOptionalArray(const bool &enforceArrayIndex,
+                                 const int &arrayIndex,
+                                 const std::string &arrayName,
+                                 vtkInformationVector **inputVectors,
+                                 const int &inputPort = 0);
+
   /**
    * This method retrieves the ttk::Triangulation of a vtkDataSet.
    *
@@ -158,22 +174,6 @@ public:
   int ProcessRequest(vtkInformation *request,
                      vtkInformationVector **inputVectors,
                      vtkInformationVector *outputVector) override;
-
-  /**
-   * Get the information object associated with an input port. There
-   * is one input port per kind of input to the algorithm. Each input
-   * port tells executives what kind of data and downstream requests
-   * this algorithm can handle for that input.
-   */
-  // vtkInformation* GetInputPortInformation(int port);
-
-  /**
-   * Get the information object associated with an output port. There
-   * is one output port per output from the algorithm. Each output
-   * port tells executives what kind of upstream requests this
-   * algorithm can handle for that output.
-   */
-  // vtkInformation* GetOutputPortInformation(int port);
 
 protected:
   ttkAlgorithm();
