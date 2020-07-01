@@ -3,10 +3,10 @@
 #include <ttkUtils.h>
 
 #include <vtkCellData.h>
-#include <vtkCharArray.h>
 #include <vtkInformation.h>
 #include <vtkLine.h>
 #include <vtkPointData.h>
+#include <vtkSignedCharArray.h>
 #include <vtkUnstructuredGrid.h>
 
 using namespace std;
@@ -88,7 +88,7 @@ int ttkDiscreteGradient::dispatch(vtkUnstructuredGrid *outputCriticalPoints,
 
     vtkNew<vtkPoints> points{};
 
-    vtkNew<vtkCharArray> cellDimensions{};
+    vtkNew<vtkSignedCharArray> cellDimensions{};
     cellDimensions->SetNumberOfComponents(1);
     cellDimensions->SetName("CellDimension");
 
@@ -106,7 +106,7 @@ int ttkDiscreteGradient::dispatch(vtkUnstructuredGrid *outputCriticalPoints,
     cellScalars->SetNumberOfComponents(1);
     cellScalars->SetName(inputScalars->GetName());
 
-    vtkNew<vtkCharArray> isOnBoundary{};
+    vtkNew<vtkSignedCharArray> isOnBoundary{};
     isOnBoundary->SetNumberOfComponents(1);
     isOnBoundary->SetName("IsOnBoundary");
 
@@ -244,10 +244,10 @@ int ttkDiscreteGradient::RequestData(vtkInformation *request,
       gradientGlyphs_cells, gradientGlyphs_cells_pairTypes, *triangulation);
 
     vtkNew<vtkPoints> points{};
-    vtkNew<vtkCharArray> pairOrigins{};
+    vtkNew<vtkSignedCharArray> pairOrigins{};
     pairOrigins->SetNumberOfComponents(1);
     pairOrigins->SetName("PairOrigin");
-    vtkNew<vtkCharArray> pairTypes{};
+    vtkNew<vtkSignedCharArray> pairTypes{};
     pairTypes->SetNumberOfComponents(1);
     pairTypes->SetName("PairType");
 
