@@ -47,44 +47,23 @@
 
 // TTK includes
 #include <TrackingFromOverlap.h>
-#include <ttkTriangulationAlgorithm.h>
+#include <ttkAlgorithm.h>
 
 class TTKTRACKINGFROMOVERLAP_EXPORT ttkTrackingFromOverlap
-  : public vtkUnstructuredGridAlgorithm,
-    protected ttk::Wrapper {
+  : public ttkAlgorithm,
+    protected ttk::TrackingFromOverlap {
 
 public:
   static ttkTrackingFromOverlap *New();
-  vtkTypeMacro(ttkTrackingFromOverlap, vtkUnstructuredGridAlgorithm)
+  vtkTypeMacro(ttkTrackingFromOverlap, ttkAlgorithm)
 
     vtkSetMacro(LabelFieldName, string);
   vtkGetMacro(LabelFieldName, string);
 
-  // default ttk setters
-  void SetDebugLevel(int debugLevel) {
-    setDebugLevel(debugLevel);
-    Modified();
-  }
-
-  void SetThreads() {
-    threadNumber_
-      = !UseAllCores ? ThreadNumber : ttk::OsCall::getNumberOfCores();
-    Modified();
-  }
-  void SetThreadNumber(int threadNumber) {
-    ThreadNumber = threadNumber;
-    SetThreads();
-  }
-  void SetUseAllCores(bool onOff) {
-    UseAllCores = onOff;
-    SetThreads();
-  }
-  // end of default ttk setters
-
   int FillInputPortInformation(int port, vtkInformation *info) override {
     switch(port) {
       case 0:
-        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkMultiBlockDataSet");
+        info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkMultiBlockDataSet");
         break;
       default:
         return 0;
@@ -140,7 +119,6 @@ protected:
 private:
   int LabelDataType;
   string LabelFieldName;
-  ttk::TrackingFromOverlap trackingFromOverlap;
 
   vtkSmartPointer<vtkMultiBlockDataSet> previousIterationData;
 
@@ -149,10 +127,10 @@ private:
   vector<vector<Edges>> levelTimeEdgesTMap; // E_T
   vector<vector<Edges>> timeLevelEdgesNMap; // E_N
 
-  bool needsToAbort() override {
+  bool needsToAbort() /*override*/ {
     return GetAbortExecute();
   };
-  int updateProgress(const float &progress) override {
+  int updateProgress(const float &progress) /*override*/ {
     UpdateProgress(progress);
     return 0;
   };
