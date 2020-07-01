@@ -104,20 +104,6 @@ Computer Graphics Forum, 2012.
         </Documentation>
       </StringVectorProperty>
 
-      <IntVectorProperty
-        name="PeriodicBoundaryConditions"
-        command="SetPeriodicBoundaryConditions"
-        label="Periodic Boundary Conditions"
-        number_of_elements="1"
-        panel_visibility="advanced"
-        default_values="0">
-        <BooleanDomain name="bool"/>
-        <Documentation>
-          Check this box to use periodic boundary conditions for computation of
-           MS-Complex.
-        </Documentation>
-      </IntVectorProperty>
-
        <IntVectorProperty name="ComputeCriticalPoints"
          label="Critical Points"
          command="SetComputeCriticalPoints"
@@ -275,7 +261,6 @@ Computer Graphics Forum, 2012.
         <Property name="ScalarField" />
         <Property name="ForceInputOffsetScalarField"/>
         <Property name="InputOffsetScalarFieldName"/>
-        <Property name="PeriodicBoundaryConditions"/>
       </PropertyGroup>
 
       <PropertyGroup panel_widget="Line" label="Output options">
