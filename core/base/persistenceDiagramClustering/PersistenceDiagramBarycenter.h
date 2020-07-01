@@ -12,8 +12,7 @@
 ///
 /// \sa PersistenceDiagramClustering
 
-#ifndef _PERSISTENCEDIAGRAMSBARYCENTER_H
-#define _PERSISTENCEDIAGRAMSBARYCENTER_H
+#pragma once
 
 #ifndef diagramTuple
 #define diagramTuple                                                       \
@@ -63,6 +62,7 @@ namespace ttk {
       reinit_prices_ = 1;
       epsilon_decreases_ = 1;
       use_progressive_ = 1;
+      this->setDebugMsgPrefix("PersistenceDiagramBarycenter");
     };
 
     ~PersistenceDiagramBarycenter(){};
@@ -179,11 +179,8 @@ namespace ttk {
 
     Timer tm;
     {
-      if(debugLevel_ > 1) {
-        std::cout << "[PersistenceDiagramClustering] Clustering "
-                  << numberOfInputs_ << " diagrams in " << 1 << " cluster."
-                  << std::endl;
-      }
+      printMsg("Computing Barycenter of " + std::to_string(numberOfInputs_)
+               + " diagrams.");
 
       std::vector<std::vector<diagramTuple>> data_min(numberOfInputs_);
       std::vector<std::vector<diagramTuple>> data_sad(numberOfInputs_);
@@ -260,7 +257,7 @@ namespace ttk {
         #endif
         {*/
       if(do_min) {
-        std::cout << "Computing Minima barycenter..." << std::endl;
+        printMsg("Computing Minima barycenter...");
         PDBarycenter<dataType> bary_min = PDBarycenter<dataType>();
         bary_min.setThreadNumber(threadNumber_);
         bary_min.setWasserstein(wasserstein_);
@@ -287,7 +284,7 @@ namespace ttk {
       #endif
       {*/
       if(do_sad) {
-        std::cout << "Computing Saddles barycenter..." << std::endl;
+        printMsg("Computing Saddles barycenter...");
         PDBarycenter<dataType> bary_sad = PDBarycenter<dataType>();
         bary_sad.setThreadNumber(threadNumber_);
         bary_sad.setWasserstein(wasserstein_);
@@ -314,7 +311,7 @@ namespace ttk {
       #endif
       {*/
       if(do_max) {
-        std::cout << "Computing Maxima barycenter..." << std::endl;
+        printMsg("Computing Maxima barycenter...");
         PDBarycenter<dataType> bary_max = PDBarycenter<dataType>();
         bary_max.setThreadNumber(threadNumber_);
         bary_max.setWasserstein(wasserstein_);
@@ -450,20 +447,15 @@ namespace ttk {
         }
       }
 
-      if(debugLevel_ > 0) {
-        std::cout << "[PersistenceDiagramBarycenter] Total cost : "
-                  << total_cost << std::endl;
-      }
-      std::stringstream msg;
-      msg << "[PersistenceDiagramBarycenter] processed in "
-          << tm.getElapsedTime() << " s. (" << threadNumber_ << " thread(s))."
-          << std::endl;
-      dMsg(std::cout, msg.str(), timeMsg);
+      printMsg("Total cost : " + std::to_string(total_cost));
+      // std::stringstream msg;
+      // msg << "[PersistenceDiagramBarycenter] processed in "
+      //     << tm.getElapsedTime() << " s. (" << threadNumber_ << "
+      //     thread(s))."
+      //     << std::endl;
+      // dMsg(std::cout, msg.str(), timeMsg);
+      printMsg("Complete", 1, tm.getElapsedTime(), threadNumber_);
     }
   }
 
 } // namespace ttk
-
-// if the package is a pure template class, uncomment the following line
-
-#endif

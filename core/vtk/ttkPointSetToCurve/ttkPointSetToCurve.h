@@ -25,9 +25,6 @@ public:
   static ttkPointSetToCurve *New();
   vtkTypeMacro(ttkPointSetToCurve, ttkAlgorithm);
 
-  vtkSetMacro(InputOrderingArray, std::string);
-  vtkGetMacro(InputOrderingArray, std::string);
-
   vtkSetMacro(CloseCurve, bool);
   vtkGetMacro(CloseCurve, bool);
 
@@ -47,6 +44,5 @@ protected:
                 const size_t nvalues);
 
 private:
-  std::string InputOrderingArray{};
   bool CloseCurve{false};
 };

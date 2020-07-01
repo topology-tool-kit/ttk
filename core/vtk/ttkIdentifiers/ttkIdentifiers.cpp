@@ -48,8 +48,6 @@ int ttkIdentifiers::RequestData(vtkInformation *request,
 
   Timer t;
 
-  printMsg(ttk::debug::Separator::L1);
-
   // use a pointer-base copy for the input data -- to adapt if your wrapper does
   // not produce an output of the type of the input.
   output->ShallowCopy(input);

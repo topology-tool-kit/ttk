@@ -6,4 +6,4 @@ HEADERS
   ttkScalarFieldSmoother.h
 DEPENDS
   scalarFieldSmoother
-  ttkTriangulationAlgorithm
+  ttkAlgorithm

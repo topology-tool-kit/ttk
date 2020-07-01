@@ -11,13 +11,11 @@
 ///
 /// \sa ttkIntegralLines.cpp %for a usage example.
 
-#ifndef _DISCRETESTREAMLINE_H
-#define _DISCRETESTREAMLINE_H
+#pragma once
 
 // base code includes
 #include <Geometry.h>
 #include <Triangulation.h>
-#include <Wrapper.h>
 
 // std includes
 #include <unordered_set>
@@ -25,34 +23,43 @@
 namespace ttk {
   enum Direction { Forward = 0, Backward };
 
-  class IntegralLines : public Debug {
+  class IntegralLines : virtual public Debug {
 
   public:
     IntegralLines();
-    ~IntegralLines();
+    ~IntegralLines() override;
 
-    template <typename dataType>
-    inline float getDistance(const SimplexId &a, const SimplexId &b) const {
+    template <class triangulationType>
+    inline float getDistance(const triangulationType *triangulation,
+                             const SimplexId &a,
+                             const SimplexId &b) const {
       float p0[3];
-      triangulation_->getVertexPoint(a, p0[0], p0[1], p0[2]);
+      triangulation->getVertexPoint(a, p0[0], p0[1], p0[2]);
       float p1[3];
-      triangulation_->getVertexPoint(b, p1[0], p1[1], p1[2]);
+      triangulation->getVertexPoint(b, p1[0], p1[1], p1[2]);
 
       return Geometry::distance(p0, p1, 3);
     }
 
-    template <typename dataType>
-    inline float getGradient(const SimplexId &a,
+    template <typename dataType, class triangulationType>
+    inline float getGradient(const triangulationType *triangulation,
+                             const SimplexId &a,
                              const SimplexId &b,
                              dataType *scalars) const {
-      return fabs(scalars[b] - scalars[a]) / getDistance<dataType>(a, b);
+      return fabs(scalars[b] - scalars[a])
+             / getDistance<triangulationType>(triangulation, a, b);
     }
 
-    template <typename dataType, typename idType>
-    int execute() const;
+    template <typename dataType,
+              typename idType,
+              class triangulationType = ttk::AbstractTriangulation>
+    int execute(const triangulationType *) const;
 
-    template <typename dataType, typename idType, class Compare>
-    int execute(Compare cmp) const;
+    template <typename dataType,
+              typename idType,
+              class Compare,
+              class triangulationType = ttk::AbstractTriangulation>
+    int execute(Compare, const triangulationType *) const;
 
     inline int setVertexNumber(const SimplexId &vertexNumber) {
       vertexNumber_ = vertexNumber;
@@ -69,12 +76,9 @@ namespace ttk {
       return 0;
     }
 
-    inline int setupTriangulation(Triangulation *triangulation) {
-      triangulation_ = triangulation;
-      if(triangulation_) {
-        triangulation_->preconditionVertexNeighbors();
-      }
-      return 0;
+    int preconditionTriangulation(
+      ttk::AbstractTriangulation *triangulation) const {
+      return triangulation->preconditionVertexNeighbors();
     }
 
     inline int setInputScalarField(void *data) {
@@ -102,7 +106,6 @@ namespace ttk {
     SimplexId vertexNumber_;
     SimplexId seedNumber_;
     int direction_;
-    Triangulation *triangulation_;
     void *inputScalarField_;
     void *inputOffsets_;
     void *vertexIdentifierScalarField_;
@@ -110,8 +113,8 @@ namespace ttk {
   };
 } // namespace ttk
 
-template <typename dataType, typename idType>
-int ttk::IntegralLines::execute() const {
+template <typename dataType, typename idType, class triangulationType>
+int ttk::IntegralLines::execute(const triangulationType *triangulation) const {
   idType *offsets = static_cast<idType *>(inputOffsets_);
   SimplexId *identifiers
     = static_cast<SimplexId *>(vertexIdentifierScalarField_);
@@ -138,12 +141,12 @@ int ttk::IntegralLines::execute() const {
     while(!isMax) {
       SimplexId vnext{-1};
       float fnext = std::numeric_limits<float>::min();
-      SimplexId neighborNumber = triangulation_->getVertexNeighborNumber(v);
+      SimplexId neighborNumber = triangulation->getVertexNeighborNumber(v);
       bool isLocalMax = true;
       bool isLocalMin = true;
       for(SimplexId k = 0; k < neighborNumber; ++k) {
         SimplexId n;
-        triangulation_->getVertexNeighbor(v, k, n);
+        triangulation->getVertexNeighbor(v, k, n);
 
         if(scalars[n] <= scalars[v])
           isLocalMax = false;
@@ -152,7 +155,8 @@ int ttk::IntegralLines::execute() const {
 
         if((direction_ == static_cast<int>(Direction::Forward))
            xor (scalars[n] < scalars[v])) {
-          const float f = getGradient<dataType>(v, n, scalars);
+          const float f = getGradient<dataType, triangulationType>(
+            triangulation, v, n, scalars);
           if(f > fnext) {
             vnext = n;
             fnext = f;
@@ -164,7 +168,7 @@ int ttk::IntegralLines::execute() const {
         idType onext = -1;
         for(SimplexId k = 0; k < neighborNumber; ++k) {
           SimplexId n;
-          triangulation_->getVertexNeighbor(v, k, n);
+          triangulation->getVertexNeighbor(v, k, n);
 
           if(scalars[n] == scalars[v]) {
             const idType o = offsets[n];
@@ -190,17 +194,19 @@ int ttk::IntegralLines::execute() const {
 
   {
     std::stringstream msg;
-    msg << "[IntegralLines] Data-set (" << vertexNumber_
-        << " points) processed in " << t.getElapsedTime() << " s. ("
-        << threadNumber_ << " thread(s))." << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
+    msg << "Processed " << vertexNumber_ << " points";
+    this->printMsg(msg.str(), 1, t.getElapsedTime(), 1);
   }
 
   return 0;
 }
 
-template <typename dataType, typename idType, class Compare>
-int ttk::IntegralLines::execute(Compare cmp) const {
+template <typename dataType,
+          typename idType,
+          class Compare,
+          class triangulationType>
+int ttk::IntegralLines::execute(Compare cmp,
+                                const triangulationType *triangulation) const {
   idType *offsets = static_cast<idType *>(inputOffsets_);
   SimplexId *identifiers
     = static_cast<SimplexId *>(vertexIdentifierScalarField_);
@@ -227,12 +233,12 @@ int ttk::IntegralLines::execute(Compare cmp) const {
     while(!isMax) {
       SimplexId vnext{-1};
       float fnext = std::numeric_limits<float>::min();
-      SimplexId neighborNumber = triangulation_->getVertexNeighborNumber(v);
+      SimplexId neighborNumber = triangulation->getVertexNeighborNumber(v);
       bool isLocalMax = true;
       bool isLocalMin = true;
       for(SimplexId k = 0; k < neighborNumber; ++k) {
         SimplexId n;
-        triangulation_->getVertexNeighbor(v, k, n);
+        triangulation->getVertexNeighbor(v, k, n);
 
         if(scalars[n] <= scalars[v])
           isLocalMax = false;
@@ -241,7 +247,8 @@ int ttk::IntegralLines::execute(Compare cmp) const {
 
         if((direction_ == static_cast<int>(Direction::Forward))
            xor (scalars[n] < scalars[v])) {
-          const float f = getGradient<dataType>(v, n, scalars);
+          const float f
+            = getGradient<dataType, triangulationType>(v, n, scalars);
           if(f > fnext) {
             vnext = n;
             fnext = f;
@@ -253,7 +260,7 @@ int ttk::IntegralLines::execute(Compare cmp) const {
         SimplexId onext = -1;
         for(SimplexId k = 0; k < neighborNumber; ++k) {
           SimplexId n;
-          triangulation_->getVertexNeighbor(v, k, n);
+          triangulation->getVertexNeighbor(v, k, n);
 
           if(scalars[n] == scalars[v]) {
             const SimplexId o = offsets[n];
@@ -282,13 +289,9 @@ int ttk::IntegralLines::execute(Compare cmp) const {
 
   {
     std::stringstream msg;
-    msg << "[IntegralLines] Data-set (" << vertexNumber_
-        << " points) processed in " << t.getElapsedTime() << " s. ("
-        << threadNumber_ << " thread(s))." << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
+    msg << "Processed " << vertexNumber_ << " points";
+    this->printMsg(msg.str(), 1, t.getElapsedTime(), 1);
   }
 
   return 0;
 }
-
-#endif // DISCRETESTREAMLINE_H
