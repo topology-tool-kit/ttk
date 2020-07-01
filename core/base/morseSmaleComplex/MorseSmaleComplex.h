@@ -275,7 +275,7 @@ namespace ttk {
           break;
       }
 
-      abstractMorseSmaleComplex_->setupTriangulation(data);
+      abstractMorseSmaleComplex_->preconditionTriangulation(data);
       return 0;
     }
 
@@ -421,15 +421,15 @@ namespace ttk {
       return 0;
     }
 
-    template <typename dataType, typename idType>
-    int execute() {
+    template <typename dataType, typename idType, typename triangulationType>
+    int execute(const triangulationType &triangulation) {
       switch(dimensionality_) {
         case 2:
-          morseSmaleComplex2D_.execute<dataType, idType>();
+          morseSmaleComplex2D_.execute<dataType, idType>(triangulation);
           break;
 
         case 3:
-          morseSmaleComplex3D_.execute<dataType, idType>();
+          morseSmaleComplex3D_.execute<dataType, idType>(triangulation);
           break;
       }
       return 0;
