@@ -31,17 +31,9 @@
 #pragma once
 
 // VTK includes
-#include <vtkDataArray.h>
-#include <vtkDataSet.h>
-#include <vtkDataSetAlgorithm.h>
-#include <vtkDoubleArray.h>
-#include <vtkFiltersCoreModule.h>
 #include <vtkFloatArray.h>
 #include <vtkInformation.h>
-#include <vtkObjectFactory.h>
 #include <vtkPointData.h>
-#include <vtkPointSet.h>
-#include <vtkSmartPointer.h>
 
 // VTK Module
 #include <ttkDistanceFieldModule.h>
@@ -54,25 +46,10 @@ enum DistanceType { Float = 0, Double };
 
 class TTKDISTANCEFIELD_EXPORT ttkDistanceField : public ttkAlgorithm,
                                                  protected ttk::DistanceField {
-
 public:
   static ttkDistanceField *New();
 
   vtkTypeMacro(ttkDistanceField, ttkAlgorithm);
-
-  //void SetDebugLevel(int debugLevel) {
-    //setDebugLevel(debugLevel);
-    //Modified();
-  //}
-  //void SetThreadNumber(int threadNumber) {
-    //ThreadNumber = threadNumber;
-    //SetThreads();
-  //}
-
-  //void SetUseAllCores(bool onOff) {
-    //UseAllCores = onOff;
-    //SetThreads();
-  //}
 
   vtkSetMacro(OutputScalarFieldType, int);
   vtkGetMacro(OutputScalarFieldType, int);
@@ -106,6 +83,6 @@ private:
 
   //ttk::DistanceField distanceField_;
   ttk::Triangulation *triangulation_;
-  vtkDataArray *identifiers_;
+  vtkDataArray *identifiers_{NULL};
 };
 

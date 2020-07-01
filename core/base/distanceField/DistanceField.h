@@ -114,6 +114,7 @@ int ttk::DistanceField::execute() const {
   // prepare output
   std::vector<std::vector<dataType>> scalars(sources.size());
 
+  // @PETER This doesn't seem to very work efficient, there's multilple source shortest paths algorithms.
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
