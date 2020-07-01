@@ -107,7 +107,7 @@ bool Class::preprocessFld(vtkDataSet *dataset) {
   std::ostringstream stream;
   stream << "Scalar type: " << scalars->GetDataTypeAsString() << " (code "
          << _scalarTypeCode << ")";
-  printMsg(stream.str().c_str());
+  printMsg(stream.str(), ttk::debug::Priority::VERBOSE);
   
   return true;
 }

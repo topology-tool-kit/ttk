@@ -42,8 +42,8 @@ public:
   vtkTypeMacro(ttkContourAroundPoint, ttkAlgorithm);
 
   // setter+getter macros for each parameter from the XML file
-  vtkSetMacro(ui_sizeFilter, double) vtkGetMacro(ui_sizeFilter, double);
   vtkSetMacro(ui_extension, double) vtkGetMacro(ui_extension, double);
+  vtkSetMacro(ui_sizeFilter, double) vtkGetMacro(ui_sizeFilter, double);
   vtkSetMacro(ui_spherical, bool) vtkGetMacro(ui_spherical, bool);
 
 protected:
@@ -100,13 +100,13 @@ protected:
   }
 
 private:
+  // output region size, in percent of the maximum overlap-free size:
+  // 0 --> single point, 100 --> touching neighbor regions
+  double ui_extension;
   // minimum required output region size,
   // in centi-percent of the number of input field vertices:
   // 0 --> all pass, 10000 none pass
   double ui_sizeFilter;
-  // output region size, in percent of the maximum overlap-free size:
-  // 0 --> single point, 100 --> touching neighbor regions
-  double ui_extension;
   // name of the scalar variable of the input field
   bool ui_spherical;
 

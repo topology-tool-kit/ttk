@@ -451,18 +451,16 @@ void ttk::ContourAroundPoint::extendOutPts(
   // We weight the vertices based on the difference to the extreme value.
   // Vertices that are close to the extreme value get much weight,
   // vertices that are close to the isovalue get little weight.
-  
-  // Because we only use symmetric kernels for the weighting, the sign of
-  // the difference does not matter.
-  const double dMax = isoval - extremeVal;
+  const double dMax = std::abs(isoval - extremeVal);
+#ifndef NDEBUG
+  const double dMaxRelaxed = dMax * 1.001;
+#endif
   
   // For now, we use a "full cosine" kernel.
   const double kernelInputScaler = M_PI / dMax;
   // d=0 … cos(0)=1 … w=1, d=dMax … cos(pi)=-1 … w = 0
   auto k_func = [dMax, kernelInputScaler](double d)
   {
-    assert(d >= -dMax);
-    assert(d <=  dMax);
     return (std::cos(d * kernelInputScaler) + 1. ) / 2.;
   };
   
@@ -475,7 +473,14 @@ void ttk::ContourAroundPoint::extendOutPts(
   
   for(const auto v : vertices) {
     const scalarT vSca = inpScalars[v];
-    const double w = k_func(vSca - extremeVal);
+    // Because we only use symmetric kernels for the weighting, the sign of
+    // the difference does not matter.
+    const double d = vSca - extremeVal;
+#ifndef NDEBUG
+    if(std::abs(d) > dMaxRelaxed)
+      printWrn("d: "+std::to_string(d)+"  dMax: "+std::to_string(dMax));
+#endif
+    const double w = k_func(d);
     wSum += w;
     
     float x, y, z;
