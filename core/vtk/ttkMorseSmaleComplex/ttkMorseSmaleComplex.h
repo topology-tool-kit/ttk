@@ -145,7 +145,6 @@ private:
   int ReturnSaddleConnectors{false};
   double SaddleConnectorsPersistenceThreshold{0.0};
 
-  ttk::MorseSmaleComplex morseSmaleComplex_{};
   ttk::Triangulation *triangulation_{};
   vtkDataArray *defaultOffsets_{};
   bool hasUpdatedMesh_{};

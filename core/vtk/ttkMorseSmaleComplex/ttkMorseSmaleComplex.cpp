@@ -63,7 +63,7 @@ int ttkMorseSmaleComplex::setupTriangulation(vtkDataSet *input) {
 
   // setupTriangulation() is called first to select the correct algorithm (2D or
   // 3D)
-  morseSmaleComplex_.setupTriangulation(triangulation_);
+  this->setupTriangulation(triangulation_);
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(triangulation_->isEmpty()) {
@@ -206,18 +206,18 @@ int ttkMorseSmaleComplex::dispatch(vtkDataArray *inputScalars,
   vector<VTK_TT> separatrices2_cells_separatrixFunctionDiffs;
 
   if(ComputeCriticalPoints) {
-    morseSmaleComplex_.setOutputCriticalPoints(
+    this->setOutputCriticalPoints(
       &criticalPoints_numberOfPoints, &criticalPoints_points,
       &criticalPoints_points_cellDimensions, &criticalPoints_points_cellIds,
       &criticalPoints_points_cellScalars, &criticalPoints_points_isOnBoundary,
       &criticalPoints_points_PLVertexIdentifiers,
       &criticalPoints_points_manifoldSize);
   } else {
-    morseSmaleComplex_.setOutputCriticalPoints(
+    this->setOutputCriticalPoints(
       nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr);
   }
 
-  morseSmaleComplex_.setOutputSeparatrices1(
+  this->setOutputSeparatrices1(
     &separatrices1_numberOfPoints, &separatrices1_points,
     &separatrices1_points_smoothingMask, &separatrices1_points_cellDimensions,
     &separatrices1_points_cellIds, &separatrices1_numberOfCells,
@@ -229,7 +229,7 @@ int ttkMorseSmaleComplex::dispatch(vtkDataArray *inputScalars,
     &separatrices1_cells_separatrixFunctionDiffs,
     &separatrices1_cells_isOnBoundary);
 
-  morseSmaleComplex_.setOutputSeparatrices2(
+  this->setOutputSeparatrices2(
     &separatrices2_numberOfPoints, &separatrices2_points,
     &separatrices2_numberOfCells, &separatrices2_cells,
     &separatrices2_cells_sourceIds, &separatrices2_cells_separatrixIds,
@@ -875,27 +875,23 @@ int ttkMorseSmaleComplex::RequestData(vtkInformation *request,
   morseSmaleManifold->SetNumberOfTuples(numberOfVertices);
   morseSmaleManifold->SetName("MorseSmaleManifold");
 
-  morseSmaleComplex_.setIterationThreshold(IterationThreshold);
+  this->setIterationThreshold(IterationThreshold);
 
-  morseSmaleComplex_.setComputeAscendingSeparatrices1(
-    ComputeAscendingSeparatrices1);
+  this->setComputeAscendingSeparatrices1(ComputeAscendingSeparatrices1);
 
-  morseSmaleComplex_.setComputeDescendingSeparatrices1(
-    ComputeDescendingSeparatrices1);
-  morseSmaleComplex_.setComputeSaddleConnectors(ComputeSaddleConnectors);
+  this->setComputeDescendingSeparatrices1(ComputeDescendingSeparatrices1);
+  this->setComputeSaddleConnectors(ComputeSaddleConnectors);
 
-  morseSmaleComplex_.setComputeAscendingSeparatrices2(
-    ComputeAscendingSeparatrices2);
+  this->setComputeAscendingSeparatrices2(ComputeAscendingSeparatrices2);
 
-  morseSmaleComplex_.setComputeDescendingSeparatrices2(
-    ComputeDescendingSeparatrices2);
+  this->setComputeDescendingSeparatrices2(ComputeDescendingSeparatrices2);
 
-  morseSmaleComplex_.setReturnSaddleConnectors(ReturnSaddleConnectors);
-  morseSmaleComplex_.setSaddleConnectorsPersistenceThreshold(
+  this->setReturnSaddleConnectors(ReturnSaddleConnectors);
+  this->setSaddleConnectorsPersistenceThreshold(
     SaddleConnectorsPersistenceThreshold);
 
-  morseSmaleComplex_.setInputScalarField(inputScalars->GetVoidPointer(0));
-  morseSmaleComplex_.setInputOffsets(inputOffsets->GetVoidPointer(0));
+  this->setInputScalarField(inputScalars->GetVoidPointer(0));
+  this->setInputOffsets(inputOffsets->GetVoidPointer(0));
 
   void *ascendingManifoldPtr = nullptr;
   void *descendingManifoldPtr = nullptr;
@@ -908,7 +904,7 @@ int ttkMorseSmaleComplex::RequestData(vtkInformation *request,
      and ComputeFinalSegmentation)
     morseSmaleManifoldPtr = morseSmaleManifold->GetVoidPointer(0);
 
-  morseSmaleComplex_.setOutputMorseComplexes(
+  this->setOutputMorseComplexes(
     ascendingManifoldPtr, descendingManifoldPtr, morseSmaleManifoldPtr);
 
   switch(inputScalars->GetDataType()) {
