@@ -117,7 +117,7 @@ public:
     triangleMesh_.setInputCells(triangleNumber, triangleSet);
 #endif
 
-    smoother->setupTriangulation(&triangleMesh_);
+    smoother->preconditionTriangulation(&triangleMesh_);
 
     {
       stringstream msg;
