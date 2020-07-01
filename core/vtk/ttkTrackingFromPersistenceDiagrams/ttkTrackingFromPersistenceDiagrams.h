@@ -4,8 +4,7 @@
 #include <tuple>
 
 #include <TrackingFromPersistenceDiagrams.h>
-#include <Wrapper.h>
-#include <ttkTriangulationAlgorithm.h>
+#include <ttkAlgorithm.h>
 
 #include <vtkCellData.h>
 #include <vtkCellType.h>
@@ -30,13 +29,13 @@
 #include <ttkTrackingFromPersistenceDiagramsModule.h>
 
 class TTKTRACKINGFROMPERSISTENCEDIAGRAMS_EXPORT
-  ttkTrackingFromPersistenceDiagrams : public vtkDataSetAlgorithm,
-                                       protected ttk::Wrapper {
+  ttkTrackingFromPersistenceDiagrams : public ttkAlgorithm,
+                                       protected ttk::TrackingFromPersistenceDiagrams {
 
 public:
   static ttkTrackingFromPersistenceDiagrams *New();
 
-  vtkTypeMacro(ttkTrackingFromPersistenceDiagrams, vtkDataSetAlgorithm);
+  vtkTypeMacro(ttkTrackingFromPersistenceDiagrams, ttkAlgorithm);
 
   void SetThreads() {
     if(!UseAllCores)
@@ -156,44 +155,27 @@ protected:
 
 private:
   // Input bottleneck config.
-  bool UseGeometricSpacing;
-  bool Is3D;
-  bool DoPostProc;
-  double PostProcThresh;
-  double Spacing;
-  double Alpha;
-  double Tolerance;
-  double PX;
-  double PY;
-  double PZ;
-  double PE;
-  double PS;
-  std::string DistanceAlgorithm;
-  int PVAlgorithm;
-  std::string WassersteinMetric;
+  bool UseGeometricSpacing{false};
+  bool Is3D{true};
+  bool DoPostProc{false};
+  double PostProcThresh{0.0};
+  double Spacing{1.0};
+  double Alpha{1.0};
+  double Tolerance{1.0};
+  double PX{1};
+  double PY{1};
+  double PZ{1};
+  double PE{1};
+  double PS{1};
+  std::string DistanceAlgorithm{"ttk"};
+  int PVAlgorithm{-1};
+  std::string WassersteinMetric{"1"};
 
-  bool UseAllCores;
-  int ThreadNumber;
-  vtkUnstructuredGrid *outputMesh_;
+  vtkUnstructuredGrid *outputMesh_{nullptr};
 
-  template <typename dataType>
-  int doIt(std::vector<vtkDataSet *> &input,
-           vtkUnstructuredGrid *outputMean,
-           int numInputs);
 
-  bool needsToAbort() override;
-
-  int updateProgress(const float &progress) override;
-
-  ttk::TrackingFromPersistenceDiagrams tracking_;
 };
 
-template <typename dataType>
-int ttkTrackingFromPersistenceDiagrams::doIt(std::vector<vtkDataSet *> &input,
-                                             vtkUnstructuredGrid *mesh,
-                                             int numInputs) {
-  std::vector<std::vector<diagramTuple>> inputPersistenceDiagrams(
-    (unsigned long)numInputs, std::vector<diagramTuple>());
 
   std::vector<vtkSmartPointer<vtkUnstructuredGrid>> outputPersistenceDiagrams(
     (unsigned long)2 * numInputs - 2,
