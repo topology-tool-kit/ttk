@@ -42,11 +42,10 @@ class TTKCONTOURAROUNDPOINT_EXPORT ttkContourAroundPoint
 
 public:
   static ttkContourAroundPoint *New();
-  vtkTypeMacro(ttkContourAroundPoint, vtkDataSetAlgorithm)
+  vtkTypeMacro(ttkContourAroundPoint, vtkDataSetAlgorithm);
 
-    // BEGIN default ttk setters
-
-    void SetDebugLevel(int debugLevel) {
+  // BEGIN default TTK setters
+  void SetDebugLevel(int debugLevel) {
     setDebugLevel(debugLevel);
     Modified();
   }
@@ -59,25 +58,27 @@ public:
     UseAllCores = onOff;
     SetThreads();
   }
-  // END default ttk setters
+  // END default TTK setters
 
   // BEGIN set-getters macros for each parameter from the
   // ServerManagerConfiguration XML file.
-  vtkSetMacro(ui_sizeFilter, double) vtkGetMacro(ui_sizeFilter, double)
+  vtkSetMacro(ui_sizeFilter, double) vtkGetMacro(ui_sizeFilter, double);
 
-    vtkSetMacro(ui_extension, double) vtkGetMacro(ui_extension, double)
+  vtkSetMacro(ui_extension, double) vtkGetMacro(ui_extension, double);
 
-      vtkSetMacro(ui_scalars, std::string) vtkGetMacro(ui_scalars, std::string)
-    // END set-getters macros
+  vtkSetMacro(ui_scalars, std::string) vtkGetMacro(ui_scalars, std::string);
+  
+  vtkSetMacro(ui_spherical, bool) vtkGetMacro(ui_spherical, bool);
+  // END set-getters macros
 
-    // By default, this filter has one input and one output, of the same type.
-    // Here, you can override the number of input/output ports and their
-    // respective type. Make sure this is consistent with the
-    // ServerManagerConfiguration XML file and the
-    // `SetNumberOfInputPorts`/`SetNumberOfOutputPorts` argument (used in the
-    // constructor). The return value is interpreted as
-    // "PORT_REQUIREMENTS_FILLED" in vtkAlgorithm.cxx
-    int FillInputPortInformation(int port, vtkInformation *info) override {
+  // By default, this filter has one input and one output, of the same type.
+  // Here, you can override the number of input/output ports and their
+  // respective type. Make sure this is consistent with the
+  // ServerManagerConfiguration XML file and the
+  // `SetNumberOfInputPorts`/`SetNumberOfOutputPorts` argument (used in the
+  // constructor). The return value is interpreted as
+  // "PORT_REQUIREMENTS_FILLED" in vtkAlgorithm.cxx
+  int FillInputPortInformation(int port, vtkInformation *info) override {
     switch(port) {
       case 0:
         info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataSet");
@@ -94,6 +95,9 @@ public:
   int FillOutputPortInformation(int port, vtkInformation *info) override {
     switch(port) {
       case 0:
+        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
+        return 1;
+      case 1:
         info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
         return 1;
     }
@@ -131,7 +135,7 @@ protected:
     debugLevel_ = 3;
 
     SetNumberOfInputPorts(3);
-    SetNumberOfOutputPorts(1);
+    SetNumberOfOutputPorts(2);
   }
 
   ~ttkContourAroundPoint() override {
@@ -140,21 +144,16 @@ protected:
   TTK_SETUP();
 
   /// @return Went well?
-  bool preprocessDomain(vtkDataSet *dataset);
+  bool preprocessFld(vtkDataSet *dataset);
 
   /// @return Went well?
-  bool preconditionConstraints(vtkUnstructuredGrid *nodes,
-                               vtkUnstructuredGrid *arcs);
+  bool preprocessPts(vtkUnstructuredGrid *nodes, vtkUnstructuredGrid *arcs);
 
   /// @return Went well?
   bool process();
 
   /// Assemble the output object from the results of the TTK module.
   bool postprocess();
-
-  /// For testing the general pipeline stuff, without having to execute the
-  /// wrapped module.
-  void makeDummyOutput();
 
   template <typename T>
   T *getBuffer(vtkFieldData *data,
@@ -179,16 +178,28 @@ protected:
   }
 
 private:
-  double ui_sizeFilter; // 10000 [c%] --> keep everything
-  double ui_extension; // 100 [%] --> maximum contour size
-  std::string ui_scalars; // name of the scalar variable of the Domain
+  // minimum required output region size,
+  // in centi-percent of the number of input field vertices:
+  // 0 --> all pass, 10000 none pass
+  double ui_sizeFilter;
+  // output region size, in percent of the maximum overlap-free size:
+  // 0 --> single point, 100 --> touching neighbor regions
+  double ui_extension;
+  // name of the scalar variable of the input field
+  std::string ui_scalars;
+  // domain is spherical?
+  bool ui_spherical;
 
-  int _scalarTypeCode; // VTK type of the scalars defined on the Domain
-  double _domainBbSize; // size of the bounding box of the domain
+  int _scalarTypeCode; // VTK type of the scalars defined on the input field
+
+  // referring to the input points
   std::vector<float> _coords;
+  std::vector<float> _scalars;
   std::vector<float> _isovals;
   std::vector<int> _flags;
-  vtkSmartPointer<vtkUnstructuredGrid> _out;
+
+  vtkSmartPointer<vtkUnstructuredGrid> _outFld;
+  vtkSmartPointer<vtkUnstructuredGrid> _outPts;
 
   std::vector<float> coordsBuf_{};
   std::vector<ttk::LongSimplexId> cinfosBuf_{};
