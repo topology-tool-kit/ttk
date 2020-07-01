@@ -139,8 +139,10 @@ int ttkHelloWorld::RequestData(vtkInformation *request,
   //       call SetInputArrayToProcess (see HelloWorld.xml file).
   //
   vtkDataArray *inputArray = this->GetInputArrayToProcess(0, inputVector);
-  if(!inputArray)
+  if(!inputArray) {
+    this->printErr("Unable to retrieve input array.");
     return 0;
+  }
   if(this->GetInputArrayAssociation(0, inputVector) != 0) {
     this->printErr("Input array needs to be a point data array.");
     return 0;

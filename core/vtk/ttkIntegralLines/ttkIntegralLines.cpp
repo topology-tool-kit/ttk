@@ -206,7 +206,7 @@ int ttkIntegralLines::RequestData(vtkInformation *request,
 
   int status = 0;
   ttkVtkTemplateMacro(
-    inputScalars->GetDataType(), triangulation->getType(), 
+    inputScalars->GetDataType(), triangulation->getType(),
     (status = this->dispatch<VTK_TT, TTK_TT>(
        inputOffsets->GetDataType(), (TTK_TT *)(triangulation->getData()))))
 #ifndef TTK_ENABLE_KAMIKAZE

@@ -18,13 +18,13 @@
 /// This filter can be used as any other VTK filter (for instance, by using the
 /// sequence of calls SetInputData(), Update(), GetOutput()).
 ///
-/// The input data array to be processed needs to be specified with the
-/// standard VTK call SetInputArrayToProcess(), with the following parameters:
-/// \param idx 0 (the first array the algorithm requires)
-/// \param port 0 (first port)
-/// \param connection 0 (first connection)
-/// \param fieldAssociation 0 (point data) OR 1 (cell data)
-/// \param arrayName (const char* string representing the name of the VTK array)
+/// The input data array needs to be specified via the standard VTK call
+/// vtkAlgorithm::SetInputArrayToProcess() with the following parameters:
+/// \param idx 0 (FIXED: the first array the algorithm requires)
+/// \param port 0 (FIXED: first port)
+/// \param connection 0 (FIXED: first connection)
+/// \param fieldAssociation 0 OR 1 (DYNAMIC: point or cell data)
+/// \param arrayName (DYNAMIC: string identifier of the input array)
 ///
 /// \sa ttk::IdentifyByScalarField
 #pragma once
