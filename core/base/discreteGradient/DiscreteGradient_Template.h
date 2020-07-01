@@ -1788,8 +1788,9 @@ int DiscreteGradient::filterSaddleConnectors(
 
   ftm::FTMTree contourTree;
   contourTree.setDebugLevel(debugLevel_);
-  contourTree.setupTriangulation(
-    const_cast<Triangulation *>(&triangulation), false);
+  // TODO wait for FTM migration
+  // contourTree.setupTriangulation(
+  //   const_cast<Triangulation *>(&triangulation), false);
   contourTree.setVertexScalars(scalars);
   contourTree.setTreeType(ftm::TreeType::Contour);
   contourTree.setVertexSoSoffsets(offsets);
