@@ -171,7 +171,8 @@ int ttkSphereFromPoint::RequestData(vtkInformation *request,
         sphereSurface->GetPointData()->AddArray(dataArray);
         dataArrayList_[threadId].emplace_back(dataArray);
       } else {
-        printWrn("Unsupported number of components :(");
+        printMsg(
+          "Unsupported number of components :(", debug::Priority::DETAIL);
       }
     }
 
@@ -188,7 +189,7 @@ int ttkSphereFromPoint::RequestData(vtkInformation *request,
   output->ShallowCopy(masterAppender_->GetOutput());
 
   printMsg(std::to_string(input->GetNumberOfPoints()) + " spheres generated", 1,
-           t.getElapsedTime());
+           t.getElapsedTime(), threadNumber_);
 
   this->printMsg(ttk::debug::Separator::L1);
 
