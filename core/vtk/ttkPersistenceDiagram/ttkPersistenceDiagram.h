@@ -197,7 +197,7 @@ int ttkPersistenceDiagram::setPersistenceDiagramInfo(
                                scalarType,
                                ttk::SimplexId>> &diagram,
   vtkSmartPointer<vtkPoints> points,
-  vtkIdType ids[3], const scalarType *inputScalars,
+  vtkIdType ids[3], vtkDataArray *inputScalars,
   const triangulationType *triangulation) {
   double p[3] = {0, 0, 0};
   const ttk::SimplexId a = std::get<0>(diagram[id]);

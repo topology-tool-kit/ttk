@@ -143,9 +143,9 @@ TopologicalSimplification.
       </IntVectorProperty>
 
       <PropertyGroup panel_widget="Line" label="Input options">
-        <Property name="ScalarField" />
+          <Property name="ScalarFieldNew" />
 	      <Property name="ForceInputOffsetScalarField"/>
-	      <Property name="InputOffsetScalarFieldName"/>
+	      <Property name="InputOffsetScalarFieldNameNew"/>
       </PropertyGroup>
 
       <PropertyGroup panel_widget="Line" label="Output options">
