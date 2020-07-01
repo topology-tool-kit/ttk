@@ -256,50 +256,7 @@ Computer Graphics Forum, 2012.
          </Documentation>
        </DoubleVectorProperty>
 
-      <IntVectorProperty
-        name="UseAllCores"
-        label="Use All Cores"
-        command="SetUseAllCores"
-        number_of_elements="1"
-        default_values="1" panel_visibility="advanced">
-        <BooleanDomain name="bool"/>
-        <Documentation>
-          Use all available cores.
-        </Documentation>
-      </IntVectorProperty>
-
-      <IntVectorProperty
-        name="ThreadNumber"
-        label="Thread Number"
-        command="SetThreadNumber"
-        number_of_elements="1"
-        default_values="1" panel_visibility="advanced">
-        <IntRangeDomain name="range" min="1" max="100" />
-        <Hints>
-          <PropertyWidgetDecorator type="GenericDecorator"
-            mode="visibility"
-            property="UseAllCores"
-            value="0" />
-        </Hints>
-
-        <Documentation>
-          Thread number.
-        </Documentation>
-      </IntVectorProperty>
-
-      <IntVectorProperty
-        name="DebugLevel"
-        label="Debug Level"
-        command="SetDebugLevel"
-        number_of_elements="1"
-        default_values="3" panel_visibility="advanced">
-        <IntRangeDomain name="range" min="0" max="100" />
-        <Documentation>
-          Debug level.
-        </Documentation>
-      </IntVectorProperty>
-
-<!--
+      <!--
       <IntVectorProperty name="IterationThreshold"
         label="Iteration Threshold"
         command="SetIterationThreshold"
@@ -311,6 +268,8 @@ Computer Graphics Forum, 2012.
           Number of iterations in the gradient reversal pass.
         </Documentation>
       </IntVectorProperty>-->
+
+      ${DEBUG_WIDGETS}
 
       <PropertyGroup panel_widget="Line" label="Input options">
         <Property name="ScalarField" />
@@ -331,13 +290,6 @@ Computer Graphics Forum, 2012.
         <Property name="ComputeFinalSegmentation"/>
         <Property name="ReturnSaddleConnectors"/>
         <Property name="SaddleConnectorsPersistenceThreshold"/>
-      </PropertyGroup>
-
-      <PropertyGroup panel_widget="Line" label="Testing">
-        <Property name="UseAllCores" />
-        <Property name="ThreadNumber" />
-        <Property name="DebugLevel" />
-<!--        <Property name="IterationThreshold"/>-->
       </PropertyGroup>
 
       <OutputPort name="Critical Points" index="0" id="port0"/>
