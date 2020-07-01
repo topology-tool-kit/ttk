@@ -197,15 +197,10 @@ namespace ttk {
      * Set the input triangulation and preprocess the needed
      * mesh traversal queries.
      */
-    inline int setupTriangulation(Triangulation *const data) {
-      // TODO
+    inline void preconditionTriangulation(AbstractTriangulation *const data) {
       discreteGradient_.preconditionTriangulation(data);
-
       data->preconditionCellEdges();
       data->preconditionCellNeighbors();
-
-      inputTriangulation_ = data;
-      return 0;
     }
 
     /**
@@ -422,7 +417,6 @@ namespace ttk {
     dcg::DiscreteGradient discreteGradient_{};
 
     const void *inputScalarField_{};
-    Triangulation *inputTriangulation_{};
     const void *inputOffsets_{};
 
     SimplexId *outputCriticalPoints_numberOfPoints_{};
