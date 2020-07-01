@@ -17,24 +17,6 @@ ttkTrackingFromPersistenceDiagrams::~ttkTrackingFromPersistenceDiagrams() {
     outputMesh_->Delete();
 }
 
-// transmit abort signals -- to copy paste in other wrappers
-bool ttkTrackingFromPersistenceDiagrams::needsToAbort() {
-  return GetAbortExecute() > 0;
-}
-
-// transmit progress status -- to copy paste in other wrappers
-int ttkTrackingFromPersistenceDiagrams::updateProgress(const float &progress) {
-  {
-    std::stringstream msg;
-    msg << "[ttkTrackingFromPersistenceDiagrams] " << progress * 100
-        << "% processed...." << std::endl;
-    dMsg(std::cout, msg.str(), advancedInfoMsg);
-  }
-
-  UpdateProgress(progress);
-  return 0;
-}
-
 int ttkTrackingFromPersistenceDiagrams::FillInputPortInformation(
   int port, vtkInformation *info) {
   info->Set(vtkAlgorithm::INPUT_IS_REPEATABLE(), 1);
@@ -64,12 +46,7 @@ int ttkTrackingFromPersistenceDiagrams::RequestData(
 
   // Number of input files
   int numInputs = inputVector[0]->GetNumberOfInformationObjects();
-  {
-    std::stringstream msg;
-    msg << "[ttkTrackingFromPersistenceDiagrams] Number of inputs: "
-        << numInputs << std::endl;
-    dMsg(std::cout, msg.str(), infoMsg);
-  }
+  this->printMsg("Number of inputs: " + std::to_string(numInputs));
 
   // Get input data
   std::vector<vtkDataSet *> input(numInputs);
@@ -141,12 +118,8 @@ int ttkTrackingFromPersistenceDiagrams::RequestData(
     vtkSmartPointer<vtkUnstructuredGrid> grid = outputPersistenceDiagrams[i];
     if(!grid || !grid->GetCellData()
        || !grid->GetCellData()->GetArray("Persistence")) {
-      std::stringstream msg;
-      msg << "[ttkTrackingFromPersistenceDiagrams] Inputs are not persistence "
-             "diagrams."
-          << std::endl;
-      dMsg(std::cerr, msg.str(), fatalMsg);
-      return -1;
+      this->printErr("Inputs are not persistence diagrams");
+      return 0;
     }
 
     // Check if inputs have the same data type and the same number of points
@@ -155,12 +128,8 @@ int ttkTrackingFromPersistenceDiagrams::RequestData(
             ->GetCellData()
             ->GetArray("Persistence")
             ->GetDataType()) {
-      std::stringstream msg;
-      msg << "[ttkTrackingFromPersistenceDiagrams] Inputs of different data "
-             "types."
-          << std::endl;
-      dMsg(std::cerr, msg.str(), fatalMsg);
-      return -3;
+      this->printErr("Inputs of different data types");
+      return 0;
     }
   }
 
@@ -171,12 +140,8 @@ int ttkTrackingFromPersistenceDiagrams::RequestData(
     if(i % 2 == 1 && i < numPersistenceDiagramsInput - 1
        && grid1->GetCellData()->GetNumberOfTuples()
             != grid2->GetCellData()->GetNumberOfTuples()) {
-      std::stringstream msg;
-      msg << "[ttkTrackingFromPersistenceDiagrams] Inconsistent length or "
-             "order of input diagrams."
-          << std::endl;
-      dMsg(std::cerr, msg.str(), fatalMsg);
-      return -2;
+      this->printErr("Inconsistent length or order of input diagrams.");
+      return 0;
     }
   }
 
@@ -218,9 +183,8 @@ int ttkTrackingFromPersistenceDiagrams::RequestData(
   std::vector<std::set<int>> trackingTupleToMerged(
     trackingsBase.size(), std::set<int>());
   if(DoPostProc)
-    this->performPostProcess<dataType>(inputPersistenceDiagrams,
-                                           trackingsBase, trackingTupleToMerged,
-                                           PostProcThresh);
+    this->performPostProcess<dataType>(inputPersistenceDiagrams, trackingsBase,
+                                       trackingTupleToMerged, PostProcThresh);
 
   // bool Is3D = true;
   bool useGeometricSpacing = UseGeometricSpacing;
