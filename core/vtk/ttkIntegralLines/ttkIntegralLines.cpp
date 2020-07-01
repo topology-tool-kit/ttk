@@ -152,7 +152,7 @@ int ttkIntegralLines::RequestData(vtkInformation *request,
   }
 
   vtkDataArray *inputIdentifiers = this->GetOptionalArray(
-    ForceInputVertexScalarField, 2, ttk::VertexScalarFieldName, inputVector);
+    ForceInputVertexScalarField, 2, ttk::VertexScalarFieldName, inputVector, 1);
 
   const SimplexId numberOfPointsInDomain = domain->GetNumberOfPoints();
   const SimplexId numberOfPointsInSeeds = seeds->GetNumberOfPoints();
