@@ -48,35 +48,6 @@ int ttkMorseSmaleComplex::FillOutputPortInformation(int port,
   return 0;
 }
 
-int ttkMorseSmaleComplex::setupTriangulation(vtkDataSet *input) {
-  hasUpdatedMesh_ = false;
-
-  triangulation_ = ttkAlgorithm::GetTriangulation(input);
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(!triangulation_) {
-    cerr << "[ttkMorseSmaleComplex] Error : "
-            "ttkTriangulation::getTriangulation() is null."
-         << endl;
-    return -1;
-  }
-#endif
-
-  // setupTriangulation() is called first to select the correct algorithm (2D or
-  // 3D)
-  this->preconditionTriangulation(triangulation_);
-
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(triangulation_->isEmpty()) {
-    cerr
-      << "[ttkMorseSmaleComplex] Error : ttkTriangulation allocation problem."
-      << endl;
-    return -1;
-  }
-#endif
-
-  return 0;
-}
-
 vtkDataArray *ttkMorseSmaleComplex::getScalars(vtkDataSet *input) {
   vtkDataArray *inputScalars{};
 
@@ -163,7 +134,7 @@ int ttkMorseSmaleComplex::dispatch(vtkDataArray *inputScalars,
                                    vtkUnstructuredGrid *outputSeparatrices2,
                                    ttk::Triangulation &triangulation) {
 
-  const int dimensionality = triangulation_->getCellVertexNumber(0) - 1;
+  const int dimensionality = triangulation.getCellVertexNumber(0) - 1;
 
   // critical points
   SimplexId criticalPoints_numberOfPoints{};
@@ -789,13 +760,12 @@ int ttkMorseSmaleComplex::RequestData(vtkInformation *request,
   }
 #endif
 
-  ret = setupTriangulation(input);
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(ret) {
-    cerr << "[ttkMorseSmaleComplex] Error : wrong triangulation." << endl;
-    return -1;
+  const auto triangulation = ttkAlgorithm::GetTriangulation(input);
+  if(triangulation == nullptr) {
+    this->printErr("Triangulation is null");
+    return 0;
   }
-#endif
+  this->preconditionTriangulation(triangulation);
 
   vtkDataArray *inputScalars = getScalars(input);
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -828,7 +798,7 @@ int ttkMorseSmaleComplex::RequestData(vtkInformation *request,
   }
 
   // morse complexes
-  const SimplexId numberOfVertices = triangulation_->getNumberOfVertices();
+  const SimplexId numberOfVertices = triangulation->getNumberOfVertices();
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!numberOfVertices) {
     cerr << "[ttkMorseSmaleComplex] Error : input has no vertices." << endl;
@@ -911,7 +881,7 @@ int ttkMorseSmaleComplex::RequestData(vtkInformation *request,
     vtkTemplateMacro(
       ret = dispatch<VTK_TT>(inputScalars, inputOffsets, outputCriticalPoints,
                              outputSeparatrices1, outputSeparatrices2,
-                             *triangulation_));
+                             *triangulation));
   }
 
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -942,5 +912,5 @@ int ttkMorseSmaleComplex::RequestData(vtkInformation *request,
       pointData->AddArray(morseSmaleManifold);
   }
 
-  return ret;
+  return 1;
 }

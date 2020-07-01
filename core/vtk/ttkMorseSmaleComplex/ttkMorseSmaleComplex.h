@@ -104,7 +104,6 @@ public:
   vtkSetMacro(SaddleConnectorsPersistenceThreshold, double);
   vtkGetMacro(SaddleConnectorsPersistenceThreshold, double);
 
-  int setupTriangulation(vtkDataSet *input);
   vtkDataArray *getScalars(vtkDataSet *input);
   vtkDataArray *getOffsets(vtkDataSet *input);
 
@@ -145,7 +144,6 @@ private:
   int ReturnSaddleConnectors{false};
   double SaddleConnectorsPersistenceThreshold{0.0};
 
-  ttk::Triangulation *triangulation_{};
   vtkDataArray *defaultOffsets_{};
   bool hasUpdatedMesh_{};
 };
