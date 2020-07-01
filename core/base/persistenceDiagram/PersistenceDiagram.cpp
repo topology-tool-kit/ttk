@@ -5,10 +5,8 @@ using namespace ttk;
 
 using namespace ftm;
 
-PersistenceDiagram::PersistenceDiagram()
-  : ComputeSaddleConnectors{},
-
-    triangulation_{}, inputScalars_{}, CTDiagram_{} {
+PersistenceDiagram::PersistenceDiagram() {
+  setDebugMsgPrefix("PersistenceDiagram");
 }
 
 PersistenceDiagram::~PersistenceDiagram() {

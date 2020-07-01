@@ -65,55 +65,16 @@
 
 // ttk code includes
 #include <PersistenceDiagram.h>
-#include <ttkTriangulationAlgorithm.h>
+#include <ttkAlgorithm.h>
 
 class TTKPERSISTENCEDIAGRAM_EXPORT ttkPersistenceDiagram
-  : public vtkDataSetAlgorithm,
-    protected ttk::Wrapper {
+  : public ttkAlgorithm,
+    protected ttk::PersistenceDiagram  {
 
 public:
   static ttkPersistenceDiagram *New();
 
-  vtkTypeMacro(ttkPersistenceDiagram, vtkDataSetAlgorithm);
-
-  void SetDebugLevel(int debugLevel) {
-    setDebugLevel(debugLevel);
-    Modified();
-  }
-
-  void SetThreadNumber(int threadNumber) {
-    ThreadNumber = threadNumber;
-    SetThreads();
-    computeDiagram_ = true;
-  }
-
-  void SetUseAllCores(bool onOff) {
-    UseAllCores = onOff;
-    SetThreads();
-    computeDiagram_ = true;
-  }
-  // end of default ttk setters
-
-  void SetScalarField(std::string data) {
-    ScalarField = data;
-    Modified();
-    computeDiagram_ = true;
-  }
-  vtkGetMacro(ScalarField, std::string);
-
-  void SetScalarFieldId(int data) {
-    ScalarFieldId = data;
-    Modified();
-    computeDiagram_ = true;
-  }
-  vtkGetMacro(ScalarFieldId, int);
-
-  void SetOffsetFieldId(int data) {
-    OffsetFieldId = data;
-    Modified();
-    computeDiagram_ = true;
-  }
-  vtkGetMacro(OffsetFieldId, int);
+  vtkTypeMacro(ttkPersistenceDiagram, ttkAlgorithm);
 
   void SetForceInputOffsetScalarField(int data) {
     ForceInputOffsetScalarField = data;
@@ -129,29 +90,11 @@ public:
   }
   vtkGetMacro(ComputeSaddleConnectors, int);
 
-  void SetInputOffsetScalarFieldName(std::string data) {
-    InputOffsetScalarFieldName = data;
-    Modified();
-    computeDiagram_ = true;
-  }
-  vtkGetMacro(InputOffsetScalarFieldName, std::string);
-
   void SetShowInsideDomain(int onOff) {
     ShowInsideDomain = onOff;
     Modified();
   }
   vtkGetMacro(ShowInsideDomain, int);
-
-  void SetPeriodicBoundaryConditions(int data) {
-    PeriodicBoundaryConditions = data;
-    Modified();
-    computeDiagram_ = true;
-  }
-  vtkGetMacro(PeriodicBoundaryConditions, int);
-
-  int getScalars(vtkDataSet *input);
-  int getTriangulation(vtkDataSet *input);
-  int getOffsets(vtkDataSet *input);
 
   template <typename scalarType>
   int setPersistenceDiagramInfo(
@@ -170,6 +113,7 @@ public:
 
   template <typename scalarType>
   int getPersistenceDiagram(
+    vtkUnstructuredGrid *outputCTPersistenceDiagram,
     ttk::ftm::TreeType treeType,
     const std::vector<std::tuple<ttk::SimplexId,
                                  ttk::CriticalType,
@@ -196,6 +140,7 @@ public:
 
   template <typename scalarType>
   int getPersistenceDiagramInsideDomain(
+    vtkUnstructuredGrid *outputCTPersistenceDiagram,
     ttk::ftm::TreeType treeType,
     const std::vector<std::tuple<ttk::SimplexId,
                                  ttk::CriticalType,
@@ -204,38 +149,32 @@ public:
                                  scalarType,
                                  ttk::SimplexId>> &diagram);
 
-  template <typename VTK_TT>
-  int deleteDiagram();
-
-  template <typename VTK_TT>
-  int dispatch();
-
+  template <typename VTK_TT, typename TTK_TT>
+  int dispatch(vtkUnstructuredGrid *outputCTPersistenceDiagram,
+                                  const VTK_TT *inputScalars,
+                                  int inputOffsetsDataType,
+                                  const void *inputOffsets,
+                                  const TTK_TT *triangulation);
+  
 protected:
   ttkPersistenceDiagram();
   ~ttkPersistenceDiagram() override;
 
+  int RequestData(vtkInformation *request,
+                  vtkInformationVector **inputVector,
+                  vtkInformationVector *outputVector) override;
+
+  int FillInputPortInformation(int port, vtkInformation *info) override;
+
   int FillOutputPortInformation(int port, vtkInformation *info) override;
 
-  TTK_SETUP();
-
 private:
-  std::string ScalarField;
-  std::string InputOffsetScalarFieldName;
-  bool ForceInputOffsetScalarField;
-  bool ComputeSaddleConnectors;
-  int ShowInsideDomain;
-  bool PeriodicBoundaryConditions;
-
-  ttk::PersistenceDiagram persistenceDiagram_;
-  ttk::Triangulation *triangulation_;
-  vtkDataArray *inputScalars_;
-  vtkUnstructuredGrid *CTPersistenceDiagram_;
-  vtkDataArray *offsets_;
-  vtkDataArray *inputOffsets_;
-  bool varyingMesh_;
-  int ScalarFieldId, OffsetFieldId;
-  void *CTDiagram_;
-  bool computeDiagram_;
+  bool ForceInputOffsetScalarField{false};
+  int ShowInsideDomain{false};
+  
+  bool computeDiagram_{true};
+  std::vector<std::tuple<ttk::SimplexId, ttk::CriticalType, ttk::SimplexId,
+      ttk::CriticalType, scalarType, ttk::SimplexId>> CTDiagram_{};
 };
 
 template <typename scalarType>
@@ -286,6 +225,7 @@ int ttkPersistenceDiagram::setPersistenceDiagramInfo(
 
 template <typename scalarType>
 int ttkPersistenceDiagram::getPersistenceDiagram(
+  vtkUnstructuredGrid *outputCTPersistenceDiagram,
   ttk::ftm::TreeType treeType,
   const std::vector<std::tuple<ttk::SimplexId,
                                ttk::CriticalType,
@@ -386,7 +326,7 @@ int ttkPersistenceDiagram::getPersistenceDiagram(
   persistenceDiagram->GetCellData()->AddArray(extremumIndexScalars);
   persistenceDiagram->GetCellData()->AddArray(persistenceScalars);
 
-  CTPersistenceDiagram_->ShallowCopy(persistenceDiagram);
+  outputCTPersistenceDiagram->ShallowCopy(persistenceDiagram);
 
   return 0;
 }
@@ -436,6 +376,7 @@ int ttkPersistenceDiagram::setPersistenceDiagramInfoInsideDomain(
 
 template <typename scalarType>
 int ttkPersistenceDiagram::getPersistenceDiagramInsideDomain(
+  vtkUnstructuredGrid *outputCTPersistenceDiagram,
   ttk::ftm::TreeType treeType,
   const std::vector<std::tuple<ttk::SimplexId,
                                ttk::CriticalType,
@@ -532,7 +473,7 @@ int ttkPersistenceDiagram::getPersistenceDiagramInsideDomain(
   persistenceDiagram->GetCellData()->AddArray(extremumIndexScalars);
   persistenceDiagram->GetCellData()->AddArray(persistenceScalars);
 
-  CTPersistenceDiagram_->ShallowCopy(persistenceDiagram);
+  outputCTPersistenceDiagram->ShallowCopy(persistenceDiagram);
   return 0;
 }
 
