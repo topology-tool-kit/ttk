@@ -6,4 +6,4 @@ HEADERS
   ttkQuadrangulationSubdivision.h
 DEPENDS
   quadrangulationSubdivision
-  ttkTriangulationAlgorithm
+  ttkAlgorithm
