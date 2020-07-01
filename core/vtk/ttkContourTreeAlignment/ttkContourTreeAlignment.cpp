@@ -1,0 +1,466 @@
+#include <ttkContourTreeAlignment.h>
+
+#include <vtkInformationVector.h>
+#include <vtkMultiBlockDataSet.h>
+#include <vtkPointData.h>
+#include <vtkCellData.h>
+#include <vtkUnstructuredGrid.h>
+#include <vtkLongLongArray.h>
+#include <vtkIdTypeArray.h>
+#include <vtkFloatArray.h>
+#include <vtkCellArray.h>
+#include <vtkDataObject.h>
+
+#include <ttkUtils.h>
+#include <ttkMacros.h>
+
+using namespace std;
+using namespace ttk;
+
+vtkStandardNewMacro(ttkContourTreeAlignment)
+
+ttkContourTreeAlignment::ttkContourTreeAlignment(){
+    this->SetNumberOfInputPorts(1);
+    this->SetNumberOfOutputPorts(1);
+    this->setDebugMsgPrefix("ttkContourTreeAlignment");
+}
+
+// Specify the input data type of each input port
+int ttkContourTreeAlignment::FillInputPortInformation(int port, vtkInformation *info){
+    if(port==0){
+        info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkMultiBlockDataSet");
+        return 1;
+    }
+    return 0;
+}
+
+// Specify the data object type of each output port
+int ttkContourTreeAlignment::FillOutputPortInformation(int port, vtkInformation *info){
+    if(port==0){
+        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
+        return 1;
+    }
+    return 0;
+}
+
+int ttkContourTreeAlignment::RequestData(
+    vtkInformation* request,
+    vtkInformationVector** inputVector,
+    vtkInformationVector* outputVector
+){
+    Timer t;
+
+    //==================================================================================================================
+    // Print status
+    {
+        // print horizontal separator
+        this->printMsg("RequestData");
+    }
+
+    //==================================================================================================================
+    // Prepare input
+    vtkInformation* inInfo = inputVector[0]->GetInformationObject(0);
+    auto inputMB = vtkMultiBlockDataSet::SafeDownCast( inInfo->Get(vtkDataObject::DATA_OBJECT()) );
+
+    size_t n = inputMB->GetNumberOfBlocks();
+
+    //==================================================================================================================
+    // print input info
+    this->printMsg(ttk::debug::Separator::L1);
+    this->printMsg({{"#Trees",std::to_string(n)},{"#Seed",std::to_string(RandomSeed)}});
+
+    //==================================================================================================================
+    // extract topologies
+    int scalarType = -1;
+    vector<void*> scalars(n); // scalar type will be determined dynamically
+    vector<int*> regionSizes(n);
+    vector<int*> segmentationIds(n);
+    vector<long long*> topologies(n);
+    vector<size_t> nVertices(n);
+    vector<size_t> nEdges(n);
+
+    for(size_t i=0; i<n; i++){
+        auto contourTree = vtkUnstructuredGrid::SafeDownCast( inputMB->GetBlock(i) );
+
+        if( !contourTree ){
+            this->printErr("block " + std::to_string(i) + " is not an unstructured grid.");
+            return 0;
+        }
+
+        this->printMsg("Block " + std::to_string(i) + " read from multiblock.",debug::Priority::VERBOSE);
+
+        nVertices[i] = contourTree->GetNumberOfPoints();
+        nEdges[i]    = contourTree->GetNumberOfCells();
+
+        auto pData = contourTree->GetPointData();
+        auto scalarArray = pData->GetArray( "Scalar" );
+        if(!scalarArray){
+            printErr("No Point Array \"Scalar\" found.");
+            return 0;
+        }
+        scalars[i] = ttkUtils::GetVoidPointer(scalarArray);
+        scalarType = scalarArray->GetDataType();
+
+        this->printMsg("Scalar Array read from point data.",debug::Priority::VERBOSE);
+
+        auto cData = contourTree->GetCellData();
+
+        auto regionArray = cData->GetArray( "RegionSize" );
+        if(!regionArray){
+            printErr("No Cell Array \"RegionSize\" found.");
+            return 0;
+        }
+        regionSizes[i]     = (int*) ttkUtils::GetVoidPointer(regionArray);
+        this->printMsg("RegionSize Array read from cell data.",debug::Priority::VERBOSE);
+
+        auto segArray = cData->GetArray( "SegmentationId" );
+        if(!regionArray){
+            printErr("No Cell Array \"SegmentationId\" found.");
+            return 0;
+        }
+        segmentationIds[i] = (int*) ttkUtils::GetVoidPointer(segArray);
+        this->printMsg("SegmentationId Array read from cell data.",debug::Priority::VERBOSE);
+
+        auto cells = contourTree->GetCells();
+        auto cellSizes = (vtkIdType*)ttkUtils::GetVoidPointer(cells->GetOffsetsArray());
+        for(int cIdx = 0; cIdx<contourTree->GetNumberOfCells(); cIdx++){
+            if(cellSizes[cIdx+1]-cellSizes[cIdx]!=2){
+                printErr("cell " + std::to_string(cIdx) + " of block " + std::to_string(i) + " not a line (input not a contour tree).");
+                return 0;
+            }
+        }
+        topologies[i] = (long long*)ttkUtils::GetVoidPointer(cells->GetConnectivityArray());
+
+    }
+
+
+    if(scalarType<0 || n<1)
+        return 1;
+
+    //==================================================================================================================
+    // print status
+    this->printMsg(ttk::debug::Separator::L1);
+    this->printMsg("For " + std::to_string(n)+" trees topologies and data extracted.");
+    this->printMsg("Starting alignment computation.");
+
+    //==================================================================================================================
+    // Compute Tree Alignment
+    vector<float> outputVertices;
+    vector<int> outputEdges;
+    vector<long long> outputFrequencies;
+    vector<long long> outputVertexIds;
+    vector<long long> outputBranchIds;
+    vector<long long> outputSegmentationIds;
+    vector<long long> outputArcIds;
+
+    this->setArcMatchMode(ArcMatchMode);
+    if(MatchTime) this->setAlignmenttreeType(lastMatchedValue);
+    else this->setAlignmenttreeType(AlignmenttreeType);
+    this->setWeightArcMatch(WeightArcMatch);
+    this->setWeightCombinatorialMatch(WeightCombinatorialMatch);
+    this->setWeightScalarValueMatch(WeightScalarValueMatch);
+    this->setDebugLevel(this->debugLevel_);
+    this->setThreadNumber(this->threadNumber_);
+
+    int success;
+    switch( scalarType ){
+        vtkTemplateMacro({
+            success = this->execute<VTK_TT>(
+                scalars,
+                regionSizes,
+                segmentationIds,
+                topologies,
+                nVertices,
+                nEdges,
+
+                outputVertices,
+                outputFrequencies,
+                outputVertexIds,
+                outputBranchIds,
+                outputSegmentationIds,
+                outputArcIds,
+                outputEdges,
+		
+                RandomSeed
+            );
+        });
+    }
+    if(!success){
+        printErr("base layer execution failed.");
+        return 0;
+    }
+
+    //==================================================================================================================
+    // print status
+    this->printMsg("Alignment computed. Writing paraview output.");
+
+    //==================================================================================================================
+    // write paraview output
+
+    // Output
+    vtkInformation* outInfo = outputVector->GetInformationObject(0);
+    auto alignmentTree = vtkUnstructuredGrid::SafeDownCast( outInfo->Get(vtkDataObject::DATA_OBJECT()) );
+
+    // Prep Array
+    auto prepArray = [](vtkAbstractArray* array, string name, size_t nComponents, size_t nTuples){
+        array->SetName(name.data());
+        array->SetNumberOfComponents( nComponents );
+        array->SetNumberOfTuples( nTuples );
+    };
+
+    // Points
+    size_t nOutputVertices = outputVertices.size();
+    auto points = vtkSmartPointer<vtkPoints>::New();
+    points->SetNumberOfPoints( nOutputVertices );
+    alignmentTree->SetPoints(points);
+
+    // Point Data
+    auto freq = vtkSmartPointer<vtkLongLongArray>::New();
+    prepArray(freq, "Frequency", 1, nOutputVertices);
+    auto freqData = (long long*) ttkUtils::GetVoidPointer(freq);
+
+    auto scalar = vtkSmartPointer<vtkFloatArray>::New();
+    prepArray(scalar, "Scalar", 1, nOutputVertices);
+    auto scalarData = (float*) ttkUtils::GetVoidPointer(scalar);
+
+    auto vertexIDs = vtkSmartPointer<vtkLongLongArray>::New();
+    prepArray(vertexIDs, "VertexIDs", n, nOutputVertices);
+    auto vertexIDsData = (long long*) ttkUtils::GetVoidPointer(vertexIDs);
+
+    auto branchIDs = vtkSmartPointer<vtkLongLongArray>::New();
+    prepArray(branchIDs, "BranchIDs", 1, nOutputVertices);
+    auto branchIDsData = (long long*) ttkUtils::GetVoidPointer(branchIDs);
+
+    auto segmentationIDs = vtkSmartPointer<vtkLongLongArray>::New();
+    prepArray(segmentationIDs, "segmentationIDs", n, nOutputVertices);
+    auto segmentationIDsData = (long long*) ttkUtils::GetVoidPointer(segmentationIDs);
+
+    auto arcIDs = vtkSmartPointer<vtkLongLongArray>::New();
+    prepArray(arcIDs, "arcIDs", n, nOutputVertices-1);
+    auto arcIDsData = (long long*) ttkUtils::GetVoidPointer(arcIDs);
+
+    auto pointCoords = (float*) ttkUtils::GetVoidPointer(points);
+    for(size_t i=0; i<nOutputVertices; i++){
+        pointCoords[i*3] = i;
+        pointCoords[i*3+1] = outputVertices[i];
+        pointCoords[i*3+2] = 0;
+
+        freqData[i] = outputFrequencies[i];
+        scalarData[i] = outputVertices[i];
+        branchIDsData[i] = outputBranchIds[i];
+    }
+    for(size_t i=0; i<outputVertexIds.size(); i++)
+            vertexIDsData[i] = outputVertexIds[i];
+    for(size_t i=0; i<outputSegmentationIds.size(); i++)
+            segmentationIDsData[i] = outputSegmentationIds[i];
+    for(size_t i=0; i<outputArcIds.size(); i++)
+            arcIDsData[i] = outputArcIds[i];
+
+    // Add Data to Points
+    auto pointData = alignmentTree->GetPointData();
+    pointData->AddArray( freq );
+    pointData->AddArray( scalar );
+    pointData->AddArray( vertexIDs );
+    pointData->AddArray( branchIDs );
+    pointData->AddArray( segmentationIDs );
+
+    // Cells
+    size_t nOutputEdges = outputEdges.size()/2;
+    auto cellArray = vtkSmartPointer<vtkCellArray>::New();
+    //cellArray->SetCells(nOutputEdges, cells);
+
+    //auto cellConnectivity = vtkSmartPointer<vtkIdTypeArray>::New();
+    auto cellConnectivity = cellArray->GetConnectivityArray();
+    cellConnectivity->SetNumberOfTuples( nOutputEdges*2 );
+    auto cellIds = (vtkIdType*) ttkUtils::GetVoidPointer(cellConnectivity);
+
+    //auto cellOffsets = vtkSmartPointer<vtkIdTypeArray>::New();
+    auto cellOffsets = cellArray->GetOffsetsArray();
+    cellOffsets->SetNumberOfTuples( nOutputEdges + 1 );
+    auto cellOffsetsData = (vtkIdType*) ttkUtils::GetVoidPointer(cellOffsets);
+
+    for(size_t i=0; i<nOutputEdges; i++){
+        cellOffsetsData[i] = i*2;
+        cellIds[i*2] = (vtkIdType) outputEdges[i*2];
+        cellIds[i*2+1] = (vtkIdType) outputEdges[i*2+1];
+    }
+    cellOffsetsData[nOutputEdges] = 2*nOutputEdges;
+
+    alignmentTree->SetCells(VTK_LINE, cellArray);
+
+    alignmentTree->GetCellData()->AddArray( arcIDs );
+
+    if(!ExportJSON || ExportPath.length() < 1){
+
+        //==================================================================================================================
+        // print status
+        this->printMsg("Paraview output written. No JSON output.");
+
+    }
+    else{
+
+        //==================================================================================================================
+        // print status
+        this->printMsg("Paraview output written. Writing JSON alignment to \"" + ExportPath + "\".");
+
+        //==================================================================================================================
+        // output alignment tree as JSON file
+
+        std::ofstream fileJSON;
+        fileJSON.open(ExportPath+"/alignment.json");
+
+        std::vector<std::vector<int>> upEdges(nOutputVertices);
+        std::vector<std::vector<int>> downEdges(nOutputVertices);
+
+        std::vector<std::vector<int>> alignmentIDs;
+        for(int i=0; i<n; i++){
+            std::vector<int> vertices_i(nVertices[i],-1);
+            alignmentIDs.push_back(vertices_i);
+        }
+
+        for(int i=0; i<nOutputEdges; i++){
+            int id1 = outputEdges[i*2];
+            int id2 = outputEdges[i*2+1];
+            float v1 = scalar->GetValue(id1);
+            float v2 = scalar->GetValue(id2);
+            if(v1>v2){
+                downEdges[id1].push_back(i);
+                upEdges[id2].push_back(i);
+            }
+            else{
+                upEdges[id1].push_back(i);
+                downEdges[id2].push_back(i);
+            }
+        }
+
+        fileJSON << "{\n";
+
+        fileJSON << "  \"nodes\": [\n";
+
+        for(int i=0; i<nOutputVertices; i++){
+            fileJSON << "    {";
+            fileJSON << "\"scalar\": " << scalar->GetValue(i) << ", ";
+            fileJSON << "\"frequency\": " << freq->GetValue(i) << ", ";
+            for(int j=0; j<n; j++){
+                if(vertexIDs->GetComponent(i,j)>=0) alignmentIDs[j][vertexIDs->GetComponent(i,j)] = i;
+            }
+            fileJSON << "\"segmentationIDs\": [";
+            for(int j=0; j<n; j++){
+                fileJSON << segmentationIDs->GetComponent(i,j);
+                if(j<n-1) fileJSON << ",";
+            }
+            fileJSON << "], ";
+            fileJSON << "\"upEdgeIDs\": [";
+            for(int j=0; j<upEdges[i].size(); j++){
+                fileJSON << upEdges[i][j];
+                if(j<upEdges[i].size()-1) fileJSON << ",";
+            }
+            fileJSON << "], ";
+            fileJSON << "\"downEdgeIDs\": [";
+            for(int j=0; j<downEdges[i].size(); j++){
+                fileJSON << downEdges[i][j];
+                if(j<downEdges[i].size()-1) fileJSON << ",";
+            }
+            fileJSON << "]";
+            fileJSON << (i==nOutputVertices-1?"}\n":"},\n");
+        }
+
+        fileJSON << "  ],\n";
+
+        fileJSON << "  \"edges\": [\n";
+
+        for(int i=0; i<nOutputEdges; i++){
+            fileJSON << "    {";
+            int id1 = outputEdges[i*2];
+            int id2 = outputEdges[i*2+1];
+            fileJSON << "\"node1\": " << id1 << ", \"node2\": " << id2;
+            fileJSON << (i==nOutputEdges-1?"}\n":"},\n");
+        }
+
+        fileJSON << "  ]\n";
+
+        fileJSON << "}\n";
+
+        fileJSON.close();
+
+        //==================================================================================================================
+        // print status
+        this->printMsg("JSON alignment written. Writing JSON input trees to \"" + ExportPath + "\".");
+
+        //==================================================================================================================
+        // output original trees as JSON
+
+        for(size_t t=0; t<n; t++){
+
+            fileJSON.open(ExportPath+"/tree" + std::to_string(t) + ".json");
+
+            std::vector<std::vector<int>> upEdges(nVertices[t]);
+            std::vector<std::vector<int>> downEdges(nVertices[t]);
+
+            for(int i=0; i<nEdges[t]; i++){
+                int id1 = topologies[t][i*2+0];
+                int id2 = topologies[t][i*2+1];
+                float v1 = ((float*)scalars[t])[id1];
+                float v2 = ((float*)scalars[t])[id2];
+                if(v1>v2){
+                    downEdges[id1].push_back(i);
+                    upEdges[id2].push_back(i);
+                }
+                else{
+                    upEdges[id1].push_back(i);
+                    downEdges[id2].push_back(i);
+                }
+            }
+
+            fileJSON << "{\n";
+
+            fileJSON << "  \"nodes\": [\n";
+
+            bool first = true;
+            for(int k=0; k<nOutputVertices; k++){
+                int i = vertexIDs->GetComponent(k,t);
+                if(i<0) continue;
+                fileJSON << (first?"    {":",\n    {");
+                fileJSON << "\"scalar\": " << ((float*)scalars[t])[i] << ", ";
+                fileJSON << "\"id\": " << alignmentIDs[t][i] << ", ";
+                fileJSON << "\"upEdgeIDs\": [";
+                for(int j=0; j<upEdges[i].size(); j++){
+                    fileJSON << upEdges[i][j];
+                    if(j<upEdges[i].size()-1) fileJSON << ",";
+                }
+                fileJSON << "], ";
+                fileJSON << "\"downEdgeIDs\": [";
+                for(int j=0; j<downEdges[i].size(); j++){
+                    fileJSON << downEdges[i][j];
+                    if(j<downEdges[i].size()-1) fileJSON << ",";
+                }
+                fileJSON << "]";
+                fileJSON << "}";
+                first = false;
+            }
+
+            fileJSON << "\n  ],\n";
+
+            fileJSON << "  \"edges\": [\n";
+
+            for(int i=0; i<nEdges[t]; i++){
+                fileJSON << "    {";
+                int id1 = alignmentIDs[t][topologies[t][i*2+0]];
+                int id2 = alignmentIDs[t][topologies[t][i*2+1]];
+                fileJSON << "\"node1\": " << id1 << ", \"node2\": " << id2;
+                fileJSON << (i==nEdges[t]-1?"}\n":"},\n");
+            }
+
+            fileJSON << "  ]\n";
+
+            fileJSON << "}\n";
+
+            fileJSON.close();
+        }
+
+    }
+
+    this->printMsg(ttk::debug::Separator::L1);
+
+    return 1;
+}
