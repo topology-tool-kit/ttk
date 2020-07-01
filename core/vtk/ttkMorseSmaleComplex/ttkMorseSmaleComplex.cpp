@@ -18,6 +18,9 @@ using namespace std;
 vtkStandardNewMacro(ttkMorseSmaleComplex);
 
 ttkMorseSmaleComplex::ttkMorseSmaleComplex() {
+  this->setDebugMsgPrefix("MorseSmaleComplex");
+  this->SetDebugLevel(3); // bug? debug level is 0 without this statement
+
   SetNumberOfInputPorts(1);
   SetNumberOfOutputPorts(4);
 }
