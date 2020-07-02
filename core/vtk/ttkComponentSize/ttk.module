@@ -5,5 +5,4 @@ SOURCES
 HEADERS
   ttkComponentSize.h
 DEPENDS
-  common
-  ttkTriangulationAlgorithm
+  ttkAlgorithm
