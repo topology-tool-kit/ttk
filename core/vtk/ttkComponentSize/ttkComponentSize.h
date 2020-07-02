@@ -24,90 +24,29 @@
 /// See the related ParaView example state files for usage examples within a
 /// VTK pipeline.
 ///
-#ifndef _TTK_PROJECTION_FROM_FIELD_H
-#define _TTK_PROJECTION_FROM_FIELD_H
 
-// VTK includes
-#include <vtkCellData.h>
-#include <vtkConnectivityFilter.h>
-#include <vtkDoubleArray.h>
-#include <vtkFiltersCoreModule.h>
-#include <vtkInformation.h>
-#include <vtkObjectFactory.h>
-#include <vtkPointData.h>
-#include <vtkPointSet.h>
-#include <vtkPointSetAlgorithm.h>
-#include <vtkSmartPointer.h>
-#include <vtkUnstructuredGrid.h>
+#pragma once
 
 // VTK Module
 #include <ttkComponentSizeModule.h>
 
-// ttk code includes
-#include <ttkTriangulationAlgorithm.h>
+// TTK Include
+#include <ttkAlgorithm.h>
 
-class TTKCOMPONENTSIZE_EXPORT ttkComponentSize : public vtkPointSetAlgorithm,
-                                                 protected ttk::Wrapper {
+class TTKCOMPONENTSIZE_EXPORT ttkComponentSize : public ttkAlgorithm {
 
 public:
   static ttkComponentSize *New();
-
-  vtkTypeMacro(ttkComponentSize, vtkPointSetAlgorithm);
-
-  // default ttk setters
-  void SetDebugLevel(int debugLevel) {
-    setDebugLevel(debugLevel);
-    Modified();
-  }
-
-  void SetThreads() {
-    if(!UseAllCores)
-      threadNumber_ = ThreadNumber;
-    else {
-      threadNumber_ = ttk::OsCall::getNumberOfCores();
-    }
-    Modified();
-  }
-
-  void SetThreadNumber(int threadNumber) {
-    ThreadNumber = threadNumber;
-    SetThreads();
-  }
-
-  void SetUseAllCores(bool onOff) {
-    UseAllCores = onOff;
-    SetThreads();
-  }
-  // end of default ttk setters
-
-  /// Over-ride the input data type to vtkDataSet.
-  int FillOutputPortInformation(int port, vtkInformation *info) override {
-    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
-    return 1;
-  }
+  vtkTypeMacro(ttkComponentSize, ttkAlgorithm);
 
 protected:
   ttkComponentSize();
+  ~ttkComponentSize();
 
-  ~ttkComponentSize() override;
+  int FillInputPortInformation(int port, vtkInformation *info) override;
+  int FillOutputPortInformation(int port, vtkInformation *info) override;
 
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;
-
-private:
-  bool UseAllCores;
-  int ThreadNumber;
-
-  vtkSmartPointer<vtkDoubleArray> vertexNumbers_, cellNumbers_;
-  vtkSmartPointer<vtkConnectivityFilter> connectivityFilter_;
-
-  // base code features
-  int doIt(vtkPointSet *input, vtkUnstructuredGrid *output);
-
-  bool needsToAbort() override;
-
-  int updateProgress(const float &progress) override;
 };
-
-#endif // _TTK_PROJECTION_FROM_FIELD_H
