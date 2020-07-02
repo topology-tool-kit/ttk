@@ -15,109 +15,31 @@
 /// VTK pipeline.
 #pragma once
 
-// VTK includes
-#include <vtkCellData.h>
-#include <vtkCharArray.h>
-#include <vtkDataArray.h>
-#include <vtkDataSet.h>
-#include <vtkDataSetAlgorithm.h>
-#include <vtkDoubleArray.h>
-#include <vtkFiltersCoreModule.h>
-#include <vtkFloatArray.h>
-#include <vtkInformation.h>
-#include <vtkIntArray.h>
-#include <vtkObjectFactory.h>
-#include <vtkPointData.h>
-#include <vtkSmartPointer.h>
-#include <vtkTable.h>
-
 // VTK Module
 #include <ttkDataSetToTableModule.h>
 
-// ttk code includes
-#include <Wrapper.h>
+#include <ttkAlgorithm.h>
 
-class TTKDATASETTOTABLE_EXPORT ttkDataSetToTable : public vtkDataSetAlgorithm,
-                                                   protected ttk::Wrapper {
+class TTKDATASETTOTABLE_EXPORT ttkDataSetToTable : public ttkAlgorithm {
+
+private:
+  int DataAssociation;
 
 public:
-  enum class AssociationType { Point = 0, Cell, Field };
-
-  static ttkDataSetToTable *New();
-  vtkTypeMacro(ttkDataSetToTable, vtkDataSetAlgorithm)
-
-    // default ttk setters
-    void SetDebugLevel(int debugLevel) {
-    setDebugLevel(debugLevel);
-    Modified();
-  }
-  void SetThreads() {
-    if(!UseAllCores)
-      threadNumber_ = ThreadNumber;
-    else {
-      threadNumber_ = ttk::OsCall::getNumberOfCores();
-    }
-    Modified();
-  }
-
-  void SetThreadNumber(int threadNumber) {
-    ThreadNumber = threadNumber;
-    SetThreads();
-  }
-  void SetUseAllCores(bool onOff) {
-    UseAllCores = onOff;
-    SetThreads();
-  }
-  // end of default ttk setters
-
   vtkSetMacro(DataAssociation, int);
   vtkGetMacro(DataAssociation, int);
 
-  int FillInputPortInformation(int port, vtkInformation *info) override {
-    switch(port) {
-      case 0:
-        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataSet");
-        break;
-      default:
-        break;
-    }
-
-    return 1;
-  }
-
-  int FillOutputPortInformation(int port, vtkInformation *info) override {
-
-    switch(port) {
-      case 0:
-        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkTable");
-        break;
-      default:
-        break;
-    }
-
-    return 1;
-  }
+  static ttkDataSetToTable *New();
+  vtkTypeMacro(ttkDataSetToTable, ttkAlgorithm);
 
 protected:
-  ttkDataSetToTable() {
-    UseAllCores = true;
+  ttkDataSetToTable();
+  ~ttkDataSetToTable();
 
-    SetNumberOfInputPorts(1);
-    SetNumberOfOutputPorts(1);
-  }
-
-  ~ttkDataSetToTable() override{};
+  int FillInputPortInformation(int port, vtkInformation *info) override;
+  int FillOutputPortInformation(int port, vtkInformation *info) override;
 
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;
-
-private:
-  bool UseAllCores;
-  int ThreadNumber;
-  int DataAssociation;
-
-  int doIt(vtkDataSet *input, vtkTable *output);
-  bool needsToAbort() override;
-  int updateProgress(const float &progress) override;
 };
