@@ -189,7 +189,6 @@ int ttkPersistenceCurve::RequestData(vtkInformation *request,
        (VTK_TT *)ttkUtils::GetVoidPointer(inputScalars),
        offsetField->GetDataType(), ttkUtils::GetVoidPointer(offsetField),
        (TTK_TT *)(triangulation->getData()))))
-#ifndef TTK_ENABLE_KAMIKAZE
     // something wrong in baseCode
     if(status) {
     std::stringstream msg;
@@ -197,7 +196,6 @@ int ttkPersistenceCurve::RequestData(vtkInformation *request,
     this->printErr(msg.str());
     return 0;
   }
-#endif
 
   printMsg("Completed", 1, timer.getElapsedTime(), threadNumber_);
   printMsg(ttk::debug::Separator::L1);
