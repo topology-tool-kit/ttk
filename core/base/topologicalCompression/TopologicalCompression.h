@@ -394,11 +394,7 @@ namespace ttk {
 
 template <class dataType>
 int ttk::TopologicalCompression::execute(const double &tol) {
-  {
-    std::stringstream msg;
-    msg << "[TopologicalCompression] Starting compression... " << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
-  }
+  this->printMsg("Starting compression...");
 
 // check the consistency of the variables -- to adapt
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -471,9 +467,7 @@ int ttk::TopologicalCompression::WriteToFile(FILE *fp,
   // #ifndef _MSC_VER
   // FILE *fm = fmemopen(buf, len, "r+");
   // #else
-  std::stringstream str;
-  str << fileName << ".temp";
-  const std::string s = str.str();
+  const std::string s = fileName + std::string(".temp");
   const char *ffn = s.c_str();
   FILE *fm = fopen(ffn, "wb");
   // #endif
@@ -486,12 +480,7 @@ int ttk::TopologicalCompression::WriteToFile(FILE *fp,
       WriteOtherTopology<double>(fm);
   }
 
-  {
-    std::stringstream msg;
-    msg << "[TopologicalCompression] Topology successfully written to buffer."
-        << std::endl;
-    dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
-  }
+  this->printMsg("Topology successfully written to buffer.");
 
   int status = 0;
   // [->fm] Write altered geometry.
@@ -510,20 +499,9 @@ int ttk::TopologicalCompression::WriteToFile(FILE *fp,
   // #endif
 
   if(status == 0) {
-    {
-      std::stringstream msg;
-      msg << "[TopologicalCompression] Geometry successfully written to buffer."
-          << std::endl;
-      dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
-    }
+    this->printMsg(" Geometry successfully written to buffer.");
   } else {
-    {
-      std::stringstream msg;
-      msg << "[TopologicalCompression] Geometry was not successfully written "
-             "to buffer."
-          << std::endl;
-      dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
-    }
+    this->printErr("Geometry was not successfully written to buffer.");
     fflush(fp);
     fclose(fp);
     return -1;
@@ -531,10 +509,8 @@ int ttk::TopologicalCompression::WriteToFile(FILE *fp,
 
   // Check computed size vs read size.
   if(totalSize < rawFileLength) {
-    std::stringstream msg;
-    msg << "[TopologicalCompression] Invalid total size (" << totalSize
-        << " vs " << rawFileLength << ")." << std::endl;
-    dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
+    this->printErr("Invalid total size (" + std::to_string(totalSize) + " vs "
+                   + std::to_string(rawFileLength) + ").");
   }
 
 #ifdef TTK_ENABLE_ZLIB
@@ -545,30 +521,16 @@ int ttk::TopologicalCompression::WriteToFile(FILE *fp,
   std::vector<Bytef> ddest(destLen);
   Bytef *dest = ddest.data();
   CompressWithZlib(false, dest, &destLen, source, sourceLen);
-  {
-    std::stringstream msg;
-    msg << "[TopologicalCompression] Data successfully compressed."
-        << std::endl;
-    dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
-  }
+  this->printMsg("Data successfully compressed.");
 
   // [fm->fp] Copy fm to fp.
   WriteUnsignedLong(fp, destLen); // Compressed size...
   WriteUnsignedLong(fp, sourceLen);
   WriteUnsignedCharArray(fp, dest, destLen);
-  {
-    std::stringstream msg;
-    msg << "[TopologicalCompression] Data successfully written to filesystem."
-        << std::endl;
-    dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
-  }
+  this->printMsg("Data successfully written to filesystem.");
+
 #else
-  {
-    std::stringstream msg;
-    msg << "[TopologicalCompression] ZLIB not found, writing raw file."
-        << std::endl;
-    dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
-  }
+  this->printMsg("ZLIB not found, writing raw file.");
   unsigned char *source = reinterpret_cast<unsigned char *>(buf);
   unsigned long sourceLen = (unsigned long)rawFileLength;
   unsigned long destLen = (unsigned long)rawFileLength;
@@ -645,11 +607,7 @@ int ttk::TopologicalCompression::WriteMetaData(
   // 7. Array name (as unsigned chars)
   WriteConstCharArray(fp, dataArrayName.c_str(), dataArrayName.size());
 
-  {
-    std::stringstream msg;
-    msg << "[ttkCompressionWriter] Metadata successfully written." << std::endl;
-    dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
-  }
+  this->printMsg("Metadata successfully written.");
 
   return 0;
 }
@@ -657,17 +615,11 @@ int ttk::TopologicalCompression::WriteMetaData(
 template <typename T>
 int ttk::TopologicalCompression::ReadFromFile(FILE *fp) {
   // [fp->] Read headers.
-  {
-    std::stringstream msg;
-    msg << "[TopologicalCompression] Successfully read metadata." << std::endl;
-    dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
-  }
+
+  this->printMsg("Successfully read metadata.");
 
   if(zfpOnly_ && (zfpBitBudget_ > 64 || zfpBitBudget_ < 1)) {
-    std::stringstream msg;
-    msg << "[TopologicalCompression] Wrong ZFP bit budget for ZFP-only use."
-        << std::endl;
-    dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
+    this->printMsg("Wrong ZFP bit budget for ZFP-only use.");
     return -4;
   }
 
@@ -687,30 +639,16 @@ int ttk::TopologicalCompression::ReadFromFile(FILE *fp) {
     std::vector<Bytef> ssource(sl);
     Bytef *source = ssource.data();
     ReadUnsignedCharArray(fp, source, sl);
-    {
-      std::stringstream msg;
-      msg << "[TopologicalCompression] Successfully read compressed data."
-          << std::endl;
-      dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
-    }
+    this->printMsg("Successfully read compressed data.");
 
     // [ff->fm] Decompress data.
     ddest.resize(destLen);
     dest = ddest.data();
     CompressWithZlib(true, dest, &destLen, source, sourceLen);
-    {
-      std::stringstream msg;
-      msg << "[TopologicalCompression] Successfully uncompressed data."
-          << std::endl;
-      dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
-    }
+    this->printMsg("Successfully uncompressed data.");
+
   } else {
-    {
-      std::stringstream msg;
-      msg << "[TopologicalCompression] File was not compressed with ZLIB."
-          << std::endl;
-      dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
-    }
+    this->printMsg("File was not compressed with ZLIB.");
 
     ReadUnsignedLong(fp); // Compressed size...
     unsigned long dl = ReadUnsignedLong(fp); // Uncompressed size...
@@ -722,22 +660,11 @@ int ttk::TopologicalCompression::ReadFromFile(FILE *fp) {
   }
 #else
   if(useZlib) {
-    {
-      std::stringstream msg;
-      msg << "[TopologicalCompression] File compressed but ZLIB not installed! "
-             "Aborting."
-          << std::endl;
-      dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
-    }
+    this->printMsg(" File compressed but ZLIB not installed! Aborting.");
     return -4;
+
   } else {
-    {
-      std::stringstream msg;
-      msg << "[TopologicalCompression] ZLIB not installed, but file was not "
-             "compressed anyways."
-          << std::endl;
-      dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
-    }
+    this->printMsg(" ZLIB not installed, but file was not compressed anyways.");
 
     ReadUnsignedLong(fp); // Compressed size...
     unsigned long dl = ReadUnsignedLong(fp); // Uncompressed size...
@@ -755,9 +682,7 @@ int ttk::TopologicalCompression::ReadFromFile(FILE *fp) {
   //#ifndef _MSC_VER
   // FILE *fm = fmemopen(buf, destLen, "r+");
   //#else
-  std::stringstream str;
-  str << fileName << ".temp";
-  const std::string s = str.str();
+  const std::string s = fileName + std::string(".temp");
   const char *ffn = s.c_str();
   FILE *ftemp = fopen(ffn, "wb");
   fwrite(buf, destLen, sizeof(char), ftemp);
@@ -773,11 +698,7 @@ int ttk::TopologicalCompression::ReadFromFile(FILE *fp) {
       ReadOtherTopology<double>(fm);
   }
 
-  {
-    std::stringstream msg;
-    msg << "[TopologicalCompression] Successfully read topology." << std::endl;
-    dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
-  }
+  this->printMsg("Successfully read topology.");
 
   // Get altered geometry.
   // Rebuild topologically consistent geometry.
@@ -794,21 +715,11 @@ int ttk::TopologicalCompression::ReadFromFile(FILE *fp) {
   fclose(fp);
 
   if(status == 0) {
-    {
-      std::stringstream msg;
-      msg << "[TopologicalCompression] Successfully read geometry."
-          << std::endl;
-      msg << "[TopologicalCompression] Successfully read file." << std::endl;
-      dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
-    }
+    this->printMsg("Successfully read geometry.");
+    this->printMsg("Successfully read file.");
   } else {
-    {
-      std::stringstream msg;
-      msg << "[TopologicalCompression] Failed to write (possibly ZFP)!"
-          << std::endl;
-      msg << "[TopologicalCompression] File may be corrupted!" << std::endl;
-      dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
-    }
+    this->printMsg("Failed to write (possibly ZFP)!");
+    this->printMsg("File may be corrupted!");
   }
 
   return status;
@@ -827,11 +738,8 @@ int ttk::TopologicalCompression::ReadMetaData(FILE *fm) {
   bool hasMagicBytes = strcmp(mBytes.data(), magicBytes_) == 0;
 
   if(!hasMagicBytes) {
-    std::stringstream msg;
-    msg << "[TopologicalCompression] Could not find magic bytes in input file!"
-        << std::endl;
-    msg << "[TopologicalCompression] File may be corrupted!" << std::endl;
-    dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
+    this->printWrn("Could not find magic bytes in input file!");
+    this->printWrn("File might be corrupted!");
 
     // rewind fm to beginning of file
     std::rewind(fm);
