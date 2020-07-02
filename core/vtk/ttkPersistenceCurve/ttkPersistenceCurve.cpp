@@ -182,7 +182,7 @@ int ttkPersistenceCurve::RequestData(vtkInformation *request,
 
   int status = 0;
   ttkVtkTemplateMacro(
-    inputScalars->GetDataType(), triangulation->getType(), 
+    inputScalars->GetDataType(), triangulation->getType(),
     (status = this->dispatch<VTK_TT, TTK_TT>(
        outputJTPersistenceCurve, outputMSCPersistenceCurve,
        outputSTPersistenceCurve, outputCTPersistenceCurve,

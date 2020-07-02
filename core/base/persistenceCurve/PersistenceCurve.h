@@ -106,9 +106,7 @@ int ttk::PersistenceCurve::computePersistencePlot(
   return 0;
 }
 
-template <typename scalarType,
-          typename idType,
-          class triangulationType>
+template <typename scalarType, typename idType, class triangulationType>
 int ttk::PersistenceCurve::execute(
   std::vector<std::pair<scalarType, SimplexId>> &JTPlot,
   std::vector<std::pair<scalarType, SimplexId>> &STPlot,
