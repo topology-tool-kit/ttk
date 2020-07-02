@@ -1,97 +1,79 @@
 #include <ttkDataSetInterpolator.h>
 
-using namespace std;
-using namespace ttk;
+#include <vtkDataSet.h>
+#include <vtkInformation.h>
+#include <vtkObjectFactory.h>
 
-vtkStandardNewMacro(ttkDataSetInterpolator)
+#include <vtkPointData.h>
+#include <vtkProbeFilter.h>
 
-  int ttkDataSetInterpolator::doIt(vtkDataSet *source,
-                                   vtkDataSet *target,
-                                   vtkDataSet *output) {
+vtkStandardNewMacro(ttkDataSetInterpolator);
 
-  Memory m;
+ttkDataSetInterpolator::ttkDataSetInterpolator() {
+  this->setDebugMsgPrefix("DataSetInterpolator");
+  this->SetNumberOfInputPorts(2);
+  this->SetNumberOfOutputPorts(1);
+}
+ttkDataSetInterpolator::~ttkDataSetInterpolator() {
+}
 
-  vtkSmartPointer<vtkProbeFilter> probe
-    = vtkSmartPointer<vtkProbeFilter>::New();
-  probe->SetInputData(target);
-  probe->SetSourceData(source);
-  probe->Update();
-
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(!probe->GetOutput()) {
-    cerr << "[ttkDataSetInterpolator] Error: data probe failed." << endl;
-    return -1;
+int ttkDataSetInterpolator::FillInputPortInformation(int port,
+                                                     vtkInformation *info) {
+  if(port == 0 || port == 1) {
+    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
+    return 1;
   }
-#endif
-
-  output->ShallowCopy(probe->GetOutput());
-
-  // add original data arrays
-  vtkPointData *inputPointData = target->GetPointData();
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(!inputPointData) {
-    cerr << "[ttkDataSetInterpolator] Error: input has no point data." << endl;
-    return -1;
-  }
-#endif
-
-  vtkPointData *outputPointData = output->GetPointData();
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(!outputPointData) {
-    cerr << "[ttkDataSetInterpolator] Error: input has no point data." << endl;
-    return -1;
-  }
-#endif
-
-  const SimplexId numberOfArrays = inputPointData->GetNumberOfArrays();
-  for(SimplexId i = 0; i < numberOfArrays; ++i)
-    outputPointData->AddArray(inputPointData->GetArray(i));
-
-  {
-    stringstream msg;
-    msg << "[ttkDataSetInterpolator] Memory usage: " << m.getElapsedUsage()
-        << " MB." << endl;
-    dMsg(cout, msg.str(), memoryMsg);
-  }
-
   return 0;
 }
 
-bool ttkDataSetInterpolator::needsToAbort() {
-  return GetAbortExecute();
-}
-
-int ttkDataSetInterpolator::updateProgress(const float &progress) {
-
-  {
-    stringstream msg;
-    msg << "[ttkDataSetInterpolator] " << progress * 100 << "% processed...."
-        << endl;
-    dMsg(cout, msg.str(), advancedInfoMsg);
+int ttkDataSetInterpolator::FillOutputPortInformation(int port,
+                                                      vtkInformation *info) {
+  if(port == 0) {
+    info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
+    return 1;
   }
-
-  UpdateProgress(progress);
   return 0;
 }
 
 int ttkDataSetInterpolator::RequestData(vtkInformation *request,
                                         vtkInformationVector **inputVector,
                                         vtkInformationVector *outputVector) {
+  ttk::Timer t;
 
-  Memory m;
+  auto target = vtkDataSet::GetData(inputVector[0]);
+  auto source = vtkDataSet::GetData(inputVector[1]);
 
-  vtkDataSet *source = vtkDataSet::GetData(inputVector[1]);
-  vtkDataSet *target = vtkDataSet::GetData(inputVector[0]);
-  vtkDataSet *output = vtkDataSet::GetData(outputVector);
+  this->printMsg(
+    "Computing " + std::to_string(target->GetNumberOfPoints()) + " locations",
+    0, 0, ttk::debug::LineMode::REPLACE);
 
-  doIt(source, target, output);
+  auto output = vtkDataSet::GetData(outputVector);
 
-  {
-    stringstream msg;
-    msg << "[ttkDataSetInterpolator] Memory usage: " << m.getElapsedUsage()
-        << " MB." << endl;
-    dMsg(cout, msg.str(), memoryMsg);
+  auto probe = vtkSmartPointer<vtkProbeFilter>::New();
+  probe->SetInputData(target);
+  probe->SetSourceData(source);
+  probe->Update();
+
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(!probe->GetOutput()) {
+    this->printErr("Data probe failed.");
+    return 0;
   }
+#endif
+
+  output->ShallowCopy(probe->GetOutput());
+
+  // add original data arrays
+  auto inputPointData = target->GetPointData();
+  auto outputPointData = output->GetPointData();
+
+  const size_t numberOfArrays = inputPointData->GetNumberOfArrays();
+  for(size_t i = 0; i < numberOfArrays; ++i)
+    outputPointData->AddArray(inputPointData->GetAbstractArray(i));
+
+  this->printMsg(
+    "Computing " + std::to_string(target->GetNumberOfPoints()) + " locations",
+    1, t.getElapsedTime());
 
   return 1;
 }
