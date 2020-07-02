@@ -19,11 +19,31 @@
 /// \param Input1 Input sources (vtkPointSet)
 /// \param Output Output integral lines (vtkUnstructuredGrid)
 ///
-/// This module respects the following convention regarding the order of the
-/// input arrays to process (SetInputArrayToProcess()):
-/// \param idx 0: input data array to average.
-/// \param idx 1: offset scalar field.
-/// \param idx 2: vertex identifiers.
+/// The input data array needs to be specified via the standard VTK call
+/// vtkAlgorithm::SetInputArrayToProcess() with the following parameters:
+/// \param idx 0 (FIXED: the first array the algorithm requires)
+/// \param port 0 (FIXED: first port)
+/// \param connection 0 (FIXED: first connection)
+/// \param fieldAssociation 0 (FIXED: point data)
+/// \param arrayName (DYNAMIC: string identifier of the input array)
+///
+/// The optional offset array can be specified via the standard VTK call
+/// vtkAlgorithm::SetInputArrayToProcess() with the following parameters:
+/// \param idx 1 (FIXED: the second array the algorithm requires)
+/// \param port 0 (FIXED: first port)
+/// \param connection 0 (FIXED: first connection)
+/// \param fieldAssociation 0 (FIXED: point data)
+/// \param arrayName (DYNAMIC: string identifier of the offset array)
+/// NOTE: To use this array `ForceInputOffsetScalarField` needs to be enabled.
+///
+/// The vertex identifier array needs to be specified via the standard VTK call
+/// vtkAlgorithm::SetInputArrayToProcess() with the following parameters:
+/// \param idx 2 (FIXED: the third array the algorithm requires)
+/// \param port 1 (FIXED: second port)
+/// \param connection 0 (FIXED: first connection)
+/// \param fieldAssociation 0 (FIXED: point data)
+/// \param arrayName (DYNAMIC: string identifier of the vertex identifier array)
+/// NOTE: To use this array `ForceInputVertexScalarField` needs to be enabled.
 ///
 /// This filter can be used as any other VTK filter (for instance, by using the
 /// sequence of calls SetInputData(), Update(), GetOutput()).
