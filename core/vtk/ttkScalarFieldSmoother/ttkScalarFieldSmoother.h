@@ -27,7 +27,8 @@
 /// \param connection 0 (FIXED: first connection)
 /// \param fieldAssociation 0 (FIXED: point data)
 /// \param arrayName (DYNAMIC: string identifier of the mask array)
-/// NOTE: To use this array `ForceInputMaskScalarField` needs to be enabled.
+/// \note: To use this optional array, `ForceInputMaskScalarField` needs to be
+/// enabled with the setter `setForceInputMaskScalarField()'.
 ///
 /// This filter can be used as any other VTK filter (for instance, by using the
 /// sequence of calls SetInputData(), Update(), GetOutput()).
