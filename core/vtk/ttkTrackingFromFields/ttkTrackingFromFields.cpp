@@ -1,4 +1,9 @@
+#include <ttkMacros.h>
 #include <ttkTrackingFromFields.h>
+#include <ttkUtils.h>
+
+// using namespace std;
+// using namespace ttk;
 
 vtkStandardNewMacro(ttkTrackingFromFields)
 
@@ -18,14 +23,26 @@ int ttkTrackingFromFields::FillOutputPortInformation(int port,
 
   return 1;
 }
+int ttkTrackingFromFields::FillInputPortInformation(int port,
+                                                    vtkInformation *info) {
+  if(port == 0) {
+    info->Set(vtkAlgorithm::INPUT_IS_REPEATABLE(), 1);
+    // info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
+    return 1;
+  }
+  return 0;
+}
 
-int ttkTrackingFromFields::doIt(std::vector<vtkDataSet *> &inputs,
-                                std::vector<vtkDataSet *> &outputs) {
-  vtkDataSet *input = inputs[0];
-  vtkUnstructuredGrid *output = vtkUnstructuredGrid::SafeDownCast(outputs[0]);
+int ttkTrackingFromFields::RequestData(vtkInformation *request,
+                                       vtkInformationVector **inputVector,
+                                       vtkInformationVector *outputVector) {
 
-  internalTriangulation_ = ttkTriangulation::getTriangulation(input);
-  internalTriangulation_->setWrapper(this);
+  vtkDataSet *input = vtkDataSet::GetData(inputVector[0]);
+  vtkUnstructuredGrid *output
+    = vtkUnstructuredGrid::SafeDownCast(vtkDataSet::GetData(outputVector));
+
+  // internalTriangulation_ = ttkTriangulation::getTriangulation(input);
+  // internalTriangulation_->setWrapper(this);
 
   // Test validity of datasets (must present the same number of points).
   if(!input)
@@ -124,7 +141,7 @@ int ttkTrackingFromFields::doIt(std::vector<vtkDataSet *> &inputs,
   int res = 0;
   if(useTTKMethod)
     res
-      = trackWithPersistenceMatching<double>(input, output, inputScalarFields);
+      = trackWithPersistenceMatching<double>(input, output, inputScalarFields, triangulationType* triangulation);
   else {
     std::stringstream msg;
     msg << "[ttkTrackingFromField] The specified matching method does not."

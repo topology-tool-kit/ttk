@@ -1,6 +1,4 @@
 #include <ttkTrackingFromPersistenceDiagrams.h>
-#include <ttkUtils.h>
-#include <ttkMacros.h>
 
 vtkStandardNewMacro(ttkTrackingFromPersistenceDiagrams)
 
@@ -34,7 +32,6 @@ int ttkTrackingFromPersistenceDiagrams::RequestData(
   vtkInformation *request,
   vtkInformationVector **inputVector,
   vtkInformationVector *outputVector) {
-  ttk::Memory m;
 
   // Output pointers informations
   vtkInformation *outInfo;
@@ -84,8 +81,7 @@ int ttkTrackingFromPersistenceDiagrams::RequestData(
     algorithm, // Not from paraview, from enclosing tracking plugin
     wasserstein, tolerance, is3D,
     alpha, // Blending
-    PX, PY, PZ, PS, PE, // Coefficients
-    this // Wrapper for accessing threadNumber
+    PX, PY, PZ, PS, PE // Coefficients
   );
 
   // Get back meshes.
@@ -197,7 +193,7 @@ int ttkTrackingFromPersistenceDiagrams::RequestData(
   // Build mesh.
   buildMesh<dataType>(
     trackingsBase, outputMatchings, inputPersistenceDiagrams,
-    useGeometricSpacing, spacing, DoPostProc, trackingTupleToMerged, points,
+    useGeometricSpacing, spacing, trackingTupleToMerged, points,
     persistenceDiagram, persistenceScalars, valueScalars, matchingIdScalars,
     lengthScalars, timeScalars, componentIds, pointTypeScalars);
 

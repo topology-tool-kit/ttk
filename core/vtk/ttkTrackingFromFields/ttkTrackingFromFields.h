@@ -1,9 +1,8 @@
-#ifndef _TTK_TRACKINGFROMF_H
-#define _TTK_TRACKINGFROMF_H
+#pragma once
 
 #include <tuple>
 
-#include <Wrapper.h>
+#include <ttkAlgorithm.h>
 
 #include <vtkCellData.h>
 #include <vtkCellType.h>
@@ -36,28 +35,28 @@
 #include <string>
 
 class TTKTRACKINGFROMFIELDS_EXPORT ttkTrackingFromFields
-  : public vtkDataSetAlgorithm,
-    protected ttk::Wrapper {
+  : public ttkAlgorithm,
+    protected ttk::TrackingFromFields {
 
 public:
   static ttkTrackingFromFields *New();
 
-  vtkTypeMacro(ttkTrackingFromFields, vtkDataSetAlgorithm);
+  vtkTypeMacro(ttkTrackingFromFields, ttkAlgorithm);
 
-  void SetDebugLevel(int debugLevel) {
-    setDebugLevel(debugLevel);
-    Modified();
-  }
+  // void SetDebugLevel(int debugLevel) {
+  //   setDebugLevel(debugLevel);
+  //   Modified();
+  // }
 
-  void SetThreadNumber(int threadNumber) {
-    ThreadNumber = threadNumber;
-    SetThreads();
-  }
+  // void SetThreadNumber(int threadNumber) {
+  //   ThreadNumber = threadNumber;
+  //   SetThreads();
+  // }
 
-  void SetUseAllCores(bool onOff) {
-    UseAllCores = onOff;
-    SetThreads();
-  }
+  // void SetUseAllCores(bool onOff) {
+  //   UseAllCores = onOff;
+  //   SetThreads();
+  // }
 
   vtkSetMacro(Sampling, int);
   vtkGetMacro(Sampling, int);
@@ -111,30 +110,6 @@ public:
 
 protected:
   ttkTrackingFromFields() {
-    outputMesh_ = nullptr;
-    UseAllCores = false;
-
-    DistanceAlgorithm = "ttk";
-    PVAlgorithm = -1;
-    Alpha = 1.0;
-    WassersteinMetric = "2";
-    UseGeometricSpacing = false;
-    Is3D = true;
-    Spacing = 1.0;
-
-    DoPostProc = false;
-    PostProcThresh = 0;
-
-    Sampling = 1;
-    StartTimestep = 0;
-    EndTimestep = -1;
-
-    Tolerance = 1;
-    PX = 1;
-    PY = 1;
-    PZ = 0;
-    PE = 0;
-    PS = 0;
 
     SetNumberOfInputPorts(1);
     SetNumberOfOutputPorts(1);
@@ -145,67 +120,75 @@ protected:
       outputMesh_->Delete();
   }
 
-  TTK_SETUP();
+  virtual int FillInputPortInformation(int port, vtkInformation *info) override;
 
   virtual int FillOutputPortInformation(int port,
                                         vtkInformation *info) override;
+  int RequestData(vtkInformation *request,
+                  vtkInformationVector **inputVector,
+                  vtkInformationVector *outputVector) override;
 
 private:
   // Sampling config.
-  int StartTimestep;
-  int EndTimestep;
-  int Sampling;
+  int StartTimestep{0};
+  int EndTimestep{-1};
+  int Sampling{1};
 
   // Filtering config.
-  double Tolerance;
-  double PX;
-  double PY;
-  double PZ;
-  double PE;
-  double PS;
+  double Tolerance{1};
+  double PX{1};
+  double PY{1};
+  double PZ{0};
+  double PE{0};
+  double PS{0};
 
   // Bottleneck config.
-  bool UseGeometricSpacing;
-  bool Is3D;
-  bool DoPostProc;
-  double PostProcThresh;
-  double Spacing;
-  double Alpha;
-  std::string DistanceAlgorithm;
-  int PVAlgorithm;
-  std::string WassersteinMetric;
+  bool UseGeometricSpacing{false};
+  bool Is3D{true};
+  bool DoPostProc{false};
+  double PostProcThresh{0.0};
+  double Spacing{1.0};
+  double Alpha{1.0};
+  std::string DistanceAlgorithm{"ttk"};
+  int PVAlgorithm{-1};
+  std::string WassersteinMetric{"2"};
 
-  vtkUnstructuredGrid *outputMesh_;
+  vtkUnstructuredGrid *outputMesh_{nullptr};
 
-  ttk::Triangulation *internalTriangulation_;
-  ttkTriangulation triangulation_;
+  // ttk::Triangulation *internalTriangulation_;
+  // ttkTriangulation triangulation_;
   ttk::TrackingFromFields trackingF_;
   ttk::TrackingFromPersistenceDiagrams tracking_;
 
-  template <typename dataType>
+  template <class dataType, class triangulationType = AbstractTriangulation>
   int trackWithPersistenceMatching(
     vtkDataSet *input,
     vtkUnstructuredGrid *output,
-    std::vector<vtkDataArray *> inputScalarFields);
+    std::vector<vtkDataArray *> inputScalarFields,
+    triangulationType *triangulation);
 };
 
 // (*) Persistence-driven approach
-template <typename dataType>
+template <class dataType>
 int ttkTrackingFromFields::trackWithPersistenceMatching(
   vtkDataSet *input,
   vtkUnstructuredGrid *output,
   std::vector<vtkDataArray *> inputScalarFields) {
   unsigned long fieldNumber = inputScalarFields.size();
 
+  ttk::Triangulation *triangulation = ttkAlgorithm::GetTriangulation(input);
+  if(!triangulation)
+    return 0;
+
   using trackingTuple = ttk::trackingTuple;
 
   // 0. get data
-  trackingF_.setThreadNumber(ThreadNumber);
-  trackingF_.setTriangulation(internalTriangulation_);
+  // this->setThreadNumber(ThreadNumber);
+  // this->setTriangulation(internalTriangulation_);
   std::vector<void *> inputFields(fieldNumber);
   for(int i = 0; i < (int)fieldNumber; ++i)
     inputFields[i] = inputScalarFields[i]->GetVoidPointer(0);
-  trackingF_.setInputScalars(inputFields);
+  this->setInputScalars(inputFields);
 
   // 0'. get offsets
   auto numberOfVertices = (int)input->GetNumberOfPoints();
@@ -215,14 +198,24 @@ int ttkTrackingFromFields::trackWithPersistenceMatching(
   offsets_->SetName("OffsetScalarField");
   for(int i = 0; i < numberOfVertices; ++i)
     offsets_->SetTuple1(i, i);
-  trackingF_.setInputOffsets(offsets_->GetVoidPointer(0));
+  this->setInputOffsets(offsets_->GetVoidPointer(0));
 
   // 1. get persistence diagrams.
   std::vector<std::vector<diagramTuple>> persistenceDiagrams(
     fieldNumber, std::vector<diagramTuple>());
 
-  trackingF_.performDiagramComputation<dataType>(
-    (int)fieldNumber, persistenceDiagrams, this);
+  int status = 0;
+  // ttkVtkTemplateMacro(
+  //   triangulation->getType(), inputScalarFields[0]->GetDataType(),
+  //   (status = this->performDiagramComputation<dataType, TTK_TT>(
+  //      (int)fieldNumber, persistenceDiagrams,
+  //      (TTK_TT *)triangulation->getData())));
+  ttkTemplateMacro(triangulation->getType(),
+                   (status = this->performDiagramComputation<dataType, TTK_TT>(
+                      (int)fieldNumber, persistenceDiagrams,
+                      (TTK_TT *)triangulation->getData())));
+  if(status < 0)
+    return 0;
 
   // 2. call feature tracking with threshold.
   std::vector<std::vector<matchingTuple>> outputMatchings(
@@ -235,14 +228,13 @@ int ttkTrackingFromFields::trackWithPersistenceMatching(
   bool is3D = true; // Is3D;
   std::string wasserstein = WassersteinMetric;
 
-  tracking_.setThreadNumber(ThreadNumber);
+  // tracking_.setThreadNumber(ThreadNumber);
   tracking_.performMatchings<dataType>(
     (int)fieldNumber, persistenceDiagrams, outputMatchings,
     algorithm, // Not from paraview, from enclosing tracking plugin
     wasserstein, tolerance, is3D,
     alpha, // Blending
-    PX, PY, PZ, PS, PE, // Coefficients
-    this // Wrapper for accessing threadNumber
+    PX, PY, PZ, PS, PE // Coefficients
   );
 
   outputMesh_ = vtkUnstructuredGrid::New();
@@ -276,7 +268,7 @@ int ttkTrackingFromFields::trackWithPersistenceMatching(
 
   // (+ vertex id)
   std::vector<trackingTuple> trackingsBase;
-  tracking_.setThreadNumber(ThreadNumber);
+  // tracking_.setThreadNumber(ThreadNumber);
   tracking_.performTracking<dataType>(
     persistenceDiagrams, outputMatchings, trackingsBase);
 
@@ -291,11 +283,11 @@ int ttkTrackingFromFields::trackWithPersistenceMatching(
   bool useGeometricSpacing = UseGeometricSpacing;
 
   // Build mesh.
-  ttkTrackingFromPersistenceDiagrams::buildMesh(
-    trackingsBase, outputMatchings, persistenceDiagrams, useGeometricSpacing,
-    spacing, DoPostProc, trackingTupleToMerged, points, persistenceDiagram,
-    persistenceScalars, valueScalars, matchingIdScalars, lengthScalars,
-    timeScalars, componentIds, pointTypeScalars);
+  // ttkTrackingFromPersistenceDiagrams::buildMesh(
+  //   trackingsBase, outputMatchings, persistenceDiagrams, useGeometricSpacing,
+  //   spacing, DoPostProc, trackingTupleToMerged, points, persistenceDiagram,
+  //   persistenceScalars, valueScalars, matchingIdScalars, lengthScalars,
+  //   timeScalars, componentIds, pointTypeScalars);
 
   outputMesh_->ShallowCopy(persistenceDiagram);
   outputMesh->ShallowCopy(outputMesh_);
@@ -303,4 +295,3 @@ int ttkTrackingFromFields::trackWithPersistenceMatching(
   return 0;
 }
 
-#endif // _TTK_TRACKINGFROMF_H

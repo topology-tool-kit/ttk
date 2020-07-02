@@ -3,35 +3,33 @@
 /// \author Maxime Soler <soler.maxime@total.com>
 /// \date August 2018.
 
-#ifndef _TRACKINGFROMF_H
-#define _TRACKINGFROMF_H
+#pragma once
 
 // base code includes
 #include <BottleneckDistance.h>
 #include <PersistenceDiagram.h>
-#include <Wrapper.h>
+#include <Triangulation.h>
 
 namespace ttk {
 
-  class TrackingFromFields : public Debug {
+  class TrackingFromFields : virtual public Debug {
 
   public:
     TrackingFromFields() {
-    }
-
-    ~TrackingFromFields() {
+      this->setDebugMsgPrefix("TrackingFromFields");
     }
 
     /// Execute the package.
     /// \return Returns 0 upon success, negative values otherwise.
-    template <class dataType>
-    int execute();
+    // template <class dataType>
+    // int execute();
 
-    template <typename dataType>
+    template <typename dataType,
+              typename triangulationType = ttk::AbstractTriangulation>
     int performDiagramComputation(
       int fieldNumber,
       std::vector<std::vector<diagramTuple>> &persistenceDiagrams,
-      const ttk::Wrapper *wrapper);
+      const triangulationType *triangulation);
 
     /// Pass a pointer to an input array representing a scalarfield.
     /// The array is expected to be correctly allocated. idx in
@@ -54,73 +52,53 @@ namespace ttk {
       return 0;
     }
 
-    inline int setTriangulation(ttk::Triangulation *t) {
-      triangulation_ = t;
-      return 0;
+    inline void
+      preconditionTriangulation(AbstractTriangulation *triangulation) {
+      ttk::PersistenceDiagram pd{};
+      pd.preconditionTriangulation(triangulation);
     }
 
-    inline int setInputScalars(std::vector<void *> &is) {
+    inline void setInputScalars(std::vector<void *> &is) {
       inputData_ = is;
-      return 0;
     }
 
-    inline int setInputOffsets(void *io) {
+    inline void setInputOffsets(void *io) {
       inputOffsets_ = io;
-      return 0;
     }
 
   protected:
-    int numberOfInputs_;
-    std::vector<void *> inputData_;
-    void *inputOffsets_;
-    ttk::Triangulation *triangulation_; // 1 triangulation for everyone
+    int numberOfInputs_{0};
+    std::vector<void *> inputData_{};
+    void *inputOffsets_{};
   };
 } // namespace ttk
 
-// template functions
-template <class dataType>
-int ttk::TrackingFromFields::execute() {
-  ttk::Timer t;
-
-  {
-    std::stringstream msg;
-    msg << "[TrackingFromFields] Data-set "
-        << "processed in " << t.getElapsedTime() << " s. (" << threadNumber_
-        << " thread(s))." << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
-  }
-
-  return 0;
-}
-
-template <typename dataType>
+template <typename dataType, typename triangulationType>
 int ttk::TrackingFromFields::performDiagramComputation(
   int fieldNumber,
   std::vector<std::vector<diagramTuple>> &persistenceDiagrams,
-  const ttk::Wrapper *wrapper) {
+  const triangulationType *triangulation) {
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
   for(int i = 0; i < fieldNumber; ++i) {
-    ttk::PersistenceDiagram persistenceDiagram_;
-    // persistenceDiagram_.setWrapper(wrapper);
-    persistenceDiagram_.preconditionTriangulation(triangulation_);
-    persistenceDiagram_.setThreadNumber(1);
+    ttk::PersistenceDiagram persistenceDiagram;
+    persistenceDiagram.setThreadNumber(1);
     // should have been done before
 
     // std::vector<std::tuple<ttk::dcg::Cell, ttk::dcg::Cell>> dmt_pairs;
-    // persistenceDiagram_.setDMTPairs(&dmt_pairs);
-    // persistenceDiagram_.setInputScalars(inputData_[i]);
-    // persistenceDiagram_.setInputOffsets(inputOffsets_);
-    persistenceDiagram_.setComputeSaddleConnectors(false);
+    // persistenceDiagram.setDMTPairs(&dmt_pairs);
+    // persistenceDiagram.setInputScalars(inputData_[i]);
+    // persistenceDiagram.setInputOffsets(inputOffsets_);
+    persistenceDiagram.setComputeSaddleConnectors(false);
     std::vector<std::tuple<int, CriticalType, int, CriticalType, dataType, int>>
       CTDiagram;
 
-    // persistenceDiagram_.setOutputCTDiagram(&CTDiagram);
-    persistenceDiagram_.execute<dataType, int, AbstractTriangulation>(
+    // persistenceDiagram.setOutputCTDiagram(&CTDiagram);
+    persistenceDiagram.execute<dataType, int, AbstractTriangulation>(
       CTDiagram, (dataType *)(inputData_[i]), (int *)(inputOffsets_),
-      triangulation_);
+      triangulation);
 
     // Copy diagram into augmented diagram.
     persistenceDiagrams[i] = std::vector<diagramTuple>(CTDiagram.size());
@@ -131,8 +109,8 @@ int ttk::TrackingFromFields::performDiagramComputation(
       auto currentTuple = CTDiagram[j];
       const int a = std::get<0>(currentTuple);
       const int b = std::get<2>(currentTuple);
-      triangulation_->getVertexPoint(a, p[0], p[1], p[2]);
-      triangulation_->getVertexPoint(b, q[0], q[1], q[2]);
+      triangulation->getVertexPoint(a, p[0], p[1], p[2]);
+      triangulation->getVertexPoint(b, q[0], q[1], q[2]);
       const double sa = ((double *)inputData_[i])[a];
       const double sb = ((double *)inputData_[i])[b];
       diagramTuple dt
@@ -147,5 +125,3 @@ int ttk::TrackingFromFields::performDiagramComputation(
 
   return 0;
 }
-
-#endif // _TRACKINGFROMP_H

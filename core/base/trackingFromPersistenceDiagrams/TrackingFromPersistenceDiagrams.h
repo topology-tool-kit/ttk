@@ -35,8 +35,7 @@
       double py,
       double pz,
       double ps,
-      double pe,
-      const ttk::Wrapper *wrapper);
+      double pe);
 
     template <typename dataType>
     int performMatchings(
@@ -52,8 +51,7 @@
       double py,
       double pz,
       double ps,
-      double pe,
-      const ttk::Wrapper *wrapper);
+      double pe);
 
     template <typename dataType>
     int performTracking(std::vector<std::vector<diagramTuple>> &allDiagrams,
@@ -130,10 +128,9 @@ int ttk::TrackingFromPersistenceDiagrams::performSingleMatching(
   double py,
   double pz,
   double ps,
-  double pe,
-  const ttk::Wrapper *wrapper) {
+  double pe) {
   ttk::BottleneckDistance bottleneckDistance_;
-  bottleneckDistance_.setWrapper(wrapper);
+  // bottleneckDistance_.setWrapper(this);
   bottleneckDistance_.setPersistencePercentThreshold(tolerance);
   bottleneckDistance_.setPX(px);
   bottleneckDistance_.setPY(py);
@@ -165,8 +162,7 @@ int ttk::TrackingFromPersistenceDiagrams::performMatchings(
   double py,
   double pz,
   double ps,
-  double pe,
-  const ttk::Wrapper *wrapper) {
+  double pe) {
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
@@ -177,8 +173,7 @@ int ttk::TrackingFromPersistenceDiagrams::performMatchings(
       algorithm, // Not from paraview, from enclosing tracking plugin
       wasserstein, tolerance, is3D,
       alpha, // Blending
-      px, py, pz, ps, pe, // Coefficients
-      wrapper // Wrapper for accessing threadNumber
+      px, py, pz, ps, pe // Coefficients
     );
   }
 
