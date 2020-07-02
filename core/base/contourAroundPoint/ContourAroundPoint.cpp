@@ -1,6 +1,7 @@
 #include "ContourAroundPoint.hpp"
 
 using module = ttk::ContourAroundPoint;
+using ttkIdx = ttk::SimplexId; // for Windows
 
 //----------------------------------------------------------------------------//
 
@@ -24,16 +25,16 @@ int module::setInputPoints(
 
 //----------------------------------------------------------------------------//
 
-void module::getOutputContours(SimplexId *&cinfos,
-                               SimplexId &nc,
+void module::getOutputContours(ttkIdx *&cinfos,
+                               ttkIdx &nc,
                                float *&coords,
                                float *&scalars,
                                int *&flags,
-                               SimplexId &nv) const {
+                               ttkIdx &nv) const {
 
   nc = _outContoursNc;
 
-  cinfos = new SimplexId[_outContoursCinfos.size()];
+  cinfos = new ttkIdx[_outContoursCinfos.size()];
   std::copy(_outContoursCinfos.begin(), _outContoursCinfos.end(), cinfos);
 
   nv = _outContoursScalars.size();
@@ -51,7 +52,7 @@ void module::getOutputContours(SimplexId *&cinfos,
 void module::getOutputCentroids(float *&coords,
                                 float *&scalars,
                                 int *&flags,
-                                SimplexId &nv) const {
+                                ttkIdx &nv) const {
 
   nv = _outCentroidsScalars.size();
 
