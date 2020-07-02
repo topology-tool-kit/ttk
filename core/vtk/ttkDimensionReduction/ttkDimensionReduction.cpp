@@ -59,7 +59,7 @@ int ttkDimensionReduction::RequestData(vtkInformation *request,
     const SimplexId numberOfColumns = ScalarFields.size();
 
 #ifndef TTK_ENABLE_KAMIKAZE
-    if(numberOfRows <= 0 or numberOfColumns <= 0) {
+    if(numberOfRows <= 0 || numberOfColumns <= 0) {
       this->printErr("input matrix has invalid dimensions");
       return -1;
     }
