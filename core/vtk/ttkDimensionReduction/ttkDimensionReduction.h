@@ -67,7 +67,14 @@ public:
   vtkGetMacro(KeepAllDataArrays, bool);
 
   // SE && MDS
-  vtkSetMacro(InputIsADistanceMatrix, bool);
+  void SetInputIsADistanceMatrix(const bool b) {
+    this->InputIsADistanceMatrix = b;
+    if(b) {
+      this->mds_Dissimilarity = "precomputed";
+      this->se_Affinity = "precomputed";
+    }
+    Modified();
+  }
   vtkGetMacro(InputIsADistanceMatrix, bool);
 
   // SE

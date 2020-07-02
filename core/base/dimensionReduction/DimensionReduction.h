@@ -206,7 +206,7 @@ namespace ttk {
     int mds_MaxIteration{300};
     int mds_Verbose{0};
     float mds_Epsilon{0};
-    std::string mds_Dissimilarity{};
+    std::string mds_Dissimilarity{"euclidean"};
 
     // tsne
     float tsne_Perplexity{30};
@@ -215,7 +215,7 @@ namespace ttk {
     int tsne_MaxIteration{1000};
     int tsne_MaxIterationProgress{300};
     float tsne_GradientThreshold{1e-7};
-    std::string tsne_Metric{"euclidian"};
+    std::string tsne_Metric{"euclidean"};
     std::string tsne_Init{"random"};
     int tsne_Verbose{0};
     std::string tsne_Method{"barnes_hut"};
