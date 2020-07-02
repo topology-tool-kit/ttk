@@ -1,6 +1,6 @@
 #include <string>
-#include <ttkUtils.h>
 #include <ttkMacros.h>
+#include <ttkUtils.h>
 
 #include <ttkDistanceField.h>
 #include <vtkPointSet.h>
@@ -11,8 +11,8 @@ using namespace ttk;
 vtkStandardNewMacro(ttkDistanceField);
 
 ttkDistanceField::ttkDistanceField() : identifiers_{} {
-    this->SetNumberOfInputPorts(2);
-    this->SetNumberOfOutputPorts(1);
+  this->SetNumberOfInputPorts(2);
+  this->SetNumberOfOutputPorts(1);
 }
 
 ttkDistanceField::~ttkDistanceField() {
@@ -26,8 +26,9 @@ int ttkDistanceField::FillInputPortInformation(int port, vtkInformation *info) {
   return 1;
 }
 
-int ttkDistanceField::FillOutputPortInformation(int port, vtkInformation *info) {
-  if(port == 0){
+int ttkDistanceField::FillOutputPortInformation(int port,
+                                                vtkInformation *info) {
+  if(port == 0) {
     info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
     return 1;
   }
@@ -37,15 +38,20 @@ int ttkDistanceField::FillOutputPortInformation(int port, vtkInformation *info) 
 int ttkDistanceField::getTriangulation(vtkDataSet *input) {
 
   triangulation_ = ttkAlgorithm::GetTriangulation(input);
-  if(!triangulation_) return -1;
+  if(!triangulation_)
+    return -1;
 
   this->setupTriangulation(triangulation_);
   Modified();
 
-  // @Peter I tried doing this, but I got the compile error /home/peter/Projects/hackathon/ttk/core/base/distanceField/DistanceField.h:54:22: error: cannot convert ‘ttk::ExplicitTriangulation*’ to ‘ttk::Triangulation*’ in assignment triangulation_ = triangulation;
-  //int status = 0;
-  //ttkTemplateMacro(triangulation_->getType(), (status = this->setupTriangulation<TTK_TT>((TTK_TT *) triangulation_->getData())));
-  //if(triangulation_ != 0) return -1;
+  // @Peter I tried doing this, but I got the compile error
+  // /home/peter/Projects/hackathon/ttk/core/base/distanceField/DistanceField.h:54:22:
+  // error: cannot convert ‘ttk::ExplicitTriangulation*’ to
+  // ‘ttk::Triangulation*’ in assignment triangulation_ = triangulation;
+  // int status = 0;
+  // ttkTemplateMacro(triangulation_->getType(), (status =
+  // this->setupTriangulation<TTK_TT>((TTK_TT *) triangulation_->getData())));
+  // if(triangulation_ != 0) return -1;
 
   Modified();
 
@@ -70,7 +76,9 @@ int ttkDistanceField::getIdentifiers(vtkDataSet *input) {
   return 0;
 }
 
-int ttkDistanceField::RequestData(vtkInformation *request,vtkInformationVector **inputVector,vtkInformationVector *outputVector) {
+int ttkDistanceField::RequestData(vtkInformation *request,
+                                  vtkInformationVector **inputVector,
+                                  vtkInformationVector *outputVector) {
 
   vtkDataSet *domain = vtkDataSet::GetData(inputVector[0]);
   vtkPointSet *sources = vtkPointSet::GetData(inputVector[1]);
@@ -109,7 +117,8 @@ int ttkDistanceField::RequestData(vtkInformation *request,vtkInformationVector *
   }
 #endif
 
-  vtkSmartPointer<ttkSimplexIdTypeArray> origin = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
+  vtkSmartPointer<ttkSimplexIdTypeArray> origin
+    = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
 
   if(origin) {
     origin->SetNumberOfComponents(1);
@@ -119,12 +128,14 @@ int ttkDistanceField::RequestData(vtkInformation *request,vtkInformationVector *
 
 #ifndef TTK_ENABLE_KAMIKAZE
   else {
-    printErr("[ttkDistanceField] Error : ttkSimplexIdTypeArray allocation problem.");
+    printErr(
+      "[ttkDistanceField] Error : ttkSimplexIdTypeArray allocation problem.");
     return -5;
   }
 #endif
 
-  vtkSmartPointer<ttkSimplexIdTypeArray> seg = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
+  vtkSmartPointer<ttkSimplexIdTypeArray> seg
+    = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
   if(seg) {
     seg->SetNumberOfComponents(1);
     seg->SetNumberOfTuples(numberOfPointsInDomain);
@@ -132,18 +143,22 @@ int ttkDistanceField::RequestData(vtkInformation *request,vtkInformationVector *
   }
 #ifndef TTK_ENABLE_KAMIKAZE
   else {
-    printErr("[ttkDistanceField] Error : ttkSimplexIdTypeArray allocation problem.");
+    printErr(
+      "[ttkDistanceField] Error : ttkSimplexIdTypeArray allocation problem.");
     return -6;
   }
 #endif
 
   this->setVertexNumber(numberOfPointsInDomain);
   this->setSourceNumber(numberOfPointsInSources);
-  this->setVertexIdentifierScalarFieldPointer(ttkUtils::GetVoidPointer(identifiers_));
+  this->setVertexIdentifierScalarFieldPointer(
+    ttkUtils::GetVoidPointer(identifiers_));
   this->setOutputIdentifiers(ttkUtils::GetVoidPointer(origin));
   this->setOutputSegmentation(ttkUtils::GetVoidPointer(seg));
 
-  // @PETER Alot of code can be refactored into a single templated function, but that would have to to in the .h file, not sure if there's any downside to that.
+  // @PETER Alot of code can be refactored into a single templated function, but
+  // that would have to to in the .h file, not sure if there's any downside to
+  // that.
   vtkDataArray *distanceScalars{};
   switch(OutputScalarFieldType) {
     case DistanceType::Float:
@@ -155,12 +170,16 @@ int ttkDistanceField::RequestData(vtkInformation *request,vtkInformationVector *
       }
 #ifndef TTK_ENABLE_KAMIKAZE
       else {
-        printErr("[ttkDistanceField] Error : vtkFloatArray allocation problem.");
+        printErr(
+          "[ttkDistanceField] Error : vtkFloatArray allocation problem.");
         return -7;
       }
 #endif
-      this->setOutputScalarFieldPointer(ttkUtils::GetVoidPointer(distanceScalars));
-      // @PETER I don't think there's any need to use ttkTemplateMacro here because the triangulation is not part of the function call, is that right?
+      this->setOutputScalarFieldPointer(
+        ttkUtils::GetVoidPointer(distanceScalars));
+      // @PETER I don't think there's any need to use ttkTemplateMacro here
+      // because the triangulation is not part of the function call, is that
+      // right?
       ret = this->execute<float>();
       break;
 
@@ -173,12 +192,16 @@ int ttkDistanceField::RequestData(vtkInformation *request,vtkInformationVector *
       }
 #ifndef TTK_ENABLE_KAMIKAZE
       else {
-        printErr("[ttkDistanceField] Error : vtkDoubleArray allocation problem.");
+        printErr(
+          "[ttkDistanceField] Error : vtkDoubleArray allocation problem.");
         return -8;
       }
 #endif
-      this->setOutputScalarFieldPointer(ttkUtils::GetVoidPointer(distanceScalars));
-      // @PETER I don't think there's any need to use ttkTemplateMacro here because the triangulation is not part of the function call, is that right?
+      this->setOutputScalarFieldPointer(
+        ttkUtils::GetVoidPointer(distanceScalars));
+      // @PETER I don't think there's any need to use ttkTemplateMacro here
+      // because the triangulation is not part of the function call, is that
+      // right?
       ret = this->execute<double>();
       break;
 
@@ -193,7 +216,8 @@ int ttkDistanceField::RequestData(vtkInformation *request,vtkInformationVector *
 #ifndef TTK_ENABLE_KAMIKAZE
   // something wrong in baseCode
   if(ret) {
-    printErr("[ttkDistanceField] DistanceField.execute() error code : " + std::to_string(ret));
+    printErr("[ttkDistanceField] DistanceField.execute() error code : "
+             + std::to_string(ret));
     return -10;
   }
 #endif
@@ -205,7 +229,8 @@ int ttkDistanceField::RequestData(vtkInformation *request,vtkInformationVector *
   output->GetPointData()->AddArray(seg);
   distanceScalars->Delete();
 
-  printMsg("The ret is " + std::to_string(ret) , ttk::Debug::debugPriority::memoryMsg);
+  printMsg(
+    "The ret is " + std::to_string(ret), ttk::Debug::debugPriority::memoryMsg);
 
   return 1;
 }

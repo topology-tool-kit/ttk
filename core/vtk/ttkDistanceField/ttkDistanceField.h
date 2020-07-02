@@ -72,17 +72,18 @@ protected:
 
   int FillInputPortInformation(int port, vtkInformation *info) override;
   int FillOutputPortInformation(int port, vtkInformation *info) override;
-  int RequestData(vtkInformation *request,vtkInformationVector **inputVector,vtkInformationVector *outputVector) override;
+  int RequestData(vtkInformation *request,
+                  vtkInformationVector **inputVector,
+                  vtkInformationVector *outputVector) override;
 
 private:
-  //std::string ScalarField{"ScalarField"};
+  // std::string ScalarField{"ScalarField"};
   int OutputScalarFieldType{DistanceType::Float};
   std::string OutputScalarFieldName{"DistanceFieldValues"};
   bool ForceInputVertexScalarField{false};
   std::string InputVertexScalarFieldName{"InputScalarField"};
 
-  //ttk::DistanceField distanceField_;
+  // ttk::DistanceField distanceField_;
   ttk::Triangulation *triangulation_;
   vtkDataArray *identifiers_{NULL};
 };
-
