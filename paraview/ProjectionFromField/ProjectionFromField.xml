@@ -43,13 +43,10 @@ point-data scalar fields to be used as 2D coordinates.
         <BooleanDomain name="bool"/>
       </IntVectorProperty>
 
-      <StringVectorProperty
-        name="U Component"
-        command="SetUComponent"
-        number_of_elements="1"
-        animateable="0"
-        label="U Component"
-        >
+      <StringVectorProperty name="UComponentNew" label="U Component" 
+                            command="SetInputArrayToProcess" 
+                            element_types="0 0 0 0 2" 
+                            number_of_elements="5" default_values="0">
         <ArrayListDomain
           name="array_list"
           default_values="0">
@@ -62,16 +59,13 @@ point-data scalar fields to be used as 2D coordinates.
         </Documentation>
       </StringVectorProperty>
 
-      <StringVectorProperty
-        name="V Component"
-        command="SetVComponent"
-        number_of_elements="1"
-        animateable="0"
-        label="V Component"
-        >
+      <StringVectorProperty name="VComponentNew" label="V Component" 
+                            command="SetInputArrayToProcess" 
+                            element_types="0 0 0 0 2" 
+                            number_of_elements="5" default_values="1">
         <ArrayListDomain
           name="array_list"
-          default_values="0">
+          default_values="1">
           <RequiredProperties>
             <Property name="Input" function="Input" />
           </RequiredProperties>
@@ -81,62 +75,14 @@ point-data scalar fields to be used as 2D coordinates.
         </Documentation>
       </StringVectorProperty>
 
-
-      <IntVectorProperty
-         name="UseAllCores"
-         label="Use All Cores"
-         command="SetUseAllCores"
-         number_of_elements="1"
-         default_values="1" panel_visibility="advanced">
-        <BooleanDomain name="bool"/>
-         <Documentation>
-          Use all available cores.
-         </Documentation>
-      </IntVectorProperty>
-
-      <IntVectorProperty
-         name="ThreadNumber"
-         label="Thread Number"
-         command="SetThreadNumber"
-         number_of_elements="1"
-         default_values="1" panel_visibility="advanced">
-        <IntRangeDomain name="range" min="1" max="100" />
-        <Hints>
-          <PropertyWidgetDecorator type="GenericDecorator"
-            mode="visibility"
-            property="UseAllCores"
-            value="0" />
-        </Hints>
-
-         <Documentation>
-          Thread number.
-         </Documentation>
-      </IntVectorProperty>
-
-      <IntVectorProperty
-         name="DebugLevel"
-         label="Debug Level"
-         command="SetDebugLevel"
-         number_of_elements="1"
-         default_values="3" panel_visibility="advanced">
-        <IntRangeDomain name="range" min="0" max="100" />
-         <Documentation>
-           Debug level.
-         </Documentation>
-      </IntVectorProperty>
-
-      <PropertyGroup panel_widget="Line" label="Testing">
-        <Property name="UseAllCores" />
-        <Property name="ThreadNumber" />
-        <Property name="DebugLevel" />
-      </PropertyGroup>
-
       <PropertyGroup panel_widget="Line" label="Input options">
         <Property name="UseTextureCoordinates" />
-        <Property name="U Component" />
-        <Property name="V Component" />
+        <Property name="UComponentNew" />
+        <Property name="VComponentNew" />
       </PropertyGroup>
 
+      ${DEBUG_WIDGETS}
+      
       <Hints>
         <ShowInMenu category="TTK - Misc" />
       </Hints>
