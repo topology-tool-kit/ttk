@@ -74,11 +74,13 @@ protected:
                   vtkInformationVector *outputVector) override;
 
 private:
-  template <typename T>
+  template <typename scalarType,
+            typename offsetType,
+            typename triangulationType>
   int dispatch(vtkUnstructuredGrid *outputCriticalPoints,
-               vtkDataArray *inputScalars,
-               vtkDataArray *inputOffsets,
-               ttk::Triangulation &triangulation);
+               vtkDataArray *const inputScalars,
+               vtkDataArray *const inputOffsets,
+               const triangulationType &triangulation);
 
   bool ForceInputOffsetScalarField{false};
   bool ComputeGradientGlyphs{true};

@@ -38,41 +38,19 @@ int ttkDiscreteGradient::FillOutputPortInformation(int port,
   return 0;
 }
 
-template <typename VTK_TT>
+template <typename scalarType, typename offsetType, typename triangulationType>
 int ttkDiscreteGradient::dispatch(vtkUnstructuredGrid *outputCriticalPoints,
-                                  vtkDataArray *inputScalars,
-                                  vtkDataArray *inputOffsets,
-                                  ttk::Triangulation &triangulation) {
+                                  vtkDataArray *const inputScalars,
+                                  vtkDataArray *const inputOffsets,
+                                  const triangulationType &triangulation) {
 
   // critical points
-  std::vector<VTK_TT> criticalPoints_points_cellScalars;
+  std::vector<scalarType> criticalPoints_points_cellScalars;
   this->setOutputCriticalPoints(&criticalPoints_points_cellScalars);
 
-#define DG_EXPLICIT_CALLS(TRIANGL_CASE, TRIANGL_TYPE, OFFSET_TYPE)         \
-  case TRIANGL_CASE: {                                                     \
-    const auto tri = static_cast<TRIANGL_TYPE *>(triangulation.getData()); \
-    if(tri != nullptr) {                                                   \
-      ret = this->buildGradient<VTK_TT, OFFSET_TYPE>(*tri);                \
-    }                                                                      \
-    break;                                                                 \
-  }
-
-#define DG_SWITCH_TRIANGULATION(OFFSET_TYPE)                            \
-  switch(triangulation.getType()) {                                     \
-    DG_EXPLICIT_CALLS(ttk::Triangulation::Type::EXPLICIT,               \
-                      ttk::ExplicitTriangulation, OFFSET_TYPE);         \
-    DG_EXPLICIT_CALLS(ttk::Triangulation::Type::IMPLICIT,               \
-                      ttk::ImplicitTriangulation, OFFSET_TYPE);         \
-    DG_EXPLICIT_CALLS(ttk::Triangulation::Type::PERIODIC,               \
-                      ttk::PeriodicImplicitTriangulation, OFFSET_TYPE); \
-  }
-
-  int ret = 0;
-  if(inputOffsets->GetDataType() == VTK_INT) {
-    DG_SWITCH_TRIANGULATION(int);
-  } else if(inputOffsets->GetDataType() == VTK_ID_TYPE) {
-    DG_SWITCH_TRIANGULATION(vtkIdType);
-  }
+  const int ret
+    = this->buildGradient<scalarType, offsetType, triangulationType>(
+      triangulation);
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(ret) {
@@ -84,7 +62,7 @@ int ttkDiscreteGradient::dispatch(vtkUnstructuredGrid *outputCriticalPoints,
 
   // critical points
   {
-    this->setCriticalPoints<VTK_TT>(triangulation);
+    this->setCriticalPoints<scalarType>(triangulation);
 
     vtkNew<vtkPoints> points{};
 
@@ -216,9 +194,16 @@ int ttkDiscreteGradient::RequestData(vtkInformation *request,
   this->setInputScalarField(ttkUtils::GetVoidPointer(inputScalars));
   this->setInputOffsets(ttkUtils::GetVoidPointer(inputOffsets));
 
-  switch(inputScalars->GetDataType()) {
-    vtkTemplateMacro(ret = dispatch<VTK_TT>(outputCriticalPoints, inputScalars,
-                                            inputOffsets, *triangulation));
+  if(inputOffsets->GetDataType() == VTK_INT) {
+    ttkVtkTemplateMacro(inputScalars->GetDataType(), triangulation->getType(),
+                        (ret = dispatch<VTK_TT, SimplexId, TTK_TT>(
+                           outputCriticalPoints, inputScalars, inputOffsets,
+                           *static_cast<TTK_TT *>(triangulation->getData()))))
+  } else if(inputOffsets->GetDataType() == VTK_ID_TYPE) {
+    ttkVtkTemplateMacro(inputScalars->GetDataType(), triangulation->getType(),
+                        (ret = dispatch<VTK_TT, LongSimplexId, TTK_TT>(
+                           outputCriticalPoints, inputScalars, inputOffsets,
+                           *static_cast<TTK_TT *>(triangulation->getData()))))
   }
 
 #ifndef TTK_ENABLE_KAMIKAZE
