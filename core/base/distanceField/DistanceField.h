@@ -24,6 +24,7 @@
 // std includes
 #include <limits>
 #include <set>
+#include <string>
 
 namespace ttk {
 
@@ -120,7 +121,12 @@ int ttk::DistanceField::execute() const {
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(SimplexId i = 0; i < (SimplexId)sources.size(); ++i) {
-    Dijkstra::shortestPath<dataType>(sources[i], *triangulation_, scalars[i]);
+    int ret = Dijkstra::shortestPath<dataType>(
+      sources[i], *triangulation_, scalars[i]);
+    if(ret != 0) {
+      printErr("[Dijkstra] was not successful. Error code is  "
+               + std::to_string(ret) + ".");
+    }
   }
 
 #ifdef TTK_ENABLE_OPENMP
