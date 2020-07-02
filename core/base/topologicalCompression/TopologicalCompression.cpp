@@ -106,10 +106,7 @@ int ttk::TopologicalCompression::compressZFPInternal(double *array,
 
   if(status != 0) {
     ttk::Debug d;
-    std::stringstream msg;
-    msg << "[TopologicalCompression] Encountered a problem with ZFP."
-        << std::endl;
-    d.dMsg(std::cout, msg.str(), ttk::Debug::fatalMsg);
+    d.printErr("Encountered a problem with ZFP.");
   }
 
   return (int)zfpsize;
