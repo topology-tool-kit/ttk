@@ -29,11 +29,12 @@
       </InputProperty>
 
       <StringVectorProperty
-        name="ScalarField"
-        command="SetScalarField"
-        number_of_elements="1"
+        name="Scalar Field"
+        command="SetInputArrayToProcess"
+        element_types="0 0 0 0 2"
+        number_of_elements="5"
+        default_values="0"
         animateable="0"
-        label="Scalar Field"
         >
         <ArrayListDomain
           name="array_list"

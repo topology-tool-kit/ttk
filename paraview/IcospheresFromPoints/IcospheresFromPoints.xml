@@ -6,7 +6,7 @@
                 This filter creates for every vertex of an input vtkPointSet an IcoSphere with a specified number of subdivisions and radius.
             </Documentation>
 
-            <InputProperty name="Object" port_index="0" command="SetInputConnection">
+            <InputProperty name="Input" port_index="0" command="SetInputConnection">
                 <ProxyGroupDomain name="groups">
                     <Group name="sources" />
                     <Group name="filters" />

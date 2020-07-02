@@ -17,7 +17,7 @@ using ttkSimplexIdTypeArray = vtkIntArray;
     switch(dataType) { vtkTemplateMacro((call)); };      \
   }; break;
 
-#define ttkVtkTemplateMacro(triangulationType, dataType, call)            \
+#define ttkVtkTemplateMacro(dataType, triangulationType, call)            \
   switch(triangulationType) {                                             \
     ttkVtkTemplateMacroCase(dataType, ttk::Triangulation::Type::EXPLICIT, \
                             ttk::ExplicitTriangulation, call);            \

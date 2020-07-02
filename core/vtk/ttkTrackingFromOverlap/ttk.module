@@ -6,6 +6,6 @@ HEADERS
   ttkTrackingFromOverlap.h
 DEPENDS
   trackingFromOverlap
-  ttkTriangulationAlgorithm
+  ttkAlgorithm
   Boost::boost
   Boost::system

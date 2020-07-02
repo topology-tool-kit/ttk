@@ -3,6 +3,7 @@
 #include <vtkDataSet.h>
 #include <vtkFieldData.h>
 #include <vtkIdTypeArray.h>
+#include <vtkInformation.h>
 #include <vtkPointData.h>
 #include <vtkStringArray.h>
 
@@ -49,15 +50,12 @@ int ttkStringArrayConverter::RequestData(vtkInformation *request,
     return 0;
   }
 
-  // point data
-  const auto pd = input->GetPointData();
   // string array
   const auto sa = vtkStringArray::SafeDownCast(
-    pd->GetAbstractArray(this->InputStringArray.data()));
+    this->GetInputAbstractArrayToProcess(0, inputVector));
 
   if(sa == nullptr) {
-    this->printErr("Cannot find any string array with the name "
-                   + this->InputStringArray);
+    this->printErr("Cannot find the required string array");
     return 0;
   }
 
@@ -87,7 +85,8 @@ int ttkStringArrayConverter::RequestData(vtkInformation *request,
   // array of indices
   vtkNew<vtkIdTypeArray> ia{};
   // array name
-  std::string colname = this->InputStringArray + "Int";
+  std::string colname{sa->GetName()};
+  colname += "Int";
   ia->SetName(colname.data());
   ia->SetNumberOfTuples(nvalues);
   // fill array with corresponding string values indices

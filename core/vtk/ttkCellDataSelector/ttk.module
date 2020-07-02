@@ -1,8 +1,0 @@
-NAME
-  ttkCellDataSelector
-SOURCES
-  ttkCellDataSelector.cpp
-HEADERS
-  ttkCellDataSelector.h
-DEPENDS
-  common

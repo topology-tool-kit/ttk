@@ -5,8 +5,14 @@
 
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
+#include <vtkInformation.h>
 #include <vtkPointData.h>
 #include <vtkSmartPointer.h>
+
+#include <ttkMacros.h>
+#include <ttkUtils.h>
+
+#include <Triangulation.h>
 
 // A VTK macro that enables the instantiation of this class via ::New()
 // You do not have to modify this
@@ -16,7 +22,6 @@ ttkPeriodicGrid::ttkPeriodicGrid() {
   this->setDebugMsgPrefix("PeriodicGrid");
   this->SetNumberOfInputPorts(1);
   this->SetNumberOfOutputPorts(1);
-  Periodicity = true;
 }
 
 ttkPeriodicGrid::~ttkPeriodicGrid() {

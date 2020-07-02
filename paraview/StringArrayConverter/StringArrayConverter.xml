@@ -31,10 +31,11 @@
       </InputProperty>
 
       <StringVectorProperty
-          name="InputStringArray"
-          command="SetInputStringArray"
-          label="Input String Array"
-          number_of_elements="1"
+          name="Input String Array"
+          command="SetInputArrayToProcess"
+          element_types="0 0 0 0 2"
+          number_of_elements="5"
+          default_values="0"
           animateable="0"
           >
         <ArrayListDomain
@@ -54,7 +55,7 @@
       </StringVectorProperty>
 
       <PropertyGroup panel_widget="Line" label="Input options">
-        <Property name="InputStringArray" />
+        <Property name="Input String Array" />
       </PropertyGroup>
 
       <Hints>

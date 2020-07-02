@@ -46,55 +46,14 @@
       </InputProperty>
 
       <IntVectorProperty
-          name="ForceInputIdentifiersField"
-          label="Force Input Identifiers Field"
-          command="SetForceInputIdentifiersField"
-          number_of_elements="1"
-          default_values="0"
-          panel_visibility="advanced">
-        <BooleanDomain name="bool"/>
-        <Documentation>
-          Use a non-default identifiers field.
-        </Documentation>
-      </IntVectorProperty>
-
-      <StringVectorProperty
-          name="InputIdentifiersFieldName"
-          command="SetInputIdentifiersFieldName"
-          label="Identifiers Field Name"
-          default_values="ttkVertexScalarField"
-          number_of_elements="1"
-          animateable="0"
-          panel_visibility="advanced"
-          >
-        <ArrayListDomain
-            name="array_list"
-            default_values="0"
-            >
-            <RequiredProperties>
-              <Property name="quadrangles" function="Input" />
-            </RequiredProperties>
-        </ArrayListDomain>
-        <Hints>
-          <PropertyWidgetDecorator
-              type="GenericDecorator"
-              mode="visibility"
-              property="ForceInputIdentifiersField"
-              value="1" />
-        </Hints>
-        <Documentation>
-          Select the vertex identifier scalar field in the sources.
-        </Documentation>
-      </StringVectorProperty>
-
-      <IntVectorProperty
           name="SubdivisionLevel"
           label="Level of subdivisions"
           command="SetSubdivisionLevel"
           number_of_elements="1"
           default_values="1">
         <Documentation>
-          Number of subdivisions of the original quadrangulation. The higher the value, the more precise the output.
+          Number of subdivisions of the original quadrangulation. The
+          higher the value, the more precise the output.
         </Documentation>
       </IntVectorProperty>
 
@@ -146,7 +105,6 @@
         </Documentation>
       </IntVectorProperty>
 
-
       <IntVectorProperty
           name="ShowResError"
           label="Force output despite warnings"
@@ -160,7 +118,6 @@
         </Documentation>
       </IntVectorProperty>
 
-
       <DoubleVectorProperty
           name="HausdorffLevel"
           label="Hausdorff Warning Level"
@@ -170,69 +127,20 @@
           default_values="200"
           >
         <Documentation>
-          Set Hausdorff warning level. Produces a warning if the maximum Hausdorff distance between the input triangulation and the output quadrangulation exceeds this value.
+          Set Hausdorff warning level. Produces a warning if the
+          maximum Hausdorff distance between the input triangulation
+          and the output quadrangulation exceeds this value.
         </Documentation>
       </DoubleVectorProperty>
 
-
-
-      <IntVectorProperty
-          name="UseAllCores"
-          command="SetUseAllCores"
-          label="Use All Cores"
-          number_of_elements="1"
-          default_values="1"
-          panel_visibility="advanced"
-          >
-        <BooleanDomain name="bool"/>
-        <Documentation>
-          Use all available cores.
-        </Documentation>
-      </IntVectorProperty>
-
-      <IntVectorProperty
-          name="ThreadNumber"
-          command="SetThreadNumber"
-          label="Thread Number"
-          number_of_elements="1"
-          default_values="1" panel_visibility="advanced"
-          >
-        <IntRangeDomain name="range" min="1" max="100" />
-        <Hints>
-          <PropertyWidgetDecorator
-              type="GenericDecorator"
-              mode="visibility"
-              property="UseAllCores"
-              value="0" />
-        </Hints>
-        <Documentation>
-          Thread number.
-        </Documentation>
-      </IntVectorProperty>
-
-      <IntVectorProperty
-          name="DebugLevel"
-          command="SetDebugLevel"
-          label="Debug Level"
-          number_of_elements="1"
-          default_values="3" panel_visibility="advanced">
-        <IntRangeDomain name="range" min="0" max="100" />
-        <Documentation>
-          Debug level.
-        </Documentation>
-      </IntVectorProperty>
+      ${DEBUG_WIDGETS}
 
       <PropertyGroup panel_widget="Line" label="Testing">
-        <Property name="UseAllCores" />
-        <Property name="ThreadNumber" />
-        <Property name="DebugLevel" />
         <Property name="HausdorffLevel" />
         <Property name="ShowResError" />
       </PropertyGroup>
 
       <PropertyGroup panel_widget="Line" label="Input options">
-        <Property name="InputIdentifiersFieldName" />
-        <Property name="ForceInputIdentifiersField" />
         <Property name="SubdivisionLevel" />
         <Property name="RelaxationIterations" />
         <Property name="LockInputExtrema" />

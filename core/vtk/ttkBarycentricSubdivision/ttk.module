@@ -6,4 +6,4 @@ HEADERS
   ttkBarycentricSubdivision.h
 DEPENDS
   barycentricSubdivision
-  ttkTriangulationAlgorithm
+  ttkAlgorithm

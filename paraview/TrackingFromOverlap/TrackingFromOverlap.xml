@@ -34,30 +34,10 @@ Type:
                 <Documentation>Point data that associates a label with each point.</Documentation>
             </StringVectorProperty>
 
-            <IntVectorProperty name="UseAllCores" label="Use All Cores" command="SetUseAllCores" number_of_elements="1" default_values="1" panel_visibility="advanced">
-                <BooleanDomain name="bool" />
-                <Documentation>Use all available cores.</Documentation>
-            </IntVectorProperty>
-            <IntVectorProperty name="ThreadNumber" label="Thread Number" command="SetThreadNumber" number_of_elements="1" default_values="1" panel_visibility="advanced">
-                <IntRangeDomain name="range" min="1" max="100" />
-                <Documentation>Thread number.</Documentation>
-                <Hints>
-                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="UseAllCores" value="0" />
-                </Hints>
-            </IntVectorProperty>
-            <IntVectorProperty name="DebugLevel" label="Debug Level" command="SetDebugLevel" number_of_elements="1" default_values="3" panel_visibility="advanced">
-                <IntRangeDomain name="range" min="0" max="100" />
-                <Documentation>Debug level.</Documentation>
-            </IntVectorProperty>
+            ${DEBUG_WIDGETS}
 
             <PropertyGroup panel_widget="Line" label="Input Options">
                 <Property name="LabelFieldName" />
-            </PropertyGroup>
-
-            <PropertyGroup panel_widget="Line" label="Testing">
-                <Property name="UseAllCores" />
-                <Property name="ThreadNumber" />
-                <Property name="DebugLevel" />
             </PropertyGroup>
 
             <Hints>

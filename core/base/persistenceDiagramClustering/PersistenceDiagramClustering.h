@@ -15,8 +15,7 @@
 ///
 /// \sa ttkPersistenceDiagramClustering
 
-#ifndef _PERSISTENCEDIAGRAMSCLUSTERING_H
-#define _PERSISTENCEDIAGRAMSCLUSTERING_H
+#pragma once
 
 #ifndef diagramTuple
 #define diagramTuple                                                       \
@@ -36,13 +35,13 @@
 
 // base code includes
 //
-#include <Wrapper.h>
+// #include <Wrapper.h>
 //
-#include <PersistenceDiagram.h>
+// #include <PersistenceDiagram.h>
 //
 #include <PersistenceDiagramBarycenter.h>
 //
-#include <limits>
+// #include <limits>
 //
 #include <PDClustering.h>
 //
@@ -51,21 +50,17 @@ using namespace std;
 using namespace ttk;
 
 namespace ttk {
-  template <typename dataType>
-  class PersistenceDiagramClustering : public Debug {
+
+  class PersistenceDiagramClustering : virtual public Debug {
 
   public:
     PersistenceDiagramClustering() {
-      wasserstein_ = 2;
-      use_progressive_ = 1;
-      use_kmeanspp_ = 0;
-      use_accelerated_ = 0;
-      numberOfInputs_ = 0;
-      threadNumber_ = 1;
+      this->setDebugMsgPrefix("PersistenceDiagramClustering");
     };
 
     ~PersistenceDiagramClustering(){};
 
+    template <class dataType>
     std::vector<int> execute(
       std::vector<std::vector<diagramTuple>> &intermediateDiagrams,
       std::vector<std::vector<diagramTuple>> &centroids,
@@ -82,63 +77,8 @@ namespace ttk {
       return 0;
     }
 
-    inline void setWasserstein(const std::string &wasserstein) {
-      wasserstein_ = (wasserstein == "inf") ? -1 : stoi(wasserstein);
-    }
-
-    inline void setThreadNumber(const int &ThreadNumber) {
-      threadNumber_ = ThreadNumber;
-    }
-
-    inline void setUseProgressive(const bool use_progressive) {
-      use_progressive_ = use_progressive;
-    }
-
-    inline void setAlpha(const double alpha) {
-      alpha_ = alpha;
-    }
-    inline void setLambda(const double lambda) {
-      lambda_ = lambda;
-    }
-
-    inline void setTimeLimit(const double time_limit) {
-      time_limit_ = time_limit;
-    }
-
-    inline void setUseKmeansppInit(const bool UseKmeansppInit) {
-      use_kmeanspp_ = UseKmeansppInit;
-    }
-
-    inline void setUseAccelerated(const bool UseAccelerated) {
-      use_accelerated_ = UseAccelerated;
-    }
-
-    inline void setNumberOfClusters(const int NumberOfClusters) {
-      n_clusters_ = NumberOfClusters;
-    }
-    inline void setForceUseOfAlgorithm(const bool forceUseOfAlgorithm) {
-      forceUseOfAlgorithm_ = forceUseOfAlgorithm;
-    }
-    inline void setDeterministic(const bool deterministic) {
-      deterministic_ = deterministic;
-    }
-    inline void setPairTypeClustering(const int pairTypeClustering) {
-      pairTypeClustering_ = pairTypeClustering;
-    }
-
-    inline void setUseDeltaLim(const bool useDeltaLim) {
-      useDeltaLim_ = useDeltaLim;
-    }
-
-    inline void setDistanceWritingOptions(const int distanceWritingOptions) {
-      distanceWritingOptions_ = distanceWritingOptions;
-    }
-
-    inline void setDeltaLim(const double deltaLim) {
-      deltaLim_ = deltaLim;
-    }
-    template <typename type>
-    static type abs(const type var) {
+    template <class dataType>
+    static dataType abs(const dataType var) {
       return (var >= 0) ? var : -var;
     }
 
@@ -146,43 +86,43 @@ namespace ttk {
     // Critical pairs used for clustering
     // 0:min-saddles ; 1:saddles-saddles ; 2:sad-max ; else : all
 
-    double deltaLim_;
-    bool useDeltaLim_;
-    int distanceWritingOptions_;
-    int pairTypeClustering_;
-    bool forceUseOfAlgorithm_;
-    bool deterministic_;
-    int wasserstein_;
-    int n_clusters_;
+    int DistanceWritingOptions{0};
+    int PairTypeClustering{-1};
+    bool Deterministic{true};
+    int WassersteinMetric{2};
 
-    int numberOfInputs_;
-    int threadNumber_;
-    bool use_progressive_;
-    bool use_accelerated_;
-    bool use_kmeanspp_;
-    double alpha_;
-    double lambda_;
-    double time_limit_;
+    int numberOfInputs_{};
+    bool UseProgressive{true};
+
+    bool ForceUseOfAlgorithm{false};
+    bool UseInterruptible{true};
+    double Alpha{1.0};
+    bool UseAdditionalPrecision{false};
+    double DeltaLim{0.01};
+    double Lambda{1.0};
+    double TimeLimit{999999};
+
+    int NumberOfClusters{1};
+    bool UseAccelerated{false};
+    bool UseKmeansppInit{false};
 
     int points_added_;
     int points_deleted_;
 
-    std::vector<BidderDiagram<dataType>> bidder_diagrams_;
-    std::vector<GoodDiagram<dataType>> barycenter_goods_;
+    // std::vector<BidderDiagram<void>> bidder_diagrams_;
+    // std::vector<GoodDiagram<void>> barycenter_goods_;
   };
 
-  template <typename dataType>
-  std::vector<int> PersistenceDiagramClustering<dataType>::execute(
+  template <class dataType>
+  std::vector<int> PersistenceDiagramClustering::execute(
     std::vector<std::vector<diagramTuple>> &intermediateDiagrams,
     std::vector<std::vector<diagramTuple>> &final_centroids,
     std::vector<std::vector<std::vector<matchingTuple>>> &all_matchings) {
 
     Timer tm;
     {
-      std::stringstream msg;
-      msg << "[PersistenceDiagramClustering] Clustering " << numberOfInputs_
-          << " diagrams in " << n_clusters_ << " cluster(s)." << std::endl;
-      dMsg(std::cout, msg.str(), infoMsg);
+      printMsg("Clustering " + std::to_string(numberOfInputs_) + " diagrams in "
+               + std::to_string(NumberOfClusters) + " cluster(s).");
     }
 
     std::vector<std::vector<diagramTuple>> data_min(numberOfInputs_);
@@ -240,51 +180,49 @@ namespace ttk {
 
     {
       std::stringstream msg;
-      switch(pairTypeClustering_) {
+      switch(PairTypeClustering) {
         case(0):
-          msg << "[PersistenceDiagramClustering] Only MIN-SAD Pairs";
+          msg << "Only MIN-SAD Pairs";
           do_max = false;
           do_sad = false;
           break;
         case(1):
-          msg << "[PersistenceDiagramClustering] Only SAD-SAD Pairs";
+          msg << "Only SAD-SAD Pairs";
           do_max = false;
           do_min = false;
           break;
         case(2):
-          msg << "[PersistenceDiagramClustering] Only SAD-MAX Pairs";
+          msg << "Only SAD-MAX Pairs";
           do_min = false;
           do_sad = false;
           break;
         default:
-          msg << "[PersistenceDiagramClustering] All critical pairs: "
+          msg << "All critical pairs: "
                  "global clustering";
           break;
       }
-      msg << std::endl;
-      dMsg(std::cout, msg.str(), advancedInfoMsg);
+      printMsg(msg.str());
     }
 
     vector<vector<vector<vector<matchingTuple>>>>
       all_matchings_per_type_and_cluster;
     PDClustering<dataType> KMeans = PDClustering<dataType>();
-    KMeans.setWasserstein(wasserstein_);
-    KMeans.setThreadNumber(threadNumber_);
     KMeans.setNumberOfInputs(numberOfInputs_);
-    KMeans.setUseProgressive(use_progressive_);
-    KMeans.setAccelerated(use_accelerated_);
+    KMeans.setWasserstein(WassersteinMetric);
+    KMeans.setUseProgressive(UseProgressive);
+    KMeans.setAccelerated(UseAccelerated);
     KMeans.setUseKDTree(true);
-    KMeans.setTimeLimit(time_limit_);
-    KMeans.setGeometricalFactor(alpha_);
-    KMeans.setLambda(lambda_);
-    KMeans.setDeterministic(deterministic_);
-    KMeans.setForceUseOfAlgorithm(forceUseOfAlgorithm_);
+    KMeans.setTimeLimit(TimeLimit);
+    KMeans.setGeometricalFactor(Alpha);
+    KMeans.setLambda(Lambda);
+    KMeans.setDeterministic(Deterministic);
+    KMeans.setForceUseOfAlgorithm(ForceUseOfAlgorithm);
     KMeans.setDebugLevel(debugLevel_);
-    KMeans.setDeltaLim(deltaLim_);
-    KMeans.setUseDeltaLim(useDeltaLim_);
-    KMeans.setDistanceWritingOptions(distanceWritingOptions_);
-    KMeans.setKMeanspp(use_kmeanspp_);
-    KMeans.setK(n_clusters_);
+    KMeans.setDeltaLim(DeltaLim);
+    KMeans.setUseDeltaLim(UseAdditionalPrecision);
+    KMeans.setDistanceWritingOptions(DistanceWritingOptions);
+    KMeans.setKMeanspp(UseKmeansppInit);
+    KMeans.setK(NumberOfClusters);
     KMeans.setDiagrams(&data_min, &data_sad, &data_max);
     KMeans.setDos(do_min, do_sad, do_max);
     inv_clustering
@@ -306,13 +244,10 @@ namespace ttk {
         cluster_size[c]++;
         idxInCluster[j] = cluster_size[c] - 1;
       }
-      if(debugLevel_ > 20) {
-        cout << "id in cluster " << idxInCluster[j] << endl;
-      }
     }
 
-    all_matchings.resize(n_clusters_);
-    for(int c = 0; c < n_clusters_; c++) {
+    all_matchings.resize(NumberOfClusters);
+    for(int c = 0; c < NumberOfClusters; c++) {
       all_matchings[c].resize(numberOfInputs_);
     }
     for(int i = 0; i < numberOfInputs_; i++) {
@@ -395,15 +330,7 @@ namespace ttk {
       }
     }
 
-    {
-      std::stringstream msg;
-      msg << "[PersistenceDiagramClustering] Processed in "
-          << tm.getElapsedTime() << " s. (" << threadNumber_ << " thread(s))."
-          << std::endl;
-      dMsg(std::cout, msg.str(), infoMsg);
-    }
+    printMsg("Complete", 1, tm.getElapsedTime(), threadNumber_);
     return inv_clustering;
   }
 } // namespace ttk
-
-#endif

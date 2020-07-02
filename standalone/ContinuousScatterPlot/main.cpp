@@ -1,11 +1,11 @@
-/// \author Julien Tierny <julien.tierny@sorbonne-universite.fr>.
+/// \author Julien Tierny <julien.tierny@lip6.fr>.
 /// \date February 2017.
 ///
-/// \brief Command line program for critical point computation.
+/// \brief Continuous scatterplot computation program.
 
 // TTK Includes
 #include <CommandLineParser.h>
-#include <ttkScalarFieldCriticalPoints.h>
+#include <ttkContinuousScatterPlot.h>
 
 // VTK Includes
 #include <vtkCellData.h>
@@ -25,7 +25,7 @@ int main(int argc, char **argv) {
   std::vector<std::string> inputArrayNames;
   std::string outputPathPrefix{"output"};
   bool listArrays{false};
-  bool forceOffset{false};
+  int xRes = 1920, yRes = 1080;
 
   // ---------------------------------------------------------------------------
   // Set program variables based on command line arguments
@@ -43,22 +43,24 @@ int main(int argc, char **argv) {
       "o", &outputPathPrefix, "Output file prefix (no extension)", true);
     parser.setOption("l", &listArrays, "List available arrays");
 
-    parser.setOption("F", &forceOffset, "Force custom offset field (array #1)");
+    // -------------------------------------------------------------------------
+    // custom arguments and options
+    // -------------------------------------------------------------------------
+    parser.setArgument("x", &xRes, "Width of the scatter plot", true);
+    parser.setArgument("y", &yRes, "Height of the scatter plot", true);
 
     parser.parse(argc, argv);
   }
 
-  // ---------------------------------------------------------------------------
-  // Command line output messages.
-  // ---------------------------------------------------------------------------
   ttk::Debug msg;
-  msg.setDebugMsgPrefix("ScalarFieldCriticalPoints");
+  msg.setDebugMsgPrefix("ContinuousScatterPlotCmd");
+
+  vtkNew<ttkContinuousScatterPlot> csp;
 
   // ---------------------------------------------------------------------------
-  // Initialize ttkScalarFieldCriticalPoints module (adjust parameters)
+  // Pass custom arguments and options to the module
   // ---------------------------------------------------------------------------
-  auto scalarFieldCriticalPoints
-    = vtkSmartPointer<ttkScalarFieldCriticalPoints>::New();
+  csp->SetScatterplotResolution(xRes, yRes);
 
   // ---------------------------------------------------------------------------
   // Read input vtkDataObjects (optionally: print available arrays)
@@ -66,7 +68,7 @@ int main(int argc, char **argv) {
   vtkDataArray *defaultArray = nullptr;
   for(size_t i = 0; i < inputFilePaths.size(); i++) {
     // init a reader that can parse any vtkDataObject stored in xml format
-    auto reader = vtkSmartPointer<vtkXMLGenericDataObjectReader>::New();
+    vtkNew<vtkXMLGenericDataObjectReader> reader;
     reader->SetFileName(inputFilePaths[i].data());
     reader->Update();
 
@@ -100,8 +102,8 @@ int main(int argc, char **argv) {
         return 0;
       }
     } else {
-      // feed input object to ttkScalarFieldCriticalPoints filter
-      scalarFieldCriticalPoints->SetInputDataObject(i, reader->GetOutput());
+      // feed input object to ttkHelloWorld filter
+      csp->SetInputDataObject(i, reader->GetOutput());
 
       // default arrays
       if(!defaultArray) {
@@ -125,22 +127,19 @@ int main(int argc, char **argv) {
       inputArrayNames.push_back(defaultArray->GetName());
   }
   for(size_t i = 0; i < inputArrayNames.size(); i++)
-    scalarFieldCriticalPoints->SetInputArrayToProcess(
-      i, 0, 0, 0, inputArrayNames[i].data());
+    csp->SetInputArrayToProcess(i, 0, 0, 0, inputArrayNames[i].data());
 
   // ---------------------------------------------------------------------------
-  // Execute ttkScalarFieldCriticalPoints filter
+  // Execute ttkContinuousScatterPlot filter
   // ---------------------------------------------------------------------------
-  scalarFieldCriticalPoints->SetForceInputOffsetScalarField(forceOffset);
-  scalarFieldCriticalPoints->Update();
+  csp->Update();
 
   // ---------------------------------------------------------------------------
   // If output prefix is specified then write all output objects to disk
   // ---------------------------------------------------------------------------
   if(!outputPathPrefix.empty()) {
-    for(int i = 0; i < scalarFieldCriticalPoints->GetNumberOfOutputPorts();
-        i++) {
-      auto output = scalarFieldCriticalPoints->GetOutputDataObject(i);
+    for(int i = 0; i < csp->GetNumberOfOutputPorts(); i++) {
+      auto output = csp->GetOutputDataObject(i);
       auto writer
         = vtkXMLDataObjectWriter::NewWriter(output->GetDataObjectType());
 
