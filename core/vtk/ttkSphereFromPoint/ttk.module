@@ -5,5 +5,4 @@ SOURCES
 HEADERS
   ttkSphereFromPoint.h
 DEPENDS
-  common
-  ttkTriangulationAlgorithm
+  ttkAlgorithm

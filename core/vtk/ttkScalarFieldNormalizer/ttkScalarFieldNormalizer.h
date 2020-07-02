@@ -8,19 +8,16 @@
 /// \param Input Input scalar field (vtkDataSet)
 /// \param Output Output normalized scalar field (vtkDataSet)
 ///
+/// The input data array needs to be specified via the standard VTK call
+/// vtkAlgorithm::SetInputArrayToProcess() with the following parameters:
+/// \param idx 0 (FIXED: the first array the algorithm requires)
+/// \param port 0 (FIXED: first port)
+/// \param connection 0 (FIXED: first connection)
+/// \param fieldAssociation 0 (FIXED: point data)
+/// \param arrayName (DYNAMIC: string identifier of the input array)
+///
 /// This filter can be used as any other VTK filter (for instance, by using the
 /// sequence of calls SetInputData(), Update(), GetOutput()).
-///
-/// The name of the input scalar field to consider can be specified with the
-/// standard VTK call SetInputArrayToProcess(), with the following parameters:
-/// \param port 0
-/// \param connection 0
-/// \param fieldAssociation 0 (point data)
-/// \param arrayName (const char* string representing the name of the VTK array)
-///
-/// This module respects the following convention regarding the order of the
-/// input arrays to process (SetInputArrayToProcess()):
-/// \param idx 0: input scalar field
 ///
 /// See the related ParaView example state files for usage examples within a
 /// VTK pipeline.
@@ -29,8 +26,6 @@
 /// \sa vtkPointDataConverter
 /// \sa vtkScalarFieldSmoother
 #pragma once
-
-// VTK includes -- to adapt
 
 // VTK Module
 #include <ttkScalarFieldNormalizerModule.h>

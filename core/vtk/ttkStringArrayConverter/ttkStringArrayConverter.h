@@ -18,7 +18,6 @@
 
 // VTK includes
 #include <ttkAlgorithm.h>
-#include <vtkInformation.h>
 
 class TTKSTRINGARRAYCONVERTER_EXPORT ttkStringArrayConverter
   : public ttkAlgorithm {
@@ -26,9 +25,6 @@ class TTKSTRINGARRAYCONVERTER_EXPORT ttkStringArrayConverter
 public:
   static ttkStringArrayConverter *New();
   vtkTypeMacro(ttkStringArrayConverter, ttkAlgorithm);
-
-  vtkSetMacro(InputStringArray, std::string);
-  vtkGetMacro(InputStringArray, std::string);
 
 protected:
   ttkStringArrayConverter();
@@ -40,7 +36,4 @@ protected:
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;
-
-private:
-  std::string InputStringArray{};
 };

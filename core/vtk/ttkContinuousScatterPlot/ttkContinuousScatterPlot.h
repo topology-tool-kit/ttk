@@ -19,6 +19,11 @@
 /// tetrahedral meshes (vtkDataSet)
 /// \param Output Output 2D continuous scatter plot (vtkUnstructuredGrid)
 ///
+/// This module respects the following convention regarding the order of the
+/// input arrays to process (SetInputArrayToProcess()):
+/// \param idx 0: first scalar array.
+/// \param idx 1: second scalar array.
+///
 /// This filter can be used as any other VTK filter (for instance, by using the
 /// sequence of calls SetInputData(), Update(), GetOutput()).
 ///
@@ -33,68 +38,25 @@
 ///
 /// \sa ttk::ContinuousScatterPlot
 
-#ifndef _TTK_CONTINUOUSSCATTERPLOT_H
-#define _TTK_CONTINUOUSSCATTERPLOT_H
-
-// VTK includes
-#include <vtkCharArray.h>
-#include <vtkDataArray.h>
-#include <vtkDataSet.h>
-#include <vtkDataSetAlgorithm.h>
-#include <vtkDoubleArray.h>
-#include <vtkFiltersCoreModule.h>
-#include <vtkInformation.h>
-#include <vtkObjectFactory.h>
-#include <vtkPointData.h>
-#include <vtkPoints.h>
-#include <vtkSmartPointer.h>
-#include <vtkUnstructuredGrid.h>
+#pragma once
 
 // VTK Module
 #include <ttkContinuousScatterPlotModule.h>
 
 // ttk baseCode includes
 #include <ContinuousScatterPlot.h>
-#include <ttkTriangulationAlgorithm.h>
+#include <ttkAlgorithm.h>
+
+class vtkDataArray;
 
 class TTKCONTINUOUSSCATTERPLOT_EXPORT ttkContinuousScatterPlot
-  : public vtkDataSetAlgorithm,
-    protected ttk::Wrapper {
+  : public ttkAlgorithm,
+    protected ttk::ContinuousScatterPlot {
 
 public:
   static ttkContinuousScatterPlot *New();
 
-  vtkTypeMacro(ttkContinuousScatterPlot, vtkDataSetAlgorithm);
-
-  void SetDebugLevel(int debugLevel) {
-    setDebugLevel(debugLevel);
-    Modified();
-  }
-
-  void SetThreadNumber(int threadNumber) {
-    ThreadNumber = threadNumber;
-    SetThreads();
-  }
-
-  void SetUseAllCores(bool onOff) {
-    UseAllCores = onOff;
-    SetThreads();
-  }
-
-  vtkSetMacro(ScalarField1, std::string);
-  vtkGetMacro(ScalarField1, std::string);
-
-  vtkSetMacro(ScalarField2, std::string);
-  vtkGetMacro(ScalarField2, std::string);
-
-  vtkSetMacro(UcomponentId, int);
-  vtkGetMacro(UcomponentId, int);
-
-  vtkSetMacro(VcomponentId, int);
-  vtkGetMacro(VcomponentId, int);
-
-  vtkSetMacro(WithVaryingConnectivity, bool);
-  vtkGetMacro(WithVaryingConnectivity, bool);
+  vtkTypeMacro(ttkContinuousScatterPlot, ttkAlgorithm);
 
   vtkSetMacro(WithDummyValue, bool);
   vtkGetMacro(WithDummyValue, bool);
@@ -109,42 +71,27 @@ public:
     ScatterplotResolution[0] = N;
     ScatterplotResolution[1] = M;
     ScatterplotResolution[2] = 1;
-    Modified();
+    this->Modified();
   }
-
-  int getScalars(vtkDataSet *input);
-  int getTriangulation(vtkDataSet *input);
 
 protected:
   ttkContinuousScatterPlot();
   ~ttkContinuousScatterPlot() override;
 
-  TTK_SETUP();
-
   int FillInputPortInformation(int port, vtkInformation *info) override;
   int FillOutputPortInformation(int port, vtkInformation *info) override;
+  int RequestData(vtkInformation *request,
+                  vtkInformationVector **inputVector,
+                  vtkInformationVector *outputVector) override;
 
 private:
-  bool WithVaryingConnectivity;
-  bool WithDummyValue;
-  double DummyValue;
-  bool ProjectImageSupport;
-  int ScatterplotResolution[3];
-  int UcomponentId, VcomponentId;
-  std::string ScalarField1;
-  std::string ScalarField2;
+  bool WithDummyValue{false};
+  double DummyValue{0};
+  bool ProjectImageSupport{true};
+  int ScatterplotResolution[3]{1920, 1080, 0};
 
-  vtkDataArray *inputScalars1_;
-  vtkDataArray *inputScalars2_;
-  double scalarMin_[2];
-  double scalarMax_[2];
-  std::vector<std::vector<double>> density_;
-  std::vector<std::vector<char>> validPointMask_;
-  ttk::Triangulation *triangulation_;
-
-  // output
-  vtkSmartPointer<vtkUnstructuredGrid> vtu_;
-  vtkSmartPointer<vtkPoints> pts_;
+  template <typename dataType1, class triangulationType>
+  int dispatch(const dataType1 *scalars1,
+               vtkDataArray *inputScalars2,
+               const triangulationType *triangulation);
 };
-
-#endif // _TTK_CONTINUOUSSCATTERPLOT_H
