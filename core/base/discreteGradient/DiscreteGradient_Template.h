@@ -22,6 +22,7 @@ using ttk::dcg::CellExt;
 using ttk::dcg::CriticalPoint;
 using ttk::dcg::DiscreteGradient;
 using ttk::dcg::SaddleSaddleVPathComparator;
+using ttk::dcg::VisitedMask;
 using ttk::dcg::VPath;
 
 template <typename dataType, typename triangulationType>
