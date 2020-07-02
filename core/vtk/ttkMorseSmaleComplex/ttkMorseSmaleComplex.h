@@ -111,13 +111,15 @@ public:
   vtkGetMacro(SaddleConnectorsPersistenceThreshold, double);
 
 protected:
-  template <typename VTK_TT>
-  int dispatch(vtkDataArray *inputScalars,
-               vtkDataArray *inputOffsets,
-               vtkUnstructuredGrid *outputCriticalPoints,
-               vtkUnstructuredGrid *outputSeparatrices1,
-               vtkUnstructuredGrid *outputSeparatrices2,
-               ttk::Triangulation &triangulation);
+  template <typename scalarType,
+            typename offsetType,
+            typename triangulationType>
+  int dispatch(vtkDataArray *const inputScalars,
+               vtkDataArray *const inputOffsets,
+               vtkUnstructuredGrid *const outputCriticalPoints,
+               vtkUnstructuredGrid *const outputSeparatrices1,
+               vtkUnstructuredGrid *const outputSeparatrices2,
+               const triangulationType &triangulation);
 
   ttkMorseSmaleComplex();
 

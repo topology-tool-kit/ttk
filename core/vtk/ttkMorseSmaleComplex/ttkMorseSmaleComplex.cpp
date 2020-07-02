@@ -46,13 +46,14 @@ int ttkMorseSmaleComplex::FillOutputPortInformation(int port,
   return 0;
 }
 
-template <typename VTK_TT>
-int ttkMorseSmaleComplex::dispatch(vtkDataArray *inputScalars,
-                                   vtkDataArray *inputOffsets,
-                                   vtkUnstructuredGrid *outputCriticalPoints,
-                                   vtkUnstructuredGrid *outputSeparatrices1,
-                                   vtkUnstructuredGrid *outputSeparatrices2,
-                                   ttk::Triangulation &triangulation) {
+template <typename scalarType, typename offsetType, typename triangulationType>
+int ttkMorseSmaleComplex::dispatch(
+  vtkDataArray *const inputScalars,
+  vtkDataArray *const inputOffsets,
+  vtkUnstructuredGrid *const outputCriticalPoints,
+  vtkUnstructuredGrid *const outputSeparatrices1,
+  vtkUnstructuredGrid *const outputSeparatrices2,
+  const triangulationType &triangulation) {
 
   const int dimensionality = triangulation.getCellVertexNumber(0) - 1;
 
@@ -60,7 +61,7 @@ int ttkMorseSmaleComplex::dispatch(vtkDataArray *inputScalars,
   SimplexId criticalPoints_numberOfPoints{};
   vector<float> criticalPoints_points;
   vector<char> criticalPoints_points_cellDimensions;
-  vector<VTK_TT> criticalPoints_points_cellScalars;
+  vector<scalarType> criticalPoints_points_cellScalars;
   vector<SimplexId> criticalPoints_points_cellIds;
   vector<char> criticalPoints_points_isOnBoundary;
   vector<SimplexId> criticalPoints_points_PLVertexIdentifiers;
@@ -79,9 +80,9 @@ int ttkMorseSmaleComplex::dispatch(vtkDataArray *inputScalars,
   vector<SimplexId> separatrices1_cells_separatrixIds;
   vector<char> separatrices1_cells_separatrixTypes;
   vector<char> separatrices1_cells_isOnBoundary;
-  vector<VTK_TT> separatrices1_cells_separatrixFunctionMaxima;
-  vector<VTK_TT> separatrices1_cells_separatrixFunctionMinima;
-  vector<VTK_TT> separatrices1_cells_separatrixFunctionDiffs;
+  vector<scalarType> separatrices1_cells_separatrixFunctionMaxima;
+  vector<scalarType> separatrices1_cells_separatrixFunctionMinima;
+  vector<scalarType> separatrices1_cells_separatrixFunctionDiffs;
 
   // 2-separatrices
   SimplexId separatrices2_numberOfPoints{};
@@ -92,9 +93,9 @@ int ttkMorseSmaleComplex::dispatch(vtkDataArray *inputScalars,
   vector<SimplexId> separatrices2_cells_separatrixIds;
   vector<char> separatrices2_cells_separatrixTypes;
   vector<char> separatrices2_cells_isOnBoundary;
-  vector<VTK_TT> separatrices2_cells_separatrixFunctionMaxima;
-  vector<VTK_TT> separatrices2_cells_separatrixFunctionMinima;
-  vector<VTK_TT> separatrices2_cells_separatrixFunctionDiffs;
+  vector<scalarType> separatrices2_cells_separatrixFunctionMaxima;
+  vector<scalarType> separatrices2_cells_separatrixFunctionMinima;
+  vector<scalarType> separatrices2_cells_separatrixFunctionDiffs;
 
   if(ComputeCriticalPoints) {
     this->setOutputCriticalPoints(
@@ -130,31 +131,8 @@ int ttkMorseSmaleComplex::dispatch(vtkDataArray *inputScalars,
     &separatrices2_cells_separatrixFunctionDiffs,
     &separatrices2_cells_isOnBoundary);
 
-#define MSC_EXPLICIT_CALLS(TRIANGL_CASE, TRIANGL_TYPE, OFFSET_TYPE)        \
-  case TRIANGL_CASE: {                                                     \
-    const auto tri = static_cast<TRIANGL_TYPE *>(triangulation.getData()); \
-    if(tri != nullptr) {                                                   \
-      ret = this->execute<VTK_TT, OFFSET_TYPE>(*tri);                      \
-    }                                                                      \
-    break;                                                                 \
-  }
-
-#define MSC_SWITCH_TRIANGULATION(OFFSET_TYPE)                            \
-  switch(triangulation.getType()) {                                      \
-    MSC_EXPLICIT_CALLS(ttk::Triangulation::Type::EXPLICIT,               \
-                       ttk::ExplicitTriangulation, OFFSET_TYPE);         \
-    MSC_EXPLICIT_CALLS(ttk::Triangulation::Type::IMPLICIT,               \
-                       ttk::ImplicitTriangulation, OFFSET_TYPE);         \
-    MSC_EXPLICIT_CALLS(ttk::Triangulation::Type::PERIODIC,               \
-                       ttk::PeriodicImplicitTriangulation, OFFSET_TYPE); \
-  }
-
-  int ret = 0;
-  if(inputOffsets->GetDataType() == VTK_INT) {
-    MSC_SWITCH_TRIANGULATION(int);
-  } else if(inputOffsets->GetDataType() == VTK_ID_TYPE) {
-    MSC_SWITCH_TRIANGULATION(vtkIdType);
-  }
+  const int ret
+    = this->execute<scalarType, offsetType, triangulationType>(triangulation);
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(ret != 0) {
@@ -614,11 +592,18 @@ int ttkMorseSmaleComplex::RequestData(vtkInformation *request,
   this->setOutputMorseComplexes(
     ascendingManifoldPtr, descendingManifoldPtr, morseSmaleManifoldPtr);
 
-  switch(inputScalars->GetDataType()) {
-    vtkTemplateMacro(
-      ret = dispatch<VTK_TT>(inputScalars, inputOffsets, outputCriticalPoints,
-                             outputSeparatrices1, outputSeparatrices2,
-                             *triangulation));
+  if(inputOffsets->GetDataType() == VTK_INT) {
+    ttkVtkTemplateMacro(inputScalars->GetDataType(), triangulation->getType(),
+                        (ret = dispatch<VTK_TT, SimplexId, TTK_TT>(
+                           inputScalars, inputOffsets, outputCriticalPoints,
+                           outputSeparatrices1, outputSeparatrices2,
+                           *static_cast<TTK_TT *>(triangulation->getData()))))
+  } else if(inputOffsets->GetDataType() == VTK_ID_TYPE) {
+    ttkVtkTemplateMacro(inputScalars->GetDataType(), triangulation->getType(),
+                        (ret = dispatch<VTK_TT, ttk::LongSimplexId, TTK_TT>(
+                           inputScalars, inputOffsets, outputCriticalPoints,
+                           outputSeparatrices1, outputSeparatrices2,
+                           *static_cast<TTK_TT *>(triangulation->getData()))))
   }
 
 #ifndef TTK_ENABLE_KAMIKAZE
