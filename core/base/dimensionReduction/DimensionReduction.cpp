@@ -54,11 +54,11 @@ int DimensionReduction::execute() const {
 #ifndef TTK_ENABLE_KAMIKAZE
   if(majorVersion_ < '3')
     return -1;
-  if(modulePath_.length() <= 0)
+  if(ModulePath.length() <= 0)
     return -1;
-  if(moduleName_.length() <= 0)
+  if(ModuleName.length() <= 0)
     return -1;
-  if(functionName_.length() <= 0)
+  if(FunctionName.length() <= 0)
     return -1;
   if(!matrix_)
     return -1;
@@ -139,10 +139,10 @@ int DimensionReduction::execute() const {
 #endif
   gc.push_back(pPath);
 
-  if(modulePath_ == "default")
+  if(ModulePath == "default")
     modulePath = VALUE(TTK_SCRIPTS_PATH);
   else
-    modulePath = modulePath_;
+    modulePath = ModulePath;
 
   this->printMsg("Loading Python script from: " + modulePath);
   PyList_Append(pPath, PyUnicode_FromString(modulePath.data()));
@@ -192,7 +192,7 @@ int DimensionReduction::execute() const {
 #endif
 
   // load module
-  pName = PyUnicode_FromString(moduleName_.data());
+  pName = PyUnicode_FromString(ModuleName.data());
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!pName) {
     this->printErr("Python: moduleName parsing failed.");
@@ -211,7 +211,7 @@ int DimensionReduction::execute() const {
   gc.push_back(pModule);
 
   // configure function
-  pFunc = PyObject_GetAttrString(pModule, functionName_.data());
+  pFunc = PyObject_GetAttrString(pModule, FunctionName.data());
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!pFunc) {
     this->printErr("Python: functionName parsing failed.");

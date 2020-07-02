@@ -210,6 +210,8 @@ private:
   // default
   bool SelectFieldsWithRegexp{false};
   std::string RegexpString{".*"};
+  std::vector<std::string> ScalarFields{};
+
   int NumberOfComponents{2};
   int NumberOfNeighbors{5};
   int Method{2}; // MDS
@@ -219,60 +221,5 @@ private:
   // mds && se
   bool InputIsADistanceMatrix{false};
 
-  // se
-  std::string se_Affinity{"nearest_neighbors"};
-  float se_Gamma{1};
-  std::string se_EigenSolver{"auto"};
-
-  // lle
-  float lle_Regularization{1e-3};
-  std::string lle_EigenSolver{"auto"};
-  float lle_Tolerance{1e-3};
-  int lle_MaxIteration{300};
-  std::string lle_Method{"standard"};
-  float lle_HessianTolerance{1e-3};
-  float lle_ModifiedTolerance{1e-3};
-  std::string lle_NeighborsAlgorithm{"auto"};
-
-  // mds
-  bool mds_Metric{true};
-  int mds_Init{4};
-  int mds_MaxIteration{300};
-  int mds_Verbose{0};
-  float mds_Epsilon{0};
-
-  // tsne
-  float tsne_Perplexity{30};
-  float tsne_Exaggeration{12};
-  float tsne_LearningRate{200};
-  int tsne_MaxIteration{1000};
-  int tsne_MaxIterationProgress{300};
-  float tsne_GradientThreshold{1e-7};
-  std::string tsne_Metric{"euclidian"};
-  std::string tsne_Init{"random"};
-  int tsne_Verbose{0};
-  std::string tsne_Method{"barnes_hut"};
-  float tsne_Angle{0.5};
-
-  // iso
-  std::string iso_EigenSolver{"auto"};
-  float iso_Tolerance{1e-3};
-  int iso_MaxIteration{300};
-  std::string iso_PathMethod{"auto"};
-  std::string iso_NeighborsAlgorithm{"auto"};
-
-  // pca
-  bool pca_Copy{true};
-  bool pca_Whiten{false};
-  std::string pca_SVDSolver{"auto"};
-  float pca_Tolerance{0};
-  std::string pca_MaxIteration{"auto"};
-
-  // testing
-  std::string ModulePath{};
-  std::string ModuleName{};
-  std::string FunctionName{};
-
-  std::vector<std::string> ScalarFields{};
   std::vector<std::vector<double>> outputData_{};
 };
