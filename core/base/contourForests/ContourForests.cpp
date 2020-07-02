@@ -509,7 +509,7 @@ void ContourForests::unifyTree(const char treetype) {
       // if not in partition
       if(partition != 0
          && isLower(
-           leafVert, parallelData_.interfaces[partition - 1].getSeed()))
+              leafVert, parallelData_.interfaces[partition - 1].getSeed()))
         continue;
       if(partition != parallelParams_.nbInterfaces
          && isHigher(leafVert, parallelData_.interfaces[partition].getSeed()))

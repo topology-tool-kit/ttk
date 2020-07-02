@@ -4,25 +4,32 @@ using module = ttk::ContourAroundPoint;
 
 //----------------------------------------------------------------------------//
 
-int module::setInputPoints(float *coords, float *scalars, float *isovals,
-                           int *flags, std::size_t np) {
+int module::setInputPoints(
+  float *coords, float *scalars, float *isovals, int *flags, std::size_t np) {
   _inpPtsCoords = coords;
   _inpPtsScalars = scalars;
   _inpPtsIsovals = isovals;
   _inpPtsFlags = flags;
   _inpPtsNum = np;
-  if(!coords) return -1;
-  if(!scalars) return -2;
-  if(!isovals) return -3;
-  if(!flags) return -4;
+  if(!coords)
+    return -1;
+  if(!scalars)
+    return -2;
+  if(!isovals)
+    return -3;
+  if(!flags)
+    return -4;
   return 0;
 }
 
 //----------------------------------------------------------------------------//
 
-void module::getOutputContours(
-    SimplexId *&cinfos, SimplexId &nc,
-    float *&coords, float *&scalars, int *&flags, SimplexId &nv) const {
+void module::getOutputContours(SimplexId *&cinfos,
+                               SimplexId &nc,
+                               float *&coords,
+                               float *&scalars,
+                               int *&flags,
+                               SimplexId &nv) const {
 
   nc = _outContoursNc;
 
@@ -41,8 +48,10 @@ void module::getOutputContours(
 
 //----------------------------------------------------------------------------//
 
-void module::getOutputCentroids(
-    float *&coords, float *&scalars, int* &flags, SimplexId &nv) const {
+void module::getOutputCentroids(float *&coords,
+                                float *&scalars,
+                                int *&flags,
+                                SimplexId &nv) const {
 
   nv = _outCentroidsScalars.size();
 

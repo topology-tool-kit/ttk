@@ -37,15 +37,16 @@ int Class::FillInputPortInformation(int port, vtkInformation *info) {
       info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
       return 1;
     case 1:
-      info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkUnstructuredGrid");
+      info->Set(
+        vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkUnstructuredGrid");
       return 1;
     case 2:
-      info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkUnstructuredGrid");
+      info->Set(
+        vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkUnstructuredGrid");
       return 1;
   }
   return 0;
 }
-
 
 int Class::FillOutputPortInformation(int port, vtkInformation *info) {
   switch(port) {
@@ -62,7 +63,8 @@ int Class::FillOutputPortInformation(int port, vtkInformation *info) {
 //----------------------------------------------------------------------------//
 
 int Class::RequestData(vtkInformation *request,
-    vtkInformationVector **iVec, vtkInformationVector *oVec) {
+                       vtkInformationVector **iVec,
+                       vtkInformationVector *oVec) {
 
   _outFld = vtkUnstructuredGrid::GetData(oVec, 0);
   _outPts = vtkUnstructuredGrid::GetData(oVec, 1);
@@ -90,16 +92,17 @@ bool Class::preprocessFld(vtkDataSet *dataset) {
   auto scalars = GetInputArrayToProcess(0, dataset);
   if(!scalars)
     return false;
-  
+
   const double radius = ui_spherical ? -1. : 0.;
-  
+
   const auto errorCode = this->setInputField(
     triangulation, ttkUtils::GetVoidPointer(scalars), ui_sizeFilter, radius);
   if(errorCode < 0) {
-    printErr("super->setInputField failed with code " + std::to_string(errorCode));
+    printErr("super->setInputField failed with code "
+             + std::to_string(errorCode));
     return false;
   }
-  
+
   _triangTypeCode = triangulation->getType();
   _scalarTypeCode = scalars->GetDataType();
   _scalarsName = scalars->GetName();
@@ -108,14 +111,14 @@ bool Class::preprocessFld(vtkDataSet *dataset) {
   stream << "Scalar type: " << scalars->GetDataTypeAsString() << " (code "
          << _scalarTypeCode << ")";
   printMsg(stream.str(), ttk::debug::Priority::VERBOSE);
-  
+
   return true;
 }
 
 //----------------------------------------------------------------------------//
 
-bool Class::preprocessPts(
-  vtkUnstructuredGrid *nodes, vtkUnstructuredGrid *arcs) {
+bool Class::preprocessPts(vtkUnstructuredGrid *nodes,
+                          vtkUnstructuredGrid *arcs) {
   // ---- Point data ---- //
 
   auto points = nodes->GetPoints();
@@ -123,8 +126,8 @@ bool Class::preprocessPts(
     printErr("The point coordinates must be of type float");
     return false;
   }
-  auto coords = reinterpret_cast<float *>(
-    ttkUtils::GetVoidPointer(points->GetData()));
+  auto coords
+    = reinterpret_cast<float *>(ttkUtils::GetVoidPointer(points->GetData()));
 
   auto pData = nodes->GetPointData();
   auto scalarBuf = getBuffer<float>(pData, "Scalar", VTK_FLOAT, "float");
@@ -132,7 +135,7 @@ bool Class::preprocessPts(
   if(!scalarBuf || !codeBuf)
     return false;
 
-  // ---- Cell data ---- //
+    // ---- Cell data ---- //
 
 #ifndef NDEBUG // each arc should of course be defined by exactly two vertices
   auto cells = arcs->GetCells();
@@ -163,18 +166,18 @@ bool Class::preprocessPts(
   _scalars.resize(0);
   _isovals.resize(0);
   _flags.resize(0);
-  
-  auto addPoint =
-      [this, coords, scalarBuf, codeBuf](int p, float isoval, int code) {
-    const auto point = &coords[p * 3];
-    _coords.push_back(point[0]);
-    _coords.push_back(point[1]);
-    _coords.push_back(point[2]);
-    _scalars.push_back(scalarBuf[p]);
-    _isovals.push_back(isoval);
-    _flags.push_back(code == minCode ? 0 : 1);
-  };
-  
+
+  auto addPoint
+    = [this, coords, scalarBuf, codeBuf](int p, float isoval, int code) {
+        const auto point = &coords[p * 3];
+        _coords.push_back(point[0]);
+        _coords.push_back(point[1]);
+        _coords.push_back(point[2]);
+        _scalars.push_back(scalarBuf[p]);
+        _isovals.push_back(isoval);
+        _flags.push_back(code == minCode ? 0 : 1);
+      };
+
   const vtkIdType nc = arcs->GetNumberOfCells();
   for(vtkIdType c = 0; c < nc; ++c) {
     const auto p = c2p[c];
@@ -219,10 +222,10 @@ bool Class::process() {
   switch(_scalarTypeCode) {
     vtkTemplateMacro((errorCode = this->execute<VTK_TT>()));
   }
-//   ttkVtkTemplateMacro(
-//     _scalarTypeCode, _triangTypeCode,
-//     (errorCode = this->execute<VTK_TT, TTK_TT>())
-//   )
+  //   ttkVtkTemplateMacro(
+  //     _scalarTypeCode, _triangTypeCode,
+  //     (errorCode = this->execute<VTK_TT, TTK_TT>())
+  //   )
   if(errorCode < 0) { // In TTK, negative is bad.
     printErr("super->execute failed with code " + std::to_string(errorCode));
     return false;
@@ -284,7 +287,7 @@ bool Class::postprocess() {
 
   if(vtkSmartPointer<vtkPoints>::New()->GetDataType() != VTK_FLOAT) {
     printErr("The API has changed! We have expected the default "
-                  "coordinate type to be float");
+             "coordinate type to be float");
     return false;
   }
 

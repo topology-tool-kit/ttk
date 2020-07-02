@@ -615,8 +615,8 @@ char ttk::ScalarFieldCriticalPoints::getCriticalType(
          (*sosOffsets_)[neighborId0], scalarValues[neighborId0],
          (*sosOffsets_)[vertexId], scalarValues[vertexId]))
        && (isSosLowerThan<dataType>(
-         (*sosOffsets_)[neighborId1], scalarValues[neighborId1],
-         (*sosOffsets_)[vertexId], scalarValues[vertexId]))) {
+            (*sosOffsets_)[neighborId1], scalarValues[neighborId1],
+            (*sosOffsets_)[vertexId], scalarValues[vertexId]))) {
 
       // both vertices are lower, let's add that edge and update the UF
       std::map<SimplexId, SimplexId>::iterator n0It
@@ -634,8 +634,8 @@ char ttk::ScalarFieldCriticalPoints::getCriticalType(
          (*sosOffsets_)[neighborId0], scalarValues[neighborId0],
          (*sosOffsets_)[vertexId], scalarValues[vertexId]))
        && (isSosHigherThan<dataType>(
-         (*sosOffsets_)[neighborId1], scalarValues[neighborId1],
-         (*sosOffsets_)[vertexId], scalarValues[vertexId]))) {
+            (*sosOffsets_)[neighborId1], scalarValues[neighborId1],
+            (*sosOffsets_)[vertexId], scalarValues[vertexId]))) {
 
       // both vertices are lower, let's add that edge and update the UF
       std::map<SimplexId, SimplexId>::iterator n0It

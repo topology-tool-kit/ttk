@@ -22,16 +22,15 @@
 #include <vtkPointData.h>
 #include <vtkSmartPointer.h>
 
-#include <ttkContourAroundPointModule.h> // for TTKCONTOURAROUNDPOINT_EXPORT
-#include <ttkAlgorithm.h>
 #include <ContourAroundPoint.hpp>
+#include <ttkAlgorithm.h>
+#include <ttkContourAroundPointModule.h> // for TTKCONTOURAROUNDPOINT_EXPORT
 
 #include <Triangulation.h> // for tk::Triangulation::Type
 
 class vtkInformation;
 class vtkInformationVector;
 class vtkUnstructuredGrid;
-
 
 class TTKCONTOURAROUNDPOINT_EXPORT ttkContourAroundPoint
   : public ttkAlgorithm,
@@ -61,9 +60,9 @@ protected:
   // "PORT_REQUIREMENTS_FILLED" in vtkAlgorithm.cxx
   int FillInputPortInformation(int port, vtkInformation *info) override;
   int FillOutputPortInformation(int port, vtkInformation *info) override;
-  int RequestData(vtkInformation *request, vtkInformationVector **iVec,
+  int RequestData(vtkInformation *request,
+                  vtkInformationVector **iVec,
                   vtkInformationVector *oVec) override;
-
 
   /// @return Went well?
   bool preprocessFld(vtkDataSet *dataset);
@@ -112,7 +111,7 @@ private:
 
   ttk::Triangulation::Type _triangTypeCode; // triangulation->getType()
   int _scalarTypeCode; // VTK type of the scalars defined on the input field
-  const char* _scalarsName = nullptr;
+  const char *_scalarsName = nullptr;
 
   // referring to the input points
   std::vector<float> _coords;
