@@ -82,11 +82,7 @@ int ttk::TopologicalCompression::WritePersistenceGeometry(FILE *fm,
       += WritePersistenceIndex(fm, mapping_, criticalConstraints_);
   }
 
-  {
-    std::stringstream msg;
-    msg << "[TopologicalCompression] Wrote raw geometry." << std::endl;
-    dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
-  }
+  this->printMsg("Wrote raw geometry.");
 
   if(zfpBitBudget <= 64.0 && zfpBitBudget > 0) {
 #ifdef TTK_ENABLE_ZFP
@@ -101,13 +97,7 @@ int ttk::TopologicalCompression::WritePersistenceGeometry(FILE *fm,
       += CompressWithZFP(fm, false, dataVector, nx, ny, nz, zfpBitBudget);
 
 #else
-    {
-      std::stringstream msg;
-      msg << "[TopologicalCompression] Attempted to write with ZFP but ZFP is "
-             "not installed."
-          << std::endl;
-      dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
-    }
+    this->printErr("Attempted to write with ZFP but ZFP is not installed.");
     return -5;
 #endif
   }
@@ -150,11 +140,7 @@ int ttk::TopologicalCompression::ReadPersistenceGeometry(FILE *fm) {
     numberOfBytesRead
       += ReadPersistenceIndex(fm, mapping_, mappingsSortedPerValue,
                               criticalConstraints_, min, max, nbConstraints);
-    {
-      std::stringstream msg;
-      msg << "[TopologicalCompression] Successfully read geomap." << std::endl;
-      dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
-    }
+    this->printMsg("Successfully read geomap.");
   }
 
   // Prepare array reconstruction.
@@ -177,30 +163,19 @@ int ttk::TopologicalCompression::ReadPersistenceGeometry(FILE *fm) {
         double value = std::get<0>(tt);
         int sseg = std::get<1>(tt);
         if(seg != sseg) {
-          std::stringstream msg;
-          msg << "Decompression mismatch (" << seg << ", " << sseg << ")"
-              << std::endl;
-          dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
+          this->printErr("Decompression mismatch (" + std::to_string(seg) + ", "
+                         + std::to_string(sseg) + ")");
         }
         decompressedData_[i] = value;
       } else {
-        {
-          std::stringstream msg;
-          msg << "Could not find " << seg << " index." << std::endl;
-          dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
-        }
+        this->printErr("Could not find " + std::to_string(seg) + " index.");
         std::tuple<double, int> tt = *it;
         double value = std::get<0>(tt);
         decompressedData_[i] = value;
       }
     }
 
-    {
-      std::stringstream msg;
-      msg << "[TopologicalCompression] Successfully affected geomap."
-          << std::endl;
-      dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
-    }
+    this->printMsg("Successfully assigned geomap.");
 
   } else {
 #ifdef TTK_ENABLE_ZFP
@@ -208,19 +183,10 @@ int ttk::TopologicalCompression::ReadPersistenceGeometry(FILE *fm) {
     using ttk::TopologicalCompression;
     numberOfBytesRead += zfpBitBudget * vertexNumber;
     CompressWithZFP(fm, true, decompressedData_, nx, ny, nz, zfpBitBudget);
-    {
-      std::stringstream msg;
-      msg << "[TopologicalCompression] Successfully read with ZFP."
-          << std::endl;
-      dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
-    }
+    this->printMsg("Successfully read with ZFP.");
 #else
-    {
-      std::stringstream msg;
-      msg << "[TopologicalCompression] Attempted to read "
-          << "a ZFP block but ZFP is not installed." << std::endl;
-      dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
-    }
+    this->printErr(
+      "Attempted to read with ZFP a ZFP block but ZFP is not installed.");
     return -5;
 #endif
   }
@@ -237,9 +203,7 @@ int ttk::TopologicalCompression::ReadPersistenceGeometry(FILE *fm) {
 
   // double tolerance = Tolerance;
   if(min == max) {
-    std::stringstream msg;
-    msg << "[TopologicalCompression] empty scalar field range." << std::endl;
-    dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
+    this->printWrn("Empty scalar field range.");
   } else {
     // tolerance *= (max - min);
   }
@@ -253,22 +217,12 @@ int ttk::TopologicalCompression::ReadPersistenceGeometry(FILE *fm) {
   // 2.b. (3.) Crop whatever doesn't fit in topological intervals.
   CropIntervals(mapping_, mappingsSortedPerValue, min, max, vertexNumber,
                 decompressedData_.data(), segmentation_);
-  {
-    std::stringstream msg;
-    msg << "[TopologicalCompression] Successfully cropped bad intervals."
-        << std::endl;
-    dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
-  }
+  this->printMsg("Successfully cropped bad intervals.");
 
   // 2.b. (4.) Apply topological simplification with min/max constraints
   PerformSimplification<double>(criticalConstraints_, nbConstraints,
                                 vertexNumber, decompressedData_.data());
-  {
-    std::stringstream msg;
-    msg << "[TopologicalCompression] Successfully performed simplification."
-        << std::endl;
-    dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
-  }
+  this->printMsg("Successfully performed simplification.");
 
   rawFileLength += numberOfBytesRead;
 
@@ -379,9 +333,7 @@ void ttk::TopologicalCompression::CropIntervals(
       int sseg = std::get<1>(tt);
       if(seg != sseg) {
         ttk::Debug d;
-        std::stringstream msg;
-        msg << "[TopologicalCompression] Decompression mismatch." << std::endl;
-        d.dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
+        d.printErr("Decompression mismatch.");
       }
 
       auto it2 = lower_bound(mappingsSortedPerValue.begin(),
@@ -419,19 +371,13 @@ void ttk::TopologicalCompression::CropIntervals(
       }
     } else {
       ttk::Debug d;
-      std::stringstream msg;
-      msg << "[TopologicalCompression] Error looking for topo index."
-          << std::endl;
-      d.dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
+      d.printErr("Error looking for topo index.");
     }
   }
 
   if(numberOfMisses > 0) {
     ttk::Debug d;
-    std::stringstream msg;
-    msg << "[TopologicalCompression] Missed " << numberOfMisses << " values."
-        << std::endl;
-    d.dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
+    d.printWrn("Missed " + std::to_string(numberOfMisses) + " values.");
   }
 }
 
@@ -504,13 +450,9 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
   double tolerance = 0.01 * tol * (maxValue - minValue);
   double maxError = 0.01 * maximumError_ * (maxValue - minValue);
 
-  {
-    std::stringstream msg;
-    msg << "[TopologicalCompression] Computed min/max in " << t.getElapsedTime()
-        << " s. (" << threadNumber_ << " thread(s))." << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
-    t.reStart();
-  }
+  this->printMsg(
+    "Computed min/max", 1.0, t.getElapsedTime(), this->threadNumber_);
+  t.reStart();
 
   bool sqDomain = false;
   bool sqRange = false;
@@ -526,14 +468,9 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
     computePersistencePairs<dataType>(
       JTPairs, STPairs, inputData, inputOffsets.data());
 
-    {
-      std::stringstream msg;
-      msg << "[TopologicalCompression] Persistence pairs computed in "
-          << t.getElapsedTime() << " s. (" << threadNumber_ << " thread(s))."
-          << std::endl;
-      dMsg(std::cout, msg.str(), timeMsg);
-      t.reStart();
-    }
+    this->printMsg("Computed persistence pairs", 1.0, t.getElapsedTime(),
+                   this->threadNumber_);
+    t.reStart();
 
     int nbJ = JTPairs.size();
     int nbS = STPairs.size();
@@ -584,14 +521,9 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
       }
     }
 
-    {
-      std::stringstream msg;
-      msg << "[TopologicalCompression] Join pairs post-processed in "
-          << t.getElapsedTime() << " s. (" << threadNumber_ << " thread(s))."
-          << std::endl;
-      dMsg(std::cout, msg.str(), timeMsg);
-      t.reStart();
-    }
+    this->printMsg("Post-processed join pairs", 1.0, t.getElapsedTime(),
+                   this->threadNumber_);
+    t.reStart();
 
     // Split
     for(int i = nbJ; i < nbJ + nbS; ++i) {
@@ -631,14 +563,9 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
       }
     }
 
-    {
-      std::stringstream msg;
-      msg << "[TopologicalCompression] Split pairs post-processed in "
-          << t.getElapsedTime() << " s. (" << threadNumber_ << " thread(s))."
-          << std::endl;
-      dMsg(std::cout, msg.str(), timeMsg);
-      t.reStart();
-    }
+    this->printMsg("Post-processed split pairs", 1.0, t.getElapsedTime(),
+                   this->threadNumber_);
+    t.reStart();
 
     simplifiedConstraints.resize(nbCrit);
     {
@@ -650,13 +577,8 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
       }
     }
 
-    {
-      std::stringstream msg;
-      msg << "[TopologicalCompression] Got pairs in " << t.getElapsedTime()
-          << " s. (" << threadNumber_ << " thread(s))." << std::endl;
-      dMsg(std::cout, msg.str(), timeMsg);
-      t.reStart();
-    }
+    this->printMsg("Got pairs", 1.0, t.getElapsedTime(), this->threadNumber_);
+    t.reStart();
 
     // 2. Perform topological simplification with constraints.
     if(useTopologicalSimplification_) {
@@ -679,14 +601,9 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
       }
     }
 
-    {
-      std::stringstream msg;
-      msg << "[TopologicalCompression] Performed simplification in "
-          << t.getElapsedTime() << " s. (" << threadNumber_ << " thread(s))."
-          << std::endl;
-      dMsg(std::cout, msg.str(), timeMsg);
-      t.reStart();
-    }
+    this->printMsg(
+      "Performed simplification", 1.0, t.getElapsedTime(), this->threadNumber_);
+    t.reStart();
 
   } else if(strcmp(sq, "r") == 0 || strcmp(sq, "R") == 0) {
     // Range-based SQ: simple range quantization (automatic)
@@ -697,13 +614,7 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
   } else if(zfpOnly_) {
     return 0;
   } else {
-    {
-      std::stringstream msg;
-      msg << "[TopologicalCompression] Unrecognized SQ option (" << sqMethod_
-          << ")." << std::endl;
-      dMsg(std::cout, msg.str(), timeMsg);
-    }
-
+    this->printErr("Unrecognized SQ option (" + sqMethod_ + ").");
     return -3;
   }
 
@@ -721,12 +632,7 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
   bool subdivide = !dontSubdivide_;
   auto l = (int)topoIndices.size();
   if(l < 1) {
-    {
-      std::stringstream msg;
-      msg << "[TopologicalCompression] Trivial subdivision performed."
-          << std::endl;
-      dMsg(std::cout, msg.str(), timeMsg);
-    }
+    this->printMsg("Trivial subdivision performed.");
     segments.push_back(topoIndices[l - 1]);
   } else {
     for(int i = 0; i < l; ++i) {
@@ -756,14 +662,9 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
     }
   }
 
-  {
-    std::stringstream msg;
-    msg << "[TopologicalCompression] Subdivision/topological index"
-        << " attribution in " << t.getElapsedTime() << " s. (" << threadNumber_
-        << " thread(s))." << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
-    t.reStart();
-  }
+  this->printMsg("Subdivision/topological index attribution", 1.0,
+                 t.getElapsedTime(), this->threadNumber_);
+  t.reStart();
 
   // 4. Affect segment value to all points.
 
@@ -800,13 +701,9 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
     }
   }
 
-  {
-    std::stringstream msg;
-    msg << "[TopologicalCompression] Affected values in " << t.getElapsedTime()
-        << " s. (" << threadNumber_ << " thread(s))." << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
-    t.reStart();
-  }
+  this->printMsg(
+    "Assigned values", 1.0, t.getElapsedTime(), this->threadNumber_);
+  t.reStart();
 
   // 4.1. Simplify mapping
   auto segmentsSize = (int)segments.size();
@@ -821,10 +718,7 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
     else if(seg >= 0)
       affectedSegments[seg] = true;
     else {
-      std::stringstream msg;
-      msg << "[TopologicalCompression] Negative segment encoutered (" << i
-          << ")" << std::endl;
-      dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
+      this->printErr("Negative segment encoutered (" + std::to_string(i) + ")");
     }
   }
   std::vector<int> empty;
@@ -837,10 +731,8 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
   std::sort(empty.begin(), empty.end());
   int indexLast = -1;
   if(oob.size() > empty.size()) {
-    std::stringstream msg;
-    msg << "[TopologicalCompression] WARN oob size > empty size: " << oob.size()
-        << ", " << empty.size() << std::endl;
-    dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
+    this->printWrn("oob size > empty size: " + std::to_string(oob.size()) + ", "
+                   + std::to_string(empty.size()));
   } else {
     // Replace
     for(int i = 0; i < vertexNumber; ++i) {
@@ -855,10 +747,7 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
           affectedSegments[j] = true;
         }
       } else if(!affectedSegments[seg]) {
-        std::stringstream msg;
-        msg << "[TopologicalCompression] Something impossible happened"
-            << std::endl;
-        dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
+        this->printErr("Something impossible happened");
       }
     }
 
@@ -883,10 +772,8 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
           doneAffecting = true;
         } else {
           if(doneAffecting) {
-            std::stringstream msg;
-            msg << "[TopologicalCompression] Hole detected at " << i
-                << "th segment." << std::endl;
-            dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
+            this->printWrn("Hole detected at " + std::to_string(i)
+                           + "th segment.");
           } else {
             indexLast = i;
           }
@@ -901,14 +788,9 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
     }
   }
 
-  {
-    std::stringstream msg;
-    msg << "[TopologicalCompression] Simplified mapping in "
-        << t.getElapsedTime() << " s. (" << threadNumber_ << " thread(s))."
-        << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
-    t.reStart();
-  }
+  this->printMsg(
+    "Simplified mapping", 1.0, t.getElapsedTime(), this->threadNumber_);
+  t.reStart();
 
   // 5. Expose mapping.
   std::vector<bool> already(vertexNumber);
@@ -924,13 +806,9 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
     }
   }
 
-  {
-    std::stringstream msg;
-    msg << "[TopologicalCompression] Exposed mapping in " << t.getElapsedTime()
-        << " s. (" << threadNumber_ << " thread(s))." << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
-    t.reStart();
-  }
+  this->printMsg(
+    "Exposed mapping", 1.0, t.getElapsedTime(), this->threadNumber_);
+  t.reStart();
 
   // 6. SQ-D correction step.
   // Indices stay compact.
@@ -1000,14 +878,9 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
       }
     }
 
-    {
-      std::stringstream msg;
-      msg << "[TopologicalCompression] SQ-D correction step in "
-          << t.getElapsedTime() << " s. (" << threadNumber_ << " thread(s))."
-          << std::endl;
-      dMsg(std::cout, msg.str(), timeMsg);
-      t.reStart();
-    }
+    this->printMsg(
+      "SQ-D correction step", 1.0, t.getElapsedTime(), this->threadNumber_);
+    t.reStart();
   }
 
   // 7. [ZFP]: max constraints, min constraints
@@ -1025,37 +898,24 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
       }
     }
 
-    {
-      std::stringstream msg;
-      msg << "[TopologicalCompression] Exposed constraints in "
-          << t.getElapsedTime() << " s. (" << threadNumber_ << " thread(s))."
-          << std::endl;
-      dMsg(std::cout, msg.str(), timeMsg);
-      t.reStart();
-    }
+    this->printMsg(
+      "Exposed constraints", 1.0, t.getElapsedTime(), this->threadNumber_);
+    t.reStart();
   }
 
   {
-    if(indexLast > -1) {
-      if(indexLast + 1 != (int)mapping_.size()) {
-        std::stringstream msg;
-        msg << "[TopologicalCompression] possible affectation mismatch "
-            << "(" << (indexLast + 1) << ", " << mapping_.size() << ")"
-            << std::endl;
-        dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
-      }
+    if(indexLast > -1 && indexLast + 1 != (int)mapping_.size()) {
+      this->printWrn("Possible affectation mismatch ("
+                     + std::to_string(indexLast + 1) + ", "
+                     + std::to_string(mapping_.size()) + ")");
     }
 
     int nSegments = indexLast > -1 ? indexLast + 1 : (int)segments.size() - 1;
     this->nbSegments = nSegments;
     this->nbVertices = vertexNumber;
-    std::stringstream msg;
-    msg << "[TopologicalCompression] Affected " << nSegments << " segment"
-        << (nbSegments > 1 ? "s" : "") << "." << std::endl;
-    msg << "[TopologicalCompression] Data-set (" << vertexNumber
-        << " points) processed in " << t1.getElapsedTime() << " s. ("
-        << threadNumber_ << " thread(s))." << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
+
+    this->printMsg("Affected " + std::to_string(nSegments) + " segment(s).",
+                   1.0, t1.getElapsedTime(), this->threadNumber_);
   }
 
   return 0;
