@@ -19,79 +19,27 @@
 /// \sa ttk::DataSetInterpolator
 #pragma once
 
-// VTK includes -- to adapt
-#include <vtkCharArray.h>
-#include <vtkDataArray.h>
-#include <vtkDataSet.h>
-#include <vtkDataSetAlgorithm.h>
-#include <vtkDoubleArray.h>
-#include <vtkFiltersCoreModule.h>
-#include <vtkFloatArray.h>
-#include <vtkInformation.h>
-#include <vtkIntArray.h>
-#include <vtkObjectFactory.h>
-#include <vtkPointData.h>
-#include <vtkProbeFilter.h>
-#include <vtkSmartPointer.h>
-
 // VTK Module
 #include <ttkDataSetInterpolatorModule.h>
 
-#include <Wrapper.h>
+// TTK Includes
+#include <ttkAlgorithm.h>
 
 class TTKDATASETINTERPOLATOR_EXPORT ttkDataSetInterpolator
-  : public vtkDataSetAlgorithm,
-    protected ttk::Wrapper {
+  : public ttkAlgorithm {
 
 public:
   static ttkDataSetInterpolator *New();
-  vtkTypeMacro(ttkDataSetInterpolator, vtkDataSetAlgorithm)
-
-    // default ttk setters
-    void SetDebugLevel(int debugLevel) {
-    setDebugLevel(debugLevel);
-    Modified();
-  }
-
-  void SetThreads() {
-    if(!UseAllCores)
-      threadNumber_ = ThreadNumber;
-    else {
-      threadNumber_ = ttk::OsCall::getNumberOfCores();
-    }
-    Modified();
-  }
-
-  void SetThreadNumber(int threadNumber) {
-    ThreadNumber = threadNumber;
-    SetThreads();
-  }
-
-  void SetUseAllCores(bool onOff) {
-    UseAllCores = onOff;
-    SetThreads();
-  }
-  // end of default ttk setters
+  vtkTypeMacro(ttkDataSetInterpolator, ttkAlgorithm);
 
 protected:
-  ttkDataSetInterpolator() {
-    UseAllCores = true;
+  ttkDataSetInterpolator();
+  ~ttkDataSetInterpolator();
 
-    SetNumberOfInputPorts(2);
-    SetNumberOfOutputPorts(1);
-  }
-
-  ~ttkDataSetInterpolator() override{};
+  int FillInputPortInformation(int port, vtkInformation *info) override;
+  int FillOutputPortInformation(int port, vtkInformation *info) override;
 
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;
-
-private:
-  bool UseAllCores;
-  int ThreadNumber;
-
-  int doIt(vtkDataSet *source, vtkDataSet *target, vtkDataSet *output);
-  bool needsToAbort() override;
-  int updateProgress(const float &progress) override;
 };

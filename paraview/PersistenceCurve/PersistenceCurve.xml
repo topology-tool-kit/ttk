@@ -50,17 +50,16 @@ TopologicalSimplification.
       </InputProperty>
 
       <StringVectorProperty
-        name="ScalarField"
-        command="SetScalarField"
-        number_of_elements="1"
-        animateable="0"
+        name="ScalarFieldNew"
         label="Scalar Field"
+        command="SetInputArrayToProcess"
+        element_types="0 0 0 0 2"
+        number_of_elements="5"
+        default_values="0"
         >
-        <ArrayListDomain
-          name="array_list"
-          default_values="0">
+        <ArrayListDomain attribute_type="Scalars" name="array_list">
           <RequiredProperties>
-            <Property name="Input" function="Input" />
+            <Property function="Input" name="Input" />
           </RequiredProperties>
         </ArrayListDomain>
         <Documentation>
@@ -82,19 +81,19 @@ TopologicalSimplification.
          </Documentation>
       </IntVectorProperty>
 
-       <StringVectorProperty
-        name="InputOffsetScalarFieldName"
-        command="SetInputOffsetScalarFieldName"
+      <StringVectorProperty
+        name="InputOffsetScalarFieldNameNew"
         label="Input Offset Field"
-        default_values="OutputOffsetScalarField"
-        number_of_elements="1"
-        animateable="0"
+        command="SetInputArrayToProcess"
+        element_types="0 0 0 0 2"
+        number_of_elements="5"
+        default_values="1"
         panel_visibility="advanced"
         >
         <ArrayListDomain
           name="array_list"
-					default_values="0"
-                    >
+          default_values="1"
+          >
           <RequiredProperties>
             <Property name="Input" function="Input" />
           </RequiredProperties>
@@ -106,7 +105,7 @@ TopologicalSimplification.
             value="1" />
         </Hints>
         <Documentation>
-          Select the input offset field to disambiguate flat plateaus.
+          Select the input offset field (used to disambiguate flat plateaus).
         </Documentation>
       </StringVectorProperty>
 
@@ -122,64 +121,17 @@ TopologicalSimplification.
          </Documentation>
       </IntVectorProperty>
 
-      <IntVectorProperty
-        name="UseAllCores"
-        label="Use All Cores"
-        command="SetUseAllCores"
-        number_of_elements="1"
-        default_values="1" panel_visibility="advanced">
-        <BooleanDomain name="bool"/>
-        <Documentation>
-          Use all available cores.
-        </Documentation>
-      </IntVectorProperty>
-
-      <IntVectorProperty
-        name="ThreadNumber"
-        label="Thread Number"
-        command="SetThreadNumber"
-        number_of_elements="1"
-        default_values="1" panel_visibility="advanced">
-        <IntRangeDomain name="range" min="1" max="100" />
-        <Hints>
-          <PropertyWidgetDecorator type="GenericDecorator"
-            mode="visibility"
-            property="UseAllCores"
-            value="0" />
-        </Hints>
-
-        <Documentation>
-          Thread number.
-        </Documentation>
-      </IntVectorProperty>
-
-      <IntVectorProperty
-        name="DebugLevel"
-        label="Debug Level"
-        command="SetDebugLevel"
-        number_of_elements="1"
-        default_values="3" panel_visibility="advanced">
-        <IntRangeDomain name="range" min="0" max="100" />
-        <Documentation>
-          Debug level.
-        </Documentation>
-      </IntVectorProperty>
-
       <PropertyGroup panel_widget="Line" label="Input options">
-        <Property name="ScalarField" />
+        <Property name="ScalarFieldNew" />
         <Property name="ForceInputOffsetScalarField"/>
-        <Property name="InputOffsetScalarFieldName"/>
+        <Property name="InputOffsetScalarFieldNameNew"/>
       </PropertyGroup>
 
       <PropertyGroup panel_widget="Line" label="Output options">
         <Property name="SaddleConnectors" />
       </PropertyGroup>
 
-      <PropertyGroup panel_widget="Line" label="Testing">
-        <Property name="UseAllCores" />
-        <Property name="ThreadNumber" />
-        <Property name="DebugLevel" />
-      </PropertyGroup>
+      ${DEBUG_WIDGETS}
 
       <OutputPort name="Minimum-saddle pairs" index="0" id="port0" />
       <OutputPort name="Saddle-saddle pairs" index="1" id="port1" />

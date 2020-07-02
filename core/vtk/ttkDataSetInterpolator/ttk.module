@@ -5,4 +5,4 @@ SOURCES
 HEADERS
   ttkDataSetInterpolator.h
 DEPENDS
-  common
+  ttkAlgorithm
