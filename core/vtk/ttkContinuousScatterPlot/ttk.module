@@ -6,4 +6,4 @@ HEADERS
   ttkContinuousScatterPlot.h
 DEPENDS
   continuousScatterPlot
-  ttkTriangulationAlgorithm
+  ttkAlgorithm
