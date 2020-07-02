@@ -6,4 +6,4 @@ HEADERS
   ttkDimensionReduction.h
 DEPENDS
   dimensionReduction
-  ttkTriangulationAlgorithm
+  ttkAlgorithm
