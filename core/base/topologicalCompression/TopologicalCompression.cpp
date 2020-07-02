@@ -2,20 +2,11 @@
 
 // General.
 ttk::TopologicalCompression::TopologicalCompression() {
-  inputData_ = nullptr;
-  outputData_ = nullptr;
-  triangulation_ = nullptr;
-  sqMethod_ = "";
-  nbSegments = 0;
-  nbVertices = 0;
-  rawFileLength = 0;
+  this->setDebugMsgPrefix("TopologicalCompression");
 }
 
 const char *ttk::TopologicalCompression::magicBytes_{"TTKCompressedFileFormat"};
 const unsigned long ttk::TopologicalCompression::formatVersion_{1};
-
-ttk::TopologicalCompression::~TopologicalCompression() {
-}
 
 // Dependencies.
 

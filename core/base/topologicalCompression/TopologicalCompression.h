@@ -14,14 +14,10 @@
 #pragma once
 
 // base code includes
-
-#include <DataTypes.h>
-#include <Debug.h>
 #include <FTMTreePP.h>
 #include <PersistenceDiagram.h>
 #include <TopologicalSimplification.h>
 #include <Triangulation.h>
-#include <Wrapper.h>
 
 // std
 
@@ -55,7 +51,7 @@ namespace ttk {
   public:
     // Base code methods.
     TopologicalCompression();
-    ~TopologicalCompression();
+
     template <class dataType>
     int execute(const double &tolerance);
 
@@ -83,75 +79,52 @@ namespace ttk {
                          const double &tol);
 
     // Getters and setters.
-    inline int setInputDataPointer(void *data) {
+    inline void setInputDataPointer(void *data) {
       inputData_ = data;
-      return 0;
     }
-
-    inline int setOutputDataPointer(void *data) {
+    inline void setOutputDataPointer(void *data) {
       outputData_ = data;
-      return 0;
     }
-
-    inline int setCompressionType(int compressionType) {
+    inline void setCompressionType(int compressionType) {
       compressionType_ = compressionType;
-      return 0;
     }
-
-    inline int setSQ(std::string sqMethod) {
+    inline void setSQ(std::string sqMethod) {
       sqMethod_ = sqMethod;
-      return 0;
     }
-
-    inline int setZFPOnly(bool z) {
+    inline void setZFPOnly(bool z) {
       zfpOnly_ = z;
-      return 0;
     }
-
-    inline int setSubdivide(bool dontSubdivide) {
+    inline void setSubdivide(bool dontSubdivide) {
       dontSubdivide_ = dontSubdivide;
-      return 0;
     }
-
-    inline int setMaximumError(double maximumError) {
+    inline void setMaximumError(double maximumError) {
       maximumError_ = maximumError;
-      return 0;
     }
-
-    inline int
+    inline void
       setUseTopologicalSimplification(bool useTopologicalSimplification) {
       useTopologicalSimplification_ = useTopologicalSimplification;
-      return 0;
     }
-
-    inline int setFileName(char *fn) {
+    inline void setFileName(char *fn) {
       fileName = fn;
-      return 0;
     }
-
-    inline int setupTriangulation(Triangulation *triangulation) {
+    inline void setupTriangulation(Triangulation *triangulation) {
       triangulation_ = triangulation;
       if(triangulation_)
         triangulation_->preconditionVertexNeighbors();
-      return 0;
     }
 
     inline int getNbVertices() {
       return nbVertices;
     }
-
     inline int getNbSegments() {
       return nbSegments;
     }
-
     inline std::vector<int> &getSegmentation() {
       return segmentation_;
     }
-
     inline std::vector<std::tuple<double, int>> &getMapping() {
       return mapping_;
     }
-
     inline std::vector<std::tuple<int, double, int>> &getCriticalConstraints() {
       return criticalConstraints_;
     }
@@ -159,35 +132,27 @@ namespace ttk {
     inline int getCompressionType() {
       return compressionType_;
     }
-
     inline int getSQMethod() {
       return sqMethodInt_;
     }
-
     inline int getDataScalarType() {
       return dataScalarType_;
     }
-
     inline int *getDataExtent() {
       return dataExtent_;
     }
-
     inline double *getDataSpacing() {
       return dataSpacing_;
     }
-
     inline double *getDataOrigin() {
       return dataOrigin_;
     }
-
     inline double getTolerance() {
       return tolerance_;
     }
-
     inline double getZFPBitBudget() {
       return zfpBitBudget_;
     }
-
     inline bool getZFPOnly() {
       return zfpOnly_;
     }
@@ -195,15 +160,12 @@ namespace ttk {
     inline const std::vector<char> &getDataArrayName() const {
       return dataArrayName_;
     }
-
     inline std::vector<double> &getDecompressedData() {
       return decompressedData_;
     }
-
     inline std::vector<int> &getDecompressedOffsets() {
       return decompressedOffsets_;
     }
-
     inline std::vector<int> &getCompressedOffsets() {
       return compressedOffsets_;
     }
@@ -382,41 +344,41 @@ namespace ttk {
 
   protected:
     // General.
-    void *inputData_;
-    void *outputData_;
-    Triangulation *triangulation_;
-    TopologicalSimplification topologicalSimplification;
+    void *inputData_{};
+    void *outputData_{};
+    Triangulation *triangulation_{};
+    TopologicalSimplification topologicalSimplification{};
 
     // Parameters
-    int compressionType_;
-    bool zfpOnly_;
-    int sqMethodInt_;
-    std::string sqMethod_;
-    int dataScalarType_;
+    int compressionType_{};
+    bool zfpOnly_{};
+    int sqMethodInt_{};
+    std::string sqMethod_{""};
+    int dataScalarType_{};
     int dataExtent_[6];
     double dataSpacing_[3];
     double dataOrigin_[3];
-    double tolerance_;
-    double maximumError_;
-    double zfpBitBudget_;
-    bool dontSubdivide_;
-    bool useTopologicalSimplification_;
+    double tolerance_{};
+    double maximumError_{};
+    double zfpBitBudget_{};
+    bool dontSubdivide_{};
+    bool useTopologicalSimplification_{};
     std::vector<char> dataArrayName_{};
 
     // Persistence compression.
-    std::vector<int> segmentation_;
-    std::vector<std::tuple<double, int>> mapping_;
-    std::vector<std::tuple<int, double, int>> criticalConstraints_;
+    std::vector<int> segmentation_{};
+    std::vector<std::tuple<double, int>> mapping_{};
+    std::vector<std::tuple<int, double, int>> criticalConstraints_{};
 
     // IO.
-    int nbVertices;
-    int nbSegments;
-    int rawFileLength;
-    std::vector<double> decompressedData_;
-    std::vector<int> decompressedOffsets_;
-    std::vector<int> compressedOffsets_;
-    int vertexNumberRead_;
-    char *fileName;
+    int nbVertices{0};
+    int nbSegments{0};
+    int rawFileLength{0};
+    std::vector<double> decompressedData_{};
+    std::vector<int> decompressedOffsets_{};
+    std::vector<int> compressedOffsets_{};
+    int vertexNumberRead_{};
+    char *fileName{};
 
     // Char array that identifies the file format.
     static const char *magicBytes_;
@@ -425,7 +387,6 @@ namespace ttk {
     static const unsigned long formatVersion_;
   };
 
-  // End namespace ttk.
 } // namespace ttk
 
 #include <OtherCompression.h>
