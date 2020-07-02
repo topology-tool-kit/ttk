@@ -441,6 +441,8 @@ according to them.
             data->preconditionTriangleEdges();
             data->preconditionTriangleStars();
             data->preconditionCellTriangles();
+            // for filterSaddleConnectors
+            contourTree_.setupTriangulation(data);
           }
         }
       }
@@ -960,6 +962,8 @@ gradient, false otherwise.
                                       const triangulationType &triangulation);
 
     protected:
+      ftm::FTMTree contourTree_{};
+
       int IterationThreshold{-1};
       bool CollectPersistencePairs{false};
       bool ReturnSaddleConnectors{false};

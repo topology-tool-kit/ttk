@@ -1786,18 +1786,14 @@ int DiscreteGradient::filterSaddleConnectors(
   const auto *const offsets = static_cast<const idType *>(inputOffsets_);
   const auto *const scalars = static_cast<const dataType *>(inputScalarField_);
 
-  ftm::FTMTree contourTree;
-  contourTree.setDebugLevel(debugLevel_);
-  // TODO wait for FTM migration
-  // contourTree.setupTriangulation(
-  //   const_cast<Triangulation *>(&triangulation), false);
-  contourTree.setVertexScalars(scalars);
-  contourTree.setTreeType(ftm::TreeType::Contour);
-  contourTree.setVertexSoSoffsets(offsets);
-  contourTree.setThreadNumber(threadNumber_);
-  contourTree.setSegmentation(false);
-  contourTree.build<dataType, SimplexId>();
-  ftm::FTMTree_MT *tree = contourTree.getTree(ftm::TreeType::Contour);
+  contourTree_.setDebugLevel(debugLevel_);
+  contourTree_.setVertexScalars(scalars);
+  contourTree_.setTreeType(ftm::TreeType::Contour);
+  contourTree_.setVertexSoSoffsets(offsets);
+  contourTree_.setThreadNumber(threadNumber_);
+  contourTree_.setSegmentation(false);
+  contourTree_.build<dataType, SimplexId>();
+  ftm::FTMTree_MT *tree = contourTree_.getTree(ftm::TreeType::Contour);
 
   const SimplexId numberOfNodes = tree->getNumberOfNodes();
   for(SimplexId nodeId = 0; nodeId < numberOfNodes; ++nodeId) {
