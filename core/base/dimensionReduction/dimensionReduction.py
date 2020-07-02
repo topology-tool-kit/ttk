@@ -2,31 +2,17 @@ def doIt(X, method, ncomponents, nneighbors, njobs, rstate, params):
 
     import importlib
 
-    # check if numpy is installed
-    loader = importlib.find_loader("numpy")
-    found = loader is not None
-    if found:
-        print("[DimensionReduction] Python: numpy module found.")
-    else:
-        print("[DimensionReduction] Python error: numpy module not found.")
-        return 0
+    # if numpy, scipy and sklearn are not found
+    not_found = False
 
-    # check if scipy is installed
-    loader = importlib.find_loader("scipy")
-    found = loader is not None
-    if found:
-        print("[DimensionReduction] Python: scipy module found.")
-    else:
-        print("[DimensionReduction] Python error: scipy module not found.")
-        return 0
+    # check if modules are installed
+    for mod in ["numpy", "scipy", "sklearn"]:
+        if importlib.find_loader(mod) is None:
+            not_found = True
+            print("[DimensionReduction] Python error: " + mod + " module not found.")
 
-    # check if scikit-learn is installed
-    loader = importlib.find_loader("sklearn")
-    found = loader is not None
-    if found:
-        print("[DimensionReduction] Python: sklearn module found.")
-    else:
-        print("[DimensionReduction] Python error: sklearn module not found.")
+    if not_found:
+        # at least one module is not installed, aborting...
         return 0
 
     from sklearn import manifold
