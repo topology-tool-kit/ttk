@@ -34,7 +34,8 @@
 /// \param connection 0 (FIXED: first connection)
 /// \param fieldAssociation 0 (FIXED: point data)
 /// \param arrayName (DYNAMIC: string identifier of the offset array)
-/// NOTE: To use this array `ForceInputOffsetScalarField` needs to be enabled.
+/// \note: To use this optional array, `ForceInputOffsetScalarField` needs to be
+/// enabled with the setter `setForceInputOffsetScalarField()'.
 ///
 /// The vertex identifier array needs to be specified via the standard VTK call
 /// vtkAlgorithm::SetInputArrayToProcess() with the following parameters:
@@ -43,7 +44,8 @@
 /// \param connection 0 (FIXED: first connection)
 /// \param fieldAssociation 0 (FIXED: point data)
 /// \param arrayName (DYNAMIC: string identifier of the vertex identifier array)
-/// NOTE: To use this array `ForceInputVertexScalarField` needs to be enabled.
+/// \note: To use this optional array, `ForceInputVertexScalarField` needs to be
+/// enabled with the setter `setForceInputVertexScalarField()'.
 ///
 /// This filter can be used as any other VTK filter (for instance, by using the
 /// sequence of calls SetInputData(), Update(), GetOutput()).
