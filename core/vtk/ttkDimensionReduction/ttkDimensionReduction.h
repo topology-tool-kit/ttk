@@ -213,8 +213,8 @@ private:
   int NumberOfComponents{2};
   int NumberOfNeighbors{5};
   int Method{2}; // MDS
-  int IsDeterministic;
-  bool KeepAllDataArrays;
+  int IsDeterministic{true};
+  bool KeepAllDataArrays{true};
 
   // mds && se
   bool InputIsADistanceMatrix{false};
@@ -269,11 +269,10 @@ private:
   std::string pca_MaxIteration{"auto"};
 
   // testing
-  std::string ModulePath;
-  std::string ModuleName;
-  std::string FunctionName;
-  ttk::DimensionReduction dimensionReduction_;
+  std::string ModulePath{};
+  std::string ModuleName{};
+  std::string FunctionName{};
 
-  std::vector<std::string> ScalarFields;
+  std::vector<std::string> ScalarFields{};
   std::vector<std::vector<double>> outputData_{};
 };

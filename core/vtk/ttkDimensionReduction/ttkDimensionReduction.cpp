@@ -54,7 +54,7 @@ int ttkDimensionReduction::RequestData(vtkInformation *request,
     }
   }
 
-  if(dimensionReduction_.isPythonFound()) {
+  if(this->isPythonFound()) {
     const SimplexId numberOfRows = input->GetNumberOfRows();
     const SimplexId numberOfColumns = ScalarFields.size();
 
@@ -76,35 +76,32 @@ int ttkDimensionReduction::RequestData(vtkInformation *request,
 
     outputData_.clear();
 
-    dimensionReduction_.setInputModulePath(ModulePath);
-    dimensionReduction_.setInputModuleName(ModuleName);
-    dimensionReduction_.setInputFunctionName(FunctionName);
-    dimensionReduction_.setInputMatrixDimensions(numberOfRows, numberOfColumns);
-    dimensionReduction_.setInputMatrix(inputData.data());
-    dimensionReduction_.setInputMethod(Method);
-    dimensionReduction_.setInputNumberOfComponents(NumberOfComponents);
-    dimensionReduction_.setInputNumberOfNeighbors(NumberOfNeighbors);
-    dimensionReduction_.setInputIsDeterministic(IsDeterministic);
-    dimensionReduction_.setSEParameters(
+    this->setInputModulePath(ModulePath);
+    this->setInputModuleName(ModuleName);
+    this->setInputFunctionName(FunctionName);
+    this->setInputMatrixDimensions(numberOfRows, numberOfColumns);
+    this->setInputMatrix(inputData.data());
+    this->setInputMethod(Method);
+    this->setInputNumberOfComponents(NumberOfComponents);
+    this->setInputNumberOfNeighbors(NumberOfNeighbors);
+    this->setInputIsDeterministic(IsDeterministic);
+    this->setSEParameters(
       se_Affinity, se_Gamma, se_EigenSolver, InputIsADistanceMatrix);
-    dimensionReduction_.setLLEParameters(
-      lle_Regularization, lle_EigenSolver, lle_Tolerance, lle_MaxIteration,
-      lle_Method, lle_HessianTolerance, lle_ModifiedTolerance,
-      lle_NeighborsAlgorithm);
-    dimensionReduction_.setMDSParameters(mds_Metric, mds_Init, mds_MaxIteration,
-                                         mds_Verbose, mds_Epsilon,
-                                         InputIsADistanceMatrix);
-    dimensionReduction_.setTSNEParameters(
+    this->setLLEParameters(lle_Regularization, lle_EigenSolver, lle_Tolerance,
+                           lle_MaxIteration, lle_Method, lle_HessianTolerance,
+                           lle_ModifiedTolerance, lle_NeighborsAlgorithm);
+    this->setMDSParameters(mds_Metric, mds_Init, mds_MaxIteration, mds_Verbose,
+                           mds_Epsilon, InputIsADistanceMatrix);
+    this->setTSNEParameters(
       tsne_Perplexity, tsne_Exaggeration, tsne_LearningRate, tsne_MaxIteration,
       tsne_MaxIterationProgress, tsne_GradientThreshold, tsne_Metric, tsne_Init,
       tsne_Verbose, tsne_Method, tsne_Angle);
-    dimensionReduction_.setISOParameters(iso_EigenSolver, iso_Tolerance,
-                                         iso_MaxIteration, iso_PathMethod,
-                                         iso_NeighborsAlgorithm);
-    dimensionReduction_.setPCAParameters(
+    this->setISOParameters(iso_EigenSolver, iso_Tolerance, iso_MaxIteration,
+                           iso_PathMethod, iso_NeighborsAlgorithm);
+    this->setPCAParameters(
       pca_Copy, pca_Whiten, pca_SVDSolver, pca_Tolerance, pca_MaxIteration);
-    dimensionReduction_.setOutputComponents(&outputData_);
-    const int errorCode = dimensionReduction_.execute();
+    this->setOutputComponents(&outputData_);
+    const int errorCode = this->execute();
 
     if(!errorCode) {
       if(KeepAllDataArrays)
