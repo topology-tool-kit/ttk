@@ -2,8 +2,7 @@
 // Created by max on 24/05/18.
 //
 
-#ifndef TTK_PERSISTENCEDIAGRAMCOMPRESSION_H
-#define TTK_PERSISTENCEDIAGRAMCOMPRESSION_H
+#pragma once
 
 template <typename dataType>
 int ttk::TopologicalCompression::ComputeTotalSizeForPersistenceDiagram(
@@ -1059,5 +1058,3 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
 
   return 0;
 }
-
-#endif // TTK_PERSISTENCEDIAGRAMCOMPRESSION_H

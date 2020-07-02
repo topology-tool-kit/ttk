@@ -11,8 +11,7 @@
 /// \sa ttk::Triangulation
 /// \sa vtkTopologicalCompression.cpp %for a usage example.
 
-#ifndef _TOPOLOGICALCOMPRESSION_H
-#define _TOPOLOGICALCOMPRESSION_H
+#pragma once
 
 // base code includes
 
@@ -927,5 +926,3 @@ int ttk::TopologicalCompression::ReadMetaData(FILE *fm) {
 
   return 0;
 }
-
-#endif // TOPOLOGICALCOMPRESSION_H

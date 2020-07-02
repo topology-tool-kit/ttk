@@ -7,8 +7,7 @@
 // ttkTopologicalCompressionWriter.cpp
 // OtherCompression.h
 
-#ifndef TTK_OTHERCOMPRESSION_H
-#define TTK_OTHERCOMPRESSION_H
+#pragma once
 
 template <typename dataType>
 int ttk::TopologicalCompression::ComputeTotalSizeForOther() {
@@ -94,5 +93,3 @@ int ttk::TopologicalCompression::ReadOtherGeometry(FILE *fm) {
   // Code me
   return 0;
 }
-
-#endif // TTK_OTHERCOMPRESSION_H
