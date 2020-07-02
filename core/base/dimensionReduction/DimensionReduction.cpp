@@ -1,4 +1,7 @@
 #include <DimensionReduction.h>
+
+#include <map>
+
 #define VALUE_TO_STRING(x) #x
 #define VALUE(x) VALUE_TO_STRING(x)
 
@@ -24,13 +27,11 @@ DimensionReduction::DimensionReduction() {
 
   const char *version = Py_GetVersion();
   if(version[0] >= '3') {
-    stringstream msg;
-    msg << "[DimensionReduction] Initializing Python: " << version[0]
-        << version[1] << version[2] << endl;
-    dMsg(cout, msg.str(), infoMsg);
+    this->printMsg("Initializing Python " + std::to_string(version[0])
+                   + std::to_string(version[1]) + std::to_string(version[2]));
   } else {
-    cerr << "[DimensionReduction] Error: Python 3+ is required:\n"
-         << version << " is provided." << endl;
+    this->printErr("Python 3 + is required :" + std::string{version}
+                   + " is provided.");
   }
 
   majorVersion_ = version[0];
@@ -41,13 +42,9 @@ bool DimensionReduction::isPythonFound() const {
 #ifdef TTK_ENABLE_SCIKIT_LEARN
   return true;
 #else
-  stringstream msg;
-  msg << "[DimensionReduction] "
-      << "Warning: scikit-learn support disabled :(" << endl;
-  msg << "[DimensionReduction] "
-      << "Python/Numpy may not be installed properly." << endl;
-  msg << "[DimensionReduction] Features disabled..." << endl;
-  dMsg(cerr, msg.str(), fatalMsg);
+  this->printErr("Warning: scikit-learn support disabled: Python/Numpy may "
+                 "not be installed properly");
+  this->printErr("Module features disabled.");
   return false;
 #endif
 }
@@ -109,12 +106,14 @@ int DimensionReduction::execute() const {
   const int numberOfDimensions = 2;
   npy_intp dimensions[2]{numberOfRows_, numberOfColumns_};
 
+  std::map<int, std::string> methodToString{
+    {0, "SE"}, {1, "LLE"}, {2, "MDS"}, {3, "t-SNE"}, {4, "IsoMap"}, {5, "PCA"}};
+
   pArray = PyArray_SimpleNewFromData(
     numberOfDimensions, dimensions, NPY_DOUBLE, matrix_);
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!pArray) {
-    cerr << "[DimensionReduction] Python error: failed to convert the array."
-         << endl;
+    this->printErr("Python: failed to convert the array.");
     goto collect_garbage;
   }
 #endif
@@ -125,8 +124,7 @@ int DimensionReduction::execute() const {
   pSys = PyImport_ImportModule("sys");
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!pSys) {
-    cerr << "[DimensionReduction] Python error: failed to load the sys module."
-         << endl;
+    this->printErr("Python: failed to load the sys module.");
     goto collect_garbage;
   }
 #endif
@@ -135,9 +133,7 @@ int DimensionReduction::execute() const {
   pPath = PyObject_GetAttrString(pSys, "path");
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!pPath) {
-    cerr
-      << "[DimensionReduction] Python error: failed to get the path variable."
-      << endl;
+    this->printErr("Python: failed to get the path variable.");
     goto collect_garbage;
   }
 #endif
@@ -148,21 +144,14 @@ int DimensionReduction::execute() const {
   else
     modulePath = modulePath_;
 
-  {
-    stringstream msg;
-    msg << "[DimensionReduction] Loading Python script from: " << modulePath
-        << endl;
-    dMsg(cout, msg.str(), infoMsg);
-  }
+  this->printMsg("Loading Python script from: " + modulePath);
   PyList_Append(pPath, PyUnicode_FromString(modulePath.data()));
 
   // set other parameters
   pNumberOfComponents = PyLong_FromLong(numberOfComponents);
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!pNumberOfComponents) {
-    cerr << "[DimensionReduction] Python error: cannot convert "
-            "pNumberOfComponents."
-         << endl;
+    this->printErr("Python: cannot convert pNumberOfComponents.");
     goto collect_garbage;
   }
 #endif
@@ -171,9 +160,7 @@ int DimensionReduction::execute() const {
   pNumberOfNeighbors = PyLong_FromLong(numberOfNeighbors);
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!pNumberOfNeighbors) {
-    cerr
-      << "[DimensionReduction] Python error: cannot convert pNumberOfNeighbors."
-      << endl;
+    this->printErr("Python: cannot convert pNumberOfNeighbors.");
     goto collect_garbage;
   }
 #endif
@@ -182,8 +169,7 @@ int DimensionReduction::execute() const {
   pMethod = PyLong_FromLong(method_);
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!pMethod) {
-    cerr << "[DimensionReduction] Python error: cannot convert pMethod."
-         << endl;
+    this->printErr("Python: cannot convert pMethod.");
     goto collect_garbage;
   }
 #endif
@@ -192,7 +178,7 @@ int DimensionReduction::execute() const {
   pJobs = PyLong_FromLong(threadNumber_);
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!pJobs) {
-    cerr << "[DimensionReduction] Python error: cannot convert pJobs." << endl;
+    this->printErr("Python: cannot convert pJobs.");
     goto collect_garbage;
   }
 #endif
@@ -200,9 +186,7 @@ int DimensionReduction::execute() const {
   pIsDeterministic = PyLong_FromLong(randomState_);
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!pIsDeterministic) {
-    cerr
-      << "[DimensionReduction] Python error: cannot convert pIsDeterministic."
-      << endl;
+    this->printErr("Python: cannot convert pIsDeterministic.");
     goto collect_garbage;
   }
 #endif
@@ -211,8 +195,7 @@ int DimensionReduction::execute() const {
   pName = PyUnicode_FromString(moduleName_.data());
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!pName) {
-    cerr << "[DimensionReduction] Python error: moduleName parsing failed."
-         << endl;
+    this->printErr("Python: moduleName parsing failed.");
     goto collect_garbage;
   }
 #endif
@@ -221,7 +204,7 @@ int DimensionReduction::execute() const {
   pModule = PyImport_Import(pName);
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!pModule) {
-    cerr << "[DimensionReduction] Python error: module import failed." << endl;
+    this->printErr("Python: module import failed.");
     goto collect_garbage;
   }
 #endif
@@ -231,13 +214,12 @@ int DimensionReduction::execute() const {
   pFunc = PyObject_GetAttrString(pModule, functionName_.data());
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!pFunc) {
-    cerr << "[DimensionReduction] Python error: functionName parsing failed."
-         << endl;
+    this->printErr("Python: functionName parsing failed.");
     goto collect_garbage;
   }
 
   if(!PyCallable_Check(pFunc)) {
-    cerr << "[DimensionReduction] Python error: function call failed." << endl;
+    this->printErr("Python: function call failed.");
     goto collect_garbage;
   }
 #endif
@@ -309,9 +291,7 @@ int DimensionReduction::execute() const {
     pIsDeterministic, pParams, NULL);
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!pReturn) {
-    cerr
-      << "[DimensionReduction] Python error: function returned invalid object."
-      << endl;
+    this->printErr("Python: function returned invalid object.");
     goto collect_garbage;
   }
 #endif
@@ -320,9 +300,7 @@ int DimensionReduction::execute() const {
   pNRows = PyList_GetItem(pReturn, 0);
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!pNRows) {
-    cerr
-      << "[DimensionReduction] Python error: function returned invalid number "
-      << "of rows." << endl;
+    this->printErr("Python: function returned invalid number of rows");
     goto collect_garbage;
   }
 #endif
@@ -330,8 +308,7 @@ int DimensionReduction::execute() const {
   pNColumns = PyList_GetItem(pReturn, 1);
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!pNColumns) {
-    cerr << "[DimensionReduction] Python error: function returned invalid "
-         << "number of columns." << endl;
+    this->printErr("Python: function returned invalid number of columns.");
     goto collect_garbage;
   }
 #endif
@@ -339,8 +316,7 @@ int DimensionReduction::execute() const {
   pEmbedding = PyList_GetItem(pReturn, 2);
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!pEmbedding) {
-    cerr << "[DimensionReduction] Python error: function returned invalid"
-         << " embedding data." << endl;
+    this->printErr("Python: function returned invalid embedding data.");
     goto collect_garbage;
   }
 #endif
@@ -367,32 +343,8 @@ int DimensionReduction::execute() const {
   for(auto i : gc)
     Py_DECREF(i);
 
-  {
-    stringstream msg;
-    msg << "[DimensionReduction] ";
-    switch(method_) {
-      case 0:
-        msg << "SE";
-        break;
-      case 1:
-        msg << "LLE";
-        break;
-      case 2:
-        msg << "MDS";
-        break;
-      case 3:
-        msg << "t-SNE";
-        break;
-      case 4:
-        msg << "IsoMap";
-        break;
-      case 5:
-        msg << "PCA";
-        break;
-    }
-    msg << " computed in " << t.getElapsedTime() << " s." << endl;
-    dMsg(cout, msg.str(), timeMsg);
-  }
+  this->printMsg("Computed " + methodToString[this->method_], 1.0,
+                 t.getElapsedTime(), this->threadNumber_);
 
   return 0;
 
