@@ -33,6 +33,7 @@
 /// \sa ttk::PersistenceCurve
 #ifndef _TTK_PERSISTENCECURVE_H
 #define _TTK_PERSISTENCECURVE_H
+#pragma once
 
 // VTK includes
 #include <vtkDataArray.h>
@@ -50,8 +51,6 @@
 // ttk code includes
 #include <PersistenceCurve.h>
 #include <ttkAlgorithm.h>
-#include <ttkMacros.h>
-#include <ttkUtils.h>
 
 class TTKPERSISTENCECURVE_EXPORT ttkPersistenceCurve
   : public ttkAlgorithm,
@@ -107,104 +106,5 @@ private:
                const void *inputOffsets,
                const TTK_TT *triangulation);
 };
-
-template <typename vtkArrayType, typename scalarType>
-int ttkPersistenceCurve::getPersistenceCurve(
-  vtkTable *outputCurve,
-  ttk::ftm::TreeType treeType,
-  const std::vector<std::pair<scalarType, ttk::SimplexId>> &plot) {
-  const ttk::SimplexId numberOfPairs = plot.size();
-
-  vtkSmartPointer<vtkArrayType> persistenceScalars
-    = vtkSmartPointer<vtkArrayType>::New();
-  vtkSmartPointer<ttkSimplexIdTypeArray> numberOfPairsScalars
-    = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
-
-  switch(treeType) {
-    case ttk::ftm::TreeType::Join:
-      persistenceScalars->SetName("Persistence (minimum-saddle pairs)");
-      numberOfPairsScalars->SetName("Number Of Pairs (minimum-saddle pairs)");
-      break;
-
-    case ttk::ftm::TreeType::Split:
-      persistenceScalars->SetName("Persistence (maximum-saddle pairs)");
-      numberOfPairsScalars->SetName("Number Of Pairs (maximum-saddle pairs)");
-      break;
-
-    case ttk::ftm::TreeType::Join_Split:
-    case ttk::ftm::TreeType::Contour:
-      persistenceScalars->SetName("Persistence (all pairs)");
-      numberOfPairsScalars->SetName("Number Of Pairs (all pairs)");
-      break;
-  }
-
-  vtkSmartPointer<vtkTable> persistenceCurve = vtkSmartPointer<vtkTable>::New();
-
-  if(numberOfPairs) {
-    persistenceScalars->SetNumberOfTuples(numberOfPairs);
-    numberOfPairsScalars->SetNumberOfTuples(numberOfPairs);
-    persistenceCurve->SetNumberOfRows(numberOfPairs);
-
-    for(ttk::SimplexId i = 0; i < numberOfPairs; ++i) {
-      persistenceScalars->SetTuple1(i, plot[i].first);
-      numberOfPairsScalars->SetTuple1(i, plot[i].second);
-    }
-
-    persistenceCurve->AddColumn(persistenceScalars);
-    persistenceCurve->AddColumn(numberOfPairsScalars);
-
-    switch(treeType) {
-      case ttk::ftm::TreeType::Join:
-        outputCurve->ShallowCopy(persistenceCurve);
-        break;
-
-      case ttk::ftm::TreeType::Split:
-        outputCurve->ShallowCopy(persistenceCurve);
-        break;
-
-      case ttk::ftm::TreeType::Join_Split:
-      case ttk::ftm::TreeType::Contour:
-        outputCurve->ShallowCopy(persistenceCurve);
-        break;
-    }
-  }
-
-  return 0;
-}
-
-template <typename vtkArrayType, typename scalarType>
-int ttkPersistenceCurve::getMSCPersistenceCurve(
-  vtkTable *outputMSCPersistenceCurve,
-  const std::vector<std::pair<scalarType, ttk::SimplexId>> &plot) {
-  const ttk::SimplexId numberOfPairs = plot.size();
-
-  vtkSmartPointer<vtkArrayType> persistenceScalars
-    = vtkSmartPointer<vtkArrayType>::New();
-  vtkSmartPointer<ttkSimplexIdTypeArray> numberOfPairsScalars
-    = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
-
-  persistenceScalars->SetName("Persistence (saddle-saddle pairs)");
-  numberOfPairsScalars->SetName("Number Of Pairs (saddle-saddle pairs)");
-
-  vtkSmartPointer<vtkTable> persistenceCurve = vtkSmartPointer<vtkTable>::New();
-
-  if(numberOfPairs) {
-    persistenceScalars->SetNumberOfTuples(numberOfPairs);
-    numberOfPairsScalars->SetNumberOfTuples(numberOfPairs);
-    persistenceCurve->SetNumberOfRows(numberOfPairs);
-
-    for(ttk::SimplexId i = 0; i < numberOfPairs; ++i) {
-      persistenceScalars->SetTuple1(i, plot[i].first);
-      numberOfPairsScalars->SetTuple1(i, plot[i].second);
-    }
-
-    persistenceCurve->AddColumn(persistenceScalars);
-    persistenceCurve->AddColumn(numberOfPairsScalars);
-
-    outputMSCPersistenceCurve->ShallowCopy(persistenceCurve);
-  }
-
-  return 0;
-}
 
 #endif // _TTK_PERSISTENCECURVE_H
