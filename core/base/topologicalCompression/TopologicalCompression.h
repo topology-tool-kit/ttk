@@ -27,6 +27,7 @@
 #include <cstring>
 #include <iostream>
 #include <stack>
+#include <type_traits>
 
 #ifdef TTK_ENABLE_ZLIB
 #include <zlib.h>
@@ -181,13 +182,51 @@ namespace ttk {
       return std::get<1>(a) < std::get<1>(b);
     };
 
-    static bool ReadBool(FILE *fm);
-    static int ReadInt(FILE *fm);
-    static double ReadDouble(FILE *fm);
-    static unsigned long ReadUnsignedLong(FILE *fm);
-    static void
-      ReadUnsignedCharArray(FILE *fm, unsigned char *buffer, size_t length);
-    static void ReadCharArray(FILE *fm, char *buffer, size_t length);
+    template <typename T>
+    static T Read(FILE *fm) {
+      static_assert(std::is_same<T, bool>() || std::is_same<T, int>()
+                      || std::is_same<T, unsigned long>()
+                      || std::is_same<T, double>(),
+                    "Function should have only those types");
+      T ret;
+      const auto status = std::fread(&ret, sizeof(T), 1, fm);
+      if(status == 0) {
+        ttk::Debug dbg;
+        dbg.printErr("Error reading " + std::string(typeid(T).name()) + "!");
+      }
+      return ret;
+    }
+    template <typename T>
+    static void ReadByteArray(FILE *fm, T *buffer, size_t length) {
+      const auto status = std::fread(buffer, sizeof(T), length, fm);
+      if(status == 0) {
+        ttk::Debug dbg;
+        dbg.printErr("Error reading " + std::string(typeid(T).name())
+                     + "array!");
+      }
+    }
+    template <typename T>
+    static void Write(FILE *fm, T data) {
+      static_assert(std::is_same<T, bool>() || std::is_same<T, int>()
+                      || std::is_same<T, unsigned long>()
+                      || std::is_same<T, double>(),
+                    "Function should have only those types");
+      auto status = std::fwrite(&data, sizeof(T), 1, fm);
+      if(status == 0) {
+        ttk::Debug dbg;
+        dbg.printErr("Error writing " + std::string(typeid(T).name()) + "!");
+      }
+    }
+    template <typename T>
+    static void WriteByteArray(FILE *fm, const T *buffer, size_t length) {
+      const auto status = std::fwrite(buffer, sizeof(T), length, fm);
+      if(status == 0) {
+        ttk::Debug dbg;
+        dbg.printErr("Error writing " + std::string(typeid(T).name())
+                     + "array!");
+      }
+    }
+
     static int ReadCompactSegmentation(FILE *fm,
                                        std::vector<int> &segmentation,
                                        int &numberOfVertices,
@@ -205,14 +244,6 @@ namespace ttk {
     template <typename dataType>
     int ReadFromFile(FILE *fm);
 
-    static void WriteBool(FILE *fm, bool b);
-    static void WriteInt(FILE *fm, int i);
-    static void WriteDouble(FILE *fm, double d);
-    static void WriteUnsignedLong(FILE *fm, unsigned long ul);
-    static void
-      WriteUnsignedCharArray(FILE *fm, unsigned char *buffer, size_t length);
-    static void
-      WriteConstCharArray(FILE *fm, const char *buffer, size_t length);
     static int WriteCompactSegmentation(FILE *fm,
                                         const std::vector<int> &segmentation,
                                         int numberOfVertices,
@@ -440,9 +471,9 @@ int ttk::TopologicalCompression::WriteToFile(FILE *fp,
                         zfpBitBudget, dataArrayName);
 
 #ifdef TTK_ENABLE_ZLIB
-  WriteBool(fp, true);
+  Write(fp, true);
 #else
-  WriteBool(fp, false);
+  Write(fp, false);
 #endif
 
   bool usePersistence
@@ -524,9 +555,9 @@ int ttk::TopologicalCompression::WriteToFile(FILE *fp,
   this->printMsg("Data successfully compressed.");
 
   // [fm->fp] Copy fm to fp.
-  WriteUnsignedLong(fp, destLen); // Compressed size...
-  WriteUnsignedLong(fp, sourceLen);
-  WriteUnsignedCharArray(fp, dest, destLen);
+  Write(fp, destLen); // Compressed size...
+  Write(fp, sourceLen);
+  WriteByteArray(fp, dest, destLen);
   this->printMsg("Data successfully written to filesystem.");
 
 #else
@@ -535,9 +566,9 @@ int ttk::TopologicalCompression::WriteToFile(FILE *fp,
   unsigned long sourceLen = (unsigned long)rawFileLength;
   unsigned long destLen = (unsigned long)rawFileLength;
 
-  WriteUnsignedLong(fp, destLen); // Compressed size...
-  WriteUnsignedLong(fp, sourceLen);
-  WriteUnsignedCharArray(fp, source, destLen);
+  Write(fp, destLen); // Compressed size...
+  Write(fp, sourceLen);
+  WriteByteArray(fp, source, destLen);
 #endif
 
   fflush(fp);
@@ -561,16 +592,16 @@ int ttk::TopologicalCompression::WriteMetaData(
   const std::string &dataArrayName) {
 
   // -4. Magic bytes
-  WriteConstCharArray(fp, magicBytes_, std::strlen(magicBytes_));
+  WriteByteArray(fp, magicBytes_, std::strlen(magicBytes_));
 
   // -3. File format version
-  WriteUnsignedLong(fp, formatVersion_);
+  Write(fp, formatVersion_);
 
   // -2. Persistence, or Other
-  WriteInt(fp, compressionType);
+  Write(fp, compressionType);
 
   // -1. zfpOnly
-  WriteBool(fp, zfpOnly);
+  Write(fp, zfpOnly);
 
   // 0. SQ type
   const char *sq = sqMethod;
@@ -580,32 +611,32 @@ int ttk::TopologicalCompression::WriteMetaData(
                      ? 1
                      : (strcmp(sq, "d") == 0 || strcmp(sq, "D") == 0) ? 2 : 3;
 
-  WriteInt(fp, sqType);
+  Write(fp, sqType);
 
   // 1. DataType
-  WriteInt(fp, dataType);
+  Write(fp, dataType);
 
   // 2. Data extent, spacing, origin
   for(int i = 0; i < 6; ++i)
-    WriteInt(fp, dataExtent[i]);
+    Write(fp, dataExtent[i]);
 
   for(int i = 0; i < 3; ++i)
-    WriteDouble(fp, dataSpacing[i]);
+    Write(fp, dataSpacing[i]);
 
   for(int i = 0; i < 3; ++i)
-    WriteDouble(fp, dataOrigin[i]);
+    Write(fp, dataOrigin[i]);
 
   // 4. Tolerance
-  WriteDouble(fp, tolerance);
+  Write(fp, tolerance);
 
   // 5. ZFP ratio
-  WriteDouble(fp, zfpBitBudget);
+  Write(fp, zfpBitBudget);
 
   // 6. Length of array name
-  WriteUnsignedLong(fp, dataArrayName.size());
+  Write(fp, dataArrayName.size());
 
   // 7. Array name (as unsigned chars)
-  WriteConstCharArray(fp, dataArrayName.c_str(), dataArrayName.size());
+  WriteByteArray(fp, dataArrayName.c_str(), dataArrayName.size());
 
   this->printMsg("Metadata successfully written.");
 
@@ -623,7 +654,7 @@ int ttk::TopologicalCompression::ReadFromFile(FILE *fp) {
     return -4;
   }
 
-  bool useZlib = ReadBool(fp);
+  bool useZlib = Read<bool>(fp);
   unsigned char *dest;
   std::vector<unsigned char> ddest;
   unsigned long destLen;
@@ -631,14 +662,14 @@ int ttk::TopologicalCompression::ReadFromFile(FILE *fp) {
 #ifdef TTK_ENABLE_ZLIB
   if(useZlib) {
     // [fp->ff] Read compressed data.
-    uLongf sl = ReadUnsignedLong(fp); // Compressed size...
-    uLongf dl = ReadUnsignedLong(fp); // Uncompressed size...
+    uLongf sl = Read<unsigned long>(fp); // Compressed size...
+    uLongf dl = Read<unsigned long>(fp); // Uncompressed size...
 
     unsigned long sourceLen = (uLongf)sl;
     destLen = dl;
     std::vector<Bytef> ssource(sl);
     Bytef *source = ssource.data();
-    ReadUnsignedCharArray(fp, source, sl);
+    ReadByteArray(fp, source, sl);
     this->printMsg("Successfully read compressed data.");
 
     // [ff->fm] Decompress data.
@@ -650,13 +681,13 @@ int ttk::TopologicalCompression::ReadFromFile(FILE *fp) {
   } else {
     this->printMsg("File was not compressed with ZLIB.");
 
-    ReadUnsignedLong(fp); // Compressed size...
-    unsigned long dl = ReadUnsignedLong(fp); // Uncompressed size...
+    Read<unsigned long>(fp); // Compressed size...
+    unsigned long dl = Read<unsigned long>(fp); // Uncompressed size...
 
     destLen = dl;
     ddest.resize(destLen);
     dest = ddest.data();
-    ReadUnsignedCharArray(fp, dest, destLen);
+    ReadByteArray(fp, dest, destLen);
   }
 #else
   if(useZlib) {
@@ -666,13 +697,13 @@ int ttk::TopologicalCompression::ReadFromFile(FILE *fp) {
   } else {
     this->printMsg(" ZLIB not installed, but file was not compressed anyways.");
 
-    ReadUnsignedLong(fp); // Compressed size...
-    unsigned long dl = ReadUnsignedLong(fp); // Uncompressed size...
+    Read<unsigned long>(fp); // Compressed size...
+    unsigned long dl = Read<unsigned long>(fp); // Uncompressed size...
 
     destLen = dl;
     ddest.resize(destLen);
     dest = ddest.data();
-    ReadUnsignedCharArray(fp, dest, destLen);
+    ReadByteArray(fp, dest, destLen);
   }
 #endif
 
@@ -732,7 +763,7 @@ int ttk::TopologicalCompression::ReadMetaData(FILE *fm) {
   const auto magicBytesLen{std::strlen(magicBytes_)};
   std::vector<char> mBytes(magicBytesLen + 1);
   mBytes[magicBytesLen] = '\0'; // NULL-termination
-  ReadCharArray(fm, mBytes.data(), magicBytesLen);
+  ReadByteArray(fm, mBytes.data(), magicBytesLen);
 
   // To deal with pre-v1 file format (without scalar field array name)
   bool hasMagicBytes = strcmp(mBytes.data(), magicBytes_) == 0;
@@ -748,37 +779,37 @@ int ttk::TopologicalCompression::ReadMetaData(FILE *fm) {
   // -3. File format version
   unsigned long version = 0;
   if(hasMagicBytes) {
-    version = ReadUnsignedLong(fm);
+    version = Read<unsigned long>(fm);
   }
 
   // -2. Compression type.
-  compressionType_ = ReadInt(fm);
+  compressionType_ = Read<int>(fm);
 
   // -1. ZFP only type.
-  zfpOnly_ = ReadBool(fm);
+  zfpOnly_ = Read<bool>(fm);
 
   // 0. SQ type
-  sqMethodInt_ = ReadInt(fm);
+  sqMethodInt_ = Read<int>(fm);
 
   // 1. DataType
-  dataScalarType_ = ReadInt(fm);
+  dataScalarType_ = Read<int>(fm);
   // DataScalarType = VTK_DOUBLE;
 
   // 2. Data extent, spacing, origin
   for(int i = 0; i < 6; ++i)
-    dataExtent_[i] = ReadInt(fm);
+    dataExtent_[i] = Read<int>(fm);
 
   for(int i = 0; i < 3; ++i)
-    dataSpacing_[i] = ReadDouble(fm);
+    dataSpacing_[i] = Read<double>(fm);
 
   for(int i = 0; i < 3; ++i)
-    dataOrigin_[i] = ReadDouble(fm);
+    dataOrigin_[i] = Read<double>(fm);
 
   // 4. Error tolerance (relative percentage)
-  tolerance_ = ReadDouble(fm);
+  tolerance_ = Read<double>(fm);
 
   // 5. Lossy compressor ratio
-  zfpBitBudget_ = ReadDouble(fm);
+  zfpBitBudget_ = Read<double>(fm);
 
   if(version == 0) {
     // Pre-v1 format has no scalar field array name
@@ -786,12 +817,12 @@ int ttk::TopologicalCompression::ReadMetaData(FILE *fm) {
   }
 
   // 6. Length of array name
-  size_t dataArrayNameLength = ReadUnsignedLong(fm);
+  size_t dataArrayNameLength = Read<unsigned long>(fm);
 
   // 7. Array name (as unsigned chars)
   dataArrayName_.resize(dataArrayNameLength + 1);
   dataArrayName_[dataArrayNameLength] = '\0'; // NULL-termination
-  ReadCharArray(fm, dataArrayName_.data(), dataArrayNameLength);
+  ReadByteArray(fm, dataArrayName_.data(), dataArrayNameLength);
 
   return 0;
 }

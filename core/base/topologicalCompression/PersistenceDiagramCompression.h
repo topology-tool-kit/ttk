@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include <TopologicalCompression.h>
+
 template <typename dataType>
 int ttk::TopologicalCompression::ComputeTotalSizeForPersistenceDiagram(
   std::vector<std::tuple<double, int>> &mapping,
@@ -52,10 +54,10 @@ int ttk::TopologicalCompression::WritePersistenceTopology(FILE *fm) {
     return -1;
 
   numberOfBytesWritten += sizeof(int);
-  WriteInt(fm, numberOfVertices);
+  Write(fm, numberOfVertices);
 
   numberOfBytesWritten += sizeof(int);
-  WriteInt(fm, numberOfSegments);
+  Write(fm, numberOfSegments);
 
   numberOfBytesWritten += WriteCompactSegmentation(
     fm, getSegmentation(), numberOfVertices, numberOfSegments);
