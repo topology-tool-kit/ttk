@@ -16,16 +16,14 @@
 
 #pragma once
 
-#include <Triangulation.h>
-#include <Wrapper.h>
+#include <Debug.h>
 
 namespace ttk {
 
-  class DimensionReduction : public Debug {
+  class DimensionReduction : virtual public Debug {
 
   public:
     DimensionReduction();
-    ~DimensionReduction();
 
     inline int setSEParameters(std::string &Affinity,
                                float Gamma,
@@ -188,66 +186,66 @@ namespace ttk {
 
   protected:
     // se
-    std::string se_Affinity;
-    float se_Gamma;
-    std::string se_EigenSolver;
+    std::string se_Affinity{};
+    float se_Gamma{};
+    std::string se_EigenSolver{};
 
     // lle
-    float lle_Regularization;
-    std::string lle_EigenSolver;
-    float lle_Tolerance;
-    int lle_MaxIteration;
-    std::string lle_Method;
-    float lle_HessianTolerance;
-    float lle_ModifiedTolerance;
-    std::string lle_NeighborsAlgorithm;
+    float lle_Regularization{};
+    std::string lle_EigenSolver{};
+    float lle_Tolerance{};
+    int lle_MaxIteration{};
+    std::string lle_Method{};
+    float lle_HessianTolerance{};
+    float lle_ModifiedTolerance{};
+    std::string lle_NeighborsAlgorithm{};
 
     // mds
-    bool mds_Metric;
-    int mds_Init;
-    int mds_MaxIteration;
-    int mds_Verbose;
-    float mds_Epsilon;
-    std::string mds_Dissimilarity;
+    bool mds_Metric{};
+    int mds_Init{};
+    int mds_MaxIteration{};
+    int mds_Verbose{};
+    float mds_Epsilon{};
+    std::string mds_Dissimilarity{};
 
     // tsne
-    float tsne_Perplexity;
-    float tsne_Exaggeration;
-    float tsne_LearningRate;
-    int tsne_MaxIteration;
-    int tsne_MaxIterationProgress;
-    float tsne_GradientThreshold;
-    std::string tsne_Metric;
-    std::string tsne_Init;
-    int tsne_Verbose;
-    std::string tsne_Method;
-    float tsne_Angle;
+    float tsne_Perplexity{};
+    float tsne_Exaggeration{};
+    float tsne_LearningRate{};
+    int tsne_MaxIteration{};
+    int tsne_MaxIterationProgress{};
+    float tsne_GradientThreshold{};
+    std::string tsne_Metric{};
+    std::string tsne_Init{};
+    int tsne_Verbose{};
+    std::string tsne_Method{};
+    float tsne_Angle{};
 
     // iso
-    std::string iso_EigenSolver;
-    float iso_Tolerance;
-    int iso_MaxIteration;
-    std::string iso_PathMethod;
-    std::string iso_NeighborsAlgorithm;
+    std::string iso_EigenSolver{};
+    float iso_Tolerance{};
+    int iso_MaxIteration{};
+    std::string iso_PathMethod{};
+    std::string iso_NeighborsAlgorithm{};
 
     // pca
-    bool pca_Copy;
-    bool pca_Whiten;
-    std::string pca_SVDSolver;
-    float pca_Tolerance;
-    std::string pca_MaxIteration;
+    bool pca_Copy{};
+    bool pca_Whiten{};
+    std::string pca_SVDSolver{};
+    float pca_Tolerance{};
+    std::string pca_MaxIteration{};
 
-    std::string modulePath_;
-    std::string moduleName_;
-    std::string functionName_;
-    SimplexId numberOfRows_;
-    SimplexId numberOfColumns_;
-    int method_;
-    int numberOfComponents_;
-    int numberOfNeighbors_;
-    int randomState_;
-    void *matrix_;
-    std::vector<std::vector<double>> *embedding_;
-    char majorVersion_;
+    std::string modulePath_{};
+    std::string moduleName_{};
+    std::string functionName_{};
+    SimplexId numberOfRows_{0};
+    SimplexId numberOfColumns_{0};
+    int method_{};
+    int numberOfComponents_{0};
+    int numberOfNeighbors_{0};
+    int randomState_{0};
+    void *matrix_{};
+    std::vector<std::vector<double>> *embedding_{};
+    char majorVersion_{'0'};
   };
 } // namespace ttk

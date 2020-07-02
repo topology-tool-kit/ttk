@@ -11,10 +11,9 @@
 using namespace std;
 using namespace ttk;
 
-DimensionReduction::DimensionReduction()
-  : numberOfRows_{0}, numberOfColumns_{0}, numberOfComponents_{0},
-    numberOfNeighbors_{0}, randomState_{0}, matrix_{nullptr},
-    embedding_{nullptr}, majorVersion_{'0'} {
+DimensionReduction::DimensionReduction() {
+  this->setDebugMsgPrefix("DimensionReduction");
+
 #ifdef TTK_ENABLE_SCIKIT_LEARN
   auto finalize_callback = []() { Py_Finalize(); };
 
@@ -36,9 +35,6 @@ DimensionReduction::DimensionReduction()
 
   majorVersion_ = version[0];
 #endif
-}
-
-DimensionReduction::~DimensionReduction() {
 }
 
 bool DimensionReduction::isPythonFound() const {
