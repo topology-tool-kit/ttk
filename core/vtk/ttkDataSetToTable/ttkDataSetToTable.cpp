@@ -51,6 +51,9 @@ int ttkDataSetToTable::RequestData(vtkInformation *request,
                  ttk::debug::LineMode::REPLACE);
 
   auto input = vtkDataSet::GetData(inputVector[0]);
+  if(!input)
+    return 0;
+
   auto targetData = this->DataAssociation == 0
                       ? input->GetPointData()
                       : this->DataAssociation == 1 ? input->GetCellData()
