@@ -20,8 +20,7 @@
 /// \sa ttk::Triangulation
 /// \sa ttkMorseSmaleComplex.cpp %for a usage example.
 
-#ifndef _MORSESMALECOMPLEX_H
-#define _MORSESMALECOMPLEX_H
+#pragma once
 
 // base code includes
 #include <MorseSmaleComplex2D.h>
@@ -179,7 +178,7 @@
 
 namespace ttk {
 
-  class MorseSmaleComplex {
+  class MorseSmaleComplex : public virtual Debug {
 
   public:
     MorseSmaleComplex();
@@ -263,21 +262,15 @@ namespace ttk {
         ->setSaddleConnectorsPersistenceThreshold(threshold);
     }
 
-    int setupTriangulation(Triangulation *const data) {
+    inline void preconditionTriangulation(AbstractTriangulation *const data) {
       dimensionality_ = data->getCellVertexNumber(0) - 1;
-
-      switch(dimensionality_) {
-        case 2:
-          abstractMorseSmaleComplex_ = &morseSmaleComplex2D_;
-          break;
-
-        case 3:
-          abstractMorseSmaleComplex_ = &morseSmaleComplex3D_;
-          break;
+      if(dimensionality_ == 2) {
+        abstractMorseSmaleComplex_ = &morseSmaleComplex2D_;
+      } else if(dimensionality_ == 3) {
+        abstractMorseSmaleComplex_ = &morseSmaleComplex3D_;
       }
 
-      abstractMorseSmaleComplex_->setupTriangulation(data);
-      return 0;
+      abstractMorseSmaleComplex_->preconditionTriangulation(data);
     }
 
     inline int setDebugLevel(const int &debugLevel) {
@@ -422,26 +415,24 @@ namespace ttk {
       return 0;
     }
 
-    template <typename dataType, typename idType>
-    int execute() {
+    template <typename dataType, typename idType, typename triangulationType>
+    int execute(const triangulationType &triangulation) {
       switch(dimensionality_) {
         case 2:
-          morseSmaleComplex2D_.execute<dataType, idType>();
+          morseSmaleComplex2D_.execute<dataType, idType>(triangulation);
           break;
 
         case 3:
-          morseSmaleComplex3D_.execute<dataType, idType>();
+          morseSmaleComplex3D_.execute<dataType, idType>(triangulation);
           break;
       }
       return 0;
     }
 
   protected:
-    int dimensionality_;
-    AbstractMorseSmaleComplex *abstractMorseSmaleComplex_;
-    MorseSmaleComplex2D morseSmaleComplex2D_;
-    MorseSmaleComplex3D morseSmaleComplex3D_;
+    int dimensionality_{};
+    AbstractMorseSmaleComplex *abstractMorseSmaleComplex_{};
+    MorseSmaleComplex2D morseSmaleComplex2D_{};
+    MorseSmaleComplex3D morseSmaleComplex3D_{};
   };
 } // namespace ttk
-
-#endif // MORSESMALECOMPLEX_H
