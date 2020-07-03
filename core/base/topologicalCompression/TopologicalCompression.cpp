@@ -19,17 +19,7 @@ int ttk::TopologicalCompression::CompressWithZFP(FILE *file,
                                                  int ny,
                                                  int nz,
                                                  double rate) {
-  return ttk::TopologicalCompression::compressZFPInternal(
-    array.data(), nx, ny, nz, rate, decompress, file);
-}
 
-int ttk::TopologicalCompression::compressZFPInternal(double *array,
-                                                     int nx,
-                                                     int ny,
-                                                     int nz,
-                                                     double rate,
-                                                     bool decompress,
-                                                     FILE *file) {
   int status = 0; // return value: 0 = success
   zfp_type type; // array scalar type
   zfp_field *field; // array meta data
@@ -55,10 +45,11 @@ int ttk::TopologicalCompression::compressZFPInternal(double *array,
   type = zfp_type_double;
 
   if(is2D) {
-    field = zfp_field_2d(array, type, (unsigned int)n1, (unsigned int)n2);
+    field
+      = zfp_field_2d(array.data(), type, (unsigned int)n1, (unsigned int)n2);
   } else {
     field = zfp_field_3d(
-      array, type, (unsigned int)nx, (unsigned int)ny, (unsigned int)nz);
+      array.data(), type, (unsigned int)nx, (unsigned int)ny, (unsigned int)nz);
   }
 
   // allocate meta data for a compressed stream

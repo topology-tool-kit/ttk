@@ -310,16 +310,6 @@ namespace ttk {
 #endif
 
   private:
-#ifdef TTK_ENABLE_ZFP
-    static int compressZFPInternal(double *array,
-                                   int nx,
-                                   int ny,
-                                   int nz,
-                                   double rate,
-                                   bool decompress,
-                                   FILE *file);
-#endif
-
     // Internal read/write.
 
     template <typename dataType>
