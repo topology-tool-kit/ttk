@@ -46,9 +46,6 @@ function(ttk_set_paraview_rpath TARGET_NAME)
       PROPERTIES
         INSTALL_RPATH "@loader_path/${TTK_PLUGIN_SUBDIR};${TEMP}"
     )
-    get_target_property(TEMPTWO
-        ${TARGET_NAME} INSTALL_RPATH
-        )
   endif(APPLE)
 endfunction(ttk_set_paraview_rpath TTK_NAME)
 
