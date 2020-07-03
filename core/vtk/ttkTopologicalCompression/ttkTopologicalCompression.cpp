@@ -79,17 +79,10 @@ int ttkTopologicalCompression::RequestData(vtkInformation *request,
   // variable 'output' with the result of the computation.
   // if your wrapper produces an output of the same type of the input, you
   // should proceed in the same way.
-  vtkDataArray *inputScalarField = nullptr;
-
-  if(ScalarField.length()) {
-    inputScalarField = input->GetPointData()->GetArray(ScalarField.data());
-    this->printMsg("Starting computation on field '" + ScalarField + "'...");
-  } else {
-    inputScalarField = input->GetPointData()->GetArray(ScalarFieldId);
-  }
+  const auto inputScalarField = this->GetInputArrayToProcess(0, inputVector);
 
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(!inputScalarField) {
+  if(inputScalarField == nullptr) {
     this->printErr("Input scalar field pointer is NULL.");
     return -1;
   }

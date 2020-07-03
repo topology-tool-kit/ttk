@@ -11,6 +11,14 @@
 /// \param Input Input scalar field (vtkDataSet)
 /// \param Output Output scalar field (vtkDataSet)
 ///
+/// The input data array needs to be specified via the standard VTK call
+/// vtkAlgorithm::SetInputArrayToProcess() with the following parameters:
+/// \param idx 0 (FIXED: the first array the algorithm requires)
+/// \param port 0 (FIXED: first port)
+/// \param connection 0 (FIXED: first connection)
+/// \param fieldAssociation 0 (FIXED: point data)
+/// \param arrayName (DYNAMIC: string identifier of the input array)
+///
 /// This filter can be used as any other VTK filter (for instance, by using the
 /// sequence of calls SetInputData(), Update(), GetOutput()).
 ///
@@ -35,13 +43,6 @@ class TTKTOPOLOGICALCOMPRESSION_EXPORT ttkTopologicalCompression
 public:
   static ttkTopologicalCompression *New();
   vtkTypeMacro(ttkTopologicalCompression, ttkAlgorithm);
-
-  // Set/Get macros (arguments)
-  vtkSetMacro(ScalarField, std::string);
-  vtkGetMacro(ScalarField, std::string);
-
-  vtkSetMacro(ScalarFieldId, int);
-  vtkGetMacro(ScalarFieldId, int);
 
   vtkSetMacro(Tolerance, double);
   vtkGetMacro(Tolerance, double);
@@ -79,8 +80,4 @@ protected:
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;
-
-private:
-  std::string ScalarField{};
-  int ScalarFieldId{0};
 };
