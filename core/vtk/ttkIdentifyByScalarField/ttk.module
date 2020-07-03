@@ -5,4 +5,4 @@ SOURCES
 HEADERS
   ttkIdentifyByScalarField.h
 DEPENDS
-  ttkTriangulationAlgorithm
+  ttkAlgorithm

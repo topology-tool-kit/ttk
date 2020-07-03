@@ -83,12 +83,11 @@ int ttkLDistanceMatrix::RequestData(vtkInformation * /*request*/,
 
   std::vector<void *> inputPtrs(nInputs);
   for(size_t i = 0; i < nInputs; ++i) {
-    inputPtrs[i] = ttkUtils::GetVoidPointer(
-      inputData[i]->GetPointData()->GetArray(this->ScalarField.data()));
+    inputPtrs[i]
+      = ttkUtils::GetVoidPointer(this->GetInputArrayToProcess(0, inputData[i]));
   }
 
-  const auto firstField
-    = inputData[0]->GetPointData()->GetArray(this->ScalarField.data());
+  const auto firstField = this->GetInputArrayToProcess(0, inputData[0]);
   const auto dataType = firstField->GetDataType();
   const size_t nPoints = firstField->GetNumberOfTuples();
 

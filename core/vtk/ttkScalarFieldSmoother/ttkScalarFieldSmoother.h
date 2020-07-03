@@ -9,11 +9,32 @@
 /// smooths an input scalar field by averaging the scalar values on the link
 /// of each vertex.
 ///
-/// \param Input Input scalar field (vtkDataSet)
-/// \param Output Output scalar field (vtkDataSet)
+/// \param Input vtkDataSet
+/// \param Output vtkDataSet
+///
+/// The input data array needs to be specified via the standard VTK call
+/// vtkAlgorithm::SetInputArrayToProcess() with the following parameters:
+/// \param idx 0 (FIXED: the first array the algorithm requires)
+/// \param port 0 (FIXED: first port)
+/// \param connection 0 (FIXED: first connection)
+/// \param fieldAssociation 0 (FIXED: point data)
+/// \param arrayName (DYNAMIC: string identifier of the input array)
+///
+/// The optional mask array can be specified via the standard VTK call
+/// vtkAlgorithm::SetInputArrayToProcess() with the following parameters:
+/// \param idx 1 (FIXED: the second array the algorithm requires)
+/// \param port 0 (FIXED: first port)
+/// \param connection 0 (FIXED: first connection)
+/// \param fieldAssociation 0 (FIXED: point data)
+/// \param arrayName (DYNAMIC: string identifier of the mask array)
+/// \note: To use this optional array, `ForceInputMaskScalarField` needs to be
+/// enabled with the setter `setForceInputMaskScalarField()'.
 ///
 /// This filter can be used as any other VTK filter (for instance, by using the
 /// sequence of calls SetInputData(), Update(), GetOutput()).
+///
+/// See the corresponding standalone program for a usage example:
+///   - standalone/ScalarFieldSmoother/main.cpp
 ///
 /// See the related ParaView example state files for usage examples within a
 /// VTK pipeline.
@@ -24,88 +45,45 @@
 #define _TTK_SCALAR_FIELD_SMOOTHER_H
 
 // VTK includes
-#include <vtkCharArray.h>
-#include <vtkDataArray.h>
-#include <vtkDataSet.h>
-#include <vtkDataSetAlgorithm.h>
-#include <vtkDoubleArray.h>
-#include <vtkFiltersCoreModule.h>
-#include <vtkFloatArray.h>
-#include <vtkInformation.h>
-#include <vtkIntArray.h>
-#include <vtkObjectFactory.h>
-#include <vtkPointData.h>
-#include <vtkShortArray.h>
-#include <vtkUnsignedCharArray.h>
-#include <vtkUnsignedShortArray.h>
 
 // VTK Module
 #include <ttkScalarFieldSmootherModule.h>
 
 // ttk code includes
 #include <ScalarFieldSmoother.h>
-#include <ttkTriangulationAlgorithm.h>
+#include <ttkAlgorithm.h>
 
 class TTKSCALARFIELDSMOOTHER_EXPORT ttkScalarFieldSmoother
-  : public vtkDataSetAlgorithm,
-    protected ttk::Wrapper {
+  : public ttkAlgorithm,
+    protected ttk::ScalarFieldSmoother {
 
 public:
   static ttkScalarFieldSmoother *New();
 
-  vtkTypeMacro(ttkScalarFieldSmoother, vtkDataSetAlgorithm);
-
-  // default ttk setters
-  void SetDebugLevel(int debugLevel) {
-    setDebugLevel(debugLevel);
-    Modified();
-  }
-
-  void SetThreadNumber(int threadNumber) {
-    ThreadNumber = threadNumber;
-    SetThreads();
-  }
-
-  void SetUseAllCores(bool onOff) {
-    UseAllCores = onOff;
-    SetThreads();
-  }
-  // end of default ttk setters
+  vtkTypeMacro(ttkScalarFieldSmoother, ttkAlgorithm);
 
   vtkSetMacro(NumberOfIterations, int);
   vtkGetMacro(NumberOfIterations, int);
 
-  vtkSetMacro(ScalarFieldIdentifier, int);
-  vtkGetMacro(ScalarFieldIdentifier, int);
-
-  vtkSetMacro(MaskIdentifier, int);
-  vtkGetMacro(MaskIdentifier, int);
-
   vtkSetMacro(ForceInputMaskScalarField, bool);
   vtkGetMacro(ForceInputMaskScalarField, bool);
-
-  vtkSetMacro(ScalarField, std::string);
-  vtkGetMacro(ScalarField, std::string);
-
-  vtkSetMacro(InputMask, std::string);
-  vtkGetMacro(InputMask, std::string);
 
 protected:
   ttkScalarFieldSmoother();
 
   ~ttkScalarFieldSmoother() override;
 
-  TTK_SETUP();
+  int FillInputPortInformation(int port, vtkInformation *info) override;
+
+  int FillOutputPortInformation(int port, vtkInformation *info) override;
+
+  int RequestData(vtkInformation *request,
+                  vtkInformationVector **inputVector,
+                  vtkInformationVector *outputVector) override;
 
 private:
-  int NumberOfIterations;
-  int ScalarFieldIdentifier;
-  int MaskIdentifier;
-  bool ForceInputMaskScalarField;
-  std::string ScalarField;
-  std::string InputMask;
-  vtkDataArray *outputScalarField_;
-  ttk::ScalarFieldSmoother smoother_;
+  int NumberOfIterations{1};
+  bool ForceInputMaskScalarField{false};
 };
 
 #endif // _TTK_SCALAR_FIELD_SMOOTHER_H

@@ -6,4 +6,4 @@ HEADERS
   ttkPersistenceCurve.h
 DEPENDS
   persistenceCurve
-  ttkTriangulationAlgorithm
+  ttkAlgorithm

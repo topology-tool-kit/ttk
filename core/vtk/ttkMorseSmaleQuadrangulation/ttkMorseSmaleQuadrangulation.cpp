@@ -1,23 +1,15 @@
+#include <ttkMacros.h>
 #include <ttkMorseSmaleQuadrangulation.h>
 #include <ttkUtils.h>
 
-#define MODULE_S "[ttkMorseSmaleQuadrangulation] "
-#define MODULE_ERROR_S MODULE_S "Error: "
-#ifndef TTK_ENABLE_KAMIKAZE
-#define TTK_ABORT_KK(COND, MSG, RET)    \
-  if(COND) {                            \
-    cerr << MODULE_ERROR_S MSG << endl; \
-    return RET;                         \
-  }
-#else // TTK_ENABLE_KAMIKAZE
-#define TTK_ABORT_KK(COND, MSG, RET)
-#endif // TTK_ENABLE_KAMIKAZE
+#include <vtkInformation.h>
+#include <vtkObjectFactory.h>
+#include <vtkPointData.h>
+#include <vtkUnstructuredGrid.h>
 
 vtkStandardNewMacro(ttkMorseSmaleQuadrangulation);
 
-ttkMorseSmaleQuadrangulation::ttkMorseSmaleQuadrangulation()
-  : UseAllCores{true}, ThreadNumber{} {
-
+ttkMorseSmaleQuadrangulation::ttkMorseSmaleQuadrangulation() {
   // critical points + 1-separatrices + segmentation
   SetNumberOfInputPorts(3);
   // quad mesh (containing ttkVertexIdentifiers of critical points)
@@ -26,161 +18,144 @@ ttkMorseSmaleQuadrangulation::ttkMorseSmaleQuadrangulation()
 
 int ttkMorseSmaleQuadrangulation::FillInputPortInformation(
   int port, vtkInformation *info) {
-
-  if(port == 0 || port == 1) {
-    // Morse-Smale Complex output
-    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
+  if(port == 0) { // critical points
+    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkPointSet");
+    return 1;
+  } else if(port == 1) { // MSC separatrices
+    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkUnstructuredGrid");
+    return 1;
+  } else if(port == 2) { // triangulated domain
+    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
+    return 1;
   }
   return 0;
 }
 
-int ttkMorseSmaleQuadrangulation::getCriticalPoints(
-  vtkUnstructuredGrid *input) {
-
-  // store handler to points
-  auto cp = input->GetPoints();
-
-  // store handle to points identifiers
-  auto pointData = input->GetPointData();
-  auto cpci = pointData->GetArray("CellId");
-  auto cpcd = pointData->GetArray("CellDimension");
-  auto cpid = pointData->GetArray(ttk::VertexScalarFieldName);
-
-  TTK_ABORT_KK(cp == nullptr, "wrong Morse-Smale critical points", -1);
-  TTK_ABORT_KK(cpci == nullptr, "wrong critical points cell identifiers", -2);
-  TTK_ABORT_KK(cpcd == nullptr, "wrong critical points cell dimension", -3);
-  TTK_ABORT_KK(cpci == nullptr, "wrong critical points identifiers", -4);
-
-  baseWorker_.setCriticalPoints(
-    cp->GetNumberOfPoints(), cp->GetVoidPointer(0), cpid->GetVoidPointer(0),
-    cpci->GetVoidPointer(0), cpcd->GetVoidPointer(0));
-
+int ttkMorseSmaleQuadrangulation::FillOutputPortInformation(
+  int port, vtkInformation *info) {
+  if(port == 0) {
+    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
+    return 1;
+  }
   return 0;
 }
 
-int ttkMorseSmaleQuadrangulation::getSeparatrices(vtkUnstructuredGrid *input) {
+int ttkMorseSmaleQuadrangulation::RequestData(
+  vtkInformation *request,
+  vtkInformationVector **inputVector,
+  vtkInformationVector *outputVector) {
 
-  // check if separatrices have points
-  auto separatrices = input->GetPoints();
-  TTK_ABORT_KK(
-    separatrices == nullptr, "no points in Morse-Smale separatrices", -1);
+  auto critpoints = vtkPointSet::GetData(inputVector[0]);
+  auto seprs = vtkUnstructuredGrid::GetData(inputVector[1]);
+  auto domain = vtkDataSet::GetData(inputVector[2]);
+  auto output = vtkUnstructuredGrid::GetData(outputVector);
 
-  // get separatrices point data
-  auto pointData = input->GetPointData();
-  auto id = pointData->GetArray("CellId");
-  auto dim = pointData->GetArray("CellDimension");
-  auto mask = pointData->GetArray(ttk::MaskScalarFieldName);
+  auto triangulation = ttkAlgorithm::GetTriangulation(domain);
+  if(triangulation == nullptr) {
+    return 0;
+  }
+  this->preconditionTriangulation(triangulation);
 
-  TTK_ABORT_KK(id == nullptr, "wrong separatrices cell id", -2);
-  TTK_ABORT_KK(dim == nullptr, "wrong separatrices cell dimension", -3);
-  TTK_ABORT_KK(mask == nullptr, "wrong separatrices mask", -4);
+  auto cpPoints = critpoints->GetPoints();
+  auto cpData = critpoints->GetPointData();
+  auto seprsPoints = seprs->GetPoints();
+  auto seprsData = seprs->GetPointData();
 
-  baseWorker_.setSeparatrices(id->GetNumberOfTuples(), id->GetVoidPointer(0),
-                              dim->GetVoidPointer(0), mask->GetVoidPointer(0),
-                              separatrices->GetVoidPointer(0));
-  return 0;
-}
+  if(seprsPoints == nullptr || seprsData == nullptr || cpPoints == nullptr
+     || cpData == nullptr) {
+    this->printErr("Invalid input");
+    return 0;
+  }
 
-int ttkMorseSmaleQuadrangulation::getTriangulation(vtkUnstructuredGrid *input) {
-  triangulation_ = ttkTriangulation::getTriangulation(input);
-  TTK_ABORT_KK(triangulation_ == nullptr, "invalid triangulation", -1);
+  auto cpci = cpData->GetArray("CellId");
+  auto cpcd = cpData->GetArray("CellDimension");
+  auto cpid = cpData->GetArray(ttk::VertexScalarFieldName);
+  auto sepid = seprsData->GetArray("CellId");
+  auto sepdim = seprsData->GetArray("CellDimension");
+  auto sepmask = seprsData->GetArray(ttk::MaskScalarFieldName);
 
-  auto points = input->GetPoints();
-  TTK_ABORT_KK(points == nullptr, "wrong points", -2);
+  if(cpci == nullptr || cpcd == nullptr || cpid == nullptr || sepid == nullptr
+     || sepdim == nullptr || sepmask == nullptr) {
+    this->printErr("Missing data arrays");
+    return 0;
+  }
 
-  triangulation_->setWrapper(this);
-  baseWorker_.setWrapper(this);
-  baseWorker_.setupTriangulation(triangulation_);
-  baseWorker_.setInputPoints(points->GetVoidPointer(0));
+  this->setCriticalPoints(
+    cpPoints->GetNumberOfPoints(), ttkUtils::GetVoidPointer(cpPoints),
+    ttkUtils::GetVoidPointer(cpid), ttkUtils::GetVoidPointer(cpci),
+    ttkUtils::GetVoidPointer(cpcd));
 
-  return 0;
-}
+  this->setSeparatrices(
+    sepid->GetNumberOfTuples(), ttkUtils::GetVoidPointer(sepid),
+    ttkUtils::GetVoidPointer(sepdim), ttkUtils::GetVoidPointer(sepmask),
+    ttkUtils::GetVoidPointer(seprsPoints));
 
-int ttkMorseSmaleQuadrangulation::doIt(std::vector<vtkDataSet *> &inputs,
-                                       std::vector<vtkDataSet *> &outputs) {
+#define MSQUAD_EXPLICIT_CALLS(TRIANGL_CASE, TRIANGL_TYPE)                   \
+  case TRIANGL_CASE: {                                                      \
+    const auto tri = static_cast<TRIANGL_TYPE *>(triangulation->getData()); \
+    if(tri != nullptr) {                                                    \
+      res = this->execute<TRIANGL_TYPE>(*tri);                              \
+    }                                                                       \
+    break;                                                                  \
+  }
 
-  ttk::Memory m;
-
-  auto cp = vtkUnstructuredGrid::SafeDownCast(inputs[0]);
-  auto spr = vtkUnstructuredGrid::SafeDownCast(inputs[1]);
-  auto seg = vtkUnstructuredGrid::SafeDownCast(inputs[2]);
-  auto output = vtkUnstructuredGrid::SafeDownCast(outputs[0]);
-
-  int res = 0;
-
-  res += getCriticalPoints(cp);
-
-  TTK_ABORT_KK(res != 0, "wrong points", -1);
-
-  res += getSeparatrices(spr);
-
-  TTK_ABORT_KK(res != 0, "wrong separatrices", -1);
-
-  res += getTriangulation(seg);
-
-  TTK_ABORT_KK(res != 0, "wrong segmentation", -1);
-
-  baseWorker_.setDualQuadrangulation(DualQuadrangulation);
-  baseWorker_.setShowResError(ShowResError);
-
-  res += baseWorker_.execute();
+  int res{-1};
+  switch(triangulation->getType()) {
+    MSQUAD_EXPLICIT_CALLS(
+      ttk::Triangulation::Type::EXPLICIT, ttk::ExplicitTriangulation);
+    MSQUAD_EXPLICIT_CALLS(
+      ttk::Triangulation::Type::IMPLICIT, ttk::ImplicitTriangulation);
+    MSQUAD_EXPLICIT_CALLS(
+      ttk::Triangulation::Type::PERIODIC, ttk::PeriodicImplicitTriangulation);
+  }
 
   if(res != 0) {
-    vtkWarningMacro(MODULE_ERROR_S
-                    "Consider another (eigen) function, persistence threshold "
-                    "or refine your input triangulation");
+    this->printWrn("Consider another (eigen) function, persistence threshold "
+                   "or refine your input triangulation");
     if(!ShowResError) {
-      return res;
+      return 0;
     }
   }
 
-  auto &outQuadrangles = baseWorker_.outputCells_;
-  auto &outQuadPoints = baseWorker_.outputPoints_;
-  auto &outPointsIds = baseWorker_.outputPointsIds_;
-  auto &outPointsType = baseWorker_.outputPointsTypes_;
-  auto &outPointsCells = baseWorker_.outputPointsCells_;
-
   // output points: critical points + generated separatrices middles
-  auto points = vtkSmartPointer<vtkPoints>::New();
-  for(size_t i = 0; i < outQuadPoints.size() / 3; i++) {
-    points->InsertNextPoint(&outQuadPoints[3 * i]);
+  auto outQuadPoints = vtkSmartPointer<vtkPoints>::New();
+  for(size_t i = 0; i < outputPoints_.size() / 3; i++) {
+    outQuadPoints->InsertNextPoint(&outputPoints_[3 * i]);
   }
-  output->SetPoints(points);
+  output->SetPoints(outQuadPoints);
 
   // quad vertices identifiers
   auto identifiers = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
   identifiers->SetName(ttk::VertexScalarFieldName);
   ttkUtils::SetVoidArray(
-    identifiers, outPointsIds.data(), outPointsIds.size(), 1);
+    identifiers, outputPointsIds_.data(), outputPointsIds_.size(), 1);
   output->GetPointData()->AddArray(identifiers);
 
   // quad vertices type
   auto type = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
   type->SetName("QuadVertType");
-  ttkUtils::SetVoidArray(type, outPointsType.data(), outPointsType.size(), 1);
+  ttkUtils::SetVoidArray(
+    type, outputPointsTypes_.data(), outputPointsTypes_.size(), 1);
   output->GetPointData()->AddArray(type);
 
   // quad vertices cells
   auto cellid = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
   cellid->SetName("QuadCellId");
   ttkUtils::SetVoidArray(
-    cellid, outPointsCells.data(), outPointsCells.size(), 1);
+    cellid, outputPointsCells_.data(), outputPointsCells_.size(), 1);
   output->GetPointData()->AddArray(cellid);
 
   // vtkCellArray of quadrangle values containing outArray
   auto cells = vtkSmartPointer<vtkCellArray>::New();
-  for(size_t i = 0; i < outQuadrangles.size() / 5; i++) {
-    cells->InsertNextCell(4, &outQuadrangles[5 * i + 1]);
+  for(size_t i = 0; i < outputCells_.size() / 5; i++) {
+    cells->InsertNextCell(4, &outputCells_[5 * i + 1]);
   }
 
   // update output: get quadrangle values
   output->SetCells(VTK_QUAD, cells);
 
-  {
-    std::stringstream msg;
-    msg << MODULE_S "Memory usage: " << m.getElapsedUsage() << " MB." << endl;
-    dMsg(cout, msg.str(), memoryMsg);
-  }
+  // shallow copy input field data
+  output->GetFieldData()->ShallowCopy(domain->GetFieldData());
 
-  return 0;
+  return 1;
 }

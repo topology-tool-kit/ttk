@@ -16,16 +16,14 @@
 
 #pragma once
 
-#include <Triangulation.h>
-#include <Wrapper.h>
+#include <Debug.h>
 
 namespace ttk {
 
-  class DimensionReduction : public Debug {
+  class DimensionReduction : virtual public Debug {
 
   public:
     DimensionReduction();
-    ~DimensionReduction();
 
     inline int setSEParameters(std::string &Affinity,
                                float Gamma,
@@ -131,17 +129,17 @@ namespace ttk {
     }
 
     inline int setInputModulePath(const std::string &modulePath) {
-      modulePath_ = modulePath;
+      ModulePath = modulePath;
       return 0;
     }
 
     inline int setInputModuleName(const std::string &moduleName) {
-      moduleName_ = moduleName;
+      ModuleName = moduleName;
       return 0;
     }
 
     inline int setInputFunctionName(const std::string &functionName) {
-      functionName_ = functionName;
+      FunctionName = functionName;
       return 0;
     }
 
@@ -188,66 +186,68 @@ namespace ttk {
 
   protected:
     // se
-    std::string se_Affinity;
-    float se_Gamma;
-    std::string se_EigenSolver;
+    std::string se_Affinity{"nearest_neighbors"};
+    float se_Gamma{1};
+    std::string se_EigenSolver{"auto"};
 
     // lle
-    float lle_Regularization;
-    std::string lle_EigenSolver;
-    float lle_Tolerance;
-    int lle_MaxIteration;
-    std::string lle_Method;
-    float lle_HessianTolerance;
-    float lle_ModifiedTolerance;
-    std::string lle_NeighborsAlgorithm;
+    float lle_Regularization{1e-3};
+    std::string lle_EigenSolver{"auto"};
+    float lle_Tolerance{1e-3};
+    int lle_MaxIteration{300};
+    std::string lle_Method{"standard"};
+    float lle_HessianTolerance{1e-3};
+    float lle_ModifiedTolerance{1e-3};
+    std::string lle_NeighborsAlgorithm{"auto"};
 
     // mds
-    bool mds_Metric;
-    int mds_Init;
-    int mds_MaxIteration;
-    int mds_Verbose;
-    float mds_Epsilon;
-    std::string mds_Dissimilarity;
+    bool mds_Metric{true};
+    int mds_Init{4};
+    int mds_MaxIteration{300};
+    int mds_Verbose{0};
+    float mds_Epsilon{0};
+    std::string mds_Dissimilarity{"euclidean"};
 
     // tsne
-    float tsne_Perplexity;
-    float tsne_Exaggeration;
-    float tsne_LearningRate;
-    int tsne_MaxIteration;
-    int tsne_MaxIterationProgress;
-    float tsne_GradientThreshold;
-    std::string tsne_Metric;
-    std::string tsne_Init;
-    int tsne_Verbose;
-    std::string tsne_Method;
-    float tsne_Angle;
+    float tsne_Perplexity{30};
+    float tsne_Exaggeration{12};
+    float tsne_LearningRate{200};
+    int tsne_MaxIteration{1000};
+    int tsne_MaxIterationProgress{300};
+    float tsne_GradientThreshold{1e-7};
+    std::string tsne_Metric{"euclidean"};
+    std::string tsne_Init{"random"};
+    int tsne_Verbose{0};
+    std::string tsne_Method{"barnes_hut"};
+    float tsne_Angle{0.5};
 
     // iso
-    std::string iso_EigenSolver;
-    float iso_Tolerance;
-    int iso_MaxIteration;
-    std::string iso_PathMethod;
-    std::string iso_NeighborsAlgorithm;
+    std::string iso_EigenSolver{"auto"};
+    float iso_Tolerance{1e-3};
+    int iso_MaxIteration{300};
+    std::string iso_PathMethod{"auto"};
+    std::string iso_NeighborsAlgorithm{"auto"};
 
     // pca
-    bool pca_Copy;
-    bool pca_Whiten;
-    std::string pca_SVDSolver;
-    float pca_Tolerance;
-    std::string pca_MaxIteration;
+    bool pca_Copy{true};
+    bool pca_Whiten{false};
+    std::string pca_SVDSolver{"auto"};
+    float pca_Tolerance{0};
+    std::string pca_MaxIteration{"auto"};
 
-    std::string modulePath_;
-    std::string moduleName_;
-    std::string functionName_;
-    SimplexId numberOfRows_;
-    SimplexId numberOfColumns_;
-    int method_;
-    int numberOfComponents_;
-    int numberOfNeighbors_;
-    int randomState_;
-    void *matrix_;
-    std::vector<std::vector<double>> *embedding_;
-    char majorVersion_;
+    // testing
+    std::string ModulePath{};
+    std::string ModuleName{};
+    std::string FunctionName{};
+
+    SimplexId numberOfRows_{0};
+    SimplexId numberOfColumns_{0};
+    int method_{};
+    int numberOfComponents_{0};
+    int numberOfNeighbors_{0};
+    int randomState_{0};
+    void *matrix_{};
+    std::vector<std::vector<double>> *embedding_{};
+    char majorVersion_{'0'};
   };
 } // namespace ttk

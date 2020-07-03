@@ -19,6 +19,34 @@
 /// \param Input1 Input sources (vtkPointSet)
 /// \param Output Output integral lines (vtkUnstructuredGrid)
 ///
+/// The input data array needs to be specified via the standard VTK call
+/// vtkAlgorithm::SetInputArrayToProcess() with the following parameters:
+/// \param idx 0 (FIXED: the first array the algorithm requires)
+/// \param port 0 (FIXED: first port)
+/// \param connection 0 (FIXED: first connection)
+/// \param fieldAssociation 0 (FIXED: point data)
+/// \param arrayName (DYNAMIC: string identifier of the input array)
+///
+/// The optional offset array can be specified via the standard VTK call
+/// vtkAlgorithm::SetInputArrayToProcess() with the following parameters:
+/// \param idx 1 (FIXED: the second array the algorithm requires)
+/// \param port 0 (FIXED: first port)
+/// \param connection 0 (FIXED: first connection)
+/// \param fieldAssociation 0 (FIXED: point data)
+/// \param arrayName (DYNAMIC: string identifier of the offset array)
+/// \note: To use this optional array, `ForceInputOffsetScalarField` needs to be
+/// enabled with the setter `setForceInputOffsetScalarField()'.
+///
+/// The vertex identifier array needs to be specified via the standard VTK call
+/// vtkAlgorithm::SetInputArrayToProcess() with the following parameters:
+/// \param idx 2 (FIXED: the third array the algorithm requires)
+/// \param port 1 (FIXED: second port)
+/// \param connection 0 (FIXED: first connection)
+/// \param fieldAssociation 0 (FIXED: point data)
+/// \param arrayName (DYNAMIC: string identifier of the vertex identifier array)
+/// \note: To use this optional array, `ForceInputVertexScalarField` needs to be
+/// enabled with the setter `setForceInputVertexScalarField()'.
+///
 /// This filter can be used as any other VTK filter (for instance, by using the
 /// sequence of calls SetInputData(), Update(), GetOutput()).
 ///
@@ -28,110 +56,54 @@
 /// \sa ttk::IntegralLines
 /// \sa vtkIdentifiers
 
-#ifndef _TTK_DISCRETESTREAMLINE_H
-#define _TTK_DISCRETESTREAMLINE_H
-
-// VTK includes
-#include <vtkDataArray.h>
-#include <vtkDataSet.h>
-#include <vtkDataSetAlgorithm.h>
-#include <vtkDoubleArray.h>
-#include <vtkFiltersCoreModule.h>
-#include <vtkFloatArray.h>
-#include <vtkInformation.h>
-#include <vtkLine.h>
-#include <vtkObjectFactory.h>
-#include <vtkPointData.h>
-#include <vtkSmartPointer.h>
+#pragma once
 
 // VTK Module
 #include <ttkIntegralLinesModule.h>
 
 // ttk code includes
 #include <IntegralLines.h>
-#include <ttkTriangulationAlgorithm.h>
+#include <ttkAlgorithm.h>
 
-class TTKINTEGRALLINES_EXPORT ttkIntegralLines : public vtkDataSetAlgorithm,
-                                                 protected ttk::Wrapper {
+class vtkUnstructuredGrid;
+
+class TTKINTEGRALLINES_EXPORT ttkIntegralLines : public ttkAlgorithm,
+                                                 protected ttk::IntegralLines {
 
 public:
   static ttkIntegralLines *New();
 
-  vtkTypeMacro(ttkIntegralLines, vtkDataSetAlgorithm);
-
-  void SetDebugLevel(int debugLevel) {
-    setDebugLevel(debugLevel);
-    Modified();
-  }
-
-  void SetThreadNumber(int threadNumber) {
-    ThreadNumber = threadNumber;
-    SetThreads();
-  }
-
-  void SetUseAllCores(bool onOff) {
-    UseAllCores = onOff;
-    SetThreads();
-  }
-
-  vtkSetMacro(ScalarField, std::string);
-  vtkGetMacro(ScalarField, std::string);
+  vtkTypeMacro(ttkIntegralLines, ttkAlgorithm);
 
   vtkGetMacro(Direction, int);
   vtkSetMacro(Direction, int);
 
-  vtkSetMacro(OutputScalarFieldType, int);
-  vtkGetMacro(OutputScalarFieldType, int);
-
   vtkSetMacro(ForceInputVertexScalarField, bool);
   vtkGetMacro(ForceInputVertexScalarField, bool);
-
-  vtkSetMacro(InputVertexScalarFieldName, std::string);
-  vtkGetMacro(InputVertexScalarFieldName, std::string);
 
   vtkSetMacro(ForceInputOffsetScalarField, bool);
   vtkGetMacro(ForceInputOffsetScalarField, bool);
 
-  vtkSetMacro(OffsetScalarFieldName, std::string);
-  vtkGetMacro(OffsetScalarFieldName, std::string);
-
-  int getTriangulation(vtkDataSet *input);
-  int getScalars(vtkDataSet *input);
-  int getOffsets(vtkDataSet *input);
-  int getIdentifiers(vtkPointSet *input);
   int getTrajectories(vtkDataSet *input,
+                      ttk::Triangulation *triangulation,
                       std::vector<std::vector<ttk::SimplexId>> &trajectories,
                       vtkUnstructuredGrid *output);
 
-  template <typename VTK_TT>
-  int dispatch();
+  template <typename VTK_TT, typename TTK_TT>
+  int dispatch(int, const TTK_TT *);
 
 protected:
   ttkIntegralLines();
   ~ttkIntegralLines() override;
 
-  TTK_SETUP();
-
   int FillInputPortInformation(int port, vtkInformation *info) override;
   int FillOutputPortInformation(int port, vtkInformation *info) override;
+  int RequestData(vtkInformation *request,
+                  vtkInformationVector **inputVector,
+                  vtkInformationVector *outputVector) override;
 
 private:
-  bool hasUpdatedMesh_;
-  std::string ScalarField;
-  int Direction;
-  int OutputScalarFieldType;
-  bool ForceInputVertexScalarField;
-  std::string InputVertexScalarFieldName;
-  int OffsetScalarFieldId;
-  bool ForceInputOffsetScalarField;
-  std::string OffsetScalarFieldName;
-
-  ttk::Triangulation *triangulation_;
-  ttk::IntegralLines integralLines_;
-  vtkDataArray *inputScalars_;
-  vtkDataArray *offsets_;
-  vtkDataArray *inputOffsets_;
-  vtkDataArray *identifiers_;
+  int Direction{0};
+  bool ForceInputVertexScalarField{false};
+  bool ForceInputOffsetScalarField{false};
 };
-
-#endif // _TTK_DISCRETESTREAMLINE_H

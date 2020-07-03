@@ -1,18 +1,57 @@
 #include <ttkIdentifierRandomizer.h>
 
+#include <vtkCellData.h>
+#include <vtkDataSet.h>
+#include <vtkInformation.h>
+#include <vtkPointData.h>
+
+#include <ttkMacros.h>
+#include <ttkUtils.h>
+
 using namespace std;
 using namespace ttk;
 
 vtkStandardNewMacro(ttkIdentifierRandomizer);
-int ttkIdentifierRandomizer::doIt(vector<vtkDataSet *> &inputs,
-                                  vector<vtkDataSet *> &outputs) {
 
-  Memory m;
+ttkIdentifierRandomizer::ttkIdentifierRandomizer() {
 
-  bool isPointData = true;
+  this->SetNumberOfInputPorts(1);
+  this->SetNumberOfOutputPorts(1);
 
-  vtkDataSet *input = inputs[0];
-  vtkDataSet *output = outputs[0];
+  setDebugMsgPrefix("IdentifierRandomizer");
+}
+
+ttkIdentifierRandomizer::~ttkIdentifierRandomizer() {
+}
+
+int ttkIdentifierRandomizer::FillInputPortInformation(int port,
+                                                      vtkInformation *info) {
+  if(port == 0) {
+    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
+    return 1;
+  }
+  return 0;
+}
+
+int ttkIdentifierRandomizer::FillOutputPortInformation(int port,
+                                                       vtkInformation *info) {
+  if(port == 0) {
+    info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
+    return 1;
+  }
+  return 0;
+}
+
+int ttkIdentifierRandomizer::RequestData(vtkInformation *request,
+                                         vtkInformationVector **inputVector,
+                                         vtkInformationVector *outputVector) {
+
+  Timer t;
+
+  bool isPointData = false;
+
+  vtkDataSet *input = vtkDataSet::GetData(inputVector[0]);
+  vtkDataSet *output = vtkDataSet::GetData(outputVector);
 
   // use a pointer-base copy for the input data -- to adapt if your wrapper does
   // not produce an output of the type of the input.
@@ -22,92 +61,35 @@ int ttkIdentifierRandomizer::doIt(vector<vtkDataSet *> &inputs,
   // variable 'output' with the result of the computation.
   // if your wrapper produces an output of the same type of the input, you
   // should proceed in the same way.
-  vtkDataArray *inputScalarField = nullptr;
-
-  if(ScalarField.length()) {
-    inputScalarField = input->GetPointData()->GetArray(ScalarField.data());
-  } else {
-    inputScalarField = input->GetPointData()->GetArray(0);
-  }
+  vtkDataArray *inputScalarField = this->GetInputArrayToProcess(0, inputVector);
 
   if(!inputScalarField) {
-    // it may be a cell data field
-    if(ScalarField.length()) {
-      inputScalarField = input->GetCellData()->GetArray(ScalarField.data());
-    } else {
-      inputScalarField = input->GetCellData()->GetArray(0);
-    }
-    if(inputScalarField)
-      isPointData = false;
+    printErr("Could not retrieve mandatory input array :(");
+    return 0;
   }
 
-  if(!inputScalarField)
-    return -2;
+  if(input->GetPointData()->GetArray(inputScalarField->GetName())
+     == inputScalarField) {
+    isPointData = true;
+  }
 
   {
     stringstream msg;
-    msg << "[ttkIdentifierRandomizer] Shuffling ";
+    msg << "Shuffling ";
     if(isPointData)
       msg << "vertex";
     else
       msg << "cell";
-    msg << " field `" << inputScalarField->GetName() << "'..." << endl;
-    dMsg(cout, msg.str(), infoMsg);
+    msg << " field `" << inputScalarField->GetName() << "'...";
+    printMsg(msg.str());
   }
 
   // allocate the memory for the output scalar field
-  if(outputScalarField_) {
-    outputScalarField_->Delete();
-  }
-
-  switch(inputScalarField->GetDataType()) {
-
-    case VTK_CHAR:
-      outputScalarField_ = vtkCharArray::New();
-      break;
-
-    case VTK_DOUBLE:
-      outputScalarField_ = vtkDoubleArray::New();
-      break;
-
-    case VTK_FLOAT:
-      outputScalarField_ = vtkFloatArray::New();
-      break;
-
-    case VTK_INT:
-      outputScalarField_ = vtkIntArray::New();
-      break;
-
-    case VTK_ID_TYPE:
-      outputScalarField_ = vtkIdTypeArray::New();
-      break;
-
-    default:
-      stringstream msg;
-      msg << "[ttkIdentifierRandomizer] Unsupported data type :(" << endl;
-      dMsg(cerr, msg.str(), fatalMsg);
-      return -1;
-  }
-  outputScalarField_->SetNumberOfTuples(inputScalarField->GetNumberOfTuples());
-  outputScalarField_->SetName(inputScalarField->GetName());
-
-  // on the output, replace the field array by a pointer to its processed
-  // version
-  if(isPointData) {
-    if(ScalarField.length()) {
-      output->GetPointData()->RemoveArray(ScalarField.data());
-    } else {
-      output->GetPointData()->RemoveArray(0);
-    }
-    output->GetPointData()->AddArray(outputScalarField_);
-  } else {
-    if(ScalarField.length()) {
-      output->GetCellData()->RemoveArray(ScalarField.data());
-    } else {
-      output->GetCellData()->RemoveArray(0);
-    }
-    output->GetCellData()->AddArray(outputScalarField_);
-  }
+  vtkSmartPointer<vtkDataArray> outputArray
+    = vtkSmartPointer<vtkDataArray>::Take(inputScalarField->NewInstance());
+  outputArray->SetName(inputScalarField->GetName());
+  outputArray->SetNumberOfComponents(1);
+  outputArray->SetNumberOfTuples(inputScalarField->GetNumberOfTuples());
 
   vector<pair<SimplexId, SimplexId>> identifierMap;
 
@@ -176,15 +158,19 @@ int ttkIdentifierRandomizer::doIt(vector<vtkDataSet *> &inputs,
       }
     }
 
-    outputScalarField_->SetTuple(i, &outputIdentifier);
+    outputArray->SetTuple(i, &outputIdentifier);
   }
 
-  {
-    stringstream msg;
-    msg << "[ttkIdentifierRandomizer] Memory usage: " << m.getElapsedUsage()
-        << " MB." << endl;
-    dMsg(cout, msg.str(), memoryMsg);
-  }
+  if(isPointData)
+    output->GetPointData()->AddArray(outputArray);
+  else
+    output->GetCellData()->AddArray(outputArray);
 
-  return 0;
+  printMsg("Processed " + std::to_string(outputArray->GetNumberOfTuples())
+             + (isPointData ? " vertices." : " cells."),
+           1, t.getElapsedTime(), 1);
+
+  printMsg(ttk::debug::Separator::L1);
+
+  return 1;
 }

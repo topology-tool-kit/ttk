@@ -6,4 +6,4 @@ HEADERS
   ttkMorseSmaleComplex.h
 DEPENDS
   morseSmaleComplex
-  ttkTriangulationAlgorithm
+  ttkAlgorithm

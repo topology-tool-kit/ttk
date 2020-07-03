@@ -1005,6 +1005,39 @@ namespace ttk {
     inline int setInputCells(const SimplexId &cellNumber,
                              const LongSimplexId *connectivity,
                              const LongSimplexId *offset) {
+
+      // Cell Check
+      {
+        if(cellNumber > 0) {
+          const auto &cellDimension = offset[1] - offset[0] - 1;
+
+          if(cellDimension < 0 || cellDimension > 3) {
+            this->printErr("Unable to create triangulation for cells of "
+                           "dimension 4 or higher ("
+                           + std::to_string(cellDimension) + ").");
+            return -1;
+          }
+
+          bool error = false;
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(this->threadNumber_)
+#endif
+          for(SimplexId i = 0; i < cellNumber; i++) {
+            if(offset[i + 1] - offset[i] - 1 != cellDimension) {
+#pragma omp atomic write
+              error = true;
+            }
+          }
+
+          if(error) {
+            this->printErr("Unable to create triangulation for "
+                           "inhomogeneous\ncell dimensions.");
+            return -2;
+          }
+        }
+      }
+
       if(cellNumber_)
         clear();
 

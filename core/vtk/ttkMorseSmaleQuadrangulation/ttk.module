@@ -6,4 +6,4 @@ HEADERS
   ttkMorseSmaleQuadrangulation.h
 DEPENDS
   morseSmaleQuadrangulation
-  ttkTriangulationAlgorithm
+  ttkAlgorithm

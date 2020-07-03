@@ -1,51 +1,47 @@
 #include <numeric>
 #include <ttkIdentifyByScalarField.h>
+#include <ttkMacros.h>
+#include <ttkUtils.h>
+
+#include <vtkCellData.h>
+#include <vtkDataSet.h>
+#include <vtkInformation.h>
+#include <vtkPointData.h>
 
 using namespace std;
 using namespace ttk;
 
 vtkStandardNewMacro(ttkIdentifyByScalarField)
 
-  int ttkIdentifyByScalarField::getScalars(vtkDataSet *input) {
-  vtkCellData *cellData = input->GetCellData();
+  ttkIdentifyByScalarField::ttkIdentifyByScalarField() {
+  this->setDebugMsgPrefix("IdentifyByScalarField");
+  SetNumberOfInputPorts(1);
+  SetNumberOfOutputPorts(1);
+}
 
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(!cellData) {
-    cerr << "[ttkIdentifyByScalarField] Error : input has no point data."
-         << endl;
-    return -1;
+int ttkIdentifyByScalarField::FillInputPortInformation(int port,
+                                                       vtkInformation *info) {
+  if(port == 0) {
+    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
+    return 1;
   }
 
-  if(!ScalarField.length()) {
-    cerr << "[ttkIdentifyByScalarField] Error : scalar field has no name."
-         << endl;
-    return -2;
-  }
-#endif
+  return 0;
+}
 
-  if(ScalarField.length()) {
-    inputScalars_ = cellData->GetArray(ScalarField.data());
-  } else {
-    inputScalars_ = cellData->GetArray(ScalarFieldId);
-    if(inputScalars_)
-      ScalarField = inputScalars_->GetName();
+int ttkIdentifyByScalarField::FillOutputPortInformation(int port,
+                                                        vtkInformation *info) {
+  if(port == 0) {
+    info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
+    return 1;
   }
-
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(!inputScalars_) {
-    cerr << "[ttkIdentifyByScalarField] Error : input scalar field pointer is "
-            "null."
-         << endl;
-    return -3;
-  }
-#endif
 
   return 0;
 }
 
 template <typename VTK_TT>
 int ttkIdentifyByScalarField::dispatch(vector<SimplexId> &inputIds) {
-  VTK_TT *arr = static_cast<VTK_TT *>(inputScalars_->GetVoidPointer(0));
+  VTK_TT *arr = static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(inputScalars_));
 
   auto greater_cmp = [=](int a, int b) { return arr[a] > arr[b]; };
   auto lower_cmp = [=](int a, int b) { return arr[a] < arr[b]; };
@@ -59,77 +55,63 @@ int ttkIdentifyByScalarField::dispatch(vector<SimplexId> &inputIds) {
   return 0;
 }
 
-int ttkIdentifyByScalarField::doIt(vector<vtkDataSet *> &inputs,
-                                   vector<vtkDataSet *> &outputs) {
-  Memory m;
+int ttkIdentifyByScalarField::RequestData(vtkInformation *request,
+                                          vtkInformationVector **inputVector,
+                                          vtkInformationVector *outputVector) {
+  vtkDataSet *input = vtkDataSet::GetData(inputVector[0]);
+  vtkDataSet *output = vtkDataSet::GetData(outputVector);
 
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(!inputs.size()) {
-    cerr << "[ttkIdentifyByScalarField] Error: not enough input information."
-         << endl;
-    return -1;
-  }
-#endif
+  inputScalars_ = this->GetInputArrayToProcess(0, inputVector);
+  if(!inputScalars_)
+    return 0;
 
-  vtkDataSet *input = inputs[0];
-  vtkDataSet *output = outputs[0];
+  int inputArrayAssociation = this->GetInputArrayAssociation(0, inputVector);
 
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(!input) {
-    cerr << "[ttkIdentifyByScalarField] Error: input pointer is NULL." << endl;
-    return -1;
+  if(inputArrayAssociation > 1 || inputArrayAssociation < 0) {
+    printErr("input array has to be cell data or point data.");
+    return 0;
   }
 
-  if(!input->GetNumberOfPoints()) {
-    cerr << "[ttkIdentifyByScalarField] Error: input has no point." << endl;
-    return -1;
-  }
+  ttk::Timer t;
+  this->printMsg("Computing Identifiers", 0, t.getElapsedTime(), 1,
+                 ttk::debug::LineMode::REPLACE);
 
-  if(!input->GetNumberOfCells()) {
-    cerr << "[ttkIdentifyByScalarField] Error: input has no cell." << endl;
-    return -1;
-  }
-#endif
+  const SimplexId numberOfValues = inputArrayAssociation == 0
+                                     ? input->GetNumberOfPoints()
+                                     : input->GetNumberOfCells();
 
-  if(getScalars(input)) {
-#ifndef TTK_ENABLE_KAMIKAZE
-    cerr << "[ttkIndentifyByScalarField] Error : wrong scalars." << endl;
-    return -1;
-#endif
-  }
-
-  const SimplexId numberOfCells = input->GetNumberOfCells();
-  vector<SimplexId> inputIds(numberOfCells);
+  vector<SimplexId> inputIds(numberOfValues);
   std::iota(inputIds.begin(), inputIds.end(), 0);
   switch(inputScalars_->GetDataType()) {
     vtkTemplateMacro(dispatch<VTK_TT>(inputIds));
   }
 
+  this->printMsg("Computing Identifiers", 1, t.getElapsedTime(), 1);
+
   vtkSmartPointer<ttkSimplexIdTypeArray> ids
     = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
   ids->SetNumberOfComponents(1);
-  ids->SetNumberOfTuples(numberOfCells);
-  ids->SetName("CellScalarFieldName");
+  ids->SetNumberOfTuples(numberOfValues);
+  ids->SetName(inputArrayAssociation == 0 ? "PointScalarFieldName"
+                                          : "CellScalarFieldName");
 
-  SimplexId *outputIds = static_cast<SimplexId *>(ids->GetVoidPointer(0));
+  SimplexId *outputIds
+    = static_cast<SimplexId *>(ttkUtils::GetVoidPointer(ids));
 
-  for(int i = 0; i < numberOfCells; ++i)
+  for(int i = 0; i < numberOfValues; ++i)
     outputIds[inputIds[i]] = i;
   if(StartByOne) {
-    for(int i = 0; i < numberOfCells; ++i)
+    for(int i = 0; i < numberOfValues; ++i)
       outputIds[i] += 1;
   }
 
   output->ShallowCopy(input);
 
-  output->GetCellData()->AddArray(ids);
-
-  {
-    stringstream msg;
-    msg << "[ttkIdentifyByScalarField] Memory usage: " << m.getElapsedUsage()
-        << " MB." << endl;
-    dMsg(cout, msg.str(), memoryMsg);
+  if(inputArrayAssociation == 0) {
+    output->GetPointData()->AddArray(ids);
+  } else {
+    output->GetCellData()->AddArray(ids);
   }
 
-  return 0;
+  return 1;
 }

@@ -1,135 +1,156 @@
 #include <ttkComponentSize.h>
+#include <ttkUtils.h>
 
-using namespace std;
-using namespace ttk;
+#include <vtkCellData.h>
+#include <vtkConnectivityFilter.h>
+#include <vtkDoubleArray.h>
+#include <vtkInformation.h>
+#include <vtkPointData.h>
+#include <vtkUnstructuredGrid.h>
 
 vtkStandardNewMacro(ttkComponentSize);
-ttkComponentSize::ttkComponentSize() {
-  UseAllCores = true;
 
-  connectivityFilter_ = vtkSmartPointer<vtkConnectivityFilter>::New();
-  vertexNumbers_ = vtkSmartPointer<vtkDoubleArray>::New();
-  cellNumbers_ = vtkSmartPointer<vtkDoubleArray>::New();
+ttkComponentSize::ttkComponentSize() {
+  this->setDebugMsgPrefix("ComponentSize");
+
+  this->SetNumberOfInputPorts(1);
+  this->SetNumberOfOutputPorts(1);
 }
 
 ttkComponentSize::~ttkComponentSize() {
 }
 
-// transmit abort signals -- to copy paste in other wrappers
-bool ttkComponentSize::needsToAbort() {
-  return GetAbortExecute();
-}
-
-// transmit progress status -- to copy paste in other wrappers
-int ttkComponentSize::updateProgress(const float &progress) {
-
-  {
-    stringstream msg;
-    msg << "[ttkComponentSize] " << progress * 100 << "% processed...." << endl;
-    dMsg(cout, msg.str(), advancedInfoMsg);
-  }
-
-  UpdateProgress(progress);
-  return 0;
-}
-
-int ttkComponentSize::doIt(vtkPointSet *input, vtkUnstructuredGrid *output) {
-
-  Timer t;
-
-  connectivityFilter_->SetInputData(input);
-  connectivityFilter_->SetExtractionModeToAllRegions();
-  connectivityFilter_->ColorRegionsOn();
-  connectivityFilter_->Update();
-
-  output->ShallowCopy(connectivityFilter_->GetOutput());
-
-  vector<double> vertexNumbers(
-    connectivityFilter_->GetNumberOfExtractedRegions(), 0);
-  vector<double> cellNumbers(
-    connectivityFilter_->GetNumberOfExtractedRegions(), 0);
-  vtkDataArray *cellIds = output->GetCellData()->GetArray("RegionId");
-  vtkDataArray *vertexIds = output->GetPointData()->GetArray("RegionId");
-
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
-#endif
-  for(SimplexId i = 0; i < output->GetNumberOfPoints(); i++) {
-
-    double regionId = 0;
-    vertexIds->GetTuple(i, &regionId);
-    vertexNumbers[(SimplexId)regionId]++;
-  }
-
-  vertexNumbers_->SetNumberOfTuples(output->GetNumberOfPoints());
-  vertexNumbers_->SetNumberOfComponents(1);
-  vertexNumbers_->SetName("VertexNumber");
-
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
-#endif
-  for(SimplexId i = 0; i < output->GetNumberOfPoints(); i++) {
-
-    double regionId = 0;
-    vertexIds->GetTuple(i, &regionId);
-    vertexNumbers_->SetTuple1(i, vertexNumbers[(SimplexId)regionId]);
-  }
-  output->GetPointData()->AddArray(vertexNumbers_);
-
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
-#endif
-  for(SimplexId i = 0; i < output->GetNumberOfCells(); i++) {
-
-    double regionId = 0;
-    cellIds->GetTuple(i, &regionId);
-    cellNumbers[(SimplexId)regionId]++;
-  }
-
-  cellNumbers_->SetNumberOfTuples(output->GetNumberOfCells());
-  cellNumbers_->SetNumberOfComponents(1);
-  cellNumbers_->SetName("CellNumber");
-
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
-#endif
-  for(SimplexId i = 0; i < output->GetNumberOfCells(); i++) {
-
-    double regionId = 0;
-    cellIds->GetTuple(i, &regionId);
-    cellNumbers_->SetTuple1(i, cellNumbers[(SimplexId)regionId]);
-  }
-  output->GetCellData()->AddArray(cellNumbers_);
-
-  {
-    stringstream msg;
-    msg << "[ttkComponentSize] Connected component sizes computed in "
-        << t.getElapsedTime() << " s. (" << input->GetNumberOfPoints()
-        << " points)." << endl;
-    dMsg(cout, msg.str(), timeMsg);
+int ttkComponentSize::FillInputPortInformation(int port, vtkInformation *info) {
+  if(port == 0) {
+    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
+    return 1;
   }
   return 0;
 }
 
-// to adapt if your wrapper does not inherit from vtkDataSetAlgorithm
+int ttkComponentSize::FillOutputPortInformation(int port,
+                                                vtkInformation *info) {
+  if(port == 0) {
+    info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
+    return 1;
+  }
+  return 0;
+}
+
 int ttkComponentSize::RequestData(vtkInformation *request,
                                   vtkInformationVector **inputVector,
                                   vtkInformationVector *outputVector) {
+  ttk::Timer t;
+  size_t threadNumber = this->getThreadNumber();
 
-  Memory m;
+  this->printMsg(
+    "Computing connected components", 0, 0, ttk::debug::LineMode::REPLACE);
 
-  // here the vtkDataSet type should be changed to whatever type you consider.
-  vtkPointSet *input = vtkPointSet::GetData(inputVector[0]);
-  vtkUnstructuredGrid *output = vtkUnstructuredGrid::GetData(outputVector);
+  auto connectivityFilter = vtkSmartPointer<vtkConnectivityFilter>::New();
+  connectivityFilter->SetInputData(vtkDataSet::GetData(inputVector[0]));
+  connectivityFilter->SetExtractionModeToAllRegions();
+  connectivityFilter->ColorRegionsOn();
+  connectivityFilter->Update();
 
-  int status = doIt(input, output);
-
-  {
-    stringstream msg;
-    msg << "[ttkComponentSize] Memory usage: " << m.getElapsedUsage() << " MB."
-        << endl;
-    dMsg(cout, msg.str(), memoryMsg);
+  size_t nRegions = connectivityFilter->GetNumberOfExtractedRegions();
+  if(nRegions < 1) {
+    this->printErr("Unable to compute connected components.");
+    return 0;
   }
 
-  return !status; // VTK uses true/false
+  this->printMsg(
+    "Computing connected components (" + std::to_string(nRegions) + ")", 1,
+    t.getElapsedTime());
+
+  t.reStart();
+  this->printMsg("Computing component sizes", 0, 0, threadNumber,
+                 ttk::debug::LineMode::REPLACE);
+
+  auto output = vtkDataSet::GetData(outputVector);
+  output->ShallowCopy(connectivityFilter->GetOutput());
+
+  size_t nVertices = output->GetNumberOfPoints();
+  size_t nCells = output->GetNumberOfCells();
+
+  auto vertexIds = (vtkIdType *)ttkUtils::GetVoidPointer(
+    output->GetPointData()->GetArray("RegionId"));
+  auto cellIds = (vtkIdType *)ttkUtils::GetVoidPointer(
+    output->GetCellData()->GetArray("RegionId"));
+
+  if(!vertexIds || !cellIds) {
+    this->printErr("Unable to retrieve vertex and cell Identifiers.");
+    return 0;
+  }
+
+  this->printMsg("Computing component sizes", 0.1, t.getElapsedTime(),
+                 threadNumber, ttk::debug::LineMode::REPLACE);
+
+  // count vertices per region
+  std::vector<double> regionIdToVertexCountMap(nRegions, 0);
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber)
+#endif
+  for(size_t i = 0; i < nVertices; i++) {
+    auto regionId = vertexIds[i];
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp atomic update
+#endif
+    regionIdToVertexCountMap[regionId]++;
+  }
+
+  // count cells per region
+  std::vector<double> regionIdToCellCountMap(nRegions, 0);
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber)
+#endif
+  for(size_t i = 0; i < nCells; i++) {
+    auto regionId = cellIds[i];
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp atomic update
+#endif
+    regionIdToCellCountMap[regionId]++;
+  }
+
+  // generate vertex number fields
+  {
+    auto vertexNumbers = vtkSmartPointer<vtkDoubleArray>::New();
+    vertexNumbers->SetNumberOfComponents(1);
+    vertexNumbers->SetNumberOfTuples(nVertices);
+    vertexNumbers->SetName("VertexNumber");
+    auto vertexNumbersData = (double *)ttkUtils::GetVoidPointer(vertexNumbers);
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber)
+#endif
+    for(size_t i = 0; i < nVertices; i++) {
+      vertexNumbersData[i] = regionIdToVertexCountMap[vertexIds[i]];
+    }
+
+    output->GetPointData()->AddArray(vertexNumbers);
+  }
+
+  // generate cell number fields
+  {
+    auto cellNumbers = vtkSmartPointer<vtkDoubleArray>::New();
+    cellNumbers->SetNumberOfComponents(1);
+    cellNumbers->SetNumberOfTuples(nCells);
+    cellNumbers->SetName("CellNumber");
+    auto cellNumbersData = (double *)ttkUtils::GetVoidPointer(cellNumbers);
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber)
+#endif
+    for(size_t i = 0; i < nCells; i++) {
+      cellNumbersData[i] = regionIdToCellCountMap[cellIds[i]];
+    }
+
+    output->GetCellData()->AddArray(cellNumbers);
+  }
+
+  this->printMsg(
+    "Computing component sizes", 1, t.getElapsedTime(), threadNumber);
+
+  return 1;
 }

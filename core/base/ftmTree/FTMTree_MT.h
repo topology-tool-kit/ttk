@@ -102,7 +102,7 @@ namespace ttk {
     protected:
       // global
       Params *const params_;
-      Triangulation *mesh_;
+      AbstractTriangulation *mesh_;
       Scalars *const scalars_;
 
       // local
@@ -116,7 +116,7 @@ namespace ttk {
 
       // Tree with global data and partition number
       FTMTree_MT(Params *const params,
-                 Triangulation *mesh,
+                 AbstractTriangulation *mesh,
                  Scalars *const scalars,
                  TreeType type);
 
@@ -311,7 +311,7 @@ namespace ttk {
       // On this implementation, the warpper communicate with ContourForest
       // A child class of this one.
 
-      inline void setupTriangulation(Triangulation *m,
+      inline void setupTriangulation(AbstractTriangulation *m,
                                      const bool preproc = true) {
         mesh_ = m;
         if(mesh_ && preproc) {

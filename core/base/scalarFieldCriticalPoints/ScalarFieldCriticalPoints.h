@@ -40,8 +40,8 @@ namespace ttk {
     /// \param argment Dummy integer argument.
     /// \return Returns 0 upon success, negative values otherwise.
     template <class dataType, class triangulationType = AbstractTriangulation>
-    int execute(const triangulationType *triangulation,
-                const dataType *scalarValues);
+    int execute(const dataType *scalarValues,
+                const triangulationType *triangulation);
 
     template <class dataType, class triangulationType = AbstractTriangulation>
     std::pair<SimplexId, SimplexId> getNumberOfLowerUpperComponents(
@@ -159,7 +159,7 @@ namespace ttk {
 // template functions
 template <class dataType, class triangulationType>
 int ttk::ScalarFieldCriticalPoints::execute(
-  const triangulationType *triangulation, const dataType *scalarValues) {
+  const dataType *scalarValues, const triangulationType *triangulation) {
 
   // check the consistency of the variables -- to adapt
 #ifndef TTK_ENABLE_KAMIKAZE

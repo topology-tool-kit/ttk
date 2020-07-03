@@ -83,7 +83,7 @@ int ttkBlank::doIt(vector<vtkDataSet *> &inputs,
   // int dataType = inputScalarField->GetDataType();
 
   ttkVtkTemplateMacro(
-    triangulation->getType(), inputScalarField->GetDataType(),
+    inputScalarField->GetDataType(), triangulation->getType(),
     (blank_.execute<VTK_TT, TTK_TT>(
       (TTK_TT *)triangulation->getData(), SomeIntegerArgument)));
 
