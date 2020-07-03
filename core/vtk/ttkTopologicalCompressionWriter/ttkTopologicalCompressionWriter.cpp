@@ -28,7 +28,8 @@ int ttkTopologicalCompressionWriter::FillInputPortInformation(
 
 void ttkTopologicalCompressionWriter::ComputeTriangulation(vtkImageData *vti) {
   triangulation.setInputData(vti);
-  topologicalCompression.setupTriangulation(triangulation.getTriangulation());
+  topologicalCompression.preconditionTriangulation(
+    triangulation.getTriangulation());
 }
 
 vtkDataArray *
