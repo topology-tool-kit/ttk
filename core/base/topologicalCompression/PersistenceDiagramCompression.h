@@ -445,7 +445,7 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
   topoIndices.push_back(std::make_tuple(maxValue, maxIndex));
   topoIndices.push_back(std::make_tuple(minValue, minIndex));
   double tolerance = 0.01 * tol * (maxValue - minValue);
-  double maxError = 0.01 * maximumError_ * (maxValue - minValue);
+  double maxError = 0.01 * MaximumError * (maxValue - minValue);
 
   this->printMsg(
     "Computed min/max", 1.0, t.getElapsedTime(), this->threadNumber_);
@@ -454,7 +454,7 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
   bool sqDomain = false;
   bool sqRange = false;
 
-  const char *sq = sqMethod_.c_str();
+  const char *sq = SQMethod.c_str();
   int nbCrit = 0;
   std::vector<int> simplifiedConstraints;
   if(strcmp(sq, "") == 0 && !zfpOnly_) {
@@ -578,7 +578,7 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
     t.reStart();
 
     // 2. Perform topological simplification with constraints.
-    if(useTopologicalSimplification_) {
+    if(UseTopologicalSimplification) {
       topologicalSimplification.setInputScalarFieldPointer(inputData);
       topologicalSimplification.setOutputScalarFieldPointer(outputData);
       topologicalSimplification.setInputOffsetScalarFieldPointer(
@@ -611,7 +611,7 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
   } else if(zfpOnly_) {
     return 0;
   } else {
-    this->printErr("Unrecognized SQ option (" + sqMethod_ + ").");
+    this->printErr("Unrecognized SQ option (" + SQMethod + ").");
     return -3;
   }
 
@@ -626,7 +626,6 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
   // ith rank = ith segment (from bottom)
   // 0: value
   // 1: critical point index or -1 if !critical
-  bool subdivide = !dontSubdivide_;
   auto l = (int)topoIndices.size();
   if(l < 1) {
     this->printMsg("Trivial subdivision performed.");
@@ -645,7 +644,7 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
 
       if(diff == 0)
         continue;
-      if(!subdivide || (diff < (dataType)maxError)) {
+      if(!Subdivide || (diff < (dataType)maxError)) {
         segments.push_back(std::make_tuple(v1, i1));
       } else {
         // Subdivide.

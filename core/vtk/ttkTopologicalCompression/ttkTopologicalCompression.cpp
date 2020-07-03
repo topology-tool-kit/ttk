@@ -128,13 +128,8 @@ int ttkTopologicalCompression::RequestData(vtkInformation *request,
   outputOffsetField->SetNumberOfTuples(vertexNumber);
   outputOffsetField->SetName(ttk::OffsetScalarFieldName);
 
-  this->setCompressionType(CompressionType);
   this->setInputDataPointer(ttkUtils::GetVoidPointer(inputScalarField));
-  this->setSQ(SQMethod);
-  this->setUseTopologicalSimplification(UseTopologicalSimplification);
-  this->setSubdivide(!Subdivide);
   this->setOutputDataPointer(ttkUtils::GetVoidPointer(outputScalarField));
-  this->setMaximumError(MaximumError);
 
   // Call TopologicalCompression
   switch(inputScalarField->GetDataType()) {
@@ -143,9 +138,8 @@ int ttkTopologicalCompression::RequestData(vtkInformation *request,
       break;
   }
 
-  std::vector<int> voidOffsets = this->getCompressedOffsets();
   for(SimplexId i = 0; i < vertexNumber; ++i)
-    outputOffsetField->SetTuple1(i, voidOffsets[i]);
+    outputOffsetField->SetTuple1(i, this->compressedOffsets_[i]);
 
   output->GetPointData()->AddArray(outputScalarField);
   output->GetPointData()->AddArray(outputOffsetField);

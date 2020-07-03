@@ -86,12 +86,6 @@ protected:
                   vtkInformationVector *outputVector) override;
 
 private:
-  double Tolerance{10};
-  double MaximumError{10};
-  int CompressionType{0};
-  std::string SQMethod{};
-  bool Subdivide{false};
-  bool UseTopologicalSimplification{true};
   std::string ScalarField{};
   int ScalarFieldId{0};
 };

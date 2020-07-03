@@ -90,20 +90,20 @@ namespace ttk {
       compressionType_ = compressionType;
     }
     inline void setSQ(std::string sqMethod) {
-      sqMethod_ = sqMethod;
+      SQMethod = sqMethod;
     }
     inline void setZFPOnly(bool z) {
       zfpOnly_ = z;
     }
-    inline void setSubdivide(bool dontSubdivide) {
-      dontSubdivide_ = dontSubdivide;
+    inline void setSubdivide(bool b) {
+      Subdivide = b;
     }
     inline void setMaximumError(double maximumError) {
-      maximumError_ = maximumError;
+      MaximumError = maximumError;
     }
     inline void
       setUseTopologicalSimplification(bool useTopologicalSimplification) {
-      useTopologicalSimplification_ = useTopologicalSimplification;
+      UseTopologicalSimplification = useTopologicalSimplification;
     }
     inline void setFileName(char *fn) {
       fileName = fn;
@@ -150,7 +150,7 @@ namespace ttk {
       return dataOrigin_;
     }
     inline double getTolerance() {
-      return tolerance_;
+      return Tolerance;
     }
     inline double getZFPBitBudget() {
       return zfpBitBudget_;
@@ -374,17 +374,21 @@ namespace ttk {
     // Parameters
     int compressionType_{};
     bool zfpOnly_{};
+    double zfpBitBudget_{};
     int sqMethodInt_{};
-    std::string sqMethod_{""};
+
+    double Tolerance{10};
+    double MaximumError{10};
+    int CompressionType{0};
+    std::string SQMethod{};
+    bool Subdivide{false};
+    bool UseTopologicalSimplification{true};
+
     int dataScalarType_{};
     int dataExtent_[6];
     double dataSpacing_[3];
     double dataOrigin_[3];
-    double tolerance_{};
-    double maximumError_{};
-    double zfpBitBudget_{};
-    bool dontSubdivide_{};
-    bool useTopologicalSimplification_{};
+
     std::vector<char> dataArrayName_{};
 
     // Persistence compression.
@@ -797,7 +801,7 @@ int ttk::TopologicalCompression::ReadMetaData(FILE *fm) {
     dataOrigin_[i] = Read<double>(fm);
 
   // 4. Error tolerance (relative percentage)
-  tolerance_ = Read<double>(fm);
+  Tolerance = Read<double>(fm);
 
   // 5. Lossy compressor ratio
   zfpBitBudget_ = Read<double>(fm);
