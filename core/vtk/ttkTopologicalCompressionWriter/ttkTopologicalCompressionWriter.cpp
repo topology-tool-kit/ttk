@@ -88,7 +88,8 @@ void ttkTopologicalCompressionWriter::PerformCompression(
   switch(inputScalarField->GetDataType()) {
     vtkTemplateMacro(topologicalCompression.execute(
       static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(inputScalarField)),
-      static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(outputScalarField))));
+      static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(outputScalarField)),
+      *(triangulation.getTriangulation())));
     default: {
       std::stringstream msg;
       msg << "[ttkCompressionWriter] Unsupported data type." << std::endl;
