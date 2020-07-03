@@ -5,21 +5,10 @@
 // VTK includes
 #include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
+#include <vtkInformation.h>
 #include <vtkPointData.h>
 #include <vtkPointSet.h>
 #include <vtkSmartPointer.h>
-
-#include <vtkInformation.h>
-
-#ifndef TTK_ENABLE_KAMIKAZE
-#define TTK_ABORT_KK(COND, MSG, RET) \
-  if(COND) {                         \
-    this->printErr(MSG);             \
-    return RET;                      \
-  }
-#else // TTK_ENABLE_KAMIKAZE
-#define TTK_ABORT_KK(COND, MSG, RET)
-#endif // TTK_ENABLE_KAMIKAZE
 
 vtkStandardNewMacro(ttkHarmonicField);
 
@@ -100,7 +89,10 @@ int ttkHarmonicField::RequestData(vtkInformation *request,
       break;
   }
 
-  TTK_ABORT_KK(outputField == nullptr, "vtkArray allocation problem", -8);
+  if(outputField == nullptr) {
+    this->printErr("vtkArray allocation problem");
+    return 0;
+  }
 
   outputField->SetNumberOfComponents(1);
   outputField->SetNumberOfTuples(nVerts);
@@ -128,8 +120,11 @@ int ttkHarmonicField::RequestData(vtkInformation *request,
       break;
   }
 
-  TTK_ABORT_KK(
-    res != 0, "HarmonicField execute() error code: " + std::to_string(res), -9);
+  if(res != 0) {
+    this->printErr("HarmonicField execute() error code: "
+                   + std::to_string(res));
+    return 0;
+  }
 
   // update result
   output->ShallowCopy(domain);
