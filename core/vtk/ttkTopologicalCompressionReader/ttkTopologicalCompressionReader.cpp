@@ -112,7 +112,8 @@ int ttkTopologicalCompressionReader::RequestData(
   BuildMesh();
 
   triangulation.setInputData(mesh);
-  topologicalCompression.setupTriangulation(triangulation.getTriangulation());
+  topologicalCompression.preconditionTriangulation(
+    triangulation.getTriangulation());
 
   const auto status = topologicalCompression.ReadFromFile<double>(fp);
   if(status != 0) {
