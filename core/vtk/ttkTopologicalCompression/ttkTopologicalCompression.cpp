@@ -128,12 +128,11 @@ int ttkTopologicalCompression::RequestData(vtkInformation *request,
   outputOffsetField->SetNumberOfTuples(vertexNumber);
   outputOffsetField->SetName(ttk::OffsetScalarFieldName);
 
-  this->setInputDataPointer(ttkUtils::GetVoidPointer(inputScalarField));
-  this->setOutputDataPointer(ttkUtils::GetVoidPointer(outputScalarField));
-
   // Call TopologicalCompression
   switch(inputScalarField->GetDataType()) {
-    vtkTemplateMacro(this->execute<VTK_TT>());
+    vtkTemplateMacro(this->execute(
+      static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(inputScalarField)),
+      static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(outputScalarField))));
     default:
       break;
   }

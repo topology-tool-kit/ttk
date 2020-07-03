@@ -54,7 +54,7 @@ namespace ttk {
     TopologicalCompression();
 
     template <class dataType>
-    int execute();
+    int execute(dataType *inputData, dataType *outputData);
 
     // Persistence compression methods.
     template <class dataType>
@@ -80,12 +80,6 @@ namespace ttk {
                          const double &tol);
 
     // Getters and setters.
-    inline void setInputDataPointer(void *data) {
-      inputData_ = data;
-    }
-    inline void setOutputDataPointer(void *data) {
-      outputData_ = data;
-    }
     inline void setCompressionType(int compressionType) {
       compressionType_ = compressionType;
     }
@@ -369,8 +363,6 @@ namespace ttk {
 
   protected:
     // General.
-    void *inputData_{};
-    void *outputData_{};
     AbstractTriangulation *triangulation_{};
     TopologicalSimplification topologicalSimplification{};
 
@@ -422,22 +414,21 @@ namespace ttk {
 #include <PersistenceDiagramCompression.h>
 
 template <class dataType>
-int ttk::TopologicalCompression::execute() {
+int ttk::TopologicalCompression::execute(dataType *inputData,
+                                         dataType *outputData) {
   this->printMsg("Starting compression...");
 
 // check the consistency of the variables -- to adapt
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!triangulation_)
     return -1;
-  if(!inputData_)
+  if(inputData == nullptr)
     return -2;
-  if(!outputData_)
+  if(outputData == nullptr)
     return -3;
 // if (tol < 0 || tol > 100) return -4;
 #endif
 
-  auto *outputData = (dataType *)outputData_;
-  auto *inputData = (dataType *)inputData_;
   int vertexNumber = triangulation_->getNumberOfVertices();
 
   int res = 0;
