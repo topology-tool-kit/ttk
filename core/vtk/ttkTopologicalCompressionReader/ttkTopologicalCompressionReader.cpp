@@ -115,7 +115,8 @@ int ttkTopologicalCompressionReader::RequestData(
   topologicalCompression.preconditionTriangulation(
     triangulation.getTriangulation());
 
-  const auto status = topologicalCompression.ReadFromFile<double>(fp);
+  const auto status = topologicalCompression.ReadFromFile<double>(
+    fp, *(triangulation.getTriangulation()));
   if(status != 0) {
     vtkWarningMacro("Failure when reading compressed TTK file");
   }
