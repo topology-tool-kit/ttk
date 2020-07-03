@@ -53,21 +53,25 @@ namespace ttk {
     // Base code methods.
     TopologicalCompression();
 
-    template <class dataType>
-    int execute(dataType *inputData, dataType *outputData);
+    template <class dataType, typename triangulationType>
+    int execute(dataType *inputData,
+                dataType *outputData,
+                const triangulationType &triangulation);
 
     // Persistence compression methods.
-    template <class dataType>
+    template <class dataType, typename triangulationType>
     int computePersistencePairs(
       std::vector<std::tuple<SimplexId, SimplexId, dataType>> &JTPairs,
       std::vector<std::tuple<SimplexId, SimplexId, dataType>> &STPairs,
       dataType *inputScalars_,
-      SimplexId *inputOffsets);
-    template <typename dataType>
+      SimplexId *inputOffsets,
+      const triangulationType &triangulation);
+    template <typename dataType, typename triangulationType>
     int compressForPersistenceDiagram(int vertexNumber,
                                       dataType *inputData,
                                       dataType *outputData,
-                                      const double &tol);
+                                      const double &tol,
+                                      const triangulationType &triangulation);
 
     // Other compression methods.
     template <typename dataType>
@@ -107,9 +111,11 @@ namespace ttk {
     }
     inline void
       preconditionTriangulation(AbstractTriangulation *const triangulation) {
-      triangulation_ = triangulation;
-      if(triangulation != nullptr)
-        triangulation_->preconditionVertexNeighbors();
+      if(triangulation != nullptr) {
+        triangulation->preconditionVertexNeighbors();
+        topologicalSimplification.setupTriangulation(triangulation);
+        ftmTreePP.setupTriangulation(triangulation, false);
+      }
     }
 
     inline int getNbVertices() {
@@ -239,8 +245,8 @@ namespace ttk {
       int &nbConstraints);
     template <typename dataType>
     int ReadMetaData(FILE *fm);
-    template <typename dataType>
-    int ReadFromFile(FILE *fm);
+    template <typename dataType, typename triangulationType>
+    int ReadFromFile(FILE *fm, const triangulationType &triangulation);
 
     int WriteCompactSegmentation(FILE *fm,
                                  const std::vector<int> &segmentation,
@@ -324,8 +330,9 @@ namespace ttk {
     int ReadPersistenceTopology(FILE *fm);
     template <typename dataType>
     int ReadOtherTopology(FILE *fm);
-    template <typename dataType>
-    int ReadPersistenceGeometry(FILE *fm);
+    template <typename dataType, typename triangulationType>
+    int ReadPersistenceGeometry(FILE *fm,
+                                const triangulationType &triangulation);
     template <typename dataType>
     int ReadOtherGeometry(FILE *fm);
 
@@ -342,12 +349,13 @@ namespace ttk {
     template <typename dataType>
     int WriteOtherGeometry(FILE *fm);
 
-    template <typename dataType>
+    template <typename dataType, typename triangulationType>
     int PerformSimplification(
       const std::vector<std::tuple<int, double, int>> &constraints,
       int nbConstraints,
       int vertexNumber,
-      double *array);
+      double *array,
+      const triangulationType &triangulation);
 
     // Numeric management.
 
@@ -363,8 +371,8 @@ namespace ttk {
 
   protected:
     // General.
-    AbstractTriangulation *triangulation_{};
     TopologicalSimplification topologicalSimplification{};
+    ftm::FTMTreePP ftmTreePP;
 
     // Parameters
     int compressionType_{};
@@ -413,15 +421,15 @@ namespace ttk {
 #include <OtherCompression.h>
 #include <PersistenceDiagramCompression.h>
 
-template <class dataType>
-int ttk::TopologicalCompression::execute(dataType *inputData,
-                                         dataType *outputData) {
+template <class dataType, typename triangulationType>
+int ttk::TopologicalCompression::execute(
+  dataType *inputData,
+  dataType *outputData,
+  const triangulationType &triangulation) {
   this->printMsg("Starting compression...");
 
 // check the consistency of the variables -- to adapt
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(!triangulation_)
-    return -1;
   if(inputData == nullptr)
     return -2;
   if(outputData == nullptr)
@@ -429,12 +437,12 @@ int ttk::TopologicalCompression::execute(dataType *inputData,
 // if (tol < 0 || tol > 100) return -4;
 #endif
 
-  int vertexNumber = triangulation_->getNumberOfVertices();
+  int vertexNumber = triangulation.getNumberOfVertices();
 
   int res = 0;
   if(compressionType_ == (int)ttk::CompressionType::PersistenceDiagram)
     compressForPersistenceDiagram<dataType>(
-      vertexNumber, inputData, outputData, Tolerance);
+      vertexNumber, inputData, outputData, Tolerance, triangulation);
   else if(compressionType_ == (int)ttk::CompressionType::Other)
     compressForOther<dataType>(vertexNumber, inputData, outputData, Tolerance);
 
@@ -632,8 +640,9 @@ int ttk::TopologicalCompression::WriteMetaData(
   return 0;
 }
 
-template <typename T>
-int ttk::TopologicalCompression::ReadFromFile(FILE *fp) {
+template <typename T, typename triangulationType>
+int ttk::TopologicalCompression::ReadFromFile(
+  FILE *fp, const triangulationType &triangulation) {
   // [fp->] Read headers.
 
   this->printMsg("Successfully read metadata.");
@@ -724,7 +733,7 @@ int ttk::TopologicalCompression::ReadFromFile(FILE *fp) {
   // Rebuild topologically consistent geometry.
   int status = 0;
   if(compressionType_ == (int)ttk::CompressionType::PersistenceDiagram)
-    status = ReadPersistenceGeometry<double>(fm);
+    status = ReadPersistenceGeometry<double>(fm, triangulation);
   else if(compressionType_ == (int)ttk::CompressionType::Other)
     status = ReadOtherGeometry<double>(fm);
 

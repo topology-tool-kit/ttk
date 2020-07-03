@@ -120,8 +120,9 @@ int ttk::TopologicalCompression::ReadPersistenceTopology(FILE *fm) {
   return 0;
 }
 
-template <typename dataType>
-int ttk::TopologicalCompression::ReadPersistenceGeometry(FILE *fm) {
+template <typename dataType, typename triangulationType>
+int ttk::TopologicalCompression::ReadPersistenceGeometry(
+  FILE *fm, const triangulationType &triangulation) {
   using ttk::TopologicalCompression;
 
   int sqMethod = sqMethodInt_;
@@ -221,7 +222,8 @@ int ttk::TopologicalCompression::ReadPersistenceGeometry(FILE *fm) {
 
   // 2.b. (4.) Apply topological simplification with min/max constraints
   PerformSimplification<double>(criticalConstraints_, nbConstraints,
-                                vertexNumber, decompressedData_.data());
+                                vertexNumber, decompressedData_.data(),
+                                triangulation);
   this->printMsg("Successfully performed simplification.");
 
   rawFileLength += numberOfBytesRead;
@@ -229,12 +231,14 @@ int ttk::TopologicalCompression::ReadPersistenceGeometry(FILE *fm) {
   return 0;
 }
 
-template <typename dataType>
+template <typename dataType, typename triangulationType>
 int ttk::TopologicalCompression::PerformSimplification(
   const std::vector<std::tuple<int, double, int>> &constraints,
   int nbConstraints,
   int vertexNumber,
-  double *array) {
+  double *array,
+  const triangulationType &triangulation) {
+
   std::vector<int> inputOffsets(vertexNumber);
   std::vector<int> critConstraints(nbConstraints);
   std::vector<double> inArray(vertexNumber);
@@ -245,9 +249,6 @@ int ttk::TopologicalCompression::PerformSimplification(
   // Offsets
   for(int i = 0; i < vertexNumber; ++i)
     inputOffsets[i] = i;
-
-  // Triangulate.
-  topologicalSimplification.setupTriangulation(triangulation_);
 
   // Preprocess simplification.
   // std::vector<int>* authorizedSaddles = new std::vector<int>();
@@ -263,10 +264,10 @@ int ttk::TopologicalCompression::PerformSimplification(
     array[id] = val;
 
     // Smoothe neighborhood (along with offsets).
-    SimplexId neighborNumber = triangulation_->getVertexNeighborNumber(id);
+    SimplexId neighborNumber = triangulation.getVertexNeighborNumber(id);
     for(SimplexId j = 0; j < neighborNumber; ++j) {
       SimplexId neighbor;
-      triangulation_->getVertexNeighbor(id, j, neighbor);
+      triangulation.getVertexNeighbor(id, j, neighbor);
 
       if(type == 1) { // Local_maximum.
         if(array[neighbor] > val)
@@ -378,20 +379,20 @@ void ttk::TopologicalCompression::CropIntervals(
   }
 }
 
-template <typename dataType>
+template <typename dataType, typename triangulationType>
 int ttk::TopologicalCompression::computePersistencePairs(
   std::vector<std::tuple<SimplexId, SimplexId, dataType>> &JTPairs,
   std::vector<std::tuple<SimplexId, SimplexId, dataType>> &STPairs,
   dataType *inputScalars_,
-  SimplexId *inputOffsets) {
+  SimplexId *inputOffsets,
+  const triangulationType &triangulation) {
+
   // Compute offsets
-  const SimplexId numberOfVertices = triangulation_->getNumberOfVertices();
+  const SimplexId numberOfVertices = triangulation.getNumberOfVertices();
   std::vector<SimplexId> voffsets((unsigned long)numberOfVertices);
   std::copy(inputOffsets, inputOffsets + numberOfVertices, voffsets.begin());
 
   // Get contour tree
-  ftm::FTMTreePP ftmTreePP;
-  ftmTreePP.setupTriangulation(triangulation_, false);
   ftmTreePP.setVertexScalars(inputScalars_);
   ftmTreePP.setTreeType(ftm::TreeType::Join_Split);
   ftmTreePP.setVertexSoSoffsets(voffsets.data());
@@ -404,12 +405,14 @@ int ttk::TopologicalCompression::computePersistencePairs(
   return 0;
 }
 
-template <typename dataType>
+template <typename dataType, typename triangulationType>
 int ttk::TopologicalCompression::compressForPersistenceDiagram(
   int vertexNumber,
   dataType *inputData,
   dataType *outputData,
-  const double &tol) {
+  const double &tol,
+  const triangulationType &triangulation) {
+
   ttk::Timer t;
   ttk::Timer t1;
 
@@ -463,7 +466,7 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
     std::vector<std::tuple<SimplexId, SimplexId, dataType>> JTPairs;
     std::vector<std::tuple<SimplexId, SimplexId, dataType>> STPairs;
     computePersistencePairs<dataType>(
-      JTPairs, STPairs, inputData, inputOffsets.data());
+      JTPairs, STPairs, inputData, inputOffsets.data(), triangulation);
 
     this->printMsg("Computed persistence pairs", 1.0, t.getElapsedTime(),
                    this->threadNumber_);
@@ -473,7 +476,6 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
     int nbS = STPairs.size();
     std::vector<int> critConstraints(2 * nbJ + 2 * nbS);
 
-    topologicalSimplification.setupTriangulation(triangulation_);
     // auto* authorizedSaddles = new std::vector<int>();
 
     dataType maxEpsilon = 0;
@@ -853,10 +855,10 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
 
         // Get neighbors.
         SimplexId neighborNumber
-          = triangulation_->getVertexNeighborNumber(vertex);
+          = triangulation.getVertexNeighborNumber(vertex);
         for(SimplexId j = 0; j < neighborNumber; ++j) {
           SimplexId neighbor;
-          triangulation_->getVertexNeighbor(vertex, j, neighbor);
+          triangulation.getVertexNeighbor(vertex, j, neighbor);
 
           // Add current neighbor to processing stack.
           if(!markedVertices[neighbor] && segmentation_[neighbor] == seg) {
