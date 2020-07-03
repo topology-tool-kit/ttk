@@ -631,7 +631,8 @@ int ttk::TopologicalCompression::WriteMetaData(
   Write(fp, zfpBitBudget);
 
   // 6. Length of array name
-  Write(fp, dataArrayName.size());
+  // (explicit call to unsigned long variant for MSVC compatibility)
+  Write<unsigned long>(fp, dataArrayName.size());
 
   // 7. Array name (as unsigned chars)
   WriteByteArray(fp, dataArrayName.c_str(), dataArrayName.size());
