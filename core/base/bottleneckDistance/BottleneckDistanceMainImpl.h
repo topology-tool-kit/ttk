@@ -321,4 +321,3 @@ int BottleneckDistance::computeBottleneck(const std::vector<diagramTuple> &d1,
   distance_ = (double)d;
   return 0;
 }
-

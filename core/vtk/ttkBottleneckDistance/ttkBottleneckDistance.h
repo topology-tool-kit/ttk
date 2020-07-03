@@ -104,10 +104,12 @@ public:
   int FillInputPortInformation(int port, vtkInformation *info) override {
     switch(port) {
       case 0:
-        info->Set(ttkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkUnstructuredGrid");
+        info->Set(
+          ttkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkUnstructuredGrid");
         break;
       case 1:
-        info->Set(ttkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkUnstructuredGrid");
+        info->Set(
+          ttkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkUnstructuredGrid");
         break;
       default:
         break;

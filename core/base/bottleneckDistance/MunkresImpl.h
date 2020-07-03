@@ -557,4 +557,3 @@ int Munkres::computeAffectationCost(
 
   return 0;
 }
-

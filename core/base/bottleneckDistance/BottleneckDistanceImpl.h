@@ -60,8 +60,9 @@ int BottleneckDistance::execute(const bool usePersistenceMetric) {
       } break;
       case str2int("2"):
       case str2int("geometric"): {
-          this->printMsg("Solving with the approximate Dionysus geometric approach.");
-          this->printErr("Not supported");
+        this->printMsg(
+          "Solving with the approximate Dionysus geometric approach.");
+        this->printErr("Not supported");
       } break;
       case str2int("3"):
       case str2int("parallel"): {
@@ -463,4 +464,3 @@ dataType BottleneckDistance::buildMappings(
 
   return addedPersistence;
 }
-

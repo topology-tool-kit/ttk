@@ -201,4 +201,3 @@ namespace ttk {
 #include <MunkresImpl.h>
 
 } // namespace ttk
-

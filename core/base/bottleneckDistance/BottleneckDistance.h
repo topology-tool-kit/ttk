@@ -223,4 +223,3 @@ namespace ttk {
 #include <BottleneckDistanceMainImpl.h>
 
 } // namespace ttk
-

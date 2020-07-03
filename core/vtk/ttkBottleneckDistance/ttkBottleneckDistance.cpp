@@ -64,11 +64,14 @@ int ttkBottleneckDistance::RequestData(vtkInformation * /*request*/,
   vtkDataSet *input1 = vtkDataSet::GetData(inputVector[0]);
   vtkDataSet *input2 = vtkDataSet::GetData(inputVector[1]);
 
-  // vtkDataSet *output1 = outputVector->GetInformationObject(0)->Get(vtkDataObject::DATA_OBJECT()));
-  // vtkDataSet *output2 = outputVector->GetInformationObject(1)->Get(vtkDataObject::DATA_OBJECT()));
-  // vtkDataSet *output3 = outputVector->GetInformationObject(2)->Get(vtkDataObject::DATA_OBJECT()));
+  // vtkDataSet *output1 =
+  // outputVector->GetInformationObject(0)->Get(vtkDataObject::DATA_OBJECT()));
+  // vtkDataSet *output2 =
+  // outputVector->GetInformationObject(1)->Get(vtkDataObject::DATA_OBJECT()));
+  // vtkDataSet *output3 =
+  // outputVector->GetInformationObject(2)->Get(vtkDataObject::DATA_OBJECT()));
 
-// #ifndef TTK_ENABLE_KAMIKAZE
+  // #ifndef TTK_ENABLE_KAMIKAZE
   // if(!input1 || !input2) {
   //   cerr << "[ttkBottleneckDistance] Error: input pointer is NULL." << endl;
   //   return -1;
@@ -83,7 +86,7 @@ int ttkBottleneckDistance::RequestData(vtkInformation * /*request*/,
   //   cerr << "[ttkBottleneckDistance] Error: input has no points." << endl;
   //   return -1;
   // }
-// #endif
+  // #endif
 
   auto outputCT1 = vtkUnstructuredGrid::SafeDownCast(
     outputVector->GetInformationObject(0)->Get(vtkDataObject::DATA_OBJECT()));

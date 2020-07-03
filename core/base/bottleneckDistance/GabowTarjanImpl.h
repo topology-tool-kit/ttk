@@ -286,4 +286,3 @@ int GabowTarjan::run(std::vector<matchingTuple> &matchings) {
 
   return 0;
 }
-

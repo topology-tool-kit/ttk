@@ -17,4 +17,3 @@ public:
     return weight < other.weight;
   }
 };
-

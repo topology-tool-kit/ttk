@@ -138,4 +138,3 @@ namespace ttk {
 #include <GabowTarjanImpl.h>
 
 } // namespace ttk
-
