@@ -1,5 +1,4 @@
-#ifndef _MATCHINGGRAPH_H
-#define _MATCHINGGRAPH_H
+#pragma once
 
 class Edge {
 
@@ -19,4 +18,3 @@ public:
   }
 };
 
-#endif

@@ -6,4 +6,4 @@ HEADERS
   ttkBottleneckDistance.h
 DEPENDS
   bottleneckDistance
-  ttkTriangulationAlgorithm
+  ttkAlgorithm
