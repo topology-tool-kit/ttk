@@ -47,7 +47,7 @@ namespace ttk {
 
   enum class CompressionType { PersistenceDiagram = 0, Other = 1 };
 
-  class TopologicalCompression : public Debug {
+  class TopologicalCompression : virtual public Debug {
 
   public:
     // Base code methods.
