@@ -62,17 +62,12 @@ public:
   vtkGetMacro(UseTopologicalSimplification, bool);
 
   inline void SetSQMethodPV(int c) {
-    switch(c) {
-      case 1:
-        SetSQMethod("r");
-        break;
-      case 2:
-        SetSQMethod("d");
-        break;
-      case 0:
-      default:
-        SetSQMethod("");
-        break;
+    if(c == 1) {
+      SetSQMethod("r");
+    } else if(c == 2) {
+      SetSQMethod("d");
+    } else {
+      SetSQMethod("");
     }
   }
 
