@@ -33,7 +33,7 @@ int ttk::TopologicalCompression::CompressWithZFP(FILE *file,
   bool is2D = nx == 1 || ny == 1 || nz == 1;
   if(is2D) {
     if(nx + ny == 2 || ny + nz == 2 || nx + nz == 2) {
-      fprintf(stderr, "One-dimensional arrays not supported.\n");
+      this->printErr("One-dimensional arrays not supported.");
       return 0;
     }
 
@@ -75,14 +75,14 @@ int ttk::TopologicalCompression::CompressWithZFP(FILE *file,
     // zfpsize = fread(buffer, 1, bufsize, stdin);
     zfpsize = fread(buffer.data(), 1, bufsize, file);
     if(!zfp_decompress(zfp, field)) {
-      fprintf(stderr, "decompression failed\n");
+      this->printErr("Decompression failed");
       status = 1;
     }
   } else {
     // compress array and output compressed stream
     zfpsize = zfp_compress(zfp, field);
     if(!zfpsize) {
-      fprintf(stderr, "compression failed\n");
+      this->printErr("Compression failed");
       status = 1;
     } else
       fwrite(buffer.data(), 1, zfpsize, file);
