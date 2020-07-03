@@ -332,8 +332,7 @@ void ttk::TopologicalCompression::CropIntervals(
       double value = std::get<0>(tt);
       int sseg = std::get<1>(tt);
       if(seg != sseg) {
-        ttk::Debug d;
-        d.printErr("Decompression mismatch.");
+        this->printErr("Decompression mismatch.");
       }
 
       auto it2 = lower_bound(mappingsSortedPerValue.begin(),
@@ -370,14 +369,12 @@ void ttk::TopologicalCompression::CropIntervals(
         }
       }
     } else {
-      ttk::Debug d;
-      d.printErr("Error looking for topo index.");
+      this->printErr("Error looking for topo index.");
     }
   }
 
   if(numberOfMisses > 0) {
-    ttk::Debug d;
-    d.printWrn("Missed " + std::to_string(numberOfMisses) + " values.");
+    this->printWrn("Missed " + std::to_string(numberOfMisses) + " values.");
   }
 }
 

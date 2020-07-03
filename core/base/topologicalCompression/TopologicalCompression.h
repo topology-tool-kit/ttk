@@ -228,11 +228,11 @@ namespace ttk {
       }
     }
 
-    static int ReadCompactSegmentation(FILE *fm,
-                                       std::vector<int> &segmentation,
-                                       int &numberOfVertices,
-                                       int &numberOfSegments);
-    static int ReadPersistenceIndex(
+    int ReadCompactSegmentation(FILE *fm,
+                                std::vector<int> &segmentation,
+                                int &numberOfVertices,
+                                int &numberOfSegments);
+    int ReadPersistenceIndex(
       FILE *fm,
       std::vector<std::tuple<double, int>> &mappings,
       std::vector<std::tuple<double, int>> &mappingsSortedPerValue,
@@ -245,11 +245,11 @@ namespace ttk {
     template <typename dataType>
     int ReadFromFile(FILE *fm);
 
-    static int WriteCompactSegmentation(FILE *fm,
-                                        const std::vector<int> &segmentation,
-                                        int numberOfVertices,
-                                        int numberOfSegments);
-    static int WritePersistenceIndex(
+    int WriteCompactSegmentation(FILE *fm,
+                                 const std::vector<int> &segmentation,
+                                 int numberOfVertices,
+                                 int numberOfSegments);
+    int WritePersistenceIndex(
       FILE *fm,
       std::vector<std::tuple<double, int>> &mapping,
       std::vector<std::tuple<int, double, int>> &constraints);
@@ -280,7 +280,7 @@ namespace ttk {
                     const std::string &dataArrayName);
 
     template <typename dataType>
-    static void CropIntervals(
+    void CropIntervals(
       std::vector<std::tuple<dataType, int>> &mappings,
       std::vector<std::tuple<dataType, int>> &mappingsSortedPerValue,
       double min,
@@ -292,21 +292,21 @@ namespace ttk {
     // API management.
 
 #ifdef TTK_ENABLE_ZFP
-    static int CompressWithZFP(FILE *file,
-                               bool decompress,
-                               std::vector<double> &array,
-                               int nx,
-                               int ny,
-                               int nz,
-                               double rate);
+    int CompressWithZFP(FILE *file,
+                        bool decompress,
+                        std::vector<double> &array,
+                        int nx,
+                        int ny,
+                        int nz,
+                        double rate);
 #endif
 
 #ifdef TTK_ENABLE_ZLIB
-    static void CompressWithZlib(bool decompress,
-                                 Bytef *dest,
-                                 uLongf *destLen,
-                                 const Bytef *source,
-                                 uLong sourceLen);
+    void CompressWithZlib(bool decompress,
+                          Bytef *dest,
+                          uLongf *destLen,
+                          const Bytef *source,
+                          uLong sourceLen);
 #endif
 
   private:

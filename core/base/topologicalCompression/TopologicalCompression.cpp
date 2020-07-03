@@ -96,8 +96,7 @@ int ttk::TopologicalCompression::CompressWithZFP(FILE *file,
   // free(array);
 
   if(status != 0) {
-    ttk::Debug d;
-    d.printErr("Encountered a problem with ZFP.");
+    this->printErr("Encountered a problem with ZFP.");
   }
 
   return (int)zfpsize;
