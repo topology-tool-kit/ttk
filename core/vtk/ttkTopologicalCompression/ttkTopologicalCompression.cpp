@@ -1,4 +1,6 @@
 #include "ttkTopologicalCompression.h"
+#include <ttkMacros.h>
+#include <ttkUtils.h>
 
 #include <vtkDataSet.h>
 #include <vtkDoubleArray.h>
@@ -127,11 +129,11 @@ int ttkTopologicalCompression::RequestData(vtkInformation *request,
   outputOffsetField->SetName(ttk::OffsetScalarFieldName);
 
   this->setCompressionType(CompressionType);
-  this->setInputDataPointer(inputScalarField->GetVoidPointer(0));
+  this->setInputDataPointer(ttkUtils::GetVoidPointer(inputScalarField));
   this->setSQ(SQMethod);
   this->setUseTopologicalSimplification(UseTopologicalSimplification);
   this->setSubdivide(!Subdivide);
-  this->setOutputDataPointer(outputScalarField->GetVoidPointer(0));
+  this->setOutputDataPointer(ttkUtils::GetVoidPointer(outputScalarField));
   this->setMaximumError(MaximumError);
 
   // Call TopologicalCompression
