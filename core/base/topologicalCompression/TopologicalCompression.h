@@ -53,7 +53,8 @@ namespace ttk {
     // Base code methods.
     TopologicalCompression();
 
-    template <class dataType, typename triangulationType>
+    template <class dataType,
+              typename triangulationType = AbstractTriangulation>
     int execute(dataType *inputData,
                 dataType *outputData,
                 const triangulationType &triangulation);
