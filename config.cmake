@@ -313,32 +313,10 @@ if(NOT CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
   set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}")
 endif()
 
-# Install rpath
-
+# ParaView plugins go to a subdirectory with this name
 set(TTK_PLUGIN_SUBDIR "TopologyToolKit")
 
-function(ttk_set_paraview_install_name TTK_NAME)
-  if(APPLE)
-    # On macOS,
-    # let the TopologyToolKit.so find this dependency in the subdirectory
-    set_target_properties (${TTK_NAME}
-      PROPERTIES
-        INSTALL_NAME_DIR "@rpath"
-    )
-  endif(APPLE)
-endfunction(ttk_set_paraview_install_name)
-
-function(ttk_set_paraview_rpath TARGET_NAME)
-  if(APPLE)
-    # On macOS,
-    # look into the subdirectory "TopologyToolKit"
-    # to find the actual plugins.
-    set_target_properties(${TARGET_NAME}
-      PROPERTIES
-        INSTALL_RPATH "@loader_path/${TTK_PLUGIN_SUBDIR}"
-    )
-  endif(APPLE)
-endfunction(ttk_set_paraview_rpath TTK_NAME)
+# Install rpath
 
 set(CMAKE_MACOSX_RPATH TRUE)
 set(CMAKE_INSTALL_RPATH TRUE)
