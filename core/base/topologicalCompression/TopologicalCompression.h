@@ -54,7 +54,7 @@ namespace ttk {
     TopologicalCompression();
 
     template <class dataType>
-    int execute(const double &tolerance);
+    int execute();
 
     // Persistence compression methods.
     template <class dataType>
@@ -100,6 +100,9 @@ namespace ttk {
     }
     inline void setMaximumError(double maximumError) {
       MaximumError = maximumError;
+    }
+    inline void setTolerance(const double data) {
+      Tolerance = data;
     }
     inline void
       setUseTopologicalSimplification(bool useTopologicalSimplification) {
@@ -419,7 +422,7 @@ namespace ttk {
 #include <PersistenceDiagramCompression.h>
 
 template <class dataType>
-int ttk::TopologicalCompression::execute(const double &tol) {
+int ttk::TopologicalCompression::execute() {
   this->printMsg("Starting compression...");
 
 // check the consistency of the variables -- to adapt
@@ -440,9 +443,9 @@ int ttk::TopologicalCompression::execute(const double &tol) {
   int res = 0;
   if(compressionType_ == (int)ttk::CompressionType::PersistenceDiagram)
     compressForPersistenceDiagram<dataType>(
-      vertexNumber, inputData, outputData, tol);
+      vertexNumber, inputData, outputData, Tolerance);
   else if(compressionType_ == (int)ttk::CompressionType::Other)
-    compressForOther<dataType>(vertexNumber, inputData, outputData, tol);
+    compressForOther<dataType>(vertexNumber, inputData, outputData, Tolerance);
 
   return res;
 }

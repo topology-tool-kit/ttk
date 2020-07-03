@@ -133,7 +133,7 @@ int ttkTopologicalCompression::RequestData(vtkInformation *request,
 
   // Call TopologicalCompression
   switch(inputScalarField->GetDataType()) {
-    vtkTemplateMacro(this->execute<VTK_TT>(Tolerance));
+    vtkTemplateMacro(this->execute<VTK_TT>());
     default:
       break;
   }
