@@ -60,11 +60,12 @@ macro(ttk_add_vtk_module)
   endif()
 
   if(NOT "${TTK_INSTALL_PLUGIN_DIR}" STREQUAL "")
+    ttk_set_paraview_install_name(${TTK_NAME})
     install(
       TARGETS
         ${TTK_NAME}
       DESTINATION
-        "${TTK_INSTALL_PLUGIN_DIR}/TopologyToolKit"
+        "${TTK_INSTALL_PLUGIN_DIR}/${TTK_PLUGIN_SUBDIR}"
       )
   endif()
 
