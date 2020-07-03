@@ -277,11 +277,11 @@ int ttk::PersistenceDiagram::execute() const {
     MorseSmaleComplex3D morseSmaleComplex;
     morseSmaleComplex.setDebugLevel(debugLevel_);
     morseSmaleComplex.setThreadNumber(threadNumber_);
-    morseSmaleComplex.setupTriangulation(triangulation_);
+    morseSmaleComplex.preconditionTriangulation(triangulation_);
     morseSmaleComplex.setInputScalarField(inputScalars_);
     morseSmaleComplex.setInputOffsets(inputOffsets_);
     morseSmaleComplex.computePersistencePairs<scalarType, idType>(
-      pl_saddleSaddlePairs);
+      pl_saddleSaddlePairs, *triangulation_);
   }
 
   // get persistence diagrams
