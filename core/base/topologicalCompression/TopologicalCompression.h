@@ -108,9 +108,10 @@ namespace ttk {
     inline void setFileName(char *fn) {
       fileName = fn;
     }
-    inline void setupTriangulation(Triangulation *triangulation) {
+    inline void
+      preconditionTriangulation(AbstractTriangulation *const triangulation) {
       triangulation_ = triangulation;
-      if(triangulation_)
+      if(triangulation != nullptr)
         triangulation_->preconditionVertexNeighbors();
     }
 
@@ -377,7 +378,7 @@ namespace ttk {
     // General.
     void *inputData_{};
     void *outputData_{};
-    Triangulation *triangulation_{};
+    AbstractTriangulation *triangulation_{};
     TopologicalSimplification topologicalSimplification{};
 
     // Parameters
