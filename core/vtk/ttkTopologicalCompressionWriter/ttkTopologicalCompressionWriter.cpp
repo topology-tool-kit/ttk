@@ -1,4 +1,5 @@
 #include <ttkTopologicalCompressionWriter.h>
+#include <ttkUtils.h>
 
 vtkStandardNewMacro(ttkTopologicalCompressionWriter);
 
@@ -76,19 +77,18 @@ int ttkTopologicalCompressionWriter::AllocateOutput(
 
 void ttkTopologicalCompressionWriter::PerformCompression(
   vtkDataArray *inputScalarField) {
-  topologicalCompression.setInputDataPointer(
-    inputScalarField->GetVoidPointer(0));
   topologicalCompression.setSQ(SQMethod);
   topologicalCompression.setSubdivide(!Subdivide);
   topologicalCompression.setUseTopologicalSimplification(
     UseTopologicalSimplification);
   topologicalCompression.setZFPOnly(ZFPOnly);
   topologicalCompression.setCompressionType(CompressionType);
-  topologicalCompression.setOutputDataPointer(
-    outputScalarField->GetVoidPointer(0));
   topologicalCompression.setMaximumError(MaximumError);
+  topologicalCompression.setTolerance(Tolerance);
   switch(inputScalarField->GetDataType()) {
-    vtkTemplateMacro(topologicalCompression.execute<VTK_TT>(Tolerance));
+    vtkTemplateMacro(topologicalCompression.execute(
+      static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(inputScalarField)),
+      static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(outputScalarField))));
     default: {
       std::stringstream msg;
       msg << "[ttkCompressionWriter] Unsupported data type." << std::endl;
