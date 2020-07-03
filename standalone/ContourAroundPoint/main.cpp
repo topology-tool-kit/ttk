@@ -2,8 +2,6 @@
 /// \date July 2, 2020.
 ///
 /// \brief Standalone version of the `ContourAroundPoint` module.
-// NOTE This is a bit of an effort to implement and thus sadly must wait;
-// Currently it is just a copy of HelloWorld, with minimum changes to make it compile.
 
 // TTK Includes
 #include <CommandLineParser.h>
@@ -25,9 +23,11 @@ int main(int argc, char **argv) {
   // ---------------------------------------------------------------------------
   std::vector<std::string> inputFilePaths;
   std::vector<std::string> inputArrayNames;
-  std::string outputArrayName{"AveragedArray"};
   std::string outputPathPrefix{"output"};
   bool listArrays{false};
+  double regionExtension{65.};
+  double sizeFilter{10.};
+  bool spherical(false);
 
   // ---------------------------------------------------------------------------
   // Set program variables based on command line arguments
@@ -46,9 +46,12 @@ int main(int argc, char **argv) {
     parser.setOption("l", &listArrays, "List available arrays");
 
     // -------------------------------------------------------------------------
-    // TODO 1: Declare custom arguments and options
+    // DONE 1: Declare custom arguments and options
     // -------------------------------------------------------------------------
-    parser.setArgument("O", &outputArrayName, "Output array name", true);
+    parser.setArgument("r", &regionExtension, "Region extension", true);
+    parser.setArgument("s", &sizeFilter, "Size filter", true);
+    parser.setOption("spherical", &spherical,
+                     "Treat 3D coordinates as spherical with fixed radius");
 
     parser.parse(argc, argv);
   }
@@ -65,9 +68,11 @@ int main(int argc, char **argv) {
   auto contourAroundPoint = vtkSmartPointer<ttkContourAroundPoint>::New();
 
   // ---------------------------------------------------------------------------
-  // TODO 2: Pass custom arguments and options to the module
+  // DONE 2: Pass custom arguments and options to the module
   // ---------------------------------------------------------------------------
-  // contourAroundPoint->SetOutputArrayName(outputArrayName);
+  contourAroundPoint->SetRegionExtension(regionExtension);
+  contourAroundPoint->SetSizeFilter(sizeFilter);
+  contourAroundPoint->SetSpherical(spherical);
 
   // ---------------------------------------------------------------------------
   // Read input vtkDataObjects (optionally: print available arrays)
