@@ -9,16 +9,6 @@
 #include <vtkPointData.h>
 #include <vtkSmartPointer.h>
 
-#ifndef TTK_ENABLE_KAMIKAZE
-#define TTK_ABORT_KK(COND, MSG, RET) \
-  if(COND) {                         \
-    this->printErr(MSG);             \
-    return RET;                      \
-  }
-#else // TTK_ENABLE_KAMIKAZE
-#define TTK_ABORT_KK(COND, MSG, RET)
-#endif // TTK_ENABLE_KAMIKAZE
-
 vtkStandardNewMacro(ttkEigenField);
 
 ttkEigenField::ttkEigenField() {
@@ -50,7 +40,10 @@ int ttkEigenField::RequestData(vtkInformation *request,
   auto output = vtkDataSet::GetData(outputVector);
   auto triangulation = ttkAlgorithm::GetTriangulation(domain);
 
-  TTK_ABORT_KK(triangulation == nullptr, "wrong triangulation", -1);
+  if(triangulation == nullptr) {
+    this->printErr("Triangulation is NULL");
+    return 0;
+  }
 
   this->preconditionTriangulation(*triangulation);
 
@@ -71,11 +64,14 @@ int ttkEigenField::RequestData(vtkInformation *request,
       stats = vtkSmartPointer<vtkDoubleArray>::New();
       break;
     default:
-      TTK_ABORT_KK(true, "unknown field type", -7);
-      break;
+      this->printErr("Unknown field type");
+      return 0;
   }
 
-  TTK_ABORT_KK(eigenFunctions == nullptr, "vtkArray allocation problem", -3);
+  if(eigenFunctions == nullptr) {
+    this->printErr("vtkDataArray allocation problem");
+    return 0;
+  }
 
   const auto vertexNumber = triangulation->getNumberOfVertices();
 
@@ -111,8 +107,10 @@ int ttkEigenField::RequestData(vtkInformation *request,
       break;
   }
 
-  TTK_ABORT_KK(
-    res != 0, "EigenField execute error code " + std::to_string(res), -4);
+  if(res != 0) {
+    this->printErr("EigenField execute error code " + std::to_string(res));
+    return 0;
+  }
 
   // update result
   output->ShallowCopy(domain);
