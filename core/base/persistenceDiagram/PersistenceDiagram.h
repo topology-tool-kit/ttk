@@ -35,12 +35,6 @@
 #include <MorseSmaleComplex3D.h>
 #include <Triangulation.h>
 
-#ifdef TTK_ENABLE_OPENMP
-#ifdef _GLIBCXX_PARALLEL_FEATURES_H
-#include <parallel/algorithm>
-#endif
-#endif
-
 namespace ttk {
 
   /**
@@ -162,15 +156,8 @@ int ttk::PersistenceDiagram::sortPersistenceDiagram(
         else
           return va < vb;
       };
-#ifdef TTK_ENABLE_OPENMP
-#ifdef _GLIBCXX_PARALLEL_FEATURES_H
-  __gnu_parallel::sort(diagram.begin(), diagram.end(), cmp);
-#else
+
   std::sort(diagram.begin(), diagram.end(), cmp);
-#endif
-#else
-  std::sort(diagram.begin(), diagram.end(), cmp);
-#endif
 
   return 0;
 }
