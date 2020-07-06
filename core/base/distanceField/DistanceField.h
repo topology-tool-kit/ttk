@@ -38,8 +38,9 @@ namespace ttk {
     template <typename dataType>
     dataType getDistance(const SimplexId a, const SimplexId b) const;
 
-    template <typename dataType, class triangulationType = ttk::AbstractTriangulation>
-    int execute(const triangulationType*) const;
+    template <typename dataType,
+              class triangulationType = ttk::AbstractTriangulation>
+    int execute(const triangulationType *) const;
 
     inline int setVertexNumber(SimplexId vertexNumber) {
       vertexNumber_ = vertexNumber;
@@ -52,7 +53,7 @@ namespace ttk {
     }
 
     inline int preconditionTriangulation(AbstractTriangulation *triangulation) {
-        return triangulation->preconditionVertexNeighbors();
+      return triangulation->preconditionVertexNeighbors();
     }
 
     inline int setVertexIdentifierScalarFieldPointer(void *data) {
@@ -142,18 +143,18 @@ int ttk::DistanceField::execute(const triangulationType *triangulation_) const {
   }
 
   {
-      this->printMsg(ttk::debug::Separator::L2); // horizontal '-' separator
-      this->printMsg(
-              "Complete", 1, globalTimer.getElapsedTime() // global progress, time
-              );
-      this->printMsg(ttk::debug::Separator::L1); // horizontal '=' separator
+    this->printMsg(ttk::debug::Separator::L2); // horizontal '-' separator
+    this->printMsg(
+      "Complete", 1, globalTimer.getElapsedTime() // global progress, time
+    );
+    this->printMsg(ttk::debug::Separator::L1); // horizontal '=' separator
   }
   //{
-      //std::stringstream msg;
-      //msg << "[DistanceField] Data-set (" << vertexNumber_
-      //<< " points) processed in " << t.getElapsedTime() << " s. ("
-      //<< threadNumber_ << " thread(s)." << std::endl;
-      //printMsg(msg.str(), ttk::Debug::debugPriority::timeMsg);
+  // std::stringstream msg;
+  // msg << "[DistanceField] Data-set (" << vertexNumber_
+  //<< " points) processed in " << t.getElapsedTime() << " s. ("
+  //<< threadNumber_ << " thread(s)." << std::endl;
+  // printMsg(msg.str(), ttk::Debug::debugPriority::timeMsg);
   //}
 
   return 0;

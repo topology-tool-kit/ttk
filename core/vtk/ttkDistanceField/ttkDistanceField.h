@@ -42,7 +42,7 @@
 #include <DistanceField.h>
 #include <ttkAlgorithm.h>
 
-enum DistanceType { Float = 0, Double };
+enum DistanceType { Float = 0, Double = 1 };
 
 class TTKDISTANCEFIELD_EXPORT ttkDistanceField : public ttkAlgorithm,
                                                  protected ttk::DistanceField {
@@ -60,9 +60,6 @@ public:
   vtkSetMacro(ForceInputVertexScalarField, bool);
   vtkGetMacro(ForceInputVertexScalarField, bool);
 
-  vtkSetMacro(InputVertexScalarFieldName, std::string);
-  vtkGetMacro(InputVertexScalarFieldName, std::string);
-
   int getTriangulation(vtkDataSet *input);
   int getIdentifiers(vtkDataSet *input);
 
@@ -77,13 +74,7 @@ protected:
                   vtkInformationVector *outputVector) override;
 
 private:
-  // std::string ScalarField{"ScalarField"};
+  bool ForceInputVertexScalarField{false};
   int OutputScalarFieldType{DistanceType::Float};
   std::string OutputScalarFieldName{"DistanceFieldValues"};
-  bool ForceInputVertexScalarField{false};
-  std::string InputVertexScalarFieldName{"InputScalarField"};
-
-  // ttk::DistanceField distanceField_;
-  //ttk::Triangulation *triangulation_;
-  vtkDataArray *identifiers_{NULL};
 };

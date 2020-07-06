@@ -10,7 +10,7 @@ using namespace ttk;
 
 vtkStandardNewMacro(ttkDistanceField);
 
-ttkDistanceField::ttkDistanceField() : identifiers_{} {
+ttkDistanceField::ttkDistanceField() {
   this->SetNumberOfInputPorts(2);
   this->SetNumberOfOutputPorts(1);
 }
@@ -35,39 +35,10 @@ int ttkDistanceField::FillOutputPortInformation(int port,
   return 0;
 }
 
-//int ttkDistanceField::getTriangulation(vtkDataSet *input) {
-
-  //triangulation_ = ttkAlgorithm::GetTriangulation(input);
-  //if(!triangulation_)
-    //return -1;
-
-  //this->preconditionTriangulation(triangulation_);
-  //Modified();
-
-  //return 0;
-//}
-
-int ttkDistanceField::getIdentifiers(vtkDataSet *input) {
-  if(ForceInputVertexScalarField and InputVertexScalarFieldName.length())
-    identifiers_
-      = input->GetPointData()->GetArray(InputVertexScalarFieldName.data());
-  else if(input->GetPointData()->GetArray(ttk::VertexScalarFieldName))
-    identifiers_ = input->GetPointData()->GetArray(ttk::VertexScalarFieldName);
-
-#ifndef TTK_ENABLE_KAMIKAZE
-  // allocation problem
-  if(!identifiers_) {
-    printErr("[ttkDistanceField] Error : wrong vertex identifiers.");
-    return -1;
-  }
-#endif
-
-  return 0;
-}
-
 int ttkDistanceField::RequestData(vtkInformation *request,
                                   vtkInformationVector **inputVector,
                                   vtkInformationVector *outputVector) {
+  ttk::Timer globalTimer;
 
   vtkDataSet *domain = vtkDataSet::GetData(inputVector[0]);
   vtkPointSet *sources = vtkPointSet::GetData(inputVector[1]);
@@ -84,10 +55,11 @@ int ttkDistanceField::RequestData(vtkInformation *request,
   }
 #endif
 
-  ret = getIdentifiers(sources);
+  vtkDataArray *identifiers = this->GetOptionalArray(
+    ForceInputVertexScalarField, 2, ttk::VertexScalarFieldName, inputVector, 1);
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(ret) {
-    printErr("[ttkDistanceField] Error : wrong identifiers.");
+  if(!identifiers) {
+    printErr("wrong identifiers.");
     return -2;
   }
 #endif
@@ -95,7 +67,7 @@ int ttkDistanceField::RequestData(vtkInformation *request,
   const SimplexId numberOfPointsInDomain = domain->GetNumberOfPoints();
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!numberOfPointsInDomain) {
-    printErr("[ttkDistanceField] Error : domain has no points.");
+    printErr("domain has no points.");
     return -3;
   }
 #endif
@@ -103,7 +75,7 @@ int ttkDistanceField::RequestData(vtkInformation *request,
   const SimplexId numberOfPointsInSources = sources->GetNumberOfPoints();
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!numberOfPointsInSources) {
-    printErr("[ttkDistanceField] Error : sources have no points.");
+    printErr("sources have no points.");
     return -4;
   }
 #endif
@@ -119,8 +91,7 @@ int ttkDistanceField::RequestData(vtkInformation *request,
 
 #ifndef TTK_ENABLE_KAMIKAZE
   else {
-    printErr(
-      "[ttkDistanceField] Error : ttkSimplexIdTypeArray allocation problem.");
+    printErr("ttkSimplexIdTypeArray allocation problem.");
     return -5;
   }
 #endif
@@ -134,8 +105,7 @@ int ttkDistanceField::RequestData(vtkInformation *request,
   }
 #ifndef TTK_ENABLE_KAMIKAZE
   else {
-    printErr(
-      "[ttkDistanceField] Error : ttkSimplexIdTypeArray allocation problem.");
+    printErr("ttkSimplexIdTypeArray allocation problem.");
     return -6;
   }
 #endif
@@ -143,13 +113,10 @@ int ttkDistanceField::RequestData(vtkInformation *request,
   this->setVertexNumber(numberOfPointsInDomain);
   this->setSourceNumber(numberOfPointsInSources);
   this->setVertexIdentifierScalarFieldPointer(
-    ttkUtils::GetVoidPointer(identifiers_));
+    ttkUtils::GetVoidPointer(identifiers));
   this->setOutputIdentifiers(ttkUtils::GetVoidPointer(origin));
   this->setOutputSegmentation(ttkUtils::GetVoidPointer(seg));
 
-  // @PETER Alot of code can be refactored into a single templated function, but
-  // that would have to to in the .h file, not sure if there's any downside to
-  // that.
   vtkDataArray *distanceScalars{};
   switch(OutputScalarFieldType) {
     case DistanceType::Float:
@@ -161,13 +128,15 @@ int ttkDistanceField::RequestData(vtkInformation *request,
       }
 #ifndef TTK_ENABLE_KAMIKAZE
       else {
-        printErr(
-          "[ttkDistanceField] Error : vtkFloatArray allocation problem.");
+        printErr("vtkFloatArray allocation problem.");
         return -7;
       }
 #endif
-      this->setOutputScalarFieldPointer(ttkUtils::GetVoidPointer(distanceScalars));
-      ttkTemplateMacro( triangulation->getType(), (ret = this->execute<float, TTK_TT>((TTK_TT *) triangulation->getData())));
+      this->setOutputScalarFieldPointer(
+        ttkUtils::GetVoidPointer(distanceScalars));
+      ttkTemplateMacro(
+        triangulation->getType(), (ret = this->execute<float, TTK_TT>(
+                                     (TTK_TT *)triangulation->getData())));
       break;
 
     case DistanceType::Double:
@@ -179,20 +148,21 @@ int ttkDistanceField::RequestData(vtkInformation *request,
       }
 #ifndef TTK_ENABLE_KAMIKAZE
       else {
-        printErr(
-          "[ttkDistanceField] Error : vtkDoubleArray allocation problem.");
+        printErr("vtkDoubleArray allocation problem.");
         return -8;
       }
 #endif
       this->setOutputScalarFieldPointer(
         ttkUtils::GetVoidPointer(distanceScalars));
 
-      ttkTemplateMacro( triangulation->getType(), (ret = this->execute<double, TTK_TT>((TTK_TT *) triangulation->getData())));
+      ttkTemplateMacro(
+        triangulation->getType(), (ret = this->execute<double, TTK_TT>(
+                                     (TTK_TT *)triangulation->getData())));
       break;
 
     default:
 #ifndef TTK_ENABLE_KAMIKAZE
-      printErr("[ttkDistanceField] Error : Scalar field type problem.");
+      printErr("Scalar field type problem.");
       return -9;
 #endif
       break;
@@ -201,8 +171,7 @@ int ttkDistanceField::RequestData(vtkInformation *request,
 #ifndef TTK_ENABLE_KAMIKAZE
   // something wrong in baseCode
   if(ret) {
-    printErr("[ttkDistanceField] DistanceField.execute() error code : "
-             + std::to_string(ret));
+    printErr("DistanceField.execute() error code : " + std::to_string(ret));
     return -10;
   }
 #endif
@@ -214,8 +183,12 @@ int ttkDistanceField::RequestData(vtkInformation *request,
   output->GetPointData()->AddArray(seg);
   distanceScalars->Delete();
 
-  printMsg(
-    "The ret is " + std::to_string(ret), ttk::Debug::debugPriority::memoryMsg);
+  {
+    this->printMsg(ttk::debug::Separator::L2); // horizontal '-' separator
+    this->printMsg(
+      "Complete", 1, globalTimer.getElapsedTime()); // global progress, time);
+    this->printMsg(ttk::debug::Separator::L1); // horizontal '=' separator
+  }
 
   return 1;
 }
