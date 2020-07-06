@@ -290,47 +290,46 @@ namespace ttk {
                      const int &yDim,
                      const int &zDim);
 
-    std::array<SimplexId, 3>
-      vertexToPositionNd(const SimplexId vertexId) const {
-      std::array<SimplexId, 3> p{};
-      if(dimensionality_ == 1) {
-        p[0] = vertexId;
-      } else if(dimensionality_ == 2) {
-        vertexToPosition2d(vertexId, p.data());
-      } else if(dimensionality_ == 3) {
-        vertexToPosition(vertexId, p.data());
+    int preconditionVerticesInternal();
+    int preconditionEdgesInternal() override;
+    int preconditionTrianglesInternal() override;
+    int preconditionTetrahedronsInternal();
+
+    inline int preconditionCellsInternal() {
+      if(dimensionality_ == 3) {
+        return this->preconditionTetrahedronsInternal();
+      } else if(dimensionality_ == 2 && !hasPreconditionedTriangles_) {
+        hasPreconditionedTriangles_ = true;
+        return this->preconditionTrianglesInternal();
       }
-      return p;
+      return 0;
     }
 
     /**
      * Compute the barycenter of the points of the given edge identifier.
      */
     virtual int getEdgeIncenter(SimplexId edgeId, float incenter[3]) const {
-      std::array<SimplexId, 2> vertexId;
-      for(int i = 0; i < (int)vertexId.size(); ++i) {
-        getEdgeVertexInternal(edgeId, i, vertexId[i]);
-      }
+      SimplexId v0{}, v1{};
+      getEdgeVertexInternal(edgeId, 0, v0);
+      getEdgeVertexInternal(edgeId, 1, v1);
 
-      std::array<std::array<float, 3>, vertexId.size()> p;
-      std::array<std::array<SimplexId, 3>, vertexId.size()> ind;
-      for(int i = 0; i < (int)vertexId.size(); ++i) {
-        for(int j = 0; j < 3; j++)
-          p[i][j] = 0;
-        getVertexPointInternal(vertexId[i], p[i][0], p[i][1], p[i][2]);
-        ind[i] = vertexToPositionNd(vertexId[i]);
-      }
+      std::array<float, 3> p0{}, p1{};
+      getVertexPointInternal(v0, p0[0], p0[1], p0[2]);
+      getVertexPointInternal(v1, p1[0], p1[1], p1[2]);
+
+      const auto &ind0 = vertexCoords_[v0];
+      const auto &ind1 = vertexCoords_[v1];
 
       for(int i = 0; i < dimensionality_; ++i) {
-        if(ind[1][i] == nbvoxels_[i]) {
-          p[0][i] += (ind[0][i] == 0) * dimensions_[i] * spacing_[i];
-        } else if(ind[0][i] == nbvoxels_[i]) {
-          p[1][i] += (ind[1][i] == 0) * dimensions_[i] * spacing_[i];
+        if(ind1[i] == nbvoxels_[i]) {
+          p0[i] += (ind0[i] == 0) * dimensions_[i] * spacing_[i];
+        } else if(ind0[i] == nbvoxels_[i]) {
+          p1[i] += (ind1[i] == 0) * dimensions_[i] * spacing_[i];
         }
       }
 
       for(int i = 0; i < 3; ++i) {
-        incenter[i] = 0.5f * (p[0][i] + p[1][i]);
+        incenter[i] = 0.5f * (p0[i] + p1[i]);
       }
 
       return 0;
@@ -343,42 +342,39 @@ namespace ttk {
     virtual int getTriangleIncenter(SimplexId triangleId,
                                     float incenter[3]) const {
 
-      std::array<SimplexId, 3> vertexId;
-      for(int i = 0; i < (int)vertexId.size(); ++i) {
-        getTriangleVertexInternal(triangleId, i, vertexId[i]);
-      }
+      SimplexId v0{}, v1{}, v2{};
+      getTriangleVertexInternal(triangleId, 0, v0);
+      getTriangleVertexInternal(triangleId, 1, v1);
+      getTriangleVertexInternal(triangleId, 2, v2);
 
-      std::array<std::array<float, 3>, vertexId.size()> p;
-      std::array<std::array<SimplexId, 3>, vertexId.size()> ind;
-      for(int i = 0; i < (int)vertexId.size(); ++i) {
-        getVertexPointInternal(vertexId[i], p[i][0], p[i][1], p[i][2]);
-        ind[i] = vertexToPositionNd(vertexId[i]);
-      }
+      std::array<float, 3> p0{}, p1{}, p2{};
+      getVertexPointInternal(v0, p0[0], p0[1], p0[2]);
+      getVertexPointInternal(v1, p1[0], p1[1], p1[2]);
+      getVertexPointInternal(v2, p2[0], p2[1], p2[2]);
+
+      const auto &ind0 = vertexCoords_[v0];
+      const auto &ind1 = vertexCoords_[v1];
+      const auto &ind2 = vertexCoords_[v2];
 
       for(int i = 0; i < dimensionality_; ++i) {
-        if(ind[0][i] == nbvoxels_[i]) {
-          p[1][i] += (ind[1][i] == 0) * dimensions_[i] * spacing_[i];
-          p[2][i] += (ind[2][i] == 0) * dimensions_[i] * spacing_[i];
-        } else if(ind[1][i] == nbvoxels_[i]) {
-          p[0][i] += (ind[0][i] == 0) * dimensions_[i] * spacing_[i];
-          p[2][i] += (ind[2][i] == 0) * dimensions_[i] * spacing_[i];
-        } else if(ind[2][i] == nbvoxels_[i]) {
-          p[0][i] += (ind[0][i] == 0) * dimensions_[i] * spacing_[i];
-          p[1][i] += (ind[1][i] == 0) * dimensions_[i] * spacing_[i];
+        if(ind0[i] == nbvoxels_[i]) {
+          p1[i] += (ind1[i] == 0) * dimensions_[i] * spacing_[i];
+          p2[i] += (ind2[i] == 0) * dimensions_[i] * spacing_[i];
+        } else if(ind1[i] == nbvoxels_[i]) {
+          p0[i] += (ind0[i] == 0) * dimensions_[i] * spacing_[i];
+          p2[i] += (ind2[i] == 0) * dimensions_[i] * spacing_[i];
+        } else if(ind2[i] == nbvoxels_[i]) {
+          p0[i] += (ind0[i] == 0) * dimensions_[i] * spacing_[i];
+          p1[i] += (ind1[i] == 0) * dimensions_[i] * spacing_[i];
         }
       }
 
-      std::array<float, p.size()> d;
-      for(int i = 0; i < (int)d.size(); ++i) {
-        d[i] = Geometry::distance(p[(i + 1) % 3].data(), p[(i + 2) % 3].data());
-      }
+      std::array<float, 3> d{Geometry::distance(p1.data(), p2.data()),
+                             Geometry::distance(p2.data(), p0.data()),
+                             Geometry::distance(p0.data(), p1.data())};
       const float sum = d[0] + d[1] + d[2];
-      for(int i = 0; i < (int)d.size(); ++i) {
-        d[i] = d[i] / sum;
-      }
-
       for(int i = 0; i < 3; ++i) {
-        incenter[i] = d[0] * p[0][i] + d[1] * p[1][i] + d[2] * p[2][i];
+        incenter[i] = (d[0] * p0[i] + d[1] * p1[i] + d[2] * p2[i]) / sum;
       }
 
       return 0;
@@ -390,41 +386,45 @@ namespace ttk {
      */
     virtual int getTetraIncenter(SimplexId tetraId, float incenter[3]) const {
 
-      std::array<SimplexId, 4> vertexId;
-      for(int i = 0; i < (int)vertexId.size(); ++i) {
-        vertexId[i] = -1;
-        getCellVertexInternal(tetraId, i, vertexId[i]);
-      }
+      SimplexId v0{}, v1{}, v2{}, v3{};
+      getCellVertexInternal(tetraId, 0, v0);
+      getCellVertexInternal(tetraId, 1, v1);
+      getCellVertexInternal(tetraId, 2, v2);
+      getCellVertexInternal(tetraId, 3, v3);
 
-      std::array<std::array<float, 3>, vertexId.size()> p;
-      std::array<std::array<SimplexId, 3>, vertexId.size()> ind;
-      for(int i = 0; i < (int)vertexId.size(); ++i) {
-        getVertexPointInternal(vertexId[i], p[i][0], p[i][1], p[i][2]);
-        ind[i] = vertexToPositionNd(vertexId[i]);
-      }
+      std::array<float, 3> p0{}, p1{}, p2{}, p3{};
+      getVertexPointInternal(v0, p0[0], p0[1], p0[2]);
+      getVertexPointInternal(v1, p1[0], p1[1], p1[2]);
+      getVertexPointInternal(v2, p2[0], p2[1], p2[2]);
+      getVertexPointInternal(v3, p3[0], p3[1], p3[2]);
+
+      const auto &ind0 = vertexCoords_[v0];
+      const auto &ind1 = vertexCoords_[v1];
+      const auto &ind2 = vertexCoords_[v2];
+      const auto &ind3 = vertexCoords_[v3];
 
       for(int i = 0; i < dimensionality_; ++i) {
-        if(ind[0][i] == nbvoxels_[i]) {
-          p[1][i] += (ind[1][i] == 0) * dimensions_[i] * spacing_[i];
-          p[2][i] += (ind[2][i] == 0) * dimensions_[i] * spacing_[i];
-          p[3][i] += (ind[3][i] == 0) * dimensions_[i] * spacing_[i];
-        } else if(ind[1][i] == nbvoxels_[i]) {
-          p[0][i] += (ind[0][i] == 0) * dimensions_[i] * spacing_[i];
-          p[2][i] += (ind[2][i] == 0) * dimensions_[i] * spacing_[i];
-          p[3][i] += (ind[3][i] == 0) * dimensions_[i] * spacing_[i];
-        } else if(ind[2][i] == nbvoxels_[i]) {
-          p[0][i] += (ind[0][i] == 0) * dimensions_[i] * spacing_[i];
-          p[1][i] += (ind[1][i] == 0) * dimensions_[i] * spacing_[i];
-          p[3][i] += (ind[3][i] == 0) * dimensions_[i] * spacing_[i];
-        } else if(ind[3][i] == nbvoxels_[i]) {
-          p[0][i] += (ind[0][i] == 0) * dimensions_[i] * spacing_[i];
-          p[1][i] += (ind[1][i] == 0) * dimensions_[i] * spacing_[i];
-          p[2][i] += (ind[2][i] == 0) * dimensions_[i] * spacing_[i];
+        if(ind0[i] == nbvoxels_[i]) {
+          p1[i] += (ind1[i] == 0) * dimensions_[i] * spacing_[i];
+          p2[i] += (ind2[i] == 0) * dimensions_[i] * spacing_[i];
+          p3[i] += (ind3[i] == 0) * dimensions_[i] * spacing_[i];
+        } else if(ind1[i] == nbvoxels_[i]) {
+          p0[i] += (ind0[i] == 0) * dimensions_[i] * spacing_[i];
+          p2[i] += (ind2[i] == 0) * dimensions_[i] * spacing_[i];
+          p3[i] += (ind3[i] == 0) * dimensions_[i] * spacing_[i];
+        } else if(ind2[i] == nbvoxels_[i]) {
+          p0[i] += (ind0[i] == 0) * dimensions_[i] * spacing_[i];
+          p1[i] += (ind1[i] == 0) * dimensions_[i] * spacing_[i];
+          p3[i] += (ind3[i] == 0) * dimensions_[i] * spacing_[i];
+        } else if(ind3[i] == nbvoxels_[i]) {
+          p0[i] += (ind0[i] == 0) * dimensions_[i] * spacing_[i];
+          p1[i] += (ind1[i] == 0) * dimensions_[i] * spacing_[i];
+          p2[i] += (ind2[i] == 0) * dimensions_[i] * spacing_[i];
         }
       }
 
       for(int i = 0; i < 3; ++i) {
-        incenter[i] = 0.25f * (p[0][i] + p[1][i] + p[2][i] + p[3][i]);
+        incenter[i] = 0.25f * (p0[i] + p1[i] + p2[i] + p3[i]);
       }
       return 0;
     }
@@ -460,13 +460,88 @@ namespace ttk {
     SimplexId tetrahedronNumber_; // number of tetrahedra
 
     // 2d helpers
-    SimplexId Di_;
-    SimplexId Dj_;
+    SimplexId Di_{};
+    SimplexId Dj_{};
 
     // acceleration variables
     bool isAccelerated_;
     SimplexId mod_[2];
     SimplexId div_[2];
+
+    // for  every vertex, its coordinates on the grid
+    std::vector<std::array<SimplexId, 3>> vertexCoords_{};
+    // for every edge, its coordinates on the grid
+    std::vector<std::array<SimplexId, 3>> edgeCoords_{};
+    // for every triangle, its coordinates on the grid
+    std::vector<std::array<SimplexId, 3>> triangleCoords_{};
+    // for every tetrahedron, its coordinates on the grid
+    std::vector<std::array<SimplexId, 3>> tetrahedronCoords_{};
+
+    enum class EdgePosition : char {
+      //    e--------f
+      //   /|       /|
+      //  / |      / |
+      // a--------b  |
+      // |  g-----|--h
+      // | /      | /
+      // |/       |/
+      // c--------d
+
+      // length (ab)
+      L_3D,
+      // height (ac)
+      H_3D,
+      // depth (ae)
+      P_3D,
+      // diagonal1 (bc)
+      D1_3D,
+      // diagonal2 (ag)
+      D2_3D,
+      // diagonal3 (be)
+      D3_3D,
+      // diagonal4 (bg)
+      D4_3D,
+
+      // length (ab)
+      L_2D,
+      // height (ac)
+      H_2D,
+      // diagonal1 (bc)
+      D1_2D,
+
+      FIRST_EDGE_1D,
+      LAST_EDGE_1D,
+      CENTER_1D,
+    };
+
+    enum class TrianglePosition : char {
+      //    e--------f
+      //   /|       /|
+      //  / |      / |
+      // a--------b  |
+      // |  g-----|--h
+      // | /      | /
+      // |/       |/
+      // c--------d
+
+      F_3D, // face (abc, bcd)
+      C_3D, // side (abe, bef)
+      H_3D, // top (acg, aeg)
+      D1_3D, // diagonal1 (bdg, beg)
+      D2_3D, // diagonal2 (abg, bgh)
+      D3_3D, // diagonal3 (bcg, bfg)
+
+      TOP_2D, // abc
+      BOTTOM_2D, // bcd
+    };
+
+    // for every edge, its position on the grid
+    std::vector<EdgePosition> edgePositions_{};
+    // for every triangle, its position on the grid
+    std::vector<TrianglePosition> trianglePositions_{};
+
+    // cache some edge vertex computation wrt acceleration
+    std::vector<SimplexId> edgeVertexAccelerated_{};
 
     // acceleration functions
     int checkAcceleration();
