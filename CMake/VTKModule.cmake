@@ -59,12 +59,24 @@ macro(ttk_add_vtk_module)
       )
   endif()
 
+  function(ttk_set_paraview_install_name TTK_NAME)
+    if(APPLE)
+      # On macOS,
+      # let the TopologyToolKit.so find this dependency in the subdirectory
+      set_target_properties (${TTK_NAME}
+        PROPERTIES
+          INSTALL_NAME_DIR "@rpath"
+      )
+    endif(APPLE)
+  endfunction(ttk_set_paraview_install_name)
+
   if(NOT "${TTK_INSTALL_PLUGIN_DIR}" STREQUAL "")
+    ttk_set_paraview_install_name(${TTK_NAME})
     install(
       TARGETS
         ${TTK_NAME}
       DESTINATION
-        "${TTK_INSTALL_PLUGIN_DIR}/TopologyToolKit"
+        "${TTK_INSTALL_PLUGIN_DIR}/${TTK_PLUGIN_SUBDIR}"
       )
   endif()
 

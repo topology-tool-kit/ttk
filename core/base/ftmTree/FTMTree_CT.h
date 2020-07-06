@@ -72,7 +72,7 @@ namespace ttk {
         return this;
       }
 
-      inline void setupTriangulation(Triangulation *m,
+      inline void setupTriangulation(AbstractTriangulation *m,
                                      const bool preproc = true) {
         FTMTree_MT::setupTriangulation(m, preproc);
         jt_->setupTriangulation(m, false);

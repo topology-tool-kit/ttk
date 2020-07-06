@@ -6,4 +6,4 @@ HEADERS
   ttkContourAroundPoint.h
 DEPENDS
   contourAroundPoint
-  ttkTriangulationAlgorithm
+  ttkAlgorithm

@@ -1,5 +1,4 @@
-#ifndef _BOTTLENECKDISTANCEIMPLMAIN_H
-#define _BOTTLENECKDISTANCEIMPLMAIN_H
+#pragma once
 
 //  vector <   -- diagram
 //    tuple <    -- pair of critical points
@@ -29,12 +28,8 @@ int BottleneckDistance::computeBottleneck(const std::vector<diagramTuple> &d1,
   }
 
   if(transposeOriginal) {
-    std::stringstream msg;
-    msg << "[BottleneckDistance] The first persistence diagram is larger than "
-           "the second."
-        << std::endl;
-    msg << "[BottleneckDistance] Solving the transposed problem." << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
+    this->printMsg("The first persistence diagram is larger than the second.");
+    this->printMsg("Solving the transposed problem.");
   }
 
   // Check user parameters.
@@ -129,21 +124,21 @@ int BottleneckDistance::computeBottleneck(const std::vector<diagramTuple> &d1,
               ? (px * Geometry::pow(abs(std::get<7>(a) - std::get<7>(b)), w)
                  + py * Geometry::pow(abs(std::get<8>(a) - std::get<8>(b)), w)
                  + pz * Geometry::pow(abs(std::get<9>(a) - std::get<9>(b)), w))
-              : (
-                px
-                  * Geometry::pow(abs(std::get<7>(a) + std::get<11>(a)) / 2
-                                    - abs(std::get<7>(b) + std::get<11>(b)) / 2,
-                                  w)
-                + py
-                    * Geometry::pow(
-                      abs(std::get<8>(a) + std::get<12>(a)) / 2
-                        - abs(std::get<8>(b) + std::get<12>(b)) / 2,
-                      w)
-                + pz
-                    * Geometry::pow(
-                      abs(std::get<9>(a) + std::get<13>(a)) / 2
-                        - abs(std::get<9>(b) + std::get<13>(b)) / 2,
-                      w));
+              : (px
+                   * Geometry::pow(
+                       abs(std::get<7>(a) + std::get<11>(a)) / 2
+                         - abs(std::get<7>(b) + std::get<11>(b)) / 2,
+                       w)
+                 + py
+                     * Geometry::pow(
+                         abs(std::get<8>(a) + std::get<12>(a)) / 2
+                           - abs(std::get<8>(b) + std::get<12>(b)) / 2,
+                         w)
+                 + pz
+                     * Geometry::pow(
+                         abs(std::get<9>(a) + std::get<13>(a)) / 2
+                           - abs(std::get<9>(b) + std::get<13>(b)) / 2,
+                         w));
 
     double persDistance = x + y;
     double val = persDistance + geoDistance;
@@ -192,21 +187,21 @@ int BottleneckDistance::computeBottleneck(const std::vector<diagramTuple> &d1,
 
     if(nbRowMin > 0 && nbColMin > 0) {
       Munkres solverMin;
-      dMsg(std::cout, "[BottleneckDistance] Affecting minima...\n", timeMsg);
+      this->printMsg("Affecting minima...");
       this->solvePWasserstein(
         minRowColMin, maxRowColMin, minMatrix, minMatchings, solverMin);
     }
 
     if(nbRowMax > 0 && nbColMax > 0) {
       Munkres solverMax;
-      dMsg(std::cout, "[BottleneckDistance] Affecting maxima...\n", timeMsg);
+      this->printMsg("Affecting maxima...");
       this->solvePWasserstein(
         minRowColMax, maxRowColMax, maxMatrix, maxMatchings, solverMax);
     }
 
     if(nbRowSad > 0 && nbColSad > 0) {
       Munkres solverSad;
-      dMsg(std::cout, "[BottleneckDistance] Affecting saddles...\n", timeMsg);
+      this->printMsg("Affecting saddles...");
       this->solvePWasserstein(
         minRowColSad, maxRowColSad, sadMatrix, sadMatchings, solverSad);
     }
@@ -216,7 +211,7 @@ int BottleneckDistance::computeBottleneck(const std::vector<diagramTuple> &d1,
     // Launch solving for minima.
     if(nbRowMin > 0 && nbColMin > 0) {
       GabowTarjan solverMin;
-      dMsg(std::cout, "[BottleneckDistance] Affecting minima...\n", timeMsg);
+      this->printMsg("Affecting minima...");
       this->solveInfinityWasserstein(minRowColMin, maxRowColMin, nbRowMin,
                                      nbColMin, minMatrix, minMatchings,
                                      solverMin);
@@ -225,7 +220,7 @@ int BottleneckDistance::computeBottleneck(const std::vector<diagramTuple> &d1,
     // Launch solving for maxima.
     if(nbRowMax > 0 && nbColMax > 0) {
       GabowTarjan solverMax;
-      dMsg(std::cout, "[BottleneckDistance] Affecting maxima...\n", timeMsg);
+      this->printMsg("Affecting maxima...");
       this->solveInfinityWasserstein(minRowColMax, maxRowColMax, nbRowMax,
                                      nbColMax, maxMatrix, maxMatchings,
                                      solverMax);
@@ -234,19 +229,14 @@ int BottleneckDistance::computeBottleneck(const std::vector<diagramTuple> &d1,
     // Launch solving for saddles.
     if(nbRowSad > 0 && nbColSad > 0) {
       GabowTarjan solverSad;
-      dMsg(std::cout, "[BottleneckDistance] Affecting saddles...\n", timeMsg);
+      this->printMsg("Affecting saddles...");
       this->solveInfinityWasserstein(minRowColSad, maxRowColSad, nbRowSad,
                                      nbColSad, sadMatrix, sadMatchings,
                                      solverSad);
     }
   }
 
-  {
-    std::stringstream msg;
-    msg << "[BottleneckDistance] TTK CORE DONE IN " << t.getElapsedTime()
-        << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
-  }
+  this->printMsg("TTK CORE DONE", 1, t.getElapsedTime());
 
   // Rebuild mappings.
   // Begin cost computation for unpaired vertices.
@@ -305,32 +295,29 @@ int BottleneckDistance::computeBottleneck(const std::vector<diagramTuple> &d1,
   }
 
   if(numberOfMismatches > 0) {
-    std::stringstream msg;
-    msg << "[BottleneckDistance] Distance mismatch when rebuilding "
-        << numberOfMismatches << " matchings." << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
+    this->printWrn("Distance mismatch when rebuilding "
+                   + std::to_string(numberOfMismatches) + " matchings");
   }
 
   dataType affectationD = d;
   d = wasserstein > 0
         ? Geometry::pow(
-          d + addedMaxPersistence + addedMinPersistence + addedSadPersistence,
-          (1.0 / (double)wasserstein))
+            d + addedMaxPersistence + addedMinPersistence + addedSadPersistence,
+            (1.0 / (double)wasserstein))
         : std::max(
-          d, std::max(addedMaxPersistence,
-                      std::max(addedMinPersistence, addedSadPersistence)));
+            d, std::max(addedMaxPersistence,
+                        std::max(addedMinPersistence, addedSadPersistence)));
 
   {
     std::stringstream msg;
-    msg << "[BottleneckDistance] Computed distance diagMax("
-        << addedMaxPersistence << "), diagMin(" << addedMinPersistence
-        << "), diagSad(" << addedSadPersistence << "), affAll(" << affectationD
-        << "), res(" << d << ")" << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
+    this->printMsg("Computed distance:");
+    this->printMsg("diagMax(" + std::to_string(addedMaxPersistence)
+                   + "), diagMin(" + std::to_string(addedMinPersistence)
+                   + "), diagSad(" + std::to_string(addedSadPersistence) + ")");
+    this->printMsg("affAll(" + std::to_string(affectationD) + "), res("
+                   + std::to_string(d) + ")" + std::to_string(d) + ")");
   }
 
   distance_ = (double)d;
   return 0;
 }
-
-#endif

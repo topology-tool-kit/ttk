@@ -19,7 +19,6 @@
 #include <FTMTree.h>
 #include <Geometry.h>
 #include <Triangulation.h>
-#include <Wrapper.h>
 
 #include <algorithm>
 #include <array>
@@ -316,9 +315,13 @@ namespace ttk {
      * TTK assumes that the input dataset is made of only one connected
      * component.
      */
-    class DiscreteGradient : public Debug {
+    class DiscreteGradient : virtual public Debug {
 
     public:
+      DiscreteGradient() {
+        this->setDebugMsgPrefix("DiscreteGradient");
+      }
+
       /**
        * Impose a threshold on the number of simplification passes.
        */
@@ -367,23 +370,286 @@ saddle-connectors.
        * Return the scalar value of the point in the cell which has the highest
 function value.
        */
-      template <typename dataType>
-      dataType scalarMax(const Cell &cell, const dataType *const scalars) const;
+      template <typename dataType, typename triangulationType>
+      dataType scalarMax(const Cell &cell,
+                         const dataType *const scalars,
+                         const triangulationType &triangulation) const;
 
       /**
        * Return the scalar value of the point in the cell which has the lowest
 function value.
        */
-      template <typename dataType>
-      dataType scalarMin(const Cell &cell, const dataType *const scalars) const;
+      template <typename dataType, typename triangulationType>
+      dataType scalarMin(const Cell &cell,
+                         const dataType *const scalars,
+                         const triangulationType &triangulation) const;
 
       /**
        * Compute the difference of function values of a pair of cells.
        */
-      template <typename dataType>
+      template <typename dataType, typename triangulationType>
       dataType getPersistence(const Cell &up,
                               const Cell &down,
-                              const dataType *scalars) const;
+                              const dataType *scalars,
+                              const triangulationType &triangulation) const;
+
+      /**
+       * Compute the initial gradient field of the input scalar function on the
+triangulation.
+       */
+      template <typename dataType, typename idType, typename triangulationType>
+      int buildGradient(const triangulationType &triangulation);
+
+      /**
+       * Automatic detection of the PL critical points and simplification
+according to them.
+       */
+      template <typename dataType, typename idType, typename triangulationType>
+      int reverseGradient(const triangulationType &triangulation,
+                          const bool detectCriticalPoints = true);
+
+      /**
+       * Set the input scalar function.
+       */
+      inline int setInputScalarField(const void *const data) {
+        inputScalarField_ = data;
+        return 0;
+      }
+
+      /**
+       * Preprocess all the required connectivity requests on the triangulation.
+       */
+      inline void preconditionTriangulation(AbstractTriangulation *const data) {
+        if(data != nullptr) {
+          dimensionality_ = data->getCellVertexNumber(0) - 1;
+          numberOfVertices_ = data->getNumberOfVertices();
+
+          data->preconditionBoundaryVertices();
+          data->preconditionBoundaryEdges();
+          data->preconditionVertexNeighbors();
+          data->preconditionVertexEdges();
+          data->preconditionVertexStars();
+          data->preconditionEdges();
+          data->preconditionEdgeStars();
+          if(dimensionality_ == 2) {
+            data->preconditionCellEdges();
+          } else if(dimensionality_ == 3) {
+            data->preconditionBoundaryTriangles();
+            data->preconditionVertexTriangles();
+            data->preconditionEdgeTriangles();
+            data->preconditionTriangles();
+            data->preconditionTriangleEdges();
+            data->preconditionTriangleStars();
+            data->preconditionCellTriangles();
+            // for filterSaddleConnectors
+            contourTree_.setupTriangulation(data);
+          }
+        }
+      }
+
+      /**
+       * Set the input offset function.
+       */
+      inline int setInputOffsets(const void *const data) {
+        inputOffsets_ = data;
+        return 0;
+      }
+
+      /**
+       * Set the output data pointer to the critical points.
+       */
+      inline void setOutputCriticalPoints(void *const cellScalars) {
+        outputCriticalPoints_points_cellScalars_ = cellScalars;
+      }
+
+      /**
+       * Get back output critical points arrays from class members
+       */
+      inline void fetchOutputCriticalPoints(
+        SimplexId *const cp_numberOfPoints,
+        std::vector<float> *const cp_points,
+        std::vector<char> *const cp_points_cellDimensions,
+        std::vector<SimplexId> *const cp_points_cellIds,
+        std::vector<char> *const cp_points_isOnBoundary,
+        std::vector<SimplexId> *const cp_points_PLVertexIdentifiers) {
+
+        *cp_numberOfPoints = outputCriticalPoints_numberOfPoints_;
+        *cp_points = std::move(outputCriticalPoints_points_);
+        *cp_points_cellDimensions
+          = std::move(outputCriticalPoints_points_cellDimensions_);
+        *cp_points_cellIds = std::move(outputCriticalPoints_points_cellIds_);
+        *cp_points_isOnBoundary
+          = std::move(outputCriticalPoints_points_isOnBoundary_);
+        *cp_points_PLVertexIdentifiers
+          = std::move(outputCriticalPoints_points_PLVertexIdentifiers_);
+      }
+      inline void
+        fetchOutputManifoldSize(std::vector<SimplexId> *const manifoldSize) {
+        *manifoldSize = std::move(outputCriticalPoints_points_manifoldSize_);
+      }
+
+      /**
+       * Get the dimensionality of the triangulation.
+       */
+      int getDimensionality() const;
+
+      /**
+       * Get the number of dimensions available for the cells in the
+triangulation (equal to dimensionality+1).
+       */
+      int getNumberOfDimensions() const;
+
+      /**
+       * Get the number of cells of the given dimension.
+       */
+      template <typename triangulationType>
+      SimplexId getNumberOfCells(const int dimension,
+                                 const triangulationType &triangulation) const;
+
+      /**
+       * Return true if the given cell is at boundary, false otherwise.
+       */
+      template <typename triangulationType>
+      bool isBoundary(const Cell &cell,
+                      const triangulationType &triangulation) const;
+
+      /**
+       * Return true if the given cell is a critical point regarding the
+discrete gradient, false otherwise.
+       */
+      bool isCellCritical(const int cellDim, const SimplexId cellId) const;
+      bool isCellCritical(const Cell &cell) const;
+
+      /**
+       * Return the identifier of the cell paired to the cell given by the user
+in the gradient.
+       */
+      template <typename triangulationType>
+      SimplexId getPairedCell(const Cell &cell,
+                              const triangulationType &triangulation,
+                              bool isReverse = false) const;
+
+      /**
+       * Return the VPath coming from the given cell.
+       */
+      template <typename triangulationType>
+      int getAscendingPath(const Cell &cell,
+                           std::vector<Cell> &vpath,
+                           const triangulationType &triangulation,
+                           const bool enableCycleDetector = false) const;
+
+      /**
+       * Return the VPath terminating at the given cell.
+       */
+      template <typename triangulationType>
+      int getDescendingPath(const Cell &cell,
+                            std::vector<Cell> &vpath,
+                            const triangulationType &triangulation) const;
+
+      /**
+       * Return the VPath terminating at the given 2-saddle restricted to the
+2-separatrice of the 1-saddle.
+       */
+      template <typename triangulationType>
+      bool getDescendingPathThroughWall(const Cell &saddle2,
+                                        const Cell &saddle1,
+                                        const std::vector<bool> &isVisited,
+                                        std::vector<Cell> *const vpath,
+                                        const triangulationType &triangulation,
+                                        const bool stopIfMultiConnected = false,
+                                        const bool enableCycleDetector
+                                        = false) const;
+
+      /**
+       * Return the VPath coming from the given 1-saddle restricted to the
+2-separatrice of the 2-saddle.
+       */
+      template <typename triangulationType>
+      bool getAscendingPathThroughWall(const Cell &saddle1,
+                                       const Cell &saddle2,
+                                       const std::vector<bool> &isVisited,
+                                       std::vector<Cell> *const vpath,
+                                       const triangulationType &triangulation,
+                                       const bool stopIfMultiConnected = false,
+                                       const bool enableCycleDetector
+                                       = false) const;
+
+      /**
+       * Return the 2-separatrice terminating at the given 2-saddle.
+       */
+      template <typename triangulationType>
+      int getDescendingWall(const Cell &cell,
+                            VisitedMask &mask,
+                            const triangulationType &triangulation,
+                            std::vector<Cell> *const wall = nullptr,
+                            std::set<SimplexId> *const saddles = nullptr) const;
+
+      /**
+       * Return the 2-separatrice coming from the given 1-saddle.
+       */
+      template <typename triangulationType>
+      int getAscendingWall(const Cell &cell,
+                           VisitedMask &mask,
+                           const triangulationType &triangulation,
+                           std::vector<Cell> *const wall = nullptr,
+                           std::set<SimplexId> *const saddles = nullptr) const;
+
+      /**
+       * Get the vertex id of with the maximum scalar field value on
+       * the given cell. Compare offsets if scalar field is constant.
+       */
+      template <typename triangulationType>
+      SimplexId
+        getCellGreaterVertex(const Cell c,
+                             const triangulationType &triangulation) const;
+
+      /**
+       * Build the geometric embedding of the given STL vector of cells.
+       * The output data pointers are modified accordingly. This
+       * function needs the following internal pointers to be set:
+       * outputCriticalPoints_numberOfPoints_
+       * outputCriticalPoints_points_
+       * inputScalarField_
+       */
+      template <typename dataType, typename triangulationType>
+      int setCriticalPoints(const std::vector<Cell> &criticalPoints,
+                            std::vector<size_t> &nCriticalPointsByDim,
+                            const triangulationType &triangulation);
+
+      /**
+       * Detect the critical points and build their geometric embedding.
+       * The output data pointers are modified accordingly.
+       */
+      template <typename dataType, typename triangulationType>
+      int setCriticalPoints(const triangulationType &triangulation);
+
+      /**
+       * Get the output critical points as a STL vector of cells.
+       */
+      template <typename triangulationType>
+      int getCriticalPoints(std::vector<Cell> &criticalPoints,
+                            const triangulationType &triangulation) const;
+
+      /**
+       * Compute manifold size for critical extrema
+       */
+      int setManifoldSize(const std::vector<Cell> &criticalPoints,
+                          const std::vector<size_t> &nCriticalPointsByDim,
+                          const std::vector<SimplexId> &maxSeeds,
+                          const SimplexId *const ascendingManifold,
+                          const SimplexId *const descendingManifold);
+
+      /**
+       * Build the glyphs representing the discrete gradient vector field.
+       */
+      template <typename triangulationType>
+      int setGradientGlyphs(SimplexId &numberOfPoints,
+                            std::vector<float> &points,
+                            std::vector<char> &points_pairOrigins,
+                            SimplexId &numberOfCells,
+                            std::vector<SimplexId> &cells,
+                            std::vector<char> &cells_pairTypes,
+                            const triangulationType &triangulation) const;
 
     private:
       template <typename scalarType, typename offsetType>
@@ -428,7 +694,10 @@ function value.
        * @return Lower star as 4 sets of cells (0-cells, 1-cells, 2-cells and
        * 3-cells)
        */
-      inline lowerStarType lowerStar(const SimplexId a) const;
+      template <typename triangulationType>
+      inline lowerStarType
+        lowerStar(const SimplexId a,
+                  const triangulationType &triangulation) const;
 
       /**
        * @brief Return the number of unpaired faces of a given cell in
@@ -459,7 +728,10 @@ function value.
        * @param[in] alpha Cell of lower dimension
        * @param[in] beta Cell of higher dimension
        */
-      inline void pairCells(CellExt &alpha, CellExt &beta);
+      template <typename triangulationType>
+      inline void pairCells(CellExt &alpha,
+                            CellExt &beta,
+                            const triangulationType &triangulation);
 
       /**
        * Implements the ProcessLowerStars algorithm from "Theory and
@@ -467,52 +739,48 @@ function value.
        * Grayscale Digital Images", V. Robins, P. J. Wood,
        * A. P. Sheppard
        */
-      int processLowerStars();
-
-    public:
-      /**
-       * Compute the initial gradient field of the input scalar function on the
-triangulation.
-       */
-      template <typename dataType, typename idType>
-      int buildGradient();
+      template <typename triangulationType>
+      int processLowerStars(const triangulationType &triangulation);
 
       /**
        * Get the list of maxima candidates for simplification.
        */
-      template <typename dataType>
+      template <typename dataType, typename triangulationType>
       int getRemovableMaxima(
         const std::vector<std::pair<SimplexId, char>> &criticalPoints,
         const bool allowBoundary,
         std::vector<char> &isRemovableMaximum,
-        std::vector<SimplexId> &pl2dmt_maximum);
+        std::vector<SimplexId> &pl2dmt_maximum,
+        const triangulationType &triangulation);
 
       /**
        * Get the list of 1-saddles candidates for simplification.
        */
-      template <typename dataType>
+      template <typename dataType, typename triangulationType>
       int getRemovableSaddles1(
         const std::vector<std::pair<SimplexId, char>> &criticalPoints,
         const bool allowBoundary,
         std::vector<char> &isRemovableSaddle,
-        std::vector<SimplexId> &pl2dmt_saddle);
+        std::vector<SimplexId> &pl2dmt_saddle,
+        const triangulationType &triangulation);
 
       /**
        * Get the list of 2-saddles candidates for simplification.
        */
-      template <typename dataType>
+      template <typename dataType, typename triangulationType>
       int getRemovableSaddles2(
         const std::vector<std::pair<SimplexId, char>> &criticalPoints,
         const bool allowBoundary,
         std::vector<char> &isRemovableSaddle,
-        std::vector<SimplexId> &pl2dmt_saddle);
+        std::vector<SimplexId> &pl2dmt_saddle,
+        const triangulationType &triangulation);
 
       /**
        * Create initial Morse-Smale Complex structure and initialize the
 (2-saddle,...,1-saddle) vpaths
        * to the simplification process.
        */
-      template <typename dataType>
+      template <typename dataType, typename triangulationType>
       int initializeSaddleSaddleConnections1(
         const std::vector<char> &isRemovableSaddle1,
         const std::vector<char> &isRemovableSaddle2,
@@ -520,7 +788,8 @@ triangulation.
         std::vector<VPath> &vpaths,
         std::vector<CriticalPoint> &criticalPoints,
         std::vector<SimplexId> &saddle1Index,
-        std::vector<SimplexId> &saddle2Index) const;
+        std::vector<SimplexId> &saddle2Index,
+        const triangulationType &triangulation) const;
 
       /**
        * Order the (2-saddle,...,1-saddle) vpaths by persistence value.
@@ -536,7 +805,7 @@ triangulation.
        * Core of the simplification process, modify the gradient and
        * reverse the selected (2-saddle,...,1-saddle) vpaths to simplify.
        */
-      template <typename dataType>
+      template <typename dataType, typename triangulationType>
       int processSaddleSaddleConnections1(
         const int iterationThreshold,
         const std::vector<char> &isPL,
@@ -552,27 +821,29 @@ triangulation.
         std::vector<VPath> &vpaths,
         std::vector<CriticalPoint> &criticalPoints,
         std::vector<SimplexId> &saddle1Index,
-        std::vector<SimplexId> &saddle2Index);
+        std::vector<SimplexId> &saddle2Index,
+        const triangulationType &triangulation);
 
       /**
        * High-level function that manages the global simplification of
 (2-saddle,...,1-saddle) vpaths.
        */
-      template <typename dataType>
+      template <typename dataType, typename triangulationType>
       int simplifySaddleSaddleConnections1(
         const std::vector<std::pair<SimplexId, char>> &criticalPoints,
         const std::vector<char> &isPL,
         const int iterationThreshold,
         const bool allowBoundary,
         const bool allowBruteForce,
-        const bool returnSaddleConnectors);
+        const bool returnSaddleConnectors,
+        const triangulationType &triangulation);
 
       /**
        * Create initial Morse-Smale Complex structure and initialize the
 (1-saddle,...,2-saddle) vpaths
        * to the simplification process.
        */
-      template <typename dataType>
+      template <typename dataType, typename triangulationType>
       int initializeSaddleSaddleConnections2(
         const std::vector<char> &isRemovableSaddle1,
         const std::vector<char> &isRemovableSaddle2,
@@ -580,7 +851,8 @@ triangulation.
         std::vector<VPath> &vpaths,
         std::vector<CriticalPoint> &criticalPoints,
         std::vector<SimplexId> &saddle1Index,
-        std::vector<SimplexId> &saddle2Index) const;
+        std::vector<SimplexId> &saddle2Index,
+        const triangulationType &triangulation) const;
 
       /**
        * Order the (1-saddle,...,2-saddle) vpaths by persistence value.
@@ -596,7 +868,7 @@ triangulation.
        * Core of the simplification process, modify the gradient and
        * reverse the selected (1-saddle,...,2-saddle) vpaths to simplify.
        */
-      template <typename dataType>
+      template <typename dataType, typename triangulationType>
       int processSaddleSaddleConnections2(
         const int iterationThreshold,
         const std::vector<char> &isPL,
@@ -612,20 +884,22 @@ triangulation.
         std::vector<VPath> &vpaths,
         std::vector<CriticalPoint> &criticalPoints,
         std::vector<SimplexId> &saddle1Index,
-        std::vector<SimplexId> &saddle2Index);
+        std::vector<SimplexId> &saddle2Index,
+        const triangulationType &triangulation);
 
       /**
        * High-level function that manages the global simplification of
 (1-saddle,...,2-saddle) vpaths.
        */
-      template <typename dataType>
+      template <typename dataType, typename triangulationType>
       int simplifySaddleSaddleConnections2(
         const std::vector<std::pair<SimplexId, char>> &criticalPoints,
         const std::vector<char> &isPL,
         const int iterationThreshold,
         const bool allowBoundary,
         const bool allowBruteForce,
-        const bool returnSaddleConnectors);
+        const bool returnSaddleConnectors,
+        const triangulationType &triangulation);
 
       /**
        * Build the dense representation of the PL critical point list.
@@ -638,112 +912,9 @@ triangulation.
        * Process the saddle connectors by increasing value of persistence until
 a given threshold is met.
        */
-      template <typename dataType, typename idType>
-      int filterSaddleConnectors(const bool allowBoundary);
-
-      /**
-       * Automatic detection of the PL critical points and simplification
-according to them.
-       */
-      template <typename dataType, typename idType>
-      int reverseGradient(const bool detectCriticalPoints = true);
-
-      /**
-       * Set the input scalar function.
-       */
-      inline int setInputScalarField(const void *const data) {
-        inputScalarField_ = data;
-        return 0;
-      }
-
-      /**
-       * Preprocess all the required connectivity requests on the triangulation.
-       */
-      inline int setupTriangulation(Triangulation *const data) {
-        inputTriangulation_ = data;
-        if(inputTriangulation_ != nullptr) {
-          dimensionality_ = inputTriangulation_->getCellVertexNumber(0) - 1;
-          numberOfVertices_ = inputTriangulation_->getNumberOfVertices();
-
-          inputTriangulation_->preconditionBoundaryVertices();
-          inputTriangulation_->preconditionBoundaryEdges();
-          inputTriangulation_->preconditionVertexNeighbors();
-          inputTriangulation_->preconditionVertexEdges();
-          inputTriangulation_->preconditionVertexStars();
-          inputTriangulation_->preconditionEdges();
-          inputTriangulation_->preconditionEdgeStars();
-          if(dimensionality_ == 2) {
-            inputTriangulation_->preconditionCellEdges();
-          } else if(dimensionality_ == 3) {
-            inputTriangulation_->preconditionBoundaryTriangles();
-            inputTriangulation_->preconditionVertexTriangles();
-            inputTriangulation_->preconditionEdgeTriangles();
-            inputTriangulation_->preconditionTriangles();
-            inputTriangulation_->preconditionTriangleEdges();
-            inputTriangulation_->preconditionTriangleStars();
-            inputTriangulation_->preconditionCellTriangles();
-          }
-        }
-
-        return 0;
-      }
-
-      /**
-       * Set the input offset function.
-       */
-      inline int setInputOffsets(const void *const data) {
-        inputOffsets_ = data;
-        return 0;
-      }
-
-      /**
-       * Set the output data pointer to the critical points.
-       */
-      inline int setOutputCriticalPoints(
-        SimplexId *const criticalPoints_numberOfPoints,
-        std::vector<float> *const criticalPoints_points,
-        std::vector<char> *const criticalPoints_points_cellDimensons,
-        std::vector<SimplexId> *const criticalPoints_points_cellIds,
-        void *const criticalPoints_points_cellScalars,
-        std::vector<char> *const criticalPoints_points_isOnBoundary,
-        std::vector<SimplexId> *const criticalPoints_points_PLVertexIdentifiers,
-        std::vector<SimplexId> *const criticalPoints_points_manifoldSize) {
-        outputCriticalPoints_numberOfPoints_ = criticalPoints_numberOfPoints;
-        outputCriticalPoints_points_ = criticalPoints_points;
-
-        outputCriticalPoints_points_cellDimensions_
-          = criticalPoints_points_cellDimensons;
-        outputCriticalPoints_points_cellIds_ = criticalPoints_points_cellIds;
-
-        outputCriticalPoints_points_cellScalars_
-          = criticalPoints_points_cellScalars;
-
-        outputCriticalPoints_points_isOnBoundary_
-          = criticalPoints_points_isOnBoundary;
-
-        outputCriticalPoints_points_PLVertexIdentifiers_
-          = criticalPoints_points_PLVertexIdentifiers;
-
-        outputCriticalPoints_points_manifoldSize_
-          = criticalPoints_points_manifoldSize;
-        return 0;
-      }
-
-      /**
-       * Get the dimensionality of the triangulation.
-       */
-      int getDimensionality() const;
-
-      /**
-       * Get the number of dimensions available for the cells in the
-triangulation (equal to dimensionality+1).
-       */
-      int getNumberOfDimensions() const;
-
-      /**
-       * Get the number of cells of the given dimension.
-       */
-      SimplexId getNumberOfCells(const int dimension) const;
+      template <typename dataType, typename idType, typename triangulationType>
+      int filterSaddleConnectors(const bool allowBoundary,
+                                 const triangulationType &triangulation);
 
       /**
        * Return true if the given cell is a minimum regarding the discrete
@@ -770,156 +941,29 @@ gradient, false otherwise.
       bool isMaximum(const Cell &cell) const;
 
       /**
-       * Return true if the given cell is a critical point regarding the
-discrete gradient, false otherwise.
-       */
-      bool isCellCritical(const int cellDim, const SimplexId cellId) const;
-      bool isCellCritical(const Cell &cell) const;
-
-      /**
-       * Return true if the given cell is at boundary, false otherwise.
-       */
-      bool isBoundary(const Cell &cell) const;
-
-      /**
-       * Return the identifier of the cell paired to the cell given by the user
-in the gradient.
-       */
-      SimplexId getPairedCell(const Cell &cell, bool isReverse = false) const;
-
-      /**
-       * Get the output critical points as a STL vector of cells.
-       */
-      int getCriticalPoints(std::vector<Cell> &criticalPoints) const;
-
-      /**
-       * Return the VPath coming from the given cell.
-       */
-      int getAscendingPath(const Cell &cell,
-                           std::vector<Cell> &vpath,
-                           const bool enableCycleDetector = false) const;
-
-      /**
-       * Return the VPath terminating at the given cell.
-       */
-      int getDescendingPath(const Cell &cell, std::vector<Cell> &vpath) const;
-
-      /**
-       * Return the VPath terminating at the given 2-saddle restricted to the
-2-separatrice of the 1-saddle.
-       */
-      bool getDescendingPathThroughWall(const Cell &saddle2,
-                                        const Cell &saddle1,
-                                        const std::vector<bool> &isVisited,
-                                        std::vector<Cell> *const vpath,
-                                        const bool stopIfMultiConnected = false,
-                                        const bool enableCycleDetector
-                                        = false) const;
-
-      /**
-       * Return the VPath coming from the given 1-saddle restricted to the
-2-separatrice of the 2-saddle.
-       */
-      bool getAscendingPathThroughWall(const Cell &saddle1,
-                                       const Cell &saddle2,
-                                       const std::vector<bool> &isVisited,
-                                       std::vector<Cell> *const vpath,
-                                       const bool stopIfMultiConnected = false,
-                                       const bool enableCycleDetector
-                                       = false) const;
-
-      /**
-       * Return the 2-separatrice terminating at the given 2-saddle.
-       */
-      int getDescendingWall(const Cell &cell,
-                            VisitedMask &mask,
-                            std::vector<Cell> *const wall = nullptr,
-                            std::set<SimplexId> *const saddles = nullptr) const;
-
-      /**
-       * Return the 2-separatrice coming from the given 1-saddle.
-       */
-      int getAscendingWall(const Cell &cell,
-                           VisitedMask &mask,
-                           std::vector<Cell> *const wall = nullptr,
-                           std::set<SimplexId> *const saddles = nullptr) const;
-
-      /**
        * Reverse the given ascending VPath.
        */
-      int reverseAscendingPath(const std::vector<Cell> &vpath);
+      template <typename triangulationType>
+      int reverseAscendingPath(const std::vector<Cell> &vpath,
+                               const triangulationType &triangulation);
 
       /**
        * Reverse the given ascending VPath restricted on a 2-separatrice.
        */
-      int reverseAscendingPathOnWall(const std::vector<Cell> &vpath);
+      template <typename triangulationType>
+      int reverseAscendingPathOnWall(const std::vector<Cell> &vpath,
+                                     const triangulationType &triangulation);
 
       /**
        * Reverse the given descending VPath restricted on a 2-separatrice.
        */
-      int reverseDescendingPathOnWall(const std::vector<Cell> &vpath);
-
-      /**
-       * Compute the barycenter of the points of the given edge identifier.
-       */
-      int getEdgeIncenter(SimplexId edgeId, float incenter[3]) const;
-
-      /**
-       * Compute the incenter of the points of the given triangle identifier.
-       */
-      int getTriangleIncenter(SimplexId triangleId, float incenter[3]) const;
-
-      /**
-       * Compute the barycenter of the incenters of the triangles of the given
-tetra identifier.
-       */
-      int getTetraIncenter(SimplexId tetraId, float incenter[3]) const;
-
-      /**
-       * Get the vertex id of with the maximum scalar field value on
-       * the given cell. Compare offsets if scalar field is constant.
-       */
-      SimplexId getCellGreaterVertex(const Cell c) const;
-
-      /**
-       * Build the geometric embedding of the given STL vector of cells.
-       * The output data pointers are modified accordingly. This
-       * function needs the following internal pointers to be set:
-       * outputCriticalPoints_numberOfPoints_
-       * outputCriticalPoints_points_
-       * inputScalarField_
-       */
-      template <typename dataType>
-      int setCriticalPoints(const std::vector<Cell> &criticalPoints,
-                            std::vector<size_t> &nCriticalPointsByDim) const;
-
-      /**
-       * Detect the critical points and build their geometric embedding.
-       * The output data pointers are modified accordingly.
-       */
-      template <typename dataType>
-      int setCriticalPoints() const;
-
-      /**
-       * Compute manifold size for critical extrema
-       */
-      int setManifoldSize(const std::vector<Cell> &criticalPoints,
-                          const std::vector<size_t> &nCriticalPointsByDim,
-                          const std::vector<SimplexId> &maxSeeds,
-                          const SimplexId *const ascendingManifold,
-                          const SimplexId *const descendingManifold) const;
-
-      /**
-       * Build the glyphs representing the discrete gradient vector field.
-       */
-      int setGradientGlyphs(SimplexId &numberOfPoints,
-                            std::vector<float> &points,
-                            std::vector<char> &points_pairOrigins,
-                            SimplexId &numberOfCells,
-                            std::vector<SimplexId> &cells,
-                            std::vector<char> &cells_pairTypes) const;
+      template <typename triangulationType>
+      int reverseDescendingPathOnWall(const std::vector<Cell> &vpath,
+                                      const triangulationType &triangulation);
 
     protected:
+      ftm::FTMTree contourTree_{};
+
       int IterationThreshold{-1};
       bool CollectPersistencePairs{false};
       bool ReturnSaddleConnectors{false};
@@ -934,17 +978,15 @@ tetra identifier.
 
       const void *inputScalarField_{};
       const void *inputOffsets_{};
-      Triangulation *inputTriangulation_{};
 
-      SimplexId *outputCriticalPoints_numberOfPoints_{};
-      std::vector<float> *outputCriticalPoints_points_{};
-      std::vector<char> *outputCriticalPoints_points_cellDimensions_{};
-      std::vector<SimplexId> *outputCriticalPoints_points_cellIds_{};
+      SimplexId outputCriticalPoints_numberOfPoints_{};
+      std::vector<float> outputCriticalPoints_points_{};
+      std::vector<char> outputCriticalPoints_points_cellDimensions_{};
+      std::vector<SimplexId> outputCriticalPoints_points_cellIds_{};
       void *outputCriticalPoints_points_cellScalars_{};
-      std::vector<char> *outputCriticalPoints_points_isOnBoundary_{};
-      std::vector<SimplexId>
-        *outputCriticalPoints_points_PLVertexIdentifiers_{};
-      std::vector<SimplexId> *outputCriticalPoints_points_manifoldSize_{};
+      std::vector<char> outputCriticalPoints_points_isOnBoundary_{};
+      std::vector<SimplexId> outputCriticalPoints_points_PLVertexIdentifiers_{};
+      std::vector<SimplexId> outputCriticalPoints_points_manifoldSize_{};
 
       std::vector<std::array<Cell, 2>> *outputPersistencePairs_{};
 

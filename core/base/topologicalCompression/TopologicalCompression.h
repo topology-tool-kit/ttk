@@ -502,8 +502,8 @@ int ttk::TopologicalCompression::WriteToFile(FILE *fp,
 
   int totalSize = usePersistence
                     ? ComputeTotalSizeForPersistenceDiagram<double>(
-                      getMapping(), getCriticalConstraints(), zfpOnly,
-                      getNbSegments(), getNbVertices(), zfpBitBudget)
+                        getMapping(), getCriticalConstraints(), zfpOnly,
+                        getNbSegments(), getNbVertices(), zfpBitBudget)
                     : useOther ? ComputeTotalSizeForOther<double>() : 0;
 
   std::vector<char> bbuf(totalSize);

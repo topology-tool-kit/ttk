@@ -17,6 +17,8 @@ paraview_add_plugin(TopologyToolKit
   )
 
 if(NOT "${TTK_INSTALL_PLUGIN_DIR}" STREQUAL "")
+  ttk_set_paraview_rpath(TopologyToolKit)
+
   install(
     TARGETS
       TopologyToolKit

@@ -6,4 +6,4 @@ HEADERS
   ttkDiscreteGradient.h
 DEPENDS
   discreteGradient
-  ttkTriangulationAlgorithm
+  ttkAlgorithm
