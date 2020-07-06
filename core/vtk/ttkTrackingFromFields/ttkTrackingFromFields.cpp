@@ -27,10 +27,8 @@ int ttkTrackingFromFields::FillInputPortInformation(int port,
                                                     vtkInformation *info) {
   if(port == 0) {
     info->Set(vtkAlgorithm::INPUT_IS_REPEATABLE(), 1);
-    // info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
-    return 1;
   }
-  return 0;
+  return 1;
 }
 
 int ttkTrackingFromFields::RequestData(vtkInformation *request,
@@ -41,8 +39,12 @@ int ttkTrackingFromFields::RequestData(vtkInformation *request,
   vtkUnstructuredGrid *output
     = vtkUnstructuredGrid::SafeDownCast(vtkDataSet::GetData(outputVector));
 
-  // internalTriangulation_ = ttkTriangulation::getTriangulation(input);
-  // internalTriangulation_->setWrapper(this);
+  ttk::Triangulation *triangulation = ttkAlgorithm::GetTriangulation(input);
+  if(!triangulation)
+    return 0;
+
+  // TODO remove once persistenceDiagram is migrated
+  this->setTriangulation(triangulation);
 
   // Test validity of datasets (must present the same number of points).
   if(!input)
@@ -53,10 +55,7 @@ int ttkTrackingFromFields::RequestData(vtkInformation *request,
   std::vector<vtkDataArray *> inputScalarFields;
   int numberOfInputFields = input->GetPointData()->GetNumberOfArrays();
   if(numberOfInputFields < 3) {
-    std::stringstream msg;
-    msg << "[ttkTrackingFromField] not enough input fields to perform tracking."
-        << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
+    this->printErr("Not enough input fields to perform tracking.");
   }
 
   vtkDataArray *firstScalarField = input->GetPointData()->GetArray(0);
@@ -66,10 +65,7 @@ int ttkTrackingFromFields::RequestData(vtkInformation *request,
     if(!currentScalarField
        || firstScalarField->GetDataType()
             != currentScalarField->GetDataType()) {
-      std::stringstream msg;
-      msg << "[ttkTrackingFromField] inconsistent field data type or size ("
-          << i << ")." << std::endl;
-      dMsg(std::cout, msg.str(), timeMsg);
+      this->printErr("Inconsistent field data type or size");
       return -1;
     }
     inputScalarFieldsRaw.push_back(currentScalarField);
@@ -108,10 +104,7 @@ int ttkTrackingFromFields::RequestData(vtkInformation *request,
       case 4:
         break;
       default:
-        std::stringstream msg;
-        msg << "[ttkTrackingFromFieldsFromField] Unrecognized tracking method."
-            << std::endl;
-        dMsg(std::cout, msg.str(), timeMsg);
+        this->printMsg("Unrecognized tracking method.");
         break;
     }
   } else {
@@ -130,24 +123,21 @@ int ttkTrackingFromFields::RequestData(vtkInformation *request,
       case str2int("greedy"):
         break;
       default:
-        std::stringstream msg;
-        msg << "[ttkTrackingFromField] Unrecognized tracking method."
-            << std::endl;
-        dMsg(std::cout, msg.str(), timeMsg);
+        this->printMsg("Unrecognized tracking method.");
         break;
     }
   }
 
-  int res = 0;
-  if(useTTKMethod)
-    res
-      = trackWithPersistenceMatching<double>(input, output, inputScalarFields, triangulationType* triangulation);
-  else {
-    std::stringstream msg;
-    msg << "[ttkTrackingFromField] The specified matching method does not."
-        << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
+  int status = 0;
+  if(useTTKMethod) {
+    ttkVtkTemplateMacro(
+      inputScalarFields[0]->GetDataType(), triangulation->getType(),
+      (status = this->trackWithPersistenceMatching<VTK_TT, TTK_TT>(
+         input, output, inputScalarFields,
+         (TTK_TT *)triangulation->getData())));
+  } else {
+    this->printMsg("The specified matching method is not supported.");
   }
 
-  return res;
+  return status;
 }

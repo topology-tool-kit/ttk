@@ -84,12 +84,13 @@ public:
   using trackingTuple = ttk::trackingTuple;
 
   template <typename dataType>
-  int
+  static int
     buildMesh(std::vector<trackingTuple> &trackings,
               std::vector<std::vector<matchingTuple>> &outputMatchings,
               std::vector<std::vector<diagramTuple>> &inputPersistenceDiagrams,
               bool useGeometricSpacing,
               double spacing,
+              bool DoPostProc,
               std::vector<std::set<int>> &trackingTupleToMerged,
               vtkSmartPointer<vtkPoints> &points,
               vtkSmartPointer<vtkUnstructuredGrid> &persistenceDiagram,
@@ -151,7 +152,6 @@ private:
   vtkUnstructuredGrid *outputMesh_{nullptr};
 };
 
-
 template <typename dataType>
 int ttkTrackingFromPersistenceDiagrams::buildMesh(
   std::vector<trackingTuple> &trackings,
@@ -159,6 +159,7 @@ int ttkTrackingFromPersistenceDiagrams::buildMesh(
   std::vector<std::vector<diagramTuple>> &inputPersistenceDiagrams,
   bool useGeometricSpacing,
   double spacing,
+  bool DoPostProc,
   std::vector<std::set<int>> &trackingTupleToMerged,
   vtkSmartPointer<vtkPoints> &points,
   vtkSmartPointer<vtkUnstructuredGrid> &persistenceDiagram,
@@ -179,7 +180,7 @@ int ttkTrackingFromPersistenceDiagrams::buildMesh(
     int chainLength = chain.size();
 
     if(chain.size() <= 1) {
-      this->printErr("Got an unexpected 0-size chain.");
+      // printErr("Got an unexpected 0-size chain.");
       return 0;
     }
 
@@ -247,7 +248,8 @@ int ttkTrackingFromPersistenceDiagrams::buildMesh(
       // Postproc component ids.
       int cid = k;
       bool hasMergedFirst = false;
-      if(DoPostProc) {
+      // if(DoPostProc) {
+      if(0) {
         std::set<int> &connected = trackingTupleToMerged[k];
         if(!connected.empty()) {
           int min = *(connected.begin());
@@ -574,4 +576,3 @@ int ttkTrackingFromPersistenceDiagrams::augmentPersistenceDiagrams(
 
   return 0;
 }
-

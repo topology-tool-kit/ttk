@@ -6,4 +6,5 @@ HEADERS
   ttkTrackingFromFields.h
 DEPENDS
   trackingFromFields
+  trackingFromPersistenceDiagrams
   ttkAlgorithm

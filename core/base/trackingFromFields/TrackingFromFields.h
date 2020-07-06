@@ -9,6 +9,7 @@
 #include <BottleneckDistance.h>
 #include <PersistenceDiagram.h>
 #include <Triangulation.h>
+using namespace std;
 
 namespace ttk {
 
@@ -85,7 +86,6 @@ int ttk::TrackingFromFields::performDiagramComputation(
   for(int i = 0; i < fieldNumber; ++i) {
     ttk::PersistenceDiagram persistenceDiagram;
     persistenceDiagram.setThreadNumber(1);
-    // should have been done before
 
     // std::vector<std::tuple<ttk::dcg::Cell, ttk::dcg::Cell>> dmt_pairs;
     // persistenceDiagram.setDMTPairs(&dmt_pairs);

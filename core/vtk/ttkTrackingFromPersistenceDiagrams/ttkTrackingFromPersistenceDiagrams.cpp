@@ -193,7 +193,7 @@ int ttkTrackingFromPersistenceDiagrams::RequestData(
   // Build mesh.
   buildMesh<dataType>(
     trackingsBase, outputMatchings, inputPersistenceDiagrams,
-    useGeometricSpacing, spacing, trackingTupleToMerged, points,
+    useGeometricSpacing, spacing, DoPostProc, trackingTupleToMerged, points,
     persistenceDiagram, persistenceScalars, valueScalars, matchingIdScalars,
     lengthScalars, timeScalars, componentIds, pointTypeScalars);
 

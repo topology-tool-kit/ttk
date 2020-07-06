@@ -27,12 +27,15 @@
 
 // VTK Module
 #include <ttkTrackingFromFieldsModule.h>
+#include <ttkTrackingFromPersistenceDiagramsModule.h>
 
 #include <TrackingFromFields.h>
 #include <TrackingFromPersistenceDiagrams.h>
 
 #include <algorithm>
 #include <string>
+
+using namespace std;
 
 class TTKTRACKINGFROMFIELDS_EXPORT ttkTrackingFromFields
   : public ttkAlgorithm,
@@ -42,21 +45,6 @@ public:
   static ttkTrackingFromFields *New();
 
   vtkTypeMacro(ttkTrackingFromFields, ttkAlgorithm);
-
-  // void SetDebugLevel(int debugLevel) {
-  //   setDebugLevel(debugLevel);
-  //   Modified();
-  // }
-
-  // void SetThreadNumber(int threadNumber) {
-  //   ThreadNumber = threadNumber;
-  //   SetThreads();
-  // }
-
-  // void SetUseAllCores(bool onOff) {
-  //   UseAllCores = onOff;
-  //   SetThreads();
-  // }
 
   vtkSetMacro(Sampling, int);
   vtkGetMacro(Sampling, int);
@@ -160,31 +148,27 @@ private:
   ttk::TrackingFromFields trackingF_;
   ttk::TrackingFromPersistenceDiagrams tracking_;
 
-  template <class dataType, class triangulationType = AbstractTriangulation>
+  template <class dataType,
+            class triangulationType = ttk::AbstractTriangulation>
   int trackWithPersistenceMatching(
     vtkDataSet *input,
     vtkUnstructuredGrid *output,
     std::vector<vtkDataArray *> inputScalarFields,
-    triangulationType *triangulation);
+    const triangulationType *triangulation);
 };
 
 // (*) Persistence-driven approach
-template <class dataType>
+template <class dataType, class triangulationType = ttk::AbstractTriangulation>
 int ttkTrackingFromFields::trackWithPersistenceMatching(
   vtkDataSet *input,
   vtkUnstructuredGrid *output,
-  std::vector<vtkDataArray *> inputScalarFields) {
+  std::vector<vtkDataArray *> inputScalarFields,
+  const triangulationType *triangulation) {
   unsigned long fieldNumber = inputScalarFields.size();
-
-  ttk::Triangulation *triangulation = ttkAlgorithm::GetTriangulation(input);
-  if(!triangulation)
-    return 0;
 
   using trackingTuple = ttk::trackingTuple;
 
   // 0. get data
-  // this->setThreadNumber(ThreadNumber);
-  // this->setTriangulation(internalTriangulation_);
   std::vector<void *> inputFields(fieldNumber);
   for(int i = 0; i < (int)fieldNumber; ++i)
     inputFields[i] = inputScalarFields[i]->GetVoidPointer(0);
@@ -204,18 +188,8 @@ int ttkTrackingFromFields::trackWithPersistenceMatching(
   std::vector<std::vector<diagramTuple>> persistenceDiagrams(
     fieldNumber, std::vector<diagramTuple>());
 
-  int status = 0;
-  // ttkVtkTemplateMacro(
-  //   triangulation->getType(), inputScalarFields[0]->GetDataType(),
-  //   (status = this->performDiagramComputation<dataType, TTK_TT>(
-  //      (int)fieldNumber, persistenceDiagrams,
-  //      (TTK_TT *)triangulation->getData())));
-  ttkTemplateMacro(triangulation->getType(),
-                   (status = this->performDiagramComputation<dataType, TTK_TT>(
-                      (int)fieldNumber, persistenceDiagrams,
-                      (TTK_TT *)triangulation->getData())));
-  if(status < 0)
-    return 0;
+  this->performDiagramComputation<dataType, triangulationType>(
+    (int)fieldNumber, persistenceDiagrams, triangulation);
 
   // 2. call feature tracking with threshold.
   std::vector<std::vector<matchingTuple>> outputMatchings(
@@ -228,7 +202,7 @@ int ttkTrackingFromFields::trackWithPersistenceMatching(
   bool is3D = true; // Is3D;
   std::string wasserstein = WassersteinMetric;
 
-  // tracking_.setThreadNumber(ThreadNumber);
+  tracking_.setThreadNumber(this->threadNumber_);
   tracking_.performMatchings<dataType>(
     (int)fieldNumber, persistenceDiagrams, outputMatchings,
     algorithm, // Not from paraview, from enclosing tracking plugin
@@ -268,30 +242,29 @@ int ttkTrackingFromFields::trackWithPersistenceMatching(
 
   // (+ vertex id)
   std::vector<trackingTuple> trackingsBase;
-  // tracking_.setThreadNumber(ThreadNumber);
   tracking_.performTracking<dataType>(
     persistenceDiagrams, outputMatchings, trackingsBase);
 
   std::vector<std::set<int>> trackingTupleToMerged(
     trackingsBase.size(), std::set<int>());
 
-  if(DoPostProc)
+  if(DoPostProc) {
     tracking_.performPostProcess<dataType>(persistenceDiagrams, trackingsBase,
                                            trackingTupleToMerged,
                                            PostProcThresh);
+  }
 
   bool useGeometricSpacing = UseGeometricSpacing;
 
   // Build mesh.
-  // ttkTrackingFromPersistenceDiagrams::buildMesh(
-  //   trackingsBase, outputMatchings, persistenceDiagrams, useGeometricSpacing,
-  //   spacing, DoPostProc, trackingTupleToMerged, points, persistenceDiagram,
-  //   persistenceScalars, valueScalars, matchingIdScalars, lengthScalars,
-  //   timeScalars, componentIds, pointTypeScalars);
+  ttkTrackingFromPersistenceDiagrams::buildMesh<dataType>(
+    trackingsBase, outputMatchings, persistenceDiagrams, useGeometricSpacing,
+    spacing, DoPostProc, trackingTupleToMerged, points, persistenceDiagram,
+    persistenceScalars, valueScalars, matchingIdScalars, lengthScalars,
+    timeScalars, componentIds, pointTypeScalars);
 
   outputMesh_->ShallowCopy(persistenceDiagram);
   outputMesh->ShallowCopy(outputMesh_);
 
-  return 0;
+  return 1;
 }
-
