@@ -41,18 +41,7 @@ int ttkDistanceField::getTriangulation(vtkDataSet *input) {
   if(!triangulation_)
     return -1;
 
-  this->setupTriangulation(triangulation_);
-  Modified();
-
-  // @Peter I tried doing this, but I got the compile error
-  // /home/peter/Projects/hackathon/ttk/core/base/distanceField/DistanceField.h:54:22:
-  // error: cannot convert ‘ttk::ExplicitTriangulation*’ to
-  // ‘ttk::Triangulation*’ in assignment triangulation_ = triangulation;
-  // int status = 0;
-  // ttkTemplateMacro(triangulation_->getType(), (status =
-  // this->setupTriangulation<TTK_TT>((TTK_TT *) triangulation_->getData())));
-  // if(triangulation_ != 0) return -1;
-
+  this->preconditionTriangulation(triangulation_);
   Modified();
 
   return 0;

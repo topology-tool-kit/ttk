@@ -19,6 +19,7 @@
 #pragma once
 
 // base code includes
+#include "Triangulation.h"
 #include <Dijkstra.h>
 
 // std includes
@@ -50,9 +51,8 @@ namespace ttk {
       return 0;
     }
 
-    template <class TriangulationType = AbstractTriangulation>
-    inline int setupTriangulation(TriangulationType *triangulation) {
-      triangulation_ = triangulation;
+    inline int preconditionTriangulation(AbstractTriangulation *triangulation) {
+      triangulation_ = static_cast<ttk::Triangulation*>(triangulation);
       if(triangulation_) {
         triangulation_->preconditionVertexNeighbors();
       }
@@ -92,6 +92,10 @@ namespace ttk {
 
 template <typename dataType>
 int ttk::DistanceField::execute() const {
+
+  // start global timer
+  ttk::Timer globalTimer;
+
   SimplexId *identifiers
     = static_cast<SimplexId *>(vertexIdentifierScalarFieldPointer_);
   dataType *dist = static_cast<dataType *>(outputScalarFieldPointer_);
@@ -143,12 +147,19 @@ int ttk::DistanceField::execute() const {
   }
 
   {
-    std::stringstream msg;
-    msg << "[DistanceField] Data-set (" << vertexNumber_
-        << " points) processed in " << t.getElapsedTime() << " s. ("
-        << threadNumber_ << " thread(s)." << std::endl;
-    printMsg(msg.str(), ttk::Debug::debugPriority::timeMsg);
+      this->printMsg(ttk::debug::Separator::L2); // horizontal '-' separator
+      this->printMsg(
+              "Complete", 1, globalTimer.getElapsedTime() // global progress, time
+              );
+      this->printMsg(ttk::debug::Separator::L1); // horizontal '=' separator
   }
+  //{
+      //std::stringstream msg;
+      //msg << "[DistanceField] Data-set (" << vertexNumber_
+      //<< " points) processed in " << t.getElapsedTime() << " s. ("
+      //<< threadNumber_ << " thread(s)." << std::endl;
+      //printMsg(msg.str(), ttk::Debug::debugPriority::timeMsg);
+  //}
 
   return 0;
 }
