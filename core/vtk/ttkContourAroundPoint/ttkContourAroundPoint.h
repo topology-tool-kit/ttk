@@ -11,9 +11,6 @@
  * \param Input Input scalar field (vtkDataSet)
  * \param Output Output scalar field (vtkDataSet)
  *
- * This filter can be used as any other VTK filter (for instance, by using the
- * sequence of calls SetInputData(), Update(), GetOutput()).
- *
  * See the related ParaView example state files for usage examples within a VTK
  * pipeline.
  *
@@ -21,140 +18,74 @@
  */
 #pragma once
 
-// VTK includes
-#include <vtkDataSetAlgorithm.h>
 #include <vtkFieldData.h>
-#include <vtkInformation.h>
 #include <vtkPointData.h>
+#include <vtkSmartPointer.h>
 
-// VTK Module
-#include <ttkContourAroundPointModule.h>
-
-// TTK includes
 #include <ContourAroundPoint.hpp>
-#include <ttkTriangulationAlgorithm.h>
+#include <ttkAlgorithm.h>
+#include <ttkContourAroundPointModule.h> // for TTKCONTOURAROUNDPOINT_EXPORT
 
-// See the documentation of the vtkAlgorithm class to decide from which VTK
-// class your wrapper should inherit.
+#include <Triangulation.h> // for tk::Triangulation::Type
+
+class vtkInformation;
+class vtkInformationVector;
+class vtkUnstructuredGrid;
+
 class TTKCONTOURAROUNDPOINT_EXPORT ttkContourAroundPoint
-  : public vtkDataSetAlgorithm,
-    protected ttk::Wrapper {
+  : public ttkAlgorithm,
+    protected ttk::ContourAroundPoint {
 
 public:
   static ttkContourAroundPoint *New();
-  vtkTypeMacro(ttkContourAroundPoint, vtkDataSetAlgorithm)
+  vtkTypeMacro(ttkContourAroundPoint, ttkAlgorithm);
 
-    // BEGIN default ttk setters
+  // setter+getter macros for each parameter from the XML file
+  vtkSetMacro(ui_extension, double) vtkGetMacro(ui_extension, double);
+  vtkSetMacro(ui_sizeFilter, double) vtkGetMacro(ui_sizeFilter, double);
+  vtkSetMacro(ui_spherical, bool) vtkGetMacro(ui_spherical, bool);
 
-    void SetDebugLevel(int debugLevel) {
-    setDebugLevel(debugLevel);
-    Modified();
+  // for the standalone (maybe unify with the above sometime)
+  void SetRegionExtension(double val) {
+    ui_extension = val;
   }
-
-  void SetThreadNumber(int threadNumber) {
-    ThreadNumber = threadNumber;
-    SetThreads();
+  void SetSizeFilter(double val) {
+    ui_sizeFilter = val;
   }
-  void SetUseAllCores(bool onOff) {
-    UseAllCores = onOff;
-    SetThreads();
-  }
-  // END default ttk setters
-
-  // BEGIN set-getters macros for each parameter from the
-  // ServerManagerConfiguration XML file.
-  vtkSetMacro(ui_sizeFilter, double) vtkGetMacro(ui_sizeFilter, double)
-
-    vtkSetMacro(ui_extension, double) vtkGetMacro(ui_extension, double)
-
-      vtkSetMacro(ui_scalars, std::string) vtkGetMacro(ui_scalars, std::string)
-    // END set-getters macros
-
-    // By default, this filter has one input and one output, of the same type.
-    // Here, you can override the number of input/output ports and their
-    // respective type. Make sure this is consistent with the
-    // ServerManagerConfiguration XML file and the
-    // `SetNumberOfInputPorts`/`SetNumberOfOutputPorts` argument (used in the
-    // constructor). The return value is interpreted as
-    // "PORT_REQUIREMENTS_FILLED" in vtkAlgorithm.cxx
-    int FillInputPortInformation(int port, vtkInformation *info) override {
-    switch(port) {
-      case 0:
-        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataSet");
-        return 1;
-      case 1:
-        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
-        return 1;
-      case 2:
-        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
-        return 1;
-    }
-    return 0;
-  }
-  int FillOutputPortInformation(int port, vtkInformation *info) override {
-    switch(port) {
-      case 0:
-        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
-        return 1;
-    }
-    return 0;
-  }
-
-  /// Override this method in order to always prepend a class- and
-  /// debugLevel-specific prefix and include a line end after the message.
-  virtual int dMsg(std::ostream &stream,
-                   std::string msg,
-                   const int &debugLevel = infoMsg) const override {
-    if(debugLevel > debugLevel_ && debugLevel > ttk::globalDebugLevel_)
-      return 0;
-    stream << "[ttkContourAroundPoint] ";
-    switch(debugLevel) {
-      case fatalMsg:
-        stream << "Error: ";
-        break; // something went wrong
-      case timeMsg:
-        stream << "Time consumption: ";
-        break; // x.yyy s
-      case memoryMsg:
-        stream << "Memory usage: ";
-        break; // x.yyy MB
-    }
-    const auto res = ttk::Debug::dMsg(stream, msg, debugLevel);
-    stream << std::endl;
-    return res;
+  void SetSpherical(bool val) {
+    ui_spherical = val;
   }
 
 protected:
   ttkContourAroundPoint() {
-    UseAllCores = true;
-    ThreadNumber = 1;
-    debugLevel_ = 3;
-
     SetNumberOfInputPorts(3);
-    SetNumberOfOutputPorts(1);
+    SetNumberOfOutputPorts(2);
   }
 
   ~ttkContourAroundPoint() override {
   }
 
-  TTK_SETUP();
+  // Make sure this is consistent with the XML file and the
+  // `SetNumberOfInputPorts` and `SetNumberOfOutputPorts` argument
+  // (used in the constructor). The return value is interpreted as
+  // "PORT_REQUIREMENTS_FILLED" in vtkAlgorithm.cxx
+  int FillInputPortInformation(int port, vtkInformation *info) override;
+  int FillOutputPortInformation(int port, vtkInformation *info) override;
+  int RequestData(vtkInformation *request,
+                  vtkInformationVector **iVec,
+                  vtkInformationVector *oVec) override;
 
   /// @return Went well?
-  bool preprocessDomain(vtkDataSet *dataset);
+  bool preprocessFld(vtkDataSet *dataset);
 
   /// @return Went well?
-  bool preconditionConstraints(vtkUnstructuredGrid *nodes,
-                               vtkUnstructuredGrid *arcs);
+  bool preprocessPts(vtkUnstructuredGrid *nodes, vtkUnstructuredGrid *arcs);
 
   /// @return Went well?
   bool process();
 
   /// Assemble the output object from the results of the TTK module.
   bool postprocess();
-
-  /// For testing the general pipeline stuff, without having to execute the
-  /// wrapped module.
-  void makeDummyOutput();
 
   template <typename T>
   T *getBuffer(vtkFieldData *data,
@@ -179,21 +110,31 @@ protected:
   }
 
 private:
-  double ui_sizeFilter; // 10000 [c%] --> keep everything
-  double ui_extension; // 100 [%] --> maximum contour size
-  std::string ui_scalars; // name of the scalar variable of the Domain
+  // output region size, in percent of the maximum overlap-free size:
+  // 0 --> single point, 100 --> touching neighbor regions
+  double ui_extension;
+  // minimum required output region size,
+  // in centi-percent of the number of input field vertices:
+  // 0 --> all pass, 10000 none pass
+  double ui_sizeFilter;
+  // name of the scalar variable of the input field
+  bool ui_spherical;
 
-  int _scalarTypeCode; // VTK type of the scalars defined on the Domain
-  double _domainBbSize; // size of the bounding box of the domain
+  ttk::Triangulation::Type _triangTypeCode; // triangulation->getType()
+  int _scalarTypeCode; // VTK type of the scalars defined on the input field
+  const char *_scalarsName = nullptr;
+
+  // referring to the input points
   std::vector<float> _coords;
+  std::vector<float> _scalars;
   std::vector<float> _isovals;
   std::vector<int> _flags;
-  vtkSmartPointer<vtkUnstructuredGrid> _out;
+
+  vtkSmartPointer<vtkUnstructuredGrid> _outFld;
+  vtkSmartPointer<vtkUnstructuredGrid> _outPts;
 
   std::vector<float> coordsBuf_{};
   std::vector<ttk::LongSimplexId> cinfosBuf_{};
   std::vector<float> scalarsBuf_{};
   std::vector<int> flagsBuf_{};
-
-  ttk::ContourAroundPoint _wrappedModule;
 };

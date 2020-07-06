@@ -287,9 +287,9 @@ double ttkPersistenceDiagramClustering::getPersistenceDiagram(
       nbNonCompact++;
       if(nbNonCompact == 0) {
         std::stringstream msg;
-        msg << "[TTKPersistenceDiagramClustering] Diagram pair identifiers "
+        msg << "Diagram pair identifiers "
             << "must be compact (not exceed the diagram size). " << std::endl;
-        dMsg(std::cout, msg.str(), timeMsg);
+        this->printWrn(msg.str());
       }
     }
   }
@@ -297,9 +297,9 @@ double ttkPersistenceDiagramClustering::getPersistenceDiagram(
   if(nbNonCompact > 0) {
     {
       std::stringstream msg;
-      msg << "[TTKPersistenceDiagramClustering] Missed " << nbNonCompact
-          << " pairs due to non-compactness." << std::endl;
-      dMsg(std::cout, msg.str(), timeMsg);
+      msg << "Missed " << nbNonCompact << " pairs due to non-compactness."
+          << std::endl;
+      this->printWrn(msg.str());
     }
   }
 
@@ -308,10 +308,7 @@ double ttkPersistenceDiagramClustering::getPersistenceDiagram(
 
 vtkSmartPointer<vtkUnstructuredGrid>
   ttkPersistenceDiagramClustering::createOutputCentroids() {
-  if(debugLevel_ > 5) {
-    std::cout << "[ttkPersistenceDiagramClustering] Creating vtk diagrams"
-              << std::endl;
-  }
+  this->printMsg("Creating vtk diagrams", debug::Priority::VERBOSE);
   vtkNew<vtkPoints> points{};
 
   vtkNew<vtkUnstructuredGrid> persistenceDiagram{};
@@ -464,10 +461,7 @@ vtkSmartPointer<vtkUnstructuredGrid>
 
 vtkSmartPointer<vtkUnstructuredGrid>
   ttkPersistenceDiagramClustering::createOutputClusteredDiagrams() {
-  if(debugLevel_ > 5) {
-    std::cout << "[ttkPersistenceDiagramClustering] Creating vtk Outputs"
-              << std::endl;
-  }
+  this->printMsg("Creating vtk outputs", debug::Priority::VERBOSE);
   vtkNew<vtkPoints> points{};
 
   vtkNew<vtkUnstructuredGrid> persistenceDiagram{};
@@ -666,10 +660,7 @@ vtkSmartPointer<vtkUnstructuredGrid>
 
 vtkSmartPointer<vtkUnstructuredGrid>
   ttkPersistenceDiagramClustering::createMatchings() {
-  if(debugLevel_ > 5) {
-    std::cout << "[ttkPersistenceDiagramClustering] Creating vtk Matchings"
-              << std::endl;
-  }
+  this->printMsg("Creating vtk matchings", debug::Priority::VERBOSE);
   vtkNew<vtkPoints> matchingPoints{};
 
   vtkNew<vtkUnstructuredGrid> matchingMesh{};

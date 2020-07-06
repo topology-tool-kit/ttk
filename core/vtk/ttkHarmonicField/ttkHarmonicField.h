@@ -51,12 +51,6 @@ public:
 
   vtkTypeMacro(ttkHarmonicField, ttkAlgorithm);
 
-  vtkSetMacro(InputScalarFieldName, std::string);
-  vtkGetMacro(InputScalarFieldName, std::string);
-
-  vtkSetMacro(InputIdentifiersFieldName, std::string);
-  vtkGetMacro(InputIdentifiersFieldName, std::string);
-
   vtkSetMacro(OutputScalarFieldName, std::string);
   vtkGetMacro(OutputScalarFieldName, std::string);
 
@@ -91,11 +85,6 @@ public:
   vtkSetMacro(LogAlpha, double);
   vtkGetMacro(LogAlpha, double);
 
-  // get array of identifiers on the mesh
-  int getIdentifiers(vtkPointSet *input);
-  // get constraint values on identifiers
-  int getConstraints(vtkPointSet *input);
-
 protected:
   ttkHarmonicField();
   ~ttkHarmonicField() override = default;
@@ -107,16 +96,12 @@ protected:
                   vtkInformationVector *outputVector) override;
 
 private:
-  // user-defined input constraints (float) scalar field name
-  std::string InputScalarFieldName{};
   // output scalar field
   std::string OutputScalarFieldName{"OutputHarmonicField"};
   // let the user choose a different identifier scalar field
   bool ForceConstraintIdentifiers{false};
   // graph laplacian variant
   bool UseCotanWeights{true};
-  // user-defined input identifier (SimplexId) scalar field name
-  std::string InputIdentifiersFieldName{ttk::VertexScalarFieldName};
   // user-selected solving method
   SolvingMethodUserType SolvingMethod{SolvingMethodUserType::AUTO};
   // penalty value
@@ -125,9 +110,4 @@ private:
   // enum: float or double
   enum class FieldType { FLOAT, DOUBLE };
   FieldType OutputScalarFieldType{FieldType::FLOAT};
-
-  // points on the mesh where constraints_ are set
-  vtkDataArray *identifiers_{};
-  // scalar field constraint values on identifiers_
-  vtkDataArray *constraints_{};
 };

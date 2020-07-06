@@ -55,7 +55,6 @@ int ttk::HarmonicField::execute(const TriangulationType &triangulation,
   using TripletType = Eigen::Triplet<T>;
 
   Timer tm;
-  Memory mem;
 
   const auto vertexNumber = triangulation.getNumberOfVertices();
   const auto edgeNumber = triangulation.getNumberOfEdges();
@@ -98,24 +97,20 @@ int ttk::HarmonicField::execute(const TriangulationType &triangulation,
     uniqueIdentifiersSet.insert(sources[i]);
   }
 
-  // vector of unique constraint identifiers
-  std::vector<SimplexId> uniqueIdentifiers(
-    uniqueIdentifiersSet.begin(), uniqueIdentifiersSet.end());
-  // vector of unique constraint values
-  std::vector<T> uniqueValues(uniqueIdentifiers.size());
+  // (constraint id, scalar field value)
+  std::vector<std::pair<SimplexId, T>> idValues{};
 
-  // put identifier corresponding constraints in vector
-  for(size_t i = 0; i < uniqueIdentifiers.size(); ++i) {
+  for(const auto id : uniqueIdentifiersSet) {
     for(SimplexId j = 0; j < constraintNumber; ++j) {
-      if(uniqueIdentifiers[i] == sources[j]) {
-        uniqueValues[i] = constraints[j];
+      if(id == sources[j]) {
+        idValues.emplace_back(id, constraints[j]);
         break;
       }
     }
   }
 
   // unique constraint number
-  size_t uniqueConstraintNumber = uniqueValues.size();
+  size_t uniqueConstraintNumber = idValues.size();
 
   // graph laplacian of current mesh
   SpMat lap;
@@ -127,9 +122,9 @@ int ttk::HarmonicField::execute(const TriangulationType &triangulation,
 
   // constraints vector
   SpVec constraintsMat(vertexNumber);
-  for(size_t i = 0; i < uniqueConstraintNumber; ++i) {
+  for(const auto &pair : idValues) {
     // put constraint at identifier index
-    constraintsMat.coeffRef(uniqueIdentifiers[i]) = uniqueValues[i];
+    constraintsMat.coeffRef(pair.first) = pair.second;
   }
 
   // penalty matrix
@@ -139,9 +134,8 @@ int ttk::HarmonicField::execute(const TriangulationType &triangulation,
 
   std::vector<TripletType> triplets;
   triplets.reserve(uniqueConstraintNumber);
-  for(size_t i = 0; i < uniqueConstraintNumber; ++i) {
-    triplets.emplace_back(
-      TripletType(uniqueIdentifiers[i], uniqueIdentifiers[i], alpha));
+  for(const auto &pair : idValues) {
+    triplets.emplace_back(TripletType(pair.first, pair.first, alpha));
   }
   penalty.setFromTriplets(triplets.begin(), triplets.end());
 
@@ -187,8 +181,7 @@ int ttk::HarmonicField::execute(const TriangulationType &triangulation,
     outputScalarField[i] = -solDense(i, 0);
   }
 
-  this->printMsg("Complete", 1.0, tm.getElapsedTime(), this->threadNumber_,
-                 mem.getElapsedUsage());
+  this->printMsg("Complete", 1.0, tm.getElapsedTime(), this->threadNumber_);
 
 #else
   this->printMsg(
