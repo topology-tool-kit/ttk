@@ -480,6 +480,9 @@ int ttkPersistenceDiagram::RequestData(vtkInformation *request,
   }
 #endif
 
+  if(this->GetMTime() < inputScalars->GetMTime())
+    computeDiagram_ = true;
+
   vector<tuple<Cell, Cell>> dmt_pairs_temp;
   setDMTPairs(&dmt_pairs_temp);
 
