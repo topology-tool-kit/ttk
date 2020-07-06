@@ -124,21 +124,21 @@ int BottleneckDistance::computeBottleneck(const std::vector<diagramTuple> &d1,
               ? (px * Geometry::pow(abs(std::get<7>(a) - std::get<7>(b)), w)
                  + py * Geometry::pow(abs(std::get<8>(a) - std::get<8>(b)), w)
                  + pz * Geometry::pow(abs(std::get<9>(a) - std::get<9>(b)), w))
-              : (px
-                   * Geometry::pow(
-                       abs(std::get<7>(a) + std::get<11>(a)) / 2
-                         - abs(std::get<7>(b) + std::get<11>(b)) / 2,
-                       w)
-                 + py
-                     * Geometry::pow(
-                         abs(std::get<8>(a) + std::get<12>(a)) / 2
-                           - abs(std::get<8>(b) + std::get<12>(b)) / 2,
-                         w)
-                 + pz
-                     * Geometry::pow(
-                         abs(std::get<9>(a) + std::get<13>(a)) / 2
-                           - abs(std::get<9>(b) + std::get<13>(b)) / 2,
-                         w));
+              : (
+                px
+                  * Geometry::pow(abs(std::get<7>(a) + std::get<11>(a)) / 2
+                                    - abs(std::get<7>(b) + std::get<11>(b)) / 2,
+                                  w)
+                + py
+                    * Geometry::pow(
+                      abs(std::get<8>(a) + std::get<12>(a)) / 2
+                        - abs(std::get<8>(b) + std::get<12>(b)) / 2,
+                      w)
+                + pz
+                    * Geometry::pow(
+                      abs(std::get<9>(a) + std::get<13>(a)) / 2
+                        - abs(std::get<9>(b) + std::get<13>(b)) / 2,
+                      w));
 
     double persDistance = x + y;
     double val = persDistance + geoDistance;
@@ -302,11 +302,11 @@ int BottleneckDistance::computeBottleneck(const std::vector<diagramTuple> &d1,
   dataType affectationD = d;
   d = wasserstein > 0
         ? Geometry::pow(
-            d + addedMaxPersistence + addedMinPersistence + addedSadPersistence,
-            (1.0 / (double)wasserstein))
+          d + addedMaxPersistence + addedMinPersistence + addedSadPersistence,
+          (1.0 / (double)wasserstein))
         : std::max(
-            d, std::max(addedMaxPersistence,
-                        std::max(addedMinPersistence, addedSadPersistence)));
+          d, std::max(addedMaxPersistence,
+                      std::max(addedMinPersistence, addedSadPersistence)));
 
   {
     std::stringstream msg;

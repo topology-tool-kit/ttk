@@ -900,7 +900,7 @@ int ttk::MorseSmaleQuadrangulation::subdivise(
     size_t verticesInCell
       = verticesNumber_
         - std::count(
-            sum.begin(), sum.end(), std::numeric_limits<float>::infinity());
+          sum.begin(), sum.end(), std::numeric_limits<float>::infinity());
 
     const size_t thresholdVertsInCell{50};
     if(verticesInCell <= thresholdVertsInCell) {

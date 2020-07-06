@@ -147,7 +147,7 @@ namespace ttk {
       return geometricalFactor
                * (2
                   * Geometry::pow(
-                      abs<dataType>(g.y_ / 2 - g.x_ / 2), wasserstein))
+                    abs<dataType>(g.y_ / 2 - g.x_ / 2), wasserstein))
              + (1 - geometricalFactor) * getPairGeometricalLength(wasserstein);
     } else if(g.isDiagonal()) {
       return geometricalFactor
@@ -163,9 +163,9 @@ namespace ttk {
                  * (Geometry::pow(
                       abs<dataType>(coords_x_ - g.coords_x_), wasserstein)
                     + Geometry::pow(
-                        abs<dataType>(coords_y_ - g.coords_y_), wasserstein)
+                      abs<dataType>(coords_y_ - g.coords_y_), wasserstein)
                     + Geometry::pow(
-                        abs<dataType>(coords_z_ - g.coords_z_), wasserstein));
+                      abs<dataType>(coords_z_ - g.coords_z_), wasserstein));
     }
   }
 

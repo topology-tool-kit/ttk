@@ -46,9 +46,15 @@ public:
   vtkSetMacro(ui_spherical, bool) vtkGetMacro(ui_spherical, bool);
 
   // for the standalone (maybe unify with the above sometime)
-  void SetRegionExtension(double val) { ui_extension = val; }
-  void SetSizeFilter(double val) { ui_sizeFilter = val; }
-  void SetSpherical(bool val) { ui_spherical = val; }
+  void SetRegionExtension(double val) {
+    ui_extension = val;
+  }
+  void SetSizeFilter(double val) {
+    ui_sizeFilter = val;
+  }
+  void SetSpherical(bool val) {
+    ui_spherical = val;
+  }
 
 protected:
   ttkContourAroundPoint() {

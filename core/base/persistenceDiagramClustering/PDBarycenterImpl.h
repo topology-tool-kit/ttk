@@ -350,7 +350,7 @@ dataType PDBarycenter<dataType>::updateBarycenter(
       dataType shift
         = 2
           * Geometry::pow(
-              barycenter_goods_[0].get(i).getPersistence() / 2., wasserstein_);
+            barycenter_goods_[0].get(i).getPersistence() / 2., wasserstein_);
       if(shift > max_shift) {
         max_shift = shift;
       }
