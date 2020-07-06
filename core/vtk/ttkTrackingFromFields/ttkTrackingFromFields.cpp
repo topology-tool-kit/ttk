@@ -128,13 +128,29 @@ int ttkTrackingFromFields::RequestData(vtkInformation *request,
     }
   }
 
+  // 0. get data
+  unsigned long fieldNumber = inputScalarFields.size();
+  std::vector<void *> inputFields(fieldNumber);
+  for(int i = 0; i < (int)fieldNumber; ++i)
+    inputFields[i] = ttkUtils::GetVoidPointer(inputScalarFields[i]);
+  this->setInputScalars(inputFields);
+
+  // 0'. get offsets
+  auto numberOfVertices = (int)input->GetNumberOfPoints();
+  vtkIdTypeArray *offsets_ = vtkIdTypeArray::New();
+  offsets_->SetNumberOfComponents(1);
+  offsets_->SetNumberOfTuples(numberOfVertices);
+  offsets_->SetName("OffsetScalarField");
+  for(int i = 0; i < numberOfVertices; ++i)
+    offsets_->SetTuple1(i, i);
+  this->setInputOffsets(ttkUtils::GetVoidPointer(offsets_));
+
   int status = 0;
   if(useTTKMethod) {
     ttkVtkTemplateMacro(
       inputScalarFields[0]->GetDataType(), triangulation->getType(),
       (status = this->trackWithPersistenceMatching<VTK_TT, TTK_TT>(
-         input, output, inputScalarFields,
-         (TTK_TT *)triangulation->getData())));
+         input, output, fieldNumber, (TTK_TT *)triangulation->getData())));
   } else {
     this->printMsg("The specified matching method is not supported.");
   }

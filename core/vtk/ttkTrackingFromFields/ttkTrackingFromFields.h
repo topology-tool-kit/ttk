@@ -3,6 +3,7 @@
 #include <tuple>
 
 #include <ttkAlgorithm.h>
+// #include <ttkUtils.h>
 
 #include <vtkCellData.h>
 #include <vtkCellType.h>
@@ -34,8 +35,6 @@
 
 #include <algorithm>
 #include <string>
-
-using namespace std;
 
 class TTKTRACKINGFROMFIELDS_EXPORT ttkTrackingFromFields
   : public ttkAlgorithm,
@@ -150,11 +149,10 @@ private:
 
   template <class dataType,
             class triangulationType = ttk::AbstractTriangulation>
-  int trackWithPersistenceMatching(
-    vtkDataSet *input,
-    vtkUnstructuredGrid *output,
-    std::vector<vtkDataArray *> inputScalarFields,
-    const triangulationType *triangulation);
+  int trackWithPersistenceMatching(vtkDataSet *input,
+                                   vtkUnstructuredGrid *output,
+                                   unsigned long fieldNumber,
+                                   const triangulationType *triangulation);
 };
 
 // (*) Persistence-driven approach
@@ -162,27 +160,10 @@ template <class dataType, class triangulationType = ttk::AbstractTriangulation>
 int ttkTrackingFromFields::trackWithPersistenceMatching(
   vtkDataSet *input,
   vtkUnstructuredGrid *output,
-  std::vector<vtkDataArray *> inputScalarFields,
+  unsigned long fieldNumber,
   const triangulationType *triangulation) {
-  unsigned long fieldNumber = inputScalarFields.size();
 
   using trackingTuple = ttk::trackingTuple;
-
-  // 0. get data
-  std::vector<void *> inputFields(fieldNumber);
-  for(int i = 0; i < (int)fieldNumber; ++i)
-    inputFields[i] = inputScalarFields[i]->GetVoidPointer(0);
-  this->setInputScalars(inputFields);
-
-  // 0'. get offsets
-  auto numberOfVertices = (int)input->GetNumberOfPoints();
-  vtkIdTypeArray *offsets_ = vtkIdTypeArray::New();
-  offsets_->SetNumberOfComponents(1);
-  offsets_->SetNumberOfTuples(numberOfVertices);
-  offsets_->SetName("OffsetScalarField");
-  for(int i = 0; i < numberOfVertices; ++i)
-    offsets_->SetTuple1(i, i);
-  this->setInputOffsets(offsets_->GetVoidPointer(0));
 
   // 1. get persistence diagrams.
   std::vector<std::vector<diagramTuple>> persistenceDiagrams(
