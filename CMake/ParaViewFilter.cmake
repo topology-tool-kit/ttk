@@ -47,5 +47,5 @@ function(ttk_set_paraview_rpath TARGET_NAME)
         INSTALL_RPATH "@loader_path/${TTK_PLUGIN_SUBDIR};${TEMP}"
     )
   endif(APPLE)
-endfunction(ttk_set_paraview_rpath TTK_NAME)
+endfunction(ttk_set_paraview_rpath TARGET_NAME)
 
