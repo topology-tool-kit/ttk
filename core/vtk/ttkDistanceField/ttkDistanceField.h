@@ -84,6 +84,6 @@ private:
   std::string InputVertexScalarFieldName{"InputScalarField"};
 
   // ttk::DistanceField distanceField_;
-  ttk::Triangulation *triangulation_;
+  //ttk::Triangulation *triangulation_;
   vtkDataArray *identifiers_{NULL};
 };

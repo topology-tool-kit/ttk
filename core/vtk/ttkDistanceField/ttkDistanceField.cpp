@@ -35,17 +35,17 @@ int ttkDistanceField::FillOutputPortInformation(int port,
   return 0;
 }
 
-int ttkDistanceField::getTriangulation(vtkDataSet *input) {
+//int ttkDistanceField::getTriangulation(vtkDataSet *input) {
 
-  triangulation_ = ttkAlgorithm::GetTriangulation(input);
-  if(!triangulation_)
-    return -1;
+  //triangulation_ = ttkAlgorithm::GetTriangulation(input);
+  //if(!triangulation_)
+    //return -1;
 
-  this->preconditionTriangulation(triangulation_);
-  Modified();
+  //this->preconditionTriangulation(triangulation_);
+  //Modified();
 
-  return 0;
-}
+  //return 0;
+//}
 
 int ttkDistanceField::getIdentifiers(vtkDataSet *input) {
   if(ForceInputVertexScalarField and InputVertexScalarFieldName.length())
@@ -73,11 +73,13 @@ int ttkDistanceField::RequestData(vtkInformation *request,
   vtkPointSet *sources = vtkPointSet::GetData(inputVector[1]);
   vtkDataSet *output = vtkDataSet::GetData(outputVector);
 
-  int ret{};
-  ret = getTriangulation(domain);
+  ttk::Triangulation *triangulation = ttkAlgorithm::GetTriangulation(domain);
+  int ret = this->preconditionTriangulation(triangulation);
+  Modified();
+
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(ret) {
-    printErr("[ttkDistanceField] Error : wrong triangulation.");
+  if(!triangulation) {
+    this->printErr("wrong triangulation.");
     return -1;
   }
 #endif
@@ -164,12 +166,8 @@ int ttkDistanceField::RequestData(vtkInformation *request,
         return -7;
       }
 #endif
-      this->setOutputScalarFieldPointer(
-        ttkUtils::GetVoidPointer(distanceScalars));
-      // @PETER I don't think there's any need to use ttkTemplateMacro here
-      // because the triangulation is not part of the function call, is that
-      // right?
-      ret = this->execute<float>();
+      this->setOutputScalarFieldPointer(ttkUtils::GetVoidPointer(distanceScalars));
+      ttkTemplateMacro( triangulation->getType(), (ret = this->execute<float, TTK_TT>((TTK_TT *) triangulation->getData())));
       break;
 
     case DistanceType::Double:
@@ -188,10 +186,8 @@ int ttkDistanceField::RequestData(vtkInformation *request,
 #endif
       this->setOutputScalarFieldPointer(
         ttkUtils::GetVoidPointer(distanceScalars));
-      // @PETER I don't think there's any need to use ttkTemplateMacro here
-      // because the triangulation is not part of the function call, is that
-      // right?
-      ret = this->execute<double>();
+
+      ttkTemplateMacro( triangulation->getType(), (ret = this->execute<double, TTK_TT>((TTK_TT *) triangulation->getData())));
       break;
 
     default:

@@ -38,8 +38,8 @@ namespace ttk {
     template <typename dataType>
     dataType getDistance(const SimplexId a, const SimplexId b) const;
 
-    template <typename dataType>
-    int execute() const;
+    template <typename dataType, class triangulationType = ttk::AbstractTriangulation>
+    int execute(const triangulationType*) const;
 
     inline int setVertexNumber(SimplexId vertexNumber) {
       vertexNumber_ = vertexNumber;
@@ -52,11 +52,7 @@ namespace ttk {
     }
 
     inline int preconditionTriangulation(AbstractTriangulation *triangulation) {
-      triangulation_ = static_cast<ttk::Triangulation*>(triangulation);
-      if(triangulation_) {
-        triangulation_->preconditionVertexNeighbors();
-      }
-      return 0;
+        return triangulation->preconditionVertexNeighbors();
     }
 
     inline int setVertexIdentifierScalarFieldPointer(void *data) {
@@ -82,7 +78,6 @@ namespace ttk {
   protected:
     SimplexId vertexNumber_;
     SimplexId sourceNumber_;
-    Triangulation *triangulation_;
     void *vertexIdentifierScalarFieldPointer_;
     void *outputScalarFieldPointer_;
     void *outputIdentifiers_;
@@ -90,8 +85,8 @@ namespace ttk {
   };
 } // namespace ttk
 
-template <typename dataType>
-int ttk::DistanceField::execute() const {
+template <typename dataType, class triangulationType>
+int ttk::DistanceField::execute(const triangulationType *triangulation_) const {
 
   // start global timer
   ttk::Timer globalTimer;
