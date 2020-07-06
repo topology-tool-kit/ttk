@@ -219,7 +219,7 @@ int ttk::TrackingFromPersistenceDiagrams::performTracking(
             auto chainSize = (int)chain.size();
             if(chainSize == 0) {
               // Should not happen
-              std::cout << "Brain error." << std::endl;
+              this->printErr("Brain error.");
             } else if(chainStart + chainSize == in
                       && chain.at((unsigned long)chainSize - 1) == m1ai0) {
               found = true;
