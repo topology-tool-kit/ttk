@@ -21,18 +21,15 @@
 
 // TTK includes
 #include <BottleneckDistance.h>
-#include <ttkTriangulationAlgorithm.h>
+#include <ttkAlgorithm.h>
+#include <ttkMacros.h>
 
 // VTK includes
 #include <vtkCellData.h>
-#include <vtkCharArray.h>
-#include <vtkDataArray.h>
-#include <vtkDataSet.h>
-#include <vtkDataSetAlgorithm.h>
 #include <vtkDoubleArray.h>
-#include <vtkFiltersCoreModule.h>
 #include <vtkFloatArray.h>
 #include <vtkInformation.h>
+#include <vtkInformationVector.h>
 #include <vtkIntArray.h>
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
@@ -48,30 +45,13 @@
 #include <random>
 
 class TTKBOTTLENECKDISTANCE_EXPORT ttkBottleneckDistance
-  : public vtkDataSetAlgorithm,
-    protected ttk::Wrapper {
+  : public ttkAlgorithm,
+    protected ttk::BottleneckDistance {
 
 public:
   static ttkBottleneckDistance *New();
 
-  vtkTypeMacro(ttkBottleneckDistance, vtkDataSetAlgorithm);
-
-  // Default ttk setters
-  void SetDebugLevel(int debugLevel) {
-    setDebugLevel(debugLevel);
-    Modified();
-  }
-
-  void SetThreadNumber(int threadNumber) {
-    ThreadNumber = threadNumber;
-    SetThreads();
-  }
-
-  void SetUseAllCores(bool onOff) {
-    UseAllCores = onOff;
-    SetThreads();
-  }
-  // end of default ttk setters
+  vtkTypeMacro(ttkBottleneckDistance, ttkAlgorithm);
 
   vtkSetMacro(Alpha, double);
   vtkGetMacro(Alpha, double);
@@ -124,10 +104,12 @@ public:
   int FillInputPortInformation(int port, vtkInformation *info) override {
     switch(port) {
       case 0:
-        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
+        info->Set(
+          ttkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkUnstructuredGrid");
         break;
       case 1:
-        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
+        info->Set(
+          ttkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkUnstructuredGrid");
         break;
       default:
         break;
@@ -139,19 +121,23 @@ public:
   int FillOutputPortInformation(int port, vtkInformation *info) override {
     switch(port) {
       case 0:
-        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
+        info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
         break;
       case 1:
-        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
+        info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
         break;
       case 2:
-        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
+        info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
         break;
       default:
         break;
     }
     return 1;
   }
+
+  int RequestData(vtkInformation * /*request*/,
+                  vtkInformationVector **inputVector,
+                  vtkInformationVector *outputVector) override;
 
   // Warn: this is duplicated in ttkTrackingFromPersistenceDiagrams
   template <typename dataType>
@@ -189,7 +175,6 @@ public:
 protected:
   ttkBottleneckDistance() {
     // settings
-    UseAllCores = false;
     SetNumberOfInputPorts(2);
     SetNumberOfOutputPorts(3);
 
@@ -218,8 +203,6 @@ protected:
   }
 
   ~ttkBottleneckDistance() override{};
-
-  TTK_SETUP();
 
 private:
   int BenchmarkSize;
@@ -332,7 +315,7 @@ int ttkBottleneckDistance::generatePersistenceDiagram(
          return std::get<6>(a) < std::get<6>(b);
        });
 
-  return 0;
+  return 1;
 }
 
 // Warn: this is duplicated in ttkTrackingFromPersistenceDiagrams
@@ -436,20 +419,18 @@ int ttkBottleneckDistance::getPersistenceDiagram(
       nbNonCompact++;
       if(nbNonCompact == 0) {
         std::stringstream msg;
-        msg << "[TTKBottleneckDistance] Diagram pair identifiers "
+        msg << "Diagram pair identifiers "
             << "must be compact (not exceed the diagram size). " << std::endl;
-        dMsg(std::cout, msg.str(), timeMsg);
+        this->printWrn(msg.str());
       }
     }
   }
 
   if(nbNonCompact > 0) {
-    {
-      std::stringstream msg;
-      msg << "[TTKBottleneckDistance] Missed " << nbNonCompact
-          << " pairs due to non-compactness." << std::endl;
-      dMsg(std::cout, msg.str(), timeMsg);
-    }
+    std::stringstream msg;
+    msg << "Missed " << nbNonCompact << " pairs due to non-compactness."
+        << std::endl;
+    this->printWrn(msg.str());
   }
 
   sort(diagram.begin(), diagram.end(),
@@ -457,7 +438,7 @@ int ttkBottleneckDistance::getPersistenceDiagram(
          return std::get<6>(a) < std::get<6>(b);
        });
 
-  return 0;
+  return 1;
 }
 
 // Warn: this is duplicated in ttkTrackingFromPersistenceDiagrams
@@ -521,7 +502,7 @@ int ttkBottleneckDistance::augmentPersistenceDiagrams(
     CTPersistenceDiagram2->GetCellData()->AddArray(matchingIdentifiers2);
   }
 
-  return 0;
+  return 1;
 }
 
 template <typename dataType>
@@ -552,7 +533,7 @@ int ttkBottleneckDistance::translateSecondDiagram(
 
   outputCT2->SetPoints(points2);
 
-  return 0;
+  return 1;
 }
 
 template <typename dataType>
@@ -665,5 +646,5 @@ int ttkBottleneckDistance::getMatchingMesh(
 
   CTPersistenceDiagram3_->ShallowCopy(persistenceDiagram);
 
-  return 0;
+  return 1;
 }
