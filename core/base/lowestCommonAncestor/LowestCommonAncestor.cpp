@@ -53,7 +53,7 @@ int LowestCommonAncestor::RMQuery(const int &i, const int &j) const {
     // Position of the min in the blocs between the bloc of i and j
     min_pos[1] = ((blocJ - blocI) > 1)
                    ? blocMinimumPosition_[blocMinimumValueRMQ_.query(
-                     blocI + 1, blocJ - 1)]
+                       blocI + 1, blocJ - 1)]
                    : INT_MAX;
     // Position of the min in the bloc containing the jth case
     min_pos[2]
