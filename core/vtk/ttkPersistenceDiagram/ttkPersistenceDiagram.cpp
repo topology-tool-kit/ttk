@@ -421,8 +421,6 @@ int ttkPersistenceDiagram::RequestData(vtkInformation *request,
                                        vtkInformationVector **inputVector,
                                        vtkInformationVector *outputVector) {
 
-  Timer timer;
-
   vtkDataSet *input = vtkDataSet::GetData(inputVector[0]);
   vtkUnstructuredGrid *outputCTPersistenceDiagram
     = vtkUnstructuredGrid::GetData(outputVector, 0);
@@ -511,7 +509,6 @@ int ttkPersistenceDiagram::RequestData(vtkInformation *request,
 
   computeDiagram_ = false;
 
-  printMsg("Completed", 1, timer.getElapsedTime(), threadNumber_);
   printMsg(ttk::debug::Separator::L1);
 
   return 1;
