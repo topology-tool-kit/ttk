@@ -35,6 +35,12 @@
 #include <MorseSmaleComplex3D.h>
 #include <Triangulation.h>
 
+#ifdef TTK_ENABLE_OPENMP
+#ifdef _GLIBCXX_PARALLEL_FEATURES_H
+#include <parallel/algorithm>
+#endif
+#endif
+
 namespace ttk {
 
   /**
@@ -156,8 +162,15 @@ int ttk::PersistenceDiagram::sortPersistenceDiagram(
         else
           return va < vb;
       };
-
+#ifdef TTK_ENABLE_OPENMP
+#ifdef _GLIBCXX_PARALLEL_FEATURES_H
+  __gnu_parallel::sort(diagram.begin(), diagram.end(), cmp);
+#else
   std::sort(diagram.begin(), diagram.end(), cmp);
+#endif
+#else
+  std::sort(diagram.begin(), diagram.end(), cmp);
+#endif
 
   return 0;
 }
@@ -218,8 +231,6 @@ int ttk::PersistenceDiagram::execute(
   const triangulationType *triangulation) const {
 
   printMsg(ttk::debug::Separator::L1);
-
-  Timer timer;
 
   const ttk::SimplexId numberOfVertices = triangulation->getNumberOfVertices();
   // convert offsets into a valid format for contour forests
@@ -320,8 +331,6 @@ int ttk::PersistenceDiagram::execute(
   // finally sort the diagram
   sortPersistenceDiagram(CTDiagram, inputScalars, voffsets.data());
 
-  printMsg(
-    "Base execution completed", 1, timer.getElapsedTime(), threadNumber_);
   printMsg(ttk::debug::Separator::L1);
 
   return 0;

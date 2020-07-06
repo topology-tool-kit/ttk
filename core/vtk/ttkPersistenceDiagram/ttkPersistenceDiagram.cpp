@@ -493,23 +493,20 @@ int ttkPersistenceDiagram::RequestData(vtkInformation *request,
        (VTK_TT *)ttkUtils::GetVoidPointer(inputScalars),
        offsetField->GetDataType(), ttkUtils::GetVoidPointer(offsetField),
        (TTK_TT *)(triangulation->getData()))))
-#ifndef TTK_ENABLE_KAMIKAZE
-    // something wrong in baseCode
-    if(status) {
+    
+  // something wrong in baseCode
+  if(status) {
     std::stringstream msg;
     msg << "PersistenceDiagram::execute() error code : " << status;
     this->printErr(msg.str());
     return 0;
   }
-#endif
 
   // shallow copy input Field Data
   outputCTPersistenceDiagram->GetFieldData()->ShallowCopy(
     input->GetFieldData());
 
   computeDiagram_ = false;
-
-  printMsg(ttk::debug::Separator::L1);
 
   return 1;
 }
