@@ -33,3 +33,19 @@ macro(ttk_register_pv_filter vtkModuleDir xmlFile)
     endif()
   endif()
 endmacro()
+
+function(ttk_set_paraview_rpath TARGET_NAME)
+  if(APPLE)
+    # On macOS,
+    # look into the subdirectory "TopologyToolKit"
+    # to find the actual plugins.
+    get_target_property(TEMP
+        ${TARGET_NAME} INSTALL_RPATH
+        )
+    set_target_properties(${TARGET_NAME}
+      PROPERTIES
+        INSTALL_RPATH "@loader_path/${TTK_PLUGIN_SUBDIR};${TEMP}"
+    )
+  endif(APPLE)
+endfunction(ttk_set_paraview_rpath TARGET_NAME)
+
