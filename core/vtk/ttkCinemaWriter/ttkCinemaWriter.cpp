@@ -2,9 +2,11 @@
 
 #include <vtkInformation.h>
 
+#include <vtkDataArray.h>
 #include <vtkDirectory.h>
 #include <vtkFieldData.h>
 #include <vtkImageData.h>
+#include <vtkObjectFactory.h>
 #include <vtkPointData.h>
 #include <vtkStdString.h>
 #include <vtkStringArray.h>
@@ -470,7 +472,7 @@ int ttkCinemaWriter::ProcessDataProduct(vtkDataObject *input) {
       topologicalCompressionWriter->SetFileName(
         (this->DatabasePath + "/" + rDataProductPath).data());
       topologicalCompressionWriter->SetInputData(inputData);
-      topologicalCompressionWriter->WriteData();
+      topologicalCompressionWriter->Write();
     }
 
     this->printMsg("Writing data product to disk", 1, t.getElapsedTime(),
