@@ -111,8 +111,24 @@ int ttkTopologicalCompressionReader::RequestData(
   auto triangulation = ttkAlgorithm::GetTriangulation(mesh);
   this->preconditionTriangulation(triangulation);
 
-  const auto status = this->ReadFromFile<double>(
-    fp, *static_cast<ttk::ImplicitTriangulation *>(triangulation->getData()));
+  int status{0};
+  switch(triangulation->getType()) {
+    case ttk::Triangulation::Type::EXPLICIT:
+      status = this->ReadFromFile<double>(
+        fp,
+        *static_cast<ttk::ExplicitTriangulation *>(triangulation->getData()));
+      break;
+    case ttk::Triangulation::Type::IMPLICIT:
+      status = this->ReadFromFile<double>(
+        fp,
+        *static_cast<ttk::ImplicitTriangulation *>(triangulation->getData()));
+      break;
+    case ttk::Triangulation::Type::PERIODIC:
+      status = this->ReadFromFile<double>(
+        fp,
+        *static_cast<ttk::PeriodicImplicitTriangulation *>(triangulation->getData()));
+      break;
+  }
   if(status != 0) {
     vtkWarningMacro("Failure when reading compressed TTK file");
   }
