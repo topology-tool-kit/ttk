@@ -106,8 +106,8 @@ int DimensionReduction::execute() const {
   const int numberOfDimensions = 2;
   npy_intp dimensions[2]{numberOfRows_, numberOfColumns_};
 
-  std::map<int, std::string> methodToString{
-    {0, "SE"}, {1, "LLE"}, {2, "MDS"}, {3, "t-SNE"}, {4, "IsoMap"}, {5, "PCA"}};
+  std::vector<std::string> methodToString{
+    "SE", "LLE", "MDS", "t-SNE", "IsoMap", "PCA"};
 
   pArray = PyArray_SimpleNewFromData(
     numberOfDimensions, dimensions, NPY_DOUBLE, matrix_);
@@ -175,6 +175,10 @@ int DimensionReduction::execute() const {
 #endif
   gc.push_back(pMethod);
 
+  if(threadNumber_ > 1 && method_ == 2) { // MDS
+    this->printWrn(
+      "MDS is known to be instable when used with multiple threads");
+  }
   pJobs = PyLong_FromLong(threadNumber_);
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!pJobs) {
