@@ -123,11 +123,9 @@ int ttk::TopologicalCompression::ReadPersistenceTopology(FILE *fm) {
 template <typename dataType, typename triangulationType>
 int ttk::TopologicalCompression::ReadPersistenceGeometry(
   FILE *fm, const triangulationType &triangulation) {
-  using ttk::TopologicalCompression;
 
   int sqMethod = sqMethodInt_;
-  bool zfpOnly = zfpOnly_;
-  double zfpBitBudget = zfpBitBudget_;
+  double zfpBitBudget = ZFPBitBudget;
   int *dataExtent = dataExtent_;
 
   std::vector<std::tuple<double, int>> mappingsSortedPerValue;
@@ -137,7 +135,7 @@ int ttk::TopologicalCompression::ReadPersistenceGeometry(
   int nbConstraints = 0;
 
   int numberOfBytesRead = 0;
-  if(!zfpOnly) {
+  if(!ZFPOnly) {
     numberOfBytesRead
       += ReadPersistenceIndex(fm, mapping_, mappingsSortedPerValue,
                               criticalConstraints_, min, max, nbConstraints);
@@ -212,7 +210,7 @@ int ttk::TopologicalCompression::ReadPersistenceGeometry(
   if(sqMethod == 1 || sqMethod == 2)
     return 0;
 
-  if(zfpOnly)
+  if(ZFPOnly)
     return 0;
 
   // 2.b. (3.) Crop whatever doesn't fit in topological intervals.
@@ -460,7 +458,7 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
   const char *sq = SQMethod.c_str();
   int nbCrit = 0;
   std::vector<int> simplifiedConstraints;
-  if(strcmp(sq, "") == 0 && !zfpOnly_) {
+  if(strcmp(sq, "") == 0 && !ZFPOnly) {
     // No SQ: perform topological control
 
     std::vector<std::tuple<SimplexId, SimplexId, dataType>> JTPairs;
@@ -610,7 +608,7 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
   } else if(strcmp(sq, "d") == 0 || strcmp(sq, "D") == 0) {
     // Domain-based SQ: range quantization + later domain control
     sqDomain = true;
-  } else if(zfpOnly_) {
+  } else if(ZFPOnly) {
     return 0;
   } else {
     this->printErr("Unrecognized SQ option (" + SQMethod + ").");
@@ -882,7 +880,7 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
   }
 
   // 7. [ZFP]: max constraints, min constraints
-  if(!sqDomain && !sqRange && !zfpOnly_) {
+  if(!sqDomain && !sqRange && !ZFPOnly) {
     for(int i = 0; i < nbCrit; ++i) {
       SimplexId id = simplifiedConstraints[i];
       dataType val = inputData[id];
@@ -909,8 +907,8 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
     }
 
     int nSegments = indexLast > -1 ? indexLast + 1 : (int)segments.size() - 1;
-    this->nbSegments = nSegments;
-    this->nbVertices = vertexNumber;
+    this->NbSegments = nSegments;
+    this->NbVertices = vertexNumber;
 
     this->printMsg("Assigned " + std::to_string(nSegments) + " segment(s).",
                    1.0, t1.getElapsedTime(), this->threadNumber_);

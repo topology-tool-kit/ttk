@@ -89,20 +89,6 @@ protected:
 private:
   // Writer parameters.
   char *FileName{};
-  double ZFPBitBudget{0};
-  bool ZFPOnly{false};
-  int CompressionType{
-    static_cast<int>(ttk::CompressionType::PersistenceDiagram)};
-
-  // Compression results.
-  int *Segmentation;
-  double Tolerance{1.0};
-  double MaximumError;
-  int NbSegments;
-  int NbVertices;
-  std::string SQMethod{};
-  bool Subdivide{false};
-  bool UseTopologicalSimplification{true};
 
   // Whatever.
   ttkTopologicalCompressionWriter(const ttkTopologicalCompressionWriter &);

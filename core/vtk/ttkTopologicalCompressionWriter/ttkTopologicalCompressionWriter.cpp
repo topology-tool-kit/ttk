@@ -33,13 +33,6 @@ void ttkTopologicalCompressionWriter::PerformCompression(
   vtkDataArray *outputScalarField,
   const triangulationType &triangulation) {
 
-  this->setSQ(SQMethod);
-  this->setSubdivide(!Subdivide);
-  this->setUseTopologicalSimplification(UseTopologicalSimplification);
-  this->setZFPOnly(ZFPOnly);
-  this->setCompressionType(CompressionType);
-  this->setMaximumError(MaximumError);
-  this->setTolerance(Tolerance);
   switch(inputScalarField->GetDataType()) {
     vtkTemplateMacro(this->execute(
       static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(inputScalarField)),

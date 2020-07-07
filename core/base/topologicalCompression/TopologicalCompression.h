@@ -92,7 +92,7 @@ namespace ttk {
       SQMethod = sqMethod;
     }
     inline void setZFPOnly(bool z) {
-      zfpOnly_ = z;
+      ZFPOnly = z;
     }
     inline void setSubdivide(bool b) {
       Subdivide = b;
@@ -120,10 +120,10 @@ namespace ttk {
     }
 
     inline int getNbVertices() {
-      return nbVertices;
+      return NbVertices;
     }
     inline int getNbSegments() {
-      return nbSegments;
+      return NbSegments;
     }
     inline std::vector<int> &getSegmentation() {
       return segmentation_;
@@ -157,10 +157,10 @@ namespace ttk {
       return Tolerance;
     }
     inline double getZFPBitBudget() {
-      return zfpBitBudget_;
+      return ZFPBitBudget;
     }
     inline bool getZFPOnly() {
-      return zfpOnly_;
+      return ZFPOnly;
     }
 
     inline const std::vector<char> &getDataArrayName() const {
@@ -377,13 +377,13 @@ namespace ttk {
 
     // Parameters
     int compressionType_{};
-    bool zfpOnly_{};
-    double zfpBitBudget_{};
+    bool ZFPOnly{false};
+    double ZFPBitBudget{};
     int sqMethodInt_{};
 
     double Tolerance{10};
     double MaximumError{10};
-    int CompressionType{0};
+    int CompressionType{static_cast<int>(CompressionType::PersistenceDiagram)};
     std::string SQMethod{};
     bool Subdivide{false};
     bool UseTopologicalSimplification{true};
@@ -401,8 +401,8 @@ namespace ttk {
     std::vector<std::tuple<int, double, int>> criticalConstraints_{};
 
     // IO.
-    int nbVertices{0};
-    int nbSegments{0};
+    int NbVertices{0};
+    int NbSegments{0};
     int rawFileLength{0};
     std::vector<double> decompressedData_{};
     std::vector<int> decompressedOffsets_{};
@@ -481,7 +481,7 @@ int ttk::TopologicalCompression::WriteToFile(FILE *fp,
   int numberOfVertices = 1;
   for(int i = 0; i < 3; ++i)
     numberOfVertices *= (1 + dataExtent[2 * i + 1] - dataExtent[2 * i]);
-  nbVertices = numberOfVertices;
+  NbVertices = numberOfVertices;
 
   int totalSize = usePersistence
                     ? ComputeTotalSizeForPersistenceDiagram<double>(
@@ -649,7 +649,7 @@ int ttk::TopologicalCompression::ReadFromFile(
 
   this->printMsg("Successfully read metadata.");
 
-  if(zfpOnly_ && (zfpBitBudget_ > 64 || zfpBitBudget_ < 1)) {
+  if(ZFPOnly && (ZFPBitBudget > 64 || ZFPBitBudget < 1)) {
     this->printMsg("Wrong ZFP bit budget for ZFP-only use.");
     return -4;
   }
@@ -722,7 +722,7 @@ int ttk::TopologicalCompression::ReadFromFile(
   //#endif
 
   // Do read topology.
-  if(!(zfpOnly_)) {
+  if(!(ZFPOnly)) {
     if(compressionType_ == (int)ttk::CompressionType::PersistenceDiagram)
       ReadPersistenceTopology<double>(fm);
     else if(compressionType_ == (int)ttk::CompressionType::Other)
@@ -786,7 +786,7 @@ int ttk::TopologicalCompression::ReadMetaData(FILE *fm) {
   compressionType_ = Read<int>(fm);
 
   // -1. ZFP only type.
-  zfpOnly_ = Read<bool>(fm);
+  ZFPOnly = Read<bool>(fm);
 
   // 0. SQ type
   sqMethodInt_ = Read<int>(fm);
@@ -809,7 +809,7 @@ int ttk::TopologicalCompression::ReadMetaData(FILE *fm) {
   Tolerance = Read<double>(fm);
 
   // 5. Lossy compressor ratio
-  zfpBitBudget_ = Read<double>(fm);
+  ZFPBitBudget = Read<double>(fm);
 
   if(version == 0) {
     // Pre-v1 format has no scalar field array name
