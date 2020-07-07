@@ -69,17 +69,15 @@ public:
     }
   }
 
-  // expose Write method for vtkWriter API compatibility (duck-typing)
+  // expose vtkWriter methods (duck-typing)
   int Write();
+  vtkDataObject *GetInput();
+  void SetInputData(vtkDataObject *input);
 
 protected:
   // Regular writer management.
   ttkTopologicalCompressionWriter();
   virtual int FillInputPortInformation(int port, vtkInformation *info) override;
-
-  // need those two methods to align with the vtkWriter API
-  vtkDataObject *GetInput();
-  void SetInputData(vtkDataObject *input);
 
   template <typename triangulationType>
   void PerformCompression(vtkDataArray *inputScalarField,
@@ -89,12 +87,4 @@ protected:
 private:
   // Writer parameters.
   char *FileName{};
-
-  // Whatever.
-  ttkTopologicalCompressionWriter(const ttkTopologicalCompressionWriter &);
-  void operator=(const ttkTopologicalCompressionWriter &);
-
-  // give ttkCinemaWriter access to ttkTopologicalCompressionWriter
-  // protected member functions
-  friend class ttkCinemaWriter;
 };
