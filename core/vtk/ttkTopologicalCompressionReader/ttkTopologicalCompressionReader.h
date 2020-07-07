@@ -32,10 +32,6 @@ public:
   vtkSetMacro(DataScalarType, int);
   vtkGetMacro(DataScalarType, int);
 
-  void SetDebugLevel(const int val) {
-    this->setDebugLevel(val);
-  }
-
   // need this method to align with the vtkImageAlgorithm API
   vtkImageData *GetOutput();
 
@@ -62,6 +58,4 @@ private:
   std::array<int, 6> DataExtent{0, 0, 0, 0, 0, 0};
   std::array<double, 3> DataSpacing{1.0, 1.0, 1.0};
   std::array<double, 3> DataOrigin{0.0, 0.0, 0.0};
-  bool ZFPOnly{false};
-  int SQMethod;
 };

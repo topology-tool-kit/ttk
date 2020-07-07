@@ -124,7 +124,7 @@ template <typename dataType, typename triangulationType>
 int ttk::TopologicalCompression::ReadPersistenceGeometry(
   FILE *fm, const triangulationType &triangulation) {
 
-  int sqMethod = sqMethodInt_;
+  int sqMethod = SQMethodInt;
   double zfpBitBudget = ZFPBitBudget;
   int *dataExtent = dataExtent_;
 

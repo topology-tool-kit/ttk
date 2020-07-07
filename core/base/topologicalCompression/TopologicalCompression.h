@@ -139,7 +139,7 @@ namespace ttk {
       return compressionType_;
     }
     inline int getSQMethod() {
-      return sqMethodInt_;
+      return SQMethodInt;
     }
     inline int getDataScalarType() {
       return dataScalarType_;
@@ -379,7 +379,7 @@ namespace ttk {
     int compressionType_{};
     bool ZFPOnly{false};
     double ZFPBitBudget{};
-    int sqMethodInt_{};
+    int SQMethodInt{};
 
     double Tolerance{10};
     double MaximumError{10};
@@ -789,7 +789,7 @@ int ttk::TopologicalCompression::ReadMetaData(FILE *fm) {
   ZFPOnly = Read<bool>(fm);
 
   // 0. SQ type
-  sqMethodInt_ = Read<int>(fm);
+  SQMethodInt = Read<int>(fm);
 
   // 1. DataType
   dataScalarType_ = Read<int>(fm);

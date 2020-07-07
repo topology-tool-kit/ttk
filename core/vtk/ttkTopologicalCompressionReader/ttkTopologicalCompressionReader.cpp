@@ -134,7 +134,7 @@ int ttkTopologicalCompressionReader::RequestData(
   // decompressed->SetVoidArray(, vertexNumber, 0);
   mesh->GetPointData()->AddArray(decompressed);
 
-  if(SQMethod != 1 && SQMethod != 2 && !ZFPOnly) {
+  if(SQMethodInt != 1 && SQMethodInt != 2 && !ZFPOnly) {
     vtkNew<vtkIntArray> vertexOffset{};
     vertexOffset->SetNumberOfTuples(vertexNumber);
     vertexOffset->SetName(ttk::OffsetScalarFieldName);
