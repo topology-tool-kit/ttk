@@ -444,8 +444,14 @@ int ttkCinemaWriter::ProcessDataProduct(vtkDataObject *input) {
           "Cannot use Topological Compression without a vtkImageData");
         return 0;
       }
+
+      const auto inputData = vtkImageData::SafeDownCast(input);
+      const auto sf = this->GetInputArrayToProcess(0, inputData);
+
       vtkNew<ttkTopologicalCompressionWriter> topologicalCompressionWriter{};
-      topologicalCompressionWriter->SetScalarField(this->ScalarField);
+      topologicalCompressionWriter->SetInputArrayToProcess(
+        0, 0, 0, 0, sf->GetName());
+
       topologicalCompressionWriter->SetTolerance(this->Tolerance);
       topologicalCompressionWriter->SetMaximumError(this->MaximumError);
       topologicalCompressionWriter->SetZFPBitBudget(this->ZFPBitBudget);
@@ -455,13 +461,6 @@ int ttkCinemaWriter::ProcessDataProduct(vtkDataObject *input) {
       topologicalCompressionWriter->SetSubdivide(this->Subdivide);
       topologicalCompressionWriter->SetUseTopologicalSimplification(
         this->UseTopologicalSimplification);
-
-      if(ScalarField.empty()) {
-        vtkErrorMacro("Need a scalar field for Topological Compression");
-        return 0;
-      }
-      const auto inputData = vtkImageData::SafeDownCast(input);
-      const auto sf = inputData->GetPointData()->GetArray(ScalarField.data());
 
       // Check that input scalar field is indeed scalar
       if(sf->GetNumberOfComponents() != 1) {
