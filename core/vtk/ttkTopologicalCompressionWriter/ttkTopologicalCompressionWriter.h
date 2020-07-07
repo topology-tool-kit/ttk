@@ -29,12 +29,6 @@ public:
   vtkSetStringMacro(FileName);
   vtkGetStringMacro(FileName);
 
-  vtkSetMacro(ScalarField, std::string);
-  vtkGetMacro(ScalarField, std::string);
-
-  vtkSetMacro(ScalarFieldId, int);
-  vtkGetMacro(ScalarFieldId, int);
-
   vtkGetMacro(Tolerance, double);
   vtkSetMacro(Tolerance, double);
 
@@ -87,9 +81,6 @@ protected:
   vtkDataObject *GetInput();
   void SetInputData(vtkDataObject *input);
 
-  // TTK management.
-  vtkDataArray *GetInputScalarField(vtkImageData *vti);
-
   template <typename triangulationType>
   void PerformCompression(vtkDataArray *inputScalarField,
                           vtkDataArray *outputScalarField,
@@ -104,8 +95,6 @@ private:
     static_cast<int>(ttk::CompressionType::PersistenceDiagram)};
 
   // Compression results.
-  std::string ScalarField;
-  int ScalarFieldId;
   int *Segmentation;
   double Tolerance{1.0};
   double MaximumError;

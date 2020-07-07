@@ -42,7 +42,7 @@
       ${TOPOLOGICAL_COMPRESSION_WIDGETS}
 
       <PropertyGroup panel_widget="Line" label="Input">
-        <Property name="ScalarField" />
+        <Property name="Scalar Field" />
       </PropertyGroup>
 
       <PropertyGroup panel_widget="Line" label="Output">

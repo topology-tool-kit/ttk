@@ -27,13 +27,6 @@ int ttkTopologicalCompressionWriter::FillInputPortInformation(
   return 0;
 }
 
-vtkDataArray *
-  ttkTopologicalCompressionWriter::GetInputScalarField(vtkImageData *vti) {
-  return ScalarField.length()
-           ? vti->GetPointData()->GetArray(ScalarField.data())
-           : vti->GetPointData()->GetArray(ScalarFieldId);
-}
-
 template <typename triangulationType>
 void ttkTopologicalCompressionWriter::PerformCompression(
   vtkDataArray *inputScalarField,
@@ -69,7 +62,10 @@ int ttkTopologicalCompressionWriter::Write() {
   vtkDataObject *input = GetInput();
   vtkImageData *vti = vtkImageData::SafeDownCast(input);
 
-  vtkDataArray *inputScalarField = GetInputScalarField(vti);
+  auto inputScalarField = this->GetInputArrayToProcess(0, input);
+  if(inputScalarField == nullptr) {
+    return 0;
+  }
 
   auto triangulation = ttkAlgorithm::GetTriangulation(vti);
   if(triangulation == nullptr) {
