@@ -79,11 +79,6 @@ protected:
   ttkTopologicalCompressionWriter();
   virtual int FillInputPortInformation(int port, vtkInformation *info) override;
 
-  template <typename triangulationType>
-  void PerformCompression(vtkDataArray *inputScalarField,
-                          vtkDataArray *outputScalarField,
-                          const triangulationType &triangulation);
-
 private:
   // Writer parameters.
   char *FileName{};

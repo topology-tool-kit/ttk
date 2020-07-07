@@ -27,22 +27,6 @@ int ttkTopologicalCompressionWriter::FillInputPortInformation(
   return 0;
 }
 
-template <typename triangulationType>
-void ttkTopologicalCompressionWriter::PerformCompression(
-  vtkDataArray *inputScalarField,
-  vtkDataArray *outputScalarField,
-  const triangulationType &triangulation) {
-
-  switch(inputScalarField->GetDataType()) {
-    vtkTemplateMacro(this->execute(
-      static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(inputScalarField)),
-      static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(outputScalarField)),
-      triangulation));
-    default:
-      this->printErr("Unsupported data type.");
-  }
-}
-
 int ttkTopologicalCompressionWriter::Write() {
 
   this->printMsg("New writing task.");
@@ -66,7 +50,6 @@ int ttkTopologicalCompressionWriter::Write() {
   }
   this->preconditionTriangulation(triangulation);
 
-  int res = 0;
   vtkSmartPointer<vtkDataArray> outputScalarField;
 
   switch(inputScalarField->GetDataType()) {
@@ -88,19 +71,19 @@ int ttkTopologicalCompressionWriter::Write() {
     default:
       this->printErr("Unsupported data type :(");
       // Do nothing.
-      res = -1;
-  }
-
-  if(res < 0) {
-    return 0;
+      return 0;
   }
 
   outputScalarField->SetNumberOfTuples(inputScalarField->GetNumberOfTuples());
   outputScalarField->SetName(inputScalarField->GetName());
   Modified();
 
-  PerformCompression(
-    inputScalarField, outputScalarField, *triangulation->getData());
+  ttkVtkTemplateMacro(
+    inputScalarField->GetDataType(), triangulation->getType(),
+    this->execute(
+      static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(inputScalarField)),
+      static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(outputScalarField)),
+      *static_cast<TTK_TT *>(triangulation->getData())));
 
   this->printMsg("Compression successful.");
 
@@ -111,11 +94,8 @@ int ttkTopologicalCompressionWriter::Write() {
     return 0;
   }
 
-  auto pd = vti->GetPointData();
-
-  int dt = pd->GetArray(inputScalarField->GetName())->GetDataType();
-  double *vp
-    = (double *)pd->GetArray(inputScalarField->GetName())->GetVoidPointer(0);
+  int dt = inputScalarField->GetDataType();
+  auto vp = static_cast<double *>(ttkUtils::GetVoidPointer(inputScalarField));
 
   this->setFileName(FileName);
   this->WriteToFile<double>(fp, CompressionType, ZFPOnly, SQMethod.c_str(), dt,
