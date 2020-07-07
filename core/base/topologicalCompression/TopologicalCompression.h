@@ -528,7 +528,7 @@ int ttk::TopologicalCompression::WriteToFile(FILE *fp,
   // #endif
 
   if(status == 0) {
-    this->printMsg(" Geometry successfully written to buffer.");
+    this->printMsg("Geometry successfully written to buffer.");
   } else {
     this->printErr("Geometry was not successfully written to buffer.");
     fflush(fp);

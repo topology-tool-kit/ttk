@@ -912,7 +912,7 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
     this->nbSegments = nSegments;
     this->nbVertices = vertexNumber;
 
-    this->printMsg("Affected " + std::to_string(nSegments) + " segment(s).",
+    this->printMsg("Assigned " + std::to_string(nSegments) + " segment(s).",
                    1.0, t1.getElapsedTime(), this->threadNumber_);
   }
 
