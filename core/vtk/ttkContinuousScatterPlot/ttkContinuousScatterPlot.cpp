@@ -142,7 +142,6 @@ int ttkContinuousScatterPlot::RequestData(vtkInformation *request,
                          (VTK_TT *)ttkUtils::GetVoidPointer(inputScalars1),
                          inputScalars2, (TTK_TT *)triangulation->getData())));
 
-#ifndef TTK_ENABLE_KAMIKAZE
   // something wrong in baseCode
   if(status != 0) {
     std::stringstream msg;
@@ -150,7 +149,6 @@ int ttkContinuousScatterPlot::RequestData(vtkInformation *request,
     this->printErr(msg.str());
     return -6;
   }
-#endif
 
   vtkNew<vtkCharArray> maskScalars;
   maskScalars->SetNumberOfComponents(1);
