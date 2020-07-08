@@ -105,7 +105,7 @@ namespace ttk {
     double computeDistance(const BidderDiagram<double> &D1,
                            const BidderDiagram<double> &D2) const;
     void getDiagramsDistMat(
-      const size_t nInputs,
+      const std::array<size_t, 2> &nInputs,
       std::vector<std::vector<double>> &distanceMatrix,
       const std::vector<BidderDiagram<double>> &diags_min,
       const std::vector<BidderDiagram<double>> &diags_sad,

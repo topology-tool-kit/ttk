@@ -173,50 +173,66 @@ double PersistenceDiagramDistanceMatrix::computeDistance(
 }
 
 void PersistenceDiagramDistanceMatrix::getDiagramsDistMat(
-  const size_t nInputs,
+  const std::array<size_t, 2> &nInputs,
   std::vector<std::vector<double>> &distanceMatrix,
   const std::vector<BidderDiagram<double>> &diags_min,
   const std::vector<BidderDiagram<double>> &diags_sad,
   const std::vector<BidderDiagram<double>> &diags_max) const {
 
-  distanceMatrix.resize(nInputs);
+  distanceMatrix.resize(nInputs[0]);
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for schedule(dynamic) num_threads(this->threadNumber_)
 #endif // TTK_ENABLE_OPENMP
-  for(size_t i = 0; i < nInputs; ++i) {
-    distanceMatrix[i].resize(nInputs);
+  for(size_t i = 0; i < nInputs[0]; ++i) {
 
-    // matrix diagonal
-    distanceMatrix[i][i] = 0.0;
+    if(nInputs[1] == 0) {
+      distanceMatrix[i].resize(nInputs[0]);
+      // set the matrix diagonal
+      distanceMatrix[i][i] = 0.0;
+    } else {
+      distanceMatrix[i].resize(nInputs[1]);
+    }
 
-    for(size_t j = i + 1; j < nInputs; ++j) {
+    const auto getDist = [&](const size_t a, const size_t b) -> double {
       double distance{};
-
       if(this->do_min_) {
-        auto &dimin = diags_min[i];
-        auto &djmin = diags_min[j];
+        auto &dimin = diags_min[a];
+        auto &djmin = diags_min[b];
         distance += computeDistance(dimin, djmin);
       }
       if(this->do_sad_) {
-        auto &disad = diags_sad[i];
-        auto &djsad = diags_sad[j];
+        auto &disad = diags_sad[a];
+        auto &djsad = diags_sad[b];
         distance += computeDistance(disad, djsad);
       }
       if(this->do_max_) {
-        auto &dimax = diags_max[i];
-        auto &djmax = diags_max[j];
+        auto &dimax = diags_max[a];
+        auto &djmax = diags_max[b];
         distance += computeDistance(dimax, djmax);
       }
+      return distance;
+    };
 
-      distanceMatrix[i][j] = distance;
+    if(nInputs[1] == 0) {
+      // square matrix: only compute the upper triangle (i < j < nInputs[0])
+      for(size_t j = i + 1; j < nInputs[0]; ++j) {
+        distanceMatrix[i][j] = getDist(i, j);
+      }
+    } else {
+      // rectangular matrix: compute the whole line/column (0 <= j < nInputs[1])
+      for(size_t j = 0; j < nInputs[1]; ++j) {
+        distanceMatrix[i][j] = getDist(i, j + nInputs[0]);
+      }
     }
   }
 
-  // distance matrix is symmetric
-  for(size_t i = 0; i < nInputs; ++i) {
-    for(size_t j = i + 1; j < nInputs; ++j) {
-      distanceMatrix[j][i] = distanceMatrix[i][j];
+  if(nInputs[1] == 0) {
+    // square distance matrix is symmetric: complete the lower triangle
+    for(size_t i = 0; i < nInputs[0]; ++i) {
+      for(size_t j = i + 1; j < nInputs[0]; ++j) {
+        distanceMatrix[j][i] = distanceMatrix[i][j];
+      }
     }
   }
 }
