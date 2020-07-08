@@ -5,11 +5,12 @@
 using namespace ttk;
 
 std::vector<std::vector<double>> PersistenceDiagramDistanceMatrix::execute(
-  const std::vector<Diagram> &intermediateDiagrams) const {
+  const std::vector<Diagram> &intermediateDiagrams,
+  const std::array<size_t, 2> &nInputs) const {
 
   Timer tm{};
 
-  const auto nInputs = intermediateDiagrams.size();
+  const auto nDiags = intermediateDiagrams.size();
 
   if(do_min_ && do_sad_ && do_max_) {
     this->printMsg("Processing all critical pairs types");
@@ -21,9 +22,9 @@ std::vector<std::vector<double>> PersistenceDiagramDistanceMatrix::execute(
     this->printMsg("Processing only SAD-MAX pairs");
   }
 
-  std::vector<Diagram> inputDiagramsMin(nInputs);
-  std::vector<Diagram> inputDiagramsSad(nInputs);
-  std::vector<Diagram> inputDiagramsMax(nInputs);
+  std::vector<Diagram> inputDiagramsMin(nDiags);
+  std::vector<Diagram> inputDiagramsSad(nDiags);
+  std::vector<Diagram> inputDiagramsMax(nDiags);
 
   std::vector<BidderDiagram<double>> bidder_diagrams_min{};
   std::vector<BidderDiagram<double>> bidder_diagrams_sad{};
@@ -33,13 +34,13 @@ std::vector<std::vector<double>> PersistenceDiagramDistanceMatrix::execute(
   std::vector<BidderDiagram<double>> current_bidder_diagrams_max{};
 
   // Store the persistence of the global min-max pair
-  std::vector<double> maxDiagPersistence(nInputs);
+  std::vector<double> maxDiagPersistence(nDiags);
 
   // Create diagrams for min, saddle and max persistence pairs
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
-  for(size_t i = 0; i < nInputs; i++) {
+  for(size_t i = 0; i < nDiags; i++) {
     const Diagram &CTDiagram = intermediateDiagrams[i];
 
     for(size_t j = 0; j < CTDiagram.size(); ++j) {
@@ -73,13 +74,13 @@ std::vector<std::vector<double>> PersistenceDiagramDistanceMatrix::execute(
   }
 
   if(this->do_min_) {
-    setBidderDiagrams(nInputs, inputDiagramsMin, bidder_diagrams_min);
+    setBidderDiagrams(nDiags, inputDiagramsMin, bidder_diagrams_min);
   }
   if(this->do_sad_) {
-    setBidderDiagrams(nInputs, inputDiagramsSad, bidder_diagrams_sad);
+    setBidderDiagrams(nDiags, inputDiagramsSad, bidder_diagrams_sad);
   }
   if(this->do_max_) {
-    setBidderDiagrams(nInputs, inputDiagramsMax, bidder_diagrams_max);
+    setBidderDiagrams(nDiags, inputDiagramsMax, bidder_diagrams_max);
   }
 
   switch(this->Constraint) {
@@ -110,7 +111,7 @@ std::vector<std::vector<double>> PersistenceDiagramDistanceMatrix::execute(
       break;
   }
 
-  std::vector<std::vector<double>> distMat(nInputs);
+  std::vector<std::vector<double>> distMat{};
   if(this->Constraint == ConstraintType::FULL_DIAGRAMS) {
     getDiagramsDistMat(nInputs, distMat, bidder_diagrams_min,
                        bidder_diagrams_sad, bidder_diagrams_max);

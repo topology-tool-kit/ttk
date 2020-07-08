@@ -60,7 +60,8 @@ namespace ttk {
     }
 
     std::vector<std::vector<double>>
-      execute(const std::vector<Diagram> &intermediateDiagrams) const;
+      execute(const std::vector<Diagram> &intermediateDiagrams,
+              const std::array<size_t, 2> &nInputs) const;
 
     inline void setWasserstein(const int data) {
       Wasserstein = data;
