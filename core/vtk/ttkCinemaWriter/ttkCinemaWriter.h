@@ -45,8 +45,6 @@ public:
 
   int DeleteDatabase();
 
-  vtkGetMacro(ScalarField, std::string);
-  vtkSetMacro(ScalarField, std::string);
   vtkGetMacro(Tolerance, double);
   vtkSetMacro(Tolerance, double);
   vtkGetMacro(MaximumError, double);
@@ -85,7 +83,6 @@ private:
   int Mode{0};
 
   // topological compression
-  std::string ScalarField{};
   double Tolerance{1.0};
   double MaximumError{};
   double ZFPBitBudget{0};

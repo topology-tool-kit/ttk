@@ -78,7 +78,7 @@ NOTE:
             ${TOPOLOGICAL_COMPRESSION_WIDGETS}
 
             <PropertyGroup panel_widget="Line" label="Topological Compression" >
-              <Property name="ScalarField" />
+              <Property name="Scalar Field" />
               <Property name="CompressionType" />
               <Property name="Tolerance" />
               <Property name="Subdivide" />

@@ -6,4 +6,4 @@ HEADERS
   ttkTopologicalCompression.h
 DEPENDS
   topologicalCompression
-  ttkTriangulationAlgorithm
+  ttkAlgorithm

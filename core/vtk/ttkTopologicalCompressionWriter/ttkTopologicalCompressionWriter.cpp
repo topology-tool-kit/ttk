@@ -1,48 +1,60 @@
+#include <ttkMacros.h>
 #include <ttkTopologicalCompressionWriter.h>
+#include <ttkUtils.h>
+
+#include <vtkDoubleArray.h>
+#include <vtkExecutive.h>
+#include <vtkFloatArray.h>
+#include <vtkIdTypeArray.h>
+#include <vtkImageData.h>
+#include <vtkInformation.h>
+#include <vtkPointData.h>
+#include <vtkSignedCharArray.h>
 
 vtkStandardNewMacro(ttkTopologicalCompressionWriter);
 
 ttkTopologicalCompressionWriter::ttkTopologicalCompressionWriter() {
-  // GUI parameters must be initialized.
-  CompressionType = (int)ttk::CompressionType::PersistenceDiagram;
-  FileName = nullptr;
-  ZFPBitBudget = 0;
-  ZFPOnly = false;
-  Tolerance = 1;
-  SQMethod = "";
-  Subdivide = false;
-  UseTopologicalSimplification = true;
-  // ScalarField = "";
-  ScalarFieldId = 0;
-  SetUseAllCores(true);
-}
-
-ttkTopologicalCompressionWriter::~ttkTopologicalCompressionWriter() {
+  SetNumberOfInputPorts(1);
+  this->setDebugMsgPrefix("TopologicalCompressionWriter");
 }
 
 int ttkTopologicalCompressionWriter::FillInputPortInformation(
-  int, vtkInformation *info) {
-  info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkImageData");
-  return 1;
+  int port, vtkInformation *info) {
+  if(port == 0) {
+    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkImageData");
+    return 1;
+  }
+  return 0;
 }
 
-void ttkTopologicalCompressionWriter::ComputeTriangulation(vtkImageData *vti) {
-  triangulation.setInputData(vti);
-  topologicalCompression.setupTriangulation(triangulation.getTriangulation());
-}
+int ttkTopologicalCompressionWriter::Write() {
 
-vtkDataArray *
-  ttkTopologicalCompressionWriter::GetInputScalarField(vtkImageData *vti) {
-  return ScalarField.length()
-           ? vti->GetPointData()->GetArray(ScalarField.data())
-           : vti->GetPointData()->GetArray(ScalarFieldId);
-}
+  this->printMsg("New writing task.");
 
-int ttkTopologicalCompressionWriter::AllocateOutput(
-  vtkDataArray *inputScalarField) {
+  if(ZFPOnly && (ZFPBitBudget > 64 || ZFPBitBudget < 1)) {
+    this->printErr("Wrong ZFP bit budget for ZFP-onyl use, aborting.");
+    return 0;
+  }
+
+  vtkDataObject *input = GetInput();
+  vtkImageData *vti = vtkImageData::SafeDownCast(input);
+
+  auto inputScalarField = this->GetInputArrayToProcess(0, input);
+  if(inputScalarField == nullptr) {
+    return 0;
+  }
+
+  auto triangulation = ttkAlgorithm::GetTriangulation(vti);
+  if(triangulation == nullptr) {
+    return 0;
+  }
+  this->preconditionTriangulation(triangulation);
+
+  vtkSmartPointer<vtkDataArray> outputScalarField;
+
   switch(inputScalarField->GetDataType()) {
-    case VTK_CHAR:
-      outputScalarField = vtkSmartPointer<vtkCharArray>::New();
+    case VTK_SIGNED_CHAR:
+      outputScalarField = vtkSmartPointer<vtkSignedCharArray>::New();
       break;
     case VTK_DOUBLE:
       outputScalarField = vtkSmartPointer<vtkDoubleArray>::New();
@@ -56,113 +68,54 @@ int ttkTopologicalCompressionWriter::AllocateOutput(
     case VTK_ID_TYPE:
       outputScalarField = vtkSmartPointer<vtkIdTypeArray>::New();
       break;
-    default: {
-      std::stringstream msg;
-      msg << "[vtkTopologicalCompression] Unsupported data type :(" << endl;
-      d.dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
-    }
-
+    default:
+      this->printErr("Unsupported data type :(");
       // Do nothing.
-      return -1;
+      return 0;
   }
 
   outputScalarField->SetNumberOfTuples(inputScalarField->GetNumberOfTuples());
   outputScalarField->SetName(inputScalarField->GetName());
   Modified();
 
-  return 0;
-}
+  ttkVtkTemplateMacro(
+    inputScalarField->GetDataType(), triangulation->getType(),
+    this->execute(
+      static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(inputScalarField)),
+      static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(outputScalarField)),
+      *static_cast<TTK_TT *>(triangulation->getData())));
 
-void ttkTopologicalCompressionWriter::PerformCompression(
-  vtkDataArray *inputScalarField) {
-  topologicalCompression.setInputDataPointer(
-    inputScalarField->GetVoidPointer(0));
-  topologicalCompression.setSQ(SQMethod);
-  topologicalCompression.setSubdivide(!Subdivide);
-  topologicalCompression.setUseTopologicalSimplification(
-    UseTopologicalSimplification);
-  topologicalCompression.setZFPOnly(ZFPOnly);
-  topologicalCompression.setCompressionType(CompressionType);
-  topologicalCompression.setOutputDataPointer(
-    outputScalarField->GetVoidPointer(0));
-  topologicalCompression.setMaximumError(MaximumError);
-  switch(inputScalarField->GetDataType()) {
-    vtkTemplateMacro(topologicalCompression.execute<VTK_TT>(Tolerance));
-    default: {
-      std::stringstream msg;
-      msg << "[ttkCompressionWriter] Unsupported data type." << std::endl;
-      d.dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
-    } break;
-  }
-}
-
-void ttkTopologicalCompressionWriter::WriteData() {
-  bool zfpOnly = ZFPOnly;
-  double zfpBitBudget = ZFPBitBudget;
-  topologicalCompression.setThreadNumber(threadNumber_);
-
-  {
-    std::stringstream msg;
-    msg << "[ttkCompressionWriter] New writing task." << std::endl;
-    d.dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
-  }
-
-  if(zfpOnly && (zfpBitBudget > 64 || zfpBitBudget < 1)) {
-    std::stringstream msg;
-    msg << "[ttkTopologicalCompressionReader] Wrong ZFP bit budget for "
-           "ZFP-only use."
-        << " Aborting" << std::endl;
-    d.dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
-    return;
-  }
-
-  vtkDataObject *input = GetInput();
-  vtkImageData *vti = vtkImageData::SafeDownCast(input);
-
-  vtkDataArray *inputScalarField = GetInputScalarField(vti);
-
-  ComputeTriangulation(vti);
-
-  int res = AllocateOutput(inputScalarField);
-  if(res < 0)
-    return;
-
-  PerformCompression(inputScalarField);
-
-  {
-    std::stringstream msg;
-    msg << "[ttkCompressionWriter] Compression successful." << std::endl;
-    d.dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
-  }
+  this->printMsg("Compression successful.");
 
   // Open file.
   FILE *fp;
   if((fp = fopen(FileName, "wb")) == nullptr) {
-    std::stringstream msg;
-    msg << "[ttkCompressionWriter] System IO error while opening the file."
-        << std::endl;
-    d.dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
-    return;
+    this->printErr("System IO error while opening the file.");
+    return 0;
   }
 
-  int dt
-    = vti->GetPointData()->GetArray(inputScalarField->GetName())->GetDataType();
-  double *vp = (double *)vti->GetPointData()
-                 ->GetArray(inputScalarField->GetName())
-                 ->GetVoidPointer(0);
+  int dt = inputScalarField->GetDataType();
+  auto vp = static_cast<double *>(ttkUtils::GetVoidPointer(inputScalarField));
 
-  std::string inputScalarFieldName = inputScalarField->GetName();
+  this->setFileName(FileName);
+  this->WriteToFile<double>(fp, CompressionType, ZFPOnly, SQMethod.c_str(), dt,
+                            vti->GetExtent(), vti->GetSpacing(),
+                            vti->GetOrigin(), vp, Tolerance, ZFPBitBudget,
+                            inputScalarField->GetName());
 
-  topologicalCompression.setFileName(FileName);
-  topologicalCompression.WriteToFile<double>(
-    fp, CompressionType, ZFPOnly, SQMethod.c_str(), dt, vti->GetExtent(),
-    vti->GetSpacing(), vti->GetOrigin(), vp, Tolerance, ZFPBitBudget,
-    inputScalarFieldName);
+  this->printMsg("Wrote to " + std::string{FileName} + ".");
+  return 1;
+}
 
-  {
-    std::stringstream msg;
-    msg << "[ttkTopologicalCompression] Wrote to " << FileName << "."
-        << std::endl;
-    d.dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
+vtkDataObject *ttkTopologicalCompressionWriter::GetInput() {
+  // copied from ParaView's vtkWriter::GetInput()
+  if(this->GetNumberOfInputConnections(0) < 1) {
+    return nullptr;
   }
+  return this->GetExecutive()->GetInputData(0, 0);
+}
+
+void ttkTopologicalCompressionWriter::SetInputData(vtkDataObject *input) {
+  // copied from ParaView's vtkWriter::SetInputData()
+  this->SetInputDataInternal(0, input);
 }
