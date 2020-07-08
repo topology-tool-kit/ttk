@@ -259,7 +259,7 @@ bool Class::postprocess() {
   int *ctypes = new int[nc];
 
   vtkIdType cinfoCounter = 0;
-  for(std::size_t c = 0; c < (std::size_t)nc; ++c) {
+  for(ttk::SimplexId c = 0; c < nc; ++c) {
     const auto nvOfCell = cinfosBuf[cinfoCounter];
     assert(nvOfCell >= 2 && nvOfCell <= 3); // ensured in super class
     ctypes[c] = nvOfCell == 2 ? VTK_LINE : VTK_TRIANGLE;
@@ -272,7 +272,7 @@ bool Class::postprocess() {
     // Actually a warning would be in order-
     // what if conversion is not possible (e.g. too large indices)?
     cinfosBufVtk = new vtkIdType[cinfosSize];
-    for(std::size_t i = 0; i < (std::size_t)cinfosSize; ++i)
+    for(ttk::SimplexId i = 0; i < cinfosSize; ++i)
       cinfosBufVtk[i] = vtkIdType(cinfosBuf[i]);
     delete[] cinfosBuf;
   }
