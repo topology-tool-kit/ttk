@@ -46,7 +46,7 @@ namespace ttk {
                              const SimplexId &a,
                              const SimplexId &b,
                              dataType *scalars) const {
-      return fabs(scalars[b] - scalars[a])
+      return std::fabs(static_cast<float>(scalars[b] - scalars[a]))
              / getDistance<triangulationType>(triangulation, a, b);
     }
 
