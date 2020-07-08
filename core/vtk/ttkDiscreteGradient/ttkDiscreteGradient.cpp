@@ -206,11 +206,9 @@ int ttkDiscreteGradient::RequestData(vtkInformation *request,
                            *static_cast<TTK_TT *>(triangulation->getData()))))
   }
 
-#ifndef TTK_ENABLE_KAMIKAZE
   if(ret != 0) {
     return -1;
   }
-#endif // TTK_ENABLE_KAMIKAZE
 
   // gradient glyphs
   if(ComputeGradientGlyphs) {
