@@ -10,25 +10,28 @@
 
 #pragma once
 
-#include "vtkPoints.h"
-#include "vtkSmartPointer.h"
-#include "vtkUnstructuredGridAlgorithm.h"
-
 #include <ttkOFFReaderModule.h>
-#include <vtkDataSetReader.h>
+
+#include <vtkNew.h>
+#include <vtkUnstructuredGrid.h>
+#include <vtkUnstructuredGridAlgorithm.h>
 
 #include <string>
 #include <vector>
 
+class vtkPoints;
+class vtkDoubleArray;
+
 class TTKOFFREADER_EXPORT ttkOFFReader : public vtkUnstructuredGridAlgorithm {
 public:
   vtkTypeMacro(ttkOFFReader, vtkUnstructuredGridAlgorithm);
-  void PrintSelf(ostream &os, vtkIndent indent) override;
 
   static ttkOFFReader *New();
 
+  void PrintSelf(std::ostream &os, vtkIndent indent) override;
+
   // Description:
-  // Specify file name of the .abc file.
+  // Specify file name of the .off file.
   vtkSetStringMacro(FileName);
   vtkGetStringMacro(FileName);
 
@@ -49,12 +52,12 @@ private:
   ttkOFFReader(const ttkOFFReader &) = delete;
   void operator=(const ttkOFFReader &) = delete;
 
-  char *FileName;
-  vtkIdType nbVerts_, nbCells_;
-  vtkIdType nbVertsData_, nbCellsData_;
+  char *FileName{};
+  vtkIdType nbVerts_{}, nbCells_{};
+  vtkIdType nbVertsData_{}, nbCellsData_{};
 
-  vtkSmartPointer<vtkUnstructuredGrid> mesh_;
-  vtkSmartPointer<vtkPoints> points_;
-  std::vector<vtkSmartPointer<vtkDoubleArray>> vertScalars_;
-  std::vector<vtkSmartPointer<vtkDoubleArray>> cellScalars_;
+  vtkNew<vtkUnstructuredGrid> mesh_{};
+  vtkNew<vtkPoints> points_{};
+  std::vector<vtkNew<vtkDoubleArray>> vertScalars_{};
+  std::vector<vtkNew<vtkDoubleArray>> cellScalars_{};
 };

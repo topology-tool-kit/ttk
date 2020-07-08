@@ -9,24 +9,24 @@
 #include "vtkInformationVector.h"
 #include "vtkObjectFactory.h"
 #include "vtkPointData.h"
+#include "vtkPoints.h"
 #include "vtkStreamingDemandDrivenPipeline.h"
 #include "vtkUnstructuredGrid.h"
+#include <vtkDataSetReader.h>
 
 #include <iostream>
 #include <sstream>
-
-using namespace std;
 
 vtkStandardNewMacro(ttkOFFReader);
 
 // Public
 // {{{
 
-void ttkOFFReader::PrintSelf(ostream &os, vtkIndent indent) {
+void ttkOFFReader::PrintSelf(std::ostream &os, vtkIndent indent) {
   this->Superclass::PrintSelf(os, indent);
 
   os << indent << "File Name: " << (this->FileName ? this->FileName : "(none)")
-     << endl;
+     << std::endl;
 }
 
 // }}}
@@ -36,22 +36,16 @@ void ttkOFFReader::PrintSelf(ostream &os, vtkIndent indent) {
 ttkOFFReader::ttkOFFReader() {
   this->SetNumberOfInputPorts(0);
   this->SetNumberOfOutputPorts(1);
-  this->FileName = NULL;
-  this->nbVerts_ = 0;
-  this->nbCells_ = 0;
-  this->nbVertsData_ = 0;
-  this->nbCellsData_ = 0;
-  this->mesh_ = vtkSmartPointer<vtkUnstructuredGrid>::New();
-  this->points_ = vtkSmartPointer<vtkPoints>::New();
 }
 
 int ttkOFFReader::RequestData(vtkInformation *request,
                               vtkInformationVector **inputVector,
                               vtkInformationVector *outputVector) {
-  ifstream offFile(FileName, ios::in);
+  std::ifstream offFile(FileName, ios::in);
 
   if(!offFile) {
-    cerr << "[ttkOFFReader] Can't read file: '" << FileName << "'" << endl;
+    std::cerr << "[ttkOFFReader] Can't read file: '" << FileName << "'"
+              << std::endl;
     return -1;
   }
 
@@ -59,7 +53,8 @@ int ttkOFFReader::RequestData(vtkInformation *request,
 
   offFile >> FileType;
   if(FileType != "OFF") {
-    cerr << "[ttkOFFReader] Bad format for file: '" << FileName << "'" << endl;
+    std::cerr << "[ttkOFFReader] Bad format for file: '" << FileName << "'"
+              << std::endl;
     return -2;
   }
 
@@ -84,7 +79,6 @@ int ttkOFFReader::RequestData(vtkInformation *request,
   // allocation verts
   vertScalars_.resize(nbVertsData_);
   for(vtkIdType i = 0; i < nbVertsData_; i++) {
-    vertScalars_[i] = vtkSmartPointer<vtkDoubleArray>::New();
     vertScalars_[i]->SetNumberOfComponents(1);
     vertScalars_[i]->SetNumberOfTuples(nbVerts_);
     const std::string name = "VertScalarField_" + std::to_string(i);
@@ -109,7 +103,6 @@ int ttkOFFReader::RequestData(vtkInformation *request,
   // allocation cells
   cellScalars_.resize(nbCellsData_);
   for(vtkIdType i = 0; i < nbCellsData_; i++) {
-    cellScalars_[i] = vtkSmartPointer<vtkDoubleArray>::New();
     cellScalars_[i]->SetNumberOfComponents(1);
     cellScalars_[i]->SetNumberOfTuples(nbCells_);
     const std::string name = "CellScalarField_" + std::to_string(i);
@@ -129,10 +122,10 @@ int ttkOFFReader::RequestData(vtkInformation *request,
   }
 
 #ifndef NDEBUG
-  cout << "[ttkOFFReader] Read " << mesh_->GetNumberOfPoints() << " vertice(s)"
-       << endl;
-  cout << "[ttkOFFReader] Read " << mesh_->GetNumberOfCells() << " cell(s)"
-       << endl;
+  std::cout << "[ttkOFFReader] Read " << mesh_->GetNumberOfPoints()
+            << " vertice(s)" << std::endl;
+  std::cout << "[ttkOFFReader] Read " << mesh_->GetNumberOfCells() << " cell(s)"
+            << std::endl;
 #endif
 
   // get the info object
@@ -177,6 +170,7 @@ int ttkOFFReader::countCellsData(std::string line) {
 }
 
 int ttkOFFReader::processLineVert(vtkIdType curLine, std::string &line) {
+
   double x, y, z;
   std::istringstream ss(line);
 
@@ -197,7 +191,7 @@ int ttkOFFReader::processLineVert(vtkIdType curLine, std::string &line) {
 
 int ttkOFFReader::processLineCell(vtkIdType curLine, std::string &line) {
   int nbCellVerts;
-  vtkSmartPointer<vtkIdList> cellVerts = vtkSmartPointer<vtkIdList>::New();
+  vtkNew<vtkIdList> cellVerts{};
   std::istringstream ss(line);
   ss >> nbCellVerts;
   for(int j = 0; j < nbCellVerts; j++) {
@@ -216,8 +210,8 @@ int ttkOFFReader::processLineCell(vtkIdType curLine, std::string &line) {
       mesh_->InsertNextCell(VTK_TETRA, cellVerts);
       break;
     default:
-      cerr << "[ttkOFFReader] Unsupported cell type having " << nbCellVerts
-           << " vertices" << endl;
+      std::cerr << "[ttkOFFReader] Unsupported cell type having " << nbCellVerts
+                << " vertices" << std::endl;
       return -3;
   }
 
