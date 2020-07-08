@@ -15,13 +15,8 @@ using namespace ttk;
 
 vtkStandardNewMacro(ttkImportEmbeddingFromTable)
 
-  // transmit abort signals
-  bool ttkImportEmbeddingFromTable::needsToAbort() {
-  return GetAbortExecute();
-}
-
-int ttkImportEmbeddingFromTable::FillInputPortInformation(
-  int port, vtkInformation *info) {
+  int ttkImportEmbeddingFromTable::FillInputPortInformation(
+    int port, vtkInformation *info) {
   if(port == 0) {
     info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkPointSet");
     return 1;
@@ -40,19 +35,6 @@ int ttkImportEmbeddingFromTable::FillOutputPortInformation(
     info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
     return 1;
   }
-  return 0;
-}
-
-// transmit progress status
-int ttkImportEmbeddingFromTable::updateProgress(const float &progress) {
-
-  {
-    stringstream msg;
-    msg << progress * 100 << "% processed....";
-    printMsg(msg.str(), debug::Priority::VERBOSE);
-  }
-
-  UpdateProgress(progress);
   return 0;
 }
 
