@@ -494,7 +494,7 @@ void ttk::ContourAroundPoint::extendOutPts(
   // For now, we use a "full cosine" kernel.
   const double kernelInputScaler = M_PI / dMax;
   // d=0 … cos(0)=1 … w=1, d=dMax … cos(pi)=-1 … w = 0
-  auto k_func = [dMax, kernelInputScaler](double d) {
+  auto k_func = [kernelInputScaler](double d) {
     return (std::cos(d * kernelInputScaler) + 1.) / 2.;
   };
 
