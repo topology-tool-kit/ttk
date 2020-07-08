@@ -34,6 +34,7 @@ void ttkOFFReader::PrintSelf(std::ostream &os, vtkIndent indent) {
 // {{{
 
 ttkOFFReader::ttkOFFReader() {
+  this->setDebugMsgPrefix("OFFReader");
   this->SetNumberOfInputPorts(0);
   this->SetNumberOfOutputPorts(1);
 }
@@ -95,7 +96,8 @@ int processLineCell(vtkIdType curLine,
                     vtkUnstructuredGrid *mesh,
                     std::vector<vtkNew<vtkDoubleArray>> &cellScalars,
                     const vtkIdType nbVerts,
-                    const vtkIdType nbCellsData) {
+                    const vtkIdType nbCellsData,
+                    const ttk::Debug &dbg) {
   int nbCellVerts;
   vtkNew<vtkIdList> cellVerts{};
   std::istringstream ss(line);
@@ -116,8 +118,8 @@ int processLineCell(vtkIdType curLine,
       mesh->InsertNextCell(VTK_TETRA, cellVerts);
       break;
     default:
-      std::cerr << "[ttkOFFReader] Unsupported cell type having " << nbCellVerts
-                << " vertices" << std::endl;
+      dbg.printErr("Unsupported cell type having " + std::to_string(nbCellVerts)
+                   + " vertices");
       return -3;
   }
 
@@ -138,8 +140,7 @@ int ttkOFFReader::RequestData(vtkInformation *request,
   std::ifstream offFile(FileName, ios::in);
 
   if(!offFile) {
-    std::cerr << "[ttkOFFReader] Can't read file: '" << FileName << "'"
-              << std::endl;
+    this->printErr("Can't read file: '" + std::string{FileName} + "'");
     return -1;
   }
 
@@ -147,8 +148,7 @@ int ttkOFFReader::RequestData(vtkInformation *request,
 
   offFile >> FileType;
   if(FileType != "OFF") {
-    std::cerr << "[ttkOFFReader] Bad format for file: '" << FileName << "'"
-              << std::endl;
+    this->printErr("Bad format for file: '" + std::string{FileName} + "'");
     return -2;
   }
 
@@ -214,7 +214,7 @@ int ttkOFFReader::RequestData(vtkInformation *request,
   // read cells
   if(nbCells != 0) {
     while((curLine = processLineCell(
-             curLine, line, mesh, cellScalars, nbVerts, nbCellsData))
+             curLine, line, mesh, cellScalars, nbVerts, nbCellsData, *this))
           < nbVerts + nbCells) {
       std::getline(offFile, line);
     }
@@ -226,10 +226,10 @@ int ttkOFFReader::RequestData(vtkInformation *request,
   }
 
 #ifndef NDEBUG
-  std::cout << "[ttkOFFReader] Read " << mesh->GetNumberOfPoints()
-            << " vertice(s)" << std::endl;
-  std::cout << "[ttkOFFReader] Read " << mesh->GetNumberOfCells() << " cell(s)"
-            << std::endl;
+  this->printMsg("Read " + std::to_string(mesh->GetNumberOfPoints())
+                 + " vertice(s)");
+  this->printMsg("Read " + std::to_string(mesh->GetNumberOfCells())
+                 + " cell(s)");
 #endif
 
   // get the info object

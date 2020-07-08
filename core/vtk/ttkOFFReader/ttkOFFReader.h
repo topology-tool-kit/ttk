@@ -10,11 +10,13 @@
 
 #pragma once
 
+#include <Debug.h>
 #include <ttkOFFReaderModule.h>
 
 #include <vtkUnstructuredGridAlgorithm.h>
 
-class TTKOFFREADER_EXPORT ttkOFFReader : public vtkUnstructuredGridAlgorithm {
+class TTKOFFREADER_EXPORT ttkOFFReader : public vtkUnstructuredGridAlgorithm,
+                                         protected ttk::Debug {
 public:
   vtkTypeMacro(ttkOFFReader, vtkUnstructuredGridAlgorithm);
 
