@@ -10,11 +10,13 @@
 
 #include <vtkDataSetWriter.h>
 
+#include <Debug.h>
 #include <ttkOFFWriterModule.h>
 
 #include <fstream>
 
-class TTKOFFWRITER_EXPORT ttkOFFWriter : public vtkDataSetWriter {
+class TTKOFFWRITER_EXPORT ttkOFFWriter : public vtkDataSetWriter,
+                                         protected ttk::Debug {
 
 public:
   vtkTypeMacro(ttkOFFWriter, vtkDataSetWriter);

@@ -24,6 +24,7 @@ void ttkOFFWriter::PrintSelf(std::ostream &os, vtkIndent indent) {
 // {{{
 
 ttkOFFWriter::ttkOFFWriter() {
+  this->setDebugMsgPrefix("OFFWriter");
 }
 
 ttkOFFWriter::~ttkOFFWriter() {
@@ -50,8 +51,7 @@ void ttkOFFWriter::WriteData() {
     return;
 
   if(this->OpenFile() == -1) {
-    std::cerr << "[ttkOFFWriter] Could not open file `" << FileName << "' :("
-              << std::endl;
+    this->printErr("Could not open file `" + std::string{FileName} + "' :(");
     return;
   }
 
