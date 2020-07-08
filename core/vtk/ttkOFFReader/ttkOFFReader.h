@@ -12,15 +12,7 @@
 
 #include <ttkOFFReaderModule.h>
 
-#include <vtkNew.h>
-#include <vtkUnstructuredGrid.h>
 #include <vtkUnstructuredGridAlgorithm.h>
-
-#include <string>
-#include <vector>
-
-class vtkPoints;
-class vtkDoubleArray;
 
 class TTKOFFREADER_EXPORT ttkOFFReader : public vtkUnstructuredGridAlgorithm {
 public:
@@ -43,21 +35,9 @@ protected:
                   vtkInformationVector **,
                   vtkInformationVector *) override;
 
-  int countVertsData(std::string line);
-  int countCellsData(std::string line);
-  int processLineVert(vtkIdType curLine, std::string &line);
-  int processLineCell(vtkIdType curLine, std::string &line);
-
 private:
   ttkOFFReader(const ttkOFFReader &) = delete;
   void operator=(const ttkOFFReader &) = delete;
 
   char *FileName{};
-  vtkIdType nbVerts_{}, nbCells_{};
-  vtkIdType nbVertsData_{}, nbCellsData_{};
-
-  vtkNew<vtkUnstructuredGrid> mesh_{};
-  vtkNew<vtkPoints> points_{};
-  std::vector<vtkNew<vtkDoubleArray>> vertScalars_{};
-  std::vector<vtkNew<vtkDoubleArray>> cellScalars_{};
 };

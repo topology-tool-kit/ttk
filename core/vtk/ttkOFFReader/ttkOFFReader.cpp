@@ -1,21 +1,21 @@
-#include "ttkOFFReader.h"
+#include <ttkOFFReader.h>
 
-#include "vtkCellData.h"
-#include "vtkCellType.h"
-#include "vtkDataObject.h"
-#include "vtkDoubleArray.h"
-#include "vtkIdList.h"
-#include "vtkInformation.h"
-#include "vtkInformationVector.h"
-#include "vtkObjectFactory.h"
-#include "vtkPointData.h"
-#include "vtkPoints.h"
-#include "vtkStreamingDemandDrivenPipeline.h"
-#include "vtkUnstructuredGrid.h"
-#include <vtkDataSetReader.h>
+#include <vtkCellData.h>
+#include <vtkDoubleArray.h>
+#include <vtkIdList.h>
+#include <vtkInformation.h>
+#include <vtkInformationVector.h>
+#include <vtkNew.h>
+#include <vtkObjectFactory.h>
+#include <vtkPointData.h>
+#include <vtkPoints.h>
+#include <vtkStreamingDemandDrivenPipeline.h>
+#include <vtkUnstructuredGrid.h>
 
 #include <iostream>
 #include <sstream>
+#include <string>
+#include <vector>
 
 vtkStandardNewMacro(ttkOFFReader);
 
@@ -36,6 +36,100 @@ void ttkOFFReader::PrintSelf(std::ostream &os, vtkIndent indent) {
 ttkOFFReader::ttkOFFReader() {
   this->SetNumberOfInputPorts(0);
   this->SetNumberOfOutputPorts(1);
+}
+
+int countVertsData(std::string line) {
+  std::istringstream ss(line);
+  double buffer;
+  int nbFields = -1;
+  while(!ss.fail()) {
+    ss >> buffer;
+    ++nbFields;
+  }
+  // remove the 3 coordinates
+  return nbFields - 3;
+}
+
+int countCellsData(std::string line) {
+  std::istringstream ss(line);
+  double buffer;
+  int nbFields = -1;
+  int sizeCell;
+  // This line start by the size of the cell
+  ss >> sizeCell;
+  // we read all the fields
+  while(!ss.fail()) {
+    ss >> buffer;
+    ++nbFields;
+  }
+  // remove the vertices of the cell
+  return nbFields - sizeCell;
+}
+
+int processLineVert(vtkIdType curLine,
+                    std::string &line,
+                    vtkPoints *points,
+                    std::vector<vtkNew<vtkDoubleArray>> &vertScalars,
+                    const vtkIdType nbVertsData) {
+
+  double x, y, z;
+  std::istringstream ss(line);
+
+  // Coords
+  ss >> x >> y >> z;
+
+  points->InsertNextPoint(x, y, z);
+
+  // Scalars data
+  for(vtkIdType i = 0; i < nbVertsData; i++) {
+    double scalar;
+    ss >> scalar;
+    vertScalars[i]->SetTuple1(curLine, scalar);
+  }
+
+  return ++curLine;
+}
+
+int processLineCell(vtkIdType curLine,
+                    std::string &line,
+                    vtkUnstructuredGrid *mesh,
+                    std::vector<vtkNew<vtkDoubleArray>> &cellScalars,
+                    const vtkIdType nbVerts,
+                    const vtkIdType nbCellsData) {
+  int nbCellVerts;
+  vtkNew<vtkIdList> cellVerts{};
+  std::istringstream ss(line);
+  ss >> nbCellVerts;
+  for(int j = 0; j < nbCellVerts; j++) {
+    vtkIdType id;
+    ss >> id;
+    cellVerts->InsertNextId(id);
+  }
+  switch(nbCellVerts) {
+    case 2:
+      mesh->InsertNextCell(VTK_LINE, cellVerts);
+      break;
+    case 3:
+      mesh->InsertNextCell(VTK_TRIANGLE, cellVerts);
+      break;
+    case 4:
+      mesh->InsertNextCell(VTK_TETRA, cellVerts);
+      break;
+    default:
+      std::cerr << "[ttkOFFReader] Unsupported cell type having " << nbCellVerts
+                << " vertices" << std::endl;
+      return -3;
+  }
+
+  // Scalars data
+  for(vtkIdType i = 0; i < nbCellsData; i++) {
+    double scalar;
+    ss >> scalar;
+    // Currline is after having read all the vertices
+    cellScalars[i]->SetTuple1(curLine - nbVerts, scalar);
+  }
+
+  return ++curLine;
 }
 
 int ttkOFFReader::RequestData(vtkInformation *request,
@@ -60,12 +154,13 @@ int ttkOFFReader::RequestData(vtkInformation *request,
 
   vtkIdType curLine;
   std::string line;
+  vtkIdType nbVerts{}, nbCells{}, nbVertsData{}, nbCellsData{};
 
   // init values
-  offFile >> nbVerts_ >> nbCells_;
+  offFile >> nbVerts >> nbCells;
   std::getline(offFile, line);
 
-  if(!nbVerts_) {
+  if(nbVerts == 0) {
     // empty file
     return 0;
   }
@@ -74,57 +169,66 @@ int ttkOFFReader::RequestData(vtkInformation *request,
 
   // count numbers of vertices scalars
   std::getline(offFile, line);
-  nbVertsData_ = countVertsData(line);
+  nbVertsData = countVertsData(line);
 
   // allocation verts
-  vertScalars_.resize(nbVertsData_);
-  for(vtkIdType i = 0; i < nbVertsData_; i++) {
-    vertScalars_[i]->SetNumberOfComponents(1);
-    vertScalars_[i]->SetNumberOfTuples(nbVerts_);
+  std::vector<vtkNew<vtkDoubleArray>> vertScalars{};
+  vertScalars.resize(nbVertsData);
+  for(vtkIdType i = 0; i < nbVertsData; i++) {
+    vertScalars[i]->SetNumberOfComponents(1);
+    vertScalars[i]->SetNumberOfTuples(nbVerts);
     const std::string name = "VertScalarField_" + std::to_string(i);
-    vertScalars_[i]->SetName(name.c_str());
+    vertScalars[i]->SetName(name.c_str());
   }
 
+  vtkNew<vtkPoints> points{};
+
   // read vertices
-  while((curLine = processLineVert(curLine, line)) < nbVerts_) {
+  while(
+    (curLine = processLineVert(curLine, line, points, vertScalars, nbVertsData))
+    < nbVerts) {
     std::getline(offFile, line);
   }
 
   // add verts data to the mesh
-  mesh_->SetPoints(points_);
-  for(const auto &scalarArray : vertScalars_) {
-    mesh_->GetPointData()->AddArray(scalarArray);
+  vtkNew<vtkUnstructuredGrid> mesh{};
+  mesh->SetPoints(points);
+  for(const auto &scalarArray : vertScalars) {
+    mesh->GetPointData()->AddArray(scalarArray);
   }
 
   // count numbers of cells scalars
   std::getline(offFile, line);
-  nbCellsData_ = countCellsData(line);
+  nbCellsData = countCellsData(line);
 
   // allocation cells
-  cellScalars_.resize(nbCellsData_);
-  for(vtkIdType i = 0; i < nbCellsData_; i++) {
-    cellScalars_[i]->SetNumberOfComponents(1);
-    cellScalars_[i]->SetNumberOfTuples(nbCells_);
+  std::vector<vtkNew<vtkDoubleArray>> cellScalars{};
+  cellScalars.resize(nbCellsData);
+  for(vtkIdType i = 0; i < nbCellsData; i++) {
+    cellScalars[i]->SetNumberOfComponents(1);
+    cellScalars[i]->SetNumberOfTuples(nbCells);
     const std::string name = "CellScalarField_" + std::to_string(i);
-    cellScalars_[i]->SetName(name.c_str());
+    cellScalars[i]->SetName(name.c_str());
   }
 
   // read cells
-  if(nbCells_) {
-    while((curLine = processLineCell(curLine, line)) < nbVerts_ + nbCells_) {
+  if(nbCells != 0) {
+    while((curLine = processLineCell(
+             curLine, line, mesh, cellScalars, nbVerts, nbCellsData))
+          < nbVerts + nbCells) {
       std::getline(offFile, line);
     }
   }
 
   // add cell data to the mesh
-  for(const auto &scalarArray : cellScalars_) {
-    mesh_->GetCellData()->AddArray(scalarArray);
+  for(const auto &scalarArray : cellScalars) {
+    mesh->GetCellData()->AddArray(scalarArray);
   }
 
 #ifndef NDEBUG
-  std::cout << "[ttkOFFReader] Read " << mesh_->GetNumberOfPoints()
+  std::cout << "[ttkOFFReader] Read " << mesh->GetNumberOfPoints()
             << " vertice(s)" << std::endl;
-  std::cout << "[ttkOFFReader] Read " << mesh_->GetNumberOfCells() << " cell(s)"
+  std::cout << "[ttkOFFReader] Read " << mesh->GetNumberOfCells() << " cell(s)"
             << std::endl;
 #endif
 
@@ -136,94 +240,9 @@ int ttkOFFReader::RequestData(vtkInformation *request,
   vtkUnstructuredGrid *output = vtkUnstructuredGrid::SafeDownCast(
     outInfo->Get(vtkDataObject::DATA_OBJECT()));
 
-  output->ShallowCopy(mesh_);
+  output->ShallowCopy(mesh);
 
   return 1;
-}
-
-int ttkOFFReader::countVertsData(std::string line) {
-  std::istringstream ss(line);
-  double buffer;
-  int nbFields = -1;
-  while(!ss.fail()) {
-    ss >> buffer;
-    ++nbFields;
-  }
-  // remove the 3 coordinates
-  return nbFields - 3;
-}
-
-int ttkOFFReader::countCellsData(std::string line) {
-  std::istringstream ss(line);
-  double buffer;
-  int nbFields = -1;
-  int sizeCell;
-  // This line start by the size of the cell
-  ss >> sizeCell;
-  // we read all the fields
-  while(!ss.fail()) {
-    ss >> buffer;
-    ++nbFields;
-  }
-  // remove the vertices of the cell
-  return nbFields - sizeCell;
-}
-
-int ttkOFFReader::processLineVert(vtkIdType curLine, std::string &line) {
-
-  double x, y, z;
-  std::istringstream ss(line);
-
-  // Coords
-  ss >> x >> y >> z;
-
-  points_->InsertNextPoint(x, y, z);
-
-  // Scalars data
-  for(vtkIdType i = 0; i < nbVertsData_; i++) {
-    double scalar;
-    ss >> scalar;
-    vertScalars_[i]->SetTuple1(curLine, scalar);
-  }
-
-  return ++curLine;
-}
-
-int ttkOFFReader::processLineCell(vtkIdType curLine, std::string &line) {
-  int nbCellVerts;
-  vtkNew<vtkIdList> cellVerts{};
-  std::istringstream ss(line);
-  ss >> nbCellVerts;
-  for(int j = 0; j < nbCellVerts; j++) {
-    vtkIdType id;
-    ss >> id;
-    cellVerts->InsertNextId(id);
-  }
-  switch(nbCellVerts) {
-    case 2:
-      mesh_->InsertNextCell(VTK_LINE, cellVerts);
-      break;
-    case 3:
-      mesh_->InsertNextCell(VTK_TRIANGLE, cellVerts);
-      break;
-    case 4:
-      mesh_->InsertNextCell(VTK_TETRA, cellVerts);
-      break;
-    default:
-      std::cerr << "[ttkOFFReader] Unsupported cell type having " << nbCellVerts
-                << " vertices" << std::endl;
-      return -3;
-  }
-
-  // Scalars data
-  for(vtkIdType i = 0; i < nbCellsData_; i++) {
-    double scalar;
-    ss >> scalar;
-    // Currline is after having read all the vertices
-    cellScalars_[i]->SetTuple1(curLine - nbVerts_, scalar);
-  }
-
-  return ++curLine;
 }
 
 // }}}
