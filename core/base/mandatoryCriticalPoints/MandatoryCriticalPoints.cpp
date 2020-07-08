@@ -4,22 +4,11 @@ using namespace std;
 using namespace ttk;
 
 MandatoryCriticalPoints::MandatoryCriticalPoints() {
-  inputUpperBoundField_ = NULL;
-  inputLowerBoundField_ = NULL;
-  outputMandatoryMinimum_ = NULL;
-  outputMandatoryJoinSaddle_ = NULL;
-  outputMandatorySplitSaddle_ = NULL;
-  outputMandatoryMaximum_ = NULL;
-  vertexNumber_ = 0;
-  triangulation_ = NULL;
-  normalizedThreshold_ = 0.0;
+  this->setDebugMsgPrefix("MandatoryCriticalPoints");
   upperJoinTree_.setDebugLevel(debugLevel_);
   lowerJoinTree_.setDebugLevel(debugLevel_);
   upperSplitTree_.setDebugLevel(debugLevel_);
   lowerSplitTree_.setDebugLevel(debugLevel_);
-}
-
-MandatoryCriticalPoints::~MandatoryCriticalPoints() {
 }
 
 void MandatoryCriticalPoints::flush() {
@@ -52,7 +41,7 @@ void MandatoryCriticalPoints::flush() {
   mergedMaximaId_.clear();
   mergedMinimaId_.clear();
   mdtMinJoinSaddlePair_.clear();
-  mdtMaxSplitSaddlePair.clear();
+  mdtMaxSplitSaddlePair_.clear();
   isMdtMinimumSimplified_.clear();
   isMdtJoinSaddleSimplified_.clear();
   isMdtSplitSaddleSimplified_.clear();
@@ -515,7 +504,7 @@ int MandatoryCriticalPoints::buildPairs(const TreeType treeType) {
   /* Output */
   vector<pair<pair<int, int>, double>> *extremaSaddlePair
     = (treeType == TreeType::JoinTree) ? &(mdtMinJoinSaddlePair_)
-                                       : &(mdtMaxSplitSaddlePair);
+                                       : &(mdtMaxSplitSaddlePair_);
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(lowerTree->isJoinTree() != upperTree->isJoinTree())
@@ -1813,7 +1802,7 @@ int MandatoryCriticalPoints::simplify(const double &normalizedThreshold,
   /* Input */
   const vector<pair<pair<int, int>, double>> *extremaSaddlePair
     = (treeType == TreeType::JoinTree) ? &(mdtMinJoinSaddlePair_)
-                                       : &(mdtMaxSplitSaddlePair);
+                                       : &(mdtMaxSplitSaddlePair_);
   const vector<vector<int>> *mergedExtrema = (treeType == TreeType::JoinTree)
                                                ? &(mergedMinimaId_)
                                                : &(mergedMaximaId_);

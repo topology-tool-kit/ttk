@@ -23,37 +23,24 @@
 ///
 /// \sa ttkMandatoryCriticalPoints.cpp %for a usage example.
 
-#ifndef _MANDATORYCRITICALPOINTS_H
-#define _MANDATORYCRITICALPOINTS_H
+#pragma once
 
 // base code includes
 #include <ContourTree.h>
 #include <LowestCommonAncestor.h>
 #include <Triangulation.h>
-#include <Wrapper.h>
 
 // std includes
-#include <algorithm>
-#include <iomanip>
-#include <iostream>
-#include <iterator>
-#include <list>
-#include <queue>
-#include <utility>
 #include <vector>
 
 namespace ttk {
 
-  class Graph : public Debug {
+  class Graph : virtual public Debug {
   public:
     class Vertex {
       friend class Graph;
 
     public:
-      Vertex() {
-      }
-      ~Vertex() {
-      }
       inline int getNumberOfEdges() const {
         return (int)edgeIdx_.size();
       }
@@ -65,7 +52,7 @@ namespace ttk {
       }
 
     protected:
-      std::vector<int> edgeIdx_;
+      std::vector<int> edgeIdx_{};
     };
     class Edge {
       friend class Graph;
@@ -75,14 +62,12 @@ namespace ttk {
         vertexIdx_.first = start;
         vertexIdx_.second = end;
       }
-      ~Edge() {
-      }
       const std::pair<int, int> &getVertexIdx() const {
         return vertexIdx_;
       }
 
     protected:
-      std::pair<int, int> vertexIdx_;
+      std::pair<int, int> vertexIdx_{};
     };
 
   public:
@@ -130,14 +115,14 @@ namespace ttk {
     }
 
   protected:
-    std::vector<Vertex> vertexList_;
-    std::vector<Edge> edgeList_;
+    std::vector<Vertex> vertexList_{};
+    std::vector<Edge> edgeList_{};
   };
 
   /// Comparison between critical point pairs ( (Extremum,Saddle), dist(M,S) )
   struct criticalPointPairComparaison {
     bool operator()(const std::pair<std::pair<int, int>, double> &left,
-                    const std::pair<std::pair<int, int>, double> &right) {
+                    const std::pair<std::pair<int, int>, double> &right) const {
       return (left.second < right.second);
     }
   };
@@ -145,7 +130,7 @@ namespace ttk {
   /// Comparison between mandatory saddles (Saddle id, Number of merged extrema)
   struct mandatorySaddleComparaison {
     bool operator()(const std::pair<int, int> &left,
-                    const std::pair<int, int> &right) {
+                    const std::pair<int, int> &right) const {
       return (left.second < right.second);
     }
   };
@@ -154,25 +139,23 @@ namespace ttk {
   /// Comparison of the second member of a std::pair<int,double>
   struct pairComparaison {
     bool operator()(const std::pair<int, double> &left,
-                    const std::pair<int, double> &right) {
+                    const std::pair<int, double> &right) const {
       return (left.second < right.second);
     }
   };
 
-  class MandatoryCriticalPoints : public Debug {
+  class MandatoryCriticalPoints : virtual public Debug {
 
   public:
-    enum PointType : unsigned char {
+    enum class PointType : unsigned char {
       Minimum = 0,
       JoinSaddle = 1,
       SplitSaddle = 2,
       Maximum = 3
     };
 
-    enum TreeType { JoinTree, SplitTree };
-
+    enum class TreeType { JoinTree, SplitTree };
     MandatoryCriticalPoints();
-    ~MandatoryCriticalPoints();
 
   public:
     inline int buildJoinTreePlanarLayout() {
@@ -613,123 +596,124 @@ namespace ttk {
 
   protected:
     /// Void pointer to the input upper bound scalar field.
-    void *inputUpperBoundField_;
+    void *inputUpperBoundField_{};
     /// Void pointer to the input lower bound scalar field.
-    void *inputLowerBoundField_;
+    void *inputLowerBoundField_{};
     /// Void pointer to the output mandatory minima components.
-    void *outputMandatoryMinimum_;
+    void *outputMandatoryMinimum_{};
     /// Void pointer to the output mandatory join saddles components.
-    void *outputMandatoryJoinSaddle_;
+    void *outputMandatoryJoinSaddle_{};
     /// Void pointer to the output mandatory split saddles components.
-    void *outputMandatorySplitSaddle_;
+    void *outputMandatorySplitSaddle_{};
     /// Void pointer to the output mandatory maxima components.
-    void *outputMandatoryMaximum_;
+    void *outputMandatoryMaximum_{};
     /// Number of vertices
-    int vertexNumber_;
+    int vertexNumber_{};
     /// Position (x,y,z) of each vertex
-    std::vector<std::vector<double>> vertexPositions_;
+    std::vector<std::vector<double>> vertexPositions_{};
     /// Offsets
-    std::vector<int> vertexSoSoffsets_;
+    std::vector<int> vertexSoSoffsets_{};
     /// Copy of the input upper scalar field converted in double.
-    std::vector<double> upperVertexScalars_;
+    std::vector<double> upperVertexScalars_{};
     /// Copy of the input lower scalar field converted in double.
-    std::vector<double> lowerVertexScalars_;
+    std::vector<double> lowerVertexScalars_{};
     /// Triangulation object of the input.
-    Triangulation *triangulation_;
+    Triangulation *triangulation_{};
     /// Join tree of the upper bound scalar field.
-    SubLevelSetTree upperJoinTree_;
+    SubLevelSetTree upperJoinTree_{};
     /// Join tree of the lower bound scalar field.
-    SubLevelSetTree lowerJoinTree_;
+    SubLevelSetTree lowerJoinTree_{};
     /// Split tree of the upper bound scalar field.
-    SubLevelSetTree upperSplitTree_;
+    SubLevelSetTree upperSplitTree_{};
     /// Split tree of the lower bound scalar field.
-    SubLevelSetTree lowerSplitTree_;
+    SubLevelSetTree lowerSplitTree_{};
     /// List of vertex id of the minima in the upper bound scalar field.
-    std::vector<int> upperMinimumList_;
+    std::vector<int> upperMinimumList_{};
     /// List of vertex id of the minima in the lower bound scalar field.
-    std::vector<int> lowerMinimumList_;
+    std::vector<int> lowerMinimumList_{};
     /// List of vertex id of the maxima in the upper bound scalar field.
-    std::vector<int> upperMaximumList_;
+    std::vector<int> upperMaximumList_{};
     /// List of vertex id of the maxima in the lower bound scalar field.
-    std::vector<int> lowerMaximumList_;
+    std::vector<int> lowerMaximumList_{};
     /// Mandatory vertex for each minimum component.
-    std::vector<int> mandatoryMinimumVertex_;
+    std::vector<int> mandatoryMinimumVertex_{};
     /// Mandatory vertex for each maximum component.
-    std::vector<int> mandatoryMaximumVertex_;
+    std::vector<int> mandatoryMaximumVertex_{};
     /// Critical interval for each minimum component
-    std::vector<std::pair<double, double>> mandatoryMinimumInterval_;
+    std::vector<std::pair<double, double>> mandatoryMinimumInterval_{};
     /// Critical interval for each maximum component
-    std::vector<std::pair<double, double>> mandatoryMaximumInterval_;
+    std::vector<std::pair<double, double>> mandatoryMaximumInterval_{};
     /// Pair of mandatory vertices for each join saddle component.
-    std::vector<std::pair<int, int>> mandatoryJoinSaddleVertex_;
+    std::vector<std::pair<int, int>> mandatoryJoinSaddleVertex_{};
     /// Pair of mandatory vertices for each split saddle component.
-    std::vector<std::pair<int, int>> mandatorySplitSaddleVertex_;
+    std::vector<std::pair<int, int>> mandatorySplitSaddleVertex_{};
     /// List of ids of the mandatory minima merged for each mandatory join
     /// saddle.
-    std::vector<std::vector<int>> mergedMaximaId_;
+    std::vector<std::vector<int>> mergedMaximaId_{};
     /// List of ids of the mandatory maxima merged for each mandatory split
     /// saddle.
-    std::vector<std::vector<int>> mergedMinimaId_;
+    std::vector<std::vector<int>> mergedMinimaId_{};
     /// Pairs ( (M,S), d(M,S) ) Of minima and join saddles
-    std::vector<std::pair<std::pair<int, int>, double>> mdtMinJoinSaddlePair_;
+    std::vector<std::pair<std::pair<int, int>, double>> mdtMinJoinSaddlePair_{};
     /// Pairs ( (M,S), d(M,S) ) Of maxima and split saddles
-    std::vector<std::pair<std::pair<int, int>, double>> mdtMaxSplitSaddlePair;
+    std::vector<std::pair<std::pair<int, int>, double>>
+      mdtMaxSplitSaddlePair_{};
     /// Value of the simplification threshold.
-    double normalizedThreshold_;
+    double normalizedThreshold_{0.0};
     /// Flags indicating if the mandatory minimum component have been
     /// simplified.
     std::vector<bool> isMdtMinimumSimplified_;
     /// Flags indicating if the mandatory join saddle component have been
     /// simplified.
-    std::vector<bool> isMdtJoinSaddleSimplified_;
+    std::vector<bool> isMdtJoinSaddleSimplified_{};
     /// Flags indicating if the mandatory split saddle component have been
     /// simplified.
-    std::vector<bool> isMdtSplitSaddleSimplified_;
+    std::vector<bool> isMdtSplitSaddleSimplified_{};
     /// Flags indicating if the mandatory maximum component have been
     /// simplified.
-    std::vector<bool> isMdtMaximumSimplified_;
+    std::vector<bool> isMdtMaximumSimplified_{};
 
     // Graph
-    std::vector<int> mdtMinimumParentSaddleId_;
-    std::vector<int> mdtJoinSaddleParentSaddleId_;
-    std::vector<int> mdtSplitSaddleParentSaddleId_;
-    std::vector<int> mdtMaximumParentSaddleId_;
+    std::vector<int> mdtMinimumParentSaddleId_{};
+    std::vector<int> mdtJoinSaddleParentSaddleId_{};
+    std::vector<int> mdtSplitSaddleParentSaddleId_{};
+    std::vector<int> mdtMaximumParentSaddleId_{};
 
-    Graph mdtJoinTree_;
-    Graph mdtSplitTree_;
+    Graph mdtJoinTree_{};
+    Graph mdtSplitTree_{};
 
-    std::vector<int> mdtJoinTreePointComponentId_;
-    std::vector<int> mdtSplitTreePointComponentId_;
-    std::vector<PointType> mdtJoinTreePointType_;
-    std::vector<PointType> mdtSplitTreePointType_;
-    std::vector<double> mdtJoinTreePointLowInterval_;
-    std::vector<double> mdtSplitTreePointLowInterval_;
-    std::vector<double> mdtJoinTreePointUpInterval_;
-    std::vector<double> mdtSplitTreePointUpInterval_;
+    std::vector<int> mdtJoinTreePointComponentId_{};
+    std::vector<int> mdtSplitTreePointComponentId_{};
+    std::vector<PointType> mdtJoinTreePointType_{};
+    std::vector<PointType> mdtSplitTreePointType_{};
+    std::vector<double> mdtJoinTreePointLowInterval_{};
+    std::vector<double> mdtSplitTreePointLowInterval_{};
+    std::vector<double> mdtJoinTreePointUpInterval_{};
+    std::vector<double> mdtSplitTreePointUpInterval_{};
 
-    std::vector<int> mdtJoinTreeEdgeSwitchable_;
-    std::vector<int> mdtSplitTreeEdgeSwitchable_;
+    std::vector<int> mdtJoinTreeEdgeSwitchable_{};
+    std::vector<int> mdtSplitTreeEdgeSwitchable_{};
 
-    std::vector<double> mdtJoinTreePointXCoord_;
-    std::vector<double> mdtSplitTreePointXCoord_;
+    std::vector<double> mdtJoinTreePointXCoord_{};
+    std::vector<double> mdtSplitTreePointXCoord_{};
 
-    std::vector<double> mdtJoinTreePointYCoord_;
-    std::vector<double> mdtSplitTreePointYCoord_;
+    std::vector<double> mdtJoinTreePointYCoord_{};
+    std::vector<double> mdtSplitTreePointYCoord_{};
 
-    double globalMinimumValue_;
-    double globalMaximumValue_;
+    double globalMinimumValue_{};
+    double globalMaximumValue_{};
 
     /// List of the vertices forming each of the mandatory maximum components.
-    std::vector<std::vector<int>> mandatoryMaximumComponentVertices_;
+    std::vector<std::vector<int>> mandatoryMaximumComponentVertices_{};
     /// List of the vertices forming each of the mandatory split saddle
     /// components.
-    std::vector<std::vector<int>> mandatoryMinimumComponentVertices_;
+    std::vector<std::vector<int>> mandatoryMinimumComponentVertices_{};
     /// List of the vertices forming each of the mandatory join saddle
     /// components.
-    std::vector<std::vector<int>> mandatoryJoinSaddleComponentVertices_;
+    std::vector<std::vector<int>> mandatoryJoinSaddleComponentVertices_{};
     /// List of the vertices forming each of the mandatory split saddle
     /// components.
-    std::vector<std::vector<int>> mandatorySplitSaddleComponentVertices_;
+    std::vector<std::vector<int>> mandatorySplitSaddleComponentVertices_{};
   };
 } // namespace ttk
 
@@ -832,5 +816,3 @@ int ttk::MandatoryCriticalPoints::execute() {
   }
   return 0;
 }
-
-#endif // MANDATORYCRITICALPOINTS_H
