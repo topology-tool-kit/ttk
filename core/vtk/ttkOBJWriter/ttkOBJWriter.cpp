@@ -21,6 +21,7 @@ void ttkOBJWriter::PrintSelf(std::ostream &os, vtkIndent indent) {
 // {{{
 
 ttkOBJWriter::ttkOBJWriter() {
+  this->setDebugMsgPrefix("OBJWriter");
 }
 
 ttkOBJWriter::~ttkOBJWriter() {
@@ -47,8 +48,7 @@ void ttkOBJWriter::WriteData() {
     return;
 
   if(this->OpenFile() == -1) {
-    std::cerr << "[ttkOBJWriter] Could not open file `" << Filename << "' :("
-              << std::endl;
+    this->printErr("Could not open file `" + std::string{Filename} + "' :(");
     return;
   }
 

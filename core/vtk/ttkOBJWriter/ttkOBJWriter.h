@@ -11,11 +11,13 @@
 #include <vtkDataSetWriter.h>
 
 // VTK Module
+#include <Debug.h>
 #include <ttkOBJWriterModule.h>
 
 #include <fstream>
 
-class TTKOBJWRITER_EXPORT ttkOBJWriter : public vtkDataSetWriter {
+class TTKOBJWRITER_EXPORT ttkOBJWriter : public vtkDataSetWriter,
+                                         protected ttk::Debug {
 
 public:
   vtkTypeMacro(ttkOBJWriter, vtkDataSetWriter);
