@@ -11,6 +11,14 @@
 /// \param Input Input scalar field (vtkDataSet)
 /// \param Output Output scalar field (vtkDataSet)
 ///
+/// The input data array needs to be specified via the standard VTK call
+/// vtkAlgorithm::SetInputArrayToProcess() with the following parameters:
+/// \param idx 0 (FIXED: the first array the algorithm requires)
+/// \param port 0 (FIXED: first port)
+/// \param connection 0 (FIXED: first connection)
+/// \param fieldAssociation 0 (FIXED: point data)
+/// \param arrayName (DYNAMIC: string identifier of the input array)
+///
 /// This filter can be used as any other VTK filter (for instance, by using the
 /// sequence of calls SetInputData(), Update(), GetOutput()).
 ///
@@ -18,67 +26,23 @@
 /// within a VTK pipeline.
 ///
 /// \sa ttk::TopologicalCompression
-#ifndef _VTK_TOPOLOGICALCOMPRESSION_H
-#define _VTK_TOPOLOGICALCOMPRESSION_H
+
+#pragma once
 
 // ttk code includes
 #include <TopologicalCompression.h>
-#include <ttkTriangulationAlgorithm.h>
-
-// VTK includes -- to adapt
-#include <vtkCellData.h>
-#include <vtkCharArray.h>
-#include <vtkDataArray.h>
-#include <vtkDataSet.h>
-#include <vtkDataSetAlgorithm.h>
-#include <vtkDoubleArray.h>
-#include <vtkFiltersCoreModule.h>
-#include <vtkFloatArray.h>
-#include <vtkInformation.h>
-#include <vtkIntArray.h>
-#include <vtkObjectFactory.h>
-#include <vtkPointData.h>
-#include <vtkSmartPointer.h>
-#include <vtkUnstructuredGrid.h>
-#include <vtkXMLImageDataWriter.h>
+#include <ttkAlgorithm.h>
 
 // VTK Module
 #include <ttkTopologicalCompressionModule.h>
 
-// in this example, this wrapper takes a data-set on the input and produces a
-// data-set on the output - to adapt.
-// see the documentation of the vtkAlgorithm class to decide from which VTK
-// class your wrapper should inherit.
 class TTKTOPOLOGICALCOMPRESSION_EXPORT ttkTopologicalCompression
-  : public vtkDataSetAlgorithm,
-    protected ttk::Wrapper {
+  : public ttkAlgorithm,
+    protected ttk::TopologicalCompression {
 
 public:
   static ttkTopologicalCompression *New();
-
-  vtkTypeMacro(ttkTopologicalCompression, vtkDataSetAlgorithm);
-
-  void SetDebugLevel(int debugLevel) {
-    setDebugLevel(debugLevel);
-    Modified();
-  }
-
-  void SetThreadNumber(int threadNumber) {
-    ThreadNumber = threadNumber;
-    SetThreads();
-  }
-
-  void SetUseAllCores(bool onOff) {
-    UseAllCores = onOff;
-    SetThreads();
-  }
-
-  // Set/Get macros (arguments)
-  vtkSetMacro(ScalarField, std::string);
-  vtkGetMacro(ScalarField, std::string);
-
-  vtkSetMacro(ScalarFieldId, int);
-  vtkGetMacro(ScalarFieldId, int);
+  vtkTypeMacro(ttkTopologicalCompression, ttkAlgorithm);
 
   vtkSetMacro(Tolerance, double);
   vtkGetMacro(Tolerance, double);
@@ -99,52 +63,21 @@ public:
   vtkGetMacro(UseTopologicalSimplification, bool);
 
   inline void SetSQMethodPV(int c) {
-    switch(c) {
-      case 1:
-        SetSQMethod("r");
-        break;
-      case 2:
-        SetSQMethod("d");
-        break;
-      case 0:
-      default:
-        SetSQMethod("");
-        break;
+    if(c == 1) {
+      SetSQMethod("r");
+    } else if(c == 2) {
+      SetSQMethod("d");
+    } else {
+      SetSQMethod("");
     }
   }
 
 protected:
-  ttkTopologicalCompression() {
-    CompressionType = 0;
-    Tolerance = 10;
-    Subdivide = false;
-    MaximumError = 10;
-    UseTopologicalSimplification = true;
-    ScalarFieldId = 0;
-    outputScalarField_ = nullptr;
-    outputOffsetField_ = nullptr;
-    UseAllCores = true;
-  }
+  ttkTopologicalCompression();
 
-  ~ttkTopologicalCompression() override{};
-
-  TTK_SETUP();
-
-private:
-  double Tolerance;
-  double MaximumError;
-  int CompressionType;
-  std::string SQMethod;
-  bool Subdivide;
-  bool UseTopologicalSimplification;
-  std::string ScalarField;
-  int ScalarFieldId;
-
-  vtkSmartPointer<vtkDataArray> outputScalarField_;
-  vtkSmartPointer<vtkIntArray> outputOffsetField_;
-  ttkTriangulation triangulation_;
-  ttk::Triangulation *internalTriangulation_;
-  ttk::TopologicalCompression topologicalCompression_;
+  int FillInputPortInformation(int port, vtkInformation *info) override;
+  int FillOutputPortInformation(int port, vtkInformation *info) override;
+  int RequestData(vtkInformation *request,
+                  vtkInformationVector **inputVector,
+                  vtkInformationVector *outputVector) override;
 };
-
-#endif // _VTK_TOPOLOGICALCOMPRESSION_H

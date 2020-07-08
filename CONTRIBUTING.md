@@ -9,7 +9,7 @@ Please find below a few guidelines that we invite you to consider before making 
   - To make TTK's source code more homogeneous and readable, we use [clang-format](https://clang.llvm.org/docs/ClangFormat.html). A style file is already available in TTK's source tree.
 **Before creating a new pull request**, please make sure that you clang-formatted your local 
 repository by entering the following command at the top of TTK's source tree: <code>
-$ clang-format -i -style=file core/\*/\*/\*h core/\*/\*/\*hpp core/\*/\*/\*cpp core/\*/\*/\*inl standalone/\*/\*/\*cpp standalone/\*/\*/\*h</code>
+$ clang-format -i -style=file core/\*/\*/\*h core/\*/\*/\*hpp core/\*/\*/\*cpp core/\*/\*/\*inl standalone/\*/\*/\*cpp standalone/\*/\*/\*h standalone/\*/\*cpp </code>
 
   - To make your life even easier, we recommend that you setup a clang-format pre-commit hook, which will automatically run clang-format on any of your commits to your local repository.
 For this, we recommend to use scripts such as [this one](https://github.com/barisione/clang-format-hooks/).

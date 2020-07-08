@@ -11,27 +11,23 @@
 /// \sa ttk::Triangulation
 /// \sa vtkTopologicalCompression.cpp %for a usage example.
 
-#ifndef _TOPOLOGICALCOMPRESSION_H
-#define _TOPOLOGICALCOMPRESSION_H
+#pragma once
 
 // base code includes
-
-#include <DataTypes.h>
-#include <Debug.h>
 #include <FTMTreePP.h>
 #include <PersistenceDiagram.h>
 #include <TopologicalSimplification.h>
 #include <Triangulation.h>
-#include <Wrapper.h>
 
 // std
 
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
+#include <cstring>
 #include <iostream>
 #include <stack>
-#include <string.h>
+#include <type_traits>
 
 #ifdef TTK_ENABLE_ZLIB
 #include <zlib.h>
@@ -41,10 +37,8 @@
 #ifndef __cplusplus
 #define __cplusplus 201112L
 #endif
-#include <limits.h>
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <climits>
+#include <cstdio>
 #include <zfp.h>
 #include <zfp/macros.h>
 #endif
@@ -53,27 +47,32 @@ namespace ttk {
 
   enum class CompressionType { PersistenceDiagram = 0, Other = 1 };
 
-  class TopologicalCompression : public Debug {
+  class TopologicalCompression : virtual public Debug {
 
   public:
     // Base code methods.
     TopologicalCompression();
-    ~TopologicalCompression();
-    template <class dataType>
-    int execute(const double &tolerance);
+
+    template <class dataType,
+              typename triangulationType = AbstractTriangulation>
+    int execute(dataType *inputData,
+                dataType *outputData,
+                const triangulationType &triangulation);
 
     // Persistence compression methods.
-    template <class dataType>
+    template <class dataType, typename triangulationType>
     int computePersistencePairs(
       std::vector<std::tuple<SimplexId, SimplexId, dataType>> &JTPairs,
       std::vector<std::tuple<SimplexId, SimplexId, dataType>> &STPairs,
       dataType *inputScalars_,
-      SimplexId *inputOffsets);
-    template <typename dataType>
+      SimplexId *inputOffsets,
+      const triangulationType &triangulation);
+    template <typename dataType, typename triangulationType>
     int compressForPersistenceDiagram(int vertexNumber,
                                       dataType *inputData,
                                       dataType *outputData,
-                                      const double &tol);
+                                      const double &tol,
+                                      const triangulationType &triangulation);
 
     // Other compression methods.
     template <typename dataType>
@@ -86,75 +85,52 @@ namespace ttk {
                          const double &tol);
 
     // Getters and setters.
-    inline int setInputDataPointer(void *data) {
-      inputData_ = data;
-      return 0;
-    }
-
-    inline int setOutputDataPointer(void *data) {
-      outputData_ = data;
-      return 0;
-    }
-
-    inline int setCompressionType(int compressionType) {
+    inline void setCompressionType(int compressionType) {
       compressionType_ = compressionType;
-      return 0;
     }
-
-    inline int setSQ(std::string sqMethod) {
-      sqMethod_ = sqMethod;
-      return 0;
+    inline void setSQ(std::string sqMethod) {
+      SQMethod = sqMethod;
     }
-
-    inline int setZFPOnly(bool z) {
-      zfpOnly_ = z;
-      return 0;
+    inline void setZFPOnly(bool z) {
+      ZFPOnly = z;
     }
-
-    inline int setSubdivide(bool dontSubdivide) {
-      dontSubdivide_ = dontSubdivide;
-      return 0;
+    inline void setSubdivide(bool b) {
+      Subdivide = b;
     }
-
-    inline int setMaximumError(double maximumError) {
-      maximumError_ = maximumError;
-      return 0;
+    inline void setMaximumError(double maximumError) {
+      MaximumError = maximumError;
     }
-
-    inline int
+    inline void setTolerance(const double data) {
+      Tolerance = data;
+    }
+    inline void
       setUseTopologicalSimplification(bool useTopologicalSimplification) {
-      useTopologicalSimplification_ = useTopologicalSimplification;
-      return 0;
+      UseTopologicalSimplification = useTopologicalSimplification;
     }
-
-    inline int setFileName(char *fn) {
+    inline void setFileName(char *fn) {
       fileName = fn;
-      return 0;
     }
-
-    inline int setupTriangulation(Triangulation *triangulation) {
-      triangulation_ = triangulation;
-      if(triangulation_)
-        triangulation_->preconditionVertexNeighbors();
-      return 0;
+    inline void
+      preconditionTriangulation(AbstractTriangulation *const triangulation) {
+      if(triangulation != nullptr) {
+        triangulation->preconditionVertexNeighbors();
+        topologicalSimplification.setupTriangulation(triangulation);
+        ftmTreePP.setupTriangulation(triangulation, false);
+      }
     }
 
     inline int getNbVertices() {
-      return nbVertices;
+      return NbVertices;
     }
-
     inline int getNbSegments() {
-      return nbSegments;
+      return NbSegments;
     }
-
     inline std::vector<int> &getSegmentation() {
       return segmentation_;
     }
-
     inline std::vector<std::tuple<double, int>> &getMapping() {
       return mapping_;
     }
-
     inline std::vector<std::tuple<int, double, int>> &getCriticalConstraints() {
       return criticalConstraints_;
     }
@@ -162,51 +138,40 @@ namespace ttk {
     inline int getCompressionType() {
       return compressionType_;
     }
-
     inline int getSQMethod() {
-      return sqMethodInt_;
+      return SQMethodInt;
     }
-
     inline int getDataScalarType() {
       return dataScalarType_;
     }
-
     inline int *getDataExtent() {
       return dataExtent_;
     }
-
     inline double *getDataSpacing() {
       return dataSpacing_;
     }
-
     inline double *getDataOrigin() {
       return dataOrigin_;
     }
-
     inline double getTolerance() {
-      return tolerance_;
+      return Tolerance;
     }
-
     inline double getZFPBitBudget() {
-      return zfpBitBudget_;
+      return ZFPBitBudget;
     }
-
     inline bool getZFPOnly() {
-      return zfpOnly_;
+      return ZFPOnly;
     }
 
     inline const std::vector<char> &getDataArrayName() const {
       return dataArrayName_;
     }
-
     inline std::vector<double> &getDecompressedData() {
       return decompressedData_;
     }
-
     inline std::vector<int> &getDecompressedOffsets() {
       return decompressedOffsets_;
     }
-
     inline std::vector<int> &getCompressedOffsets() {
       return compressedOffsets_;
     }
@@ -222,18 +187,56 @@ namespace ttk {
       return std::get<1>(a) < std::get<1>(b);
     };
 
-    static bool ReadBool(FILE *fm);
-    static int ReadInt(FILE *fm);
-    static double ReadDouble(FILE *fm);
-    static unsigned long ReadUnsignedLong(FILE *fm);
-    static void
-      ReadUnsignedCharArray(FILE *fm, unsigned char *buffer, size_t length);
-    static void ReadCharArray(FILE *fm, char *buffer, size_t length);
-    static int ReadCompactSegmentation(FILE *fm,
-                                       std::vector<int> &segmentation,
-                                       int &numberOfVertices,
-                                       int &numberOfSegments);
-    static int ReadPersistenceIndex(
+    template <typename T>
+    static T Read(FILE *fm) {
+      static_assert(std::is_same<T, bool>() || std::is_same<T, int>()
+                      || std::is_same<T, unsigned long>()
+                      || std::is_same<T, double>(),
+                    "Function should have only those types");
+      T ret;
+      const auto status = std::fread(&ret, sizeof(T), 1, fm);
+      if(status == 0) {
+        ttk::Debug dbg;
+        dbg.printErr("Error reading " + std::string(typeid(T).name()) + "!");
+      }
+      return ret;
+    }
+    template <typename T>
+    static void ReadByteArray(FILE *fm, T *buffer, size_t length) {
+      const auto status = std::fread(buffer, sizeof(T), length, fm);
+      if(status == 0) {
+        ttk::Debug dbg;
+        dbg.printErr("Error reading " + std::string(typeid(T).name())
+                     + "array!");
+      }
+    }
+    template <typename T>
+    static void Write(FILE *fm, T data) {
+      static_assert(std::is_same<T, bool>() || std::is_same<T, int>()
+                      || std::is_same<T, unsigned long>()
+                      || std::is_same<T, double>(),
+                    "Function should have only those types");
+      auto status = std::fwrite(&data, sizeof(T), 1, fm);
+      if(status == 0) {
+        ttk::Debug dbg;
+        dbg.printErr("Error writing " + std::string(typeid(T).name()) + "!");
+      }
+    }
+    template <typename T>
+    static void WriteByteArray(FILE *fm, const T *buffer, size_t length) {
+      const auto status = std::fwrite(buffer, sizeof(T), length, fm);
+      if(status == 0) {
+        ttk::Debug dbg;
+        dbg.printErr("Error writing " + std::string(typeid(T).name())
+                     + "array!");
+      }
+    }
+
+    int ReadCompactSegmentation(FILE *fm,
+                                std::vector<int> &segmentation,
+                                int &numberOfVertices,
+                                int &numberOfSegments);
+    int ReadPersistenceIndex(
       FILE *fm,
       std::vector<std::tuple<double, int>> &mappings,
       std::vector<std::tuple<double, int>> &mappingsSortedPerValue,
@@ -243,22 +246,14 @@ namespace ttk {
       int &nbConstraints);
     template <typename dataType>
     int ReadMetaData(FILE *fm);
-    template <typename dataType>
-    int ReadFromFile(FILE *fm);
+    template <typename dataType, typename triangulationType>
+    int ReadFromFile(FILE *fm, const triangulationType &triangulation);
 
-    static void WriteBool(FILE *fm, bool b);
-    static void WriteInt(FILE *fm, int i);
-    static void WriteDouble(FILE *fm, double d);
-    static void WriteUnsignedLong(FILE *fm, unsigned long ul);
-    static void
-      WriteUnsignedCharArray(FILE *fm, unsigned char *buffer, size_t length);
-    static void
-      WriteConstCharArray(FILE *fm, const char *buffer, size_t length);
-    static int WriteCompactSegmentation(FILE *fm,
-                                        const std::vector<int> &segmentation,
-                                        int numberOfVertices,
-                                        int numberOfSegments);
-    static int WritePersistenceIndex(
+    int WriteCompactSegmentation(FILE *fm,
+                                 const std::vector<int> &segmentation,
+                                 int numberOfVertices,
+                                 int numberOfSegments);
+    int WritePersistenceIndex(
       FILE *fm,
       std::vector<std::tuple<double, int>> &mapping,
       std::vector<std::tuple<int, double, int>> &constraints);
@@ -289,7 +284,7 @@ namespace ttk {
                     const std::string &dataArrayName);
 
     template <typename dataType>
-    static void CropIntervals(
+    void CropIntervals(
       std::vector<std::tuple<dataType, int>> &mappings,
       std::vector<std::tuple<dataType, int>> &mappingsSortedPerValue,
       double min,
@@ -301,34 +296,24 @@ namespace ttk {
     // API management.
 
 #ifdef TTK_ENABLE_ZFP
-    static int CompressWithZFP(FILE *file,
-                               bool decompress,
-                               std::vector<double> &array,
-                               int nx,
-                               int ny,
-                               int nz,
-                               double rate);
+    int CompressWithZFP(FILE *file,
+                        bool decompress,
+                        std::vector<double> &array,
+                        int nx,
+                        int ny,
+                        int nz,
+                        double rate);
 #endif
 
 #ifdef TTK_ENABLE_ZLIB
-    static void CompressWithZlib(bool decompress,
-                                 Bytef *dest,
-                                 uLongf *destLen,
-                                 const Bytef *source,
-                                 uLong sourceLen);
+    void CompressWithZlib(bool decompress,
+                          Bytef *dest,
+                          uLongf *destLen,
+                          const Bytef *source,
+                          uLong sourceLen);
 #endif
 
   private:
-#ifdef TTK_ENABLE_ZFP
-    static int compressZFPInternal(double *array,
-                                   int nx,
-                                   int ny,
-                                   int nz,
-                                   double rate,
-                                   bool decompress,
-                                   FILE *file);
-#endif
-
     // Internal read/write.
 
     template <typename dataType>
@@ -346,8 +331,9 @@ namespace ttk {
     int ReadPersistenceTopology(FILE *fm);
     template <typename dataType>
     int ReadOtherTopology(FILE *fm);
-    template <typename dataType>
-    int ReadPersistenceGeometry(FILE *fm);
+    template <typename dataType, typename triangulationType>
+    int ReadPersistenceGeometry(FILE *fm,
+                                const triangulationType &triangulation);
     template <typename dataType>
     int ReadOtherGeometry(FILE *fm);
 
@@ -364,12 +350,13 @@ namespace ttk {
     template <typename dataType>
     int WriteOtherGeometry(FILE *fm);
 
-    template <typename dataType>
+    template <typename dataType, typename triangulationType>
     int PerformSimplification(
       const std::vector<std::tuple<int, double, int>> &constraints,
       int nbConstraints,
       int vertexNumber,
-      double *array);
+      double *array,
+      const triangulationType &triangulation);
 
     // Numeric management.
 
@@ -385,84 +372,80 @@ namespace ttk {
 
   protected:
     // General.
-    void *inputData_;
-    void *outputData_;
-    Triangulation *triangulation_;
-    TopologicalSimplification topologicalSimplification;
+    TopologicalSimplification topologicalSimplification{};
+    ftm::FTMTreePP ftmTreePP;
 
     // Parameters
-    int compressionType_;
-    bool zfpOnly_;
-    int sqMethodInt_;
-    std::string sqMethod_;
-    int dataScalarType_;
+    int compressionType_{};
+    bool ZFPOnly{false};
+    double ZFPBitBudget{};
+    int SQMethodInt{};
+
+    double Tolerance{10};
+    double MaximumError{10};
+    int CompressionType{static_cast<int>(CompressionType::PersistenceDiagram)};
+    std::string SQMethod{};
+    bool Subdivide{false};
+    bool UseTopologicalSimplification{true};
+
+    int dataScalarType_{};
     int dataExtent_[6];
     double dataSpacing_[3];
     double dataOrigin_[3];
-    double tolerance_;
-    double maximumError_;
-    double zfpBitBudget_;
-    bool dontSubdivide_;
-    bool useTopologicalSimplification_;
+
     std::vector<char> dataArrayName_{};
 
     // Persistence compression.
-    std::vector<int> segmentation_;
-    std::vector<std::tuple<double, int>> mapping_;
-    std::vector<std::tuple<int, double, int>> criticalConstraints_;
+    std::vector<int> segmentation_{};
+    std::vector<std::tuple<double, int>> mapping_{};
+    std::vector<std::tuple<int, double, int>> criticalConstraints_{};
 
     // IO.
-    int nbVertices;
-    int nbSegments;
-    int rawFileLength;
-    std::vector<double> decompressedData_;
-    std::vector<int> decompressedOffsets_;
-    std::vector<int> compressedOffsets_;
-    int vertexNumberRead_;
-    char *fileName;
+    int NbVertices{0};
+    int NbSegments{0};
+    int rawFileLength{0};
+    std::vector<double> decompressedData_{};
+    std::vector<int> decompressedOffsets_{};
+    std::vector<int> compressedOffsets_{};
+    int vertexNumberRead_{};
+    char *fileName{};
 
     // Char array that identifies the file format.
-    std::string magicBytes_;
+    static const char *magicBytes_;
     // Current version of the file format. To be incremented at every
     // breaking change to keep backward compatibility.
-    unsigned long formatVersion_;
+    static const unsigned long formatVersion_;
   };
 
-  // End namespace ttk.
 } // namespace ttk
 
 #include <OtherCompression.h>
 #include <PersistenceDiagramCompression.h>
 
-template <class dataType>
-int ttk::TopologicalCompression::execute(const double &tol) {
-  {
-    std::stringstream msg;
-    msg << "[TopologicalCompression] Starting compression... " << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
-  }
+template <class dataType, typename triangulationType>
+int ttk::TopologicalCompression::execute(
+  dataType *inputData,
+  dataType *outputData,
+  const triangulationType &triangulation) {
+  this->printMsg("Starting compression...");
 
 // check the consistency of the variables -- to adapt
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(!triangulation_)
-    return -1;
-  if(!inputData_)
+  if(inputData == nullptr)
     return -2;
-  if(!outputData_)
+  if(outputData == nullptr)
     return -3;
 // if (tol < 0 || tol > 100) return -4;
 #endif
 
-  auto *outputData = (dataType *)outputData_;
-  auto *inputData = (dataType *)inputData_;
-  int vertexNumber = triangulation_->getNumberOfVertices();
+  int vertexNumber = triangulation.getNumberOfVertices();
 
   int res = 0;
   if(compressionType_ == (int)ttk::CompressionType::PersistenceDiagram)
     compressForPersistenceDiagram<dataType>(
-      vertexNumber, inputData, outputData, tol);
+      vertexNumber, inputData, outputData, Tolerance, triangulation);
   else if(compressionType_ == (int)ttk::CompressionType::Other)
-    compressForOther<dataType>(vertexNumber, inputData, outputData, tol);
+    compressForOther<dataType>(vertexNumber, inputData, outputData, Tolerance);
 
   return res;
 }
@@ -486,9 +469,9 @@ int ttk::TopologicalCompression::WriteToFile(FILE *fp,
                         zfpBitBudget, dataArrayName);
 
 #ifdef TTK_ENABLE_ZLIB
-  WriteBool(fp, true);
+  Write(fp, true);
 #else
-  WriteBool(fp, false);
+  Write(fp, false);
 #endif
 
   bool usePersistence
@@ -498,7 +481,7 @@ int ttk::TopologicalCompression::WriteToFile(FILE *fp,
   int numberOfVertices = 1;
   for(int i = 0; i < 3; ++i)
     numberOfVertices *= (1 + dataExtent[2 * i + 1] - dataExtent[2 * i]);
-  nbVertices = numberOfVertices;
+  NbVertices = numberOfVertices;
 
   int totalSize = usePersistence
                     ? ComputeTotalSizeForPersistenceDiagram<double>(
@@ -513,9 +496,7 @@ int ttk::TopologicalCompression::WriteToFile(FILE *fp,
   // #ifndef _MSC_VER
   // FILE *fm = fmemopen(buf, len, "r+");
   // #else
-  std::stringstream str;
-  str << fileName << ".temp";
-  const std::string s = str.str();
+  const std::string s = fileName + std::string(".temp");
   const char *ffn = s.c_str();
   FILE *fm = fopen(ffn, "wb");
   // #endif
@@ -528,12 +509,7 @@ int ttk::TopologicalCompression::WriteToFile(FILE *fp,
       WriteOtherTopology<double>(fm);
   }
 
-  {
-    std::stringstream msg;
-    msg << "[TopologicalCompression] Topology successfully written to buffer."
-        << std::endl;
-    dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
-  }
+  this->printMsg("Topology successfully written to buffer.");
 
   int status = 0;
   // [->fm] Write altered geometry.
@@ -552,20 +528,9 @@ int ttk::TopologicalCompression::WriteToFile(FILE *fp,
   // #endif
 
   if(status == 0) {
-    {
-      std::stringstream msg;
-      msg << "[TopologicalCompression] Geometry successfully written to buffer."
-          << std::endl;
-      dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
-    }
+    this->printMsg("Geometry successfully written to buffer.");
   } else {
-    {
-      std::stringstream msg;
-      msg << "[TopologicalCompression] Geometry was not successfully written "
-             "to buffer."
-          << std::endl;
-      dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
-    }
+    this->printErr("Geometry was not successfully written to buffer.");
     fflush(fp);
     fclose(fp);
     return -1;
@@ -573,10 +538,8 @@ int ttk::TopologicalCompression::WriteToFile(FILE *fp,
 
   // Check computed size vs read size.
   if(totalSize < rawFileLength) {
-    std::stringstream msg;
-    msg << "[TopologicalCompression] Invalid total size (" << totalSize
-        << " vs " << rawFileLength << ")." << std::endl;
-    dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
+    this->printErr("Invalid total size (" + std::to_string(totalSize) + " vs "
+                   + std::to_string(rawFileLength) + ").");
   }
 
 #ifdef TTK_ENABLE_ZLIB
@@ -587,37 +550,23 @@ int ttk::TopologicalCompression::WriteToFile(FILE *fp,
   std::vector<Bytef> ddest(destLen);
   Bytef *dest = ddest.data();
   CompressWithZlib(false, dest, &destLen, source, sourceLen);
-  {
-    std::stringstream msg;
-    msg << "[TopologicalCompression] Data successfully compressed."
-        << std::endl;
-    dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
-  }
+  this->printMsg("Data successfully compressed.");
 
   // [fm->fp] Copy fm to fp.
-  WriteUnsignedLong(fp, destLen); // Compressed size...
-  WriteUnsignedLong(fp, sourceLen);
-  WriteUnsignedCharArray(fp, dest, destLen);
-  {
-    std::stringstream msg;
-    msg << "[TopologicalCompression] Data successfully written to filesystem."
-        << std::endl;
-    dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
-  }
+  Write(fp, destLen); // Compressed size...
+  Write(fp, sourceLen);
+  WriteByteArray(fp, dest, destLen);
+  this->printMsg("Data successfully written to filesystem.");
+
 #else
-  {
-    std::stringstream msg;
-    msg << "[TopologicalCompression] ZLIB not found, writing raw file."
-        << std::endl;
-    dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
-  }
+  this->printMsg("ZLIB not found, writing raw file.");
   unsigned char *source = reinterpret_cast<unsigned char *>(buf);
   unsigned long sourceLen = (unsigned long)rawFileLength;
   unsigned long destLen = (unsigned long)rawFileLength;
 
-  WriteUnsignedLong(fp, destLen); // Compressed size...
-  WriteUnsignedLong(fp, sourceLen);
-  WriteUnsignedCharArray(fp, source, destLen);
+  Write(fp, destLen); // Compressed size...
+  Write(fp, sourceLen);
+  WriteByteArray(fp, source, destLen);
 #endif
 
   fflush(fp);
@@ -641,16 +590,16 @@ int ttk::TopologicalCompression::WriteMetaData(
   const std::string &dataArrayName) {
 
   // -4. Magic bytes
-  WriteConstCharArray(fp, magicBytes_.data(), magicBytes_.size());
+  WriteByteArray(fp, magicBytes_, std::strlen(magicBytes_));
 
   // -3. File format version
-  WriteUnsignedLong(fp, formatVersion_);
+  Write(fp, formatVersion_);
 
   // -2. Persistence, or Other
-  WriteInt(fp, compressionType);
+  Write(fp, compressionType);
 
   // -1. zfpOnly
-  WriteBool(fp, zfpOnly);
+  Write(fp, zfpOnly);
 
   // 0. SQ type
   const char *sq = sqMethod;
@@ -660,60 +609,52 @@ int ttk::TopologicalCompression::WriteMetaData(
                      ? 1
                      : (strcmp(sq, "d") == 0 || strcmp(sq, "D") == 0) ? 2 : 3;
 
-  WriteInt(fp, sqType);
+  Write(fp, sqType);
 
   // 1. DataType
-  WriteInt(fp, dataType);
+  Write(fp, dataType);
 
   // 2. Data extent, spacing, origin
   for(int i = 0; i < 6; ++i)
-    WriteInt(fp, dataExtent[i]);
+    Write(fp, dataExtent[i]);
 
   for(int i = 0; i < 3; ++i)
-    WriteDouble(fp, dataSpacing[i]);
+    Write(fp, dataSpacing[i]);
 
   for(int i = 0; i < 3; ++i)
-    WriteDouble(fp, dataOrigin[i]);
+    Write(fp, dataOrigin[i]);
 
   // 4. Tolerance
-  WriteDouble(fp, tolerance);
+  Write(fp, tolerance);
 
   // 5. ZFP ratio
-  WriteDouble(fp, zfpBitBudget);
+  Write(fp, zfpBitBudget);
 
   // 6. Length of array name
-  WriteUnsignedLong(fp, dataArrayName.size());
+  // (explicit call to unsigned long variant for MSVC compatibility)
+  Write<unsigned long>(fp, dataArrayName.size());
 
   // 7. Array name (as unsigned chars)
-  WriteConstCharArray(fp, dataArrayName.c_str(), dataArrayName.size());
+  WriteByteArray(fp, dataArrayName.c_str(), dataArrayName.size());
 
-  {
-    std::stringstream msg;
-    msg << "[ttkCompressionWriter] Metadata successfully written." << std::endl;
-    dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
-  }
+  this->printMsg("Metadata successfully written.");
 
   return 0;
 }
 
-template <typename T>
-int ttk::TopologicalCompression::ReadFromFile(FILE *fp) {
+template <typename T, typename triangulationType>
+int ttk::TopologicalCompression::ReadFromFile(
+  FILE *fp, const triangulationType &triangulation) {
   // [fp->] Read headers.
-  {
-    std::stringstream msg;
-    msg << "[TopologicalCompression] Successfully read metadata." << std::endl;
-    dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
-  }
 
-  if(zfpOnly_ && (zfpBitBudget_ > 64 || zfpBitBudget_ < 1)) {
-    std::stringstream msg;
-    msg << "[TopologicalCompression] Wrong ZFP bit budget for ZFP-only use."
-        << std::endl;
-    dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
+  this->printMsg("Successfully read metadata.");
+
+  if(ZFPOnly && (ZFPBitBudget > 64 || ZFPBitBudget < 1)) {
+    this->printMsg("Wrong ZFP bit budget for ZFP-only use.");
     return -4;
   }
 
-  bool useZlib = ReadBool(fp);
+  bool useZlib = Read<bool>(fp);
   unsigned char *dest;
   std::vector<unsigned char> ddest;
   unsigned long destLen;
@@ -721,73 +662,48 @@ int ttk::TopologicalCompression::ReadFromFile(FILE *fp) {
 #ifdef TTK_ENABLE_ZLIB
   if(useZlib) {
     // [fp->ff] Read compressed data.
-    uLongf sl = ReadUnsignedLong(fp); // Compressed size...
-    uLongf dl = ReadUnsignedLong(fp); // Uncompressed size...
+    uLongf sl = Read<unsigned long>(fp); // Compressed size...
+    uLongf dl = Read<unsigned long>(fp); // Uncompressed size...
 
     unsigned long sourceLen = (uLongf)sl;
     destLen = dl;
     std::vector<Bytef> ssource(sl);
     Bytef *source = ssource.data();
-    ReadUnsignedCharArray(fp, source, sl);
-    {
-      std::stringstream msg;
-      msg << "[TopologicalCompression] Successfully read compressed data."
-          << std::endl;
-      dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
-    }
+    ReadByteArray(fp, source, sl);
+    this->printMsg("Successfully read compressed data.");
 
     // [ff->fm] Decompress data.
     ddest.resize(destLen);
     dest = ddest.data();
     CompressWithZlib(true, dest, &destLen, source, sourceLen);
-    {
-      std::stringstream msg;
-      msg << "[TopologicalCompression] Successfully uncompressed data."
-          << std::endl;
-      dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
-    }
-  } else {
-    {
-      std::stringstream msg;
-      msg << "[TopologicalCompression] File was not compressed with ZLIB."
-          << std::endl;
-      dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
-    }
+    this->printMsg("Successfully uncompressed data.");
 
-    ReadUnsignedLong(fp); // Compressed size...
-    unsigned long dl = ReadUnsignedLong(fp); // Uncompressed size...
+  } else {
+    this->printMsg("File was not compressed with ZLIB.");
+
+    Read<unsigned long>(fp); // Compressed size...
+    unsigned long dl = Read<unsigned long>(fp); // Uncompressed size...
 
     destLen = dl;
     ddest.resize(destLen);
     dest = ddest.data();
-    ReadUnsignedCharArray(fp, dest, destLen);
+    ReadByteArray(fp, dest, destLen);
   }
 #else
   if(useZlib) {
-    {
-      std::stringstream msg;
-      msg << "[TopologicalCompression] File compressed but ZLIB not installed! "
-             "Aborting."
-          << std::endl;
-      dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
-    }
+    this->printMsg(" File compressed but ZLIB not installed! Aborting.");
     return -4;
-  } else {
-    {
-      std::stringstream msg;
-      msg << "[TopologicalCompression] ZLIB not installed, but file was not "
-             "compressed anyways."
-          << std::endl;
-      dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
-    }
 
-    ReadUnsignedLong(fp); // Compressed size...
-    unsigned long dl = ReadUnsignedLong(fp); // Uncompressed size...
+  } else {
+    this->printMsg(" ZLIB not installed, but file was not compressed anyways.");
+
+    Read<unsigned long>(fp); // Compressed size...
+    unsigned long dl = Read<unsigned long>(fp); // Uncompressed size...
 
     destLen = dl;
     ddest.resize(destLen);
     dest = ddest.data();
-    ReadUnsignedCharArray(fp, dest, destLen);
+    ReadByteArray(fp, dest, destLen);
   }
 #endif
 
@@ -797,9 +713,7 @@ int ttk::TopologicalCompression::ReadFromFile(FILE *fp) {
   //#ifndef _MSC_VER
   // FILE *fm = fmemopen(buf, destLen, "r+");
   //#else
-  std::stringstream str;
-  str << fileName << ".temp";
-  const std::string s = str.str();
+  const std::string s = fileName + std::string(".temp");
   const char *ffn = s.c_str();
   FILE *ftemp = fopen(ffn, "wb");
   fwrite(buf, destLen, sizeof(char), ftemp);
@@ -808,24 +722,20 @@ int ttk::TopologicalCompression::ReadFromFile(FILE *fp) {
   //#endif
 
   // Do read topology.
-  if(!(zfpOnly_)) {
+  if(!(ZFPOnly)) {
     if(compressionType_ == (int)ttk::CompressionType::PersistenceDiagram)
       ReadPersistenceTopology<double>(fm);
     else if(compressionType_ == (int)ttk::CompressionType::Other)
       ReadOtherTopology<double>(fm);
   }
 
-  {
-    std::stringstream msg;
-    msg << "[TopologicalCompression] Successfully read topology." << std::endl;
-    dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
-  }
+  this->printMsg("Successfully read topology.");
 
   // Get altered geometry.
   // Rebuild topologically consistent geometry.
   int status = 0;
   if(compressionType_ == (int)ttk::CompressionType::PersistenceDiagram)
-    status = ReadPersistenceGeometry<double>(fm);
+    status = ReadPersistenceGeometry<double>(fm, triangulation);
   else if(compressionType_ == (int)ttk::CompressionType::Other)
     status = ReadOtherGeometry<double>(fm);
 
@@ -836,21 +746,11 @@ int ttk::TopologicalCompression::ReadFromFile(FILE *fp) {
   fclose(fp);
 
   if(status == 0) {
-    {
-      std::stringstream msg;
-      msg << "[TopologicalCompression] Successfully read geometry."
-          << std::endl;
-      msg << "[TopologicalCompression] Successfully read file." << std::endl;
-      dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
-    }
+    this->printMsg("Successfully read geometry.");
+    this->printMsg("Successfully read file.");
   } else {
-    {
-      std::stringstream msg;
-      msg << "[TopologicalCompression] Failed to write (possibly ZFP)!"
-          << std::endl;
-      msg << "[TopologicalCompression] File may be corrupted!" << std::endl;
-      dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
-    }
+    this->printMsg("Failed to write (possibly ZFP)!");
+    this->printMsg("File may be corrupted!");
   }
 
   return status;
@@ -860,19 +760,17 @@ template <typename T>
 int ttk::TopologicalCompression::ReadMetaData(FILE *fm) {
 
   // -4. Magic bytes
-  std::vector<char> mBytes(magicBytes_.size() + 1);
-  mBytes[magicBytes_.size()] = '\0'; // NULL-termination
-  ReadCharArray(fm, mBytes.data(), magicBytes_.size());
+  const auto magicBytesLen{std::strlen(magicBytes_)};
+  std::vector<char> mBytes(magicBytesLen + 1);
+  mBytes[magicBytesLen] = '\0'; // NULL-termination
+  ReadByteArray(fm, mBytes.data(), magicBytesLen);
 
   // To deal with pre-v1 file format (without scalar field array name)
-  bool hasMagicBytes = strcmp(mBytes.data(), magicBytes_.data()) == 0;
+  bool hasMagicBytes = strcmp(mBytes.data(), magicBytes_) == 0;
 
   if(!hasMagicBytes) {
-    std::stringstream msg;
-    msg << "[TopologicalCompression] Could not find magic bytes in input file!"
-        << std::endl;
-    msg << "[TopologicalCompression] File may be corrupted!" << std::endl;
-    dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
+    this->printWrn("Could not find magic bytes in input file!");
+    this->printWrn("File might be corrupted!");
 
     // rewind fm to beginning of file
     std::rewind(fm);
@@ -881,37 +779,37 @@ int ttk::TopologicalCompression::ReadMetaData(FILE *fm) {
   // -3. File format version
   unsigned long version = 0;
   if(hasMagicBytes) {
-    version = ReadUnsignedLong(fm);
+    version = Read<unsigned long>(fm);
   }
 
   // -2. Compression type.
-  compressionType_ = ReadInt(fm);
+  compressionType_ = Read<int>(fm);
 
   // -1. ZFP only type.
-  zfpOnly_ = ReadBool(fm);
+  ZFPOnly = Read<bool>(fm);
 
   // 0. SQ type
-  sqMethodInt_ = ReadInt(fm);
+  SQMethodInt = Read<int>(fm);
 
   // 1. DataType
-  dataScalarType_ = ReadInt(fm);
+  dataScalarType_ = Read<int>(fm);
   // DataScalarType = VTK_DOUBLE;
 
   // 2. Data extent, spacing, origin
   for(int i = 0; i < 6; ++i)
-    dataExtent_[i] = ReadInt(fm);
+    dataExtent_[i] = Read<int>(fm);
 
   for(int i = 0; i < 3; ++i)
-    dataSpacing_[i] = ReadDouble(fm);
+    dataSpacing_[i] = Read<double>(fm);
 
   for(int i = 0; i < 3; ++i)
-    dataOrigin_[i] = ReadDouble(fm);
+    dataOrigin_[i] = Read<double>(fm);
 
   // 4. Error tolerance (relative percentage)
-  tolerance_ = ReadDouble(fm);
+  Tolerance = Read<double>(fm);
 
   // 5. Lossy compressor ratio
-  zfpBitBudget_ = ReadDouble(fm);
+  ZFPBitBudget = Read<double>(fm);
 
   if(version == 0) {
     // Pre-v1 format has no scalar field array name
@@ -919,14 +817,12 @@ int ttk::TopologicalCompression::ReadMetaData(FILE *fm) {
   }
 
   // 6. Length of array name
-  size_t dataArrayNameLength = ReadUnsignedLong(fm);
+  size_t dataArrayNameLength = Read<unsigned long>(fm);
 
   // 7. Array name (as unsigned chars)
   dataArrayName_.resize(dataArrayNameLength + 1);
   dataArrayName_[dataArrayNameLength] = '\0'; // NULL-termination
-  ReadCharArray(fm, dataArrayName_.data(), dataArrayNameLength);
+  ReadByteArray(fm, dataArrayName_.data(), dataArrayNameLength);
 
   return 0;
 }
-
-#endif // TOPOLOGICALCOMPRESSION_H

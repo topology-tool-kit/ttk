@@ -2,9 +2,11 @@
 
 #include <vtkInformation.h>
 
+#include <vtkDataArray.h>
 #include <vtkDirectory.h>
 #include <vtkFieldData.h>
 #include <vtkImageData.h>
+#include <vtkObjectFactory.h>
 #include <vtkPointData.h>
 #include <vtkStdString.h>
 #include <vtkStringArray.h>
@@ -442,8 +444,14 @@ int ttkCinemaWriter::ProcessDataProduct(vtkDataObject *input) {
           "Cannot use Topological Compression without a vtkImageData");
         return 0;
       }
+
+      const auto inputData = vtkImageData::SafeDownCast(input);
+      const auto sf = this->GetInputArrayToProcess(0, inputData);
+
       vtkNew<ttkTopologicalCompressionWriter> topologicalCompressionWriter{};
-      topologicalCompressionWriter->SetScalarField(this->ScalarField);
+      topologicalCompressionWriter->SetInputArrayToProcess(
+        0, 0, 0, 0, sf->GetName());
+
       topologicalCompressionWriter->SetTolerance(this->Tolerance);
       topologicalCompressionWriter->SetMaximumError(this->MaximumError);
       topologicalCompressionWriter->SetZFPBitBudget(this->ZFPBitBudget);
@@ -454,13 +462,6 @@ int ttkCinemaWriter::ProcessDataProduct(vtkDataObject *input) {
       topologicalCompressionWriter->SetUseTopologicalSimplification(
         this->UseTopologicalSimplification);
 
-      if(ScalarField.empty()) {
-        vtkErrorMacro("Need a scalar field for Topological Compression");
-        return 0;
-      }
-      const auto inputData = vtkImageData::SafeDownCast(input);
-      const auto sf = inputData->GetPointData()->GetArray(ScalarField.data());
-
       // Check that input scalar field is indeed scalar
       if(sf->GetNumberOfComponents() != 1) {
         vtkErrorMacro("Input scalar field should have only 1 component");
@@ -470,7 +471,7 @@ int ttkCinemaWriter::ProcessDataProduct(vtkDataObject *input) {
       topologicalCompressionWriter->SetFileName(
         (this->DatabasePath + "/" + rDataProductPath).data());
       topologicalCompressionWriter->SetInputData(inputData);
-      topologicalCompressionWriter->WriteData();
+      topologicalCompressionWriter->Write();
     }
 
     this->printMsg("Writing data product to disk", 1, t.getElapsedTime(),

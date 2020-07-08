@@ -34,7 +34,6 @@
 #include <FTMTreePP.h>
 #include <MorseSmaleComplex3D.h>
 #include <Triangulation.h>
-#include <Wrapper.h>
 
 namespace ttk {
 
@@ -42,7 +41,7 @@ namespace ttk {
    * Compute the persistence diagram of a function on a triangulation.
    * TTK assumes that the input dataset is made of only one connected component.
    */
-  class PersistenceDiagram : public Debug {
+  class PersistenceDiagram : virtual public Debug {
 
   public:
     PersistenceDiagram();
@@ -64,7 +63,7 @@ namespace ttk {
                                                       ttk::CriticalType,
                                                       scalarType,
                                                       ttk::SimplexId>> &diagram,
-                               scalarType *scalars,
+                               const scalarType *scalars,
                                SimplexId *offsets) const;
 
     template <typename scalarType>
@@ -78,10 +77,18 @@ namespace ttk {
                              ttk::CriticalType,
                              scalarType,
                              ttk::SimplexId>> &diagram,
-      scalarType *scalars) const;
+      const scalarType *scalars) const;
 
-    template <class scalarType, typename idType>
-    int execute() const;
+    template <typename scalarType, typename idType, class triangulationType>
+    int execute(std::vector<std::tuple<ttk::SimplexId,
+                                       ttk::CriticalType,
+                                       ttk::SimplexId,
+                                       ttk::CriticalType,
+                                       scalarType,
+                                       ttk::SimplexId>> &CTDiagram,
+                const scalarType *inputScalars,
+                const idType *inputOffsets,
+                const triangulationType *triangulation) const;
 
     inline int
       setDMTPairs(std::vector<std::tuple<dcg::Cell, dcg::Cell>> *data) {
@@ -89,41 +96,34 @@ namespace ttk {
       return 0;
     }
 
+    inline int preconditionTriangulation(Triangulation *triangulation) {
+      if(triangulation) {
+        ftm::FTMTreePP contourTree;
+        contourTree.setDebugLevel(debugLevel_);
+        // TODO: contourTree.preconditionTriangulation(triangulation);
+        triangulation->preconditionBoundaryVertices();
+      }
+      return 0;
+    }
+
+    // TODO: Remove when FTM and MSC are migrated
     inline int setupTriangulation(Triangulation *data) {
       triangulation_ = data;
       if(triangulation_) {
         ftm::FTMTreePP contourTree;
         contourTree.setupTriangulation(triangulation_);
-
         triangulation_->preconditionBoundaryVertices();
       }
-      return 0;
-    }
-
-    inline int setInputScalars(void *data) {
-      inputScalars_ = data;
-      return 0;
-    }
-
-    inline int setInputOffsets(void *data) {
-      inputOffsets_ = data;
-      return 0;
-    }
-
-    inline int setOutputCTDiagram(void *data) {
-      CTDiagram_ = data;
       return 0;
     }
 
   protected:
     std::vector<std::tuple<dcg::Cell, dcg::Cell>> *dmt_pairs;
 
-    bool ComputeSaddleConnectors;
+    bool ComputeSaddleConnectors{false};
 
+    // TODO: Remove when FTM and MSC are migrated
     Triangulation *triangulation_;
-    void *inputScalars_;
-    void *inputOffsets_;
-    void *CTDiagram_;
   };
 } // namespace ttk
 
@@ -136,7 +136,7 @@ int ttk::PersistenceDiagram::sortPersistenceDiagram(
                          ttk::CriticalType,
                          scalarType,
                          ttk::SimplexId>> &diagram,
-  scalarType *scalars,
+  const scalarType *scalars,
   SimplexId *offsets) const {
   auto cmp
     = [scalars, offsets](
@@ -173,7 +173,7 @@ int ttk::PersistenceDiagram::computeCTPersistenceDiagram(
                          ttk::CriticalType,
                          scalarType,
                          ttk::SimplexId>> &diagram,
-  scalarType *scalars) const {
+  const scalarType *scalars) const {
   const ttk::SimplexId numberOfPairs = pairs.size();
   diagram.resize(numberOfPairs);
   for(ttk::SimplexId i = 0; i < numberOfPairs; ++i) {
@@ -205,34 +205,37 @@ int ttk::PersistenceDiagram::computeCTPersistenceDiagram(
   return 0;
 }
 
-template <typename scalarType, typename idType>
-int ttk::PersistenceDiagram::execute() const {
+template <typename scalarType, typename idType, class triangulationType>
+int ttk::PersistenceDiagram::execute(
+  std::vector<std::tuple<ttk::SimplexId,
+                         ttk::CriticalType,
+                         ttk::SimplexId,
+                         ttk::CriticalType,
+                         scalarType,
+                         ttk::SimplexId>> &CTDiagram,
+  const scalarType *inputScalars,
+  const idType *inputOffsets,
+  const triangulationType *triangulation) const {
 
-  // get data
-  std::vector<std::tuple<ttk::SimplexId, ttk::CriticalType, ttk::SimplexId,
-                         ttk::CriticalType, scalarType, ttk::SimplexId>>
-    &CTDiagram = *static_cast<
-      std::vector<std::tuple<ttk::SimplexId, ttk::CriticalType, ttk::SimplexId,
-                             ttk::CriticalType, scalarType, ttk::SimplexId>> *>(
-      CTDiagram_);
-  scalarType *scalars = static_cast<scalarType *>(inputScalars_);
-  SimplexId *offsets = static_cast<SimplexId *>(inputOffsets_);
+  printMsg(ttk::debug::Separator::L1);
 
-  const ttk::SimplexId numberOfVertices = triangulation_->getNumberOfVertices();
+  const ttk::SimplexId numberOfVertices = triangulation->getNumberOfVertices();
   // convert offsets into a valid format for contour forests
   std::vector<ttk::SimplexId> voffsets(numberOfVertices);
-  std::copy(offsets, offsets + numberOfVertices, voffsets.begin());
+  std::copy(inputOffsets, inputOffsets + numberOfVertices, voffsets.begin());
 
+  // TODO: Change the following to migrated code when FTM module is migrated
   // get contour tree
   ftm::FTMTreePP contourTree;
   contourTree.setupTriangulation(triangulation_, false);
-  contourTree.setVertexScalars(inputScalars_);
+  contourTree.setVertexScalars(inputScalars);
   contourTree.setTreeType(ftm::TreeType::Join_Split);
   contourTree.setVertexSoSoffsets(voffsets.data());
   contourTree.setThreadNumber(threadNumber_);
   contourTree.setDebugLevel(debugLevel_);
   contourTree.setSegmentation(false);
   contourTree.build<scalarType, idType>();
+  // !!!
 
   // get persistence pairs
   std::vector<std::tuple<ttk::SimplexId, ttk::SimplexId, scalarType>> JTPairs;
@@ -274,19 +277,21 @@ int ttk::PersistenceDiagram::execute() const {
     pl_saddleSaddlePairs;
   const int dimensionality = triangulation_->getDimensionality();
   if(dimensionality == 3 and ComputeSaddleConnectors) {
+    // TODO: Change the following to migrated code when FTM module is migrated
     MorseSmaleComplex3D morseSmaleComplex;
     morseSmaleComplex.setDebugLevel(debugLevel_);
     morseSmaleComplex.setThreadNumber(threadNumber_);
-    morseSmaleComplex.setupTriangulation(triangulation_);
-    morseSmaleComplex.setInputScalarField(inputScalars_);
-    morseSmaleComplex.setInputOffsets(inputOffsets_);
+    morseSmaleComplex.preconditionTriangulation(triangulation_);
+    morseSmaleComplex.setInputScalarField(inputScalars);
+    morseSmaleComplex.setInputOffsets(inputOffsets);
     morseSmaleComplex.computePersistencePairs<scalarType, idType>(
-      pl_saddleSaddlePairs);
+      pl_saddleSaddlePairs, *triangulation);
+    // !!!
   }
 
   // get persistence diagrams
   computeCTPersistenceDiagram<scalarType>(
-    contourTree, CTPairs, CTDiagram, scalars);
+    contourTree, CTPairs, CTDiagram, inputScalars);
 
   // add saddle-saddle pairs to the diagram if needed
   if(dimensionality == 3 and ComputeSaddleConnectors) {
@@ -311,7 +316,9 @@ int ttk::PersistenceDiagram::execute() const {
   }
 
   // finally sort the diagram
-  sortPersistenceDiagram(CTDiagram, scalars, offsets);
+  sortPersistenceDiagram(CTDiagram, inputScalars, voffsets.data());
+
+  printMsg(ttk::debug::Separator::L1);
 
   return 0;
 }

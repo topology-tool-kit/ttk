@@ -1,150 +1,139 @@
 #include "ttkTopologicalCompression.h"
+#include <ttkMacros.h>
+#include <ttkUtils.h>
 
-using namespace std;
-using namespace ttk;
+#include <vtkDataSet.h>
+#include <vtkDoubleArray.h>
+#include <vtkFloatArray.h>
+#include <vtkIdTypeArray.h>
+#include <vtkInformation.h>
+#include <vtkIntArray.h>
+#include <vtkNew.h>
+#include <vtkPointData.h>
+#include <vtkSignedCharArray.h>
+#include <vtkSmartPointer.h>
 
-vtkStandardNewMacro(ttkTopologicalCompression)
+vtkStandardNewMacro(ttkTopologicalCompression);
 
-  int ttkTopologicalCompression::doIt(std::vector<vtkDataSet *> &inputs,
-                                      std::vector<vtkDataSet *> &outputs) {
+ttkTopologicalCompression::ttkTopologicalCompression() {
+  this->SetNumberOfInputPorts(1);
+  this->SetNumberOfOutputPorts(1);
+}
+
+int ttkTopologicalCompression::FillInputPortInformation(int port,
+                                                        vtkInformation *info) {
+  if(port == 0) {
+    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
+    return 1;
+  }
+  return 0;
+}
+
+int ttkTopologicalCompression::FillOutputPortInformation(int port,
+                                                         vtkInformation *info) {
+  if(port == 0) {
+    info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
+    return 1;
+  }
+  return 0;
+}
+
+int ttkTopologicalCompression::RequestData(vtkInformation *request,
+                                           vtkInformationVector **inputVector,
+                                           vtkInformationVector *outputVector) {
+
+  auto input = vtkDataSet::GetData(inputVector[0]);
+  auto output = vtkDataSet::GetData(outputVector);
+
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(!inputs.size()) {
-    cerr << "[ttkTopologicalCompression] Error: not enough input information."
-         << endl;
+  if(input == nullptr) {
+    this->printErr("Input pointer is NULL.");
+    return -1;
+  }
+  if(input->GetNumberOfPoints() == 0) {
+    this->printErr("Input has no point.");
+    return -1;
+  }
+  if(input->GetPointData() == nullptr) {
+    this->printErr("Input has no point data.");
+    return -1;
+  }
+  if(output == nullptr) {
+    this->printErr("Output pointer is NULL.");
     return -1;
   }
 #endif
-
-  // Prepare IO
-  vtkDataSet *input1 = inputs[0];
-  vtkDataSet *output1 = outputs[0];
-
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(!input1) {
-    cerr << "[ttkTopologicalCompression] Error: input pointer is NULL." << endl;
-    return -1;
-  }
-
-  if(!input1->GetNumberOfPoints()) {
-    cerr << "[ttkTopologicalCompression] Error: input has no point." << endl;
-    return -1;
-  }
-
-  if(!input1->GetPointData()) {
-    cerr << "[ttkTopologicalCompression] Error: input has no point data."
-         << endl;
-    return -1;
-  }
-
-  if(!output1) {
-    cerr << "[ttkTopologicalCompression] Error: output pointer is NULL."
-         << endl;
-    return -1;
-  }
-#endif
-
-  triangulation_.setWrapper(this);
-  topologicalCompression_.setWrapper(this);
 
   // Triangulate
-  triangulation_.setInputData(input1);
-  internalTriangulation_ = ttkTriangulation::getTriangulation(input1);
-  topologicalCompression_.setupTriangulation(internalTriangulation_);
-  Modified();
+  auto triangulation = ttkAlgorithm::GetTriangulation(input);
+  if(triangulation == nullptr) {
+    return 0;
+  }
+  this->preconditionTriangulation(triangulation);
 
   // use a pointer-base copy for the input data -- to adapt if your wrapper does
   // not produce an output of the type of the input.
-  output1->ShallowCopy(input1);
+  output->ShallowCopy(input);
 
   // in the following, the target scalar field of the input is replaced in the
   // variable 'output' with the result of the computation.
   // if your wrapper produces an output of the same type of the input, you
   // should proceed in the same way.
-  vtkDataArray *inputScalarField = nullptr;
-
-  if(ScalarField.length()) {
-    inputScalarField = input1->GetPointData()->GetArray(ScalarField.data());
-    std::stringstream msg;
-    msg << "[ttkTopologicalCompression] Starting computation on field '"
-        << ScalarField << "'..." << std::endl;
-    dMsg(std::cout, msg.str(), infoMsg);
-  } else
-    inputScalarField = input1->GetPointData()->GetArray(ScalarFieldId);
+  const auto inputScalarField = this->GetInputArrayToProcess(0, inputVector);
 
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(!inputScalarField) {
-    cerr << "[ttkTopologicalCompression] Error: input scalar field pointer is "
-            "NULL."
-         << endl;
+  if(inputScalarField == nullptr) {
+    this->printErr("Input scalar field pointer is NULL.");
     return -1;
   }
 #endif
 
+  const auto vertexNumber = inputScalarField->GetNumberOfTuples();
+
   // allocate the memory for the output scalar field
-  if(!outputScalarField_) {
-    switch(inputScalarField->GetDataType()) {
-      case VTK_CHAR:
-        outputScalarField_
-          = vtkSmartPointer<vtkCharArray>::New(); // vtkCharArray::New();
-        break;
-      case VTK_DOUBLE:
-        outputScalarField_ = vtkSmartPointer<vtkDoubleArray>::New();
-        break;
-      case VTK_FLOAT:
-        outputScalarField_ = vtkSmartPointer<vtkFloatArray>::New();
-        break;
-      case VTK_INT:
-        outputScalarField_ = vtkSmartPointer<vtkIntArray>::New();
-        break;
-      case VTK_ID_TYPE:
-        outputScalarField_ = vtkSmartPointer<vtkIdTypeArray>::New();
-        break;
+  vtkSmartPointer<vtkDataArray> outputScalarField{};
 
-      default: {
-        std::stringstream msg;
-        msg << "[ttkTopologicalCompression] Unsupported data type :("
-            << std::endl;
-        dMsg(std::cerr, msg.str(), fatalMsg);
-      }
-        return -1;
-    }
+  switch(inputScalarField->GetDataType()) {
+    case VTK_CHAR:
+      outputScalarField = vtkSmartPointer<vtkSignedCharArray>::New();
+      break;
+    case VTK_DOUBLE:
+      outputScalarField = vtkSmartPointer<vtkDoubleArray>::New();
+      break;
+    case VTK_FLOAT:
+      outputScalarField = vtkSmartPointer<vtkFloatArray>::New();
+      break;
+    case VTK_INT:
+      outputScalarField = vtkSmartPointer<vtkIntArray>::New();
+      break;
+    case VTK_ID_TYPE:
+      outputScalarField = vtkSmartPointer<vtkIdTypeArray>::New();
+      break;
+    default:
+      this->printErr("Unsupported data type :(");
+      return -1;
   }
 
-  if(!outputOffsetField_) {
-    outputOffsetField_ = vtkSmartPointer<vtkIntArray>::New();
-  }
+  outputScalarField->SetNumberOfTuples(vertexNumber);
+  outputScalarField->SetName(inputScalarField->GetName());
 
-  SimplexId vertexNumber = (SimplexId)inputScalarField->GetNumberOfTuples();
-  outputOffsetField_->SetNumberOfTuples(vertexNumber);
-  outputOffsetField_->SetName(ttk::OffsetScalarFieldName);
-
-  outputScalarField_->SetNumberOfTuples(vertexNumber);
-  outputScalarField_->SetName(inputScalarField->GetName());
-
-  topologicalCompression_.setCompressionType(CompressionType);
-  topologicalCompression_.setInputDataPointer(
-    inputScalarField->GetVoidPointer(0));
-  topologicalCompression_.setSQ(SQMethod);
-  topologicalCompression_.setUseTopologicalSimplification(
-    UseTopologicalSimplification);
-  topologicalCompression_.setSubdivide(!Subdivide);
-  topologicalCompression_.setOutputDataPointer(
-    outputScalarField_->GetVoidPointer(0));
-  topologicalCompression_.setMaximumError(MaximumError);
+  vtkNew<vtkIntArray> outputOffsetField{};
+  outputOffsetField->SetNumberOfTuples(vertexNumber);
+  outputOffsetField->SetName(ttk::OffsetScalarFieldName);
 
   // Call TopologicalCompression
-  switch(inputScalarField->GetDataType()) {
-    vtkTemplateMacro(topologicalCompression_.execute<VTK_TT>(Tolerance));
-    default:
-      break;
-  }
+  ttkVtkTemplateMacro(
+    inputScalarField->GetDataType(), triangulation->getType(),
+    this->execute(
+      static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(inputScalarField)),
+      static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(outputScalarField)),
+      *static_cast<TTK_TT *>(triangulation->getData())));
 
-  std::vector<int> voidOffsets = topologicalCompression_.getCompressedOffsets();
   for(SimplexId i = 0; i < vertexNumber; ++i)
-    outputOffsetField_->SetTuple1(i, voidOffsets[i]);
+    outputOffsetField->SetTuple1(i, this->compressedOffsets_[i]);
 
-  output1->GetPointData()->AddArray(outputScalarField_);
-  output1->GetPointData()->AddArray(outputOffsetField_);
+  output->GetPointData()->AddArray(outputScalarField);
+  output->GetPointData()->AddArray(outputOffsetField);
 
   return 1;
 }

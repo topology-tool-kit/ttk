@@ -313,7 +313,10 @@ if(NOT CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
   set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_INSTALL_LIBDIR}")
 endif()
 
-# Install rapth
+# ParaView plugins go to a subdirectory with this name
+set(TTK_PLUGIN_SUBDIR "TopologyToolKit")
+
+# Install rpath
 
 set(CMAKE_MACOSX_RPATH TRUE)
 set(CMAKE_INSTALL_RPATH TRUE)

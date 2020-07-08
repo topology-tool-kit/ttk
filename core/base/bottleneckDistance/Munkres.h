@@ -2,8 +2,7 @@
 /// \class ttk::Munkres
 /// \author Maxime Soler <soler.maxime@total.com>
 
-#ifndef _MUNKRES_H
-#define _MUNKRES_H
+#pragma once
 
 #include <Debug.h>
 #include <PersistenceDiagram.h>
@@ -16,7 +15,9 @@ namespace ttk {
   class Munkres : public Debug {
 
   public:
-    Munkres(){};
+    Munkres() {
+      this->setDebugMsgPrefix("Munkres");
+    }
 
     ~Munkres(){};
 
@@ -83,8 +84,7 @@ namespace ttk {
           msg << std::fixed << std::setprecision(3) << (*C)[r][c] << " ";
       }
 
-      msg << std::endl;
-      dMsg(std::cout, msg.str(), infoMsg);
+      this->printMsg(msg.str(), debug::Priority::DETAIL);
     }
 
     inline void showMaskMatrix() {
@@ -104,8 +104,7 @@ namespace ttk {
           msg << M[r][c] << "  ";
         msg << std::endl;
       }
-      msg << std::endl;
-      dMsg(std::cout, msg.str(), infoMsg);
+      this->printMsg(msg.str(), debug::Priority::DETAIL);
     }
 
   private:
@@ -202,5 +201,3 @@ namespace ttk {
 #include <MunkresImpl.h>
 
 } // namespace ttk
-
-#endif

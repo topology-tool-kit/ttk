@@ -6,4 +6,4 @@ HEADERS
   ttkManifoldCheck.h
 DEPENDS
   manifoldCheck
-  ttkTriangulationAlgorithm
+  ttkAlgorithm

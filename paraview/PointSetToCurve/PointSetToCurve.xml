@@ -30,15 +30,15 @@
 
       <StringVectorProperty
           name="InputOrderingArray"
-          command="SetInputOrderingArray"
+          command="SetInputArrayToProcess"
           label="Input Ordering Array"
-          number_of_elements="1"
+          element_types="0 0 0 0 2"
+          default_values="0"
+          number_of_elements="5"
           animateable="0"
           >
         <ArrayListDomain
             name="array_list"
-            attribute_type="Scalars"
-            input_domain_name="inputs_array"
             default_values="0"
             >
           <RequiredProperties>

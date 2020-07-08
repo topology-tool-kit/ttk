@@ -25,55 +25,20 @@
 
 #pragma once
 
-// VTK includes -- to adapt
-#include <vtkCellData.h>
-#include <vtkCharArray.h>
-#include <vtkDataArray.h>
-#include <vtkDataSet.h>
-#include <vtkDataSetAlgorithm.h>
-#include <vtkDoubleArray.h>
-#include <vtkFiltersCoreModule.h>
-#include <vtkFloatArray.h>
-#include <vtkInformation.h>
-#include <vtkIntArray.h>
-#include <vtkObjectFactory.h>
-#include <vtkPointData.h>
-#include <vtkShortArray.h>
-#include <vtkSmartPointer.h>
-#include <vtkUnsignedCharArray.h>
-#include <vtkUnsignedShortArray.h>
-
 // VTK Module
 #include <ttkMorseSmaleQuadrangulationModule.h>
 
 // ttk code includes
 #include <MorseSmaleQuadrangulation.h>
-#include <ttkTriangulationAlgorithm.h>
-
-#include <ttkTriangulation.h>
+#include <ttkAlgorithm.h>
 
 class TTKMORSESMALEQUADRANGULATION_EXPORT ttkMorseSmaleQuadrangulation
-  : public vtkDataSetAlgorithm,
-    protected ttk::Wrapper {
+  : public ttkAlgorithm,
+    virtual protected ttk::MorseSmaleQuadrangulation {
 
 public:
   static ttkMorseSmaleQuadrangulation *New();
-  vtkTypeMacro(ttkMorseSmaleQuadrangulation, vtkDataSetAlgorithm);
-
-  void SetDebugLevel(int debugLevel) {
-    setDebugLevel(debugLevel);
-    Modified();
-  }
-
-  void SetThreadNumber(int threadNumber) {
-    ThreadNumber = threadNumber;
-    SetThreads();
-  }
-
-  void SetUseAllCores(bool onOff) {
-    UseAllCores = onOff;
-    SetThreads();
-  }
+  vtkTypeMacro(ttkMorseSmaleQuadrangulation, ttkAlgorithm);
 
   vtkGetMacro(DualQuadrangulation, bool);
   vtkSetMacro(DualQuadrangulation, bool);
@@ -81,39 +46,12 @@ public:
   vtkSetMacro(ShowResError, bool);
   vtkGetMacro(ShowResError, bool);
 
-  // get data from Morse-Smale Complex
-  int getCriticalPoints(vtkUnstructuredGrid *input);
-  int getSeparatrices(vtkUnstructuredGrid *input);
-  int getTriangulation(vtkUnstructuredGrid *input);
-
-  // default copy constructor
-  ttkMorseSmaleQuadrangulation(const ttkMorseSmaleQuadrangulation &) = delete;
-  // default move constructor
-  ttkMorseSmaleQuadrangulation(ttkMorseSmaleQuadrangulation &&) = delete;
-  // default copy assignment operator
-  ttkMorseSmaleQuadrangulation &operator=(const ttkMorseSmaleQuadrangulation &)
-    = delete;
-  // default move assignment operator
-  ttkMorseSmaleQuadrangulation &operator=(ttkMorseSmaleQuadrangulation &&)
-    = delete;
-
 protected:
   ttkMorseSmaleQuadrangulation();
 
-  ~ttkMorseSmaleQuadrangulation() override = default;
-
-  TTK_SETUP();
-
   int FillInputPortInformation(int port, vtkInformation *info) override;
-
-private:
-  // triangulation
-  ttk::Triangulation *triangulation_{};
-  // if dual quadrangulation
-  bool DualQuadrangulation{false};
-  // show result despite error
-  bool ShowResError{false};
-
-  // worker object
-  ttk::MorseSmaleQuadrangulation baseWorker_{};
+  int FillOutputPortInformation(int port, vtkInformation *info) override;
+  int RequestData(vtkInformation *request,
+                  vtkInformationVector **inputVector,
+                  vtkInformationVector *outputVector) override;
 };

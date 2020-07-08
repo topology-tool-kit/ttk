@@ -135,18 +135,18 @@
         </Documentation>
       </IntVectorProperty>
 
-        <StringVectorProperty
-          name="n"
-          label="p parameter"
-          command="SetWassersteinMetric"
-          number_of_elements="1"
-          default_values="2"
-          panel_visibility="advanced">
+      <IntVectorProperty
+        name="n"
+        label="p parameter"
+        command="SetWassersteinMetric"
+        number_of_elements="1"
+        default_values="2"
+        panel_visibility="advanced">
         <Documentation>
           Value of the parameter p for the Wp (p-th Wasserstein) distance
-computation (type "inf" for the Bottleneck distance).
+          computation (type "inf" for the Bottleneck distance).
         </Documentation>
-      </StringVectorProperty>
+      </IntVectorProperty>
 
       <IntVectorProperty
           name="Deterministic"
@@ -277,7 +277,7 @@ computation (type "inf" for the Bottleneck distance).
 
 
         <DoubleVectorProperty
-          name="spacing_"
+          name="Spacing"
           label="Spacing"
           command="SetSpacing"
           number_of_elements="1"

@@ -1,8 +1,8 @@
-# fot the ttk_parse_module_file
+# for the ttk_parse_module_file
 include(CMake/VTKModule.cmake)
 
 # register a new filter to build in the TTK plugin
-# deduce the location of the corresonding vtk.module file
+# deduce the location of the corresponding vtk.module file
 # also register the xml file if given
 
 file(READ "CMake/debug_widgets.xml" DEBUG_WIDGETS)
@@ -33,3 +33,19 @@ macro(ttk_register_pv_filter vtkModuleDir xmlFile)
     endif()
   endif()
 endmacro()
+
+function(ttk_set_paraview_rpath TARGET_NAME)
+  if(APPLE)
+    # On macOS,
+    # look into the subdirectory "TopologyToolKit"
+    # to find the actual plugins.
+    get_target_property(TEMP
+        ${TARGET_NAME} INSTALL_RPATH
+        )
+    set_target_properties(${TARGET_NAME}
+      PROPERTIES
+        INSTALL_RPATH "@loader_path/${TTK_PLUGIN_SUBDIR};${TEMP}"
+    )
+  endif(APPLE)
+endfunction(ttk_set_paraview_rpath TARGET_NAME)
+

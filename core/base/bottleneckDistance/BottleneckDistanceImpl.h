@@ -1,5 +1,4 @@
-#ifndef _BOTTLENECKDISTANCEIMPL_H
-#define _BOTTLENECKDISTANCEIMPL_H
+#pragma once
 
 constexpr unsigned long long str2int(const char *str, int h = 0) {
   return !str[h] ? 5381 : (str2int(str, h + 1) * 33) ^ str[h];
@@ -12,12 +11,8 @@ int BottleneckDistance::execute(const bool usePersistenceMetric) {
   bool fromParaView = pvAlgorithm_ >= 0;
   if(fromParaView) {
     switch(pvAlgorithm_) {
-      case 0: {
-        std::stringstream msg;
-        msg << "[BottleneckDistance|PV] Solving with the TTK approach."
-            << std::endl;
-        dMsg(std::cout, msg.str(), timeMsg);
-      }
+      case 0:
+        this->printMsg("Solving with the TTK approach");
         this->computeBottleneck<dataType>(
           *static_cast<const std::vector<diagramTuple> *>(outputCT1_),
           *static_cast<const std::vector<diagramTuple> *>(outputCT2_),
@@ -26,51 +21,32 @@ int BottleneckDistance::execute(const bool usePersistenceMetric) {
         break;
       case 1: {
         std::stringstream msg;
-        msg << "[BottleneckDistance|PV] Solving with the legacy Dionysus exact "
-               "approach."
-            << std::endl
-            << "[BottleneckDistance|PV] Not supported." << std::endl;
-        dMsg(std::cout, msg.str(), timeMsg);
+        this->printMsg("Solving with the legacy Dionysus exact approach.");
+        this->printErr("Not supported");
       } break;
       case 2: {
-        std::stringstream msg;
-        msg << "[BottleneckDistance|PV] Solving with the approximate Dionysus "
-               "geometric approach."
-            << std::endl
-            << "[BottleneckDistance|PV] Not supported." << std::endl;
-        dMsg(std::cout, msg.str(), timeMsg);
+        this->printMsg(
+          "Solving with the approximate Dionysus geometric approach.");
+        this->printErr("Not supported");
       } break;
       case 3: {
-        std::stringstream msg;
-        msg << "[BottleneckDistance|PV] Solving with the parallel TTK approach."
-            << std::endl
-            << "[BottleneckDistance|PV] Not supported." << std::endl;
-        dMsg(std::cout, msg.str(), timeMsg);
+        this->printMsg("Solving with the parallel TTK approach");
+        this->printErr("Not supported");
       } break;
       case 4: {
-        std::stringstream msg;
-        msg << "[BottleneckDistance] Benchmarking..." << std::endl
-            << "[BottleneckDistance|PV] Not supported." << std::endl;
-        dMsg(std::cout, msg.str(), timeMsg);
+        this->printMsg("Benchmarking");
+        this->printErr("Not supported");
       } break;
       default: {
-        std::stringstream msg;
-        msg << "[BottleneckDistance|PV] You must specify a valid assignment "
-               "algorithm."
-            << std::endl;
-        dMsg(std::cout, msg.str(), fatalMsg);
+        this->printErr("You must specify a valid assignment algorithm.");
       }
     }
 
   } else {
     switch(str2int(algorithm_.c_str())) {
       case str2int("0"):
-      case str2int("ttk"): {
-        std::stringstream msg;
-        msg << "[BottleneckDistance] Solving with the TTK approach."
-            << std::endl;
-        dMsg(std::cout, msg.str(), timeMsg);
-      }
+      case str2int("ttk"):
+        this->printMsg("Solving with the TTK approach");
         this->computeBottleneck<dataType>(
           *static_cast<const std::vector<diagramTuple> *>(outputCT1_),
           *static_cast<const std::vector<diagramTuple> *>(outputCT2_),
@@ -79,52 +55,31 @@ int BottleneckDistance::execute(const bool usePersistenceMetric) {
         break;
       case str2int("1"):
       case str2int("legacy"): {
-        std::stringstream msg;
-        msg << "[BottleneckDistance] Solving with the legacy Dionysus exact "
-               "approach."
-            << std::endl
-            << "[BottleneckDistance|PV] Not supported." << std::endl;
-        dMsg(std::cout, msg.str(), timeMsg);
+        this->printMsg("Solving with the legacy Dionysus exact approach.");
+        this->printErr("Not supported");
       } break;
       case str2int("2"):
       case str2int("geometric"): {
-        std::stringstream msg;
-        msg << "[BottleneckDistance] Solving with the approximate Dionysus "
-               "geometric approach."
-            << std::endl
-            << "[BottleneckDistance|PV] Not supported." << std::endl;
-        dMsg(std::cout, msg.str(), timeMsg);
+        this->printMsg(
+          "Solving with the approximate Dionysus geometric approach.");
+        this->printErr("Not supported");
       } break;
       case str2int("3"):
       case str2int("parallel"): {
-        std::stringstream msg;
-        msg << "[BottleneckDistance] Solving with the parallel TTK approach."
-            << std::endl
-            << "[BottleneckDistance|PV] Not supported." << std::endl;
-        dMsg(std::cout, msg.str(), timeMsg);
+        this->printMsg("Solving with the parallel TTK approach");
+        this->printErr("Not supported");
       } break;
       case str2int("bench"): {
-        std::stringstream msg;
-        msg << "[BottleneckDistance] Benchmarking..." << std::endl
-            << "[BottleneckDistance|PV] Not supported." << std::endl;
-        dMsg(std::cout, msg.str(), timeMsg);
+        this->printMsg("Benchmarking");
+        this->printErr("Not supported");
       } break;
       default: {
-        std::stringstream msg;
-        msg << "[BottleneckDistance] You must specify a valid assignment "
-               "algorithm."
-            << std::endl;
-        dMsg(std::cout, msg.str(), fatalMsg);
+        this->printErr("You must specify a valid assignment algorithm.");
       }
     }
   }
 
-  {
-    std::stringstream msg;
-    msg << "[BottleneckDistance] Data-set processed in " << t.getElapsedTime()
-        << " s. (" << threadNumber_ << " thread(s))." << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
-  }
+  this->printMsg("Complete", 1, t.getElapsedTime(), threadNumber_);
 
   return 0;
 }
@@ -509,5 +464,3 @@ dataType BottleneckDistance::buildMappings(
 
   return addedPersistence;
 }
-
-#endif

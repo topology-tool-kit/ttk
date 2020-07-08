@@ -8,6 +8,14 @@
 /// \param Input Input scalar field (vtkDataSet)
 /// \param Output Output normalized scalar field (vtkDataSet)
 ///
+/// The input data array needs to be specified via the standard VTK call
+/// vtkAlgorithm::SetInputArrayToProcess() with the following parameters:
+/// \param idx 0 (FIXED: the first array the algorithm requires)
+/// \param port 0 (FIXED: first port)
+/// \param connection 0 (FIXED: first connection)
+/// \param fieldAssociation 0 (FIXED: point data)
+/// \param arrayName (DYNAMIC: string identifier of the input array)
+///
 /// This filter can be used as any other VTK filter (for instance, by using the
 /// sequence of calls SetInputData(), Update(), GetOutput()).
 ///
@@ -17,78 +25,34 @@
 /// \sa vtkCellDataConverter
 /// \sa vtkPointDataConverter
 /// \sa vtkScalarFieldSmoother
-#ifndef _TTK_SCALARFIELDNORMALIZER_H
-#define _TTK_SCALARFIELDNORMALIZER_H
-
-// VTK includes -- to adapt
-#include <vtkCharArray.h>
-#include <vtkDataArray.h>
-#include <vtkDataSet.h>
-#include <vtkDataSetAlgorithm.h>
-#include <vtkDoubleArray.h>
-#include <vtkFiltersCoreModule.h>
-#include <vtkFloatArray.h>
-#include <vtkIdTypeArray.h>
-#include <vtkInformation.h>
-#include <vtkIntArray.h>
-#include <vtkObjectFactory.h>
-#include <vtkPointData.h>
-#include <vtkSmartPointer.h>
+#pragma once
 
 // VTK Module
 #include <ttkScalarFieldNormalizerModule.h>
 
 // ttk code includes
-#include <ttkTriangulationAlgorithm.h>
+#include <ttkAlgorithm.h>
 
 // in this example, this wrapper takes a data-set on the input and produces a
 // data-set on the output - to adapt.
 // see the documentation of the vtkAlgorithm class to decide from which VTK
 // class your wrapper should inherit.
 class TTKSCALARFIELDNORMALIZER_EXPORT ttkScalarFieldNormalizer
-  : public vtkDataSetAlgorithm,
-    protected ttk::Wrapper {
+  : public ttkAlgorithm {
 
 public:
   static ttkScalarFieldNormalizer *New();
 
-  vtkTypeMacro(ttkScalarFieldNormalizer, vtkDataSetAlgorithm);
-
-  // default ttk setters
-  void SetDebugLevel(int debugLevel) {
-    setDebugLevel(debugLevel);
-    Modified();
-  }
-
-  void SetThreads() {
-    if(!UseAllCores)
-      threadNumber_ = ThreadNumber;
-    else {
-      threadNumber_ = ttk::OsCall::getNumberOfCores();
-    }
-    Modified();
-  }
-
-  void SetThreadNumber(int threadNumber) {
-    ThreadNumber = threadNumber;
-    SetThreads();
-  }
-
-  void SetUseAllCores(bool onOff) {
-    UseAllCores = onOff;
-    SetThreads();
-  }
-  // end of default ttk setters
-
-  // set-getters macros to define from each variable you want to access from
-  // the outside (in particular from paraview) - to adapt.
-  vtkSetMacro(ScalarField, std::string);
-  vtkGetMacro(ScalarField, std::string);
+  vtkTypeMacro(ttkScalarFieldNormalizer, ttkAlgorithm);
 
 protected:
   ttkScalarFieldNormalizer();
 
   ~ttkScalarFieldNormalizer() override;
+
+  int FillInputPortInformation(int port, vtkInformation *info) override;
+
+  int FillOutputPortInformation(int port, vtkInformation *info) override;
 
   int normalize(vtkDataArray *input, vtkDataArray *output) const;
 
@@ -97,17 +61,4 @@ protected:
                   vtkInformationVector *outputVector) override;
 
 private:
-  bool UseAllCores;
-  int ThreadNumber;
-  std::string ScalarField;
-  vtkDataArray *outputScalarField_;
-
-  // base code features
-  int doIt(vtkDataSet *input, vtkDataSet *output);
-
-  bool needsToAbort() override;
-
-  int updateProgress(const float &progress) override;
 };
-
-#endif // _TTK_SCALARFIELDNORMALIZER_H

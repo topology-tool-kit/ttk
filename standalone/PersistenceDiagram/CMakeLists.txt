@@ -1,18 +1,17 @@
 cmake_minimum_required(VERSION 3.2)
 
-project(ttkMorseSmaleComplexCmd)
+project(ttkPersistenceDiagramCmd)
 
-if(TARGET ttkMorseSmaleComplex)
+if(TARGET ttkPersistenceDiagram)
   add_executable(${PROJECT_NAME} main.cpp)
   target_link_libraries(${PROJECT_NAME}
     PRIVATE
-      ttkMorseSmaleComplex
-      ttkProgramBase
+      ttkPersistenceDiagram
     )
   set_target_properties(${PROJECT_NAME}
     PROPERTIES
       INSTALL_RPATH
-        "${CMAKE_INSTALL_PREFIX}/lib64/TopologyToolKit;${CMAKE_INSTALL_PREFIX}/lib/ttk"
+        "${CMAKE_INSTALL_RPATH}"
     )
   install(
     TARGETS

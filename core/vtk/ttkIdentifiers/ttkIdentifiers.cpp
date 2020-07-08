@@ -1,40 +1,50 @@
 #include <ttkIdentifiers.h>
 
+#include <vtkCellData.h>
+#include <vtkDataSet.h>
+#include <vtkInformation.h>
+#include <vtkPointData.h>
+
+#include <ttkMacros.h>
+#include <ttkUtils.h>
+
 using namespace std;
 using namespace ttk;
 
-vtkStandardNewMacro(ttkIdentifiers)
+vtkStandardNewMacro(ttkIdentifiers);
 
-  ttkIdentifiers::ttkIdentifiers() {
+ttkIdentifiers::ttkIdentifiers() {
+  this->SetNumberOfInputPorts(1);
+  this->SetNumberOfOutputPorts(1);
 
-  // init
-  CellFieldName = "CellIdentifiers";
-  VertexFieldName = ttk::VertexScalarFieldName;
-  UseAllCores = true;
+  setDebugMsgPrefix("Identifiers");
 }
 
 ttkIdentifiers::~ttkIdentifiers() {
 }
 
-// transmit abort signals -- to copy paste in other wrappers
-bool ttkIdentifiers::needsToAbort() {
-  return GetAbortExecute();
-}
-
-// transmit progress status -- to copy paste in other wrappers
-int ttkIdentifiers::updateProgress(const float &progress) {
-
-  {
-    stringstream msg;
-    msg << "[ttkIdentifiers] " << progress * 100 << "% processed...." << endl;
-    dMsg(cout, msg.str(), advancedInfoMsg);
+int ttkIdentifiers::FillInputPortInformation(int port, vtkInformation *info) {
+  if(port == 0) {
+    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
+    return 1;
   }
-
-  UpdateProgress(progress);
   return 0;
 }
 
-int ttkIdentifiers::doIt(vtkDataSet *input, vtkDataSet *output) {
+int ttkIdentifiers::FillOutputPortInformation(int port, vtkInformation *info) {
+  if(port == 0) {
+    info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
+    return 1;
+  }
+  return 0;
+}
+
+int ttkIdentifiers::RequestData(vtkInformation *request,
+                                vtkInformationVector **inputVector,
+                                vtkInformationVector *outputVector) {
+
+  vtkDataSet *input = vtkDataSet::GetData(inputVector[0]);
+  vtkDataSet *output = vtkDataSet::GetData(outputVector);
 
   Timer t;
 
@@ -57,39 +67,13 @@ int ttkIdentifiers::doIt(vtkDataSet *input, vtkDataSet *output) {
 
   SimplexId vertexNumber = input->GetNumberOfPoints();
   SimplexId cellNumber = input->GetNumberOfCells();
-  SimplexId count = 0;
-
-  //   // see also vtkOriginalCellIds
-  //   vtkDataArray *original =
-  //     input->GetPointData()->GetArray("vtkOriginalPointIds");
-  //   printf("original: %d\n", original);
-  //   if(original){
-  //     printf("\t%d entries...\n", original->GetNumberOfTuples());
-  //   }
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(SimplexId i = 0; i < vertexNumber; i++) {
     // avoid any processing if the abort signal is sent
-    if((!wrapper_) || ((wrapper_) && (!wrapper_->needsToAbort()))) {
-
-      vertexIdentifiers->SetTuple1(i, i);
-
-      // update the progress bar of the wrapping code -- to adapt
-      if(debugLevel_ > advancedInfoMsg) {
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp critical
-#endif
-        {
-          if((wrapper_) && (!(count % ((vertexNumber) / 10)))) {
-            wrapper_->updateProgress((count + 1.0) / (2 * vertexNumber));
-          }
-
-          count++;
-        }
-      }
-    }
+    vertexIdentifiers->SetTuple1(i, i);
   }
 
 #ifdef TTK_ENABLE_OPENMP
@@ -97,58 +81,17 @@ int ttkIdentifiers::doIt(vtkDataSet *input, vtkDataSet *output) {
 #endif
   for(SimplexId i = 0; i < cellNumber; i++) {
     // avoid any processing if the abort signal is sent
-    if((!wrapper_) || ((wrapper_) && (!wrapper_->needsToAbort()))) {
-
-      cellIdentifiers->SetTuple1(i, i);
-
-      // update the progress bar of the wrapping code -- to adapt
-      if(debugLevel_ > advancedInfoMsg) {
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp critical
-#endif
-        {
-          if((wrapper_) && (!(count % ((cellNumber) / 10)))) {
-            wrapper_->updateProgress(1 + (count + 1.0) / (2 * cellNumber));
-          }
-
-          count++;
-        }
-      }
-    }
+    cellIdentifiers->SetTuple1(i, i);
   }
 
   output->GetPointData()->AddArray(vertexIdentifiers);
   output->GetCellData()->AddArray(cellIdentifiers);
 
-  {
-    stringstream msg;
-    msg << "[ttkIdentifiers] Identifiers generated in " << t.getElapsedTime()
-        << " s. (" << threadNumber_ << " thread(s))." << endl;
-    dMsg(cout, msg.str(), timeMsg);
-  }
+  printMsg("Processed " + std::to_string(vertexNumber) + " vertices and "
+             + std::to_string(cellNumber) + " cells",
+           1, t.getElapsedTime(), threadNumber_);
 
-  return 0;
-}
+  printMsg(ttk::debug::Separator::L1);
 
-// to adapt if your wrapper does not inherit from vtkDataSetAlgorithm
-int ttkIdentifiers::RequestData(vtkInformation *request,
-                                vtkInformationVector **inputVector,
-                                vtkInformationVector *outputVector) {
-
-  Memory m;
-
-  // here the vtkDataSet type should be changed to whatever type you consider.
-  vtkDataSet *input = vtkDataSet::GetData(inputVector[0]);
-  vtkDataSet *output = vtkDataSet::GetData(outputVector);
-
-  int ret = doIt(input, output);
-
-  {
-    stringstream msg;
-    msg << "[ttkIdentifiers] Memory usage: " << m.getElapsedUsage() << " MB."
-        << endl;
-    dMsg(cout, msg.str(), memoryMsg);
-  }
-
-  return !ret; // VTK uses true/false
+  return 1;
 }

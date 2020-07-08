@@ -1,4 +1,6 @@
+#include <ttkMacros.h>
 #include <ttkPersistenceDiagramClustering.h>
+#include <ttkUtils.h>
 #include <vtkFieldData.h>
 
 using namespace std;
@@ -11,164 +13,21 @@ vtkStandardNewMacro(ttkPersistenceDiagramClustering)
   SetNumberOfOutputPorts(3);
 }
 
-// transmit abort signals -- to copy paste in other wrappers
-bool ttkPersistenceDiagramClustering::needsToAbort() {
-  return GetAbortExecute();
-}
-
-// transmit progress status -- to copy paste in other wrappers
-int ttkPersistenceDiagramClustering::updateProgress(const float &progress) {
-  {
-    stringstream msg;
-    msg << "[ttkPersistenceDiagramClustering] " << progress * 100
-        << "% processed...." << endl;
-    dMsg(cout, msg.str(), advancedInfoMsg);
-  }
-
-  UpdateProgress(progress);
-  return 0;
-}
-
-int ttkPersistenceDiagramClustering::doIt(
-  const std::vector<vtkUnstructuredGrid *> &inputDiagram,
-  vtkUnstructuredGrid *outputClusters,
-  vtkUnstructuredGrid *outputCentroids,
-  vtkUnstructuredGrid *outputMatchings,
-  int numInputs) {
-
-  int ret{};
-  if(needUpdate_) {
-    // clear data before computation
-    intermediateDiagrams_ = {};
-    all_matchings_ = {};
-    final_centroids_ = {};
-
-    intermediateDiagrams_.resize(numInputs);
-    all_matchings_.resize(3);
-
-    max_dimension_total_ = 0;
-    for(int i = 0; i < numInputs; i++) {
-      double max_dimension
-        = getPersistenceDiagram(intermediateDiagrams_[i], inputDiagram[i]);
-      if(max_dimension_total_ < max_dimension) {
-        max_dimension_total_ = max_dimension;
-      }
-    }
-
-    if(Method == 0) {
-      // Progressive approach
-      PersistenceDiagramClustering<double> persistenceDiagramsClustering;
-      persistenceDiagramsClustering.setWrapper(this);
-
-      string wassersteinMetric = WassersteinMetric;
-
-      if(!UseInterruptible) {
-        TimeLimit = 999999999;
-      }
-      persistenceDiagramsClustering.setWasserstein(wassersteinMetric);
-      persistenceDiagramsClustering.setDeterministic(Deterministic);
-      persistenceDiagramsClustering.setForceUseOfAlgorithm(ForceUseOfAlgorithm);
-      persistenceDiagramsClustering.setPairTypeClustering(PairTypeClustering);
-      persistenceDiagramsClustering.setNumberOfInputs(numInputs);
-      persistenceDiagramsClustering.setDebugLevel(debugLevel_);
-      persistenceDiagramsClustering.setTimeLimit(TimeLimit);
-      persistenceDiagramsClustering.setUseProgressive(UseProgressive);
-      persistenceDiagramsClustering.setThreadNumber(threadNumber_);
-      persistenceDiagramsClustering.setAlpha(Alpha);
-      persistenceDiagramsClustering.setDeltaLim(DeltaLim);
-      persistenceDiagramsClustering.setUseDeltaLim(UseAdditionalPrecision);
-      persistenceDiagramsClustering.setLambda(Lambda);
-      persistenceDiagramsClustering.setNumberOfClusters(NumberOfClusters);
-      persistenceDiagramsClustering.setUseAccelerated(UseAccelerated);
-      persistenceDiagramsClustering.setUseKmeansppInit(UseKmeansppInit);
-      persistenceDiagramsClustering.setDistanceWritingOptions(
-        DistanceWritingOptions);
-
-      inv_clustering_ = persistenceDiagramsClustering.execute(
-        intermediateDiagrams_, final_centroids_, all_matchings_);
-
-      needUpdate_ = false;
-    }
-
-    else {
-      // AUCTION APPROACH
-      final_centroids_.resize(1);
-      inv_clustering_.resize(numInputs);
-      for(int i_input = 0; i_input < numInputs; i_input++) {
-        inv_clustering_[i_input] = 0;
-      }
-      PersistenceDiagramBarycenter<double> persistenceDiagramsBarycenter;
-      persistenceDiagramsBarycenter.setWrapper(this);
-
-      string wassersteinMetric = WassersteinMetric;
-      persistenceDiagramsBarycenter.setWasserstein(wassersteinMetric);
-      persistenceDiagramsBarycenter.setMethod(2);
-      persistenceDiagramsBarycenter.setNumberOfInputs(numInputs);
-      persistenceDiagramsBarycenter.setTimeLimit(TimeLimit);
-      persistenceDiagramsBarycenter.setDeterministic(Deterministic);
-      persistenceDiagramsBarycenter.setUseProgressive(UseProgressive);
-      persistenceDiagramsBarycenter.setDebugLevel(debugLevel_);
-      persistenceDiagramsBarycenter.setThreadNumber(threadNumber_);
-      persistenceDiagramsBarycenter.setAlpha(Alpha);
-      persistenceDiagramsBarycenter.setLambda(Lambda);
-      // persistenceDiagramsBarycenter.setReinitPrices(ReinitPrices);
-      // persistenceDiagramsBarycenter.setEpsilonDecreases(EpsilonDecreases);
-      // persistenceDiagramsBarycenter.setEarlyStoppage(EarlyStoppage);
-
-      persistenceDiagramsBarycenter.execute(
-        intermediateDiagrams_, final_centroids_[0], all_matchings_);
-
-      needUpdate_ = false;
-    }
-  }
-
-  outputMatchings->ShallowCopy(createMatchings());
-  outputClusters->ShallowCopy(createOutputClusteredDiagrams());
-  outputCentroids->ShallowCopy(createOutputCentroids());
-
-  // collect input FieldData to annotate outputClusters
-  auto fd = outputClusters->GetFieldData();
-  bool hasStructure{false};
-  for(const auto diag : inputDiagram) {
-    if(diag->GetFieldData() != nullptr) {
-      // ensure fd has the same structure as the first non-null input
-      // FieldData
-      if(!hasStructure) {
-        fd->CopyStructure(diag->GetFieldData());
-        hasStructure = true;
-      }
-      // copy data
-      fd->InsertNextTuple(0, diag->GetFieldData());
-    }
-  }
-
-  // add clusterId to outputClusters FieldData
-  vtkNew<vtkIntArray> cid{};
-  cid->SetName("ClusterId");
-  for(const auto c : this->inv_clustering_) {
-    cid->InsertNextValue(c);
-  }
-  fd->AddArray(cid);
-
-  return ret;
-}
-
 int ttkPersistenceDiagramClustering::FillInputPortInformation(
   int port, vtkInformation *info) {
-  if(!this->Superclass::FillInputPortInformation(port, info)) {
+  if(port == 0)
+    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkMultiBlockDataSet");
+  else
     return 0;
-  }
-  info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkMultiBlockDataSet");
   return 1;
 }
 
 int ttkPersistenceDiagramClustering::FillOutputPortInformation(
   int port, vtkInformation *info) {
-  if(!this->Superclass::FillOutputPortInformation(port, info)) {
-    return 0;
-  }
   if(port == 0 || port == 1 || port == 2)
     info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
+  else
+    return 0;
   return 1;
 }
 
@@ -179,8 +38,8 @@ int ttkPersistenceDiagramClustering::RequestData(
   vtkInformationVector *outputVector) {
   Memory m;
 
-  // Number of input files
-  int numInputs = numberOfInputsFromCommandLine;
+  // // Number of input files
+  int numInputs = 0; // numberOfInputsFromCommandLine;
 
   // Get input data
   std::vector<vtkUnstructuredGrid *> input;
@@ -206,15 +65,99 @@ int ttkPersistenceDiagramClustering::RequestData(
   auto output_matchings = vtkUnstructuredGrid::SafeDownCast(
     outputVector->GetInformationObject(2)->Get(vtkDataObject::DATA_OBJECT()));
 
-  doIt(input, output_clusters, output_centroids, output_matchings, numInputs);
+  if(needUpdate_) {
+    // clear data before computation
+    intermediateDiagrams_ = {};
+    all_matchings_ = {};
+    final_centroids_ = {};
 
-  {
-    stringstream msg;
-    msg << "[ttkPersistenceDiagramClustering] Memory usage: "
-        << m.getElapsedUsage() << " MB." << endl;
-    dMsg(cout, msg.str(), memoryMsg);
+    intermediateDiagrams_.resize(numInputs);
+    all_matchings_.resize(3);
+
+    max_dimension_total_ = 0;
+    this->setNumberOfInputs(numInputs);
+    for(int i = 0; i < numInputs; i++) {
+      double max_dimension
+        = getPersistenceDiagram(intermediateDiagrams_[i], input[i]);
+      if(max_dimension_total_ < max_dimension) {
+        max_dimension_total_ = max_dimension;
+      }
+    }
+
+    if(Method == 0) {
+      // Progressive approach
+      // PersistenceDiagramClustering persistenceDiagramsClustering;
+      // persistenceDiagramsClustering.setWrapper(this);
+
+      if(!UseInterruptible) {
+        TimeLimit = 999999999;
+      }
+
+      inv_clustering_ = this->execute<double>(
+        intermediateDiagrams_, final_centroids_, all_matchings_);
+
+      needUpdate_ = false;
+    }
+
+    else {
+      // AUCTION APPROACH
+      final_centroids_.resize(1);
+      inv_clustering_.resize(numInputs);
+      for(int i_input = 0; i_input < numInputs; i_input++) {
+        inv_clustering_[i_input] = 0;
+      }
+      PersistenceDiagramBarycenter<double> persistenceDiagramsBarycenter;
+      // persistenceDiagramsBarycenter.setWrapper(this);
+
+      string wassersteinMetric = std::to_string(WassersteinMetric);
+      persistenceDiagramsBarycenter.setWasserstein(wassersteinMetric);
+      persistenceDiagramsBarycenter.setMethod(2);
+      persistenceDiagramsBarycenter.setNumberOfInputs(numInputs);
+      persistenceDiagramsBarycenter.setTimeLimit(TimeLimit);
+      persistenceDiagramsBarycenter.setDeterministic(Deterministic);
+      persistenceDiagramsBarycenter.setUseProgressive(UseProgressive);
+      persistenceDiagramsBarycenter.setDebugLevel(debugLevel_);
+      persistenceDiagramsBarycenter.setThreadNumber(threadNumber_);
+      persistenceDiagramsBarycenter.setAlpha(Alpha);
+      persistenceDiagramsBarycenter.setLambda(Lambda);
+      // persistenceDiagramsBarycenter.setReinitPrices(ReinitPrices);
+      // persistenceDiagramsBarycenter.setEpsilonDecreases(EpsilonDecreases);
+      // persistenceDiagramsBarycenter.setEarlyStoppage(EarlyStoppage);
+
+      persistenceDiagramsBarycenter.execute(
+        intermediateDiagrams_, final_centroids_[0], all_matchings_);
+
+      needUpdate_ = false;
+    }
   }
 
+  output_matchings->ShallowCopy(createMatchings());
+  output_clusters->ShallowCopy(createOutputClusteredDiagrams());
+  output_centroids->ShallowCopy(createOutputCentroids());
+
+  // collect input FieldData to annotate outputClusters
+  auto fd = output_clusters->GetFieldData();
+  bool hasStructure{false};
+  for(const auto diag : input) {
+    if(diag->GetFieldData() != nullptr) {
+      // ensure fd has the same structure as the first non-null input
+      // FieldData
+      if(!hasStructure) {
+        fd->CopyStructure(diag->GetFieldData());
+        hasStructure = true;
+      }
+      // copy data
+      fd->InsertNextTuple(0, diag->GetFieldData());
+    }
+  }
+
+  // add clusterId to outputClusters FieldData
+  vtkNew<vtkIntArray> cid{};
+  cid->SetName("ClusterId");
+  for(const auto c : this->inv_clustering_) {
+    cid->InsertNextValue(c);
+  }
+  fd->AddArray(cid);
   return 1;
 }
 
@@ -344,9 +287,9 @@ double ttkPersistenceDiagramClustering::getPersistenceDiagram(
       nbNonCompact++;
       if(nbNonCompact == 0) {
         std::stringstream msg;
-        msg << "[TTKPersistenceDiagramClustering] Diagram pair identifiers "
+        msg << "Diagram pair identifiers "
             << "must be compact (not exceed the diagram size). " << std::endl;
-        dMsg(std::cout, msg.str(), timeMsg);
+        this->printWrn(msg.str());
       }
     }
   }
@@ -354,9 +297,9 @@ double ttkPersistenceDiagramClustering::getPersistenceDiagram(
   if(nbNonCompact > 0) {
     {
       std::stringstream msg;
-      msg << "[TTKPersistenceDiagramClustering] Missed " << nbNonCompact
-          << " pairs due to non-compactness." << std::endl;
-      dMsg(std::cout, msg.str(), timeMsg);
+      msg << "Missed " << nbNonCompact << " pairs due to non-compactness."
+          << std::endl;
+      this->printWrn(msg.str());
     }
   }
 
@@ -365,10 +308,7 @@ double ttkPersistenceDiagramClustering::getPersistenceDiagram(
 
 vtkSmartPointer<vtkUnstructuredGrid>
   ttkPersistenceDiagramClustering::createOutputCentroids() {
-  if(debugLevel_ > 5) {
-    std::cout << "[ttkPersistenceDiagramClustering] Creating vtk diagrams"
-              << std::endl;
-  }
+  this->printMsg("Creating vtk diagrams", debug::Priority::VERBOSE);
   vtkNew<vtkPoints> points{};
 
   vtkNew<vtkUnstructuredGrid> persistenceDiagram{};
@@ -521,10 +461,7 @@ vtkSmartPointer<vtkUnstructuredGrid>
 
 vtkSmartPointer<vtkUnstructuredGrid>
   ttkPersistenceDiagramClustering::createOutputClusteredDiagrams() {
-  if(debugLevel_ > 5) {
-    std::cout << "[ttkPersistenceDiagramClustering] Creating vtk Outputs"
-              << std::endl;
-  }
+  this->printMsg("Creating vtk outputs", debug::Priority::VERBOSE);
   vtkNew<vtkPoints> points{};
 
   vtkNew<vtkUnstructuredGrid> persistenceDiagram{};
@@ -723,10 +660,7 @@ vtkSmartPointer<vtkUnstructuredGrid>
 
 vtkSmartPointer<vtkUnstructuredGrid>
   ttkPersistenceDiagramClustering::createMatchings() {
-  if(debugLevel_ > 5) {
-    std::cout << "[ttkPersistenceDiagramClustering] Creating vtk Matchings"
-              << std::endl;
-  }
+  this->printMsg("Creating vtk matchings", debug::Priority::VERBOSE);
   vtkNew<vtkPoints> matchingPoints{};
 
   vtkNew<vtkUnstructuredGrid> matchingMesh{};

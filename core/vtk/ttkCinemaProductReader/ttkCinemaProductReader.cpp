@@ -2,6 +2,7 @@
 
 #include <vtkInformation.h>
 
+#include <vtkImageData.h>
 #include <vtkDoubleArray.h>
 #include <vtkFieldData.h>
 #include <vtkMultiBlockDataSet.h>

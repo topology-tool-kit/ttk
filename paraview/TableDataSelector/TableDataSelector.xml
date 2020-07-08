@@ -53,7 +53,7 @@
 
       <StringVectorProperty name="NbColumns"
         command="GetRangeIds"
-        number_of_elements_per_command="0"
+        number_of_elements_per_command="1"
         information_only="1"
         si_class="vtkSIDataArraySelectionProperty" />
 
@@ -84,53 +84,13 @@
          </Documentation>
       </StringVectorProperty>
 
-      <IntVectorProperty
-        name="UseAllCores"
-        label="Use All Cores"
-        command="SetUseAllCores"
-        number_of_elements="1"
-        default_values="1" panel_visibility="advanced">
-        <BooleanDomain name="bool"/>
-        <Documentation>
-          Use all available cores.
-        </Documentation>
-      </IntVectorProperty>
-
-      <IntVectorProperty
-        name="ThreadNumber"
-        label="Thread Number"
-        command="SetThreadNumber"
-        number_of_elements="1"
-        default_values="1" panel_visibility="advanced">
-        <IntRangeDomain name="range" min="1" max="100" />
-        <Documentation>
-          Thread number.
-        </Documentation>
-      </IntVectorProperty>
-
-      <IntVectorProperty
-        name="DebugLevel"
-        label="Debug Level"
-        command="SetDebugLevel"
-        number_of_elements="1"
-        default_values="3" panel_visibility="advanced">
-        <IntRangeDomain name="range" min="0" max="100" />
-        <Documentation>
-          Debug level.
-        </Documentation>
-      </IntVectorProperty>
-
       <PropertyGroup panel_widget="Line" label="Input options">
         <Property name="ScalarFields" />
         <Property name="RangeId" />
         <Property name="RegexFilter" />
       </PropertyGroup>
 
-      <PropertyGroup panel_widget="Line" label="Testing">
-        <Property name="UseAllCores" />
-        <Property name="ThreadNumber" />
-        <Property name="DebugLevel" />
-      </PropertyGroup>
+      ${DEBUG_WIDGETS}
 
       <Hints>
         <ShowInMenu category="TTK - High Dimension / Point Cloud Data" />

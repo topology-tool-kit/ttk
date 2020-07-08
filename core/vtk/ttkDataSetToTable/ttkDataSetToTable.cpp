@@ -1,124 +1,75 @@
 #include <ttkDataSetToTable.h>
 
-using namespace std;
-using namespace ttk;
+#include <vtkCellData.h>
+#include <vtkDataSet.h>
+#include <vtkInformation.h>
+#include <vtkObjectFactory.h>
+#include <vtkPointData.h>
+#include <vtkTable.h>
 
-vtkStandardNewMacro(ttkDataSetToTable)
+vtkStandardNewMacro(ttkDataSetToTable);
 
-  // transmit abort signals
-  bool ttkDataSetToTable::needsToAbort() {
-  return GetAbortExecute();
+ttkDataSetToTable::ttkDataSetToTable() {
+  this->setDebugMsgPrefix("DataSetToTable");
+
+  this->SetNumberOfInputPorts(1);
+  this->SetNumberOfOutputPorts(1);
 }
 
-// transmit progress status
-int ttkDataSetToTable::updateProgress(const float &progress) {
+ttkDataSetToTable::~ttkDataSetToTable() {
+}
 
-  {
-    stringstream msg;
-    msg << "[ttkDataSetToTable] " << progress * 100 << "% processed...."
-        << endl;
-    dMsg(cout, msg.str(), advancedInfoMsg);
+int ttkDataSetToTable::FillInputPortInformation(int port,
+                                                vtkInformation *info) {
+  if(port == 0) {
+    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
+    return 1;
   }
-
-  UpdateProgress(progress);
   return 0;
 }
 
-int ttkDataSetToTable::doIt(vtkDataSet *input, vtkTable *output) {
-  Memory m;
-
-  vtkSmartPointer<vtkTable> table = vtkSmartPointer<vtkTable>::New();
-
-  switch(static_cast<AssociationType>(DataAssociation)) {
-    case AssociationType::Point: {
-      vtkPointData *inputPointData = input->GetPointData();
-#ifndef TTK_ENABLE_KAMIKAZE
-      if(!inputPointData) {
-        cerr << "[ttkDataSetToTable] Error: input has no point data." << endl;
-        return -1;
-      }
-#endif
-
-#ifndef TTK_ENABLE_KAMIKAZE
-      const SimplexId numberOfArrays = inputPointData->GetNumberOfArrays();
-      if(numberOfArrays <= 0) {
-        cerr << "[ttkDataSetToTable] Error: input point data is empty." << endl;
-        return -1;
-      }
-#endif
-
-      table->GetRowData()->ShallowCopy(inputPointData);
-    } break;
-
-    case AssociationType::Cell: {
-      vtkCellData *inputCellData = input->GetCellData();
-#ifndef TTK_ENABLE_KAMIKAZE
-      if(!inputCellData) {
-        cerr << "[ttkDataSetToTable] Error: input has no cell data." << endl;
-        return -1;
-      }
-#endif
-
-#ifndef TTK_ENABLE_KAMIKAZE
-      const SimplexId numberOfArrays = inputCellData->GetNumberOfArrays();
-      if(numberOfArrays <= 0) {
-        cerr << "[ttkDataSetToTable] Error: input cell data is empty." << endl;
-        return -1;
-      }
-#endif
-
-      table->GetRowData()->ShallowCopy(inputCellData);
-    } break;
-
-    case AssociationType::Field: {
-      vtkFieldData *inputFieldData = input->GetFieldData();
-#ifndef TTK_ENABLE_KAMIKAZE
-      if(!inputFieldData) {
-        cerr << "[ttkDataSetToTable] Error: input has no field data." << endl;
-        return -1;
-      }
-#endif
-
-#ifndef TTK_ENABLE_KAMIKAZE
-      const SimplexId numberOfArrays = inputFieldData->GetNumberOfArrays();
-      if(numberOfArrays <= 0) {
-        cerr << "[ttkDataSetToTable] Error: input field data is empty." << endl;
-        return -1;
-      }
-#endif
-
-      table->GetRowData()->ShallowCopy(inputFieldData);
-    } break;
+int ttkDataSetToTable::FillOutputPortInformation(int port,
+                                                 vtkInformation *info) {
+  if(port == 0) {
+    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkTable");
+    return 1;
   }
-
-  output->ShallowCopy(table);
-
-  {
-    stringstream msg;
-    msg << "[ttkDataSetToTable] Memory usage: " << m.getElapsedUsage() << " MB."
-        << endl;
-    dMsg(cout, msg.str(), memoryMsg);
-  }
-
   return 0;
 }
 
 int ttkDataSetToTable::RequestData(vtkInformation *request,
                                    vtkInformationVector **inputVector,
                                    vtkInformationVector *outputVector) {
-  Memory m;
+  ttk::Timer t;
 
-  vtkDataSet *input = vtkDataSet::GetData(inputVector[0]);
-  vtkTable *output = vtkTable::GetData(outputVector);
+  std::string targetAttributeName
+    = this->DataAssociation == 0
+        ? "Point"
+        : this->DataAssociation == 1 ? "Cell" : "Field";
 
-  doIt(input, output);
+  this->printMsg("Converting " + targetAttributeName + "Data to Table", 0, 0,
+                 ttk::debug::LineMode::REPLACE);
 
-  {
-    stringstream msg;
-    msg << "[ttkDataSetToTable] Memory usage: " << m.getElapsedUsage() << " MB."
-        << endl;
-    dMsg(cout, msg.str(), memoryMsg);
+  auto input = vtkDataSet::GetData(inputVector[0]);
+  if(!input)
+    return 0;
+
+  auto targetData = this->DataAssociation == 0
+                      ? input->GetPointData()
+                      : this->DataAssociation == 1 ? input->GetCellData()
+                                                   : input->GetFieldData();
+
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(targetData->GetNumberOfArrays() < 1) {
+    this->printWrn("Empty " + targetAttributeName + "Data.");
   }
+#endif
+
+  auto table = vtkTable::GetData(outputVector);
+  table->GetRowData()->ShallowCopy(targetData);
+
+  this->printMsg("Converting " + targetAttributeName + "Data to Table", 1,
+                 t.getElapsedTime());
 
   return 1;
 }

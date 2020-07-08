@@ -1,282 +1,117 @@
 #include <ttkDiscreteGradient.h>
+#include <ttkMacros.h>
+#include <ttkUtils.h>
+
+#include <vtkCellData.h>
+#include <vtkInformation.h>
+#include <vtkLine.h>
+#include <vtkPointData.h>
+#include <vtkSignedCharArray.h>
+#include <vtkUnstructuredGrid.h>
 
 using namespace std;
 using namespace ttk;
 using namespace dcg;
 
-vtkStandardNewMacro(ttkDiscreteGradient)
+vtkStandardNewMacro(ttkDiscreteGradient);
 
-  ttkDiscreteGradient::ttkDiscreteGradient()
-  : UseAllCores{true}, ScalarField{}, InputOffsetScalarFieldName{},
-    ForceInputOffsetScalarField{false}, ComputeGradientGlyphs{true},
-    IterationThreshold{-1}, ScalarFieldId{}, OffsetFieldId{-1},
-
-    triangulation_{}, inputScalars_{}, offsets_{}, inputOffsets_{},
-    hasUpdatedMesh_{} {
+ttkDiscreteGradient::ttkDiscreteGradient() {
   SetNumberOfInputPorts(1);
   SetNumberOfOutputPorts(2);
 }
 
-ttkDiscreteGradient::~ttkDiscreteGradient() {
-  if(offsets_)
-    offsets_->Delete();
-}
-
 int ttkDiscreteGradient::FillInputPortInformation(int port,
                                                   vtkInformation *info) {
-  switch(port) {
-    case 0:
-      info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataSet");
-      break;
+  if(port == 0) {
+    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
+    return 1;
   }
-
-  return 1;
+  return 0;
 }
 
 int ttkDiscreteGradient::FillOutputPortInformation(int port,
                                                    vtkInformation *info) {
-  switch(port) {
-    case 0:
-    case 1:
-      info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
-      break;
+  if(port == 0 || port == 1) {
+    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
+    return 1;
   }
-
-  return 1;
-}
-
-int ttkDiscreteGradient::setupTriangulation(vtkDataSet *input) {
-  triangulation_ = ttkTriangulation::getTriangulation(input);
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(!triangulation_) {
-    cerr << "[ttkDiscreteGradient] Error : "
-            "ttkTriangulation::getTriangulation() is null."
-         << endl;
-    return -1;
-  }
-#endif
-
-  hasUpdatedMesh_
-    = ttkTriangulation::hasChangedConnectivity(triangulation_, input, this);
-
-  triangulation_->setWrapper(this);
-  discreteGradient_.setWrapper(this);
-  discreteGradient_.setupTriangulation(triangulation_);
-  Modified();
-
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(triangulation_->isEmpty()) {
-    cerr << "[ttkDiscreteGradient] Error : vtkTriangulation allocation problem."
-         << endl;
-    return -1;
-  }
-#endif
   return 0;
 }
 
-int ttkDiscreteGradient::getScalars(vtkDataSet *input) {
-  vtkPointData *pointData = input->GetPointData();
-
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(!pointData) {
-    cerr << "[ttkDiscreteGradient] Error : input has no point data." << endl;
-    return -1;
-  }
-
-  if(!ScalarField.length()) {
-    cerr << "[ttkDiscreteGradient] Error : scalar field has no name." << endl;
-    return -2;
-  }
-#endif
-
-  if(ScalarField.length()) {
-    inputScalars_ = pointData->GetArray(ScalarField.data());
-  } else {
-    inputScalars_ = pointData->GetArray(ScalarFieldId);
-    if(inputScalars_)
-      ScalarField = inputScalars_->GetName();
-  }
-
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(!inputScalars_) {
-    cerr << "[ttkDiscreteGradient] Error : input scalar field pointer is null."
-         << endl;
-    return -3;
-  }
-#endif
-
-  return 0;
-}
-
-int ttkDiscreteGradient::getOffsets(vtkDataSet *input) {
-  if(OffsetFieldId != -1) {
-    inputOffsets_ = input->GetPointData()->GetArray(OffsetFieldId);
-    if(inputOffsets_) {
-      InputOffsetScalarFieldName = inputOffsets_->GetName();
-      ForceInputOffsetScalarField = true;
-    }
-  }
-
-  if(ForceInputOffsetScalarField and InputOffsetScalarFieldName.length()) {
-    inputOffsets_
-      = input->GetPointData()->GetArray(InputOffsetScalarFieldName.data());
-  } else if(input->GetPointData()->GetArray(ttk::OffsetScalarFieldName)) {
-    inputOffsets_ = input->GetPointData()->GetArray(ttk::OffsetScalarFieldName);
-  } else {
-    if(hasUpdatedMesh_ and offsets_) {
-      offsets_->Delete();
-      offsets_ = nullptr;
-    }
-
-    if(!offsets_) {
-      const SimplexId numberOfVertices = input->GetNumberOfPoints();
-
-      offsets_ = ttkSimplexIdTypeArray::New();
-      offsets_->SetNumberOfComponents(1);
-      offsets_->SetNumberOfTuples(numberOfVertices);
-      offsets_->SetName(ttk::OffsetScalarFieldName);
-      for(SimplexId i = 0; i < numberOfVertices; ++i)
-        offsets_->SetTuple1(i, i);
-    }
-
-    inputOffsets_ = offsets_;
-  }
-
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(!inputOffsets_) {
-    cerr << "[ttkDiscreteGradient] Error : wrong input offset scalar field."
-         << endl;
-    return -1;
-  }
-#endif
-
-  return 0;
-}
-
-template <typename VTK_TT>
-int ttkDiscreteGradient::dispatch(vtkUnstructuredGrid *outputCriticalPoints) {
+template <typename scalarType, typename offsetType, typename triangulationType>
+int ttkDiscreteGradient::dispatch(vtkUnstructuredGrid *outputCriticalPoints,
+                                  vtkDataArray *const inputScalars,
+                                  vtkDataArray *const inputOffsets,
+                                  const triangulationType &triangulation) {
 
   // critical points
-  SimplexId criticalPoints_numberOfPoints{};
-  vector<float> criticalPoints_points;
-  vector<char> criticalPoints_points_cellDimensions;
-  vector<SimplexId> criticalPoints_points_cellIds;
-  vector<char> criticalPoints_points_isOnBoundary;
-  vector<SimplexId> criticalPoints_points_PLVertexIdentifiers;
-  vector<SimplexId> criticalPoints_points_manifoldSize;
+  std::vector<scalarType> criticalPoints_points_cellScalars;
+  this->setOutputCriticalPoints(&criticalPoints_points_cellScalars);
 
-  int ret = 0;
-  vector<VTK_TT> criticalPoints_points_cellScalars;
+  const int ret
+    = this->buildGradient<scalarType, offsetType, triangulationType>(
+      triangulation);
 
-  discreteGradient_.setOutputCriticalPoints(
-    &criticalPoints_numberOfPoints, &criticalPoints_points,
-    &criticalPoints_points_cellDimensions, &criticalPoints_points_cellIds,
-    &criticalPoints_points_cellScalars, &criticalPoints_points_isOnBoundary,
-    &criticalPoints_points_PLVertexIdentifiers,
-    &criticalPoints_points_manifoldSize);
-
-  if(inputOffsets_->GetDataType() == VTK_INT)
-    ret = discreteGradient_.buildGradient<VTK_TT, int>();
-  if(inputOffsets_->GetDataType() == VTK_ID_TYPE)
-    ret = discreteGradient_.buildGradient<VTK_TT, vtkIdType>();
 #ifndef TTK_ENABLE_KAMIKAZE
   if(ret) {
-    cerr << "[ttkDiscreteGradient] Error : DiscreteGradient.buildGradient() "
-            "error code : "
-         << ret << endl;
+    this->printErr("DiscreteGradient.buildGradient() error code: "
+                   + std::to_string(ret));
     return -1;
   }
 #endif
 
   // critical points
   {
-    discreteGradient_.setCriticalPoints<VTK_TT>();
+    this->setCriticalPoints<scalarType>(triangulation);
 
     vtkNew<vtkPoints> points{};
-#ifndef TTK_ENABLE_KAMIKAZE
-    if(!points) {
-      cerr << "[ttkDiscreteGradient] Error : vtkPoints allocation problem."
-           << endl;
-      return -1;
-    }
-#endif
 
-    vtkNew<vtkCharArray> cellDimensions{};
-#ifndef TTK_ENABLE_KAMIKAZE
-    if(!cellDimensions) {
-      cerr << "[ttkDiscreteGradient] Error : vtkCharArray allocation problem."
-           << endl;
-      return -1;
-    }
-#endif
+    vtkNew<vtkSignedCharArray> cellDimensions{};
     cellDimensions->SetNumberOfComponents(1);
     cellDimensions->SetName("CellDimension");
 
     vtkNew<ttkSimplexIdTypeArray> cellIds{};
-#ifndef TTK_ENABLE_KAMIKAZE
-    if(!cellIds) {
-      cerr << "[ttkDiscreteGradient] Error : ttkSimplexIdTypeArray allocation "
-              "problem."
-           << endl;
-      return -1;
-    }
-#endif
     cellIds->SetNumberOfComponents(1);
     cellIds->SetName("CellId");
 
-    vtkDataArray *cellScalars = inputScalars_->NewInstance();
+    vtkDataArray *cellScalars = inputScalars->NewInstance();
 #ifndef TTK_ENABLE_KAMIKAZE
     if(!cellScalars) {
-      cerr << "[ttkDiscreteGradient] Error : vtkDataArray allocation problem."
-           << endl;
+      this->printErr("vtkDataArray allocation problem.");
       return -1;
     }
 #endif
     cellScalars->SetNumberOfComponents(1);
-    cellScalars->SetName(ScalarField.data());
+    cellScalars->SetName(inputScalars->GetName());
 
-    vtkNew<vtkCharArray> isOnBoundary{};
-#ifndef TTK_ENABLE_KAMIKAZE
-    if(!isOnBoundary) {
-      cerr << "[vtkMorseSmaleComplex] Error : vtkCharArray allocation problem."
-           << endl;
-      return -1;
-    }
-#endif
+    vtkNew<vtkSignedCharArray> isOnBoundary{};
     isOnBoundary->SetNumberOfComponents(1);
     isOnBoundary->SetName("IsOnBoundary");
 
     vtkNew<ttkSimplexIdTypeArray> PLVertexIdentifiers{};
-#ifndef TTK_ENABLE_KAMIKAZE
-    if(!PLVertexIdentifiers) {
-      cerr << "[ttkMorseSmaleComplex] Error : ttkSimplexIdTypeArray allocation "
-           << "problem." << endl;
-      return -1;
-    }
-#endif
     PLVertexIdentifiers->SetNumberOfComponents(1);
     PLVertexIdentifiers->SetName(ttk::VertexScalarFieldName);
 
-    for(SimplexId i = 0; i < criticalPoints_numberOfPoints; ++i) {
-      points->InsertNextPoint(criticalPoints_points[3 * i],
-                              criticalPoints_points[3 * i + 1],
-                              criticalPoints_points[3 * i + 2]);
+    for(SimplexId i = 0; i < outputCriticalPoints_numberOfPoints_; ++i) {
+      points->InsertNextPoint(outputCriticalPoints_points_[3 * i],
+                              outputCriticalPoints_points_[3 * i + 1],
+                              outputCriticalPoints_points_[3 * i + 2]);
 
-      cellDimensions->InsertNextTuple1(criticalPoints_points_cellDimensions[i]);
-      cellIds->InsertNextTuple1(criticalPoints_points_cellIds[i]);
+      cellDimensions->InsertNextTuple1(
+        outputCriticalPoints_points_cellDimensions_[i]);
+      cellIds->InsertNextTuple1(outputCriticalPoints_points_cellIds_[i]);
       cellScalars->InsertNextTuple1(criticalPoints_points_cellScalars[i]);
-      isOnBoundary->InsertNextTuple1(criticalPoints_points_isOnBoundary[i]);
+      isOnBoundary->InsertNextTuple1(
+        outputCriticalPoints_points_isOnBoundary_[i]);
       PLVertexIdentifiers->InsertNextTuple1(
-        criticalPoints_points_PLVertexIdentifiers[i]);
+        outputCriticalPoints_points_PLVertexIdentifiers_[i]);
     }
     outputCriticalPoints->SetPoints(points);
 
     vtkPointData *pointData = outputCriticalPoints->GetPointData();
 #ifndef TTK_ENABLE_KAMIKAZE
     if(!pointData) {
-      cerr << "[ttkDiscreteGradient] Error : outputCriticalPoints has no point "
-              "data."
-           << endl;
+      this->printErr("outputCriticalPoints has no point data");
       return -1;
     }
 #endif
@@ -291,90 +126,94 @@ int ttkDiscreteGradient::dispatch(vtkUnstructuredGrid *outputCriticalPoints) {
   return ret;
 }
 
-int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
-                              vector<vtkDataSet *> &outputs) {
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(!inputs.size()) {
-    cerr << "[ttkDiscreteGradient] Error: not enough input information."
-         << endl;
-    return -1;
-  }
-#endif
-  vtkDataSet *input = inputs[0];
-  auto outputCriticalPoints = vtkUnstructuredGrid::SafeDownCast(outputs[0]);
-  auto outputGradientGlyphs = vtkUnstructuredGrid::SafeDownCast(outputs[1]);
+int ttkDiscreteGradient::RequestData(vtkInformation *request,
+                                     vtkInformationVector **inputVector,
+                                     vtkInformationVector *outputVector) {
+
+  auto input = vtkDataSet::GetData(inputVector[0]);
+  auto outputCriticalPoints = vtkUnstructuredGrid::GetData(outputVector, 0);
+  auto outputGradientGlyphs = vtkUnstructuredGrid::GetData(outputVector, 1);
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!input) {
-    cerr << "[ttkDiscreteGradient] Error: input pointer is NULL." << endl;
+    this->printErr("Input pointer is NULL.");
     return -1;
   }
-
   if(!outputCriticalPoints or !outputGradientGlyphs) {
-    cerr << "[ttkDiscreteGradient] Error: output pointer is NULL." << endl;
+    this->printErr("Output pointer is NULL.");
     return -1;
   }
-
   if(!input->GetNumberOfPoints()) {
-    cerr << "[ttkDiscreteGradient] Error: input has no point." << endl;
+    this->printErr("Input has no point.");
     return -1;
   }
 #endif
+
+  auto triangulation = ttkAlgorithm::GetTriangulation(input);
+  if(triangulation == nullptr) {
+    this->printErr("Triangulation is NULL");
+    return 0;
+  }
+  this->preconditionTriangulation(triangulation);
+
+  const auto inputScalars = this->GetInputArrayToProcess(0, input);
+  auto inputOffsets
+    = ttkAlgorithm::GetOptionalArray(this->ForceInputOffsetScalarField, 1,
+                                     ttk::OffsetScalarFieldName, inputVector);
+
+  vtkNew<ttkSimplexIdTypeArray> offsets{};
+
+  if(inputOffsets == nullptr) {
+    // build a new offset field
+    const SimplexId numberOfVertices = input->GetNumberOfPoints();
+    offsets->SetNumberOfComponents(1);
+    offsets->SetNumberOfTuples(numberOfVertices);
+    offsets->SetName(ttk::OffsetScalarFieldName);
+    for(SimplexId i = 0; i < numberOfVertices; ++i) {
+      offsets->SetTuple1(i, i);
+    }
+    inputOffsets = offsets;
+  }
+
+  if(inputScalars == nullptr || inputOffsets == nullptr) {
+    this->printErr("Input scalar arrays are NULL");
+    return 0;
+  }
 
   int ret{};
 
-  ret = setupTriangulation(input);
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(ret) {
-    cerr << "[ttkDiscreteGradient] Error : wrong triangulation." << endl;
-    return -1;
-  }
-#endif
-
-  ret = getScalars(input);
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(ret) {
-    cerr << "[ttkDiscreteGradient] Error : wrong scalars." << endl;
-    return -1;
-  }
-#endif
-
-  ret = getOffsets(input);
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(ret) {
-    cerr << "[ttkDiscreteGradient] Error : wrong offsets." << endl;
-    return -1;
-  }
-#endif
-
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(inputOffsets_->GetDataType() != VTK_INT
-     and inputOffsets_->GetDataType() != VTK_ID_TYPE) {
-    cerr
-      << "[ttkDiscreteGradient] Error : input offset field type not supported."
-      << endl;
+  if(inputOffsets->GetDataType() != VTK_INT
+     and inputOffsets->GetDataType() != VTK_ID_TYPE) {
+    this->printErr("input offset field type not supported.");
     return -1;
   }
 #endif
 
   // baseCode processing
-  discreteGradient_.setWrapper(this);
-  discreteGradient_.setIterationThreshold(IterationThreshold);
-  discreteGradient_.setInputScalarField(inputScalars_->GetVoidPointer(0));
-  discreteGradient_.setInputOffsets(inputOffsets_->GetVoidPointer(0));
+  this->setInputScalarField(ttkUtils::GetVoidPointer(inputScalars));
+  this->setInputOffsets(ttkUtils::GetVoidPointer(inputOffsets));
 
-  switch(inputScalars_->GetDataType()) {
-    vtkTemplateMacro(ret = dispatch<VTK_TT>(outputCriticalPoints));
+  if(inputOffsets->GetDataType() == VTK_INT) {
+    ttkVtkTemplateMacro(inputScalars->GetDataType(), triangulation->getType(),
+                        (ret = dispatch<VTK_TT, SimplexId, TTK_TT>(
+                           outputCriticalPoints, inputScalars, inputOffsets,
+                           *static_cast<TTK_TT *>(triangulation->getData()))))
+  } else if(inputOffsets->GetDataType() == VTK_ID_TYPE) {
+    ttkVtkTemplateMacro(inputScalars->GetDataType(), triangulation->getType(),
+                        (ret = dispatch<VTK_TT, LongSimplexId, TTK_TT>(
+                           outputCriticalPoints, inputScalars, inputOffsets,
+                           *static_cast<TTK_TT *>(triangulation->getData()))))
   }
 
-#ifndef TTK_ENABLE_KAMIKAZE
   if(ret != 0) {
     return -1;
   }
-#endif // TTK_ENABLE_KAMIKAZE
 
   // gradient glyphs
   if(ComputeGradientGlyphs) {
+    Timer tm{};
+
     SimplexId gradientGlyphs_numberOfPoints{};
     vector<float> gradientGlyphs_points;
     vector<char> gradientGlyphs_points_pairOrigins;
@@ -382,39 +221,16 @@ int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
     vector<SimplexId> gradientGlyphs_cells;
     vector<char> gradientGlyphs_cells_pairTypes;
 
-    discreteGradient_.setGradientGlyphs(
+    this->setGradientGlyphs(
       gradientGlyphs_numberOfPoints, gradientGlyphs_points,
       gradientGlyphs_points_pairOrigins, gradientGlyphs_numberOfCells,
-      gradientGlyphs_cells, gradientGlyphs_cells_pairTypes);
+      gradientGlyphs_cells, gradientGlyphs_cells_pairTypes, *triangulation);
 
     vtkNew<vtkPoints> points{};
-#ifndef TTK_ENABLE_KAMIKAZE
-    if(!points) {
-      cerr << "[ttkDiscreteGradient] Error : vtkPoints allocation problem."
-           << endl;
-      return -1;
-    }
-#endif
-
-    vtkNew<vtkCharArray> pairOrigins{};
-#ifndef TTK_ENABLE_KAMIKAZE
-    if(!pairOrigins) {
-      cerr << "[ttkDiscreteGradient] Error : vtkCharArray allocation problem."
-           << endl;
-      return -1;
-    }
-#endif
+    vtkNew<vtkSignedCharArray> pairOrigins{};
     pairOrigins->SetNumberOfComponents(1);
     pairOrigins->SetName("PairOrigin");
-
-    vtkNew<vtkCharArray> pairTypes{};
-#ifndef TTK_ENABLE_KAMIKAZE
-    if(!pairTypes) {
-      cerr << "[ttkDiscreteGradient] Error : vtkCharArray allocation problem."
-           << endl;
-      return -1;
-    }
-#endif
+    vtkNew<vtkSignedCharArray> pairTypes{};
     pairTypes->SetNumberOfComponents(1);
     pairTypes->SetName("PairType");
 
@@ -430,41 +246,28 @@ int ttkDiscreteGradient::doIt(vector<vtkDataSet *> &inputs,
     outputGradientGlyphs->Allocate(gradientGlyphs_numberOfCells);
     SimplexId ptr{};
     for(SimplexId i = 0; i < gradientGlyphs_numberOfCells; ++i) {
-      vtkIdType line[2];
-      line[0] = gradientGlyphs_cells[ptr + 1];
-      line[1] = gradientGlyphs_cells[ptr + 2];
-
-      outputGradientGlyphs->InsertNextCell(VTK_LINE, 2, line);
-
+      std::array<vtkIdType, 2> line
+        = {gradientGlyphs_cells[ptr + 1], gradientGlyphs_cells[ptr + 2]};
+      outputGradientGlyphs->InsertNextCell(VTK_LINE, 2, line.data());
       pairTypes->InsertNextTuple1(gradientGlyphs_cells_pairTypes[i]);
-
       ptr += (gradientGlyphs_cells[ptr] + 1);
     }
 
     vtkPointData *pointData = outputGradientGlyphs->GetPointData();
+    vtkCellData *cellData = outputGradientGlyphs->GetCellData();
+
 #ifndef TTK_ENABLE_KAMIKAZE
-    if(!pointData) {
-      cerr << "[ttkDiscreteGradient] Error : outputGradientGlyphs has no point "
-              "data."
-           << endl;
+    if(pointData == nullptr || cellData == nullptr) {
+      this->printErr("In outputGradientGlyphs point or cell data");
       return -1;
     }
 #endif
 
     pointData->AddArray(pairOrigins);
-
-    vtkCellData *cellData = outputGradientGlyphs->GetCellData();
-#ifndef TTK_ENABLE_KAMIKAZE
-    if(!cellData) {
-      cerr << "[ttkDiscreteGradient] Error : outputGradientGlyphs has no cell "
-              "data."
-           << endl;
-      return -1;
-    }
-#endif
-
     cellData->AddArray(pairTypes);
+
+    this->printMsg("Computed gradient glyphs", 1.0, tm.getElapsedTime(), 1);
   }
 
-  return ret;
+  return 1;
 }

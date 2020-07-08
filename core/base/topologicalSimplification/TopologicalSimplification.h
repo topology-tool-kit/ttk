@@ -110,7 +110,7 @@ namespace ttk {
     template <typename dataType, typename idType>
     int execute() const;
 
-    inline int setupTriangulation(Triangulation *triangulation) {
+    inline int setupTriangulation(AbstractTriangulation *triangulation) {
       triangulation_ = triangulation;
       if(triangulation_) {
         vertexNumber_ = triangulation_->getNumberOfVertices();
@@ -165,7 +165,7 @@ namespace ttk {
     }
 
   protected:
-    Triangulation *triangulation_;
+    AbstractTriangulation *triangulation_;
     SimplexId vertexNumber_;
     SimplexId constraintNumber_;
     void *inputScalarFieldPointer_;

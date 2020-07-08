@@ -1,4 +1,3 @@
-
 <ServerManagerConfiguration>
   <!-- This is the server manager configuration XML. It defines the interface to
   our new filter. As a rule of thumb, try to locate the configuration for
@@ -45,54 +44,14 @@
           <Entry value="2" text="Field"/>
         </EnumerationDomain>
         <Documentation>
-          Set the input data association (point, cell or field data).
+          Set the input data association (point, cell, or field).
         </Documentation>
       </IntVectorProperty>
 
-      <IntVectorProperty
-        name="UseAllCores"
-        label="Use All Cores"
-        command="SetUseAllCores"
-        number_of_elements="1"
-        default_values="1" panel_visibility="advanced">
-        <BooleanDomain name="bool"/>
-        <Documentation>
-          Use all available cores.
-        </Documentation>
-      </IntVectorProperty>
-
-      <IntVectorProperty
-        name="ThreadNumber"
-        label="Thread Number"
-        command="SetThreadNumber"
-        number_of_elements="1"
-        default_values="1" panel_visibility="advanced">
-        <IntRangeDomain name="range" min="1" max="100" />
-        <Documentation>
-          Thread number.
-        </Documentation>
-      </IntVectorProperty>
-
-      <IntVectorProperty
-        name="DebugLevel"
-        label="Debug Level"
-        command="SetDebugLevel"
-        number_of_elements="1"
-        default_values="3" panel_visibility="advanced">
-        <IntRangeDomain name="range" min="0" max="100" />
-        <Documentation>
-          Debug level.
-        </Documentation>
-      </IntVectorProperty>
-
-      <PropertyGroup panel_widget="Line" label="Testing">
-        <Property name="UseAllCores" />
-        <Property name="ThreadNumber" />
-        <Property name="DebugLevel" />
-      </PropertyGroup>
+      ${DEBUG_WIDGETS}
 
       <Hints>
-        <ShowInMenu category="TTK - High Dimension / Point Cloud Data" />
+        <ShowInMenu category="TTK - Pipeline" />
       </Hints>
     </SourceProxy>
   </ProxyGroup>

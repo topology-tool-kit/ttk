@@ -70,14 +70,8 @@ int ttkScalarFieldCriticalPoints::RequestData(
   if(!inputScalarField)
     return 0;
 
-  vtkDataArray *offsetField = nullptr;
-
-  if(this->GetInputArrayInformation(1))
-    offsetField = this->GetInputArrayToProcess(1, inputVector);
-
-  if((!offsetField) || (!ForceInputOffsetScalarField)) {
-    offsetField = input->GetPointData()->GetArray(ttk::OffsetScalarFieldName);
-  }
+  vtkDataArray *offsetField = ttkAlgorithm::GetOptionalArray(
+    ForceInputOffsetScalarField, 1, ttk::OffsetScalarFieldName, inputVector);
 
   sosOffsets_.resize(inputScalarField->GetNumberOfTuples());
   for(SimplexId i = 0; i < inputScalarField->GetNumberOfTuples(); i++) {
@@ -98,11 +92,10 @@ int ttkScalarFieldCriticalPoints::RequestData(
             {"  Offset Array", offsetField ? offsetField->GetName() : "None"}});
 
   int status = 0;
-  ttkVtkTemplateMacro(
-    triangulation->getType(), inputScalarField->GetDataType(),
-    (status = this->execute<VTK_TT, TTK_TT>(
-       (TTK_TT *)triangulation->getData(),
-       (VTK_TT *)ttkUtils::GetVoidPointer(inputScalarField))));
+  ttkVtkTemplateMacro(inputScalarField->GetDataType(), triangulation->getType(),
+                      (status = this->execute<VTK_TT, TTK_TT>(
+                         (VTK_TT *)ttkUtils::GetVoidPointer(inputScalarField),
+                         (TTK_TT *)triangulation->getData())));
   if(status < 0)
     return 0;
 

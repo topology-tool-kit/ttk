@@ -104,21 +104,21 @@ int ttk::TrackingFromFields::performDiagramComputation(
 #endif // TTK_ENABLE_OPENMP
   for(int i = 0; i < fieldNumber; ++i) {
     ttk::PersistenceDiagram persistenceDiagram_;
-    persistenceDiagram_.setWrapper(wrapper);
+    // persistenceDiagram_.setWrapper(wrapper);
     persistenceDiagram_.setupTriangulation(triangulation_);
     persistenceDiagram_.setThreadNumber(1);
     // should have been done before
 
-    std::vector<std::tuple<ttk::dcg::Cell, ttk::dcg::Cell>> dmt_pairs;
-    persistenceDiagram_.setDMTPairs(&dmt_pairs);
-    persistenceDiagram_.setInputScalars(inputData_[i]);
-    persistenceDiagram_.setInputOffsets(inputOffsets_);
+    // std::vector<std::tuple<ttk::dcg::Cell, ttk::dcg::Cell>> dmt_pairs;
+    // persistenceDiagram_.setDMTPairs(&dmt_pairs);
+    // persistenceDiagram_.setInputScalars(inputData_[i]);
+    // persistenceDiagram_.setInputOffsets(inputOffsets_);
     persistenceDiagram_.setComputeSaddleConnectors(false);
     std::vector<std::tuple<int, CriticalType, int, CriticalType, dataType, int>>
       CTDiagram;
 
-    persistenceDiagram_.setOutputCTDiagram(&CTDiagram);
-    persistenceDiagram_.execute<dataType, int>();
+    // persistenceDiagram_.setOutputCTDiagram(&CTDiagram);
+    persistenceDiagram_.execute<dataType, int, AbstractTriangulation>(CTDiagram, (dataType*)(inputData_[i]), (int *)(inputOffsets_), triangulation_);
 
     // Copy diagram into augmented diagram.
     persistenceDiagrams[i] = std::vector<diagramTuple>(CTDiagram.size());

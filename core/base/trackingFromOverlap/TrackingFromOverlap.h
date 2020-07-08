@@ -20,13 +20,11 @@
 
 #pragma once
 
+#include <Debug.h>
 #include <algorithm>
 #include <boost/variant.hpp>
 #include <map>
 #include <unordered_map>
-
-// base code includes
-#include <Wrapper.h>
 
 using namespace std;
 
@@ -82,16 +80,18 @@ struct CoordinateComparator {
 };
 
 namespace ttk {
-  class TrackingFromOverlap : public Debug {
+  class TrackingFromOverlap : virtual public Debug {
   public:
-    TrackingFromOverlap(){};
+    TrackingFromOverlap() {
+      this->setDebugMsgPrefix("TrackingFromOverlap");
+    };
     ~TrackingFromOverlap(){};
 
     // This function sorts points based on their x, y, and then z coordinate
     int sortCoordinates(const float *pointCoordinates,
                         const size_t nPoints,
                         vector<size_t> &sortedIndicies) const {
-      dMsg(cout, "[ttkTrackingFromOverlap] Sorting coordinates ... ", timeMsg);
+      printMsg("Sorting coordinates ... ", debug::Priority::PERFORMANCE);
       Timer t;
 
       sortedIndicies.resize(nPoints);
@@ -101,15 +101,15 @@ namespace ttk {
       sort(sortedIndicies.begin(), sortedIndicies.end(), c);
 
       stringstream msg;
-      msg << "done (" << t.getElapsedTime() << " s)." << endl;
-      dMsg(cout, msg.str(), timeMsg);
+      msg << "done (" << t.getElapsedTime() << " s).";
+      printMsg(msg.str(), debug::Priority::PERFORMANCE);
 
       return 1;
     }
 
     int computeBranches(vector<Edges> &timeEdgesMap,
                         vector<Nodes> &timeNodesMap) const {
-      dMsg(cout, "[ttkTrackingFromOverlap] Computing branches  ... ", timeMsg);
+      printMsg("Computing branches  ... ", debug::Priority::PERFORMANCE);
       Timer tm;
 
       size_t nT = timeNodesMap.size();
@@ -199,8 +199,8 @@ namespace ttk {
       }
 
       stringstream msg;
-      msg << "done (" << tm.getElapsedTime() << " s)." << endl;
-      dMsg(cout, msg.str(), timeMsg);
+      msg << "done (" << tm.getElapsedTime() << " s).";
+      printMsg(msg.str(), debug::Priority::PERFORMANCE);
 
       return 1;
     }
@@ -259,7 +259,7 @@ int ttk::TrackingFromOverlap::computeNodes(const float *pointCoordinates,
                                            const labelType *pointLabels,
                                            const size_t nPoints,
                                            Nodes &nodes) const {
-  dMsg(cout, "[ttkTrackingFromOverlap] Identifying nodes ..... ", timeMsg);
+  printMsg("Identifying nodes ..... ", debug::Priority::PERFORMANCE);
 
   Timer t;
 
@@ -290,9 +290,8 @@ int ttk::TrackingFromOverlap::computeNodes(const float *pointCoordinates,
   // Print Status
   {
     stringstream msg;
-    msg << "done (#" << nNodes << " in " << t.getElapsedTime() << " s)."
-        << endl;
-    dMsg(cout, msg.str(), timeMsg);
+    msg << "done (#" << nNodes << " in " << t.getElapsedTime() << " s).";
+    printMsg(msg.str(), debug::Priority::PERFORMANCE);
   }
 
   return 1;
@@ -329,7 +328,7 @@ int ttk::TrackingFromOverlap::computeOverlap(const float *pointCoordinates0,
   // -------------------------------------------------------------------------
   // Track Nodes
   // -------------------------------------------------------------------------
-  dMsg(cout, "[ttkTrackingFromOverlap] Tracking .............. ", timeMsg);
+  printMsg("Tracking .............. ", debug::Priority::PERFORMANCE);
   Timer t;
 
   /* Function that determines configuration of point p0 and p1:
@@ -424,9 +423,8 @@ int ttk::TrackingFromOverlap::computeOverlap(const float *pointCoordinates0,
   // Print Status
   {
     stringstream msg;
-    msg << "done (#" << nEdges << " in " << t.getElapsedTime() << " s)."
-        << endl;
-    dMsg(cout, msg.str(), timeMsg);
+    msg << "done (#" << nEdges << " in " << t.getElapsedTime() << " s).";
+    printMsg(msg.str(), debug::Priority::PERFORMANCE);
   }
 
   return 0;

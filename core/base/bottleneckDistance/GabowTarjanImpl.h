@@ -1,5 +1,4 @@
-#ifndef _GABOWTARJANIMPL_H
-#define _GABOWTARJANIMPL_H
+#pragma once
 
 #include "MatchingGraph.h"
 #include <iostream>
@@ -124,10 +123,7 @@ dataType GabowTarjan::Distance(dataType maxLevel) {
       ++guessEdge;
 
     if(guessEdge >= nbEdges) {
-      std::stringstream msg;
-      ttk::Debug d;
-      msg << "[Gabow-Tarjan] ran out of edges." << std::endl;
-      d.dMsg(std::cout, msg.str(), ttk::Debug::timeMsg);
+      this->printMsg("ran out of edges.");
     }
 
     // Add the edges with the current weight (distance) to the connection matrix
@@ -160,12 +156,7 @@ dataType GabowTarjan::Distance(dataType maxLevel) {
     Layers.resize(MaxSize + 1);
 
     // Temporarily augment matching.
-    {
-      std::stringstream msg;
-      ttk::Debug d;
-      msg << "[Gabow-Tarjan] Guessing for " << guessEdge << "..." << std::endl;
-      d.dMsg(std::cout, msg.str(), ttk::Debug::infoMsg);
-    }
+    this->printMsg("Guessing for " + std::to_string(guessEdge) + "...");
 
     matching = 0;
     HopcroftKarp<dataType>(matching);
@@ -180,10 +171,7 @@ dataType GabowTarjan::Distance(dataType maxLevel) {
 
       // Ended binary search.
       if(oldGuessEdge == guessEdge) {
-        std::stringstream msg;
-        ttk::Debug d;
-        msg << "[Gabow-Tarjan] Binary search success." << std::endl;
-        d.dMsg(std::cout, msg.str(), ttk::Debug::timeMsg);
+        this->printMsg("Binary search success.");
         return Edges[(guessEdge > 0 ? guessEdge - 1 : guessEdge)].weight;
       }
 
@@ -193,9 +181,7 @@ dataType GabowTarjan::Distance(dataType maxLevel) {
       if(firstNotAddedEdge == nbEdges) {
         std::stringstream msg;
         ttk::Debug d;
-        msg << "[Gabow-Tarjan] Not enough edges to find the matching!"
-            << std::endl;
-        d.dMsg(std::cout, msg.str(), ttk::Debug::timeMsg);
+        this->printMsg("Not enough edges to find the matching!");
         // return -1;
         return currentWeight;
       }
@@ -207,10 +193,7 @@ dataType GabowTarjan::Distance(dataType maxLevel) {
 
       // Ended binary search.
       if(oldGuessEdge == guessEdge) {
-        std::stringstream msg;
-        ttk::Debug d;
-        msg << "[Gabow-Tarjan] Binary search success." << std::endl;
-        d.dMsg(std::cout, msg.str(), ttk::Debug::timeMsg);
+        this->printMsg("Binary search success.");
         return Edges[(guessEdge > 0 ? guessEdge - 1 : guessEdge)].weight;
       }
     }
@@ -226,7 +209,6 @@ void GabowTarjan::printCurrentMatching() {
 
   {
     std::stringstream msg;
-    ttk::Debug d;
     msg << "Assignment matrix: " << std::endl;
     for(int i = 0; i < size; ++i) {
       int k = Pair[i];
@@ -238,7 +220,7 @@ void GabowTarjan::printCurrentMatching() {
       msg << std::endl;
     }
     msg << "/Assignment matrix." << std::endl << std::endl;
-    d.dMsg(std::cout, msg.str(), ttk::Debug::advancedInfoMsg);
+    this->printMsg(msg.str(), debug::Priority::VERBOSE);
   }
 
   {
@@ -249,7 +231,7 @@ void GabowTarjan::printCurrentMatching() {
       msg << missedPlaces.at(i) << " ";
     }
     msg << std::endl << std::endl;
-    d.dMsg(std::cout, msg.str(), ttk::Debug::timeMsg);
+    this->printMsg(msg.str());
   }
 }
 
@@ -257,12 +239,7 @@ template <typename dataType>
 int GabowTarjan::run(std::vector<matchingTuple> &matchings) {
   // Compute distance.
   double dist = Distance<dataType>(1);
-  {
-    std::stringstream msg;
-    ttk::Debug m;
-    msg << "[Gabow-Tarjan] Computed distance " << dist << std::endl;
-    m.dMsg(std::cout, msg.str(), ttk::Debug::timeMsg);
-  }
+  this->printMsg("Computed distance " + std::to_string(dist));
 
   // Fill matchings.
   matchings.clear();
@@ -274,11 +251,7 @@ int GabowTarjan::run(std::vector<matchingTuple> &matchings) {
 
     int j = Pair[i] - MaxSize;
     if(j <= -1 || (j < (int)Size2 && Pair[j + MaxSize] != (int)i)) {
-      std::stringstream msg;
-      ttk::Debug dbg;
-      msg << "[Gabow-Tarjan] Hopcroft-Karp built an invalid matching."
-          << std::endl;
-      dbg.dMsg(std::cout, msg.str(), ttk::Debug::timeMsg);
+      this->printErr("Hopcroft-Karp built an invalid matching.");
       // return -1;
     }
 
@@ -297,11 +270,7 @@ int GabowTarjan::run(std::vector<matchingTuple> &matchings) {
 
     int i = Pair[j] - MaxSize - Size2;
     if(i > -1 && (i >= (int)Size1 || Pair[i + MaxSize + Size2] != (int)j)) {
-      std::stringstream msg;
-      ttk::Debug dbg;
-      msg << "[Gabow-Tarjan] Hopcroft-Karp built an invalid matching."
-          << std::endl;
-      dbg.dMsg(std::cout, msg.str(), ttk::Debug::timeMsg);
+      this->printErr("Hopcroft-Karp built an invalid matching.");
       // return -1;
     }
 
@@ -317,5 +286,3 @@ int GabowTarjan::run(std::vector<matchingTuple> &matchings) {
 
   return 0;
 }
-
-#endif
