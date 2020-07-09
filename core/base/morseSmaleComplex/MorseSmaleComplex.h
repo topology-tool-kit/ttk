@@ -274,6 +274,7 @@ namespace ttk {
     }
 
     inline int setDebugLevel(const int &debugLevel) {
+      Debug::setDebugLevel(debugLevel);
       morseSmaleComplex2D_.setDebugLevel(debugLevel);
       morseSmaleComplex3D_.setDebugLevel(debugLevel);
       return 0;
