@@ -459,8 +459,6 @@ int ttkMorseSmaleComplex::RequestData(vtkInformation *request,
                                       vtkInformationVector **inputVector,
                                       vtkInformationVector *outputVector) {
 
-  int ret{};
-
   const auto input = vtkDataSet::GetData(inputVector[0]);
   auto outputCriticalPoints = vtkUnstructuredGrid::GetData(outputVector, 0);
   auto outputSeparatrices1 = vtkUnstructuredGrid::GetData(outputVector, 1);
@@ -592,6 +590,7 @@ int ttkMorseSmaleComplex::RequestData(vtkInformation *request,
   this->setOutputMorseComplexes(
     ascendingManifoldPtr, descendingManifoldPtr, morseSmaleManifoldPtr);
 
+  int ret{};
   if(inputOffsets->GetDataType() == VTK_INT) {
     ttkVtkTemplateMacro(inputScalars->GetDataType(), triangulation->getType(),
                         (ret = dispatch<VTK_TT, SimplexId, TTK_TT>(
@@ -606,11 +605,9 @@ int ttkMorseSmaleComplex::RequestData(vtkInformation *request,
                            *static_cast<TTK_TT *>(triangulation->getData()))))
   }
 
-#ifndef TTK_ENABLE_KAMIKAZE
   if(ret != 0) {
     return -1;
   }
-#endif // TTK_ENABLE_KAMIKAZE
 
   outputMorseComplexes->ShallowCopy(input);
   // morse complexes
