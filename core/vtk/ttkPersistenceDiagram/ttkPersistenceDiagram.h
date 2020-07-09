@@ -75,23 +75,16 @@ public:
 
   vtkTypeMacro(ttkPersistenceDiagram, ttkAlgorithm);
 
-  void SetForceInputOffsetScalarField(int data) {
-    ForceInputOffsetScalarField = data;
-    Modified();
-    computeDiagram_ = true;
-  }
+  vtkSetMacro(ForceInputOffsetScalarField, int);
   vtkGetMacro(ForceInputOffsetScalarField, int);
 
-  void SetComputeSaddleConnectors(int data) {
-    ComputeSaddleConnectors = data;
-    Modified();
-    computeDiagram_ = true;
-  }
+  vtkSetMacro(ComputeSaddleConnectors, int);
   vtkGetMacro(ComputeSaddleConnectors, int);
 
   void SetShowInsideDomain(int onOff) {
     ShowInsideDomain = onOff;
     Modified();
+    computeDiagram_ = false;
   }
   vtkGetMacro(ShowInsideDomain, int);
 
@@ -180,8 +173,8 @@ protected:
                   vtkInformationVector *outputVector) override;
 
   int FillInputPortInformation(int port, vtkInformation *info) override;
-
   int FillOutputPortInformation(int port, vtkInformation *info) override;
+  void Modified() override;
 
 private:
   bool ForceInputOffsetScalarField{false};
