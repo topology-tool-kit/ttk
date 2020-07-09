@@ -96,12 +96,19 @@ public:
             long long* topology,
             size_t nVertices,
             size_t nEdges);
+    ~ContourTree();
 
     BinaryTree* rootAtMax();
     BinaryTree* rootAtNode(CTNode* root);
     bool isBinary();
     void computeBranches();
     std::pair<std::vector<CTNode*>,std::vector<CTEdge*>> getGraph();
+
+    static void deleteBinaryTree(BinaryTree* t){
+        if(t->child1) deleteBinaryTree(t->child1);
+        if(t->child2) deleteBinaryTree(t->child2);
+        delete t;
+    }
 
 private:
     std::vector<CTNode*> nodes;

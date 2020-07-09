@@ -261,10 +261,10 @@ bool ttk::ContourTreeAlignment::initialize(ContourTree* ct){
 
 bool ttk::ContourTreeAlignment::initialize_consistentRoot(ContourTree* ct, int rootIdx){
 
-    contourtrees.push_back(ct);
-
     // cancel computation if tree is not binary
     if(!ct->isBinary()) return false;
+
+    contourtrees.push_back(ct);
 
     // compute initial Alignment from initial contourtree
 
@@ -363,6 +363,8 @@ bool ttk::ContourTreeAlignment::initialize_consistentRoot(ContourTree* ct, int r
 
     }
 
+    ContourTree::deleteBinaryTree(t);
+
     alignmentRoot = nodes[rootIdx];
     alignmentRootIdx = rootIdx;
 
@@ -429,16 +431,16 @@ bool ttk::ContourTreeAlignment::alignTree(ContourTree* ct){
 
 bool ttk::ContourTreeAlignment::alignTree_consistentRoot(ContourTree* ct){
 
-    contourtrees.push_back(ct);
-
     // cancel computation if tree not binary
     if(!ct->isBinary()) return false;
+
+    contourtrees.push_back(ct);
 
     // compute optimal alignment between current alignment and new tree
 
     BinaryTree* t1,*t2;
 
-    AlignmentTree* res;
+    AlignmentTree* res = NULL;
     float resVal = FLT_MAX;
 
     std::vector<CTNode*> nodes2 = ct->getGraph().first;
@@ -458,8 +460,20 @@ bool ttk::ContourTreeAlignment::alignTree_consistentRoot(ContourTree* ct){
             std::pair<float,AlignmentTree*> match = getAlignmentBinary(t1,t2);
 
             if(match.first < resVal){
+                //printMsg("test11");
+                if(res && res->node2) ContourTree::deleteBinaryTree(res->node2);
+                //printMsg("test12");
+                if(res) deleteAlignmentTree(res);
+                //printMsg("test13");
                 resVal = match.first;
                 res = match.second;
+            }
+            else{
+                //printMsg("test21");
+                ContourTree::deleteBinaryTree(t2);
+                //printMsg("test22");
+                deleteAlignmentTree(match.second);
+                //printMsg("test23");
             }
 
         }
@@ -469,6 +483,10 @@ bool ttk::ContourTreeAlignment::alignTree_consistentRoot(ContourTree* ct){
     }
 
     computeNewAlignmenttree(res);
+
+    ContourTree::deleteBinaryTree(res->node1);
+    ContourTree::deleteBinaryTree(res->node2);
+    deleteAlignmentTree(res);
 
     alignmentVal += resVal;
 
@@ -480,8 +498,15 @@ bool ttk::ContourTreeAlignment::alignTree_consistentRoot(ContourTree* ct){
 
 void ttk::ContourTreeAlignment::computeNewAlignmenttree(AlignmentTree* res){
 
-    nodes = std::vector<AlignmentNode*>();
-    arcs = std::vector<AlignmentEdge*>();
+    for(AlignmentNode* node : nodes){
+        delete node;
+    }
+    for(AlignmentEdge* edge : arcs){
+        delete edge;
+    }
+
+    nodes.clear();
+    arcs.clear();
 
     //std::queue<std::pair<AlignmentTree*,AlignmentNode*>> q;
     std::queue<std::tuple<AlignmentTree*,AlignmentNode*,std::vector<AlignmentEdge*>,std::vector<AlignmentEdge*>>> q;
@@ -898,6 +923,14 @@ std::pair<float,AlignmentTree*> ttk::ContourTreeAlignment::getAlignmentBinary( B
 
     // backtrace through the table to get the alignment
     AlignmentTree* res = traceAlignmentTree(t1,t2,memT,memF);
+
+    for(int i=0; i<=t1->size; i++){
+        delete[] memT[i];
+        delete[] memF[i];
+    }
+
+    delete[] memT;
+    delete[] memF;
 
     return std::make_pair(dist,res);
 

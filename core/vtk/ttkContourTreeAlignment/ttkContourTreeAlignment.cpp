@@ -22,7 +22,6 @@ vtkStandardNewMacro(ttkContourTreeAlignment)
 ttkContourTreeAlignment::ttkContourTreeAlignment(){
     this->SetNumberOfInputPorts(1);
     this->SetNumberOfOutputPorts(1);
-    this->setDebugMsgPrefix("ttkContourTreeAlignment");
 }
 
 // Specify the input data type of each input port
@@ -53,7 +52,6 @@ int ttkContourTreeAlignment::RequestData(
     //==================================================================================================================
     // Print status
     {
-        // print horizontal separator
         this->printMsg("RequestData");
     }
 
@@ -114,7 +112,7 @@ int ttkContourTreeAlignment::RequestData(
         this->printMsg("RegionSize Array read from cell data.",debug::Priority::VERBOSE);
 
         auto segArray = cData->GetArray( "SegmentationId" );
-        if(!regionArray){
+        if(!segArray){
             printErr("No Cell Array \"SegmentationId\" found.");
             return 0;
         }

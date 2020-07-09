@@ -62,6 +62,15 @@ ContourTree::ContourTree(
 
 }
 
+ContourTree::~ContourTree(){
+    for(CTNode* node : nodes){
+        delete node;
+    }
+    for(CTEdge* edge : arcs){
+        delete edge;
+    }
+}
+
 Tree* ContourTree::computeRootedTree(CTNode* node, CTEdge* parent, int &id){
 
     // initialize tree

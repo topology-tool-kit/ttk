@@ -129,6 +129,12 @@ namespace ttk{
         /// function that adds branch decomposition information
         void computeBranches();
 
+        static void deleteAlignmentTree(AlignmentTree* t){
+            if(t->child1) deleteAlignmentTree(t->child1);
+            if(t->child2) deleteAlignmentTree(t->child2);
+            delete t;
+        }
+
     protected:
 
         /// filter parameters
@@ -262,10 +268,9 @@ template <class scalarType> int ttk::ContourTreeAlignment::execute(
     for(int rootIdx=0; rootIdx<nVertices[permutation[0]]; rootIdx++){
     //for(int rootIdx=2; rootIdx<3; rootIdx++){
 
-        contourtrees = std::vector<ContourTree*>();
-        //threshold = 0;
-        nodes = std::vector<AlignmentNode*>();
-        arcs = std::vector<AlignmentEdge*>();
+        contourtrees.clear();
+        nodes.clear();
+        arcs.clear();
         alignmentVal = 0;
 
 
@@ -288,14 +293,18 @@ template <class scalarType> int ttk::ContourTreeAlignment::execute(
 
             if(ct->getGraph().first.size() != nVertices[permutation[i]]){
 
+                delete ct;
                 this->printErr("WTF??");
                 return 0;
 
             }
 
             binary = initialize_consistentRoot(ct,rootIdx);
-            if(!init && binary) init = true;
-            if(!binary) this->printWrn("Input " + std::to_string(permutation[i]) + " not binary.");
+            if(binary) init = true;
+            else{
+                this->printWrn("Input " + std::to_string(permutation[i]) + " not binary.");
+                delete ct;
+            }
             if(init) break;
 
             i++;
@@ -312,9 +321,18 @@ template <class scalarType> int ttk::ContourTreeAlignment::execute(
         this->printMsg("Alignment initialized with tree " + std::to_string(permutation[i]),debug::Priority::DETAIL);
 
         if(alignmentRoot->type == saddleNode){
-        //if(nodes[0]->type == saddleNode){
 
-            this->printMsg("Initialized root saddle, alignment aborted.",debug::Priority::DETAIL);
+            this->printMsg("Initialized root is saddle, alignment aborted.");
+
+            for(AlignmentNode* node : nodes){
+                delete node;
+            }
+            for(AlignmentEdge* edge : arcs){
+                delete edge;
+            }
+            for(ContourTree* ct : contourtrees){
+                delete ct;
+            }
 
             continue;
 
@@ -325,14 +343,18 @@ template <class scalarType> int ttk::ContourTreeAlignment::execute(
         i++;
         while(i<nTrees){
 
-            binary = alignTree_consistentRoot(new ContourTree(scalars[permutation[i]],
-                                            regionSizes[permutation[i]],
-                                            segmentationIds[permutation[i]],
-                                            topologies[permutation[i]],
-                                            nVertices[permutation[i]],
-                                            nEdges[permutation[i]]));
-            if(!binary) this->printWrn("Input " + std::to_string(permutation[i]) + " not binary.");
+            ContourTree* ct = new ContourTree(scalars[permutation[i]],
+                                              regionSizes[permutation[i]],
+                                              segmentationIds[permutation[i]],
+                                              topologies[permutation[i]],
+                                              nVertices[permutation[i]],
+                                              nEdges[permutation[i]]);
 
+            binary = alignTree_consistentRoot(ct);
+            if(!binary){
+                this->printWrn("Input " + std::to_string(permutation[i]) + " not binary.");
+                delete ct;
+            }
             else this->printMsg("Tree " + std::to_string(permutation[i]) + " aligned.",debug::Priority::DETAIL);
 
             i++;
@@ -343,9 +365,32 @@ template <class scalarType> int ttk::ContourTreeAlignment::execute(
 
         if(alignmentVal < bestAlignmentValue){
 
+            for(AlignmentNode* node : std::get<0>(bestAlignment)){
+                delete node;
+            }
+            for(AlignmentEdge* edge : std::get<1>(bestAlignment)){
+                delete edge;
+            }
+            for(ContourTree* ct : std::get<2>(bestAlignment)){
+                delete ct;
+            }
+
             bestAlignmentValue = alignmentVal;
             bestAlignment = std::make_tuple(nodes,arcs,contourtrees);
             bestRootIdx = rootIdx;
+
+        }
+        else{
+
+            for(AlignmentNode* node : nodes){
+                delete node;
+            }
+            for(AlignmentEdge* edge : arcs){
+                delete edge;
+            }
+            for(ContourTree* ct : contourtrees){
+                delete ct;
+            }
 
         }
 
