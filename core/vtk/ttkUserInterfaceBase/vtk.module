@@ -2,5 +2,6 @@ NAME
  ttkUserInterfaceBase
 DEPENDS
   VTK::FiltersCore
+  VTK::RenderingOpenGL2
 PRIVATE_DEPENDS
   VTK::CommonCore
