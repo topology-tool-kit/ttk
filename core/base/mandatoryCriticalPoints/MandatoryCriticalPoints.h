@@ -592,7 +592,15 @@ namespace ttk {
       const double globalOtherExtremumValue) const;
 
     /// TODO : Replace SubLevelSetTrees by scalar fields for vertex value
-    int buildPairs(const TreeType treeType);
+    int
+      buildPairs(const TreeType treeType,
+                 const std::vector<std::pair<int, int>> &saddleList,
+                 const std::vector<std::vector<int>> &mergedExtrema,
+                 const std::vector<std::pair<double, double>> &extremumInterval,
+                 SubLevelSetTree &lowerTree,
+                 SubLevelSetTree &upperTree,
+                 std::vector<std::pair<std::pair<int, int>, double>>
+                   &extremaSaddlePair) const;
 
     int computePlanarLayout(const TreeType &treeType);
 
@@ -814,8 +822,12 @@ int ttk::MandatoryCriticalPoints::execute() {
   enumerateMandatorySaddles(PointType::SplitSaddle);
 
   // Build pairs of <extremum,saddle>
-  buildPairs(TreeType::JoinTree);
-  buildPairs(TreeType::SplitTree);
+  buildPairs(TreeType::JoinTree, mandatoryJoinSaddleVertex_, mergedMinimaId_,
+             mandatoryMinimumInterval_, lowerJoinTree_, upperJoinTree_,
+             mdtMinJoinSaddlePair_);
+  buildPairs(TreeType::SplitTree, mandatorySplitSaddleVertex_, mergedMaximaId_,
+             mandatoryMaximumInterval_, lowerSplitTree_, upperSplitTree_,
+             mdtMaxSplitSaddlePair_);
 
   // Simplify pairs
   simplify(normalizedThreshold_, TreeType::JoinTree);

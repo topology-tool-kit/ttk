@@ -376,29 +376,18 @@ int MandatoryCriticalPoints::buildMandatoryTree(
   return 0;
 }
 
-int MandatoryCriticalPoints::buildPairs(const TreeType treeType) {
-
-  /* Input */
-  const vector<pair<int, int>> *saddleList = (treeType == TreeType::JoinTree)
-                                               ? &(mandatoryJoinSaddleVertex_)
-                                               : &(mandatorySplitSaddleVertex_);
-  const vector<vector<int>> *mergedExtrema = (treeType == TreeType::JoinTree)
-                                               ? &(mergedMinimaId_)
-                                               : &(mergedMaximaId_);
-  const vector<pair<double, double>> *extremumInterval
-    = (treeType == TreeType::JoinTree) ? &(mandatoryMinimumInterval_)
-                                       : &(mandatoryMaximumInterval_);
-  SubLevelSetTree *lowerTree
-    = (treeType == TreeType::JoinTree) ? &(lowerJoinTree_) : &(lowerSplitTree_);
-  SubLevelSetTree *upperTree
-    = (treeType == TreeType::JoinTree) ? &(upperJoinTree_) : &(upperSplitTree_);
-  /* Output */
-  vector<pair<pair<int, int>, double>> *extremaSaddlePair
-    = (treeType == TreeType::JoinTree) ? &(mdtMinJoinSaddlePair_)
-                                       : &(mdtMaxSplitSaddlePair_);
+int MandatoryCriticalPoints::buildPairs(
+  const TreeType treeType,
+  const std::vector<std::pair<int, int>> &saddleList,
+  const std::vector<std::vector<int>> &mergedExtrema,
+  const std::vector<std::pair<double, double>> &extremumInterval,
+  SubLevelSetTree &lowerTree,
+  SubLevelSetTree &upperTree,
+  std::vector<std::pair<std::pair<int, int>, double>> &extremaSaddlePair)
+  const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(lowerTree->isJoinTree() != upperTree->isJoinTree())
+  if(lowerTree.isJoinTree() != upperTree.isJoinTree())
     return -1;
 #endif
 
@@ -406,55 +395,50 @@ int MandatoryCriticalPoints::buildPairs(const TreeType treeType) {
   // .first.first = saddle id
   // .first.second = extremum id
   // .second = metric d(M,S)
-  extremaSaddlePair->clear();
+  extremaSaddlePair.clear();
   // Build list of pairs
-  for(int i = 0; i < (int)mergedExtrema->size(); i++) {
-    for(int j = 0; j < (int)(*mergedExtrema)[i].size(); j++) {
+  for(size_t i = 0; i < mergedExtrema.size(); i++) {
+    for(size_t j = 0; j < mergedExtrema[i].size(); j++) {
       // Build a pair (Si,Mj)
-      pair<pair<int, int>, double> constructedPair;
-      constructedPair.first.first = (*mergedExtrema)[i][j];
-      constructedPair.first.second = i;
+      std::pair<std::pair<int, int>, double> constructedPair{
+        {mergedExtrema[i][j], i}, 0.0};
       // Get the values to compute d(Mj,Si)
       double lowerValue = 0;
       double upperValue = 0;
-      if(lowerTree->isJoinTree()) {
-        lowerValue = (*extremumInterval)[constructedPair.first.first].first;
+      if(lowerTree.isJoinTree()) {
+        lowerValue = extremumInterval[constructedPair.first.first].first;
         // lowerTree->getVertexScalar(extremumList[(*mergedExtrema)[i][j]],
         // lowerValue);
-        upperTree->getVertexScalar((*saddleList)[i].second, upperValue);
+        upperTree.getVertexScalar(saddleList[i].second, upperValue);
       } else {
-        lowerTree->getVertexScalar((*saddleList)[i].first, lowerValue);
+        lowerTree.getVertexScalar(saddleList[i].first, lowerValue);
         // upperTree->getVertexScalar(extremumList[(*mergedExtrema)[i][j]],
         // upperValue);
-        upperValue = (*extremumInterval)[constructedPair.first.first].second;
+        upperValue = extremumInterval[constructedPair.first.first].second;
       }
       // Evaluate d(Si,Mj)
       constructedPair.second = fabs(upperValue - lowerValue);
       // Add the pair to the list
-      extremaSaddlePair->push_back(constructedPair);
+      extremaSaddlePair.push_back(constructedPair);
     }
   }
   // Sort pair by increasing value of d(S,M) (.second)
   criticalPointPairComparaison pairComparaison;
-  sort(extremaSaddlePair->begin(), extremaSaddlePair->end(), pairComparaison);
+  sort(extremaSaddlePair.begin(), extremaSaddlePair.end(), pairComparaison);
 
-  if(debugLevel_ > advancedInfoMsg) {
-    stringstream title;
-    title << "[MandatoryCriticalPoints] List of ";
-    if(lowerTree->isJoinTree())
-      title << "minimum - join saddle";
-    else
-      title << "maximum - split saddle";
-    title << " pairs : " << endl;
-    dMsg(cout, title.str(), advancedInfoMsg);
-    for(int i = 0; i < (int)extremaSaddlePair->size(); i++) {
-      stringstream msg;
-      msg << "  (" << setw(3) << (*extremaSaddlePair)[i].first.first << ";";
-      msg << setw(3) << (*extremaSaddlePair)[i].first.second << ")";
-      msg << " -> d = " << (*extremaSaddlePair)[i].second << endl;
-      dMsg(cout, msg.str(), advancedInfoMsg);
-    }
+  const std::string treeName = treeType == TreeType::JoinTree
+                                 ? "minimum - join saddle"
+                                 : "maximum - split saddle";
+  this->printMsg(
+    "List of mandatory " + treeName + " pairs:", debug::Priority::DETAIL);
+  for(size_t i = 0; i < extremaSaddlePair.size(); i++) {
+    std::stringstream msg;
+    msg << "  (" << std::setw(3) << extremaSaddlePair[i].first.first << ";";
+    msg << std::setw(3) << extremaSaddlePair[i].first.second << ")";
+    msg << " -> d = " << extremaSaddlePair[i].second;
+    this->printMsg(msg.str(), debug::Priority::DETAIL);
   }
+
   return 0;
 }
 
