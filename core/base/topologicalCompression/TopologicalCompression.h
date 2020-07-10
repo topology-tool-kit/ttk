@@ -15,12 +15,10 @@
 
 // base code includes
 #include <FTMTreePP.h>
-#include <PersistenceDiagram.h>
 #include <TopologicalSimplification.h>
 #include <Triangulation.h>
 
 // std
-
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>

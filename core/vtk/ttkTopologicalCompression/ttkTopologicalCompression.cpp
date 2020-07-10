@@ -129,7 +129,7 @@ int ttkTopologicalCompression::RequestData(vtkInformation *request,
       static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(outputScalarField)),
       *static_cast<TTK_TT *>(triangulation->getData())));
 
-  for(SimplexId i = 0; i < vertexNumber; ++i)
+  for(ttk::SimplexId i = 0; i < vertexNumber; ++i)
     outputOffsetField->SetTuple1(i, this->compressedOffsets_[i]);
 
   output->GetPointData()->AddArray(outputScalarField);
