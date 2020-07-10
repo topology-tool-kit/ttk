@@ -1011,11 +1011,7 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
   {
 // Build the list of all saddles joining the extrema
 #ifdef TTK_ENABLE_OPENMP
-#ifdef _WIN32
 #pragma omp for
-#else
-#pragma omp for schedule(auto)
-#endif
 #endif
     for(int i = 0; i < (int)mandatoryExtremumVertex->size(); i++) {
       // Super arc in upper and lower trees
@@ -1113,22 +1109,14 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
     // Reinitialize the transverse arrays to -1
 
 #ifdef TTK_ENABLE_OPENMP
-#ifdef _WIN32
 #pragma omp for
-#else
-#pragma omp for schedule(auto)
-#endif
 #endif
     for(int i = 0; i < (int)upperTransverse.size(); i++) {
       upperTransverse[i] = -1;
     }
 
 #ifdef TTK_ENABLE_OPENMP
-#ifdef _WIN32
 #pragma omp for
-#else
-#pragma omp for schedule(auto)
-#endif
 #endif
     for(int i = 0; i < (int)lowerTransverse.size(); i++) {
       lowerTransverse[i] = -1;
@@ -1136,11 +1124,7 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
 
 // Mark the super arcs with the id of the saddle
 #ifdef TTK_ENABLE_OPENMP
-#ifdef _WIN32
 #pragma omp for
-#else
-#pragma omp for schedule(auto)
-#endif
 #endif
     for(int i = 0; i < (int)upperSaddleList.size(); i++) {
       int superArcId
@@ -1149,11 +1133,7 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
     }
 
 #ifdef TTK_ENABLE_OPENMP
-#ifdef _WIN32
 #pragma omp for
-#else
-#pragma omp for schedule(auto)
-#endif
 #endif
     for(int i = 0; i < (int)lowerSaddleList.size(); i++) {
       int superArcId
@@ -1186,11 +1166,7 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
 
 // For each extrema, find it's first up saddle
 #ifdef TTK_ENABLE_OPENMP
-#ifdef _WIN32
 #pragma omp for
-#else
-#pragma omp for schedule(auto)
-#endif
 #endif
     for(int i = 0; i < (int)mandatoryExtremumVertex->size(); i++) {
       int superArcId;
@@ -1234,11 +1210,7 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
 
 // For each saddle, find it's first up saddle
 #ifdef TTK_ENABLE_OPENMP
-#ifdef _WIN32
 #pragma omp for
-#else
-#pragma omp for schedule(auto)
-#endif
 #endif
     for(int i = 0; i < (int)upperSaddleList.size(); i++) {
       int superArcId
@@ -1263,11 +1235,7 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
     }
 
 #ifdef TTK_ENABLE_OPENMP
-#ifdef _WIN32
 #pragma omp for
-#else
-#pragma omp for schedule(auto)
-#endif
 #endif
     for(int i = 0; i < (int)lowerSaddleList.size(); i++) {
       int superArcId
@@ -1319,11 +1287,7 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
     unsigned int kmax = (extremaNumber * (extremaNumber - 1)) / 2;
 // Loop over pairs of extrema
 #ifdef TTK_ENABLE_OPENMP
-#ifdef _WIN32
 #pragma omp for
-#else
-#pragma omp for schedule(auto)
-#endif
 #endif
     for(int k = 0; k < (int)kmax; k++) {
       unsigned int i = k / extremaNumber;
