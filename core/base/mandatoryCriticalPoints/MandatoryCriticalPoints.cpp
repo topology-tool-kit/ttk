@@ -136,352 +136,243 @@ int MandatoryCriticalPoints::buildSubTrees() {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp section
 #endif
-    {upperJoinTree_.setNumberOfVertices(vertexNumber_);
-  upperJoinTree_.setVertexScalars(&upperVertexScalars_);
-  upperJoinTree_.setVertexPositions(&vertexPositions_);
-  upperJoinTree_.setTriangulation(triangulation_);
-  upperJoinTree_.setVertexSoSoffsets(&vertexSoSoffsets_);
-  upperJoinTree_.buildExtremumList(upperMinimumList_, true);
-  upperJoinTree_.build();
-}
+    {
+      upperJoinTree_.setNumberOfVertices(vertexNumber_);
+      upperJoinTree_.setVertexScalars(&upperVertexScalars_);
+      upperJoinTree_.setVertexPositions(&vertexPositions_);
+      upperJoinTree_.setTriangulation(triangulation_);
+      upperJoinTree_.setVertexSoSoffsets(&vertexSoSoffsets_);
+      upperJoinTree_.buildExtremumList(upperMinimumList_, true);
+      upperJoinTree_.build();
+    }
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp section
 #endif
-{
-  lowerJoinTree_.setNumberOfVertices(vertexNumber_);
-  lowerJoinTree_.setVertexScalars(&lowerVertexScalars_);
-  lowerJoinTree_.setVertexPositions(&vertexPositions_);
-  lowerJoinTree_.setTriangulation(triangulation_);
-  lowerJoinTree_.setVertexSoSoffsets(&vertexSoSoffsets_);
-  lowerJoinTree_.setMinimumList(lowerMinimumList_);
-  lowerJoinTree_.build();
-}
+    {
+      lowerJoinTree_.setNumberOfVertices(vertexNumber_);
+      lowerJoinTree_.setVertexScalars(&lowerVertexScalars_);
+      lowerJoinTree_.setVertexPositions(&vertexPositions_);
+      lowerJoinTree_.setTriangulation(triangulation_);
+      lowerJoinTree_.setVertexSoSoffsets(&vertexSoSoffsets_);
+      lowerJoinTree_.setMinimumList(lowerMinimumList_);
+      lowerJoinTree_.build();
+    }
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp section
 #endif
-{
-  upperSplitTree_.setNumberOfVertices(vertexNumber_);
-  upperSplitTree_.setVertexScalars(&upperVertexScalars_);
-  upperSplitTree_.setVertexPositions(&vertexPositions_);
-  upperSplitTree_.setTriangulation(triangulation_);
-  upperSplitTree_.setVertexSoSoffsets(&vertexSoSoffsets_);
-  upperSplitTree_.setMaximumList(upperMaximumList_);
-  upperSplitTree_.build();
-}
+    {
+      upperSplitTree_.setNumberOfVertices(vertexNumber_);
+      upperSplitTree_.setVertexScalars(&upperVertexScalars_);
+      upperSplitTree_.setVertexPositions(&vertexPositions_);
+      upperSplitTree_.setTriangulation(triangulation_);
+      upperSplitTree_.setVertexSoSoffsets(&vertexSoSoffsets_);
+      upperSplitTree_.setMaximumList(upperMaximumList_);
+      upperSplitTree_.build();
+    }
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp section
 #endif
-{
-  lowerSplitTree_.setNumberOfVertices(vertexNumber_);
-  lowerSplitTree_.setVertexScalars(&lowerVertexScalars_);
-  lowerSplitTree_.setVertexPositions(&vertexPositions_);
-  lowerSplitTree_.setTriangulation(triangulation_);
-  lowerSplitTree_.setVertexSoSoffsets(&vertexSoSoffsets_);
-  lowerSplitTree_.buildExtremumList(lowerMaximumList_, false);
-  lowerSplitTree_.build();
-}
-}
-{
-  stringstream msg;
-  msg << "[MandatoryCriticalPoints] ";
-  msg << "4 SubLevelSetTrees computed in ";
-  msg << t.getElapsedTime() << " s. (";
-  msg << threadNumber_;
-  msg << " thread(s)).";
-  msg << endl;
-  dMsg(cout, msg.str(), timeMsg);
-}
-return 0;
-}
-
-int MandatoryCriticalPoints::buildMandatoryTree(const TreeType treeType) {
-
-  /* Input Variables */
-  // Union Find Structure
-  const vector<int> *mdtExtremumParentSaddle = (treeType == TreeType::JoinTree)
-                                                 ? &(mdtMinimumParentSaddleId_)
-                                                 : &(mdtMaximumParentSaddleId_);
-  const vector<int> *mdtSaddleParentSaddle
-    = (treeType == TreeType::JoinTree) ? &(mdtJoinSaddleParentSaddleId_)
-                                       : &(mdtSplitSaddleParentSaddleId_);
-  // Simplification flags
-  const vector<bool> *isExtremumSimplified = (treeType == TreeType::JoinTree)
-                                               ? &(isMdtMinimumSimplified_)
-                                               : &(isMdtMaximumSimplified_);
-  const vector<bool> *isSaddleSimplified = (treeType == TreeType::JoinTree)
-                                             ? &(isMdtJoinSaddleSimplified_)
-                                             : &(isMdtSplitSaddleSimplified_);
-  // Intervals
-  const vector<pair<double, double>> *extremumInterval
-    = (treeType == TreeType::JoinTree) ? &(mandatoryMinimumInterval_)
-                                       : &(mandatoryMaximumInterval_);
-  // Pairs of saddle vertices for the saddle intervals
-  const vector<pair<int, int>> *mandatorySaddleVertices
-    = (treeType == TreeType::JoinTree) ? &(mandatoryJoinSaddleVertex_)
-                                       : &(mandatorySplitSaddleVertex_);
-  // Other Informations
-  const int extremaNumber = (treeType == TreeType::JoinTree)
-                              ? mandatoryMinimumVertex_.size()
-                              : mandatoryMaximumVertex_.size();
-  const int saddleNumber = (treeType == TreeType::JoinTree)
-                             ? mandatoryJoinSaddleVertex_.size()
-                             : mandatorySplitSaddleVertex_.size();
-  const PointType extremumType = (treeType == TreeType::JoinTree)
-                                   ? PointType::Minimum
-                                   : PointType::Maximum;
-  const PointType saddleType = (treeType == TreeType::JoinTree)
-                                 ? PointType::JoinSaddle
-                                 : PointType::SplitSaddle;
-  const PointType otherExtremumType = (treeType == TreeType::JoinTree)
-                                        ? PointType::Maximum
-                                        : PointType::Minimum;
-  const double globalOtherExtremumValue = (treeType == TreeType::JoinTree)
-                                            ? getGlobalMaximum()
-                                            : getGlobalMinimum();
-
-  // TODO Check consistency of the input variables here
-
-  /* Output Variables */
-  // Graph object
-  Graph *mdtTree;
-  // Id of the critical component associated to the graph point
-  vector<int> *mdtTreePointComponentId;
-  // Critical component type associated to the graph point
-  vector<PointType> *mdtTreePointType;
-  // Lower and Upper values of the interval
-  vector<double> *mdtTreePointLowInterval;
-  vector<double> *mdtTreePointUpInterval;
-  vector<int> *mdtTreeEdgeSwitchable;
-  if(treeType == TreeType::JoinTree) {
-    mdtTree = &(mdtJoinTree_);
-    mdtTreePointComponentId = &(mdtJoinTreePointComponentId_);
-    mdtTreePointType = &(mdtJoinTreePointType_);
-    mdtTreePointLowInterval = &(mdtJoinTreePointLowInterval_);
-    mdtTreePointUpInterval = &(mdtJoinTreePointUpInterval_);
-    mdtTreeEdgeSwitchable = &(mdtJoinTreeEdgeSwitchable_);
-  } else {
-    mdtTree = &(mdtSplitTree_);
-    mdtTreePointComponentId = &(mdtSplitTreePointComponentId_);
-    mdtTreePointType = &(mdtSplitTreePointType_);
-    mdtTreePointLowInterval = &(mdtSplitTreePointLowInterval_);
-    mdtTreePointUpInterval = &(mdtSplitTreePointUpInterval_);
-    mdtTreeEdgeSwitchable = &(mdtSplitTreeEdgeSwitchable_);
+    {
+      lowerSplitTree_.setNumberOfVertices(vertexNumber_);
+      lowerSplitTree_.setVertexScalars(&lowerVertexScalars_);
+      lowerSplitTree_.setVertexPositions(&vertexPositions_);
+      lowerSplitTree_.setTriangulation(triangulation_);
+      lowerSplitTree_.setVertexSoSoffsets(&vertexSoSoffsets_);
+      lowerSplitTree_.buildExtremumList(lowerMaximumList_, false);
+      lowerSplitTree_.build();
+    }
   }
+  this->printMsg("4 SubLevelSetTrees computed", 1.0, t.getElapsedTime(),
+                 this->threadNumber_);
+  return 0;
+}
+
+int MandatoryCriticalPoints::buildMandatoryTree(
+  const TreeType treeType,
+  Graph &mdtTree,
+  std::vector<int> &mdtTreePointComponentId,
+  std::vector<PointType> &mdtTreePointType,
+  std::vector<double> &mdtTreePointLowInterval,
+  std::vector<double> &mdtTreePointUpInterval,
+  std::vector<int> &mdtTreeEdgeSwitchable,
+  const std::vector<int> &mdtExtremumParentSaddle,
+  const std::vector<int> &mdtSaddleParentSaddle,
+  const std::vector<bool> &isExtremumSimplified,
+  const std::vector<bool> &isSaddleSimplified,
+  const std::vector<std::pair<double, double>> &extremumInterval,
+  const std::vector<std::pair<int, int>> &mandatorySaddleVertices,
+  const int extremaNumber,
+  const int saddleNumber,
+  const PointType extremumType,
+  const PointType saddleType,
+  const PointType otherExtremumType,
+  const double globalOtherExtremumValue) const {
+
+  const std::string treeName
+    = treeType == TreeType::JoinTree ? "join tree" : "split tree";
 
   /* Preliminaries operations */
-  mdtTree->clear();
-  mdtTreePointComponentId->clear();
-  mdtTreePointComponentId->reserve(extremaNumber + saddleNumber + 1);
-  mdtTreePointType->clear();
-  mdtTreePointType->reserve(extremaNumber + saddleNumber + 1);
-  mdtTreePointLowInterval->clear();
-  mdtTreePointLowInterval->reserve(extremaNumber + saddleNumber + 1);
-  mdtTreePointUpInterval->clear();
-  mdtTreePointUpInterval->reserve(extremaNumber + saddleNumber + 1);
-  mdtTreeEdgeSwitchable->clear();
+  mdtTree.clear();
+  mdtTreePointComponentId.clear();
+  mdtTreePointComponentId.reserve(extremaNumber + saddleNumber + 1);
+  mdtTreePointType.clear();
+  mdtTreePointType.reserve(extremaNumber + saddleNumber + 1);
+  mdtTreePointLowInterval.clear();
+  mdtTreePointLowInterval.reserve(extremaNumber + saddleNumber + 1);
+  mdtTreePointUpInterval.clear();
+  mdtTreePointUpInterval.reserve(extremaNumber + saddleNumber + 1);
+  mdtTreeEdgeSwitchable.clear();
 
   /* Graph Object Building */
   vector<int> saddleGraphVertex(saddleNumber, -1);
   // Create and connect all extrema to their saddle
   for(int i = 0; i < extremaNumber; i++) {
     // If simplified, do nothing and go to the next extremum
-    if((*isExtremumSimplified)[i])
+    if(isExtremumSimplified[i])
       continue;
     // New point in the graph
-    int extremumGraphPoint = mdtTree->addVertex();
-    mdtTreePointComponentId->push_back(i);
-    mdtTreePointType->push_back(extremumType);
+    int extremumGraphPoint = mdtTree.addVertex();
+    mdtTreePointComponentId.push_back(i);
+    mdtTreePointType.push_back(extremumType);
 
-    mdtTreePointLowInterval->push_back((*extremumInterval)[i].first);
-    mdtTreePointUpInterval->push_back((*extremumInterval)[i].second);
+    mdtTreePointLowInterval.push_back(extremumInterval[i].first);
+    mdtTreePointUpInterval.push_back(extremumInterval[i].second);
     // Look for the saddle and connect if there is one
-    int parentSaddle = (*mdtExtremumParentSaddle)[i];
+    int parentSaddle = mdtExtremumParentSaddle[i];
     // If no parent saddle, end the loop
     if(parentSaddle == -1)
       break;
     // Create the saddle (if not already)
     if(saddleGraphVertex[parentSaddle] == -1) {
-      saddleGraphVertex[parentSaddle] = mdtTree->addVertex();
-      mdtTreePointComponentId->push_back(parentSaddle);
-      mdtTreePointType->push_back(saddleType);
-      int lowerVertex = (*mandatorySaddleVertices)[parentSaddle].first;
-      int upperVertex = (*mandatorySaddleVertices)[parentSaddle].second;
-      mdtTreePointLowInterval->push_back(lowerVertexScalars_[lowerVertex]);
-      mdtTreePointUpInterval->push_back(upperVertexScalars_[upperVertex]);
+      saddleGraphVertex[parentSaddle] = mdtTree.addVertex();
+      mdtTreePointComponentId.push_back(parentSaddle);
+      mdtTreePointType.push_back(saddleType);
+      int lowerVertex = mandatorySaddleVertices[parentSaddle].first;
+      int upperVertex = mandatorySaddleVertices[parentSaddle].second;
+      mdtTreePointLowInterval.push_back(lowerVertexScalars_[lowerVertex]);
+      mdtTreePointUpInterval.push_back(upperVertexScalars_[upperVertex]);
     }
     // Connect the extrema and saddle
-    mdtTree->addEdge(saddleGraphVertex[parentSaddle], extremumGraphPoint);
+    mdtTree.addEdge(saddleGraphVertex[parentSaddle], extremumGraphPoint);
     // Not switchable (saddle -> extremum)
-    mdtTreeEdgeSwitchable->push_back(0);
+    mdtTreeEdgeSwitchable.push_back(0);
   }
 
   // If there is no extremum (=> no saddles), do nothing (empty graph)
-  if(mdtTree->getNumberOfVertices() == 0) {
-    if(debugLevel_ > infoMsg) {
-      stringstream msg;
-      msg << "[MandatoryCriticalPoints] Mandatory ";
-      if(treeType == TreeType::JoinTree) {
-        msg << "join tree";
-      } else {
-        msg << "split tree";
-      }
-      msg << "empty.";
-      msg << endl;
-      dMsg(cout, msg.str(), infoMsg);
-    }
+  if(mdtTree.getNumberOfVertices() == 0) {
+    this->printWrn("Mandatory " + treeName + " empty.");
     return 0;
   }
 
   // If there is only one extremum (=> no saddles), connect the extremum to the
   // other global extremum
-  if(mdtTree->getNumberOfVertices() == 1) {
-    mdtTree->addVertex();
-    mdtTreePointComponentId->push_back(-1);
-    mdtTreePointType->push_back(otherExtremumType);
-    mdtTreePointLowInterval->push_back(globalOtherExtremumValue);
-    mdtTreePointUpInterval->push_back(globalOtherExtremumValue);
-    mdtTree->addEdge(1, 0);
-    mdtTreeEdgeSwitchable->push_back(0);
-    if(debugLevel_ > infoMsg) {
-      stringstream msg;
-      msg << "[MandatoryCriticalPoints] Mandatory ";
-      if(treeType == TreeType::JoinTree) {
-        msg << "join tree";
-      } else {
-        msg << "split tree";
-      }
-      msg << " with only one ";
-      if(treeType == TreeType::JoinTree) {
-        msg << "minimum";
-      } else {
-        msg << "maximum";
-      }
-      msg << ".";
-      msg << endl;
-      dMsg(cout, msg.str(), infoMsg);
-    }
+  if(mdtTree.getNumberOfVertices() == 1) {
+    mdtTree.addVertex();
+    mdtTreePointComponentId.push_back(-1);
+    mdtTreePointType.push_back(otherExtremumType);
+    mdtTreePointLowInterval.push_back(globalOtherExtremumValue);
+    mdtTreePointUpInterval.push_back(globalOtherExtremumValue);
+    mdtTree.addEdge(1, 0);
+    mdtTreeEdgeSwitchable.push_back(0);
+    this->printWrn("Mandatory " + treeName + " with only one minimum.");
+
   } else {
     // Continue to add the remaining saddles
     // Create and connect all remaining saddles
     for(int i = 0; i < saddleNumber; i++) {
 
       // If simplified, do nothing and go to the next saddle
-      if((*isSaddleSimplified)[i]) {
+      if(isSaddleSimplified[i]) {
         continue;
       }
       // Create the graph point if not already
       if(saddleGraphVertex[i] == -1) {
-        saddleGraphVertex[i] = mdtTree->addVertex();
-        mdtTreePointComponentId->push_back(i);
-        mdtTreePointType->push_back(saddleType);
-        int lowerVertex = (*mandatorySaddleVertices)[i].first;
-        int upperVertex = (*mandatorySaddleVertices)[i].second;
-        mdtTreePointLowInterval->push_back(lowerVertexScalars_[lowerVertex]);
-        mdtTreePointUpInterval->push_back(upperVertexScalars_[upperVertex]);
+        saddleGraphVertex[i] = mdtTree.addVertex();
+        mdtTreePointComponentId.push_back(i);
+        mdtTreePointType.push_back(saddleType);
+        int lowerVertex = mandatorySaddleVertices[i].first;
+        int upperVertex = mandatorySaddleVertices[i].second;
+        mdtTreePointLowInterval.push_back(lowerVertexScalars_[lowerVertex]);
+        mdtTreePointUpInterval.push_back(upperVertexScalars_[upperVertex]);
       }
       // Look for the saddle above and connect if there is one
-      int parentSaddle = (*mdtSaddleParentSaddle)[i];
+      int parentSaddle = mdtSaddleParentSaddle[i];
       // If the parent is different from the saddle itself, create it and
       // connect
       if(parentSaddle != i) {
         // Create the graph point if not already
         if(saddleGraphVertex[parentSaddle] == -1) {
-          saddleGraphVertex[parentSaddle] = mdtTree->addVertex();
-          mdtTreePointComponentId->push_back(parentSaddle);
-          mdtTreePointType->push_back(saddleType);
-          int lowerVertex = (*mandatorySaddleVertices)[parentSaddle].first;
-          int upperVertex = (*mandatorySaddleVertices)[parentSaddle].second;
-          mdtTreePointLowInterval->push_back(lowerVertexScalars_[lowerVertex]);
-          mdtTreePointUpInterval->push_back(upperVertexScalars_[upperVertex]);
+          saddleGraphVertex[parentSaddle] = mdtTree.addVertex();
+          mdtTreePointComponentId.push_back(parentSaddle);
+          mdtTreePointType.push_back(saddleType);
+          int lowerVertex = mandatorySaddleVertices[parentSaddle].first;
+          int upperVertex = mandatorySaddleVertices[parentSaddle].second;
+          mdtTreePointLowInterval.push_back(lowerVertexScalars_[lowerVertex]);
+          mdtTreePointUpInterval.push_back(upperVertexScalars_[upperVertex]);
         }
         // Connect the two saddles
-        mdtTree->addEdge(saddleGraphVertex[parentSaddle], saddleGraphVertex[i]);
+        mdtTree.addEdge(saddleGraphVertex[parentSaddle], saddleGraphVertex[i]);
         // Test if switchable : parentSaddle and i
-        mdtTreeEdgeSwitchable->push_back(
+        mdtTreeEdgeSwitchable.push_back(
           areSaddlesSwitchables(treeType, parentSaddle, i));
       } else { // It is the root, create the global extremum to connect with it
-        int globalOtherExtremumGraphPoint = mdtTree->addVertex();
-        mdtTreePointComponentId->push_back(-1);
-        mdtTreePointType->push_back(otherExtremumType);
-        mdtTreePointLowInterval->push_back(globalOtherExtremumValue);
-        mdtTreePointUpInterval->push_back(globalOtherExtremumValue);
-        mdtTree->addEdge(globalOtherExtremumGraphPoint, saddleGraphVertex[i]);
-        mdtTreeEdgeSwitchable->push_back(0);
+        int globalOtherExtremumGraphPoint = mdtTree.addVertex();
+        mdtTreePointComponentId.push_back(-1);
+        mdtTreePointType.push_back(otherExtremumType);
+        mdtTreePointLowInterval.push_back(globalOtherExtremumValue);
+        mdtTreePointUpInterval.push_back(globalOtherExtremumValue);
+        mdtTree.addEdge(globalOtherExtremumGraphPoint, saddleGraphVertex[i]);
+        mdtTreeEdgeSwitchable.push_back(0);
       }
     }
   }
 
   /* Debug Messages */
-  if(debugLevel_ > infoMsg) {
-    stringstream msg;
-    msg << "[MandatoryCriticalPoints] Building of the ";
-    if(treeType == TreeType::JoinTree)
-      msg << "mandatory join tree";
-    else
-      msg << "mandatory split tree";
-    msg << " : ";
-    msg << mdtTree->getNumberOfVertices() << " points, ";
-    msg << mdtTree->getNumberOfEdges() << " edges.";
-    msg << endl;
-    dMsg(cout, msg.str(), infoMsg);
-  }
-  if(debugLevel_ > advancedInfoMsg) {
-    stringstream title;
-    title << "[MandatoryCriticalPoints] List of ";
-    if(treeType == TreeType::JoinTree)
-      title << "mandatory join tree";
-    else
-      title << "mandatory split tree";
-    title << " graph points : " << endl;
-    dMsg(cout, title.str(), advancedInfoMsg);
-    for(int i = 0; i < mdtTree->getNumberOfVertices(); i++) {
-      stringstream msg;
-      msg << "  (" << setw(3) << right << i << ") ";
-      msg << setw(12) << right;
-      switch((*mdtTreePointType)[i]) {
-        case PointType::Minimum:
-          msg << "Minimum";
-          break;
-        case PointType::Maximum:
-          msg << "Maximum";
-          break;
-        case PointType::JoinSaddle:
-          msg << "Join Saddle";
-          break;
-        case PointType::SplitSaddle:
-          msg << "Split Saddle";
-          break;
-        default:
-          break;
-      }
-      msg << "  id = " << setw(3) << (*mdtTreePointComponentId)[i];
-      msg << "  I = [ " << (*mdtTreePointLowInterval)[i];
-      msg << " ; " << (*mdtTreePointUpInterval)[i];
-      msg << " ]";
-      msg << endl;
-      dMsg(cout, msg.str(), advancedInfoMsg);
+  this->printMsg("Building of the mandatory " + treeName + "");
+  this->printMsg({{"#Points", std::to_string(mdtTree.getNumberOfVertices())},
+                  {"#Edges", std::to_string(mdtTree.getNumberOfEdges())}});
+
+  this->printMsg("List of mandatory " + treeName + " graph points:",
+                 debug::Priority::DETAIL);
+  for(int i = 0; i < mdtTree.getNumberOfVertices(); i++) {
+    std::stringstream msg{};
+    msg << "  (" << setw(3) << right << i << ") ";
+    msg << setw(12) << right;
+    switch(mdtTreePointType[i]) {
+      case PointType::Minimum:
+        msg << "Minimum";
+        break;
+      case PointType::Maximum:
+        msg << "Maximum";
+        break;
+      case PointType::JoinSaddle:
+        msg << "Join Saddle";
+        break;
+      case PointType::SplitSaddle:
+        msg << "Split Saddle";
+        break;
+      default:
+        break;
     }
+    msg << "  id = " << setw(3) << mdtTreePointComponentId[i];
+    msg << "  I = [ " << mdtTreePointLowInterval[i];
+    msg << " ; " << mdtTreePointUpInterval[i];
+    msg << " ]";
+    this->printMsg(msg.str(), debug::Priority::DETAIL);
   }
-  if(debugLevel_ > advancedInfoMsg) {
-    stringstream title;
-    title << "[MandatoryCriticalPoints] List of ";
-    if(treeType == TreeType::JoinTree)
-      title << "mandatory join tree";
-    else
-      title << "mandatory split tree";
-    title << " graph edges : " << endl;
-    dMsg(cout, title.str(), advancedInfoMsg);
-    for(int i = 0; i < mdtTree->getNumberOfEdges(); i++) {
-      stringstream msg;
-      msg << "  (" << setw(3) << right << i << ") ";
-      msg << "Points  ";
-      msg << setw(3) << right << mdtTree->getEdge(i)->getVertexIdx().first;
-      msg << " -> ";
-      msg << setw(3) << left << mdtTree->getEdge(i)->getVertexIdx().second;
-      msg << endl;
-      dMsg(cout, msg.str(), advancedInfoMsg);
-    }
+
+  this->printMsg(
+    "List of mandatory " + treeName + " graph edges:", debug::Priority::DETAIL);
+  for(int i = 0; i < mdtTree.getNumberOfEdges(); i++) {
+    std::stringstream msg{};
+    msg << "  (" << setw(3) << right << i << ") ";
+    msg << "Points  ";
+    msg << setw(3) << right << mdtTree.getEdge(i)->getVertexIdx().first;
+    msg << " -> ";
+    msg << setw(3) << left << mdtTree.getEdge(i)->getVertexIdx().second;
+    this->printMsg(msg.str(), debug::Priority::DETAIL);
   }
+
   return 0;
 }
 

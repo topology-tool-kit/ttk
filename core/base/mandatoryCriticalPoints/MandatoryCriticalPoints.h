@@ -531,7 +531,17 @@ namespace ttk {
 
     inline int simplifyJoinTree() {
       if(simplify(normalizedThreshold_, TreeType::JoinTree) == 0) {
-        if(buildMandatoryTree(TreeType::JoinTree) == 0) {
+        if(buildMandatoryTree(
+             TreeType::JoinTree, mdtJoinTree_, mdtJoinTreePointComponentId_,
+             mdtJoinTreePointType_, mdtJoinTreePointLowInterval_,
+             mdtJoinTreePointUpInterval_, mdtJoinTreeEdgeSwitchable_,
+             mdtMinimumParentSaddleId_, mdtJoinSaddleParentSaddleId_,
+             isMdtMinimumSimplified_, isMdtJoinSaddleSimplified_,
+             mandatoryMinimumInterval_, mandatoryJoinSaddleVertex_,
+             mandatoryMinimumVertex_.size(), mandatoryJoinSaddleVertex_.size(),
+             PointType::Minimum, PointType::JoinSaddle, PointType::Maximum,
+             getGlobalMaximum())
+           == 0) {
           return 0;
         } else
           return -1;
@@ -541,7 +551,17 @@ namespace ttk {
 
     inline int simplifySplitTree() {
       if(simplify(normalizedThreshold_, TreeType::SplitTree) == 0) {
-        if(buildMandatoryTree(TreeType::SplitTree) == 0) {
+        if(buildMandatoryTree(
+             TreeType::SplitTree, mdtSplitTree_, mdtSplitTreePointComponentId_,
+             mdtSplitTreePointType_, mdtSplitTreePointLowInterval_,
+             mdtSplitTreePointUpInterval_, mdtSplitTreeEdgeSwitchable_,
+             mdtMaximumParentSaddleId_, mdtSplitSaddleParentSaddleId_,
+             isMdtMaximumSimplified_, isMdtSplitSaddleSimplified_,
+             mandatoryMaximumInterval_, mandatorySplitSaddleVertex_,
+             mandatoryMaximumVertex_.size(), mandatorySplitSaddleVertex_.size(),
+             PointType::Maximum, PointType::SplitSaddle, PointType::Minimum,
+             getGlobalMinimum())
+           == 0) {
           return 0;
         } else
           return -1;
@@ -550,7 +570,26 @@ namespace ttk {
     }
 
   protected:
-    int buildMandatoryTree(const TreeType treeType);
+    int buildMandatoryTree(
+      const TreeType treeType,
+      Graph &mdtTree,
+      std::vector<int> &mdtTreePointComponentId,
+      std::vector<PointType> &mdtTreePointType,
+      std::vector<double> &mdtTreePointLowInterval,
+      std::vector<double> &mdtTreePointUpInterval,
+      std::vector<int> &mdtTreeEdgeSwitchable,
+      const std::vector<int> &mdtExtremumParentSaddle,
+      const std::vector<int> &mdtSaddleParentSaddle,
+      const std::vector<bool> &isExtremumSimplified,
+      const std::vector<bool> &isSaddleSimplified,
+      const std::vector<std::pair<double, double>> &extremumInterval,
+      const std::vector<std::pair<int, int>> &mandatorySaddleVertices,
+      const int extremaNumber,
+      const int saddleNumber,
+      const PointType extremumType,
+      const PointType saddleType,
+      const PointType otherExtremumType,
+      const double globalOtherExtremumValue) const;
 
     /// TODO : Replace SubLevelSetTrees by scalar fields for vertex value
     int buildPairs(const TreeType treeType);
@@ -783,8 +822,26 @@ int ttk::MandatoryCriticalPoints::execute() {
   simplify(normalizedThreshold_, TreeType::SplitTree);
 
   // Build the mandatory trees
-  buildMandatoryTree(TreeType::JoinTree);
-  buildMandatoryTree(TreeType::SplitTree);
+  buildMandatoryTree(TreeType::JoinTree, mdtJoinTree_,
+                     mdtJoinTreePointComponentId_, mdtJoinTreePointType_,
+                     mdtJoinTreePointLowInterval_, mdtJoinTreePointUpInterval_,
+                     mdtJoinTreeEdgeSwitchable_, mdtMinimumParentSaddleId_,
+                     mdtJoinSaddleParentSaddleId_, isMdtMinimumSimplified_,
+                     isMdtJoinSaddleSimplified_, mandatoryMinimumInterval_,
+                     mandatoryJoinSaddleVertex_, mandatoryMinimumVertex_.size(),
+                     mandatoryJoinSaddleVertex_.size(), PointType::Minimum,
+                     PointType::JoinSaddle, PointType::Maximum,
+                     getGlobalMaximum());
+  buildMandatoryTree(
+    TreeType::SplitTree, mdtSplitTree_, mdtSplitTreePointComponentId_,
+    mdtSplitTreePointType_, mdtSplitTreePointLowInterval_,
+    mdtSplitTreePointUpInterval_, mdtSplitTreeEdgeSwitchable_,
+    mdtMaximumParentSaddleId_, mdtSplitSaddleParentSaddleId_,
+    isMdtMaximumSimplified_, isMdtSplitSaddleSimplified_,
+    mandatoryMaximumInterval_, mandatorySplitSaddleVertex_,
+    mandatoryMaximumVertex_.size(), mandatorySplitSaddleVertex_.size(),
+    PointType::Maximum, PointType::SplitSaddle, PointType::Minimum,
+    getGlobalMinimum());
 
   // Compute the planar layout for the output trees
   computePlanarLayout(TreeType::JoinTree);
@@ -806,13 +863,7 @@ int ttk::MandatoryCriticalPoints::execute() {
   fill(mandatoryMaximumComponentVertices_.begin(),
        mandatoryMaximumComponentVertices_.end(), std::vector<int>());
 
-  // Debug messages
-  if(debugLevel_ > timeMsg) {
-    std::stringstream msg;
-    msg << "[MandatoryCriticalPoints] Data-set (" << vertexNumber_
-        << " points) processed in " << t.getElapsedTime() << " s. ("
-        << threadNumber_ << " thread(s))." << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
-  }
+  this->printMsg("Data-set (" + std::to_string(vertexNumber_) + " points) processed",
+                 1.0, t.getElapsedTime(), this->threadNumber_);
   return 0;
 }
