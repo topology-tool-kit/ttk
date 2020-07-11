@@ -43,7 +43,7 @@ public:
 
 protected:
   ttkImportEmbeddingFromTable() {
-    this->setDebugMsgPrefix("ttkImportEmbeddingFromTable");
+    this->setDebugMsgPrefix("ImportEmbeddingFromTable");
     SetNumberOfInputPorts(2);
     SetNumberOfOutputPorts(1);
   }
@@ -62,7 +62,4 @@ private:
   std::string YColumn;
   std::string ZColumn;
   bool Embedding2D;
-
-  bool needsToAbort();
-  int updateProgress(const float &progress);
 };
