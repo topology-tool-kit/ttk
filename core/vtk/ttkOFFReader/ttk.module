@@ -4,3 +4,5 @@ SOURCES
   ttkOFFReader.cpp
 HEADERS
   ttkOFFReader.h
+DEPENDS
+  common

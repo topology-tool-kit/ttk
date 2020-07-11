@@ -9,25 +9,24 @@
 #pragma once
 
 #include <vtkDataSetWriter.h>
-#include <vtkPoints.h>
-#include <vtkSmartPointer.h>
 
+#include <Debug.h>
 #include <ttkOFFWriterModule.h>
 
-#include <iostream>
-#include <string>
-#include <vector>
+#include <fstream>
 
-class TTKOFFWRITER_EXPORT ttkOFFWriter : public vtkDataSetWriter {
+class TTKOFFWRITER_EXPORT ttkOFFWriter : public vtkDataSetWriter,
+                                         protected ttk::Debug {
 
 public:
   vtkTypeMacro(ttkOFFWriter, vtkDataSetWriter);
-  void PrintSelf(ostream &os, vtkIndent indent) override;
 
   static ttkOFFWriter *New();
 
+  void PrintSelf(std::ostream &os, vtkIndent indent) override;
+
   // Description:
-  // Specify file name of the .abc file.
+  // Specify file name of the .off file.
   vtkSetStringMacro(Filename);
   vtkGetStringMacro(Filename);
 
@@ -38,7 +37,7 @@ protected:
   int OpenFile();
   virtual void WriteData() override;
 
-  char *Filename;
+  char *Filename{};
   std::ofstream Stream{};
 
 private:
