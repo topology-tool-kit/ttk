@@ -26,10 +26,6 @@
         <DataTypeDomain name="input_type">
           <DataType value="vtkPointSet"/>
         </DataTypeDomain>
-        <InputArrayDomain name="input_scalars"
-                          attribute_type="point">
-          <Property name="DataSet" function="FieldDataSelection" />
-        </InputArrayDomain>
         <Documentation>
           Data-set to process.
         </Documentation>
