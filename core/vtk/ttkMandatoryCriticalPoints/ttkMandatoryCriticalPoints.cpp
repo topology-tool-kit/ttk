@@ -121,10 +121,8 @@ int ttkMandatoryCriticalPoints::RequestData(
   auto outputJoinTree = vtkUnstructuredGrid::GetData(outputVector, 4);
   auto outputSplitTree = vtkUnstructuredGrid::GetData(outputVector, 5);
 
-  // Check the last modification of the input
-  if(inputMTime_ != input->GetMTime()) {
-    inputMTime_ = input->GetMTime();
-    computeAll_ = true;
+  if(input == nullptr) {
+    return 0;
   }
 
   // Use a pointer-base copy for the input data
@@ -205,7 +203,7 @@ int ttkMandatoryCriticalPoints::RequestData(
   outputMaximum->GetPointData()->AddArray(outputMandatoryMaximum);
 
   // Reset the baseCode object
-  if((computeAll_) || (hasChangedConnectivity))
+  if(hasChangedConnectivity)
     this->flush();
 
   // Set the number of vertex
@@ -234,18 +232,13 @@ int ttkMandatoryCriticalPoints::RequestData(
   this->setSimplificationThreshold(simplificationThreshold_);
 
   // Execute process
-  if(computeAll_) {
-    // Calling the executing package
-    switch(inputUpperBoundField->GetDataType()) {
-      vtkTemplateMacro(this->execute<VTK_TT>(*triangulation));
-    }
-    computeAll_ = false;
-    simplify_ = false;
-    computeMinimumOutput_ = true;
-    computeJoinSaddleOutput_ = true;
-    computeSplitSaddleOutput_ = true;
-    computeMaximumOutput_ = true;
+  switch(inputUpperBoundField->GetDataType()) {
+    vtkTemplateMacro(this->execute<VTK_TT>(*triangulation));
   }
+  computeMinimumOutput_ = true;
+  computeJoinSaddleOutput_ = true;
+  computeSplitSaddleOutput_ = true;
+  computeMaximumOutput_ = true;
 
   // Simplification
   if(simplify_) {

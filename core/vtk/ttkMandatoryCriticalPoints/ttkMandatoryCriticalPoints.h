@@ -144,9 +144,6 @@ protected:
                   vtkInformationVector *outputVector) override;
 
 private:
-  unsigned long int inputMTime_{0};
-  bool computeAll_{true};
-
   int lowerBoundId{0}, upperBoundId{1};
   std::string upperBoundFiledName_{"upperBoundField"};
   std::string lowerBoundFieldName_{"lowerBoundField"};
