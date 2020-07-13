@@ -299,7 +299,7 @@ namespace ttk {
         for(int i = 1; i < (int)mandatoryJoinSaddleVertex_.size(); i++)
           outputJoinSaddle(i, triangulation, false);
       } else {
-        int *output = (int *)outputMandatoryJoinSaddle_;
+        int *output = outputMandatoryJoinSaddle_;
         for(int i = 0; i < vertexNumber_; i++) {
           output[i] = -1;
         }
@@ -313,7 +313,7 @@ namespace ttk {
         for(int i = 0; i < (int)mandatoryMaximumVertex_.size(); i++)
           outputMaximum(i, false, false);
       } else {
-        int *output = (int *)outputMandatoryMaximum_;
+        int *output = outputMandatoryMaximum_;
         for(int i = 0; i < vertexNumber_; i++) {
           output[i] = -1;
         }
@@ -327,7 +327,7 @@ namespace ttk {
         for(int i = 0; i < (int)mandatoryMinimumVertex_.size(); i++)
           outputMinimum(i, false, false);
       } else {
-        int *output = (int *)outputMandatoryMinimum_;
+        int *output = outputMandatoryMinimum_;
         for(int i = 0; i < vertexNumber_; i++) {
           output[i] = -1;
         }
@@ -342,7 +342,7 @@ namespace ttk {
         for(int i = 1; i < (int)mandatorySplitSaddleVertex_.size(); i++)
           outputSplitSaddle(i, triangulation, false);
       } else {
-        int *output = (int *)outputMandatorySplitSaddle_;
+        int *output = outputMandatorySplitSaddle_;
         for(int i = 0; i < vertexNumber_; i++) {
           output[i] = -1;
         }
@@ -354,7 +354,7 @@ namespace ttk {
     inline int outputJoinSaddle(const int &id,
                                 const triangulationType &triangulation,
                                 const bool &reset = true) {
-      int *output = (int *)outputMandatoryJoinSaddle_;
+      int *output = outputMandatoryJoinSaddle_;
       if(reset)
         for(int i = 0; i < vertexNumber_; i++) {
           output[i] = -1;
@@ -378,7 +378,7 @@ namespace ttk {
     int outputMaximum(const int &id,
                       const bool &reset = true,
                       const bool &parallel = true) {
-      int *output = (int *)outputMandatoryMaximum_;
+      int *output = outputMandatoryMaximum_;
       if(reset)
         for(int i = 0; i < vertexNumber_; i++)
           output[i] = -1;
@@ -400,7 +400,7 @@ namespace ttk {
     int outputMinimum(const int &id,
                       const bool &reset = true,
                       const bool &parallel = true) {
-      int *output = (int *)outputMandatoryMinimum_;
+      int *output = outputMandatoryMinimum_;
       if(reset)
         for(int i = 0; i < vertexNumber_; i++)
           output[i] = -1;
@@ -423,7 +423,7 @@ namespace ttk {
     inline int outputSplitSaddle(const int &id,
                                  const triangulationType &triangulation,
                                  const bool &reset = true) {
-      int *output = (int *)outputMandatorySplitSaddle_;
+      int *output = outputMandatorySplitSaddle_;
       if(reset) {
         for(int i = 0; i < vertexNumber_; i++) {
           output[i] = -1;
@@ -460,7 +460,7 @@ namespace ttk {
     }
 
     inline int setOutputJoinSaddleDataPointer(void *data) {
-      outputMandatoryJoinSaddle_ = data;
+      outputMandatoryJoinSaddle_ = static_cast<int *>(data);
       return 0;
     }
 
@@ -471,7 +471,7 @@ namespace ttk {
     /// \return Returns 0 upon success, negative values otherwise.
     /// \sa setVertexNumber()
     inline int setOutputMaximumDataPointer(void *data) {
-      outputMandatoryMaximum_ = data;
+      outputMandatoryMaximum_ = static_cast<int *>(data);
       return 0;
     }
 
@@ -482,12 +482,12 @@ namespace ttk {
     /// \return Returns 0 upon success, negative values otherwise.
     /// \sa setVertexNumber().
     inline int setOutputMinimumDataPointer(void *data) {
-      outputMandatoryMinimum_ = data;
+      outputMandatoryMinimum_ = static_cast<int *>(data);
       return 0;
     }
 
     inline int setOutputSplitSaddleDataPointer(void *data) {
-      outputMandatorySplitSaddle_ = data;
+      outputMandatorySplitSaddle_ = static_cast<int *>(data);
       return 0;
     }
 
@@ -714,13 +714,13 @@ namespace ttk {
     /// Void pointer to the input lower bound scalar field.
     void *inputLowerBoundField_{};
     /// Void pointer to the output mandatory minima components.
-    void *outputMandatoryMinimum_{};
+    int *outputMandatoryMinimum_{};
     /// Void pointer to the output mandatory join saddles components.
-    void *outputMandatoryJoinSaddle_{};
+    int *outputMandatoryJoinSaddle_{};
     /// Void pointer to the output mandatory split saddles components.
-    void *outputMandatorySplitSaddle_{};
+    int *outputMandatorySplitSaddle_{};
     /// Void pointer to the output mandatory maxima components.
-    void *outputMandatoryMaximum_{};
+    int *outputMandatoryMaximum_{};
     /// Number of vertices
     int vertexNumber_{};
     /// Position (x,y,z) of each vertex
