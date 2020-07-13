@@ -287,6 +287,7 @@ namespace ttk {
     }
 
     inline int setWrapper(const Wrapper *const wrapper) {
+      Debug::setWrapper(wrapper);
       morseSmaleComplex2D_.setWrapper(wrapper);
       morseSmaleComplex3D_.setWrapper(wrapper);
       return 0;
