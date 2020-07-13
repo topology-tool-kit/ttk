@@ -1575,32 +1575,16 @@ void MandatoryCriticalPoints::getSubTreeSuperArcIds(
   listOfSuperArcId.swap(subTreeSuperArcId);
 }
 
-int MandatoryCriticalPoints::simplify(const double &normalizedThreshold,
-                                      const TreeType treeType) {
-
-  /* Input */
-  const std::vector<std::pair<std::pair<int, int>, double>> *extremaSaddlePair
-    = (treeType == TreeType::JoinTree) ? &(mdtMinJoinSaddlePair_)
-                                       : &(mdtMaxSplitSaddlePair_);
-  const std::vector<std::vector<int>> *mergedExtrema
-    = (treeType == TreeType::JoinTree) ? &(mergedMinimaId_)
-                                       : &(mergedMaximaId_);
-  const int numberOfExtrema = (treeType == TreeType::JoinTree)
-                                ? (int)mandatoryMinimumVertex_.size()
-                                : (int)mandatoryMaximumVertex_.size();
-  /* Output */
-  std::vector<bool> *extremumSimplified = (treeType == TreeType::JoinTree)
-                                            ? &(isMdtMinimumSimplified_)
-                                            : &(isMdtMaximumSimplified_);
-  std::vector<bool> *saddleSimplified = (treeType == TreeType::JoinTree)
-                                          ? &(isMdtJoinSaddleSimplified_)
-                                          : &(isMdtSplitSaddleSimplified_);
-  std::vector<int> *extremumParentSaddle = (treeType == TreeType::JoinTree)
-                                             ? &(mdtMinimumParentSaddleId_)
-                                             : &(mdtMaximumParentSaddleId_);
-  std::vector<int> *saddleParentSaddle = (treeType == TreeType::JoinTree)
-                                           ? &(mdtJoinSaddleParentSaddleId_)
-                                           : &(mdtSplitSaddleParentSaddleId_);
+int MandatoryCriticalPoints::simplify(
+  const double normalizedThreshold,
+  const TreeType treeType,
+  const std::vector<std::pair<std::pair<int, int>, double>> &extremaSaddlePair,
+  const std::vector<std::vector<int>> &mergedExtrema,
+  const int numberOfExtrema,
+  std::vector<bool> &extremumSimplified,
+  std::vector<bool> &saddleSimplified,
+  std::vector<int> &extremumParentSaddle,
+  std::vector<int> &saddleParentSaddle) const {
 
   // Simplification threshold value
   double simplificationThreshold;
@@ -1616,134 +1600,109 @@ int MandatoryCriticalPoints::simplify(const double &normalizedThreshold,
   int saddlesSimplifiedNumber = 0;
 
   // First : simplification of extrema
-  extremumSimplified->resize(numberOfExtrema);
-  fill(extremumSimplified->begin(), extremumSimplified->end(), false);
-  for(int i = 0; i < (int)extremaSaddlePair->size(); i++) {
-    if((*extremaSaddlePair)[i].second < simplificationThreshold) {
-      (*extremumSimplified)[(*extremaSaddlePair)[i].first.first] = true;
+  extremumSimplified.resize(numberOfExtrema);
+  fill(extremumSimplified.begin(), extremumSimplified.end(), false);
+  for(size_t i = 0; i < extremaSaddlePair.size(); i++) {
+    if(extremaSaddlePair[i].second < simplificationThreshold) {
+      extremumSimplified[extremaSaddlePair[i].first.first] = true;
       extremaSimplifiedNumber++;
     } else
       break;
   }
 
   // Second : simplification of saddles
-  saddleSimplified->resize(mergedExtrema->size());
-  fill(saddleSimplified->begin(), saddleSimplified->end(), false);
-  std::vector<int> nonSimplifiedExtremaNumber(mergedExtrema->size(), 0);
-  extremumParentSaddle->resize(numberOfExtrema);
-  fill(extremumParentSaddle->begin(), extremumParentSaddle->end(), -1);
-  saddleParentSaddle->resize(mergedExtrema->size());
-  fill(saddleParentSaddle->begin(), saddleParentSaddle->end(), -1);
-  for(int i = 0; i < (int)mergedExtrema->size(); i++) {
-    (*saddleParentSaddle)[i] = i;
-    for(int j = 0; j < (int)(*mergedExtrema)[i].size(); j++) {
-      if(!(*extremumSimplified)[(*mergedExtrema)[i][j]])
+  saddleSimplified.resize(mergedExtrema.size());
+  fill(saddleSimplified.begin(), saddleSimplified.end(), false);
+  std::vector<int> nonSimplifiedExtremaNumber(mergedExtrema.size(), 0);
+  extremumParentSaddle.resize(numberOfExtrema);
+  fill(extremumParentSaddle.begin(), extremumParentSaddle.end(), -1);
+  saddleParentSaddle.resize(mergedExtrema.size());
+  fill(saddleParentSaddle.begin(), saddleParentSaddle.end(), -1);
+  for(size_t i = 0; i < mergedExtrema.size(); i++) {
+    saddleParentSaddle[i] = i;
+    for(size_t j = 0; j < mergedExtrema[i].size(); j++) {
+      if(!extremumSimplified[mergedExtrema[i][j]])
         nonSimplifiedExtremaNumber[i]++;
     }
     if(nonSimplifiedExtremaNumber[i] > 1) {
       // Find one non simplified extremum to test
       int extremum = 0;
-      while((*extremumSimplified)[(*mergedExtrema)[i][extremum]]) {
+      while(extremumSimplified[mergedExtrema[i][extremum]]) {
         extremum++;
       }
-      if(!((*extremumParentSaddle)[(*mergedExtrema)[i][extremum]] == -1)) {
+      if(!(extremumParentSaddle[mergedExtrema[i][extremum]] == -1)) {
         // Find the root
-        int rootSaddleId
-          = (*extremumParentSaddle)[(*mergedExtrema)[i][extremum]];
+        int rootSaddleId = extremumParentSaddle[mergedExtrema[i][extremum]];
         int lastSaddleId = -1;
         while(rootSaddleId != lastSaddleId) {
           lastSaddleId = rootSaddleId;
-          rootSaddleId = (*saddleParentSaddle)[rootSaddleId];
+          rootSaddleId = saddleParentSaddle[rootSaddleId];
         }
         // Compare the number of merged extrema
         if(!(nonSimplifiedExtremaNumber[i]
              > nonSimplifiedExtremaNumber[rootSaddleId])) {
-          (*saddleSimplified)[i] = true;
+          saddleSimplified[i] = true;
           saddlesSimplifiedNumber++;
         }
       }
     } else {
-      (*saddleSimplified)[i] = true;
+      saddleSimplified[i] = true;
       saddlesSimplifiedNumber++;
     }
-    if(!(*saddleSimplified)[i]) {
-      for(int j = 0; j < (int)(*mergedExtrema)[i].size(); j++) {
-        int extremaId = (*mergedExtrema)[i][j];
-        if(!(*extremumSimplified)[extremaId]) {
+    if(!saddleSimplified[i]) {
+      for(size_t j = 0; j < mergedExtrema[i].size(); j++) {
+        int extremaId = mergedExtrema[i][j];
+        if(!extremumSimplified[extremaId]) {
           // If the extrema is not already connected, define the parent
-          if((*extremumParentSaddle)[extremaId] == -1) {
-            (*extremumParentSaddle)[extremaId] = i;
+          if(extremumParentSaddle[extremaId] == -1) {
+            extremumParentSaddle[extremaId] = i;
           } else {
             // Find the root
-            int rootSaddleId = (*extremumParentSaddle)[extremaId];
+            int rootSaddleId = extremumParentSaddle[extremaId];
             int lastSaddleId = -1;
             while(rootSaddleId != lastSaddleId) {
               lastSaddleId = rootSaddleId;
-              rootSaddleId = (*saddleParentSaddle)[rootSaddleId];
+              rootSaddleId = saddleParentSaddle[rootSaddleId];
             }
             // Link the root to the proccessed saddle
-            (*saddleParentSaddle)[rootSaddleId] = i;
+            saddleParentSaddle[rootSaddleId] = i;
           }
         }
       }
     }
   }
-  /* Debug messages */
-  if(debugLevel_ > infoMsg) {
-    std::stringstream msg;
-    msg << "[MandatoryCriticalPoints] Number of ";
-    if(treeType == TreeType::JoinTree)
-      msg << "minima";
-    else
-      msg << "maxima";
-    msg << " simplified : " << extremaSimplifiedNumber;
-    msg << " (threshold value = " << simplificationThreshold << ")";
-    msg << std::endl;
-    dMsg(std::cout, msg.str(), infoMsg);
-  }
-  if(debugLevel_ > advancedInfoMsg && extremaSimplifiedNumber > 0) {
-    std::stringstream msg;
-    msg << "[MandatoryCriticalPoints] List of simplified ";
-    if(treeType == TreeType::JoinTree)
-      msg << "minima";
-    else
-      msg << "maxima";
-    msg << " : " << std::endl;
-    dMsg(std::cout, msg.str(), advancedInfoMsg);
-    for(size_t i = 0; i < extremumSimplified->size(); i++) {
-      if((*extremumSimplified)[i]) {
-        std::stringstream msg2;
-        msg2 << "    (" << i << ")" << std::endl;
-        dMsg(std::cout, msg2.str(), advancedInfoMsg);
+
+  const std::string pt = treeType == TreeType::JoinTree ? "minima" : "maxima";
+
+  this->printMsg(
+    "#Simplified " + pt + ": " + std::to_string(extremaSimplifiedNumber)
+    + " (threshold value = " + std::to_string(simplificationThreshold) + ")");
+
+  if(extremaSimplifiedNumber > 0) {
+    this->printMsg("List of simplified " + pt + ":", debug::Priority::DETAIL);
+    for(size_t i = 0; i < extremumSimplified.size(); i++) {
+      if(extremumSimplified[i]) {
+        std::stringstream msg;
+        msg << "    (" << i << ")";
+        this->printMsg(msg.str(), debug::Priority::DETAIL);
       }
     }
   }
-  if(debugLevel_ > infoMsg) {
-    std::stringstream msg;
-    msg << "[MandatoryCriticalPoints] Number of ";
-    if(treeType == TreeType::JoinTree)
-      msg << "join saddles";
-    else
-      msg << "split saddles";
-    msg << " simplified : " << saddlesSimplifiedNumber;
-    msg << " (threshold value = " << simplificationThreshold << ")";
-    msg << std::endl;
-    dMsg(std::cout, msg.str(), infoMsg);
-  }
-  if(debugLevel_ > advancedInfoMsg && saddlesSimplifiedNumber > 0) {
-    std::stringstream msg;
-    msg << "[MandatoryCriticalPoints] List of simplified ";
-    if(treeType == TreeType::JoinTree)
-      msg << "join saddles";
-    else
-      msg << "split saddles";
-    msg << " : " << std::endl;
-    dMsg(std::cout, msg.str(), advancedInfoMsg);
-    for(size_t i = 0; i < saddleSimplified->size(); i++) {
-      if((*saddleSimplified)[i]) {
-        std::stringstream msg2;
-        msg2 << "    (" << i << ")" << std::endl;
-        dMsg(std::cout, msg2.str(), advancedInfoMsg);
+
+  const std::string st
+    = treeType == TreeType::JoinTree ? "join saddles" : "split saddles";
+
+  this->printMsg(
+    "#Simplified " + st + ": " + std::to_string(saddlesSimplifiedNumber)
+    + " (threshold value = " + std::to_string(simplificationThreshold) + ")");
+
+  if(saddlesSimplifiedNumber > 0) {
+    this->printMsg("List of simplified " + st + ":", debug::Priority::DETAIL);
+    for(size_t i = 0; i < saddleSimplified.size(); i++) {
+      if(saddleSimplified[i]) {
+        std::stringstream msg;
+        msg << "    (" << i << ")";
+        this->printMsg(msg.str(), debug::Priority::DETAIL);
       }
     }
   }

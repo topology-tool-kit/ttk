@@ -548,7 +548,12 @@ namespace ttk {
     }
 
     inline int simplifyJoinTree() {
-      if(simplify(normalizedThreshold_, TreeType::JoinTree) == 0) {
+      if(simplify(normalizedThreshold_, TreeType::JoinTree,
+                  mdtMinJoinSaddlePair_, mergedMinimaId_,
+                  mandatoryMinimumVertex_.size(), isMdtMinimumSimplified_,
+                  isMdtJoinSaddleSimplified_, mdtMinimumParentSaddleId_,
+                  mdtJoinSaddleParentSaddleId_)
+         == 0) {
         if(buildMandatoryTree(
              TreeType::JoinTree, mdtJoinTree_, mdtJoinTreePointComponentId_,
              mdtJoinTreePointType_, mdtJoinTreePointLowInterval_,
@@ -568,7 +573,12 @@ namespace ttk {
     }
 
     inline int simplifySplitTree() {
-      if(simplify(normalizedThreshold_, TreeType::SplitTree) == 0) {
+      if(simplify(normalizedThreshold_, TreeType::SplitTree,
+                  mdtMaxSplitSaddlePair_, mergedMaximaId_,
+                  mandatoryMaximumVertex_.size(), isMdtMaximumSimplified_,
+                  isMdtSplitSaddleSimplified_, mdtMaximumParentSaddleId_,
+                  mdtSplitSaddleParentSaddleId_)
+         == 0) {
         if(buildMandatoryTree(
              TreeType::SplitTree, mdtSplitTree_, mdtSplitTreePointComponentId_,
              mdtSplitTreePointType_, mdtSplitTreePointLowInterval_,
@@ -677,7 +687,16 @@ namespace ttk {
       return superArcId;
     }
 
-    int simplify(const double &normalizedThreshold, const TreeType treeType);
+    int simplify(const double normalizedThreshold,
+                 const TreeType treeType,
+                 const std::vector<std::pair<std::pair<int, int>, double>>
+                   &extremaSaddlePair,
+                 const std::vector<std::vector<int>> &mergedExtrema,
+                 const int numberOfExtrema,
+                 std::vector<bool> &extremumSimplified,
+                 std::vector<bool> &saddleSimplified,
+                 std::vector<int> &extremumParentSaddle,
+                 std::vector<int> &saddleParentSaddle) const;
 
   protected:
     /// Void pointer to the input upper bound scalar field.
@@ -876,8 +895,14 @@ int ttk::MandatoryCriticalPoints::execute() {
              mdtMaxSplitSaddlePair_);
 
   // Simplify pairs
-  simplify(normalizedThreshold_, TreeType::JoinTree);
-  simplify(normalizedThreshold_, TreeType::SplitTree);
+  simplify(normalizedThreshold_, TreeType::JoinTree, mdtMinJoinSaddlePair_,
+           mergedMinimaId_, mandatoryMinimumVertex_.size(),
+           isMdtMinimumSimplified_, isMdtJoinSaddleSimplified_,
+           mdtMinimumParentSaddleId_, mdtJoinSaddleParentSaddleId_);
+  simplify(normalizedThreshold_, TreeType::SplitTree, mdtMaxSplitSaddlePair_,
+           mergedMaximaId_, mandatoryMaximumVertex_.size(),
+           isMdtMaximumSimplified_, isMdtSplitSaddleSimplified_,
+           mdtMaximumParentSaddleId_, mdtSplitSaddleParentSaddleId_);
 
   // Build the mandatory trees
   buildMandatoryTree(TreeType::JoinTree, mdtJoinTree_,
