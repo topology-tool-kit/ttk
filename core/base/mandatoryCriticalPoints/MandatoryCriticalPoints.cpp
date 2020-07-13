@@ -1,6 +1,5 @@
 #include <MandatoryCriticalPoints.h>
 
-using namespace std;
 using namespace ttk;
 
 MandatoryCriticalPoints::MandatoryCriticalPoints() {
@@ -224,7 +223,7 @@ int MandatoryCriticalPoints::buildMandatoryTree(
   mdtTreeEdgeSwitchable.clear();
 
   /* Graph Object Building */
-  vector<int> saddleGraphVertex(saddleNumber, -1);
+  std::vector<int> saddleGraphVertex(saddleNumber, -1);
   // Create and connect all extrema to their saddle
   for(int i = 0; i < extremaNumber; i++) {
     // If simplified, do nothing and go to the next extremum
@@ -336,8 +335,8 @@ int MandatoryCriticalPoints::buildMandatoryTree(
                  debug::Priority::DETAIL);
   for(int i = 0; i < mdtTree.getNumberOfVertices(); i++) {
     std::stringstream msg{};
-    msg << "  (" << setw(3) << right << i << ") ";
-    msg << setw(12) << right;
+    msg << "  (" << std::setw(3) << std::right << i << ") ";
+    msg << std::setw(12) << std::right;
     switch(mdtTreePointType[i]) {
       case PointType::Minimum:
         msg << "Minimum";
@@ -354,7 +353,7 @@ int MandatoryCriticalPoints::buildMandatoryTree(
       default:
         break;
     }
-    msg << "  id = " << setw(3) << mdtTreePointComponentId[i];
+    msg << "  id = " << std::setw(3) << mdtTreePointComponentId[i];
     msg << "  I = [ " << mdtTreePointLowInterval[i];
     msg << " ; " << mdtTreePointUpInterval[i];
     msg << " ]";
@@ -365,11 +364,13 @@ int MandatoryCriticalPoints::buildMandatoryTree(
     "List of mandatory " + treeName + " graph edges:", debug::Priority::DETAIL);
   for(int i = 0; i < mdtTree.getNumberOfEdges(); i++) {
     std::stringstream msg{};
-    msg << "  (" << setw(3) << right << i << ") ";
+    msg << "  (" << std::setw(3) << std::right << i << ") ";
     msg << "Points  ";
-    msg << setw(3) << right << mdtTree.getEdge(i)->getVertexIdx().first;
+    msg << std::setw(3) << std::right
+        << mdtTree.getEdge(i)->getVertexIdx().first;
     msg << " -> ";
-    msg << setw(3) << left << mdtTree.getEdge(i)->getVertexIdx().second;
+    msg << std::setw(3) << std::left
+        << mdtTree.getEdge(i)->getVertexIdx().second;
     this->printMsg(msg.str(), debug::Priority::DETAIL);
   }
 
@@ -424,7 +425,8 @@ int MandatoryCriticalPoints::buildPairs(
   }
   // Sort pair by increasing value of d(S,M) (.second)
   criticalPointPairComparaison pairComparaison;
-  sort(extremaSaddlePair.begin(), extremaSaddlePair.end(), pairComparaison);
+  std::sort(
+    extremaSaddlePair.begin(), extremaSaddlePair.end(), pairComparaison);
 
   const std::string treeName = treeType == TreeType::JoinTree
                                  ? "minimum - join saddle"
@@ -448,24 +450,24 @@ int MandatoryCriticalPoints::computePlanarLayout(const TreeType &treeType) {
   // Mandatory Tree
   const Graph *mdtTree
     = (treeType == TreeType::JoinTree) ? &(mdtJoinTree_) : &(mdtSplitTree_);
-  const vector<PointType> *mdtTreePointType = (treeType == TreeType::JoinTree)
-                                                ? &(mdtJoinTreePointType_)
-                                                : &(mdtSplitTreePointType_);
-  const vector<double> *mdtTreePointLowInterval
+  const std::vector<PointType> *mdtTreePointType
+    = (treeType == TreeType::JoinTree) ? &(mdtJoinTreePointType_)
+                                       : &(mdtSplitTreePointType_);
+  const std::vector<double> *mdtTreePointLowInterval
     = (treeType == TreeType::JoinTree) ? &(mdtJoinTreePointLowInterval_)
                                        : &(mdtSplitTreePointLowInterval_);
-  const vector<double> *mdtTreePointUpInterval
+  const std::vector<double> *mdtTreePointUpInterval
     = (treeType == TreeType::JoinTree) ? &(mdtJoinTreePointUpInterval_)
                                        : &(mdtSplitTreePointUpInterval_);
 
   /* Output */
   // X coordinates
-  vector<double> *xCoord = (treeType == TreeType::JoinTree)
-                             ? &(mdtJoinTreePointXCoord_)
-                             : &(mdtSplitTreePointXCoord_);
-  vector<double> *yCoord = (treeType == TreeType::JoinTree)
-                             ? &(mdtJoinTreePointYCoord_)
-                             : &(mdtSplitTreePointYCoord_);
+  std::vector<double> *xCoord = (treeType == TreeType::JoinTree)
+                                  ? &(mdtJoinTreePointXCoord_)
+                                  : &(mdtSplitTreePointXCoord_);
+  std::vector<double> *yCoord = (treeType == TreeType::JoinTree)
+                                  ? &(mdtJoinTreePointYCoord_)
+                                  : &(mdtSplitTreePointYCoord_);
 
   /* Informations */
   const int numberOfPoints = mdtTree->getNumberOfVertices();
@@ -511,13 +513,13 @@ int MandatoryCriticalPoints::computePlanarLayout(const TreeType &treeType) {
   yCoord->resize(numberOfPoints);
 
   // Graph Point x intervals
-  vector<pair<double, double>> xInterval(numberOfPoints);
+  std::vector<std::pair<double, double>> xInterval(numberOfPoints);
   xInterval[rootGraphPointId].first = -0.5 * (double)numberOfPoints;
   xInterval[rootGraphPointId].second = 0.5 * (double)numberOfPoints;
   // Order
-  vector<pair<int, double>> xOrder(numberOfPoints);
+  std::vector<std::pair<int, double>> xOrder(numberOfPoints);
 
-  queue<int> graphPointQueue;
+  std::queue<int> graphPointQueue;
   graphPointQueue.push(rootGraphPointId);
 
   while(!graphPointQueue.empty()) {
@@ -579,7 +581,7 @@ int MandatoryCriticalPoints::computePlanarLayout(const TreeType &treeType) {
   /* X coordinates */
   // Sorting
   pairComparaison xCoordCmp;
-  sort(xOrder.begin(), xOrder.end(), xCoordCmp);
+  std::sort(xOrder.begin(), xOrder.end(), xCoordCmp);
   // X coordinates for all points except root (global extremum)
   int pointCount = 0;
   for(int i = 0; i < numberOfPoints; i++) {
@@ -593,7 +595,7 @@ int MandatoryCriticalPoints::computePlanarLayout(const TreeType &treeType) {
   (*xCoord)[rootGraphPointId] = (*xCoord)[downRootPointId];
 
   if(debugLevel_ > advancedInfoMsg) {
-    stringstream msg;
+    std::stringstream msg;
     msg << "[MandatoryCriticalPoints] Planar layout for mandatory ";
     if(treeType == TreeType::JoinTree)
       msg << "join tree";
@@ -601,14 +603,14 @@ int MandatoryCriticalPoints::computePlanarLayout(const TreeType &treeType) {
       msg << "split tree";
     msg << " : root point " << rootGraphPointId;
     msg << " ( -> " << downRootPointId << ")";
-    msg << endl;
-    dMsg(cout, msg.str(), advancedInfoMsg);
+    msg << std::endl;
+    dMsg(std::cout, msg.str(), advancedInfoMsg);
     for(int i = 0; i < numberOfPoints; i++) {
-      stringstream msg2;
+      std::stringstream msg2;
       msg2 << "  (" << i << ") :"
            << "  x = " << (*xCoord)[i] << "  y = " << (*yCoord)[i];
-      msg2 << endl;
-      dMsg(cout, msg2.str(), advancedInfoMsg);
+      msg2 << std::endl;
+      dMsg(std::cout, msg2.str(), advancedInfoMsg);
     }
   }
 
@@ -627,7 +629,7 @@ int MandatoryCriticalPoints::computeExtremumComponent(
   const double value = (pointType == PointType::Minimum)
                          ? upperVertexScalars_[seedVertexId]
                          : lowerVertexScalars_[seedVertexId];
-  vector<int> *componentVertexList
+  std::vector<int> *componentVertexList
     = (pointType == PointType::Minimum)
         ? &(mandatoryMinimumComponentVertices_[componentId])
         : &(mandatoryMaximumComponentVertices_[componentId]);
@@ -639,7 +641,7 @@ int MandatoryCriticalPoints::computeExtremumComponent(
   // Get the sub tree root super arc
   int rootSuperArcId = getSubTreeRootSuperArcId(tree, superArcId, value);
   // Get the list of the sub tree super arc ids
-  vector<int> subTreeSuperArcId;
+  std::vector<int> subTreeSuperArcId;
   getSubTreeSuperArcIds(tree, rootSuperArcId, subTreeSuperArcId);
   // Comparaison
   int sign = (pointType == PointType::Minimum) ? 1 : -1;
@@ -695,15 +697,15 @@ int MandatoryCriticalPoints::computeSaddleComponent(
     = (pointType == PointType::JoinSaddle)
         ? upperVertexScalars_[mandatoryJoinSaddleVertex_[componentId].second]
         : upperVertexScalars_[mandatorySplitSaddleVertex_[componentId].second];
-  vector<int> *componentVertexList
+  std::vector<int> *componentVertexList
     = (pointType == PointType::JoinSaddle)
         ? &(mandatoryJoinSaddleComponentVertices_[componentId])
         : &(mandatorySplitSaddleComponentVertices_[componentId]);
 
   componentVertexList->clear();
 
-  vector<bool> isVisited(vertexNumber_, false);
-  queue<SimplexId> idQueue;
+  std::vector<bool> isVisited(vertexNumber_, false);
+  std::queue<SimplexId> idQueue;
   idQueue.push(seedVertexId);
 
   while(!(idQueue.empty())) {
@@ -745,10 +747,10 @@ int MandatoryCriticalPoints::enumerateMandatoryExtrema(
                                   ? &(lowerJoinTree_)
                                   : &(upperSplitTree_);
   /* Output */
-  vector<int> *mandatoryExtremum = (pointType == PointType::Minimum)
-                                     ? &(mandatoryMinimumVertex_)
-                                     : &(mandatoryMaximumVertex_);
-  vector<pair<double, double>> *criticalInterval
+  std::vector<int> *mandatoryExtremum = (pointType == PointType::Minimum)
+                                          ? &(mandatoryMinimumVertex_)
+                                          : &(mandatoryMaximumVertex_);
+  std::vector<std::pair<double, double>> *criticalInterval
     = (pointType == PointType::Minimum) ? &(mandatoryMinimumInterval_)
                                         : &(mandatoryMaximumInterval_);
 
@@ -763,21 +765,21 @@ int MandatoryCriticalPoints::enumerateMandatoryExtrema(
 #endif
 
   // Extremum list in the first tree
-  const vector<int> *extremumList = firstTree->getExtremumList();
+  const std::vector<int> *extremumList = firstTree->getExtremumList();
   // Some tmp variables
   int extremumNumber = (int)extremumList->size();
-  vector<int> vertexId(extremumNumber);
-  vector<double> vertexValue(extremumNumber);
-  vector<int> superArcId(extremumNumber);
+  std::vector<int> vertexId(extremumNumber);
+  std::vector<double> vertexValue(extremumNumber);
+  std::vector<int> superArcId(extremumNumber);
   // vector<int> rootSuperArcId(extremumNumber);
-  vector<int> subTreeSuperArcId; // vector<vector<int> >
-                                 // subTreeSuperArcId(extremumNumber);
+  std::vector<int> subTreeSuperArcId; // vector<vector<int> >
+                                      // subTreeSuperArcId(extremumNumber);
   // Clear the list of mandatory extrema
   mandatoryExtremum->clear();
   criticalInterval->clear();
   // To mark the super arc in the second tree as already used for a mandatory
   // critical component
-  vector<bool> isSuperArcAlreadyVisited(
+  std::vector<bool> isSuperArcAlreadyVisited(
     secondTree->getNumberOfSuperArcs(), false);
 
   // #ifdef TTK_ENABLE_OPENMP
@@ -805,7 +807,7 @@ int MandatoryCriticalPoints::enumerateMandatoryExtrema(
     // Exploration of the sub tree (if not already eliminated)
     if(isMandatory) {
       subTreeSuperArcId.clear();
-      queue<int> superArcQueue;
+      std::queue<int> superArcQueue;
       superArcQueue.push(rootSuperArcId);
       while(isMandatory && (!superArcQueue.empty())) {
         int spaId = superArcQueue.front();
@@ -834,7 +836,7 @@ int MandatoryCriticalPoints::enumerateMandatoryExtrema(
       // Mark all the super arcs in the sub tree as visited and compute the
       // critical interval
       criticalInterval->push_back(
-        pair<double, double>(vertexValue[i], vertexValue[i]));
+        std::pair<double, double>(vertexValue[i], vertexValue[i]));
       for(int j = 0; j < (int)subTreeSuperArcId.size(); j++) {
         isSuperArcAlreadyVisited[subTreeSuperArcId[j]] = true;
         int downNodeId
@@ -897,7 +899,7 @@ int MandatoryCriticalPoints::enumerateMandatoryExtrema(
   }
 
   if(debugLevel_ > timeMsg) {
-    stringstream msg;
+    std::stringstream msg;
     msg << "[MandatoryCriticalPoints] ";
     msg << mandatoryExtremum->size() << " mandatory ";
     if(pointType == PointType::Minimum)
@@ -906,13 +908,13 @@ int MandatoryCriticalPoints::enumerateMandatoryExtrema(
       msg << "maxima";
     msg << " computed in ";
     msg << t.getElapsedTime() << " s. (" << threadNumber_ << " thread(s))";
-    msg << endl;
-    dMsg(cout, msg.str(), timeMsg);
+    msg << std::endl;
+    dMsg(std::cout, msg.str(), timeMsg);
   }
 
   if(debugLevel_ > advancedInfoMsg) {
-    stringstream title;
-    stringstream CPType;
+    std::stringstream title;
+    std::stringstream CPType;
     title << "[MandatoryCriticalPoints] List of mandatory ";
     if(pointType == PointType::Minimum) {
       CPType << "Minimum";
@@ -921,18 +923,20 @@ int MandatoryCriticalPoints::enumerateMandatoryExtrema(
       CPType << "Maximum";
       title << "maxima : ";
     }
-    title << endl;
-    dMsg(cout, title.str(), advancedInfoMsg);
+    title << std::endl;
+    dMsg(std::cout, title.str(), advancedInfoMsg);
     for(int i = 0; i < (int)mandatoryExtremum->size(); i++) {
-      stringstream msg;
-      msg << "  -> " << CPType.str() << " (" << setw(3) << right << i << ") ";
+      std::stringstream msg;
+      msg << "  -> " << CPType.str() << " (" << std::setw(3) << std::right << i
+          << ") ";
       msg << " \t"
-          << "Vertex  " << setw(9) << left << (*mandatoryExtremum)[i];
-      msg << " \tInterval  [ " << setw(12) << right
-          << (*criticalInterval)[i].first << " ; " << setprecision(9)
-          << setw(11) << left << (*criticalInterval)[i].second << " ]";
-      msg << endl;
-      dMsg(cout, msg.str(), advancedInfoMsg);
+          << "Vertex  " << std::setw(9) << std::left << (*mandatoryExtremum)[i];
+      msg << " \tInterval  [ " << std::setw(12) << std::right
+          << (*criticalInterval)[i].first << " ; " << std::setprecision(9)
+          << std::setw(11) << std::left << (*criticalInterval)[i].second
+          << " ]";
+      msg << std::endl;
+      dMsg(std::cout, msg.str(), advancedInfoMsg);
     }
   }
   return 0;
@@ -950,14 +954,14 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
   SubLevelSetTree *upperTree = (pointType == PointType::JoinSaddle)
                                  ? &(upperJoinTree_)
                                  : &(upperSplitTree_);
-  const vector<int> *mandatoryExtremumVertex
+  const std::vector<int> *mandatoryExtremumVertex
     = (pointType == PointType::JoinSaddle) ? &(mandatoryMinimumVertex_)
                                            : &(mandatoryMaximumVertex_);
   /* Output */
-  vector<pair<int, int>> *mandatorySaddleVertex
+  std::vector<std::pair<int, int>> *mandatorySaddleVertex
     = (pointType == PointType::JoinSaddle) ? &(mandatoryJoinSaddleVertex_)
                                            : &(mandatorySplitSaddleVertex_);
-  vector<vector<int>> *mandatoryMergedExtrema
+  std::vector<std::vector<int>> *mandatoryMergedExtrema
     = (pointType == PointType::JoinSaddle) ? &(mergedMinimaId_)
                                            : &(mergedMaximaId_);
 
@@ -977,16 +981,16 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
 
   unsigned int extremaNumber = mandatoryExtremumVertex->size();
 
-  vector<int> upperSaddleList;
-  vector<int> lowerSaddleList;
+  std::vector<int> upperSaddleList;
+  std::vector<int> lowerSaddleList;
 
-  vector<int> upperTransverse(upperTree->getNumberOfSuperArcs(), -1);
-  vector<int> lowerTransverse(lowerTree->getNumberOfSuperArcs(), -1);
+  std::vector<int> upperTransverse(upperTree->getNumberOfSuperArcs(), -1);
+  std::vector<int> lowerTransverse(lowerTree->getNumberOfSuperArcs(), -1);
 
-  vector<vector<int>> lowerToUpperLinks;
-  vector<vector<int>> upperToLowerLinks;
+  std::vector<std::vector<int>> lowerToUpperLinks;
+  std::vector<std::vector<int>> upperToLowerLinks;
 
-  vector<vector<int>> mergedExtrema;
+  std::vector<std::vector<int>> mergedExtrema;
 
   // NOTE-julien
   // the loop below is not thread-safe.
@@ -1259,10 +1263,10 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
     }
 
     // Link lists for each thread
-    vector<vector<int>> localLowerToUpperLinks;
-    vector<vector<int>> localUpperToLowerLinks;
+    std::vector<std::vector<int>> localLowerToUpperLinks;
+    std::vector<std::vector<int>> localUpperToLowerLinks;
     // Merged extrema list for each thread (lower saddles only)
-    vector<vector<int>> localMergedExtrema;
+    std::vector<std::vector<int>> localMergedExtrema;
     // Resize of lists
     localLowerToUpperLinks.resize(lowerSaddleList.size());
     localUpperToLowerLinks.resize(upperSaddleList.size());
@@ -1299,7 +1303,7 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
     }
     // Lower -> Upper
     for(unsigned int i = 0; i < localLowerToUpperLinks.size(); i++) {
-      vector<int>::iterator newEnd;
+      std::vector<int>::iterator newEnd;
       newEnd = unique(
         localLowerToUpperLinks[i].begin(), localLowerToUpperLinks[i].end());
 #ifdef TTK_ENABLE_OPENMP
@@ -1316,7 +1320,7 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
     localLowerToUpperLinks.clear();
     // Upper -> Lower
     for(unsigned int i = 0; i < localUpperToLowerLinks.size(); i++) {
-      vector<int>::iterator newEnd;
+      std::vector<int>::iterator newEnd;
       newEnd = unique(
         localUpperToLowerLinks[i].begin(), localUpperToLowerLinks[i].end());
 #ifdef TTK_ENABLE_OPENMP
@@ -1333,8 +1337,8 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
     localUpperToLowerLinks.clear();
     // Merged extrema
     for(unsigned int i = 0; i < localMergedExtrema.size(); i++) {
-      vector<int>::iterator newEnd;
-      sort(localMergedExtrema[i].begin(), localMergedExtrema[i].end());
+      std::vector<int>::iterator newEnd;
+      std::sort(localMergedExtrema[i].begin(), localMergedExtrema[i].end());
       newEnd
         = unique(localMergedExtrema[i].begin(), localMergedExtrema[i].end());
 #ifdef TTK_ENABLE_OPENMP
@@ -1356,26 +1360,26 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
   // the code below is thread-safe
 
   // Breadth-first search to identify connected components
-  vector<bool> isLowerVisited(lowerSaddleList.size(), false);
-  vector<bool> isUpperVisited(upperSaddleList.size(), false);
-  vector<vector<int>> lowComponent;
-  vector<vector<int>> uppComponent;
+  std::vector<bool> isLowerVisited(lowerSaddleList.size(), false);
+  std::vector<bool> isUpperVisited(upperSaddleList.size(), false);
+  std::vector<std::vector<int>> lowComponent;
+  std::vector<std::vector<int>> uppComponent;
   for(unsigned int i = 0; i < lowerSaddleList.size(); i++) {
     if(!isLowerVisited[i]) {
       // New component
-      lowComponent.push_back(vector<int>());
-      uppComponent.push_back(vector<int>());
+      lowComponent.push_back(std::vector<int>());
+      uppComponent.push_back(std::vector<int>());
       int componentId = static_cast<int>(lowComponent.size()) - 1;
       lowComponent[componentId].push_back(i);
       isLowerVisited[i] = true;
       // Lists of neighbors
-      vector<int> nextList;
-      vector<int> currentList;
+      std::vector<int> nextList;
+      std::vector<int> currentList;
       currentList.push_back(i);
       // Pointers
-      vector<bool> *isVisited = &(isUpperVisited);
-      vector<vector<int>> *component = &(uppComponent);
-      vector<vector<int>> *linkList = &(lowerToUpperLinks);
+      std::vector<bool> *isVisited = &(isUpperVisited);
+      std::vector<std::vector<int>> *component = &(uppComponent);
+      std::vector<std::vector<int>> *linkList = &(lowerToUpperLinks);
       while(!currentList.empty()) {
         // For each entry in the list
         for(unsigned int j = 0; j < currentList.size(); j++) {
@@ -1407,9 +1411,10 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
 
   // Find pairs of vertices and list of merged extrema
   int numberOfComponents = static_cast<int>(lowComponent.size());
-  (*mandatorySaddleVertex).resize(numberOfComponents, pair<int, int>(-1, -1));
-  vector<vector<int>> mandatoryMergedExtrema_tmp;
-  mandatoryMergedExtrema_tmp.resize(numberOfComponents, vector<int>());
+  (*mandatorySaddleVertex)
+    .resize(numberOfComponents, std::pair<int, int>(-1, -1));
+  std::vector<std::vector<int>> mandatoryMergedExtrema_tmp;
+  mandatoryMergedExtrema_tmp.resize(numberOfComponents, std::vector<int>());
 
   for(int i = 0; i < numberOfComponents; i++) {
     int nodeId;
@@ -1455,20 +1460,22 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
   }
 
   // Sort the merged extrema list
-  vector<pair<int, int>> order;
+  std::vector<std::pair<int, int>> order;
   for(unsigned int i = 0; i < mandatoryMergedExtrema_tmp.size(); i++) {
-    sort(mandatoryMergedExtrema_tmp[i].begin(),
-         mandatoryMergedExtrema_tmp[i].end());
-    vector<int>::iterator newEnd = unique(mandatoryMergedExtrema_tmp[i].begin(),
-                                          mandatoryMergedExtrema_tmp[i].end());
+    std::sort(mandatoryMergedExtrema_tmp[i].begin(),
+              mandatoryMergedExtrema_tmp[i].end());
+    std::vector<int>::iterator newEnd
+      = unique(mandatoryMergedExtrema_tmp[i].begin(),
+               mandatoryMergedExtrema_tmp[i].end());
     mandatoryMergedExtrema_tmp[i].resize(
       distance(mandatoryMergedExtrema_tmp[i].begin(), newEnd));
     mandatoryMergedExtrema_tmp[i].shrink_to_fit();
-    order.push_back(pair<int, int>(i, mandatoryMergedExtrema_tmp[i].size()));
+    order.push_back(
+      std::pair<int, int>(i, mandatoryMergedExtrema_tmp[i].size()));
   }
   // Sort by number of merged extrema
   mandatorySaddleComparaison cmp;
-  sort(order.begin(), order.end(), cmp);
+  std::sort(order.begin(), order.end(), cmp);
   // Reorder for output
   (*mandatoryMergedExtrema).clear();
   (*mandatoryMergedExtrema).resize(mandatoryMergedExtrema_tmp.size());
@@ -1512,7 +1519,7 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
 
   // Debug messages
   if(debugLevel_ > timeMsg) {
-    stringstream msg;
+    std::stringstream msg;
     msg << "[MandatoryCriticalPoints] ";
     msg << mandatorySaddleVertex->size();
     if(pointType == PointType::JoinSaddle)
@@ -1520,12 +1527,12 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
     else
       msg << " mandatory split saddles computed in ";
     msg << t.getElapsedTime() << " s. (" << threadNumber_ << " thread(s))";
-    msg << endl;
-    dMsg(cout, msg.str(), timeMsg);
+    msg << std::endl;
+    dMsg(std::cout, msg.str(), timeMsg);
   }
   if(debugLevel_ > advancedInfoMsg) {
-    stringstream title;
-    stringstream pointTypeMsg;
+    std::stringstream title;
+    std::stringstream pointTypeMsg;
     title << "[MandatoryCriticalPoints] List of ";
     if(lowerTree->isJoinTree()) {
       title << "join saddles : ";
@@ -1534,25 +1541,27 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
       title << "split saddles : ";
       pointTypeMsg << "Split Saddle";
     }
-    title << endl;
-    dMsg(cout, title.str(), advancedInfoMsg);
+    title << std::endl;
+    dMsg(std::cout, title.str(), advancedInfoMsg);
     for(int i = 0; i < (int)mandatorySaddleVertex->size(); i++) {
-      stringstream msg;
+      std::stringstream msg;
       msg << "  -> " << pointTypeMsg.str() << " (";
-      msg << setw(3) << right << i << ")";
+      msg << std::setw(3) << std::right << i << ")";
       msg << "  Vertices  <";
-      msg << setw(9) << right << (*mandatorySaddleVertex)[i].first << " ; ";
-      msg << setw(9) << left << (*mandatorySaddleVertex)[i].second << ">";
+      msg << std::setw(9) << std::right << (*mandatorySaddleVertex)[i].first
+          << " ; ";
+      msg << std::setw(9) << std::left << (*mandatorySaddleVertex)[i].second
+          << ">";
       msg << "  Interval  [";
       double lowerValue = 0;
       double upperValue = 0;
       lowerTree->getVertexScalar((*mandatorySaddleVertex)[i].first, lowerValue);
       upperTree->getVertexScalar(
         (*mandatorySaddleVertex)[i].second, upperValue);
-      msg << setw(12) << right << lowerValue << " ; ";
-      msg << setw(12) << left << upperValue << "]";
-      msg << endl;
-      dMsg(cout, msg.str(), advancedInfoMsg);
+      msg << std::setw(12) << std::right << lowerValue << " ; ";
+      msg << std::setw(12) << std::left << upperValue << "]";
+      msg << std::endl;
+      dMsg(std::cout, msg.str(), advancedInfoMsg);
     }
   }
 
@@ -1595,7 +1604,7 @@ int MandatoryCriticalPoints::findCommonAncestorNodeId(
   const int &vertexId0,
   const int &vertexId1) const {
   int numberOfSuperArcs = tree->getNumberOfSuperArcs();
-  vector<bool> isSuperArcVisited(numberOfSuperArcs, false);
+  std::vector<bool> isSuperArcVisited(numberOfSuperArcs, false);
   int superArcId0 = getVertexSuperArcId(vertexId0, tree);
   int superArcId1 = getVertexSuperArcId(vertexId1, tree);
   int superArcId = superArcId0;
@@ -1615,9 +1624,9 @@ int MandatoryCriticalPoints::findCommonAncestorNodeId(
 void MandatoryCriticalPoints::getSubTreeSuperArcIds(
   const SubLevelSetTree *tree,
   const int &rootSuperArcId,
-  vector<int> &subTreeSuperArcId) const {
-  vector<int> listOfSuperArcId;
-  queue<int> superArcIdsToCompute;
+  std::vector<int> &subTreeSuperArcId) const {
+  std::vector<int> listOfSuperArcId;
+  std::queue<int> superArcIdsToCompute;
   superArcIdsToCompute.push(rootSuperArcId);
   while(!superArcIdsToCompute.empty()) {
     int superArcId = superArcIdsToCompute.front();
@@ -1639,28 +1648,28 @@ int MandatoryCriticalPoints::simplify(const double &normalizedThreshold,
                                       const TreeType treeType) {
 
   /* Input */
-  const vector<pair<pair<int, int>, double>> *extremaSaddlePair
+  const std::vector<std::pair<std::pair<int, int>, double>> *extremaSaddlePair
     = (treeType == TreeType::JoinTree) ? &(mdtMinJoinSaddlePair_)
                                        : &(mdtMaxSplitSaddlePair_);
-  const vector<vector<int>> *mergedExtrema = (treeType == TreeType::JoinTree)
-                                               ? &(mergedMinimaId_)
-                                               : &(mergedMaximaId_);
+  const std::vector<std::vector<int>> *mergedExtrema
+    = (treeType == TreeType::JoinTree) ? &(mergedMinimaId_)
+                                       : &(mergedMaximaId_);
   const int numberOfExtrema = (treeType == TreeType::JoinTree)
                                 ? (int)mandatoryMinimumVertex_.size()
                                 : (int)mandatoryMaximumVertex_.size();
   /* Output */
-  vector<bool> *extremumSimplified = (treeType == TreeType::JoinTree)
-                                       ? &(isMdtMinimumSimplified_)
-                                       : &(isMdtMaximumSimplified_);
-  vector<bool> *saddleSimplified = (treeType == TreeType::JoinTree)
-                                     ? &(isMdtJoinSaddleSimplified_)
-                                     : &(isMdtSplitSaddleSimplified_);
-  vector<int> *extremumParentSaddle = (treeType == TreeType::JoinTree)
-                                        ? &(mdtMinimumParentSaddleId_)
-                                        : &(mdtMaximumParentSaddleId_);
-  vector<int> *saddleParentSaddle = (treeType == TreeType::JoinTree)
-                                      ? &(mdtJoinSaddleParentSaddleId_)
-                                      : &(mdtSplitSaddleParentSaddleId_);
+  std::vector<bool> *extremumSimplified = (treeType == TreeType::JoinTree)
+                                            ? &(isMdtMinimumSimplified_)
+                                            : &(isMdtMaximumSimplified_);
+  std::vector<bool> *saddleSimplified = (treeType == TreeType::JoinTree)
+                                          ? &(isMdtJoinSaddleSimplified_)
+                                          : &(isMdtSplitSaddleSimplified_);
+  std::vector<int> *extremumParentSaddle = (treeType == TreeType::JoinTree)
+                                             ? &(mdtMinimumParentSaddleId_)
+                                             : &(mdtMaximumParentSaddleId_);
+  std::vector<int> *saddleParentSaddle = (treeType == TreeType::JoinTree)
+                                           ? &(mdtJoinSaddleParentSaddleId_)
+                                           : &(mdtSplitSaddleParentSaddleId_);
 
   // Simplification threshold value
   double simplificationThreshold;
@@ -1689,7 +1698,7 @@ int MandatoryCriticalPoints::simplify(const double &normalizedThreshold,
   // Second : simplification of saddles
   saddleSimplified->resize(mergedExtrema->size());
   fill(saddleSimplified->begin(), saddleSimplified->end(), false);
-  vector<int> nonSimplifiedExtremaNumber(mergedExtrema->size(), 0);
+  std::vector<int> nonSimplifiedExtremaNumber(mergedExtrema->size(), 0);
   extremumParentSaddle->resize(numberOfExtrema);
   fill(extremumParentSaddle->begin(), extremumParentSaddle->end(), -1);
   saddleParentSaddle->resize(mergedExtrema->size());
@@ -1750,7 +1759,7 @@ int MandatoryCriticalPoints::simplify(const double &normalizedThreshold,
   }
   /* Debug messages */
   if(debugLevel_ > infoMsg) {
-    stringstream msg;
+    std::stringstream msg;
     msg << "[MandatoryCriticalPoints] Number of ";
     if(treeType == TreeType::JoinTree)
       msg << "minima";
@@ -1758,28 +1767,28 @@ int MandatoryCriticalPoints::simplify(const double &normalizedThreshold,
       msg << "maxima";
     msg << " simplified : " << extremaSimplifiedNumber;
     msg << " (threshold value = " << simplificationThreshold << ")";
-    msg << endl;
-    dMsg(cout, msg.str(), infoMsg);
+    msg << std::endl;
+    dMsg(std::cout, msg.str(), infoMsg);
   }
   if(debugLevel_ > advancedInfoMsg && extremaSimplifiedNumber > 0) {
-    stringstream msg;
+    std::stringstream msg;
     msg << "[MandatoryCriticalPoints] List of simplified ";
     if(treeType == TreeType::JoinTree)
       msg << "minima";
     else
       msg << "maxima";
-    msg << " : " << endl;
-    dMsg(cout, msg.str(), advancedInfoMsg);
+    msg << " : " << std::endl;
+    dMsg(std::cout, msg.str(), advancedInfoMsg);
     for(size_t i = 0; i < extremumSimplified->size(); i++) {
       if((*extremumSimplified)[i]) {
-        stringstream msg2;
-        msg2 << "    (" << i << ")" << endl;
-        dMsg(cout, msg2.str(), advancedInfoMsg);
+        std::stringstream msg2;
+        msg2 << "    (" << i << ")" << std::endl;
+        dMsg(std::cout, msg2.str(), advancedInfoMsg);
       }
     }
   }
   if(debugLevel_ > infoMsg) {
-    stringstream msg;
+    std::stringstream msg;
     msg << "[MandatoryCriticalPoints] Number of ";
     if(treeType == TreeType::JoinTree)
       msg << "join saddles";
@@ -1787,23 +1796,23 @@ int MandatoryCriticalPoints::simplify(const double &normalizedThreshold,
       msg << "split saddles";
     msg << " simplified : " << saddlesSimplifiedNumber;
     msg << " (threshold value = " << simplificationThreshold << ")";
-    msg << endl;
-    dMsg(cout, msg.str(), infoMsg);
+    msg << std::endl;
+    dMsg(std::cout, msg.str(), infoMsg);
   }
   if(debugLevel_ > advancedInfoMsg && saddlesSimplifiedNumber > 0) {
-    stringstream msg;
+    std::stringstream msg;
     msg << "[MandatoryCriticalPoints] List of simplified ";
     if(treeType == TreeType::JoinTree)
       msg << "join saddles";
     else
       msg << "split saddles";
-    msg << " : " << endl;
-    dMsg(cout, msg.str(), advancedInfoMsg);
+    msg << " : " << std::endl;
+    dMsg(std::cout, msg.str(), advancedInfoMsg);
     for(size_t i = 0; i < saddleSimplified->size(); i++) {
       if((*saddleSimplified)[i]) {
-        stringstream msg2;
-        msg2 << "    (" << i << ")" << endl;
-        dMsg(cout, msg2.str(), advancedInfoMsg);
+        std::stringstream msg2;
+        msg2 << "    (" << i << ")" << std::endl;
+        dMsg(std::cout, msg2.str(), advancedInfoMsg);
       }
     }
   }
