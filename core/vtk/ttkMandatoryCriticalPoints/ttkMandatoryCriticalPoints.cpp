@@ -364,7 +364,7 @@ int ttkMandatoryCriticalPoints::doIt(vector<vtkDataSet *> &inputs,
     return -1;
 
   triangulation_->setWrapper(this);
-  mandatoryCriticalPoints_.setupTriangulation(triangulation_);
+  mandatoryCriticalPoints_.preconditionTriangulation(triangulation_);
 
   bool hasChangedConnectivity = false;
 
@@ -445,7 +445,8 @@ int ttkMandatoryCriticalPoints::doIt(vector<vtkDataSet *> &inputs,
   if(computeAll_) {
     // Calling the executing package
     switch(inputUpperBoundField->GetDataType()) {
-      vtkTemplateMacro(mandatoryCriticalPoints_.execute<VTK_TT>());
+      vtkTemplateMacro(
+        mandatoryCriticalPoints_.execute<VTK_TT>(*triangulation_));
     }
     computeAll_ = false;
     simplify_ = false;
@@ -478,16 +479,18 @@ int ttkMandatoryCriticalPoints::doIt(vector<vtkDataSet *> &inputs,
   }
   if(computeJoinSaddleOutput_) {
     if(outputAllJoinSaddleComponents_)
-      mandatoryCriticalPoints_.outputAllJoinSaddle();
+      mandatoryCriticalPoints_.outputAllJoinSaddle(*triangulation_);
     else
-      mandatoryCriticalPoints_.outputJoinSaddle(outputJoinSaddleComponentId_);
+      mandatoryCriticalPoints_.outputJoinSaddle(
+        outputJoinSaddleComponentId_, *triangulation_);
     computeJoinSaddleOutput_ = false;
   }
   if(computeSplitSaddleOutput_) {
     if(outputAllSplitSaddleComponents_)
-      mandatoryCriticalPoints_.outputAllSplitSaddle();
+      mandatoryCriticalPoints_.outputAllSplitSaddle(*triangulation_);
     else
-      mandatoryCriticalPoints_.outputSplitSaddle(outputSplitSaddleComponentId_);
+      mandatoryCriticalPoints_.outputSplitSaddle(
+        outputSplitSaddleComponentId_, *triangulation_);
     computeSplitSaddleOutput_ = false;
   }
   if(computeMaximumOutput_) {

@@ -174,12 +174,13 @@ namespace ttk {
     /// \pre To build these trees, the following must have been called :
     /// setVertexNumber(), fillVertexScalars(), setVertexPosition(),
     /// setTriangulation() and setSoSoffsets().
-    int buildSubTrees();
+    template <typename triangulationType>
+    int buildSubTrees(const triangulationType &triangulation);
 
     /// Execute the package.
     /// \return Returns 0 upon success, negative values otherwise.
-    template <class dataType>
-    int execute();
+    template <class dataType, typename triangulationType>
+    int execute(const triangulationType &triangulation);
 
     template <class dataType>
     inline int fillVertexScalars(void *upperData, void *lowerData) {
@@ -291,11 +292,12 @@ namespace ttk {
 
     // TODO Mettre les fonctions d'output dans le cpp
 
-    inline int outputAllJoinSaddle() {
+    template <typename triangulationType>
+    inline int outputAllJoinSaddle(const triangulationType &triangulation) {
       if(mandatoryJoinSaddleVertex_.size() > 0) {
-        outputJoinSaddle(0, true);
+        outputJoinSaddle(0, triangulation, true);
         for(int i = 1; i < (int)mandatoryJoinSaddleVertex_.size(); i++)
-          outputJoinSaddle(i, false);
+          outputJoinSaddle(i, triangulation, false);
       } else {
         int *output = (int *)outputMandatoryJoinSaddle_;
         for(int i = 0; i < vertexNumber_; i++) {
@@ -333,11 +335,12 @@ namespace ttk {
       return 0;
     }
 
-    inline int outputAllSplitSaddle() {
+    template <typename triangulationType>
+    inline int outputAllSplitSaddle(const triangulationType &triangulation) {
       if(mandatorySplitSaddleVertex_.size() > 0) {
-        outputSplitSaddle(0, true);
+        outputSplitSaddle(0, triangulation, true);
         for(int i = 1; i < (int)mandatorySplitSaddleVertex_.size(); i++)
-          outputSplitSaddle(i, false);
+          outputSplitSaddle(i, triangulation, false);
       } else {
         int *output = (int *)outputMandatorySplitSaddle_;
         for(int i = 0; i < vertexNumber_; i++) {
@@ -347,7 +350,10 @@ namespace ttk {
       return 0;
     }
 
-    inline int outputJoinSaddle(const int &id, const bool &reset = true) {
+    template <typename triangulationType>
+    inline int outputJoinSaddle(const int &id,
+                                const triangulationType &triangulation,
+                                const bool &reset = true) {
       int *output = (int *)outputMandatoryJoinSaddle_;
       if(reset)
         for(int i = 0; i < vertexNumber_; i++) {
@@ -356,10 +362,10 @@ namespace ttk {
       if(id < (int)mandatoryJoinSaddleVertex_.size()) {
         if(!isMdtJoinSaddleSimplified_[id]) {
           if(mandatoryJoinSaddleComponentVertices_[id].empty())
-            computeSaddleComponent(id, PointType::JoinSaddle,
-                                   mandatoryJoinSaddleVertex_,
-                                   lowerVertexScalars_, upperVertexScalars_,
-                                   mandatoryJoinSaddleComponentVertices_[id]);
+            computeSaddleComponent(
+              id, PointType::JoinSaddle, mandatoryJoinSaddleVertex_,
+              lowerVertexScalars_, upperVertexScalars_,
+              mandatoryJoinSaddleComponentVertices_[id], triangulation);
           for(int i = 0;
               i < (int)mandatoryJoinSaddleComponentVertices_[id].size(); i++) {
             output[mandatoryJoinSaddleComponentVertices_[id][i]] += 1;
@@ -413,7 +419,10 @@ namespace ttk {
       return 0;
     }
 
-    inline int outputSplitSaddle(const int &id, const bool &reset = true) {
+    template <typename triangulationType>
+    inline int outputSplitSaddle(const int &id,
+                                 const triangulationType &triangulation,
+                                 const bool &reset = true) {
       int *output = (int *)outputMandatorySplitSaddle_;
       if(reset) {
         for(int i = 0; i < vertexNumber_; i++) {
@@ -423,10 +432,10 @@ namespace ttk {
       if(id < (int)mandatorySplitSaddleVertex_.size()) {
         if(!isMdtSplitSaddleSimplified_[id]) {
           if(mandatorySplitSaddleComponentVertices_[id].empty())
-            computeSaddleComponent(id, PointType::SplitSaddle,
-                                   mandatorySplitSaddleVertex_,
-                                   lowerVertexScalars_, upperVertexScalars_,
-                                   mandatorySplitSaddleComponentVertices_[id]);
+            computeSaddleComponent(
+              id, PointType::SplitSaddle, mandatorySplitSaddleVertex_,
+              lowerVertexScalars_, upperVertexScalars_,
+              mandatorySplitSaddleComponentVertices_[id], triangulation);
           for(int i = 0;
               i < (int)mandatorySplitSaddleComponentVertices_[id].size(); i++) {
             output[mandatorySplitSaddleComponentVertices_[id][i]] += 1;
@@ -507,12 +516,11 @@ namespace ttk {
       return 0;
     }
 
-    inline int setupTriangulation(Triangulation *triangulation) {
-      triangulation_ = triangulation;
-      if(triangulation_) {
-        triangulation_->preconditionVertexNeighbors();
+    inline void
+      preconditionTriangulation(AbstractTriangulation *const triangulation) {
+      if(triangulation) {
+        triangulation->preconditionVertexNeighbors();
       }
-      return 0;
     }
 
     /// Set the number of vertices in the scalar field.
@@ -639,13 +647,15 @@ namespace ttk {
                                  const std::vector<double> &vertexScalars,
                                  std::vector<int> &componentVertexList) const;
 
+    template <typename triangulationType>
     int computeSaddleComponent(
       const int componentId,
       const PointType &pointType,
       const std::vector<std::pair<int, int>> &mandatorySaddleVertex,
       const std::vector<double> &lowVertexScalars,
       const std::vector<double> &upVertexInterval,
-      std::vector<int> &componentVertexList) const;
+      std::vector<int> &componentVertexList,
+      const triangulationType &triangulation) const;
 
     int enumerateMandatoryExtrema(
       const PointType pointType,
@@ -721,8 +731,6 @@ namespace ttk {
     std::vector<double> upperVertexScalars_{};
     /// Copy of the input lower scalar field converted in double.
     std::vector<double> lowerVertexScalars_{};
-    /// Triangulation object of the input.
-    Triangulation *triangulation_{};
     /// Join tree of the upper bound scalar field.
     SubLevelSetTree upperJoinTree_{};
     /// Join tree of the lower bound scalar field.
@@ -825,8 +833,9 @@ namespace ttk {
 // #include                  <MandatoryCriticalPoints.cpp>
 
 // template functions
-template <class dataType>
-int ttk::MandatoryCriticalPoints::execute() {
+template <class dataType, typename triangulationType>
+int ttk::MandatoryCriticalPoints::execute(
+  const triangulationType &triangulation) {
 
   Timer t;
 
@@ -849,15 +858,13 @@ int ttk::MandatoryCriticalPoints::execute() {
     return -7;
   if(!vertexPositions_.size())
     return -8;
-  if(!triangulation_)
-    return -9;
 #endif
 
   // Init the input
   fillVertexScalars<dataType>(inputUpperBoundField_, inputLowerBoundField_);
 
   // Build the join trees and split trees
-  buildSubTrees();
+  buildSubTrees(triangulation);
 
 // Compute mandatory extrema
 #ifdef TTK_ENABLE_OPENMP
@@ -958,5 +965,170 @@ int ttk::MandatoryCriticalPoints::execute() {
   this->printMsg(
     "Data-set (" + std::to_string(vertexNumber_) + " points) processed", 1.0,
     t.getElapsedTime(), this->threadNumber_);
+  return 0;
+}
+
+template <typename triangulationType>
+int ttk::MandatoryCriticalPoints::buildSubTrees(
+  const triangulationType &triangulation) {
+
+  Timer t;
+
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(vertexNumber_ <= 0)
+    return -1;
+  if((int)upperVertexScalars_.size() != vertexNumber_)
+    return -2;
+  if((int)lowerVertexScalars_.size() != vertexNumber_)
+    return -3;
+  if((int)vertexPositions_.size() != vertexNumber_)
+    return -4;
+  if(triangulation.getNumberOfVertices() != vertexNumber_)
+    return -5;
+  if((int)vertexSoSoffsets_.size() != vertexNumber_)
+    return -6;
+#endif
+
+  // upperMaximumList_ and lowerMinimumList_ computation (not sorted by function
+  // value)
+  lowerMinimumList_.clear();
+  upperMaximumList_.clear();
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif
+  for(int i = 0; i < vertexNumber_; i++) {
+    bool isLowerMin = true;
+    bool isUpperMax = true;
+    SimplexId neighborNumber = triangulation.getVertexNeighborNumber(i);
+    for(SimplexId j = 0; j < neighborNumber; j++) {
+      SimplexId neighborId;
+      triangulation.getVertexNeighbor(i, j, neighborId);
+      if((lowerVertexScalars_[neighborId] < lowerVertexScalars_[i])
+         || ((lowerVertexScalars_[neighborId] == lowerVertexScalars_[i])
+             && (vertexSoSoffsets_[neighborId] < vertexSoSoffsets_[i])))
+        isLowerMin = false;
+      if((upperVertexScalars_[neighborId] > upperVertexScalars_[i])
+         || ((upperVertexScalars_[neighborId] == upperVertexScalars_[i])
+             && (vertexSoSoffsets_[neighborId] > vertexSoSoffsets_[i])))
+        isUpperMax = false;
+      if(!isUpperMax && !isLowerMin)
+        break;
+    }
+    if(isLowerMin) {
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp critical
+#endif
+      { lowerMinimumList_.push_back(i); }
+    }
+    if(isUpperMax) {
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp critical
+#endif
+      { upperMaximumList_.push_back(i); }
+    }
+  }
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel sections num_threads(threadNumber_)
+#endif
+  {
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp section
+#endif
+    {
+      upperJoinTree_.setNumberOfVertices(vertexNumber_);
+      upperJoinTree_.setVertexScalars(&upperVertexScalars_);
+      upperJoinTree_.setVertexPositions(&vertexPositions_);
+      upperJoinTree_.setTriangulation(&triangulation);
+      upperJoinTree_.setVertexSoSoffsets(&vertexSoSoffsets_);
+      upperJoinTree_.buildExtremumList(upperMinimumList_, true);
+      upperJoinTree_.build();
+    }
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp section
+#endif
+    {
+      lowerJoinTree_.setNumberOfVertices(vertexNumber_);
+      lowerJoinTree_.setVertexScalars(&lowerVertexScalars_);
+      lowerJoinTree_.setVertexPositions(&vertexPositions_);
+      lowerJoinTree_.setTriangulation(&triangulation);
+      lowerJoinTree_.setVertexSoSoffsets(&vertexSoSoffsets_);
+      lowerJoinTree_.setMinimumList(lowerMinimumList_);
+      lowerJoinTree_.build();
+    }
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp section
+#endif
+    {
+      upperSplitTree_.setNumberOfVertices(vertexNumber_);
+      upperSplitTree_.setVertexScalars(&upperVertexScalars_);
+      upperSplitTree_.setVertexPositions(&vertexPositions_);
+      upperSplitTree_.setTriangulation(&triangulation);
+      upperSplitTree_.setVertexSoSoffsets(&vertexSoSoffsets_);
+      upperSplitTree_.setMaximumList(upperMaximumList_);
+      upperSplitTree_.build();
+    }
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp section
+#endif
+    {
+      lowerSplitTree_.setNumberOfVertices(vertexNumber_);
+      lowerSplitTree_.setVertexScalars(&lowerVertexScalars_);
+      lowerSplitTree_.setVertexPositions(&vertexPositions_);
+      lowerSplitTree_.setTriangulation(&triangulation);
+      lowerSplitTree_.setVertexSoSoffsets(&vertexSoSoffsets_);
+      lowerSplitTree_.buildExtremumList(lowerMaximumList_, false);
+      lowerSplitTree_.build();
+    }
+  }
+  this->printMsg("4 SubLevelSetTrees computed", 1.0, t.getElapsedTime(),
+                 this->threadNumber_);
+  return 0;
+}
+
+template <typename triangulationType>
+int ttk::MandatoryCriticalPoints::computeSaddleComponent(
+  const int componentId,
+  const PointType &pointType,
+  const std::vector<std::pair<int, int>> &mandatorySaddleVertex,
+  const std::vector<double> &lowVertexScalars,
+  const std::vector<double> &upVertexScalars,
+  std::vector<int> &componentVertexList,
+  const triangulationType &triangulation) const {
+
+  const int seedVertexId = mandatorySaddleVertex[componentId].first;
+  const double lowInterval = lowVertexScalars[seedVertexId];
+  const double upInterval
+    = upVertexScalars[mandatorySaddleVertex[componentId].second];
+
+  componentVertexList.clear();
+
+  std::vector<bool> isVisited(vertexNumber_, false);
+  std::queue<SimplexId> idQueue;
+  idQueue.push(seedVertexId);
+
+  while(!(idQueue.empty())) {
+    int vertexId = idQueue.front();
+    idQueue.pop();
+    if(!isVisited[vertexId]) {
+      isVisited[vertexId] = true;
+      double lowerValue = lowerVertexScalars_[vertexId];
+      double upperValue = upperVertexScalars_[vertexId];
+      if((pointType == PointType::JoinSaddle && (!(lowerValue > upInterval))
+          && (upperValue > lowInterval))
+         || (pointType == PointType::SplitSaddle
+             && (!(upperValue < lowInterval)) && (lowerValue < upInterval))) {
+        componentVertexList.push_back(vertexId);
+        // Neighbors
+        SimplexId neighborNumber
+          = triangulation.getVertexNeighborNumber(vertexId);
+        for(SimplexId i = 0; i < neighborNumber; i++) {
+          SimplexId neighborVertexId;
+          triangulation.getVertexNeighbor(vertexId, i, neighborVertexId);
+          idQueue.push(neighborVertexId);
+        }
+      }
+    }
+  }
   return 0;
 }
