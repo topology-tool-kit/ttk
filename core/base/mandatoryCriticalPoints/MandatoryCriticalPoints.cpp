@@ -597,66 +597,59 @@ int MandatoryCriticalPoints::computePlanarLayout(
 }
 
 int MandatoryCriticalPoints::computeExtremumComponent(
-  const int &componentId, const PointType &pointType) {
+  const int componentId,
+  const PointType &pointType,
+  const SubLevelSetTree &tree,
+  const int seedVertexId,
+  const std::vector<double> &vertexScalars,
+  std::vector<int> &componentVertexList) const {
 
-  const SubLevelSetTree *tree = (pointType == PointType::Minimum)
-                                  ? &(lowerJoinTree_)
-                                  : &(upperSplitTree_);
-  const int seedVertexId = (pointType == PointType::Minimum)
-                             ? mandatoryMinimumVertex_[componentId]
-                             : mandatoryMaximumVertex_[componentId];
-  const double value = (pointType == PointType::Minimum)
-                         ? upperVertexScalars_[seedVertexId]
-                         : lowerVertexScalars_[seedVertexId];
-  std::vector<int> *componentVertexList
-    = (pointType == PointType::Minimum)
-        ? &(mandatoryMinimumComponentVertices_[componentId])
-        : &(mandatoryMaximumComponentVertices_[componentId]);
+  const double value = vertexScalars[seedVertexId];
 
   // Clear the list
-  componentVertexList->clear();
+  componentVertexList.clear();
   // Get the super arc id of the vertex
-  int superArcId = getVertexSuperArcId(seedVertexId, tree);
+  int superArcId = getVertexSuperArcId(seedVertexId, &tree);
   // Get the sub tree root super arc
-  int rootSuperArcId = getSubTreeRootSuperArcId(tree, superArcId, value);
+  int rootSuperArcId = getSubTreeRootSuperArcId(&tree, superArcId, value);
   // Get the list of the sub tree super arc ids
   std::vector<int> subTreeSuperArcId;
-  getSubTreeSuperArcIds(tree, rootSuperArcId, subTreeSuperArcId);
+  getSubTreeSuperArcIds(&tree, rootSuperArcId, subTreeSuperArcId);
   // Comparaison
   int sign = (pointType == PointType::Minimum) ? 1 : -1;
   // Compute each super arc
   for(int i = 0; i < (int)subTreeSuperArcId.size(); i++) {
-    const SuperArc *superArc = tree->getSuperArc(subTreeSuperArcId[i]);
+    const SuperArc *superArc = tree.getSuperArc(subTreeSuperArcId[i]);
     const int numberOfRegularNodes = superArc->getNumberOfRegularNodes();
     // Root super arc and others treated differently
     if(subTreeSuperArcId[i] == rootSuperArcId) {
       // Test the value for each regular node
       for(int j = 0; j < numberOfRegularNodes; j++) {
         int regularNodeId = superArc->getRegularNodeId(j);
-        double nodeScalar = tree->getNodeScalar(regularNodeId);
+        double nodeScalar = tree.getNodeScalar(regularNodeId);
         if(!((sign * nodeScalar) > (sign * value))) {
-          int vertexId = tree->getNode(regularNodeId)->getVertexId();
-          componentVertexList->push_back(vertexId);
+          int vertexId = tree.getNode(regularNodeId)->getVertexId();
+          componentVertexList.push_back(vertexId);
         }
       }
       // Down node
       int downNodeId = superArc->getDownNodeId();
-      double nodeScalar = tree->getNodeScalar(downNodeId);
+      double nodeScalar = tree.getNodeScalar(downNodeId);
       if(!((sign * nodeScalar) > (sign * value))) {
-        int vertexId = tree->getNode(downNodeId)->getVertexId();
-        componentVertexList->push_back(vertexId);
+        int vertexId = tree.getNode(downNodeId)->getVertexId();
+        componentVertexList.push_back(vertexId);
       }
     } else {
       // Take all regular nodes
       for(int j = 0; j < numberOfRegularNodes; j++) {
         int regularNodeId = superArc->getRegularNodeId(j);
-        int vertexId = tree->getNode(regularNodeId)->getVertexId();
-        componentVertexList->push_back(vertexId);
+        int vertexId = tree.getNode(regularNodeId)->getVertexId();
+        componentVertexList.push_back(vertexId);
       }
       // Take down node
       int downNodeId = superArc->getDownNodeId();
-      int vertexId = tree->getNode(downNodeId)->getVertexId();
-      componentVertexList->push_back(vertexId);
+      int vertexId = tree.getNode(downNodeId)->getVertexId();
+      componentVertexList.push_back(vertexId);
     }
   }
   return 0;
