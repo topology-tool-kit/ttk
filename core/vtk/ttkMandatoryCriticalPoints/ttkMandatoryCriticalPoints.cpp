@@ -1,4 +1,6 @@
+#include <ttkMacros.h>
 #include <ttkMandatoryCriticalPoints.h>
+#include <ttkUtils.h>
 
 #include <vtkCellData.h>
 #include <vtkDataObject.h>
@@ -195,15 +197,19 @@ int ttkMandatoryCriticalPoints::RequestData(
     this->setVertexPosition(i, point.data());
   }
   // Set the void pointers to the upper and lower bound fields
-  this->setLowerBoundFieldPointer(inputLowerBoundField->GetVoidPointer(0));
-  this->setUpperBoundFieldPointer(inputUpperBoundField->GetVoidPointer(0));
+  this->setLowerBoundFieldPointer(
+    ttkUtils::GetVoidPointer(inputLowerBoundField));
+  this->setUpperBoundFieldPointer(
+    ttkUtils::GetVoidPointer(inputUpperBoundField));
   // Set the output data pointers
-  this->setOutputMinimumDataPointer(outputMandatoryMinimum->GetVoidPointer(0));
+  this->setOutputMinimumDataPointer(
+    ttkUtils::GetVoidPointer(outputMandatoryMinimum));
   this->setOutputJoinSaddleDataPointer(
-    outputMandatoryJoinSaddle->GetVoidPointer(0));
+    ttkUtils::GetVoidPointer(outputMandatoryJoinSaddle));
   this->setOutputSplitSaddleDataPointer(
-    outputMandatorySplitSaddle->GetVoidPointer(0));
-  this->setOutputMaximumDataPointer(outputMandatoryMaximum->GetVoidPointer(0));
+    ttkUtils::GetVoidPointer(outputMandatorySplitSaddle));
+  this->setOutputMaximumDataPointer(
+    ttkUtils::GetVoidPointer(outputMandatoryMaximum));
   // Set the triangulation object
   // Set the offsets
   this->setSoSoffsets();
@@ -212,9 +218,11 @@ int ttkMandatoryCriticalPoints::RequestData(
   this->setSimplificationThreshold(simplificationThreshold_);
 
   // Execute process
-  switch(inputUpperBoundField->GetDataType()) {
-    vtkTemplateMacro(this->execute<VTK_TT>(*triangulation));
-  }
+  ttkVtkTemplateMacro(inputUpperBoundField->GetDataType(),
+                      triangulation->getType(),
+                      (this->execute<VTK_TT, TTK_TT>(
+                        *static_cast<TTK_TT *>(triangulation->getData()))));
+
   computeMinimumOutput_ = true;
   computeJoinSaddleOutput_ = true;
   computeSplitSaddleOutput_ = true;
