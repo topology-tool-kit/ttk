@@ -78,12 +78,8 @@ namespace ttk {
     }
 
     /// \returns Returns a pointer to the id-th node
-    inline Node *getNode(const unsigned int &id) {
-      if(id < node_.size()) {
-        return node_.data() + id;
-      } else {
-        return nullptr;
-      }
+    inline Node &getNode(const unsigned int &id) {
+      return node_[id];
     }
 
     /// Preprocess the tree structure to answer the query() calls in constant

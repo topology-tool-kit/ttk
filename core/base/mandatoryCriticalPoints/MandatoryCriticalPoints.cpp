@@ -925,12 +925,12 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
       if(superArcId != -1) {
         lcaSaddleId = extremaNumber + upperTransverse[superArcId];
         // Ancestor
-        upperLca.getNode(i)->setAncestor(lcaSaddleId);
+        upperLca.getNode(i).setAncestor(lcaSaddleId);
 // Successor
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp critical(upperLca)
 #endif
-        upperLca.getNode(lcaSaddleId)->addSuccessor(i);
+        upperLca.getNode(lcaSaddleId).addSuccessor(i);
       }
 
       // Lower Tree
@@ -942,12 +942,12 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
       if(superArcId != -1) {
         lcaSaddleId = extremaNumber + lowerTransverse[superArcId];
         // Ancestor
-        lowerLca.getNode(i)->setAncestor(lcaSaddleId);
+        lowerLca.getNode(i).setAncestor(lcaSaddleId);
 // Successor
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp critical(lowerLca)
 #endif
-        lowerLca.getNode(lcaSaddleId)->addSuccessor(i);
+        lowerLca.getNode(lcaSaddleId).addSuccessor(i);
       }
     }
 
@@ -966,14 +966,13 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
         int lcaSuccessorSaddleId = extremaNumber + i;
         int lcaAncestorSaddleId = extremaNumber + upperTransverse[superArcId];
         // Ancestor
-        upperLca.getNode(lcaSuccessorSaddleId)
-          ->setAncestor(lcaAncestorSaddleId);
+        upperLca.getNode(lcaSuccessorSaddleId).setAncestor(lcaAncestorSaddleId);
 // Successor
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp critical(upperLca)
 #endif
         upperLca.getNode(lcaAncestorSaddleId)
-          ->addSuccessor(lcaSuccessorSaddleId);
+          .addSuccessor(lcaSuccessorSaddleId);
       }
     }
 
@@ -991,14 +990,13 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
         int lcaSuccessorSaddleId = extremaNumber + i;
         int lcaAncestorSaddleId = extremaNumber + lowerTransverse[superArcId];
         // Ancestor
-        lowerLca.getNode(lcaSuccessorSaddleId)
-          ->setAncestor(lcaAncestorSaddleId);
+        lowerLca.getNode(lcaSuccessorSaddleId).setAncestor(lcaAncestorSaddleId);
 // Successor
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp critical(lowerLca)
 #endif
         lowerLca.getNode(lcaAncestorSaddleId)
-          ->addSuccessor(lcaSuccessorSaddleId);
+          .addSuccessor(lcaSuccessorSaddleId);
       }
     }
 
