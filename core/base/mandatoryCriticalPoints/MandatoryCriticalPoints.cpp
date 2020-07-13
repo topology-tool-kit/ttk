@@ -578,9 +578,8 @@ int MandatoryCriticalPoints::computePlanarLayout(
   // X coordinate for the root
   xCoord[rootGraphPointId] = xCoord[downRootPointId];
 
-  const std::string treeName = treeType == TreeType::JoinTree
-                                 ? "minimum - join saddle"
-                                 : "maximum - split saddle";
+  const std::string treeName
+    = treeType == TreeType::JoinTree ? "join tree" : "split tree";
 
   this->printMsg("Planar layout for mandatory " + treeName + ": root point ("
                    + std::to_string(downRootPointId) + ")",
@@ -701,39 +700,28 @@ int MandatoryCriticalPoints::computeSaddleComponent(
 }
 
 int MandatoryCriticalPoints::enumerateMandatoryExtrema(
-  const PointType pointType) {
+  const PointType pointType,
+  SubLevelSetTree &firstTree,
+  SubLevelSetTree &secondTree,
+  std::vector<int> &mandatoryExtremum,
+  std::vector<std::pair<double, double>> &criticalInterval) const {
 
   Timer t;
 
-  /* Input */
-  SubLevelSetTree *firstTree = (pointType == PointType::Minimum)
-                                 ? &(upperJoinTree_)
-                                 : &(lowerSplitTree_);
-  SubLevelSetTree *secondTree = (pointType == PointType::Minimum)
-                                  ? &(lowerJoinTree_)
-                                  : &(upperSplitTree_);
-  /* Output */
-  std::vector<int> *mandatoryExtremum = (pointType == PointType::Minimum)
-                                          ? &(mandatoryMinimumVertex_)
-                                          : &(mandatoryMaximumVertex_);
-  std::vector<std::pair<double, double>> *criticalInterval
-    = (pointType == PointType::Minimum) ? &(mandatoryMinimumInterval_)
-                                        : &(mandatoryMaximumInterval_);
-
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(!(firstTree->isJoinTree() != firstTree->isSplitTree()))
+  if(!(firstTree.isJoinTree() != firstTree.isSplitTree()))
     return -1;
-  if(!(secondTree->isJoinTree() != secondTree->isSplitTree()))
+  if(!(secondTree.isJoinTree() != secondTree.isSplitTree()))
     return -2;
-  if(!((firstTree->isJoinTree() && secondTree->isJoinTree())
-       || (firstTree->isSplitTree() && secondTree->isSplitTree())))
+  if(!((firstTree.isJoinTree() && secondTree.isJoinTree())
+       || (firstTree.isSplitTree() && secondTree.isSplitTree())))
     return -3;
 #endif
 
   // Extremum list in the first tree
-  const std::vector<int> *extremumList = firstTree->getExtremumList();
+  const std::vector<int> &extremumList = *firstTree.getExtremumList();
   // Some tmp variables
-  int extremumNumber = (int)extremumList->size();
+  size_t extremumNumber = extremumList.size();
   std::vector<int> vertexId(extremumNumber);
   std::vector<double> vertexValue(extremumNumber);
   std::vector<int> superArcId(extremumNumber);
@@ -741,31 +729,31 @@ int MandatoryCriticalPoints::enumerateMandatoryExtrema(
   std::vector<int> subTreeSuperArcId; // vector<vector<int> >
                                       // subTreeSuperArcId(extremumNumber);
   // Clear the list of mandatory extrema
-  mandatoryExtremum->clear();
-  criticalInterval->clear();
+  mandatoryExtremum.clear();
+  criticalInterval.clear();
   // To mark the super arc in the second tree as already used for a mandatory
   // critical component
   std::vector<bool> isSuperArcAlreadyVisited(
-    secondTree->getNumberOfSuperArcs(), false);
+    secondTree.getNumberOfSuperArcs(), false);
 
   // #ifdef TTK_ENABLE_OPENMP
   // #pragma omp parallel for num_threads(threadNumber_)
   // #endif
-  for(int i = 0; i < extremumNumber; i++) {
+  for(size_t i = 0; i < extremumNumber; i++) {
     // Mandatory until proven otherwise
     bool isMandatory = true;
     // Vertex Id (first tree)
-    vertexId[i] = (*extremumList)[i];
+    vertexId[i] = extremumList[i];
     // Vertex Value (first tree)
-    firstTree->getVertexScalar(vertexId[i], vertexValue[i]);
+    firstTree.getVertexScalar(vertexId[i], vertexValue[i]);
     // Super Arc Id (second tree)
-    int secondTreeSuperArcId = getVertexSuperArcId(vertexId[i], secondTree);
+    int secondTreeSuperArcId = getVertexSuperArcId(vertexId[i], &secondTree);
     // Root Super Arc Id (second tree) of the sub tree containing the vertex and
     // rooted at the value of the vertex in the first scalar field
     int rootSuperArcId = -1;
     if(!isSuperArcAlreadyVisited[secondTreeSuperArcId]) {
       rootSuperArcId = getSubTreeRootSuperArcId(
-        secondTree, secondTreeSuperArcId, vertexValue[i]);
+        &secondTree, secondTreeSuperArcId, vertexValue[i]);
     } else {
       isMandatory = false;
     }
@@ -781,13 +769,13 @@ int MandatoryCriticalPoints::enumerateMandatoryExtrema(
         if(isSuperArcAlreadyVisited[spaId]) {
           isMandatory = false;
         } else {
-          int downNodeId = secondTree->getSuperArc(spaId)->getDownNodeId();
+          int downNodeId = secondTree.getSuperArc(spaId)->getDownNodeId();
           int numberOfDownSuperArcs
-            = secondTree->getNode(downNodeId)->getNumberOfDownSuperArcs();
+            = secondTree.getNode(downNodeId)->getNumberOfDownSuperArcs();
           if(numberOfDownSuperArcs > 0) {
             for(int j = 0; j < numberOfDownSuperArcs; j++) {
               superArcQueue.push(
-                secondTree->getNode(downNodeId)->getDownSuperArcId(j));
+                secondTree.getNode(downNodeId)->getDownSuperArcId(j));
             }
           }
           subTreeSuperArcId.push_back(spaId);
@@ -798,33 +786,33 @@ int MandatoryCriticalPoints::enumerateMandatoryExtrema(
     // If it is a mandatory extremum
     if(isMandatory) {
       // Add it to the list
-      mandatoryExtremum->push_back(vertexId[i]);
+      mandatoryExtremum.push_back(vertexId[i]);
       // Mark all the super arcs in the sub tree as visited and compute the
       // critical interval
-      criticalInterval->push_back(
+      criticalInterval.push_back(
         std::pair<double, double>(vertexValue[i], vertexValue[i]));
       for(int j = 0; j < (int)subTreeSuperArcId.size(); j++) {
         isSuperArcAlreadyVisited[subTreeSuperArcId[j]] = true;
         int downNodeId
-          = secondTree->getSuperArc(subTreeSuperArcId[j])->getDownNodeId();
-        double downNodeValue = secondTree->getNodeScalar(downNodeId);
+          = secondTree.getSuperArc(subTreeSuperArcId[j])->getDownNodeId();
+        double downNodeValue = secondTree.getNodeScalar(downNodeId);
         if(pointType == PointType::Minimum) {
-          if(downNodeValue < criticalInterval->back().first) {
-            criticalInterval->back().first = downNodeValue;
+          if(downNodeValue < criticalInterval.back().first) {
+            criticalInterval.back().first = downNodeValue;
           }
         } else {
-          if(downNodeValue > criticalInterval->back().second) {
-            criticalInterval->back().second = downNodeValue;
+          if(downNodeValue > criticalInterval.back().second) {
+            criticalInterval.back().second = downNodeValue;
           }
         }
       }
       // Mark the super arc from the root of the sub tree to the global root
-      int upNodeId = secondTree->getSuperArc(rootSuperArcId)->getUpNodeId();
-      int spaId = secondTree->getNode(upNodeId)->getUpSuperArcId(0);
+      int upNodeId = secondTree.getSuperArc(rootSuperArcId)->getUpNodeId();
+      int spaId = secondTree.getNode(upNodeId)->getUpSuperArcId(0);
       while((spaId != -1) && !(isSuperArcAlreadyVisited[spaId])) {
         isSuperArcAlreadyVisited[spaId] = true;
-        upNodeId = secondTree->getSuperArc(spaId)->getUpNodeId();
-        spaId = secondTree->getNode(upNodeId)->getUpSuperArcId(0);
+        upNodeId = secondTree.getSuperArc(spaId)->getUpNodeId();
+        spaId = secondTree.getNode(upNodeId)->getUpSuperArcId(0);
       }
     }
 
@@ -864,47 +852,24 @@ int MandatoryCriticalPoints::enumerateMandatoryExtrema(
     // }
   }
 
-  if(debugLevel_ > timeMsg) {
+  const std::string pt = pointType == PointType::Minimum ? "minima" : "maxima";
+
+  this->printMsg(
+    "Computed " + std::to_string(mandatoryExtremum.size()) + " " + pt, 1.0,
+    t.getElapsedTime(), this->threadNumber_);
+  this->printMsg("List of mandatory " + pt, debug::Priority::DETAIL);
+
+  for(size_t i = 0; i < mandatoryExtremum.size(); i++) {
     std::stringstream msg;
-    msg << "[MandatoryCriticalPoints] ";
-    msg << mandatoryExtremum->size() << " mandatory ";
-    if(pointType == PointType::Minimum)
-      msg << "minima";
-    else
-      msg << "maxima";
-    msg << " computed in ";
-    msg << t.getElapsedTime() << " s. (" << threadNumber_ << " thread(s))";
-    msg << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
+    msg << "  -> " << pt << " (" << std::setw(3) << std::right << i << ") ";
+    msg << " \t"
+        << "Vertex  " << std::setw(9) << std::left << mandatoryExtremum[i];
+    msg << " \tInterval  [ " << std::setw(12) << std::right
+        << criticalInterval[i].first << " ; " << std::setprecision(9)
+        << std::setw(11) << std::left << criticalInterval[i].second << " ]";
+    this->printMsg(msg.str(), debug::Priority::DETAIL);
   }
 
-  if(debugLevel_ > advancedInfoMsg) {
-    std::stringstream title;
-    std::stringstream CPType;
-    title << "[MandatoryCriticalPoints] List of mandatory ";
-    if(pointType == PointType::Minimum) {
-      CPType << "Minimum";
-      title << "minima : ";
-    } else {
-      CPType << "Maximum";
-      title << "maxima : ";
-    }
-    title << std::endl;
-    dMsg(std::cout, title.str(), advancedInfoMsg);
-    for(int i = 0; i < (int)mandatoryExtremum->size(); i++) {
-      std::stringstream msg;
-      msg << "  -> " << CPType.str() << " (" << std::setw(3) << std::right << i
-          << ") ";
-      msg << " \t"
-          << "Vertex  " << std::setw(9) << std::left << (*mandatoryExtremum)[i];
-      msg << " \tInterval  [ " << std::setw(12) << std::right
-          << (*criticalInterval)[i].first << " ; " << std::setprecision(9)
-          << std::setw(11) << std::left << (*criticalInterval)[i].second
-          << " ]";
-      msg << std::endl;
-      dMsg(std::cout, msg.str(), advancedInfoMsg);
-    }
-  }
   return 0;
 }
 

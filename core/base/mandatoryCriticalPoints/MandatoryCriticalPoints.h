@@ -643,7 +643,12 @@ namespace ttk {
       const std::vector<double> &upVertexInterval,
       std::vector<int> &componentVertexList) const;
 
-    int enumerateMandatoryExtrema(const PointType pointType);
+    int enumerateMandatoryExtrema(
+      const PointType pointType,
+      SubLevelSetTree &firstTree,
+      SubLevelSetTree &secondTree,
+      std::vector<int> &mandatoryExtremum,
+      std::vector<std::pair<double, double>> &criticalInterval) const;
 
     /// TODO : Multiplicity
     int enumerateMandatorySaddles(const PointType pointType);
@@ -843,11 +848,19 @@ int ttk::MandatoryCriticalPoints::execute() {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp section
 #endif
-    { enumerateMandatoryExtrema(PointType::Minimum); }
+    {
+      enumerateMandatoryExtrema(PointType::Minimum, upperJoinTree_,
+                                lowerJoinTree_, mandatoryMinimumVertex_,
+                                mandatoryMinimumInterval_);
+    }
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp section
 #endif
-    { enumerateMandatoryExtrema(PointType::Maximum); }
+    {
+      enumerateMandatoryExtrema(PointType::Maximum, lowerSplitTree_,
+                                upperSplitTree_, mandatoryMaximumVertex_,
+                                mandatoryMaximumInterval_);
+    }
   }
 
   // Compute mandatory saddles
