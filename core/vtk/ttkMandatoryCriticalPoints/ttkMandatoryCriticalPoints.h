@@ -28,6 +28,14 @@
 /// This filter can be used as any other VTK filter (for instance, by using the
 /// sequence of calls SetInputData(), Update(), GetOutput()).
 ///
+/// The input data arrays needs to be specified via the standard VTK call
+/// vtkAlgorithm::SetInputArrayToProcess() with the following parameters:
+/// \param idx 0 for the lowerBoundField, 1 for the upperBoundField
+/// \param port 0 (FIXED: first port)
+/// \param connection 0 (FIXED: first connection)
+/// \param fieldAssociation 0 (FIXED: point data)
+/// \param arrayName (DYNAMIC: string identifier of the input array)
+///
 /// See the related ParaView example state files for usage examples within a
 /// VTK pipeline.
 ///
@@ -64,26 +72,6 @@ public:
       simplify_ = true;
       Modified();
     }
-  }
-
-  void SetUpperBoundField(const int &id) {
-    upperBoundId = id;
-    Modified();
-  }
-
-  void SetUpperBoundFieldName(std::string name) {
-    upperBoundFiledName_ = name;
-    Modified();
-  }
-
-  void SetLowerBoundField(const int &id) {
-    lowerBoundId = id;
-    Modified();
-  }
-
-  void SetLowerBoundFieldName(std::string name) {
-    lowerBoundFieldName_ = name;
-    Modified();
   }
 
   void SetOutputMinimumComponentId(int id) {
@@ -144,10 +132,6 @@ protected:
                   vtkInformationVector *outputVector) override;
 
 private:
-  int lowerBoundId{0}, upperBoundId{1};
-  std::string upperBoundFiledName_{"upperBoundField"};
-  std::string lowerBoundFieldName_{"lowerBoundField"};
-
   double simplificationThreshold_{0.0};
   bool simplify_{true};
 

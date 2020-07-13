@@ -51,16 +51,13 @@ Computer Graphics Forum, 2014.
         </Documentation>
       </InputProperty>
 
-
-
-
-
       <StringVectorProperty
-        name="Lower Field"
-        command="SetLowerBoundFieldName"
-        number_of_elements="1"
+        name="Lower Bound Field"
+        command="SetInputArrayToProcess"
+        element_types="0 0 0 0 2"
+        number_of_elements="5"
+        default_values="0"
         animateable="0"
-        label="Lower Bound Field"
         >
         <ArrayListDomain
           name="array_list"
@@ -75,11 +72,12 @@ Computer Graphics Forum, 2014.
       </StringVectorProperty>
 
       <StringVectorProperty
-        name="Upper Field"
-        command="SetUpperBoundFieldName"
-        number_of_elements="1"
+        name="Upper Bound Field"
+        command="SetInputArrayToProcess"
+        element_types="0 0 0 0 2"
+        number_of_elements="5"
+        default_values="1"
         animateable="0"
-        label="Upper Bound Field"
         >
         <ArrayListDomain
           name="array_list"
@@ -92,11 +90,6 @@ Computer Graphics Forum, 2014.
           Select the upper bound field to process.
         </Documentation>
       </StringVectorProperty>
-
-      <PropertyGroup panel_widget="Line" label="Input Bound Fields">
-        <Property name="Upper Field" />
-        <Property name="Lower Field" />
-      </PropertyGroup>
 
       <DoubleVectorProperty
          name="SimplificationThreshold"
@@ -227,8 +220,8 @@ specify in the text box below which maximum to display.
 
       <PropertyGroup panel_widget="Line" label="Input options">
         <Property name="SimplificationThreshold" />
-        <Property name="Lower Field" />
-        <Property name="Upper Field" />
+        <Property name="Lower Bound Field" />
+        <Property name="Upper Bound Field" />
       </PropertyGroup>
 
       ${DEBUG_WIDGETS}

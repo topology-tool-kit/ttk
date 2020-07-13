@@ -132,31 +132,11 @@ int ttkMandatoryCriticalPoints::RequestData(
   outputMaximum->ShallowCopy(input);
 
   // Input data arrays
-  vtkDataArray *inputLowerBoundField = nullptr;
-  vtkDataArray *inputUpperBoundField = nullptr;
+  const auto inputLowerBoundField = this->GetInputArrayToProcess(0, input);
+  const auto inputUpperBoundField = this->GetInputArrayToProcess(1, input);
 
-  // Get the upper bound field array in the input data set
-  if(upperBoundFiledName_.length()) {
-    inputUpperBoundField
-      = input->GetPointData()->GetArray(upperBoundFiledName_.c_str());
-  } else {
-    inputUpperBoundField = input->GetPointData()->GetArray(upperBoundId);
-  }
-  // Error if not found
-  if(!inputUpperBoundField) {
-    return -1;
-  }
-
-  // Get the lower bound field array in the input data set
-  if(lowerBoundFieldName_.length()) {
-    inputLowerBoundField
-      = input->GetPointData()->GetArray(lowerBoundFieldName_.c_str());
-  } else {
-    inputLowerBoundField = input->GetPointData()->GetArray(lowerBoundId);
-  }
-  // Error if not found
-  if(!inputLowerBoundField) {
-    return -1;
+  if(inputLowerBoundField == nullptr || inputUpperBoundField == nullptr) {
+    return 0;
   }
 
   this->printMsg("Using `" + std::string{inputLowerBoundField->GetName()}
