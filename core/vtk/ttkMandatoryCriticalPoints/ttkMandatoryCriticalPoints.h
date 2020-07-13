@@ -40,68 +40,23 @@
 /// \sa ttk::MandatoryCriticalPoints
 /// \sa vtkUncertainDataEstimator
 ///
-#ifndef _TTK_MANDATORYCRITICALPOINTS_H
-#define _TTK_MANDATORYCRITICALPOINTS_H
-
-// VTK includes -- to adapt
-#include <vtkCellData.h>
-#include <vtkCellType.h>
-#include <vtkCharArray.h>
-#include <vtkDataArray.h>
-#include <vtkDataSet.h>
-#include <vtkDataSetAlgorithm.h>
-#include <vtkDoubleArray.h>
-#include <vtkFiltersCoreModule.h>
-#include <vtkFloatArray.h>
-#include <vtkIdList.h>
-#include <vtkInformation.h>
-#include <vtkInformationVector.h>
-#include <vtkIntArray.h>
-#include <vtkObjectFactory.h>
-#include <vtkPointData.h>
-#include <vtkPoints.h>
-#include <vtkSmartPointer.h>
-#include <vtkUnsignedCharArray.h>
-#include <vtkUnstructuredGrid.h>
+#pragma once
 
 // VTK Module
 #include <ttkMandatoryCriticalPointsModule.h>
 
 // ttk code includes
 #include <MandatoryCriticalPoints.h>
-#include <ttkTriangulationAlgorithm.h>
+#include <ttkAlgorithm.h>
 
-#include <queue>
-#include <utility>
-#include <vector>
-
-// in this example, this wrapper takes a data-set on the input and produces a
-// data-set on the output - to adapt.
-// see the documentation of the vtkAlgorithm class to decide from which VTK
-// class your wrapper should inherit.
 class TTKMANDATORYCRITICALPOINTS_EXPORT ttkMandatoryCriticalPoints
-  : public vtkDataSetAlgorithm,
-    protected ttk::Wrapper {
+  : public ttkAlgorithm,
+    protected ttk::MandatoryCriticalPoints {
 
 public:
   static ttkMandatoryCriticalPoints *New();
 
-  vtkTypeMacro(ttkMandatoryCriticalPoints, vtkDataSetAlgorithm);
-
-  // int buildMandatoryTree(vtkUnstructuredGrid *outputJoinTree, const Digraph
-  // &mandatoryTree, const bool isJoinTree); void
-  // buildMandatorySplitTree(vtkUnstructuredGrid *outputSplitTree);
-
-  int buildVtkTree(vtkUnstructuredGrid *outputTree,
-                   ttk::MandatoryCriticalPoints::TreeType treeType);
-
-  void SetDebugLevel(int debugLevel) {
-    if(debugLevel != debugLevel_) {
-      setDebugLevel(debugLevel);
-      computeAll_ = true;
-      Modified();
-    }
-  }
+  vtkTypeMacro(ttkMandatoryCriticalPoints, ttkAlgorithm);
 
   void SetSimplificationThreshold(double threshold) {
     if(threshold != simplificationThreshold_) {
@@ -110,30 +65,6 @@ public:
       Modified();
     }
   }
-
-  void SetThreads() {
-    if(!UseAllCores)
-      threadNumber_ = ThreadNumber;
-    else {
-      threadNumber_ = ttk::OsCall::getNumberOfCores();
-    }
-    Modified();
-    computeAll_ = true;
-  }
-
-  void SetThreadNumber(int threadNumber) {
-    ThreadNumber = threadNumber;
-    SetThreads();
-  }
-
-  void SetUseAllCores(bool onOff) {
-    UseAllCores = onOff;
-    SetThreads();
-  }
-  // end of default ttk setters
-
-  // set-getters macros to define from each variable you want to access from
-  // the outside (in particular from paraview) - to adapt.
 
   void SetUpperBoundField(const int &id) {
     upperBoundId = id;
@@ -206,75 +137,35 @@ public:
 protected:
   ttkMandatoryCriticalPoints();
 
-  ~ttkMandatoryCriticalPoints() override;
-
   int FillInputPortInformation(int port, vtkInformation *info) override;
   int FillOutputPortInformation(int port, vtkInformation *info) override;
-
-  TTK_PIPELINE_REQUEST();
-  TTK_OUTPUT_MANAGEMENT();
+  int RequestData(vtkInformation *request,
+                  vtkInformationVector **inputVector,
+                  vtkInformationVector *outputVector) override;
 
 private:
-  ttk::MandatoryCriticalPoints mandatoryCriticalPoints_;
+  unsigned long int inputMTime_{0};
+  bool computeAll_{true};
 
-  unsigned long int inputMTime_;
-  bool computeAll_;
+  int lowerBoundId{0}, upperBoundId{1};
+  std::string upperBoundFiledName_{"upperBoundField"};
+  std::string lowerBoundFieldName_{"lowerBoundField"};
 
-  bool UseAllCores;
-  int ThreadNumber, lowerBoundId, upperBoundId;
-  std::string upperBoundFiledName_;
-  std::string lowerBoundFieldName_;
-  vtkIntArray *outputMandatoryMinimum_;
-  vtkIntArray *outputMandatoryJoinSaddle_;
-  vtkIntArray *outputMandatorySplitSaddle_;
-  vtkIntArray *outputMandatoryMaximum_;
+  double simplificationThreshold_{0.0};
+  bool simplify_{true};
 
-  // Join Trees
-  vtkPoints *mandatoryJoinTreePoints_;
-  std::vector<vtkIdList *> mandatoryJoinTreeEdge_;
-  vtkIntArray *mdtJoinTreePointType_;
-  vtkDoubleArray *mdtJoinTreePointLowInterval_;
-  vtkDoubleArray *mdtJoinTreePointUpInterval_;
-  vtkIntArray *mdtJoinTreePointComponentId_;
-  vtkIntArray *mdtJoinTreeEdgeSwitchable_;
-  // Split Tree
-  vtkPoints *mandatorySplitTreePoints_;
-  std::vector<vtkIdList *> mandatorySplitTreeEdge_;
-  vtkIntArray *mdtSplitTreePointType_;
-  vtkDoubleArray *mdtSplitTreePointLowInterval_;
-  vtkDoubleArray *mdtSplitTreePointUpInterval_;
-  vtkIntArray *mdtSplitTreePointComponentId_;
-  vtkIntArray *mdtSplitTreeEdgeSwitchable_;
+  int outputMinimumComponentId_{0};
+  int outputJoinSaddleComponentId_{0};
+  int outputSplitSaddleComponentId_{0};
+  int outputMaximumComponentId_{0};
 
-  double simplificationThreshold_;
-  bool simplify_;
+  bool outputAllMinimumComponents_{true};
+  bool outputAllJoinSaddleComponents_{true};
+  bool outputAllSplitSaddleComponents_{true};
+  bool outputAllMaximumComponents_{true};
 
-  int outputMinimumComponentId_;
-  int outputJoinSaddleComponentId_;
-  int outputSplitSaddleComponentId_;
-  int outputMaximumComponentId_;
-
-  bool outputAllMinimumComponents_;
-  bool outputAllJoinSaddleComponents_;
-  bool outputAllSplitSaddleComponents_;
-  bool outputAllMaximumComponents_;
-
-  bool computeMinimumOutput_;
-  bool computeJoinSaddleOutput_;
-  bool computeSplitSaddleOutput_;
-  bool computeMaximumOutput_;
-
-  ttk::Triangulation *triangulation_;
-
-  float memoryUsage_;
-
-  // base code features
-  int doIt(std::vector<vtkDataSet *> &inputs,
-           std::vector<vtkDataSet *> &outputs);
-
-  bool needsToAbort() override;
-
-  int updateProgress(const float &progress) override;
+  bool computeMinimumOutput_{true};
+  bool computeJoinSaddleOutput_{true};
+  bool computeSplitSaddleOutput_{true};
+  bool computeMaximumOutput_{true};
 };
-
-#endif // _TTK_MANDATORYCRITICALPOINTS_H
