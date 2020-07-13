@@ -693,8 +693,8 @@ int MandatoryCriticalPoints::enumerateMandatoryExtrema(
   const std::string pt = pointType == PointType::Minimum ? "minima" : "maxima";
 
   this->printMsg(
-    "Computed " + std::to_string(mandatoryExtremum.size()) + " " + pt, 1.0,
-    t.getElapsedTime(), this->threadNumber_);
+    "Computed " + std::to_string(mandatoryExtremum.size()) + " mandatory " + pt,
+    1.0, t.getElapsedTime(), this->threadNumber_);
   this->printMsg("List of mandatory " + pt, debug::Priority::DETAIL);
 
   for(size_t i = 0; i < mandatoryExtremum.size(); i++) {
@@ -1267,8 +1267,9 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
   const std::string st
     = pointType == PointType::JoinSaddle ? "join saddles" : "split saddles";
 
-  this->printMsg(
-    "Computed mandatory " + st, 1.0, t.getElapsedTime(), this->threadNumber_);
+  this->printMsg("Computed " + std::to_string(mandatorySaddleVertex.size())
+                   + " mandatory " + st,
+                 1.0, t.getElapsedTime(), this->threadNumber_);
 
   this->printMsg("List of " + st + ":", debug::Priority::DETAIL);
   for(size_t i = 0; i < mandatorySaddleVertex.size(); i++) {
