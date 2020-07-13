@@ -661,7 +661,13 @@ namespace ttk {
       std::vector<std::pair<double, double>> &criticalInterval) const;
 
     /// TODO : Multiplicity
-    int enumerateMandatorySaddles(const PointType pointType);
+    int enumerateMandatorySaddles(
+      const PointType pointType,
+      SubLevelSetTree &lowerTree,
+      SubLevelSetTree &upperTree,
+      const std::vector<int> mandatoryExtremumVertex,
+      std::vector<std::pair<int, int>> &mandatorySaddleVertex,
+      std::vector<std::vector<int>> &mandatoryMergedExtrema);
 
     int getSubTreeRootSuperArcId(const SubLevelSetTree *tree,
                                  const int &startingSuperArcId,
@@ -883,8 +889,12 @@ int ttk::MandatoryCriticalPoints::execute() {
   }
 
   // Compute mandatory saddles
-  enumerateMandatorySaddles(PointType::JoinSaddle);
-  enumerateMandatorySaddles(PointType::SplitSaddle);
+  enumerateMandatorySaddles(PointType::JoinSaddle, lowerJoinTree_,
+                            upperJoinTree_, mandatoryMinimumVertex_,
+                            mandatoryJoinSaddleVertex_, mergedMinimaId_);
+  enumerateMandatorySaddles(PointType::SplitSaddle, lowerSplitTree_,
+                            upperSplitTree_, mandatoryMaximumVertex_,
+                            mandatorySplitSaddleVertex_, mergedMaximaId_);
 
   // Build pairs of <extremum,saddle>
   buildPairs(TreeType::JoinTree, mandatoryJoinSaddleVertex_, mergedMinimaId_,

@@ -874,27 +874,15 @@ int MandatoryCriticalPoints::enumerateMandatoryExtrema(
 }
 
 int MandatoryCriticalPoints::enumerateMandatorySaddles(
-  const PointType pointType) {
+  const PointType pointType,
+  SubLevelSetTree &lowerTree,
+  SubLevelSetTree &upperTree,
+  const std::vector<int> mandatoryExtremumVertex,
+  std::vector<std::pair<int, int>> &mandatorySaddleVertex,
+  std::vector<std::vector<int>> &mandatoryMergedExtrema) {
+
   // Timer
   Timer t;
-
-  /* Input */
-  SubLevelSetTree *lowerTree = (pointType == PointType::JoinSaddle)
-                                 ? &(lowerJoinTree_)
-                                 : &(lowerSplitTree_);
-  SubLevelSetTree *upperTree = (pointType == PointType::JoinSaddle)
-                                 ? &(upperJoinTree_)
-                                 : &(upperSplitTree_);
-  const std::vector<int> *mandatoryExtremumVertex
-    = (pointType == PointType::JoinSaddle) ? &(mandatoryMinimumVertex_)
-                                           : &(mandatoryMaximumVertex_);
-  /* Output */
-  std::vector<std::pair<int, int>> *mandatorySaddleVertex
-    = (pointType == PointType::JoinSaddle) ? &(mandatoryJoinSaddleVertex_)
-                                           : &(mandatorySplitSaddleVertex_);
-  std::vector<std::vector<int>> *mandatoryMergedExtrema
-    = (pointType == PointType::JoinSaddle) ? &(mergedMinimaId_)
-                                           : &(mergedMaximaId_);
 
   // Object to handle requests for common ancestors
   LowestCommonAncestor lowerLca;
@@ -910,13 +898,13 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
   - Compute each pair of extrema
   */
 
-  unsigned int extremaNumber = mandatoryExtremumVertex->size();
+  const unsigned int extremaNumber = mandatoryExtremumVertex.size();
 
   std::vector<int> upperSaddleList;
   std::vector<int> lowerSaddleList;
 
-  std::vector<int> upperTransverse(upperTree->getNumberOfSuperArcs(), -1);
-  std::vector<int> lowerTransverse(lowerTree->getNumberOfSuperArcs(), -1);
+  std::vector<int> upperTransverse(upperTree.getNumberOfSuperArcs(), -1);
+  std::vector<int> lowerTransverse(lowerTree.getNumberOfSuperArcs(), -1);
 
   std::vector<std::vector<int>> lowerToUpperLinks;
   std::vector<std::vector<int>> upperToLowerLinks;
@@ -932,12 +920,12 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp for
 #endif
-    for(int i = 0; i < (int)mandatoryExtremumVertex->size(); i++) {
+    for(int i = 0; i < (int)mandatoryExtremumVertex.size(); i++) {
       // Super arc in upper and lower trees
       int upperSuperArcId
-        = getVertexSuperArcId((*mandatoryExtremumVertex)[i], upperTree);
+        = getVertexSuperArcId(mandatoryExtremumVertex[i], &upperTree);
       int lowerSuperArcId
-        = getVertexSuperArcId((*mandatoryExtremumVertex)[i], lowerTree);
+        = getVertexSuperArcId(mandatoryExtremumVertex[i], &lowerTree);
       bool saddleFound;
       bool rootReached;
       bool multipleSaddleFound;
@@ -962,15 +950,15 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
         }
         if(!saddleFound) {
           // Get the upper super arc
-          int upNodeId = upperTree->getSuperArc(upperSuperArcId)->getUpNodeId();
-          upperSuperArcId = upperTree->getNode(upNodeId)->getUpSuperArcId(0);
+          int upNodeId = upperTree.getSuperArc(upperSuperArcId)->getUpNodeId();
+          upperSuperArcId = upperTree.getNode(upNodeId)->getUpSuperArcId(0);
           if(upperSuperArcId == -1) {
             rootReached = true;
           }
         } else {
           if(!multipleSaddleFound) {
             int saddleId
-              = upperTree->getSuperArc(upperSuperArcId)->getDownNodeId();
+              = upperTree.getSuperArc(upperSuperArcId)->getDownNodeId();
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp critical
 #endif
@@ -999,15 +987,15 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
         }
         if(!saddleFound) {
           // Get the upper super arc
-          int upNodeId = lowerTree->getSuperArc(lowerSuperArcId)->getUpNodeId();
-          lowerSuperArcId = lowerTree->getNode(upNodeId)->getUpSuperArcId(0);
+          int upNodeId = lowerTree.getSuperArc(lowerSuperArcId)->getUpNodeId();
+          lowerSuperArcId = lowerTree.getNode(upNodeId)->getUpSuperArcId(0);
           if(lowerSuperArcId == -1) {
             rootReached = true;
           }
         } else {
           if(!multipleSaddleFound) {
             int saddleId
-              = lowerTree->getSuperArc(lowerSuperArcId)->getDownNodeId();
+              = lowerTree.getSuperArc(lowerSuperArcId)->getDownNodeId();
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp critical
 #endif
@@ -1047,7 +1035,7 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
 #endif
     for(int i = 0; i < (int)upperSaddleList.size(); i++) {
       int superArcId
-        = upperTree->getNode(upperSaddleList[i])->getUpSuperArcId(0);
+        = upperTree.getNode(upperSaddleList[i])->getUpSuperArcId(0);
       upperTransverse[superArcId] = i;
     }
 
@@ -1056,7 +1044,7 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
 #endif
     for(int i = 0; i < (int)lowerSaddleList.size(); i++) {
       int superArcId
-        = lowerTree->getNode(lowerSaddleList[i])->getUpSuperArcId(0);
+        = lowerTree.getNode(lowerSaddleList[i])->getUpSuperArcId(0);
       lowerTransverse[superArcId] = i;
     }
 
@@ -1070,7 +1058,7 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
 #pragma omp section
 #endif
       {
-        upperLca.addNodes(mandatoryExtremumVertex->size()
+        upperLca.addNodes(mandatoryExtremumVertex.size()
                           + upperSaddleList.size());
       }
 // Lower lca
@@ -1078,7 +1066,7 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
 #pragma omp section
 #endif
       {
-        lowerLca.addNodes(mandatoryExtremumVertex->size()
+        lowerLca.addNodes(mandatoryExtremumVertex.size()
                           + lowerSaddleList.size());
       }
     }
@@ -1087,15 +1075,14 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp for
 #endif
-    for(int i = 0; i < (int)mandatoryExtremumVertex->size(); i++) {
+    for(int i = 0; i < (int)mandatoryExtremumVertex.size(); i++) {
       int superArcId;
       int lcaSaddleId;
       // Upper Tree
-      superArcId
-        = getVertexSuperArcId((*mandatoryExtremumVertex)[i], upperTree);
+      superArcId = getVertexSuperArcId(mandatoryExtremumVertex[i], &upperTree);
       while((superArcId != -1) && (upperTransverse[superArcId] == -1)) {
-        int nodeId = upperTree->getSuperArc(superArcId)->getUpNodeId();
-        superArcId = upperTree->getNode(nodeId)->getUpSuperArcId(0);
+        int nodeId = upperTree.getSuperArc(superArcId)->getUpNodeId();
+        superArcId = upperTree.getNode(nodeId)->getUpSuperArcId(0);
       }
       if(superArcId != -1) {
         lcaSaddleId = extremaNumber + upperTransverse[superArcId];
@@ -1109,11 +1096,10 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
       }
 
       // Lower Tree
-      superArcId
-        = getVertexSuperArcId((*mandatoryExtremumVertex)[i], lowerTree);
+      superArcId = getVertexSuperArcId(mandatoryExtremumVertex[i], &lowerTree);
       while((superArcId != -1) && (lowerTransverse[superArcId] == -1)) {
-        int nodeId = lowerTree->getSuperArc(superArcId)->getUpNodeId();
-        superArcId = lowerTree->getNode(nodeId)->getUpSuperArcId(0);
+        int nodeId = lowerTree.getSuperArc(superArcId)->getUpNodeId();
+        superArcId = lowerTree.getNode(nodeId)->getUpSuperArcId(0);
       }
       if(superArcId != -1) {
         lcaSaddleId = extremaNumber + lowerTransverse[superArcId];
@@ -1133,10 +1119,10 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
 #endif
     for(int i = 0; i < (int)upperSaddleList.size(); i++) {
       int superArcId
-        = upperTree->getNode(upperSaddleList[i])->getUpSuperArcId(0);
+        = upperTree.getNode(upperSaddleList[i])->getUpSuperArcId(0);
       do {
-        int nodeId = upperTree->getSuperArc(superArcId)->getUpNodeId();
-        superArcId = upperTree->getNode(nodeId)->getUpSuperArcId(0);
+        int nodeId = upperTree.getSuperArc(superArcId)->getUpNodeId();
+        superArcId = upperTree.getNode(nodeId)->getUpSuperArcId(0);
       } while((superArcId != -1) && (upperTransverse[superArcId] == -1));
       if(superArcId != -1) {
         int lcaSuccessorSaddleId = extremaNumber + i;
@@ -1158,10 +1144,10 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
 #endif
     for(int i = 0; i < (int)lowerSaddleList.size(); i++) {
       int superArcId
-        = lowerTree->getNode(lowerSaddleList[i])->getUpSuperArcId(0);
+        = lowerTree.getNode(lowerSaddleList[i])->getUpSuperArcId(0);
       do {
-        int nodeId = lowerTree->getSuperArc(superArcId)->getUpNodeId();
-        superArcId = lowerTree->getNode(nodeId)->getUpSuperArcId(0);
+        int nodeId = lowerTree.getSuperArc(superArcId)->getUpNodeId();
+        superArcId = lowerTree.getNode(nodeId)->getUpSuperArcId(0);
       } while((superArcId != -1) && (lowerTransverse[superArcId] == -1));
       if(superArcId != -1) {
         int lcaSuccessorSaddleId = extremaNumber + i;
@@ -1342,8 +1328,7 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
 
   // Find pairs of vertices and list of merged extrema
   int numberOfComponents = static_cast<int>(lowComponent.size());
-  (*mandatorySaddleVertex)
-    .resize(numberOfComponents, std::pair<int, int>(-1, -1));
+  mandatorySaddleVertex.resize(numberOfComponents, std::pair<int, int>(-1, -1));
   std::vector<std::vector<int>> mandatoryMergedExtrema_tmp;
   mandatoryMergedExtrema_tmp.resize(numberOfComponents, std::vector<int>());
 
@@ -1351,17 +1336,15 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
     int nodeId;
     // Find the vertex with minimum value in f-
     nodeId = lowerSaddleList[lowComponent[i][0]];
-    (*mandatorySaddleVertex)[i].first
-      = lowerTree->getNode(nodeId)->getVertexId();
+    mandatorySaddleVertex[i].first = lowerTree.getNode(nodeId)->getVertexId();
     for(unsigned int j = 0; j < lowComponent[i].size(); j++) {
       // First saddle
       int nId = lowerSaddleList[lowComponent[i][j]];
-      double nodeScalar = lowerTree->getNodeScalar(nId);
+      double nodeScalar = lowerTree.getNodeScalar(nId);
       double refScalar = 0;
-      lowerTree->getVertexScalar((*mandatorySaddleVertex)[i].first, refScalar);
+      lowerTree.getVertexScalar(mandatorySaddleVertex[i].first, refScalar);
       if(nodeScalar < refScalar) {
-        (*mandatorySaddleVertex)[i].first
-          = lowerTree->getNode(nId)->getVertexId();
+        mandatorySaddleVertex[i].first = lowerTree.getNode(nId)->getVertexId();
       }
     }
 
@@ -1375,17 +1358,15 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
 
     // Find the vertex with maximum value in f+
     nodeId = upperSaddleList[uppComponent[i][0]];
-    (*mandatorySaddleVertex)[i].second
-      = upperTree->getNode(nodeId)->getVertexId();
+    mandatorySaddleVertex[i].second = upperTree.getNode(nodeId)->getVertexId();
     for(unsigned int j = 0; j < uppComponent[i].size(); j++) {
       // First saddle
       int nId = upperSaddleList[uppComponent[i][j]];
-      double nodeScalar = upperTree->getNodeScalar(nId);
+      double nodeScalar = upperTree.getNodeScalar(nId);
       double refScalar = 0;
-      upperTree->getVertexScalar((*mandatorySaddleVertex)[i].second, refScalar);
+      upperTree.getVertexScalar(mandatorySaddleVertex[i].second, refScalar);
       if(nodeScalar > refScalar) {
-        (*mandatorySaddleVertex)[i].second
-          = upperTree->getNode(nId)->getVertexId();
+        mandatorySaddleVertex[i].second = upperTree.getNode(nId)->getVertexId();
       }
     }
   }
@@ -1408,11 +1389,10 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
   mandatorySaddleComparaison cmp;
   std::sort(order.begin(), order.end(), cmp);
   // Reorder for output
-  (*mandatoryMergedExtrema).clear();
-  (*mandatoryMergedExtrema).resize(mandatoryMergedExtrema_tmp.size());
+  mandatoryMergedExtrema.clear();
+  mandatoryMergedExtrema.resize(mandatoryMergedExtrema_tmp.size());
   for(unsigned int i = 0; i < order.size(); i++) {
-    mandatoryMergedExtrema_tmp[order[i].first].swap(
-      (*mandatoryMergedExtrema)[i]);
+    mandatoryMergedExtrema_tmp[order[i].first].swap(mandatoryMergedExtrema[i]);
   }
 
 // Getting global max and min
@@ -1448,52 +1428,29 @@ int MandatoryCriticalPoints::enumerateMandatorySaddles(
     }
   }
 
-  // Debug messages
-  if(debugLevel_ > timeMsg) {
+  const std::string st
+    = pointType == PointType::JoinSaddle ? "join saddles" : "split saddles";
+
+  this->printMsg(
+    "Computed mandatory " + st, 1.0, t.getElapsedTime(), this->threadNumber_);
+
+  this->printMsg("List of " + st + ":", debug::Priority::DETAIL);
+  for(size_t i = 0; i < mandatorySaddleVertex.size(); i++) {
     std::stringstream msg;
-    msg << "[MandatoryCriticalPoints] ";
-    msg << mandatorySaddleVertex->size();
-    if(pointType == PointType::JoinSaddle)
-      msg << " mandatory join saddles computed in ";
-    else
-      msg << " mandatory split saddles computed in ";
-    msg << t.getElapsedTime() << " s. (" << threadNumber_ << " thread(s))";
-    msg << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
-  }
-  if(debugLevel_ > advancedInfoMsg) {
-    std::stringstream title;
-    std::stringstream pointTypeMsg;
-    title << "[MandatoryCriticalPoints] List of ";
-    if(lowerTree->isJoinTree()) {
-      title << "join saddles : ";
-      pointTypeMsg << "Join Saddle";
-    } else {
-      title << "split saddles : ";
-      pointTypeMsg << "Split Saddle";
-    }
-    title << std::endl;
-    dMsg(std::cout, title.str(), advancedInfoMsg);
-    for(int i = 0; i < (int)mandatorySaddleVertex->size(); i++) {
-      std::stringstream msg;
-      msg << "  -> " << pointTypeMsg.str() << " (";
-      msg << std::setw(3) << std::right << i << ")";
-      msg << "  Vertices  <";
-      msg << std::setw(9) << std::right << (*mandatorySaddleVertex)[i].first
-          << " ; ";
-      msg << std::setw(9) << std::left << (*mandatorySaddleVertex)[i].second
-          << ">";
-      msg << "  Interval  [";
-      double lowerValue = 0;
-      double upperValue = 0;
-      lowerTree->getVertexScalar((*mandatorySaddleVertex)[i].first, lowerValue);
-      upperTree->getVertexScalar(
-        (*mandatorySaddleVertex)[i].second, upperValue);
-      msg << std::setw(12) << std::right << lowerValue << " ; ";
-      msg << std::setw(12) << std::left << upperValue << "]";
-      msg << std::endl;
-      dMsg(std::cout, msg.str(), advancedInfoMsg);
-    }
+    msg << "  -> " << st << " (";
+    msg << std::setw(3) << std::right << i << ")";
+    msg << "  Vertices  <";
+    msg << std::setw(9) << std::right << mandatorySaddleVertex[i].first
+        << " ; ";
+    msg << std::setw(9) << std::left << mandatorySaddleVertex[i].second << ">";
+    msg << "  Interval  [";
+    double lowerValue = 0;
+    double upperValue = 0;
+    lowerTree.getVertexScalar(mandatorySaddleVertex[i].first, lowerValue);
+    upperTree.getVertexScalar(mandatorySaddleVertex[i].second, upperValue);
+    msg << std::setw(12) << std::right << lowerValue << " ; ";
+    msg << std::setw(12) << std::left << upperValue << "]";
+    this->printMsg(msg.str(), debug::Priority::DETAIL);
   }
 
   return 0;
