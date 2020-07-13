@@ -446,11 +446,11 @@ namespace ttk {
     }
 
     inline int setDebugLevel(const int &debugLevel) {
+      Debug::setDebugLevel(debugLevel);
       upperJoinTree_.setDebugLevel(debugLevel);
       lowerJoinTree_.setDebugLevel(debugLevel);
       upperSplitTree_.setDebugLevel(debugLevel);
       lowerSplitTree_.setDebugLevel(debugLevel);
-      debugLevel_ = debugLevel;
       return 0;
     }
 
