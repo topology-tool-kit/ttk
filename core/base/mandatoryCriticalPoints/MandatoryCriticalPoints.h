@@ -84,11 +84,8 @@ namespace ttk {
       return (int)vertexList_.size() - 1;
     }
     /// Get a pointer to the vertex idx
-    const Vertex *getVertex(const int &idx) const {
-      if(idx < (int)vertexList_.size())
-        return &(vertexList_[idx]);
-      else
-        return NULL;
+    const Vertex &getVertex(const int idx) const {
+      return vertexList_[idx];
     }
     /// Add an edge between the vertex start and end, returns it's index
     int addEdge(const int &start, const int &end) {
@@ -103,11 +100,8 @@ namespace ttk {
     }
     /// Get a pointer to the edge idx, returns NULL if the idx is incorrect or
     /// if the edge has been removed.
-    const Edge *getEdge(const int &idx) const {
-      if(idx < (int)edgeList_.size())
-        return &(edgeList_[idx]);
-      else
-        return NULL;
+    const Edge &getEdge(const int idx) const {
+      return edgeList_[idx];
     }
     inline void clear() {
       vertexList_.clear();

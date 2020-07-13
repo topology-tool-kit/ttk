@@ -263,8 +263,8 @@ int ttkMandatoryCriticalPoints::buildVtkTree(
 
   // Edges (cells)
   for(int i = 0; i < numberOfEdges; i++) {
-    (*mdtTreeEdge)[i]->InsertNextId(graph->getEdge(i)->getVertexIdx().first);
-    (*mdtTreeEdge)[i]->InsertNextId(graph->getEdge(i)->getVertexIdx().second);
+    (*mdtTreeEdge)[i]->InsertNextId(graph->getEdge(i).getVertexIdx().first);
+    (*mdtTreeEdge)[i]->InsertNextId(graph->getEdge(i).getVertexIdx().second);
     outputTree->InsertNextCell(VTK_LINE, (*mdtTreeEdge)[i]);
   }
   return 0;

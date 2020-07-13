@@ -367,10 +367,10 @@ int MandatoryCriticalPoints::buildMandatoryTree(
     msg << "  (" << std::setw(3) << std::right << i << ") ";
     msg << "Points  ";
     msg << std::setw(3) << std::right
-        << mdtTree.getEdge(i)->getVertexIdx().first;
+        << mdtTree.getEdge(i).getVertexIdx().first;
     msg << " -> ";
     msg << std::setw(3) << std::left
-        << mdtTree.getEdge(i)->getVertexIdx().second;
+        << mdtTree.getEdge(i).getVertexIdx().second;
     this->printMsg(msg.str(), debug::Priority::DETAIL);
   }
 
@@ -482,10 +482,10 @@ int MandatoryCriticalPoints::computePlanarLayout(
 
   // Root down point
   int downRootPointId = -1;
-  if(mdtTree.getVertex(rootGraphPointId)->getNumberOfEdges() == 1) {
-    int edgeId = mdtTree.getVertex(rootGraphPointId)->getEdgeIdx(0);
-    if(mdtTree.getEdge(edgeId)->getVertexIdx().first == rootGraphPointId) {
-      downRootPointId = mdtTree.getEdge(edgeId)->getVertexIdx().second;
+  if(mdtTree.getVertex(rootGraphPointId).getNumberOfEdges() == 1) {
+    int edgeId = mdtTree.getVertex(rootGraphPointId).getEdgeIdx(0);
+    if(mdtTree.getEdge(edgeId).getVertexIdx().first == rootGraphPointId) {
+      downRootPointId = mdtTree.getEdge(edgeId).getVertexIdx().second;
     }
   }
   if(downRootPointId == -1) {
@@ -512,11 +512,11 @@ int MandatoryCriticalPoints::computePlanarLayout(
     graphPointQueue.pop();
 
     // Number Of Down Edges
-    int numberOfEdges = mdtTree.getVertex(graphPoint)->getNumberOfEdges();
+    int numberOfEdges = mdtTree.getVertex(graphPoint).getNumberOfEdges();
     int numberOfDownEdges = 0;
     for(int i = 0; i < numberOfEdges; i++) {
-      int edgeId = mdtTree.getVertex(graphPoint)->getEdgeIdx(i);
-      if(mdtTree.getEdge(edgeId)->getVertexIdx().first == graphPoint) {
+      int edgeId = mdtTree.getVertex(graphPoint).getEdgeIdx(i);
+      if(mdtTree.getEdge(edgeId).getVertexIdx().first == graphPoint) {
         numberOfDownEdges++;
       }
     }
@@ -531,10 +531,10 @@ int MandatoryCriticalPoints::computePlanarLayout(
     int downPointCount = 0;
     // Interval splitting for down points
     for(int i = 0; i < numberOfEdges; i++) {
-      int edgeId = mdtTree.getVertex(graphPoint)->getEdgeIdx(i);
+      int edgeId = mdtTree.getVertex(graphPoint).getEdgeIdx(i);
       int downGraphPoint = -1;
-      if(mdtTree.getEdge(edgeId)->getVertexIdx().first == graphPoint) {
-        downGraphPoint = mdtTree.getEdge(edgeId)->getVertexIdx().second;
+      if(mdtTree.getEdge(edgeId).getVertexIdx().first == graphPoint) {
+        downGraphPoint = mdtTree.getEdge(edgeId).getVertexIdx().second;
       }
       // Next edge if it is not a down edge
       if(downGraphPoint == -1)
