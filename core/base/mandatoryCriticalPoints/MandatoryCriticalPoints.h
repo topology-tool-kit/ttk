@@ -362,7 +362,10 @@ namespace ttk {
       if(id < (int)mandatoryJoinSaddleVertex_.size()) {
         if(!isMdtJoinSaddleSimplified_[id]) {
           if(mandatoryJoinSaddleComponentVertices_[id].empty())
-            computeSaddleComponent(id, PointType::JoinSaddle);
+            computeSaddleComponent(id, PointType::JoinSaddle,
+                                   mandatoryJoinSaddleVertex_,
+                                   lowerVertexScalars_, upperVertexScalars_,
+                                   mandatoryJoinSaddleComponentVertices_[id]);
           for(int i = 0;
               i < (int)mandatoryJoinSaddleComponentVertices_[id].size(); i++) {
             output[mandatoryJoinSaddleComponentVertices_[id][i]] += 1;
@@ -426,7 +429,10 @@ namespace ttk {
       if(id < (int)mandatorySplitSaddleVertex_.size()) {
         if(!isMdtSplitSaddleSimplified_[id]) {
           if(mandatorySplitSaddleComponentVertices_[id].empty())
-            computeSaddleComponent(id, PointType::SplitSaddle);
+            computeSaddleComponent(id, PointType::SplitSaddle,
+                                   mandatorySplitSaddleVertex_,
+                                   lowerVertexScalars_, upperVertexScalars_,
+                                   mandatorySplitSaddleComponentVertices_[id]);
           for(int i = 0;
               i < (int)mandatorySplitSaddleComponentVertices_[id].size(); i++) {
             output[mandatorySplitSaddleComponentVertices_[id][i]] += 1;
@@ -629,8 +635,13 @@ namespace ttk {
                                  const std::vector<double> &vertexScalars,
                                  std::vector<int> &componentVertexList) const;
 
-    int computeSaddleComponent(const int &componentId,
-                               const PointType &pointType);
+    int computeSaddleComponent(
+      const int componentId,
+      const PointType &pointType,
+      const std::vector<std::pair<int, int>> &mandatorySaddleVertex,
+      const std::vector<double> &lowVertexScalars,
+      const std::vector<double> &upVertexInterval,
+      std::vector<int> &componentVertexList) const;
 
     int enumerateMandatoryExtrema(const PointType pointType);
 

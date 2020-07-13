@@ -656,25 +656,19 @@ int MandatoryCriticalPoints::computeExtremumComponent(
 }
 
 int MandatoryCriticalPoints::computeSaddleComponent(
-  const int &componentId, const PointType &pointType) {
+  const int componentId,
+  const PointType &pointType,
+  const std::vector<std::pair<int, int>> &mandatorySaddleVertex,
+  const std::vector<double> &lowVertexScalars,
+  const std::vector<double> &upVertexScalars,
+  std::vector<int> &componentVertexList) const {
 
-  const int &seedVertexId = (pointType == PointType::JoinSaddle)
-                              ? mandatoryJoinSaddleVertex_[componentId].first
-                              : mandatorySplitSaddleVertex_[componentId].second;
-  const double lowInterval
-    = (pointType == PointType::JoinSaddle)
-        ? lowerVertexScalars_[mandatoryJoinSaddleVertex_[componentId].first]
-        : lowerVertexScalars_[mandatorySplitSaddleVertex_[componentId].first];
+  const int seedVertexId = mandatorySaddleVertex[componentId].first;
+  const double lowInterval = lowVertexScalars[seedVertexId];
   const double upInterval
-    = (pointType == PointType::JoinSaddle)
-        ? upperVertexScalars_[mandatoryJoinSaddleVertex_[componentId].second]
-        : upperVertexScalars_[mandatorySplitSaddleVertex_[componentId].second];
-  std::vector<int> *componentVertexList
-    = (pointType == PointType::JoinSaddle)
-        ? &(mandatoryJoinSaddleComponentVertices_[componentId])
-        : &(mandatorySplitSaddleComponentVertices_[componentId]);
+    = upVertexScalars[mandatorySaddleVertex[componentId].second];
 
-  componentVertexList->clear();
+  componentVertexList.clear();
 
   std::vector<bool> isVisited(vertexNumber_, false);
   std::queue<SimplexId> idQueue;
@@ -691,7 +685,7 @@ int MandatoryCriticalPoints::computeSaddleComponent(
           && (upperValue > lowInterval))
          || (pointType == PointType::SplitSaddle
              && (!(upperValue < lowInterval)) && (lowerValue < upInterval))) {
-        componentVertexList->push_back(vertexId);
+        componentVertexList.push_back(vertexId);
         // Neighbors
         SimplexId neighborNumber
           = triangulation_->getVertexNeighborNumber(vertexId);
