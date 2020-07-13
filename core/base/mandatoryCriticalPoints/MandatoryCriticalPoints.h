@@ -159,11 +159,17 @@ namespace ttk {
 
   public:
     inline int buildJoinTreePlanarLayout() {
-      return computePlanarLayout(TreeType::JoinTree);
+      return computePlanarLayout(
+        TreeType::JoinTree, mdtJoinTree_, mdtJoinTreePointType_,
+        mdtJoinTreePointLowInterval_, mdtJoinTreePointUpInterval_,
+        mdtJoinTreePointXCoord_, mdtJoinTreePointYCoord_);
     }
 
     inline int buildSplitTreePlanarLayout() {
-      return computePlanarLayout(TreeType::SplitTree);
+      return computePlanarLayout(
+        TreeType::SplitTree, mdtSplitTree_, mdtSplitTreePointType_,
+        mdtSplitTreePointLowInterval_, mdtSplitTreePointUpInterval_,
+        mdtSplitTreePointXCoord_, mdtSplitTreePointYCoord_);
     }
 
     /// Process the construction of the 4 trees :
@@ -602,7 +608,13 @@ namespace ttk {
                  std::vector<std::pair<std::pair<int, int>, double>>
                    &extremaSaddlePair) const;
 
-    int computePlanarLayout(const TreeType &treeType);
+    int computePlanarLayout(const TreeType &treeType,
+                            const Graph &mdtTree,
+                            const std::vector<PointType> &mdtTreePointType,
+                            const std::vector<double> &mdtTreePointLowInterval,
+                            const std::vector<double> &mdtTreePointUpInterval,
+                            std::vector<double> &xCoord,
+                            std::vector<double> &yCoord) const;
 
     int computeExtremumComponent(const int &componentId,
                                  const PointType &pointType);
@@ -856,8 +868,13 @@ int ttk::MandatoryCriticalPoints::execute() {
     getGlobalMinimum());
 
   // Compute the planar layout for the output trees
-  computePlanarLayout(TreeType::JoinTree);
-  computePlanarLayout(TreeType::SplitTree);
+  computePlanarLayout(TreeType::JoinTree, mdtJoinTree_, mdtJoinTreePointType_,
+                      mdtJoinTreePointLowInterval_, mdtJoinTreePointUpInterval_,
+                      mdtJoinTreePointXCoord_, mdtJoinTreePointYCoord_);
+  computePlanarLayout(TreeType::SplitTree, mdtSplitTree_,
+                      mdtSplitTreePointType_, mdtSplitTreePointLowInterval_,
+                      mdtSplitTreePointUpInterval_, mdtSplitTreePointXCoord_,
+                      mdtSplitTreePointYCoord_);
 
   // Clear outputs
   mandatoryMinimumComponentVertices_.resize(mandatoryMinimumVertex_.size());
@@ -875,7 +892,8 @@ int ttk::MandatoryCriticalPoints::execute() {
   fill(mandatoryMaximumComponentVertices_.begin(),
        mandatoryMaximumComponentVertices_.end(), std::vector<int>());
 
-  this->printMsg("Data-set (" + std::to_string(vertexNumber_) + " points) processed",
-                 1.0, t.getElapsedTime(), this->threadNumber_);
+  this->printMsg(
+    "Data-set (" + std::to_string(vertexNumber_) + " points) processed", 1.0,
+    t.getElapsedTime(), this->threadNumber_);
   return 0;
 }

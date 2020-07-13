@@ -444,33 +444,17 @@ int MandatoryCriticalPoints::buildPairs(
   return 0;
 }
 
-int MandatoryCriticalPoints::computePlanarLayout(const TreeType &treeType) {
-
-  /* Input */
-  // Mandatory Tree
-  const Graph *mdtTree
-    = (treeType == TreeType::JoinTree) ? &(mdtJoinTree_) : &(mdtSplitTree_);
-  const std::vector<PointType> *mdtTreePointType
-    = (treeType == TreeType::JoinTree) ? &(mdtJoinTreePointType_)
-                                       : &(mdtSplitTreePointType_);
-  const std::vector<double> *mdtTreePointLowInterval
-    = (treeType == TreeType::JoinTree) ? &(mdtJoinTreePointLowInterval_)
-                                       : &(mdtSplitTreePointLowInterval_);
-  const std::vector<double> *mdtTreePointUpInterval
-    = (treeType == TreeType::JoinTree) ? &(mdtJoinTreePointUpInterval_)
-                                       : &(mdtSplitTreePointUpInterval_);
-
-  /* Output */
-  // X coordinates
-  std::vector<double> *xCoord = (treeType == TreeType::JoinTree)
-                                  ? &(mdtJoinTreePointXCoord_)
-                                  : &(mdtSplitTreePointXCoord_);
-  std::vector<double> *yCoord = (treeType == TreeType::JoinTree)
-                                  ? &(mdtJoinTreePointYCoord_)
-                                  : &(mdtSplitTreePointYCoord_);
+int MandatoryCriticalPoints::computePlanarLayout(
+  const TreeType &treeType,
+  const Graph &mdtTree,
+  const std::vector<PointType> &mdtTreePointType,
+  const std::vector<double> &mdtTreePointLowInterval,
+  const std::vector<double> &mdtTreePointUpInterval,
+  std::vector<double> &xCoord,
+  std::vector<double> &yCoord) const {
 
   /* Informations */
-  const int numberOfPoints = mdtTree->getNumberOfVertices();
+  const int numberOfPoints = mdtTree.getNumberOfVertices();
   const double rangeMin = getGlobalMinimum();
   const double rangeMax = getGlobalMaximum();
   const double range = rangeMax - rangeMin;
@@ -478,15 +462,15 @@ int MandatoryCriticalPoints::computePlanarLayout(const TreeType &treeType) {
   // Get the root
   int rootGraphPointId = -1;
   if(treeType == TreeType::JoinTree) {
-    for(size_t i = 0; i < mdtTreePointType->size(); i++) {
-      if((*mdtTreePointType)[i] == PointType::Maximum) {
+    for(size_t i = 0; i < mdtTreePointType.size(); i++) {
+      if(mdtTreePointType[i] == PointType::Maximum) {
         rootGraphPointId = i;
         break;
       }
     }
   } else {
-    for(size_t i = 0; i < mdtTreePointType->size(); i++) {
-      if((*mdtTreePointType)[i] == PointType::Minimum) {
+    for(size_t i = 0; i < mdtTreePointType.size(); i++) {
+      if(mdtTreePointType[i] == PointType::Minimum) {
         rootGraphPointId = i;
         break;
       }
@@ -498,10 +482,10 @@ int MandatoryCriticalPoints::computePlanarLayout(const TreeType &treeType) {
 
   // Root down point
   int downRootPointId = -1;
-  if(mdtTree->getVertex(rootGraphPointId)->getNumberOfEdges() == 1) {
-    int edgeId = mdtTree->getVertex(rootGraphPointId)->getEdgeIdx(0);
-    if(mdtTree->getEdge(edgeId)->getVertexIdx().first == rootGraphPointId) {
-      downRootPointId = mdtTree->getEdge(edgeId)->getVertexIdx().second;
+  if(mdtTree.getVertex(rootGraphPointId)->getNumberOfEdges() == 1) {
+    int edgeId = mdtTree.getVertex(rootGraphPointId)->getEdgeIdx(0);
+    if(mdtTree.getEdge(edgeId)->getVertexIdx().first == rootGraphPointId) {
+      downRootPointId = mdtTree.getEdge(edgeId)->getVertexIdx().second;
     }
   }
   if(downRootPointId == -1) {
@@ -509,8 +493,8 @@ int MandatoryCriticalPoints::computePlanarLayout(const TreeType &treeType) {
   }
 
   // Resize of outputs
-  xCoord->resize(numberOfPoints);
-  yCoord->resize(numberOfPoints);
+  xCoord.resize(numberOfPoints);
+  yCoord.resize(numberOfPoints);
 
   // Graph Point x intervals
   std::vector<std::pair<double, double>> xInterval(numberOfPoints);
@@ -528,11 +512,11 @@ int MandatoryCriticalPoints::computePlanarLayout(const TreeType &treeType) {
     graphPointQueue.pop();
 
     // Number Of Down Edges
-    int numberOfEdges = mdtTree->getVertex(graphPoint)->getNumberOfEdges();
+    int numberOfEdges = mdtTree.getVertex(graphPoint)->getNumberOfEdges();
     int numberOfDownEdges = 0;
     for(int i = 0; i < numberOfEdges; i++) {
-      int edgeId = mdtTree->getVertex(graphPoint)->getEdgeIdx(i);
-      if(mdtTree->getEdge(edgeId)->getVertexIdx().first == graphPoint) {
+      int edgeId = mdtTree.getVertex(graphPoint)->getEdgeIdx(i);
+      if(mdtTree.getEdge(edgeId)->getVertexIdx().first == graphPoint) {
         numberOfDownEdges++;
       }
     }
@@ -547,10 +531,10 @@ int MandatoryCriticalPoints::computePlanarLayout(const TreeType &treeType) {
     int downPointCount = 0;
     // Interval splitting for down points
     for(int i = 0; i < numberOfEdges; i++) {
-      int edgeId = mdtTree->getVertex(graphPoint)->getEdgeIdx(i);
+      int edgeId = mdtTree.getVertex(graphPoint)->getEdgeIdx(i);
       int downGraphPoint = -1;
-      if(mdtTree->getEdge(edgeId)->getVertexIdx().first == graphPoint) {
-        downGraphPoint = mdtTree->getEdge(edgeId)->getVertexIdx().second;
+      if(mdtTree.getEdge(edgeId)->getVertexIdx().first == graphPoint) {
+        downGraphPoint = mdtTree.getEdge(edgeId)->getVertexIdx().second;
       }
       // Next edge if it is not a down edge
       if(downGraphPoint == -1)
@@ -572,8 +556,8 @@ int MandatoryCriticalPoints::computePlanarLayout(const TreeType &treeType) {
 
   /* Y coordinates */
   for(int i = 0; i < numberOfPoints; i++) {
-    (*yCoord)[i]
-      = ((0.5 * ((*mdtTreePointLowInterval)[i] + (*mdtTreePointUpInterval)[i]))
+    yCoord[i]
+      = ((0.5 * (mdtTreePointLowInterval[i] + mdtTreePointUpInterval[i]))
          - rangeMin)
         / range;
   }
@@ -586,32 +570,27 @@ int MandatoryCriticalPoints::computePlanarLayout(const TreeType &treeType) {
   int pointCount = 0;
   for(int i = 0; i < numberOfPoints; i++) {
     if(xOrder[i].first != rootGraphPointId) {
-      (*xCoord)[xOrder[i].first]
+      xCoord[xOrder[i].first]
         = (double)pointCount * (1.0 / ((int)numberOfPoints - 2.0));
       pointCount++;
     }
   }
   // X coordinate for the root
-  (*xCoord)[rootGraphPointId] = (*xCoord)[downRootPointId];
+  xCoord[rootGraphPointId] = xCoord[downRootPointId];
 
-  if(debugLevel_ > advancedInfoMsg) {
+  const std::string treeName = treeType == TreeType::JoinTree
+                                 ? "minimum - join saddle"
+                                 : "maximum - split saddle";
+
+  this->printMsg("Planar layout for mandatory " + treeName + ": root point ("
+                   + std::to_string(downRootPointId) + ")",
+                 debug::Priority::DETAIL);
+
+  for(int i = 0; i < numberOfPoints; i++) {
     std::stringstream msg;
-    msg << "[MandatoryCriticalPoints] Planar layout for mandatory ";
-    if(treeType == TreeType::JoinTree)
-      msg << "join tree";
-    else
-      msg << "split tree";
-    msg << " : root point " << rootGraphPointId;
-    msg << " ( -> " << downRootPointId << ")";
-    msg << std::endl;
-    dMsg(std::cout, msg.str(), advancedInfoMsg);
-    for(int i = 0; i < numberOfPoints; i++) {
-      std::stringstream msg2;
-      msg2 << "  (" << i << ") :"
-           << "  x = " << (*xCoord)[i] << "  y = " << (*yCoord)[i];
-      msg2 << std::endl;
-      dMsg(std::cout, msg2.str(), advancedInfoMsg);
-    }
+    msg << "  (" << i << ") :"
+        << "  x = " << xCoord[i] << "  y = " << yCoord[i];
+    this->printMsg(msg.str(), debug::Priority::DETAIL);
   }
 
   return 0;
