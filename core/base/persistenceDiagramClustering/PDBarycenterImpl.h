@@ -20,11 +20,10 @@
 #define BSaddle1 ttk::CriticalType::Saddle1
 #define BSaddle2 ttk::CriticalType::Saddle2
 
-#include <BottleneckDistance.h>
-//
-#include <stdlib.h> /* srand, rand */
+#include <cstdlib> /* srand, rand */
 //
 #include <cmath>
+#include <numeric>
 
 using namespace ttk;
 

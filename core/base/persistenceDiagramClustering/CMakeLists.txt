@@ -8,7 +8,5 @@ ttk_add_base_library(persistenceDiagramClustering
   DEPENDS
     common
     auction
-    persistenceDiagram
-    bottleneckDistance
     kdTree
   )
