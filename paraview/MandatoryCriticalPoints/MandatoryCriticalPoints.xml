@@ -214,7 +214,6 @@ specify in the text box below which maximum to display.
          </Documentation>
       </IntVectorProperty>
 
-
       <PropertyGroup panel_widget="Line" label="Output options">
         <Property name="OutputAllMinimumComponents" />
         <Property name="OutputAllJoinSaddleComponents" />
@@ -226,60 +225,13 @@ specify in the text box below which maximum to display.
         <Property name="OutputMaxmumComponentId" />
       </PropertyGroup>
 
-
-      <IntVectorProperty
-         name="UseAllCores"
-         label="Use All Cores"
-         command="SetUseAllCores"
-         number_of_elements="1"
-         default_values="1" panel_visibility="advanced">
-        <BooleanDomain name="bool"/>
-         <Documentation>
-          Use all available cores.
-         </Documentation>
-      </IntVectorProperty>
-
-      <IntVectorProperty
-         name="ThreadNumber"
-         label="Thread Number"
-         command="SetThreadNumber"
-         number_of_elements="1"
-         default_values="1" panel_visibility="advanced">
-        <IntRangeDomain name="range" min="1" max="100" />
-        <Hints>
-          <PropertyWidgetDecorator type="GenericDecorator"
-            mode="visibility"
-            property="UseAllCores"
-            value="0" />
-        </Hints>
-         <Documentation>
-          Thread number.
-         </Documentation>
-      </IntVectorProperty>
-
-      <IntVectorProperty
-         name="DebugLevel"
-         label="Debug Level"
-         command="SetDebugLevel"
-         number_of_elements="1"
-         default_values="3" panel_visibility="advanced">
-        <IntRangeDomain name="range" min="1" max="6" />
-         <Documentation>
-           Debug level.
-         </Documentation>
-      </IntVectorProperty>
-
-      <PropertyGroup panel_widget="Line" label="Testing">
-        <Property name="UseAllCores" />
-        <Property name="ThreadNumber" />
-        <Property name="DebugLevel" />
-      </PropertyGroup>
-
       <PropertyGroup panel_widget="Line" label="Input options">
         <Property name="SimplificationThreshold" />
         <Property name="Lower Field" />
         <Property name="Upper Field" />
       </PropertyGroup>
+
+      ${DEBUG_WIDGETS}
 
       <OutputPort name="MandatoryMinima" index="0" id="port0" />
       <OutputPort name="MandatoryJoinSaddles" index="1" id="port1" />
