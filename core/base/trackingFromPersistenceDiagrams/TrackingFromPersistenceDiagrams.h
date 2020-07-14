@@ -8,8 +8,9 @@
 
 // base code includes
 #include <BottleneckDistance.h>
-#include <PersistenceDiagram.h>
 #include <Wrapper.h>
+
+#include <set>
 
 namespace ttk {
 
