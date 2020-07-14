@@ -15,6 +15,12 @@ if (NOT MSVC) # GCC and Clang
     list(APPEND TTK_COMPILER_FLAGS -O0 -g -pg)
   endif()
 
+  # hardened linker flags for Clang and GCC
+  list(APPEND TTK_LINKER_FLAGS
+    -Wl,--as-needed
+    -Wl,--no-undefined
+    )
+
 else() # MSVC
 
   # warning flags
