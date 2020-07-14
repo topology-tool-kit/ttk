@@ -1,4 +1,6 @@
 #include <ttkEigenField.h>
+#include <ttkMacros.h>
+#include <ttkUtils.h>
 
 // VTK includes
 #include <vtkDataSet.h>
@@ -93,15 +95,17 @@ int ttkEigenField::RequestData(vtkInformation *request,
   switch(OutputFieldType) {
     case FieldType::FLOAT:
       res += this->execute<float>(
-        *triangulation, static_cast<float *>(eigenFunctions->GetVoidPointer(0)),
+        *triangulation,
+        static_cast<float *>(ttkUtils::GetVoidPointer(eigenFunctions)),
         EigenNumber, ComputeStatistics,
-        static_cast<float *>(stats->GetVoidPointer(0)));
+        static_cast<float *>(ttkUtils::GetVoidPointer(stats)));
       break;
     case FieldType::DOUBLE:
       res += this->execute<double>(
         *triangulation,
-        static_cast<double *>(eigenFunctions->GetVoidPointer(0)), EigenNumber,
-        ComputeStatistics, static_cast<double *>(stats->GetVoidPointer(0)));
+        static_cast<double *>(ttkUtils::GetVoidPointer(eigenFunctions)),
+        EigenNumber, ComputeStatistics,
+        static_cast<double *>(ttkUtils::GetVoidPointer(stats)));
       break;
     default:
       break;
