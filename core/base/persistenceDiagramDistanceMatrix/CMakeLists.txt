@@ -6,5 +6,4 @@ ttk_add_base_library(persistenceDiagramDistanceMatrix
   DEPENDS
     common
     auction
-    persistenceDiagram
   )
