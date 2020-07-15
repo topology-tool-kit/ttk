@@ -47,38 +47,26 @@ public:
 
   vtkTypeMacro(ttkUncertainDataEstimator, vtkAlgorithm);
 
-  // set-getters macros to define from each variable you want to access from
-  // the outside (in particular from paraview) - to adapt.
+  vtkGetMacro(ComputeLowerBound, bool);
+  vtkSetMacro(ComputeLowerBound, bool);
 
-  void ComputeLowerBound(bool state) {
-    computeLowerBound_ = state;
-  }
+  vtkGetMacro(ComputeUpperBound, bool);
+  vtkSetMacro(ComputeUpperBound, bool);
 
-  void ComputeUpperBound(bool state) {
-    computeUpperBound_ = state;
-  }
+  vtkGetMacro(BinCount, int);
+  vtkSetMacro(BinCount, int);
 
-  void BoundToCompute(int value) {
-    switch(value) {
-      case 0:
-        ComputeLowerBound(true);
-        ComputeUpperBound(true);
-        break;
-      case 1:
-        ComputeLowerBound(true);
-        ComputeUpperBound(false);
-        break;
-      case 2:
-        ComputeLowerBound(false);
-        ComputeUpperBound(true);
-        break;
+  void SetBoundToCompute(int value) {
+    if(value == 0) {
+      SetComputeLowerBound(true);
+      SetComputeUpperBound(true);
+    } else if(value == 1) {
+      SetComputeLowerBound(true);
+      SetComputeUpperBound(false);
+    } else if(value == 2) {
+      SetComputeLowerBound(false);
+      SetComputeUpperBound(true);
     }
-    Modified();
-  }
-
-  void BinCount(int binCount) {
-    binCount_ = binCount;
-    Modified();
   }
 
 protected:
@@ -90,9 +78,4 @@ protected:
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;
-
-private:
-  bool computeLowerBound_{true};
-  bool computeUpperBound_{true};
-  int binCount_{10};
 };

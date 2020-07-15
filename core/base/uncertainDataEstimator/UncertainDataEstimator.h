@@ -222,7 +222,7 @@ namespace ttk {
     }
 
     inline void setOutputProbability(int idx, double *data) {
-      if(idx < binCount_) {
+      if(idx < BinCount) {
         outputProbability_[idx] = data;
       }
     }
@@ -232,11 +232,11 @@ namespace ttk {
     }
 
     inline void setComputeLowerBound(const bool &state) {
-      computeLowerBound_ = state;
+      ComputeLowerBound = state;
     }
 
     inline void setComputeUpperBound(const bool &state) {
-      computeUpperBound_ = state;
+      ComputeUpperBound = state;
     }
 
     /// Set the number of vertices in the scalar field.
@@ -247,7 +247,7 @@ namespace ttk {
     }
 
     inline void setBinCount(const int &binCount) {
-      binCount_ = binCount;
+      BinCount = binCount;
       outputProbability_.clear();
       outputProbability_.resize(binCount);
       for(int b = 0; b < binCount; b++)
@@ -270,7 +270,7 @@ namespace ttk {
     }
 
     inline double getBinValue(int b) {
-      if(b < binCount_)
+      if(b < BinCount)
         return binValues_[b];
       return 0.0;
     }
@@ -278,10 +278,10 @@ namespace ttk {
   protected:
     SimplexId vertexNumber_{0};
     int numberOfInputs_{0};
-    int binCount_{0};
+    int BinCount{0};
     std::vector<double> binValues_{};
-    bool computeLowerBound_{};
-    bool computeUpperBound_{};
+    bool ComputeLowerBound{};
+    bool ComputeUpperBound{};
     std::vector<void *> inputData_{};
     void *outputLowerBoundField_{};
     void *outputUpperBoundField_{};
@@ -329,26 +329,26 @@ int ttk::UncertainDataEstimator::execute() {
     if((!wrapper_) || ((wrapper_) && (!wrapper_->needsToAbort()))) {
 
       // For the lower bound scalar field
-      if(computeLowerBound_) {
+      if(ComputeLowerBound) {
         // Initialisation : values of the first input
         outputLowerBoundField[v] = inputData[0][v];
         // Loop over the inputs
         for(int inp = 1; inp < numberOfInputs_; inp++) {
           // Minimum value
-          if(computeLowerBound_)
+          if(ComputeLowerBound)
             if(inputData[inp][v] < outputLowerBoundField[v])
               outputLowerBoundField[v] = inputData[inp][v];
         }
       }
 
       // For the upper bound scalar field
-      if(computeUpperBound_) {
+      if(ComputeUpperBound) {
         // Initialisation : values of the first input
         outputUpperBoundField[v] = inputData[0][v];
         // Loop over the inputs
         for(int inp = 1; inp < numberOfInputs_; inp++) {
           // Maximum value
-          if(computeUpperBound_)
+          if(ComputeUpperBound)
             if(inputData[inp][v] > outputUpperBoundField[v])
               outputUpperBoundField[v] = inputData[inp][v];
         }
@@ -371,7 +371,7 @@ int ttk::UncertainDataEstimator::execute() {
   }
 
   // Histogram
-  if(computeUpperBound_ && computeLowerBound_) {
+  if(ComputeUpperBound && ComputeLowerBound) {
     // Range
     double range[2];
     range[0] = outputLowerBoundField[0];
@@ -385,10 +385,10 @@ int ttk::UncertainDataEstimator::execute() {
     }
 
     // Interval between bins
-    double dx = (range[1] - range[0]) / (double)binCount_;
+    double dx = (range[1] - range[0]) / (double)BinCount;
 
     // Bin values
-    for(int b = 0; b < binCount_; b++) {
+    for(int b = 0; b < BinCount; b++) {
       binValues_[b] = range[0] + (dx / 2.0) + (double)b * dx;
     }
 
@@ -399,9 +399,9 @@ int ttk::UncertainDataEstimator::execute() {
 #endif
     for(SimplexId v = 0; v < vertexNumber_; v++) {
       for(int i = 0; i < numberOfInputs_; i++) {
-        idx = (int)floor((inputData[i][v] - range[0]) * binCount_
+        idx = (int)floor((inputData[i][v] - range[0]) * BinCount
                          / (range[1] - range[0]));
-        idx = (idx == binCount_) ? binCount_ - 1 : idx;
+        idx = (idx == BinCount) ? BinCount - 1 : idx;
         outputProbability_[idx][v] += increment;
       }
     }

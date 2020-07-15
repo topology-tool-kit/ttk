@@ -41,7 +41,7 @@ See also MandatoryCriticalPoints.
         </Documentation>
       </InputProperty>
 
-      <IntVectorProperty name="Bound to Compute" command="BoundToCompute"
+      <IntVectorProperty name="Bound to Compute" command="SetBoundToCompute"
       number_of_elements="1" default_values="0">
         <EnumerationDomain name="enum">
           <Entry value="0" text="Lower and Upper"/>
@@ -60,7 +60,7 @@ See also MandatoryCriticalPoints.
       <IntVectorProperty
          name="BinCount"
          label="Bin count"
-         command="BinCount"
+         command="SetBinCount"
          number_of_elements="1"
          default_values="10">
         <IntRangeDomain name="range" min="1" max="1000" />

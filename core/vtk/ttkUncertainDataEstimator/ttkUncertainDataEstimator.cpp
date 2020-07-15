@@ -61,11 +61,11 @@ int ttkUncertainDataEstimator::RequestData(vtkInformation *request,
   boundFields->ShallowCopy(input[0]);
   probability->ShallowCopy(input[0]);
   mean->ShallowCopy(input[0]);
-  // Get arrays from input datas
-  // vtkDataArray* inputScalarField[numInputs] = { nullptr };
+
   int numFields = 0;
   int numArrays = 0;
 
+  // Get arrays from input datas
   std::vector<vtkDataArray *> inputScalarField;
 
   for(int i = 0; i < numInputs; i++) {
@@ -105,12 +105,12 @@ int ttkUncertainDataEstimator::RequestData(vtkInformation *request,
   outputUpperBoundScalarField->SetName("upperBoundField");
 
   this->printMsg(std::vector<std::vector<std::string>>{
-    {"#Bins", std::to_string(binCount_)}});
+    {"#Bins", std::to_string(BinCount)}});
 
-  std::vector<vtkNew<vtkDoubleArray>> probabilityScalarField(binCount_);
+  std::vector<vtkNew<vtkDoubleArray>> probabilityScalarField(BinCount);
 
   // Create DoubleArray objects and link them to the data set
-  for(int b = 0; b < binCount_; b++) {
+  for(int b = 0; b < BinCount; b++) {
     probabilityScalarField[b]->SetNumberOfTuples(input[0]->GetNumberOfPoints());
     probability->GetPointData()->AddArray(probabilityScalarField[b]);
     probabilityScalarField[b]->FillComponent(0, 0.);
@@ -126,7 +126,7 @@ int ttkUncertainDataEstimator::RequestData(vtkInformation *request,
   mean->GetPointData()->AddArray(meanField);
 
   // Resize arrays and add them in the output if required
-  if(computeLowerBound_) {
+  if(ComputeLowerBound) {
     outputLowerBoundScalarField->SetNumberOfTuples(
       input[0]->GetNumberOfPoints());
     boundFields->GetPointData()->AddArray(outputLowerBoundScalarField);
@@ -134,7 +134,7 @@ int ttkUncertainDataEstimator::RequestData(vtkInformation *request,
     outputLowerBoundScalarField->SetNumberOfTuples(0);
   }
 
-  if(computeUpperBound_) {
+  if(ComputeUpperBound) {
     outputUpperBoundScalarField->SetNumberOfTuples(
       input[0]->GetNumberOfPoints());
     boundFields->GetPointData()->AddArray(outputUpperBoundScalarField);
@@ -152,17 +152,13 @@ int ttkUncertainDataEstimator::RequestData(vtkInformation *request,
       this->setInputDataPointer(i, inputScalarField[i]->GetVoidPointer(0));
     }
 
-    this->setComputeLowerBound(computeLowerBound_);
-    this->setComputeUpperBound(computeUpperBound_);
-
     this->setOutputLowerBoundField(
       outputLowerBoundScalarField->GetVoidPointer(0));
     this->setOutputUpperBoundField(
       outputUpperBoundScalarField->GetVoidPointer(0));
     this->setOutputMeanField(meanField->GetVoidPointer(0));
 
-    this->setBinCount(binCount_);
-    for(int b = 0; b < binCount_; b++) {
+    for(int b = 0; b < BinCount; b++) {
       this->setOutputProbability(b, probabilityScalarField[b]->GetPointer(0));
     }
 
@@ -170,7 +166,7 @@ int ttkUncertainDataEstimator::RequestData(vtkInformation *request,
       vtkTemplateMacro(this->execute<VTK_TT>());
     }
 
-    for(int b = 0; b < binCount_; b++) {
+    for(int b = 0; b < BinCount; b++) {
       std::stringstream name{};
       name << std::setprecision(8) << this->getBinValue(b);
       probabilityScalarField[b]->SetName(name.str().c_str());
