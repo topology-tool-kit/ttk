@@ -64,11 +64,16 @@ int ttkContourTreeAlignment::RequestData(
 
     //==================================================================================================================
     // print input info
-    this->printMsg(ttk::debug::Separator::L1);
-    this->printMsg({{"#Trees",std::to_string(n)},{"#Seed",std::to_string(RandomSeed)}});
+    this->printMsg({{"#Trees",std::to_string(n)},{"Seed",std::to_string(RandomSeed)}});
 
     //==================================================================================================================
     // extract topologies
+    this->printMsg(ttk::debug::Separator::L1);
+    this->printMsg("Extracting topologies for " + std::to_string(n)+" trees",debug::Priority::VERBOSE);
+    if(this->debugLevel_ < static_cast<int>(debug::Priority::VERBOSE)){
+        this->printMsg("Extracting topologies for " + std::to_string(n)+" trees.",0,debug::LineMode::REPLACE);
+    }
+
     int scalarType = -1;
     vector<void*> scalars(n); // scalar type will be determined dynamically
     vector<int*> regionSizes(n);
@@ -86,6 +91,9 @@ int ttkContourTreeAlignment::RequestData(
         }
 
         this->printMsg("Block " + std::to_string(i) + " read from multiblock.",debug::Priority::VERBOSE);
+        if(this->debugLevel_ < static_cast<int>(debug::Priority::VERBOSE)){
+            this->printMsg("Extracting topologies for " + std::to_string(n)+" trees (" + std::to_string(i) + "/" + std::to_string(n) + ")",(float)i/(float)n,debug::LineMode::REPLACE);
+        }
 
         nVertices[i] = contourTree->GetNumberOfPoints();
         nEdges[i]    = contourTree->GetNumberOfCells();
@@ -137,8 +145,11 @@ int ttkContourTreeAlignment::RequestData(
 
     //==================================================================================================================
     // print status
-    this->printMsg(ttk::debug::Separator::L1);
-    this->printMsg("For " + std::to_string(n)+" trees topologies and data extracted.");
+    this->printMsg("For " + std::to_string(n)+" trees topologies and data extracted.",debug::Priority::VERBOSE);
+    if(this->debugLevel_ < static_cast<int>(debug::Priority::VERBOSE)){
+        this->printMsg("Extracting topologies for " + std::to_string(n)+" trees",1);
+    }
+
     this->printMsg("Starting alignment computation.");
 
     //==================================================================================================================
@@ -190,7 +201,9 @@ int ttkContourTreeAlignment::RequestData(
 
     //==================================================================================================================
     // print status
-    this->printMsg("Alignment computed. Writing paraview output.");
+    this->printMsg(ttk::debug::Separator::L1);
+    this->printMsg("Alignment computed.");
+    this->printMsg("Writing paraview/vtk output.",0,debug::LineMode::REPLACE);
 
     //==================================================================================================================
     // write paraview output
@@ -288,18 +301,20 @@ int ttkContourTreeAlignment::RequestData(
 
     alignmentTree->GetCellData()->AddArray( arcIDs );
 
+    this->printMsg("Writing paraview/vtk output",1);
+
     if(!ExportJSON || ExportPath.length() < 1){
 
         //==================================================================================================================
         // print status
-        this->printMsg("Paraview output written. No JSON output.");
+        this->printMsg("No JSON output.");
 
     }
     else{
 
         //==================================================================================================================
         // print status
-        this->printMsg("Paraview output written. Writing JSON alignment to \"" + ExportPath + "\".");
+        this->printMsg("Writing JSON alignment to \"" + ExportPath + "\"", 0, debug::LineMode::REPLACE);
 
         //==================================================================================================================
         // output alignment tree as JSON file
@@ -383,7 +398,8 @@ int ttkContourTreeAlignment::RequestData(
 
         //==================================================================================================================
         // print status
-        this->printMsg("JSON alignment written. Writing JSON input trees to \"" + ExportPath + "\".");
+        this->printMsg("Writing JSON alignment to \"" + ExportPath + "\"", 1);
+        this->printMsg("Writing JSON input trees to \"" + ExportPath + "\"", 0, debug::LineMode::REPLACE);
 
         //==================================================================================================================
         // output original trees as JSON
@@ -455,6 +471,7 @@ int ttkContourTreeAlignment::RequestData(
 
             fileJSON.close();
         }
+        this->printMsg("Writing JSON input trees to \"" + ExportPath + "\"", 1);
 
     }
 

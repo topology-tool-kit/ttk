@@ -210,15 +210,18 @@ template <class scalarType> int ttk::ContourTreeAlignment::execute(
     // Print Input
     {
         this->printMsg(ttk::debug::Separator::L1); // L1 is the '=' separator
-        this->printMsg("Execute");
+        this->printMsg("Execute base layer");
         this->printMsg("Computing Alignment for " + std::to_string(nTrees) + " trees.");
         //this->printMsg("Computing Alignment for " + std::to_string(nTrees) + " trees.", 0, t.getElapsedTime(), 1);
     }
 
     for(size_t t=0; t<nTrees; t++){
-        this->printMsg(ttk::debug::Separator::L2,debug::Priority::DETAIL);
-        this->printMsg("Tree " + std::to_string(t) + " (cellDimension, vertexId0, vertexId1, scalarOfVertexId0, scalarOfVertexId1, regionSize, segmentationId)",debug::Priority::DETAIL);
+        this->printMsg(ttk::debug::Separator::L2,debug::Priority::VERBOSE);
+        this->printMsg("Input Tree "  + std::to_string(t) + " topology:",debug::Priority::VERBOSE);
+        //this->printMsg("(cellDimension, vertexId0, vertexId1, scalarOfVertexId0, scalarOfVertexId1, regionSize, segmentationId)",debug::Priority::VERBOSE);
 
+        std::vector<std::vector<std::string>> tableLines;
+        tableLines.push_back({"cellId", "vId0", "vId1", "scalar0", "scalar1", "region", "segId"});
         for(size_t i=0; i<nEdges[t]; i++){
             //long long cellDimension = topologies[t][i*3];
             long long vertexId0     = topologies[t][i*2+0];
@@ -228,14 +231,25 @@ template <class scalarType> int ttk::ContourTreeAlignment::execute(
             scalarType scalarOfVertexId0 = scalars[t][ vertexId0 ];
             scalarType scalarOfVertexId1 = scalars[t][ vertexId1 ];
 
-            this->printMsg(std::to_string(2)//cellDimension)
+            /*this->printMsg(std::to_string(2)//cellDimension)
                 + ", " + std::to_string(vertexId0)
                 + ", " + std::to_string(vertexId1)
                 + ", " + std::to_string(scalarOfVertexId0)
                 + ", " + std::to_string(scalarOfVertexId1)
                 + ", " + std::to_string(regionSize)
-                + ", " + std::to_string(segmentationId),debug::Priority::DETAIL);
+                + ", " + std::to_string(segmentationId),debug::Priority::DETAIL);*/
+            std::vector<std::string> tableLine;
+            tableLine.push_back(std::to_string(i));
+            tableLine.push_back(std::to_string(vertexId0));
+            tableLine.push_back(std::to_string(vertexId1));
+            tableLine.push_back(std::to_string(scalarOfVertexId0));
+            tableLine.push_back(std::to_string(scalarOfVertexId1));
+            tableLine.push_back(std::to_string(regionSize));
+            tableLine.push_back(std::to_string(segmentationId));
+
+            tableLines.push_back(tableLine);
         }
+        this->printMsg(tableLines,debug::Priority::VERBOSE);
     }
 
     // prepare data structures
@@ -243,6 +257,9 @@ template <class scalarType> int ttk::ContourTreeAlignment::execute(
     nodes = std::vector<AlignmentNode*>();
     arcs = std::vector<AlignmentEdge*>();
     int bestRootIdx;
+
+    this->printMsg(ttk::debug::Separator::L1);
+    this->printMsg("Shuffling input trees. Used seed: " + std::to_string(seed),0,debug::LineMode::REPLACE);
 
     // permute list input trees randomly with given seed
     permutation = std::vector<size_t>();
@@ -252,18 +269,42 @@ template <class scalarType> int ttk::ContourTreeAlignment::execute(
     std::srand(seed);
     if(alignmenttreeType!=lastMatchedValue) std::random_shuffle(permutation.begin(),permutation.end());
 
-    // print permutation ToDo: optimize for output not necessary?
-    std::string permutationString = "";
-    for(size_t i=0; i<permutation.size(); i++){
-        permutationString += std::to_string(permutation[i]) + (i==permutation.size()-1?"":",");
+    this->printMsg("Shuffling input trees. Used seed: " + std::to_string(seed),1);
+
+    // print permutation
+    if(this->debugLevel_ >= static_cast<int>(debug::Priority::DETAIL)){
+        std::string permutationString = "";
+        for(size_t i=0; i<permutation.size(); i++){
+            permutationString += std::to_string(permutation[i]) + (i==permutation.size()-1?"":",");
+        }
+        this->printMsg("Permutation: "+permutationString,debug::Priority::DETAIL);
     }
-    this->printMsg(ttk::debug::Separator::L1);
-    this->printMsg("Seed for permutation: " + std::to_string(seed),debug::Priority::DETAIL);
-    this->printMsg("Permutation: "+permutationString,debug::Priority::DETAIL);
+
     this->printMsg("Starting alignment heuristic.");
 
     std::tuple<std::vector<AlignmentNode*>,std::vector<AlignmentEdge*>,std::vector<ContourTree*>> bestAlignment;
     float bestAlignmentValue = FLT_MAX;
+
+    /*printMsg(ttk::debug::Separator::L2);
+    printMsg("Filtering input contour trees",0,debug::LineMode::REPLACE);
+
+    std::vector<ContourTree> contourtreesToAlign;
+    for(size_t i=0; i<nTrees; i++){
+        ContourTree ct(scalars[permutation[i]],
+              regionSizes[permutation[i]],
+              segmentationIds[permutation[i]],
+              topologies[permutation[i]],
+              nVertices[permutation[i]],
+              nEdges[permutation[i]]);
+        if(ct.isBinary()){
+            contourtreesToAlign.push_back(ct);
+        }
+        else{
+            this->printWrn("Input " + std::to_string(permutation[i]) + " not binary. Will not be aligned.");
+        }
+    }
+
+    printMsg("Filtering input contour trees",1);*/
 
     for(int rootIdx=0; rootIdx<nVertices[permutation[0]]; rootIdx++){
     //for(int rootIdx=2; rootIdx<3; rootIdx++){
@@ -401,15 +442,17 @@ template <class scalarType> int ttk::ContourTreeAlignment::execute(
     contourtrees = std::get<2>(bestAlignment);
 
     this->printMsg(ttk::debug::Separator::L1);
-    this->printMsg("Alignment iteration complete. Root of optimal alignment: " + std::to_string(bestRootIdx) + ".");
+    this->printMsg("Alignment iteration complete.");
+    this->printMsg("Root of optimal alignment: " + std::to_string(bestRootIdx) + ".");
+    this->printMsg("Value of optimal alignment: " + std::to_string(bestAlignmentValue) + ".");
     this->printMsg(ttk::debug::Separator::L1);
-    this->printMsg("Computing branches.");
+    this->printMsg("Computing branches",0,timer.getElapsedTime(),debug::LineMode::REPLACE);
 
     computeBranches();
 
-    this->printMsg("Branches computed.");
+    this->printMsg("Computing branches",1,timer.getElapsedTime());
     this->printMsg(ttk::debug::Separator::L1);
-    this->printMsg("Writing output.");
+    this->printMsg("Writing output pointers",0,timer.getElapsedTime(),debug::LineMode::REPLACE);
 
     for(AlignmentNode* node : nodes){
 
@@ -458,13 +501,13 @@ template <class scalarType> int ttk::ContourTreeAlignment::execute(
         }
 
     }
+    this->printMsg("Writing output pointers",1,timer.getElapsedTime());
 
     // Print performance
     {
-        this->printMsg(ttk::debug::Separator::L2);
+        this->printMsg(ttk::debug::Separator::L1);
         this->printMsg("Alignment computed in " + std::to_string(timer.getElapsedTime()) + " s. (" + std::to_string(threadNumber_) + " thread(s)).");
         this->printMsg("Number of nodes in alignment: " + std::to_string(nodes.size()));
-        this->printMsg(ttk::debug::Separator::L1);
     }
 
     return 1;
