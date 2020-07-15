@@ -198,7 +198,7 @@ int Editor::init(int &argc, char **argv) {
     std::stringstream msg;
     msg << "No " << inputFormat_ << " file in directory " << inputDirectory_
         << endl;
-    dMsg(cerr, msg.str(), fatalMsg);
+    this->printErr(msg.str());
     return -1;
   } else {
     /* Selection of input files */
@@ -242,13 +242,10 @@ int Editor::init(int &argc, char **argv) {
     outputHistograms_ = vtkImageData::New();
   }
 
-  if(debugLevel_ > infoMsg) {
-    std::stringstream msg;
-    msg << "[Editor] Directory = " << inputDirectory_ << endl;
-    msg << "[Editor] " << inputFileName_.size() << " " << inputFormat_
-        << " files found in directory" << endl;
-    dMsg(cout, msg.str(), infoMsg);
-  }
+  this->printMsg("Directory: " + inputDirectory_, ttk::debug::Priority::DETAIL);
+  this->printMsg(std::to_string(inputFileName_.size()) + " " + inputFormat_
+                   + " files found in directory",
+                 ttk::debug::Priority::DETAIL);
 
   return 0;
 }
@@ -286,8 +283,7 @@ int Editor::initRawReader() {
       rawReader_->SetDataScalarTypeToUnsignedChar();
     } else {
       std::stringstream msg;
-      msg << "Scalar type " << scalarType_ << " not supported" << endl;
-      dMsg(cerr, msg.str(), fatalMsg);
+      this->printErr("Scalar type " + scalarType_ + " not supported");
       return -1;
     }
     // Byte order
@@ -302,17 +298,11 @@ int Editor::initRawReader() {
 
 int Editor::loadData(const std::string &fileName) {
 
-  if(debugLevel_ > infoMsg) {
-    std::stringstream msg;
-    msg << "[Editor] Loading file " << fileName << endl;
-    dMsg(cout, msg.str(), infoMsg);
-  }
+  this->printMsg("Loading file " + fileName, ttk::debug::Priority::DETAIL);
 
   if(inputFormat_ == "raw") {
     if(!rawReader_) {
-      std::stringstream msg;
-      msg << "[Editor] Function loadData : reader not intialized" << endl;
-      dMsg(cerr, msg.str(), fatalMsg);
+      this->printErr("Function loadData: reader not initialized");
       return -1;
     }
     input_ = NULL;
@@ -353,24 +343,18 @@ int Editor::loadData(const std::string &fileName) {
       }
       input_ = readXMLFile<vtkXMLImageDataReader>(fileName);
     } else {
-      std::stringstream msg;
-      msg << "[Editor] File format " << inputFormat_ << " not supported"
-          << endl;
-      dMsg(cerr, msg.str(), fatalMsg);
+      this->printErr("File format " + inputFormat_ + " not supported");
       return -2;
     }
   }
 
   if(input_) {
-    std::stringstream msg;
-    msg << "[Editor] Reading file " << fileName << endl;
-    msg << "[Editor]   done! (read " << input_->GetNumberOfPoints()
-        << " vertices, " << input_->GetNumberOfCells() << " cells)" << endl;
-    dMsg(cout, msg.str(), infoMsg);
+    this->printMsg("Read file " + fileName);
+    this->printMsg(std::vector<std::vector<std::string>>{
+      {"#Vertices", std::to_string(input_->GetNumberOfPoints())},
+      {"#Cells", std::to_string(input_->GetNumberOfCells())}});
   } else {
-    std::stringstream msg;
-    msg << "[Editor] Error reading file " << fileName << endl;
-    dMsg(cerr, msg.str(), fatalMsg);
+    this->printErr("Cannot read file " + fileName);
   }
 
   return 0;
