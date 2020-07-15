@@ -4,10 +4,7 @@
 /// \brief Imports multiple data-sets into one uncertain data-set.
 
 // include the local headers
-#include <Editor.h>
-
-using namespace std;
-using namespace ttk;
+#include "Editor.h"
 
 int main(int argc, char **argv) {
 
