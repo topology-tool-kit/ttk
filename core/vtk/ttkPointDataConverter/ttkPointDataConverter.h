@@ -53,7 +53,9 @@ protected:
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;
 
-  template <typename A, typename B, typename C>
+  template <typename InputFieldType,
+            typename OutputFieldType,
+            typename OutputVTKArrayType>
   int convert(vtkDataArray *inputData, vtkDataSet *output);
 
 private:

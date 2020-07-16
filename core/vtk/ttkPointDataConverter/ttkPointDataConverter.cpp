@@ -43,35 +43,41 @@ int ttkPointDataConverter::FillOutputPortInformation(int port,
   return 0;
 }
 
-template <typename A, typename B, typename C>
+template <typename InputFieldType,
+          typename OutputFieldType,
+          typename OutputVTKArrayType>
 int ttkPointDataConverter::convert(vtkDataArray *inputData,
                                    vtkDataSet *output) {
-  A *input_ptr = static_cast<A *>(inputData->GetVoidPointer(0));
+  const auto input_ptr
+    = static_cast<InputFieldType *>(inputData->GetVoidPointer(0));
   int n = inputData->GetNumberOfComponents();
   vtkIdType N = inputData->GetNumberOfTuples();
-  B *output_ptr = new B[N * n];
+
+  vtkNew<OutputVTKArrayType> outputData;
+  outputData->SetName(inputData->GetName());
+  outputData->SetNumberOfComponents(n);
+  outputData->SetNumberOfTuples(N);
+  auto output_ptr
+    = static_cast<OutputFieldType *>(outputData->GetVoidPointer(0));
 
   if(UseNormalization) {
-    auto type_min = static_cast<double>(std::numeric_limits<B>::min());
-    auto type_max = static_cast<double>(std::numeric_limits<B>::max());
+    auto type_min
+      = static_cast<double>(std::numeric_limits<OutputFieldType>::min());
+    auto type_max
+      = static_cast<double>(std::numeric_limits<OutputFieldType>::max());
     for(int k = 0; k < n; ++k) {
       double *input_limits = inputData->GetRange(k);
 
       for(vtkIdType i = 0; i < N; ++i) {
-        double d = (double)input_ptr[i * n + k];
+        auto d = (double)input_ptr[i * n + k];
         d = (d - input_limits[0]) / (input_limits[1] - input_limits[0]);
         d = d * (type_max - type_min) + type_min;
-        output_ptr[i * n + k] = (B)d;
+        output_ptr[i * n + k] = (OutputFieldType)d;
       }
     }
   } else
     for(vtkIdType i = 0; i < N * n; ++i)
-      output_ptr[i] = (B)input_ptr[i];
-
-  vtkNew<C> outputData;
-  outputData->SetName(inputData->GetName());
-  outputData->SetNumberOfComponents(n);
-  outputData->SetArray(output_ptr, N * n, 0);
+      output_ptr[i] = (OutputFieldType)input_ptr[i];
 
   output->GetPointData()->AddArray(outputData);
 
