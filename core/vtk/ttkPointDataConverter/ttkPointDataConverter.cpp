@@ -14,6 +14,7 @@
 #include <vtkUnsignedShortArray.h>
 
 #include <ttkPointDataConverter.h>
+#include <ttkUtils.h>
 
 #include <limits>
 
@@ -49,7 +50,7 @@ template <typename InputFieldType,
 int ttkPointDataConverter::convert(vtkDataArray *inputData,
                                    vtkDataSet *output) {
   const auto input_ptr
-    = static_cast<InputFieldType *>(inputData->GetVoidPointer(0));
+    = static_cast<InputFieldType *>(ttkUtils::GetVoidPointer(inputData));
   int n = inputData->GetNumberOfComponents();
   vtkIdType N = inputData->GetNumberOfTuples();
 
@@ -58,7 +59,7 @@ int ttkPointDataConverter::convert(vtkDataArray *inputData,
   outputData->SetNumberOfComponents(n);
   outputData->SetNumberOfTuples(N);
   auto output_ptr
-    = static_cast<OutputFieldType *>(outputData->GetVoidPointer(0));
+    = static_cast<OutputFieldType *>(ttkUtils::GetVoidPointer(outputData));
 
   if(UseNormalization) {
     auto type_min
