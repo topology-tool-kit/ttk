@@ -571,19 +571,19 @@ int ttkMorseSmaleComplex::RequestData(vtkInformation *request,
   this->setSaddleConnectorsPersistenceThreshold(
     SaddleConnectorsPersistenceThreshold);
 
-  this->setInputScalarField(inputScalars->GetVoidPointer(0));
-  this->setInputOffsets(inputOffsets->GetVoidPointer(0));
+  this->setInputScalarField(ttkUtils::GetVoidPointer(inputScalars));
+  this->setInputOffsets(ttkUtils::GetVoidPointer(inputOffsets));
 
   void *ascendingManifoldPtr = nullptr;
   void *descendingManifoldPtr = nullptr;
   void *morseSmaleManifoldPtr = nullptr;
   if(ComputeAscendingSegmentation)
-    ascendingManifoldPtr = ascendingManifold->GetVoidPointer(0);
+    ascendingManifoldPtr = ttkUtils::GetVoidPointer(ascendingManifold);
   if(ComputeDescendingSegmentation)
-    descendingManifoldPtr = descendingManifold->GetVoidPointer(0);
+    descendingManifoldPtr = ttkUtils::GetVoidPointer(descendingManifold);
   if(ComputeAscendingSegmentation and ComputeDescendingSegmentation
      and ComputeFinalSegmentation)
-    morseSmaleManifoldPtr = morseSmaleManifold->GetVoidPointer(0);
+    morseSmaleManifoldPtr = ttkUtils::GetVoidPointer(morseSmaleManifold);
 
   this->setOutputMorseComplexes(
     ascendingManifoldPtr, descendingManifoldPtr, morseSmaleManifoldPtr);
