@@ -6,30 +6,33 @@
 using namespace std;
 using namespace ttk;
 
-vtkStandardNewMacro(ttkPointDataSelector)
+vtkStandardNewMacro(ttkPointDataSelector);
 
-  // transmit abort signals
-  bool ttkPointDataSelector::needsToAbort() {
-  return GetAbortExecute();
+ttkPointDataSelector::ttkPointDataSelector() {
+  this->setDebugMsgPrefix("PointDataSelector");
+  this->SetNumberOfInputPorts(1);
+  this->SetNumberOfOutputPorts(1);
 }
 
-// transmit progress status
-int ttkPointDataSelector::updateProgress(const float &progress) {
-
-  {
-    stringstream msg;
-    msg << "[ttkPointDataSelector] " << progress * 100 << "% processed...."
-        << endl;
-    dMsg(cout, msg.str(), advancedInfoMsg);
+int ttkPointDataSelector::FillInputPortInformation(int port,
+                                                   vtkInformation *info) {
+  if(port == 0) {
+    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
+    return 1;
   }
+  return 0;
+}
 
-  UpdateProgress(progress);
+int ttkPointDataSelector::FillOutputPortInformation(int port,
+                                                    vtkInformation *info) {
+  if(port == 0) {
+    info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
+    return 1;
+  }
   return 0;
 }
 
 int ttkPointDataSelector::doIt(vtkDataSet *input, vtkDataSet *output) {
-  Memory m;
-
   output->ShallowCopy(input);
 
   vtkPointData *inputPointData = input->GetPointData();
@@ -107,13 +110,6 @@ int ttkPointDataSelector::doIt(vtkDataSet *input, vtkDataSet *output) {
 
   output->GetPointData()->ShallowCopy(outputPointData);
 
-  {
-    stringstream msg;
-    msg << "[ttkPointDataSelector] Memory usage: " << m.getElapsedUsage()
-        << " MB." << endl;
-    dMsg(cout, msg.str(), memoryMsg);
-  }
-
   return 0;
 }
 
@@ -124,26 +120,17 @@ int ttkPointDataSelector::RequestInformation(
 
   vtkDataSet *input = vtkDataSet::GetData(inputVector[0]);
   FillAvailableFields(input);
-  return vtkDataSetAlgorithm::RequestInformation(
-    request, inputVector, outputVector);
+  return ttkAlgorithm::RequestInformation(request, inputVector, outputVector);
 }
 
 int ttkPointDataSelector::RequestData(vtkInformation *request,
                                       vtkInformationVector **inputVector,
                                       vtkInformationVector *outputVector) {
-  Memory m;
 
   vtkDataSet *input = vtkDataSet::GetData(inputVector[0]);
   vtkDataSet *output = vtkDataSet::GetData(outputVector);
 
   doIt(input, output);
-
-  {
-    stringstream msg;
-    msg << "[ttkPointDataSelector] Memory usage: " << m.getElapsedUsage()
-        << " MB." << endl;
-    dMsg(cout, msg.str(), memoryMsg);
-  }
 
   return 1;
 }
