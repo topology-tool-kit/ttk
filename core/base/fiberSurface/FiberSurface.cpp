@@ -635,12 +635,8 @@ int FiberSurface::flipEdges() const {
     }
   }
 
-  {
-    stringstream msg;
-    msg << "[FiberSurface] Edge flips performed in " << t.getElapsedTime()
-        << " s. (" << threadNumber_ << " thread(s))" << endl;
-    dMsg(cout, msg.str(), timeMsg);
-  }
+  this->printMsg(
+    "Performed edge flips", 1.0, t.getElapsedTime(), this->threadNumber_);
 
   return 0;
 }
@@ -1270,14 +1266,11 @@ int FiberSurface::mergeEdges(const double &distanceThreshold) const {
     mergeVertices(0);
   }
 
-  {
-    stringstream msg;
-    msg << "[FiberSurface] Edge collapses performed in " << t.getElapsedTime()
-        << " s. (" << threadNumber_ << " thread(s))" << endl;
-    msg << "[FiberSurface] " << initVertexNumber - (*globalVertexList_).size()
-        << " vertices removed." << endl;
-    dMsg(cout, msg.str(), timeMsg);
-  }
+  this->printMsg(
+    "Performed edge collapses", 1.0, t.getElapsedTime(), this->threadNumber_);
+  this->printMsg(std::vector<std::vector<std::string>>{
+    {"#Vertices removed",
+     std::to_string(initVertexNumber - (*globalVertexList_).size())}});
 
   return 0;
 }
@@ -1550,13 +1543,8 @@ int FiberSurface::mergeVertices(const double &distanceThreshold) const {
     }
   }
 
-  {
-    stringstream msg;
-    msg << "[FiberSurface] Output made manifold (" << uniqueVertexNumber
-        << " vertices) in " << t.getElapsedTime() << " s. (" << threadNumber_
-        << " thread(s))" << endl;
-    dMsg(cout, msg.str(), timeMsg);
-  }
+  this->printMsg(
+    "Output made manifold", 1.0, t.getElapsedTime(), this->threadNumber_);
 
   return 0;
 }

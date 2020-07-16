@@ -1707,13 +1707,7 @@ inline int ttk::FiberSurface::computeSurface() {
 
   finalize<dataTypeU, dataTypeV>(pointSnapping_, false, false, false);
 
-  {
-    std::stringstream msg;
-    msg << "[FiberSurface] FiberSurface extracted in " << t.getElapsedTime()
-        << " s. (" << globalVertexList_->size() << " vertices, "
-        << threadNumber_ << " thread(s))" << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
-  }
+  this->printMsg("Extracted", 1.0, t.getElapsedTime(), this->threadNumber_);
 
   return 0;
 }
@@ -2422,13 +2416,10 @@ inline int ttk::FiberSurface::remeshIntersections() const {
     for(SimplexId j = 0; j < (SimplexId)tetIntersections[tetId].size(); j++) {
 
       if(j > 1000) {
-        std::stringstream msg;
-        msg << "[FiberSurface] Preventing an infinite loop!" << std::endl;
-        msg << "[FiberSurface] More than 1000 re-meshed triangles in tet #"
-            << tetId << " :(" << std::endl;
-        msg << "[FiberSurface] Extra-thin triangles keep on intersecting?!"
-            << std::endl;
-        dMsg(std::cerr, msg.str(), infoMsg);
+        this->printWrn("Preventing an infinite loop!");
+        this->printWrn("More than 1000 re-meshed triangles in tet #"
+                       + std::to_string(tetId));
+        this->printWrn("Extra-thin triangles keep on intersecting?!");
         break;
       }
 
