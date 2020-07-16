@@ -21,6 +21,26 @@ vtkStandardNewMacro(ttkPointDataConverter);
 
 ttkPointDataConverter::ttkPointDataConverter() {
   this->setDebugMsgPrefix("PointDataConverter");
+  this->SetNumberOfInputPorts(1);
+  this->SetNumberOfOutputPorts(1);
+}
+
+int ttkPointDataConverter::FillInputPortInformation(int port,
+                                                    vtkInformation *info) {
+  if(port == 0) {
+    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
+    return 1;
+  }
+  return 0;
+}
+
+int ttkPointDataConverter::FillOutputPortInformation(int port,
+                                                     vtkInformation *info) {
+  if(port == 0) {
+    info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
+    return 1;
+  }
+  return 0;
 }
 
 template <typename A, typename B, typename C>
