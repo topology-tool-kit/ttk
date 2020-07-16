@@ -33,8 +33,6 @@
 // base code includes
 #include <Wrapper.h>
 //
-#include <PersistenceDiagram.h>
-//
 #include <Auction.h>
 //
 #include <KDTree.h>

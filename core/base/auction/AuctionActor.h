@@ -3,11 +3,11 @@
 
 #include <Debug.h>
 #include <KDTree.h>
-#include <PersistenceDiagram.h>
 #include <array>
 #include <cmath>
 #include <iostream>
 #include <limits>
+#include <queue>
 
 namespace ttk {
   template <typename dataType>
