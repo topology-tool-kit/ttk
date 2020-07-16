@@ -35,20 +35,20 @@ int ttkLDistance::RequestData(vtkInformation *request,
                               vtkInformationVector **inputVector,
                               vtkInformationVector *outputVector) {
 
-  const auto input1 = vtkDataSet::GetData(inputVector[0]);
+  const auto input = vtkDataSet::GetData(inputVector[0]);
   auto output = vtkDataSet::GetData(outputVector);
 
   // Test validity of datasets (must present the same number of points).
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(!input1) {
+  if(!input) {
     this->printErr("Input pointer is NULL.");
     return -1;
   }
-  if(!input1->GetNumberOfPoints()) {
+  if(!input->GetNumberOfPoints()) {
     this->printErr("Input has no point.");
     return -1;
   }
-  if(!input1->GetPointData()) {
+  if(!input->GetPointData()) {
     this->printErr("Input has no point data.");
     return -1;
   }
@@ -59,24 +59,10 @@ int ttkLDistance::RequestData(vtkInformation *request,
 #endif
 
   // Use a pointer-base copy for the input.
-  output->ShallowCopy(input1);
+  output->ShallowCopy(input);
 
-  // In the following, the target scalar field of the input is replaced in the
-  // variable 'output' with the result of the computation.
-  // if your wrapper produces an output of the same type of the input, you
-  // should proceed in the same way.
-  vtkDataArray *inputScalarField1 = NULL;
-  vtkDataArray *inputScalarField2 = NULL;
-
-  if(ScalarField1.length())
-    inputScalarField1 = input1->GetPointData()->GetArray(ScalarField1.data());
-  else
-    inputScalarField1 = input1->GetPointData()->GetArray(ScalarFieldId1);
-
-  if(ScalarField2.length())
-    inputScalarField2 = input1->GetPointData()->GetArray(ScalarField2.data());
-  else
-    inputScalarField2 = input1->GetPointData()->GetArray(ScalarFieldId2);
+  const auto inputScalarField1 = this->GetInputArrayToProcess(0, input);
+  const auto inputScalarField2 = this->GetInputArrayToProcess(1, input);
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!inputScalarField1 || !inputScalarField2
@@ -90,7 +76,7 @@ int ttkLDistance::RequestData(vtkInformation *request,
   vtkSmartPointer<vtkDataArray> outputScalarField{
     inputScalarField1->NewInstance()};
 
-  ttk::SimplexId numberOfPoints = input1->GetNumberOfPoints();
+  ttk::SimplexId numberOfPoints = input->GetNumberOfPoints();
 
   outputScalarField->SetNumberOfTuples(numberOfPoints);
   outputScalarField->SetName(DistanceFieldName.data());

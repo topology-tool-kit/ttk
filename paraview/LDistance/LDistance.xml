@@ -35,11 +35,12 @@
       </InputProperty>
 
       <StringVectorProperty
-        name="ScalarField1"
-        command="SetScalarField1"
-        number_of_elements="1"
+        name="Scalar Field 1"
+        command="SetInputArrayToProcess"
+        element_types="0 0 0 0 2"
+        number_of_elements="5"
+        default_values="0"
         animateable="0"
-        label="Scalar Field 1"
         >
         <ArrayListDomain
           name="array_list"
@@ -54,11 +55,12 @@
       </StringVectorProperty>
 
      <StringVectorProperty
-        name="ScalarField2"
-        command="SetScalarField2"
-        number_of_elements="1"
+        name="Scalar Field 2"
+        command="SetInputArrayToProcess"
+        element_types="0 0 0 0 2"
+        number_of_elements="5"
+        default_values="1"
         animateable="0"
-        label="Scalar Field 2"
         >
         <ArrayListDomain
           name="array_list"
@@ -98,8 +100,8 @@ for the L-infinity distance).
      ${DEBUG_WIDGETS}
 
       <PropertyGroup panel_widget="Line" label="Input options">
-        <Property name="ScalarField1" />
-        <Property name="ScalarField2" />
+        <Property name="Scalar Field 1" />
+        <Property name="Scalar Field 2" />
       </PropertyGroup>
 
       <PropertyGroup panel_widget="Line" label="Output options">

@@ -10,6 +10,15 @@
 /// \param Input Input scalar field (vtkDataSet)
 /// \param Output Output scalar field (vtkDataSet)
 ///
+/// The input data array needs to be specified via the standard VTK call
+/// vtkAlgorithm::SetInputArrayToProcess() with the following parameters:
+/// \param idx 0 (FIXED: the first array the algorithm requires)
+/// \param idx 1 (FIXED: the second array the algorithm requires)
+/// \param port 0 (FIXED: first port)
+/// \param connection 0 (FIXED: first connection)
+/// \param fieldAssociation 0 (FIXED: point data)
+/// \param arrayName (DYNAMIC: string identifier of the input array)
+///
 /// This filter can be used as any other VTK filter (for instance, by using the
 /// sequence of calls SetInputData(), Update(), GetOutput()).
 ///
@@ -32,18 +41,6 @@ public:
   static ttkLDistance *New();
   vtkTypeMacro(ttkLDistance, ttkAlgorithm);
 
-  vtkSetMacro(ScalarField1, std::string);
-  vtkGetMacro(ScalarField1, std::string);
-
-  vtkSetMacro(ScalarField2, std::string);
-  vtkGetMacro(ScalarField2, std::string);
-
-  vtkSetMacro(ScalarFieldId1, int);
-  vtkGetMacro(ScalarFieldId1, int);
-
-  vtkSetMacro(ScalarFieldId2, int);
-  vtkGetMacro(ScalarFieldId2, int);
-
   vtkSetMacro(DistanceType, std::string);
   vtkGetMacro(DistanceType, std::string);
 
@@ -63,9 +60,5 @@ protected:
 
 private:
   std::string DistanceType{2};
-  std::string ScalarField1{};
-  std::string ScalarField2{};
-  int ScalarFieldId1{0};
-  int ScalarFieldId2{1};
   std::string DistanceFieldName{"L2-distance"};
 };
