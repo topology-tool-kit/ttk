@@ -122,8 +122,8 @@ namespace ttk {
                         const bool &intersectionRemesh = false);
 
 #ifdef TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE
-    inline int flushOctree() {
-      return octree_.flush();
+    inline void flushOctree() {
+      octree_.flush();
     }
 #endif
 
@@ -524,9 +524,7 @@ inline int ttk::FiberSurface::buildOctree() {
 
     octree_.setDebugLevel(debugLevel_);
     octree_.setThreadNumber(threadNumber_);
-    if(triangulation_) {
-      octree_.setTriangulation(triangulation_);
-    } else {
+    if(!triangulation_) {
       octree_.setCellList(tetList_);
       octree_.setCellNumber(tetNumber_);
       octree_.setPointList(pointSet_);
@@ -534,7 +532,7 @@ inline int ttk::FiberSurface::buildOctree() {
     }
     octree_.setRange(uField_, vField_);
 
-    octree_.build<dataTypeU, dataTypeV>();
+    octree_.build<dataTypeU, dataTypeV>(triangulation_);
   }
 
   return 0;
