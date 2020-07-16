@@ -5,6 +5,7 @@ include(CMake/VTKModule.cmake)
 # deduce the location of the corresponding vtk.module file
 # also register the xml file if given
 
+# TODO ... this has nothing to do here.
 file(READ "CMake/debug_widgets.xml" DEBUG_WIDGETS)
 file(READ "CMake/topological_compression.xml" TOPOLOGICAL_COMPRESSION_WIDGETS)
 
