@@ -196,14 +196,13 @@ namespace ttk {
       return 0;
     }
 
-    inline int setupTriangulation(Triangulation *triangulation) {
-      triangulation_ = triangulation;
-
+    inline void
+      preconditionTriangulation(AbstractTriangulation *triangulation) {
       // for breadth-first search traversals
-      if(triangulation_) {
-        triangulation_->preconditionCellNeighbors();
+      if(triangulation != nullptr) {
+        triangulation->preconditionCellNeighbors();
       }
-      return 0;
+      triangulation_ = triangulation;
     }
 
     inline int setVertexList(const SimplexId &polygonEdgeId,
@@ -493,7 +492,7 @@ namespace ttk {
     std::vector<std::vector<Vertex> *> polygonEdgeVertexLists_{};
     std::vector<std::vector<Triangle> *> polygonEdgeTriangleLists_{};
 
-    Triangulation *triangulation_{};
+    AbstractTriangulation *triangulation_{};
 
 #ifdef TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE
     RangeDrivenOctree octree_{};

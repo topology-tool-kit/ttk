@@ -117,7 +117,7 @@ int ttkFiberSurface::doIt(vector<vtkDataSet *> &inputs,
   if(!triangulation)
     return -1;
   triangulation->setWrapper(this);
-  fiberSurface_.setupTriangulation(triangulation);
+  fiberSurface_.preconditionTriangulation(triangulation);
   fiberSurface_.setWrapper(this);
   outputVertexList_.clear();
   fiberSurface_.setGlobalVertexList(&outputVertexList_);

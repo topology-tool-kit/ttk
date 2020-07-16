@@ -281,7 +281,7 @@ namespace ttk {
         // trigger the fiberSurface pre-processing on the triangulation.
         fiberSurface_.setWrapper(wrapper_);
         fiberSurface_.setInputField(uField_, vField_);
-        fiberSurface_.setupTriangulation(triangulation_);
+        fiberSurface_.preconditionTriangulation(triangulation_);
         // trigger the fiber surface precomputation
 #ifdef TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE
         if(withRangeDrivenOctree_)
@@ -542,7 +542,7 @@ inline int ttk::ReebSpace::compute2sheets(
   fiberSurface_.setWrapper(wrapper_);
   fiberSurface_.setGlobalVertexList(&fiberSurfaceVertexList_);
   fiberSurface_.setInputField(uField_, vField_);
-  fiberSurface_.setupTriangulation(triangulation_);
+  fiberSurface_.preconditionTriangulation(triangulation_);
 
   fiberSurface_.setPolygonEdgeNumber(jacobiEdges.size());
 
@@ -715,7 +715,7 @@ inline int ttk::ReebSpace::compute2sheetChambers() {
   fiberSurface_.setWrapper(wrapper_);
   fiberSurface_.setGlobalVertexList(&fiberSurfaceVertexList_);
   fiberSurface_.setInputField(uField_, vField_);
-  fiberSurface_.setupTriangulation(triangulation_);
+  fiberSurface_.preconditionTriangulation(triangulation_);
   fiberSurface_.setTetNumber(tetNumber_);
   fiberSurface_.setPolygonEdgeNumber(threadNumber_);
 
