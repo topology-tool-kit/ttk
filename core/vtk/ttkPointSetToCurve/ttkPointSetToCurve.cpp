@@ -77,8 +77,9 @@ int ttkPointSetToCurve::RequestData(vtkInformation *request,
   std::vector<std::pair<vtkIdType, double>> orderedValues{};
 
   switch(oa->GetDataType()) {
-    vtkTemplateMacro(dispatch(
-      orderedValues, static_cast<VTK_TT *>(oa->GetVoidPointer(0)), nvalues));
+    vtkTemplateMacro(
+      dispatch(orderedValues,
+               static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(oa)), nvalues));
   }
 
   // compare two pairs of index/value according to their values
