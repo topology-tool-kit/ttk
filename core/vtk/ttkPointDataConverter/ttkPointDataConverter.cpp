@@ -69,14 +69,10 @@ int ttkPointDataConverter::convert(vtkDataArray *inputData,
       output_ptr[i] = (B)input_ptr[i];
 
   vtkNew<C> outputData;
-  outputData->SetName(ScalarField.data());
+  outputData->SetName(inputData->GetName());
   outputData->SetNumberOfComponents(n);
   outputData->SetArray(output_ptr, N * n, 0);
 
-  if(ScalarField.length())
-    output->GetPointData()->RemoveArray(ScalarField.data());
-  else
-    output->GetPointData()->RemoveArray(0);
   output->GetPointData()->AddArray(outputData);
 
   return 0;
@@ -91,15 +87,7 @@ int ttkPointDataConverter::RequestData(vtkInformation *request,
 
   output->ShallowCopy(input);
 
-  // TODO
-  vtkDataArray *inputScalarField = nullptr;
-  if(ScalarField.length())
-    inputScalarField = input->GetPointData()->GetArray(ScalarField.data());
-  else
-    inputScalarField = input->GetPointData()->GetArray(0);
-  if(!inputScalarField)
-    return -1;
-
+  const auto inputScalarField = this->GetInputArrayToProcess(0, input);
   auto InputType = inputScalarField->GetDataType();
 
   bool oldUseNormalization{UseNormalization};

@@ -33,9 +33,6 @@ public:
 
   vtkTypeMacro(ttkPointDataConverter, ttkAlgorithm);
 
-  vtkSetMacro(ScalarField, std::string);
-  vtkGetMacro(ScalarField, std::string);
-
   void SetOutputType(int outputType) {
     OutputType = static_cast<SupportedType>(outputType);
     Modified();
@@ -71,7 +68,6 @@ private:
     UnsignedChar,
   };
 
-  std::string ScalarField;
   SupportedType OutputType{SupportedType::Char};
   bool UseNormalization{false};
 };
