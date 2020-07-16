@@ -7,6 +7,7 @@
 #include <vtkPointData.h>
 
 #include <ttkUncertainDataEstimator.h>
+#include <ttkUtils.h>
 
 vtkStandardNewMacro(ttkUncertainDataEstimator);
 
@@ -104,8 +105,8 @@ int ttkUncertainDataEstimator::RequestData(vtkInformation *request,
   outputLowerBoundScalarField->SetName("lowerBoundField");
   outputUpperBoundScalarField->SetName("upperBoundField");
 
-  this->printMsg(std::vector<std::vector<std::string>>{
-    {"#Bins", std::to_string(BinCount)}});
+  this->printMsg(
+    std::vector<std::vector<std::string>>{{"#Bins", std::to_string(BinCount)}});
 
   std::vector<vtkNew<vtkDoubleArray>> probabilityScalarField(BinCount);
 
@@ -149,14 +150,15 @@ int ttkUncertainDataEstimator::RequestData(vtkInformation *request,
 
     this->setNumberOfInputs(numFields);
     for(int i = 0; i < numFields; i++) {
-      this->setInputDataPointer(i, inputScalarField[i]->GetVoidPointer(0));
+      this->setInputDataPointer(
+        i, ttkUtils::GetVoidPointer(inputScalarField[i]));
     }
 
     this->setOutputLowerBoundField(
-      outputLowerBoundScalarField->GetVoidPointer(0));
+      ttkUtils::GetVoidPointer(outputLowerBoundScalarField));
     this->setOutputUpperBoundField(
-      outputUpperBoundScalarField->GetVoidPointer(0));
-    this->setOutputMeanField(meanField->GetVoidPointer(0));
+      ttkUtils::GetVoidPointer(outputUpperBoundScalarField));
+    this->setOutputMeanField(ttkUtils::GetVoidPointer(meanField));
 
     for(int b = 0; b < BinCount; b++) {
       this->setOutputProbability(b, probabilityScalarField[b]->GetPointer(0));
