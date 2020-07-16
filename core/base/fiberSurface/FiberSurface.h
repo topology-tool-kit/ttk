@@ -25,38 +25,30 @@
 ///
 /// \sa ttkFiberSurface.cpp %for a usage example.
 
-#ifndef _FIBERSURFACE_H
-#define _FIBERSURFACE_H
+#pragma once
 
 // standard includes
-#ifdef __APPLE__
-#include <algorithm>
-#else
-#ifdef _WIN32
-#include <algorithm>
-#else
-#ifdef __clang__
+#if defined(__APPLE__) || defined(_WIN32) || defined(__clang__)
 #include <algorithm>
 #include <numeric>
 #else
 #include <parallel/algorithm>
 #endif
-#endif
-#endif
 
+#include <array>
 #include <queue>
 
 // base code includes
-#include <Geometry.h>
 #ifdef TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE
 #include <RangeDrivenOctree.h>
 #endif
+#include <Debug.h>
+#include <Geometry.h>
 #include <Triangulation.h>
-#include <Wrapper.h>
 
 namespace ttk {
 
-  class FiberSurface : public Debug {
+  class FiberSurface : virtual public Debug {
 
   public:
     struct Vertex {
@@ -2554,5 +2546,3 @@ inline int ttk::FiberSurface::remeshIntersections() const {
 
   return 0;
 }
-
-#endif // FIBERSURFACE_H
