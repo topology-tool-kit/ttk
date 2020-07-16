@@ -6,4 +6,4 @@ HEADERS
   ttkEigenField.h
 DEPENDS
   eigenField
-  ttkTriangulationAlgorithm
+  ttkAlgorithm
