@@ -8,84 +8,6 @@ static const float PREC_FLT_2{powf(10.F, -FLT_DIG + 2)};
 static const double PREC_DBL{Geometry::pow(10.0, -DBL_DIG)};
 static const double PREC_DBL_4{Geometry::pow(10.0, -DBL_DIG + 4)};
 
-struct _fiberSurfaceVertexCmpX {
-
-  bool operator()(const FiberSurface::Vertex &v0,
-                  const FiberSurface::Vertex &v1) {
-
-    if(fabs(v0.p_[0] - v1.p_[0]) < PREC_DBL) {
-      // let's consider x coordinates are equal
-      if(fabs(v0.p_[1] - v1.p_[1]) < PREC_DBL) {
-        // let's consider y coordinates are equal
-        if(fabs(v0.p_[2] - v1.p_[2]) < PREC_DBL) {
-          // let's consider z coordinates are equal
-          // NOTE: the local Id should be sufficient
-          return v0.globalId_ < v1.globalId_;
-        } else
-          return v0.p_[2] < v1.p_[2];
-      } else
-        return v0.p_[1] < v1.p_[1];
-    } else {
-      return v0.p_[0] < v1.p_[0];
-    }
-  }
-} FiberSurfaceVertexComparisonX;
-
-struct _fiberSurfaceVertexCmpY {
-
-  bool operator()(const FiberSurface::Vertex &v0,
-                  const FiberSurface::Vertex &v1) {
-
-    if(fabs(v0.p_[1] - v1.p_[1]) < PREC_DBL) {
-      // let's consider y coordinates are equal
-      if(fabs(v0.p_[2] - v1.p_[2]) < PREC_DBL) {
-        // let's consider z coordinates are equal
-        if(fabs(v0.p_[0] - v1.p_[0]) < PREC_DBL) {
-          // let's consider x coordinates are equal
-          // NOTE: the local Id should be sufficient
-          return v0.globalId_ < v1.globalId_;
-        } else
-          return v0.p_[0] < v1.p_[0];
-      } else
-        return v0.p_[2] < v1.p_[2];
-    } else {
-      return v0.p_[1] < v1.p_[1];
-    }
-  }
-} FiberSurfaceVertexComparisonY;
-
-struct _fiberSurfaceVertexCmpZ {
-
-  bool operator()(const FiberSurface::Vertex &v0,
-                  const FiberSurface::Vertex &v1) {
-
-    if(fabs(v0.p_[2] - v1.p_[2]) < PREC_DBL) {
-      // let's consider z coordinates are equal
-      if(fabs(v0.p_[0] - v1.p_[0]) < PREC_DBL) {
-        // let's consider x coordinates are equal
-        if(fabs(v0.p_[1] - v1.p_[1]) < PREC_DBL) {
-          // let's consider y coordinates are equal
-          // NOTE: the local Id should be sufficient
-          return v0.globalId_ < v1.globalId_;
-        } else
-          return v0.p_[1] < v1.p_[1];
-      } else
-        return v0.p_[0] < v1.p_[0];
-    } else {
-      return v0.p_[2] < v1.p_[2];
-    }
-  }
-} FiberSurfaceVertexComparisonZ;
-
-struct _fiberSurfaceTriangleCmp {
-
-  bool operator()(const pair<double, pair<SimplexId, SimplexId>> &t0,
-                  const pair<double, pair<SimplexId, SimplexId>> &t1) {
-    return t0.first < t1.first;
-  }
-
-} FiberSurfaceTriangleCmp;
-
 FiberSurface::FiberSurface() {
   this->setDebugMsgPrefix("FiberSurface");
 }
@@ -772,6 +694,12 @@ int FiberSurface::flipEdges(
         pair<double, pair<SimplexId, SimplexId>>(alpha, triangles[i]));
     }
 
+    const auto FiberSurfaceTriangleCmp
+      = [](const pair<double, pair<SimplexId, SimplexId>> &t0,
+           const pair<double, pair<SimplexId, SimplexId>> &t1) {
+          return t0.first < t1.first;
+        };
+
     sort(localTriangles.begin(), localTriangles.end(), FiberSurfaceTriangleCmp);
 
     for(SimplexId i = 0; i < (SimplexId)triangles.size(); i++) {
@@ -1363,6 +1291,63 @@ int FiberSurface::mergeVertices(const double &distanceThreshold) const {
   for(SimplexId i = 0; i < (SimplexId)tmpList.size(); i++) {
     tmpList[i].localId_ = i;
   }
+
+  const auto FiberSurfaceVertexComparisonX
+    = [](const FiberSurface::Vertex &v0, const FiberSurface::Vertex &v1) {
+        if(fabs(v0.p_[0] - v1.p_[0]) < PREC_DBL) {
+          // let's consider x coordinates are equal
+          if(fabs(v0.p_[1] - v1.p_[1]) < PREC_DBL) {
+            // let's consider y coordinates are equal
+            if(fabs(v0.p_[2] - v1.p_[2]) < PREC_DBL) {
+              // let's consider z coordinates are equal
+              // NOTE: the local Id should be sufficient
+              return v0.globalId_ < v1.globalId_;
+            } else
+              return v0.p_[2] < v1.p_[2];
+          } else
+            return v0.p_[1] < v1.p_[1];
+        } else {
+          return v0.p_[0] < v1.p_[0];
+        }
+      };
+
+  const auto FiberSurfaceVertexComparisonY
+    = [](const FiberSurface::Vertex &v0, const FiberSurface::Vertex &v1) {
+        if(fabs(v0.p_[1] - v1.p_[1]) < PREC_DBL) {
+          // let's consider y coordinates are equal
+          if(fabs(v0.p_[2] - v1.p_[2]) < PREC_DBL) {
+            // let's consider z coordinates are equal
+            if(fabs(v0.p_[0] - v1.p_[0]) < PREC_DBL) {
+              // let's consider x coordinates are equal
+              // NOTE: the local Id should be sufficient
+              return v0.globalId_ < v1.globalId_;
+            } else
+              return v0.p_[0] < v1.p_[0];
+          } else
+            return v0.p_[2] < v1.p_[2];
+        } else {
+          return v0.p_[1] < v1.p_[1];
+        }
+      };
+
+  const auto FiberSurfaceVertexComparisonZ
+    = [](const FiberSurface::Vertex &v0, const FiberSurface::Vertex &v1) {
+        if(fabs(v0.p_[2] - v1.p_[2]) < PREC_DBL) {
+          // let's consider z coordinates are equal
+          if(fabs(v0.p_[0] - v1.p_[0]) < PREC_DBL) {
+            // let's consider x coordinates are equal
+            if(fabs(v0.p_[1] - v1.p_[1]) < PREC_DBL) {
+              // let's consider y coordinates are equal
+              // NOTE: the local Id should be sufficient
+              return v0.globalId_ < v1.globalId_;
+            } else
+              return v0.p_[1] < v1.p_[1];
+          } else
+            return v0.p_[0] < v1.p_[0];
+        } else {
+          return v0.p_[2] < v1.p_[2];
+        }
+      };
 
   // now do a parallel sort
   SimplexId uniqueVertexNumber = 0;
