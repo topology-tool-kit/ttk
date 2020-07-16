@@ -59,27 +59,23 @@ namespace ttk {
   class FiberSurface : public Debug {
 
   public:
-    class Vertex {
-
-    public:
-      bool isBasePoint_, isIntersectionPoint_;
-      SimplexId localId_, globalId_, polygonEdgeId_;
+    struct Vertex {
+      bool isBasePoint_{}, isIntersectionPoint_{};
+      SimplexId localId_{}, globalId_{}, polygonEdgeId_{};
       // TODO also encode the vertex ids of the triangle of the input mesh
       // where this point has been computed (for constrained triangulation)
-      std::pair<SimplexId, SimplexId> meshEdge_;
-      double p_[3], t_;
-      std::pair<double, double> uv_;
+      std::pair<SimplexId, SimplexId> meshEdge_{};
+      std::array<double, 3> p_{};
+      double t_{};
+      std::pair<double, double> uv_{};
     };
 
-    class Triangle {
-
-    public:
-      SimplexId vertexIds_[3], tetId_, caseId_, polygonEdgeId_;
+    struct Triangle {
+      std::array<SimplexId, 3> vertexIds_{};
+      SimplexId tetId_{}, caseId_{}, polygonEdgeId_{};
     };
 
     FiberSurface();
-
-    ~FiberSurface();
 
 #ifdef TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE
     template <class dataTypeU, class dataTypeV>
@@ -232,16 +228,16 @@ namespace ttk {
 
   protected:
     struct IntersectionTriangle {
-      SimplexId caseId_;
+      SimplexId caseId_{};
       // use negative values for new triangles
-      SimplexId triangleId_;
-      SimplexId polygonEdgeId_;
+      SimplexId triangleId_{};
+      SimplexId polygonEdgeId_{};
       // use negative values for new vertices
-      SimplexId vertexIds_[3];
-      std::pair<double, double> uv_[3];
-      double t_[3];
-      double p_[3][3];
-      std::pair<double, double> intersection_;
+      std::array<SimplexId, 3> vertexIds_{};
+      std::array<std::pair<double, double>, 3> uv_{};
+      std::array<double, 3> t_{};
+      std::array<std::array<double, 3>, 3> p_{};
+      std::pair<double, double> intersection_{};
     };
 
     template <class dataTypeU, class dataTypeV>
@@ -485,28 +481,30 @@ namespace ttk {
       const std::vector<std::pair<SimplexId, SimplexId>> &triangles,
       const double &distanceThreshold) const;
 
-    bool pointSnapping_;
+    bool pointSnapping_{false};
 
-    SimplexId pointNumber_, tetNumber_, polygonEdgeNumber_;
-    const void *uField_, *vField_;
-    const float *pointSet_;
-    const SimplexId *tetList_;
-    const std::vector<std::vector<SimplexId>> *tetNeighbors_;
-    SimplexId edgeImplicitEncoding_[12];
+    SimplexId pointNumber_{}, tetNumber_{}, polygonEdgeNumber_{};
+    const void *uField_{}, *vField_{};
+    const float *pointSet_{};
+    const SimplexId *tetList_{};
+    const std::vector<std::vector<SimplexId>> *tetNeighbors_{};
+    std::array<SimplexId, 12> edgeImplicitEncoding_{
+      0, 1, 0, 2, 0, 3, 3, 1, 2, 1, 2, 3};
 
-    double edgeCollapseThreshold_, pointSnappingThreshold_;
+    double edgeCollapseThreshold_{Geometry::powIntTen(-FLT_DIG + 2)},
+      pointSnappingThreshold_{Geometry::powIntTen(-FLT_DIG + 1)};
 
     const std::vector<std::pair<std::pair<double, double>,
-                                std::pair<double, double>>> *polygon_;
+                                std::pair<double, double>>> *polygon_{};
 
-    std::vector<Vertex> *globalVertexList_;
-    std::vector<std::vector<Vertex> *> polygonEdgeVertexLists_;
-    std::vector<std::vector<Triangle> *> polygonEdgeTriangleLists_;
+    std::vector<Vertex> *globalVertexList_{};
+    std::vector<std::vector<Vertex> *> polygonEdgeVertexLists_{};
+    std::vector<std::vector<Triangle> *> polygonEdgeTriangleLists_{};
 
-    Triangulation *triangulation_;
+    Triangulation *triangulation_{};
 
 #ifdef TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE
-    RangeDrivenOctree octree_;
+    RangeDrivenOctree octree_{};
 #endif
   };
 } // namespace ttk
@@ -2205,10 +2203,10 @@ inline int ttk::FiberSurface::processTetrahedron(
                 double distance = Geometry::distance(
                   (*polygonEdgeVertexLists_[polygonEdgeId])
                     [createdVertexList[colinearVertices[j]]]
-                      .p_,
+                      .p_.data(),
                   (*polygonEdgeVertexLists_[polygonEdgeId])
                     [createdVertexList[colinearVertices[k]]]
-                      .p_);
+                      .p_.data());
 
                 //                 bool basePointSnap = true;
                 //                 for(int l = 0; l < 3; l++){
