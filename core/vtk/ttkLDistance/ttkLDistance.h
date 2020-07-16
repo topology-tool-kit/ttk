@@ -19,58 +19,19 @@
 /// \sa ttk::LDistance
 #pragma once
 
-// VTK includes -- to adapt
-#include <vtkCharArray.h>
-#include <vtkDataArray.h>
-#include <vtkDataSet.h>
-#include <vtkDataSetAlgorithm.h>
-#include <vtkDoubleArray.h>
-#include <vtkFiltersCoreModule.h>
-#include <vtkFloatArray.h>
-#include <vtkInformation.h>
-#include <vtkIntArray.h>
-#include <vtkObjectFactory.h>
-#include <vtkPointData.h>
-#include <vtkSmartPointer.h>
-
 // VTK Module
 #include <ttkLDistanceModule.h>
 
 // ttk code includes
 #include <LDistance.h>
-#include <ttkTriangulationAlgorithm.h>
+#include <ttkAlgorithm.h>
 
-// In this example, this wrapper takes a data-set on the input and produces a
-// data-set on the output - to adapt.
-// see the documentation of the vtkAlgorithm class to decide from which VTK
-// class your wrapper should inherit.
-class TTKLDISTANCE_EXPORT ttkLDistance : public vtkDataSetAlgorithm,
-                                         protected ttk::Wrapper {
-
+class TTKLDISTANCE_EXPORT ttkLDistance : public ttkAlgorithm,
+                                         protected ttk::LDistance {
 public:
   static ttkLDistance *New();
+  vtkTypeMacro(ttkLDistance, ttkAlgorithm);
 
-  vtkTypeMacro(ttkLDistance, vtkDataSetAlgorithm);
-
-  // Default ttk setters
-  void SetDebugLevel(int debugLevel) {
-    setDebugLevel(debugLevel);
-    Modified();
-  }
-
-  void SetThreadNumber(int threadNumber) {
-    ThreadNumber = threadNumber;
-    SetThreads();
-  }
-
-  void SetUseAllCores(bool onOff) {
-    UseAllCores = onOff;
-    SetThreads();
-  }
-  // end of default ttk setters
-
-  // set-getters macros to define from each variable you want to access from
-  // the outside (in particular from paraview) - to adapt.
   vtkSetMacro(ScalarField1, std::string);
   vtkGetMacro(ScalarField1, std::string);
 
@@ -92,31 +53,19 @@ public:
   vtkGetMacro(result, double);
 
 protected:
-  // By default, this filter has one input and one output.
-  ttkLDistance() {
+  ttkLDistance();
 
-    DistanceType = "2";
-    DistanceFieldName = "L2-distance";
-    ScalarFieldId1 = 0;
-    ScalarFieldId2 = 1;
-    outputScalarField_ = NULL;
-    UseAllCores = true;
-    result = -1.;
-  }
-
-  ~ttkLDistance() override{};
-
-  TTK_SETUP();
+  int FillInputPortInformation(int port, vtkInformation *info) override;
+  int FillOutputPortInformation(int port, vtkInformation *info) override;
+  int RequestData(vtkInformation *request,
+                  vtkInformationVector **inputVector,
+                  vtkInformationVector *outputVector) override;
 
 private:
-  std::string DistanceType;
-  std::string ScalarField1;
-  std::string ScalarField2;
-  int ScalarFieldId1;
-  int ScalarFieldId2;
-  std::string DistanceFieldName;
-  double result;
-
-  vtkSmartPointer<vtkDataArray> outputScalarField_;
-  ttk::LDistance lDistance_;
+  std::string DistanceType{2};
+  std::string ScalarField1{};
+  std::string ScalarField2{};
+  int ScalarFieldId1{0};
+  int ScalarFieldId2{1};
+  std::string DistanceFieldName{"L2-distance"};
 };
