@@ -18,29 +18,15 @@
 #include <array>
 #include <limits>
 #include <string>
-
-// VTK includes
-#include <vtkCharArray.h>
-#include <vtkDataArray.h>
 #include <vtkDataArraySelection.h>
-#include <vtkDataSet.h>
-#include <vtkDataSetAlgorithm.h>
-#include <vtkDoubleArray.h>
-#include <vtkFiltersCoreModule.h>
-#include <vtkFloatArray.h>
-#include <vtkIdTypeArray.h>
-#include <vtkInformation.h>
-#include <vtkIntArray.h>
-#include <vtkObjectFactory.h>
-#include <vtkPointData.h>
-#include <vtkSmartPointer.h>
-#include <vtkUnsignedShortArray.h>
 
 // VTK Module
 #include <ttkPointDataSelectorModule.h>
 
 // ttk code includes
 #include <ttkAlgorithm.h>
+
+class vtkDataSet;
 
 class TTKPOINTDATASELECTOR_EXPORT ttkPointDataSelector : public ttkAlgorithm {
 
@@ -104,8 +90,5 @@ private:
   std::vector<std::string> SelectedFields{};
   std::vector<std::string> AvailableFields{};
   std::string RegexpString{".*"};
-  vtkSmartPointer<vtkDataArray> localFieldCopy_{};
   std::array<int, 2> RangeId{0, std::numeric_limits<int>::max()};
-
-  int doIt(vtkDataSet *input, vtkDataSet *output);
 };
