@@ -38,7 +38,6 @@ std::vector<std::vector<double>>
   std::vector<std::vector<double>> distMatrix(nInputs);
 
   LDistance worker{};
-  worker.setNumberOfPoints(nPoints);
   worker.setThreadNumber(this->threadNumber_);
 
   // compute matrix upper triangle
@@ -47,12 +46,15 @@ std::vector<std::vector<double>>
     auto &distCol = distMatrix[i];
     distCol.resize(nInputs);
     // get pointer to scalar field of input i
-    worker.setInputDataPointer1(static_cast<T *>(inputs[i]));
+    const auto inputDataPtr1{static_cast<T *>(inputs[i])};
     for(size_t j = i + 1; j < nInputs; ++j) {
       // get pointer to scalar field of input jc
-      worker.setInputDataPointer2(static_cast<T *>(inputs[j]));
+      const auto inputDataPtr2{static_cast<T *>(inputs[j])};
+      // empty output
+      T *outputPtr{};
       // call execute
-      worker.execute<T>(this->DistanceType);
+      worker.execute(
+        inputDataPtr1, inputDataPtr2, outputPtr, this->DistanceType, nPoints);
       // store result
       distMatrix[i][j] = worker.getResult();
     }
