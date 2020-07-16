@@ -1,40 +1,26 @@
+#include <vtkCharArray.h>
+#include <vtkDataArray.h>
+#include <vtkDataSet.h>
+#include <vtkDoubleArray.h>
+#include <vtkFloatArray.h>
+#include <vtkIdTypeArray.h>
+#include <vtkInformation.h>
+#include <vtkIntArray.h>
+#include <vtkNew.h>
+#include <vtkObjectFactory.h>
+#include <vtkPointData.h>
+#include <vtkShortArray.h>
+#include <vtkUnsignedCharArray.h>
+#include <vtkUnsignedShortArray.h>
+
 #include <ttkPointDataConverter.h>
 
-#ifdef _WIN32
-#include <ciso646>
-#endif
+#include <limits>
 
-using namespace std;
-using namespace ttk;
+vtkStandardNewMacro(ttkPointDataConverter);
 
-vtkStandardNewMacro(ttkPointDataConverter)
-
-  ttkPointDataConverter::ttkPointDataConverter() {
-  OutputType = 0;
-  UseNormalization = false;
-  UseAllCores = true;
-}
-
-ttkPointDataConverter::~ttkPointDataConverter() {
-}
-
-// transmit abort signals -- to copy paste in other wrappers
-bool ttkPointDataConverter::needsToAbort() {
-  return GetAbortExecute();
-}
-
-// transmit progress status -- to copy paste in other wrappers
-int ttkPointDataConverter::updateProgress(const float &progress) {
-
-  {
-    stringstream msg;
-    msg << "[ttkPointDataConverter] " << progress * 100 << "% processed...."
-        << endl;
-    dMsg(cout, msg.str(), advancedInfoMsg);
-  }
-
-  UpdateProgress(progress);
-  return 0;
+ttkPointDataConverter::ttkPointDataConverter() {
+  this->setDebugMsgPrefix("PointDataConverter");
 }
 
 template <typename A, typename B, typename C>
@@ -46,8 +32,8 @@ int ttkPointDataConverter::convert(vtkDataArray *inputData,
   B *output_ptr = new B[N * n];
 
   if(UseNormalization) {
-    auto type_min = static_cast<double>(numeric_limits<B>::min());
-    auto type_max = static_cast<double>(numeric_limits<B>::max());
+    auto type_min = static_cast<double>(std::numeric_limits<B>::min());
+    auto type_max = static_cast<double>(std::numeric_limits<B>::max());
     for(int k = 0; k < n; ++k) {
       double *input_limits = inputData->GetRange(k);
 
@@ -62,7 +48,7 @@ int ttkPointDataConverter::convert(vtkDataArray *inputData,
     for(vtkIdType i = 0; i < N * n; ++i)
       output_ptr[i] = (B)input_ptr[i];
 
-  vtkSmartPointer<C> outputData = vtkSmartPointer<C>::New();
+  vtkNew<C> outputData;
   outputData->SetName(ScalarField.data());
   outputData->SetNumberOfComponents(n);
   outputData->SetArray(output_ptr, N * n, 0);
@@ -76,9 +62,16 @@ int ttkPointDataConverter::convert(vtkDataArray *inputData,
   return 0;
 }
 
-int ttkPointDataConverter::doIt(vtkDataSet *input, vtkDataSet *output) {
+int ttkPointDataConverter::RequestData(vtkInformation *request,
+                                       vtkInformationVector **inputVector,
+                                       vtkInformationVector *outputVector) {
+
+  vtkDataSet *input = vtkDataSet::GetData(inputVector[0]);
+  vtkDataSet *output = vtkDataSet::GetData(outputVector);
+
   output->ShallowCopy(input);
 
+  // TODO
   vtkDataArray *inputScalarField = nullptr;
   if(ScalarField.length())
     inputScalarField = input->GetPointData()->GetArray(ScalarField.data());
@@ -248,34 +241,10 @@ int ttkPointDataConverter::doIt(vtkDataSet *input, vtkDataSet *output) {
       convert<unsigned char, unsigned short, vtkUnsignedShortArray>(
         inputScalarField, output);
   } else {
-    stringstream msg;
-    msg << "[ttkPointDataConverter] Unsupported data type :(" << endl;
-    dMsg(cerr, msg.str(), fatalMsg);
+    this->printErr("Unsupported data type");
   }
 
   UseNormalization = oldUseNormalization;
-  return 0;
-}
-
-// to adapt if your wrapper does not inherit from vtkDataSetAlgorithm
-int ttkPointDataConverter::RequestData(vtkInformation *request,
-                                       vtkInformationVector **inputVector,
-                                       vtkInformationVector *outputVector) {
-
-  Memory m;
-
-  // here the vtkDataSet type should be changed to whatever type you consider.
-  vtkDataSet *input = vtkDataSet::GetData(inputVector[0]);
-  vtkDataSet *output = vtkDataSet::GetData(outputVector);
-
-  doIt(input, output);
-
-  {
-    stringstream msg;
-    msg << "[ttkPointDataConverter] Memory usage: " << m.getElapsedUsage()
-        << " MB." << endl;
-    dMsg(cout, msg.str(), memoryMsg);
-  }
 
   return 1;
 }
