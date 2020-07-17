@@ -2,10 +2,10 @@
 #include <vtkCellData.h>
 #include <vtkDoubleArray.h>
 #include <vtkInformation.h>
+#include <vtkNew.h>
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
-#include <vtkSmartPointer.h>
 #include <vtkUnstructuredGrid.h>
 
 #include <ttkFiberSurface.h>
@@ -194,22 +194,14 @@ int ttkFiberSurface::RequestData(vtkInformation *request,
     triangleNumber += threadedTriangleList_[i].size();
   }
 
-  vtkSmartPointer<vtkPoints> outputVertexList
-    = vtkSmartPointer<vtkPoints>::New();
-  vtkSmartPointer<vtkDoubleArray> outputU
-    = vtkSmartPointer<vtkDoubleArray>::New();
-  vtkSmartPointer<vtkDoubleArray> outputV
-    = vtkSmartPointer<vtkDoubleArray>::New();
-  vtkSmartPointer<vtkDoubleArray> outputParameterization
-    = vtkSmartPointer<vtkDoubleArray>::New();
-  vtkSmartPointer<vtkCellArray> outputTriangleList
-    = vtkSmartPointer<vtkCellArray>::New();
-  vtkSmartPointer<ttkSimplexIdTypeArray> outputEdgeIds
-    = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
-  vtkSmartPointer<ttkSimplexIdTypeArray> outputTetIds
-    = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
-  vtkSmartPointer<ttkSimplexIdTypeArray> outputCaseIds
-    = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
+  vtkNew<vtkPoints> outputVertexList{};
+  vtkNew<vtkDoubleArray> outputU{};
+  vtkNew<vtkDoubleArray> outputV{};
+  vtkNew<vtkDoubleArray> outputParameterization{};
+  vtkNew<vtkCellArray> outputTriangleList{};
+  vtkNew<ttkSimplexIdTypeArray> outputEdgeIds{};
+  vtkNew<ttkSimplexIdTypeArray> outputTetIds{};
+  vtkNew<ttkSimplexIdTypeArray> outputCaseIds{};
 
   if(RangeCoordinates) {
     outputU->SetName(DataUcomponent.data());
@@ -270,7 +262,7 @@ int ttkFiberSurface::RequestData(vtkInformation *request,
     outputCaseIds->SetNumberOfTuples(triangleNumber);
   }
 
-  vtkSmartPointer<vtkIdList> idList = vtkSmartPointer<vtkIdList>::New();
+  vtkNew<vtkIdList> idList{};
   idList->SetNumberOfIds(3);
 
   triangleNumber = 0;
