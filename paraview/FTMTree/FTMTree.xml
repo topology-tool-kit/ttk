@@ -56,23 +56,13 @@
                 </Documentation>
             </InputProperty>
 
-            <StringVectorProperty
-                name="Scalar Field"
-                command="SetScalarField"
-                number_of_elements="1"
-                animateable="0"
-                label="Scalar Field"
-                >
-                <ArrayListDomain
-                    name="array_list"
-                    default_values="0">
+            <StringVectorProperty name="ScalarFieldNew" label="Input Array" command="SetInputArrayToProcess" element_types="0 0 0 0 2" number_of_elements="5">
+                <ArrayListDomain attribute_type="Scalars" name="array_list">
                     <RequiredProperties>
-                        <Property name="Input" function="Input" />
+                        <Property function="Input" name="Input" />
                     </RequiredProperties>
                 </ArrayListDomain>
-                <Documentation>
-                    Select the scalar field to process.
-                </Documentation>
+                <Documentation>The scalar array that will be used to compute the tree.</Documentation>
             </StringVectorProperty>
 
             <IntVectorProperty
@@ -90,31 +80,30 @@
                 </Documentation>
             </IntVectorProperty>
 
-            <StringVectorProperty
-                name="InputOffsetScalarFieldName"
-                command="SetInputOffsetScalarFieldName"
-                label="Input Offset"
-                number_of_elements="1"
-                animateable="0"
-                panel_visibility="advanced"
-                >
-                <ArrayListDomain
-                    name="array_list"
-                    default_values="0"
-                    >
-                    <RequiredProperties>
-                        <Property name="Input" function="Input" />
-                    </RequiredProperties>
-                </ArrayListDomain>
-                <Hints>
-                  <PropertyWidgetDecorator type="GenericDecorator"
-                    mode="visibility"
-                    property="ForceInputOffsetScalarField"
-                    value="1" />
-                </Hints>
-                <Documentation>
-                    Select the input offset scalar field to process.
-                </Documentation>
+            <StringVectorProperty 
+                name="OffsetNew" 
+                label="Input Offset Field" 
+                command="SetInputArrayToProcess" 
+                element_types="0 0 0 0 2" 
+                default_values="1"
+                number_of_elements="5">
+              <ArrayListDomain
+                name="array_list"
+                default_values="0">
+                <RequiredProperties>
+                  <Property name="Input" function="Input" />
+                </RequiredProperties>
+              </ArrayListDomain>
+              <Hints>
+                <PropertyWidgetDecorator type="GenericDecorator"
+                  mode="visibility"
+                  property="With predefined offset"
+                  value="1" />
+              </Hints>
+              <Documentation>
+                Select the scalar field to use as a vertex offset
+                (used to disambiguate flat plateaus).
+              </Documentation>
             </StringVectorProperty>
 
             <IntVectorProperty
@@ -182,50 +171,7 @@ between nodes, ...)
                 </Documentation>
             </IntVectorProperty>
 
-            <IntVectorProperty
-                name="UseAllCores"
-                command="SetUseAllCores"
-                label="Use All Cores"
-                number_of_elements="1"
-                default_values="1"
-                panel_visibility="advanced">
-                <BooleanDomain name="bool"/>
-                <Documentation>
-                    Use all available cores.
-                </Documentation>
-            </IntVectorProperty>
-
-            <IntVectorProperty
-                name="ThreadNumber"
-                command="SetThreadNumber"
-                label="Thread Number"
-                number_of_elements="1"
-                default_values="1"
-                panel_visibility="advanced">
-                <IntRangeDomain name="range" min="1" max="128" />
-                <Hints>
-                  <PropertyWidgetDecorator type="GenericDecorator"
-                    mode="visibility"
-                    property="UseAllCores"
-                    value="0" />
-                </Hints>
-
-                <Documentation>
-                    Number of threads to use for the computation.
-                </Documentation>
-            </IntVectorProperty>
-
-            <IntVectorProperty
-                name="DebugLevel"
-                command="SetDebugLevel"
-                label="Debug Level"
-                number_of_elements="1"
-                default_values="3" panel_visibility="advanced">
-                <IntRangeDomain name="range" min="0" max="10" />
-                <Documentation>
-                    Debug level.
-                </Documentation>
-            </IntVectorProperty>
+            ${DEBUG_WIDGETS}
 
             <PropertyGroup panel_widget="Line" label="Input options">
                 <Property name="Scalar Field"/>
