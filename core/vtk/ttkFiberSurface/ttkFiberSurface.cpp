@@ -11,9 +11,6 @@
 #include <ttkFiberSurface.h>
 #include <ttkMacros.h>
 
-using namespace std;
-using namespace ttk;
-
 vtkStandardNewMacro(ttkFiberSurface);
 
 ttkFiberSurface::ttkFiberSurface() {
@@ -55,7 +52,8 @@ int ttkFiberSurface::RequestData(vtkInformation *request,
                                  vtkInformationVector **inputVector,
                                  vtkInformationVector *outputVector) {
 
-  Timer t;
+  using ttk::SimplexId;
+  ttk::Timer t;
 
   const auto input = vtkDataSet::GetData(inputVector[0]);
   const auto polygon = vtkUnstructuredGrid::GetData(inputVector[1]);
@@ -156,7 +154,7 @@ int ttkFiberSurface::RequestData(vtkInformation *request,
   SimplexId cellNumber = polygon->GetNumberOfCells();
 
   SimplexId vertexId0, vertexId1;
-  pair<pair<double, double>, pair<double, double>> rangeEdge;
+  std::pair<std::pair<double, double>, std::pair<double, double>> rangeEdge;
 
   for(SimplexId i = 0; i < cellNumber; i++) {
 
