@@ -70,11 +70,12 @@ IEEE Transactions on Visualization and Computer Graphics, 2016.
       </InputProperty>
 
       <StringVectorProperty
-        name="DataUComponent"
-        command="SetDataUcomponent"
-        number_of_elements="1"
+        name="Domain U Component"
+        command="SetInputArrayToProcess"
+        element_types="0 0 0 0 2"
+        number_of_elements="5"
+        default_values="0"
         animateable="0"
-        label="Domain U component"
         >
         <ArrayListDomain
           name="array_list"
@@ -89,11 +90,12 @@ IEEE Transactions on Visualization and Computer Graphics, 2016.
       </StringVectorProperty>
 
       <StringVectorProperty
-        name="DataVComponent"
-        command="SetDataVcomponent"
-        number_of_elements="1"
+        name="Domain V Component"
+        command="SetInputArrayToProcess"
+        element_types="0 0 0 0 2"
+        number_of_elements="5"
+        default_values="1"
         animateable="0"
-        label="Domain V component"
         >
         <ArrayListDomain
           name="array_list"
@@ -108,11 +110,12 @@ IEEE Transactions on Visualization and Computer Graphics, 2016.
       </StringVectorProperty>
 
       <StringVectorProperty
-        name="PolygonUComponent"
-        command="SetPolygonUcomponent"
-        number_of_elements="1"
+        name="Polygon U Component"
+        command="SetInputArrayToProcess"
+        element_types="0 0 0 0 2"
+        number_of_elements="5"
+        default_values="2"
         animateable="0"
-        label="Polygon U component"
         >
         <ArrayListDomain
           name="array_list"
@@ -127,11 +130,12 @@ IEEE Transactions on Visualization and Computer Graphics, 2016.
       </StringVectorProperty>
 
       <StringVectorProperty
-        name="PolygonVComponent"
-        command="SetPolygonVcomponent"
-        number_of_elements="1"
+        name="Polygon V Component"
+        command="SetInputArrayToProcess"
+        element_types="0 0 0 0 2"
+        number_of_elements="5"
+        default_values="3"
         animateable="0"
-        label="Polygon V component"
         >
         <ArrayListDomain
           name="array_list"
@@ -289,10 +293,10 @@ IEEE Transactions on Visualization and Computer Graphics, 2016.
       ${DEBUG_WIDGETS}
 
       <PropertyGroup panel_widget="Line" label="Input options">
-        <Property name="DataUComponent" />
-        <Property name="DataVComponent" />
-        <Property name="PolygonUComponent" />
-        <Property name="PolygonVComponent" />
+        <Property name="Domain U Component" />
+        <Property name="Domain V Component" />
+        <Property name="Polygon U Component" />
+        <Property name="Polygon V Component" />
       </PropertyGroup>
 
       <PropertyGroup panel_widget="Line" label="Pre-processing">

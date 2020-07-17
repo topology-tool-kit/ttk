@@ -54,18 +54,6 @@ public:
   static ttkFiberSurface *New();
   vtkTypeMacro(ttkFiberSurface, ttkAlgorithm);
 
-  vtkGetMacro(DataUcomponent, std::string);
-  vtkSetMacro(DataUcomponent, std::string);
-
-  vtkGetMacro(DataVcomponent, std::string);
-  vtkSetMacro(DataVcomponent, std::string);
-
-  vtkGetMacro(PolygonUcomponent, std::string);
-  vtkSetMacro(PolygonUcomponent, std::string);
-
-  vtkGetMacro(PolygonVcomponent, std::string);
-  vtkSetMacro(PolygonVcomponent, std::string);
-
   vtkGetMacro(RangeCoordinates, bool);
   vtkSetMacro(RangeCoordinates, bool);
 
@@ -107,9 +95,6 @@ private:
     TetIds{true}, CaseIds{true}, RangeOctree{true}, PointMerge{false};
 
   double PointMergeDistanceThreshold{0.000001};
-
-  std::string DataUcomponent, DataVcomponent, PolygonUcomponent,
-    PolygonVcomponent;
 
   // NOTE: we assume here that this guy is small and that making a copy from
   // VTK is not an issue.

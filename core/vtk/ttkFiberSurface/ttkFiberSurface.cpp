@@ -59,51 +59,15 @@ int ttkFiberSurface::RequestData(vtkInformation *request,
   const auto polygon = vtkUnstructuredGrid::GetData(inputVector[1]);
   auto output = vtkPolyData::GetData(outputVector);
 
-  vtkDataArray *dataUfield = NULL, *dataVfield = NULL, *polygonUfield = NULL,
-               *polygonVfield = NULL;
+  const auto dataUfield = this->GetInputArrayToProcess(0, input);
+  const auto dataVfield = this->GetInputArrayToProcess(1, input);
+  const auto polygonUfield = this->GetInputArrayToProcess(2, polygon);
+  const auto polygonVfield = this->GetInputArrayToProcess(3, polygon);
 
-  if(DataUcomponent.length()) {
-    dataUfield = input->GetPointData()->GetArray(DataUcomponent.data());
-  } else {
-    // default
-    dataUfield = input->GetPointData()->GetArray(0);
-  }
-  if(!dataUfield) {
+  if(dataUfield == nullptr || dataVfield == nullptr || polygonUfield == nullptr
+     || polygonVfield == nullptr) {
     this->printErr("Could not find data array");
     return -1;
-  }
-
-  if(DataVcomponent.length()) {
-    dataVfield = input->GetPointData()->GetArray(DataVcomponent.data());
-  } else {
-    // default
-    dataVfield = input->GetPointData()->GetArray(0);
-  }
-  if(!dataVfield) {
-    this->printErr("Could not find data array");
-    return -2;
-  }
-
-  if(PolygonUcomponent.length()) {
-    polygonUfield = polygon->GetPointData()->GetArray(PolygonUcomponent.data());
-  } else {
-    // default
-    polygonUfield = polygon->GetPointData()->GetArray(0);
-  }
-  if(!polygonUfield) {
-    this->printErr("Could not find data array");
-    return -3;
-  }
-
-  if(PolygonVcomponent.length()) {
-    polygonVfield = polygon->GetPointData()->GetArray(PolygonVcomponent.data());
-  } else {
-    // default
-    polygonVfield = polygon->GetPointData()->GetArray(0);
-  }
-  if(!polygonVfield) {
-    this->printErr("Could not find data array");
-    return -4;
   }
 
   if(!(input->GetDataObjectType() == VTK_UNSTRUCTURED_GRID
@@ -202,10 +166,10 @@ int ttkFiberSurface::RequestData(vtkInformation *request,
   vtkNew<ttkSimplexIdTypeArray> outputCaseIds{};
 
   if(RangeCoordinates) {
-    outputU->SetName(DataUcomponent.data());
+    outputU->SetName(dataUfield->GetName());
     outputU->SetNumberOfTuples(outputVertexList_.size());
 
-    outputV->SetName(DataVcomponent.data());
+    outputV->SetName(dataVfield->GetName());
     outputV->SetNumberOfTuples(outputVertexList_.size());
   }
 
@@ -236,8 +200,8 @@ int ttkFiberSurface::RequestData(vtkInformation *request,
     output->GetPointData()->AddArray(outputU);
     output->GetPointData()->AddArray(outputV);
   } else {
-    output->GetPointData()->RemoveArray(DataUcomponent.data());
-    output->GetPointData()->RemoveArray(DataVcomponent.data());
+    output->GetPointData()->RemoveArray(dataUfield->GetName());
+    output->GetPointData()->RemoveArray(dataVfield->GetName());
   }
   if(EdgeParameterization) {
     output->GetPointData()->AddArray(outputParameterization);
