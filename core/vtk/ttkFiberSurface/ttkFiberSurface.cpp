@@ -10,6 +10,7 @@
 
 #include <ttkFiberSurface.h>
 #include <ttkMacros.h>
+#include <ttkUtils.h>
 
 vtkStandardNewMacro(ttkFiberSurface);
 
@@ -85,7 +86,7 @@ int ttkFiberSurface::RequestData(vtkInformation *request,
   outputVertexList_.clear();
   this->setGlobalVertexList(&outputVertexList_);
   this->setInputField(
-    dataUfield->GetVoidPointer(0), dataVfield->GetVoidPointer(0));
+    ttkUtils::GetVoidPointer(dataUfield), ttkUtils::GetVoidPointer(dataVfield));
   this->setPolygonEdgeNumber(polygon->GetNumberOfCells());
   threadedTriangleList_.resize(polygon->GetNumberOfCells());
   threadedVertexList_.resize(polygon->GetNumberOfCells());
