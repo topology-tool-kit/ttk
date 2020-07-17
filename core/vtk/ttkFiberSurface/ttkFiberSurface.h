@@ -38,54 +38,21 @@
 /// \sa ttk::FiberSurface
 /// \sa vtkRangePolygon
 
-#ifndef _TTK_FIBERSURFACE_H
-#define _TTK_FIBERSURFACE_H
-
-// VTK includes -- to adapt
-#include <vtkCellArray.h>
-#include <vtkCellData.h>
-#include <vtkDataSetAlgorithm.h>
-#include <vtkDoubleArray.h>
-#include <vtkFiltersCoreModule.h>
-#include <vtkInformation.h>
-#include <vtkIntArray.h>
-#include <vtkObjectFactory.h>
-#include <vtkPointData.h>
-#include <vtkPolyData.h>
-#include <vtkSmartPointer.h>
-#include <vtkUnstructuredGrid.h>
+#pragma once
 
 // VTK Module
 #include <ttkFiberSurfaceModule.h>
 
 // ttk code includes
 #include <FiberSurface.h>
-#include <ttkTriangulationAlgorithm.h>
+#include <ttkAlgorithm.h>
 
-class TTKFIBERSURFACE_EXPORT ttkFiberSurface : public vtkDataSetAlgorithm,
-                                               protected ttk::Wrapper {
+class TTKFIBERSURFACE_EXPORT ttkFiberSurface : public ttkAlgorithm,
+                                               protected ttk::FiberSurface {
 
 public:
   static ttkFiberSurface *New();
-
-  vtkTypeMacro(ttkFiberSurface, vtkDataSetAlgorithm);
-
-  // default ttk setters
-  void SetDebugLevel(int debugLevel) {
-    setDebugLevel(debugLevel);
-    Modified();
-  }
-
-  void SetThreadNumber(int threadNumber) {
-    ThreadNumber = threadNumber;
-    SetThreads();
-  }
-
-  void SetUseAllCores(bool onOff) {
-    UseAllCores = onOff;
-    SetThreads();
-  }
-  // end of default ttk setters
+  vtkTypeMacro(ttkFiberSurface, ttkAlgorithm);
 
   vtkGetMacro(DataUcomponent, std::string);
   vtkSetMacro(DataUcomponent, std::string);
@@ -123,41 +90,23 @@ public:
   vtkGetMacro(PointMergeDistanceThreshold, double);
   vtkSetMacro(PointMergeDistanceThreshold, double);
 
-  int FillInputPortInformation(int port, vtkInformation *info) override {
+protected:
+  ttkFiberSurface();
 
-    switch(port) {
-      case 0:
-        info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
-        return 1;
-      case 1:
-        info->Set(
-          vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkUnstructuredGrid");
-        return 1;
-    }
-
-    return 0;
-  }
-
-  int FillOutputPortInformation(int port, vtkInformation *info) override {
-    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkPolyData");
-    return 1;
-  }
+  int FillInputPortInformation(int port, vtkInformation *info) override;
+  int FillOutputPortInformation(int port, vtkInformation *info) override;
+  int RequestData(vtkInformation *request,
+                  vtkInformationVector **inputVector,
+                  vtkInformationVector *outputVector) override;
 
   template <typename VTK_T1, typename VTK_T2, typename triangulationType>
   int dispatch(const triangulationType *const triangulation);
 
-protected:
-  ttkFiberSurface();
-
-  ~ttkFiberSurface() override;
-
-  TTK_SETUP();
-
 private:
-  bool RangeCoordinates, EdgeParameterization, EdgeIds, TetIds, CaseIds,
-    RangeOctree, PointMerge;
+  bool RangeCoordinates{true}, EdgeParameterization{true}, EdgeIds{true},
+    TetIds{true}, CaseIds{true}, RangeOctree{true}, PointMerge{false};
 
-  double PointMergeDistanceThreshold;
+  double PointMergeDistanceThreshold{0.000001};
 
   std::string DataUcomponent, DataVcomponent, PolygonUcomponent,
     PolygonVcomponent;
@@ -165,13 +114,9 @@ private:
   // NOTE: we assume here that this guy is small and that making a copy from
   // VTK is not an issue.
   std::vector<std::pair<std::pair<double, double>, std::pair<double, double>>>
-    inputPolygon_;
+    inputPolygon_{};
 
-  std::vector<ttk::FiberSurface::Vertex> outputVertexList_;
-  std::vector<std::vector<ttk::FiberSurface::Vertex>> threadedVertexList_;
-  std::vector<std::vector<ttk::FiberSurface::Triangle>> threadedTriangleList_;
-
-  ttk::FiberSurface fiberSurface_;
+  std::vector<ttk::FiberSurface::Vertex> outputVertexList_{};
+  std::vector<std::vector<ttk::FiberSurface::Vertex>> threadedVertexList_{};
+  std::vector<std::vector<ttk::FiberSurface::Triangle>> threadedTriangleList_{};
 };
-
-#endif // _TTK_RANGEPOLYGON_H
