@@ -21,14 +21,14 @@ vtkStandardNewMacro(ttkFiberSurface)
 ttkFiberSurface::~ttkFiberSurface() {
 }
 
-template <typename VTK_T1, typename VTK_T2>
-int ttkFiberSurface::dispatch() {
+template <typename VTK_T1, typename VTK_T2, typename triangulationType>
+int ttkFiberSurface::dispatch(const triangulationType *const triangulation) {
 #ifdef TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE
   if(RangeOctree) {
-    fiberSurface_.buildOctree<VTK_T1, VTK_T2>();
+    fiberSurface_.buildOctree<VTK_T1, VTK_T2>(triangulation);
   }
 #endif // TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE
-  fiberSurface_.computeSurface<VTK_T1, VTK_T2>();
+  fiberSurface_.computeSurface<VTK_T1, VTK_T2>(triangulation);
   return 0;
 }
 
@@ -184,7 +184,7 @@ int ttkFiberSurface::doIt(vector<vtkDataSet *> &inputs,
 
   switch(vtkTemplate2PackMacro(
     dataUfield->GetDataType(), dataVfield->GetDataType())) {
-    vtkTemplate2Macro((dispatch<VTK_T1, VTK_T2>()));
+    vtkTemplate2Macro((dispatch<VTK_T1, VTK_T2>(triangulation->getData())));
   }
 
   // prepare the VTK output

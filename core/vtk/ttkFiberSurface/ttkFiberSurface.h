@@ -143,8 +143,8 @@ public:
     return 1;
   }
 
-  template <typename VTK_T1, typename VTK_T2>
-  int dispatch();
+  template <typename VTK_T1, typename VTK_T2, typename triangulationType>
+  int dispatch(const triangulationType *const triangulation);
 
 protected:
   ttkFiberSurface();
