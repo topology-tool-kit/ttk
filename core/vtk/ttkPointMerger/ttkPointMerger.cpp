@@ -83,14 +83,14 @@ int ttkPointMerger::RequestData(vtkInformation *request,
 #endif
   for(SimplexId i = 0; i < (SimplexId)candidateVertices.size(); i++) {
     double distance = -1;
-    std::vector<double> p0(3);
+    std::array<double, 3> p0{};
 
     SimplexId vertexId0 = candidateVertices[i];
 
     input->GetPoint(vertexId0, p0.data());
     for(SimplexId j = 0; j < (SimplexId)candidateVertices.size(); j++) {
       if(i != j) {
-        std::vector<double> p1(3);
+        std::array<double, 3> p1{};
         SimplexId vertexId1 = candidateVertices[j];
         input->GetPoint(vertexId1, p1.data());
         distance = ttk::Geometry::distance(p0.data(), p1.data());
@@ -125,7 +125,7 @@ int ttkPointMerger::RequestData(vtkInformation *request,
       mergeCount[targetVertexId]++;
 
       if(i != targetVertexId) {
-        std::vector<double> p0(3), p1(3);
+        std::array<double, 3> p0{}, p1{};
         input->GetPoint(i, p0.data());
         input->GetPoint(targetVertexId, p1.data());
         double distance = ttk::Geometry::distance(p0.data(), p1.data());
