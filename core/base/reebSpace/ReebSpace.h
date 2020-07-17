@@ -285,7 +285,7 @@ namespace ttk {
         // trigger the fiber surface precomputation
 #ifdef TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE
         if(withRangeDrivenOctree_)
-          fiberSurface_.buildOctree<dataTypeU, dataTypeV>();
+          fiberSurface_.buildOctree<dataTypeU, dataTypeV>(triangulation_);
 #endif
 
         vertexNumber_ = triangulation_->getNumberOfVertices();
@@ -608,15 +608,16 @@ inline int ttk::ReebSpace::compute2sheets(
       }
 
       fiberSurface_.computeContour<dataTypeU, dataTypeV>(
-        rangePoint0, rangePoint1, edgeSeeds, edge2polygonEdgeId[edgeId]);
+        rangePoint0, rangePoint1, edgeSeeds, triangulation_,
+        edge2polygonEdgeId[edgeId]);
     } else {
 #ifdef TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE
       if(withRangeDrivenOctree_) {
         fiberSurface_.computeSurfaceWithOctree<dataTypeU, dataTypeV>(
-          rangePoint0, rangePoint1, edge2polygonEdgeId[edgeId]);
+          rangePoint0, rangePoint1, triangulation_, edge2polygonEdgeId[edgeId]);
       } else {
         fiberSurface_.computeSurface<dataTypeU, dataTypeV>(
-          rangePoint0, rangePoint1, edge2polygonEdgeId[edgeId]);
+          rangePoint0, rangePoint1, triangulation_, edge2polygonEdgeId[edgeId]);
       }
 #else
       fiberSurface_.computeSurface<dataTypeU, dataTypeV>(
