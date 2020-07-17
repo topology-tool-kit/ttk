@@ -172,7 +172,7 @@ int ttkFiberSurface::RequestData(vtkInformation *request,
     inputPolygon_.push_back(rangeEdge);
   }
 
-  for(SimplexId i = 0; i < (SimplexId)threadedTriangleList_.size(); i++) {
+  for(size_t i = 0; i < threadedTriangleList_.size(); i++) {
     threadedTriangleList_[i].clear();
     this->setTriangleList(i, &(threadedTriangleList_[i]));
     threadedVertexList_[i].clear();
@@ -188,9 +188,9 @@ int ttkFiberSurface::RequestData(vtkInformation *request,
   // NOTE: right now, there is a copy of the output data. this is no good.
   // to fix.
 
-  SimplexId triangleNumber = 0;
+  size_t triangleNumber = 0;
 
-  for(SimplexId i = 0; i < (SimplexId)threadedTriangleList_.size(); i++) {
+  for(size_t i = 0; i < threadedTriangleList_.size(); i++) {
     triangleNumber += threadedTriangleList_[i].size();
   }
 
@@ -222,7 +222,7 @@ int ttkFiberSurface::RequestData(vtkInformation *request,
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
-  for(SimplexId i = 0; i < (SimplexId)outputVertexList_.size(); i++) {
+  for(size_t i = 0; i < outputVertexList_.size(); i++) {
     outputVertexList->SetPoint(i, outputVertexList_[i].p_[0],
                                outputVertexList_[i].p_[1],
                                outputVertexList_[i].p_[2]);
@@ -266,8 +266,8 @@ int ttkFiberSurface::RequestData(vtkInformation *request,
   idList->SetNumberOfIds(3);
 
   triangleNumber = 0;
-  for(SimplexId i = 0; i < (SimplexId)threadedTriangleList_.size(); i++) {
-    for(SimplexId j = 0; j < (SimplexId)threadedTriangleList_[i].size(); j++) {
+  for(size_t i = 0; i < threadedTriangleList_.size(); i++) {
+    for(size_t j = 0; j < threadedTriangleList_[i].size(); j++) {
       for(int k = 0; k < 3; k++) {
         idList->SetId(k, threadedTriangleList_[i][j].vertexIds_[k]);
       }
