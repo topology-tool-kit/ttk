@@ -142,10 +142,15 @@ int ttkFiberSurface::RequestData(vtkInformation *request,
     this->setVertexList(i, &(threadedVertexList_[i]));
   }
 
-  switch(vtkTemplate2PackMacro(
-    dataUfield->GetDataType(), dataVfield->GetDataType())) {
-    vtkTemplate2Macro((dispatch<VTK_T1, VTK_T2>(triangulation->getData())));
+  if(dataUfield->GetDataType() != dataVfield->GetDataType()) {
+    this->printErr(
+      "Scalar fields should have same input type. Use TTKPointDataConverter or "
+      "TTKArrayEditor to convert array types.");
   }
+
+  ttkVtkTemplateMacro(dataUfield->GetDataType(), triangulation->getType(),
+                      (dispatch<VTK_TT, VTK_TT>(
+                        static_cast<TTK_TT *>(triangulation->getData()))));
 
   // prepare the VTK output
   // NOTE: right now, there is a copy of the output data. this is no good.
