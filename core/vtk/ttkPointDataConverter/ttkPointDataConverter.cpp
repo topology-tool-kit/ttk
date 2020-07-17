@@ -18,6 +18,10 @@
 
 #include <limits>
 
+#ifdef _WIN32
+#include <ciso646>
+#endif // _WIN32
+
 vtkStandardNewMacro(ttkPointDataConverter);
 
 ttkPointDataConverter::ttkPointDataConverter() {
