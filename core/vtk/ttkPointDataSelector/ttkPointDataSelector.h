@@ -15,74 +15,41 @@
 /// VTK pipeline.
 #pragma once
 
+#include <array>
 #include <limits>
 #include <string>
-
-// VTK includes
-#include <vtkCharArray.h>
-#include <vtkDataArray.h>
 #include <vtkDataArraySelection.h>
-#include <vtkDataSet.h>
-#include <vtkDataSetAlgorithm.h>
-#include <vtkDoubleArray.h>
-#include <vtkFiltersCoreModule.h>
-#include <vtkFloatArray.h>
-#include <vtkIdTypeArray.h>
-#include <vtkInformation.h>
-#include <vtkIntArray.h>
-#include <vtkObjectFactory.h>
-#include <vtkPointData.h>
-#include <vtkSmartPointer.h>
-#include <vtkUnsignedShortArray.h>
 
 // VTK Module
 #include <ttkPointDataSelectorModule.h>
 
 // ttk code includes
-#include <Wrapper.h>
+#include <ttkAlgorithm.h>
 
-class TTKPOINTDATASELECTOR_EXPORT ttkPointDataSelector
-  : public vtkDataSetAlgorithm,
-    protected ttk::Wrapper {
+class vtkDataSet;
+
+class TTKPOINTDATASELECTOR_EXPORT ttkPointDataSelector : public ttkAlgorithm {
 
 public:
   static ttkPointDataSelector *New();
-  vtkTypeMacro(ttkPointDataSelector, vtkDataSetAlgorithm);
+  vtkTypeMacro(ttkPointDataSelector, ttkAlgorithm);
 
-  // default ttk setters
-  void SetDebugLevel(int debugLevel) {
-    setDebugLevel(debugLevel);
-    Modified();
-  }
   vtkSetMacro(RegexpString, std::string);
 
-  vtkGetVector2Macro(RangeId, int);
-  vtkSetVector2Macro(RangeId, int);
+  void SetRangeId(int data0, int data1) {
+    RangeId[0] = data0;
+    RangeId[1] = data1;
+    Modified();
+  }
+  int *GetRangeId() {
+    return RangeId.data();
+  }
 
   vtkSetMacro(RenameSelected, bool);
   vtkGetMacro(RenameSelected, bool);
 
   vtkSetMacro(SelectedFieldName, std::string);
   vtkGetMacro(SelectedFieldName, std::string);
-
-  void SetThreads() {
-    if(!UseAllCores)
-      threadNumber_ = ThreadNumber;
-    else {
-      threadNumber_ = ttk::OsCall::getNumberOfCores();
-    }
-    Modified();
-  }
-
-  void SetThreadNumber(int threadNumber) {
-    ThreadNumber = threadNumber;
-    SetThreads();
-  }
-  void SetUseAllCores(bool onOff) {
-    UseAllCores = onOff;
-    SetThreads();
-  }
-  // end of default ttk setters
 
   void AddScalarField(std::string s) {
     SelectedFields.emplace_back(s);
@@ -103,30 +70,14 @@ public:
   }
 
 protected:
-  ttkPointDataSelector() {
-    UseAllCores = true;
-    RenameSelected = false;
-    RegexpString = "*";
-    SelectedFieldName = "SelectedField";
-
-    SetNumberOfInputPorts(1);
-    SetNumberOfOutputPorts(1);
-
-    localFieldCopy_ = NULL;
-
-    RangeId[0] = 0;
-    RangeId[1] = std::numeric_limits<int>::max();
-  }
-
-  ~ttkPointDataSelector() override {
-    if(localFieldCopy_)
-      localFieldCopy_->Delete();
-  };
+  ttkPointDataSelector();
 
   int RequestInformation(vtkInformation *request,
                          vtkInformationVector **inputVector,
                          vtkInformationVector *outputVector) override;
 
+  int FillInputPortInformation(int port, vtkInformation *info) override;
+  int FillOutputPortInformation(int port, vtkInformation *info) override;
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;
@@ -134,17 +85,10 @@ protected:
   void FillAvailableFields(vtkDataSet *input);
 
 private:
-  bool UseAllCores;
-  int ThreadNumber;
-  bool RenameSelected;
-  std::string SelectedFieldName;
-  std::vector<std::string> SelectedFields;
-  std::vector<std::string> AvailableFields;
-  std::string RegexpString;
-  vtkDataArray *localFieldCopy_;
-  int RangeId[2];
-
-  int doIt(vtkDataSet *input, vtkDataSet *output);
-  bool needsToAbort() override;
-  int updateProgress(const float &progress) override;
+  bool RenameSelected{false};
+  std::string SelectedFieldName{"SelectedField"};
+  std::vector<std::string> SelectedFields{};
+  std::vector<std::string> AvailableFields{};
+  std::string RegexpString{".*"};
+  std::array<int, 2> RangeId{0, std::numeric_limits<int>::max()};
 };

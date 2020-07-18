@@ -1,59 +1,87 @@
+#include <vtkDataArray.h>
+#include <vtkDataSet.h>
+#include <vtkInformation.h>
+#include <vtkIntArray.h>
+#include <vtkNew.h>
+#include <vtkObjectFactory.h>
+#include <vtkPointData.h>
+#include <vtkSmartPointer.h>
+
 #include <algorithm>
-#include <cstddef>
 #include <regex>
 #include <ttkPointDataSelector.h>
 
-using namespace std;
-using namespace ttk;
+vtkStandardNewMacro(ttkPointDataSelector);
 
-vtkStandardNewMacro(ttkPointDataSelector)
-
-  // transmit abort signals
-  bool ttkPointDataSelector::needsToAbort() {
-  return GetAbortExecute();
+ttkPointDataSelector::ttkPointDataSelector() {
+  this->setDebugMsgPrefix("PointDataSelector");
+  this->SetNumberOfInputPorts(1);
+  this->SetNumberOfOutputPorts(1);
 }
 
-// transmit progress status
-int ttkPointDataSelector::updateProgress(const float &progress) {
-
-  {
-    stringstream msg;
-    msg << "[ttkPointDataSelector] " << progress * 100 << "% processed...."
-        << endl;
-    dMsg(cout, msg.str(), advancedInfoMsg);
+int ttkPointDataSelector::FillInputPortInformation(int port,
+                                                   vtkInformation *info) {
+  if(port == 0) {
+    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
+    return 1;
   }
-
-  UpdateProgress(progress);
   return 0;
 }
 
-int ttkPointDataSelector::doIt(vtkDataSet *input, vtkDataSet *output) {
-  Memory m;
+int ttkPointDataSelector::FillOutputPortInformation(int port,
+                                                    vtkInformation *info) {
+  if(port == 0) {
+    info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
+    return 1;
+  }
+  return 0;
+}
+
+void ttkPointDataSelector::FillAvailableFields(vtkDataSet *input) {
+  int nbScalars = input->GetPointData()->GetNumberOfArrays();
+  AvailableFields.clear();
+  AvailableFields.resize(nbScalars);
+  for(int i = 0; i < nbScalars; ++i) {
+    AvailableFields[i] = input->GetPointData()->GetArrayName(i);
+  }
+}
+
+int ttkPointDataSelector::RequestInformation(
+  vtkInformation *request,
+  vtkInformationVector **inputVector,
+  vtkInformationVector *outputVector) {
+
+  vtkDataSet *input = vtkDataSet::GetData(inputVector[0]);
+  FillAvailableFields(input);
+  return ttkAlgorithm::RequestInformation(request, inputVector, outputVector);
+}
+
+int ttkPointDataSelector::RequestData(vtkInformation *request,
+                                      vtkInformationVector **inputVector,
+                                      vtkInformationVector *outputVector) {
+
+  vtkDataSet *input = vtkDataSet::GetData(inputVector[0]);
+  vtkDataSet *output = vtkDataSet::GetData(outputVector);
 
   output->ShallowCopy(input);
 
   vtkPointData *inputPointData = input->GetPointData();
+  vtkNew<vtkPointData> outputPointData{};
+
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!inputPointData) {
-    cerr << "[ttkPointDataSelector] Error: input has no point data." << endl;
+    this->printErr("Input has no point data.");
     return -1;
   }
-#endif
 
-  vtkSmartPointer<vtkPointData> outputPointData
-    = vtkSmartPointer<vtkPointData>::New();
-#ifndef TTK_ENABLE_KAMIKAZE
   if(!outputPointData) {
-    cerr
-      << "[ttkPointDataSelector] Error: vtkPointData memory allocation problem."
-      << endl;
+    this->printErr("vtkPointData memory allocation problem.");
     return -1;
   }
 #endif
 
   if(AvailableFields.empty()) {
-    // when loading from statefiles
-    // or vtk script
+    // when loading from statefiles or vtk script
     FillAvailableFields(input);
   }
 
@@ -65,13 +93,13 @@ int ttkPointDataSelector::doIt(vtkDataSet *input, vtkDataSet *output) {
       }
       // check bounds in the range
       ptrdiff_t pos
-        = find(AvailableFields.begin(), AvailableFields.end(), scalar)
+        = std::find(AvailableFields.begin(), AvailableFields.end(), scalar)
           - AvailableFields.begin();
       if(pos < RangeId[0] || pos > RangeId[1]) {
         continue;
       }
       // retrieve array if match
-      if(!regex_match(scalar, regex(RegexpString))) {
+      if(!std::regex_match(scalar, std::regex(RegexpString))) {
         continue;
       }
       // Add the array
@@ -80,21 +108,15 @@ int ttkPointDataSelector::doIt(vtkDataSet *input, vtkDataSet *output) {
 
         if(RenameSelected) {
           if(SelectedFields.size() != 1 && RangeId[1] - RangeId[0] != 0) {
-            vtkErrorMacro("Can't rename more than one field.");
+            this->printErr("Can't rename more than one field.");
             return 0;
           }
 
-          if(localFieldCopy_) {
-            localFieldCopy_->Delete();
-            localFieldCopy_ = nullptr;
-          }
-
-          localFieldCopy_ = arr->NewInstance();
-
-          if(localFieldCopy_) {
-            localFieldCopy_->DeepCopy(arr);
-            localFieldCopy_->SetName(SelectedFieldName.data());
-            arr = localFieldCopy_;
+          vtkSmartPointer<vtkDataArray> localFieldCopy{arr->NewInstance()};
+          if(localFieldCopy) {
+            localFieldCopy->DeepCopy(arr);
+            localFieldCopy->SetName(SelectedFieldName.data());
+            arr = localFieldCopy;
           }
         }
 
@@ -102,57 +124,10 @@ int ttkPointDataSelector::doIt(vtkDataSet *input, vtkDataSet *output) {
       }
     }
   } catch(std::regex_error &) {
-    vtkWarningMacro("[ttkPointDataSelector]: Bad regexp.");
+    this->printErr("Bad regexp.");
   }
 
   output->GetPointData()->ShallowCopy(outputPointData);
 
-  {
-    stringstream msg;
-    msg << "[ttkPointDataSelector] Memory usage: " << m.getElapsedUsage()
-        << " MB." << endl;
-    dMsg(cout, msg.str(), memoryMsg);
-  }
-
-  return 0;
-}
-
-int ttkPointDataSelector::RequestInformation(
-  vtkInformation *request,
-  vtkInformationVector **inputVector,
-  vtkInformationVector *outputVector) {
-
-  vtkDataSet *input = vtkDataSet::GetData(inputVector[0]);
-  FillAvailableFields(input);
-  return vtkDataSetAlgorithm::RequestInformation(
-    request, inputVector, outputVector);
-}
-
-int ttkPointDataSelector::RequestData(vtkInformation *request,
-                                      vtkInformationVector **inputVector,
-                                      vtkInformationVector *outputVector) {
-  Memory m;
-
-  vtkDataSet *input = vtkDataSet::GetData(inputVector[0]);
-  vtkDataSet *output = vtkDataSet::GetData(outputVector);
-
-  doIt(input, output);
-
-  {
-    stringstream msg;
-    msg << "[ttkPointDataSelector] Memory usage: " << m.getElapsedUsage()
-        << " MB." << endl;
-    dMsg(cout, msg.str(), memoryMsg);
-  }
-
   return 1;
-}
-
-void ttkPointDataSelector::FillAvailableFields(vtkDataSet *input) {
-  int nbScalars = input->GetPointData()->GetNumberOfArrays();
-  AvailableFields.clear();
-  AvailableFields.resize(nbScalars);
-  for(int i = 0; i < nbScalars; ++i) {
-    AvailableFields[i] = input->GetPointData()->GetArrayName(i);
-  }
 }
