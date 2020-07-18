@@ -107,8 +107,6 @@ int main(int argc, char **argv) {
   for(size_t i = 0; i < inputArrayNames.size(); i++)
     mcp->SetInputArrayToProcess(i, 0, 0, 0, inputArrayNames[i].data());
 
-  // TODO manage the offset array?
-
   // ---------------------------------------------------------------------------
   // Execute the filter
   // ---------------------------------------------------------------------------
