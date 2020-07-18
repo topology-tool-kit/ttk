@@ -1,28 +1,9 @@
-#include <Editor.h>
+#include "Editor.h"
+
+#include <CommandLineParser.h>
 
 Editor::Editor() {
-
-  input_ = NULL;
-  // reader_ = NULL;
-  lastObject_ = true;
-
-  rawReader_ = NULL;
-
-  outputBounds_ = NULL;
-  outputHistograms_ = NULL;
-  // uncertainDataEstimator_ = ttkUncertainDataEstimator::New();
-}
-
-Editor::~Editor() {
-  if(rawReader_) {
-    rawReader_->Delete();
-  }
-  if(outputBounds_) {
-    outputBounds_->Delete();
-  }
-  if(outputHistograms_) {
-    outputHistograms_->Delete();
-  }
+  this->setDebugMsgPrefix("Editor");
 }
 
 int Editor::execute() {
@@ -58,13 +39,13 @@ int Editor::execute() {
 
 int Editor::init(int &argc, char **argv) {
 
-  CommandLineParser parser;
+  ttk::CommandLineParser parser;
 
   // Input directory
   parser.setArgument("l", &inputDirectory_, "Path to the input data set");
 
   // Fraction of input to consider
-  string fraction_str;
+  std::string fraction_str;
   parser.setArgument("c", &fraction_str,
                      "Takes only a part of the input file (syntax : "
                      "\"num/den\") (default : \"1/1\")",
@@ -122,8 +103,8 @@ int Editor::init(int &argc, char **argv) {
 
   // Thread number
   {
-    stringstream msg;
-    msg << "Thread number (default: " << OsCall::getNumberOfCores() << ")";
+    std::stringstream msg;
+    msg << "Thread number (default: " << ttk::OsCall::getNumberOfCores() << ")";
     parser.setArgument("t", &threadNumber_, msg.str(), true);
   }
 
@@ -131,12 +112,12 @@ int Editor::init(int &argc, char **argv) {
   parser.parse(argc, argv);
 
   // set default values
-  if(globalDebugLevel_ < 0) {
-    globalDebugLevel_ = infoMsg;
+  if(ttk::globalDebugLevel_ < 0) {
+    ttk::globalDebugLevel_ = infoMsg;
   }
-  debugLevel_ = globalDebugLevel_;
+  debugLevel_ = ttk::globalDebugLevel_;
   if(threadNumber_ < 1) {
-    threadNumber_ = OsCall::getNumberOfCores();
+    threadNumber_ = ttk::OsCall::getNumberOfCores();
   }
 
   numberOfBins_ = (numberOfBins_ < 0) ? 0 : numberOfBins_;
@@ -167,14 +148,14 @@ int Editor::init(int &argc, char **argv) {
       inputDirectory_.pop_back();
     }
     inputFileName_
-      = OsCall::listFilesInDirectory(inputDirectory_, inputFormat_);
+      = ttk::OsCall::listFilesInDirectory(inputDirectory_, inputFormat_);
   }
   int fraction, numberOfFractions;
   if(fraction_str.empty()) {
     numberOfFractions = 1;
     fraction = 1;
   } else {
-    string num, den;
+    std::string num, den;
     bool slashFound(false);
     for(size_t i = 0; i < fraction_str.size(); i++) {
       if(fraction_str[i] != '/') {
@@ -190,16 +171,16 @@ int Editor::init(int &argc, char **argv) {
     if(!num.empty() && !den.empty()) {
       try {
         fraction = stoi(num);
-      } catch(invalid_argument &) {
+      } catch(std::invalid_argument &) {
         fraction = 1;
-      } catch(out_of_range &) {
+      } catch(std::out_of_range &) {
         fraction = 1;
       }
       try {
         numberOfFractions = stoi(den);
-      } catch(invalid_argument &) {
+      } catch(std::invalid_argument &) {
         numberOfFractions = 1;
-      } catch(out_of_range &) {
+      } catch(std::out_of_range &) {
         numberOfFractions = 1;
       }
       if(!(numberOfFractions > 0) || !(fraction > 0)
@@ -214,10 +195,10 @@ int Editor::init(int &argc, char **argv) {
     }
   }
   if(inputFileName_.empty()) {
-    stringstream msg;
+    std::stringstream msg;
     msg << "No " << inputFormat_ << " file in directory " << inputDirectory_
         << endl;
-    dMsg(cerr, msg.str(), fatalMsg);
+    this->printErr(msg.str());
     return -1;
   } else {
     /* Selection of input files */
@@ -226,7 +207,7 @@ int Editor::init(int &argc, char **argv) {
     double den = static_cast<double>(numberOfFractions);
     int first = static_cast<int>((numberOfFiles * (num - 1.0) / den) + 0.5);
     int last = static_cast<int>((numberOfFiles * num / den) - 0.5);
-    vector<string> newList;
+    std::vector<std::string> newList;
     newList.insert(newList.begin(), inputFileName_.begin() + first,
                    inputFileName_.begin() + last + 1);
     inputFileName_.swap(newList);
@@ -261,25 +242,16 @@ int Editor::init(int &argc, char **argv) {
     outputHistograms_ = vtkImageData::New();
   }
 
-  if(debugLevel_ > infoMsg) {
-    stringstream msg;
-    msg << "[Editor] Directory = " << inputDirectory_ << endl;
-    msg << "[Editor] " << inputFileName_.size() << " " << inputFormat_
-        << " files found in directory" << endl;
-    dMsg(cout, msg.str(), infoMsg);
-  }
+  this->printMsg("Directory: " + inputDirectory_, ttk::debug::Priority::DETAIL);
+  this->printMsg(std::to_string(inputFileName_.size()) + " " + inputFormat_
+                   + " files found in directory",
+                 ttk::debug::Priority::DETAIL);
 
   return 0;
 }
 
 int Editor::initRawReader() {
   if(inputFormat_ == "raw") {
-    // Create reader
-    if(rawReader_) {
-      rawReader_->Delete();
-      rawReader_ = NULL;
-    }
-    rawReader_ = vtkImageReader2::New();
     // Data domain
     rawReader_->SetFileDimensionality(dimension_);
     if(isLowerLeft_) {
@@ -310,9 +282,8 @@ int Editor::initRawReader() {
     } else if(scalarType_ == "unsignedChar") {
       rawReader_->SetDataScalarTypeToUnsignedChar();
     } else {
-      stringstream msg;
-      msg << "Scalar type " << scalarType_ << " not supported" << endl;
-      dMsg(cerr, msg.str(), fatalMsg);
+      std::stringstream msg;
+      this->printErr("Scalar type " + scalarType_ + " not supported");
       return -1;
     }
     // Byte order
@@ -325,19 +296,13 @@ int Editor::initRawReader() {
   return 0;
 }
 
-int Editor::loadData(const string &fileName) {
+int Editor::loadData(const std::string &fileName) {
 
-  if(debugLevel_ > infoMsg) {
-    stringstream msg;
-    msg << "[Editor] Loading file " << fileName << endl;
-    dMsg(cout, msg.str(), infoMsg);
-  }
+  this->printMsg("Loading file " + fileName, ttk::debug::Priority::DETAIL);
 
   if(inputFormat_ == "raw") {
     if(!rawReader_) {
-      stringstream msg;
-      msg << "[Editor] Function loadData : reader not intialized" << endl;
-      dMsg(cerr, msg.str(), fatalMsg);
+      this->printErr("Function loadData: reader not initialized");
       return -1;
     }
     input_ = NULL;
@@ -378,24 +343,18 @@ int Editor::loadData(const string &fileName) {
       }
       input_ = readXMLFile<vtkXMLImageDataReader>(fileName);
     } else {
-      stringstream msg;
-      msg << "[Editor] File format " << inputFormat_ << " not supported"
-          << endl;
-      dMsg(cerr, msg.str(), fatalMsg);
+      this->printErr("File format " + inputFormat_ + " not supported");
       return -2;
     }
   }
 
   if(input_) {
-    stringstream msg;
-    msg << "[Editor] Reading file " << fileName << endl;
-    msg << "[Editor]   done! (read " << input_->GetNumberOfPoints()
-        << " vertices, " << input_->GetNumberOfCells() << " cells)" << endl;
-    dMsg(cout, msg.str(), infoMsg);
+    this->printMsg("Read file " + fileName);
+    this->printMsg(std::vector<std::vector<std::string>>{
+      {"#Vertices", std::to_string(input_->GetNumberOfPoints())},
+      {"#Cells", std::to_string(input_->GetNumberOfCells())}});
   } else {
-    stringstream msg;
-    msg << "[Editor] Error reading file " << fileName << endl;
-    dMsg(cerr, msg.str(), fatalMsg);
+    this->printErr("Cannot read file " + fileName);
   }
 
   return 0;
@@ -430,10 +389,9 @@ int Editor::loadData(const string &fileName) {
 
 int Editor::saveData() const {
   if(inputFormat_ == "raw") {
-    vtkSmartPointer<vtkXMLImageDataWriter> imageWriter
-      = vtkSmartPointer<vtkXMLImageDataWriter>::New();
+    auto imageWriter = vtkSmartPointer<vtkXMLImageDataWriter>::New();
 
-    stringstream fileName;
+    std::stringstream fileName;
     fileName << outputDirectory_;
     if(outputDirectory_.back() != '/') {
       fileName << "/";

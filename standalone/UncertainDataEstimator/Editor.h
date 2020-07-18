@@ -3,8 +3,7 @@
 ///
 /// \brief Data-structures and processing.
 
-#ifndef EDITOR_H
-#define EDITOR_H
+#pragma once
 
 #include <cmath>
 #include <stdexcept>
@@ -45,22 +44,13 @@
 #include <vtkUnsignedIntArray.h>
 #include <vtkUnsignedShortArray.h>
 
-// base code includes
-#include <CommandLineParser.h>
-
 // vtk wrappers
-#include <UncertainDataEstimator.h>
 #include <ttkUncertainDataEstimator.h>
 
-using namespace std;
-using namespace ttk;
-
-class Editor : public Debug {
+class Editor : virtual public ttk::Debug {
 
 public:
   Editor();
-
-  ~Editor();
 
   int execute();
 
@@ -73,10 +63,10 @@ public:
 
   int saveData() const;
 
-  int loadData(const string &fileName);
+  int loadData(const std::string &fileName);
 
   template <class TReader>
-  vtkDataSet *readXMLFile(const string &fileName) const {
+  vtkDataSet *readXMLFile(const std::string &fileName) const {
     vtkSmartPointer<TReader> reader = vtkSmartPointer<TReader>::New();
     reader->SetFileName(fileName.c_str());
     reader->Update();
@@ -94,7 +84,7 @@ public:
     loadData(inputFileName_[0]);
 
     // Base code object
-    PDFBounds<dataType> pdfBounds;
+    ttk::PDFBounds<dataType> pdfBounds;
     int numberOfVertices = input_->GetNumberOfPoints();
     pdfBounds.setNumberOfVertices(numberOfVertices);
     pdfBounds.evaluateRealization(
@@ -173,38 +163,36 @@ public:
 
 protected:
   // Input
-  string inputDirectory_;
-  string inputFormat_;
-  vector<string> inputFileName_;
-  int numberOfFractions_;
-  int fraction_;
+  std::string inputDirectory_{};
+  std::string inputFormat_{};
+  std::vector<std::string> inputFileName_{};
+  int numberOfFractions_{};
+  int fraction_{};
 
   // Histogram parameters
-  int numberOfBins_;
+  int numberOfBins_{};
 
   // Parameters for raw files
-  bool isBigEndian_;
-  bool isLowerLeft_;
-  string scalarType_;
-  int dimension_;
-  int nx_, ny_, nz_; // Dimensions
-  double dx_, dy_, dz_; // Spacing
-  double ox_, oy_, oz_; // Origin
+  bool isBigEndian_{};
+  bool isLowerLeft_{};
+  std::string scalarType_{};
+  int dimension_{};
+  int nx_{}, ny_{}, nz_{}; // Dimensions
+  double dx_{}, dy_{}, dz_{}; // Spacing
+  double ox_{}, oy_{}, oz_{}; // Origin
   // Reader for raw files
-  vtkImageReader2 *rawReader_;
+  vtkNew<vtkImageReader2> rawReader_{};
 
   // Input data set
-  vtkDataSet *input_;
+  vtkDataSet *input_{};
 
   // Output
-  string outputDirectory_;
-  string outputPrefix_;
+  std::string outputDirectory_{};
+  std::string outputPrefix_{};
 
-  vtkDataSet *outputBounds_;
-  vtkDataSet *outputHistograms_;
+  vtkSmartPointer<vtkDataSet> outputBounds_{};
+  vtkSmartPointer<vtkDataSet> outputHistograms_{};
 
   // vtkXMLImageDataReader         *reader_;
   // vtkUncertainDataEstimator     *uncertainDataEstimator_;
 };
-
-#endif // EDITOR_H
