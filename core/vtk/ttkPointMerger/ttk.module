@@ -5,5 +5,5 @@ SOURCES
 HEADERS
   ttkPointMerger.h
 DEPENDS
-  ttkTriangulationAlgorithm
+  ttkAlgorithm
   geometry
