@@ -5,4 +5,4 @@ SOURCES
 HEADERS
   ttkPointDataConverter.h
 DEPENDS
-  common
+  ttkAlgorithm
