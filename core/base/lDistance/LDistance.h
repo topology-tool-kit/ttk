@@ -10,8 +10,7 @@
 ///
 /// \sa ttkLDistance.cpp for a usage example.
 
-#ifndef _LDISTANCE_H
-#define _LDISTANCE_H
+#pragma once
 
 // Standard.
 #include <cmath>
@@ -19,71 +18,34 @@
 #include <string>
 
 // Base code.
+#include <Debug.h>
 #include <Geometry.h>
-#include <Wrapper.h>
 
 namespace ttk {
 
-  class LDistance : public Debug {
-
+  class LDistance : virtual public Debug {
   public:
     LDistance();
 
-    ~LDistance();
+    template <class dataType>
+    int execute(const dataType *const inputData1,
+                const dataType *const inputData2,
+                dataType *const outputData,
+                const std::string &distanceType,
+                const SimplexId vertexNumber);
 
     template <class dataType>
-    int execute(const std::string &distanceType);
-
-    template <class dataType>
-    int computeLn(dataType *input1,
-                  dataType *input2,
-                  dataType *output,
+    int computeLn(const dataType *const input1,
+                  const dataType *const input2,
+                  dataType *const output,
                   const int n,
-                  const ttk::SimplexId vertexNumber);
+                  const SimplexId vertexNumber);
 
     template <class dataType>
-    int computeLinf(dataType *input1,
-                    dataType *input2,
-                    dataType *output,
-                    const ttk::SimplexId vertexNumber);
-
-    /// Pass a pointer to an input array representing a scalarfield.
-    /// The expected format for the array is the following:
-    /// <vertex0-component0> <vertex0-component1> ... <vertex0-componentN>
-    /// <vertex1-component0> <vertex1-component1> ... <vertex1-componentN>
-    /// <vertexM-component0> <vertexM-component1> ... <vertexM-componentN>.
-    /// The array is expected to be correctly allocated.
-    /// \param data Pointer to the data array.
-    /// \return Returns 0 upon success, negative values otherwise.
-    /// \sa setVertexNumber() and setDimensionNumber().
-    inline int setInputDataPointer1(void *data) {
-      inputData1_ = data;
-      return 0;
-    }
-
-    inline int setInputDataPointer2(void *data) {
-      inputData2_ = data;
-      return 0;
-    }
-
-    /// Pass a pointer to an output array representing a scalar field.
-    /// The expected format for the array is the following:
-    /// <vertex0-component0> <vertex0-component1> ... <vertex0-componentN>
-    /// <vertex1-component0> <vertex1-component1> ... <vertex1-componentN>
-    /// <vertexM-component0> <vertexM-component1> ... <vertexM-componentN>.
-    /// The array is expected to be correctly allocated.
-    /// \param data Pointer to the data array.
-    /// \return Returns 0 upon success, negative values otherwise.
-    /// \sa setVertexNumber() and setDimensionNumber().
-    inline int setOutputDataPointer(void *data) {
-      outputData_ = data;
-      return 0;
-    }
-
-    inline int setNumberOfPoints(ttk::SimplexId numberOfPoints) {
-      numberOfPoints_ = numberOfPoints;
-      return 0;
-    }
+    int computeLinf(const dataType *const input1,
+                    const dataType *const input2,
+                    dataType *const output,
+                    const SimplexId vertexNumber);
 
     inline double getResult() {
       return result;
@@ -95,30 +57,27 @@ namespace ttk {
     }
 
   protected:
-    void *inputData1_, *inputData2_, *outputData_;
-    double result;
-    ttk::SimplexId numberOfPoints_;
+    double result{};
   };
 } // namespace ttk
 
 // template functions
 template <class dataType>
-int ttk::LDistance::execute(const std::string &distanceType) {
+int ttk::LDistance::execute(const dataType *const inputData1,
+                            const dataType *const inputData2,
+                            dataType *const outputData,
+                            const std::string &distanceType,
+                            const SimplexId vertexNumber) {
 
   Timer t;
   int status;
 
 // Check variables consistency
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(!inputData1_ || !inputData2_)
+  if(inputData1 == nullptr || inputData2 == nullptr) {
     return -1;
+  }
 #endif
-
-  dataType *outputData = (dataType *)outputData_;
-  dataType *inputData1 = (dataType *)inputData1_;
-  dataType *inputData2 = (dataType *)inputData2_;
-
-  ttk::SimplexId vertexNumber = numberOfPoints_;
 
   if(distanceType == "inf") {
     status = computeLinf(inputData1, inputData2, outputData, vertexNumber);
@@ -130,21 +89,16 @@ int ttk::LDistance::execute(const std::string &distanceType) {
     status = computeLn(inputData1, inputData2, outputData, n, vertexNumber);
   }
 
-  {
-    std::stringstream msg;
-    msg << "[LDistance] Data-set (" << vertexNumber << " points) processed in "
-        << t.getElapsedTime() << " s. (" << threadNumber_ << " thread(s))."
-        << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
-  }
+  this->printMsg(
+    "Data-set processed", 1.0, t.getElapsedTime(), this->threadNumber_);
 
   return status;
 }
 
 template <class dataType>
-int ttk::LDistance::computeLn(dataType *input1,
-                              dataType *input2,
-                              dataType *output,
+int ttk::LDistance::computeLn(const dataType *const input1,
+                              const dataType *const input2,
+                              dataType *const output,
                               const int n,
                               const ttk::SimplexId vertexNumber) {
   dataType sum = 0;
@@ -170,19 +124,16 @@ int ttk::LDistance::computeLn(dataType *input1,
 
   // Affect result.
   result = (double)sum;
-  {
-    std::stringstream msg;
-    msg << "[LDistance] Distance: " << result << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
-  }
+  this->printMsg("L" + std::to_string(n)
+                 + "-distance: " + std::to_string(result));
 
   return 0;
 }
 
 template <class dataType>
-int ttk::LDistance::computeLinf(dataType *input1,
-                                dataType *input2,
-                                dataType *output,
+int ttk::LDistance::computeLinf(const dataType *const input1,
+                                const dataType *const input2,
+                                dataType *const output,
                                 const ttk::SimplexId vertexNumber) {
   if(vertexNumber < 1)
     return 0;
@@ -205,13 +156,7 @@ int ttk::LDistance::computeLinf(dataType *input1,
 
   // Affect result.
   result = (double)maxValue;
-  {
-    std::stringstream msg;
-    msg << "[LDistance] Distance: " << result << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
-  }
+  this->printMsg("Linf-distance: " + std::to_string(result));
 
   return 0;
 }
-
-#endif // LDISTANCE_H
