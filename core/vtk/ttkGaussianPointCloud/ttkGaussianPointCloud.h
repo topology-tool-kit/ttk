@@ -44,4 +44,5 @@ protected:
 private:
   int Dimension{2};
   int NumberOfSamples{1000};
+      
 };
