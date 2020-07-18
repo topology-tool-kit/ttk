@@ -21,7 +21,6 @@ int main(int argc, char **argv) {
   std::vector<std::string> inputArrayNames;
   std::string outputPathPrefix{"output"};
   bool listArrays{false};
-  bool forceOffset{false};
 
   {
     ttk::CommandLineParser parser;
@@ -35,8 +34,6 @@ int main(int argc, char **argv) {
     parser.setArgument(
       "o", &outputPathPrefix, "Output file prefix (no extension)", true);
     parser.setOption("l", &listArrays, "List available arrays");
-
-    parser.setOption("F", &forceOffset, "Force custom offset field (array #1)");
 
     parser.parse(argc, argv);
   }
