@@ -276,7 +276,7 @@ namespace ttk {
         jacobiSet.setWrapper(wrapper_);
 
         // trigger the jacobiSet pre-processing on the triangulation.
-        jacobiSet.setupTriangulation(triangulation_);
+        jacobiSet.preconditionTriangulation(triangulation_);
 
         // trigger the fiberSurface pre-processing on the triangulation.
         fiberSurface_.setWrapper(wrapper_);
@@ -448,7 +448,7 @@ inline int ttk::ReebSpace::execute() {
   JacobiSet<dataTypeU, dataTypeV> jacobiSet;
 
   jacobiSet.setWrapper(wrapper_);
-  jacobiSet.setupTriangulation(triangulation_);
+  jacobiSet.preconditionTriangulation(triangulation_);
   jacobiSet.setInputField(uField_, vField_);
   jacobiSet.setSosOffsetsU(sosOffsetsU_);
   jacobiSet.setSosOffsetsV(sosOffsetsV_);

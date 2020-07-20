@@ -2,25 +2,7 @@
 
 template <class dataTypeU, class dataTypeV>
 ttk::JacobiSet<dataTypeU, dataTypeV>::JacobiSet() {
-
-  vertexNumber_ = 0;
-
-  uField_ = nullptr;
-  vField_ = nullptr;
-
-  tetList_ = nullptr;
-
-  edgeList_ = nullptr;
-  edgeFanLinkEdgeLists_ = nullptr;
-  edgeFans_ = nullptr;
-  sosOffsetsU_ = nullptr;
-  sosOffsetsV_ = nullptr;
-
-  triangulation_ = nullptr;
-}
-
-template <class dataTypeU, class dataTypeV>
-ttk::JacobiSet<dataTypeU, dataTypeV>::~JacobiSet() {
+  this->setDebugMsgPrefix("JacobiSet");
 }
 
 template <class dataTypeU, class dataTypeV>

@@ -37,7 +37,7 @@ int ttkJacobiSet::baseCall(vtkDataSet *input,
   triangulation->setWrapper(this);
   JacobiSet<dataTypeU, dataTypeV> jacobiSet;
   jacobiSet.setWrapper(this);
-  jacobiSet.setupTriangulation(triangulation);
+  jacobiSet.preconditionTriangulation(triangulation);
 
   // point data
   jacobiSet.setInputField(uField->GetVoidPointer(0), vField->GetVoidPointer(0));
