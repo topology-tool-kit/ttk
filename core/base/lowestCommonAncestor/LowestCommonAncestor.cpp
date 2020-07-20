@@ -27,12 +27,7 @@ int LowestCommonAncestor::preprocess() {
     return retval;
   }
 
-  if(debugLevel_ > timeMsg) {
-    stringstream msg;
-    msg << "[LowestCommonAncestor] Preprocessed queries in "
-        << t.getElapsedTime() << "s." << endl;
-    dMsg(cout, msg.str(), timeMsg);
-  }
+  this->printMsg("Preprocessed queries.", 1.0, t.getElapsedTime(), 1);
 
   return 0;
 }
@@ -125,6 +120,9 @@ int LowestCommonAncestor::computeBlocs() {
       quotient /= 2;
       plusOne[blocSize_ - 2 - j] = static_cast<bool>(remain);
     }
+    if(blocSize_ < 1) {
+      return -1;
+    }
     vector<int> normalizedBloc(blocSize_);
     normalizedBloc[0] = 0;
     for(int j = 0; j < (blocSize_ - 1); j++) {
@@ -174,19 +172,14 @@ int LowestCommonAncestor::eulerianTransverse() {
     }
   }
   if(rootId == -1) {
-    stringstream msg;
-    msg << "[LowestCommonAncestor] Tree root not found." << endl;
-    dMsg(cerr, msg.str(), fatalMsg);
+    this->printErr("Tree root not found.");
     return -1;
   } else {
-    stringstream msg;
-    msg << "[LowestCommonAncestor] Root found : node id = " << rootId << endl;
-    dMsg(cout, msg.str(), advancedInfoMsg);
+    this->printMsg("Rout found: node id = " + std::to_string(rootId),
+                   debug::Priority::DETAIL);
   }
   if(!(node_[rootId].getNumberOfSuccessors() > 0)) {
-    stringstream msg;
-    msg << "[LowestCommonAncestor] Tree root found with no successor." << endl;
-    dMsg(cerr, msg.str(), fatalMsg);
+    this->printErr("Tree root found with no successor.");
     return -2;
   }
   // Initialize the vectors

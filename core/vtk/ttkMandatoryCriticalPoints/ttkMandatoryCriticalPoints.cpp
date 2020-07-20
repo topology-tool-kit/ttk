@@ -1,637 +1,130 @@
+#include <ttkMacros.h>
 #include <ttkMandatoryCriticalPoints.h>
+#include <ttkUtils.h>
 
-using namespace std;
-using namespace ttk;
+#include <vtkCellData.h>
+#include <vtkDataObject.h>
+#include <vtkDoubleArray.h>
+#include <vtkInformation.h>
+#include <vtkIntArray.h>
+#include <vtkObjectFactory.h>
+#include <vtkPointData.h>
+#include <vtkUnstructuredGrid.h>
 
-vtkStandardNewMacro(ttkMandatoryCriticalPoints)
+#include <array>
 
-  ttkMandatoryCriticalPoints::ttkMandatoryCriticalPoints() {
-  SetLowerBoundFieldName("lowerBoundField");
-  SetUpperBoundFieldName("upperBoundField");
-  SetSimplificationThreshold(0.0);
+vtkStandardNewMacro(ttkMandatoryCriticalPoints);
 
-  // init
-  outputMandatoryMinimum_ = nullptr;
-  outputMandatoryJoinSaddle_ = nullptr;
-  outputMandatorySplitSaddle_ = nullptr;
-  outputMandatoryMaximum_ = nullptr;
-
-  mandatoryJoinTreePoints_ = nullptr;
-  mandatorySplitTreePoints_ = nullptr;
-
-  UseAllCores = true;
-
-  computeMinimumOutput_ = false;
-  computeJoinSaddleOutput_ = false;
-  computeSplitSaddleOutput_ = false;
-  computeMaximumOutput_ = false;
-
-  mandatoryJoinTreePoints_ = nullptr;
-  mdtJoinTreePointType_ = nullptr;
-  mdtJoinTreePointLowInterval_ = nullptr;
-  mdtJoinTreePointUpInterval_ = nullptr;
-  mdtJoinTreePointComponentId_ = nullptr;
-  mandatorySplitTreePoints_ = nullptr;
-  mdtSplitTreePointType_ = nullptr;
-  mdtSplitTreePointLowInterval_ = nullptr;
-  mdtSplitTreePointUpInterval_ = nullptr;
-  mdtSplitTreePointComponentId_ = nullptr;
-  mdtJoinTreeEdgeSwitchable_ = nullptr;
-  mdtSplitTreeEdgeSwitchable_ = nullptr;
-
+ttkMandatoryCriticalPoints::ttkMandatoryCriticalPoints() {
   SetNumberOfInputPorts(1);
   SetNumberOfOutputPorts(6);
-
-  inputMTime_ = 0;
-  computeAll_ = true;
-  simplificationThreshold_ = 0.0;
-  simplify_ = true;
-
-  memoryUsage_ = 0.0;
-
-  lowerBoundId = 0;
-  upperBoundId = 1;
-
-  outputAllMinimumComponents_ = true;
-  outputMinimumComponentId_ = 0;
-  outputAllJoinSaddleComponents_ = true;
-  outputJoinSaddleComponentId_ = 0;
-  outputAllSplitSaddleComponents_ = true;
-  outputSplitSaddleComponentId_ = 0;
-  outputAllMaximumComponents_ = true;
-  outputMaximumComponentId_ = 0;
-
-  computeMinimumOutput_ = true;
-  computeJoinSaddleOutput_ = true;
-  computeSplitSaddleOutput_ = true;
-  computeMaximumOutput_ = true;
-
-  triangulation_ = nullptr;
 }
 
-ttkMandatoryCriticalPoints::~ttkMandatoryCriticalPoints() {
-  if(outputMandatoryMinimum_)
-    outputMandatoryMinimum_->Delete();
-  if(outputMandatoryJoinSaddle_)
-    outputMandatoryJoinSaddle_->Delete();
-  if(outputMandatorySplitSaddle_)
-    outputMandatorySplitSaddle_->Delete();
-  if(outputMandatoryMaximum_)
-    outputMandatoryMaximum_->Delete();
-  if(mandatoryJoinTreePoints_)
-    mandatoryJoinTreePoints_->Delete();
-  if(mdtJoinTreePointType_)
-    mdtJoinTreePointType_->Delete();
-  if(mdtJoinTreePointLowInterval_)
-    mdtJoinTreePointLowInterval_->Delete();
-  if(mdtJoinTreePointUpInterval_)
-    mdtJoinTreePointUpInterval_->Delete();
-  if(mdtJoinTreePointComponentId_)
-    mdtJoinTreePointComponentId_->Delete();
-  if(mandatorySplitTreePoints_)
-    mandatorySplitTreePoints_->Delete();
-  if(mdtSplitTreePointType_)
-    mdtSplitTreePointType_->Delete();
-  if(mdtSplitTreePointLowInterval_)
-    mdtSplitTreePointLowInterval_->Delete();
-  if(mdtSplitTreePointUpInterval_)
-    mdtSplitTreePointUpInterval_->Delete();
-  if(mdtSplitTreePointComponentId_)
-    mdtSplitTreePointComponentId_->Delete();
-  if(mandatoryJoinTreeEdge_.size()) {
-    for(size_t i = 0; i < mandatoryJoinTreeEdge_.size(); i++) {
-      if(mandatoryJoinTreeEdge_[i])
-        mandatoryJoinTreeEdge_[i]->Delete();
-    }
+int ttkMandatoryCriticalPoints::FillInputPortInformation(int port,
+                                                         vtkInformation *info) {
+  if(port == 0) {
+    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
+    return 1;
   }
-  if(mandatorySplitTreeEdge_.size()) {
-    for(size_t i = 0; i < mandatorySplitTreeEdge_.size(); i++) {
-      if(mandatorySplitTreeEdge_[i])
-        mandatorySplitTreeEdge_[i]->Delete();
-    }
-  }
-  if(mdtJoinTreeEdgeSwitchable_)
-    mdtJoinTreeEdgeSwitchable_->Delete();
-  if(mdtSplitTreeEdgeSwitchable_)
-    mdtSplitTreeEdgeSwitchable_->Delete();
+  return 0;
 }
 
-// struct XCoordCmp {
-//   bool operator()(const pair<int,double> &left, const pair<int,double>
-//   &right){
-//     return (left.second < right.second);
-//   }
-// } xCoordCmp;
-
-/////////////////////////////////////////////////////
-/////////////////////////////////////////////////////
-/////////////////////////////////////////////////////
-// void ttkMandatoryCriticalPoints::buildMandatorySplitTree(vtkUnstructuredGrid
-// *outputSplitTree) {
-//
-//   // Clear the objects
-//   if(mandatorySplitTreePoints_)
-//     mandatorySplitTreePoints_->Delete();
-//   if(mandatorySplitTreeEdge_.size()) {
-//     for(int i=0 ; i<(int)mandatorySplitTreeEdge_.size() ; i++)
-//       if(mandatorySplitTreeEdge_[i])
-//         mandatorySplitTreeEdge_[i]->Delete();
-//     mandatorySplitTreeEdge_.clear();
-//   }
-//   // Tree Informations
-//   const Digraph &mandatorySplitTree =
-// mandatoryCriticalPoints_.getMandatorySplitTree();
-//   /* New Objects */
-//   // Points
-//   mandatorySplitTreePoints_ = vtkPoints::New();
-//   // Edges
-//   mandatorySplitTreeEdge_.resize(mandatorySplitTree.getNumberOfEdges(),nullptr);
-//   for(int i=0 ; i<(int)mandatorySplitTreeEdge_.size() ; i++)
-//     mandatorySplitTreeEdge_[i] = vtkIdList::New();
-//
-//   cout << "[ttkMandatoryCriticalPoints] Number of points : ";
-//   cout << mandatorySplitTree.getNumberOfPoints() << endl;
-//   cout << "[ttkMandatoryCriticalPoints] Number of edges : ";
-//   cout << mandatorySplitTreeEdge_.size() << endl;
-//
-//   // PointId to GraphPointId
-//   vector<int> graphPointToVtkPoint(mandatorySplitTree.getNumberOfPoints(),
-// -1);
-//   // Level
-//   vector<int> pointLevel(mandatorySplitTree.getNumberOfPoints(), -1);
-//   // Find the root
-//   int rootGraphPointId = -1;
-//   for(int i=0 ; i<(mandatorySplitTree.getNumberOfPoints()) ; i++) {
-//     if(!mandatorySplitTree.getPoint(i).getNumberOfParentEdges()) {
-//       rootGraphPointId = i;
-//       cout << "WTF " << i << endl;
-//     }
-//   }
-//   cout << "[ttkMandatoryCriticalPoints] rootGraphPointId = ";
-//   cout << rootGraphPointId << endl;
-//   vector<pair<double,double> >
-// interval(mandatorySplitTree.getNumberOfPoints());
-//   vector<double> xCoord(mandatorySplitTree.getNumberOfPoints());
-//   vector<double> yCoord(mandatorySplitTree.getNumberOfPoints());
-//   interval[rootGraphPointId].first = -2.0;
-//   interval[rootGraphPointId].second = 2.0;
-//   queue<int> graphPointQueue;
-//   graphPointQueue.push(rootGraphPointId);
-//   while(!graphPointQueue.empty()) {
-//     int graphPoint = graphPointQueue.front();
-//     graphPointQueue.pop();
-//     int numberOfChildren =
-// mandatorySplitTree.getPoint(graphPoint).getNumberOfChildEdges();
-//     ////
-//     xCoord[graphPoint] = (interval[graphPoint].first +
-// interval[graphPoint].second) / 2.0;
-//     ////
-//     for(int i=0 ; i<numberOfChildren ; i++) {
-//       int childGraphEdge =
-// mandatorySplitTree.getPoint(graphPoint).getChildEdgeId(i);
-//       int childGraphPoint =
-// mandatorySplitTree.getEdge(childGraphEdge).getChildPointId();
-//       cout << "  graphPoint " << graphPoint;
-//       cout << "  childGraphPoint " << childGraphPoint;
-//       cout << endl;
-//       interval[childGraphPoint].first = interval[graphPoint].first +
-// ((interval[graphPoint].second - interval[graphPoint].first) * i /
-// numberOfChildren);
-//       interval[childGraphPoint].second = interval[graphPoint].first +
-// ((interval[graphPoint].second - interval[graphPoint].first) * (i+1) /
-// numberOfChildren);
-//       graphPointQueue.push(childGraphPoint);
-//     }
-//   }
-//   // y coordinates
-//   for(int i=0 ; i<mandatorySplitTree.getNumberOfPoints() ; i++) {
-//     int criticalPointId = mandatorySplitTree.getPoint(i).getId();
-//     pair<double,double> criticalInterval;
-//     if(mandatorySplitTree.getPoint(i).isLeaf()) {
-//       criticalInterval =
-// mandatoryCriticalPoints_.getMaximumInterval(criticalPointId);
-//       // yCoord[i] = criticalInterval.first;
-//     } else {
-//       criticalInterval =
-// mandatoryCriticalPoints_.getSplitSaddleInterval(criticalPointId);
-//       // yCoord[i] = criticalInterval.second;
-//     }
-//     double y = 0.5 * (criticalInterval.first + criticalInterval.second);
-//     yCoord[i] = y;
-//   }
-//   // x coordinates fix
-//   vector<pair<int,double> >
-// sortedXCoord(mandatorySplitTree.getNumberOfPoints());
-//   for(int i=0 ; i<mandatorySplitTree.getNumberOfPoints() ; i++) {
-//     sortedXCoord[i].first = i;
-//     sortedXCoord[i].second = xCoord[i];
-//   }
-//   sort(sortedXCoord.begin(), sortedXCoord.end(), xCoordCmp);
-//   for(int i=0 ; i<mandatorySplitTree.getNumberOfPoints() ; i++) {
-//     xCoord[sortedXCoord[i].first] = i * (1.0 / ((int)
-// mandatorySplitTree.getNumberOfPoints() - 1.0));
-//   }
-//
-//   for(int i=0 ; i<mandatorySplitTree.getNumberOfPoints() ; i++) {
-//     cout << "  Point (" << i << ") ";
-//     cout << "Interval [" << interval[i].first << ", " << interval[i].second
-// << "]";
-//     cout << " -> x = " << xCoord[i];
-//     cout << ", y = " << yCoord[i] << endl;
-//   }
-//   for(int i=0 ; i<mandatorySplitTree.getNumberOfPoints() ; i++) {
-//     mandatorySplitTreePoints_->InsertNextPoint(xCoord[i], yCoord[i], 0.0);
-//   }
-//   outputSplitTree->SetPoints(mandatorySplitTreePoints_);
-//   outputSplitTree->Allocate();
-//   for(int i=0 ; i<mandatorySplitTree.getNumberOfEdges() ; i++) {
-//     int parentId = mandatorySplitTree.getEdge(i).getParentPointId();
-//     int childId = mandatorySplitTree.getEdge(i).getChildPointId();
-//     mandatorySplitTreeEdge_[i]->InsertNextId(parentId);
-//     mandatorySplitTreeEdge_[i]->InsertNextId(childId);
-//     outputSplitTree->InsertNextCell(VTK_LINE, mandatorySplitTreeEdge_[i]);
-//   }
-// }
-/////////////////////////////////////////////////////
-/////////////////////////////////////////////////////
-/////////////////////////////////////////////////////
-
-int ttkMandatoryCriticalPoints::buildVtkTree(
-  vtkUnstructuredGrid *outputTree, MandatoryCriticalPoints::TreeType treeType) {
-
-  /* Graph Informations */
-  const Graph *graph = (treeType == MandatoryCriticalPoints::TreeType::JoinTree)
-                         ? mandatoryCriticalPoints_.getJoinTreeGraph()
-                         : mandatoryCriticalPoints_.getSplitTreeGraph();
-  const vector<double> *xCoord
-    = (treeType == MandatoryCriticalPoints::TreeType::JoinTree)
-        ? mandatoryCriticalPoints_.getJoinTreeXLayout()
-        : mandatoryCriticalPoints_.getSplitTreeXLayout();
-  const vector<double> *yCoord
-    = (treeType == MandatoryCriticalPoints::TreeType::JoinTree)
-        ? mandatoryCriticalPoints_.getJoinTreeYLayout()
-        : mandatoryCriticalPoints_.getSplitTreeYLayout();
-  const vector<int> *mdtTreePointComponentId
-    = (treeType == MandatoryCriticalPoints::TreeType::JoinTree)
-        ? mandatoryCriticalPoints_.getMdtJoinTreePointComponentId()
-        : mandatoryCriticalPoints_.getMdtSplitTreePointComponentId();
-  const vector<MandatoryCriticalPoints::PointType> *mdtTreePointType
-    = (treeType == MandatoryCriticalPoints::TreeType::JoinTree)
-        ? mandatoryCriticalPoints_.getMdtJoinTreePointType()
-        : mandatoryCriticalPoints_.getMdtSplitTreePointType();
-  const vector<double> *mdtTreePointLowInterval
-    = (treeType == MandatoryCriticalPoints::TreeType::JoinTree)
-        ? mandatoryCriticalPoints_.getMdtJoinTreePointLowInterval()
-        : mandatoryCriticalPoints_.getMdtSplitTreePointLowInterval();
-  const vector<double> *mdtTreePointUpInterval
-    = (treeType == MandatoryCriticalPoints::TreeType::JoinTree)
-        ? mandatoryCriticalPoints_.getMdtJoinTreePointUpInterval()
-        : mandatoryCriticalPoints_.getMdtSplitTreePointUpInterval();
-  const vector<int> *mdtTreeEdgeSwitchable
-    = (treeType == MandatoryCriticalPoints::TreeType::JoinTree)
-        ? mandatoryCriticalPoints_.getMdtJoinTreeEdgeSwitchable()
-        : mandatoryCriticalPoints_.getMdtSplitTreeEdgeSwitchable();
-  const int numberOfPoints = graph->getNumberOfVertices();
-  const int numberOfEdges = graph->getNumberOfEdges();
-
-  /* VTK Objects */
-  vtkPoints **mdtTreePoints
-    = (treeType == MandatoryCriticalPoints::TreeType::JoinTree)
-        ? &(mandatoryJoinTreePoints_)
-        : &(mandatorySplitTreePoints_);
-  vector<vtkIdList *> *mdtTreeEdge
-    = (treeType == MandatoryCriticalPoints::TreeType::JoinTree)
-        ? &(mandatoryJoinTreeEdge_)
-        : &(mandatorySplitTreeEdge_);
-  vtkIntArray **outputTreePointType
-    = (treeType == MandatoryCriticalPoints::TreeType::JoinTree)
-        ? &(mdtJoinTreePointType_)
-        : &(mdtSplitTreePointType_);
-  vtkDoubleArray **outputTreePointLowInterval
-    = (treeType == MandatoryCriticalPoints::TreeType::JoinTree)
-        ? &(mdtJoinTreePointLowInterval_)
-        : &(mdtSplitTreePointLowInterval_);
-  vtkDoubleArray **outputTreePointUpInterval
-    = (treeType == MandatoryCriticalPoints::TreeType::JoinTree)
-        ? &(mdtJoinTreePointUpInterval_)
-        : &(mdtSplitTreePointUpInterval_);
-  vtkIntArray **outputTreePointComponentId
-    = (treeType == MandatoryCriticalPoints::TreeType::JoinTree)
-        ? &(mdtJoinTreePointComponentId_)
-        : &(mdtSplitTreePointComponentId_);
-
-  vtkIntArray **outputTreeEdgeSwitchable
-    = (treeType == MandatoryCriticalPoints::TreeType::JoinTree)
-        ? &(mdtJoinTreeEdgeSwitchable_)
-        : &(mdtSplitTreeEdgeSwitchable_);
-
-  /* Point datas */
-  if((*outputTreePointType) == nullptr) {
-    (*outputTreePointType) = vtkIntArray::New();
-    (*outputTreePointType)->SetName("Type");
+int ttkMandatoryCriticalPoints::FillOutputPortInformation(
+  int port, vtkInformation *info) {
+  if(port >= 0 && port < 4) {
+    info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
+    return 1;
+  } else if(port == 4 || port == 5) {
+    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
+    return 1;
   }
-  (*outputTreePointType)->SetNumberOfTuples(numberOfPoints);
-  outputTree->GetPointData()->AddArray(*outputTreePointType);
-  if((*outputTreePointLowInterval) == nullptr) {
-    (*outputTreePointLowInterval) = vtkDoubleArray::New();
-    (*outputTreePointLowInterval)->SetName("LowInterval");
-  }
-  (*outputTreePointLowInterval)->SetNumberOfTuples(numberOfPoints);
-  outputTree->GetPointData()->AddArray(*outputTreePointLowInterval);
-  if((*outputTreePointUpInterval) == nullptr) {
-    (*outputTreePointUpInterval) = vtkDoubleArray::New();
-    (*outputTreePointUpInterval)->SetName("UpInterval");
-  }
-  (*outputTreePointUpInterval)->SetNumberOfTuples(numberOfPoints);
-  outputTree->GetPointData()->AddArray(*outputTreePointUpInterval);
-  if((*outputTreePointComponentId) == nullptr) {
-    (*outputTreePointComponentId) = vtkIntArray::New();
-    (*outputTreePointComponentId)->SetName("ComponentId");
-  }
-  (*outputTreePointComponentId)->SetNumberOfTuples(numberOfPoints);
-  outputTree->GetPointData()->AddArray(*outputTreePointComponentId);
+  return 0;
+}
+
+void buildVtkTree(
+  vtkUnstructuredGrid *outputTree,
+  ttk::MandatoryCriticalPoints::TreeType treeType,
+  const ttk::Graph &graph,
+  const std::vector<double> &xCoord,
+  const std::vector<double> &yCoord,
+  const std::vector<int> &mdtTreePointComponentId,
+  const std::vector<ttk::MandatoryCriticalPoints::PointType> &mdtTreePointType,
+  const std::vector<double> &mdtTreePointLowInterval,
+  const std::vector<double> &mdtTreePointUpInterval,
+  const std::vector<int> &mdtTreeEdgeSwitchable) {
+
+  const int numberOfPoints = graph.getNumberOfVertices();
+  const int numberOfEdges = graph.getNumberOfEdges();
+
+  /* Point data */
+  vtkNew<vtkIntArray> outputTreePointType{};
+  outputTreePointType->SetName("Type");
+  outputTreePointType->SetNumberOfTuples(numberOfPoints);
+  outputTree->GetPointData()->AddArray(outputTreePointType);
+
+  vtkNew<vtkDoubleArray> outputTreePointLowInterval{};
+  outputTreePointLowInterval->SetName("LowInterval");
+  outputTreePointLowInterval->SetNumberOfTuples(numberOfPoints);
+  outputTree->GetPointData()->AddArray(outputTreePointLowInterval);
+
+  vtkNew<vtkDoubleArray> outputTreePointUpInterval{};
+  outputTreePointUpInterval->SetName("UpInterval");
+  outputTreePointUpInterval->SetNumberOfTuples(numberOfPoints);
+  outputTree->GetPointData()->AddArray(outputTreePointUpInterval);
+
+  vtkNew<vtkIntArray> outputTreePointComponentId{};
+  outputTreePointComponentId->SetName("ComponentId");
+  outputTreePointComponentId->SetNumberOfTuples(numberOfPoints);
+  outputTree->GetPointData()->AddArray(outputTreePointComponentId);
 
   for(int i = 0; i < numberOfPoints; i++) {
-    (*outputTreePointType)->SetTuple1(i, (*mdtTreePointType)[i]);
-  }
-  for(int i = 0; i < numberOfPoints; i++) {
-    (*outputTreePointLowInterval)->SetTuple1(i, (*mdtTreePointLowInterval)[i]);
-  }
-  for(int i = 0; i < numberOfPoints; i++) {
-    (*outputTreePointUpInterval)->SetTuple1(i, (*mdtTreePointUpInterval)[i]);
-  }
-  for(int i = 0; i < numberOfPoints; i++) {
-    (*outputTreePointComponentId)->SetTuple1(i, (*mdtTreePointComponentId)[i]);
+    outputTreePointType->SetTuple1(i, static_cast<int>(mdtTreePointType[i]));
+    outputTreePointLowInterval->SetTuple1(i, mdtTreePointLowInterval[i]);
+    outputTreePointUpInterval->SetTuple1(i, mdtTreePointUpInterval[i]);
+    outputTreePointComponentId->SetTuple1(i, mdtTreePointComponentId[i]);
   }
 
-  /* Cell datas */
-  if((*outputTreeEdgeSwitchable) == nullptr) {
-    (*outputTreeEdgeSwitchable) = vtkIntArray::New();
-    (*outputTreeEdgeSwitchable)->SetName("Switchable");
-  }
-  (*outputTreeEdgeSwitchable)->SetNumberOfTuples(numberOfEdges);
-  outputTree->GetCellData()->AddArray(*outputTreeEdgeSwitchable);
+  /* Cell data */
+  vtkNew<vtkIntArray> outputTreeEdgeSwitchable{};
+  outputTreeEdgeSwitchable->SetName("Switchable");
+  outputTreeEdgeSwitchable->SetNumberOfTuples(numberOfEdges);
+  outputTree->GetCellData()->AddArray(outputTreeEdgeSwitchable);
   for(int i = 0; i < numberOfEdges; i++) {
-    (*outputTreeEdgeSwitchable)->SetTuple1(i, (*mdtTreeEdgeSwitchable)[i]);
-  }
-
-  // Clear the VTK objects
-  if((*mdtTreePoints) != nullptr)
-    (*mdtTreePoints)->Delete();
-  if(mdtTreeEdge->size()) {
-    for(size_t i = 0; i < mdtTreeEdge->size(); i++)
-      if((*mdtTreeEdge)[i] != nullptr)
-        (*mdtTreeEdge)[i]->Delete();
-    mdtTreeEdge->clear();
+    outputTreeEdgeSwitchable->SetTuple1(i, mdtTreeEdgeSwitchable[i]);
   }
 
   /* New Objects */
   // Points
-  (*mdtTreePoints) = vtkPoints::New();
-  outputTree->SetPoints((*mdtTreePoints));
-  // Edges
-  mdtTreeEdge->resize(graph->getNumberOfEdges(), nullptr);
-  for(size_t i = 0; i < mdtTreeEdge->size(); i++)
-    (*mdtTreeEdge)[i] = vtkIdList::New();
-  outputTree->Allocate(numberOfEdges);
-
-  // Points
+  vtkNew<vtkPoints> mdtTreePoints{};
+  outputTree->SetPoints(mdtTreePoints);
   for(int i = 0; i < numberOfPoints; i++) {
-    (*mdtTreePoints)->InsertNextPoint((*xCoord)[i], (*yCoord)[i], 0.0);
+    mdtTreePoints->InsertNextPoint(xCoord[i], yCoord[i], 0.0);
   }
 
   // Edges (cells)
+  outputTree->Allocate(numberOfEdges);
   for(int i = 0; i < numberOfEdges; i++) {
-    (*mdtTreeEdge)[i]->InsertNextId(graph->getEdge(i)->getVertexIdx().first);
-    (*mdtTreeEdge)[i]->InsertNextId(graph->getEdge(i)->getVertexIdx().second);
-    outputTree->InsertNextCell(VTK_LINE, (*mdtTreeEdge)[i]);
+    std::array<vtkIdType, 2> edge{graph.getEdge(i).getVertexIdx().first,
+                                  graph.getEdge(i).getVertexIdx().second};
+    outputTree->InsertNextCell(VTK_LINE, 2, edge.data());
   }
-  return 0;
 }
 
-// int ttkMandatoryCriticalPoints::buildMandatoryTree(vtkUnstructuredGrid
-// *outputJoinTree, const Digraph &mandatoryTree, const bool isJoinTree) {
-//
-//   // Clear the objects
-//   if(mandatoryJoinTreePoints_)
-//     mandatoryJoinTreePoints_->Delete();
-//   if(mandatoryJoinTreeEdge_.size()) {
-//     for(int i=0 ; i<(int)mandatoryJoinTreeEdge_.size() ; i++)
-//       if(mandatoryJoinTreeEdge_[i])
-//         mandatoryJoinTreeEdge_[i]->Delete();
-//     mandatoryJoinTreeEdge_.clear();
-//   }
-//
-//   if(!mandatoryTree.getNumberOfPoints())
-//     return -1;
-//
-//   // Tree Informations
-//   // const Digraph &mandatoryJoinTree =
-// mandatoryCriticalPoints_.getMandatoryJoinTree();
-//
-//   /* New Objects */
-//   // Points
-//   mandatoryJoinTreePoints_ = vtkPoints::New();
-//   // Edges
-//   mandatoryJoinTreeEdge_.resize(mandatoryTree.getNumberOfEdges(),nullptr);
-//   for(int i=0 ; i<(int)mandatoryJoinTreeEdge_.size() ; i++)
-//     mandatoryJoinTreeEdge_[i] = vtkIdList::New();
-//
-//   cout << "[ttkMandatoryCriticalPoints] Number of points : ";
-//   cout << mandatoryTree.getNumberOfPoints() << endl;
-//   cout << "[ttkMandatoryCriticalPoints] Number of edges : ";
-//   cout << mandatoryJoinTreeEdge_.size() << endl;
-//
-//   // PointId to GraphPointId
-//   vector<int> graphPointToVtkPoint(mandatoryTree.getNumberOfPoints(), -1);
-//   // Level
-//   vector<int> pointLevel(mandatoryTree.getNumberOfPoints(), -1);
-//   // Find the root
-//   int rootGraphPointId = -1;
-//   for(int i=0 ; i<(mandatoryTree.getNumberOfPoints()) ; i++) {
-//     if(!mandatoryTree.getPoint(i).getNumberOfParentEdges()) {
-//       rootGraphPointId = i;
-//       cout << "WTF " << i << endl;
-//     }
-//   }
-//
-//   cout << "[ttkMandatoryCriticalPoints] rootGraphPointId = ";
-//   cout << rootGraphPointId << endl;
-//
-//   vector<pair<double,double> > interval(mandatoryTree.getNumberOfPoints());
-//   vector<double> xCoord(mandatoryTree.getNumberOfPoints());
-//   vector<double> yCoord(mandatoryTree.getNumberOfPoints());
-//   interval[rootGraphPointId].first = -2.0;
-//   interval[rootGraphPointId].second = 2.0;
-//
-//   queue<int> graphPointQueue;
-//   graphPointQueue.push(rootGraphPointId);
-//   while(!graphPointQueue.empty()) {
-//     int graphPoint = graphPointQueue.front();
-//     graphPointQueue.pop();
-//     int numberOfChildren =
-// mandatoryTree.getPoint(graphPoint).getNumberOfChildEdges();
-//     ////
-//     xCoord[graphPoint] = (interval[graphPoint].first +
-// interval[graphPoint].second) / 2.0;
-//     ////
-//     for(int i=0 ; i<numberOfChildren ; i++) {
-//       int childGraphEdge =
-// mandatoryTree.getPoint(graphPoint).getChildEdgeId(i);
-//       int childGraphPoint =
-// mandatoryTree.getEdge(childGraphEdge).getChildPointId();
-//       cout << "  graphPoint " << graphPoint;
-//       cout << "  childGraphPoint " << childGraphPoint;
-//       cout << endl;
-//       interval[childGraphPoint].first = interval[graphPoint].first +
-// ((interval[graphPoint].second - interval[graphPoint].first) * i /
-// numberOfChildren);
-//       interval[childGraphPoint].second = interval[graphPoint].first +
-// ((interval[graphPoint].second - interval[graphPoint].first) * (i+1) /
-// numberOfChildren);
-//       graphPointQueue.push(childGraphPoint);
-//     }
-//   }
-//   cout << "WTF Y COORDINATES" << endl;
-//   // y coordinates
-//   for(int i=0 ; i<mandatoryTree.getNumberOfPoints() ; i++) {
-//     int criticalPointId = mandatoryTree.getPoint(i).getId();
-//     pair<double,double> criticalInterval;
-//     if(mandatoryTree.getPoint(i).isLeaf()) {
-//       if(isJoinTree)
-//         criticalInterval =
-// mandatoryCriticalPoints_.getMinimumInterval(criticalPointId);
-//       else
-//         criticalInterval =
-// mandatoryCriticalPoints_.getMaximumInterval(criticalPointId);
-//       // yCoord[i] = criticalInterval.first;
-//     } else {
-//       if(isJoinTree)
-//         criticalInterval =
-// mandatoryCriticalPoints_.getJoinSaddleInterval(criticalPointId);
-//       else
-//         criticalInterval =
-// mandatoryCriticalPoints_.getSplitSaddleInterval(criticalPointId);
-//       // yCoord[i] = criticalInterval.second;
-//     }
-//     double y = 0.5 * (criticalInterval.first + criticalInterval.second);
-//     yCoord[i] = y;
-//   }
-//   cout << "WTF X COORDINATES" << endl;
-//   // x coordinates fix
-//   if(mandatoryTree.getNumberOfPoints() > 1){
-//     vector<pair<int,double> >
-// sortedXCoord(mandatoryTree.getNumberOfPoints());
-//     for(int i=0 ; i<mandatoryTree.getNumberOfPoints() ; i++) {
-//       sortedXCoord[i].first = i;
-//       sortedXCoord[i].second = xCoord[i];
-//     }
-//     sort(sortedXCoord.begin(), sortedXCoord.end(), xCoordCmp);
-//     for(int i=0 ; i<mandatoryTree.getNumberOfPoints() ; i++) {
-//       xCoord[sortedXCoord[i].first] = i * (1.0 / ((int)
-// mandatoryTree.getNumberOfPoints() - 1.0));
-//     }
-//   }
-//   cout << "WTF FIN" << endl;
-//
-//   for(int i=0 ; i<mandatoryTree.getNumberOfPoints() ; i++) {
-//     cout << "  Point (" << i << ") ";
-//     cout << "Interval [" << interval[i].first << ", " << interval[i].second
-// << "]";
-//     cout << " -> x = " << xCoord[i];
-//     cout << ", y = " << yCoord[i] << endl;
-//   }
-//
-//   for(int i=0 ; i<mandatoryTree.getNumberOfPoints() ; i++) {
-//     mandatoryJoinTreePoints_->InsertNextPoint(xCoord[i], yCoord[i], 0.0);
-//   }
-//   outputJoinTree->SetPoints(mandatoryJoinTreePoints_);
-//   outputJoinTree->Allocate();
-//   for(int i=0 ; i<mandatoryTree.getNumberOfEdges() ; i++) {
-//     int parentId = mandatoryTree.getEdge(i).getParentPointId();
-//     int childId = mandatoryTree.getEdge(i).getChildPointId();
-//     mandatoryJoinTreeEdge_[i]->InsertNextId(parentId);
-//     mandatoryJoinTreeEdge_[i]->InsertNextId(childId);
-//     outputJoinTree->InsertNextCell(VTK_LINE, mandatoryJoinTreeEdge_[i]);
-//   }
-//
-//   return 0;
-//
-//
-//
-//
-//
-//   // // Points
-//   // mandatoryJoinTreePoints_->InsertNextPoint(0,0,0);
-//   // mandatoryJoinTreePoints_->InsertNextPoint(1,0,0);
-//   // mandatoryJoinTreePoints_->InsertNextPoint(0,1,0);
-//   // // Lists
-//   // mandatoryJoinTreeEdge_[0]->InsertNextId(0);
-//   // mandatoryJoinTreeEdge_[0]->InsertNextId(1);
-//   // mandatoryJoinTreeEdge_[1]->InsertNextId(0);
-//   // mandatoryJoinTreeEdge_[1]->InsertNextId(2);
-//   // // Building of the structure
-//   // outputJoinTree->SetPoints(mandatoryJoinTreePoints_);
-//   // outputJoinTree->Allocate();
-//   // outputJoinTree->InsertNextCell(VTK_LINE, mandatoryJoinTreeEdge_[0]);
-//   // outputJoinTree->InsertNextCell(VTK_LINE, mandatoryJoinTreeEdge_[1]);
-//   //
-//   // for(int i=0 ; i<(int)minimumParentSaddleId.size() ; i++) {
-//   //   if(/*minimumParentSaddleId[i] != -1*/ true) {
-//   //     mandatoryJoinTreePoints_->InsertNextPoint(i/23.0,0,0);
-//   //   }
-//   // }
-//   // outputJoinTree->SetPoints(mandatoryJoinTreePoints_);
-//   // outputJoinTree->Allocate();
-//   // for(int i=0 ; i<(int)minimumParentSaddleId.size() ; i++) {
-//   //   mandatoryJoinTreeEdge_[i]->InsertNextId(i);
-//   //   // mandatoryJoinTreeEdge_[i]->InsertNextId(i+1);
-//   //   outputJoinTree->InsertNextCell(VTK_VERTEX, mandatoryJoinTreeEdge_[i]);
-//   // }
-// }
+int ttkMandatoryCriticalPoints::RequestData(
+  vtkInformation *request,
+  vtkInformationVector **inputVector,
+  vtkInformationVector *outputVector) {
 
-// transmit abort signals -- to copy paste in other wrappers
-bool ttkMandatoryCriticalPoints::needsToAbort() {
-  return GetAbortExecute();
-}
+  const auto input = vtkDataSet::GetData(inputVector[0]);
+  auto outputMinimum = vtkDataSet::GetData(outputVector, 0);
+  auto outputJoinSaddle = vtkDataSet::GetData(outputVector, 1);
+  auto outputSplitSaddle = vtkDataSet::GetData(outputVector, 2);
+  auto outputMaximum = vtkDataSet::GetData(outputVector, 3);
+  auto outputJoinTree = vtkUnstructuredGrid::GetData(outputVector, 4);
+  auto outputSplitTree = vtkUnstructuredGrid::GetData(outputVector, 5);
 
-// transmit progress status -- to copy paste in other wrappers
-int ttkMandatoryCriticalPoints::updateProgress(const float &progress) {
-
-  {
-    stringstream msg;
-    msg << "[ttkMandatoryCriticalPoints] " << progress * 100
-        << "% processed...." << endl;
-    dMsg(cout, msg.str(), advancedInfoMsg);
-  }
-
-  UpdateProgress(progress);
-  return 0;
-}
-
-int ttkMandatoryCriticalPoints::doIt(vector<vtkDataSet *> &inputs,
-                                     vector<vtkDataSet *> &outputs) {
-  //   vtkDataSet *input, vtkDataSet
-  // *outputMinimum, vtkDataSet *outputJoinSaddle, vtkDataSet
-  // *outputSplitSaddle, vtkDataSet *outputMaximum, vtkUnstructuredGrid
-  // *outputJoinTree, vtkUnstructuredGrid *outputSplitTree){
-
-  Memory m;
-
-  vtkDataSet *input = inputs[0];
-  vtkDataSet *outputMinimum = outputs[0];
-  vtkDataSet *outputJoinSaddle = outputs[1];
-  vtkDataSet *outputSplitSaddle = outputs[2];
-  vtkDataSet *outputMaximum = outputs[3];
-  vtkUnstructuredGrid *outputJoinTree
-    = vtkUnstructuredGrid::SafeDownCast(outputs[4]);
-  vtkUnstructuredGrid *outputSplitTree
-    = vtkUnstructuredGrid::SafeDownCast(outputs[5]);
-
-  // Check the last modification of the input
-  if(inputMTime_ != input->GetMTime()) {
-    inputMTime_ = input->GetMTime();
-    computeAll_ = true;
+  if(input == nullptr) {
+    return 0;
   }
 
   // Use a pointer-base copy for the input data
@@ -641,147 +134,107 @@ int ttkMandatoryCriticalPoints::doIt(vector<vtkDataSet *> &inputs,
   outputMaximum->ShallowCopy(input);
 
   // Input data arrays
-  vtkDataArray *inputLowerBoundField = nullptr;
-  vtkDataArray *inputUpperBoundField = nullptr;
+  const auto inputLowerBoundField = this->GetInputArrayToProcess(0, input);
+  const auto inputUpperBoundField = this->GetInputArrayToProcess(1, input);
 
-  // Get the upper bound field array in the input data set
-  if(upperBoundFiledName_.length()) {
-    inputUpperBoundField
-      = input->GetPointData()->GetArray(upperBoundFiledName_.c_str());
-  } else {
-    inputUpperBoundField = input->GetPointData()->GetArray(upperBoundId);
-  }
-  // Error if not found
-  if(!inputUpperBoundField) {
-    return -1;
+  if(inputLowerBoundField == nullptr || inputUpperBoundField == nullptr) {
+    return 0;
   }
 
-  // Get the lower bound field array in the input data set
-  if(lowerBoundFieldName_.length()) {
-    inputLowerBoundField
-      = input->GetPointData()->GetArray(lowerBoundFieldName_.c_str());
-  } else {
-    inputLowerBoundField = input->GetPointData()->GetArray(lowerBoundId);
-  }
-  // Error if not found
-  if(!inputLowerBoundField) {
-    return -1;
-  }
-
-  {
-    stringstream msg;
-    msg << "[ttkMandatoryCriticalPoints] Using `"
-        << inputLowerBoundField->GetName() << "' as lower bound..." << endl;
-    msg << "[ttkMandatoryCriticalPoints] Using `"
-        << inputUpperBoundField->GetName() << "' as upper bound..." << endl;
-    dMsg(cout, msg.str(), infoMsg);
-  }
+  this->printMsg("Using `" + std::string{inputLowerBoundField->GetName()}
+                 + "' as lower bound...");
+  this->printMsg("Using `" + std::string{inputUpperBoundField->GetName()}
+                 + "' as upper bound...");
 
   // Initialize the triangulation object with the input data set
-  triangulation_ = ttkTriangulation::getTriangulation(input);
+  auto triangulation = ttkAlgorithm::GetTriangulation(input);
 
-  if(!triangulation_)
+  if(triangulation == nullptr)
     return -1;
 
-  triangulation_->setWrapper(this);
-  mandatoryCriticalPoints_.setupTriangulation(triangulation_);
+  this->preconditionTriangulation(triangulation);
 
   bool hasChangedConnectivity = false;
 
-  if((triangulation_->isEmpty())
-     || (ttkTriangulation::hasChangedConnectivity(
-       triangulation_, input, this))) {
+  if(triangulation->isEmpty()) {
     Modified();
     hasChangedConnectivity = true;
   }
 
   // Allocate the memory for the output scalar field
-  if((!outputMandatoryMinimum_) || (hasChangedConnectivity)) {
-    if(!outputMandatoryMinimum_)
-      outputMandatoryMinimum_ = vtkIntArray::New();
-    outputMandatoryMinimum_->SetNumberOfTuples(input->GetNumberOfPoints());
-    outputMandatoryMinimum_->SetName("MinimumComponents");
-  }
-  if((!outputMandatoryJoinSaddle_) || (hasChangedConnectivity)) {
-    if(!outputMandatoryJoinSaddle_)
-      outputMandatoryJoinSaddle_ = vtkIntArray::New();
-    outputMandatoryJoinSaddle_->SetNumberOfTuples(input->GetNumberOfPoints());
-    outputMandatoryJoinSaddle_->SetName("JoinSaddleComponents");
-  }
-  if((!outputMandatorySplitSaddle_) || (hasChangedConnectivity)) {
-    if(!outputMandatorySplitSaddle_)
-      outputMandatorySplitSaddle_ = vtkIntArray::New();
-    outputMandatorySplitSaddle_->SetNumberOfTuples(input->GetNumberOfPoints());
-    outputMandatorySplitSaddle_->SetName("SplitSaddleComponents");
-  }
-  if((!outputMandatoryMaximum_) || (hasChangedConnectivity)) {
-    if(!outputMandatoryMaximum_)
-      outputMandatoryMaximum_ = vtkIntArray::New();
-    outputMandatoryMaximum_->SetNumberOfTuples(input->GetNumberOfPoints());
-    outputMandatoryMaximum_->SetName("MaximumComponents");
-  }
+  vtkNew<vtkIntArray> outputMandatoryMinimum{};
+  outputMandatoryMinimum->SetNumberOfTuples(input->GetNumberOfPoints());
+  outputMandatoryMinimum->SetName("MinimumComponents");
+
+  vtkNew<vtkIntArray> outputMandatoryJoinSaddle{};
+  outputMandatoryJoinSaddle->SetNumberOfTuples(input->GetNumberOfPoints());
+  outputMandatoryJoinSaddle->SetName("JoinSaddleComponents");
+
+  vtkNew<vtkIntArray> outputMandatorySplitSaddle{};
+  outputMandatorySplitSaddle->SetNumberOfTuples(input->GetNumberOfPoints());
+  outputMandatorySplitSaddle->SetName("SplitSaddleComponents");
+
+  vtkNew<vtkIntArray> outputMandatoryMaximum{};
+  outputMandatoryMaximum->SetNumberOfTuples(input->GetNumberOfPoints());
+  outputMandatoryMaximum->SetName("MaximumComponents");
+
   // Add array in the output data set
-  outputMinimum->GetPointData()->AddArray(outputMandatoryMinimum_);
-  outputJoinSaddle->GetPointData()->AddArray(outputMandatoryJoinSaddle_);
-  outputSplitSaddle->GetPointData()->AddArray(outputMandatorySplitSaddle_);
-  outputMaximum->GetPointData()->AddArray(outputMandatoryMaximum_);
+  outputMinimum->GetPointData()->AddArray(outputMandatoryMinimum);
+  outputJoinSaddle->GetPointData()->AddArray(outputMandatoryJoinSaddle);
+  outputSplitSaddle->GetPointData()->AddArray(outputMandatorySplitSaddle);
+  outputMaximum->GetPointData()->AddArray(outputMandatoryMaximum);
 
   // Reset the baseCode object
-  if((computeAll_) || (hasChangedConnectivity))
-    mandatoryCriticalPoints_.flush();
+  if(hasChangedConnectivity)
+    this->flush();
 
-  // Wrapper
-  mandatoryCriticalPoints_.setWrapper(this);
   // Set the number of vertex
-  mandatoryCriticalPoints_.setVertexNumber(input->GetNumberOfPoints());
+  this->setVertexNumber(input->GetNumberOfPoints());
   // Set the coordinates of each vertex
-  double point[3];
+  std::array<double, 3> point{};
   for(int i = 0; i < input->GetNumberOfPoints(); i++) {
-    input->GetPoint(i, point);
-    mandatoryCriticalPoints_.setVertexPosition(i, point);
+    input->GetPoint(i, point.data());
+    this->setVertexPosition(i, point.data());
   }
   // Set the void pointers to the upper and lower bound fields
-  mandatoryCriticalPoints_.setLowerBoundFieldPointer(
-    inputLowerBoundField->GetVoidPointer(0));
-  mandatoryCriticalPoints_.setUpperBoundFieldPointer(
-    inputUpperBoundField->GetVoidPointer(0));
+  this->setLowerBoundFieldPointer(
+    ttkUtils::GetVoidPointer(inputLowerBoundField));
+  this->setUpperBoundFieldPointer(
+    ttkUtils::GetVoidPointer(inputUpperBoundField));
   // Set the output data pointers
-  mandatoryCriticalPoints_.setOutputMinimumDataPointer(
-    outputMandatoryMinimum_->GetVoidPointer(0));
-  mandatoryCriticalPoints_.setOutputJoinSaddleDataPointer(
-    outputMandatoryJoinSaddle_->GetVoidPointer(0));
-  mandatoryCriticalPoints_.setOutputSplitSaddleDataPointer(
-    outputMandatorySplitSaddle_->GetVoidPointer(0));
-  mandatoryCriticalPoints_.setOutputMaximumDataPointer(
-    outputMandatoryMaximum_->GetVoidPointer(0));
+  this->setOutputMinimumDataPointer(
+    ttkUtils::GetVoidPointer(outputMandatoryMinimum));
+  this->setOutputJoinSaddleDataPointer(
+    ttkUtils::GetVoidPointer(outputMandatoryJoinSaddle));
+  this->setOutputSplitSaddleDataPointer(
+    ttkUtils::GetVoidPointer(outputMandatorySplitSaddle));
+  this->setOutputMaximumDataPointer(
+    ttkUtils::GetVoidPointer(outputMandatoryMaximum));
   // Set the triangulation object
   // Set the offsets
-  mandatoryCriticalPoints_.setSoSoffsets();
+  this->setSoSoffsets();
   // Simplification threshold
 
-  mandatoryCriticalPoints_.setSimplificationThreshold(simplificationThreshold_);
+  this->setSimplificationThreshold(simplificationThreshold_);
 
   // Execute process
-  if(computeAll_) {
-    // Calling the executing package
-    switch(inputUpperBoundField->GetDataType()) {
-      vtkTemplateMacro(mandatoryCriticalPoints_.execute<VTK_TT>());
-    }
-    computeAll_ = false;
-    simplify_ = false;
-    computeMinimumOutput_ = true;
-    computeJoinSaddleOutput_ = true;
-    computeSplitSaddleOutput_ = true;
-    computeMaximumOutput_ = true;
-  }
+  ttkVtkTemplateMacro(inputUpperBoundField->GetDataType(),
+                      triangulation->getType(),
+                      (this->execute<VTK_TT, TTK_TT>(
+                        *static_cast<TTK_TT *>(triangulation->getData()))));
+
+  computeMinimumOutput_ = true;
+  computeJoinSaddleOutput_ = true;
+  computeSplitSaddleOutput_ = true;
+  computeMaximumOutput_ = true;
 
   // Simplification
   if(simplify_) {
     // Simplify
-    mandatoryCriticalPoints_.simplifyJoinTree();
-    mandatoryCriticalPoints_.buildJoinTreePlanarLayout();
-    mandatoryCriticalPoints_.simplifySplitTree();
-    mandatoryCriticalPoints_.buildSplitTreePlanarLayout();
+    this->simplifyJoinTree();
+    this->buildJoinTreePlanarLayout();
+    this->simplifySplitTree();
+    this->buildSplitTreePlanarLayout();
     // Recompute the outputs
     computeMinimumOutput_ = true;
     computeJoinSaddleOutput_ = true;
@@ -791,64 +244,44 @@ int ttkMandatoryCriticalPoints::doIt(vector<vtkDataSet *> &inputs,
   // Outputs
   if(computeMinimumOutput_) {
     if(outputAllMinimumComponents_)
-      mandatoryCriticalPoints_.outputAllMinima();
+      this->outputAllMinima();
     else
-      mandatoryCriticalPoints_.outputMinimum(outputMinimumComponentId_);
+      this->outputMinimum(outputMinimumComponentId_);
     computeMinimumOutput_ = false;
   }
   if(computeJoinSaddleOutput_) {
     if(outputAllJoinSaddleComponents_)
-      mandatoryCriticalPoints_.outputAllJoinSaddle();
+      this->outputAllJoinSaddle(*triangulation);
     else
-      mandatoryCriticalPoints_.outputJoinSaddle(outputJoinSaddleComponentId_);
+      this->outputJoinSaddle(outputJoinSaddleComponentId_, *triangulation);
     computeJoinSaddleOutput_ = false;
   }
   if(computeSplitSaddleOutput_) {
     if(outputAllSplitSaddleComponents_)
-      mandatoryCriticalPoints_.outputAllSplitSaddle();
+      this->outputAllSplitSaddle(*triangulation);
     else
-      mandatoryCriticalPoints_.outputSplitSaddle(outputSplitSaddleComponentId_);
+      this->outputSplitSaddle(outputSplitSaddleComponentId_, *triangulation);
     computeSplitSaddleOutput_ = false;
   }
   if(computeMaximumOutput_) {
     if(outputAllMaximumComponents_)
-      mandatoryCriticalPoints_.outputAllMaxima();
+      this->outputAllMaxima();
     else
-      mandatoryCriticalPoints_.outputMaximum(outputMaximumComponentId_);
+      this->outputMaximum(outputMaximumComponentId_);
     computeMaximumOutput_ = false;
   }
 
-  buildVtkTree(outputJoinTree, MandatoryCriticalPoints::TreeType::JoinTree);
-  buildVtkTree(outputSplitTree, MandatoryCriticalPoints::TreeType::SplitTree);
+  buildVtkTree(outputJoinTree, ttk::MandatoryCriticalPoints::TreeType::JoinTree,
+               mdtJoinTree_, mdtJoinTreePointXCoord_, mdtJoinTreePointYCoord_,
+               mdtJoinTreePointComponentId_, mdtJoinTreePointType_,
+               mdtJoinTreePointLowInterval_, mdtJoinTreePointUpInterval_,
+               mdtJoinTreeEdgeSwitchable_);
+  buildVtkTree(outputSplitTree,
+               ttk::MandatoryCriticalPoints::TreeType::SplitTree, mdtSplitTree_,
+               mdtSplitTreePointXCoord_, mdtSplitTreePointYCoord_,
+               mdtSplitTreePointComponentId_, mdtSplitTreePointType_,
+               mdtSplitTreePointLowInterval_, mdtSplitTreePointUpInterval_,
+               mdtSplitTreeEdgeSwitchable_);
 
-  {
-    stringstream msg;
-    memoryUsage_ += m.getElapsedUsage();
-    msg << "[ttkMandatoryCriticalPoints] Memory usage: " << memoryUsage_
-        << " MB." << endl;
-    dMsg(cout, msg.str(), memoryMsg);
-  }
-
-  return 0;
-}
-
-int ttkMandatoryCriticalPoints::FillInputPortInformation(int port,
-                                                         vtkInformation *info) {
-  if(!this->Superclass::FillInputPortInformation(port, info)) {
-    return 0;
-  }
-  info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataSet");
-  return 1;
-}
-
-int ttkMandatoryCriticalPoints::FillOutputPortInformation(
-  int port, vtkInformation *info) {
-  if(!this->Superclass::FillOutputPortInformation(port, info)) {
-    return 0;
-  }
-  if(port >= 0 && port < 4)
-    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataSet");
-  if((port == 4) || (port == 5))
-    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
   return 1;
 }

@@ -6,8 +6,7 @@
 /// \brief Class to answer the lowest common ancestor requests of pairs of nodes
 /// in a tree in constant time after a linear time preprocess.
 
-#ifndef LOWESTCOMMONANCESTOR_H
-#define LOWESTCOMMONANCESTOR_H
+#pragma once
 
 // ttk includes
 #include <Debug.h>
@@ -24,7 +23,7 @@
 
 namespace ttk {
 
-  class LowestCommonAncestor : public Debug {
+  class LowestCommonAncestor : virtual public Debug {
   public:
     class Node {
     public:
@@ -49,11 +48,14 @@ namespace ttk {
       }
 
     protected:
-      int ancestor_;
-      std::vector<int> successor_;
+      int ancestor_{};
+      std::vector<int> successor_{};
     };
 
-  public:
+    LowestCommonAncestor() {
+      this->setDebugMsgPrefix("LowestCommonAncestor");
+    }
+
     /// Add a node in the tree
     /// \return Returns the id of the new node
     inline int addNode() {
@@ -76,12 +78,8 @@ namespace ttk {
     }
 
     /// \returns Returns a pointer to the id-th node
-    inline Node *getNode(const unsigned int &id) {
-      if(id < node_.size()) {
-        return node_.data() + id;
-      } else {
-        return nullptr;
-      }
+    inline Node &getNode(const unsigned int &id) {
+      return node_[id];
     }
 
     /// Preprocess the tree structure to answer the query() calls in constant
@@ -145,5 +143,3 @@ namespace ttk {
   };
 
 } // namespace ttk
-
-#endif

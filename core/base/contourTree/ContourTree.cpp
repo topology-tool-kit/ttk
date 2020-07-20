@@ -207,8 +207,9 @@ int SubLevelSetTree::build() {
     return -2;
   if((!vertexSoSoffsets_) || ((int)vertexSoSoffsets_->size() != vertexNumber_))
     return -3;
-  if(triangulation_->isEmpty())
-    return -4;
+  // TODO uncomment after triangulation templatization
+  // if(triangulation_->isEmpty())
+  //   return -4;
   if((!minimumList_) && (!maximumList_))
     return -5;
   if((minimumList_) && (maximumList_))
@@ -1202,7 +1203,8 @@ int SubLevelSetTree::flush() {
 int SubLevelSetTree::buildExtremumList(vector<int> &extremumList,
                                        const bool &isSubLevelSet) {
 
-  if((!triangulation_) || triangulation_->isEmpty())
+  // TODO uncomment after triangulation templatization
+  if((!triangulation_) /*|| triangulation_->isEmpty()*/)
     return -1;
 
   if((!vertexScalars_) || (!vertexScalars_->size()))

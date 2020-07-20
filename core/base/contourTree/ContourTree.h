@@ -492,7 +492,8 @@ namespace ttk {
       vertex2node_.resize(vertexNumber, -1);
     };
 
-    inline void setTriangulation(Triangulation *triangulation) {
+    inline void
+      setTriangulation(const AbstractTriangulation *const triangulation) {
       triangulation_ = triangulation;
     }
 
@@ -563,7 +564,7 @@ namespace ttk {
     double minScalar_, maxScalar_;
     const std::vector<real> *vertexScalars_;
     std::vector<int> *vertexSoSoffsets_;
-    Triangulation *triangulation_;
+    const AbstractTriangulation *triangulation_;
     std::vector<int> *minimumList_, *maximumList_;
     std::vector<Node> nodeList_, originalNodeList_;
     std::vector<Arc> arcList_;
