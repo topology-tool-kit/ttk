@@ -45,32 +45,8 @@ public:
   static ttkJacobiSet *New();
   vtkTypeMacro(ttkJacobiSet, ttkAlgorithm);
 
-  vtkSetMacro(Ucomponent, std::string);
-  vtkGetMacro(Ucomponent, std::string);
-
-  vtkSetMacro(Vcomponent, std::string);
-  vtkGetMacro(Vcomponent, std::string);
-
-  vtkSetMacro(UcomponentId, int);
-  vtkGetMacro(UcomponentId, int);
-
-  vtkSetMacro(VcomponentId, int);
-  vtkGetMacro(VcomponentId, int);
-
-  vtkSetMacro(UoffsetId, int);
-  vtkGetMacro(UoffsetId, int);
-
-  vtkSetMacro(VoffsetId, int);
-  vtkGetMacro(VoffsetId, int);
-
   vtkGetMacro(ForceInputOffsetScalarField, bool);
   vtkSetMacro(ForceInputOffsetScalarField, bool);
-
-  vtkGetMacro(OffsetFieldU, std::string);
-  vtkSetMacro(OffsetFieldU, std::string);
-
-  vtkGetMacro(OffsetFieldV, std::string);
-  vtkSetMacro(OffsetFieldV, std::string);
 
   vtkSetMacro(EdgeIds, bool);
   vtkGetMacro(EdgeIds, bool);
@@ -90,8 +66,6 @@ protected:
 private:
   bool ForceInputOffsetScalarField{false};
   bool EdgeIds{false}, VertexScalars{false};
-  int UcomponentId{0}, VcomponentId{1}, UoffsetId{-1}, VoffsetId{-1};
-  std::string Ucomponent{}, Vcomponent{}, OffsetFieldU{}, OffsetFieldV{};
   std::vector<std::pair<ttk::SimplexId, ttk::SimplexId>> edgeList_{};
   // for each edge, one skeleton of its triangle fan
   std::vector<std::vector<std::pair<ttk::SimplexId, ttk::SimplexId>>>
@@ -102,5 +76,8 @@ private:
   std::vector<ttk::SimplexId> sosOffsetsU_{}, sosOffsetsV_{};
 
   template <class dataTypeU, class dataTypeV>
-  int baseCall(vtkDataSet *input, vtkDataArray *uField, vtkDataArray *vField);
+  int baseCall(vtkDataSet *input,
+               vtkDataArray *uField,
+               vtkDataArray *vField,
+               ttk::Triangulation *triangulation);
 };

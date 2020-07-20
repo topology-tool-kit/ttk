@@ -42,93 +42,8 @@ int ttkJacobiSet::FillOutputPortInformation(int port, vtkInformation *info) {
 template <class dataTypeU, class dataTypeV>
 int ttkJacobiSet::baseCall(vtkDataSet *input,
                            vtkDataArray *uField,
-                           vtkDataArray *vField) {
-
-  ttk::Timer t;
-
-  auto triangulation = ttkAlgorithm::GetTriangulation(input);
-
-  if(!triangulation)
-    return -1;
-
-  this->preconditionTriangulation(triangulation);
-
-  // point data
-  vtkDataArray *offsetFieldU = NULL, *offsetFieldV = NULL;
-
-  if((ForceInputOffsetScalarField)
-     || ((UoffsetId != -1) && (VoffsetId != -1))) {
-    if(OffsetFieldU.length()) {
-
-      offsetFieldU = input->GetPointData()->GetArray(OffsetFieldU.data());
-
-      if(offsetFieldU) {
-        sosOffsetsU_.resize(offsetFieldU->GetNumberOfTuples());
-        for(vtkIdType i = 0; i < offsetFieldU->GetNumberOfTuples(); i++) {
-          sosOffsetsU_[i] = offsetFieldU->GetTuple1(i);
-        }
-
-        this->setSosOffsetsU(&sosOffsetsU_);
-      }
-    } else if(UoffsetId != -1) {
-      offsetFieldU = input->GetPointData()->GetArray(UoffsetId);
-
-      if(offsetFieldU) {
-        sosOffsetsU_.resize(offsetFieldU->GetNumberOfTuples());
-        for(vtkIdType i = 0; i < offsetFieldU->GetNumberOfTuples(); i++) {
-          sosOffsetsU_[i] = offsetFieldU->GetTuple1(i);
-        }
-
-        this->setSosOffsetsU(&sosOffsetsU_);
-      }
-    } else if(input->GetPointData()->GetArray(ttk::OffsetFieldUName)) {
-      offsetFieldU = input->GetPointData()->GetArray(ttk::OffsetFieldUName);
-
-      if(offsetFieldU) {
-        sosOffsetsU_.resize(offsetFieldU->GetNumberOfTuples());
-        for(vtkIdType i = 0; i < offsetFieldU->GetNumberOfTuples(); i++) {
-          sosOffsetsU_[i] = offsetFieldU->GetTuple1(i);
-        }
-
-        this->setSosOffsetsU(&sosOffsetsU_);
-      }
-    }
-    if(OffsetFieldV.length()) {
-
-      offsetFieldV = input->GetPointData()->GetArray(OffsetFieldV.data());
-
-      if(offsetFieldV) {
-        sosOffsetsV_.resize(offsetFieldV->GetNumberOfTuples());
-        for(vtkIdType i = 0; i < offsetFieldV->GetNumberOfTuples(); i++) {
-          sosOffsetsV_[i] = offsetFieldV->GetTuple1(i);
-        }
-
-        this->setSosOffsetsV(&sosOffsetsV_);
-      }
-    } else if(VoffsetId != -1) {
-      offsetFieldV = input->GetPointData()->GetArray(VoffsetId);
-
-      if(offsetFieldV) {
-        sosOffsetsV_.resize(offsetFieldV->GetNumberOfTuples());
-        for(vtkIdType i = 0; i < offsetFieldV->GetNumberOfTuples(); i++) {
-          sosOffsetsV_[i] = offsetFieldV->GetTuple1(i);
-        }
-
-        this->setSosOffsetsV(&sosOffsetsV_);
-      }
-    } else if(input->GetPointData()->GetArray(ttk::OffsetFieldVName)) {
-      offsetFieldV = input->GetPointData()->GetArray(ttk::OffsetFieldVName);
-
-      if(offsetFieldV) {
-        sosOffsetsV_.resize(offsetFieldV->GetNumberOfTuples());
-        for(vtkIdType i = 0; i < offsetFieldV->GetNumberOfTuples(); i++) {
-          sosOffsetsV_[i] = offsetFieldV->GetTuple1(i);
-        }
-
-        this->setSosOffsetsV(&sosOffsetsV_);
-      }
-    }
-  }
+                           vtkDataArray *vField,
+                           ttk::Triangulation *triangulation) {
 
 #define EXEC(_DATATYPE, TRIANGLCASE, TRIANGLTYPE, _CALL)                      \
   case TRIANGLCASE: {                                                         \
@@ -140,8 +55,6 @@ int ttkJacobiSet::baseCall(vtkDataSet *input,
 
   ttkVtkTemplateTrianglMacro(_, triangulation->getType(), EXEC, _);
 
-  Modified();
-
   return 0;
 }
 
@@ -152,34 +65,49 @@ int ttkJacobiSet::RequestData(vtkInformation *request,
   const auto input = vtkDataSet::GetData(inputVector[0]);
   auto output = vtkUnstructuredGrid::GetData(outputVector);
 
-  vtkDataArray *uComponent = nullptr, *vComponent = nullptr;
+  const auto uComponent = this->GetInputArrayToProcess(0, input);
+  const auto vComponent = this->GetInputArrayToProcess(1, input);
 
-  if(Ucomponent.length()) {
-    uComponent = input->GetPointData()->GetArray(Ucomponent.data());
-  } else {
-    // default
-    uComponent = input->GetPointData()->GetArray(UcomponentId);
-  }
-  if(!uComponent)
+  if(uComponent == nullptr || vComponent == nullptr)
     return -1;
-
-  if(Vcomponent.length()) {
-    vComponent = input->GetPointData()->GetArray(Vcomponent.data());
-  } else {
-    // default
-    vComponent = input->GetPointData()->GetArray(VcomponentId);
-  }
-  if(!vComponent)
-    return -2;
 
   this->printMsg("U-component: `" + std::string{uComponent->GetName()} + "'");
   this->printMsg("V-component: `" + std::string{vComponent->GetName()} + "'");
+
+  // point data
+  const auto offsetFieldU = this->GetOptionalArray(
+    ForceInputOffsetScalarField, 2, ttk::OffsetFieldUName, inputVector);
+  const auto offsetFieldV = this->GetOptionalArray(
+    ForceInputOffsetScalarField, 3, ttk::OffsetFieldVName, inputVector);
+
+  if(ForceInputOffsetScalarField) {
+    if(offsetFieldU) {
+      sosOffsetsU_.resize(offsetFieldU->GetNumberOfTuples());
+      for(vtkIdType i = 0; i < offsetFieldU->GetNumberOfTuples(); i++) {
+        sosOffsetsU_[i] = offsetFieldU->GetTuple1(i);
+      }
+      this->setSosOffsetsU(&sosOffsetsU_);
+    }
+
+    if(offsetFieldV) {
+      sosOffsetsV_.resize(offsetFieldV->GetNumberOfTuples());
+      for(vtkIdType i = 0; i < offsetFieldV->GetNumberOfTuples(); i++) {
+        sosOffsetsV_[i] = offsetFieldV->GetTuple1(i);
+      }
+      this->setSosOffsetsV(&sosOffsetsV_);
+    }
+  }
+
+  auto triangulation = ttkAlgorithm::GetTriangulation(input);
+  if(triangulation == nullptr)
+    return -1;
+  this->preconditionTriangulation(triangulation);
 
   // set the jacobi functor
   switch(vtkTemplate2PackMacro(
     uComponent->GetDataType(), vComponent->GetDataType())) {
     vtkTemplate2Macro(
-      (baseCall<VTK_T1, VTK_T2>(input, uComponent, vComponent)));
+      (baseCall<VTK_T1, VTK_T2>(input, uComponent, vComponent, triangulation)));
   }
 
   vtkNew<vtkSignedCharArray> edgeTypes{};
@@ -194,10 +122,6 @@ int ttkJacobiSet::RequestData(vtkInformation *request,
   vtkNew<vtkCellArray> cellArray{};
   vtkNew<vtkIdList> idList{};
   idList->SetNumberOfIds(2);
-
-  auto triangulation = ttkAlgorithm::GetTriangulation(input);
-  if(!triangulation)
-    return -1;
 
   size_t pointCount = 0;
   std::array<double, 3> p{};
