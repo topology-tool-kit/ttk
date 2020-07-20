@@ -1,9 +1,5 @@
 #include <GaussianPointCloud.h>
 
-using namespace ttk;
-
-GaussianPointCloud::GaussianPointCloud() {
-}
-
-GaussianPointCloud::~GaussianPointCloud() {
+ttk::GaussianPointCloud::GaussianPointCloud() {
+  this->setDebugMsgPrefix("GaussianPointCloud");
 }
