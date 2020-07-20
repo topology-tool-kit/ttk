@@ -95,7 +95,20 @@ int ttkJacobiSet::RequestData(vtkInformation *request,
     return -1;
   this->preconditionTriangulation(triangulation);
 
-  // set the jacobi functor
+#ifdef TTK_AVOID_DOUBLE_TEMPLATING
+  if(uComponent->GetDataType() != vComponent->GetDataType()) {
+    this->printErr(
+      "Scalar fields should have same input type. Use TTKPointDataConverter or "
+      "TTKArrayEditor to convert array types.");
+    return 0;
+  }
+  switch(uComponent->GetDataType()) {
+    vtkTemplateMacro(
+      dispatch(static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(uComponent)),
+               static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(vComponent)),
+               triangulation));
+  }
+#else
   switch(vtkTemplate2PackMacro(
     uComponent->GetDataType(), vComponent->GetDataType())) {
     vtkTemplate2Macro(
@@ -103,6 +116,7 @@ int ttkJacobiSet::RequestData(vtkInformation *request,
                static_cast<VTK_T2 *>(ttkUtils::GetVoidPointer(vComponent)),
                triangulation));
   }
+#endif // TTK_AVOID_DOUBLE_TEMPLATING
 
   vtkNew<vtkSignedCharArray> edgeTypes{};
 
