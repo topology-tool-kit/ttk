@@ -1,4 +1,5 @@
 #include <ttkReebSpace.h>
+#include <ttkUtils.h>
 
 using namespace std;
 using namespace ttk;
@@ -75,8 +76,6 @@ int ttkReebSpace::baseCall(vtkDataSet *input,
       || (reebSpace_.setRangeDrivenOctree(UseOctreeAcceleration));
 
   // first time or the values changed
-  reebSpace_.setInputField(
-    uField->GetVoidPointer(0), vField->GetVoidPointer(0));
   reebSpace_.setSosOffsetsU(&sosOffsetsU_);
   reebSpace_.setSosOffsetsV(&sosOffsetsV_);
 
@@ -109,11 +108,15 @@ int ttkReebSpace::baseCall(vtkDataSet *input,
 
       dMsg(cout, msg.str(), timeMsg);
     }
-    reebSpace_.execute<dataTypeU, dataTypeV>();
+    reebSpace_.execute(
+      static_cast<dataTypeU *>(ttkUtils::GetVoidPointer(uField)),
+      static_cast<dataTypeV *>(ttkUtils::GetVoidPointer(vField)));
   }
 
   if(SimplificationThreshold > 0) {
-    reebSpace_.simplify<dataTypeU, dataTypeV>(
+    reebSpace_.simplify(
+      static_cast<dataTypeU *>(ttkUtils::GetVoidPointer(uField)),
+      static_cast<dataTypeV *>(ttkUtils::GetVoidPointer(vField)),
       SimplificationThreshold,
       (ReebSpace::SimplificationCriterion)SimplificationCriterion);
   }

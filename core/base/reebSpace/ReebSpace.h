@@ -98,7 +98,8 @@ namespace ttk {
     }
 
     template <class dataTypeU, class dataTypeV>
-    inline int execute();
+    inline int execute(const dataTypeU *const uField,
+                       const dataTypeV *const vField);
 
     inline const Sheet0 *get0sheet(const SimplexId &sheetId) const {
 
@@ -187,25 +188,17 @@ namespace ttk {
     //       }
 
     template <class dataTypeU, class dataTypeV>
-    inline int perturbate(const dataTypeU &uEpsilon
-                          = Geometry::powIntTen(-DBL_DIG),
-                          const dataTypeV &vEpsilon
-                          = Geometry::powIntTen(-DBL_DIG)) const;
+    inline int
+      perturbate(const dataTypeU *const uField,
+                 const dataTypeV *const vField,
+                 const dataTypeU &uEpsilon = Geometry::powIntTen(-DBL_DIG),
+                 const dataTypeV &vEpsilon = Geometry::powIntTen(-DBL_DIG));
 
     inline void setExpand3Sheets(const bool &onOff) {
       expand3sheets_ = onOff;
     }
 
-    inline void setInputField(const void *uField, const void *vField) {
-      uField_ = uField;
-      vField_ = vField;
-#ifdef TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE
-      fiberSurface_.flushOctree();
-#endif
-    }
-
     inline bool setRangeDrivenOctree(const bool &onOff) {
-
       if(onOff != withRangeDrivenOctree_) {
         withRangeDrivenOctree_ = onOff;
         return true;
@@ -251,13 +244,7 @@ namespace ttk {
         jacobiSet_.preconditionTriangulation(triangulation);
 
         // trigger the fiberSurface pre-processing on the triangulation.
-        fiberSurface_.setInputField(uField_, vField_);
         fiberSurface_.preconditionTriangulation(triangulation);
-        // trigger the fiber surface precomputation
-#ifdef TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE
-        if(withRangeDrivenOctree_)
-          fiberSurface_.buildOctree<dataTypeU, dataTypeV>(triangulation);
-#endif
 
         vertexNumber_ = triangulation->getNumberOfVertices();
         edgeNumber_ = triangulation->getNumberOfEdges();
@@ -268,7 +255,9 @@ namespace ttk {
     }
 
     template <class dataTypeU, class dataTypeV>
-    inline int simplify(const double &simplificationThreshold,
+    inline int simplify(const dataTypeU *const uField,
+                        const dataTypeV *const vField,
+                        const double &simplificationThreshold,
                         const SimplificationCriterion &criterion
                         = SimplificationCriterion::rangeArea);
 
@@ -305,10 +294,13 @@ namespace ttk {
 
     template <class dataTypeU, class dataTypeV>
     inline int compute2sheets(
-      const std::vector<std::pair<SimplexId, SimplexId>> &jacobiEdges);
+      const std::vector<std::pair<SimplexId, SimplexId>> &jacobiEdges,
+      const dataTypeU *const uField,
+      const dataTypeV *const vField);
 
     template <class dataTypeU, class dataTypeV>
-    inline int compute2sheetChambers();
+    inline int compute2sheetChambers(const dataTypeU *const uField,
+                                     const dataTypeV *const vField);
 
     int compute3sheet(
       const SimplexId &vertexId,
@@ -318,7 +310,9 @@ namespace ttk {
       std::vector<std::vector<std::vector<SimplexId>>> &tetTriangles);
 
     template <class dataTypeU, class dataTypeV>
-    inline int computeGeometricalMeasures(Sheet3 &sheet);
+    inline int computeGeometricalMeasures(Sheet3 &sheet,
+                                          const dataTypeU *const uField,
+                                          const dataTypeV *const vField);
 
     int connect3sheetTo0sheet(ReebSpaceData &data,
                               const SimplexId &sheet3Id,
@@ -386,7 +380,6 @@ namespace ttk {
     SimplexId vertexNumber_{0}, edgeNumber_{0}, tetNumber_{0};
     double totalArea_{-1}, totalVolume_{-1}, totalHyperVolume_{-1};
 
-    const void *uField_{}, *vField_{};
     std::vector<SimplexId> *sosOffsetsU_{}, *sosOffsetsV_{};
 
     bool hasConnectedSheets_{false}, expand3sheets_{true},
@@ -409,9 +402,17 @@ namespace ttk {
 // #include                  <ReebSpace.cpp>
 
 template <class dataTypeU, class dataTypeV>
-inline int ttk::ReebSpace::execute() {
+inline int ttk::ReebSpace::execute(const dataTypeU *const uField,
+                                   const dataTypeV *const vField) {
 
   flush();
+
+#ifdef TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE
+  fiberSurface_.flushOctree();
+  if(withRangeDrivenOctree_) {
+    fiberSurface_.buildOctree<dataTypeU, dataTypeV>(triangulation_);
+  }
+#endif
 
   Timer t;
 
@@ -419,8 +420,7 @@ inline int ttk::ReebSpace::execute() {
   jacobiSet_.preconditionTriangulation(triangulation_);
   jacobiSet_.setSosOffsetsU(sosOffsetsU_);
   jacobiSet_.setSosOffsetsV(sosOffsetsV_);
-  jacobiSet_.execute(jacobiSetEdges_, static_cast<const dataTypeU *>(uField_),
-                     static_cast<const dataTypeV *>(vField_), *triangulation_);
+  jacobiSet_.execute(jacobiSetEdges_, uField, vField, *triangulation_);
 
   // 2) compute the list saddle 1-sheets
   // + list of saddle 0-sheets
@@ -429,7 +429,7 @@ inline int ttk::ReebSpace::execute() {
   // at this stage, jacobiSetClassification contains the list of saddle edges
   // along with their 1-sheet Id.
 
-  compute2sheets<dataTypeU, dataTypeV>(jacobiSetClassification);
+  compute2sheets(jacobiSetClassification, uField, vField);
   //   compute2sheetChambers<dataTypeU, dataTypeV>();
 
   std::vector<std::vector<std::vector<SimplexId>>> tetTriangles;
@@ -451,12 +451,11 @@ inline int ttk::ReebSpace::execute() {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
-    for(SimplexId i = 0; i < (SimplexId)originalData_.sheet3List_.size(); i++) {
-      computeGeometricalMeasures<dataTypeU, dataTypeV>(
-        originalData_.sheet3List_[i]);
+    for(size_t i = 0; i < originalData_.sheet3List_.size(); i++) {
+      computeGeometricalMeasures(originalData_.sheet3List_[i], uField, vField);
     }
 
-    for(SimplexId i = 0; i < (SimplexId)originalData_.sheet3List_.size(); i++) {
+    for(size_t i = 0; i < originalData_.sheet3List_.size(); i++) {
       totalArea_ += originalData_.sheet3List_[i].rangeArea_;
       totalVolume_ += originalData_.sheet3List_[i].domainVolume_;
       totalHyperVolume_ += originalData_.sheet3List_[i].hyperVolume_;
@@ -480,7 +479,9 @@ inline int ttk::ReebSpace::execute() {
 
 template <class dataTypeU, class dataTypeV>
 inline int ttk::ReebSpace::compute2sheets(
-  const std::vector<std::pair<SimplexId, SimplexId>> &jacobiEdges) {
+  const std::vector<std::pair<SimplexId, SimplexId>> &jacobiEdges,
+  const dataTypeU *const uField,
+  const dataTypeV *const vField) {
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!triangulation_)
@@ -509,7 +510,7 @@ inline int ttk::ReebSpace::compute2sheets(
 
   fiberSurface_.setWrapper(wrapper_);
   fiberSurface_.setGlobalVertexList(&fiberSurfaceVertexList_);
-  fiberSurface_.setInputField(uField_, vField_);
+  fiberSurface_.setInputField(uField, vField);
   fiberSurface_.preconditionTriangulation(triangulation_);
 
   fiberSurface_.setPolygonEdgeNumber(jacobiEdges.size());
@@ -562,11 +563,11 @@ inline int ttk::ReebSpace::compute2sheets(
     triangulation_->getEdgeVertex(edgeId, 0, vertexId0);
     triangulation_->getEdgeVertex(edgeId, 1, vertexId1);
 
-    rangePoint0.first = ((dataTypeU *)uField_)[vertexId0];
-    rangePoint0.second = ((dataTypeV *)vField_)[vertexId0];
+    rangePoint0.first = uField[vertexId0];
+    rangePoint0.second = vField[vertexId0];
 
-    rangePoint1.first = ((dataTypeU *)uField_)[vertexId1];
-    rangePoint1.second = ((dataTypeV *)vField_)[vertexId1];
+    rangePoint1.first = uField[vertexId1];
+    rangePoint1.second = vField[vertexId1];
 
     if(originalData_.edgeTypes_[edgeId] == 1) {
       std::vector<SimplexId> edgeSeeds(
@@ -656,7 +657,9 @@ inline int ttk::ReebSpace::compute2sheets(
 }
 
 template <class dataTypeU, class dataTypeV>
-inline int ttk::ReebSpace::compute2sheetChambers() {
+inline int
+  ttk::ReebSpace::compute2sheetChambers(const dataTypeU *const uField,
+                                        const dataTypeV *const vField) {
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!triangulation_)
@@ -683,7 +686,7 @@ inline int ttk::ReebSpace::compute2sheetChambers() {
 
   fiberSurface_.setWrapper(wrapper_);
   fiberSurface_.setGlobalVertexList(&fiberSurfaceVertexList_);
-  fiberSurface_.setInputField(uField_, vField_);
+  fiberSurface_.setInputField(uField, vField);
   fiberSurface_.preconditionTriangulation(triangulation_);
   fiberSurface_.setTetNumber(tetNumber_);
   fiberSurface_.setPolygonEdgeNumber(threadNumber_);
@@ -715,11 +718,11 @@ inline int ttk::ReebSpace::compute2sheetChambers() {
     triangulation_->getEdgeVertex(edgeId, 0, vertexId0);
     triangulation_->getEdgeVertex(edgeId, 1, vertexId1);
 
-    rangePoint0.first = ((dataTypeU *)uField_)[vertexId0];
-    rangePoint0.second = ((dataTypeV *)vField_)[vertexId0];
+    rangePoint0.first = uField[vertexId0];
+    rangePoint0.second = vField[vertexId0];
 
-    rangePoint1.first = ((dataTypeU *)uField_)[vertexId1];
-    rangePoint1.second = ((dataTypeV *)vField_)[vertexId1];
+    rangePoint1.first = uField[vertexId1];
+    rangePoint1.second = vField[vertexId1];
 
     fiberSurface_.computeSurface<dataTypeU, dataTypeV>(
       rangePoint0, rangePoint1, threadId);
@@ -741,7 +744,8 @@ inline int ttk::ReebSpace::compute2sheetChambers() {
 }
 
 template <class dataTypeU, class dataTypeV>
-inline int ttk::ReebSpace::computeGeometricalMeasures(Sheet3 &sheet) {
+inline int ttk::ReebSpace::computeGeometricalMeasures(
+  Sheet3 &sheet, const dataTypeU *const uField, const dataTypeV *const vField) {
 
   sheet.domainVolume_ = 0;
   sheet.rangeArea_ = 0;
@@ -763,8 +767,8 @@ inline int ttk::ReebSpace::computeGeometricalMeasures(Sheet3 &sheet) {
       triangulation_->getVertexPoint(
         vertexId, domainPoints[j][0], domainPoints[j][1], domainPoints[j][2]);
 
-      rangePoints[j][0] = ((dataTypeU *)uField_)[vertexId];
-      rangePoints[j][1] = ((dataTypeV *)vField_)[vertexId];
+      rangePoints[j][0] = uField[vertexId];
+      rangePoints[j][1] = vField[vertexId];
     }
 
     Geometry::getBoundingBox(domainPoints, domainBox);
@@ -788,20 +792,21 @@ inline int ttk::ReebSpace::computeGeometricalMeasures(Sheet3 &sheet) {
 }
 
 template <class dataTypeU, class dataTypeV>
-inline int ttk::ReebSpace::perturbate(const dataTypeU &uEpsilon,
-                                      const dataTypeV &vEpsilon) const {
+inline int ttk::ReebSpace::perturbate(const dataTypeU *const uField,
+                                      const dataTypeV *const vField,
+                                      const dataTypeU &uEpsilon,
+                                      const dataTypeV &vEpsilon) {
 
-  JacobiSet jacobiSet{};
-  jacobiSet.setWrapper(wrapper_);
-  jacobiSet.setVertexNumber(vertexNumber_);
-  jacobiSet.perturbate(static_cast<dataTypeU *>(uField_),
-                       static_cast<dataTypeV *>(vField_), uEpsilon, vEpsilon);
+  jacobiSet_.setVertexNumber(vertexNumber_);
+  jacobiSet_.perturbate(uField, vField, uEpsilon, vEpsilon);
 
   return 0;
 }
 
 template <class dataTypeU, class dataTypeV>
-inline int ttk::ReebSpace::simplify(const double &simplificationThreshold,
+inline int ttk::ReebSpace::simplify(const dataTypeU *const uField,
+                                    const dataTypeV *const vField,
+                                    const double &simplificationThreshold,
                                     const SimplificationCriterion &criterion) {
 
   if((totalArea_ == -1) || (totalVolume_ == -1) || (totalHyperVolume_ == -1)) {
@@ -811,12 +816,11 @@ inline int ttk::ReebSpace::simplify(const double &simplificationThreshold,
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
-    for(SimplexId i = 0; i < (SimplexId)originalData_.sheet3List_.size(); i++) {
-      computeGeometricalMeasures<dataTypeU, dataTypeV>(
-        originalData_.sheet3List_[i]);
+    for(size_t i = 0; i < originalData_.sheet3List_.size(); i++) {
+      computeGeometricalMeasures(originalData_.sheet3List_[i], uField, vField);
     }
 
-    for(SimplexId i = 0; i < (SimplexId)originalData_.sheet3List_.size(); i++) {
+    for(size_t i = 0; i < originalData_.sheet3List_.size(); i++) {
       totalArea_ += originalData_.sheet3List_[i].rangeArea_;
       totalVolume_ += originalData_.sheet3List_[i].domainVolume_;
       totalHyperVolume_ += originalData_.sheet3List_[i].hyperVolume_;
