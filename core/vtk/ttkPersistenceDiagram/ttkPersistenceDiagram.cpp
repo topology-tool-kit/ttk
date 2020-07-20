@@ -1,5 +1,5 @@
-#include <ttkPersistenceDiagram.h>
 #include <ttkMacros.h>
+#include <ttkPersistenceDiagram.h>
 #include <ttkUtils.h>
 
 using namespace std;
@@ -47,7 +47,9 @@ int ttkPersistenceDiagram::deleteDiagram() {
   return 0;
 }
 
-template <typename scalarType, typename vtkSimplexArray, class triangulationType>
+template <typename scalarType,
+          typename vtkSimplexArray,
+          class triangulationType>
 int ttkPersistenceDiagram::setPersistenceDiagramInfo(
   ttk::SimplexId id,
   vtkSmartPointer<vtkSimplexArray> vertexIdentifierScalars,
@@ -206,7 +208,9 @@ int ttkPersistenceDiagram::getPersistenceDiagram(
   return 0;
 }
 
-template <typename scalarType, typename vtkSimplexArray, class triangulationType>
+template <typename scalarType,
+          typename vtkSimplexArray,
+          class triangulationType>
 int ttkPersistenceDiagram::setPersistenceDiagramInfoInsideDomain(
   ttk::SimplexId id,
   vtkSmartPointer<vtkSimplexArray> vertexIdentifierScalars,
@@ -356,7 +360,6 @@ int ttkPersistenceDiagram::getPersistenceDiagramInsideDomain(
   return 0;
 }
 
-
 template <typename VTK_TT, typename TTK_TT>
 int ttkPersistenceDiagram::dispatch(
   vtkUnstructuredGrid *outputCTPersistenceDiagram,
@@ -496,9 +499,9 @@ int ttkPersistenceDiagram::RequestData(vtkInformation *request,
        (VTK_TT *)ttkUtils::GetVoidPointer(inputScalars),
        offsetField->GetDataType(), ttkUtils::GetVoidPointer(offsetField),
        (TTK_TT *)(triangulation->getData()))))
-    
-  // something wrong in baseCode
-  if(status) {
+
+    // something wrong in baseCode
+    if(status) {
     std::stringstream msg;
     msg << "PersistenceDiagram::execute() error code : " << status;
     this->printErr(msg.str());

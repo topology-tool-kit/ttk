@@ -125,8 +125,8 @@ int ttkTopologicalCompressionReader::RequestData(
       break;
     case ttk::Triangulation::Type::PERIODIC:
       status = this->ReadFromFile<double>(
-        fp,
-        *static_cast<ttk::PeriodicImplicitTriangulation *>(triangulation->getData()));
+        fp, *static_cast<ttk::PeriodicImplicitTriangulation *>(
+              triangulation->getData()));
       break;
   }
   if(status != 0) {

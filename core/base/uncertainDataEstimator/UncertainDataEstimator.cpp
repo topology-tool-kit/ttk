@@ -30,7 +30,7 @@ void ttk::PDFHistograms::getVertexHistogram(
 }
 
 void ttk::PDFHistograms::normalize() {
-      const double normalization = 1.0 / static_cast<double>(numberOfInputs_);
+  const double normalization = 1.0 / static_cast<double>(numberOfInputs_);
 #ifdef TTK_ENABLE_OPENMP
 #ifdef _WIN32
 #pragma omp parallel for num_threads(threadNumber_)
@@ -39,9 +39,9 @@ void ttk::PDFHistograms::normalize() {
   schedule(static, (numberOfBins_ * numberOfVertices_) / threadNumber_)
 #endif
 #endif
-      for(int i = 0; i < numberOfBins_; i++) {
-        for(SimplexId j = 0; j < numberOfVertices_; j++) {
-          probability_[i][j] *= normalization;
-        }
-      }
+  for(int i = 0; i < numberOfBins_; i++) {
+    for(SimplexId j = 0; j < numberOfVertices_; j++) {
+      probability_[i][j] *= normalization;
     }
+  }
+}

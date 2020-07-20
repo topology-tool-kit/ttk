@@ -118,7 +118,9 @@ int ttk::TrackingFromFields::performDiagramComputation(
       CTDiagram;
 
     // persistenceDiagram_.setOutputCTDiagram(&CTDiagram);
-    persistenceDiagram_.execute<dataType, int, AbstractTriangulation>(CTDiagram, (dataType*)(inputData_[i]), (int *)(inputOffsets_), triangulation_);
+    persistenceDiagram_.execute<dataType, int, AbstractTriangulation>(
+      CTDiagram, (dataType *)(inputData_[i]), (int *)(inputOffsets_),
+      triangulation_);
 
     // Copy diagram into augmented diagram.
     persistenceDiagrams[i] = std::vector<diagramTuple>(CTDiagram.size());

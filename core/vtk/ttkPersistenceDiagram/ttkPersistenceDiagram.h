@@ -50,8 +50,8 @@
 #include <vtkCellData.h>
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
-#include <vtkFloatArray.h>
 #include <vtkDoubleArray.h>
+#include <vtkFloatArray.h>
 #include <vtkInformation.h>
 #include <vtkInformationVector.h>
 #include <vtkPointData.h>
@@ -95,7 +95,9 @@ public:
   }
   vtkGetMacro(ShowInsideDomain, int);
 
-  template <typename scalarType, typename vtkSimplexArray, class triangulationType>
+  template <typename scalarType,
+            typename vtkSimplexArray,
+            class triangulationType>
   int setPersistenceDiagramInfo(
     ttk::SimplexId id,
     vtkSmartPointer<vtkSimplexArray> vertexIdentifierScalars,
@@ -125,7 +127,9 @@ public:
     vtkDataArray *inputScalars,
     const triangulationType *triangulation);
 
-  template <typename scalarType, typename vtkSimplexArray, class triangulationType>
+  template <typename scalarType,
+            typename vtkSimplexArray,
+            class triangulationType>
   int setPersistenceDiagramInfoInsideDomain(
     ttk::SimplexId id,
     vtkSmartPointer<vtkSimplexArray> vertexIdentifierScalars,

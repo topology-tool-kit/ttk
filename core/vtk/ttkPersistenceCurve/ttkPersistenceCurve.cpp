@@ -1,6 +1,6 @@
+#include <ttkMacros.h>
 #include <ttkPersistenceCurve.h>
 #include <ttkUtils.h>
-#include <ttkMacros.h>
 
 using namespace std;
 using namespace ttk;
