@@ -51,8 +51,7 @@ int ttkJacobiSet::baseCall(vtkDataSet *input,
   if(!triangulation)
     return -1;
 
-  JacobiSet jacobiSet{};
-  jacobiSet.preconditionTriangulation(triangulation);
+  this->preconditionTriangulation(triangulation);
 
   // point data
   vtkDataArray *offsetFieldU = NULL, *offsetFieldV = NULL;
@@ -69,7 +68,7 @@ int ttkJacobiSet::baseCall(vtkDataSet *input,
           sosOffsetsU_[i] = offsetFieldU->GetTuple1(i);
         }
 
-        jacobiSet.setSosOffsetsU(&sosOffsetsU_);
+        this->setSosOffsetsU(&sosOffsetsU_);
       }
     } else if(UoffsetId != -1) {
       offsetFieldU = input->GetPointData()->GetArray(UoffsetId);
@@ -80,7 +79,7 @@ int ttkJacobiSet::baseCall(vtkDataSet *input,
           sosOffsetsU_[i] = offsetFieldU->GetTuple1(i);
         }
 
-        jacobiSet.setSosOffsetsU(&sosOffsetsU_);
+        this->setSosOffsetsU(&sosOffsetsU_);
       }
     } else if(input->GetPointData()->GetArray(ttk::OffsetFieldUName)) {
       offsetFieldU = input->GetPointData()->GetArray(ttk::OffsetFieldUName);
@@ -91,7 +90,7 @@ int ttkJacobiSet::baseCall(vtkDataSet *input,
           sosOffsetsU_[i] = offsetFieldU->GetTuple1(i);
         }
 
-        jacobiSet.setSosOffsetsU(&sosOffsetsU_);
+        this->setSosOffsetsU(&sosOffsetsU_);
       }
     }
     if(OffsetFieldV.length()) {
@@ -104,7 +103,7 @@ int ttkJacobiSet::baseCall(vtkDataSet *input,
           sosOffsetsV_[i] = offsetFieldV->GetTuple1(i);
         }
 
-        jacobiSet.setSosOffsetsV(&sosOffsetsV_);
+        this->setSosOffsetsV(&sosOffsetsV_);
       }
     } else if(VoffsetId != -1) {
       offsetFieldV = input->GetPointData()->GetArray(VoffsetId);
@@ -115,7 +114,7 @@ int ttkJacobiSet::baseCall(vtkDataSet *input,
           sosOffsetsV_[i] = offsetFieldV->GetTuple1(i);
         }
 
-        jacobiSet.setSosOffsetsV(&sosOffsetsV_);
+        this->setSosOffsetsV(&sosOffsetsV_);
       }
     } else if(input->GetPointData()->GetArray(ttk::OffsetFieldVName)) {
       offsetFieldV = input->GetPointData()->GetArray(ttk::OffsetFieldVName);
@@ -126,17 +125,17 @@ int ttkJacobiSet::baseCall(vtkDataSet *input,
           sosOffsetsV_[i] = offsetFieldV->GetTuple1(i);
         }
 
-        jacobiSet.setSosOffsetsV(&sosOffsetsV_);
+        this->setSosOffsetsV(&sosOffsetsV_);
       }
     }
   }
 
 #define EXEC(_DATATYPE, TRIANGLCASE, TRIANGLTYPE, _CALL)                      \
   case TRIANGLCASE: {                                                         \
-    jacobiSet.execute(                                                        \
-      jacobiSet_, static_cast<dataTypeU *>(ttkUtils::GetVoidPointer(uField)), \
-      static_cast<dataTypeV *>(ttkUtils::GetVoidPointer(vField)),             \
-      *static_cast<TRIANGLTYPE *>(triangulation->getData()));                 \
+    this->execute(jacobiSet_,                                                 \
+                  static_cast<dataTypeU *>(ttkUtils::GetVoidPointer(uField)), \
+                  static_cast<dataTypeV *>(ttkUtils::GetVoidPointer(vField)), \
+                  *static_cast<TRIANGLTYPE *>(triangulation->getData()));     \
   } break;
 
   ttkVtkTemplateTrianglMacro(_, triangulation->getType(), EXEC, _);
