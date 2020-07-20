@@ -17,14 +17,12 @@
 /// Proc. of ACM SODA 2000.
 ///
 
-#ifndef _CONTOUR_TREE_H
-#define _CONTOUR_TREE_H
+#pragma once
 
 #include <Triangulation.h>
 #include <UnionFind.h>
 
-#include <math.h>
-
+#include <cmath>
 #include <queue>
 #include <set>
 #include <vector>
@@ -35,13 +33,7 @@ namespace ttk {
   class Node;
 
   class Arc : virtual public Debug {
-
   public:
-    Arc() {
-      downNodeId_ = -1;
-      upNodeId_ = -1;
-    };
-
     inline int getDownNodeId() const {
       return downNodeId_;
     };
@@ -59,18 +51,12 @@ namespace ttk {
     };
 
   protected:
-    int downNodeId_, upNodeId_;
+    int downNodeId_{-1}, upNodeId_{-1};
   };
 
   class SuperArc : public Arc {
-
   public:
     friend class SubLevelSetTree;
-
-    SuperArc() {
-      Arc();
-      pruned_ = false;
-    };
 
     inline void appendRegularNode(const int &nodeId) {
       regularNodeList_.push_back(nodeId);
@@ -144,21 +130,14 @@ namespace ttk {
                           bool order = true);
 
   protected:
-    bool pruned_;
-    std::vector<int> regularNodeList_;
-    std::vector<std::vector<double>> barycenterList_;
-    std::vector<std::vector<int>> sampleList_;
+    bool pruned_{false};
+    std::vector<int> regularNodeList_{};
+    std::vector<std::vector<double>> barycenterList_{};
+    std::vector<std::vector<int>> sampleList_{};
   };
 
   class Node : virtual public Debug {
-
   public:
-    Node() {
-      vertexId_ = -1;
-      layoutX_ = layoutY_ = 0;
-      pruned_ = false;
-    };
-
     inline void addDownArcId(const int &downArcId) {
       downArcList_.push_back(downArcId);
     };
@@ -240,15 +219,14 @@ namespace ttk {
   protected:
     friend class SubLevelSetTree;
 
-    int vertexId_;
-    bool pruned_;
-    double layoutX_, layoutY_;
-    std::vector<int> downArcList_, upArcList_;
-    std::vector<int> downSuperArcList_, upSuperArcList_;
+    int vertexId_{-1};
+    bool pruned_{false};
+    double layoutX_{}, layoutY_{};
+    std::vector<int> downArcList_{}, upArcList_{};
+    std::vector<int> downSuperArcList_{}, upSuperArcList_{};
   };
 
   class ContourTreeSimplificationMetric : virtual public Debug {
-
   public:
     friend class SubLevelSetTree;
 
@@ -259,19 +237,18 @@ namespace ttk {
       = 0;
 
   protected:
-    SubLevelSetTree *tree_;
+    SubLevelSetTree *tree_{};
   };
 
   class PersistenceMetric : public ContourTreeSimplificationMetric {
-
   public:
-    double computeSuperArcMetric(const int &downVertexId,
-                                 const int &upVertexId,
-                                 const std::vector<int> &interiorNodeIds);
+    double
+      computeSuperArcMetric(const int &downVertexId,
+                            const int &upVertexId,
+                            const std::vector<int> &interiorNodeIds) override;
   };
 
   class SubLevelSetTree : virtual public Debug {
-
   public:
     SubLevelSetTree();
 
@@ -559,25 +536,24 @@ namespace ttk {
 
     int openSuperArc(const int &nodeId);
 
-    int vertexNumber_;
-    bool maintainRegularVertices_;
-    double minScalar_, maxScalar_;
-    const std::vector<real> *vertexScalars_;
-    std::vector<int> *vertexSoSoffsets_;
-    const AbstractTriangulation *triangulation_;
-    std::vector<int> *minimumList_, *maximumList_;
-    std::vector<Node> nodeList_, originalNodeList_;
-    std::vector<Arc> arcList_;
-    std::vector<SuperArc> superArcList_, originalSuperArcList_;
-    std::vector<int> vertex2node_, vertex2superArc_, vertex2superArcNode_;
-    std::vector<std::vector<double>> *vertexPositions_;
-    bool isSkeletonComputed_;
+    int vertexNumber_{0};
+    bool maintainRegularVertices_{true};
+    double minScalar_{}, maxScalar_{};
+    const std::vector<real> *vertexScalars_{};
+    std::vector<int> *vertexSoSoffsets_{};
+    const AbstractTriangulation *triangulation_{};
+    std::vector<int> *minimumList_{}, *maximumList_{};
+    std::vector<Node> nodeList_{}, originalNodeList_{};
+    std::vector<Arc> arcList_{};
+    std::vector<SuperArc> superArcList_{}, originalSuperArcList_{};
+    std::vector<int> vertex2node_{}, vertex2superArc_{}, vertex2superArcNode_{};
+    std::vector<std::vector<double>> *vertexPositions_{};
+    bool isSkeletonComputed_{false};
   };
 
   class ContourTree : public SubLevelSetTree {
   public:
     ContourTree();
-    ~ContourTree();
 
     int build();
 
@@ -637,8 +613,6 @@ namespace ttk {
 
     bool isNodeEligible(const Node *n) const;
 
-    SubLevelSetTree mergeTree_, splitTree_;
+    SubLevelSetTree mergeTree_{}, splitTree_{};
   };
 } // namespace ttk
-
-#endif

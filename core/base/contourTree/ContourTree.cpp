@@ -161,17 +161,7 @@ double
 }
 
 SubLevelSetTree::SubLevelSetTree() {
-
-  vertexNumber_ = 0;
-  triangulation_ = NULL;
-  minimumList_ = NULL;
-  maximumList_ = NULL;
-  vertexSoSoffsets_ = NULL;
-  vertexScalars_ = NULL;
-  maintainRegularVertices_ = true;
-  vertexPositions_ = NULL;
-
-  isSkeletonComputed_ = false;
+  this->setDebugMsgPrefix("SubLevelSetTree");
 }
 
 int SubLevelSetTree::appendRegularNode(const int &superArcId,
@@ -199,7 +189,7 @@ int SubLevelSetTree::appendRegularNode(const int &superArcId,
 
 int SubLevelSetTree::build() {
 
-  DebugTimer timer;
+  Timer timer;
 
   if(!vertexNumber_)
     return -1;
@@ -2352,29 +2342,12 @@ int SubLevelSetTree::clearSkeleton() {
 }
 
 ContourTree::ContourTree() {
-}
-
-ContourTree::~ContourTree() {
-
-  /*  if(vertexSoSoffsets_){
-      vertexSoSoffsets_->clear();
-      delete vertexSoSoffsets_;
-      }
-
-      if(minimumList_){
-      minimumList_->clear();
-      delete minimumList_;
-      }
-
-      if(maximumList_){
-      maximumList_->clear();
-      delete maximumList_;
-      }*/
+  this->setDebugMsgPrefix("ContourTree");
 }
 
 int ContourTree::build() {
 
-  DebugTimer timer;
+  Timer timer;
 
   if(!vertexNumber_)
     return -1;
@@ -2488,7 +2461,7 @@ int ContourTree::build() {
 
 int ContourTree::combineTrees() {
 
-  DebugTimer timer;
+  Timer timer;
 
   if((!mergeTree_.getNumberOfNodes()) || (!splitTree_.getNumberOfNodes()))
     return -1;
