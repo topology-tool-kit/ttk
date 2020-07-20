@@ -92,7 +92,7 @@ int ttkReebSpace::baseCall(vtkDataSet *input,
     VaryingTriangulation = true;
 
   triangulation->setWrapper(this);
-  reebSpace_.setupTriangulation<dataTypeU, dataTypeV>(triangulation);
+  reebSpace_.preconditionTriangulation<dataTypeU, dataTypeV>(triangulation);
 
   {
     stringstream msg;

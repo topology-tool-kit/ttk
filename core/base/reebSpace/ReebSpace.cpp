@@ -4,26 +4,7 @@ using namespace std;
 using namespace ttk;
 
 ReebSpace::ReebSpace() {
-
-  vertexNumber_ = 0;
-  tetNumber_ = 0;
-  uField_ = NULL;
-  vField_ = NULL;
-  sosOffsetsU_ = NULL;
-  sosOffsetsV_ = NULL;
-
-  totalArea_ = -1;
-  totalVolume_ = -1;
-  totalHyperVolume_ = -1;
-
-  hasConnectedSheets_ = false;
-  expand3sheets_ = true;
-
-  triangulation_ = NULL;
-  withRangeDrivenOctree_ = true;
-}
-
-ReebSpace::~ReebSpace() {
+  this->setDebugMsgPrefix("ReebSpace");
 }
 
 int ReebSpace::compute1sheetsOnly(
@@ -1381,13 +1362,13 @@ int ReebSpace::simplifySheet(const SimplexId &sheetId,
       double otherScore = 0;
 
       switch(criterion) {
-        case domainVolume:
+        case SimplificationCriterion::domainVolume:
           otherScore = currentData_.sheet3List_[otherSheetId].domainVolume_;
           break;
-        case rangeArea:
+        case SimplificationCriterion::rangeArea:
           otherScore = currentData_.sheet3List_[otherSheetId].rangeArea_;
           break;
-        case hyperVolume:
+        case SimplificationCriterion::hyperVolume:
           otherScore = currentData_.sheet3List_[otherSheetId].hyperVolume_;
           break;
       }
@@ -1513,15 +1494,15 @@ int ReebSpace::simplifySheets(
         double value = 0;
         switch(simplificationCriterion) {
 
-          case ReebSpace::domainVolume:
+          case SimplificationCriterion::domainVolume:
             value = currentData_.sheet3List_[i].domainVolume_ / totalVolume_;
             break;
 
-          case ReebSpace::rangeArea:
+          case SimplificationCriterion::rangeArea:
             value = currentData_.sheet3List_[i].rangeArea_ / totalArea_;
             break;
 
-          case ReebSpace::hyperVolume:
+          case SimplificationCriterion::hyperVolume:
             value
               = currentData_.sheet3List_[i].hyperVolume_ / totalHyperVolume_;
             break;

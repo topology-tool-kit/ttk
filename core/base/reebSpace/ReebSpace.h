@@ -26,88 +26,72 @@
 ///
 /// \sa ttkReebSpace.cpp %for a usage example.
 
-#ifndef _REEBSPACE_H
-#define _REEBSPACE_H
-
-// standard includes
+#pragma once
 
 // base code includes
 #include <FiberSurface.h>
 #include <Geometry.h>
 #include <JacobiSet.h>
 #include <Triangulation.h>
-// to add FiberSurface.h
-#include <Wrapper.h>
 
 #include <map>
 #include <set>
 
 namespace ttk {
 
-  class ReebSpace : public Debug {
-
+  class ReebSpace : virtual public Debug {
   public:
-    enum SimplificationCriterion {
+    enum class SimplificationCriterion {
       domainVolume, // 0
       rangeArea, // 1
       hyperVolume // 2
     };
 
-    class Sheet0 {
-
-    public:
-      SimplexId vertexId_, pruned_;
+    struct Sheet0 {
+      SimplexId vertexId_{}, pruned_{};
       // 0: extrema-sheet, 1: saddle-sheet
-      char type_;
-      std::vector<SimplexId> sheet1List_;
-      std::vector<SimplexId> sheet3List_;
+      char type_{};
+      std::vector<SimplexId> sheet1List_{};
+      std::vector<SimplexId> sheet3List_{};
     };
 
-    class Sheet1 {
-
-    public:
-      bool hasSaddleEdges_, pruned_;
-      std::vector<SimplexId> edgeList_;
+    struct Sheet1 {
+      bool hasSaddleEdges_{}, pruned_{};
+      std::vector<SimplexId> edgeList_{};
       // 0: extrema-sheet, 1: saddle-sheet (can be inferred by the number
       // of 2-sheets attached to it?)
-      std::vector<SimplexId> sheet0List_;
+      std::vector<SimplexId> sheet0List_{};
       // NB: the corresponding 2-sheet should have the same global
       // indentifier.
-      std::vector<SimplexId> sheet3List_;
+      std::vector<SimplexId> sheet3List_{};
     };
 
-    class Sheet2 {
-
-    public:
-      bool pruned_;
-      SimplexId sheet1Id_;
+    struct Sheet2 {
+      bool pruned_{};
+      SimplexId sheet1Id_{};
       // for each point, x, y, z coordinates
       // this is how coincident point will be merged afterwards
       // this list is meant to be temporary. after the merge, we'll use a
       // global list
-      std::vector<std::vector<FiberSurface::Vertex>> vertexList_;
-      std::vector<std::vector<FiberSurface::Triangle>> triangleList_;
-      std::vector<SimplexId> sheet3List_;
+      std::vector<std::vector<FiberSurface::Vertex>> vertexList_{};
+      std::vector<std::vector<FiberSurface::Triangle>> triangleList_{};
+      std::vector<SimplexId> sheet3List_{};
     };
 
-    class Sheet3 {
-
-    public:
-      SimplexId Id_, simplificationId_, preMerger_;
-      bool pruned_;
-      double domainVolume_, rangeArea_, hyperVolume_;
-      std::vector<SimplexId> vertexList_;
-      std::vector<SimplexId> tetList_;
-      std::vector<SimplexId> sheet0List_;
-      std::vector<SimplexId> sheet1List_;
-      std::vector<SimplexId> sheet2List_;
-      std::vector<SimplexId> sheet3List_;
-      std::vector<SimplexId> preMergedSheets_;
+    struct Sheet3 {
+      SimplexId Id_{}, simplificationId_{}, preMerger_{};
+      bool pruned_{};
+      double domainVolume_{}, rangeArea_{}, hyperVolume_{};
+      std::vector<SimplexId> vertexList_{};
+      std::vector<SimplexId> tetList_{};
+      std::vector<SimplexId> sheet0List_{};
+      std::vector<SimplexId> sheet1List_{};
+      std::vector<SimplexId> sheet2List_{};
+      std::vector<SimplexId> sheet3List_{};
+      std::vector<SimplexId> preMergedSheets_{};
     };
 
     ReebSpace();
-
-    ~ReebSpace();
 
     inline bool empty() const {
       return (currentData_.vertex2sheet0_.size() == 0);
@@ -208,21 +192,16 @@ namespace ttk {
                           const dataTypeV &vEpsilon
                           = Geometry::powIntTen(-DBL_DIG)) const;
 
-    inline int setExpand3Sheets(const bool &onOff) {
+    inline void setExpand3Sheets(const bool &onOff) {
       expand3sheets_ = onOff;
-      return 0;
     }
 
-    inline int setInputField(const void *uField, const void *vField) {
-
+    inline void setInputField(const void *uField, const void *vField) {
       uField_ = uField;
       vField_ = vField;
-
 #ifdef TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE
       fiberSurface_.flushOctree();
 #endif
-
-      return 0;
     }
 
     inline bool setRangeDrivenOctree(const bool &onOff) {
@@ -236,61 +215,53 @@ namespace ttk {
       return false;
     }
 
-    inline int setSosOffsetsU(std::vector<SimplexId> *sosOffsetsU) {
+    inline void setSosOffsetsU(std::vector<SimplexId> *sosOffsetsU) {
       sosOffsetsU_ = sosOffsetsU;
-      return 0;
     }
 
-    inline int setSosOffsetsV(std::vector<SimplexId> *sosOffsetsV) {
+    inline void setSosOffsetsV(std::vector<SimplexId> *sosOffsetsV) {
       sosOffsetsV_ = sosOffsetsV;
-      return 0;
     }
 
-    inline int setTetNumber(const SimplexId &tetNumber) {
+    inline void setTetNumber(const SimplexId &tetNumber) {
       tetNumber_ = tetNumber;
-      return 0;
     }
 
     /// Set the number of vertices in the scalar field.
     /// \param vertexNumber Number of vertices in the data-set.
     /// \return Returns 0 upon success, negative values otherwise.
-    int setVertexNumber(const SimplexId &vertexNumber) {
+    inline void setVertexNumber(const SimplexId &vertexNumber) {
       vertexNumber_ = vertexNumber;
-      return 0;
     }
 
     // WARNING: if you plan to use the range driven octree, make sure
     // that you provided pointers to the u and v fields.
     template <class dataTypeU, class dataTypeV>
-    inline int setupTriangulation(Triangulation *triangulation) {
+    inline int
+      preconditionTriangulation(AbstractTriangulation *const triangulation) {
 
       triangulation_ = triangulation;
 
-      if(triangulation_) {
-
-        triangulation_->preconditionVertexStars();
-        triangulation_->preconditionEdges();
-        triangulation_->preconditionVertexEdges();
-
-        JacobiSet jacobiSet{};
-        jacobiSet.setWrapper(wrapper_);
+      if(triangulation) {
+        triangulation->preconditionVertexStars();
+        triangulation->preconditionEdges();
+        triangulation->preconditionVertexEdges();
 
         // trigger the jacobiSet pre-processing on the triangulation.
-        jacobiSet.preconditionTriangulation(triangulation_);
+        jacobiSet_.preconditionTriangulation(triangulation);
 
         // trigger the fiberSurface pre-processing on the triangulation.
-        fiberSurface_.setWrapper(wrapper_);
         fiberSurface_.setInputField(uField_, vField_);
-        fiberSurface_.preconditionTriangulation(triangulation_);
+        fiberSurface_.preconditionTriangulation(triangulation);
         // trigger the fiber surface precomputation
 #ifdef TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE
         if(withRangeDrivenOctree_)
-          fiberSurface_.buildOctree<dataTypeU, dataTypeV>(triangulation_);
+          fiberSurface_.buildOctree<dataTypeU, dataTypeV>(triangulation);
 #endif
 
-        vertexNumber_ = triangulation_->getNumberOfVertices();
-        edgeNumber_ = triangulation_->getNumberOfEdges();
-        tetNumber_ = triangulation_->getNumberOfCells();
+        vertexNumber_ = triangulation->getNumberOfVertices();
+        edgeNumber_ = triangulation->getNumberOfEdges();
+        tetNumber_ = triangulation->getNumberOfCells();
       }
 
       return 0;
@@ -298,7 +269,8 @@ namespace ttk {
 
     template <class dataTypeU, class dataTypeV>
     inline int simplify(const double &simplificationThreshold,
-                        const SimplificationCriterion &criterion = rangeArea);
+                        const SimplificationCriterion &criterion
+                        = SimplificationCriterion::rangeArea);
 
   protected:
     class ReebSpaceData;
@@ -391,46 +363,47 @@ namespace ttk {
     //
     //       int triangulateThreeSheets();
 
-    SimplexId vertexNumber_, edgeNumber_, tetNumber_;
-    double totalArea_, totalVolume_, totalHyperVolume_;
+    SimplexId vertexNumber_{0}, edgeNumber_{0}, tetNumber_{0};
+    double totalArea_{-1}, totalVolume_{-1}, totalHyperVolume_{-1};
 
-    const void *uField_, *vField_;
-    std::vector<SimplexId> *sosOffsetsU_, *sosOffsetsV_;
+    const void *uField_{}, *vField_{};
+    std::vector<SimplexId> *sosOffsetsU_{}, *sosOffsetsV_{};
 
     // output segmentation
     class ReebSpaceData {
-
     public:
-      SimplificationCriterion simplificationCriterion_;
-      double simplificationThreshold_;
+      SimplificationCriterion simplificationCriterion_{};
+      double simplificationThreshold_{};
 
-      std::vector<SimplexId> edge2sheet1_;
-      std::vector<SimplexId> edgeTypes_;
-      std::vector<SimplexId> tet2sheet3_;
-      std::vector<SimplexId> vertex2sheet0_;
-      std::vector<SimplexId> vertex2sheet3_;
+      std::vector<SimplexId> edge2sheet1_{};
+      std::vector<SimplexId> edgeTypes_{};
+      std::vector<SimplexId> tet2sheet3_{};
+      std::vector<SimplexId> vertex2sheet0_{};
+      std::vector<SimplexId> vertex2sheet3_{};
 
       // structure
-      std::vector<Sheet0> sheet0List_;
-      std::vector<Sheet1> sheet1List_;
-      std::vector<Sheet2> sheet2List_;
-      std::vector<Sheet3> sheet3List_;
+      std::vector<Sheet0> sheet0List_{};
+      std::vector<Sheet1> sheet1List_{};
+      std::vector<Sheet2> sheet2List_{};
+      std::vector<Sheet3> sheet3List_{};
 
       //         std::vector<float>         sheet3points_;
       //         std::vector<long long int> sheet3cells_;
     };
 
-    bool hasConnectedSheets_, expand3sheets_, withRangeDrivenOctree_;
-    ReebSpaceData originalData_, currentData_;
+    bool hasConnectedSheets_{false}, expand3sheets_{true},
+      withRangeDrivenOctree_{true};
+    ReebSpaceData originalData_{}, currentData_{};
 
     // information that does not get simplified
-    std::vector<std::pair<SimplexId, char>> jacobiSetEdges_;
-    std::vector<SimplexId> jacobi2edges_;
+    std::vector<std::pair<SimplexId, char>> jacobiSetEdges_{};
+    std::vector<SimplexId> jacobi2edges_{};
 
-    FiberSurface fiberSurface_;
-    std::vector<FiberSurface::Vertex> fiberSurfaceVertexList_;
+    FiberSurface fiberSurface_{};
+    JacobiSet jacobiSet_{};
+    std::vector<FiberSurface::Vertex> fiberSurfaceVertexList_{};
 
-    Triangulation *triangulation_;
+    AbstractTriangulation *triangulation_{};
   };
 } // namespace ttk
 
@@ -445,14 +418,11 @@ inline int ttk::ReebSpace::execute() {
   Timer t;
 
   // 1) compute the jacobi set
-  JacobiSet jacobiSet{};
-
-  jacobiSet.setWrapper(wrapper_);
-  jacobiSet.preconditionTriangulation(triangulation_);
-  jacobiSet.setSosOffsetsU(sosOffsetsU_);
-  jacobiSet.setSosOffsetsV(sosOffsetsV_);
-  jacobiSet.execute(jacobiSetEdges_, static_cast<const dataTypeU *>(uField_),
-                    static_cast<const dataTypeV *>(vField_), *triangulation_);
+  jacobiSet_.preconditionTriangulation(triangulation_);
+  jacobiSet_.setSosOffsetsU(sosOffsetsU_);
+  jacobiSet_.setSosOffsetsV(sosOffsetsV_);
+  jacobiSet_.execute(jacobiSetEdges_, static_cast<const dataTypeU *>(uField_),
+                     static_cast<const dataTypeV *>(vField_), *triangulation_);
 
   // 2) compute the list saddle 1-sheets
   // + list of saddle 0-sheets
@@ -872,13 +842,13 @@ inline int ttk::ReebSpace::simplify(const double &simplificationThreshold,
     std::stringstream msg;
     msg << "[ReebSpace] Simplifying with criterion ";
     switch(criterion) {
-      case domainVolume:
+      case SimplificationCriterion::domainVolume:
         msg << "'Domain Volume'";
         break;
-      case rangeArea:
+      case SimplificationCriterion::rangeArea:
         msg << "'Range Area'";
         break;
-      case hyperVolume:
+      case SimplificationCriterion::hyperVolume:
         msg << "'HyperVolume'";
         break;
     }
@@ -895,5 +865,3 @@ inline int ttk::ReebSpace::simplify(const double &simplificationThreshold,
 
   return 0;
 }
-
-#endif // REEBSPACE_H
