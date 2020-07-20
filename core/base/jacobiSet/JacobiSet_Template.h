@@ -80,47 +80,39 @@ int ttk::JacobiSet::execute(
     }
   }
 
-  if(debugLevel_ >= Debug::infoMsg) {
-    SimplexId minimumNumber = 0, saddleNumber = 0, maximumNumber = 0,
-              monkeySaddleNumber = 0;
+  SimplexId minimumNumber = 0, saddleNumber = 0, maximumNumber = 0,
+            monkeySaddleNumber = 0;
 
-    for(SimplexId i = 0; i < (SimplexId)jacobiSet.size(); i++) {
-      switch(jacobiSet[i].second) {
-        case 0:
-          minimumNumber++;
-          break;
-        case 1:
-          saddleNumber++;
-          break;
-        case 2:
-          maximumNumber++;
-          break;
-        case -1:
-          monkeySaddleNumber++;
-          break;
-      }
-    }
-
-    {
-      std::stringstream msg;
-      msg << "[JacobiSet] Minimum edges: " << minimumNumber << std::endl;
-      msg << "[JacobiSet] Saddle edges: " << saddleNumber << std::endl;
-      msg << "[JacobiSet] Maximum edges: " << maximumNumber << std::endl;
-      msg << "[JacobiSet] Multi-saddle edges: " << monkeySaddleNumber
-          << std::endl;
-      dMsg(std::cout, msg.str(), Debug::infoMsg);
+  for(SimplexId i = 0; i < (SimplexId)jacobiSet.size(); i++) {
+    switch(jacobiSet[i].second) {
+      case 0:
+        minimumNumber++;
+        break;
+      case 1:
+        saddleNumber++;
+        break;
+      case 2:
+        maximumNumber++;
+        break;
+      case -1:
+        monkeySaddleNumber++;
+        break;
     }
   }
 
-  {
-    std::stringstream msg;
-    msg << "[JacobiSet] Data-set (" << edgeNumber << " edges) processed in "
-        << t.getElapsedTime() << " s. (" << threadNumber_ << " thread(s))."
-        << std::endl;
-    msg << "[JacobiSet] Jacobi edge rate: "
-        << 100 * (jacobiSet.size() / ((double)edgeNumber)) << "%" << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
-  }
+  this->printMsg(
+    std::vector<std::vector<std::string>>{
+      {"#Minimum edges", std::to_string(minimumNumber)},
+      {"#Saddle edges", std::to_string(saddleNumber)},
+      {"#Maximum edges", std::to_string(maximumNumber)},
+      {"#Multi-saddle edges", std::to_string(monkeySaddleNumber)}},
+    debug::Priority::DETAIL);
+
+  this->printMsg(
+    "Data-set processed", 1.0, t.getElapsedTime(), this->threadNumber_);
+  this->printMsg("Jacobi edge rate: "
+                 + std::to_string(100.0 * jacobiSet.size() / (double)edgeNumber)
+                 + "%");
 
   return 0;
 }
@@ -131,11 +123,7 @@ int ttk::JacobiSet::executeLegacy(
 
   Timer t;
 
-  {
-    std::stringstream msg;
-    msg << "[JacobiSet] Using legacy implementation..." << std::endl;
-    dMsg(std::cout, msg.str(), Debug::infoMsg);
-  }
+  this->printWrn("Using legacy implementation...");
 
   // check the consistency of the variables -- to adapt
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -274,48 +262,40 @@ int ttk::JacobiSet::executeLegacy(
     }
   }
 
-  if(debugLevel_ >= Debug::infoMsg) {
-    SimplexId minimumNumber = 0, saddleNumber = 0, maximumNumber = 0,
-              monkeySaddleNumber = 0;
+  SimplexId minimumNumber = 0, saddleNumber = 0, maximumNumber = 0,
+            monkeySaddleNumber = 0;
 
-    for(SimplexId i = 0; i < (SimplexId)jacobiSet.size(); i++) {
-      switch(jacobiSet[i].second) {
-        case 0:
-          minimumNumber++;
-          break;
-        case 1:
-          saddleNumber++;
-          break;
-        case 2:
-          maximumNumber++;
-          break;
-        case -1:
-          monkeySaddleNumber++;
-          break;
-      }
-    }
-
-    {
-      std::stringstream msg;
-      msg << "[JacobiSet] Minimum edges: " << minimumNumber << std::endl;
-      msg << "[JacobiSet] Saddle edges: " << saddleNumber << std::endl;
-      msg << "[JacobiSet] Maximum edges: " << maximumNumber << std::endl;
-      msg << "[JacobiSet] Multi-saddle edges: " << monkeySaddleNumber
-          << std::endl;
-      dMsg(std::cout, msg.str(), Debug::infoMsg);
+  for(SimplexId i = 0; i < (SimplexId)jacobiSet.size(); i++) {
+    switch(jacobiSet[i].second) {
+      case 0:
+        minimumNumber++;
+        break;
+      case 1:
+        saddleNumber++;
+        break;
+      case 2:
+        maximumNumber++;
+        break;
+      case -1:
+        monkeySaddleNumber++;
+        break;
     }
   }
 
-  {
-    std::stringstream msg;
-    msg << "[JacobiSet] Data-set (" << edgeList_->size()
-        << " edges) processed in " << t.getElapsedTime() << " s. ("
-        << threadNumber_ << " thread(s))." << std::endl;
-    msg << "[JacobiSet] Jacobi edge rate: "
-        << 100 * (jacobiSet.size() / ((double)edgeList_->size())) << "%"
-        << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
-  }
+  this->printMsg(
+    std::vector<std::vector<std::string>>{
+      {"#Minimum edges", std::to_string(minimumNumber)},
+      {"#Saddle edges", std::to_string(saddleNumber)},
+      {"#Maximum edges", std::to_string(maximumNumber)},
+      {"#Multi-saddle edges", std::to_string(monkeySaddleNumber)}},
+    debug::Priority::DETAIL);
+
+  this->printMsg(
+    "Data-set processed", 1.0, t.getElapsedTime(), this->threadNumber_);
+  this->printMsg(
+    "Jacobi edge rate: "
+    + std::to_string(100.0 * (jacobiSet.size() / ((double)edgeList_->size())))
+    + "%");
 
   return 0;
 }
@@ -442,11 +422,9 @@ char ttk::JacobiSet::getCriticalType(const SimplexId &edgeId) {
             } else if(distance > 0) {
               upperNeighbors.push_back(vertexId);
             } else {
-              std::stringstream msg;
-              msg << "[JacobiSet] "
-                  << "Inconsistent (non-bijective?) offsets for vertex #"
-                  << vertexId << std::endl;
-              dMsg(std::cerr, msg.str(), Debug::infoMsg);
+              this->printWrn(
+                "Inconsistent (non-bijective?) offsets for vertex #"
+                + std::to_string(vertexId));
             }
           }
         }
