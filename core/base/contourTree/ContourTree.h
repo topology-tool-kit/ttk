@@ -452,7 +452,7 @@ namespace ttk {
                         const Node *newDown,
                         const Node *newUp);
 
-    int print(std::ostream &stream, const int &debugLevel) const;
+    int print() const;
 
     inline void setMaximumList(std::vector<int> &maximumList) {
       maximumList_ = &(maximumList);
