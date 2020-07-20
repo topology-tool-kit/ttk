@@ -22,9 +22,6 @@
 #include <Triangulation.h>
 #include <UnionFind.h>
 
-#include <cmath>
-#include <queue>
-#include <set>
 #include <vector>
 
 namespace ttk {

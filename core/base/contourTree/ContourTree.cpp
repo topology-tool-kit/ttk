@@ -1,5 +1,9 @@
 #include <ContourTree.h>
+
+#include <cmath>
 #include <iomanip>
+#include <queue>
+#include <set>
 
 using namespace std;
 using namespace ttk;
