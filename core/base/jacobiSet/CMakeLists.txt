@@ -1,7 +1,7 @@
 ttk_add_base_template_library(jacobiSet
   HEADERS
     JacobiSet.h
-    JacobiSet.inl
+    JacobiSet_Template.h
   DEPENDS
     scalarFieldCriticalPoints
     triangulation

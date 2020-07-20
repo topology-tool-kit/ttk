@@ -134,6 +134,6 @@ namespace ttk {
 } // namespace ttk
 
 // if the package is not a template, comment the following line
-#include "JacobiSet.inl"
+#include "JacobiSet_Template.h"
 
 #endif // JACOBISET_H
