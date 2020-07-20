@@ -53,9 +53,12 @@ int RangeDrivenOctree::rangeSegmentQuery(
 
   SimplexId ret = rangeSegmentQuery(p0, p1, rootId_, cellList);
 
-  this->printMsg("Query done", 1.0, t.getElapsedTime(), this->threadNumber_);
-  this->printMsg(std::vector<std::vector<std::string>>{
-    {"#Non empty leaves", std::to_string(cellList.size())}});
+  this->printMsg("Query done", 1.0, t.getElapsedTime(), this->threadNumber_,
+                 debug::LineMode::NEW, debug::Priority::DETAIL);
+  this->printMsg(
+    std::vector<std::vector<std::string>>{
+      {"#Non empty leaves", std::to_string(cellList.size())}},
+    debug::Priority::DETAIL);
 
   return ret;
 }
