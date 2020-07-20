@@ -19,6 +19,24 @@
 /// This filter can be used as any other VTK filter (for instance, by using the
 /// sequence of calls SetInputData(), Update(), GetOutput()).
 ///
+/// The input data arrays needs to be specified via the standard VTK call
+/// vtkAlgorithm::SetInputArrayToProcess() with the following parameters:
+/// \param idx 0 for the U Component, 1 for the V Component
+/// \param port 0 (FIXED: first port)
+/// \param connection 0 (FIXED: first connection)
+/// \param fieldAssociation 0 (FIXED: point data)
+/// \param arrayName (DYNAMIC: string identifier of the input array)
+///
+/// The optional offset arrays can be specified via the standard VTK call
+/// vtkAlgorithm::SetInputArrayToProcess() with the following parameters:
+/// \param idx 2 for the U Offset Field, 3 for the V Offset Field
+/// \param port 0 (FIXED: first port)
+/// \param connection 0 (FIXED: first connection)
+/// \param fieldAssociation 0 (FIXED: point data)
+/// \param arrayName (DYNAMIC: string identifier of the offset array)
+/// \note: To use this optional array, `ForceInputOffsetScalarField` needs to be
+/// enabled with the setter `setForceInputOffsetScalarField()'.
+///
 /// See the related ParaView example state files for usage examples within a
 /// VTK pipeline.
 ///
