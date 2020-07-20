@@ -131,11 +131,16 @@ int ttkJacobiSet::baseCall(vtkDataSet *input,
     }
   }
 
-  // go!
-  jacobiSet.execute<dataTypeU, dataTypeV>(
-    jacobiSet_, static_cast<dataTypeU *>(ttkUtils::GetVoidPointer(uField)),
-    static_cast<dataTypeV *>(ttkUtils::GetVoidPointer(vField)),
-    *triangulation->getData());
+#define EXEC(_DATATYPE, TRIANGLCASE, TRIANGLTYPE, _CALL)                      \
+  case TRIANGLCASE: {                                                         \
+    jacobiSet.execute(                                                        \
+      jacobiSet_, static_cast<dataTypeU *>(ttkUtils::GetVoidPointer(uField)), \
+      static_cast<dataTypeV *>(ttkUtils::GetVoidPointer(vField)),             \
+      *static_cast<TRIANGLTYPE *>(triangulation->getData()));                 \
+  } break;
+
+  ttkVtkTemplateTrianglMacro(_, triangulation->getType(), EXEC, _);
+
   Modified();
 
   return 0;
