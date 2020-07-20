@@ -1,26 +1,28 @@
 #include "JacobiSet.h"
 
-template <class dataTypeU, class dataTypeV>
-int ttk::JacobiSet::execute(
-  std::vector<std::pair<SimplexId, char>> &jacobiSet) {
+template <class dataTypeU, class dataTypeV, typename triangulationType>
+int ttk::JacobiSet::execute(std::vector<std::pair<SimplexId, char>> &jacobiSet,
+                            const dataTypeU *const uField,
+                            const dataTypeV *const vField,
+                            const triangulationType &triangulation) {
 
   Timer t;
 
   // check the consistency of the variables -- to adapt
 #ifndef TTK_ENABLE_KAMIKAZE
-  if((!triangulation_) || (triangulation_->isEmpty())) {
+  if((triangulation.isEmpty())) {
     if(vertexNumber_) {
-      return executeLegacy<dataTypeU, dataTypeV>(jacobiSet);
+      return executeLegacy(jacobiSet, uField, vField, triangulation);
     }
     return -1;
   }
-  if(!uField_)
+  if(!uField)
     return -2;
-  if(!vField_)
+  if(!vField)
     return -3;
 #endif
 
-  SimplexId vertexNumber = triangulation_->getNumberOfVertices();
+  SimplexId vertexNumber = triangulation.getNumberOfVertices();
 
   if(!sosOffsetsU_) {
     // let's use our own local copy
@@ -50,7 +52,7 @@ int ttk::JacobiSet::execute(
 
   jacobiSet.clear();
 
-  SimplexId edgeNumber = triangulation_->getNumberOfEdges();
+  SimplexId edgeNumber = triangulation.getNumberOfEdges();
 
   std::vector<std::vector<std::pair<SimplexId, char>>> threadedCriticalTypes(
     threadNumber_);
@@ -60,7 +62,7 @@ int ttk::JacobiSet::execute(
 #endif
   for(SimplexId i = 0; i < edgeNumber; i++) {
 
-    char type = getCriticalType<dataTypeU, dataTypeV>(i);
+    char type = getCriticalType(i, uField, vField, triangulation);
 
     if(type != -2) {
       // -2: regular vertex
@@ -117,9 +119,12 @@ int ttk::JacobiSet::execute(
   return 0;
 }
 
-template <class dataTypeU, class dataTypeV>
+template <class dataTypeU, class dataTypeV, typename triangulationType>
 int ttk::JacobiSet::executeLegacy(
-  std::vector<std::pair<SimplexId, char>> &jacobiSet) {
+  std::vector<std::pair<SimplexId, char>> &jacobiSet,
+  const dataTypeU *const uField,
+  const dataTypeV *const vField,
+  const triangulationType &triangulation) {
 
   Timer t;
 
@@ -129,9 +134,9 @@ int ttk::JacobiSet::executeLegacy(
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!vertexNumber_)
     return -1;
-  if(!uField_)
+  if(!uField)
     return -2;
-  if(!vField_)
+  if(!vField)
     return -3;
   if(!edgeList_)
     return -4;
@@ -146,9 +151,6 @@ int ttk::JacobiSet::executeLegacy(
   SimplexId count = 0;
 
   jacobiSet.clear();
-
-  dataTypeU *uField = (dataTypeU *)uField_;
-  dataTypeV *vField = (dataTypeV *)vField_;
 
   // distance fields (not really memory efficient)
   // for each thread
@@ -300,15 +302,15 @@ int ttk::JacobiSet::executeLegacy(
   return 0;
 }
 
-template <class dataTypeU, class dataTypeV>
-char ttk::JacobiSet::getCriticalType(const SimplexId &edgeId) {
-
-  dataTypeU *uField = (dataTypeU *)uField_;
-  dataTypeV *vField = (dataTypeV *)vField_;
+template <class dataTypeU, class dataTypeV, typename triangulationType>
+char ttk::JacobiSet::getCriticalType(const SimplexId &edgeId,
+                                     const dataTypeU *const uField,
+                                     const dataTypeV *const vField,
+                                     const triangulationType &triangulation) {
 
   SimplexId vertexId0 = -1, vertexId1 = -1;
-  triangulation_->getEdgeVertex(edgeId, 0, vertexId0);
-  triangulation_->getEdgeVertex(edgeId, 1, vertexId1);
+  triangulation.getEdgeVertex(edgeId, 0, vertexId0);
+  triangulation.getEdgeVertex(edgeId, 1, vertexId1);
 
   double projectedPivotVertex[2];
   projectedPivotVertex[0] = uField[vertexId0];
@@ -326,7 +328,7 @@ char ttk::JacobiSet::getCriticalType(const SimplexId &edgeId) {
   rangeNormal[0] = -rangeEdge[1];
   rangeNormal[1] = rangeEdge[0];
 
-  SimplexId starNumber = triangulation_->getEdgeStarNumber(edgeId);
+  SimplexId starNumber = triangulation.getEdgeStarNumber(edgeId);
   std::vector<SimplexId> lowerNeighbors, upperNeighbors;
 
   SimplexId neighborNumber = 0;
@@ -334,12 +336,12 @@ char ttk::JacobiSet::getCriticalType(const SimplexId &edgeId) {
   for(SimplexId i = 0; i < starNumber; i++) {
 
     SimplexId tetId = -1;
-    triangulation_->getEdgeStar(edgeId, i, tetId);
+    triangulation.getEdgeStar(edgeId, i, tetId);
 
-    SimplexId vertexNumber = triangulation_->getCellVertexNumber(tetId);
+    SimplexId vertexNumber = triangulation.getCellVertexNumber(tetId);
     for(SimplexId j = 0; j < vertexNumber; j++) {
       SimplexId vertexId = -1;
-      triangulation_->getCellVertex(tetId, j, vertexId);
+      triangulation.getCellVertex(tetId, j, vertexId);
 
       if((vertexId != -1) && (vertexId != vertexId0)
          && (vertexId != vertexId1)) {
@@ -464,16 +466,16 @@ char ttk::JacobiSet::getCriticalType(const SimplexId &edgeId) {
   for(SimplexId i = 0; i < starNumber; i++) {
 
     SimplexId tetId = -1;
-    triangulation_->getEdgeStar(edgeId, i, tetId);
+    triangulation.getEdgeStar(edgeId, i, tetId);
 
-    SimplexId vertexNumber = triangulation_->getCellVertexNumber(tetId);
+    SimplexId vertexNumber = triangulation.getCellVertexNumber(tetId);
     for(SimplexId j = 0; j < vertexNumber; j++) {
       SimplexId edgeVertexId0 = -1;
-      triangulation_->getCellVertex(tetId, j, edgeVertexId0);
+      triangulation.getCellVertex(tetId, j, edgeVertexId0);
       if((edgeVertexId0 != vertexId0) && (edgeVertexId0 != vertexId1)) {
         for(SimplexId k = j + 1; k < vertexNumber; k++) {
           SimplexId edgeVertexId1 = -1;
-          triangulation_->getCellVertex(tetId, k, edgeVertexId1);
+          triangulation.getCellVertex(tetId, k, edgeVertexId1);
           if((edgeVertexId1 != vertexId0) && (edgeVertexId1 != vertexId1)) {
             // processing the edge (edgeVertexId0, edgeVertexId1)
 
@@ -549,20 +551,19 @@ char ttk::JacobiSet::getCriticalType(const SimplexId &edgeId) {
 }
 
 template <class dataTypeU, class dataTypeV>
-int ttk::JacobiSet::perturbate(const dataTypeU &uEpsilon,
-                               const dataTypeV &vEpsilon) const {
+int ttk::JacobiSet::perturbate(const dataTypeU *const uField,
+                               const dataTypeV *const vField,
+                               const dataTypeU uEpsilon,
+                               const dataTypeV vEpsilon) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(!uField_)
+  if(!uField)
     return -1;
-  if(!vField_)
+  if(!vField)
     return -2;
   if(!vertexNumber_)
     return -3;
 #endif
-
-  dataTypeU *uField = (dataTypeU *)uField_;
-  dataTypeV *vField = (dataTypeV *)vField_;
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)

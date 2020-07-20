@@ -1,4 +1,5 @@
 #include <ttkJacobiSet.h>
+#include <ttkUtils.h>
 
 using namespace std;
 using namespace ttk;
@@ -40,8 +41,6 @@ int ttkJacobiSet::baseCall(vtkDataSet *input,
   jacobiSet.preconditionTriangulation(triangulation);
 
   // point data
-  jacobiSet.setInputField(uField->GetVoidPointer(0), vField->GetVoidPointer(0));
-
   vtkDataArray *offsetFieldU = NULL, *offsetFieldV = NULL;
 
   if((ForceInputOffsetScalarField)
@@ -119,7 +118,10 @@ int ttkJacobiSet::baseCall(vtkDataSet *input,
   }
 
   // go!
-  jacobiSet.execute<dataTypeU, dataTypeV>(jacobiSet_);
+  jacobiSet.execute<dataTypeU, dataTypeV>(
+    jacobiSet_, static_cast<dataTypeU *>(ttkUtils::GetVoidPointer(uField)),
+    static_cast<dataTypeV *>(ttkUtils::GetVoidPointer(vField)),
+    *triangulation->getData());
   Modified();
 
   return 0;

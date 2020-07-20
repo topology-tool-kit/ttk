@@ -36,15 +36,23 @@ namespace ttk {
   public:
     JacobiSet();
 
-    template <class dataTypeU, class dataTypeV>
-    int execute(std::vector<std::pair<SimplexId, char>> &jacobiSet);
+    template <class dataTypeU, class dataTypeV, typename triangulationType>
+    int execute(std::vector<std::pair<SimplexId, char>> &jacobiSet,
+                const dataTypeU *const uField,
+                const dataTypeV *const vField,
+                const triangulationType &triangulation);
+
+    template <class dataTypeU, class dataTypeV, typename triangulationType>
+    char getCriticalType(const SimplexId &edgeId,
+                         const dataTypeU *const uField,
+                         const dataTypeV *const vField,
+                         const triangulationType &triangulation);
 
     template <class dataTypeU, class dataTypeV>
-    char getCriticalType(const SimplexId &edgeId);
-
-    template <class dataTypeU, class dataTypeV>
-    int perturbate(const dataTypeU &uEpsilon = Geometry::powIntTen(-DBL_DIG),
-                   const dataTypeV &vEpsilon
+    int perturbate(const dataTypeU *const uField,
+                   const dataTypeV *const vField,
+                   const dataTypeU uEpsilon = Geometry::powIntTen(-DBL_DIG),
+                   const dataTypeV vEpsilon
                    = Geometry::powIntTen(-DBL_DIG)) const;
 
     inline void
@@ -61,11 +69,6 @@ namespace ttk {
     inline void setEdgeList(
       const std::vector<std::pair<SimplexId, SimplexId>> *edgeList) {
       edgeList_ = edgeList;
-    }
-
-    inline void setInputField(const void *uField, const void *vField) {
-      uField_ = uField;
-      vField_ = vField;
     }
 
     inline void setSosOffsets(std::vector<SimplexId> *sosOffsets) {
@@ -92,8 +95,7 @@ namespace ttk {
     }
 
     inline void
-      preconditionTriangulation(AbstractTriangulation *triangulation) {
-      triangulation_ = triangulation;
+      preconditionTriangulation(AbstractTriangulation *const triangulation) {
       if(triangulation) {
         triangulation->preconditionEdges();
         triangulation->preconditionEdgeStars();
@@ -101,12 +103,14 @@ namespace ttk {
     }
 
   protected:
-    template <class dataTypeU, class dataTypeV>
-    int executeLegacy(std::vector<std::pair<SimplexId, char>> &jacobiSet);
+    template <class dataTypeU, class dataTypeV, typename triangulationType>
+    int executeLegacy(std::vector<std::pair<SimplexId, char>> &jacobiSet,
+                      const dataTypeU *const uField,
+                      const dataTypeV *const vField,
+                      const triangulationType &triangulation);
 
     SimplexId vertexNumber_{};
     const SimplexId *tetList_{};
-    const void *uField_{}, *vField_{};
     const std::vector<std::pair<SimplexId, SimplexId>> *edgeList_{};
     // for each edge, one skeleton of its triangle fan
     const std::vector<std::vector<std::pair<SimplexId, SimplexId>>>
@@ -115,7 +119,6 @@ namespace ttk {
     const std::vector<std::vector<SimplexId>> *edgeFans_{};
     std::vector<SimplexId> *sosOffsetsU_{}, *sosOffsetsV_{};
     std::vector<SimplexId> localSosOffsetsU_{}, localSosOffsetsV_{};
-    AbstractTriangulation *triangulation_{};
   };
 } // namespace ttk
 

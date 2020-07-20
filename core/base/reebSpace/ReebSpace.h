@@ -449,10 +449,10 @@ inline int ttk::ReebSpace::execute() {
 
   jacobiSet.setWrapper(wrapper_);
   jacobiSet.preconditionTriangulation(triangulation_);
-  jacobiSet.setInputField(uField_, vField_);
   jacobiSet.setSosOffsetsU(sosOffsetsU_);
   jacobiSet.setSosOffsetsV(sosOffsetsV_);
-  jacobiSet.execute<dataTypeU, dataTypeV>(jacobiSetEdges_);
+  jacobiSet.execute(jacobiSetEdges_, static_cast<const dataTypeU *>(uField_),
+                    static_cast<const dataTypeV *>(vField_), *triangulation_);
 
   // 2) compute the list saddle 1-sheets
   // + list of saddle 0-sheets
@@ -825,9 +825,9 @@ inline int ttk::ReebSpace::perturbate(const dataTypeU &uEpsilon,
 
   JacobiSet jacobiSet{};
   jacobiSet.setWrapper(wrapper_);
-  jacobiSet.setInputField(uField_, vField_);
   jacobiSet.setVertexNumber(vertexNumber_);
-  jacobiSet.perturbate(uEpsilon, vEpsilon);
+  jacobiSet.perturbate(static_cast<dataTypeU *>(uField_),
+                       static_cast<dataTypeV *>(vField_), uEpsilon, vEpsilon);
 
   return 0;
 }
