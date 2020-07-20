@@ -272,9 +272,29 @@ namespace ttk {
                         const SimplificationCriterion &criterion
                         = SimplificationCriterion::rangeArea);
 
-  protected:
-    class ReebSpaceData;
+  private:
+    // output segmentation
+    struct ReebSpaceData {
+      SimplificationCriterion simplificationCriterion_{};
+      double simplificationThreshold_{};
 
+      std::vector<SimplexId> edge2sheet1_{};
+      std::vector<SimplexId> edgeTypes_{};
+      std::vector<SimplexId> tet2sheet3_{};
+      std::vector<SimplexId> vertex2sheet0_{};
+      std::vector<SimplexId> vertex2sheet3_{};
+
+      // structure
+      std::vector<Sheet0> sheet0List_{};
+      std::vector<Sheet1> sheet1List_{};
+      std::vector<Sheet2> sheet2List_{};
+      std::vector<Sheet3> sheet3List_{};
+
+      //         std::vector<float>         sheet3points_;
+      //         std::vector<long long int> sheet3cells_;
+    };
+
+  protected:
     int compute1sheetsOnly(
       const std::vector<std::pair<SimplexId, char>> &jacobiSet,
       std::vector<std::pair<SimplexId, SimplexId>> &jacobiSetClassification);
@@ -368,28 +388,6 @@ namespace ttk {
 
     const void *uField_{}, *vField_{};
     std::vector<SimplexId> *sosOffsetsU_{}, *sosOffsetsV_{};
-
-    // output segmentation
-    class ReebSpaceData {
-    public:
-      SimplificationCriterion simplificationCriterion_{};
-      double simplificationThreshold_{};
-
-      std::vector<SimplexId> edge2sheet1_{};
-      std::vector<SimplexId> edgeTypes_{};
-      std::vector<SimplexId> tet2sheet3_{};
-      std::vector<SimplexId> vertex2sheet0_{};
-      std::vector<SimplexId> vertex2sheet3_{};
-
-      // structure
-      std::vector<Sheet0> sheet0List_{};
-      std::vector<Sheet1> sheet1List_{};
-      std::vector<Sheet2> sheet2List_{};
-      std::vector<Sheet3> sheet3List_{};
-
-      //         std::vector<float>         sheet3points_;
-      //         std::vector<long long int> sheet3cells_;
-    };
 
     bool hasConnectedSheets_{false}, expand3sheets_{true},
       withRangeDrivenOctree_{true};
