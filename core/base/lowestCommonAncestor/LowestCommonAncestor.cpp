@@ -36,7 +36,8 @@ int ttk::LowestCommonAncestor::preprocess() {
     return retval;
   }
 
-  this->printMsg("Preprocessed queries.", 1.0, t.getElapsedTime(), 1);
+  this->printMsg("Preprocessed queries.", 1.0, t.getElapsedTime(), 1,
+                 debug::LineMode::NEW, debug::Priority::DETAIL);
 
   return 0;
 }
