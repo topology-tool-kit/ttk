@@ -1,47 +1,142 @@
 /// \author Julien Tierny <julien.tierny@lip6.fr>.
 /// \date February 2017.
 ///
-/// \brief Command line program for Jacobi set computation.
+/// \brief Command line program for JacobiSet computation.
 
 // include the local headers
+#include <CommandLineParser.h>
 #include <ttkJacobiSet.h>
-#include <ttkProgramBase.h>
 
-using namespace std;
-using namespace ttk;
+#include <vtkCellData.h>
+#include <vtkDataArray.h>
+#include <vtkDataSet.h>
+#include <vtkNew.h>
+#include <vtkPointData.h>
+#include <vtkXMLDataObjectWriter.h>
+#include <vtkXMLGenericDataObjectReader.h>
 
 int main(int argc, char **argv) {
 
-  vtkProgram<ttkJacobiSet> program;
+  std::vector<std::string> inputFilePaths;
+  std::vector<std::string> inputArrayNames;
+  std::string outputPathPrefix{"output"};
+  bool listArrays{false};
+  bool forceOffset{false};
 
-  // specify local parameters to the TTK module with default values.
-  int uComponentId = 0, vComponentId = 1;
+  {
+    ttk::CommandLineParser parser;
 
-  // register these arguments to the command line parser
-  program.parser_.setArgument(
-    "u", &uComponentId, "Identifier of the u-component field", true);
-  program.parser_.setArgument(
-    "v", &vComponentId, "Identifier of the v-component field", true);
+    // -------------------------------------------------------------------------
+    // Standard options and arguments
+    // -------------------------------------------------------------------------
+    parser.setArgument(
+      "i", &inputFilePaths, "Input data-sets (*.vti, *vtu, *vtp)", false);
+    parser.setArgument("a", &inputArrayNames, "Input array names", true);
+    parser.setArgument(
+      "o", &outputPathPrefix, "Output file prefix (no extension)", true);
+    parser.setOption("l", &listArrays, "List available arrays");
 
-  int ret = 0;
-  ret = program.init(argc, argv);
+    parser.setOption(
+      "F", &forceOffset, "Force custom offset fields (array #1)");
 
-  if(ret != 0)
-    return ret;
+    parser.parse(argc, argv);
+  }
 
-  // change here the arguments of the vtkWrapper that you want to update prior
-  // to execution.
-  program.ttkObject_->SetUcomponentId(uComponentId);
-  program.ttkObject_->SetVcomponentId(vComponentId);
+  ttk::Debug msg;
+  msg.setDebugMsgPrefix("JacobiSet");
 
-  // execute data processing
-  ret = program.run();
+  vtkNew<ttkJacobiSet> js{};
 
-  if(ret != 0)
-    return ret;
+  vtkDataArray *defaultArray = nullptr;
+  for(size_t i = 0; i < inputFilePaths.size(); i++) {
+    // init a reader that can parse any vtkDataObject stored in xml format
+    vtkNew<vtkXMLGenericDataObjectReader> reader{};
+    reader->SetFileName(inputFilePaths[i].data());
+    reader->Update();
 
-  // save the output
-  ret = program.save();
+    // check if input vtkDataObject was successfully read
+    auto inputDataObject = reader->GetOutput();
+    if(!inputDataObject) {
+      msg.printErr("Unable to read input file `" + inputFilePaths[i] + "' :(");
+      return 0;
+    }
 
-  return ret;
+    auto inputAsVtkDataSet = vtkDataSet::SafeDownCast(inputDataObject);
+
+    // if requested print list of arrays, otherwise proceed with execution
+    if(listArrays) {
+      msg.printMsg(inputFilePaths[i] + ":");
+      if(inputAsVtkDataSet) {
+        // Point Data
+        msg.printMsg("  PointData:");
+        auto pointData = inputAsVtkDataSet->GetPointData();
+        for(int j = 0; j < pointData->GetNumberOfArrays(); j++)
+          msg.printMsg("    - " + std::string(pointData->GetArrayName(j)));
+
+        // Cell Data
+        msg.printMsg("  CellData:");
+        auto cellData = inputAsVtkDataSet->GetCellData();
+        for(int j = 0; j < cellData->GetNumberOfArrays(); j++)
+          msg.printMsg("    - " + std::string(cellData->GetArrayName(j)));
+      } else {
+        msg.printErr("Unable to list arrays on file `" + inputFilePaths[i]
+                     + "'");
+        return 0;
+      }
+    } else {
+      // feed input object to the filter
+      js->SetInputDataObject(i, reader->GetOutput());
+
+      // default arrays
+      if(!defaultArray) {
+        defaultArray = inputAsVtkDataSet->GetPointData()->GetArray(0);
+        if(!defaultArray)
+          defaultArray = inputAsVtkDataSet->GetCellData()->GetArray(0);
+      }
+    }
+  }
+
+  // terminate program if it was just asked to list arrays
+  if(listArrays) {
+    return 1;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Specify which arrays of the input vtkDataObjects will be processed
+  // ---------------------------------------------------------------------------
+  if(!inputArrayNames.size()) {
+    if(defaultArray)
+      inputArrayNames.push_back(defaultArray->GetName());
+  }
+  for(size_t i = 0; i < inputArrayNames.size(); i++)
+    js->SetInputArrayToProcess(i, 0, 0, 0, inputArrayNames[i].data());
+
+  // TODO manage the offset array?
+
+  // ---------------------------------------------------------------------------
+  // Execute the filter
+  // ---------------------------------------------------------------------------
+  js->SetForceInputOffsetScalarField(forceOffset);
+  js->Update();
+
+  // ---------------------------------------------------------------------------
+  // If output prefix is specified then write all output objects to disk
+  // ---------------------------------------------------------------------------
+  if(!outputPathPrefix.empty()) {
+    for(int i = 0; i < js->GetNumberOfOutputPorts(); i++) {
+      auto output = js->GetOutputDataObject(i);
+      auto writer
+        = vtkXMLDataObjectWriter::NewWriter(output->GetDataObjectType());
+
+      std::string outputFileName = outputPathPrefix + "_port_"
+                                   + std::to_string(i) + "."
+                                   + writer->GetDefaultFileExtension();
+      msg.printMsg("Writing output file `" + outputFileName + "'...");
+      writer->SetInputDataObject(output);
+      writer->SetFileName(outputFileName.data());
+      writer->Update();
+    }
+  }
+
+  return 1;
 }
