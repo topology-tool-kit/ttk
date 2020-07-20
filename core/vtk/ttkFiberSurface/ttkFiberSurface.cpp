@@ -38,14 +38,20 @@ int ttkFiberSurface::FillOutputPortInformation(int port, vtkInformation *info) {
   return 0;
 }
 
-template <typename VTK_T1, typename VTK_T2, typename triangulationType>
-int ttkFiberSurface::dispatch(const triangulationType *const triangulation) {
+template <typename VTK_T1, typename VTK_T2>
+int ttkFiberSurface::dispatch(ttk::Triangulation *const triangulation) {
+
 #ifdef TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE
   if(RangeOctree) {
-    this->buildOctree<VTK_T1, VTK_T2>(triangulation);
+    ttkTemplateMacro(triangulation->getType(),
+                     (this->buildOctree<VTK_T1, VTK_T2>(
+                       static_cast<TTK_TT *>(triangulation->getData()))));
   }
 #endif // TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE
-  this->computeSurface<VTK_T1, VTK_T2>(triangulation);
+
+  ttkTemplateMacro(triangulation->getType(),
+                   (this->computeSurface<VTK_T1, VTK_T2>(
+                     static_cast<TTK_TT *>(triangulation->getData()))));
   return 0;
 }
 
@@ -142,15 +148,10 @@ int ttkFiberSurface::RequestData(vtkInformation *request,
     this->setVertexList(i, &(threadedVertexList_[i]));
   }
 
-  if(dataUfield->GetDataType() != dataVfield->GetDataType()) {
-    this->printErr(
-      "Scalar fields should have same input type. Use TTKPointDataConverter or "
-      "TTKArrayEditor to convert array types.");
+  switch(vtkTemplate2PackMacro(
+    dataUfield->GetDataType(), dataVfield->GetDataType())) {
+    vtkTemplate2Macro((dispatch<VTK_T1, VTK_T2>(triangulation)));
   }
-
-  ttkVtkTemplateMacro(dataUfield->GetDataType(), triangulation->getType(),
-                      (dispatch<VTK_TT, VTK_TT>(
-                        static_cast<TTK_TT *>(triangulation->getData()))));
 
   // prepare the VTK output
   // NOTE: right now, there is a copy of the output data. this is no good.

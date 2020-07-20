@@ -87,8 +87,8 @@ protected:
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;
 
-  template <typename VTK_T1, typename VTK_T2, typename triangulationType>
-  int dispatch(const triangulationType *const triangulation);
+  template <typename VTK_T1, typename VTK_T2>
+  int dispatch(ttk::Triangulation *const triangulation);
 
 private:
   bool RangeCoordinates{true}, EdgeParameterization{true}, EdgeIds{true},
