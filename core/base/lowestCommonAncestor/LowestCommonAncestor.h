@@ -12,13 +12,6 @@
 #include <Debug.h>
 #include <RangeMinimumQuery.h>
 // STL includes
-#include <algorithm>
-#include <array>
-#include <climits>
-#include <cmath>
-#include <sstream>
-#include <stack>
-#include <string>
 #include <vector>
 
 namespace ttk {
@@ -52,9 +45,7 @@ namespace ttk {
       std::vector<int> successor_{};
     };
 
-    LowestCommonAncestor() {
-      this->setDebugMsgPrefix("LowestCommonAncestor");
-    }
+    LowestCommonAncestor();
 
     /// Add a node in the tree
     /// \return Returns the id of the new node
@@ -119,27 +110,27 @@ namespace ttk {
 
   protected:
     /* Tree structure */
-    std::vector<Node> node_;
+    std::vector<Node> node_{};
 
     /* Eulerian Transverse */
-    std::vector<int> nodeOrder_;
-    std::vector<int> nodeDepth_;
-    std::vector<int> nodeFirstAppearence_;
+    std::vector<int> nodeOrder_{};
+    std::vector<int> nodeDepth_{};
+    std::vector<int> nodeFirstAppearence_{};
 
     /* Range Minimum Query */
-    int blocSize_;
+    int blocSize_{};
     // Boundaries of blocs
-    std::vector<std::pair<int, int>> blocPartition_;
+    std::vector<std::pair<int, int>> blocPartition_{};
     // Min values
-    std::vector<int> blocMinimumValue_;
+    std::vector<int> blocMinimumValue_{};
     // RMQ of the blocMinimumValue_ vector
-    RangeMinimumQuery<int> blocMinimumValueRMQ_;
+    RangeMinimumQuery<int> blocMinimumValueRMQ_{};
     // Positions of min values
-    std::vector<int> blocMinimumPosition_;
+    std::vector<int> blocMinimumPosition_{};
     // All queries for each possible bloc (positions)
-    std::vector<std::vector<std::vector<int>>> normalizedBlocTable_;
+    std::vector<std::vector<std::vector<int>>> normalizedBlocTable_{};
     // Corresponding normalized bloc for each bloc of nodeDepth_
-    std::vector<int> blocToNormalizedBloc_;
+    std::vector<int> blocToNormalizedBloc_{};
   };
 
 } // namespace ttk
