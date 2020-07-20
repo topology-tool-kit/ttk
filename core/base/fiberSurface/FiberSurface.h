@@ -2373,7 +2373,7 @@ template <class dataTypeU, class dataTypeV>
 inline int ttk::FiberSurface::remeshIntersections() const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
-  if((!tetNumber_) && (!triangulation))
+  if(!tetNumber_)
     return -1;
 #endif
 
@@ -2438,7 +2438,6 @@ inline int ttk::FiberSurface::remeshIntersections() const {
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(SimplexId i = 0; i < (SimplexId)tetList.size(); i++) {
-
     SimplexId tetId = tetList[i];
 
     // pre-process by merging nearby vertices...?
@@ -2523,7 +2522,6 @@ inline int ttk::FiberSurface::remeshIntersections() const {
   }
 
   for(SimplexId i = 0; i < (SimplexId)tetIntersections.size(); i++) {
-
     for(SimplexId j = 0; j < (SimplexId)tetIntersections[i].size(); j++) {
 
       if(((tetIntersections[i][j].intersection_.first != -DBL_MAX)
