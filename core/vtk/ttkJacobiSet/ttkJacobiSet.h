@@ -63,6 +63,11 @@ protected:
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;
 
+  template <class dataTypeU, class dataTypeV>
+  int dispatch(const dataTypeU *const uField,
+               const dataTypeV *const vField,
+               ttk::Triangulation *const triangulation);
+
 private:
   bool ForceInputOffsetScalarField{false};
   bool EdgeIds{false}, VertexScalars{false};
@@ -74,10 +79,4 @@ private:
   std::vector<std::vector<ttk::SimplexId>> edgeFans_{};
   std::vector<std::pair<ttk::SimplexId, char>> jacobiSet_{};
   std::vector<ttk::SimplexId> sosOffsetsU_{}, sosOffsetsV_{};
-
-  template <class dataTypeU, class dataTypeV>
-  int baseCall(vtkDataSet *input,
-               vtkDataArray *uField,
-               vtkDataArray *vField,
-               ttk::Triangulation *triangulation);
 };

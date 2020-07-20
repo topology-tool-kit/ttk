@@ -40,21 +40,13 @@ int ttkJacobiSet::FillOutputPortInformation(int port, vtkInformation *info) {
 }
 
 template <class dataTypeU, class dataTypeV>
-int ttkJacobiSet::baseCall(vtkDataSet *input,
-                           vtkDataArray *uField,
-                           vtkDataArray *vField,
-                           ttk::Triangulation *triangulation) {
-
-#define EXEC(_DATATYPE, TRIANGLCASE, TRIANGLTYPE, _CALL)                      \
-  case TRIANGLCASE: {                                                         \
-    this->execute(jacobiSet_,                                                 \
-                  static_cast<dataTypeU *>(ttkUtils::GetVoidPointer(uField)), \
-                  static_cast<dataTypeV *>(ttkUtils::GetVoidPointer(vField)), \
-                  *static_cast<TRIANGLTYPE *>(triangulation->getData()));     \
-  } break;
-
-  ttkVtkTemplateTrianglMacro(_, triangulation->getType(), EXEC, _);
-
+int ttkJacobiSet::dispatch(const dataTypeU *const uField,
+                           const dataTypeV *const vField,
+                           ttk::Triangulation *const triangulation) {
+  ttkTemplateMacro(
+    triangulation->getType(),
+    this->execute(jacobiSet_, uField, vField,
+                  *static_cast<TTK_TT *>(triangulation->getData())));
   return 0;
 }
 
@@ -107,7 +99,9 @@ int ttkJacobiSet::RequestData(vtkInformation *request,
   switch(vtkTemplate2PackMacro(
     uComponent->GetDataType(), vComponent->GetDataType())) {
     vtkTemplate2Macro(
-      (baseCall<VTK_T1, VTK_T2>(input, uComponent, vComponent, triangulation)));
+      dispatch(static_cast<VTK_T1 *>(ttkUtils::GetVoidPointer(uComponent)),
+               static_cast<VTK_T2 *>(ttkUtils::GetVoidPointer(vComponent)),
+               triangulation));
   }
 
   vtkNew<vtkSignedCharArray> edgeTypes{};
