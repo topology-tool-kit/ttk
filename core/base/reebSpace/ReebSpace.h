@@ -272,7 +272,7 @@ namespace ttk {
         triangulation_->preconditionEdges();
         triangulation_->preconditionVertexEdges();
 
-        JacobiSet<dataTypeU, dataTypeV> jacobiSet;
+        JacobiSet jacobiSet{};
         jacobiSet.setWrapper(wrapper_);
 
         // trigger the jacobiSet pre-processing on the triangulation.
@@ -445,14 +445,14 @@ inline int ttk::ReebSpace::execute() {
   Timer t;
 
   // 1) compute the jacobi set
-  JacobiSet<dataTypeU, dataTypeV> jacobiSet;
+  JacobiSet jacobiSet{};
 
   jacobiSet.setWrapper(wrapper_);
   jacobiSet.preconditionTriangulation(triangulation_);
   jacobiSet.setInputField(uField_, vField_);
   jacobiSet.setSosOffsetsU(sosOffsetsU_);
   jacobiSet.setSosOffsetsV(sosOffsetsV_);
-  jacobiSet.execute(jacobiSetEdges_);
+  jacobiSet.execute<dataTypeU, dataTypeV>(jacobiSetEdges_);
 
   // 2) compute the list saddle 1-sheets
   // + list of saddle 0-sheets
@@ -823,7 +823,7 @@ template <class dataTypeU, class dataTypeV>
 inline int ttk::ReebSpace::perturbate(const dataTypeU &uEpsilon,
                                       const dataTypeV &vEpsilon) const {
 
-  JacobiSet<dataTypeU, dataTypeV> jacobiSet;
+  JacobiSet jacobiSet{};
   jacobiSet.setWrapper(wrapper_);
   jacobiSet.setInputField(uField_, vField_);
   jacobiSet.setVertexNumber(vertexNumber_);

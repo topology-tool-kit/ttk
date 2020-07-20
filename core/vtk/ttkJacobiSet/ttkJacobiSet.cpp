@@ -35,7 +35,7 @@ int ttkJacobiSet::baseCall(vtkDataSet *input,
     return -1;
 
   triangulation->setWrapper(this);
-  JacobiSet<dataTypeU, dataTypeV> jacobiSet;
+  JacobiSet jacobiSet{};
   jacobiSet.setWrapper(this);
   jacobiSet.preconditionTriangulation(triangulation);
 
@@ -119,7 +119,7 @@ int ttkJacobiSet::baseCall(vtkDataSet *input,
   }
 
   // go!
-  jacobiSet.execute(jacobiSet_);
+  jacobiSet.execute<dataTypeU, dataTypeV>(jacobiSet_);
   Modified();
 
   return 0;

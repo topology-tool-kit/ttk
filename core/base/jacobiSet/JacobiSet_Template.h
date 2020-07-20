@@ -1,12 +1,7 @@
 #include "JacobiSet.h"
 
 template <class dataTypeU, class dataTypeV>
-ttk::JacobiSet<dataTypeU, dataTypeV>::JacobiSet() {
-  this->setDebugMsgPrefix("JacobiSet");
-}
-
-template <class dataTypeU, class dataTypeV>
-int ttk::JacobiSet<dataTypeU, dataTypeV>::execute(
+int ttk::JacobiSet::execute(
   std::vector<std::pair<SimplexId, char>> &jacobiSet) {
 
   Timer t;
@@ -15,7 +10,7 @@ int ttk::JacobiSet<dataTypeU, dataTypeV>::execute(
 #ifndef TTK_ENABLE_KAMIKAZE
   if((!triangulation_) || (triangulation_->isEmpty())) {
     if(vertexNumber_) {
-      return executeLegacy(jacobiSet);
+      return executeLegacy<dataTypeU, dataTypeV>(jacobiSet);
     }
     return -1;
   }
@@ -65,7 +60,7 @@ int ttk::JacobiSet<dataTypeU, dataTypeV>::execute(
 #endif
   for(SimplexId i = 0; i < edgeNumber; i++) {
 
-    char type = getCriticalType(i);
+    char type = getCriticalType<dataTypeU, dataTypeV>(i);
 
     if(type != -2) {
       // -2: regular vertex
@@ -131,7 +126,7 @@ int ttk::JacobiSet<dataTypeU, dataTypeV>::execute(
 }
 
 template <class dataTypeU, class dataTypeV>
-int ttk::JacobiSet<dataTypeU, dataTypeV>::executeLegacy(
+int ttk::JacobiSet::executeLegacy(
   std::vector<std::pair<SimplexId, char>> &jacobiSet) {
 
   Timer t;
@@ -326,8 +321,7 @@ int ttk::JacobiSet<dataTypeU, dataTypeV>::executeLegacy(
 }
 
 template <class dataTypeU, class dataTypeV>
-char ttk::JacobiSet<dataTypeU, dataTypeV>::getCriticalType(
-  const SimplexId &edgeId) {
+char ttk::JacobiSet::getCriticalType(const SimplexId &edgeId) {
 
   dataTypeU *uField = (dataTypeU *)uField_;
   dataTypeV *vField = (dataTypeV *)vField_;
@@ -577,8 +571,8 @@ char ttk::JacobiSet<dataTypeU, dataTypeV>::getCriticalType(
 }
 
 template <class dataTypeU, class dataTypeV>
-int ttk::JacobiSet<dataTypeU, dataTypeV>::perturbate(
-  const dataTypeU &uEpsilon, const dataTypeV &vEpsilon) const {
+int ttk::JacobiSet::perturbate(const dataTypeU &uEpsilon,
+                               const dataTypeV &vEpsilon) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!uField_)

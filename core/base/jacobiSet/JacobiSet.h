@@ -32,16 +32,17 @@
 
 namespace ttk {
 
-  template <class dataTypeU, class dataTypeV>
   class JacobiSet : virtual public Debug {
-
   public:
     JacobiSet();
 
+    template <class dataTypeU, class dataTypeV>
     int execute(std::vector<std::pair<SimplexId, char>> &jacobiSet);
 
+    template <class dataTypeU, class dataTypeV>
     char getCriticalType(const SimplexId &edgeId);
 
+    template <class dataTypeU, class dataTypeV>
     int perturbate(const dataTypeU &uEpsilon = Geometry::powIntTen(-DBL_DIG),
                    const dataTypeV &vEpsilon
                    = Geometry::powIntTen(-DBL_DIG)) const;
@@ -100,6 +101,7 @@ namespace ttk {
     }
 
   protected:
+    template <class dataTypeU, class dataTypeV>
     int executeLegacy(std::vector<std::pair<SimplexId, char>> &jacobiSet);
 
     SimplexId vertexNumber_{};
