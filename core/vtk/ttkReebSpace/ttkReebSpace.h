@@ -214,7 +214,5 @@ private:
   double SimplificationThreshold{0.0};
   std::string Ucomponent{}, Vcomponent{}, OffsetFieldU{}, OffsetFieldV{};
 
-  vtkDataArray *uComponent_{}, *vComponent_{}, *offsetFieldU_{},
-    *offsetFieldV_{};
   std::vector<ttk::SimplexId> sosOffsetsU_{}, sosOffsetsV_{};
 };
