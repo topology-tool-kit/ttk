@@ -110,14 +110,15 @@ int ttkReebSpace::baseCall(vtkDataSet *input,
     }
     reebSpace_.execute(
       static_cast<dataTypeU *>(ttkUtils::GetVoidPointer(uField)),
-      static_cast<dataTypeV *>(ttkUtils::GetVoidPointer(vField)));
+      static_cast<dataTypeV *>(ttkUtils::GetVoidPointer(vField)),
+      *triangulation->getData());
   }
 
   if(SimplificationThreshold > 0) {
     reebSpace_.simplify(
       static_cast<dataTypeU *>(ttkUtils::GetVoidPointer(uField)),
       static_cast<dataTypeV *>(ttkUtils::GetVoidPointer(vField)),
-      SimplificationThreshold,
+      *triangulation->getData(), SimplificationThreshold,
       (ReebSpace::SimplificationCriterion)SimplificationCriterion);
   }
 
