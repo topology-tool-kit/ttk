@@ -17,13 +17,13 @@ int ttk::ReebSpace::compute1sheetsOnly(
   jacobiClassification.reserve(jacobiSet.size());
 
   // markup the saddle jacobi and visisted edges
-  for(SimplexId i = 0; i < (SimplexId)jacobiSet.size(); i++) {
+  for(size_t i = 0; i < jacobiSet.size(); i++) {
     originalData_.edgeTypes_[jacobiSet[i].first] = jacobiSet[i].second;
   }
 
   std::vector<bool> visitedEdges(triangulation_->getNumberOfEdges(), false);
 
-  for(SimplexId i = 0; i < (SimplexId)jacobiSet.size(); i++) {
+  for(size_t i = 0; i < jacobiSet.size(); i++) {
 
     if(visitedEdges[jacobiSet[i].first] == false) {
 
@@ -155,12 +155,12 @@ int ttk::ReebSpace::compute1sheets(
   jacobiClassification.reserve(jacobiSet.size());
 
   // markup the saddle jacobi and visisted edges
-  for(SimplexId i = 0; i < (SimplexId)jacobiSet.size(); i++) {
+  for(size_t i = 0; i < jacobiSet.size(); i++) {
     originalData_.edgeTypes_[jacobiSet[i].first] = jacobiSet[i].second;
   }
 
   std::vector<bool> visitedEdges(triangulation_->getNumberOfEdges(), false);
-  for(SimplexId i = 0; i < (SimplexId)jacobiSet.size(); i++) {
+  for(size_t i = 0; i < jacobiSet.size(); i++) {
 
     if(/*(saddleEdge[jacobiSet[i].first] == 1)&&*/
        (visitedEdges[jacobiSet[i].first] == false)) {
@@ -200,7 +200,7 @@ int ttk::ReebSpace::compute1sheets(
           triangulation_->getEdgeVertex(edgeId, 1, vertexId1);
 
           if(originalData_.vertex2sheet0_[vertexId0]
-             >= (SimplexId)originalData_.sheet0List_.size()) {
+             >= static_cast<SimplexId>(originalData_.sheet0List_.size())) {
             // WEIRD BUG after multiple runs
             originalData_.vertex2sheet0_[vertexId0] = -1;
           }
@@ -262,7 +262,7 @@ int ttk::ReebSpace::compute1sheets(
           }
 
           if(originalData_.vertex2sheet0_[vertexId1]
-             >= (SimplexId)originalData_.sheet0List_.size()) {
+             >= static_cast<SimplexId>(originalData_.sheet0List_.size())) {
             // WEIRD BUG after multiple runs
             originalData_.vertex2sheet0_[vertexId1] = -1;
           }
@@ -397,8 +397,7 @@ int ttk::ReebSpace::compute3sheet(
               // cut by a fiber surface triangle or not.
 
               bool isCut = false;
-              for(SimplexId k = 0; k < (SimplexId)tetTriangles[tetId].size();
-                  k++) {
+              for(size_t k = 0; k < tetTriangles[tetId].size(); k++) {
                 SimplexId l = 0, m = 0, n = 0;
                 l = tetTriangles[tetId][k][0];
                 m = tetTriangles[tetId][k][1];
@@ -458,12 +457,11 @@ int ttk::ReebSpace::compute3sheets(
 
   tetTriangles.resize(tetNumber_);
 
-  for(SimplexId i = 0; i < (SimplexId)originalData_.sheet2List_.size(); i++) {
-    for(SimplexId j = 0;
-        j < (SimplexId)originalData_.sheet2List_[i].triangleList_.size(); j++) {
-      for(SimplexId k = 0;
-          k < (SimplexId)originalData_.sheet2List_[i].triangleList_[j].size();
-          k++) {
+  for(size_t i = 0; i < originalData_.sheet2List_.size(); i++) {
+    for(size_t j = 0; j < originalData_.sheet2List_[i].triangleList_.size();
+        j++) {
+      for(size_t k = 0;
+          k < originalData_.sheet2List_[i].triangleList_[j].size(); k++) {
 
         SimplexId tetId
           = originalData_.sheet2List_[i].triangleList_[j][k].tetId_;
@@ -479,9 +477,8 @@ int ttk::ReebSpace::compute3sheets(
   }
 
   // mark all the jacobi edge vertices
-  for(SimplexId i = 0; i < (SimplexId)originalData_.sheet1List_.size(); i++) {
-    for(SimplexId j = 0;
-        j < (SimplexId)originalData_.sheet1List_[i].edgeList_.size(); j++) {
+  for(size_t i = 0; i < originalData_.sheet1List_.size(); i++) {
+    for(size_t j = 0; j < originalData_.sheet1List_[i].edgeList_.size(); j++) {
 
       SimplexId edgeId = originalData_.sheet1List_[i].edgeList_[j];
 
@@ -509,9 +506,9 @@ int ttk::ReebSpace::compute3sheets(
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
-  for(SimplexId i = 0; i < (SimplexId)originalData_.sheet3List_.size(); i++) {
-    for(SimplexId j = 0;
-        j < (SimplexId)originalData_.sheet3List_[i].vertexList_.size(); j++) {
+  for(size_t i = 0; i < originalData_.sheet3List_.size(); i++) {
+    for(size_t j = 0; j < originalData_.sheet3List_[i].vertexList_.size();
+        j++) {
 
       SimplexId vertexId = originalData_.sheet3List_[i].vertexList_[j];
       SimplexId sheetId = originalData_.vertex2sheet3_[vertexId];
@@ -544,8 +541,7 @@ int ttk::ReebSpace::compute3sheets(
                 if((sheetId != otherSheetId) && (otherSheetId >= 0)) {
 
                   bool inThere = false;
-                  for(SimplexId m = 0;
-                      m < (SimplexId)neighborList[sheetId].size(); m++) {
+                  for(size_t m = 0; m < neighborList[sheetId].size(); m++) {
                     if(neighborList[sheetId][m].first == otherSheetId) {
                       inThere = true;
                       break;
@@ -557,8 +553,7 @@ int ttk::ReebSpace::compute3sheets(
                       std::pair<SimplexId, bool>(otherSheetId, true));
                   }
 
-                  for(SimplexId m = 0;
-                      m < (SimplexId)tetTriangles[tetId].size(); m++) {
+                  for(size_t m = 0; m < tetTriangles[tetId].size(); m++) {
 
                     // see if this guy is a saddle
                     SimplexId x = tetTriangles[tetId][m][0];
@@ -592,8 +587,8 @@ int ttk::ReebSpace::compute3sheets(
                         // this is a saddle Jacobi edge
 
                         inThere = false;
-                        for(SimplexId n = 0;
-                            n < (SimplexId)neighborList[sheetId].size(); n++) {
+                        for(size_t n = 0; n < neighborList[sheetId].size();
+                            n++) {
 
                           if(neighborList[sheetId][n].first == otherSheetId) {
                             if(neighborList[sheetId][n].second == true) {
@@ -628,10 +623,10 @@ int ttk::ReebSpace::compute3sheets(
     totalSheetNumber = originalData_.sheet3List_.size();
 
     // expending sheets
-    for(SimplexId i = 0; i < (SimplexId)originalData_.sheet3List_.size(); i++) {
+    for(size_t i = 0; i < originalData_.sheet3List_.size(); i++) {
       if(originalData_.sheet3List_[i].pruned_ == false) {
 
-        for(SimplexId j = 0; j < (SimplexId)neighborList[i].size(); j++) {
+        for(size_t j = 0; j < neighborList[i].size(); j++) {
 
           if(neighborList[i][j].second) {
 
@@ -646,15 +641,15 @@ int ttk::ReebSpace::compute3sheets(
 
             // make sure that no forbidden neighbor has been merged in the
             // candidate neighbor
-            for(SimplexId k = 0;
-                k < (SimplexId)originalData_.sheet3List_[neighborId]
-                      .preMergedSheets_.size();
+            for(size_t k = 0;
+                k
+                < originalData_.sheet3List_[neighborId].preMergedSheets_.size();
                 k++) {
 
               SimplexId subNeighborId
                 = originalData_.sheet3List_[neighborId].preMergedSheets_[k];
 
-              for(SimplexId l = 0; l < (SimplexId)neighborList[i].size(); l++) {
+              for(size_t l = 0; l < neighborList[i].size(); l++) {
                 if((neighborList[i][l].first == subNeighborId)
                    && (!neighborList[i][l].second)) {
                   isForbidden = true;
@@ -668,14 +663,13 @@ int ttk::ReebSpace::compute3sheets(
             // make sure that neighborId is not a candidate for a merge with a
             // sheet that is forbidden for i
             if(!isForbidden) {
-              for(SimplexId k = 0; k < (SimplexId)neighborList[i].size(); k++) {
+              for(size_t k = 0; k < neighborList[i].size(); k++) {
                 if(!neighborList[i][k].second) {
                   SimplexId forbiddenNeighbor = neighborList[i][k].first;
 
                   // make sure forbiddenNeighbor is not a valid merger for
                   // neighborId
-                  for(SimplexId l = 0;
-                      l < (SimplexId)neighborList[neighborId].size(); l++) {
+                  for(size_t l = 0; l < neighborList[neighborId].size(); l++) {
                     if((forbiddenNeighbor == neighborList[neighborId][l].first)
                        && (neighborList[neighborId][l].second)) {
                       isForbidden = true;
@@ -688,7 +682,7 @@ int ttk::ReebSpace::compute3sheets(
               }
             }
 
-            if((neighborId != i) && (!isForbidden)
+            if((neighborId != static_cast<SimplexId>(i)) && (!isForbidden)
                && (originalData_.sheet3List_[neighborId].pruned_ == false)
                && (originalData_.sheet3List_[neighborId].vertexList_.size()
                    > originalData_.sheet3List_[i].vertexList_.size())) {
@@ -718,8 +712,7 @@ int ttk::ReebSpace::connect3sheetTo0sheet(ReebSpaceData &data,
                                           const SimplexId &sheet0Id) {
 
   bool alreadyConnected = false;
-  for(SimplexId i = 0;
-      i < (SimplexId)data.sheet3List_[sheet3Id].sheet0List_.size(); i++) {
+  for(size_t i = 0; i < data.sheet3List_[sheet3Id].sheet0List_.size(); i++) {
     if(data.sheet3List_[sheet3Id].sheet0List_[i] == sheet0Id) {
       // already connected
       alreadyConnected = true;
@@ -729,8 +722,7 @@ int ttk::ReebSpace::connect3sheetTo0sheet(ReebSpaceData &data,
   if(!alreadyConnected)
     data.sheet3List_[sheet3Id].sheet0List_.push_back(sheet0Id);
 
-  for(SimplexId i = 0;
-      i < (SimplexId)data.sheet0List_[sheet0Id].sheet3List_.size(); i++) {
+  for(size_t i = 0; i < data.sheet0List_[sheet0Id].sheet3List_.size(); i++) {
     if(data.sheet0List_[sheet0Id].sheet3List_[i] == sheet3Id)
       // already connected
       return -1;
@@ -745,8 +737,7 @@ int ttk::ReebSpace::connect3sheetTo1sheet(ReebSpaceData &data,
                                           const SimplexId &sheet1Id) {
 
   bool alreadyConnected = false;
-  for(SimplexId i = 0;
-      i < (SimplexId)data.sheet3List_[sheet3Id].sheet1List_.size(); i++) {
+  for(size_t i = 0; i < data.sheet3List_[sheet3Id].sheet1List_.size(); i++) {
     if(data.sheet3List_[sheet3Id].sheet1List_[i] == sheet1Id) {
       // already connected
       alreadyConnected = true;
@@ -756,8 +747,7 @@ int ttk::ReebSpace::connect3sheetTo1sheet(ReebSpaceData &data,
   if(!alreadyConnected)
     data.sheet3List_[sheet3Id].sheet1List_.push_back(sheet1Id);
 
-  for(SimplexId i = 0;
-      i < (SimplexId)data.sheet1List_[sheet1Id].sheet3List_.size(); i++) {
+  for(size_t i = 0; i < data.sheet1List_[sheet1Id].sheet3List_.size(); i++) {
     if(data.sheet1List_[sheet1Id].sheet3List_[i] == sheet3Id)
       // already connected
       return -1;
@@ -772,8 +762,7 @@ int ttk::ReebSpace::connect3sheetTo2sheet(ReebSpaceData &data,
                                           const SimplexId &sheet2Id) {
 
   bool alreadyConnected = false;
-  for(SimplexId i = 0;
-      i < (SimplexId)data.sheet3List_[sheet3Id].sheet2List_.size(); i++) {
+  for(size_t i = 0; i < data.sheet3List_[sheet3Id].sheet2List_.size(); i++) {
     if(data.sheet3List_[sheet3Id].sheet2List_[i] == sheet2Id) {
       // already connected
       alreadyConnected = true;
@@ -783,8 +772,7 @@ int ttk::ReebSpace::connect3sheetTo2sheet(ReebSpaceData &data,
   if(!alreadyConnected)
     data.sheet3List_[sheet3Id].sheet2List_.push_back(sheet2Id);
 
-  for(SimplexId i = 0;
-      i < (SimplexId)data.sheet2List_[sheet2Id].sheet3List_.size(); i++) {
+  for(size_t i = 0; i < data.sheet2List_[sheet2Id].sheet3List_.size(); i++) {
     if(data.sheet2List_[sheet2Id].sheet3List_[i] == sheet3Id)
       // already connected
       return -1;
@@ -802,8 +790,7 @@ int ttk::ReebSpace::connect3sheetTo3sheet(ReebSpaceData &data,
     return -1;
 
   bool alreadyConnected = false;
-  for(SimplexId i = 0;
-      i < (SimplexId)data.sheet3List_[sheet3Id].sheet3List_.size(); i++) {
+  for(size_t i = 0; i < data.sheet3List_[sheet3Id].sheet3List_.size(); i++) {
     if(data.sheet3List_[sheet3Id].sheet3List_[i] == otherSheet3Id) {
       // already connected
       alreadyConnected = true;
@@ -813,8 +800,8 @@ int ttk::ReebSpace::connect3sheetTo3sheet(ReebSpaceData &data,
   if(!alreadyConnected)
     data.sheet3List_[sheet3Id].sheet3List_.push_back(otherSheet3Id);
 
-  for(SimplexId i = 0;
-      i < (SimplexId)data.sheet3List_[otherSheet3Id].sheet3List_.size(); i++) {
+  for(size_t i = 0; i < data.sheet3List_[otherSheet3Id].sheet3List_.size();
+      i++) {
     if(data.sheet3List_[otherSheet3Id].sheet3List_[i] == sheet3Id)
       // already connected
       return -3;
@@ -828,13 +815,12 @@ int ttk::ReebSpace::connectSheets() {
 
   Timer t;
 
-  for(SimplexId i = 0; i < (SimplexId)originalData_.sheet2List_.size(); i++) {
-    for(SimplexId j = 0;
-        j < (SimplexId)originalData_.sheet2List_[i].triangleList_.size(); j++) {
+  for(size_t i = 0; i < originalData_.sheet2List_.size(); i++) {
+    for(size_t j = 0; j < originalData_.sheet2List_[i].triangleList_.size();
+        j++) {
 
-      for(SimplexId k = 0;
-          k < (SimplexId)originalData_.sheet2List_[i].triangleList_[j].size();
-          k++) {
+      for(size_t k = 0;
+          k < originalData_.sheet2List_[i].triangleList_[j].size(); k++) {
 
         SimplexId tetId
           = originalData_.sheet2List_[i].triangleList_[j][k].tetId_;
@@ -910,8 +896,7 @@ int ttk::ReebSpace::disconnect1sheetFrom0sheet(ReebSpaceData &data,
 
   newList.reserve(data.sheet0List_[sheet0Id].sheet1List_.size());
 
-  for(SimplexId i = 0;
-      i < (SimplexId)data.sheet0List_[sheet0Id].sheet1List_.size(); i++) {
+  for(size_t i = 0; i < data.sheet0List_[sheet0Id].sheet1List_.size(); i++) {
 
     if(data.sheet0List_[sheet0Id].sheet1List_[i] != sheet1Id) {
       newList.push_back(data.sheet0List_[sheet0Id].sheet1List_[i]);
@@ -933,8 +918,7 @@ int ttk::ReebSpace::disconnect3sheetFrom0sheet(ReebSpaceData &data,
   std::vector<SimplexId> newList;
 
   newList.reserve(data.sheet0List_[sheet0Id].sheet3List_.size());
-  for(SimplexId i = 0;
-      i < (SimplexId)data.sheet0List_[sheet0Id].sheet3List_.size(); i++) {
+  for(size_t i = 0; i < data.sheet0List_[sheet0Id].sheet3List_.size(); i++) {
     if(data.sheet0List_[sheet0Id].sheet3List_[i] != sheet3Id)
       newList.push_back(data.sheet0List_[sheet0Id].sheet3List_[i]);
   }
@@ -952,8 +936,7 @@ int ttk::ReebSpace::disconnect3sheetFrom1sheet(ReebSpaceData &data,
   std::vector<SimplexId> newList;
 
   newList.reserve(data.sheet1List_[sheet1Id].sheet3List_.size());
-  for(SimplexId i = 0;
-      i < (SimplexId)data.sheet1List_[sheet1Id].sheet3List_.size(); i++) {
+  for(size_t i = 0; i < data.sheet1List_[sheet1Id].sheet3List_.size(); i++) {
     SimplexId other3SheetId = data.sheet1List_[sheet1Id].sheet3List_[i];
     if((other3SheetId != sheet3Id) && (!data.sheet3List_[other3SheetId].pruned_)
        && (data.sheet3List_[other3SheetId].tetList_.size())) {
@@ -970,8 +953,7 @@ int ttk::ReebSpace::disconnect3sheetFrom1sheet(ReebSpaceData &data,
     data.sheet2List_[sheet1Id].pruned_ = true;
 
     // update the segmentation
-    for(SimplexId i = 0;
-        i < (SimplexId)data.sheet1List_[sheet1Id].edgeList_.size(); i++) {
+    for(size_t i = 0; i < data.sheet1List_[sheet1Id].edgeList_.size(); i++) {
 
       SimplexId vertexId = -1;
       triangulation_->getEdgeVertex(
@@ -984,8 +966,7 @@ int ttk::ReebSpace::disconnect3sheetFrom1sheet(ReebSpaceData &data,
       data.vertex2sheet3_[vertexId] = biggerId;
     }
 
-    for(SimplexId i = 0;
-        i < (SimplexId)data.sheet1List_[sheet1Id].sheet0List_.size(); i++) {
+    for(size_t i = 0; i < data.sheet1List_[sheet1Id].sheet0List_.size(); i++) {
 
       disconnect1sheetFrom0sheet(
         data, sheet1Id, data.sheet1List_[sheet1Id].sheet0List_[i], biggerId);
@@ -1002,8 +983,7 @@ int ttk::ReebSpace::disconnect3sheetFrom2sheet(ReebSpaceData &data,
   std::vector<SimplexId> newList;
 
   newList.reserve(data.sheet2List_[sheet2Id].sheet3List_.size());
-  for(SimplexId i = 0;
-      i < (SimplexId)data.sheet2List_[sheet2Id].sheet3List_.size(); i++) {
+  for(size_t i = 0; i < data.sheet2List_[sheet2Id].sheet3List_.size(); i++) {
     if(data.sheet2List_[sheet2Id].sheet3List_[i] != sheet3Id)
       newList.push_back(data.sheet2List_[sheet2Id].sheet3List_[i]);
   }
@@ -1020,8 +1000,8 @@ int ttk::ReebSpace::disconnect3sheetFrom3sheet(ReebSpaceData &data,
   std::vector<SimplexId> newList;
 
   newList.reserve(data.sheet3List_[other3SheetId].sheet3List_.size());
-  for(SimplexId i = 0;
-      i < (SimplexId)data.sheet3List_[other3SheetId].sheet3List_.size(); i++) {
+  for(size_t i = 0; i < data.sheet3List_[other3SheetId].sheet3List_.size();
+      i++) {
     if(data.sheet3List_[other3SheetId].sheet3List_[i] != sheet3Id)
       newList.push_back(data.sheet3List_[other3SheetId].sheet3List_[i]);
   }
@@ -1069,15 +1049,14 @@ int ttk::ReebSpace::mergeSheets(const SimplexId &smallerId,
                                 const SimplexId &biggerId) {
 
   // 1. add the vertices and tets of smaller to bigger
-  for(SimplexId i = 0;
-      i < (SimplexId)currentData_.sheet3List_[smallerId].vertexList_.size();
+  for(size_t i = 0; i < currentData_.sheet3List_[smallerId].vertexList_.size();
       i++) {
     SimplexId vertexId = currentData_.sheet3List_[smallerId].vertexList_[i];
     currentData_.sheet3List_[biggerId].vertexList_.push_back(vertexId);
     currentData_.vertex2sheet3_[vertexId] = biggerId;
   }
-  for(SimplexId i = 0;
-      i < (SimplexId)currentData_.sheet3List_[smallerId].tetList_.size(); i++) {
+  for(size_t i = 0; i < currentData_.sheet3List_[smallerId].tetList_.size();
+      i++) {
     SimplexId tetId = currentData_.sheet3List_[smallerId].tetList_[i];
     currentData_.sheet3List_[biggerId].tetList_.push_back(tetId);
     currentData_.tet2sheet3_[tetId] = biggerId;
@@ -1092,8 +1071,7 @@ int ttk::ReebSpace::mergeSheets(const SimplexId &smallerId,
     += currentData_.sheet3List_[smallerId].hyperVolume_;
 
   // 3. add smaller's connections to bigger's
-  for(SimplexId i = 0;
-      i < (SimplexId)currentData_.sheet3List_[smallerId].sheet3List_.size();
+  for(size_t i = 0; i < currentData_.sheet3List_[smallerId].sheet3List_.size();
       i++) {
 
     SimplexId otherSheetId = currentData_.sheet3List_[smallerId].sheet3List_[i];
@@ -1103,8 +1081,7 @@ int ttk::ReebSpace::mergeSheets(const SimplexId &smallerId,
     }
   }
 
-  for(SimplexId i = 0;
-      i < (SimplexId)currentData_.sheet3List_[smallerId].sheet2List_.size();
+  for(size_t i = 0; i < currentData_.sheet3List_[smallerId].sheet2List_.size();
       i++) {
 
     SimplexId otherSheetId = currentData_.sheet3List_[smallerId].sheet2List_[i];
@@ -1114,8 +1091,7 @@ int ttk::ReebSpace::mergeSheets(const SimplexId &smallerId,
     }
   }
 
-  for(SimplexId i = 0;
-      i < (SimplexId)currentData_.sheet3List_[smallerId].sheet1List_.size();
+  for(size_t i = 0; i < currentData_.sheet3List_[smallerId].sheet1List_.size();
       i++) {
 
     SimplexId otherSheetId = currentData_.sheet3List_[smallerId].sheet1List_[i];
@@ -1125,8 +1101,7 @@ int ttk::ReebSpace::mergeSheets(const SimplexId &smallerId,
     }
   }
 
-  for(SimplexId i = 0;
-      i < (SimplexId)currentData_.sheet3List_[smallerId].sheet0List_.size();
+  for(size_t i = 0; i < currentData_.sheet3List_[smallerId].sheet0List_.size();
       i++) {
 
     SimplexId otherSheetId = currentData_.sheet3List_[smallerId].sheet0List_[i];
@@ -1139,32 +1114,28 @@ int ttk::ReebSpace::mergeSheets(const SimplexId &smallerId,
   currentData_.sheet3List_[smallerId].pruned_ = true;
 
   // 4. disconnect smaller from all of its connections.
-  for(SimplexId i = 0;
-      i < (SimplexId)currentData_.sheet3List_[smallerId].sheet3List_.size();
+  for(size_t i = 0; i < currentData_.sheet3List_[smallerId].sheet3List_.size();
       i++) {
     disconnect3sheetFrom3sheet(
       currentData_, smallerId,
       currentData_.sheet3List_[smallerId].sheet3List_[i]);
   }
 
-  for(SimplexId i = 0;
-      i < (SimplexId)currentData_.sheet3List_[smallerId].sheet2List_.size();
+  for(size_t i = 0; i < currentData_.sheet3List_[smallerId].sheet2List_.size();
       i++) {
     disconnect3sheetFrom2sheet(
       currentData_, smallerId,
       currentData_.sheet3List_[smallerId].sheet2List_[i]);
   }
 
-  for(SimplexId i = 0;
-      i < (SimplexId)currentData_.sheet3List_[smallerId].sheet1List_.size();
+  for(size_t i = 0; i < currentData_.sheet3List_[smallerId].sheet1List_.size();
       i++) {
     disconnect3sheetFrom1sheet(
       currentData_, smallerId,
       currentData_.sheet3List_[smallerId].sheet1List_[i], biggerId);
   }
 
-  for(SimplexId i = 0;
-      i < (SimplexId)currentData_.sheet3List_[smallerId].sheet0List_.size();
+  for(size_t i = 0; i < currentData_.sheet3List_[smallerId].sheet0List_.size();
       i++) {
     disconnect3sheetFrom0sheet(
       currentData_, smallerId,
@@ -1178,15 +1149,14 @@ int ttk::ReebSpace::preMergeSheets(const SimplexId &sheetId0,
                                    const SimplexId &sheetId1) {
 
   // 1. add the vertices and tets of 0 to 1
-  for(SimplexId i = 0;
-      i < (SimplexId)originalData_.sheet3List_[sheetId0].vertexList_.size();
+  for(size_t i = 0; i < originalData_.sheet3List_[sheetId0].vertexList_.size();
       i++) {
     SimplexId vertexId = originalData_.sheet3List_[sheetId0].vertexList_[i];
     originalData_.sheet3List_[sheetId1].vertexList_.push_back(vertexId);
     originalData_.vertex2sheet3_[vertexId] = sheetId1;
   }
-  for(SimplexId i = 0;
-      i < (SimplexId)originalData_.sheet3List_[sheetId0].tetList_.size(); i++) {
+  for(size_t i = 0; i < originalData_.sheet3List_[sheetId0].tetList_.size();
+      i++) {
     SimplexId tetId = originalData_.sheet3List_[sheetId0].tetList_[i];
     originalData_.sheet3List_[sheetId1].tetList_.push_back(tetId);
     originalData_.tet2sheet3_[tetId] = sheetId1;
@@ -1230,27 +1200,27 @@ int ttk::ReebSpace::prepareSimplification() {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
-  for(SimplexId i = 0; i < (SimplexId)currentData_.sheet2List_.size(); i++) {
+  for(size_t i = 0; i < currentData_.sheet2List_.size(); i++) {
     currentData_.sheet2List_[i].sheet1Id_
       = originalData_.sheet2List_[i].sheet1Id_;
     currentData_.sheet2List_[i].sheet3List_
       = originalData_.sheet2List_[i].sheet3List_;
   }
 
-  for(SimplexId i = 0; i < (SimplexId)currentData_.sheet3List_.size(); i++) {
+  for(size_t i = 0; i < currentData_.sheet3List_.size(); i++) {
     currentData_.sheet3List_[i].simplificationId_
       = currentData_.sheet3List_[i].Id_;
   }
 
-  for(SimplexId i = 0; i < (SimplexId)currentData_.sheet1List_.size(); i++) {
+  for(size_t i = 0; i < currentData_.sheet1List_.size(); i++) {
     if((currentData_.sheet1List_[i].hasSaddleEdges_)
        && (currentData_.sheet1List_[i].sheet3List_.size() == 1)) {
 
       currentData_.sheet1List_[i].pruned_ = true;
       currentData_.sheet2List_[i].pruned_ = true;
 
-      for(SimplexId j = 0;
-          j < (SimplexId)currentData_.sheet1List_[i].sheet0List_.size(); j++) {
+      for(size_t j = 0; j < currentData_.sheet1List_[i].sheet0List_.size();
+          j++) {
         SimplexId sheet0Id = currentData_.sheet1List_[i].sheet0List_[j];
         currentData_.sheet0List_[sheet0Id].pruned_ = true;
       }
@@ -1332,8 +1302,7 @@ int ttk::ReebSpace::simplifySheet(const SimplexId &sheetId,
   double maximumScore = -1;
 
   // see the adjacent 3-sheets
-  for(SimplexId i = 0;
-      i < (SimplexId)currentData_.sheet3List_[sheetId].sheet3List_.size();
+  for(size_t i = 0; i < currentData_.sheet3List_[sheetId].sheet3List_.size();
       i++) {
     SimplexId otherSheetId = currentData_.sheet3List_[sheetId].sheet3List_[i];
     if((!currentData_.sheet3List_[otherSheetId].pruned_)
@@ -1460,15 +1429,14 @@ int ttk::ReebSpace::simplifySheets(
   SimplexId simplifiedSheets = 0;
   double lastThreshold = -1;
 
-  for(SimplexId it = 0; it < (SimplexId)originalData_.sheet3List_.size();
-      it++) {
+  for(size_t it = 0; it < originalData_.sheet3List_.size(); it++) {
 
     // do while, avoiding infinite loop
 
     double minValue = -1;
     SimplexId minId = -1;
 
-    for(SimplexId i = 0; i < (SimplexId)currentData_.sheet3List_.size(); i++) {
+    for(size_t i = 0; i < currentData_.sheet3List_.size(); i++) {
       if(!currentData_.sheet3List_[i].pruned_) {
 
         double value = 0;
@@ -1508,19 +1476,19 @@ int ttk::ReebSpace::simplifySheets(
   currentData_.simplificationCriterion_ = simplificationCriterion;
 
   SimplexId simplificationId = 0;
-  for(SimplexId i = 0; i < (SimplexId)currentData_.sheet3List_.size(); i++) {
+  for(size_t i = 0; i < currentData_.sheet3List_.size(); i++) {
     if(!currentData_.sheet3List_[i].pruned_) {
       currentData_.sheet3List_[i].simplificationId_ = simplificationId;
       simplificationId++;
     }
   }
-  for(SimplexId i = 0; i < (SimplexId)currentData_.sheet3List_.size(); i++) {
+  for(size_t i = 0; i < currentData_.sheet3List_.size(); i++) {
     if(currentData_.sheet3List_[i].pruned_) {
       // find where it merged
       if(currentData_.sheet3List_[i].vertexList_.size()) {
         SimplexId vertexId = currentData_.sheet3List_[i].vertexList_[0];
         SimplexId sheetId = currentData_.vertex2sheet3_[vertexId];
-        if(sheetId != i) {
+        if(sheetId != static_cast<SimplexId>(i)) {
           currentData_.sheet3List_[i].simplificationId_
             = currentData_.sheet3List_[sheetId].simplificationId_;
         }
@@ -1529,12 +1497,12 @@ int ttk::ReebSpace::simplifySheets(
   }
 
   // orphans
-  for(SimplexId i = 0; i < (SimplexId)currentData_.sheet1List_.size(); i++) {
+  for(size_t i = 0; i < currentData_.sheet1List_.size(); i++) {
     if((!currentData_.sheet1List_[i].pruned_)
        && (currentData_.sheet1List_[i].hasSaddleEdges_)) {
       SimplexId nonSimplified = 0;
-      for(SimplexId j = 0;
-          j < (SimplexId)currentData_.sheet1List_[i].sheet3List_.size(); j++) {
+      for(size_t j = 0; j < currentData_.sheet1List_[i].sheet3List_.size();
+          j++) {
         SimplexId sheet3Id = currentData_.sheet1List_[i].sheet3List_[j];
 
         if(!currentData_.sheet3List_[sheet3Id].pruned_) {
