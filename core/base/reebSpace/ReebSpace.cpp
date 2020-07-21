@@ -1,15 +1,12 @@
 #include <ReebSpace.h>
 
-using namespace std;
-using namespace ttk;
-
-ReebSpace::ReebSpace() {
+ttk::ReebSpace::ReebSpace() {
   this->setDebugMsgPrefix("ReebSpace");
 }
 
-int ReebSpace::compute1sheetsOnly(
-  const vector<pair<SimplexId, char>> &jacobiSet,
-  vector<pair<SimplexId, SimplexId>> &jacobiClassification) {
+int ttk::ReebSpace::compute1sheetsOnly(
+  const std::vector<std::pair<SimplexId, char>> &jacobiSet,
+  std::vector<std::pair<SimplexId, SimplexId>> &jacobiClassification) {
 
   // bfs on the saddle jacobi edges only to identify saddle 1-sheets as well as
   // saddle 0-sheets
@@ -24,7 +21,7 @@ int ReebSpace::compute1sheetsOnly(
     originalData_.edgeTypes_[jacobiSet[i].first] = jacobiSet[i].second;
   }
 
-  vector<bool> visitedEdges(triangulation_->getNumberOfEdges(), false);
+  std::vector<bool> visitedEdges(triangulation_->getNumberOfEdges(), false);
 
   for(SimplexId i = 0; i < (SimplexId)jacobiSet.size(); i++) {
 
@@ -35,7 +32,7 @@ int ReebSpace::compute1sheetsOnly(
       originalData_.sheet1List_.back().hasSaddleEdges_ = false;
       originalData_.sheet1List_.back().pruned_ = false;
 
-      queue<SimplexId> edgeQueue;
+      std::queue<SimplexId> edgeQueue;
       edgeQueue.push(jacobiSet[i].first);
 
       do {
@@ -46,7 +43,7 @@ int ReebSpace::compute1sheetsOnly(
         if(!visitedEdges[edgeId]) {
 
           jacobiClassification.push_back(
-            pair<SimplexId, SimplexId>(edgeId, sheet1Id));
+            std::pair<SimplexId, SimplexId>(edgeId, sheet1Id));
 
           originalData_.sheet1List_.back().edgeList_.push_back(edgeId);
           originalData_.edge2sheet1_[edgeId] = sheet1Id;
@@ -137,19 +134,20 @@ int ReebSpace::compute1sheetsOnly(
   }
 
   {
-    stringstream msg;
+    std::stringstream msg;
     msg << "[ReebSpace] " << originalData_.sheet1List_.size()
         << " 1-sheets and " << originalData_.sheet0List_.size()
-        << " 0-sheets extracted in " << t.getElapsedTime() << " s." << endl;
-    dMsg(cout, msg.str(), timeMsg);
+        << " 0-sheets extracted in " << t.getElapsedTime() << " s."
+        << std::endl;
+    dMsg(std::cout, msg.str(), timeMsg);
   }
 
   return 0;
 }
 
-int ReebSpace::compute1sheets(
-  const vector<pair<SimplexId, char>> &jacobiSet,
-  vector<pair<SimplexId, SimplexId>> &jacobiClassification) {
+int ttk::ReebSpace::compute1sheets(
+  const std::vector<std::pair<SimplexId, char>> &jacobiSet,
+  std::vector<std::pair<SimplexId, SimplexId>> &jacobiClassification) {
 
   // bfs on the saddle jacobi edges only to identify saddle 1-sheets as well as
   // saddle 0-sheets
@@ -164,7 +162,7 @@ int ReebSpace::compute1sheets(
     originalData_.edgeTypes_[jacobiSet[i].first] = jacobiSet[i].second;
   }
 
-  vector<bool> visitedEdges(triangulation_->getNumberOfEdges(), false);
+  std::vector<bool> visitedEdges(triangulation_->getNumberOfEdges(), false);
   for(SimplexId i = 0; i < (SimplexId)jacobiSet.size(); i++) {
 
     if(/*(saddleEdge[jacobiSet[i].first] == 1)&&*/
@@ -177,7 +175,7 @@ int ReebSpace::compute1sheets(
       originalData_.sheet1List_.back().hasSaddleEdges_ = false;
       originalData_.sheet1List_.back().pruned_ = false;
 
-      queue<SimplexId> edgeQueue;
+      std::queue<SimplexId> edgeQueue;
       edgeQueue.push(jacobiSet[i].first);
 
       do {
@@ -188,7 +186,7 @@ int ReebSpace::compute1sheets(
         if(!visitedEdges[edgeId]) {
 
           jacobiClassification.push_back(
-            pair<SimplexId, SimplexId>(edgeId, sheet1Id));
+            std::pair<SimplexId, SimplexId>(edgeId, sheet1Id));
 
           if(originalData_.edgeTypes_[edgeId] == 1) {
             // saddle edge
@@ -338,19 +336,20 @@ int ReebSpace::compute1sheets(
   }
 
   {
-    stringstream msg;
+    std::stringstream msg;
     msg << "[ReebSpace] " << originalData_.sheet1List_.size()
         << " 1-sheets and " << originalData_.sheet0List_.size()
-        << " 0-sheets extracted in " << t.getElapsedTime() << " s." << endl;
-    dMsg(cout, msg.str(), timeMsg);
+        << " 0-sheets extracted in " << t.getElapsedTime() << " s."
+        << std::endl;
+    dMsg(std::cout, msg.str(), timeMsg);
   }
 
   return 0;
 }
 
-int ReebSpace::compute3sheet(
+int ttk::ReebSpace::compute3sheet(
   const SimplexId &vertexId,
-  const vector<vector<vector<SimplexId>>> &tetTriangles) {
+  const std::vector<std::vector<std::vector<SimplexId>>> &tetTriangles) {
 
   SimplexId sheetId = originalData_.sheet3List_.size();
   originalData_.sheet3List_.resize(originalData_.sheet3List_.size() + 1);
@@ -358,7 +357,7 @@ int ReebSpace::compute3sheet(
   originalData_.sheet3List_.back().preMerger_ = -1;
   originalData_.sheet3List_.back().Id_ = sheetId;
 
-  queue<SimplexId> vertexQueue;
+  std::queue<SimplexId> vertexQueue;
   vertexQueue.push(vertexId);
 
   do {
@@ -412,7 +411,7 @@ int ReebSpace::compute3sheet(
                 n = tetTriangles[tetId][k][2];
 
                 for(int p = 0; p < 3; p++) {
-                  pair<SimplexId, SimplexId> meshEdge;
+                  std::pair<SimplexId, SimplexId> meshEdge;
 
                   if(fiberSurfaceVertexList_.size()) {
                     // the fiber surfaces have been merged
@@ -458,7 +457,8 @@ int ReebSpace::compute3sheet(
   return 0;
 }
 
-int ReebSpace::compute3sheets(vector<vector<vector<SimplexId>>> &tetTriangles) {
+int ttk::ReebSpace::compute3sheets(
+  std::vector<std::vector<std::vector<SimplexId>>> &tetTriangles) {
 
   Timer t;
 
@@ -474,7 +474,7 @@ int ReebSpace::compute3sheets(vector<vector<vector<SimplexId>>> &tetTriangles) {
         SimplexId tetId
           = originalData_.sheet2List_[i].triangleList_[j][k].tetId_;
 
-        vector<SimplexId> triangle(3);
+        std::vector<SimplexId> triangle(3);
         triangle[0] = i;
         triangle[1] = j;
         triangle[2] = k;
@@ -507,7 +507,7 @@ int ReebSpace::compute3sheets(vector<vector<vector<SimplexId>>> &tetTriangles) {
   }
 
   // for 3-sheet expansion
-  vector<vector<pair<SimplexId, bool>>> neighborList(
+  std::vector<std::vector<std::pair<SimplexId, bool>>> neighborList(
     originalData_.sheet3List_.size());
   // end of 3-sheet expansion
 
@@ -560,7 +560,7 @@ int ReebSpace::compute3sheets(vector<vector<vector<SimplexId>>> &tetTriangles) {
 
                   if(!inThere) {
                     neighborList[sheetId].push_back(
-                      pair<SimplexId, bool>(otherSheetId, true));
+                      std::pair<SimplexId, bool>(otherSheetId, true));
                   }
 
                   for(SimplexId m = 0;
@@ -612,7 +612,7 @@ int ReebSpace::compute3sheets(vector<vector<vector<SimplexId>>> &tetTriangles) {
 
                         if(!inThere) {
                           neighborList[sheetId].push_back(
-                            pair<SimplexId, bool>(otherSheetId, false));
+                            std::pair<SimplexId, bool>(otherSheetId, false));
                         }
                       }
                     }
@@ -714,18 +714,18 @@ int ReebSpace::compute3sheets(vector<vector<vector<SimplexId>>> &tetTriangles) {
   // end of the 3-sheet expansion
 
   {
-    stringstream msg;
+    std::stringstream msg;
     msg << "[ReebSpace] " << totalSheetNumber << " 3-sheets computed in "
-        << t.getElapsedTime() << " s." << endl;
-    dMsg(cout, msg.str(), timeMsg);
+        << t.getElapsedTime() << " s." << std::endl;
+    dMsg(std::cout, msg.str(), timeMsg);
   }
 
   return 0;
 }
 
-int ReebSpace::connect3sheetTo0sheet(ReebSpaceData &data,
-                                     const SimplexId &sheet3Id,
-                                     const SimplexId &sheet0Id) {
+int ttk::ReebSpace::connect3sheetTo0sheet(ReebSpaceData &data,
+                                          const SimplexId &sheet3Id,
+                                          const SimplexId &sheet0Id) {
 
   bool alreadyConnected = false;
   for(SimplexId i = 0;
@@ -750,9 +750,9 @@ int ReebSpace::connect3sheetTo0sheet(ReebSpaceData &data,
   return 0;
 }
 
-int ReebSpace::connect3sheetTo1sheet(ReebSpaceData &data,
-                                     const SimplexId &sheet3Id,
-                                     const SimplexId &sheet1Id) {
+int ttk::ReebSpace::connect3sheetTo1sheet(ReebSpaceData &data,
+                                          const SimplexId &sheet3Id,
+                                          const SimplexId &sheet1Id) {
 
   bool alreadyConnected = false;
   for(SimplexId i = 0;
@@ -777,9 +777,9 @@ int ReebSpace::connect3sheetTo1sheet(ReebSpaceData &data,
   return 0;
 }
 
-int ReebSpace::connect3sheetTo2sheet(ReebSpaceData &data,
-                                     const SimplexId &sheet3Id,
-                                     const SimplexId &sheet2Id) {
+int ttk::ReebSpace::connect3sheetTo2sheet(ReebSpaceData &data,
+                                          const SimplexId &sheet3Id,
+                                          const SimplexId &sheet2Id) {
 
   bool alreadyConnected = false;
   for(SimplexId i = 0;
@@ -804,9 +804,9 @@ int ReebSpace::connect3sheetTo2sheet(ReebSpaceData &data,
   return 0;
 }
 
-int ReebSpace::connect3sheetTo3sheet(ReebSpaceData &data,
-                                     const SimplexId &sheet3Id,
-                                     const SimplexId &otherSheet3Id) {
+int ttk::ReebSpace::connect3sheetTo3sheet(ReebSpaceData &data,
+                                          const SimplexId &sheet3Id,
+                                          const SimplexId &otherSheet3Id) {
 
   if(sheet3Id == otherSheet3Id)
     return -1;
@@ -834,7 +834,7 @@ int ReebSpace::connect3sheetTo3sheet(ReebSpaceData &data,
   return 0;
 }
 
-int ReebSpace::connectSheets() {
+int ttk::ReebSpace::connectSheets() {
 
   Timer t;
 
@@ -903,24 +903,24 @@ int ReebSpace::connectSheets() {
   }
 
   {
-    stringstream msg;
-    msg << "[ReebSpace] Sheet connectivity established." << endl;
-    dMsg(cout, msg.str(), timeMsg);
+    std::stringstream msg;
+    msg << "[ReebSpace] Sheet connectivity established." << std::endl;
+    dMsg(std::cout, msg.str(), timeMsg);
   }
 
-  printConnectivity(cout, originalData_);
+  printConnectivity(std::cout, originalData_);
 
   hasConnectedSheets_ = true;
 
   return 0;
 }
 
-int ReebSpace::disconnect1sheetFrom0sheet(ReebSpaceData &data,
-                                          const SimplexId &sheet1Id,
-                                          const SimplexId &sheet0Id,
-                                          const SimplexId &biggerId) {
+int ttk::ReebSpace::disconnect1sheetFrom0sheet(ReebSpaceData &data,
+                                               const SimplexId &sheet1Id,
+                                               const SimplexId &sheet0Id,
+                                               const SimplexId &biggerId) {
 
-  vector<SimplexId> newList;
+  std::vector<SimplexId> newList;
 
   newList.reserve(data.sheet0List_[sheet0Id].sheet1List_.size());
 
@@ -940,11 +940,11 @@ int ReebSpace::disconnect1sheetFrom0sheet(ReebSpaceData &data,
   return 0;
 }
 
-int ReebSpace::disconnect3sheetFrom0sheet(ReebSpaceData &data,
-                                          const SimplexId &sheet3Id,
-                                          const SimplexId &sheet0Id) {
+int ttk::ReebSpace::disconnect3sheetFrom0sheet(ReebSpaceData &data,
+                                               const SimplexId &sheet3Id,
+                                               const SimplexId &sheet0Id) {
 
-  vector<SimplexId> newList;
+  std::vector<SimplexId> newList;
 
   newList.reserve(data.sheet0List_[sheet0Id].sheet3List_.size());
   for(SimplexId i = 0;
@@ -958,12 +958,12 @@ int ReebSpace::disconnect3sheetFrom0sheet(ReebSpaceData &data,
   return 0;
 }
 
-int ReebSpace::disconnect3sheetFrom1sheet(ReebSpaceData &data,
-                                          const SimplexId &sheet3Id,
-                                          const SimplexId &sheet1Id,
-                                          const SimplexId &biggerId) {
+int ttk::ReebSpace::disconnect3sheetFrom1sheet(ReebSpaceData &data,
+                                               const SimplexId &sheet3Id,
+                                               const SimplexId &sheet1Id,
+                                               const SimplexId &biggerId) {
 
-  vector<SimplexId> newList;
+  std::vector<SimplexId> newList;
 
   newList.reserve(data.sheet1List_[sheet1Id].sheet3List_.size());
   for(SimplexId i = 0;
@@ -1009,11 +1009,11 @@ int ReebSpace::disconnect3sheetFrom1sheet(ReebSpaceData &data,
   return 0;
 }
 
-int ReebSpace::disconnect3sheetFrom2sheet(ReebSpaceData &data,
-                                          const SimplexId &sheet3Id,
-                                          const SimplexId &sheet2Id) {
+int ttk::ReebSpace::disconnect3sheetFrom2sheet(ReebSpaceData &data,
+                                               const SimplexId &sheet3Id,
+                                               const SimplexId &sheet2Id) {
 
-  vector<SimplexId> newList;
+  std::vector<SimplexId> newList;
 
   newList.reserve(data.sheet2List_[sheet2Id].sheet3List_.size());
   for(SimplexId i = 0;
@@ -1027,11 +1027,11 @@ int ReebSpace::disconnect3sheetFrom2sheet(ReebSpaceData &data,
   return 0;
 }
 
-int ReebSpace::disconnect3sheetFrom3sheet(ReebSpaceData &data,
-                                          const SimplexId &sheet3Id,
-                                          const SimplexId &other3SheetId) {
+int ttk::ReebSpace::disconnect3sheetFrom3sheet(ReebSpaceData &data,
+                                               const SimplexId &sheet3Id,
+                                               const SimplexId &other3SheetId) {
 
-  vector<SimplexId> newList;
+  std::vector<SimplexId> newList;
 
   newList.reserve(data.sheet3List_[other3SheetId].sheet3List_.size());
   for(SimplexId i = 0;
@@ -1045,7 +1045,7 @@ int ReebSpace::disconnect3sheetFrom3sheet(ReebSpaceData &data,
   return 0;
 }
 
-int ReebSpace::flush() {
+int ttk::ReebSpace::flush() {
 
   totalArea_ = -1;
   totalVolume_ = -1;
@@ -1079,8 +1079,8 @@ int ReebSpace::flush() {
   return 0;
 }
 
-int ReebSpace::mergeSheets(const SimplexId &smallerId,
-                           const SimplexId &biggerId) {
+int ttk::ReebSpace::mergeSheets(const SimplexId &smallerId,
+                                const SimplexId &biggerId) {
 
   // 1. add the vertices and tets of smaller to bigger
   for(SimplexId i = 0;
@@ -1188,8 +1188,8 @@ int ReebSpace::mergeSheets(const SimplexId &smallerId,
   return 0;
 }
 
-int ReebSpace::preMergeSheets(const SimplexId &sheetId0,
-                              const SimplexId &sheetId1) {
+int ttk::ReebSpace::preMergeSheets(const SimplexId &sheetId0,
+                                   const SimplexId &sheetId1) {
 
   // 1. add the vertices and tets of 0 to 1
   for(SimplexId i = 0;
@@ -1221,7 +1221,7 @@ int ReebSpace::preMergeSheets(const SimplexId &sheetId0,
   return 0;
 }
 
-int ReebSpace::prepareSimplification() {
+int ttk::ReebSpace::prepareSimplification() {
 
   Timer t;
 
@@ -1272,26 +1272,26 @@ int ReebSpace::prepareSimplification() {
   }
 
   {
-    stringstream msg;
+    std::stringstream msg;
     msg << "[ReebSpace] Data prepared for simplification in "
-        << t.getElapsedTime() << " s." << endl;
-    dMsg(cout, msg.str(), timeMsg);
+        << t.getElapsedTime() << " s." << std::endl;
+    dMsg(std::cout, msg.str(), timeMsg);
   }
 
   return 0;
 }
 
-int ReebSpace::printConnectivity(ostream &stream,
-                                 const ReebSpaceData &data) const {
+int ttk::ReebSpace::printConnectivity(std::ostream &stream,
+                                      const ReebSpaceData &data) const {
 
   if(debugLevel_ < advancedInfoMsg)
     return -1;
 
-  stringstream msg;
+  std::stringstream msg;
 
-  msg << "[ReebSpace] Connectivity..." << endl;
+  msg << "[ReebSpace] Connectivity..." << std::endl;
 
-  msg << "[ReebSpace] " << data.sheet0List_.size() << " 0-sheets:" << endl;
+  msg << "[ReebSpace] " << data.sheet0List_.size() << " 0-sheets:" << std::endl;
   for(SimplexId i = 0; i < (SimplexId)data.sheet0List_.size(); i++) {
     msg << "[ReebSpace]  3-sheets for 0-sheet #" << i
         << " [p=" << data.sheet0List_[i].pruned_ << "]"
@@ -1300,10 +1300,10 @@ int ReebSpace::printConnectivity(ostream &stream,
         j++) {
       msg << "#" << data.sheet0List_[i].sheet3List_[j] << ", ";
     }
-    msg << endl;
+    msg << std::endl;
   }
 
-  msg << "[ReebSpace] " << data.sheet1List_.size() << " 1-sheets:" << endl;
+  msg << "[ReebSpace] " << data.sheet1List_.size() << " 1-sheets:" << std::endl;
   for(SimplexId i = 0; i < (SimplexId)data.sheet1List_.size(); i++) {
     msg << "[ReebSpace]  3-sheets for 1-sheet #" << i
         << " [p=" << data.sheet1List_[i].pruned_ << "]"
@@ -1312,10 +1312,10 @@ int ReebSpace::printConnectivity(ostream &stream,
         j++) {
       msg << "#" << data.sheet1List_[i].sheet3List_[j] << ", ";
     }
-    msg << endl;
+    msg << std::endl;
   }
 
-  msg << "[ReebSpace] " << data.sheet2List_.size() << " 2-sheets:" << endl;
+  msg << "[ReebSpace] " << data.sheet2List_.size() << " 2-sheets:" << std::endl;
   for(SimplexId i = 0; i < (SimplexId)data.sheet2List_.size(); i++) {
     msg << "[ReebSpace]  3-sheets for 2-sheet #" << i
         << " [p=" << data.sheet2List_[i].pruned_ << "]"
@@ -1324,10 +1324,10 @@ int ReebSpace::printConnectivity(ostream &stream,
         j++) {
       msg << "#" << data.sheet2List_[i].sheet3List_[j] << ", ";
     }
-    msg << endl;
+    msg << std::endl;
   }
 
-  msg << "[ReebSpace] " << data.sheet3List_.size() << " 3-sheets:" << endl;
+  msg << "[ReebSpace] " << data.sheet3List_.size() << " 3-sheets:" << std::endl;
   for(SimplexId i = 0; i < (SimplexId)data.sheet3List_.size(); i++) {
     msg << "[ReebSpace]  3-sheets for 3-sheet #" << i
         << " [p=" << data.sheet3List_[i].pruned_ << "]"
@@ -1336,7 +1336,7 @@ int ReebSpace::printConnectivity(ostream &stream,
         j++) {
       msg << "#" << data.sheet3List_[i].sheet3List_[j] << ", ";
     }
-    msg << endl;
+    msg << std::endl;
   }
 
   dMsg(stream, msg.str(), advancedInfoMsg);
@@ -1345,8 +1345,8 @@ int ReebSpace::printConnectivity(ostream &stream,
   return 0;
 }
 
-int ReebSpace::simplifySheet(const SimplexId &sheetId,
-                             const SimplificationCriterion &criterion) {
+int ttk::ReebSpace::simplifySheet(const SimplexId &sheetId,
+                                  const SimplificationCriterion &criterion) {
 
   SimplexId candidateId = -1;
   double maximumScore = -1;
@@ -1468,7 +1468,7 @@ int ReebSpace::simplifySheet(const SimplexId &sheetId,
   return 0;
 }
 
-int ReebSpace::simplifySheets(
+int ttk::ReebSpace::simplifySheets(
   const double &simplificationThreshold,
   const SimplificationCriterion &simplificationCriterion) {
 
@@ -1570,19 +1570,19 @@ int ReebSpace::simplifySheets(
 
   // TODO: update segmentation for 1-sheets and 0-sheets?...
 
-  printConnectivity(cout, currentData_);
+  printConnectivity(std::cout, currentData_);
 
   {
-    stringstream msg;
+    std::stringstream msg;
     msg << "[ReebSpace] " << simplifiedSheets << " 3-sheets simplified in "
         << t.getElapsedTime() << " s. (" << threadNumber_ << " thread(s))"
-        << endl;
+        << std::endl;
     if(simplifiedSheets) {
       msg << "[ReebSpace] Last 3-sheet simplified at threshold "
-          << lastThreshold << endl;
+          << lastThreshold << std::endl;
     }
-    msg << "[ReebSpace] " << simplificationId << " 3-sheets left." << endl;
-    dMsg(cout, msg.str(), timeMsg);
+    msg << "[ReebSpace] " << simplificationId << " 3-sheets left." << std::endl;
+    dMsg(std::cout, msg.str(), timeMsg);
   }
 
   return 0;
