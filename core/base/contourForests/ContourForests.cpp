@@ -23,11 +23,9 @@ ContourForests::ContourForests()
   : ContourForestsTree(new Params(), nullptr, new Scalars()), parallelParams_(),
     parallelData_() {
   params_->treeType = TreeType::Contour;
-  stringstream msg;
-  msg << "[ContourForests]: DEPRECATED This module will be removed in a future"
-      << "release, please use FTM instead for contour trees"
-      << " and FTR for Reeb graphs." << endl;
-  dMsg(cerr, msg.str(), timeMsg);
+  this->printWrn(
+    "DEPRECATED This module will be removed in a future release, please use "
+    "FTM instead for contour trees and FTR for Reeb graphs.");
 }
 
 ContourForests::~ContourForests() {
@@ -85,8 +83,7 @@ void ContourForests::initInterfaces() {
     for(const auto &i : parallelData_.interfaces) {
       partition << i.getSeed() << " ";
     }
-    partition << endl;
-    dMsg(cout, partition.str(), 3);
+    this->printMsg(partition.str(), debug::Priority::DETAIL);
   }
 
   // }
@@ -698,9 +695,7 @@ void ContourForests::unifyTree(const char treetype) {
 // Print
 // {
 void ContourForests::printDebug(DebugTimer &timer, const string &str) {
-  stringstream msg;
-  msg << "[ContourForests] " << str << " : " << timer.getElapsedTime() << endl;
-  dMsg(cout, msg.str(), timeMsg);
+  this->printMsg(str, 1.0, timer.getElapsedTime(), this->threadNumber_);
 }
 
 void ContourForests::printVectCT() {
