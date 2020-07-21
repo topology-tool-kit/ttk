@@ -1,10 +1,20 @@
+#include <vtkCellArray.h>
+#include <vtkCellData.h>
+#include <vtkDataArray.h>
+#include <vtkDoubleArray.h>
+#include <vtkInformation.h>
 #include <vtkNew.h>
+#include <vtkObjectFactory.h>
+#include <vtkPointData.h>
+#include <vtkSignedCharArray.h>
+#include <vtkUnstructuredGrid.h>
 
 #include <ttkMacros.h>
 #include <ttkReebSpace.h>
 #include <ttkUtils.h>
 
 vtkStandardNewMacro(ttkReebSpace);
+
 ttkReebSpace::ttkReebSpace() {
   this->SetNumberOfInputPorts(1);
   this->SetNumberOfOutputPorts(4);
@@ -226,7 +236,7 @@ int ttkReebSpace::RequestData(vtkInformation *request,
     sheet0->GetPointData()->RemoveArray(ttk::VertexScalarFieldName);
   }
 
-  vtkNew<vtkCharArray> vertexTypes{};
+  vtkNew<vtkSignedCharArray> vertexTypes{};
   if(ZeroSheetType) {
     vertexTypes->SetNumberOfTuples(vertexNumber);
     vertexTypes->SetName("SheetType");
