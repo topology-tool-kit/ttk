@@ -230,7 +230,6 @@ namespace ttk {
 
     // WARNING: if you plan to use the range driven octree, make sure
     // that you provided pointers to the u and v fields.
-    template <class dataTypeU, class dataTypeV>
     inline int
       preconditionTriangulation(AbstractTriangulation *const triangulation) {
       if(triangulation) {

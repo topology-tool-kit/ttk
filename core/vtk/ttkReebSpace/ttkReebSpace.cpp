@@ -56,8 +56,6 @@ int ttkReebSpace::dispatch(const dataTypeU *const uField,
   if(triangulation->isEmpty())
     VaryingTriangulation = true;
 
-  this->preconditionTriangulation<dataTypeU, dataTypeV>(triangulation);
-
   // go!
   if(this->empty() || VaryingValues || VaryingTriangulation) {
     this->printMsg("Starting computation");
@@ -180,6 +178,7 @@ int ttkReebSpace::RequestData(vtkInformation *request,
   if(triangulation == nullptr) {
     return -3;
   }
+  this->preconditionTriangulation(triangulation);
 
   this->setSosOffsetsU(&sosOffsetsU_);
   this->setSosOffsetsV(&sosOffsetsV_);
