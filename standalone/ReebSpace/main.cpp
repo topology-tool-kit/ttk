@@ -1,55 +1,141 @@
 /// \author Julien Tierny <julien.tierny@lip6.fr>.
 /// \date February 2017.
 ///
-/// \brief Command line program for bivariate Reeb space computation.
+/// \brief Command line program for Reeb Space computation.
 
 // include the local headers
-#include <ttkProgramBase.h>
+#include <CommandLineParser.h>
 #include <ttkReebSpace.h>
 
-using namespace std;
-using namespace ttk;
+#include <vtkCellData.h>
+#include <vtkDataArray.h>
+#include <vtkDataSet.h>
+#include <vtkNew.h>
+#include <vtkPointData.h>
+#include <vtkXMLDataObjectWriter.h>
+#include <vtkXMLGenericDataObjectReader.h>
 
 int main(int argc, char **argv) {
 
-  // init editor
-  vtkProgram<ttkReebSpace> program;
+  std::vector<std::string> inputFilePaths;
+  std::vector<std::string> inputArrayNames;
+  std::string outputPathPrefix{"output"};
+  bool listArrays{false};
+  bool forceOffset{false};
 
-  // specify local parameters to the TTK module with default values.
-  double threshold = 0;
-  int criterion = 0;
-  int uId = 0, vId = 1;
+  {
+    ttk::CommandLineParser parser;
 
-  // register these arguments to the command line parser
-  program.parser_.setArgument(
-    "s", &threshold, "Simplification threshold, in [0, 1]", true);
-  program.parser_.setArgument(
-    "c", &criterion, "Simplification criterion, in [0, 2]", true);
+    // -------------------------------------------------------------------------
+    // Standard options and arguments
+    // -------------------------------------------------------------------------
+    parser.setArgument(
+      "i", &inputFilePaths, "Input data-sets (*.vti, *vtu, *vtp)", false);
+    parser.setArgument("a", &inputArrayNames, "Input array names", true);
+    parser.setArgument(
+      "o", &outputPathPrefix, "Output file prefix (no extension)", true);
+    parser.setOption("l", &listArrays, "List available arrays");
 
-  program.parser_.setArgument(
-    "u", &uId, "Identifier of the u-component field", true);
-  program.parser_.setArgument(
-    "v", &vId, "Identifier of the v-component field", true);
+    parser.setOption("F", &forceOffset, "Force custom offset field (array #1)");
 
-  int ret = program.init(argc, argv);
+    parser.parse(argc, argv);
+  }
 
-  if(ret != 0)
-    return ret;
+  ttk::Debug msg;
+  msg.setDebugMsgPrefix("ReebSpace");
 
-  // change here the arguments of the vtkWrapper that you want to update prior
-  // to execution.
-  program.ttkObject_->SetUcomponentId(uId);
-  program.ttkObject_->SetVcomponentId(vId);
-  program.ttkObject_->SetSimplificationCriterion(criterion);
-  program.ttkObject_->SetSimplificationThreshold(threshold);
+  vtkNew<ttkReebSpace> msc{};
 
-  // execute data processing
-  ret = program.run();
+  vtkDataArray *defaultArray = nullptr;
+  for(size_t i = 0; i < inputFilePaths.size(); i++) {
+    // init a reader that can parse any vtkDataObject stored in xml format
+    vtkNew<vtkXMLGenericDataObjectReader> reader{};
+    reader->SetFileName(inputFilePaths[i].data());
+    reader->Update();
 
-  if(ret != 0)
-    return ret;
+    // check if input vtkDataObject was successfully read
+    auto inputDataObject = reader->GetOutput();
+    if(!inputDataObject) {
+      msg.printErr("Unable to read input file `" + inputFilePaths[i] + "' :(");
+      return 0;
+    }
 
-  ret = program.save();
+    auto inputAsVtkDataSet = vtkDataSet::SafeDownCast(inputDataObject);
 
-  return ret;
+    // if requested print list of arrays, otherwise proceed with execution
+    if(listArrays) {
+      msg.printMsg(inputFilePaths[i] + ":");
+      if(inputAsVtkDataSet) {
+        // Point Data
+        msg.printMsg("  PointData:");
+        auto pointData = inputAsVtkDataSet->GetPointData();
+        for(int j = 0; j < pointData->GetNumberOfArrays(); j++)
+          msg.printMsg("    - " + std::string(pointData->GetArrayName(j)));
+
+        // Cell Data
+        msg.printMsg("  CellData:");
+        auto cellData = inputAsVtkDataSet->GetCellData();
+        for(int j = 0; j < cellData->GetNumberOfArrays(); j++)
+          msg.printMsg("    - " + std::string(cellData->GetArrayName(j)));
+      } else {
+        msg.printErr("Unable to list arrays on file `" + inputFilePaths[i]
+                     + "'");
+        return 0;
+      }
+    } else {
+      // feed input object to the filter
+      msc->SetInputDataObject(i, reader->GetOutput());
+
+      // default arrays
+      if(!defaultArray) {
+        defaultArray = inputAsVtkDataSet->GetPointData()->GetArray(0);
+        if(!defaultArray)
+          defaultArray = inputAsVtkDataSet->GetCellData()->GetArray(0);
+      }
+    }
+  }
+
+  // terminate program if it was just asked to list arrays
+  if(listArrays) {
+    return 1;
+  }
+
+  // ---------------------------------------------------------------------------
+  // Specify which arrays of the input vtkDataObjects will be processed
+  // ---------------------------------------------------------------------------
+  if(!inputArrayNames.size()) {
+    if(defaultArray)
+      inputArrayNames.push_back(defaultArray->GetName());
+  }
+  for(size_t i = 0; i < inputArrayNames.size(); i++)
+    msc->SetInputArrayToProcess(i, 0, 0, 0, inputArrayNames[i].data());
+
+  // TODO manage the offset array?
+
+  // ---------------------------------------------------------------------------
+  // Execute the filter
+  // ---------------------------------------------------------------------------
+  msc->SetForceInputOffsetScalarField(forceOffset);
+  msc->Update();
+
+  // ---------------------------------------------------------------------------
+  // If output prefix is specified then write all output objects to disk
+  // ---------------------------------------------------------------------------
+  if(!outputPathPrefix.empty()) {
+    for(int i = 0; i < msc->GetNumberOfOutputPorts(); i++) {
+      auto output = msc->GetOutputDataObject(i);
+      auto writer
+        = vtkXMLDataObjectWriter::NewWriter(output->GetDataObjectType());
+
+      std::string outputFileName = outputPathPrefix + "_port_"
+                                   + std::to_string(i) + "."
+                                   + writer->GetDefaultFileExtension();
+      msg.printMsg("Writing output file `" + outputFileName + "'...");
+      writer->SetInputDataObject(output);
+      writer->SetFileName(outputFileName.data());
+      writer->Update();
+    }
+  }
+
+  return 1;
 }
