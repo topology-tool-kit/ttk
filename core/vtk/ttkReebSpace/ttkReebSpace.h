@@ -62,29 +62,11 @@ public:
   static ttkReebSpace *New();
   vtkTypeMacro(ttkReebSpace, ttkAlgorithm);
 
-  vtkSetMacro(Ucomponent, std::string);
-  vtkGetMacro(Ucomponent, std::string);
-
-  vtkSetMacro(Vcomponent, std::string);
-  vtkGetMacro(Vcomponent, std::string);
-
-  vtkSetMacro(UcomponentId, int);
-  vtkGetMacro(UcomponentId, int);
-
-  vtkSetMacro(VcomponentId, int);
-  vtkGetMacro(VcomponentId, int);
-
   vtkGetMacro(ForceInputOffsetScalarField, bool);
   vtkSetMacro(ForceInputOffsetScalarField, bool);
 
   vtkGetMacro(UseOctreeAcceleration, bool);
   vtkSetMacro(UseOctreeAcceleration, bool);
-
-  vtkGetMacro(OffsetFieldU, std::string);
-  vtkSetMacro(OffsetFieldU, std::string);
-
-  vtkGetMacro(OffsetFieldV, std::string);
-  vtkSetMacro(OffsetFieldV, std::string);
 
   // 0-sheet options
   vtkGetMacro(ZeroSheetId, bool);
@@ -179,8 +161,6 @@ protected:
                ttk::Triangulation *const triangulation);
 
 private:
-  int UcomponentId{0}, VcomponentId{1};
-
   bool ZeroSheetValue{true}, ZeroSheetVertexId{true}, ZeroSheetType{true},
     ZeroSheetId{true};
   bool OneSheetValue{true}, OneSheetVertexId{true}, OneSheetType{true},
@@ -196,7 +176,6 @@ private:
   bool UseOctreeAcceleration{true};
   int SimplificationCriterion{1};
   double SimplificationThreshold{0.0};
-  std::string Ucomponent{}, Vcomponent{}, OffsetFieldU{}, OffsetFieldV{};
 
   std::vector<ttk::SimplexId> sosOffsetsU_{}, sosOffsetsV_{};
 };

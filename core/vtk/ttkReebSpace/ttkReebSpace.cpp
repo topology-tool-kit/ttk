@@ -89,91 +89,30 @@ int ttkReebSpace::RequestData(vtkInformation *request,
   auto sheet2 = vtkUnstructuredGrid::GetData(outputVector, 2);
   auto sheet3 = vtkDataSet::GetData(outputVector, 3);
 
-  vtkDataArray *uComponent{}, *vComponent{}, *offsetFieldU{}, *offsetFieldV{};
+  const auto uComponent = this->GetInputArrayToProcess(0, inputVector);
+  const auto vComponent = this->GetInputArrayToProcess(1, inputVector);
+  const auto offsetFieldU = this->GetOptionalArray(
+    ForceInputOffsetScalarField, 2, ttk::OffsetFieldUName, inputVector);
+  const auto offsetFieldV = this->GetOptionalArray(
+    ForceInputOffsetScalarField, 3, ttk::OffsetFieldVName, inputVector);
 
   // check data components
-  if(Ucomponent.length()) {
-    std::string oldName = Ucomponent;
-    if(uComponent) {
-      oldName = uComponent->GetName();
-    }
-    uComponent = input->GetPointData()->GetArray(Ucomponent.data());
-    if(oldName != Ucomponent)
-      uComponent->Modified();
-  } else {
-    // default
-    uComponent = input->GetPointData()->GetArray(UcomponentId);
-  }
-  if(!uComponent)
-    return -1;
 
-  if(Vcomponent.length()) {
-    std::string oldName = Vcomponent;
-    if(vComponent) {
-      oldName = vComponent->GetName();
-    }
-    vComponent = input->GetPointData()->GetArray(Vcomponent.data());
-    if(oldName != Vcomponent)
-      vComponent->Modified();
-  } else {
-    // default
-    vComponent = input->GetPointData()->GetArray(VcomponentId);
+  if(uComponent == nullptr || vComponent == nullptr) {
+    return -1;
   }
-  if(!vComponent)
-    return -2;
 
   if(ForceInputOffsetScalarField) {
-    if(OffsetFieldU.length()) {
-
-      std::string oldName = OffsetFieldU;
-      if(offsetFieldU) {
-        oldName = offsetFieldU->GetName();
-      }
-      offsetFieldU = input->GetPointData()->GetArray(OffsetFieldU.data());
-      if(oldName != OffsetFieldU)
-        offsetFieldU->Modified();
-
-      if(offsetFieldU) {
-        sosOffsetsU_.resize(offsetFieldU->GetNumberOfTuples());
-        for(vtkIdType i = 0; i < offsetFieldU->GetNumberOfTuples(); i++) {
-          sosOffsetsU_[i] = offsetFieldU->GetTuple1(i);
-        }
+    if(offsetFieldU) {
+      sosOffsetsU_.resize(offsetFieldU->GetNumberOfTuples());
+      for(vtkIdType i = 0; i < offsetFieldU->GetNumberOfTuples(); i++) {
+        sosOffsetsU_[i] = offsetFieldU->GetTuple1(i);
       }
     }
-    if(OffsetFieldV.length()) {
-
-      std::string oldName = OffsetFieldV;
-      if(offsetFieldV) {
-        oldName = offsetFieldV->GetName();
-      }
-      offsetFieldV = input->GetPointData()->GetArray(OffsetFieldV.data());
-      if(oldName != OffsetFieldV)
-        offsetFieldV->Modified();
-
-      if(offsetFieldV) {
-        sosOffsetsV_.resize(offsetFieldV->GetNumberOfTuples());
-        for(vtkIdType i = 0; i < offsetFieldV->GetNumberOfTuples(); i++) {
-          sosOffsetsV_[i] = offsetFieldV->GetTuple1(i);
-        }
-      }
-    }
-  } else {
-    if(input->GetPointData()->GetArray(ttk::OffsetFieldUName)) {
-      offsetFieldU = input->GetPointData()->GetArray(ttk::OffsetFieldUName);
-      if(offsetFieldU) {
-        sosOffsetsU_.resize(offsetFieldU->GetNumberOfTuples());
-        for(vtkIdType i = 0; i < offsetFieldU->GetNumberOfTuples(); i++) {
-          sosOffsetsU_[i] = offsetFieldU->GetTuple1(i);
-        }
-      }
-    }
-    if(input->GetPointData()->GetArray(ttk::OffsetFieldVName)) {
-      offsetFieldV = input->GetPointData()->GetArray(ttk::OffsetFieldVName);
-      if(offsetFieldV) {
-        sosOffsetsV_.resize(offsetFieldV->GetNumberOfTuples());
-        for(vtkIdType i = 0; i < offsetFieldV->GetNumberOfTuples(); i++) {
-          sosOffsetsV_[i] = offsetFieldV->GetTuple1(i);
-        }
+    if(offsetFieldV) {
+      sosOffsetsV_.resize(offsetFieldV->GetNumberOfTuples());
+      for(vtkIdType i = 0; i < offsetFieldV->GetNumberOfTuples(); i++) {
+        sosOffsetsV_[i] = offsetFieldV->GetTuple1(i);
       }
     }
   }
