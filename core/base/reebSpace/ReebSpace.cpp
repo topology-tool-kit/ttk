@@ -133,14 +133,11 @@ int ttk::ReebSpace::compute1sheetsOnly(
     }
   }
 
-  {
-    std::stringstream msg;
-    msg << "[ReebSpace] " << originalData_.sheet1List_.size()
-        << " 1-sheets and " << originalData_.sheet0List_.size()
-        << " 0-sheets extracted in " << t.getElapsedTime() << " s."
-        << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
-  }
+  this->printMsg(std::vector<std::vector<std::string>>{
+    {"#1-sheets", std::to_string(originalData_.sheet1List_.size())},
+    {"#0-sheets", std::to_string(originalData_.sheet0List_.size())}});
+  this->printMsg(
+    "Extracted 0- and 1-sheets", 1.0, t.getElapsedTime(), this->threadNumber_);
 
   return 0;
 }
@@ -335,14 +332,11 @@ int ttk::ReebSpace::compute1sheets(
     }
   }
 
-  {
-    std::stringstream msg;
-    msg << "[ReebSpace] " << originalData_.sheet1List_.size()
-        << " 1-sheets and " << originalData_.sheet0List_.size()
-        << " 0-sheets extracted in " << t.getElapsedTime() << " s."
-        << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
-  }
+  this->printMsg(std::vector<std::vector<std::string>>{
+    {"#1-sheets", std::to_string(originalData_.sheet1List_.size())},
+    {"#0-sheets", std::to_string(originalData_.sheet0List_.size())}});
+  this->printMsg(
+    "Extracted 0- and 1-sheets", 1.0, t.getElapsedTime(), this->threadNumber_);
 
   return 0;
 }
@@ -713,12 +707,8 @@ int ttk::ReebSpace::compute3sheets(
   }
   // end of the 3-sheet expansion
 
-  {
-    std::stringstream msg;
-    msg << "[ReebSpace] " << totalSheetNumber << " 3-sheets computed in "
-        << t.getElapsedTime() << " s." << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
-  }
+  this->printMsg("Computed " + std::to_string(totalSheetNumber) + " 3-sheets",
+                 1.0, t.getElapsedTime(), this->threadNumber_);
 
   return 0;
 }
@@ -902,11 +892,7 @@ int ttk::ReebSpace::connectSheets() {
     }
   }
 
-  {
-    std::stringstream msg;
-    msg << "[ReebSpace] Sheet connectivity established." << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
-  }
+  this->printMsg("Sheet connectivity established.");
 
   printConnectivity(std::cout, originalData_);
 
@@ -1271,12 +1257,8 @@ int ttk::ReebSpace::prepareSimplification() {
     }
   }
 
-  {
-    std::stringstream msg;
-    msg << "[ReebSpace] Data prepared for simplification in "
-        << t.getElapsedTime() << " s." << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
-  }
+  this->printMsg("Data preparetd for simplification.", 1.0, t.getElapsedTime(),
+                 this->threadNumber_);
 
   return 0;
 }
@@ -1289,58 +1271,56 @@ int ttk::ReebSpace::printConnectivity(std::ostream &stream,
 
   std::stringstream msg;
 
-  msg << "[ReebSpace] Connectivity..." << std::endl;
+  msg << "Connectivity..." << std::endl;
 
-  msg << "[ReebSpace] " << data.sheet0List_.size() << " 0-sheets:" << std::endl;
-  for(SimplexId i = 0; i < (SimplexId)data.sheet0List_.size(); i++) {
-    msg << "[ReebSpace]  3-sheets for 0-sheet #" << i
+  msg << data.sheet0List_.size() << " 0-sheets:" << std::endl;
+  for(size_t i = 0; i < data.sheet0List_.size(); i++) {
+    msg << "3-sheets for 0-sheet #" << i
         << " [p=" << data.sheet0List_[i].pruned_ << "]"
         << ": ";
-    for(SimplexId j = 0; j < (SimplexId)data.sheet0List_[i].sheet3List_.size();
-        j++) {
+    for(size_t j = 0; j < data.sheet0List_[i].sheet3List_.size(); j++) {
       msg << "#" << data.sheet0List_[i].sheet3List_[j] << ", ";
     }
     msg << std::endl;
   }
 
-  msg << "[ReebSpace] " << data.sheet1List_.size() << " 1-sheets:" << std::endl;
-  for(SimplexId i = 0; i < (SimplexId)data.sheet1List_.size(); i++) {
-    msg << "[ReebSpace]  3-sheets for 1-sheet #" << i
+  msg << data.sheet1List_.size() << " 1-sheets:" << std::endl;
+  for(size_t i = 0; i < data.sheet1List_.size(); i++) {
+    msg << "3-sheets for 1-sheet #" << i
         << " [p=" << data.sheet1List_[i].pruned_ << "]"
         << ": ";
-    for(SimplexId j = 0; j < (SimplexId)data.sheet1List_[i].sheet3List_.size();
-        j++) {
+    for(size_t j = 0; j < data.sheet1List_[i].sheet3List_.size(); j++) {
       msg << "#" << data.sheet1List_[i].sheet3List_[j] << ", ";
     }
     msg << std::endl;
   }
 
-  msg << "[ReebSpace] " << data.sheet2List_.size() << " 2-sheets:" << std::endl;
-  for(SimplexId i = 0; i < (SimplexId)data.sheet2List_.size(); i++) {
-    msg << "[ReebSpace]  3-sheets for 2-sheet #" << i
+  msg << data.sheet2List_.size() << " 2-sheets:" << std::endl;
+  for(size_t i = 0; i < data.sheet2List_.size(); i++) {
+    msg << "3-sheets for 2-sheet #" << i
         << " [p=" << data.sheet2List_[i].pruned_ << "]"
         << ": ";
-    for(SimplexId j = 0; j < (SimplexId)data.sheet2List_[i].sheet3List_.size();
-        j++) {
+    for(size_t j = 0; j < data.sheet2List_[i].sheet3List_.size(); j++) {
       msg << "#" << data.sheet2List_[i].sheet3List_[j] << ", ";
     }
     msg << std::endl;
   }
 
-  msg << "[ReebSpace] " << data.sheet3List_.size() << " 3-sheets:" << std::endl;
-  for(SimplexId i = 0; i < (SimplexId)data.sheet3List_.size(); i++) {
-    msg << "[ReebSpace]  3-sheets for 3-sheet #" << i
+  msg << data.sheet3List_.size() << " 3-sheets:" << std::endl;
+  for(size_t i = 0; i < data.sheet3List_.size(); i++) {
+    msg << "3-sheets for 3-sheet #" << i
         << " [p=" << data.sheet3List_[i].pruned_ << "]"
         << ": ";
-    for(SimplexId j = 0; j < (SimplexId)data.sheet3List_[i].sheet3List_.size();
-        j++) {
+    for(size_t j = 0; j < data.sheet3List_[i].sheet3List_.size(); j++) {
       msg << "#" << data.sheet3List_[i].sheet3List_[j] << ", ";
     }
     msg << std::endl;
   }
 
-  dMsg(stream, msg.str(), advancedInfoMsg);
-  //   dMsg(stream, msg.str(), timeMsg);
+  std::string one_line{};
+  while(std::getline(msg, one_line)) {
+    this->printMsg(one_line, debug::Priority::VERBOSE);
+  }
 
   return 0;
 }
@@ -1572,18 +1552,13 @@ int ttk::ReebSpace::simplifySheets(
 
   printConnectivity(std::cout, currentData_);
 
-  {
-    std::stringstream msg;
-    msg << "[ReebSpace] " << simplifiedSheets << " 3-sheets simplified in "
-        << t.getElapsedTime() << " s. (" << threadNumber_ << " thread(s))"
-        << std::endl;
-    if(simplifiedSheets) {
-      msg << "[ReebSpace] Last 3-sheet simplified at threshold "
-          << lastThreshold << std::endl;
-    }
-    msg << "[ReebSpace] " << simplificationId << " 3-sheets left." << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
-  }
+  this->printMsg(std::vector<std::vector<std::string>>{
+    {"#3-sheets simplified", std::to_string(simplifiedSheets)},
+    {"Last 3-sheet threshold", std::to_string(lastThreshold)},
+    {"#3-sheets left", std::to_string(simplificationId)}});
+
+  this->printMsg(
+    "3-sheets simplified", 1.0, t.getElapsedTime(), this->threadNumber_);
 
   return 0;
 }

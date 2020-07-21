@@ -417,7 +417,6 @@ inline int ttk::ReebSpace::execute(const dataTypeU *const uField,
   Timer t;
 
   // 1) compute the jacobi set
-  jacobiSet_.preconditionTriangulation(triangulation_);
   jacobiSet_.setSosOffsetsU(sosOffsetsU_);
   jacobiSet_.setSosOffsetsV(sosOffsetsV_);
   jacobiSet_.execute(jacobiSetEdges_, uField, vField, *triangulation_);
@@ -435,13 +434,8 @@ inline int ttk::ReebSpace::execute(const dataTypeU *const uField,
   std::vector<std::vector<std::vector<SimplexId>>> tetTriangles;
   compute3sheets(tetTriangles);
 
-  {
-    std::stringstream msg;
-    msg << "[ReebSpace] Data-set (" << vertexNumber_ << " points) processed in "
-        << t.getElapsedTime() << " s. TOTAL (" << threadNumber_
-        << " thread(s))." << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
-  }
+  this->printMsg(
+    "Data-set processed", 1.0, t.getElapsedTime(), this->threadNumber_);
 
   // post-process for further interaction
   if((totalArea_ == -1) || (totalVolume_ == -1) || (totalHyperVolume_ == -1)) {
@@ -461,13 +455,8 @@ inline int ttk::ReebSpace::execute(const dataTypeU *const uField,
       totalHyperVolume_ += originalData_.sheet3List_[i].hyperVolume_;
     }
 
-    {
-      std::stringstream msg;
-      msg << "[ReebSpace] Geometrical measures computed in "
-          << tm.getElapsedTime() << " s. (" << threadNumber_ << " thread(s))"
-          << std::endl;
-      dMsg(std::cout, msg.str(), timeMsg);
-    }
+    this->printMsg("Computed geometrical measures", 1.0, tm.getElapsedTime(),
+                   this->threadNumber_);
   }
 
   fiberSurface_.finalize<dataTypeU, dataTypeV>();
@@ -492,7 +481,7 @@ inline int ttk::ReebSpace::compute2sheets(
 
   // at this point, they have exactly the same size
   originalData_.sheet2List_.resize(originalData_.sheet1List_.size());
-  for(SimplexId i = 0; i < (SimplexId)originalData_.sheet2List_.size(); i++) {
+  for(size_t i = 0; i < originalData_.sheet2List_.size(); i++) {
     originalData_.sheet2List_[i].sheet1Id_ = i;
     originalData_.sheet2List_[i].pruned_ = false;
     originalData_.sheet2List_[i].vertexList_.resize(
@@ -501,24 +490,22 @@ inline int ttk::ReebSpace::compute2sheets(
     originalData_.sheet2List_[i].triangleList_.resize(
       originalData_.sheet1List_[originalData_.sheet2List_[i].sheet1Id_]
         .edgeList_.size());
-    for(SimplexId j = 0;
-        j < (SimplexId)originalData_.sheet2List_[i].vertexList_.size(); j++) {
+    for(size_t j = 0; j < originalData_.sheet2List_[i].vertexList_.size();
+        j++) {
       originalData_.sheet2List_[i].vertexList_[j].clear();
       originalData_.sheet2List_[i].triangleList_[j].clear();
     }
   }
 
-  fiberSurface_.setWrapper(wrapper_);
   fiberSurface_.setGlobalVertexList(&fiberSurfaceVertexList_);
   fiberSurface_.setInputField(uField, vField);
-  fiberSurface_.preconditionTriangulation(triangulation_);
 
   fiberSurface_.setPolygonEdgeNumber(jacobiEdges.size());
 
   std::vector<SimplexId> edge2polygonEdgeId(edgeNumber_, -1);
   jacobi2edges_.resize(jacobiEdges.size());
 
-  for(SimplexId i = 0; i < (SimplexId)jacobiEdges.size(); i++) {
+  for(size_t i = 0; i < jacobiEdges.size(); i++) {
 
     SimplexId edgeId = jacobiEdges[i].first;
 
@@ -529,11 +516,10 @@ inline int ttk::ReebSpace::compute2sheets(
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
-  for(SimplexId i = 0; i < (SimplexId)originalData_.sheet2List_.size(); i++) {
+  for(size_t i = 0; i < originalData_.sheet2List_.size(); i++) {
 
-    for(SimplexId j = 0;
-        j < (SimplexId)originalData_
-              .sheet1List_[originalData_.sheet2List_[i].sheet1Id_]
+    for(size_t j = 0;
+        j < originalData_.sheet1List_[originalData_.sheet2List_[i].sheet1Id_]
               .edgeList_.size();
         j++) {
 
@@ -553,7 +539,7 @@ inline int ttk::ReebSpace::compute2sheets(
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
-  for(SimplexId i = 0; i < (SimplexId)jacobiEdges.size(); i++) {
+  for(size_t i = 0; i < jacobiEdges.size(); i++) {
 
     SimplexId edgeId = jacobiEdges[i].first;
 
@@ -572,7 +558,7 @@ inline int ttk::ReebSpace::compute2sheets(
     if(originalData_.edgeTypes_[edgeId] == 1) {
       std::vector<SimplexId> edgeSeeds(
         triangulation_->getEdgeStarNumber(edgeId), -1);
-      for(SimplexId j = 0; j < (SimplexId)edgeSeeds.size(); j++) {
+      for(size_t j = 0; j < edgeSeeds.size(); j++) {
         triangulation_->getEdgeStar(edgeId, j, edgeSeeds[j]);
       }
 
@@ -646,12 +632,8 @@ inline int ttk::ReebSpace::compute2sheets(
   //     }
   //   }
 
-  {
-    std::stringstream msg;
-    msg << "[ReebSpace] Fiber surfaces computed in " << t.getElapsedTime()
-        << " s. overall (" << threadNumber_ << " thread(s))." << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
-  }
+  this->printMsg(
+    "Computed fiber surfaces", 1.0, t.getElapsedTime(), this->threadNumber_);
 
   return 0;
 }
@@ -666,32 +648,26 @@ inline int
     return -1;
 #endif
 
-  {
-    std::stringstream msg;
-    msg << "[ReebSpace] Computing chambers' pre-images." << std::endl;
-    msg << "[ReebSpace] This will take a LONG time." << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
-  }
+  this->printWrn("Computing chambers' pre-images.");
+  this->printWrn("This will take a LONG time.");
 
   Timer t;
 
   // at this point, they have exactly the same size
   originalData_.sheet2List_.resize(threadNumber_);
-  for(SimplexId i = 0; i < (SimplexId)originalData_.sheet2List_.size(); i++) {
+  for(size_t i = 0; i < originalData_.sheet2List_.size(); i++) {
     originalData_.sheet2List_[i].sheet1Id_ = i;
     originalData_.sheet2List_[i].pruned_ = false;
     originalData_.sheet2List_[i].vertexList_.resize(1);
     originalData_.sheet2List_[i].triangleList_.resize(1);
   }
 
-  fiberSurface_.setWrapper(wrapper_);
   fiberSurface_.setGlobalVertexList(&fiberSurfaceVertexList_);
   fiberSurface_.setInputField(uField, vField);
-  fiberSurface_.preconditionTriangulation(triangulation_);
   fiberSurface_.setTetNumber(tetNumber_);
   fiberSurface_.setPolygonEdgeNumber(threadNumber_);
 
-  for(SimplexId i = 0; i < (SimplexId)originalData_.sheet2List_.size(); i++) {
+  for(size_t i = 0; i < originalData_.sheet2List_.size(); i++) {
 
     fiberSurface_.setTriangleList(
       i, &(originalData_.sheet2List_[i].triangleList_[0]));
@@ -732,13 +708,8 @@ inline int
     originalData_.sheet2List_[threadId].vertexList_[0].clear();
   }
 
-  {
-    std::stringstream msg;
-    msg << "[ReebSpace] Chambers pre-image boundaries computed in "
-        << t.getElapsedTime() << " s. overall (" << threadNumber_
-        << " thread(s))." << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
-  }
+  this->printMsg("Computed chambers pre-image boundaries", 1.0,
+                 t.getElapsedTime(), this->threadNumber_);
 
   return 0;
 }
@@ -751,7 +722,7 @@ inline int ttk::ReebSpace::computeGeometricalMeasures(
   sheet.rangeArea_ = 0;
   sheet.hyperVolume_ = 0;
 
-  for(SimplexId i = 0; i < (SimplexId)sheet.tetList_.size(); i++) {
+  for(size_t i = 0; i < sheet.tetList_.size(); i++) {
 
     SimplexId tetId = sheet.tetList_[i];
     std::vector<std::pair<double, double>> domainBox, rangeBox;
@@ -826,13 +797,8 @@ inline int ttk::ReebSpace::simplify(const dataTypeU *const uField,
       totalHyperVolume_ += originalData_.sheet3List_[i].hyperVolume_;
     }
 
-    {
-      std::stringstream msg;
-      msg << "[ReebSpace] Geometrical measures computed in "
-          << t.getElapsedTime() << " s. (" << threadNumber_ << " thread(s))"
-          << std::endl;
-      dMsg(std::cout, msg.str(), timeMsg);
-    }
+    this->printMsg("Computed geometrical measures", 1.0, t.getElapsedTime(),
+                   this->threadNumber_);
   }
 
   if(!hasConnectedSheets_) {
@@ -842,7 +808,7 @@ inline int ttk::ReebSpace::simplify(const dataTypeU *const uField,
 
   {
     std::stringstream msg;
-    msg << "[ReebSpace] Simplifying with criterion ";
+    msg << "Simplifying with criterion ";
     switch(criterion) {
       case SimplificationCriterion::domainVolume:
         msg << "'Domain Volume'";
@@ -855,7 +821,7 @@ inline int ttk::ReebSpace::simplify(const dataTypeU *const uField,
         break;
     }
     msg << " at threshold " << simplificationThreshold << "." << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
+    this->printMsg(msg.str());
   }
 
   if(!((criterion == currentData_.simplificationCriterion_)
