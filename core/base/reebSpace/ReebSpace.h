@@ -824,7 +824,7 @@ inline int ttk::ReebSpace::simplify(const dataTypeU *const uField,
 
   {
     std::stringstream msg;
-    msg << "Simplifying with criterion ";
+    msg << "Simplifying (";
     switch(criterion) {
       case SimplificationCriterion::domainVolume:
         msg << "'Domain Volume'";
@@ -836,7 +836,7 @@ inline int ttk::ReebSpace::simplify(const dataTypeU *const uField,
         msg << "'HyperVolume'";
         break;
     }
-    msg << " at threshold " << simplificationThreshold << "." << std::endl;
+    msg << ", thr: " << simplificationThreshold << ").";
     this->printMsg(msg.str());
   }
 

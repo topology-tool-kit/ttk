@@ -266,7 +266,7 @@ int ttk::ReebSpace::prepareSimplification() {
     }
   }
 
-  this->printMsg("Data preparetd for simplification.", 1.0, t.getElapsedTime(),
+  this->printMsg("Data prepared for simplification.", 1.0, t.getElapsedTime(),
                  this->threadNumber_);
 
   return 0;
