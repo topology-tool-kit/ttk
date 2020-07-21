@@ -220,7 +220,4 @@ private:
                vtkDataArray *offsetFieldU,
                vtkDataArray *vField,
                vtkDataArray *offsetFieldV);
-
-  template <class dataTypeU, class dataTypeV>
-  int preProcess(vtkDataSet *input, vtkDataArray *uField, vtkDataArray *vField);
 };
