@@ -30,11 +30,6 @@
 ///
 #pragma once
 
-// VTK includes
-#include <vtkFloatArray.h>
-#include <vtkInformation.h>
-#include <vtkPointData.h>
-
 // VTK Module
 #include <ttkDistanceFieldModule.h>
 
@@ -42,7 +37,7 @@
 #include <DistanceField.h>
 #include <ttkAlgorithm.h>
 
-enum DistanceType { Float = 0, Double = 1 };
+#include <string>
 
 class TTKDISTANCEFIELD_EXPORT ttkDistanceField : public ttkAlgorithm,
                                                  protected ttk::DistanceField {
@@ -62,7 +57,6 @@ public:
 
 protected:
   ttkDistanceField();
-  ~ttkDistanceField() override;
 
   int FillInputPortInformation(int port, vtkInformation *info) override;
   int FillOutputPortInformation(int port, vtkInformation *info) override;
@@ -71,7 +65,9 @@ protected:
                   vtkInformationVector *outputVector) override;
 
 private:
+  enum class DistanceType { Float = 0, Double = 1 };
+
   bool ForceInputVertexScalarField{false};
-  int OutputScalarFieldType{DistanceType::Float};
+  int OutputScalarFieldType{static_cast<int>(DistanceType::Float)};
   std::string OutputScalarFieldName{"DistanceFieldValues"};
 };
