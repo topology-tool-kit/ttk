@@ -189,6 +189,11 @@ protected:
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;
 
+  template <class dataTypeU, class dataTypeV>
+  int dispatch(const dataTypeU *const uField,
+               const dataTypeV *const vField,
+               ttk::Triangulation *const triangulation);
+
 private:
   int UcomponentId{0}, VcomponentId{1};
 
@@ -212,12 +217,4 @@ private:
   vtkDataArray *uComponent_{}, *vComponent_{}, *offsetFieldU_{},
     *offsetFieldV_{};
   std::vector<ttk::SimplexId> sosOffsetsU_{}, sosOffsetsV_{};
-
-  // template base call
-  template <class dataTypeU, class dataTypeV>
-  int baseCall(vtkDataSet *input,
-               vtkDataArray *uField,
-               vtkDataArray *offsetFieldU,
-               vtkDataArray *vField,
-               vtkDataArray *offsetFieldV);
 };

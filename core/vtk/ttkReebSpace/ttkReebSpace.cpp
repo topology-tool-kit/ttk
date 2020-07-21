@@ -36,27 +36,11 @@ int ttkReebSpace::FillOutputPortInformation(int port, vtkInformation *info) {
 }
 
 template <class dataTypeU, class dataTypeV>
-int ttkReebSpace::baseCall(vtkDataSet *input,
-                           vtkDataArray *uField,
-                           vtkDataArray *offsetFieldU,
-                           vtkDataArray *vField,
-                           vtkDataArray *offsetFieldV) {
+int ttkReebSpace::dispatch(const dataTypeU *const uField,
+                           const dataTypeV *const vField,
+                           ttk::Triangulation *const triangulation) {
 
-  bool VaryingValues
-    = (uField->GetMTime() > GetMTime())
-      || ((offsetFieldU) && (offsetFieldU->GetMTime() > GetMTime()))
-      || (vField->GetMTime() > GetMTime())
-      || ((offsetFieldV) && (offsetFieldV->GetMTime() > GetMTime()))
-      || (this->setRangeDrivenOctree(UseOctreeAcceleration));
-
-  // first time or the values changed
-  this->setSosOffsetsU(&sosOffsetsU_);
-  this->setSosOffsetsV(&sosOffsetsV_);
-
-  auto triangulation = ttkAlgorithm::GetTriangulation(input);
-
-  if(!triangulation)
-    return -1;
+  bool VaryingValues = this->setRangeDrivenOctree(UseOctreeAcceleration);
 
   bool VaryingTriangulation = false;
   if(triangulation->isEmpty())
@@ -64,21 +48,15 @@ int ttkReebSpace::baseCall(vtkDataSet *input,
 
   this->preconditionTriangulation<dataTypeU, dataTypeV>(triangulation);
 
-  this->printMsg("U-component: `" + std::string{uField->GetName()} + "'");
-  this->printMsg("V-component: `" + std::string{vField->GetName()} + "'");
-
   // go!
-  if((this->empty()) || (VaryingValues) || (VaryingTriangulation)) {
+  if(this->empty() || VaryingValues || VaryingTriangulation) {
     this->printMsg("Starting computation");
-    this->execute(static_cast<dataTypeU *>(ttkUtils::GetVoidPointer(uField)),
-                  static_cast<dataTypeV *>(ttkUtils::GetVoidPointer(vField)),
-                  *triangulation->getData());
+    this->execute(uField, vField, *triangulation->getData());
   }
 
   if(SimplificationThreshold > 0) {
-    this->simplify(static_cast<dataTypeU *>(ttkUtils::GetVoidPointer(uField)),
-                   static_cast<dataTypeV *>(ttkUtils::GetVoidPointer(vField)),
-                   *triangulation->getData(), SimplificationThreshold,
+    this->simplify(uField, vField, *triangulation->getData(),
+                   SimplificationThreshold,
                    (ReebSpace::SimplificationCriterion)SimplificationCriterion);
   }
 
@@ -183,20 +161,28 @@ int ttkReebSpace::RequestData(vtkInformation *request,
     }
   }
 
+  this->printMsg("U-component: `" + std::string{uComponent_->GetName()} + "'");
+  this->printMsg("V-component: `" + std::string{vComponent_->GetName()} + "'");
+
+  auto triangulation = ttkAlgorithm::GetTriangulation(input);
+  if(triangulation == nullptr) {
+    return -3;
+  }
+
+  this->setSosOffsetsU(&sosOffsetsU_);
+  this->setSosOffsetsV(&sosOffsetsV_);
+
   // set the Reeb space functor
   switch(vtkTemplate2PackMacro(
     uComponent_->GetDataType(), vComponent_->GetDataType())) {
-    vtkTemplate2Macro((baseCall<VTK_T1, VTK_T2>(
-      input, uComponent_, offsetFieldU_, vComponent_, offsetFieldV_)));
+    vtkTemplate2Macro(
+      dispatch(static_cast<VTK_T1 *>(ttkUtils::GetVoidPointer(uComponent_)),
+               static_cast<VTK_T2 *>(ttkUtils::GetVoidPointer(vComponent_)),
+               triangulation));
   }
 
   // prepare the output
   this->printMsg("Preparing the VTK output...");
-
-  auto triangulation = ttkAlgorithm::GetTriangulation(input);
-
-  if(!triangulation)
-    return -3;
 
   // 0-sheets -
   // Optional additional fields:
