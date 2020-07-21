@@ -16,32 +16,20 @@
 /// Charles Gueunet, Pierre Fortin, Julien Jomier, Julien Tierny \n
 /// Proc. of IEEE LDAV 2016.
 
-#ifndef _MERGETREE_H
-#define _MERGETREE_H
+#pragma once
 
 #include <queue>
 #include <vector>
 
-#ifdef __APPLE__
-#include <algorithm>
-#include <numeric>
-#else
-#ifdef _WIN32
-#include <algorithm>
-#include <numeric>
-#else
-#ifdef __clang__
+#if defined(__APPLE__) || defined(_WIN32) || defined(__clang__)
 #include <algorithm>
 #include <numeric>
 #else
 #include <parallel/algorithm>
 #endif
-#endif
-#endif
 
 #include <Geometry.h>
 #include <Triangulation.h>
-#include <Wrapper.h>
 
 #include "DeprecatedDataTypes.h"
 #include "DeprecatedNode.h"
@@ -792,5 +780,3 @@ namespace ttk {
 } // namespace ttk
 
 #include <MergeTreeTemplate.h>
-
-#endif /* end of include guard: MERGETREE_H */

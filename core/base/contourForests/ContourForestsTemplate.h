@@ -17,8 +17,7 @@
 ///
 /// \sa ttkContourForests.cpp %for a usage example.
 
-#ifndef _CONTOURFORESTSTEMPLATE_H
-#define _CONTOURFORESTSTEMPLATE_H
+#pragma once
 
 #include "ContourForests.h"
 
@@ -330,182 +329,181 @@ namespace ttk {
 #endif
         {
 
-        // if less partition : we built JT and ST in parallel
+          // if less partition : we built JT and ST in parallel
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp section
 #endif
-          {if(params_->treeType == TreeType::Join
-              || params_->treeType == TreeType::Contour
-              || params_->treeType
-                   == TreeType::JoinAndSplit){DebugTimer timerSimplify;
-        DebugTimer timerBuild;
-        parallelData_.trees[i].getJoinTree()->build(
-          vect_baseUF_JT[i], std::get<0>(overlaps), std::get<1>(overlaps),
-          std::get<0>(rangeJT), std::get<1>(rangeJT), std::get<0>(seedsPos),
-          std::get<1>(seedsPos));
-        speedProcess[i] = partitionSize / timerBuild.getElapsedTime();
+          {
+            if(params_->treeType == TreeType::Join
+               || params_->treeType == TreeType::Contour
+               || params_->treeType == TreeType::JoinAndSplit) {
+              DebugTimer timerSimplify;
+              DebugTimer timerBuild;
+              parallelData_.trees[i].getJoinTree()->build(
+                vect_baseUF_JT[i], std::get<0>(overlaps), std::get<1>(overlaps),
+                std::get<0>(rangeJT), std::get<1>(rangeJT),
+                std::get<0>(seedsPos), std::get<1>(seedsPos));
+              speedProcess[i] = partitionSize / timerBuild.getElapsedTime();
 
 #ifdef TTK_ENABLE_CONTOUR_FORESTS_PARALLEL_SIMPLIFY
-        timerSimplify.reStart();
-        const SimplexId tmpMerge =
+              timerSimplify.reStart();
+              const SimplexId tmpMerge =
 
-          parallelData_.trees[i].getJoinTree()->localSimplify<scalarType>(
-            std::get<0>(seedsPos), std::get<1>(seedsPos));
+                parallelData_.trees[i].getJoinTree()->localSimplify<scalarType>(
+                  std::get<0>(seedsPos), std::get<1>(seedsPos));
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp atomic update
 #endif
-        timeSimplify[i] += timerSimplify.getElapsedTime();
+              timeSimplify[i] += timerSimplify.getElapsedTime();
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp atomic update
 #endif
-        nbPairMerged += tmpMerge;
+              nbPairMerged += tmpMerge;
 #endif
-      }
-    }
+            }
+          }
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp section
 #endif
-    {
-      if(params_->treeType == TreeType::Split
-         || params_->treeType == TreeType::Contour
-         || params_->treeType == TreeType::JoinAndSplit) {
-        DebugTimer timerSimplify;
-        DebugTimer timerBuild;
-        parallelData_.trees[i].getSplitTree()->build(
-          vect_baseUF_ST[i], std::get<1>(overlaps), std::get<0>(overlaps),
-          std::get<0>(rangeST), std::get<1>(rangeST), std::get<0>(seedsPos),
-          std::get<1>(seedsPos));
-        speedProcess[parallelParams_.nbPartitions + i]
-          = partitionSize / timerBuild.getElapsedTime();
+          {
+            if(params_->treeType == TreeType::Split
+               || params_->treeType == TreeType::Contour
+               || params_->treeType == TreeType::JoinAndSplit) {
+              DebugTimer timerSimplify;
+              DebugTimer timerBuild;
+              parallelData_.trees[i].getSplitTree()->build(
+                vect_baseUF_ST[i], std::get<1>(overlaps), std::get<0>(overlaps),
+                std::get<0>(rangeST), std::get<1>(rangeST),
+                std::get<0>(seedsPos), std::get<1>(seedsPos));
+              speedProcess[parallelParams_.nbPartitions + i]
+                = partitionSize / timerBuild.getElapsedTime();
 
 #ifdef TTK_ENABLE_CONTOUR_FORESTS_PARALLEL_SIMPLIFY
-        timerSimplify.reStart();
-        const SimplexId tmpMerge =
+              timerSimplify.reStart();
+              const SimplexId tmpMerge =
 
-          parallelData_.trees[i].getSplitTree()->localSimplify<scalarType>(
+                parallelData_.trees[i]
+                  .getSplitTree()
+                  ->localSimplify<scalarType>(
+                    std::get<0>(seedsPos), std::get<1>(seedsPos));
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp atomic update
+#endif
+              timeSimplify[i] += timerSimplify.getElapsedTime();
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp atomic update
+#endif
+              nbPairMerged += tmpMerge;
+#endif
+            }
+          }
+        }
+
+        this->printMsg("Constructed Merge Tree " + std::to_string(i), 1.0,
+                       timerMergeTree.getElapsedTime(), this->threadNumber_);
+
+        // Update segmentation of each arc if needed
+        if(params_->simplifyThreshold
+           || params_->treeType != TreeType::Contour) {
+          DebugTimer timerUpdateSegm;
+          parallelData_.trees[i].getJoinTree()->updateSegmentation();
+          parallelData_.trees[i].getSplitTree()->updateSegmentation();
+
+          if(params_->debugLevel >= 3) {
+            std::cout << "Local MT : updated in "
+                      << timerUpdateSegm.getElapsedTime() << std::endl;
+          }
+        }
+
+        // ---------------
+        // Combine JT & ST
+        // ---------------
+
+        if(params_->treeType == TreeType::Contour) {
+          DebugTimer timerCombine;
+
+          // clone here if we do not want to destry original merge trees!
+          auto *jt = parallelData_.trees[i].getJoinTree();
+          auto *st = parallelData_.trees[i].getSplitTree();
+
+          // Copy missing nodes of a tree to the other one
+          // Maintain this traversal order for good insertion
+          for(idNode t = 0; t < st->getNumberOfNodes(); ++t) {
+            if(!st->getNode(t)->isHidden()) {
+              // std::cout << "insert in jt : " <<
+              // st->getNode(t)->getVertexId() << std::endl;
+              jt->insertNode(st->getNode(t), true);
+            }
+          }
+          // and vice versa
+          for(idNode t = 0; t < jt->getNumberOfNodes(); ++t) {
+            if(!jt->getNode(t)->isHidden()) {
+              // std::cout << "insert in st : " <<
+              // jt->getNode(t)->getVertexId() << std::endl;
+              st->insertNode(jt->getNode(t), true);
+            }
+          }
+
+          // debug print current JT / ST
+          if(params_->debugLevel >= 6) {
+            std::cout << "Local JT :" << std::endl;
+            parallelData_.trees[i].getJoinTree()->printTree2();
+            std::cout << "Local ST :" << std::endl;
+            parallelData_.trees[i].getSplitTree()->printTree2();
+            std::cout << "combine" << std::endl;
+          }
+
+          // Combine, destroy JT and ST to compute CT
+          parallelData_.trees[i].combine(
             std::get<0>(seedsPos), std::get<1>(seedsPos));
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp atomic update
+          parallelData_.trees[i].updateSegmentation();
+
+          if(params_->debugLevel > 2) {
+            printDebug(timerCombine, "Trees combined   in    ");
+          }
+
+          // debug print CT
+          if(params_->debugLevel >= 4) {
+            parallelData_.trees[i].printTree2();
+          }
+        } else {
+          if(params_->debugLevel >= 6) {
+            std::cout << "Local JT :" << std::endl;
+            parallelData_.trees[i].getJoinTree()->printTree2();
+            std::cout << "Local ST :" << std::endl;
+            parallelData_.trees[i].getSplitTree()->printTree2();
+            std::cout << "combine" << std::endl;
+          }
+        }
+      } // namespace ttk
+
+      // -------------------------------------
+      // Print process speed and simplify info
+      // -------------------------------------
+
+      if(params_->debugLevel > 2) {
+#ifdef TTK_ENABLE_CONTOUR_FORESTS_PARALLEL_SIMPLIFY
+        if(params_->simplifyThreshold) {
+          auto maxSimplifIt
+            = max_element(timeSimplify.cbegin(), timeSimplify.cend());
+          float maxSimplif = *maxSimplifIt;
+          std::cout << "Local simplification maximum time :" << maxSimplif;
+          std::cout << " ( " << nbPairMerged << " pairs merged )" << std::endl;
+        }
 #endif
-        timeSimplify[i] += timerSimplify.getElapsedTime();
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp atomic update
-#endif
-        nbPairMerged += tmpMerge;
-#endif
+        auto maxProcSpeed
+          = max_element(speedProcess.cbegin(), speedProcess.cend());
+        auto minProcSpeed
+          = min_element(speedProcess.cbegin(), speedProcess.cend());
+        std::cout << "process speed : ";
+        std::cout << " min is " << *minProcSpeed << " vert/sec";
+        std::cout << " max is " << *maxProcSpeed << " vert/sec";
+        std::cout << std::endl;
       }
+
+      return 0;
     }
 
   } // namespace cf
-
-  {
-    std::stringstream mt;
-    mt << "[ParallelBuild] Merge Tree " << static_cast<unsigned>(i)
-       << " constructed in : " << timerMergeTree.getElapsedTime() << std::endl;
-    dMsg(std::cout, mt.str(), infoMsg);
-  }
-
-  // Update segmentation of each arc if needed
-  if(params_->simplifyThreshold || params_->treeType != TreeType::Contour) {
-    DebugTimer timerUpdateSegm;
-    parallelData_.trees[i].getJoinTree()->updateSegmentation();
-    parallelData_.trees[i].getSplitTree()->updateSegmentation();
-
-    if(params_->debugLevel >= 3) {
-      std::cout << "Local MT : updated in " << timerUpdateSegm.getElapsedTime()
-                << std::endl;
-    }
-  }
-
-  // ---------------
-  // Combine JT & ST
-  // ---------------
-
-  if(params_->treeType == TreeType::Contour) {
-    DebugTimer timerCombine;
-
-    // clone here if we do not want to destry original merge trees!
-    auto *jt = parallelData_.trees[i].getJoinTree();
-    auto *st = parallelData_.trees[i].getSplitTree();
-
-    // Copy missing nodes of a tree to the other one
-    // Maintain this traversal order for good insertion
-    for(idNode t = 0; t < st->getNumberOfNodes(); ++t) {
-      if(!st->getNode(t)->isHidden()) {
-        // std::cout << "insert in jt : " <<
-        // st->getNode(t)->getVertexId() << std::endl;
-        jt->insertNode(st->getNode(t), true);
-      }
-    }
-    // and vice versa
-    for(idNode t = 0; t < jt->getNumberOfNodes(); ++t) {
-      if(!jt->getNode(t)->isHidden()) {
-        // std::cout << "insert in st : " <<
-        // jt->getNode(t)->getVertexId() << std::endl;
-        st->insertNode(jt->getNode(t), true);
-      }
-    }
-
-    // debug print current JT / ST
-    if(params_->debugLevel >= 6) {
-      std::cout << "Local JT :" << std::endl;
-      parallelData_.trees[i].getJoinTree()->printTree2();
-      std::cout << "Local ST :" << std::endl;
-      parallelData_.trees[i].getSplitTree()->printTree2();
-      std::cout << "combine" << std::endl;
-    }
-
-    // Combine, destroy JT and ST to compute CT
-    parallelData_.trees[i].combine(
-      std::get<0>(seedsPos), std::get<1>(seedsPos));
-    parallelData_.trees[i].updateSegmentation();
-
-    if(params_->debugLevel > 2) {
-      printDebug(timerCombine, "Trees combined   in    ");
-    }
-
-    // debug print CT
-    if(params_->debugLevel >= 4) {
-      parallelData_.trees[i].printTree2();
-    }
-  } else {
-    if(params_->debugLevel >= 6) {
-      std::cout << "Local JT :" << std::endl;
-      parallelData_.trees[i].getJoinTree()->printTree2();
-      std::cout << "Local ST :" << std::endl;
-      parallelData_.trees[i].getSplitTree()->printTree2();
-      std::cout << "combine" << std::endl;
-    }
-  }
 } // namespace ttk
-
-// -------------------------------------
-// Print process speed and simplify info
-// -------------------------------------
-
-if(params_->debugLevel > 2) {
-#ifdef TTK_ENABLE_CONTOUR_FORESTS_PARALLEL_SIMPLIFY
-  if(params_->simplifyThreshold) {
-    auto maxSimplifIt = max_element(timeSimplify.cbegin(), timeSimplify.cend());
-    float maxSimplif = *maxSimplifIt;
-    std::cout << "Local simplification maximum time :" << maxSimplif;
-    std::cout << " ( " << nbPairMerged << " pairs merged )" << std::endl;
-  }
-#endif
-  auto maxProcSpeed = max_element(speedProcess.cbegin(), speedProcess.cend());
-  auto minProcSpeed = min_element(speedProcess.cbegin(), speedProcess.cend());
-  std::cout << "process speed : ";
-  std::cout << " min is " << *minProcSpeed << " vert/sec";
-  std::cout << " max is " << *maxProcSpeed << " vert/sec";
-  std::cout << std::endl;
-}
-
-return 0;
-}
-
-//}
-}
-}
-
-#endif /* end of include guard: _CONTOURFORESTSTEMPLATE_H */

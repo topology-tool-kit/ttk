@@ -17,10 +17,7 @@
 ///
 /// \sa ttkContourForests.cpp %for a usage example.
 
-#ifndef _CONTOURFOREST_H
-#define _CONTOURFOREST_H
-
-#include <typeinfo>
+#pragma once
 
 #include "ContourForestsTree.h"
 
@@ -257,6 +254,5 @@ namespace ttk {
 
   } // namespace cf
 } // namespace ttk
-#include <ContourForestsTemplate.h>
 
-#endif
+#include <ContourForestsTemplate.h>
