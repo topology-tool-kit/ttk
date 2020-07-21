@@ -45,26 +45,12 @@ int ttkTextureMapFromField::RequestData(vtkInformation *request,
 
   output->ShallowCopy(input);
 
-  vtkDataArray *inputScalarFieldU = NULL;
-  vtkDataArray *inputScalarFieldV = NULL;
+  const auto inputScalarFieldU = this->GetInputArrayToProcess(0, input);
+  const auto inputScalarFieldV = this->GetInputArrayToProcess(1, input);
 
-  if(UComponent.length()) {
-    inputScalarFieldU = input->GetPointData()->GetArray(UComponent.data());
-  } else {
-    inputScalarFieldU = input->GetPointData()->GetArray(0);
-  }
-
-  if(!inputScalarFieldU)
+  if(inputScalarFieldU == nullptr || inputScalarFieldV == nullptr) {
     return -1;
-
-  if(VComponent.length()) {
-    inputScalarFieldV = input->GetPointData()->GetArray(VComponent.data());
-  } else {
-    inputScalarFieldV = input->GetPointData()->GetArray(0);
   }
-
-  if(!inputScalarFieldV)
-    return -2;
 
   vtkNew<vtkFloatArray> textureCoordinates{};
   textureCoordinates->SetNumberOfComponents(2);

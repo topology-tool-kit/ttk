@@ -49,12 +49,6 @@ public:
   vtkSetMacro(RepeatVTexture, bool);
   vtkGetMacro(RepeatVTexture, bool);
 
-  vtkSetMacro(UComponent, std::string);
-  vtkGetMacro(UComponent, std::string);
-
-  vtkSetMacro(VComponent, std::string);
-  vtkGetMacro(VComponent, std::string);
-
 protected:
   ttkTextureMapFromField();
 
@@ -67,5 +61,4 @@ protected:
 private:
   bool OnlyUComponent{true}, OnlyVComponent{false}, RepeatUTexture{false},
     RepeatVTexture{false};
-  std::string UComponent, VComponent;
 };

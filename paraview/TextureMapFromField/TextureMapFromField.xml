@@ -63,10 +63,11 @@ or to generate texture-based level lines out of a single scalar fields.
 
       <StringVectorProperty
         name="U Component"
-        command="SetUComponent"
-        number_of_elements="1"
+        command="SetInputArrayToProcess"
+        element_types="0 0 0 0 2"
+        number_of_elements="5"
+        default_values="0"
         animateable="0"
-        label="U Component"
         >
         <ArrayListDomain
           name="array_list"
@@ -106,10 +107,11 @@ or to generate texture-based level lines out of a single scalar fields.
 
       <StringVectorProperty
         name="V Component"
-        command="SetVComponent"
-        number_of_elements="1"
+        command="SetInputArrayToProcess"
+        element_types="0 0 0 0 2"
+        number_of_elements="5"
+        default_values="1"
         animateable="0"
-        label="V Component"
         >
         <ArrayListDomain
           name="array_list"
