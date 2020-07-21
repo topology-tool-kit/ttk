@@ -30,10 +30,8 @@
 namespace ttk {
 
   class DistanceField : virtual public Debug {
-
   public:
     DistanceField();
-    ~DistanceField();
 
     template <typename dataType>
     dataType getDistance(const SimplexId a, const SimplexId b) const;
@@ -42,47 +40,41 @@ namespace ttk {
               class triangulationType = ttk::AbstractTriangulation>
     int execute(const triangulationType *) const;
 
-    inline int setVertexNumber(SimplexId vertexNumber) {
+    inline void setVertexNumber(SimplexId vertexNumber) {
       vertexNumber_ = vertexNumber;
-      return 0;
     }
 
-    inline int setSourceNumber(SimplexId sourceNumber) {
+    inline void setSourceNumber(SimplexId sourceNumber) {
       sourceNumber_ = sourceNumber;
-      return 0;
     }
 
     inline int preconditionTriangulation(AbstractTriangulation *triangulation) {
       return triangulation->preconditionVertexNeighbors();
     }
 
-    inline int setVertexIdentifierScalarFieldPointer(void *data) {
+    inline void setVertexIdentifierScalarFieldPointer(void *data) {
       vertexIdentifierScalarFieldPointer_ = data;
-      return 0;
     }
 
-    inline int setOutputScalarFieldPointer(void *data) {
+    inline void setOutputScalarFieldPointer(void *data) {
       outputScalarFieldPointer_ = data;
-      return 0;
     }
 
-    inline int setOutputIdentifiers(void *data) {
+    inline void setOutputIdentifiers(void *data) {
       outputIdentifiers_ = data;
-      return 0;
     }
 
-    inline int setOutputSegmentation(void *data) {
+    inline void setOutputSegmentation(void *data) {
       outputSegmentation_ = data;
-      return 0;
     }
 
   protected:
-    SimplexId vertexNumber_;
-    SimplexId sourceNumber_;
-    void *vertexIdentifierScalarFieldPointer_;
-    void *outputScalarFieldPointer_;
-    void *outputIdentifiers_;
-    void *outputSegmentation_;
+    SimplexId vertexNumber_{};
+    SimplexId sourceNumber_{};
+    void *vertexIdentifierScalarFieldPointer_{};
+    void *outputScalarFieldPointer_{};
+    void *outputIdentifiers_{};
+    void *outputSegmentation_{};
   };
 } // namespace ttk
 
@@ -120,12 +112,12 @@ int ttk::DistanceField::execute(const triangulationType *triangulation_) const {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
-  for(SimplexId i = 0; i < (SimplexId)sources.size(); ++i) {
+  for(size_t i = 0; i < sources.size(); ++i) {
     int ret = Dijkstra::shortestPath<dataType>(
       sources[i], *triangulation_, scalars[i]);
     if(ret != 0) {
-      printErr("[Dijkstra] was not successful. Error code is  "
-               + std::to_string(ret) + ".");
+      this->printErr(
+        "Algorithm not successful (error code:  " + std::to_string(ret) + ").");
     }
   }
 
@@ -133,7 +125,7 @@ int ttk::DistanceField::execute(const triangulationType *triangulation_) const {
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(SimplexId k = 0; k < vertexNumber_; ++k) {
-    for(SimplexId i = 0; i < (SimplexId)sources.size(); ++i) {
+    for(size_t i = 0; i < sources.size(); ++i) {
       if(i == 0 or dist[k] > scalars[i][k]) {
         dist[k] = scalars[i][k];
         origin[k] = sources[i];
@@ -142,20 +134,8 @@ int ttk::DistanceField::execute(const triangulationType *triangulation_) const {
     }
   }
 
-  {
-    this->printMsg(ttk::debug::Separator::L2); // horizontal '-' separator
-    this->printMsg(
-      "Complete", 1, globalTimer.getElapsedTime() // global progress, time
-    );
-    this->printMsg(ttk::debug::Separator::L1); // horizontal '=' separator
-  }
-  //{
-  // std::stringstream msg;
-  // msg << "[DistanceField] Data-set (" << vertexNumber_
-  //<< " points) processed in " << t.getElapsedTime() << " s. ("
-  //<< threadNumber_ << " thread(s)." << std::endl;
-  // printMsg(msg.str(), ttk::Debug::debugPriority::timeMsg);
-  //}
+  this->printMsg(
+    "Complete", 1.0, globalTimer.getElapsedTime(), this->threadNumber_);
 
   return 0;
 }
