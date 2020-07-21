@@ -426,6 +426,7 @@ inline int ttk::ReebSpace::execute(const dataTypeU *const uField,
                                    const triangulationType &triangulation) {
 
   flush(triangulation);
+  fiberSurface_.setInputField(uField, vField);
 
 #ifdef TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE
   fiberSurface_.flushOctree();
@@ -515,8 +516,6 @@ inline int ttk::ReebSpace::compute2sheets(
   }
 
   fiberSurface_.setGlobalVertexList(&fiberSurfaceVertexList_);
-  fiberSurface_.setInputField(uField, vField);
-
   fiberSurface_.setPolygonEdgeNumber(jacobiEdges.size());
 
   std::vector<SimplexId> edge2polygonEdgeId(edgeNumber_, -1);
@@ -676,7 +675,6 @@ inline int ttk::ReebSpace::compute2sheetChambers(
   }
 
   fiberSurface_.setGlobalVertexList(&fiberSurfaceVertexList_);
-  fiberSurface_.setInputField(uField, vField);
   fiberSurface_.setTetNumber(tetNumber_);
   fiberSurface_.setPolygonEdgeNumber(threadNumber_);
 

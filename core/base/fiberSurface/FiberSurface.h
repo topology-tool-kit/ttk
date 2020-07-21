@@ -72,7 +72,7 @@ namespace ttk {
 
 #ifdef TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE
     template <class dataTypeU, class dataTypeV, typename triangulationType>
-    inline int buildOctree(const triangulationType &triangulation);
+    inline int buildOctree(const triangulationType *const triangulation);
 #endif
 
     template <class dataTypeU, class dataTypeV, typename triangulationType>
@@ -511,7 +511,7 @@ namespace ttk {
 #ifdef TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE
 template <class dataTypeU, class dataTypeV, typename triangulationType>
 inline int
-  ttk::FiberSurface::buildOctree(const triangulationType &triangulation) {
+  ttk::FiberSurface::buildOctree(const triangulationType *const triangulation) {
 
   if(!uField_)
     return -1;
