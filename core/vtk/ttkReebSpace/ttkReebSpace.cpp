@@ -1,60 +1,36 @@
+#include <ttkMacros.h>
 #include <ttkReebSpace.h>
 #include <ttkUtils.h>
 
-using namespace std;
-using namespace ttk;
-
 vtkStandardNewMacro(ttkReebSpace);
 ttkReebSpace::ttkReebSpace() {
-
-  // init
-  SetNumberOfOutputPorts(4);
-
-  ZeroSheetId = true;
-  ZeroSheetType = true;
-  ZeroSheetValue = true;
-  ZeroSheetVertexId = true;
-
-  OneSheetId = true;
-  OneSheetType = true;
-  OneSheetValue = true;
-  OneSheetVertexId = true;
-  OneSheetEdgeId = true;
-
-  TwoSheets = true;
-  TwoSheetCaseId = true;
-  TwoSheetEdgeId = true;
-  TwoSheetEdgeType = true;
-  TwoSheetId = true;
-  TwoSheetParameterization = true;
-  TwoSheetTetId = true;
-  TwoSheetValue = true;
-
-  ThreeSheetTetNumber = true;
-  ThreeSheetVertexNumber = true;
-  ThreeSheetExpansion = true;
-  ThreeSheetDomainVolume = true;
-  ThreeSheetRangeArea = true;
-  ThreeSheetHyperVolume = true;
-
-  SimplificationThreshold = 0;
-  SimplificationCriterion = 1;
-
-  UseAllCores = true;
-  ForceInputOffsetScalarField = false;
-
-  uComponent_ = NULL;
-  vComponent_ = NULL;
-  offsetFieldU_ = NULL;
-  offsetFieldV_ = NULL;
-
-  UcomponentId = 0;
-  VcomponentId = 1;
-
-  UseOctreeAcceleration = true;
+  this->SetNumberOfInputPorts(1);
+  this->SetNumberOfOutputPorts(4);
 }
 
-ttkReebSpace::~ttkReebSpace() {
+int ttkReebSpace::FillInputPortInformation(int port, vtkInformation *info) {
+  if(port == 0) {
+    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
+    return 1;
+  }
+  return 0;
+}
+
+int ttkReebSpace::FillOutputPortInformation(int port, vtkInformation *info) {
+  if(port == 0) { // 0-sheets, corners of jacobi set segments
+    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
+    return 1;
+  } else if(port == 1) { // 1-sheets, jacobi sets
+    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
+    return 1;
+  } else if(port == 2) { // 2-sheets, fiber surfaces of jacobi sets
+    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
+    return 1;
+  } else if(port == 3) {
+    info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
+    return 1;
+  }
+  return 0;
 }
 
 template <class dataTypeU, class dataTypeV>
@@ -64,22 +40,18 @@ int ttkReebSpace::baseCall(vtkDataSet *input,
                            vtkDataArray *vField,
                            vtkDataArray *offsetFieldV) {
 
-  Timer t;
-
-  reebSpace_.setWrapper(this);
-
   bool VaryingValues
     = (uField->GetMTime() > GetMTime())
       || ((offsetFieldU) && (offsetFieldU->GetMTime() > GetMTime()))
       || (vField->GetMTime() > GetMTime())
       || ((offsetFieldV) && (offsetFieldV->GetMTime() > GetMTime()))
-      || (reebSpace_.setRangeDrivenOctree(UseOctreeAcceleration));
+      || (this->setRangeDrivenOctree(UseOctreeAcceleration));
 
   // first time or the values changed
-  reebSpace_.setSosOffsetsU(&sosOffsetsU_);
-  reebSpace_.setSosOffsetsV(&sosOffsetsV_);
+  this->setSosOffsetsU(&sosOffsetsU_);
+  this->setSosOffsetsV(&sosOffsetsV_);
 
-  Triangulation *triangulation = ttkTriangulation::getTriangulation(input);
+  auto triangulation = ttkAlgorithm::GetTriangulation(input);
 
   if(!triangulation)
     return -1;
@@ -87,65 +59,44 @@ int ttkReebSpace::baseCall(vtkDataSet *input,
   bool VaryingTriangulation = false;
   if(triangulation->isEmpty())
     VaryingTriangulation = true;
-  if(ttkTriangulation::hasChangedConnectivity(triangulation, input, this))
-    VaryingTriangulation = true;
 
-  triangulation->setWrapper(this);
-  reebSpace_.preconditionTriangulation<dataTypeU, dataTypeV>(triangulation);
+  this->preconditionTriangulation<dataTypeU, dataTypeV>(triangulation);
 
-  {
-    stringstream msg;
-    msg << "[ttkReebSpace] U-component: '" << uField->GetName() << "'" << endl;
-    msg << "[ttkReebSpace] V-component: '" << vField->GetName() << "'" << endl;
-    dMsg(cout, msg.str(), timeMsg);
-  }
+  this->printMsg("U-component: `" + std::string{uField->GetName()} + "'");
+  this->printMsg("V-component: `" + std::string{vField->GetName()} + "'");
 
   // go!
-  if((reebSpace_.empty()) || (VaryingValues) || (VaryingTriangulation)) {
-    {
-      stringstream msg;
-      msg << "[ttkReebSpace] Starting computation..." << endl;
-
-      dMsg(cout, msg.str(), timeMsg);
-    }
-    reebSpace_.execute(
-      static_cast<dataTypeU *>(ttkUtils::GetVoidPointer(uField)),
-      static_cast<dataTypeV *>(ttkUtils::GetVoidPointer(vField)),
-      *triangulation->getData());
+  if((this->empty()) || (VaryingValues) || (VaryingTriangulation)) {
+    this->printMsg("Starting computation");
+    this->execute(static_cast<dataTypeU *>(ttkUtils::GetVoidPointer(uField)),
+                  static_cast<dataTypeV *>(ttkUtils::GetVoidPointer(vField)),
+                  *triangulation->getData());
   }
 
   if(SimplificationThreshold > 0) {
-    reebSpace_.simplify(
-      static_cast<dataTypeU *>(ttkUtils::GetVoidPointer(uField)),
-      static_cast<dataTypeV *>(ttkUtils::GetVoidPointer(vField)),
-      *triangulation->getData(), SimplificationThreshold,
-      (ReebSpace::SimplificationCriterion)SimplificationCriterion);
+    this->simplify(static_cast<dataTypeU *>(ttkUtils::GetVoidPointer(uField)),
+                   static_cast<dataTypeV *>(ttkUtils::GetVoidPointer(vField)),
+                   *triangulation->getData(), SimplificationThreshold,
+                   (ReebSpace::SimplificationCriterion)SimplificationCriterion);
   }
 
   Modified();
 
   return 0;
 }
-int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
-                       vector<vtkDataSet *> &outputs) {
+int ttkReebSpace::RequestData(vtkInformation *request,
+                              vtkInformationVector **inputVector,
+                              vtkInformationVector *outputVector) {
 
-  Memory m;
-
-  if(inputs.size() != 1)
-    return -1;
-
-  if(outputs.size() != 4)
-    return -2;
-
-  vtkDataSet *input = inputs[0];
-  vtkUnstructuredGrid *sheet0 = vtkUnstructuredGrid::SafeDownCast(outputs[0]);
-  vtkUnstructuredGrid *sheet1 = vtkUnstructuredGrid::SafeDownCast(outputs[1]);
-  vtkUnstructuredGrid *sheet2 = vtkUnstructuredGrid::SafeDownCast(outputs[2]);
-  vtkDataSet *sheet3 = outputs[3];
+  const auto input = vtkDataSet::GetData(inputVector[0]);
+  auto sheet0 = vtkUnstructuredGrid::GetData(outputVector, 0);
+  auto sheet1 = vtkUnstructuredGrid::GetData(outputVector, 1);
+  auto sheet2 = vtkUnstructuredGrid::GetData(outputVector, 2);
+  auto sheet3 = vtkDataSet::GetData(outputVector, 3);
 
   // check data components
   if(Ucomponent.length()) {
-    string oldName = Ucomponent;
+    std::string oldName = Ucomponent;
     if(uComponent_) {
       oldName = uComponent_->GetName();
     }
@@ -160,7 +111,7 @@ int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
     return -1;
 
   if(Vcomponent.length()) {
-    string oldName = Vcomponent;
+    std::string oldName = Vcomponent;
     if(vComponent_) {
       oldName = vComponent_->GetName();
     }
@@ -177,7 +128,7 @@ int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
   if(ForceInputOffsetScalarField) {
     if(OffsetFieldU.length()) {
 
-      string oldName = OffsetFieldU;
+      std::string oldName = OffsetFieldU;
       if(offsetFieldU_) {
         oldName = offsetFieldU_->GetName();
       }
@@ -187,14 +138,14 @@ int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
 
       if(offsetFieldU_) {
         sosOffsetsU_.resize(offsetFieldU_->GetNumberOfTuples());
-        for(SimplexId i = 0; i < offsetFieldU_->GetNumberOfTuples(); i++) {
+        for(vtkIdType i = 0; i < offsetFieldU_->GetNumberOfTuples(); i++) {
           sosOffsetsU_[i] = offsetFieldU_->GetTuple1(i);
         }
       }
     }
     if(OffsetFieldV.length()) {
 
-      string oldName = OffsetFieldV;
+      std::string oldName = OffsetFieldV;
       if(offsetFieldV_) {
         oldName = offsetFieldV_->GetName();
       }
@@ -204,7 +155,7 @@ int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
 
       if(offsetFieldV_) {
         sosOffsetsV_.resize(offsetFieldV_->GetNumberOfTuples());
-        for(SimplexId i = 0; i < offsetFieldV_->GetNumberOfTuples(); i++) {
+        for(vtkIdType i = 0; i < offsetFieldV_->GetNumberOfTuples(); i++) {
           sosOffsetsV_[i] = offsetFieldV_->GetTuple1(i);
         }
       }
@@ -214,7 +165,7 @@ int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
       offsetFieldU_ = input->GetPointData()->GetArray(ttk::OffsetFieldUName);
       if(offsetFieldU_) {
         sosOffsetsU_.resize(offsetFieldU_->GetNumberOfTuples());
-        for(SimplexId i = 0; i < offsetFieldU_->GetNumberOfTuples(); i++) {
+        for(vtkIdType i = 0; i < offsetFieldU_->GetNumberOfTuples(); i++) {
           sosOffsetsU_[i] = offsetFieldU_->GetTuple1(i);
         }
       }
@@ -223,7 +174,7 @@ int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
       offsetFieldV_ = input->GetPointData()->GetArray(ttk::OffsetFieldVName);
       if(offsetFieldV_) {
         sosOffsetsV_.resize(offsetFieldV_->GetNumberOfTuples());
-        for(SimplexId i = 0; i < offsetFieldV_->GetNumberOfTuples(); i++) {
+        for(vtkIdType i = 0; i < offsetFieldV_->GetNumberOfTuples(); i++) {
           sosOffsetsV_[i] = offsetFieldV_->GetTuple1(i);
         }
       }
@@ -238,13 +189,9 @@ int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
   }
 
   // prepare the output
-  {
-    stringstream msg;
-    msg << "[ttkReebSpace] Preparing the VTK-output..." << endl;
-    dMsg(cout, msg.str(), timeMsg);
-  }
+  this->printMsg("Preparing the VTK output...");
 
-  Triangulation *triangulation = ttkTriangulation::getTriangulation(input);
+  auto triangulation = ttkAlgorithm::GetTriangulation(input);
 
   if(!triangulation)
     return -3;
@@ -252,13 +199,12 @@ int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
   // 0-sheets -
   // Optional additional fields:
   // PointData; u, v, vertexId, type, sheetId
-  const vector<SimplexId> *sheet0segmentation
-    = reebSpace_.get0sheetSegmentation();
-  SimplexId vertexNumber = 0;
-  for(SimplexId i = 0; i < (SimplexId)sheet0segmentation->size(); i++) {
-    SimplexId sheet0Id = (*sheet0segmentation)[i];
+  const auto sheet0segmentation = this->get0sheetSegmentation();
+  int vertexNumber = 0;
+  for(size_t i = 0; i < sheet0segmentation->size(); i++) {
+    int sheet0Id = (*sheet0segmentation)[i];
     if(sheet0Id != -1) {
-      const ReebSpace::Sheet0 *sheet = reebSpace_.get0sheet(sheet0Id);
+      const ReebSpace::Sheet0 *sheet = this->get0sheet(sheet0Id);
       if(sheet != nullptr && !sheet->pruned_) {
         vertexNumber++;
       }
@@ -314,11 +260,11 @@ int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
 
   vertexNumber = 0;
   double *p = nullptr;
-  for(SimplexId i = 0; i < (SimplexId)sheet0segmentation->size(); i++) {
-    SimplexId sheet0Id = (*sheet0segmentation)[i];
+  for(size_t i = 0; i < sheet0segmentation->size(); i++) {
+    int sheet0Id = (*sheet0segmentation)[i];
     if(sheet0Id != -1) {
 
-      const ReebSpace::Sheet0 *sheet = reebSpace_.get0sheet(sheet0Id);
+      const ReebSpace::Sheet0 *sheet = this->get0sheet(sheet0Id);
 
       if(sheet != nullptr && !sheet->pruned_) {
         p = input->GetPoint(i);
@@ -342,7 +288,7 @@ int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
         }
         if(ZeroSheetType) {
           const ReebSpace::Sheet0 *sht0
-            = reebSpace_.get0sheet((*sheet0segmentation)[i]);
+            = this->get0sheet((*sheet0segmentation)[i]);
           vertexTypes->SetTuple1(vertexNumber, sht0->type_);
         }
 
@@ -365,8 +311,7 @@ int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
   // Optional additional fields:
   // PointData: u, v, vertexId,
   // CellData: edgeId, type, sheetId
-  const vector<SimplexId> *sheet1segmentation
-    = reebSpace_.get1sheetSegmentation();
+  const auto sheet1segmentation = this->get1sheetSegmentation();
 
   vtkSmartPointer<vtkPoints> sheet1Points = vtkSmartPointer<vtkPoints>::New();
   sheet1->SetPoints(sheet1Points);
@@ -422,19 +367,19 @@ int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
   double p0[3], p1[3];
   vtkSmartPointer<vtkIdList> idList = vtkSmartPointer<vtkIdList>::New();
   idList->SetNumberOfIds(2);
-  const vector<SimplexId> *edgeTypes = reebSpace_.getEdgeTypes();
+  const auto edgeTypes = this->getEdgeTypes();
 
-  for(SimplexId i = 0; i < (SimplexId)sheet1segmentation->size(); i++) {
+  for(size_t i = 0; i < sheet1segmentation->size(); i++) {
 
-    SimplexId sheet1Id = (*sheet1segmentation)[i];
+    int sheet1Id = (*sheet1segmentation)[i];
 
     if(sheet1Id != -1) {
 
-      const ReebSpace::Sheet1 *sheet = reebSpace_.get1sheet(sheet1Id);
+      const ReebSpace::Sheet1 *sheet = this->get1sheet(sheet1Id);
 
       if((sheet) && (!sheet->pruned_)) {
 
-        SimplexId vertexId0 = -1, vertexId1 = -1;
+        int vertexId0 = -1, vertexId1 = -1;
         triangulation->getEdgeVertex(i, 0, vertexId0);
         triangulation->getEdgeVertex(i, 1, vertexId1);
 
@@ -505,8 +450,8 @@ int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
   // optional fields:
   // pointdata: twoSheetValues, twoSheetParameterization
   if(TwoSheets) {
-    const vector<FiberSurface::Vertex> *vertexList
-      = reebSpace_.getFiberSurfaceVertices();
+    const std::vector<ttk::FiberSurface::Vertex> *vertexList
+      = this->getFiberSurfaceVertices();
 
     vtkSmartPointer<vtkPoints> sheet2Points = vtkSmartPointer<vtkPoints>::New();
     sheet2Points->SetNumberOfPoints(vertexList->size());
@@ -536,12 +481,12 @@ int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
       sheet2->GetPointData()->RemoveArray("EdgeParameterization");
     }
 
-    SimplexId sheet2TriangleNumber = 0;
-    for(SimplexId i = 0; i < reebSpace_.getNumberOf2sheets(); i++) {
-      const ReebSpace::Sheet2 *sheet = reebSpace_.get2sheet(i);
+    int sheet2TriangleNumber = 0;
+    for(int i = 0; i < this->getNumberOf2sheets(); i++) {
+      const ReebSpace::Sheet2 *sheet = this->get2sheet(i);
 
       if(sheet != nullptr && !sheet->pruned_) {
-        for(SimplexId j = 0; j < (SimplexId)sheet->triangleList_.size(); j++) {
+        for(size_t j = 0; j < sheet->triangleList_.size(); j++) {
           sheet2TriangleNumber += sheet->triangleList_[j].size();
         }
       }
@@ -596,7 +541,7 @@ int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
       sheet2->GetCellData()->RemoveArray("CaseIds");
     }
 
-    for(SimplexId i = 0; i < (SimplexId)vertexList->size(); i++) {
+    for(size_t i = 0; i < vertexList->size(); i++) {
       sheet2->GetPoints()->SetPoint(i, (*vertexList)[i].p_[0],
                                     (*vertexList)[i].p_[1],
                                     (*vertexList)[i].p_[2]);
@@ -617,16 +562,15 @@ int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
       sheet2->GetPointData()->AddArray(triangleParameterization);
     }
 
-    SimplexId triangleNumber = 0;
+    int triangleNumber = 0;
     idList->SetNumberOfIds(3);
-    for(SimplexId i = 0; i < reebSpace_.getNumberOf2sheets(); i++) {
-      const ReebSpace::Sheet2 *sht2 = reebSpace_.get2sheet(i);
+    for(int i = 0; i < this->getNumberOf2sheets(); i++) {
+      const ReebSpace::Sheet2 *sht2 = this->get2sheet(i);
 
       if(sht2 != nullptr && !sht2->pruned_) {
-        for(SimplexId j = 0; j < (SimplexId)sht2->triangleList_.size(); j++) {
+        for(size_t j = 0; j < sht2->triangleList_.size(); j++) {
 
-          for(SimplexId k = 0; k < (SimplexId)sht2->triangleList_[j].size();
-              k++) {
+          for(size_t k = 0; k < sht2->triangleList_[j].size(); k++) {
 
             for(int l = 0; l < 3; l++) {
               idList->SetId(l, sht2->triangleList_[j][k].vertexIds_[l]);
@@ -639,15 +583,13 @@ int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
             }
 
             if(TwoSheetEdgeId) {
-              const ReebSpace::Sheet1 *sht1
-                = reebSpace_.get1sheet(sht2->sheet1Id_);
+              const ReebSpace::Sheet1 *sht1 = this->get1sheet(sht2->sheet1Id_);
               triangleEdgeIds->SetTuple1(triangleNumber, sht1->edgeList_[j]);
             }
 
             if(TwoSheetEdgeType) {
-              SimplexId polygonEdgeId
-                = sht2->triangleList_[j][k].polygonEdgeId_;
-              SimplexId edgeId = reebSpace_.getJacobi2Edge(polygonEdgeId);
+              auto polygonEdgeId = sht2->triangleList_[j][k].polygonEdgeId_;
+              auto edgeId = this->getJacobi2Edge(polygonEdgeId);
               triangleEdgeType->SetTuple1(triangleNumber, (*edgeTypes)[edgeId]);
             }
 
@@ -712,8 +654,7 @@ int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
 
   // now take care of the 3 sheets
   sheet3->ShallowCopy(input);
-  const vector<SimplexId> *vertex3sheets
-    = reebSpace_.get3sheetVertexSegmentation();
+  const auto vertex3sheets = this->get3sheetVertexSegmentation();
 
   vtkSmartPointer<ttkSimplexIdTypeArray> vertexNumberField
     = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
@@ -723,8 +664,8 @@ int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
   if(ThreeSheetTetNumber) {
     tetNumberField->SetNumberOfTuples(input->GetNumberOfPoints());
     tetNumberField->SetName("3-SheetTetNumber");
-    for(SimplexId i = 0; i < input->GetNumberOfPoints(); i++) {
-      const ReebSpace::Sheet3 *sht3 = reebSpace_.get3sheet((*vertex3sheets)[i]);
+    for(int i = 0; i < input->GetNumberOfPoints(); i++) {
+      const ReebSpace::Sheet3 *sht3 = this->get3sheet((*vertex3sheets)[i]);
       if((sht3) && (!sht3->pruned_))
         tetNumberField->SetTuple1(i, sht3->tetList_.size());
       else
@@ -738,8 +679,8 @@ int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
   if(ThreeSheetVertexNumber) {
     vertexNumberField->SetNumberOfTuples(input->GetNumberOfPoints());
     vertexNumberField->SetName("3-SheetVertexNumber");
-    for(SimplexId i = 0; i < input->GetNumberOfPoints(); i++) {
-      const ReebSpace::Sheet3 *sht3 = reebSpace_.get3sheet((*vertex3sheets)[i]);
+    for(int i = 0; i < input->GetNumberOfPoints(); i++) {
+      const ReebSpace::Sheet3 *sht3 = this->get3sheet((*vertex3sheets)[i]);
       if((sht3) && (!sht3->pruned_))
         vertexNumberField->SetTuple1(i, sht3->vertexList_.size());
       else
@@ -756,8 +697,8 @@ int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
     domainVolume->SetNumberOfTuples(input->GetNumberOfPoints());
     domainVolume->SetName("3-SheetDomainVolume");
 
-    for(SimplexId i = 0; i < input->GetNumberOfPoints(); i++) {
-      const ReebSpace::Sheet3 *sht3 = reebSpace_.get3sheet((*vertex3sheets)[i]);
+    for(int i = 0; i < input->GetNumberOfPoints(); i++) {
+      const ReebSpace::Sheet3 *sht3 = this->get3sheet((*vertex3sheets)[i]);
       if((sht3) && (!sht3->pruned_)) {
         domainVolume->SetTuple1(i, sht3->domainVolume_);
       } else {
@@ -776,8 +717,8 @@ int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
     rangeArea->SetNumberOfTuples(input->GetNumberOfPoints());
     rangeArea->SetName("3-SheetRangeArea");
 
-    for(SimplexId i = 0; i < input->GetNumberOfPoints(); i++) {
-      const ReebSpace::Sheet3 *sht3 = reebSpace_.get3sheet((*vertex3sheets)[i]);
+    for(int i = 0; i < input->GetNumberOfPoints(); i++) {
+      const ReebSpace::Sheet3 *sht3 = this->get3sheet((*vertex3sheets)[i]);
       if((sht3) && (!sht3->pruned_)) {
         rangeArea->SetTuple1(i, sht3->rangeArea_);
       } else {
@@ -796,8 +737,8 @@ int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
     hyperVolume->SetNumberOfTuples(input->GetNumberOfPoints());
     hyperVolume->SetName("3-SheetHyperVolume");
 
-    for(SimplexId i = 0; i < input->GetNumberOfPoints(); i++) {
-      const ReebSpace::Sheet3 *sht3 = reebSpace_.get3sheet((*vertex3sheets)[i]);
+    for(int i = 0; i < input->GetNumberOfPoints(); i++) {
+      const ReebSpace::Sheet3 *sht3 = this->get3sheet((*vertex3sheets)[i]);
       if((sht3) && (!sht3->pruned_)) {
         hyperVolume->SetTuple1(i, sht3->hyperVolume_);
       } else {
@@ -814,8 +755,8 @@ int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
     = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
   vertexSegmentation->SetName("3-SheetId");
   vertexSegmentation->SetNumberOfTuples(input->GetNumberOfPoints());
-  for(SimplexId i = 0; i < input->GetNumberOfPoints(); i++) {
-    const ReebSpace::Sheet3 *sheet = reebSpace_.get3sheet((*vertex3sheets)[i]);
+  for(int i = 0; i < input->GetNumberOfPoints(); i++) {
+    const ReebSpace::Sheet3 *sheet = this->get3sheet((*vertex3sheets)[i]);
     if(sheet) {
       vertexSegmentation->SetTuple1(i, sheet->simplificationId_);
     } else {
@@ -824,13 +765,13 @@ int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
   }
   sheet3->GetPointData()->AddArray(vertexSegmentation);
 
-  const vector<SimplexId> *tet3sheets = reebSpace_.get3sheetTetSegmentation();
+  const auto tet3sheets = this->get3sheetTetSegmentation();
   vtkSmartPointer<ttkSimplexIdTypeArray> tetSegmentation
     = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
   tetSegmentation->SetName("3-SheetId");
   tetSegmentation->SetNumberOfTuples(input->GetNumberOfCells());
-  for(SimplexId i = 0; i < input->GetNumberOfCells(); i++) {
-    const ReebSpace::Sheet3 *sht3 = reebSpace_.get3sheet((*tet3sheets)[i]);
+  for(int i = 0; i < input->GetNumberOfCells(); i++) {
+    const ReebSpace::Sheet3 *sht3 = this->get3sheet((*tet3sheets)[i]);
     if(sht3) {
       tetSegmentation->SetTuple1(i, sht3->simplificationId_);
     } else {
@@ -838,12 +779,6 @@ int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
     }
   }
   sheet3->GetCellData()->AddArray(tetSegmentation);
-  {
-    stringstream msg;
-    msg << "[ttkReebSpace] Memory usage: " << m.getElapsedUsage() << " MB."
-        << endl;
-    dMsg(cout, msg.str(), memoryMsg);
-  }
 
   return 0;
 }

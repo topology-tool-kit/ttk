@@ -41,8 +41,8 @@
 /// \sa vtkRangePolygon
 /// \sa ttk::ReebSpace
 ///
-#ifndef _TTK_REEBSPACE_H
-#define _TTK_REEBSPACE_H
+
+#pragma once
 
 // VTK includes -- to adapt
 #include <vtkCellArray.h>
@@ -65,36 +65,18 @@
 
 // ttk code includes
 #include <ReebSpace.h>
-#include <ttkTriangulationAlgorithm.h>
+#include <ttkAlgorithm.h>
 
 // in this example, this wrapper takes a data-set on the input and produces a
 // data-set on the output - to adapt.
 // see the documentation of the vtkAlgorithm class to decide from which VTK
 // class your wrapper should inherit.
-class TTKREEBSPACE_EXPORT ttkReebSpace : public vtkDataSetAlgorithm,
-                                         protected ttk::Wrapper {
+class TTKREEBSPACE_EXPORT ttkReebSpace : public ttkAlgorithm,
+                                         protected ttk::ReebSpace {
 
 public:
   static ttkReebSpace *New();
-
-  vtkTypeMacro(ttkReebSpace, vtkDataSetAlgorithm);
-
-  // default ttk setters
-  void SetDebugLevel(int debugLevel) {
-    setDebugLevel(debugLevel);
-    Modified();
-  }
-
-  void SetThreadNumber(int threadNumber) {
-    ThreadNumber = threadNumber;
-    SetThreads();
-  }
-
-  void SetUseAllCores(bool onOff) {
-    UseAllCores = onOff;
-    SetThreads();
-  }
-  // end of default ttk setters
+  vtkTypeMacro(ttkReebSpace, ttkAlgorithm);
 
   vtkSetMacro(Ucomponent, std::string);
   vtkGetMacro(Ucomponent, std::string);
@@ -201,49 +183,35 @@ public:
 protected:
   ttkReebSpace();
 
-  ~ttkReebSpace() override;
-
-  virtual int FillOutputPortInformation(int port,
-                                        vtkInformation *info) override {
-
-    if(port == 0) {
-      // 0-sheets, corners of jacobi set segments
-      info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
-    } else if(port == 1) {
-      // 1-sheets, jacobi sets
-      info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
-    } else if(port == 2) {
-      // 2-sheets, fiber surfaces of jacobi sets
-      info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
-    }
-
-    return 1;
-  }
-
-  TTK_SETUP();
+  int FillInputPortInformation(int port, vtkInformation *info) override;
+  int FillOutputPortInformation(int port, vtkInformation *info) override;
+  int RequestData(vtkInformation *request,
+                  vtkInformationVector **inputVector,
+                  vtkInformationVector *outputVector) override;
 
 private:
-  int UcomponentId, VcomponentId;
+  int UcomponentId{0}, VcomponentId{1};
 
-  bool ZeroSheetValue, ZeroSheetVertexId, ZeroSheetType, ZeroSheetId;
-  bool OneSheetValue, OneSheetVertexId, OneSheetType, OneSheetId,
-    OneSheetEdgeId;
-  bool TwoSheets, TwoSheetCaseId, TwoSheetValue, TwoSheetParameterization,
-    TwoSheetId, TwoSheetEdgeId, TwoSheetTetId, TwoSheetEdgeType;
-  bool ThreeSheetVertexNumber, ThreeSheetTetNumber, ThreeSheetExpansion,
-    ThreeSheetDomainVolume, ThreeSheetRangeArea, ThreeSheetHyperVolume;
+  bool ZeroSheetValue{true}, ZeroSheetVertexId{true}, ZeroSheetType{true},
+    ZeroSheetId{true};
+  bool OneSheetValue{true}, OneSheetVertexId{true}, OneSheetType{true},
+    OneSheetId{true}, OneSheetEdgeId{true};
+  bool TwoSheets{true}, TwoSheetCaseId{true}, TwoSheetValue{true},
+    TwoSheetParameterization{true}, TwoSheetId{true}, TwoSheetEdgeId{true},
+    TwoSheetTetId{true}, TwoSheetEdgeType{true};
+  bool ThreeSheetVertexNumber{true}, ThreeSheetTetNumber{true},
+    ThreeSheetExpansion{true}, ThreeSheetDomainVolume{true},
+    ThreeSheetRangeArea{true}, ThreeSheetHyperVolume{true};
 
-  bool ForceInputOffsetScalarField;
-  bool UseOctreeAcceleration;
-  int SimplificationCriterion;
-  double SimplificationThreshold;
-  std::string Ucomponent, Vcomponent, OffsetFieldU, OffsetFieldV;
+  bool ForceInputOffsetScalarField{false};
+  bool UseOctreeAcceleration{true};
+  int SimplificationCriterion{1};
+  double SimplificationThreshold{0.0};
+  std::string Ucomponent{}, Vcomponent{}, OffsetFieldU{}, OffsetFieldV{};
 
-  vtkDataArray *uComponent_, *vComponent_, *offsetFieldU_, *offsetFieldV_;
-  std::vector<ttk::SimplexId> sosOffsetsU_, sosOffsetsV_;
-
-  // core data-structure
-  ttk::ReebSpace reebSpace_;
+  vtkDataArray *uComponent_{}, *vComponent_{}, *offsetFieldU_{},
+    *offsetFieldV_{};
+  std::vector<ttk::SimplexId> sosOffsetsU_{}, sosOffsetsV_{};
 
   // template base call
   template <class dataTypeU, class dataTypeV>
@@ -256,5 +224,3 @@ private:
   template <class dataTypeU, class dataTypeV>
   int preProcess(vtkDataSet *input, vtkDataArray *uField, vtkDataArray *vField);
 };
-
-#endif // _TTK_REEBSPACE_H
