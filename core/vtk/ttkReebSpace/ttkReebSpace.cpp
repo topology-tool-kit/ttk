@@ -764,5 +764,5 @@ int ttkReebSpace::RequestData(vtkInformation *request,
   }
   sheet3->GetCellData()->AddArray(tetSegmentation);
 
-  return 0;
+  return 1;
 }
