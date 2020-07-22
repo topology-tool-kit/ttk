@@ -255,7 +255,7 @@ int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
     SimplexId sheet0Id = (*sheet0segmentation)[i];
     if(sheet0Id != -1) {
       const ReebSpace::Sheet0 *sheet = reebSpace_.get0sheet(sheet0Id);
-      if(!sheet->pruned_) {
+      if(sheet != nullptr && !sheet->pruned_) {
         vertexNumber++;
       }
     }
@@ -316,7 +316,7 @@ int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
 
       const ReebSpace::Sheet0 *sheet = reebSpace_.get0sheet(sheet0Id);
 
-      if(!sheet->pruned_) {
+      if(sheet != nullptr && !sheet->pruned_) {
         p = input->GetPoint(i);
 
         sheet0->GetPoints()->SetPoint(vertexNumber, p);
@@ -536,7 +536,7 @@ int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
     for(SimplexId i = 0; i < reebSpace_.getNumberOf2sheets(); i++) {
       const ReebSpace::Sheet2 *sheet = reebSpace_.get2sheet(i);
 
-      if(!sheet->pruned_) {
+      if(sheet != nullptr && !sheet->pruned_) {
         for(SimplexId j = 0; j < (SimplexId)sheet->triangleList_.size(); j++) {
           sheet2TriangleNumber += sheet->triangleList_[j].size();
         }
@@ -618,7 +618,7 @@ int ttkReebSpace::doIt(vector<vtkDataSet *> &inputs,
     for(SimplexId i = 0; i < reebSpace_.getNumberOf2sheets(); i++) {
       const ReebSpace::Sheet2 *sht2 = reebSpace_.get2sheet(i);
 
-      if(!sht2->pruned_) {
+      if(sht2 != nullptr && !sht2->pruned_) {
         for(SimplexId j = 0; j < (SimplexId)sht2->triangleList_.size(); j++) {
 
           for(SimplexId k = 0; k < (SimplexId)sht2->triangleList_[j].size();
