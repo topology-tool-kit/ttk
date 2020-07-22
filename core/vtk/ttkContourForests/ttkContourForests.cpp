@@ -71,15 +71,6 @@ void ttkContourForests::SetForceInputOffsetScalarField(bool onOff) {
   Modified();
 }
 
-void ttkContourForests::SetScalarField(string scalarField) {
-  toComputeContourTree_ = true;
-  toComputeSkeleton_ = true;
-  toComputeSegmentation_ = true;
-
-  scalarField_ = scalarField;
-  Modified();
-}
-
 void ttkContourForests::SetTreeType(int treeType) {
   if(treeType >= 0 && treeType <= 2) {
     toUpdateTree_ = true;
@@ -182,182 +173,6 @@ void ttkContourForests::SetSimplificationThreshold(
   }
 }
 
-int ttkContourForests::vtkDataSetToStdVector(vtkDataSet *input) {
-
-  triangulation_ = ttkAlgorithm::GetTriangulation(input);
-
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(!triangulation_) {
-    cerr << "[ttkContourForests] Error: input triangulation is NULL." << endl;
-    return -1;
-  }
-#endif
-
-  varyingMesh_ = false;
-  if(triangulation_->isEmpty())
-    varyingMesh_ = true;
-
-  // init
-  if(varyingMesh_ || !numberOfVertices_) {
-    numberOfVertices_ = input->GetNumberOfPoints();
-  }
-
-  if(varyingMesh_) {
-    segmentation_ = input->NewInstance();
-    if(segmentation_ != nullptr) {
-      segmentation_->ShallowCopy(input);
-    }
-  }
-
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(!input->GetPointData()) {
-    cerr << "[ttkContourForests] Error: input has no point data." << endl;
-    return -2;
-  }
-#endif
-
-  // scalars
-  if(scalarField_.length()) {
-    vtkInputScalars_ = input->GetPointData()->GetArray(scalarField_.data());
-  } else {
-    vtkInputScalars_ = input->GetPointData()->GetArray(FieldId);
-  }
-
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(!vtkInputScalars_) {
-    cerr << "[ttkContourForests] Error: input scalar is NULL." << endl;
-    return -2;
-  }
-#endif
-
-  varyingDataValues_ = (vtkInputScalars_->GetMTime() > GetMTime());
-  if(varyingMesh_ || varyingDataValues_ || inputScalarsName_.empty()) {
-    if(input->GetPointData()) {
-      int numberOfArrays = input->GetPointData()->GetNumberOfArrays();
-      int numberOfScalarArrays{};
-
-      for(int i = 0; i < numberOfArrays; ++i) {
-        vtkDataArray *inputArray = input->GetPointData()->GetArray(i);
-        if(inputArray) {
-          if(inputArray->GetNumberOfTuples() == numberOfVertices_
-             && inputArray->GetNumberOfComponents() == 1) {
-            ++numberOfScalarArrays;
-          }
-        }
-      }
-
-      inputScalars_.resize(numberOfScalarArrays);
-      inputScalarsName_.resize(numberOfScalarArrays);
-
-      int k{};
-      for(int i = 0; i < numberOfArrays; ++i) {
-        vtkDataArray *inputArray = input->GetPointData()->GetArray(i);
-        if(inputArray) {
-          if(inputArray->GetNumberOfTuples() == numberOfVertices_
-             && inputArray->GetNumberOfComponents() == 1) {
-            inputScalars_[k].resize(numberOfVertices_);
-            inputScalarsName_[k] = inputArray->GetName();
-
-            for(SimplexId j = 0; j < numberOfVertices_; ++j) {
-              inputScalars_[k][j] = inputArray->GetTuple1(j);
-            }
-
-            ++k;
-          }
-        }
-      }
-    }
-    Modified();
-  }
-
-  if(scalarField_.size() == 0) {
-    vertexScalars_ = &(inputScalars_[FieldId]);
-    scalarField_ = inputScalarsName_[FieldId];
-  } else {
-    for(unsigned int i = 0; i < inputScalarsName_.size(); ++i) {
-      if(inputScalarsName_[i] == scalarField_) {
-        vertexScalars_ = &(inputScalars_[i]);
-        FieldId = i;
-      }
-    }
-  }
-
-  auto result
-    = std::minmax_element(vertexScalars_->begin(), vertexScalars_->end());
-  double scalarMin = *result.first;
-  double scalarMax = *result.second;
-  deltaScalar_ = (scalarMax - scalarMin);
-
-  // offsets
-  if(varyingMesh_ || varyingDataValues_ || !vertexSoSoffsets_.size()) {
-
-    vertexSoSoffsets_.clear();
-
-    if((InputOffsetFieldId != -1) && (inputOffsetScalarFieldName_.empty())) {
-      if(input->GetPointData()->GetArray(InputOffsetFieldId)) {
-        inputOffsetScalarFieldName_
-          = input->GetPointData()->GetArray(InputOffsetFieldId)->GetName();
-        useInputOffsetScalarField_ = true;
-      }
-    }
-
-    if(useInputOffsetScalarField_ and inputOffsetScalarFieldName_.length()) {
-
-      auto offsets
-        = input->GetPointData()->GetArray(inputOffsetScalarFieldName_.data());
-
-      if(offsets->GetNumberOfTuples() != numberOfVertices_) {
-        this->printErr("Mesh and offset sizes do not match :(");
-        this->printErr("Using default offset field instead...");
-      } else {
-        vertexSoSoffsets_.resize(offsets->GetNumberOfTuples());
-        for(SimplexId i = 0; i < (SimplexId)vertexSoSoffsets_.size(); ++i) {
-          vertexSoSoffsets_[i] = offsets->GetTuple1(i);
-        }
-      }
-    } else if(input->GetPointData()->GetArray(ttk::OffsetScalarFieldName)) {
-      auto offsets
-        = input->GetPointData()->GetArray(ttk::OffsetScalarFieldName);
-
-      if(offsets->GetNumberOfTuples() != numberOfVertices_) {
-        this->printErr("Mesh and offset sizes do not match :(");
-        this->printErr("Using default offset field instead...");
-      } else {
-        vertexSoSoffsets_.resize(offsets->GetNumberOfTuples());
-        for(SimplexId i = 0; i < (SimplexId)vertexSoSoffsets_.size(); ++i) {
-          vertexSoSoffsets_[i] = offsets->GetTuple1(i);
-        }
-      }
-    }
-    if(vertexSoSoffsets_.empty()) {
-      vertexSoSoffsets_.resize(numberOfVertices_);
-      for(SimplexId i = 0; i < (SimplexId)vertexSoSoffsets_.size(); ++i) {
-        vertexSoSoffsets_[i] = i;
-      }
-    }
-    toUpdateVertexSoSoffsets_ = false;
-  }
-
-  if(varyingMesh_ || varyingDataValues_ || !isLoaded_) {
-    this->printMsg("Convenient data storage loaded", debug::Priority::DETAIL);
-    this->printMsg(
-      std::vector<std::vector<std::string>>{
-        {"#Input scalars", std::to_string(inputScalars_.size())},
-        {"#Tuples", std::to_string(vertexScalars_->size())},
-        {"#Vertices", std::to_string(numberOfVertices_)},
-        {"#Offsets", std::to_string(vertexSoSoffsets_.size())},
-        {"Min", std::to_string(scalarMin)},
-        {"Max", std::to_string(scalarMax)},
-      },
-      debug::Priority::DETAIL);
-  }
-
-  this->printMsg("Launching computation for field `" + scalarField_ + "'...");
-
-  isLoaded_ = true;
-  return 0;
-}
-
 bool ttkContourForests::isCoincident(float p1[], double p2[]) {
   double sPrev[3];
   double sNext[3];
@@ -394,9 +209,8 @@ void ttkContourForests::getSkeletonArcs() {
   float point1[3];
   vector<double> point2(3);
   // get skeleton scalars
-  vector<vector<vector<double>>> skeletonScalars(inputScalars_.size());
-  for(unsigned int f = 0; f < inputScalars_.size(); ++f)
-    getSkeletonScalars(inputScalars_[f], skeletonScalars[f]);
+  vector<vector<double>> skeletonScalars{};
+  getSkeletonScalars(vertexScalars_, skeletonScalars);
 
   double inputScalar;
   SuperArc *a;
@@ -451,11 +265,11 @@ void ttkContourForests::getSkeletonArcs() {
             vtkPolyData *lineData = line->GetOutput();
 
             // Point data //
-            for(unsigned int f = 0; f < inputScalars_.size(); ++f) {
-              inputScalar = skeletonScalars[f][i][j];
+            {
+              inputScalar = skeletonScalars[i][j];
 
               scalars = vtkDoubleArray::New();
-              scalars->SetName(inputScalarsName_[f].data());
+              scalars->SetName(vtkInputScalars_->GetName());
               for(unsigned int k = 0; k < 2; ++k)
                 scalars->InsertTuple1(k, inputScalar);
               lineData->GetPointData()->AddArray(scalars);
@@ -518,12 +332,13 @@ void ttkContourForests::getSkeletonArcs() {
           vtkPolyData *lineData = line->GetOutput();
 
           // Point data //
-          for(unsigned int f = 0; f < inputScalars_.size(); ++f) {
-            inputScalar = skeletonScalars
-              [f][i][barycenters_[static_cast<int>(treeType_)][i].size()];
+          {
+            inputScalar
+              = skeletonScalars[i][barycenters_[static_cast<int>(treeType_)][i]
+                                     .size()];
 
             scalars = vtkDoubleArray::New();
-            scalars->SetName(inputScalarsName_[f].data());
+            scalars->SetName(vtkInputScalars_->GetName());
             for(unsigned int k = 0; k < 2; ++k)
               scalars->InsertTuple1(k, inputScalar);
             lineData->GetPointData()->AddArray(scalars);
@@ -585,11 +400,11 @@ void ttkContourForests::getSkeletonArcs() {
           vtkPolyData *lineData = line->GetOutput();
 
           // Point data //
-          for(unsigned int f = 0; f < inputScalars_.size(); ++f) {
-            inputScalar = skeletonScalars[f][i][0];
+          {
+            inputScalar = skeletonScalars[i][0];
 
             scalars = vtkDoubleArray::New();
-            scalars->SetName(inputScalarsName_[f].data());
+            scalars->SetName(vtkInputScalars_->GetName());
             for(unsigned int k = 0; k < 2; ++k)
               scalars->InsertTuple1(k, inputScalar);
             lineData->GetPointData()->AddArray(scalars);
@@ -718,11 +533,8 @@ void ttkContourForests::getSkeletonNodes() {
   float point[3];
 
   double scalar{};
-  vector<vtkDoubleArray *> scalars(inputScalars_.size());
-  for(unsigned int f = 0; f < inputScalars_.size(); ++f) {
-    scalars[f] = vtkDoubleArray::New();
-    scalars[f]->SetName(inputScalarsName_[f].data());
-  }
+  vtkNew<vtkDoubleArray> scalars{};
+  scalars->SetName(vtkInputScalars_->GetName());
 
   ttkSimplexIdTypeArray *nodeIdentifierScalars = ttkSimplexIdTypeArray::New();
   nodeIdentifierScalars->SetName("NodeIdentifier");
@@ -757,10 +569,8 @@ void ttkContourForests::getSkeletonNodes() {
       points->InsertPoint(identifier, point);
 
       // Scalars
-      for(unsigned int f = 0; f < inputScalars_.size(); ++f) {
-        scalar = inputScalars_[f][vertexId];
-        scalars[f]->InsertTuple1(identifier, scalar);
-      }
+      scalar = vertexScalars_[vertexId];
+      scalars->InsertTuple1(identifier, scalar);
 
       // NodeIdentifier
       nodeIdentifierScalars->InsertTuple1(identifier, nodeId);
@@ -787,15 +597,12 @@ void ttkContourForests::getSkeletonNodes() {
     }
   }
   skeletonNodes_->SetPoints(points);
-  for(unsigned int f = 0; f < inputScalars_.size(); ++f)
-    skeletonNodes_->GetPointData()->AddArray(scalars[f]);
+  skeletonNodes_->GetPointData()->AddArray(scalars);
   skeletonNodes_->GetPointData()->AddArray(nodeIdentifierScalars);
   skeletonNodes_->GetPointData()->AddArray(vertexIdentifierScalars);
   skeletonNodes_->GetPointData()->AddArray(nodeTypeScalars);
   skeletonNodes_->GetPointData()->AddArray(regionSizeScalars);
 
-  for(unsigned int f = 0; f < inputScalars_.size(); ++f)
-    scalars[f]->Delete();
   nodeIdentifierScalars->Delete();
   vertexIdentifierScalars->Delete();
   nodeTypeScalars->Delete();
@@ -908,8 +715,8 @@ int ttkContourForests::sample(unsigned int samplingLevel) {
         nodeMaxVId = tree_->getNode(nodeMaxId)->getVertexId();
         nodeMinVId = tree_->getNode(nodeMinId)->getVertexId();
 
-        fmax = (*vertexScalars_)[nodeMaxVId];
-        fmin = (*vertexScalars_)[nodeMinVId];
+        fmax = vertexScalars_[nodeMaxVId];
+        fmin = vertexScalars_[nodeMinVId];
 
         delta = (fmax - fmin) / samplingLevel;
 
@@ -921,7 +728,7 @@ int ttkContourForests::sample(unsigned int samplingLevel) {
           if(a->isMasqued(j))
             continue;
           vertexId = nodeId;
-          f = (*vertexScalars_)[vertexId];
+          f = vertexScalars_[vertexId];
 
           for(unsigned int k = 0; k < samplingLevel; ++k) {
             if(f <= (k + 1) * delta + fmin) {
@@ -1101,25 +908,25 @@ void ttkContourForests::getSegmentation(vtkDataSet *input) {
   vtkSmartPointer<ttkSimplexIdTypeArray> scalarsRegionId
     = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
   scalarsRegionId->SetName("SegmentationId");
-  scalarsRegionId->SetNumberOfTuples(vertexScalars_->size());
+  scalarsRegionId->SetNumberOfTuples(vertexScalars_.size());
 
   int regionType{};
   vtkSmartPointer<vtkIntArray> scalarsRegionType
     = vtkSmartPointer<vtkIntArray>::New();
   scalarsRegionType->SetName("RegionType");
-  scalarsRegionType->SetNumberOfTuples(vertexScalars_->size());
+  scalarsRegionType->SetNumberOfTuples(vertexScalars_.size());
 
   SimplexId regionSize{};
   vtkSmartPointer<ttkSimplexIdTypeArray> scalarsRegionSize
     = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
   scalarsRegionSize->SetName("RegionSize");
-  scalarsRegionSize->SetNumberOfTuples(vertexScalars_->size());
+  scalarsRegionSize->SetNumberOfTuples(vertexScalars_.size());
 
   double regionSpan{};
   vtkSmartPointer<vtkDoubleArray> scalarsRegionSpan
     = vtkSmartPointer<vtkDoubleArray>::New();
   scalarsRegionSpan->SetName("RegionSpan");
-  scalarsRegionSpan->SetNumberOfTuples(vertexScalars_->size());
+  scalarsRegionSpan->SetNumberOfTuples(vertexScalars_.size());
 
   SimplexId currentZone{};
 
@@ -1337,9 +1144,110 @@ int ttkContourForests::RequestData(vtkInformation *request,
   }
 #endif
 
-  // conversion
-  if(vtkDataSetToStdVector(input))
+  triangulation_ = ttkAlgorithm::GetTriangulation(input);
+
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(!triangulation_) {
+    cerr << "[ttkContourForests] Error: input triangulation is NULL." << endl;
     return -1;
+  }
+#endif
+
+  varyingMesh_ = false;
+  if(triangulation_->isEmpty())
+    varyingMesh_ = true;
+
+  // init
+  if(varyingMesh_ || !numberOfVertices_) {
+    numberOfVertices_ = input->GetNumberOfPoints();
+  }
+
+  if(varyingMesh_) {
+    segmentation_ = input->NewInstance();
+    if(segmentation_ != nullptr) {
+      segmentation_->ShallowCopy(input);
+    }
+  }
+
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(!input->GetPointData()) {
+    cerr << "[ttkContourForests] Error: input has no point data." << endl;
+    return -2;
+  }
+#endif
+
+  // scalars
+  vtkInputScalars_ = this->GetInputArrayToProcess(0, input);
+
+#ifndef TTK_ENABLE_KAMIKAZE
+  if(!vtkInputScalars_) {
+    cerr << "[ttkContourForests] Error: input scalar is NULL." << endl;
+    return -2;
+  }
+#endif
+
+  varyingDataValues_ = (vtkInputScalars_->GetMTime() > GetMTime());
+  if(input->GetPointData()) {
+
+    vertexScalars_.resize(numberOfVertices_);
+    for(SimplexId j = 0; j < numberOfVertices_; ++j) {
+      vertexScalars_[j] = vtkInputScalars_->GetTuple1(j);
+    }
+  }
+
+  auto result
+    = std::minmax_element(vertexScalars_.begin(), vertexScalars_.end());
+  double scalarMin = *result.first;
+  double scalarMax = *result.second;
+  deltaScalar_ = (scalarMax - scalarMin);
+
+  // offsets
+  if(varyingMesh_ || varyingDataValues_ || !vertexSoSoffsets_.size()) {
+
+    vertexSoSoffsets_.clear();
+
+    const auto offsets = this->GetOptionalArray(
+      useInputOffsetScalarField_, 1, ttk::OffsetScalarFieldName, inputVector);
+
+    if(useInputOffsetScalarField_ and offsets != nullptr) {
+
+      if(offsets->GetNumberOfTuples() != numberOfVertices_) {
+        this->printErr("Mesh and offset sizes do not match :(");
+        this->printErr("Using default offset field instead...");
+      } else {
+        vertexSoSoffsets_.resize(offsets->GetNumberOfTuples());
+        for(SimplexId i = 0; i < (SimplexId)vertexSoSoffsets_.size(); ++i) {
+          vertexSoSoffsets_[i] = offsets->GetTuple1(i);
+        }
+      }
+    }
+
+    if(vertexSoSoffsets_.empty()) {
+      vertexSoSoffsets_.resize(numberOfVertices_);
+      for(SimplexId i = 0; i < (SimplexId)vertexSoSoffsets_.size(); ++i) {
+        vertexSoSoffsets_[i] = i;
+      }
+    }
+    toUpdateVertexSoSoffsets_ = false;
+  }
+
+  if(varyingMesh_ || varyingDataValues_ || !isLoaded_) {
+    this->printMsg("Convenient data storage loaded", debug::Priority::DETAIL);
+    this->printMsg(
+      std::vector<std::vector<std::string>>{
+        {"#Tuples", std::to_string(vertexScalars_.size())},
+        {"#Vertices", std::to_string(numberOfVertices_)},
+        {"#Offsets", std::to_string(vertexSoSoffsets_.size())},
+        {"Min", std::to_string(scalarMin)},
+        {"Max", std::to_string(scalarMax)},
+      },
+      debug::Priority::DETAIL);
+  }
+
+  this->printMsg("Launching computation for field `"
+                 + std::string{vtkInputScalars_->GetName()} + "'...");
+
+  isLoaded_ = true;
 
   if(simplificationType_ == 0) {
     simplificationThreshold_ = simplificationThresholdBuffer_ * deltaScalar_;

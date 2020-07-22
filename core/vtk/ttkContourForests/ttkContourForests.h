@@ -79,19 +79,8 @@ public:
   static ttkContourForests *New();
   vtkTypeMacro(ttkContourForests, ttkAlgorithm);
 
-  vtkSetMacro(FieldId, int);
-
-  vtkGetMacro(scalarField_, std::string);
-  void SetScalarField(std::string scalarField);
-
   vtkGetMacro(useInputOffsetScalarField_, int);
   void SetForceInputOffsetScalarField(bool onOff);
-
-  vtkSetMacro(inputOffsetScalarFieldName_, std::string);
-  vtkGetMacro(inputOffsetScalarFieldName_, std::string);
-
-  vtkSetMacro(InputOffsetFieldId, int);
-  vtkGetMacro(InputOffsetFieldId, int);
 
   void SetTreeType(int tree);
 
@@ -122,7 +111,6 @@ protected:
                   vtkInformationVector *outputVector) override;
 
   // Base //
-  int vtkDataSetToStdVector(vtkDataSet *input);
   bool isCoincident(float p1[], double p2[]);
   bool isCoincident(double p1[], double p2[]);
 
@@ -158,9 +146,6 @@ protected:
 
 private:
   // Base //
-  int FieldId{0};
-  int InputOffsetFieldId{-1};
-  std::string inputOffsetScalarFieldName_{ttk::OffsetScalarFieldName};
   bool isLoaded_{};
   bool lessPartition_{true};
   ttk::cf::MergeTree *tree_{};
@@ -177,7 +162,6 @@ private:
   bool varyingMesh_{};
   bool varyingDataValues_{};
   ttk::cf::TreeType treeType_{ttk::cf::TreeType::Contour};
-  std::string scalarField_{};
   bool showMin_{true};
   bool showMax_{true};
   bool showSaddle1_{true};
@@ -204,9 +188,7 @@ private:
   ttk::Triangulation *triangulation_{};
   std::vector<ttk::SimplexId> vertexSoSoffsets_{};
   std::vector<ttk::SimplexId> criticalPoints_{};
-  std::vector<double> *vertexScalars_{};
-  std::vector<std::vector<double>> inputScalars_{};
-  std::vector<std::string> inputScalarsName_{};
+  std::vector<double> vertexScalars_{};
 
   // treeType, SuperArc, several vertices list.
   std::vector<std::vector<std::vector<std::vector<ttk::SimplexId>>>> samples_{};

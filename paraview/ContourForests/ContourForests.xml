@@ -54,10 +54,10 @@
 
       <StringVectorProperty
         name="Scalar Field"
-        command="SetScalarField"
-        number_of_elements="1"
-        animateable="0"
-        label="Scalar Field"
+        command="SetInputArrayToProcess"
+        element_types="0 0 0 0 2"
+        number_of_elements="5"
+        default_values="0"
         >
         <ArrayListDomain
           name="array_list"
@@ -86,11 +86,11 @@
       </IntVectorProperty>
 
       <StringVectorProperty
-        name="InputOffsetScalarFieldName"
-        command="SetinputOffsetScalarFieldName_"
-        label="Input Offset Field"
-        default_values="OutputOffsetScalarField"
-        number_of_elements="1"
+        name="Offset Field"
+        command="SetInputArrayToProcess"
+        element_types="0 0 0 0 2"
+        number_of_elements="5"
+        default_values="1"
         animateable="0"
         panel_visibility="advanced"
         >
@@ -283,7 +283,6 @@
       <PropertyGroup panel_widget="Line" label="Input options">
         <Property name="Scalar Field"/>
         <Property name="ForceInputOffsetScalarField"/>
-        <Property name="InputOffsetScalarFieldName"/>
       </PropertyGroup>
 
       <OutputPort name="Skeleton Nodes" index="0" id="port0" />
