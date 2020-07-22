@@ -44,7 +44,7 @@ int main(int argc, char **argv) {
   ttk::Debug msg;
   msg.setDebugMsgPrefix("ReebSpace");
 
-  vtkNew<ttkReebSpace> msc{};
+  vtkNew<ttkReebSpace> rs{};
 
   vtkDataArray *defaultArray = nullptr;
   for(size_t i = 0; i < inputFilePaths.size(); i++) {
@@ -84,7 +84,7 @@ int main(int argc, char **argv) {
       }
     } else {
       // feed input object to the filter
-      msc->SetInputDataObject(i, reader->GetOutput());
+      rs->SetInputDataObject(i, reader->GetOutput());
 
       // default arrays
       if(!defaultArray) {
@@ -108,22 +108,22 @@ int main(int argc, char **argv) {
       inputArrayNames.push_back(defaultArray->GetName());
   }
   for(size_t i = 0; i < inputArrayNames.size(); i++)
-    msc->SetInputArrayToProcess(i, 0, 0, 0, inputArrayNames[i].data());
+    rs->SetInputArrayToProcess(i, 0, 0, 0, inputArrayNames[i].data());
 
   // TODO manage the offset array?
 
   // ---------------------------------------------------------------------------
   // Execute the filter
   // ---------------------------------------------------------------------------
-  msc->SetForceInputOffsetScalarField(forceOffset);
-  msc->Update();
+  rs->SetForceInputOffsetScalarField(forceOffset);
+  rs->Update();
 
   // ---------------------------------------------------------------------------
   // If output prefix is specified then write all output objects to disk
   // ---------------------------------------------------------------------------
   if(!outputPathPrefix.empty()) {
-    for(int i = 0; i < msc->GetNumberOfOutputPorts(); i++) {
-      auto output = msc->GetOutputDataObject(i);
+    for(int i = 0; i < rs->GetNumberOfOutputPorts(); i++) {
+      auto output = rs->GetOutputDataObject(i);
       auto writer
         = vtkXMLDataObjectWriter::NewWriter(output->GetDataObjectType());
 
