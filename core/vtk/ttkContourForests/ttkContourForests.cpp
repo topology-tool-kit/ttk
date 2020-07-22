@@ -307,12 +307,8 @@ int ttkContourForests::vtkDataSetToStdVector(vtkDataSet *input) {
         = input->GetPointData()->GetArray(inputOffsetScalarFieldName_.data());
 
       if(offsets->GetNumberOfTuples() != numberOfVertices_) {
-        stringstream msg;
-        msg << "[ttkContourForests] Mesh and offset sizes do not match :("
-            << endl;
-        msg << "[ttkContourForests] Using default offset field instead..."
-            << endl;
-        dMsg(cerr, msg.str(), Debug::infoMsg);
+        this->printErr("Mesh and offset sizes do not match :(");
+        this->printErr("Using default offset field instead...");
       } else {
         vertexSoSoffsets_.resize(offsets->GetNumberOfTuples());
         for(SimplexId i = 0; i < (SimplexId)vertexSoSoffsets_.size(); ++i) {
@@ -324,12 +320,8 @@ int ttkContourForests::vtkDataSetToStdVector(vtkDataSet *input) {
         = input->GetPointData()->GetArray(ttk::OffsetScalarFieldName);
 
       if(offsets->GetNumberOfTuples() != numberOfVertices_) {
-        stringstream msg;
-        msg << "[ttkContourForests] Mesh and offset sizes do not match :("
-            << endl;
-        msg << "[ttkContourForests] Using default offset field instead..."
-            << endl;
-        dMsg(cerr, msg.str(), Debug::infoMsg);
+        this->printErr("Mesh and offset sizes do not match :(");
+        this->printErr("Using default offset field instead...");
       } else {
         vertexSoSoffsets_.resize(offsets->GetNumberOfTuples());
         for(SimplexId i = 0; i < (SimplexId)vertexSoSoffsets_.size(); ++i) {
@@ -347,30 +339,20 @@ int ttkContourForests::vtkDataSetToStdVector(vtkDataSet *input) {
   }
 
   if(varyingMesh_ || varyingDataValues_ || !isLoaded_) {
-    stringstream msg;
-    msg << "[ttkContourForests] Convenient data storage has been loaded."
-        << endl;
-    msg << "[ttkContourForests]   Number of input scalars: "
-        << inputScalars_.size() << endl;
-    msg << "[ttkContourForests]   Input scalars name:" << endl;
-    for(unsigned int i = 0; i < inputScalarsName_.size(); ++i)
-      msg << "[ttkContourForests]     " << inputScalarsName_[i] << endl;
-    msg << "[ttkContourForests]   Active scalar name: " << scalarField_ << endl;
-    msg << "[ttkContourForests]   Number of tuples: " << vertexScalars_->size()
-        << endl;
-    msg << "[ttkContourForests]   [min max]: [" << scalarMin << " " << scalarMax
-        << "]" << endl;
-    msg << "[ttkContourForests]   Number of vertices: " << numberOfVertices_
-        << endl;
-    msg << "[ttkContourForests]   Vertex offsets: " << boolalpha
-        << (bool)vertexSoSoffsets_.size() << endl;
-    dMsg(cout, msg.str(), detailedInfoMsg);
+    this->printMsg("Convenient data storage loaded", debug::Priority::DETAIL);
+    this->printMsg(
+      std::vector<std::vector<std::string>>{
+        {"#Input scalars", std::to_string(inputScalars_.size())},
+        {"#Tuples", std::to_string(vertexScalars_->size())},
+        {"#Vertices", std::to_string(numberOfVertices_)},
+        {"#Offsets", std::to_string(vertexSoSoffsets_.size())},
+        {"Min", std::to_string(scalarMin)},
+        {"Max", std::to_string(scalarMax)},
+      },
+      debug::Priority::DETAIL);
   }
 
-  stringstream msg;
-  msg << "[ttkContourForests] Launching computation for field '" << scalarField_
-      << "'..." << endl;
-  dMsg(cout, msg.str(), timeMsg);
+  this->printMsg("Launching computation for field `" + scalarField_ + "'...");
 
   isLoaded_ = true;
   return 0;
@@ -1104,15 +1086,11 @@ void ttkContourForests::getSkeleton() {
   // ce qui est fait n'est plus à faire
   toComputeSkeleton_ = false;
 
-  {
-    stringstream msg;
-    msg << "[ttkContourForests] Topological skeleton built in "
-        << t.getElapsedTime() << "s :" << endl;
-    msg << "[ttkContourForests]   Arc - Resolution: " << arcResolution_ << endl;
-    msg << "[ttkContourForests]   Smoothing: " << boolalpha
-        << skeletonSmoothing_ << endl;
-    dMsg(cout, msg.str(), timeMsg);
-  }
+  this->printMsg(
+    "Topological skeleton built", 1.0, t.getElapsedTime(), this->threadNumber_);
+  this->printMsg(std::vector<std::vector<std::string>>{
+    {"Arc resolution", std::to_string(arcResolution_)},
+    {"Smoothing", std::to_string(skeletonSmoothing_)}});
 }
 
 void ttkContourForests::getSegmentation(vtkDataSet *input) {
@@ -1267,16 +1245,11 @@ void ttkContourForests::getSegmentation(vtkDataSet *input) {
   segmentation_->GetPointData()->AddArray(scalarsRegionSize);
   segmentation_->GetPointData()->AddArray(scalarsRegionSpan);
 
-  {
-    stringstream msg;
-    msg << "[ttkContourForests] Topological segmentation built in "
-        << t.getElapsedTime() << "s :" << endl;
-    msg << "[ttkContourForests]   RegionType: " << boolalpha
-        << (bool)scalarsRegionType->GetNumberOfTuples() << endl;
-    msg << "[ttkContourForests]   SegmentationId: " << boolalpha
-        << (bool)scalarsRegionId->GetNumberOfTuples() << endl;
-    dMsg(cout, msg.str(), timeMsg);
-  }
+  this->printMsg("Topological segmentation built", 1.0, t.getElapsedTime(),
+                 this->threadNumber_);
+  this->printMsg(std::vector<std::vector<std::string>>{
+    {"Region type", std::to_string(scalarsRegionType->GetNumberOfTuples())},
+    {"Segmentation Id", std::to_string(scalarsRegionId->GetNumberOfTuples())}});
 
   toComputeSegmentation_ = false;
 }
@@ -1331,11 +1304,7 @@ void ttkContourForests::updateTree() {
 int ttkContourForests::RequestData(vtkInformation *request,
                                    vtkInformationVector **inputVector,
                                    vtkInformationVector *outputVector) {
-
   vtkWarningMacro(
-    "DEPRECATED This plugin will be removed in a future release, please use "
-    "FTM instead for contour trees and FTR for Reeb graphs.");
-  this->printWrn(
     "DEPRECATED This plugin will be removed in a future release, please use "
     "FTM instead for contour trees and FTR for Reeb graphs.");
 
