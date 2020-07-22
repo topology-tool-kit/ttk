@@ -1282,25 +1282,23 @@ void ttkContourForests::getSegmentation(vtkDataSet *input) {
 }
 
 void ttkContourForests::getTree() {
-  setDebugLevel(debugLevel_);
   // sequential params
-  contourTree_.setDebugLevel(debugLevel_);
-  contourTree_.setupTriangulation(triangulation_);
-  contourTree_.setVertexScalars(ttkUtils::GetVoidPointer(vtkInputScalars_));
+  this->setupTriangulation(triangulation_);
+  this->setVertexScalars(ttkUtils::GetVoidPointer(vtkInputScalars_));
   if(!vertexSoSoffsets_.empty()) {
-    contourTree_.setVertexSoSoffsets(vertexSoSoffsets_);
+    this->setVertexSoSoffsets(vertexSoSoffsets_);
   }
-  contourTree_.setTreeType(treeType_);
+  this->setTreeType(treeType_);
   // parallel params
-  contourTree_.setLessPartition(lessPartition_);
-  contourTree_.setThreadNumber(threadNumber_);
-  contourTree_.setPartitionNum(partitionNum_);
+  this->setLessPartition(lessPartition_);
+  this->setThreadNumber(threadNumber_);
+  this->setPartitionNum(partitionNum_);
   // simplification params
-  contourTree_.setSimplificationMethod(simplificationType_);
-  contourTree_.setSimplificationThreshold(simplificationThreshold_);
+  this->setSimplificationMethod(simplificationType_);
+  this->setSimplificationThreshold(simplificationThreshold_);
   // build
   switch(vtkInputScalars_->GetDataType()) {
-    vtkTemplateMacro(contourTree_.build<VTK_TT>());
+    vtkTemplateMacro(this->build<VTK_TT>());
   }
 
   // ce qui est fait n'est plus à faire
@@ -1311,17 +1309,17 @@ void ttkContourForests::updateTree() {
   // polymorphic tree
   switch(treeType_) {
     case TreeType::Join:
-      tree_ = contourTree_.getJoinTree();
+      tree_ = this->getJoinTree();
       break;
     case TreeType::Split:
-      tree_ = contourTree_.getSplitTree();
+      tree_ = this->getSplitTree();
       break;
     case TreeType::JoinAndSplit:
-      tree_ = contourTree_.getJoinTree();
-      tree_ = contourTree_.getSplitTree();
+      tree_ = this->getJoinTree();
+      tree_ = this->getSplitTree();
       break;
     case TreeType::Contour:
-      tree_ = &contourTree_;
+      tree_ = this;
       break;
   }
 

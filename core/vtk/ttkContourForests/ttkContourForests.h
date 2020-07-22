@@ -164,7 +164,6 @@ private:
   bool isLoaded_{};
   bool lessPartition_{true};
   ttk::cf::MergeTree *tree_{};
-  ttk::cf::ContourForests contourTree_{};
   vtkSmartPointer<vtkPolyData> skeletonNodes_{vtkPolyData::New()};
   vtkSmartPointer<vtkPolyData> skeletonArcs_{vtkPolyData::New()};
   vtkSmartPointer<vtkDataSet> segmentation_{};
