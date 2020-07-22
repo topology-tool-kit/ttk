@@ -1,5 +1,6 @@
 #include "ttkContourForests.h"
 
+#include <ttkMacros.h>
 #include <ttkUtils.h>
 
 using namespace std;
@@ -8,67 +9,13 @@ using namespace cf;
 
 vtkStandardNewMacro(ttkContourForests);
 
-ttkContourForests::ttkContourForests()
-  : // Base //
-    FieldId{0}, InputOffsetFieldId{-1},
-    inputOffsetScalarFieldName_{ttk::OffsetScalarFieldName}, isLoaded_{},
-    lessPartition_{true}, tree_{},
-    // Here the given number of core only serve for preprocess,
-    // a clean tree append before the true process and re-set
-    // the good number of threads
-    contourTree_{}, skeletonNodes_{vtkPolyData::New()},
-    skeletonArcs_{vtkPolyData::New()}, segmentation_{},
-
-    // Void //
-    voidUnstructuredGrid_{vtkUnstructuredGrid::New()},
-    voidPolyData_{vtkPolyData::New()},
-
-    // Configuration //
-    varyingMesh_{}, varyingDataValues_{}, treeType_{TreeType::Contour},
-    showMin_{true}, showMax_{true}, showSaddle1_{true},
-    showSaddle2_{true}, showArc_{true}, arcResolution_{1}, partitionNum_{-1},
-    skeletonSmoothing_{}, simplificationType_{}, simplificationThreshold_{},
-    simplificationThresholdBuffer_{},
-
-    // Computation handles //
-    toUpdateVertexSoSoffsets_{true}, toComputeContourTree_{true},
-    toUpdateTree_{true}, toComputeSkeleton_{true}, toComputeSegmentation_{true},
-
-    // Convenient storage //
-    deltaScalar_{}, numberOfVertices_{} {
-  contourTree_.setWrapper(this);
-  contourTree_.setDebugLevel(debugLevel_);
-  UseAllCores = false;
-  useInputOffsetScalarField_ = false;
-  SetTreeType(2);
-  arcResolution_ = 20;
-  skeletonSmoothing_ = 15;
-  lessPartition_ = 1;
-  partitionNum_ = -1;
-
-  UseAllCores = true;
-
+ttkContourForests::ttkContourForests() {
   // VTK Interface //
-  SetNumberOfInputPorts(1);
-  SetNumberOfOutputPorts(3);
-
-  triangulation_ = NULL;
+  this->SetNumberOfInputPorts(1);
+  this->SetNumberOfOutputPorts(3);
 
   vtkWarningMacro(
     "Contour Forests is deprecated, please use FTM Tree instead.");
-}
-
-ttkContourForests::~ttkContourForests() {
-  // Base //
-  if(skeletonNodes_)
-    skeletonNodes_->Delete();
-  if(skeletonArcs_)
-    skeletonArcs_->Delete();
-  // segmentation_->Delete();
-
-  // Void //
-  voidUnstructuredGrid_->Delete();
-  voidPolyData_->Delete();
 }
 
 void ttkContourForests::clearSkeleton() {
@@ -87,82 +34,30 @@ void ttkContourForests::clearSegmentation() {
 
 void ttkContourForests::clearTree() {
   tree_ = nullptr;
-  contourTree_.setWrapper(this);
-  contourTree_.setDebugLevel(debugLevel_);
-}
-
-// transmit abort signals -- to copy paste in other wrappers
-bool ttkContourForests::needsToAbort() {
-  return GetAbortExecute();
-}
-
-// transmit progress status -- to copy paste in other wrappers
-int ttkContourForests::updateProgress(const float &progress) {
-  {
-    stringstream msg;
-    msg << "[ttkContourForests] " << progress * 100 << "% processed...."
-        << endl;
-    dMsg(cout, msg.str(), advancedInfoMsg);
-  }
-
-  UpdateProgress(progress);
-  return 0;
 }
 
 int ttkContourForests::FillInputPortInformation(int port,
                                                 vtkInformation *info) {
-  if(port == 0)
+  if(port == 0) {
     info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataSet");
-  return 1;
+    return 1;
+  }
+  return 0;
 }
 
 int ttkContourForests::FillOutputPortInformation(int port,
                                                  vtkInformation *info) {
-  switch(port) {
-    case 0:
-      info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkPolyData");
-      break;
-
-    case 1:
-      info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkPolyData");
-      break;
-
-    case 2:
-      info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataSet");
-      break;
+  if(port == 0) {
+    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkPolyData");
+    return 1;
+  } else if(port == 1) {
+    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkPolyData");
+    return 1;
+  } else if(port == 2) {
+    info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
+    return 1;
   }
-
-  return 1;
-}
-
-void ttkContourForests::SetThreads() {
-  if(!UseAllCores)
-    threadNumber_ = ThreadNumber;
-  else
-    threadNumber_ = OsCall::getNumberOfCores();
-
-  if(partitionNum_ != -1) {
-    toComputeContourTree_ = true;
-    toComputeSkeleton_ = true;
-    toUpdateTree_ = true;
-  }
-
-  Modified();
-}
-
-void ttkContourForests::SetThreadNumber(int threadNumber) {
-  ThreadNumber = threadNumber;
-  SetThreads();
-}
-
-void ttkContourForests::SetDebugLevel(int d) {
-  Debug::setDebugLevel(d);
-  debugLevel_ = d;
-}
-
-void ttkContourForests::SetUseAllCores(bool onOff) {
-  UseAllCores = onOff;
-  SetThreads();
+  return 0;
 }
 
 void ttkContourForests::SetForceInputOffsetScalarField(bool onOff) {
@@ -289,7 +184,7 @@ void ttkContourForests::SetSimplificationThreshold(
 
 int ttkContourForests::vtkDataSetToStdVector(vtkDataSet *input) {
 
-  triangulation_ = ttkTriangulation::getTriangulation(input);
+  triangulation_ = ttkAlgorithm::GetTriangulation(input);
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!triangulation_) {
@@ -300,8 +195,6 @@ int ttkContourForests::vtkDataSetToStdVector(vtkDataSet *input) {
 
   varyingMesh_ = false;
   if(triangulation_->isEmpty())
-    varyingMesh_ = true;
-  if(ttkTriangulation::hasChangedConnectivity(triangulation_, input, this))
     varyingMesh_ = true;
 
   // init
@@ -394,9 +287,6 @@ int ttkContourForests::vtkDataSetToStdVector(vtkDataSet *input) {
   double scalarMin = *result.first;
   double scalarMax = *result.second;
   deltaScalar_ = (scalarMax - scalarMin);
-
-  // neighbors
-  triangulation_->setWrapper(this);
 
   // offsets
   if(varyingMesh_ || varyingDataValues_ || !vertexSoSoffsets_.size()) {
@@ -1445,16 +1335,16 @@ void ttkContourForests::updateTree() {
   toUpdateTree_ = false;
 }
 
-int ttkContourForests::doIt(vector<vtkDataSet *> &inputs,
-                            vector<vtkDataSet *> &outputs) {
+int ttkContourForests::RequestData(vtkInformation *request,
+                                   vtkInformationVector **inputVector,
+                                   vtkInformationVector *outputVector) {
 
-  if(debugLevel_) {
-    vtkWarningMacro("[ttkContourForests]: DEPRECATED This plugin will be "
-                    "removed in a future release, please use FTM instead for "
-                    "contour trees and FTR for Reeb graphs.");
-  }
-
-  Memory m;
+  vtkWarningMacro(
+    "DEPRECATED This plugin will be removed in a future release, please use "
+    "FTM instead for contour trees and FTR for Reeb graphs.");
+  this->printWrn(
+    "DEPRECATED This plugin will be removed in a future release, please use "
+    "FTM instead for contour trees and FTR for Reeb graphs.");
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!inputs.size()) {
@@ -1463,10 +1353,10 @@ int ttkContourForests::doIt(vector<vtkDataSet *> &inputs,
   }
 #endif
 
-  vtkDataSet *input = inputs[0];
-  vtkPolyData *outputSkeletonNodes = vtkPolyData::SafeDownCast(outputs[0]);
-  vtkPolyData *outputSkeletonArcs = vtkPolyData::SafeDownCast(outputs[1]);
-  vtkDataSet *outputSegmentation = outputs[2];
+  const auto input = vtkDataSet::GetData(inputVector[0]);
+  auto outputSkeletonNodes = vtkPolyData::GetData(outputVector, 0);
+  auto outputSkeletonArcs = vtkPolyData::GetData(outputVector, 1);
+  auto outputSegmentation = vtkDataSet::GetData(outputVector, 2);
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!input) {
@@ -1541,12 +1431,5 @@ int ttkContourForests::doIt(vector<vtkDataSet *> &inputs,
   // segmentation
   outputSegmentation->ShallowCopy(segmentation_);
 
-  {
-    stringstream msg;
-    msg << "[ttkContourForests] Memory usage: " << m.getElapsedUsage() << " MB."
-        << endl;
-    dMsg(cout, msg.str(), memoryMsg);
-  }
-
-  return 0;
+  return 1;
 }
