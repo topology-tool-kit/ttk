@@ -19,8 +19,8 @@ ttkContourForests::ttkContourForests() {
 }
 
 void ttkContourForests::clearSkeleton() {
-  samples_->clear();
-  barycenters_->clear();
+  samples_.clear();
+  barycenters_.clear();
 
   skeletonNodes_->Delete();
   skeletonNodes_ = vtkPolyData::New();
@@ -444,7 +444,7 @@ void ttkContourForests::getSkeletonArcs() {
       regionId = currentZone++;
 
       // Line //
-      if((*barycenters_)[static_cast<int>(treeType_)][i].size()) {
+      if(barycenters_[static_cast<int>(treeType_)][i].size()) {
         // init: min
         SimplexId downNodeVId;
         if(treeType_ == TreeType::Split)
@@ -459,9 +459,9 @@ void ttkContourForests::getSkeletonArcs() {
         line->SetPoint1(point1);
 
         const auto nbBarycenter
-          = (*barycenters_)[static_cast<int>(treeType_)][i].size();
+          = barycenters_[static_cast<int>(treeType_)][i].size();
         for(unsigned int j = 0; j < nbBarycenter; ++j) {
-          point2 = (*barycenters_)[static_cast<int>(treeType_)][i][j];
+          point2 = barycenters_[static_cast<int>(treeType_)][i][j];
           line->SetPoint2(point2.data());
 
           if(!isCoincident(point1, point2.data())) {
@@ -538,7 +538,7 @@ void ttkContourForests::getSkeletonArcs() {
           // Point data //
           for(unsigned int f = 0; f < inputScalars_.size(); ++f) {
             inputScalar = skeletonScalars
-              [f][i][(*barycenters_)[static_cast<int>(treeType_)][i].size()];
+              [f][i][barycenters_[static_cast<int>(treeType_)][i].size()];
 
             scalars = vtkDoubleArray::New();
             scalars->SetName(inputScalarsName_[f].data());
@@ -700,10 +700,9 @@ int ttkContourForests::getSkeletonScalars(
 
       // iteration
       for(SimplexId j = 0;
-          j < (SimplexId)(*samples_)[static_cast<int>(treeType_)][i].size();
-          ++j) {
+          j < (SimplexId)samples_[static_cast<int>(treeType_)][i].size(); ++j) {
         const vector<SimplexId> &sample
-          = (*samples_)[static_cast<int>(treeType_)][i][j];
+          = samples_[static_cast<int>(treeType_)][i][j];
 
         f = 0;
         for(SimplexId k = 0; k < (SimplexId)sample.size(); ++k) {
@@ -898,9 +897,8 @@ void ttkContourForests::getCriticalPoints() {
 }
 
 int ttkContourForests::sample(unsigned int samplingLevel) {
-  samples_->resize(3);
-  (*samples_)[static_cast<int>(treeType_)].resize(
-    tree_->getNumberOfSuperArcs());
+  samples_.resize(3);
+  samples_[static_cast<int>(treeType_)].resize(tree_->getNumberOfSuperArcs());
   vector<vector<SimplexId>> sampleList(samplingLevel);
 
   SuperArc *a;
@@ -953,7 +951,7 @@ int ttkContourForests::sample(unsigned int samplingLevel) {
 
         // update the arc
         for(SimplexId j = 0; j < (SimplexId)sampleList.size(); ++j)
-          (*samples_)[static_cast<int>(treeType_)][i].push_back(sampleList[j]);
+          samples_[static_cast<int>(treeType_)][i].push_back(sampleList[j]);
       }
     }
   }
@@ -962,8 +960,8 @@ int ttkContourForests::sample(unsigned int samplingLevel) {
 }
 
 int ttkContourForests::computeBarycenters() {
-  barycenters_->resize(3);
-  (*barycenters_)[static_cast<int>(treeType_)].resize(
+  barycenters_.resize(3);
+  barycenters_[static_cast<int>(treeType_)].resize(
     tree_->getNumberOfSuperArcs());
   vector<float> barycenter(3);
   SimplexId vertexId;
@@ -973,10 +971,8 @@ int ttkContourForests::computeBarycenters() {
     a = tree_->getSuperArc(i);
     if(!a->isPruned()) {
       for(SimplexId j = 0;
-          j < (SimplexId)(*samples_)[static_cast<int>(treeType_)][i].size();
-          ++j) {
-        vector<SimplexId> &sample
-          = (*samples_)[static_cast<int>(treeType_)][i][j];
+          j < (SimplexId)samples_[static_cast<int>(treeType_)][i].size(); ++j) {
+        vector<SimplexId> &sample = samples_[static_cast<int>(treeType_)][i][j];
 
         for(unsigned int k = 0; k < 3; ++k)
           barycenter[k] = 0;
@@ -996,12 +992,12 @@ int ttkContourForests::computeBarycenters() {
 
           // update the arc
           unsigned int nbBar
-            = (*barycenters_)[static_cast<int>(treeType_)][i].size();
-          (*barycenters_)[static_cast<int>(treeType_)][i].resize(nbBar + 1);
-          (*barycenters_)[static_cast<int>(treeType_)][i][nbBar].resize(3);
+            = barycenters_[static_cast<int>(treeType_)][i].size();
+          barycenters_[static_cast<int>(treeType_)][i].resize(nbBar + 1);
+          barycenters_[static_cast<int>(treeType_)][i][nbBar].resize(3);
 
           for(unsigned int k = 0; k < 3; ++k)
-            (*barycenters_)[static_cast<int>(treeType_)][i][nbBar][k]
+            barycenters_[static_cast<int>(treeType_)][i][nbBar][k]
               = barycenter[k];
         }
       }
@@ -1027,7 +1023,7 @@ void ttkContourForests::smoothSkeleton(unsigned int skeletonSmoothing) {
 }
 
 void ttkContourForests::smooth(const SimplexId idArc, bool order) {
-  int N = (*barycenters_)[static_cast<int>(treeType_)][idArc].size();
+  int N = barycenters_[static_cast<int>(treeType_)][idArc].size();
   if(N) {
     // init //
     vector<vector<double>> barycenterList(N);
@@ -1058,22 +1054,21 @@ void ttkContourForests::smooth(const SimplexId idArc, bool order) {
       // first
       for(unsigned int k = 0; k < 3; ++k)
         barycenterList[0][k]
-          = (p0[k] + (*barycenters_)[static_cast<int>(treeType_)][idArc][1][k])
+          = (p0[k] + barycenters_[static_cast<int>(treeType_)][idArc][1][k])
             * 0.5;
 
       // main
       for(int i = 1; i < N - 1; ++i) {
         for(unsigned int k = 0; k < 3; ++k)
           barycenterList[i][k]
-            = ((*barycenters_)[static_cast<int>(treeType_)][idArc][i - 1][k]
-               + (*barycenters_)[static_cast<int>(treeType_)][idArc][i + 1][k])
+            = (barycenters_[static_cast<int>(treeType_)][idArc][i - 1][k]
+               + barycenters_[static_cast<int>(treeType_)][idArc][i + 1][k])
               * 0.5;
       }
       // last
       for(unsigned int k = 0; k < 3; ++k)
         barycenterList[N - 1][k]
-          = (p1[k]
-             + (*barycenters_)[static_cast<int>(treeType_)][idArc][N - 1][k])
+          = (p1[k] + barycenters_[static_cast<int>(treeType_)][idArc][N - 1][k])
             * 0.5;
     } else {
       for(unsigned int k = 0; k < 3; ++k)
@@ -1083,7 +1078,7 @@ void ttkContourForests::smooth(const SimplexId idArc, bool order) {
     // copy //
     for(int i = 0; i < N; ++i) {
       for(unsigned int k = 0; k < 3; ++k)
-        (*barycenters_)[static_cast<int>(treeType_)][idArc][i][k]
+        barycenters_[static_cast<int>(treeType_)][idArc][i][k]
           = barycenterList[i][k];
     }
   }
@@ -1401,11 +1396,8 @@ int ttkContourForests::RequestData(vtkInformation *request,
   if(varyingMesh_ || varyingDataValues_ || toComputeContourTree_) {
     clearTree();
     getTree();
-  }
-
-  // update the trees
-  if(varyingMesh_ || varyingDataValues_ || toUpdateTree_)
     updateTree();
+  }
 
   // Skeleton //
   if(varyingMesh_ || varyingDataValues_ || toComputeSkeleton_) {

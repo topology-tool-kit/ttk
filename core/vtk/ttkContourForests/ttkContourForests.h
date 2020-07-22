@@ -210,7 +210,6 @@ private:
   std::vector<std::string> inputScalarsName_{};
 
   // treeType, SuperArc, several vertices list.
-  std::vector<std::vector<std::vector<std::vector<ttk::SimplexId>>>>
-    *samples_{};
-  std::vector<std::vector<std::vector<std::vector<double>>>> *barycenters_{};
+  std::vector<std::vector<std::vector<std::vector<ttk::SimplexId>>>> samples_{};
+  std::vector<std::vector<std::vector<std::vector<double>>>> barycenters_{};
 };
