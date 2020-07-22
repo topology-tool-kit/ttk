@@ -22,10 +22,11 @@ Interface::Interface(const SimplexId &seed) : seed_(seed) {
 ContourForests::ContourForests()
   : ContourForestsTree(new Params(), nullptr, new Scalars()), parallelParams_(),
     parallelData_() {
-  params_->treeType = TreeType::Contour;
+  this->setDebugMsgPrefix("ContourForests");
   this->printWrn(
     "DEPRECATED This module will be removed in a future release, please use "
     "FTM instead for contour trees and FTR for Reeb graphs.");
+  params_->treeType = TreeType::Contour;
 }
 
 ContourForests::~ContourForests() {

@@ -79,16 +79,17 @@ int MergeTree::build(vector<ExtendedUnionFind *> &vect_baseUF,
 #pragma omp critical
 #endif
     {
-      cout << "partition : " << static_cast<unsigned>(treeData_.partition);
-      cout << ", isJT : " << isJT;
-      cout << ",  size : ";
-      cout << "before  : " << abs(beforeEnd - beforeStart);
-      cout << ", main : " << abs(mainEnd - mainStart);
-      cout << ", after : " << abs(afterEnd - afterStart);
-      cout << ", Total : ";
-      cout << abs(beforeEnd - beforeStart) + abs(mainEnd - mainStart)
-                + abs(afterEnd - afterStart);
-      cout << endl;
+      std::stringstream msg;
+      msg << "partition : " << static_cast<unsigned>(treeData_.partition);
+      msg << ", isJT : " << isJT;
+      msg << ",  size : ";
+      msg << "before  : " << abs(beforeEnd - beforeStart);
+      msg << ", main : " << abs(mainEnd - mainStart);
+      msg << ", after : " << abs(afterEnd - afterStart);
+      msg << ", Total : ";
+      msg << abs(beforeEnd - beforeStart) + abs(mainEnd - mainStart)
+               + abs(afterEnd - afterStart);
+      this->printMsg(msg.str());
     }
   }
 

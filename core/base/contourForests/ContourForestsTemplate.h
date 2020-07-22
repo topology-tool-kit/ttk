@@ -46,21 +46,16 @@ namespace ttk {
       initNbPartitions();
       initSoS();
 
-      if(params_->debugLevel >= 2) {
-        // print params:
-        std::cout << "threads :"
-                  << static_cast<unsigned>(parallelParams_.nbThreads)
-                  << std::endl;
-        std::cout << "partitions : "
-                  << static_cast<unsigned>(parallelParams_.nbPartitions)
-                  << std::endl;
-        if(params_->simplifyThreshold) {
-          std::cout << "simplify method : " << params_->simplifyMethod
-                    << std::endl;
-          std::cout << "simplify thresh.: " << params_->simplifyThreshold
-                    << std::endl;
-        }
+      this->printMsg(std::vector<std::vector<std::string>>{
+        {"#Threads", std::to_string(parallelParams_.nbThreads)},
+        {"#Partitions", std::to_string(parallelParams_.nbPartitions)}});
+
+      if(params_->simplifyThreshold) {
+        this->printMsg(std::vector<std::vector<std::string>>{
+          {"Simplify method", std::to_string(params_->simplifyMethod)},
+          {"Simplify thresh.", std::to_string(params_->simplifyThreshold)}});
       }
+
       printDebug(timerTOTAL, "Initialization                   ");
 
       // ---------
@@ -214,7 +209,7 @@ namespace ttk {
         }
       }
 
-      printDebug(timerUnify, "Create Contour tree              ");
+      printDebug(timerUnify, "Contour tree created              ");
 
       // -------------------
       // Simplification step
@@ -246,12 +241,14 @@ namespace ttk {
           st_->printTree2();
         }
       } else if(params_->debugLevel > 2) {
+        std::stringstream msg;
         if(params_->treeType == TreeType::Contour)
-          std::cout << "max node : " << getNumberOfNodes() << std::endl;
+          msg << "max node : " << getNumberOfNodes();
         else {
-          std::cout << "JT max node : " << jt_->getNumberOfNodes() << std::endl;
-          std::cout << "ST max node : " << st_->getNumberOfNodes() << std::endl;
+          msg << "JT max node : " << jt_->getNumberOfNodes();
+          msg << "ST max node : " << st_->getNumberOfNodes();
         }
+        this->printMsg(msg.str());
       }
 
       if(params_->treeType == TreeType::Contour) {
@@ -496,10 +493,11 @@ namespace ttk {
           = max_element(speedProcess.cbegin(), speedProcess.cend());
         auto minProcSpeed
           = min_element(speedProcess.cbegin(), speedProcess.cend());
-        std::cout << "process speed : ";
-        std::cout << " min is " << *minProcSpeed << " vert/sec";
-        std::cout << " max is " << *maxProcSpeed << " vert/sec";
-        std::cout << std::endl;
+        std::stringstream msg;
+        msg << "process speed : ";
+        msg << " min is " << *minProcSpeed << " vert/sec";
+        msg << " max is " << *maxProcSpeed << " vert/sec";
+        this->printMsg(msg.str());
       }
 
       return 0;
