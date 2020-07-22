@@ -1,3 +1,16 @@
+#include <vtkAppendPolyData.h>
+#include <vtkCellArray.h>
+#include <vtkCellData.h>
+#include <vtkDataSet.h>
+#include <vtkDoubleArray.h>
+#include <vtkGenericCell.h>
+#include <vtkInformation.h>
+#include <vtkIntArray.h>
+#include <vtkLine.h>
+#include <vtkLineSource.h>
+#include <vtkObjectFactory.h>
+#include <vtkPointData.h>
+
 #include "ttkContourForests.h"
 
 #include <ttkMacros.h>
