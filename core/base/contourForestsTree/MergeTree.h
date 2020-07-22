@@ -46,7 +46,7 @@ namespace ttk {
     protected:
       // global
       Params *const params_;
-      Triangulation *mesh_;
+      AbstractTriangulation *mesh_;
       Scalars *const scalars_;
 
       // local
@@ -59,7 +59,7 @@ namespace ttk {
 
       // Tree with global data and partition number
       MergeTree(Params *const params,
-                Triangulation *mesh,
+                AbstractTriangulation *mesh,
                 Scalars *const scalars,
                 TreeType type,
                 idPartition part = nullPartition);
@@ -142,8 +142,8 @@ namespace ttk {
         scalars_->values = local_scalars;
       }
 
-      inline void setupTriangulation(Triangulation *m,
-                                     const bool preproc = true) {
+      inline void preconditionTriangulation(AbstractTriangulation *const m,
+                                            const bool preproc = true) {
         mesh_ = m;
         if(mesh_ && preproc) {
           mesh_->preconditionEdges();

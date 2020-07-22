@@ -14,7 +14,7 @@ using namespace cf;
 // Constructors & destructors
 
 MergeTree::MergeTree(Params *const params,
-                     Triangulation *mesh,
+                     AbstractTriangulation *mesh,
                      Scalars *const scalars,
                      TreeType type,
                      idPartition part)

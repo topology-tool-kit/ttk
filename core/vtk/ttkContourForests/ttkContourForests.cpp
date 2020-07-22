@@ -1076,7 +1076,7 @@ void ttkContourForests::getSegmentation(vtkDataSet *input) {
 
 void ttkContourForests::getTree() {
   // sequential params
-  this->setupTriangulation(triangulation_);
+  this->preconditionTriangulation(triangulation_);
   this->setVertexScalars(ttkUtils::GetVoidPointer(vtkInputScalars_));
   if(!vertexSoSoffsets_.empty()) {
     this->setVertexSoSoffsets(vertexSoSoffsets_);

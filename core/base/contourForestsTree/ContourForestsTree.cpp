@@ -15,7 +15,7 @@ using namespace ttk;
 using namespace cf;
 
 ContourForestsTree::ContourForestsTree(Params *const params,
-                                       Triangulation *mesh,
+                                       AbstractTriangulation *mesh,
                                        Scalars *const scalars,
                                        idPartition part)
   : MergeTree(params, mesh, scalars, TreeType::Contour, part),

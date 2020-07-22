@@ -47,7 +47,7 @@ namespace ttk {
       // {
 
       ContourForestsTree(Params *const params,
-                         Triangulation *mesh,
+                         AbstractTriangulation *mesh,
                          Scalars *const scalars,
                          idPartition part = nullPartition);
       virtual ~ContourForestsTree();
