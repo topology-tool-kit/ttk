@@ -179,7 +179,7 @@ int ttk::RangeDrivenOctree::build() {
 
       if(triangulation_) {
         triangulation_->getCellVertex(i, j, vertexId);
-      } else {
+      } else if(cell != nullptr) {
         vertexId = cell[j];
       }
 
