@@ -1130,7 +1130,7 @@ int ttkContourForests::RequestData(vtkInformation *request,
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!inputs.size()) {
-    cerr << "[ttkContourForests] Error: not enough input information." << endl;
+    this->printErr("Not enough input information.");
     return -1;
   }
 #endif
@@ -1142,17 +1142,17 @@ int ttkContourForests::RequestData(vtkInformation *request,
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!input) {
-    cerr << "[ttkContourForests] Error: input pointer is NULL." << endl;
+    this->printErr("Input pointer is NULL.");
     return -1;
   }
 
   if(!outputSkeletonNodes || !outputSkeletonArcs || !outputSegmentation) {
-    cerr << "[ttkContourForests] Error: output pointer is NULL." << endl;
+    this->printErr("Output pointer is NULL.");
     return -1;
   }
 
   if(!input->GetNumberOfPoints()) {
-    cerr << "[ttkContourForests] Error: input has no point." << endl;
+    this->printErr("Input has no point.");
     return -1;
   }
 #endif
@@ -1161,7 +1161,7 @@ int ttkContourForests::RequestData(vtkInformation *request,
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!triangulation_) {
-    cerr << "[ttkContourForests] Error: input triangulation is NULL." << endl;
+    this->printErr("Input triangulation is NULL.");
     return -1;
   }
 #endif
@@ -1184,7 +1184,7 @@ int ttkContourForests::RequestData(vtkInformation *request,
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!input->GetPointData()) {
-    cerr << "[ttkContourForests] Error: input has no point data." << endl;
+    this->printErr("Input has no point data.");
     return -2;
   }
 #endif
@@ -1194,7 +1194,7 @@ int ttkContourForests::RequestData(vtkInformation *request,
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!vtkInputScalars_) {
-    cerr << "[ttkContourForests] Error: input scalar is NULL." << endl;
+    this->printErr("Input scalar is NULL.");
     return -2;
   }
 #endif
@@ -1291,7 +1291,7 @@ int ttkContourForests::RequestData(vtkInformation *request,
   if(varyingMesh_ || varyingDataValues_ || toComputeSkeleton_) {
 #ifndef TTK_ENABLE_KAMIKAZE
     if(tree_ == nullptr) {
-      cerr << "[ttkContourForests] Error: MergeTree pointer is NULL." << endl;
+      this->printErr("MergeTree pointer is NULL.");
       return -2;
     }
 #endif // TTK_ENABLE_KAMIKAZE
