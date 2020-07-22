@@ -2,7 +2,7 @@
 <ServerManagerConfiguration>
   <ProxyGroup name="filters">
     <SourceProxy
-      name="IntegralLines"
+      name="ttkIntegralLines"
       class="ttkIntegralLines"
       label="TTK IntegralLines">
       <Documentation

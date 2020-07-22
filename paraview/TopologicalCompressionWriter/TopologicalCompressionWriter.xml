@@ -1,9 +1,9 @@
 <ServerManagerConfiguration>
   <ProxyGroup name="writers">
     <WriterProxy
-        name="TopologicalCompressionWriter"
+        name="ttkTopologicalCompressionWriter"
         class="ttkTopologicalCompressionWriter"
-        label="TTKTopologicalCompressionWriter">
+        label="TTK TTKTopologicalCompressionWriter">
 
       <Documentation
           long_help="TTK topologicalCompressionWriter plugin."

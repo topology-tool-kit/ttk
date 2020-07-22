@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ServerManagerConfiguration>
     <ProxyGroup name="filters">
-        <SourceProxy name="ArrayEditor" class="ttkArrayEditor" label="TTK ArrayEditor">
+        <SourceProxy name="ttkArrayEditor" class="ttkArrayEditor" label="TTK ArrayEditor">
             <Documentation long_help="TTK ArrayEditor" short_help="TTK ArrayEditor">This filter adds data arrays to a 'vtkDataObject' (called target) based on a string or point/cell/field data of an optional second 'vtkDataObject' (called source). This filter can also be used to directly edit an array (including renaming, type conversion, and reindexing).</Documentation>
             <!-- Inputs -->
             <InputProperty name="Target" port_index="0" command="SetInputConnection">

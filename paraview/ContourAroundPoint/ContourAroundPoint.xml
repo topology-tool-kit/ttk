@@ -1,5 +1,5 @@
 <ServerManagerConfiguration><ProxyGroup name="filters"><SourceProxy
-  name="ContourAroundPoint"
+  name="ttkContourAroundPoint"
   class="ttkContourAroundPoint"
   label="TTK ContourAroundPoint">
   <Documentation

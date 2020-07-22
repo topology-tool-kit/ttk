@@ -6,7 +6,7 @@
   that matches your filter and then model your xml on it -->
   <ProxyGroup name="filters">
     <SourceProxy
-      name="DimensionReduction"
+      name="ttkDimensionReduction"
       class="ttkDimensionReduction"
       label="TTK DimensionReduction">
       <Documentation

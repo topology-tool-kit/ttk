@@ -1,7 +1,7 @@
 <ServerManagerConfiguration>
     <ProxyGroup name="filters">
         <SourceProxy
-            name="ftmtree"
+            name="ttkftmtree"
             class="ttkFTMTree"
             label="TTK Merge and Contour Tree (FTM)">
             <Documentation

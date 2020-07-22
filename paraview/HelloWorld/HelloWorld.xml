@@ -8,7 +8,7 @@
 
 <ServerManagerConfiguration>
     <ProxyGroup name="filters">
-        <SourceProxy name="HelloWorld" class="ttkHelloWorld" label="TTK HelloWorld">
+        <SourceProxy name="ttkHelloWorld" class="ttkHelloWorld" label="TTK HelloWorld">
            <Documentation long_help="HelloWorld Long" short_help="HelloWorld Short">
                This filter is a well documented ttk example filter that computes for each vertex of a vtkDataSet the average scalar value of itself and its neighbors.
            </Documentation>

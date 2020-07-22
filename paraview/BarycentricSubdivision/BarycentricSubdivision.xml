@@ -5,7 +5,7 @@
        that matches your filter and then model your xml on it -->
   <ProxyGroup name="filters">
    <SourceProxy
-     name="BarycentricSubdivision"
+     name="ttkBarycentricSubdivision"
      class="ttkBarycentricSubdivision"
      label="TTK BarycentricSubdivision">
      <Documentation

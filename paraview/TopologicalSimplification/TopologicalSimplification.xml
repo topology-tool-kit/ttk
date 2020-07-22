@@ -1,7 +1,7 @@
 <ServerManagerConfiguration>
 	<ProxyGroup name="filters">
    <SourceProxy
-     name="TopologicalSimplification"
+     name="ttkTopologicalSimplification"
 		 class="ttkTopologicalSimplification"
 		 label="TTK TopologicalSimplification">
 		 <Documentation

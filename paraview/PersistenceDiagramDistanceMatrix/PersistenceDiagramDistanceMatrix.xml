@@ -1,7 +1,7 @@
 <ServerManagerConfiguration>
   <ProxyGroup name="filters">
     <SourceProxy
-        name="PersistenceDiagramDistanceMatrix"
+        name="ttkPersistenceDiagramDistanceMatrix"
         class="ttkPersistenceDiagramDistanceMatrix"
         label="TTK PersistenceDiagramDistanceMatrix">
       <Documentation

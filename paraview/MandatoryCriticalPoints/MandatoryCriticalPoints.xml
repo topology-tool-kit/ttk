@@ -6,7 +6,7 @@
        that matches your filter and then model your xml on it -->
   <ProxyGroup name="filters">
    <SourceProxy
-     name="MandatoryCriticalPoints"
+     name="ttkMandatoryCriticalPoints"
      class="ttkMandatoryCriticalPoints"
      label="TTK MandatoryCriticalPoints">
      <Documentation

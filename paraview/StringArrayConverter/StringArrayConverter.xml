@@ -1,7 +1,7 @@
 <ServerManagerConfiguration>
   <ProxyGroup name="filters">
     <SourceProxy
-        name="StringArrayConverter"
+        name="ttkStringArrayConverter"
         class="ttkStringArrayConverter"
         label="TTK StringArrayConverter">
       <Documentation
