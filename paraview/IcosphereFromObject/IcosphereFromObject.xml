@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ServerManagerConfiguration>
     <ProxyGroup name="filters">
-        <SourceProxy name="IcosphereFromObject" class="ttkIcosphereFromObject" label="TTK IcosphereFromObject">
+        <SourceProxy name="ttkIcosphereFromObject" class="ttkIcosphereFromObject" label="TTK IcosphereFromObject">
             <Documentation long_help="TTK filter that creates an IcosphereFromObject" short_help="TTK filter that creates an IcosphereFromObject">
                 This filter creates an IcosphereFromObject with a specified radius, center, and number of subdivisions. Alternatively, by providing an optional input, the filter will automatically determine the radius and center such that the resulting IcosphereFromObject encapsulates the input object. In this case, the entered radius parameter is used as a scaling factor.
             </Documentation>

@@ -6,7 +6,7 @@
        that matches your filter and then model your xml on it -->
   <ProxyGroup name="filters">
    <SourceProxy
-     name="IdentifyByScalarField"
+     name="ttkIdentifyByScalarField"
      class="ttkIdentifyByScalarField"
      label="TTK IdentifyByScalarField">
      <Documentation

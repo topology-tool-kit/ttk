@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ServerManagerConfiguration>
     <ProxyGroup name="filters">
-        <SourceProxy name="Extract" class="ttkExtract" label="TTK Extract">
+        <SourceProxy name="ttkExtract" class="ttkExtract" label="TTK Extract">
             <Documentation long_help="TTK Extract" short_help="TTK Extract">
 This filter uses a list of values to extract either blocks of a 'vtkMultiBlockDataSet' by interpreting the values as block indices, or the subset of a 'vtkDataObject' whose point/cell values are contained in that list.
             </Documentation>

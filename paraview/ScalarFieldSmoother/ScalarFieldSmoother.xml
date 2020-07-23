@@ -6,7 +6,7 @@
   that matches your filter and then model your xml on it -->
   <ProxyGroup name="filters">
     <SourceProxy
-      name="ScalarFieldSmoother"
+      name="ttkScalarFieldSmoother"
       class="ttkScalarFieldSmoother"
       label="TTK ScalarFieldSmoother">
       <Documentation

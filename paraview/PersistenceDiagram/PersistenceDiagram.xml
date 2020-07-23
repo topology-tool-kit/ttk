@@ -6,7 +6,7 @@
        that matches your filter and then model your xml on it -->
   <ProxyGroup name="filters">
     <SourceProxy
-      name="PersistenceDiagram"
+      name="ttkPersistenceDiagram"
       class="ttkPersistenceDiagram"
       label="TTK PersistenceDiagram">
       <Documentation

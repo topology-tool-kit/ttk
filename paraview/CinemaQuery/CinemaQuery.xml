@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ServerManagerConfiguration>
     <ProxyGroup name="filters">
-        <SourceProxy name="CinemaQuery" class="ttkCinemaQuery" label="TTK CinemaQuery">
+        <SourceProxy name="ttkCinemaQuery" class="ttkCinemaQuery" label="TTK CinemaQuery">
             <Documentation long_help="TTK CinemaQuery" short_help="TTK CinemaQuery">This filter evaluates a SQL statement on multiple InputTables.</Documentation>
 
             <InputProperty clean_command="RemoveAllInputs" name="InputTable" command="AddInputConnection" multiple_input="1">

@@ -1,7 +1,7 @@
 <ServerManagerConfiguration>
   <ProxyGroup name="filters">
     <SourceProxy
-        name="PointSetToCurve"
+        name="ttkPointSetToCurve"
         class="ttkPointSetToCurve"
         label="TTK PointSetToCurve">
       <Documentation

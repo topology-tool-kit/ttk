@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ServerManagerConfiguration>
     <ProxyGroup name="filters">
-        <SourceProxy name="DepthImageBasedGeometryApproximation" class="ttkDepthImageBasedGeometryApproximation" label="TTK DepthImageBasedGeometryApproximation">
+        <SourceProxy name="ttkDepthImageBasedGeometryApproximation" class="ttkDepthImageBasedGeometryApproximation" label="TTK DepthImageBasedGeometryApproximation">
             <Documentation long_help="TTK depthImageBasedGeometryApproximation" short_help="TTK depthImageBasedGeometryApproximation">This filter approximates the geometry that is depicted by a set of depth images.
 
                 Related publication:

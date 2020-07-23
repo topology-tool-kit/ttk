@@ -5,7 +5,7 @@
        that matches your filter and then model your xml on it -->
   <ProxyGroup name="filters">
    <SourceProxy
-     name="Blank"
+     name="ttkBlank"
      class="ttkBlank"
      label="TTK Blank">
      <Documentation

@@ -6,7 +6,7 @@
        that matches your filter and then model your xml on it -->
   <ProxyGroup name="filters">
      <SourceProxy
-        name="FTRGraph"
+        name="ttkFTRGraph"
         class="ttkFTRGraph"
         label="TTK Reeb graph (FTR)">
         <Documentation

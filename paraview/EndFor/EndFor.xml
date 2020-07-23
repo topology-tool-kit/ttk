@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ServerManagerConfiguration>
     <ProxyGroup name="filters">
-        <SourceProxy name="EndFor" class="ttkEndFor" label="TTK EndFor">
+        <SourceProxy name="ttkEndFor" class="ttkEndFor" label="TTK EndFor">
             <Documentation long_help="TTK EndFor" short_help="TTK EndFor">This filter requests more data as long as the maximum number of elements is not reached. This filter works in conjunction with the ttkForEachRow filter.</Documentation>
 
             <InputProperty name="Data" port_index="0" command="SetInputConnection">

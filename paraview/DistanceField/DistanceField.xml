@@ -2,7 +2,7 @@
 
   <ProxyGroup name="filters">
     <SourceProxy
-      name="DistanceField"
+      name="ttkDistanceField"
       class="ttkDistanceField"
       label="TTK DistanceField">
       <Documentation

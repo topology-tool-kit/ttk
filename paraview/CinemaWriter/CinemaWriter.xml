@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ServerManagerConfiguration>
     <ProxyGroup name="filters">
-        <SourceProxy name="CinemaWriter" class="ttkCinemaWriter" label="TTK CinemaWriter">
+        <SourceProxy name="ttkCinemaWriter" class="ttkCinemaWriter" label="TTK CinemaWriter">
             <Documentation long_help="ttkCinemaWriter" short_help="ttkCinemaWriter">
 This filter stores a data product in a Cinema database, and then returns the unmodified input as output.
 

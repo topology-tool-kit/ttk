@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ServerManagerConfiguration>
     <ProxyGroup name="filters">
-        <SourceProxy name="ForEach" class="ttkForEach" label="TTK ForEach">
+        <SourceProxy name="ttkForEach" class="ttkForEach" label="TTK ForEach">
             <Documentation long_help="TTK ForEach" short_help="TTK ForEach">This filter works in conjunction with the ttkEndFor filter to iterate over blocks, rows, array values, and arrays.</Documentation>
 
             <InputProperty name="Input" command="SetInputConnection">

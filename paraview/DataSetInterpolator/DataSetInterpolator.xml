@@ -6,7 +6,7 @@
   that matches your filter and then model your xml on it -->
   <ProxyGroup name="filters">
     <SourceProxy
-      name="DataSetInterpolator"
+      name="ttkDataSetInterpolator"
       class="ttkDataSetInterpolator"
       label="TTK DataSetInterpolator">
       <Documentation

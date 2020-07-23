@@ -1,9 +1,9 @@
 <ServerManagerConfiguration>
   <ProxyGroup name="sources">
     <SourceProxy
-        name="TopologicalCompressionReader"
+        name="ttkTopologicalCompressionReader"
         class="ttkTopologicalCompressionReader"
-        label="TTKTopologicalCompressionReader">
+        label="TTK TTKTopologicalCompressionReader">
       <Documentation
           long_help="TTK topologicalCompressionReader plugin."
           short_help="Read a .ttk file.">

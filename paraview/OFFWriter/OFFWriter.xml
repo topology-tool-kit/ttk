@@ -2,7 +2,7 @@
 
   <ProxyGroup name="writers">
     <!-- ================================================================== -->
-    <WriterProxy name="OFFWriter" class="ttkOFFWriter" label="OFFWriter">
+    <WriterProxy name="ttkOFFWriter" class="ttkOFFWriter" label="TTK OFFWriter">
         <Documentation
           long_help="Export a VTK Unstructured Grid into an Object Filed Format mesh."
           short_help="Write an .off file.">

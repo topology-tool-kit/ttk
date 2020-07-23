@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ServerManagerConfiguration>
     <ProxyGroup name="filters">
-        <SourceProxy name="GridLayout" class="ttkGridLayout" label="TTK GridLayout">
+        <SourceProxy name="ttkGridLayout" class="ttkGridLayout" label="TTK GridLayout">
             <Documentation long_help="TTK GridLayout plugin." short_help="TTK GridLayout plugin.">This filter computes a grid layout for the blocks of a vtkMultiBlockDataSet.</Documentation>
 
             <InputProperty name="Input" command="SetInputConnection">

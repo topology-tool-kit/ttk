@@ -2,7 +2,7 @@
 
    <ProxyGroup name="sources">
       <!-- ================================================================== -->
-      <SourceProxy name="OFFReader" class="ttkOFFReader" label="OFFReader">
+      <SourceProxy name="ttkOFFReader" class="ttkOFFReader" label="TTK OFFReader">
          <Documentation
             long_help="Import an Object File Format mesh into a VTK Unstructured Grid."
             short_help="Read an .off file.">

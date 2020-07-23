@@ -1,6 +1,6 @@
 <ServerManagerConfiguration>
     <ProxyGroup name="sources">
-        <SourceProxy name="GaussianPointCloud" class="ttkGaussianPointCloud" label="TTK GaussianPointCloud">
+        <SourceProxy name="ttkGaussianPointCloud" class="ttkGaussianPointCloud" label="TTK GaussianPointCloud">
             <Documentation long_help="TTK GaussianPointCloud" short_help="TTK
 GaussianPointCloud">
               This module generates a 1D, 2D or 3D point cloud by randomly
