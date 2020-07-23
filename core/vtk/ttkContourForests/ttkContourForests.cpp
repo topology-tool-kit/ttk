@@ -1128,13 +1128,6 @@ int ttkContourForests::RequestData(vtkInformation *request,
     "DEPRECATED This plugin will be removed in a future release, please use "
     "FTM instead for contour trees and FTR for Reeb graphs.");
 
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(!inputs.size()) {
-    this->printErr("Not enough input information.");
-    return -1;
-  }
-#endif
-
   const auto input = vtkDataSet::GetData(inputVector[0]);
   auto outputSkeletonNodes = vtkPolyData::GetData(outputVector, 0);
   auto outputSkeletonArcs = vtkPolyData::GetData(outputVector, 1);
