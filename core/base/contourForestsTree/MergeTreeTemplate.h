@@ -18,8 +18,7 @@
 ///
 /// \sa ttkContourForests.cpp %for a usage example.
 
-#ifndef MERGETREETEMPLATE_H
-#define MERGETREETEMPLATE_H
+#pragma once
 
 #include "MergeTree.h"
 
@@ -117,9 +116,10 @@ namespace ttk {
       // }
     }
 
-    template <typename scalarType>
+    template <typename scalarType, typename triangulationType>
     SimplexId MergeTree::globalSimplify(const SimplexId posSeed0,
-                                        const SimplexId posSeed1) {
+                                        const SimplexId posSeed1,
+                                        const triangulationType &mesh) {
 
       // if null threshold, leave
       if(!params_->simplifyThreshold) {
@@ -162,7 +162,7 @@ namespace ttk {
       std::vector<std::tuple<SimplexId, SimplexId, scalarType, bool>> pairsJT;
       std::vector<std::tuple<SimplexId, SimplexId, scalarType, bool>> pairsST;
 
-      recoverMTPairs<scalarType>(sortedNodes, pairsJT, pairsST);
+      recoverMTPairs<scalarType>(sortedNodes, pairsJT, pairsST, mesh);
 
       //}
       //---------------------
@@ -511,9 +511,10 @@ namespace ttk {
 
     // Persistence
 
-    template <typename scalarType>
+    template <typename scalarType, typename triangulationType>
     int MergeTree::computePersistencePairs(
-      std::vector<std::tuple<SimplexId, SimplexId, scalarType>> &pairs) {
+      std::vector<std::tuple<SimplexId, SimplexId, scalarType>> &pairs,
+      const triangulationType &mesh) {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(!getNumberOfSuperArcs()) {
         return -1;
@@ -527,7 +528,7 @@ namespace ttk {
         SimplexId curVert = curNode->getVertexId();
         SimplexId termVert = getNode(curNode->getTerminaison())->getVertexId();
 
-        addPair<scalarType>(pairs, curVert, termVert);
+        addPair<scalarType>(pairs, curVert, termVert, mesh);
       }
 
       auto pair_sort
@@ -541,9 +542,10 @@ namespace ttk {
       return 0;
     }
 
-    template <typename scalarType>
+    template <typename scalarType, typename triangulationType>
     int MergeTree::computePersistencePairs(
-      std::vector<std::tuple<SimplexId, SimplexId, scalarType, bool>> &pairs) {
+      std::vector<std::tuple<SimplexId, SimplexId, scalarType, bool>> &pairs,
+      const triangulationType &mesh) {
       // Need to be called on MergeTree, not ContourTree
 
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -565,7 +567,7 @@ namespace ttk {
         SimplexId termVert = getNode(curNode->getTerminaison())->getVertexId();
 
         addPair<scalarType>(
-          pairs, curVert, termVert, treeData_.treeType == TreeType::Join);
+          pairs, curVert, termVert, mesh, treeData_.treeType == TreeType::Join);
       }
 
       auto pair_sort
@@ -579,12 +581,12 @@ namespace ttk {
       return 0;
     }
 
-    template <typename scalarType>
+    template <typename scalarType, typename triangulationType>
     void MergeTree::recoverMTPairs(
       const std::vector<idNode> &sortedNodes,
       std::vector<std::tuple<SimplexId, SimplexId, scalarType, bool>> &pairsJT,
-      std::vector<std::tuple<SimplexId, SimplexId, scalarType, bool>>
-        &pairsST) {
+      std::vector<std::tuple<SimplexId, SimplexId, scalarType, bool>> &pairsST,
+      const triangulationType &mesh) {
       const auto nbNode = getNumberOfNodes();
 
       std::vector<ExtendedUnionFind *> vect_JoinUF(nbNode, nullptr);
@@ -656,7 +658,8 @@ namespace ttk {
                   ExtendedUnionFind *neighUF = vect_JoinUF[neigh]->find();
 
                   if(ni != furtherI) { // keep the more persitent pair
-                    addPair<scalarType>(pairsJT, neighUF->getOrigin(), v, true);
+                    addPair<scalarType>(
+                      pairsJT, neighUF->getOrigin(), v, mesh, true);
                     pendingMinMax.erase(neighUF->getOrigin());
 
                     // std::cout << " jt make pair : " <<
@@ -687,7 +690,7 @@ namespace ttk {
               // std::cout << " add : " << pair_vert.first << " - " <<
               // pair_vert.second << std::endl;
               addPair<scalarType>(
-                pairsJT, pair_vert.first, pair_vert.second, true);
+                pairsJT, pair_vert.first, pair_vert.second, mesh, true);
             }
           }
         } // end para section
@@ -763,7 +766,7 @@ namespace ttk {
 
                   if(ni != furtherI) {
                     addPair<scalarType>(
-                      pairsST, neighUF->getOrigin(), v, false);
+                      pairsST, neighUF->getOrigin(), v, mesh, false);
 
                     pendingMinMax.erase(neighUF->getOrigin());
 
@@ -792,7 +795,7 @@ namespace ttk {
           // Add the pending biggest pair of each component
           for(const auto &pair_vert : pendingMinMax) {
             addPair<scalarType>(
-              pairsST, pair_vert.first, pair_vert.second, false);
+              pairsST, pair_vert.first, pair_vert.second, mesh, false);
           }
         } // end para section
       } // end para
@@ -802,11 +805,12 @@ namespace ttk {
     // Tools
     // {
 
-    template <typename scalarType>
+    template <typename scalarType, typename triangulationType>
     void MergeTree::addPair(
       std::vector<std::tuple<SimplexId, SimplexId, scalarType, bool>> &pairs,
       const SimplexId &orig,
       const SimplexId &term,
+      const triangulationType &mesh,
       const bool goUp) {
       if(params_->simplifyMethod == SimplifMethod::Persist) {
         pairs.emplace_back(
@@ -814,26 +818,27 @@ namespace ttk {
           fabs(getValue<scalarType>(orig) - getValue<scalarType>(term)), goUp);
       } else if(params_->simplifyMethod == SimplifMethod::Span) {
         float coordOrig[3], coordTerm[3], span;
-        mesh_->getVertexPoint(orig, coordOrig[0], coordOrig[1], coordOrig[2]);
-        mesh_->getVertexPoint(term, coordTerm[0], coordTerm[1], coordTerm[2]);
+        mesh->getVertexPoint(orig, coordOrig[0], coordOrig[1], coordOrig[2]);
+        mesh->getVertexPoint(term, coordTerm[0], coordTerm[1], coordTerm[2]);
         span = Geometry::distance(coordOrig, coordTerm);
         pairs.emplace_back(orig, term, span, goUp);
       }
     }
 
-    template <typename scalarType>
+    template <typename scalarType, typename triangulationType>
     void MergeTree::addPair(
       std::vector<std::tuple<SimplexId, SimplexId, scalarType>> &pairs,
       const SimplexId &orig,
-      const SimplexId &term) {
+      const SimplexId &term,
+      const triangulationType &mesh) {
       if(params_->simplifyMethod == SimplifMethod::Persist) {
         pairs.emplace_back(
           orig, term,
           fabs(getValue<scalarType>(orig) - getValue<scalarType>(term)));
       } else if(params_->simplifyMethod == SimplifMethod::Span) {
         float coordOrig[3], coordTerm[3], span;
-        mesh_->getVertexPoint(orig, coordOrig[0], coordOrig[1], coordOrig[2]);
-        mesh_->getVertexPoint(term, coordTerm[0], coordTerm[1], coordTerm[2]);
+        mesh->getVertexPoint(orig, coordOrig[0], coordOrig[1], coordOrig[2]);
+        mesh->getVertexPoint(term, coordTerm[0], coordTerm[1], coordTerm[2]);
         span = Geometry::distance(coordOrig, coordTerm);
         pairs.emplace_back(orig, term, span);
       }
@@ -842,5 +847,3 @@ namespace ttk {
     // }
   } // namespace cf
 } // namespace ttk
-
-#endif /* end of include guard: MERGETREETEMPLATE_H */

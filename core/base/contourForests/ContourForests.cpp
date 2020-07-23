@@ -20,7 +20,7 @@ Interface::Interface(const SimplexId &seed) : seed_(seed) {
 // ------------------------- ContourForests
 
 ContourForests::ContourForests()
-  : ContourForestsTree(new Params(), nullptr, new Scalars()), parallelParams_(),
+  : ContourForestsTree(new Params(), new Scalars()), parallelParams_(),
     parallelData_() {
   this->setDebugMsgPrefix("ContourForests");
   this->printWrn(
@@ -90,8 +90,9 @@ void ContourForests::initInterfaces() {
   // }
 }
 
-void ContourForests::initOverlap() {
-  const SimplexId nbEdges = mesh_->getNumberOfEdges();
+template <typename triangulationType>
+void ContourForests::initOverlap(const triangulationType &mesh) {
+  const SimplexId nbEdges = mesh->getNumberOfEdges();
 
   // if we choose to have less partition, we still want to use all thread for
   // overlap init.
@@ -124,8 +125,8 @@ void ContourForests::initOverlap() {
     vector<vector<SimplexId>> &localLowers = lowers[part];
 
     SimplexId v0, v1;
-    mesh_->getEdgeVertex(e, 0, v0);
-    mesh_->getEdgeVertex(e, 1, v1);
+    mesh->getEdgeVertex(e, 0, v0);
+    mesh->getEdgeVertex(e, 1, v1);
 
     for(idInterface i = 0; i < parallelParams_.nbInterfaces; i++) {
       const bool side0 = isEqHigher(v0, parallelData_.interfaces[i].getSeed());
@@ -482,7 +483,7 @@ void ContourForests::unifyTree(const char treetype) {
 
   // this tree will receive the final tree
   // all variables linked to tmpree have a "_tt" suffix
-  MergeTree tmpTree(params_, mesh_, scalars_, params_->treeType);
+  MergeTree tmpTree(params_, scalars_, params_->treeType);
   // for vert2tree
   tmpTree.flush();
   // statistical reserves

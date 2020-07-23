@@ -29,8 +29,8 @@ namespace ttk {
     // Process
     // {
 
-    template <typename scalarType>
-    int ContourForests::build() {
+    template <typename scalarType, typename triangulationType>
+    int ContourForests::build(const triangulationType &mesh) {
 
 #ifdef TTK_ENABLE_OPENMP
       omp_set_num_threads(parallelParams_.nbThreads);
@@ -42,7 +42,7 @@ namespace ttk {
       // Paramemters
       // -----------
       initTreeType();
-      initNbScalars();
+      initNbScalars(mesh);
       initNbPartitions();
       initSoS();
 
@@ -72,7 +72,7 @@ namespace ttk {
 
       DebugTimer timerInitOverlap;
       initInterfaces();
-      initOverlap();
+      initOverlap(mesh);
       if(params_->debugLevel > 3) {
         for(idInterface i = 0; i < parallelParams_.nbInterfaces; i++) {
           std::cout << "interface : " << static_cast<unsigned>(i);
@@ -100,7 +100,7 @@ namespace ttk {
 
       for(idPartition tree = 0; tree < parallelParams_.nbPartitions; ++tree) {
         // Tree array initialization
-        parallelData_.trees.emplace_back(params_, mesh_, scalars_, tree);
+        parallelData_.trees.emplace_back(params_, scalars_, tree);
       }
 
 #ifdef TTK_ENABLE_OPENMP
@@ -128,7 +128,7 @@ namespace ttk {
       // -------------------------
 
       DebugTimer timerbuild;
-      parallelBuild<scalarType>(vect_baseUF_JT, vect_baseUF_ST);
+      parallelBuild<scalarType>(vect_baseUF_JT, vect_baseUF_ST, mesh);
 
       if(params_->debugLevel >= 4) {
         if(params_->treeType == TreeType::Contour) {
@@ -218,7 +218,7 @@ namespace ttk {
       if(params_->treeType == TreeType::Contour
          && parallelParams_.partitionNum == -1 && params_->simplifyThreshold) {
         DebugTimer timerGlobalSimplify;
-        SimplexId simplifed = globalSimplify<scalarType>(-1, nullVertex);
+        SimplexId simplifed = globalSimplify<scalarType>(-1, nullVertex, mesh);
         if(params_->debugLevel >= 1) {
           printDebug(timerGlobalSimplify, "Simplify Contour tree            ");
           std::cout << " ( " << simplifed << " pairs merged )" << std::endl;
@@ -274,10 +274,12 @@ namespace ttk {
       return 0;
     }
 
-    template <typename scalarType>
+    template <typename scalarType, typename triangulationType>
     int ContourForests::parallelBuild(
       std::vector<std::vector<ExtendedUnionFind *>> &vect_baseUF_JT,
-      std::vector<std::vector<ExtendedUnionFind *>> &vect_baseUF_ST) {
+      std::vector<std::vector<ExtendedUnionFind *>> &vect_baseUF_ST,
+      const triangulationType &mesh) {
+
       std::vector<float> timeSimplify(parallelParams_.nbPartitions, 0);
       std::vector<float> speedProcess(parallelParams_.nbPartitions * 2, 0);
 #ifdef TTK_ENABLE_CONTOUR_FORESTS_PARALLEL_SIMPLIFY
@@ -339,7 +341,7 @@ namespace ttk {
               parallelData_.trees[i].getJoinTree()->build(
                 vect_baseUF_JT[i], std::get<0>(overlaps), std::get<1>(overlaps),
                 std::get<0>(rangeJT), std::get<1>(rangeJT),
-                std::get<0>(seedsPos), std::get<1>(seedsPos));
+                std::get<0>(seedsPos), std::get<1>(seedsPos), mesh);
               speedProcess[i] = partitionSize / timerBuild.getElapsedTime();
 
 #ifdef TTK_ENABLE_CONTOUR_FORESTS_PARALLEL_SIMPLIFY
@@ -372,7 +374,7 @@ namespace ttk {
               parallelData_.trees[i].getSplitTree()->build(
                 vect_baseUF_ST[i], std::get<1>(overlaps), std::get<0>(overlaps),
                 std::get<0>(rangeST), std::get<1>(rangeST),
-                std::get<0>(seedsPos), std::get<1>(seedsPos));
+                std::get<0>(seedsPos), std::get<1>(seedsPos), mesh);
               speedProcess[parallelParams_.nbPartitions + i]
                 = partitionSize / timerBuild.getElapsedTime();
 

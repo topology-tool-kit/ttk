@@ -14,11 +14,10 @@ using namespace cf;
 // Constructors & destructors
 
 MergeTree::MergeTree(Params *const params,
-                     AbstractTriangulation *mesh,
                      Scalars *const scalars,
                      TreeType type,
                      idPartition part)
-  : params_(params), mesh_(mesh), scalars_(scalars) {
+  : params_(params), scalars_(scalars) {
   treeData_.treeType = type;
   treeData_.partition = part;
 }
@@ -32,13 +31,15 @@ MergeTree::~MergeTree() {
 // Process
 // {
 
+template <typename triangulationType>
 int MergeTree::build(vector<ExtendedUnionFind *> &vect_baseUF,
                      const vector<SimplexId> &overlapBefore,
                      const vector<SimplexId> &overlapAfter,
                      SimplexId start,
                      SimplexId end,
                      const SimplexId &posSeed0,
-                     const SimplexId &posSeed1) {
+                     const SimplexId &posSeed1,
+                     const triangulationType &mesh) {
   // idea, work on the neighbohood instead of working on the node itsef.
   // Need lower / higher star construction.
   //
@@ -104,7 +105,8 @@ int MergeTree::build(vector<ExtendedUnionFind *> &vect_baseUF,
     const SimplexId currentVertex = overlapBefore[sortedNode];
     const bool overlapB = isJT;
     const bool overlapA = !isJT;
-    processVertex(currentVertex, vect_baseUF, overlapB, overlapA, timerBegin);
+    processVertex(
+      currentVertex, vect_baseUF, overlapB, overlapA, mesh, timerBegin);
   } // foreach node
 
   // }
@@ -116,7 +118,7 @@ int MergeTree::build(vector<ExtendedUnionFind *> &vect_baseUF,
   // for each vertex of our triangulation
   for(sortedNode = mainStart; sortedNode != mainEnd; sortedNode += step) {
     const SimplexId currentVertex = scalars_->sortedVertices[sortedNode];
-    processVertex(currentVertex, vect_baseUF, false, false, timerBegin);
+    processVertex(currentVertex, vect_baseUF, false, false, mesh, timerBegin);
   } // foreach node
 
   // }
@@ -130,7 +132,8 @@ int MergeTree::build(vector<ExtendedUnionFind *> &vect_baseUF,
     const SimplexId currentVertex = overlapAfter[sortedNode];
     const bool overlapB = !isJT;
     const bool overlapA = isJT;
-    processVertex(currentVertex, vect_baseUF, overlapB, overlapA, timerBegin);
+    processVertex(
+      currentVertex, vect_baseUF, overlapB, overlapA, mesh, timerBegin);
   } // foreach node
 
   // }
@@ -153,7 +156,7 @@ int MergeTree::build(vector<ExtendedUnionFind *> &vect_baseUF,
     corrVertex = getNode(l)->getVertexId();
 
     // case of an isolated point
-    if(!mesh_->getVertexNeighborNumber(corrVertex)) {
+    if(!mesh->getVertexNeighborNumber(corrVertex)) {
       tmp_sa = getNode(l)->getUpSuperArcId(0);
     } else {
       tmp_sa = (idSuperArc)((vect_baseUF[corrVertex])->find()->getData());
@@ -212,17 +215,18 @@ int MergeTree::build(vector<ExtendedUnionFind *> &vect_baseUF,
   return 0;
 }
 
+template <typename triangulationType>
 void MergeTree::processVertex(const SimplexId &currentVertex,
                               vector<ExtendedUnionFind *> &vect_baseUF,
                               const bool overlapB,
                               const bool overlapA,
+                              const triangulationType &mesh,
                               DebugTimer &begin) {
   vector<ExtendedUnionFind *> vect_neighUF;
   ExtendedUnionFind *seed = nullptr, *tmpseed;
 
   SimplexId neighSize;
-  const SimplexId neighborNumber
-    = mesh_->getVertexNeighborNumber(currentVertex);
+  const SimplexId neighborNumber = mesh->getVertexNeighborNumber(currentVertex);
   const bool isJT = treeData_.treeType == TreeType::Join;
 
   idSuperArc currentArc;
@@ -231,7 +235,7 @@ void MergeTree::processVertex(const SimplexId &currentVertex,
 
   // Check UF in neighborhood
   for(SimplexId n = 0; n < neighborNumber; ++n) {
-    mesh_->getVertexNeighbor(currentVertex, n, neighbor);
+    mesh->getVertexNeighbor(currentVertex, n, neighbor);
     // if the vertex is out: consider it null
     tmpseed = vect_baseUF[neighbor];
     // unvisited vertex, we continue.
@@ -1331,8 +1335,8 @@ void MergeTree::printTree2() {
 
 // Clone
 MergeTree *MergeTree::clone() const {
-  MergeTree *newMT = new MergeTree(
-    params_, mesh_, scalars_, treeData_.treeType, treeData_.partition);
+  MergeTree *newMT
+    = new MergeTree(params_, scalars_, treeData_.treeType, treeData_.partition);
 
   newMT->treeData_.superArcs = treeData_.superArcs;
   newMT->treeData_.nodes = treeData_.nodes;
@@ -1609,7 +1613,8 @@ tuple<idNode, idNode, SimplexId> MergeTree::createReceptArc(
 // ---------------------- Debug
 // {
 
-bool MergeTree::verifyTree(void) {
+template <typename triangulationType>
+bool MergeTree::verifyTree(const triangulationType &mesh) {
   bool res = true;
 
 #ifdef TTK_ENABLE_OPENMP
@@ -1730,7 +1735,7 @@ bool MergeTree::verifyTree(void) {
     }
 
     // verify segmentation information
-    const auto &nbVert = mesh_->getNumberOfVertices();
+    const auto &nbVert = mesh->getNumberOfVertices();
     vector<bool> segmSeen(nbVert, false);
 
     for(idSuperArc aid = 0; aid < nbArcs; aid++) {

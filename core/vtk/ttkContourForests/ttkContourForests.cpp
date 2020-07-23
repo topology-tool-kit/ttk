@@ -1081,7 +1081,7 @@ void ttkContourForests::getTree() {
   this->setSimplificationThreshold(simplificationThreshold_);
   // build
   switch(vtkInputScalars_->GetDataType()) {
-    vtkTemplateMacro(this->build<VTK_TT>());
+    vtkTemplateMacro(this->build<VTK_TT>(triangulation_->getData()));
   }
 
   // ce qui est fait n'est plus à faire
