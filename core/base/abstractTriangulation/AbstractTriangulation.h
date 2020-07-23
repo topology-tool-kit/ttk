@@ -27,18 +27,18 @@
 
 #define ttkTemplateMacroCase(triangulationType, triangulationClass, call) \
   case triangulationType: {                                               \
-    typedef triangulationClass TTK_TT;                                    \
+    using TTK_TT = triangulationClass;                                    \
     call;                                                                 \
   }; break
 
-#define ttkTemplateMacro(triangulationType, call)                          \
-  switch(triangulationType) {                                              \
-    ttkTemplateMacroCase(                                                  \
-      Triangulation::Type::EXPLICIT, ExplicitTriangulation, call);         \
-    ttkTemplateMacroCase(                                                  \
-      Triangulation::Type::IMPLICIT, ImplicitTriangulation, call);         \
-    ttkTemplateMacroCase(                                                  \
-      Triangulation::Type::PERIODIC, PeriodicImplicitTriangulation, call); \
+#define ttkTemplateMacro(triangulationType, call)                            \
+  switch(triangulationType) {                                                \
+    ttkTemplateMacroCase(                                                    \
+      ttk::Triangulation::Type::EXPLICIT, ttk::ExplicitTriangulation, call); \
+    ttkTemplateMacroCase(                                                    \
+      ttk::Triangulation::Type::IMPLICIT, ttk::ImplicitTriangulation, call); \
+    ttkTemplateMacroCase(ttk::Triangulation::Type::PERIODIC,                 \
+                         ttk::PeriodicImplicitTriangulation, call);          \
   }
 
 namespace ttk {

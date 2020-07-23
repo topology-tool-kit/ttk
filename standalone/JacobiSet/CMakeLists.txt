@@ -7,12 +7,11 @@ if(TARGET ttkJacobiSet)
   target_link_libraries(${PROJECT_NAME}
     PRIVATE
       ttkJacobiSet
-      ttkProgramBase
     )
   set_target_properties(${PROJECT_NAME}
     PROPERTIES
       INSTALL_RPATH
-        "${CMAKE_INSTALL_PREFIX}/lib64/TopologyToolKit;${CMAKE_INSTALL_PREFIX}/lib/ttk"
+        "${CMAKE_INSTALL_RPATH}"
     )
   install(
     TARGETS

@@ -1,49 +1,28 @@
 #include "JacobiSet.h"
 
-template <class dataTypeU, class dataTypeV>
-ttk::JacobiSet<dataTypeU, dataTypeV>::JacobiSet() {
-
-  vertexNumber_ = 0;
-
-  uField_ = nullptr;
-  vField_ = nullptr;
-
-  tetList_ = nullptr;
-
-  edgeList_ = nullptr;
-  edgeFanLinkEdgeLists_ = nullptr;
-  edgeFans_ = nullptr;
-  sosOffsetsU_ = nullptr;
-  sosOffsetsV_ = nullptr;
-
-  triangulation_ = nullptr;
-}
-
-template <class dataTypeU, class dataTypeV>
-ttk::JacobiSet<dataTypeU, dataTypeV>::~JacobiSet() {
-}
-
-template <class dataTypeU, class dataTypeV>
-int ttk::JacobiSet<dataTypeU, dataTypeV>::execute(
-  std::vector<std::pair<SimplexId, char>> &jacobiSet) {
+template <class dataTypeU, class dataTypeV, typename triangulationType>
+int ttk::JacobiSet::execute(std::vector<std::pair<SimplexId, char>> &jacobiSet,
+                            const dataTypeU *const uField,
+                            const dataTypeV *const vField,
+                            const triangulationType &triangulation) {
 
   Timer t;
 
   // check the consistency of the variables -- to adapt
 #ifndef TTK_ENABLE_KAMIKAZE
-  if((!triangulation_) || (triangulation_->isEmpty())) {
+  if((triangulation.isEmpty())) {
     if(vertexNumber_) {
-      return executeLegacy(jacobiSet);
+      return executeLegacy(jacobiSet, uField, vField, triangulation);
     }
     return -1;
   }
-  if(!uField_)
+  if(!uField)
     return -2;
-  if(!vField_)
+  if(!vField)
     return -3;
 #endif
 
-  SimplexId vertexNumber = triangulation_->getNumberOfVertices();
+  SimplexId vertexNumber = triangulation.getNumberOfVertices();
 
   if(!sosOffsetsU_) {
     // let's use our own local copy
@@ -73,7 +52,7 @@ int ttk::JacobiSet<dataTypeU, dataTypeV>::execute(
 
   jacobiSet.clear();
 
-  SimplexId edgeNumber = triangulation_->getNumberOfEdges();
+  SimplexId edgeNumber = triangulation.getNumberOfEdges();
 
   std::vector<std::vector<std::pair<SimplexId, char>>> threadedCriticalTypes(
     threadNumber_);
@@ -83,7 +62,7 @@ int ttk::JacobiSet<dataTypeU, dataTypeV>::execute(
 #endif
   for(SimplexId i = 0; i < edgeNumber; i++) {
 
-    char type = getCriticalType(i);
+    char type = getCriticalType(i, uField, vField, triangulation);
 
     if(type != -2) {
       // -2: regular vertex
@@ -103,70 +82,61 @@ int ttk::JacobiSet<dataTypeU, dataTypeV>::execute(
     }
   }
 
-  if(debugLevel_ >= Debug::infoMsg) {
-    SimplexId minimumNumber = 0, saddleNumber = 0, maximumNumber = 0,
-              monkeySaddleNumber = 0;
+  SimplexId minimumNumber = 0, saddleNumber = 0, maximumNumber = 0,
+            monkeySaddleNumber = 0;
 
-    for(SimplexId i = 0; i < (SimplexId)jacobiSet.size(); i++) {
-      switch(jacobiSet[i].second) {
-        case 0:
-          minimumNumber++;
-          break;
-        case 1:
-          saddleNumber++;
-          break;
-        case 2:
-          maximumNumber++;
-          break;
-        case -1:
-          monkeySaddleNumber++;
-          break;
-      }
-    }
-
-    {
-      std::stringstream msg;
-      msg << "[JacobiSet] Minimum edges: " << minimumNumber << std::endl;
-      msg << "[JacobiSet] Saddle edges: " << saddleNumber << std::endl;
-      msg << "[JacobiSet] Maximum edges: " << maximumNumber << std::endl;
-      msg << "[JacobiSet] Multi-saddle edges: " << monkeySaddleNumber
-          << std::endl;
-      dMsg(std::cout, msg.str(), Debug::infoMsg);
+  for(SimplexId i = 0; i < (SimplexId)jacobiSet.size(); i++) {
+    switch(jacobiSet[i].second) {
+      case 0:
+        minimumNumber++;
+        break;
+      case 1:
+        saddleNumber++;
+        break;
+      case 2:
+        maximumNumber++;
+        break;
+      case -1:
+        monkeySaddleNumber++;
+        break;
     }
   }
 
-  {
-    std::stringstream msg;
-    msg << "[JacobiSet] Data-set (" << edgeNumber << " edges) processed in "
-        << t.getElapsedTime() << " s. (" << threadNumber_ << " thread(s))."
-        << std::endl;
-    msg << "[JacobiSet] Jacobi edge rate: "
-        << 100 * (jacobiSet.size() / ((double)edgeNumber)) << "%" << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
-  }
+  this->printMsg(
+    std::vector<std::vector<std::string>>{
+      {"#Minimum edges", std::to_string(minimumNumber)},
+      {"#Saddle edges", std::to_string(saddleNumber)},
+      {"#Maximum edges", std::to_string(maximumNumber)},
+      {"#Multi-saddle edges", std::to_string(monkeySaddleNumber)}},
+    debug::Priority::DETAIL);
+
+  this->printMsg(
+    "Data-set processed", 1.0, t.getElapsedTime(), this->threadNumber_);
+  this->printMsg("Jacobi edge rate: "
+                 + std::to_string(100.0 * jacobiSet.size() / (double)edgeNumber)
+                 + "%");
 
   return 0;
 }
 
-template <class dataTypeU, class dataTypeV>
-int ttk::JacobiSet<dataTypeU, dataTypeV>::executeLegacy(
-  std::vector<std::pair<SimplexId, char>> &jacobiSet) {
+template <class dataTypeU, class dataTypeV, typename triangulationType>
+int ttk::JacobiSet::executeLegacy(
+  std::vector<std::pair<SimplexId, char>> &jacobiSet,
+  const dataTypeU *const uField,
+  const dataTypeV *const vField,
+  const triangulationType &triangulation) {
 
   Timer t;
 
-  {
-    std::stringstream msg;
-    msg << "[JacobiSet] Using legacy implementation..." << std::endl;
-    dMsg(std::cout, msg.str(), Debug::infoMsg);
-  }
+  this->printWrn("Using legacy implementation...");
 
   // check the consistency of the variables -- to adapt
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!vertexNumber_)
     return -1;
-  if(!uField_)
+  if(!uField)
     return -2;
-  if(!vField_)
+  if(!vField)
     return -3;
   if(!edgeList_)
     return -4;
@@ -181,9 +151,6 @@ int ttk::JacobiSet<dataTypeU, dataTypeV>::executeLegacy(
   SimplexId count = 0;
 
   jacobiSet.clear();
-
-  dataTypeU *uField = (dataTypeU *)uField_;
-  dataTypeV *vField = (dataTypeV *)vField_;
 
   // distance fields (not really memory efficient)
   // for each thread
@@ -297,62 +264,53 @@ int ttk::JacobiSet<dataTypeU, dataTypeV>::executeLegacy(
     }
   }
 
-  if(debugLevel_ >= Debug::infoMsg) {
-    SimplexId minimumNumber = 0, saddleNumber = 0, maximumNumber = 0,
-              monkeySaddleNumber = 0;
+  SimplexId minimumNumber = 0, saddleNumber = 0, maximumNumber = 0,
+            monkeySaddleNumber = 0;
 
-    for(SimplexId i = 0; i < (SimplexId)jacobiSet.size(); i++) {
-      switch(jacobiSet[i].second) {
-        case 0:
-          minimumNumber++;
-          break;
-        case 1:
-          saddleNumber++;
-          break;
-        case 2:
-          maximumNumber++;
-          break;
-        case -1:
-          monkeySaddleNumber++;
-          break;
-      }
-    }
-
-    {
-      std::stringstream msg;
-      msg << "[JacobiSet] Minimum edges: " << minimumNumber << std::endl;
-      msg << "[JacobiSet] Saddle edges: " << saddleNumber << std::endl;
-      msg << "[JacobiSet] Maximum edges: " << maximumNumber << std::endl;
-      msg << "[JacobiSet] Multi-saddle edges: " << monkeySaddleNumber
-          << std::endl;
-      dMsg(std::cout, msg.str(), Debug::infoMsg);
+  for(SimplexId i = 0; i < (SimplexId)jacobiSet.size(); i++) {
+    switch(jacobiSet[i].second) {
+      case 0:
+        minimumNumber++;
+        break;
+      case 1:
+        saddleNumber++;
+        break;
+      case 2:
+        maximumNumber++;
+        break;
+      case -1:
+        monkeySaddleNumber++;
+        break;
     }
   }
 
-  {
-    std::stringstream msg;
-    msg << "[JacobiSet] Data-set (" << edgeList_->size()
-        << " edges) processed in " << t.getElapsedTime() << " s. ("
-        << threadNumber_ << " thread(s))." << std::endl;
-    msg << "[JacobiSet] Jacobi edge rate: "
-        << 100 * (jacobiSet.size() / ((double)edgeList_->size())) << "%"
-        << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
-  }
+  this->printMsg(
+    std::vector<std::vector<std::string>>{
+      {"#Minimum edges", std::to_string(minimumNumber)},
+      {"#Saddle edges", std::to_string(saddleNumber)},
+      {"#Maximum edges", std::to_string(maximumNumber)},
+      {"#Multi-saddle edges", std::to_string(monkeySaddleNumber)}},
+    debug::Priority::DETAIL);
+
+  this->printMsg(
+    "Data-set processed", 1.0, t.getElapsedTime(), this->threadNumber_);
+  this->printMsg(
+    "Jacobi edge rate: "
+    + std::to_string(100.0 * (jacobiSet.size() / ((double)edgeList_->size())))
+    + "%");
 
   return 0;
 }
 
-template <class dataTypeU, class dataTypeV>
-char ttk::JacobiSet<dataTypeU, dataTypeV>::getCriticalType(
-  const SimplexId &edgeId) {
-
-  dataTypeU *uField = (dataTypeU *)uField_;
-  dataTypeV *vField = (dataTypeV *)vField_;
+template <class dataTypeU, class dataTypeV, typename triangulationType>
+char ttk::JacobiSet::getCriticalType(const SimplexId &edgeId,
+                                     const dataTypeU *const uField,
+                                     const dataTypeV *const vField,
+                                     const triangulationType &triangulation) {
 
   SimplexId vertexId0 = -1, vertexId1 = -1;
-  triangulation_->getEdgeVertex(edgeId, 0, vertexId0);
-  triangulation_->getEdgeVertex(edgeId, 1, vertexId1);
+  triangulation.getEdgeVertex(edgeId, 0, vertexId0);
+  triangulation.getEdgeVertex(edgeId, 1, vertexId1);
 
   double projectedPivotVertex[2];
   projectedPivotVertex[0] = uField[vertexId0];
@@ -370,7 +328,7 @@ char ttk::JacobiSet<dataTypeU, dataTypeV>::getCriticalType(
   rangeNormal[0] = -rangeEdge[1];
   rangeNormal[1] = rangeEdge[0];
 
-  SimplexId starNumber = triangulation_->getEdgeStarNumber(edgeId);
+  SimplexId starNumber = triangulation.getEdgeStarNumber(edgeId);
   std::vector<SimplexId> lowerNeighbors, upperNeighbors;
 
   SimplexId neighborNumber = 0;
@@ -378,12 +336,12 @@ char ttk::JacobiSet<dataTypeU, dataTypeV>::getCriticalType(
   for(SimplexId i = 0; i < starNumber; i++) {
 
     SimplexId tetId = -1;
-    triangulation_->getEdgeStar(edgeId, i, tetId);
+    triangulation.getEdgeStar(edgeId, i, tetId);
 
-    SimplexId vertexNumber = triangulation_->getCellVertexNumber(tetId);
+    SimplexId vertexNumber = triangulation.getCellVertexNumber(tetId);
     for(SimplexId j = 0; j < vertexNumber; j++) {
       SimplexId vertexId = -1;
-      triangulation_->getCellVertex(tetId, j, vertexId);
+      triangulation.getCellVertex(tetId, j, vertexId);
 
       if((vertexId != -1) && (vertexId != vertexId0)
          && (vertexId != vertexId1)) {
@@ -466,11 +424,9 @@ char ttk::JacobiSet<dataTypeU, dataTypeV>::getCriticalType(
             } else if(distance > 0) {
               upperNeighbors.push_back(vertexId);
             } else {
-              std::stringstream msg;
-              msg << "[JacobiSet] "
-                  << "Inconsistent (non-bijective?) offsets for vertex #"
-                  << vertexId << std::endl;
-              dMsg(std::cerr, msg.str(), Debug::infoMsg);
+              this->printWrn(
+                "Inconsistent (non-bijective?) offsets for vertex #"
+                + std::to_string(vertexId));
             }
           }
         }
@@ -510,16 +466,16 @@ char ttk::JacobiSet<dataTypeU, dataTypeV>::getCriticalType(
   for(SimplexId i = 0; i < starNumber; i++) {
 
     SimplexId tetId = -1;
-    triangulation_->getEdgeStar(edgeId, i, tetId);
+    triangulation.getEdgeStar(edgeId, i, tetId);
 
-    SimplexId vertexNumber = triangulation_->getCellVertexNumber(tetId);
+    SimplexId vertexNumber = triangulation.getCellVertexNumber(tetId);
     for(SimplexId j = 0; j < vertexNumber; j++) {
       SimplexId edgeVertexId0 = -1;
-      triangulation_->getCellVertex(tetId, j, edgeVertexId0);
+      triangulation.getCellVertex(tetId, j, edgeVertexId0);
       if((edgeVertexId0 != vertexId0) && (edgeVertexId0 != vertexId1)) {
         for(SimplexId k = j + 1; k < vertexNumber; k++) {
           SimplexId edgeVertexId1 = -1;
-          triangulation_->getCellVertex(tetId, k, edgeVertexId1);
+          triangulation.getCellVertex(tetId, k, edgeVertexId1);
           if((edgeVertexId1 != vertexId0) && (edgeVertexId1 != vertexId1)) {
             // processing the edge (edgeVertexId0, edgeVertexId1)
 
@@ -595,20 +551,19 @@ char ttk::JacobiSet<dataTypeU, dataTypeV>::getCriticalType(
 }
 
 template <class dataTypeU, class dataTypeV>
-int ttk::JacobiSet<dataTypeU, dataTypeV>::perturbate(
-  const dataTypeU &uEpsilon, const dataTypeV &vEpsilon) const {
+int ttk::JacobiSet::perturbate(const dataTypeU *const uField,
+                               const dataTypeV *const vField,
+                               const dataTypeU uEpsilon,
+                               const dataTypeV vEpsilon) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(!uField_)
+  if(!uField)
     return -1;
-  if(!vField_)
+  if(!vField)
     return -2;
   if(!vertexNumber_)
     return -3;
 #endif
-
-  dataTypeU *uField = (dataTypeU *)uField_;
-  dataTypeV *vField = (dataTypeV *)vField_;
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)

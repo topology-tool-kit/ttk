@@ -6,4 +6,4 @@ HEADERS
   ttkReebSpace.h
 DEPENDS
   reebSpace
-  ttkTriangulationAlgorithm
+  ttkAlgorithm

@@ -25,71 +25,61 @@
 ///
 /// \sa ttkFiberSurface.cpp %for a usage example.
 
-#ifndef _FIBERSURFACE_H
-#define _FIBERSURFACE_H
+#pragma once
 
 // standard includes
-#ifdef __APPLE__
-#include <algorithm>
-#else
-#ifdef _WIN32
-#include <algorithm>
-#else
-#ifdef __clang__
+#if defined(__APPLE__) || defined(_WIN32) || defined(__clang__)
 #include <algorithm>
 #include <numeric>
 #else
 #include <parallel/algorithm>
 #endif
-#endif
-#endif
 
+#include <array>
 #include <queue>
 
 // base code includes
-#include <Geometry.h>
 #ifdef TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE
 #include <RangeDrivenOctree.h>
 #endif
+
+#include <Debug.h>
+#include <Geometry.h>
 #include <Triangulation.h>
-#include <Wrapper.h>
 
 namespace ttk {
 
-  class FiberSurface : public Debug {
+  class FiberSurface : virtual public Debug {
 
   public:
-    class Vertex {
-
-    public:
-      bool isBasePoint_, isIntersectionPoint_;
-      SimplexId localId_, globalId_, polygonEdgeId_;
+    struct Vertex {
+      bool isBasePoint_{}, isIntersectionPoint_{};
+      SimplexId localId_{}, globalId_{}, polygonEdgeId_{};
       // TODO also encode the vertex ids of the triangle of the input mesh
       // where this point has been computed (for constrained triangulation)
-      std::pair<SimplexId, SimplexId> meshEdge_;
-      double p_[3], t_;
-      std::pair<double, double> uv_;
+      std::pair<SimplexId, SimplexId> meshEdge_{};
+      std::array<double, 3> p_{};
+      double t_{};
+      std::pair<double, double> uv_{};
     };
 
-    class Triangle {
-
-    public:
-      SimplexId vertexIds_[3], tetId_, caseId_, polygonEdgeId_;
+    struct Triangle {
+      std::array<SimplexId, 3> vertexIds_{};
+      SimplexId tetId_{}, caseId_{}, polygonEdgeId_{};
     };
 
     FiberSurface();
 
-    ~FiberSurface();
-
 #ifdef TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE
-    template <class dataTypeU, class dataTypeV>
-    inline int buildOctree();
+    template <class dataTypeU, class dataTypeV, typename triangulationType>
+    inline int buildOctree(const triangulationType *const triangulation);
 #endif
 
-    template <class dataTypeU, class dataTypeV>
+    template <class dataTypeU, class dataTypeV, typename triangulationType>
     inline int computeContour(const std::pair<double, double> &rangePoint0,
                               const std::pair<double, double> &rangePoint1,
                               const std::vector<SimplexId> &seedTetList,
+                              const triangulationType *const triangulation,
                               const SimplexId &polygonEdgeId = 0) const;
 
     template <class dataTypeU, class dataTypeV>
@@ -99,19 +89,21 @@ namespace ttk {
       const std::vector<SimplexId> &seedTetList,
       const std::vector<SimplexId> *edgeIdList = NULL) const;
 
-    template <class dataTypeU, class dataTypeV>
+    template <class dataTypeU, class dataTypeV, typename triangulationType>
     inline int computeSurface(const std::pair<double, double> &rangePoint0,
                               const std::pair<double, double> &rangePoint1,
+                              const triangulationType *const triangulation,
                               const SimplexId &polygonEdgeId = 0) const;
 
-    template <class dataTypeU, class dataTypeV>
-    inline int computeSurface();
+    template <class dataTypeU, class dataTypeV, typename triangulationType>
+    inline int computeSurface(const triangulationType *const triangulation);
 
 #ifdef TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE
-    template <class dataTypeU, class dataTypeV>
+    template <class dataTypeU, class dataTypeV, typename triangulationType>
     inline int
       computeSurfaceWithOctree(const std::pair<double, double> &rangePoint0,
                                const std::pair<double, double> &rangePoint1,
+                               const triangulationType *const triangulation,
                                const SimplexId &polygonEdgeId) const;
 #endif
 
@@ -122,15 +114,16 @@ namespace ttk {
                         const bool &intersectionRemesh = false);
 
 #ifdef TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE
-    inline int flushOctree() {
-      return octree_.flush();
+    inline void flushOctree() {
+      octree_.flush();
     }
 #endif
 
-    template <class dataTypeU, class dataTypeV>
+    template <class dataTypeU, class dataTypeV, typename triangulationType>
     inline int processTetrahedron(const SimplexId &tetId,
                                   const std::pair<double, double> &rangePoint0,
                                   const std::pair<double, double> &rangePoint1,
+                                  const triangulationType *const triangulation,
                                   const SimplexId &polygonEdgeId = 0) const;
 
     inline int setGlobalVertexList(std::vector<Vertex> *globalList) {
@@ -208,14 +201,12 @@ namespace ttk {
       return 0;
     }
 
-    inline int setupTriangulation(Triangulation *triangulation) {
-      triangulation_ = triangulation;
-
+    inline void
+      preconditionTriangulation(AbstractTriangulation *triangulation) {
       // for breadth-first search traversals
-      if(triangulation_) {
-        triangulation_->preconditionCellNeighbors();
+      if(triangulation != nullptr) {
+        triangulation->preconditionCellNeighbors();
       }
-      return 0;
     }
 
     inline int setVertexList(const SimplexId &polygonEdgeId,
@@ -232,19 +223,19 @@ namespace ttk {
 
   protected:
     struct IntersectionTriangle {
-      SimplexId caseId_;
+      SimplexId caseId_{};
       // use negative values for new triangles
-      SimplexId triangleId_;
-      SimplexId polygonEdgeId_;
+      SimplexId triangleId_{};
+      SimplexId polygonEdgeId_{};
       // use negative values for new vertices
-      SimplexId vertexIds_[3];
-      std::pair<double, double> uv_[3];
-      double t_[3];
-      double p_[3][3];
-      std::pair<double, double> intersection_;
+      std::array<SimplexId, 3> vertexIds_{};
+      std::array<std::pair<double, double>, 3> uv_{};
+      std::array<double, 3> t_{};
+      std::array<std::array<double, 3>, 3> p_{};
+      std::pair<double, double> intersection_{};
     };
 
-    template <class dataTypeU, class dataTypeV>
+    template <class dataTypeU, class dataTypeV, typename triangulationType>
     inline int computeBaseTriangle(
       const SimplexId &tetId,
       const SimplexId &localEdgeId0,
@@ -262,9 +253,10 @@ namespace ttk {
       std::vector<std::vector<double>> &basePoints,
       std::vector<std::pair<double, double>> &basePointProections,
       std::vector<double> &basePointParameterization,
-      std::vector<std::pair<SimplexId, SimplexId>> &baseEdges) const;
+      std::vector<std::pair<SimplexId, SimplexId>> &baseEdges,
+      const triangulationType *const triangulation) const;
 
-    template <class dataTypeU, class dataTYpeV>
+    template <class dataTypeU, class dataTYpeV, typename triangulationType>
     inline int computeCase0(const SimplexId &polygonEdgeId,
                             const SimplexId &tetId,
                             const SimplexId &localEdgeId0,
@@ -278,9 +270,10 @@ namespace ttk {
                             const SimplexId &localEdgeId2,
                             const double &t2,
                             const double &u2,
-                            const double &v2) const;
+                            const double &v2,
+                            const triangulationType *const triangulation) const;
 
-    template <class dataTypeU, class dataTYpeV>
+    template <class dataTypeU, class dataTYpeV, typename triangulationType>
     inline int computeCase1(const SimplexId &polygonEdgeId,
                             const SimplexId &tetId,
                             const SimplexId &localEdgeId0,
@@ -294,9 +287,10 @@ namespace ttk {
                             const SimplexId &localEdgeId2,
                             const double &t2,
                             const double &u2,
-                            const double &v2) const;
+                            const double &v2,
+                            const triangulationType *const triangulation) const;
 
-    template <class dataTypeU, class dataTYpeV>
+    template <class dataTypeU, class dataTYpeV, typename triangulationType>
     inline int computeCase2(const SimplexId &polygonEdgeId,
                             const SimplexId &tetId,
                             const SimplexId &localEdgeId0,
@@ -310,9 +304,10 @@ namespace ttk {
                             const SimplexId &localEdgeId2,
                             const double &t2,
                             const double &u2,
-                            const double &v2) const;
+                            const double &v2,
+                            const triangulationType *const triangulation) const;
 
-    template <class dataTypeU, class dataTYpeV>
+    template <class dataTypeU, class dataTYpeV, typename triangulationType>
     inline int computeCase3(const SimplexId &polygonEdgeId,
                             const SimplexId &tetId,
                             const SimplexId &localEdgeId0,
@@ -326,9 +321,10 @@ namespace ttk {
                             const SimplexId &localEdgeId2,
                             const double &t2,
                             const double &u2,
-                            const double &v2) const;
+                            const double &v2,
+                            const triangulationType *const triangulation) const;
 
-    template <class dataTypeU, class dataTYpeV>
+    template <class dataTypeU, class dataTYpeV, typename triangulationType>
     inline int computeCase4(const SimplexId &polygonEdgeId,
                             const SimplexId &tetId,
                             const SimplexId &localEdgeId0,
@@ -342,7 +338,8 @@ namespace ttk {
                             const SimplexId &localEdgeId2,
                             const double &t2,
                             const double &u2,
-                            const double &v2) const;
+                            const double &v2,
+                            const triangulationType *const triangulation) const;
 
     int computeTriangleFiber(
       const SimplexId &tetId,
@@ -485,35 +482,36 @@ namespace ttk {
       const std::vector<std::pair<SimplexId, SimplexId>> &triangles,
       const double &distanceThreshold) const;
 
-    bool pointSnapping_;
+    bool pointSnapping_{false};
 
-    SimplexId pointNumber_, tetNumber_, polygonEdgeNumber_;
-    const void *uField_, *vField_;
-    const float *pointSet_;
-    const SimplexId *tetList_;
-    const std::vector<std::vector<SimplexId>> *tetNeighbors_;
-    SimplexId edgeImplicitEncoding_[12];
+    SimplexId pointNumber_{}, tetNumber_{}, polygonEdgeNumber_{};
+    const void *uField_{}, *vField_{};
+    const float *pointSet_{};
+    const SimplexId *tetList_{};
+    const std::vector<std::vector<SimplexId>> *tetNeighbors_{};
+    std::array<SimplexId, 12> edgeImplicitEncoding_{
+      0, 1, 0, 2, 0, 3, 3, 1, 2, 1, 2, 3};
 
-    double edgeCollapseThreshold_, pointSnappingThreshold_;
+    double edgeCollapseThreshold_{Geometry::powIntTen(-FLT_DIG + 2)},
+      pointSnappingThreshold_{Geometry::powIntTen(-FLT_DIG + 1)};
 
     const std::vector<std::pair<std::pair<double, double>,
-                                std::pair<double, double>>> *polygon_;
+                                std::pair<double, double>>> *polygon_{};
 
-    std::vector<Vertex> *globalVertexList_;
-    std::vector<std::vector<Vertex> *> polygonEdgeVertexLists_;
-    std::vector<std::vector<Triangle> *> polygonEdgeTriangleLists_;
-
-    Triangulation *triangulation_;
+    std::vector<Vertex> *globalVertexList_{};
+    std::vector<std::vector<Vertex> *> polygonEdgeVertexLists_{};
+    std::vector<std::vector<Triangle> *> polygonEdgeTriangleLists_{};
 
 #ifdef TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE
-    RangeDrivenOctree octree_;
+    RangeDrivenOctree octree_{};
 #endif
   };
 } // namespace ttk
 
 #ifdef TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE
-template <class dataTypeU, class dataTypeV>
-inline int ttk::FiberSurface::buildOctree() {
+template <class dataTypeU, class dataTypeV, typename triangulationType>
+inline int
+  ttk::FiberSurface::buildOctree(const triangulationType *const triangulation) {
 
   if(!uField_)
     return -1;
@@ -524,9 +522,7 @@ inline int ttk::FiberSurface::buildOctree() {
 
     octree_.setDebugLevel(debugLevel_);
     octree_.setThreadNumber(threadNumber_);
-    if(triangulation_) {
-      octree_.setTriangulation(triangulation_);
-    } else {
+    if(!triangulation) {
       octree_.setCellList(tetList_);
       octree_.setCellNumber(tetNumber_);
       octree_.setPointList(pointSet_);
@@ -534,14 +530,14 @@ inline int ttk::FiberSurface::buildOctree() {
     }
     octree_.setRange(uField_, vField_);
 
-    octree_.build<dataTypeU, dataTypeV>();
+    octree_.build<dataTypeU, dataTypeV>(triangulation);
   }
 
   return 0;
 }
 #endif
 
-template <class dataTypeU, class dataTypeV>
+template <class dataTypeU, class dataTypeV, typename triangulationType>
 inline int ttk::FiberSurface::computeBaseTriangle(
   const SimplexId &tetId,
   const SimplexId &localEdgeId0,
@@ -559,7 +555,8 @@ inline int ttk::FiberSurface::computeBaseTriangle(
   std::vector<std::vector<double>> &basePoints,
   std::vector<std::pair<double, double>> &basePointProjections,
   std::vector<double> &basePointParameterization,
-  std::vector<std::pair<SimplexId, SimplexId>> &baseEdges) const {
+  std::vector<std::pair<SimplexId, SimplexId>> &baseEdges,
+  const triangulationType *const triangulation) const {
 
   basePoints.resize(3);
   basePointProjections.resize(3);
@@ -573,15 +570,15 @@ inline int ttk::FiberSurface::computeBaseTriangle(
     switch(i) {
 
       case 0:
-        if(!triangulation_) {
+        if(!triangulation) {
           vertexId0
             = tetList_[5 * tetId + 1 + edgeImplicitEncoding_[2 * localEdgeId0]];
           vertexId1 = tetList_[5 * tetId + 1
                                + edgeImplicitEncoding_[2 * localEdgeId0 + 1]];
         } else {
-          triangulation_->getCellVertex(
+          triangulation->getCellVertex(
             tetId, edgeImplicitEncoding_[2 * localEdgeId0], vertexId0);
-          triangulation_->getCellVertex(
+          triangulation->getCellVertex(
             tetId, edgeImplicitEncoding_[2 * localEdgeId0 + 1], vertexId1);
         }
         basePointProjections[i].first = u0;
@@ -590,15 +587,15 @@ inline int ttk::FiberSurface::computeBaseTriangle(
         break;
 
       case 1:
-        if(!triangulation_) {
+        if(!triangulation) {
           vertexId0
             = tetList_[5 * tetId + 1 + edgeImplicitEncoding_[2 * localEdgeId1]];
           vertexId1 = tetList_[5 * tetId + 1
                                + edgeImplicitEncoding_[2 * localEdgeId1 + 1]];
         } else {
-          triangulation_->getCellVertex(
+          triangulation->getCellVertex(
             tetId, edgeImplicitEncoding_[2 * localEdgeId1], vertexId0);
-          triangulation_->getCellVertex(
+          triangulation->getCellVertex(
             tetId, edgeImplicitEncoding_[2 * localEdgeId1 + 1], vertexId1);
         }
         basePointProjections[i].first = u1;
@@ -607,15 +604,15 @@ inline int ttk::FiberSurface::computeBaseTriangle(
         break;
 
       case 2:
-        if(!triangulation_) {
+        if(!triangulation) {
           vertexId0
             = tetList_[5 * tetId + 1 + edgeImplicitEncoding_[2 * localEdgeId2]];
           vertexId1 = tetList_[5 * tetId + 1
                                + edgeImplicitEncoding_[2 * localEdgeId2 + 1]];
         } else {
-          triangulation_->getCellVertex(
+          triangulation->getCellVertex(
             tetId, edgeImplicitEncoding_[2 * localEdgeId2], vertexId0);
-          triangulation_->getCellVertex(
+          triangulation->getCellVertex(
             tetId, edgeImplicitEncoding_[2 * localEdgeId2 + 1], vertexId1);
         }
         basePointProjections[i].first = u2;
@@ -638,15 +635,15 @@ inline int ttk::FiberSurface::computeBaseTriangle(
     basePoints[i].resize(3);
 
     float pA[3], pB[3];
-    if(triangulation_) {
-      triangulation_->getVertexPoint(vertexId0, pA[0], pA[1], pA[2]);
-      triangulation_->getVertexPoint(vertexId1, pB[0], pB[1], pB[2]);
+    if(triangulation) {
+      triangulation->getVertexPoint(vertexId0, pA[0], pA[1], pA[2]);
+      triangulation->getVertexPoint(vertexId1, pB[0], pB[1], pB[2]);
     }
 
     for(int j = 0; j < 3; j++) {
 
       double c0, c1;
-      if(!triangulation_) {
+      if(!triangulation) {
         c0 = pointSet_[3 * vertexId0 + j];
         c1 = pointSet_[3 * vertexId1 + j];
       } else {
@@ -667,21 +664,23 @@ inline int ttk::FiberSurface::computeBaseTriangle(
   return 0;
 }
 
-template <class dataTypeU, class dataTypeV>
-inline int ttk::FiberSurface::computeCase0(const SimplexId &polygonEdgeId,
-                                           const SimplexId &tetId,
-                                           const SimplexId &localEdgeId0,
-                                           const double &t0,
-                                           const double &u0,
-                                           const double &v0,
-                                           const SimplexId &localEdgeId1,
-                                           const double &t1,
-                                           const double &u1,
-                                           const double &v1,
-                                           const SimplexId &localEdgeId2,
-                                           const double &t2,
-                                           const double &u2,
-                                           const double &v2) const {
+template <class dataTypeU, class dataTypeV, typename triangulationType>
+inline int ttk::FiberSurface::computeCase0(
+  const SimplexId &polygonEdgeId,
+  const SimplexId &tetId,
+  const SimplexId &localEdgeId0,
+  const double &t0,
+  const double &u0,
+  const double &v0,
+  const SimplexId &localEdgeId1,
+  const double &t1,
+  const double &u1,
+  const double &v1,
+  const SimplexId &localEdgeId2,
+  const double &t2,
+  const double &u2,
+  const double &v2,
+  const triangulationType *const triangulation) const {
 
   // that one's easy, make just one triangle
   SimplexId vertexId = (*polygonEdgeVertexLists_[polygonEdgeId]).size();
@@ -715,15 +714,15 @@ inline int ttk::FiberSurface::computeCase0(const SimplexId &polygonEdgeId,
 
     switch(i) {
       case 0:
-        if(!triangulation_) {
+        if(!triangulation) {
           vertexId0
             = tetList_[5 * tetId + 1 + edgeImplicitEncoding_[2 * localEdgeId0]];
           vertexId1 = tetList_[5 * tetId + 1
                                + edgeImplicitEncoding_[2 * localEdgeId0 + 1]];
         } else {
-          triangulation_->getCellVertex(
+          triangulation->getCellVertex(
             tetId, edgeImplicitEncoding_[2 * localEdgeId0], vertexId0);
-          triangulation_->getCellVertex(
+          triangulation->getCellVertex(
             tetId, edgeImplicitEncoding_[2 * localEdgeId0 + 1], vertexId1);
         }
         (*polygonEdgeVertexLists_[polygonEdgeId])[vertexId + i].uv_.first = u0;
@@ -732,15 +731,15 @@ inline int ttk::FiberSurface::computeCase0(const SimplexId &polygonEdgeId,
         break;
 
       case 1:
-        if(!triangulation_) {
+        if(!triangulation) {
           vertexId0
             = tetList_[5 * tetId + 1 + edgeImplicitEncoding_[2 * localEdgeId1]];
           vertexId1 = tetList_[5 * tetId + 1
                                + edgeImplicitEncoding_[2 * localEdgeId1 + 1]];
         } else {
-          triangulation_->getCellVertex(
+          triangulation->getCellVertex(
             tetId, edgeImplicitEncoding_[2 * localEdgeId1], vertexId0);
-          triangulation_->getCellVertex(
+          triangulation->getCellVertex(
             tetId, edgeImplicitEncoding_[2 * localEdgeId1 + 1], vertexId1);
         }
         (*polygonEdgeVertexLists_[polygonEdgeId])[vertexId + i].uv_.first = u1;
@@ -749,15 +748,15 @@ inline int ttk::FiberSurface::computeCase0(const SimplexId &polygonEdgeId,
         break;
 
       case 2:
-        if(!triangulation_) {
+        if(!triangulation) {
           vertexId0
             = tetList_[5 * tetId + 1 + edgeImplicitEncoding_[2 * localEdgeId2]];
           vertexId1 = tetList_[5 * tetId + 1
                                + edgeImplicitEncoding_[2 * localEdgeId2 + 1]];
         } else {
-          triangulation_->getCellVertex(
+          triangulation->getCellVertex(
             tetId, edgeImplicitEncoding_[2 * localEdgeId2], vertexId0);
-          triangulation_->getCellVertex(
+          triangulation->getCellVertex(
             tetId, edgeImplicitEncoding_[2 * localEdgeId2 + 1], vertexId1);
         }
         (*polygonEdgeVertexLists_[polygonEdgeId])[vertexId + i].uv_.first = u2;
@@ -778,15 +777,15 @@ inline int ttk::FiberSurface::computeCase0(const SimplexId &polygonEdgeId,
       p0.data(), p1.data(), p.data(), baryCentrics, 2);
 
     float pA[3], pB[3];
-    if(triangulation_) {
-      triangulation_->getVertexPoint(vertexId0, pA[0], pA[1], pA[2]);
-      triangulation_->getVertexPoint(vertexId1, pB[0], pB[1], pB[2]);
+    if(triangulation) {
+      triangulation->getVertexPoint(vertexId0, pA[0], pA[1], pA[2]);
+      triangulation->getVertexPoint(vertexId1, pB[0], pB[1], pB[2]);
     }
 
     for(int j = 0; j < 3; j++) {
 
       double c0, c1;
-      if(!triangulation_) {
+      if(!triangulation) {
         c0 = pointSet_[3 * vertexId0 + j];
         c1 = pointSet_[3 * vertexId1 + j];
       } else {
@@ -810,21 +809,23 @@ inline int ttk::FiberSurface::computeCase0(const SimplexId &polygonEdgeId,
   return 3;
 }
 
-template <class dataTypeU, class dataTypeV>
-inline int ttk::FiberSurface::computeCase1(const SimplexId &polygonEdgeId,
-                                           const SimplexId &tetId,
-                                           const SimplexId &localEdgeId0,
-                                           const double &t0,
-                                           const double &u0,
-                                           const double &v0,
-                                           const SimplexId &localEdgeId1,
-                                           const double &t1,
-                                           const double &u1,
-                                           const double &v1,
-                                           const SimplexId &localEdgeId2,
-                                           const double &t2,
-                                           const double &u2,
-                                           const double &v2) const {
+template <class dataTypeU, class dataTypeV, typename triangulationType>
+inline int ttk::FiberSurface::computeCase1(
+  const SimplexId &polygonEdgeId,
+  const SimplexId &tetId,
+  const SimplexId &localEdgeId0,
+  const double &t0,
+  const double &u0,
+  const double &v0,
+  const SimplexId &localEdgeId1,
+  const double &t1,
+  const double &u1,
+  const double &v1,
+  const SimplexId &localEdgeId2,
+  const double &t2,
+  const double &u2,
+  const double &v2,
+  const triangulationType *const triangulation) const {
 
   SimplexId vertexId = (*polygonEdgeVertexLists_[polygonEdgeId]).size();
 
@@ -895,7 +896,7 @@ inline int ttk::FiberSurface::computeCase1(const SimplexId &polygonEdgeId,
   computeBaseTriangle<dataTypeU, dataTypeV>(
     tetId, localEdgeId0, t0, u0, v0, localEdgeId1, t1, u1, v1, localEdgeId2, t2,
     u2, v2, basePoints, basePointProjections, basePointParameterization,
-    baseEdges);
+    baseEdges, triangulation);
 
   // find the pivot vertex for this case
   SimplexId pivotVertexId = -1;
@@ -997,21 +998,23 @@ inline int ttk::FiberSurface::computeCase1(const SimplexId &polygonEdgeId,
   return 5;
 }
 
-template <class dataTypeU, class dataTypeV>
-inline int ttk::FiberSurface::computeCase2(const SimplexId &polygonEdgeId,
-                                           const SimplexId &tetId,
-                                           const SimplexId &localEdgeId0,
-                                           const double &t0,
-                                           const double &u0,
-                                           const double &v0,
-                                           const SimplexId &localEdgeId1,
-                                           const double &t1,
-                                           const double &u1,
-                                           const double &v1,
-                                           const SimplexId &localEdgeId2,
-                                           const double &t2,
-                                           const double &u2,
-                                           const double &v2) const {
+template <class dataTypeU, class dataTypeV, typename triangulationType>
+inline int ttk::FiberSurface::computeCase2(
+  const SimplexId &polygonEdgeId,
+  const SimplexId &tetId,
+  const SimplexId &localEdgeId0,
+  const double &t0,
+  const double &u0,
+  const double &v0,
+  const SimplexId &localEdgeId1,
+  const double &t1,
+  const double &u1,
+  const double &v1,
+  const SimplexId &localEdgeId2,
+  const double &t2,
+  const double &u2,
+  const double &v2,
+  const triangulationType *const triangulation) const {
 
   SimplexId vertexId = (*polygonEdgeVertexLists_[polygonEdgeId]).size();
 
@@ -1062,7 +1065,7 @@ inline int ttk::FiberSurface::computeCase2(const SimplexId &polygonEdgeId,
   computeBaseTriangle<dataTypeU, dataTypeV>(
     tetId, localEdgeId0, t0, u0, v0, localEdgeId1, t1, u1, v1, localEdgeId2, t2,
     u2, v2, basePoints, basePointProjections, basePointParameterization,
-    baseEdges);
+    baseEdges, triangulation);
 
   // find the pivot for this case
   bool isPivotPositive = false;
@@ -1168,21 +1171,23 @@ inline int ttk::FiberSurface::computeCase2(const SimplexId &polygonEdgeId,
   return 4;
 }
 
-template <class dataTypeU, class dataTypeV>
-inline int ttk::FiberSurface::computeCase3(const SimplexId &polygonEdgeId,
-                                           const SimplexId &tetId,
-                                           const SimplexId &localEdgeId0,
-                                           const double &t0,
-                                           const double &u0,
-                                           const double &v0,
-                                           const SimplexId &localEdgeId1,
-                                           const double &t1,
-                                           const double &u1,
-                                           const double &v1,
-                                           const SimplexId &localEdgeId2,
-                                           const double &t2,
-                                           const double &u2,
-                                           const double &v2) const {
+template <class dataTypeU, class dataTypeV, typename triangulationType>
+inline int ttk::FiberSurface::computeCase3(
+  const SimplexId &polygonEdgeId,
+  const SimplexId &tetId,
+  const SimplexId &localEdgeId0,
+  const double &t0,
+  const double &u0,
+  const double &v0,
+  const SimplexId &localEdgeId1,
+  const double &t1,
+  const double &u1,
+  const double &v1,
+  const SimplexId &localEdgeId2,
+  const double &t2,
+  const double &u2,
+  const double &v2,
+  const triangulationType *const triangulation) const {
 
   SimplexId vertexId = (*polygonEdgeVertexLists_[polygonEdgeId]).size();
 
@@ -1221,7 +1226,7 @@ inline int ttk::FiberSurface::computeCase3(const SimplexId &polygonEdgeId,
   computeBaseTriangle<dataTypeU, dataTypeV>(
     tetId, localEdgeId0, t0, u0, v0, localEdgeId1, t1, u1, v1, localEdgeId2, t2,
     u2, v2, basePoints, basePointProjections, basePointParameterization,
-    baseEdges);
+    baseEdges, triangulation);
 
   // now find the pivot
   bool isPivotPositive = false;
@@ -1306,21 +1311,23 @@ inline int ttk::FiberSurface::computeCase3(const SimplexId &polygonEdgeId,
   return 3;
 }
 
-template <class dataTypeU, class dataTypeV>
-inline int ttk::FiberSurface::computeCase4(const SimplexId &polygonEdgeId,
-                                           const SimplexId &tetId,
-                                           const SimplexId &localEdgeId0,
-                                           const double &t0,
-                                           const double &u0,
-                                           const double &v0,
-                                           const SimplexId &localEdgeId1,
-                                           const double &t1,
-                                           const double &u1,
-                                           const double &v1,
-                                           const SimplexId &localEdgeId2,
-                                           const double &t2,
-                                           const double &u2,
-                                           const double &v2) const {
+template <class dataTypeU, class dataTypeV, typename triangulationType>
+inline int ttk::FiberSurface::computeCase4(
+  const SimplexId &polygonEdgeId,
+  const SimplexId &tetId,
+  const SimplexId &localEdgeId0,
+  const double &t0,
+  const double &u0,
+  const double &v0,
+  const SimplexId &localEdgeId1,
+  const double &t1,
+  const double &u1,
+  const double &v1,
+  const SimplexId &localEdgeId2,
+  const double &t2,
+  const double &u2,
+  const double &v2,
+  const triangulationType *const triangulation) const {
 
   SimplexId vertexId = (*polygonEdgeVertexLists_[polygonEdgeId]).size();
 
@@ -1371,7 +1378,7 @@ inline int ttk::FiberSurface::computeCase4(const SimplexId &polygonEdgeId,
   computeBaseTriangle<dataTypeU, dataTypeV>(
     tetId, localEdgeId0, t0, u0, v0, localEdgeId1, t1, u1, v1, localEdgeId2, t2,
     u2, v2, basePoints, basePointProjections, basePointParameterization,
-    baseEdges);
+    baseEdges, triangulation);
 
   // find the pivot vertex for this case
   bool isPivotPositive = false;
@@ -1474,11 +1481,12 @@ inline int ttk::FiberSurface::computeCase4(const SimplexId &polygonEdgeId,
   return 4;
 }
 
-template <class dataTypeU, class dataTypeV>
+template <class dataTypeU, class dataTypeV, typename triangulationType>
 inline int ttk::FiberSurface::computeContour(
   const std::pair<double, double> &rangePoint0,
   const std::pair<double, double> &rangePoint1,
   const std::vector<SimplexId> &seedTetList,
+  const triangulationType *const triangulation,
   const SimplexId &polygonEdgeId) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -1486,7 +1494,7 @@ inline int ttk::FiberSurface::computeContour(
     return -4;
   if(!vField_)
     return -5;
-  if(!triangulation_)
+  if(!triangulation)
     return -6;
   if(!polygonEdgeNumber_)
     return -7;
@@ -1494,7 +1502,7 @@ inline int ttk::FiberSurface::computeContour(
     return -8;
 #endif
 
-  std::vector<bool> visitedTets(triangulation_->getNumberOfCells(), false);
+  std::vector<bool> visitedTets(triangulation->getNumberOfCells(), false);
   std::queue<SimplexId> tetQueue;
 
   // init the queue
@@ -1512,17 +1520,17 @@ inline int ttk::FiberSurface::computeContour(
     if(!visitedTets[tetId]) {
 
       createdVertices = processTetrahedron<dataTypeU, dataTypeV>(
-        tetId, rangePoint0, rangePoint1, polygonEdgeId);
+        tetId, rangePoint0, rangePoint1, triangulation, polygonEdgeId);
 
       if(createdVertices) {
         // only propagate if we created a triangle
         SimplexId tetNeighborNumber
-          = triangulation_->getCellNeighborNumber(tetId);
+          = triangulation->getCellNeighborNumber(tetId);
 
         for(SimplexId i = 0; i < tetNeighborNumber; i++) {
 
           SimplexId neighborId = -1;
-          triangulation_->getCellNeighbor(tetId, i, neighborId);
+          triangulation->getCellNeighbor(tetId, i, neighborId);
 
           if(!visitedTets[neighborId])
             tetQueue.push(neighborId);
@@ -1620,22 +1628,23 @@ int ttk::FiberSurface::computeContour(
   return 0;
 }
 
-template <class dataTypeU, class dataTypeV>
+template <class dataTypeU, class dataTypeV, typename triangulationType>
 inline int ttk::FiberSurface::computeSurface(
   const std::pair<double, double> &rangePoint0,
   const std::pair<double, double> &rangePoint1,
+  const triangulationType *const triangulation,
   const SimplexId &polygonEdgeId) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
-  if((!tetNumber_) && (!triangulation_))
+  if((!tetNumber_) && (!triangulation))
     return -1;
-  if((!tetList_) && (!triangulation_))
+  if((!tetList_) && (!triangulation))
     return -2;
   if(!uField_)
     return -3;
   if(!vField_)
     return -4;
-  if((!pointSet_) && (!triangulation_))
+  if((!pointSet_) && (!triangulation))
     return -5;
   if(!polygonEdgeNumber_)
     return -6;
@@ -1645,8 +1654,8 @@ inline int ttk::FiberSurface::computeSurface(
 
   SimplexId tetNumber = tetNumber_;
 
-  if(triangulation_) {
-    tetNumber = triangulation_->getNumberOfCells();
+  if(triangulation) {
+    tetNumber = triangulation->getNumberOfCells();
   }
 
 #ifdef TTK_ENABLE_OPENMP
@@ -1655,25 +1664,26 @@ inline int ttk::FiberSurface::computeSurface(
   for(SimplexId i = 0; i < tetNumber; i++) {
 
     processTetrahedron<dataTypeU, dataTypeV>(
-      i, rangePoint0, rangePoint1, polygonEdgeId);
+      i, rangePoint0, rangePoint1, triangulation, polygonEdgeId);
   }
 
   return 0;
 }
 
-template <class dataTypeU, class dataTypeV>
-inline int ttk::FiberSurface::computeSurface() {
+template <class dataTypeU, class dataTypeV, typename triangulationType>
+inline int ttk::FiberSurface::computeSurface(
+  const triangulationType *const triangulation) {
 
 #ifndef TTK_ENABLE_KAMIKAZE
-  if((!tetNumber_) && (!triangulation_))
+  if((!tetNumber_) && (!triangulation))
     return -1;
-  if((!tetList_) && (!triangulation_))
+  if((!tetList_) && (!triangulation))
     return -2;
   if(!uField_)
     return -3;
   if(!vField_)
     return -4;
-  if((!pointSet_) && (!triangulation_))
+  if((!pointSet_) && (!triangulation))
     return -5;
   if(!polygon_)
     return -6;
@@ -1694,7 +1704,7 @@ inline int ttk::FiberSurface::computeSurface() {
     for(SimplexId i = 0; i < polygonEdgeNumber_; i++) {
 
       computeSurfaceWithOctree<dataTypeU, dataTypeV>(
-        (*polygon_)[i].first, (*polygon_)[i].second, i);
+        (*polygon_)[i].first, (*polygon_)[i].second, triangulation, i);
     }
   } else {
     // regular extraction (the octree has not been computed)
@@ -1703,7 +1713,7 @@ inline int ttk::FiberSurface::computeSurface() {
 #endif
     for(SimplexId i = 0; i < polygonEdgeNumber_; i++) {
       computeSurface<dataTypeU, dataTypeV>(
-        (*polygon_)[i].first, (*polygon_)[i].second, i);
+        (*polygon_)[i].first, (*polygon_)[i].second, triangulation, i);
     }
   }
 
@@ -1720,34 +1730,29 @@ inline int ttk::FiberSurface::computeSurface() {
 
   finalize<dataTypeU, dataTypeV>(pointSnapping_, false, false, false);
 
-  {
-    std::stringstream msg;
-    msg << "[FiberSurface] FiberSurface extracted in " << t.getElapsedTime()
-        << " s. (" << globalVertexList_->size() << " vertices, "
-        << threadNumber_ << " thread(s))" << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
-  }
+  this->printMsg("Extracted", 1.0, t.getElapsedTime(), this->threadNumber_);
 
   return 0;
 }
 
 #ifdef TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE
-template <class dataTypeU, class dataTypeV>
+template <class dataTypeU, class dataTypeV, typename triangulationType>
 inline int ttk::FiberSurface::computeSurfaceWithOctree(
   const std::pair<double, double> &rangePoint0,
   const std::pair<double, double> &rangePoint1,
+  const triangulationType *const triangulation,
   const SimplexId &polygonEdgeId) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
-  if((!tetNumber_) && (!triangulation_))
+  if((!tetNumber_) && (!triangulation))
     return -1;
-  if((!tetList_) && (!triangulation_))
+  if((!tetList_) && (!triangulation))
     return -2;
   if(!uField_)
     return -3;
   if(!vField_)
     return -4;
-  if((!pointSet_) && (!triangulation_))
+  if((!pointSet_) && (!triangulation))
     return -5;
   if(!polygonEdgeNumber_)
     return -6;
@@ -1763,7 +1768,7 @@ inline int ttk::FiberSurface::computeSurfaceWithOctree(
 #endif
   for(SimplexId i = 0; i < (SimplexId)tetList.size(); i++) {
     processTetrahedron<dataTypeU, dataTypeV>(
-      tetList[i], rangePoint0, rangePoint1, polygonEdgeId);
+      tetList[i], rangePoint0, rangePoint1, triangulation, polygonEdgeId);
   }
 
   return 0;
@@ -1835,11 +1840,12 @@ int ttk::FiberSurface::finalize(const bool &mergeDuplicatedVertices,
   return 0;
 }
 
-template <class dataTypeU, class dataTypeV>
+template <class dataTypeU, class dataTypeV, typename triangulationType>
 inline int ttk::FiberSurface::processTetrahedron(
   const SimplexId &tetId,
   const std::pair<double, double> &rangePoint0,
   const std::pair<double, double> &rangePoint1,
+  const triangulationType *const triangulation,
   const SimplexId &polygonEdgeId) const {
 
   double rangeEdge[2];
@@ -1860,10 +1866,10 @@ inline int ttk::FiberSurface::processTetrahedron(
   for(int i = 0; i < 4; i++) {
 
     SimplexId vertexId = 0;
-    if(!triangulation_) {
+    if(!triangulation) {
       vertexId = tetList_[5 * tetId + 1 + i];
     } else {
-      triangulation_->getCellVertex(tetId, i, vertexId);
+      triangulation->getCellVertex(tetId, i, vertexId);
     }
 
     double projectedVertex[2];
@@ -2042,10 +2048,10 @@ inline int ttk::FiberSurface::processTetrahedron(
         for(SimplexId j = 0; j < (SimplexId)triangleEdges[i].size(); j++) {
 
           SimplexId vertexId0 = 0, vertexId1 = 0;
-          if(triangulation_) {
-            triangulation_->getCellVertex(
+          if(triangulation) {
+            triangulation->getCellVertex(
               tetId, edgeImplicitEncoding_[2 * triangleEdges[i][j]], vertexId0);
-            triangulation_->getCellVertex(
+            triangulation->getCellVertex(
               tetId, edgeImplicitEncoding_[2 * triangleEdges[i][j] + 1],
               vertexId1);
           } else {
@@ -2113,7 +2119,8 @@ inline int ttk::FiberSurface::processTetrahedron(
           createdVertices += computeCase0<dataTypeU, dataTypeV>(
             polygonEdgeId, tetId, triangleEdges[i][0], t[0], uv[0].first,
             uv[0].second, triangleEdges[i][1], t[1], uv[1].first, uv[1].second,
-            triangleEdges[i][2], t[2], uv[2].first, uv[2].second);
+            triangleEdges[i][2], t[2], uv[2].first, uv[2].second,
+            triangulation);
         } else if(lowerVertexNumber == 3) {
           // well do nothing (empty triangle)
         } else if(upperVertexNumber == 3) {
@@ -2123,37 +2130,44 @@ inline int ttk::FiberSurface::processTetrahedron(
           createdVertices += computeCase1<dataTypeU, dataTypeV>(
             polygonEdgeId, tetId, triangleEdges[i][0], t[0], uv[0].first,
             uv[0].second, triangleEdges[i][1], t[1], uv[1].first, uv[1].second,
-            triangleEdges[i][2], t[2], uv[2].first, uv[2].second);
+            triangleEdges[i][2], t[2], uv[2].first, uv[2].second,
+            triangulation);
         } else if((lowerVertexNumber == 2) && (upperVertexNumber == 1)) {
           createdVertices += computeCase2<dataTypeU, dataTypeV>(
             polygonEdgeId, tetId, triangleEdges[i][0], t[0], uv[0].first,
             uv[0].second, triangleEdges[i][1], t[1], uv[1].first, uv[1].second,
-            triangleEdges[i][2], t[2], uv[2].first, uv[2].second);
+            triangleEdges[i][2], t[2], uv[2].first, uv[2].second,
+            triangulation);
         } else if((lowerVertexNumber == 1) && (upperVertexNumber == 2)) {
           createdVertices += computeCase2<dataTypeU, dataTypeV>(
             polygonEdgeId, tetId, triangleEdges[i][0], t[0], uv[0].first,
             uv[0].second, triangleEdges[i][1], t[1], uv[1].first, uv[1].second,
-            triangleEdges[i][2], t[2], uv[2].first, uv[2].second);
+            triangleEdges[i][2], t[2], uv[2].first, uv[2].second,
+            triangulation);
         } else if((greyVertexNumber == 1) && (lowerVertexNumber == 2)) {
           createdVertices += computeCase3<dataTypeU, dataTypeV>(
             polygonEdgeId, tetId, triangleEdges[i][0], t[0], uv[0].first,
             uv[0].second, triangleEdges[i][1], t[1], uv[1].first, uv[1].second,
-            triangleEdges[i][2], t[2], uv[2].first, uv[2].second);
+            triangleEdges[i][2], t[2], uv[2].first, uv[2].second,
+            triangulation);
         } else if((greyVertexNumber == 1) && (upperVertexNumber == 2)) {
           createdVertices += computeCase3<dataTypeU, dataTypeV>(
             polygonEdgeId, tetId, triangleEdges[i][0], t[0], uv[0].first,
             uv[0].second, triangleEdges[i][1], t[1], uv[1].first, uv[1].second,
-            triangleEdges[i][2], t[2], uv[2].first, uv[2].second);
+            triangleEdges[i][2], t[2], uv[2].first, uv[2].second,
+            triangulation);
         } else if((greyVertexNumber == 2) && (lowerVertexNumber == 1)) {
           createdVertices += computeCase4<dataTypeU, dataTypeV>(
             polygonEdgeId, tetId, triangleEdges[i][0], t[0], uv[0].first,
             uv[0].second, triangleEdges[i][1], t[1], uv[1].first, uv[1].second,
-            triangleEdges[i][2], t[2], uv[2].first, uv[2].second);
+            triangleEdges[i][2], t[2], uv[2].first, uv[2].second,
+            triangulation);
         } else if((greyVertexNumber == 2) && (upperVertexNumber == 1)) {
           createdVertices += computeCase4<dataTypeU, dataTypeV>(
             polygonEdgeId, tetId, triangleEdges[i][0], t[0], uv[0].first,
             uv[0].second, triangleEdges[i][1], t[1], uv[1].first, uv[1].second,
-            triangleEdges[i][2], t[2], uv[2].first, uv[2].second);
+            triangleEdges[i][2], t[2], uv[2].first, uv[2].second,
+            triangulation);
         }
       }
     }
@@ -2207,10 +2221,10 @@ inline int ttk::FiberSurface::processTetrahedron(
                 double distance = Geometry::distance(
                   (*polygonEdgeVertexLists_[polygonEdgeId])
                     [createdVertexList[colinearVertices[j]]]
-                      .p_,
+                      .p_.data(),
                   (*polygonEdgeVertexLists_[polygonEdgeId])
                     [createdVertexList[colinearVertices[k]]]
-                      .p_);
+                      .p_.data());
 
                 //                 bool basePointSnap = true;
                 //                 for(int l = 0; l < 3; l++){
@@ -2359,7 +2373,7 @@ template <class dataTypeU, class dataTypeV>
 inline int ttk::FiberSurface::remeshIntersections() const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
-  if((!tetNumber_) && (!triangulation_))
+  if(!tetNumber_)
     return -1;
 #endif
 
@@ -2424,7 +2438,6 @@ inline int ttk::FiberSurface::remeshIntersections() const {
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(SimplexId i = 0; i < (SimplexId)tetList.size(); i++) {
-
     SimplexId tetId = tetList[i];
 
     // pre-process by merging nearby vertices...?
@@ -2435,13 +2448,10 @@ inline int ttk::FiberSurface::remeshIntersections() const {
     for(SimplexId j = 0; j < (SimplexId)tetIntersections[tetId].size(); j++) {
 
       if(j > 1000) {
-        std::stringstream msg;
-        msg << "[FiberSurface] Preventing an infinite loop!" << std::endl;
-        msg << "[FiberSurface] More than 1000 re-meshed triangles in tet #"
-            << tetId << " :(" << std::endl;
-        msg << "[FiberSurface] Extra-thin triangles keep on intersecting?!"
-            << std::endl;
-        dMsg(std::cerr, msg.str(), infoMsg);
+        this->printWrn("Preventing an infinite loop!");
+        this->printWrn("More than 1000 re-meshed triangles in tet #"
+                       + std::to_string(tetId));
+        this->printWrn("Extra-thin triangles keep on intersecting?!");
         break;
       }
 
@@ -2512,7 +2522,6 @@ inline int ttk::FiberSurface::remeshIntersections() const {
   }
 
   for(SimplexId i = 0; i < (SimplexId)tetIntersections.size(); i++) {
-
     for(SimplexId j = 0; j < (SimplexId)tetIntersections[i].size(); j++) {
 
       if(((tetIntersections[i][j].intersection_.first != -DBL_MAX)
@@ -2558,5 +2567,3 @@ inline int ttk::FiberSurface::remeshIntersections() const {
 
   return 0;
 }
-
-#endif // FIBERSURFACE_H
