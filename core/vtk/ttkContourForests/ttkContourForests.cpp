@@ -8,6 +8,7 @@
 #include <vtkIntArray.h>
 #include <vtkLine.h>
 #include <vtkLineSource.h>
+#include <vtkNew.h>
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
 
@@ -209,8 +210,7 @@ bool ttkContourForests::isCoincident(double p1[], double p2[]) {
 }
 
 void ttkContourForests::getSkeletonArcs() {
-  vtkSmartPointer<vtkAppendPolyData> app
-    = vtkSmartPointer<vtkAppendPolyData>::New();
+  vtkNew<vtkAppendPolyData> app{};
 
   vtkDoubleArray *scalars{};
   ttkSimplexIdTypeArray *identifierScalars{};
@@ -391,8 +391,7 @@ void ttkContourForests::getSkeletonArcs() {
           app->AddInputData(lineData);
         }
       } else {
-        vtkSmartPointer<vtkLineSource> line
-          = vtkSmartPointer<vtkLineSource>::New();
+        vtkNew<vtkLineSource> line{};
 
         SimplexId downNodeVId
           = tree_->getNode(a->getDownNodeId())->getVertexId();
@@ -542,24 +541,24 @@ int ttkContourForests::getSkeletonScalars(
 }
 
 void ttkContourForests::getSkeletonNodes() {
-  vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+  vtkNew<vtkPoints> points{};
   float point[3];
 
   double scalar{};
   vtkNew<vtkDoubleArray> scalars{};
   scalars->SetName(vtkInputScalars_->GetName());
 
-  ttkSimplexIdTypeArray *nodeIdentifierScalars = ttkSimplexIdTypeArray::New();
+  vtkNew<ttkSimplexIdTypeArray> nodeIdentifierScalars{};
   nodeIdentifierScalars->SetName("NodeIdentifier");
 
-  ttkSimplexIdTypeArray *vertexIdentifierScalars = ttkSimplexIdTypeArray::New();
+  vtkNew<ttkSimplexIdTypeArray> vertexIdentifierScalars{};
   vertexIdentifierScalars->SetName(ttk::VertexScalarFieldName);
 
   int type{};
-  vtkIntArray *nodeTypeScalars = vtkIntArray::New();
+  vtkNew<vtkIntArray> nodeTypeScalars{};
   nodeTypeScalars->SetName("CriticalType");
 
-  ttkSimplexIdTypeArray *regionSizeScalars = ttkSimplexIdTypeArray::New();
+  vtkNew<ttkSimplexIdTypeArray> regionSizeScalars{};
   regionSizeScalars->SetName("RegionSize");
 
   SimplexId identifier{};
@@ -615,11 +614,6 @@ void ttkContourForests::getSkeletonNodes() {
   skeletonNodes_->GetPointData()->AddArray(vertexIdentifierScalars);
   skeletonNodes_->GetPointData()->AddArray(nodeTypeScalars);
   skeletonNodes_->GetPointData()->AddArray(regionSizeScalars);
-
-  nodeIdentifierScalars->Delete();
-  vertexIdentifierScalars->Delete();
-  nodeTypeScalars->Delete();
-  regionSizeScalars->Delete();
 }
 
 CriticalType ttkContourForests::getNodeType(SimplexId id) {
@@ -918,26 +912,22 @@ void ttkContourForests::getSegmentation(vtkDataSet *input) {
 
   // field
   SimplexId regionId{};
-  vtkSmartPointer<ttkSimplexIdTypeArray> scalarsRegionId
-    = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
+  vtkNew<ttkSimplexIdTypeArray> scalarsRegionId{};
   scalarsRegionId->SetName("SegmentationId");
   scalarsRegionId->SetNumberOfTuples(vertexScalars_.size());
 
   int regionType{};
-  vtkSmartPointer<vtkIntArray> scalarsRegionType
-    = vtkSmartPointer<vtkIntArray>::New();
+  vtkNew<vtkIntArray> scalarsRegionType{};
   scalarsRegionType->SetName("RegionType");
   scalarsRegionType->SetNumberOfTuples(vertexScalars_.size());
 
   SimplexId regionSize{};
-  vtkSmartPointer<ttkSimplexIdTypeArray> scalarsRegionSize
-    = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
+  vtkNew<ttkSimplexIdTypeArray> scalarsRegionSize{};
   scalarsRegionSize->SetName("RegionSize");
   scalarsRegionSize->SetNumberOfTuples(vertexScalars_.size());
 
   double regionSpan{};
-  vtkSmartPointer<vtkDoubleArray> scalarsRegionSpan
-    = vtkSmartPointer<vtkDoubleArray>::New();
+  vtkNew<vtkDoubleArray> scalarsRegionSpan{};
   scalarsRegionSpan->SetName("RegionSpan");
   scalarsRegionSpan->SetNumberOfTuples(vertexScalars_.size());
 
