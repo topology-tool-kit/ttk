@@ -16,10 +16,12 @@ if (NOT MSVC) # GCC and Clang
   endif()
 
   # hardened linker flags for Clang and GCC
-  list(APPEND TTK_LINKER_FLAGS
-    -Wl,--as-needed
-    -Wl,--no-undefined
-    )
+  if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+    list(APPEND TTK_LINKER_FLAGS
+      -Wl,--as-needed
+      -Wl,--no-undefined
+      )
+  endif()
 
 else() # MSVC
 

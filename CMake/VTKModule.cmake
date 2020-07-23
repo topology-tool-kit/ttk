@@ -50,7 +50,7 @@ macro(ttk_add_vtk_module)
       vtk_module_definitions(${TTK_NAME} PRIVATE TTK_ENABLE_DOUBLE_TEMPLATING)
     endif()
 
-    if(NOT MSVC)
+    if(TTK_LINKER_FLAGS)
       vtk_module_link_options(${TTK_NAME} PRIVATE ${TTK_LINKER_FLAGS})
     endif()
 

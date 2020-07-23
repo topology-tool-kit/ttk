@@ -132,7 +132,7 @@ function(ttk_set_compile_options library)
   target_compile_options(${library} PRIVATE ${TTK_COMPILER_FLAGS})
 
   # linker flags
-  if(NOT MSVC)
+  if(TTK_LINKER_FLAGS)
     target_link_options(${library} PRIVATE ${TTK_LINKER_FLAGS})
   endif()
 
