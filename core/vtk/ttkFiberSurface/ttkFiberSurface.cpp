@@ -148,7 +148,7 @@ int ttkFiberSurface::RequestData(vtkInformation *request,
     this->setVertexList(i, &(threadedVertexList_[i]));
   }
 
-#ifdef TTK_AVOID_DOUBLE_TEMPLATING
+#ifndef TTK_ENABLE_DOUBLE_TEMPLATING
   if(dataUfield->GetDataType() != dataVfield->GetDataType()) {
     this->printErr(
       "Scalar fields should have same input type. Use TTKPointDataConverter or "
@@ -163,7 +163,7 @@ int ttkFiberSurface::RequestData(vtkInformation *request,
     dataUfield->GetDataType(), dataVfield->GetDataType())) {
     vtkTemplate2Macro((dispatch<VTK_T1, VTK_T2>(triangulation)));
   }
-#endif // TTK_AVOID_DOUBLE_TEMPLATING
+#endif // TTK_ENABLE_DOUBLE_TEMPLATING
 
   // prepare the VTK output
   // NOTE: right now, there is a copy of the output data. this is no good.

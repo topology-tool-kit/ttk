@@ -129,7 +129,7 @@ int ttkReebSpace::RequestData(vtkInformation *request,
   this->setSosOffsetsU(&sosOffsetsU_);
   this->setSosOffsetsV(&sosOffsetsV_);
 
-#ifdef TTK_AVOID_DOUBLE_TEMPLATING
+#ifndef TTK_ENABLE_DOUBLE_TEMPLATING
   if(uComponent->GetDataType() != vComponent->GetDataType()) {
     this->printErr(
       "Scalar fields should have same input type. Use TTKPointDataConverter or "
@@ -150,7 +150,7 @@ int ttkReebSpace::RequestData(vtkInformation *request,
                static_cast<VTK_T2 *>(ttkUtils::GetVoidPointer(vComponent)),
                triangulation));
   }
-#endif // TTK_AVOID_DOUBLE_TEMPLATING
+#endif // TTK_ENABLE_DOUBLE_TEMPLATING
 
   // prepare the output
   this->printMsg("Preparing the VTK output...");

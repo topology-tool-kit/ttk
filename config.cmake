@@ -72,7 +72,7 @@ mark_as_advanced(TTK_ENABLE_KAMIKAZE)
 option(TTK_ENABLE_CPU_OPTIMIZATION "Enable native CPU optimizations" ON)
 mark_as_advanced(TTK_ENABLE_CPU_OPTIMIZATION)
 
-option(TTK_AVOID_DOUBLE_TEMPLATING "Use single templating in place of double templating" ON)
+option(TTK_ENABLE_DOUBLE_TEMPLATING "Use double templating for bivariate data" OFF)
 mark_as_advanced(TTK_AVOID_DOUBLE_TEMPLATING)
 
 option(TTK_BUILD_DOCUMENTATION "Build doxygen developer documentation" OFF)
