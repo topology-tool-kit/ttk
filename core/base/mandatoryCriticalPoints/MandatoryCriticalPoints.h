@@ -31,6 +31,7 @@
 #include <Triangulation.h>
 
 // std includes
+#include <queue>
 #include <vector>
 
 namespace ttk {
