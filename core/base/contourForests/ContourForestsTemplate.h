@@ -410,8 +410,9 @@ namespace ttk {
           parallelData_.trees[i].getSplitTree()->updateSegmentation();
 
           if(params_->debugLevel >= 3) {
-            std::cout << "Local MT : updated in "
-                      << timerUpdateSegm.getElapsedTime() << std::endl;
+            this->printMsg("Local MT updated", 1.0,
+                           timerUpdateSegm.getElapsedTime(),
+                           this->threadNumber_);
           }
         }
 
