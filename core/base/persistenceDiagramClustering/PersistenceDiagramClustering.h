@@ -66,17 +66,6 @@ namespace ttk {
       std::vector<std::vector<diagramTuple>> &centroids,
       std::vector<std::vector<std::vector<matchingTuple>>> &all_matchings);
 
-    inline int setNumberOfInputs(int numberOfInputs) {
-      numberOfInputs_ = numberOfInputs;
-      // 			if(inputData_)
-      // 			free(inputData_);
-      // 			inputData_ = (void **) malloc(numberOfInputs*sizeof(void *));
-      // 			for(int i=0 ; i<numberOfInputs ; i++){
-      // 			inputData_[i] = NULL;
-      // 			}
-      return 0;
-    }
-
     template <class dataType>
     static dataType abs(const dataType var) {
       return (var >= 0) ? var : -var;
@@ -91,7 +80,6 @@ namespace ttk {
     bool Deterministic{true};
     int WassersteinMetric{2};
 
-    int numberOfInputs_{};
     bool UseProgressive{true};
 
     bool ForceUseOfAlgorithm{false};
@@ -119,6 +107,7 @@ namespace ttk {
     std::vector<std::vector<diagramTuple>> &final_centroids,
     std::vector<std::vector<std::vector<matchingTuple>>> &all_matchings) {
 
+    const int numberOfInputs_ = intermediateDiagrams.size();
     Timer tm;
     {
       printMsg("Clustering " + std::to_string(numberOfInputs_) + " diagrams in "

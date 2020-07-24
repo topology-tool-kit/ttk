@@ -75,7 +75,6 @@ int ttkPersistenceDiagramClustering::RequestData(
     all_matchings_.resize(3);
 
     max_dimension_total_ = 0;
-    this->setNumberOfInputs(numInputs);
     for(int i = 0; i < numInputs; i++) {
       double max_dimension
         = getPersistenceDiagram(intermediateDiagrams_[i], input[i]);
