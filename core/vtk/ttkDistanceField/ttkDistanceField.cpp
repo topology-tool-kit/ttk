@@ -45,7 +45,7 @@ int ttkDistanceField::RequestData(vtkInformation *request,
   vtkDataSet *output = vtkDataSet::GetData(outputVector);
 
   ttk::Triangulation *triangulation = ttkAlgorithm::GetTriangulation(domain);
-  int ret = this->preconditionTriangulation(triangulation);
+  this->preconditionTriangulation(triangulation);
   Modified();
 
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -56,7 +56,7 @@ int ttkDistanceField::RequestData(vtkInformation *request,
 #endif
 
   vtkDataArray *identifiers = this->GetOptionalArray(
-    ForceInputVertexScalarField, 2, ttk::VertexScalarFieldName, inputVector, 1);
+    ForceInputVertexScalarField, 0, ttk::VertexScalarFieldName, sources);
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!identifiers) {
     printErr("wrong identifiers.");
@@ -115,6 +115,7 @@ int ttkDistanceField::RequestData(vtkInformation *request,
   this->setOutputSegmentation(ttkUtils::GetVoidPointer(seg));
 
   vtkSmartPointer<vtkDataArray> distanceScalars{};
+  int ret{};
   switch(static_cast<DistanceType>(OutputScalarFieldType)) {
     case DistanceType::Float:
       distanceScalars = vtkFloatArray::New();
@@ -165,13 +166,11 @@ int ttkDistanceField::RequestData(vtkInformation *request,
       break;
   }
 
-#ifndef TTK_ENABLE_KAMIKAZE
   // something wrong in baseCode
   if(ret) {
     printErr("DistanceField.execute() error code : " + std::to_string(ret));
     return -10;
   }
-#endif
 
   // update result
   output->ShallowCopy(domain);
