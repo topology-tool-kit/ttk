@@ -92,6 +92,7 @@ protected:
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;
+  void Modified() override;
 
   // Base //
   bool isCoincident(float p1[], double p2[]);

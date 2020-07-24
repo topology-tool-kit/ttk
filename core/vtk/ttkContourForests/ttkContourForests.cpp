@@ -74,6 +74,12 @@ int ttkContourForests::FillOutputPortInformation(int port,
   return 0;
 }
 
+void ttkContourForests::Modified() {
+  toComputeSkeleton_ = true;
+  toComputeContourTree_ = true;
+  ttkAlgorithm::Modified();
+}
+
 void ttkContourForests::SetForceInputOffsetScalarField(bool onOff) {
   toUpdateVertexSoSoffsets_ = true;
   toComputeContourTree_ = true;
