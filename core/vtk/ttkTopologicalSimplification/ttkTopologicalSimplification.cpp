@@ -1,4 +1,5 @@
 #include <ttkTopologicalSimplification.h>
+#include <ttkUtils.h>
 
 using namespace std;
 using namespace ttk;
@@ -354,12 +355,25 @@ int ttkTopologicalSimplification::doIt(vector<vtkDataSet *> &inputs,
 
   if(inputOffsets_->GetDataType() == VTK_INT) {
     switch(inputScalars_->GetDataType()) {
-      vtkTemplateMacro(ret = topologicalSimplification_.execute<VTK_TT, int>());
+      vtkTemplateMacro(
+        ret = topologicalSimplification_.execute(
+          static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(inputScalars_)),
+          static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(outputScalars)),
+          static_cast<int *>(ttkUtils::GetVoidPointer(identifiers_)),
+          static_cast<int *>(ttkUtils::GetVoidPointer(inputOffsets_)),
+          static_cast<SimplexId *>(ttkUtils::GetVoidPointer(outputOffsets)),
+          *triangulation_->getData()));
     }
   } else if(inputOffsets_->GetDataType() == VTK_ID_TYPE) {
     switch(inputScalars_->GetDataType()) {
       vtkTemplateMacro(
-        ret = topologicalSimplification_.execute<VTK_TT, vtkIdType>());
+        ret = topologicalSimplification_.execute(
+          static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(inputScalars_)),
+          static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(outputScalars)),
+          static_cast<vtkIdType *>(ttkUtils::GetVoidPointer(identifiers_)),
+          static_cast<vtkIdType *>(ttkUtils::GetVoidPointer(inputOffsets_)),
+          static_cast<SimplexId *>(ttkUtils::GetVoidPointer(outputOffsets)),
+          *triangulation_->getData()));
     }
   }
 #ifndef TTK_ENABLE_KAMIKAZE
