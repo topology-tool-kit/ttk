@@ -297,18 +297,9 @@ int ttk::TopologicalCompression::PerformSimplification(
   for(int i = 0; i < vertexNumber; ++i)
     decompressedOffsets_[i] = 0;
 
-  topologicalSimplification.setInputScalarFieldPointer(inArray.data());
-  topologicalSimplification.setOutputScalarFieldPointer(array);
-  topologicalSimplification.setInputOffsetScalarFieldPointer(
-    inputOffsets.data());
-  topologicalSimplification.setOutputOffsetScalarFieldPointer(
-    decompressedOffsets_.data());
-  topologicalSimplification.setVertexIdentifierScalarFieldPointer(
-    critConstraints.data());
-  topologicalSimplification.setConstraintNumber(nbConstraints);
   status = topologicalSimplification.execute<double, int>(
     inArray.data(), array, critConstraints.data(), inputOffsets.data(),
-    decompressedOffsets_.data(), triangulation);
+    decompressedOffsets_.data(), nbConstraints, triangulation);
 
   return status;
 }
@@ -581,22 +572,13 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
 
     // 2. Perform topological simplification with constraints.
     if(UseTopologicalSimplification) {
-      topologicalSimplification.setInputScalarFieldPointer(inputData);
-      topologicalSimplification.setOutputScalarFieldPointer(outputData);
-      topologicalSimplification.setInputOffsetScalarFieldPointer(
-        inputOffsets.data());
       compressedOffsets_.resize(vertexNumber);
       for(int i = 0; i < vertexNumber; ++i)
         compressedOffsets_[i] = i;
-      topologicalSimplification.setOutputOffsetScalarFieldPointer(
-        compressedOffsets_.data());
-      topologicalSimplification.setVertexIdentifierScalarFieldPointer(
-        simplifiedConstraints.data());
-      topologicalSimplification.setConstraintNumber(nbCrit);
       int status = 0;
       status = topologicalSimplification.execute<dataType, SimplexId>(
         inputData, outputData, simplifiedConstraints.data(),
-        inputOffsets.data(), compressedOffsets_.data(), triangulation);
+        inputOffsets.data(), compressedOffsets_.data(), nbCrit, triangulation);
       if(status != 0) {
         return status;
       }

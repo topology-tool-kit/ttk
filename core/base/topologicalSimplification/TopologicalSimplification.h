@@ -110,6 +110,7 @@ namespace ttk {
                 const idType *const identifiers,
                 const idType *const inputOffsets,
                 SimplexId *const offsets,
+                const SimplexId constraintNumber,
                 const triangulationType &triangulation) const;
 
     inline int preconditionTriangulation(AbstractTriangulation *triangulation) {
@@ -120,26 +121,6 @@ namespace ttk {
       return 0;
     }
 
-    inline void setVertexNumber(SimplexId vertexNumber) {
-      vertexNumber_ = vertexNumber;
-    }
-
-    inline void setConstraintNumber(SimplexId constraintNumber) {
-      constraintNumber_ = constraintNumber;
-    }
-
-    inline void setInputScalarFieldPointer(void *data) {
-      inputScalarFieldPointer_ = data;
-    }
-
-    inline void setVertexIdentifierScalarFieldPointer(void *data) {
-      vertexIdentifierScalarFieldPointer_ = data;
-    }
-
-    inline void setInputOffsetScalarFieldPointer(void *data) {
-      inputOffsetScalarFieldPointer_ = data;
-    }
-
     inline void setConsiderIdentifierAsBlackList(bool onOff) {
       considerIdentifierAsBlackList_ = onOff;
     }
@@ -148,24 +129,10 @@ namespace ttk {
       addPerturbation_ = onOff;
     }
 
-    inline void setOutputScalarFieldPointer(void *data) {
-      outputScalarFieldPointer_ = data;
-    }
-
-    inline void setOutputOffsetScalarFieldPointer(void *data) {
-      outputOffsetScalarFieldPointer_ = data;
-    }
-
   protected:
     SimplexId vertexNumber_{};
-    SimplexId constraintNumber_{};
-    void *inputScalarFieldPointer_{};
-    void *vertexIdentifierScalarFieldPointer_{};
-    void *inputOffsetScalarFieldPointer_{};
     bool considerIdentifierAsBlackList_{false};
     bool addPerturbation_{false};
-    void *outputScalarFieldPointer_{};
-    void *outputOffsetScalarFieldPointer_{};
   };
 } // namespace ttk
 
@@ -315,6 +282,7 @@ int ttk::TopologicalSimplification::execute(
   const idType *const identifiers,
   const idType *const inputOffsets,
   SimplexId *const offsets,
+  const SimplexId constraintNumber,
   const triangulationType &triangulation) const {
 
   Timer t;
@@ -333,7 +301,7 @@ int ttk::TopologicalSimplification::execute(
 
   // get the user extremum list
   std::vector<bool> extrema(vertexNumber_, false);
-  for(SimplexId k = 0; k < constraintNumber_; ++k) {
+  for(SimplexId k = 0; k < constraintNumber; ++k) {
     const SimplexId identifierId = identifiers[k];
 
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -349,7 +317,7 @@ int ttk::TopologicalSimplification::execute(
   getCriticalPoints(outputScalars, offsets, authorizedMinima, authorizedMaxima,
                     extrema, triangulation);
 
-  this->printMsg("Maintaining " + std::to_string(constraintNumber_)
+  this->printMsg("Maintaining " + std::to_string(constraintNumber)
                    + " constraints (" + std::to_string(authorizedMinima.size())
                    + " minima and " + std::to_string(authorizedMaxima.size())
                    + "maxima)",

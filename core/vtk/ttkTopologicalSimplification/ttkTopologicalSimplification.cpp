@@ -325,25 +325,6 @@ int ttkTopologicalSimplification::doIt(vector<vtkDataSet *> &inputs,
   }
 #endif
 
-  topologicalSimplification_.setVertexNumber(numberOfVertices);
-  topologicalSimplification_.setConstraintNumber(numberOfConstraints);
-  topologicalSimplification_.setInputScalarFieldPointer(
-    inputScalars_->GetVoidPointer(0));
-  topologicalSimplification_.setVertexIdentifierScalarFieldPointer(
-    identifiers_->GetVoidPointer(0));
-  topologicalSimplification_.setConsiderIdentifierAsBlackList(
-    ConsiderIdentifierAsBlackList);
-  topologicalSimplification_.setAddPerturbation(AddPerturbation);
-
-  topologicalSimplification_.setInputOffsetScalarFieldPointer(
-    inputOffsets_->GetVoidPointer(0));
-
-  topologicalSimplification_.setOutputScalarFieldPointer(
-    outputScalars->GetVoidPointer(0));
-
-  topologicalSimplification_.setOutputOffsetScalarFieldPointer(
-    outputOffsets->GetVoidPointer(0));
-
 #ifndef TTK_ENABLE_KAMIKAZE
   if(identifiers_->GetDataType() != inputOffsets_->GetDataType()) {
     cerr << "[ttkTopologicalSimplification] Error : type of identifiers and "
@@ -362,7 +343,7 @@ int ttkTopologicalSimplification::doIt(vector<vtkDataSet *> &inputs,
           static_cast<int *>(ttkUtils::GetVoidPointer(identifiers_)),
           static_cast<int *>(ttkUtils::GetVoidPointer(inputOffsets_)),
           static_cast<SimplexId *>(ttkUtils::GetVoidPointer(outputOffsets)),
-          *triangulation_->getData()));
+          numberOfConstraints, *triangulation_->getData()));
     }
   } else if(inputOffsets_->GetDataType() == VTK_ID_TYPE) {
     switch(inputScalars_->GetDataType()) {
@@ -373,7 +354,7 @@ int ttkTopologicalSimplification::doIt(vector<vtkDataSet *> &inputs,
           static_cast<vtkIdType *>(ttkUtils::GetVoidPointer(identifiers_)),
           static_cast<vtkIdType *>(ttkUtils::GetVoidPointer(inputOffsets_)),
           static_cast<SimplexId *>(ttkUtils::GetVoidPointer(outputOffsets)),
-          *triangulation_->getData()));
+          numberOfConstraints, *triangulation_->getData()));
     }
   }
 #ifndef TTK_ENABLE_KAMIKAZE
