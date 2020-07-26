@@ -1,3 +1,11 @@
+#include <vtkDataArray.h>
+#include <vtkDataSet.h>
+#include <vtkInformation.h>
+#include <vtkNew.h>
+#include <vtkObjectFactory.h>
+#include <vtkPointData.h>
+#include <vtkPointSet.h>
+
 #include <ttkMacros.h>
 #include <ttkTopologicalSimplification.h>
 #include <ttkUtils.h>
@@ -45,18 +53,17 @@ int ttkTopologicalSimplification::RequestData(
 
   // triangulation
 
-  triangulation_ = ttkAlgorithm::GetTriangulation(domain);
+  auto triangulation = ttkAlgorithm::GetTriangulation(domain);
 
-  if(!triangulation_) {
+  if(!triangulation) {
     this->printErr("Input triangulation pointer is NULL.");
     return -1;
   }
 
-  this->preconditionTriangulation(triangulation_);
+  this->preconditionTriangulation(triangulation);
   Modified();
-  hasUpdatedMesh_ = true;
 
-  if(triangulation_->isEmpty()) {
+  if(triangulation->isEmpty()) {
     this->printErr("Triangulation allocation problem.");
     return -1;
   }
@@ -80,49 +87,50 @@ int ttkTopologicalSimplification::RequestData(
     return -1;
   }
 
+  vtkDataArray *inputScalars{};
   if(ScalarField.length()) {
-    inputScalars_ = pointData->GetArray(ScalarField.data());
+    inputScalars = pointData->GetArray(ScalarField.data());
   } else {
-    inputScalars_ = pointData->GetArray(ScalarFieldId);
-    if(inputScalars_)
-      ScalarField = inputScalars_->GetName();
+    inputScalars = pointData->GetArray(ScalarFieldId);
+    if(inputScalars)
+      ScalarField = inputScalars->GetName();
   }
 
-  if(!inputScalars_) {
+  if(!inputScalars) {
     this->printErr("Input scalar field pointer is null.");
     return -3;
   }
 
   // constraint identifier field
 
+  vtkDataArray *identifiers{};
   if(ForceInputVertexScalarField && InputVertexScalarFieldName.length())
-    identifiers_ = constraints->GetPointData()->GetArray(
+    identifiers = constraints->GetPointData()->GetArray(
       InputVertexScalarFieldName.data());
   else if(constraints->GetPointData()->GetArray(ttk::VertexScalarFieldName))
-    identifiers_
+    identifiers
       = constraints->GetPointData()->GetArray(ttk::VertexScalarFieldName);
 
-  if(!identifiers_) {
+  if(!identifiers) {
     this->printErr("Wrong vertex identifier scalar field.");
     return -1;
   }
 
   // domain offset field
 
+  vtkDataArray *inputOffsets{};
   if(ForceInputOffsetScalarField && InputOffsetScalarFieldName.length()) {
-    inputOffsets_
+    inputOffsets
       = domain->GetPointData()->GetArray(InputOffsetScalarFieldName.data());
   } else if(OffsetFieldId != -1
             && domain->GetPointData()->GetArray(OffsetFieldId)) {
-    inputOffsets_ = domain->GetPointData()->GetArray(OffsetFieldId);
+    inputOffsets = domain->GetPointData()->GetArray(OffsetFieldId);
   } else if(domain->GetPointData()->GetArray(ttk::OffsetScalarFieldName)) {
-    inputOffsets_
-      = domain->GetPointData()->GetArray(ttk::OffsetScalarFieldName);
+    inputOffsets = domain->GetPointData()->GetArray(ttk::OffsetScalarFieldName);
   } else {
-    if(hasUpdatedMesh_ && offsets_) {
+    if(offsets_ != nullptr) {
       offsets_->Delete();
       offsets_ = nullptr;
-      hasUpdatedMesh_ = false;
     }
 
     if(!offsets_) {
@@ -136,16 +144,16 @@ int ttkTopologicalSimplification::RequestData(
         offsets_->SetTuple1(i, i);
     }
 
-    inputOffsets_ = offsets_;
+    inputOffsets = offsets_;
   }
 
-  if(!inputOffsets_) {
+  if(!inputOffsets) {
     this->printErr("Wrong input offset scalar field.");
     return -1;
   }
 
-  if(inputOffsets_->GetDataType() != VTK_INT
-     and inputOffsets_->GetDataType() != VTK_ID_TYPE) {
+  if(inputOffsets->GetDataType() != VTK_INT
+     and inputOffsets->GetDataType() != VTK_ID_TYPE) {
     this->printErr("Input offset field type not supported.");
     return -1;
   }
@@ -169,10 +177,10 @@ int ttkTopologicalSimplification::RequestData(
     return -7;
   }
 
-  vtkSmartPointer<vtkDataArray> outputScalars{inputScalars_->NewInstance()};
+  vtkSmartPointer<vtkDataArray> outputScalars{inputScalars->NewInstance()};
   if(outputScalars) {
     outputScalars->SetNumberOfTuples(numberOfVertices);
-    outputScalars->SetName(inputScalars_->GetName());
+    outputScalars->SetName(inputScalars->GetName());
   } else {
     this->printErr("vtkDataArray allocation problem.");
     return -9;
@@ -184,32 +192,32 @@ int ttkTopologicalSimplification::RequestData(
     return -10;
   }
 
-  if(identifiers_->GetDataType() != inputOffsets_->GetDataType()) {
+  if(identifiers->GetDataType() != inputOffsets->GetDataType()) {
     this->printErr("Type of identifiers and offsets are different.");
     return -11;
   }
 
-  if(inputOffsets_->GetDataType() == VTK_INT) {
-    switch(inputScalars_->GetDataType()) {
+  if(inputOffsets->GetDataType() == VTK_INT) {
+    switch(inputScalars->GetDataType()) {
       vtkTemplateMacro(
         ret = this->execute(
-          static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(inputScalars_)),
+          static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(inputScalars)),
           static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(outputScalars)),
-          static_cast<int *>(ttkUtils::GetVoidPointer(identifiers_)),
-          static_cast<int *>(ttkUtils::GetVoidPointer(inputOffsets_)),
+          static_cast<int *>(ttkUtils::GetVoidPointer(identifiers)),
+          static_cast<int *>(ttkUtils::GetVoidPointer(inputOffsets)),
           static_cast<SimplexId *>(ttkUtils::GetVoidPointer(outputOffsets)),
-          numberOfConstraints, *triangulation_->getData()));
+          numberOfConstraints, *triangulation->getData()));
     }
-  } else if(inputOffsets_->GetDataType() == VTK_ID_TYPE) {
-    switch(inputScalars_->GetDataType()) {
+  } else if(inputOffsets->GetDataType() == VTK_ID_TYPE) {
+    switch(inputScalars->GetDataType()) {
       vtkTemplateMacro(
         ret = this->execute(
-          static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(inputScalars_)),
+          static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(inputScalars)),
           static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(outputScalars)),
-          static_cast<vtkIdType *>(ttkUtils::GetVoidPointer(identifiers_)),
-          static_cast<vtkIdType *>(ttkUtils::GetVoidPointer(inputOffsets_)),
+          static_cast<vtkIdType *>(ttkUtils::GetVoidPointer(identifiers)),
+          static_cast<vtkIdType *>(ttkUtils::GetVoidPointer(inputOffsets)),
           static_cast<SimplexId *>(ttkUtils::GetVoidPointer(outputOffsets)),
-          numberOfConstraints, *triangulation_->getData()));
+          numberOfConstraints, *triangulation->getData()));
     }
   }
 

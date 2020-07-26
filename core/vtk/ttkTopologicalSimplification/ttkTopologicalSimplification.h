@@ -50,22 +50,7 @@
 #pragma once
 
 // VTK includes -- to adapt
-#include <vtkCharArray.h>
-#include <vtkDataArray.h>
-#include <vtkDataSet.h>
-#include <vtkDataSetAlgorithm.h>
-#include <vtkDoubleArray.h>
-#include <vtkFiltersCoreModule.h>
-#include <vtkFloatArray.h>
-#include <vtkInformation.h>
-#include <vtkIntArray.h>
-#include <vtkObjectFactory.h>
-#include <vtkPointData.h>
-#include <vtkPointSet.h>
-#include <vtkShortArray.h>
 #include <vtkSmartPointer.h>
-#include <vtkUnsignedCharArray.h>
-#include <vtkUnsignedShortArray.h>
 
 // VTK Module
 #include <ttkTopologicalSimplificationModule.h>
@@ -73,6 +58,8 @@
 // ttk code includes
 #include <TopologicalSimplification.h>
 #include <ttkAlgorithm.h>
+
+class vtkDataArray;
 
 class TTKTOPOLOGICALSIMPLIFICATION_EXPORT ttkTopologicalSimplification
   : public ttkAlgorithm,
@@ -126,11 +113,6 @@ private:
   bool ForceInputOffsetScalarField{false};
   bool ConsiderIdentifierAsBlackList{false};
   bool AddPerturbation{false};
-  bool hasUpdatedMesh_{false};
 
-  ttk::Triangulation *triangulation_{};
-  vtkDataArray *identifiers_{};
-  vtkDataArray *inputScalars_{};
   vtkSmartPointer<vtkDataArray> offsets_{};
-  vtkDataArray *inputOffsets_{};
 };
