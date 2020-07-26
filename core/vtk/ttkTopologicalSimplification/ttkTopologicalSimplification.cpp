@@ -36,9 +36,7 @@ int ttkTopologicalSimplification::getTriangulation(vtkDataSet *input) {
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!triangulation_) {
-    cerr << "[ttkTopologicalSimplification] Error : input triangulation "
-            "pointer is NULL."
-         << endl;
+    this->printErr("Input triangulation pointer is NULL.");
     return -1;
   }
 #endif
@@ -49,9 +47,7 @@ int ttkTopologicalSimplification::getTriangulation(vtkDataSet *input) {
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(triangulation_->isEmpty()) {
-    cerr << "[ttkTopologicalSimplification] Error : ttkTriangulation "
-            "allocation problem."
-         << endl;
+    this->printErr("Triangulation allocation problem.");
     return -1;
   }
 #endif
@@ -62,14 +58,12 @@ int ttkTopologicalSimplification::getTriangulation(vtkDataSet *input) {
 int ttkTopologicalSimplification::getScalars(vtkDataSet *input) {
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!input) {
-    cerr << "[ttkTopologicalSimplification] Error : input pointer is NULL."
-         << endl;
+    this->printErr("Input pointer is NULL.");
     return -1;
   }
 
   if(!input->GetNumberOfPoints()) {
-    cerr << "[ttkTopologicalSimplification] Error : input has no point."
-         << endl;
+    this->printErr("Input has no point.");
     return -1;
   }
 #endif
@@ -78,8 +72,7 @@ int ttkTopologicalSimplification::getScalars(vtkDataSet *input) {
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!pointData) {
-    cerr << "[ttkTopologicalSimplification] Error : input has no point data."
-         << endl;
+    this->printErr("Input has no point data.");
     return -1;
   }
 #endif
@@ -94,9 +87,7 @@ int ttkTopologicalSimplification::getScalars(vtkDataSet *input) {
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!inputScalars_) {
-    cerr << "[ttkTopologicalSimplification] Error : input scalar field pointer "
-            "is null."
-         << endl;
+    this->printErr("Input scalar field pointer is null.");
     return -3;
   }
 #endif
@@ -113,9 +104,7 @@ int ttkTopologicalSimplification::getIdentifiers(vtkPointSet *input) {
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!identifiers_) {
-    cerr << "[ttkTopologicalSimplification] Error : wrong vertex identifier "
-            "scalar field."
-         << endl;
+    this->printErr("Wrong vertex identifier scalar field.");
     return -1;
   }
 #endif
@@ -155,9 +144,7 @@ int ttkTopologicalSimplification::getOffsets(vtkDataSet *input) {
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!inputOffsets_) {
-    cerr << "[ttkTopologicalSimplification] Error : wrong input offset scalar "
-            "field."
-         << endl;
+    this->printErr("Wrong input offset scalar field.");
     return -1;
   }
 #endif
@@ -181,8 +168,7 @@ int ttkTopologicalSimplification::RequestData(
   ret = getTriangulation(domain);
 #ifndef TTK_ENABLE_KAMIKAZE
   if(ret) {
-    cerr << "[ttkTopologicalSimplification] Error : wrong triangulation."
-         << endl;
+    this->printErr("Wrong triangulation.");
     return -1;
   }
 #endif
@@ -190,7 +176,7 @@ int ttkTopologicalSimplification::RequestData(
   ret = getScalars(domain);
 #ifndef TTK_ENABLE_KAMIKAZE
   if(ret) {
-    cerr << "[ttkTopologicalSimplification] Error : wrong scalars." << endl;
+    this->printErr("Wrong scalars.");
     return -2;
   }
 #endif
@@ -198,7 +184,7 @@ int ttkTopologicalSimplification::RequestData(
   ret = getIdentifiers(constraints);
 #ifndef TTK_ENABLE_KAMIKAZE
   if(ret) {
-    cerr << "[ttkTopologicalSimplification] Error : wrong identifiers." << endl;
+    this->printErr("Wrong identifiers.");
     return -3;
   }
 #endif
@@ -206,16 +192,14 @@ int ttkTopologicalSimplification::RequestData(
   ret = getOffsets(domain);
 #ifndef TTK_ENABLE_KAMIKAZE
   if(ret) {
-    cerr << "[ttkTopologicalSimplification] Error : wrong offsets." << endl;
+    this->printErr("Wrong offsets.");
     return -4;
   }
 #endif
 #ifndef TTK_ENABLE_KAMIKAZE
   if(inputOffsets_->GetDataType() != VTK_INT
      and inputOffsets_->GetDataType() != VTK_ID_TYPE) {
-    cerr << "[ttkTopologicalSimplification] Error : input offset field type "
-            "not supported."
-         << endl;
+    this->printErr("Input offset field type not supported.");
     return -1;
   }
 #endif
@@ -223,8 +207,7 @@ int ttkTopologicalSimplification::RequestData(
   const auto numberOfVertices = domain->GetNumberOfPoints();
 #ifndef TTK_ENABLE_KAMIKAZE
   if(numberOfVertices <= 0) {
-    cerr << "[ttkTopologicalSimplification] Error : domain has no points."
-         << endl;
+    this->printErr("Domain has no points.");
     return -5;
   }
 #endif
@@ -240,9 +223,7 @@ int ttkTopologicalSimplification::RequestData(
   }
 #ifndef TTK_ENABLE_KAMIKAZE
   else {
-    cerr << "[ttkTopologicalSimplification] Error : ttkSimplexIdTypeArray "
-            "allocation problem."
-         << endl;
+    this->printErr("ttkSimplexIdTypeArray allocation problem.");
     return -7;
   }
 #endif
@@ -254,9 +235,7 @@ int ttkTopologicalSimplification::RequestData(
   }
 #ifndef TTK_ENABLE_KAMIKAZE
   else {
-    cerr << "[ttkTopologicalSimplification] Error : vtkDataArray allocation "
-            "problem."
-         << endl;
+    this->printErr("vtkDataArray allocation problem.");
     return -9;
   }
 #endif
@@ -264,17 +243,14 @@ int ttkTopologicalSimplification::RequestData(
   const auto numberOfConstraints = constraints->GetNumberOfPoints();
 #ifndef TTK_ENABLE_KAMIKAZE
   if(numberOfConstraints <= 0) {
-    cerr << "[ttkTopologicalSimplification] Error : input has no constraints."
-         << endl;
+    this->printErr("Input has no constraints.");
     return -10;
   }
 #endif
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(identifiers_->GetDataType() != inputOffsets_->GetDataType()) {
-    cerr << "[ttkTopologicalSimplification] Error : type of identifiers and "
-            "offsets are different."
-         << endl;
+    this->printErr("Type of identifiers and offsets are different.");
     return -11;
   }
 #endif
@@ -305,9 +281,8 @@ int ttkTopologicalSimplification::RequestData(
 #ifndef TTK_ENABLE_KAMIKAZE
   // something wrong in baseCode
   if(ret) {
-    cerr << "[ttkTopologicalSimplification] "
-            "TopologicalSimplification.execute() error code : "
-         << ret << endl;
+    this->printErr("TopologicalSimplification.execute() error code: "
+                   + std::to_string(ret));
     return -12;
   }
 #endif
