@@ -30,9 +30,20 @@ int ttkTopologicalSimplification::FillOutputPortInformation(
   return 0;
 }
 
-int ttkTopologicalSimplification::getTriangulation(vtkDataSet *input) {
+int ttkTopologicalSimplification::RequestData(
+  vtkInformation *request,
+  vtkInformationVector **inputVector,
+  vtkInformationVector *outputVector) {
 
-  triangulation_ = ttkAlgorithm::GetTriangulation(input);
+  using ttk::SimplexId;
+
+  const auto domain = vtkDataSet::GetData(inputVector[0]);
+  const auto constraints = vtkPointSet::GetData(inputVector[1]);
+  auto output = vtkDataSet::GetData(outputVector);
+
+  int ret{};
+
+  triangulation_ = ttkAlgorithm::GetTriangulation(domain);
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!triangulation_) {
@@ -52,23 +63,19 @@ int ttkTopologicalSimplification::getTriangulation(vtkDataSet *input) {
   }
 #endif
 
-  return 0;
-}
-
-int ttkTopologicalSimplification::getScalars(vtkDataSet *input) {
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(!input) {
+  if(!domain) {
     this->printErr("Input pointer is NULL.");
     return -1;
   }
 
-  if(!input->GetNumberOfPoints()) {
+  if(!domain->GetNumberOfPoints()) {
     this->printErr("Input has no point.");
     return -1;
   }
 #endif
 
-  vtkPointData *pointData = input->GetPointData();
+  const auto pointData = domain->GetPointData();
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!pointData) {
@@ -92,15 +99,12 @@ int ttkTopologicalSimplification::getScalars(vtkDataSet *input) {
   }
 #endif
 
-  return 0;
-}
-
-int ttkTopologicalSimplification::getIdentifiers(vtkPointSet *input) {
-  if(ForceInputVertexScalarField and InputVertexScalarFieldName.length())
+  if(ForceInputVertexScalarField && InputVertexScalarFieldName.length())
+    identifiers_ = constraints->GetPointData()->GetArray(
+      InputVertexScalarFieldName.data());
+  else if(constraints->GetPointData()->GetArray(ttk::VertexScalarFieldName))
     identifiers_
-      = input->GetPointData()->GetArray(InputVertexScalarFieldName.data());
-  else if(input->GetPointData()->GetArray(ttk::VertexScalarFieldName))
-    identifiers_ = input->GetPointData()->GetArray(ttk::VertexScalarFieldName);
+      = constraints->GetPointData()->GetArray(ttk::VertexScalarFieldName);
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!identifiers_) {
@@ -109,27 +113,24 @@ int ttkTopologicalSimplification::getIdentifiers(vtkPointSet *input) {
   }
 #endif
 
-  return 0;
-}
-
-int ttkTopologicalSimplification::getOffsets(vtkDataSet *input) {
-  if(ForceInputOffsetScalarField and InputOffsetScalarFieldName.length()) {
+  if(ForceInputOffsetScalarField && InputOffsetScalarFieldName.length()) {
     inputOffsets_
-      = input->GetPointData()->GetArray(InputOffsetScalarFieldName.data());
+      = domain->GetPointData()->GetArray(InputOffsetScalarFieldName.data());
   } else if(OffsetFieldId != -1
-            and input->GetPointData()->GetArray(OffsetFieldId)) {
-    inputOffsets_ = input->GetPointData()->GetArray(OffsetFieldId);
-  } else if(input->GetPointData()->GetArray(ttk::OffsetScalarFieldName)) {
-    inputOffsets_ = input->GetPointData()->GetArray(ttk::OffsetScalarFieldName);
+            && domain->GetPointData()->GetArray(OffsetFieldId)) {
+    inputOffsets_ = domain->GetPointData()->GetArray(OffsetFieldId);
+  } else if(domain->GetPointData()->GetArray(ttk::OffsetScalarFieldName)) {
+    inputOffsets_
+      = domain->GetPointData()->GetArray(ttk::OffsetScalarFieldName);
   } else {
-    if(hasUpdatedMesh_ and offsets_) {
+    if(hasUpdatedMesh_ && offsets_) {
       offsets_->Delete();
       offsets_ = nullptr;
       hasUpdatedMesh_ = false;
     }
 
     if(!offsets_) {
-      const auto numberOfVertices = input->GetNumberOfPoints();
+      const auto numberOfVertices = domain->GetNumberOfPoints();
 
       offsets_ = ttkSimplexIdTypeArray::New();
       offsets_->SetNumberOfComponents(1);
@@ -149,53 +150,6 @@ int ttkTopologicalSimplification::getOffsets(vtkDataSet *input) {
   }
 #endif
 
-  return 0;
-}
-
-int ttkTopologicalSimplification::RequestData(
-  vtkInformation *request,
-  vtkInformationVector **inputVector,
-  vtkInformationVector *outputVector) {
-
-  using ttk::SimplexId;
-
-  const auto domain = vtkDataSet::GetData(inputVector[0]);
-  const auto constraints = vtkPointSet::GetData(inputVector[1]);
-  auto output = vtkDataSet::GetData(outputVector);
-
-  int ret{};
-
-  ret = getTriangulation(domain);
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(ret) {
-    this->printErr("Wrong triangulation.");
-    return -1;
-  }
-#endif
-
-  ret = getScalars(domain);
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(ret) {
-    this->printErr("Wrong scalars.");
-    return -2;
-  }
-#endif
-
-  ret = getIdentifiers(constraints);
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(ret) {
-    this->printErr("Wrong identifiers.");
-    return -3;
-  }
-#endif
-
-  ret = getOffsets(domain);
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(ret) {
-    this->printErr("Wrong offsets.");
-    return -4;
-  }
-#endif
 #ifndef TTK_ENABLE_KAMIKAZE
   if(inputOffsets_->GetDataType() != VTK_INT
      and inputOffsets_->GetDataType() != VTK_ID_TYPE) {

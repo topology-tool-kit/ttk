@@ -106,11 +106,6 @@ public:
   vtkSetMacro(InputVertexScalarFieldName, std::string);
   vtkGetMacro(InputVertexScalarFieldName, std::string);
 
-  int getTriangulation(vtkDataSet *input);
-  int getScalars(vtkDataSet *input);
-  int getIdentifiers(vtkPointSet *input);
-  int getOffsets(vtkDataSet *input);
-
 protected:
   ttkTopologicalSimplification();
 
