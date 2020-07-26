@@ -58,7 +58,7 @@ int ttkTopologicalSimplification::getTriangulation(vtkDataSet *input) {
   triangulation_->setPeriodicBoundaryConditions(PeriodicBoundaryConditions);
   triangulation_->setWrapper(this);
   topologicalSimplification_.setWrapper(this);
-  topologicalSimplification_.setupTriangulation(triangulation_);
+  topologicalSimplification_.preconditionTriangulation(triangulation_);
   Modified();
   hasUpdatedMesh_ = true;
 

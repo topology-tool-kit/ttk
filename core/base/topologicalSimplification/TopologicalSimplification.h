@@ -21,13 +21,12 @@
 ///
 /// \sa ttkTopologicalSimplification.cpp %for a usage example.
 
-#ifndef _TOPOLOGICALSIMPLIFICATION_H
-#define _TOPOLOGICALSIMPLIFICATION_H
+#pragma once
 
 // base code includes
-#include <Wrapper.h>
-
+#include <Debug.h>
 #include <Triangulation.h>
+
 #include <cmath>
 #include <set>
 #include <tuple>
@@ -35,20 +34,18 @@
 
 namespace ttk {
 
-  struct SweepCmp {
-  private:
-    bool isIncreasingOrder_;
+  class SweepCmp {
+    bool isIncreasingOrder_{};
 
   public:
-    SweepCmp() : isIncreasingOrder_{} {
+    SweepCmp() {
     }
 
     SweepCmp(bool isIncreasingOrder) : isIncreasingOrder_{isIncreasingOrder} {
     }
 
-    int setIsIncreasingOrder(bool isIncreasingOrder) {
+    inline void setIsIncreasingOrder(bool isIncreasingOrder) {
       isIncreasingOrder_ = isIncreasingOrder;
-      return 0;
     }
 
     template <typename dataType>
@@ -64,15 +61,12 @@ namespace ttk {
                 or (std::get<0>(v0) == std::get<0>(v1)
                     and std::get<1>(v0) > std::get<1>(v1)));
       }
-    };
+    }
   };
 
-  class TopologicalSimplification : public Debug {
-
+  class TopologicalSimplification : virtual public Debug {
   public:
     TopologicalSimplification();
-
-    ~TopologicalSimplification();
 
     template <typename dataType>
     bool isLowerThan(SimplexId a,
@@ -110,71 +104,62 @@ namespace ttk {
     template <typename dataType, typename idType>
     int execute() const;
 
-    inline int setupTriangulation(AbstractTriangulation *triangulation) {
+    inline int preconditionTriangulation(AbstractTriangulation *triangulation) {
       triangulation_ = triangulation;
-      if(triangulation_) {
-        vertexNumber_ = triangulation_->getNumberOfVertices();
-        triangulation_->preconditionVertexNeighbors();
+      if(triangulation) {
+        vertexNumber_ = triangulation->getNumberOfVertices();
+        triangulation->preconditionVertexNeighbors();
       }
       return 0;
     }
 
-    inline int setVertexNumber(SimplexId vertexNumber) {
+    inline void setVertexNumber(SimplexId vertexNumber) {
       vertexNumber_ = vertexNumber;
-      return 0;
     }
 
-    inline int setConstraintNumber(SimplexId constraintNumber) {
+    inline void setConstraintNumber(SimplexId constraintNumber) {
       constraintNumber_ = constraintNumber;
-      return 0;
     }
 
-    inline int setInputScalarFieldPointer(void *data) {
+    inline void setInputScalarFieldPointer(void *data) {
       inputScalarFieldPointer_ = data;
-      return 0;
     }
 
-    inline int setVertexIdentifierScalarFieldPointer(void *data) {
+    inline void setVertexIdentifierScalarFieldPointer(void *data) {
       vertexIdentifierScalarFieldPointer_ = data;
-      return 0;
     }
 
-    inline int setInputOffsetScalarFieldPointer(void *data) {
+    inline void setInputOffsetScalarFieldPointer(void *data) {
       inputOffsetScalarFieldPointer_ = data;
-      return 0;
     }
 
-    inline int setConsiderIdentifierAsBlackList(bool onOff) {
+    inline void setConsiderIdentifierAsBlackList(bool onOff) {
       considerIdentifierAsBlackList_ = onOff;
-      return 0;
     }
 
-    inline int setAddPerturbation(bool onOff) {
+    inline void setAddPerturbation(bool onOff) {
       addPerturbation_ = onOff;
-      return 0;
     }
 
-    inline int setOutputScalarFieldPointer(void *data) {
+    inline void setOutputScalarFieldPointer(void *data) {
       outputScalarFieldPointer_ = data;
-      return 0;
     }
 
-    inline int setOutputOffsetScalarFieldPointer(void *data) {
+    inline void setOutputOffsetScalarFieldPointer(void *data) {
       outputOffsetScalarFieldPointer_ = data;
-      return 0;
     }
 
   protected:
-    AbstractTriangulation *triangulation_;
-    SimplexId vertexNumber_;
-    SimplexId constraintNumber_;
-    void *inputScalarFieldPointer_;
-    void *vertexIdentifierScalarFieldPointer_;
-    void *inputOffsetScalarFieldPointer_;
-    bool considerIdentifierAsBlackList_;
-    bool addPerturbation_;
-    void *outputScalarFieldPointer_;
-    void *outputOffsetScalarFieldPointer_;
+    AbstractTriangulation *triangulation_{};
+    SimplexId vertexNumber_{};
+    SimplexId constraintNumber_{};
+    void *inputScalarFieldPointer_{};
+    void *vertexIdentifierScalarFieldPointer_{};
+    void *inputOffsetScalarFieldPointer_{};
+    bool considerIdentifierAsBlackList_{false};
+    bool addPerturbation_{false};
+    void *outputScalarFieldPointer_{};
+    void *outputOffsetScalarFieldPointer_{};
   };
 } // namespace ttk
 
@@ -502,4 +487,3 @@ int ttk::TopologicalSimplification::execute() const {
 
   return 0;
 }
-#endif // TOPOLOGICALSIMPLIFICATION_H
