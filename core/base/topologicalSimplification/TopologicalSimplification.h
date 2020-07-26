@@ -340,13 +340,11 @@ int ttk::TopologicalSimplification::execute() const {
   getCriticalPoints<dataType>(
     scalars, offsets, authorizedMinima, authorizedMaxima, extrema);
 
-  {
-    std::stringstream msg;
-    msg << "[TopologicalSimplification] Maintaining " << constraintNumber_
-        << " constraints (" << authorizedMinima.size() << " minima and "
-        << authorizedMaxima.size() << " maxima)." << std::endl;
-    dMsg(std::cout, msg.str(), advancedInfoMsg);
-  }
+  this->printMsg("Maintaining " + std::to_string(constraintNumber_)
+                   + " constraints (" + std::to_string(authorizedMinima.size())
+                   + " minima and " + std::to_string(authorizedMaxima.size())
+                   + "maxima)",
+                 debug::Priority::DETAIL);
 
   // declare the tuple-comparison functor
   SweepCmp cmp;
@@ -355,12 +353,8 @@ int ttk::TopologicalSimplification::execute() const {
   int iteration{};
   for(SimplexId i = 0; i < vertexNumber_; ++i) {
 
-    {
-      std::stringstream msg;
-      msg << "[TopologicalSimplification] Starting simplifying iteration #" << i
-          << "..." << std::endl;
-      dMsg(std::cout, msg.str(), advancedInfoMsg);
-    }
+    this->printMsg("Starting simplifying iteration #" + std::to_string(i),
+                   debug::Priority::DETAIL);
 
     for(int j = 0; j < 2; ++j) {
 
@@ -444,12 +438,12 @@ int ttk::TopologicalSimplification::execute() const {
     if(minima.size() > authorizedMinima.size())
       needForMoreIterations = true;
 
-    {
-      std::stringstream msg;
-      msg << "[TopologicalSimplification] Current status: " << minima.size()
-          << " minima, " << maxima.size() << " maxima." << std::endl;
-      dMsg(std::cout, msg.str(), advancedInfoMsg);
-    }
+    this->printMsg(
+      std::vector<std::vector<std::string>>{
+        {"#Minima", std::to_string(minima.size())},
+        {"#Maxima", std::to_string(maxima.size())},
+      },
+      debug::Priority::DETAIL);
 
     if(!needForMoreIterations) {
       for(SimplexId k : minima) {
@@ -477,13 +471,8 @@ int ttk::TopologicalSimplification::execute() const {
       break;
   }
 
-  {
-    std::stringstream msg;
-    msg << "[TopologicalSimplification] Scalar field simplified"
-        << " in " << t.getElapsedTime() << " s. (" << threadNumber_
-        << " threads(s), " << iteration << " ite.)." << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
-  }
+  this->printMsg(
+    "Simplified scalar field", 1.0, t.getElapsedTime(), this->threadNumber_);
 
   return 0;
 }
