@@ -78,9 +78,6 @@ public:
   vtkSetMacro(AddPerturbation, bool);
   vtkGetMacro(AddPerturbation, bool);
 
-  vtkSetMacro(OutputOffsetScalarFieldName, std::string);
-  vtkGetMacro(OutputOffsetScalarFieldName, std::string);
-
   vtkSetMacro(ForceInputVertexScalarField, bool);
   vtkGetMacro(ForceInputVertexScalarField, bool);
 
@@ -95,7 +92,6 @@ protected:
 
 private:
   int OffsetFieldId{-1};
-  std::string OutputOffsetScalarFieldName{ttk::OffsetScalarFieldName};
   bool ForceInputVertexScalarField{false};
   bool ForceInputOffsetScalarField{false};
   bool ConsiderIdentifierAsBlackList{false};

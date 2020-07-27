@@ -96,21 +96,44 @@ int ttkTopologicalSimplification::RequestData(
     return -1;
   }
 
+  // name of the potential offset field related to the input scalar field
+  const auto offsetFieldName = std::string{inputScalars->GetName()} + "_Order";
+
   // domain offset field
-  const auto inputOffsets = this->GetOptionalArray(
-    ForceInputOffsetScalarField, 2, ttk::OffsetScalarFieldName, inputVector);
-  vtkNew<ttkSimplexIdTypeArray> offsets{};
-  if(inputOffsets == nullptr) {
-    // fill in with default offset
-    offsets->SetNumberOfComponents(1);
-    offsets->SetNumberOfTuples(numberOfVertices);
-    offsets->SetName(ttk::OffsetScalarFieldName);
-    for(int i = 0; i < numberOfVertices; ++i) {
-      offsets->SetTuple1(i, i);
+  const auto fetchOffsets = [&]() {
+    // try to find an order array related to the input scalar field
+    const auto inputOffsets
+      = domain->GetPointData()->GetArray(offsetFieldName.data());
+    if(inputOffsets != nullptr) {
+      return inputOffsets;
+    } else {
+      // sort
+      std::vector<SimplexId> sortedVertices(numberOfVertices);
+      for(size_t i = 0; i < sortedVertices.size(); ++i) {
+        sortedVertices[i] = i;
+      }
+
+      std::sort(
+        sortedVertices.begin(), sortedVertices.end(),
+        [&](const SimplexId a, const SimplexId b) {
+          return (inputScalars->GetTuple1(a) < inputScalars->GetTuple1(b))
+                 || (inputScalars->GetTuple1(a) == inputScalars->GetTuple1(b)
+                     && a < b);
+        });
+
+      vtkDataArray *vertsOrder = ttkSimplexIdTypeArray::New();
+      vertsOrder->SetName(offsetFieldName.data());
+      vertsOrder->SetNumberOfComponents(1);
+      vertsOrder->SetNumberOfTuples(numberOfVertices);
+
+      for(size_t i = 0; i < sortedVertices.size(); ++i) {
+        vertsOrder->SetTuple1(sortedVertices[i], i);
+      }
+      return vertsOrder;
     }
-  } else {
-    offsets->ShallowCopy(inputOffsets);
-  }
+  };
+
+  const auto offsets = fetchOffsets();
 
   if(!offsets) {
     this->printErr("Wrong input offset scalar field.");
@@ -123,14 +146,11 @@ int ttkTopologicalSimplification::RequestData(
     return -1;
   }
 
-  if(OutputOffsetScalarFieldName.length() <= 0)
-    OutputOffsetScalarFieldName = ttk::OffsetScalarFieldName;
-
   vtkNew<ttkSimplexIdTypeArray> outputOffsets{};
   if(outputOffsets) {
     outputOffsets->SetNumberOfComponents(1);
     outputOffsets->SetNumberOfTuples(numberOfVertices);
-    outputOffsets->SetName(OutputOffsetScalarFieldName.data());
+    outputOffsets->SetName(offsets->GetName());
   } else {
     this->printErr("ttkSimplexIdTypeArray allocation problem.");
     return -7;
