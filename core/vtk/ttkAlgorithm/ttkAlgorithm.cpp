@@ -1,6 +1,8 @@
 #include <ttkAlgorithm.h>
+#include <ttkMacros.h>
 #include <ttkUtils.h>
 
+#include <OrderDisambiguation.h>
 #include <Triangulation.h>
 #include <vtkCellTypes.h>
 #include <vtkCommand.h>
@@ -278,6 +280,55 @@ vtkDataArray *ttkAlgorithm::GetOptionalArray(const bool &enforceArrayIndex,
     optionalArray = this->GetInputArrayToProcess(arrayIndex, inputData);
   }
   return optionalArray;
+}
+
+vtkDataArray *ttkAlgorithm::GetOffsetField(vtkDataArray *const sfArray,
+                                           const bool enforceArrayIndex,
+                                           const int arrayIndex,
+                                           vtkInformationVector **inputVectors,
+                                           const int &inputPort) {
+
+  // try to find a vtkDataArray with the name sfArrayName + "_Order"
+  const auto offsetFieldName = std::string{sfArray->GetName()} + "_Order";
+  this->SetInputArrayToProcess(
+    arrayIndex, inputPort, 0, 0, offsetFieldName.data());
+  const auto inOrder = this->GetInputArrayToProcess(arrayIndex, inputVectors);
+  if(inOrder != nullptr) {
+    return inOrder;
+  } else {
+    // if no array found, generate one
+    vtkDataArray *inDisamb = nullptr;
+    if(enforceArrayIndex) {
+      inDisamb = this->GetInputArrayToProcess(arrayIndex, inputVectors);
+    }
+
+    vtkSmartPointer<vtkDataArray> vertsOrder = ttkSimplexIdTypeArray::New();
+    vertsOrder->SetName(offsetFieldName.data());
+    vertsOrder->SetNumberOfComponents(1);
+    const auto nVerts = sfArray->GetNumberOfTuples();
+    vertsOrder->SetNumberOfTuples(nVerts);
+
+#define CALL_SORT_VERTICES(TYPE, VAL)                                      \
+  switch(sfArray->GetDataType()) {                                         \
+    vtkTemplateMacro(ttk::sortVertices(                                    \
+      nVerts, static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(sfArray)),    \
+      static_cast<TYPE *>(VAL),                                            \
+      static_cast<ttk::SimplexId *>(ttkUtils::GetVoidPointer(vertsOrder)), \
+      this->threadNumber_));                                               \
+  }
+
+    if(inDisamb == nullptr) {
+      CALL_SORT_VERTICES(int, nullptr)
+    } else if(inDisamb->GetDataType() == VTK_INT) {
+      CALL_SORT_VERTICES(int, ttkUtils::GetVoidPointer(inDisamb))
+    } else if(inDisamb->GetDataType() == VTK_ID_TYPE) {
+      CALL_SORT_VERTICES(vtkIdType, ttkUtils::GetVoidPointer(inDisamb))
+    } else {
+      CALL_SORT_VERTICES(vtkIdType, nullptr)
+    }
+
+    return vertsOrder;
+  }
 }
 
 ttk::Triangulation *ttkAlgorithm::GetTriangulation(vtkDataSet *dataSet) {

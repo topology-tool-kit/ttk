@@ -139,6 +139,19 @@ public:
                                  const int &inputPort = 0);
 
   /**
+   * Retrieves an offset field from the given scalar field named \p
+   * sfArrayName or generates one, either disambiguated with the
+   * implicit vertex identifier field, or with a user-provided offset
+   * field through the \p enforceArrayIndex boolean parameter and the
+   * \p arrayIndex.
+   */
+  vtkDataArray *GetOffsetField(vtkDataArray *const sfArray,
+                               const bool enforceArrayIndex,
+                               const int arrayIndex,
+                               vtkInformationVector **inputVectors,
+                               const int &inputPort = 0);
+
+  /**
    * This method retrieves the ttk::Triangulation of a vtkDataSet.
    *
    * Note, this method initializes a triangulation if one does not exist
