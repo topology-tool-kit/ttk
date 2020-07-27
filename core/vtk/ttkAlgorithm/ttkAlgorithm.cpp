@@ -100,7 +100,7 @@ ttk::Triangulation *ttkAlgorithm::FindTriangulation(void *key) {
     }
 
     if(valid) {
-      this->printMsg("Returning already initilized triangulation",
+      this->printMsg("Returning already initialized triangulation",
                      ttk::debug::Priority::DETAIL);
       triangulation->setDebugLevel(this->debugLevel_);
       return triangulation;
