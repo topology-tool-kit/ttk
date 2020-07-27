@@ -6,6 +6,7 @@
 #include <vtkPointData.h>
 #include <vtkPointSet.h>
 
+#include <OrderDisambiguation.h>
 #include <ttkMacros.h>
 #include <ttkTopologicalSimplification.h>
 #include <ttkUtils.h>
@@ -102,32 +103,47 @@ int ttkTopologicalSimplification::RequestData(
   // domain offset field
   const auto fetchOffsets = [&]() {
     // try to find an order array related to the input scalar field
-    const auto inputOffsets
+    const auto inputOrder
       = domain->GetPointData()->GetArray(offsetFieldName.data());
-    if(inputOffsets != nullptr) {
-      return inputOffsets;
+    if(inputOrder != nullptr) {
+      return inputOrder;
     } else {
-      // sort
-      std::vector<SimplexId> sortedVertices(numberOfVertices);
-      for(size_t i = 0; i < sortedVertices.size(); ++i) {
-        sortedVertices[i] = i;
-      }
-
-      std::sort(
-        sortedVertices.begin(), sortedVertices.end(),
-        [&](const SimplexId a, const SimplexId b) {
-          return (inputScalars->GetTuple1(a) < inputScalars->GetTuple1(b))
-                 || (inputScalars->GetTuple1(a) == inputScalars->GetTuple1(b)
-                     && a < b);
-        });
+      const auto inputOffsets
+        = this->GetOptionalArray(ForceInputOffsetScalarField, 2,
+                                 ttk::OffsetScalarFieldName, inputVector);
 
       vtkDataArray *vertsOrder = ttkSimplexIdTypeArray::New();
       vertsOrder->SetName(offsetFieldName.data());
       vertsOrder->SetNumberOfComponents(1);
       vertsOrder->SetNumberOfTuples(numberOfVertices);
 
-      for(size_t i = 0; i < sortedVertices.size(); ++i) {
-        vertsOrder->SetTuple1(sortedVertices[i], i);
+      if(inputOffsets == nullptr) {
+        switch(inputScalars->GetDataType()) {
+          vtkTemplateMacro(ttk::sortVertices(
+            numberOfVertices,
+            static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(inputScalars)),
+            static_cast<int *>(nullptr),
+            static_cast<SimplexId *>(ttkUtils::GetVoidPointer(vertsOrder)),
+            this->threadNumber_));
+        }
+      } else if(inputOffsets->GetDataType() == VTK_INT) {
+        switch(inputScalars->GetDataType()) {
+          vtkTemplateMacro(ttk::sortVertices(
+            numberOfVertices,
+            static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(inputScalars)),
+            static_cast<int *>(ttkUtils::GetVoidPointer(inputOffsets)),
+            static_cast<SimplexId *>(ttkUtils::GetVoidPointer(vertsOrder)),
+            this->threadNumber_));
+        }
+      } else if(inputOffsets->GetDataType() == VTK_ID_TYPE) {
+        switch(inputScalars->GetDataType()) {
+          vtkTemplateMacro(ttk::sortVertices(
+            numberOfVertices,
+            static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(inputScalars)),
+            static_cast<vtkIdType *>(ttkUtils::GetVoidPointer(inputOffsets)),
+            static_cast<SimplexId *>(ttkUtils::GetVoidPointer(vertsOrder)),
+            this->threadNumber_));
+        }
       }
       return vertsOrder;
     }
