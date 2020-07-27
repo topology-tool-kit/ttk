@@ -69,9 +69,6 @@ public:
   static ttkTopologicalSimplification *New();
   vtkTypeMacro(ttkTopologicalSimplification, ttkAlgorithm);
 
-  vtkSetMacro(ScalarField, std::string);
-  vtkGetMacro(ScalarField, std::string);
-
   vtkSetMacro(ForceInputOffsetScalarField, bool);
   vtkGetMacro(ForceInputOffsetScalarField, bool);
 
@@ -81,17 +78,11 @@ public:
   vtkSetMacro(AddPerturbation, bool);
   vtkGetMacro(AddPerturbation, bool);
 
-  vtkSetMacro(InputOffsetScalarFieldName, std::string);
-  vtkGetMacro(InputOffsetScalarFieldName, std::string);
-
   vtkSetMacro(OutputOffsetScalarFieldName, std::string);
   vtkGetMacro(OutputOffsetScalarFieldName, std::string);
 
   vtkSetMacro(ForceInputVertexScalarField, bool);
   vtkGetMacro(ForceInputVertexScalarField, bool);
-
-  vtkSetMacro(InputVertexScalarFieldName, std::string);
-  vtkGetMacro(InputVertexScalarFieldName, std::string);
 
 protected:
   ttkTopologicalSimplification();
@@ -103,16 +94,10 @@ protected:
                   vtkInformationVector *outputVector) override;
 
 private:
-  int ScalarFieldId{0};
   int OffsetFieldId{-1};
-  std::string ScalarField{};
-  std::string InputOffsetScalarFieldName{ttk::OffsetScalarFieldName};
   std::string OutputOffsetScalarFieldName{ttk::OffsetScalarFieldName};
   bool ForceInputVertexScalarField{false};
-  std::string InputVertexScalarFieldName{ttk::VertexScalarFieldName};
   bool ForceInputOffsetScalarField{false};
   bool ConsiderIdentifierAsBlackList{false};
   bool AddPerturbation{false};
-
-  vtkSmartPointer<vtkDataArray> offsets_{};
 };
