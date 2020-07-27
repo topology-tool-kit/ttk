@@ -6,7 +6,6 @@
 #include <vtkPointData.h>
 #include <vtkPointSet.h>
 
-#include <OrderDisambiguation.h>
 #include <ttkMacros.h>
 #include <ttkTopologicalSimplification.h>
 #include <ttkUtils.h>
@@ -97,59 +96,9 @@ int ttkTopologicalSimplification::RequestData(
     return -1;
   }
 
-  // name of the potential offset field related to the input scalar field
-  const auto offsetFieldName = std::string{inputScalars->GetName()} + "_Order";
-
   // domain offset field
-  const auto fetchOffsets = [&]() {
-    // try to find an order array related to the input scalar field
-    const auto inputOrder
-      = domain->GetPointData()->GetArray(offsetFieldName.data());
-    if(inputOrder != nullptr) {
-      return inputOrder;
-    } else {
-      const auto inputOffsets
-        = this->GetOptionalArray(ForceInputOffsetScalarField, 2,
-                                 ttk::OffsetScalarFieldName, inputVector);
-
-      vtkDataArray *vertsOrder = ttkSimplexIdTypeArray::New();
-      vertsOrder->SetName(offsetFieldName.data());
-      vertsOrder->SetNumberOfComponents(1);
-      vertsOrder->SetNumberOfTuples(numberOfVertices);
-
-      if(inputOffsets == nullptr) {
-        switch(inputScalars->GetDataType()) {
-          vtkTemplateMacro(ttk::sortVertices(
-            numberOfVertices,
-            static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(inputScalars)),
-            static_cast<int *>(nullptr),
-            static_cast<SimplexId *>(ttkUtils::GetVoidPointer(vertsOrder)),
-            this->threadNumber_));
-        }
-      } else if(inputOffsets->GetDataType() == VTK_INT) {
-        switch(inputScalars->GetDataType()) {
-          vtkTemplateMacro(ttk::sortVertices(
-            numberOfVertices,
-            static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(inputScalars)),
-            static_cast<int *>(ttkUtils::GetVoidPointer(inputOffsets)),
-            static_cast<SimplexId *>(ttkUtils::GetVoidPointer(vertsOrder)),
-            this->threadNumber_));
-        }
-      } else if(inputOffsets->GetDataType() == VTK_ID_TYPE) {
-        switch(inputScalars->GetDataType()) {
-          vtkTemplateMacro(ttk::sortVertices(
-            numberOfVertices,
-            static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(inputScalars)),
-            static_cast<vtkIdType *>(ttkUtils::GetVoidPointer(inputOffsets)),
-            static_cast<SimplexId *>(ttkUtils::GetVoidPointer(vertsOrder)),
-            this->threadNumber_));
-        }
-      }
-      return vertsOrder;
-    }
-  };
-
-  const auto offsets = fetchOffsets();
+  const auto offsets = this->GetOffsetField(
+    inputScalars, ForceInputOffsetScalarField, 2, inputVector);
 
   if(!offsets) {
     this->printErr("Wrong input offset scalar field.");
