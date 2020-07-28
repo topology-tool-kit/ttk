@@ -587,9 +587,10 @@ in the gradient.
        * Get the vertex id of with the maximum scalar field value on
        * the given cell. Compare offsets if scalar field is constant.
        */
-      template <typename triangulationType>
+      template <typename idType, typename triangulationType>
       SimplexId
         getCellGreaterVertex(const Cell c,
+                             const idType *const offsets,
                              const triangulationType &triangulation) const;
 
       /**
@@ -600,7 +601,7 @@ in the gradient.
        * outputCriticalPoints_points_
        * inputScalarField_
        */
-      template <typename dataType, typename triangulationType>
+      template <typename dataType, typename idType, typename triangulationType>
       int setCriticalPoints(const std::vector<Cell> &criticalPoints,
                             std::vector<size_t> &nCriticalPointsByDim,
                             const triangulationType &triangulation);
@@ -609,7 +610,7 @@ in the gradient.
        * Detect the critical points and build their geometric embedding.
        * The output data pointers are modified accordingly.
        */
-      template <typename dataType, typename triangulationType>
+      template <typename dataType, typename idType, typename triangulationType>
       int setCriticalPoints(const triangulationType &triangulation);
 
       /**
@@ -655,9 +656,10 @@ in the gradient.
        * @return Lower star as 4 sets of cells (0-cells, 1-cells, 2-cells and
        * 3-cells)
        */
-      template <typename triangulationType>
+      template <typename idType, typename triangulationType>
       inline lowerStarType
         lowerStar(const SimplexId a,
+                  const idType *const offsets,
                   const triangulationType &triangulation) const;
 
       /**
@@ -700,8 +702,9 @@ in the gradient.
        * Grayscale Digital Images", V. Robins, P. J. Wood,
        * A. P. Sheppard
        */
-      template <typename triangulationType>
-      int processLowerStars(const triangulationType &triangulation);
+      template <typename idType, typename triangulationType>
+      int processLowerStars(const idType *const offsets,
+                            const triangulationType &triangulation);
 
       /**
        * Get the list of maxima candidates for simplification.
@@ -950,9 +953,6 @@ gradient, false otherwise.
       std::vector<SimplexId> outputCriticalPoints_points_manifoldSize_{};
 
       std::vector<std::array<Cell, 2>> *outputPersistencePairs_{};
-
-      // index of vertices sorted by ascending order
-      std::vector<size_t> vertsOrder_{};
     };
 
   } // namespace dcg

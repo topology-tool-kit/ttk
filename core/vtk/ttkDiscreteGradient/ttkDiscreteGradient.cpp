@@ -61,7 +61,7 @@ int ttkDiscreteGradient::dispatch(vtkUnstructuredGrid *outputCriticalPoints,
 
   // critical points
   {
-    this->setCriticalPoints<scalarType>(triangulation);
+    this->setCriticalPoints<scalarType, offsetType>(triangulation);
 
     vtkNew<vtkPoints> points{};
 

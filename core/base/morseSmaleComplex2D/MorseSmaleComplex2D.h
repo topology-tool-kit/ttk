@@ -139,7 +139,7 @@ int ttk::MorseSmaleComplex2D::execute(const triangulationType &triangulation) {
 
   if(outputCriticalPoints_numberOfPoints_ and outputCriticalPoints_points_) {
     std::vector<size_t> nCriticalPointsByDim{};
-    discreteGradient_.setCriticalPoints<dataType>(
+    discreteGradient_.setCriticalPoints<dataType, idType>(
       criticalPoints, nCriticalPointsByDim, triangulation);
 
     discreteGradient_.fetchOutputCriticalPoints(
