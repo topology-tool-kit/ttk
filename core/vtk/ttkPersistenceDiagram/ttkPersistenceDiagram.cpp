@@ -459,8 +459,8 @@ int ttkPersistenceDiagram::RequestData(vtkInformation *request,
   }
 #endif
 
-  vtkDataArray *offsetField = ttkAlgorithm::GetOptionalArray(
-    ForceInputOffsetScalarField, 1, ttk::OffsetScalarFieldName, inputVector);
+  vtkDataArray *offsetField = this->GetOffsetField(
+    inputScalars, ForceInputOffsetScalarField, 1, inputVector);
 
   if(!offsetField) {
     offsetField = pointData->GetArray(ttk::OffsetScalarFieldName);

@@ -70,8 +70,8 @@ int ttkScalarFieldCriticalPoints::RequestData(
   if(!inputScalarField)
     return 0;
 
-  vtkDataArray *offsetField = ttkAlgorithm::GetOptionalArray(
-    ForceInputOffsetScalarField, 1, ttk::OffsetScalarFieldName, inputVector);
+  vtkDataArray *offsetField = this->GetOffsetField(
+    inputScalarField, ForceInputOffsetScalarField, 1, inputVector);
 
   sosOffsets_.resize(inputScalarField->GetNumberOfTuples());
   for(SimplexId i = 0; i < inputScalarField->GetNumberOfTuples(); i++) {

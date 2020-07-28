@@ -67,27 +67,25 @@ int ttkJacobiSet::RequestData(vtkInformation *request,
   this->printMsg("V-component: `" + std::string{vComponent->GetName()} + "'");
 
   // point data
-  const auto offsetFieldU = this->GetOptionalArray(
-    ForceInputOffsetScalarField, 2, ttk::OffsetFieldUName, inputVector);
-  const auto offsetFieldV = this->GetOptionalArray(
-    ForceInputOffsetScalarField, 3, ttk::OffsetFieldVName, inputVector);
+  const auto offsetFieldU = this->GetOffsetField(
+    uComponent, ForceInputOffsetScalarField, 2, inputVector);
+  const auto offsetFieldV = this->GetOffsetField(
+    vComponent, ForceInputOffsetScalarField, 3, inputVector);
 
-  if(ForceInputOffsetScalarField) {
-    if(offsetFieldU) {
-      sosOffsetsU_.resize(offsetFieldU->GetNumberOfTuples());
-      for(vtkIdType i = 0; i < offsetFieldU->GetNumberOfTuples(); i++) {
-        sosOffsetsU_[i] = offsetFieldU->GetTuple1(i);
-      }
-      this->setSosOffsetsU(&sosOffsetsU_);
+  if(offsetFieldU) {
+    sosOffsetsU_.resize(offsetFieldU->GetNumberOfTuples());
+    for(vtkIdType i = 0; i < offsetFieldU->GetNumberOfTuples(); i++) {
+      sosOffsetsU_[i] = offsetFieldU->GetTuple1(i);
     }
+    this->setSosOffsetsU(&sosOffsetsU_);
+  }
 
-    if(offsetFieldV) {
-      sosOffsetsV_.resize(offsetFieldV->GetNumberOfTuples());
-      for(vtkIdType i = 0; i < offsetFieldV->GetNumberOfTuples(); i++) {
-        sosOffsetsV_[i] = offsetFieldV->GetTuple1(i);
-      }
-      this->setSosOffsetsV(&sosOffsetsV_);
+  if(offsetFieldV) {
+    sosOffsetsV_.resize(offsetFieldV->GetNumberOfTuples());
+    for(vtkIdType i = 0; i < offsetFieldV->GetNumberOfTuples(); i++) {
+      sosOffsetsV_[i] = offsetFieldV->GetTuple1(i);
     }
+    this->setSosOffsetsV(&sosOffsetsV_);
   }
 
   auto triangulation = ttkAlgorithm::GetTriangulation(input);
