@@ -209,7 +209,6 @@ int DiscreteGradient::buildGradient(const triangulationType &triangulation) {
   Timer t;
 
   const auto *const offsets = static_cast<const idType *>(inputOffsets_);
-  const auto *const scalars = static_cast<const dataType *>(inputScalarField_);
 
   const int numberOfDimensions = getNumberOfDimensions();
 
@@ -231,7 +230,14 @@ int DiscreteGradient::buildGradient(const triangulationType &triangulation) {
     gradient_[i][i + 1].resize(numberOfCells[i + 1], -1);
   }
 
-  sortVertices(numberOfCells[0], vertsOrder_, scalars, offsets);
+  // copy offset to vertsOrder_ (avoid further templating)
+  vertsOrder_.resize(this->numberOfVertices_);
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(this->threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+  for(size_t i = 0; i < vertsOrder_.size(); ++i) {
+    vertsOrder_[i] = offsets[i];
+  }
 
   // compute gradient pairs
   processLowerStars(triangulation);

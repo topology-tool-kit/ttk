@@ -156,23 +156,8 @@ int ttkDiscreteGradient::RequestData(vtkInformation *request,
   this->preconditionTriangulation(triangulation);
 
   const auto inputScalars = this->GetInputArrayToProcess(0, input);
-  auto inputOffsets
-    = ttkAlgorithm::GetOptionalArray(this->ForceInputOffsetScalarField, 1,
-                                     ttk::OffsetScalarFieldName, inputVector);
-
-  vtkNew<ttkSimplexIdTypeArray> offsets{};
-
-  if(inputOffsets == nullptr) {
-    // build a new offset field
-    const SimplexId numberOfVertices = input->GetNumberOfPoints();
-    offsets->SetNumberOfComponents(1);
-    offsets->SetNumberOfTuples(numberOfVertices);
-    offsets->SetName(ttk::OffsetScalarFieldName);
-    for(SimplexId i = 0; i < numberOfVertices; ++i) {
-      offsets->SetTuple1(i, i);
-    }
-    inputOffsets = offsets;
-  }
+  auto inputOffsets = ttkAlgorithm::GetOffsetField(
+    inputScalars, this->ForceInputOffsetScalarField, 1, inputVector);
 
   if(inputScalars == nullptr || inputOffsets == nullptr) {
     this->printErr("Input scalar arrays are NULL");

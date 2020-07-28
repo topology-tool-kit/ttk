@@ -495,23 +495,8 @@ int ttkMorseSmaleComplex::RequestData(vtkInformation *request,
   }
 #endif
 
-  auto inputOffsets
-    = ttkAlgorithm::GetOptionalArray(this->ForceInputOffsetScalarField, 1,
-                                     ttk::OffsetScalarFieldName, inputVector);
-
-  vtkNew<ttkSimplexIdTypeArray> offsets{};
-
-  if(inputOffsets == nullptr) {
-    // build a new offset field
-    const SimplexId numberOfVertices = input->GetNumberOfPoints();
-    offsets->SetNumberOfComponents(1);
-    offsets->SetNumberOfTuples(numberOfVertices);
-    offsets->SetName(ttk::OffsetScalarFieldName);
-    for(SimplexId i = 0; i < numberOfVertices; ++i) {
-      offsets->SetTuple1(i, i);
-    }
-    inputOffsets = offsets;
-  }
+  auto inputOffsets = ttkAlgorithm::GetOffsetField(
+    inputScalars, this->ForceInputOffsetScalarField, 1, inputVector);
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(inputOffsets == nullptr) {
@@ -625,6 +610,8 @@ int ttkMorseSmaleComplex::RequestData(vtkInformation *request,
     if(ComputeAscendingSegmentation and ComputeDescendingSegmentation
        and ComputeFinalSegmentation)
       pointData->AddArray(morseSmaleManifold);
+
+    pointData->AddArray(inputOffsets);
   }
 
   return !ret;

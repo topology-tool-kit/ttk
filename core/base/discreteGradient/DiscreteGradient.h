@@ -27,18 +27,7 @@
 #include <set>
 #include <utility>
 
-#if defined(__GNUC__) && !defined(__clang__)
-#include <parallel/algorithm>
-#endif
-
 namespace ttk {
-#if defined(_GLIBCXX_PARALLEL_FEATURES_H) && defined(TTK_ENABLE_OPENMP)
-#define PSORT                               \
-  omp_set_num_threads(this->threadNumber_); \
-  __gnu_parallel::sort
-#else
-#define PSORT std::sort
-#endif // _GLIBCXX_PARALLEL_FEATURES_H && TTK_ENABLE_OPENMP
 
   namespace dcg {
     /**
@@ -652,34 +641,6 @@ in the gradient.
                             const triangulationType &triangulation) const;
 
     private:
-      template <typename scalarType, typename offsetType>
-      void sortVertices(const SimplexId vertexNumber,
-                        std::vector<size_t> &vertsOrder,
-                        const scalarType *const scalarField,
-                        const offsetType *const offsetField) const {
-
-        std::vector<SimplexId> sortedVertices(vertexNumber);
-        vertsOrder.resize(vertexNumber);
-
-        // fill with numbers from 0 to vertexNumber - 1
-        std::iota(sortedVertices.begin(), sortedVertices.end(), 0);
-
-        // sort vertices in ascending order following scalarfield / offsets
-        PSORT(sortedVertices.begin(), sortedVertices.end(),
-              [&](const SimplexId a, const SimplexId b) {
-                return (scalarField[a] < scalarField[b])
-                       || (scalarField[a] == scalarField[b]
-                           && offsetField[a] < offsetField[b]);
-              });
-
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
-#endif // TTK_ENABLE_OPENMP
-        for(size_t i = 0; i < vertsOrder.size(); ++i) {
-          vertsOrder[sortedVertices[i]] = i;
-        }
-      }
-
       /**
        * Type alias for lower stars of a given cell
        */
