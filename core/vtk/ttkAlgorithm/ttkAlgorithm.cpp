@@ -297,6 +297,7 @@ vtkDataArray *ttkAlgorithm::GetOffsetField(vtkDataArray *const sfArray,
     return inOrder;
   } else {
     // if no array found, generate one
+    ttk::Timer tm{};
     vtkDataArray *inDisamb = nullptr;
     if(enforceArrayIndex) {
       inDisamb = this->GetInputArrayToProcess(arrayIndex, inputVectors);
@@ -327,6 +328,8 @@ vtkDataArray *ttkAlgorithm::GetOffsetField(vtkDataArray *const sfArray,
       CALL_SORT_VERTICES(vtkIdType, nullptr)
     }
 
+    this->printMsg("Generated a sorted offset field", 1.0, tm.getElapsedTime(),
+                   this->threadNumber_);
     return vertsOrder;
   }
 }
