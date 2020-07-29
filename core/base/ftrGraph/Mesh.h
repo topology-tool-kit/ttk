@@ -60,7 +60,7 @@ namespace ttk {
 
     class Mesh : public Allocable {
     private:
-      ttk::Triangulation *tri_;
+      ttk::AbstractTriangulation *tri_;
       idVertex nbVerts_;
       idEdge nbEdges_;
       idCell nbTriangles_;
@@ -69,17 +69,17 @@ namespace ttk {
 
     public:
       // Init
-      explicit Mesh(Triangulation *tri) : tri_{tri} {
+      explicit Mesh(AbstractTriangulation *tri) : tri_{tri} {
       }
 
       Mesh() : Mesh{nullptr} {
       }
 
-      void setTriangulation(Triangulation *tri) {
+      void setTriangulation(AbstractTriangulation *tri) {
         tri_ = tri;
       }
 
-      Triangulation *getTriangulation() {
+      AbstractTriangulation *getTriangulation() {
         return tri_;
       }
 

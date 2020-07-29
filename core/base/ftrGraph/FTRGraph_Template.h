@@ -1,5 +1,4 @@
-#ifndef FTRGRAPH_TEMPLATE_H
-#define FTRGRAPH_TEMPLATE_H
+#pragma once
 
 #include "FTRGraph.h"
 #include "FTRPropagation.h"
@@ -27,13 +26,13 @@ namespace ttk {
     template <typename ScalarType>
     FTRGraph<ScalarType>::FTRGraph()
       : params_{}, scalars_{new Scalars<ScalarType>}, mesh_{} {
-      // need a call to setupTriangulation later
+      this->setDebugMsgPrefix("FTRGraph");
     }
 
     template <typename ScalarType>
     FTRGraph<ScalarType>::FTRGraph(Triangulation *mesh)
       : params_{}, scalars_{new Scalars<ScalarType>}, mesh_{} {
-      setupTriangulation(mesh);
+      preconditionTriangulation(mesh);
     }
 
     template <typename ScalarType>
@@ -58,10 +57,7 @@ namespace ttk {
       omp_set_nested(1);
 #ifdef TTK_ENABLE_OMP_PRIORITY
       if(omp_get_max_task_priority() < PriorityLevel::Max) {
-        std::stringstream msg;
-        msg << "[FTR Graph]: Warning, OpenMP max priority is lower than 5"
-            << std::endl;
-        dMsg(std::cerr, msg.str(), infoMsg);
+        this->printWrn("OpenMP max priority is lower than 5");
       }
 #endif
 #endif
@@ -165,12 +161,12 @@ namespace ttk {
       // printGraph(4);
       // std::cout << dynGraphs_.up.printNbCC() << std::endl;
 #endif
-      {
-        std::stringstream msg;
-        msg << "[FTR Graph]: " << graph_.getNumberOfVisibleArcs() << " arcs ("
-            << graph_.getNumberOfArcs() << ")" << std::endl;
-        dMsg(std::cout, msg.str(), advancedInfoMsg);
-      }
+      this->printMsg(
+        std::vector<std::vector<std::string>>{
+          {"#Visible arcs", std::to_string(graph_.getNumberOfVisibleArcs())},
+          {"#Arcs", std::to_string(graph_.getNumberOfArcs())},
+        },
+        debug::Priority::DETAIL);
 
 #ifdef TTK_ENABLE_FTR_TASK_STATS
       std::cout << "propTimes_ :" << std::endl;
@@ -239,12 +235,8 @@ namespace ttk {
       nbProp_ = graph_.getNumberOfLeaves();
       propTimes_.resize(nbProp_);
 #endif
-      {
-        std::stringstream msg;
-        msg << "[FTR Graph]: " << graph_.getNumberOfLeaves() << " leaves"
-            << std::endl;
-        dMsg(std::cout, msg.str(), infoMsg);
-      }
+      this->printMsg(std::vector<std::vector<std::string>>{
+        {"#Leaves", std::to_string(graph_.getNumberOfLeaves())}});
     }
 
     template <typename ScalarType>
@@ -337,5 +329,3 @@ namespace ttk {
 
   } // namespace ftr
 } // namespace ttk
-
-#endif /* end of include guard: FTRGRAPH_TEMPLATE_H */

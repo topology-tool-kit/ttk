@@ -11,8 +11,7 @@
 /// \sa ttk::Triangulation
 /// \sa vtkFTRGraph.cpp %for a usage example.
 
-#ifndef _FTRGRAPH_H
-#define _FTRGRAPH_H
+#pragma once
 
 // base code includes
 #include <Triangulation.h>
@@ -44,49 +43,48 @@ namespace ttk {
 
     struct DynGraphs {
       // one going up, one going down
-      DynamicGraph<idVertex> up, down;
+      DynamicGraph<idVertex> up{}, down{};
     };
 
     struct Valences {
-      std::vector<valence> lower, upper;
+      std::vector<valence> lower{}, upper{};
     };
 
     struct LocalForests {
       // one for upper link, one for lower link
-      LocalForest<idVertex> up, down;
+      LocalForest<idVertex> up{}, down{};
     };
 
     struct Star {
-      std::vector<idEdge> lower, upper;
+      std::vector<idEdge> lower{}, upper{};
     };
 
     struct Comp {
-      std::set<DynGraphNode<idVertex> *> lower, upper;
+      std::set<DynGraphNode<idVertex> *> lower{}, upper{};
     };
 
     template <typename ScalarType>
     class FTRGraph : public Allocable {
-    private:
       // Exernal fields
-      Params params_;
-      Scalars<ScalarType> *const scalars_;
+      Params params_{};
+      Scalars<ScalarType> *const scalars_{};
 
       // Internal fields
-      Graph graph_;
-      Mesh mesh_;
-      Propagations propagations_;
-      DynGraphs dynGraphs_;
-      Valences valences_;
+      Graph graph_{};
+      Mesh mesh_{};
+      Propagations propagations_{};
+      DynGraphs dynGraphs_{};
+      Valences valences_{};
 
 #ifndef TTK_DISABLE_FTR_LAZY
-      Lazy lazy_;
+      Lazy lazy_{};
 #endif
 
 #ifdef TTK_ENABLE_FTR_TASK_STATS
       // Stats
-      DebugTimer sweepStart_;
-      std::vector<float> propTimes_;
-      idVertex nbProp_;
+      DebugTimer sweepStart_{};
+      std::vector<float> propTimes_{};
+      idVertex nbProp_{};
 #endif
 
     public:
@@ -138,9 +136,9 @@ namespace ttk {
       // must satisfy some pre-condition (see ttk::Triangulation for more
       // details). Such pre-condition functions are typically called from this
       // function.
-      inline int setupTriangulation(Triangulation *triangulation) {
+      inline int
+        preconditionTriangulation(AbstractTriangulation *triangulation) {
         mesh_.setTriangulation(triangulation);
-
         if(triangulation) {
           mesh_.preprocess();
         }
@@ -168,9 +166,8 @@ namespace ttk {
 
       /// Control the verbosity of the base code
       virtual int setDebugLevel(const int &lvl) override {
-        Debug::setDebugLevel(lvl);
         params_.debugLevel = lvl;
-        return 0;
+        return Debug::setDebugLevel(lvl);
       }
 
       void setParams(const Params &p) {
@@ -478,5 +475,3 @@ namespace ttk {
 #include "FTRGraphPrint_Template.h"
 #include "FTRGraphPrivate_Template.h"
 #include "FTRGraph_Template.h"
-
-#endif // FTRGRAPH_H

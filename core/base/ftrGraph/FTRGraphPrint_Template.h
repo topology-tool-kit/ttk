@@ -1,5 +1,4 @@
-#ifndef FTRGRAPHPRINT_TEMPLATE_H
-#define FTRGRAPHPRINT_TEMPLATE_H
+#pragma once
 
 #include "FTRGraph.h"
 
@@ -64,12 +63,8 @@ namespace ttk {
     void FTRGraph<ScalarType>::printTime(DebugTimer &timer,
                                          const std::string &msg,
                                          const int lvl) const {
-      std::ostringstream outString(std::string(lvl, ' '));
-      outString << msg << timer.getElapsedTime() << std::endl;
-      dMsg(std::cout, outString.str(), lvl);
+      this->printMsg(msg, 1.0, timer.getElapsedTime(), this->threadNumber_);
     }
 
   } // namespace ftr
 } // namespace ttk
-
-#endif /* end of include guard: FTRGRAPHPRINT_TEMPLATE_H */
