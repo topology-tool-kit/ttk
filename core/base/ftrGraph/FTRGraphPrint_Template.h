@@ -60,7 +60,7 @@ namespace ttk {
     }
 
     template <typename ScalarType>
-    void FTRGraph<ScalarType>::printTime(DebugTimer &timer,
+    void FTRGraph<ScalarType>::printTime(Timer &timer,
                                          const std::string &msg,
                                          const int lvl) const {
       this->printMsg(msg, 1.0, timer.getElapsedTime(), this->threadNumber_);

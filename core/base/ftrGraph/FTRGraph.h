@@ -82,7 +82,7 @@ namespace ttk {
 
 #ifdef TTK_ENABLE_FTR_TASK_STATS
       // Stats
-      DebugTimer sweepStart_{};
+      Timer sweepStart_{};
       std::vector<float> propTimes_{};
       idVertex nbProp_{};
 #endif
@@ -240,9 +240,7 @@ namespace ttk {
 
       void printGraph(const int verbosity) const;
 
-      void printTime(DebugTimer &timer,
-                     const std::string &msg,
-                     const int lvl) const;
+      void printTime(Timer &timer, const std::string &msg, const int lvl) const;
 
       // Initialize functions (virtual inherit from Allocable)
       // called automatically by the build

@@ -65,28 +65,28 @@ namespace ttk {
       params_.printSelf();
 
       // Precompute
-      DebugTimer timeAlloc;
+      Timer timeAlloc;
       alloc();
       printTime(timeAlloc, "[FTR Graph]: alloc time: ", infoMsg);
 
-      DebugTimer timeInit;
+      Timer timeInit;
       init();
       printTime(timeInit, "[FTR Graph]: init time: ", infoMsg);
 
       // std::cout << printMesh() << std::endl;
       // std::cout << mesh_.printEdges() << std::endl;
 
-      DebugTimer finTime;
+      Timer finTime;
 #ifdef GPROFILE
       std::cout << "Profiling enabled ..." << std::endl;
       ProfilerStart("ftr.log");
 #endif
 
-      DebugTimer timeSort;
+      Timer timeSort;
       scalars_->sort();
       printTime(timeSort, "[FTR Graph]: sort time: ", infoMsg);
 
-      DebugTimer timePreSortSimplices;
+      Timer timePreSortSimplices;
       mesh_.preSortEdges([&](const idVertex a, const idVertex b) {
         return scalars_->isLower(a, b);
       });
@@ -98,7 +98,7 @@ namespace ttk {
 
       // Build the graph
 
-      DebugTimer timeBuild;
+      Timer timeBuild;
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel num_threads(params_.threadNumber)
@@ -108,11 +108,11 @@ namespace ttk {
 #pragma omp single nowait
 #endif
         {
-          DebugTimer timeCritSearch;
+          Timer timeCritSearch;
           criticalSearch();
           printTime(timeCritSearch, "[FTR Graph]: leaf search time ", timeMsg);
 
-          DebugTimer timeSwipe;
+          Timer timeSwipe;
           sweepFrowSeeds();
           // sweepSequential();
           printTime(timeSwipe, "[FTR Graph]: sweepFrowSeeds time: ", timeMsg);
@@ -131,7 +131,7 @@ namespace ttk {
 #endif
 
       // post-process
-      DebugTimer postProcTime;
+      Timer postProcTime;
       graph_.mergeArcs<ScalarType>(scalars_);
       graph_.arcs2nodes<ScalarType>(scalars_);
       printTime(postProcTime, "[FTR Graph]: postProcess: ", advancedInfoMsg);
