@@ -56,7 +56,12 @@
                 </Documentation>
             </InputProperty>
 
-            <StringVectorProperty name="ScalarFieldNew" label="Input Array" command="SetInputArrayToProcess" element_types="0 0 0 0 2" number_of_elements="5">
+            <StringVectorProperty name="Scalar Field"
+                                  command="SetInputArrayToProcess"
+                                  element_types="0 0 0 0 2"
+                                  number_of_elements="5"
+                                  default_values="0"
+                                  >
                 <ArrayListDomain attribute_type="Scalars" name="array_list">
                     <RequiredProperties>
                         <Property function="Input" name="Input" />
@@ -80,11 +85,11 @@
                 </Documentation>
             </IntVectorProperty>
 
-            <StringVectorProperty 
-                name="OffsetNew" 
-                label="Input Offset Field" 
-                command="SetInputArrayToProcess" 
-                element_types="0 0 0 0 2" 
+            <StringVectorProperty
+                name="OffsetNew"
+                label="Input Offset Field"
+                command="SetInputArrayToProcess"
+                element_types="0 0 0 0 2"
                 default_values="1"
                 number_of_elements="5">
               <ArrayListDomain
@@ -105,19 +110,6 @@
                 (used to disambiguate flat plateaus).
               </Documentation>
             </StringVectorProperty>
-
-            <IntVectorProperty
-                name="PeriodicBoundaryConditions"
-                command="SetPeriodicBoundaryConditions"
-                label="Periodic Boundary Conditions"
-                number_of_elements="1"
-                panel_visibility="advanced"
-                default_values="0">
-                <BooleanDomain name="bool"/>
-                <Documentation>
-                    Check this box to use periodic boundary conditions for computation.
-                </Documentation>
-            </IntVectorProperty>
 
             <IntVectorProperty name="Tree Type" command="SetTreeType"
                 number_of_elements="1" default_values="2">
@@ -176,8 +168,6 @@ between nodes, ...)
             <PropertyGroup panel_widget="Line" label="Input options">
                 <Property name="Scalar Field"/>
                 <Property name="ForceInputOffsetScalarField"/>
-                <Property name="InputOffsetScalarFieldName"/>
-                <Property name="PeriodicBoundaryConditions"/>
             </PropertyGroup>
 
             <PropertyGroup panel_widget="Line" label="Output options">
@@ -185,12 +175,6 @@ between nodes, ...)
                 <Property name="SuperArcSamplingLevel"/>
                 <Property name="NormalizeId" />
                 <Property name="AdvancedStats" />
-            </PropertyGroup>
-
-            <PropertyGroup panel_widget="Line" label="Testing">
-                <Property name="UseAllCores" />
-                <Property name="ThreadNumber" />
-                <Property name="DebugLevel" />
             </PropertyGroup>
 
             <OutputPort name="Skeleton Nodes" index="0" id="port0" />

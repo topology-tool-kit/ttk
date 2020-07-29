@@ -1,28 +1,9 @@
 /// \sa ttk::ftm::FTMTree
-#ifndef _VTK_FTMTREE__H
-#define _VTK_FTMTREE__H
+
+#pragma once
 
 // VTK includes
-#include <vtkCellData.h>
-#include <vtkDataArray.h>
-#include <vtkDataSet.h>
-#include <vtkDataSetAlgorithm.h>
-#include <vtkPointData.h>
 #include <vtkSmartPointer.h>
-// Data array
-#include <vtkCharArray.h>
-#include <vtkDoubleArray.h>
-#include <vtkFloatArray.h>
-#include <vtkIntArray.h>
-
-// Unused ? (compile without these on my computer)
-// #include <vtkFiltersCoreModule.h>
-// #include <vtkInformation.h>
-// #include <vtkInformationVector.h>
-// #include <vtkLine.h>
-// #include <vtkObjectFactory.h>
-// #include <vtkType.h>
-// #include <vtkUnstructuredGrid.h>
 
 // VTK module
 #include <ttkFTMTreeModule.h>
@@ -32,6 +13,8 @@
 #include <ttkAlgorithm.h>
 #include <ttkFTMStructures.h>
 
+class vtkDataSet;
+
 class TTKFTMTREE_EXPORT ttkFTMTree : public ttkAlgorithm,
                                      protected ttk::ftm::FTMTree {
 
@@ -40,13 +23,8 @@ public:
 
   vtkTypeMacro(ttkFTMTree, ttkAlgorithm);
 
-  // end of default ttk setters
-
-  // used by command line
-  vtkSetMacro(ScalarFieldId, int);
-  vtkGetMacro(ScalarFieldId, int);
-  vtkSetMacro(OffsetFieldId, int);
-  vtkGetMacro(OffsetFieldId, int);
+  vtkGetMacro(ForceInputOffsetScalarField, bool);
+  vtkSetMacro(ForceInputOffsetScalarField, bool);
 
   // Parameters uses a structure, we can't use vtkMacro on them
   void SetTreeType(const int type) {
@@ -127,27 +105,20 @@ public:
   void printCSVTree(const ttk::ftm::FTMTree_MT *const tree) const;
 #endif
 
-  // vtkDataSetAlgorithm methods
+protected:
+  ttkFTMTree();
 
+  // vtkDataSetAlgorithm methods
   int FillInputPortInformation(int port, vtkInformation *info) override;
   int FillOutputPortInformation(int port, vtkInformation *info) override;
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;
 
-protected:
-  ttkFTMTree();
-  ~ttkFTMTree() override = default;
-
   void identify(vtkDataSet *ds) const;
 
 private:
   bool ForceInputOffsetScalarField = false;
-  std::string InputOffsetScalarFieldName;
-  std::string ScalarFieldName;
-  int ScalarFieldId = -1;
-  int OffsetFieldId = -1;
-
   ttk::ftm::Params params_;
 
   int nbCC_;
@@ -156,8 +127,4 @@ private:
   std::vector<ttk::ftm::LocalFTM> ftmTree_;
   std::vector<vtkDataArray *> inputScalars_;
   std::vector<std::vector<ttk::SimplexId>> offsets_;
-
-  bool hasUpdatedMesh_;
 };
-
-#endif // _VTK_FTMTREE__H

@@ -4,52 +4,48 @@
 
 // VTK inclues
 #include <vtkConnectivityFilter.h>
-#include <vtkDataObject.h>
 #include <vtkImageData.h>
 #include <vtkInformation.h>
 #include <vtkInformationVector.h>
+#include <vtkNew.h>
 #include <vtkPolyData.h>
 #include <vtkThreshold.h>
-
-using namespace std;
-using namespace ttk;
-
-using namespace ftm;
+#include <vtkUnstructuredGrid.h>
 
 vtkStandardNewMacro(ttkFTMTree);
 
+ttkFTMTree::ttkFTMTree() {
+  SetNumberOfInputPorts(1);
+  SetNumberOfOutputPorts(3);
+}
+
 int ttkFTMTree::FillInputPortInformation(int port, vtkInformation *info) {
-  if(port == 0)
-    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataSet");
-  return 1;
+  if(port == 0) {
+    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
+    return 1;
+  }
+  return 0;
 }
 
 int ttkFTMTree::FillOutputPortInformation(int port, vtkInformation *info) {
-  switch(port) {
-    case 0:
-    case 1:
-      info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
-      break;
-
-    case 2:
-      info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataSet");
-      break;
+  if(port == 0 || port == 1) {
+    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
+    return 1;
+  } else if(port == 2) {
+    info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
+    return 1;
   }
-
-  return 1;
+  return 0;
 }
 
 int ttkFTMTree::RequestData(vtkInformation *request,
                             vtkInformationVector **inputVector,
                             vtkInformationVector *outputVector) {
-  Memory m;
 
-  vtkDataSet *input = vtkDataSet::GetData(inputVector[0]);
-  vtkUnstructuredGrid *outputSkeletonNodes
-    = vtkUnstructuredGrid::GetData(outputVector, 0);
-  vtkUnstructuredGrid *outputSkeletonArcs
-    = vtkUnstructuredGrid::GetData(outputVector, 1);
-  vtkDataSet *outputSegmentation = vtkDataSet::GetData(outputVector, 2);
+  const auto input = vtkDataSet::GetData(inputVector[0]);
+  auto outputSkeletonNodes = vtkUnstructuredGrid::GetData(outputVector, 0);
+  auto outputSkeletonArcs = vtkUnstructuredGrid::GetData(outputVector, 1);
+  auto outputSegmentation = vtkDataSet::GetData(outputVector, 2);
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!input) {
@@ -73,12 +69,6 @@ int ttkFTMTree::RequestData(vtkInformation *request,
   vtkDataArray *inputArray = this->GetInputArrayToProcess(0, inputVector);
   if(!inputArray)
     return 0;
-  this->ScalarFieldName = inputArray->GetName();
-  vtkDataArray *offsetField = ttkAlgorithm::GetOptionalArray(
-    ForceInputOffsetScalarField, 1, ttk::OffsetScalarFieldName, inputVector);
-  if(offsetField) {
-    this->InputOffsetScalarFieldName = offsetField->GetName();
-  }
 
   // Connected components
   if(input->IsA("vtkUnstructuredGrid")) {
@@ -87,8 +77,7 @@ int ttkFTMTree::RequestData(vtkInformation *request,
     // We then reconstruct the global tree using an offest mecanism
     identify(input);
 
-    vtkSmartPointer<vtkConnectivityFilter> connectivity
-      = vtkSmartPointer<vtkConnectivityFilter>::New();
+    vtkNew<vtkConnectivityFilter> connectivity{};
     connectivity->SetInputData(input);
     connectivity->SetExtractionModeToAllRegions();
     connectivity->ColorRegionsOn();
@@ -106,8 +95,7 @@ int ttkFTMTree::RequestData(vtkInformation *request,
       // the base code will not be consistent with those of the original
       // mesh
       for(int cc = 0; cc < nbCC_; cc++) {
-        vtkSmartPointer<vtkThreshold> threshold
-          = vtkSmartPointer<vtkThreshold>::New();
+        vtkNew<vtkThreshold> threshold{};
         threshold->SetInputConnection(connectivity->GetOutputPort());
         threshold->SetInputArrayToProcess(
           0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_CELLS, "RegionId");
@@ -153,12 +141,7 @@ int ttkFTMTree::RequestData(vtkInformation *request,
   }
   getOffsets();
 
-  {
-    stringstream msg;
-    dMsg(cout, msg.str(), timeMsg);
-  }
-
-  ftm::idNode acc_nbNodes = 0;
+  ttk::ftm::idNode acc_nbNodes = 0;
 
   // Build tree
   for(int cc = 0; cc < nbCC_; cc++) {
@@ -169,10 +152,10 @@ int ttkFTMTree::RequestData(vtkInformation *request,
     ftmTree_[cc].tree.setSegmentation(GetWithSegmentation());
     ftmTree_[cc].tree.setNormalizeIds(GetWithNormalize());
 
-    ttkVtkTemplateMacro(inputArray->GetDataType(),
-                        triangulation_[cc]->getType(),
-                        (ftmTree_[cc].tree.build<VTK_TT, SimplexId, TTK_TT>(
-                          (TTK_TT *)triangulation_[cc]->getData())));
+    ttkVtkTemplateMacro(
+      inputArray->GetDataType(), triangulation_[cc]->getType(),
+      (ftmTree_[cc].tree.build<VTK_TT, ttk::SimplexId, TTK_TT>(
+        (TTK_TT *)triangulation_[cc]->getData())));
 
     ftmTree_[cc].offset = acc_nbNodes;
     acc_nbNodes += ftmTree_[cc].tree.getTree(GetTreeType())->getNumberOfNodes();
@@ -211,16 +194,10 @@ int ttkFTMTree::RequestData(vtkInformation *request,
   printCSVStats();
 #endif
 
-  {
-    stringstream msg;
-    msg << "Memory usage: " << m.getElapsedUsage() << " MB." << endl;
-    dMsg(cout, msg.str(), memoryMsg);
-  }
-
   return 1;
 }
 
-int ttkFTMTree::addCompleteSkeletonArc(const ftm::idSuperArc arcId,
+int ttkFTMTree::addCompleteSkeletonArc(const ttk::ftm::idSuperArc arcId,
                                        const int cc,
                                        vtkPoints *points,
                                        vtkUnstructuredGrid *skeletonArcs,
@@ -228,10 +205,11 @@ int ttkFTMTree::addCompleteSkeletonArc(const ftm::idSuperArc arcId,
   FTMTree_MT *tree = ftmTree_[cc].tree.getTree(GetTreeType());
   vtkDataArray *idMapper = connected_components_[cc]->GetPointData()->GetArray(
     ttk::VertexScalarFieldName);
-  SuperArc *arc = tree->getSuperArc(arcId);
+  auto arc = tree->getSuperArc(arcId);
   float point[3];
   vtkIdType pointIds[2];
 
+  using ttk::SimplexId;
   const SimplexId downNodeId = tree->getLowerNodeId(arc);
   const SimplexId l_downVertexId = tree->getNode(downNodeId)->getVertexId();
   const SimplexId g_downVertexId = idMapper->GetTuple1(l_downVertexId);
@@ -289,7 +267,7 @@ int ttkFTMTree::addCompleteSkeletonArc(const ftm::idSuperArc arcId,
   return 1;
 }
 
-int ttkFTMTree::addDirectSkeletonArc(const idSuperArc arcId,
+int ttkFTMTree::addDirectSkeletonArc(const ttk::ftm::idSuperArc arcId,
                                      const int cc,
                                      vtkPoints *points,
                                      vtkUnstructuredGrid *skeletonArcs,
@@ -297,10 +275,11 @@ int ttkFTMTree::addDirectSkeletonArc(const idSuperArc arcId,
   FTMTree_MT *tree = ftmTree_[cc].tree.getTree(GetTreeType());
   vtkDataArray *idMapper = connected_components_[cc]->GetPointData()->GetArray(
     ttk::VertexScalarFieldName);
-  SuperArc *arc = tree->getSuperArc(arcId);
+  auto arc = tree->getSuperArc(arcId);
   float point[3];
   vtkIdType pointIds[2];
 
+  using ttk::SimplexId;
   const SimplexId downNodeId = tree->getLowerNodeId(arc);
   const SimplexId l_downVertexId = tree->getNode(downNodeId)->getVertexId();
   const SimplexId g_downVertexId = idMapper->GetTuple1(l_downVertexId);
@@ -339,7 +318,7 @@ int ttkFTMTree::addDirectSkeletonArc(const idSuperArc arcId,
   return 1;
 }
 
-int ttkFTMTree::addSampledSkeletonArc(const idSuperArc arcId,
+int ttkFTMTree::addSampledSkeletonArc(const ttk::ftm::idSuperArc arcId,
                                       const int cc,
                                       vtkPoints *points,
                                       vtkUnstructuredGrid *skeletonArcs,
@@ -347,10 +326,11 @@ int ttkFTMTree::addSampledSkeletonArc(const idSuperArc arcId,
   FTMTree_MT *tree = ftmTree_[cc].tree.getTree(GetTreeType());
   vtkDataArray *idMapper = connected_components_[cc]->GetPointData()->GetArray(
     ttk::VertexScalarFieldName);
-  SuperArc *arc = tree->getSuperArc(arcId);
+  auto arc = tree->getSuperArc(arcId);
   float point[3];
   vtkIdType pointIds[2];
 
+  using ttk::SimplexId;
   const SimplexId downNodeId = tree->getLowerNodeId(arc);
   const SimplexId l_downVertexId = tree->getNode(downNodeId)->getVertexId();
   const SimplexId g_downVertexId = idMapper->GetTuple1(l_downVertexId);
@@ -440,61 +420,37 @@ int ttkFTMTree::addSampledSkeletonArc(const idSuperArc arcId,
 int ttkFTMTree::getOffsets() {
   offsets_.resize(nbCC_);
   for(int cc = 0; cc < nbCC_; cc++) {
-    vtkDataArray *inputOffsets;
-    if(!this->InputOffsetScalarFieldName.empty()) {
-      inputOffsets = connected_components_[cc]->GetPointData()->GetArray(
-        this->InputOffsetScalarFieldName.c_str());
-    } else if(this->OffsetFieldId != -1) {
-      inputOffsets = connected_components_[cc]->GetPointData()->GetArray(
-        this->OffsetFieldId);
-      this->InputOffsetScalarFieldName = inputOffsets->GetName();
-      this->ForceInputOffsetScalarField = true;
-    }
+    const auto inputOffsets = this->GetOptionalArray(
+      ForceInputOffsetScalarField, 1, ttk::OffsetScalarFieldName,
+      connected_components_[cc]);
 
-    const SimplexId numberOfVertices
-      = connected_components_[cc]->GetNumberOfPoints();
+    offsets_[cc].resize(connected_components_[cc]->GetNumberOfPoints());
 
-    if(ForceInputOffsetScalarField and InputOffsetScalarFieldName.length()) {
-      inputOffsets = connected_components_[cc]->GetPointData()->GetArray(
-        InputOffsetScalarFieldName.data());
-      offsets_[cc].resize(numberOfVertices);
-      for(SimplexId i = 0; i < numberOfVertices; i++) {
-        offsets_[cc][i] = inputOffsets->GetTuple1(i);
-      }
-    } else if(connected_components_[cc]->GetPointData()->GetArray(
-                ttk::OffsetScalarFieldName)) {
-      inputOffsets = connected_components_[cc]->GetPointData()->GetArray(
-        ttk::OffsetScalarFieldName);
-      offsets_[cc].resize(numberOfVertices);
-      for(SimplexId i = 0; i < numberOfVertices; i++) {
+    if(inputOffsets != nullptr) {
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(this->threadNumber_)
+#endif
+      for(size_t i = 0; i < offsets_[cc].size(); i++) {
         offsets_[cc][i] = inputOffsets->GetTuple1(i);
       }
     } else {
-      if(hasUpdatedMesh_ and offsets_[cc].size()) {
-        // don't keep an out-dated offset array
-        offsets_[cc].clear();
-      }
-
-      if(offsets_[cc].empty()) {
-        offsets_[cc].resize(numberOfVertices);
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for
+#pragma omp parallel for num_threads(this->threadNumber_)
 #endif
-        for(SimplexId i = 0; i < numberOfVertices; i++) {
-          offsets_[cc][i] = i;
-        }
+      for(size_t i = 0; i < offsets_[cc].size(); i++) {
+        offsets_[cc][i] = i;
       }
     }
+  }
 
 #ifndef TTK_ENABLE_KAMIKAZE
-    if(offsets_[cc].empty()) {
-      this->printMsg(
-        {"Error : wrong input offset scalar field for ", std::to_string(cc)},
-        debug::Priority::ERROR);
-      return 0;
-    }
-#endif
+  if(offsets_[cc].empty()) {
+    this->printMsg(
+      {"Error : wrong input offset scalar field for ", std::to_string(cc)},
+      debug::Priority::ERROR);
+    return 0;
   }
+#endif
 
   return 1;
 }
@@ -502,22 +458,8 @@ int ttkFTMTree::getOffsets() {
 int ttkFTMTree::getScalars() {
   inputScalars_.resize(nbCC_);
   for(int cc = 0; cc < nbCC_; cc++) {
-    vtkPointData *pointData = connected_components_[cc]->GetPointData();
-#ifndef TTK_ENABLE_KAMIKAZE
-    if(!pointData) {
-      this->printMsg(
-        {"Error : input cc ", std::to_string(cc), " has no point data."},
-        debug::Priority::ERROR);
-      return 0;
-    }
-#endif
-
-    if(ScalarFieldName.length()) {
-      inputScalars_[cc] = pointData->GetArray(ScalarFieldName.data());
-    } else if(ScalarFieldId != -1) {
-      inputScalars_[cc] = pointData->GetArray(ScalarFieldId);
-      this->ScalarFieldName = inputScalars_[cc]->GetName();
-    }
+    inputScalars_[cc]
+      = this->GetInputArrayToProcess(0, connected_components_[cc]);
 
 #ifndef TTK_ENABLE_KAMIKAZE
     if(!inputScalars_[cc]) {
@@ -533,7 +475,7 @@ int ttkFTMTree::getScalars() {
 }
 
 int ttkFTMTree::getSegmentation(vtkDataSet *outputSegmentation) {
-  VertData vertData;
+  ttk::ftm::VertData vertData;
   vertData.init(ftmTree_, params_);
 
   for(int cc = 0; cc < nbCC_; cc++) {
@@ -541,9 +483,9 @@ int ttkFTMTree::getSegmentation(vtkDataSet *outputSegmentation) {
     vtkDataArray *idMapper
       = connected_components_[cc]->GetPointData()->GetArray(
         ttk::VertexScalarFieldName);
-    const idSuperArc numberOfSuperArcs = tree->getNumberOfSuperArcs();
+    const auto numberOfSuperArcs = tree->getNumberOfSuperArcs();
     // #pragma omp for
-    for(idSuperArc arcId = 0; arcId < numberOfSuperArcs; ++arcId) {
+    for(ttk::ftm::idSuperArc arcId = 0; arcId < numberOfSuperArcs; ++arcId) {
       vertData.fillArrayPoint(
         arcId, ftmTree_[cc], triangulation_[cc], idMapper, params_);
     }
@@ -556,9 +498,8 @@ int ttkFTMTree::getSegmentation(vtkDataSet *outputSegmentation) {
 }
 
 int ttkFTMTree::getSkeletonArcs(vtkUnstructuredGrid *outputSkeletonArcs) {
-  vtkSmartPointer<vtkUnstructuredGrid> skeletonArcs
-    = vtkSmartPointer<vtkUnstructuredGrid>::New();
-  vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+  vtkNew<vtkUnstructuredGrid> skeletonArcs{};
+  vtkNew<vtkPoints> points{};
 
   ttk::ftm::ArcData arcData;
   arcData.init(ftmTree_, params_);
@@ -567,6 +508,7 @@ int ttkFTMTree::getSkeletonArcs(vtkUnstructuredGrid *outputSkeletonArcs) {
   for(int cc = 0; cc < nbCC_; cc++) {
     FTMTree_MT *tree = ftmTree_[cc].tree.getTree(GetTreeType());
 
+    using ttk::SimplexId;
     const SimplexId numberOfSuperArcs = tree->getNumberOfSuperArcs();
 #ifndef TTK_ENABLE_KAMIKAZE
     if(!numberOfSuperArcs) {
@@ -604,11 +546,10 @@ int ttkFTMTree::getSkeletonArcs(vtkUnstructuredGrid *outputSkeletonArcs) {
 }
 
 int ttkFTMTree::getSkeletonNodes(vtkUnstructuredGrid *outputSkeletonNodes) {
-  vtkSmartPointer<vtkUnstructuredGrid> skeletonNodes
-    = vtkSmartPointer<vtkUnstructuredGrid>::New();
-  vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+  vtkNew<vtkUnstructuredGrid> skeletonNodes{};
+  vtkNew<vtkPoints> points{};
 
-  NodeData nodeData;
+  ttk::ftm::NodeData nodeData;
   nodeData.init(ftmTree_, params_);
   nodeData.setScalarType(inputScalars_[0]->GetDataType());
 
@@ -618,7 +559,7 @@ int ttkFTMTree::getSkeletonNodes(vtkUnstructuredGrid *outputSkeletonNodes) {
       = connected_components_[cc]->GetPointData()->GetArray(
         ttk::VertexScalarFieldName);
 
-    const idNode numberOfNodes = tree->getNumberOfNodes();
+    const auto numberOfNodes = tree->getNumberOfNodes();
 #ifndef TTK_ENABLE_KAMIKAZE
     if(!numberOfNodes) {
       this->printErr("Error : tree has no nodes.");
@@ -626,8 +567,8 @@ int ttkFTMTree::getSkeletonNodes(vtkUnstructuredGrid *outputSkeletonNodes) {
     }
 #endif
 
-    for(idNode nodeId = 0; nodeId < numberOfNodes; ++nodeId) {
-      const Node *node = tree->getNode(nodeId);
+    for(ttk::ftm::idNode nodeId = 0; nodeId < numberOfNodes; ++nodeId) {
+      const auto node = tree->getNode(nodeId);
 #ifndef TTK_ENABLE_KAMIKAZE
       if(!node) {
         this->printMsg({"Error : node ", std::to_string(nodeId), " is null."},
@@ -635,11 +576,11 @@ int ttkFTMTree::getSkeletonNodes(vtkUnstructuredGrid *outputSkeletonNodes) {
         return 0;
       }
 #endif
-      const SimplexId local_vertId = node->getVertexId();
+      const auto local_vertId = node->getVertexId();
       float point[3];
       triangulation_[cc]->getVertexPoint(
         local_vertId, point[0], point[1], point[2]);
-      const SimplexId nextPoint = points->InsertNextPoint(point);
+      const auto nextPoint = points->InsertNextPoint(point);
       nodeData.fillArrayPoint(
         nextPoint, nodeId, ftmTree_[cc], idMapper, triangulation_[cc], params_);
     }
@@ -725,20 +666,14 @@ int ttkFTMTree::preconditionTriangulation() {
 
 // protected
 
-ttkFTMTree::ttkFTMTree() {
-  SetNumberOfInputPorts(1);
-  SetNumberOfOutputPorts(3);
-}
-
 void ttkFTMTree::identify(vtkDataSet *ds) const {
-  vtkSmartPointer<ttkSimplexIdTypeArray> identifiers
-    = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
-  const SimplexId nbPoints = ds->GetNumberOfPoints();
+  vtkNew<ttkSimplexIdTypeArray> identifiers{};
+  const auto nbPoints = ds->GetNumberOfPoints();
   identifiers->SetName(ttk::VertexScalarFieldName);
   identifiers->SetNumberOfComponents(1);
   identifiers->SetNumberOfTuples(nbPoints);
 
-  for(SimplexId i = 0; i < nbPoints; i++) {
+  for(int i = 0; i < nbPoints; i++) {
     identifiers->SetTuple1(i, i);
   }
 
