@@ -15,8 +15,7 @@
 
 class vtkDataSet;
 
-class TTKFTMTREE_EXPORT ttkFTMTree : public ttkAlgorithm,
-                                     protected ttk::ftm::FTMTree {
+class TTKFTMTREE_EXPORT ttkFTMTree : public ttkAlgorithm {
 
 public:
   static ttkFTMTree *New();

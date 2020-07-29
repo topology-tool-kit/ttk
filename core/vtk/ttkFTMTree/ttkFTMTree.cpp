@@ -15,6 +15,7 @@
 vtkStandardNewMacro(ttkFTMTree);
 
 ttkFTMTree::ttkFTMTree() {
+  this->setDebugMsgPrefix("FTMTree");
   SetNumberOfInputPorts(1);
   SetNumberOfOutputPorts(3);
 }
@@ -202,7 +203,7 @@ int ttkFTMTree::addCompleteSkeletonArc(const ttk::ftm::idSuperArc arcId,
                                        vtkPoints *points,
                                        vtkUnstructuredGrid *skeletonArcs,
                                        ttk::ftm::ArcData &arcData) {
-  FTMTree_MT *tree = ftmTree_[cc].tree.getTree(GetTreeType());
+  auto tree = ftmTree_[cc].tree.getTree(GetTreeType());
   vtkDataArray *idMapper = connected_components_[cc]->GetPointData()->GetArray(
     ttk::VertexScalarFieldName);
   auto arc = tree->getSuperArc(arcId);
@@ -272,7 +273,7 @@ int ttkFTMTree::addDirectSkeletonArc(const ttk::ftm::idSuperArc arcId,
                                      vtkPoints *points,
                                      vtkUnstructuredGrid *skeletonArcs,
                                      ttk::ftm::ArcData &arcData) {
-  FTMTree_MT *tree = ftmTree_[cc].tree.getTree(GetTreeType());
+  auto tree = ftmTree_[cc].tree.getTree(GetTreeType());
   vtkDataArray *idMapper = connected_components_[cc]->GetPointData()->GetArray(
     ttk::VertexScalarFieldName);
   auto arc = tree->getSuperArc(arcId);
@@ -323,7 +324,7 @@ int ttkFTMTree::addSampledSkeletonArc(const ttk::ftm::idSuperArc arcId,
                                       vtkPoints *points,
                                       vtkUnstructuredGrid *skeletonArcs,
                                       ttk::ftm::ArcData &arcData) {
-  FTMTree_MT *tree = ftmTree_[cc].tree.getTree(GetTreeType());
+  auto tree = ftmTree_[cc].tree.getTree(GetTreeType());
   vtkDataArray *idMapper = connected_components_[cc]->GetPointData()->GetArray(
     ttk::VertexScalarFieldName);
   auto arc = tree->getSuperArc(arcId);
@@ -479,7 +480,7 @@ int ttkFTMTree::getSegmentation(vtkDataSet *outputSegmentation) {
   vertData.init(ftmTree_, params_);
 
   for(int cc = 0; cc < nbCC_; cc++) {
-    FTMTree_MT *tree = ftmTree_[cc].tree.getTree(GetTreeType());
+    auto tree = ftmTree_[cc].tree.getTree(GetTreeType());
     vtkDataArray *idMapper
       = connected_components_[cc]->GetPointData()->GetArray(
         ttk::VertexScalarFieldName);
@@ -506,7 +507,7 @@ int ttkFTMTree::getSkeletonArcs(vtkUnstructuredGrid *outputSkeletonArcs) {
 
   const int samplingLevel = params_.samplingLvl;
   for(int cc = 0; cc < nbCC_; cc++) {
-    FTMTree_MT *tree = ftmTree_[cc].tree.getTree(GetTreeType());
+    auto tree = ftmTree_[cc].tree.getTree(GetTreeType());
 
     using ttk::SimplexId;
     const SimplexId numberOfSuperArcs = tree->getNumberOfSuperArcs();
@@ -554,7 +555,7 @@ int ttkFTMTree::getSkeletonNodes(vtkUnstructuredGrid *outputSkeletonNodes) {
   nodeData.setScalarType(inputScalars_[0]->GetDataType());
 
   for(int cc = 0; cc < nbCC_; cc++) {
-    FTMTree_MT *tree = ftmTree_[cc].tree.getTree(GetTreeType());
+    auto tree = ftmTree_[cc].tree.getTree(GetTreeType());
     vtkDataArray *idMapper
       = connected_components_[cc]->GetPointData()->GetArray(
         ttk::VertexScalarFieldName);
