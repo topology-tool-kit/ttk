@@ -137,7 +137,7 @@ int ttkFTMTree::RequestData(vtkInformation *request,
 
   // now proceed for each triangulation obtained.
 
-  if(setupTriangulation()) {
+  if(preconditionTriangulation()) {
 #ifndef TTK_ENABLE_KAMIKAZE
     this->printErr("Error : wrong triangulation.");
     return 0;
@@ -169,8 +169,8 @@ int ttkFTMTree::RequestData(vtkInformation *request,
     ftmTree_[cc].tree.setSegmentation(GetWithSegmentation());
     ftmTree_[cc].tree.setNormalizeIds(GetWithNormalize());
 
-    ttkVtkTemplateMacro(triangulation_[cc]->getType(),
-                        inputArray->GetDataType(),
+    ttkVtkTemplateMacro(inputArray->GetDataType(),
+                        triangulation_[cc]->getType(),
                         (ftmTree_[cc].tree.build<VTK_TT, SimplexId, TTK_TT>(
                           (TTK_TT *)triangulation_[cc]->getData())));
 
@@ -693,7 +693,7 @@ void ttkFTMTree::printCSVTree(const ftm::FTMTree_MT *const tree) const {
 }
 #endif
 
-int ttkFTMTree::setupTriangulation() {
+int ttkFTMTree::preconditionTriangulation() {
   triangulation_.resize(nbCC_);
   ftmTree_.resize(nbCC_);
 
@@ -709,7 +709,7 @@ int ttkFTMTree::setupTriangulation() {
 
     ftmTree_[cc].tree.setDebugLevel(debugLevel_);
     ftmTree_[cc].tree.setThreadNumber(threadNumber_);
-    ftmTree_[cc].tree.setupTriangulation(triangulation_[cc]);
+    ftmTree_[cc].tree.preconditionTriangulation(triangulation_[cc]);
 
 #ifndef TTK_ENABLE_KAMIKAZE
     if(triangulation_[cc]->isEmpty()) {

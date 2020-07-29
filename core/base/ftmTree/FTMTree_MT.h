@@ -324,11 +324,11 @@ namespace ttk {
       // On this implementation, the warpper communicate with ContourForest
       // A child class of this one.
 
-      inline void setupTriangulation(AbstractTriangulation *m,
-                                     const bool preproc = true) {
-        if(t && preproc) {
+      inline void preconditionTriangulation(AbstractTriangulation *tri,
+                                            const bool preproc = true) {
+        if(tri && preproc) {
           // propage through vertices (build)
-          t->preconditionVertexNeighbors();
+          tri->preconditionVertexNeighbors();
         }
       }
 

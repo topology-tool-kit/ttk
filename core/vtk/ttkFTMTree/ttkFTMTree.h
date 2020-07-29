@@ -94,7 +94,7 @@ public:
     return params_.samplingLvl;
   }
 
-  int setupTriangulation();
+  int preconditionTriangulation();
   int getScalars();
   int getOffsets();
 

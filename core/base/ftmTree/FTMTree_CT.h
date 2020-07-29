@@ -37,8 +37,7 @@ namespace ttk {
       // Constructors
       // -----------------
 
-      FTMTree_CT(Params *const params,
-                 Scalars *const scalars);
+      FTMTree_CT(Params *const params, Scalars *const scalars);
       virtual ~FTMTree_CT();
 
       // -----------------
@@ -70,11 +69,11 @@ namespace ttk {
         return this;
       }
 
-      inline void setupTriangulation(AbstractTriangulation *m,
-                                     const bool preproc = true) {
-        FTMTree_MT::setupTriangulation(m, preproc);
-        jt_->setupTriangulation(m, false);
-        st_->setupTriangulation(m, false);
+      inline void preconditionTriangulation(AbstractTriangulation *tri,
+                                            const bool preproc = true) {
+        FTMTree_MT::preconditionTriangulation(tri, preproc);
+        jt_->preconditionTriangulation(tri, false);
+        st_->preconditionTriangulation(tri, false);
       }
 
       inline int setDebugLevel(const int &d) {
@@ -95,12 +94,11 @@ namespace ttk {
       // PROCESS
       // -----------------
 
+      template <class triangulationType = AbstractTriangulation>
+      int leafSearch(const triangulationType *mesh);
 
-      template<class triangulationType = AbstractTriangulation>
-      int leafSearch(const triangulationType* mesh);
-
-      template<class triangulationType = AbstractTriangulation>
-      void build(const triangulationType* mesh, TreeType tt);
+      template <class triangulationType = AbstractTriangulation>
+      void build(const triangulationType *mesh, TreeType tt);
 
       void insertNodes();
 
