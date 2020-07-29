@@ -30,6 +30,7 @@ namespace ttk {
 
     template <typename ScalarType>
     FTRGraph<ScalarType>::FTRGraph(AbstractTriangulation *mesh) {
+      this->setDebugMsgPrefix("FTRGraph");
       preconditionTriangulation(mesh);
     }
 
@@ -54,11 +55,13 @@ namespace ttk {
       // Precompute
       Timer timeAlloc;
       alloc();
-      printTime(timeAlloc, "[FTR Graph]: alloc time: ", infoMsg);
+      this->printMsg(
+        "alloc time: ", 1.0, timeAlloc.getElapsedTime(), this->threadNumber_);
 
       Timer timeInit;
       init();
-      printTime(timeInit, "[FTR Graph]: init time: ", infoMsg);
+      this->printMsg(
+        "init time: ", 1.0, timeInit.getElapsedTime(), this->threadNumber_);
 
       // std::cout << printMesh() << std::endl;
       // std::cout << mesh_.printEdges() << std::endl;
@@ -71,7 +74,8 @@ namespace ttk {
 
       Timer timeSort;
       scalars_.sort();
-      printTime(timeSort, "[FTR Graph]: sort time: ", infoMsg);
+      this->printMsg(
+        "sort time: ", 1.0, timeSort.getElapsedTime(), this->threadNumber_);
 
       Timer timePreSortSimplices;
       mesh_.preSortEdges([&](const idVertex a, const idVertex b) {
@@ -80,8 +84,9 @@ namespace ttk {
       mesh_.preSortTriangles([&](const idVertex a, const idVertex b) {
         return scalars_.isLower(a, b);
       });
-      printTime(
-        timePreSortSimplices, "[FTR Graph]: simplices sort time: ", infoMsg);
+      this->printMsg("simplices sort time: ", 1.0,
+                     timePreSortSimplices.getElapsedTime(),
+                     this->threadNumber_);
 
       // Build the graph
 
@@ -97,15 +102,18 @@ namespace ttk {
         {
           Timer timeCritSearch;
           criticalSearch();
-          printTime(timeCritSearch, "[FTR Graph]: leaf search time ", timeMsg);
+          this->printMsg("leaf search time ", 1.0,
+                         timeCritSearch.getElapsedTime(), this->threadNumber_);
 
           Timer timeSwipe;
           sweepFrowSeeds();
           // sweepSequential();
-          printTime(timeSwipe, "[FTR Graph]: sweepFrowSeeds time: ", timeMsg);
+          this->printMsg("sweepFrowSeeds time: ", 1.0,
+                         timeSwipe.getElapsedTime(), this->threadNumber_);
         }
       }
-      printTime(timeBuild, "[FTR Graph]: build time: ", timeMsg);
+      this->printMsg(
+        "build time: ", 1.0, timeBuild.getElapsedTime(), this->threadNumber_);
 
       // Debug print
 #ifndef NDEBUG
@@ -121,7 +129,8 @@ namespace ttk {
       Timer postProcTime;
       graph_.mergeArcs<ScalarType>(&scalars_);
       graph_.arcs2nodes<ScalarType>(&scalars_);
-      printTime(postProcTime, "[FTR Graph]: postProcess: ", advancedInfoMsg);
+      this->printMsg("postProcess: ", 1.0, postProcTime.getElapsedTime(),
+                     this->threadNumber_);
 
       // std::cout << "nb verts: " << mesh_.getNumberOfVertices() << std::endl;
       // std::cout << "nb triangle: " << mesh_.getNumberOfVertices() <<
@@ -130,7 +139,8 @@ namespace ttk {
       // std::endl; std::cout << "nb  arcs: " << graph_.getNumberOfVisibleArcs()
       // << std::endl;
 
-      printTime(finTime, "[FTR Graph]: *TOTAL* time: ", timeMsg);
+      this->printMsg(
+        "*TOTAL* time: ", 1.0, finTime.getElapsedTime(), this->threadNumber_);
 
 #ifdef GPROFILE
       ProfilerStop();

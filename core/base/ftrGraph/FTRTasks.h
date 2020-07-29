@@ -44,18 +44,13 @@ namespace ttk {
         getChunk(const TaskChunk &params) {
 #ifndef TTK_ENABLE_KAMIKAZE
         if(!params.nbElemt) {
-          std::cerr << "[FTR Graph]: getChunk called with nbElemnt null"
-                    << std::endl;
+          this->printErr("getChunk called with nbElemnt null");
         }
         if(!params.nbTasks and !params.grainSize) {
-          std::cerr
-            << "[FTR Graph]: getChunk called with neither nbtasks nor grainSize"
-            << std::endl;
+          this->printErr("getChunk called with neither nbtasks nor grainSize");
         }
         if(params.nbTasks and params.grainSize) {
-          std::cerr
-            << "[FTR Graph]: getChunk called with both nbtasks and grainSize"
-            << std::endl;
+          this->printErr("getChunk called with both nbtasks and grainSize");
         }
 #endif
         const idVertex grainSize = (params.grainSize)

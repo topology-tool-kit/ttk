@@ -230,8 +230,7 @@ namespace ttk {
     void DynGraphNode<Type>::removeEdge(void) {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(!parent_) {
-        std::cerr << "[FTR Graph]: DynGraph remove edge in root node"
-                  << std::endl;
+        this->printErr("DynGraph remove edge in root node");
         return;
       }
 #endif

@@ -35,17 +35,15 @@ namespace ttk {
       int debugLevel = 1;
 
       void printSelf() {
-        if(debugLevel) {
-          std::cout << "[FTR Graph]: thread number: " << threadNumber
-                    << std::endl;
-          std::cout << "[FTR Graph]: debug lvl: " << debugLevel << std::endl;
-          if(debugLevel > 2) {
-            std::cout << "[FTR Graph]: segmentation: " << std::boolalpha << segm
-                      << std::endl;
-            std::cout << "[FTR Graph]: sampling level: " << samplingLvl
-                      << std::endl;
-          }
-        }
+        Debug dbg{};
+        dbg.setDebugMsgPrefix("FTRGraph");
+        dbg.setDebugLevel(debugLevel);
+        dbg.printMsg(std::vector<std::vector<std::string>>{
+          {"#Threads", std::to_string(threadNumber)},
+          {"Debug level", std::to_string(debugLevel)},
+          {"Segmentation", std::to_string(segm)},
+          {"Sampling level", std::to_string(samplingLvl)},
+        });
       }
     };
 

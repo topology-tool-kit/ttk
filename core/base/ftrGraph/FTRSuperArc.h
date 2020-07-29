@@ -66,7 +66,7 @@ namespace ttk {
       idNode getDownNodeId(void) const {
 #ifndef TTK_ENABLE_KAMIKAZE
         if(downNodeId_ == nullNode) {
-          std::cerr << "[FTR Graph]: Arc have null down node" << std::endl;
+          this->printErr("Arc have null down node");
         }
 #endif
         return downNodeId_;
@@ -79,7 +79,7 @@ namespace ttk {
       Propagation *getPropagation(void) const {
 #ifndef TTK_ENABLE_KAMIKAZE
         if(!ufProp_) {
-          std::cerr << "[FTR Graph]: Arc have null UF propagation" << std::endl;
+          this->printErr("Arc have null UF propagation");
         }
 #endif
         return ufProp_->find()->getPropagation();
