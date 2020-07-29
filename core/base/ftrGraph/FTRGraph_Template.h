@@ -24,32 +24,19 @@
 namespace ttk {
   namespace ftr {
     template <typename ScalarType>
-    FTRGraph<ScalarType>::FTRGraph()
-      : params_{}, scalars_{new Scalars<ScalarType>}, mesh_{} {
+    FTRGraph<ScalarType>::FTRGraph() {
       this->setDebugMsgPrefix("FTRGraph");
     }
 
     template <typename ScalarType>
-    FTRGraph<ScalarType>::FTRGraph(AbstractTriangulation *mesh)
-      : params_{}, scalars_{new Scalars<ScalarType>}, mesh_{} {
+    FTRGraph<ScalarType>::FTRGraph(AbstractTriangulation *mesh) {
       preconditionTriangulation(mesh);
-    }
-
-    template <typename ScalarType>
-    FTRGraph<ScalarType>::~FTRGraph() {
-      delete scalars_;
     }
 
     template <typename ScalarType>
     void FTRGraph<ScalarType>::build() {
       Timer t;
 
-#ifndef TTK_ENABLE_KAMIKAZE
-      if(!scalars_) {
-        std::cerr << "[FTR Graph]: no scalars given" << std::endl;
-        return;
-      }
-#endif
       // init some values
 
 #ifdef TTK_ENABLE_OPENMP
@@ -83,15 +70,15 @@ namespace ttk {
 #endif
 
       Timer timeSort;
-      scalars_->sort();
+      scalars_.sort();
       printTime(timeSort, "[FTR Graph]: sort time: ", infoMsg);
 
       Timer timePreSortSimplices;
       mesh_.preSortEdges([&](const idVertex a, const idVertex b) {
-        return scalars_->isLower(a, b);
+        return scalars_.isLower(a, b);
       });
       mesh_.preSortTriangles([&](const idVertex a, const idVertex b) {
-        return scalars_->isLower(a, b);
+        return scalars_.isLower(a, b);
       });
       printTime(
         timePreSortSimplices, "[FTR Graph]: simplices sort time: ", infoMsg);
@@ -132,8 +119,8 @@ namespace ttk {
 
       // post-process
       Timer postProcTime;
-      graph_.mergeArcs<ScalarType>(scalars_);
-      graph_.arcs2nodes<ScalarType>(scalars_);
+      graph_.mergeArcs<ScalarType>(&scalars_);
+      graph_.arcs2nodes<ScalarType>(&scalars_);
       printTime(postProcTime, "[FTR Graph]: postProcess: ", advancedInfoMsg);
 
       // std::cout << "nb verts: " << mesh_.getNumberOfVertices() << std::endl;
@@ -152,7 +139,7 @@ namespace ttk {
       // list of regular vertices on each arc
       // explicit build: for sampling
       if(params_.samplingLvl) {
-        graph_.buildArcSegmentation<ScalarType>(scalars_);
+        graph_.buildArcSegmentation<ScalarType>(&scalars_);
       }
 
       // Debug print
@@ -194,9 +181,9 @@ namespace ttk {
       const bool addMax = !params_.singleSweep;
 
       ScalarFieldCriticalPoints critPoints;
-      critPoints.setSosOffsets(scalars_->getVOffsets());
+      critPoints.setSosOffsets(scalars_.getVOffsets());
 
-      TaskChunk leafChunkParams(scalars_->getSize());
+      TaskChunk leafChunkParams(scalars_.getSize());
       leafChunkParams.grainSize = 10000;
       auto leafChunk = Tasks::getChunk(leafChunkParams);
 
@@ -209,13 +196,13 @@ namespace ttk {
           const idVertex lowerBound
             = Tasks::getBegin(leafChunkId, std::get<0>(leafChunk));
           const idVertex upperBound = Tasks::getEnd(
-            leafChunkId, std::get<0>(leafChunk), scalars_->getSize());
+            leafChunkId, std::get<0>(leafChunk), scalars_.getSize());
 
           // each task uses its local forests
           for(idVertex v = lowerBound; v < upperBound; ++v) {
             std::tie(valences_.lower[v], valences_.upper[v])
               = critPoints.getNumberOfLowerUpperComponents<ScalarType>(
-                v, scalars_->getScalars(), mesh_.getTriangulation());
+                v, scalars_.getScalars(), mesh_.getTriangulation());
 
             // leaf cases
             if(addMin && valences_.lower[v] == 0) {
@@ -245,7 +232,7 @@ namespace ttk {
       // used to interleave min and max
       // Note: useless if only start for min or max
 
-      graph_.sortLeaves<ScalarType>(scalars_);
+      graph_.sortLeaves<ScalarType>(&scalars_);
 
 #ifdef TTK_ENABLE_FTR_TASK_STATS
       sweepStart_.reStart();
@@ -284,8 +271,8 @@ namespace ttk {
     void FTRGraph<ScalarType>::alloc() {
       mesh_.alloc();
 
-      scalars_->setSize(mesh_.getNumberOfVertices());
-      scalars_->alloc();
+      scalars_.setSize(mesh_.getNumberOfVertices());
+      scalars_.alloc();
 
       graph_.setNumberOfElmt(mesh_.getNumberOfVertices());
       graph_.alloc();
@@ -310,8 +297,8 @@ namespace ttk {
 
     template <typename ScalarType>
     void FTRGraph<ScalarType>::init() {
-      scalars_->removeNaN();
-      scalars_->init();
+      scalars_.removeNaN();
+      scalars_.init();
       graph_.init();
       propagations_.init();
       dynGraphs_.up.init();

@@ -67,7 +67,7 @@ namespace ttk {
     class FTRGraph : public Allocable {
       // Exernal fields
       Params params_{};
-      Scalars<ScalarType> *const scalars_{};
+      Scalars<ScalarType> scalars_{};
 
       // Internal fields
       Graph graph_{};
@@ -90,7 +90,6 @@ namespace ttk {
     public:
       explicit FTRGraph(AbstractTriangulation *mesh);
       FTRGraph();
-      virtual ~FTRGraph();
 
       /// build the Reeb Graph
       /// \pre If this TTK package uses ttk::Triangulation for fast mesh
@@ -177,7 +176,7 @@ namespace ttk {
 
       /// Scalar field used to compute the Reeb Graph
       void setScalars(const void *scalars) {
-        scalars_->setScalars((ScalarType *)scalars);
+        scalars_.setScalars((ScalarType *)scalars);
       }
 
       /// When several points have the same scalar value,
@@ -186,7 +185,7 @@ namespace ttk {
       /// This is explained in the TTK report.
       /// Set the array to use here
       void setVertexSoSoffsets(std::vector<SimplexId> *sos) {
-        scalars_->setOffsets(sos);
+        scalars_.setOffsets(sos);
       }
 
       DynamicGraph<idVertex> &dynGraph(const Propagation *const lp) {

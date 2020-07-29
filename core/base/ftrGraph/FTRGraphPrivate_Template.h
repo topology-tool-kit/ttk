@@ -400,10 +400,10 @@ namespace ttk {
 
       const bool fromMin = begin < stop;
       Propagation *localProp
-        = newPropagation(scalars_->getSortedVert(begin), fromMin);
+        = newPropagation(scalars_.getSortedVert(begin), fromMin);
       const idVertex incr = fromMin ? 1 : -1;
       for(idVertex idv = begin; idv < stop; idv = idv + incr) {
-        const idVertex curVert = scalars_->getSortedVert(idv);
+        const idVertex curVert = scalars_.getSortedVert(idv);
         localProp->setCurvert(curVert); // never use Fibo Heap here
 
         idSuperArc currentArc = nullSuperArc;
@@ -1061,9 +1061,9 @@ namespace ttk {
                                                       const bool fromMin) {
       VertCompFN comp;
       if(fromMin)
-        comp = [&](idVertex a, idVertex b) { return scalars_->isHigher(a, b); };
+        comp = [&](idVertex a, idVertex b) { return scalars_.isHigher(a, b); };
       else
-        comp = [&](idVertex a, idVertex b) { return scalars_->isLower(a, b); };
+        comp = [&](idVertex a, idVertex b) { return scalars_.isLower(a, b); };
       return propagations_.newPropagation(leaf, comp, fromMin);
     }
 
@@ -1077,15 +1077,15 @@ namespace ttk {
 
       if(localProp->compare(end0, end1)) {
         if(localProp->goDown()) {
-          return -scalars_->getMirror(end0);
+          return -scalars_.getMirror(end0);
         }
-        return scalars_->getMirror(end0);
+        return scalars_.getMirror(end0);
       }
 
       if(localProp->goDown()) {
-        return -scalars_->getMirror(end1);
+        return -scalars_.getMirror(end1);
       }
-      return scalars_->getMirror(end1);
+      return scalars_.getMirror(end1);
     }
 
     template <typename ScalarType>
