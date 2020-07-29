@@ -22,8 +22,8 @@ public:
   vtkSetMacro(ScalarField, std::string);
   vtkGetMacro(ScalarField, std::string);
 
-  vtkSetMacro(UseInputOffsetScalarField, bool);
-  vtkGetMacro(UseInputOffsetScalarField, bool);
+  vtkSetMacro(ForceInputOffsetScalarField, bool);
+  vtkGetMacro(ForceInputOffsetScalarField, bool);
 
   vtkSetMacro(InputOffsetScalarFieldName, std::string);
   vtkGetMacro(InputOffsetScalarFieldName, std::string);
@@ -79,10 +79,6 @@ public:
     return params_.samplingLvl;
   }
 
-  int setupTriangulation();
-  int getScalars();
-  int getOffsets();
-
   int getSkeletonNodes(const ttk::ftr::Graph &graph,
                        vtkUnstructuredGrid *outputSkeletonNodes);
 
@@ -110,7 +106,7 @@ public:
   int getSegmentation(const ttk::ftr::Graph &graph,
                       vtkDataSet *outputSegmentation);
 
-  template <typename VTK_TT>
+  template <typename VTK_TT, typename TTK_TT>
   int dispatch(ttk::ftr::Graph &graph);
 
 protected:
@@ -126,7 +122,7 @@ protected:
 
 private:
   std::string ScalarField{};
-  bool UseInputOffsetScalarField{};
+  bool ForceInputOffsetScalarField{};
   std::string InputOffsetScalarFieldName{};
   int ScalarFieldId{};
   int OffsetFieldId{};

@@ -23,19 +23,19 @@
 
 namespace ttk {
   namespace ftr {
-    template <typename ScalarType>
-    FTRGraph<ScalarType>::FTRGraph() {
+    template <typename ScalarType, typename triangulationType>
+    FTRGraph<ScalarType, triangulationType>::FTRGraph() {
       this->setDebugMsgPrefix("FTRGraph");
     }
 
-    template <typename ScalarType>
-    FTRGraph<ScalarType>::FTRGraph(AbstractTriangulation *mesh) {
+    template <typename ScalarType, typename triangulationType>
+    FTRGraph<ScalarType, triangulationType>::FTRGraph(triangulationType *mesh) {
       this->setDebugMsgPrefix("FTRGraph");
       preconditionTriangulation(mesh);
     }
 
-    template <typename ScalarType>
-    void FTRGraph<ScalarType>::build() {
+    template <typename ScalarType, typename triangulationType>
+    void FTRGraph<ScalarType, triangulationType>::build() {
       Timer t;
 
       // init some values
@@ -185,8 +185,8 @@ namespace ttk {
 
     // protected
 
-    template <typename ScalarType>
-    void FTRGraph<ScalarType>::criticalSearch() {
+    template <typename ScalarType, typename triangulationType>
+    void FTRGraph<ScalarType, triangulationType>::criticalSearch() {
       const bool addMin = true;
       const bool addMax = !params_.singleSweep;
 
@@ -236,8 +236,8 @@ namespace ttk {
         {"#Leaves", std::to_string(graph_.getNumberOfLeaves())}});
     }
 
-    template <typename ScalarType>
-    void FTRGraph<ScalarType>::sweepFrowSeeds() {
+    template <typename ScalarType, typename triangulationType>
+    void FTRGraph<ScalarType, triangulationType>::sweepFrowSeeds() {
       const idNode nbSeed = graph_.getNumberOfLeaves();
       // used to interleave min and max
       // Note: useless if only start for min or max
@@ -272,13 +272,13 @@ namespace ttk {
       }
     }
 
-    template <typename ScalarType>
-    void FTRGraph<ScalarType>::sweepSequential() {
+    template <typename ScalarType, typename triangulationType>
+    void FTRGraph<ScalarType, triangulationType>::sweepSequential() {
       growthSequential(0, mesh_.getNumberOfVertices());
     }
 
-    template <typename ScalarType>
-    void FTRGraph<ScalarType>::alloc() {
+    template <typename ScalarType, typename triangulationType>
+    void FTRGraph<ScalarType, triangulationType>::alloc() {
       mesh_.alloc();
 
       scalars_.setSize(mesh_.getNumberOfVertices());
@@ -305,8 +305,8 @@ namespace ttk {
       valences_.upper.resize(mesh_.getNumberOfVertices());
     }
 
-    template <typename ScalarType>
-    void FTRGraph<ScalarType>::init() {
+    template <typename ScalarType, typename triangulationType>
+    void FTRGraph<ScalarType, triangulationType>::init() {
       scalars_.removeNaN();
       scalars_.init();
       graph_.init();

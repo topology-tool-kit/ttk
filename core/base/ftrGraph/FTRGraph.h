@@ -63,7 +63,7 @@ namespace ttk {
       std::set<DynGraphNode<idVertex> *> lower{}, upper{};
     };
 
-    template <typename ScalarType>
+    template <typename ScalarType, typename triangulationType>
     class FTRGraph : public Allocable {
       // Exernal fields
       Params params_{};
@@ -71,7 +71,7 @@ namespace ttk {
 
       // Internal fields
       Graph graph_{};
-      Mesh mesh_{};
+      Mesh<triangulationType> mesh_{};
       Propagations propagations_{};
       DynGraphs dynGraphs_{};
       Valences valences_{};
@@ -88,7 +88,7 @@ namespace ttk {
 #endif
 
     public:
-      explicit FTRGraph(AbstractTriangulation *mesh);
+      explicit FTRGraph(triangulationType *mesh);
       FTRGraph();
 
       /// build the Reeb Graph
@@ -135,8 +135,7 @@ namespace ttk {
       // must satisfy some pre-condition (see ttk::Triangulation for more
       // details). Such pre-condition functions are typically called from this
       // function.
-      inline int
-        preconditionTriangulation(AbstractTriangulation *triangulation) {
+      inline int preconditionTriangulation(triangulationType *triangulation) {
         mesh_.setTriangulation(triangulation);
         if(triangulation) {
           mesh_.preprocess();

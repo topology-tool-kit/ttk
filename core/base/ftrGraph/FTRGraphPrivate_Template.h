@@ -21,10 +21,9 @@
 
 namespace ttk {
   namespace ftr {
-    template <typename ScalarType>
-    void FTRGraph<ScalarType>::growthFromSeed(const idVertex seed,
-                                              Propagation *localProp,
-                                              idSuperArc currentArc) {
+    template <typename ScalarType, typename triangulationType>
+    void FTRGraph<ScalarType, triangulationType>::growthFromSeed(
+      const idVertex seed, Propagation *localProp, idSuperArc currentArc) {
 
       PRINT(seed << " :: " << localProp->getNbArcs());
       if(!localProp->getNbArcs()) {
@@ -392,9 +391,9 @@ namespace ttk {
 #endif
     }
 
-    template <typename ScalarType>
-    void FTRGraph<ScalarType>::growthSequential(const idVertex begin,
-                                                const idVertex stop) {
+    template <typename ScalarType, typename triangulationType>
+    void FTRGraph<ScalarType, triangulationType>::growthSequential(
+      const idVertex begin, const idVertex stop) {
       Star star;
       Comp comp;
 
@@ -493,9 +492,9 @@ namespace ttk {
       } // end for each vertex
     }
 
-    template <typename ScalarType>
-    void FTRGraph<ScalarType>::visitStar(const Propagation *const localProp,
-                                         Star &star) const {
+    template <typename ScalarType, typename triangulationType>
+    void FTRGraph<ScalarType, triangulationType>::visitStar(
+      const Propagation *const localProp, Star &star) const {
 
       star.lower.clear();
       star.upper.clear();
@@ -519,22 +518,24 @@ namespace ttk {
       }
     }
 
-    template <typename ScalarType>
-    std::set<DynGraphNode<idVertex> *> FTRGraph<ScalarType>::lowerComps(
-      const std::vector<idEdge> &finishingEdges,
-      const Propagation *const localProp) {
+    template <typename ScalarType, typename triangulationType>
+    std::set<DynGraphNode<idVertex> *>
+      FTRGraph<ScalarType, triangulationType>::lowerComps(
+        const std::vector<idEdge> &finishingEdges,
+        const Propagation *const localProp) {
       return dynGraph(localProp).findRoot(finishingEdges);
     }
 
-    template <typename ScalarType>
+    template <typename ScalarType, typename triangulationType>
     std::set<DynGraphNode<idVertex> *>
-      FTRGraph<ScalarType>::upperComps(const std::vector<idEdge> &startingEdges,
-                                       const Propagation *const localProp) {
+      FTRGraph<ScalarType, triangulationType>::upperComps(
+        const std::vector<idEdge> &startingEdges,
+        const Propagation *const localProp) {
       return dynGraph(localProp).findRoot(startingEdges);
     }
 
-    template <typename ScalarType>
-    bool FTRGraph<ScalarType>::checkStop(
+    template <typename ScalarType, typename triangulationType>
+    bool FTRGraph<ScalarType, triangulationType>::checkStop(
       const std::vector<DynGraphNode<idVertex> *> &compVect) {
       for(const auto *dgNode : compVect) {
         const idSuperArc arc = dgNode->getCorArc();
@@ -545,9 +546,10 @@ namespace ttk {
       return false;
     }
 
-    template <typename ScalarType>
-    std::pair<valence, valence> FTRGraph<ScalarType>::getLinkNbCC(
-      const idVertex curVert, LocalForests &localForests, VertCompFN comp) {
+    template <typename ScalarType, typename triangulationType>
+    std::pair<valence, valence>
+      FTRGraph<ScalarType, triangulationType>::getLinkNbCC(
+        const idVertex curVert, LocalForests &localForests, VertCompFN comp) {
       // traduce edge id in a local id for the forests
       std::unordered_map<idEdge, std::size_t> mapNeighDown, mapNeighUp;
       std::size_t nextId = 0;
@@ -623,10 +625,9 @@ namespace ttk {
       return {down, up};
     }
 
-    template <typename ScalarType>
-    void
-      FTRGraph<ScalarType>::updatePreimage(const Propagation *const localProp,
-                                           const idSuperArc curArc) {
+    template <typename ScalarType, typename triangulationType>
+    void FTRGraph<ScalarType, triangulationType>::updatePreimage(
+      const Propagation *const localProp, const idSuperArc curArc) {
       const idCell nbAdjTriangles
         = mesh_.getVertexTriangleNumber(localProp->getCurVertex());
 
@@ -664,8 +665,8 @@ namespace ttk {
       }
     }
 
-    template <typename ScalarType>
-    void FTRGraph<ScalarType>::updatePreimageStartCell(
+    template <typename ScalarType, typename triangulationType>
+    void FTRGraph<ScalarType, triangulationType>::updatePreimageStartCell(
       const orderedTriangle &oTriangle,
       const Propagation *const localProp,
       const idSuperArc curArc) {
@@ -680,8 +681,8 @@ namespace ttk {
         std::get<1>(oTriangle), std::get<0>(oTriangle), w, curArc);
     }
 
-    template <typename ScalarType>
-    void FTRGraph<ScalarType>::updatePreimageMiddleCell(
+    template <typename ScalarType, typename triangulationType>
+    void FTRGraph<ScalarType, triangulationType>::updatePreimageMiddleCell(
       const orderedTriangle &oTriangle,
       const Propagation *const localProp,
       const idSuperArc curArc) {
@@ -706,8 +707,8 @@ namespace ttk {
         std::get<1>(oTriangle), std::get<2>(oTriangle), w, curArc);
     }
 
-    template <typename ScalarType>
-    void FTRGraph<ScalarType>::updatePreimageEndCell(
+    template <typename ScalarType, typename triangulationType>
+    void FTRGraph<ScalarType, triangulationType>::updatePreimageEndCell(
       const orderedTriangle &oTriangle,
       const Propagation *const localProp,
       const idSuperArc curArc) {
@@ -717,8 +718,8 @@ namespace ttk {
       // dynGraph(localProp).setCorArc(std::get<2>(oTriangle), curArc);
     }
 
-    template <typename ScalarType>
-    void FTRGraph<ScalarType>::updateDynGraphCurArc(
+    template <typename ScalarType, typename triangulationType>
+    void FTRGraph<ScalarType, triangulationType>::updateDynGraphCurArc(
       const idVertex seed,
       const idEdge neigEdge,
       const idSuperArc curArc,
@@ -736,9 +737,9 @@ namespace ttk {
     }
 
 #ifndef TTK_DISABLE_FTR_LAZY
-    template <typename ScalarType>
-    void FTRGraph<ScalarType>::lazyUpdatePreimage(Propagation *const localProp,
-                                                  const idSuperArc curArc) {
+    template <typename ScalarType, typename triangulationType>
+    void FTRGraph<ScalarType, triangulationType>::lazyUpdatePreimage(
+      Propagation *const localProp, const idSuperArc curArc) {
       const idCell nbAdjTriangles
         = mesh_.getVertexTriangleNumber(localProp->getCurVertex());
 
@@ -775,18 +776,19 @@ namespace ttk {
       }
     }
 
-    template <typename ScalarType>
-    void FTRGraph<ScalarType>::updateLazyStart(const orderedTriangle &oTriangle,
-                                               Propagation *const localProp,
-                                               const idSuperArc curArc) {
+    template <typename ScalarType, typename triangulationType>
+    void FTRGraph<ScalarType, triangulationType>::updateLazyStart(
+      const orderedTriangle &oTriangle,
+      Propagation *const localProp,
+      const idSuperArc curArc) {
       lazy_.addEmplace(std::get<0>(oTriangle), std::get<1>(oTriangle), curArc);
     }
 
-    template <typename ScalarType>
-    void
-      FTRGraph<ScalarType>::updateLazyMiddle(const orderedTriangle &oTriangle,
-                                             Propagation *const localProp,
-                                             const idSuperArc curArc) {
+    template <typename ScalarType, typename triangulationType>
+    void FTRGraph<ScalarType, triangulationType>::updateLazyMiddle(
+      const orderedTriangle &oTriangle,
+      Propagation *const localProp,
+      const idSuperArc curArc) {
       lazy_.delEmplace(std::get<0>(oTriangle), std::get<1>(oTriangle), curArc);
       dynGraph(localProp).removeEdge(
         std::get<0>(oTriangle), std::get<1>(oTriangle));
@@ -795,10 +797,11 @@ namespace ttk {
       lazy_.addEmplace(std::get<1>(oTriangle), std::get<2>(oTriangle), curArc);
     }
 
-    template <typename ScalarType>
-    void FTRGraph<ScalarType>::updateLazyEnd(const orderedTriangle &oTriangle,
-                                             Propagation *const localProp,
-                                             const idSuperArc curArc) {
+    template <typename ScalarType, typename triangulationType>
+    void FTRGraph<ScalarType, triangulationType>::updateLazyEnd(
+      const orderedTriangle &oTriangle,
+      Propagation *const localProp,
+      const idSuperArc curArc) {
       lazy_.delEmplace(std::get<1>(oTriangle), std::get<2>(oTriangle), curArc);
       dynGraph(localProp).removeEdge(
         std::get<1>(oTriangle), std::get<2>(oTriangle));
@@ -806,10 +809,11 @@ namespace ttk {
       dynGraph(localProp).setCorArc(std::get<2>(oTriangle), curArc);
     }
 
-    template <typename ScalarType>
-    void FTRGraph<ScalarType>::updateLazyAdd(const Propagation *const localProp,
-                                             const linkEdge edge,
-                                             const idSuperArc arc) {
+    template <typename ScalarType, typename triangulationType>
+    void FTRGraph<ScalarType, triangulationType>::updateLazyAdd(
+      const Propagation *const localProp,
+      const linkEdge edge,
+      const idSuperArc arc) {
       const orderedEdge e0
         = mesh_.getOrderedEdge(std::get<0>(edge), localProp->goUp());
       const orderedEdge e1
@@ -819,16 +823,17 @@ namespace ttk {
         std::get<1>(edge), std::get<0>(edge), w, arc);
     }
 
-    template <typename ScalarType>
-    void FTRGraph<ScalarType>::updateLazyDel(const Propagation *const localProp,
-                                             const linkEdge edge,
-                                             const idSuperArc arc) {
+    template <typename ScalarType, typename triangulationType>
+    void FTRGraph<ScalarType, triangulationType>::updateLazyDel(
+      const Propagation *const localProp,
+      const linkEdge edge,
+      const idSuperArc arc) {
       dynGraph(localProp).removeEdge(std::get<0>(edge), std::get<1>(edge));
     }
 
-    template <typename ScalarType>
-    void FTRGraph<ScalarType>::lazyApply(Propagation *const localProp,
-                                         const idSuperArc a) {
+    template <typename ScalarType, typename triangulationType>
+    void FTRGraph<ScalarType, triangulationType>::lazyApply(
+      Propagation *const localProp, const idSuperArc a) {
       auto add = lazy_.addGetNext(a);
       while(add != nullLink) {
         updateLazyAdd(localProp, add, a);
@@ -838,8 +843,8 @@ namespace ttk {
 
 #endif
 
-    template <typename ScalarType>
-    void FTRGraph<ScalarType>::updateDynGraphCurArc(
+    template <typename ScalarType, typename triangulationType>
+    void FTRGraph<ScalarType, triangulationType>::updateDynGraphCurArc(
       const idVertex seed,
       const idSuperArc curArc,
       const Propagation *const localProp) {
@@ -852,10 +857,9 @@ namespace ttk {
       }
     }
 
-    template <typename ScalarType>
-    void
-      FTRGraph<ScalarType>::localGrowth(Propagation *const localProp,
-                                        const std::vector<idEdge> &upperEdges) {
+    template <typename ScalarType, typename triangulationType>
+    void FTRGraph<ScalarType, triangulationType>::localGrowth(
+      Propagation *const localProp, const std::vector<idEdge> &upperEdges) {
       const idVertex curVert = localProp->getCurVertex();
       for(const idEdge e : upperEdges) {
         idVertex v0, v1;
@@ -871,9 +875,9 @@ namespace ttk {
       }
     }
 
-    template <typename ScalarType>
-    bool FTRGraph<ScalarType>::checkLast(Propagation *const localProp,
-                                         const std::vector<idEdge> &starVect) {
+    template <typename ScalarType, typename triangulationType>
+    bool FTRGraph<ScalarType, triangulationType>::checkLast(
+      Propagation *const localProp, const std::vector<idEdge> &starVect) {
       const idVertex curSaddle = localProp->getCurVertex();
       AtomicUF *curId = localProp->getId();
       valence decr = 0;
@@ -956,8 +960,8 @@ namespace ttk {
       return oldVal == decr;
     }
 
-    template <typename ScalarType>
-    idSuperArc FTRGraph<ScalarType>::mergeAtSaddle(
+    template <typename ScalarType, typename triangulationType>
+    idSuperArc FTRGraph<ScalarType, triangulationType>::mergeAtSaddle(
       const idNode saddleId,
       Propagation *localProp,
       const std::set<DynGraphNode<idVertex> *> &compVect) {
@@ -984,8 +988,8 @@ namespace ttk {
       return visibleClosed;
     }
 
-    template <typename ScalarType>
-    idSuperArc FTRGraph<ScalarType>::mergeAtSaddle(
+    template <typename ScalarType, typename triangulationType>
+    idSuperArc FTRGraph<ScalarType, triangulationType>::mergeAtSaddle(
       const idNode saddleId,
       const std::set<DynGraphNode<idVertex> *> &compVect) {
       // version for the sequential arc growth, do not merge the propagations
@@ -1009,8 +1013,8 @@ namespace ttk {
       return visibleClosed;
     }
 
-    template <typename ScalarType>
-    void FTRGraph<ScalarType>::splitAtSaddle(
+    template <typename ScalarType, typename triangulationType>
+    void FTRGraph<ScalarType, triangulationType>::splitAtSaddle(
       Propagation *const localProp,
       const std::set<DynGraphNode<idVertex> *> &compVect,
       const bool hidden) {
@@ -1029,9 +1033,9 @@ namespace ttk {
       }
     }
 
-    template <typename ScalarType>
-    idSuperArc FTRGraph<ScalarType>::visit(Propagation *const localProp,
-                                           const idSuperArc curArc) {
+    template <typename ScalarType, typename triangulationType>
+    idSuperArc FTRGraph<ScalarType, triangulationType>::visit(
+      Propagation *const localProp, const idSuperArc curArc) {
       const idVertex curVert = localProp->getCurVertex();
       Visit opposite;
       idSuperArc retArc;
@@ -1056,9 +1060,9 @@ namespace ttk {
 
     /// Tools
 
-    template <typename ScalarType>
-    Propagation *FTRGraph<ScalarType>::newPropagation(const idVertex leaf,
-                                                      const bool fromMin) {
+    template <typename ScalarType, typename triangulationType>
+    Propagation *FTRGraph<ScalarType, triangulationType>::newPropagation(
+      const idVertex leaf, const bool fromMin) {
       VertCompFN comp;
       if(fromMin)
         comp = [&](idVertex a, idVertex b) { return scalars_.isHigher(a, b); };
@@ -1067,11 +1071,11 @@ namespace ttk {
       return propagations_.newPropagation(leaf, comp, fromMin);
     }
 
-    template <typename ScalarType>
-    idVertex
-      FTRGraph<ScalarType>::getWeight(const orderedEdge &e0,
-                                      const orderedEdge &e1,
-                                      const Propagation *const localProp) {
+    template <typename ScalarType, typename triangulationType>
+    idVertex FTRGraph<ScalarType, triangulationType>::getWeight(
+      const orderedEdge &e0,
+      const orderedEdge &e1,
+      const Propagation *const localProp) {
       const idVertex end0 = std::get<1>(e0);
       const idVertex end1 = std::get<1>(e1);
 
@@ -1088,10 +1092,11 @@ namespace ttk {
       return scalars_.getMirror(end1);
     }
 
-    template <typename ScalarType>
-    vertPosInTriangle FTRGraph<ScalarType>::getVertPosInTriangle(
-      const orderedTriangle &oTriangle,
-      const Propagation *const localProp) const {
+    template <typename ScalarType, typename triangulationType>
+    vertPosInTriangle
+      FTRGraph<ScalarType, triangulationType>::getVertPosInTriangle(
+        const orderedTriangle &oTriangle,
+        const Propagation *const localProp) const {
       orderedEdge firstEdge
         = mesh_.getOrderedEdge(std::get<0>(oTriangle), localProp->goUp());
       if(std::get<0>(firstEdge) == localProp->getCurVertex()) {
@@ -1103,8 +1108,8 @@ namespace ttk {
       }
     }
 
-    template <typename ScalarType>
-    idVertex FTRGraph<ScalarType>::getEndVertexInTriangle(
+    template <typename ScalarType, typename triangulationType>
+    idVertex FTRGraph<ScalarType, triangulationType>::getEndVertexInTriangle(
       const orderedTriangle &oTriangle,
       const Propagation *const localProp) const {
       const orderedEdge &higherEdge
@@ -1112,10 +1117,9 @@ namespace ttk {
       return std::get<1>(higherEdge);
     }
 
-    template <typename ScalarType>
-    idEdge FTRGraph<ScalarType>::getEdgeFromOTri(const orderedTriangle oTri,
-                                                 const idVertex v0,
-                                                 const idVertex v1) {
+    template <typename ScalarType, typename triangulationType>
+    idEdge FTRGraph<ScalarType, triangulationType>::getEdgeFromOTri(
+      const orderedTriangle oTri, const idVertex v0, const idVertex v1) {
       idVertex edge0Vert, edge1Vert;
 
       mesh_.getEdgeVertex(std::get<0>(oTri), 0, edge0Vert);
