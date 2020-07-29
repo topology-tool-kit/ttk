@@ -43,8 +43,7 @@ int ttkTrackingFromFields::RequestData(vtkInformation *request,
   if(!triangulation)
     return 0;
 
-  // TODO remove once persistenceDiagram is migrated
-  this->setTriangulation(triangulation);
+  this->preconditionTriangulation(triangulation);
 
   // Test validity of datasets (must present the same number of points).
   if(!input)

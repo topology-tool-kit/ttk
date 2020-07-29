@@ -2,12 +2,13 @@
 /// \class ttk::TrackingFromPersistenceDiagrams
 /// \author Maxime Soler <soler.maxime@total.com>
 /// \date August 2018.
-
-#ifndef _TRACKINGFROMP_H
-#define _TRACKINGFROMP_H
+#pragma once
 
 // base code includes
 #include <BottleneckDistance.h>
+#include <set>
+
+namespace ttk {
 
   class TrackingFromPersistenceDiagrams : virtual public Debug {
 
@@ -418,5 +419,3 @@ int ttk::TrackingFromPersistenceDiagrams::performPostProcess(
 
   return 0;
 }
-
-#endif // _TRACKINGFROMP_H
