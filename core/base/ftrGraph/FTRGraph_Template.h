@@ -30,7 +30,7 @@ namespace ttk {
     }
 
     template <typename ScalarType>
-    FTRGraph<ScalarType>::FTRGraph(Triangulation *mesh)
+    FTRGraph<ScalarType>::FTRGraph(AbstractTriangulation *mesh)
       : params_{}, scalars_{new Scalars<ScalarType>}, mesh_{} {
       preconditionTriangulation(mesh);
     }

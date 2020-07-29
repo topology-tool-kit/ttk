@@ -88,7 +88,7 @@ namespace ttk {
 #endif
 
     public:
-      explicit FTRGraph(Triangulation *mesh);
+      explicit FTRGraph(AbstractTriangulation *mesh);
       FTRGraph();
       virtual ~FTRGraph();
 
