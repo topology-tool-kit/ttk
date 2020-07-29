@@ -27,8 +27,7 @@
 ///
 /// \sa ttkPersistenceDiagram.cpp %for a usage example.
 
-#ifndef _PERSISTENCEDIAGRAM_H
-#define _PERSISTENCEDIAGRAM_H
+#pragma once
 
 // base code includes
 #include <FTMTreePP.h>
@@ -47,9 +46,8 @@ namespace ttk {
     PersistenceDiagram();
     ~PersistenceDiagram();
 
-    inline int setComputeSaddleConnectors(bool state) {
+    inline void setComputeSaddleConnectors(bool state) {
       ComputeSaddleConnectors = state;
-      return 0;
     }
 
     ttk::CriticalType getNodeType(ftm::FTMTree_MT *tree,
@@ -88,42 +86,31 @@ namespace ttk {
                                        ttk::SimplexId>> &CTDiagram,
                 const scalarType *inputScalars,
                 const idType *inputOffsets,
-                const triangulationType *triangulation) const;
+                const triangulationType *triangulation);
 
-    inline int
+    inline void
       setDMTPairs(std::vector<std::tuple<dcg::Cell, dcg::Cell>> *data) {
       dmt_pairs = data;
-      return 0;
     }
 
-    inline int preconditionTriangulation(Triangulation *triangulation) {
+    inline void preconditionTriangulation(Triangulation *triangulation) {
       if(triangulation) {
-        ftm::FTMTreePP contourTree;
-        contourTree.setDebugLevel(debugLevel_);
-        // TODO: contourTree.preconditionTriangulation(triangulation);
         triangulation->preconditionBoundaryVertices();
+        contourTree_.setDebugLevel(debugLevel_);
+        contourTree_.setThreadNumber(threadNumber_);
+        contourTree_.preconditionTriangulation(triangulation);
+        morseSmaleComplex_.setDebugLevel(debugLevel_);
+        morseSmaleComplex_.setThreadNumber(threadNumber_);
+        morseSmaleComplex_.preconditionTriangulation(triangulation);
       }
-      return 0;
-    }
-
-    // TODO: Remove when FTM and MSC are migrated
-    inline int setupTriangulation(Triangulation *data) {
-      triangulation_ = data;
-      if(triangulation_) {
-        ftm::FTMTreePP contourTree;
-        contourTree.setupTriangulation(triangulation_);
-        triangulation_->preconditionBoundaryVertices();
-      }
-      return 0;
     }
 
   protected:
     std::vector<std::tuple<dcg::Cell, dcg::Cell>> *dmt_pairs;
 
     bool ComputeSaddleConnectors{false};
-
-    // TODO: Remove when FTM and MSC are migrated
-    Triangulation *triangulation_;
+    ftm::FTMTreePP contourTree_{};
+    MorseSmaleComplex3D morseSmaleComplex_{};
   };
 } // namespace ttk
 
@@ -215,7 +202,7 @@ int ttk::PersistenceDiagram::execute(
                          ttk::SimplexId>> &CTDiagram,
   const scalarType *inputScalars,
   const idType *inputOffsets,
-  const triangulationType *triangulation) const {
+  const triangulationType *triangulation) {
 
   printMsg(ttk::debug::Separator::L1);
 
@@ -226,22 +213,18 @@ int ttk::PersistenceDiagram::execute(
 
   // TODO: Change the following to migrated code when FTM module is migrated
   // get contour tree
-  ftm::FTMTreePP contourTree;
-  contourTree.setupTriangulation(triangulation_, false);
-  contourTree.setVertexScalars(inputScalars);
-  contourTree.setTreeType(ftm::TreeType::Join_Split);
-  contourTree.setVertexSoSoffsets(voffsets.data());
-  contourTree.setThreadNumber(threadNumber_);
-  contourTree.setDebugLevel(debugLevel_);
-  contourTree.setSegmentation(false);
-  contourTree.build<scalarType, idType>();
+  contourTree_.setVertexScalars(inputScalars);
+  contourTree_.setTreeType(ftm::TreeType::Join_Split);
+  contourTree_.setVertexSoSoffsets(voffsets.data());
+  contourTree_.setSegmentation(false);
+  contourTree_.build<scalarType, idType>(triangulation);
   // !!!
 
   // get persistence pairs
   std::vector<std::tuple<ttk::SimplexId, ttk::SimplexId, scalarType>> JTPairs;
   std::vector<std::tuple<ttk::SimplexId, ttk::SimplexId, scalarType>> STPairs;
-  contourTree.computePersistencePairs<scalarType>(JTPairs, true);
-  contourTree.computePersistencePairs<scalarType>(STPairs, false);
+  contourTree_.computePersistencePairs<scalarType>(JTPairs, true);
+  contourTree_.computePersistencePairs<scalarType>(STPairs, false);
 
   // merge pairs
   std::vector<std::tuple<ttk::SimplexId, ttk::SimplexId, scalarType, bool>>
@@ -275,23 +258,19 @@ int ttk::PersistenceDiagram::execute(
   // get the saddle-saddle pairs
   std::vector<std::tuple<SimplexId, SimplexId, scalarType>>
     pl_saddleSaddlePairs;
-  const int dimensionality = triangulation_->getDimensionality();
+  const int dimensionality = triangulation->getDimensionality();
   if(dimensionality == 3 and ComputeSaddleConnectors) {
     // TODO: Change the following to migrated code when FTM module is migrated
-    MorseSmaleComplex3D morseSmaleComplex;
-    morseSmaleComplex.setDebugLevel(debugLevel_);
-    morseSmaleComplex.setThreadNumber(threadNumber_);
-    morseSmaleComplex.preconditionTriangulation(triangulation_);
-    morseSmaleComplex.setInputScalarField(inputScalars);
-    morseSmaleComplex.setInputOffsets(inputOffsets);
-    morseSmaleComplex.computePersistencePairs<scalarType, idType>(
+    morseSmaleComplex_.setInputScalarField(inputScalars);
+    morseSmaleComplex_.setInputOffsets(inputOffsets);
+    morseSmaleComplex_.computePersistencePairs<scalarType, idType>(
       pl_saddleSaddlePairs, *triangulation);
     // !!!
   }
 
   // get persistence diagrams
   computeCTPersistenceDiagram<scalarType>(
-    contourTree, CTPairs, CTDiagram, inputScalars);
+    contourTree_, CTPairs, CTDiagram, inputScalars);
 
   // add saddle-saddle pairs to the diagram if needed
   if(dimensionality == 3 and ComputeSaddleConnectors) {
@@ -322,5 +301,3 @@ int ttk::PersistenceDiagram::execute(
 
   return 0;
 }
-
-#endif // PERSISTENCEDIAGRAM_H

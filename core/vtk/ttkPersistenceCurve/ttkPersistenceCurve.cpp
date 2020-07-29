@@ -240,9 +240,8 @@ int ttkPersistenceCurve::RequestData(vtkInformation *request,
     return 0;
   }
 #endif
-  preconditionTriangulation(triangulation);
-  // TODO: Remove when FTM and MSC are migrated
-  setupTriangulation(triangulation);
+
+  this->preconditionTriangulation(triangulation);
 
   vtkDataArray *inputScalars = this->GetInputArrayToProcess(0, inputVector);
 #ifndef TTK_ENABLE_KAMIKAZE
