@@ -43,7 +43,7 @@ FTMTree_CT::~FTMTree_CT() {
 }
 
 int FTMTree_CT::combine() {
-  DebugTimer stepTime;
+  Timer stepTime;
   queue<pair<bool, idNode>> growingNodes, remainingNodes;
 
   const bool DEBUG = false;
@@ -313,7 +313,7 @@ void FTMTree_CT::createCTArcSegmentation(idSuperArc ctArc,
 }
 
 void FTMTree_CT::finalizeSegmentation(void) {
-  DebugTimer finSegmTime;
+  Timer finSegmTime;
   const auto &nbArc = getNumberOfSuperArcs();
 
 #ifdef TTK_ENABLE_OPENMP

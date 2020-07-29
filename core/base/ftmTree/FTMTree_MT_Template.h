@@ -54,12 +54,12 @@ namespace ttk {
       }
 
       // Build Merge treeString using tasks
-      DebugTimer precomputeTime;
+      Timer precomputeTime;
       int alreadyDone = leafSearch(mesh);
       printTime(precomputeTime, "leafSearch " + treeString, scalars_->size,
                 3 + alreadyDone);
 
-      DebugTimer buildTime;
+      Timer buildTime;
       leafGrowth(mesh);
       int nbProcessed = 0;
 #ifdef TTK_ENABLE_FTM_TREE_PROCESS_SPEED
@@ -71,13 +71,13 @@ namespace ttk {
 #endif
       printTime(buildTime, "leafGrowth " + treeString, nbProcessed, 3);
 
-      DebugTimer bbTime;
+      Timer bbTime;
       SimplexId bbSize = trunk(mesh, ct);
       printTime(bbTime, "trunk " + treeString, bbSize, 3);
 
       // Segmentation
       if(ct && params_->segm) {
-        DebugTimer segmTime;
+        Timer segmTime;
         buildSegmentation();
         printTime(segmTime, "segment " + treeString, scalars_->size, 3);
       }
@@ -400,7 +400,7 @@ namespace ttk {
 
     template <class triangulationType>
     SimplexId FTMTree_MT::trunk(const triangulationType *mesh, const bool ct) {
-      DebugTimer bbTimer;
+      Timer bbTimer;
 
       std::vector<SimplexId> trunkVerts;
       const auto &nbScalars = scalars_->size;

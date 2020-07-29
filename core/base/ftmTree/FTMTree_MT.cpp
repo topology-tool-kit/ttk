@@ -161,7 +161,7 @@ void FTMTree_MT::buildSegmentation() {
   // change segments size using the created vector
   mt_data_.segments_.resize(sizes);
 
-  DebugTimer segmentsSet;
+  Timer segmentsSet;
 
   // Fill segments using vert2tree
 
@@ -214,7 +214,7 @@ void FTMTree_MT::buildSegmentation() {
   if(mt_data_.trunkSegments->size() == 0) {
     // sort arc that have been filled by the trunk
     // only for MT
-    DebugTimer segmentsSortTime;
+    Timer segmentsSortTime;
     for(idSuperArc a = 0; a < nbArcs; ++a) {
       if(posSegm[a]) {
 #ifdef TTK_ENABLE_OPENMP
@@ -229,7 +229,7 @@ void FTMTree_MT::buildSegmentation() {
     printTime(segmentsSortTime, "segmentation sort vertices", -1, 4);
   } else {
     // Contour tree: we create the arc segmentation for arcs in the trunk
-    DebugTimer segmentsArcTime;
+    Timer segmentsArcTime;
     for(idSuperArc a = 0; a < nbArcs; ++a) {
       // CT computation, we have already the vert list
       if((*mt_data_.trunkSegments)[a].size()) {
@@ -549,7 +549,7 @@ void FTMTree_MT::move(FTMTree_MT *mt) {
 }
 
 void FTMTree_MT::normalizeIds(void) {
-  DebugTimer normTime;
+  Timer normTime;
   sortLeaves(true);
 
   auto getNodeParentArcNb
@@ -747,7 +747,7 @@ void FTMTree_MT::printParams(void) const {
   }
 }
 
-int FTMTree_MT::printTime(DebugTimer &t,
+int FTMTree_MT::printTime(Timer &t,
                           const string &s,
                           SimplexId nbScalars,
                           const int debugLevel) const {

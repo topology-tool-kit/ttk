@@ -49,7 +49,7 @@
 #include "FTMStructures.h"
 #include "FTMSuperArc.h"
 
-static ttk::DebugTimer _launchGlobalTime;
+static ttk::Timer _launchGlobalTime;
 
 namespace ttk {
   namespace ftm {
@@ -595,7 +595,7 @@ namespace ttk {
 
       void printParams(void) const;
 
-      int printTime(DebugTimer &t,
+      int printTime(Timer &t,
                     const std::string &s,
                     SimplexId nbScalars = -1,
                     const int debugLevel = 2) const;

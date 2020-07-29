@@ -8,7 +8,7 @@ namespace ttk {
 
     template <class triangulationType>
     void FTMTree_CT::build(const triangulationType *mesh, TreeType tt) {
-      DebugTimer mergeTreesTime;
+      Timer mergeTreesTime;
 
       const bool bothMT = tt == TreeType::Contour || tt == TreeType::Join_Split;
 
@@ -17,7 +17,7 @@ namespace ttk {
       if(bothMT) {
         // single leaf search for both tree
         // When executed from CT, both minima and maxima are extracted
-        DebugTimer precomputeTime;
+        Timer precomputeTime;
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel num_threads(threadNumber_)
 #endif
@@ -73,10 +73,10 @@ namespace ttk {
       // Combine
       if(tt == TreeType::Contour) {
 
-        DebugTimer combineFullTime;
+        Timer combineFullTime;
         insertNodes();
 
-        DebugTimer combineTime;
+        Timer combineTime;
         combine();
         printTime(combineTime, "combine trees", -1, 4);
         printTime(combineFullTime, "combine full", -1, 3);

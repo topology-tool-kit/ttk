@@ -69,7 +69,7 @@ void ttk::ftm::FTMTree::build(const triangulationType *mesh) {
   }
 
   // Alloc / reserve
-  DebugTimer initTime;
+  Timer initTime;
   switch(params_->treeType) {
     case TreeType::Join:
       getJoinTree()->makeAlloc();
@@ -91,10 +91,10 @@ void ttk::ftm::FTMTree::build(const triangulationType *mesh) {
   }
   printTime(initTime, "alloc", -1, 3);
 
-  DebugTimer startTime;
+  Timer startTime;
 
   // init values
-  DebugTimer setTimer;
+  Timer setTimer;
   switch(params_->treeType) {
     case TreeType::Join:
       getJoinTree()->makeInit();
@@ -118,7 +118,7 @@ void ttk::ftm::FTMTree::build(const triangulationType *mesh) {
 
   // for fast comparison
   // and regions / segmentation
-  DebugTimer sortTime;
+  Timer sortTime;
   initSoS<idType>();
   sortInput<scalarType, idType>();
   printTime(sortTime, "sort step", -1, 3);
@@ -127,7 +127,7 @@ void ttk::ftm::FTMTree::build(const triangulationType *mesh) {
   // BUILD
   // -----
 
-  DebugTimer buildTime;
+  Timer buildTime;
   FTMTree_CT::build(mesh, params_->treeType);
   printTime(buildTime, "build tree", -1, 3);
 
