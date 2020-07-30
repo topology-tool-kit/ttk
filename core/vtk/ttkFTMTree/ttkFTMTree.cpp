@@ -494,6 +494,9 @@ int ttkFTMTree::getSegmentation(vtkDataSet *outputSegmentation) {
 
   vtkPointData *pointData = outputSegmentation->GetPointData();
   vertData.addArray(pointData, params_);
+  // vertex identifier field should not be propagated (it has caused
+  // downstream bugs in distanceField in oceanVortices)
+  pointData->RemoveArray(ttk::VertexScalarFieldName);
 
   return 1;
 }
