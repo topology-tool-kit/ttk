@@ -18,6 +18,15 @@ MergeTree::MergeTree(Params *const params,
                      TreeType type,
                      idPartition part)
   : params_(params), scalars_(scalars) {
+  if(type == TreeType::Join) {
+    this->setDebugMsgPrefix("JoinTree");
+  } else if(type == TreeType::Split) {
+    this->setDebugMsgPrefix("SplitTree");
+  } else if(type == TreeType::Contour) {
+    this->setDebugMsgPrefix("ContourTree");
+  } else if(type == TreeType::JoinAndSplit) {
+    this->setDebugMsgPrefix("SplitJoinTree");
+  }
   treeData_.treeType = type;
   treeData_.partition = part;
 }

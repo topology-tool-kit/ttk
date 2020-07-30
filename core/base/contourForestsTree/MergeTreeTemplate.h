@@ -1012,18 +1012,10 @@ namespace ttk {
       // {
 
       if(params_->debugLevel >= infoMsg) {
-        std::stringstream msg;
-
-        if(isJT)
-          msg << "[MergeTree] Join  Tree ";
-        else
-          msg << "[MergeTree] Split Tree ";
-
-        msg << static_cast<unsigned>(treeData_.partition) << " ";
-        msg << "computed   in        " << timerBegin.getElapsedTime();
-        msg << "              \t( nb arcs : " << getNumberOfSuperArcs() << " )"
-            << std::endl;
-        dMsg(std::cout, msg.str(), infoMsg);
+        this->printMsg("Tree " + std::to_string(treeData_.partition)
+                         + " computed ("
+                         + std::to_string(getNumberOfSuperArcs()) + " arcs)",
+                       1.0, timerBegin.getElapsedTime(), this->threadNumber_);
       }
 
       // }
@@ -1089,17 +1081,13 @@ namespace ttk {
         treeData_.leaves.emplace_back(currentNode);
 
         if(params_->debugLevel >= advancedInfoMsg) {
-          std::stringstream msg;
-          msg << "[MergeTree] ";
-
           if(isJT) {
-            msg << "min node id:" << currentVertex;
+            this->printMsg("Min node id: " + std::to_string(currentVertex), 1.0,
+                           begin.getElapsedTime(), this->threadNumber_);
           } else {
-            msg << "max node id:" << currentVertex;
+            this->printMsg("Max node id: " + std::to_string(currentVertex), 1.0,
+                           begin.getElapsedTime(), this->threadNumber_);
           }
-
-          msg << " at : " << begin.getElapsedTime() << std::endl;
-          dMsg(std::cout, msg.str(), advancedInfoMsg);
         }
       } else if(neighSize > 1) {
         // Is a saddle if have more than one UF in neighborhood
@@ -1151,11 +1139,7 @@ namespace ttk {
         //<< getNode(getCorrespondingNode(farOrigin))->getVertexId() << endl;
 
         if(params_->debugLevel >= advancedInfoMsg) {
-          std::stringstream msg;
-
-          msg << "[MergeTree] ";
-          msg << "saddle node id:" << currentVertex;
-          dMsg(std::cout, msg.str(), advancedInfoMsg);
+          this->printMsg("Saddle node id: " + std::to_string(currentVertex));
         }
 
       } else {
