@@ -12,6 +12,7 @@
 #pragma once
 
 #include "FTRDataTypes.h"
+#include <Debug.h>
 
 #include <tuple>
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -43,14 +44,16 @@ namespace ttk {
       static std::tuple<idVertex, idPropagation>
         getChunk(const TaskChunk &params) {
 #ifndef TTK_ENABLE_KAMIKAZE
+        Debug dbg{};
+        dbg.setDebugMsgPrefix("Task");
         if(!params.nbElemt) {
-          this->printErr("getChunk called with nbElemnt null");
+          dbg.printErr("getChunk called with nbElemnt null");
         }
         if(!params.nbTasks and !params.grainSize) {
-          this->printErr("getChunk called with neither nbtasks nor grainSize");
+          dbg.printErr("getChunk called with neither nbtasks nor grainSize");
         }
         if(params.nbTasks and params.grainSize) {
-          this->printErr("getChunk called with both nbtasks and grainSize");
+          dbg.printErr("getChunk called with both nbtasks and grainSize");
         }
 #endif
         const idVertex grainSize = (params.grainSize)

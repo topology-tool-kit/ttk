@@ -49,8 +49,7 @@ int ttkFTRGraph::addCompleteSkeletonArc(const Graph &graph,
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(upNodeId == nullNode || downNodeId == nullNode) {
-    this->printErr("NULL NODES IN SKELETON "
-                   + std::to_string(graph.printArc(arcId)));
+    this->printErr("NULL NODES IN SKELETON " + graph.printArc(arcId));
     return 1;
   }
 #endif
@@ -120,8 +119,7 @@ int ttkFTRGraph::addDirectSkeletonArc(const Graph &graph,
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(upNodeId == nullNode || downNodeId == nullNode) {
-    this->printErr("NULL NODES IN SKELETON "
-                   + std::to_string(graph.printArc(arcId)));
+    this->printErr("NULL NODES IN SKELETON " + graph.printArc(arcId));
     return 1;
   }
 #endif
@@ -174,8 +172,7 @@ int ttkFTRGraph::addSampledSkeletonArc(const Graph &graph,
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(upNodeId == nullNode || downNodeId == nullNode) {
-    this->printErr("NULL NODES IN SKELETON "
-                   + std::to_string(graph.printArc(arcId)));
+    this->printErr("NULL NODES IN SKELETON " + graph.printArc(arcId));
     return 1;
   }
 #endif
