@@ -208,7 +208,6 @@ int ttk::ContourAroundPoint::setInputField(Triang *triangulation,
                                            void *scalars,
                                            double sizeFilter,
                                            double radius) {
-  msg(std::string(60, '-').c_str());
 
   if(!triangulation)
     return -1;
