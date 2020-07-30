@@ -6,8 +6,7 @@
 ///\brief TTK processing package that efficiently computes the
 /// contour tree of scalar data and more
 /// (data segmentation, topological simplification,
-/// p
-///  ersistence diagrams, persistence curves, etc.).
+/// persistence diagrams, persistence curves, etc.).
 ///
 ///\param dataType Data type of the input scalar field (char, float,
 /// etc.).
