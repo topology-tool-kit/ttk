@@ -21,13 +21,12 @@
 ///
 /// \sa ttkTopologicalSimplification.cpp %for a usage example.
 
-#ifndef _TOPOLOGICALSIMPLIFICATION_H
-#define _TOPOLOGICALSIMPLIFICATION_H
+#pragma once
 
 // base code includes
-#include <Wrapper.h>
-
+#include <Debug.h>
 #include <Triangulation.h>
+
 #include <cmath>
 #include <set>
 #include <tuple>
@@ -35,20 +34,18 @@
 
 namespace ttk {
 
-  struct SweepCmp {
-  private:
-    bool isIncreasingOrder_;
+  class SweepCmp {
+    bool isIncreasingOrder_{};
 
   public:
-    SweepCmp() : isIncreasingOrder_{} {
+    SweepCmp() {
     }
 
     SweepCmp(bool isIncreasingOrder) : isIncreasingOrder_{isIncreasingOrder} {
     }
 
-    int setIsIncreasingOrder(bool isIncreasingOrder) {
+    inline void setIsIncreasingOrder(bool isIncreasingOrder) {
       isIncreasingOrder_ = isIncreasingOrder;
-      return 0;
     }
 
     template <typename dataType>
@@ -64,15 +61,12 @@ namespace ttk {
                 or (std::get<0>(v0) == std::get<0>(v1)
                     and std::get<1>(v0) > std::get<1>(v1)));
       }
-    };
+    }
   };
 
-  class TopologicalSimplification : public Debug {
-
+  class TopologicalSimplification : virtual public Debug {
   public:
     TopologicalSimplification();
-
-    ~TopologicalSimplification();
 
     template <typename dataType>
     bool isLowerThan(SimplexId a,
@@ -86,95 +80,59 @@ namespace ttk {
                       dataType *scalars,
                       SimplexId *offsets) const;
 
-    template <typename dataType>
+    template <typename dataType, typename triangulationType>
     int getCriticalType(SimplexId vertexId,
                         dataType *scalars,
-                        SimplexId *offsets) const;
+                        SimplexId *offsets,
+                        const triangulationType &triangulation) const;
 
-    template <typename dataType>
-    int getCriticalPoints(dataType *scalars,
-                          SimplexId *offsets,
-                          std::vector<SimplexId> &minList,
-                          std::vector<SimplexId> &maxList) const;
-
-    template <typename dataType>
+    template <typename dataType, typename triangulationType>
     int getCriticalPoints(dataType *scalars,
                           SimplexId *offsets,
                           std::vector<SimplexId> &minList,
                           std::vector<SimplexId> &maxList,
-                          std::vector<bool> &blackList) const;
+                          const triangulationType &triangulation) const;
+
+    template <typename dataType, typename triangulationType>
+    int getCriticalPoints(dataType *scalars,
+                          SimplexId *offsets,
+                          std::vector<SimplexId> &minList,
+                          std::vector<SimplexId> &maxList,
+                          std::vector<bool> &blackList,
+                          const triangulationType &triangulation) const;
 
     template <typename dataType>
     int addPerturbation(dataType *scalars, SimplexId *offsets) const;
 
-    template <typename dataType, typename idType>
-    int execute() const;
+    template <typename dataType, typename idType, typename triangulationType>
+    int execute(const dataType *const inputScalars,
+                dataType *const outputScalars,
+                const idType *const identifiers,
+                const idType *const inputOffsets,
+                SimplexId *const offsets,
+                const SimplexId constraintNumber,
+                const triangulationType &triangulation) const;
 
-    inline int setupTriangulation(AbstractTriangulation *triangulation) {
-      triangulation_ = triangulation;
-      if(triangulation_) {
-        vertexNumber_ = triangulation_->getNumberOfVertices();
-        triangulation_->preconditionVertexNeighbors();
+    inline int preconditionTriangulation(AbstractTriangulation *triangulation) {
+      if(triangulation) {
+        vertexNumber_ = triangulation->getNumberOfVertices();
+        triangulation->preconditionVertexNeighbors();
       }
       return 0;
     }
 
-    inline int setVertexNumber(SimplexId vertexNumber) {
-      vertexNumber_ = vertexNumber;
-      return 0;
-    }
-
-    inline int setConstraintNumber(SimplexId constraintNumber) {
-      constraintNumber_ = constraintNumber;
-      return 0;
-    }
-
-    inline int setInputScalarFieldPointer(void *data) {
-      inputScalarFieldPointer_ = data;
-      return 0;
-    }
-
-    inline int setVertexIdentifierScalarFieldPointer(void *data) {
-      vertexIdentifierScalarFieldPointer_ = data;
-      return 0;
-    }
-
-    inline int setInputOffsetScalarFieldPointer(void *data) {
-      inputOffsetScalarFieldPointer_ = data;
-      return 0;
-    }
-
-    inline int setConsiderIdentifierAsBlackList(bool onOff) {
+    inline void setConsiderIdentifierAsBlackList(bool onOff) {
       considerIdentifierAsBlackList_ = onOff;
-      return 0;
     }
 
-    inline int setAddPerturbation(bool onOff) {
+    inline void setAddPerturbation(bool onOff) {
       addPerturbation_ = onOff;
-      return 0;
-    }
-
-    inline int setOutputScalarFieldPointer(void *data) {
-      outputScalarFieldPointer_ = data;
-      return 0;
-    }
-
-    inline int setOutputOffsetScalarFieldPointer(void *data) {
-      outputOffsetScalarFieldPointer_ = data;
-      return 0;
     }
 
   protected:
-    AbstractTriangulation *triangulation_;
-    SimplexId vertexNumber_;
-    SimplexId constraintNumber_;
-    void *inputScalarFieldPointer_;
-    void *vertexIdentifierScalarFieldPointer_;
-    void *inputOffsetScalarFieldPointer_;
-    bool considerIdentifierAsBlackList_;
-    bool addPerturbation_;
-    void *outputScalarFieldPointer_;
-    void *outputOffsetScalarFieldPointer_;
+    SimplexId vertexNumber_{};
+    bool considerIdentifierAsBlackList_{false};
+    bool addPerturbation_{false};
   };
 } // namespace ttk
 
@@ -199,16 +157,19 @@ bool ttk::TopologicalSimplification::isHigherThan(SimplexId a,
           or (scalars[a] == scalars[b] and offsets[a] > offsets[b]));
 }
 
-template <typename dataType>
-int ttk::TopologicalSimplification::getCriticalType(SimplexId vertex,
-                                                    dataType *scalars,
-                                                    SimplexId *offsets) const {
+template <typename dataType, typename triangulationType>
+int ttk::TopologicalSimplification::getCriticalType(
+  SimplexId vertex,
+  dataType *scalars,
+  SimplexId *offsets,
+  const triangulationType &triangulation) const {
+
   bool isMinima{true};
   bool isMaxima{true};
-  SimplexId neighborNumber = triangulation_->getVertexNeighborNumber(vertex);
+  SimplexId neighborNumber = triangulation.getVertexNeighborNumber(vertex);
   for(SimplexId i = 0; i < neighborNumber; ++i) {
     SimplexId neighbor;
-    triangulation_->getVertexNeighbor(vertex, i, neighbor);
+    triangulation.getVertexNeighbor(vertex, i, neighbor);
 
     if(isLowerThan<dataType>(neighbor, vertex, scalars, offsets))
       isMinima = false;
@@ -227,19 +188,21 @@ int ttk::TopologicalSimplification::getCriticalType(SimplexId vertex,
   return 0;
 }
 
-template <typename dataType>
+template <typename dataType, typename triangulationType>
 int ttk::TopologicalSimplification::getCriticalPoints(
   dataType *scalars,
   SimplexId *offsets,
   std::vector<SimplexId> &minima,
-  std::vector<SimplexId> &maxima) const {
+  std::vector<SimplexId> &maxima,
+  const triangulationType &triangulation) const {
+
   std::vector<int> type(vertexNumber_, 0);
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for
 #endif
   for(SimplexId k = 0; k < vertexNumber_; ++k)
-    type[k] = getCriticalType<dataType>(k, scalars, offsets);
+    type[k] = getCriticalType<dataType>(k, scalars, offsets, triangulation);
 
   for(SimplexId k = 0; k < vertexNumber_; ++k) {
     if(type[k] < 0)
@@ -250,20 +213,21 @@ int ttk::TopologicalSimplification::getCriticalPoints(
   return 0;
 }
 
-template <typename dataType>
+template <typename dataType, typename triangulationType>
 int ttk::TopologicalSimplification::getCriticalPoints(
   dataType *scalars,
   SimplexId *offsets,
   std::vector<SimplexId> &minima,
   std::vector<SimplexId> &maxima,
-  std::vector<bool> &extrema) const {
+  std::vector<bool> &extrema,
+  const triangulationType &triangulation) const {
   std::vector<int> type(vertexNumber_);
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(SimplexId k = 0; k < vertexNumber_; ++k) {
     if(considerIdentifierAsBlackList_ xor extrema[k]) {
-      type[k] = getCriticalType<dataType>(k, scalars, offsets);
+      type[k] = getCriticalType<dataType>(k, scalars, offsets, triangulation);
     }
   }
 
@@ -311,17 +275,15 @@ int ttk::TopologicalSimplification::addPerturbation(dataType *scalars,
   return 0;
 }
 
-template <typename dataType, typename idType>
-int ttk::TopologicalSimplification::execute() const {
-
-  // get input data
-  dataType *inputScalars = static_cast<dataType *>(inputScalarFieldPointer_);
-  dataType *scalars = static_cast<dataType *>(outputScalarFieldPointer_);
-  idType *identifiers
-    = static_cast<idType *>(vertexIdentifierScalarFieldPointer_);
-  idType *inputOffsets = static_cast<idType *>(inputOffsetScalarFieldPointer_);
-  SimplexId *offsets
-    = static_cast<SimplexId *>(outputOffsetScalarFieldPointer_);
+template <typename dataType, typename idType, typename triangulationType>
+int ttk::TopologicalSimplification::execute(
+  const dataType *const inputScalars,
+  dataType *const outputScalars,
+  const idType *const identifiers,
+  const idType *const inputOffsets,
+  SimplexId *const offsets,
+  const SimplexId constraintNumber,
+  const triangulationType &triangulation) const {
 
   Timer t;
 
@@ -330,16 +292,16 @@ int ttk::TopologicalSimplification::execute() const {
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(SimplexId k = 0; k < vertexNumber_; ++k) {
-    scalars[k] = inputScalars[k];
-    if(std::isnan((double)scalars[k]))
-      scalars[k] = 0;
+    outputScalars[k] = inputScalars[k];
+    if(std::isnan((double)outputScalars[k]))
+      outputScalars[k] = 0;
 
     offsets[k] = inputOffsets[k];
   }
 
   // get the user extremum list
   std::vector<bool> extrema(vertexNumber_, false);
-  for(SimplexId k = 0; k < constraintNumber_; ++k) {
+  for(SimplexId k = 0; k < constraintNumber; ++k) {
     const SimplexId identifierId = identifiers[k];
 
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -352,16 +314,14 @@ int ttk::TopologicalSimplification::execute() const {
   std::vector<SimplexId> authorizedMaxima;
   std::vector<bool> authorizedExtrema(vertexNumber_, false);
 
-  getCriticalPoints<dataType>(
-    scalars, offsets, authorizedMinima, authorizedMaxima, extrema);
+  getCriticalPoints(outputScalars, offsets, authorizedMinima, authorizedMaxima,
+                    extrema, triangulation);
 
-  {
-    std::stringstream msg;
-    msg << "[TopologicalSimplification] Maintaining " << constraintNumber_
-        << " constraints (" << authorizedMinima.size() << " minima and "
-        << authorizedMaxima.size() << " maxima)." << std::endl;
-    dMsg(std::cout, msg.str(), advancedInfoMsg);
-  }
+  this->printMsg("Maintaining " + std::to_string(constraintNumber)
+                   + " constraints (" + std::to_string(authorizedMinima.size())
+                   + " minima and " + std::to_string(authorizedMaxima.size())
+                   + "maxima)",
+                 debug::Priority::DETAIL);
 
   // declare the tuple-comparison functor
   SweepCmp cmp;
@@ -370,12 +330,8 @@ int ttk::TopologicalSimplification::execute() const {
   int iteration{};
   for(SimplexId i = 0; i < vertexNumber_; ++i) {
 
-    {
-      std::stringstream msg;
-      msg << "[TopologicalSimplification] Starting simplifying iteration #" << i
-          << "..." << std::endl;
-      dMsg(std::cout, msg.str(), advancedInfoMsg);
-    }
+    this->printMsg("Starting simplifying iteration #" + std::to_string(i),
+                   debug::Priority::DETAIL);
 
     for(int j = 0; j < 2; ++j) {
 
@@ -391,13 +347,13 @@ int ttk::TopologicalSimplification::execute() const {
       if(isIncreasingOrder) {
         for(SimplexId k : authorizedMinima) {
           authorizedExtrema[k] = true;
-          sweepFront.emplace(scalars[k], offsets[k], k);
+          sweepFront.emplace(outputScalars[k], offsets[k], k);
           visitedVertices[k] = true;
         }
       } else {
         for(SimplexId k : authorizedMaxima) {
           authorizedExtrema[k] = true;
-          sweepFront.emplace(scalars[k], offsets[k], k);
+          sweepFront.emplace(outputScalars[k], offsets[k], k);
           visitedVertices[k] = true;
         }
       }
@@ -413,12 +369,13 @@ int ttk::TopologicalSimplification::execute() const {
         sweepFront.erase(front);
 
         SimplexId neighborNumber
-          = triangulation_->getVertexNeighborNumber(vertexId);
+          = triangulation.getVertexNeighborNumber(vertexId);
         for(SimplexId k = 0; k < neighborNumber; ++k) {
           SimplexId neighbor;
-          triangulation_->getVertexNeighbor(vertexId, k, neighbor);
+          triangulation.getVertexNeighbor(vertexId, k, neighbor);
           if(!visitedVertices[neighbor]) {
-            sweepFront.emplace(scalars[neighbor], offsets[neighbor], neighbor);
+            sweepFront.emplace(
+              outputScalars[neighbor], offsets[neighbor], neighbor);
             visitedVertices[neighbor] = true;
           }
         }
@@ -426,22 +383,24 @@ int ttk::TopologicalSimplification::execute() const {
         ++adjustmentPos;
       } while(!sweepFront.empty());
 
-      // save offsets and rearrange scalars
+      // save offsets and rearrange outputScalars
       SimplexId offset = (isIncreasingOrder ? 0 : vertexNumber_ + 1);
 
       for(SimplexId k = 0; k < vertexNumber_; ++k) {
 
         if(isIncreasingOrder) {
           if(k
-             and scalars[adjustmentSequence[k]]
-                   <= scalars[adjustmentSequence[k - 1]])
-            scalars[adjustmentSequence[k]] = scalars[adjustmentSequence[k - 1]];
+             && outputScalars[adjustmentSequence[k]]
+                  <= outputScalars[adjustmentSequence[k - 1]])
+            outputScalars[adjustmentSequence[k]]
+              = outputScalars[adjustmentSequence[k - 1]];
           ++offset;
         } else {
           if(k
-             and scalars[adjustmentSequence[k]]
-                   >= scalars[adjustmentSequence[k - 1]])
-            scalars[adjustmentSequence[k]] = scalars[adjustmentSequence[k - 1]];
+             && outputScalars[adjustmentSequence[k]]
+                  >= outputScalars[adjustmentSequence[k - 1]])
+            outputScalars[adjustmentSequence[k]]
+              = outputScalars[adjustmentSequence[k - 1]];
           --offset;
         }
         offsets[adjustmentSequence[k]] = offset;
@@ -452,19 +411,19 @@ int ttk::TopologicalSimplification::execute() const {
     bool needForMoreIterations{false};
     std::vector<SimplexId> minima;
     std::vector<SimplexId> maxima;
-    getCriticalPoints<dataType>(scalars, offsets, minima, maxima);
+    getCriticalPoints(outputScalars, offsets, minima, maxima, triangulation);
 
     if(maxima.size() > authorizedMaxima.size())
       needForMoreIterations = true;
     if(minima.size() > authorizedMinima.size())
       needForMoreIterations = true;
 
-    {
-      std::stringstream msg;
-      msg << "[TopologicalSimplification] Current status: " << minima.size()
-          << " minima, " << maxima.size() << " maxima." << std::endl;
-      dMsg(std::cout, msg.str(), advancedInfoMsg);
-    }
+    this->printMsg(
+      std::vector<std::vector<std::string>>{
+        {"#Minima", std::to_string(minima.size())},
+        {"#Maxima", std::to_string(maxima.size())},
+      },
+      debug::Priority::DETAIL);
 
     if(!needForMoreIterations) {
       for(SimplexId k : minima) {
@@ -485,21 +444,15 @@ int ttk::TopologicalSimplification::execute() const {
 
     // optional adding of perturbation
     if(addPerturbation_)
-      addPerturbation<dataType>(scalars, offsets);
+      addPerturbation<dataType>(outputScalars, offsets);
 
     ++iteration;
     if(!needForMoreIterations)
       break;
   }
 
-  {
-    std::stringstream msg;
-    msg << "[TopologicalSimplification] Scalar field simplified"
-        << " in " << t.getElapsedTime() << " s. (" << threadNumber_
-        << " threads(s), " << iteration << " ite.)." << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
-  }
+  this->printMsg(
+    "Simplified scalar field", 1.0, t.getElapsedTime(), this->threadNumber_);
 
   return 0;
 }
-#endif // TOPOLOGICALSIMPLIFICATION_H

@@ -46,60 +46,28 @@
 /// \sa ttkFTMTree
 /// \sa ttkIdentifiers
 /// \sa ttk::TopologicalSimplification
-#ifndef _TTK_TOPOLOGICALSIMPLIFICATION_H
-#define _TTK_TOPOLOGICALSIMPLIFICATION_H
+
+#pragma once
 
 // VTK includes -- to adapt
-#include <vtkCharArray.h>
-#include <vtkDataArray.h>
-#include <vtkDataSet.h>
-#include <vtkDataSetAlgorithm.h>
-#include <vtkDoubleArray.h>
-#include <vtkFiltersCoreModule.h>
-#include <vtkFloatArray.h>
-#include <vtkInformation.h>
-#include <vtkIntArray.h>
-#include <vtkObjectFactory.h>
-#include <vtkPointData.h>
-#include <vtkShortArray.h>
 #include <vtkSmartPointer.h>
-#include <vtkUnsignedCharArray.h>
-#include <vtkUnsignedShortArray.h>
 
 // VTK Module
 #include <ttkTopologicalSimplificationModule.h>
 
 // ttk code includes
 #include <TopologicalSimplification.h>
-#include <ttkTriangulationAlgorithm.h>
+#include <ttkAlgorithm.h>
 
-#include <ttkTriangulation.h>
+class vtkDataArray;
 
 class TTKTOPOLOGICALSIMPLIFICATION_EXPORT ttkTopologicalSimplification
-  : public vtkDataSetAlgorithm,
-    protected ttk::Wrapper {
+  : public ttkAlgorithm,
+    protected ttk::TopologicalSimplification {
 
 public:
   static ttkTopologicalSimplification *New();
-  vtkTypeMacro(ttkTopologicalSimplification, vtkDataSetAlgorithm);
-
-  void SetDebugLevel(int debugLevel) {
-    setDebugLevel(debugLevel);
-    Modified();
-  }
-
-  void SetThreadNumber(int threadNumber) {
-    ThreadNumber = threadNumber;
-    SetThreads();
-  }
-
-  void SetUseAllCores(bool onOff) {
-    UseAllCores = onOff;
-    SetThreads();
-  }
-
-  vtkSetMacro(ScalarField, std::string);
-  vtkGetMacro(ScalarField, std::string);
+  vtkTypeMacro(ttkTopologicalSimplification, ttkAlgorithm);
 
   vtkSetMacro(ForceInputOffsetScalarField, bool);
   vtkGetMacro(ForceInputOffsetScalarField, bool);
@@ -110,58 +78,26 @@ public:
   vtkSetMacro(AddPerturbation, bool);
   vtkGetMacro(AddPerturbation, bool);
 
-  vtkSetMacro(InputOffsetScalarFieldName, std::string);
-  vtkGetMacro(InputOffsetScalarFieldName, std::string);
-
   vtkSetMacro(OutputOffsetScalarFieldName, std::string);
   vtkGetMacro(OutputOffsetScalarFieldName, std::string);
 
   vtkSetMacro(ForceInputVertexScalarField, bool);
   vtkGetMacro(ForceInputVertexScalarField, bool);
 
-  vtkSetMacro(InputVertexScalarFieldName, std::string);
-  vtkGetMacro(InputVertexScalarFieldName, std::string);
-
-  vtkSetMacro(PeriodicBoundaryConditions, int);
-  vtkGetMacro(PeriodicBoundaryConditions, int);
-
-  int getTriangulation(vtkDataSet *input);
-  int getScalars(vtkDataSet *input);
-  int getIdentifiers(vtkPointSet *input);
-  int getOffsets(vtkDataSet *input);
-
-  template <typename VTK_TT>
-  int dispatch();
-
 protected:
   ttkTopologicalSimplification();
 
-  ~ttkTopologicalSimplification() override;
-
-  TTK_SETUP();
-
   int FillInputPortInformation(int port, vtkInformation *info) override;
+  int FillOutputPortInformation(int port, vtkInformation *info) override;
+  int RequestData(vtkInformation *request,
+                  vtkInformationVector **inputVector,
+                  vtkInformationVector *outputVector) override;
 
 private:
-  int ScalarFieldId;
-  int OffsetFieldId;
-  std::string ScalarField;
-  std::string InputOffsetScalarFieldName;
-  std::string OutputOffsetScalarFieldName;
-  bool ForceInputVertexScalarField;
-  std::string InputVertexScalarFieldName;
-  bool ForceInputOffsetScalarField;
-  bool PeriodicBoundaryConditions;
-  bool ConsiderIdentifierAsBlackList;
-  bool AddPerturbation;
-  bool hasUpdatedMesh_;
-
-  ttk::TopologicalSimplification topologicalSimplification_;
-  ttk::Triangulation *triangulation_;
-  vtkDataArray *identifiers_;
-  vtkDataArray *inputScalars_;
-  vtkDataArray *offsets_;
-  vtkDataArray *inputOffsets_;
+  int OffsetFieldId{-1};
+  std::string OutputOffsetScalarFieldName{ttk::OffsetScalarFieldName};
+  bool ForceInputVertexScalarField{false};
+  bool ForceInputOffsetScalarField{false};
+  bool ConsiderIdentifierAsBlackList{false};
+  bool AddPerturbation{false};
 };
-
-#endif // _TTK_TOPOLOGICALSIMPLIFICATION_H
