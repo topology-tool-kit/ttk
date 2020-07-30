@@ -11,7 +11,7 @@
 
 #include <Debug.h>
 
-#if defined(__APPLE__) && defined(_WIN32) && defined(__clang__)
+#if defined(__APPLE__) || defined(_WIN32) || defined(__clang__)
 #include <algorithm>
 #include <numeric>
 #else
