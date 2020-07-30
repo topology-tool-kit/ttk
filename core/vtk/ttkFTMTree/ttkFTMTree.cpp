@@ -142,6 +142,9 @@ int ttkFTMTree::RequestData(vtkInformation *request,
   }
   getOffsets();
 
+  this->printMsg("Launching on field "
+                 + std::string{inputScalars_[0]->GetName()});
+
   ttk::ftm::idNode acc_nbNodes = 0;
 
   // Build tree
