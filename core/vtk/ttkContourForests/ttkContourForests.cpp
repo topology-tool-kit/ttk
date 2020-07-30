@@ -87,7 +87,7 @@ void ttkContourForests::SetForceInputOffsetScalarField(bool onOff) {
   toComputeSkeleton_ = true;
   toComputeSegmentation_ = true;
 
-  useInputOffsetScalarField_ = onOff;
+  ForceInputOffsetScalarField = onOff;
   Modified();
 }
 
@@ -1210,9 +1210,9 @@ int ttkContourForests::RequestData(vtkInformation *request,
     vertexSoSoffsets_.clear();
 
     const auto offsets = this->GetOptionalArray(
-      useInputOffsetScalarField_, 1, ttk::OffsetScalarFieldName, inputVector);
+      ForceInputOffsetScalarField, 1, ttk::OffsetScalarFieldName, inputVector);
 
-    if(useInputOffsetScalarField_ and offsets != nullptr) {
+    if(offsets != nullptr) {
 
       if(offsets->GetNumberOfTuples() != numberOfVertices_) {
         this->printErr("Mesh and offset sizes do not match :(");
