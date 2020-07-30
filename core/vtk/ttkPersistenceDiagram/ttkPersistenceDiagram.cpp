@@ -420,6 +420,11 @@ int ttkPersistenceDiagram::dispatch(
   return ret;
 }
 
+void ttkPersistenceDiagram::Modified() {
+  computeDiagram_ = true;
+  ttkAlgorithm::Modified();
+}
+
 int ttkPersistenceDiagram::RequestData(vtkInformation *request,
                                        vtkInformationVector **inputVector,
                                        vtkInformationVector *outputVector) {
@@ -498,10 +503,10 @@ int ttkPersistenceDiagram::RequestData(vtkInformation *request,
        outputCTPersistenceDiagram, inputScalars,
        (VTK_TT *)ttkUtils::GetVoidPointer(inputScalars),
        offsetField->GetDataType(), ttkUtils::GetVoidPointer(offsetField),
-       (TTK_TT *)(triangulation->getData()))))
+       (TTK_TT *)(triangulation->getData()))));
 
-    // something wrong in baseCode
-    if(status) {
+  // something wrong in baseCode
+  if(status) {
     std::stringstream msg;
     msg << "PersistenceDiagram::execute() error code : " << status;
     this->printErr(msg.str());
