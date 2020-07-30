@@ -17,10 +17,7 @@
 ///
 /// \sa ttkContourForests.cpp %for a usage example.
 
-#ifndef _CONTOURFOREST_H
-#define _CONTOURFOREST_H
-
-#include <typeinfo>
+#pragma once
 
 #include "ContourForestsTree.h"
 
@@ -223,7 +220,8 @@ namespace ttk {
       // {
       void initInterfaces(void);
 
-      void initOverlap(void);
+      template <typename triangulationType>
+      void initOverlap(const triangulationType &mesh);
 
       void initNbPartitions(void);
 
@@ -231,13 +229,14 @@ namespace ttk {
       // Process
       // {
 
-      template <typename scalarType>
-      int build();
+      template <typename scalarType, typename triangulationType>
+      int build(const triangulationType &mesh);
 
-      template <typename scalarType>
+      template <typename scalarType, typename triangulationType>
       int
         parallelBuild(std::vector<std::vector<ExtendedUnionFind *>> &baseUF_JT,
-                      std::vector<std::vector<ExtendedUnionFind *>> &baseUF_ST);
+                      std::vector<std::vector<ExtendedUnionFind *>> &baseUF_ST,
+                      const triangulationType &mesh);
 
       void stitch(void);
       void stitchTree(const char tree);
@@ -257,6 +256,5 @@ namespace ttk {
 
   } // namespace cf
 } // namespace ttk
-#include <ContourForestsTemplate.h>
 
-#endif
+#include <ContourForestsTemplate.h>

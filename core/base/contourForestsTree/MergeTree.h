@@ -16,32 +16,20 @@
 /// Charles Gueunet, Pierre Fortin, Julien Jomier, Julien Tierny \n
 /// Proc. of IEEE LDAV 2016.
 
-#ifndef _MERGETREE_H
-#define _MERGETREE_H
+#pragma once
 
 #include <queue>
 #include <vector>
 
-#ifdef __APPLE__
-#include <algorithm>
-#include <numeric>
-#else
-#ifdef _WIN32
-#include <algorithm>
-#include <numeric>
-#else
-#ifdef __clang__
+#if defined(__APPLE__) || defined(_WIN32) || defined(__clang__)
 #include <algorithm>
 #include <numeric>
 #else
 #include <parallel/algorithm>
 #endif
-#endif
-#endif
 
 #include <Geometry.h>
 #include <Triangulation.h>
-#include <Wrapper.h>
 
 #include "DeprecatedDataTypes.h"
 #include "DeprecatedNode.h"
@@ -58,7 +46,6 @@ namespace ttk {
     protected:
       // global
       Params *const params_;
-      Triangulation *mesh_;
       Scalars *const scalars_;
 
       // local
@@ -71,7 +58,6 @@ namespace ttk {
 
       // Tree with global data and partition number
       MergeTree(Params *const params,
-                Triangulation *mesh,
                 Scalars *const scalars,
                 TreeType type,
                 idPartition part = nullPartition);
@@ -84,8 +70,9 @@ namespace ttk {
       // --------------------
       // {
 
-      void initNbScalars(void) {
-        scalars_->size = mesh_->getNumberOfVertices();
+      template <typename triangulationType>
+      void initNbScalars(const triangulationType &tri) {
+        scalars_->size = tri->getNumberOfVertices();
       }
 
       /// \brief init Simulation of Simplicity datastructure if not set
@@ -154,12 +141,11 @@ namespace ttk {
         scalars_->values = local_scalars;
       }
 
-      inline void setupTriangulation(Triangulation *m,
-                                     const bool preproc = true) {
-        mesh_ = m;
-        if(mesh_ && preproc) {
-          mesh_->preconditionEdges();
-          mesh_->preconditionVertexNeighbors();
+      inline void preconditionTriangulation(AbstractTriangulation *const m,
+                                            const bool preproc = true) {
+        if(m && preproc) {
+          m->preconditionEdges();
+          m->preconditionVertexNeighbors();
         }
       }
 
@@ -400,20 +386,24 @@ namespace ttk {
       // ..........................{
 
       // Merge tree processing of a vertex during build
+      template <typename triangulationType>
       void processVertex(const SimplexId &vertex,
                          std::vector<ExtendedUnionFind *> &vect_baseUF,
                          const bool overlapB,
                          const bool overlapA,
+                         const triangulationType &mesh,
                          DebugTimer &begin);
 
       /// \brief Compute the merge tree using Carr's algorithm
+      template <typename triangulationType>
       int build(std::vector<ExtendedUnionFind *> &vect_baseUF,
                 const std::vector<SimplexId> &overlapBefore,
                 const std::vector<SimplexId> &overlapAfter,
                 SimplexId start,
                 SimplexId end,
                 const SimplexId &posSeed0,
-                const SimplexId &posSeed1);
+                const SimplexId &posSeed1,
+                const triangulationType &mesh);
 
       // }
       // Simplify
@@ -425,9 +415,10 @@ namespace ttk {
                               const SimplexId &podSeed1);
 
       // BFS simpliciation for global CT
-      template <typename scalarType>
+      template <typename scalarType, typename triangulationType>
       SimplexId globalSimplify(const SimplexId posSeed0,
-                               const SimplexId posSeed1);
+                               const SimplexId posSeed1,
+                               const triangulationType &mesh);
 
       // Having sorted std::pairs, simplify the current tree
       // in accordance with threashol, between the two seeds.
@@ -447,23 +438,26 @@ namespace ttk {
       // PersistencePairs
       // ...........................{
 
-      template <typename scalarType>
+      template <typename scalarType, typename triangulationType>
       int computePersistencePairs(
-        std::vector<std::tuple<SimplexId, SimplexId, scalarType>> &pairs);
+        std::vector<std::tuple<SimplexId, SimplexId, scalarType>> &pairs,
+        const triangulationType &mesh);
 
-      template <typename scalarType>
+      template <typename scalarType, typename triangulationType>
       int computePersistencePairs(
-        std::vector<std::tuple<SimplexId, SimplexId, scalarType, bool>> &pairs);
+        std::vector<std::tuple<SimplexId, SimplexId, scalarType, bool>> &pairs,
+        const triangulationType &mesh);
 
       // Construct abstract JT / ST on a CT and fill std::pairs in accordance.
       // used for global simplification
-      template <typename scalarType>
+      template <typename scalarType, typename triangulationType>
       void recoverMTPairs(
         const std::vector<idNode> &sortedNodes,
         std::vector<std::tuple<SimplexId, SimplexId, scalarType, bool>>
           &pairsJT,
         std::vector<std::tuple<SimplexId, SimplexId, scalarType, bool>>
-          &pairsST);
+          &pairsST,
+        const triangulationType &mesh);
 
       // }
 
@@ -764,23 +758,26 @@ namespace ttk {
         return std::make_pair(vert.second, vert.first);
       }
 
-      bool verifyTree(void);
+      template <typename triangulationType>
+      bool verifyTree(const triangulationType &mesh);
 
       // Create a std::pair with the value corresponding to the simplification
       // method
 
-      template <typename scalarType>
+      template <typename scalarType, typename triangulationType>
       void addPair(
         std::vector<std::tuple<SimplexId, SimplexId, scalarType, bool>> &pairs,
         const SimplexId &orig,
         const SimplexId &term,
+        const triangulationType &mesh,
         const bool goUp);
 
-      template <typename scalarType>
+      template <typename scalarType, typename triangulationType>
       void addPair(
         std::vector<std::tuple<SimplexId, SimplexId, scalarType>> &pairs,
         const SimplexId &orig,
-        const SimplexId &term);
+        const SimplexId &term,
+        const triangulationType &mesh);
 
       // }
     };
@@ -792,5 +789,3 @@ namespace ttk {
 } // namespace ttk
 
 #include <MergeTreeTemplate.h>
-
-#endif /* end of include guard: MERGETREE_H */

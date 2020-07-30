@@ -18,7 +18,6 @@
 
 #include "DeprecatedDataTypes.h"
 #include "DeprecatedNode.h"
-#include "DeprecatedStructures.h"
 #include "DeprecatedSuperArc.h"
 
 namespace ttk {

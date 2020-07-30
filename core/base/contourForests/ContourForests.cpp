@@ -20,14 +20,13 @@ Interface::Interface(const SimplexId &seed) : seed_(seed) {
 // ------------------------- ContourForests
 
 ContourForests::ContourForests()
-  : ContourForestsTree(new Params(), nullptr, new Scalars()), parallelParams_(),
+  : ContourForestsTree(new Params(), new Scalars()), parallelParams_(),
     parallelData_() {
+  this->setDebugMsgPrefix("ContourForests");
+  this->printWrn(
+    "DEPRECATED This module will be removed in a future release, please use "
+    "FTM instead for contour trees and FTR for Reeb graphs.");
   params_->treeType = TreeType::Contour;
-  stringstream msg;
-  msg << "[ContourForests]: DEPRECATED This module will be removed in a future"
-      << "release, please use FTM instead for contour trees"
-      << " and FTR for Reeb graphs." << endl;
-  dMsg(cerr, msg.str(), timeMsg);
 }
 
 ContourForests::~ContourForests() {
@@ -85,165 +84,8 @@ void ContourForests::initInterfaces() {
     for(const auto &i : parallelData_.interfaces) {
       partition << i.getSeed() << " ";
     }
-    partition << endl;
-    dMsg(cout, partition.str(), 3);
+    this->printMsg(partition.str(), debug::Priority::DETAIL);
   }
-
-  // }
-}
-
-void ContourForests::initOverlap() {
-  const SimplexId nbEdges = mesh_->getNumberOfEdges();
-
-  // if we choose to have less partition, we still want to use all thread for
-  // overlap init.
-
-  // ------------------
-  // Parallel find border vertices
-  // ------------------
-  // {
-
-  vector<vector<vector<SimplexId>>> lowers(parallelParams_.nbThreads);
-  vector<vector<vector<SimplexId>>> uppers(parallelParams_.nbThreads);
-
-  for(numThread p = 0; p < parallelParams_.nbThreads; p++) {
-    lowers[p].resize(parallelParams_.nbInterfaces);
-    uppers[p].resize(parallelParams_.nbInterfaces);
-  }
-
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(parallelParams_.nbThreads) schedule(static)
-#endif
-  for(SimplexId e = 0; e < nbEdges; e++) {
-
-#ifdef TTK_ENABLE_OPENMP
-    idPartition part = omp_get_thread_num();
-#else
-    idPartition part = 0;
-#endif
-
-    vector<vector<SimplexId>> &localUppers = uppers[part];
-    vector<vector<SimplexId>> &localLowers = lowers[part];
-
-    SimplexId v0, v1;
-    mesh_->getEdgeVertex(e, 0, v0);
-    mesh_->getEdgeVertex(e, 1, v1);
-
-    for(idInterface i = 0; i < parallelParams_.nbInterfaces; i++) {
-      const bool side0 = isEqHigher(v0, parallelData_.interfaces[i].getSeed());
-      const bool side1 = isEqHigher(v1, parallelData_.interfaces[i].getSeed());
-
-      if(side0 != side1) {
-        // edge cross this interface, add both extrema in it
-        if(side0) {
-          // The seed is already in the partition, we do not want to have it
-          // twice
-          // if (v0 != vect_interfaces_[i].getSeed()) {
-          localUppers[i].emplace_back(v0);
-          //}
-          localLowers[i].emplace_back(v1);
-        } else {
-          // if (v1 != vect_interfaces_[i].getSeed()) {
-          localUppers[i].emplace_back(v1);
-          //}
-          localLowers[i].emplace_back(v0);
-        }
-      }
-    }
-  }
-
-  // }
-  // --------------------------
-  // Insert in interfaces
-  // --------------------------
-  // {
-
-  // reserve
-  vector<SimplexId> sizeReserveUp(parallelParams_.nbInterfaces, 0);
-  vector<SimplexId> sizeReserveLo(parallelParams_.nbInterfaces, 0);
-  for(numThread p = 0; p < parallelParams_.nbThreads; p++) {
-    for(idInterface i = 0; i < parallelParams_.nbInterfaces; i++) {
-      sizeReserveUp[i] += uppers[p][i].size();
-      sizeReserveLo[i] += lowers[p][i].size();
-    }
-  }
-
-  for(idInterface i = 0; i < parallelParams_.nbInterfaces; i++) {
-    parallelData_.interfaces[i].upReserve(sizeReserveUp[i]);
-    parallelData_.interfaces[i].loReserve(sizeReserveLo[i]);
-  }
-
-  // append
-  for(numThread p = 0; p < parallelParams_.nbThreads; p++) {
-    for(idInterface i = 0; i < parallelParams_.nbInterfaces; i++) {
-      parallelData_.interfaces[i].appendUpper(uppers[p][i]);
-      parallelData_.interfaces[i].appendLower(lowers[p][i]);
-    }
-  }
-
-  // }
-  // -----------------
-  // Sort the overlap
-  // ----------------
-  // {
-
-  auto vertComp
-    = [&](const SimplexId &a, const SimplexId &b) { return isLower(a, b); };
-
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(parallelParams_.nbThreads) schedule(static)
-#endif
-  for(idInterface i = 0; i < parallelParams_.nbInterfaces; i++) {
-    vector<SimplexId> &upOverlap = parallelData_.interfaces[i].getUpper();
-    vector<SimplexId> &loOverlap = parallelData_.interfaces[i].getLower();
-
-    // sort & unique via set
-
-    // LESS EFFICIENT IN PARALLEL
-    // {
-    // set<SimplexId, decltype(vertComp)> setUpOverlap(upOverlap.begin(),
-    // upOverlap.end(), vertComp); vector<SimplexId>
-    // vectUpOverlap(setUpOverlap.begin(), setUpOverlap.end());
-    // parallelData_.interfaces[i].swapUpper(vectUpOverlap);
-
-    // set<SimplexId, decltype(vertComp)> setLoOverlap(loOverlap.begin(),
-    // loOverlap.end(), vertComp); vector<SimplexId>
-    // vectLoOverlap(setLoOverlap.begin(), setLoOverlap.end());
-    // parallelData_.interfaces[i].swapLower(vectLoOverlap);
-    // }
-
-    // sort & unique via functions
-
-    sort(upOverlap.begin(), upOverlap.end(), vertComp);
-    auto upLast = unique(upOverlap.begin(), upOverlap.end());
-    upOverlap.erase(upLast, upOverlap.end());
-
-    sort(loOverlap.begin(), loOverlap.end(), vertComp);
-    auto loLast = unique(loOverlap.begin(), loOverlap.end());
-    loOverlap.erase(loLast, loOverlap.end());
-  }
-
-  // }
-  // -----------
-  // Debug print
-  // -----------
-  // {
-
-  // for (idInterface i = 0; i < parallelParams_.nbInterfaces; i++) {
-  // cout << "interface : " << i << endl;
-
-  // cout << "upper" << endl;
-  // for (const SimplexId &v : parallelData_.interfaces[i].getUpper()) {
-  // cout << v << ", ";
-  //}
-
-  // cout << endl << "lower" << endl;
-  // for (const SimplexId &v : parallelData_.interfaces[i].getLower()) {
-  // cout << v << ", ";
-  //}
-
-  // cout << endl;
-  //}
 
   // }
 }
@@ -484,7 +326,7 @@ void ContourForests::unifyTree(const char treetype) {
 
   // this tree will receive the final tree
   // all variables linked to tmpree have a "_tt" suffix
-  MergeTree tmpTree(params_, mesh_, scalars_, params_->treeType);
+  MergeTree tmpTree(params_, scalars_, params_->treeType);
   // for vert2tree
   tmpTree.flush();
   // statistical reserves
@@ -698,9 +540,7 @@ void ContourForests::unifyTree(const char treetype) {
 // Print
 // {
 void ContourForests::printDebug(DebugTimer &timer, const string &str) {
-  stringstream msg;
-  msg << "[ContourForests] " << str << " : " << timer.getElapsedTime() << endl;
-  dMsg(cout, msg.str(), timeMsg);
+  this->printMsg(str, 1.0, timer.getElapsedTime(), this->threadNumber_);
 }
 
 void ContourForests::printVectCT() {
