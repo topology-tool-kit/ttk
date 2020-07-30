@@ -428,9 +428,6 @@ int ttkFTMTree::getOffsets() {
     offsets_[cc].resize(connected_components_[cc]->GetNumberOfPoints());
 
     if(inputOffsets != nullptr) {
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(this->threadNumber_)
-#endif
       for(size_t i = 0; i < offsets_[cc].size(); i++) {
         offsets_[cc][i] = inputOffsets->GetTuple1(i);
       }
