@@ -126,7 +126,7 @@ int ttkFTMTree::RequestData(vtkInformation *request,
 
   // now proceed for each triangulation obtained.
 
-  if(preconditionTriangulation()) {
+  if(preconditionTriangulation() == 0) {
 #ifndef TTK_ENABLE_KAMIKAZE
     this->printErr("Error : wrong triangulation.");
     return 0;
@@ -134,7 +134,7 @@ int ttkFTMTree::RequestData(vtkInformation *request,
   }
 
   // Fill the vector of scalar/offset, cut the array in pieces if needed
-  if(getScalars()) {
+  if(getScalars() == 0) {
 #ifndef TTK_ENABLE_KAMIKAZE
     this->printErr("Error : wrong input scalars.");
     return 0;
@@ -165,14 +165,14 @@ int ttkFTMTree::RequestData(vtkInformation *request,
   UpdateProgress(0.50);
 
   // Construct output
-  if(getSkeletonNodes(outputSkeletonNodes)) {
+  if(getSkeletonNodes(outputSkeletonNodes) == 0) {
 #ifndef TTK_ENABLE_KAMIKAZE
     this->printErr("Error : wrong properties on skeleton nodes.");
     return 0;
 #endif
   }
 
-  if(getSkeletonArcs(outputSkeletonArcs)) {
+  if(getSkeletonArcs(outputSkeletonArcs) == 0) {
 #ifndef TTK_ENABLE_KAMIKAZE
     this->printErr("Error : wrong properties on skeleton arcs.");
     return 0;
@@ -181,7 +181,7 @@ int ttkFTMTree::RequestData(vtkInformation *request,
 
   if(GetWithSegmentation()) {
     outputSegmentation->ShallowCopy(input);
-    if(getSegmentation(outputSegmentation)) {
+    if(getSegmentation(outputSegmentation) == 0) {
 #ifndef TTK_ENABLE_KAMIKAZE
       this->printErr("Error : wrong properties on segmentation.");
       return 0;
