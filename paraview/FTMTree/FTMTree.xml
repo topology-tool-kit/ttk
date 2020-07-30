@@ -86,12 +86,12 @@
             </IntVectorProperty>
 
             <StringVectorProperty
-                name="OffsetNew"
-                label="Input Offset Field"
+                name="Input Offset Field"
                 command="SetInputArrayToProcess"
                 element_types="0 0 0 0 2"
+                number_of_elements="5"
                 default_values="1"
-                number_of_elements="5">
+                >
               <ArrayListDomain
                 name="array_list"
                 default_values="0">
@@ -102,7 +102,7 @@
               <Hints>
                 <PropertyWidgetDecorator type="GenericDecorator"
                   mode="visibility"
-                  property="With predefined offset"
+                  property="ForceInputOffsetScalarField"
                   value="1" />
               </Hints>
               <Documentation>
@@ -168,6 +168,7 @@ between nodes, ...)
             <PropertyGroup panel_widget="Line" label="Input options">
                 <Property name="Scalar Field"/>
                 <Property name="ForceInputOffsetScalarField"/>
+                <Property name="Input Offset Field"/>
             </PropertyGroup>
 
             <PropertyGroup panel_widget="Line" label="Output options">
