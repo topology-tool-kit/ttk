@@ -442,16 +442,16 @@ int ttkFTMTree::getOffsets() {
         offsets_[cc][i] = i;
       }
     }
-  }
 
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(offsets_[cc].empty()) {
-    this->printMsg(
-      {"Error : wrong input offset scalar field for ", std::to_string(cc)},
-      debug::Priority::ERROR);
-    return 0;
-  }
+    if(offsets_[cc].empty()) {
+      this->printMsg(
+        {"Error : wrong input offset scalar field for ", std::to_string(cc)},
+        ttk::debug::Priority::ERROR);
+      return 0;
+    }
 #endif
+  }
 
   return 1;
 }
@@ -466,7 +466,7 @@ int ttkFTMTree::getScalars() {
     if(!inputScalars_[cc]) {
       this->printMsg({"Error : input scalar ", std::to_string(cc),
                       " field pointer is null."},
-                     debug::Priority::ERROR);
+                     ttk::debug::Priority::ERROR);
       return 0;
     }
 #endif
@@ -573,7 +573,7 @@ int ttkFTMTree::getSkeletonNodes(vtkUnstructuredGrid *outputSkeletonNodes) {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(!node) {
         this->printMsg({"Error : node ", std::to_string(nodeId), " is null."},
-                       debug::Priority::ERROR);
+                       ttk::debug::Priority::ERROR);
         return 0;
       }
 #endif
@@ -657,7 +657,7 @@ int ttkFTMTree::preconditionTriangulation() {
     if(triangulation_[cc]->isEmpty()) {
       this->printMsg({"Error : ttkTriangulation on connected component",
                       std::to_string(cc), " allocation problem."},
-                     debug::Priority::ERROR);
+                     ttk::debug::Priority::ERROR);
       return 0;
     }
 #endif
