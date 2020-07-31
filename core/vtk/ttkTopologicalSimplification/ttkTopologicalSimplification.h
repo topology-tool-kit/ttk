@@ -49,9 +49,6 @@
 
 #pragma once
 
-// VTK includes -- to adapt
-#include <vtkSmartPointer.h>
-
 // VTK Module
 #include <ttkTopologicalSimplificationModule.h>
 
@@ -91,7 +88,6 @@ protected:
                   vtkInformationVector *outputVector) override;
 
 private:
-  int OffsetFieldId{-1};
   bool ForceInputVertexScalarField{false};
   bool ForceInputOffsetScalarField{false};
   bool ConsiderIdentifierAsBlackList{false};

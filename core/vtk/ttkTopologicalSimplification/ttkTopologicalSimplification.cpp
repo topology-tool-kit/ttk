@@ -5,6 +5,7 @@
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
 #include <vtkPointSet.h>
+#include <vtkSmartPointer.h>
 
 #include <ttkMacros.h>
 #include <ttkTopologicalSimplification.h>
