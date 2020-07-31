@@ -147,8 +147,7 @@ private:
   ttk::TrackingFromFields trackingF_;
   ttk::TrackingFromPersistenceDiagrams tracking_;
 
-  template <class dataType,
-            class triangulationType = ttk::AbstractTriangulation>
+  template <class dataType, class triangulationType>
   int trackWithPersistenceMatching(vtkDataSet *input,
                                    vtkUnstructuredGrid *output,
                                    unsigned long fieldNumber,
@@ -156,7 +155,7 @@ private:
 };
 
 // (*) Persistence-driven approach
-template <class dataType, class triangulationType = ttk::AbstractTriangulation>
+template <class dataType, class triangulationType>
 int ttkTrackingFromFields::trackWithPersistenceMatching(
   vtkDataSet *input,
   vtkUnstructuredGrid *output,
