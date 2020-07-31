@@ -459,7 +459,7 @@ int ttkMorseSmaleComplex::RequestData(vtkInformation *request,
                                       vtkInformationVector **inputVector,
                                       vtkInformationVector *outputVector) {
 
-  int ret{1};
+  int ret{};
 
   const auto input = vtkDataSet::GetData(inputVector[0]);
   auto outputCriticalPoints = vtkUnstructuredGrid::GetData(outputVector, 0);
@@ -632,5 +632,5 @@ int ttkMorseSmaleComplex::RequestData(vtkInformation *request,
       pointData->AddArray(morseSmaleManifold);
   }
 
-  return ret;
+  return !ret;
 }
