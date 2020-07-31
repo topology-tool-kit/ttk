@@ -204,7 +204,7 @@ dataType DiscreteGradient::getPersistence(
          - scalarMin(down, scalars, triangulation);
 }
 
-template <typename dataType, typename idType, typename triangulationType>
+template <typename idType, typename triangulationType>
 int DiscreteGradient::buildGradient(const triangulationType &triangulation) {
   Timer t;
 

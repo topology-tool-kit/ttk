@@ -49,8 +49,7 @@ int ttkDiscreteGradient::dispatch(vtkUnstructuredGrid *outputCriticalPoints,
   this->setOutputCriticalPoints(&criticalPoints_points_cellScalars);
 
   const int ret
-    = this->buildGradient<scalarType, offsetType, triangulationType>(
-      triangulation);
+    = this->buildGradient<offsetType, triangulationType>(triangulation);
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(ret) {

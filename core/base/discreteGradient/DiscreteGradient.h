@@ -397,7 +397,7 @@ function value.
        * Compute the initial gradient field of the input scalar function on the
 triangulation.
        */
-      template <typename dataType, typename idType, typename triangulationType>
+      template <typename idType, typename triangulationType>
       int buildGradient(const triangulationType &triangulation);
 
       /**

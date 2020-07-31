@@ -75,7 +75,7 @@ int ttk::MorseSmaleComplex2D::execute(const triangulationType &triangulation) {
   discreteGradient_.setDebugLevel(debugLevel_);
   {
     Timer tmp;
-    discreteGradient_.buildGradient<dataType, idType>(triangulation);
+    discreteGradient_.buildGradient<idType, triangulationType>(triangulation);
 
     this->printMsg("Discrete gradient computed", 1.0, tmp.getElapsedTime(),
                    this->threadNumber_);

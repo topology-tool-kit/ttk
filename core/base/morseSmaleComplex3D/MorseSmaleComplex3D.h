@@ -171,7 +171,7 @@ int ttk::MorseSmaleComplex3D::computePersistencePairs(
     discreteGradient_.setDebugLevel(debugLevel_);
     discreteGradient_.setThreadNumber(threadNumber_);
     discreteGradient_.setCollectPersistencePairs(false);
-    discreteGradient_.buildGradient<dataType, idType>(triangulation);
+    discreteGradient_.buildGradient<idType, triangulationType>(triangulation);
     discreteGradient_.reverseGradient<dataType, idType>(triangulation);
 
     // collect saddle-saddle connections
@@ -676,7 +676,7 @@ int ttk::MorseSmaleComplex3D::execute(const triangulationType &triangulation) {
   discreteGradient_.setDebugLevel(debugLevel_);
   {
     Timer tmp;
-    discreteGradient_.buildGradient<dataType, idType>(triangulation);
+    discreteGradient_.buildGradient<idType, triangulationType>(triangulation);
 
     this->printMsg("Discrete gradient computed", 1.0, tmp.getElapsedTime(),
                    this->threadNumber_);
