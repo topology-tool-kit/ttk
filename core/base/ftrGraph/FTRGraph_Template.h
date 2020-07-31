@@ -191,7 +191,6 @@ namespace ttk {
       const bool addMax = !params_.singleSweep;
 
       ScalarFieldCriticalPoints critPoints;
-      critPoints.setSosOffsets(scalars_.getVOffsets());
 
       TaskChunk leafChunkParams(scalars_.getSize());
       leafChunkParams.grainSize = 10000;
@@ -212,7 +211,8 @@ namespace ttk {
           for(idVertex v = lowerBound; v < upperBound; ++v) {
             std::tie(valences_.lower[v], valences_.upper[v])
               = critPoints.getNumberOfLowerUpperComponents<ScalarType>(
-                v, scalars_.getScalars(), mesh_.getTriangulation());
+                v, scalars_.getScalars(), scalars_.getOffsets(),
+                mesh_.getTriangulation());
 
             // leaf cases
             if(addMin && valences_.lower[v] == 0) {

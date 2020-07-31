@@ -265,7 +265,9 @@ int ttkFTRGraph::dispatch(Graph &graph) {
   ftrGraph_.setParams(params_);
   // reeb graph parameters
   ftrGraph_.setScalars(ttkUtils::GetVoidPointer(inputScalars_));
-  ftrGraph_.setVertexSoSoffsets(&offsets_);
+  // TODO: SimplexId -> template to int + long long?
+  ftrGraph_.setVertexSoSoffsets(
+    static_cast<ttk::SimplexId *>(ttkUtils::GetVoidPointer(offsets_)));
   // build
   this->printMsg("Starting computation on field: "
                  + std::string{inputScalars_->GetName()});
@@ -316,25 +318,8 @@ int ttkFTRGraph::RequestData(vtkInformation *request,
     return -3;
   }
 
-  auto inputOffsets
-    = this->GetOptionalArray(this->ForceInputOffsetScalarField, 1,
-                             ttk::OffsetScalarFieldName, inputVector);
-
-  const auto nVerts = mesh_->GetNumberOfPoints();
-  if(inputOffsets != nullptr) {
-    offsets_.resize(nVerts);
-    for(size_t i = 0; i < offsets_.size(); i++) {
-      offsets_[i] = inputOffsets->GetTuple1(i);
-    }
-  } else {
-    offsets_.resize(nVerts);
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
-#endif
-    for(size_t i = 0; i < offsets_.size(); i++) {
-      offsets_[i] = i;
-    }
-  }
+  offsets_ = this->GetOffsetField(
+    inputScalars_, ForceInputOffsetScalarField, 1, inputVector);
 
   // compute graph
   ttkVtkTemplateMacro(inputScalars_->GetDataType(), triangulation_->getType(),
