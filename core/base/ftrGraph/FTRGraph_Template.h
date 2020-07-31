@@ -210,9 +210,8 @@ namespace ttk {
           // each task uses its local forests
           for(idVertex v = lowerBound; v < upperBound; ++v) {
             std::tie(valences_.lower[v], valences_.upper[v])
-              = critPoints.getNumberOfLowerUpperComponents<ScalarType>(
-                v, scalars_.getScalars(), scalars_.getOffsets(),
-                mesh_.getTriangulation());
+              = critPoints.getNumberOfLowerUpperComponents(
+                v, scalars_.getOffsets(), mesh_.getTriangulation());
 
             // leaf cases
             if(addMin && valences_.lower[v] == 0) {

@@ -37,45 +37,23 @@ namespace ttk {
     /// Execute the package.
     /// \param argment Dummy integer argument.
     /// \return Returns 0 upon success, negative values otherwise.
-    template <class dataType,
-              typename idType,
-              class triangulationType = AbstractTriangulation>
-    int execute(const dataType *const scalarValues,
-                const idType *const offsets,
+    template <typename idType, class triangulationType = AbstractTriangulation>
+    int execute(const idType *const offsets,
                 const triangulationType *triangulation);
 
-    template <class dataType,
-              typename idType,
-              class triangulationType = AbstractTriangulation>
+    template <typename idType, class triangulationType = AbstractTriangulation>
     std::pair<SimplexId, SimplexId> getNumberOfLowerUpperComponents(
       const SimplexId vertexId,
-      const dataType *const scalarValues,
       const idType *const offsets,
       const triangulationType *triangulation) const;
 
-    template <class dataType,
-              typename idType,
-              class triangulationType = AbstractTriangulation>
-    char getCriticalType(const dataType *const scalarValues,
-                         const idType *const offsets,
-                         const triangulationType *triangulation,
-                         const SimplexId &vertexId) const {
-
-      return getCriticalType<dataType, triangulationType>(
-        vertexId, scalarValues, triangulation);
-    }
-
-    template <class dataType,
-              typename idType,
-              class triangulationType = AbstractTriangulation>
+    template <typename idType, class triangulationType = AbstractTriangulation>
     char getCriticalType(const SimplexId &vertexId,
-                         const dataType *const scalarValues,
                          const idType *const offsets,
                          const triangulationType *triangulation) const;
 
-    template <class dataType, typename idType>
+    template <typename idType>
     char getCriticalType(const SimplexId &vertexId,
-                         const dataType *const scalarValues,
                          const idType *const offsets,
                          const std::vector<std::pair<SimplexId, SimplexId>>
                            &vertexLinkEdgeList) const;
@@ -131,11 +109,9 @@ namespace ttk {
 } // namespace ttk
 
 // template functions
-template <class dataType, typename idType, class triangulationType>
+template <typename idType, class triangulationType>
 int ttk::ScalarFieldCriticalPoints::execute(
-  const dataType *const scalarValues,
-  const idType *const offsets,
-  const triangulationType *triangulation) {
+  const idType *const offsets, const triangulationType *triangulation) {
 
   // check the consistency of the variables -- to adapt
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -143,8 +119,6 @@ int ttk::ScalarFieldCriticalPoints::execute(
     return -1;
   if((!vertexNumber_) && ((!triangulation) || (triangulation->isEmpty())))
     return -2;
-  if(!scalarValues)
-    return -3;
   if((!vertexLinkEdgeLists_) && (!triangulation))
     return -4;
   if(!criticalPoints_)
@@ -168,7 +142,7 @@ int ttk::ScalarFieldCriticalPoints::execute(
 #endif
     for(SimplexId i = 0; i < (SimplexId)vertexNumber_; i++) {
 
-      vertexTypes[i] = getCriticalType(i, scalarValues, offsets, triangulation);
+      vertexTypes[i] = getCriticalType(i, offsets, triangulation);
     }
   } else if(vertexLinkEdgeLists_) {
     // legacy implementation
@@ -177,8 +151,7 @@ int ttk::ScalarFieldCriticalPoints::execute(
 #endif
     for(SimplexId i = 0; i < (SimplexId)vertexNumber_; i++) {
 
-      vertexTypes[i]
-        = getCriticalType(i, scalarValues, offsets, (*vertexLinkEdgeLists_)[i]);
+      vertexTypes[i] = getCriticalType(i, offsets, (*vertexLinkEdgeLists_)[i]);
     }
   }
 
@@ -269,11 +242,10 @@ int ttk::ScalarFieldCriticalPoints::execute(
   return 0;
 }
 
-template <class dataType, typename idType, class triangulationType>
+template <typename idType, class triangulationType>
 std::pair<ttk::SimplexId, ttk::SimplexId>
   ttk::ScalarFieldCriticalPoints::getNumberOfLowerUpperComponents(
     const SimplexId vertexId,
-    const dataType *const scalarValues,
     const idType *const offsets,
     const triangulationType *triangulation) const {
 
@@ -402,16 +374,15 @@ std::pair<ttk::SimplexId, ttk::SimplexId>
   return std::make_pair(lowerList.size(), upperList.size());
 }
 
-template <class dataType, typename idType, class triangulationType>
+template <typename idType, class triangulationType>
 char ttk::ScalarFieldCriticalPoints::getCriticalType(
   const SimplexId &vertexId,
-  const dataType *const scalarValues,
   const idType *const offsets,
   const triangulationType *triangulation) const {
 
   SimplexId downValence, upValence;
-  std::tie(downValence, upValence) = getNumberOfLowerUpperComponents(
-    vertexId, scalarValues, offsets, triangulation);
+  std::tie(downValence, upValence)
+    = getNumberOfLowerUpperComponents(vertexId, offsets, triangulation);
 
   if(downValence == 0 && upValence == 1) {
     return (char)(CriticalType::Local_minimum);
@@ -453,10 +424,9 @@ char ttk::ScalarFieldCriticalPoints::getCriticalType(
   return (char)(CriticalType::Regular);
 }
 
-template <class dataType, typename idType>
+template <typename idType>
 char ttk::ScalarFieldCriticalPoints::getCriticalType(
   const SimplexId &vertexId,
-  const dataType *const scalarValues,
   const idType *const offsets,
   const std::vector<std::pair<SimplexId, SimplexId>> &vertexLink) const {
 

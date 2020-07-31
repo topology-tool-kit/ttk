@@ -84,17 +84,15 @@ int ttkScalarFieldCriticalPoints::RequestData(
 
   int status = 0;
   if(offsetField->GetDataType() == VTK_INT) {
-    ttkVtkTemplateMacro(
-      inputScalarField->GetDataType(), triangulation->getType(),
+    ttkTemplateMacro(
+      triangulation->getType(),
       (status = this->execute(
-         (VTK_TT *)ttkUtils::GetVoidPointer(inputScalarField),
          static_cast<int *>(ttkUtils::GetVoidPointer(offsetField)),
          (TTK_TT *)triangulation->getData())));
   } else if(offsetField->GetDataType() == VTK_ID_TYPE) {
-    ttkVtkTemplateMacro(
-      inputScalarField->GetDataType(), triangulation->getType(),
+    ttkTemplateMacro(
+      triangulation->getType(),
       (status = this->execute(
-         (VTK_TT *)ttkUtils::GetVoidPointer(inputScalarField),
          static_cast<vtkIdType *>(ttkUtils::GetVoidPointer(offsetField)),
          (TTK_TT *)triangulation->getData())));
   } else {
