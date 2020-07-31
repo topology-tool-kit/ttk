@@ -113,7 +113,7 @@ namespace ttk {
       if(triangulation != nullptr) {
         triangulation->preconditionVertexNeighbors();
         topologicalSimplification.preconditionTriangulation(triangulation);
-        ftmTreePP.setupTriangulation(triangulation, false);
+        ftmTreePP.preconditionTriangulation(triangulation, false);
       }
     }
 

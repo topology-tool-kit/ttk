@@ -105,7 +105,7 @@ int ttk::TrackingFromFields::performDiagramComputation(
   for(int i = 0; i < fieldNumber; ++i) {
     ttk::PersistenceDiagram persistenceDiagram_;
     // persistenceDiagram_.setWrapper(wrapper);
-    persistenceDiagram_.setupTriangulation(triangulation_);
+    persistenceDiagram_.preconditionTriangulation(triangulation_);
     persistenceDiagram_.setThreadNumber(1);
     // should have been done before
 

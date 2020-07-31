@@ -102,8 +102,8 @@
             value="1" />
         </Hints>
         <Documentation>
-          Select the scalar field to use as a vertex offset (used to
-disambiguate flat plateaus).
+          Select the scalar field to use as a vertex offset
+          (used to disambiguate flat plateaus).
         </Documentation>
       </StringVectorProperty>
 

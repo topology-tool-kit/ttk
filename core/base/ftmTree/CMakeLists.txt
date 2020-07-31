@@ -10,6 +10,7 @@ ttk_add_base_library(ftmTree
     FTMDataTypes.h
     FTMTree.h
     FTMTree_CT.h
+    FTMTree_CT_Template.h
     FTMTree_MT.h
     FTMTree_MT_Template.h
     FTMTree_Template.h
