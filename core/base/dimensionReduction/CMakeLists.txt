@@ -17,3 +17,4 @@ install(
   )
 
 target_compile_definitions(dimensionReduction PUBLIC -DTTK_SCRIPTS_PATH=${CMAKE_INSTALL_PREFIX}/share/scripts/ttk)
+target_link_libraries(dimensionReduction PRIVATE ${PYTHON_LIBRARY})

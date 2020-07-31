@@ -45,8 +45,13 @@ macro(ttk_add_vtk_module)
         ${TTK_DEPENDS}
       )
 
+
     if(TTK_ENABLE_DOUBLE_TEMPLATING)
       vtk_module_definitions(${TTK_NAME} PRIVATE TTK_ENABLE_DOUBLE_TEMPLATING)
+    endif()
+
+    if(TTK_LINKER_FLAGS)
+      vtk_module_link_options(${TTK_NAME} PRIVATE ${TTK_LINKER_FLAGS})
     endif()
 
     install(
