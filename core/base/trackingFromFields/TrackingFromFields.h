@@ -96,7 +96,7 @@ int ttk::TrackingFromFields::performDiagramComputation(
       CTDiagram;
 
     // persistenceDiagram.setOutputCTDiagram(&CTDiagram);
-    persistenceDiagram.execute<dataType, int, AbstractTriangulation>(
+    persistenceDiagram.execute<dataType, int, triangulationType>(
       CTDiagram, (dataType *)(inputData_[i]), (int *)(inputOffsets_),
       triangulation);
 
