@@ -73,7 +73,7 @@ public:
 
   int preconditionTriangulation();
   int getScalars();
-  int getOffsets();
+  int getOffsets(vtkInformationVector **inputVector);
 
   int getSkeletonNodes(vtkUnstructuredGrid *outputSkeletonNodes);
 
