@@ -139,6 +139,12 @@ public:
                                  const int &inputPort = 0);
 
   /**
+   * Returns a string containing the name of the corresponding offset
+   * field from a given scalar field
+   */
+  std::string OffsetFieldName(vtkDataArray *const sfArray) const;
+
+  /**
    * Retrieves an offset field from the given scalar field named \p
    * sfArrayName or generates one, either disambiguated with the
    * implicit vertex identifier field, or with a user-provided offset

@@ -282,6 +282,10 @@ vtkDataArray *ttkAlgorithm::GetOptionalArray(const bool &enforceArrayIndex,
   return optionalArray;
 }
 
+std::string ttkAlgorithm::OffsetFieldName(vtkDataArray *const sfArray) const {
+  return std::string{sfArray->GetName()} + "_Order";
+}
+
 vtkDataArray *ttkAlgorithm::GetOffsetField(vtkDataArray *const sfArray,
                                            const bool enforceArrayIndex,
                                            const int arrayIndex,
@@ -289,7 +293,7 @@ vtkDataArray *ttkAlgorithm::GetOffsetField(vtkDataArray *const sfArray,
                                            const int &inputPort) {
 
   // try to find a vtkDataArray with the name sfArrayName + "_Order"
-  const auto offsetFieldName = std::string{sfArray->GetName()} + "_Order";
+  const auto offsetFieldName = this->OffsetFieldName(sfArray);
   this->SetInputArrayToProcess(
     arrayIndex, inputPort, 0, 0, offsetFieldName.data());
   const auto inOrder = this->GetInputArrayToProcess(arrayIndex, inputVectors);

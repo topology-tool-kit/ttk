@@ -119,7 +119,7 @@ int ttkTopologicalCompression::RequestData(vtkInformation *request,
 
   vtkNew<vtkIntArray> outputOffsetField{};
   outputOffsetField->SetNumberOfTuples(vertexNumber);
-  outputOffsetField->SetName(ttk::OffsetScalarFieldName);
+  outputOffsetField->SetName(this->OffsetFieldName(inputScalarField).data());
 
   // Call TopologicalCompression
   ttkVtkTemplateMacro(

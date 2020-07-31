@@ -140,7 +140,7 @@ int ttkTopologicalCompressionReader::RequestData(
   if(SQMethodInt != 1 && SQMethodInt != 2 && !ZFPOnly) {
     vtkNew<vtkIntArray> vertexOffset{};
     vertexOffset->SetNumberOfTuples(vertexNumber);
-    vertexOffset->SetName(ttk::OffsetScalarFieldName);
+    vertexOffset->SetName(this->OffsetFieldName(decompressed).data());
     const auto &voidOffsets = this->getDecompressedOffsets();
     for(size_t i = 0; i < voidOffsets.size(); ++i)
       vertexOffset->SetTuple1(i, voidOffsets[i]);

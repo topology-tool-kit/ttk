@@ -462,20 +462,6 @@ int ttkPersistenceDiagram::RequestData(vtkInformation *request,
   vtkDataArray *offsetField = this->GetOffsetField(
     inputScalars, ForceInputOffsetScalarField, 1, inputVector);
 
-  if(!offsetField) {
-    offsetField = pointData->GetArray(ttk::OffsetScalarFieldName);
-  }
-
-  if(!offsetField) {
-    const SimplexId numberOfVertices = input->GetNumberOfPoints();
-
-    offsetField = ttkSimplexIdTypeArray::New();
-    offsetField->SetNumberOfComponents(1);
-    offsetField->SetNumberOfTuples(numberOfVertices);
-    offsetField->SetName(ttk::OffsetScalarFieldName);
-    for(SimplexId i = 0; i < numberOfVertices; ++i)
-      offsetField->SetTuple1(i, i);
-  }
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!offsetField) {
     this->printErr("Wrong input offsets");
