@@ -4,6 +4,7 @@
 
 #include <OrderDisambiguation.h>
 #include <Triangulation.h>
+
 #include <vtkCellTypes.h>
 #include <vtkCommand.h>
 #include <vtkImageData.h>
@@ -11,6 +12,7 @@
 #include <vtkInformationIntegerKey.h>
 #include <vtkInformationVector.h>
 #include <vtkMultiBlockDataSet.h>
+#include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkTable.h>
 #include <vtkUnstructuredGrid.h>
@@ -298,6 +300,7 @@ vtkDataArray *ttkAlgorithm::GetOffsetField(vtkDataArray *const sfArray,
     arrayIndex, inputPort, 0, 0, offsetFieldName.data());
   const auto inOrder = this->GetInputArrayToProcess(arrayIndex, inputData);
   if(inOrder != nullptr) {
+    this->printMsg("Found existing sorted offset field");
     return inOrder;
   } else {
     // if no array found, generate one
@@ -322,15 +325,15 @@ vtkDataArray *ttkAlgorithm::GetOffsetField(vtkDataArray *const sfArray,
       this->threadNumber_));                                               \
   }
 
-    if(inDisamb == nullptr) {
-      CALL_SORT_VERTICES(int, nullptr)
-    } else if(inDisamb->GetDataType() == VTK_INT) {
+    if(inDisamb != nullptr && inDisamb->GetDataType() == VTK_INT) {
       CALL_SORT_VERTICES(int, ttkUtils::GetVoidPointer(inDisamb))
-    } else if(inDisamb->GetDataType() == VTK_ID_TYPE) {
+    } else if(inDisamb != nullptr && inDisamb->GetDataType() == VTK_ID_TYPE) {
       CALL_SORT_VERTICES(vtkIdType, ttkUtils::GetVoidPointer(inDisamb))
     } else {
-      CALL_SORT_VERTICES(vtkIdType, nullptr)
+      CALL_SORT_VERTICES(int, nullptr)
     }
+
+    inputData->GetPointData()->AddArray(vertsOrder);
 
     this->printMsg("Generated a sorted offset field", 1.0, tm.getElapsedTime(),
                    this->threadNumber_);
