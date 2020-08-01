@@ -50,6 +50,9 @@ int ttkTopologicalCompressionWriter::Write() {
   }
   this->preconditionTriangulation(triangulation);
 
+  const auto inputOffsets
+    = this->GetOffsetField(inputScalarField, false, 1, inputVector);
+
   vtkSmartPointer<vtkDataArray> outputScalarField;
 
   switch(inputScalarField->GetDataType()) {
