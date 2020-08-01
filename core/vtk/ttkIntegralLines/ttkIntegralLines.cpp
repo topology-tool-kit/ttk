@@ -140,7 +140,7 @@ int ttkIntegralLines::RequestData(vtkInformation *request,
   vtkDataArray *inputScalars = this->GetInputArrayToProcess(0, domain);
 
   vtkDataArray *inputOffsets = this->GetOffsetField(
-    inputScalars, ForceInputOffsetScalarField, 1, inputVector);
+    inputScalars, ForceInputOffsetScalarField, 1, domain);
 
   vtkDataArray *inputIdentifiers = this->GetOptionalArray(
     ForceInputVertexScalarField, 2, ttk::VertexScalarFieldName, inputVector, 1);

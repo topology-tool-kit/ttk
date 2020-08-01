@@ -72,7 +72,7 @@ int ttkScalarFieldCriticalPoints::RequestData(
     return 0;
 
   vtkDataArray *offsetField = this->GetOffsetField(
-    inputScalarField, ForceInputOffsetScalarField, 1, inputVector);
+    inputScalarField, ForceInputOffsetScalarField, 1, input);
 
   // setting up the base layer
   this->preconditionTriangulation(triangulation);

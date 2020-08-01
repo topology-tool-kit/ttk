@@ -99,7 +99,7 @@ int ttkTopologicalSimplification::RequestData(
 
   // domain offset field
   const auto offsets = this->GetOffsetField(
-    inputScalars, ForceInputOffsetScalarField, 2, inputVector);
+    inputScalars, ForceInputOffsetScalarField, 2, domain);
 
   if(!offsets) {
     this->printErr("Wrong input offset scalar field.");

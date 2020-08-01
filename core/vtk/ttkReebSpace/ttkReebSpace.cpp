@@ -91,10 +91,10 @@ int ttkReebSpace::RequestData(vtkInformation *request,
 
   const auto uComponent = this->GetInputArrayToProcess(0, inputVector);
   const auto vComponent = this->GetInputArrayToProcess(1, inputVector);
-  const auto offsetFieldU = this->GetOffsetField(
-    uComponent, ForceInputOffsetScalarField, 2, inputVector);
-  const auto offsetFieldV = this->GetOffsetField(
-    vComponent, ForceInputOffsetScalarField, 3, inputVector);
+  const auto offsetFieldU
+    = this->GetOffsetField(uComponent, ForceInputOffsetScalarField, 2, input);
+  const auto offsetFieldV
+    = this->GetOffsetField(vComponent, ForceInputOffsetScalarField, 3, input);
 
   // check data components
 

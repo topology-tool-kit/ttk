@@ -67,10 +67,10 @@ int ttkJacobiSet::RequestData(vtkInformation *request,
   this->printMsg("V-component: `" + std::string{vComponent->GetName()} + "'");
 
   // point data
-  const auto offsetFieldU = this->GetOffsetField(
-    uComponent, ForceInputOffsetScalarField, 2, inputVector);
-  const auto offsetFieldV = this->GetOffsetField(
-    vComponent, ForceInputOffsetScalarField, 3, inputVector);
+  const auto offsetFieldU
+    = this->GetOffsetField(uComponent, ForceInputOffsetScalarField, 2, input);
+  const auto offsetFieldV
+    = this->GetOffsetField(vComponent, ForceInputOffsetScalarField, 3, input);
 
   if(offsetFieldU) {
     sosOffsetsU_.resize(offsetFieldU->GetNumberOfTuples());

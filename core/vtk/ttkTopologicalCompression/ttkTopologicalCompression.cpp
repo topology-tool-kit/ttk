@@ -91,7 +91,7 @@ int ttkTopologicalCompression::RequestData(vtkInformation *request,
   const auto vertexNumber = inputScalarField->GetNumberOfTuples();
 
   const auto inputOffsets
-    = this->GetOffsetField(inputScalarField, false, 1, inputVector);
+    = this->GetOffsetField(inputScalarField, false, 1, input);
 
   // allocate the memory for the output scalar field
   vtkSmartPointer<vtkDataArray> outputScalarField{};

@@ -459,8 +459,8 @@ int ttkPersistenceDiagram::RequestData(vtkInformation *request,
   }
 #endif
 
-  vtkDataArray *offsetField = this->GetOffsetField(
-    inputScalars, ForceInputOffsetScalarField, 1, inputVector);
+  vtkDataArray *offsetField
+    = this->GetOffsetField(inputScalars, ForceInputOffsetScalarField, 1, input);
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!offsetField) {

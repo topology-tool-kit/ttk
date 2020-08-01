@@ -140,7 +140,7 @@ int ttkFTMTree::RequestData(vtkInformation *request,
     return 0;
 #endif
   }
-  getOffsets(inputVector);
+  getOffsets();
 
   this->printMsg("Launching on field "
                  + std::string{inputScalars_[0]->GetName()});
@@ -421,13 +421,14 @@ int ttkFTMTree::addSampledSkeletonArc(const ttk::ftm::idSuperArc arcId,
   return 1;
 }
 
-int ttkFTMTree::getOffsets(vtkInformationVector **inputVector) {
+int ttkFTMTree::getOffsets() {
   // should be called after getScalars for inputScalars_ needs to be filled
 
   offsets_.resize(nbCC_);
   for(int cc = 0; cc < nbCC_; cc++) {
-    const auto offsets = this->GetOffsetField(
-      inputScalars_[cc], ForceInputOffsetScalarField, 1, inputVector);
+    const auto offsets
+      = this->GetOffsetField(inputScalars_[cc], ForceInputOffsetScalarField, 1,
+                             connected_components_[cc]);
 
     offsets_[cc].resize(connected_components_[cc]->GetNumberOfPoints());
 

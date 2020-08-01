@@ -289,14 +289,14 @@ std::string ttkAlgorithm::OffsetFieldName(vtkDataArray *const sfArray) const {
 vtkDataArray *ttkAlgorithm::GetOffsetField(vtkDataArray *const sfArray,
                                            const bool enforceArrayIndex,
                                            const int arrayIndex,
-                                           vtkInformationVector **inputVectors,
+                                           vtkDataSet *const inputData,
                                            const int &inputPort) {
 
   // try to find a vtkDataArray with the name sfArrayName + "_Order"
   const auto offsetFieldName = this->OffsetFieldName(sfArray);
   this->SetInputArrayToProcess(
     arrayIndex, inputPort, 0, 0, offsetFieldName.data());
-  const auto inOrder = this->GetInputArrayToProcess(arrayIndex, inputVectors);
+  const auto inOrder = this->GetInputArrayToProcess(arrayIndex, inputData);
   if(inOrder != nullptr) {
     return inOrder;
   } else {
@@ -304,7 +304,7 @@ vtkDataArray *ttkAlgorithm::GetOffsetField(vtkDataArray *const sfArray,
     ttk::Timer tm{};
     vtkDataArray *inDisamb = nullptr;
     if(enforceArrayIndex) {
-      inDisamb = this->GetInputArrayToProcess(arrayIndex, inputVectors);
+      inDisamb = this->GetInputArrayToProcess(arrayIndex, inputData);
     }
 
     vtkSmartPointer<vtkDataArray> vertsOrder = ttkSimplexIdTypeArray::New();

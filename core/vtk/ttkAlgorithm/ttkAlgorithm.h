@@ -154,7 +154,7 @@ public:
   vtkDataArray *GetOffsetField(vtkDataArray *const sfArray,
                                const bool enforceArrayIndex,
                                const int arrayIndex,
-                               vtkInformationVector **inputVectors,
+                               vtkDataSet *const inputData,
                                const int &inputPort = 0);
 
   /**
