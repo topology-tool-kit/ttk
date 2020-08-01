@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <OrderDisambiguation.h>
 #include <TopologicalCompression.h>
 
 template <typename dataType>
@@ -151,7 +152,7 @@ int ttk::TopologicalCompression::ReadPersistenceGeometry(
   decompressedData_.resize(vertexNumber);
   if(zfpBitBudget > 64.0 || zfpBitBudget < 1) {
 
-    // 2.a. (2.) Affect values to points thanks to topology indices.
+    // 2.a. (2.) Assign values to points thanks to topology indices.
     for(int i = 0; i < vertexNumber; ++i) {
       int seg = segmentation_[i];
       auto end = mapping_.end();
@@ -272,18 +273,14 @@ int ttk::TopologicalCompression::PerformSimplification(
           array[neighbor] = val;
         if(array[neighbor] == val
            && inputOffsets[neighbor] > inputOffsets[id]) {
-          int tmp = inputOffsets[id];
-          inputOffsets[id] = inputOffsets[neighbor];
-          inputOffsets[neighbor] = tmp;
+          std::swap(inputOffsets[id], inputOffsets[neighbor]);
         }
       } else if(type == -1) { // Local_minimum.
         if(array[neighbor] < val)
           array[neighbor] = val;
         if(array[neighbor] == val
            && inputOffsets[neighbor] < inputOffsets[id]) {
-          int tmp = inputOffsets[id];
-          inputOffsets[id] = inputOffsets[neighbor];
-          inputOffsets[neighbor] = tmp;
+          std::swap(inputOffsets[id], inputOffsets[neighbor]);
         }
       } else if(type == 0) { // Saddle
       }
@@ -292,13 +289,18 @@ int ttk::TopologicalCompression::PerformSimplification(
     critConstraints[i] = id;
   }
 
-  for(int i = 0; i < vertexNumber; ++i)
+  for(int i = 0; i < vertexNumber; ++i) {
     inArray[i] = array[i];
+  }
   for(int i = 0; i < vertexNumber; ++i)
     decompressedOffsets_[i] = 0;
 
+  std::vector<SimplexId> vertsOrder(vertexNumber);
+  sortVertices(vertexNumber, array, inputOffsets.data(), vertsOrder.data(),
+               this->threadNumber_);
+
   status = topologicalSimplification.execute<double, int>(
-    inArray.data(), array, critConstraints.data(), inputOffsets.data(),
+    inArray.data(), array, critConstraints.data(), vertsOrder.data(),
     decompressedOffsets_.data(), nbConstraints, triangulation);
 
   return status;
