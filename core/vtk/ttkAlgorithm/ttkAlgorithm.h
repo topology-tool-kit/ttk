@@ -145,11 +145,12 @@ public:
   std::string OffsetFieldName(vtkDataArray *const sfArray) const;
 
   /**
-   * Retrieves an offset field from the given scalar field named \p
-   * sfArrayName or generates one, either disambiguated with the
-   * implicit vertex identifier field, or with a user-provided offset
-   * field through the \p enforceArrayIndex boolean parameter and the
-   * \p arrayIndex.
+   * Retrieves an offset field from the given scalar field \p sfArray
+   * or generates one, either disambiguated with the implicit vertex
+   * identifier field, or with a user-provided offset field through
+   * the \p enforceArrayIndex parameter and the \p arrayIndex. The
+   * generated sorted offset field is then attached to the input
+   * vtkDataset \p inputData.
    */
   vtkDataArray *GetOffsetField(vtkDataArray *const sfArray,
                                const bool enforceArrayIndex,
