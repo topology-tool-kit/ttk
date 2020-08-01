@@ -289,7 +289,6 @@ int ttkFTRGraph::RequestData(vtkInformation *request,
   auto outputSkeletonNodes = vtkUnstructuredGrid::GetData(outputVector, 0);
   auto outputSkeletonArcs = vtkUnstructuredGrid::GetData(outputVector, 1);
   auto outputSegmentation = vtkDataSet::GetData(outputVector, 2);
-  outputSegmentation->ShallowCopy(mesh_);
 
   // Skeleton
   Graph graph;
@@ -356,6 +355,8 @@ int ttkFTRGraph::RequestData(vtkInformation *request,
 
 int ttkFTRGraph::getSegmentation(const ttk::ftr::Graph &graph,
                                  vtkDataSet *outputSegmentation) {
+  outputSegmentation->ShallowCopy(mesh_);
+
   const idVertex numberOfVertices = mesh_->GetNumberOfPoints();
   ttk::ftr::VertData vertData(numberOfVertices);
 
