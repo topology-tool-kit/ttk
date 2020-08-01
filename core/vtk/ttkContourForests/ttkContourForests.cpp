@@ -1213,7 +1213,10 @@ int ttkContourForests::RequestData(vtkInformation *request,
       vtkInputScalars_, ForceInputOffsetScalarField, 1, input);
 
     if(offsets != nullptr) {
-
+      if(segmentation_ != nullptr) {
+        // propagate offsets to output
+        segmentation_->GetPointData()->AddArray(offsets);
+      }
       if(offsets->GetNumberOfTuples() != numberOfVertices_) {
         this->printErr("Mesh and offset sizes do not match :(");
         this->printErr("Using default offset field instead...");

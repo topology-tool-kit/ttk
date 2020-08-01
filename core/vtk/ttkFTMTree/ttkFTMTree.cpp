@@ -71,6 +71,10 @@ int ttkFTMTree::RequestData(vtkInformation *request,
   if(!inputArray)
     return 0;
 
+  // force the computation of the offset field if it doesn't exist
+  const auto inputOffsets
+    = this->GetOffsetField(inputArray, ForceInputOffsetScalarField, 1, input);
+
   // Connected components
   if(input->IsA("vtkUnstructuredGrid")) {
     // This data set may have several connected components,
@@ -190,6 +194,7 @@ int ttkFTMTree::RequestData(vtkInformation *request,
       return 0;
 #endif
     }
+    outputSegmentation->GetPointData()->AddArray(inputOffsets);
   }
 
   UpdateProgress(1);
