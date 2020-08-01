@@ -589,8 +589,6 @@ int ttkReebSpace::RequestData(vtkInformation *request,
 
   // now take care of the 3 sheets
   sheet3->ShallowCopy(input);
-  sheet3->GetPointData()->AddArray(offsetFieldU);
-  sheet3->GetPointData()->AddArray(offsetFieldV);
   const auto vertex3sheets = this->get3sheetVertexSegmentation();
 
   vtkNew<ttkSimplexIdTypeArray> vertexNumberField{};

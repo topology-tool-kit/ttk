@@ -602,7 +602,7 @@ int ttkMorseSmaleComplex::RequestData(vtkInformation *request,
       return -1;
     }
 #endif
-    pointData->AddArray(inputOffsets);
+
     if(ComputeDescendingSegmentation)
       pointData->AddArray(descendingManifold);
     if(ComputeAscendingSegmentation)
