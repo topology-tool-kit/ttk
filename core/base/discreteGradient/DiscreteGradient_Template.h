@@ -3237,6 +3237,69 @@ ttk::SimplexId DiscreteGradient::getCellGreaterVertex(
   return vertexId;
 }
 
+template <typename idType, typename triangulationType>
+ttk::SimplexId DiscreteGradient::getCellLowerVertex(
+  const Cell c,
+  const idType *const offsets,
+  const triangulationType &triangulation) const {
+
+  auto cellDim = c.dim_;
+  auto cellId = c.id_;
+
+  SimplexId vertexId = -1;
+  if(cellDim == 0) {
+    vertexId = cellId;
+  }
+
+  else if(cellDim == 1) {
+    SimplexId v0;
+    SimplexId v1;
+    triangulation.getEdgeVertex(cellId, 0, v0);
+    triangulation.getEdgeVertex(cellId, 1, v1);
+
+    if(offsets[v0] < offsets[v1]) {
+      vertexId = v0;
+    } else {
+      vertexId = v1;
+    }
+  }
+
+  else if(cellDim == 2) {
+    SimplexId v0{}, v1{}, v2{};
+    triangulation.getTriangleVertex(cellId, 0, v0);
+    triangulation.getTriangleVertex(cellId, 1, v1);
+    triangulation.getTriangleVertex(cellId, 2, v2);
+    if(offsets[v0] < offsets[v1] && offsets[v0] < offsets[v2]) {
+      vertexId = v0;
+    } else if(offsets[v1] < offsets[v0] && offsets[v1] < offsets[v2]) {
+      vertexId = v1;
+    } else {
+      vertexId = v2;
+    }
+  }
+
+  else if(cellDim == 3) {
+    SimplexId v0{}, v1{}, v2{}, v3{};
+    triangulation.getCellVertex(cellId, 0, v0);
+    triangulation.getCellVertex(cellId, 1, v1);
+    triangulation.getCellVertex(cellId, 2, v2);
+    triangulation.getCellVertex(cellId, 3, v3);
+    if(offsets[v0] < offsets[v1] && offsets[v0] < offsets[v2]
+       && offsets[v0] < offsets[v3]) {
+      vertexId = v0;
+    } else if(offsets[v1] < offsets[v0] && offsets[v1] < offsets[v2]
+              && offsets[v1] < offsets[v3]) {
+      vertexId = v1;
+    } else if(offsets[v2] < offsets[v0] && offsets[v2] < offsets[v1]
+              && offsets[v2] < offsets[v3]) {
+      vertexId = v2;
+    } else {
+      vertexId = v3;
+    }
+  }
+  return vertexId;
+}
+
 template <typename triangulationType>
 int DiscreteGradient::setGradientGlyphs(
   SimplexId &numberOfPoints,

@@ -585,13 +585,23 @@ in the gradient.
 
       /**
        * Get the vertex id of with the maximum scalar field value on
-       * the given cell. Compare offsets if scalar field is constant.
+       * the given cell.
        */
       template <typename idType, typename triangulationType>
       SimplexId
         getCellGreaterVertex(const Cell c,
                              const idType *const offsets,
                              const triangulationType &triangulation) const;
+
+      /**
+       * Get the vertex id of with the minimum scalar field value on
+       * the given cell.
+       */
+      template <typename idType, typename triangulationType>
+      SimplexId
+        getCellLowerVertex(const Cell c,
+                           const idType *const offsets,
+                           const triangulationType &triangulation) const;
 
       /**
        * Build the geometric embedding of the given STL vector of cells.
