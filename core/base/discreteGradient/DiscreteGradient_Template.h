@@ -25,183 +25,16 @@ using ttk::dcg::SaddleSaddleVPathComparator;
 using ttk::dcg::VisitedMask;
 using ttk::dcg::VPath;
 
-template <typename dataType, typename triangulationType>
-dataType
-  DiscreteGradient::scalarMax(const Cell &cell,
-                              const dataType *const scalars,
-                              const triangulationType &triangulation) const {
-  dataType scalar{};
-
-  if(dimensionality_ == 2) {
-    switch(cell.dim_) {
-      case 0:
-        scalar = scalars[cell.id_];
-        break;
-
-      case 1:
-        for(int i = 0; i < 2; ++i) {
-          SimplexId vertexId = -1;
-          triangulation.getEdgeVertex(cell.id_, i, vertexId);
-          const dataType vertexScalar = scalars[vertexId];
-
-          if(!i or scalar < vertexScalar) {
-            scalar = vertexScalar;
-          }
-        }
-        break;
-
-      case 2:
-        for(int i = 0; i < 3; ++i) {
-          SimplexId vertexId = -1;
-          triangulation.getCellVertex(cell.id_, i, vertexId);
-          const dataType vertexScalar = scalars[vertexId];
-
-          if(!i or scalar < vertexScalar) {
-            scalar = vertexScalar;
-          }
-        }
-        break;
-    }
-  } else if(dimensionality_ == 3) {
-    switch(cell.dim_) {
-      case 0:
-        scalar = scalars[cell.id_];
-        break;
-
-      case 1:
-        for(int i = 0; i < 2; ++i) {
-          SimplexId vertexId = -1;
-          triangulation.getEdgeVertex(cell.id_, i, vertexId);
-          const dataType vertexScalar = scalars[vertexId];
-
-          if(!i or scalar < vertexScalar) {
-            scalar = vertexScalar;
-          }
-        }
-        break;
-
-      case 2:
-        for(int i = 0; i < 3; ++i) {
-          SimplexId vertexId = -1;
-          triangulation.getTriangleVertex(cell.id_, i, vertexId);
-          const dataType vertexScalar = scalars[vertexId];
-
-          if(!i or scalar < vertexScalar) {
-            scalar = vertexScalar;
-          }
-        }
-        break;
-
-      case 3:
-        for(int i = 0; i < 4; ++i) {
-          SimplexId vertexId = -1;
-          triangulation.getCellVertex(cell.id_, i, vertexId);
-          const dataType vertexScalar = scalars[vertexId];
-
-          if(!i or scalar < vertexScalar) {
-            scalar = vertexScalar;
-          }
-        }
-        break;
-    }
-  }
-
-  return scalar;
-}
-
-template <typename dataType, typename triangulationType>
-dataType
-  DiscreteGradient::scalarMin(const Cell &cell,
-                              const dataType *const scalars,
-                              const triangulationType &triangulation) const {
-  dataType scalar{};
-
-  if(dimensionality_ == 2) {
-    switch(cell.dim_) {
-      case 0:
-        scalar = scalars[cell.id_];
-        break;
-
-      case 1:
-        for(int i = 0; i < 2; ++i) {
-          SimplexId vertexId;
-          triangulation.getEdgeVertex(cell.id_, i, vertexId);
-          const dataType vertexScalar = scalars[vertexId];
-
-          if(!i or scalar > vertexScalar) {
-            scalar = vertexScalar;
-          }
-        }
-        break;
-
-      case 2:
-        for(int i = 0; i < 3; ++i) {
-          SimplexId vertexId;
-          triangulation.getCellVertex(cell.id_, i, vertexId);
-          const dataType vertexScalar = scalars[vertexId];
-
-          if(!i or scalar > vertexScalar) {
-            scalar = vertexScalar;
-          }
-        }
-        break;
-    }
-  } else if(dimensionality_ == 3) {
-    switch(cell.dim_) {
-      case 0:
-        scalar = scalars[cell.id_];
-        break;
-
-      case 1:
-        for(int i = 0; i < 2; ++i) {
-          SimplexId vertexId;
-          triangulation.getEdgeVertex(cell.id_, i, vertexId);
-          const dataType vertexScalar = scalars[vertexId];
-
-          if(!i or scalar > vertexScalar) {
-            scalar = vertexScalar;
-          }
-        }
-        break;
-
-      case 2:
-        for(int i = 0; i < 3; ++i) {
-          SimplexId vertexId;
-          triangulation.getTriangleVertex(cell.id_, i, vertexId);
-          const dataType vertexScalar = scalars[vertexId];
-
-          if(!i or scalar > vertexScalar) {
-            scalar = vertexScalar;
-          }
-        }
-        break;
-
-      case 3:
-        for(int i = 0; i < 4; ++i) {
-          SimplexId vertexId;
-          triangulation.getCellVertex(cell.id_, i, vertexId);
-          const dataType vertexScalar = scalars[vertexId];
-
-          if(!i or scalar > vertexScalar) {
-            scalar = vertexScalar;
-          }
-        }
-        break;
-    }
-  }
-
-  return scalar;
-}
-
-template <typename dataType, typename triangulationType>
+template <typename dataType, typename idType, typename triangulationType>
 dataType DiscreteGradient::getPersistence(
   const Cell &up,
   const Cell &down,
   const dataType *const scalars,
+  const idType *const offsets,
   const triangulationType &triangulation) const {
 
-  return scalarMax(up, scalars, triangulation)
-         - scalarMin(down, scalars, triangulation);
+  return scalars[getCellGreaterVertex(up, offsets, triangulation)]
+         - scalars[getCellLowerVertex(down, offsets, triangulation)];
 }
 
 template <typename idType, typename triangulationType>
@@ -302,7 +135,8 @@ int DiscreteGradient::setCriticalPoints(
     float incenter[3];
     triangulation.getCellIncenter(cell.id_, cell.dim_, incenter);
 
-    const auto scalar = scalarMax<dataType>(cell, scalars, triangulation);
+    const auto scalar
+      = scalars[getCellGreaterVertex(cell, offsets, triangulation)];
     const char isOnBoundary = isBoundary(cell, triangulation);
 
     outputCriticalPoints_points_[3 * i] = incenter[0];
@@ -559,7 +393,7 @@ int DiscreteGradient::getRemovableSaddles2(
   return 0;
 }
 
-template <typename dataType, typename triangulationType>
+template <typename dataType, typename idType, typename triangulationType>
 int DiscreteGradient::initializeSaddleSaddleConnections1(
   const std::vector<char> &isRemovableSaddle1,
   const std::vector<char> &isRemovableSaddle2,
@@ -572,6 +406,7 @@ int DiscreteGradient::initializeSaddleSaddleConnections1(
   Timer t;
 
   const auto *const scalars = static_cast<const dataType *>(inputScalarField_);
+  const auto *const offsets = static_cast<const idType *>(inputOffsets_);
 
   const int maximumDim = dimensionality_;
   const int saddle2Dim = maximumDim - 1;
@@ -644,7 +479,7 @@ int DiscreteGradient::initializeSaddleSaddleConnections1(
 
         // update vpath
         const auto persistence
-          = getPersistence<dataType>(saddle2, saddle1, scalars, triangulation);
+          = getPersistence(saddle2, saddle1, scalars, offsets, triangulation);
 
         vpaths.push_back(VPath(true, -1, sourceIndex, destinationIndex,
                                sourceSlot, destinationSlot, persistence));
@@ -714,7 +549,7 @@ int DiscreteGradient::orderSaddleSaddleConnections1(
   return 0;
 }
 
-template <typename dataType, typename triangulationType>
+template <typename dataType, typename idType, typename triangulationType>
 int DiscreteGradient::processSaddleSaddleConnections1(
   const int iterationThreshold,
   const std::vector<char> &isPL,
@@ -735,6 +570,7 @@ int DiscreteGradient::processSaddleSaddleConnections1(
   Timer t;
 
   const auto *const scalars = static_cast<const dataType *>(inputScalarField_);
+  const auto *const offsets = static_cast<const idType *>(inputOffsets_);
 
   const SimplexId numberOfEdges = triangulation.getNumberOfEdges();
   const SimplexId numberOfTriangles = triangulation.getNumberOfTriangles();
@@ -1012,7 +848,7 @@ int DiscreteGradient::processSaddleSaddleConnections1(
           // update vpaths
           const SimplexId newVPathId = vpaths.size();
           const auto persistence
-            = getPersistence(saddle2, saddle1, scalars, triangulation);
+            = getPersistence(saddle2, saddle1, scalars, offsets, triangulation);
 
           vpaths.push_back(VPath(
             true, -1, newSourceId, newDestinationId, -1, -1, persistence));
@@ -1075,7 +911,7 @@ int DiscreteGradient::processSaddleSaddleConnections1(
           // update vpaths
           const SimplexId newVPathId = vpaths.size();
           const auto persistence
-            = getPersistence(saddle2, saddle1, scalars, triangulation);
+            = getPersistence(saddle2, saddle1, scalars, offsets, triangulation);
 
           vpaths.push_back(VPath(
             true, -1, newSourceId, newDestinationId, -1, -1, persistence));
@@ -1100,7 +936,7 @@ int DiscreteGradient::processSaddleSaddleConnections1(
   return 0;
 }
 
-template <typename dataType, typename triangulationType>
+template <typename dataType, typename idType, typename triangulationType>
 int DiscreteGradient::simplifySaddleSaddleConnections1(
   const std::vector<std::pair<SimplexId, char>> &criticalPoints,
   const std::vector<char> &isPL,
@@ -1129,7 +965,7 @@ int DiscreteGradient::simplifySaddleSaddleConnections1(
   std::vector<CriticalPoint> dmt_criticalPoints;
   std::vector<SimplexId> saddle1Index;
   std::vector<SimplexId> saddle2Index;
-  initializeSaddleSaddleConnections1<dataType>(
+  initializeSaddleSaddleConnections1<dataType, idType>(
     isRemovableSaddle1, isRemovableSaddle2, allowBruteForce, vpaths,
     dmt_criticalPoints, saddle1Index, saddle2Index, triangulation);
 
@@ -1141,7 +977,7 @@ int DiscreteGradient::simplifySaddleSaddleConnections1(
   orderSaddleSaddleConnections1<dataType>(vpaths, dmt_criticalPoints, S);
 
   // Part 3 : process the vpaths
-  processSaddleSaddleConnections1<dataType>(
+  processSaddleSaddleConnections1<dataType, idType>(
     iterationThreshold, isPL, allowBoundary, allowBruteForce,
     returnSaddleConnectors, S, pl2dmt_saddle1, pl2dmt_saddle2,
     isRemovableSaddle1, isRemovableSaddle2, vpaths, dmt_criticalPoints,
@@ -1153,7 +989,7 @@ int DiscreteGradient::simplifySaddleSaddleConnections1(
   return 0;
 }
 
-template <typename dataType, typename triangulationType>
+template <typename dataType, typename idType, typename triangulationType>
 int DiscreteGradient::initializeSaddleSaddleConnections2(
   const std::vector<char> &isRemovableSaddle1,
   const std::vector<char> &isRemovableSaddle2,
@@ -1166,6 +1002,7 @@ int DiscreteGradient::initializeSaddleSaddleConnections2(
   Timer t;
 
   const auto *const scalars = static_cast<const dataType *>(inputScalarField_);
+  const auto *const offsets = static_cast<const idType *>(inputOffsets_);
 
   const int maximumDim = dimensionality_;
   const int saddle2Dim = maximumDim - 1;
@@ -1237,7 +1074,7 @@ int DiscreteGradient::initializeSaddleSaddleConnections2(
 
         // update vpath
         const auto persistence
-          = getPersistence(saddle2, saddle1, scalars, triangulation);
+          = getPersistence(saddle2, saddle1, scalars, offsets, triangulation);
 
         vpaths.push_back(VPath(true, -1, sourceIndex, destinationIndex,
                                sourceSlot, destinationSlot, persistence));
@@ -1307,7 +1144,7 @@ int DiscreteGradient::orderSaddleSaddleConnections2(
   return 0;
 }
 
-template <typename dataType, typename triangulationType>
+template <typename dataType, typename idType, typename triangulationType>
 int DiscreteGradient::processSaddleSaddleConnections2(
   const int iterationThreshold,
   const std::vector<char> &isPL,
@@ -1331,6 +1168,7 @@ int DiscreteGradient::processSaddleSaddleConnections2(
                  + std::to_string(this->SaddleConnectorsPersistenceThreshold));
 
   const auto *const scalars = static_cast<const dataType *>(inputScalarField_);
+  const auto *const offsets = static_cast<const idType *>(inputOffsets_);
 
   const SimplexId numberOfEdges = triangulation.getNumberOfEdges();
   const SimplexId numberOfTriangles = triangulation.getNumberOfTriangles();
@@ -1606,7 +1444,7 @@ int DiscreteGradient::processSaddleSaddleConnections2(
           // update vpaths
           const SimplexId newVPathId = vpaths.size();
           const auto persistence
-            = getPersistence(saddle2, saddle1, scalars, triangulation);
+            = getPersistence(saddle2, saddle1, scalars, offsets, triangulation);
 
           vpaths.push_back(VPath(
             true, -1, newSourceId, newDestinationId, -1, -1, persistence));
@@ -1668,7 +1506,7 @@ int DiscreteGradient::processSaddleSaddleConnections2(
           // update vpaths
           const SimplexId newVPathId = vpaths.size();
           const auto persistence
-            = getPersistence(saddle2, saddle1, scalars, triangulation);
+            = getPersistence(saddle2, saddle1, scalars, offsets, triangulation);
 
           vpaths.push_back(VPath(
             true, -1, newSourceId, newDestinationId, -1, -1, persistence));
@@ -1693,7 +1531,7 @@ int DiscreteGradient::processSaddleSaddleConnections2(
   return 0;
 }
 
-template <typename dataType, typename triangulationType>
+template <typename dataType, typename idType, typename triangulationType>
 int DiscreteGradient::simplifySaddleSaddleConnections2(
   const std::vector<std::pair<SimplexId, char>> &criticalPoints,
   const std::vector<char> &isPL,
@@ -1722,7 +1560,7 @@ int DiscreteGradient::simplifySaddleSaddleConnections2(
   std::vector<CriticalPoint> dmt_criticalPoints;
   std::vector<SimplexId> saddle1Index;
   std::vector<SimplexId> saddle2Index;
-  initializeSaddleSaddleConnections2<dataType>(
+  initializeSaddleSaddleConnections2<dataType, idType>(
     isRemovableSaddle1, isRemovableSaddle2, allowBruteForce, vpaths,
     dmt_criticalPoints, saddle1Index, saddle2Index, triangulation);
 
@@ -1734,7 +1572,7 @@ int DiscreteGradient::simplifySaddleSaddleConnections2(
   orderSaddleSaddleConnections2<dataType>(vpaths, dmt_criticalPoints, S);
 
   // Part 3 : process the vpaths
-  processSaddleSaddleConnections2<dataType>(
+  processSaddleSaddleConnections2<dataType, idType>(
     iterationThreshold, isPL, allowBoundary, allowBruteForce,
     returnSaddleConnectors, S, pl2dmt_saddle1, pl2dmt_saddle2,
     isRemovableSaddle1, isRemovableSaddle2, vpaths, dmt_criticalPoints,
@@ -1805,10 +1643,10 @@ int DiscreteGradient::filterSaddleConnectors(
   std::vector<char> isPL;
   getCriticalPointMap(cpset, isPL);
 
-  simplifySaddleSaddleConnections1<dataType>(
+  simplifySaddleSaddleConnections1<dataType, idType>(
     cpset, isPL, IterationThreshold, allowBoundary, allowBruteForce,
     returnSaddleConnectors, triangulation);
-  simplifySaddleSaddleConnections2<dataType>(
+  simplifySaddleSaddleConnections2<dataType, idType>(
     cpset, isPL, IterationThreshold, allowBoundary, allowBruteForce,
     returnSaddleConnectors, triangulation);
 
@@ -1878,10 +1716,10 @@ int DiscreteGradient::reverseGradient(const triangulationType &triangulation,
   std::fill(dmt1Saddle2PL_.begin(), dmt1Saddle2PL_.end(), -1);
 
   if(dimensionality_ == 3) {
-    simplifySaddleSaddleConnections1<dataType>(
+    simplifySaddleSaddleConnections1<dataType, idType>(
       criticalPoints, isPL, IterationThreshold, allowBoundary, allowBruteForce,
       returnSaddleConnectors, triangulation);
-    simplifySaddleSaddleConnections2<dataType>(
+    simplifySaddleSaddleConnections2<dataType, idType>(
       criticalPoints, isPL, IterationThreshold, allowBoundary, allowBruteForce,
       returnSaddleConnectors, triangulation);
   }

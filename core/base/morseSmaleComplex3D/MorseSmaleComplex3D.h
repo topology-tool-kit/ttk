@@ -95,7 +95,7 @@ namespace ttk {
      * outputSeparatrices2_cells_
      * inputScalarField_
      */
-    template <typename dataType, typename triangulationType>
+    template <typename dataType, typename idType, typename triangulationType>
     int setDescendingSeparatrices2(
       const std::vector<Separatrix> &separatrices,
       const std::vector<std::vector<dcg::Cell>> &separatricesGeometry,
@@ -141,7 +141,7 @@ namespace ttk {
      * outputSeparatrices2_cells_
      * inputScalarField_
      */
-    template <typename dataType, typename triangulationType>
+    template <typename dataType, typename idType, typename triangulationType>
     int setAscendingSeparatrices2(
       const std::vector<Separatrix> &separatrices,
       const std::vector<std::vector<dcg::Cell>> &separatricesGeometry,
@@ -199,7 +199,7 @@ int ttk::MorseSmaleComplex3D::computePersistencePairs(
   return 0;
 }
 
-template <typename dataType, typename triangulationType>
+template <typename dataType, typename idType, typename triangulationType>
 int ttk::MorseSmaleComplex3D::setAscendingSeparatrices2(
   const std::vector<Separatrix> &separatrices,
   const std::vector<std::vector<dcg::Cell>> &separatricesGeometry,
@@ -229,6 +229,7 @@ int ttk::MorseSmaleComplex3D::setAscendingSeparatrices2(
 #endif
 
   const auto scalars = static_cast<const dataType *>(inputScalarField_);
+  const auto offsets = static_cast<const idType *>(inputOffsets_);
   auto separatrixFunctionMaxima = static_cast<std::vector<dataType> *>(
     outputSeparatrices2_cells_separatrixFunctionMaxima_);
   auto separatrixFunctionMinima = static_cast<std::vector<dataType> *>(
@@ -296,17 +297,18 @@ int ttk::MorseSmaleComplex3D::setAscendingSeparatrices2(
     const dcg::Cell &src = sep.source_; // saddle1
 
     // compute separatrix function diff
-    const dataType sepFuncMin
-      = discreteGradient_.scalarMin(src, scalars, triangulation);
+    const dataType sepFuncMin = scalars[discreteGradient_.getCellLowerVertex(
+      src, offsets, triangulation)];
     const auto maxId = *std::max_element(
       sepSaddles.begin(), sepSaddles.end(),
-      [&triangulation, scalars, this](const SimplexId a, const SimplexId b) {
-        return discreteGradient_.scalarMax(Cell{2, a}, scalars, triangulation)
-               < discreteGradient_.scalarMax(
-                 Cell{2, b}, scalars, triangulation);
+      [&triangulation, offsets, this](const SimplexId a, const SimplexId b) {
+        return offsets[discreteGradient_.getCellGreaterVertex(
+                 Cell{2, a}, offsets, triangulation)]
+               < offsets[discreteGradient_.getCellGreaterVertex(
+                 Cell{2, b}, offsets, triangulation)];
       });
-    const dataType sepFuncMax
-      = discreteGradient_.scalarMax(Cell{2, maxId}, scalars, triangulation);
+    const dataType sepFuncMax = scalars[discreteGradient_.getCellGreaterVertex(
+      Cell{2, maxId}, offsets, triangulation)];
 
     // get boundary condition
     const char onBoundary
@@ -441,7 +443,7 @@ int ttk::MorseSmaleComplex3D::setAscendingSeparatrices2(
   return 0;
 }
 
-template <typename dataType, typename triangulationType>
+template <typename dataType, typename idType, typename triangulationType>
 int ttk::MorseSmaleComplex3D::setDescendingSeparatrices2(
   const std::vector<Separatrix> &separatrices,
   const std::vector<std::vector<dcg::Cell>> &separatricesGeometry,
@@ -471,6 +473,7 @@ int ttk::MorseSmaleComplex3D::setDescendingSeparatrices2(
 #endif
 
   const auto scalars = static_cast<const dataType *>(inputScalarField_);
+  const auto offsets = static_cast<const idType *>(inputOffsets_);
   auto separatrixFunctionMaxima = static_cast<std::vector<dataType> *>(
     outputSeparatrices2_cells_separatrixFunctionMaxima_);
   auto separatrixFunctionMinima = static_cast<std::vector<dataType> *>(
@@ -550,17 +553,18 @@ int ttk::MorseSmaleComplex3D::setDescendingSeparatrices2(
     const char sepType = 2;
 
     // compute separatrix function diff
-    const dataType sepFuncMax
-      = discreteGradient_.scalarMax(src, scalars, triangulation);
+    const dataType sepFuncMax = scalars[discreteGradient_.getCellGreaterVertex(
+      src, offsets, triangulation)];
     const auto minId = *std::min_element(
       sepSaddles.begin(), sepSaddles.end(),
-      [&triangulation, scalars, this](const SimplexId a, const SimplexId b) {
-        return discreteGradient_.scalarMin(Cell{1, a}, scalars, triangulation)
-               < discreteGradient_.scalarMin(
-                 Cell{1, b}, scalars, triangulation);
+      [&triangulation, offsets, this](const SimplexId a, const SimplexId b) {
+        return offsets[discreteGradient_.getCellLowerVertex(
+                 Cell{1, a}, offsets, triangulation)]
+               < offsets[discreteGradient_.getCellLowerVertex(
+                 Cell{1, b}, offsets, triangulation)];
       });
-    const dataType sepFuncMin
-      = discreteGradient_.scalarMin(Cell{1, minId}, scalars, triangulation);
+    const dataType sepFuncMin = scalars[discreteGradient_.getCellLowerVertex(
+      Cell{1, minId}, offsets, triangulation)];
     const dataType sepFuncDiff = sepFuncMax - sepFuncMin;
 
     // get boundary condition
@@ -736,7 +740,7 @@ int ttk::MorseSmaleComplex3D::execute(const triangulationType &triangulation) {
     Timer tmp{};
 
     flattenSeparatricesVectors(separatrices1, separatricesGeometry1);
-    setSeparatrices1<dataType>(
+    setSeparatrices1<dataType, idType>(
       separatrices1[0], separatricesGeometry1[0], triangulation);
 
     this->printMsg(
@@ -752,7 +756,7 @@ int ttk::MorseSmaleComplex3D::execute(const triangulationType &triangulation) {
     getDescendingSeparatrices2(criticalPoints, separatrices,
                                separatricesGeometry, separatricesSaddles,
                                triangulation);
-    setDescendingSeparatrices2<dataType>(
+    setDescendingSeparatrices2<dataType, idType>(
       separatrices, separatricesGeometry, separatricesSaddles, triangulation);
 
     this->printMsg("Descending 2-separatrices computed", 1.0,
@@ -767,7 +771,7 @@ int ttk::MorseSmaleComplex3D::execute(const triangulationType &triangulation) {
     getAscendingSeparatrices2(criticalPoints, separatrices,
                               separatricesGeometry, separatricesSaddles,
                               triangulation);
-    setAscendingSeparatrices2<dataType>(
+    setAscendingSeparatrices2<dataType, idType>(
       separatrices, separatricesGeometry, separatricesSaddles, triangulation);
 
     this->printMsg("Ascending 2-separatrices computed", 1.0,

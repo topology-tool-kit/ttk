@@ -378,7 +378,7 @@ namespace ttk {
      * outputSeparatrices1_cells_
      * inputScalarField_
      */
-    template <typename dataType, typename triangulationType>
+    template <typename dataType, typename idType, typename triangulationType>
     int setSeparatrices1(
       const std::vector<Separatrix> &separatrices,
       const std::vector<std::vector<dcg::Cell>> &separatricesGeometry,
@@ -535,7 +535,7 @@ int ttk::AbstractMorseSmaleComplex::getDescendingSeparatrices1(
   return 0;
 }
 
-template <typename dataType, typename triangulationType>
+template <typename dataType, typename idType, typename triangulationType>
 int ttk::AbstractMorseSmaleComplex::setSeparatrices1(
   const std::vector<Separatrix> &separatrices,
   const std::vector<std::vector<dcg::Cell>> &separatricesGeometry,
@@ -566,6 +566,7 @@ int ttk::AbstractMorseSmaleComplex::setSeparatrices1(
 #endif
 
   const auto scalars = static_cast<const dataType *>(inputScalarField_);
+  const auto offsets = static_cast<const idType *>(inputOffsets_);
   auto separatrixFunctionMaxima = static_cast<std::vector<dataType> *>(
     outputSeparatrices1_cells_separatrixFunctionMaxima_);
   auto separatrixFunctionMinima = static_cast<std::vector<dataType> *>(
@@ -662,11 +663,15 @@ int ttk::AbstractMorseSmaleComplex::setSeparatrices1(
 
     // compute separatrix function diff
     const auto sepFuncMax
-      = std::max(discreteGradient_.scalarMax(src, scalars, triangulation),
-                 discreteGradient_.scalarMax(dst, scalars, triangulation));
+      = std::max(scalars[discreteGradient_.getCellGreaterVertex(
+                   src, offsets, triangulation)],
+                 scalars[discreteGradient_.getCellGreaterVertex(
+                   dst, offsets, triangulation)]);
     const auto sepFuncMin
-      = std::min(discreteGradient_.scalarMin(src, scalars, triangulation),
-                 discreteGradient_.scalarMin(dst, scalars, triangulation));
+      = std::min(scalars[discreteGradient_.getCellLowerVertex(
+                   src, offsets, triangulation)],
+                 scalars[discreteGradient_.getCellLowerVertex(
+                   dst, offsets, triangulation)]);
     const auto sepFuncDiff = sepFuncMax - sepFuncMin;
 
     // get boundary condition

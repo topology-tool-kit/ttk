@@ -91,7 +91,7 @@ int ttk::MorseSmaleComplex2D::execute(const triangulationType &triangulation) {
     std::vector<std::vector<dcg::Cell>> separatricesGeometry;
     getDescendingSeparatrices1(
       criticalPoints, separatrices, separatricesGeometry, triangulation);
-    setSeparatrices1<dataType>(
+    setSeparatrices1<dataType, idType>(
       separatrices, separatricesGeometry, triangulation);
 
     this->printMsg("Descending 1-separatrices computed", 1.0,
@@ -104,7 +104,7 @@ int ttk::MorseSmaleComplex2D::execute(const triangulationType &triangulation) {
     std::vector<std::vector<dcg::Cell>> separatricesGeometry;
     getAscendingSeparatrices1(
       criticalPoints, separatrices, separatricesGeometry, triangulation);
-    setSeparatrices1<dataType>(
+    setSeparatrices1<dataType, idType>(
       separatrices, separatricesGeometry, triangulation);
 
     this->printMsg("Ascending 1-separatrices computed", 1.0,

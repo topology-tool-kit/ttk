@@ -356,30 +356,13 @@ saddle-connectors.
       }
 
       /**
-       * Return the scalar value of the point in the cell which has the highest
-function value.
-       */
-      template <typename dataType, typename triangulationType>
-      dataType scalarMax(const Cell &cell,
-                         const dataType *const scalars,
-                         const triangulationType &triangulation) const;
-
-      /**
-       * Return the scalar value of the point in the cell which has the lowest
-function value.
-       */
-      template <typename dataType, typename triangulationType>
-      dataType scalarMin(const Cell &cell,
-                         const dataType *const scalars,
-                         const triangulationType &triangulation) const;
-
-      /**
        * Compute the difference of function values of a pair of cells.
        */
-      template <typename dataType, typename triangulationType>
+      template <typename dataType, typename idType, typename triangulationType>
       dataType getPersistence(const Cell &up,
                               const Cell &down,
-                              const dataType *scalars,
+                              const dataType *const scalars,
+                              const idType *const offsets,
                               const triangulationType &triangulation) const;
 
       /**
@@ -754,7 +737,7 @@ in the gradient.
 (2-saddle,...,1-saddle) vpaths
        * to the simplification process.
        */
-      template <typename dataType, typename triangulationType>
+      template <typename dataType, typename idType, typename triangulationType>
       int initializeSaddleSaddleConnections1(
         const std::vector<char> &isRemovableSaddle1,
         const std::vector<char> &isRemovableSaddle2,
@@ -779,7 +762,7 @@ in the gradient.
        * Core of the simplification process, modify the gradient and
        * reverse the selected (2-saddle,...,1-saddle) vpaths to simplify.
        */
-      template <typename dataType, typename triangulationType>
+      template <typename dataType, typename idType, typename triangulationType>
       int processSaddleSaddleConnections1(
         const int iterationThreshold,
         const std::vector<char> &isPL,
@@ -802,7 +785,7 @@ in the gradient.
        * High-level function that manages the global simplification of
 (2-saddle,...,1-saddle) vpaths.
        */
-      template <typename dataType, typename triangulationType>
+      template <typename dataType, typename idType, typename triangulationType>
       int simplifySaddleSaddleConnections1(
         const std::vector<std::pair<SimplexId, char>> &criticalPoints,
         const std::vector<char> &isPL,
@@ -817,7 +800,7 @@ in the gradient.
 (1-saddle,...,2-saddle) vpaths
        * to the simplification process.
        */
-      template <typename dataType, typename triangulationType>
+      template <typename dataType, typename idType, typename triangulationType>
       int initializeSaddleSaddleConnections2(
         const std::vector<char> &isRemovableSaddle1,
         const std::vector<char> &isRemovableSaddle2,
@@ -842,7 +825,7 @@ in the gradient.
        * Core of the simplification process, modify the gradient and
        * reverse the selected (1-saddle,...,2-saddle) vpaths to simplify.
        */
-      template <typename dataType, typename triangulationType>
+      template <typename dataType, typename idType, typename triangulationType>
       int processSaddleSaddleConnections2(
         const int iterationThreshold,
         const std::vector<char> &isPL,
@@ -865,7 +848,7 @@ in the gradient.
        * High-level function that manages the global simplification of
 (1-saddle,...,2-saddle) vpaths.
        */
-      template <typename dataType, typename triangulationType>
+      template <typename dataType, typename idType, typename triangulationType>
       int simplifySaddleSaddleConnections2(
         const std::vector<std::pair<SimplexId, char>> &criticalPoints,
         const std::vector<char> &isPL,
