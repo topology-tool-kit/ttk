@@ -433,14 +433,6 @@ int ttkPersistenceDiagram::RequestData(vtkInformation *request,
   vtkUnstructuredGrid *outputCTPersistenceDiagram
     = vtkUnstructuredGrid::GetData(outputVector, 0);
 
-#ifndef TTK_ENABLE_KAMIKAZE
-  vtkPointData *pointData = input->GetPointData();
-  if(!pointData) {
-    this->printErr("Input has no point data.");
-    return 0;
-  }
-#endif
-
   ttk::Triangulation *triangulation = ttkAlgorithm::GetTriangulation(input);
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!triangulation) {

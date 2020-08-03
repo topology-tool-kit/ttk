@@ -228,14 +228,6 @@ int ttkPersistenceCurve::RequestData(vtkInformation *request,
   vtkTable *outputSTPersistenceCurve = vtkTable::GetData(outputVector, 2);
   vtkTable *outputCTPersistenceCurve = vtkTable::GetData(outputVector, 3);
 
-#ifndef TTK_ENABLE_KAMIKAZE
-  vtkPointData *pointData = input->GetPointData();
-  if(!pointData) {
-    cerr << "[ttkPersistenceCurve] Error : input has no point data." << endl;
-    return -1;
-  }
-#endif
-
   ttk::Triangulation *triangulation = ttkAlgorithm::GetTriangulation(input);
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!triangulation) {
@@ -277,9 +269,10 @@ int ttkPersistenceCurve::RequestData(vtkInformation *request,
        outputSTPersistenceCurve, outputCTPersistenceCurve,
        (VTK_TT *)ttkUtils::GetVoidPointer(inputScalars),
        offsetField->GetDataType(), ttkUtils::GetVoidPointer(offsetField),
-       (TTK_TT *)(triangulation->getData()))))
-    // something wrong in baseCode
-    if(status) {
+       (TTK_TT *)(triangulation->getData()))));
+
+  // something wrong in baseCode
+  if(status) {
     std::stringstream msg;
     msg << "PersistenceCurve::execute() error code : " << status;
     this->printErr(msg.str());
