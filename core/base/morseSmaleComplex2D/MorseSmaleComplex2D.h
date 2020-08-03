@@ -27,7 +27,6 @@ namespace ttk {
 
   public:
     MorseSmaleComplex2D();
-    ~MorseSmaleComplex2D();
 
     /**
      * Main function for computing the whole Morse-Smale complex.

@@ -1,13 +1,8 @@
 #include <MorseSmaleComplex3D.h>
 #include <iterator>
 
-using namespace ttk;
-
-MorseSmaleComplex3D::MorseSmaleComplex3D() : AbstractMorseSmaleComplex() {
+ttk::MorseSmaleComplex3D::MorseSmaleComplex3D() : AbstractMorseSmaleComplex() {
   this->setDebugMsgPrefix("MorseSmaleComplex3D");
-}
-
-MorseSmaleComplex3D::~MorseSmaleComplex3D() {
 }
 
 void ttk::MorseSmaleComplex3D::flattenSeparatricesVectors(

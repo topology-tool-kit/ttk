@@ -29,7 +29,6 @@ namespace ttk {
 
   public:
     MorseSmaleComplex3D();
-    ~MorseSmaleComplex3D();
 
     /**
      * Main function for computing the whole Morse-Smale complex.
