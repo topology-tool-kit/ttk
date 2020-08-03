@@ -64,7 +64,7 @@ int ttkScalarFieldSmoother::RequestData(vtkInformation *request,
   }
 
   vtkDataArray *inputMaskField = ttkAlgorithm::GetOptionalArray(
-    ForceInputMaskScalarField, 1, ttk::MaskScalarFieldName, inputVector);
+    ForceInputMaskScalarField, 1, ttk::MaskScalarFieldName, input);
 
   // preparing the output
   vtkSmartPointer<vtkDataArray> outputArray

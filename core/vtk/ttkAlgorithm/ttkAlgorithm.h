@@ -130,11 +130,6 @@ public:
   vtkDataArray *GetOptionalArray(const bool &enforceArrayIndex,
                                  const int &arrayIndex,
                                  const std::string &arrayName,
-                                 vtkInformationVector **inputVectors,
-                                 const int &inputPort = 0);
-  vtkDataArray *GetOptionalArray(const bool &enforceArrayIndex,
-                                 const int &arrayIndex,
-                                 const std::string &arrayName,
                                  vtkDataSet *const inputData,
                                  const int &inputPort = 0);
 

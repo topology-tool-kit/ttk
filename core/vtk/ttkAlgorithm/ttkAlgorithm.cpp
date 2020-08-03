@@ -247,25 +247,6 @@ int checkCellTypes(vtkDataSet *object) {
   return 1;
 }
 
-vtkDataArray *
-  ttkAlgorithm::GetOptionalArray(const bool &enforceArrayIndex,
-                                 const int &arrayIndex,
-                                 const std::string &arrayName,
-                                 vtkInformationVector **inputVectors,
-                                 const int &inputPort) {
-
-  vtkDataArray *optionalArray = nullptr;
-
-  if(enforceArrayIndex)
-    optionalArray = this->GetInputArrayToProcess(arrayIndex, inputVectors);
-
-  if(!optionalArray) {
-    this->SetInputArrayToProcess(arrayIndex, inputPort, 0, 0, arrayName.data());
-    optionalArray = this->GetInputArrayToProcess(arrayIndex, inputVectors);
-  }
-  return optionalArray;
-}
-
 vtkDataArray *ttkAlgorithm::GetOptionalArray(const bool &enforceArrayIndex,
                                              const int &arrayIndex,
                                              const std::string &arrayName,

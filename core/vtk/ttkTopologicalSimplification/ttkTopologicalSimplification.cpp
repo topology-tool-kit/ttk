@@ -85,10 +85,6 @@ int ttkTopologicalSimplification::RequestData(
   }
 
   // constraint identifier field
-
-  // use the GetOptionalArray variant here to fix a segfault occuring
-  // when changing a threshold bound on the Threshold filter usually
-  // connected to the second input port
   const auto identifiers = this->GetOptionalArray(
     ForceInputVertexScalarField, 1, ttk::VertexScalarFieldName, constraints);
 
