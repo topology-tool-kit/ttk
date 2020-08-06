@@ -632,5 +632,5 @@ int ttkMorseSmaleComplex::RequestData(vtkInformation *request,
       pointData->AddArray(morseSmaleManifold);
   }
 
-  return 1;
+  return !ret;
 }

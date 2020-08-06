@@ -347,4 +347,3 @@ void FTMTree_CT::insertNodes(void) {
     st_->insertNode(jt_->getNode(t));
   }
 }
-

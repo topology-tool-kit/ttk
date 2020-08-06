@@ -16,23 +16,20 @@
 /// Numerische Mathematik, 1959.
 ///
 /// \sa ttkDistanceField.cpp %for a usage example.
-
-#ifndef _DISTANCEFIELD_H
-#define _DISTANCEFIELD_H
+#pragma once
 
 // base code includes
+#include "Triangulation.h"
 #include <Dijkstra.h>
-#include <Geometry.h>
-#include <Triangulation.h>
-#include <Wrapper.h>
 
 // std includes
 #include <limits>
 #include <set>
+#include <string>
 
 namespace ttk {
 
-  class DistanceField : public Debug {
+  class DistanceField : virtual public Debug {
 
   public:
     DistanceField();
@@ -41,8 +38,9 @@ namespace ttk {
     template <typename dataType>
     dataType getDistance(const SimplexId a, const SimplexId b) const;
 
-    template <typename dataType>
-    int execute() const;
+    template <typename dataType,
+              class triangulationType = ttk::AbstractTriangulation>
+    int execute(const triangulationType *) const;
 
     inline int setVertexNumber(SimplexId vertexNumber) {
       vertexNumber_ = vertexNumber;
@@ -54,12 +52,8 @@ namespace ttk {
       return 0;
     }
 
-    inline int setupTriangulation(Triangulation *triangulation) {
-      triangulation_ = triangulation;
-      if(triangulation_) {
-        triangulation_->preconditionVertexNeighbors();
-      }
-      return 0;
+    inline int preconditionTriangulation(AbstractTriangulation *triangulation) {
+      return triangulation->preconditionVertexNeighbors();
     }
 
     inline int setVertexIdentifierScalarFieldPointer(void *data) {
@@ -85,7 +79,6 @@ namespace ttk {
   protected:
     SimplexId vertexNumber_;
     SimplexId sourceNumber_;
-    Triangulation *triangulation_;
     void *vertexIdentifierScalarFieldPointer_;
     void *outputScalarFieldPointer_;
     void *outputIdentifiers_;
@@ -93,8 +86,12 @@ namespace ttk {
   };
 } // namespace ttk
 
-template <typename dataType>
-int ttk::DistanceField::execute() const {
+template <typename dataType, class triangulationType>
+int ttk::DistanceField::execute(const triangulationType *triangulation_) const {
+
+  // start global timer
+  ttk::Timer globalTimer;
+
   SimplexId *identifiers
     = static_cast<SimplexId *>(vertexIdentifierScalarFieldPointer_);
   dataType *dist = static_cast<dataType *>(outputScalarFieldPointer_);
@@ -118,11 +115,18 @@ int ttk::DistanceField::execute() const {
   // prepare output
   std::vector<std::vector<dataType>> scalars(sources.size());
 
+  // @PETER This doesn't seem to very work efficient, there's multilple source
+  // shortest paths algorithms.
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(SimplexId i = 0; i < (SimplexId)sources.size(); ++i) {
-    Dijkstra::shortestPath<dataType>(sources[i], *triangulation_, scalars[i]);
+    int ret = Dijkstra::shortestPath<dataType>(
+      sources[i], *triangulation_, scalars[i]);
+    if(ret != 0) {
+      printErr("[Dijkstra] was not successful. Error code is  "
+               + std::to_string(ret) + ".");
+    }
   }
 
 #ifdef TTK_ENABLE_OPENMP
@@ -139,14 +143,19 @@ int ttk::DistanceField::execute() const {
   }
 
   {
-    std::stringstream msg;
-    msg << "[DistanceField] Data-set (" << vertexNumber_
-        << " points) processed in " << t.getElapsedTime() << " s. ("
-        << threadNumber_ << " thread(s))." << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
+    this->printMsg(ttk::debug::Separator::L2); // horizontal '-' separator
+    this->printMsg(
+      "Complete", 1, globalTimer.getElapsedTime() // global progress, time
+    );
+    this->printMsg(ttk::debug::Separator::L1); // horizontal '=' separator
   }
+  //{
+  // std::stringstream msg;
+  // msg << "[DistanceField] Data-set (" << vertexNumber_
+  //<< " points) processed in " << t.getElapsedTime() << " s. ("
+  //<< threadNumber_ << " thread(s)." << std::endl;
+  // printMsg(msg.str(), ttk::Debug::debugPriority::timeMsg);
+  //}
 
   return 0;
 }
-
-#endif // DISTANCEFIELD_H
