@@ -190,5 +190,5 @@ int ttkDistanceField::RequestData(vtkInformation *request,
     this->printMsg(ttk::debug::Separator::L1); // horizontal '=' separator
   }
 
-  return 1;
+  return !ret;
 }

@@ -2,19 +2,15 @@
 /// \class ttk::TrackingFromPersistenceDiagrams
 /// \author Maxime Soler <soler.maxime@total.com>
 /// \date August 2018.
-
-#ifndef _TRACKINGFROMP_H
-#define _TRACKINGFROMP_H
+#pragma once
 
 // base code includes
 #include <BottleneckDistance.h>
-#include <Wrapper.h>
-
 #include <set>
 
 namespace ttk {
 
-  class TrackingFromPersistenceDiagrams : public Debug {
+  class TrackingFromPersistenceDiagrams : virtual public Debug {
 
   public:
     TrackingFromPersistenceDiagrams();
@@ -40,8 +36,7 @@ namespace ttk {
       double py,
       double pz,
       double ps,
-      double pe,
-      const ttk::Wrapper *wrapper);
+      double pe);
 
     template <typename dataType>
     int performMatchings(
@@ -57,8 +52,7 @@ namespace ttk {
       double py,
       double pz,
       double ps,
-      double pe,
-      const ttk::Wrapper *wrapper);
+      double pe);
 
     template <typename dataType>
     int performTracking(std::vector<std::vector<diagramTuple>> &allDiagrams,
@@ -116,13 +110,7 @@ int ttk::TrackingFromPersistenceDiagrams::execute() {
   }
 #endif
 
-  {
-    std::stringstream msg;
-    msg << "[TrackingFromPersistenceDiagrams] Data-set "
-        << "processed in " << t.getElapsedTime() << " s. (" << threadNumber_
-        << " thread(s))." << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
-  }
+  this->printMsg("Complete", 1, t.getElapsedTime(), threadNumber_);
 
   return 0;
 }
@@ -141,10 +129,9 @@ int ttk::TrackingFromPersistenceDiagrams::performSingleMatching(
   double py,
   double pz,
   double ps,
-  double pe,
-  const ttk::Wrapper *wrapper) {
+  double pe) {
   ttk::BottleneckDistance bottleneckDistance_;
-  bottleneckDistance_.setWrapper(wrapper);
+  // bottleneckDistance_.setWrapper(this);
   bottleneckDistance_.setPersistencePercentThreshold(tolerance);
   bottleneckDistance_.setPX(px);
   bottleneckDistance_.setPY(py);
@@ -176,8 +163,7 @@ int ttk::TrackingFromPersistenceDiagrams::performMatchings(
   double py,
   double pz,
   double ps,
-  double pe,
-  const ttk::Wrapper *wrapper) {
+  double pe) {
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
@@ -188,8 +174,7 @@ int ttk::TrackingFromPersistenceDiagrams::performMatchings(
       algorithm, // Not from paraview, from enclosing tracking plugin
       wasserstein, tolerance, is3D,
       alpha, // Blending
-      px, py, pz, ps, pe, // Coefficients
-      wrapper // Wrapper for accessing threadNumber
+      px, py, pz, ps, pe // Coefficients
     );
   }
 
@@ -235,7 +220,7 @@ int ttk::TrackingFromPersistenceDiagrams::performTracking(
             auto chainSize = (int)chain.size();
             if(chainSize == 0) {
               // Should not happen
-              std::cout << "Brain error." << std::endl;
+              this->printErr("Brain error.");
             } else if(chainStart + chainSize == in
                       && chain.at((unsigned long)chainSize - 1) == m1ai0) {
               found = true;
@@ -415,9 +400,8 @@ int ttk::TrackingFromPersistenceDiagrams::performPostProcess(
 
         /// Merge!
         std::stringstream msg;
-        msg << "[ttkTrackingFromPersistenceDiagrams] Merged " << m << " with "
-            << k << ": d = " << dist << "." << std::endl;
-        dMsg(std::cout, msg.str(), timeMsg);
+        msg << "Merged " << m << " with " << k << ": d = " << dist << ".";
+        printMsg(msg.str());
 
         // Get every other tracking trajectory.
         std::set<int> &mergedM = trackingTupleToMerged[m];
@@ -435,5 +419,3 @@ int ttk::TrackingFromPersistenceDiagrams::performPostProcess(
 
   return 0;
 }
-
-#endif // _TRACKINGFROMP_H

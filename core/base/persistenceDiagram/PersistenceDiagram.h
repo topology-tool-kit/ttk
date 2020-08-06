@@ -93,7 +93,8 @@ namespace ttk {
       dmt_pairs = data;
     }
 
-    inline void preconditionTriangulation(Triangulation *triangulation) {
+    inline void
+      preconditionTriangulation(AbstractTriangulation *triangulation) {
       if(triangulation) {
         triangulation->preconditionBoundaryVertices();
         contourTree_.setDebugLevel(debugLevel_);
