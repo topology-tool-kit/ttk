@@ -12,6 +12,8 @@ const unsigned long ttk::TopologicalCompression::formatVersion_{1};
 
 #ifdef TTK_ENABLE_ZFP
 
+#include <zfp.h>
+
 int ttk::TopologicalCompression::CompressWithZFP(FILE *file,
                                                  bool decompress,
                                                  std::vector<double> &array,
