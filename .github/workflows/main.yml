@@ -30,6 +30,7 @@ jobs:
           qtxmlpatterns5-dev-tools \
           libqt5x11extras5-dev \
           libqt5svg5-dev \
+          dpkg-dev
         # TTK dependencies
         sudo apt install -y \
           libboost-dev \
@@ -40,15 +41,7 @@ jobs:
           python3-sklearn \
           zlib1g-dev
 
-    - name: Cache ParaView/Spectra/ZFP install directory
-      id: cache-paraview
-      uses: actions/cache@v2
-      with:
-        path: /usr/local
-        key: ${{ runner.os }}-deps-v5.8.0
-
     - name: Install Spectra dependency
-      if: steps.cache-paraview.outputs.cache-hit != 'true'
       run: |
         git clone --depth 1 https://github.com/yixuan/spectra
         mkdir build_spectra && cd build_spectra
@@ -56,7 +49,6 @@ jobs:
         sudo make install
 
     - name: Install ZFP dependency
-      if: steps.cache-paraview.outputs.cache-hit != 'true'
       run: |
         git clone --depth 1 https://github.com/LLNL/zfp
         mkdir build_zfp && cd build_zfp
@@ -66,13 +58,24 @@ jobs:
           ../zfp
         sudo make -j$(nproc) install
 
-    - name: Build & install patched ParaView
+    - name: Cache ParaView .deb package
+      id: cache-paraview
+      uses: actions/cache@v2
+      with:
+        path: ttk-paraview.deb
+        key: ${{ runner.os }}-pv-deb-v5.8.0
+
+    - name: Build patched ParaView
       if: steps.cache-paraview.outputs.cache-hit != 'true'
       run: |
         git clone --depth 1 https://github.com/pierre-guillou/paraview-ttk
         mkdir build_paraview && cd build_paraview
         cmake -DVTK_ENABLE_OSPRAY=OFF ../paraview-ttk
-        sudo make -j$(nproc) install
+        cd ..
+        cmake --build build_paraview --target package -- -j$(nproc)
+
+    - name: Install ParaView .deb
+      run: sudo dpkg -i ttk-paraview.deb
 
     - name: Create & configure TTK build directory
       run: |
@@ -82,5 +85,4 @@ jobs:
 
     - name: Build TTK
       run: |
-        cd build
-        make -j$(nproc)
+        cmake --build build --target package -- -j$(nproc)
