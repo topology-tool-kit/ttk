@@ -57,19 +57,16 @@ jobs:
           ../zfp
         sudo make -j$(nproc) install
 
-    - name: Clone ParaView & create build directory
+    - name: Clone ParaView repository to get access to version.txt
       run: |
         git clone --depth 1 https://github.com/pierre-guillou/paraview-ttk
-        mkdir build_paraview && cd build_paraview
-        # copy ParaView version file into build directory
-        cp ../paraview-ttk/version.txt .
 
     - name: Cache ParaView build directory
       id: cache-paraview
       uses: actions/cache@v2
       with:
         path: build_paraview
-        key: ${{ runner.os }}-paraview-${{ hashFiles('build_paraview/version.txt') }}
+        key: ${{ runner.os }}-paraview-${{ hashFiles('paraview_ttk/version.txt') }}
 
     - name: Build patched ParaView
       if: steps.cache-paraview.outputs.cache-hit != 'true'
