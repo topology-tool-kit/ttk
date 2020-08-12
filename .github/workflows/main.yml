@@ -57,21 +57,35 @@ jobs:
           ../zfp
         sudo make -j$(nproc) install
 
-    - name: Build & install patched ParaView
+    - name: Clone ParaView & create build directory
       run: |
         git clone --depth 1 https://github.com/pierre-guillou/paraview-ttk
         mkdir build_paraview && cd build_paraview
-        cmake \
-          -DVTK_ENABLE_OSPRAY=OFF \
-          ../paraview-ttk
-        sudo make -j$(nproc) install
+        # copy ParaView version file into build directory
+        cp ../paraview-ttk/version.txt .
+
+    - name: Cache ParaView build directory
+      id: cache-paraview
+      uses: actions/cache@v2
+      with:
+        path: build_paraview
+        key: ${{ runner.os }}-paraview-${{ hashFiles('build_paraview/version.txt') }}
+
+    - name: Build patched ParaView
+      if: steps.cache-paraview.outputs.cache-hit != 'true'
+      run: |
+        cd build_paraview
+        cmake -DVTK_ENABLE_OSPRAY=OFF ../paraview-ttk
+        make -j$(nproc)
+
+    - name: Install ParaView cached artifacts
+      run: cd build_paraview && sudo make install
 
     - name: Create & configure TTK build directory
       run: |
         mkdir build
         cd build
-        cmake \
-          $GITHUB_WORKSPACE
+        cmake $GITHUB_WORKSPACE
 
     - name: Build TTK
       run: |
