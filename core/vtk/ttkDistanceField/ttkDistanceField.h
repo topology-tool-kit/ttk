@@ -60,9 +60,6 @@ public:
   vtkSetMacro(ForceInputVertexScalarField, bool);
   vtkGetMacro(ForceInputVertexScalarField, bool);
 
-  int getTriangulation(vtkDataSet *input);
-  int getIdentifiers(vtkDataSet *input);
-
 protected:
   ttkDistanceField();
   ~ttkDistanceField() override;
