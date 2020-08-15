@@ -148,10 +148,10 @@ int save(const std::vector<float> &pointSet,
   }
 
   for(int i = 0; i < nbTriangles; i++) {
-    int cellSize = triangleSetOff[i+1] - triangleSetOff[i];
+    int cellSize = triangleSetOff[i + 1] - triangleSetOff[i];
     assert(cellSize == 3);
     f << cellSize << " ";
-    for(int j = triangleSetOff[i]; j < triangleSetOff[i+1]; j++) {
+    for(int j = triangleSetOff[i]; j < triangleSetOff[i + 1]; j++) {
       f << triangleSetCo[j];
       f << " ";
     }

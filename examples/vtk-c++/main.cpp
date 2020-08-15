@@ -48,11 +48,15 @@ int main(int argc, char **argv) {
   vtkSmartPointer<ttkPersistenceCurve> curve
     = vtkSmartPointer<ttkPersistenceCurve>::New();
   curve->SetInputConnection(reader->GetOutputPort());
+  curve->SetInputArrayToProcess(
+    0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_POINTS, "data");
 
   // 3. computing the persitence diagram
   vtkSmartPointer<ttkPersistenceDiagram> diagram
     = vtkSmartPointer<ttkPersistenceDiagram>::New();
   diagram->SetInputConnection(reader->GetOutputPort());
+  diagram->SetInputArrayToProcess(
+    0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_POINTS, "data");
 
   // 4. selecting the critical point pairs
   vtkSmartPointer<vtkThreshold> criticalPairs
@@ -74,6 +78,8 @@ int main(int argc, char **argv) {
   vtkSmartPointer<ttkTopologicalSimplification> topologicalSimplification
     = vtkSmartPointer<ttkTopologicalSimplification>::New();
   topologicalSimplification->SetInputConnection(0, reader->GetOutputPort());
+  topologicalSimplification->SetInputArrayToProcess(
+    0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_POINTS, "data");
   topologicalSimplification->SetInputConnection(
     1, persistentPairs->GetOutputPort());
 
@@ -82,6 +88,8 @@ int main(int argc, char **argv) {
     = vtkSmartPointer<ttkMorseSmaleComplex>::New();
   morseSmaleComplex->SetInputConnection(
     topologicalSimplification->GetOutputPort());
+  morseSmaleComplex->SetInputArrayToProcess(
+    0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_POINTS, "data");
 
   // 8. saving the output data
   vtkSmartPointer<vtkTableWriter> curveWriter
