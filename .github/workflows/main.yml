@@ -92,7 +92,25 @@ jobs:
           -DTTK_ENABLE_KAMIKAZE=TRUE \
           $GITHUB_WORKSPACE
 
-    - name: Build TTK
+    - name: Build & install TTK
       run: |
         cd build
         make -j$(nproc) package
+        sudo dpkg -i ttk.deb
+
+    - name: Test TTK examples
+      run: |
+        cd examples/pvpython
+        pvpython example.py ../data/inputData.vtu
+        cd ../python
+        python example.py ../data/inputData.vtu
+        cd ../c++
+        mkdir build && cd build
+        cmake ..
+        make
+        ./ttkExample-c++ ../../data/inputData.off
+        cd ../../vtk-c++
+        mkdir build &&  cd build
+        cmake ..
+        make
+        ./ttkExample-vtk-c++ ../../data/inputData.vtu
