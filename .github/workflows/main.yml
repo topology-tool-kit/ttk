@@ -58,25 +58,10 @@ jobs:
           ../zfp
         sudo make -j$(nproc) install
 
-    - name: Cache ParaView .deb package
-      id: cache-paraview
-      uses: actions/cache@v2
-      with:
-        path: build_paraview/ttk-paraview.deb
-        key: ${{ runner.os }}-pv-deb-v5.8.0
-
-    - name: Build patched ParaView
-      if: steps.cache-paraview.outputs.cache-hit != 'true'
+    - name: Fetch & install ParaView .deb
       run: |
-        git clone --depth 1 https://github.com/pierre-guillou/paraview-ttk
-        mkdir build_paraview && cd build_paraview
-        cmake -DVTK_ENABLE_OSPRAY=OFF ../paraview-ttk
-        make -j$(nproc) package
-
-    - name: Install ParaView .deb
-      run: |
-        cd build_paraview
-        sudo dpkg -i ttk-paraview.deb
+        wget https://github.com/pierre-guillou/paraview-ttk/releases/download/v5.8.0-test/ttk-paraview.deb
+        sudo dpkg -i ttk-paraview.deb || sudo apt -f install
 
     - name: Create & configure TTK build directory
       run: |
