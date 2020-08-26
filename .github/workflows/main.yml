@@ -69,8 +69,6 @@ jobs:
         cd build
         cmake \
           -DCMAKE_BUILD_TYPE=Release \
-          -DCMAKE_INSTALL_PREFIX=/usr \
-          -DTTK_INSTALL_PLUGIN_DIR=/usr/lib/plugins \
           -DTTK_BUILD_PARAVIEW_PLUGINS=TRUE \
           -DTTK_BUILD_VTK_WRAPPERS=TRUE \
           -DTTK_BUILD_STANDALONE_APPS=TRUE \
@@ -91,7 +89,8 @@ jobs:
 
     - name: Test TTK examples
       run: |
-        export PV_PLUGIN_PATH=/usr/lib/x86_64-linux-gnu/paraview-5.8/plugins/TopologyToolKit
+        dpkg -L ttk
+        export PV_PLUGIN_PATH=/usr/lib/paraview-5.8/plugins/TopologyToolKit
         export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$PV_PLUGIN_PATH
         export PYTHONPATH=$PYTHONPATH:/usr/lib/x86_64-linux-gnu/python3.6/site-packages
         cd examples/pvpython
