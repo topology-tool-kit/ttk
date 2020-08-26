@@ -83,6 +83,12 @@ jobs:
         make -j$(nproc) package
         sudo dpkg -i ttk.deb
 
+    - name: Upload TTK .deb package
+      uses: actions/upload-artifact@v2
+      with:
+        name: ttk.deb
+        path: build/ttk.deb
+
     - name: Test TTK examples
       run: |
         export PV_PLUGIN_PATH=/usr/lib/x86_64-linux-gnu/paraview-5.8/plugins/TopologyToolKit
