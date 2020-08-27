@@ -31,7 +31,11 @@ vtkStandardNewMacro(ttkTrackingFromOverlap)
                vtkDataArray *&labels) {
   auto timesteps = vtkMultiBlockDataSet::SafeDownCast(mb->GetBlock(level));
   pointSet = vtkPointSet::SafeDownCast(timesteps->GetBlock(time));
-  labels = pointSet->GetPointData()->GetArray(labelFieldName.data());
+  if(pointSet == nullptr) {
+    return;
+  }
+  const auto pd = pointSet->GetPointData();
+  labels = pd->GetArray(labelFieldName.data());
 };
 
 // Function to compute number of levels and timesteps contained in a
