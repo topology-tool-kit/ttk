@@ -10,6 +10,7 @@ on:
 
 env:
   PV_DEB: https://github.com/pierre-guillou/paraview-ttk/releases/download/v5.8.0-test/ttk-paraview.deb
+  PV_PLUGIN_PATH: /usr/lib/paraview-5.8/plugins/TopologyToolKit
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -111,7 +112,6 @@ jobs:
 
     - name: Test TTK examples
       run: |
-        export PV_PLUGIN_PATH=/usr/lib/paraview-5.8/plugins/TopologyToolKit
         export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$PV_PLUGIN_PATH
         cd examples/pvpython
         pvpython example.py ../data/inputData.vtu
