@@ -8,6 +8,9 @@ on:
   push:
     branches: [ master ]
 
+env:
+  PV_DEB: https://github.com/pierre-guillou/paraview-ttk/releases/download/v5.8.0-test/ttk-paraview.deb
+
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "build"
@@ -60,7 +63,7 @@ jobs:
 
     - name: Fetch & install ParaView .deb
       run: |
-        wget https://github.com/pierre-guillou/paraview-ttk/releases/download/v5.8.0-test/ttk-paraview.deb
+        wget ${{ env.PV_DEB }}
         sudo dpkg -i ttk-paraview.deb || sudo apt -f install
 
     - name: Create & configure TTK build directory
@@ -94,7 +97,7 @@ jobs:
 
     - name: Fetch & install ParaView .deb
       run: |
-        wget https://github.com/pierre-guillou/paraview-ttk/releases/download/v5.8.0-test/ttk-paraview.deb
+        wget ${{ env.PV_DEB }}
         sudo dpkg -i ttk-paraview.deb || sudo apt -f install
 
     - name: Fetch TTK .deb artifact
