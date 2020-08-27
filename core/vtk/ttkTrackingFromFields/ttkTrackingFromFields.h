@@ -131,7 +131,6 @@ private:
 
   // Bottleneck config.
   bool UseGeometricSpacing{false};
-  bool Is3D{true};
   bool DoPostProc{false};
   double PostProcThresh{0.0};
   double Spacing{1.0};
