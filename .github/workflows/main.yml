@@ -75,17 +75,36 @@ jobs:
           -DTTK_ENABLE_KAMIKAZE=TRUE \
           $GITHUB_WORKSPACE
 
-    - name: Build & install TTK
+    - name: Build TTK
       run: |
         cd build
         make -j$(nproc) package
-        sudo dpkg -i ttk.deb
 
     - name: Upload TTK .deb package
       uses: actions/upload-artifact@v2
       with:
         name: ttk.deb
         path: build/ttk.deb
+
+  test:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Fetch & install ParaView .deb
+      run: |
+        wget https://github.com/pierre-guillou/paraview-ttk/releases/download/v5.8.0-test/ttk-paraview.deb
+        sudo dpkg -i ttk-paraview.deb || sudo apt -f install
+
+    - name: Fetch TTK .deb artifact
+      uses: actions/download-artifact@v2
+      with:
+        name: ttk.deb
+
+    - name: Install TTK .deb
+      run: |
+        sudo dpkg -i ttk.deb || sudo apt -f install
 
     - name: Test TTK examples
       run: |
