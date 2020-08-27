@@ -71,7 +71,20 @@ namespace ttk{
         ContourTreeAlignment(){
             this->setDebugMsgPrefix("ContourTreeAlignment");
         };
-        ~ContourTreeAlignment(){};
+        ~ContourTreeAlignment(){
+            for(auto ct : contourtrees){
+                delete ct;
+            }
+            contourtrees.clear();
+            for(auto v : nodes){
+                delete v;
+            }
+            nodes.clear();
+            for(auto e : arcs){
+                delete e;
+            }
+            arcs.clear();
+        };
 
         /// setter for parameters
         void setArcMatchMode(int mode){
@@ -285,28 +298,36 @@ template <class scalarType> int ttk::ContourTreeAlignment::execute(
     std::tuple<std::vector<AlignmentNode*>,std::vector<AlignmentEdge*>,std::vector<ContourTree*>> bestAlignment;
     float bestAlignmentValue = FLT_MAX;
 
-    /*printMsg(ttk::debug::Separator::L2);
+    printMsg(ttk::debug::Separator::L2);
     printMsg("Filtering input contour trees",0,debug::LineMode::REPLACE);
 
-    std::vector<ContourTree> contourtreesToAlign;
+    std::vector<ContourTree*> contourtreesToAlign;
     for(size_t i=0; i<nTrees; i++){
-        ContourTree ct(scalars[permutation[i]],
+        ContourTree* ct = new ContourTree(scalars[permutation[i]],
               regionSizes[permutation[i]],
               segmentationIds[permutation[i]],
               topologies[permutation[i]],
               nVertices[permutation[i]],
               nEdges[permutation[i]]);
-        if(ct.isBinary()){
+        if(ct->isBinary()){
             contourtreesToAlign.push_back(ct);
         }
         else{
             this->printWrn("Input " + std::to_string(permutation[i]) + " not binary. Will not be aligned.");
         }
+        printMsg("Filtering input contour trees (" + std::to_string(i) + "/" + std::to_string(nTrees) + ")",(float)i/(float)nTrees,debug::LineMode::REPLACE);
+    }
+    if(contourtreesToAlign.empty()){
+
+        this->printErr("No input binary.");
+
+        return 0;
+
     }
 
-    printMsg("Filtering input contour trees",1);*/
+    printMsg("Filtering input contour trees",1);
 
-    for(int rootIdx=0; rootIdx<nVertices[permutation[0]]; rootIdx++){
+    for(int rootIdx=0; rootIdx<contourtreesToAlign[0]->getGraph().first.size(); rootIdx++){
     //for(int rootIdx=2; rootIdx<3; rootIdx++){
 
         contourtrees.clear();
@@ -316,50 +337,17 @@ template <class scalarType> int ttk::ContourTreeAlignment::execute(
 
 
         this->printMsg(ttk::debug::Separator::L2);
-        this->printMsg("Alignment computation started with root " + std::to_string(rootIdx));
+        this->printMsg("Starting alignment computation with root " + std::to_string(rootIdx));
 
         // initialize alignment with first tree
 
         bool binary;
         bool init = false;
         size_t i=0;
-        while(i<nTrees){
 
-            ContourTree* ct = new ContourTree(scalars[permutation[i]],
-                    regionSizes[permutation[i]],
-                    segmentationIds[permutation[i]],
-                    topologies[permutation[i]],
-                    nVertices[permutation[i]],
-                    nEdges[permutation[i]]);
-
-            if(ct->getGraph().first.size() != nVertices[permutation[i]]){
-
-                delete ct;
-                this->printErr("WTF??");
-                return 0;
-
-            }
-
-            binary = initialize_consistentRoot(ct,rootIdx);
-            if(binary) init = true;
-            else{
-                this->printWrn("Input " + std::to_string(permutation[i]) + " not binary.");
-                delete ct;
-            }
-            if(init) break;
-
-            i++;
-
-        }
-        if(!init){
-
-            this->printErr("No input binary.");
-
-            return 0;
-
-        }
-
-        this->printMsg("Alignment initialized with tree " + std::to_string(permutation[i]),debug::Priority::DETAIL);
+        this->printMsg("Initializing alignment with tree " + std::to_string(permutation[i]),0,debug::LineMode::REPLACE,debug::Priority::DETAIL);
+        initialize_consistentRoot(contourtreesToAlign[i],rootIdx);
+        this->printMsg("Initializing alignment with tree " + std::to_string(permutation[i]),1,debug::Priority::DETAIL);
 
         if(alignmentRoot->type == saddleNode){
 
@@ -371,9 +359,9 @@ template <class scalarType> int ttk::ContourTreeAlignment::execute(
             for(AlignmentEdge* edge : arcs){
                 delete edge;
             }
-            for(ContourTree* ct : contourtrees){
-                delete ct;
-            }
+            //for(ContourTree* ct : contourtrees){
+            //    delete ct;
+            //}
 
             continue;
 
@@ -382,21 +370,12 @@ template <class scalarType> int ttk::ContourTreeAlignment::execute(
         // construct other contour tree objects and align them
 
         i++;
-        while(i<nTrees){
+        //while(i<nTrees){
+        while(i<contourtreesToAlign.size()){
 
-            ContourTree* ct = new ContourTree(scalars[permutation[i]],
-                                              regionSizes[permutation[i]],
-                                              segmentationIds[permutation[i]],
-                                              topologies[permutation[i]],
-                                              nVertices[permutation[i]],
-                                              nEdges[permutation[i]]);
-
-            binary = alignTree_consistentRoot(ct);
-            if(!binary){
-                this->printWrn("Input " + std::to_string(permutation[i]) + " not binary.");
-                delete ct;
-            }
-            else this->printMsg("Tree " + std::to_string(permutation[i]) + " aligned.",debug::Priority::DETAIL);
+            this->printMsg("Aligning tree " + std::to_string(permutation[i]),0,debug::LineMode::REPLACE,debug::Priority::DETAIL);
+            alignTree_consistentRoot(contourtreesToAlign[i]);
+            this->printMsg("Aligning tree " + std::to_string(permutation[i]),1,debug::Priority::DETAIL);
 
             i++;
 
@@ -412,9 +391,9 @@ template <class scalarType> int ttk::ContourTreeAlignment::execute(
             for(AlignmentEdge* edge : std::get<1>(bestAlignment)){
                 delete edge;
             }
-            for(ContourTree* ct : std::get<2>(bestAlignment)){
-                delete ct;
-            }
+            //for(ContourTree* ct : std::get<2>(bestAlignment)){
+            //    delete ct;
+            //}
 
             bestAlignmentValue = alignmentVal;
             bestAlignment = std::make_tuple(nodes,arcs,contourtrees);
@@ -429,9 +408,9 @@ template <class scalarType> int ttk::ContourTreeAlignment::execute(
             for(AlignmentEdge* edge : arcs){
                 delete edge;
             }
-            for(ContourTree* ct : contourtrees){
-                delete ct;
-            }
+            //for(ContourTree* ct : contourtrees){
+            //    delete ct;
+            //}
 
         }
 

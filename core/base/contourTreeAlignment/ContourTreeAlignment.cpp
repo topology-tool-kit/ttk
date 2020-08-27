@@ -451,29 +451,25 @@ bool ttk::ContourTreeAlignment::alignTree_consistentRoot(ContourTree* ct){
 
     for(CTNode* node2 : nodes2){
 
-        t2 = ct->rootAtNode(node2);
-
         // compute matching
 
         if( (alignmentRoot->type==maxNode && node2->type==maxNode) || (alignmentRoot->type==minNode && node2->type==minNode) ){
 
+            t2 = ct->rootAtNode(node2);
+
             std::pair<float,AlignmentTree*> match = getAlignmentBinary(t1,t2);
 
+            //if(match.second->node1==NULL || match.second->node2==NULL) printWrn("Root not matched...");
+
             if(match.first < resVal){
-                //printMsg("test11");
                 if(res && res->node2) ContourTree::deleteBinaryTree(res->node2);
-                //printMsg("test12");
                 if(res) deleteAlignmentTree(res);
-                //printMsg("test13");
                 resVal = match.first;
                 res = match.second;
             }
             else{
-                //printMsg("test21");
                 ContourTree::deleteBinaryTree(t2);
-                //printMsg("test22");
                 deleteAlignmentTree(match.second);
-                //printMsg("test23");
             }
 
         }
