@@ -169,6 +169,14 @@ if(TTK_BUILD_STANDALONE_APPS)
   add_subdirectory(standalone)
 endif()
 
+# Environment variables
+# ---------------------
+
+if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+  configure_file(ttk-env.sh.in ttk-env.sh)
+  install(FILES "${PROJECT_BINARY_DIR}/ttk-env.sh" DESTINATION /etc/profile.d)
+endif()
+
 # Status
 # ------
 

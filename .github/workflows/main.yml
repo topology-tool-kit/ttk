@@ -73,6 +73,7 @@ jobs:
         cd build
         cmake \
           -DCMAKE_BUILD_TYPE=Release \
+          -DCMAKE_INSTALL_PREFIX=/usr \
           -DTTK_BUILD_PARAVIEW_PLUGINS=TRUE \
           -DTTK_BUILD_VTK_WRAPPERS=TRUE \
           -DTTK_BUILD_STANDALONE_APPS=TRUE \
@@ -112,7 +113,7 @@ jobs:
 
     - name: Test TTK examples
       run: |
-        export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$PV_PLUGIN_PATH
+        source /etc/profile
         cd examples/pvpython
         pvpython example.py ../data/inputData.vtu
         cd ../python
