@@ -294,11 +294,11 @@ namespace ttk {
     // TODO Mettre les fonctions d'output dans le cpp
 
     template <typename triangulationType>
-    inline int outputAllJoinSaddle(const triangulationType &triangulation) {
+    inline int computeAllJoinSaddle(const triangulationType &triangulation) {
       if(mandatoryJoinSaddleVertex_.size() > 0) {
-        outputJoinSaddle(0, triangulation, true);
+        computeJoinSaddle(0, triangulation, true);
         for(int i = 1; i < (int)mandatoryJoinSaddleVertex_.size(); i++)
-          outputJoinSaddle(i, triangulation, false);
+          computeJoinSaddle(i, triangulation, false);
       } else {
         int *output = outputMandatoryJoinSaddle_;
         for(int i = 0; i < vertexNumber_; i++) {
@@ -308,11 +308,11 @@ namespace ttk {
       return 0;
     }
 
-    int outputAllMaxima() {
+    int computeAllMaxima() {
       if(mandatoryMaximumVertex_.size() > 0) {
-        outputMaximum(0, true, false);
+        computeMaximum(0, true, false);
         for(int i = 0; i < (int)mandatoryMaximumVertex_.size(); i++)
-          outputMaximum(i, false, false);
+          computeMaximum(i, false, false);
       } else {
         int *output = outputMandatoryMaximum_;
         for(int i = 0; i < vertexNumber_; i++) {
@@ -322,11 +322,11 @@ namespace ttk {
       return 0;
     }
 
-    int outputAllMinima() {
+    int computeAllMinima() {
       if(mandatoryMinimumVertex_.size() > 0) {
-        outputMinimum(0, true, false);
+        computeMinimum(0, true, false);
         for(int i = 0; i < (int)mandatoryMinimumVertex_.size(); i++)
-          outputMinimum(i, false, false);
+          computeMinimum(i, false, false);
       } else {
         int *output = outputMandatoryMinimum_;
         for(int i = 0; i < vertexNumber_; i++) {
@@ -337,11 +337,11 @@ namespace ttk {
     }
 
     template <typename triangulationType>
-    inline int outputAllSplitSaddle(const triangulationType &triangulation) {
+    inline int computeAllSplitSaddle(const triangulationType &triangulation) {
       if(mandatorySplitSaddleVertex_.size() > 0) {
-        outputSplitSaddle(0, triangulation, true);
+        computeSplitSaddle(0, triangulation, true);
         for(int i = 1; i < (int)mandatorySplitSaddleVertex_.size(); i++)
-          outputSplitSaddle(i, triangulation, false);
+          computeSplitSaddle(i, triangulation, false);
       } else {
         int *output = outputMandatorySplitSaddle_;
         for(int i = 0; i < vertexNumber_; i++) {
@@ -352,9 +352,9 @@ namespace ttk {
     }
 
     template <typename triangulationType>
-    inline int outputJoinSaddle(const int &id,
-                                const triangulationType &triangulation,
-                                const bool &reset = true) {
+    inline int computeJoinSaddle(const int &id,
+                                 const triangulationType &triangulation,
+                                 const bool &reset = true) {
       int *output = outputMandatoryJoinSaddle_;
       if(reset)
         for(int i = 0; i < vertexNumber_; i++) {
@@ -376,9 +376,9 @@ namespace ttk {
       return 0;
     }
 
-    int outputMaximum(const int &id,
-                      const bool &reset = true,
-                      const bool &parallel = true) {
+    int computeMaximum(const int &id,
+                       const bool &reset = true,
+                       const bool &parallel = true) {
       int *output = outputMandatoryMaximum_;
       if(reset)
         for(int i = 0; i < vertexNumber_; i++)
@@ -398,9 +398,9 @@ namespace ttk {
       return 0;
     }
 
-    int outputMinimum(const int &id,
-                      const bool &reset = true,
-                      const bool &parallel = true) {
+    int computeMinimum(const int &id,
+                       const bool &reset = true,
+                       const bool &parallel = true) {
       int *output = outputMandatoryMinimum_;
       if(reset)
         for(int i = 0; i < vertexNumber_; i++)
@@ -421,9 +421,9 @@ namespace ttk {
     }
 
     template <typename triangulationType>
-    inline int outputSplitSaddle(const int &id,
-                                 const triangulationType &triangulation,
-                                 const bool &reset = true) {
+    inline int computeSplitSaddle(const int &id,
+                                  const triangulationType &triangulation,
+                                  const bool &reset = true) {
       int *output = outputMandatorySplitSaddle_;
       if(reset) {
         for(int i = 0; i < vertexNumber_; i++) {

@@ -244,30 +244,30 @@ int ttkMandatoryCriticalPoints::RequestData(
   // Outputs
   if(computeMinimumOutput_) {
     if(outputAllMinimumComponents_)
-      this->outputAllMinima();
+      this->computeAllMinima();
     else
-      this->outputMinimum(outputMinimumComponentId_);
+      this->computeMinimum(outputMinimumComponentId_);
     computeMinimumOutput_ = false;
   }
   if(computeJoinSaddleOutput_) {
     if(outputAllJoinSaddleComponents_)
-      this->outputAllJoinSaddle(*triangulation);
+      this->computeAllJoinSaddle(*triangulation);
     else
-      this->outputJoinSaddle(outputJoinSaddleComponentId_, *triangulation);
+      this->computeJoinSaddle(outputJoinSaddleComponentId_, *triangulation);
     computeJoinSaddleOutput_ = false;
   }
   if(computeSplitSaddleOutput_) {
     if(outputAllSplitSaddleComponents_)
-      this->outputAllSplitSaddle(*triangulation);
+      this->computeAllSplitSaddle(*triangulation);
     else
-      this->outputSplitSaddle(outputSplitSaddleComponentId_, *triangulation);
+      this->computeSplitSaddle(outputSplitSaddleComponentId_, *triangulation);
     computeSplitSaddleOutput_ = false;
   }
   if(computeMaximumOutput_) {
     if(outputAllMaximumComponents_)
-      this->outputAllMaxima();
+      this->computeAllMaxima();
     else
-      this->outputMaximum(outputMaximumComponentId_);
+      this->computeMaximum(outputMaximumComponentId_);
     computeMaximumOutput_ = false;
   }
 
