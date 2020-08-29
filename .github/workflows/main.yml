@@ -9,7 +9,6 @@ on:
     branches: [ master ]
 
 env:
-  PV_DEB: https://github.com/pierre-guillou/paraview-ttk/releases/download/v5.8.0-test/ttk-paraview.deb
   PV_PLUGIN_PATH: /usr/lib/paraview-5.8/plugins/TopologyToolKit
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
@@ -62,9 +61,14 @@ jobs:
           ../zfp
         sudo make -j$(nproc) install
 
-    - name: Fetch & install ParaView .deb
+    - uses: dsaltares/fetch-gh-release-asset@master
+      with:
+        repo: "pierre-guillou/paraview-ttk"
+        version: "latest"
+        file: "ttk-paraview.deb"
+
+    - name: Install ParaView .deb
       run: |
-        wget ${{ env.PV_DEB }}
         sudo dpkg -i ttk-paraview.deb || sudo apt -f install
 
     - name: Create & configure TTK build directory
@@ -97,9 +101,14 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Fetch & install ParaView .deb
+    - uses: dsaltares/fetch-gh-release-asset@master
+      with:
+        repo: "pierre-guillou/paraview-ttk"
+        version: "latest"
+        file: "ttk-paraview.deb"
+
+    - name: Install ParaView .deb
       run: |
-        wget ${{ env.PV_DEB }}
         sudo dpkg -i ttk-paraview.deb || sudo apt -f install
 
     - name: Fetch TTK .deb artifact
