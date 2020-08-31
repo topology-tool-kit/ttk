@@ -89,6 +89,20 @@ jobs:
         cd build
         make -j$(nproc) package
 
+    - name: Update package informations
+      run: |
+        cd build
+        # unpack deb package to access control file
+        mkdir tmp
+        dpkg-deb -x ttk.deb tmp
+        dpkg-deb --control ttk.deb tmp/DEBIAN
+        # modify control file, remove libgcc-s1 dependency
+        sed 's/libgcc-s1[^,]*, //g' -i tmp/DEBIAN/control
+        # build updated deb package
+        dpkg -b tmp ttk.deb.new
+        # replace old package with new
+        mv ttk.deb.new ttk.deb
+
     - name: Upload TTK .deb package
       uses: actions/upload-artifact@v2
       with:
@@ -118,15 +132,16 @@ jobs:
 
     - name: Install TTK .deb
       run: |
+        dpkg --info ttk.deb
         sudo dpkg -i ttk.deb || sudo apt -f install
 
     - name: Test TTK examples
       run: |
         source /etc/profile
         cd examples/pvpython
-        pvpython example.py ../data/inputData.vtu
+        PYTHONPATH= pvpython example.py ../data/inputData.vtu
         cd ../python
-        python example.py ../data/inputData.vtu
+        python3 example.py ../data/inputData.vtu
         cd ../c++
         mkdir build && cd build
         cmake ..
