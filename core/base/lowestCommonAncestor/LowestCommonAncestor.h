@@ -12,6 +12,7 @@
 #include <Debug.h>
 #include <RangeMinimumQuery.h>
 // STL includes
+#include <array>
 #include <vector>
 
 namespace ttk {
