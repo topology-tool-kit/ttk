@@ -33,9 +33,11 @@ inputData = XMLUnstructuredGridReader(FileName=[inputFilePath])
 
 # 2. computing the persistence curve
 persistenceCurve = TTKPersistenceCurve(inputData)
+persistenceCurve.ScalarField = ['POINTS', 'data']
 
 # 3. computing the persitence diagram
 persistenceDiagram = TTKPersistenceDiagram(inputData)
+persistenceDiagram.ScalarField = ['POINTS', 'data']
 
 # 4. selecting the critical point pairs
 criticalPointPairs = Threshold(persistenceDiagram)
@@ -50,9 +52,11 @@ persistentPairs.ThresholdRange = [0.05, 999999]
 # 6. simplifying the input data to remove non-persistent pairs
 topologicalSimplification = TTKTopologicalSimplification(
   Domain=inputData, Constraints=persistentPairs)
+topologicalSimplification.ScalarField = ['POINTS', 'data']
 
 # 7. computing the Morse-Smale complex
 morseSmaleComplex = TTKMorseSmaleComplex(topologicalSimplification)
+morseSmaleComplex.ScalarField = ['POINTS', 'data']
 
 # 8. saving the output data
 SaveData('curve.vtk', OutputPort(persistenceCurve, 3))
