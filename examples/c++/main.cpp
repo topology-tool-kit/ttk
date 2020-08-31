@@ -25,6 +25,7 @@
 #include <PersistenceDiagram.h>
 #include <TopologicalSimplification.h>
 
+#include <cassert>
 #include <iostream>
 
 int load(const std::string &inputPath,
@@ -37,17 +38,10 @@ int load(const std::string &inputPath,
   if(inputPath.empty())
     return -1;
 
-  ttk::Debug d;
-  d.setDebugLevel(ttk::globalDebugLevel_);
-
-  {
-    std::stringstream msg;
-    msg << "[main::load] Reading input mesh..." << std::endl;
-    // choose where to display this message (std::cout, std::cerr, a file)
-    // choose the priority of this message (1, nearly always displayed,
-    // higher values mean lower priorities)
-    d.dMsg(std::cout, msg.str(), d.timeMsg);
-  }
+  ttk::Debug dbg;
+  dbg.setDebugLevel(ttk::globalDebugLevel_);
+  dbg.setDebugMsgPrefix("main::load");
+  dbg.printMsg("Reading input mesh...");
 
   int vertexNumber = 0, triangleNumber = 0;
   std::string keyword;
@@ -55,19 +49,14 @@ int load(const std::string &inputPath,
   std::ifstream f(inputPath.data(), std::ios::in);
 
   if(!f) {
-    std::stringstream msg;
-    msg << "[main::load] Cannot open file `" << inputPath << "'!" << std::endl;
-    d.dMsg(std::cerr, msg.str(), d.fatalMsg);
+    dbg.printErr("Cannot read file `" + inputPath + "'!");
     return -1;
   }
 
   f >> keyword;
 
   if(keyword != "OFF") {
-    std::stringstream msg;
-    msg << "[main::load] Input OFF file `" << inputPath << "' seems invalid :("
-        << std::endl;
-    d.dMsg(std::cerr, msg.str(), d.fatalMsg);
+    dbg.printErr("Input OFF file `" + inputPath + "' seems invalid :(");
     return -2;
   }
 
@@ -103,12 +92,8 @@ int load(const std::string &inputPath,
 
   f.close();
 
-  {
-    std::stringstream msg;
-    msg << "[main::load]   done! (read " << vertexNumber << " vertices, "
-        << triangleNumber << " triangles)" << std::endl;
-    d.dMsg(std::cout, msg.str(), d.timeMsg);
-  }
+  dbg.printMsg("... done! (read " + std::to_string(vertexNumber) + " vertices, "
+               + std::to_string(triangleNumber) + " triangles)");
 
   return 0;
 }
@@ -119,18 +104,15 @@ int save(const std::vector<float> &pointSet,
          const std::string &outputPath) {
 
   // save the simplified terrain in some OFF file
-  ttk::Debug d;
-  d.setDebugLevel(ttk::globalDebugLevel_);
-
   std::string fileName(outputPath);
 
   std::ofstream f(fileName.data(), std::ios::out);
 
   if(!f) {
-    std::stringstream msg;
-    msg << "[main::save] Could not write output file `" << fileName << "'!"
-        << std::endl;
-    d.dMsg(std::cerr, msg.str(), d.fatalMsg);
+    ttk::Debug dbg;
+    dbg.setDebugLevel(ttk::globalDebugLevel_);
+    dbg.setDebugMsgPrefix("main::save");
+    dbg.printErr("Could not write output file `" + fileName + "'!");
     return -1;
   }
 
