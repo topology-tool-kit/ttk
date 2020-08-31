@@ -190,22 +190,18 @@ int main(int argc, char **argv) {
   // 2. computing the persistence curve
   ttk::PersistenceCurve curve;
   std::vector<std::pair<float, ttk::SimplexId>> outputCurve;
-  curve.setupTriangulation(&triangulation);
-  curve.setInputScalars(height.data());
-  curve.setInputOffsets(offsets.data());
-  curve.setOutputCTPlot(&outputCurve);
-  curve.execute<float, ttk::SimplexId>();
+  curve.preconditionTriangulation(&triangulation);
+  curve.execute<float, ttk::SimplexId>(
+    outputCurve, height.data(), offsets.data(), &triangulation);
 
   // 3. computing the persitence diagram
   ttk::PersistenceDiagram diagram;
   std::vector<std::tuple<ttk::SimplexId, ttk::CriticalType, ttk::SimplexId,
                          ttk::CriticalType, float, ttk::SimplexId>>
     diagramOutput;
-  diagram.setupTriangulation(&triangulation);
-  diagram.setInputScalars(height.data());
-  diagram.setInputOffsets(offsets.data());
-  diagram.setOutputCTDiagram(&diagramOutput);
-  diagram.execute<float, ttk::SimplexId>();
+  diagram.preconditionTriangulation(&triangulation);
+  diagram.execute<float, ttk::SimplexId>(
+    diagramOutput, height.data(), offsets.data(), &triangulation);
 
   // 4. selecting the critical point pairs
   std::vector<float> simplifiedHeight = height;
@@ -222,15 +218,11 @@ int main(int argc, char **argv) {
 
   // 6. simplifying the input data to remove non-persistent pairs
   ttk::TopologicalSimplification simplification;
-  simplification.setupTriangulation(&triangulation);
-  simplification.setInputScalarFieldPointer(height.data());
-  simplification.setInputOffsetScalarFieldPointer(offsets.data());
-  simplification.setOutputOffsetScalarFieldPointer(simplifiedOffsets.data());
-  simplification.setOutputScalarFieldPointer(simplifiedHeight.data());
-  simplification.setConstraintNumber(authorizedCriticalPoints.size());
-  simplification.setVertexIdentifierScalarFieldPointer(
-    authorizedCriticalPoints.data());
-  simplification.execute<float, ttk::SimplexId>();
+  simplification.preconditionTriangulation(&triangulation);
+  simplification.execute<float, ttk::SimplexId>(
+    height.data(), simplifiedHeight.data(), authorizedCriticalPoints.data(),
+    offsets.data(), simplifiedOffsets.data(), authorizedCriticalPoints.size(),
+    triangulation);
 
   // assign the simplified values to the input mesh
   for(int i = 0; i < (int)simplifiedHeight.size(); i++) {
@@ -269,7 +261,7 @@ int main(int argc, char **argv) {
     triangulation.getNumberOfVertices(), -1),
     descendingSegmentation(triangulation.getNumberOfVertices(), -1),
     mscSegmentation(triangulation.getNumberOfVertices(), -1);
-  morseSmaleComplex.setupTriangulation(&triangulation);
+  morseSmaleComplex.preconditionTriangulation(&triangulation);
   morseSmaleComplex.setInputScalarField(simplifiedHeight.data());
   morseSmaleComplex.setInputOffsets(simplifiedOffsets.data());
   morseSmaleComplex.setOutputMorseComplexes(ascendingSegmentation.data(),
@@ -293,7 +285,7 @@ int main(int argc, char **argv) {
     &separatrices1_cells_separatrixFunctionDiffs,
     &separatrices1_cells_isOnBoundary);
 
-  morseSmaleComplex.execute<float, ttk::SimplexId>();
+  morseSmaleComplex.execute<float, ttk::SimplexId>(triangulation);
 
   // save the output
   save(pointSet, triangleSetCo, triangleSetOff, "output.off");
