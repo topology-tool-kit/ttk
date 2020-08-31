@@ -163,15 +163,17 @@ int ttkPersistenceCurve::dispatch(vtkTable *outputJTPersistenceCurve,
   std::vector<std::pair<VTK_TT, SimplexId>> MSCPlot{};
   std::vector<std::pair<VTK_TT, SimplexId>> CTPlot{};
 
+  this->setOutputJTPlot(&JTPlot);
+  this->setOutputSTPlot(&STPlot);
+  this->setOutputCTPlot(&CTPlot);
+
   if(inputOffsetsDataType == VTK_INT) {
-    ret = this->execute<VTK_TT, int, TTK_TT>(JTPlot, STPlot, MSCPlot, CTPlot,
-                                             inputScalars, (int *)inputOffsets,
-                                             triangulation);
+    ret = this->execute<VTK_TT, int, TTK_TT>(
+      MSCPlot, inputScalars, (int *)inputOffsets, triangulation);
   }
   if(inputOffsetsDataType == VTK_ID_TYPE) {
     ret = this->execute<VTK_TT, vtkIdType, TTK_TT>(
-      JTPlot, STPlot, MSCPlot, CTPlot, inputScalars, (vtkIdType *)inputOffsets,
-      triangulation);
+      MSCPlot, inputScalars, (vtkIdType *)inputOffsets, triangulation);
   }
 
   ret = getPersistenceCurve<vtkDoubleArray, VTK_TT>(
