@@ -46,10 +46,7 @@ namespace ttk {
     template <typename scalarType,
               typename idType,
               class triangulationType = ttk::AbstractTriangulation>
-    int execute(std::vector<std::pair<scalarType, SimplexId>> &JTPlot,
-                std::vector<std::pair<scalarType, SimplexId>> &STPlot,
-                std::vector<std::pair<scalarType, SimplexId>> &MSCPlot,
-                std::vector<std::pair<scalarType, SimplexId>> &CTPlot,
+    int execute(std::vector<std::pair<scalarType, SimplexId>> &outputCurve,
                 const scalarType *inputScalars,
                 const idType *inputOffsets,
                 const triangulationType *triangulation);
@@ -65,7 +62,20 @@ namespace ttk {
       }
     }
 
+    inline void setOutputJTPlot(void *const data) {
+      JTPlot_ = data;
+    }
+    inline void setOutputSTPlot(void *const data) {
+      STPlot_ = data;
+    }
+    inline void setOutputCTPlot(void *const data) {
+      CTPlot_ = data;
+    }
+
   protected:
+    void *JTPlot_{};
+    void *STPlot_{};
+    void *CTPlot_{};
     bool ComputeSaddleConnectors{false};
     ftm::FTMTreePP contourTree_{};
     MorseSmaleComplex3D morseSmaleComplex_{};
@@ -93,10 +103,7 @@ int ttk::PersistenceCurve::computePersistencePlot(
 
 template <typename scalarType, typename idType, class triangulationType>
 int ttk::PersistenceCurve::execute(
-  std::vector<std::pair<scalarType, SimplexId>> &JTPlot,
-  std::vector<std::pair<scalarType, SimplexId>> &STPlot,
-  std::vector<std::pair<scalarType, SimplexId>> &MSCPlot,
-  std::vector<std::pair<scalarType, SimplexId>> &CTPlot,
+  std::vector<std::pair<scalarType, SimplexId>> &outputCurve,
   const scalarType *inputScalars,
   const idType *inputOffsets,
   const triangulationType *triangulation) {
@@ -104,6 +111,13 @@ int ttk::PersistenceCurve::execute(
   printMsg(ttk::debug::Separator::L1);
 
   Timer timer;
+
+  auto &JTPlot
+    = *static_cast<std::vector<std::pair<scalarType, SimplexId>> *>(JTPlot_);
+  auto &STPlot
+    = *static_cast<std::vector<std::pair<scalarType, SimplexId>> *>(STPlot_);
+  auto &CTPlot
+    = *static_cast<std::vector<std::pair<scalarType, SimplexId>> *>(CTPlot_);
 
   const SimplexId numberOfVertices = triangulation->getNumberOfVertices();
   // convert offsets into a valid format for contour tree
@@ -160,7 +174,7 @@ int ttk::PersistenceCurve::execute(
       std::sort(pl_saddleSaddlePairs.begin(), pl_saddleSaddlePairs.end(), cmp);
     }
 
-    computePersistencePlot<scalarType>(pl_saddleSaddlePairs, MSCPlot);
+    computePersistencePlot<scalarType>(pl_saddleSaddlePairs, outputCurve);
   }
 
   // get persistence curves
@@ -171,15 +185,21 @@ int ttk::PersistenceCurve::execute(
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp section
 #endif
-    computePersistencePlot<scalarType>(JTPairs, JTPlot);
+    if(JTPlot_ != nullptr) {
+      computePersistencePlot<scalarType>(JTPairs, JTPlot);
+    }
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp section
 #endif
-    computePersistencePlot<scalarType>(STPairs, STPlot);
+    if(STPlot_ != nullptr) {
+      computePersistencePlot<scalarType>(STPairs, STPlot);
+    }
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp section
 #endif
-    computePersistencePlot<scalarType>(CTPairs, CTPlot);
+    if(CTPlot_ != nullptr) {
+      computePersistencePlot<scalarType>(CTPairs, CTPlot);
+    }
   }
 
   printMsg(
