@@ -20,7 +20,9 @@
 
 // std
 #include <algorithm>
+#include <climits>
 #include <cmath>
+#include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
@@ -29,16 +31,6 @@
 
 #ifdef TTK_ENABLE_ZLIB
 #include <zlib.h>
-#endif
-
-#ifdef TTK_ENABLE_ZFP
-#ifndef __cplusplus
-#define __cplusplus 201112L
-#endif
-#include <climits>
-#include <cstdio>
-#include <zfp.h>
-#include <zfp/macros.h>
 #endif
 
 namespace ttk {

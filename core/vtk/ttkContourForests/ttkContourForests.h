@@ -62,7 +62,7 @@ public:
   static ttkContourForests *New();
   vtkTypeMacro(ttkContourForests, ttkAlgorithm);
 
-  vtkGetMacro(useInputOffsetScalarField_, int);
+  vtkGetMacro(ForceInputOffsetScalarField, bool);
   void SetForceInputOffsetScalarField(bool onOff);
 
   void SetTreeType(int tree);
@@ -142,7 +142,7 @@ private:
   vtkNew<vtkPolyData> voidPolyData_{};
 
   // Configuration //
-  bool useInputOffsetScalarField_{false};
+  bool ForceInputOffsetScalarField{false};
   bool varyingMesh_{};
   bool varyingDataValues_{};
   ttk::cf::TreeType treeType_{ttk::cf::TreeType::Contour};

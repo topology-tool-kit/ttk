@@ -1,7 +1,7 @@
 /// \author Julien Tierny <julien.tierny@lip6.fr>.
 /// \date February 2017.
 ///
-/// \brief Command line program for Morse-Smale complex computation.
+/// \brief Command line program for MeshSubdivision computation.
 
 // include the local headers
 #include <CommandLineParser.h>
@@ -39,7 +39,7 @@ int main(int argc, char **argv) {
   }
 
   ttk::Debug msg;
-  msg.setDebugMsgPrefix("MorseSmaleComplex");
+  msg.setDebugMsgPrefix("MeshSubdivision");
 
   vtkNew<ttkMeshSubdivision> msub{};
 

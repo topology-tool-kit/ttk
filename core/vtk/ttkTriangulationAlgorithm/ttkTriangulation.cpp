@@ -251,6 +251,10 @@ int ttkTriangulation::setInputData(vtkDataSet *dataSet) {
 
     auto vtuDataSet = vtkUnstructuredGrid::SafeDownCast(dataSet);
 
+    if(vtuDataSet == nullptr) {
+      return 1;
+    }
+
     // Points
     if(vtuDataSet->GetPoints()) {
       switch(vtuDataSet->GetPoints()->GetDataType()) {
@@ -346,6 +350,10 @@ int ttkTriangulation::setInputData(vtkDataSet *dataSet) {
 
     auto vtpDataSet = vtkPolyData::SafeDownCast(dataSet);
 
+    if(vtpDataSet == nullptr) {
+      return 1;
+    }
+
     // Points
     if(vtpDataSet->GetPoints()) {
       switch(vtpDataSet->GetPoints()->GetDataType()) {
@@ -436,6 +444,10 @@ int ttkTriangulation::setInputData(vtkDataSet *dataSet) {
   } else if((dataSet->GetDataObjectType() == VTK_IMAGE_DATA)) {
 
     auto vtiData = vtkImageData::SafeDownCast(dataSet);
+
+    if(vtiData == nullptr) {
+      return 1;
+    }
 
     int extents[6];
     vtiData->GetExtent(extents);

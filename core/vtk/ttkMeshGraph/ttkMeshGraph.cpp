@@ -46,6 +46,10 @@ int ttkMeshGraph::RequestData(vtkInformation *request,
   // ---------------------------------------------------------------------------
   auto input = vtkUnstructuredGrid::GetData(inputVector[0]);
 
+  if(input == nullptr) {
+    return -1;
+  }
+
   size_t nInputPoints = input->GetNumberOfPoints();
   size_t nInputCells = input->GetNumberOfCells();
   auto inputCells = input->GetCells();

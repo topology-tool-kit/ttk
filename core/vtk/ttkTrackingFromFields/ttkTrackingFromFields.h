@@ -20,7 +20,7 @@
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
 #include <vtkPoints.h>
-#include <vtkSmartPointer.h>
+#include <vtkNew.h>
 #include <vtkTable.h>
 #include <vtkUnstructuredGrid.h>
 
@@ -97,14 +97,8 @@ public:
 
 protected:
   ttkTrackingFromFields() {
-
     SetNumberOfInputPorts(1);
     SetNumberOfOutputPorts(1);
-  }
-
-  ~ttkTrackingFromFields() override {
-    if(outputMesh_)
-      outputMesh_->Delete();
   }
 
   virtual int FillInputPortInformation(int port, vtkInformation *info) override;
@@ -131,7 +125,6 @@ private:
 
   // Bottleneck config.
   bool UseGeometricSpacing{false};
-  bool Is3D{true};
   bool DoPostProc{false};
   double PostProcThresh{0.0};
   double Spacing{1.0};
@@ -139,8 +132,6 @@ private:
   std::string DistanceAlgorithm{"ttk"};
   int PVAlgorithm{-1};
   std::string WassersteinMetric{"2"};
-
-  vtkUnstructuredGrid *outputMesh_{nullptr};
 
   // ttk::Triangulation *internalTriangulation_;
   // ttkTriangulation triangulation_;
@@ -191,27 +182,17 @@ int ttkTrackingFromFields::trackWithPersistenceMatching(
     PX, PY, PZ, PS, PE // Coefficients
   );
 
-  outputMesh_ = vtkUnstructuredGrid::New();
-  vtkUnstructuredGrid *outputMesh = vtkUnstructuredGrid::SafeDownCast(output);
+  vtkNew<vtkPoints> points{};
+  vtkNew<vtkUnstructuredGrid> persistenceDiagram{};
 
-  vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
-  vtkSmartPointer<vtkUnstructuredGrid> persistenceDiagram
-    = vtkSmartPointer<vtkUnstructuredGrid>::New();
+  vtkNew<vtkDoubleArray> persistenceScalars{};
+  vtkNew<vtkDoubleArray> valueScalars{};
+  vtkNew<vtkIntArray> matchingIdScalars{};
+  vtkNew<vtkIntArray> lengthScalars{};
+  vtkNew<vtkIntArray> timeScalars{};
+  vtkNew<vtkIntArray> componentIds{};
+  vtkNew<vtkIntArray> pointTypeScalars{};
 
-  vtkSmartPointer<vtkDoubleArray> persistenceScalars
-    = vtkSmartPointer<vtkDoubleArray>::New();
-  vtkSmartPointer<vtkDoubleArray> valueScalars
-    = vtkSmartPointer<vtkDoubleArray>::New();
-  vtkSmartPointer<vtkIntArray> matchingIdScalars
-    = vtkSmartPointer<vtkIntArray>::New();
-  vtkSmartPointer<vtkIntArray> lengthScalars
-    = vtkSmartPointer<vtkIntArray>::New();
-  vtkSmartPointer<vtkIntArray> timeScalars
-    = vtkSmartPointer<vtkIntArray>::New();
-  vtkSmartPointer<vtkIntArray> componentIds
-    = vtkSmartPointer<vtkIntArray>::New();
-  vtkSmartPointer<vtkIntArray> pointTypeScalars
-    = vtkSmartPointer<vtkIntArray>::New();
   persistenceScalars->SetName("Cost");
   valueScalars->SetName("Scalar");
   matchingIdScalars->SetName("MatchingIdentifier");
@@ -243,8 +224,7 @@ int ttkTrackingFromFields::trackWithPersistenceMatching(
     persistenceScalars, valueScalars, matchingIdScalars, lengthScalars,
     timeScalars, componentIds, pointTypeScalars);
 
-  outputMesh_->ShallowCopy(persistenceDiagram);
-  outputMesh->ShallowCopy(outputMesh_);
+  output->ShallowCopy(persistenceDiagram);
 
   return 1;
 }

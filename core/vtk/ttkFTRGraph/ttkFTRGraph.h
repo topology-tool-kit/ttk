@@ -19,20 +19,8 @@ public:
   static ttkFTRGraph *New();
   vtkTypeMacro(ttkFTRGraph, ttkAlgorithm);
 
-  vtkSetMacro(ScalarField, std::string);
-  vtkGetMacro(ScalarField, std::string);
-
   vtkSetMacro(ForceInputOffsetScalarField, bool);
   vtkGetMacro(ForceInputOffsetScalarField, bool);
-
-  vtkSetMacro(InputOffsetScalarFieldName, std::string);
-  vtkGetMacro(InputOffsetScalarFieldName, std::string);
-
-  vtkSetMacro(ScalarFieldId, int);
-  vtkGetMacro(ScalarFieldId, int);
-
-  vtkSetMacro(OffsetFieldId, int);
-  vtkGetMacro(OffsetFieldId, int);
 
   void SetSingleSweep(const bool ss) {
     params_.singleSweep = ss;
@@ -121,12 +109,7 @@ protected:
                   vtkInformationVector *outputVector) override;
 
 private:
-  std::string ScalarField{};
   bool ForceInputOffsetScalarField{};
-  std::string InputOffsetScalarFieldName{};
-  int ScalarFieldId{};
-  int OffsetFieldId{};
-
   ttk::ftr::Params params_{};
 
   vtkDataSet *mesh_{};

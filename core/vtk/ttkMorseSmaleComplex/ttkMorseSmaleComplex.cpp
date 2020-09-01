@@ -19,8 +19,6 @@ vtkStandardNewMacro(ttkMorseSmaleComplex);
 
 ttkMorseSmaleComplex::ttkMorseSmaleComplex() {
   this->setDebugMsgPrefix("MorseSmaleComplex");
-  this->SetDebugLevel(3); // bug? debug level is 0 without this statement
-
   SetNumberOfInputPorts(1);
   SetNumberOfOutputPorts(4);
 }
@@ -459,8 +457,6 @@ int ttkMorseSmaleComplex::RequestData(vtkInformation *request,
                                       vtkInformationVector **inputVector,
                                       vtkInformationVector *outputVector) {
 
-  int ret{};
-
   const auto input = vtkDataSet::GetData(inputVector[0]);
   auto outputCriticalPoints = vtkUnstructuredGrid::GetData(outputVector, 0);
   auto outputSeparatrices1 = vtkUnstructuredGrid::GetData(outputVector, 1);
@@ -575,23 +571,24 @@ int ttkMorseSmaleComplex::RequestData(vtkInformation *request,
   this->setSaddleConnectorsPersistenceThreshold(
     SaddleConnectorsPersistenceThreshold);
 
-  this->setInputScalarField(inputScalars->GetVoidPointer(0));
-  this->setInputOffsets(inputOffsets->GetVoidPointer(0));
+  this->setInputScalarField(ttkUtils::GetVoidPointer(inputScalars));
+  this->setInputOffsets(ttkUtils::GetVoidPointer(inputOffsets));
 
   void *ascendingManifoldPtr = nullptr;
   void *descendingManifoldPtr = nullptr;
   void *morseSmaleManifoldPtr = nullptr;
   if(ComputeAscendingSegmentation)
-    ascendingManifoldPtr = ascendingManifold->GetVoidPointer(0);
+    ascendingManifoldPtr = ttkUtils::GetVoidPointer(ascendingManifold);
   if(ComputeDescendingSegmentation)
-    descendingManifoldPtr = descendingManifold->GetVoidPointer(0);
+    descendingManifoldPtr = ttkUtils::GetVoidPointer(descendingManifold);
   if(ComputeAscendingSegmentation and ComputeDescendingSegmentation
      and ComputeFinalSegmentation)
-    morseSmaleManifoldPtr = morseSmaleManifold->GetVoidPointer(0);
+    morseSmaleManifoldPtr = ttkUtils::GetVoidPointer(morseSmaleManifold);
 
   this->setOutputMorseComplexes(
     ascendingManifoldPtr, descendingManifoldPtr, morseSmaleManifoldPtr);
 
+  int ret{};
   if(inputOffsets->GetDataType() == VTK_INT) {
     ttkVtkTemplateMacro(inputScalars->GetDataType(), triangulation->getType(),
                         (ret = dispatch<VTK_TT, SimplexId, TTK_TT>(
@@ -606,11 +603,9 @@ int ttkMorseSmaleComplex::RequestData(vtkInformation *request,
                            *static_cast<TTK_TT *>(triangulation->getData()))))
   }
 
-#ifndef TTK_ENABLE_KAMIKAZE
   if(ret != 0) {
     return -1;
   }
-#endif // TTK_ENABLE_KAMIKAZE
 
   outputMorseComplexes->ShallowCopy(input);
   // morse complexes

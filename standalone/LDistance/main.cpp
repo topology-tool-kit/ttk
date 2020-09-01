@@ -1,7 +1,7 @@
 /// \author Julien Tierny <julien.tierny@lip6.fr>.
 /// \date February 2017.
 ///
-/// \brief Command line program for Morse-Smale complex computation.
+/// \brief Command line program for LDistance computation.
 
 // include the local headers
 #include <CommandLineParser.h>

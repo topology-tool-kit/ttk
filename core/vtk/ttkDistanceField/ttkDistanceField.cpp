@@ -1,12 +1,12 @@
-#include <string>
-#include <ttkMacros.h>
-#include <ttkUtils.h>
-
-#include <ttkDistanceField.h>
+#include <vtkFloatArray.h>
+#include <vtkInformation.h>
+#include <vtkNew.h>
+#include <vtkPointData.h>
 #include <vtkPointSet.h>
 
-using namespace std;
-using namespace ttk;
+#include <ttkDistanceField.h>
+#include <ttkMacros.h>
+#include <ttkUtils.h>
 
 vtkStandardNewMacro(ttkDistanceField);
 
@@ -15,15 +15,15 @@ ttkDistanceField::ttkDistanceField() {
   this->SetNumberOfOutputPorts(1);
 }
 
-ttkDistanceField::~ttkDistanceField() {
-}
-
 int ttkDistanceField::FillInputPortInformation(int port, vtkInformation *info) {
-  if(port == 0)
+  if(port == 0) {
     info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
-  if(port == 1)
+    return 1;
+  } else if(port == 1) {
     info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkPointSet");
-  return 1;
+    return 1;
+  }
+  return 0;
 }
 
 int ttkDistanceField::FillOutputPortInformation(int port,
@@ -45,7 +45,7 @@ int ttkDistanceField::RequestData(vtkInformation *request,
   vtkDataSet *output = vtkDataSet::GetData(outputVector);
 
   ttk::Triangulation *triangulation = ttkAlgorithm::GetTriangulation(domain);
-  int ret = this->preconditionTriangulation(triangulation);
+  this->preconditionTriangulation(triangulation);
   Modified();
 
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -56,7 +56,7 @@ int ttkDistanceField::RequestData(vtkInformation *request,
 #endif
 
   vtkDataArray *identifiers = this->GetOptionalArray(
-    ForceInputVertexScalarField, 2, ttk::VertexScalarFieldName, inputVector, 1);
+    ForceInputVertexScalarField, 0, ttk::VertexScalarFieldName, sources);
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!identifiers) {
     printErr("wrong identifiers.");
@@ -64,7 +64,7 @@ int ttkDistanceField::RequestData(vtkInformation *request,
   }
 #endif
 
-  const SimplexId numberOfPointsInDomain = domain->GetNumberOfPoints();
+  const int numberOfPointsInDomain = domain->GetNumberOfPoints();
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!numberOfPointsInDomain) {
     printErr("domain has no points.");
@@ -72,7 +72,7 @@ int ttkDistanceField::RequestData(vtkInformation *request,
   }
 #endif
 
-  const SimplexId numberOfPointsInSources = sources->GetNumberOfPoints();
+  const int numberOfPointsInSources = sources->GetNumberOfPoints();
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!numberOfPointsInSources) {
     printErr("sources have no points.");
@@ -80,9 +80,7 @@ int ttkDistanceField::RequestData(vtkInformation *request,
   }
 #endif
 
-  vtkSmartPointer<ttkSimplexIdTypeArray> origin
-    = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
-
+  vtkNew<ttkSimplexIdTypeArray> origin{};
   if(origin) {
     origin->SetNumberOfComponents(1);
     origin->SetNumberOfTuples(numberOfPointsInDomain);
@@ -96,8 +94,7 @@ int ttkDistanceField::RequestData(vtkInformation *request,
   }
 #endif
 
-  vtkSmartPointer<ttkSimplexIdTypeArray> seg
-    = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
+  vtkNew<ttkSimplexIdTypeArray> seg{};
   if(seg) {
     seg->SetNumberOfComponents(1);
     seg->SetNumberOfTuples(numberOfPointsInDomain);
@@ -117,8 +114,9 @@ int ttkDistanceField::RequestData(vtkInformation *request,
   this->setOutputIdentifiers(ttkUtils::GetVoidPointer(origin));
   this->setOutputSegmentation(ttkUtils::GetVoidPointer(seg));
 
-  vtkDataArray *distanceScalars{};
-  switch(OutputScalarFieldType) {
+  vtkSmartPointer<vtkDataArray> distanceScalars{};
+  int ret{};
+  switch(static_cast<DistanceType>(OutputScalarFieldType)) {
     case DistanceType::Float:
       distanceScalars = vtkFloatArray::New();
       if(distanceScalars) {
@@ -168,13 +166,11 @@ int ttkDistanceField::RequestData(vtkInformation *request,
       break;
   }
 
-#ifndef TTK_ENABLE_KAMIKAZE
   // something wrong in baseCode
   if(ret) {
     printErr("DistanceField.execute() error code : " + std::to_string(ret));
     return -10;
   }
-#endif
 
   // update result
   output->ShallowCopy(domain);
@@ -182,13 +178,6 @@ int ttkDistanceField::RequestData(vtkInformation *request,
   output->GetPointData()->AddArray(origin);
   output->GetPointData()->AddArray(seg);
   distanceScalars->Delete();
-
-  {
-    this->printMsg(ttk::debug::Separator::L2); // horizontal '-' separator
-    this->printMsg(
-      "Complete", 1, globalTimer.getElapsedTime()); // global progress, time);
-    this->printMsg(ttk::debug::Separator::L1); // horizontal '=' separator
-  }
 
   return !ret;
 }

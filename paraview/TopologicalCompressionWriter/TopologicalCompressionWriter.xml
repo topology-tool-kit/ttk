@@ -3,7 +3,7 @@
     <WriterProxy
         name="ttkTopologicalCompressionWriter"
         class="ttkTopologicalCompressionWriter"
-        label="TTK TTKTopologicalCompressionWriter">
+        label="TTK TopologicalCompressionWriter">
 
       <Documentation
           long_help="TTK topologicalCompressionWriter plugin."

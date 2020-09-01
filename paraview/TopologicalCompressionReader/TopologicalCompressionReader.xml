@@ -3,7 +3,7 @@
     <SourceProxy
         name="ttkTopologicalCompressionReader"
         class="ttkTopologicalCompressionReader"
-        label="TTK TTKTopologicalCompressionReader">
+        label="TTK TopologicalCompressionReader">
       <Documentation
           long_help="TTK topologicalCompressionReader plugin."
           short_help="Read a .ttk file.">

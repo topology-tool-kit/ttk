@@ -104,11 +104,12 @@ int ttkForEach::RequestData(vtkInformation *request,
   } else if(mode == 4) {
     auto inputFD
       = input->GetAttributesAsFieldData(this->GetArrayAttributeType());
-    if(inputFD) {
+    if(inputFD == nullptr) {
       this->printErr("Unable to retrieve attribute type.");
       return 0;
+    } else {
+      iterationInformation->SetValue(1, inputFD->GetNumberOfArrays());
     }
-    iterationInformation->SetValue(1, inputFD->GetNumberOfArrays());
   } else {
     this->printErr("Unsupported mode");
     return 0;

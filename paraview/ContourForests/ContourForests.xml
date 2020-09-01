@@ -283,6 +283,7 @@
       <PropertyGroup panel_widget="Line" label="Input options">
         <Property name="Scalar Field"/>
         <Property name="ForceInputOffsetScalarField"/>
+        <Property name="Offset Field"/>
       </PropertyGroup>
 
       <OutputPort name="Skeleton Nodes" index="0" id="port0" />

@@ -28,7 +28,7 @@
 #include <map>
 
 // base code includes
-#include <Wrapper.h>
+#include <Debug.h>
 
 namespace ttk {
 

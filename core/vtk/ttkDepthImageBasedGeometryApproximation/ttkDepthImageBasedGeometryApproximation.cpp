@@ -60,6 +60,10 @@ int ttkDepthImageBasedGeometryApproximation::RequestData(
     // Get vtkImageData
     auto inputImage = vtkImageData::SafeDownCast(inputMBD->GetBlock(i));
 
+    if(inputImage == nullptr) {
+      continue;
+    }
+
     // Get depth array
     auto depthArray = this->GetInputArrayToProcess(0, inputImage);
 

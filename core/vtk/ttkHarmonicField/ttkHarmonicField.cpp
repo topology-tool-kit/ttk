@@ -68,6 +68,10 @@ int ttkHarmonicField::RequestData(vtkInformation *request,
   } else if(inputField->IsA("vtkFloatArray")) {
     OutputScalarFieldType = FieldType::FLOAT;
   } else {
+    this->printErr("Filter only supports floating point scalar fields");
+    this->printErr(
+      "Please select a floating point input scalar field or convert an "
+      "existing one with TTKPointDataConverter or TTKArrayEditor");
     return -2;
   }
 

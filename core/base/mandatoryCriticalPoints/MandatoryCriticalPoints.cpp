@@ -690,22 +690,28 @@ int MandatoryCriticalPoints::enumerateMandatoryExtrema(
     // }
   }
 
-  const std::string pt = pointType == PointType::Minimum ? "minima" : "maxima";
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp critical
+#endif
+  {
+    const std::string pt
+      = pointType == PointType::Minimum ? "minima" : "maxima";
 
-  this->printMsg(
-    "Computed " + std::to_string(mandatoryExtremum.size()) + " mandatory " + pt,
-    1.0, t.getElapsedTime(), this->threadNumber_);
-  this->printMsg("List of mandatory " + pt, debug::Priority::DETAIL);
+    this->printMsg("Computed " + std::to_string(mandatoryExtremum.size())
+                     + " mandatory " + pt,
+                   1.0, t.getElapsedTime(), this->threadNumber_);
+    this->printMsg("List of mandatory " + pt, debug::Priority::DETAIL);
 
-  for(size_t i = 0; i < mandatoryExtremum.size(); i++) {
-    std::stringstream msg;
-    msg << "  -> " << pt << " (" << std::setw(3) << std::right << i << ") ";
-    msg << " \t"
-        << "Vertex  " << std::setw(9) << std::left << mandatoryExtremum[i];
-    msg << " \tInterval  [ " << std::setw(12) << std::right
-        << criticalInterval[i].first << " ; " << std::setprecision(9)
-        << std::setw(11) << std::left << criticalInterval[i].second << " ]";
-    this->printMsg(msg.str(), debug::Priority::DETAIL);
+    for(size_t i = 0; i < mandatoryExtremum.size(); i++) {
+      std::stringstream msg;
+      msg << "  -> " << pt << " (" << std::setw(3) << std::right << i << ") ";
+      msg << " \t"
+          << "Vertex  " << std::setw(9) << std::left << mandatoryExtremum[i];
+      msg << " \tInterval  [ " << std::setw(12) << std::right
+          << criticalInterval[i].first << " ; " << std::setprecision(9)
+          << std::setw(11) << std::left << criticalInterval[i].second << " ]";
+      this->printMsg(msg.str(), debug::Priority::DETAIL);
+    }
   }
 
   return 0;

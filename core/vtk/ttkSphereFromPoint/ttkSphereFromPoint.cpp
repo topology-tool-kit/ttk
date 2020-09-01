@@ -163,10 +163,12 @@ int ttkSphereFromPoint::RequestData(vtkInformation *request,
         array->GetTuple(i, &value);
 
         vtkDataArray *dataArray = array->NewInstance();
-        dataArray->SetName(array->GetName());
-        dataArray->SetNumberOfTuples(sphereSurface->GetNumberOfPoints());
-        for(SimplexId k = 0; k < sphereSurface->GetNumberOfPoints(); k++) {
-          dataArray->SetTuple(k, &value);
+        if(dataArray != nullptr) {
+          dataArray->SetName(array->GetName());
+          dataArray->SetNumberOfTuples(sphereSurface->GetNumberOfPoints());
+          for(SimplexId k = 0; k < sphereSurface->GetNumberOfPoints(); k++) {
+            dataArray->SetTuple(k, &value);
+          }
         }
         sphereSurface->GetPointData()->AddArray(dataArray);
         dataArrayList_[threadId].emplace_back(dataArray);

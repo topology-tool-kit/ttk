@@ -92,15 +92,15 @@ public:
               double spacing,
               bool DoPostProc,
               std::vector<std::set<int>> &trackingTupleToMerged,
-              vtkSmartPointer<vtkPoints> &points,
-              vtkSmartPointer<vtkUnstructuredGrid> &persistenceDiagram,
-              vtkSmartPointer<vtkDoubleArray> &persistenceScalars,
-              vtkSmartPointer<vtkDoubleArray> &valueScalars,
-              vtkSmartPointer<vtkIntArray> &matchingIdScalars,
-              vtkSmartPointer<vtkIntArray> &lengthScalars,
-              vtkSmartPointer<vtkIntArray> &timeScalars,
-              vtkSmartPointer<vtkIntArray> &componentIds,
-              vtkSmartPointer<vtkIntArray> &pointTypeScalars);
+              vtkPoints *points,
+              vtkUnstructuredGrid *persistenceDiagram,
+              vtkDoubleArray *persistenceScalars,
+              vtkDoubleArray *valueScalars,
+              vtkIntArray *matchingIdScalars,
+              vtkIntArray *lengthScalars,
+              vtkIntArray *timeScalars,
+              vtkIntArray *componentIds,
+              vtkIntArray *pointTypeScalars);
 
 protected:
   ttkTrackingFromPersistenceDiagrams();
@@ -161,15 +161,15 @@ int ttkTrackingFromPersistenceDiagrams::buildMesh(
   double spacing,
   bool DoPostProc,
   std::vector<std::set<int>> &trackingTupleToMerged,
-  vtkSmartPointer<vtkPoints> &points,
-  vtkSmartPointer<vtkUnstructuredGrid> &persistenceDiagram,
-  vtkSmartPointer<vtkDoubleArray> &persistenceScalars,
-  vtkSmartPointer<vtkDoubleArray> &valueScalars,
-  vtkSmartPointer<vtkIntArray> &matchingIdScalars,
-  vtkSmartPointer<vtkIntArray> &lengthScalars,
-  vtkSmartPointer<vtkIntArray> &timeScalars,
-  vtkSmartPointer<vtkIntArray> &componentIds,
-  vtkSmartPointer<vtkIntArray> &pointTypeScalars) {
+  vtkPoints *points,
+  vtkUnstructuredGrid *persistenceDiagram,
+  vtkDoubleArray *persistenceScalars,
+  vtkDoubleArray *valueScalars,
+  vtkIntArray *matchingIdScalars,
+  vtkIntArray *lengthScalars,
+  vtkIntArray *timeScalars,
+  vtkIntArray *componentIds,
+  vtkIntArray *pointTypeScalars) {
   int currentVertex = 0;
   for(unsigned int k = 0; k < trackings.size(); ++k) {
     trackingTuple tt = trackings.at((unsigned long)k);

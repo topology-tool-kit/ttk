@@ -93,11 +93,11 @@ namespace ttk {
 
       /// build the Reeb Graph
       /// \pre If this TTK package uses ttk::Triangulation for fast mesh
-      /// traversals, the function setupTriangulation() must be called on this
-      /// object prior to this function, in a clearly distinct pre-processing
-      /// steps. An error will be returned otherwise.
-      /// \note In such a case, it is recommended to exclude
-      /// setupTriangulation() from any time performance measurement.
+      /// traversals, the function preconditionTriangulation() must be called on
+      /// this object prior to this function, in a clearly distinct
+      /// pre-processing steps. An error will be returned otherwise. \note In
+      /// such a case, it is recommended to exclude preconditionTriangulation()
+      /// from any time performance measurement.
       void build();
 
       // General documentation info:

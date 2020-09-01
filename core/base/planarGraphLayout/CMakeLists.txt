@@ -4,5 +4,5 @@ ttk_add_base_library(planarGraphLayout
   HEADERS
     PlanarGraphLayout.h
   DEPENDS
-    triangulation
+    common
     )
