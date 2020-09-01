@@ -46,8 +46,7 @@ namespace ttk {
     template <typename scalarType,
               typename idType,
               class triangulationType = ttk::AbstractTriangulation>
-    int execute(std::vector<std::pair<scalarType, SimplexId>> &outputCurve,
-                const scalarType *inputScalars,
+    int execute(const scalarType *inputScalars,
                 const idType *inputOffsets,
                 const triangulationType *triangulation);
 
@@ -71,11 +70,15 @@ namespace ttk {
     inline void setOutputCTPlot(void *const data) {
       CTPlot_ = data;
     }
+    inline void setOutputMSCPlot(void *const data) {
+      MSCPlot_ = data;
+    }
 
   protected:
     void *JTPlot_{};
     void *STPlot_{};
     void *CTPlot_{};
+    void *MSCPlot_{};
     bool ComputeSaddleConnectors{false};
     ftm::FTMTreePP contourTree_{};
     MorseSmaleComplex3D morseSmaleComplex_{};
@@ -102,37 +105,32 @@ int ttk::PersistenceCurve::computePersistencePlot(
 }
 
 template <typename scalarType, typename idType, class triangulationType>
-int ttk::PersistenceCurve::execute(
-  std::vector<std::pair<scalarType, SimplexId>> &outputCurve,
-  const scalarType *inputScalars,
-  const idType *inputOffsets,
-  const triangulationType *triangulation) {
+int ttk::PersistenceCurve::execute(const scalarType *inputScalars,
+                                   const idType *inputOffsets,
+                                   const triangulationType *triangulation) {
 
   printMsg(ttk::debug::Separator::L1);
 
   Timer timer;
 
-  auto &JTPlot
-    = *static_cast<std::vector<std::pair<scalarType, SimplexId>> *>(JTPlot_);
-  auto &STPlot
-    = *static_cast<std::vector<std::pair<scalarType, SimplexId>> *>(STPlot_);
-  auto &CTPlot
-    = *static_cast<std::vector<std::pair<scalarType, SimplexId>> *>(CTPlot_);
+  using plotType = std::vector<std::pair<scalarType, SimplexId>>;
+
+  auto JTPlot = static_cast<plotType *>(JTPlot_);
+  auto STPlot = static_cast<plotType *>(STPlot_);
+  auto CTPlot = static_cast<plotType *>(CTPlot_);
+  auto MSCPlot = static_cast<plotType *>(MSCPlot_);
 
   const SimplexId numberOfVertices = triangulation->getNumberOfVertices();
   // convert offsets into a valid format for contour tree
   std::vector<SimplexId> voffsets(numberOfVertices);
   std::copy(inputOffsets, inputOffsets + numberOfVertices, voffsets.begin());
 
-  // TODO: Change the following to migrated code when FTM module is migrated
-  // get contour tree
   contourTree_.setVertexScalars(inputScalars);
   contourTree_.setTreeType(ftm::TreeType::Join_Split);
   contourTree_.setVertexSoSoffsets(voffsets.data());
   contourTree_.setSegmentation(false);
   contourTree_.setThreadNumber(threadNumber_);
   contourTree_.build<scalarType, idType>(triangulation);
-  // !!!
 
   // get persistence pairs
   std::vector<std::tuple<SimplexId, SimplexId, scalarType>> JTPairs;
@@ -154,12 +152,10 @@ int ttk::PersistenceCurve::execute(
   }
 
   // get the saddle-saddle pairs
-  std::vector<std::tuple<SimplexId, SimplexId, scalarType>>
-    pl_saddleSaddlePairs;
   const int dimensionality = triangulation->getDimensionality();
-  if(dimensionality == 3 and ComputeSaddleConnectors) {
-    // TODO: Change the following to migrated code when MorseComplex module is
-    // migrated
+  if(dimensionality == 3 and ComputeSaddleConnectors and MSCPlot_ != nullptr) {
+    std::vector<std::tuple<SimplexId, SimplexId, scalarType>>
+      pl_saddleSaddlePairs;
     morseSmaleComplex_.setInputScalarField(inputScalars);
     morseSmaleComplex_.setInputOffsets(inputOffsets);
     morseSmaleComplex_.computePersistencePairs<scalarType, idType>(
@@ -174,7 +170,7 @@ int ttk::PersistenceCurve::execute(
       std::sort(pl_saddleSaddlePairs.begin(), pl_saddleSaddlePairs.end(), cmp);
     }
 
-    computePersistencePlot<scalarType>(pl_saddleSaddlePairs, outputCurve);
+    computePersistencePlot<scalarType>(pl_saddleSaddlePairs, *MSCPlot);
   }
 
   // get persistence curves
@@ -186,19 +182,19 @@ int ttk::PersistenceCurve::execute(
 #pragma omp section
 #endif
     if(JTPlot_ != nullptr) {
-      computePersistencePlot<scalarType>(JTPairs, JTPlot);
+      computePersistencePlot<scalarType>(JTPairs, *JTPlot);
     }
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp section
 #endif
     if(STPlot_ != nullptr) {
-      computePersistencePlot<scalarType>(STPairs, STPlot);
+      computePersistencePlot<scalarType>(STPairs, *STPlot);
     }
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp section
 #endif
     if(CTPlot_ != nullptr) {
-      computePersistencePlot<scalarType>(CTPairs, CTPlot);
+      computePersistencePlot<scalarType>(CTPairs, *CTPlot);
     }
   }
 

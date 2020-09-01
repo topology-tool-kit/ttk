@@ -166,14 +166,15 @@ int ttkPersistenceCurve::dispatch(vtkTable *outputJTPersistenceCurve,
   this->setOutputJTPlot(&JTPlot);
   this->setOutputSTPlot(&STPlot);
   this->setOutputCTPlot(&CTPlot);
+  this->setOutputMSCPlot(&MSCPlot);
 
   if(inputOffsetsDataType == VTK_INT) {
     ret = this->execute<VTK_TT, int, TTK_TT>(
-      MSCPlot, inputScalars, (int *)inputOffsets, triangulation);
+      inputScalars, (int *)inputOffsets, triangulation);
   }
   if(inputOffsetsDataType == VTK_ID_TYPE) {
     ret = this->execute<VTK_TT, vtkIdType, TTK_TT>(
-      MSCPlot, inputScalars, (vtkIdType *)inputOffsets, triangulation);
+      inputScalars, (vtkIdType *)inputOffsets, triangulation);
   }
 
   ret = getPersistenceCurve<vtkDoubleArray, VTK_TT>(
