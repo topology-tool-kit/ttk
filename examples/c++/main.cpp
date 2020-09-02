@@ -191,8 +191,9 @@ int main(int argc, char **argv) {
   ttk::PersistenceCurve curve;
   std::vector<std::pair<float, ttk::SimplexId>> outputCurve;
   curve.preconditionTriangulation(&triangulation);
+  curve.setOutputCTPlot(&outputCurve);
   curve.execute<float, ttk::SimplexId>(
-    outputCurve, height.data(), offsets.data(), &triangulation);
+    height.data(), offsets.data(), &triangulation);
 
   // 3. computing the persitence diagram
   ttk::PersistenceDiagram diagram;
