@@ -142,43 +142,17 @@ int ttk::IntegralLines::execute(const triangulationType *triangulation) const {
       SimplexId vnext{-1};
       float fnext = std::numeric_limits<float>::min();
       SimplexId neighborNumber = triangulation->getVertexNeighborNumber(v);
-      bool isLocalMax = true;
-      bool isLocalMin = true;
       for(SimplexId k = 0; k < neighborNumber; ++k) {
         SimplexId n;
         triangulation->getVertexNeighbor(v, k, n);
 
-        if(scalars[n] <= scalars[v])
-          isLocalMax = false;
-        if(scalars[n] >= scalars[v])
-          isLocalMin = false;
-
         if((direction_ == static_cast<int>(Direction::Forward))
-           xor (scalars[n] < scalars[v])) {
+           xor (offsets[n] < offsets[v])) {
           const float f = getGradient<dataType, triangulationType>(
             triangulation, v, n, scalars);
           if(f > fnext) {
             vnext = n;
             fnext = f;
-          }
-        }
-      }
-
-      if(vnext == -1 and !isLocalMax and !isLocalMin) {
-        idType onext = -1;
-        for(SimplexId k = 0; k < neighborNumber; ++k) {
-          SimplexId n;
-          triangulation->getVertexNeighbor(v, k, n);
-
-          if(scalars[n] == scalars[v]) {
-            const idType o = offsets[n];
-            if((direction_ == static_cast<int>(Direction::Forward))
-               xor (o < offsets[v])) {
-              if(o > onext) {
-                vnext = n;
-                onext = o;
-              }
-            }
           }
         }
       }
@@ -234,43 +208,17 @@ int ttk::IntegralLines::execute(Compare cmp,
       SimplexId vnext{-1};
       float fnext = std::numeric_limits<float>::min();
       SimplexId neighborNumber = triangulation->getVertexNeighborNumber(v);
-      bool isLocalMax = true;
-      bool isLocalMin = true;
       for(SimplexId k = 0; k < neighborNumber; ++k) {
         SimplexId n;
         triangulation->getVertexNeighbor(v, k, n);
 
-        if(scalars[n] <= scalars[v])
-          isLocalMax = false;
-        if(scalars[n] >= scalars[v])
-          isLocalMin = false;
-
         if((direction_ == static_cast<int>(Direction::Forward))
-           xor (scalars[n] < scalars[v])) {
+           xor (offsets[n] < offsets[v])) {
           const float f
             = getGradient<dataType, triangulationType>(v, n, scalars);
           if(f > fnext) {
             vnext = n;
             fnext = f;
-          }
-        }
-      }
-
-      if(vnext == -1 and !isLocalMax and !isLocalMin) {
-        SimplexId onext = -1;
-        for(SimplexId k = 0; k < neighborNumber; ++k) {
-          SimplexId n;
-          triangulation->getVertexNeighbor(v, k, n);
-
-          if(scalars[n] == scalars[v]) {
-            const SimplexId o = offsets[n];
-            if((direction_ == static_cast<int>(Direction::Forward))
-               xor (o < offsets[v])) {
-              if(o > onext) {
-                vnext = n;
-                onext = o;
-              }
-            }
           }
         }
       }
