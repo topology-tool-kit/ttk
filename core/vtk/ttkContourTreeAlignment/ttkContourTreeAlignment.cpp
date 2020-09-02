@@ -98,8 +98,14 @@ int ttkContourTreeAlignment::RequestData(
         nVertices[i] = contourTree->GetNumberOfPoints();
         nEdges[i]    = contourTree->GetNumberOfCells();
 
-        auto pData = contourTree->GetPointData();
-        auto scalarArray = pData->GetArray( "Scalar" );
+        //auto pData = contourTree->GetPointData();
+        //auto scalarArray = pData->GetArray( "Scalar" );
+
+        if(this->GetInputArrayAssociation(0,contourTree)!=0){
+            printErr("Scalar array not point data.");
+            return 0;
+        }
+        auto scalarArray = this->GetInputArrayToProcess(0,contourTree);
         if(!scalarArray){
             printErr("No Point Array \"Scalar\" found.");
             return 0;
@@ -109,9 +115,14 @@ int ttkContourTreeAlignment::RequestData(
 
         this->printMsg("Scalar Array read from point data.",debug::Priority::VERBOSE);
 
-        auto cData = contourTree->GetCellData();
+        //auto cData = contourTree->GetCellData();
 
-        auto regionArray = cData->GetArray( "RegionSize" );
+        //auto regionArray = cData->GetArray( "RegionSize" );
+        if(this->GetInputArrayAssociation(1,contourTree)!=1){
+            printErr("Region size array not cell data.");
+            return 0;
+        }
+        auto regionArray = this->GetInputArrayToProcess(1,contourTree);
         if(!regionArray){
             printErr("No Cell Array \"RegionSize\" found.");
             return 0;
@@ -119,7 +130,12 @@ int ttkContourTreeAlignment::RequestData(
         regionSizes[i]     = (int*) ttkUtils::GetVoidPointer(regionArray);
         this->printMsg("RegionSize Array read from cell data.",debug::Priority::VERBOSE);
 
-        auto segArray = cData->GetArray( "SegmentationId" );
+        //auto segArray = cData->GetArray( "SegmentationId" );
+        if(this->GetInputArrayAssociation(2,contourTree)!=1){
+            printErr("Segmentation Id array not cell data.");
+            return 0;
+        }
+        auto segArray = this->GetInputArrayToProcess(2,contourTree);
         if(!segArray){
             printErr("No Cell Array \"SegmentationId\" found.");
             return 0;

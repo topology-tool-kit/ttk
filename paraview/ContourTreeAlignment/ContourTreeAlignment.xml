@@ -12,9 +12,78 @@
                 <DataTypeDomain name="input_type">
                     <DataType value="vtkMultiBlockDataSet" />
                 </DataTypeDomain>
-                <InputArrayDomain name="input_array" attribute_type="point" />
-                <Documentation>A vtkMultiBlockDataSet containing TODO.</Documentation>
+                <InputArrayDomain name="input_array" attribute_type="point" number_of_components="1" />
+                <InputArrayDomain name="cell_array" attribute_type="cell" number_of_components="1" />
+                <Documentation>A vtkMultiBlockDataSet containing the contour trees that should be aligned.</Documentation>
             </InputProperty>
+
+            <StringVectorProperty
+                name="ScalarFieldNew"
+                command="SetInputArrayToProcess"
+                element_types="0 0 0 0 2"
+                number_of_elements="5"
+                default_values="0 0 0 0 Scalar"
+                animateable="0"
+                label="Scalar Field"
+                >
+                <ArrayListDomain
+                    name="scalar_list"
+                    attribute_type="Scalars"
+                    input_domain_name="input_array">
+                    <RequiredProperties>
+                        <Property name="Input" function="Input" />
+                    </RequiredProperties>
+                </ArrayListDomain>
+                <Documentation>
+                    The point array for the original scalar values.
+                </Documentation>
+            </StringVectorProperty>
+
+            <StringVectorProperty
+                name="RegSizeArray"
+                command="SetInputArrayToProcess"
+                element_types="0 0 0 0 2"
+                number_of_elements="5"
+                default_values="1 0 0 1 RegionSize"
+                animateable="0"
+                label="Region size array"
+                >
+                <ArrayListDomain
+                    name="reg_list"
+                    attribute_type="Scalars"
+                    data_type="VTK_INT"
+                    input_domain_name="cell_array">
+                    <RequiredProperties>
+                        <Property name="Input" function="Input" />
+                    </RequiredProperties>
+                </ArrayListDomain>
+                <Documentation>
+                    The cell array for the regions sizes of arcs.
+                </Documentation>
+            </StringVectorProperty>
+
+            <StringVectorProperty
+                name="SegIdArray"
+                command="SetInputArrayToProcess"
+                element_types="0 0 0 0 2"
+                number_of_elements="5"
+                default_values="2 0 0 1 SegmentationId"
+                animateable="0"
+                label="Segmentation ID array"
+                >
+                <ArrayListDomain
+                    name="seg_list"
+                    attribute_type="Scalars"
+                    data_type="VTK_INT"
+                    input_domain_name="cell_array">
+                    <RequiredProperties>
+                        <Property name="Input" function="Input" />
+                    </RequiredProperties>
+                </ArrayListDomain>
+                <Documentation>
+                    The cell array for the segmentation ids of arcs.
+                </Documentation>
+            </StringVectorProperty>
 
             <IntVectorProperty name="matchOverTime"
                                label="Match over time"

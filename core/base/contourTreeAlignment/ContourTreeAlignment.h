@@ -5,9 +5,18 @@
 ///
 /// \brief TTK %contourTreeAlignment processing package.
 ///
-/// %ContourTreeAlignment is a TTK processing package that TODO
+/// %ContourTreeAlignment is a TTK processing package that computes an alignment for n contour trees. To compute the
+/// alignment, use the execute function. Each contour tree is represented by an integer array for the topology,  an
+/// integer array for each of the edge scalars "regionSize" and segementationId", a <scalarType> array for the vertex
+/// scalars and two integers for the number of edges and vertices. These properties are passed as vectors of arrays,
+/// where the i-th array in a vector represents the corresponding array for the i-th tree. The alignment tree is
+/// written to the output vectors which are passed by reference.
 ///
-/// \sa ttk::Triangulation
+/// \b Related \b publication: \n
+/// 'Fuzzy contour trees: Alignment and joint layout of multiple contour trees'
+/// Anna Pia Lohfink, Florian Wetzels, Jonas Lukasczyk, Gunther H. Weber, and Christoph Garth.
+/// Comput. Graph. Forum, 39(3):343–355, 2020.
+///
 
 #pragma once
 

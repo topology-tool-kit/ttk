@@ -7,10 +7,37 @@
 ///
 /// VTK wrapping code for the @ContourTreeAlignment package.
 ///
-/// TODO
+/// This filter takes a multiblock of unstructured grids, where each block represents a contour tree, and computed the
+/// alignment of these contour trees. For each tree, a point array for the scalar vlues, a cell array for the region sizes of arcs and a cell array
+/// "for the segmentation ids of arcs are required. Contour trees computed by the FTMTree module fulfill these requirements and are the
+/// recommended way to use this filter.
 ///
-/// \param Input TODO
-/// \param Output TODO
+/// \param Input vtkMultiBlockDataSet representing the contour trees to align
+/// \param Output vtkUnstructuredGrid representing the alignment tree
+///
+/// The input data array for the scalar values needs to be specified via the standard VTK call
+/// vtkAlgorithm::SetInputArrayToProcess() with the following parameters:
+/// \param idx 0 (FIXED: the first array the algorithm requires)
+/// \param port 0 (FIXED: first port)
+/// \param connection 0 (FIXED: first connection)
+/// \param fieldAssociation 0 (FIXED: point data)
+/// \param arrayName (DYNAMIC: string identifier of the input array)
+///
+/// The input data array for the region sizes needs to be specified via the standard VTK call
+/// vtkAlgorithm::SetInputArrayToProcess() with the following parameters:
+/// \param idx 1 (FIXED: the second array the algorithm requires)
+/// \param port 0 (FIXED: first port)
+/// \param connection 0 (FIXED: first connection)
+/// \param fieldAssociation 1 (FIXED: cell data)
+/// \param arrayName (DYNAMIC: string identifier of the input array)
+///
+/// The input data array for the segmentation ids needs to be specified via the standard VTK call
+/// vtkAlgorithm::SetInputArrayToProcess() with the following parameters:
+/// \param idx 2 (FIXED: the third array the algorithm requires)
+/// \param port 0 (FIXED: first port)
+/// \param connection 0 (FIXED: first connection)
+/// \param fieldAssociation 1 (FIXED: cell data)
+/// \param arrayName (DYNAMIC: string identifier of the input array)
 ///
 /// \sa ttk::ContourTreeAlignment
 
