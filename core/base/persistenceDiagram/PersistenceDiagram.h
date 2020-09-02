@@ -55,14 +55,15 @@ namespace ttk {
                                   const SimplexId vertexId) const;
 
     template <typename scalarType>
-    int sortPersistenceDiagram(std::vector<std::tuple<ttk::SimplexId,
-                                                      ttk::CriticalType,
-                                                      ttk::SimplexId,
-                                                      ttk::CriticalType,
-                                                      scalarType,
-                                                      ttk::SimplexId>> &diagram,
-                               const scalarType *scalars,
-                               SimplexId *offsets) const;
+    void
+      sortPersistenceDiagram(std::vector<std::tuple<ttk::SimplexId,
+                                                    ttk::CriticalType,
+                                                    ttk::SimplexId,
+                                                    ttk::CriticalType,
+                                                    scalarType,
+                                                    ttk::SimplexId>> &diagram,
+                             const scalarType *scalars,
+                             SimplexId *offsets) const;
 
     template <typename scalarType>
     int computeCTPersistenceDiagram(
@@ -116,8 +117,7 @@ namespace ttk {
 } // namespace ttk
 
 template <typename scalarType>
-int ttk::PersistenceDiagram::sortPersistenceDiagram(
-
+void ttk::PersistenceDiagram::sortPersistenceDiagram(
   std::vector<std::tuple<ttk::SimplexId,
                          ttk::CriticalType,
                          ttk::SimplexId,
@@ -126,28 +126,17 @@ int ttk::PersistenceDiagram::sortPersistenceDiagram(
                          ttk::SimplexId>> &diagram,
   const scalarType *scalars,
   SimplexId *offsets) const {
+
   auto cmp
-    = [scalars, offsets](
+    = [offsets](
         const std::tuple<ttk::SimplexId, ttk::CriticalType, ttk::SimplexId,
                          ttk::CriticalType, scalarType, ttk::SimplexId> &a,
         const std::tuple<ttk::SimplexId, ttk::CriticalType, ttk::SimplexId,
                          ttk::CriticalType, scalarType, ttk::SimplexId> &b) {
-        const ttk::SimplexId idA = std::get<0>(a);
-        const ttk::SimplexId idB = std::get<0>(b);
-        const ttk::SimplexId va = offsets[idA];
-        const ttk::SimplexId vb = offsets[idB];
-        const scalarType sa = scalars[idA];
-        const scalarType sb = scalars[idB];
-
-        if(sa != sb)
-          return sa < sb;
-        else
-          return va < vb;
+        return offsets[std::get<0>(a)] < offsets[std::get<0>(b)];
       };
 
   std::sort(diagram.begin(), diagram.end(), cmp);
-
-  return 0;
 }
 
 template <typename scalarType>
@@ -212,14 +201,11 @@ int ttk::PersistenceDiagram::execute(
   std::vector<ttk::SimplexId> voffsets(numberOfVertices);
   std::copy(inputOffsets, inputOffsets + numberOfVertices, voffsets.begin());
 
-  // TODO: Change the following to migrated code when FTM module is migrated
-  // get contour tree
   contourTree_.setVertexScalars(inputScalars);
   contourTree_.setTreeType(ftm::TreeType::Join_Split);
   contourTree_.setVertexSoSoffsets(voffsets.data());
   contourTree_.setSegmentation(false);
   contourTree_.build<scalarType, idType>(triangulation);
-  // !!!
 
   // get persistence pairs
   std::vector<std::tuple<ttk::SimplexId, ttk::SimplexId, scalarType>> JTPairs;
@@ -261,12 +247,10 @@ int ttk::PersistenceDiagram::execute(
     pl_saddleSaddlePairs;
   const int dimensionality = triangulation->getDimensionality();
   if(dimensionality == 3 and ComputeSaddleConnectors) {
-    // TODO: Change the following to migrated code when FTM module is migrated
     morseSmaleComplex_.setInputScalarField(inputScalars);
     morseSmaleComplex_.setInputOffsets(inputOffsets);
     morseSmaleComplex_.computePersistencePairs<scalarType, idType>(
       pl_saddleSaddlePairs, *triangulation);
-    // !!!
   }
 
   // get persistence diagrams
