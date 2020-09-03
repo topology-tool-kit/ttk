@@ -44,7 +44,6 @@ namespace ttk {
       initTreeType();
       initNbScalars(mesh);
       initNbPartitions();
-      initSoS();
 
       this->printMsg(std::vector<std::vector<std::string>>{
         {"#Threads", std::to_string(parallelParams_.nbThreads)},
@@ -548,9 +547,9 @@ namespace ttk {
 
         for(idInterface i = 0; i < parallelParams_.nbInterfaces; i++) {
           const bool side0
-            = isEqHigher(v0, parallelData_.interfaces[i].getSeed());
+            = isHigher(v0, parallelData_.interfaces[i].getSeed());
           const bool side1
-            = isEqHigher(v1, parallelData_.interfaces[i].getSeed());
+            = isHigher(v1, parallelData_.interfaces[i].getSeed());
 
           if(side0 != side1) {
             // edge cross this interface, add both extrema in it

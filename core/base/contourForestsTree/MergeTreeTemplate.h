@@ -30,38 +30,16 @@ namespace ttk {
     template <typename scalarType>
     void MergeTree::sortInput(void) {
       const auto &nbVertices = scalars_->size;
-      auto &sortedVect = scalars_->sortedVertices;
 
-      if(!sortedVect.size()) {
-        auto indirect_sort = [&](const size_t &a, const size_t &b) {
-          return isLower<scalarType>(a, b);
-        };
-
-        sortedVect.resize(nbVertices, 0);
-        iota(sortedVect.begin(), sortedVect.end(), 0);
-
-#ifdef TTK_ENABLE_OPENMP
-#ifdef _GLIBCXX_PARALLEL_FEATURES_H
-        // ensure this namespace exists
-        __gnu_parallel::sort(
-          sortedVect.begin(), sortedVect.end(), indirect_sort);
-#else
-        sort(sortedVect.begin(), sortedVect.end(), indirect_sort);
-#endif
-#else
-        sort(sortedVect.begin(), sortedVect.end(), indirect_sort);
-#endif
+      if(scalars_->sortedVertices.size() != static_cast<size_t>(nbVertices)) {
+        scalars_->sortedVertices.resize(nbVertices);
       }
-
-      if(!scalars_->mirrorVertices.size()) {
-        scalars_->mirrorVertices.resize(nbVertices);
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for
 #endif
-        for(SimplexId i = 0; i < nbVertices; i++) {
-          scalars_->mirrorVertices[sortedVect[i]] = i;
-        }
+      for(SimplexId i = 0; i < nbVertices; i++) {
+        scalars_->sortedVertices[scalars_->sosOffsets[i]] = i;
       }
     }
     // }
@@ -252,10 +230,10 @@ namespace ttk {
           const SimplexId &thisEndVert = std::get<1>(pp);
           const idNode &thisOriginId = getCorrespondingNodeId(thisOriginVert);
 
-          if(scalars_->mirrorVertices[thisOriginVert] <= posSeed0
-             || scalars_->mirrorVertices[thisOriginVert] >= posSeed1
-             || scalars_->mirrorVertices[thisEndVert] <= posSeed0
-             || scalars_->mirrorVertices[thisEndVert] >= posSeed1) {
+          if(scalars_->sosOffsets[thisOriginVert] <= posSeed0
+             || scalars_->sosOffsets[thisOriginVert] >= posSeed1
+             || scalars_->sosOffsets[thisEndVert] <= posSeed0
+             || scalars_->sosOffsets[thisEndVert] >= posSeed1) {
             continue;
           }
 
@@ -357,10 +335,10 @@ namespace ttk {
           const idNode &thisOriginId = getCorrespondingNodeId(thisOriginVert);
           // const idNode &  thisEndId      = getCorrespondingNode(thisEndVert);
 
-          if(scalars_->mirrorVertices[thisOriginVert] <= posSeed0
-             || scalars_->mirrorVertices[thisOriginVert] >= posSeed1
-             || scalars_->mirrorVertices[thisEndVert] <= posSeed0
-             || scalars_->mirrorVertices[thisEndVert] >= posSeed1) {
+          if(scalars_->sosOffsets[thisOriginVert] <= posSeed0
+             || scalars_->sosOffsets[thisOriginVert] >= posSeed1
+             || scalars_->sosOffsets[thisEndVert] <= posSeed0
+             || scalars_->sosOffsets[thisEndVert] >= posSeed1) {
             continue;
           }
 
@@ -380,12 +358,12 @@ namespace ttk {
             const bool overlapB =
 
               scalars_
-                ->mirrorVertices[getNode(std::get<0>(receptArc))->getVertexId()]
+                ->sosOffsets[getNode(std::get<0>(receptArc))->getVertexId()]
               < posSeed0;
             const bool overlapA =
 
               scalars_
-                ->mirrorVertices[getNode(std::get<1>(receptArc))->getVertexId()]
+                ->sosOffsets[getNode(std::get<1>(receptArc))->getVertexId()]
               >= posSeed1;
             const idSuperArc na
               = makeSuperArc(std::get<0>(receptArc), std::get<1>(receptArc),
@@ -986,10 +964,10 @@ namespace ttk {
           originNode->setTerminaison(rootNode);
 
           const bool overlapB
-            = scalars_->mirrorVertices[getNode(rootNode)->getVertexId()]
+            = scalars_->sosOffsets[getNode(rootNode)->getVertexId()]
               <= posSeed0;
           const bool overlapA
-            = scalars_->mirrorVertices[getNode(rootNode)->getVertexId()]
+            = scalars_->sosOffsets[getNode(rootNode)->getVertexId()]
               >= posSeed1;
 
           closeSuperArc(tmp_sa, rootNode, overlapB, overlapA);
