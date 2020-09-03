@@ -351,7 +351,7 @@ int ttk::TopologicalSimplification::execute(
       } while(!sweepFront.empty());
 
       // save offsets and rearrange outputScalars
-      SimplexId offset = (isIncreasingOrder ? 0 : vertexNumber_ + 1);
+      SimplexId offset = (isIncreasingOrder ? 0 : vertexNumber_);
 
       for(SimplexId k = 0; k < vertexNumber_; ++k) {
 
