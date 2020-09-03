@@ -73,7 +73,6 @@ namespace ttk {
 #endif
 
       Timer timeSort;
-      scalars_.sort();
       this->printMsg(
         "sort time: ", 1.0, timeSort.getElapsedTime(), this->threadNumber_);
 
