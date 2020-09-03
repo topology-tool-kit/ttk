@@ -178,17 +178,10 @@ int ttkDiscreteGradient::RequestData(vtkInformation *request,
   this->setInputScalarField(ttkUtils::GetVoidPointer(inputScalars));
   this->setInputOffsets(ttkUtils::GetVoidPointer(inputOffsets));
 
-  if(inputOffsets->GetDataType() == VTK_INT) {
-    ttkVtkTemplateMacro(inputScalars->GetDataType(), triangulation->getType(),
-                        (ret = dispatch<VTK_TT, SimplexId, TTK_TT>(
-                           outputCriticalPoints, inputScalars, inputOffsets,
-                           *static_cast<TTK_TT *>(triangulation->getData()))))
-  } else if(inputOffsets->GetDataType() == VTK_ID_TYPE) {
-    ttkVtkTemplateMacro(inputScalars->GetDataType(), triangulation->getType(),
-                        (ret = dispatch<VTK_TT, LongSimplexId, TTK_TT>(
-                           outputCriticalPoints, inputScalars, inputOffsets,
-                           *static_cast<TTK_TT *>(triangulation->getData()))))
-  }
+  ttkVtkTemplateMacro(inputScalars->GetDataType(), triangulation->getType(),
+                      (ret = dispatch<VTK_TT, SimplexId, TTK_TT>(
+                         outputCriticalPoints, inputScalars, inputOffsets,
+                         *static_cast<TTK_TT *>(triangulation->getData()))));
 
   if(ret != 0) {
     return -1;

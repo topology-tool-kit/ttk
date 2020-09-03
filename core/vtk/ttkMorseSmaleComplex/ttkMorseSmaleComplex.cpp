@@ -574,19 +574,12 @@ int ttkMorseSmaleComplex::RequestData(vtkInformation *request,
     ascendingManifoldPtr, descendingManifoldPtr, morseSmaleManifoldPtr);
 
   int ret{};
-  if(inputOffsets->GetDataType() == VTK_INT) {
-    ttkVtkTemplateMacro(inputScalars->GetDataType(), triangulation->getType(),
-                        (ret = dispatch<VTK_TT, SimplexId, TTK_TT>(
-                           inputScalars, inputOffsets, outputCriticalPoints,
-                           outputSeparatrices1, outputSeparatrices2,
-                           *static_cast<TTK_TT *>(triangulation->getData()))))
-  } else if(inputOffsets->GetDataType() == VTK_ID_TYPE) {
-    ttkVtkTemplateMacro(inputScalars->GetDataType(), triangulation->getType(),
-                        (ret = dispatch<VTK_TT, ttk::LongSimplexId, TTK_TT>(
-                           inputScalars, inputOffsets, outputCriticalPoints,
-                           outputSeparatrices1, outputSeparatrices2,
-                           *static_cast<TTK_TT *>(triangulation->getData()))))
-  }
+
+  ttkVtkTemplateMacro(
+    inputScalars->GetDataType(), triangulation->getType(),
+    (ret = dispatch<VTK_TT, SimplexId, TTK_TT>(
+       inputScalars, inputOffsets, outputCriticalPoints, outputSeparatrices1,
+       outputSeparatrices2, *static_cast<TTK_TT *>(triangulation->getData()))));
 
   if(ret != 0) {
     return -1;

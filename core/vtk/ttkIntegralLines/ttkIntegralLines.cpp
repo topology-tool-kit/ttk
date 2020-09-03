@@ -116,19 +116,6 @@ int ttkIntegralLines::getTrajectories(vtkDataSet *input,
   return 0;
 }
 
-template <typename VTK_TT, typename TTK_TT>
-int ttkIntegralLines::dispatch(int inputOffsetsDataType,
-                               const TTK_TT *triangulation) {
-  int ret = 0;
-  if(inputOffsetsDataType == VTK_INT) {
-    ret = this->execute<VTK_TT, int, TTK_TT>(triangulation);
-  }
-  if(inputOffsetsDataType == VTK_ID_TYPE) {
-    ret = this->execute<VTK_TT, vtkIdType, TTK_TT>(triangulation);
-  }
-  return ret;
-}
-
 int ttkIntegralLines::RequestData(vtkInformation *request,
                                   vtkInformationVector **inputVector,
                                   vtkInformationVector *outputVector) {
@@ -196,13 +183,12 @@ int ttkIntegralLines::RequestData(vtkInformation *request,
   this->preconditionTriangulation(triangulation);
 
   int status = 0;
-  ttkVtkTemplateMacro(
-    inputScalars->GetDataType(), triangulation->getType(),
-    (status = this->dispatch<VTK_TT, TTK_TT>(
-       inputOffsets->GetDataType(), (TTK_TT *)(triangulation->getData()))))
+  ttkVtkTemplateMacro(inputScalars->GetDataType(), triangulation->getType(),
+                      (status = this->execute<VTK_TT, SimplexId, TTK_TT>(
+                         static_cast<TTK_TT *>(triangulation->getData()))));
 #ifndef TTK_ENABLE_KAMIKAZE
-    // something wrong in baseCode
-    if(status) {
+  // something wrong in baseCode
+  if(status) {
     std::stringstream msg;
     msg << "IntegralLines.execute() error code : " << status;
     this->printErr(msg.str());

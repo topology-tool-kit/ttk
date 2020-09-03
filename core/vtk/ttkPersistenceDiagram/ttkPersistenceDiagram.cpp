@@ -386,12 +386,8 @@ int ttkPersistenceDiagram::dispatch(
   vector<tuple_t> *CTDiagram = (vector<tuple_t> *)CTDiagram_;
 
   if(computeDiagram_) {
-    if(inputOffsetsDataType == VTK_INT)
-      ret = this->execute<VTK_TT, int, TTK_TT>(
-        *CTDiagram, inputScalars, (int *)inputOffsets, triangulation);
-    if(inputOffsetsDataType == VTK_ID_TYPE)
-      ret = this->execute<VTK_TT, vtkIdType, TTK_TT>(
-        *CTDiagram, inputScalars, (vtkIdType *)inputOffsets, triangulation);
+    ret = this->execute<VTK_TT, SimplexId, TTK_TT>(
+      *CTDiagram, inputScalars, (SimplexId *)inputOffsets, triangulation);
 #ifndef TTK_ENABLE_KAMIKAZE
     if(ret) {
       std::stringstream msg;
