@@ -16,7 +16,10 @@ jobs:
   # This workflow contains a single job called "build"
   build:
     # The type of runner that the job will run on
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-18.04, ubuntu-20.04]
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -65,11 +68,11 @@ jobs:
       with:
         repo: "pierre-guillou/paraview-ttk"
         version: "latest"
-        file: "ttk-paraview.deb"
+        file: "ttk-paraview-${{ matrix.os }}.deb"
 
     - name: Install ParaView .deb
       run: |
-        sudo apt install ./ttk-paraview.deb
+        sudo apt install ./ttk-paraview-${{ matrix.os }}.deb
 
     - name: Create & configure TTK build directory
       run: |
@@ -99,19 +102,20 @@ jobs:
         # modify control file, remove libgcc-s1 dependency
         sed 's/libgcc-s1[^,]*, //g' -i tmp/DEBIAN/control
         # build updated deb package
-        dpkg -b tmp ttk.deb.new
-        # replace old package with new
-        mv ttk.deb.new ttk.deb
+        dpkg -b tmp ttk-${{ matrix.os }}.deb
 
     - name: Upload TTK .deb package
       uses: actions/upload-artifact@v2
       with:
-        name: ttk.deb
-        path: build/ttk.deb
+        name: ttk-${{ matrix.os }}.deb
+        path: build/ttk-${{ matrix.os }}.deb
 
   test:
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-18.04, ubuntu-20.04]
     steps:
     - uses: actions/checkout@v2
 
@@ -119,21 +123,20 @@ jobs:
       with:
         repo: "pierre-guillou/paraview-ttk"
         version: "latest"
-        file: "ttk-paraview.deb"
+        file: "ttk-paraview-${{ matrix.os }}.deb"
 
     - name: Install ParaView .deb
       run: |
-        sudo apt install ./ttk-paraview.deb
+        sudo apt install ./ttk-paraview-${{ matrix.os }}.deb
 
     - name: Fetch TTK .deb artifact
       uses: actions/download-artifact@v2
       with:
-        name: ttk.deb
+        name: ttk-${{ matrix.os }}.deb
 
     - name: Install TTK .deb
       run: |
-        dpkg --info ttk.deb
-        sudo apt install ./ttk.deb
+        sudo apt install ./ttk-${{ matrix.os }}.deb
 
     - name: Test TTK examples
       run: |
@@ -142,13 +145,13 @@ jobs:
         PYTHONPATH= pvpython example.py ../data/inputData.vtu
         cd ../python
         python3 example.py ../data/inputData.vtu
-        cd ../c++
-        mkdir build && cd build
-        cmake ..
-        make
-        ./ttkExample-c++ ../../data/inputData.off
-        cd ../../vtk-c++
-        mkdir build &&  cd build
-        cmake ..
-        make
-        ./ttkExample-vtk-c++ ../../data/inputData.vtu
+        # cd ../c++
+        # mkdir build && cd build
+        # cmake ..
+        # make
+        # ./ttkExample-c++ ../../data/inputData.off
+        # cd ../../vtk-c++
+        # mkdir build &&  cd build
+        # cmake ..
+        # make
+        # ./ttkExample-vtk-c++ ../../data/inputData.vtu
