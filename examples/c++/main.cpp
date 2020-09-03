@@ -192,8 +192,7 @@ int main(int argc, char **argv) {
   std::vector<std::pair<float, ttk::SimplexId>> outputCurve;
   curve.preconditionTriangulation(&triangulation);
   curve.setOutputCTPlot(&outputCurve);
-  curve.execute<float, ttk::SimplexId>(
-    height.data(), offsets.data(), &triangulation);
+  curve.execute<float>(height.data(), offsets.data(), &triangulation);
 
   // 3. computing the persitence diagram
   ttk::PersistenceDiagram diagram;
@@ -201,7 +200,7 @@ int main(int argc, char **argv) {
                          ttk::CriticalType, float, ttk::SimplexId>>
     diagramOutput;
   diagram.preconditionTriangulation(&triangulation);
-  diagram.execute<float, ttk::SimplexId>(
+  diagram.execute<float>(
     diagramOutput, height.data(), offsets.data(), &triangulation);
 
   // 4. selecting the critical point pairs
@@ -220,10 +219,10 @@ int main(int argc, char **argv) {
   // 6. simplifying the input data to remove non-persistent pairs
   ttk::TopologicalSimplification simplification;
   simplification.preconditionTriangulation(&triangulation);
-  simplification.execute<float, ttk::SimplexId>(
-    height.data(), simplifiedHeight.data(), authorizedCriticalPoints.data(),
-    offsets.data(), simplifiedOffsets.data(), authorizedCriticalPoints.size(),
-    triangulation);
+  simplification.execute<float>(height.data(), simplifiedHeight.data(),
+                                authorizedCriticalPoints.data(), offsets.data(),
+                                simplifiedOffsets.data(),
+                                authorizedCriticalPoints.size(), triangulation);
 
   // assign the simplified values to the input mesh
   for(int i = 0; i < (int)simplifiedHeight.size(); i++) {

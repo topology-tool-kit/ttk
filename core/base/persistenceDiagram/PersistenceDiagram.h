@@ -62,8 +62,8 @@ namespace ttk {
                                                     ttk::CriticalType,
                                                     scalarType,
                                                     ttk::SimplexId>> &diagram,
-                             const scalarType *scalars,
-                             SimplexId *offsets) const;
+                             const scalarType *const scalars,
+                             const SimplexId *const offsets) const;
 
     template <typename scalarType>
     int computeCTPersistenceDiagram(
@@ -78,7 +78,7 @@ namespace ttk {
                              ttk::SimplexId>> &diagram,
       const scalarType *scalars) const;
 
-    template <typename scalarType, typename idType, class triangulationType>
+    template <typename scalarType, class triangulationType>
     int execute(std::vector<std::tuple<ttk::SimplexId,
                                        ttk::CriticalType,
                                        ttk::SimplexId,
@@ -86,7 +86,7 @@ namespace ttk {
                                        scalarType,
                                        ttk::SimplexId>> &CTDiagram,
                 const scalarType *inputScalars,
-                const idType *inputOffsets,
+                const SimplexId *inputOffsets,
                 const triangulationType *triangulation);
 
     inline void
@@ -124,8 +124,8 @@ void ttk::PersistenceDiagram::sortPersistenceDiagram(
                          ttk::CriticalType,
                          scalarType,
                          ttk::SimplexId>> &diagram,
-  const scalarType *scalars,
-  SimplexId *offsets) const {
+  const scalarType *const scalars,
+  const SimplexId *const offsets) const {
 
   auto cmp
     = [offsets](
@@ -182,7 +182,7 @@ int ttk::PersistenceDiagram::computeCTPersistenceDiagram(
   return 0;
 }
 
-template <typename scalarType, typename idType, class triangulationType>
+template <typename scalarType, class triangulationType>
 int ttk::PersistenceDiagram::execute(
   std::vector<std::tuple<ttk::SimplexId,
                          ttk::CriticalType,
@@ -191,21 +191,16 @@ int ttk::PersistenceDiagram::execute(
                          scalarType,
                          ttk::SimplexId>> &CTDiagram,
   const scalarType *inputScalars,
-  const idType *inputOffsets,
+  const SimplexId *inputOffsets,
   const triangulationType *triangulation) {
 
   printMsg(ttk::debug::Separator::L1);
 
-  const ttk::SimplexId numberOfVertices = triangulation->getNumberOfVertices();
-  // convert offsets into a valid format for contour forests
-  std::vector<ttk::SimplexId> voffsets(numberOfVertices);
-  std::copy(inputOffsets, inputOffsets + numberOfVertices, voffsets.begin());
-
   contourTree_.setVertexScalars(inputScalars);
   contourTree_.setTreeType(ftm::TreeType::Join_Split);
-  contourTree_.setVertexSoSoffsets(voffsets.data());
+  contourTree_.setVertexSoSoffsets(inputOffsets);
   contourTree_.setSegmentation(false);
-  contourTree_.build<scalarType, idType>(triangulation);
+  contourTree_.build<scalarType, SimplexId>(triangulation);
 
   // get persistence pairs
   std::vector<std::tuple<ttk::SimplexId, ttk::SimplexId, scalarType>> JTPairs;
@@ -249,7 +244,7 @@ int ttk::PersistenceDiagram::execute(
   if(dimensionality == 3 and ComputeSaddleConnectors) {
     morseSmaleComplex_.setInputScalarField(inputScalars);
     morseSmaleComplex_.setInputOffsets(inputOffsets);
-    morseSmaleComplex_.computePersistencePairs<scalarType, idType>(
+    morseSmaleComplex_.computePersistencePairs<scalarType, SimplexId>(
       pl_saddleSaddlePairs, *triangulation);
   }
 
@@ -280,7 +275,7 @@ int ttk::PersistenceDiagram::execute(
   }
 
   // finally sort the diagram
-  sortPersistenceDiagram(CTDiagram, inputScalars, voffsets.data());
+  sortPersistenceDiagram(CTDiagram, inputScalars, inputOffsets);
 
   printMsg(ttk::debug::Separator::L1);
 

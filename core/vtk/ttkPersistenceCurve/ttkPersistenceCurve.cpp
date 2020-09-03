@@ -168,7 +168,7 @@ int ttkPersistenceCurve::dispatch(vtkTable *outputJTPersistenceCurve,
   this->setOutputCTPlot(&CTPlot);
   this->setOutputMSCPlot(&MSCPlot);
 
-  ret = this->execute<VTK_TT, SimplexId, TTK_TT>(
+  ret = this->execute<VTK_TT, TTK_TT>(
     inputScalars, (SimplexId *)inputOffsets, triangulation);
 
   ret = getPersistenceCurve<vtkDoubleArray, VTK_TT>(
