@@ -128,21 +128,21 @@ int ttkTrackingFromFields::RequestData(vtkInformation *request,
   }
 
   // 0. get data
-  unsigned long fieldNumber = inputScalarFields.size();
+  int fieldNumber = inputScalarFields.size();
   std::vector<void *> inputFields(fieldNumber);
-  for(int i = 0; i < (int)fieldNumber; ++i)
+  for(int i = 0; i < fieldNumber; ++i)
     inputFields[i] = ttkUtils::GetVoidPointer(inputScalarFields[i]);
   this->setInputScalars(inputFields);
 
   // 0'. get offsets
-  auto numberOfVertices = (int)input->GetNumberOfPoints();
-  vtkIdTypeArray *offsets_ = vtkIdTypeArray::New();
-  offsets_->SetNumberOfComponents(1);
-  offsets_->SetNumberOfTuples(numberOfVertices);
-  offsets_->SetName("OffsetScalarField");
-  for(int i = 0; i < numberOfVertices; ++i)
-    offsets_->SetTuple1(i, i);
-  this->setInputOffsets(ttkUtils::GetVoidPointer(offsets_));
+  std::vector<SimplexId *> inputOrders(fieldNumber);
+  for(int i = 0; i < fieldNumber; ++i) {
+    auto orderArray
+      = this->GetOffsetField(inputScalarFields[i], false, 0, input);
+    inputOrders[i]
+      = static_cast<SimplexId *>(ttkUtils::GetVoidPointer(orderArray));
+  }
+  this->setInputOffsets(inputOrders);
 
   int status = 0;
   if(useTTKMethod) {
