@@ -119,7 +119,6 @@ void ttk::ftm::FTMTree::build(const triangulationType *mesh) {
   // for fast comparison
   // and regions / segmentation
   Timer sortTime;
-  initSoS<idType>();
   sortInput<scalarType, idType>();
   printTime(sortTime, "sort step", -1, 3);
 

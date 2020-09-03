@@ -43,86 +43,19 @@ namespace ttk {
 
     // Scalar related containers (global)
     struct Scalars {
-      SimplexId size;
-      void *values;
-      void *offsets;
+      SimplexId size{};
+      void *values{};
+      const SimplexId *offsets{};
 
-      std::shared_ptr<std::vector<SimplexId>> sortedVertices, mirrorVertices;
-
-      // Need vertices to be sorted : use mirrorVertices.
+      // [0] -> vertex id of the global miminum
+      // [size-1] -> vertex id of the global maximum
+      std::vector<SimplexId> sortedVertices{};
 
       bool isLower(SimplexId a, SimplexId b) const {
-        return (*mirrorVertices)[a] < (*mirrorVertices)[b];
+        return offsets[a] < offsets[b];
       }
-      bool isEqLower(SimplexId a, SimplexId b) const {
-        return (*mirrorVertices)[a] <= (*mirrorVertices)[b];
-      }
-
       bool isHigher(SimplexId a, SimplexId b) const {
-        return (*mirrorVertices)[a] > (*mirrorVertices)[b];
-      }
-      bool isEqHigher(SimplexId a, SimplexId b) const {
-        return (*mirrorVertices)[a] >= (*mirrorVertices)[b];
-      }
-
-      Scalars()
-        : size(0), values(nullptr), offsets(nullptr), sortedVertices(nullptr),
-          mirrorVertices(nullptr) {
-      }
-
-      // Heavy
-      Scalars(const Scalars &o)
-        : size(o.size), values(o.values), offsets(o.offsets),
-          sortedVertices(o.sortedVertices), mirrorVertices(o.mirrorVertices) {
-        std::cout << "copy in depth, bad perfs" << std::endl;
-      }
-
-      // Sort
-      template <typename type>
-      void qsort(type arr[],
-                 const long int begin,
-                 const long int stop,
-                 std::function<bool(type, type)> comp) const {
-        if(begin >= stop)
-          return;
-
-#ifdef TTK_ENABLE_OPENMP
-        static const long int MINSIZE = 10;
-#endif
-
-        long int left = begin - 1;
-        long int right = stop + 1;
-        const type pivot = arr[begin];
-
-        while(1) {
-          while(comp(pivot, arr[--right]))
-            ;
-          while(++left <= stop && !comp(pivot, arr[left]))
-            ;
-
-          if(left < right)
-            swap_el<type>(arr, left, right);
-          else
-            break;
-        }
-
-        swap_el<type>(arr, begin, right);
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp task untied if(right - begin > MINSIZE)
-#endif
-        qsort(arr, begin, right - 1, comp);
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp task untied if(stop - right > MINSIZE)
-#endif
-        qsort(arr, right + 1, stop, comp);
-      }
-
-    private:
-      template <typename type>
-      static void swap_el(type arr[], const size_t a, const size_t b) {
-        const type tmp = arr[a];
-        arr[a] = arr[b];
-        arr[b] = tmp;
+        return offsets[a] > offsets[b];
       }
     };
 
