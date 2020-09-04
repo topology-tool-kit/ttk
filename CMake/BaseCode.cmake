@@ -168,10 +168,6 @@ function(ttk_set_compile_options library)
     target_compile_definitions(${library} PUBLIC TTK_ENABLE_SCIKIT_LEARN)
   endif()
 
-  if (TTK_ENABLE_ZLIB)
-    target_compile_definitions(${library} PUBLIC TTK_ENABLE_ZLIB)
-  endif()
-
   # TODO per module
   if (TTK_ENABLE_GRAPHVIZ AND GRAPHVIZ_FOUND)
     target_compile_definitions(${library} PUBLIC TTK_ENABLE_GRAPHVIZ)
