@@ -194,6 +194,4 @@ private:
   bool UseOctreeAcceleration{true};
   int SimplificationCriterion{1};
   double SimplificationThreshold{0.0};
-
-  std::vector<ttk::SimplexId> sosOffsetsU_{}, sosOffsetsV_{};
 };
