@@ -6,7 +6,10 @@ name: CI
 # events but only for the master branch
 on:
   push:
-    branches: [ master ]
+    branch-ignore:
+      - 'master'
+    tags:
+      - 'latest'
 
 env:
   PV_PLUGIN_PATH: /usr/lib/paraview-5.8/plugins/TopologyToolKit
@@ -29,14 +32,6 @@ jobs:
     - name: Install Ubuntu dependencies
       run: |
         sudo apt update
-        # ParaView dependencies
-        sudo apt install -y \
-          qt5-default \
-          qttools5-dev \
-          qtxmlpatterns5-dev-tools \
-          libqt5x11extras5-dev \
-          libqt5svg5-dev \
-          dpkg-dev
         # TTK dependencies
         sudo apt install -y \
           libboost-dev \
@@ -45,7 +40,8 @@ jobs:
           libsqlite3-dev \
           graphviz \
           python3-sklearn \
-          zlib1g-dev
+          zlib1g-dev \
+          dpkg-dev
 
     - name: Install Spectra dependency
       run: |
@@ -85,6 +81,8 @@ jobs:
           -DTTK_BUILD_VTK_WRAPPERS=TRUE \
           -DTTK_BUILD_STANDALONE_APPS=TRUE \
           -DTTK_ENABLE_KAMIKAZE=TRUE \
+          -DTTK_ENABLE_DOUBLE_TEMPLATING=TRUE \
+          -DTTK_ENABLE_CPU_OPTIMIZATION=FALSE \
           $GITHUB_WORKSPACE
 
     - name: Build TTK
@@ -97,7 +95,7 @@ jobs:
         cd build
         # unpack deb package to access control file
         mkdir tmp
-        dpkg-deb -x ttk.deb tmp
+        dpkg-deb --extract ttk.deb tmp
         dpkg-deb --control ttk.deb tmp/DEBIAN
         # modify control file, remove libgcc-s1 dependency
         sed 's/libgcc-s1[^,]*, //g' -i tmp/DEBIAN/control
@@ -125,33 +123,74 @@ jobs:
         version: "latest"
         file: "ttk-paraview-${{ matrix.os }}.deb"
 
-    - name: Install ParaView .deb
-      run: |
-        sudo apt install ./ttk-paraview-${{ matrix.os }}.deb
-
     - name: Fetch TTK .deb artifact
       uses: actions/download-artifact@v2
       with:
         name: ttk-${{ matrix.os }}.deb
 
-    - name: Install TTK .deb
+    - name: Install generated .deb packages
       run: |
+        sudo apt update
+        sudo apt install ./ttk-paraview-${{ matrix.os }}.deb
         sudo apt install ./ttk-${{ matrix.os }}.deb
 
     - name: Test TTK examples
       run: |
         source /etc/profile
-        cd examples/pvpython
-        PYTHONPATH= pvpython example.py ../data/inputData.vtu
-        cd ../python
+        # base layer
+        cd $GITHUB_WORKSPACE/examples/c++
+        mkdir build && cd build
+        cmake ..
+        make
+        ./ttkExample-c++ -i ../../data/inputData.off
+        # VTK layer
+        cd $GITHUB_WORKSPACE/examples/vtk-c++
+        mkdir build &&  cd build
+        cmake ..
+        make
+        ./ttkExample-vtk-c++ -i ../../data/inputData.vtu
+        # pure Python
+        cd $GITHUB_WORKSPACE/examples/python
         python3 example.py ../data/inputData.vtu
-        # cd ../c++
-        # mkdir build && cd build
-        # cmake ..
-        # make
-        # ./ttkExample-c++ ../../data/inputData.off
-        # cd ../../vtk-c++
-        # mkdir build &&  cd build
-        # cmake ..
-        # make
-        # ./ttkExample-vtk-c++ ../../data/inputData.vtu
+        # pvpython
+        cd $GITHUB_WORKSPACE/examples/pvpython
+        pvpython example.py ../data/inputData.vtu
+
+  create-release:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        draft: false
+        prerelease: true
+
+    - name: Fetch all uploaded artifacts
+      uses: actions/download-artifact@v2
+
+    - name: Upload Ubuntu Bionic .deb as Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ttk-ubuntu-18.04.deb/ttk-ubuntu-18.04.deb
+        asset_name: ttk-ubuntu-18.04.deb
+        asset_content_type: application/vnd.debian.binary-package
+
+    - name: Upload Ubuntu Focal .deb as Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ttk-ubuntu-20.04.deb/ttk-ubuntu-20.04.deb
+        asset_name: ttk-ubuntu-20.04.deb
+        asset_content_type: application/vnd.debian.binary-package

@@ -32,7 +32,8 @@ set(CPACK_GENERATOR "DEB")
 set(CPACK_PACKAGE_CONTACT "Julien Tierny <julien.tierny@sorbonne-universite.fr>")
 set(CPACK_PACKAGE_VENDOR "LIP6 - Sorbonne Université")
 set(CPACK_PACKAGE_HOMEPAGE_URL "https://topology-tool-kit.github.io/")
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "ttk-paraview (= 5.8.0), python3-sklearn")
+set(CPACK_DEBIAN_PACKAGE_DEPENDS
+  "ttk-paraview (= 5.8.0), python3-sklearn, qt5-default, qttools5-dev, libqt5x11extras5-dev, libqt5svg5-dev, libboost-system-dev, python3-dev, libxt-dev" )
 # autogenerate dependency information
 set (CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
 include(CPack)

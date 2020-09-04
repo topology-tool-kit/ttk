@@ -4,3 +4,5 @@ export PV_PLUGIN_PATH=${TTK_INSTALL_PLUGIN_DIR}
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$PV_PLUGIN_PATH
 # help the Python interpreter find the TTK and the VTK modules
 export PYTHONPATH=$PYTHONPATH:${CMAKE_INSTALL_PREFIX}/${TTK_PYTHON_MODULE_DIR}
+# help CMake find the configuration files
+export CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH:${CMAKE_INSTALL_PREFIX}/lib/cmake/ttk
