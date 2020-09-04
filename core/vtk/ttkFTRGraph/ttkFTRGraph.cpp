@@ -317,8 +317,7 @@ int ttkFTRGraph::RequestData(vtkInformation *request,
     return -3;
   }
 
-  offsets_ = this->GetOffsetField(
-    inputScalars_, ForceInputOffsetScalarField, 1, mesh_);
+  offsets_ = this->GetOrderArray(mesh_, 0, 1, ForceInputOffsetScalarField);
 
   // compute graph
   ttkVtkTemplateMacro(inputScalars_->GetDataType(), triangulation_->getType(),

@@ -137,7 +137,7 @@ public:
    * Returns a string containing the name of the corresponding offset
    * field from a given scalar field
    */
-  std::string OffsetFieldName(vtkDataArray *const sfArray) const;
+  static std::string GetOrderArrayName(vtkDataArray *const array);
 
   /**
    * Retrieves an offset field from the given scalar field \p sfArray
@@ -147,11 +147,10 @@ public:
    * generated sorted offset field is then attached to the input
    * vtkDataset \p inputData.
    */
-  vtkDataArray *GetOffsetField(vtkDataArray *const sfArray,
-                               const bool enforceArrayIndex,
-                               const int arrayIndex,
-                               vtkDataSet *const inputData,
-                               const int &inputPort = 0);
+  vtkDataArray *GetOrderArray(vtkDataSet *const inputData,
+                              const int scalarArrayIdx,
+                              const int orderArrayIdx = 0,
+                              const bool enforceOrderArrayIdx = false);
 
   /**
    * This method retrieves the ttk::Triangulation of a vtkDataSet.

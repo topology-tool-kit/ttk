@@ -1209,8 +1209,8 @@ int ttkContourForests::RequestData(vtkInformation *request,
 
     vertexSoSoffsets_.clear();
 
-    const auto offsets = this->GetOffsetField(
-      vtkInputScalars_, ForceInputOffsetScalarField, 1, input);
+    const auto offsets
+      = this->GetOrderArray(input, 0, 1, ForceInputOffsetScalarField);
 
     if(offsets != nullptr) {
 

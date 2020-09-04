@@ -68,9 +68,9 @@ int ttkJacobiSet::RequestData(vtkInformation *request,
 
   // point data
   const auto offsetFieldU
-    = this->GetOffsetField(uComponent, ForceInputOffsetScalarField, 2, input);
+    = this->GetOrderArray(input, 0, 2, ForceInputOffsetScalarField);
   const auto offsetFieldV
-    = this->GetOffsetField(vComponent, ForceInputOffsetScalarField, 3, input);
+    = this->GetOrderArray(input, 1, 3, ForceInputOffsetScalarField);
 
   if(offsetFieldU) {
     sosOffsetsU_.resize(offsetFieldU->GetNumberOfTuples());

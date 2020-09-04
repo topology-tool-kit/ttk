@@ -255,7 +255,7 @@ int ttkPersistenceCurve::RequestData(vtkInformation *request,
 #endif
 
   vtkDataArray *offsetField
-    = this->GetOffsetField(inputScalars, ForceInputOffsetScalarField, 1, input);
+    = this->GetOrderArray(input, 0, 1, ForceInputOffsetScalarField);
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!offsetField) {

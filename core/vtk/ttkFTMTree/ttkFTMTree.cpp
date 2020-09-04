@@ -426,9 +426,8 @@ int ttkFTMTree::getOffsets() {
 
   offsets_.resize(nbCC_);
   for(int cc = 0; cc < nbCC_; cc++) {
-    const auto offsets
-      = this->GetOffsetField(inputScalars_[cc], ForceInputOffsetScalarField, 1,
-                             connected_components_[cc]);
+    const auto offsets = this->GetOrderArray(
+      connected_components_[cc], 0, 1, ForceInputOffsetScalarField);
 
     offsets_[cc].resize(connected_components_[cc]->GetNumberOfPoints());
 

@@ -495,8 +495,8 @@ int ttkMorseSmaleComplex::RequestData(vtkInformation *request,
   }
 #endif
 
-  auto inputOffsets = ttkAlgorithm::GetOffsetField(
-    inputScalars, this->ForceInputOffsetScalarField, 1, input);
+  auto inputOffsets = ttkAlgorithm::GetOrderArray(
+    input, 0, 1, this->ForceInputOffsetScalarField);
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(inputOffsets == nullptr) {

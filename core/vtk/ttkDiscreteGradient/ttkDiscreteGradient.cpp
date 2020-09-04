@@ -156,8 +156,8 @@ int ttkDiscreteGradient::RequestData(vtkInformation *request,
   this->preconditionTriangulation(triangulation);
 
   const auto inputScalars = this->GetInputArrayToProcess(0, input);
-  auto inputOffsets = ttkAlgorithm::GetOffsetField(
-    inputScalars, this->ForceInputOffsetScalarField, 1, input);
+  auto inputOffsets = ttkAlgorithm::GetOrderArray(
+    input, 0, 1, this->ForceInputOffsetScalarField);
 
   if(inputScalars == nullptr || inputOffsets == nullptr) {
     this->printErr("Input scalar arrays are NULL");

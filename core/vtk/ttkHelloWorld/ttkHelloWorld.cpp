@@ -95,6 +95,8 @@ int ttkHelloWorld::RequestData(vtkInformation *request,
   if(!inputDataSet)
     return 0;
 
+  inputDataSet->Print(std::cout);
+
   // Get input array that will be processed
   //
   // Note: VTK provides abstract functionality to handle array selections, but
@@ -152,6 +154,9 @@ int ttkHelloWorld::RequestData(vtkInformation *request,
     return 0;
   }
 
+  auto order = this->GetOrderArray(inputDataSet, 0, 0, false);
+  order->Print(std::cout);
+
   // Create an output array that has the same data type as the input array
   // Note: vtkSmartPointers are well documented
   //       (https://vtk.org/Wiki/VTK/Tutorials/SmartPointers)
@@ -194,6 +199,8 @@ int ttkHelloWorld::RequestData(vtkInformation *request,
 
   // add to the output point data the computed output array
   outputDataSet->GetPointData()->AddArray(outputArray);
+
+  inputDataSet->Print(std::cout);
 
   return 1;
 }

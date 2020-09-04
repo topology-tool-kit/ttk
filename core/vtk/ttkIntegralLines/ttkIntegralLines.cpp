@@ -139,8 +139,8 @@ int ttkIntegralLines::RequestData(vtkInformation *request,
   ttk::Triangulation *triangulation = ttkAlgorithm::GetTriangulation(domain);
   vtkDataArray *inputScalars = this->GetInputArrayToProcess(0, domain);
 
-  vtkDataArray *inputOffsets = this->GetOffsetField(
-    inputScalars, ForceInputOffsetScalarField, 1, domain);
+  vtkDataArray *inputOffsets
+    = this->GetOrderArray(domain, 0, 1, ForceInputOffsetScalarField);
 
   vtkDataArray *inputIdentifiers = this->GetOptionalArray(
     ForceInputVertexScalarField, 2, ttk::VertexScalarFieldName, seeds);
