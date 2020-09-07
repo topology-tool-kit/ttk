@@ -311,7 +311,8 @@ vtkDataArray *ttkAlgorithm::GetOrderArray(vtkDataSet *const inputData,
                        + std::string(orderArray->GetName())
                        + "` is of incorrect type.");
         auto temp = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
-        this->printErr(" -> use `ttkArrayEditor` to convert data type to `"+std::string(temp->GetDataTypeAsString())+"`.");
+        this->printErr(" -> use `ttkArrayEditor` to convert data type to `"
+                       + std::string(temp->GetDataTypeAsString()) + "`.");
         return nullptr;
       }
       default: {
@@ -375,7 +376,8 @@ vtkDataArray *ttkAlgorithm::GetOrderArray(vtkDataSet *const inputData,
       this->printMsg("Initializing order array.", 1, timer.getElapsedTime(),
                      this->threadNumber_);
 
-      this->printWrn("Run `ttkArrayPreconditioning` prior to this filter to improve performance during multiple executions.");
+      this->printWrn("Run `ttkArrayPreconditioning` prior to this filter to "
+                     "improve performance during multiple executions.");
 
       return newOrderArray;
     }
@@ -394,7 +396,8 @@ vtkDataArray *ttkAlgorithm::GetOrderArray(vtkDataSet *const inputData,
         + "` for scalar array `" + std::string(scalarArray->GetName())
         + "` is of incorrect type.");
       auto temp = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
-      this->printErr(" -> use `ttkArrayEditor` to convert data type to `"+std::string(temp->GetDataTypeAsString())+"`.");
+      this->printErr(" -> use `ttkArrayEditor` to convert data type to `"
+                     + std::string(temp->GetDataTypeAsString()) + "`.");
       return nullptr;
     }
 
