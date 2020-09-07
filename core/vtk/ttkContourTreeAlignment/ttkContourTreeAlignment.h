@@ -39,6 +39,11 @@
 /// \param fieldAssociation 1 (FIXED: cell data)
 /// \param arrayName (DYNAMIC: string identifier of the input array)
 ///
+/// \b Related \b publication: \n
+/// 'Fuzzy contour trees: Alignment and joint layout of multiple contour trees'
+/// Anna Pia Lohfink, Florian Wetzels, Jonas Lukasczyk, Gunther H. Weber, and Christoph Garth.
+/// Comput. Graph. Forum, 39(3):343–355, 2020.
+///
 /// \sa ttk::ContourTreeAlignment
 
 #pragma once

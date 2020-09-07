@@ -2,7 +2,23 @@
 <ServerManagerConfiguration>
     <ProxyGroup name="filters">
         <SourceProxy name="ContourTreeAlignment" class="ttkContourTreeAlignment" label="TTK ContourTreeAlignment">
-            <Documentation long_help="TTK contourTreeAlignment" short_help="TTK contourTreeAlignment">TODO</Documentation>
+            <Documentation long_help="TTK contourTreeAlignment" short_help="TTK contourTreeAlignment">
+
+                long_help="TTK plugin for computing an alignment of a multiblock of contour trees, given as unstructured grids."
+                short_help="TTK plugin for computing an alignment of contour trees.">
+
+                Given a multiblock of unstructured grids representing contour trees, this plugin comutes an alignment of the trees.
+
+                The arrays for the scalar values of vertices, the region sizes of arcs and the segmentation ids of arcs must be specified.
+
+                Also, this plugin can write the alignment tree to a JSON output file specified by the user.
+
+                Related publication:
+                'Fuzzy contour trees: Alignment and joint layout of multiple contour trees'
+                Anna Pia Lohfink, Florian Wetzels, Jonas Lukasczyk, Gunther H. Weber, and Christoph Garth.
+                Comput. Graph. Forum, 39(3):343–355, 2020.
+
+            </Documentation>
 
             <InputProperty name="Input" command="SetInputConnection">
                 <ProxyGroupDomain name="groups">
@@ -147,7 +163,7 @@
                     <Entry value="1" text="median"/>
                 </EnumerationDomain>
                 <Documentation>
-                    This property indicates which arc property will be used for matching.
+                    This property indicates which method will be used to compute the scalar values of alignment vertices from the matched vertices.
                 </Documentation>
             </IntVectorProperty>
 
