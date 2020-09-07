@@ -77,6 +77,10 @@ function(ttk_add_base_template_library library)
       $<INSTALL_INTERFACE:include/ttk/base>
     )
 
+  if(TTK_ENABLE_DOUBLE_TEMPLATING)
+    target_compile_definitions(${library} INTERFACE TTK_ENABLE_DOUBLE_TEMPLATING)
+  endif()
+
   if(TTK_ENABLE_KAMIKAZE)
     target_compile_definitions(${library} INTERFACE TTK_ENABLE_KAMIKAZE)
   endif()
@@ -134,6 +138,10 @@ function(ttk_set_compile_options library)
   # linker flags
   if(TTK_LINKER_FLAGS)
     target_link_options(${library} PRIVATE ${TTK_LINKER_FLAGS})
+  endif()
+
+  if (TTK_ENABLE_DOUBLE_TEMPLATING)
+    target_compile_definitions(${library} PUBLIC TTK_ENABLE_DOUBLE_TEMPLATING)
   endif()
 
   if (TTK_ENABLE_KAMIKAZE)
