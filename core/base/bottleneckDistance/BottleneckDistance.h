@@ -25,7 +25,6 @@
 // base code includes
 #include <GabowTarjan.h>
 #include <Munkres.h>
-#include <PersistenceDiagram.h>
 #include <Triangulation.h>
 
 #include <functional>

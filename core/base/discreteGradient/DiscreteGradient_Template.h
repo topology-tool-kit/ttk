@@ -1793,7 +1793,7 @@ int DiscreteGradient::filterSaddleConnectors(
   contourTree_.setVertexSoSoffsets(offsets);
   contourTree_.setThreadNumber(threadNumber_);
   contourTree_.setSegmentation(false);
-  contourTree_.build<dataType, SimplexId>();
+  contourTree_.build<dataType, SimplexId>(&triangulation);
   ftm::FTMTree_MT *tree = contourTree_.getTree(ftm::TreeType::Contour);
 
   const SimplexId numberOfNodes = tree->getNumberOfNodes();
@@ -1817,9 +1817,7 @@ int DiscreteGradient::filterSaddleConnectors(
   return 0;
 }
 
-template <typename dataType,
-          typename idType,
-          typename triangulationType = ttk::AbstractTriangulation>
+template <typename dataType, typename idType, typename triangulationType>
 int DiscreteGradient::reverseGradient(const triangulationType &triangulation,
                                       bool detectCriticalPoints) {
 
@@ -3242,7 +3240,7 @@ ttk::SimplexId DiscreteGradient::getCellGreaterVertex(
   return vertexId;
 }
 
-template <typename triangulationType = ttk::AbstractTriangulation>
+template <typename triangulationType>
 int DiscreteGradient::setGradientGlyphs(
   SimplexId &numberOfPoints,
   std::vector<float> &points,

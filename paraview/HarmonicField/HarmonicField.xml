@@ -1,7 +1,7 @@
 <ServerManagerConfiguration>
   <ProxyGroup name="filters">
     <SourceProxy
-        name="HarmonicField"
+        name="ttkHarmonicField"
         class="ttkHarmonicField"
         label="TTK HarmonicField">
       <Documentation

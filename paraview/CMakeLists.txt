@@ -1,5 +1,3 @@
-set(VTKWRAPPER_DIR "${CMAKE_CURRENT_LIST_DIR}/../core/vtk/")
-
 # Fill TTK_MODULES, TTK_MODULES_FILES
 # These lists are then used by singlePlugin/CMakeLists.txt
 # The goal is to create a single plugin for parview

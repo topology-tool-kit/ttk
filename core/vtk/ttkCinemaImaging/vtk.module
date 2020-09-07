@@ -2,3 +2,4 @@ NAME
   ttkCinemaImaging
 DEPENDS
   ttkAlgorithm
+  VTK::RenderingOpenGL2

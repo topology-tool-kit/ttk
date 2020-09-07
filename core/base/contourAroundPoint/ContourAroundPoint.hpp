@@ -208,7 +208,6 @@ int ttk::ContourAroundPoint::setInputField(Triang *triangulation,
                                            void *scalars,
                                            double sizeFilter,
                                            double radius) {
-  msg(std::string(60, '-').c_str());
 
   if(!triangulation)
     return -1;
@@ -280,7 +279,7 @@ int ttk::ContourAroundPoint::execute() const {
   //#ifdef TTK_ENABLE_OPENMP
   //#pragma omp parallel for num_threads(threadNumber_)
   //#endif
-  for(SimplexId p = 0; p < _inpPtsNum; ++p) {
+  for(size_t p = 0; p < _inpPtsNum; ++p) {
     handleOneInpPt<scalarT>(
       findInpFldVert(p), _inpPtsIsovals[p], _inpPtsFlags[p], _inpPtsScalars[p]);
   }
@@ -494,7 +493,7 @@ void ttk::ContourAroundPoint::extendOutPts(
   // For now, we use a "full cosine" kernel.
   const double kernelInputScaler = M_PI / dMax;
   // d=0 … cos(0)=1 … w=1, d=dMax … cos(pi)=-1 … w = 0
-  auto k_func = [dMax, kernelInputScaler](double d) {
+  auto k_func = [kernelInputScaler](double d) {
     return (std::cos(d * kernelInputScaler) + 1.) / 2.;
   };
 

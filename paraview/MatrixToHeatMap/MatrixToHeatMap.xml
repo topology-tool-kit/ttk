@@ -1,7 +1,7 @@
 <ServerManagerConfiguration>
   <ProxyGroup name="filters">
     <SourceProxy
-      name="MatrixToHeatMap"
+      name="ttkMatrixToHeatMap"
       class="ttkMatrixToHeatMap"
       label="TTK MatrixToHeatMap">
 

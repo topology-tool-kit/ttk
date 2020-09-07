@@ -1,5 +1,4 @@
-#ifndef DYNAMICGRAPH_TEMPLATE_H
-#define DYNAMICGRAPH_TEMPLATE_H
+#pragma once
 
 #include "DynamicGraph.h"
 
@@ -230,8 +229,9 @@ namespace ttk {
     void DynGraphNode<Type>::removeEdge(void) {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(!parent_) {
-        std::cerr << "[FTR Graph]: DynGraph remove edge in root node"
-                  << std::endl;
+        Debug dbg{};
+        dbg.setDebugMsgPrefix("DynamicGraph");
+        dbg.printErr("DynGraph remove edge in root node");
         return;
       }
 #endif
@@ -241,5 +241,3 @@ namespace ttk {
 
   } // namespace ftr
 } // namespace ttk
-
-#endif /* end of include guard: DYNAMICGRAPH_TEMPLATE_H */

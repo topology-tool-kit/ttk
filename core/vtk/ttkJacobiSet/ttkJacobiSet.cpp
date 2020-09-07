@@ -1,209 +1,153 @@
-#include <ttkJacobiSet.h>
+#include <vtkCellData.h>
+#include <vtkDataArray.h>
+#include <vtkDataSet.h>
+#include <vtkInformation.h>
+#include <vtkNew.h>
+#include <vtkObjectFactory.h>
+#include <vtkPointData.h>
+#include <vtkSignedCharArray.h>
+#include <vtkSmartPointer.h>
+#include <vtkUnstructuredGrid.h>
 
-using namespace std;
-using namespace ttk;
+#include <ttkJacobiSet.h>
+#include <ttkMacros.h>
+#include <ttkUtils.h>
+
+#include <array>
 
 vtkStandardNewMacro(ttkJacobiSet);
+
 ttkJacobiSet::ttkJacobiSet() {
+  this->SetNumberOfInputPorts(1);
+  this->SetNumberOfOutputPorts(1);
   ForceInputOffsetScalarField = false;
-
-  // init
-  UcomponentId = 0;
-  VcomponentId = 1;
-
-  UoffsetId = -1;
-  VoffsetId = -1;
-
-  EdgeIds = false;
-  VertexScalars = false;
-  UseAllCores = true;
 }
 
-ttkJacobiSet::~ttkJacobiSet() {
+int ttkJacobiSet::FillInputPortInformation(int port, vtkInformation *info) {
+  if(port == 0) {
+    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
+    return 1;
+  }
+  return 0;
+}
+
+int ttkJacobiSet::FillOutputPortInformation(int port, vtkInformation *info) {
+  if(port == 0 || port == 1) {
+    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
+    return 1;
+  }
+  return 0;
 }
 
 template <class dataTypeU, class dataTypeV>
-int ttkJacobiSet::baseCall(vtkDataSet *input,
-                           vtkDataArray *uField,
-                           vtkDataArray *vField) {
-
-  Timer t;
-
-  Triangulation *triangulation = ttkTriangulation::getTriangulation(input);
-
-  if(!triangulation)
-    return -1;
-
-  triangulation->setWrapper(this);
-  JacobiSet<dataTypeU, dataTypeV> jacobiSet;
-  jacobiSet.setWrapper(this);
-  jacobiSet.setupTriangulation(triangulation);
-
-  // point data
-  jacobiSet.setInputField(uField->GetVoidPointer(0), vField->GetVoidPointer(0));
-
-  vtkDataArray *offsetFieldU = NULL, *offsetFieldV = NULL;
-
-  if((ForceInputOffsetScalarField)
-     || ((UoffsetId != -1) && (VoffsetId != -1))) {
-    if(OffsetFieldU.length()) {
-
-      offsetFieldU = input->GetPointData()->GetArray(OffsetFieldU.data());
-
-      if(offsetFieldU) {
-        sosOffsetsU_.resize(offsetFieldU->GetNumberOfTuples());
-        for(SimplexId i = 0; i < offsetFieldU->GetNumberOfTuples(); i++) {
-          sosOffsetsU_[i] = offsetFieldU->GetTuple1(i);
-        }
-
-        jacobiSet.setSosOffsetsU(&sosOffsetsU_);
-      }
-    } else if(UoffsetId != -1) {
-      offsetFieldU = input->GetPointData()->GetArray(UoffsetId);
-
-      if(offsetFieldU) {
-        sosOffsetsU_.resize(offsetFieldU->GetNumberOfTuples());
-        for(SimplexId i = 0; i < offsetFieldU->GetNumberOfTuples(); i++) {
-          sosOffsetsU_[i] = offsetFieldU->GetTuple1(i);
-        }
-
-        jacobiSet.setSosOffsetsU(&sosOffsetsU_);
-      }
-    } else if(input->GetPointData()->GetArray(ttk::OffsetFieldUName)) {
-      offsetFieldU = input->GetPointData()->GetArray(ttk::OffsetFieldUName);
-
-      if(offsetFieldU) {
-        sosOffsetsU_.resize(offsetFieldU->GetNumberOfTuples());
-        for(SimplexId i = 0; i < offsetFieldU->GetNumberOfTuples(); i++) {
-          sosOffsetsU_[i] = offsetFieldU->GetTuple1(i);
-        }
-
-        jacobiSet.setSosOffsetsU(&sosOffsetsU_);
-      }
-    }
-    if(OffsetFieldV.length()) {
-
-      offsetFieldV = input->GetPointData()->GetArray(OffsetFieldV.data());
-
-      if(offsetFieldV) {
-        sosOffsetsV_.resize(offsetFieldV->GetNumberOfTuples());
-        for(SimplexId i = 0; i < offsetFieldV->GetNumberOfTuples(); i++) {
-          sosOffsetsV_[i] = offsetFieldV->GetTuple1(i);
-        }
-
-        jacobiSet.setSosOffsetsV(&sosOffsetsV_);
-      }
-    } else if(VoffsetId != -1) {
-      offsetFieldV = input->GetPointData()->GetArray(VoffsetId);
-
-      if(offsetFieldV) {
-        sosOffsetsV_.resize(offsetFieldV->GetNumberOfTuples());
-        for(SimplexId i = 0; i < offsetFieldV->GetNumberOfTuples(); i++) {
-          sosOffsetsV_[i] = offsetFieldV->GetTuple1(i);
-        }
-
-        jacobiSet.setSosOffsetsV(&sosOffsetsV_);
-      }
-    } else if(input->GetPointData()->GetArray(ttk::OffsetFieldVName)) {
-      offsetFieldV = input->GetPointData()->GetArray(ttk::OffsetFieldVName);
-
-      if(offsetFieldV) {
-        sosOffsetsV_.resize(offsetFieldV->GetNumberOfTuples());
-        for(SimplexId i = 0; i < offsetFieldV->GetNumberOfTuples(); i++) {
-          sosOffsetsV_[i] = offsetFieldV->GetTuple1(i);
-        }
-
-        jacobiSet.setSosOffsetsV(&sosOffsetsV_);
-      }
-    }
-  }
-
-  // go!
-  jacobiSet.execute(jacobiSet_);
-  Modified();
-
+int ttkJacobiSet::dispatch(const dataTypeU *const uField,
+                           const dataTypeV *const vField,
+                           ttk::Triangulation *const triangulation) {
+  ttkTemplateMacro(
+    triangulation->getType(),
+    this->execute(jacobiSet_, uField, vField,
+                  *static_cast<TTK_TT *>(triangulation->getData())));
   return 0;
 }
-int ttkJacobiSet::doIt(vector<vtkDataSet *> &inputs,
-                       vector<vtkDataSet *> &outputs) {
 
-  Memory m;
+int ttkJacobiSet::RequestData(vtkInformation *request,
+                              vtkInformationVector **inputVector,
+                              vtkInformationVector *outputVector) {
 
-  vtkDataSet *input = inputs[0];
-  vtkUnstructuredGrid *output = vtkUnstructuredGrid::SafeDownCast(outputs[0]);
+  const auto input = vtkDataSet::GetData(inputVector[0]);
+  auto output = vtkUnstructuredGrid::GetData(outputVector);
 
-  vtkDataArray *uComponent = nullptr, *vComponent = nullptr;
+  const auto uComponent = this->GetInputArrayToProcess(0, input);
+  const auto vComponent = this->GetInputArrayToProcess(1, input);
 
-  if(Ucomponent.length()) {
-    uComponent = input->GetPointData()->GetArray(Ucomponent.data());
-  } else {
-    // default
-    uComponent = input->GetPointData()->GetArray(UcomponentId);
-  }
-  if(!uComponent)
+  if(uComponent == nullptr || vComponent == nullptr)
     return -1;
 
-  if(Vcomponent.length()) {
-    vComponent = input->GetPointData()->GetArray(Vcomponent.data());
-  } else {
-    // default
-    vComponent = input->GetPointData()->GetArray(VcomponentId);
-  }
-  if(!vComponent)
-    return -2;
+  this->printMsg("U-component: `" + std::string{uComponent->GetName()} + "'");
+  this->printMsg("V-component: `" + std::string{vComponent->GetName()} + "'");
 
-  {
-    stringstream msg;
-    msg << "[ttkJacobiSet] U-component: `" << uComponent->GetName() << "'"
-        << endl;
-    msg << "[ttkJacobiSet] V-component: `" << vComponent->GetName() << "'"
-        << endl;
-    dMsg(cout, msg.str(), infoMsg);
+  // point data
+  const auto offsetFieldU = this->GetOptionalArray(
+    ForceInputOffsetScalarField, 2, ttk::OffsetFieldUName, inputVector);
+  const auto offsetFieldV = this->GetOptionalArray(
+    ForceInputOffsetScalarField, 3, ttk::OffsetFieldVName, inputVector);
+
+  if(ForceInputOffsetScalarField) {
+    if(offsetFieldU) {
+      sosOffsetsU_.resize(offsetFieldU->GetNumberOfTuples());
+      for(vtkIdType i = 0; i < offsetFieldU->GetNumberOfTuples(); i++) {
+        sosOffsetsU_[i] = offsetFieldU->GetTuple1(i);
+      }
+      this->setSosOffsetsU(&sosOffsetsU_);
+    }
+
+    if(offsetFieldV) {
+      sosOffsetsV_.resize(offsetFieldV->GetNumberOfTuples());
+      for(vtkIdType i = 0; i < offsetFieldV->GetNumberOfTuples(); i++) {
+        sosOffsetsV_[i] = offsetFieldV->GetTuple1(i);
+      }
+      this->setSosOffsetsV(&sosOffsetsV_);
+    }
   }
 
-  // set the jacobi functor
+  auto triangulation = ttkAlgorithm::GetTriangulation(input);
+  if(triangulation == nullptr)
+    return -1;
+  this->preconditionTriangulation(triangulation);
+
+#ifndef TTK_ENABLE_DOUBLE_TEMPLATING
+  if(uComponent->GetDataType() != vComponent->GetDataType()) {
+    this->printErr(
+      "Scalar fields should have same input type. Use TTKPointDataConverter or "
+      "TTKArrayEditor to convert array types.");
+    return 0;
+  }
+  switch(uComponent->GetDataType()) {
+    vtkTemplateMacro(
+      dispatch(static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(uComponent)),
+               static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(vComponent)),
+               triangulation));
+  }
+#else
   switch(vtkTemplate2PackMacro(
     uComponent->GetDataType(), vComponent->GetDataType())) {
     vtkTemplate2Macro(
-      (baseCall<VTK_T1, VTK_T2>(input, uComponent, vComponent)));
+      dispatch(static_cast<VTK_T1 *>(ttkUtils::GetVoidPointer(uComponent)),
+               static_cast<VTK_T2 *>(ttkUtils::GetVoidPointer(vComponent)),
+               triangulation));
   }
+#endif // TTK_ENABLE_DOUBLE_TEMPLATING
 
-  vtkSmartPointer<vtkCharArray> edgeTypes
-    = vtkSmartPointer<vtkCharArray>::New();
+  vtkNew<vtkSignedCharArray> edgeTypes{};
 
   edgeTypes->SetNumberOfComponents(1);
   edgeTypes->SetNumberOfTuples(2 * jacobiSet_.size());
   edgeTypes->SetName("Critical Type");
 
-  vtkSmartPointer<vtkPoints> pointSet = vtkSmartPointer<vtkPoints>::New();
+  vtkNew<vtkPoints> pointSet{};
   pointSet->SetNumberOfPoints(2 * jacobiSet_.size());
 
-  vtkSmartPointer<vtkCellArray> cellArray
-    = vtkSmartPointer<vtkCellArray>::New();
-  vtkSmartPointer<vtkIdList> idList = vtkSmartPointer<vtkIdList>::New();
+  vtkNew<vtkCellArray> cellArray{};
+  vtkNew<vtkIdList> idList{};
   idList->SetNumberOfIds(2);
 
-  Triangulation *triangulation = ttkTriangulation::getTriangulation(input);
-  if(!triangulation)
-    return -1;
+  size_t pointCount = 0;
+  std::array<double, 3> p{};
+  for(size_t i = 0; i < jacobiSet_.size(); i++) {
 
-  SimplexId pointCount = 0;
-  double p[3];
-  for(SimplexId i = 0; i < (SimplexId)jacobiSet_.size(); i++) {
-
-    SimplexId edgeId = jacobiSet_[i].first;
-    SimplexId vertexId0 = -1, vertexId1 = -1;
+    int edgeId = jacobiSet_[i].first;
+    int vertexId0 = -1, vertexId1 = -1;
     triangulation->getEdgeVertex(edgeId, 0, vertexId0);
     triangulation->getEdgeVertex(edgeId, 1, vertexId1);
 
-    input->GetPoint(vertexId0, p);
-    pointSet->SetPoint(pointCount, p);
+    input->GetPoint(vertexId0, p.data());
+    pointSet->SetPoint(pointCount, p.data());
     edgeTypes->SetTuple1(pointCount, (float)jacobiSet_[i].second);
     idList->SetId(0, pointCount);
     pointCount++;
 
-    input->GetPoint(vertexId1, p);
-    pointSet->SetPoint(pointCount, p);
+    input->GetPoint(vertexId1, p.data());
+    pointSet->SetPoint(pointCount, p.data());
     edgeTypes->SetTuple1(pointCount, (float)jacobiSet_[i].second);
     idList->SetId(1, pointCount);
     pointCount++;
@@ -215,14 +159,13 @@ int ttkJacobiSet::doIt(vector<vtkDataSet *> &inputs,
   output->GetPointData()->AddArray(edgeTypes);
 
   if(EdgeIds) {
-    vtkSmartPointer<ttkSimplexIdTypeArray> edgeIdArray
-      = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
+    vtkNew<ttkSimplexIdTypeArray> edgeIdArray{};
     edgeIdArray->SetNumberOfComponents(1);
     edgeIdArray->SetNumberOfTuples(jacobiSet_.size());
     edgeIdArray->SetName("EdgeIds");
 
     pointCount = 0;
-    for(SimplexId i = 0; i < (SimplexId)jacobiSet_.size(); i++) {
+    for(size_t i = 0; i < jacobiSet_.size(); i++) {
       edgeIdArray->SetTuple1(pointCount, (float)jacobiSet_[i].first);
       pointCount++;
     }
@@ -236,63 +179,27 @@ int ttkJacobiSet::doIt(vector<vtkDataSet *> &inputs,
 
     for(int i = 0; i < input->GetPointData()->GetNumberOfArrays(); i++) {
 
-      vtkDataArray *scalarField = input->GetPointData()->GetArray(i);
-      vtkSmartPointer<vtkDataArray> scalarArray;
+      const auto scalarField = input->GetPointData()->GetArray(i);
+      vtkSmartPointer<vtkDataArray> scalarArray{scalarField->NewInstance()};
 
-      auto copyToScalarArray = [&]() {
-        scalarArray->SetNumberOfComponents(
-          scalarField->GetNumberOfComponents());
-        scalarArray->SetNumberOfTuples(2 * jacobiSet_.size());
-        scalarArray->SetName(scalarField->GetName());
-        std::vector<double> value(scalarField->GetNumberOfComponents());
-        for(SimplexId j = 0; j < (SimplexId)jacobiSet_.size(); j++) {
+      scalarArray->SetNumberOfComponents(scalarField->GetNumberOfComponents());
+      scalarArray->SetNumberOfTuples(2 * jacobiSet_.size());
+      scalarArray->SetName(scalarField->GetName());
+      std::vector<double> value(scalarField->GetNumberOfComponents());
 
-          SimplexId edgeId = jacobiSet_[j].first;
-          SimplexId vertexId0 = -1, vertexId1 = -1;
-          triangulation->getEdgeVertex(edgeId, 0, vertexId0);
-          triangulation->getEdgeVertex(edgeId, 1, vertexId1);
+      for(size_t j = 0; j < jacobiSet_.size(); j++) {
+        int edgeId = jacobiSet_[j].first;
+        int vertexId0 = -1, vertexId1 = -1;
+        triangulation->getEdgeVertex(edgeId, 0, vertexId0);
+        triangulation->getEdgeVertex(edgeId, 1, vertexId1);
 
-          scalarField->GetTuple(vertexId0, value.data());
-          scalarArray->SetTuple(2 * j, value.data());
+        scalarField->GetTuple(vertexId0, value.data());
+        scalarArray->SetTuple(2 * j, value.data());
 
-          scalarField->GetTuple(vertexId1, value.data());
-          scalarArray->SetTuple(2 * j + 1, value.data());
-        }
-        output->GetPointData()->AddArray(scalarArray);
-      };
-
-      switch(scalarField->GetDataType()) {
-        case VTK_CHAR:
-          scalarArray = vtkSmartPointer<vtkCharArray>::New();
-          copyToScalarArray();
-          break;
-        case VTK_DOUBLE:
-          scalarArray = vtkSmartPointer<vtkDoubleArray>::New();
-          copyToScalarArray();
-          break;
-        case VTK_FLOAT:
-          scalarArray = vtkSmartPointer<vtkFloatArray>::New();
-          copyToScalarArray();
-          break;
-        case VTK_INT:
-          scalarArray = vtkSmartPointer<vtkIntArray>::New();
-          copyToScalarArray();
-          break;
-        case VTK_ID_TYPE:
-          scalarArray = vtkSmartPointer<vtkIdTypeArray>::New();
-          copyToScalarArray();
-          break;
-        case VTK_UNSIGNED_SHORT:
-          scalarArray = vtkSmartPointer<vtkUnsignedShortArray>::New();
-          copyToScalarArray();
-          break;
-        default: {
-          stringstream msg;
-          msg << "[ttkJacobiSet] Scalar attachment: "
-              << "unsupported data type :(" << endl;
-          dMsg(cerr, msg.str(), detailedInfoMsg);
-        } break;
+        scalarField->GetTuple(vertexId1, value.data());
+        scalarArray->SetTuple(2 * j + 1, value.data());
       }
+      output->GetPointData()->AddArray(scalarArray);
     }
   } else {
     for(int i = 0; i < input->GetPointData()->GetNumberOfArrays(); i++) {
@@ -301,12 +208,5 @@ int ttkJacobiSet::doIt(vector<vtkDataSet *> &inputs,
     }
   }
 
-  {
-    stringstream msg;
-    msg << "[ttkJacobiSet] Memory usage: " << m.getElapsedUsage() << " MB."
-        << endl;
-    dMsg(cout, msg.str(), memoryMsg);
-  }
-
-  return 0;
+  return 1;
 }

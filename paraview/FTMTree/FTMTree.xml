@@ -1,7 +1,7 @@
 <ServerManagerConfiguration>
     <ProxyGroup name="filters">
         <SourceProxy
-            name="ftmtree"
+            name="ttkftmtree"
             class="ttkFTMTree"
             label="TTK Merge and Contour Tree (FTM)">
             <Documentation
@@ -56,23 +56,18 @@
                 </Documentation>
             </InputProperty>
 
-            <StringVectorProperty
-                name="Scalar Field"
-                command="SetScalarField"
-                number_of_elements="1"
-                animateable="0"
-                label="Scalar Field"
-                >
-                <ArrayListDomain
-                    name="array_list"
-                    default_values="0">
+            <StringVectorProperty name="Scalar Field"
+                                  command="SetInputArrayToProcess"
+                                  element_types="0 0 0 0 2"
+                                  number_of_elements="5"
+                                  default_values="0"
+                                  >
+                <ArrayListDomain attribute_type="Scalars" name="array_list">
                     <RequiredProperties>
-                        <Property name="Input" function="Input" />
+                        <Property function="Input" name="Input" />
                     </RequiredProperties>
                 </ArrayListDomain>
-                <Documentation>
-                    Select the scalar field to process.
-                </Documentation>
+                <Documentation>The scalar array that will be used to compute the tree.</Documentation>
             </StringVectorProperty>
 
             <IntVectorProperty
@@ -91,44 +86,30 @@
             </IntVectorProperty>
 
             <StringVectorProperty
-                name="InputOffsetScalarFieldName"
-                command="SetInputOffsetScalarFieldName"
-                label="Input Offset"
-                number_of_elements="1"
-                animateable="0"
-                panel_visibility="advanced"
+                name="Input Offset Field"
+                command="SetInputArrayToProcess"
+                element_types="0 0 0 0 2"
+                number_of_elements="5"
+                default_values="1"
                 >
-                <ArrayListDomain
-                    name="array_list"
-                    default_values="0"
-                    >
-                    <RequiredProperties>
-                        <Property name="Input" function="Input" />
-                    </RequiredProperties>
-                </ArrayListDomain>
-                <Hints>
-                  <PropertyWidgetDecorator type="GenericDecorator"
-                    mode="visibility"
-                    property="ForceInputOffsetScalarField"
-                    value="1" />
-                </Hints>
-                <Documentation>
-                    Select the input offset scalar field to process.
-                </Documentation>
-            </StringVectorProperty>
-
-            <IntVectorProperty
-                name="PeriodicBoundaryConditions"
-                command="SetPeriodicBoundaryConditions"
-                label="Periodic Boundary Conditions"
-                number_of_elements="1"
-                panel_visibility="advanced"
+              <ArrayListDomain
+                name="array_list"
                 default_values="0">
-                <BooleanDomain name="bool"/>
-                <Documentation>
-                    Check this box to use periodic boundary conditions for computation.
-                </Documentation>
-            </IntVectorProperty>
+                <RequiredProperties>
+                  <Property name="Input" function="Input" />
+                </RequiredProperties>
+              </ArrayListDomain>
+              <Hints>
+                <PropertyWidgetDecorator type="GenericDecorator"
+                  mode="visibility"
+                  property="ForceInputOffsetScalarField"
+                  value="1" />
+              </Hints>
+              <Documentation>
+                Select the scalar field to use as a vertex offset
+                (used to disambiguate flat plateaus).
+              </Documentation>
+            </StringVectorProperty>
 
             <IntVectorProperty name="Tree Type" command="SetTreeType"
                 number_of_elements="1" default_values="2">
@@ -182,56 +163,12 @@ between nodes, ...)
                 </Documentation>
             </IntVectorProperty>
 
-            <IntVectorProperty
-                name="UseAllCores"
-                command="SetUseAllCores"
-                label="Use All Cores"
-                number_of_elements="1"
-                default_values="1"
-                panel_visibility="advanced">
-                <BooleanDomain name="bool"/>
-                <Documentation>
-                    Use all available cores.
-                </Documentation>
-            </IntVectorProperty>
-
-            <IntVectorProperty
-                name="ThreadNumber"
-                command="SetThreadNumber"
-                label="Thread Number"
-                number_of_elements="1"
-                default_values="1"
-                panel_visibility="advanced">
-                <IntRangeDomain name="range" min="1" max="128" />
-                <Hints>
-                  <PropertyWidgetDecorator type="GenericDecorator"
-                    mode="visibility"
-                    property="UseAllCores"
-                    value="0" />
-                </Hints>
-
-                <Documentation>
-                    Number of threads to use for the computation.
-                </Documentation>
-            </IntVectorProperty>
-
-            <IntVectorProperty
-                name="DebugLevel"
-                command="SetDebugLevel"
-                label="Debug Level"
-                number_of_elements="1"
-                default_values="3" panel_visibility="advanced">
-                <IntRangeDomain name="range" min="0" max="10" />
-                <Documentation>
-                    Debug level.
-                </Documentation>
-            </IntVectorProperty>
+            ${DEBUG_WIDGETS}
 
             <PropertyGroup panel_widget="Line" label="Input options">
                 <Property name="Scalar Field"/>
                 <Property name="ForceInputOffsetScalarField"/>
-                <Property name="InputOffsetScalarFieldName"/>
-                <Property name="PeriodicBoundaryConditions"/>
+                <Property name="Input Offset Field"/>
             </PropertyGroup>
 
             <PropertyGroup panel_widget="Line" label="Output options">
@@ -239,12 +176,6 @@ between nodes, ...)
                 <Property name="SuperArcSamplingLevel"/>
                 <Property name="NormalizeId" />
                 <Property name="AdvancedStats" />
-            </PropertyGroup>
-
-            <PropertyGroup panel_widget="Line" label="Testing">
-                <Property name="UseAllCores" />
-                <Property name="ThreadNumber" />
-                <Property name="DebugLevel" />
             </PropertyGroup>
 
             <OutputPort name="Skeleton Nodes" index="0" id="port0" />

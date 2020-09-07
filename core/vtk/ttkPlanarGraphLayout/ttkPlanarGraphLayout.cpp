@@ -44,6 +44,10 @@ int ttkPlanarGraphLayout::RequestData(vtkInformation *request,
   auto input = vtkUnstructuredGrid::GetData(inputVector[0]);
   auto output = vtkUnstructuredGrid::GetData(outputVector);
 
+  if(input == nullptr || output == nullptr) {
+    return -1;
+  }
+
   // Copy input to output
   output->ShallowCopy(input);
 

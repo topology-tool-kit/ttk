@@ -6,4 +6,4 @@ HEADERS
   ttkGaussianPointCloud.h
 DEPENDS
   gaussianPointCloud
-  ttkTriangulationAlgorithm
+  ttkAlgorithm

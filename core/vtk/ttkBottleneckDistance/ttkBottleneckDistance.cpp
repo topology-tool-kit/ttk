@@ -173,7 +173,7 @@ int ttkBottleneckDistance::RequestData(vtkInformation * /*request*/,
   // double alpha = Alpha;
   status = this->execute<dataType>(usePersistenceMetric);
   if(status != 0)
-    return status;
+    return 0;
 
   // Apply results to outputs 0 and 1.
   status = augmentPersistenceDiagrams<dataType>(
@@ -201,5 +201,5 @@ int ttkBottleneckDistance::RequestData(vtkInformation * /*request*/,
   if(UseOutputMatching)
     outputCT3->ShallowCopy(CTPersistenceDiagram3_);
 
-  return status;
+  return 1;
 }

@@ -513,6 +513,11 @@ int ttkBottleneckDistance::translateSecondDiagram(
   ttkSimplexIdTypeArray *pairIdentifierScalars
     = ttkSimplexIdTypeArray::SafeDownCast(
       outputCT2->GetCellData()->GetArray("PairIdentifier"));
+
+  if(pairIdentifierScalars == nullptr) {
+    return -1;
+  }
+
   auto pairingsSize = (int)pairIdentifierScalars->GetNumberOfTuples();
 
   for(int i = 0; i < pairingsSize; ++i) {

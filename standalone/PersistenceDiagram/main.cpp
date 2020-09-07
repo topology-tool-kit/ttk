@@ -120,7 +120,8 @@ int main(int argc, char **argv) {
       inputArrayNames.push_back(defaultArray->GetName());
   }
   for(size_t i = 0; i < inputArrayNames.size(); i++)
-    persistenceDiagram->SetInputArrayToProcess(i, 0, 0, 0, inputArrayNames[i].data());
+    persistenceDiagram->SetInputArrayToProcess(
+      i, 0, 0, 0, inputArrayNames[i].data());
 
   // ---------------------------------------------------------------------------
   // Execute ttkPersistenceDiagram filter

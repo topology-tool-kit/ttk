@@ -18,7 +18,6 @@
 // base code includes
 #include <Geometry.h>
 #include <Triangulation.h>
-#include <Wrapper.h>
 
 #include "FTMDataTypes.h"
 #include "FTMTree_CT.h"
@@ -46,8 +45,8 @@ namespace ttk {
 
       // Initialize structures then build tree
       // Need triangulation, scalars and all params set before call
-      template <typename scalarType, typename idType>
-      void build(void);
+      template <typename scalarType, typename idType, class triangulationType>
+      void build(const triangulationType *mesh);
     };
 
 #include "FTMTree_Template.h"

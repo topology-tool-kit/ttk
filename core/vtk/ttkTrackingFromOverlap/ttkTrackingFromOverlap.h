@@ -129,12 +129,4 @@ private:
   vector<vector<Nodes>> levelTimeNodesMap; // N
   vector<vector<Edges>> levelTimeEdgesTMap; // E_T
   vector<vector<Edges>> timeLevelEdgesNMap; // E_N
-
-  bool needsToAbort() /*override*/ {
-    return GetAbortExecute();
-  };
-  int updateProgress(const float &progress) /*override*/ {
-    UpdateProgress(progress);
-    return 0;
-  };
 };

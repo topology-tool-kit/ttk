@@ -6,7 +6,7 @@
        that matches your filter and then model your xml on it -->
   <ProxyGroup name="filters">
    <SourceProxy
-     name="MandatoryCriticalPoints"
+     name="ttkMandatoryCriticalPoints"
      class="ttkMandatoryCriticalPoints"
      label="TTK MandatoryCriticalPoints">
      <Documentation
@@ -51,16 +51,13 @@ Computer Graphics Forum, 2014.
         </Documentation>
       </InputProperty>
 
-
-
-
-
       <StringVectorProperty
-        name="Lower Field"
-        command="SetLowerBoundFieldName"
-        number_of_elements="1"
+        name="Lower Bound Field"
+        command="SetInputArrayToProcess"
+        element_types="0 0 0 0 2"
+        number_of_elements="5"
+        default_values="0"
         animateable="0"
-        label="Lower Bound Field"
         >
         <ArrayListDomain
           name="array_list"
@@ -75,11 +72,12 @@ Computer Graphics Forum, 2014.
       </StringVectorProperty>
 
       <StringVectorProperty
-        name="Upper Field"
-        command="SetUpperBoundFieldName"
-        number_of_elements="1"
+        name="Upper Bound Field"
+        command="SetInputArrayToProcess"
+        element_types="0 0 0 0 2"
+        number_of_elements="5"
+        default_values="1"
         animateable="0"
-        label="Upper Bound Field"
         >
         <ArrayListDomain
           name="array_list"
@@ -92,11 +90,6 @@ Computer Graphics Forum, 2014.
           Select the upper bound field to process.
         </Documentation>
       </StringVectorProperty>
-
-      <PropertyGroup panel_widget="Line" label="Input Bound Fields">
-        <Property name="Upper Field" />
-        <Property name="Lower Field" />
-      </PropertyGroup>
 
       <DoubleVectorProperty
          name="SimplificationThreshold"
@@ -214,7 +207,6 @@ specify in the text box below which maximum to display.
          </Documentation>
       </IntVectorProperty>
 
-
       <PropertyGroup panel_widget="Line" label="Output options">
         <Property name="OutputAllMinimumComponents" />
         <Property name="OutputAllJoinSaddleComponents" />
@@ -226,60 +218,13 @@ specify in the text box below which maximum to display.
         <Property name="OutputMaxmumComponentId" />
       </PropertyGroup>
 
-
-      <IntVectorProperty
-         name="UseAllCores"
-         label="Use All Cores"
-         command="SetUseAllCores"
-         number_of_elements="1"
-         default_values="1" panel_visibility="advanced">
-        <BooleanDomain name="bool"/>
-         <Documentation>
-          Use all available cores.
-         </Documentation>
-      </IntVectorProperty>
-
-      <IntVectorProperty
-         name="ThreadNumber"
-         label="Thread Number"
-         command="SetThreadNumber"
-         number_of_elements="1"
-         default_values="1" panel_visibility="advanced">
-        <IntRangeDomain name="range" min="1" max="100" />
-        <Hints>
-          <PropertyWidgetDecorator type="GenericDecorator"
-            mode="visibility"
-            property="UseAllCores"
-            value="0" />
-        </Hints>
-         <Documentation>
-          Thread number.
-         </Documentation>
-      </IntVectorProperty>
-
-      <IntVectorProperty
-         name="DebugLevel"
-         label="Debug Level"
-         command="SetDebugLevel"
-         number_of_elements="1"
-         default_values="3" panel_visibility="advanced">
-        <IntRangeDomain name="range" min="1" max="6" />
-         <Documentation>
-           Debug level.
-         </Documentation>
-      </IntVectorProperty>
-
-      <PropertyGroup panel_widget="Line" label="Testing">
-        <Property name="UseAllCores" />
-        <Property name="ThreadNumber" />
-        <Property name="DebugLevel" />
-      </PropertyGroup>
-
       <PropertyGroup panel_widget="Line" label="Input options">
         <Property name="SimplificationThreshold" />
-        <Property name="Lower Field" />
-        <Property name="Upper Field" />
+        <Property name="Lower Bound Field" />
+        <Property name="Upper Bound Field" />
       </PropertyGroup>
+
+      ${DEBUG_WIDGETS}
 
       <OutputPort name="MandatoryMinima" index="0" id="port0" />
       <OutputPort name="MandatoryJoinSaddles" index="1" id="port1" />

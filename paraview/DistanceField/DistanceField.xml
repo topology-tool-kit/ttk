@@ -2,7 +2,7 @@
 
   <ProxyGroup name="filters">
     <SourceProxy
-      name="DistanceField"
+      name="ttkDistanceField"
       class="ttkDistanceField"
       label="TTK DistanceField">
       <Documentation
@@ -68,13 +68,15 @@ Edsger W. Dijkstra, Numerische Mathematik, 1959.
       </IntVectorProperty>
 
       <StringVectorProperty
-        name="InputVertexScalarFieldName"
-        command="SetInputVertexScalarFieldName"
-        label="Vertex identifier field"
-        number_of_elements="1"
-        animateable="0"
-        panel_visibility="advanced"
-        >
+          name="InputVertexScalarFieldNameNew"
+          label="Vertex Identifier Field"
+          command="SetInputArrayToProcess"
+          element_types="0 0 0 0 2"
+          number_of_elements="5"
+          default_values="0"
+          animateable="0"
+          panel_visibility="advanced"
+          >
         <ArrayListDomain
           name="array_list"
           default_values="0"
@@ -120,59 +122,12 @@ Edsger W. Dijkstra, Numerische Mathematik, 1959.
         </Documentation>
       </StringVectorProperty>
 
-      <IntVectorProperty
-        name="UseAllCores"
-        label="Use All Cores"
-        command="SetUseAllCores"
-        number_of_elements="1"
-        default_values="1" panel_visibility="advanced">
-        <BooleanDomain name="bool"/>
-        <Documentation>
-          Use all available cores.
-        </Documentation>
-      </IntVectorProperty>
-
-      <IntVectorProperty
-        name="ThreadNumber"
-        label="Thread Number"
-        command="SetThreadNumber"
-        number_of_elements="1"
-        default_values="1" panel_visibility="advanced">
-        <IntRangeDomain name="range" min="1" max="100" />
-        <Hints>
-          <PropertyWidgetDecorator type="GenericDecorator"
-            mode="visibility"
-            property="UseAllCores"
-            value="0" />
-        </Hints>
-
-        <Documentation>
-          Thread number.
-        </Documentation>
-      </IntVectorProperty>
-
-      <IntVectorProperty
-        name="DebugLevel"
-        label="Debug Level"
-        command="SetDebugLevel"
-        number_of_elements="1"
-        default_values="3" panel_visibility="advanced">
-        <IntRangeDomain name="range" min="0" max="100" />
-        <Documentation>
-          Debug level.
-        </Documentation>
-      </IntVectorProperty>
-
-      <PropertyGroup panel_widget="Line" label="Testing">
-        <Property name="UseAllCores" />
-        <Property name="ThreadNumber" />
-        <Property name="DebugLevel" />
-      </PropertyGroup>
+      ${DEBUG_WIDGETS}
 
       <PropertyGroup panel_widget="Line" label="Input options">
         <Property name="Sources" />
         <Property name="ForceInputVertexScalarField" />
-        <Property name="InputVertexScalarFieldName" />
+        <Property name="InputVertexScalarFieldNameNew" />
       </PropertyGroup>
 
       <PropertyGroup panel_widget="Line" label="Output options">

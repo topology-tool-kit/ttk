@@ -26,6 +26,24 @@
 /// This filter can be used as any other VTK filter (for instance, by using the
 /// sequence of calls SetInputData(), Update(), GetOutput()).
 ///
+/// The input data arrays needs to be specified via the standard VTK call
+/// vtkAlgorithm::SetInputArrayToProcess() with the following parameters:
+/// \param idx 0 for the U Component, 1 for the V Component
+/// \param port 0 (FIXED: first port)
+/// \param connection 0 (FIXED: first connection)
+/// \param fieldAssociation 0 (FIXED: point data)
+/// \param arrayName (DYNAMIC: string identifier of the input array)
+///
+/// The optional offset arrays can be specified via the standard VTK call
+/// vtkAlgorithm::SetInputArrayToProcess() with the following parameters:
+/// \param idx 2 for the U Offset Field, 3 for the V Offset Field
+/// \param port 0 (FIXED: first port)
+/// \param connection 0 (FIXED: first connection)
+/// \param fieldAssociation 0 (FIXED: point data)
+/// \param arrayName (DYNAMIC: string identifier of the offset array)
+/// \note: To use this optional array, `ForceInputOffsetScalarField` needs to be
+/// enabled with the setter `setForceInputOffsetScalarField()'.
+///
 /// See the related ParaView example state files for usage examples within a
 /// VTK pipeline.
 ///
@@ -41,84 +59,32 @@
 /// \sa vtkRangePolygon
 /// \sa ttk::ReebSpace
 ///
-#ifndef _TTK_REEBSPACE_H
-#define _TTK_REEBSPACE_H
 
-// VTK includes -- to adapt
-#include <vtkCellArray.h>
-#include <vtkCellData.h>
-#include <vtkCharArray.h>
-#include <vtkDataArray.h>
-#include <vtkDataSetAlgorithm.h>
-#include <vtkDoubleArray.h>
-#include <vtkFiltersCoreModule.h>
-#include <vtkFloatArray.h>
-#include <vtkInformation.h>
-#include <vtkInformationVector.h>
-#include <vtkObjectFactory.h>
-#include <vtkPointData.h>
-#include <vtkSmartPointer.h>
-#include <vtkUnstructuredGrid.h>
+#pragma once
 
 // VTK Module
 #include <ttkReebSpaceModule.h>
 
 // ttk code includes
 #include <ReebSpace.h>
-#include <ttkTriangulationAlgorithm.h>
+#include <ttkAlgorithm.h>
 
 // in this example, this wrapper takes a data-set on the input and produces a
 // data-set on the output - to adapt.
 // see the documentation of the vtkAlgorithm class to decide from which VTK
 // class your wrapper should inherit.
-class TTKREEBSPACE_EXPORT ttkReebSpace : public vtkDataSetAlgorithm,
-                                         protected ttk::Wrapper {
+class TTKREEBSPACE_EXPORT ttkReebSpace : public ttkAlgorithm,
+                                         protected ttk::ReebSpace {
 
 public:
   static ttkReebSpace *New();
-
-  vtkTypeMacro(ttkReebSpace, vtkDataSetAlgorithm);
-
-  // default ttk setters
-  void SetDebugLevel(int debugLevel) {
-    setDebugLevel(debugLevel);
-    Modified();
-  }
-
-  void SetThreadNumber(int threadNumber) {
-    ThreadNumber = threadNumber;
-    SetThreads();
-  }
-
-  void SetUseAllCores(bool onOff) {
-    UseAllCores = onOff;
-    SetThreads();
-  }
-  // end of default ttk setters
-
-  vtkSetMacro(Ucomponent, std::string);
-  vtkGetMacro(Ucomponent, std::string);
-
-  vtkSetMacro(Vcomponent, std::string);
-  vtkGetMacro(Vcomponent, std::string);
-
-  vtkSetMacro(UcomponentId, int);
-  vtkGetMacro(UcomponentId, int);
-
-  vtkSetMacro(VcomponentId, int);
-  vtkGetMacro(VcomponentId, int);
+  vtkTypeMacro(ttkReebSpace, ttkAlgorithm);
 
   vtkGetMacro(ForceInputOffsetScalarField, bool);
   vtkSetMacro(ForceInputOffsetScalarField, bool);
 
   vtkGetMacro(UseOctreeAcceleration, bool);
   vtkSetMacro(UseOctreeAcceleration, bool);
-
-  vtkGetMacro(OffsetFieldU, std::string);
-  vtkSetMacro(OffsetFieldU, std::string);
-
-  vtkGetMacro(OffsetFieldV, std::string);
-  vtkSetMacro(OffsetFieldV, std::string);
 
   // 0-sheet options
   vtkGetMacro(ZeroSheetId, bool);
@@ -201,60 +167,33 @@ public:
 protected:
   ttkReebSpace();
 
-  ~ttkReebSpace() override;
+  int FillInputPortInformation(int port, vtkInformation *info) override;
+  int FillOutputPortInformation(int port, vtkInformation *info) override;
+  int RequestData(vtkInformation *request,
+                  vtkInformationVector **inputVector,
+                  vtkInformationVector *outputVector) override;
 
-  virtual int FillOutputPortInformation(int port,
-                                        vtkInformation *info) override {
-
-    if(port == 0) {
-      // 0-sheets, corners of jacobi set segments
-      info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
-    } else if(port == 1) {
-      // 1-sheets, jacobi sets
-      info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
-    } else if(port == 2) {
-      // 2-sheets, fiber surfaces of jacobi sets
-      info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
-    }
-
-    return 1;
-  }
-
-  TTK_SETUP();
+  template <class dataTypeU, class dataTypeV>
+  int dispatch(const dataTypeU *const uField,
+               const dataTypeV *const vField,
+               ttk::Triangulation *const triangulation);
 
 private:
-  int UcomponentId, VcomponentId;
+  bool ZeroSheetValue{true}, ZeroSheetVertexId{true}, ZeroSheetType{true},
+    ZeroSheetId{true};
+  bool OneSheetValue{true}, OneSheetVertexId{true}, OneSheetType{true},
+    OneSheetId{true}, OneSheetEdgeId{true};
+  bool TwoSheets{true}, TwoSheetCaseId{true}, TwoSheetValue{true},
+    TwoSheetParameterization{true}, TwoSheetId{true}, TwoSheetEdgeId{true},
+    TwoSheetTetId{true}, TwoSheetEdgeType{true};
+  bool ThreeSheetVertexNumber{true}, ThreeSheetTetNumber{true},
+    ThreeSheetExpansion{true}, ThreeSheetDomainVolume{true},
+    ThreeSheetRangeArea{true}, ThreeSheetHyperVolume{true};
 
-  bool ZeroSheetValue, ZeroSheetVertexId, ZeroSheetType, ZeroSheetId;
-  bool OneSheetValue, OneSheetVertexId, OneSheetType, OneSheetId,
-    OneSheetEdgeId;
-  bool TwoSheets, TwoSheetCaseId, TwoSheetValue, TwoSheetParameterization,
-    TwoSheetId, TwoSheetEdgeId, TwoSheetTetId, TwoSheetEdgeType;
-  bool ThreeSheetVertexNumber, ThreeSheetTetNumber, ThreeSheetExpansion,
-    ThreeSheetDomainVolume, ThreeSheetRangeArea, ThreeSheetHyperVolume;
+  bool ForceInputOffsetScalarField{false};
+  bool UseOctreeAcceleration{true};
+  int SimplificationCriterion{1};
+  double SimplificationThreshold{0.0};
 
-  bool ForceInputOffsetScalarField;
-  bool UseOctreeAcceleration;
-  int SimplificationCriterion;
-  double SimplificationThreshold;
-  std::string Ucomponent, Vcomponent, OffsetFieldU, OffsetFieldV;
-
-  vtkDataArray *uComponent_, *vComponent_, *offsetFieldU_, *offsetFieldV_;
-  std::vector<ttk::SimplexId> sosOffsetsU_, sosOffsetsV_;
-
-  // core data-structure
-  ttk::ReebSpace reebSpace_;
-
-  // template base call
-  template <class dataTypeU, class dataTypeV>
-  int baseCall(vtkDataSet *input,
-               vtkDataArray *uField,
-               vtkDataArray *offsetFieldU,
-               vtkDataArray *vField,
-               vtkDataArray *offsetFieldV);
-
-  template <class dataTypeU, class dataTypeV>
-  int preProcess(vtkDataSet *input, vtkDataArray *uField, vtkDataArray *vField);
+  std::vector<ttk::SimplexId> sosOffsetsU_{}, sosOffsetsV_{};
 };
-
-#endif // _TTK_REEBSPACE_H

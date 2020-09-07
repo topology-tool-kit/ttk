@@ -3,6 +3,7 @@
 ttk::TrackingFromPersistenceDiagrams::TrackingFromPersistenceDiagrams() {
   inputData_ = nullptr;
   numberOfInputs_ = 0;
+  this->setDebugMsgPrefix("TrackingFromPersistenceDiagrams");
 }
 
 ttk::TrackingFromPersistenceDiagrams::~TrackingFromPersistenceDiagrams() {

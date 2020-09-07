@@ -18,8 +18,7 @@
 ///
 /// \sa ttkContourForests.cpp %for a usage example.
 
-#ifndef MERGETREETEMPLATE_H
-#define MERGETREETEMPLATE_H
+#pragma once
 
 #include "MergeTree.h"
 
@@ -117,9 +116,10 @@ namespace ttk {
       // }
     }
 
-    template <typename scalarType>
+    template <typename scalarType, typename triangulationType>
     SimplexId MergeTree::globalSimplify(const SimplexId posSeed0,
-                                        const SimplexId posSeed1) {
+                                        const SimplexId posSeed1,
+                                        const triangulationType &mesh) {
 
       // if null threshold, leave
       if(!params_->simplifyThreshold) {
@@ -162,7 +162,7 @@ namespace ttk {
       std::vector<std::tuple<SimplexId, SimplexId, scalarType, bool>> pairsJT;
       std::vector<std::tuple<SimplexId, SimplexId, scalarType, bool>> pairsST;
 
-      recoverMTPairs<scalarType>(sortedNodes, pairsJT, pairsST);
+      recoverMTPairs<scalarType>(sortedNodes, pairsJT, pairsST, mesh);
 
       //}
       //---------------------
@@ -511,9 +511,10 @@ namespace ttk {
 
     // Persistence
 
-    template <typename scalarType>
+    template <typename scalarType, typename triangulationType>
     int MergeTree::computePersistencePairs(
-      std::vector<std::tuple<SimplexId, SimplexId, scalarType>> &pairs) {
+      std::vector<std::tuple<SimplexId, SimplexId, scalarType>> &pairs,
+      const triangulationType &mesh) {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(!getNumberOfSuperArcs()) {
         return -1;
@@ -527,7 +528,7 @@ namespace ttk {
         SimplexId curVert = curNode->getVertexId();
         SimplexId termVert = getNode(curNode->getTerminaison())->getVertexId();
 
-        addPair<scalarType>(pairs, curVert, termVert);
+        addPair<scalarType>(pairs, curVert, termVert, mesh);
       }
 
       auto pair_sort
@@ -541,9 +542,10 @@ namespace ttk {
       return 0;
     }
 
-    template <typename scalarType>
+    template <typename scalarType, typename triangulationType>
     int MergeTree::computePersistencePairs(
-      std::vector<std::tuple<SimplexId, SimplexId, scalarType, bool>> &pairs) {
+      std::vector<std::tuple<SimplexId, SimplexId, scalarType, bool>> &pairs,
+      const triangulationType &mesh) {
       // Need to be called on MergeTree, not ContourTree
 
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -565,7 +567,7 @@ namespace ttk {
         SimplexId termVert = getNode(curNode->getTerminaison())->getVertexId();
 
         addPair<scalarType>(
-          pairs, curVert, termVert, treeData_.treeType == TreeType::Join);
+          pairs, curVert, termVert, mesh, treeData_.treeType == TreeType::Join);
       }
 
       auto pair_sort
@@ -579,12 +581,12 @@ namespace ttk {
       return 0;
     }
 
-    template <typename scalarType>
+    template <typename scalarType, typename triangulationType>
     void MergeTree::recoverMTPairs(
       const std::vector<idNode> &sortedNodes,
       std::vector<std::tuple<SimplexId, SimplexId, scalarType, bool>> &pairsJT,
-      std::vector<std::tuple<SimplexId, SimplexId, scalarType, bool>>
-        &pairsST) {
+      std::vector<std::tuple<SimplexId, SimplexId, scalarType, bool>> &pairsST,
+      const triangulationType &mesh) {
       const auto nbNode = getNumberOfNodes();
 
       std::vector<ExtendedUnionFind *> vect_JoinUF(nbNode, nullptr);
@@ -656,7 +658,8 @@ namespace ttk {
                   ExtendedUnionFind *neighUF = vect_JoinUF[neigh]->find();
 
                   if(ni != furtherI) { // keep the more persitent pair
-                    addPair<scalarType>(pairsJT, neighUF->getOrigin(), v, true);
+                    addPair<scalarType>(
+                      pairsJT, neighUF->getOrigin(), v, mesh, true);
                     pendingMinMax.erase(neighUF->getOrigin());
 
                     // std::cout << " jt make pair : " <<
@@ -687,7 +690,7 @@ namespace ttk {
               // std::cout << " add : " << pair_vert.first << " - " <<
               // pair_vert.second << std::endl;
               addPair<scalarType>(
-                pairsJT, pair_vert.first, pair_vert.second, true);
+                pairsJT, pair_vert.first, pair_vert.second, mesh, true);
             }
           }
         } // end para section
@@ -763,7 +766,7 @@ namespace ttk {
 
                   if(ni != furtherI) {
                     addPair<scalarType>(
-                      pairsST, neighUF->getOrigin(), v, false);
+                      pairsST, neighUF->getOrigin(), v, mesh, false);
 
                     pendingMinMax.erase(neighUF->getOrigin());
 
@@ -792,7 +795,7 @@ namespace ttk {
           // Add the pending biggest pair of each component
           for(const auto &pair_vert : pendingMinMax) {
             addPair<scalarType>(
-              pairsST, pair_vert.first, pair_vert.second, false);
+              pairsST, pair_vert.first, pair_vert.second, mesh, false);
           }
         } // end para section
       } // end para
@@ -802,11 +805,12 @@ namespace ttk {
     // Tools
     // {
 
-    template <typename scalarType>
+    template <typename scalarType, typename triangulationType>
     void MergeTree::addPair(
       std::vector<std::tuple<SimplexId, SimplexId, scalarType, bool>> &pairs,
       const SimplexId &orig,
       const SimplexId &term,
+      const triangulationType &mesh,
       const bool goUp) {
       if(params_->simplifyMethod == SimplifMethod::Persist) {
         pairs.emplace_back(
@@ -814,33 +818,527 @@ namespace ttk {
           fabs(getValue<scalarType>(orig) - getValue<scalarType>(term)), goUp);
       } else if(params_->simplifyMethod == SimplifMethod::Span) {
         float coordOrig[3], coordTerm[3], span;
-        mesh_->getVertexPoint(orig, coordOrig[0], coordOrig[1], coordOrig[2]);
-        mesh_->getVertexPoint(term, coordTerm[0], coordTerm[1], coordTerm[2]);
+        mesh->getVertexPoint(orig, coordOrig[0], coordOrig[1], coordOrig[2]);
+        mesh->getVertexPoint(term, coordTerm[0], coordTerm[1], coordTerm[2]);
         span = Geometry::distance(coordOrig, coordTerm);
         pairs.emplace_back(orig, term, span, goUp);
       }
     }
 
-    template <typename scalarType>
+    template <typename scalarType, typename triangulationType>
     void MergeTree::addPair(
       std::vector<std::tuple<SimplexId, SimplexId, scalarType>> &pairs,
       const SimplexId &orig,
-      const SimplexId &term) {
+      const SimplexId &term,
+      const triangulationType &mesh) {
       if(params_->simplifyMethod == SimplifMethod::Persist) {
         pairs.emplace_back(
           orig, term,
           fabs(getValue<scalarType>(orig) - getValue<scalarType>(term)));
       } else if(params_->simplifyMethod == SimplifMethod::Span) {
         float coordOrig[3], coordTerm[3], span;
-        mesh_->getVertexPoint(orig, coordOrig[0], coordOrig[1], coordOrig[2]);
-        mesh_->getVertexPoint(term, coordTerm[0], coordTerm[1], coordTerm[2]);
+        mesh->getVertexPoint(orig, coordOrig[0], coordOrig[1], coordOrig[2]);
+        mesh->getVertexPoint(term, coordTerm[0], coordTerm[1], coordTerm[2]);
         span = Geometry::distance(coordOrig, coordTerm);
         pairs.emplace_back(orig, term, span);
       }
     }
 
+    template <typename triangulationType>
+    int MergeTree::build(std::vector<ExtendedUnionFind *> &vect_baseUF,
+                         const std::vector<SimplexId> &overlapBefore,
+                         const std::vector<SimplexId> &overlapAfter,
+                         SimplexId start,
+                         SimplexId end,
+                         const SimplexId &posSeed0,
+                         const SimplexId &posSeed1,
+                         const triangulationType &mesh) {
+      // idea, work on the neighbohood instead of working on the node itsef.
+      // Need lower / higher star construction.
+      //
+      // at this time, ST have no root except in Adjacency list. These root are
+      // isolated vertices.
+      //
+      // clear and reset tree data (this step should take almost no time)
+      flush();
+
+      DebugTimer timerBegin;
+
+      // -----------------
+      // Find boundaries
+      // -----------------
+      // {
+
+      SimplexId sortedNode;
+      const SimplexId step = (treeData_.treeType == TreeType::Join) ? 1 : -1;
+
+      // main
+      const SimplexId mainStart = start;
+      const SimplexId mainEnd = end;
+
+      const bool isJT = treeData_.treeType == TreeType::Join;
+      // else Split Tree, can't be called on ContourTree
+
+      // overlap before
+      const SimplexId beforeStart = (isJT) ? 0 : overlapBefore.size() - 1;
+      const SimplexId beforeEnd = (isJT) ? overlapBefore.size() : -1;
+
+      // overlap after
+      const SimplexId afterStart = (isJT) ? 0 : overlapAfter.size() - 1;
+      const SimplexId afterEnd = (isJT) ? overlapAfter.size() : -1;
+
+      // print debug
+      if(params_->debugLevel >= 3) {
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp critical
+#endif
+        {
+          std::stringstream msg;
+          msg << "partition : " << static_cast<unsigned>(treeData_.partition);
+          msg << ", isJT : " << isJT;
+          msg << ",  size : ";
+          msg << "before  : " << abs(beforeEnd - beforeStart);
+          msg << ", main : " << abs(mainEnd - mainStart);
+          msg << ", after : " << abs(afterEnd - afterStart);
+          msg << ", Total : ";
+          msg << abs(beforeEnd - beforeStart) + abs(mainEnd - mainStart)
+                   + abs(afterEnd - afterStart);
+          this->printMsg(msg.str());
+        }
+      }
+
+      // }
+      // --------------
+      // Overlap Before
+      // --------------
+      // {
+
+      // for each vertex of our triangulation
+      for(sortedNode = beforeStart; sortedNode != beforeEnd;
+          sortedNode += step) {
+        const SimplexId currentVertex = overlapBefore[sortedNode];
+        const bool overlapB = isJT;
+        const bool overlapA = !isJT;
+        processVertex(
+          currentVertex, vect_baseUF, overlapB, overlapA, mesh, timerBegin);
+      } // foreach node
+
+      // }
+      // ---------------
+      // Partition
+      // ---------------
+      // {
+
+      // for each vertex of our triangulation
+      for(sortedNode = mainStart; sortedNode != mainEnd; sortedNode += step) {
+        const SimplexId currentVertex = scalars_->sortedVertices[sortedNode];
+        processVertex(
+          currentVertex, vect_baseUF, false, false, mesh, timerBegin);
+      } // foreach node
+
+      // }
+      // ---------------
+      // Overlap After
+      // ---------------
+      // {
+
+      // for each vertex of our triangulation
+      for(sortedNode = afterStart; sortedNode != afterEnd; sortedNode += step) {
+        const SimplexId currentVertex = overlapAfter[sortedNode];
+        const bool overlapB = !isJT;
+        const bool overlapA = isJT;
+        processVertex(
+          currentVertex, vect_baseUF, overlapB, overlapA, mesh, timerBegin);
+      } // foreach node
+
+      // }
+      // ---------------
+      // Close root arcs
+      // ---------------
+      // {
+
+      // Closing step for openedSuperArc.
+      // Not aesthetic but efficient
+      // More efficient that using nullity of the neighborhood
+      // to detect extrema of the opponent tree
+      idNode rootNode;
+      SimplexId corrVertex, origin;
+      idSuperArc tmp_sa;
+
+      // It can't be more connected component that leaves so test for each
+      // leaves (even virtual extrema)
+      for(const auto &l : treeData_.leaves) {
+        corrVertex = getNode(l)->getVertexId();
+
+        // case of an isolated point
+        if(!mesh->getVertexNeighborNumber(corrVertex)) {
+          tmp_sa = getNode(l)->getUpSuperArcId(0);
+        } else {
+          tmp_sa = (idSuperArc)((vect_baseUF[corrVertex])->find()->getData());
+          origin = (idSuperArc)((vect_baseUF[corrVertex])->find()->getOrigin());
+        }
+
+        if(treeData_.superArcs[tmp_sa].getUpNodeId() == nullNodes) {
+          rootNode
+            = makeNode(treeData_.superArcs[tmp_sa].getLastVisited(), origin);
+          Node *originNode = getNode(
+            getNode(getSuperArc(tmp_sa)->getDownNodeId())->getOrigin());
+          originNode->setTerminaison(rootNode);
+
+          const bool overlapB
+            = scalars_->mirrorVertices[getNode(rootNode)->getVertexId()]
+              <= posSeed0;
+          const bool overlapA
+            = scalars_->mirrorVertices[getNode(rootNode)->getVertexId()]
+              >= posSeed1;
+
+          closeSuperArc(tmp_sa, rootNode, overlapB, overlapA);
+
+          // in the case we have 1 vertex domain,
+          // hide the close SuperArc wich is point1 <>> point1
+          if(getSuperArc(tmp_sa)->getDownNodeId()
+             == getSuperArc(tmp_sa)->getUpNodeId()) {
+            hideArc(tmp_sa);
+          }
+
+          treeData_.roots.emplace_back(rootNode);
+        }
+      }
+
+      // }
+      // -----------
+      // Timer print
+      // ------------
+      // {
+
+      if(params_->debugLevel >= infoMsg) {
+        this->printMsg("Tree " + std::to_string(treeData_.partition)
+                         + " computed ("
+                         + std::to_string(getNumberOfSuperArcs()) + " arcs)",
+                       1.0, timerBegin.getElapsedTime(), this->threadNumber_);
+      }
+
+      // }
+
+      return 0;
+    }
+
+    template <typename triangulationType>
+    void MergeTree::processVertex(const SimplexId &currentVertex,
+                                  std::vector<ExtendedUnionFind *> &vect_baseUF,
+                                  const bool overlapB,
+                                  const bool overlapA,
+                                  const triangulationType &mesh,
+                                  DebugTimer &begin) {
+      std::vector<ExtendedUnionFind *> vect_neighUF;
+      ExtendedUnionFind *seed = nullptr, *tmpseed;
+
+      SimplexId neighSize;
+      const SimplexId neighborNumber
+        = mesh->getVertexNeighborNumber(currentVertex);
+      const bool isJT = treeData_.treeType == TreeType::Join;
+
+      idSuperArc currentArc;
+      idNode closingNode, currentNode;
+      SimplexId neighbor;
+
+      // Check UF in neighborhood
+      for(SimplexId n = 0; n < neighborNumber; ++n) {
+        mesh->getVertexNeighbor(currentVertex, n, neighbor);
+        // if the vertex is out: consider it null
+        tmpseed = vect_baseUF[neighbor];
+        // unvisited vertex, we continue.
+        if(tmpseed == nullptr) {
+          continue;
+        }
+
+        tmpseed = tmpseed->find();
+
+        // get all different UF in neighborhood
+        if(find(vect_neighUF.cbegin(), vect_neighUF.cend(), tmpseed)
+           == vect_neighUF.end()) {
+          vect_neighUF.emplace_back(tmpseed);
+          seed = tmpseed;
+        }
+      }
+
+      (neighSize = vect_neighUF.size());
+
+      // SimplexId test = 1;
+      // if (currentVertex == test)
+      // cout << test << " : " << vect_neighUF.size() << " " <<
+      // vect_interfaceUF.size() << endl; Make output
+      if(!neighSize) {
+        // we are on a real extrema we have to create a new UNION FIND and a
+        // branch a real extrema can't be a virtual extrema
+
+        seed = new ExtendedUnionFind(currentVertex);
+        // When creating an extrema we create a pair ending on this node.
+        currentNode = makeNode(currentVertex);
+        getNode(currentNode)->setOrigin(currentNode);
+        currentArc = openSuperArc(currentNode, overlapB, overlapA);
+        // if(overlap && partition_ == 1) cout << currentVertex << endl;
+        treeData_.leaves.emplace_back(currentNode);
+
+        if(params_->debugLevel >= advancedInfoMsg) {
+          if(isJT) {
+            this->printMsg("Min node id: " + std::to_string(currentVertex), 1.0,
+                           begin.getElapsedTime(), this->threadNumber_);
+          } else {
+            this->printMsg("Max node id: " + std::to_string(currentVertex), 1.0,
+                           begin.getElapsedTime(), this->threadNumber_);
+          }
+        }
+      } else if(neighSize > 1) {
+        // Is a saddle if have more than one UF in neighborhood
+        // Or is linked to an interface (virtual extrema -> leaves or
+        // interface cc representant : regular node )
+
+        // Merge operation => close all arriving SuperArc (ignoring UF from
+        // interface) And open a new one
+        closingNode = makeNode(currentVertex);
+        currentArc = openSuperArc(closingNode, overlapB, overlapA);
+
+        SimplexId farOrigin = vect_neighUF[0]->find()->getOrigin();
+
+        // close each SuperArc finishing here
+        for(auto *neigh : vect_neighUF) {
+          closeSuperArc((idSuperArc)neigh->find()->getData(), closingNode,
+                        overlapB, overlapA);
+          // persistance pair closing here.
+          // For the one who will continue, it will be overide later
+          vertex2Node(neigh->find()->getOrigin())->setTerminaison(closingNode);
+
+          // cout <<
+          // getNode(getCorrespondingNode(neigh->find()->getOrigin()))->getVertexId()
+          //<< " terminate on " << getNode(closingNode)->getVertexId() << endl;
+
+          if((isJT && isLower(neigh->find()->getOrigin(), farOrigin))
+             || (!isJT && isHigher(neigh->find()->getOrigin(), farOrigin))) {
+            // here we keep the continuing the most persitant pair.
+            // It means a pair end when a parent have another origin thant the
+            // current leaf (or is the root) It might be not intuitive but it is
+            // more convenient for degenerate cases
+            farOrigin = neigh->find()->getOrigin();
+            // cout << "find origin  " << farOrigin << " for " << currentVertex
+            // << " " << isJT
+            //<< endl;
+          }
+        }
+
+        // Union correspond to the merge
+        seed = ExtendedUnionFind::makeUnion(vect_neighUF);
+        if(seed == nullptr) {
+          return;
+        }
+        seed->setOrigin(farOrigin);
+        getNode(closingNode)->setOrigin(getCorrespondingNodeId(farOrigin));
+
+        // cout << "  " << getNode(closingNode)->getVertexId() << " have origin
+        // at "
+        //<< getNode(getCorrespondingNode(farOrigin))->getVertexId() << endl;
+
+        if(params_->debugLevel >= advancedInfoMsg) {
+          this->printMsg("Saddle node id: " + std::to_string(currentVertex));
+        }
+
+      } else {
+#ifndef TTK_ENABLE_KAMIKAZE
+        if(seed == nullptr) {
+          return;
+        }
+#endif // TTK_ENABLE_KAMIKAZE
+       // regular node
+        currentArc = (idSuperArc)seed->find()->getData();
+        updateCorrespondingArc(currentVertex, currentArc);
+      }
+      // common
+      seed->setData((ufDataType)currentArc);
+      getSuperArc(currentArc)->setLastVisited(currentVertex);
+      vect_baseUF[currentVertex] = seed;
+    }
+
+    template <typename triangulationType>
+    bool MergeTree::verifyTree(const triangulationType &mesh) {
+      bool res = true;
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp critical
+#endif
+      {
+        const idSuperArc &nbArcs = getNumberOfSuperArcs();
+        const idSuperArc &nbNodes = getNumberOfNodes();
+
+        std::cout << "Verify Tree : " << std::endl;
+        std::cout << "nbNode initial : " << nbNodes << std::endl;
+        std::cout << "nbArcs initial : " << nbArcs << std::endl;
+
+        idSuperArc nbArcsVisibles = 0;
+        idSuperArc nbNodesVisibles = 0;
+
+        // for each visible arc, verify he is in the node
+
+        for(idSuperArc aid = 0; aid < nbArcs; aid++) {
+          const SuperArc &arc = treeData_.superArcs[aid];
+          if(arc.isVisible()) {
+            ++nbArcsVisibles;
+            const idNode &up = arc.getUpNodeId();
+            const idNode &down = arc.getDownNodeId();
+            if(up == nullNodes || down == nullNodes) {
+              res = false;
+              std::cout << "[Verif]: arc id : " << aid
+                        << "have a null boundary :";
+              std::cout << " down :" << down << " up:" << up << std::endl;
+            } else {
+              bool isIn = false;
+
+              // Arc is present in its upNode
+              const Node &nup = treeData_.nodes[up];
+              const auto &upNbDown = nup.getNumberOfDownSuperArcs();
+              for(idSuperArc d = 0; d < upNbDown; d++) {
+                if(nup.getDownSuperArcId(d) == aid) {
+                  isIn = true;
+                  break;
+                }
+              }
+              if(!isIn) {
+                res = false;
+                std::cout << "[Verif]: arc " << printArc(aid)
+                          << " is not known by its up node :";
+                std::cout << treeData_.nodes[up].getVertexId() << std::endl;
+              }
+
+              isIn = false;
+
+              // Arc is present in its upNode
+              const Node &ndown = treeData_.nodes[arc.getDownNodeId()];
+              const auto &upNbUp = ndown.getNumberOfUpSuperArcs();
+              for(idSuperArc u = 0; u < upNbUp; u++) {
+                if(ndown.getUpSuperArcId(u) == aid) {
+                  isIn = true;
+                  break;
+                }
+              }
+              if(!isIn) {
+                res = false;
+                std::cout << "[Verif]: arc " << printArc(aid)
+                          << " is not known by its down node :";
+                std::cout << treeData_.nodes[down].getVertexId() << std::endl;
+              }
+            }
+          }
+        }
+
+        // for each node, verify she is in the arc
+
+        for(idNode nid = 0; nid < nbNodes; nid++) {
+          const Node &node = treeData_.nodes[nid];
+          if(!node.isHidden()) {
+            ++nbNodesVisibles;
+
+            // Verify up arcs
+            const auto &nbup = node.getNumberOfUpSuperArcs();
+            for(idSuperArc ua = 0; ua < nbup; ua++) {
+              const SuperArc &arc
+                = treeData_.superArcs[node.getUpSuperArcId(ua)];
+              const idNode arcDownNode = arc.getDownNodeId();
+              if(arcDownNode != nid || !arc.isVisible()) {
+                res = false;
+                const idNode upnode = arc.getUpNodeId();
+                const idNode downnode = arc.getDownNodeId();
+                if(upnode == nullNodes || downnode == nullNodes) {
+                  std::cout << "[Verif]: arc id : " << node.getUpSuperArcId(ua);
+                  std::cout << "have a null boundary :";
+                  std::cout << " down :" << downnode << " up:" << upnode
+                            << std::endl;
+                } else {
+                  std::cout << "[Verif] Node " << node.getVertexId()
+                            << " id : " << nid;
+                  std::cout << " Problem with up arc : "
+                            << printArc(node.getUpSuperArcId(ua)) << std::endl;
+                }
+              }
+            }
+
+            // Verify down arcs
+            const auto &nbdown = node.getNumberOfDownSuperArcs();
+            for(idSuperArc da = 0; da < nbdown; da++) {
+              const SuperArc &arc
+                = treeData_.superArcs[node.getDownSuperArcId(da)];
+              const idNode arcUpNode = arc.getUpNodeId();
+              if(arcUpNode != nid || !arc.isVisible()) {
+                res = false;
+                const idNode upnode = arc.getUpNodeId();
+                const idNode downnode = arc.getDownNodeId();
+                if(upnode == nullNodes || downnode == nullNodes) {
+                  std::cout << "[Verif]: arc id : "
+                            << node.getDownSuperArcId(da);
+                  std::cout << "have a null boundary :";
+                  std::cout << " down :" << downnode << " up:" << upnode
+                            << std::endl;
+                } else {
+                  std::cout << "[Verif] Node " << node.getVertexId()
+                            << " id : " << nid;
+                  std::cout << " Problem with down arc : "
+                            << printArc(node.getUpSuperArcId(da)) << std::endl;
+                }
+              }
+            }
+          }
+        }
+
+        // verify segmentation information
+        const auto &nbVert = mesh->getNumberOfVertices();
+        std::vector<bool> segmSeen(nbVert, false);
+
+        for(idSuperArc aid = 0; aid < nbArcs; aid++) {
+          SuperArc &arc = treeData_.superArcs[aid];
+
+          if(!arc.isVisible())
+            continue;
+
+          const SimplexId segmSize = arc.getVertSize();
+          const std::pair<SimplexId, bool> *segmVect = arc.getVertList();
+
+          if(segmSize && !segmVect) {
+            res = false;
+            std::cout << "[Verif] Inconsistant segmentation for arc : ";
+            std::cout << printArc(aid);
+            std::cout << " have size of " << segmSize;
+            std::cout << " and a null list" << std::endl;
+          }
+
+          if(segmVect != nullptr) {
+            for(SimplexId v = 0; v < segmSize; v++) {
+              if(!segmVect[v].second) {
+                segmSeen.at(segmVect[v].first) = true;
+              }
+            }
+          }
+        }
+
+        for(const Node &node : treeData_.nodes) {
+          if(node.isHidden())
+            continue;
+
+          segmSeen.at(node.getVertexId()) = true;
+        }
+
+        std::cout << "Segm missing : ";
+        for(SimplexId v = 0; v < nbVert; v++) {
+          if(!segmSeen[v]) {
+            res = false;
+            std::cout << v << ", ";
+          }
+        }
+        std::cout << std::endl;
+
+        std::cout << "Nb visible Node : " << nbNodesVisibles << std::endl;
+        std::cout << "Nb visible Arcs : " << nbArcsVisibles << std::endl;
+      }
+      return res;
+    }
+
     // }
   } // namespace cf
 } // namespace ttk
-
-#endif /* end of include guard: MERGETREETEMPLATE_H */

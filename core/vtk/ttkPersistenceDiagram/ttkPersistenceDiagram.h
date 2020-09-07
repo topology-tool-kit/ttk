@@ -50,8 +50,8 @@
 #include <vtkCellData.h>
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
-#include <vtkFloatArray.h>
 #include <vtkDoubleArray.h>
+#include <vtkFloatArray.h>
 #include <vtkInformation.h>
 #include <vtkInformationVector.h>
 #include <vtkPointData.h>
@@ -75,27 +75,22 @@ public:
 
   vtkTypeMacro(ttkPersistenceDiagram, ttkAlgorithm);
 
-  void SetForceInputOffsetScalarField(int data) {
-    ForceInputOffsetScalarField = data;
-    Modified();
-    computeDiagram_ = true;
-  }
+  vtkSetMacro(ForceInputOffsetScalarField, int);
   vtkGetMacro(ForceInputOffsetScalarField, int);
 
-  void SetComputeSaddleConnectors(int data) {
-    ComputeSaddleConnectors = data;
-    Modified();
-    computeDiagram_ = true;
-  }
+  vtkSetMacro(ComputeSaddleConnectors, int);
   vtkGetMacro(ComputeSaddleConnectors, int);
 
   void SetShowInsideDomain(int onOff) {
     ShowInsideDomain = onOff;
     Modified();
+    computeDiagram_ = false;
   }
   vtkGetMacro(ShowInsideDomain, int);
 
-  template <typename scalarType, typename vtkSimplexArray, class triangulationType>
+  template <typename scalarType,
+            typename vtkSimplexArray,
+            class triangulationType>
   int setPersistenceDiagramInfo(
     ttk::SimplexId id,
     vtkSmartPointer<vtkSimplexArray> vertexIdentifierScalars,
@@ -125,7 +120,9 @@ public:
     vtkDataArray *inputScalars,
     const triangulationType *triangulation);
 
-  template <typename scalarType, typename vtkSimplexArray, class triangulationType>
+  template <typename scalarType,
+            typename vtkSimplexArray,
+            class triangulationType>
   int setPersistenceDiagramInfoInsideDomain(
     ttk::SimplexId id,
     vtkSmartPointer<vtkSimplexArray> vertexIdentifierScalars,
@@ -176,8 +173,8 @@ protected:
                   vtkInformationVector *outputVector) override;
 
   int FillInputPortInformation(int port, vtkInformation *info) override;
-
   int FillOutputPortInformation(int port, vtkInformation *info) override;
+  void Modified() override;
 
 private:
   bool ForceInputOffsetScalarField{false};

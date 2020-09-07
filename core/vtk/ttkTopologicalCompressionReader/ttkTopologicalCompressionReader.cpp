@@ -112,23 +112,9 @@ int ttkTopologicalCompressionReader::RequestData(
   this->preconditionTriangulation(triangulation);
 
   int status{0};
-  switch(triangulation->getType()) {
-    case ttk::Triangulation::Type::EXPLICIT:
-      status = this->ReadFromFile<double>(
-        fp,
-        *static_cast<ttk::ExplicitTriangulation *>(triangulation->getData()));
-      break;
-    case ttk::Triangulation::Type::IMPLICIT:
-      status = this->ReadFromFile<double>(
-        fp,
-        *static_cast<ttk::ImplicitTriangulation *>(triangulation->getData()));
-      break;
-    case ttk::Triangulation::Type::PERIODIC:
-      status = this->ReadFromFile<double>(
-        fp,
-        *static_cast<ttk::PeriodicImplicitTriangulation *>(triangulation->getData()));
-      break;
-  }
+  ttkTemplateMacro(triangulation->getType(),
+                   status = this->ReadFromFile<double>(
+                     fp, *static_cast<TTK_TT *>(triangulation->getData())));
   if(status != 0) {
     vtkWarningMacro("Failure when reading compressed TTK file");
   }
@@ -144,9 +130,10 @@ int ttkTopologicalCompressionReader::RequestData(
   } else {
     decompressed->SetName("Decompressed");
   }
-  const auto &decompressdeData = this->getDecompressedData();
-  for(int i = 0; i < vertexNumber; ++i)
-    decompressed->SetTuple1(i, decompressdeData[i]);
+  for(int i = 0; i < vertexNumber; ++i) {
+    decompressed->SetTuple1(i, decompressedData_[i]);
+  }
+
   // decompressed->SetVoidArray(, vertexNumber, 0);
   mesh->GetPointData()->AddArray(decompressed);
 

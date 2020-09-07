@@ -22,6 +22,10 @@ public:
     ScalarFieldSmoother *smoother
       = dynamic_cast<ScalarFieldSmoother *>(Program<ttkModule>::ttkModule_);
 
+    if(smoother == nullptr) {
+      return 0;
+    }
+
     smoother->setDimensionNumber(3);
     smoother->setInputDataPointer(pointSet_.data());
     smoother->setOutputDataPointer(pointSet_.data());

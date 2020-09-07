@@ -2,7 +2,7 @@
 <ServerManagerConfiguration>
   <ProxyGroup name="filters">
     <SourceProxy
-      name="ContinuousScatterPlot"
+      name="ttkContinuousScatterPlot"
       class="ttkContinuousScatterPlot"
       label="TTK ContinuousScatterPlot">
       <Documentation

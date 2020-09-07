@@ -1,4 +1,9 @@
+#include <ttkMacros.h>
 #include <ttkTrackingFromFields.h>
+#include <ttkUtils.h>
+
+// using namespace std;
+// using namespace ttk;
 
 vtkStandardNewMacro(ttkTrackingFromFields)
 
@@ -18,14 +23,27 @@ int ttkTrackingFromFields::FillOutputPortInformation(int port,
 
   return 1;
 }
+int ttkTrackingFromFields::FillInputPortInformation(int port,
+                                                    vtkInformation *info) {
+  if(port == 0) {
+    info->Set(vtkAlgorithm::INPUT_IS_REPEATABLE(), 1);
+  }
+  return 1;
+}
 
-int ttkTrackingFromFields::doIt(std::vector<vtkDataSet *> &inputs,
-                                std::vector<vtkDataSet *> &outputs) {
-  vtkDataSet *input = inputs[0];
-  vtkUnstructuredGrid *output = vtkUnstructuredGrid::SafeDownCast(outputs[0]);
+int ttkTrackingFromFields::RequestData(vtkInformation *request,
+                                       vtkInformationVector **inputVector,
+                                       vtkInformationVector *outputVector) {
 
-  internalTriangulation_ = ttkTriangulation::getTriangulation(input);
-  internalTriangulation_->setWrapper(this);
+  vtkDataSet *input = vtkDataSet::GetData(inputVector[0]);
+  vtkUnstructuredGrid *output
+    = vtkUnstructuredGrid::SafeDownCast(vtkDataSet::GetData(outputVector));
+
+  ttk::Triangulation *triangulation = ttkAlgorithm::GetTriangulation(input);
+  if(!triangulation)
+    return 0;
+
+  this->preconditionTriangulation(triangulation);
 
   // Test validity of datasets (must present the same number of points).
   if(!input)
@@ -36,10 +54,7 @@ int ttkTrackingFromFields::doIt(std::vector<vtkDataSet *> &inputs,
   std::vector<vtkDataArray *> inputScalarFields;
   int numberOfInputFields = input->GetPointData()->GetNumberOfArrays();
   if(numberOfInputFields < 3) {
-    std::stringstream msg;
-    msg << "[ttkTrackingFromField] not enough input fields to perform tracking."
-        << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
+    this->printErr("Not enough input fields to perform tracking.");
   }
 
   vtkDataArray *firstScalarField = input->GetPointData()->GetArray(0);
@@ -49,10 +64,7 @@ int ttkTrackingFromFields::doIt(std::vector<vtkDataSet *> &inputs,
     if(!currentScalarField
        || firstScalarField->GetDataType()
             != currentScalarField->GetDataType()) {
-      std::stringstream msg;
-      msg << "[ttkTrackingFromField] inconsistent field data type or size ("
-          << i << ")." << std::endl;
-      dMsg(std::cout, msg.str(), timeMsg);
+      this->printErr("Inconsistent field data type or size");
       return -1;
     }
     inputScalarFieldsRaw.push_back(currentScalarField);
@@ -91,10 +103,7 @@ int ttkTrackingFromFields::doIt(std::vector<vtkDataSet *> &inputs,
       case 4:
         break;
       default:
-        std::stringstream msg;
-        msg << "[ttkTrackingFromFieldsFromField] Unrecognized tracking method."
-            << std::endl;
-        dMsg(std::cout, msg.str(), timeMsg);
+        this->printMsg("Unrecognized tracking method.");
         break;
     }
   } else {
@@ -113,24 +122,37 @@ int ttkTrackingFromFields::doIt(std::vector<vtkDataSet *> &inputs,
       case str2int("greedy"):
         break;
       default:
-        std::stringstream msg;
-        msg << "[ttkTrackingFromField] Unrecognized tracking method."
-            << std::endl;
-        dMsg(std::cout, msg.str(), timeMsg);
+        this->printMsg("Unrecognized tracking method.");
         break;
     }
   }
 
-  int res = 0;
-  if(useTTKMethod)
-    res
-      = trackWithPersistenceMatching<double>(input, output, inputScalarFields);
-  else {
-    std::stringstream msg;
-    msg << "[ttkTrackingFromField] The specified matching method does not."
-        << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
+  // 0. get data
+  unsigned long fieldNumber = inputScalarFields.size();
+  std::vector<void *> inputFields(fieldNumber);
+  for(int i = 0; i < (int)fieldNumber; ++i)
+    inputFields[i] = ttkUtils::GetVoidPointer(inputScalarFields[i]);
+  this->setInputScalars(inputFields);
+
+  // 0'. get offsets
+  auto numberOfVertices = (int)input->GetNumberOfPoints();
+  vtkIdTypeArray *offsets_ = vtkIdTypeArray::New();
+  offsets_->SetNumberOfComponents(1);
+  offsets_->SetNumberOfTuples(numberOfVertices);
+  offsets_->SetName("OffsetScalarField");
+  for(int i = 0; i < numberOfVertices; ++i)
+    offsets_->SetTuple1(i, i);
+  this->setInputOffsets(ttkUtils::GetVoidPointer(offsets_));
+
+  int status = 0;
+  if(useTTKMethod) {
+    ttkVtkTemplateMacro(
+      inputScalarFields[0]->GetDataType(), triangulation->getType(),
+      (status = this->trackWithPersistenceMatching<VTK_TT, TTK_TT>(
+         input, output, fieldNumber, (TTK_TT *)triangulation->getData())));
+  } else {
+    this->printMsg("The specified matching method is not supported.");
   }
 
-  return res;
+  return status;
 }

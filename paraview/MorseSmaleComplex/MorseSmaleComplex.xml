@@ -6,7 +6,7 @@
        that matches your filter and then model your xml on it -->
   <ProxyGroup name="filters">
     <SourceProxy
-      name="MorseSmaleComplex"
+      name="ttkMorseSmaleComplex"
       class="ttkMorseSmaleComplex"
       label="TTK MorseSmaleComplex">
       <Documentation

@@ -5,7 +5,7 @@
        that matches your filter and then model your xml on it -->
   <ProxyGroup name="filters">
     <SourceProxy
-        name="TopologicalCompression"
+        name="ttkTopologicalCompression"
         class="ttkTopologicalCompression"
         label="TTK TopologicalCompression">
 

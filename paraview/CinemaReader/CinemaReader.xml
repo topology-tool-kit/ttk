@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ServerManagerConfiguration>
     <ProxyGroup name="sources">
-        <SourceProxy name="CinemaReader" class="ttkCinemaReader" label="TTK CinemaReader">
+        <SourceProxy name="ttkCinemaReader" class="ttkCinemaReader" label="TTK CinemaReader">
             <Documentation long_help="TTK CinemaReader" short_help="TTK CinemaReader">
                 This source reads the content of a Cinema Spec D database by converting the corresponding data.csv file into a vtkTable.
             </Documentation>

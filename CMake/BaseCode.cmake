@@ -36,7 +36,7 @@ function(ttk_add_base_library library)
       endif()
     endforeach()
   endif()
- 
+
   ttk_set_compile_options(${library})
 
   install(TARGETS ${library}
@@ -76,6 +76,10 @@ function(ttk_add_base_template_library library)
       $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
       $<INSTALL_INTERFACE:include/ttk/base>
     )
+
+  if(TTK_ENABLE_DOUBLE_TEMPLATING)
+    target_compile_definitions(${library} INTERFACE TTK_ENABLE_DOUBLE_TEMPLATING)
+  endif()
 
   if(TTK_ENABLE_KAMIKAZE)
     target_compile_definitions(${library} INTERFACE TTK_ENABLE_KAMIKAZE)
@@ -130,6 +134,15 @@ function(ttk_set_compile_options library)
 
   # compilation flags
   target_compile_options(${library} PRIVATE ${TTK_COMPILER_FLAGS})
+
+  # linker flags
+  if(TTK_LINKER_FLAGS)
+    target_link_options(${library} PRIVATE ${TTK_LINKER_FLAGS})
+  endif()
+
+  if (TTK_ENABLE_DOUBLE_TEMPLATING)
+    target_compile_definitions(${library} PUBLIC TTK_ENABLE_DOUBLE_TEMPLATING)
+  endif()
 
   if (TTK_ENABLE_KAMIKAZE)
     target_compile_definitions(${library} PUBLIC TTK_ENABLE_KAMIKAZE)

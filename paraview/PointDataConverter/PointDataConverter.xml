@@ -5,9 +5,9 @@
        that matches your filter and then model your xml on it -->
   <ProxyGroup name="filters">
     <SourceProxy
-	name="PointDataConverter"
-	class="ttkPointDataConverter"
-	label="TTK PointDataConverter">
+    name="ttkPointDataConverter"
+    class="ttkPointDataConverter"
+    label="TTK PointDataConverter">
       <Documentation
           long_help="TTK plugin that converts data types for point-based
 scalar fields (for instance, from double to float)."
@@ -28,7 +28,7 @@ scalar fields (for instance, from double to float).
           <DataType value="vtkDataSet"/>
         </DataTypeDomain>
         <InputArrayDomain name="input_scalars"
-			  attribute_type="point">
+              attribute_type="point">
           <Property name="Input" function="FieldDataSelection"/>
         </InputArrayDomain>
         <Documentation>
@@ -37,11 +37,12 @@ scalar fields (for instance, from double to float).
       </InputProperty>
 
       <StringVectorProperty
-          name="PointDataScalarField"
-          command="SetScalarField"
-          number_of_elements="1"
+          name="Point Data Scalar Field"
+          command="SetInputArrayToProcess"
+          number_of_elements="5"
+          element_types="0 0 0 0 2"
+          default_values="0"
           animateable="0"
-          label="Point Data Scalar Field"
           >
         <ArrayListDomain
             name="array_list">
@@ -55,8 +56,8 @@ scalar fields (for instance, from double to float).
       </StringVectorProperty>
 
       <IntVectorProperty name="Output Type" command="SetOutputType"
-			 number_of_elements="1" default_values="0">
-	<EnumerationDomain name="enum">
+             number_of_elements="1" default_values="0">
+    <EnumerationDomain name="enum">
     <Entry value="0" text="Char"/>
     <Entry value="1" text="Double"/>
     <Entry value="2" text="Float"/>
@@ -65,8 +66,8 @@ scalar fields (for instance, from double to float).
     <Entry value="5" text="Short"/>
     <Entry value="6" text="Unsigned Short"/>
     <Entry value="7" text="Unsigned Char"/>
-	</EnumerationDomain>
-	<Documentation>
+    </EnumerationDomain>
+    <Documentation>
     Data output type.
         </Documentation>
       </IntVectorProperty>
@@ -84,62 +85,15 @@ data types such as char or unsigned chars).
         </Documentation>
       </IntVectorProperty>
 
-      <IntVectorProperty
-          name="UseAllCores"
-          label="Use All Cores"
-          command="SetUseAllCores"
-          number_of_elements="1"
-          default_values="1" panel_visibility="advanced">
-        <BooleanDomain name="bool"/>
-        <Documentation>
-          Use all available cores.
-        </Documentation>
-      </IntVectorProperty>
-
-      <IntVectorProperty
-          name="ThreadNumber"
-          label="Thread Number"
-          command="SetThreadNumber"
-          number_of_elements="1"
-          default_values="1" panel_visibility="advanced">
-        <IntRangeDomain name="range" min="1" max="100" />
-        <Hints>
-          <PropertyWidgetDecorator type="GenericDecorator"
-            mode="visibility"
-            property="UseAllCores"
-            value="0" />
-        </Hints>
-
-        <Documentation>
-          Thread number.
-        </Documentation>
-      </IntVectorProperty>
-
-      <IntVectorProperty
-          name="DebugLevel"
-          label="Debug Level"
-          command="SetDebugLevel"
-          number_of_elements="1"
-          default_values="3" panel_visibility="advanced">
-        <IntRangeDomain name="range" min="0" max="100" />
-        <Documentation>
-          Debug level.
-        </Documentation>
-      </IntVectorProperty>
+      ${DEBUG_WIDGETS}
 
       <PropertyGroup panel_widget="Line" label="Input options">
-        <Property name="PointDataScalarField" />
+        <Property name="Point Data Scalar Field" />
       </PropertyGroup>
 
       <PropertyGroup panel_widget="Line" label="Output options">
         <Property name="Output Type" />
         <Property name="NormalizeToRange" />
-      </PropertyGroup>
-
-      <PropertyGroup panel_widget="Line" label="Testing">
-        <Property name="UseAllCores" />
-        <Property name="ThreadNumber" />
-        <Property name="DebugLevel" />
       </PropertyGroup>
 
       <Hints>

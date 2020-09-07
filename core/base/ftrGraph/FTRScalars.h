@@ -131,7 +131,7 @@ namespace ttk {
           vertices_.begin(), vertices_.end());
 
         // Fill the mirror array, used for later comparisons
-        DebugTimer tt;
+        Timer tt;
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_) \
   schedule(static, size_ / threadNumber_)

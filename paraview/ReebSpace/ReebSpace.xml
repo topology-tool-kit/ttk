@@ -6,7 +6,7 @@
        that matches your filter and then model your xml on it -->
   <ProxyGroup name="filters">
    <SourceProxy
-     name="ReebSpace"
+     name="ttkReebSpace"
      class="ttkReebSpace"
      label="TTK ReebSpace">
      <Documentation
@@ -56,10 +56,11 @@ ProjectionFromField, RangePolygon.
 
       <StringVectorProperty
         name="U Component"
-        command="SetUcomponent"
-        number_of_elements="1"
+        command="SetInputArrayToProcess"
+        element_types="0 0 0 0 2"
+        number_of_elements="5"
+        default_values="0"
         animateable="0"
-        label="U Component"
         >
         <ArrayListDomain
           name="array_list"
@@ -75,10 +76,11 @@ ProjectionFromField, RangePolygon.
 
       <StringVectorProperty
         name="V Component"
-        command="SetVcomponent"
-        number_of_elements="1"
+        command="SetInputArrayToProcess"
+        element_types="0 0 0 0 2"
+        number_of_elements="5"
+        default_values="1"
         animateable="0"
-        label="V Component"
         >
         <ArrayListDomain
           name="array_list"
@@ -106,11 +108,12 @@ ProjectionFromField, RangePolygon.
       </IntVectorProperty>
 
       <StringVectorProperty
-        name="OffsetU"
-        command="SetOffsetFieldU"
-        number_of_elements="1"
+        name="U Offset Field"
+        command="SetInputArrayToProcess"
+        element_types="0 0 0 0 2"
+        number_of_elements="5"
+        default_values="2"
         animateable="0"
-        label="U offset field"
         panel_visibility="advanced"
         >
         <ArrayListDomain
@@ -133,11 +136,12 @@ u-coordinate (used to disambiguate collinear edges).
       </StringVectorProperty>
 
       <StringVectorProperty
-        name="OffsetV"
-        command="SetOffsetFieldV"
-        number_of_elements="1"
+        name="V Offset Field"
+        command="SetInputArrayToProcess"
+        element_types="0 0 0 0 2"
+        number_of_elements="5"
+        default_values="3"
         animateable="0"
-        label="V offset field"
         panel_visibility="advanced"
         >
         <ArrayListDomain
@@ -457,61 +461,14 @@ v-coordinate (used to disambiguate collinear edges).
         </Documentation>
       </IntVectorProperty>
 
-      <IntVectorProperty
-         name="UseAllCores"
-         label="Use All Cores"
-         command="SetUseAllCores"
-         number_of_elements="1"
-         default_values="1" panel_visibility="advanced">
-        <BooleanDomain name="bool"/>
-         <Documentation>
-          Use all available cores.
-         </Documentation>
-      </IntVectorProperty>
-
-      <IntVectorProperty
-         name="ThreadNumber"
-         label="Thread Number"
-         command="SetThreadNumber"
-         number_of_elements="1"
-         default_values="1" panel_visibility="advanced">
-        <IntRangeDomain name="range" min="1" max="100" />
-        <Hints>
-          <PropertyWidgetDecorator type="GenericDecorator"
-            mode="visibility"
-            property="UseAllCores"
-            value="0" />
-        </Hints>
-
-         <Documentation>
-          Thread number.
-         </Documentation>
-      </IntVectorProperty>
-
-      <IntVectorProperty
-         name="DebugLevel"
-         label="Debug Level"
-         command="SetDebugLevel"
-         number_of_elements="1"
-         default_values="3" panel_visibility="advanced">
-        <IntRangeDomain name="range" min="0" max="100" />
-         <Documentation>
-           Debug level.
-         </Documentation>
-      </IntVectorProperty>
-
-      <PropertyGroup panel_widget="Line" label="Testing">
-        <Property name="UseAllCores" />
-        <Property name="ThreadNumber" />
-        <Property name="DebugLevel" />
-      </PropertyGroup>
+      ${DEBUG_WIDGETS}
 
       <PropertyGroup panel_widget="Line" label="Input options">
         <Property name="U Component" />
         <Property name="V Component" />
         <Property name="With predefined offset" />
-        <Property name="OffsetU" />
-        <Property name="OffsetV" />
+        <Property name="U Offset Field" />
+        <Property name="V Offset Field" />
         <Property name="SimplificationCriterion" />
         <Property name="SimplificationThreshold" />
         <Property name="OctreeAcceleration" />

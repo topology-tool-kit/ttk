@@ -1,147 +1,113 @@
+#include <vtkCellArray.h>
+#include <vtkCellData.h>
+#include <vtkDoubleArray.h>
+#include <vtkInformation.h>
+#include <vtkNew.h>
+#include <vtkObjectFactory.h>
+#include <vtkPointData.h>
+#include <vtkPolyData.h>
+#include <vtkUnstructuredGrid.h>
+
 #include <ttkFiberSurface.h>
+#include <ttkMacros.h>
+#include <ttkUtils.h>
 
-using namespace std;
-using namespace ttk;
+vtkStandardNewMacro(ttkFiberSurface);
 
-vtkStandardNewMacro(ttkFiberSurface)
-
-  ttkFiberSurface::ttkFiberSurface() {
-  UseAllCores = true;
-  RangeCoordinates = true;
-  EdgeParameterization = true;
-  EdgeIds = true;
-  TetIds = true;
-  CaseIds = true;
-  PointMerge = false;
-  RangeOctree = true;
-  PointMergeDistanceThreshold = 0.000001;
-  SetNumberOfInputPorts(2);
+ttkFiberSurface::ttkFiberSurface() {
+  this->SetNumberOfInputPorts(2);
+  this->SetNumberOfOutputPorts(1);
 }
 
-ttkFiberSurface::~ttkFiberSurface() {
-}
-
-template <typename VTK_T1, typename VTK_T2>
-int ttkFiberSurface::dispatch() {
-#ifdef TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE
-  if(RangeOctree) {
-    fiberSurface_.buildOctree<VTK_T1, VTK_T2>();
+int ttkFiberSurface::FillInputPortInformation(int port, vtkInformation *info) {
+  if(port == 0) {
+    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
+    return 1;
+  } else if(port == 1) {
+    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkUnstructuredGrid");
+    return 1;
   }
-#endif // TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE
-  fiberSurface_.computeSurface<VTK_T1, VTK_T2>();
   return 0;
 }
 
-int ttkFiberSurface::doIt(vector<vtkDataSet *> &inputs,
-                          vector<vtkDataSet *> &outputs) {
-
-  Memory m;
-  Timer t;
-
-  vtkDataSet *input = inputs[0];
-  vtkUnstructuredGrid *polygon = vtkUnstructuredGrid::SafeDownCast(inputs[1]);
-  vtkPolyData *output = vtkPolyData::SafeDownCast(outputs[0]);
-
-  vtkDataArray *dataUfield = NULL, *dataVfield = NULL, *polygonUfield = NULL,
-               *polygonVfield = NULL;
-
-  if(DataUcomponent.length()) {
-    dataUfield = input->GetPointData()->GetArray(DataUcomponent.data());
-  } else {
-    // default
-    dataUfield = input->GetPointData()->GetArray(0);
+int ttkFiberSurface::FillOutputPortInformation(int port, vtkInformation *info) {
+  if(port == 0) {
+    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkPolyData");
+    return 1;
   }
-  if(!dataUfield) {
-    stringstream msg;
-    msg << "[ttkFiberSurface] Error1: Could not find data array '"
-        << DataUcomponent << "'!" << endl;
-    dMsg(cerr, msg.str(), fatalMsg);
+  return 0;
+}
+
+template <typename VTK_T1, typename VTK_T2>
+int ttkFiberSurface::dispatch(ttk::Triangulation *const triangulation) {
+
+#ifdef TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE
+  if(RangeOctree) {
+    ttkTemplateMacro(triangulation->getType(),
+                     (this->buildOctree<VTK_T1, VTK_T2>(
+                       static_cast<TTK_TT *>(triangulation->getData()))));
+  }
+#endif // TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE
+
+  ttkTemplateMacro(triangulation->getType(),
+                   (this->computeSurface<VTK_T1, VTK_T2>(
+                     static_cast<TTK_TT *>(triangulation->getData()))));
+  return 0;
+}
+
+int ttkFiberSurface::RequestData(vtkInformation *request,
+                                 vtkInformationVector **inputVector,
+                                 vtkInformationVector *outputVector) {
+
+  using ttk::SimplexId;
+  ttk::Timer t;
+
+  const auto input = vtkDataSet::GetData(inputVector[0]);
+  const auto polygon = vtkUnstructuredGrid::GetData(inputVector[1]);
+  auto output = vtkPolyData::GetData(outputVector);
+
+  const auto dataUfield = this->GetInputArrayToProcess(0, input);
+  const auto dataVfield = this->GetInputArrayToProcess(1, input);
+  const auto polygonUfield = this->GetInputArrayToProcess(2, polygon);
+  const auto polygonVfield = this->GetInputArrayToProcess(3, polygon);
+
+  if(dataUfield == nullptr || dataVfield == nullptr || polygonUfield == nullptr
+     || polygonVfield == nullptr) {
+    this->printErr("Could not find data array");
     return -1;
   }
 
-  if(DataVcomponent.length()) {
-    dataVfield = input->GetPointData()->GetArray(DataVcomponent.data());
-  } else {
-    // default
-    dataVfield = input->GetPointData()->GetArray(0);
-  }
-  if(!dataVfield) {
-    stringstream msg;
-    msg << "[ttkFiberSurface] Error2: Could not find data array '"
-        << DataVcomponent << "'!" << endl;
-    dMsg(cerr, msg.str(), fatalMsg);
-    return -2;
-  }
-
-  if(PolygonUcomponent.length()) {
-    polygonUfield = polygon->GetPointData()->GetArray(PolygonUcomponent.data());
-  } else {
-    // default
-    polygonUfield = polygon->GetPointData()->GetArray(0);
-  }
-  if(!polygonUfield) {
-    stringstream msg;
-    msg << "[ttkFiberSurface] Error3: Could not find data array '"
-        << PolygonUcomponent << "'!" << endl;
-    dMsg(cerr, msg.str(), fatalMsg);
-    return -3;
-  }
-
-  if(PolygonVcomponent.length()) {
-    polygonVfield = polygon->GetPointData()->GetArray(PolygonVcomponent.data());
-  } else {
-    // default
-    polygonVfield = polygon->GetPointData()->GetArray(0);
-  }
-  if(!polygonVfield) {
-    stringstream msg;
-    msg << "[ttkFiberSurface] Error4: Could not find data array '"
-        << PolygonVcomponent << "'!" << endl;
-    dMsg(cerr, msg.str(), fatalMsg);
-    return -4;
-  }
-
-  if(!((input->GetDataObjectType() == VTK_UNSTRUCTURED_GRID)
-       //     ||(input->GetDataObjectType() == TTK_UNSTRUCTURED_GRID)
-       || (input->GetDataObjectType() == VTK_IMAGE_DATA))) {
-    //     ||(input->GetDataObjectType() == TTK_IMAGE_DATA))){
-    stringstream msg;
-    msg << "[ttkFiberSurface] Error5: Unsupported VTK data-structure ("
-        << input->GetDataObjectType() << ")" << endl;
-    dMsg(cerr, msg.str(), fatalMsg);
+  if(!(input->GetDataObjectType() == VTK_UNSTRUCTURED_GRID
+       || input->GetDataObjectType() == VTK_IMAGE_DATA)) {
+    this->printErr("Unsupported VTK data structure");
     return -5;
   }
 
-  Triangulation *triangulation = ttkTriangulation::getTriangulation(input);
-
-  if(!triangulation)
+  auto triangulation = ttkAlgorithm::GetTriangulation(input);
+  if(triangulation == nullptr) {
     return -1;
-  triangulation->setWrapper(this);
-  fiberSurface_.setupTriangulation(triangulation);
-  fiberSurface_.setWrapper(this);
+  }
+
+  this->preconditionTriangulation(triangulation);
   outputVertexList_.clear();
-  fiberSurface_.setGlobalVertexList(&outputVertexList_);
-  fiberSurface_.setInputField(
-    dataUfield->GetVoidPointer(0), dataVfield->GetVoidPointer(0));
-  fiberSurface_.setPolygonEdgeNumber(polygon->GetNumberOfCells());
+  this->setGlobalVertexList(&outputVertexList_);
+  this->setInputField(
+    ttkUtils::GetVoidPointer(dataUfield), ttkUtils::GetVoidPointer(dataVfield));
+  this->setPolygonEdgeNumber(polygon->GetNumberOfCells());
   threadedTriangleList_.resize(polygon->GetNumberOfCells());
   threadedVertexList_.resize(polygon->GetNumberOfCells());
-  fiberSurface_.setPolygon(&inputPolygon_);
+  this->setPolygon(&inputPolygon_);
 
-  fiberSurface_.setPointMerging(PointMerge);
-  fiberSurface_.setPointMergingThreshold(PointMergeDistanceThreshold);
+  this->setPointMerging(PointMerge);
+  this->setPointMergingThreshold(PointMergeDistanceThreshold);
 
 #ifdef TTK_ENABLE_FIBER_SURFACE_WITH_RANGE_OCTREE
   if((!RangeOctree) || (dataUfield->GetMTime() > GetMTime())
      || (dataVfield->GetMTime() > GetMTime())) {
 
-    {
-      stringstream msg;
-      msg << "[ttkFiberSurface] Resetting octree..." << endl;
-      dMsg(cout, msg.str(), infoMsg);
-    }
+    this->printMsg("Resetting octree...");
 
-    fiberSurface_.flushOctree();
+    this->flushOctree();
     Modified();
   }
 #endif
@@ -159,7 +125,7 @@ int ttkFiberSurface::doIt(vector<vtkDataSet *> &inputs,
   SimplexId cellNumber = polygon->GetNumberOfCells();
 
   SimplexId vertexId0, vertexId1;
-  pair<pair<double, double>, pair<double, double>> rangeEdge;
+  std::pair<std::pair<double, double>, std::pair<double, double>> rangeEdge;
 
   for(SimplexId i = 0; i < cellNumber; i++) {
 
@@ -175,50 +141,54 @@ int ttkFiberSurface::doIt(vector<vtkDataSet *> &inputs,
     inputPolygon_.push_back(rangeEdge);
   }
 
-  for(SimplexId i = 0; i < (SimplexId)threadedTriangleList_.size(); i++) {
+  for(size_t i = 0; i < threadedTriangleList_.size(); i++) {
     threadedTriangleList_[i].clear();
-    fiberSurface_.setTriangleList(i, &(threadedTriangleList_[i]));
+    this->setTriangleList(i, &(threadedTriangleList_[i]));
     threadedVertexList_[i].clear();
-    fiberSurface_.setVertexList(i, &(threadedVertexList_[i]));
+    this->setVertexList(i, &(threadedVertexList_[i]));
   }
 
+#ifndef TTK_ENABLE_DOUBLE_TEMPLATING
+  if(dataUfield->GetDataType() != dataVfield->GetDataType()) {
+    this->printErr(
+      "Scalar fields should have same input type. Use TTKPointDataConverter or "
+      "TTKArrayEditor to convert array types.");
+    return 0;
+  }
+  switch(dataUfield->GetDataType()) {
+    vtkTemplateMacro((dispatch<VTK_TT, VTK_TT>(triangulation)));
+  }
+#else
   switch(vtkTemplate2PackMacro(
     dataUfield->GetDataType(), dataVfield->GetDataType())) {
-    vtkTemplate2Macro((dispatch<VTK_T1, VTK_T2>()));
+    vtkTemplate2Macro((dispatch<VTK_T1, VTK_T2>(triangulation)));
   }
+#endif // TTK_ENABLE_DOUBLE_TEMPLATING
 
   // prepare the VTK output
   // NOTE: right now, there is a copy of the output data. this is no good.
   // to fix.
 
-  SimplexId triangleNumber = 0;
+  size_t triangleNumber = 0;
 
-  for(SimplexId i = 0; i < (SimplexId)threadedTriangleList_.size(); i++) {
+  for(size_t i = 0; i < threadedTriangleList_.size(); i++) {
     triangleNumber += threadedTriangleList_[i].size();
   }
 
-  vtkSmartPointer<vtkPoints> outputVertexList
-    = vtkSmartPointer<vtkPoints>::New();
-  vtkSmartPointer<vtkDoubleArray> outputU
-    = vtkSmartPointer<vtkDoubleArray>::New();
-  vtkSmartPointer<vtkDoubleArray> outputV
-    = vtkSmartPointer<vtkDoubleArray>::New();
-  vtkSmartPointer<vtkDoubleArray> outputParameterization
-    = vtkSmartPointer<vtkDoubleArray>::New();
-  vtkSmartPointer<vtkCellArray> outputTriangleList
-    = vtkSmartPointer<vtkCellArray>::New();
-  vtkSmartPointer<ttkSimplexIdTypeArray> outputEdgeIds
-    = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
-  vtkSmartPointer<ttkSimplexIdTypeArray> outputTetIds
-    = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
-  vtkSmartPointer<ttkSimplexIdTypeArray> outputCaseIds
-    = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
+  vtkNew<vtkPoints> outputVertexList{};
+  vtkNew<vtkDoubleArray> outputU{};
+  vtkNew<vtkDoubleArray> outputV{};
+  vtkNew<vtkDoubleArray> outputParameterization{};
+  vtkNew<vtkCellArray> outputTriangleList{};
+  vtkNew<ttkSimplexIdTypeArray> outputEdgeIds{};
+  vtkNew<ttkSimplexIdTypeArray> outputTetIds{};
+  vtkNew<ttkSimplexIdTypeArray> outputCaseIds{};
 
   if(RangeCoordinates) {
-    outputU->SetName(DataUcomponent.data());
+    outputU->SetName(dataUfield->GetName());
     outputU->SetNumberOfTuples(outputVertexList_.size());
 
-    outputV->SetName(DataVcomponent.data());
+    outputV->SetName(dataVfield->GetName());
     outputV->SetNumberOfTuples(outputVertexList_.size());
   }
 
@@ -233,7 +203,7 @@ int ttkFiberSurface::doIt(vector<vtkDataSet *> &inputs,
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
-  for(SimplexId i = 0; i < (SimplexId)outputVertexList_.size(); i++) {
+  for(size_t i = 0; i < outputVertexList_.size(); i++) {
     outputVertexList->SetPoint(i, outputVertexList_[i].p_[0],
                                outputVertexList_[i].p_[1],
                                outputVertexList_[i].p_[2]);
@@ -249,8 +219,8 @@ int ttkFiberSurface::doIt(vector<vtkDataSet *> &inputs,
     output->GetPointData()->AddArray(outputU);
     output->GetPointData()->AddArray(outputV);
   } else {
-    output->GetPointData()->RemoveArray(DataUcomponent.data());
-    output->GetPointData()->RemoveArray(DataVcomponent.data());
+    output->GetPointData()->RemoveArray(dataUfield->GetName());
+    output->GetPointData()->RemoveArray(dataVfield->GetName());
   }
   if(EdgeParameterization) {
     output->GetPointData()->AddArray(outputParameterization);
@@ -273,12 +243,12 @@ int ttkFiberSurface::doIt(vector<vtkDataSet *> &inputs,
     outputCaseIds->SetNumberOfTuples(triangleNumber);
   }
 
-  vtkSmartPointer<vtkIdList> idList = vtkSmartPointer<vtkIdList>::New();
+  vtkNew<vtkIdList> idList{};
   idList->SetNumberOfIds(3);
 
   triangleNumber = 0;
-  for(SimplexId i = 0; i < (SimplexId)threadedTriangleList_.size(); i++) {
-    for(SimplexId j = 0; j < (SimplexId)threadedTriangleList_[i].size(); j++) {
+  for(size_t i = 0; i < threadedTriangleList_.size(); i++) {
+    for(size_t j = 0; j < threadedTriangleList_[i].size(); j++) {
       for(int k = 0; k < 3; k++) {
         idList->SetId(k, threadedTriangleList_[i][j].vertexIds_[k]);
       }
@@ -314,12 +284,5 @@ int ttkFiberSurface::doIt(vector<vtkDataSet *> &inputs,
     output->GetCellData()->RemoveArray("CaseIds");
   }
 
-  {
-    stringstream msg;
-    msg << "[ttkFiberSurface] Memory usage: " << m.getElapsedUsage() << " MB."
-        << endl;
-    dMsg(cout, msg.str(), memoryMsg);
-  }
-
-  return 0;
+  return 1;
 }

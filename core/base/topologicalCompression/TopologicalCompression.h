@@ -15,14 +15,14 @@
 
 // base code includes
 #include <FTMTreePP.h>
-#include <PersistenceDiagram.h>
 #include <TopologicalSimplification.h>
 #include <Triangulation.h>
 
 // std
-
 #include <algorithm>
+#include <climits>
 #include <cmath>
+#include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
@@ -31,16 +31,6 @@
 
 #ifdef TTK_ENABLE_ZLIB
 #include <zlib.h>
-#endif
-
-#ifdef TTK_ENABLE_ZFP
-#ifndef __cplusplus
-#define __cplusplus 201112L
-#endif
-#include <climits>
-#include <cstdio>
-#include <zfp.h>
-#include <zfp/macros.h>
 #endif
 
 namespace ttk {
@@ -114,8 +104,8 @@ namespace ttk {
       preconditionTriangulation(AbstractTriangulation *const triangulation) {
       if(triangulation != nullptr) {
         triangulation->preconditionVertexNeighbors();
-        topologicalSimplification.setupTriangulation(triangulation);
-        ftmTreePP.setupTriangulation(triangulation, false);
+        topologicalSimplification.preconditionTriangulation(triangulation);
+        ftmTreePP.preconditionTriangulation(triangulation, false);
       }
     }
 

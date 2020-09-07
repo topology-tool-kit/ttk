@@ -22,11 +22,12 @@ using namespace ttk;
 using namespace ftm;
 
 FTMTree_CT::FTMTree_CT(Params *const params,
-                       Triangulation *mesh,
+
                        Scalars *const scalars)
-  : FTMTree_MT(params, mesh, scalars, TreeType::Contour),
-    jt_(new FTMTree_MT(params, mesh, scalars, TreeType::Join)),
-    st_(new FTMTree_MT(params, mesh, scalars, TreeType::Split)) {
+  : FTMTree_MT(params, scalars, TreeType::Contour),
+    jt_(new FTMTree_MT(params, scalars, TreeType::Join)),
+    st_(new FTMTree_MT(params, scalars, TreeType::Split)) {
+  this->setDebugMsgPrefix("FTMTree_CT");
 }
 
 FTMTree_CT::~FTMTree_CT() {
@@ -40,103 +41,8 @@ FTMTree_CT::~FTMTree_CT() {
   }
 }
 
-void FTMTree_CT::build(TreeType tt) {
-  DebugTimer mergeTreesTime;
-
-  const bool bothMT = tt == TreeType::Contour || tt == TreeType::Join_Split;
-
-  initComp();
-
-  if(bothMT) {
-    // single leaf search for both tree
-    // When executed from CT, both minima and maxima are extracted
-    DebugTimer precomputeTime;
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel num_threads(threadNumber_)
-#endif
-    {
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp single nowait
-#endif
-      { leafSearch(); }
-    }
-    printTime(precomputeTime, "[FTM] leafSearch", -1, 3);
-  }
-
-#ifdef TTK_ENABLE_OMP_PRIORITY
-  {
-    // Set priority
-    if(st_->getNumberOfLeaves() < jt_->getNumberOfLeaves())
-      st_->setPrior();
-    else
-      jt_->setPrior();
-  }
-#endif
-
-  // JT & ST
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel num_threads(threadNumber_)
-#endif
-  {
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp single nowait
-#endif
-    {if(tt == TreeType::Join || bothMT){
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp task untied if(threadNumber_ > 1)
-#endif
-      jt_->build(tt == TreeType::Contour);
-}
-if(tt == TreeType::Split || bothMT) {
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp task untied if(threadNumber_ > 1)
-#endif
-  st_->build(tt == TreeType::Contour);
-}
-}
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp taskwait
-#endif
-}
-
-printTime(mergeTreesTime, "[FTM] merge trees ", -1, 3);
-
-// Combine
-
-if(tt == TreeType::Contour) {
-
-  DebugTimer combineFullTime;
-  insertNodes();
-
-  DebugTimer combineTime;
-  combine();
-  printTime(combineTime, "[FTM] combine trees", -1, 4);
-  printTime(combineFullTime, "[FTM] combine full", -1, 3);
-}
-
-// Debug
-
-if(debugLevel_ > 3) {
-  cout << "- [FTM] final number of nodes :";
-  switch(tt) {
-    case TreeType::Join:
-      cout << jt_->getNumberOfNodes();
-      break;
-    case TreeType::Split:
-      cout << st_->getNumberOfNodes();
-      break;
-    case TreeType::Join_Split:
-      cout << jt_->getNumberOfNodes() + st_->getNumberOfNodes();
-      break;
-    default:
-      cout << getNumberOfNodes();
-  }
-  cout << endl;
-}
-}
-
 int FTMTree_CT::combine() {
-  DebugTimer stepTime;
+  Timer stepTime;
   queue<pair<bool, idNode>> growingNodes, remainingNodes;
 
   const bool DEBUG = false;
@@ -406,7 +312,7 @@ void FTMTree_CT::createCTArcSegmentation(idSuperArc ctArc,
 }
 
 void FTMTree_CT::finalizeSegmentation(void) {
-  DebugTimer finSegmTime;
+  Timer finSegmTime;
   const auto &nbArc = getNumberOfSuperArcs();
 
 #ifdef TTK_ENABLE_OPENMP
@@ -416,7 +322,7 @@ void FTMTree_CT::finalizeSegmentation(void) {
     getSuperArc(i)->createSegmentation(scalars_);
   }
 
-  printTime(finSegmTime, "[FTM] post-process segm", -1, 4);
+  printTime(finSegmTime, "post-process segm", -1, 4);
 }
 
 void FTMTree_CT::insertNodes(void) {
@@ -440,52 +346,4 @@ void FTMTree_CT::insertNodes(void) {
     }
     st_->insertNode(jt_->getNode(t));
   }
-}
-
-int FTMTree_CT::leafSearch() {
-  const auto nbScalars = scalars_->size;
-  const auto chunkSize = getChunkSize();
-  const auto chunkNb = getChunkCount();
-
-  // Extrema extract and launch tasks
-  for(SimplexId chunkId = 0; chunkId < chunkNb; ++chunkId) {
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp task firstprivate(chunkId)
-#endif
-    {
-      const SimplexId lowerBound = chunkId * chunkSize;
-      const SimplexId upperBound = min(nbScalars, (chunkId + 1) * chunkSize);
-      for(SimplexId v = lowerBound; v < upperBound; ++v) {
-        const auto &neighNumb = mesh_->getVertexNeighborNumber(v);
-        valence upval = 0;
-        valence downval = 0;
-
-        for(valence n = 0; n < neighNumb; ++n) {
-          SimplexId neigh;
-          mesh_->getVertexNeighbor(v, n, neigh);
-          if(scalars_->isLower(neigh, v)) {
-            ++downval;
-          } else {
-            ++upval;
-          }
-        }
-
-        jt_->setValence(v, downval);
-        st_->setValence(v, upval);
-
-        if(!downval) {
-          jt_->makeNode(v);
-        }
-
-        if(!upval) {
-          st_->makeNode(v);
-        }
-      }
-    }
-  }
-
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp taskwait
-#endif
-  return 0;
 }

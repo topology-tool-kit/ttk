@@ -25,7 +25,6 @@
 #include <AuctionActor.h>
 #include <Debug.h>
 #include <KDTree.h>
-#include <PersistenceDiagram.h>
 #include <cmath>
 #include <iostream>
 #include <limits>

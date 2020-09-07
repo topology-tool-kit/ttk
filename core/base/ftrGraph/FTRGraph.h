@@ -11,8 +11,7 @@
 /// \sa ttk::Triangulation
 /// \sa vtkFTRGraph.cpp %for a usage example.
 
-#ifndef _FTRGRAPH_H
-#define _FTRGRAPH_H
+#pragma once
 
 // base code includes
 #include <Triangulation.h>
@@ -44,63 +43,61 @@ namespace ttk {
 
     struct DynGraphs {
       // one going up, one going down
-      DynamicGraph<idVertex> up, down;
+      DynamicGraph<idVertex> up{}, down{};
     };
 
     struct Valences {
-      std::vector<valence> lower, upper;
+      std::vector<valence> lower{}, upper{};
     };
 
     struct LocalForests {
       // one for upper link, one for lower link
-      LocalForest<idVertex> up, down;
+      LocalForest<idVertex> up{}, down{};
     };
 
     struct Star {
-      std::vector<idEdge> lower, upper;
+      std::vector<idEdge> lower{}, upper{};
     };
 
     struct Comp {
-      std::set<DynGraphNode<idVertex> *> lower, upper;
+      std::set<DynGraphNode<idVertex> *> lower{}, upper{};
     };
 
-    template <typename ScalarType>
+    template <typename ScalarType, typename triangulationType>
     class FTRGraph : public Allocable {
-    private:
       // Exernal fields
-      Params params_;
-      Scalars<ScalarType> *const scalars_;
+      Params params_{};
+      Scalars<ScalarType> scalars_{};
 
       // Internal fields
-      Graph graph_;
-      Mesh mesh_;
-      Propagations propagations_;
-      DynGraphs dynGraphs_;
-      Valences valences_;
+      Graph graph_{};
+      Mesh<triangulationType> mesh_{};
+      Propagations propagations_{};
+      DynGraphs dynGraphs_{};
+      Valences valences_{};
 
 #ifndef TTK_DISABLE_FTR_LAZY
-      Lazy lazy_;
+      Lazy lazy_{};
 #endif
 
 #ifdef TTK_ENABLE_FTR_TASK_STATS
       // Stats
-      DebugTimer sweepStart_;
-      std::vector<float> propTimes_;
-      idVertex nbProp_;
+      Timer sweepStart_{};
+      std::vector<float> propTimes_{};
+      idVertex nbProp_{};
 #endif
 
     public:
-      explicit FTRGraph(Triangulation *mesh);
+      explicit FTRGraph(triangulationType *mesh);
       FTRGraph();
-      virtual ~FTRGraph();
 
       /// build the Reeb Graph
       /// \pre If this TTK package uses ttk::Triangulation for fast mesh
-      /// traversals, the function setupTriangulation() must be called on this
-      /// object prior to this function, in a clearly distinct pre-processing
-      /// steps. An error will be returned otherwise.
-      /// \note In such a case, it is recommended to exclude
-      /// setupTriangulation() from any time performance measurement.
+      /// traversals, the function preconditionTriangulation() must be called on
+      /// this object prior to this function, in a clearly distinct
+      /// pre-processing steps. An error will be returned otherwise. \note In
+      /// such a case, it is recommended to exclude preconditionTriangulation()
+      /// from any time performance measurement.
       void build();
 
       // General documentation info:
@@ -138,9 +135,8 @@ namespace ttk {
       // must satisfy some pre-condition (see ttk::Triangulation for more
       // details). Such pre-condition functions are typically called from this
       // function.
-      inline int setupTriangulation(Triangulation *triangulation) {
+      inline int preconditionTriangulation(triangulationType *triangulation) {
         mesh_.setTriangulation(triangulation);
-
         if(triangulation) {
           mesh_.preprocess();
         }
@@ -168,9 +164,8 @@ namespace ttk {
 
       /// Control the verbosity of the base code
       virtual int setDebugLevel(const int &lvl) override {
-        Debug::setDebugLevel(lvl);
         params_.debugLevel = lvl;
-        return 0;
+        return Debug::setDebugLevel(lvl);
       }
 
       void setParams(const Params &p) {
@@ -180,7 +175,7 @@ namespace ttk {
 
       /// Scalar field used to compute the Reeb Graph
       void setScalars(const void *scalars) {
-        scalars_->setScalars((ScalarType *)scalars);
+        scalars_.setScalars((ScalarType *)scalars);
       }
 
       /// When several points have the same scalar value,
@@ -189,7 +184,7 @@ namespace ttk {
       /// This is explained in the TTK report.
       /// Set the array to use here
       void setVertexSoSoffsets(std::vector<SimplexId> *sos) {
-        scalars_->setOffsets(sos);
+        scalars_.setOffsets(sos);
       }
 
       DynamicGraph<idVertex> &dynGraph(const Propagation *const lp) {
@@ -243,9 +238,7 @@ namespace ttk {
 
       void printGraph(const int verbosity) const;
 
-      void printTime(DebugTimer &timer,
-                     const std::string &msg,
-                     const int lvl) const;
+      void printTime(Timer &timer, const std::string &msg, const int lvl) const;
 
       // Initialize functions (virtual inherit from Allocable)
       // called automatically by the build
@@ -478,5 +471,3 @@ namespace ttk {
 #include "FTRGraphPrint_Template.h"
 #include "FTRGraphPrivate_Template.h"
 #include "FTRGraph_Template.h"
-
-#endif // FTRGRAPH_H

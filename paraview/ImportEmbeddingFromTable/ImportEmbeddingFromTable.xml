@@ -6,7 +6,7 @@
   that matches your filter and then model your xml on it -->
   <ProxyGroup name="filters">
     <SourceProxy
-            name="ImportEmbeddingFromTable"
+            name="ttkImportEmbeddingFromTable"
             class="ttkImportEmbeddingFromTable"
             label="TTK ImportEmbeddingFromTable">
       <Documentation
@@ -26,10 +26,6 @@
         <DataTypeDomain name="input_type">
           <DataType value="vtkPointSet"/>
         </DataTypeDomain>
-        <InputArrayDomain name="input_scalars"
-                          attribute_type="point">
-          <Property name="DataSet" function="FieldDataSelection" />
-        </InputArrayDomain>
         <Documentation>
           Data-set to process.
         </Documentation>

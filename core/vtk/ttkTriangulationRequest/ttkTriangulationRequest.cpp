@@ -452,6 +452,9 @@ int ttkTriangulationRequest::RequestData(vtkInformation *request,
 
       if(arr and arr->GetNumberOfComponents() == 1) {
         vtkDataArray *newArr = arr->NewInstance();
+        if(newArr == nullptr) {
+          continue;
+        }
         newArr->SetName(arr->GetName());
         newArr->SetNumberOfComponents(1);
 

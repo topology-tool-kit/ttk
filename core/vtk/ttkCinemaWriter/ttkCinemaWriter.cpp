@@ -106,8 +106,11 @@ int ttkCinemaWriter::ProcessDataProduct(vtkDataObject *input) {
     = vtkXMLDataObjectWriter::NewWriter(input->GetDataObjectType());
   xmlWriter->SetDataModeToAppended();
   xmlWriter->SetCompressorTypeToZLib();
-  vtkZLibDataCompressor::SafeDownCast(xmlWriter->GetCompressor())
-    ->SetCompressionLevel(this->CompressionLevel);
+  const auto compressor
+    = vtkZLibDataCompressor::SafeDownCast(xmlWriter->GetCompressor());
+  if(compressor != nullptr) {
+    compressor->SetCompressionLevel(this->CompressionLevel);
+  }
 
   std::string productExtension = this->Mode == 0
                                    ? xmlWriter->GetDefaultFileExtension()

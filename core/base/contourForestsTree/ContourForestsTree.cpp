@@ -15,12 +15,11 @@ using namespace ttk;
 using namespace cf;
 
 ContourForestsTree::ContourForestsTree(Params *const params,
-                                       Triangulation *mesh,
                                        Scalars *const scalars,
                                        idPartition part)
-  : MergeTree(params, mesh, scalars, TreeType::Contour, part),
-    jt_(new MergeTree(params, mesh, scalars, TreeType::Join, part)),
-    st_(new MergeTree(params, mesh, scalars, TreeType::Split, part)) {
+  : MergeTree(params, scalars, TreeType::Contour, part),
+    jt_(new MergeTree(params, scalars, TreeType::Join, part)),
+    st_(new MergeTree(params, scalars, TreeType::Split, part)) {
 }
 
 ContourForestsTree::~ContourForestsTree() {

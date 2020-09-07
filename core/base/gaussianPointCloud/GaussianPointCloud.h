@@ -11,18 +11,14 @@
 #pragma once
 
 // base code includes
-#include <Wrapper.h>
+#include <Debug.h>
 #include <random>
-
-using namespace std;
 
 namespace ttk {
 
-  class GaussianPointCloud : public Debug {
-
+  class GaussianPointCloud : virtual public Debug {
   public:
     GaussianPointCloud();
-    ~GaussianPointCloud();
 
     template <class dataType>
     int castSample(const int &dimension,
@@ -34,7 +30,7 @@ namespace ttk {
     template <class dataType>
     int generate(const int &dimension,
                  const int &numberOfSamples,
-                 void *outputData) const;
+                 dataType *const outputData) const;
   };
 } // namespace ttk
 
@@ -49,14 +45,14 @@ int ttk::GaussianPointCloud::castSample(const int &dimension,
 
   dataType u, v, w;
 
-  uniform_real_distribution<dataType> uniformDistribution(-1, 1);
+  std::uniform_real_distribution<dataType> uniformDistribution(-1, 1);
   u = uniformDistribution(gen);
   v = (dimension >= 2 ? uniformDistribution(gen) : 0);
   w = (dimension == 3 ? uniformDistribution(gen) : 0);
 
   dataType norm = sqrt(u * u + v * v + w * w);
 
-  normal_distribution<dataType> normalDistribution{0, 1};
+  std::normal_distribution<dataType> normalDistribution{0, 1};
 
   dataType gaussianScale = normalDistribution(gen);
 
@@ -70,28 +66,22 @@ int ttk::GaussianPointCloud::castSample(const int &dimension,
 template <class dataType>
 int ttk::GaussianPointCloud::generate(const int &dimension,
                                       const int &numberOfSamples,
-                                      void *outputData) const {
+                                      dataType *const outputData) const {
 
   Timer t;
-
-  dataType *data = (dataType *)outputData;
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(int i = 0; i < numberOfSamples; i++) {
-    castSample<dataType>(
-      dimension, data[3 * i], data[3 * i + 1], data[3 * i + 2]);
+    castSample<dataType>(dimension, outputData[3 * i], outputData[3 * i + 1],
+                         outputData[3 * i + 2]);
   }
 
-  {
-    stringstream msg;
-    msg << "[GaussianPointCloud] " << numberOfSamples
-        << " samples generated in " << dimension << "D in "
-        << t.getElapsedTime() << " s. (" << threadNumber_ << " thread(s))."
-        << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
-  }
+  this->printMsg(std::vector<std::vector<std::string>>{
+    {"#Samples", std::to_string(numberOfSamples)}});
+  this->printMsg("Samples generated in " + std::to_string(dimension) + "D", 1.0,
+                 t.getElapsedTime(), this->threadNumber_);
 
   return 0;
 }

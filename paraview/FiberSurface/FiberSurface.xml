@@ -6,7 +6,7 @@
        that matches your filter and then model your xml on it -->
   <ProxyGroup name="filters">
    <SourceProxy
-     name="FiberSurface"
+     name="ttkFiberSurface"
      class="ttkFiberSurface"
      label="TTK FiberSurface">
      <Documentation
@@ -70,11 +70,12 @@ IEEE Transactions on Visualization and Computer Graphics, 2016.
       </InputProperty>
 
       <StringVectorProperty
-        name="DataUComponent"
-        command="SetDataUcomponent"
-        number_of_elements="1"
+        name="Domain U Component"
+        command="SetInputArrayToProcess"
+        element_types="0 0 0 0 2"
+        number_of_elements="5"
+        default_values="0"
         animateable="0"
-        label="Domain U component"
         >
         <ArrayListDomain
           name="array_list"
@@ -89,11 +90,12 @@ IEEE Transactions on Visualization and Computer Graphics, 2016.
       </StringVectorProperty>
 
       <StringVectorProperty
-        name="DataVComponent"
-        command="SetDataVcomponent"
-        number_of_elements="1"
+        name="Domain V Component"
+        command="SetInputArrayToProcess"
+        element_types="0 0 0 0 2"
+        number_of_elements="5"
+        default_values="1"
         animateable="0"
-        label="Domain V component"
         >
         <ArrayListDomain
           name="array_list"
@@ -108,11 +110,12 @@ IEEE Transactions on Visualization and Computer Graphics, 2016.
       </StringVectorProperty>
 
       <StringVectorProperty
-        name="PolygonUComponent"
-        command="SetPolygonUcomponent"
-        number_of_elements="1"
+        name="Polygon U Component"
+        command="SetInputArrayToProcess"
+        element_types="0 0 0 0 2"
+        number_of_elements="5"
+        default_values="2"
         animateable="0"
-        label="Polygon U component"
         >
         <ArrayListDomain
           name="array_list"
@@ -127,11 +130,12 @@ IEEE Transactions on Visualization and Computer Graphics, 2016.
       </StringVectorProperty>
 
       <StringVectorProperty
-        name="PolygonVComponent"
-        command="SetPolygonVcomponent"
-        number_of_elements="1"
+        name="Polygon V Component"
+        command="SetInputArrayToProcess"
+        element_types="0 0 0 0 2"
+        number_of_elements="5"
+        default_values="3"
         animateable="0"
-        label="Polygon V component"
         >
         <ArrayListDomain
           name="array_list"
@@ -286,54 +290,13 @@ IEEE Transactions on Visualization and Computer Graphics, 2016.
         </Documentation>
       </IntVectorProperty>
 
-      <IntVectorProperty
-         name="UseAllCores"
-         label="Use All Cores"
-         command="SetUseAllCores"
-         number_of_elements="1"
-         default_values="1" panel_visibility="advanced">
-        <BooleanDomain name="bool"/>
-         <Documentation>
-          Use all available cores.
-         </Documentation>
-      </IntVectorProperty>
-
-      <IntVectorProperty
-         name="ThreadNumber"
-         label="Thread Number"
-         command="SetThreadNumber"
-         number_of_elements="1"
-         default_values="1" panel_visibility="advanced">
-        <IntRangeDomain name="range" min="1" max="100" />
-        <Hints>
-          <PropertyWidgetDecorator type="GenericDecorator"
-            mode="visibility"
-            property="UseAllCores"
-            value="0" />
-        </Hints>
-
-         <Documentation>
-          Thread number.
-         </Documentation>
-      </IntVectorProperty>
-
-      <IntVectorProperty
-         name="DebugLevel"
-         label="Debug Level"
-         command="SetDebugLevel"
-         number_of_elements="1"
-         default_values="3" panel_visibility="advanced">
-        <IntRangeDomain name="range" min="0" max="100" />
-         <Documentation>
-           Debug level.
-         </Documentation>
-      </IntVectorProperty>
+      ${DEBUG_WIDGETS}
 
       <PropertyGroup panel_widget="Line" label="Input options">
-        <Property name="DataUComponent" />
-        <Property name="DataVComponent" />
-        <Property name="PolygonUComponent" />
-        <Property name="PolygonVComponent" />
+        <Property name="Domain U Component" />
+        <Property name="Domain V Component" />
+        <Property name="Polygon U Component" />
+        <Property name="Polygon V Component" />
       </PropertyGroup>
 
       <PropertyGroup panel_widget="Line" label="Pre-processing">
@@ -348,12 +311,6 @@ IEEE Transactions on Visualization and Computer Graphics, 2016.
         <Property name="WithEdgeIds" />
         <Property name="WithTetIds" />
         <Property name="WithCaseIds" />
-      </PropertyGroup>
-
-      <PropertyGroup panel_widget="Line" label="Testing">
-        <Property name="UseAllCores" />
-        <Property name="ThreadNumber" />
-        <Property name="DebugLevel" />
       </PropertyGroup>
 
       <Hints>

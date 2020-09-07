@@ -132,9 +132,7 @@ std::string Graph::printVisit() const {
 void Graph::alloc() {
 #ifndef TTK_ENABLE_KAMIKAZE
   if(nbElmt_ == nullVertex) {
-    cout
-      << "[FTR Graph]: ERROR, setNumberOfElmt not called before alloc in Graph"
-      << endl;
+    this->printErr("setNumberOfElmt not called before alloc in Graph");
   }
 #endif
   leaves_.reserve(nbElmt_);

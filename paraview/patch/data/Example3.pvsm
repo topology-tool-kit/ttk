@@ -57311,7 +57311,7 @@
         <Domain name="bool" id="10517.UseContinuousCellRange.bool"/>
       </Property>
     </Proxy>
-    <Proxy group="filters" type="MandatoryCriticalPoints" id="14797" servers="1">
+    <Proxy group="filters" type="ttkMandatoryCriticalPoints" id="14797" servers="1">
       <Property name="DebugLevel" id="14797.DebugLevel" number_of_elements="1">
         <Element index="0" value="3"/>
         <Domain name="range" id="14797.DebugLevel.range"/>
@@ -57322,8 +57322,12 @@
         <Domain name="input_scalars" id="14797.Input.input_scalars"/>
         <Domain name="input_type" id="14797.Input.input_type"/>
       </Property>
-      <Property name="Lower Field" id="14797.Lower Field" number_of_elements="1">
-        <Element index="0" value="lowerBoundField"/>
+      <Property name="Lower Bound Field" id="14797.Lower Field" number_of_elements="5">
+        <Element index="0" value="0"/>
+        <Element index="1" value=""/>
+        <Element index="2" value=""/>
+        <Element index="3" value="0"/>
+        <Element index="4" value="lowerBoundField"/>
         <Domain name="array_list" id="14797.Lower Field.array_list">
           <String text="lowerBoundField"/>
           <String text="upperBoundField"/>
@@ -57369,8 +57373,12 @@
         <Element index="0" value="1"/>
         <Domain name="range" id="14797.ThreadNumber.range"/>
       </Property>
-      <Property name="Upper Field" id="14797.Upper Field" number_of_elements="1">
-        <Element index="0" value="upperBoundField"/>
+      <Property name="Upper Bound Field" id="14797.Upper Field" number_of_elements="5">
+        <Element index="0" value="1"/>
+        <Element index="1" value=""/>
+        <Element index="2" value=""/>
+        <Element index="3" value="0"/>
+        <Element index="4" value="upperBoundField"/>
         <Domain name="array_list" id="14797.Upper Field.array_list">
           <String text="lowerBoundField"/>
           <String text="upperBoundField"/>
@@ -57381,7 +57389,7 @@
         <Domain name="bool" id="14797.UseAllCores.bool"/>
       </Property>
     </Proxy>
-    <Proxy group="filters" type="PersistenceDiagram" id="9295" servers="1">
+    <Proxy group="filters" type="ttkPersistenceDiagram" id="9295" servers="1">
       <Property name="DebugLevel" id="9295.DebugLevel" number_of_elements="1">
         <Element index="0" value="3"/>
         <Domain name="range" id="9295.DebugLevel.range"/>
@@ -57403,17 +57411,17 @@
           <String text="upperBoundField"/>
         </Domain>
       </Property>
-      <Property name="PeriodicBoundaryConditions" id="9295.PeriodicBoundaryConditions" number_of_elements="1">
-        <Element index="0" value="0"/>
-        <Domain name="bool" id="9295.PeriodicBoundaryConditions.bool"/>
-      </Property>
       <Property name="SaddleConnectors" id="9295.SaddleConnectors" number_of_elements="1">
         <Element index="0" value="0"/>
         <Domain name="bool" id="9295.SaddleConnectors.bool"/>
       </Property>
-      <Property name="ScalarField" id="9295.ScalarField" number_of_elements="1">
-        <Element index="0" value="lowerBoundField"/>
-        <Domain name="array_list" id="9295.ScalarField.array_list">
+      <Property name="ScalarFieldNew" id="9295.ScalarFieldNew" number_of_elements="5">
+        <Element index="0" value="0"/>
+        <Element index="1" value=""/>
+        <Element index="2" value=""/>
+        <Element index="3" value="0"/>
+        <Element index="4" value="lowerBoundField"/>
+        <Domain name="array_list" id="9295.ScalarFieldNew.array_list">
           <String text="lowerBoundField"/>
           <String text="upperBoundField"/>
         </Domain>
@@ -57431,7 +57439,7 @@
         <Domain name="bool" id="9295.UseAllCores.bool"/>
       </Property>
     </Proxy>
-    <Proxy group="filters" type="PersistenceDiagram" id="10495" servers="1">
+    <Proxy group="filters" type="ttkPersistenceDiagram" id="10495" servers="1">
       <Property name="DebugLevel" id="10495.DebugLevel" number_of_elements="1">
         <Element index="0" value="3"/>
         <Domain name="range" id="10495.DebugLevel.range"/>
@@ -57453,17 +57461,17 @@
           <String text="upperBoundField"/>
         </Domain>
       </Property>
-      <Property name="PeriodicBoundaryConditions" id="10495.PeriodicBoundaryConditions" number_of_elements="1">
-        <Element index="0" value="0"/>
-        <Domain name="bool" id="10495.PeriodicBoundaryConditions.bool"/>
-      </Property>
       <Property name="SaddleConnectors" id="10495.SaddleConnectors" number_of_elements="1">
         <Element index="0" value="0"/>
         <Domain name="bool" id="10495.SaddleConnectors.bool"/>
       </Property>
-      <Property name="ScalarField" id="10495.ScalarField" number_of_elements="1">
-        <Element index="0" value="upperBoundField"/>
-        <Domain name="array_list" id="10495.ScalarField.array_list">
+      <Property name="ScalarFieldNew" id="10495.ScalarFieldNew" number_of_elements="5">
+        <Element index="0" value="0"/>
+        <Element index="1" value=""/>
+        <Element index="2" value=""/>
+        <Element index="3" value="0"/>
+        <Element index="4" value="upperBoundField"/>
+        <Domain name="array_list" id="10495.ScalarFieldNew.array_list">
           <String text="lowerBoundField"/>
           <String text="upperBoundField"/>
         </Domain>
@@ -57481,7 +57489,7 @@
         <Domain name="bool" id="10495.UseAllCores.bool"/>
       </Property>
     </Proxy>
-    <Proxy group="filters" type="ScalarFieldCriticalPoints" id="9534" servers="1">
+    <Proxy group="filters" type="ttkScalarFieldCriticalPoints" id="9534" servers="1">
       <Property name="Debug_DebugLevel" id="9534.Debug_DebugLevel" number_of_elements="1">
         <Element index="0" value="3"/>
         <Domain name="range" id="9534.Debug_DebugLevel.range"/>
@@ -57542,7 +57550,7 @@
         <Domain name="bool" id="9534.With vertex scalars.bool"/>
       </Property>
     </Proxy>
-    <Proxy group="filters" type="ScalarFieldCriticalPoints" id="10734" servers="1">
+    <Proxy group="filters" type="ttkScalarFieldCriticalPoints" id="10734" servers="1">
       <Property name="Debug_DebugLevel" id="10734.Debug_DebugLevel" number_of_elements="1">
         <Element index="0" value="3"/>
         <Domain name="range" id="10734.Debug_DebugLevel.range"/>
@@ -57603,7 +57611,7 @@
         <Domain name="bool" id="10734.With vertex scalars.bool"/>
       </Property>
     </Proxy>
-    <Proxy group="filters" type="SphereFromPoint" id="9328" servers="1">
+    <Proxy group="filters" type="ttkSphereFromPoint" id="9328" servers="1">
       <Property name="DebugLevel" id="9328.DebugLevel" number_of_elements="1">
         <Element index="0" value="3"/>
         <Domain name="range" id="9328.DebugLevel.range"/>
@@ -57650,7 +57658,7 @@
         <Domain name="bool" id="9328.UseAllCores.bool"/>
       </Property>
     </Proxy>
-    <Proxy group="filters" type="SphereFromPoint" id="9729" servers="1">
+    <Proxy group="filters" type="ttkSphereFromPoint" id="9729" servers="1">
       <Property name="DebugLevel" id="9729.DebugLevel" number_of_elements="1">
         <Element index="0" value="3"/>
         <Domain name="range" id="9729.DebugLevel.range"/>
@@ -57697,7 +57705,7 @@
         <Domain name="bool" id="9729.UseAllCores.bool"/>
       </Property>
     </Proxy>
-    <Proxy group="filters" type="SphereFromPoint" id="10528" servers="1">
+    <Proxy group="filters" type="ttkSphereFromPoint" id="10528" servers="1">
       <Property name="DebugLevel" id="10528.DebugLevel" number_of_elements="1">
         <Element index="0" value="3"/>
         <Domain name="range" id="10528.DebugLevel.range"/>
@@ -57744,7 +57752,7 @@
         <Domain name="bool" id="10528.UseAllCores.bool"/>
       </Property>
     </Proxy>
-    <Proxy group="filters" type="SphereFromPoint" id="10929" servers="1">
+    <Proxy group="filters" type="ttkSphereFromPoint" id="10929" servers="1">
       <Property name="DebugLevel" id="10929.DebugLevel" number_of_elements="1">
         <Element index="0" value="3"/>
         <Domain name="range" id="10929.DebugLevel.range"/>
@@ -57791,7 +57799,7 @@
         <Domain name="bool" id="10929.UseAllCores.bool"/>
       </Property>
     </Proxy>
-    <Proxy group="filters" type="SphereFromPoint" id="17660" servers="1">
+    <Proxy group="filters" type="ttkSphereFromPoint" id="17660" servers="1">
       <Property name="DebugLevel" id="17660.DebugLevel" number_of_elements="1">
         <Element index="0" value="3"/>
         <Domain name="range" id="17660.DebugLevel.range"/>
@@ -57838,7 +57846,7 @@
         <Domain name="bool" id="17660.UseAllCores.bool"/>
       </Property>
     </Proxy>
-    <Proxy group="filters" type="SphereFromPoint" id="18394" servers="1">
+    <Proxy group="filters" type="ttkSphereFromPoint" id="18394" servers="1">
       <Property name="DebugLevel" id="18394.DebugLevel" number_of_elements="1">
         <Element index="0" value="3"/>
         <Domain name="range" id="18394.DebugLevel.range"/>
@@ -57885,7 +57893,7 @@
         <Domain name="bool" id="18394.UseAllCores.bool"/>
       </Property>
     </Proxy>
-    <Proxy group="filters" type="TopologicalSimplification" id="9339" servers="1">
+    <Proxy group="filters" type="ttkTopologicalSimplification" id="9339" servers="1">
       <Property name="AddPerturbation" id="9339.AddPerturbation" number_of_elements="1">
         <Element index="0" value="0"/>
         <Domain name="bool" id="9339.AddPerturbation.bool"/>
@@ -57939,8 +57947,12 @@
         <Element index="0" value="0"/>
         <Domain name="bool" id="9339.PeriodicBoundaryConditions.bool"/>
       </Property>
-      <Property name="ScalarField" id="9339.ScalarField" number_of_elements="1">
-        <Element index="0" value="lowerBoundField"/>
+      <Property name="Scalar Field" id="9339.ScalarField" number_of_elements="5">
+        <Element index="0" value="0"/>
+        <Element index="1" value=""/>
+        <Element index="2" value=""/>
+        <Element index="3" value="0"/>
+        <Element index="4" value="lowerBoundField"/>
         <Domain name="array_list" id="9339.ScalarField.array_list">
           <String text="lowerBoundField"/>
           <String text="upperBoundField"/>
@@ -57955,7 +57967,7 @@
         <Domain name="bool" id="9339.UseAllCores.bool"/>
       </Property>
     </Proxy>
-    <Proxy group="filters" type="TopologicalSimplification" id="10539" servers="1">
+    <Proxy group="filters" type="ttkTopologicalSimplification" id="10539" servers="1">
       <Property name="AddPerturbation" id="10539.AddPerturbation" number_of_elements="1">
         <Element index="0" value="0"/>
         <Domain name="bool" id="10539.AddPerturbation.bool"/>
@@ -58009,8 +58021,12 @@
         <Element index="0" value="0"/>
         <Domain name="bool" id="10539.PeriodicBoundaryConditions.bool"/>
       </Property>
-      <Property name="ScalarField" id="10539.ScalarField" number_of_elements="1">
-        <Element index="0" value="upperBoundField"/>
+      <Property name="Scalar Field" id="10539.ScalarField" number_of_elements="5">
+        <Element index="0" value="0"/>
+        <Element index="1" value=""/>
+        <Element index="2" value=""/>
+        <Element index="3" value="0"/>
+        <Element index="4" value="upperBoundField"/>
         <Domain name="array_list" id="10539.ScalarField.array_list">
           <String text="lowerBoundField"/>
           <String text="upperBoundField"/>

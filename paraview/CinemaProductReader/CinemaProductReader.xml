@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ServerManagerConfiguration>
     <ProxyGroup name="filters">
-        <SourceProxy name="CinemaProductReader" class="ttkCinemaProductReader" label="TTK CinemaProductReader">
+        <SourceProxy name="ttkCinemaProductReader" class="ttkCinemaProductReader" label="TTK CinemaProductReader">
             <Documentation long_help="TTK CinemaProductReader" short_help="TTK CinemaProductReader">This filter reads the products that are referenced in a vtkTable. The results are stored in a vtkMultiBlockDataSet where each block corresponds to a row of the table with consistent ordering.</Documentation>
 
             <InputProperty name="Input" command="SetInputConnection">

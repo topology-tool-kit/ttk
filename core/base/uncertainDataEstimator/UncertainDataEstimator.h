@@ -9,8 +9,7 @@
 ///
 /// \sa ttkUncertainDataEstimator.cpp %for a usage example.
 
-#ifndef _UNCERTAINDATAESTIMATOR_H
-#define _UNCERTAINDATAESTIMATOR_H
+#pragma once
 
 // base code includes
 #include <Wrapper.h>
@@ -18,16 +17,8 @@
 namespace ttk {
 
   template <class dataType>
-  class PDFBounds : public Debug {
+  class PDFBounds : virtual public Debug {
   public:
-    PDFBounds() {
-      numberOfVertices_ = 0;
-    }
-
-    ~PDFBounds() {
-      flush();
-    }
-
     int evaluateRealization(const void *voidPointer) {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(!(numberOfVertices_ > 0)) {
@@ -68,10 +59,7 @@ namespace ttk {
     }
 
     std::pair<dataType, dataType> getRange() const {
-      std::pair<dataType, dataType> range;
-      range.first = getRangeMin();
-      range.second = getRangeMax();
-      return range;
+      return {getRangeMin(), getRangeMax()};
     }
 
     dataType getRangeMax() const {
@@ -102,13 +90,6 @@ namespace ttk {
       }
     }
 
-    inline int flush() {
-      numberOfVertices_ = 0;
-      upperBound_.clear();
-      lowerBound_.clear();
-      return 0;
-    }
-
     inline dataType *getLowerBoundPointer() {
       return lowerBound_.data();
     }
@@ -117,31 +98,18 @@ namespace ttk {
       return upperBound_.data();
     }
 
-    inline int setNumberOfVertices(const SimplexId number) {
+    inline void setNumberOfVertices(const SimplexId number) {
       numberOfVertices_ = number;
-      return 0;
     }
 
   protected:
-    SimplexId numberOfVertices_;
-    std::vector<dataType> upperBound_;
-    std::vector<dataType> lowerBound_;
+    SimplexId numberOfVertices_{0};
+    std::vector<dataType> upperBound_{};
+    std::vector<dataType> lowerBound_{};
   };
 
-  class PDFHistograms : public Debug {
+  class PDFHistograms : virtual public Debug {
   public:
-    PDFHistograms() {
-      numberOfBins_ = 0;
-      numberOfInputs_ = 0;
-      numberOfVertices_ = 0;
-      rangeMax_ = 0;
-      rangeMin_ = 0;
-    }
-
-    ~PDFHistograms() {
-      flush();
-    }
-
     template <class dataType>
     int evaluateRealization(const dataType *inputData) {
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -177,100 +145,46 @@ namespace ttk {
       return 0;
     }
 
-    inline int flush() {
-      binValue_.clear();
-      numberOfBins_ = 0;
-      numberOfInputs_ = 0;
-      numberOfVertices_ = 0;
-      rangeMax_ = 0;
-      rangeMin_ = 0;
-      // selection_.clear(); // TODO : selection support
-      return 0;
-    }
-
     inline double *getBinFieldPointer(const int binId) {
       if(binId < numberOfBins_) {
         return probability_[binId].data();
       } else {
-        return NULL;
+        return nullptr;
       }
     }
 
     void getVertexHistogram(const SimplexId vertexId,
-                            std::vector<double> &histogram) const {
-      histogram.resize(numberOfBins_);
-      if(vertexId < numberOfVertices_) {
-#ifdef TTK_ENABLE_OPENMP
-#ifdef _WIN32
-#pragma omp parallel for num_threads(threadNumber_)
-#else
-#pragma omp parallel for num_threads(threadNumber_) \
-  schedule(static, numberOfBins_ / threadNumber_)
-#endif
-#endif
-        for(int i = 0; i < (int)numberOfBins_; i++) {
-          if((SimplexId)probability_[i].size() == numberOfVertices_) {
-            histogram[i] = probability_[i][vertexId];
-          } else {
-            histogram[i] = 0.0;
-          }
-        }
-      } else {
-        fill(histogram.begin(), histogram.end(), 0.0);
-      }
-    }
+                            std::vector<double> &histogram) const;
 
-    int normalize() {
-      const double normalization = 1.0 / static_cast<double>(numberOfInputs_);
-#ifdef TTK_ENABLE_OPENMP
-#ifdef _WIN32
-#pragma omp parallel for num_threads(threadNumber_)
-#else
-#pragma omp parallel for num_threads(threadNumber_) collapse(2) \
-  schedule(static, (numberOfBins_ * numberOfVertices_) / threadNumber_)
-#endif
-#endif
-      for(int i = 0; i < numberOfBins_; i++) {
-        for(SimplexId j = 0; j < numberOfVertices_; j++) {
-          probability_[i][j] *= normalization;
-        }
-      }
-      return 0;
-    }
+    void normalize();
 
-    inline int setNumberOfBins(const int number) {
+    inline void setNumberOfBins(const int number) {
       numberOfBins_ = number;
-      return 0;
     }
 
-    inline int setNumberOfVertices(const SimplexId number) {
+    inline void setNumberOfVertices(const SimplexId number) {
       numberOfVertices_ = number;
-      return 0;
     }
 
-    inline int setRange(const double min, const double max) {
+    inline void setRange(const double min, const double max) {
       rangeMin_ = min;
       rangeMax_ = max;
-      return 0;
     }
 
   protected:
-    std::vector<double> binValue_;
-    std::vector<std::vector<double>> probability_;
-    int numberOfBins_;
-    int numberOfInputs_;
-    SimplexId numberOfVertices_;
-    double rangeMin_;
-    double rangeMax_;
+    std::vector<double> binValue_{};
+    std::vector<std::vector<double>> probability_{};
+    int numberOfBins_{0};
+    int numberOfInputs_{0};
+    SimplexId numberOfVertices_{0};
+    double rangeMin_{0.0};
+    double rangeMax_{0.0};
     // std::vector<int> selection_; // TODO : selection support
   };
 
-  class UncertainDataEstimator : public Debug {
-
+  class UncertainDataEstimator : virtual public Debug {
   public:
     UncertainDataEstimator();
-
-    ~UncertainDataEstimator();
 
     /// Execute the package.
     /// \return Returns 0 upon success, negative values otherwise.
@@ -295,53 +209,45 @@ namespace ttk {
     /// field. The array is expected to be correctly allocated. \param data
     /// Pointer to the data array. \return Returns 0 upon success, negative
     /// values otherwise. \sa setVertexNumber()
-    inline int setOutputLowerBoundField(void *data) {
+    inline void setOutputLowerBoundField(void *data) {
       outputLowerBoundField_ = data;
-      return 0;
     }
 
     /// Pass a pointer to an output array representing the upper bound scalar
     /// field. The array is expected to be correctly allocated. \param data
     /// Pointer to the data array. \return Returns 0 upon success, negative
     /// values otherwise. \sa setVertexNumber()
-    inline int setOutputUpperBoundField(void *data) {
+    inline void setOutputUpperBoundField(void *data) {
       outputUpperBoundField_ = data;
-      return 0;
     }
 
-    inline int setOutputProbability(int idx, double *data) {
-      if(idx < binCount_) {
+    inline void setOutputProbability(int idx, double *data) {
+      if(idx < BinCount) {
         outputProbability_[idx] = data;
       }
-
-      return 0;
     }
 
-    inline int setOutputMeanField(void *data) {
+    inline void setOutputMeanField(void *data) {
       outputMeanField_ = data;
-      return 0;
     }
 
-    inline int setComputeLowerBound(const bool &state) {
-      computeLowerBound_ = state;
-      return 0;
+    inline void setComputeLowerBound(const bool &state) {
+      ComputeLowerBound = state;
     }
 
-    inline int setComputeUpperBound(const bool &state) {
-      computeUpperBound_ = state;
-      return 0;
+    inline void setComputeUpperBound(const bool &state) {
+      ComputeUpperBound = state;
     }
 
     /// Set the number of vertices in the scalar field.
     /// \param vertexNumber Number of vertices in the data-set.
     /// \return Returns 0 upon success, negative values otherwise.
-    inline int setVertexNumber(const SimplexId &vertexNumber) {
+    inline void setVertexNumber(const SimplexId &vertexNumber) {
       vertexNumber_ = vertexNumber;
-      return 0;
     }
 
-    inline int setBinCount(const int &binCount) {
-      binCount_ = binCount;
+    inline void setBinCount(const int &binCount) {
+      BinCount = binCount;
       outputProbability_.clear();
       outputProbability_.resize(binCount);
       for(int b = 0; b < binCount; b++)
@@ -349,48 +255,41 @@ namespace ttk {
 
       binValues_.clear();
       binValues_.resize(binCount);
-
-      return 0;
     }
 
     /// Set the number of input scalar fields
     /// \param numberOfInputs Number of input scalar fields.
     /// \return Returns 0 upon success, negative values otherwise
-    inline int setNumberOfInputs(int numberOfInputs) {
+    inline void setNumberOfInputs(int numberOfInputs) {
       numberOfInputs_ = numberOfInputs;
       inputData_.clear();
       inputData_.resize(numberOfInputs);
       for(int i = 0; i < numberOfInputs; i++) {
         inputData_[i] = NULL;
       }
-      return 0;
     }
 
     inline double getBinValue(int b) {
-      if(b < binCount_)
+      if(b < BinCount)
         return binValues_[b];
       return 0.0;
     }
 
   protected:
-    SimplexId vertexNumber_;
-    int numberOfInputs_;
-    int binCount_;
+    SimplexId vertexNumber_{0};
+    int numberOfInputs_{0};
+    int BinCount{0};
     std::vector<double> binValues_{};
-    bool computeLowerBound_;
-    bool computeUpperBound_;
+    bool ComputeLowerBound{};
+    bool ComputeUpperBound{};
     std::vector<void *> inputData_{};
-    void *outputLowerBoundField_;
-    void *outputUpperBoundField_;
+    void *outputLowerBoundField_{};
+    void *outputUpperBoundField_{};
     std::vector<double *> outputProbability_{};
-    void *outputMeanField_;
+    void *outputMeanField_{};
   };
 } // namespace ttk
 
-// if the package is a pure template class, uncomment the following line
-// #include                  <UncertainDataEstimator.cpp>
-
-// template functions
 template <class dataType>
 int ttk::UncertainDataEstimator::execute() {
 
@@ -424,33 +323,32 @@ int ttk::UncertainDataEstimator::execute() {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
-
   for(SimplexId v = 0; v < (SimplexId)vertexNumber_; v++) {
 
     // Avoid any processing if the abort signal is sent
     if((!wrapper_) || ((wrapper_) && (!wrapper_->needsToAbort()))) {
 
       // For the lower bound scalar field
-      if(computeLowerBound_) {
+      if(ComputeLowerBound) {
         // Initialisation : values of the first input
         outputLowerBoundField[v] = inputData[0][v];
         // Loop over the inputs
         for(int inp = 1; inp < numberOfInputs_; inp++) {
           // Minimum value
-          if(computeLowerBound_)
+          if(ComputeLowerBound)
             if(inputData[inp][v] < outputLowerBoundField[v])
               outputLowerBoundField[v] = inputData[inp][v];
         }
       }
 
       // For the upper bound scalar field
-      if(computeUpperBound_) {
+      if(ComputeUpperBound) {
         // Initialisation : values of the first input
         outputUpperBoundField[v] = inputData[0][v];
         // Loop over the inputs
         for(int inp = 1; inp < numberOfInputs_; inp++) {
           // Maximum value
-          if(computeUpperBound_)
+          if(ComputeUpperBound)
             if(inputData[inp][v] > outputUpperBoundField[v])
               outputUpperBoundField[v] = inputData[inp][v];
         }
@@ -473,7 +371,7 @@ int ttk::UncertainDataEstimator::execute() {
   }
 
   // Histogram
-  if(computeUpperBound_ && computeLowerBound_) {
+  if(ComputeUpperBound && ComputeLowerBound) {
     // Range
     double range[2];
     range[0] = outputLowerBoundField[0];
@@ -487,10 +385,10 @@ int ttk::UncertainDataEstimator::execute() {
     }
 
     // Interval between bins
-    double dx = (range[1] - range[0]) / (double)binCount_;
+    double dx = (range[1] - range[0]) / (double)BinCount;
 
     // Bin values
-    for(int b = 0; b < binCount_; b++) {
+    for(int b = 0; b < BinCount; b++) {
       binValues_[b] = range[0] + (dx / 2.0) + (double)b * dx;
     }
 
@@ -501,9 +399,9 @@ int ttk::UncertainDataEstimator::execute() {
 #endif
     for(SimplexId v = 0; v < vertexNumber_; v++) {
       for(int i = 0; i < numberOfInputs_; i++) {
-        idx = (int)floor((inputData[i][v] - range[0]) * binCount_
+        idx = (int)floor((inputData[i][v] - range[0]) * BinCount
                          / (range[1] - range[0]));
-        idx = (idx == binCount_) ? binCount_ - 1 : idx;
+        idx = (idx == BinCount) ? BinCount - 1 : idx;
         outputProbability_[idx][v] += increment;
       }
     }
@@ -518,15 +416,10 @@ int ttk::UncertainDataEstimator::execute() {
     outputMeanField[v] = sum / static_cast<double>(numberOfInputs_);
   }
 
-  {
-    std::stringstream msg;
-    msg << "[UncertainDataEstimator] Data-set (" << vertexNumber_
-        << " points) processed in " << t.getElapsedTime() << " s. ("
-        << threadNumber_ << " thread(s))." << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
-  }
+  this->printMsg(std::vector<std::vector<std::string>>{
+    {"#Vertices", std::to_string(vertexNumber_)}});
+  this->printMsg(
+    "Data-set processed", 1.0, t.getElapsedTime(), this->threadNumber_);
 
   return 0;
 }
-
-#endif // UNCERTAINDATAESTIMATOR_H

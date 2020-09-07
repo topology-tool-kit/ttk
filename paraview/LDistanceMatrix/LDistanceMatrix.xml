@@ -1,7 +1,7 @@
 <ServerManagerConfiguration>
   <ProxyGroup name="filters">
    <SourceProxy
-     name="LDistanceMatrix"
+     name="ttkLDistanceMatrix"
      class="ttkLDistanceMatrix"
      label="TTK LDistanceMatrix">
      <Documentation

@@ -78,6 +78,8 @@ install(
 # Paraview plugin
 # ---------------
 
+set(VTKWRAPPER_DIR "${CMAKE_CURRENT_LIST_DIR}/core/vtk/")
+
 if(TTK_BUILD_PARAVIEW_PLUGINS)
   include(CMake/ParaViewFilter.cmake)
   add_compile_definitions("TTK_BUILD_PARAVIEW_PLUGINS")

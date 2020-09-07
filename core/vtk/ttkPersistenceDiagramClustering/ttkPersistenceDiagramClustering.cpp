@@ -75,7 +75,6 @@ int ttkPersistenceDiagramClustering::RequestData(
     all_matchings_.resize(3);
 
     max_dimension_total_ = 0;
-    this->setNumberOfInputs(numInputs);
     for(int i = 0; i < numInputs; i++) {
       double max_dimension
         = getPersistenceDiagram(intermediateDiagrams_[i], input[i]);
@@ -205,6 +204,10 @@ double ttkPersistenceDiagramClustering::getPersistenceDiagram(
       pairIdentifierScalars->SetTuple(pair_index, &index_of_pair);
   }
 
+  // If diagram has the diagonal (we assume it is last)
+  if(*pairIdentifierScalars->GetTuple(pairingsSize - 1) == -1)
+    pairingsSize -= 1;
+
 #ifndef TTK_ENABLE_KAMIKAZE
   if(pairingsSize < 1 || !vertexIdentifierScalars || !pairIdentifierScalars
      || !nodeTypeScalars || !persistenceScalars || !extremumIndexScalars
@@ -222,7 +225,7 @@ double ttkPersistenceDiagramClustering::getPersistenceDiagram(
   double max_dimension = 0;
 
   // skip diagonal cell (corresponding points already dealt with)
-  for(int i = 0; i < pairingsSize - 1; ++i) {
+  for(int i = 0; i < pairingsSize; ++i) {
 
     int vertexId1 = vertexIdentifierScalars->GetValue(2 * i);
     int vertexId2 = vertexIdentifierScalars->GetValue(2 * i + 1);

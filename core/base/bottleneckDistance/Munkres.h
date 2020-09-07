@@ -5,7 +5,6 @@
 #pragma once
 
 #include <Debug.h>
-#include <PersistenceDiagram.h>
 #include <cmath>
 #include <iostream>
 #include <limits>

@@ -45,6 +45,15 @@ macro(ttk_add_vtk_module)
         ${TTK_DEPENDS}
       )
 
+
+    if(TTK_ENABLE_DOUBLE_TEMPLATING)
+      vtk_module_definitions(${TTK_NAME} PRIVATE TTK_ENABLE_DOUBLE_TEMPLATING)
+    endif()
+
+    if(TTK_LINKER_FLAGS)
+      vtk_module_link_options(${TTK_NAME} PRIVATE ${TTK_LINKER_FLAGS})
+    endif()
+
     install(
       TARGETS
         ${TTK_NAME}
@@ -92,15 +101,40 @@ macro(ttk_add_vtk_module)
   endif()
 endmacro()
 
-# whitelist mechanism
 # return the target name if target is enabled
 # empty otherwise
+# Used by the whitelist mechanism to disable target by default:
+# - the whitelist mechanism needs to be enables in the cmake command line
+#   before the first configure.
+# Also check dependencies of each module.
 function(ttk_get_target ttk_module ttk_target)
+  # default status
   if(NOT DEFINED VTK_MODULE_ENABLE_${ttk_module})
     set(VTK_MODULE_ENABLE_${ttk_module} "${TTK_ENABLE_FILTER_DEFAULT}" CACHE STRING "Enable the ${ttk_module} module.")
     mark_as_advanced(VTK_MODULE_ENABLE_${ttk_module})
   endif()
 
+  # dependencies check
+  ttk_parse_module_file(${VTKWRAPPER_DIR}/${ttk_module}/vtk.module)
+  cmake_parse_arguments("VTK" "" "NAME" "DEPENDS;PRIVATE_DEPENDS" ${moduleFileContent})
+   foreach(VTK_DEP_TARGET ${VTK_DEPENDS}) 
+    # Check VTK targets are available (Assume VTK use the VTK namespace)
+    string(REGEX MATCH "VTK::.*" TARGET_VTK ${VTK_DEP_TARGET})
+    if(NOT "${TARGET_VTK}" STREQUAL "")
+      if(NOT TARGET ${TARGET_VTK})
+        message(WARNING "Missing dependency ${TARGET_VTK} for module ${ttk_module}.")
+        set(VTK_MODULE_ENABLE_${ttk_module} "NO" CACHE STRING "Enable the ${ttk_module} module." FORCE)
+      endif()
+    endif()
+  endforeach()
+  foreach(VTK_DEP_TARGET ${VTK_PRIVATE_DEPENDS}) 
+    if(NOT TARGET ${VTK_DEP_TARGET})
+      message(WARNING "Missing (private) dependency ${VTK_DEP_TARGET} for module ${ttk_module}.")
+      set(VTK_MODULE_ENABLE_${ttk_module} "NO" CACHE STRING "Enable the ${ttk_module} module." FORCE)
+    endif()
+  endforeach()
+
+  # add the module if enabled
   list(APPEND ACCEPTED_VALUES "YES" "WANT" "DEFAULT")
   if("${VTK_MODULE_ENABLE_${ttk_module}}" IN_LIST ACCEPTED_VALUES)
     set(${ttk_target} ${ttk_module} PARENT_SCOPE)

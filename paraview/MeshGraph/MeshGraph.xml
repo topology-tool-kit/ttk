@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ServerManagerConfiguration>
     <ProxyGroup name="filters">
-        <SourceProxy name="MeshGraph" class="ttkMeshGraph" label="TTK MeshGraph">
+        <SourceProxy name="ttkMeshGraph" class="ttkMeshGraph" label="TTK MeshGraph">
             <Documentation long_help="TTK MeshGraph" short_help="TTK MeshGraph">This filter generates for each one dimensional cell (edge) of a 'vtkUnstructuredGrid' a two dimensional cell by mapping a size value to the width of the input cell. The output is a 'vtkUnstructuredGrid' consisting of a set of either quadratic quads or linear polygons.</Documentation>
 
             <InputProperty name="Input" command="SetInputConnection">

@@ -52,7 +52,18 @@ int copyObjects(vtkDataObject *source, vtkDataObject *copy) {
     auto sourceAsMB = vtkMultiBlockDataSet::SafeDownCast(source);
     auto copyAsMB = vtkMultiBlockDataSet::SafeDownCast(copy);
 
-    copyAsMB->GetFieldData()->ShallowCopy(sourceAsMB->GetFieldData());
+    if(sourceAsMB == nullptr || copyAsMB == nullptr) {
+      return 0;
+    }
+
+    const auto sourceFD = sourceAsMB->GetFieldData();
+    auto copyFD = copyAsMB->GetFieldData();
+
+    if(sourceFD == nullptr || copyFD == nullptr) {
+      return 0;
+    }
+
+    copyFD->ShallowCopy(sourceFD);
 
     for(size_t i = 0; i < sourceAsMB->GetNumberOfBlocks(); i++) {
       auto block = sourceAsMB->GetBlock(i);

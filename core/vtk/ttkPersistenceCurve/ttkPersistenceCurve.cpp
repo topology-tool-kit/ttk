@@ -1,6 +1,6 @@
+#include <ttkMacros.h>
 #include <ttkPersistenceCurve.h>
 #include <ttkUtils.h>
-#include <ttkMacros.h>
 
 using namespace std;
 using namespace ttk;
@@ -163,15 +163,18 @@ int ttkPersistenceCurve::dispatch(vtkTable *outputJTPersistenceCurve,
   std::vector<std::pair<VTK_TT, SimplexId>> MSCPlot{};
   std::vector<std::pair<VTK_TT, SimplexId>> CTPlot{};
 
+  this->setOutputJTPlot(&JTPlot);
+  this->setOutputSTPlot(&STPlot);
+  this->setOutputCTPlot(&CTPlot);
+  this->setOutputMSCPlot(&MSCPlot);
+
   if(inputOffsetsDataType == VTK_INT) {
-    ret = this->execute<VTK_TT, int, TTK_TT>(JTPlot, STPlot, MSCPlot, CTPlot,
-                                             inputScalars, (int *)inputOffsets,
-                                             triangulation);
+    ret = this->execute<VTK_TT, int, TTK_TT>(
+      inputScalars, (int *)inputOffsets, triangulation);
   }
   if(inputOffsetsDataType == VTK_ID_TYPE) {
     ret = this->execute<VTK_TT, vtkIdType, TTK_TT>(
-      JTPlot, STPlot, MSCPlot, CTPlot, inputScalars, (vtkIdType *)inputOffsets,
-      triangulation);
+      inputScalars, (vtkIdType *)inputOffsets, triangulation);
   }
 
   ret = getPersistenceCurve<vtkDoubleArray, VTK_TT>(
@@ -240,9 +243,8 @@ int ttkPersistenceCurve::RequestData(vtkInformation *request,
     return 0;
   }
 #endif
-  preconditionTriangulation(triangulation);
-  // TODO: Remove when FTM and MSC are migrated
-  setupTriangulation(triangulation);
+
+  this->preconditionTriangulation(triangulation);
 
   vtkDataArray *inputScalars = this->GetInputArrayToProcess(0, inputVector);
 #ifndef TTK_ENABLE_KAMIKAZE

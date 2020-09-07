@@ -3,11 +3,11 @@
 
 #include <Debug.h>
 #include <KDTree.h>
-#include <PersistenceDiagram.h>
 #include <array>
 #include <cmath>
 #include <iostream>
 #include <limits>
+#include <queue>
 
 namespace ttk {
   template <typename dataType>
@@ -483,7 +483,7 @@ namespace ttk {
                                    double geometricalFactor) {
     dataType best_val = std::numeric_limits<dataType>::lowest();
     dataType second_val = std::numeric_limits<dataType>::lowest();
-    Good<dataType> *best_good = nullptr;
+    Good<dataType> *best_good{};
     for(int i = 0; i < goods->size(); i++) {
       Good<dataType> &g = goods->get(i);
       dataType val = -this->cost(g, wasserstein, geometricalFactor);
@@ -586,7 +586,7 @@ namespace ttk {
       }
     }
 
-    Good<dataType> *best_good;
+    Good<dataType> *best_good{};
     dataType best_val = 0;
     dataType second_val = 0;
     if(non_empty_goods) {
@@ -707,7 +707,7 @@ namespace ttk {
     }
 
     // std::cout << "got here 1/2" << std::endl;
-    Good<dataType> *best_good;
+    Good<dataType> *best_good{};
     dataType best_val = 0;
     dataType second_val = 0;
     if(non_empty_goods) {
@@ -806,7 +806,7 @@ namespace ttk {
     // std::cout<<"got to 2"<<std::endl;
     dataType best_val, second_val;
     KDTree<dataType> *closest_kdt;
-    Good<dataType> *best_good;
+    Good<dataType> *best_good{};
     if(costs.size() == 2) {
       // std::cout<<"got to 735"<<std::endl;
       std::vector<int> idx(2);

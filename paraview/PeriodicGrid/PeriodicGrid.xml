@@ -8,7 +8,7 @@
 
 <ServerManagerConfiguration>
     <ProxyGroup name="filters">
-        <SourceProxy name="PeriodicGrid" class="ttkPeriodicGrid" label="TTK PeriodicGrid">
+        <SourceProxy name="ttkPeriodicGrid" class="ttkPeriodicGrid" label="TTK PeriodicGrid">
            <Documentation long_help="PeriodicGrid Long" short_help="PeriodicGrid Short">
                This filter converts a regular grid (vtkImageData) into a
 periodic regular grid (vtkImageData), in all dimensions.

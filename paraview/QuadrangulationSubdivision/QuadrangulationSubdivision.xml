@@ -1,7 +1,7 @@
 <ServerManagerConfiguration>
   <ProxyGroup name="filters">
     <SourceProxy
-        name="QuadrangulationSubdivision"
+        name="ttkQuadrangulationSubdivision"
         class="ttkQuadrangulationSubdivision"
         label="TTK QuadrangulationSubdivision">
       <Documentation

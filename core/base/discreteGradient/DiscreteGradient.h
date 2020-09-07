@@ -442,7 +442,7 @@ according to them.
             data->preconditionTriangleStars();
             data->preconditionCellTriangles();
             // for filterSaddleConnectors
-            contourTree_.setupTriangulation(data);
+            contourTree_.preconditionTriangulation(data);
           }
         }
       }

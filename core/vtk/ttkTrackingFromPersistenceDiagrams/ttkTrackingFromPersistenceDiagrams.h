@@ -1,11 +1,11 @@
-#ifndef _TTK_TRACKINGFROMP_H
-#define _TTK_TRACKINGFROMP_H
+#pragma once
 
 #include <tuple>
 
 #include <TrackingFromPersistenceDiagrams.h>
-#include <Wrapper.h>
-#include <ttkTriangulationAlgorithm.h>
+#include <ttkAlgorithm.h>
+// #include <ttkUtils.h>
+#include <ttkMacros.h>
 
 #include <vtkCellData.h>
 #include <vtkCellType.h>
@@ -30,37 +30,14 @@
 #include <ttkTrackingFromPersistenceDiagramsModule.h>
 
 class TTKTRACKINGFROMPERSISTENCEDIAGRAMS_EXPORT
-  ttkTrackingFromPersistenceDiagrams : public vtkDataSetAlgorithm,
-                                       protected ttk::Wrapper {
+  ttkTrackingFromPersistenceDiagrams
+  : public ttkAlgorithm,
+    protected ttk::TrackingFromPersistenceDiagrams {
 
 public:
   static ttkTrackingFromPersistenceDiagrams *New();
 
-  vtkTypeMacro(ttkTrackingFromPersistenceDiagrams, vtkDataSetAlgorithm);
-
-  void SetThreads() {
-    if(!UseAllCores)
-      threadNumber_ = ThreadNumber;
-    else {
-      threadNumber_ = ttk::OsCall::getNumberOfCores();
-    }
-    Modified();
-  }
-
-  void SetThreadNumber(int threadNumber) {
-    ThreadNumber = threadNumber;
-    SetThreads();
-  }
-
-  void SetUseAllCores(bool onOff) {
-    UseAllCores = onOff;
-    SetThreads();
-  }
-
-  void SetDebugLevel(int debugLevel) {
-    setDebugLevel(debugLevel);
-    Modified();
-  }
+  vtkTypeMacro(ttkTrackingFromPersistenceDiagrams, ttkAlgorithm);
 
   vtkSetMacro(Tolerance, double);
   vtkGetMacro(Tolerance, double);
@@ -113,17 +90,17 @@ public:
               std::vector<std::vector<diagramTuple>> &inputPersistenceDiagrams,
               bool useGeometricSpacing,
               double spacing,
-              bool doPostProc,
+              bool DoPostProc,
               std::vector<std::set<int>> &trackingTupleToMerged,
-              vtkSmartPointer<vtkPoints> &points,
-              vtkSmartPointer<vtkUnstructuredGrid> &persistenceDiagram,
-              vtkSmartPointer<vtkDoubleArray> &persistenceScalars,
-              vtkSmartPointer<vtkDoubleArray> &valueScalars,
-              vtkSmartPointer<vtkIntArray> &matchingIdScalars,
-              vtkSmartPointer<vtkIntArray> &lengthScalars,
-              vtkSmartPointer<vtkIntArray> &timeScalars,
-              vtkSmartPointer<vtkIntArray> &componentIds,
-              vtkSmartPointer<vtkIntArray> &pointTypeScalars);
+              vtkPoints *points,
+              vtkUnstructuredGrid *persistenceDiagram,
+              vtkDoubleArray *persistenceScalars,
+              vtkDoubleArray *valueScalars,
+              vtkIntArray *matchingIdScalars,
+              vtkIntArray *lengthScalars,
+              vtkIntArray *timeScalars,
+              vtkIntArray *componentIds,
+              vtkIntArray *pointTypeScalars);
 
 protected:
   ttkTrackingFromPersistenceDiagrams();
@@ -156,209 +133,24 @@ protected:
 
 private:
   // Input bottleneck config.
-  bool UseGeometricSpacing;
-  bool Is3D;
-  bool DoPostProc;
-  double PostProcThresh;
-  double Spacing;
-  double Alpha;
-  double Tolerance;
-  double PX;
-  double PY;
-  double PZ;
-  double PE;
-  double PS;
-  std::string DistanceAlgorithm;
-  int PVAlgorithm;
-  std::string WassersteinMetric;
+  bool UseGeometricSpacing{false};
+  bool Is3D{true};
+  bool DoPostProc{false};
+  double PostProcThresh{0.0};
+  double Spacing{1.0};
+  double Alpha{1.0};
+  double Tolerance{1.0};
+  double PX{1};
+  double PY{1};
+  double PZ{1};
+  double PE{1};
+  double PS{1};
+  std::string DistanceAlgorithm{"ttk"};
+  int PVAlgorithm{-1};
+  std::string WassersteinMetric{"1"};
 
-  bool UseAllCores;
-  int ThreadNumber;
-  vtkUnstructuredGrid *outputMesh_;
-
-  template <typename dataType>
-  int doIt(std::vector<vtkDataSet *> &input,
-           vtkUnstructuredGrid *outputMean,
-           int numInputs);
-
-  bool needsToAbort() override;
-
-  int updateProgress(const float &progress) override;
-
-  ttk::TrackingFromPersistenceDiagrams tracking_;
+  vtkUnstructuredGrid *outputMesh_{nullptr};
 };
-
-template <typename dataType>
-int ttkTrackingFromPersistenceDiagrams::doIt(std::vector<vtkDataSet *> &input,
-                                             vtkUnstructuredGrid *mesh,
-                                             int numInputs) {
-  std::vector<std::vector<diagramTuple>> inputPersistenceDiagrams(
-    (unsigned long)numInputs, std::vector<diagramTuple>());
-
-  std::vector<vtkSmartPointer<vtkUnstructuredGrid>> outputPersistenceDiagrams(
-    (unsigned long)2 * numInputs - 2,
-    vtkSmartPointer<vtkUnstructuredGrid>::New());
-
-  std::vector<std::vector<matchingTuple>> outputMatchings(
-    (unsigned long)numInputs - 1, std::vector<matchingTuple>());
-
-  // Input parameters.
-  double spacing = Spacing;
-  std::string algorithm = DistanceAlgorithm;
-  double alpha = Alpha;
-  double tolerance = Tolerance;
-  bool is3D = Is3D;
-  std::string wasserstein = WassersteinMetric;
-
-  // Transform inputs into the right structure.
-  for(int i = 0; i < numInputs; ++i) {
-    vtkUnstructuredGrid *grid1 = vtkUnstructuredGrid::New();
-    grid1->ShallowCopy(vtkUnstructuredGrid::SafeDownCast(input[i]));
-    this->getPersistenceDiagram(inputPersistenceDiagrams[i], grid1, spacing, 0);
-  }
-
-  tracking_.setThreadNumber(ThreadNumber);
-  tracking_.performMatchings<dataType>(
-    numInputs, inputPersistenceDiagrams, outputMatchings,
-    algorithm, // Not from paraview, from enclosing tracking plugin
-    wasserstein, tolerance, is3D,
-    alpha, // Blending
-    PX, PY, PZ, PS, PE, // Coefficients
-    this // Wrapper for accessing threadNumber
-  );
-
-  // Get back meshes.
-  //  #pragma omp parallel for num_threads(ThreadNumber)
-  for(int i = 0; i < numInputs - 1; ++i) {
-    vtkUnstructuredGrid *grid1 = vtkUnstructuredGrid::New();
-    grid1->ShallowCopy(vtkUnstructuredGrid::SafeDownCast(input[i]));
-    vtkUnstructuredGrid *grid2 = vtkUnstructuredGrid::New();
-    grid2->ShallowCopy(vtkUnstructuredGrid::SafeDownCast(input[i + 1]));
-
-    vtkUnstructuredGrid *CTPersistenceDiagram1_
-      = vtkUnstructuredGrid::SafeDownCast(grid1);
-    vtkUnstructuredGrid *CTPersistenceDiagram2_
-      = vtkUnstructuredGrid::SafeDownCast(grid2);
-
-    int status = this->augmentPersistenceDiagrams<dataType>(
-      inputPersistenceDiagrams[i], inputPersistenceDiagrams[i + 1],
-      outputMatchings[i], CTPersistenceDiagram1_, CTPersistenceDiagram2_);
-    if(status < 0)
-      return -2;
-
-    outputPersistenceDiagrams[2 * i]->ShallowCopy(CTPersistenceDiagram1_);
-    outputPersistenceDiagrams[2 * i + 1]->ShallowCopy(CTPersistenceDiagram2_);
-  }
-
-  auto numPersistenceDiagramsInput
-    = (int)outputPersistenceDiagrams.size(); // numInputs;
-
-  for(int i = 0; i < numPersistenceDiagramsInput; ++i) {
-    vtkSmartPointer<vtkUnstructuredGrid> grid = outputPersistenceDiagrams[i];
-    if(!grid || !grid->GetCellData()
-       || !grid->GetCellData()->GetArray("Persistence")) {
-      std::stringstream msg;
-      msg << "[ttkTrackingFromPersistenceDiagrams] Inputs are not persistence "
-             "diagrams."
-          << std::endl;
-      dMsg(std::cerr, msg.str(), fatalMsg);
-      return -1;
-    }
-
-    // Check if inputs have the same data type and the same number of points
-    if(grid->GetCellData()->GetArray("Persistence")->GetDataType()
-       != outputPersistenceDiagrams[0]
-            ->GetCellData()
-            ->GetArray("Persistence")
-            ->GetDataType()) {
-      std::stringstream msg;
-      msg << "[ttkTrackingFromPersistenceDiagrams] Inputs of different data "
-             "types."
-          << std::endl;
-      dMsg(std::cerr, msg.str(), fatalMsg);
-      return -3;
-    }
-  }
-
-  for(int i = 0; i < numPersistenceDiagramsInput - 1; ++i) {
-    vtkSmartPointer<vtkUnstructuredGrid> grid1 = outputPersistenceDiagrams[i];
-    vtkSmartPointer<vtkUnstructuredGrid> grid2
-      = outputPersistenceDiagrams[i + 1];
-    if(i % 2 == 1 && i < numPersistenceDiagramsInput - 1
-       && grid1->GetCellData()->GetNumberOfTuples()
-            != grid2->GetCellData()->GetNumberOfTuples()) {
-      std::stringstream msg;
-      msg << "[ttkTrackingFromPersistenceDiagrams] Inconsistent length or "
-             "order of input diagrams."
-          << std::endl;
-      dMsg(std::cerr, msg.str(), fatalMsg);
-      return -2;
-    }
-  }
-
-  outputMesh_ = vtkUnstructuredGrid::New();
-  vtkUnstructuredGrid *outputMesh = vtkUnstructuredGrid::SafeDownCast(mesh);
-
-  vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
-  vtkSmartPointer<vtkUnstructuredGrid> persistenceDiagram
-    = vtkSmartPointer<vtkUnstructuredGrid>::New();
-
-  vtkSmartPointer<vtkDoubleArray> persistenceScalars
-    = vtkSmartPointer<vtkDoubleArray>::New();
-  vtkSmartPointer<vtkDoubleArray> valueScalars
-    = vtkSmartPointer<vtkDoubleArray>::New();
-  vtkSmartPointer<vtkIntArray> matchingIdScalars
-    = vtkSmartPointer<vtkIntArray>::New();
-  vtkSmartPointer<vtkIntArray> lengthScalars
-    = vtkSmartPointer<vtkIntArray>::New();
-  vtkSmartPointer<vtkIntArray> timeScalars
-    = vtkSmartPointer<vtkIntArray>::New();
-  vtkSmartPointer<vtkIntArray> componentIds
-    = vtkSmartPointer<vtkIntArray>::New();
-  vtkSmartPointer<vtkIntArray> pointTypeScalars
-    = vtkSmartPointer<vtkIntArray>::New();
-  persistenceScalars->SetName("Cost");
-  valueScalars->SetName("Scalar");
-  matchingIdScalars->SetName("MatchingIdentifier");
-  lengthScalars->SetName("ComponentLength");
-  timeScalars->SetName("TimeStep");
-  componentIds->SetName("ConnectedComponentId");
-  pointTypeScalars->SetName("CriticalType");
-
-  // (+ vertex id)
-  std::vector<trackingTuple>
-    trackingsBase; // structure containing all trajectories
-  tracking_.setThreadNumber(ThreadNumber);
-  tracking_.performTracking<dataType>(
-    inputPersistenceDiagrams, outputMatchings, trackingsBase);
-
-  std::vector<std::set<int>> trackingTupleToMerged(
-    trackingsBase.size(), std::set<int>());
-  if(DoPostProc)
-    tracking_.performPostProcess<dataType>(inputPersistenceDiagrams,
-                                           trackingsBase, trackingTupleToMerged,
-                                           PostProcThresh);
-
-  // bool Is3D = true;
-  bool useGeometricSpacing = UseGeometricSpacing;
-  // auto spacing = (float) Spacing;
-
-  // std::vector<trackingTuple> trackings = *trackingsBase;
-  // Row = iteration number
-  // Col = (id in pd 2, arrival point id)
-
-  // Build mesh.
-  buildMesh<dataType>(
-    trackingsBase, outputMatchings, inputPersistenceDiagrams,
-    useGeometricSpacing, spacing, DoPostProc, trackingTupleToMerged, points,
-    persistenceDiagram, persistenceScalars, valueScalars, matchingIdScalars,
-    lengthScalars, timeScalars, componentIds, pointTypeScalars);
-
-  outputMesh_->ShallowCopy(persistenceDiagram);
-  outputMesh->ShallowCopy(outputMesh_);
-
-  return 0;
-}
 
 template <typename dataType>
 int ttkTrackingFromPersistenceDiagrams::buildMesh(
@@ -369,15 +161,15 @@ int ttkTrackingFromPersistenceDiagrams::buildMesh(
   double spacing,
   bool DoPostProc,
   std::vector<std::set<int>> &trackingTupleToMerged,
-  vtkSmartPointer<vtkPoints> &points,
-  vtkSmartPointer<vtkUnstructuredGrid> &persistenceDiagram,
-  vtkSmartPointer<vtkDoubleArray> &persistenceScalars,
-  vtkSmartPointer<vtkDoubleArray> &valueScalars,
-  vtkSmartPointer<vtkIntArray> &matchingIdScalars,
-  vtkSmartPointer<vtkIntArray> &lengthScalars,
-  vtkSmartPointer<vtkIntArray> &timeScalars,
-  vtkSmartPointer<vtkIntArray> &componentIds,
-  vtkSmartPointer<vtkIntArray> &pointTypeScalars) {
+  vtkPoints *points,
+  vtkUnstructuredGrid *persistenceDiagram,
+  vtkDoubleArray *persistenceScalars,
+  vtkDoubleArray *valueScalars,
+  vtkIntArray *matchingIdScalars,
+  vtkIntArray *lengthScalars,
+  vtkIntArray *timeScalars,
+  vtkIntArray *componentIds,
+  vtkIntArray *pointTypeScalars) {
   int currentVertex = 0;
   for(unsigned int k = 0; k < trackings.size(); ++k) {
     trackingTuple tt = trackings.at((unsigned long)k);
@@ -388,8 +180,8 @@ int ttkTrackingFromPersistenceDiagrams::buildMesh(
     int chainLength = chain.size();
 
     if(chain.size() <= 1) {
-      std::cout << "Got an unexpected 0-size chain." << std::endl;
-      return -9;
+      // printErr("Got an unexpected 0-size chain.");
+      return 0;
     }
 
     for(int c = 0; c < (int)chain.size() - 1; ++c) {
@@ -456,7 +248,8 @@ int ttkTrackingFromPersistenceDiagrams::buildMesh(
       // Postproc component ids.
       int cid = k;
       bool hasMergedFirst = false;
-      if(DoPostProc) {
+      // if(DoPostProc) {
+      if(0) {
         std::set<int> &connected = trackingTupleToMerged[k];
         if(!connected.empty()) {
           int min = *(connected.begin());
@@ -701,21 +494,15 @@ int ttkTrackingFromPersistenceDiagrams::getPersistenceDiagram(
     if(pairIdentifier >= pairingsSize) {
       nbNonCompact++;
       if(nbNonCompact == 0) {
-        std::stringstream msg;
-        msg << "[TTKBottleneckDistance] Diagram pair identifiers "
-            << "must be compact (not exceed the diagram size). " << std::endl;
-        dMsg(std::cout, msg.str(), timeMsg);
+        this->printWrn("Diagram pair identifiers must be compact (not exceed "
+                       "the diagram size).");
       }
     }
   }
 
   if(nbNonCompact > 0) {
-    {
-      std::stringstream msg;
-      msg << "[TTKBottleneckDistance] Missed " << nbNonCompact
-          << " pairs due to non-compactness." << std::endl;
-      dMsg(std::cout, msg.str(), timeMsg);
-    }
+    this->printWrn("Missed " + std::to_string(nbNonCompact)
+                   + " pairs due to non-compactness.");
   }
 
   sort(diagram.begin(), diagram.end(),
@@ -789,5 +576,3 @@ int ttkTrackingFromPersistenceDiagrams::augmentPersistenceDiagrams(
 
   return 0;
 }
-
-#endif // _TTK_TRACKINGFROMP_H

@@ -4,7 +4,6 @@ ttk_add_base_library(persistenceDiagramDistanceMatrix
   HEADERS
     PersistenceDiagramDistanceMatrix.h
   DEPENDS
-    common 
-    auction 
-    persistenceDiagram
+    common
+    auction
   )

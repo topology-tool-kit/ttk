@@ -25,6 +25,7 @@
 #include <PersistenceDiagram.h>
 #include <TopologicalSimplification.h>
 
+#include <cassert>
 #include <iostream>
 
 int load(const std::string &inputPath,
@@ -37,17 +38,10 @@ int load(const std::string &inputPath,
   if(inputPath.empty())
     return -1;
 
-  ttk::Debug d;
-  d.setDebugLevel(ttk::globalDebugLevel_);
-
-  {
-    std::stringstream msg;
-    msg << "[main::load] Reading input mesh..." << std::endl;
-    // choose where to display this message (std::cout, std::cerr, a file)
-    // choose the priority of this message (1, nearly always displayed,
-    // higher values mean lower priorities)
-    d.dMsg(std::cout, msg.str(), d.timeMsg);
-  }
+  ttk::Debug dbg;
+  dbg.setDebugLevel(ttk::globalDebugLevel_);
+  dbg.setDebugMsgPrefix("main::load");
+  dbg.printMsg("Reading input mesh...");
 
   int vertexNumber = 0, triangleNumber = 0;
   std::string keyword;
@@ -55,19 +49,14 @@ int load(const std::string &inputPath,
   std::ifstream f(inputPath.data(), std::ios::in);
 
   if(!f) {
-    std::stringstream msg;
-    msg << "[main::load] Cannot open file `" << inputPath << "'!" << std::endl;
-    d.dMsg(std::cerr, msg.str(), d.fatalMsg);
+    dbg.printErr("Cannot read file `" + inputPath + "'!");
     return -1;
   }
 
   f >> keyword;
 
   if(keyword != "OFF") {
-    std::stringstream msg;
-    msg << "[main::load] Input OFF file `" << inputPath << "' seems invalid :("
-        << std::endl;
-    d.dMsg(std::cerr, msg.str(), d.fatalMsg);
+    dbg.printErr("Input OFF file `" + inputPath + "' seems invalid :(");
     return -2;
   }
 
@@ -103,12 +92,8 @@ int load(const std::string &inputPath,
 
   f.close();
 
-  {
-    std::stringstream msg;
-    msg << "[main::load]   done! (read " << vertexNumber << " vertices, "
-        << triangleNumber << " triangles)" << std::endl;
-    d.dMsg(std::cout, msg.str(), d.timeMsg);
-  }
+  dbg.printMsg("... done! (read " + std::to_string(vertexNumber) + " vertices, "
+               + std::to_string(triangleNumber) + " triangles)");
 
   return 0;
 }
@@ -119,18 +104,15 @@ int save(const std::vector<float> &pointSet,
          const std::string &outputPath) {
 
   // save the simplified terrain in some OFF file
-  ttk::Debug d;
-  d.setDebugLevel(ttk::globalDebugLevel_);
-
   std::string fileName(outputPath);
 
   std::ofstream f(fileName.data(), std::ios::out);
 
   if(!f) {
-    std::stringstream msg;
-    msg << "[main::save] Could not write output file `" << fileName << "'!"
-        << std::endl;
-    d.dMsg(std::cerr, msg.str(), d.fatalMsg);
+    ttk::Debug dbg;
+    dbg.setDebugLevel(ttk::globalDebugLevel_);
+    dbg.setDebugMsgPrefix("main::save");
+    dbg.printErr("Could not write output file `" + fileName + "'!");
     return -1;
   }
 
@@ -148,10 +130,10 @@ int save(const std::vector<float> &pointSet,
   }
 
   for(int i = 0; i < nbTriangles; i++) {
-    int cellSize = triangleSetOff[i+1] - triangleSetOff[i];
+    int cellSize = triangleSetOff[i + 1] - triangleSetOff[i];
     assert(cellSize == 3);
     f << cellSize << " ";
-    for(int j = triangleSetOff[i]; j < triangleSetOff[i+1]; j++) {
+    for(int j = triangleSetOff[i]; j < triangleSetOff[i + 1]; j++) {
       f << triangleSetCo[j];
       f << " ";
     }
@@ -208,22 +190,19 @@ int main(int argc, char **argv) {
   // 2. computing the persistence curve
   ttk::PersistenceCurve curve;
   std::vector<std::pair<float, ttk::SimplexId>> outputCurve;
-  curve.setupTriangulation(&triangulation);
-  curve.setInputScalars(height.data());
-  curve.setInputOffsets(offsets.data());
+  curve.preconditionTriangulation(&triangulation);
   curve.setOutputCTPlot(&outputCurve);
-  curve.execute<float, ttk::SimplexId>();
+  curve.execute<float, ttk::SimplexId>(
+    height.data(), offsets.data(), &triangulation);
 
   // 3. computing the persitence diagram
   ttk::PersistenceDiagram diagram;
   std::vector<std::tuple<ttk::SimplexId, ttk::CriticalType, ttk::SimplexId,
                          ttk::CriticalType, float, ttk::SimplexId>>
     diagramOutput;
-  diagram.setupTriangulation(&triangulation);
-  diagram.setInputScalars(height.data());
-  diagram.setInputOffsets(offsets.data());
-  diagram.setOutputCTDiagram(&diagramOutput);
-  diagram.execute<float, ttk::SimplexId>();
+  diagram.preconditionTriangulation(&triangulation);
+  diagram.execute<float, ttk::SimplexId>(
+    diagramOutput, height.data(), offsets.data(), &triangulation);
 
   // 4. selecting the critical point pairs
   std::vector<float> simplifiedHeight = height;
@@ -240,15 +219,11 @@ int main(int argc, char **argv) {
 
   // 6. simplifying the input data to remove non-persistent pairs
   ttk::TopologicalSimplification simplification;
-  simplification.setupTriangulation(&triangulation);
-  simplification.setInputScalarFieldPointer(height.data());
-  simplification.setInputOffsetScalarFieldPointer(offsets.data());
-  simplification.setOutputOffsetScalarFieldPointer(simplifiedOffsets.data());
-  simplification.setOutputScalarFieldPointer(simplifiedHeight.data());
-  simplification.setConstraintNumber(authorizedCriticalPoints.size());
-  simplification.setVertexIdentifierScalarFieldPointer(
-    authorizedCriticalPoints.data());
-  simplification.execute<float, ttk::SimplexId>();
+  simplification.preconditionTriangulation(&triangulation);
+  simplification.execute<float, ttk::SimplexId>(
+    height.data(), simplifiedHeight.data(), authorizedCriticalPoints.data(),
+    offsets.data(), simplifiedOffsets.data(), authorizedCriticalPoints.size(),
+    triangulation);
 
   // assign the simplified values to the input mesh
   for(int i = 0; i < (int)simplifiedHeight.size(); i++) {
@@ -287,7 +262,7 @@ int main(int argc, char **argv) {
     triangulation.getNumberOfVertices(), -1),
     descendingSegmentation(triangulation.getNumberOfVertices(), -1),
     mscSegmentation(triangulation.getNumberOfVertices(), -1);
-  morseSmaleComplex.setupTriangulation(&triangulation);
+  morseSmaleComplex.preconditionTriangulation(&triangulation);
   morseSmaleComplex.setInputScalarField(simplifiedHeight.data());
   morseSmaleComplex.setInputOffsets(simplifiedOffsets.data());
   morseSmaleComplex.setOutputMorseComplexes(ascendingSegmentation.data(),
@@ -311,7 +286,7 @@ int main(int argc, char **argv) {
     &separatrices1_cells_separatrixFunctionDiffs,
     &separatrices1_cells_isOnBoundary);
 
-  morseSmaleComplex.execute<float, ttk::SimplexId>();
+  morseSmaleComplex.execute<float, ttk::SimplexId>(triangulation);
 
   // save the output
   save(pointSet, triangleSetCo, triangleSetOff, "output.off");
