@@ -175,7 +175,8 @@ int ttkIntegralLines::RequestData(vtkInformation *request,
   this->setSeedNumber(numberOfPointsInSeeds);
   this->setDirection(Direction);
   this->setInputScalarField(inputScalars->GetVoidPointer(0));
-  this->setInputOffsets(inputOffsets->GetVoidPointer(0));
+  this->setInputOffsets(
+    static_cast<SimplexId *>(inputOffsets->GetVoidPointer(0)));
 
   this->setVertexIdentifierScalarField(inputIdentifiers->GetVoidPointer(0));
   this->setOutputTrajectories(&trajectories);
@@ -184,7 +185,7 @@ int ttkIntegralLines::RequestData(vtkInformation *request,
 
   int status = 0;
   ttkVtkTemplateMacro(inputScalars->GetDataType(), triangulation->getType(),
-                      (status = this->execute<VTK_TT, SimplexId, TTK_TT>(
+                      (status = this->execute<VTK_TT, TTK_TT>(
                          static_cast<TTK_TT *>(triangulation->getData()))));
 #ifndef TTK_ENABLE_KAMIKAZE
   // something wrong in baseCode
