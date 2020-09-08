@@ -299,7 +299,7 @@ int ttk::TopologicalCompression::PerformSimplification(
   sortVertices(vertexNumber, array, inputOffsets.data(), vertsOrder.data(),
                this->threadNumber_);
 
-  status = topologicalSimplification.execute<double, int>(
+  status = topologicalSimplification.execute<double>(
     inArray.data(), array, critConstraints.data(), vertsOrder.data(),
     decompressedOffsets_.data(), nbConstraints, triangulation);
 
@@ -573,7 +573,7 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
     if(UseTopologicalSimplification) {
       compressedOffsets_.resize(vertexNumber);
       int status = 0;
-      status = topologicalSimplification.execute<dataType, SimplexId>(
+      status = topologicalSimplification.execute<dataType>(
         inputData, outputData, simplifiedConstraints.data(), inputOffsets,
         compressedOffsets_.data(), nbCrit, triangulation);
       if(status != 0) {
