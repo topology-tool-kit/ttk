@@ -20,6 +20,7 @@
 /// Anna Pia Lohfink, Florian Wetzels, Jonas Lukasczyk, Gunther H. Weber, and
 /// Christoph Garth. Comput. Graph. Forum, 39(3):343–355, 2020.
 ///
+///
 
 #pragma once
 
