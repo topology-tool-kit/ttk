@@ -390,7 +390,7 @@ int ttk::TopologicalCompression::computePersistencePairs(
   ftmTreePP.setTreeType(ftm::TreeType::Join_Split);
   ftmTreePP.setVertexSoSoffsets(voffsets.data());
   ftmTreePP.setThreadNumber(threadNumber_);
-  ftmTreePP.build<dataType, SimplexId>(&triangulation);
+  ftmTreePP.build<dataType>(&triangulation);
   ftmTreePP.setSegmentation(false);
   ftmTreePP.computePersistencePairs<dataType>(JTPairs, true);
   ftmTreePP.computePersistencePairs<dataType>(STPairs, false);

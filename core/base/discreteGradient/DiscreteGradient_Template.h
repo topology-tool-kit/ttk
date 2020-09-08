@@ -1629,7 +1629,7 @@ int DiscreteGradient::filterSaddleConnectors(
   contourTree_.setVertexSoSoffsets(offsets);
   contourTree_.setThreadNumber(threadNumber_);
   contourTree_.setSegmentation(false);
-  contourTree_.build<dataType, SimplexId>(&triangulation);
+  contourTree_.build<dataType>(&triangulation);
   ftm::FTMTree_MT *tree = contourTree_.getTree(ftm::TreeType::Contour);
 
   const SimplexId numberOfNodes = tree->getNumberOfNodes();

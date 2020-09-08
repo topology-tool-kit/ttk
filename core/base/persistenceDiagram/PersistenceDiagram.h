@@ -200,7 +200,7 @@ int ttk::PersistenceDiagram::execute(
   contourTree_.setTreeType(ftm::TreeType::Join_Split);
   contourTree_.setVertexSoSoffsets(inputOffsets);
   contourTree_.setSegmentation(false);
-  contourTree_.build<scalarType, SimplexId>(triangulation);
+  contourTree_.build<scalarType>(triangulation);
 
   // get persistence pairs
   std::vector<std::tuple<ttk::SimplexId, ttk::SimplexId, scalarType>> JTPairs;

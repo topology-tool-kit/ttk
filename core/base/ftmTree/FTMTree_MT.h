@@ -157,7 +157,7 @@ namespace ttk {
       }
 
       /// \brief if sortedVertices_ is null, define and fill it
-      template <typename scalarType, typename idType>
+      template <typename scalarType>
       void sortInput(void);
 
       /// \brief clear local data for new computation

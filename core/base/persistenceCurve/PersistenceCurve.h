@@ -124,7 +124,7 @@ int ttk::PersistenceCurve::execute(const scalarType *inputScalars,
   contourTree_.setVertexSoSoffsets(inputOffsets);
   contourTree_.setSegmentation(false);
   contourTree_.setThreadNumber(threadNumber_);
-  contourTree_.build<scalarType, SimplexId>(triangulation);
+  contourTree_.build<scalarType>(triangulation);
 
   // get persistence pairs
   std::vector<std::tuple<SimplexId, SimplexId, scalarType>> JTPairs;
