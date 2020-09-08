@@ -26,11 +26,11 @@ int ttk::TopologicalCompression::computeOther() {
   return 0;
 }
 
-template <typename dataType, typename idType>
+template <typename dataType>
 int ttk::TopologicalCompression::compressForOther(
   int vertexNumber,
   const dataType *const inputData,
-  const idType *const inputOffsets,
+  const SimplexId *const inputOffsets,
   dataType *outputData,
   const double &tol) {
 

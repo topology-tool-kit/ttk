@@ -398,11 +398,11 @@ int ttk::TopologicalCompression::computePersistencePairs(
   return 0;
 }
 
-template <typename dataType, typename idType, typename triangulationType>
+template <typename dataType, typename triangulationType>
 int ttk::TopologicalCompression::compressForPersistenceDiagram(
   int vertexNumber,
   const dataType *const inputData,
-  const idType *const inputOffsets,
+  const SimplexId *const inputOffsets,
   dataType *outputData,
   const double &tol,
   const triangulationType &triangulation) {
