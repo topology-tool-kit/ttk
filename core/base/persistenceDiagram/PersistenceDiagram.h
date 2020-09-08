@@ -244,7 +244,7 @@ int ttk::PersistenceDiagram::execute(
   if(dimensionality == 3 and ComputeSaddleConnectors) {
     morseSmaleComplex_.setInputScalarField(inputScalars);
     morseSmaleComplex_.setInputOffsets(inputOffsets);
-    morseSmaleComplex_.computePersistencePairs<scalarType, SimplexId>(
+    morseSmaleComplex_.computePersistencePairs<scalarType>(
       pl_saddleSaddlePairs, *triangulation);
   }
 

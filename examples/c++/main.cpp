@@ -285,7 +285,7 @@ int main(int argc, char **argv) {
     &separatrices1_cells_separatrixFunctionDiffs,
     &separatrices1_cells_isOnBoundary);
 
-  morseSmaleComplex.execute<float, ttk::SimplexId>(triangulation);
+  morseSmaleComplex.execute<float>(triangulation);
 
   // save the output
   save(pointSet, triangleSetCo, triangleSetOff, "output.off");

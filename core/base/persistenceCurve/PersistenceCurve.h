@@ -152,7 +152,7 @@ int ttk::PersistenceCurve::execute(const scalarType *inputScalars,
       pl_saddleSaddlePairs;
     morseSmaleComplex_.setInputScalarField(inputScalars);
     morseSmaleComplex_.setInputOffsets(inputOffsets);
-    morseSmaleComplex_.computePersistencePairs<scalarType, SimplexId>(
+    morseSmaleComplex_.computePersistencePairs<scalarType>(
       pl_saddleSaddlePairs, *triangulation);
 
     // sort the saddle-saddle pairs by persistence value and compute curve

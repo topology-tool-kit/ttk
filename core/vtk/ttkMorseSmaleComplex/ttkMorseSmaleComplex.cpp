@@ -44,7 +44,7 @@ int ttkMorseSmaleComplex::FillOutputPortInformation(int port,
   return 0;
 }
 
-template <typename scalarType, typename offsetType, typename triangulationType>
+template <typename scalarType, typename triangulationType>
 int ttkMorseSmaleComplex::dispatch(
   vtkDataArray *const inputScalars,
   vtkDataArray *const inputOffsets,
@@ -129,8 +129,7 @@ int ttkMorseSmaleComplex::dispatch(
     &separatrices2_cells_separatrixFunctionDiffs,
     &separatrices2_cells_isOnBoundary);
 
-  const int ret
-    = this->execute<scalarType, offsetType, triangulationType>(triangulation);
+  const int ret = this->execute<scalarType, triangulationType>(triangulation);
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(ret != 0) {
@@ -557,7 +556,8 @@ int ttkMorseSmaleComplex::RequestData(vtkInformation *request,
     SaddleConnectorsPersistenceThreshold);
 
   this->setInputScalarField(ttkUtils::GetVoidPointer(inputScalars));
-  this->setInputOffsets(ttkUtils::GetVoidPointer(inputOffsets));
+  this->setInputOffsets(
+    static_cast<SimplexId *>(ttkUtils::GetVoidPointer(inputOffsets)));
 
   void *ascendingManifoldPtr = nullptr;
   void *descendingManifoldPtr = nullptr;
@@ -577,7 +577,7 @@ int ttkMorseSmaleComplex::RequestData(vtkInformation *request,
 
   ttkVtkTemplateMacro(
     inputScalars->GetDataType(), triangulation->getType(),
-    (ret = dispatch<VTK_TT, SimplexId, TTK_TT>(
+    (ret = dispatch<VTK_TT, TTK_TT>(
        inputScalars, inputOffsets, outputCriticalPoints, outputSeparatrices1,
        outputSeparatrices2, *static_cast<TTK_TT *>(triangulation->getData()))));
 

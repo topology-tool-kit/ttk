@@ -228,7 +228,7 @@ namespace ttk {
      * Set the input offset field associated on the points of the data set
      * (if none, identifiers are used instead).
      */
-    inline int setInputOffsets(const void *const data) {
+    inline int setInputOffsets(const SimplexId *const data) {
       inputOffsets_ = data;
       discreteGradient_.setInputOffsets(inputOffsets_);
       return 0;
@@ -378,7 +378,7 @@ namespace ttk {
      * outputSeparatrices1_cells_
      * inputScalarField_
      */
-    template <typename dataType, typename idType, typename triangulationType>
+    template <typename dataType, typename triangulationType>
     int setSeparatrices1(
       const std::vector<Separatrix> &separatrices,
       const std::vector<std::vector<dcg::Cell>> &separatricesGeometry,
@@ -429,7 +429,7 @@ namespace ttk {
     dcg::DiscreteGradient discreteGradient_{};
 
     const void *inputScalarField_{};
-    const void *inputOffsets_{};
+    const SimplexId *inputOffsets_{};
 
     SimplexId *outputCriticalPoints_numberOfPoints_{};
     std::vector<float> *outputCriticalPoints_points_{};
@@ -535,7 +535,7 @@ int ttk::AbstractMorseSmaleComplex::getDescendingSeparatrices1(
   return 0;
 }
 
-template <typename dataType, typename idType, typename triangulationType>
+template <typename dataType, typename triangulationType>
 int ttk::AbstractMorseSmaleComplex::setSeparatrices1(
   const std::vector<Separatrix> &separatrices,
   const std::vector<std::vector<dcg::Cell>> &separatricesGeometry,
@@ -566,7 +566,7 @@ int ttk::AbstractMorseSmaleComplex::setSeparatrices1(
 #endif
 
   const auto scalars = static_cast<const dataType *>(inputScalarField_);
-  const auto offsets = static_cast<const idType *>(inputOffsets_);
+  const auto offsets = inputOffsets_;
   auto separatrixFunctionMaxima = static_cast<std::vector<dataType> *>(
     outputSeparatrices1_cells_separatrixFunctionMaxima_);
   auto separatrixFunctionMinima = static_cast<std::vector<dataType> *>(

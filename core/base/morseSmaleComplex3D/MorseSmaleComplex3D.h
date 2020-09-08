@@ -33,14 +33,14 @@ namespace ttk {
     /**
      * Main function for computing the whole Morse-Smale complex.
      */
-    template <typename dataType, typename idtype, typename triangulationType>
+    template <typename dataType, typename triangulationType>
     int execute(const triangulationType &triangulation);
 
     /**
      * Compute the (saddle1, saddle2) pairs not detected by the
      * contour tree.
      */
-    template <typename dataType, typename idType, typename triangulationType>
+    template <typename dataType, typename triangulationType>
     int computePersistencePairs(
       std::vector<std::tuple<SimplexId, SimplexId, dataType>>
         &pl_saddleSaddlePairs,
@@ -95,7 +95,7 @@ namespace ttk {
      * outputSeparatrices2_cells_
      * inputScalarField_
      */
-    template <typename dataType, typename idType, typename triangulationType>
+    template <typename dataType, typename triangulationType>
     int setDescendingSeparatrices2(
       const std::vector<Separatrix> &separatrices,
       const std::vector<std::vector<dcg::Cell>> &separatricesGeometry,
@@ -141,7 +141,7 @@ namespace ttk {
      * outputSeparatrices2_cells_
      * inputScalarField_
      */
-    template <typename dataType, typename idType, typename triangulationType>
+    template <typename dataType, typename triangulationType>
     int setAscendingSeparatrices2(
       const std::vector<Separatrix> &separatrices,
       const std::vector<std::vector<dcg::Cell>> &separatricesGeometry,
@@ -158,7 +158,7 @@ namespace ttk {
   };
 } // namespace ttk
 
-template <typename dataType, typename idType, typename triangulationType>
+template <typename dataType, typename triangulationType>
 int ttk::MorseSmaleComplex3D::setAscendingSeparatrices2(
   const std::vector<Separatrix> &separatrices,
   const std::vector<std::vector<dcg::Cell>> &separatricesGeometry,
@@ -188,7 +188,7 @@ int ttk::MorseSmaleComplex3D::setAscendingSeparatrices2(
 #endif
 
   const auto scalars = static_cast<const dataType *>(inputScalarField_);
-  const auto offsets = static_cast<const idType *>(inputOffsets_);
+  const auto offsets = inputOffsets_;
   auto separatrixFunctionMaxima = static_cast<std::vector<dataType> *>(
     outputSeparatrices2_cells_separatrixFunctionMaxima_);
   auto separatrixFunctionMinima = static_cast<std::vector<dataType> *>(
@@ -402,7 +402,7 @@ int ttk::MorseSmaleComplex3D::setAscendingSeparatrices2(
   return 0;
 }
 
-template <typename dataType, typename idType, typename triangulationType>
+template <typename dataType, typename triangulationType>
 int ttk::MorseSmaleComplex3D::setDescendingSeparatrices2(
   const std::vector<Separatrix> &separatrices,
   const std::vector<std::vector<dcg::Cell>> &separatricesGeometry,
@@ -432,7 +432,7 @@ int ttk::MorseSmaleComplex3D::setDescendingSeparatrices2(
 #endif
 
   const auto scalars = static_cast<const dataType *>(inputScalarField_);
-  const auto offsets = static_cast<const idType *>(inputOffsets_);
+  const auto offsets = inputOffsets_;
   auto separatrixFunctionMaxima = static_cast<std::vector<dataType> *>(
     outputSeparatrices2_cells_separatrixFunctionMaxima_);
   auto separatrixFunctionMinima = static_cast<std::vector<dataType> *>(
@@ -612,7 +612,7 @@ int ttk::MorseSmaleComplex3D::setDescendingSeparatrices2(
   return 0;
 }
 
-template <typename dataType, typename idType, typename triangulationType>
+template <typename dataType, typename triangulationType>
 int ttk::MorseSmaleComplex3D::execute(const triangulationType &triangulation) {
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!inputScalarField_) {
@@ -640,14 +640,14 @@ int ttk::MorseSmaleComplex3D::execute(const triangulationType &triangulation) {
   discreteGradient_.setDebugLevel(debugLevel_);
   {
     Timer tmp;
-    discreteGradient_.buildGradient<idType, triangulationType>(triangulation);
+    discreteGradient_.buildGradient<triangulationType>(triangulation);
 
     this->printMsg("Discrete gradient computed", 1.0, tmp.getElapsedTime(),
                    this->threadNumber_);
   }
 
   if(ReturnSaddleConnectors) {
-    discreteGradient_.reverseGradient<dataType, idType>(triangulation);
+    discreteGradient_.reverseGradient<dataType>(triangulation);
   }
 
   std::vector<dcg::Cell> criticalPoints;
@@ -699,7 +699,7 @@ int ttk::MorseSmaleComplex3D::execute(const triangulationType &triangulation) {
     Timer tmp{};
 
     flattenSeparatricesVectors(separatrices1, separatricesGeometry1);
-    setSeparatrices1<dataType, idType>(
+    setSeparatrices1<dataType>(
       separatrices1[0], separatricesGeometry1[0], triangulation);
 
     this->printMsg(
@@ -715,7 +715,7 @@ int ttk::MorseSmaleComplex3D::execute(const triangulationType &triangulation) {
     getDescendingSeparatrices2(criticalPoints, separatrices,
                                separatricesGeometry, separatricesSaddles,
                                triangulation);
-    setDescendingSeparatrices2<dataType, idType>(
+    setDescendingSeparatrices2<dataType>(
       separatrices, separatricesGeometry, separatricesSaddles, triangulation);
 
     this->printMsg("Descending 2-separatrices computed", 1.0,
@@ -730,7 +730,7 @@ int ttk::MorseSmaleComplex3D::execute(const triangulationType &triangulation) {
     getAscendingSeparatrices2(criticalPoints, separatrices,
                               separatricesGeometry, separatricesSaddles,
                               triangulation);
-    setAscendingSeparatrices2<dataType, idType>(
+    setAscendingSeparatrices2<dataType>(
       separatrices, separatricesGeometry, separatricesSaddles, triangulation);
 
     this->printMsg("Ascending 2-separatrices computed", 1.0,
@@ -765,7 +765,7 @@ int ttk::MorseSmaleComplex3D::execute(const triangulationType &triangulation) {
 
   if(outputCriticalPoints_numberOfPoints_ and outputSeparatrices1_points_) {
     std::vector<size_t> nCriticalPointsByDim{};
-    discreteGradient_.setCriticalPoints<dataType, idType>(
+    discreteGradient_.setCriticalPoints<dataType>(
       criticalPoints, nCriticalPointsByDim, triangulation);
 
     discreteGradient_.fetchOutputCriticalPoints(
@@ -792,13 +792,13 @@ int ttk::MorseSmaleComplex3D::execute(const triangulationType &triangulation) {
   return 0;
 }
 
-template <typename dataType, typename idType, typename triangulationType>
+template <typename dataType, typename triangulationType>
 int ttk::MorseSmaleComplex3D::computePersistencePairs(
   std::vector<std::tuple<SimplexId, SimplexId, dataType>> &pl_saddleSaddlePairs,
   const triangulationType &triangulation) {
 
   const dataType *scalars = static_cast<const dataType *>(inputScalarField_);
-  const dataType *offsets = static_cast<const dataType *>(inputOffsets_);
+  const auto offsets = inputOffsets_;
 
   std::vector<std::array<dcg::Cell, 2>> dmt_pairs;
   {
@@ -806,13 +806,13 @@ int ttk::MorseSmaleComplex3D::computePersistencePairs(
     discreteGradient_.setDebugLevel(debugLevel_);
     discreteGradient_.setThreadNumber(threadNumber_);
     discreteGradient_.setCollectPersistencePairs(false);
-    discreteGradient_.buildGradient<idType, triangulationType>(triangulation);
-    discreteGradient_.reverseGradient<dataType, idType>(triangulation);
+    discreteGradient_.buildGradient<triangulationType>(triangulation);
+    discreteGradient_.reverseGradient<dataType>(triangulation);
 
     // collect saddle-saddle connections
     discreteGradient_.setCollectPersistencePairs(true);
     discreteGradient_.setOutputPersistencePairs(&dmt_pairs);
-    discreteGradient_.reverseGradient<dataType, idType>(triangulation, false);
+    discreteGradient_.reverseGradient<dataType>(triangulation, false);
   }
 
   // transform DMT pairs into PL pairs
