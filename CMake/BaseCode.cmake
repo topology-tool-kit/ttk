@@ -10,11 +10,12 @@
 function(ttk_add_base_library library)
   cmake_parse_arguments(ARG "" "" "SOURCES;HEADERS;DEPENDS;OPTIONAL_DEPENDS" ${ARGN})
 
-  add_library(${library}
-    STATIC
-      ${ARG_SOURCES}
-      ${ARG_HEADERS}
-    )
+  if(TTK_ENABLE_SHARED_BASE_LIBRARIES)
+    add_library(${library} SHARED ${ARG_SOURCES} ${ARG_HEADERS})
+  else()
+    add_library(${library} STATIC ${ARG_SOURCES} ${ARG_HEADERS})
+  endif()
+
   set_target_properties(${library}
     PROPERTIES
       POSITION_INDEPENDENT_CODE TRUE

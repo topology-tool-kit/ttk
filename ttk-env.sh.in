@@ -1,7 +1,7 @@
 # help ParaView find TTK plugin and autoload it
 export PV_PLUGIN_PATH=${TTK_INSTALL_PLUGIN_DIR}
 # help the dynamic linker find TTK's shared libraries
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$PV_PLUGIN_PATH
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${CMAKE_INSTALL_FULL_LIBDIR}/ttk:$PV_PLUGIN_PATH
 # help the Python interpreter find the TTK and the VTK modules
 export PYTHONPATH=$PYTHONPATH:${CMAKE_INSTALL_PREFIX}/${TTK_PYTHON_MODULE_DIR}
 # help CMake find the configuration files
