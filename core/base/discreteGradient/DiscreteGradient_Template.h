@@ -25,23 +25,23 @@ using ttk::dcg::SaddleSaddleVPathComparator;
 using ttk::dcg::VisitedMask;
 using ttk::dcg::VPath;
 
-template <typename dataType, typename idType, typename triangulationType>
+template <typename dataType, typename triangulationType>
 dataType DiscreteGradient::getPersistence(
   const Cell &up,
   const Cell &down,
   const dataType *const scalars,
-  const idType *const offsets,
+  const SimplexId *const offsets,
   const triangulationType &triangulation) const {
 
   return scalars[getCellGreaterVertex(up, offsets, triangulation)]
          - scalars[getCellLowerVertex(down, offsets, triangulation)];
 }
 
-template <typename idType, typename triangulationType>
+template <typename triangulationType>
 int DiscreteGradient::buildGradient(const triangulationType &triangulation) {
   Timer t;
 
-  const auto *const offsets = static_cast<const idType *>(inputOffsets_);
+  const auto *const offsets = inputOffsets_;
 
   const int numberOfDimensions = getNumberOfDimensions();
 
@@ -83,7 +83,7 @@ int DiscreteGradient::buildGradient(const triangulationType &triangulation) {
   return 0;
 }
 
-template <typename dataType, typename idType, typename triangulationType>
+template <typename dataType, typename triangulationType>
 int DiscreteGradient::setCriticalPoints(
   const std::vector<Cell> &criticalPoints,
   std::vector<size_t> &nCriticalPointsByDim,
@@ -97,7 +97,7 @@ int DiscreteGradient::setCriticalPoints(
   }
 #endif
   const auto *const scalars = static_cast<const dataType *>(inputScalarField_);
-  const auto *const offsets = static_cast<const idType *>(inputOffsets_);
+  const auto *const offsets = inputOffsets_;
   auto *outputCriticalPoints_points_cellScalars
     = static_cast<std::vector<dataType> *>(
       outputCriticalPoints_points_cellScalars_);
@@ -164,14 +164,14 @@ int DiscreteGradient::setCriticalPoints(
   return 0;
 }
 
-template <typename dataType, typename idType, typename triangulationType>
+template <typename dataType, typename triangulationType>
 int DiscreteGradient::setCriticalPoints(
   const triangulationType &triangulation) {
 
   std::vector<Cell> criticalPoints;
   getCriticalPoints(criticalPoints, triangulation);
   std::vector<size_t> nCriticalPointsByDim{};
-  setCriticalPoints<dataType, idType>(
+  setCriticalPoints<dataType>(
     criticalPoints, nCriticalPointsByDim, triangulation);
 
   return 0;
@@ -393,7 +393,7 @@ int DiscreteGradient::getRemovableSaddles2(
   return 0;
 }
 
-template <typename dataType, typename idType, typename triangulationType>
+template <typename dataType, typename triangulationType>
 int DiscreteGradient::initializeSaddleSaddleConnections1(
   const std::vector<char> &isRemovableSaddle1,
   const std::vector<char> &isRemovableSaddle2,
@@ -406,7 +406,7 @@ int DiscreteGradient::initializeSaddleSaddleConnections1(
   Timer t;
 
   const auto *const scalars = static_cast<const dataType *>(inputScalarField_);
-  const auto *const offsets = static_cast<const idType *>(inputOffsets_);
+  const auto *const offsets = inputOffsets_;
 
   const int maximumDim = dimensionality_;
   const int saddle2Dim = maximumDim - 1;
@@ -549,7 +549,7 @@ int DiscreteGradient::orderSaddleSaddleConnections1(
   return 0;
 }
 
-template <typename dataType, typename idType, typename triangulationType>
+template <typename dataType, typename triangulationType>
 int DiscreteGradient::processSaddleSaddleConnections1(
   const int iterationThreshold,
   const std::vector<char> &isPL,
@@ -570,7 +570,7 @@ int DiscreteGradient::processSaddleSaddleConnections1(
   Timer t;
 
   const auto *const scalars = static_cast<const dataType *>(inputScalarField_);
-  const auto *const offsets = static_cast<const idType *>(inputOffsets_);
+  const auto *const offsets = inputOffsets_;
 
   const SimplexId numberOfEdges = triangulation.getNumberOfEdges();
   const SimplexId numberOfTriangles = triangulation.getNumberOfTriangles();
@@ -936,7 +936,7 @@ int DiscreteGradient::processSaddleSaddleConnections1(
   return 0;
 }
 
-template <typename dataType, typename idType, typename triangulationType>
+template <typename dataType, typename triangulationType>
 int DiscreteGradient::simplifySaddleSaddleConnections1(
   const std::vector<std::pair<SimplexId, char>> &criticalPoints,
   const std::vector<char> &isPL,
@@ -965,7 +965,7 @@ int DiscreteGradient::simplifySaddleSaddleConnections1(
   std::vector<CriticalPoint> dmt_criticalPoints;
   std::vector<SimplexId> saddle1Index;
   std::vector<SimplexId> saddle2Index;
-  initializeSaddleSaddleConnections1<dataType, idType>(
+  initializeSaddleSaddleConnections1<dataType>(
     isRemovableSaddle1, isRemovableSaddle2, allowBruteForce, vpaths,
     dmt_criticalPoints, saddle1Index, saddle2Index, triangulation);
 
@@ -977,7 +977,7 @@ int DiscreteGradient::simplifySaddleSaddleConnections1(
   orderSaddleSaddleConnections1<dataType>(vpaths, dmt_criticalPoints, S);
 
   // Part 3 : process the vpaths
-  processSaddleSaddleConnections1<dataType, idType>(
+  processSaddleSaddleConnections1<dataType>(
     iterationThreshold, isPL, allowBoundary, allowBruteForce,
     returnSaddleConnectors, S, pl2dmt_saddle1, pl2dmt_saddle2,
     isRemovableSaddle1, isRemovableSaddle2, vpaths, dmt_criticalPoints,
@@ -989,7 +989,7 @@ int DiscreteGradient::simplifySaddleSaddleConnections1(
   return 0;
 }
 
-template <typename dataType, typename idType, typename triangulationType>
+template <typename dataType, typename triangulationType>
 int DiscreteGradient::initializeSaddleSaddleConnections2(
   const std::vector<char> &isRemovableSaddle1,
   const std::vector<char> &isRemovableSaddle2,
@@ -1002,7 +1002,7 @@ int DiscreteGradient::initializeSaddleSaddleConnections2(
   Timer t;
 
   const auto *const scalars = static_cast<const dataType *>(inputScalarField_);
-  const auto *const offsets = static_cast<const idType *>(inputOffsets_);
+  const auto *const offsets = inputOffsets_;
 
   const int maximumDim = dimensionality_;
   const int saddle2Dim = maximumDim - 1;
@@ -1144,7 +1144,7 @@ int DiscreteGradient::orderSaddleSaddleConnections2(
   return 0;
 }
 
-template <typename dataType, typename idType, typename triangulationType>
+template <typename dataType, typename triangulationType>
 int DiscreteGradient::processSaddleSaddleConnections2(
   const int iterationThreshold,
   const std::vector<char> &isPL,
@@ -1168,7 +1168,7 @@ int DiscreteGradient::processSaddleSaddleConnections2(
                  + std::to_string(this->SaddleConnectorsPersistenceThreshold));
 
   const auto *const scalars = static_cast<const dataType *>(inputScalarField_);
-  const auto *const offsets = static_cast<const idType *>(inputOffsets_);
+  const auto *const offsets = inputOffsets_;
 
   const SimplexId numberOfEdges = triangulation.getNumberOfEdges();
   const SimplexId numberOfTriangles = triangulation.getNumberOfTriangles();
@@ -1531,7 +1531,7 @@ int DiscreteGradient::processSaddleSaddleConnections2(
   return 0;
 }
 
-template <typename dataType, typename idType, typename triangulationType>
+template <typename dataType, typename triangulationType>
 int DiscreteGradient::simplifySaddleSaddleConnections2(
   const std::vector<std::pair<SimplexId, char>> &criticalPoints,
   const std::vector<char> &isPL,
@@ -1560,7 +1560,7 @@ int DiscreteGradient::simplifySaddleSaddleConnections2(
   std::vector<CriticalPoint> dmt_criticalPoints;
   std::vector<SimplexId> saddle1Index;
   std::vector<SimplexId> saddle2Index;
-  initializeSaddleSaddleConnections2<dataType, idType>(
+  initializeSaddleSaddleConnections2<dataType>(
     isRemovableSaddle1, isRemovableSaddle2, allowBruteForce, vpaths,
     dmt_criticalPoints, saddle1Index, saddle2Index, triangulation);
 
@@ -1572,7 +1572,7 @@ int DiscreteGradient::simplifySaddleSaddleConnections2(
   orderSaddleSaddleConnections2<dataType>(vpaths, dmt_criticalPoints, S);
 
   // Part 3 : process the vpaths
-  processSaddleSaddleConnections2<dataType, idType>(
+  processSaddleSaddleConnections2<dataType>(
     iterationThreshold, isPL, allowBoundary, allowBruteForce,
     returnSaddleConnectors, S, pl2dmt_saddle1, pl2dmt_saddle2,
     isRemovableSaddle1, isRemovableSaddle2, vpaths, dmt_criticalPoints,
@@ -1584,7 +1584,7 @@ int DiscreteGradient::simplifySaddleSaddleConnections2(
   return 0;
 }
 
-template <typename dataType, typename idType, typename triangulationType>
+template <typename dataType, typename triangulationType>
 int DiscreteGradient::filterSaddleConnectors(
   const bool allowBoundary, const triangulationType &triangulation) {
 
@@ -1620,8 +1620,8 @@ int DiscreteGradient::filterSaddleConnectors(
 
   std::vector<std::pair<SimplexId, char>> cpset;
 
-  const auto *const offsets = static_cast<const idType *>(inputOffsets_);
   const auto *const scalars = static_cast<const dataType *>(inputScalarField_);
+  const auto *const offsets = inputOffsets_;
 
   contourTree_.setDebugLevel(debugLevel_);
   contourTree_.setVertexScalars(scalars);
@@ -1643,22 +1643,22 @@ int DiscreteGradient::filterSaddleConnectors(
   std::vector<char> isPL;
   getCriticalPointMap(cpset, isPL);
 
-  simplifySaddleSaddleConnections1<dataType, idType>(
+  simplifySaddleSaddleConnections1<dataType>(
     cpset, isPL, IterationThreshold, allowBoundary, allowBruteForce,
     returnSaddleConnectors, triangulation);
-  simplifySaddleSaddleConnections2<dataType, idType>(
+  simplifySaddleSaddleConnections2<dataType>(
     cpset, isPL, IterationThreshold, allowBoundary, allowBruteForce,
     returnSaddleConnectors, triangulation);
 
   return 0;
 }
 
-template <typename dataType, typename idType, typename triangulationType>
+template <typename dataType, typename triangulationType>
 int DiscreteGradient::reverseGradient(const triangulationType &triangulation,
                                       bool detectCriticalPoints) {
 
   std::vector<std::pair<SimplexId, char>> criticalPoints{};
-  const auto *const offsets = static_cast<const idType *>(inputOffsets_);
+  const auto *const offsets = inputOffsets_;
 
   if(detectCriticalPoints) {
 
@@ -1716,16 +1716,16 @@ int DiscreteGradient::reverseGradient(const triangulationType &triangulation,
   std::fill(dmt1Saddle2PL_.begin(), dmt1Saddle2PL_.end(), -1);
 
   if(dimensionality_ == 3) {
-    simplifySaddleSaddleConnections1<dataType, idType>(
+    simplifySaddleSaddleConnections1<dataType>(
       criticalPoints, isPL, IterationThreshold, allowBoundary, allowBruteForce,
       returnSaddleConnectors, triangulation);
-    simplifySaddleSaddleConnections2<dataType, idType>(
+    simplifySaddleSaddleConnections2<dataType>(
       criticalPoints, isPL, IterationThreshold, allowBoundary, allowBruteForce,
       returnSaddleConnectors, triangulation);
   }
 
   if(dimensionality_ == 3 and ReturnSaddleConnectors) {
-    filterSaddleConnectors<dataType, idType>(allowBoundary, triangulation);
+    filterSaddleConnectors<dataType>(allowBoundary, triangulation);
   }
 
   this->printMsg(
@@ -1774,10 +1774,10 @@ SimplexId DiscreteGradient::getNumberOfCells(
   return -1;
 }
 
-template <typename idType, typename triangulationType>
+template <typename triangulationType>
 inline DiscreteGradient::lowerStarType
   DiscreteGradient::lowerStar(const SimplexId a,
-                              const idType *const offsets,
+                              const SimplexId *const offsets,
                               const triangulationType &triangulation) const {
   lowerStarType res{};
 
@@ -1985,9 +1985,9 @@ inline void DiscreteGradient::pairCells(
   beta.paired_ = true;
 }
 
-template <typename idType, typename triangulationType>
+template <typename triangulationType>
 int DiscreteGradient::processLowerStars(
-  const idType *const offsets, const triangulationType &triangulation) {
+  const SimplexId *const offsets, const triangulationType &triangulation) {
 
   /* Compute gradient */
 
@@ -3012,10 +3012,10 @@ int DiscreteGradient::reverseDescendingPathOnWall(
   return 0;
 }
 
-template <typename idType, typename triangulationType>
+template <typename triangulationType>
 ttk::SimplexId DiscreteGradient::getCellGreaterVertex(
   const Cell c,
-  const idType *const offsets,
+  const SimplexId *const offsets,
   const triangulationType &triangulation) const {
 
   auto cellDim = c.dim_;
@@ -3075,10 +3075,10 @@ ttk::SimplexId DiscreteGradient::getCellGreaterVertex(
   return vertexId;
 }
 
-template <typename idType, typename triangulationType>
+template <typename triangulationType>
 ttk::SimplexId DiscreteGradient::getCellLowerVertex(
   const Cell c,
-  const idType *const offsets,
+  const SimplexId *const offsets,
   const triangulationType &triangulation) const {
 
   auto cellDim = c.dim_;
