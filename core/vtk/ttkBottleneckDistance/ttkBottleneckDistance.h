@@ -98,7 +98,9 @@ public:
   vtkSetMacro(Spacing, double);
   vtkGetMacro(Spacing, double);
 
-  vtkGetMacro(result, double);
+  double Getresult() {
+    return this->distance_;
+  }
 
   // Override input types.
   int FillInputPortInformation(int port, vtkInformation *info) override {
@@ -196,7 +198,6 @@ protected:
     PVAlgorithm = -1;
 
     // outputs
-    result = -1.;
     CTPersistenceDiagram1_ = vtkSmartPointer<vtkUnstructuredGrid>::New();
     CTPersistenceDiagram2_ = vtkSmartPointer<vtkUnstructuredGrid>::New();
     CTPersistenceDiagram3_ = vtkSmartPointer<vtkUnstructuredGrid>::New();
@@ -224,7 +225,6 @@ private:
   bool UsePersistenceMetric;
   bool UseGeometricSpacing;
   int PVAlgorithm;
-  double result;
 
   vtkSmartPointer<vtkUnstructuredGrid> CTPersistenceDiagram1_;
   vtkSmartPointer<vtkUnstructuredGrid> CTPersistenceDiagram2_;
