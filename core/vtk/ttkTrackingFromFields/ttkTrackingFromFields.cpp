@@ -137,8 +137,8 @@ int ttkTrackingFromFields::RequestData(vtkInformation *request,
   // 0'. get offsets
   std::vector<SimplexId *> inputOrders(fieldNumber);
   for(int i = 0; i < fieldNumber; ++i) {
-    auto orderArray
-      = this->GetOffsetField(inputScalarFields[i], false, 0, input);
+    this->SetInputArrayToProcess(0, 0, 0, 0, inputScalarFields[i]->GetName());
+    auto orderArray = this->GetOrderArray(input, 0, 0, false);
     inputOrders[i]
       = static_cast<SimplexId *>(ttkUtils::GetVoidPointer(orderArray));
   }
