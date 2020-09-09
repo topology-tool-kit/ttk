@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<ServerManagerConfiguration>
+  <ProxyGroup name="filters">
+    <SourceProxy name="ttkArrayPreconditioning"
+                 class="ttkArrayPreconditioning"
+                 label="TTK ArrayPreconditioning">
+      <Documentation
+          long_help="Array Preconditioning"
+          short_help="Array Preconditioning">
+        This filter preconditions a vtkDataSet by computing an input
+        order array for every selected scalar arrays.
+      </Documentation>
+
+      <InputProperty name="Input" command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources" />
+          <Group name="filters" />
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkDataSet" />
+        </DataTypeDomain>
+        <InputArrayDomain name="input_array"
+                          attribute_type="point"
+                          number_of_components="1" />
+        <Documentation>
+          A vtkDataSet that has at least one point data scalar array.
+        </Documentation>
+      </InputProperty>
+
+      <StringVectorProperty
+          name="PointDataArrays"
+          command="GetPointDataArraySelection"
+          number_of_elements_per_command="1"
+          repeat_command="1"
+          si_class="vtkSIDataArraySelectionProperty">
+          <ArrayListDomain name="array_list" input_domain_name="point_arrays">
+            <RequiredProperties>
+              <Property name="Input" function="Input" />
+            </RequiredProperties>
+          </ArrayListDomain>
+          <Documentation>
+            Select the point data arrays to pass through
+          </Documentation>
+          <Hints>
+            <ArraySelectionWidget icon_type="point"/>
+          </Hints>
+      </StringVectorProperty>
+
+      ${DEBUG_WIDGETS}
+
+      <PropertyGroup panel_widget="Line" label="Input Options">
+        <Property name="PointDataArrays" />
+      </PropertyGroup>
+
+      <Hints>
+        <ShowInMenu category="TTK - Misc" />
+      </Hints>
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>
