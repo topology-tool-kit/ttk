@@ -35,6 +35,12 @@ public:
   static ttkArrayPreconditioning *New();
   vtkTypeMacro(ttkArrayPreconditioning, ttkAlgorithm);
 
+  vtkSetMacro(SelectFieldsWithRegexp, bool);
+  vtkGetMacro(SelectFieldsWithRegexp, bool);
+
+  vtkSetMacro(RegexpString, std::string);
+  vtkGetMacro(RegexpString, std::string);
+
   // copy the vtkPassSelectedArray ("PassArrays" filter) API
   vtkDataArraySelection *GetPointDataArraySelection() {
     return this->ArraySelection;
@@ -50,4 +56,6 @@ protected:
 
 private:
   vtkNew<vtkDataArraySelection> ArraySelection{};
+  bool SelectFieldsWithRegexp{false};
+  std::string RegexpString{".*"};
 };

@@ -11,6 +11,8 @@
 #include <ttkMacros.h>
 #include <ttkUtils.h>
 
+#include <regex>
+
 vtkStandardNewMacro(ttkArrayPreconditioning);
 
 ttkArrayPreconditioning::ttkArrayPreconditioning() {
@@ -59,30 +61,46 @@ int ttkArrayPreconditioning::RequestData(vtkInformation *request,
   auto pointData = input->GetPointData();
   auto nVertices = input->GetNumberOfPoints();
 
-  for(int i = 0; i < pointData->GetNumberOfArrays(); ++i) {
-    auto scalarArray = pointData->GetArray(i);
+  std::vector<vtkDataArray *> scalarArrays{};
 
-    if(scalarArray != nullptr && scalarArray->GetName() != nullptr
-       && ArraySelection->ArrayIsEnabled(scalarArray->GetName())) {
-
-      vtkNew<ttkSimplexIdTypeArray> orderArray{};
-      orderArray->SetName(this->GetOrderArrayName(scalarArray).data());
-      orderArray->SetNumberOfComponents(1);
-      orderArray->SetNumberOfTuples(nVertices);
-
-      switch(scalarArray->GetDataType()) {
-        vtkTemplateMacro(ttk::sortVertices(
-          nVertices,
-          static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(scalarArray)),
-          static_cast<int *>(nullptr),
-          static_cast<ttk::SimplexId *>(ttkUtils::GetVoidPointer(orderArray)),
-          this->threadNumber_))
+  if(SelectFieldsWithRegexp) {
+    // select all input point data arrays whose name is matching the regexp
+    const auto n = pointData->GetNumberOfArrays();
+    for(int i = 0; i < n; ++i) {
+      auto array = pointData->GetArray(i);
+      if(array != nullptr && array->GetName() != nullptr
+         && std::regex_match(array->GetName(), std::regex(RegexpString))) {
+        scalarArrays.emplace_back(array);
       }
-
-      output->GetPointData()->AddArray(orderArray);
-      this->printMsg("Generated order array for scalar array `"
-                     + std::string{scalarArray->GetName()} + "'");
     }
+  } else {
+    // get all selected input point data arrays
+    for(int i = 0; i < pointData->GetNumberOfArrays(); ++i) {
+      auto array = pointData->GetArray(i);
+      if(array != nullptr && array->GetName() != nullptr
+         && ArraySelection->ArrayIsEnabled(array->GetName())) {
+        scalarArrays.emplace_back(array);
+      }
+    }
+  }
+
+  for(auto scalarArray : scalarArrays) {
+    vtkNew<ttkSimplexIdTypeArray> orderArray{};
+    orderArray->SetName(this->GetOrderArrayName(scalarArray).data());
+    orderArray->SetNumberOfComponents(1);
+    orderArray->SetNumberOfTuples(nVertices);
+
+    switch(scalarArray->GetDataType()) {
+      vtkTemplateMacro(ttk::sortVertices(
+        nVertices, static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(scalarArray)),
+        static_cast<int *>(nullptr),
+        static_cast<ttk::SimplexId *>(ttkUtils::GetVoidPointer(orderArray)),
+        this->threadNumber_));
+    }
+
+    output->GetPointData()->AddArray(orderArray);
+    this->printMsg("Generated order array for scalar array `"
+                   + std::string{scalarArray->GetName()} + "'");
   }
 
   this->printMsg("Preconditioned selected scalar arrays", 1.0,
