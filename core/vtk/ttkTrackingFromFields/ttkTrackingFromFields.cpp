@@ -1,33 +1,119 @@
+#include <vtkInformation.h>
+
 #include <ttkMacros.h>
 #include <ttkTrackingFromFields.h>
+#include <ttkTrackingFromPersistenceDiagrams.h>
 #include <ttkUtils.h>
 
-// using namespace std;
-// using namespace ttk;
+vtkStandardNewMacro(ttkTrackingFromFields);
 
-vtkStandardNewMacro(ttkTrackingFromFields)
-
-  constexpr unsigned long long str2int(const char *str, int h = 0) {
+constexpr unsigned long long str2int(const char *str, int h = 0) {
   return !str[h] ? 5381 : (str2int(str, h + 1) * 33) ^ str[h];
+}
+
+ttkTrackingFromFields::ttkTrackingFromFields() {
+  this->SetNumberOfInputPorts(1);
+  this->SetNumberOfOutputPorts(1);
 }
 
 int ttkTrackingFromFields::FillOutputPortInformation(int port,
                                                      vtkInformation *info) {
-  switch(port) {
-    case 0:
-      info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
-      break;
-    default:
-      break;
+  if(port == 0) {
+    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
+    return 1;
   }
-
-  return 1;
+  return 0;
 }
 int ttkTrackingFromFields::FillInputPortInformation(int port,
                                                     vtkInformation *info) {
   if(port == 0) {
     info->Set(vtkAlgorithm::INPUT_IS_REPEATABLE(), 1);
+    return 1;
   }
+  return 0;
+}
+
+// (*) Persistence-driven approach
+template <class dataType, class triangulationType>
+int ttkTrackingFromFields::trackWithPersistenceMatching(
+  vtkDataSet *input,
+  vtkUnstructuredGrid *output,
+  unsigned long fieldNumber,
+  const triangulationType *triangulation) {
+
+  using trackingTuple = ttk::trackingTuple;
+
+  // 1. get persistence diagrams.
+  std::vector<std::vector<diagramTuple>> persistenceDiagrams(
+    fieldNumber, std::vector<diagramTuple>());
+
+  this->performDiagramComputation<dataType, triangulationType>(
+    (int)fieldNumber, persistenceDiagrams, triangulation);
+
+  // 2. call feature tracking with threshold.
+  std::vector<std::vector<matchingTuple>> outputMatchings(
+    fieldNumber - 1, std::vector<matchingTuple>());
+
+  double spacing = Spacing;
+  std::string algorithm = DistanceAlgorithm;
+  double alpha = Alpha;
+  double tolerance = Tolerance;
+  bool is3D = true; // Is3D;
+  std::string wasserstein = WassersteinMetric;
+
+  ttk::TrackingFromPersistenceDiagrams tfp{};
+  tfp.setThreadNumber(this->threadNumber_);
+  tfp.performMatchings<dataType>(
+    (int)fieldNumber, persistenceDiagrams, outputMatchings,
+    algorithm, // Not from paraview, from enclosing tracking plugin
+    wasserstein, tolerance, is3D,
+    alpha, // Blending
+    PX, PY, PZ, PS, PE // Coefficients
+  );
+
+  vtkNew<vtkPoints> points{};
+  vtkNew<vtkUnstructuredGrid> persistenceDiagram{};
+
+  vtkNew<vtkDoubleArray> persistenceScalars{};
+  vtkNew<vtkDoubleArray> valueScalars{};
+  vtkNew<vtkIntArray> matchingIdScalars{};
+  vtkNew<vtkIntArray> lengthScalars{};
+  vtkNew<vtkIntArray> timeScalars{};
+  vtkNew<vtkIntArray> componentIds{};
+  vtkNew<vtkIntArray> pointTypeScalars{};
+
+  persistenceScalars->SetName("Cost");
+  valueScalars->SetName("Scalar");
+  matchingIdScalars->SetName("MatchingIdentifier");
+  lengthScalars->SetName("ComponentLength");
+  timeScalars->SetName("TimeStep");
+  componentIds->SetName("ConnectedComponentId");
+  pointTypeScalars->SetName("CriticalType");
+
+  // (+ vertex id)
+  std::vector<trackingTuple> trackingsBase;
+  tfp.performTracking<dataType>(
+    persistenceDiagrams, outputMatchings, trackingsBase);
+
+  std::vector<std::set<int>> trackingTupleToMerged(
+    trackingsBase.size(), std::set<int>());
+
+  if(DoPostProc) {
+    tfp.performPostProcess<dataType>(persistenceDiagrams, trackingsBase,
+                                     trackingTupleToMerged, PostProcThresh);
+  }
+
+  bool useGeometricSpacing = UseGeometricSpacing;
+
+  // Build mesh.
+  ttkTrackingFromPersistenceDiagrams::buildMesh<dataType>(
+    trackingsBase, outputMatchings, persistenceDiagrams, useGeometricSpacing,
+    spacing, DoPostProc, trackingTupleToMerged, points, persistenceDiagram,
+    persistenceScalars, valueScalars, matchingIdScalars, lengthScalars,
+    timeScalars, componentIds, pointTypeScalars);
+
+  output->ShallowCopy(persistenceDiagram);
+
   return 1;
 }
 
@@ -35,9 +121,8 @@ int ttkTrackingFromFields::RequestData(vtkInformation *request,
                                        vtkInformationVector **inputVector,
                                        vtkInformationVector *outputVector) {
 
-  vtkDataSet *input = vtkDataSet::GetData(inputVector[0]);
-  vtkUnstructuredGrid *output
-    = vtkUnstructuredGrid::SafeDownCast(vtkDataSet::GetData(outputVector));
+  auto input = vtkDataSet::GetData(inputVector[0]);
+  auto output = vtkUnstructuredGrid::GetData(outputVector);
 
   ttk::Triangulation *triangulation = ttkAlgorithm::GetTriangulation(input);
   if(!triangulation)
@@ -45,23 +130,25 @@ int ttkTrackingFromFields::RequestData(vtkInformation *request,
 
   this->preconditionTriangulation(triangulation);
 
-  // Test validity of datasets (must present the same number of points).
-  if(!input)
+  // Test validity of datasets
+  if(input == nullptr || output == nullptr) {
     return -1;
+  }
 
   // Get number and list of inputs.
   std::vector<vtkDataArray *> inputScalarFieldsRaw;
   std::vector<vtkDataArray *> inputScalarFields;
-  int numberOfInputFields = input->GetPointData()->GetNumberOfArrays();
+  const auto pointData = input->GetPointData();
+  int numberOfInputFields = pointData->GetNumberOfArrays();
   if(numberOfInputFields < 3) {
     this->printErr("Not enough input fields to perform tracking.");
   }
 
-  vtkDataArray *firstScalarField = input->GetPointData()->GetArray(0);
+  vtkDataArray *firstScalarField = pointData->GetArray(0);
 
   for(int i = 0; i < numberOfInputFields; ++i) {
-    vtkDataArray *currentScalarField = input->GetPointData()->GetArray(i);
-    if(!currentScalarField
+    vtkDataArray *currentScalarField = pointData->GetArray(i);
+    if(currentScalarField == nullptr
        || firstScalarField->GetDataType()
             != currentScalarField->GetDataType()) {
       this->printErr("Inconsistent field data type or size");
@@ -130,8 +217,9 @@ int ttkTrackingFromFields::RequestData(vtkInformation *request,
   // 0. get data
   int fieldNumber = inputScalarFields.size();
   std::vector<void *> inputFields(fieldNumber);
-  for(int i = 0; i < fieldNumber; ++i)
+  for(int i = 0; i < fieldNumber; ++i) {
     inputFields[i] = ttkUtils::GetVoidPointer(inputScalarFields[i]);
+  }
   this->setInputScalars(inputFields);
 
   // 0'. get offsets
