@@ -53,10 +53,8 @@ int ttkHarmonicField::RequestData(vtkInformation *request,
   this->preconditionTriangulation(*triangulation, UseCotanWeights);
 
   vtkDataArray *inputField = this->GetInputArrayToProcess(0, identifiers);
-  vtkDataArray *vertsid
-    = this->GetInputArrayInformation(1) && this->ForceConstraintIdentifiers
-        ? this->GetInputArrayToProcess(1, inputVector)
-        : identifiers->GetPointData()->GetArray(ttk::VertexScalarFieldName);
+  vtkDataArray *vertsid = this->GetOptionalArray(
+    ForceConstraintIdentifiers, 1, ttk::VertexScalarFieldName, identifiers);
 
   if(vertsid == nullptr || inputField == nullptr) {
     this->printErr("Input fields are NULL");

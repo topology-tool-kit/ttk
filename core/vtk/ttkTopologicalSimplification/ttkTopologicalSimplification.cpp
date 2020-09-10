@@ -5,6 +5,7 @@
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
 #include <vtkPointSet.h>
+#include <vtkSmartPointer.h>
 
 #include <ttkMacros.h>
 #include <ttkTopologicalSimplification.h>
@@ -84,10 +85,6 @@ int ttkTopologicalSimplification::RequestData(
   }
 
   // constraint identifier field
-
-  // use the GetOptionalArray variant here to fix a segfault occuring
-  // when changing a threshold bound on the Threshold filter usually
-  // connected to the second input port
   const auto identifiers = this->GetOptionalArray(
     ForceInputVertexScalarField, 1, ttk::VertexScalarFieldName, constraints);
 
@@ -97,21 +94,8 @@ int ttkTopologicalSimplification::RequestData(
   }
 
   // domain offset field
-  const auto inputOffsets = this->GetOptionalArray(
-    ForceInputOffsetScalarField, 2, ttk::OffsetScalarFieldName, inputVector);
-  vtkNew<ttkSimplexIdTypeArray> offsets{};
-  if(inputOffsets == nullptr) {
-    // fill in with default offset
-    offsets->SetNumberOfComponents(1);
-    offsets->SetNumberOfTuples(numberOfVertices);
-    offsets->SetName(ttk::OffsetScalarFieldName);
-    for(int i = 0; i < numberOfVertices; ++i) {
-      offsets->SetTuple1(i, i);
-    }
-  } else {
-    offsets->ShallowCopy(inputOffsets);
-  }
-
+  const auto offsets
+    = this->GetOrderArray(domain, 0, 2, ForceInputOffsetScalarField);
   if(!offsets) {
     this->printErr("Wrong input offset scalar field.");
     return -1;
@@ -123,14 +107,11 @@ int ttkTopologicalSimplification::RequestData(
     return -1;
   }
 
-  if(OutputOffsetScalarFieldName.length() <= 0)
-    OutputOffsetScalarFieldName = ttk::OffsetScalarFieldName;
-
   vtkNew<ttkSimplexIdTypeArray> outputOffsets{};
   if(outputOffsets) {
     outputOffsets->SetNumberOfComponents(1);
     outputOffsets->SetNumberOfTuples(numberOfVertices);
-    outputOffsets->SetName(OutputOffsetScalarFieldName.data());
+    outputOffsets->SetName(offsets->GetName());
   } else {
     this->printErr("ttkSimplexIdTypeArray allocation problem.");
     return -7;

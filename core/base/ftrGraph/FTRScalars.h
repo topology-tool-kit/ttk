@@ -25,41 +25,26 @@ namespace ttk {
     template <typename ScalarType>
     class Scalars : virtual public Debug {
     private:
-      idVertex size_;
+      idVertex size_{nullVertex};
 
-      ScalarType *values_;
-      std::vector<SimplexId> *vOffsets_;
-      SimplexId *offsets_;
+      ScalarType *values_{};
+      const SimplexId *offsets_{};
 
-      bool externalOffsets_;
-
-      std::vector<Vert<ScalarType>> vertices_;
-      std::vector<idVertex> mirror_;
+      std::vector<Vert<ScalarType>> vertices_{};
+      std::vector<idVertex> mirror_{};
 
     public:
-      Scalars()
-        : size_(nullVertex), values_(nullptr), vOffsets_(nullptr),
-          offsets_(nullptr), externalOffsets_(false), vertices_(), mirror_() {
+      Scalars() {
       }
 
       // Heavy, prevent using it
       Scalars(const Scalars &o) = delete;
 
-      virtual ~Scalars() {
-        if(!externalOffsets_) {
-          delete[] offsets_;
-        }
-      }
-
       ScalarType *getScalars() {
         return values_;
       }
 
-      std::vector<SimplexId> *getVOffsets() {
-        return vOffsets_;
-      }
-
-      SimplexId *getOffsets() {
+      const SimplexId *getOffsets() const {
         return offsets_;
       }
 
@@ -87,33 +72,16 @@ namespace ttk {
         values_ = values;
       }
 
-      void setOffsets(std::vector<SimplexId> *sos) {
-        externalOffsets_ = sos;
-        vOffsets_ = sos;
-        if(vOffsets_) {
-          offsets_ = vOffsets_->data();
-        }
+      void setOffsets(const SimplexId *const sos) {
+        offsets_ = sos;
       }
 
       void alloc() {
-        if(!externalOffsets_) {
-          offsets_ = new SimplexId[size_];
-        }
         vertices_.resize(size_);
         mirror_.resize(size_);
       }
 
       void init() {
-        // Create offset array if not given by user
-        if(!externalOffsets_) {
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for schedule(static, size_ / threadNumber_)
-#endif
-          for(SimplexId i = 0; i < size_; i++) {
-            offsets_[i] = i;
-          }
-        }
-
         // Copy everything in the main array
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for schedule(static, size_ / threadNumber_)

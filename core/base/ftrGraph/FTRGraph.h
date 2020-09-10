@@ -183,7 +183,7 @@ namespace ttk {
       /// them in a morse discret geometry compliant way.
       /// This is explained in the TTK report.
       /// Set the array to use here
-      void setVertexSoSoffsets(std::vector<SimplexId> *sos) {
+      void setVertexSoSoffsets(SimplexId *sos) {
         scalars_.setOffsets(sos);
       }
 

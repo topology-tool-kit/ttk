@@ -90,6 +90,8 @@ int ttkTopologicalCompression::RequestData(vtkInformation *request,
 
   const auto vertexNumber = inputScalarField->GetNumberOfTuples();
 
+  const auto inputOffsets = this->GetOrderArray(input, 0, 1, false);
+
   // allocate the memory for the output scalar field
   vtkSmartPointer<vtkDataArray> outputScalarField{};
 
@@ -119,13 +121,14 @@ int ttkTopologicalCompression::RequestData(vtkInformation *request,
 
   vtkNew<vtkIntArray> outputOffsetField{};
   outputOffsetField->SetNumberOfTuples(vertexNumber);
-  outputOffsetField->SetName(ttk::OffsetScalarFieldName);
+  outputOffsetField->SetName(this->GetOrderArrayName(inputScalarField).data());
 
   // Call TopologicalCompression
   ttkVtkTemplateMacro(
     inputScalarField->GetDataType(), triangulation->getType(),
     this->execute(
       static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(inputScalarField)),
+      static_cast<ttk::SimplexId *>(ttkUtils::GetVoidPointer(inputOffsets)),
       static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(outputScalarField)),
       *static_cast<TTK_TT *>(triangulation->getData())));
 

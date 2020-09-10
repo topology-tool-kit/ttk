@@ -53,13 +53,9 @@ namespace ttk {
       operator()(const std::tuple<dataType, SimplexId, SimplexId> &v0,
                  const std::tuple<dataType, SimplexId, SimplexId> &v1) const {
       if(isIncreasingOrder_) {
-        return (std::get<0>(v0) < std::get<0>(v1)
-                or (std::get<0>(v0) == std::get<0>(v1)
-                    and std::get<1>(v0) < std::get<1>(v1)));
+        return std::get<1>(v0) < std::get<1>(v1);
       } else {
-        return (std::get<0>(v0) > std::get<0>(v1)
-                or (std::get<0>(v0) == std::get<0>(v1)
-                    and std::get<1>(v0) > std::get<1>(v1)));
+        return std::get<1>(v0) > std::get<1>(v1);
       }
     }
   };
@@ -68,41 +64,30 @@ namespace ttk {
   public:
     TopologicalSimplification();
 
-    template <typename dataType>
-    bool isLowerThan(SimplexId a,
-                     SimplexId b,
-                     dataType *scalars,
-                     SimplexId *offsets) const;
-
-    template <typename dataType>
-    bool isHigherThan(SimplexId a,
-                      SimplexId b,
-                      dataType *scalars,
-                      SimplexId *offsets) const;
-
     template <typename dataType, typename triangulationType>
     int getCriticalType(SimplexId vertexId,
-                        dataType *scalars,
-                        SimplexId *offsets,
+                        const dataType *const scalars,
+                        const SimplexId *const offsets,
                         const triangulationType &triangulation) const;
 
     template <typename dataType, typename triangulationType>
-    int getCriticalPoints(dataType *scalars,
-                          SimplexId *offsets,
+    int getCriticalPoints(const dataType *const scalars,
+                          const SimplexId *const offsets,
                           std::vector<SimplexId> &minList,
                           std::vector<SimplexId> &maxList,
                           const triangulationType &triangulation) const;
 
     template <typename dataType, typename triangulationType>
-    int getCriticalPoints(dataType *scalars,
-                          SimplexId *offsets,
+    int getCriticalPoints(const dataType *const scalars,
+                          const SimplexId *const offsets,
                           std::vector<SimplexId> &minList,
                           std::vector<SimplexId> &maxList,
                           std::vector<bool> &blackList,
                           const triangulationType &triangulation) const;
 
     template <typename dataType>
-    int addPerturbation(dataType *scalars, SimplexId *offsets) const;
+    int addPerturbation(dataType *const scalars,
+                        SimplexId *const offsets) const;
 
     template <typename dataType, typename idType, typename triangulationType>
     int execute(const dataType *const inputScalars,
@@ -139,29 +124,11 @@ namespace ttk {
 // if the package is a pure template typename, uncomment the following line
 // #include                  <TopologicalSimplification.cpp>
 
-template <typename dataType>
-bool ttk::TopologicalSimplification::isLowerThan(SimplexId a,
-                                                 SimplexId b,
-                                                 dataType *scalars,
-                                                 SimplexId *offsets) const {
-  return (scalars[a] < scalars[b]
-          or (scalars[a] == scalars[b] and offsets[a] < offsets[b]));
-}
-
-template <typename dataType>
-bool ttk::TopologicalSimplification::isHigherThan(SimplexId a,
-                                                  SimplexId b,
-                                                  dataType *scalars,
-                                                  SimplexId *offsets) const {
-  return (scalars[a] > scalars[b]
-          or (scalars[a] == scalars[b] and offsets[a] > offsets[b]));
-}
-
 template <typename dataType, typename triangulationType>
 int ttk::TopologicalSimplification::getCriticalType(
   SimplexId vertex,
-  dataType *scalars,
-  SimplexId *offsets,
+  const dataType *const scalars,
+  const SimplexId *const offsets,
   const triangulationType &triangulation) const {
 
   bool isMinima{true};
@@ -171,9 +138,9 @@ int ttk::TopologicalSimplification::getCriticalType(
     SimplexId neighbor;
     triangulation.getVertexNeighbor(vertex, i, neighbor);
 
-    if(isLowerThan<dataType>(neighbor, vertex, scalars, offsets))
+    if(offsets[neighbor] < offsets[vertex])
       isMinima = false;
-    if(isHigherThan<dataType>(neighbor, vertex, scalars, offsets))
+    if(offsets[neighbor] > offsets[vertex])
       isMaxima = false;
     if(!isMinima and !isMaxima) {
       return 0;
@@ -190,8 +157,8 @@ int ttk::TopologicalSimplification::getCriticalType(
 
 template <typename dataType, typename triangulationType>
 int ttk::TopologicalSimplification::getCriticalPoints(
-  dataType *scalars,
-  SimplexId *offsets,
+  const dataType *const scalars,
+  const SimplexId *const offsets,
   std::vector<SimplexId> &minima,
   std::vector<SimplexId> &maxima,
   const triangulationType &triangulation) const {
@@ -215,8 +182,8 @@ int ttk::TopologicalSimplification::getCriticalPoints(
 
 template <typename dataType, typename triangulationType>
 int ttk::TopologicalSimplification::getCriticalPoints(
-  dataType *scalars,
-  SimplexId *offsets,
+  const dataType *const scalars,
+  const SimplexId *const offsets,
   std::vector<SimplexId> &minima,
   std::vector<SimplexId> &maxima,
   std::vector<bool> &extrema,
@@ -241,8 +208,8 @@ int ttk::TopologicalSimplification::getCriticalPoints(
 }
 
 template <typename dataType>
-int ttk::TopologicalSimplification::addPerturbation(dataType *scalars,
-                                                    SimplexId *offsets) const {
+int ttk::TopologicalSimplification::addPerturbation(
+  dataType *const scalars, SimplexId *const offsets) const {
   dataType epsilon{};
 
   if(std::is_same<dataType, double>::value)

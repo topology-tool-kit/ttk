@@ -91,10 +91,10 @@ int ttkReebSpace::RequestData(vtkInformation *request,
 
   const auto uComponent = this->GetInputArrayToProcess(0, inputVector);
   const auto vComponent = this->GetInputArrayToProcess(1, inputVector);
-  const auto offsetFieldU = this->GetOptionalArray(
-    ForceInputOffsetScalarField, 2, ttk::OffsetFieldUName, inputVector);
-  const auto offsetFieldV = this->GetOptionalArray(
-    ForceInputOffsetScalarField, 3, ttk::OffsetFieldVName, inputVector);
+  const auto offsetFieldU
+    = this->GetOrderArray(input, 0, 2, ForceInputOffsetScalarField);
+  const auto offsetFieldV
+    = this->GetOrderArray(input, 1, 3, ForceInputOffsetScalarField);
 
   // check data components
 
@@ -102,18 +102,16 @@ int ttkReebSpace::RequestData(vtkInformation *request,
     return -1;
   }
 
-  if(ForceInputOffsetScalarField) {
-    if(offsetFieldU) {
-      sosOffsetsU_.resize(offsetFieldU->GetNumberOfTuples());
-      for(vtkIdType i = 0; i < offsetFieldU->GetNumberOfTuples(); i++) {
-        sosOffsetsU_[i] = offsetFieldU->GetTuple1(i);
-      }
+  if(offsetFieldU) {
+    sosOffsetsU_.resize(offsetFieldU->GetNumberOfTuples());
+    for(vtkIdType i = 0; i < offsetFieldU->GetNumberOfTuples(); i++) {
+      sosOffsetsU_[i] = offsetFieldU->GetTuple1(i);
     }
-    if(offsetFieldV) {
-      sosOffsetsV_.resize(offsetFieldV->GetNumberOfTuples());
-      for(vtkIdType i = 0; i < offsetFieldV->GetNumberOfTuples(); i++) {
-        sosOffsetsV_[i] = offsetFieldV->GetTuple1(i);
-      }
+  }
+  if(offsetFieldV) {
+    sosOffsetsV_.resize(offsetFieldV->GetNumberOfTuples());
+    for(vtkIdType i = 0; i < offsetFieldV->GetNumberOfTuples(); i++) {
+      sosOffsetsV_[i] = offsetFieldV->GetTuple1(i);
     }
   }
 

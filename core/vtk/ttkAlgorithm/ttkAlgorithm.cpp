@@ -1,7 +1,10 @@
 #include <ttkAlgorithm.h>
+#include <ttkMacros.h>
 #include <ttkUtils.h>
 
+#include <OrderDisambiguation.h>
 #include <Triangulation.h>
+
 #include <vtkCellTypes.h>
 #include <vtkCommand.h>
 #include <vtkImageData.h>
@@ -9,13 +12,14 @@
 #include <vtkInformationIntegerKey.h>
 #include <vtkInformationVector.h>
 #include <vtkMultiBlockDataSet.h>
+#include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkTable.h>
 #include <vtkUnstructuredGrid.h>
 
 #include <vtkCompositeDataPipeline.h>
 
-// TODO: use a class here to add semantic about the four fields
+// TODO: use a class here to add semantic about the four arrays
 // and clear access methods
 typedef std::unordered_map<void *,
                            std::tuple<ttk::Triangulation,
@@ -243,25 +247,6 @@ int checkCellTypes(vtkDataSet *object) {
   return 1;
 }
 
-vtkDataArray *
-  ttkAlgorithm::GetOptionalArray(const bool &enforceArrayIndex,
-                                 const int &arrayIndex,
-                                 const std::string &arrayName,
-                                 vtkInformationVector **inputVectors,
-                                 const int &inputPort) {
-
-  vtkDataArray *optionalArray = nullptr;
-
-  if(enforceArrayIndex)
-    optionalArray = this->GetInputArrayToProcess(arrayIndex, inputVectors);
-
-  if(!optionalArray) {
-    this->SetInputArrayToProcess(arrayIndex, inputPort, 0, 0, arrayName.data());
-    optionalArray = this->GetInputArrayToProcess(arrayIndex, inputVectors);
-  }
-  return optionalArray;
-}
-
 vtkDataArray *ttkAlgorithm::GetOptionalArray(const bool &enforceArrayIndex,
                                              const int &arrayIndex,
                                              const std::string &arrayName,
@@ -278,6 +263,152 @@ vtkDataArray *ttkAlgorithm::GetOptionalArray(const bool &enforceArrayIndex,
     optionalArray = this->GetInputArrayToProcess(arrayIndex, inputData);
   }
   return optionalArray;
+}
+
+std::string ttkAlgorithm::GetOrderArrayName(vtkDataArray *const array) {
+  return std::string(array->GetName()) + "_Order";
+}
+
+vtkDataArray *ttkAlgorithm::GetOrderArray(vtkDataSet *const inputData,
+                                          const int scalarArrayIdx,
+                                          const int orderArrayIdx,
+                                          const bool enforceOrderArrayIdx) {
+
+  auto isValidOrderArray = [](vtkDataArray *const array) {
+    if(!array)
+      return -4;
+
+    if(array->GetNumberOfComponents() != 1)
+      return -3;
+
+    auto temp = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
+    if(array->GetDataType() != temp->GetDataType())
+      return -2;
+
+    const std::string name(array->GetName());
+    if(name.size() < 6 || (name.rfind("_Order") != (name.size() - 6)))
+      return -1;
+
+    return 1;
+  };
+
+  if(enforceOrderArrayIdx) {
+    auto orderArray = this->GetInputArrayToProcess(orderArrayIdx, inputData);
+    switch(isValidOrderArray(orderArray)) {
+      case -4: {
+        this->printErr("Unable to retrieve enforced order array at idx "
+                       + std::to_string(orderArrayIdx) + ".");
+        return nullptr;
+      }
+      case -3: {
+        this->printErr("Retrieved enforced order array `"
+                       + std::string(orderArray->GetName())
+                       + "` has more than one component.");
+        return nullptr;
+      }
+      case -2: {
+        this->printErr("Enforced order array `"
+                       + std::string(orderArray->GetName())
+                       + "` is of incorrect type.");
+        auto temp = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
+        this->printErr(" -> use `ttkArrayEditor` to convert data type to `"
+                       + std::string(temp->GetDataTypeAsString()) + "`.");
+        return nullptr;
+      }
+      default: {
+        this->printMsg("Retrieved enforced order array `"
+                         + std::string(orderArray->GetName()) + "`.",
+                       ttk::debug::Priority::DETAIL);
+        return orderArray;
+      }
+    }
+  }
+
+  auto scalarArray = this->GetInputArrayToProcess(scalarArrayIdx, inputData);
+  if(!scalarArray) {
+    this->printErr("Unable to retrieve input scalar array for idx "
+                   + std::to_string(scalarArrayIdx) + ".");
+    return nullptr;
+  } else if(isValidOrderArray(scalarArray) == 1) {
+    this->printMsg("Retrieved scalar array `"
+                     + std::string(scalarArray->GetName())
+                     + "` is already an order array.",
+                   ttk::debug::Priority::DETAIL);
+    return scalarArray;
+  }
+
+  auto orderArray = inputData
+                      ->GetAttributesAsFieldData(this->GetInputArrayAssociation(
+                        scalarArrayIdx, inputData))
+                      ->GetArray(this->GetOrderArrayName(scalarArray).data());
+
+  switch(isValidOrderArray(orderArray)) {
+    case -4: {
+      ttk::Timer timer;
+      this->printWrn("Unable to find existing order array for scalar array `"
+                     + std::string(scalarArray->GetName()) + "`.");
+
+      this->printMsg("Initializing order array.", 0, 0, this->threadNumber_,
+                     ttk::debug::LineMode::REPLACE);
+
+      auto nVertices = scalarArray->GetNumberOfTuples();
+      auto newOrderArray = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
+      newOrderArray->SetName(this->GetOrderArrayName(scalarArray).data());
+      newOrderArray->SetNumberOfComponents(1);
+      newOrderArray->SetNumberOfTuples(nVertices);
+
+      switch(scalarArray->GetDataType()) {
+        vtkTemplateMacro(ttk::sortVertices(
+          nVertices,
+          static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(scalarArray)),
+          static_cast<int *>(nullptr),
+          static_cast<ttk::SimplexId *>(
+            ttkUtils::GetVoidPointer(newOrderArray)),
+          this->threadNumber_));
+      }
+
+      // append order array temporarily to input
+      inputData
+        ->GetAttributesAsFieldData(
+          this->GetInputArrayAssociation(scalarArrayIdx, inputData))
+        ->AddArray(newOrderArray);
+
+      this->printMsg("Initializing order array.", 1, timer.getElapsedTime(),
+                     this->threadNumber_);
+
+      this->printWrn("Run `ttkArrayPreconditioning` prior to this filter to "
+                     "improve performance during multiple executions.");
+
+      return newOrderArray;
+    }
+
+    case -3: {
+      this->printErr(
+        "Retrieved order array `" + std::string(orderArray->GetName())
+        + "` for scalar array `" + std::string(scalarArray->GetName())
+        + "` has more than one component.");
+      return nullptr;
+    }
+
+    case -2: {
+      this->printErr(
+        "Retrieved order array `" + std::string(orderArray->GetName())
+        + "` for scalar array `" + std::string(scalarArray->GetName())
+        + "` is of incorrect type.");
+      auto temp = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
+      this->printErr(" -> use `ttkArrayEditor` to convert data type to `"
+                     + std::string(temp->GetDataTypeAsString()) + "`.");
+      return nullptr;
+    }
+
+    default: {
+      this->printMsg(
+        "Retrieved order array `" + std::string(orderArray->GetName())
+          + "` for scalar array `" + std::string(scalarArray->GetName()) + "`.",
+        ttk::debug::Priority::DETAIL);
+      return orderArray;
+    }
+  }
 }
 
 ttk::Triangulation *ttkAlgorithm::GetTriangulation(vtkDataSet *dataSet) {

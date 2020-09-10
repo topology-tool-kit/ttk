@@ -17,10 +17,10 @@
 #include <vtkInformation.h>
 #include <vtkInformationVector.h>
 #include <vtkIntArray.h>
+#include <vtkNew.h>
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
 #include <vtkPoints.h>
-#include <vtkNew.h>
 #include <vtkTable.h>
 #include <vtkUnstructuredGrid.h>
 

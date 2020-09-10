@@ -130,13 +130,27 @@ public:
   vtkDataArray *GetOptionalArray(const bool &enforceArrayIndex,
                                  const int &arrayIndex,
                                  const std::string &arrayName,
-                                 vtkInformationVector **inputVectors,
-                                 const int &inputPort = 0);
-  vtkDataArray *GetOptionalArray(const bool &enforceArrayIndex,
-                                 const int &arrayIndex,
-                                 const std::string &arrayName,
                                  vtkDataSet *const inputData,
                                  const int &inputPort = 0);
+
+  /**
+   * Returns a string containing the name of the corresponding offset
+   * field from a given scalar field
+   */
+  static std::string GetOrderArrayName(vtkDataArray *const array);
+
+  /**
+   * Retrieves an offset field from the given scalar field \p sfArray
+   * or generates one, either disambiguated with the implicit vertex
+   * identifier field, or with a user-provided offset field through
+   * the \p enforceArrayIndex parameter and the \p arrayIndex. The
+   * generated sorted offset field is then attached to the input
+   * vtkDataset \p inputData.
+   */
+  vtkDataArray *GetOrderArray(vtkDataSet *const inputData,
+                              const int scalarArrayIdx,
+                              const int orderArrayIdx = 0,
+                              const bool enforceOrderArrayIdx = false);
 
   /**
    * This method retrieves the ttk::Triangulation of a vtkDataSet.

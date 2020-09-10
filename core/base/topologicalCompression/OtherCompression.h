@@ -26,13 +26,15 @@ int ttk::TopologicalCompression::computeOther() {
   return 0;
 }
 
-template <typename dataType>
-int ttk::TopologicalCompression::compressForOther(int vertexNumber,
-                                                  dataType *inputData,
-                                                  dataType *outputData,
-                                                  const double &tol) {
-  ttk::Timer t;
+template <typename dataType, typename idType>
+int ttk::TopologicalCompression::compressForOther(
+  int vertexNumber,
+  const dataType *const inputData,
+  const idType *const inputOffsets,
+  dataType *outputData,
+  const double &tol) {
 
+  ttk::Timer t;
   // Code me
 
   this->printMsg(

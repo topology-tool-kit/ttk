@@ -5,7 +5,7 @@
 #define TTK_COMMA ,
 
 #ifdef TTK_ENABLE_64BIT_IDS
-using ttkSimplexIdTypeArray = vtkIdTypeArray;
+using ttkSimplexIdTypeArray = vtkLongLongArray;
 #else
 using ttkSimplexIdTypeArray = vtkIntArray;
 #endif

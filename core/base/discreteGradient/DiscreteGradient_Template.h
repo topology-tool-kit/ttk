@@ -204,12 +204,11 @@ dataType DiscreteGradient::getPersistence(
          - scalarMin(down, scalars, triangulation);
 }
 
-template <typename dataType, typename idType, typename triangulationType>
+template <typename idType, typename triangulationType>
 int DiscreteGradient::buildGradient(const triangulationType &triangulation) {
   Timer t;
 
   const auto *const offsets = static_cast<const idType *>(inputOffsets_);
-  const auto *const scalars = static_cast<const dataType *>(inputScalarField_);
 
   const int numberOfDimensions = getNumberOfDimensions();
 
@@ -231,10 +230,8 @@ int DiscreteGradient::buildGradient(const triangulationType &triangulation) {
     gradient_[i][i + 1].resize(numberOfCells[i + 1], -1);
   }
 
-  sortVertices(numberOfCells[0], vertsOrder_, scalars, offsets);
-
   // compute gradient pairs
-  processLowerStars(triangulation);
+  processLowerStars(offsets, triangulation);
 
   std::vector<std::vector<std::string>> rows{
     {"#Vertices", std::to_string(numberOfCells[0])},
@@ -253,7 +250,7 @@ int DiscreteGradient::buildGradient(const triangulationType &triangulation) {
   return 0;
 }
 
-template <typename dataType, typename triangulationType>
+template <typename dataType, typename idType, typename triangulationType>
 int DiscreteGradient::setCriticalPoints(
   const std::vector<Cell> &criticalPoints,
   std::vector<size_t> &nCriticalPointsByDim,
@@ -267,6 +264,7 @@ int DiscreteGradient::setCriticalPoints(
   }
 #endif
   const auto *const scalars = static_cast<const dataType *>(inputScalarField_);
+  const auto *const offsets = static_cast<const idType *>(inputOffsets_);
   auto *outputCriticalPoints_points_cellScalars
     = static_cast<std::vector<dataType> *>(
       outputCriticalPoints_points_cellScalars_);
@@ -317,7 +315,7 @@ int DiscreteGradient::setCriticalPoints(
       (*outputCriticalPoints_points_cellScalars)[i] = scalar;
     }
     outputCriticalPoints_points_isOnBoundary_[i] = isOnBoundary;
-    auto vertId = getCellGreaterVertex(cell, triangulation);
+    auto vertId = getCellGreaterVertex(cell, offsets, triangulation);
     outputCriticalPoints_points_PLVertexIdentifiers_[i] = vertId;
   }
 
@@ -332,14 +330,14 @@ int DiscreteGradient::setCriticalPoints(
   return 0;
 }
 
-template <typename dataType, typename triangulationType>
+template <typename dataType, typename idType, typename triangulationType>
 int DiscreteGradient::setCriticalPoints(
   const triangulationType &triangulation) {
 
   std::vector<Cell> criticalPoints;
   getCriticalPoints(criticalPoints, triangulation);
   std::vector<size_t> nCriticalPointsByDim{};
-  setCriticalPoints<dataType>(
+  setCriticalPoints<dataType, idType>(
     criticalPoints, nCriticalPointsByDim, triangulation);
 
   return 0;
@@ -1822,6 +1820,7 @@ int DiscreteGradient::reverseGradient(const triangulationType &triangulation,
                                       bool detectCriticalPoints) {
 
   std::vector<std::pair<SimplexId, char>> criticalPoints{};
+  const auto *const offsets = static_cast<const idType *>(inputOffsets_);
 
   if(detectCriticalPoints) {
 
@@ -1832,13 +1831,12 @@ int DiscreteGradient::reverseGradient(const triangulationType &triangulation,
     criticalPoints.resize(criticalCells.size());
 
     // iterate over cells to get points (max vertex) and type
-    std::transform(
-      criticalCells.begin(), criticalCells.end(), criticalPoints.begin(),
-      [&](const Cell &c) {
-        const auto cellType = criticalTypeFromCellDimension(c.dim_);
-        const auto vertexId = getCellGreaterVertex(c, triangulation);
-        return std::make_pair(vertexId, static_cast<char>(cellType));
-      });
+    for(size_t i = 0; i < criticalCells.size(); ++i) {
+      const auto &c = criticalCells[i];
+      criticalPoints[i]
+        = {getCellGreaterVertex(c, offsets, triangulation),
+           static_cast<char>(criticalTypeFromCellDimension(c.dim_))};
+    }
 
     // print number of critical cells
     {
@@ -1938,9 +1936,10 @@ SimplexId DiscreteGradient::getNumberOfCells(
   return -1;
 }
 
-template <typename triangulationType>
+template <typename idType, typename triangulationType>
 inline DiscreteGradient::lowerStarType
   DiscreteGradient::lowerStar(const SimplexId a,
+                              const idType *const offsets,
                               const triangulationType &triangulation) const {
   lowerStarType res{};
 
@@ -1958,7 +1957,7 @@ inline DiscreteGradient::lowerStarType
     if(vertexId == a) {
       triangulation.getEdgeVertex(edgeId, 1, vertexId);
     }
-    if(vertsOrder_[vertexId] < vertsOrder_[a]) {
+    if(offsets[vertexId] < offsets[a]) {
       res[1].emplace_back(CellExt{1, edgeId, {vertexId}, {}});
     }
   }
@@ -1968,34 +1967,33 @@ inline DiscreteGradient::lowerStarType
     return res;
   }
 
-  const auto processTriangle
-    = [&](const SimplexId triangleId, const SimplexId v0, const SimplexId v1,
-          const SimplexId v2) {
-        std::array<SimplexId, 3> lowVerts{};
-        if(v0 == a) {
-          lowVerts[0] = v1;
-          lowVerts[1] = v2;
-        } else if(v1 == a) {
-          lowVerts[0] = v0;
-          lowVerts[1] = v2;
-        } else if(v2 == a) {
-          lowVerts[0] = v0;
-          lowVerts[1] = v1;
+  const auto processTriangle = [&](const SimplexId triangleId,
+                                   const SimplexId v0, const SimplexId v1,
+                                   const SimplexId v2) {
+    std::array<SimplexId, 3> lowVerts{};
+    if(v0 == a) {
+      lowVerts[0] = v1;
+      lowVerts[1] = v2;
+    } else if(v1 == a) {
+      lowVerts[0] = v0;
+      lowVerts[1] = v2;
+    } else if(v2 == a) {
+      lowVerts[0] = v0;
+      lowVerts[1] = v1;
+    }
+    if(offsets[a] > offsets[lowVerts[0]] && offsets[a] > offsets[lowVerts[1]]) {
+      uint8_t j{}, k{};
+      // store edges indices of current triangle
+      std::array<uint8_t, 3> faces{};
+      for(const auto &e : res[1]) {
+        if(e.lowVerts_[0] == lowVerts[0] || e.lowVerts_[0] == lowVerts[1]) {
+          faces[k++] = j;
         }
-        if(vertsOrder_[a] > vertsOrder_[lowVerts[0]]
-           && vertsOrder_[a] > vertsOrder_[lowVerts[1]]) {
-          uint8_t j{}, k{};
-          // store edges indices of current triangle
-          std::array<uint8_t, 3> faces{};
-          for(const auto &e : res[1]) {
-            if(e.lowVerts_[0] == lowVerts[0] || e.lowVerts_[0] == lowVerts[1]) {
-              faces[k++] = j;
-            }
-            j++;
-          }
-          res[2].emplace_back(CellExt{2, triangleId, lowVerts, faces});
-        }
-      };
+        j++;
+      }
+      res[2].emplace_back(CellExt{2, triangleId, lowVerts, faces});
+    }
+  };
 
   if(dimensionality_ == 2) {
     // store lower triangles
@@ -2059,9 +2057,9 @@ inline DiscreteGradient::lowerStarType
           lowVerts[1] = v1;
           lowVerts[2] = v2;
         }
-        if(vertsOrder_[a] > vertsOrder_[lowVerts[0]]
-           && vertsOrder_[a] > vertsOrder_[lowVerts[1]]
-           && vertsOrder_[a] > vertsOrder_[lowVerts[2]]) {
+        if(offsets[a] > offsets[lowVerts[0]]
+           && offsets[a] > offsets[lowVerts[1]]
+           && offsets[a] > offsets[lowVerts[2]]) {
           uint8_t j{}, k{};
           // store triangles indices of current tetra
           std::array<uint8_t, 3> faces{};
@@ -2149,9 +2147,9 @@ inline void DiscreteGradient::pairCells(
   beta.paired_ = true;
 }
 
-template <typename triangulationType>
+template <typename idType, typename triangulationType>
 int DiscreteGradient::processLowerStars(
-  const triangulationType &triangulation) {
+  const idType *const offsets, const triangulationType &triangulation) {
 
   /* Compute gradient */
 
@@ -2168,7 +2166,7 @@ int DiscreteGradient::processLowerStars(
         // there should be a shared facet between the two cells
         // compare the vertices not in the shared facet
         if(a.dim_ == 1) {
-          return vertsOrder_[a.lowVerts_[0]] > vertsOrder_[b.lowVerts_[0]];
+          return offsets[a.lowVerts_[0]] > offsets[b.lowVerts_[0]];
 
         } else if(a.dim_ == 2) {
           const auto &m0 = a.lowVerts_[0];
@@ -2177,13 +2175,13 @@ int DiscreteGradient::processLowerStars(
           const auto &n1 = b.lowVerts_[1];
 
           if(m0 == n0) {
-            return vertsOrder_[m1] > vertsOrder_[n1];
+            return offsets[m1] > offsets[n1];
           } else if(m0 == n1) {
-            return vertsOrder_[m1] > vertsOrder_[n0];
+            return offsets[m1] > offsets[n0];
           } else if(m1 == n0) {
-            return vertsOrder_[m0] > vertsOrder_[n1];
+            return offsets[m0] > offsets[n1];
           } else if(m1 == n1) {
-            return vertsOrder_[m0] > vertsOrder_[n0];
+            return offsets[m0] > offsets[n0];
           }
 
         } else if(a.dim_ == 3) {
@@ -2214,7 +2212,7 @@ int DiscreteGradient::processLowerStars(
             n = n2;
           }
 
-          return vertsOrder_[m] > vertsOrder_[n];
+          return offsets[m] > offsets[n];
         }
       } else {
         // the cell of greater dimension should contain the cell of
@@ -2263,7 +2261,7 @@ int DiscreteGradient::processLowerStars(
       }
     };
 
-    auto Lx = lowerStar(x, triangulation);
+    auto Lx = lowerStar(x, offsets, triangulation);
 
     // Lx[1] empty => x is a local minimum
 
@@ -2273,7 +2271,7 @@ int DiscreteGradient::processLowerStars(
       for(size_t i = 1; i < Lx[1].size(); ++i) {
         const auto &a = Lx[1][minId].lowVerts_[0];
         const auto &b = Lx[1][i].lowVerts_[0];
-        if(vertsOrder_[a] > vertsOrder_[b]) {
+        if(offsets[a] > offsets[b]) {
           // edge[i] < edge[0]
           minId = i;
         }
@@ -3176,9 +3174,11 @@ int DiscreteGradient::reverseDescendingPathOnWall(
   return 0;
 }
 
-template <typename triangulationType>
+template <typename idType, typename triangulationType>
 ttk::SimplexId DiscreteGradient::getCellGreaterVertex(
-  const Cell c, const triangulationType &triangulation) const {
+  const Cell c,
+  const idType *const offsets,
+  const triangulationType &triangulation) const {
 
   auto cellDim = c.dim_;
   auto cellId = c.id_;
@@ -3194,7 +3194,7 @@ ttk::SimplexId DiscreteGradient::getCellGreaterVertex(
     triangulation.getEdgeVertex(cellId, 0, v0);
     triangulation.getEdgeVertex(cellId, 1, v1);
 
-    if(vertsOrder_[v0] > vertsOrder_[v1]) {
+    if(offsets[v0] > offsets[v1]) {
       vertexId = v0;
     } else {
       vertexId = v1;
@@ -3206,10 +3206,9 @@ ttk::SimplexId DiscreteGradient::getCellGreaterVertex(
     triangulation.getTriangleVertex(cellId, 0, v0);
     triangulation.getTriangleVertex(cellId, 1, v1);
     triangulation.getTriangleVertex(cellId, 2, v2);
-    if(vertsOrder_[v0] > vertsOrder_[v1] && vertsOrder_[v0] > vertsOrder_[v2]) {
+    if(offsets[v0] > offsets[v1] && offsets[v0] > offsets[v2]) {
       vertexId = v0;
-    } else if(vertsOrder_[v1] > vertsOrder_[v0]
-              && vertsOrder_[v1] > vertsOrder_[v2]) {
+    } else if(offsets[v1] > offsets[v0] && offsets[v1] > offsets[v2]) {
       vertexId = v1;
     } else {
       vertexId = v2;
@@ -3222,16 +3221,14 @@ ttk::SimplexId DiscreteGradient::getCellGreaterVertex(
     triangulation.getCellVertex(cellId, 1, v1);
     triangulation.getCellVertex(cellId, 2, v2);
     triangulation.getCellVertex(cellId, 3, v3);
-    if(vertsOrder_[v0] > vertsOrder_[v1] && vertsOrder_[v0] > vertsOrder_[v2]
-       && vertsOrder_[v0] > vertsOrder_[v3]) {
+    if(offsets[v0] > offsets[v1] && offsets[v0] > offsets[v2]
+       && offsets[v0] > offsets[v3]) {
       vertexId = v0;
-    } else if(vertsOrder_[v1] > vertsOrder_[v0]
-              && vertsOrder_[v1] > vertsOrder_[v2]
-              && vertsOrder_[v1] > vertsOrder_[v3]) {
+    } else if(offsets[v1] > offsets[v0] && offsets[v1] > offsets[v2]
+              && offsets[v1] > offsets[v3]) {
       vertexId = v1;
-    } else if(vertsOrder_[v2] > vertsOrder_[v0]
-              && vertsOrder_[v2] > vertsOrder_[v1]
-              && vertsOrder_[v2] > vertsOrder_[v3]) {
+    } else if(offsets[v2] > offsets[v0] && offsets[v2] > offsets[v1]
+              && offsets[v2] > offsets[v3]) {
       vertexId = v2;
     } else {
       vertexId = v3;

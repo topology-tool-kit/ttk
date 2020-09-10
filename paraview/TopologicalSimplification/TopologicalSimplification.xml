@@ -202,17 +202,6 @@
         </Documentation>
       </IntVectorProperty>
 
-      <StringVectorProperty
-          name="OutputOffsetScalarFieldName"
-          command="SetOutputOffsetScalarFieldName"
-          label="Output Offset Scalar Field"
-          number_of_elements="1"
-          panel_visibility="advanced">
-        <Documentation>
-          Select the name of the output offset field.
-        </Documentation>
-      </StringVectorProperty>
-
       ${DEBUG_WIDGETS}
 
       <PropertyGroup panel_widget="Line" label="Input options">
@@ -225,7 +214,6 @@
       </PropertyGroup>
 
       <PropertyGroup panel_widget="Line" label="Output options">
-        <Property name="OutputOffsetScalarFieldName"/>
         <Property name="AddPerturbation"/>
       </PropertyGroup>
 

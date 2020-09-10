@@ -164,7 +164,6 @@ int ttk::JacobiSet::executeLegacy(
   for(ThreadId i = 0; i < threadNumber_; i++) {
     threadedCriticalPoints[i].setDomainDimension(2);
     threadedCriticalPoints[i].setVertexNumber(vertexNumber_);
-    threadedCriticalPoints[i].setSosOffsets(sosOffsetsU_);
   }
 
   std::vector<std::vector<std::pair<SimplexId, char>>> threadedCriticalTypes(
@@ -231,9 +230,8 @@ int ttk::JacobiSet::executeLegacy(
       // also, lots of things in there can be done out of the loop
 
       // in the loop
-      char type = threadedCriticalPoints[threadId].getCriticalType<double>(
-        pivotVertexId, threadedDistanceField[i].data(),
-        (*edgeFanLinkEdgeLists_)[i]);
+      char type = threadedCriticalPoints[threadId].getCriticalType(
+        pivotVertexId, sosOffsetsU_->data(), (*edgeFanLinkEdgeLists_)[i]);
 
       if(type != -2) {
         // -2: regular vertex

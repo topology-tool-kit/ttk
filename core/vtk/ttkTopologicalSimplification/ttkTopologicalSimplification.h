@@ -49,9 +49,6 @@
 
 #pragma once
 
-// VTK includes -- to adapt
-#include <vtkSmartPointer.h>
-
 // VTK Module
 #include <ttkTopologicalSimplificationModule.h>
 
@@ -78,9 +75,6 @@ public:
   vtkSetMacro(AddPerturbation, bool);
   vtkGetMacro(AddPerturbation, bool);
 
-  vtkSetMacro(OutputOffsetScalarFieldName, std::string);
-  vtkGetMacro(OutputOffsetScalarFieldName, std::string);
-
   vtkSetMacro(ForceInputVertexScalarField, bool);
   vtkGetMacro(ForceInputVertexScalarField, bool);
 
@@ -94,8 +88,6 @@ protected:
                   vtkInformationVector *outputVector) override;
 
 private:
-  int OffsetFieldId{-1};
-  std::string OutputOffsetScalarFieldName{ttk::OffsetScalarFieldName};
   bool ForceInputVertexScalarField{false};
   bool ForceInputOffsetScalarField{false};
   bool ConsiderIdentifierAsBlackList{false};

@@ -164,6 +164,7 @@ int ttk::MorseSmaleComplex3D::computePersistencePairs(
   const triangulationType &triangulation) {
 
   const dataType *scalars = static_cast<const dataType *>(inputScalarField_);
+  const dataType *offsets = static_cast<const dataType *>(inputOffsets_);
 
   std::vector<std::array<dcg::Cell, 2>> dmt_pairs;
   {
@@ -171,7 +172,7 @@ int ttk::MorseSmaleComplex3D::computePersistencePairs(
     discreteGradient_.setDebugLevel(debugLevel_);
     discreteGradient_.setThreadNumber(threadNumber_);
     discreteGradient_.setCollectPersistencePairs(false);
-    discreteGradient_.buildGradient<dataType, idType>(triangulation);
+    discreteGradient_.buildGradient<idType, triangulationType>(triangulation);
     discreteGradient_.reverseGradient<dataType, idType>(triangulation);
 
     // collect saddle-saddle connections
@@ -183,9 +184,9 @@ int ttk::MorseSmaleComplex3D::computePersistencePairs(
   // transform DMT pairs into PL pairs
   for(const auto &pair : dmt_pairs) {
     const SimplexId v0
-      = discreteGradient_.getCellGreaterVertex(pair[0], triangulation);
+      = discreteGradient_.getCellGreaterVertex(pair[0], offsets, triangulation);
     const SimplexId v1
-      = discreteGradient_.getCellGreaterVertex(pair[1], triangulation);
+      = discreteGradient_.getCellGreaterVertex(pair[1], offsets, triangulation);
     const dataType persistence = scalars[v1] - scalars[v0];
 
     if(v0 != -1 and v1 != -1 and persistence >= 0) {
@@ -676,7 +677,7 @@ int ttk::MorseSmaleComplex3D::execute(const triangulationType &triangulation) {
   discreteGradient_.setDebugLevel(debugLevel_);
   {
     Timer tmp;
-    discreteGradient_.buildGradient<dataType, idType>(triangulation);
+    discreteGradient_.buildGradient<idType, triangulationType>(triangulation);
 
     this->printMsg("Discrete gradient computed", 1.0, tmp.getElapsedTime(),
                    this->threadNumber_);
@@ -801,7 +802,7 @@ int ttk::MorseSmaleComplex3D::execute(const triangulationType &triangulation) {
 
   if(outputCriticalPoints_numberOfPoints_ and outputSeparatrices1_points_) {
     std::vector<size_t> nCriticalPointsByDim{};
-    discreteGradient_.setCriticalPoints<dataType>(
+    discreteGradient_.setCriticalPoints<dataType, idType>(
       criticalPoints, nCriticalPointsByDim, triangulation);
 
     discreteGradient_.fetchOutputCriticalPoints(
