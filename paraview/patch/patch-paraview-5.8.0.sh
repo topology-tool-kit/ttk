@@ -90,6 +90,8 @@ $PATCH_BIN Remoting/Core/vtkPVFileInformation.cxx \
 ## CPack variables for packaging meta-data
 $PATCH_BIN -p1 \
   < "${PATCH_DIR}/paraview-5.8.0-CPack-CMakeLists.txt.patch"
+mkdir -p .github/workflows/
+cp ${PATCH_DIR}/main.yml .github/workflows
 
 echo "Finished patching."
 
