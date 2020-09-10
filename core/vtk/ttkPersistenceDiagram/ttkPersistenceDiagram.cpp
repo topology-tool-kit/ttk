@@ -433,8 +433,8 @@ int ttkPersistenceDiagram::RequestData(vtkInformation *request,
   vtkUnstructuredGrid *outputCTPersistenceDiagram
     = vtkUnstructuredGrid::GetData(outputVector, 0);
 
-  vtkPointData *pointData = input->GetPointData();
 #ifndef TTK_ENABLE_KAMIKAZE
+  vtkPointData *pointData = input->GetPointData();
   if(!pointData) {
     this->printErr("Input has no point data.");
     return 0;

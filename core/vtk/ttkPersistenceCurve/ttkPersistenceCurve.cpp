@@ -228,8 +228,8 @@ int ttkPersistenceCurve::RequestData(vtkInformation *request,
   vtkTable *outputSTPersistenceCurve = vtkTable::GetData(outputVector, 2);
   vtkTable *outputCTPersistenceCurve = vtkTable::GetData(outputVector, 3);
 
-  vtkPointData *pointData = input->GetPointData();
 #ifndef TTK_ENABLE_KAMIKAZE
+  vtkPointData *pointData = input->GetPointData();
   if(!pointData) {
     cerr << "[ttkPersistenceCurve] Error : input has no point data." << endl;
     return -1;
