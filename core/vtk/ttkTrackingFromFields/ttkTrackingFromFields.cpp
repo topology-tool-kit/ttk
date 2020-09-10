@@ -149,9 +149,17 @@ int ttkTrackingFromFields::RequestData(vtkInformation *request,
   for(int i = 0; i < numberOfInputFields; ++i) {
     vtkDataArray *currentScalarField = pointData->GetArray(i);
     if(currentScalarField == nullptr
-       || firstScalarField->GetDataType()
-            != currentScalarField->GetDataType()) {
-      this->printErr("Inconsistent field data type or size");
+       || currentScalarField->GetName() == nullptr) {
+      continue;
+    }
+    std::string sfname{currentScalarField->GetName()};
+    if(sfname.rfind("_Order") == (sfname.size() - 6)) {
+      continue;
+    }
+    if(firstScalarField->GetDataType() != currentScalarField->GetDataType()) {
+      this->printErr("Inconsistent field data type or size between fields `"
+                     + std::string{firstScalarField->GetName()} + "' and `"
+                     + sfname + "'");
       return -1;
     }
     inputScalarFieldsRaw.push_back(currentScalarField);
@@ -165,6 +173,7 @@ int ttkTrackingFromFields::RequestData(vtkInformation *request,
                 s1.begin(), s1.end(), s2.begin(), s2.end());
             });
 
+  numberOfInputFields = inputScalarFieldsRaw.size();
   int end = EndTimestep <= 0 ? numberOfInputFields
                              : std::min(numberOfInputFields, EndTimestep);
   for(int i = StartTimestep; i < end; i += Sampling) {
