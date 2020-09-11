@@ -43,6 +43,14 @@ namespace ttk {
       const std::vector<std::tuple<SimplexId, SimplexId, scalarType>> &pairs,
       std::vector<std::pair<scalarType, SimplexId>> &plot) const;
 
+    /**
+     * @pre For this function to behave correctly in the absence of
+     * the VTK wrapper, ttk::preconditionOrderArray() needs to be
+     * called to fill the @p inputOffsets buffer prior to any
+     * computation (the VTK wrapper already includes a mecanism to
+     * automatically generate such a preconditioned buffer).
+     * @see examples/c++/main.cpp for an example use.
+     */
     template <typename scalarType,
               class triangulationType = ttk::AbstractTriangulation>
     int execute(const scalarType *inputScalars,

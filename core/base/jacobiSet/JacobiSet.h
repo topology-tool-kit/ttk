@@ -76,10 +76,26 @@ namespace ttk {
       setSosOffsetsU(sosOffsets->data());
     }
 
+    /**
+     * @pre For this function to behave correctly in the absence of
+     * the VTK wrapper, ttk::preconditionOrderArray() needs to be
+     * called to fill the @p sosOffsets buffer prior to any
+     * computation (the VTK wrapper already includes a mecanism to
+     * automatically generate such a preconditioned buffer).
+     * @see examples/c++/main.cpp for an example use.
+     */
     inline void setSosOffsetsU(const SimplexId *const sosOffsets) {
       sosOffsetsU_ = sosOffsets;
     }
 
+    /**
+     * @pre For this function to behave correctly in the absence of
+     * the VTK wrapper, ttk::preconditionOrderArray() needs to be
+     * called to fill the @p sosOffsets buffer prior to any
+     * computation (the VTK wrapper already includes a mecanism to
+     * automatically generate such a preconditioned buffer).
+     * @see examples/c++/main.cpp for an example use.
+     */
     inline void setSosOffsetsV(const SimplexId *const sosOffsets) {
       sosOffsetsV_ = sosOffsets;
     }
