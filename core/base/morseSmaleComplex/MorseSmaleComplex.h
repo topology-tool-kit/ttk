@@ -303,7 +303,7 @@ namespace ttk {
       return 0;
     }
 
-    inline int setInputOffsets(void *const data) {
+    inline int setInputOffsets(const SimplexId *const data) {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(!abstractMorseSmaleComplex_) {
         return -1;
@@ -417,15 +417,15 @@ namespace ttk {
       return 0;
     }
 
-    template <typename dataType, typename idType, typename triangulationType>
+    template <typename dataType, typename triangulationType>
     int execute(const triangulationType &triangulation) {
       switch(dimensionality_) {
         case 2:
-          morseSmaleComplex2D_.execute<dataType, idType>(triangulation);
+          morseSmaleComplex2D_.execute<dataType>(triangulation);
           break;
 
         case 3:
-          morseSmaleComplex3D_.execute<dataType, idType>(triangulation);
+          morseSmaleComplex3D_.execute<dataType>(triangulation);
           break;
       }
       return 0;

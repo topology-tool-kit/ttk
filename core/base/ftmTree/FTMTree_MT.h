@@ -130,20 +130,6 @@ namespace ttk {
         scalars_->size = triangulation->getNumberOfVertices();
       }
 
-      /// \brief init Simulation of Simplicity datastructure if not set
-      template <typename idType>
-      void initSoS(void) {
-        if(scalars_->offsets == nullptr) {
-          scalars_->offsets = new idType[scalars_->size];
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for
-#endif
-          for(SimplexId i = 0; i < scalars_->size; i++) {
-            ((idType *)scalars_->offsets)[i] = i;
-          }
-        }
-      }
-
       void initComp(void) {
         if(isST()) {
           comp_.vertLower
@@ -171,8 +157,7 @@ namespace ttk {
       }
 
       /// \brief if sortedVertices_ is null, define and fill it
-      /// Also fill the mirror vector
-      template <typename scalarType, typename idType>
+      template <typename scalarType>
       void sortInput(void);
 
       /// \brief clear local data for new computation
@@ -371,9 +356,8 @@ namespace ttk {
       }
 
       // offset
-      template <typename idType>
-      inline void setVertexSoSoffsets(idType *sos) {
-        scalars_->offsets = (void *)sos;
+      inline void setVertexSoSoffsets(const SimplexId *const sos) {
+        scalars_->offsets = sos;
       }
 
       // arcs
@@ -658,44 +642,12 @@ namespace ttk {
       // -----------------
       // Compare using the scalar array : only for sort step
 
-      template <typename scalarType, typename idType>
       inline bool isLower(SimplexId a, SimplexId b) const {
-        return ((scalarType *)scalars_->values)[a]
-                 < ((scalarType *)scalars_->values)[b]
-               || (((scalarType *)scalars_->values)[a]
-                     == ((scalarType *)scalars_->values)[b]
-                   && ((idType *)scalars_->offsets)[a]
-                        < ((idType *)scalars_->offsets)[b]);
+        return scalars_->offsets[a] < scalars_->offsets[b];
       }
 
-      template <typename scalarType, typename idType>
       inline bool isHigher(SimplexId a, SimplexId b) const {
-        return ((scalarType *)scalars_->values)[a]
-                 > ((scalarType *)scalars_->values)[b]
-               || (((scalarType *)scalars_->values)[a]
-                     == ((scalarType *)scalars_->values)[b]
-                   && ((idType *)scalars_->offsets)[a]
-                        > ((idType *)scalars_->offsets)[b]);
-      }
-
-      template <typename scalarType, typename idType>
-      inline bool isEqLower(SimplexId a, SimplexId b) const {
-        return ((scalarType *)scalars_->values)[a]
-                 < ((scalarType *)scalars_->values)[b]
-               || (((scalarType *)scalars_->values)[a]
-                     == ((scalarType *)scalars_->values)[b]
-                   && ((idType *)scalars_->offsets)[a]
-                        <= ((idType *)scalars_->offsets)[b]);
-      }
-
-      template <typename scalarType, typename idType>
-      inline bool isEqHigher(SimplexId a, SimplexId b) const {
-        return ((scalarType *)scalars_->values)[a]
-                 > ((scalarType *)scalars_->values)[b]
-               || (((scalarType *)scalars_->values)[a]
-                     == ((scalarType *)scalars_->values)[b]
-                   && ((idType *)scalars_->offsets)[a]
-                        >= ((idType *)scalars_->offsets)[b]);
+        return scalars_->offsets[a] > scalars_->offsets[b];
       }
 
       template <typename type>

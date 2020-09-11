@@ -44,10 +44,9 @@ namespace ttk {
     TopologicalCompression();
 
     template <class dataType,
-              typename idType,
               typename triangulationType = AbstractTriangulation>
     int execute(const dataType *const inputData,
-                const idType *const inputOffsets,
+                const SimplexId *const inputOffsets,
                 dataType *outputData,
                 const triangulationType &triangulation);
 
@@ -59,10 +58,10 @@ namespace ttk {
       const dataType *const inputScalars_,
       const SimplexId *const inputOffsets,
       const triangulationType &triangulation);
-    template <typename dataType, typename idType, typename triangulationType>
+    template <typename dataType, typename triangulationType>
     int compressForPersistenceDiagram(int vertexNumber,
                                       const dataType *const inputData,
-                                      const idType *const inputOffset,
+                                      const SimplexId *const inputOffset,
                                       dataType *outputData,
                                       const double &tol,
                                       const triangulationType &triangulation);
@@ -71,10 +70,10 @@ namespace ttk {
     template <typename dataType>
     int computeOther();
 
-    template <typename dataType, typename idType>
+    template <typename dataType>
     int compressForOther(int vertexNumber,
                          const dataType *const inputData,
-                         const idType *const inputOffsets,
+                         const SimplexId *const inputOffsets,
                          dataType *outputData,
                          const double &tol);
 
@@ -416,10 +415,10 @@ namespace ttk {
 #include <OtherCompression.h>
 #include <PersistenceDiagramCompression.h>
 
-template <class dataType, typename idType, typename triangulationType>
+template <class dataType, typename triangulationType>
 int ttk::TopologicalCompression::execute(
   const dataType *const inputData,
-  const idType *const inputOffsets,
+  const SimplexId *const inputOffsets,
   dataType *outputData,
   const triangulationType &triangulation) {
   this->printMsg("Starting compression...");

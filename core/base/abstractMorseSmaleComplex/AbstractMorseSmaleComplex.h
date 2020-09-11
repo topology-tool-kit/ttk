@@ -228,7 +228,7 @@ namespace ttk {
      * Set the input offset field associated on the points of the data set
      * (if none, identifiers are used instead).
      */
-    inline int setInputOffsets(const void *const data) {
+    inline int setInputOffsets(const SimplexId *const data) {
       inputOffsets_ = data;
       discreteGradient_.setInputOffsets(inputOffsets_);
       return 0;
@@ -429,7 +429,7 @@ namespace ttk {
     dcg::DiscreteGradient discreteGradient_{};
 
     const void *inputScalarField_{};
-    const void *inputOffsets_{};
+    const SimplexId *inputOffsets_{};
 
     SimplexId *outputCriticalPoints_numberOfPoints_{};
     std::vector<float> *outputCriticalPoints_points_{};
@@ -566,6 +566,7 @@ int ttk::AbstractMorseSmaleComplex::setSeparatrices1(
 #endif
 
   const auto scalars = static_cast<const dataType *>(inputScalarField_);
+  const auto offsets = inputOffsets_;
   auto separatrixFunctionMaxima = static_cast<std::vector<dataType> *>(
     outputSeparatrices1_cells_separatrixFunctionMaxima_);
   auto separatrixFunctionMinima = static_cast<std::vector<dataType> *>(
@@ -662,11 +663,15 @@ int ttk::AbstractMorseSmaleComplex::setSeparatrices1(
 
     // compute separatrix function diff
     const auto sepFuncMax
-      = std::max(discreteGradient_.scalarMax(src, scalars, triangulation),
-                 discreteGradient_.scalarMax(dst, scalars, triangulation));
+      = std::max(scalars[discreteGradient_.getCellGreaterVertex(
+                   src, offsets, triangulation)],
+                 scalars[discreteGradient_.getCellGreaterVertex(
+                   dst, offsets, triangulation)]);
     const auto sepFuncMin
-      = std::min(discreteGradient_.scalarMin(src, scalars, triangulation),
-                 discreteGradient_.scalarMin(dst, scalars, triangulation));
+      = std::min(scalars[discreteGradient_.getCellLowerVertex(
+                   src, offsets, triangulation)],
+                 scalars[discreteGradient_.getCellLowerVertex(
+                   dst, offsets, triangulation)]);
     const auto sepFuncDiff = sepFuncMax - sepFuncMin;
 
     // get boundary condition

@@ -138,28 +138,15 @@ int ttkTopologicalSimplification::RequestData(
   }
 
   int ret{};
-  if(offsets->GetDataType() == VTK_INT) {
-    switch(inputScalars->GetDataType()) {
-      vtkTemplateMacro(
-        ret = this->execute(
-          static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(inputScalars)),
-          static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(outputScalars)),
-          static_cast<int *>(ttkUtils::GetVoidPointer(identifiers)),
-          static_cast<int *>(ttkUtils::GetVoidPointer(offsets)),
-          static_cast<SimplexId *>(ttkUtils::GetVoidPointer(outputOffsets)),
-          numberOfConstraints, *triangulation->getData()));
-    }
-  } else if(offsets->GetDataType() == VTK_ID_TYPE) {
-    switch(inputScalars->GetDataType()) {
-      vtkTemplateMacro(
-        ret = this->execute(
-          static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(inputScalars)),
-          static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(outputScalars)),
-          static_cast<vtkIdType *>(ttkUtils::GetVoidPointer(identifiers)),
-          static_cast<vtkIdType *>(ttkUtils::GetVoidPointer(offsets)),
-          static_cast<SimplexId *>(ttkUtils::GetVoidPointer(outputOffsets)),
-          numberOfConstraints, *triangulation->getData()));
-    }
+  switch(inputScalars->GetDataType()) {
+    vtkTemplateMacro(
+      ret = this->execute(
+        static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(inputScalars)),
+        static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(outputScalars)),
+        static_cast<int *>(ttkUtils::GetVoidPointer(identifiers)),
+        static_cast<SimplexId *>(ttkUtils::GetVoidPointer(offsets)),
+        static_cast<SimplexId *>(ttkUtils::GetVoidPointer(outputOffsets)),
+        numberOfConstraints, *triangulation->getData()));
   }
 
   // something wrong in baseCode

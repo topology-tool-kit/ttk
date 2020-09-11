@@ -15,11 +15,6 @@ namespace ttk {
     struct Vert {
       idVertex id;
       ScalarType value;
-      idVertex offset;
-
-      inline bool operator<(const Vert<ScalarType> &v) const {
-        return std::tie(value, offset) < std::tie(v.value, v.offset);
-      }
     };
 
     template <typename ScalarType>
@@ -31,7 +26,6 @@ namespace ttk {
       const SimplexId *offsets_{};
 
       std::vector<Vert<ScalarType>> vertices_{};
-      std::vector<idVertex> mirror_{};
 
     public:
       Scalars() {
@@ -61,7 +55,7 @@ namespace ttk {
       }
 
       idVertex getMirror(const idVertex i) const {
-        return mirror_[i];
+        return offsets_[i];
       }
 
       void setSize(const idVertex size) {
@@ -78,7 +72,6 @@ namespace ttk {
 
       void alloc() {
         vertices_.resize(size_);
-        mirror_.resize(size_);
       }
 
       void init() {
@@ -87,25 +80,11 @@ namespace ttk {
 #pragma omp parallel for schedule(static, size_ / threadNumber_)
 #endif
         for(idVertex i = 0; i < size_; i++) {
-          vertices_[i].id = i;
-          vertices_[i].value = values_[i];
-          vertices_[i].offset = offsets_[i];
-        }
-      }
-
-      void sort() {
-        // Sort the vertices array
-        ::ttk::ftr::parallel_sort<decltype(vertices_.begin())>(
-          vertices_.begin(), vertices_.end());
-
-        // Fill the mirror array, used for later comparisons
-        Timer tt;
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_) \
-  schedule(static, size_ / threadNumber_)
-#endif
-        for(idVertex i = 0; i < size_; i++) {
-          mirror_[vertices_[i].id] = i;
+          // ids and value sorted by offset value
+          // vertices_[0] -> global minimum
+          // vertices_[size_ - 1] -> global maximum
+          vertices_[offsets_[i]].id = i;
+          vertices_[offsets_[i]].value = values_[i];
         }
       }
 
@@ -131,17 +110,10 @@ namespace ttk {
       // Need vertices to be sorted : use mirrorVertices.
 
       bool isLower(const idVertex a, const idVertex b) const {
-        return mirror_[a] < mirror_[b];
+        return offsets_[a] < offsets_[b];
       }
-      bool isEqLower(const idVertex a, const idVertex b) const {
-        return mirror_[a] <= mirror_[b];
-      }
-
       bool isHigher(const idVertex a, const idVertex b) const {
-        return mirror_[a] > mirror_[b];
-      }
-      bool isEqHigher(const idVertex a, const idVertex b) const {
-        return mirror_[a] >= mirror_[b];
+        return offsets_[a] > offsets_[b];
       }
     };
   } // namespace ftr

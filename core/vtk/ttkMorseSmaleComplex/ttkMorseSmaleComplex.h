@@ -111,9 +111,7 @@ public:
   vtkGetMacro(SaddleConnectorsPersistenceThreshold, double);
 
 protected:
-  template <typename scalarType,
-            typename offsetType,
-            typename triangulationType>
+  template <typename scalarType, typename triangulationType>
   int dispatch(vtkDataArray *const inputScalars,
                vtkDataArray *const inputOffsets,
                vtkUnstructuredGrid *const outputCriticalPoints,

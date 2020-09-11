@@ -83,22 +83,12 @@ int ttkScalarFieldCriticalPoints::RequestData(
             {"  Offset Array", offsetField ? offsetField->GetName() : "None"}});
 
   int status = 0;
-  if(offsetField->GetDataType() == VTK_INT) {
-    ttkTemplateMacro(
-      triangulation->getType(),
-      (status = this->execute(
-         static_cast<int *>(ttkUtils::GetVoidPointer(offsetField)),
-         (TTK_TT *)triangulation->getData())));
-  } else if(offsetField->GetDataType() == VTK_ID_TYPE) {
-    ttkTemplateMacro(
-      triangulation->getType(),
-      (status = this->execute(
-         static_cast<vtkIdType *>(ttkUtils::GetVoidPointer(offsetField)),
-         (TTK_TT *)triangulation->getData())));
-  } else {
-    this->printErr("Wrong offset field type");
-    return 0;
-  }
+  ttkTemplateMacro(
+    triangulation->getType(),
+    (status = this->execute(
+       static_cast<SimplexId *>(ttkUtils::GetVoidPointer(offsetField)),
+       (TTK_TT *)triangulation->getData())));
+
   if(status < 0)
     return 0;
 

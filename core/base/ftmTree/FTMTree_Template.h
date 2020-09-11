@@ -27,7 +27,7 @@
 // PROCESS
 // -------
 
-template <typename scalarType, typename idType, class triangulationType>
+template <typename scalarType, class triangulationType>
 void ttk::ftm::FTMTree::build(const triangulationType *mesh) {
   // -----
   // INPUT
@@ -119,8 +119,7 @@ void ttk::ftm::FTMTree::build(const triangulationType *mesh) {
   // for fast comparison
   // and regions / segmentation
   Timer sortTime;
-  initSoS<idType>();
-  sortInput<scalarType, idType>();
+  sortInput<scalarType>();
   printTime(sortTime, "sort step", -1, 3);
 
   // -----

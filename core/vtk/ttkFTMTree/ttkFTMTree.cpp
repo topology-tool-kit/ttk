@@ -156,10 +156,10 @@ int ttkFTMTree::RequestData(vtkInformation *request,
     ftmTree_[cc].tree.setSegmentation(GetWithSegmentation());
     ftmTree_[cc].tree.setNormalizeIds(GetWithNormalize());
 
-    ttkVtkTemplateMacro(
-      inputArray->GetDataType(), triangulation_[cc]->getType(),
-      (ftmTree_[cc].tree.build<VTK_TT, ttk::SimplexId, TTK_TT>(
-        (TTK_TT *)triangulation_[cc]->getData())));
+    ttkVtkTemplateMacro(inputArray->GetDataType(),
+                        triangulation_[cc]->getType(),
+                        (ftmTree_[cc].tree.build<VTK_TT, TTK_TT>(
+                          (TTK_TT *)triangulation_[cc]->getData())));
 
     ftmTree_[cc].offset = acc_nbNodes;
     acc_nbNodes += ftmTree_[cc].tree.getTree(GetTreeType())->getNumberOfNodes();

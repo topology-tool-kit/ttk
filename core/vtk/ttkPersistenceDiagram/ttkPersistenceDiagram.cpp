@@ -386,12 +386,8 @@ int ttkPersistenceDiagram::dispatch(
   vector<tuple_t> *CTDiagram = (vector<tuple_t> *)CTDiagram_;
 
   if(computeDiagram_) {
-    if(inputOffsetsDataType == VTK_INT)
-      ret = this->execute<VTK_TT, int, TTK_TT>(
-        *CTDiagram, inputScalars, (int *)inputOffsets, triangulation);
-    if(inputOffsetsDataType == VTK_ID_TYPE)
-      ret = this->execute<VTK_TT, vtkIdType, TTK_TT>(
-        *CTDiagram, inputScalars, (vtkIdType *)inputOffsets, triangulation);
+    ret = this->execute<VTK_TT, TTK_TT>(
+      *CTDiagram, inputScalars, (SimplexId *)inputOffsets, triangulation);
 #ifndef TTK_ENABLE_KAMIKAZE
     if(ret) {
       std::stringstream msg;
@@ -432,14 +428,6 @@ int ttkPersistenceDiagram::RequestData(vtkInformation *request,
   vtkDataSet *input = vtkDataSet::GetData(inputVector[0]);
   vtkUnstructuredGrid *outputCTPersistenceDiagram
     = vtkUnstructuredGrid::GetData(outputVector, 0);
-
-#ifndef TTK_ENABLE_KAMIKAZE
-  vtkPointData *pointData = input->GetPointData();
-  if(!pointData) {
-    this->printErr("Input has no point data.");
-    return 0;
-  }
-#endif
 
   ttk::Triangulation *triangulation = ttkAlgorithm::GetTriangulation(input);
 #ifndef TTK_ENABLE_KAMIKAZE

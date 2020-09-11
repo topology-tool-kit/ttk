@@ -153,13 +153,12 @@ namespace ttk {
         const SimplexId &start
           = (i == 0)
               ? 0
-              : scalars_
-                  ->mirrorVertices[parallelData_.interfaces[i - 1].getSeed()];
+              : scalars_->sosOffsets[parallelData_.interfaces[i - 1].getSeed()];
 
         const SimplexId &end
           = (i == parallelParams_.nbInterfaces)
               ? scalars_->size
-              : scalars_->mirrorVertices[parallelData_.interfaces[i].getSeed()];
+              : scalars_->sosOffsets[parallelData_.interfaces[i].getSeed()];
 
         return std::make_tuple(start, end);
       }
@@ -169,14 +168,12 @@ namespace ttk {
         const SimplexId &start
           = (i == parallelParams_.nbInterfaces)
               ? scalars_->size - 1
-              : scalars_->mirrorVertices[parallelData_.interfaces[i].getSeed()]
-                  - 1;
+              : scalars_->sosOffsets[parallelData_.interfaces[i].getSeed()] - 1;
 
         const SimplexId &end
           = (i == 0)
               ? -1
-              : scalars_
-                    ->mirrorVertices[parallelData_.interfaces[i - 1].getSeed()]
+              : scalars_->sosOffsets[parallelData_.interfaces[i - 1].getSeed()]
                   - 1;
 
         return std::make_tuple(start, end);
@@ -187,13 +184,12 @@ namespace ttk {
         const SimplexId &seed0
           = (i == 0)
               ? -1
-              : scalars_
-                  ->mirrorVertices[parallelData_.interfaces[i - 1].getSeed()];
+              : scalars_->sosOffsets[parallelData_.interfaces[i - 1].getSeed()];
 
         const SimplexId &seed1
           = (i == parallelParams_.nbInterfaces)
               ? nullVertex
-              : scalars_->mirrorVertices[parallelData_.interfaces[i].getSeed()];
+              : scalars_->sosOffsets[parallelData_.interfaces[i].getSeed()];
 
         return std::make_tuple(seed0, seed1);
       }

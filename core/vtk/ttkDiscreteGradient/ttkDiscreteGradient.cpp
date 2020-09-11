@@ -38,7 +38,7 @@ int ttkDiscreteGradient::FillOutputPortInformation(int port,
   return 0;
 }
 
-template <typename scalarType, typename offsetType, typename triangulationType>
+template <typename scalarType, typename triangulationType>
 int ttkDiscreteGradient::dispatch(vtkUnstructuredGrid *outputCriticalPoints,
                                   vtkDataArray *const inputScalars,
                                   vtkDataArray *const inputOffsets,
@@ -48,8 +48,7 @@ int ttkDiscreteGradient::dispatch(vtkUnstructuredGrid *outputCriticalPoints,
   std::vector<scalarType> criticalPoints_points_cellScalars;
   this->setOutputCriticalPoints(&criticalPoints_points_cellScalars);
 
-  const int ret
-    = this->buildGradient<offsetType, triangulationType>(triangulation);
+  const int ret = this->buildGradient<triangulationType>(triangulation);
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(ret) {
@@ -61,7 +60,7 @@ int ttkDiscreteGradient::dispatch(vtkUnstructuredGrid *outputCriticalPoints,
 
   // critical points
   {
-    this->setCriticalPoints<scalarType, offsetType>(triangulation);
+    this->setCriticalPoints<scalarType>(triangulation);
 
     vtkNew<vtkPoints> points{};
 
@@ -176,19 +175,13 @@ int ttkDiscreteGradient::RequestData(vtkInformation *request,
 
   // baseCode processing
   this->setInputScalarField(ttkUtils::GetVoidPointer(inputScalars));
-  this->setInputOffsets(ttkUtils::GetVoidPointer(inputOffsets));
+  this->setInputOffsets(
+    static_cast<SimplexId *>(ttkUtils::GetVoidPointer(inputOffsets)));
 
-  if(inputOffsets->GetDataType() == VTK_INT) {
-    ttkVtkTemplateMacro(inputScalars->GetDataType(), triangulation->getType(),
-                        (ret = dispatch<VTK_TT, SimplexId, TTK_TT>(
-                           outputCriticalPoints, inputScalars, inputOffsets,
-                           *static_cast<TTK_TT *>(triangulation->getData()))))
-  } else if(inputOffsets->GetDataType() == VTK_ID_TYPE) {
-    ttkVtkTemplateMacro(inputScalars->GetDataType(), triangulation->getType(),
-                        (ret = dispatch<VTK_TT, LongSimplexId, TTK_TT>(
-                           outputCriticalPoints, inputScalars, inputOffsets,
-                           *static_cast<TTK_TT *>(triangulation->getData()))))
-  }
+  ttkVtkTemplateMacro(inputScalars->GetDataType(), triangulation->getType(),
+                      (ret = dispatch<VTK_TT, TTK_TT>(
+                         outputCriticalPoints, inputScalars, inputOffsets,
+                         *static_cast<TTK_TT *>(triangulation->getData()))));
 
   if(ret != 0) {
     return -1;

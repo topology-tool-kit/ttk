@@ -96,5 +96,4 @@ private:
   // for each edge, the one skeleton of its triangle fan
   std::vector<std::vector<ttk::SimplexId>> edgeFans_{};
   std::vector<std::pair<ttk::SimplexId, char>> jacobiSet_{};
-  std::vector<ttk::SimplexId> sosOffsetsU_{}, sosOffsetsV_{};
 };

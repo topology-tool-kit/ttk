@@ -102,19 +102,6 @@ int ttkReebSpace::RequestData(vtkInformation *request,
     return -1;
   }
 
-  if(offsetFieldU) {
-    sosOffsetsU_.resize(offsetFieldU->GetNumberOfTuples());
-    for(vtkIdType i = 0; i < offsetFieldU->GetNumberOfTuples(); i++) {
-      sosOffsetsU_[i] = offsetFieldU->GetTuple1(i);
-    }
-  }
-  if(offsetFieldV) {
-    sosOffsetsV_.resize(offsetFieldV->GetNumberOfTuples());
-    for(vtkIdType i = 0; i < offsetFieldV->GetNumberOfTuples(); i++) {
-      sosOffsetsV_[i] = offsetFieldV->GetTuple1(i);
-    }
-  }
-
   this->printMsg("U-component: `" + std::string{uComponent->GetName()} + "'");
   this->printMsg("V-component: `" + std::string{vComponent->GetName()} + "'");
 
@@ -124,8 +111,10 @@ int ttkReebSpace::RequestData(vtkInformation *request,
   }
   this->preconditionTriangulation(triangulation);
 
-  this->setSosOffsetsU(&sosOffsetsU_);
-  this->setSosOffsetsV(&sosOffsetsV_);
+  this->setSosOffsetsU(
+    static_cast<ttk::SimplexId *>(ttkUtils::GetVoidPointer(offsetFieldU)));
+  this->setSosOffsetsV(
+    static_cast<ttk::SimplexId *>(ttkUtils::GetVoidPointer(offsetFieldV)));
 
 #ifndef TTK_ENABLE_DOUBLE_TEMPLATING
   if(uComponent->GetDataType() != vComponent->GetDataType()) {

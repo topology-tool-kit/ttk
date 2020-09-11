@@ -73,14 +73,14 @@ namespace ttk {
 
     inline void setSosOffsets(std::vector<SimplexId> *sosOffsets) {
       // legacy API
-      setSosOffsetsU(sosOffsets);
+      setSosOffsetsU(sosOffsets->data());
     }
 
-    inline void setSosOffsetsU(std::vector<SimplexId> *sosOffsets) {
+    inline void setSosOffsetsU(const SimplexId *const sosOffsets) {
       sosOffsetsU_ = sosOffsets;
     }
 
-    inline void setSosOffsetsV(std::vector<SimplexId> *sosOffsets) {
+    inline void setSosOffsetsV(const SimplexId *const sosOffsets) {
       sosOffsetsV_ = sosOffsets;
     }
 
@@ -117,8 +117,7 @@ namespace ttk {
       *edgeFanLinkEdgeLists_{};
     // for each edge, the one skeleton of its triangle fan
     const std::vector<std::vector<SimplexId>> *edgeFans_{};
-    std::vector<SimplexId> *sosOffsetsU_{}, *sosOffsetsV_{};
-    std::vector<SimplexId> localSosOffsetsU_{}, localSosOffsetsV_{};
+    const SimplexId *sosOffsetsU_{}, *sosOffsetsV_{};
   };
 } // namespace ttk
 

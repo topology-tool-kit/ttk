@@ -75,15 +75,6 @@ namespace ttk {
         scalars_->size = tri->getNumberOfVertices();
       }
 
-      /// \brief init Simulation of Simplicity datastructure if not set
-      void initSoS(void) {
-        std::vector<SimplexId> &sosVect = scalars_->sosOffsets;
-        if(!sosVect.size()) {
-          sosVect.resize(scalars_->size);
-          iota(sosVect.begin(), sosVect.end(), 0);
-        }
-      }
-
       /// \brief init the type of the current tree froms params
       void initTreeType(void) {
         treeData_.treeType = params_->treeType;
@@ -175,7 +166,7 @@ namespace ttk {
       // offset
       // .....................{
 
-      inline void setVertexSoSoffsets(const std::vector<SimplexId> &offsets) {
+      inline void setVertexSoSoffsets(const SimplexId *const offsets) {
         scalars_->sosOffsets = offsets;
       }
 
@@ -647,21 +638,11 @@ namespace ttk {
       // Strict
 
       inline bool isLower(const SimplexId &a, const SimplexId &b) const {
-        return scalars_->mirrorVertices[a] < scalars_->mirrorVertices[b];
+        return scalars_->isLower(a, b);
       }
 
       inline bool isHigher(const SimplexId &a, const SimplexId &b) const {
-        return scalars_->mirrorVertices[a] > scalars_->mirrorVertices[b];
-      }
-
-      // Large
-
-      inline bool isEqLower(const SimplexId &a, const SimplexId &b) const {
-        return scalars_->mirrorVertices[a] <= scalars_->mirrorVertices[b];
-      }
-
-      inline bool isEqHigher(const SimplexId &a, const SimplexId &b) const {
-        return scalars_->mirrorVertices[a] >= scalars_->mirrorVertices[b];
+        return scalars_->isHigher(a, b);
       }
 
       //}

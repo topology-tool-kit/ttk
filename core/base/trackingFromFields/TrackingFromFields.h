@@ -63,14 +63,14 @@ namespace ttk {
       inputData_ = is;
     }
 
-    inline void setInputOffsets(void *io) {
+    inline void setInputOffsets(std::vector<SimplexId *> &io) {
       inputOffsets_ = io;
     }
 
   protected:
     int numberOfInputs_{0};
     std::vector<void *> inputData_{};
-    void *inputOffsets_{};
+    std::vector<SimplexId *> inputOffsets_{};
   };
 } // namespace ttk
 
@@ -96,9 +96,8 @@ int ttk::TrackingFromFields::performDiagramComputation(
       CTDiagram;
 
     // persistenceDiagram.setOutputCTDiagram(&CTDiagram);
-    persistenceDiagram.execute<dataType, int, triangulationType>(
-      CTDiagram, (dataType *)(inputData_[i]), (int *)(inputOffsets_),
-      triangulation);
+    persistenceDiagram.execute<dataType, triangulationType>(
+      CTDiagram, (dataType *)(inputData_[i]), inputOffsets_[i], triangulation);
 
     // Copy diagram into augmented diagram.
     persistenceDiagrams[i] = std::vector<diagramTuple>(CTDiagram.size());

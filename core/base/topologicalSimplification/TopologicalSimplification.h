@@ -89,11 +89,11 @@ namespace ttk {
     int addPerturbation(dataType *const scalars,
                         SimplexId *const offsets) const;
 
-    template <typename dataType, typename idType, typename triangulationType>
+    template <typename dataType, typename triangulationType>
     int execute(const dataType *const inputScalars,
                 dataType *const outputScalars,
-                const idType *const identifiers,
-                const idType *const inputOffsets,
+                const SimplexId *const identifiers,
+                const SimplexId *const inputOffsets,
                 SimplexId *const offsets,
                 const SimplexId constraintNumber,
                 const triangulationType &triangulation) const;
@@ -242,12 +242,12 @@ int ttk::TopologicalSimplification::addPerturbation(
   return 0;
 }
 
-template <typename dataType, typename idType, typename triangulationType>
+template <typename dataType, typename triangulationType>
 int ttk::TopologicalSimplification::execute(
   const dataType *const inputScalars,
   dataType *const outputScalars,
-  const idType *const identifiers,
-  const idType *const inputOffsets,
+  const SimplexId *const identifiers,
+  const SimplexId *const inputOffsets,
   SimplexId *const offsets,
   const SimplexId constraintNumber,
   const triangulationType &triangulation) const {
@@ -351,7 +351,7 @@ int ttk::TopologicalSimplification::execute(
       } while(!sweepFront.empty());
 
       // save offsets and rearrange outputScalars
-      SimplexId offset = (isIncreasingOrder ? 0 : vertexNumber_ + 1);
+      SimplexId offset = (isIncreasingOrder ? 0 : vertexNumber_);
 
       for(SimplexId k = 0; k < vertexNumber_; ++k) {
 

@@ -356,53 +356,35 @@ saddle-connectors.
       }
 
       /**
-       * Return the scalar value of the point in the cell which has the highest
-function value.
-       */
-      template <typename dataType, typename triangulationType>
-      dataType scalarMax(const Cell &cell,
-                         const dataType *const scalars,
-                         const triangulationType &triangulation) const;
-
-      /**
-       * Return the scalar value of the point in the cell which has the lowest
-function value.
-       */
-      template <typename dataType, typename triangulationType>
-      dataType scalarMin(const Cell &cell,
-                         const dataType *const scalars,
-                         const triangulationType &triangulation) const;
-
-      /**
        * Compute the difference of function values of a pair of cells.
        */
       template <typename dataType, typename triangulationType>
       dataType getPersistence(const Cell &up,
                               const Cell &down,
-                              const dataType *scalars,
+                              const dataType *const scalars,
+                              const SimplexId *const offsets,
                               const triangulationType &triangulation) const;
 
       /**
        * Compute the initial gradient field of the input scalar function on the
 triangulation.
        */
-      template <typename idType, typename triangulationType>
+      template <typename triangulationType>
       int buildGradient(const triangulationType &triangulation);
 
       /**
        * Automatic detection of the PL critical points and simplification
 according to them.
        */
-      template <typename dataType, typename idType, typename triangulationType>
+      template <typename dataType, typename triangulationType>
       int reverseGradient(const triangulationType &triangulation,
                           const bool detectCriticalPoints = true);
 
       /**
        * Set the input scalar function.
        */
-      inline int setInputScalarField(const void *const data) {
+      inline void setInputScalarField(const void *const data) {
         inputScalarField_ = data;
-        return 0;
       }
 
       /**
@@ -439,9 +421,8 @@ according to them.
       /**
        * Set the input offset function.
        */
-      inline int setInputOffsets(const void *const data) {
+      inline void setInputOffsets(const SimplexId *const data) {
         inputOffsets_ = data;
-        return 0;
       }
 
       /**
@@ -585,13 +566,23 @@ in the gradient.
 
       /**
        * Get the vertex id of with the maximum scalar field value on
-       * the given cell. Compare offsets if scalar field is constant.
+       * the given cell.
        */
-      template <typename idType, typename triangulationType>
+      template <typename triangulationType>
       SimplexId
         getCellGreaterVertex(const Cell c,
-                             const idType *const offsets,
+                             const SimplexId *const offsets,
                              const triangulationType &triangulation) const;
+
+      /**
+       * Get the vertex id of with the minimum scalar field value on
+       * the given cell.
+       */
+      template <typename triangulationType>
+      SimplexId
+        getCellLowerVertex(const Cell c,
+                           const SimplexId *const offsets,
+                           const triangulationType &triangulation) const;
 
       /**
        * Build the geometric embedding of the given STL vector of cells.
@@ -601,7 +592,7 @@ in the gradient.
        * outputCriticalPoints_points_
        * inputScalarField_
        */
-      template <typename dataType, typename idType, typename triangulationType>
+      template <typename dataType, typename triangulationType>
       int setCriticalPoints(const std::vector<Cell> &criticalPoints,
                             std::vector<size_t> &nCriticalPointsByDim,
                             const triangulationType &triangulation);
@@ -610,7 +601,7 @@ in the gradient.
        * Detect the critical points and build their geometric embedding.
        * The output data pointers are modified accordingly.
        */
-      template <typename dataType, typename idType, typename triangulationType>
+      template <typename dataType, typename triangulationType>
       int setCriticalPoints(const triangulationType &triangulation);
 
       /**
@@ -656,10 +647,10 @@ in the gradient.
        * @return Lower star as 4 sets of cells (0-cells, 1-cells, 2-cells and
        * 3-cells)
        */
-      template <typename idType, typename triangulationType>
+      template <typename triangulationType>
       inline lowerStarType
         lowerStar(const SimplexId a,
-                  const idType *const offsets,
+                  const SimplexId *const offsets,
                   const triangulationType &triangulation) const;
 
       /**
@@ -702,8 +693,8 @@ in the gradient.
        * Grayscale Digital Images", V. Robins, P. J. Wood,
        * A. P. Sheppard
        */
-      template <typename idType, typename triangulationType>
-      int processLowerStars(const idType *const offsets,
+      template <typename triangulationType>
+      int processLowerStars(const SimplexId *const offsets,
                             const triangulationType &triangulation);
 
       /**
@@ -876,7 +867,7 @@ in the gradient.
        * Process the saddle connectors by increasing value of persistence until
 a given threshold is met.
        */
-      template <typename dataType, typename idType, typename triangulationType>
+      template <typename dataType, typename triangulationType>
       int filterSaddleConnectors(const bool allowBoundary,
                                  const triangulationType &triangulation);
 
@@ -941,7 +932,7 @@ gradient, false otherwise.
       std::vector<SimplexId> dmt2Saddle2PL_{};
 
       const void *inputScalarField_{};
-      const void *inputOffsets_{};
+      const SimplexId *inputOffsets_{};
 
       SimplexId outputCriticalPoints_numberOfPoints_{};
       std::vector<float> outputCriticalPoints_points_{};

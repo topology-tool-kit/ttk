@@ -434,8 +434,8 @@ namespace ttk {
       // Root (close last arc)
       // if several CC still the backbone is only in one.
       // But the root may not be the max node of the whole dataset: TODO
-      const idNode rootNode = makeNode(
-        (*scalars_->sortedVertices)[(isJT()) ? scalars_->size - 1 : 0]);
+      const idNode rootNode
+        = makeNode(scalars_->sortedVertices[(isJT()) ? scalars_->size - 1 : 0]);
       closeSuperArc(lastArc, rootNode);
       getSuperArc(lastArc)->setLastVisited(getNode(rootNode)->getVertexId());
 
@@ -513,57 +513,17 @@ namespace ttk {
 
     // ------------------------------------------------------------------------
 
-    template <typename scalarType, typename idType>
+    template <typename scalarType>
     void ftm::FTMTree_MT::sortInput(void) {
-      const auto &nbVertices = scalars_->size;
 
-      auto *sortedVect = scalars_->sortedVertices.get();
-      if(sortedVect == nullptr) {
-        sortedVect = new std::vector<SimplexId>(0);
-        scalars_->sortedVertices.reset(sortedVect);
-      } else {
-        sortedVect->clear();
-      }
-
-      auto indirect_sort = [&](const size_t &a, const size_t &b) {
-        return isLower<scalarType, idType>(a, b);
-      };
-
-      sortedVect->resize(nbVertices, 0);
-      std::iota(sortedVect->begin(), sortedVect->end(), SimplexId{0});
-
-      // #pragma omp parallel
-      // #pragma omp single
-      //    scalars_->qsort<SimplexId>(sortedVect->data(), 0, scalars_->size -1,
-      //    indirect_sort);
-
-#ifdef TTK_ENABLE_OPENMP
-#ifdef __clang__
-      std::cout << "Caution, outside GCC, sequential sort" << std::endl;
-      std::sort(sortedVect->begin(), sortedVect->end(), indirect_sort);
-#else
-      __gnu_parallel::sort(
-        sortedVect->begin(), sortedVect->end(), indirect_sort);
-#endif
-#else
-      std::sort(sortedVect->begin(), sortedVect->end(), indirect_sort);
-#endif
-
-      auto *mirrorVert = scalars_->mirrorVertices.get();
-      if(mirrorVert == nullptr) {
-        mirrorVert = new std::vector<SimplexId>(0);
-        scalars_->mirrorVertices.reset(mirrorVert);
-      } else {
-        mirrorVert->clear();
-      }
-
-      scalars_->mirrorVertices->resize(nbVertices);
+      const auto nbVertices = scalars_->size;
+      scalars_->sortedVertices.resize(nbVertices);
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for
 #endif
       for(SimplexId i = 0; i < nbVertices; i++) {
-        (*scalars_->mirrorVertices)[(*sortedVect)[i]] = i;
+        scalars_->sortedVertices[scalars_->offsets[i]] = i;
       }
     }
 

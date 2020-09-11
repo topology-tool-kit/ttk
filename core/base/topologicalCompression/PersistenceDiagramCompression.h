@@ -299,7 +299,7 @@ int ttk::TopologicalCompression::PerformSimplification(
   sortVertices(vertexNumber, array, inputOffsets.data(), vertsOrder.data(),
                this->threadNumber_);
 
-  status = topologicalSimplification.execute<double, int>(
+  status = topologicalSimplification.execute<double>(
     inArray.data(), array, critConstraints.data(), vertsOrder.data(),
     decompressedOffsets_.data(), nbConstraints, triangulation);
 
@@ -390,7 +390,7 @@ int ttk::TopologicalCompression::computePersistencePairs(
   ftmTreePP.setTreeType(ftm::TreeType::Join_Split);
   ftmTreePP.setVertexSoSoffsets(voffsets.data());
   ftmTreePP.setThreadNumber(threadNumber_);
-  ftmTreePP.build<dataType, SimplexId>(&triangulation);
+  ftmTreePP.build<dataType>(&triangulation);
   ftmTreePP.setSegmentation(false);
   ftmTreePP.computePersistencePairs<dataType>(JTPairs, true);
   ftmTreePP.computePersistencePairs<dataType>(STPairs, false);
@@ -398,11 +398,11 @@ int ttk::TopologicalCompression::computePersistencePairs(
   return 0;
 }
 
-template <typename dataType, typename idType, typename triangulationType>
+template <typename dataType, typename triangulationType>
 int ttk::TopologicalCompression::compressForPersistenceDiagram(
   int vertexNumber,
   const dataType *const inputData,
-  const idType *const inputOffsets,
+  const SimplexId *const inputOffsets,
   dataType *outputData,
   const double &tol,
   const triangulationType &triangulation) {
@@ -573,7 +573,7 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
     if(UseTopologicalSimplification) {
       compressedOffsets_.resize(vertexNumber);
       int status = 0;
-      status = topologicalSimplification.execute<dataType, SimplexId>(
+      status = topologicalSimplification.execute<dataType>(
         inputData, outputData, simplifiedConstraints.data(), inputOffsets,
         compressedOffsets_.data(), nbCrit, triangulation);
       if(status != 0) {
