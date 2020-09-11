@@ -166,6 +166,14 @@ namespace ttk {
       // offset
       // .....................{
 
+      /**
+       * @pre For this function to behave correctly in the absence of
+       * the VTK wrapper, ttk::preconditionOrderArray() needs to be
+       * called to fill the @p offsets buffer prior to any
+       * computation (the VTK wrapper already includes a mecanism to
+       * automatically generate such a preconditioned buffer).
+       * @see examples/c++/main.cpp for an example use.
+       */
       inline void setVertexSoSoffsets(const SimplexId *const offsets) {
         scalars_->sosOffsets = offsets;
       }

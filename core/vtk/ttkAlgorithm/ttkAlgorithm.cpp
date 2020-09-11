@@ -358,10 +358,9 @@ vtkDataArray *ttkAlgorithm::GetOrderArray(vtkDataSet *const inputData,
       newOrderArray->SetNumberOfTuples(nVertices);
 
       switch(scalarArray->GetDataType()) {
-        vtkTemplateMacro(ttk::sortVertices(
+        vtkTemplateMacro(ttk::preconditionOrderArray(
           nVertices,
           static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(scalarArray)),
-          static_cast<int *>(nullptr),
           static_cast<ttk::SimplexId *>(
             ttkUtils::GetVoidPointer(newOrderArray)),
           this->threadNumber_));

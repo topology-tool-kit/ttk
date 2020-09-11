@@ -178,21 +178,24 @@ int main(int argc, char **argv) {
 
   // computing some elevation
   std::vector<float> height(pointSet.size() / 3);
-  std::vector<ttk::SimplexId> offsets(height.size());
   int vertexId = 0;
   // use the z-coordinate here
   for(int i = 2; i < (int)pointSet.size(); i += 3) {
     height[vertexId] = pointSet[i];
-    offsets[vertexId] = vertexId;
     vertexId++;
   }
+
+  // order array: every vertex sorted according to the elevation field
+  std::vector<ttk::SimplexId> order(height.size());
+  // precondition/fill in the order array according to the elevation field
+  ttk::preconditionOrderArray(height.size(), height.data(), order.data());
 
   // 2. computing the persistence curve
   ttk::PersistenceCurve curve;
   std::vector<std::pair<float, ttk::SimplexId>> outputCurve;
   curve.preconditionTriangulation(&triangulation);
   curve.setOutputCTPlot(&outputCurve);
-  curve.execute<float>(height.data(), offsets.data(), &triangulation);
+  curve.execute<float>(height.data(), order.data(), &triangulation);
 
   // 3. computing the persitence diagram
   ttk::PersistenceDiagram diagram;
@@ -201,12 +204,11 @@ int main(int argc, char **argv) {
     diagramOutput;
   diagram.preconditionTriangulation(&triangulation);
   diagram.execute<float>(
-    diagramOutput, height.data(), offsets.data(), &triangulation);
+    diagramOutput, height.data(), order.data(), &triangulation);
 
   // 4. selecting the critical point pairs
   std::vector<float> simplifiedHeight = height;
-  std::vector<ttk::SimplexId> authorizedCriticalPoints,
-    simplifiedOffsets = offsets;
+  std::vector<ttk::SimplexId> authorizedCriticalPoints, simplifiedOrder = order;
   for(int i = 0; i < (int)diagramOutput.size(); i++) {
     double persistence = std::get<4>(diagramOutput[i]);
     if(persistence > 0.05) {
@@ -220,8 +222,8 @@ int main(int argc, char **argv) {
   ttk::TopologicalSimplification simplification;
   simplification.preconditionTriangulation(&triangulation);
   simplification.execute<float>(height.data(), simplifiedHeight.data(),
-                                authorizedCriticalPoints.data(), offsets.data(),
-                                simplifiedOffsets.data(),
+                                authorizedCriticalPoints.data(), order.data(),
+                                simplifiedOrder.data(),
                                 authorizedCriticalPoints.size(), triangulation);
 
   // assign the simplified values to the input mesh
@@ -263,7 +265,7 @@ int main(int argc, char **argv) {
     mscSegmentation(triangulation.getNumberOfVertices(), -1);
   morseSmaleComplex.preconditionTriangulation(&triangulation);
   morseSmaleComplex.setInputScalarField(simplifiedHeight.data());
-  morseSmaleComplex.setInputOffsets(simplifiedOffsets.data());
+  morseSmaleComplex.setInputOffsets(simplifiedOrder.data());
   morseSmaleComplex.setOutputMorseComplexes(ascendingSegmentation.data(),
                                             descendingSegmentation.data(),
                                             mscSegmentation.data());
