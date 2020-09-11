@@ -472,7 +472,7 @@ int DiscreteGradient::initializeSaddleSaddleConnections1(
   }
 
   this->printMsg(
-    " Initialization step", 1.0, t.getElapsedTime(), this->threadNumber_);
+    " Initialization step #1", 1.0, t.getElapsedTime(), this->threadNumber_);
 
   return 0;
 }
@@ -496,7 +496,7 @@ int DiscreteGradient::orderSaddleSaddleConnections1(
   }
 
   this->printMsg(
-    " Ordering of the vpaths", 1.0, t.getElapsedTime(), this->threadNumber_);
+    " Ordering of the vpaths #1", 1.0, t.getElapsedTime(), this->threadNumber_);
 
   return 0;
 }
@@ -881,8 +881,8 @@ int DiscreteGradient::processSaddleSaddleConnections1(
     ++numberOfIterations;
   }
 
-  this->printMsg(
-    " Processing of the vpaths", 1.0, t.getElapsedTime(), this->threadNumber_);
+  this->printMsg(" Processing of the vpaths #1", 1.0, t.getElapsedTime(),
+                 this->threadNumber_);
 
   return 0;
 }
@@ -934,7 +934,7 @@ int DiscreteGradient::simplifySaddleSaddleConnections1(
     isRemovableSaddle1, isRemovableSaddle2, vpaths, dmt_criticalPoints,
     saddle1Index, saddle2Index, triangulation);
 
-  this->printMsg("Saddle-Saddle pairs simplified", 1.0, t.getElapsedTime(),
+  this->printMsg("Saddle-Saddle pairs simplified #1", 1.0, t.getElapsedTime(),
                  this->threadNumber_);
 
   return 0;
@@ -1065,7 +1065,7 @@ int DiscreteGradient::initializeSaddleSaddleConnections2(
   }
 
   this->printMsg(
-    " Initialization step", 1.0, t.getElapsedTime(), this->threadNumber_);
+    " Initialization step #2", 1.0, t.getElapsedTime(), this->threadNumber_);
 
   return 0;
 }
@@ -1089,7 +1089,7 @@ int DiscreteGradient::orderSaddleSaddleConnections2(
   }
 
   this->printMsg(
-    " Ordering of the vpaths", 1.0, t.getElapsedTime(), this->threadNumber_);
+    " Ordering of the vpaths #2", 1.0, t.getElapsedTime(), this->threadNumber_);
 
   return 0;
 }
@@ -1474,8 +1474,8 @@ int DiscreteGradient::processSaddleSaddleConnections2(
     ++numberOfIterations;
   }
 
-  this->printMsg(
-    " Processing of the vpaths", 1.0, t.getElapsedTime(), this->threadNumber_);
+  this->printMsg(" Processing of the vpaths #2", 1.0, t.getElapsedTime(),
+                 this->threadNumber_);
 
   return 0;
 }
@@ -1527,7 +1527,7 @@ int DiscreteGradient::simplifySaddleSaddleConnections2(
     isRemovableSaddle1, isRemovableSaddle2, vpaths, dmt_criticalPoints,
     saddle1Index, saddle2Index, triangulation);
 
-  this->printMsg("Saddle-Saddle pairs simplified", 1.0, t.getElapsedTime(),
+  this->printMsg("Saddle-Saddle pairs simplified #2", 1.0, t.getElapsedTime(),
                  this->threadNumber_);
 
   return 0;
