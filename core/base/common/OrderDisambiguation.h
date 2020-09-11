@@ -1,6 +1,7 @@
 #pragma once
 
 #include <DataTypes.h>
+#include <Debug.h>
 
 #include <algorithm>
 #include <vector>
@@ -67,5 +68,23 @@ namespace ttk {
     for(size_t i = 0; i < sortedVertices.size(); ++i) {
       order[sortedVertices[i]] = i;
     }
+  }
+
+  /**
+   * @brief Precondition an order array to be consumed by the base layer API
+   *
+   * @param[in] nVerts number of vertices
+   * @param[in] scalars pointer to scalar field buffer of size @p nVerts
+   * @param[out] order pointer to pre-allocated order buffer of size @p nVerts
+   * @param[in] nThreads number of threads to be used
+   */
+  template <typename scalarType>
+  inline void preconditionOrderArray(const size_t nVerts,
+                                     const scalarType *const scalars,
+                                     SimplexId *const order,
+                                     const int nThreads
+                                     = ttk::globalThreadNumber_) {
+    ttk::sortVertices(
+      nVerts, scalars, static_cast<int *>(nullptr), order, nThreads);
   }
 } // namespace ttk
