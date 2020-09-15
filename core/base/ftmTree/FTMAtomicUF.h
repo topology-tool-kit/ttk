@@ -141,6 +141,13 @@ namespace ttk {
         parent_ = parent;
       }
 
+      inline void resetParent() {
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp atomic write
+#endif
+        parent_ = this;
+      }
+
       static inline AtomicUF *makeUnion(AtomicUF *uf0, AtomicUF *uf1) {
         uf0 = uf0->find();
         uf1 = uf1->find();
