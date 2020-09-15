@@ -232,12 +232,12 @@ int ttkTrackingFromFields::RequestData(vtkInformation *request,
   this->setInputScalars(inputFields);
 
   // 0'. get offsets
-  std::vector<SimplexId *> inputOrders(fieldNumber);
+  std::vector<ttk::SimplexId *> inputOrders(fieldNumber);
   for(int i = 0; i < fieldNumber; ++i) {
     this->SetInputArrayToProcess(0, 0, 0, 0, inputScalarFields[i]->GetName());
     auto orderArray = this->GetOrderArray(input, 0, 0, false);
     inputOrders[i]
-      = static_cast<SimplexId *>(ttkUtils::GetVoidPointer(orderArray));
+      = static_cast<ttk::SimplexId *>(ttkUtils::GetVoidPointer(orderArray));
   }
   this->setInputOffsets(inputOrders);
 
