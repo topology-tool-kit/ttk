@@ -4,11 +4,10 @@
 
 using namespace std;
 using namespace ttk;
-using namespace dcg;
 
-vtkStandardNewMacro(ttkPersistenceDiagram)
+vtkStandardNewMacro(ttkPersistenceDiagram);
 
-  ttkPersistenceDiagram::ttkPersistenceDiagram() {
+ttkPersistenceDiagram::ttkPersistenceDiagram() {
   SetNumberOfInputPorts(1);
   SetNumberOfOutputPorts(1);
 }
@@ -464,9 +463,6 @@ int ttkPersistenceDiagram::RequestData(vtkInformation *request,
 
   if(this->GetMTime() < inputScalars->GetMTime())
     computeDiagram_ = true;
-
-  vector<tuple<Cell, Cell>> dmt_pairs_temp;
-  setDMTPairs(&dmt_pairs_temp);
 
   scalarDataType = inputScalars->GetDataType();
 

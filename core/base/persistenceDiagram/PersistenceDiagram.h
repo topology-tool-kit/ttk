@@ -115,11 +115,6 @@ namespace ttk {
                 const triangulationType *triangulation);
 
     inline void
-      setDMTPairs(std::vector<std::tuple<dcg::Cell, dcg::Cell>> *data) {
-      dmt_pairs = data;
-    }
-
-    inline void
       preconditionTriangulation(AbstractTriangulation *triangulation) {
       if(triangulation) {
         triangulation->preconditionBoundaryVertices();
@@ -133,8 +128,6 @@ namespace ttk {
     }
 
   protected:
-    std::vector<std::tuple<dcg::Cell, dcg::Cell>> *dmt_pairs;
-
     bool ComputeSaddleConnectors{false};
     ftm::FTMTreePP contourTree_{};
     MorseSmaleComplex3D morseSmaleComplex_{};
