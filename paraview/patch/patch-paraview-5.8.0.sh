@@ -87,6 +87,16 @@ $PATCH_BIN Qt/ApplicationComponents/pqExampleVisualizationsDialog.cxx \
 $PATCH_BIN Remoting/Core/vtkPVFileInformation.cxx \
   < "${PATCH_DIR}/paraview-5.8.0-vtkPVFileInformation.cxx.patch"
 
+## CPack variables for packaging meta-data
+$PATCH_BIN -p1 \
+  < "${PATCH_DIR}/paraview-5.8.0-CPack-CMakeLists.txt.patch"
+$PATCH_BIN -p1 \
+  < "${PATCH_DIR}/paraview-5.8.0-build-options-CMakeLists.txt.patch"
+$PATCH_BIN -p1 \
+  < "${PATCH_DIR}/paraview-5.8.0-numpy_interface-warning.patch"
+mkdir -p .github/workflows/
+cp ${PATCH_DIR}/main.yml .github/workflows
+
 echo "Finished patching."
 
 cd "$PATCH_DIR" || exit 4
