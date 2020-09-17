@@ -1,3 +1,4 @@
+/// TODO 12: Add your information
 /// \author Your Name Here <Your Email Address Here>.
 /// \date The Date Here.
 ///
@@ -44,7 +45,7 @@ int main(int argc, char **argv) {
     parser.setOption("l", &listArrays, "List available arrays");
 
     // -------------------------------------------------------------------------
-    // TODO 1: Declare custom arguments and options
+    // TODO 13: Declare custom arguments and options
     // -------------------------------------------------------------------------
     parser.setArgument("O", &outputArrayName, "Output array name", true);
 
@@ -63,7 +64,7 @@ int main(int argc, char **argv) {
   auto helloWorld = vtkSmartPointer<ttkHelloWorld>::New();
 
   // ---------------------------------------------------------------------------
-  // TODO 2: Pass custom arguments and options to the module
+  // TODO 14: Pass custom arguments and options to the module
   // ---------------------------------------------------------------------------
   // helloWorld->SetOutputArrayName(outputArrayName);
 
