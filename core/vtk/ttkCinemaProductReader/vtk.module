@@ -3,3 +3,7 @@ NAME
 DEPENDS
   ttkAlgorithm
   ttkTopologicalCompressionReader
+PRIVATE_DEPENDS
+  VTK::IOImage
+  VTK::IOLegacy
+  VTK::IOXML

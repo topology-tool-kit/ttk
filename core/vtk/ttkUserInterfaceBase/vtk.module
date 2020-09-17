@@ -5,3 +5,7 @@ DEPENDS
   VTK::RenderingOpenGL2
 PRIVATE_DEPENDS
   VTK::CommonCore
+  VTK::InteractionStyle
+  VTK::IOExport
+  VTK::IOImage
+  VTK::FiltersGeometry

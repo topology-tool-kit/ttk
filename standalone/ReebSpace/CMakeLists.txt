@@ -7,6 +7,7 @@ if(TARGET ttkReebSpace)
   target_link_libraries(${PROJECT_NAME}
     PRIVATE
       ttkReebSpace
+      VTK::IOXML
     )
   set_target_properties(${PROJECT_NAME}
     PROPERTIES
