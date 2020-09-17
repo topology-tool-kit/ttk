@@ -104,7 +104,9 @@ void addValuePass(vtkDataSet *object,
     size_t nComponents = field->GetNumberOfComponents();
     for(size_t c = 0; c < nComponents; c++) {
       auto valuePass = vtkSmartPointer<vtkValuePass>::New();
+#if VTK_MAJOR_VERSION < 8 || (VTK_MAJOR_VERSION == 8 && VTK_MINOR_VERSION < 90)
       valuePass->SetRenderingMode(vtkValuePass::FLOATING_POINT);
+#endif
       valuePass->SetInputArrayToProcess(fieldType == 0
                                           ? VTK_SCALAR_MODE_USE_POINT_FIELD_DATA
                                           : VTK_SCALAR_MODE_USE_CELL_FIELD_DATA,
