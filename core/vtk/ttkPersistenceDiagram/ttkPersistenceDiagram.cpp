@@ -217,7 +217,7 @@ int ttkPersistenceDiagram::dispatch(
   const triangulationType *triangulation) {
 
   int status{};
-  if(this->computeDiagram_) {
+  if(this->computeDiagram_ || CTDiagram_.empty()) {
     CTDiagram_.clear();
     status = this->execute(CTDiagram_, inputScalars, inputOrder, triangulation);
 
