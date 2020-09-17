@@ -7,9 +7,10 @@ name: CI
 on:
   push:
     branch-ignore:
-      - 'master'
+      - '*'
     tags:
-      - 'latest'
+      - 'v*'
+      - 'dev*'
 
 env:
   PV_PLUGIN_PATH: /usr/lib/paraview-5.8/plugins/TopologyToolKit
