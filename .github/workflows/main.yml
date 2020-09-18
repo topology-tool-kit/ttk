@@ -1,0 +1,198 @@
+# This is a basic workflow to help you get started with Actions
+
+name: CI
+
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the master branch
+on:
+  push:
+    branch-ignore:
+      - '*'
+    tags:
+      - 'v*'
+      - 'dev*'
+
+env:
+  PV_PLUGIN_PATH: /usr/lib/paraview-5.8/plugins/TopologyToolKit
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-18.04, ubuntu-20.04]
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+    - uses: actions/checkout@v2
+
+    - name: Install Ubuntu dependencies
+      run: |
+        sudo apt update
+        # TTK dependencies
+        sudo apt install -y \
+          libboost-system-dev \
+          libeigen3-dev \
+          libgraphviz-dev \
+          libsqlite3-dev \
+          graphviz \
+          python3-sklearn \
+          zlib1g-dev \
+          dpkg-dev
+
+    - name: Install Spectra dependency
+      run: |
+        git clone --depth 1 https://github.com/yixuan/spectra
+        mkdir build_spectra && cd build_spectra
+        cmake ../spectra
+        sudo make install
+
+    - name: Install ZFP dependency
+      run: |
+        git clone --depth 1 https://github.com/LLNL/zfp
+        mkdir build_zfp && cd build_zfp
+        cmake \
+          -DBUILD_SHARED_LIBS=OFF \
+          -DBUILD_TESTING=OFF \
+          ../zfp
+        sudo make -j$(nproc) install
+
+    - uses: dsaltares/fetch-gh-release-asset@master
+      with:
+        repo: "topology-tool-kit/ttk-paraview"
+        version: "tags/v5.8.0"
+        file: "ttk-paraview-${{ matrix.os }}.deb"
+
+    - name: Install ParaView .deb
+      run: |
+        sudo apt install ./ttk-paraview-${{ matrix.os }}.deb
+
+    - name: Create & configure TTK build directory
+      run: |
+        mkdir build
+        cd build
+        cmake \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DCMAKE_INSTALL_PREFIX=/usr \
+          -DTTK_BUILD_PARAVIEW_PLUGINS=TRUE \
+          -DTTK_BUILD_VTK_WRAPPERS=TRUE \
+          -DTTK_BUILD_STANDALONE_APPS=TRUE \
+          -DTTK_ENABLE_KAMIKAZE=TRUE \
+          -DTTK_ENABLE_DOUBLE_TEMPLATING=TRUE \
+          -DTTK_ENABLE_CPU_OPTIMIZATION=FALSE \
+          -DTTK_ENABLE_SHARED_BASE_LIBRARIES=TRUE \
+          $GITHUB_WORKSPACE
+
+    - name: Build TTK
+      run: |
+        cd build
+        make -j$(nproc) package
+
+    - name: Update package informations
+      run: |
+        cd build
+        # unpack deb package to access control file
+        mkdir tmp
+        dpkg-deb --extract ttk.deb tmp
+        dpkg-deb --control ttk.deb tmp/DEBIAN
+        # modify control file, remove libgcc-s1 dependency
+        sed 's/libgcc-s1[^,]*, //g' -i tmp/DEBIAN/control
+        # build updated deb package
+        dpkg -b tmp ttk-${{ matrix.os }}.deb
+
+    - name: Upload TTK .deb package
+      uses: actions/upload-artifact@v2
+      with:
+        name: ttk-${{ matrix.os }}.deb
+        path: build/ttk-${{ matrix.os }}.deb
+
+  test:
+    needs: build
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-18.04, ubuntu-20.04]
+    steps:
+    - uses: actions/checkout@v2
+
+    - uses: dsaltares/fetch-gh-release-asset@master
+      with:
+        repo: "topology-tool-kit/ttk-paraview"
+        version: "tags/v5.8.0"
+        file: "ttk-paraview-${{ matrix.os }}.deb"
+
+    - name: Fetch TTK .deb artifact
+      uses: actions/download-artifact@v2
+      with:
+        name: ttk-${{ matrix.os }}.deb
+
+    - name: Install generated .deb packages
+      run: |
+        sudo apt update
+        sudo apt install ./ttk-paraview-${{ matrix.os }}.deb
+        sudo apt install ./ttk-${{ matrix.os }}.deb
+
+    - name: Test TTK examples
+      run: |
+        source /etc/profile
+        # base layer
+        cd $GITHUB_WORKSPACE/examples/c++
+        mkdir build && cd build
+        cmake ..
+        make
+        ./ttkExample-c++ -i ../../data/inputData.off
+        # VTK layer
+        cd $GITHUB_WORKSPACE/examples/vtk-c++
+        mkdir build &&  cd build
+        cmake ..
+        make
+        ./ttkExample-vtk-c++ -i ../../data/inputData.vtu
+        # pure Python
+        cd $GITHUB_WORKSPACE/examples/python
+        python3 example.py ../data/inputData.vtu
+        # pvpython
+        cd $GITHUB_WORKSPACE/examples/pvpython
+        pvpython example.py ../data/inputData.vtu
+
+  create-release:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        draft: false
+        prerelease: true
+
+    - name: Fetch all uploaded artifacts
+      uses: actions/download-artifact@v2
+
+    - name: Upload Ubuntu Bionic .deb as Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ttk-ubuntu-18.04.deb/ttk-ubuntu-18.04.deb
+        asset_name: ttk-ubuntu-18.04.deb
+        asset_content_type: application/vnd.debian.binary-package
+
+    - name: Upload Ubuntu Focal .deb as Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ttk-ubuntu-20.04.deb/ttk-ubuntu-20.04.deb
+        asset_name: ttk-ubuntu-20.04.deb
+        asset_content_type: application/vnd.debian.binary-package
