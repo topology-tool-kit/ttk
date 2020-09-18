@@ -1,5 +1,6 @@
 #include <ttkCinemaQuery.h>
 
+#include <vtkVersion.h>
 #include <vtkInformation.h>
 
 #include <vtkDelimitedTextReader.h>

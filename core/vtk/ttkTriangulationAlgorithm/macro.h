@@ -1,5 +1,6 @@
 #pragma once
 
+#include <vtkVersion.h>
 #include <vtkIdTypeArray.h>
 #include <vtkImageData.h>
 #include <vtkInformationVector.h>
