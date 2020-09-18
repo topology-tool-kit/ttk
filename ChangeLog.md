@@ -10,6 +10,7 @@
 - New module API (simpler, clearer, more convenient)
 - Performance updates for the Morse-Smale complex (improved worstcase runtime with processlowerStar, IEEE PAMI 2011)
 - Order-based simulation of simplicity (big performance updates)
+- Fuzzy Contour Trees: Alignment and Joint Layout of Multiple Contour Trees (EuroVis 2020)
 
 
 ### 0.9.8.9
