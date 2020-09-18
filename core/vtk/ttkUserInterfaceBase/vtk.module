@@ -2,10 +2,10 @@ NAME
  ttkUserInterfaceBase
 DEPENDS
   VTK::FiltersCore
-  VTK::RenderingOpenGL2
-PRIVATE_DEPENDS
-  VTK::CommonCore
+  VTK::FiltersGeometry
   VTK::InteractionStyle
   VTK::IOExport
   VTK::IOImage
-  VTK::FiltersGeometry
+  VTK::RenderingOpenGL2
+PRIVATE_DEPENDS
+  VTK::CommonCore
