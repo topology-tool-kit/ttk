@@ -35,9 +35,9 @@
 namespace ttk {
   template <typename dataType>
   struct Compare {
-    constexpr bool operator()(std::pair<int, dataType> const &a,
-                              std::pair<int, dataType> const &b) const
-      noexcept {
+    constexpr bool
+      operator()(std::pair<int, dataType> const &a,
+                 std::pair<int, dataType> const &b) const noexcept {
       return a.second > b.second;
     }
   };

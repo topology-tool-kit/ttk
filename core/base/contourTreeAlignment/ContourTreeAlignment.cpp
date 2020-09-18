@@ -1234,9 +1234,7 @@ AlignmentTree *ttk::ContourTreeAlignment::traceAlignmentTree(BinaryTree *t1,
   if(t2 == NULL)
     return traceNullAlignment(t1, true);
 
-  auto id = [this](BinaryTree *t) {
-    return t == NULL ? 0 : t->id;
-  };
+  auto id = [this](BinaryTree *t) { return t == NULL ? 0 : t->id; };
 
   if(memT[t1->id][t2->id] == editCost(t1, t2) + memF[t1->id][t2->id]) {
 
@@ -1314,11 +1312,10 @@ AlignmentTree *ttk::ContourTreeAlignment::traceAlignmentTree(BinaryTree *t1,
     return res;
   }
 
-  if(
-    memT[t1->id][t2->id]
-    == editCost(NULL, t2) + memT[0][id(t2->child2)]
-         + memT[t1->id][id(
-             t2->child1)] /* && t2->type != maxNode && t2->type != minNode */) {
+  if(memT[t1->id][t2->id]
+     == editCost(NULL, t2) + memT[0][id(t2->child2)]
+          + memT[t1->id][id(
+            t2->child1)] /* && t2->type != maxNode && t2->type != minNode */) {
 
     AlignmentTree *resChild1 = traceAlignmentTree(t1, t2->child1, memT, memF);
     AlignmentTree *resChild2 = traceNullAlignment(t2->child2, false);
@@ -1338,11 +1335,10 @@ AlignmentTree *ttk::ContourTreeAlignment::traceAlignmentTree(BinaryTree *t1,
     return res;
   }
 
-  if(
-    memT[t1->id][t2->id]
-    == editCost(NULL, t2) + memT[0][id(t2->child1)]
-         + memT[t1->id][id(
-             t2->child2)] /* && t2->type != maxNode && t2->type != minNode */) {
+  if(memT[t1->id][t2->id]
+     == editCost(NULL, t2) + memT[0][id(t2->child1)]
+          + memT[t1->id][id(
+            t2->child2)] /* && t2->type != maxNode && t2->type != minNode */) {
 
     AlignmentTree *resChild1 = traceAlignmentTree(t1, t2->child2, memT, memF);
     AlignmentTree *resChild2 = traceNullAlignment(t2->child1, false);
@@ -1383,9 +1379,7 @@ std::vector<AlignmentTree *> ttk::ContourTreeAlignment::traceAlignmentForest(
       res.push_back(traceNullAlignment(t1->child2, true));
   }
 
-  auto id = [this](BinaryTree *t) {
-    return t == NULL ? 0 : t->id;
-  };
+  auto id = [this](BinaryTree *t) { return t == NULL ? 0 : t->id; };
 
   if(memF[t1->id][t2->id]
      == memT[id(t1->child1)][id(t2->child1)]

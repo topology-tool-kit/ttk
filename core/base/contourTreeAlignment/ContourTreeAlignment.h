@@ -264,7 +264,8 @@ int ttk::ContourTreeAlignment::execute(const vector<void *> &scalarsVP,
     this->printMsg("Input Tree " + std::to_string(t) + " topology:",
                    debug::Priority::VERBOSE);
     // this->printMsg("(cellDimension, vertexId0, vertexId1, scalarOfVertexId0,
-    // scalarOfVertexId1, regionSize, segmentationId)",debug::Priority::VERBOSE);
+    // scalarOfVertexId1, regionSize,
+    // segmentationId)",debug::Priority::VERBOSE);
 
     std::vector<std::vector<std::string>> tableLines;
     tableLines.push_back(

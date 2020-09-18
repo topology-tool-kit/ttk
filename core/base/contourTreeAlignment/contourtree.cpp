@@ -1,6 +1,6 @@
 #include "contourtree.h"
-#include <float.h>
 #include <cmath>
+#include <float.h>
 
 ContourTree::ContourTree(float *scalars,
                          int *regionSizes,
