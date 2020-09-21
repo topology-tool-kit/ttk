@@ -42,58 +42,8 @@ int ttkPersistenceDiagram::deleteDiagram() {
   return 0;
 }
 
-template <typename scalarType,
-          typename vtkSimplexArray,
-          class triangulationType>
-int ttkPersistenceDiagram::setPersistenceDiagramInfo(
-  ttk::SimplexId id,
-  vtkNew<vtkSimplexArray> &vertexIdentifierScalars,
-  vtkNew<vtkIntArray> &nodeTypeScalars,
-  vtkNew<vtkFloatArray> &coordsScalars,
-  const std::vector<std::tuple<ttk::SimplexId,
-                               ttk::CriticalType,
-                               ttk::SimplexId,
-                               ttk::CriticalType,
-                               scalarType,
-                               ttk::SimplexId>> &diagram,
-  vtkNew<vtkPoints> &points,
-  vtkIdType ids[3],
-  vtkDataArray *inputScalars,
-  const triangulationType *triangulation) {
-  double p[3] = {0, 0, 0};
-  const ttk::SimplexId a = std::get<0>(diagram[id]);
-  const ttk::SimplexId na
-    = static_cast<ttk::SimplexId>(std::get<1>(diagram[id]));
-  const ttk::SimplexId b = std::get<2>(diagram[id]);
-  const ttk::SimplexId nb
-    = static_cast<ttk::SimplexId>(std::get<3>(diagram[id]));
-
-  nodeTypeScalars->InsertTuple1(2 * id, na);
-  nodeTypeScalars->InsertTuple1(2 * id + 1, nb);
-
-  vertexIdentifierScalars->InsertTuple1(2 * id, a);
-  vertexIdentifierScalars->InsertTuple1(2 * id + 1, b);
-
-  float coords[3];
-  triangulation->getVertexPoint(a, coords[0], coords[1], coords[2]);
-  coordsScalars->InsertTuple3(2 * id, coords[0], coords[1], coords[2]);
-
-  triangulation->getVertexPoint(b, coords[0], coords[1], coords[2]);
-  coordsScalars->InsertTuple3(2 * id + 1, coords[0], coords[1], coords[2]);
-
-  p[0] = inputScalars->GetTuple1(a);
-  p[1] = inputScalars->GetTuple1(a);
-  ids[0] = points->InsertNextPoint(p);
-
-  p[0] = inputScalars->GetTuple1(a);
-  p[1] = inputScalars->GetTuple1(b);
-  ids[1] = points->InsertNextPoint(p);
-
-  return 0;
-}
-
 template <typename scalarType, class triangulationType>
-int ttkPersistenceDiagram::getPersistenceDiagram(
+int ttkPersistenceDiagram::setPersistenceDiagram(
   vtkUnstructuredGrid *outputCTPersistenceDiagram,
   ttk::ftm::TreeType treeType,
   const std::vector<std::tuple<ttk::SimplexId,
@@ -148,9 +98,32 @@ int ttkPersistenceDiagram::getPersistenceDiagram(
       const ttk::SimplexId type = std::get<5>(diagram[i]);
       maxPersistenceValue = std::max(persistenceValue, maxPersistenceValue);
 
-      setPersistenceDiagramInfo(i, vertexIdentifierScalars, nodeTypeScalars,
-                                coordsScalars, diagram, points, ids,
-                                inputScalars, triangulation);
+      std::array<double, 3> p{0, 0, 0};
+      const auto a = std::get<0>(diagram[i]);
+      const auto na = static_cast<ttk::SimplexId>(std::get<1>(diagram[i]));
+      const auto b = std::get<2>(diagram[i]);
+      const auto nb = static_cast<ttk::SimplexId>(std::get<3>(diagram[i]));
+
+      nodeTypeScalars->InsertTuple1(2 * i, na);
+      nodeTypeScalars->InsertTuple1(2 * i + 1, nb);
+
+      vertexIdentifierScalars->InsertTuple1(2 * i, a);
+      vertexIdentifierScalars->InsertTuple1(2 * i + 1, b);
+
+      std::array<float, 3> coords{};
+      triangulation->getVertexPoint(a, coords[0], coords[1], coords[2]);
+      coordsScalars->InsertTuple3(2 * i, coords[0], coords[1], coords[2]);
+
+      triangulation->getVertexPoint(b, coords[0], coords[1], coords[2]);
+      coordsScalars->InsertTuple3(2 * i + 1, coords[0], coords[1], coords[2]);
+
+      p[0] = inputScalars->GetTuple1(a);
+      p[1] = inputScalars->GetTuple1(a);
+      ids[0] = points->InsertNextPoint(p.data());
+
+      p[0] = inputScalars->GetTuple1(a);
+      p[1] = inputScalars->GetTuple1(b);
+      ids[1] = points->InsertNextPoint(p.data());
 
       // add cell data
       persistenceDiagram->InsertNextCell(VTK_LINE, 2, ids);
@@ -196,55 +169,8 @@ int ttkPersistenceDiagram::getPersistenceDiagram(
   return 0;
 }
 
-template <typename scalarType,
-          typename vtkSimplexArray,
-          class triangulationType>
-int ttkPersistenceDiagram::setPersistenceDiagramInfoInsideDomain(
-  ttk::SimplexId id,
-  vtkNew<vtkSimplexArray> &vertexIdentifierScalars,
-  vtkNew<vtkIntArray> &nodeTypeScalars,
-  vtkDataArray *birthScalars,
-  vtkDataArray *deathScalars,
-  const std::vector<std::tuple<ttk::SimplexId,
-                               ttk::CriticalType,
-                               ttk::SimplexId,
-                               ttk::CriticalType,
-                               scalarType,
-                               ttk::SimplexId>> &diagram,
-  vtkNew<vtkPoints> &points,
-  vtkIdType ids[3],
-  vtkDataArray *inputScalars,
-  const triangulationType *triangulation) {
-  float p[3];
-  const ttk::SimplexId a = std::get<0>(diagram[id]);
-  const ttk::SimplexId na
-    = static_cast<ttk::SimplexId>(std::get<1>(diagram[id]));
-  const ttk::SimplexId b = std::get<2>(diagram[id]);
-  const ttk::SimplexId nb
-    = static_cast<ttk::SimplexId>(std::get<3>(diagram[id]));
-  const double sa = inputScalars->GetTuple1(a);
-  const double sb = inputScalars->GetTuple1(b);
-
-  nodeTypeScalars->InsertTuple1(2 * id, na);
-  nodeTypeScalars->InsertTuple1(2 * id + 1, nb);
-  vertexIdentifierScalars->InsertTuple1(2 * id, a);
-  vertexIdentifierScalars->InsertTuple1(2 * id + 1, b);
-  birthScalars->InsertTuple1(2 * id, sa);
-  birthScalars->InsertTuple1(2 * id + 1, sa);
-  deathScalars->InsertTuple1(2 * id, sa);
-  deathScalars->InsertTuple1(2 * id + 1, sb);
-
-  triangulation->getVertexPoint(a, p[0], p[1], p[2]);
-  ids[0] = points->InsertNextPoint(p);
-
-  triangulation->getVertexPoint(b, p[0], p[1], p[2]);
-  ids[1] = points->InsertNextPoint(p);
-
-  return 0;
-}
-
 template <typename scalarType, class triangulationType>
-int ttkPersistenceDiagram::getPersistenceDiagramInsideDomain(
+int ttkPersistenceDiagram::setPersistenceDiagramInsideDomain(
   vtkUnstructuredGrid *outputCTPersistenceDiagram,
   ttk::ftm::TreeType treeType,
   const std::vector<std::tuple<ttk::SimplexId,
@@ -301,9 +227,28 @@ int ttkPersistenceDiagram::getPersistenceDiagramInsideDomain(
       const ttk::SimplexId type = std::get<5>(diagram[i]);
       maxPersistenceValue = std::max(persistenceValue, maxPersistenceValue);
 
-      setPersistenceDiagramInfoInsideDomain(
-        i, vertexIdentifierScalars, nodeTypeScalars, birthScalars, deathScalars,
-        diagram, points, ids, inputScalars, triangulation);
+      std::array<float, 3> p{};
+      const auto a = std::get<0>(diagram[i]);
+      const auto na = static_cast<ttk::SimplexId>(std::get<1>(diagram[i]));
+      const auto b = std::get<2>(diagram[i]);
+      const auto nb = static_cast<ttk::SimplexId>(std::get<3>(diagram[i]));
+      const double sa = inputScalars->GetTuple1(a);
+      const double sb = inputScalars->GetTuple1(b);
+
+      nodeTypeScalars->InsertTuple1(2 * i, na);
+      nodeTypeScalars->InsertTuple1(2 * i + 1, nb);
+      vertexIdentifierScalars->InsertTuple1(2 * i, a);
+      vertexIdentifierScalars->InsertTuple1(2 * i + 1, b);
+      birthScalars->InsertTuple1(2 * i, sa);
+      birthScalars->InsertTuple1(2 * i + 1, sa);
+      deathScalars->InsertTuple1(2 * i, sa);
+      deathScalars->InsertTuple1(2 * i + 1, sb);
+
+      triangulation->getVertexPoint(a, p[0], p[1], p[2]);
+      ids[0] = points->InsertNextPoint(p.data());
+
+      triangulation->getVertexPoint(b, p[0], p[1], p[2]);
+      ids[1] = points->InsertNextPoint(p.data());
 
       // add cell data
       persistenceDiagram->InsertNextCell(VTK_LINE, 2, ids);
@@ -381,11 +326,11 @@ int ttkPersistenceDiagram::dispatch(
   }
 
   if(ShowInsideDomain)
-    ret = getPersistenceDiagramInsideDomain<VTK_TT>(
+    ret = setPersistenceDiagramInsideDomain<VTK_TT>(
       outputCTPersistenceDiagram, ttk::ftm::TreeType::Contour, *CTDiagram,
       inputScalarDataArray, triangulation);
   else
-    ret = getPersistenceDiagram<VTK_TT>(outputCTPersistenceDiagram,
+    ret = setPersistenceDiagram<VTK_TT>(outputCTPersistenceDiagram,
                                         ttk::ftm::TreeType::Contour, *CTDiagram,
                                         inputScalarDataArray, triangulation);
 #ifndef TTK_ENABLE_KAMIKAZE

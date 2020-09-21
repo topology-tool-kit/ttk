@@ -88,27 +88,8 @@ public:
   }
   vtkGetMacro(ShowInsideDomain, int);
 
-  template <typename scalarType,
-            typename vtkSimplexArray,
-            class triangulationType>
-  int setPersistenceDiagramInfo(
-    ttk::SimplexId id,
-    vtkNew<vtkSimplexArray> &vertexIdentifierScalars,
-    vtkNew<vtkIntArray> &nodeTypeScalars,
-    vtkNew<vtkFloatArray> &coordsScalars,
-    const std::vector<std::tuple<ttk::SimplexId,
-                                 ttk::CriticalType,
-                                 ttk::SimplexId,
-                                 ttk::CriticalType,
-                                 scalarType,
-                                 ttk::SimplexId>> &diagram,
-    vtkNew<vtkPoints> &points,
-    vtkIdType ids[3],
-    vtkDataArray *inputScalars,
-    const triangulationType *triangulation);
-
   template <typename scalarType, class triangulationType>
-  int getPersistenceDiagram(
+  int setPersistenceDiagram(
     vtkUnstructuredGrid *outputCTPersistenceDiagram,
     ttk::ftm::TreeType treeType,
     const std::vector<std::tuple<ttk::SimplexId,
@@ -120,28 +101,8 @@ public:
     vtkDataArray *inputScalars,
     const triangulationType *triangulation);
 
-  template <typename scalarType,
-            typename vtkSimplexArray,
-            class triangulationType>
-  int setPersistenceDiagramInfoInsideDomain(
-    ttk::SimplexId id,
-    vtkNew<vtkSimplexArray> &vertexIdentifierScalars,
-    vtkNew<vtkIntArray> &nodeTypeScalars,
-    vtkDataArray *birthScalars,
-    vtkDataArray *deathScalars,
-    const std::vector<std::tuple<ttk::SimplexId,
-                                 ttk::CriticalType,
-                                 ttk::SimplexId,
-                                 ttk::CriticalType,
-                                 scalarType,
-                                 ttk::SimplexId>> &diagram,
-    vtkNew<vtkPoints> &points,
-    vtkIdType ids[3],
-    vtkDataArray *inputScalars,
-    const triangulationType *triangulation);
-
   template <typename scalarType, class triangulationType>
-  int getPersistenceDiagramInsideDomain(
+  int setPersistenceDiagramInsideDomain(
     vtkUnstructuredGrid *outputCTPersistenceDiagram,
     ttk::ftm::TreeType treeType,
     const std::vector<std::tuple<ttk::SimplexId,
