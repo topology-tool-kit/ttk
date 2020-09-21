@@ -1,3 +1,10 @@
+#include <vtkCellData.h>
+#include <vtkDataSet.h>
+#include <vtkDoubleArray.h>
+#include <vtkFloatArray.h>
+#include <vtkInformation.h>
+#include <vtkPointData.h>
+
 #include <ttkMacros.h>
 #include <ttkPersistenceDiagram.h>
 #include <ttkUtils.h>

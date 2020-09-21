@@ -42,21 +42,12 @@
 /// \sa ttkScalarFieldCriticalPoints
 /// \sa ttkTopologicalSimplification
 /// \sa ttk::PersistenceDiagram
-#ifndef _TTK_PERSISTENCEDIAGRAM_H
-#define _TTK_PERSISTENCEDIAGRAM_H
+
 #pragma once
 
 // VTK includes
-#include <vtkCellData.h>
 #include <vtkDataArray.h>
-#include <vtkDataSet.h>
-#include <vtkDoubleArray.h>
-#include <vtkFloatArray.h>
-#include <vtkInformation.h>
-#include <vtkInformationVector.h>
 #include <vtkNew.h>
-#include <vtkPointData.h>
-#include <vtkTable.h>
 #include <vtkUnstructuredGrid.h>
 
 // VTK Module
@@ -130,5 +121,3 @@ private:
   std::vector<ttk::PersistencePair> CTDiagram_{};
   int scalarDataType{0};
 };
-
-#endif // _TTK_PERSISTENCEDIAGRAM_H
