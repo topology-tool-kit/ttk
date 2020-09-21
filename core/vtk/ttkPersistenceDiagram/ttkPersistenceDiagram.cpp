@@ -2,6 +2,7 @@
 #include <vtkDataSet.h>
 #include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
+#include <vtkIdTypeArray.h>
 #include <vtkInformation.h>
 #include <vtkPointData.h>
 
@@ -42,108 +43,115 @@ int ttkPersistenceDiagram::setPersistenceDiagram(
   vtkDataArray *inputScalars,
   const triangulationType *triangulation) {
 
-  vtkNew<vtkPoints> points{};
   vtkNew<vtkUnstructuredGrid> persistenceDiagram{};
+
+  // point data arrays
 
   vtkNew<ttkSimplexIdTypeArray> vertexIdentifierScalars{};
   vertexIdentifierScalars->SetNumberOfComponents(1);
   vertexIdentifierScalars->SetName(ttk::VertexScalarFieldName);
+  vertexIdentifierScalars->SetNumberOfTuples(2 * diagram.size());
 
   vtkNew<vtkIntArray> nodeTypeScalars{};
   nodeTypeScalars->SetNumberOfComponents(1);
   nodeTypeScalars->SetName("CriticalType");
-
-  vtkNew<ttkSimplexIdTypeArray> pairIdentifierScalars{};
-  pairIdentifierScalars->SetNumberOfComponents(1);
-  pairIdentifierScalars->SetName("PairIdentifier");
-
-  vtkNew<vtkDoubleArray> persistenceScalars{};
-  persistenceScalars->SetNumberOfComponents(1);
-  persistenceScalars->SetName("Persistence");
-
-  vtkNew<vtkIntArray> extremumIndexScalars{};
-  extremumIndexScalars->SetNumberOfComponents(1);
-  extremumIndexScalars->SetName("PairType");
+  nodeTypeScalars->SetNumberOfTuples(2 * diagram.size());
 
   vtkNew<vtkFloatArray> coordsScalars{};
   coordsScalars->SetNumberOfComponents(3);
   coordsScalars->SetName("Coordinates");
+  coordsScalars->SetNumberOfTuples(2 * diagram.size());
+
+  // cell data arrays
+
+  vtkNew<ttkSimplexIdTypeArray> pairIdentifierScalars{};
+  pairIdentifierScalars->SetNumberOfComponents(1);
+  pairIdentifierScalars->SetName("PairIdentifier");
+  pairIdentifierScalars->SetNumberOfTuples(diagram.size());
+
+  vtkNew<vtkDoubleArray> persistenceScalars{};
+  persistenceScalars->SetNumberOfComponents(1);
+  persistenceScalars->SetName("Persistence");
+  persistenceScalars->SetNumberOfTuples(diagram.size());
+
+  vtkNew<vtkIntArray> extremumIndexScalars{};
+  extremumIndexScalars->SetNumberOfComponents(1);
+  extremumIndexScalars->SetName("PairType");
+  extremumIndexScalars->SetNumberOfTuples(diagram.size());
 
   const ttk::SimplexId minIndex = 0;
   const ttk::SimplexId saddleSaddleIndex = 1;
   const ttk::SimplexId maxIndex = triangulation->getCellVertexNumber(0) - 2;
 
-  const ttk::SimplexId diagramSize = diagram.size();
-  if(diagramSize) {
-    vtkIdType ids[2];
-    vtkIdType oldIds[2];
+  vtkNew<vtkPoints> points{};
+  points->SetNumberOfPoints(2 * diagram.size());
+  vtkNew<vtkIdTypeArray> offsets{}, connectivity{};
+  offsets->SetNumberOfComponents(1);
+  offsets->SetNumberOfTuples(diagram.size() + 1);
+  connectivity->SetNumberOfComponents(1);
+  connectivity->SetNumberOfTuples(2 * diagram.size());
 
-    double maxPersistenceValue = std::numeric_limits<double>::min();
-    oldIds[0] = 0;
-    for(ttk::SimplexId i = 0; i < diagramSize; ++i) {
-      const double persistenceValue = std::get<4>(diagram[i]);
-      const ttk::SimplexId type = std::get<5>(diagram[i]);
-      maxPersistenceValue = std::max(persistenceValue, maxPersistenceValue);
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(this->threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+  for(size_t i = 0; i < diagram.size(); ++i) {
+    const auto a = std::get<0>(diagram[i]);
+    const auto b = std::get<2>(diagram[i]);
+    const auto ta = std::get<1>(diagram[i]);
+    const auto tb = std::get<3>(diagram[i]);
+    const auto sa = inputScalars->GetTuple1(a);
+    const auto sb = inputScalars->GetTuple1(b);
 
-      std::array<double, 3> p{0, 0, 0};
-      const auto a = std::get<0>(diagram[i]);
-      const auto na = static_cast<ttk::SimplexId>(std::get<1>(diagram[i]));
-      const auto b = std::get<2>(diagram[i]);
-      const auto nb = static_cast<ttk::SimplexId>(std::get<3>(diagram[i]));
+    points->SetPoint(2 * i, sa, sa, 0);
+    points->SetPoint(2 * i + 1, sa, sb, 0);
+    connectivity->SetTuple1(2 * i, 2 * i);
+    connectivity->SetTuple1(2 * i + 1, 2 * i + 1);
+    offsets->SetTuple1(i, 2 * i);
 
-      nodeTypeScalars->InsertTuple1(2 * i, na);
-      nodeTypeScalars->InsertTuple1(2 * i + 1, nb);
+    // point data
+    vertexIdentifierScalars->SetTuple1(2 * i, a);
+    vertexIdentifierScalars->SetTuple1(2 * i + 1, b);
+    nodeTypeScalars->SetTuple1(2 * i, static_cast<ttk::SimplexId>(ta));
+    nodeTypeScalars->SetTuple1(2 * i + 1, static_cast<ttk::SimplexId>(tb));
+    std::array<float, 3> coords{};
+    triangulation->getVertexPoint(a, coords[0], coords[1], coords[2]);
+    coordsScalars->SetTuple3(2 * i, coords[0], coords[1], coords[2]);
+    triangulation->getVertexPoint(b, coords[0], coords[1], coords[2]);
+    coordsScalars->SetTuple3(2 * i + 1, coords[0], coords[1], coords[2]);
 
-      vertexIdentifierScalars->InsertTuple1(2 * i, a);
-      vertexIdentifierScalars->InsertTuple1(2 * i + 1, b);
-
-      std::array<float, 3> coords{};
-      triangulation->getVertexPoint(a, coords[0], coords[1], coords[2]);
-      coordsScalars->InsertTuple3(2 * i, coords[0], coords[1], coords[2]);
-
-      triangulation->getVertexPoint(b, coords[0], coords[1], coords[2]);
-      coordsScalars->InsertTuple3(2 * i + 1, coords[0], coords[1], coords[2]);
-
-      p[0] = inputScalars->GetTuple1(a);
-      p[1] = inputScalars->GetTuple1(a);
-      ids[0] = points->InsertNextPoint(p.data());
-
-      p[0] = inputScalars->GetTuple1(a);
-      p[1] = inputScalars->GetTuple1(b);
-      ids[1] = points->InsertNextPoint(p.data());
-
-      // add cell data
-      persistenceDiagram->InsertNextCell(VTK_LINE, 2, ids);
-      pairIdentifierScalars->InsertTuple1(i, i);
-      if(!i)
-        extremumIndexScalars->InsertTuple1(i, -1);
-      else {
-        switch(type) {
-          case 0:
-            extremumIndexScalars->InsertTuple1(i, minIndex);
-            break;
-
-          case 1:
-            extremumIndexScalars->InsertTuple1(i, saddleSaddleIndex);
-            break;
-
-          case 2:
-            extremumIndexScalars->InsertTuple1(i, maxIndex);
-            break;
-        }
+    // cell data
+    pairIdentifierScalars->SetTuple1(i, i);
+    persistenceScalars->SetTuple1(i, std::get<4>(diagram[i]));
+    if(i == 0) {
+      extremumIndexScalars->SetTuple1(i, -1);
+    } else {
+      const auto type = std::get<5>(diagram[i]);
+      if(type == 0) {
+        extremumIndexScalars->SetTuple1(i, minIndex);
+      } else if(type == 1) {
+        extremumIndexScalars->SetTuple1(i, saddleSaddleIndex);
+      } else if(type == 2) {
+        extremumIndexScalars->SetTuple1(i, maxIndex);
       }
-      persistenceScalars->InsertTuple1(i, persistenceValue);
     }
-    oldIds[1] = ids[0];
-
-    // add diag
-    persistenceDiagram->InsertNextCell(VTK_LINE, 2, oldIds);
-    pairIdentifierScalars->InsertTuple1(diagramSize, -1);
-    extremumIndexScalars->InsertTuple1(diagramSize, -1);
-    persistenceScalars->InsertTuple1(diagramSize, 2 * maxPersistenceValue);
   }
+  offsets->SetTuple1(diagram.size(), connectivity->GetNumberOfTuples());
 
+  vtkNew<vtkCellArray> cells{};
+  cells->SetData(offsets, connectivity);
   persistenceDiagram->SetPoints(points);
+  persistenceDiagram->SetCells(VTK_LINE, cells);
+
+  // add diagonal (first point -> last birth/penultimate point)
+  std::array<vtkIdType, 2> diag{0, 2 * (cells->GetNumberOfCells() - 1)};
+  persistenceDiagram->InsertNextCell(VTK_LINE, 2, diag.data());
+  pairIdentifierScalars->InsertTuple1(diagram.size(), -1);
+  extremumIndexScalars->InsertTuple1(diagram.size(), -1);
+  // persistence of min-max pair
+  const auto maxPersistence = std::get<4>(diagram[0]);
+  persistenceScalars->InsertTuple1(diagram.size(), 2 * maxPersistence);
+
+  // add data arrays
   persistenceDiagram->GetPointData()->AddArray(vertexIdentifierScalars);
   persistenceDiagram->GetPointData()->AddArray(nodeTypeScalars);
   persistenceDiagram->GetPointData()->AddArray(coordsScalars);
