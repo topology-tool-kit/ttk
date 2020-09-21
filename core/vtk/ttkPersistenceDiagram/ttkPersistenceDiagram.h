@@ -94,14 +94,6 @@ public:
     vtkDataArray *inputScalars,
     const triangulationType *triangulation);
 
-  template <typename VTK_TT, typename TTK_TT>
-  int dispatch(vtkUnstructuredGrid *outputCTPersistenceDiagram,
-               vtkDataArray *inputScalarDataArray,
-               const VTK_TT *inputScalars,
-               int inputOffsetsDataType,
-               const void *inputOffsets,
-               const TTK_TT *triangulation);
-
 protected:
   ttkPersistenceDiagram();
 

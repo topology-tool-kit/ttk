@@ -269,52 +269,6 @@ int ttkPersistenceDiagram::setPersistenceDiagramInsideDomain(
   return 0;
 }
 
-template <typename VTK_TT, typename TTK_TT>
-int ttkPersistenceDiagram::dispatch(
-  vtkUnstructuredGrid *outputCTPersistenceDiagram,
-  vtkDataArray *inputScalarDataArray,
-  const VTK_TT *inputScalars,
-  int inputOffsetsDataType,
-  const void *inputOffsets,
-  const TTK_TT *triangulation) {
-
-  int ret = 0;
-
-  if(computeDiagram_) {
-    CTDiagram_.clear();
-  }
-
-  if(computeDiagram_) {
-    ret = this->execute<VTK_TT, TTK_TT>(
-      CTDiagram_, inputScalars, (SimplexId *)inputOffsets, triangulation);
-#ifndef TTK_ENABLE_KAMIKAZE
-    if(ret) {
-      std::stringstream msg;
-      msg << "PersistenceDiagram::execute() error code : " << ret;
-      this->printErr(msg.str());
-      return -4;
-    }
-#endif
-  }
-
-  if(ShowInsideDomain)
-    ret = setPersistenceDiagramInsideDomain(
-      outputCTPersistenceDiagram, ttk::ftm::TreeType::Contour, CTDiagram_,
-      inputScalarDataArray, triangulation);
-  else
-    ret = setPersistenceDiagram(outputCTPersistenceDiagram,
-                                ttk::ftm::TreeType::Contour, CTDiagram_,
-                                inputScalarDataArray, triangulation);
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(ret) {
-    this->printErr("Build of contour tree persistence diagram has failed.");
-    return -5;
-  }
-#endif
-
-  return ret;
-}
-
 void ttkPersistenceDiagram::Modified() {
   computeDiagram_ = true;
   ttkAlgorithm::Modified();
@@ -364,23 +318,38 @@ int ttkPersistenceDiagram::RequestData(vtkInformation *request,
   if(this->GetMTime() < inputScalars->GetMTime())
     computeDiagram_ = true;
 
-  scalarDataType = inputScalars->GetDataType();
-
   int status = 0;
-  ttkVtkTemplateMacro(
-    inputScalars->GetDataType(), triangulation->getType(),
-    (status = this->dispatch<VTK_TT, TTK_TT>(
-       outputCTPersistenceDiagram, inputScalars,
-       (VTK_TT *)ttkUtils::GetVoidPointer(inputScalars),
-       offsetField->GetDataType(), ttkUtils::GetVoidPointer(offsetField),
-       (TTK_TT *)(triangulation->getData()))));
+  if(computeDiagram_) {
+    CTDiagram_.clear();
+    ttkVtkTemplateMacro(
+      inputScalars->GetDataType(), triangulation->getType(),
+      status = this->execute(
+        CTDiagram_,
+        static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(inputScalars)),
+        static_cast<SimplexId *>(ttkUtils::GetVoidPointer(offsetField)),
+        static_cast<TTK_TT *>(triangulation->getData())));
 
-  // something wrong in baseCode
-  if(status) {
-    std::stringstream msg;
-    msg << "PersistenceDiagram::execute() error code : " << status;
-    this->printErr(msg.str());
-    return 0;
+    // something wrong in baseCode
+    if(status) {
+      std::stringstream msg;
+      msg << "PersistenceDiagram::execute() error code : " << status;
+      this->printErr(msg.str());
+      return 0;
+    }
+  }
+
+  if(ShowInsideDomain) {
+    ttkTemplateMacro(
+      triangulation->getType(),
+      setPersistenceDiagramInsideDomain(
+        outputCTPersistenceDiagram, ttk::ftm::TreeType::Contour, CTDiagram_,
+        inputScalars, static_cast<TTK_TT *>(triangulation->getData())));
+  } else {
+    ttkTemplateMacro(
+      triangulation->getType(),
+      setPersistenceDiagram(
+        outputCTPersistenceDiagram, ttk::ftm::TreeType::Contour, CTDiagram_,
+        inputScalars, static_cast<TTK_TT *>(triangulation->getData())));
   }
 
   // shallow copy input Field Data
