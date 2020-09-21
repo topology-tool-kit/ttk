@@ -2,9 +2,6 @@
 #include <ttkPersistenceDiagram.h>
 #include <ttkUtils.h>
 
-using namespace std;
-using namespace ttk;
-
 vtkStandardNewMacro(ttkPersistenceDiagram);
 
 ttkPersistenceDiagram::ttkPersistenceDiagram() {
@@ -29,19 +26,18 @@ int ttkPersistenceDiagram::FillInputPortInformation(int port,
 
 int ttkPersistenceDiagram::FillOutputPortInformation(int port,
                                                      vtkInformation *info) {
-  switch(port) {
-    case 0:
-      info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
-      break;
+  if(port == 0) {
+    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
+    return 1;
   }
-  return 1;
+  return 0;
 }
 
 template <typename VTK_TT>
 int ttkPersistenceDiagram::deleteDiagram() {
-  using tuple_t = tuple<SimplexId, CriticalType, SimplexId, CriticalType,
-                        VTK_TT, SimplexId>;
-  vector<tuple_t> *CTDiagram = (vector<tuple_t> *)CTDiagram_;
+  using tuple_t = std::tuple<SimplexId, ttk::CriticalType, SimplexId,
+                             ttk::CriticalType, VTK_TT, SimplexId>;
+  std::vector<tuple_t> *CTDiagram = (std::vector<tuple_t> *)CTDiagram_;
   delete CTDiagram;
   return 0;
 }
@@ -51,16 +47,16 @@ template <typename scalarType,
           class triangulationType>
 int ttkPersistenceDiagram::setPersistenceDiagramInfo(
   ttk::SimplexId id,
-  vtkSmartPointer<vtkSimplexArray> vertexIdentifierScalars,
-  vtkSmartPointer<vtkIntArray> nodeTypeScalars,
-  vtkSmartPointer<vtkFloatArray> coordsScalars,
+  vtkNew<vtkSimplexArray> &vertexIdentifierScalars,
+  vtkNew<vtkIntArray> &nodeTypeScalars,
+  vtkNew<vtkFloatArray> &coordsScalars,
   const std::vector<std::tuple<ttk::SimplexId,
                                ttk::CriticalType,
                                ttk::SimplexId,
                                ttk::CriticalType,
                                scalarType,
                                ttk::SimplexId>> &diagram,
-  vtkSmartPointer<vtkPoints> points,
+  vtkNew<vtkPoints> &points,
   vtkIdType ids[3],
   vtkDataArray *inputScalars,
   const triangulationType *triangulation) {
@@ -108,38 +104,31 @@ int ttkPersistenceDiagram::getPersistenceDiagram(
                                ttk::SimplexId>> &diagram,
   vtkDataArray *inputScalars,
   const triangulationType *triangulation) {
-  vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+  vtkNew<vtkPoints> points{};
 
-  vtkSmartPointer<vtkUnstructuredGrid> persistenceDiagram
-    = vtkSmartPointer<vtkUnstructuredGrid>::New();
+  vtkNew<vtkUnstructuredGrid> persistenceDiagram{};
 
-  vtkSmartPointer<ttkSimplexIdTypeArray> vertexIdentifierScalars
-    = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
+  vtkNew<ttkSimplexIdTypeArray> vertexIdentifierScalars{};
   vertexIdentifierScalars->SetNumberOfComponents(1);
   vertexIdentifierScalars->SetName(ttk::VertexScalarFieldName);
 
-  vtkSmartPointer<vtkIntArray> nodeTypeScalars
-    = vtkSmartPointer<vtkIntArray>::New();
+  vtkNew<vtkIntArray> nodeTypeScalars{};
   nodeTypeScalars->SetNumberOfComponents(1);
   nodeTypeScalars->SetName("CriticalType");
 
-  vtkSmartPointer<ttkSimplexIdTypeArray> pairIdentifierScalars
-    = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
+  vtkNew<ttkSimplexIdTypeArray> pairIdentifierScalars{};
   pairIdentifierScalars->SetNumberOfComponents(1);
   pairIdentifierScalars->SetName("PairIdentifier");
 
-  vtkSmartPointer<vtkDoubleArray> persistenceScalars
-    = vtkSmartPointer<vtkDoubleArray>::New();
+  vtkNew<vtkDoubleArray> persistenceScalars{};
   persistenceScalars->SetNumberOfComponents(1);
   persistenceScalars->SetName("Persistence");
 
-  vtkSmartPointer<vtkIntArray> extremumIndexScalars
-    = vtkSmartPointer<vtkIntArray>::New();
+  vtkNew<vtkIntArray> extremumIndexScalars{};
   extremumIndexScalars->SetNumberOfComponents(1);
   extremumIndexScalars->SetName("PairType");
 
-  vtkSmartPointer<vtkFloatArray> coordsScalars
-    = vtkSmartPointer<vtkFloatArray>::New();
+  vtkNew<vtkFloatArray> coordsScalars{};
   coordsScalars->SetNumberOfComponents(3);
   coordsScalars->SetName("Coordinates");
 
@@ -212,8 +201,8 @@ template <typename scalarType,
           class triangulationType>
 int ttkPersistenceDiagram::setPersistenceDiagramInfoInsideDomain(
   ttk::SimplexId id,
-  vtkSmartPointer<vtkSimplexArray> vertexIdentifierScalars,
-  vtkSmartPointer<vtkIntArray> nodeTypeScalars,
+  vtkNew<vtkSimplexArray> &vertexIdentifierScalars,
+  vtkNew<vtkIntArray> &nodeTypeScalars,
   vtkDataArray *birthScalars,
   vtkDataArray *deathScalars,
   const std::vector<std::tuple<ttk::SimplexId,
@@ -222,7 +211,7 @@ int ttkPersistenceDiagram::setPersistenceDiagramInfoInsideDomain(
                                ttk::CriticalType,
                                scalarType,
                                ttk::SimplexId>> &diagram,
-  vtkSmartPointer<vtkPoints> points,
+  vtkNew<vtkPoints> &points,
   vtkIdType ids[3],
   vtkDataArray *inputScalars,
   const triangulationType *triangulation) {
@@ -266,33 +255,27 @@ int ttkPersistenceDiagram::getPersistenceDiagramInsideDomain(
                                ttk::SimplexId>> &diagram,
   vtkDataArray *inputScalars,
   const triangulationType *triangulation) {
-  vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+  vtkNew<vtkPoints> points{};
 
-  vtkSmartPointer<vtkUnstructuredGrid> persistenceDiagram
-    = vtkSmartPointer<vtkUnstructuredGrid>::New();
+  vtkNew<vtkUnstructuredGrid> persistenceDiagram{};
 
-  vtkSmartPointer<ttkSimplexIdTypeArray> vertexIdentifierScalars
-    = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
+  vtkNew<ttkSimplexIdTypeArray> vertexIdentifierScalars{};
   vertexIdentifierScalars->SetNumberOfComponents(1);
   vertexIdentifierScalars->SetName(ttk::VertexScalarFieldName);
 
-  vtkSmartPointer<vtkIntArray> nodeTypeScalars
-    = vtkSmartPointer<vtkIntArray>::New();
+  vtkNew<vtkIntArray> nodeTypeScalars{};
   nodeTypeScalars->SetNumberOfComponents(1);
   nodeTypeScalars->SetName("CriticalType");
 
-  vtkSmartPointer<ttkSimplexIdTypeArray> pairIdentifierScalars
-    = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
+  vtkNew<ttkSimplexIdTypeArray> pairIdentifierScalars{};
   pairIdentifierScalars->SetNumberOfComponents(1);
   pairIdentifierScalars->SetName("PairIdentifier");
 
-  vtkSmartPointer<vtkDoubleArray> persistenceScalars
-    = vtkSmartPointer<vtkDoubleArray>::New();
+  vtkNew<vtkDoubleArray> persistenceScalars{};
   persistenceScalars->SetNumberOfComponents(1);
   persistenceScalars->SetName("Persistence");
 
-  vtkSmartPointer<vtkIntArray> extremumIndexScalars
-    = vtkSmartPointer<vtkIntArray>::New();
+  vtkNew<vtkIntArray> extremumIndexScalars{};
   extremumIndexScalars->SetNumberOfComponents(1);
   extremumIndexScalars->SetName("PairType");
 
@@ -370,19 +353,19 @@ int ttkPersistenceDiagram::dispatch(
 
   int ret = 0;
 
-  using tuple_t = tuple<SimplexId, CriticalType, SimplexId, CriticalType,
-                        VTK_TT, SimplexId>;
+  using tuple_t = std::tuple<SimplexId, ttk::CriticalType, SimplexId,
+                             ttk::CriticalType, VTK_TT, SimplexId>;
 
   if(CTDiagram_ && computeDiagram_) {
-    vector<tuple_t> *tmpDiagram = (vector<tuple_t> *)CTDiagram_;
+    std::vector<tuple_t> *tmpDiagram = (std::vector<tuple_t> *)CTDiagram_;
     delete tmpDiagram;
-    CTDiagram_ = new vector<tuple_t>();
+    CTDiagram_ = new std::vector<tuple_t>();
   } else if(!CTDiagram_) {
-    CTDiagram_ = new vector<tuple_t>();
+    CTDiagram_ = new std::vector<tuple_t>();
     computeDiagram_ = true;
   }
 
-  vector<tuple_t> *CTDiagram = (vector<tuple_t> *)CTDiagram_;
+  std::vector<tuple_t> *CTDiagram = (std::vector<tuple_t> *)CTDiagram_;
 
   if(computeDiagram_) {
     ret = this->execute<VTK_TT, TTK_TT>(
@@ -399,11 +382,11 @@ int ttkPersistenceDiagram::dispatch(
 
   if(ShowInsideDomain)
     ret = getPersistenceDiagramInsideDomain<VTK_TT>(
-      outputCTPersistenceDiagram, ftm::TreeType::Contour, *CTDiagram,
+      outputCTPersistenceDiagram, ttk::ftm::TreeType::Contour, *CTDiagram,
       inputScalarDataArray, triangulation);
   else
     ret = getPersistenceDiagram<VTK_TT>(outputCTPersistenceDiagram,
-                                        ftm::TreeType::Contour, *CTDiagram,
+                                        ttk::ftm::TreeType::Contour, *CTDiagram,
                                         inputScalarDataArray, triangulation);
 #ifndef TTK_ENABLE_KAMIKAZE
   if(ret) {

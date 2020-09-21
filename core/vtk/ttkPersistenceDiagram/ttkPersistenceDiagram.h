@@ -54,8 +54,8 @@
 #include <vtkFloatArray.h>
 #include <vtkInformation.h>
 #include <vtkInformationVector.h>
+#include <vtkNew.h>
 #include <vtkPointData.h>
-#include <vtkSmartPointer.h>
 #include <vtkTable.h>
 #include <vtkUnstructuredGrid.h>
 
@@ -93,16 +93,16 @@ public:
             class triangulationType>
   int setPersistenceDiagramInfo(
     ttk::SimplexId id,
-    vtkSmartPointer<vtkSimplexArray> vertexIdentifierScalars,
-    vtkSmartPointer<vtkIntArray> nodeTypeScalars,
-    vtkSmartPointer<vtkFloatArray> coordsScalars,
+    vtkNew<vtkSimplexArray> &vertexIdentifierScalars,
+    vtkNew<vtkIntArray> &nodeTypeScalars,
+    vtkNew<vtkFloatArray> &coordsScalars,
     const std::vector<std::tuple<ttk::SimplexId,
                                  ttk::CriticalType,
                                  ttk::SimplexId,
                                  ttk::CriticalType,
                                  scalarType,
                                  ttk::SimplexId>> &diagram,
-    vtkSmartPointer<vtkPoints> points,
+    vtkNew<vtkPoints> &points,
     vtkIdType ids[3],
     vtkDataArray *inputScalars,
     const triangulationType *triangulation);
@@ -125,8 +125,8 @@ public:
             class triangulationType>
   int setPersistenceDiagramInfoInsideDomain(
     ttk::SimplexId id,
-    vtkSmartPointer<vtkSimplexArray> vertexIdentifierScalars,
-    vtkSmartPointer<vtkIntArray> nodeTypeScalars,
+    vtkNew<vtkSimplexArray> &vertexIdentifierScalars,
+    vtkNew<vtkIntArray> &nodeTypeScalars,
     vtkDataArray *birthScalars,
     vtkDataArray *deathScalars,
     const std::vector<std::tuple<ttk::SimplexId,
@@ -135,7 +135,7 @@ public:
                                  ttk::CriticalType,
                                  scalarType,
                                  ttk::SimplexId>> &diagram,
-    vtkSmartPointer<vtkPoints> points,
+    vtkNew<vtkPoints> &points,
     vtkIdType ids[3],
     vtkDataArray *inputScalars,
     const triangulationType *triangulation);
