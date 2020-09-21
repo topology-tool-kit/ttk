@@ -118,7 +118,6 @@ void ttk::ftm::FTMTreePP::computePersistencePairs(
 
   for(idNode nid = 0; nid < nbNodes; ++nid) {
     nodesUF_[nid] = AtomicUF{tree->getNode(nid)->getVertexId()};
-    nodesUF_[nid].resetParent();
   }
 
   computePairs<scalarType>(tree, pairs);

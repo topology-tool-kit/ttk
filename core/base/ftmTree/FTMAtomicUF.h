@@ -26,19 +26,18 @@ namespace ttk {
 
     class AtomicUF {
     private:
-      unsigned rank_;
-      AtomicUF *parent_;
+      unsigned rank_{};
+      AtomicUF *parent_{};
       SharedData data_;
 
     public:
       inline explicit AtomicUF(SimplexId extrema = nullVertex)
-        : rank_(0), data_(extrema) {
-        parent_ = this;
+        : data_(extrema) {
       }
 
       // heavy recursif
       inline AtomicUF *find() {
-        if(parent_ == this)
+        if(parent_ == nullptr)
           return this;
         else {
           decltype(parent_) tmp = parent_->find();
@@ -139,13 +138,6 @@ namespace ttk {
 #pragma omp atomic write
 #endif
         parent_ = parent;
-      }
-
-      inline void resetParent() {
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp atomic write
-#endif
-        parent_ = this;
       }
 
       static inline AtomicUF *makeUnion(AtomicUF *uf0, AtomicUF *uf1) {
