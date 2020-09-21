@@ -88,29 +88,18 @@ public:
   }
   vtkGetMacro(ShowInsideDomain, int);
 
-  template <typename scalarType, class triangulationType>
-  int setPersistenceDiagram(
-    vtkUnstructuredGrid *outputCTPersistenceDiagram,
-    ttk::ftm::TreeType treeType,
-    const std::vector<std::tuple<ttk::SimplexId,
-                                 ttk::CriticalType,
-                                 ttk::SimplexId,
-                                 ttk::CriticalType,
-                                 scalarType,
-                                 ttk::SimplexId>> &diagram,
-    vtkDataArray *inputScalars,
-    const triangulationType *triangulation);
+  template <class triangulationType>
+  int setPersistenceDiagram(vtkUnstructuredGrid *outputCTPersistenceDiagram,
+                            ttk::ftm::TreeType treeType,
+                            const std::vector<ttk::PersistencePair> &diagram,
+                            vtkDataArray *inputScalars,
+                            const triangulationType *triangulation);
 
-  template <typename scalarType, class triangulationType>
+  template <class triangulationType>
   int setPersistenceDiagramInsideDomain(
     vtkUnstructuredGrid *outputCTPersistenceDiagram,
     ttk::ftm::TreeType treeType,
-    const std::vector<std::tuple<ttk::SimplexId,
-                                 ttk::CriticalType,
-                                 ttk::SimplexId,
-                                 ttk::CriticalType,
-                                 scalarType,
-                                 ttk::SimplexId>> &diagram,
+    const std::vector<ttk::PersistencePair> &diagram,
     vtkDataArray *inputScalars,
     const triangulationType *triangulation);
 
@@ -122,12 +111,8 @@ public:
                const void *inputOffsets,
                const TTK_TT *triangulation);
 
-  template <typename VTK_TT>
-  int deleteDiagram();
-
 protected:
   ttkPersistenceDiagram();
-  ~ttkPersistenceDiagram() override;
 
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,
@@ -142,7 +127,7 @@ private:
   int ShowInsideDomain{false};
 
   bool computeDiagram_{true};
-  void *CTDiagram_{nullptr};
+  std::vector<ttk::PersistencePair> CTDiagram_{};
   int scalarDataType{0};
 };
 

@@ -100,7 +100,7 @@ int ttk::TrackingFromFields::performDiagramComputation(
     // persistenceDiagram.setInputScalars(inputData_[i]);
     // persistenceDiagram.setInputOffsets(inputOffsets_);
     persistenceDiagram.setComputeSaddleConnectors(false);
-    std::vector<std::tuple<int, CriticalType, int, CriticalType, dataType, int>>
+    std::vector<std::tuple<int, CriticalType, int, CriticalType, double, int>>
       CTDiagram;
 
     // persistenceDiagram.setOutputCTDiagram(&CTDiagram);

@@ -61,7 +61,6 @@ namespace ttk {
 
   public:
     PersistenceDiagram();
-    ~PersistenceDiagram();
 
     inline void setComputeSaddleConnectors(bool state) {
       ComputeSaddleConnectors = state;
@@ -71,28 +70,15 @@ namespace ttk {
                                   ftm::TreeType treeType,
                                   const SimplexId vertexId) const;
 
-    template <typename scalarType>
-    void
-      sortPersistenceDiagram(std::vector<std::tuple<ttk::SimplexId,
-                                                    ttk::CriticalType,
-                                                    ttk::SimplexId,
-                                                    ttk::CriticalType,
-                                                    scalarType,
-                                                    ttk::SimplexId>> &diagram,
-                             const scalarType *const scalars,
-                             const SimplexId *const offsets) const;
+    void sortPersistenceDiagram(std::vector<PersistencePair> &diagram,
+                                const SimplexId *const offsets) const;
 
     template <typename scalarType>
     int computeCTPersistenceDiagram(
       ftm::FTMTreePP &tree,
       const std::vector<
         std::tuple<ttk::SimplexId, ttk::SimplexId, scalarType, bool>> &pairs,
-      std::vector<std::tuple<ttk::SimplexId,
-                             ttk::CriticalType,
-                             ttk::SimplexId,
-                             ttk::CriticalType,
-                             scalarType,
-                             ttk::SimplexId>> &diagram,
+      std::vector<PersistencePair> &diagram,
       const scalarType *scalars) const;
 
     /**
@@ -104,12 +90,7 @@ namespace ttk {
      * @see examples/c++/main.cpp for an example use.
      */
     template <typename scalarType, class triangulationType>
-    int execute(std::vector<std::tuple<ttk::SimplexId,
-                                       ttk::CriticalType,
-                                       ttk::SimplexId,
-                                       ttk::CriticalType,
-                                       scalarType,
-                                       ttk::SimplexId>> &CTDiagram,
+    int execute(std::vector<PersistencePair> &CTDiagram,
                 const scalarType *inputScalars,
                 const SimplexId *inputOffsets,
                 const triangulationType *triangulation);
@@ -135,40 +116,13 @@ namespace ttk {
 } // namespace ttk
 
 template <typename scalarType>
-void ttk::PersistenceDiagram::sortPersistenceDiagram(
-  std::vector<std::tuple<ttk::SimplexId,
-                         ttk::CriticalType,
-                         ttk::SimplexId,
-                         ttk::CriticalType,
-                         scalarType,
-                         ttk::SimplexId>> &diagram,
-  const scalarType *const scalars,
-  const SimplexId *const offsets) const {
-
-  auto cmp
-    = [offsets](
-        const std::tuple<ttk::SimplexId, ttk::CriticalType, ttk::SimplexId,
-                         ttk::CriticalType, scalarType, ttk::SimplexId> &a,
-        const std::tuple<ttk::SimplexId, ttk::CriticalType, ttk::SimplexId,
-                         ttk::CriticalType, scalarType, ttk::SimplexId> &b) {
-        return offsets[std::get<0>(a)] < offsets[std::get<0>(b)];
-      };
-
-  std::sort(diagram.begin(), diagram.end(), cmp);
-}
-
-template <typename scalarType>
 int ttk::PersistenceDiagram::computeCTPersistenceDiagram(
   ftm::FTMTreePP &tree,
   const std::vector<
     std::tuple<ttk::SimplexId, ttk::SimplexId, scalarType, bool>> &pairs,
-  std::vector<std::tuple<ttk::SimplexId,
-                         ttk::CriticalType,
-                         ttk::SimplexId,
-                         ttk::CriticalType,
-                         scalarType,
-                         ttk::SimplexId>> &diagram,
+  std::vector<PersistencePair> &diagram,
   const scalarType *scalars) const {
+
   const ttk::SimplexId numberOfPairs = pairs.size();
   diagram.resize(numberOfPairs);
   for(ttk::SimplexId i = 0; i < numberOfPairs; ++i) {
@@ -201,16 +155,10 @@ int ttk::PersistenceDiagram::computeCTPersistenceDiagram(
 }
 
 template <typename scalarType, class triangulationType>
-int ttk::PersistenceDiagram::execute(
-  std::vector<std::tuple<ttk::SimplexId,
-                         ttk::CriticalType,
-                         ttk::SimplexId,
-                         ttk::CriticalType,
-                         scalarType,
-                         ttk::SimplexId>> &CTDiagram,
-  const scalarType *inputScalars,
-  const SimplexId *inputOffsets,
-  const triangulationType *triangulation) {
+int ttk::PersistenceDiagram::execute(std::vector<PersistencePair> &CTDiagram,
+                                     const scalarType *inputScalars,
+                                     const SimplexId *inputOffsets,
+                                     const triangulationType *triangulation) {
 
   printMsg(ttk::debug::Separator::L1);
 
@@ -293,7 +241,7 @@ int ttk::PersistenceDiagram::execute(
   }
 
   // finally sort the diagram
-  sortPersistenceDiagram(CTDiagram, inputScalars, inputOffsets);
+  sortPersistenceDiagram(CTDiagram, inputOffsets);
 
   printMsg(ttk::debug::Separator::L1);
 

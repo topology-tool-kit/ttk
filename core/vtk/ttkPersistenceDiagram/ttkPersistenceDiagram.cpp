@@ -9,12 +9,6 @@ ttkPersistenceDiagram::ttkPersistenceDiagram() {
   SetNumberOfOutputPorts(1);
 }
 
-ttkPersistenceDiagram::~ttkPersistenceDiagram() {
-  if(CTDiagram_) {
-    switch(scalarDataType) { vtkTemplateMacro(deleteDiagram<VTK_TT>()); }
-  }
-}
-
 int ttkPersistenceDiagram::FillInputPortInformation(int port,
                                                     vtkInformation *info) {
   if(port == 0) {
@@ -33,29 +27,15 @@ int ttkPersistenceDiagram::FillOutputPortInformation(int port,
   return 0;
 }
 
-template <typename VTK_TT>
-int ttkPersistenceDiagram::deleteDiagram() {
-  using tuple_t = std::tuple<SimplexId, ttk::CriticalType, SimplexId,
-                             ttk::CriticalType, VTK_TT, SimplexId>;
-  std::vector<tuple_t> *CTDiagram = (std::vector<tuple_t> *)CTDiagram_;
-  delete CTDiagram;
-  return 0;
-}
-
-template <typename scalarType, class triangulationType>
+template <class triangulationType>
 int ttkPersistenceDiagram::setPersistenceDiagram(
   vtkUnstructuredGrid *outputCTPersistenceDiagram,
   ttk::ftm::TreeType treeType,
-  const std::vector<std::tuple<ttk::SimplexId,
-                               ttk::CriticalType,
-                               ttk::SimplexId,
-                               ttk::CriticalType,
-                               scalarType,
-                               ttk::SimplexId>> &diagram,
+  const std::vector<ttk::PersistencePair> &diagram,
   vtkDataArray *inputScalars,
   const triangulationType *triangulation) {
-  vtkNew<vtkPoints> points{};
 
+  vtkNew<vtkPoints> points{};
   vtkNew<vtkUnstructuredGrid> persistenceDiagram{};
 
   vtkNew<ttkSimplexIdTypeArray> vertexIdentifierScalars{};
@@ -91,10 +71,10 @@ int ttkPersistenceDiagram::setPersistenceDiagram(
     vtkIdType ids[2];
     vtkIdType oldIds[2];
 
-    scalarType maxPersistenceValue = std::numeric_limits<scalarType>::min();
+    double maxPersistenceValue = std::numeric_limits<double>::min();
     oldIds[0] = 0;
     for(ttk::SimplexId i = 0; i < diagramSize; ++i) {
-      const scalarType persistenceValue = std::get<4>(diagram[i]);
+      const double persistenceValue = std::get<4>(diagram[i]);
       const ttk::SimplexId type = std::get<5>(diagram[i]);
       maxPersistenceValue = std::max(persistenceValue, maxPersistenceValue);
 
@@ -169,20 +149,15 @@ int ttkPersistenceDiagram::setPersistenceDiagram(
   return 0;
 }
 
-template <typename scalarType, class triangulationType>
+template <class triangulationType>
 int ttkPersistenceDiagram::setPersistenceDiagramInsideDomain(
   vtkUnstructuredGrid *outputCTPersistenceDiagram,
   ttk::ftm::TreeType treeType,
-  const std::vector<std::tuple<ttk::SimplexId,
-                               ttk::CriticalType,
-                               ttk::SimplexId,
-                               ttk::CriticalType,
-                               scalarType,
-                               ttk::SimplexId>> &diagram,
+  const std::vector<ttk::PersistencePair> &diagram,
   vtkDataArray *inputScalars,
   const triangulationType *triangulation) {
-  vtkNew<vtkPoints> points{};
 
+  vtkNew<vtkPoints> points{};
   vtkNew<vtkUnstructuredGrid> persistenceDiagram{};
 
   vtkNew<ttkSimplexIdTypeArray> vertexIdentifierScalars{};
@@ -221,9 +196,9 @@ int ttkPersistenceDiagram::setPersistenceDiagramInsideDomain(
   if(diagramSize) {
     vtkIdType ids[2];
 
-    scalarType maxPersistenceValue = std::numeric_limits<scalarType>::min();
+    double maxPersistenceValue = std::numeric_limits<double>::min();
     for(ttk::SimplexId i = 0; i < diagramSize; ++i) {
-      const scalarType persistenceValue = std::get<4>(diagram[i]);
+      const double persistenceValue = std::get<4>(diagram[i]);
       const ttk::SimplexId type = std::get<5>(diagram[i]);
       maxPersistenceValue = std::max(persistenceValue, maxPersistenceValue);
 
@@ -298,23 +273,13 @@ int ttkPersistenceDiagram::dispatch(
 
   int ret = 0;
 
-  using tuple_t = std::tuple<SimplexId, ttk::CriticalType, SimplexId,
-                             ttk::CriticalType, VTK_TT, SimplexId>;
-
-  if(CTDiagram_ && computeDiagram_) {
-    std::vector<tuple_t> *tmpDiagram = (std::vector<tuple_t> *)CTDiagram_;
-    delete tmpDiagram;
-    CTDiagram_ = new std::vector<tuple_t>();
-  } else if(!CTDiagram_) {
-    CTDiagram_ = new std::vector<tuple_t>();
-    computeDiagram_ = true;
+  if(computeDiagram_) {
+    CTDiagram_.clear();
   }
-
-  std::vector<tuple_t> *CTDiagram = (std::vector<tuple_t> *)CTDiagram_;
 
   if(computeDiagram_) {
     ret = this->execute<VTK_TT, TTK_TT>(
-      *CTDiagram, inputScalars, (SimplexId *)inputOffsets, triangulation);
+      CTDiagram_, inputScalars, (SimplexId *)inputOffsets, triangulation);
 #ifndef TTK_ENABLE_KAMIKAZE
     if(ret) {
       std::stringstream msg;
@@ -326,13 +291,13 @@ int ttkPersistenceDiagram::dispatch(
   }
 
   if(ShowInsideDomain)
-    ret = setPersistenceDiagramInsideDomain<VTK_TT>(
-      outputCTPersistenceDiagram, ttk::ftm::TreeType::Contour, *CTDiagram,
+    ret = setPersistenceDiagramInsideDomain(
+      outputCTPersistenceDiagram, ttk::ftm::TreeType::Contour, CTDiagram_,
       inputScalarDataArray, triangulation);
   else
-    ret = setPersistenceDiagram<VTK_TT>(outputCTPersistenceDiagram,
-                                        ttk::ftm::TreeType::Contour, *CTDiagram,
-                                        inputScalarDataArray, triangulation);
+    ret = setPersistenceDiagram(outputCTPersistenceDiagram,
+                                ttk::ftm::TreeType::Contour, CTDiagram_,
+                                inputScalarDataArray, triangulation);
 #ifndef TTK_ENABLE_KAMIKAZE
   if(ret) {
     this->printErr("Build of contour tree persistence diagram has failed.");
