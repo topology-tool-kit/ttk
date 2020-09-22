@@ -37,11 +37,12 @@ int ttkPersistenceDiagram::FillOutputPortInformation(int port,
   return 0;
 }
 
-template <class triangulationType>
+template <typename scalarType, typename triangulationType>
 int ttkPersistenceDiagram::setPersistenceDiagram(
   vtkUnstructuredGrid *outputCTPersistenceDiagram,
   const std::vector<ttk::PersistencePair> &diagram,
-  vtkDataArray *inputScalars,
+  vtkDataArray *inputScalarsArray,
+  const scalarType *const inputScalars,
   const triangulationType *triangulation) const {
 
   vtkNew<vtkUnstructuredGrid> persistenceDiagram{};
@@ -59,8 +60,8 @@ int ttkPersistenceDiagram::setPersistenceDiagram(
   nodeTypeScalars->SetNumberOfTuples(2 * diagram.size());
 
   vtkNew<vtkFloatArray> coordsScalars{};
-  vtkSmartPointer<vtkDataArray> birthScalars{inputScalars->NewInstance()};
-  vtkSmartPointer<vtkDataArray> deathScalars{inputScalars->NewInstance()};
+  vtkSmartPointer<vtkDataArray> birthScalars{inputScalarsArray->NewInstance()};
+  vtkSmartPointer<vtkDataArray> deathScalars{inputScalarsArray->NewInstance()};
 
   if(this->ShowInsideDomain) {
     birthScalars->SetNumberOfComponents(1);
@@ -113,8 +114,9 @@ int ttkPersistenceDiagram::setPersistenceDiagram(
     const auto b = std::get<2>(diagram[i]);
     const auto ta = std::get<1>(diagram[i]);
     const auto tb = std::get<3>(diagram[i]);
-    const auto sa = inputScalars->GetTuple1(a);
-    const auto sb = inputScalars->GetTuple1(b);
+    // inputScalarsArray->GetTuple is not thread safe...
+    const auto sa = inputScalars[a];
+    const auto sb = inputScalars[b];
 
     if(this->ShowInsideDomain) {
       std::array<float, 3> coords{};
@@ -222,8 +224,8 @@ int ttkPersistenceDiagram::dispatch(
     }
   }
 
-  setPersistenceDiagram(
-    outputCTPersistenceDiagram, CTDiagram_, inputScalarsArray, triangulation);
+  setPersistenceDiagram(outputCTPersistenceDiagram, CTDiagram_,
+                        inputScalarsArray, inputScalars, triangulation);
 
   return 1;
 }
