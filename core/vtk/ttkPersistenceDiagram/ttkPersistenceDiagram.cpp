@@ -201,6 +201,33 @@ int ttkPersistenceDiagram::setPersistenceDiagram(
   return 0;
 }
 
+template <typename scalarType, typename triangulationType>
+int ttkPersistenceDiagram::dispatch(
+  vtkUnstructuredGrid *outputCTPersistenceDiagram,
+  vtkDataArray *const inputScalarsArray,
+  const scalarType *const inputScalars,
+  const SimplexId *const inputOrder,
+  const triangulationType *triangulation) {
+
+  int status{};
+  if(this->computeDiagram_) {
+    CTDiagram_.clear();
+    status = this->execute(CTDiagram_, inputScalars, inputOrder, triangulation);
+
+    // something wrong in baseCode
+    if(status != 0) {
+      this->printErr("PersistenceDiagram::execute() error code : "
+                     + std::to_string(status));
+      return 0;
+    }
+  }
+
+  setPersistenceDiagram(
+    outputCTPersistenceDiagram, CTDiagram_, inputScalarsArray, triangulation);
+
+  return 1;
+}
+
 void ttkPersistenceDiagram::Modified() {
   computeDiagram_ = true;
   ttkAlgorithm::Modified();
@@ -250,30 +277,14 @@ int ttkPersistenceDiagram::RequestData(vtkInformation *request,
   if(this->GetMTime() < inputScalars->GetMTime())
     computeDiagram_ = true;
 
-  int status = 0;
-  if(computeDiagram_) {
-    CTDiagram_.clear();
-    ttkVtkTemplateMacro(
-      inputScalars->GetDataType(), triangulation->getType(),
-      status = this->execute(
-        CTDiagram_,
-        static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(inputScalars)),
-        static_cast<SimplexId *>(ttkUtils::GetVoidPointer(offsetField)),
-        static_cast<TTK_TT *>(triangulation->getData())));
-
-    // something wrong in baseCode
-    if(status) {
-      std::stringstream msg;
-      msg << "PersistenceDiagram::execute() error code : " << status;
-      this->printErr(msg.str());
-      return 0;
-    }
-  }
-
-  ttkTemplateMacro(
-    triangulation->getType(),
-    setPersistenceDiagram(outputCTPersistenceDiagram, CTDiagram_, inputScalars,
-                          static_cast<TTK_TT *>(triangulation->getData())));
+  int status{};
+  ttkVtkTemplateMacro(
+    inputScalars->GetDataType(), triangulation->getType(),
+    status = this->dispatch(
+      outputCTPersistenceDiagram, inputScalars,
+      static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(inputScalars)),
+      static_cast<SimplexId *>(ttkUtils::GetVoidPointer(offsetField)),
+      static_cast<TTK_TT *>(triangulation->getData())));
 
   // shallow copy input Field Data
   outputCTPersistenceDiagram->GetFieldData()->ShallowCopy(
@@ -281,5 +292,5 @@ int ttkPersistenceDiagram::RequestData(vtkInformation *request,
 
   computeDiagram_ = false;
 
-  return 1;
+  return status;
 }

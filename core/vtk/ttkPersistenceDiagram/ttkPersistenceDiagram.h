@@ -90,6 +90,13 @@ protected:
   void Modified() override;
 
 private:
+  template <typename scalarType, typename triangulationType>
+  int dispatch(vtkUnstructuredGrid *outputCTPersistenceDiagram,
+               vtkDataArray *const inputScalarsArray,
+               const scalarType *const inputScalars,
+               const SimplexId *const inputOrder,
+               const triangulationType *triangulation);
+
   template <class triangulationType>
   int setPersistenceDiagram(vtkUnstructuredGrid *outputCTPersistenceDiagram,
                             const std::vector<ttk::PersistencePair> &diagram,
