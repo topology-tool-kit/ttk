@@ -37,6 +37,11 @@ int ttkPersistenceDiagram::FillOutputPortInformation(int port,
   return 0;
 }
 
+void ttkPersistenceDiagram::Modified() {
+  computeDiagram_ = true;
+  ttkAlgorithm::Modified();
+}
+
 template <typename scalarType, typename triangulationType>
 int ttkPersistenceDiagram::setPersistenceDiagram(
   vtkUnstructuredGrid *outputCTPersistenceDiagram,
@@ -228,11 +233,6 @@ int ttkPersistenceDiagram::dispatch(
                         inputScalarsArray, inputScalars, triangulation);
 
   return 1;
-}
-
-void ttkPersistenceDiagram::Modified() {
-  computeDiagram_ = true;
-  ttkAlgorithm::Modified();
 }
 
 int ttkPersistenceDiagram::RequestData(vtkInformation *request,
