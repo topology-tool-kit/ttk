@@ -47,7 +47,6 @@
 
 // VTK includes
 #include <vtkDataArray.h>
-#include <vtkNew.h>
 #include <vtkUnstructuredGrid.h>
 
 // VTK Module
@@ -79,21 +78,6 @@ public:
   }
   vtkGetMacro(ShowInsideDomain, int);
 
-  template <class triangulationType>
-  int setPersistenceDiagram(vtkUnstructuredGrid *outputCTPersistenceDiagram,
-                            ttk::ftm::TreeType treeType,
-                            const std::vector<ttk::PersistencePair> &diagram,
-                            vtkDataArray *inputScalars,
-                            const triangulationType *triangulation);
-
-  template <class triangulationType>
-  int setPersistenceDiagramInsideDomain(
-    vtkUnstructuredGrid *outputCTPersistenceDiagram,
-    ttk::ftm::TreeType treeType,
-    const std::vector<ttk::PersistencePair> &diagram,
-    vtkDataArray *inputScalars,
-    const triangulationType *triangulation);
-
 protected:
   ttkPersistenceDiagram();
 
@@ -106,10 +90,15 @@ protected:
   void Modified() override;
 
 private:
+  template <class triangulationType>
+  int setPersistenceDiagram(vtkUnstructuredGrid *outputCTPersistenceDiagram,
+                            const std::vector<ttk::PersistencePair> &diagram,
+                            vtkDataArray *inputScalars,
+                            const triangulationType *triangulation) const;
+
   bool ForceInputOffsetScalarField{false};
   int ShowInsideDomain{false};
 
   bool computeDiagram_{true};
   std::vector<ttk::PersistencePair> CTDiagram_{};
-  int scalarDataType{0};
 };

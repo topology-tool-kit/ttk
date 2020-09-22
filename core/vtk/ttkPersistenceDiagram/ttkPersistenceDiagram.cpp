@@ -4,7 +4,9 @@
 #include <vtkFloatArray.h>
 #include <vtkIdTypeArray.h>
 #include <vtkInformation.h>
+#include <vtkNew.h>
 #include <vtkPointData.h>
+#include <vtkSmartPointer.h>
 
 #include <ttkMacros.h>
 #include <ttkPersistenceDiagram.h>
@@ -38,10 +40,9 @@ int ttkPersistenceDiagram::FillOutputPortInformation(int port,
 template <class triangulationType>
 int ttkPersistenceDiagram::setPersistenceDiagram(
   vtkUnstructuredGrid *outputCTPersistenceDiagram,
-  ttk::ftm::TreeType treeType,
   const std::vector<ttk::PersistencePair> &diagram,
   vtkDataArray *inputScalars,
-  const triangulationType *triangulation) {
+  const triangulationType *triangulation) const {
 
   vtkNew<vtkUnstructuredGrid> persistenceDiagram{};
 
@@ -58,9 +59,22 @@ int ttkPersistenceDiagram::setPersistenceDiagram(
   nodeTypeScalars->SetNumberOfTuples(2 * diagram.size());
 
   vtkNew<vtkFloatArray> coordsScalars{};
-  coordsScalars->SetNumberOfComponents(3);
-  coordsScalars->SetName("Coordinates");
-  coordsScalars->SetNumberOfTuples(2 * diagram.size());
+  vtkSmartPointer<vtkDataArray> birthScalars{inputScalars->NewInstance()};
+  vtkSmartPointer<vtkDataArray> deathScalars{inputScalars->NewInstance()};
+
+  if(this->ShowInsideDomain) {
+    birthScalars->SetNumberOfComponents(1);
+    birthScalars->SetName("Birth");
+    birthScalars->SetNumberOfTuples(2 * diagram.size());
+
+    deathScalars->SetNumberOfComponents(1);
+    deathScalars->SetName("Death");
+    deathScalars->SetNumberOfTuples(2 * diagram.size());
+  } else {
+    coordsScalars->SetNumberOfComponents(3);
+    coordsScalars->SetName("Coordinates");
+    coordsScalars->SetNumberOfTuples(2 * diagram.size());
+  }
 
   // cell data arrays
 
@@ -102,8 +116,16 @@ int ttkPersistenceDiagram::setPersistenceDiagram(
     const auto sa = inputScalars->GetTuple1(a);
     const auto sb = inputScalars->GetTuple1(b);
 
-    points->SetPoint(2 * i, sa, sa, 0);
-    points->SetPoint(2 * i + 1, sa, sb, 0);
+    if(this->ShowInsideDomain) {
+      std::array<float, 3> coords{};
+      triangulation->getVertexPoint(a, coords[0], coords[1], coords[2]);
+      points->SetPoint(2 * i, coords[0], coords[1], coords[2]);
+      triangulation->getVertexPoint(b, coords[0], coords[1], coords[2]);
+      points->SetPoint(2 * i + 1, coords[0], coords[1], coords[2]);
+    } else {
+      points->SetPoint(2 * i, sa, sa, 0);
+      points->SetPoint(2 * i + 1, sa, sb, 0);
+    }
     connectivity->SetTuple1(2 * i, 2 * i);
     connectivity->SetTuple1(2 * i + 1, 2 * i + 1);
     offsets->SetTuple1(i, 2 * i);
@@ -113,11 +135,19 @@ int ttkPersistenceDiagram::setPersistenceDiagram(
     vertexIdentifierScalars->SetTuple1(2 * i + 1, b);
     nodeTypeScalars->SetTuple1(2 * i, static_cast<ttk::SimplexId>(ta));
     nodeTypeScalars->SetTuple1(2 * i + 1, static_cast<ttk::SimplexId>(tb));
-    std::array<float, 3> coords{};
-    triangulation->getVertexPoint(a, coords[0], coords[1], coords[2]);
-    coordsScalars->SetTuple3(2 * i, coords[0], coords[1], coords[2]);
-    triangulation->getVertexPoint(b, coords[0], coords[1], coords[2]);
-    coordsScalars->SetTuple3(2 * i + 1, coords[0], coords[1], coords[2]);
+
+    if(this->ShowInsideDomain) {
+      birthScalars->SetTuple1(2 * i, sa);
+      birthScalars->SetTuple1(2 * i + 1, sa);
+      deathScalars->SetTuple1(2 * i, sa);
+      deathScalars->SetTuple1(2 * i + 1, sb);
+    } else {
+      std::array<float, 3> coords{};
+      triangulation->getVertexPoint(a, coords[0], coords[1], coords[2]);
+      coordsScalars->SetTuple3(2 * i, coords[0], coords[1], coords[2]);
+      triangulation->getVertexPoint(b, coords[0], coords[1], coords[2]);
+      coordsScalars->SetTuple3(2 * i + 1, coords[0], coords[1], coords[2]);
+    }
 
     // cell data
     pairIdentifierScalars->SetTuple1(i, i);
@@ -142,138 +172,32 @@ int ttkPersistenceDiagram::setPersistenceDiagram(
   persistenceDiagram->SetPoints(points);
   persistenceDiagram->SetCells(VTK_LINE, cells);
 
-  // add diagonal (first point -> last birth/penultimate point)
-  std::array<vtkIdType, 2> diag{0, 2 * (cells->GetNumberOfCells() - 1)};
-  persistenceDiagram->InsertNextCell(VTK_LINE, 2, diag.data());
-  pairIdentifierScalars->InsertTuple1(diagram.size(), -1);
-  extremumIndexScalars->InsertTuple1(diagram.size(), -1);
-  // persistence of min-max pair
-  const auto maxPersistence = std::get<4>(diagram[0]);
-  persistenceScalars->InsertTuple1(diagram.size(), 2 * maxPersistence);
+  if(!this->ShowInsideDomain) {
+    // add diagonal (first point -> last birth/penultimate point)
+    std::array<vtkIdType, 2> diag{0, 2 * (cells->GetNumberOfCells() - 1)};
+    persistenceDiagram->InsertNextCell(VTK_LINE, 2, diag.data());
+    pairIdentifierScalars->InsertTuple1(diagram.size(), -1);
+    extremumIndexScalars->InsertTuple1(diagram.size(), -1);
+    // persistence of min-max pair
+    const auto maxPersistence = std::get<4>(diagram[0]);
+    persistenceScalars->InsertTuple1(diagram.size(), 2 * maxPersistence);
+  }
 
   // add data arrays
   persistenceDiagram->GetPointData()->AddArray(vertexIdentifierScalars);
   persistenceDiagram->GetPointData()->AddArray(nodeTypeScalars);
-  persistenceDiagram->GetPointData()->AddArray(coordsScalars);
-  persistenceDiagram->GetCellData()->AddArray(pairIdentifierScalars);
-  persistenceDiagram->GetCellData()->AddArray(extremumIndexScalars);
-  persistenceDiagram->GetCellData()->AddArray(persistenceScalars);
-
-  outputCTPersistenceDiagram->ShallowCopy(persistenceDiagram);
-
-  return 0;
-}
-
-template <class triangulationType>
-int ttkPersistenceDiagram::setPersistenceDiagramInsideDomain(
-  vtkUnstructuredGrid *outputCTPersistenceDiagram,
-  ttk::ftm::TreeType treeType,
-  const std::vector<ttk::PersistencePair> &diagram,
-  vtkDataArray *inputScalars,
-  const triangulationType *triangulation) {
-
-  vtkNew<vtkPoints> points{};
-  vtkNew<vtkUnstructuredGrid> persistenceDiagram{};
-
-  vtkNew<ttkSimplexIdTypeArray> vertexIdentifierScalars{};
-  vertexIdentifierScalars->SetNumberOfComponents(1);
-  vertexIdentifierScalars->SetName(ttk::VertexScalarFieldName);
-
-  vtkNew<vtkIntArray> nodeTypeScalars{};
-  nodeTypeScalars->SetNumberOfComponents(1);
-  nodeTypeScalars->SetName("CriticalType");
-
-  vtkNew<ttkSimplexIdTypeArray> pairIdentifierScalars{};
-  pairIdentifierScalars->SetNumberOfComponents(1);
-  pairIdentifierScalars->SetName("PairIdentifier");
-
-  vtkNew<vtkDoubleArray> persistenceScalars{};
-  persistenceScalars->SetNumberOfComponents(1);
-  persistenceScalars->SetName("Persistence");
-
-  vtkNew<vtkIntArray> extremumIndexScalars{};
-  extremumIndexScalars->SetNumberOfComponents(1);
-  extremumIndexScalars->SetName("PairType");
-
-  vtkDataArray *birthScalars = inputScalars->NewInstance();
-  birthScalars->SetNumberOfComponents(1);
-  birthScalars->SetName("Birth");
-
-  vtkDataArray *deathScalars = inputScalars->NewInstance();
-  deathScalars->SetNumberOfComponents(1);
-  deathScalars->SetName("Death");
-
-  const ttk::SimplexId minIndex = 0;
-  const ttk::SimplexId saddleSaddleIndex = 1;
-  const ttk::SimplexId maxIndex = triangulation->getCellVertexNumber(0) - 2;
-
-  const ttk::SimplexId diagramSize = diagram.size();
-  if(diagramSize) {
-    vtkIdType ids[2];
-
-    double maxPersistenceValue = std::numeric_limits<double>::min();
-    for(ttk::SimplexId i = 0; i < diagramSize; ++i) {
-      const double persistenceValue = std::get<4>(diagram[i]);
-      const ttk::SimplexId type = std::get<5>(diagram[i]);
-      maxPersistenceValue = std::max(persistenceValue, maxPersistenceValue);
-
-      std::array<float, 3> p{};
-      const auto a = std::get<0>(diagram[i]);
-      const auto na = static_cast<ttk::SimplexId>(std::get<1>(diagram[i]));
-      const auto b = std::get<2>(diagram[i]);
-      const auto nb = static_cast<ttk::SimplexId>(std::get<3>(diagram[i]));
-      const double sa = inputScalars->GetTuple1(a);
-      const double sb = inputScalars->GetTuple1(b);
-
-      nodeTypeScalars->InsertTuple1(2 * i, na);
-      nodeTypeScalars->InsertTuple1(2 * i + 1, nb);
-      vertexIdentifierScalars->InsertTuple1(2 * i, a);
-      vertexIdentifierScalars->InsertTuple1(2 * i + 1, b);
-      birthScalars->InsertTuple1(2 * i, sa);
-      birthScalars->InsertTuple1(2 * i + 1, sa);
-      deathScalars->InsertTuple1(2 * i, sa);
-      deathScalars->InsertTuple1(2 * i + 1, sb);
-
-      triangulation->getVertexPoint(a, p[0], p[1], p[2]);
-      ids[0] = points->InsertNextPoint(p.data());
-
-      triangulation->getVertexPoint(b, p[0], p[1], p[2]);
-      ids[1] = points->InsertNextPoint(p.data());
-
-      // add cell data
-      persistenceDiagram->InsertNextCell(VTK_LINE, 2, ids);
-      pairIdentifierScalars->InsertTuple1(i, i);
-      if(!i)
-        extremumIndexScalars->InsertTuple1(i, -1);
-      else {
-        switch(type) {
-          case 0:
-            extremumIndexScalars->InsertTuple1(i, minIndex);
-            break;
-
-          case 1:
-            extremumIndexScalars->InsertTuple1(i, saddleSaddleIndex);
-            break;
-
-          case 2:
-            extremumIndexScalars->InsertTuple1(i, maxIndex);
-            break;
-        }
-      }
-      persistenceScalars->InsertTuple1(i, persistenceValue);
-    }
+  if(this->ShowInsideDomain) {
+    persistenceDiagram->GetPointData()->AddArray(birthScalars);
+    persistenceDiagram->GetPointData()->AddArray(deathScalars);
+  } else {
+    persistenceDiagram->GetPointData()->AddArray(coordsScalars);
   }
-
-  persistenceDiagram->SetPoints(points);
-  persistenceDiagram->GetPointData()->AddArray(vertexIdentifierScalars);
-  persistenceDiagram->GetPointData()->AddArray(nodeTypeScalars);
-  persistenceDiagram->GetPointData()->AddArray(birthScalars);
-  persistenceDiagram->GetPointData()->AddArray(deathScalars);
   persistenceDiagram->GetCellData()->AddArray(pairIdentifierScalars);
   persistenceDiagram->GetCellData()->AddArray(extremumIndexScalars);
   persistenceDiagram->GetCellData()->AddArray(persistenceScalars);
 
   outputCTPersistenceDiagram->ShallowCopy(persistenceDiagram);
+
   return 0;
 }
 
@@ -346,19 +270,10 @@ int ttkPersistenceDiagram::RequestData(vtkInformation *request,
     }
   }
 
-  if(ShowInsideDomain) {
-    ttkTemplateMacro(
-      triangulation->getType(),
-      setPersistenceDiagramInsideDomain(
-        outputCTPersistenceDiagram, ttk::ftm::TreeType::Contour, CTDiagram_,
-        inputScalars, static_cast<TTK_TT *>(triangulation->getData())));
-  } else {
-    ttkTemplateMacro(
-      triangulation->getType(),
-      setPersistenceDiagram(
-        outputCTPersistenceDiagram, ttk::ftm::TreeType::Contour, CTDiagram_,
-        inputScalars, static_cast<TTK_TT *>(triangulation->getData())));
-  }
+  ttkTemplateMacro(
+    triangulation->getType(),
+    setPersistenceDiagram(outputCTPersistenceDiagram, CTDiagram_, inputScalars,
+                          static_cast<TTK_TT *>(triangulation->getData())));
 
   // shallow copy input Field Data
   outputCTPersistenceDiagram->GetFieldData()->ShallowCopy(
