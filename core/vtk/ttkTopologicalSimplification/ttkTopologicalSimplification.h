@@ -78,6 +78,9 @@ public:
   vtkSetMacro(ForceInputVertexScalarField, bool);
   vtkGetMacro(ForceInputVertexScalarField, bool);
 
+  vtkSetMacro(UseLTS, bool);
+  vtkGetMacro(UseLTS, bool);
+
 protected:
   ttkTopologicalSimplification();
 
@@ -92,4 +95,5 @@ private:
   bool ForceInputOffsetScalarField{false};
   bool ConsiderIdentifierAsBlackList{false};
   bool AddPerturbation{false};
+  bool UseLTS{false};
 };

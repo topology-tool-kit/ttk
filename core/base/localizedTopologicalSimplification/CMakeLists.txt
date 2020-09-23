@@ -1,0 +1,9 @@
+ttk_add_base_library(localizedTopologicalSimplification
+  SOURCES
+    LocalizedTopologicalSimplification.cpp
+  HEADERS
+    LocalizedTopologicalSimplification.h
+    SSCPropagation.h
+  DEPENDS
+    triangulation
+)

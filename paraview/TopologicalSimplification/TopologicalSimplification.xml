@@ -190,6 +190,18 @@
       </IntVectorProperty>
 
       <IntVectorProperty
+          name="UseLTS"
+          label="Use LTS (EXPERIMENTAL)"
+          command="SetUseLTS"
+          number_of_elements="1"
+          default_values="0">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Use the Localized Topological Simplification algorithm.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
           name="AddPerturbation"
           command="SetAddPerturbation"
           label="Numerical Perturbation"
@@ -214,6 +226,7 @@
       </PropertyGroup>
 
       <PropertyGroup panel_widget="Line" label="Output options">
+        <Property name="UseLTS"/>
         <Property name="AddPerturbation"/>
       </PropertyGroup>
 
