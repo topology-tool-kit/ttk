@@ -293,8 +293,7 @@ jobs:
       wget https://www.paraview.org/files/v$(PV_V)/ParaView-$(PV_VERSION).tar.xz
       xz -d ParaView-$(PV_VERSION).tar.xz
       tar xvf ParaView-$(PV_VERSION).tar
-      mkdir ParaView-$(PV_VERSION)/build
-    condition: ne(variables.CACHE_RESTORED, 'true')
+      mkdir -p ParaView-$(PV_VERSION)/build
     displayName: 'Download and extract ParaView $(PV_VERSION)'
 
   - task: CMake@1
