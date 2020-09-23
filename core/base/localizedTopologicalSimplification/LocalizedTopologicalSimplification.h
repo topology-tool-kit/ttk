@@ -1,17 +1,19 @@
-/// TODO 1: Provide your information
-///
 /// \ingroup base
 /// \class ttk::LocalizedTopologicalSimplification
-/// \author Your Name Here <Your Email Address Here>
-/// \date The Date Here.
+/// \author Jonas Lukasczyk <jl@jluk.de>
+/// \date 09/23/2020
 ///
-/// This module defines the %LocalizedTopologicalSimplification class that computes for each vertex of a
-/// triangulation the average scalar value of itself and its direct neighbors.
+/// This module provides functions to compute a localized topological
+/// simplification of a scalar array. This algorithm is an order of magnitude
+/// faster than the default simplification procedure as LTS utlizes
+/// shared-memory parallelism, and constraints computationally expensive
+/// procedures onto the subsets of the domain that actually need to be
+/// simplified.
 ///
 /// \b Related \b publication: \n
 /// 'Localized Topological Simplification of Scalar Data'
 /// Jonas Lukasczyk, Christoph Garth, Ross Maciejewski and Julien Tierny.
-/// TTK Publications.
+/// IEEE Transactions on Visualization and Computer Graphics.
 /// 2020.
 ///
 
