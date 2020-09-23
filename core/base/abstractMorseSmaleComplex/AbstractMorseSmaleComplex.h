@@ -578,7 +578,6 @@ int ttk::AbstractMorseSmaleComplex::setSeparatrices1(
 #endif
 
   const auto scalars = static_cast<const dataType *>(inputScalarField_);
-  const auto offsets = inputOffsets_;
   auto separatrixFunctionMaxima = static_cast<std::vector<dataType> *>(
     outputSeparatrices1_cells_separatrixFunctionMaxima_);
   auto separatrixFunctionMinima = static_cast<std::vector<dataType> *>(
@@ -674,16 +673,12 @@ int ttk::AbstractMorseSmaleComplex::setSeparatrices1(
       = saddleConnector ? 1 : std::min(dst.dim_, dimensionality - 1);
 
     // compute separatrix function diff
-    const auto sepFuncMax
-      = std::max(scalars[discreteGradient_.getCellGreaterVertex(
-                   src, offsets, triangulation)],
-                 scalars[discreteGradient_.getCellGreaterVertex(
-                   dst, offsets, triangulation)]);
-    const auto sepFuncMin
-      = std::min(scalars[discreteGradient_.getCellLowerVertex(
-                   src, offsets, triangulation)],
-                 scalars[discreteGradient_.getCellLowerVertex(
-                   dst, offsets, triangulation)]);
+    const auto sepFuncMax = std::max(
+      scalars[discreteGradient_.getCellGreaterVertex(src, triangulation)],
+      scalars[discreteGradient_.getCellGreaterVertex(dst, triangulation)]);
+    const auto sepFuncMin = std::min(
+      scalars[discreteGradient_.getCellLowerVertex(src, triangulation)],
+      scalars[discreteGradient_.getCellLowerVertex(dst, triangulation)]);
     const auto sepFuncDiff = sepFuncMax - sepFuncMin;
 
     // get boundary condition

@@ -588,7 +588,6 @@ in the gradient.
       template <typename triangulationType>
       SimplexId
         getCellGreaterVertex(const Cell c,
-                             const SimplexId *const offsets,
                              const triangulationType &triangulation) const;
 
       /**
@@ -598,7 +597,6 @@ in the gradient.
       template <typename triangulationType>
       SimplexId
         getCellLowerVertex(const Cell c,
-                           const SimplexId *const offsets,
                            const triangulationType &triangulation) const;
 
       /**

@@ -247,18 +247,18 @@ int ttk::MorseSmaleComplex3D::setAscendingSeparatrices2(
     const dcg::Cell &src = sep.source_; // saddle1
 
     // compute separatrix function diff
-    const dataType sepFuncMin = scalars[discreteGradient_.getCellLowerVertex(
-      src, offsets, triangulation)];
+    const dataType sepFuncMin
+      = scalars[discreteGradient_.getCellLowerVertex(src, triangulation)];
     const auto maxId = *std::max_element(
       sepSaddles.begin(), sepSaddles.end(),
       [&triangulation, offsets, this](const SimplexId a, const SimplexId b) {
         return offsets[discreteGradient_.getCellGreaterVertex(
-                 Cell{2, a}, offsets, triangulation)]
+                 Cell{2, a}, triangulation)]
                < offsets[discreteGradient_.getCellGreaterVertex(
-                 Cell{2, b}, offsets, triangulation)];
+                 Cell{2, b}, triangulation)];
       });
     const dataType sepFuncMax = scalars[discreteGradient_.getCellGreaterVertex(
-      Cell{2, maxId}, offsets, triangulation)];
+      Cell{2, maxId}, triangulation)];
 
     // get boundary condition
     const char onBoundary
@@ -515,18 +515,18 @@ int ttk::MorseSmaleComplex3D::setDescendingSeparatrices2(
     const char sepType = 2;
 
     // compute separatrix function diff
-    const dataType sepFuncMax = scalars[discreteGradient_.getCellGreaterVertex(
-      src, offsets, triangulation)];
+    const dataType sepFuncMax
+      = scalars[discreteGradient_.getCellGreaterVertex(src, triangulation)];
     const auto minId = *std::min_element(
       sepSaddles.begin(), sepSaddles.end(),
       [&triangulation, offsets, this](const SimplexId a, const SimplexId b) {
         return offsets[discreteGradient_.getCellLowerVertex(
-                 Cell{1, a}, offsets, triangulation)]
+                 Cell{1, a}, triangulation)]
                < offsets[discreteGradient_.getCellLowerVertex(
-                 Cell{1, b}, offsets, triangulation)];
+                 Cell{1, b}, triangulation)];
       });
     const dataType sepFuncMin = scalars[discreteGradient_.getCellLowerVertex(
-      Cell{1, minId}, offsets, triangulation)];
+      Cell{1, minId}, triangulation)];
     const dataType sepFuncDiff = sepFuncMax - sepFuncMin;
 
     // get boundary condition
