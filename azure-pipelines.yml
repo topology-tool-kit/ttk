@@ -133,6 +133,20 @@ jobs:
   - task: CMake@1
     inputs:
       workingDirectory: 'build-example/'
+      cmakeArgs: '../examples/c++ $(CMakeArgs)
+                  -GNinja
+                  -DCMAKE_BUILD_TYPE=$(BuildType)
+                  -DTTKBase_DIR=$(Build.ArtifactStagingDirectory)/ttk-install/lib/cmake/ttk'
+    displayName: 'Configure C++ Example'
+
+  - script: |
+      cmake --build .
+    workingDirectory: 'build-example/'
+    displayName: 'Build C++ Example'
+
+  - task: CMake@1
+    inputs:
+      workingDirectory: 'build-example-vtk/'
       cmakeArgs: '../examples/vtk-c++ $(CMakeArgs)
                   -GNinja
                   -DCMAKE_BUILD_TYPE=$(BuildType)
@@ -142,7 +156,7 @@ jobs:
 
   - script: |
       cmake --build .
-    workingDirectory: 'build-example/'
+    workingDirectory: 'build-example-vtk/'
     displayName: 'Build TTKVTK Example'
 
 
@@ -246,6 +260,20 @@ jobs:
   - task: CMake@1
     inputs:
       workingDirectory: 'build-example/'
+      cmakeArgs: '../examples/c++ $(CMakeArgs)
+                  -DCMAKE_BUILD_TYPE=$(BuildType)
+                  -DTTKBase_DIR=$(Build.ArtifactStagingDirectory)/ttk-install/lib/cmake/ttk'
+    displayName: 'Configure C++ Example'
+
+  - script: |
+      cmake --build .
+    workingDirectory: 'build-example/'
+    displayName: 'Build C++ Example'
+
+
+  - task: CMake@1
+    inputs:
+      workingDirectory: 'build-example-vtk/'
       cmakeArgs: '../examples/vtk-c++ $(CMakeArgs)
                   -DCMAKE_BUILD_TYPE=$(BuildType)
                   -DParaView_DIR=$(Build.ArtifactStagingDirectory)/pv-install/lib/cmake/paraview-$(PV_V)
@@ -254,7 +282,7 @@ jobs:
 
   - script: |
       cmake --build .
-    workingDirectory: 'build-example/'
+    workingDirectory: 'build-example-vtk/'
     displayName: 'Build TTKVTK Example'
 
 # ------------------------------
@@ -341,6 +369,19 @@ jobs:
   - task: CMake@1
     inputs:
       workingDirectory: 'build-example/'
+      cmakeArgs: '../examples/c++ $(CMakeArgs)
+                  -DCMAKE_BUILD_TYPE=$(BuildType)
+                  -DTTKBase_DIR=$(Build.ArtifactStagingDirectory)/ttk-install/lib/cmake/ttk'
+    displayName: 'Configure C++ Example'
+
+  - script: |
+      cmake --build .
+    workingDirectory: 'build-example/'
+    displayName: 'Build C++ Example'
+
+  - task: CMake@1
+    inputs:
+      workingDirectory: 'build-example-vtk/'
       cmakeArgs: '../examples/vtk-c++ $(CMakeArgs)
                   -DCMAKE_BUILD_TYPE=$(BuildType)
                   -DParaView_DIR=$(System.DefaultWorkingDirectory)/ParaView-$(PV_VERSION)/build/
@@ -349,7 +390,7 @@ jobs:
 
   - script: |
       cmake --build .
-    workingDirectory: 'build-example/'
+    workingDirectory: 'build-example-vtk/'
     displayName: 'Build TTKVTK Example'
 
 
@@ -438,17 +479,34 @@ jobs:
 
   - script: |
       mkdir build-example
+    displayName: 'Create C++ example build directory'
+
+  - script: |
+      $(compilerInitialization)
+      set BOOST_ROOT=$(BOOST_ROOT_1_69_0)
+      cmake ../examples/c++ -GNinja -DCMAKE_BUILD_TYPE=Release -DTTKBase_DIR="$(Build.ArtifactStagingDirectory)/ttk-install/lib/cmake/ttk"
+    workingDirectory: 'build-example-vtk/'
+    displayName: 'Configure C++ Example'
+
+  - script: |
+      $(compilerInitialization)
+      ninja
+    workingDirectory: 'build-example/'
+    displayName: 'Build C++ Example'
+
+  - script: |
+      mkdir build-example-vtk
     displayName: 'Create TTKVTK example build directory'
 
   - script: |
       $(compilerInitialization)
       set BOOST_ROOT=$(BOOST_ROOT_1_69_0)
       cmake ../examples/vtk-c++ -GNinja -DCMAKE_BUILD_TYPE=Release -DVTK_DIR=$(Build.ArtifactStagingDirectory)/vtk-install/lib/cmake/vtk-$(VTKVPath) -DTTKVTK_DIR="$(Build.ArtifactStagingDirectory)/ttk-install/lib/cmake/ttk"
-    workingDirectory: 'build-example/'
+    workingDirectory: 'build-example-vtk/'
     displayName: 'Configure TTKVTK Example'
 
   - script: |
       $(compilerInitialization)
       ninja
-    workingDirectory: 'build-example/'
+    workingDirectory: 'build-example-vtk/'
     displayName: 'Build TTKVTK Example'
