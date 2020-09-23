@@ -803,36 +803,4 @@
             </Deprecated>
         </SourceProxy>
     </ProxyGroup>
-    <ProxyGroup name="writers">
-        <SourceProxy
-            base_proxygroup="writers"
-            base_proxyname="ttkOBJWriter"
-            class="ttkOBJWriter"
-            name="OBJWriter"
-            label="TTK OBJWriter (deprecated)">
-            <Deprecated deprecated_in="5.8" to_remove_in="5.9">
-                Please update your state file to use ttkOBJWriter instead of OBJWriter.
-            </Deprecated>
-        </SourceProxy>
-        <SourceProxy
-            base_proxygroup="writers"
-            base_proxyname="ttkOFFWriter"
-            class="ttkOFFWriter"
-            name="OFFWriter"
-            label="TTK OFFWriter (deprecated)">
-            <Deprecated deprecated_in="5.8" to_remove_in="5.9">
-                Please update your state file to use ttkOFFWriter instead of OFFWriter.
-            </Deprecated>
-        </SourceProxy>
-        <SourceProxy
-            base_proxygroup="writers"
-            base_proxyname="ttkTopologicalCompressionWriter"
-            class="ttkTopologicalCompressionWriter"
-            name="TopologicalCompressionWriter"
-            label="TTK TopologicalCompressionWriter (deprecated)">
-            <Deprecated deprecated_in="5.8" to_remove_in="5.9">
-                Please update your state file to use ttkTopologicalCompressionWriter instead of TopologicalCompressionWriter.
-            </Deprecated>
-        </SourceProxy>
-    </ProxyGroup>
 </ServerManagerConfiguration>
