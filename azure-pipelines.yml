@@ -130,19 +130,19 @@ jobs:
     workingDirectory: '$(Build.ArtifactStagingDirectory)/ttk-install/'
     displayName: 'Test TTK command line'
 
-  - task: CMake@1
-    inputs:
-      workingDirectory: 'build-example/'
-      cmakeArgs: '../examples/vtk-c++ $(CMakeArgs)
-                    -GNinja
-                    -DCMAKE_BUILD_TYPE=$(BuildType)
-                    -DTTKVTK_DIR=$(Build.ArtifactStagingDirectory)/ttk-install/lib/cmake/ttk'
-    displayName: 'Configure TTKVTK Example'
+  # - task: CMake@1
+  #   inputs:
+  #     workingDirectory: 'build-example/'
+  #     cmakeArgs: '../examples/vtk-c++ $(CMakeArgs)
+  #                   -GNinja
+  #                   -DCMAKE_BUILD_TYPE=$(BuildType)
+  #                   -DTTKVTK_DIR=$(Build.ArtifactStagingDirectory)/ttk-install/lib/cmake/ttk'
+  #   displayName: 'Configure TTKVTK Example'
 
-  - script: |
-      cmake --build .
-    workingDirectory: 'build-example/'
-    displayName: 'Build TTKVTK Example'
+  # - script: |
+  #     cmake --build .
+  #   workingDirectory: 'build-example/'
+  #   displayName: 'Build TTKVTK Example'
 
 
 # ParaView
@@ -242,19 +242,19 @@ jobs:
     workingDirectory: '$(Build.ArtifactStagingDirectory)/ttk-install/'
     displayName: 'Test TTK Command line'
 
-  - task: CMake@1
-    inputs:
-      workingDirectory: 'build-example/'
-      cmakeArgs: '../examples/vtk-c++ $(CMakeArgs)
-                    -GNinja
-                    -DCMAKE_BUILD_TYPE=$(BuildType)
-                    -DTTKVTK_DIR=$(Build.ArtifactStagingDirectory)/ttk-install/lib/cmake/ttk'
-    displayName: 'Configure TTKVTK Example'
+  # - task: CMake@1
+  #   inputs:
+  #     workingDirectory: 'build-example/'
+  #     cmakeArgs: '../examples/vtk-c++ $(CMakeArgs)
+  #                   -GNinja
+  #                   -DCMAKE_BUILD_TYPE=$(BuildType)
+  #                   -DTTKVTK_DIR=$(Build.ArtifactStagingDirectory)/ttk-install/lib/cmake/ttk'
+  #   displayName: 'Configure TTKVTK Example'
 
-  - script: |
-      cmake --build .
-    workingDirectory: 'build-example/'
-    displayName: 'Build TTKVTK Example'
+  # - script: |
+  #     cmake --build .
+  #   workingDirectory: 'build-example/'
+  #   displayName: 'Build TTKVTK Example'
 
 # ------------------------------
 # Mac OS build
@@ -338,19 +338,19 @@ jobs:
     workingDirectory: '$(Build.ArtifactStagingDirectory)/ttk-install/'
     displayName: 'Test TTK Command line (DISABLED FOR NOW)'
 
-  - task: CMake@1
-    inputs:
-      workingDirectory: 'build-example/'
-      cmakeArgs: '../examples/vtk-c++ $(CMakeArgs)
-                    -GNinja
-                    -DCMAKE_BUILD_TYPE=$(BuildType)
-                    -DTTKVTK_DIR=$(Build.ArtifactStagingDirectory)/ttk-install/lib/cmake/ttk'
-    displayName: 'Configure TTKVTK Example'
+  # - task: CMake@1
+  #   inputs:
+  #     workingDirectory: 'build-example/'
+  #     cmakeArgs: '../examples/vtk-c++ $(CMakeArgs)
+  #                   -GNinja
+  #                   -DCMAKE_BUILD_TYPE=$(BuildType)
+  #                   -DTTKVTK_DIR=$(Build.ArtifactStagingDirectory)/ttk-install/lib/cmake/ttk'
+  #   displayName: 'Configure TTKVTK Example'
 
-  - script: |
-      cmake --build .
-    workingDirectory: 'build-example/'
-    displayName: 'Build TTKVTK Example'
+  # - script: |
+  #     cmake --build .
+  #   workingDirectory: 'build-example/'
+  #   displayName: 'Build TTKVTK Example'
 
 
 # ------------------------------
@@ -436,14 +436,14 @@ jobs:
     workingDirectory: build/
     displayName: 'Build and install TTK'
 
-  - script: |
-      $(compilerInitialization)
-      cmake ../examples/vtk-c++ $(CMakeArgs) -GNinja -DCMAKE_BUILD_TYPE=Release -DTTKVTK_DIR="$(Build.ArtifactStagingDirectory)/ttk-install/lib/cmake/ttk"
-    workingDirectory: 'build-example/'
-    displayName: 'Configure TTKVTK Example'
+  # - script: |
+  #     $(compilerInitialization)
+  #     cmake ../examples/vtk-c++ $(CMakeArgs) -GNinja -DCMAKE_BUILD_TYPE=Release -DTTKVTK_DIR="$(Build.ArtifactStagingDirectory)/ttk-install/lib/cmake/ttk"
+  #   workingDirectory: 'build-example/'
+  #   displayName: 'Configure TTKVTK Example'
 
-  - script: |
-      $(compilerInitialization)
-      ninja
-    workingDirectory: 'build-example/'
-    displayName: 'Build TTKVTK Example'
+  # - script: |
+  #     $(compilerInitialization)
+  #     ninja
+  #   workingDirectory: 'build-example/'
+  #   displayName: 'Build TTKVTK Example'
