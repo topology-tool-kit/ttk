@@ -136,6 +136,7 @@ jobs:
       cmakeArgs: '../examples/vtk-c++ $(CMakeArgs)
                   -GNinja
                   -DCMAKE_BUILD_TYPE=$(BuildType)
+                  -DVTK_DIR=$(Build.ArtifactStagingDirectory)/vtk-install/lib/cmake/vtk-$(VTKVPath)
                   -DTTKVTK_DIR=$(Build.ArtifactStagingDirectory)/ttk-install/lib/cmake/ttk'
     displayName: 'Configure TTKVTK Example'
 
@@ -247,6 +248,7 @@ jobs:
       workingDirectory: 'build-example/'
       cmakeArgs: '../examples/vtk-c++ $(CMakeArgs)
                   -DCMAKE_BUILD_TYPE=$(BuildType)
+                  -DParaView_DIR=$(Build.ArtifactStagingDirectory)/pv-install/lib/cmake/paraview-$(PV_V)
                   -DTTKVTK_DIR=$(Build.ArtifactStagingDirectory)/ttk-install/lib/cmake/ttk'
     displayName: 'Configure TTKVTK Example'
 
@@ -341,6 +343,7 @@ jobs:
       workingDirectory: 'build-example/'
       cmakeArgs: '../examples/vtk-c++ $(CMakeArgs)
                   -DCMAKE_BUILD_TYPE=$(BuildType)
+                  -DParaView_DIR=./ParaView-$(PV_VERSION)/build/
                   -DTTKVTK_DIR=$(Build.ArtifactStagingDirectory)/ttk-install/lib/cmake/ttk'
     displayName: 'Configure TTKVTK Example'
 
@@ -439,7 +442,7 @@ jobs:
 
   - script: |
       $(compilerInitialization)
-      cmake ../examples/vtk-c++ $(CMakeArgs) -GNinja -DCMAKE_BUILD_TYPE=Release -DTTKVTK_DIR="$(Build.ArtifactStagingDirectory)/ttk-install/lib/cmake/ttk"
+      cmake ../examples/vtk-c++ -GNinja -DCMAKE_BUILD_TYPE=Release -DVTK_DIR=$(Build.ArtifactStagingDirectory)/vtk-install/lib/cmake/vtk-$(VTKVPath) -DTTKVTK_DIR="$(Build.ArtifactStagingDirectory)/ttk-install/lib/cmake/ttk"
     workingDirectory: 'build-example/'
     displayName: 'Configure TTKVTK Example'
 
