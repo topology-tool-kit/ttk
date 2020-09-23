@@ -485,7 +485,7 @@ jobs:
       $(compilerInitialization)
       set BOOST_ROOT=$(BOOST_ROOT_1_69_0)
       cmake ../examples/c++ -GNinja -DCMAKE_BUILD_TYPE=Release -DTTKBase_DIR="$(Build.ArtifactStagingDirectory)/ttk-install/lib/cmake/ttk"
-    workingDirectory: 'build-example-vtk/'
+    workingDirectory: 'build-example/'
     displayName: 'Configure C++ Example'
 
   - script: |
