@@ -70,11 +70,19 @@ jobs:
       sudo update-alternatives --set c++ /usr/bin/$(CXX)
     displayName: 'Install dependencies'
 
+  - task: Cache@2
+    inputs:
+      key: VTK | $(Agent.OS) | $(VTKVersion)
+      path: $(Build.ArtifactStagingDirectory)/vtk-install
+      cacheHitVar: CACHE_RESTORED
+    displayName: Cache VTK build
+
   - script: |
       git clone --quiet https://gitlab.kitware.com/vtk/vtk.git
       cd vtk
       git checkout $(VTKVersion)
       git submodule update --init --recursive
+    condition: ne(variables.CACHE_RESTORED, 'true')
     displayName: 'Clone VTK $(VTKVPath)'
 
   - task: CMake@1
@@ -89,11 +97,13 @@ jobs:
                     -DVTK_BUILD_TESTING=OFF
                     -DVTK_WRAP_PYTHON=YES
                     -DVTK_PYTHON_VERSION=3'
+    condition: ne(variables.CACHE_RESTORED, 'true')
     displayName: 'Configure VTK $(VTKVPath)'
 
   - script: |
       cmake --build . --target install
     workingDirectory: 'vtk/build'
+    condition: ne(variables.CACHE_RESTORED, 'true')
     displayName: 'Build and install VTK (No rendering)'
 
   - task: CMake@1
@@ -158,16 +168,25 @@ jobs:
       sudo update-alternatives --set c++ /usr/bin/$(CXX)
     displayName: 'Install dependencies'
 
+  - task: Cache@2
+    inputs:
+      key: ParaView | $(Agent.OS) | $(PV_VERSION)
+      path: $(Build.ArtifactStagingDirectory)/pv-install
+      cacheHitVar: CACHE_RESTORED
+    displayName: Cache ParaView build
+
   - script: |
       wget https://www.paraview.org/files/v$(PV_V)/ParaView-$(PV_VERSION).tar.xz
       xz -d ParaView-$(PV_VERSION).tar.xz
       tar xvf ParaView-$(PV_VERSION).tar
       mkdir ParaView-$(PV_VERSION)/build
+    condition: ne(variables.CACHE_RESTORED, 'true')
     displayName: 'Download and extract ParaView $(PV_VERSION)'
 
   - script: |
       ./patch-paraview-5.8.0.sh ../../ParaView-$(PV_VERSION)
     workingDirectory: 'paraview/patch'
+    condition: ne(variables.CACHE_RESTORED, 'true')
     displayName: 'Patch ParaView $(PV_VERSION)'
 
   - task: CMake@1
@@ -183,11 +202,13 @@ jobs:
                     -DVTK_DEFAULT_RENDER_WINDOW_OFFSCREEN=ON
                     -DVTK_USE_X=OFF
                     -DVTK_MODULE_USE_EXTERNAL_VTK_glew=ON'
+    condition: ne(variables.CACHE_RESTORED, 'true')
     displayName: 'Configure ParaView $(PV_VERSION)'
 
   - script: |
       cmake --build . --target install -- -j 4
     workingDirectory: 'ParaView-$(PV_VERSION)/build'
+    condition: ne(variables.CACHE_RESTORED, 'true')
     displayName: 'Build and install ParaView $(PV_VERSION)'
 
   - task: CMake@1
@@ -232,11 +253,19 @@ jobs:
       brew install wget python libomp mesa glew boost vtk
     displayName: 'Install dependencies'
 
+  - task: Cache@2
+    inputs:
+      key: ParaView | $(Agent.OS) | $(PV_VERSION)
+      path: ParaView-$(PV_VERSION)/build
+      cacheHitVar: CACHE_RESTORED
+    displayName: Cache ParaView build
+
   - script: |
       wget https://www.paraview.org/files/v$(PV_V)/ParaView-$(PV_VERSION).tar.xz
       xz -d ParaView-$(PV_VERSION).tar.xz
       tar xvf ParaView-$(PV_VERSION).tar
       mkdir ParaView-$(PV_VERSION)/build
+    condition: ne(variables.CACHE_RESTORED, 'true')
     displayName: 'Download and extract ParaView $(PV_VERSION)'
 
   - task: CMake@1
@@ -248,11 +277,13 @@ jobs:
                     -DPARAVIEW_ENABLE_PYTHON=ON
                     -DVTK_PYTHON_VERSION=3
                     -DPARAVIEW_BUILD_QT_GUI=NO'
+    condition: ne(variables.CACHE_RESTORED, 'true')
     displayName: 'Configure ParaView'
 
   - script: |
       cmake --build . -- -j 4
     workingDirectory: 'ParaView-$(PV_VERSION)/build'
+    condition: ne(variables.CACHE_RESTORED, 'true')
     displayName: 'Build ParaView'
 
   - task: CMake@1
@@ -312,24 +343,34 @@ jobs:
     vmImage: $(imageName)
 
   steps:
+  - task: Cache@2
+    inputs:
+      key: VTK | $(Agent.OS) | $(VTKVersion)
+      path: $(Build.ArtifactStagingDirectory)/vtk-install
+      cacheHitVar: CACHE_RESTORED
+    displayName: Cache VTK build
+
   - bash: |
       git clone --quiet https://gitlab.kitware.com/vtk/vtk.git
       cd vtk
       git checkout $(VTKVersion)
       git submodule update --init --recursive
       mkdir build
+    condition: ne(variables.CACHE_RESTORED, 'true')
     displayName: 'Clone VTK $(VTKVPath)'
 
   - script: |
       $(compilerInitialization)
       cmake -DCMAKE_C_COMPILER:FILEPATH="$(cCompiler)" -DCMAKE_CXX_COMPILER="$(cxxCompiler)" -DBUILD_SHARED_LIBS:BOOL=ON -DCMAKE_INSTALL_PREFIX="$(Build.ArtifactStagingDirectory)/vtk-install" -DCMAKE_BUILD_TYPE:STRING=Release -DBUILD_TESTING:BOOL=OFF -DVTK_BUILD_TESTING=OFF -DVTK_GROUP_ENABLE_Rendering=NO -GNinja ..
     workingDirectory: vtk/build
+    condition: ne(variables.CACHE_RESTORED, 'true')
     displayName: 'Configure VTK $(VTKVPath)'
 
   - script: |
       $(compilerInitialization)
       cmake --build . --target install
     workingDirectory: vtk/build
+    condition: ne(variables.CACHE_RESTORED, 'true')
     displayName: 'Build and install VTK'
 
   - script: |
