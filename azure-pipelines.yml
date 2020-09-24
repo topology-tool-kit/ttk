@@ -40,6 +40,7 @@ jobs:
 
   variables:
     CMakeArgs: ''
+    CCACHE_DIR: $(Pipeline.Workspace)/ccache
     LD_LIBRARY_PATH: $(Build.ArtifactStagingDirectory)/vtk-install/lib/
     VTKVersion: v9.0.0
     VTKVPath: 9.0
@@ -63,6 +64,7 @@ jobs:
       echo 'Configure distribution'
       sudo add-apt-repository ppa:ubuntu-toolchain-r/test
       sudo apt-get update
+      sudo apt-get install -y ccache
       sudo apt-get install -y ninja-build libc++-dev libc++abi-dev libc++abi1 libstdc++-7-dev libboost-all-dev gcc-7 g++-7 gcc-6 g++-6 python3 libomp-dev libomp5
       sudo update-alternatives --install /usr/bin/cc cc /usr/bin/$(CC) 100
       sudo update-alternatives --set cc /usr/bin/$(CC)
@@ -70,11 +72,19 @@ jobs:
       sudo update-alternatives --set c++ /usr/bin/$(CXX)
     displayName: 'Install dependencies'
 
+  - task: Cache@2
+    inputs:
+      key: VTK | $(Agent.OS) | "$(VTKVersion)"
+      path: $(Build.ArtifactStagingDirectory)/vtk-install
+      cacheHitVar: CACHE_RESTORED
+    displayName: Cache VTK build
+
   - script: |
       git clone --quiet https://gitlab.kitware.com/vtk/vtk.git
       cd vtk
       git checkout $(VTKVersion)
       git submodule update --init --recursive
+    condition: ne(variables.CACHE_RESTORED, 'true')
     displayName: 'Clone VTK $(VTKVPath)'
 
   - task: CMake@1
@@ -89,18 +99,28 @@ jobs:
                     -DVTK_BUILD_TESTING=OFF
                     -DVTK_WRAP_PYTHON=YES
                     -DVTK_PYTHON_VERSION=3'
+    condition: ne(variables.CACHE_RESTORED, 'true')
     displayName: 'Configure VTK $(VTKVPath)'
 
   - script: |
       cmake --build . --target install
     workingDirectory: 'vtk/build'
+    condition: ne(variables.CACHE_RESTORED, 'true')
     displayName: 'Build and install VTK (No rendering)'
+
+  - task: Cache@2
+    inputs:
+      key: ccache | "$(Agent.OS)" | "$(Build.SourceVersion)"
+      restoreKeys: ccache | "$(Agent.OS)"
+      path: $(CCACHE_DIR)
+    displayName: ccache
 
   - task: CMake@1
     inputs:
       workingDirectory: 'build/'
       cmakeArgs: '.. $(CMakeArgs)
                     -GNinja
+                    -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
                     -DCMAKE_INSTALL_PREFIX=$(Build.ArtifactStagingDirectory)/ttk-install
                     -DCMAKE_BUILD_TYPE=$(BuildType)
                     -DVTK_DIR=$(Build.ArtifactStagingDirectory)/vtk-install/lib/cmake/vtk-$(VTKVPath)
@@ -120,6 +140,36 @@ jobs:
     workingDirectory: '$(Build.ArtifactStagingDirectory)/ttk-install/'
     displayName: 'Test TTK command line'
 
+  - task: CMake@1
+    inputs:
+      workingDirectory: 'build-example/'
+      cmakeArgs: '../examples/c++ $(CMakeArgs)
+                  -GNinja
+                  -DCMAKE_BUILD_TYPE=$(BuildType)
+                  -DTTKBase_DIR=$(Build.ArtifactStagingDirectory)/ttk-install/lib/cmake/ttk'
+    displayName: 'Configure C++ Example'
+
+  - script: |
+      cmake --build .
+    workingDirectory: 'build-example/'
+    displayName: 'Build C++ Example'
+
+  - task: CMake@1
+    inputs:
+      workingDirectory: 'build-example-vtk/'
+      cmakeArgs: '../examples/vtk-c++ $(CMakeArgs)
+                  -GNinja
+                  -DCMAKE_BUILD_TYPE=$(BuildType)
+                  -DVTK_DIR=$(Build.ArtifactStagingDirectory)/vtk-install/lib/cmake/vtk-$(VTKVPath)
+                  -DTTKVTK_DIR=$(Build.ArtifactStagingDirectory)/ttk-install/lib/cmake/ttk'
+    displayName: 'Configure TTKVTK Example'
+
+  - script: |
+      cmake --build .
+    workingDirectory: 'build-example-vtk/'
+    displayName: 'Build TTKVTK Example'
+
+
 # ParaView
 
 - job:
@@ -131,6 +181,7 @@ jobs:
 
   variables:
     CMakeArgs: ''
+    CCACHE_DIR: $(Pipeline.Workspace)/ccache
     PV_VERSION: 'v5.8.0'
     PV_V: '5.8'
     TTK_MODULE_DISABLE: ''
@@ -150,6 +201,7 @@ jobs:
       echo "Configure distribution"
       sudo add-apt-repository ppa:ubuntu-toolchain-r/test
       sudo apt-get update
+      sudo apt-get install -y ccache
       sudo apt-get install -y libboost-all-dev libc++-dev libc++abi-dev libc++abi1 libstdc++-7-dev gcc-7 g++-7
       sudo apt-get install -y libosmesa6-dev libglu1-mesa-dev freeglut3-dev mesa-common-dev libeigen3-dev graphviz-dev python3 python3-sklearn libglew-dev
       sudo update-alternatives --install /usr/bin/cc cc /usr/bin/$(CC) 100
@@ -158,16 +210,25 @@ jobs:
       sudo update-alternatives --set c++ /usr/bin/$(CXX)
     displayName: 'Install dependencies'
 
+  - task: Cache@2
+    inputs:
+      key: ParaView | $(Agent.OS) | "$(PV_VERSION)"
+      path: $(Build.ArtifactStagingDirectory)/pv-install
+      cacheHitVar: CACHE_RESTORED
+    displayName: Cache ParaView build
+
   - script: |
       wget https://www.paraview.org/files/v$(PV_V)/ParaView-$(PV_VERSION).tar.xz
       xz -d ParaView-$(PV_VERSION).tar.xz
       tar xvf ParaView-$(PV_VERSION).tar
       mkdir ParaView-$(PV_VERSION)/build
+    condition: ne(variables.CACHE_RESTORED, 'true')
     displayName: 'Download and extract ParaView $(PV_VERSION)'
 
   - script: |
       ./patch-paraview-5.8.0.sh ../../ParaView-$(PV_VERSION)
     workingDirectory: 'paraview/patch'
+    condition: ne(variables.CACHE_RESTORED, 'true')
     displayName: 'Patch ParaView $(PV_VERSION)'
 
   - task: CMake@1
@@ -183,17 +244,26 @@ jobs:
                     -DVTK_DEFAULT_RENDER_WINDOW_OFFSCREEN=ON
                     -DVTK_USE_X=OFF
                     -DVTK_MODULE_USE_EXTERNAL_VTK_glew=ON'
+    condition: ne(variables.CACHE_RESTORED, 'true')
     displayName: 'Configure ParaView $(PV_VERSION)'
 
   - script: |
       cmake --build . --target install -- -j 4
     workingDirectory: 'ParaView-$(PV_VERSION)/build'
+    condition: ne(variables.CACHE_RESTORED, 'true')
     displayName: 'Build and install ParaView $(PV_VERSION)'
+
+  - task: Cache@2
+    inputs:
+      key: ccache | "$(Agent.OS)" | "$(Build.SourceVersion)"
+      restoreKeys: ccache | "$(Agent.OS)"
+      path: $(CCACHE_DIR)
+    displayName: ccache
 
   - task: CMake@1
     inputs:
       workingDirectory: 'build/'
-      cmakeArgs: '.. -DCMAKE_BUILD_TYPE=$(BuildType) -DCMAKE_INSTALL_PREFIX=$(Build.ArtifactStagingDirectory)/ttk-install -DParaView_DIR=$(Build.ArtifactStagingDirectory)/pv-install/lib/cmake/paraview-$(PV_V) -DTTK_BUILD_STANDALONE_APPS=ON $(TTK_MODULE_DISABLE) $(TTK_MODULE_TEST)'
+      cmakeArgs: '.. -DCMAKE_BUILD_TYPE=$(BuildType) -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_INSTALL_PREFIX=$(Build.ArtifactStagingDirectory)/ttk-install -DParaView_DIR=$(Build.ArtifactStagingDirectory)/pv-install/lib/cmake/paraview-$(PV_V) -DTTK_BUILD_STANDALONE_APPS=ON $(TTK_MODULE_DISABLE) $(TTK_MODULE_TEST)'
     displayName: 'Configure TTK'
 
   - script: |
@@ -206,6 +276,67 @@ jobs:
     workingDirectory: '$(Build.ArtifactStagingDirectory)/ttk-install/'
     displayName: 'Test TTK Command line'
 
+  - task: CMake@1
+    inputs:
+      workingDirectory: 'build-example/'
+      cmakeArgs: '../examples/c++ $(CMakeArgs)
+                  -DCMAKE_BUILD_TYPE=$(BuildType)
+                  -DTTKBase_DIR=$(Build.ArtifactStagingDirectory)/ttk-install/lib/cmake/ttk'
+    displayName: 'Configure C++ Example'
+
+  - script: |
+      cmake --build .
+    workingDirectory: 'build-example/'
+    displayName: 'Build C++ Example'
+
+  - task: CMake@1
+    inputs:
+      workingDirectory: 'build-example-vtk/'
+      cmakeArgs: '../examples/vtk-c++ $(CMakeArgs)
+                  -DCMAKE_BUILD_TYPE=$(BuildType)
+                  -DParaView_DIR=$(Build.ArtifactStagingDirectory)/pv-install/lib/cmake/paraview-$(PV_V)
+                  -DTTKVTK_DIR=$(Build.ArtifactStagingDirectory)/ttk-install/lib/cmake/ttk'
+    displayName: 'Configure TTKVTK Example'
+
+  - script: |
+      cmake --build .
+    workingDirectory: 'build-example-vtk/'
+    displayName: 'Build TTKVTK Example'
+
+  - script: |
+      ./ttkExample-c++ -i ../examples/data/inputData.off
+      if [ ! -f output.off ]; then
+        exit 1
+      fi
+    workingDirectory: 'build-example/'
+    displayName: 'Test C++ Example'
+
+  - script: |
+      ./ttkExample-vtk-c++ -i ../examples/data/inputData.vtu
+      if [ ! -f curve.vtk ] || [ ! -f separatrices.vtu ] || [ ! -f segmentation.vtu ] ; then
+        exit 1
+      fi
+    workingDirectory: 'build-example-vtk/'
+    displayName: 'Test TTKVTK Example'
+
+  - script: |
+      export PYTHONPATH=$(Build.ArtifactStagingDirectory)/ttk-install/lib/python3.6/site-packages
+      $(Build.ArtifactStagingDirectory)/pv-install/bin/pvpython ./example.py ../data/inputData.vtu
+      if [ ! -f curve.vtk ] || [ ! -f separatrices.vtu ] || [ ! -f segmentation.vtu ] ; then
+        exit 1
+      fi
+    workingDirectory: 'examples/python/'
+    displayName: 'Test Python Example'
+
+  - script: |
+      $(Build.ArtifactStagingDirectory)/pv-install/bin/pvpython ./example.py ../data/inputData.vtu
+      if [ ! -f curve.vtk ] || [ ! -f separatrices.vtu ] || [ ! -f segmentation.vtu ] ; then
+        exit 1
+      fi
+    workingDirectory: 'examples/pvpython/'
+    displayName: 'Test pvpython Example'
+
+
 # ------------------------------
 # Mac OS build
 # ------------------------------
@@ -217,6 +348,7 @@ jobs:
 
   variables:
     CMakeArgs: ''
+    CCACHE_DIR: $(Pipeline.Workspace)/ccache
     PV_VERSION: 'v5.8.0'
     PV_V: '5.8'
     TTK_MODULE_DISABLE: ''
@@ -229,14 +361,21 @@ jobs:
   steps:
   - script: |
       brew cask install xquartz
-      brew install wget python libomp mesa glew boost vtk
+      brew install wget python libomp mesa glew boost ccache
     displayName: 'Install dependencies'
+
+  - task: Cache@2
+    inputs:
+      key: ParaView | $(Agent.OS) | "$(PV_VERSION)"
+      path: ParaView-$(PV_VERSION)/build
+      cacheHitVar: CACHE_RESTORED
+    displayName: Cache ParaView build
 
   - script: |
       wget https://www.paraview.org/files/v$(PV_V)/ParaView-$(PV_VERSION).tar.xz
       xz -d ParaView-$(PV_VERSION).tar.xz
       tar xvf ParaView-$(PV_VERSION).tar
-      mkdir ParaView-$(PV_VERSION)/build
+      mkdir -p ParaView-$(PV_VERSION)/build
     displayName: 'Download and extract ParaView $(PV_VERSION)'
 
   - task: CMake@1
@@ -248,20 +387,31 @@ jobs:
                     -DPARAVIEW_ENABLE_PYTHON=ON
                     -DVTK_PYTHON_VERSION=3
                     -DPARAVIEW_BUILD_QT_GUI=NO'
+    condition: ne(variables.CACHE_RESTORED, 'true')
     displayName: 'Configure ParaView'
 
   - script: |
       cmake --build . -- -j 4
     workingDirectory: 'ParaView-$(PV_VERSION)/build'
+    condition: ne(variables.CACHE_RESTORED, 'true')
     displayName: 'Build ParaView'
+
+  - task: Cache@2
+    inputs:
+      key: ccache | "$(Agent.OS)" | "$(Build.SourceVersion)"
+      restoreKeys: ccache | "$(Agent.OS)"
+      path: $(CCACHE_DIR)
+    displayName: ccache
 
   - task: CMake@1
     inputs:
       workingDirectory: 'build/'
       cmakeArgs: '.. $(CMakeArgs)
+                     -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
                      -DCMAKE_INSTALL_PREFIX=$(Build.ArtifactStagingDirectory)/ttk-install
                      -DCMAKE_BUILD_TYPE=Release
                      -DParaView_DIR=./ParaView-$(PV_VERSION)/build/
+                     -DTTK_INSTALL_PLUGIN_DIR=$(System.DefaultWorkingDirectory)/ParaView-$(PV_VERSION)/build/bin/plugins
                      -DTTK_BUILD_STANDALONE_APPS=ON
                      $(TTK_MODULE_DISABLE)
                      $(TTK_MODULE_TEST)'
@@ -277,6 +427,69 @@ jobs:
       echo "Need a fix"
     workingDirectory: '$(Build.ArtifactStagingDirectory)/ttk-install/'
     displayName: 'Test TTK Command line (DISABLED FOR NOW)'
+
+  - task: CMake@1
+    inputs:
+      workingDirectory: 'build-example/'
+      cmakeArgs: '../examples/c++ $(CMakeArgs)
+                  -DCMAKE_BUILD_TYPE=$(BuildType)
+                  -DTTKBase_DIR=$(Build.ArtifactStagingDirectory)/ttk-install/lib/cmake/ttk'
+    displayName: 'Configure C++ Example'
+
+  - script: |
+      cmake --build .
+    workingDirectory: 'build-example/'
+    displayName: 'Build C++ Example'
+
+  - task: CMake@1
+    inputs:
+      workingDirectory: 'build-example-vtk/'
+      cmakeArgs: '../examples/vtk-c++ $(CMakeArgs)
+                  -DCMAKE_BUILD_TYPE=$(BuildType)
+                  -DParaView_DIR=$(System.DefaultWorkingDirectory)/ParaView-$(PV_VERSION)/build/
+                  -DTTKVTK_DIR=$(Build.ArtifactStagingDirectory)/ttk-install/lib/cmake/ttk'
+    displayName: 'Configure TTKVTK Example'
+
+  - script: |
+      cmake --build .
+    workingDirectory: 'build-example-vtk/'
+    displayName: 'Build TTKVTK Example'
+
+  - script: |
+      ./ttkExample-c++ -i ../examples/data/inputData.off
+      if [ ! -f output.off ]; then
+        exit 1
+      fi
+    workingDirectory: 'build-example/'
+    displayName: 'Test C++ Example'
+
+  - script: |
+      ./ttkExample-vtk-c++ -i ../examples/data/inputData.vtu
+      if [ ! -f curve.vtk ] || [ ! -f separatrices.vtu ] || [ ! -f segmentation.vtu ] ; then
+        exit 1
+      fi
+    workingDirectory: 'build-example-vtk/'
+    displayName: 'Test TTKVTK Example'
+
+  - script: |
+      export PYTHONPATH=$(Build.ArtifactStagingDirectory)/ttk-install/lib/python3.8/site-packages
+      $(System.DefaultWorkingDirectory)/ParaView-$(PV_VERSION)/build/bin/pvpython ./example.py ../data/inputData.vtu
+      if [ ! -f curve.vtk ] || [ ! -f separatrices.vtu ] || [ ! -f segmentation.vtu ] ; then
+        exit 1
+      fi
+    workingDirectory: 'examples/python/'
+    displayName: 'Test Python Example'
+
+  - script: |
+      export PV_PLUGIN_PATH=$(System.DefaultWorkingDirectory)/ParaView-$(PV_VERSION)/build/bin/plugins
+      $(System.DefaultWorkingDirectory)/ParaView-$(PV_VERSION)/build/bin/pvpython -v=9 ./example.py ../data/inputData.vtu
+      if [ ! -f curve.vtk ] || [ ! -f separatrices.vtu ] || [ ! -f segmentation.vtu ] ; then
+        exit 1
+      fi
+    workingDirectory: 'examples/pvpython/'
+    displayName: 'Test pvpython Example'
+
+
 
 # ------------------------------
 # Windows build
@@ -312,24 +525,34 @@ jobs:
     vmImage: $(imageName)
 
   steps:
+  - task: Cache@2
+    inputs:
+      key: VTK | $(Agent.OS) | "$(VTKVersion)"
+      path: $(Build.ArtifactStagingDirectory)/vtk-install
+      cacheHitVar: CACHE_RESTORED
+    displayName: Cache VTK build
+
   - bash: |
       git clone --quiet https://gitlab.kitware.com/vtk/vtk.git
       cd vtk
       git checkout $(VTKVersion)
       git submodule update --init --recursive
       mkdir build
+    condition: ne(variables.CACHE_RESTORED, 'true')
     displayName: 'Clone VTK $(VTKVPath)'
 
   - script: |
       $(compilerInitialization)
       cmake -DCMAKE_C_COMPILER:FILEPATH="$(cCompiler)" -DCMAKE_CXX_COMPILER="$(cxxCompiler)" -DBUILD_SHARED_LIBS:BOOL=ON -DCMAKE_INSTALL_PREFIX="$(Build.ArtifactStagingDirectory)/vtk-install" -DCMAKE_BUILD_TYPE:STRING=Release -DBUILD_TESTING:BOOL=OFF -DVTK_BUILD_TESTING=OFF -DVTK_GROUP_ENABLE_Rendering=NO -GNinja ..
     workingDirectory: vtk/build
+    condition: ne(variables.CACHE_RESTORED, 'true')
     displayName: 'Configure VTK $(VTKVPath)'
 
   - script: |
       $(compilerInitialization)
       cmake --build . --target install
     workingDirectory: vtk/build
+    condition: ne(variables.CACHE_RESTORED, 'true')
     displayName: 'Build and install VTK'
 
   - script: |
@@ -350,3 +573,53 @@ jobs:
       cmake --build . --target install
     workingDirectory: build/
     displayName: 'Build and install TTK'
+
+  - script: |
+      mkdir build-example
+    displayName: 'Create C++ example build directory'
+
+  - script: |
+      $(compilerInitialization)
+      set BOOST_ROOT=$(BOOST_ROOT_1_69_0)
+      cmake ../examples/c++ -GNinja -DCMAKE_BUILD_TYPE=Release -DTTKBase_DIR="$(Build.ArtifactStagingDirectory)/ttk-install/lib/cmake/ttk"
+    workingDirectory: 'build-example/'
+    displayName: 'Configure C++ Example'
+
+  - script: |
+      $(compilerInitialization)
+      ninja
+    workingDirectory: 'build-example/'
+    displayName: 'Build C++ Example'
+
+  - script: |
+      mkdir build-example-vtk
+    displayName: 'Create TTKVTK example build directory'
+
+  - script: |
+      $(compilerInitialization)
+      set BOOST_ROOT=$(BOOST_ROOT_1_69_0)
+      cmake ../examples/vtk-c++ -GNinja -DCMAKE_BUILD_TYPE=Release -DVTK_DIR=$(Build.ArtifactStagingDirectory)/vtk-install/lib/cmake/vtk-$(VTKVPath) -DTTKVTK_DIR="$(Build.ArtifactStagingDirectory)/ttk-install/lib/cmake/ttk"
+    workingDirectory: 'build-example-vtk/'
+    displayName: 'Configure TTKVTK Example'
+
+  - script: |
+      $(compilerInitialization)
+      ninja
+    workingDirectory: 'build-example-vtk/'
+    displayName: 'Build TTKVTK Example'
+
+  - bash: |
+      ./ttkExample-c++ -i ../examples/data/inputData.off
+      if [ ! -f output.off ]; then
+        exit 1
+      fi
+    workingDirectory: 'build-example/'
+    displayName: 'Test C++ Example'
+
+  - bash: |
+      cmd.exe /C 'set PATH=$(Build.ArtifactStagingDirectory)/vtk-install/bin;$(Build.ArtifactStagingDirectory)/ttk-install/bin/ttk;%PATH% & ttkExample-vtk-c++.exe -i ../examples/data/inputData.vtu'
+      if [ ! -f curve.vtk ] || [ ! -f separatrices.vtu ] || [ ! -f segmentation.vtu ] ; then
+        exit 1
+      fi
+    workingDirectory: 'build-example-vtk/'
+    displayName: 'Test TTKVTK Example'
