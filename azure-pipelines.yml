@@ -320,6 +320,7 @@ jobs:
     displayName: 'Test TTKVTK Example'
 
   - script: |
+      export PYTHONPATH=$(Build.ArtifactStagingDirectory)/ttk-install/lib/python3.6/site-packages
       $(Build.ArtifactStagingDirectory)/pv-install/bin/pvpython ./example.py ../data/inputData.vtu
       if [ ! -f curve.vtk ] || [ ! -f separatrices.vtu ] || [ ! -f segmentation.vtu ] ; then
         exit 1
@@ -479,6 +480,7 @@ jobs:
     displayName: 'Test Python Example'
 
   - script: |
+      export PV_PLUGIN_PATH=$(System.DefaultWorkingDirectory)/ParaView-$(PV_VERSION)/lib/paraview-5.8/plugins
       $(System.DefaultWorkingDirectory)/ParaView-$(PV_VERSION)/build/bin/pvpython ./example.py ../data/inputData.vtu
       if [ ! -f curve.vtk ] || [ ! -f separatrices.vtu ] || [ ! -f segmentation.vtu ] ; then
         exit 1
@@ -614,19 +616,9 @@ jobs:
     displayName: 'Test C++ Example'
 
   - bash: |
-      cmd.exe /C 'set PATH=$(Build.ArtifactStagingDirectory)/vtk-install/bin;%PATH%'
-      ./ttkExample-vtk-c++ -i ../examples/data/inputData.vtu
+      cmd.exe /C 'set PATH=$(Build.ArtifactStagingDirectory)/vtk-install/bin;%PATH% & ttkExample-vtk-c++.exe -i ../examples/data/inputData.vtu'
       if [ ! -f curve.vtk ] || [ ! -f separatrices.vtu ] || [ ! -f segmentation.vtu ] ; then
         exit 1
       fi
     workingDirectory: 'build-example-vtk/'
     displayName: 'Test TTKVTK Example'
-
-  - bash: |
-      cmd.exe /C 'set PATH=$(Build.ArtifactStagingDirectory)/vtk-install/bin;$PATH'
-      vtkpython.exe ./example.py ../data/inputData.vtu
-      if [ ! -f curve.vtk ] || [ ! -f separatrices.vtu ] || [ ! -f segmentation.vtu ] ; then
-        exit 1
-      fi
-    workingDirectory: 'examples/python/'
-    displayName: 'Test Python Example'
