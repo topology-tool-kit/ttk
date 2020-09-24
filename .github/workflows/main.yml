@@ -23,7 +23,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-18.04, ubuntu-20.04]
+        os: [ubuntu-16.04, ubuntu-18.04, ubuntu-20.04]
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -115,7 +115,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-18.04, ubuntu-20.04]
+        os: [ubuntu-16.04, ubuntu-18.04, ubuntu-20.04]
     steps:
     - uses: actions/checkout@v2
 
@@ -176,6 +176,16 @@ jobs:
 
     - name: Fetch all uploaded artifacts
       uses: actions/download-artifact@v2
+
+    - name: Upload Ubuntu Bionic .deb as Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ttk-ubuntu-16.04.deb/ttk-ubuntu-16.04.deb
+        asset_name: ttk-ubuntu-16.04.deb
+        asset_content_type: application/vnd.debian.binary-package
 
     - name: Upload Ubuntu Bionic .deb as Release Asset
       uses: actions/upload-release-asset@v1
