@@ -481,7 +481,7 @@ jobs:
 
   - script: |
       export PV_PLUGIN_PATH=$(System.DefaultWorkingDirectory)/ParaView-$(PV_VERSION)/lib/paraview-5.8/plugins
-      $(System.DefaultWorkingDirectory)/ParaView-$(PV_VERSION)/build/bin/pvpython ./example.py ../data/inputData.vtu
+      $(System.DefaultWorkingDirectory)/ParaView-$(PV_VERSION)/build/bin/pvpython -v=9 ./example.py ../data/inputData.vtu
       if [ ! -f curve.vtk ] || [ ! -f separatrices.vtu ] || [ ! -f segmentation.vtu ] ; then
         exit 1
       fi
@@ -616,7 +616,11 @@ jobs:
     displayName: 'Test C++ Example'
 
   - bash: |
-      cmd.exe /C 'set PATH=$(Build.ArtifactStagingDirectory)/vtk-install/bin;%PATH% & ttkExample-vtk-c++.exe -i ../examples/data/inputData.vtu'
+      echo $(Build.ArtifactStagingDirectory)/vtk-install/bin/
+      ls -la $(Build.ArtifactStagingDirectory)/vtk-install/bin/
+      echo $(Build.ArtifactStagingDirectory)/ttk-install/bin/
+      ls -la $(Build.ArtifactStagingDirectory)/ttk-install/bin/
+      cmd.exe /C 'set PATH=$(Build.ArtifactStagingDirectory)/vtk-install/bin;$(Build.ArtifactStagingDirectory)/ttk-install/bin/ttk;%PATH% & ttkExample-vtk-c++.exe -i ../examples/data/inputData.vtu'
       if [ ! -f curve.vtk ] || [ ! -f separatrices.vtu ] || [ ! -f segmentation.vtu ] ; then
         exit 1
       fi
