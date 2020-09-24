@@ -289,7 +289,6 @@ jobs:
     workingDirectory: 'build-example/'
     displayName: 'Build C++ Example'
 
-
   - task: CMake@1
     inputs:
       workingDirectory: 'build-example-vtk/'
@@ -303,6 +302,39 @@ jobs:
       cmake --build .
     workingDirectory: 'build-example-vtk/'
     displayName: 'Build TTKVTK Example'
+
+  - script: |
+      ./ttkExample-c++ -i ../examples/data/inputData.off
+      if [ ! -f output.off ]; then
+        exit 1
+      fi
+    workingDirectory: 'build-example/'
+    displayName: 'Test C++ Example'
+
+  - script: |
+      ./ttkExample-vtk-c++ -i ../examples/data/inputData.vtu
+      if [ ! -f curve.vtk ] || [ ! -f separatrices.vtu ] || [ ! -f segmentation.vtu ] ; then
+        exit 1
+      fi
+    workingDirectory: 'build-example-vtk/'
+    displayName: 'Test TTKVTK Example'
+
+  - script: |
+      ./example.py ../data/inputData.vtu
+      if [ ! -f curve.vtk ] || [ ! -f separatrices.vtu ] || [ ! -f segmentation.vtu ] ; then
+        exit 1
+      fi
+    workingDirectory: 'examples/python/'
+    displayName: 'Test Python Example'
+
+  - script: |
+      ./example.py ../data/inputData.vtu
+      if [ ! -f curve.vtk ] || [ ! -f separatrices.vtu ] || [ ! -f segmentation.vtu ] ; then
+        exit 1
+      fi
+    workingDirectory: 'examples/pvpython/'
+    displayName: 'Test pvpython Example'
+
 
 # ------------------------------
 # Mac OS build
@@ -421,6 +453,39 @@ jobs:
     workingDirectory: 'build-example-vtk/'
     displayName: 'Build TTKVTK Example'
 
+  - script: |
+      DYLD_PRINT_LIBRARIES=1 ./ttkExample-c++ -i ../examples/data/inputData.off
+      if [ ! -f output.off ]; then
+        exit 1
+      fi
+    workingDirectory: 'build-example/'
+    displayName: 'Test C++ Example'
+
+  - script: |
+      DYLD_PRINT_LIBRARIES=1 ./ttkExample-vtk-c++ -i ../examples/data/inputData.vtu
+      if [ ! -f curve.vtk ] || [ ! -f separatrices.vtu ] || [ ! -f segmentation.vtu ] ; then
+        exit 1
+      fi
+    workingDirectory: 'build-example-vtk/'
+    displayName: 'Test TTKVTK Example'
+
+  - script: |
+      $(System.DefaultWorkingDirectory)/ParaView-$(PV_VERSION)/build/bin/pvpython ./example.py ../data/inputData.vtu
+      if [ ! -f curve.vtk ] || [ ! -f separatrices.vtu ] || [ ! -f segmentation.vtu ] ; then
+        exit 1
+      fi
+    workingDirectory: 'examples/python/'
+    displayName: 'Test Python Example'
+
+  - script: |
+      $(System.DefaultWorkingDirectory)/ParaView-$(PV_VERSION)/build/bin/pvpython ./example.py ../data/inputData.vtu
+      if [ ! -f curve.vtk ] || [ ! -f separatrices.vtu ] || [ ! -f segmentation.vtu ] ; then
+        exit 1
+      fi
+    workingDirectory: 'examples/pvpython/'
+    displayName: 'Test pvpython Example'
+
+
 
 # ------------------------------
 # Windows build
@@ -538,3 +603,27 @@ jobs:
       ninja
     workingDirectory: 'build-example-vtk/'
     displayName: 'Build TTKVTK Example'
+
+  - bash: |
+      ./ttkExample-c++ -i ../examples/data/inputData.off
+      if [ ! -f output.off ]; then
+        exit 1
+      fi
+    workingDirectory: 'build-example/'
+    displayName: 'Test C++ Example'
+
+  - bash: |
+      ./ttkExample-vtk-c++ -i ../examples/data/inputData.vtu
+      if [ ! -f curve.vtk ] || [ ! -f separatrices.vtu ] || [ ! -f segmentation.vtu ] ; then
+        exit 1
+      fi
+    workingDirectory: 'build-example-vtk/'
+    displayName: 'Test TTKVTK Example'
+
+  - bash: |
+      ./example.py ../data/inputData.vtu
+      if [ ! -f curve.vtk ] || [ ! -f separatrices.vtu ] || [ ! -f segmentation.vtu ] ; then
+        exit 1
+      fi
+    workingDirectory: 'examples/python/'
+    displayName: 'Test Python Example'
