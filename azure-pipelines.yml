@@ -411,6 +411,7 @@ jobs:
                      -DCMAKE_INSTALL_PREFIX=$(Build.ArtifactStagingDirectory)/ttk-install
                      -DCMAKE_BUILD_TYPE=Release
                      -DParaView_DIR=./ParaView-$(PV_VERSION)/build/
+                     -DTTK_INSTALL_PLUGIN_DIR=$(System.DefaultWorkingDirectory)/ParaView-$(PV_VERSION)/build/bin/plugins
                      -DTTK_BUILD_STANDALONE_APPS=ON
                      $(TTK_MODULE_DISABLE)
                      $(TTK_MODULE_TEST)'
@@ -480,7 +481,7 @@ jobs:
     displayName: 'Test Python Example'
 
   - script: |
-      export PV_PLUGIN_PATH=$(System.DefaultWorkingDirectory)/ParaView-$(PV_VERSION)/lib/paraview-5.8/plugins
+      export PV_PLUGIN_PATH=$(System.DefaultWorkingDirectory)/ParaView-$(PV_VERSION)/build/bin/plugins
       $(System.DefaultWorkingDirectory)/ParaView-$(PV_VERSION)/build/bin/pvpython -v=9 ./example.py ../data/inputData.vtu
       if [ ! -f curve.vtk ] || [ ! -f separatrices.vtu ] || [ ! -f segmentation.vtu ] ; then
         exit 1
@@ -616,10 +617,6 @@ jobs:
     displayName: 'Test C++ Example'
 
   - bash: |
-      echo $(Build.ArtifactStagingDirectory)/vtk-install/bin/
-      ls -la $(Build.ArtifactStagingDirectory)/vtk-install/bin/
-      echo $(Build.ArtifactStagingDirectory)/ttk-install/bin/
-      ls -la $(Build.ArtifactStagingDirectory)/ttk-install/bin/
       cmd.exe /C 'set PATH=$(Build.ArtifactStagingDirectory)/vtk-install/bin;$(Build.ArtifactStagingDirectory)/ttk-install/bin/ttk;%PATH% & ttkExample-vtk-c++.exe -i ../examples/data/inputData.vtu'
       if [ ! -f curve.vtk ] || [ ! -f separatrices.vtu ] || [ ! -f segmentation.vtu ] ; then
         exit 1
