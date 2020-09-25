@@ -7,6 +7,7 @@ if(TARGET ttkScalarFieldSmoother)
   target_link_libraries(${PROJECT_NAME}
     PRIVATE
       ttkScalarFieldSmoother
+      VTK::IOXML
     )
   set_target_properties(${PROJECT_NAME}
     PROPERTIES

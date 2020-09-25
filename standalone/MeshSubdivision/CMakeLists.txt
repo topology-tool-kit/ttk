@@ -7,6 +7,7 @@ if(TARGET ttkMeshSubdivision)
   target_link_libraries(${PROJECT_NAME}
     PRIVATE
       ttkMeshSubdivision
+      VTK::IOXML
     )
   set_target_properties(${PROJECT_NAME}
     PROPERTIES

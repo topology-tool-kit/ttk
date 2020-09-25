@@ -7,6 +7,7 @@ if(TARGET ttkContourForests)
   target_link_libraries(${PROJECT_NAME}
     PRIVATE
       ttkContourForests
+      VTK::IOXML
     )
   set_target_properties(${PROJECT_NAME}
     PROPERTIES

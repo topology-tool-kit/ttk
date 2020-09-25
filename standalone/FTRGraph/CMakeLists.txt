@@ -7,6 +7,7 @@ if(TARGET ttkFTRGraph)
   target_link_libraries(${PROJECT_NAME}
     PRIVATE
       ttkFTRGraph
+      VTK::IOXML
     )
   set_target_properties(${PROJECT_NAME}
     PROPERTIES

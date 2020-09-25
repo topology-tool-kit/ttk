@@ -7,6 +7,7 @@ if(TARGET ttkLDistance)
   target_link_libraries(${PROJECT_NAME}
     PRIVATE
       ttkLDistance
+      VTK::IOXML
     )
   set_target_properties(${PROJECT_NAME}
     PROPERTIES

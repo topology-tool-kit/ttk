@@ -3,3 +3,5 @@ NAME
 DEPENDS
   ttkAlgorithm
   VTK::RenderingOpenGL2
+PRIVATE_DEPENDS
+  VTK::FiltersGeometry
