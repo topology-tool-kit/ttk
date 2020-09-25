@@ -33,7 +33,7 @@ set(CPACK_PACKAGE_CONTACT "Julien Tierny <julien.tierny@sorbonne-universite.fr>"
 set(CPACK_PACKAGE_VENDOR "LIP6 - Sorbonne Université")
 set(CPACK_PACKAGE_HOMEPAGE_URL "https://topology-tool-kit.github.io/")
 set(CPACK_DEBIAN_PACKAGE_DEPENDS
-  "ttk-paraview (= 5.8.0), python3-sklearn, libboost-system-dev, python3-dev, libgraphviz-dev, libsqlite3-dev")
+  "ttk-paraview (= 5.8.1), python3-sklearn, libboost-system-dev, python3-dev, libgraphviz-dev, libsqlite3-dev")
 # autogenerate dependency information
 set (CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
 include(CPack)
