@@ -16,10 +16,6 @@
 // base code includes
 #include <AbstractTriangulation.h>
 
-#ifdef _WIN32
-#include <ciso646>
-#endif
-
 #include <array>
 
 namespace ttk {

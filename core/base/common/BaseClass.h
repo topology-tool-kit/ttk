@@ -12,6 +12,11 @@
 #include <omp.h>
 #endif
 
+#ifdef _WIN32
+// enable the `and` and `or` keywords on MSVC
+#include <ciso646>
+#endif // _WIN32
+
 #include <DataTypes.h>
 
 namespace ttk {

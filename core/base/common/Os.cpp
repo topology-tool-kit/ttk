@@ -12,7 +12,6 @@
 
 #include <windows.h>
 
-#include <ciso646>
 #include <cwchar>
 #include <direct.h>
 #include <stdint.h>

@@ -22,10 +22,6 @@
 #include <array>
 #include <limits>
 
-#ifdef _WIN32
-#include <ciso646>
-#endif
-
 #include <PDBarycenter.h>
 
 using namespace std;
