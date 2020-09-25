@@ -114,9 +114,11 @@ namespace ttk {
         contourTree_.setDebugLevel(debugLevel_);
         contourTree_.setThreadNumber(threadNumber_);
         contourTree_.preconditionTriangulation(triangulation);
-        morseSmaleComplex_.setDebugLevel(debugLevel_);
-        morseSmaleComplex_.setThreadNumber(threadNumber_);
-        morseSmaleComplex_.preconditionTriangulation(triangulation);
+        if(this->ComputeSaddleConnectors) {
+          morseSmaleComplex_.setDebugLevel(debugLevel_);
+          morseSmaleComplex_.setThreadNumber(threadNumber_);
+          morseSmaleComplex_.preconditionTriangulation(triangulation);
+        }
       }
     }
 
