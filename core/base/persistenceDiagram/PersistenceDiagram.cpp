@@ -44,7 +44,7 @@ void ttk::PersistenceDiagram::sortPersistenceDiagram(
   std::vector<PersistencePair> &diagram, const SimplexId *const offsets) const {
 
   auto cmp = [offsets](const PersistencePair &a, const PersistencePair &b) {
-    return offsets[std::get<0>(a)] < offsets[std::get<0>(b)];
+    return offsets[a.birth] < offsets[b.birth];
   };
 
   std::sort(diagram.begin(), diagram.end(), cmp);

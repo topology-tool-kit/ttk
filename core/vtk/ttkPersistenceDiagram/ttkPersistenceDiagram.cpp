@@ -115,10 +115,10 @@ int ttkPersistenceDiagram::setPersistenceDiagram(
 #pragma omp parallel for num_threads(this->threadNumber_)
 #endif // TTK_ENABLE_OPENMP
   for(size_t i = 0; i < diagram.size(); ++i) {
-    const auto a = std::get<0>(diagram[i]);
-    const auto b = std::get<2>(diagram[i]);
-    const auto ta = std::get<1>(diagram[i]);
-    const auto tb = std::get<3>(diagram[i]);
+    const auto a = diagram[i].birth;
+    const auto b = diagram[i].death;
+    const auto ta = diagram[i].birthType;
+    const auto tb = diagram[i].deathType;
     // inputScalarsArray->GetTuple is not thread safe...
     const auto sa = inputScalars[a];
     const auto sb = inputScalars[b];
@@ -158,11 +158,11 @@ int ttkPersistenceDiagram::setPersistenceDiagram(
 
     // cell data
     pairIdentifierScalars->SetTuple1(i, i);
-    persistenceScalars->SetTuple1(i, std::get<4>(diagram[i]));
+    persistenceScalars->SetTuple1(i, diagram[i].persistence);
     if(i == 0) {
       extremumIndexScalars->SetTuple1(i, -1);
     } else {
-      const auto type = std::get<5>(diagram[i]);
+      const auto type = diagram[i].pairType;
       if(type == 0) {
         extremumIndexScalars->SetTuple1(i, minIndex);
       } else if(type == 1) {
@@ -186,7 +186,7 @@ int ttkPersistenceDiagram::setPersistenceDiagram(
     pairIdentifierScalars->InsertTuple1(diagram.size(), -1);
     extremumIndexScalars->InsertTuple1(diagram.size(), -1);
     // persistence of min-max pair
-    const auto maxPersistence = std::get<4>(diagram[0]);
+    const auto maxPersistence = diagram[0].persistence;
     persistenceScalars->InsertTuple1(diagram.size(), 2 * maxPersistence);
   }
 

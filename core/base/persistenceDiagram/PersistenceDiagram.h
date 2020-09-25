@@ -39,19 +39,31 @@ namespace ttk {
   /**
    * @brief Persistence pair type (with persistence in double)
    */
-  using PersistencePair = std::tuple<
+  struct PersistencePair {
     /** first (lower) vertex id */
-    ttk::SimplexId,
+    ttk::SimplexId birth{};
     /** first vertex type */
-    ttk::CriticalType,
+    ttk::CriticalType birthType{};
     /** second (higher) vertex id */
-    ttk::SimplexId,
+    ttk::SimplexId death{};
     /** second vertex type */
-    ttk::CriticalType,
+    ttk::CriticalType deathType{};
     /** persistence value (scalars[second] - scalars[first]) */
-    double,
+    double persistence{};
     /** pair type (min-saddle: 0, saddle-saddle: 1, saddle-max: 2) */
-    ttk::SimplexId>;
+    ttk::SimplexId pairType{};
+
+    PersistencePair() = default;
+    PersistencePair(const SimplexId b,
+                    const CriticalType bType,
+                    const SimplexId d,
+                    const CriticalType dType,
+                    const double pers,
+                    const SimplexId pType)
+      : birth{b}, birthType{bType}, death{d}, deathType{dType},
+        persistence{pers}, pairType{pType} {
+    }
+  };
 
   /**
    * Compute the persistence diagram of a function on a triangulation.
@@ -128,26 +140,25 @@ int ttk::PersistenceDiagram::computeCTPersistenceDiagram(
   for(ttk::SimplexId i = 0; i < numberOfPairs; ++i) {
     const ttk::SimplexId v0 = std::get<0>(pairs[i]);
     const ttk::SimplexId v1 = std::get<1>(pairs[i]);
-    const scalarType persistenceValue = std::get<2>(pairs[i]);
+    const auto persistenceValue = static_cast<double>(std::get<2>(pairs[i]));
     const bool type = std::get<3>(pairs[i]);
 
-    std::get<4>(diagram[i]) = persistenceValue;
     if(type == true) {
-      std::get<0>(diagram[i]) = v0;
-      std::get<1>(diagram[i])
-        = getNodeType(tree.getJoinTree(), ftm::TreeType::Join, v0);
-      std::get<2>(diagram[i]) = v1;
-      std::get<3>(diagram[i])
-        = getNodeType(tree.getJoinTree(), ftm::TreeType::Join, v1);
-      std::get<5>(diagram[i]) = 0;
+      diagram[i] = PersistencePair{
+        v0,
+        getNodeType(tree.getJoinTree(), ftm::TreeType::Join, v0),
+        v1,
+        getNodeType(tree.getJoinTree(), ftm::TreeType::Join, v1),
+        persistenceValue,
+        0};
     } else {
-      std::get<0>(diagram[i]) = v1;
-      std::get<1>(diagram[i])
-        = getNodeType(tree.getSplitTree(), ftm::TreeType::Split, v1);
-      std::get<2>(diagram[i]) = v0;
-      std::get<3>(diagram[i])
-        = getNodeType(tree.getSplitTree(), ftm::TreeType::Split, v0);
-      std::get<5>(diagram[i]) = 2;
+      diagram[i] = PersistencePair{
+        v1,
+        getNodeType(tree.getSplitTree(), ftm::TreeType::Split, v1),
+        v0,
+        getNodeType(tree.getSplitTree(), ftm::TreeType::Split, v0),
+        persistenceValue,
+        2};
     }
   }
 
@@ -223,20 +234,10 @@ int ttk::PersistenceDiagram::execute(std::vector<PersistencePair> &CTDiagram,
     for(const auto &i : pl_saddleSaddlePairs) {
       const ttk::SimplexId v0 = std::get<0>(i);
       const ttk::SimplexId v1 = std::get<1>(i);
-      const scalarType persistenceValue = std::get<2>(i);
+      const auto persistenceValue = static_cast<double>(std::get<2>(i));
 
-      std::tuple<ttk::SimplexId, ttk::CriticalType, ttk::SimplexId,
-                 ttk::CriticalType, scalarType, ttk::SimplexId>
-        t;
-
-      std::get<0>(t) = v0;
-      std::get<1>(t) = ttk::CriticalType::Saddle1;
-      std::get<2>(t) = v1;
-      std::get<3>(t) = ttk::CriticalType::Saddle2;
-      std::get<4>(t) = persistenceValue;
-      std::get<5>(t) = 1;
-
-      CTDiagram.push_back(t);
+      CTDiagram.emplace_back(v0, ttk::CriticalType::Saddle1, v1,
+                             ttk::CriticalType::Saddle2, persistenceValue, 1);
     }
   }
 
