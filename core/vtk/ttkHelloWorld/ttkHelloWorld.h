@@ -44,6 +44,28 @@
 // VTK Includes
 #include <ttkAlgorithm.h>
 
+/* Note on including VTK modules 
+ * 
+ * Each VTK module that you include a header from needs to be specified in this
+ * module's vtk.module file, either in the DEPENDS or PRIVATE_DEPENDS (if the
+ * header is included in the cpp file only) sections. 
+ * 
+ * In order to find the corresponding module, check its location within the VTK
+ * source code. The VTK module name is composed of the path to the header. You
+ * can also find the module name within the vtk.module file located in the same
+ * directory as the header file.
+ * 
+ * For example, vtkSphereSource.h is located in directory VTK/Filters/Sources/,
+ * so its corresponding VTK module is called VTK::FiltersSources. In this case,
+ * the vtk.module file would need to be extended to
+ *
+ * NAME
+ *   ttkHelloWorld
+ * DEPENDS
+ *   ttkAlgorithm
+ *   VTK::FiltersSources
+ */
+
 // TTK Base Includes
 #include <HelloWorld.h>
 
