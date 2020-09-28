@@ -204,7 +204,7 @@ int ttkContourTreeAlignment::RequestData(vtkInformation *request,
   this->setDebugLevel(this->debugLevel_);
   this->setThreadNumber(this->threadNumber_);
 
-  int success;
+  int success = 1;
   switch(scalarType) {
     vtkTemplateMacro({
       success = this->execute<VTK_TT>(
@@ -351,12 +351,12 @@ int ttkContourTreeAlignment::RequestData(vtkInformation *request,
     std::vector<std::vector<int>> downEdges(nOutputVertices);
 
     std::vector<std::vector<int>> alignmentIDs;
-    for(int i = 0; i < n; i++) {
+    for(int i = 0; i < (int)n; i++) {
       std::vector<int> vertices_i(nVertices[i], -1);
       alignmentIDs.push_back(vertices_i);
     }
 
-    for(int i = 0; i < nOutputEdges; i++) {
+    for(int i = 0; i < (int)nOutputEdges; i++) {
       int id1 = outputEdges[i * 2];
       int id2 = outputEdges[i * 2 + 1];
       float v1 = scalar->GetValue(id1);
@@ -374,48 +374,48 @@ int ttkContourTreeAlignment::RequestData(vtkInformation *request,
 
     fileJSON << "  \"nodes\": [\n";
 
-    for(int i = 0; i < nOutputVertices; i++) {
+    for(int i = 0; i < (int)nOutputVertices; i++) {
       fileJSON << "    {";
       fileJSON << "\"scalar\": " << scalar->GetValue(i) << ", ";
       fileJSON << "\"frequency\": " << freq->GetValue(i) << ", ";
-      for(int j = 0; j < n; j++) {
+      for(int j = 0; j < (int)n; j++) {
         if(vertexIDs->GetComponent(i, j) >= 0)
           alignmentIDs[j][vertexIDs->GetComponent(i, j)] = i;
       }
       fileJSON << "\"segmentationIDs\": [";
-      for(int j = 0; j < n; j++) {
+      for(int j = 0; j < (int)n; j++) {
         fileJSON << segmentationIDs->GetComponent(i, j);
-        if(j < n - 1)
+        if(j < (int)n - 1)
           fileJSON << ",";
       }
       fileJSON << "], ";
       fileJSON << "\"upEdgeIDs\": [";
-      for(int j = 0; j < upEdges[i].size(); j++) {
+      for(int j = 0; j < (int)upEdges[i].size(); j++) {
         fileJSON << upEdges[i][j];
-        if(j < upEdges[i].size() - 1)
+        if(j < (int)upEdges[i].size() - 1)
           fileJSON << ",";
       }
       fileJSON << "], ";
       fileJSON << "\"downEdgeIDs\": [";
-      for(int j = 0; j < downEdges[i].size(); j++) {
+      for(int j = 0; j < (int)downEdges[i].size(); j++) {
         fileJSON << downEdges[i][j];
-        if(j < downEdges[i].size() - 1)
+        if(j < (int)downEdges[i].size() - 1)
           fileJSON << ",";
       }
       fileJSON << "]";
-      fileJSON << (i == nOutputVertices - 1 ? "}\n" : "},\n");
+      fileJSON << (i == (int)nOutputVertices - 1 ? "}\n" : "},\n");
     }
 
     fileJSON << "  ],\n";
 
     fileJSON << "  \"edges\": [\n";
 
-    for(int i = 0; i < nOutputEdges; i++) {
+    for(int i = 0; i < (int)nOutputEdges; i++) {
       fileJSON << "    {";
       int id1 = outputEdges[i * 2];
       int id2 = outputEdges[i * 2 + 1];
       fileJSON << "\"node1\": " << id1 << ", \"node2\": " << id2;
-      fileJSON << (i == nOutputEdges - 1 ? "}\n" : "},\n");
+      fileJSON << (i == (int)nOutputEdges - 1 ? "}\n" : "},\n");
     }
 
     fileJSON << "  ]\n";
@@ -433,24 +433,24 @@ int ttkContourTreeAlignment::RequestData(vtkInformation *request,
     //==================================================================================================================
     // output original trees as JSON
 
-    for(size_t t = 0; t < n; t++) {
+    for(size_t localT = 0; localT < n; localT++) {
 
-      fileJSON.open(ExportPath + "/tree" + std::to_string(t) + ".json");
+      fileJSON.open(ExportPath + "/tree" + std::to_string(localT) + ".json");
 
-      std::vector<std::vector<int>> upEdges(nVertices[t]);
-      std::vector<std::vector<int>> downEdges(nVertices[t]);
+      std::vector<std::vector<int>> localUpEdges(nVertices[localT]);
+      std::vector<std::vector<int>> localDownEdges(nVertices[localT]);
 
-      for(int i = 0; i < nEdges[t]; i++) {
-        int id1 = topologies[t][i * 2 + 0];
-        int id2 = topologies[t][i * 2 + 1];
-        float v1 = ((float *)scalars[t])[id1];
-        float v2 = ((float *)scalars[t])[id2];
+      for(int i = 0; i < (int)nEdges[localT]; i++) {
+        int id1 = topologies[localT][i * 2 + 0];
+        int id2 = topologies[localT][i * 2 + 1];
+        float v1 = ((float *)scalars[localT])[id1];
+        float v2 = ((float *)scalars[localT])[id2];
         if(v1 > v2) {
-          downEdges[id1].push_back(i);
-          upEdges[id2].push_back(i);
+          localDownEdges[id1].push_back(i);
+          localUpEdges[id2].push_back(i);
         } else {
-          upEdges[id1].push_back(i);
-          downEdges[id2].push_back(i);
+          localUpEdges[id1].push_back(i);
+          localDownEdges[id2].push_back(i);
         }
       }
 
@@ -459,24 +459,24 @@ int ttkContourTreeAlignment::RequestData(vtkInformation *request,
       fileJSON << "  \"nodes\": [\n";
 
       bool first = true;
-      for(int k = 0; k < nOutputVertices; k++) {
-        int i = vertexIDs->GetComponent(k, t);
+      for(int k = 0; k < (int)nOutputVertices; k++) {
+        int i = vertexIDs->GetComponent(k, localT);
         if(i < 0)
           continue;
         fileJSON << (first ? "    {" : ",\n    {");
-        fileJSON << "\"scalar\": " << ((float *)scalars[t])[i] << ", ";
-        fileJSON << "\"id\": " << alignmentIDs[t][i] << ", ";
+        fileJSON << "\"scalar\": " << ((float *)scalars[localT])[i] << ", ";
+        fileJSON << "\"id\": " << alignmentIDs[localT][i] << ", ";
         fileJSON << "\"upEdgeIDs\": [";
-        for(int j = 0; j < upEdges[i].size(); j++) {
-          fileJSON << upEdges[i][j];
-          if(j < upEdges[i].size() - 1)
+        for(int j = 0; j < (int)localUpEdges[i].size(); j++) {
+          fileJSON << localUpEdges[i][j];
+          if(j < (int)localUpEdges[i].size() - 1)
             fileJSON << ",";
         }
         fileJSON << "], ";
         fileJSON << "\"downEdgeIDs\": [";
-        for(int j = 0; j < downEdges[i].size(); j++) {
-          fileJSON << downEdges[i][j];
-          if(j < downEdges[i].size() - 1)
+        for(int j = 0; j < (int)localDownEdges[i].size(); j++) {
+          fileJSON << localDownEdges[i][j];
+          if(j < (int)localDownEdges[i].size() - 1)
             fileJSON << ",";
         }
         fileJSON << "]";
@@ -488,12 +488,12 @@ int ttkContourTreeAlignment::RequestData(vtkInformation *request,
 
       fileJSON << "  \"edges\": [\n";
 
-      for(int i = 0; i < nEdges[t]; i++) {
+      for(int i = 0; i < (int)nEdges[localT]; i++) {
         fileJSON << "    {";
-        int id1 = alignmentIDs[t][topologies[t][i * 2 + 0]];
-        int id2 = alignmentIDs[t][topologies[t][i * 2 + 1]];
+        int id1 = alignmentIDs[localT][topologies[localT][i * 2 + 0]];
+        int id2 = alignmentIDs[localT][topologies[localT][i * 2 + 1]];
         fileJSON << "\"node1\": " << id1 << ", \"node2\": " << id2;
-        fileJSON << (i == nEdges[t] - 1 ? "}\n" : "},\n");
+        fileJSON << (i == (int)nEdges[localT] - 1 ? "}\n" : "},\n");
       }
 
       fileJSON << "  ]\n";
