@@ -6,4 +6,5 @@ ttk_add_base_library(localizedTopologicalSimplification
     SSCPropagation.h
   DEPENDS
     triangulation
+    Boost::boost
 )

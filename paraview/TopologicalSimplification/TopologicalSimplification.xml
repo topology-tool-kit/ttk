@@ -199,6 +199,7 @@
           label="Use LTS"
           command="SetUseLTS"
           number_of_elements="1"
+          panel_visibility="advanced"
           default_values="1">
         <BooleanDomain name="bool"/>
         <Documentation>
