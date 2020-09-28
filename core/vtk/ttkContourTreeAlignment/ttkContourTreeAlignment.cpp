@@ -437,8 +437,8 @@ int ttkContourTreeAlignment::RequestData(vtkInformation *request,
 
       fileJSON.open(ExportPath + "/tree" + std::to_string(localT) + ".json");
 
-      std::vector<std::vector<int>> upEdges(nVertices[localT]);
-      std::vector<std::vector<int>> downEdges(nVertices[localT]);
+      std::vector<std::vector<int>> localUpEdges(nVertices[localT]);
+      std::vector<std::vector<int>> localDownEdges(nVertices[localT]);
 
       for(int i = 0; i < (int)nEdges[localT]; i++) {
         int id1 = topologies[localT][i * 2 + 0];
@@ -446,11 +446,11 @@ int ttkContourTreeAlignment::RequestData(vtkInformation *request,
         float v1 = ((float *)scalars[localT])[id1];
         float v2 = ((float *)scalars[localT])[id2];
         if(v1 > v2) {
-          downEdges[id1].push_back(i);
-          upEdges[id2].push_back(i);
+          localDownEdges[id1].push_back(i);
+          localUpEdges[id2].push_back(i);
         } else {
-          upEdges[id1].push_back(i);
-          downEdges[id2].push_back(i);
+          localUpEdges[id1].push_back(i);
+          localDownEdges[id2].push_back(i);
         }
       }
 
@@ -467,16 +467,16 @@ int ttkContourTreeAlignment::RequestData(vtkInformation *request,
         fileJSON << "\"scalar\": " << ((float *)scalars[localT])[i] << ", ";
         fileJSON << "\"id\": " << alignmentIDs[localT][i] << ", ";
         fileJSON << "\"upEdgeIDs\": [";
-        for(int j = 0; j < (int)upEdges[i].size(); j++) {
-          fileJSON << upEdges[i][j];
-          if(j < (int)upEdges[i].size() - 1)
+        for(int j = 0; j < (int)localUpEdges[i].size(); j++) {
+          fileJSON << localUpEdges[i][j];
+          if(j < (int)localUpEdges[i].size() - 1)
             fileJSON << ",";
         }
         fileJSON << "], ";
         fileJSON << "\"downEdgeIDs\": [";
-        for(int j = 0; j < (int)downEdges[i].size(); j++) {
-          fileJSON << downEdges[i][j];
-          if(j < (int)downEdges[i].size() - 1)
+        for(int j = 0; j < (int)localDownEdges[i].size(); j++) {
+          fileJSON << localDownEdges[i][j];
+          if(j < (int)localDownEdges[i].size() - 1)
             fileJSON << ",";
         }
         fileJSON << "]";
