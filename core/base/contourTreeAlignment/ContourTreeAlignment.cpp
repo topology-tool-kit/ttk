@@ -390,7 +390,7 @@ bool ttk::ContourTreeAlignment::alignTree(ContourTree *ct) {
 
   BinaryTree *t1, *t2;
 
-  AlignmentTree *res;
+  AlignmentTree *res = nullptr;
   float resVal = FLT_MAX;
 
   std::vector<AlignmentNode *> nodes1 = nodes;
@@ -1357,6 +1357,8 @@ AlignmentTree *ttk::ContourTreeAlignment::traceAlignmentTree(BinaryTree *t1,
       = std::max(res->height, resChild2 == NULL ? 0 : resChild2->height + 1);
     return res;
   }
+
+  return nullptr;
 }
 
 std::vector<AlignmentTree *> ttk::ContourTreeAlignment::traceAlignmentForest(
@@ -1574,6 +1576,8 @@ std::vector<AlignmentTree *> ttk::ContourTreeAlignment::traceAlignmentForest(
       return res;
     }
   }
+
+  return std::vector<AlignmentTree *>();
 }
 
 AlignmentTree *ttk::ContourTreeAlignment::traceNullAlignment(BinaryTree *t,

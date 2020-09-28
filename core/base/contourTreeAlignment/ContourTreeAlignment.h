@@ -369,7 +369,8 @@ int ttk::ContourTreeAlignment::execute(const vector<void *> &scalarsVP,
   printMsg("Filtering input contour trees", 1);
 
   for(int rootIdx = 0;
-      rootIdx < contourtreesToAlign[0]->getGraph().first.size(); rootIdx++) {
+      rootIdx < (int)contourtreesToAlign[0]->getGraph().first.size();
+      rootIdx++) {
     // for(int rootIdx=2; rootIdx<3; rootIdx++){
 
     contourtrees.clear();
@@ -383,8 +384,6 @@ int ttk::ContourTreeAlignment::execute(const vector<void *> &scalarsVP,
 
     // initialize alignment with first tree
 
-    bool binary;
-    bool init = false;
     size_t i = 0;
 
     this->printMsg(
