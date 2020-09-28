@@ -33,12 +33,12 @@ namespace ttk {
         }
 
         static inline SSCPropagation<IT>* unify(
-            SSCPropagation<IT>* uf0,
-            SSCPropagation<IT>* uf1,
+            SSCPropagation<IT>* p0,
+            SSCPropagation<IT>* p1,
             const IT* orderField
         ){
-            SSCPropagation<IT>* parent = uf0;
-            SSCPropagation<IT>* child  = uf1;
+            SSCPropagation<IT>* parent = p0;
+            SSCPropagation<IT>* child  = p1;
 
             // determine parent and child based on persistence
             if(orderField[parent->criticalPoints[0]] < orderField[child->criticalPoints[0]]) {
