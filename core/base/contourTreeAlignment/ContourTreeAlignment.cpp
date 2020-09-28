@@ -1234,7 +1234,7 @@ AlignmentTree *ttk::ContourTreeAlignment::traceAlignmentTree(BinaryTree *t1,
   if(t2 == NULL)
     return traceNullAlignment(t1, true);
 
-  auto id = [this](BinaryTree *t) { return t == NULL ? 0 : t->id; };
+  auto id = [](BinaryTree *t) { return t == NULL ? 0 : t->id; };
 
   if(memT[t1->id][t2->id] == editCost(t1, t2) + memF[t1->id][t2->id]) {
 
@@ -1381,7 +1381,7 @@ std::vector<AlignmentTree *> ttk::ContourTreeAlignment::traceAlignmentForest(
       res.push_back(traceNullAlignment(t1->child2, true));
   }
 
-  auto id = [this](BinaryTree *t) { return t == NULL ? 0 : t->id; };
+  auto id = [](BinaryTree *t) { return t == NULL ? 0 : t->id; };
 
   if(memF[t1->id][t2->id]
      == memT[id(t1->child1)][id(t2->child1)]
