@@ -7,6 +7,9 @@ if(TARGET ttkUncertainDataEstimator)
   target_link_libraries(${PROJECT_NAME}
     PRIVATE
       ttkUncertainDataEstimator
+      VTK::IOImage
+      VTK::IOLegacy
+      VTK::IOXML
     )
   set_target_properties(${PROJECT_NAME}
     PROPERTIES
