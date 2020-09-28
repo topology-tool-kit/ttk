@@ -1050,7 +1050,7 @@ namespace ttk {
           // init propagations
           status = this->initializePropagations<IT,TT>(
               propagations,
-              segmentation, // use as authorization mask (will be overriden by subsequent procedures)
+              queueMask, // use as authorization mask (will be overriden by subsequent procedures)
               localOrder, // use as maxima buffer (will be overriden by subsequent procedures)
 
               authorizedExtremaIndices,
