@@ -95,5 +95,5 @@ private:
   bool ForceInputOffsetScalarField{false};
   bool ConsiderIdentifierAsBlackList{false};
   bool AddPerturbation{false};
-  bool UseLTS{false};
+  bool UseLTS{true};
 };
