@@ -54,84 +54,26 @@
 // ttk code includes
 #include <PersistenceDiagramBarycenter.h>
 #include <PersistenceDiagramClustering.h>
-//
-//
+
 #include <ttkAlgorithm.h>
 
-// in this example, this wrapper takes a data-set on the input and produces a
-// data-set on the output - to adapt.
-// see the documentation of the vtkAlgorithm class to decide from which VTK
-// class your wrapper should inherit.
 class TTKPERSISTENCEDIAGRAMCLUSTERING_EXPORT ttkPersistenceDiagramClustering
   : public ttkAlgorithm,
     protected ttk::PersistenceDiagramClustering {
 
 public:
-  // void setNumberOfInputsFromCommandLine(int number) {
-  //   numberOfInputsFromCommandLine = number;
-  //   SetNumberOfInputPorts(number);
-  // }
   static ttkPersistenceDiagramClustering *New();
 
   vtkTypeMacro(ttkPersistenceDiagramClustering, ttkAlgorithm);
 
-  // default ttk setters
-  // void SetDebugLevel(int debugLevel) {
-  //   setDebugLevel(debugLevel);
-  //   Modified();
-  //   needUpdate_ = true;
-  // }
-
-  // void SetThreads() {
-  //   if(!UseAllCores)
-  //     threadNumber_ = ThreadNumber;
-  //   else {
-  //     threadNumber_ = ttk::OsCall::getNumberOfCores();
-  //   }
-  //   Modified();
-  //   needUpdate_ = true;
-  // }
-
-  /*void SetThreadNumber(int threadNumber){
-    ThreadNumber = threadNumber;
-    SetThreads();
-  }*/
-
-  // void SetUseAllCores(bool onOff) {
-  //   UseAllCores = onOff;
-  //   SetThreads();
-  // }
-  // // end of default ttk setters
-
-  // set-getters macros to define from each variable you want to access from
-  // the outside (in particular from paraview) - to adapt.
-
-  // vtkSetMacro(ScalarField, std::string);
-  // vtkGetMacro(ScalarField, std::string);
-
   vtkSetMacro(WassersteinMetric, int);
   vtkGetMacro(WassersteinMetric, int);
 
-  void SetUseProgressive(int data) {
-    UseProgressive = data;
-    Modified();
-    needUpdate_ = true;
-  }
-  vtkGetMacro(UseProgressive, int);
+  vtkSetMacro(UseProgressive, bool);
+  vtkGetMacro(UseProgressive, bool);
 
-  void SetTimeLimit(double data) {
-    TimeLimit = data;
-    Modified();
-    needUpdate_ = true;
-  }
+  vtkSetMacro(TimeLimit, double);
   vtkGetMacro(TimeLimit, double);
-
-  // void SetThreadNumber(int data) {
-  //   ThreadNumber = data;
-  //   Modified();
-  //   needUpdate_ = true;
-  // }
-  // vtkGetMacro(ThreadNumber, int);
 
   void SetAlpha(double data) {
     if(data > 0 && data <= 1) {
@@ -143,7 +85,6 @@ public:
       Alpha = 0.001;
     }
     Modified();
-    needUpdate_ = true;
   }
   vtkGetMacro(Alpha, double);
 
@@ -152,67 +93,35 @@ public:
     SetAlpha(alpha);
   }
 
-  void SetDeltaLim(double data) {
-    DeltaLim = data;
-    Modified();
-    needUpdate_ = true;
-  }
-
+  vtkSetMacro(DeltaLim, double);
   vtkGetMacro(DeltaLim, double);
 
-  void SetLambda(double data) {
-    Lambda = data;
-    Modified();
-    needUpdate_ = true;
-  }
+  vtkSetMacro(Lambda, double);
   vtkGetMacro(Lambda, double);
 
-  void SetNumberOfClusters(int data) {
-    NumberOfClusters = data;
-    Modified();
-    needUpdate_ = true;
-  }
+  vtkSetMacro(NumberOfClusters, int);
   vtkGetMacro(NumberOfClusters, int);
 
-  void SetUseAccelerated(bool data) {
-    UseAccelerated = data;
-    Modified();
-    needUpdate_ = true;
-  }
+  vtkSetMacro(UseAccelerated, bool);
   vtkGetMacro(UseAccelerated, bool);
 
-  void SetUseKmeansppInit(bool data) {
-    UseKmeansppInit = data;
-    Modified();
-    needUpdate_ = true;
-  }
+  vtkSetMacro(UseKmeansppInit, bool);
   vtkGetMacro(UseKmeansppInit, bool);
 
-  void SetForceUseOfAlgorithm(bool data) {
-    ForceUseOfAlgorithm = data;
-    Modified();
-    needUpdate_ = true;
-  }
+  vtkSetMacro(ForceUseOfAlgorithm, bool);
   vtkGetMacro(ForceUseOfAlgorithm, bool);
 
-  void SetDeterministic(bool data) {
-    Deterministic = data;
-    Modified();
-    needUpdate_ = true;
-  }
+  vtkSetMacro(Deterministic, bool);
   vtkGetMacro(Deterministic, bool);
 
-  void SetPairTypeClustering(int data) {
-    PairTypeClustering = data;
-    Modified();
-    needUpdate_ = true;
-  }
+  vtkSetMacro(PairTypeClustering, int);
   vtkGetMacro(PairTypeClustering, int);
 
   void SetSpacing(double spacing) {
     Spacing = spacing;
     oldSpacing = spacing;
     Modified();
+    needUpdate_ = false;
   }
   vtkGetMacro(Spacing, double);
 
@@ -224,36 +133,21 @@ public:
       Spacing = oldSpacing;
     }
     Modified();
+    needUpdate_ = false;
   }
 
   vtkGetMacro(DisplayMethod, bool);
 
-  void SetUseAdditionalPrecision(bool data) {
-    UseAdditionalPrecision = data;
-    Modified();
-    needUpdate_ = true;
-  }
+  vtkSetMacro(UseAdditionalPrecision, bool);
   vtkGetMacro(UseAdditionalPrecision, bool);
 
-  void SetDistanceWritingOptions(int data) {
-    DistanceWritingOptions = data;
-    Modified();
-    needUpdate_ = true;
-  }
+  vtkSetMacro(DistanceWritingOptions, int);
   vtkGetMacro(DistanceWritingOptions, int);
 
-  void SetUseInterruptible(bool data) {
-    UseInterruptible = data;
-    Modified();
-    needUpdate_ = true;
-  }
+  vtkSetMacro(UseInterruptible, bool);
   vtkGetMacro(UseInterruptible, bool);
 
-  void SetMethod(int method) {
-    Method = method;
-    needUpdate_ = true;
-    Modified();
-  }
+  vtkSetMacro(Method, double);
   vtkGetMacro(Method, double);
 
 protected:
@@ -281,6 +175,7 @@ protected:
 
   int FillInputPortInformation(int port, vtkInformation *info) override;
   int FillOutputPortInformation(int port, vtkInformation *info) override;
+  void Modified() override;
 
   vtkSmartPointer<vtkUnstructuredGrid> createMatchings();
   vtkSmartPointer<vtkUnstructuredGrid> createOutputClusteredDiagrams();
@@ -296,9 +191,6 @@ private:
   std::vector<std::vector<diagramType>> final_centroids_{};
   std::vector<int> inv_clustering_{};
 
-  // vtkUnstructuredGrid* output_clusters_;
-  // vtkUnstructuredGrid* output_centroids_;
-
   double Spacing{1.0};
   int DisplayMethod{0};
   double oldSpacing{1.0};
@@ -306,15 +198,4 @@ private:
   double max_dimension_total_{};
   int Method{0}; // 0 = progressive approach, 1 = Auction approach
   bool needUpdate_{true};
-
-  // base code features
-  // int doIt(const std::vector<vtkUnstructuredGrid *> &input,
-  //          vtkUnstructuredGrid *outputClusters,
-  //          vtkUnstructuredGrid *outputCentroids,
-  //          vtkUnstructuredGrid *outputMatchings,
-  //          int numInputs);
-
-  // bool needsToAbort() override;
-
-  // int updateProgress(const float &progress) override;
 };
