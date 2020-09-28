@@ -181,14 +181,15 @@ BinaryTree *
   // add neighbors to children
   for(int i = 0; i < (int)node->edgeList.size(); i++) {
 
-    CTEdge *edge = arcs[node->edgeList[i]];
+    CTEdge *localEdge = arcs[node->edgeList[i]];
 
-    if(edge != parent) {
+    if(localEdge != parent) {
 
-      CTNode *child = nodes[edge->node1Idx] == node ? nodes[edge->node2Idx]
-                                                    : nodes[edge->node1Idx];
+      CTNode *child = nodes[localEdge->node1Idx] == node
+                        ? nodes[localEdge->node2Idx]
+                        : nodes[localEdge->node1Idx];
 
-      BinaryTree *childTree = computeRootedTree_binary(child, edge, id);
+      BinaryTree *childTree = computeRootedTree_binary(child, localEdge, id);
 
       children.push_back(childTree);
 
