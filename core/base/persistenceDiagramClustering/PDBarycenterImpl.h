@@ -58,8 +58,7 @@ void PDBarycenter<dataType>::runMatching(
   int actual_distance) {
   Timer time_matchings;
 #ifdef TTK_ENABLE_OPENMP
-  omp_set_num_threads(threadNumber_);
-#pragma omp parallel for schedule(dynamic, 1)
+#pragma omp parallel for num_threads(threadNumber_) schedule(dynamic, 1)
 #endif
 
   for(int i = 0; i < numberOfInputs_; i++) {
@@ -135,8 +134,7 @@ void PDBarycenter<dataType>::runMatchingAuction(
   std::vector<std::vector<matchingTuple>> *all_matchings,
   bool use_kdt) {
 #ifdef TTK_ENABLE_OPENMP
-  omp_set_num_threads(threadNumber_);
-#pragma omp parallel for schedule(dynamic, 1)
+#pragma omp parallel for num_threads(threadNumber_) schedule(dynamic, 1)
 #endif
   for(int i = 0; i < numberOfInputs_; i++) {
     Auction<dataType> auction = Auction<dataType>(

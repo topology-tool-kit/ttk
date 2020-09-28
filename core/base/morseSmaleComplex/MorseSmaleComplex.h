@@ -280,7 +280,7 @@ namespace ttk {
       return 0;
     }
 
-    inline int setThreadNumber(const int &threadNumber) {
+    inline int setThreadNumber(const int threadNumber) {
       morseSmaleComplex2D_.setThreadNumber(threadNumber);
       morseSmaleComplex3D_.setThreadNumber(threadNumber);
       return 0;

@@ -30,7 +30,7 @@ namespace ttk {
       return threadNumber_;
     };
 
-    int setThreadNumber(const int threadNumber) {
+    virtual int setThreadNumber(const int threadNumber) {
       threadNumber_ = threadNumber;
       return 0;
     }
