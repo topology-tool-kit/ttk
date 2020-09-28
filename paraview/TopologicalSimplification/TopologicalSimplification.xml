@@ -27,11 +27,16 @@
 
         Also, this plugin can be given a specific input vertex offset.
 
-        Related publication:
+        Related publications:
         "Generalized Topological Simplification of Scalar Fields on Surfaces"
         Julien Tierny, Valerio Pascucci
         Proc. of IEEE VIS 2012.
         IEEE Transactions on Visualization and Computer Graphics, 2012.
+        
+        "Localized Topological Simplification of Scalar Data"
+        Jonas Lukasczyk, Christoph Garth, Ross Maciejewski, Julien Tierny
+        Proc. of IEEE VIS 2020.
+        IEEE Transactions on Visualization and Computer Graphics
 
         See also ScalarFieldCriticalPoints, IntegralLines, ContourForests, Identifiers.
 
