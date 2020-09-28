@@ -1,6 +1,7 @@
 include(CMakeFindDependencyMacro)
 
 # Boost is a required dependency
+find_dependency(Boost REQUIRED COMPONENTS boost)
 find_dependency(Boost REQUIRED COMPONENTS system)
 
 # Was TTK built with optional dependencies?
