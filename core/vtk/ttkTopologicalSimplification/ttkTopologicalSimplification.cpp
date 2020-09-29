@@ -167,8 +167,7 @@ int ttkTopologicalSimplification::RequestData(
         );
 
         // TODO: fix convention in original ttk module
-        if(ret)
-            ret = 0;
+        ret = !ret;
   } else {
       switch(inputScalars->GetDataType()) {
         vtkTemplateMacro(

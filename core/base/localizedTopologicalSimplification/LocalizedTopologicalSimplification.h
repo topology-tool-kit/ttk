@@ -540,12 +540,15 @@ namespace ttk {
       };
 
       template<typename IT, class TT>
-      int computeSuperlevelSetComponents(
+      int computeLocalOrderOfSegmentIteration(
           IT* localOrder,
+          IT* localVertexSequence,
 
+          const bool& performSuperlevelSetPropagation,
           const TT* triangulation,
           const IT* segmentation,
           const IT& segmentId,
+          const std::vector<IT>& boundary,
           const std::vector<IT>& segment,
           const IT& saddleIdx
       ) const {
@@ -555,9 +558,26 @@ namespace ttk {
               std::vector<std::pair<IT,IT>>
           > queue;
 
-          queue.emplace( std::numeric_limits<IT>::max(), saddleIdx );
+          IT nSegmentVertices = segment.size();
 
-          std::vector<IT> localVertexSequence(segment.size()+1); // +1 to make room for saddle
+          if(performSuperlevelSetPropagation){
+            // add saddle to queue
+            queue.emplace( std::numeric_limits<IT>::max(), saddleIdx );
+          } else {
+            // invert order
+            IT offset = -nSegmentVertices-1; // ensures that inverted order < 0
+            for(IT i=0; i<nSegmentVertices; i++)
+              localOrder[ segment[i] ] = offset-localOrder[ segment[i] ];
+
+            // add all boundary vertices to queue
+            for(const auto& v: boundary){
+              queue.emplace( localOrder[v], v );
+              localOrder[v] = 0;
+            }
+
+            // also add saddle to queue
+            queue.emplace( std::numeric_limits<IT>::min(), saddleIdx );
+          }
 
           IT q=0;
           while(!queue.empty()){
@@ -579,66 +599,18 @@ namespace ttk {
               }
           }
 
-          // skip first idx as it correponds to saddle
-          for(IT i=1, j=segment.size()+1; i<j; i++)
-              localOrder[ localVertexSequence[i] ] = -i;
+          if(performSuperlevelSetPropagation){
+            // skip first idx as it correponds to saddle
+            for(IT i=1; i<=nSegmentVertices; i++)
+                localOrder[ localVertexSequence[i] ] = -i;
+          } else {
+            IT order = -nSegmentVertices;
+            // skip last idx as it correponds to saddle
+            for(IT i=0; i<nSegmentVertices; i++)
+                localOrder[ localVertexSequence[i] ] = order++;
+          }
 
           return 1;
-      };
-
-      template<typename IT, class TT>
-      int computeSublevelSetComponents(
-          IT* localOrder,
-
-          const TT* triangulation,
-          const IT* segmentation,
-          const IT& segmentId,
-          const std::vector<IT>& segment,
-          const std::vector<IT>& boundaryMinima,
-          const IT& saddleIdx
-      ) const {
-        // init priority queue
-        std::priority_queue<
-            std::pair<IT,IT>,
-            std::vector<std::pair<IT,IT>>
-        > queue;
-
-        for(const auto& v: boundaryMinima){
-          queue.emplace( -localOrder[v], v );
-          localOrder[v] = 0;
-        }
-
-        // emplace saddle but make sure that it is popped last
-        queue.emplace( std::numeric_limits<IT>::min(), saddleIdx );
-
-        std::vector<IT> localVertexSequence(segment.size()+1); // +1 to make room for saddle
-
-        IT q=0;
-        while(!queue.empty()){
-            IT v = std::get<1>(queue.top());
-            queue.pop();
-
-            localVertexSequence[q++] = v;
-
-            IT nNeighbors = triangulation->getVertexNeighborNumber( v );
-            for(IT n=0; n<nNeighbors; n++){
-                IT u;
-                triangulation->getVertexNeighbor(v,n,u);
-
-                // if u is in segment and has not already been added to the queue
-                if(segmentation[u]==segmentId && localOrder[u]<0){
-                    queue.emplace( -localOrder[u], u );
-                    localOrder[u] = 0;
-                }
-            }
-        }
-
-        // skip last idx as it correponds to saddle
-        IT order = -segment.size()-1;
-        for(IT i=0, j=segment.size(); i<j; i++)
-            localOrder[ localVertexSequence[i] ] = order++;
-
-        return 1;
       };
 
       template<typename IT, class TT>
@@ -665,17 +637,16 @@ namespace ttk {
           const IT& extremumIndex = propagation->criticalPoints[0];
           const IT& saddleIndex = propagation->lastEncounteredCriticalPoint;
 
+          // vector to record boundary
+          std::vector<IT> boundary;
+
+          // make enough room for segment + saddle
+          std::vector<IT> localVertexSequence(propagation->segmentSize+1);
+
           int status = 1;
-
           bool containsResidualExtrema = true;
-          bool lastIterationWasSuperlevelSetPropagation = false;
-
-          // this vector stores valid minima
-          std::vector<IT> boundaryMinima;
-
+          bool performSuperlevelSetPropagation = true;
           while(containsResidualExtrema){
-            containsResidualExtrema = false;
-
             propagation->nIterations++;
 
             if(propagation->nIterations>20){
@@ -683,103 +654,72 @@ namespace ttk {
               return 0;
             }
 
-            if(!lastIterationWasSuperlevelSetPropagation){
-              lastIterationWasSuperlevelSetPropagation = true;
-
-              // execute superlevel set propagation
-              status = this->computeSuperlevelSetComponents<IT,TT>(
-                  localOrder,
-
-                  triangulation,
-                  segmentation,
-                  extremumIndex,
-                  propagation->segment,
-                  saddleIndex
-              );
-              if(!status)
-                  return 0;
-
-              // check if computed local order does not contain any internal minima
-              boundaryMinima.clear();
-              IT smallestBoundaryVertex = -1;
-              IT smallestBoundaryOrder = std::numeric_limits<IT>::max();
-              for(const auto& v: propagation->segment){
-                bool isOnSegmentBoundary = false;
-                bool hasSmallerNeighbor = false;
-
-                const auto& vOrder = localOrder[v];
-
-                IT nNeighbors = triangulation->getVertexNeighborNumber( v );
-                for(IT n=0; n<nNeighbors; n++){
-                    IT u;
-                    triangulation->getVertexNeighbor(v,n,u);
-
-                    // if u is not inside segment -> v is on segment boundary
-                    if(segmentation[u]!=extremumIndex){
-                        isOnSegmentBoundary = true;
-                    } else if (localOrder[u]<vOrder){
-                        hasSmallerNeighbor = true;
-                    }
-                }
-
-                if(isOnSegmentBoundary){
-                  if(smallestBoundaryOrder>vOrder){
-                    smallestBoundaryOrder=vOrder;
-                    smallestBoundaryVertex=v;
-                  }
-
-                  if(!hasSmallerNeighbor)
-                    boundaryMinima.push_back(v);
-                } else if(!hasSmallerNeighbor) {
-                    containsResidualExtrema = true;
-                }
-              }
-
-              if(containsResidualExtrema && boundaryMinima.size()<1){
-                this->printWrn("No minimum on segment boudnary -> choosing smallest boundary vertex by default.");
-                if(smallestBoundaryVertex<0){
-                  this->printErr("WHAT");
-                  return 0;
-                }
-                boundaryMinima.push_back(smallestBoundaryVertex);
-              }
-            } else {
-              lastIterationWasSuperlevelSetPropagation = false;
-              // execute sublevel set propagation
-              status = this->computeSublevelSetComponents<IT,TT>(
+            // execute superlevel set propagation
+            status = this->computeLocalOrderOfSegmentIteration<IT,TT>(
                 localOrder,
+                localVertexSequence.data(),
 
+                performSuperlevelSetPropagation,
                 triangulation,
                 segmentation,
                 extremumIndex,
+                boundary,
                 propagation->segment,
-                boundaryMinima,
                 saddleIndex
-              );
-              if(!status)
-                  return 0;
+            );
+            if(!status)
+                return 0;
 
-              // check if there exists additonal maxima than saddle
-              for(const auto& v: propagation->segment){
-                bool hasLargerNeighbor = false;
-                bool nextToSaddle = false;
+            performSuperlevelSetPropagation = !performSuperlevelSetPropagation;
 
-                const auto& vOrder = localOrder[v];
+            IT boundaryWriteIdx = 0;
+            IT nResidualMaxima = 0;
+            IT nResidualMinima = 0;
 
-                IT nNeighbors = triangulation->getVertexNeighborNumber( v );
-                for(IT n=0; n<nNeighbors; n++){
-                    IT u;
-                    triangulation->getVertexNeighbor(v,n,u);
+            for(const auto& v: propagation->segment){
+              bool isOnSegmentBoundary = false;
+              bool hasSmallerNeighbor = false;
+              bool hasLargerNeighbor = false;
 
-                    if(u==saddleIndex)
-                      nextToSaddle = true;
+              const auto& vOrder = localOrder[v];
 
-                    if(segmentation[u]==extremumIndex && localOrder[u]>vOrder)
-                        hasLargerNeighbor = true;
+              IT nNeighbors = triangulation->getVertexNeighborNumber( v );
+              for(IT n=0; n<nNeighbors; n++){
+                IT u;
+                triangulation->getVertexNeighbor(v,n,u);
+
+                if(u==saddleIndex){
+                  hasLargerNeighbor = true;
+                  continue;
                 }
 
-                if(!hasLargerNeighbor && !nextToSaddle)
-                  containsResidualExtrema = true;
+                // if u is not inside segment -> v is on segment boundary
+                if(segmentation[u]!=extremumIndex){
+                    isOnSegmentBoundary = true;
+                } else {
+                  if(localOrder[u]>vOrder)
+                    hasLargerNeighbor = true;
+                  else
+                    hasSmallerNeighbor = true;
+                }
+              }
+
+              if(!hasLargerNeighbor)
+                  nResidualMaxima++;
+
+              if(isOnSegmentBoundary){
+                  localVertexSequence[boundaryWriteIdx++] = v;
+              } else if(!hasSmallerNeighbor){
+                  nResidualMinima++;
+              }
+            }
+
+            containsResidualExtrema = nResidualMinima>0 || nResidualMaxima>0;
+
+            if(containsResidualExtrema && boundary.size()==0){
+              boundary.resize( boundaryWriteIdx );
+              for(IT i=0; i<boundaryWriteIdx; i++){
+                boundary[i] = localVertexSequence[i];
               }
             }
           }
