@@ -1,3 +1,7 @@
+if(APPLE)
+  set(TTK_LTS_MACOS_DEPENDENCY "Boost::boost")
+endif()
+
 ttk_add_base_library(localizedTopologicalSimplification
   SOURCES
     LocalizedTopologicalSimplification.cpp
@@ -6,5 +10,5 @@ ttk_add_base_library(localizedTopologicalSimplification
     SSCPropagation.h
   DEPENDS
     triangulation
-    Boost::boost
+    ${TTK_LTS_MACOS_DEPENDENCY}
 )
