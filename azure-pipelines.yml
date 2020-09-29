@@ -125,6 +125,7 @@ jobs:
                     -DCMAKE_BUILD_TYPE=$(BuildType)
                     -DVTK_DIR=$(Build.ArtifactStagingDirectory)/vtk-install/lib/cmake/vtk-$(VTKVPath)
                     -DTTK_BUILD_PARAVIEW_PLUGINS=OFF
+                    -DTTK_ENABLE_CPU_OPTIMIZATION=OFF
                     -DTTK_BUILD_STANDALONE_APPS=ON
                     $(TTK_MODULE_DISABLE)
                     $(TTK_MODULE_TEST)'
@@ -263,7 +264,7 @@ jobs:
   - task: CMake@1
     inputs:
       workingDirectory: 'build/'
-      cmakeArgs: '.. -DCMAKE_BUILD_TYPE=$(BuildType) -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_INSTALL_PREFIX=$(Build.ArtifactStagingDirectory)/ttk-install -DParaView_DIR=$(Build.ArtifactStagingDirectory)/pv-install/lib/cmake/paraview-$(PV_V) -DTTK_BUILD_STANDALONE_APPS=ON $(TTK_MODULE_DISABLE) $(TTK_MODULE_TEST)'
+      cmakeArgs: '.. -DCMAKE_BUILD_TYPE=$(BuildType) -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DCMAKE_INSTALL_PREFIX=$(Build.ArtifactStagingDirectory)/ttk-install -DParaView_DIR=$(Build.ArtifactStagingDirectory)/pv-install/lib/cmake/paraview-$(PV_V) -DTTK_ENABLE_CPU_OPTIMIZATION=OFF -DTTK_BUILD_STANDALONE_APPS=ON $(TTK_MODULE_DISABLE) $(TTK_MODULE_TEST)'
     displayName: 'Configure TTK'
 
   - script: |
@@ -413,6 +414,7 @@ jobs:
                      -DParaView_DIR=./ParaView-$(PV_VERSION)/build/
                      -DTTK_INSTALL_PLUGIN_DIR=$(System.DefaultWorkingDirectory)/ParaView-$(PV_VERSION)/build/bin/plugins
                      -DTTK_BUILD_STANDALONE_APPS=ON
+                     -DTTK_ENABLE_CPU_OPTIMIZATION=OFF
                      $(TTK_MODULE_DISABLE)
                      $(TTK_MODULE_TEST)'
     displayName: 'Configure TTK'
