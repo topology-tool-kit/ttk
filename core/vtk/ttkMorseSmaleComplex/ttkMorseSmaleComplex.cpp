@@ -13,8 +13,6 @@
 #include <vtkSignedCharArray.h>
 #include <vtkUnstructuredGrid.h>
 
-using namespace std;
-
 vtkStandardNewMacro(ttkMorseSmaleComplex);
 
 ttkMorseSmaleComplex::ttkMorseSmaleComplex() {
@@ -57,43 +55,43 @@ int ttkMorseSmaleComplex::dispatch(
 
   // critical points
   SimplexId criticalPoints_numberOfPoints{};
-  vector<float> criticalPoints_points;
-  vector<char> criticalPoints_points_cellDimensions;
-  vector<scalarType> criticalPoints_points_cellScalars;
-  vector<SimplexId> criticalPoints_points_cellIds;
-  vector<char> criticalPoints_points_isOnBoundary;
-  vector<SimplexId> criticalPoints_points_PLVertexIdentifiers;
-  vector<SimplexId> criticalPoints_points_manifoldSize;
+  std::vector<float> criticalPoints_points;
+  std::vector<char> criticalPoints_points_cellDimensions;
+  std::vector<scalarType> criticalPoints_points_cellScalars;
+  std::vector<SimplexId> criticalPoints_points_cellIds;
+  std::vector<char> criticalPoints_points_isOnBoundary;
+  std::vector<SimplexId> criticalPoints_points_PLVertexIdentifiers;
+  std::vector<SimplexId> criticalPoints_points_manifoldSize;
 
   // 1-separatrices
   SimplexId separatrices1_numberOfPoints{};
-  vector<float> separatrices1_points;
-  vector<char> separatrices1_points_smoothingMask;
-  vector<char> separatrices1_points_cellDimensions;
-  vector<SimplexId> separatrices1_points_cellIds;
+  std::vector<float> separatrices1_points;
+  std::vector<char> separatrices1_points_smoothingMask;
+  std::vector<char> separatrices1_points_cellDimensions;
+  std::vector<SimplexId> separatrices1_points_cellIds;
   SimplexId separatrices1_numberOfCells{};
-  vector<SimplexId> separatrices1_cells;
-  vector<SimplexId> separatrices1_cells_sourceIds;
-  vector<SimplexId> separatrices1_cells_destinationIds;
-  vector<SimplexId> separatrices1_cells_separatrixIds;
-  vector<char> separatrices1_cells_separatrixTypes;
-  vector<char> separatrices1_cells_isOnBoundary;
-  vector<scalarType> separatrices1_cells_separatrixFunctionMaxima;
-  vector<scalarType> separatrices1_cells_separatrixFunctionMinima;
-  vector<scalarType> separatrices1_cells_separatrixFunctionDiffs;
+  std::vector<SimplexId> separatrices1_cells;
+  std::vector<SimplexId> separatrices1_cells_sourceIds;
+  std::vector<SimplexId> separatrices1_cells_destinationIds;
+  std::vector<SimplexId> separatrices1_cells_separatrixIds;
+  std::vector<char> separatrices1_cells_separatrixTypes;
+  std::vector<char> separatrices1_cells_isOnBoundary;
+  std::vector<scalarType> separatrices1_cells_separatrixFunctionMaxima;
+  std::vector<scalarType> separatrices1_cells_separatrixFunctionMinima;
+  std::vector<scalarType> separatrices1_cells_separatrixFunctionDiffs;
 
   // 2-separatrices
   SimplexId separatrices2_numberOfPoints{};
-  vector<float> separatrices2_points;
+  std::vector<float> separatrices2_points;
   SimplexId separatrices2_numberOfCells{};
-  vector<SimplexId> separatrices2_cells;
-  vector<SimplexId> separatrices2_cells_sourceIds;
-  vector<SimplexId> separatrices2_cells_separatrixIds;
-  vector<char> separatrices2_cells_separatrixTypes;
-  vector<char> separatrices2_cells_isOnBoundary;
-  vector<scalarType> separatrices2_cells_separatrixFunctionMaxima;
-  vector<scalarType> separatrices2_cells_separatrixFunctionMinima;
-  vector<scalarType> separatrices2_cells_separatrixFunctionDiffs;
+  std::vector<SimplexId> separatrices2_cells;
+  std::vector<SimplexId> separatrices2_cells_sourceIds;
+  std::vector<SimplexId> separatrices2_cells_separatrixIds;
+  std::vector<char> separatrices2_cells_separatrixTypes;
+  std::vector<char> separatrices2_cells_isOnBoundary;
+  std::vector<scalarType> separatrices2_cells_separatrixFunctionMaxima;
+  std::vector<scalarType> separatrices2_cells_separatrixFunctionMinima;
+  std::vector<scalarType> separatrices2_cells_separatrixFunctionDiffs;
 
   if(ComputeCriticalPoints) {
     this->setOutputCriticalPoints(
