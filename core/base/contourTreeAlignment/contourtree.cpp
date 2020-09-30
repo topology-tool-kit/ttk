@@ -15,7 +15,7 @@ ContourTree::ContourTree(float *scalars,
   float minVal = FLT_MAX;
   float maxVal = -FLT_MAX;
 
-  for(int i = 0; i < nVertices; i++) {
+  for(size_t i = 0; i < nVertices; i++) {
     CTNode *node = new CTNode;
     node->scalarValue = scalars[i];
     node->edgeList = std::vector<int>();
@@ -26,9 +26,9 @@ ContourTree::ContourTree(float *scalars,
     if(node->scalarValue < minVal)
       minVal = node->scalarValue;
   }
-  float scalarRange = maxVal - minVal;
+  //float scalarRange = maxVal - minVal;
   int j = 0;
-  for(int i = 0; i < nEdges; i++) {
+  for(size_t i = 0; i < nEdges; i++) {
     CTEdge *edge = new CTEdge;
     edge->area = regionSizes[i];
     edge->segId = segmentationIds[i];
@@ -109,7 +109,7 @@ Tree *ContourTree::computeRootedTree(CTNode *node, CTEdge *parent, int &id) {
   bool parentVisited = false;
 
   // add neighbors to children
-  for(int i = 0; i < node->edgeList.size(); i++) {
+  for(size_t i = 0; i < node->edgeList.size(); i++) {
 
     CTEdge *edge = arcs[node->edgeList[i]];
     if(edge == parent) {
@@ -131,7 +131,7 @@ Tree *ContourTree::computeRootedTree(CTNode *node, CTEdge *parent, int &id) {
   }
 
   // get Persistence of parent edge and compute volume
-  if(parent = NULL) {
+  if(parent == nullptr) {
     t->scalardistanceParent = 0.0001;
     t->volume = 0.0001;
   } else {
@@ -180,9 +180,9 @@ BinaryTree *
   std::vector<BinaryTree *> children;
 
   // add neighbors to children
-  for(int i = 0; i < node->edgeList.size(); i++) {
+  for(size_t i = 0; i < node->edgeList.size(); i++) {
 
-    CTEdge *edge = arcs[node->edgeList[i]];
+    edge = arcs[node->edgeList[i]];
 
     if(edge != parent) {
 
@@ -210,7 +210,7 @@ BinaryTree *
   t->scalarValue = node->scalarValue;
 
   // get Persistence of parent edge and compute volume
-  if(parent == NULL) {
+  if(parent == nullptr) {
     t->scalardistanceParent = 10000;
     t->area = 10000;
     t->volume = 10000;
@@ -227,7 +227,7 @@ BinaryTree *ContourTree::rootAtMax() {
 
   // get global maximum node to build rooted tree from there
   float maxVal = -FLT_MAX;
-  CTNode *globalMax;
+  CTNode *globalMax = nullptr;
 
   for(CTNode *node : nodes) {
     if(node->scalarValue > maxVal) {
@@ -257,7 +257,7 @@ void ContourTree::computeBranches() {
 
   // find global minimum
   int minIdx = 0;
-  for(int i = 1; i < nodes.size(); i++) {
+  for(size_t i = 1; i < nodes.size(); i++) {
     if(nodes[minIdx]->scalarValue > nodes[i]->scalarValue)
       minIdx = i;
   }
@@ -286,7 +286,7 @@ void ContourTree::computeBranches() {
     std::vector<int> path = q.top();
     q.pop();
 
-    for(int i = 1; i < path.size() - 1; i++) {
+    for(size_t i = 1; i < path.size() - 1; i++) {
 
       int idx = path[i];
 

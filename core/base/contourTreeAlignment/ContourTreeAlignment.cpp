@@ -390,7 +390,7 @@ bool ttk::ContourTreeAlignment::alignTree(ContourTree *ct) {
 
   BinaryTree *t1, *t2;
 
-  AlignmentTree *res;
+  AlignmentTree *res = nullptr;
   float resVal = FLT_MAX;
 
   std::vector<AlignmentNode *> nodes1 = nodes;
@@ -428,7 +428,11 @@ bool ttk::ContourTreeAlignment::alignTree(ContourTree *ct) {
     i++;
   }
 
-  computeNewAlignmenttree(res);
+  if(res) computeNewAlignmenttree(res);
+  else{
+      printErr("Alignment computation failed.");
+      return false;
+  }
 
   return true;
 }
@@ -445,7 +449,7 @@ bool ttk::ContourTreeAlignment::alignTree_consistentRoot(ContourTree *ct) {
 
   BinaryTree *t1, *t2;
 
-  AlignmentTree *res = NULL;
+  AlignmentTree *res = nullptr;
   float resVal = FLT_MAX;
 
   std::vector<CTNode *> nodes2 = ct->getGraph().first;
@@ -484,7 +488,11 @@ bool ttk::ContourTreeAlignment::alignTree_consistentRoot(ContourTree *ct) {
     i++;
   }
 
-  computeNewAlignmenttree(res);
+  if(res) computeNewAlignmenttree(res);
+  else{
+    printErr("Alignment computation failed.");
+    return false;
+  }
 
   ContourTree::deleteBinaryTree(res->node1);
   ContourTree::deleteBinaryTree(res->node2);
@@ -1012,21 +1020,8 @@ std::pair<float, AlignmentTree *>
                                                 BinaryTree *t2) {
 
   // initialize memoization tables
-
-  float **memT = new float *[t1->size + 1];
-  float **memF = new float *[t1->size + 1];
-
-  for(int i = 0; i <= t1->size; i++) {
-    memT[i] = new float[t2->size + 1];
-    memF[i] = new float[t2->size + 1];
-  }
-
-  for(int i = 0; i <= t1->size; i++) {
-    for(int j = 0; j <= t2->size; j++) {
-      memT[i][j] = -1;
-      memF[i][j] = -1;
-    }
-  }
+  std::vector<std::vector<float>> memT(t1->size+1,std::vector<float>(t2->size+1,-1));
+  std::vector<std::vector<float>> memF(t1->size+1,std::vector<float>(t2->size+1,-1));
 
   // compute table of distances
   float dist = alignTreeBinary(t1, t2, memT, memF);
@@ -1034,21 +1029,13 @@ std::pair<float, AlignmentTree *>
   // backtrace through the table to get the alignment
   AlignmentTree *res = traceAlignmentTree(t1, t2, memT, memF);
 
-  for(int i = 0; i <= t1->size; i++) {
-    delete[] memT[i];
-    delete[] memF[i];
-  }
-
-  delete[] memT;
-  delete[] memF;
-
   return std::make_pair(dist, res);
 }
 
 float ttk::ContourTreeAlignment::alignTreeBinary(BinaryTree *t1,
                                                  BinaryTree *t2,
-                                                 float **memT,
-                                                 float **memF) {
+                                                 std::vector<std::vector<float>> &memT,
+                                                 std::vector<std::vector<float>> &memF) {
 
   // base cases for matching to empty tree
 
@@ -1116,8 +1103,8 @@ float ttk::ContourTreeAlignment::alignTreeBinary(BinaryTree *t1,
 
 float ttk::ContourTreeAlignment::alignForestBinary(BinaryTree *t1,
                                                    BinaryTree *t2,
-                                                   float **memT,
-                                                   float **memF) {
+                                                   std::vector<std::vector<float>> &memT,
+                                                   std::vector<std::vector<float>> &memF) {
 
   // base cases for matching to empty tree
 
@@ -1226,8 +1213,8 @@ float ttk::ContourTreeAlignment::editCost(BinaryTree *t1, BinaryTree *t2) {
 
 AlignmentTree *ttk::ContourTreeAlignment::traceAlignmentTree(BinaryTree *t1,
                                                              BinaryTree *t2,
-                                                             float **memT,
-                                                             float **memF) {
+                                                             std::vector<std::vector<float>> &memT,
+                                                             std::vector<std::vector<float>> &memF) {
 
   if(t1 == NULL)
     return traceNullAlignment(t2, false);
@@ -1361,10 +1348,13 @@ AlignmentTree *ttk::ContourTreeAlignment::traceAlignmentTree(BinaryTree *t1,
       = std::max(res->height, resChild2 == NULL ? 0 : resChild2->height + 1);
     return res;
   }
+
+  printErr("Alignment computation failed. Traceback of memoization table not possible.");
+  return new AlignmentTree();
 }
 
 std::vector<AlignmentTree *> ttk::ContourTreeAlignment::traceAlignmentForest(
-  BinaryTree *t1, BinaryTree *t2, float **memT, float **memF) {
+  BinaryTree *t1, BinaryTree *t2, std::vector<std::vector<float>> &memT, std::vector<std::vector<float>> &memF) {
 
   if(t1 == NULL && t2 == NULL)
     return std::vector<AlignmentTree *>();
@@ -1580,6 +1570,9 @@ std::vector<AlignmentTree *> ttk::ContourTreeAlignment::traceAlignmentForest(
       return res;
     }
   }
+
+  printErr("Alignment computation failed. Traceback of memoization table not possible.");
+  return std::vector<AlignmentTree*>();
 }
 
 AlignmentTree *ttk::ContourTreeAlignment::traceNullAlignment(BinaryTree *t,
