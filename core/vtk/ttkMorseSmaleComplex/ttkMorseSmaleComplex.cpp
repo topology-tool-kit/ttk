@@ -11,6 +11,7 @@
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
 #include <vtkSignedCharArray.h>
+#include <vtkUnsignedCharArray.h>
 #include <vtkUnstructuredGrid.h>
 
 vtkStandardNewMacro(ttkMorseSmaleComplex);
@@ -84,7 +85,8 @@ int ttkMorseSmaleComplex::dispatch(
   SimplexId separatrices2_numberOfPoints{};
   std::vector<float> separatrices2_points;
   SimplexId separatrices2_numberOfCells{};
-  std::vector<SimplexId> separatrices2_cells;
+  std::vector<SimplexId> separatrices2_cells_offsets;
+  std::vector<SimplexId> separatrices2_cells_connectivity;
   std::vector<SimplexId> separatrices2_cells_sourceIds;
   std::vector<SimplexId> separatrices2_cells_separatrixIds;
   std::vector<char> separatrices2_cells_separatrixTypes;
@@ -119,9 +121,9 @@ int ttkMorseSmaleComplex::dispatch(
 
   this->setOutputSeparatrices2(
     &separatrices2_numberOfPoints, &separatrices2_points,
-    &separatrices2_numberOfCells, &separatrices2_cells,
-    &separatrices2_cells_sourceIds, &separatrices2_cells_separatrixIds,
-    &separatrices2_cells_separatrixTypes,
+    &separatrices2_numberOfCells, &separatrices2_cells_offsets,
+    &separatrices2_cells_connectivity, &separatrices2_cells_sourceIds,
+    &separatrices2_cells_separatrixIds, &separatrices2_cells_separatrixTypes,
     &separatrices2_cells_separatrixFunctionMaxima,
     &separatrices2_cells_separatrixFunctionMinima,
     &separatrices2_cells_separatrixFunctionDiffs,
@@ -432,33 +434,34 @@ int ttkMorseSmaleComplex::dispatch(
     isOnBoundary->SetName("NumberOfCriticalPointsOnBoundary");
     isOnBoundary->SetNumberOfTuples(separatrices2_numberOfCells);
 
-    outputSeparatrices2->Allocate(separatrices2_numberOfCells);
-    SimplexId ptr{};
-    for(SimplexId i = 0; i < separatrices2_numberOfCells; ++i) {
-      const int vertexNumber = separatrices2_cells[ptr];
+    vtkNew<vtkIdTypeArray> offsets{}, connectivity{};
+    offsets->SetNumberOfComponents(1);
+    offsets->SetNumberOfTuples(separatrices2_numberOfCells + 1);
+    connectivity->SetNumberOfComponents(1);
+    connectivity->SetNumberOfTuples(separatrices2_cells_connectivity.size());
 
-      if(vertexNumber == 3) {
-        vtkIdType triangle[3];
-        triangle[0] = separatrices2_cells[ptr + 1];
-        triangle[1] = separatrices2_cells[ptr + 2];
-        triangle[2] = separatrices2_cells[ptr + 3];
+    vtkNew<vtkUnsignedCharArray> cellTypes{};
+    cellTypes->SetNumberOfComponents(1);
+    cellTypes->SetNumberOfTuples(separatrices2_numberOfCells);
 
-        outputSeparatrices2->InsertNextCell(
-          VTK_TRIANGLE, vertexNumber, triangle);
-      } else {
-        vtkIdType ids[16];
-        for(int j = 1; j <= vertexNumber; ++j)
-          ids[j - 1] = separatrices2_cells[ptr + j];
-
-        outputSeparatrices2->InsertNextCell(VTK_POLYGON, vertexNumber, ids);
-      }
-      ptr += (separatrices2_cells[ptr] + 1);
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(this->threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+    for(size_t i = 0; i < separatrices2_cells_connectivity.size(); ++i) {
+      connectivity->SetTuple1(i, separatrices2_cells_connectivity[i]);
     }
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(this->threadNumber_)
 #endif // TTK_ENABLE_OPENMP
     for(SimplexId i = 0; i < separatrices2_numberOfCells; ++i) {
+      offsets->SetTuple1(i, separatrices2_cells_offsets[i]);
+      if(separatrices2_cells_offsets[i + 1] - separatrices2_cells_offsets[i]
+         == 3) {
+        cellTypes->SetTuple1(i, VTK_TRIANGLE);
+      } else {
+        cellTypes->SetTuple1(i, VTK_POLYGON);
+      }
       sourceIds->SetTuple1(i, separatrices2_cells_sourceIds[i]);
       separatrixIds->SetTuple1(i, separatrices2_cells_separatrixIds[i]);
       separatrixTypes->SetTuple1(i, separatrices2_cells_separatrixTypes[i]);
@@ -470,6 +473,14 @@ int ttkMorseSmaleComplex::dispatch(
         i, separatrices2_cells_separatrixFunctionDiffs[i]);
       isOnBoundary->SetTuple1(i, separatrices2_cells_isOnBoundary[i]);
     }
+
+    offsets->SetTuple1(
+      separatrices2_numberOfCells, connectivity->GetNumberOfTuples());
+
+    vtkNew<vtkCellArray> cells{};
+    cells->SetData(offsets, connectivity);
+    outputSeparatrices2->SetPoints(points);
+    outputSeparatrices2->SetCells(cellTypes, cells);
 
     auto cellData = outputSeparatrices2->GetCellData();
 #ifndef TTK_ENABLE_KAMIKAZE

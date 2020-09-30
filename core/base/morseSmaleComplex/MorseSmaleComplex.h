@@ -385,7 +385,8 @@ namespace ttk {
       SimplexId *const separatrices2_numberOfPoints,
       std::vector<float> *const separatrices2_points,
       SimplexId *const separatrices2_numberOfCells,
-      std::vector<SimplexId> *const separatrices2_cells,
+      std::vector<SimplexId> *const separatrices2_cells_offsets,
+      std::vector<SimplexId> *const separatrices2_cells_connectivity,
       std::vector<SimplexId> *const separatrices2_cells_sourceIds,
       std::vector<SimplexId> *const separatrices2_cells_separatrixIds,
       std::vector<char> *const separatrices2_cells_separatrixTypes,
@@ -400,9 +401,9 @@ namespace ttk {
 #endif
       abstractMorseSmaleComplex_->setOutputSeparatrices2(
         separatrices2_numberOfPoints, separatrices2_points,
-        separatrices2_numberOfCells, separatrices2_cells,
-        separatrices2_cells_sourceIds, separatrices2_cells_separatrixIds,
-        separatrices2_cells_separatrixTypes,
+        separatrices2_numberOfCells, separatrices2_cells_offsets,
+        separatrices2_cells_connectivity, separatrices2_cells_sourceIds,
+        separatrices2_cells_separatrixIds, separatrices2_cells_separatrixTypes,
         separatrices2_cells_separatrixFunctionMaxima,
         separatrices2_cells_separatrixFunctionMinima,
         separatrices2_cells_separatrixFunctionDiffs,

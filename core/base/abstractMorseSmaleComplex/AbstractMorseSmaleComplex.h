@@ -325,7 +325,8 @@ namespace ttk {
       SimplexId *const separatrices2_numberOfPoints,
       std::vector<float> *const separatrices2_points,
       SimplexId *const separatrices2_numberOfCells,
-      std::vector<SimplexId> *const separatrices2_cells,
+      std::vector<SimplexId> *const separatrices2_cells_offsets,
+      std::vector<SimplexId> *const separatrices2_cells_connectivity,
       std::vector<SimplexId> *const separatrices2_cells_sourceIds,
       std::vector<SimplexId> *const separatrices2_cells_separatrixIds,
       std::vector<char> *const separatrices2_cells_separatrixTypes,
@@ -336,7 +337,9 @@ namespace ttk {
       outputSeparatrices2_numberOfPoints_ = separatrices2_numberOfPoints;
       outputSeparatrices2_points_ = separatrices2_points;
       outputSeparatrices2_numberOfCells_ = separatrices2_numberOfCells;
-      outputSeparatrices2_cells_ = separatrices2_cells;
+      outputSeparatrices2_cells_offsets_ = separatrices2_cells_offsets;
+      outputSeparatrices2_cells_connectivity_
+        = separatrices2_cells_connectivity;
       outputSeparatrices2_cells_sourceIds_ = separatrices2_cells_sourceIds;
       outputSeparatrices2_cells_separatrixIds_
         = separatrices2_cells_separatrixIds;
@@ -466,7 +469,8 @@ namespace ttk {
     SimplexId *outputSeparatrices2_numberOfPoints_{};
     std::vector<float> *outputSeparatrices2_points_{};
     SimplexId *outputSeparatrices2_numberOfCells_{};
-    std::vector<SimplexId> *outputSeparatrices2_cells_{};
+    std::vector<SimplexId> *outputSeparatrices2_cells_offsets_{};
+    std::vector<SimplexId> *outputSeparatrices2_cells_connectivity_{};
     std::vector<SimplexId> *outputSeparatrices2_cells_sourceIds_{};
     std::vector<SimplexId> *outputSeparatrices2_cells_separatrixIds_{};
     std::vector<char> *outputSeparatrices2_cells_separatrixTypes_{};

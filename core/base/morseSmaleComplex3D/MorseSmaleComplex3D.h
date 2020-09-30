@@ -177,7 +177,8 @@ int ttk::MorseSmaleComplex3D::setAscendingSeparatrices2(
     this->printErr("2-separatrices pointer to numberOfCells is null.");
     return -1;
   }
-  if(outputSeparatrices2_cells_ == nullptr) {
+  if(outputSeparatrices2_cells_connectivity_ == nullptr
+     || outputSeparatrices2_cells_offsets_ == nullptr) {
     this->printErr("2-separatrices pointer to cells is null.");
     return -1;
   }
@@ -212,7 +213,7 @@ int ttk::MorseSmaleComplex3D::setAscendingSeparatrices2(
   // old number of separatrices cells
   const auto noldcells{ncells};
   // index of last vertex of last old cell + 1
-  const auto firstCellId{outputSeparatrices2_cells_->size()};
+  const auto firstCellId{outputSeparatrices2_cells_connectivity_->size()};
   // list of valid geometryId to flatten loops
   std::vector<SimplexId> validGeomIds{};
   // corresponding separatrix index in separatrices array
@@ -337,13 +338,16 @@ int ttk::MorseSmaleComplex3D::setAscendingSeparatrices2(
   const auto noldpoints{npoints};
   npoints += cellVertsIds.size();
   ncells = noldcells + flatTetras.size();
-  const auto nnewcellids = pointsPerCell.back() + flatTetras.size();
+  const auto nnewcellids = pointsPerCell.back();
 
   // resize arrays
   outputSeparatrices2_points_->resize(3 * npoints);
   auto points = &outputSeparatrices2_points_->at(3 * noldpoints);
-  outputSeparatrices2_cells_->resize(firstCellId + nnewcellids);
-  auto cells = &outputSeparatrices2_cells_->at(firstCellId);
+  outputSeparatrices2_cells_connectivity_->resize(firstCellId + nnewcellids);
+  outputSeparatrices2_cells_offsets_->resize(ncells + 1);
+  outputSeparatrices2_cells_offsets_->at(0) = 0;
+  auto cellsConn = &outputSeparatrices2_cells_connectivity_->at(firstCellId);
+  auto cellsOff = &outputSeparatrices2_cells_offsets_->at(noldcells);
   if(outputSeparatrices2_cells_sourceIds_ != nullptr)
     outputSeparatrices2_cells_sourceIds_->resize(ncells);
   if(outputSeparatrices2_cells_separatrixIds_ != nullptr)
@@ -374,10 +378,9 @@ int ttk::MorseSmaleComplex3D::setAscendingSeparatrices2(
 #endif // TTK_ENABLE_OPENMP
   for(size_t i = 0; i < flatTetras.size(); ++i) {
     const auto &poly = flatTetras[i];
-    const auto k = pointsPerCell[i] + i;
-    cells[k + 0] = poly.tetras_.size();
+    const auto k = pointsPerCell[i];
     for(size_t j = 0; j < poly.tetras_.size(); ++j) {
-      cells[k + 1 + j] = vertId2PointsId[poly.tetras_[j]];
+      cellsConn[k + j] = vertId2PointsId[poly.tetras_[j]];
     }
     const auto l = i + noldcells;
     if(outputSeparatrices2_cells_sourceIds_ != nullptr)
@@ -394,6 +397,11 @@ int ttk::MorseSmaleComplex3D::setAscendingSeparatrices2(
       (*separatrixFunctionDiffs)[l] = poly.sepFuncMax_ - poly.sepFuncMin_;
     if(outputSeparatrices2_cells_isOnBoundary_ != nullptr)
       (*outputSeparatrices2_cells_isOnBoundary_)[l] = poly.onBoundary_;
+  }
+
+  for(size_t i = 0; i < flatTetras.size(); ++i) {
+    // fill offsets sequentially (due to iteration dependencies)
+    cellsOff[i + 1] = cellsOff[i] + flatTetras[i].tetras_.size();
   }
 
   (*outputSeparatrices2_numberOfPoints_) = npoints;
@@ -421,7 +429,8 @@ int ttk::MorseSmaleComplex3D::setDescendingSeparatrices2(
     this->printErr("2-separatrices pointer to numberOfCells is null.");
     return -1;
   }
-  if(outputSeparatrices2_cells_ == nullptr) {
+  if(outputSeparatrices2_cells_connectivity_ == nullptr
+     || outputSeparatrices2_cells_offsets_ == nullptr) {
     this->printErr("2-separatrices pointer to cells is null.");
     return -1;
   }
@@ -456,7 +465,8 @@ int ttk::MorseSmaleComplex3D::setDescendingSeparatrices2(
   // old number of separatrices cells
   const auto noldcells{ncells};
   // index of last vertex of last old cell + 1
-  const auto firstCellId{outputSeparatrices2_cells_->size()};
+  const auto firstCellId{outputSeparatrices2_cells_connectivity_->size()};
+
   // list of valid geometryId to flatten loops
   std::vector<SimplexId> validGeomIds{};
   // corresponding separatrix index in separatrices array
@@ -479,9 +489,12 @@ int ttk::MorseSmaleComplex3D::setDescendingSeparatrices2(
   }
 
   // resize arrays
-  outputSeparatrices2_cells_->resize(
-    firstCellId + 4 * (ncells - noldcells)); // triangles cells
-  auto cells = &outputSeparatrices2_cells_->at(firstCellId);
+  outputSeparatrices2_cells_offsets_->resize(ncells + 1);
+  outputSeparatrices2_cells_offsets_->at(0) = 0;
+  outputSeparatrices2_cells_connectivity_->resize(
+    firstCellId + 3 * (ncells - noldcells)); // triangles cells
+  auto cellsOff = &outputSeparatrices2_cells_offsets_->at(noldcells);
+  auto cellsConn = &outputSeparatrices2_cells_connectivity_->at(firstCellId);
   if(outputSeparatrices2_cells_sourceIds_ != nullptr)
     outputSeparatrices2_cells_sourceIds_->resize(ncells);
   if(outputSeparatrices2_cells_separatrixIds_ != nullptr)
@@ -547,10 +560,9 @@ int ttk::MorseSmaleComplex3D::setDescendingSeparatrices2(
       // index of current cell among all new cells
       const auto m = l - noldcells;
 
-      cells[4 * m + 0] = 3;
-      cells[4 * m + 1] = v0;
-      cells[4 * m + 2] = v1;
-      cells[4 * m + 3] = v2;
+      cellsConn[3 * m + 0] = v0;
+      cellsConn[3 * m + 1] = v1;
+      cellsConn[3 * m + 2] = v2;
       cellVertsIds[3 * m + 0] = v0;
       cellVertsIds[3 * m + 1] = v1;
       cellVertsIds[3 * m + 2] = v2;
@@ -597,14 +609,19 @@ int ttk::MorseSmaleComplex3D::setDescendingSeparatrices2(
     vertId2PointsId[cellVertsIds[i]] = i + noldpoints;
   }
 
+  const auto lastOffset = noldcells == 0 ? 0 : cellsOff[-1];
+
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
   for(size_t i = 0; i < ncells - noldcells; ++i) {
-    cells[4 * i + 1] = vertId2PointsId[cells[4 * i + 1]];
-    cells[4 * i + 2] = vertId2PointsId[cells[4 * i + 2]];
-    cells[4 * i + 3] = vertId2PointsId[cells[4 * i + 3]];
+    cellsOff[i] = 3 * i + lastOffset;
+    cellsConn[3 * i + 0] = vertId2PointsId[cellsConn[3 * i + 0]];
+    cellsConn[3 * i + 1] = vertId2PointsId[cellsConn[3 * i + 1]];
+    cellsConn[3 * i + 2] = vertId2PointsId[cellsConn[3 * i + 2]];
   }
+
+  cellsOff[ncells - noldcells] = cellsOff[ncells - noldcells - 1] + 3;
 
   (*outputSeparatrices2_numberOfPoints_) = npoints;
   (*outputSeparatrices2_numberOfCells_) = ncells;
