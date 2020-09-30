@@ -63,14 +63,22 @@ namespace ttk {
       inputData_ = is;
     }
 
-    inline void setInputOffsets(void *io) {
+    /**
+     * @pre For this function to behave correctly in the absence of
+     * the VTK wrapper, ttk::preconditionOrderArray() needs to be
+     * called to fill every buffer in the @p io vector prior to any
+     * computation (the VTK wrapper already includes a mecanism to
+     * automatically generate such a preconditioned buffer).
+     * @see examples/c++/main.cpp for an example use.
+     */
+    inline void setInputOffsets(std::vector<SimplexId *> &io) {
       inputOffsets_ = io;
     }
 
   protected:
     int numberOfInputs_{0};
     std::vector<void *> inputData_{};
-    void *inputOffsets_{};
+    std::vector<SimplexId *> inputOffsets_{};
   };
 } // namespace ttk
 
@@ -96,9 +104,8 @@ int ttk::TrackingFromFields::performDiagramComputation(
       CTDiagram;
 
     // persistenceDiagram.setOutputCTDiagram(&CTDiagram);
-    persistenceDiagram.execute<dataType, int, triangulationType>(
-      CTDiagram, (dataType *)(inputData_[i]), (int *)(inputOffsets_),
-      triangulation);
+    persistenceDiagram.execute<dataType, triangulationType>(
+      CTDiagram, (dataType *)(inputData_[i]), inputOffsets_[i], triangulation);
 
     // Copy diagram into augmented diagram.
     persistenceDiagrams[i] = std::vector<diagramTuple>(CTDiagram.size());

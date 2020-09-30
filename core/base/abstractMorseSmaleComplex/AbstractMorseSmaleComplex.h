@@ -20,7 +20,19 @@
 
 #include <queue>
 
+#if defined(__GNUC__) && !defined(__clang__)
+#include <parallel/algorithm>
+#endif
+
 namespace ttk {
+
+#if defined(_GLIBCXX_PARALLEL_FEATURES_H) && defined(TTK_ENABLE_OPENMP)
+#define PSORT                               \
+  omp_set_num_threads(this->threadNumber_); \
+  __gnu_parallel::sort
+#else
+#define PSORT std::sort
+#endif // _GLIBCXX_PARALLEL_FEATURES_H && TTK_ENABLE_OPENMP
 
   /**
    * Utility class representing Ridge lines, Valley lines
@@ -215,8 +227,15 @@ namespace ttk {
     /**
      * Set the input offset field associated on the points of the data set
      * (if none, identifiers are used instead).
+     *
+     * @pre For this function to behave correctly in the absence of
+     * the VTK wrapper, ttk::preconditionOrderArray() needs to be
+     * called to fill the @p data buffer prior to any
+     * computation (the VTK wrapper already includes a mecanism to
+     * automatically generate such a preconditioned buffer).
+     * @see examples/c++/main.cpp for an example use.
      */
-    inline int setInputOffsets(const void *const data) {
+    inline int setInputOffsets(const SimplexId *const data) {
       inputOffsets_ = data;
       discreteGradient_.setInputOffsets(inputOffsets_);
       return 0;
@@ -417,7 +436,7 @@ namespace ttk {
     dcg::DiscreteGradient discreteGradient_{};
 
     const void *inputScalarField_{};
-    const void *inputOffsets_{};
+    const SimplexId *inputOffsets_{};
 
     SimplexId *outputCriticalPoints_numberOfPoints_{};
     std::vector<float> *outputCriticalPoints_points_{};
@@ -554,6 +573,7 @@ int ttk::AbstractMorseSmaleComplex::setSeparatrices1(
 #endif
 
   const auto scalars = static_cast<const dataType *>(inputScalarField_);
+  const auto offsets = inputOffsets_;
   auto separatrixFunctionMaxima = static_cast<std::vector<dataType> *>(
     outputSeparatrices1_cells_separatrixFunctionMaxima_);
   auto separatrixFunctionMinima = static_cast<std::vector<dataType> *>(
@@ -650,11 +670,15 @@ int ttk::AbstractMorseSmaleComplex::setSeparatrices1(
 
     // compute separatrix function diff
     const auto sepFuncMax
-      = std::max(discreteGradient_.scalarMax(src, scalars, triangulation),
-                 discreteGradient_.scalarMax(dst, scalars, triangulation));
+      = std::max(scalars[discreteGradient_.getCellGreaterVertex(
+                   src, offsets, triangulation)],
+                 scalars[discreteGradient_.getCellGreaterVertex(
+                   dst, offsets, triangulation)]);
     const auto sepFuncMin
-      = std::min(discreteGradient_.scalarMin(src, scalars, triangulation),
-                 discreteGradient_.scalarMin(dst, scalars, triangulation));
+      = std::min(scalars[discreteGradient_.getCellLowerVertex(
+                   src, offsets, triangulation)],
+                 scalars[discreteGradient_.getCellLowerVertex(
+                   dst, offsets, triangulation)]);
     const auto sepFuncDiff = sepFuncMax - sepFuncMin;
 
     // get boundary condition

@@ -104,22 +104,31 @@ int ttk::TopologicalCompression::CompressWithZFP(FILE *file,
   return (int)zfpsize;
 }
 
-#endif
+#endif // TTK_ENABLE_ZFP
 
 #ifdef TTK_ENABLE_ZLIB
 
-void ttk::TopologicalCompression::CompressWithZlib(bool decompress,
-                                                   Bytef *dest,
-                                                   uLongf *destLen,
-                                                   const Bytef *source,
-                                                   uLong sourceLen) {
-  if(decompress)
-    uncompress(dest, destLen, source, sourceLen);
-  else
-    compress(dest, destLen, source, sourceLen);
+#include <zlib.h>
+
+unsigned long
+  ttk::TopologicalCompression::GetZlibDestLen(const unsigned long sourceLen) {
+  return compressBound(sourceLen);
 }
 
-#endif
+void ttk::TopologicalCompression::CompressWithZlib(
+  bool decompress,
+  unsigned char *dest,
+  unsigned long &destLen,
+  const unsigned char *const source,
+  const unsigned long sourceLen) {
+
+  if(decompress)
+    uncompress(dest, &destLen, source, sourceLen);
+  else
+    compress(dest, &destLen, source, sourceLen);
+}
+
+#endif // TTK_ENABLE_ZLIB
 
 unsigned int ttk::TopologicalCompression::log2(int val) {
   if(val == 0)

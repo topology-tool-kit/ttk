@@ -6,3 +6,4 @@ DEPENDS
   VTK::IOExport
 PRIVATE_DEPENDS
   VTK::CommonCore
+  VTK::FiltersGeometry

@@ -6,10 +6,9 @@ ttk_add_base_library(laplacian
   DEPENDS
     geometry
     triangulation
-  OPTIONAL_DEPENDS
-    Eigen3::Eigen
     )
 
 if (EIGEN3_FOUND)
-  target_compile_definitions(laplacian PUBLIC TTK_ENABLE_EIGEN)
+  target_compile_definitions(laplacian PRIVATE TTK_ENABLE_EIGEN)
+  target_include_directories(laplacian SYSTEM PRIVATE ${EIGEN3_INCLUDE_DIR})
 endif()

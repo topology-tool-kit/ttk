@@ -27,12 +27,14 @@ int ttk::TopologicalCompression::computeOther() {
 }
 
 template <typename dataType>
-int ttk::TopologicalCompression::compressForOther(int vertexNumber,
-                                                  dataType *inputData,
-                                                  dataType *outputData,
-                                                  const double &tol) {
-  ttk::Timer t;
+int ttk::TopologicalCompression::compressForOther(
+  int vertexNumber,
+  const dataType *const inputData,
+  const SimplexId *const inputOffsets,
+  dataType *outputData,
+  const double &tol) {
 
+  ttk::Timer t;
   // Code me
 
   this->printMsg(

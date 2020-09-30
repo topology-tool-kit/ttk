@@ -40,7 +40,7 @@ namespace ttk {
     /**
      * TODO 2: This method preconditions the triangulation for all operations
      *         the algorithm of this module requires. For instance,
-     *         preconditionVertexNeighbors, preprocessBoundaryEdges, ...
+     *         preconditionVertexNeighbors, preconditionBoundaryEdges, ...
      *
      *         Note: If the algorithm does not require a triangulation then
      *               this method can be deleted.
@@ -68,16 +68,16 @@ namespace ttk {
       // print horizontal separator
       this->printMsg(ttk::debug::Separator::L1); // L1 is the '=' separator
 
-      // print input parameters
+      // print input parameters in table format
       this->printMsg({
         {"#Threads", std::to_string(this->threadNumber_)},
         {"#Vertices", std::to_string(triangulation->getNumberOfVertices())},
       });
       this->printMsg(ttk::debug::Separator::L1);
 
-      // ---------------------------------------------------------------------
+      // -----------------------------------------------------------------------
       // Compute Vertex Averages
-      // ---------------------------------------------------------------------
+      // -----------------------------------------------------------------------
       {
         // start a local timer for this subprocedure
         ttk::Timer localTimer;

@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <OrderDisambiguation.h>
 #include <TopologicalCompression.h>
 
 template <typename dataType>
@@ -151,7 +152,7 @@ int ttk::TopologicalCompression::ReadPersistenceGeometry(
   decompressedData_.resize(vertexNumber);
   if(zfpBitBudget > 64.0 || zfpBitBudget < 1) {
 
-    // 2.a. (2.) Affect values to points thanks to topology indices.
+    // 2.a. (2.) Assign values to points thanks to topology indices.
     for(int i = 0; i < vertexNumber; ++i) {
       int seg = segmentation_[i];
       auto end = mapping_.end();
@@ -272,18 +273,14 @@ int ttk::TopologicalCompression::PerformSimplification(
           array[neighbor] = val;
         if(array[neighbor] == val
            && inputOffsets[neighbor] > inputOffsets[id]) {
-          int tmp = inputOffsets[id];
-          inputOffsets[id] = inputOffsets[neighbor];
-          inputOffsets[neighbor] = tmp;
+          std::swap(inputOffsets[id], inputOffsets[neighbor]);
         }
       } else if(type == -1) { // Local_minimum.
         if(array[neighbor] < val)
           array[neighbor] = val;
         if(array[neighbor] == val
            && inputOffsets[neighbor] < inputOffsets[id]) {
-          int tmp = inputOffsets[id];
-          inputOffsets[id] = inputOffsets[neighbor];
-          inputOffsets[neighbor] = tmp;
+          std::swap(inputOffsets[id], inputOffsets[neighbor]);
         }
       } else if(type == 0) { // Saddle
       }
@@ -292,13 +289,18 @@ int ttk::TopologicalCompression::PerformSimplification(
     critConstraints[i] = id;
   }
 
-  for(int i = 0; i < vertexNumber; ++i)
+  for(int i = 0; i < vertexNumber; ++i) {
     inArray[i] = array[i];
+  }
   for(int i = 0; i < vertexNumber; ++i)
     decompressedOffsets_[i] = 0;
 
-  status = topologicalSimplification.execute<double, int>(
-    inArray.data(), array, critConstraints.data(), inputOffsets.data(),
+  std::vector<SimplexId> vertsOrder(vertexNumber);
+  sortVertices(vertexNumber, array, inputOffsets.data(), vertsOrder.data(),
+               this->threadNumber_);
+
+  status = topologicalSimplification.execute<double>(
+    inArray.data(), array, critConstraints.data(), vertsOrder.data(),
     decompressedOffsets_.data(), nbConstraints, triangulation);
 
   return status;
@@ -374,8 +376,8 @@ template <typename dataType, typename triangulationType>
 int ttk::TopologicalCompression::computePersistencePairs(
   std::vector<std::tuple<SimplexId, SimplexId, dataType>> &JTPairs,
   std::vector<std::tuple<SimplexId, SimplexId, dataType>> &STPairs,
-  dataType *inputScalars_,
-  SimplexId *inputOffsets,
+  const dataType *const inputScalars_,
+  const SimplexId *const inputOffsets,
   const triangulationType &triangulation) {
 
   // Compute offsets
@@ -388,7 +390,7 @@ int ttk::TopologicalCompression::computePersistencePairs(
   ftmTreePP.setTreeType(ftm::TreeType::Join_Split);
   ftmTreePP.setVertexSoSoffsets(voffsets.data());
   ftmTreePP.setThreadNumber(threadNumber_);
-  ftmTreePP.build<dataType, SimplexId>(&triangulation);
+  ftmTreePP.build<dataType>(&triangulation);
   ftmTreePP.setSegmentation(false);
   ftmTreePP.computePersistencePairs<dataType>(JTPairs, true);
   ftmTreePP.computePersistencePairs<dataType>(STPairs, false);
@@ -399,17 +401,14 @@ int ttk::TopologicalCompression::computePersistencePairs(
 template <typename dataType, typename triangulationType>
 int ttk::TopologicalCompression::compressForPersistenceDiagram(
   int vertexNumber,
-  dataType *inputData,
+  const dataType *const inputData,
+  const SimplexId *const inputOffsets,
   dataType *outputData,
   const double &tol,
   const triangulationType &triangulation) {
 
   ttk::Timer t;
   ttk::Timer t1;
-
-  std::vector<SimplexId> inputOffsets(vertexNumber);
-  for(int i = 0; i < vertexNumber; ++i)
-    inputOffsets[i] = i;
 
   // 1. Compute persistence pairs.
   std::vector<std::tuple<dataType, int>> topoIndices;
@@ -457,7 +456,7 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
     std::vector<std::tuple<SimplexId, SimplexId, dataType>> JTPairs;
     std::vector<std::tuple<SimplexId, SimplexId, dataType>> STPairs;
     computePersistencePairs<dataType>(
-      JTPairs, STPairs, inputData, inputOffsets.data(), triangulation);
+      JTPairs, STPairs, inputData, inputOffsets, triangulation);
 
     this->printMsg("Computed persistence pairs", 1.0, t.getElapsedTime(),
                    this->threadNumber_);
@@ -486,9 +485,9 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
         persistentSum2 += (p1 * p1);
         persistentSum1 += abs<dataType>(p1);
         int type1 = topologicalSimplification.getCriticalType(
-          cp1, inputData, inputOffsets.data(), triangulation);
+          cp1, inputData, inputOffsets, triangulation);
         int type2 = topologicalSimplification.getCriticalType(
-          cp2, inputData, inputOffsets.data(), triangulation);
+          cp2, inputData, inputOffsets, triangulation);
         if(type1 == 0) {
           // authorizedSaddles->push_back(cp1);
           topoIndices.push_back(std::make_tuple(idt1, cp1));
@@ -528,9 +527,9 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
         persistentSum1 += abs<dataType>(p1);
         // Saddle selection.
         int type1 = topologicalSimplification.getCriticalType(
-          cp1, inputData, inputOffsets.data(), triangulation);
+          cp1, inputData, inputOffsets, triangulation);
         int type2 = topologicalSimplification.getCriticalType(
-          cp2, inputData, inputOffsets.data(), triangulation);
+          cp2, inputData, inputOffsets, triangulation);
         if(type1 == 0) {
           // authorizedSaddles->push_back(cp1);
           topoIndices.push_back(std::make_tuple(idt1, cp1));
@@ -573,12 +572,10 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
     // 2. Perform topological simplification with constraints.
     if(UseTopologicalSimplification) {
       compressedOffsets_.resize(vertexNumber);
-      for(int i = 0; i < vertexNumber; ++i)
-        compressedOffsets_[i] = i;
       int status = 0;
-      status = topologicalSimplification.execute<dataType, SimplexId>(
-        inputData, outputData, simplifiedConstraints.data(),
-        inputOffsets.data(), compressedOffsets_.data(), nbCrit, triangulation);
+      status = topologicalSimplification.execute<dataType>(
+        inputData, outputData, simplifiedConstraints.data(), inputOffsets,
+        compressedOffsets_.data(), nbCrit, triangulation);
       if(status != 0) {
         return status;
       }
@@ -871,7 +868,7 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
       SimplexId id = simplifiedConstraints[i];
       dataType val = inputData[id];
       int type = topologicalSimplification.getCriticalType(
-        id, inputData, inputOffsets.data(), triangulation);
+        id, inputData, inputOffsets, triangulation);
       if(type == -1 // Local_minimum
          || type == 1 // Local_maximum
          || type == 0) {

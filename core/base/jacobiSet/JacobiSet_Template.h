@@ -22,34 +22,6 @@ int ttk::JacobiSet::execute(std::vector<std::pair<SimplexId, char>> &jacobiSet,
     return -3;
 #endif
 
-  SimplexId vertexNumber = triangulation.getNumberOfVertices();
-
-  if(!sosOffsetsU_) {
-    // let's use our own local copy
-    sosOffsetsU_ = &localSosOffsetsU_;
-  }
-
-  if(vertexNumber != (SimplexId)sosOffsetsU_->size()) {
-
-    sosOffsetsU_->resize(vertexNumber);
-    for(SimplexId i = 0; i < vertexNumber; i++) {
-      (*sosOffsetsU_)[i] = i;
-    }
-  }
-
-  if(!sosOffsetsV_) {
-    // let's use our own local copy
-    sosOffsetsV_ = &localSosOffsetsV_;
-  }
-
-  if(vertexNumber != (SimplexId)sosOffsetsV_->size()) {
-
-    sosOffsetsV_->resize(vertexNumber);
-    for(SimplexId i = 0; i < vertexNumber; i++) {
-      (*sosOffsetsV_)[i] = vertexNumber - i;
-    }
-  }
-
   jacobiSet.clear();
 
   SimplexId edgeNumber = triangulation.getNumberOfEdges();
@@ -164,7 +136,6 @@ int ttk::JacobiSet::executeLegacy(
   for(ThreadId i = 0; i < threadNumber_; i++) {
     threadedCriticalPoints[i].setDomainDimension(2);
     threadedCriticalPoints[i].setVertexNumber(vertexNumber_);
-    threadedCriticalPoints[i].setSosOffsets(sosOffsetsU_);
   }
 
   std::vector<std::vector<std::pair<SimplexId, char>>> threadedCriticalTypes(
@@ -231,9 +202,8 @@ int ttk::JacobiSet::executeLegacy(
       // also, lots of things in there can be done out of the loop
 
       // in the loop
-      char type = threadedCriticalPoints[threadId].getCriticalType<double>(
-        pivotVertexId, threadedDistanceField[i].data(),
-        (*edgeFanLinkEdgeLists_)[i]);
+      char type = threadedCriticalPoints[threadId].getCriticalType(
+        pivotVertexId, sosOffsetsU_, (*edgeFanLinkEdgeLists_)[i]);
 
       if(type != -2) {
         // -2: regular vertex
@@ -388,14 +358,14 @@ char ttk::JacobiSet::getCriticalType(const SimplexId &edgeId,
             // degenerate
             // compute the distance field out of the offset positions
             double offsetProjectedPivotVertex[2];
-            offsetProjectedPivotVertex[0] = (*sosOffsetsU_)[vertexId0];
+            offsetProjectedPivotVertex[0] = sosOffsetsU_[vertexId0];
             offsetProjectedPivotVertex[1]
-              = (*sosOffsetsV_)[vertexId0] * (*sosOffsetsV_)[vertexId0];
+              = sosOffsetsV_[vertexId0] * sosOffsetsV_[vertexId0];
 
             double offsetProjectedOtherVertex[2];
-            offsetProjectedOtherVertex[0] = (*sosOffsetsU_)[vertexId1];
+            offsetProjectedOtherVertex[0] = sosOffsetsU_[vertexId1];
             offsetProjectedOtherVertex[1]
-              = (*sosOffsetsV_)[vertexId1] * (*sosOffsetsV_)[vertexId1];
+              = sosOffsetsV_[vertexId1] * sosOffsetsV_[vertexId1];
 
             double offsetRangeEdge[2];
             offsetRangeEdge[0]
@@ -407,9 +377,9 @@ char ttk::JacobiSet::getCriticalType(const SimplexId &edgeId,
             offsetRangeNormal[0] = -offsetRangeEdge[1];
             offsetRangeNormal[1] = offsetRangeEdge[0];
 
-            projectedVertex[0] = (*sosOffsetsU_)[vertexId];
+            projectedVertex[0] = sosOffsetsU_[vertexId];
             projectedVertex[1]
-              = (*sosOffsetsV_)[vertexId] * (*sosOffsetsV_)[vertexId];
+              = sosOffsetsV_[vertexId] * sosOffsetsV_[vertexId];
 
             vertexRangeEdge[0]
               = projectedVertex[0] - offsetProjectedPivotVertex[0];

@@ -43,11 +43,18 @@ namespace ttk {
       const std::vector<std::tuple<SimplexId, SimplexId, scalarType>> &pairs,
       std::vector<std::pair<scalarType, SimplexId>> &plot) const;
 
+    /**
+     * @pre For this function to behave correctly in the absence of
+     * the VTK wrapper, ttk::preconditionOrderArray() needs to be
+     * called to fill the @p inputOffsets buffer prior to any
+     * computation (the VTK wrapper already includes a mecanism to
+     * automatically generate such a preconditioned buffer).
+     * @see examples/c++/main.cpp for an example use.
+     */
     template <typename scalarType,
-              typename idType,
               class triangulationType = ttk::AbstractTriangulation>
     int execute(const scalarType *inputScalars,
-                const idType *inputOffsets,
+                const SimplexId *inputOffsets,
                 const triangulationType *triangulation);
 
     inline void preconditionTriangulation(Triangulation *triangulation) {
@@ -104,9 +111,9 @@ int ttk::PersistenceCurve::computePersistencePlot(
   return 0;
 }
 
-template <typename scalarType, typename idType, class triangulationType>
+template <typename scalarType, class triangulationType>
 int ttk::PersistenceCurve::execute(const scalarType *inputScalars,
-                                   const idType *inputOffsets,
+                                   const SimplexId *inputOffsets,
                                    const triangulationType *triangulation) {
 
   printMsg(ttk::debug::Separator::L1);
@@ -120,17 +127,12 @@ int ttk::PersistenceCurve::execute(const scalarType *inputScalars,
   auto CTPlot = static_cast<plotType *>(CTPlot_);
   auto MSCPlot = static_cast<plotType *>(MSCPlot_);
 
-  const SimplexId numberOfVertices = triangulation->getNumberOfVertices();
-  // convert offsets into a valid format for contour tree
-  std::vector<SimplexId> voffsets(numberOfVertices);
-  std::copy(inputOffsets, inputOffsets + numberOfVertices, voffsets.begin());
-
   contourTree_.setVertexScalars(inputScalars);
   contourTree_.setTreeType(ftm::TreeType::Join_Split);
-  contourTree_.setVertexSoSoffsets(voffsets.data());
+  contourTree_.setVertexSoSoffsets(inputOffsets);
   contourTree_.setSegmentation(false);
   contourTree_.setThreadNumber(threadNumber_);
-  contourTree_.build<scalarType, idType>(triangulation);
+  contourTree_.build<scalarType>(triangulation);
 
   // get persistence pairs
   std::vector<std::tuple<SimplexId, SimplexId, scalarType>> JTPairs;
@@ -158,7 +160,7 @@ int ttk::PersistenceCurve::execute(const scalarType *inputScalars,
       pl_saddleSaddlePairs;
     morseSmaleComplex_.setInputScalarField(inputScalars);
     morseSmaleComplex_.setInputOffsets(inputOffsets);
-    morseSmaleComplex_.computePersistencePairs<scalarType, idType>(
+    morseSmaleComplex_.computePersistencePairs<scalarType>(
       pl_saddleSaddlePairs, *triangulation);
 
     // sort the saddle-saddle pairs by persistence value and compute curve

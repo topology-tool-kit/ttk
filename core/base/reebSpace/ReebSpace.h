@@ -209,11 +209,27 @@ namespace ttk {
       return false;
     }
 
-    inline void setSosOffsetsU(std::vector<SimplexId> *sosOffsetsU) {
+    /**
+     * @pre For this function to behave correctly in the absence of
+     * the VTK wrapper, ttk::preconditionOrderArray() needs to be
+     * called to fill the @p sosOffsetsU buffer prior to any
+     * computation (the VTK wrapper already includes a mecanism to
+     * automatically generate such a preconditioned buffer).
+     * @see examples/c++/main.cpp for an example use.
+     */
+    inline void setSosOffsetsU(const SimplexId *const sosOffsetsU) {
       sosOffsetsU_ = sosOffsetsU;
     }
 
-    inline void setSosOffsetsV(std::vector<SimplexId> *sosOffsetsV) {
+    /**
+     * @pre For this function to behave correctly in the absence of
+     * the VTK wrapper, ttk::preconditionOrderArray() needs to be
+     * called to fill the @p sosOffsetsV buffer prior to any
+     * computation (the VTK wrapper already includes a mecanism to
+     * automatically generate such a preconditioned buffer).
+     * @see examples/c++/main.cpp for an example use.
+     */
+    inline void setSosOffsetsV(const SimplexId *const sosOffsetsV) {
       sosOffsetsV_ = sosOffsetsV;
     }
 
@@ -401,7 +417,7 @@ namespace ttk {
     SimplexId vertexNumber_{0}, edgeNumber_{0}, tetNumber_{0};
     double totalArea_{-1}, totalVolume_{-1}, totalHyperVolume_{-1};
 
-    std::vector<SimplexId> *sosOffsetsU_{}, *sosOffsetsV_{};
+    const SimplexId *sosOffsetsU_{}, *sosOffsetsV_{};
 
     bool hasConnectedSheets_{false}, expand3sheets_{true},
       withRangeDrivenOctree_{true};

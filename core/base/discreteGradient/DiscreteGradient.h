@@ -27,18 +27,7 @@
 #include <set>
 #include <utility>
 
-#if defined(__GNUC__) && !defined(__clang__)
-#include <parallel/algorithm>
-#endif
-
 namespace ttk {
-#if defined(_GLIBCXX_PARALLEL_FEATURES_H) && defined(TTK_ENABLE_OPENMP)
-#define PSORT                               \
-  omp_set_num_threads(this->threadNumber_); \
-  __gnu_parallel::sort
-#else
-#define PSORT std::sort
-#endif // _GLIBCXX_PARALLEL_FEATURES_H && TTK_ENABLE_OPENMP
 
   namespace dcg {
     /**
@@ -367,53 +356,35 @@ saddle-connectors.
       }
 
       /**
-       * Return the scalar value of the point in the cell which has the highest
-function value.
-       */
-      template <typename dataType, typename triangulationType>
-      dataType scalarMax(const Cell &cell,
-                         const dataType *const scalars,
-                         const triangulationType &triangulation) const;
-
-      /**
-       * Return the scalar value of the point in the cell which has the lowest
-function value.
-       */
-      template <typename dataType, typename triangulationType>
-      dataType scalarMin(const Cell &cell,
-                         const dataType *const scalars,
-                         const triangulationType &triangulation) const;
-
-      /**
        * Compute the difference of function values of a pair of cells.
        */
       template <typename dataType, typename triangulationType>
       dataType getPersistence(const Cell &up,
                               const Cell &down,
-                              const dataType *scalars,
+                              const dataType *const scalars,
+                              const SimplexId *const offsets,
                               const triangulationType &triangulation) const;
 
       /**
        * Compute the initial gradient field of the input scalar function on the
 triangulation.
        */
-      template <typename dataType, typename idType, typename triangulationType>
+      template <typename triangulationType>
       int buildGradient(const triangulationType &triangulation);
 
       /**
        * Automatic detection of the PL critical points and simplification
 according to them.
        */
-      template <typename dataType, typename idType, typename triangulationType>
+      template <typename dataType, typename triangulationType>
       int reverseGradient(const triangulationType &triangulation,
                           const bool detectCriticalPoints = true);
 
       /**
        * Set the input scalar function.
        */
-      inline int setInputScalarField(const void *const data) {
+      inline void setInputScalarField(const void *const data) {
         inputScalarField_ = data;
-        return 0;
       }
 
       /**
@@ -449,10 +420,16 @@ according to them.
 
       /**
        * Set the input offset function.
+       *
+       * @pre For this function to behave correctly in the absence of
+       * the VTK wrapper, ttk::preconditionOrderArray() needs to be
+       * called to fill the @p data buffer prior to any
+       * computation (the VTK wrapper already includes a mecanism to
+       * automatically generate such a preconditioned buffer).
+       * @see examples/c++/main.cpp for an example use.
        */
-      inline int setInputOffsets(const void *const data) {
+      inline void setInputOffsets(const SimplexId *const data) {
         inputOffsets_ = data;
-        return 0;
       }
 
       /**
@@ -596,12 +573,23 @@ in the gradient.
 
       /**
        * Get the vertex id of with the maximum scalar field value on
-       * the given cell. Compare offsets if scalar field is constant.
+       * the given cell.
        */
       template <typename triangulationType>
       SimplexId
         getCellGreaterVertex(const Cell c,
+                             const SimplexId *const offsets,
                              const triangulationType &triangulation) const;
+
+      /**
+       * Get the vertex id of with the minimum scalar field value on
+       * the given cell.
+       */
+      template <typename triangulationType>
+      SimplexId
+        getCellLowerVertex(const Cell c,
+                           const SimplexId *const offsets,
+                           const triangulationType &triangulation) const;
 
       /**
        * Build the geometric embedding of the given STL vector of cells.
@@ -652,34 +640,6 @@ in the gradient.
                             const triangulationType &triangulation) const;
 
     private:
-      template <typename scalarType, typename offsetType>
-      void sortVertices(const SimplexId vertexNumber,
-                        std::vector<size_t> &vertsOrder,
-                        const scalarType *const scalarField,
-                        const offsetType *const offsetField) const {
-
-        std::vector<SimplexId> sortedVertices(vertexNumber);
-        vertsOrder.resize(vertexNumber);
-
-        // fill with numbers from 0 to vertexNumber - 1
-        std::iota(sortedVertices.begin(), sortedVertices.end(), 0);
-
-        // sort vertices in ascending order following scalarfield / offsets
-        PSORT(sortedVertices.begin(), sortedVertices.end(),
-              [&](const SimplexId a, const SimplexId b) {
-                return (scalarField[a] < scalarField[b])
-                       || (scalarField[a] == scalarField[b]
-                           && offsetField[a] < offsetField[b]);
-              });
-
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
-#endif // TTK_ENABLE_OPENMP
-        for(size_t i = 0; i < vertsOrder.size(); ++i) {
-          vertsOrder[sortedVertices[i]] = i;
-        }
-      }
-
       /**
        * Type alias for lower stars of a given cell
        */
@@ -697,6 +657,7 @@ in the gradient.
       template <typename triangulationType>
       inline lowerStarType
         lowerStar(const SimplexId a,
+                  const SimplexId *const offsets,
                   const triangulationType &triangulation) const;
 
       /**
@@ -740,7 +701,8 @@ in the gradient.
        * A. P. Sheppard
        */
       template <typename triangulationType>
-      int processLowerStars(const triangulationType &triangulation);
+      int processLowerStars(const SimplexId *const offsets,
+                            const triangulationType &triangulation);
 
       /**
        * Get the list of maxima candidates for simplification.
@@ -912,7 +874,7 @@ in the gradient.
        * Process the saddle connectors by increasing value of persistence until
 a given threshold is met.
        */
-      template <typename dataType, typename idType, typename triangulationType>
+      template <typename dataType, typename triangulationType>
       int filterSaddleConnectors(const bool allowBoundary,
                                  const triangulationType &triangulation);
 
@@ -977,7 +939,7 @@ gradient, false otherwise.
       std::vector<SimplexId> dmt2Saddle2PL_{};
 
       const void *inputScalarField_{};
-      const void *inputOffsets_{};
+      const SimplexId *inputOffsets_{};
 
       SimplexId outputCriticalPoints_numberOfPoints_{};
       std::vector<float> outputCriticalPoints_points_{};
@@ -989,9 +951,6 @@ gradient, false otherwise.
       std::vector<SimplexId> outputCriticalPoints_points_manifoldSize_{};
 
       std::vector<std::array<Cell, 2>> *outputPersistencePairs_{};
-
-      // index of vertices sorted by ascending order
-      std::vector<size_t> vertsOrder_{};
     };
 
   } // namespace dcg

@@ -7,6 +7,7 @@ if(TARGET ttkMandatoryCriticalPoints)
   target_link_libraries(${PROJECT_NAME}
     PRIVATE
       ttkMandatoryCriticalPoints
+      VTK::IOXML
     )
   set_target_properties(${PROJECT_NAME}
     PROPERTIES

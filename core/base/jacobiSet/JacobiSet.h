@@ -73,14 +73,30 @@ namespace ttk {
 
     inline void setSosOffsets(std::vector<SimplexId> *sosOffsets) {
       // legacy API
-      setSosOffsetsU(sosOffsets);
+      setSosOffsetsU(sosOffsets->data());
     }
 
-    inline void setSosOffsetsU(std::vector<SimplexId> *sosOffsets) {
+    /**
+     * @pre For this function to behave correctly in the absence of
+     * the VTK wrapper, ttk::preconditionOrderArray() needs to be
+     * called to fill the @p sosOffsets buffer prior to any
+     * computation (the VTK wrapper already includes a mecanism to
+     * automatically generate such a preconditioned buffer).
+     * @see examples/c++/main.cpp for an example use.
+     */
+    inline void setSosOffsetsU(const SimplexId *const sosOffsets) {
       sosOffsetsU_ = sosOffsets;
     }
 
-    inline void setSosOffsetsV(std::vector<SimplexId> *sosOffsets) {
+    /**
+     * @pre For this function to behave correctly in the absence of
+     * the VTK wrapper, ttk::preconditionOrderArray() needs to be
+     * called to fill the @p sosOffsets buffer prior to any
+     * computation (the VTK wrapper already includes a mecanism to
+     * automatically generate such a preconditioned buffer).
+     * @see examples/c++/main.cpp for an example use.
+     */
+    inline void setSosOffsetsV(const SimplexId *const sosOffsets) {
       sosOffsetsV_ = sosOffsets;
     }
 
@@ -117,8 +133,7 @@ namespace ttk {
       *edgeFanLinkEdgeLists_{};
     // for each edge, the one skeleton of its triangle fan
     const std::vector<std::vector<SimplexId>> *edgeFans_{};
-    std::vector<SimplexId> *sosOffsetsU_{}, *sosOffsetsV_{};
-    std::vector<SimplexId> localSosOffsetsU_{}, localSosOffsetsV_{};
+    const SimplexId *sosOffsetsU_{}, *sosOffsetsV_{};
   };
 } // namespace ttk
 

@@ -34,75 +34,49 @@ namespace ttk {
   public:
     ScalarFieldCriticalPoints();
 
-    ~ScalarFieldCriticalPoints();
-
-    /// Execute the package.
-    /// \param argment Dummy integer argument.
-    /// \return Returns 0 upon success, negative values otherwise.
-    template <class dataType, class triangulationType = AbstractTriangulation>
-    int execute(const dataType *scalarValues,
+    /**
+     * Execute the package.
+     * \param argment Dummy integer argument.
+     * \return Returns 0 upon success, negative values otherwise.
+     *
+     * @pre For this function to behave correctly in the absence of
+     * the VTK wrapper, ttk::preconditionOrderArray() needs to be
+     * called to fill the @p offsets buffer prior to any
+     * computation (the VTK wrapper already includes a mecanism to
+     * automatically generate such a preconditioned buffer).
+     * @see examples/c++/main.cpp for an example use.
+     */
+    template <class triangulationType = AbstractTriangulation>
+    int execute(const SimplexId *const offsets,
                 const triangulationType *triangulation);
 
-    template <class dataType, class triangulationType = AbstractTriangulation>
+    template <class triangulationType = AbstractTriangulation>
     std::pair<SimplexId, SimplexId> getNumberOfLowerUpperComponents(
       const SimplexId vertexId,
-      const dataType *scalarValues,
+      const SimplexId *const offsets,
       const triangulationType *triangulation) const;
 
-    template <class dataType, class triangulationType = AbstractTriangulation>
-    char getCriticalType(const dataType *scalarValues,
-                         const triangulationType *triangulation,
-                         const SimplexId &vertexId) const {
-
-      return getCriticalType<dataType, triangulationType>(
-        vertexId, scalarValues, triangulation);
-    }
-
-    template <class dataType, class triangulationType = AbstractTriangulation>
+    template <class triangulationType = AbstractTriangulation>
     char getCriticalType(const SimplexId &vertexId,
-                         const dataType *scalarValues,
+                         const SimplexId *const offsets,
                          const triangulationType *triangulation) const;
 
-    template <class dataType>
     char getCriticalType(const SimplexId &vertexId,
-                         const dataType *scalarValues,
+                         const SimplexId *const offsets,
                          const std::vector<std::pair<SimplexId, SimplexId>>
                            &vertexLinkEdgeList) const;
 
-    template <class dataType>
-    static bool isSosHigherThan(const SimplexId &offset0,
-                                const dataType &value0,
-                                const SimplexId &offset1,
-                                const dataType &value1) {
-
-      return ((value0 > value1) || ((value0 == value1) && (offset0 > offset1)));
-    }
-
-    template <class dataType>
-    static bool isSosLowerThan(const SimplexId &offset0,
-                               const dataType &value0,
-                               const SimplexId &offset1,
-                               const dataType &value1) {
-
-      return ((value0 < value1) || ((value0 == value1) && (offset0 < offset1)));
-    }
-
-    int setDomainDimension(const int &dimension) {
-
+    inline void setDomainDimension(const int &dimension) {
       dimension_ = dimension;
-
-      return 0;
     }
 
-    int setOutput(std::vector<std::pair<SimplexId, char>> *criticalPoints) {
-
+    inline void
+      setOutput(std::vector<std::pair<SimplexId, char>> *criticalPoints) {
       criticalPoints_ = criticalPoints;
-
-      return 0;
     }
 
-    int setupTriangulation(AbstractTriangulation *triangulation) {
-
+    inline void
+      preconditionTriangulation(AbstractTriangulation *triangulation) {
       // pre-condition functions
       if(triangulation) {
         triangulation->preconditionVertexNeighbors();
@@ -111,24 +85,12 @@ namespace ttk {
 
       setDomainDimension(triangulation->getDimensionality());
       setVertexNumber(triangulation->getNumberOfVertices());
-
-      return 0;
     }
 
-    int setSosOffsets(std::vector<SimplexId> *offsets) {
-
-      sosOffsets_ = offsets;
-
-      return 0;
-    }
-
-    int setVertexLinkEdgeLists(
+    inline void setVertexLinkEdgeLists(
       const std::vector<std::vector<std::pair<SimplexId, SimplexId>>>
         *edgeList) {
-
       vertexLinkEdgeLists_ = edgeList;
-
-      return 0;
     }
 
     /// Set the number of vertices in the scalar field.
@@ -144,22 +106,20 @@ namespace ttk {
     }
 
   protected:
-    int dimension_;
-    SimplexId vertexNumber_;
+    int dimension_{};
+    SimplexId vertexNumber_{};
     const std::vector<std::vector<std::pair<SimplexId, SimplexId>>>
-      *vertexLinkEdgeLists_;
-    std::vector<std::pair<SimplexId, char>> *criticalPoints_;
-    std::vector<SimplexId> *sosOffsets_;
-    std::vector<SimplexId> localSosOffSets_;
+      *vertexLinkEdgeLists_{};
+    std::vector<std::pair<SimplexId, char>> *criticalPoints_{};
 
-    bool forceNonManifoldCheck;
+    bool forceNonManifoldCheck{false};
   };
 } // namespace ttk
 
 // template functions
-template <class dataType, class triangulationType>
+template <class triangulationType>
 int ttk::ScalarFieldCriticalPoints::execute(
-  const dataType *scalarValues, const triangulationType *triangulation) {
+  const SimplexId *const offsets, const triangulationType *triangulation) {
 
   // check the consistency of the variables -- to adapt
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -167,8 +127,6 @@ int ttk::ScalarFieldCriticalPoints::execute(
     return -1;
   if((!vertexNumber_) && ((!triangulation) || (triangulation->isEmpty())))
     return -2;
-  if(!scalarValues)
-    return -3;
   if((!vertexLinkEdgeLists_) && (!triangulation))
     return -4;
   if(!criticalPoints_)
@@ -179,22 +137,6 @@ int ttk::ScalarFieldCriticalPoints::execute(
     vertexNumber_ = triangulation->getNumberOfVertices();
     dimension_ = triangulation->getCellVertexNumber(0) - 1;
   }
-
-  if(!sosOffsets_) {
-    // let's use our own local copy
-    sosOffsets_ = &localSosOffSets_;
-  }
-  if((SimplexId)sosOffsets_->size() != vertexNumber_) {
-    Timer preProcess;
-    sosOffsets_->resize(vertexNumber_);
-    for(SimplexId i = 0; i < vertexNumber_; i++)
-      (*sosOffsets_)[i] = i;
-
-    printMsg("Preprocessed " + std::to_string(vertexNumber_) + " offsets.", 1,
-             preProcess.getElapsedTime(), 1);
-  }
-
-  printMsg(ttk::debug::Separator::L1);
 
   printMsg("Extracting critical points...");
 
@@ -208,7 +150,7 @@ int ttk::ScalarFieldCriticalPoints::execute(
 #endif
     for(SimplexId i = 0; i < (SimplexId)vertexNumber_; i++) {
 
-      vertexTypes[i] = getCriticalType(i, scalarValues, triangulation);
+      vertexTypes[i] = getCriticalType(i, offsets, triangulation);
     }
   } else if(vertexLinkEdgeLists_) {
     // legacy implementation
@@ -217,8 +159,7 @@ int ttk::ScalarFieldCriticalPoints::execute(
 #endif
     for(SimplexId i = 0; i < (SimplexId)vertexNumber_; i++) {
 
-      vertexTypes[i]
-        = getCriticalType(i, scalarValues, (*vertexLinkEdgeLists_)[i]);
+      vertexTypes[i] = getCriticalType(i, offsets, (*vertexLinkEdgeLists_)[i]);
     }
   }
 
@@ -309,11 +250,11 @@ int ttk::ScalarFieldCriticalPoints::execute(
   return 0;
 }
 
-template <class dataType, class triangulationType>
+template <class triangulationType>
 std::pair<ttk::SimplexId, ttk::SimplexId>
   ttk::ScalarFieldCriticalPoints::getNumberOfLowerUpperComponents(
     const SimplexId vertexId,
-    const dataType *scalarValues,
+    const SimplexId *const offsets,
     const triangulationType *triangulation) const {
 
   SimplexId neighborNumber = triangulation->getVertexNeighborNumber(vertexId);
@@ -323,18 +264,12 @@ std::pair<ttk::SimplexId, ttk::SimplexId>
     SimplexId neighborId = 0;
     triangulation->getVertexNeighbor(vertexId, i, neighborId);
 
-    if(isSosLowerThan<dataType>(
-         (*sosOffsets_)[neighborId], scalarValues[neighborId],
-         (*sosOffsets_)[vertexId], scalarValues[vertexId])) {
-
+    if(offsets[neighborId] < offsets[vertexId]) {
       lowerNeighbors.push_back(neighborId);
     }
 
     // upper link
-    if(isSosHigherThan<dataType>(
-         (*sosOffsets_)[neighborId], scalarValues[neighborId],
-         (*sosOffsets_)[vertexId], scalarValues[vertexId])) {
-
+    if(offsets[neighborId] > offsets[vertexId]) {
       upperNeighbors.push_back(neighborId);
     }
   }
@@ -377,9 +312,7 @@ std::pair<ttk::SimplexId, ttk::SimplexId>
       if(neighborId0 != vertexId) {
         // we are on the link
 
-        bool lower0 = isSosLowerThan<dataType>(
-          (*sosOffsets_)[neighborId0], scalarValues[neighborId0],
-          (*sosOffsets_)[vertexId], scalarValues[vertexId]);
+        bool lower0 = offsets[neighborId0] < offsets[vertexId];
 
         // connect it to everybody except himself and vertexId
         for(SimplexId k = j + 1; k < cellSize; k++) {
@@ -389,9 +322,7 @@ std::pair<ttk::SimplexId, ttk::SimplexId>
 
           if((neighborId1 != neighborId0) && (neighborId1 != vertexId)) {
 
-            bool lower1 = isSosLowerThan<dataType>(
-              (*sosOffsets_)[neighborId1], scalarValues[neighborId1],
-              (*sosOffsets_)[vertexId], scalarValues[vertexId]);
+            bool lower1 = offsets[neighborId1] < offsets[vertexId];
 
             std::vector<SimplexId> *neighbors = &lowerNeighbors;
             std::vector<UnionFind *> *seeds = &lowerList;
@@ -451,15 +382,15 @@ std::pair<ttk::SimplexId, ttk::SimplexId>
   return std::make_pair(lowerList.size(), upperList.size());
 }
 
-template <class dataType, class triangulationType>
+template <class triangulationType>
 char ttk::ScalarFieldCriticalPoints::getCriticalType(
   const SimplexId &vertexId,
-  const dataType *scalarValues,
+  const SimplexId *const offsets,
   const triangulationType *triangulation) const {
 
   SimplexId downValence, upValence;
-  std::tie(downValence, upValence) = getNumberOfLowerUpperComponents<dataType>(
-    vertexId, scalarValues, triangulation);
+  std::tie(downValence, upValence)
+    = getNumberOfLowerUpperComponents(vertexId, offsets, triangulation);
 
   if(downValence == 0 && upValence == 1) {
     return (char)(CriticalType::Local_minimum);
@@ -491,211 +422,6 @@ char ttk::ScalarFieldCriticalPoints::getCriticalType(
         return (char)(CriticalType::Saddle2);
       } else {
         // monkey saddle, saddle + extremum
-        return (char)(CriticalType::Degenerate);
-        // NOTE: we may have a similar effect in 3D (TODO)
-      }
-    }
-  }
-
-  // -2: regular points
-  return (char)(CriticalType::Regular);
-}
-
-template <class dataType>
-char ttk::ScalarFieldCriticalPoints::getCriticalType(
-  const SimplexId &vertexId,
-  const dataType *scalarValues,
-  const std::vector<std::pair<SimplexId, SimplexId>> &vertexLink) const {
-
-  std::map<SimplexId, SimplexId> global2LowerLink, global2UpperLink;
-  std::map<SimplexId, SimplexId>::iterator neighborIt;
-
-  SimplexId lowerCount = 0, upperCount = 0;
-
-  for(SimplexId i = 0; i < (SimplexId)vertexLink.size(); i++) {
-
-    SimplexId neighborId = vertexLink[i].first;
-
-    // first vertex
-    // lower link search
-    if(isSosLowerThan<dataType>(
-         (*sosOffsets_)[neighborId], scalarValues[neighborId],
-         (*sosOffsets_)[vertexId], scalarValues[vertexId])) {
-
-      neighborIt = global2LowerLink.find(neighborId);
-      if(neighborIt == global2LowerLink.end()) {
-        // not in there, add it
-        global2LowerLink[neighborId] = lowerCount;
-        lowerCount++;
-      }
-    }
-
-    // upper link
-    if(isSosHigherThan<dataType>(
-         (*sosOffsets_)[neighborId], scalarValues[neighborId],
-         (*sosOffsets_)[vertexId], scalarValues[vertexId])) {
-
-      neighborIt = global2UpperLink.find(neighborId);
-      if(neighborIt == global2UpperLink.end()) {
-        // not in there, add it
-        global2UpperLink[neighborId] = upperCount;
-        upperCount++;
-      }
-    }
-
-    // second vertex
-    neighborId = vertexLink[i].second;
-
-    // lower link search
-    if(isSosLowerThan<dataType>(
-         (*sosOffsets_)[neighborId], scalarValues[neighborId],
-         (*sosOffsets_)[vertexId], scalarValues[vertexId])) {
-
-      neighborIt = global2LowerLink.find(neighborId);
-      if(neighborIt == global2LowerLink.end()) {
-        // not in there, add it
-        global2LowerLink[neighborId] = lowerCount;
-        lowerCount++;
-      }
-    }
-
-    // upper link
-    if(isSosHigherThan<dataType>(
-         (*sosOffsets_)[neighborId], scalarValues[neighborId],
-         (*sosOffsets_)[vertexId], scalarValues[vertexId])) {
-
-      neighborIt = global2UpperLink.find(neighborId);
-      if(neighborIt == global2UpperLink.end()) {
-        // not in there, add it
-        global2UpperLink[neighborId] = upperCount;
-        upperCount++;
-      }
-    }
-  }
-
-  if(debugLevel_ >= (int)(debug::Priority::VERBOSE)) {
-    printMsg("Vertex #" + std::to_string(vertexId) + " lower link ("
-               + std::to_string(lowerCount) + " vertices)",
-             debug::Priority::VERBOSE);
-    printMsg("Vertex #" + std::to_string(vertexId) + " upper link ("
-               + std::to_string(upperCount) + " vertices)",
-             debug::Priority::VERBOSE);
-  }
-
-  if(!lowerCount) {
-    // minimum
-    return (char)(CriticalType::Local_minimum);
-  }
-  if(!upperCount) {
-    // maximum
-    return (char)(CriticalType::Local_maximum);
-  }
-
-  // so far 40% of the computation, that's ok.
-
-  // now enumerate the connected components of the lower and upper links
-  // NOTE: a breadth first search might be faster than a UF
-  // if so, one would need the one-skeleton data structure, not the edge list
-  std::vector<UnionFind> lowerSeeds(lowerCount);
-  std::vector<UnionFind> upperSeeds(upperCount);
-  std::vector<UnionFind *> lowerList(lowerCount);
-  std::vector<UnionFind *> upperList(upperCount);
-  for(SimplexId i = 0; i < (SimplexId)lowerList.size(); i++)
-    lowerList[i] = &(lowerSeeds[i]);
-  for(SimplexId i = 0; i < (SimplexId)upperList.size(); i++)
-    upperList[i] = &(upperSeeds[i]);
-
-  for(SimplexId i = 0; i < (SimplexId)vertexLink.size(); i++) {
-
-    SimplexId neighborId0 = vertexLink[i].first;
-    SimplexId neighborId1 = vertexLink[i].second;
-
-    // process the lower link
-    if((isSosLowerThan<dataType>(
-         (*sosOffsets_)[neighborId0], scalarValues[neighborId0],
-         (*sosOffsets_)[vertexId], scalarValues[vertexId]))
-       && (isSosLowerThan<dataType>(
-         (*sosOffsets_)[neighborId1], scalarValues[neighborId1],
-         (*sosOffsets_)[vertexId], scalarValues[vertexId]))) {
-
-      // both vertices are lower, let's add that edge and update the UF
-      std::map<SimplexId, SimplexId>::iterator n0It
-        = global2LowerLink.find(neighborId0);
-      std::map<SimplexId, SimplexId>::iterator n1It
-        = global2LowerLink.find(neighborId1);
-
-      lowerList[n0It->second]
-        = makeUnion(lowerList[n0It->second], lowerList[n1It->second]);
-      lowerList[n1It->second] = lowerList[n0It->second];
-    }
-
-    // process the upper link
-    if((isSosHigherThan<dataType>(
-         (*sosOffsets_)[neighborId0], scalarValues[neighborId0],
-         (*sosOffsets_)[vertexId], scalarValues[vertexId]))
-       && (isSosHigherThan<dataType>(
-         (*sosOffsets_)[neighborId1], scalarValues[neighborId1],
-         (*sosOffsets_)[vertexId], scalarValues[vertexId]))) {
-
-      // both vertices are lower, let's add that edge and update the UF
-      std::map<SimplexId, SimplexId>::iterator n0It
-        = global2UpperLink.find(neighborId0);
-      std::map<SimplexId, SimplexId>::iterator n1It
-        = global2UpperLink.find(neighborId1);
-
-      upperList[n0It->second]
-        = makeUnion(upperList[n0It->second], upperList[n1It->second]);
-      upperList[n1It->second] = upperList[n0It->second];
-    }
-  }
-
-  // let's remove duplicates
-  std::vector<UnionFind *>::iterator it;
-  // update the UFs if necessary
-  for(SimplexId i = 0; i < (SimplexId)lowerList.size(); i++)
-    lowerList[i] = lowerList[i]->find();
-  for(SimplexId i = 0; i < (SimplexId)upperList.size(); i++)
-    upperList[i] = upperList[i]->find();
-
-  sort(lowerList.begin(), lowerList.end());
-  it = unique(lowerList.begin(), lowerList.end());
-  lowerList.resize(distance(lowerList.begin(), it));
-
-  sort(upperList.begin(), upperList.end());
-  it = unique(upperList.begin(), upperList.end());
-  upperList.resize(distance(upperList.begin(), it));
-
-  if(debugLevel_ >= (int)(debug::Priority::VERBOSE)) {
-    printMsg("Vertex #" + std::to_string(vertexId)
-               + ": lowerLink-#CC=" + std::to_string(lowerList.size())
-               + " upperLink-#CC=" + std::to_string(upperList.size()),
-             debug::Priority::VERBOSE);
-  }
-
-  if((lowerList.size() == 1) && (upperList.size() == 1))
-    // regular point
-    return (char)(CriticalType::Regular);
-  else {
-    // saddles
-    if(dimension_ == 2) {
-      if((lowerList.size() > 2) || (upperList.size() > 2)) {
-        // monkey saddle
-        return (char)(CriticalType::Degenerate);
-      } else {
-        // regular saddle
-        return (char)(CriticalType::Saddle1);
-        // NOTE: you may have multi-saddles on the boundary in that
-        // configuration
-        // to make this computation 100% correct, one would need to disambiguate
-        // boundary from interior vertices
-      }
-    } else if(dimension_ == 3) {
-      if((lowerList.size() == 2) && (upperList.size() == 1)) {
-        return (char)(CriticalType::Saddle1);
-      } else if((lowerList.size() == 1) && (upperList.size() == 2)) {
-        return (char)(CriticalType::Saddle2);
-      } else {
-        // monkey saddle
         return (char)(CriticalType::Degenerate);
         // NOTE: we may have a similar effect in 3D (TODO)
       }

@@ -20,10 +20,10 @@
 /// and local scope, time and memory measurements, etc.
 /// Each ttk class should inheritate from it.
 
-#ifndef _DEBUG_H
-#define _DEBUG_H
+#pragma once
 
 #include <BaseClass.h>
+
 #include <algorithm>
 #include <cerrno>
 #include <fstream>
@@ -491,5 +491,6 @@ namespace ttk {
   class DebugMemory : public Memory {};
 } // namespace ttk
 
-#endif
+#include <OrderDisambiguation.h>
+
 /// @}

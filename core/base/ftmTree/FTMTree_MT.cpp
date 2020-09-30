@@ -182,7 +182,7 @@ void FTMTree_MT::buildSegmentation() {
       const SimplexId lowerBound = chunkId * chunkSize;
       const SimplexId upperBound = min(nbVert, (chunkId + 1) * chunkSize);
       for(SimplexId i = lowerBound; i < upperBound; ++i) {
-        const auto vert = (*scalars_->sortedVertices)[i];
+        const auto vert = scalars_->sortedVertices[i];
         if(isCorrespondingArc(vert)) {
           idSuperArc sa = getCorrespondingSuperArcId(vert);
           SimplexId vertToAdd;
@@ -380,9 +380,9 @@ tuple<SimplexId, SimplexId>
 
   if(isST()) {
     begin = 0;
-    stop = (*scalars_->mirrorVertices)[trunkVerts[0]];
+    stop = scalars_->offsets[trunkVerts[0]];
   } else {
-    begin = (*scalars_->mirrorVertices)[trunkVerts[0]];
+    begin = scalars_->offsets[trunkVerts[0]];
     stop = scalars_->size;
   }
 
@@ -884,13 +884,12 @@ SimplexId FTMTree_MT::trunkCTSegmentation(const vector<SimplexId> &trunkVerts,
       if(lowerBound != upperBound) {
         const SimplexId pos = isST() ? upperBound - 1 : lowerBound;
         lastVertInRange
-          = getVertInRange(trunkVerts, (*scalars_->sortedVertices)[pos], 0);
+          = getVertInRange(trunkVerts, scalars_->sortedVertices[pos], 0);
       }
       for(SimplexId v = lowerBound; v < upperBound; ++v) {
         const SimplexId s
-          = isST()
-              ? (*scalars_->sortedVertices)[lowerBound + upperBound - 1 - v]
-              : (*scalars_->sortedVertices)[v];
+          = isST() ? scalars_->sortedVertices[lowerBound + upperBound - 1 - v]
+                   : scalars_->sortedVertices[v];
         if(isCorrespondingNull(s)) {
           const idNode oldVertInRange = lastVertInRange;
           lastVertInRange = getVertInRange(trunkVerts, s, lastVertInRange);
@@ -977,9 +976,8 @@ SimplexId FTMTree_MT::trunkSegmentation(const vector<SimplexId> &trunkVerts,
         = min(stop, (begin + (chunkId + 1) * chunkSize));
       for(SimplexId v = lowerBound; v < upperBound; ++v) {
         const SimplexId s
-          = isST()
-              ? (*scalars_->sortedVertices)[lowerBound + upperBound - 1 - v]
-              : (*scalars_->sortedVertices)[v];
+          = isST() ? scalars_->sortedVertices[lowerBound + upperBound - 1 - v]
+                   : scalars_->sortedVertices[v];
         if(isCorrespondingNull(s)) {
           const idNode oldVertInRange = lastVertInRange;
           lastVertInRange = getVertInRange(trunkVerts, s, lastVertInRange);

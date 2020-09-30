@@ -44,7 +44,7 @@ int ttkMorseSmaleComplex::FillOutputPortInformation(int port,
   return 0;
 }
 
-template <typename scalarType, typename offsetType, typename triangulationType>
+template <typename scalarType, typename triangulationType>
 int ttkMorseSmaleComplex::dispatch(
   vtkDataArray *const inputScalars,
   vtkDataArray *const inputOffsets,
@@ -129,8 +129,7 @@ int ttkMorseSmaleComplex::dispatch(
     &separatrices2_cells_separatrixFunctionDiffs,
     &separatrices2_cells_isOnBoundary);
 
-  const int ret
-    = this->execute<scalarType, offsetType, triangulationType>(triangulation);
+  const int ret = this->execute<scalarType, triangulationType>(triangulation);
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(ret != 0) {
@@ -495,23 +494,8 @@ int ttkMorseSmaleComplex::RequestData(vtkInformation *request,
   }
 #endif
 
-  auto inputOffsets
-    = ttkAlgorithm::GetOptionalArray(this->ForceInputOffsetScalarField, 1,
-                                     ttk::OffsetScalarFieldName, inputVector);
-
-  vtkNew<ttkSimplexIdTypeArray> offsets{};
-
-  if(inputOffsets == nullptr) {
-    // build a new offset field
-    const SimplexId numberOfVertices = input->GetNumberOfPoints();
-    offsets->SetNumberOfComponents(1);
-    offsets->SetNumberOfTuples(numberOfVertices);
-    offsets->SetName(ttk::OffsetScalarFieldName);
-    for(SimplexId i = 0; i < numberOfVertices; ++i) {
-      offsets->SetTuple1(i, i);
-    }
-    inputOffsets = offsets;
-  }
+  auto inputOffsets = ttkAlgorithm::GetOrderArray(
+    input, 0, 1, this->ForceInputOffsetScalarField);
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(inputOffsets == nullptr) {
@@ -572,7 +556,8 @@ int ttkMorseSmaleComplex::RequestData(vtkInformation *request,
     SaddleConnectorsPersistenceThreshold);
 
   this->setInputScalarField(ttkUtils::GetVoidPointer(inputScalars));
-  this->setInputOffsets(ttkUtils::GetVoidPointer(inputOffsets));
+  this->setInputOffsets(
+    static_cast<SimplexId *>(ttkUtils::GetVoidPointer(inputOffsets)));
 
   void *ascendingManifoldPtr = nullptr;
   void *descendingManifoldPtr = nullptr;
@@ -589,19 +574,12 @@ int ttkMorseSmaleComplex::RequestData(vtkInformation *request,
     ascendingManifoldPtr, descendingManifoldPtr, morseSmaleManifoldPtr);
 
   int ret{};
-  if(inputOffsets->GetDataType() == VTK_INT) {
-    ttkVtkTemplateMacro(inputScalars->GetDataType(), triangulation->getType(),
-                        (ret = dispatch<VTK_TT, SimplexId, TTK_TT>(
-                           inputScalars, inputOffsets, outputCriticalPoints,
-                           outputSeparatrices1, outputSeparatrices2,
-                           *static_cast<TTK_TT *>(triangulation->getData()))))
-  } else if(inputOffsets->GetDataType() == VTK_ID_TYPE) {
-    ttkVtkTemplateMacro(inputScalars->GetDataType(), triangulation->getType(),
-                        (ret = dispatch<VTK_TT, ttk::LongSimplexId, TTK_TT>(
-                           inputScalars, inputOffsets, outputCriticalPoints,
-                           outputSeparatrices1, outputSeparatrices2,
-                           *static_cast<TTK_TT *>(triangulation->getData()))))
-  }
+
+  ttkVtkTemplateMacro(
+    inputScalars->GetDataType(), triangulation->getType(),
+    (ret = dispatch<VTK_TT, TTK_TT>(
+       inputScalars, inputOffsets, outputCriticalPoints, outputSeparatrices1,
+       outputSeparatrices2, *static_cast<TTK_TT *>(triangulation->getData()))));
 
   if(ret != 0) {
     return -1;
@@ -625,6 +603,8 @@ int ttkMorseSmaleComplex::RequestData(vtkInformation *request,
     if(ComputeAscendingSegmentation and ComputeDescendingSegmentation
        and ComputeFinalSegmentation)
       pointData->AddArray(morseSmaleManifold);
+
+    pointData->AddArray(inputOffsets);
   }
 
   return !ret;

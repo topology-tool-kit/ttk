@@ -41,7 +41,6 @@ macro(ttk_add_vtk_module)
 
     vtk_module_link(${TTK_NAME}
       PUBLIC
-        ${VTK_LIBRARIES}
         ${TTK_DEPENDS}
       )
 

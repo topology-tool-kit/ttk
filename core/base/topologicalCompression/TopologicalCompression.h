@@ -29,10 +29,6 @@
 #include <stack>
 #include <type_traits>
 
-#ifdef TTK_ENABLE_ZLIB
-#include <zlib.h>
-#endif
-
 namespace ttk {
 
   enum class CompressionType { PersistenceDiagram = 0, Other = 1 };
@@ -43,9 +39,18 @@ namespace ttk {
     // Base code methods.
     TopologicalCompression();
 
+    /**
+     * @pre For this function to behave correctly in the absence of
+     * the VTK wrapper, ttk::preconditionOrderArray() needs to be
+     * called to fill the @p inputOffsets buffer prior to any
+     * computation (the VTK wrapper already includes a mecanism to
+     * automatically generate such a preconditioned buffer).
+     * @see examples/c++/main.cpp for an example use.
+     */
     template <class dataType,
               typename triangulationType = AbstractTriangulation>
-    int execute(dataType *inputData,
+    int execute(const dataType *const inputData,
+                const SimplexId *const inputOffsets,
                 dataType *outputData,
                 const triangulationType &triangulation);
 
@@ -54,12 +59,13 @@ namespace ttk {
     int computePersistencePairs(
       std::vector<std::tuple<SimplexId, SimplexId, dataType>> &JTPairs,
       std::vector<std::tuple<SimplexId, SimplexId, dataType>> &STPairs,
-      dataType *inputScalars_,
-      SimplexId *inputOffsets,
+      const dataType *const inputScalars_,
+      const SimplexId *const inputOffsets,
       const triangulationType &triangulation);
     template <typename dataType, typename triangulationType>
     int compressForPersistenceDiagram(int vertexNumber,
-                                      dataType *inputData,
+                                      const dataType *const inputData,
+                                      const SimplexId *const inputOffset,
                                       dataType *outputData,
                                       const double &tol,
                                       const triangulationType &triangulation);
@@ -70,7 +76,8 @@ namespace ttk {
 
     template <typename dataType>
     int compressForOther(int vertexNumber,
-                         dataType *inputData,
+                         const dataType *const inputData,
+                         const SimplexId *const inputOffsets,
                          dataType *outputData,
                          const double &tol);
 
@@ -296,11 +303,12 @@ namespace ttk {
 #endif
 
 #ifdef TTK_ENABLE_ZLIB
+    unsigned long GetZlibDestLen(const unsigned long sourceLen);
     void CompressWithZlib(bool decompress,
-                          Bytef *dest,
-                          uLongf *destLen,
-                          const Bytef *source,
-                          uLong sourceLen);
+                          unsigned char *dest,
+                          unsigned long &destLen,
+                          const unsigned char *const source,
+                          const unsigned long sourceLen);
 #endif
 
   private:
@@ -414,7 +422,8 @@ namespace ttk {
 
 template <class dataType, typename triangulationType>
 int ttk::TopologicalCompression::execute(
-  dataType *inputData,
+  const dataType *const inputData,
+  const SimplexId *const inputOffsets,
   dataType *outputData,
   const triangulationType &triangulation) {
   this->printMsg("Starting compression...");
@@ -432,10 +441,11 @@ int ttk::TopologicalCompression::execute(
 
   int res = 0;
   if(compressionType_ == (int)ttk::CompressionType::PersistenceDiagram)
-    compressForPersistenceDiagram<dataType>(
-      vertexNumber, inputData, outputData, Tolerance, triangulation);
+    compressForPersistenceDiagram(vertexNumber, inputData, inputOffsets,
+                                  outputData, Tolerance, triangulation);
   else if(compressionType_ == (int)ttk::CompressionType::Other)
-    compressForOther<dataType>(vertexNumber, inputData, outputData, Tolerance);
+    compressForOther(
+      vertexNumber, inputData, inputOffsets, outputData, Tolerance);
 
   return res;
 }
@@ -534,18 +544,17 @@ int ttk::TopologicalCompression::WriteToFile(FILE *fp,
 
 #ifdef TTK_ENABLE_ZLIB
   // [fm->ff] Compress fm.
-  uLong sourceLen = (uLong)rawFileLength;
-  Bytef *source = reinterpret_cast<unsigned char *>(buf);
-  uLongf destLen = compressBound(sourceLen);
-  std::vector<Bytef> ddest(destLen);
-  Bytef *dest = ddest.data();
-  CompressWithZlib(false, dest, &destLen, source, sourceLen);
+  auto sourceLen = static_cast<unsigned long>(rawFileLength);
+  const auto source = reinterpret_cast<unsigned char *>(buf);
+  auto destLen = GetZlibDestLen(sourceLen);
+  std::vector<unsigned char> ddest(destLen);
+  CompressWithZlib(false, ddest.data(), destLen, source, sourceLen);
   this->printMsg("Data successfully compressed.");
 
   // [fm->fp] Copy fm to fp.
   Write(fp, destLen); // Compressed size...
   Write(fp, sourceLen);
-  WriteByteArray(fp, dest, destLen);
+  WriteByteArray(fp, ddest.data(), destLen);
   this->printMsg("Data successfully written to filesystem.");
 
 #else
@@ -652,20 +661,18 @@ int ttk::TopologicalCompression::ReadFromFile(
 #ifdef TTK_ENABLE_ZLIB
   if(useZlib) {
     // [fp->ff] Read compressed data.
-    uLongf sl = Read<unsigned long>(fp); // Compressed size...
-    uLongf dl = Read<unsigned long>(fp); // Uncompressed size...
+    auto sl = Read<unsigned long>(fp); // Compressed size...
+    auto dl = Read<unsigned long>(fp); // Uncompressed size...
 
-    unsigned long sourceLen = (uLongf)sl;
     destLen = dl;
-    std::vector<Bytef> ssource(sl);
-    Bytef *source = ssource.data();
-    ReadByteArray(fp, source, sl);
+    std::vector<unsigned char> ssource(sl);
+    ReadByteArray(fp, ssource.data(), sl);
     this->printMsg("Successfully read compressed data.");
 
     // [ff->fm] Decompress data.
     ddest.resize(destLen);
     dest = ddest.data();
-    CompressWithZlib(true, dest, &destLen, source, sourceLen);
+    CompressWithZlib(true, dest, destLen, ssource.data(), sl);
     this->printMsg("Successfully uncompressed data.");
 
   } else {

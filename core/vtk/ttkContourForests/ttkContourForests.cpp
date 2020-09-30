@@ -1074,9 +1074,8 @@ void ttkContourForests::getTree() {
   // sequential params
   this->preconditionTriangulation(triangulation_);
   this->setVertexScalars(ttkUtils::GetVoidPointer(vtkInputScalars_));
-  if(!vertexSoSoffsets_.empty()) {
-    this->setVertexSoSoffsets(vertexSoSoffsets_);
-  }
+  this->setVertexSoSoffsets(vertexSoSoffsets_);
+
   this->setTreeType(treeType_);
   // parallel params
   this->setLessPartition(lessPartition_);
@@ -1205,32 +1204,16 @@ int ttkContourForests::RequestData(vtkInformation *request,
   deltaScalar_ = (scalarMax - scalarMin);
 
   // offsets
-  if(varyingMesh_ || varyingDataValues_ || !vertexSoSoffsets_.size()) {
+  if(varyingMesh_ || varyingDataValues_ || vertexSoSoffsets_ == nullptr) {
 
-    vertexSoSoffsets_.clear();
-
-    const auto offsets = this->GetOptionalArray(
-      ForceInputOffsetScalarField, 1, ttk::OffsetScalarFieldName, inputVector);
+    const auto offsets
+      = this->GetOrderArray(input, 0, 1, ForceInputOffsetScalarField);
 
     if(offsets != nullptr) {
-
-      if(offsets->GetNumberOfTuples() != numberOfVertices_) {
-        this->printErr("Mesh and offset sizes do not match :(");
-        this->printErr("Using default offset field instead...");
-      } else {
-        vertexSoSoffsets_.resize(offsets->GetNumberOfTuples());
-        for(SimplexId i = 0; i < (SimplexId)vertexSoSoffsets_.size(); ++i) {
-          vertexSoSoffsets_[i] = offsets->GetTuple1(i);
-        }
-      }
+      vertexSoSoffsets_
+        = static_cast<SimplexId *>(ttkUtils::GetVoidPointer(offsets));
     }
 
-    if(vertexSoSoffsets_.empty()) {
-      vertexSoSoffsets_.resize(numberOfVertices_);
-      for(SimplexId i = 0; i < (SimplexId)vertexSoSoffsets_.size(); ++i) {
-        vertexSoSoffsets_[i] = i;
-      }
-    }
     toUpdateVertexSoSoffsets_ = false;
   }
 
@@ -1240,7 +1223,6 @@ int ttkContourForests::RequestData(vtkInformation *request,
       std::vector<std::vector<std::string>>{
         {"#Tuples", std::to_string(vertexScalars_.size())},
         {"#Vertices", std::to_string(numberOfVertices_)},
-        {"#Offsets", std::to_string(vertexSoSoffsets_.size())},
         {"Min", std::to_string(scalarMin)},
         {"Max", std::to_string(scalarMax)},
       },

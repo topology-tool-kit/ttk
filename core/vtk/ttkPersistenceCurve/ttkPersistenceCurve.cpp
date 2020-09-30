@@ -168,14 +168,8 @@ int ttkPersistenceCurve::dispatch(vtkTable *outputJTPersistenceCurve,
   this->setOutputCTPlot(&CTPlot);
   this->setOutputMSCPlot(&MSCPlot);
 
-  if(inputOffsetsDataType == VTK_INT) {
-    ret = this->execute<VTK_TT, int, TTK_TT>(
-      inputScalars, (int *)inputOffsets, triangulation);
-  }
-  if(inputOffsetsDataType == VTK_ID_TYPE) {
-    ret = this->execute<VTK_TT, vtkIdType, TTK_TT>(
-      inputScalars, (vtkIdType *)inputOffsets, triangulation);
-  }
+  ret = this->execute<VTK_TT, TTK_TT>(
+    inputScalars, (SimplexId *)inputOffsets, triangulation);
 
   ret = getPersistenceCurve<vtkDoubleArray, VTK_TT>(
     outputJTPersistenceCurve, TreeType::Join, JTPlot);
@@ -228,14 +222,6 @@ int ttkPersistenceCurve::RequestData(vtkInformation *request,
   vtkTable *outputSTPersistenceCurve = vtkTable::GetData(outputVector, 2);
   vtkTable *outputCTPersistenceCurve = vtkTable::GetData(outputVector, 3);
 
-  vtkPointData *pointData = input->GetPointData();
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(!pointData) {
-    cerr << "[ttkPersistenceCurve] Error : input has no point data." << endl;
-    return -1;
-  }
-#endif
-
   ttk::Triangulation *triangulation = ttkAlgorithm::GetTriangulation(input);
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!triangulation) {
@@ -254,23 +240,9 @@ int ttkPersistenceCurve::RequestData(vtkInformation *request,
   }
 #endif
 
-  vtkDataArray *offsetField = ttkAlgorithm::GetOptionalArray(
-    ForceInputOffsetScalarField, 1, ttk::OffsetScalarFieldName, inputVector);
+  vtkDataArray *offsetField
+    = this->GetOrderArray(input, 0, 1, ForceInputOffsetScalarField);
 
-  if(!offsetField) {
-    offsetField = pointData->GetArray(ttk::OffsetScalarFieldName);
-  }
-
-  if(!offsetField) {
-    const SimplexId numberOfVertices = input->GetNumberOfPoints();
-
-    offsetField = ttkSimplexIdTypeArray::New();
-    offsetField->SetNumberOfComponents(1);
-    offsetField->SetNumberOfTuples(numberOfVertices);
-    offsetField->SetName(ttk::OffsetScalarFieldName);
-    for(SimplexId i = 0; i < numberOfVertices; ++i)
-      offsetField->SetTuple1(i, i);
-  }
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!offsetField) {
     this->printErr("Wrong input offsets");
@@ -291,9 +263,10 @@ int ttkPersistenceCurve::RequestData(vtkInformation *request,
        outputSTPersistenceCurve, outputCTPersistenceCurve,
        (VTK_TT *)ttkUtils::GetVoidPointer(inputScalars),
        offsetField->GetDataType(), ttkUtils::GetVoidPointer(offsetField),
-       (TTK_TT *)(triangulation->getData()))))
-    // something wrong in baseCode
-    if(status) {
+       (TTK_TT *)(triangulation->getData()))));
+
+  // something wrong in baseCode
+  if(status) {
     std::stringstream msg;
     msg << "PersistenceCurve::execute() error code : " << status;
     this->printErr(msg.str());

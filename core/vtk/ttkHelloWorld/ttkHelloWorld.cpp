@@ -127,8 +127,8 @@ int ttkHelloWorld::RequestData(vtkInformation *request,
   //
   //       The final parameter is the 'name' of the array.
   //
-  //       Example: SetInputArrayToProcess(3,1,0,1,"EdgeLength") will store for
-  //                the 3rd array the filter needs the cell data array named
+  //       Example: SetInputArrayToProcess(3,1,0,1,"EdgeLength") will store that
+  //                for the 3rd array the filter needs the cell data array named
   //                "EdgeLength" that it will retrieve from the vtkDataObject
   //                at input port 1 (first connection). During the RequestData
   //                method one can then actually retrieve the 3rd array it
@@ -138,11 +138,16 @@ int ttkHelloWorld::RequestData(vtkInformation *request,
   //       If this filter is run within ParaView, then the UI will automatically
   //       call SetInputArrayToProcess (see HelloWorld.xml file).
   //
+  //       During the RequestData execution one can then retrieve an actual
+  //       array with the method "GetInputArrayToProcess".
   vtkDataArray *inputArray = this->GetInputArrayToProcess(0, inputVector);
   if(!inputArray) {
     this->printErr("Unable to retrieve input array.");
     return 0;
   }
+
+  // To make sure that the selected array can be processed by this filter,
+  // one should also check that the array association and format is correct.
   if(this->GetInputArrayAssociation(0, inputVector) != 0) {
     this->printErr("Input array needs to be a point data array.");
     return 0;
@@ -151,6 +156,10 @@ int ttkHelloWorld::RequestData(vtkInformation *request,
     this->printErr("Input array needs to be a scalar array.");
     return 0;
   }
+
+  // If all checks pass then log which array is going to be processed.
+  this->printMsg("Starting computation...");
+  this->printMsg("  Scalar Array: " + std::string(inputArray->GetName()));
 
   // Create an output array that has the same data type as the input array
   // Note: vtkSmartPointers are well documented
@@ -161,8 +170,8 @@ int ttkHelloWorld::RequestData(vtkInformation *request,
   outputArray->SetNumberOfComponents(1); // only one component per tuple
   outputArray->SetNumberOfTuples(inputArray->GetNumberOfTuples());
 
-  // Get ttk::triangulation of the input vtkDataSet (will create one if does
-  // not exist already)
+  // Get ttk::triangulation of the input vtkDataSet (will create one if one does
+  // not exist already).
   ttk::Triangulation *triangulation
     = ttkAlgorithm::GetTriangulation(inputDataSet);
   if(!triangulation)
@@ -171,8 +180,6 @@ int ttkHelloWorld::RequestData(vtkInformation *request,
   // Precondition the triangulation (e.g., enable fetching of vertex neighbors)
   this->preconditionTriangulation(triangulation); // implemented in base class
 
-  printMsg("Starting computation...");
-  printMsg("  Scalar Array: " + std::string(inputArray->GetName()));
   // Templatize over the different input array data types and call the base code
   int status = 0; // this integer checks if the base code returns an error
   ttkVtkTemplateMacro(inputArray->GetDataType(), triangulation->getType(),
@@ -195,5 +202,6 @@ int ttkHelloWorld::RequestData(vtkInformation *request,
   // add to the output point data the computed output array
   outputDataSet->GetPointData()->AddArray(outputArray);
 
+  // return success
   return 1;
 }

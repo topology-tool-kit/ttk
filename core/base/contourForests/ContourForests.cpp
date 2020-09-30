@@ -38,12 +38,11 @@ ContourForests::~ContourForests() {
 // {
 
 idPartition ContourForests::vertex2partition(const SimplexId &v) {
-  const SimplexId &position = scalars_->mirrorVertices[v];
+  const SimplexId &position = scalars_->sosOffsets[v];
   idPartition partition = 0;
-  while(
-    partition < parallelParams_.nbInterfaces
-    && scalars_->mirrorVertices[parallelData_.interfaces[partition].getSeed()]
-         <= position) {
+  while(partition < parallelParams_.nbInterfaces
+        && scalars_->sosOffsets[parallelData_.interfaces[partition].getSeed()]
+             <= position) {
     ++partition;
   }
 
@@ -266,7 +265,7 @@ void ContourForests::stitchTree(const char treetype) {
       if(otherPartition < parallelParams_.nbInterfaces) {
         const SimplexId &nextSeed
           = parallelData_.interfaces[otherPartition].getSeed();
-        crossNextInterface = isEqLower(nextSeed, stitchVertex);
+        crossNextInterface = isLower(nextSeed, stitchVertex);
       }
       otherTree->treeData_.superArcs.emplace_back(
         curTreeStitchNodeId, otherTreeStitchNodeId, true, crossNextInterface, i,

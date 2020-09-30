@@ -102,5 +102,4 @@ private:
   std::vector<std::vector<std::pair<ttk::SimplexId, ttk::SimplexId>>>
     vertexLinkEdgeList_;
   std::vector<std::pair<ttk::SimplexId, char>> criticalPoints_;
-  std::vector<ttk::SimplexId> sosOffsets_;
 };

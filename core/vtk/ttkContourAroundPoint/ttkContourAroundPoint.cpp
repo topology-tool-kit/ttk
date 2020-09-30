@@ -3,7 +3,7 @@
 #include <ttkMacros.h>
 #include <ttkUtils.h>
 
-// #include <vtkVersion.h>
+#include <vtkVersion.h>
 #include <vtkInformation.h>
 #include <vtkInformationVector.h>
 

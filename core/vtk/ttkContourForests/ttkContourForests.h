@@ -170,7 +170,7 @@ private:
   double deltaScalar_{};
   ttk::SimplexId numberOfVertices_{};
   ttk::Triangulation *triangulation_{};
-  std::vector<ttk::SimplexId> vertexSoSoffsets_{};
+  ttk::SimplexId *vertexSoSoffsets_{};
   std::vector<ttk::SimplexId> criticalPoints_{};
   std::vector<double> vertexScalars_{};
 

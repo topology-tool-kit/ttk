@@ -156,10 +156,10 @@ int ttkFTMTree::RequestData(vtkInformation *request,
     ftmTree_[cc].tree.setSegmentation(GetWithSegmentation());
     ftmTree_[cc].tree.setNormalizeIds(GetWithNormalize());
 
-    ttkVtkTemplateMacro(
-      inputArray->GetDataType(), triangulation_[cc]->getType(),
-      (ftmTree_[cc].tree.build<VTK_TT, ttk::SimplexId, TTK_TT>(
-        (TTK_TT *)triangulation_[cc]->getData())));
+    ttkVtkTemplateMacro(inputArray->GetDataType(),
+                        triangulation_[cc]->getType(),
+                        (ftmTree_[cc].tree.build<VTK_TT, TTK_TT>(
+                          (TTK_TT *)triangulation_[cc]->getData())));
 
     ftmTree_[cc].offset = acc_nbNodes;
     acc_nbNodes += ftmTree_[cc].tree.getTree(GetTreeType())->getNumberOfNodes();
@@ -422,25 +422,17 @@ int ttkFTMTree::addSampledSkeletonArc(const ttk::ftm::idSuperArc arcId,
 }
 
 int ttkFTMTree::getOffsets() {
+  // should be called after getScalars for inputScalars_ needs to be filled
+
   offsets_.resize(nbCC_);
   for(int cc = 0; cc < nbCC_; cc++) {
-    const auto inputOffsets = this->GetOptionalArray(
-      ForceInputOffsetScalarField, 1, ttk::OffsetScalarFieldName,
-      connected_components_[cc]);
+    const auto offsets = this->GetOrderArray(
+      connected_components_[cc], 0, 1, ForceInputOffsetScalarField);
 
     offsets_[cc].resize(connected_components_[cc]->GetNumberOfPoints());
 
-    if(inputOffsets != nullptr) {
-      for(size_t i = 0; i < offsets_[cc].size(); i++) {
-        offsets_[cc][i] = inputOffsets->GetTuple1(i);
-      }
-    } else {
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(this->threadNumber_)
-#endif
-      for(size_t i = 0; i < offsets_[cc].size(); i++) {
-        offsets_[cc][i] = i;
-      }
+    for(size_t i = 0; i < offsets_[cc].size(); i++) {
+      offsets_[cc][i] = offsets->GetTuple1(i);
     }
 
 #ifndef TTK_ENABLE_KAMIKAZE

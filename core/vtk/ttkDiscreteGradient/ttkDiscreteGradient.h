@@ -74,9 +74,7 @@ protected:
                   vtkInformationVector *outputVector) override;
 
 private:
-  template <typename scalarType,
-            typename offsetType,
-            typename triangulationType>
+  template <typename scalarType, typename triangulationType>
   int dispatch(vtkUnstructuredGrid *outputCriticalPoints,
                vtkDataArray *const inputScalars,
                vtkDataArray *const inputOffsets,

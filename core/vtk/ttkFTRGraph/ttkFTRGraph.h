@@ -115,5 +115,5 @@ private:
   vtkDataSet *mesh_{};
   ttk::Triangulation *triangulation_{};
   vtkDataArray *inputScalars_{};
-  std::vector<ttk::ftr::idVertex> offsets_{};
+  vtkDataArray *offsets_{};
 };
