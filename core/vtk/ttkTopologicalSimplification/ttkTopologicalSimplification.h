@@ -35,11 +35,16 @@
 /// See the related ParaView example state files for usage examples within a
 /// VTK pipeline.
 ///
-/// \b Related \b publication \n
+/// \b Related \b publications \n
 /// "Generalized Topological Simplification of Scalar Fields on Surfaces" \n
 /// Julien Tierny, Valerio Pascucci \n
 /// Proc. of IEEE VIS 2012.\n
 /// IEEE Transactions on Visualization and Computer Graphics, 2012.
+///
+/// "Localized Topological Simplification of Scalar Data"
+/// Jonas Lukasczyk, Christoph Garth, Ross Maciejewski, Julien Tierny
+/// Proc. of IEEE VIS 2020.
+/// IEEE Transactions on Visualization and Computer Graphics
 ///
 /// \sa ttkScalarFieldCriticalPoints
 /// \sa ttkIntegralLines
@@ -78,6 +83,9 @@ public:
   vtkSetMacro(ForceInputVertexScalarField, bool);
   vtkGetMacro(ForceInputVertexScalarField, bool);
 
+  vtkSetMacro(UseLTS, bool);
+  vtkGetMacro(UseLTS, bool);
+
 protected:
   ttkTopologicalSimplification();
 
@@ -92,4 +100,5 @@ private:
   bool ForceInputOffsetScalarField{false};
   bool ConsiderIdentifierAsBlackList{false};
   bool AddPerturbation{false};
+  bool UseLTS{true};
 };

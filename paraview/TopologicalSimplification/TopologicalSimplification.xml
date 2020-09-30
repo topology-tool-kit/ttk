@@ -27,11 +27,16 @@
 
         Also, this plugin can be given a specific input vertex offset.
 
-        Related publication:
+        Related publications:
         "Generalized Topological Simplification of Scalar Fields on Surfaces"
         Julien Tierny, Valerio Pascucci
         Proc. of IEEE VIS 2012.
         IEEE Transactions on Visualization and Computer Graphics, 2012.
+        
+        "Localized Topological Simplification of Scalar Data"
+        Jonas Lukasczyk, Christoph Garth, Ross Maciejewski, Julien Tierny
+        Proc. of IEEE VIS 2020.
+        IEEE Transactions on Visualization and Computer Graphics
 
         See also ScalarFieldCriticalPoints, IntegralLines, ContourForests, Identifiers.
 
@@ -190,6 +195,19 @@
       </IntVectorProperty>
 
       <IntVectorProperty
+          name="UseLTS"
+          label="Use LTS"
+          command="SetUseLTS"
+          number_of_elements="1"
+          panel_visibility="advanced"
+          default_values="1">
+        <BooleanDomain name="bool"/>
+        <Documentation>
+          Use the Localized Topological Simplification algorithm.
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
           name="AddPerturbation"
           command="SetAddPerturbation"
           label="Numerical Perturbation"
@@ -214,6 +232,7 @@
       </PropertyGroup>
 
       <PropertyGroup panel_widget="Line" label="Output options">
+        <Property name="UseLTS"/>
         <Property name="AddPerturbation"/>
       </PropertyGroup>
 
