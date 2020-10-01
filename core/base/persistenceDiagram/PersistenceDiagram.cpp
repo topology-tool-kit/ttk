@@ -9,9 +9,6 @@ PersistenceDiagram::PersistenceDiagram() {
   setDebugMsgPrefix("PersistenceDiagram");
 }
 
-PersistenceDiagram::~PersistenceDiagram() {
-}
-
 CriticalType PersistenceDiagram::getNodeType(FTMTree_MT *tree,
                                              TreeType treeType,
                                              const SimplexId vertexId) const {
@@ -41,4 +38,14 @@ CriticalType PersistenceDiagram::getNodeType(FTMTree_MT *tree,
     else
       return CriticalType::Local_maximum;
   }
+}
+
+void ttk::PersistenceDiagram::sortPersistenceDiagram(
+  std::vector<PersistencePair> &diagram, const SimplexId *const offsets) const {
+
+  auto cmp = [offsets](const PersistencePair &a, const PersistencePair &b) {
+    return offsets[a.birth] < offsets[b.birth];
+  };
+
+  std::sort(diagram.begin(), diagram.end(), cmp);
 }
