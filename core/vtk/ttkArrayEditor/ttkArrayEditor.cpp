@@ -1,6 +1,7 @@
 #include <ttkArrayEditor.h>
 
 #include <vtkInformation.h>
+#include <vtkObjectFactory.h>
 
 #include <vtkAbstractArray.h>
 #include <vtkDataArray.h>

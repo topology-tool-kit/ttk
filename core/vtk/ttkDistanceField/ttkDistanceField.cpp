@@ -1,3 +1,4 @@
+#include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
 #include <vtkInformation.h>
 #include <vtkNew.h>

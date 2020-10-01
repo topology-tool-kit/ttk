@@ -1,12 +1,12 @@
 #pragma once
 
-#include <vtkVersion.h>
 #include <vtkIdTypeArray.h>
 #include <vtkImageData.h>
 #include <vtkInformationVector.h>
 #include <vtkIntArray.h>
 #include <vtkPolyData.h>
 #include <vtkUnstructuredGrid.h>
+#include <vtkVersion.h>
 
 #define TTK_COMMA ,
 

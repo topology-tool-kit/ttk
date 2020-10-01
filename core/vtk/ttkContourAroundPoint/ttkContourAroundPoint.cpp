@@ -3,9 +3,9 @@
 #include <ttkMacros.h>
 #include <ttkUtils.h>
 
-#include <vtkVersion.h>
 #include <vtkInformation.h>
 #include <vtkInformationVector.h>
+#include <vtkVersion.h>
 
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
