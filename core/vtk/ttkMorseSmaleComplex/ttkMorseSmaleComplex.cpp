@@ -71,7 +71,7 @@ int ttkMorseSmaleComplex::dispatch(
   std::vector<char> separatrices1_points_cellDimensions;
   std::vector<SimplexId> separatrices1_points_cellIds;
   SimplexId separatrices1_numberOfCells{};
-  std::vector<SimplexId> separatrices1_cells;
+  std::vector<SimplexId> separatrices1_cells_connectivity;
   std::vector<SimplexId> separatrices1_cells_sourceIds;
   std::vector<SimplexId> separatrices1_cells_destinationIds;
   std::vector<SimplexId> separatrices1_cells_separatrixIds;
@@ -111,7 +111,7 @@ int ttkMorseSmaleComplex::dispatch(
     &separatrices1_numberOfPoints, &separatrices1_points,
     &separatrices1_points_smoothingMask, &separatrices1_points_cellDimensions,
     &separatrices1_points_cellIds, &separatrices1_numberOfCells,
-    &separatrices1_cells, &separatrices1_cells_sourceIds,
+    &separatrices1_cells_connectivity, &separatrices1_cells_sourceIds,
     &separatrices1_cells_destinationIds, &separatrices1_cells_separatrixIds,
     &separatrices1_cells_separatrixTypes,
     &separatrices1_cells_separatrixFunctionMaxima,
@@ -320,8 +320,10 @@ int ttkMorseSmaleComplex::dispatch(
 #pragma omp parallel for num_threads(this->threadNumber_)
 #endif // TTK_ENABLE_OPENMP
     for(SimplexId i = 0; i < separatrices1_numberOfCells; ++i) {
-      connectivity->SetTuple1(2 * i, separatrices1_cells[3 * i + 1]);
-      connectivity->SetTuple1(2 * i + 1, separatrices1_cells[3 * i + 2]);
+      connectivity->SetTuple1(
+        2 * i + 0, separatrices1_cells_connectivity[2 * i + 0]);
+      connectivity->SetTuple1(
+        2 * i + 1, separatrices1_cells_connectivity[2 * i + 1]);
       offsets->SetTuple1(i, 2 * i);
 
       sourceIds->SetTuple1(i, separatrices1_cells_sourceIds[i]);
