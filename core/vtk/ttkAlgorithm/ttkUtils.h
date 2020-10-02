@@ -7,6 +7,9 @@
 
 #pragma once
 
+// VTK Module
+#include <ttkAlgorithmModule.h>
+
 #include <string>
 #include <vector>
 
@@ -22,7 +25,7 @@ class vtkCellArray;
 template <typename T>
 class vtkSmartPointer;
 
-class ttkUtils {
+class TTKALGORITHM_EXPORT ttkUtils {
 private:
   ttkUtils(){};
 
