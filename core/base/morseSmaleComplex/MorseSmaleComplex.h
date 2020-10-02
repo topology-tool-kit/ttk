@@ -385,14 +385,14 @@ namespace ttk {
       SimplexId *const separatrices2_numberOfPoints,
       std::vector<float> *const separatrices2_points,
       SimplexId *const separatrices2_numberOfCells,
-      std::vector<SimplexId> *const separatrices2_cells_offsets,
-      std::vector<SimplexId> *const separatrices2_cells_connectivity,
+      std::vector<long long> *const separatrices2_cells_offsets,
+      std::vector<long long> *const separatrices2_cells_connectivity,
       std::vector<SimplexId> *const separatrices2_cells_sourceIds,
       std::vector<SimplexId> *const separatrices2_cells_separatrixIds,
       std::vector<char> *const separatrices2_cells_separatrixTypes,
-      void *const separatrices2_cells_separatrixFunctionMaxima,
-      void *const separatrices2_cells_separatrixFunctionMinima,
-      void *const separatrices2_cells_separatrixFunctionDiffs,
+      std::vector<double> *const separatrices2_cells_separatrixFunctionMaxima,
+      std::vector<double> *const separatrices2_cells_separatrixFunctionMinima,
+      std::vector<double> *const separatrices2_cells_separatrixFunctionDiffs,
       std::vector<char> *const separatrices2_cells_isOnBoundary) {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(!abstractMorseSmaleComplex_) {

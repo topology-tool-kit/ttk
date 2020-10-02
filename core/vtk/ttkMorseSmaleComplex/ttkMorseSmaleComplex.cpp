@@ -85,15 +85,6 @@ int ttkMorseSmaleComplex::dispatch(
   SimplexId separatrices2_numberOfPoints{};
   std::vector<float> separatrices2_points;
   SimplexId separatrices2_numberOfCells{};
-  std::vector<SimplexId> separatrices2_cells_offsets;
-  std::vector<SimplexId> separatrices2_cells_connectivity;
-  std::vector<SimplexId> separatrices2_cells_sourceIds;
-  std::vector<SimplexId> separatrices2_cells_separatrixIds;
-  std::vector<char> separatrices2_cells_separatrixTypes;
-  std::vector<char> separatrices2_cells_isOnBoundary;
-  std::vector<scalarType> separatrices2_cells_separatrixFunctionMaxima;
-  std::vector<scalarType> separatrices2_cells_separatrixFunctionMinima;
-  std::vector<scalarType> separatrices2_cells_separatrixFunctionDiffs;
 
   if(ComputeCriticalPoints) {
     this->setOutputCriticalPoints(

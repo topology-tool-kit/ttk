@@ -141,4 +141,15 @@ private:
   bool ComputeFinalSegmentation{true};
   int ReturnSaddleConnectors{false};
   double SaddleConnectorsPersistenceThreshold{0.0};
+
+  // 2-separatrices
+  std::vector<vtkIdType> separatrices2_cells_offsets;
+  std::vector<vtkIdType> separatrices2_cells_connectivity;
+  std::vector<ttk::SimplexId> separatrices2_cells_sourceIds;
+  std::vector<ttk::SimplexId> separatrices2_cells_separatrixIds;
+  std::vector<char> separatrices2_cells_separatrixTypes;
+  std::vector<char> separatrices2_cells_isOnBoundary;
+  std::vector<double> separatrices2_cells_separatrixFunctionMaxima;
+  std::vector<double> separatrices2_cells_separatrixFunctionMinima;
+  std::vector<double> separatrices2_cells_separatrixFunctionDiffs;
 };
