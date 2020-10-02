@@ -1734,6 +1734,41 @@ int DiscreteGradient::reverseGradient(const triangulationType &triangulation,
   return 0;
 }
 
+template <typename dataType, typename triangulationType>
+void DiscreteGradient::computeSaddleSaddlePersistencePairs(
+  std::vector<std::tuple<SimplexId, SimplexId, dataType>> &pl_saddleSaddlePairs,
+  const triangulationType &triangulation) {
+
+  const dataType *scalars = static_cast<const dataType *>(inputScalarField_);
+
+  std::vector<std::array<dcg::Cell, 2>> dmt_pairs;
+  {
+    // simplify to be PL-conformant
+    this->CollectPersistencePairs = false;
+    this->buildGradient<triangulationType>(triangulation);
+    this->reverseGradient<dataType>(triangulation);
+
+    // collect saddle-saddle connections
+    this->CollectPersistencePairs = true;
+    this->setOutputPersistencePairs(&dmt_pairs);
+    this->reverseGradient<dataType>(triangulation, false);
+  }
+
+  // transform DMT pairs into PL pairs
+  for(const auto &pair : dmt_pairs) {
+    const SimplexId v0 = this->getCellGreaterVertex(pair[0], triangulation);
+    const SimplexId v1 = this->getCellGreaterVertex(pair[1], triangulation);
+    const dataType persistence = scalars[v1] - scalars[v0];
+
+    if(v0 != -1 and v1 != -1 and persistence >= 0) {
+      if(!triangulation.isVertexOnBoundary(v0)
+         or !triangulation.isVertexOnBoundary(v1)) {
+        pl_saddleSaddlePairs.emplace_back(v0, v1, persistence);
+      }
+    }
+  }
+}
+
 template <typename triangulationType>
 SimplexId DiscreteGradient::getNumberOfCells(
   const int dimension, const triangulationType &triangulation) const {
