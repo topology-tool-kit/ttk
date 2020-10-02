@@ -6,6 +6,7 @@
 #include <vtkDataArray.h>
 #include <vtkDataObject.h>
 #include <vtkDataSet.h>
+#include <vtkDoubleArray.h>
 #include <vtkInformation.h>
 #include <vtkNew.h>
 #include <vtkObjectFactory.h>
@@ -370,12 +371,9 @@ int ttkMorseSmaleComplex::dispatch(
     vtkNew<ttkSimplexIdTypeArray> sourceIds{};
     vtkNew<ttkSimplexIdTypeArray> separatrixIds{};
     vtkNew<vtkSignedCharArray> separatrixTypes{};
-    vtkSmartPointer<vtkDataArray> separatrixFunctionMaxima{
-      inputScalars->NewInstance()};
-    vtkSmartPointer<vtkDataArray> separatrixFunctionMinima{
-      inputScalars->NewInstance()};
-    vtkSmartPointer<vtkDataArray> separatrixFunctionDiffs{
-      inputScalars->NewInstance()};
+    vtkNew<vtkDoubleArray> separatrixFunctionMaxima{};
+    vtkNew<vtkDoubleArray> separatrixFunctionMinima{};
+    vtkNew<vtkDoubleArray> separatrixFunctionDiffs{};
     vtkNew<vtkSignedCharArray> isOnBoundary{};
 
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -401,37 +399,53 @@ int ttkMorseSmaleComplex::dispatch(
 
     sourceIds->SetNumberOfComponents(1);
     sourceIds->SetName("SourceId");
-    sourceIds->SetNumberOfTuples(separatrices2_numberOfCells);
+    ttkUtils::SetVoidArray(sourceIds, separatrices2_cells_sourceIds.data(),
+                           separatrices2_numberOfCells, 1);
 
     separatrixIds->SetNumberOfComponents(1);
     separatrixIds->SetName("SeparatrixId");
-    separatrixIds->SetNumberOfTuples(separatrices2_numberOfCells);
+    ttkUtils::SetVoidArray(separatrixIds,
+                           separatrices2_cells_separatrixIds.data(),
+                           separatrices2_numberOfCells, 1);
 
     separatrixTypes->SetNumberOfComponents(1);
     separatrixTypes->SetName("SeparatrixType");
-    separatrixTypes->SetNumberOfTuples(separatrices2_numberOfCells);
+    ttkUtils::SetVoidArray(separatrixTypes,
+                           separatrices2_cells_separatrixTypes.data(),
+                           separatrices2_numberOfCells, 1);
 
     separatrixFunctionMaxima->SetNumberOfComponents(1);
     separatrixFunctionMaxima->SetName("SeparatrixFunctionMaximum");
-    separatrixFunctionMaxima->SetNumberOfTuples(separatrices2_numberOfCells);
+    ttkUtils::SetVoidArray(separatrixFunctionMaxima,
+                           separatrices2_cells_separatrixFunctionMaxima.data(),
+                           separatrices2_numberOfCells, 1);
 
     separatrixFunctionMinima->SetNumberOfComponents(1);
     separatrixFunctionMinima->SetName("SeparatrixFunctionMinimum");
-    separatrixFunctionMinima->SetNumberOfTuples(separatrices2_numberOfCells);
+    ttkUtils::SetVoidArray(separatrixFunctionMinima,
+                           separatrices2_cells_separatrixFunctionMinima.data(),
+                           separatrices2_numberOfCells, 1);
 
     separatrixFunctionDiffs->SetNumberOfComponents(1);
     separatrixFunctionDiffs->SetName("SeparatrixFunctionDifference");
-    separatrixFunctionDiffs->SetNumberOfTuples(separatrices2_numberOfCells);
+    ttkUtils::SetVoidArray(separatrixFunctionDiffs,
+                           separatrices2_cells_separatrixFunctionDiffs.data(),
+                           separatrices2_numberOfCells, 1);
 
     isOnBoundary->SetNumberOfComponents(1);
     isOnBoundary->SetName("NumberOfCriticalPointsOnBoundary");
-    isOnBoundary->SetNumberOfTuples(separatrices2_numberOfCells);
+    ttkUtils::SetVoidArray(isOnBoundary,
+                           separatrices2_cells_isOnBoundary.data(),
+                           separatrices2_numberOfCells, 1);
 
     vtkNew<vtkIdTypeArray> offsets{}, connectivity{};
     offsets->SetNumberOfComponents(1);
-    offsets->SetNumberOfTuples(separatrices2_numberOfCells + 1);
+    ttkUtils::SetVoidArray(offsets, separatrices2_cells_offsets.data(),
+                           separatrices2_cells_offsets.size(), 1);
     connectivity->SetNumberOfComponents(1);
-    connectivity->SetNumberOfTuples(separatrices2_cells_connectivity.size());
+    ttkUtils::SetVoidArray(connectivity,
+                           separatrices2_cells_connectivity.data(),
+                           separatrices2_cells_connectivity.size(), 1);
 
     vtkNew<vtkUnsignedCharArray> cellTypes{};
     cellTypes->SetNumberOfComponents(1);
@@ -440,35 +454,14 @@ int ttkMorseSmaleComplex::dispatch(
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(this->threadNumber_)
 #endif // TTK_ENABLE_OPENMP
-    for(size_t i = 0; i < separatrices2_cells_connectivity.size(); ++i) {
-      connectivity->SetTuple1(i, separatrices2_cells_connectivity[i]);
-    }
-
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(this->threadNumber_)
-#endif // TTK_ENABLE_OPENMP
     for(SimplexId i = 0; i < separatrices2_numberOfCells; ++i) {
-      offsets->SetTuple1(i, separatrices2_cells_offsets[i]);
       if(separatrices2_cells_offsets[i + 1] - separatrices2_cells_offsets[i]
          == 3) {
         cellTypes->SetTuple1(i, VTK_TRIANGLE);
       } else {
         cellTypes->SetTuple1(i, VTK_POLYGON);
       }
-      sourceIds->SetTuple1(i, separatrices2_cells_sourceIds[i]);
-      separatrixIds->SetTuple1(i, separatrices2_cells_separatrixIds[i]);
-      separatrixTypes->SetTuple1(i, separatrices2_cells_separatrixTypes[i]);
-      separatrixFunctionMaxima->SetTuple1(
-        i, separatrices2_cells_separatrixFunctionMaxima[i]);
-      separatrixFunctionMinima->SetTuple1(
-        i, separatrices2_cells_separatrixFunctionMinima[i]);
-      separatrixFunctionDiffs->SetTuple1(
-        i, separatrices2_cells_separatrixFunctionDiffs[i]);
-      isOnBoundary->SetTuple1(i, separatrices2_cells_isOnBoundary[i]);
     }
-
-    offsets->SetTuple1(
-      separatrices2_numberOfCells, connectivity->GetNumberOfTuples());
 
     vtkNew<vtkCellArray> cells{};
     cells->SetData(offsets, connectivity);
