@@ -352,14 +352,14 @@ namespace ttk {
       std::vector<char> *const separatrices1_points_cellDimensions,
       std::vector<SimplexId> *const separatrices1_points_cellIds,
       SimplexId *const separatrices1_numberOfCells,
-      std::vector<SimplexId> *const separatrices1_cells,
+      std::vector<long long> *const separatrices1_cells_connectivity,
       std::vector<SimplexId> *const separatrices1_cells_sourceIds,
       std::vector<SimplexId> *const separatrices1_cells_destinationIds,
       std::vector<SimplexId> *const separatrices1_cells_separatrixIds,
       std::vector<char> *const separatrices1_cells_separatrixTypes,
-      void *const separatrices1_cells_separatrixFunctionMaxima,
-      void *const separatrices1_cells_separatrixFunctionMinima,
-      void *const separatrices1_cells_separatrixFunctionDiffs,
+      std::vector<double> *const separatrices1_cells_separatrixFunctionMaxima,
+      std::vector<double> *const separatrices1_cells_separatrixFunctionMinima,
+      std::vector<double> *const separatrices1_cells_separatrixFunctionDiffs,
       std::vector<char> *const separatrices1_cells_isOnBoundary) {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(!abstractMorseSmaleComplex_) {
@@ -370,7 +370,7 @@ namespace ttk {
         separatrices1_numberOfPoints, separatrices1_points,
         separatrices1_points_smoothingMask, separatrices1_points_cellDimensions,
         separatrices1_points_cellIds, separatrices1_numberOfCells,
-        separatrices1_cells, separatrices1_cells_sourceIds,
+        separatrices1_cells_connectivity, separatrices1_cells_sourceIds,
         separatrices1_cells_destinationIds, separatrices1_cells_separatrixIds,
         separatrices1_cells_separatrixTypes,
         separatrices1_cells_separatrixFunctionMaxima,
