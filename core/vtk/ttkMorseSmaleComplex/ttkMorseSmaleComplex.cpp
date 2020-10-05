@@ -64,14 +64,43 @@ int ttkMorseSmaleComplex::dispatch(
   // critical points
   SimplexId criticalPoints_numberOfPoints{};
   std::vector<scalarType> criticalPoints_points_cellScalars;
+  criticalPoints_points.clear();
+  criticalPoints_points_cellDimensions.clear();
+  criticalPoints_points_cellIds.clear();
+  criticalPoints_points_isOnBoundary.clear();
+  criticalPoints_points_PLVertexIdentifiers.clear();
+  criticalPoints_points_manifoldSize.clear();
 
   // 1-separatrices
   SimplexId separatrices1_numberOfPoints{};
   SimplexId separatrices1_numberOfCells{};
+  separatrices1_points.clear();
+  separatrices1_points_smoothingMask.clear();
+  separatrices1_points_cellDimensions.clear();
+  separatrices1_points_cellIds.clear();
+  separatrices1_cells_connectivity.clear();
+  separatrices1_cells_sourceIds.clear();
+  separatrices1_cells_destinationIds.clear();
+  separatrices1_cells_separatrixIds.clear();
+  separatrices1_cells_separatrixTypes.clear();
+  separatrices1_cells_isOnBoundary.clear();
+  separatrices1_cells_separatrixFunctionMaxima.clear();
+  separatrices1_cells_separatrixFunctionMinima.clear();
+  separatrices1_cells_separatrixFunctionDiffs.clear();
 
   // 2-separatrices
   SimplexId separatrices2_numberOfPoints{};
   SimplexId separatrices2_numberOfCells{};
+  separatrices2_points.clear();
+  separatrices2_cells_offsets.clear();
+  separatrices2_cells_connectivity.clear();
+  separatrices2_cells_sourceIds.clear();
+  separatrices2_cells_separatrixIds.clear();
+  separatrices2_cells_separatrixTypes.clear();
+  separatrices2_cells_isOnBoundary.clear();
+  separatrices2_cells_separatrixFunctionMaxima.clear();
+  separatrices2_cells_separatrixFunctionMinima.clear();
+  separatrices2_cells_separatrixFunctionDiffs.clear();
 
   if(ComputeCriticalPoints) {
     this->setOutputCriticalPoints(
