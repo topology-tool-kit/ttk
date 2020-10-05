@@ -1,14 +1,13 @@
 #include <ttkCinemaQuery.h>
 
-#include <vtkVersion.h>
 #include <vtkInformation.h>
 
 #include <vtkDelimitedTextReader.h>
 #include <vtkFieldData.h>
 #include <vtkInformationVector.h>
+#include <vtkObjectFactory.h>
 #include <vtkSmartPointer.h>
 #include <vtkTable.h>
-#include <vtkVersionMacros.h>
 
 #include <ttkUtils.h>
 
@@ -167,10 +166,6 @@ int ttkCinemaQuery::RequestData(vtkInformation *request,
   // ===========================================================================
   // Process Result
   {
-#if VTK_MAJOR_VERSION < 7
-    this->printErr("This filter requires at least VTK 7.0");
-    return 0;
-#else
     if(csvNRows < 1 || status != 1) {
       csvResult << "NULL";
       for(int i = 0; i < csvNColumns; i++)
@@ -209,7 +204,6 @@ int ttkCinemaQuery::RequestData(vtkInformation *request,
 
     this->printMsg("Converting SQL result to VTK table", 1,
                    conversionTimer.getElapsedTime());
-#endif
   }
 
   // print stats

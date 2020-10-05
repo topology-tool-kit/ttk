@@ -1,6 +1,7 @@
 #include <ttkDimensionReduction.h>
 #include <ttkUtils.h>
 
+#include <vtkDoubleArray.h>
 #include <vtkInformation.h>
 #include <vtkNew.h>
 #include <vtkObjectFactory.h>

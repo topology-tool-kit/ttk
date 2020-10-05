@@ -1,6 +1,7 @@
 #include <ttkCinemaReader.h>
 
 #include <vtkInformation.h>
+#include <vtkObjectFactory.h>
 
 #include <vtkDelimitedTextReader.h>
 #include <vtkFieldData.h>
