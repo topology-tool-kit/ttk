@@ -2435,7 +2435,7 @@ namespace ttk {
     }
 
     /// Tune the number of active threads (default: number of logical cores)
-    inline int setThreadNumber(const ThreadId &threadNumber) {
+    inline int setThreadNumber(const ThreadId threadNumber) {
       explicitTriangulation_.setThreadNumber(threadNumber);
       implicitTriangulation_.setThreadNumber(threadNumber);
       periodicImplicitTriangulation_.setThreadNumber(threadNumber);

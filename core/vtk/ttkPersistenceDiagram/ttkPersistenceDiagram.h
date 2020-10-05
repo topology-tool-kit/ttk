@@ -65,11 +65,11 @@ public:
 
   vtkTypeMacro(ttkPersistenceDiagram, ttkAlgorithm);
 
-  vtkSetMacro(ForceInputOffsetScalarField, int);
-  vtkGetMacro(ForceInputOffsetScalarField, int);
+  vtkSetMacro(ForceInputOffsetScalarField, bool);
+  vtkGetMacro(ForceInputOffsetScalarField, bool);
 
-  vtkSetMacro(ComputeSaddleConnectors, int);
-  vtkGetMacro(ComputeSaddleConnectors, int);
+  vtkSetMacro(ComputeSaddleConnectors, bool);
+  vtkGetMacro(ComputeSaddleConnectors, bool);
 
   void SetShowInsideDomain(int onOff) {
     ShowInsideDomain = onOff;

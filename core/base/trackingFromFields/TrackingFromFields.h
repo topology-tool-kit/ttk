@@ -9,7 +9,6 @@
 #include <BottleneckDistance.h>
 #include <PersistenceDiagram.h>
 #include <Triangulation.h>
-using namespace std;
 
 namespace ttk {
 

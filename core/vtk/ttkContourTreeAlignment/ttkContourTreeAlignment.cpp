@@ -47,7 +47,6 @@ int ttkContourTreeAlignment::FillOutputPortInformation(int port,
 int ttkContourTreeAlignment::RequestData(vtkInformation *request,
                                          vtkInformationVector **inputVector,
                                          vtkInformationVector *outputVector) {
-  Timer t;
 
   //==================================================================================================================
   // Print status

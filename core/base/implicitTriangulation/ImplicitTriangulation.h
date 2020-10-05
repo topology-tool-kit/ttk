@@ -15,10 +15,6 @@
 // base code includes
 #include <AbstractTriangulation.h>
 
-#ifdef _WIN32
-#include <ciso646>
-#endif
-
 namespace ttk {
 
   class ImplicitTriangulation final : public AbstractTriangulation {

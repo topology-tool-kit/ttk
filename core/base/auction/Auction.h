@@ -1,6 +1,4 @@
-
-#ifndef _AUCTION_H
-#define _AUCTION_H
+#pragma once
 
 #ifndef matchingTuple
 #define matchingTuple std::tuple<ttk::SimplexId, ttk::SimplexId, dataType>
@@ -35,11 +33,13 @@
 namespace ttk {
   template <typename dataType>
   struct Compare {
+    // clang-format off
     constexpr bool
       operator()(std::pair<int, dataType> const &a,
                  std::pair<int, dataType> const &b) const noexcept {
       return a.second > b.second;
     }
+    // clang-format on
   };
 
   template <typename dataType>
@@ -360,5 +360,3 @@ namespace ttk {
 } // namespace ttk
 
 #include <AuctionImpl.h>
-
-#endif

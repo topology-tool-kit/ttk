@@ -12,7 +12,6 @@
 
 #include <windows.h>
 
-#include <ciso646>
 #include <cwchar>
 #include <direct.h>
 #include <stdint.h>
@@ -37,7 +36,9 @@ namespace ttk {
 #ifdef _WIN32
     directoryPath = _getcwd(NULL, 0);
 #else
-    directoryPath = getcwd(NULL, PATH_MAX);
+    std::vector<char> cwdName(PATH_MAX);
+    getcwd(cwdName.data(), cwdName.size());
+    directoryPath = std::string{cwdName.data()};
 #endif
     directoryPath += "/";
 

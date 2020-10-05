@@ -163,7 +163,7 @@ int ttkCinemaImaging::RequestData(vtkInformation *request,
   double camFocus[3];
   std::copy(this->CamFocus, this->CamFocus + 3, camFocus);
   double camNearFar[2];
-  std::copy(this->CamNearFar, this->CamNearFar + 3, camNearFar);
+  std::copy(this->CamNearFar, this->CamNearFar + 2, camNearFar);
   double camHeight = this->GetCamHeight();
   double camDir[3];
   double camUp[3] = {0, 0, 1};
