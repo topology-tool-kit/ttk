@@ -7,6 +7,7 @@
 #include <vtkDataObject.h>
 #include <vtkDataSet.h>
 #include <vtkDoubleArray.h>
+#include <vtkFloatArray.h>
 #include <vtkInformation.h>
 #include <vtkNew.h>
 #include <vtkObjectFactory.h>
@@ -72,12 +73,10 @@ int ttkMorseSmaleComplex::dispatch(
 
   // 1-separatrices
   SimplexId separatrices1_numberOfPoints{};
-  std::vector<float> separatrices1_points;
   SimplexId separatrices1_numberOfCells{};
 
   // 2-separatrices
   SimplexId separatrices2_numberOfPoints{};
-  std::vector<float> separatrices2_points;
   SimplexId separatrices2_numberOfCells{};
 
   if(ComputeCriticalPoints) {
@@ -211,7 +210,7 @@ int ttkMorseSmaleComplex::dispatch(
   if(ComputeAscendingSeparatrices1 or ComputeDescendingSeparatrices1
      or ComputeSaddleConnectors) {
 
-    vtkNew<vtkPoints> points{};
+    vtkNew<vtkFloatArray> pointsCoords{};
     vtkNew<vtkSignedCharArray> smoothingMask{};
     vtkNew<vtkSignedCharArray> cellDimensions{};
     vtkNew<ttkSimplexIdTypeArray> cellIds{};
@@ -225,26 +224,17 @@ int ttkMorseSmaleComplex::dispatch(
     vtkNew<vtkSignedCharArray> isOnBoundary{};
 
 #ifndef TTK_ENABLE_KAMIKAZE
-    if(!points || !smoothingMask || !cellDimensions || !cellIds || !sourceIds
-       || !destinationIds || !separatrixIds || !separatrixTypes
+    if(!pointsCoords || !smoothingMask || !cellDimensions || !cellIds
+       || !sourceIds || !destinationIds || !separatrixIds || !separatrixTypes
        || !separatrixFunctionMaxima || !separatrixFunctionMinima
        || !separatrixFunctionDiffs || !isOnBoundary) {
       this->printErr("1-separatrices vtkDataArray allocation problem.");
       return -1;
     }
 #endif
-    points->SetNumberOfPoints(separatrices1_numberOfPoints);
 
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(this->threadNumber_)
-#endif // TTK_ENABLE_OPENMP
-    for(SimplexId i = 0; i < separatrices1_numberOfPoints; ++i) {
-      points->SetPoint(i, separatrices1_points[3 * i],
-                       separatrices1_points[3 * i + 1],
-                       separatrices1_points[3 * i + 2]);
-    }
-
-    outputSeparatrices1->SetPoints(points);
+    pointsCoords->SetNumberOfComponents(3);
+    setArray(pointsCoords, separatrices1_points);
 
     smoothingMask->SetNumberOfComponents(1);
     smoothingMask->SetName(ttk::MaskScalarFieldName);
@@ -306,6 +296,9 @@ int ttkMorseSmaleComplex::dispatch(
       offsets->SetTuple1(i, 2 * i);
     }
 
+    vtkNew<vtkPoints> points{};
+    points->SetData(pointsCoords);
+    outputSeparatrices1->SetPoints(points);
     vtkNew<vtkCellArray> cells{};
     cells->SetData(offsets, connectivity);
     outputSeparatrices1->SetCells(VTK_LINE, cells);
@@ -338,7 +331,7 @@ int ttkMorseSmaleComplex::dispatch(
   if(dimensionality == 3
      and (ComputeAscendingSeparatrices2 or ComputeDescendingSeparatrices2)) {
 
-    vtkNew<vtkPoints> points{};
+    vtkNew<vtkFloatArray> pointsCoords{};
     vtkNew<ttkSimplexIdTypeArray> sourceIds{};
     vtkNew<ttkSimplexIdTypeArray> separatrixIds{};
     vtkNew<vtkSignedCharArray> separatrixTypes{};
@@ -348,25 +341,16 @@ int ttkMorseSmaleComplex::dispatch(
     vtkNew<vtkSignedCharArray> isOnBoundary{};
 
 #ifndef TTK_ENABLE_KAMIKAZE
-    if(!points || !sourceIds || !separatrixIds || !separatrixTypes
+    if(!pointsCoords || !sourceIds || !separatrixIds || !separatrixTypes
        || !separatrixFunctionMaxima || !separatrixFunctionMinima
        || !separatrixFunctionDiffs || !isOnBoundary) {
       this->printErr("2-separatrices vtkDataArray allocation problem.");
       return -1;
     }
 #endif
-    points->SetNumberOfPoints(separatrices2_numberOfPoints);
 
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(this->threadNumber_)
-#endif // TTK_ENABLE_OPENMP
-    for(SimplexId i = 0; i < separatrices2_numberOfPoints; ++i) {
-      points->SetPoint(i, separatrices2_points[3 * i],
-                       separatrices2_points[3 * i + 1],
-                       separatrices2_points[3 * i + 2]);
-    }
-
-    outputSeparatrices2->SetPoints(points);
+    pointsCoords->SetNumberOfComponents(3);
+    setArray(pointsCoords, separatrices2_points);
 
     sourceIds->SetNumberOfComponents(1);
     sourceIds->SetName("SourceId");
@@ -399,13 +383,6 @@ int ttkMorseSmaleComplex::dispatch(
     isOnBoundary->SetName("NumberOfCriticalPointsOnBoundary");
     setArray(isOnBoundary, separatrices2_cells_isOnBoundary);
 
-    vtkNew<vtkIdTypeArray> offsets{}, connectivity{};
-    offsets->SetNumberOfComponents(1);
-    setArray(offsets, separatrices2_cells_offsets);
-
-    connectivity->SetNumberOfComponents(1);
-    setArray(connectivity, separatrices2_cells_connectivity);
-
     vtkNew<vtkUnsignedCharArray> cellTypes{};
     cellTypes->SetNumberOfComponents(1);
     cellTypes->SetNumberOfTuples(separatrices2_numberOfCells);
@@ -414,17 +391,24 @@ int ttkMorseSmaleComplex::dispatch(
 #pragma omp parallel for num_threads(this->threadNumber_)
 #endif // TTK_ENABLE_OPENMP
     for(SimplexId i = 0; i < separatrices2_numberOfCells; ++i) {
-      if(separatrices2_cells_offsets[i + 1] - separatrices2_cells_offsets[i]
-         == 3) {
+      if(separatrices2_cells_separatrixTypes[i] == 2) {
         cellTypes->SetTuple1(i, VTK_TRIANGLE);
-      } else {
+      } else if(separatrices2_cells_separatrixTypes[i] == 1) {
         cellTypes->SetTuple1(i, VTK_POLYGON);
       }
     }
 
+    vtkNew<vtkIdTypeArray> offsets{}, connectivity{};
+    offsets->SetNumberOfComponents(1);
+    setArray(offsets, separatrices2_cells_offsets);
+    connectivity->SetNumberOfComponents(1);
+    setArray(connectivity, separatrices2_cells_connectivity);
+
+    vtkNew<vtkPoints> points{};
+    points->SetData(pointsCoords);
+    outputSeparatrices2->SetPoints(points);
     vtkNew<vtkCellArray> cells{};
     cells->SetData(offsets, connectivity);
-    outputSeparatrices2->SetPoints(points);
     outputSeparatrices2->SetCells(cellTypes, cells);
 
     auto cellData = outputSeparatrices2->GetCellData();

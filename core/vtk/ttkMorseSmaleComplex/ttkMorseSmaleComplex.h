@@ -143,6 +143,7 @@ private:
   double SaddleConnectorsPersistenceThreshold{0.0};
 
   // 1-separatrices data
+  std::vector<float> separatrices1_points;
   std::vector<char> separatrices1_points_smoothingMask;
   std::vector<char> separatrices1_points_cellDimensions;
   std::vector<ttk::SimplexId> separatrices1_points_cellIds;
@@ -157,6 +158,7 @@ private:
   std::vector<double> separatrices1_cells_separatrixFunctionDiffs;
 
   // 2-separatrices data
+  std::vector<float> separatrices2_points;
   std::vector<vtkIdType> separatrices2_cells_offsets;
   std::vector<vtkIdType> separatrices2_cells_connectivity;
   std::vector<ttk::SimplexId> separatrices2_cells_sourceIds;
