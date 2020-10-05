@@ -142,6 +142,14 @@ private:
   int ReturnSaddleConnectors{false};
   double SaddleConnectorsPersistenceThreshold{0.0};
 
+  // critical points
+  std::vector<float> criticalPoints_points;
+  std::vector<char> criticalPoints_points_cellDimensions;
+  std::vector<ttk::SimplexId> criticalPoints_points_cellIds;
+  std::vector<char> criticalPoints_points_isOnBoundary;
+  std::vector<ttk::SimplexId> criticalPoints_points_PLVertexIdentifiers;
+  std::vector<ttk::SimplexId> criticalPoints_points_manifoldSize;
+
   // 1-separatrices data
   std::vector<float> separatrices1_points;
   std::vector<char> separatrices1_points_smoothingMask;

@@ -63,13 +63,7 @@ int ttkMorseSmaleComplex::dispatch(
 
   // critical points
   SimplexId criticalPoints_numberOfPoints{};
-  std::vector<float> criticalPoints_points;
-  std::vector<char> criticalPoints_points_cellDimensions;
   std::vector<scalarType> criticalPoints_points_cellScalars;
-  std::vector<SimplexId> criticalPoints_points_cellIds;
-  std::vector<char> criticalPoints_points_isOnBoundary;
-  std::vector<SimplexId> criticalPoints_points_PLVertexIdentifiers;
-  std::vector<SimplexId> criticalPoints_points_manifoldSize;
 
   // 1-separatrices
   SimplexId separatrices1_numberOfPoints{};
@@ -124,7 +118,7 @@ int ttkMorseSmaleComplex::dispatch(
 
   // critical points
   {
-    vtkNew<vtkPoints> points{};
+    vtkNew<vtkFloatArray> pointsCoords{};
     vtkNew<vtkSignedCharArray> cellDimensions{};
     vtkNew<ttkSimplexIdTypeArray> cellIds{};
     vtkSmartPointer<vtkDataArray> cellScalars{inputScalars->NewInstance()};
@@ -133,61 +127,53 @@ int ttkMorseSmaleComplex::dispatch(
     vtkNew<ttkSimplexIdTypeArray> manifoldSizeScalars{};
 
 #ifndef TTK_ENABLE_KAMIKAZE
-    if(!points || !cellDimensions || !cellIds || !cellScalars || !isOnBoundary
-       || !PLVertexIdentifiers || !manifoldSizeScalars) {
+    if(!pointsCoords || !cellDimensions || !cellIds || !cellScalars
+       || !isOnBoundary || !PLVertexIdentifiers || !manifoldSizeScalars) {
       this->printErr("Critical points vtkDataArray allocation problem.");
       return -1;
     }
 #endif
-    points->SetNumberOfPoints(criticalPoints_numberOfPoints);
+
+    pointsCoords->SetNumberOfComponents(3);
+    setArray(pointsCoords, criticalPoints_points);
 
     cellDimensions->SetNumberOfComponents(1);
     cellDimensions->SetName("CellDimension");
-    cellDimensions->SetNumberOfTuples(criticalPoints_numberOfPoints);
+    setArray(cellDimensions, criticalPoints_points_cellDimensions);
 
     cellIds->SetNumberOfComponents(1);
     cellIds->SetName("CellId");
-    cellIds->SetNumberOfTuples(criticalPoints_numberOfPoints);
+    setArray(cellIds, criticalPoints_points_cellIds);
 
     cellScalars->SetNumberOfComponents(1);
     cellScalars->SetName(inputScalars->GetName());
     cellScalars->SetNumberOfTuples(criticalPoints_numberOfPoints);
-
-    isOnBoundary->SetNumberOfComponents(1);
-    isOnBoundary->SetName("IsOnBoundary");
-    isOnBoundary->SetNumberOfTuples(criticalPoints_numberOfPoints);
-
-    PLVertexIdentifiers->SetNumberOfComponents(1);
-    PLVertexIdentifiers->SetName(ttk::VertexScalarFieldName);
-    PLVertexIdentifiers->SetNumberOfTuples(criticalPoints_numberOfPoints);
-
-    manifoldSizeScalars->SetNumberOfComponents(1);
-    manifoldSizeScalars->SetName("ManifoldSize");
-    manifoldSizeScalars->SetNumberOfTuples(criticalPoints_numberOfPoints);
-
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(this->threadNumber_)
 #endif // TTK_ENABLE_OPENMP
     for(SimplexId i = 0; i < criticalPoints_numberOfPoints; ++i) {
-      points->SetPoint(i, criticalPoints_points[3 * i],
-                       criticalPoints_points[3 * i + 1],
-                       criticalPoints_points[3 * i + 2]);
-
-      cellDimensions->SetTuple1(i, criticalPoints_points_cellDimensions[i]);
-      cellIds->SetTuple1(i, criticalPoints_points_cellIds[i]);
       cellScalars->SetTuple1(i, criticalPoints_points_cellScalars[i]);
-      isOnBoundary->SetTuple1(i, criticalPoints_points_isOnBoundary[i]);
-      PLVertexIdentifiers->SetTuple1(
-        i, criticalPoints_points_PLVertexIdentifiers[i]);
-
-      if(ComputeAscendingSegmentation and ComputeDescendingSegmentation) {
-        manifoldSizeScalars->SetTuple1(
-          i, criticalPoints_points_manifoldSize[i]);
-      } else {
-        manifoldSizeScalars->SetTuple1(i, -1);
-      }
     }
 
+    isOnBoundary->SetNumberOfComponents(1);
+    isOnBoundary->SetName("IsOnBoundary");
+    setArray(isOnBoundary, criticalPoints_points_isOnBoundary);
+
+    PLVertexIdentifiers->SetNumberOfComponents(1);
+    PLVertexIdentifiers->SetName(ttk::VertexScalarFieldName);
+    setArray(PLVertexIdentifiers, criticalPoints_points_PLVertexIdentifiers);
+
+    manifoldSizeScalars->SetNumberOfComponents(1);
+    manifoldSizeScalars->SetName("ManifoldSize");
+    if(!ComputeAscendingSegmentation or !ComputeDescendingSegmentation) {
+      criticalPoints_points_manifoldSize.resize(criticalPoints_numberOfPoints);
+      std::fill(criticalPoints_points_manifoldSize.begin(),
+                criticalPoints_points_manifoldSize.end(), -1);
+    }
+    setArray(manifoldSizeScalars, criticalPoints_points_manifoldSize);
+
+    vtkNew<vtkPoints> points{};
+    points->SetData(pointsCoords);
     outputCriticalPoints->SetPoints(points);
 
     auto pointData = outputCriticalPoints->GetPointData();
