@@ -1831,9 +1831,12 @@ namespace ttk {
     /// \return Returns 0 upon success, negative values otherwise.
     /// \sa isEdgeOnBoundary()
     virtual inline int preconditionBoundaryEdges() {
-      preconditionEdges();
-      preconditionBoundaryEdgesInternal();
-      hasPreconditionedBoundaryEdges_ = true;
+
+      if(!hasPreconditionedBoundaryEdges_) {
+        preconditionEdges();
+        preconditionBoundaryEdgesInternal();
+        hasPreconditionedBoundaryEdges_ = true;
+      }
       return 0;
     }
 
@@ -1851,9 +1854,12 @@ namespace ttk {
     /// \return Returns 0 upon success, negative values otherwise.
     /// \sa isTriangleOnBoundary()
     virtual inline int preconditionBoundaryTriangles() {
-      hasPreconditionedBoundaryTriangles_ = true;
-      preconditionTriangles();
-      preconditionBoundaryTrianglesInternal();
+
+      if(!hasPreconditionedBoundaryTriangles_) {
+        preconditionTriangles();
+        preconditionBoundaryTrianglesInternal();
+        hasPreconditionedBoundaryTriangles_ = true;
+      }
       return 0;
     }
 
@@ -1871,8 +1877,11 @@ namespace ttk {
     /// \return Returns 0 upon success, negative values otherwise.
     /// \sa isVertexOnBoundary()
     virtual inline int preconditionBoundaryVertices() {
-      hasPreconditionedBoundaryVertices_ = true;
-      preconditionBoundaryVerticesInternal();
+
+      if(!hasPreconditionedBoundaryVertices_) {
+        preconditionBoundaryVerticesInternal();
+        hasPreconditionedBoundaryVertices_ = true;
+      }
       return 0;
     }
 
@@ -1893,14 +1902,14 @@ namespace ttk {
     /// \sa getCellEdgeNumber()
     virtual inline int preconditionCellEdges() {
 
-      hasPreconditionedCellEdges_ = true;
+      if(!hasPreconditionedCellEdges_) {
+        hasPreconditionedCellEdges_ = true;
+        if(getDimensionality() == 1)
+          return preconditionCellNeighbors();
 
-      if(getDimensionality() == 1)
-        return preconditionCellNeighbors();
-
-      preconditionEdges();
-      preconditionCellEdgesInternal();
-
+        preconditionEdges();
+        preconditionCellEdgesInternal();
+      }
       return 0;
     }
 
@@ -1923,10 +1932,10 @@ namespace ttk {
     /// \sa getCellNeighborNumber()
     virtual inline int preconditionCellNeighbors() {
 
-      hasPreconditionedCellNeighbors_ = true;
-
-      preconditionCellNeighborsInternal();
-
+      if(!hasPreconditionedCellNeighbors_) {
+        preconditionCellNeighborsInternal();
+        hasPreconditionedCellNeighbors_ = true;
+      }
       return 0;
     }
 
@@ -1949,18 +1958,19 @@ namespace ttk {
     /// \sa getCellTriangleNumber()
     virtual inline int preconditionCellTriangles() {
 
-      hasPreconditionedCellTriangles_ = true;
+      if(!hasPreconditionedCellTriangles_) {
+        hasPreconditionedCellTriangles_ = true;
 
 #ifndef TTK_ENABLE_KAMIKAZE
-      if(getDimensionality() == 1)
-        return -1;
+        if(getDimensionality() == 1)
+          return -1;
 #endif
-      if(getDimensionality() == 2)
-        return preconditionCellNeighbors();
+        if(getDimensionality() == 2)
+          return preconditionCellNeighbors();
 
-      preconditionTriangles();
-      preconditionCellTrianglesInternal();
-
+        preconditionTriangles();
+        preconditionCellTrianglesInternal();
+      }
       return 0;
     }
 
@@ -1983,10 +1993,10 @@ namespace ttk {
     /// \sa getNumberOfEdges()
     virtual inline int preconditionEdges() {
 
-      hasPreconditionedEdges_ = true;
-
-      preconditionEdgesInternal();
-
+      if(!hasPreconditionedEdges_) {
+        preconditionEdgesInternal();
+        hasPreconditionedEdges_ = true;
+      }
       return 0;
     }
 
@@ -2009,15 +2019,15 @@ namespace ttk {
     /// \sa getEdgeLinkNumber()
     virtual inline int preconditionEdgeLinks() {
 
-      hasPreconditionedEdgeLinks_ = true;
-
+      if(!hasPreconditionedEdgeLinks_) {
 #ifndef TTK_ENABLE_KAMIKAZE
-      if(getDimensionality() == 1)
-        return -1;
+        if(getDimensionality() == 1)
+          return -1;
 #endif
-      preconditionEdges();
-      preconditionEdgeLinksInternal();
-
+        preconditionEdges();
+        preconditionEdgeLinksInternal();
+        hasPreconditionedEdgeLinks_ = true;
+      }
       return 0;
     }
 
@@ -2040,15 +2050,15 @@ namespace ttk {
     /// \sa getEdgeStarNumber()
     virtual inline int preconditionEdgeStars() {
 
-      hasPreconditionedEdgeStars_ = true;
-
+      if(!hasPreconditionedEdgeStars_) {
 #ifndef TTK_ENABLE_KAMIKAZE
-      if(getDimensionality() == 1)
-        return -1;
+        if(getDimensionality() == 1)
+          return -1;
 #endif
-      preconditionEdges();
-      preconditionEdgeStarsInternal();
-
+        preconditionEdges();
+        preconditionEdgeStarsInternal();
+        hasPreconditionedEdgeStars_ = true;
+      }
       return 0;
     }
 
@@ -2071,19 +2081,21 @@ namespace ttk {
     /// \sa getEdgeTriangleNumber()
     virtual inline int preconditionEdgeTriangles() {
 
-      hasPreconditionedEdgeTriangles_ = true;
+      if(!hasPreconditionedEdgeTriangles_) {
+        hasPreconditionedEdgeTriangles_ = true;
 
 #ifndef TTK_ENABLE_KAMIKAZE
-      if(getDimensionality() == 1)
-        return -1;
+        if(getDimensionality() == 1)
+          return -1;
 #endif
 
-      if(getDimensionality() == 2)
-        return preconditionEdgeStars();
+        if(getDimensionality() == 2)
+          return preconditionEdgeStars();
 
-      preconditionEdges();
-      preconditionTriangles();
-      preconditionEdgeTrianglesInternal();
+        preconditionEdges();
+        preconditionTriangles();
+        preconditionEdgeTrianglesInternal();
+      }
 
       return 0;
     }
@@ -2107,16 +2119,18 @@ namespace ttk {
     /// \sa getTriangleVertex()
     virtual inline int preconditionTriangles() {
 
-      hasPreconditionedTriangles_ = true;
+      if(!hasPreconditionedTriangles_) {
+        hasPreconditionedTriangles_ = true;
 
 #ifndef TTK_ENABLE_KAMIKAZE
-      if(getDimensionality() == 1)
-        return -1;
+        if(getDimensionality() == 1)
+          return -1;
 #endif
-      if(getDimensionality() == 2)
-        return 0;
+        if(getDimensionality() == 2)
+          return 0;
 
-      preconditionTrianglesInternal();
+        preconditionTrianglesInternal();
+      }
 
       return 0;
     }
@@ -2140,19 +2154,20 @@ namespace ttk {
     /// \sa getTriangleEdgeNumber()
     virtual inline int preconditionTriangleEdges() {
 
-      hasPreconditionedTriangleEdges_ = true;
+      if(!hasPreconditionedTriangleEdges_) {
+        hasPreconditionedTriangleEdges_ = true;
 
 #ifndef TTK_ENABLE_KAMIKAZE
-      if(getDimensionality() == 1)
-        return -1;
+        if(getDimensionality() == 1)
+          return -1;
 #endif
-      if(getDimensionality() == 2)
-        return preconditionCellEdges();
+        if(getDimensionality() == 2)
+          return preconditionCellEdges();
 
-      preconditionEdges();
-      preconditionTriangles();
-      preconditionTriangleEdgesInternal();
-
+        preconditionEdges();
+        preconditionTriangles();
+        preconditionTriangleEdgesInternal();
+      }
       return 0;
     }
 
@@ -2175,15 +2190,15 @@ namespace ttk {
     /// \sa getTriangleLinkNumber()
     virtual inline int preconditionTriangleLinks() {
 
-      hasPreconditionedTriangleLinks_ = true;
-
+      if(!hasPreconditionedTriangleLinks_) {
 #ifndef TTK_ENABLE_KAMIKAZE
-      if(getDimensionality() != 3)
-        return -2;
+        if(getDimensionality() != 3)
+          return -2;
 #endif
-      preconditionTriangles();
-      preconditionTriangleLinksInternal();
-
+        preconditionTriangles();
+        preconditionTriangleLinksInternal();
+        hasPreconditionedTriangleLinks_ = true;
+      }
       return 0;
     }
 
@@ -2206,16 +2221,15 @@ namespace ttk {
     /// \sa getTriangleStarNumber()
     virtual inline int preconditionTriangleStars() {
 
-      hasPreconditionedTriangleStars_ = true;
-
+      if(!hasPreconditionedTriangleStars_) {
 #ifndef TTK_ENABLE_KAMIKAZE
-      if(getDimensionality() != 3)
-        return -1;
+        if(getDimensionality() != 3)
+          return -1;
 #endif
-
-      preconditionTriangles();
-      preconditionTriangleStarsInternal();
-
+        preconditionTriangles();
+        preconditionTriangleStarsInternal();
+        hasPreconditionedTriangleStars_ = true;
+      }
       return 0;
     }
 
@@ -2238,14 +2252,15 @@ namespace ttk {
     /// \sa getVertexEdgeNumber()
     virtual inline int preconditionVertexEdges() {
 
-      hasPreconditionedVertexEdges_ = true;
+      if(!hasPreconditionedVertexEdges_) {
+        hasPreconditionedVertexEdges_ = true;
 
-      if(getDimensionality() == 1)
-        return preconditionVertexStars();
+        if(getDimensionality() == 1)
+          return preconditionVertexStars();
 
-      preconditionEdges();
-      preconditionVertexEdgesInternal();
-
+        preconditionEdges();
+        preconditionVertexEdgesInternal();
+      }
       return 0;
     }
 
@@ -2268,10 +2283,10 @@ namespace ttk {
     /// \sa getVertexLinkNumber()
     virtual inline int preconditionVertexLinks() {
 
-      hasPreconditionedVertexLinks_ = true;
-
-      preconditionVertexLinksInternal();
-
+      if(!hasPreconditionedVertexLinks_) {
+        preconditionVertexLinksInternal();
+        hasPreconditionedVertexLinks_ = true;
+      }
       return 0;
     }
 
@@ -2294,10 +2309,10 @@ namespace ttk {
     /// \sa getVertexNeighborNumber()
     virtual inline int preconditionVertexNeighbors() {
 
-      hasPreconditionedVertexNeighbors_ = true;
-
-      preconditionVertexNeighborsInternal();
-
+      if(!hasPreconditionedVertexNeighbors_) {
+        preconditionVertexNeighborsInternal();
+        hasPreconditionedVertexNeighbors_ = true;
+      }
       return 0;
     }
 
@@ -2320,10 +2335,10 @@ namespace ttk {
     /// \sa getVertexStarNumber()
     virtual inline int preconditionVertexStars() {
 
-      hasPreconditionedVertexStars_ = true;
-
-      preconditionVertexStarsInternal();
-
+      if(!hasPreconditionedVertexStars_) {
+        preconditionVertexStarsInternal();
+        hasPreconditionedVertexStars_ = true;
+      }
       return 0;
     }
 
@@ -2346,19 +2361,20 @@ namespace ttk {
     /// \sa getVertexTriangleNumber()
     virtual inline int preconditionVertexTriangles() {
 
-      hasPreconditionedVertexTriangles_ = true;
+      if(!hasPreconditionedVertexTriangles_) {
+        hasPreconditionedVertexTriangles_ = true;
 
 #ifndef TTK_ENABLE_KAMIKAZE
-      if(getDimensionality() == 1)
-        return -1;
+        if(getDimensionality() == 1)
+          return -1;
 #endif
 
-      if(getDimensionality() == 2)
-        return preconditionVertexStars();
+        if(getDimensionality() == 2)
+          return preconditionVertexStars();
 
-      preconditionTriangles();
-      preconditionVertexTrianglesInternal();
-
+        preconditionTriangles();
+        preconditionVertexTrianglesInternal();
+      }
       return 0;
     }
 
