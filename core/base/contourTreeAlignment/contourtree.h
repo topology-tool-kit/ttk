@@ -94,28 +94,20 @@ public:
   ~ContourTree();
 
   std::shared_ptr<BinaryTree> rootAtMax();
-  std::shared_ptr<BinaryTree> rootAtNode(CTNode *root);
+  std::shared_ptr<BinaryTree> rootAtNode(std::shared_ptr<CTNode> root);
   bool isBinary();
   void computeBranches();
-  std::pair<std::vector<CTNode *>, std::vector<CTEdge *>> getGraph();
-
-  /*static void deleteBinaryTree(std::shared_ptr<BinaryTree> t) {
-    if(t->child1)
-      deleteBinaryTree(t->child1);
-    if(t->child2)
-      deleteBinaryTree(t->child2);
-    delete t;
-  }*/
+  std::pair<std::vector<std::shared_ptr<CTNode> >, std::vector<std::shared_ptr<CTEdge> >> getGraph();
 
 private:
-  std::vector<CTNode *> nodes;
-  std::vector<CTEdge *> arcs;
+  std::vector<std::shared_ptr<CTNode> > nodes;
+  std::vector<std::shared_ptr<CTEdge> > arcs;
 
   bool binary;
   float threshold;
 
-  std::shared_ptr<Tree> computeRootedTree(CTNode *node, CTEdge *parent, int &id);
-  std::shared_ptr<BinaryTree> computeRootedTree_binary(CTNode *node, CTEdge *parent, int &id);
+  std::shared_ptr<Tree> computeRootedTree(std::shared_ptr<CTNode> node, std::shared_ptr<CTEdge> parent, int &id);
+  std::shared_ptr<BinaryTree> computeRootedTree_binary(std::shared_ptr<CTNode> node, std::shared_ptr<CTEdge> parent, int &id);
   std::pair<float, std::vector<int>> pathToMax(int root, int parent);
   std::pair<float, std::vector<int>> pathToMin(int root, int parent);
 };

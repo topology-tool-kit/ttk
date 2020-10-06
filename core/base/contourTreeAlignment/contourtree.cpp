@@ -9,14 +9,14 @@ ContourTree::ContourTree(float *scalars,
                          size_t nVertices,
                          size_t nEdges) {
 
-  nodes = std::vector<CTNode *>();
-  arcs = std::vector<CTEdge *>();
+  nodes = std::vector<std::shared_ptr<CTNode> >();
+  arcs = std::vector<std::shared_ptr<CTEdge> >();
 
   float minVal = FLT_MAX;
   float maxVal = -FLT_MAX;
 
   for(size_t i = 0; i < nVertices; i++) {
-    CTNode *node = new CTNode;
+    std::shared_ptr<CTNode> node(new CTNode);
     node->scalarValue = scalars[i];
     node->edgeList = std::vector<int>();
     node->branchID = -1;
@@ -26,16 +26,11 @@ ContourTree::ContourTree(float *scalars,
     if(node->scalarValue < minVal)
       minVal = node->scalarValue;
   }
-  //float scalarRange = maxVal - minVal;
   int j = 0;
   for(size_t i = 0; i < nEdges; i++) {
-    CTEdge *edge = new CTEdge;
+    std::shared_ptr<CTEdge> edge(new CTEdge);
     edge->area = regionSizes[i];
     edge->segId = segmentationIds[i];
-    /*if(topology[j] != 2){
-        // something wrong here
-        std::cout << "cell with dimension>2 found...\n";
-    }*/
     edge->node1Idx = topology[j + 0];
     nodes[topology[j + 0]]->edgeList.push_back(i);
     edge->node2Idx = topology[j + 1];
@@ -44,17 +39,17 @@ ContourTree::ContourTree(float *scalars,
                                     - nodes[edge->node2Idx]->scalarValue);
     edge->volume = edge->area * edge->scalardistance;
     arcs.push_back(edge);
-    j += 2; // topology[j]+1;
+    j += 2;
   }
 
-  for(CTNode *node : nodes) {
+  for(std::shared_ptr<CTNode> node : nodes) {
     if(node->edgeList.size() == 0)
       std::cout << "wtf?\n" << std::flush;
     if(node->edgeList.size() > 1)
       node->type = saddleNode;
     else {
-      CTEdge *edge = arcs[node->edgeList[0]];
-      CTNode *neighbor = nodes[edge->node1Idx] == node ? nodes[edge->node2Idx]
+      std::shared_ptr<CTEdge> edge = arcs[node->edgeList[0]];
+      std::shared_ptr<CTNode> neighbor = nodes[edge->node1Idx] == node ? nodes[edge->node2Idx]
                                                        : nodes[edge->node1Idx];
       if(neighbor->scalarValue > node->scalarValue)
         node->type = minNode;
@@ -64,22 +59,16 @@ ContourTree::ContourTree(float *scalars,
   }
 
   binary = true;
-  for(CTNode *node : nodes) {
+  for(std::shared_ptr<CTNode> node : nodes) {
     if(node->edgeList.size() > 3)
       binary = false;
   }
 }
 
 ContourTree::~ContourTree() {
-  for(CTNode *node : nodes) {
-    delete node;
-  }
-  for(CTEdge *edge : arcs) {
-    delete edge;
-  }
 }
 
-std::shared_ptr<Tree> ContourTree::computeRootedTree(CTNode *node, CTEdge *parent, int &id) {
+std::shared_ptr<Tree> ContourTree::computeRootedTree(std::shared_ptr<CTNode> node, std::shared_ptr<CTEdge> parent, int &id) {
 
   // initialize tree
   std::shared_ptr<Tree> t(new Tree);
@@ -96,9 +85,6 @@ std::shared_ptr<Tree> ContourTree::computeRootedTree(CTNode *node, CTEdge *paren
   t->size = 1;
   t->height = 0;
 
-  // set vertex reference
-  // t->vertexId = node->getVertexId();
-
   // compute number of children (depends on whether current node is the root or
   // not)
   if(parent == nullptr)
@@ -111,13 +97,13 @@ std::shared_ptr<Tree> ContourTree::computeRootedTree(CTNode *node, CTEdge *paren
   // add neighbors to children
   for(size_t i = 0; i < node->edgeList.size(); i++) {
 
-    CTEdge *edge = arcs[node->edgeList[i]];
+    std::shared_ptr<CTEdge> edge = arcs[node->edgeList[i]];
     if(edge == parent) {
       parentVisited = true;
       continue;
     }
 
-    CTNode *child = nodes[edge->node1Idx] == node ? nodes[edge->node2Idx]
+    std::shared_ptr<CTNode> child = nodes[edge->node1Idx] == node ? nodes[edge->node2Idx]
                                                   : nodes[edge->node1Idx];
 
     std::shared_ptr<Tree> childTree = computeRootedTree(child, edge, id);
@@ -143,7 +129,7 @@ std::shared_ptr<Tree> ContourTree::computeRootedTree(CTNode *node, CTEdge *paren
 }
 
 std::shared_ptr<BinaryTree> 
-  ContourTree::computeRootedTree_binary(CTNode *node, CTEdge *parent, int &id) {
+  ContourTree::computeRootedTree_binary(std::shared_ptr<CTNode> node, std::shared_ptr<CTEdge> parent, int &id) {
 
   // initialize tree
   std::shared_ptr<BinaryTree> t(new BinaryTree);
@@ -154,7 +140,7 @@ std::shared_ptr<BinaryTree>
 
   // set type/label
   t->type = node->type;
-  CTEdge *edge = arcs[node->edgeList[0]];
+  std::shared_ptr<CTEdge> edge = arcs[node->edgeList[0]];
   int nodeIdx = nodes[edge->node1Idx] == node ? edge->node1Idx : edge->node2Idx;
   t->nodeRefs = std::vector<std::pair<int, int>>();
   t->nodeRefs.push_back(std::make_pair(-1, nodeIdx));
@@ -173,9 +159,6 @@ std::shared_ptr<BinaryTree>
   t->size = 1;
   t->height = 0;
 
-  // set vertex reference
-  // t->vertexId = node->getVertexId();
-
   // children at first into vector
   std::vector<std::shared_ptr<BinaryTree> > children;
 
@@ -186,7 +169,7 @@ std::shared_ptr<BinaryTree>
 
     if(edge != parent) {
 
-      CTNode *child = nodes[edge->node1Idx] == node ? nodes[edge->node2Idx]
+      std::shared_ptr<CTNode> child = nodes[edge->node1Idx] == node ? nodes[edge->node2Idx]
                                                     : nodes[edge->node1Idx];
 
       std::shared_ptr<BinaryTree> childTree = computeRootedTree_binary(child, edge, id);
@@ -204,7 +187,6 @@ std::shared_ptr<BinaryTree>
   t->child1 = children.size() > 0 ? children[0] : nullptr;
   t->child2 = children.size() > 1 ? children[1] : nullptr;
 
-  // tree not fuzzy => freq=1
   t->freq = 1;
 
   t->scalarValue = node->scalarValue;
@@ -227,9 +209,9 @@ std::shared_ptr<BinaryTree> ContourTree::rootAtMax() {
 
   // get global maximum node to build rooted tree from there
   float maxVal = -FLT_MAX;
-  CTNode *globalMax = nullptr;
+  std::shared_ptr<CTNode> globalMax = nullptr;
 
-  for(CTNode *node : nodes) {
+  for(std::shared_ptr<CTNode> node : nodes) {
     if(node->scalarValue > maxVal) {
       globalMax = node;
       maxVal = node->scalarValue;
@@ -241,7 +223,7 @@ std::shared_ptr<BinaryTree> ContourTree::rootAtMax() {
   return computeRootedTree_binary(globalMax, nullptr, id);
 }
 
-std::shared_ptr<BinaryTree> ContourTree::rootAtNode(CTNode *root) {
+std::shared_ptr<BinaryTree> ContourTree::rootAtNode(std::shared_ptr<CTNode> root) {
 
   int id = 1;
 
@@ -271,10 +253,6 @@ void ContourTree::computeBranches() {
   maxPath.push_back(minIdx);
   maxPath.insert(maxPath.end(), maxPath_.begin(), maxPath_.end());
 
-  /*for(int idx : maxPath){
-      nodes[idx]->branchID = 0;
-  }*/
-
   int currID = 0;
   nodes[minIdx]->branchID = 0;
   std::stack<std::vector<int>> q;
@@ -282,7 +260,6 @@ void ContourTree::computeBranches() {
 
   while(!q.empty()) {
 
-    // std::vector<int> path = q.front();
     std::vector<int> path = q.top();
     q.pop();
 
@@ -391,7 +368,7 @@ std::pair<float, std::vector<int>> ContourTree::pathToMin(int root,
   return std::make_pair(bestVal, path);
 }
 
-std::pair<std::vector<CTNode *>, std::vector<CTEdge *>>
+std::pair<std::vector<std::shared_ptr<CTNode> >, std::vector<std::shared_ptr<CTEdge> >>
   ContourTree::getGraph() {
   return std::make_pair(nodes, arcs);
 }

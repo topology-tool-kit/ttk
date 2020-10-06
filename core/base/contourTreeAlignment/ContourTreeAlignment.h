@@ -82,17 +82,8 @@ namespace ttk {
       this->setDebugMsgPrefix("ContourTreeAlignment");
     };
     ~ContourTreeAlignment() {
-      for(auto ct : contourtrees) {
-        //delete ct;
-      }
       contourtrees.clear();
-      for(auto v : nodes) {
-        //delete v;
-      }
       nodes.clear();
-      for(auto e : arcs) {
-        //delete e;
-      }
       arcs.clear();
     };
 
@@ -132,15 +123,15 @@ namespace ttk {
                 int seed);
 
     /// functions for aligning single trees in iteration
-    bool alignTree(ContourTree *t);
-    bool initialize(ContourTree *t);
-    bool alignTree_consistentRoot(ContourTree *t);
-    bool initialize_consistentRoot(ContourTree *t, int rootIdx);
+    bool alignTree(std::shared_ptr<ContourTree> t);
+    bool initialize(std::shared_ptr<ContourTree> t);
+    bool alignTree_consistentRoot(std::shared_ptr<ContourTree> t);
+    bool initialize_consistentRoot(std::shared_ptr<ContourTree> t, int rootIdx);
 
     /// getters for graph data structures
-    std::vector<std::pair<std::vector<CTNode *>, std::vector<CTEdge *>>>
+    std::vector<std::pair<std::vector<std::shared_ptr<CTNode> >, std::vector<std::shared_ptr<CTEdge> >>>
       getGraphs();
-    std::vector<ContourTree *> getContourTrees();
+    std::vector<std::shared_ptr<ContourTree>> getContourTrees();
 
     std::pair<std::vector<std::shared_ptr<AlignmentNode> >, std::vector<std::shared_ptr<AlignmentEdge> >>
       getAlignmentGraph();
@@ -153,14 +144,6 @@ namespace ttk {
 
     /// function that adds branch decomposition information
     void computeBranches();
-
-    /*static void deleteAlignmentTree(std::shared_ptr<AlignmentTree> t) {
-      if(t->child1)
-        deleteAlignmentTree(t->child1);
-      if(t->child2)
-        deleteAlignmentTree(t->child2);
-      delete t;
-    }*/
 
   protected:
     /// filter parameters
@@ -175,7 +158,7 @@ namespace ttk {
     std::vector<std::shared_ptr<AlignmentEdge> > arcs;
 
     /// iteration variables
-    std::vector<ContourTree *> contourtrees;
+    std::vector<std::shared_ptr<ContourTree>> contourtrees;
     std::vector<size_t> permutation;
     std::shared_ptr<AlignmentNode> alignmentRoot;
     int alignmentRootIdx;
@@ -255,22 +238,17 @@ int ttk::ContourTreeAlignment::execute(const vector<void *> &scalarsVP,
     this->printMsg("Execute base layer");
     this->printMsg("Computing Alignment for " + std::to_string(nTrees)
                    + " trees.");
-    // this->printMsg("Computing Alignment for " + std::to_string(nTrees) + "
-    // trees.", 0, t.getElapsedTime(), 1);
   }
 
   for(size_t t = 0; t < nTrees; t++) {
     this->printMsg(ttk::debug::Separator::L2, debug::Priority::VERBOSE);
     this->printMsg("Input Tree " + std::to_string(t) + " topology:",
                    debug::Priority::VERBOSE);
-    // this->printMsg("(cellDimension, vertexId0, vertexId1, scalarOfVertexId0,
-    // scalarOfVertexId1, regionSize, segmentationId)",debug::Priority::VERBOSE);
 
     std::vector<std::vector<std::string>> tableLines;
     tableLines.push_back(
       {"cellId", "vId0", "vId1", "scalar0", "scalar1", "region", "segId"});
     for(size_t i = 0; i < nEdges[t]; i++) {
-      // long long cellDimension = topologies[t][i*3];
       long long vertexId0 = topologies[t][i * 2 + 0];
       long long vertexId1 = topologies[t][i * 2 + 1];
       int regionSize = regionSizes[t][i];
@@ -278,13 +256,6 @@ int ttk::ContourTreeAlignment::execute(const vector<void *> &scalarsVP,
       scalarType scalarOfVertexId0 = scalars[t][vertexId0];
       scalarType scalarOfVertexId1 = scalars[t][vertexId1];
 
-      /*this->printMsg(std::to_string(2)//cellDimension)
-          + ", " + std::to_string(vertexId0)
-          + ", " + std::to_string(vertexId1)
-          + ", " + std::to_string(scalarOfVertexId0)
-          + ", " + std::to_string(scalarOfVertexId1)
-          + ", " + std::to_string(regionSize)
-          + ", " + std::to_string(segmentationId),debug::Priority::DETAIL);*/
       std::vector<std::string> tableLine;
       tableLine.push_back(std::to_string(i));
       tableLine.push_back(std::to_string(vertexId0));
@@ -300,7 +271,7 @@ int ttk::ContourTreeAlignment::execute(const vector<void *> &scalarsVP,
   }
 
   // prepare data structures
-  contourtrees = std::vector<ContourTree *>();
+  contourtrees = std::vector<std::shared_ptr<ContourTree>>();
   nodes = std::vector<std::shared_ptr<AlignmentNode> >();
   arcs = std::vector<std::shared_ptr<AlignmentEdge> >();
   int bestRootIdx;
@@ -335,19 +306,19 @@ int ttk::ContourTreeAlignment::execute(const vector<void *> &scalarsVP,
   this->printMsg("Starting alignment heuristic.");
 
   std::tuple<std::vector<std::shared_ptr<AlignmentNode> >, std::vector<std::shared_ptr<AlignmentEdge> >,
-             std::vector<ContourTree *>>
+             std::vector<std::shared_ptr<ContourTree>>>
     bestAlignment;
   float bestAlignmentValue = FLT_MAX;
 
   printMsg(ttk::debug::Separator::L2);
   printMsg("Filtering input contour trees", 0, debug::LineMode::REPLACE);
 
-  std::vector<ContourTree *> contourtreesToAlign;
+  std::vector<std::shared_ptr<ContourTree>> contourtreesToAlign;
   for(size_t i = 0; i < nTrees; i++) {
-    ContourTree *ct = new ContourTree(
+      std::shared_ptr<ContourTree> ct(new ContourTree(
       scalars[permutation[i]], regionSizes[permutation[i]],
       segmentationIds[permutation[i]], topologies[permutation[i]],
-      nVertices[permutation[i]], nEdges[permutation[i]]);
+      nVertices[permutation[i]], nEdges[permutation[i]]));
     if(ct->isBinary()) {
       contourtreesToAlign.push_back(ct);
     } else {
@@ -369,7 +340,6 @@ int ttk::ContourTreeAlignment::execute(const vector<void *> &scalarsVP,
 
   for(size_t rootIdx = 0;
       rootIdx < contourtreesToAlign[0]->getGraph().first.size(); rootIdx++) {
-    // for(int rootIdx=2; rootIdx<3; rootIdx++){
 
     contourtrees.clear();
     nodes.clear();
@@ -395,23 +365,12 @@ int ttk::ContourTreeAlignment::execute(const vector<void *> &scalarsVP,
 
       this->printMsg("Initialized root is saddle, alignment aborted.");
 
-      /*for(std::shared_ptr<AlignmentNode> node : nodes) {
-        delete node;
-      }
-      for(std::shared_ptr<AlignmentEdge> edge : arcs) {
-        delete edge;
-      }*/
-      // for(ContourTree* ct : contourtrees){
-      //    delete ct;
-      //}
-
       continue;
     }
 
     // construct other contour tree objects and align them
 
     i++;
-    // while(i<nTrees){
     while(i < contourtreesToAlign.size()) {
 
       this->printMsg("Aligning tree " + std::to_string(permutation[i]), 0,
@@ -428,31 +387,10 @@ int ttk::ContourTreeAlignment::execute(const vector<void *> &scalarsVP,
 
     if(alignmentVal < bestAlignmentValue) {
 
-      /*for(std::shared_ptr<AlignmentNode> node : std::get<0>(bestAlignment)) {
-        delete node;
-      }
-      for(std::shared_ptr<AlignmentEdge> edge : std::get<1>(bestAlignment)) {
-        delete edge;
-      }*/
-      // for(ContourTree* ct : std::get<2>(bestAlignment)){
-      //    delete ct;
-      //}
-
       bestAlignmentValue = alignmentVal;
       bestAlignment = std::make_tuple(nodes, arcs, contourtrees);
       bestRootIdx = rootIdx;
 
-    } else {
-
-      /*for(std::shared_ptr<AlignmentNode> node : nodes) {
-        delete node;
-      }
-      for(std::shared_ptr<AlignmentEdge> edge : arcs) {
-        delete edge;
-      }*/
-      // for(ContourTree* ct : contourtrees){
-      //    delete ct;
-      //}
     }
   }
 

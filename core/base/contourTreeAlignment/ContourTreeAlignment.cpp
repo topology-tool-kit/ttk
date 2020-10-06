@@ -169,7 +169,7 @@ std::pair<float, std::vector<std::shared_ptr<AlignmentNode> >>
 /// iterated aligning
 ///=====================================================================================================================
 
-bool ttk::ContourTreeAlignment::initialize(ContourTree *ct) {
+bool ttk::ContourTreeAlignment::initialize(std::shared_ptr<ContourTree> ct) {
 
   contourtrees.push_back(ct);
 
@@ -264,7 +264,7 @@ bool ttk::ContourTreeAlignment::initialize(ContourTree *ct) {
   return true;
 }
 
-bool ttk::ContourTreeAlignment::initialize_consistentRoot(ContourTree *ct,
+bool ttk::ContourTreeAlignment::initialize_consistentRoot(std::shared_ptr<ContourTree> ct,
                                                           int rootIdx) {
 
   // cancel computation if tree is not binary
@@ -366,11 +366,8 @@ bool ttk::ContourTreeAlignment::initialize_consistentRoot(ContourTree *ct,
   }
 
   if(nodes.size() != ct->getGraph().first.size()) {
-
     printErr("wtf?");
   }
-
-  //ContourTree::deleteBinaryTree(t);
 
   alignmentRoot = nodes[rootIdx];
   alignmentRootIdx = rootIdx;
@@ -378,7 +375,7 @@ bool ttk::ContourTreeAlignment::initialize_consistentRoot(ContourTree *ct,
   return true;
 }
 
-bool ttk::ContourTreeAlignment::alignTree(ContourTree *ct) {
+bool ttk::ContourTreeAlignment::alignTree(std::shared_ptr<ContourTree> ct) {
 
   contourtrees.push_back(ct);
 
@@ -394,7 +391,7 @@ bool ttk::ContourTreeAlignment::alignTree(ContourTree *ct) {
   float resVal = FLT_MAX;
 
   std::vector<std::shared_ptr<AlignmentNode> > nodes1 = nodes;
-  std::vector<CTNode *> nodes2 = ct->getGraph().first;
+  std::vector<std::shared_ptr<CTNode> > nodes2 = ct->getGraph().first;
 
   int i = 0;
   int j = 0;
@@ -405,7 +402,7 @@ bool ttk::ContourTreeAlignment::alignTree(ContourTree *ct) {
 
     j = 0;
 
-    for(CTNode *node2 : nodes2) {
+    for(std::shared_ptr<CTNode> node2 : nodes2) {
 
       t2 = ct->rootAtNode(node2);
 
@@ -437,7 +434,7 @@ bool ttk::ContourTreeAlignment::alignTree(ContourTree *ct) {
   return true;
 }
 
-bool ttk::ContourTreeAlignment::alignTree_consistentRoot(ContourTree *ct) {
+bool ttk::ContourTreeAlignment::alignTree_consistentRoot(std::shared_ptr<ContourTree> ct) {
 
   // cancel computation if tree not binary
   if(!ct->isBinary())
@@ -452,13 +449,13 @@ bool ttk::ContourTreeAlignment::alignTree_consistentRoot(ContourTree *ct) {
   std::shared_ptr<AlignmentTree> res = nullptr;
   float resVal = FLT_MAX;
 
-  std::vector<CTNode *> nodes2 = ct->getGraph().first;
+  std::vector<std::shared_ptr<CTNode> > nodes2 = ct->getGraph().first;
 
   int i = 0;
 
   t1 = this->rootAtNode(alignmentRoot);
 
-  for(CTNode *node2 : nodes2) {
+  for(std::shared_ptr<CTNode> node2 : nodes2) {
 
     // compute matching
 
@@ -469,19 +466,9 @@ bool ttk::ContourTreeAlignment::alignTree_consistentRoot(ContourTree *ct) {
 
       std::pair<float, std::shared_ptr<AlignmentTree> > match = getAlignmentBinary(t1, t2);
 
-      // if(match.second->node1==nullptr || match.second->node2==nullptr)
-      // printWrn("Root not matched...");
-
       if(match.first < resVal) {
-        //if(res && res->node2)
-          //ContourTree::deleteBinaryTree(res->node2);
-        //if(res)
-        //  deleteAlignmentTree(res);
         resVal = match.first;
         res = match.second;
-      } else {
-        //ContourTree::deleteBinaryTree(t2);
-        //deleteAlignmentTree(match.second);
       }
     }
 
@@ -494,10 +481,6 @@ bool ttk::ContourTreeAlignment::alignTree_consistentRoot(ContourTree *ct) {
     return false;
   }
 
-  //ContourTree::deleteBinaryTree(res->node1);
-  //ContourTree::deleteBinaryTree(res->node2);
-  //deleteAlignmentTree(res);
-
   alignmentVal += resVal;
 
   alignmentRoot = nodes[0];
@@ -507,17 +490,9 @@ bool ttk::ContourTreeAlignment::alignTree_consistentRoot(ContourTree *ct) {
 
 void ttk::ContourTreeAlignment::computeNewAlignmenttree(std::shared_ptr<AlignmentTree> res) {
 
-  for(std::shared_ptr<AlignmentNode> node : nodes) {
-    //delete node;
-  }
-  for(std::shared_ptr<AlignmentEdge> edge : arcs) {
-    //delete edge;
-  }
-
   nodes.clear();
   arcs.clear();
 
-  // std::queue<std::pair<AlignmentTree*,AlignmentNode*>> q;
   std::queue<
     std::tuple<std::shared_ptr<AlignmentTree> , std::shared_ptr<AlignmentNode> , std::vector<std::shared_ptr<AlignmentEdge> >,
                std::vector<std::shared_ptr<AlignmentEdge> >>>
@@ -587,14 +562,11 @@ void ttk::ContourTreeAlignment::computeNewAlignmenttree(std::shared_ptr<Alignmen
 
   nodes.push_back(currNode);
 
-  // q.push(std::make_pair(res,currNode));
   q.push(std::make_tuple(res, currNode, std::vector<std::shared_ptr<AlignmentEdge> >(),
                          std::vector<std::shared_ptr<AlignmentEdge> >()));
 
   while(!q.empty()) {
 
-    // currTree = q.front().first;
-    // currNode = q.front().second;
     currTree = std::get<0>(q.front());
     currNode = std::get<1>(q.front());
     auto openEdgesOld1 = std::get<2>(q.front());
@@ -771,7 +743,6 @@ void ttk::ContourTreeAlignment::computeNewAlignmenttree(std::shared_ptr<Alignmen
       nodes.push_back(childNode);
       arcs.push_back(childEdge);
 
-      // q.push(std::make_pair(currTree->child1,childNode));
       q.push(std::make_tuple(
         currTree->child1, childNode, openEdgesOld1, openEdgesNew1));
     }
@@ -963,7 +934,7 @@ int ttk::ContourTreeAlignment::getAlignmentRootIdx() {
   return idx;
 }
 
-std::vector<ContourTree *> ttk::ContourTreeAlignment::getContourTrees() {
+std::vector<std::shared_ptr<ContourTree> > ttk::ContourTreeAlignment::getContourTrees() {
 
   /*std::vector<ContourForests*> trees_ttk;
 
@@ -976,13 +947,13 @@ std::vector<ContourTree *> ttk::ContourTreeAlignment::getContourTrees() {
   return contourtrees;
 }
 
-std::vector<std::pair<std::vector<CTNode *>, std::vector<CTEdge *>>>
+std::vector<std::pair<std::vector<std::shared_ptr<CTNode> >, std::vector<std::shared_ptr<CTEdge> >>>
   ttk::ContourTreeAlignment::getGraphs() {
 
-  std::vector<std::pair<std::vector<CTNode *>, std::vector<CTEdge *>>>
+  std::vector<std::pair<std::vector<std::shared_ptr<CTNode> >, std::vector<std::shared_ptr<CTEdge> >>>
     trees_simplified;
 
-  for(ContourTree *ct : contourtrees) {
+  for(std::shared_ptr<ContourTree> ct : contourtrees) {
     trees_simplified.push_back(ct->getGraph());
   }
 
