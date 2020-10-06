@@ -289,20 +289,21 @@ int ttk::MorseSmaleComplex3D::setAscendingSeparatrices2(
     }
   }
 
-  decltype(polygonTetras) flatTetras{};
-  flatTetras.reserve(polygonTetras.size());
+  // indices of valid polygon tetras
+  std::vector<SimplexId> validTetraIds{};
+  validTetraIds.reserve(polygonTetras.size());
 
-  for(auto &&polyCell : polygonTetras) {
-    if(polyCell.valid_) {
-      flatTetras.emplace_back(std::move(polyCell));
+  for(size_t i = 0; i < polygonTetras.size(); ++i) {
+    if(polygonTetras[i].valid_) {
+      validTetraIds.emplace_back(i);
     }
   }
 
   // count number of valid new cells and new points
   size_t nnewpoints{};
-  std::vector<size_t> pointsPerCell(flatTetras.size() + 1);
-  for(size_t i = 0; i < flatTetras.size(); ++i) {
-    const auto &poly = flatTetras[i];
+  std::vector<SimplexId> pointsPerCell(validTetraIds.size() + 1);
+  for(size_t i = 0; i < validTetraIds.size(); ++i) {
+    const auto &poly = polygonTetras[validTetraIds[i]];
     nnewpoints += poly.tetras_.size();
     pointsPerCell[i + 1] = nnewpoints;
   }
@@ -312,8 +313,8 @@ int ttk::MorseSmaleComplex3D::setAscendingSeparatrices2(
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
-  for(size_t i = 0; i < flatTetras.size(); ++i) {
-    const auto &poly = flatTetras[i];
+  for(size_t i = 0; i < validTetraIds.size(); ++i) {
+    const auto &poly = polygonTetras[validTetraIds[i]];
     for(size_t j = 0; j < poly.tetras_.size(); ++j) {
       cellVertsIds[pointsPerCell[i] + j] = poly.tetras_[j];
     }
@@ -324,11 +325,11 @@ int ttk::MorseSmaleComplex3D::setAscendingSeparatrices2(
   cellVertsIds.erase(last, cellVertsIds.end());
 
   // vertex Id to index in points array
-  std::vector<size_t> vertId2PointsId(triangulation.getNumberOfCells());
+  std::vector<SimplexId> vertId2PointsId(triangulation.getNumberOfCells());
 
   const auto noldpoints{npoints};
   npoints += cellVertsIds.size();
-  ncells = noldcells + flatTetras.size();
+  ncells = noldcells + validTetraIds.size();
   const auto nnewcellids = pointsPerCell.back();
 
   // resize arrays
@@ -367,8 +368,8 @@ int ttk::MorseSmaleComplex3D::setAscendingSeparatrices2(
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
-  for(size_t i = 0; i < flatTetras.size(); ++i) {
-    const auto &poly = flatTetras[i];
+  for(size_t i = 0; i < validTetraIds.size(); ++i) {
+    const auto &poly = polygonTetras[validTetraIds[i]];
     const auto k = pointsPerCell[i];
     for(size_t j = 0; j < poly.tetras_.size(); ++j) {
       cellsConn[k + j] = vertId2PointsId[poly.tetras_[j]];
@@ -390,9 +391,10 @@ int ttk::MorseSmaleComplex3D::setAscendingSeparatrices2(
       (*outputSeparatrices2_cells_isOnBoundary_)[l] = poly.onBoundary_;
   }
 
-  for(size_t i = 0; i < flatTetras.size(); ++i) {
+  for(size_t i = 0; i < validTetraIds.size(); ++i) {
     // fill offsets sequentially (due to iteration dependencies)
-    cellsOff[i + 1] = cellsOff[i] + flatTetras[i].tetras_.size();
+    cellsOff[i + 1]
+      = cellsOff[i] + polygonTetras[validTetraIds[i]].tetras_.size();
   }
 
   (*outputSeparatrices2_numberOfPoints_) = npoints;
