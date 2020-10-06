@@ -36,16 +36,6 @@ namespace ttk {
     template <typename dataType, typename triangulationType>
     int execute(const triangulationType &triangulation);
 
-    /**
-     * Compute the (saddle1, saddle2) pairs not detected by the
-     * contour tree.
-     */
-    template <typename dataType, typename triangulationType>
-    int computePersistencePairs(
-      std::vector<std::tuple<SimplexId, SimplexId, dataType>>
-        &pl_saddleSaddlePairs,
-      const triangulationType &triangulation);
-
     template <typename dataType>
     int setAugmentedCriticalPoints(const std::vector<dcg::Cell> &criticalPoints,
                                    SimplexId *ascendingManifold,
@@ -257,18 +247,18 @@ int ttk::MorseSmaleComplex3D::setAscendingSeparatrices2(
     const dcg::Cell &src = sep.source_; // saddle1
 
     // compute separatrix function diff
-    const dataType sepFuncMin = scalars[discreteGradient_.getCellLowerVertex(
-      src, offsets, triangulation)];
+    const dataType sepFuncMin
+      = scalars[discreteGradient_.getCellLowerVertex(src, triangulation)];
     const auto maxId = *std::max_element(
       sepSaddles.begin(), sepSaddles.end(),
       [&triangulation, offsets, this](const SimplexId a, const SimplexId b) {
         return offsets[discreteGradient_.getCellGreaterVertex(
-                 Cell{2, a}, offsets, triangulation)]
+                 Cell{2, a}, triangulation)]
                < offsets[discreteGradient_.getCellGreaterVertex(
-                 Cell{2, b}, offsets, triangulation)];
+                 Cell{2, b}, triangulation)];
       });
     const dataType sepFuncMax = scalars[discreteGradient_.getCellGreaterVertex(
-      Cell{2, maxId}, offsets, triangulation)];
+      Cell{2, maxId}, triangulation)];
 
     // get boundary condition
     const char onBoundary
@@ -525,18 +515,18 @@ int ttk::MorseSmaleComplex3D::setDescendingSeparatrices2(
     const char sepType = 2;
 
     // compute separatrix function diff
-    const dataType sepFuncMax = scalars[discreteGradient_.getCellGreaterVertex(
-      src, offsets, triangulation)];
+    const dataType sepFuncMax
+      = scalars[discreteGradient_.getCellGreaterVertex(src, triangulation)];
     const auto minId = *std::min_element(
       sepSaddles.begin(), sepSaddles.end(),
       [&triangulation, offsets, this](const SimplexId a, const SimplexId b) {
         return offsets[discreteGradient_.getCellLowerVertex(
-                 Cell{1, a}, offsets, triangulation)]
+                 Cell{1, a}, triangulation)]
                < offsets[discreteGradient_.getCellLowerVertex(
-                 Cell{1, b}, offsets, triangulation)];
+                 Cell{1, b}, triangulation)];
       });
     const dataType sepFuncMin = scalars[discreteGradient_.getCellLowerVertex(
-      Cell{1, minId}, offsets, triangulation)];
+      Cell{1, minId}, triangulation)];
     const dataType sepFuncDiff = sepFuncMax - sepFuncMin;
 
     // get boundary condition
@@ -806,47 +796,6 @@ int ttk::MorseSmaleComplex3D::execute(const triangulationType &triangulation) {
                    + " points) processed",
                  1.0, t.getElapsedTime(), this->threadNumber_);
 
-  return 0;
-}
-
-template <typename dataType, typename triangulationType>
-int ttk::MorseSmaleComplex3D::computePersistencePairs(
-  std::vector<std::tuple<SimplexId, SimplexId, dataType>> &pl_saddleSaddlePairs,
-  const triangulationType &triangulation) {
-
-  const dataType *scalars = static_cast<const dataType *>(inputScalarField_);
-  const auto offsets = inputOffsets_;
-
-  std::vector<std::array<dcg::Cell, 2>> dmt_pairs;
-  {
-    // simplify to be PL-conformant
-    discreteGradient_.setDebugLevel(debugLevel_);
-    discreteGradient_.setThreadNumber(threadNumber_);
-    discreteGradient_.setCollectPersistencePairs(false);
-    discreteGradient_.buildGradient<triangulationType>(triangulation);
-    discreteGradient_.reverseGradient<dataType>(triangulation);
-
-    // collect saddle-saddle connections
-    discreteGradient_.setCollectPersistencePairs(true);
-    discreteGradient_.setOutputPersistencePairs(&dmt_pairs);
-    discreteGradient_.reverseGradient<dataType>(triangulation, false);
-  }
-
-  // transform DMT pairs into PL pairs
-  for(const auto &pair : dmt_pairs) {
-    const SimplexId v0
-      = discreteGradient_.getCellGreaterVertex(pair[0], offsets, triangulation);
-    const SimplexId v1
-      = discreteGradient_.getCellGreaterVertex(pair[1], offsets, triangulation);
-    const dataType persistence = scalars[v1] - scalars[v0];
-
-    if(v0 != -1 and v1 != -1 and persistence >= 0) {
-      if(!triangulation.isVertexOnBoundary(v0)
-         or !triangulation.isVertexOnBoundary(v1)) {
-        pl_saddleSaddlePairs.emplace_back(v0, v1, persistence);
-      }
-    }
-  }
   return 0;
 }
 

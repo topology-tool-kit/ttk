@@ -30,8 +30,8 @@
 #pragma once
 
 // base code includes
+#include <DiscreteGradient.h>
 #include <FTMTreePP.h>
-#include <MorseSmaleComplex3D.h>
 #include <Triangulation.h>
 
 namespace ttk {
@@ -115,9 +115,9 @@ namespace ttk {
         contourTree_.setThreadNumber(threadNumber_);
         contourTree_.preconditionTriangulation(triangulation);
         if(this->ComputeSaddleConnectors) {
-          morseSmaleComplex_.setDebugLevel(debugLevel_);
-          morseSmaleComplex_.setThreadNumber(threadNumber_);
-          morseSmaleComplex_.preconditionTriangulation(triangulation);
+          dcg_.setDebugLevel(debugLevel_);
+          dcg_.setThreadNumber(threadNumber_);
+          dcg_.preconditionTriangulation(triangulation);
         }
       }
     }
@@ -125,7 +125,7 @@ namespace ttk {
   protected:
     bool ComputeSaddleConnectors{false};
     ftm::FTMTreePP contourTree_{};
-    MorseSmaleComplex3D morseSmaleComplex_{};
+    dcg::DiscreteGradient dcg_{};
   };
 } // namespace ttk
 
@@ -216,23 +216,20 @@ int ttk::PersistenceDiagram::execute(std::vector<PersistencePair> &CTDiagram,
     CTPairs.erase(CTPairs.end() - 1);
   }
 
-  // get the saddle-saddle pairs
-  std::vector<std::tuple<SimplexId, SimplexId, scalarType>>
-    pl_saddleSaddlePairs;
-  const int dimensionality = triangulation->getDimensionality();
-  if(dimensionality == 3 and ComputeSaddleConnectors) {
-    morseSmaleComplex_.setInputScalarField(inputScalars);
-    morseSmaleComplex_.setInputOffsets(inputOffsets);
-    morseSmaleComplex_.computePersistencePairs<scalarType>(
-      pl_saddleSaddlePairs, *triangulation);
-  }
-
   // get persistence diagrams
   computeCTPersistenceDiagram<scalarType>(
     contourTree_, CTPairs, CTDiagram, inputScalars);
 
-  // add saddle-saddle pairs to the diagram if needed
-  if(dimensionality == 3 and ComputeSaddleConnectors) {
+  // get the saddle-saddle pairs
+  std::vector<std::tuple<SimplexId, SimplexId, scalarType>>
+    pl_saddleSaddlePairs;
+  if(triangulation->getDimensionality() == 3 and ComputeSaddleConnectors) {
+    dcg_.setInputScalarField(inputScalars);
+    dcg_.setInputOffsets(inputOffsets);
+    dcg_.computeSaddleSaddlePersistencePairs<scalarType>(
+      pl_saddleSaddlePairs, *triangulation);
+
+    // add saddle-saddle pairs to the diagram
     for(const auto &i : pl_saddleSaddlePairs) {
       const ttk::SimplexId v0 = std::get<0>(i);
       const ttk::SimplexId v1 = std::get<1>(i);
