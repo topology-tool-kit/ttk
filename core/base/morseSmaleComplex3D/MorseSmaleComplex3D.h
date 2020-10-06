@@ -227,15 +227,21 @@ int ttk::MorseSmaleComplex3D::setAscendingSeparatrices2(
     }
   }
 
+  struct SeparatrixInfo {
+    double sepFuncMax_{}, sepFuncMin_{};
+    SimplexId sourceId_{}, sepId_{};
+    char onBoundary_{};
+  };
+
   struct PolygonCell {
     SimplexId edgeId_{};
     SimplexId nTetras_{};
-    dataType sepFuncMax_{}, sepFuncMin_{};
-    SimplexId sourceId_{}, sepId_{};
-    char onBoundary_{};
+    SimplexId sepInfosId_{};
     bool valid_{false};
   };
 
+  // store the separatrices info (one per separatrix)
+  std::vector<SeparatrixInfo> sepInfos(validGeomIds.size());
   // store the polygonal cells tetras SimplexId
   std::vector<PolygonCell> polygonTetras(ncells - noldcells);
 
@@ -271,6 +277,12 @@ int ttk::MorseSmaleComplex3D::setAscendingSeparatrices2(
                         return triangulation.isEdgeOnBoundary(a);
                       });
 
+    sepInfos[i].sepId_ = sepId;
+    sepInfos[i].sourceId_ = src.id_;
+    sepInfos[i].sepFuncMin_ = sepFuncMin;
+    sepInfos[i].sepFuncMax_ = sepFuncMax;
+    sepInfos[i].onBoundary_ = onBoundary;
+
     for(size_t j = 0; j < sepGeom.size(); ++j) {
       const auto &cell = sepGeom[j];
       // index of current cell in cell data arrays
@@ -281,11 +293,7 @@ int ttk::MorseSmaleComplex3D::setAscendingSeparatrices2(
       polyCell.nTetras_ = triangulation.getEdgeStarNumber(cell.id_);
 
       if(polyCell.nTetras_ > 2) {
-        polyCell.sepFuncMax_ = sepFuncMax;
-        polyCell.sepFuncMin_ = sepFuncMin;
-        polyCell.sourceId_ = src.id_;
-        polyCell.sepId_ = sepId;
-        polyCell.onBoundary_ = onBoundary;
+        polyCell.sepInfosId_ = i;
         polyCell.valid_ = true;
       }
     }
@@ -386,20 +394,22 @@ int ttk::MorseSmaleComplex3D::setAscendingSeparatrices2(
       cellsConn[k + j] = vertId2PointsId[cellsConn[k + j]];
     }
     const auto l = i + noldcells;
+    const auto &sepInfo = sepInfos[poly.sepInfosId_];
+
     if(outputSeparatrices2_cells_sourceIds_ != nullptr)
-      (*outputSeparatrices2_cells_sourceIds_)[l] = poly.sourceId_;
+      (*outputSeparatrices2_cells_sourceIds_)[l] = sepInfo.sourceId_;
     if(outputSeparatrices2_cells_separatrixIds_ != nullptr)
-      (*outputSeparatrices2_cells_separatrixIds_)[l] = poly.sepId_;
+      (*outputSeparatrices2_cells_separatrixIds_)[l] = sepInfo.sepId_;
     if(outputSeparatrices2_cells_separatrixTypes_ != nullptr)
       (*outputSeparatrices2_cells_separatrixTypes_)[l] = 1;
     if(separatrixFunctionMaxima != nullptr)
-      (*separatrixFunctionMaxima)[l] = poly.sepFuncMax_;
+      (*separatrixFunctionMaxima)[l] = sepInfo.sepFuncMax_;
     if(separatrixFunctionDiffs != nullptr)
-      (*separatrixFunctionMinima)[l] = poly.sepFuncMin_;
+      (*separatrixFunctionMinima)[l] = sepInfo.sepFuncMin_;
     if(separatrixFunctionDiffs != nullptr)
-      (*separatrixFunctionDiffs)[l] = poly.sepFuncMax_ - poly.sepFuncMin_;
+      (*separatrixFunctionDiffs)[l] = sepInfo.sepFuncMax_ - sepInfo.sepFuncMin_;
     if(outputSeparatrices2_cells_isOnBoundary_ != nullptr)
-      (*outputSeparatrices2_cells_isOnBoundary_)[l] = poly.onBoundary_;
+      (*outputSeparatrices2_cells_isOnBoundary_)[l] = sepInfo.onBoundary_;
   }
 
   for(size_t i = 0; i < validTetraIds.size(); ++i) {
