@@ -226,7 +226,8 @@ int ttk::MorseSmaleComplex3D::setAscendingSeparatrices2(
   }
 
   struct PolygonCell {
-    std::vector<SimplexId> tetras_{};
+    SimplexId edgeId_{};
+    SimplexId nTetras_{};
     dataType sepFuncMax_{}, sepFuncMin_{};
     SimplexId sourceId_{}, sepId_{};
     char onBoundary_{};
@@ -274,11 +275,10 @@ int ttk::MorseSmaleComplex3D::setAscendingSeparatrices2(
       const auto k = geomCellsBegId[i] + j - noldcells;
       auto &polyCell = polygonTetras[k];
 
-      // Transform to dual : edge -> polygon
-      getDualPolygon(cell.id_, polyCell.tetras_, triangulation);
+      polyCell.edgeId_ = cell.id_;
+      polyCell.nTetras_ = triangulation.getEdgeStarNumber(cell.id_);
 
-      if(polyCell.tetras_.size() > 2) {
-        sortDualPolygonVertices(polyCell.tetras_, triangulation);
+      if(polyCell.nTetras_ > 2) {
         polyCell.sepFuncMax_ = sepFuncMax;
         polyCell.sepFuncMin_ = sepFuncMin;
         polyCell.sourceId_ = src.id_;
@@ -304,19 +304,39 @@ int ttk::MorseSmaleComplex3D::setAscendingSeparatrices2(
   std::vector<SimplexId> pointsPerCell(validTetraIds.size() + 1);
   for(size_t i = 0; i < validTetraIds.size(); ++i) {
     const auto &poly = polygonTetras[validTetraIds[i]];
-    nnewpoints += poly.tetras_.size();
+    nnewpoints += poly.nTetras_;
     pointsPerCell[i + 1] = nnewpoints;
   }
 
-  // reduce number of points to remove duplicates
+  // resize connectivity array
+  outputSeparatrices2_cells_connectivity_->resize(firstCellId + nnewpoints);
+  auto cellsConn = &outputSeparatrices2_cells_connectivity_->at(firstCellId);
+  // copy of cell connectivity array (for removing duplicates vertices)
   std::vector<SimplexId> cellVertsIds(nnewpoints);
+
+  // tetras in one edge's star (one vector per thread)
+  std::vector<std::vector<SimplexId>> tetrasPerThread(threadNumber_);
+
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
   for(size_t i = 0; i < validTetraIds.size(); ++i) {
     const auto &poly = polygonTetras[validTetraIds[i]];
-    for(size_t j = 0; j < poly.tetras_.size(); ++j) {
-      cellVertsIds[pointsPerCell[i] + j] = poly.tetras_[j];
+
+#ifdef TTK_ENABLE_OPENMP
+    const size_t tid = omp_get_thread_num();
+#else
+    const size_t tid = 0;
+#endif // TTK_ENABLE_OPENMP
+
+    // get tetras in edge star
+    tetrasPerThread[tid].clear();
+    getDualPolygon(poly.edgeId_, tetrasPerThread[tid], triangulation);
+    sortDualPolygonVertices(tetrasPerThread[tid], triangulation);
+
+    for(SimplexId j = 0; j < poly.nTetras_; ++j) {
+      cellVertsIds[pointsPerCell[i] + j] = tetrasPerThread[tid][j];
+      cellsConn[pointsPerCell[i] + j] = tetrasPerThread[tid][j];
     }
   }
 
@@ -330,15 +350,12 @@ int ttk::MorseSmaleComplex3D::setAscendingSeparatrices2(
   const auto noldpoints{npoints};
   npoints += cellVertsIds.size();
   ncells = noldcells + validTetraIds.size();
-  const auto nnewcellids = pointsPerCell.back();
 
   // resize arrays
   outputSeparatrices2_points_->resize(3 * npoints);
   auto points = &outputSeparatrices2_points_->at(3 * noldpoints);
-  outputSeparatrices2_cells_connectivity_->resize(firstCellId + nnewcellids);
   outputSeparatrices2_cells_offsets_->resize(ncells + 1);
   outputSeparatrices2_cells_offsets_->at(0) = 0;
-  auto cellsConn = &outputSeparatrices2_cells_connectivity_->at(firstCellId);
   auto cellsOff = &outputSeparatrices2_cells_offsets_->at(noldcells);
   if(outputSeparatrices2_cells_sourceIds_ != nullptr)
     outputSeparatrices2_cells_sourceIds_->resize(ncells);
@@ -371,8 +388,8 @@ int ttk::MorseSmaleComplex3D::setAscendingSeparatrices2(
   for(size_t i = 0; i < validTetraIds.size(); ++i) {
     const auto &poly = polygonTetras[validTetraIds[i]];
     const auto k = pointsPerCell[i];
-    for(size_t j = 0; j < poly.tetras_.size(); ++j) {
-      cellsConn[k + j] = vertId2PointsId[poly.tetras_[j]];
+    for(SimplexId j = 0; j < poly.nTetras_; ++j) {
+      cellsConn[k + j] = vertId2PointsId[cellsConn[k + j]];
     }
     const auto l = i + noldcells;
     if(outputSeparatrices2_cells_sourceIds_ != nullptr)
@@ -393,8 +410,7 @@ int ttk::MorseSmaleComplex3D::setAscendingSeparatrices2(
 
   for(size_t i = 0; i < validTetraIds.size(); ++i) {
     // fill offsets sequentially (due to iteration dependencies)
-    cellsOff[i + 1]
-      = cellsOff[i] + polygonTetras[validTetraIds[i]].tetras_.size();
+    cellsOff[i + 1] = cellsOff[i] + polygonTetras[validTetraIds[i]].nTetras_;
   }
 
   (*outputSeparatrices2_numberOfPoints_) = npoints;
