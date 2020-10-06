@@ -199,22 +199,18 @@ int main(int argc, char **argv) {
 
   // 3. computing the persitence diagram
   ttk::PersistenceDiagram diagram;
-  std::vector<std::tuple<ttk::SimplexId, ttk::CriticalType, ttk::SimplexId,
-                         ttk::CriticalType, float, ttk::SimplexId>>
-    diagramOutput;
+  std::vector<ttk::PersistencePair> diagramOutput;
   diagram.preconditionTriangulation(&triangulation);
-  diagram.execute<float>(
-    diagramOutput, height.data(), order.data(), &triangulation);
+  diagram.execute(diagramOutput, height.data(), order.data(), &triangulation);
 
   // 4. selecting the critical point pairs
   std::vector<float> simplifiedHeight = height;
   std::vector<ttk::SimplexId> authorizedCriticalPoints, simplifiedOrder = order;
   for(int i = 0; i < (int)diagramOutput.size(); i++) {
-    double persistence = std::get<4>(diagramOutput[i]);
-    if(persistence > 0.05) {
+    if(diagramOutput[i].persistence > 0.05) {
       // 5. selecting the most persistent pairs
-      authorizedCriticalPoints.push_back(std::get<0>(diagramOutput[i]));
-      authorizedCriticalPoints.push_back(std::get<2>(diagramOutput[i]));
+      authorizedCriticalPoints.push_back(diagramOutput[i].birth);
+      authorizedCriticalPoints.push_back(diagramOutput[i].death);
     }
   }
 

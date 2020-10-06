@@ -135,7 +135,7 @@ Tree *ContourTree::computeRootedTree(CTNode *node, CTEdge *parent, int &id) {
     t->volume = 0.0001;
   } else {
     t->scalardistanceParent = parent->scalardistance;
-    t->volume = t->scalardistanceParent * (float)parent->area;
+    t->volume = t->scalardistanceParent * parent->area;
   }
 
   return t;
@@ -216,8 +216,8 @@ BinaryTree *
     t->volume = 10000;
   } else {
     t->scalardistanceParent = parent->scalardistance;
-    t->area = (float)parent->area;
-    t->volume = t->scalardistanceParent * (float)parent->area;
+    t->area = parent->area;
+    t->volume = t->scalardistanceParent * parent->area;
   }
 
   return t;

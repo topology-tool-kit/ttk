@@ -113,7 +113,6 @@ private:
   std::vector<CTEdge *> arcs;
 
   bool binary;
-  float threshold;
 
   Tree *computeRootedTree(CTNode *node, CTEdge *parent, int &id);
   BinaryTree *computeRootedTree_binary(CTNode *node, CTEdge *parent, int &id);

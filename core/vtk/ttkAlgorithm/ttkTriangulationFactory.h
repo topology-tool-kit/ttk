@@ -12,49 +12,45 @@ class vtkPointSet;
 class vtkPoints;
 class vtkCellArray;
 namespace ttk {
-    class Triangulation;
+  class Triangulation;
 }
 
 struct RegistryValue {
-    ttk::Triangulation* triangulation;
-    vtkDataSet* owner;
+  ttk::Triangulation *triangulation;
+  vtkDataSet *owner;
 
-    vtkMTimeType cellModTime{0};
+  vtkMTimeType cellModTime{0};
 
-    int extent[6];
-    double origin[3];
-    double spacing[3];
-    int dimensions[3];
+  int extent[6];
+  double origin[3];
+  double spacing[3];
+  int dimensions[3];
 
-    RegistryValue(
-        vtkDataSet* dataSet,
-        ttk::Triangulation* triangulation_
-    );
-    ~RegistryValue();
-    bool isValid(vtkDataSet* dataSet) const;
+  RegistryValue(vtkDataSet *dataSet, ttk::Triangulation *triangulation_);
+  ~RegistryValue();
+  bool isValid(vtkDataSet *dataSet) const;
 };
 
 typedef long long RegistryKey;
-typedef std::unordered_map<RegistryKey,RegistryValue> Registry;
+typedef std::unordered_map<RegistryKey, RegistryValue> Registry;
 
 class TTKALGORITHM_EXPORT ttkTriangulationFactory : public ttk::Debug {
-    public:
-        static ttk::Triangulation* GetTriangulation(
-            int debugLevel,
-            vtkDataSet* object
-        );
+public:
+  static ttk::Triangulation *GetTriangulation(int debugLevel,
+                                              vtkDataSet *object);
 
-        static ttkTriangulationFactory* Instance;
-        static RegistryKey GetKey(vtkDataSet* dataSet);
+  static ttkTriangulationFactory *Instance;
+  static RegistryKey GetKey(vtkDataSet *dataSet);
 
-        Registry registry;
+  Registry registry;
 
-    private:
-        ttk::Triangulation* CreateImplicitTriangulation(vtkImageData* image);
-        ttk::Triangulation* CreateExplicitTriangulation(vtkPointSet* pointSet);
-        ttk::Triangulation* CreateTriangulation(vtkDataSet* dataSet);
-        int FindImplicitTriangulation(ttk::Triangulation*& triangulation, vtkImageData* image);
+private:
+  ttk::Triangulation *CreateImplicitTriangulation(vtkImageData *image);
+  ttk::Triangulation *CreateExplicitTriangulation(vtkPointSet *pointSet);
+  ttk::Triangulation *CreateTriangulation(vtkDataSet *dataSet);
+  int FindImplicitTriangulation(ttk::Triangulation *&triangulation,
+                                vtkImageData *image);
 
-        ttkTriangulationFactory();
-        ~ttkTriangulationFactory();
+  ttkTriangulationFactory();
+  ~ttkTriangulationFactory();
 };

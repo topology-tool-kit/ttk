@@ -13,5 +13,14 @@ if (@TTK_ENABLE_OPENMP@)
   find_dependency(OpenMP REQUIRED)
 endif()
 
+if (@TTK_ENABLE_ZFP@ AND NOT @TTK_ENABLE_SHARED_BASE_LIBRARIES@)
+  set(ZFP_DIR "@ZFP_DIR@" CACHE PATH "Use TTK ZFP dir" FORCE)
+  find_dependency(ZFP REQUIRED @ZFP_DIR@)
+endif()
+
+if (@TTK_ENABLE_ZLIB@ AND NOT @TTK_ENABLE_SHARED_BASE_LIBRARIES@)
+  find_dependency(ZLIB REQUIRED)
+endif()
+
 # Include the actual targets for TTK Base
 include("${CMAKE_CURRENT_LIST_DIR}/TTKBaseTargets.cmake")

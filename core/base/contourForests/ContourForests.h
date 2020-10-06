@@ -130,12 +130,13 @@ namespace ttk {
       // Getters & Setters
       // {
 
-      inline void setThreadNumber(const unsigned short nbThread) {
+      inline int setThreadNumber(const int nbThread) {
         if(nbThread) {
           parallelParams_.nbThreads = nbThread;
         } else {
           parallelParams_.nbThreads = OsCall::getNumberOfCores();
         }
+        return 0;
       }
 
       inline void setPartitionNum(int p) {

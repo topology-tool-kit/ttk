@@ -12,6 +12,11 @@
 #include <omp.h>
 #endif
 
+#ifdef _WIN32
+// enable the `and` and `or` keywords on MSVC
+#include <ciso646>
+#endif // _WIN32
+
 #include <DataTypes.h>
 
 namespace ttk {
@@ -30,7 +35,7 @@ namespace ttk {
       return threadNumber_;
     };
 
-    int setThreadNumber(const int threadNumber) {
+    virtual int setThreadNumber(const int threadNumber) {
       threadNumber_ = threadNumber;
       return 0;
     }

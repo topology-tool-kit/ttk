@@ -70,8 +70,6 @@ struct AlignmentEdge {
   std::vector<std::pair<int, int>> arcRefs;
 };
 
-using namespace std;
-
 namespace ttk {
 
   class ContourTreeAlignment : virtual public Debug {
@@ -115,20 +113,20 @@ namespace ttk {
 
     /// The actual iterated n-tree-alignment algorithm
     template <class scalarType>
-    int execute(const vector<void *> &scalarsVP,
-                const vector<int *> &regionSizes,
-                const vector<int *> &segmentationIds,
-                const vector<long long *> &topologies,
-                const vector<size_t> &nVertices,
-                const vector<size_t> &nEdges,
+    int execute(const std::vector<void *> &scalarsVP,
+                const std::vector<int *> &regionSizes,
+                const std::vector<int *> &segmentationIds,
+                const std::vector<long long *> &topologies,
+                const std::vector<size_t> &nVertices,
+                const std::vector<size_t> &nEdges,
 
-                vector<float> &outputVertices,
-                vector<long long> &outputFrequencies,
-                vector<long long> &outputVertexIds,
-                vector<long long> &outputBranchIds,
-                vector<long long> &outputSegmentationIds,
-                vector<long long> &outputArcIds,
-                vector<int> &outputEdges,
+                std::vector<float> &outputVertices,
+                std::vector<long long> &outputFrequencies,
+                std::vector<long long> &outputVertexIds,
+                std::vector<long long> &outputBranchIds,
+                std::vector<long long> &outputSegmentationIds,
+                std::vector<long long> &outputArcIds,
+                std::vector<int> &outputEdges,
                 int seed);
 
     /// functions for aligning single trees in iteration
@@ -225,26 +223,27 @@ namespace ttk {
 } // namespace ttk
 
 template <class scalarType>
-int ttk::ContourTreeAlignment::execute(const vector<void *> &scalarsVP,
-                                       const vector<int *> &regionSizes,
-                                       const vector<int *> &segmentationIds,
-                                       const vector<long long *> &topologies,
-                                       const vector<size_t> &nVertices,
-                                       const vector<size_t> &nEdges,
-                                       vector<float> &outputVertices,
-                                       vector<long long> &outputFrequencies,
-                                       vector<long long> &outputVertexIds,
-                                       vector<long long> &outputBranchIds,
-                                       vector<long long> &outputSegmentationIds,
-                                       vector<long long> &outputArcIds,
-                                       vector<int> &outputEdges,
-                                       int seed) {
+int ttk::ContourTreeAlignment::execute(
+  const std::vector<void *> &scalarsVP,
+  const std::vector<int *> &regionSizes,
+  const std::vector<int *> &segmentationIds,
+  const std::vector<long long *> &topologies,
+  const std::vector<size_t> &nVertices,
+  const std::vector<size_t> &nEdges,
+  std::vector<float> &outputVertices,
+  std::vector<long long> &outputFrequencies,
+  std::vector<long long> &outputVertexIds,
+  std::vector<long long> &outputBranchIds,
+  std::vector<long long> &outputSegmentationIds,
+  std::vector<long long> &outputArcIds,
+  std::vector<int> &outputEdges,
+  int seed) {
 
   Timer timer;
 
   size_t nTrees = nVertices.size();
 
-  vector<float *> scalars(nTrees);
+  std::vector<float *> scalars(nTrees);
   for(size_t t = 0; t < nTrees; t++) {
     scalars[t] = (float *)((scalarType *)scalarsVP[t]);
   }
@@ -304,7 +303,7 @@ int ttk::ContourTreeAlignment::execute(const vector<void *> &scalarsVP,
   contourtrees = std::vector<ContourTree *>();
   nodes = std::vector<AlignmentNode *>();
   arcs = std::vector<AlignmentEdge *>();
-  int bestRootIdx;
+  int bestRootIdx{};
 
   this->printMsg(ttk::debug::Separator::L1);
   this->printMsg("Shuffling input trees. Used seed: " + std::to_string(seed), 0,
@@ -317,7 +316,7 @@ int ttk::ContourTreeAlignment::execute(const vector<void *> &scalarsVP,
   }
   std::srand(seed);
   if(alignmenttreeType != lastMatchedValue)
-    std::random_shuffle(permutation.begin(), permutation.end());
+    std::shuffle(permutation.begin(), permutation.end(), std::random_device{});
 
   this->printMsg(
     "Shuffling input trees. Used seed: " + std::to_string(seed), 1);

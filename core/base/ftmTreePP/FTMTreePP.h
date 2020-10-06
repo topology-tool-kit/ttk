@@ -25,7 +25,7 @@ namespace ttk {
      */
     class FTMTreePP : public FTMTree {
     private:
-      std::vector<AtomicUF *> nodesUF_;
+      std::vector<AtomicUF> nodesUF_;
 
     public:
       FTMTreePP();
@@ -50,21 +50,21 @@ namespace ttk {
       void addPendingNode(const idNode parentNode, const idNode toAdd) {
         // Trick, we use the arc list to maintaint nodes
         // coming to this UF.
-        nodesUF_[parentNode]->find()->addArcToClose(toAdd);
+        nodesUF_[parentNode].find()->addArcToClose(toAdd);
       }
 
       idNode countPendingNode(const idNode current) {
-        return nodesUF_[current]->find()->getOpenedArcs().size();
+        return nodesUF_[current].find()->getOpenedArcs().size();
       }
 
       template <typename scalarType>
       SimplexId getMostPersistVert(const idNode current,
                                    ftm::FTMTree_MT *tree) {
         SimplexId minVert = tree->getNode(current)->getVertexId();
-        AtomicUF *uf = nodesUF_[current]->find();
+        AtomicUF *uf = nodesUF_[current].find();
 
         for(const auto nodeid : uf->getOpenedArcs()) {
-          const SimplexId vtmp = nodesUF_[nodeid]->find()->getExtrema();
+          const SimplexId vtmp = nodesUF_[nodeid].find()->getExtrema();
           if(tree->compLower(vtmp, minVert)) {
             minVert = vtmp;
           }
@@ -74,7 +74,7 @@ namespace ttk {
       }
 
       void clearPendingNodes(const idNode current) {
-        nodesUF_[current]->find()->clearOpenedArcs();
+        nodesUF_[current].find()->clearOpenedArcs();
       }
 
       template <typename scalarType>
@@ -83,13 +83,13 @@ namespace ttk {
         std::vector<std::tuple<SimplexId, SimplexId, scalarType>> &pairs,
         ftm::FTMTree_MT *tree,
         const SimplexId mp) {
-        AtomicUF *uf = nodesUF_[current]->find();
+        AtomicUF *uf = nodesUF_[current].find();
         const SimplexId curVert = tree->getNode(current)->getVertexId();
         const scalarType curVal = getValue<scalarType>(curVert);
 
         for(const auto nodeid : uf->getOpenedArcs()) {
-          const SimplexId tmpVert = nodesUF_[nodeid]->find()->getExtrema();
-          AtomicUF::makeUnion(uf, nodesUF_[nodeid]);
+          const SimplexId tmpVert = nodesUF_[nodeid].find()->getExtrema();
+          AtomicUF::makeUnion(uf, &nodesUF_[nodeid]);
           if(tmpVert != mp) {
             const scalarType tmpVal = getValue<scalarType>(tmpVert);
             if(scalars_->isLower(tmpVert, curVert)) {
@@ -110,25 +110,18 @@ void ttk::ftm::FTMTreePP::computePersistencePairs(
   const bool jt) {
   ftm::FTMTree_MT *tree = jt ? getJoinTree() : getSplitTree();
 
-  nodesUF_.clear();
   pairs.clear();
-  nodesUF_.resize(tree->getNumberOfNodes(), nullptr);
   pairs.reserve(tree->getNumberOfLeaves());
 
   const auto nbNodes = tree->getNumberOfNodes();
+  nodesUF_.resize(nbNodes);
+
   for(idNode nid = 0; nid < nbNodes; ++nid) {
-    nodesUF_[nid] = new AtomicUF(tree->getNode(nid)->getVertexId());
+    nodesUF_[nid] = AtomicUF{tree->getNode(nid)->getVertexId()};
   }
 
   computePairs<scalarType>(tree, pairs);
-
   sortPairs<scalarType>(tree, pairs);
-
-  // destruct
-  for(AtomicUF *uf : nodesUF_) {
-    delete uf;
-    uf = nullptr;
-  }
 }
 
 template <typename scalarType>
@@ -168,7 +161,7 @@ void ttk::ftm::FTMTreePP::computePairs(
       const SimplexId mostPersist
         = getMostPersistVert<scalarType>(parentNode, tree);
       createPairs<scalarType>(parentNode, pairs, tree, mostPersist);
-      nodesUF_[parentNode]->find()->setExtrema(mostPersist);
+      nodesUF_[parentNode].find()->setExtrema(mostPersist);
       toSee.push(parentNode);
     }
   }

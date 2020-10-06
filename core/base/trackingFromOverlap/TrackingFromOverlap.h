@@ -26,8 +26,6 @@
 #include <map>
 #include <unordered_map>
 
-using namespace std;
-
 using topologyType = unsigned char;
 using idType = long long int;
 
@@ -60,8 +58,8 @@ struct Node {
   Node() = default;
 };
 
-using Edges = vector<idType>; // [index0, index1, overlap, branch,...]
-using Nodes = vector<Node>;
+using Edges = std::vector<idType>; // [index0, index1, overlap, branch,...]
+using Nodes = std::vector<Node>;
 
 struct CoordinateComparator {
   const float *coordinates;
@@ -90,7 +88,7 @@ namespace ttk {
     // This function sorts points based on their x, y, and then z coordinate
     int sortCoordinates(const float *pointCoordinates,
                         const size_t nPoints,
-                        vector<size_t> &sortedIndicies) const {
+                        std::vector<size_t> &sortedIndicies) const {
       printMsg("Sorting coordinates ... ", debug::Priority::PERFORMANCE);
       Timer t;
 
@@ -100,15 +98,15 @@ namespace ttk {
       CoordinateComparator c = CoordinateComparator(pointCoordinates);
       sort(sortedIndicies.begin(), sortedIndicies.end(), c);
 
-      stringstream msg;
+      std::stringstream msg;
       msg << "done (" << t.getElapsedTime() << " s).";
       printMsg(msg.str(), debug::Priority::PERFORMANCE);
 
       return 1;
     }
 
-    int computeBranches(vector<Edges> &timeEdgesMap,
-                        vector<Nodes> &timeNodesMap) const {
+    int computeBranches(std::vector<Edges> &timeEdgesMap,
+                        std::vector<Nodes> &timeNodesMap) const {
       printMsg("Computing branches  ... ", debug::Priority::PERFORMANCE);
       Timer tm;
 
@@ -198,7 +196,7 @@ namespace ttk {
         }
       }
 
-      stringstream msg;
+      std::stringstream msg;
       msg << "done (" << tm.getElapsedTime() << " s).";
       printMsg(msg.str(), debug::Priority::PERFORMANCE);
 
@@ -210,7 +208,7 @@ namespace ttk {
     template <typename labelType>
     int computeLabelIndexMap(const labelType *pointLabels,
                              const size_t nPoints,
-                             map<labelType, size_t> &labelIndexMap) const;
+                             std::map<labelType, size_t> &labelIndexMap) const;
 
     // This function computes all nodes and their properties based on a labeled
     // point set
@@ -242,7 +240,7 @@ template <typename labelType>
 int ttk::TrackingFromOverlap::computeLabelIndexMap(
   const labelType *pointLabels,
   const size_t nPoints,
-  map<labelType, size_t> &labelIndexMap) const {
+  std::map<labelType, size_t> &labelIndexMap) const {
   for(size_t i = 0; i < nPoints; i++)
     labelIndexMap[pointLabels[i]] = 0;
   size_t i = 0;
@@ -263,7 +261,7 @@ int ttk::TrackingFromOverlap::computeNodes(const float *pointCoordinates,
 
   Timer t;
 
-  map<labelType, size_t> labelIndexMap;
+  std::map<labelType, size_t> labelIndexMap;
   this->computeLabelIndexMap(pointLabels, nPoints, labelIndexMap);
 
   size_t nNodes = labelIndexMap.size();
@@ -289,7 +287,7 @@ int ttk::TrackingFromOverlap::computeNodes(const float *pointCoordinates,
 
   // Print Status
   {
-    stringstream msg;
+    std::stringstream msg;
     msg << "done (#" << nNodes << " in " << t.getElapsedTime() << " s).";
     printMsg(msg.str(), debug::Priority::PERFORMANCE);
   }
@@ -312,16 +310,16 @@ int ttk::TrackingFromOverlap::computeOverlap(const float *pointCoordinates0,
   // -------------------------------------------------------------------------
   // Compute labelIndexMaps
   // -------------------------------------------------------------------------
-  map<labelType, size_t> labelIndexMap0;
-  map<labelType, size_t> labelIndexMap1;
+  std::map<labelType, size_t> labelIndexMap0;
+  std::map<labelType, size_t> labelIndexMap1;
   this->computeLabelIndexMap<labelType>(pointLabels0, nPoints0, labelIndexMap0);
   this->computeLabelIndexMap<labelType>(pointLabels1, nPoints1, labelIndexMap1);
 
   // -------------------------------------------------------------------------
   // Sort coordinates
   // -------------------------------------------------------------------------
-  vector<size_t> sortedIndicies0;
-  vector<size_t> sortedIndicies1;
+  std::vector<size_t> sortedIndicies0;
+  std::vector<size_t> sortedIndicies1;
   this->sortCoordinates(pointCoordinates0, nPoints0, sortedIndicies0);
   this->sortCoordinates(pointCoordinates1, nPoints1, sortedIndicies1);
 
@@ -357,7 +355,7 @@ int ttk::TrackingFromOverlap::computeOverlap(const float *pointCoordinates0,
   size_t j = 0; // iterator for 1
 
   size_t nEdges = 0;
-  unordered_map<size_t, unordered_map<size_t, size_t>> edgesMap;
+  std::unordered_map<size_t, std::unordered_map<size_t, size_t>> edgesMap;
   // Iterate over both point sets synchronously using comparison function
   while(i < nPoints0 && j < nPoints1) {
     size_t pointIndex0 = sortedIndicies0[i];
@@ -378,7 +376,7 @@ int ttk::TrackingFromOverlap::computeOverlap(const float *pointCoordinates0,
 
       // If map does not exist then create it
       if(edges0 == edgesMap.end()) {
-        edgesMap[nodeIndex0] = unordered_map<size_t, size_t>();
+        edgesMap[nodeIndex0] = std::unordered_map<size_t, size_t>();
         edges0 = edgesMap.find(nodeIndex0);
       }
 
@@ -422,7 +420,7 @@ int ttk::TrackingFromOverlap::computeOverlap(const float *pointCoordinates0,
 
   // Print Status
   {
-    stringstream msg;
+    std::stringstream msg;
     msg << "done (#" << nEdges << " in " << t.getElapsedTime() << " s).";
     printMsg(msg.str(), debug::Priority::PERFORMANCE);
   }

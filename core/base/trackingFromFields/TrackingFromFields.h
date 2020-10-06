@@ -9,7 +9,6 @@
 #include <BottleneckDistance.h>
 #include <PersistenceDiagram.h>
 #include <Triangulation.h>
-using namespace std;
 
 namespace ttk {
 
@@ -100,8 +99,7 @@ int ttk::TrackingFromFields::performDiagramComputation(
     // persistenceDiagram.setInputScalars(inputData_[i]);
     // persistenceDiagram.setInputOffsets(inputOffsets_);
     persistenceDiagram.setComputeSaddleConnectors(false);
-    std::vector<std::tuple<int, CriticalType, int, CriticalType, dataType, int>>
-      CTDiagram;
+    std::vector<PersistencePair> CTDiagram{};
 
     // persistenceDiagram.setOutputCTDiagram(&CTDiagram);
     persistenceDiagram.execute<dataType, triangulationType>(
@@ -114,17 +112,16 @@ int ttk::TrackingFromFields::performDiagramComputation(
       float p[3];
       float q[3];
       auto currentTuple = CTDiagram[j];
-      const int a = std::get<0>(currentTuple);
-      const int b = std::get<2>(currentTuple);
+      const int a = currentTuple.birth;
+      const int b = currentTuple.death;
       triangulation->getVertexPoint(a, p[0], p[1], p[2]);
       triangulation->getVertexPoint(b, q[0], q[1], q[2]);
       const double sa = ((double *)inputData_[i])[a];
       const double sb = ((double *)inputData_[i])[b];
-      diagramTuple dt
-        = std::make_tuple(std::get<0>(currentTuple), std::get<1>(currentTuple),
-                          std::get<2>(currentTuple), std::get<3>(currentTuple),
-                          std::get<4>(currentTuple), std::get<5>(currentTuple),
-                          sa, p[0], p[1], p[2], sb, q[0], q[1], q[2]);
+      diagramTuple dt = std::make_tuple(
+        currentTuple.birth, currentTuple.birthType, currentTuple.death,
+        currentTuple.deathType, currentTuple.persistence, currentTuple.pairType,
+        sa, p[0], p[1], p[2], sb, q[0], q[1], q[2]);
 
       persistenceDiagrams[i][j] = dt;
     }

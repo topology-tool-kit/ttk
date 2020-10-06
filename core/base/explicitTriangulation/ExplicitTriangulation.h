@@ -1025,7 +1025,9 @@ namespace ttk {
 #endif
           for(SimplexId i = 0; i < cellNumber; i++) {
             if(offset[i + 1] - offset[i] - 1 != cellDimension) {
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp atomic write
+#endif // TTK_ENABLE_OPENMP
               error = true;
             }
           }

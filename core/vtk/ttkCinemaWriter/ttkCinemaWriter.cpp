@@ -246,7 +246,7 @@ int ttkCinemaWriter::ProcessDataProduct(vtkDataObject *input) {
     boost::interprocess::file_lock flock(csvPath.data());
     try {
       // flock.lock();
-    } catch(boost::interprocess::interprocess_exception &e) {
+    } catch(boost::interprocess::interprocess_exception &) {
       this->printErr("Unable to initialize write lock.");
       return 0;
     }

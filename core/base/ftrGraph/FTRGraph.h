@@ -156,10 +156,11 @@ namespace ttk {
 
       /// The nuber of threads to be used during the computation
       /// of the reeb graph
-      void setThreadNumber(const idThread nb) {
+      int setThreadNumber(const int nb) override {
         params_.threadNumber = nb;
         // Security, but do not rely on this one
         threadNumber_ = nb;
+        return 0;
       }
 
       /// Control the verbosity of the base code

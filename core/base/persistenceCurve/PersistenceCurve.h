@@ -18,8 +18,8 @@
 #pragma once
 
 // base code includes
+#include <DiscreteGradient.h>
 #include <FTMTreePP.h>
-#include <MorseSmaleComplex3D.h>
 #include <Triangulation.h>
 
 namespace ttk {
@@ -32,7 +32,6 @@ namespace ttk {
 
   public:
     PersistenceCurve();
-    ~PersistenceCurve();
 
     inline void setComputeSaddleConnectors(bool state) {
       ComputeSaddleConnectors = state;
@@ -62,9 +61,11 @@ namespace ttk {
         triangulation->preconditionBoundaryVertices();
         contourTree_.setDebugLevel(debugLevel_);
         contourTree_.preconditionTriangulation(triangulation);
-        morseSmaleComplex_.setDebugLevel(debugLevel_);
-        morseSmaleComplex_.setThreadNumber(threadNumber_);
-        morseSmaleComplex_.preconditionTriangulation(triangulation);
+        if(this->ComputeSaddleConnectors) {
+          dcg_.setDebugLevel(debugLevel_);
+          dcg_.setThreadNumber(threadNumber_);
+          dcg_.preconditionTriangulation(triangulation);
+        }
       }
     }
 
@@ -88,7 +89,7 @@ namespace ttk {
     void *MSCPlot_{};
     bool ComputeSaddleConnectors{false};
     ftm::FTMTreePP contourTree_{};
-    MorseSmaleComplex3D morseSmaleComplex_{};
+    dcg::DiscreteGradient dcg_{};
   };
 } // namespace ttk
 
@@ -158,9 +159,9 @@ int ttk::PersistenceCurve::execute(const scalarType *inputScalars,
   if(dimensionality == 3 and ComputeSaddleConnectors and MSCPlot_ != nullptr) {
     std::vector<std::tuple<SimplexId, SimplexId, scalarType>>
       pl_saddleSaddlePairs;
-    morseSmaleComplex_.setInputScalarField(inputScalars);
-    morseSmaleComplex_.setInputOffsets(inputOffsets);
-    morseSmaleComplex_.computePersistencePairs<scalarType>(
+    dcg_.setInputScalarField(inputScalars);
+    dcg_.setInputOffsets(inputOffsets);
+    dcg_.computeSaddleSaddlePersistencePairs<scalarType>(
       pl_saddleSaddlePairs, *triangulation);
 
     // sort the saddle-saddle pairs by persistence value and compute curve
