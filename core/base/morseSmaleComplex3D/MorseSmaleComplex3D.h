@@ -234,10 +234,9 @@ int ttk::MorseSmaleComplex3D::setAscendingSeparatrices2(
   };
 
   struct PolygonCell {
-    SimplexId edgeId_{};
     SimplexId nTetras_{};
+    SimplexId edgeId_{};
     SimplexId sepInfosId_{};
-    bool valid_{false};
   };
 
   // store the separatrices info (one per separatrix)
@@ -289,12 +288,11 @@ int ttk::MorseSmaleComplex3D::setAscendingSeparatrices2(
       const auto k = geomCellsBegId[i] + j - noldcells;
       auto &polyCell = polygonTetras[k];
 
-      polyCell.edgeId_ = cell.id_;
       polyCell.nTetras_ = triangulation.getEdgeStarNumber(cell.id_);
 
       if(polyCell.nTetras_ > 2) {
+        polyCell.edgeId_ = cell.id_;
         polyCell.sepInfosId_ = i;
-        polyCell.valid_ = true;
       }
     }
   }
@@ -304,7 +302,7 @@ int ttk::MorseSmaleComplex3D::setAscendingSeparatrices2(
   validTetraIds.reserve(polygonTetras.size());
 
   for(size_t i = 0; i < polygonTetras.size(); ++i) {
-    if(polygonTetras[i].valid_) {
+    if(polygonTetras[i].nTetras_ > 2) {
       validTetraIds.emplace_back(i);
     }
   }
