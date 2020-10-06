@@ -936,14 +936,6 @@ int ttk::ContourTreeAlignment::getAlignmentRootIdx() {
 
 std::vector<std::shared_ptr<ContourTree> > ttk::ContourTreeAlignment::getContourTrees() {
 
-  /*std::vector<ContourForests*> trees_ttk;
-
-  for(ContourTree* ct : contourtrees){
-      trees_ttk.push_back(ct->getContourForest());
-  }
-
-  return trees_ttk;*/
-
   return contourtrees;
 }
 

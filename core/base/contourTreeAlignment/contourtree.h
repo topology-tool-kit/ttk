@@ -62,7 +62,6 @@ struct CTNode {
   float scalarValue;
   int branchID;
 
-  // std::vector<CTEdge*> edgeList;
   std::vector<int> edgeList;
 };
 
