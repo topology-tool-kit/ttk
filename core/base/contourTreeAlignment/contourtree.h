@@ -4,9 +4,9 @@
 #include <fstream>
 #include <functional>
 #include <iostream>
+#include <memory>
 #include <queue>
 #include <stack>
-#include <memory>
 
 ///=====================================================================================================================
 /// enums and structs for tree data structure
@@ -96,16 +96,21 @@ public:
   std::shared_ptr<BinaryTree> rootAtNode(std::shared_ptr<CTNode> root);
   bool isBinary();
   void computeBranches();
-  std::pair<std::vector<std::shared_ptr<CTNode> >, std::vector<std::shared_ptr<CTEdge> >> getGraph();
+  std::pair<std::vector<std::shared_ptr<CTNode>>,
+            std::vector<std::shared_ptr<CTEdge>>>
+    getGraph();
 
 private:
-  std::vector<std::shared_ptr<CTNode> > nodes;
-  std::vector<std::shared_ptr<CTEdge> > arcs;
+  std::vector<std::shared_ptr<CTNode>> nodes;
+  std::vector<std::shared_ptr<CTEdge>> arcs;
 
   bool binary;
 
-  std::shared_ptr<Tree> computeRootedTree(std::shared_ptr<CTNode> node, std::shared_ptr<CTEdge> parent, int &id);
-  std::shared_ptr<BinaryTree> computeRootedTree_binary(std::shared_ptr<CTNode> node, std::shared_ptr<CTEdge> parent, int &id);
+  std::shared_ptr<Tree> computeRootedTree(std::shared_ptr<CTNode> node,
+                                          std::shared_ptr<CTEdge> parent,
+                                          int &id);
+  std::shared_ptr<BinaryTree> computeRootedTree_binary(
+    std::shared_ptr<CTNode> node, std::shared_ptr<CTEdge> parent, int &id);
   std::pair<float, std::vector<int>> pathToMax(int root, int parent);
   std::pair<float, std::vector<int>> pathToMin(int root, int parent);
 };
