@@ -99,14 +99,16 @@ namespace ttk {
      */
     template <typename triangulationType>
     int getDualPolygon(const SimplexId edgeId,
-                       std::vector<SimplexId> &polygon,
+                       SimplexId *const polygon,
+                       const size_t polSize,
                        const triangulationType &triangulation) const;
 
     /**
      * Sort the polygon vertices to be clockwise
      */
     template <typename triangulationType>
-    int sortDualPolygonVertices(std::vector<SimplexId> &polygon,
+    int sortDualPolygonVertices(SimplexId *const polygon,
+                                const size_t polSize,
                                 const triangulationType &triangulation) const;
 
     /**
@@ -314,29 +316,21 @@ int ttk::MorseSmaleComplex3D::setAscendingSeparatrices2(
   // copy of cell connectivity array (for removing duplicates vertices)
   std::vector<SimplexId> cellVertsIds(nnewpoints);
 
-  // tetras in one edge's star (one vector per thread)
-  std::vector<std::vector<SimplexId>> tetrasPerThread(threadNumber_);
-
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
   for(size_t i = 0; i < validTetraIds.size(); ++i) {
     const auto &poly = polygonTetras[validTetraIds[i]];
 
-#ifdef TTK_ENABLE_OPENMP
-    const size_t tid = omp_get_thread_num();
-#else
-    const size_t tid = 0;
-#endif // TTK_ENABLE_OPENMP
-
     // get tetras in edge star
-    tetrasPerThread[tid].clear();
-    getDualPolygon(poly.edgeId_, tetrasPerThread[tid], triangulation);
-    sortDualPolygonVertices(tetrasPerThread[tid], triangulation);
+    getDualPolygon(poly.edgeId_, &cellVertsIds[pointsPerCell[i]], poly.nTetras_,
+                   triangulation);
+    // sort tetras (in-place)
+    sortDualPolygonVertices(
+      &cellVertsIds[pointsPerCell[i]], poly.nTetras_, triangulation);
 
     for(SimplexId j = 0; j < poly.nTetras_; ++j) {
-      cellVertsIds[pointsPerCell[i] + j] = tetrasPerThread[tid][j];
-      cellsConn[pointsPerCell[i] + j] = tetrasPerThread[tid][j];
+      cellsConn[pointsPerCell[i] + j] = cellVertsIds[pointsPerCell[i] + j];
     }
   }
 
@@ -1093,11 +1087,11 @@ int ttk::MorseSmaleComplex3D::getDescendingSeparatrices2(
 template <typename triangulationType>
 int ttk::MorseSmaleComplex3D::getDualPolygon(
   const SimplexId edgeId,
-  std::vector<SimplexId> &polygon,
+  SimplexId *const polygon,
+  const size_t polSize,
   const triangulationType &triangulation) const {
 
-  polygon.resize(triangulation.getEdgeStarNumber(edgeId));
-  for(size_t i = 0; i < polygon.size(); ++i) {
+  for(size_t i = 0; i < polSize; ++i) {
     SimplexId starId;
     triangulation.getEdgeStar(edgeId, i, starId);
     polygon[i] = starId;
@@ -1108,15 +1102,16 @@ int ttk::MorseSmaleComplex3D::getDualPolygon(
 
 template <typename triangulationType>
 int ttk::MorseSmaleComplex3D::sortDualPolygonVertices(
-  std::vector<SimplexId> &polygon,
+  SimplexId *const polygon,
+  const size_t polSize,
   const triangulationType &triangulation) const {
 
-  for(size_t i = 1; i < polygon.size(); ++i) {
+  for(size_t i = 1; i < polSize; ++i) {
 
     // find polygon[i - 1] neighboring tetra in polygon[i..]
     bool isFound = false;
     size_t j = i;
-    for(; j < polygon.size(); ++j) {
+    for(; j < polSize; ++j) {
       // check if current is the neighbor
       for(SimplexId k = 0;
           k < triangulation.getCellNeighborNumber(polygon[i - 1]); ++k) {
