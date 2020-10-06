@@ -4,6 +4,7 @@
 
 #include <vtkDataObject.h>
 #include <vtkDataSet.h>
+#include <vtkDoubleArray.h>
 #include <vtkImageData.h>
 #include <vtkInformation.h>
 #include <vtkInformationVector.h>

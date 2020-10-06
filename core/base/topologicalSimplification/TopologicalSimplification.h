@@ -300,7 +300,7 @@ int ttk::TopologicalSimplification::execute(
   this->printMsg("Maintaining " + std::to_string(constraintNumber)
                    + " constraints (" + std::to_string(authorizedMinima.size())
                    + " minima and " + std::to_string(authorizedMaxima.size())
-                   + "maxima)",
+                   + " maxima)",
                  debug::Priority::DETAIL);
 
   // declare the tuple-comparison functor

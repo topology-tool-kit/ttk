@@ -33,8 +33,8 @@ dataType DiscreteGradient::getPersistence(
   const SimplexId *const offsets,
   const triangulationType &triangulation) const {
 
-  return scalars[getCellGreaterVertex(up, offsets, triangulation)]
-         - scalars[getCellLowerVertex(down, offsets, triangulation)];
+  return scalars[getCellGreaterVertex(up, triangulation)]
+         - scalars[getCellLowerVertex(down, triangulation)];
 }
 
 template <typename triangulationType>
@@ -97,7 +97,6 @@ int DiscreteGradient::setCriticalPoints(
   }
 #endif
   const auto *const scalars = static_cast<const dataType *>(inputScalarField_);
-  const auto *const offsets = inputOffsets_;
   auto *outputCriticalPoints_points_cellScalars
     = static_cast<std::vector<dataType> *>(
       outputCriticalPoints_points_cellScalars_);
@@ -135,8 +134,7 @@ int DiscreteGradient::setCriticalPoints(
     float incenter[3];
     triangulation.getCellIncenter(cell.id_, cell.dim_, incenter);
 
-    const auto scalar
-      = scalars[getCellGreaterVertex(cell, offsets, triangulation)];
+    const auto scalar = scalars[getCellGreaterVertex(cell, triangulation)];
     const char isOnBoundary = isBoundary(cell, triangulation);
 
     outputCriticalPoints_points_[3 * i] = incenter[0];
@@ -149,7 +147,7 @@ int DiscreteGradient::setCriticalPoints(
       (*outputCriticalPoints_points_cellScalars)[i] = scalar;
     }
     outputCriticalPoints_points_isOnBoundary_[i] = isOnBoundary;
-    auto vertId = getCellGreaterVertex(cell, offsets, triangulation);
+    auto vertId = getCellGreaterVertex(cell, triangulation);
     outputCriticalPoints_points_PLVertexIdentifiers_[i] = vertId;
   }
 
@@ -1658,7 +1656,6 @@ int DiscreteGradient::reverseGradient(const triangulationType &triangulation,
                                       bool detectCriticalPoints) {
 
   std::vector<std::pair<SimplexId, char>> criticalPoints{};
-  const auto *const offsets = inputOffsets_;
 
   if(detectCriticalPoints) {
 
@@ -1672,7 +1669,7 @@ int DiscreteGradient::reverseGradient(const triangulationType &triangulation,
     for(size_t i = 0; i < criticalCells.size(); ++i) {
       const auto &c = criticalCells[i];
       criticalPoints[i]
-        = {getCellGreaterVertex(c, offsets, triangulation),
+        = {getCellGreaterVertex(c, triangulation),
            static_cast<char>(criticalTypeFromCellDimension(c.dim_))};
     }
 
@@ -1732,6 +1729,41 @@ int DiscreteGradient::reverseGradient(const triangulationType &triangulation,
     "Gradient reversed", 1.0, t.getElapsedTime(), this->threadNumber_);
 
   return 0;
+}
+
+template <typename dataType, typename triangulationType>
+void DiscreteGradient::computeSaddleSaddlePersistencePairs(
+  std::vector<std::tuple<SimplexId, SimplexId, dataType>> &pl_saddleSaddlePairs,
+  const triangulationType &triangulation) {
+
+  const dataType *scalars = static_cast<const dataType *>(inputScalarField_);
+
+  std::vector<std::array<dcg::Cell, 2>> dmt_pairs;
+  {
+    // simplify to be PL-conformant
+    this->CollectPersistencePairs = false;
+    this->buildGradient<triangulationType>(triangulation);
+    this->reverseGradient<dataType>(triangulation);
+
+    // collect saddle-saddle connections
+    this->CollectPersistencePairs = true;
+    this->setOutputPersistencePairs(&dmt_pairs);
+    this->reverseGradient<dataType>(triangulation, false);
+  }
+
+  // transform DMT pairs into PL pairs
+  for(const auto &pair : dmt_pairs) {
+    const SimplexId v0 = this->getCellGreaterVertex(pair[0], triangulation);
+    const SimplexId v1 = this->getCellGreaterVertex(pair[1], triangulation);
+    const dataType persistence = scalars[v1] - scalars[v0];
+
+    if(v0 != -1 and v1 != -1 and persistence >= 0) {
+      if(!triangulation.isVertexOnBoundary(v0)
+         or !triangulation.isVertexOnBoundary(v1)) {
+        pl_saddleSaddlePairs.emplace_back(v0, v1, persistence);
+      }
+    }
+  }
 }
 
 template <typename triangulationType>
@@ -3014,9 +3046,9 @@ int DiscreteGradient::reverseDescendingPathOnWall(
 
 template <typename triangulationType>
 ttk::SimplexId DiscreteGradient::getCellGreaterVertex(
-  const Cell c,
-  const SimplexId *const offsets,
-  const triangulationType &triangulation) const {
+  const Cell c, const triangulationType &triangulation) const {
+
+  const auto offsets = this->inputOffsets_;
 
   auto cellDim = c.dim_;
   auto cellId = c.id_;
@@ -3077,9 +3109,9 @@ ttk::SimplexId DiscreteGradient::getCellGreaterVertex(
 
 template <typename triangulationType>
 ttk::SimplexId DiscreteGradient::getCellLowerVertex(
-  const Cell c,
-  const SimplexId *const offsets,
-  const triangulationType &triangulation) const {
+  const Cell c, const triangulationType &triangulation) const {
+
+  const auto offsets = this->inputOffsets_;
 
   auto cellDim = c.dim_;
   auto cellId = c.id_;

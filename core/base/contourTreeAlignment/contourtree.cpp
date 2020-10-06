@@ -122,7 +122,7 @@ std::shared_ptr<Tree> ContourTree::computeRootedTree(std::shared_ptr<CTNode> nod
     t->volume = 0.0001;
   } else {
     t->scalardistanceParent = parent->scalardistance;
-    t->volume = t->scalardistanceParent * (float)parent->area;
+    t->volume = t->scalardistanceParent * parent->area;
   }
 
   return t;
@@ -198,8 +198,8 @@ std::shared_ptr<BinaryTree>
     t->volume = 10000;
   } else {
     t->scalardistanceParent = parent->scalardistance;
-    t->area = (float)parent->area;
-    t->volume = t->scalardistanceParent * (float)parent->area;
+    t->area = parent->area;
+    t->volume = t->scalardistanceParent * parent->area;
   }
 
   return t;

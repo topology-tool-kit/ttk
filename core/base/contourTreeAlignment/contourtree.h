@@ -103,7 +103,6 @@ private:
   std::vector<std::shared_ptr<CTEdge> > arcs;
 
   bool binary;
-  float threshold;
 
   std::shared_ptr<Tree> computeRootedTree(std::shared_ptr<CTNode> node, std::shared_ptr<CTEdge> parent, int &id);
   std::shared_ptr<BinaryTree> computeRootedTree_binary(std::shared_ptr<CTNode> node, std::shared_ptr<CTEdge> parent, int &id);

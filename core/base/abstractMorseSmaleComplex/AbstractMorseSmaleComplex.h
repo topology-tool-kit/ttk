@@ -282,7 +282,7 @@ namespace ttk {
       std::vector<char> *const separatrices1_points_cellDimensions,
       std::vector<SimplexId> *const separatrices1_points_cellIds,
       SimplexId *const separatrices1_numberOfCells,
-      std::vector<SimplexId> *const separatrices1_cells,
+      std::vector<SimplexId> *const separatrices1_cells_connectivity,
       std::vector<SimplexId> *const separatrices1_cells_sourceIds,
       std::vector<SimplexId> *const separatrices1_cells_destinationIds,
       std::vector<SimplexId> *const separatrices1_cells_separatrixIds,
@@ -299,7 +299,8 @@ namespace ttk {
         = separatrices1_points_cellDimensions;
       outputSeparatrices1_points_cellIds_ = separatrices1_points_cellIds;
       outputSeparatrices1_numberOfCells_ = separatrices1_numberOfCells;
-      outputSeparatrices1_cells_ = separatrices1_cells;
+      outputSeparatrices1_cells_connectivity_
+        = separatrices1_cells_connectivity;
       outputSeparatrices1_cells_sourceIds_ = separatrices1_cells_sourceIds;
       outputSeparatrices1_cells_destinationIds_
         = separatrices1_cells_destinationIds;
@@ -325,7 +326,8 @@ namespace ttk {
       SimplexId *const separatrices2_numberOfPoints,
       std::vector<float> *const separatrices2_points,
       SimplexId *const separatrices2_numberOfCells,
-      std::vector<SimplexId> *const separatrices2_cells,
+      std::vector<SimplexId> *const separatrices2_cells_offsets,
+      std::vector<SimplexId> *const separatrices2_cells_connectivity,
       std::vector<SimplexId> *const separatrices2_cells_sourceIds,
       std::vector<SimplexId> *const separatrices2_cells_separatrixIds,
       std::vector<char> *const separatrices2_cells_separatrixTypes,
@@ -336,7 +338,9 @@ namespace ttk {
       outputSeparatrices2_numberOfPoints_ = separatrices2_numberOfPoints;
       outputSeparatrices2_points_ = separatrices2_points;
       outputSeparatrices2_numberOfCells_ = separatrices2_numberOfCells;
-      outputSeparatrices2_cells_ = separatrices2_cells;
+      outputSeparatrices2_cells_offsets_ = separatrices2_cells_offsets;
+      outputSeparatrices2_cells_connectivity_
+        = separatrices2_cells_connectivity;
       outputSeparatrices2_cells_sourceIds_ = separatrices2_cells_sourceIds;
       outputSeparatrices2_cells_separatrixIds_
         = separatrices2_cells_separatrixIds;
@@ -453,7 +457,7 @@ namespace ttk {
     std::vector<char> *outputSeparatrices1_points_cellDimensions_{};
     std::vector<SimplexId> *outputSeparatrices1_points_cellIds_{};
     SimplexId *outputSeparatrices1_numberOfCells_{};
-    std::vector<SimplexId> *outputSeparatrices1_cells_{};
+    std::vector<SimplexId> *outputSeparatrices1_cells_connectivity_{};
     std::vector<SimplexId> *outputSeparatrices1_cells_sourceIds_{};
     std::vector<SimplexId> *outputSeparatrices1_cells_destinationIds_{};
     std::vector<SimplexId> *outputSeparatrices1_cells_separatrixIds_{};
@@ -466,7 +470,8 @@ namespace ttk {
     SimplexId *outputSeparatrices2_numberOfPoints_{};
     std::vector<float> *outputSeparatrices2_points_{};
     SimplexId *outputSeparatrices2_numberOfCells_{};
-    std::vector<SimplexId> *outputSeparatrices2_cells_{};
+    std::vector<SimplexId> *outputSeparatrices2_cells_offsets_{};
+    std::vector<SimplexId> *outputSeparatrices2_cells_connectivity_{};
     std::vector<SimplexId> *outputSeparatrices2_cells_sourceIds_{};
     std::vector<SimplexId> *outputSeparatrices2_cells_separatrixIds_{};
     std::vector<char> *outputSeparatrices2_cells_separatrixTypes_{};
@@ -561,7 +566,7 @@ int ttk::AbstractMorseSmaleComplex::setSeparatrices1(
     this->printErr("1-separatrices pointer to numberOfCells is null.");
     return -1;
   }
-  if(outputSeparatrices1_cells_ == nullptr) {
+  if(outputSeparatrices1_cells_connectivity_ == nullptr) {
     this->printErr("1-separatrices pointer to cells is null.");
     return -1;
   }
@@ -573,7 +578,6 @@ int ttk::AbstractMorseSmaleComplex::setSeparatrices1(
 #endif
 
   const auto scalars = static_cast<const dataType *>(inputScalarField_);
-  const auto offsets = inputOffsets_;
   auto separatrixFunctionMaxima = static_cast<std::vector<dataType> *>(
     outputSeparatrices1_cells_separatrixFunctionMaxima_);
   auto separatrixFunctionMinima = static_cast<std::vector<dataType> *>(
@@ -625,8 +629,8 @@ int ttk::AbstractMorseSmaleComplex::setSeparatrices1(
   // resize arrays
   outputSeparatrices1_points_->resize(3 * npoints);
   auto &points = *outputSeparatrices1_points_;
-  outputSeparatrices1_cells_->resize(3 * ncells);
-  auto &cells = *outputSeparatrices1_cells_;
+  outputSeparatrices1_cells_connectivity_->resize(2 * ncells);
+  auto &cellsConn = *outputSeparatrices1_cells_connectivity_;
   if(outputSeparatrices1_points_smoothingMask_ != nullptr)
     outputSeparatrices1_points_smoothingMask_->resize(npoints);
   if(outputSeparatrices1_points_cellDimensions_ != nullptr)
@@ -669,16 +673,12 @@ int ttk::AbstractMorseSmaleComplex::setSeparatrices1(
       = saddleConnector ? 1 : std::min(dst.dim_, dimensionality - 1);
 
     // compute separatrix function diff
-    const auto sepFuncMax
-      = std::max(scalars[discreteGradient_.getCellGreaterVertex(
-                   src, offsets, triangulation)],
-                 scalars[discreteGradient_.getCellGreaterVertex(
-                   dst, offsets, triangulation)]);
-    const auto sepFuncMin
-      = std::min(scalars[discreteGradient_.getCellLowerVertex(
-                   src, offsets, triangulation)],
-                 scalars[discreteGradient_.getCellLowerVertex(
-                   dst, offsets, triangulation)]);
+    const auto sepFuncMax = std::max(
+      scalars[discreteGradient_.getCellGreaterVertex(src, triangulation)],
+      scalars[discreteGradient_.getCellGreaterVertex(dst, triangulation)]);
+    const auto sepFuncMin = std::min(
+      scalars[discreteGradient_.getCellLowerVertex(src, triangulation)],
+      scalars[discreteGradient_.getCellLowerVertex(dst, triangulation)]);
     const auto sepFuncDiff = sepFuncMax - sepFuncMin;
 
     // get boundary condition
@@ -718,9 +718,8 @@ int ttk::AbstractMorseSmaleComplex::setSeparatrices1(
       // index of current cell in cell data arrays
       const auto l = geomCellsBegId[i] + j - 1;
 
-      cells[3 * l + 0] = 2;
-      cells[3 * l + 1] = k - 1;
-      cells[3 * l + 2] = k;
+      cellsConn[2 * l + 0] = k - 1;
+      cellsConn[2 * l + 1] = k;
 
       if(outputSeparatrices1_cells_sourceIds_ != nullptr)
         (*outputSeparatrices1_cells_sourceIds_)[l] = src.id_;

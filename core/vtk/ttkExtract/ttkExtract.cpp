@@ -295,7 +295,9 @@ int testPointDataArray(std::vector<int> &oIndex_to_mIndex_map,
                        const std::vector<dataType> pivotValues,
                        const size_t &threadNumber) {
   const size_t nPivotValues = pivotValues.size();
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber)
+#endif // TTK_ENABLE_OPENMP
   for(size_t i = 0; i < nPoints; i++) {
     bool hasToBeMarked = false;
     const dataType &v = inputPointDataArray[i];
@@ -319,7 +321,9 @@ int testCellDataArray(std::vector<int> &oIndex_to_mIndex_map,
                       const size_t &threadNumber) {
   const size_t nPivotValues = pivotValues.size();
 
+#ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber)
+#endif // TTK_ENABLE_OPENMP
   for(size_t i = 0; i < nCells; i++) {
     const dataType &v = inputCellDataArray[i];
 

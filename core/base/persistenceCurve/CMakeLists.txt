@@ -6,6 +6,5 @@ ttk_add_base_library(persistenceCurve
   DEPENDS
     discreteGradient
     triangulation
-    morseSmaleComplex3D
     ftmTreePP
     )

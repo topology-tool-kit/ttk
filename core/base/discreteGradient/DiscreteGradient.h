@@ -381,6 +381,16 @@ according to them.
                           const bool detectCriticalPoints = true);
 
       /**
+       * Compute the (saddle1, saddle2) pairs not detected by the
+       * contour tree.
+       */
+      template <typename dataType, typename triangulationType>
+      void computeSaddleSaddlePersistencePairs(
+        std::vector<std::tuple<SimplexId, SimplexId, dataType>>
+          &pl_saddleSaddlePairs,
+        const triangulationType &triangulation);
+
+      /**
        * Set the input scalar function.
        */
       inline void setInputScalarField(const void *const data) {
@@ -578,7 +588,6 @@ in the gradient.
       template <typename triangulationType>
       SimplexId
         getCellGreaterVertex(const Cell c,
-                             const SimplexId *const offsets,
                              const triangulationType &triangulation) const;
 
       /**
@@ -588,7 +597,6 @@ in the gradient.
       template <typename triangulationType>
       SimplexId
         getCellLowerVertex(const Cell c,
-                           const SimplexId *const offsets,
                            const triangulationType &triangulation) const;
 
       /**

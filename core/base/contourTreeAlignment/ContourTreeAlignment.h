@@ -193,9 +193,9 @@ namespace ttk {
     /// helper functions for tree data structures
     bool isBinary(std::shared_ptr<Tree> t);
     std::shared_ptr<BinaryTree> rootAtNode(std::shared_ptr<AlignmentNode> root);
-    std::shared_ptr<BinaryTree> 
+    std::shared_ptr<BinaryTree>
       computeRootedTree(std::shared_ptr<AlignmentNode> node, std::shared_ptr<AlignmentEdge> parent, int &id);
-    std::shared_ptr<BinaryTree> 
+    std::shared_ptr<BinaryTree>
       computeRootedDualTree(std::shared_ptr<AlignmentEdge> arc, bool parent1, int &id);
     void computeNewAlignmenttree(std::shared_ptr<AlignmentTree> res);
 

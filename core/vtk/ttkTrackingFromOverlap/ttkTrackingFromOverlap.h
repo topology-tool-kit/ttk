@@ -55,10 +55,10 @@ class TTKTRACKINGFROMOVERLAP_EXPORT ttkTrackingFromOverlap
 
 public:
   static ttkTrackingFromOverlap *New();
-  vtkTypeMacro(ttkTrackingFromOverlap, ttkAlgorithm)
+  vtkTypeMacro(ttkTrackingFromOverlap, ttkAlgorithm);
 
-    vtkSetMacro(LabelFieldName, string);
-  vtkGetMacro(LabelFieldName, string);
+  vtkSetMacro(LabelFieldName, std::string);
+  vtkGetMacro(LabelFieldName, std::string);
 
 protected:
   ttkTrackingFromOverlap() {
@@ -69,7 +69,6 @@ protected:
     SetNumberOfInputPorts(1);
     SetNumberOfOutputPorts(1);
   }
-  ~ttkTrackingFromOverlap() override{};
 
   bool UseAllCores;
   int ThreadNumber;
@@ -121,12 +120,12 @@ protected:
 
 private:
   int LabelDataType;
-  string LabelFieldName;
+  std::string LabelFieldName;
 
   vtkSmartPointer<vtkMultiBlockDataSet> previousIterationData;
 
   // Containers for nodes and edges
-  vector<vector<Nodes>> levelTimeNodesMap; // N
-  vector<vector<Edges>> levelTimeEdgesTMap; // E_T
-  vector<vector<Edges>> timeLevelEdgesNMap; // E_N
+  std::vector<std::vector<Nodes>> levelTimeNodesMap; // N
+  std::vector<std::vector<Edges>> levelTimeEdgesTMap; // E_T
+  std::vector<std::vector<Edges>> timeLevelEdgesNMap; // E_N
 };

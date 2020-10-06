@@ -348,7 +348,6 @@ int TwoSkeleton::buildTriangleList(
             triangleNumber++;
 
             if(triangleList) {
-              triangleList->size();
               triangleList->push_back(triangle);
             }
             if(triangleStars) {

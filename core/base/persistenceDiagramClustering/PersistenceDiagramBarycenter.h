@@ -99,10 +99,6 @@ namespace ttk {
       wasserstein_ = (wasserstein == "inf") ? -1 : stoi(wasserstein);
     }
 
-    inline void setThreadNumber(const int &ThreadNumber) {
-      threadNumber_ = ThreadNumber;
-    }
-
     inline void setUseProgressive(const bool use_progressive) {
       if(use_progressive)
         epsilon_decreases_ = true;
@@ -150,7 +146,6 @@ namespace ttk {
     int method_;
     int wasserstein_;
     int numberOfInputs_;
-    int threadNumber_;
     bool use_progressive_;
     double alpha_;
     double lambda_;

@@ -42,21 +42,11 @@
 /// \sa ttkScalarFieldCriticalPoints
 /// \sa ttkTopologicalSimplification
 /// \sa ttk::PersistenceDiagram
-#ifndef _TTK_PERSISTENCEDIAGRAM_H
-#define _TTK_PERSISTENCEDIAGRAM_H
+
 #pragma once
 
 // VTK includes
-#include <vtkCellData.h>
 #include <vtkDataArray.h>
-#include <vtkDataSet.h>
-#include <vtkDoubleArray.h>
-#include <vtkFloatArray.h>
-#include <vtkInformation.h>
-#include <vtkInformationVector.h>
-#include <vtkPointData.h>
-#include <vtkSmartPointer.h>
-#include <vtkTable.h>
 #include <vtkUnstructuredGrid.h>
 
 // VTK Module
@@ -75,11 +65,11 @@ public:
 
   vtkTypeMacro(ttkPersistenceDiagram, ttkAlgorithm);
 
-  vtkSetMacro(ForceInputOffsetScalarField, int);
-  vtkGetMacro(ForceInputOffsetScalarField, int);
+  vtkSetMacro(ForceInputOffsetScalarField, bool);
+  vtkGetMacro(ForceInputOffsetScalarField, bool);
 
-  vtkSetMacro(ComputeSaddleConnectors, int);
-  vtkGetMacro(ComputeSaddleConnectors, int);
+  vtkSetMacro(ComputeSaddleConnectors, bool);
+  vtkGetMacro(ComputeSaddleConnectors, bool);
 
   void SetShowInsideDomain(int onOff) {
     ShowInsideDomain = onOff;
@@ -88,85 +78,8 @@ public:
   }
   vtkGetMacro(ShowInsideDomain, int);
 
-  template <typename scalarType,
-            typename vtkSimplexArray,
-            class triangulationType>
-  int setPersistenceDiagramInfo(
-    ttk::SimplexId id,
-    vtkSmartPointer<vtkSimplexArray> vertexIdentifierScalars,
-    vtkSmartPointer<vtkIntArray> nodeTypeScalars,
-    vtkSmartPointer<vtkFloatArray> coordsScalars,
-    const std::vector<std::tuple<ttk::SimplexId,
-                                 ttk::CriticalType,
-                                 ttk::SimplexId,
-                                 ttk::CriticalType,
-                                 scalarType,
-                                 ttk::SimplexId>> &diagram,
-    vtkSmartPointer<vtkPoints> points,
-    vtkIdType ids[3],
-    vtkDataArray *inputScalars,
-    const triangulationType *triangulation);
-
-  template <typename scalarType, class triangulationType>
-  int getPersistenceDiagram(
-    vtkUnstructuredGrid *outputCTPersistenceDiagram,
-    ttk::ftm::TreeType treeType,
-    const std::vector<std::tuple<ttk::SimplexId,
-                                 ttk::CriticalType,
-                                 ttk::SimplexId,
-                                 ttk::CriticalType,
-                                 scalarType,
-                                 ttk::SimplexId>> &diagram,
-    vtkDataArray *inputScalars,
-    const triangulationType *triangulation);
-
-  template <typename scalarType,
-            typename vtkSimplexArray,
-            class triangulationType>
-  int setPersistenceDiagramInfoInsideDomain(
-    ttk::SimplexId id,
-    vtkSmartPointer<vtkSimplexArray> vertexIdentifierScalars,
-    vtkSmartPointer<vtkIntArray> nodeTypeScalars,
-    vtkDataArray *birthScalars,
-    vtkDataArray *deathScalars,
-    const std::vector<std::tuple<ttk::SimplexId,
-                                 ttk::CriticalType,
-                                 ttk::SimplexId,
-                                 ttk::CriticalType,
-                                 scalarType,
-                                 ttk::SimplexId>> &diagram,
-    vtkSmartPointer<vtkPoints> points,
-    vtkIdType ids[3],
-    vtkDataArray *inputScalars,
-    const triangulationType *triangulation);
-
-  template <typename scalarType, class triangulationType>
-  int getPersistenceDiagramInsideDomain(
-    vtkUnstructuredGrid *outputCTPersistenceDiagram,
-    ttk::ftm::TreeType treeType,
-    const std::vector<std::tuple<ttk::SimplexId,
-                                 ttk::CriticalType,
-                                 ttk::SimplexId,
-                                 ttk::CriticalType,
-                                 scalarType,
-                                 ttk::SimplexId>> &diagram,
-    vtkDataArray *inputScalars,
-    const triangulationType *triangulation);
-
-  template <typename VTK_TT, typename TTK_TT>
-  int dispatch(vtkUnstructuredGrid *outputCTPersistenceDiagram,
-               vtkDataArray *inputScalarDataArray,
-               const VTK_TT *inputScalars,
-               int inputOffsetsDataType,
-               const void *inputOffsets,
-               const TTK_TT *triangulation);
-
-  template <typename VTK_TT>
-  int deleteDiagram();
-
 protected:
   ttkPersistenceDiagram();
-  ~ttkPersistenceDiagram() override;
 
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,
@@ -177,12 +90,23 @@ protected:
   void Modified() override;
 
 private:
+  template <typename scalarType, typename triangulationType>
+  int dispatch(vtkUnstructuredGrid *outputCTPersistenceDiagram,
+               vtkDataArray *const inputScalarsArray,
+               const scalarType *const inputScalars,
+               const SimplexId *const inputOrder,
+               const triangulationType *triangulation);
+
+  template <typename scalarType, typename triangulationType>
+  int setPersistenceDiagram(vtkUnstructuredGrid *outputCTPersistenceDiagram,
+                            const std::vector<ttk::PersistencePair> &diagram,
+                            vtkDataArray *inputScalarsArray,
+                            const scalarType *const inputScalars,
+                            const triangulationType *triangulation) const;
+
   bool ForceInputOffsetScalarField{false};
   int ShowInsideDomain{false};
 
   bool computeDiagram_{true};
-  void *CTDiagram_{nullptr};
-  int scalarDataType{0};
+  std::vector<ttk::PersistencePair> CTDiagram_{};
 };
-
-#endif // _TTK_PERSISTENCEDIAGRAM_H
