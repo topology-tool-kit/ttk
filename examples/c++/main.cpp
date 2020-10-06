@@ -245,15 +245,15 @@ int main(int argc, char **argv) {
   std::vector<char> separatrices1_points_cellDimensions;
   std::vector<ttk::SimplexId> separatrices1_points_cellIds;
   ttk::SimplexId separatrices1_numberOfCells{};
-  std::vector<ttk::SimplexId> separatrices1_cells;
+  std::vector<long long> separatrices1_cells_connectivity;
   std::vector<ttk::SimplexId> separatrices1_cells_sourceIds;
   std::vector<ttk::SimplexId> separatrices1_cells_destinationIds;
   std::vector<ttk::SimplexId> separatrices1_cells_separatrixIds;
   std::vector<char> separatrices1_cells_separatrixTypes;
   std::vector<char> separatrices1_cells_isOnBoundary;
-  std::vector<float> separatrices1_cells_separatrixFunctionMaxima;
-  std::vector<float> separatrices1_cells_separatrixFunctionMinima;
-  std::vector<float> separatrices1_cells_separatrixFunctionDiffs;
+  std::vector<double> separatrices1_cells_separatrixFunctionMaxima;
+  std::vector<double> separatrices1_cells_separatrixFunctionMinima;
+  std::vector<double> separatrices1_cells_separatrixFunctionDiffs;
   // segmentation
   std::vector<ttk::SimplexId> ascendingSegmentation(
     triangulation.getNumberOfVertices(), -1),
@@ -275,7 +275,7 @@ int main(int argc, char **argv) {
     &separatrices1_numberOfPoints, &separatrices1_points,
     &separatrices1_points_smoothingMask, &separatrices1_points_cellDimensions,
     &separatrices1_points_cellIds, &separatrices1_numberOfCells,
-    &separatrices1_cells, &separatrices1_cells_sourceIds,
+    &separatrices1_cells_connectivity, &separatrices1_cells_sourceIds,
     &separatrices1_cells_destinationIds, &separatrices1_cells_separatrixIds,
     &separatrices1_cells_separatrixTypes,
     &separatrices1_cells_separatrixFunctionMaxima,
