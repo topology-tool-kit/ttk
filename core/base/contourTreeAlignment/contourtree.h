@@ -6,6 +6,7 @@
 #include <iostream>
 #include <queue>
 #include <stack>
+#include <memory>
 
 ///=====================================================================================================================
 /// enums and structs for tree data structure
@@ -18,7 +19,7 @@ enum Type_Node { minNode, maxNode, saddleNode };
 ///=====================================================================================================================
 /// basic tree data structure for a rooted contour tree of unbounded degree
 struct Tree {
-  std::vector<Tree *> children;
+  std::vector<std::shared_ptr<Tree>> children;
   Type_Node type;
   int vertexId;
   int id;
@@ -31,8 +32,8 @@ struct Tree {
 ///=====================================================================================================================
 /// basic tree data structure for a rooted contour tree of degree 2
 struct BinaryTree {
-  BinaryTree *child1;
-  BinaryTree *child2;
+  std::shared_ptr<BinaryTree> child1;
+  std::shared_ptr<BinaryTree> child2;
   Type_Node type;
   int vertexId;
   int id;
@@ -69,9 +70,7 @@ struct CTNode {
 /// edge data structure for an unrooted contour tree (definition)
 struct CTEdge {
 
-  // CTNode* node1;
   int node1Idx;
-  // CTNode* node2;
   int node2Idx;
   float scalardistance;
   float area;
@@ -79,7 +78,7 @@ struct CTEdge {
   int segId;
 };
 
-///=====================================================================================================================
+///=======================================================================================S==============================
 /// class for an unrooted contour tree
 ///=====================================================================================================================
 
@@ -94,19 +93,19 @@ public:
               size_t nEdges);
   ~ContourTree();
 
-  BinaryTree *rootAtMax();
-  BinaryTree *rootAtNode(CTNode *root);
+  std::shared_ptr<BinaryTree> rootAtMax();
+  std::shared_ptr<BinaryTree> rootAtNode(CTNode *root);
   bool isBinary();
   void computeBranches();
   std::pair<std::vector<CTNode *>, std::vector<CTEdge *>> getGraph();
 
-  static void deleteBinaryTree(BinaryTree *t) {
+  /*static void deleteBinaryTree(std::shared_ptr<BinaryTree> t) {
     if(t->child1)
       deleteBinaryTree(t->child1);
     if(t->child2)
       deleteBinaryTree(t->child2);
     delete t;
-  }
+  }*/
 
 private:
   std::vector<CTNode *> nodes;
@@ -115,8 +114,8 @@ private:
   bool binary;
   float threshold;
 
-  Tree *computeRootedTree(CTNode *node, CTEdge *parent, int &id);
-  BinaryTree *computeRootedTree_binary(CTNode *node, CTEdge *parent, int &id);
+  std::shared_ptr<Tree> computeRootedTree(CTNode *node, CTEdge *parent, int &id);
+  std::shared_ptr<BinaryTree> computeRootedTree_binary(CTNode *node, CTEdge *parent, int &id);
   std::pair<float, std::vector<int>> pathToMax(int root, int parent);
   std::pair<float, std::vector<int>> pathToMin(int root, int parent);
 };

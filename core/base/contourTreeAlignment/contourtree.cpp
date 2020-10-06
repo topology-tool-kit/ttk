@@ -79,10 +79,10 @@ ContourTree::~ContourTree() {
   }
 }
 
-Tree *ContourTree::computeRootedTree(CTNode *node, CTEdge *parent, int &id) {
+std::shared_ptr<Tree> ContourTree::computeRootedTree(CTNode *node, CTEdge *parent, int &id) {
 
   // initialize tree
-  Tree *t = new Tree;
+  std::shared_ptr<Tree> t(new Tree);
 
   // set id and increment for later calls
   t->id = id;
@@ -101,10 +101,10 @@ Tree *ContourTree::computeRootedTree(CTNode *node, CTEdge *parent, int &id) {
 
   // compute number of children (depends on whether current node is the root or
   // not)
-  if(parent == NULL)
-    t->children = std::vector<Tree *>(node->edgeList.size());
+  if(parent == nullptr)
+    t->children = std::vector<std::shared_ptr<Tree> >(node->edgeList.size());
   else
-    t->children = std::vector<Tree *>(node->edgeList.size() - 1);
+    t->children = std::vector<std::shared_ptr<Tree> >(node->edgeList.size() - 1);
 
   bool parentVisited = false;
 
@@ -120,7 +120,7 @@ Tree *ContourTree::computeRootedTree(CTNode *node, CTEdge *parent, int &id) {
     CTNode *child = nodes[edge->node1Idx] == node ? nodes[edge->node2Idx]
                                                   : nodes[edge->node1Idx];
 
-    Tree *childTree = computeRootedTree(child, edge, id);
+    std::shared_ptr<Tree> childTree = computeRootedTree(child, edge, id);
 
     t->children[i - (parentVisited ? 1 : 0)] = childTree;
 
@@ -142,11 +142,11 @@ Tree *ContourTree::computeRootedTree(CTNode *node, CTEdge *parent, int &id) {
   return t;
 }
 
-BinaryTree *
+std::shared_ptr<BinaryTree> 
   ContourTree::computeRootedTree_binary(CTNode *node, CTEdge *parent, int &id) {
 
   // initialize tree
-  BinaryTree *t = new BinaryTree;
+  std::shared_ptr<BinaryTree> t(new BinaryTree);
 
   // set id and increment for later calls
   t->id = id;
@@ -159,8 +159,8 @@ BinaryTree *
   t->nodeRefs = std::vector<std::pair<int, int>>();
   t->nodeRefs.push_back(std::make_pair(-1, nodeIdx));
   t->arcRefs = std::vector<std::pair<int, int>>();
-  // if(parent != NULL) t->arcRefs.push_back(std::make_pair(-1,parent->segId));
-  if(parent != NULL) {
+  // if(parent != nullptr) t->arcRefs.push_back(std::make_pair(-1,parent->segId));
+  if(parent != nullptr) {
     int arcRef = arcs[node->edgeList[0]] == parent
                    ? node->edgeList[0]
                    : arcs[node->edgeList[1]] == parent ? node->edgeList[1]
@@ -177,7 +177,7 @@ BinaryTree *
   // t->vertexId = node->getVertexId();
 
   // children at first into vector
-  std::vector<BinaryTree *> children;
+  std::vector<std::shared_ptr<BinaryTree> > children;
 
   // add neighbors to children
   for(size_t i = 0; i < node->edgeList.size(); i++) {
@@ -189,7 +189,7 @@ BinaryTree *
       CTNode *child = nodes[edge->node1Idx] == node ? nodes[edge->node2Idx]
                                                     : nodes[edge->node1Idx];
 
-      BinaryTree *childTree = computeRootedTree_binary(child, edge, id);
+      std::shared_ptr<BinaryTree> childTree = computeRootedTree_binary(child, edge, id);
 
       children.push_back(childTree);
 
@@ -201,8 +201,8 @@ BinaryTree *
   }
 
   // children from vector to binary tree
-  t->child1 = children.size() > 0 ? children[0] : NULL;
-  t->child2 = children.size() > 1 ? children[1] : NULL;
+  t->child1 = children.size() > 0 ? children[0] : nullptr;
+  t->child2 = children.size() > 1 ? children[1] : nullptr;
 
   // tree not fuzzy => freq=1
   t->freq = 1;
@@ -223,7 +223,7 @@ BinaryTree *
   return t;
 }
 
-BinaryTree *ContourTree::rootAtMax() {
+std::shared_ptr<BinaryTree> ContourTree::rootAtMax() {
 
   // get global maximum node to build rooted tree from there
   float maxVal = -FLT_MAX;
@@ -238,15 +238,15 @@ BinaryTree *ContourTree::rootAtMax() {
 
   int id = 1;
 
-  return computeRootedTree_binary(globalMax, NULL, id);
+  return computeRootedTree_binary(globalMax, nullptr, id);
 }
 
-BinaryTree *ContourTree::rootAtNode(CTNode *root) {
+std::shared_ptr<BinaryTree> ContourTree::rootAtNode(CTNode *root) {
 
   int id = 1;
 
   // rootedTree = computeRootedTree(root,-1, id);
-  return computeRootedTree_binary(root, NULL, id);
+  return computeRootedTree_binary(root, nullptr, id);
 }
 
 bool ContourTree::isBinary() {
