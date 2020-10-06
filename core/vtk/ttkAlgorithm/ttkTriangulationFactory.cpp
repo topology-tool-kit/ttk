@@ -326,6 +326,9 @@ ttk::Triangulation *
     "# Registered Triangulations: " + std::to_string(instance->registry.size()),
     ttk::debug::Priority::VERBOSE);
 
+  if(triangulation)
+    triangulation->setDebugLevel(debugLevel);
+
   return triangulation;
 };
 
@@ -355,8 +358,6 @@ RegistryKey ttkTriangulationFactory::GetKey(vtkDataSet *dataSet) {
         return (RegistryKey)cells;
     }
   }
-
-  this->printErr("Unable to derive key.");
 
   return 0;
 };
