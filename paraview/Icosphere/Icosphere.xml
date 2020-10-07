@@ -6,17 +6,6 @@
                 This filter creates an Icosphere with a specified radius, center, and number of subdivisions. Alternatively, by providing an optional input, the filter will automatically determine the radius and center such that the resulting Icosphere encapsulates the input object. In this case, the entered radius parameter is used as a scaling factor.
             </Documentation>
 
-            <InputProperty name="Object" port_index="0" command="SetInputConnection">
-                <ProxyGroupDomain name="groups">
-                    <Group name="sources" />
-                    <Group name="filters" />
-                </ProxyGroupDomain>
-                <Documentation>Object that will be used to compute bounding shpere.</Documentation>
-                <Hints>
-                    <Optional />
-                </Hints>
-            </InputProperty>
-
             <IntVectorProperty name="NumberOfSubdivisions" label="Subdivisions" command="SetNumberOfSubdivisions" number_of_elements="1" default_values="0">
                 <Documentation>Number of subdevisions.</Documentation>
             </IntVectorProperty>
