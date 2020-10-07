@@ -108,10 +108,6 @@ RegistryValue::RegistryValue(vtkDataSet *dataSet,
   onDelete->Init(dataSet);
 };
 
-RegistryValue::~RegistryValue() {
-  delete this->triangulation;
-};
-
 bool RegistryValue::isValid(vtkDataSet *dataSet) const {
   auto cells = GetCells(dataSet);
   if(cells)
@@ -149,15 +145,14 @@ ttkTriangulationFactory::ttkTriangulationFactory() {
   this->setDebugMsgPrefix("TriangulationFactory");
 };
 
-ttkTriangulationFactory::~ttkTriangulationFactory(){};
-
-ttk::Triangulation *
+std::unique_ptr<ttk::Triangulation>
   ttkTriangulationFactory::CreateImplicitTriangulation(vtkImageData *image) {
   ttk::Timer timer;
   this->printMsg("Initializing Implicit Triangulation", 0, 0,
                  ttk::debug::LineMode::REPLACE, ttk::debug::Priority::DETAIL);
 
-  auto triangulation = new ttk::Triangulation();
+  auto triangulation
+    = std::unique_ptr<ttk::Triangulation>(new ttk::Triangulation());
 
   int extent[6];
   image->GetExtent(extent);
@@ -187,7 +182,7 @@ ttk::Triangulation *
   return triangulation;
 };
 
-ttk::Triangulation *
+std::unique_ptr<ttk::Triangulation>
   ttkTriangulationFactory::CreateExplicitTriangulation(vtkPointSet *pointSet) {
   ttk::Timer timer;
   this->printMsg("Initializing Explicit Triangulation", 0, 0,
@@ -205,7 +200,8 @@ ttk::Triangulation *
     return nullptr;
   }
 
-  auto triangulation = new ttk::Triangulation();
+  auto triangulation
+    = std::unique_ptr<ttk::Triangulation>(new ttk::Triangulation());
 
   // Points
   {
@@ -213,8 +209,7 @@ ttk::Triangulation *
     if(pointDataType != VTK_FLOAT && pointDataType != VTK_DOUBLE) {
       this->printErr("Unable to initialize 'ttk::Triangulation' for point "
                      "precision other than 'float' or 'double'.");
-      delete triangulation;
-      return nullptr;
+      return {};
     }
 
     void *pointDataArray = ttkUtils::GetVoidPointer(points);
@@ -228,13 +223,11 @@ ttk::Triangulation *
     this->printWrn("Inhomogeneous cell dimensions detected.");
     this->printWrn(
       "Consider using `ttkExtract` to extract cells of a given dimension.");
-    delete triangulation;
-    return nullptr;
+    return {};
   } else if(cellTypeStatus == -2) {
     this->printWrn("Cells are not simplices.");
     this->printWrn("Consider using `vtkTetrahedralize` in pre-processing.");
-    delete triangulation;
-    return nullptr;
+    return {};
   }
 
   // Cells
@@ -250,8 +243,7 @@ ttk::Triangulation *
     if(status != 0) {
       this->printErr(
         "Run the `vtkTetrahedralize` filter to resolve the issue.");
-      delete triangulation;
-      return nullptr;
+      return {};
     }
   }
 
@@ -262,7 +254,7 @@ ttk::Triangulation *
   return triangulation;
 };
 
-ttk::Triangulation *
+std::unique_ptr<ttk::Triangulation>
   ttkTriangulationFactory::CreateTriangulation(vtkDataSet *dataSet) {
   switch(dataSet->GetDataObjectType()) {
     case VTK_UNSTRUCTURED_GRID:
@@ -297,7 +289,7 @@ ttk::Triangulation *
     if(it->second.isValid(object)) {
       instance->printMsg(
         "Retrieving Existing Triangulation", ttk::debug::Priority::DETAIL);
-      triangulation = it->second.triangulation;
+      triangulation = it->second.triangulation.get();
     } else {
       instance->printMsg(
         "Existing Triangulation No Longer Valid", ttk::debug::Priority::DETAIL);
@@ -314,7 +306,7 @@ ttk::Triangulation *
   }
 
   if(!triangulation) {
-    triangulation = instance->CreateTriangulation(object);
+    triangulation = instance->CreateTriangulation(object).release();
     if(triangulation) {
       instance->registry.emplace(std::piecewise_construct,
                                  std::forward_as_tuple(key),
@@ -338,7 +330,7 @@ int ttkTriangulationFactory::FindImplicitTriangulation(
   for(const auto &it : this->registry) {
     if(it.second.owner->IsA("vtkImageData")) {
       if(it.second.isValid(image)) {
-        triangulation = it.second.triangulation;
+        triangulation = it.second.triangulation.get();
         return 1;
       }
     }
