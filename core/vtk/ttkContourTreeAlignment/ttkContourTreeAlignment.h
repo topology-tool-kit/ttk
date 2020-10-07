@@ -29,7 +29,7 @@
 /// The input data array for the region sizes needs to be specified via the
 /// standard VTK call vtkAlgorithm::SetInputArrayToProcess() with the following
 /// parameters: \param idx 1 (FIXED: the second array the algorithm requires)
-/// \param port 0 (FIXED: first port)
+/// \param port 0 (FIXED: first port)R
 /// \param connection 0 (FIXED: first connection)
 /// \param fieldAssociation 1 (FIXED: cell data)
 /// \param arrayName (DYNAMIC: string identifier of the input array)

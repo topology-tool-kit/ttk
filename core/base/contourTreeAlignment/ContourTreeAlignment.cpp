@@ -12,54 +12,56 @@
 void ttk::ContourTreeAlignment::computeBranches() {
 
   // find global minimum
-  AlignmentNode *minNode = nodes[0];
+  std::shared_ptr<AlignmentNode> minNode = nodes[0];
   for(size_t i = 1; i < nodes.size(); i++) {
     if(minNode->scalarValue > nodes[i]->scalarValue)
       minNode = nodes[i];
   }
 
   // find path to global max
-  AlignmentNode *nextNode = minNode->edgeList[0]->node1 == minNode
-                              ? minNode->edgeList[0]->node2
-                              : minNode->edgeList[0]->node1;
-  std::vector<AlignmentNode *> maxPath_ = pathToMax(nextNode, minNode).second;
-  std::vector<AlignmentNode *> maxPath;
+  std::shared_ptr<AlignmentNode> nextNode
+    = minNode->edgeList[0]->node1 == minNode ? minNode->edgeList[0]->node2
+                                             : minNode->edgeList[0]->node1;
+  std::vector<std::shared_ptr<AlignmentNode>> maxPath_
+    = pathToMax(nextNode, minNode).second;
+  std::vector<std::shared_ptr<AlignmentNode>> maxPath;
   maxPath.push_back(minNode);
   maxPath.insert(maxPath.end(), maxPath_.begin(), maxPath_.end());
 
   int currID = 0;
   minNode->branchID = 0;
-  std::stack<std::vector<AlignmentNode *>> q;
+  std::stack<std::vector<std::shared_ptr<AlignmentNode>>> q;
   q.push(maxPath);
 
   while(!q.empty()) {
 
-    std::vector<AlignmentNode *> path = q.top();
+    std::vector<std::shared_ptr<AlignmentNode>> path = q.top();
     q.pop();
 
     for(size_t i = 1; i < path.size() - 1; i++) {
 
-      AlignmentNode *currNode = path[i];
+      std::shared_ptr<AlignmentNode> currNode = path[i];
 
-      for(AlignmentEdge *cE : currNode->edgeList) {
+      for(std::shared_ptr<AlignmentEdge> cE : currNode->edgeList) {
 
-        AlignmentNode *cN = cE->node1 == currNode ? cE->node2 : cE->node1;
+        std::shared_ptr<AlignmentNode> cN
+          = cE->node1 == currNode ? cE->node2 : cE->node1;
         if(cN == path[i - 1])
           continue;
         if(cN == path[i + 1])
           continue;
 
         if(cN->scalarValue > currNode->scalarValue) {
-          std::vector<AlignmentNode *> newPath_
+          std::vector<std::shared_ptr<AlignmentNode>> newPath_
             = pathToMax(cN, currNode).second;
-          std::vector<AlignmentNode *> newPath;
+          std::vector<std::shared_ptr<AlignmentNode>> newPath;
           newPath.push_back(currNode);
           newPath.insert(newPath.end(), newPath_.begin(), newPath_.end());
           q.push(newPath);
         } else {
-          std::vector<AlignmentNode *> newPath_
+          std::vector<std::shared_ptr<AlignmentNode>> newPath_
             = pathToMin(cN, currNode).second;
-          std::vector<AlignmentNode *> newPath;
+          std::vector<std::shared_ptr<AlignmentNode>> newPath;
           newPath.push_back(currNode);
           newPath.insert(newPath.end(), newPath_.begin(), newPath_.end());
           q.push(newPath);
@@ -69,23 +71,24 @@ void ttk::ContourTreeAlignment::computeBranches() {
       currNode->branchID = currID;
     }
 
-    for(AlignmentEdge *cE : path.back()->edgeList) {
+    for(std::shared_ptr<AlignmentEdge> cE : path.back()->edgeList) {
 
-      AlignmentNode *cN = cE->node1 == path.back() ? cE->node2 : cE->node1;
+      std::shared_ptr<AlignmentNode> cN
+        = cE->node1 == path.back() ? cE->node2 : cE->node1;
       if(cN == path[path.size() - 2])
         continue;
 
       if(cN->scalarValue > path.back()->scalarValue) {
-        std::vector<AlignmentNode *> newPath_
+        std::vector<std::shared_ptr<AlignmentNode>> newPath_
           = pathToMax(cN, path.back()).second;
-        std::vector<AlignmentNode *> newPath;
+        std::vector<std::shared_ptr<AlignmentNode>> newPath;
         newPath.push_back(path.back());
         newPath.insert(newPath.end(), newPath_.begin(), newPath_.end());
         q.push(newPath);
       } else {
-        std::vector<AlignmentNode *> newPath_
+        std::vector<std::shared_ptr<AlignmentNode>> newPath_
           = pathToMin(cN, path.back()).second;
-        std::vector<AlignmentNode *> newPath;
+        std::vector<std::shared_ptr<AlignmentNode>> newPath;
         newPath.push_back(path.back());
         newPath.insert(newPath.end(), newPath_.begin(), newPath_.end());
         q.push(newPath);
@@ -97,23 +100,24 @@ void ttk::ContourTreeAlignment::computeBranches() {
   }
 }
 
-std::pair<float, std::vector<AlignmentNode *>>
-  ttk::ContourTreeAlignment::pathToMax(AlignmentNode *root,
-                                       AlignmentNode *parent) {
+std::pair<float, std::vector<std::shared_ptr<AlignmentNode>>>
+  ttk::ContourTreeAlignment::pathToMax(std::shared_ptr<AlignmentNode> root,
+                                       std::shared_ptr<AlignmentNode> parent) {
 
-  std::vector<AlignmentNode *> path;
+  std::vector<std::shared_ptr<AlignmentNode>> path;
   path.push_back(root);
 
   if(root->edgeList.size() == 1) {
     return std::make_pair(root->scalarValue, path);
   }
 
-  std::vector<AlignmentNode *> bestPath;
+  std::vector<std::shared_ptr<AlignmentNode>> bestPath;
   float bestVal = -FLT_MAX;
 
-  for(AlignmentEdge *cE : root->edgeList) {
+  for(std::shared_ptr<AlignmentEdge> cE : root->edgeList) {
 
-    AlignmentNode *nextNode = cE->node1 == root ? cE->node2 : cE->node1;
+    std::shared_ptr<AlignmentNode> nextNode
+      = cE->node1 == root ? cE->node2 : cE->node1;
     if(parent == nextNode)
       continue;
     if(nextNode->scalarValue < root->scalarValue)
@@ -131,23 +135,24 @@ std::pair<float, std::vector<AlignmentNode *>>
   return std::make_pair(bestVal, path);
 }
 
-std::pair<float, std::vector<AlignmentNode *>>
-  ttk::ContourTreeAlignment::pathToMin(AlignmentNode *root,
-                                       AlignmentNode *parent) {
+std::pair<float, std::vector<std::shared_ptr<AlignmentNode>>>
+  ttk::ContourTreeAlignment::pathToMin(std::shared_ptr<AlignmentNode> root,
+                                       std::shared_ptr<AlignmentNode> parent) {
 
-  std::vector<AlignmentNode *> path;
+  std::vector<std::shared_ptr<AlignmentNode>> path;
   path.push_back(root);
 
   if(root->edgeList.size() == 1) {
     return std::make_pair(root->scalarValue, path);
   }
 
-  std::vector<AlignmentNode *> bestPath;
+  std::vector<std::shared_ptr<AlignmentNode>> bestPath;
   float bestVal = FLT_MAX;
 
-  for(AlignmentEdge *cE : root->edgeList) {
+  for(std::shared_ptr<AlignmentEdge> cE : root->edgeList) {
 
-    AlignmentNode *nextNode = cE->node1 == root ? cE->node2 : cE->node1;
+    std::shared_ptr<AlignmentNode> nextNode
+      = cE->node1 == root ? cE->node2 : cE->node1;
     if(parent == nextNode)
       continue;
     if(nextNode->scalarValue > root->scalarValue)
@@ -169,7 +174,7 @@ std::pair<float, std::vector<AlignmentNode *>>
 /// iterated aligning
 ///=====================================================================================================================
 
-bool ttk::ContourTreeAlignment::initialize(ContourTree *ct) {
+bool ttk::ContourTreeAlignment::initialize(std::shared_ptr<ContourTree> ct) {
 
   contourtrees.push_back(ct);
 
@@ -179,12 +184,14 @@ bool ttk::ContourTreeAlignment::initialize(ContourTree *ct) {
 
   // compute initial Alignment from initial contourtree
 
-  BinaryTree *t = ct->rootAtMax();
+  std::shared_ptr<BinaryTree> t = ct->rootAtMax();
 
-  std::queue<std::pair<BinaryTree *, AlignmentNode *>> q;
+  std::queue<
+    std::pair<std::shared_ptr<BinaryTree>, std::shared_ptr<AlignmentNode>>>
+    q;
 
-  AlignmentNode *currNode = new AlignmentNode();
-  BinaryTree *currTree;
+  std::shared_ptr<AlignmentNode> currNode(new AlignmentNode());
+  std::shared_ptr<BinaryTree> currTree;
 
   currNode->freq = 1;
   currNode->type = t->type;
@@ -204,9 +211,9 @@ bool ttk::ContourTreeAlignment::initialize(ContourTree *ct) {
     currNode = q.front().second;
     q.pop();
 
-    if(currTree->child1 != NULL) {
+    if(currTree->child1 != nullptr) {
 
-      AlignmentNode *childNode = new AlignmentNode();
+      std::shared_ptr<AlignmentNode> childNode(new AlignmentNode());
       childNode->freq = 1;
       childNode->type = currTree->child1->type;
       childNode->branchID = -1;
@@ -216,7 +223,7 @@ bool ttk::ContourTreeAlignment::initialize(ContourTree *ct) {
       childNode->nodeRefs.push_back(
         std::make_pair(0, currTree->child1->nodeRefs[0].second));
 
-      AlignmentEdge *childEdge = new AlignmentEdge();
+      std::shared_ptr<AlignmentEdge> childEdge(new AlignmentEdge());
       childEdge->area = currTree->child1->area;
       childEdge->scalardistance = currTree->child1->scalardistanceParent;
       childEdge->volume = currTree->child1->volume;
@@ -232,9 +239,9 @@ bool ttk::ContourTreeAlignment::initialize(ContourTree *ct) {
       q.push(std::make_pair(currTree->child1, childNode));
     }
 
-    if(currTree->child2 != NULL) {
+    if(currTree->child2 != nullptr) {
 
-      AlignmentNode *childNode = new AlignmentNode();
+      std::shared_ptr<AlignmentNode> childNode(new AlignmentNode());
       childNode->freq = 1;
       childNode->type = currTree->child2->type;
       childNode->branchID = -1;
@@ -244,7 +251,7 @@ bool ttk::ContourTreeAlignment::initialize(ContourTree *ct) {
       childNode->nodeRefs.push_back(
         std::make_pair(0, currTree->child2->nodeRefs[0].second));
 
-      AlignmentEdge *childEdge = new AlignmentEdge();
+      std::shared_ptr<AlignmentEdge> childEdge(new AlignmentEdge());
       childEdge->area = currTree->child2->area;
       childEdge->scalardistance = currTree->child2->scalardistanceParent;
       childEdge->volume = currTree->child2->volume;
@@ -264,8 +271,8 @@ bool ttk::ContourTreeAlignment::initialize(ContourTree *ct) {
   return true;
 }
 
-bool ttk::ContourTreeAlignment::initialize_consistentRoot(ContourTree *ct,
-                                                          int rootIdx) {
+bool ttk::ContourTreeAlignment::initialize_consistentRoot(
+  std::shared_ptr<ContourTree> ct, int rootIdx) {
 
   // cancel computation if tree is not binary
   if(!ct->isBinary())
@@ -275,12 +282,14 @@ bool ttk::ContourTreeAlignment::initialize_consistentRoot(ContourTree *ct,
 
   // compute initial Alignment from initial contourtree
 
-  BinaryTree *t = ct->rootAtMax();
+  std::shared_ptr<BinaryTree> t = ct->rootAtMax();
 
-  std::queue<std::pair<BinaryTree *, AlignmentNode *>> q;
+  std::queue<
+    std::pair<std::shared_ptr<BinaryTree>, std::shared_ptr<AlignmentNode>>>
+    q;
 
-  AlignmentNode *currNode = new AlignmentNode();
-  BinaryTree *currTree;
+  std::shared_ptr<AlignmentNode> currNode(new AlignmentNode());
+  std::shared_ptr<BinaryTree> currTree;
 
   currNode->freq = 1;
   currNode->type = t->type;
@@ -300,9 +309,9 @@ bool ttk::ContourTreeAlignment::initialize_consistentRoot(ContourTree *ct,
     currNode = q.front().second;
     q.pop();
 
-    if(currTree->child1 != NULL) {
+    if(currTree->child1 != nullptr) {
 
-      AlignmentNode *childNode = new AlignmentNode();
+      std::shared_ptr<AlignmentNode> childNode(new AlignmentNode());
       childNode->freq = 1;
       childNode->type = currTree->child1->type;
       childNode->branchID = -1;
@@ -312,7 +321,7 @@ bool ttk::ContourTreeAlignment::initialize_consistentRoot(ContourTree *ct,
       childNode->nodeRefs.push_back(
         std::make_pair(0, currTree->child1->nodeRefs[0].second));
 
-      AlignmentEdge *childEdge = new AlignmentEdge();
+      std::shared_ptr<AlignmentEdge> childEdge(new AlignmentEdge());
       childEdge->area = currTree->child1->area;
       childEdge->scalardistance = currTree->child1->scalardistanceParent;
       childEdge->volume = currTree->child1->volume;
@@ -332,9 +341,9 @@ bool ttk::ContourTreeAlignment::initialize_consistentRoot(ContourTree *ct,
       q.push(std::make_pair(currTree->child1, childNode));
     }
 
-    if(currTree->child2 != NULL) {
+    if(currTree->child2 != nullptr) {
 
-      AlignmentNode *childNode = new AlignmentNode();
+      std::shared_ptr<AlignmentNode> childNode(new AlignmentNode());
       childNode->freq = 1;
       childNode->type = currTree->child2->type;
       childNode->branchID = -1;
@@ -344,7 +353,7 @@ bool ttk::ContourTreeAlignment::initialize_consistentRoot(ContourTree *ct,
       childNode->nodeRefs.push_back(
         std::make_pair(0, currTree->child2->nodeRefs[0].second));
 
-      AlignmentEdge *childEdge = new AlignmentEdge();
+      std::shared_ptr<AlignmentEdge> childEdge(new AlignmentEdge());
       childEdge->area = currTree->child2->area;
       childEdge->scalardistance = currTree->child2->scalardistanceParent;
       childEdge->volume = currTree->child2->volume;
@@ -366,11 +375,8 @@ bool ttk::ContourTreeAlignment::initialize_consistentRoot(ContourTree *ct,
   }
 
   if(nodes.size() != ct->getGraph().first.size()) {
-
     printErr("wtf?");
   }
-
-  ContourTree::deleteBinaryTree(t);
 
   alignmentRoot = nodes[rootIdx];
   alignmentRootIdx = rootIdx;
@@ -378,7 +384,7 @@ bool ttk::ContourTreeAlignment::initialize_consistentRoot(ContourTree *ct,
   return true;
 }
 
-bool ttk::ContourTreeAlignment::alignTree(ContourTree *ct) {
+bool ttk::ContourTreeAlignment::alignTree(std::shared_ptr<ContourTree> ct) {
 
   contourtrees.push_back(ct);
 
@@ -388,24 +394,24 @@ bool ttk::ContourTreeAlignment::alignTree(ContourTree *ct) {
 
   // compute optimal alignment between current alignment and new tree
 
-  BinaryTree *t1, *t2;
+  std::shared_ptr<BinaryTree> t1, t2;
 
-  AlignmentTree *res = nullptr;
+  std::shared_ptr<AlignmentTree> res = nullptr;
   float resVal = FLT_MAX;
 
-  std::vector<AlignmentNode *> nodes1 = nodes;
-  std::vector<CTNode *> nodes2 = ct->getGraph().first;
+  std::vector<std::shared_ptr<AlignmentNode>> nodes1 = nodes;
+  std::vector<std::shared_ptr<CTNode>> nodes2 = ct->getGraph().first;
 
   int i = 0;
   int j = 0;
 
-  for(AlignmentNode *node1 : nodes1) {
+  for(std::shared_ptr<AlignmentNode> node1 : nodes1) {
 
     t1 = this->rootAtNode(node1);
 
     j = 0;
 
-    for(CTNode *node2 : nodes2) {
+    for(std::shared_ptr<CTNode> node2 : nodes2) {
 
       t2 = ct->rootAtNode(node2);
 
@@ -414,7 +420,8 @@ bool ttk::ContourTreeAlignment::alignTree(ContourTree *ct) {
       if((node1->type == maxNode && node2->type == maxNode)
          || (node1->type == minNode && node2->type == minNode)) {
 
-        std::pair<float, AlignmentTree *> match = getAlignmentBinary(t1, t2);
+        std::pair<float, std::shared_ptr<AlignmentTree>> match
+          = getAlignmentBinary(t1, t2);
 
         if(match.first < resVal) {
           resVal = match.first;
@@ -428,12 +435,18 @@ bool ttk::ContourTreeAlignment::alignTree(ContourTree *ct) {
     i++;
   }
 
-  computeNewAlignmenttree(res);
+  if(res)
+    computeNewAlignmenttree(res);
+  else {
+    printErr("Alignment computation failed.");
+    return false;
+  }
 
   return true;
 }
 
-bool ttk::ContourTreeAlignment::alignTree_consistentRoot(ContourTree *ct) {
+bool ttk::ContourTreeAlignment::alignTree_consistentRoot(
+  std::shared_ptr<ContourTree> ct) {
 
   // cancel computation if tree not binary
   if(!ct->isBinary())
@@ -443,18 +456,18 @@ bool ttk::ContourTreeAlignment::alignTree_consistentRoot(ContourTree *ct) {
 
   // compute optimal alignment between current alignment and new tree
 
-  BinaryTree *t1, *t2;
+  std::shared_ptr<BinaryTree> t1, t2;
 
-  AlignmentTree *res = NULL;
+  std::shared_ptr<AlignmentTree> res = nullptr;
   float resVal = FLT_MAX;
 
-  std::vector<CTNode *> nodes2 = ct->getGraph().first;
+  std::vector<std::shared_ptr<CTNode>> nodes2 = ct->getGraph().first;
 
   int i = 0;
 
   t1 = this->rootAtNode(alignmentRoot);
 
-  for(CTNode *node2 : nodes2) {
+  for(std::shared_ptr<CTNode> node2 : nodes2) {
 
     // compute matching
 
@@ -463,32 +476,24 @@ bool ttk::ContourTreeAlignment::alignTree_consistentRoot(ContourTree *ct) {
 
       t2 = ct->rootAtNode(node2);
 
-      std::pair<float, AlignmentTree *> match = getAlignmentBinary(t1, t2);
-
-      // if(match.second->node1==NULL || match.second->node2==NULL)
-      // printWrn("Root not matched...");
+      std::pair<float, std::shared_ptr<AlignmentTree>> match
+        = getAlignmentBinary(t1, t2);
 
       if(match.first < resVal) {
-        if(res && res->node2)
-          ContourTree::deleteBinaryTree(res->node2);
-        if(res)
-          deleteAlignmentTree(res);
         resVal = match.first;
         res = match.second;
-      } else {
-        ContourTree::deleteBinaryTree(t2);
-        deleteAlignmentTree(match.second);
       }
     }
 
     i++;
   }
 
-  computeNewAlignmenttree(res);
-
-  ContourTree::deleteBinaryTree(res->node1);
-  ContourTree::deleteBinaryTree(res->node2);
-  deleteAlignmentTree(res);
+  if(res)
+    computeNewAlignmenttree(res);
+  else {
+    printErr("Alignment computation failed.");
+    return false;
+  }
 
   alignmentVal += resVal;
 
@@ -497,53 +502,47 @@ bool ttk::ContourTreeAlignment::alignTree_consistentRoot(ContourTree *ct) {
   return true;
 }
 
-void ttk::ContourTreeAlignment::computeNewAlignmenttree(AlignmentTree *res) {
-
-  for(AlignmentNode *node : nodes) {
-    delete node;
-  }
-  for(AlignmentEdge *edge : arcs) {
-    delete edge;
-  }
+void ttk::ContourTreeAlignment::computeNewAlignmenttree(
+  std::shared_ptr<AlignmentTree> res) {
 
   nodes.clear();
   arcs.clear();
 
-  // std::queue<std::pair<AlignmentTree*,AlignmentNode*>> q;
   std::queue<
-    std::tuple<AlignmentTree *, AlignmentNode *, std::vector<AlignmentEdge *>,
-               std::vector<AlignmentEdge *>>>
+    std::tuple<std::shared_ptr<AlignmentTree>, std::shared_ptr<AlignmentNode>,
+               std::vector<std::shared_ptr<AlignmentEdge>>,
+               std::vector<std::shared_ptr<AlignmentEdge>>>>
     q;
 
-  AlignmentNode *currNode;
-  AlignmentTree *currTree;
+  std::shared_ptr<AlignmentNode> currNode;
+  std::shared_ptr<AlignmentTree> currTree;
 
-  currNode = new AlignmentNode();
+  currNode = std::shared_ptr<AlignmentNode>(new AlignmentNode());
 
-  currNode->freq = (res->node1 == NULL ? 0 : res->node1->freq)
-                   + (res->node2 == NULL ? 0 : res->node2->freq);
-  currNode->type = res->node1 == NULL ? res->node2->type : res->node1->type;
+  currNode->freq = (res->node1 == nullptr ? 0 : res->node1->freq)
+                   + (res->node2 == nullptr ? 0 : res->node2->freq);
+  currNode->type = res->node1 == nullptr ? res->node2->type : res->node1->type;
   currNode->branchID = -1;
 
   if(alignmenttreeType == lastMatchedValue) {
 
-    currNode->scalarValue
-      = res->node2 == NULL ? res->node1->scalarValue : res->node2->scalarValue;
+    currNode->scalarValue = res->node2 == nullptr ? res->node1->scalarValue
+                                                  : res->node2->scalarValue;
 
     currNode->nodeRefs = std::vector<std::pair<int, int>>();
-    if(res->node1 != NULL)
+    if(res->node1 != nullptr)
       currNode->nodeRefs.insert(currNode->nodeRefs.end(),
                                 res->node1->nodeRefs.begin(),
                                 res->node1->nodeRefs.end());
-    if(res->node2 != NULL)
+    if(res->node2 != nullptr)
       currNode->nodeRefs.push_back(std::make_pair(
         (int)contourtrees.size() - 1, res->node2->nodeRefs[0].second));
 
   } else if(alignmenttreeType == averageValues) {
 
-    currNode->scalarValue = res->node1 == NULL
+    currNode->scalarValue = res->node1 == nullptr
                               ? res->node2->scalarValue
-                              : res->node2 == NULL
+                              : res->node2 == nullptr
                                   ? res->node1->scalarValue
                                   : (res->node1->scalarValue * res->node1->freq
                                      + res->node2->scalarValue)
@@ -551,9 +550,9 @@ void ttk::ContourTreeAlignment::computeNewAlignmenttree(AlignmentTree *res) {
 
   } else {
 
-    if(res->node1 == NULL)
+    if(res->node1 == nullptr)
       currNode->scalarValue = res->node2->scalarValue;
-    else if(res->node2 == NULL)
+    else if(res->node2 == nullptr)
       currNode->scalarValue = res->node1->scalarValue;
     else {
       std::vector<float> values;
@@ -569,24 +568,22 @@ void ttk::ContourTreeAlignment::computeNewAlignmenttree(AlignmentTree *res) {
   }
 
   currNode->nodeRefs = std::vector<std::pair<int, int>>();
-  if(res->node1 != NULL)
+  if(res->node1 != nullptr)
     currNode->nodeRefs.insert(currNode->nodeRefs.end(),
                               res->node1->nodeRefs.begin(),
                               res->node1->nodeRefs.end());
-  if(res->node2 != NULL)
+  if(res->node2 != nullptr)
     currNode->nodeRefs.push_back(std::make_pair(
       (int)contourtrees.size() - 1, res->node2->nodeRefs[0].second));
 
   nodes.push_back(currNode);
 
-  // q.push(std::make_pair(res,currNode));
-  q.push(std::make_tuple(res, currNode, std::vector<AlignmentEdge *>(),
-                         std::vector<AlignmentEdge *>()));
+  q.push(std::make_tuple(res, currNode,
+                         std::vector<std::shared_ptr<AlignmentEdge>>(),
+                         std::vector<std::shared_ptr<AlignmentEdge>>()));
 
   while(!q.empty()) {
 
-    // currTree = q.front().first;
-    // currNode = q.front().second;
     currTree = std::get<0>(q.front());
     currNode = std::get<1>(q.front());
     auto openEdgesOld1 = std::get<2>(q.front());
@@ -597,15 +594,17 @@ void ttk::ContourTreeAlignment::computeNewAlignmenttree(AlignmentTree *res) {
 
     // type 'rootNode' not possible, otherwise has to be catched
 
-    if(currTree->child1 != NULL) {
+    if(currTree->child1 != nullptr) {
 
-      AlignmentNode *childNode = new AlignmentNode();
+      std::shared_ptr<AlignmentNode> childNode(new AlignmentNode());
 
       childNode->freq
-        = (currTree->child1->node1 == NULL ? 0 : currTree->child1->node1->freq)
-          + (currTree->child1->node2 == NULL ? 0
-                                             : currTree->child1->node2->freq);
-      childNode->type = currTree->child1->node1 == NULL
+        = (currTree->child1->node1 == nullptr ? 0
+                                              : currTree->child1->node1->freq)
+          + (currTree->child1->node2 == nullptr
+               ? 0
+               : currTree->child1->node2->freq);
+      childNode->type = currTree->child1->node1 == nullptr
                           ? currTree->child1->node2->type
                           : currTree->child1->node1->type;
 
@@ -613,16 +612,16 @@ void ttk::ContourTreeAlignment::computeNewAlignmenttree(AlignmentTree *res) {
 
       if(alignmenttreeType == lastMatchedValue) {
 
-        childNode->scalarValue = currTree->child1->node2 == NULL
+        childNode->scalarValue = currTree->child1->node2 == nullptr
                                    ? currTree->child1->node1->scalarValue
                                    : currTree->child1->node2->scalarValue;
 
       } else if(alignmenttreeType == averageValues) {
 
         childNode->scalarValue
-          = currTree->child1->node1 == NULL
+          = currTree->child1->node1 == nullptr
               ? currTree->child1->node2->scalarValue
-              : currTree->child1->node2 == NULL
+              : currTree->child1->node2 == nullptr
                   ? currTree->child1->node1->scalarValue
                   : (currTree->child1->node1->scalarValue
                        * currTree->child1->node1->freq
@@ -631,9 +630,9 @@ void ttk::ContourTreeAlignment::computeNewAlignmenttree(AlignmentTree *res) {
 
       } else {
 
-        if(currTree->child1->node1 == NULL)
+        if(currTree->child1->node1 == nullptr)
           childNode->scalarValue = currTree->child1->node2->scalarValue;
-        else if(currTree->child1->node2 == NULL)
+        else if(currTree->child1->node2 == nullptr)
           childNode->scalarValue = currTree->child1->node1->scalarValue;
         else {
           std::vector<float> values;
@@ -649,33 +648,33 @@ void ttk::ContourTreeAlignment::computeNewAlignmenttree(AlignmentTree *res) {
       }
 
       childNode->nodeRefs = std::vector<std::pair<int, int>>();
-      if(currTree->child1->node1 != NULL)
+      if(currTree->child1->node1 != nullptr)
         childNode->nodeRefs.insert(childNode->nodeRefs.end(),
                                    currTree->child1->node1->nodeRefs.begin(),
                                    currTree->child1->node1->nodeRefs.end());
-      if(currTree->child1->node2 != NULL)
+      if(currTree->child1->node2 != nullptr)
         childNode->nodeRefs.push_back(
           std::make_pair((int)contourtrees.size() - 1,
                          currTree->child1->node2->nodeRefs[0].second));
 
-      AlignmentEdge *childEdge = new AlignmentEdge();
+      std::shared_ptr<AlignmentEdge> childEdge(new AlignmentEdge());
 
       if(alignmenttreeType == lastMatchedValue) {
 
-        childEdge->area = currTree->child1->node2 == NULL
+        childEdge->area = currTree->child1->node2 == nullptr
                             ? currTree->child1->node1->area
                             : currTree->child1->node2->area;
 
         childEdge->scalardistance
-          = currTree->child1->node2 == NULL
+          = currTree->child1->node2 == nullptr
               ? currTree->child1->node1->scalardistanceParent
               : currTree->child1->node2->scalardistanceParent;
 
       } else if(alignmenttreeType == averageValues) {
 
-        childEdge->area = currTree->child1->node1 == NULL
+        childEdge->area = currTree->child1->node1 == nullptr
                             ? currTree->child1->node2->area
-                            : currTree->child1->node2 == NULL
+                            : currTree->child1->node2 == nullptr
                                 ? currTree->child1->node1->area
                                 : (currTree->child1->node1->area
                                      * currTree->child1->node1->freq
@@ -683,9 +682,9 @@ void ttk::ContourTreeAlignment::computeNewAlignmenttree(AlignmentTree *res) {
                                     / childNode->freq;
 
         childEdge->scalardistance
-          = currTree->child1->node1 == NULL
+          = currTree->child1->node1 == nullptr
               ? currTree->child1->node2->scalardistanceParent
-              : currTree->child1->node2 == NULL
+              : currTree->child1->node2 == nullptr
                   ? currTree->child1->node1->scalardistanceParent
                   : (currTree->child1->node1->scalardistanceParent
                        * currTree->child1->node1->freq
@@ -694,11 +693,11 @@ void ttk::ContourTreeAlignment::computeNewAlignmenttree(AlignmentTree *res) {
 
       } else {
 
-        if(currTree->child1->node1 == NULL) {
+        if(currTree->child1->node1 == nullptr) {
           childEdge->area = currTree->child1->node2->area;
           childEdge->scalardistance
             = currTree->child1->node2->scalardistanceParent;
-        } else if(currTree->child1->node2 == NULL) {
+        } else if(currTree->child1->node2 == nullptr) {
           childEdge->area = currTree->child1->node1->scalarValue;
           childEdge->scalardistance
             = currTree->child1->node1->scalardistanceParent;
@@ -727,8 +726,8 @@ void ttk::ContourTreeAlignment::computeNewAlignmenttree(AlignmentTree *res) {
       }
 
       childEdge->arcRefs = std::vector<std::pair<int, int>>();
-      if(currTree->child1->node1 != NULL) {
-        for(AlignmentEdge *e : openEdgesOld1) {
+      if(currTree->child1->node1 != nullptr) {
+        for(std::shared_ptr<AlignmentEdge> e : openEdgesOld1) {
           e->arcRefs.insert(e->arcRefs.end(),
                             currTree->child1->node1->arcRefs.begin(),
                             currTree->child1->node1->arcRefs.end());
@@ -739,8 +738,8 @@ void ttk::ContourTreeAlignment::computeNewAlignmenttree(AlignmentTree *res) {
                                   currTree->child1->node1->arcRefs.end());
       } else
         openEdgesOld1.push_back(childEdge);
-      if(currTree->child1->node2 != NULL) {
-        for(AlignmentEdge *e : openEdgesNew1) {
+      if(currTree->child1->node2 != nullptr) {
+        for(std::shared_ptr<AlignmentEdge> e : openEdgesNew1) {
           e->arcRefs.push_back(
             std::make_pair((int)contourtrees.size() - 1,
                            currTree->child1->node2->arcRefs[0].second));
@@ -763,20 +762,21 @@ void ttk::ContourTreeAlignment::computeNewAlignmenttree(AlignmentTree *res) {
       nodes.push_back(childNode);
       arcs.push_back(childEdge);
 
-      // q.push(std::make_pair(currTree->child1,childNode));
       q.push(std::make_tuple(
         currTree->child1, childNode, openEdgesOld1, openEdgesNew1));
     }
 
-    if(currTree->child2 != NULL) {
+    if(currTree->child2 != nullptr) {
 
-      AlignmentNode *childNode = new AlignmentNode();
+      std::shared_ptr<AlignmentNode> childNode(new AlignmentNode());
 
       childNode->freq
-        = (currTree->child2->node1 == NULL ? 0 : currTree->child2->node1->freq)
-          + (currTree->child2->node2 == NULL ? 0
-                                             : currTree->child2->node2->freq);
-      childNode->type = currTree->child2->node1 == NULL
+        = (currTree->child2->node1 == nullptr ? 0
+                                              : currTree->child2->node1->freq)
+          + (currTree->child2->node2 == nullptr
+               ? 0
+               : currTree->child2->node2->freq);
+      childNode->type = currTree->child2->node1 == nullptr
                           ? currTree->child2->node2->type
                           : currTree->child2->node1->type;
 
@@ -784,16 +784,16 @@ void ttk::ContourTreeAlignment::computeNewAlignmenttree(AlignmentTree *res) {
 
       if(alignmenttreeType == lastMatchedValue) {
 
-        childNode->scalarValue = currTree->child2->node2 == NULL
+        childNode->scalarValue = currTree->child2->node2 == nullptr
                                    ? currTree->child2->node1->scalarValue
                                    : currTree->child2->node2->scalarValue;
 
       } else if(alignmenttreeType == averageValues) {
 
         childNode->scalarValue
-          = currTree->child2->node1 == NULL
+          = currTree->child2->node1 == nullptr
               ? currTree->child2->node2->scalarValue
-              : currTree->child2->node2 == NULL
+              : currTree->child2->node2 == nullptr
                   ? currTree->child2->node1->scalarValue
                   : (currTree->child2->node1->scalarValue
                        * currTree->child2->node1->freq
@@ -802,9 +802,9 @@ void ttk::ContourTreeAlignment::computeNewAlignmenttree(AlignmentTree *res) {
 
       } else {
 
-        if(currTree->child2->node1 == NULL)
+        if(currTree->child2->node1 == nullptr)
           childNode->scalarValue = currTree->child2->node2->scalarValue;
-        else if(currTree->child2->node2 == NULL)
+        else if(currTree->child2->node2 == nullptr)
           childNode->scalarValue = currTree->child2->node1->scalarValue;
         else {
           std::vector<float> values;
@@ -820,33 +820,33 @@ void ttk::ContourTreeAlignment::computeNewAlignmenttree(AlignmentTree *res) {
       }
 
       childNode->nodeRefs = std::vector<std::pair<int, int>>();
-      if(currTree->child2->node1 != NULL)
+      if(currTree->child2->node1 != nullptr)
         childNode->nodeRefs.insert(childNode->nodeRefs.end(),
                                    currTree->child2->node1->nodeRefs.begin(),
                                    currTree->child2->node1->nodeRefs.end());
-      if(currTree->child2->node2 != NULL)
+      if(currTree->child2->node2 != nullptr)
         childNode->nodeRefs.push_back(
           std::make_pair((int)contourtrees.size() - 1,
                          currTree->child2->node2->nodeRefs[0].second));
 
-      AlignmentEdge *childEdge = new AlignmentEdge();
+      std::shared_ptr<AlignmentEdge> childEdge(new AlignmentEdge());
 
       if(alignmenttreeType == lastMatchedValue) {
 
-        childEdge->area = currTree->child2->node2 == NULL
+        childEdge->area = currTree->child2->node2 == nullptr
                             ? currTree->child2->node1->area
                             : currTree->child2->node2->area;
 
         childEdge->scalardistance
-          = currTree->child2->node2 == NULL
+          = currTree->child2->node2 == nullptr
               ? currTree->child2->node1->scalardistanceParent
               : currTree->child2->node2->scalardistanceParent;
 
       } else if(alignmenttreeType == averageValues) {
 
-        childEdge->area = currTree->child2->node1 == NULL
+        childEdge->area = currTree->child2->node1 == nullptr
                             ? currTree->child2->node2->area
-                            : currTree->child2->node2 == NULL
+                            : currTree->child2->node2 == nullptr
                                 ? currTree->child2->node1->area
                                 : (currTree->child2->node1->area
                                      * currTree->child2->node1->freq
@@ -854,9 +854,9 @@ void ttk::ContourTreeAlignment::computeNewAlignmenttree(AlignmentTree *res) {
                                     / childNode->freq;
 
         childEdge->scalardistance
-          = currTree->child2->node1 == NULL
+          = currTree->child2->node1 == nullptr
               ? currTree->child2->node2->scalardistanceParent
-              : currTree->child2->node2 == NULL
+              : currTree->child2->node2 == nullptr
                   ? currTree->child2->node1->scalardistanceParent
                   : (currTree->child2->node1->scalardistanceParent
                        * currTree->child2->node1->freq
@@ -865,11 +865,11 @@ void ttk::ContourTreeAlignment::computeNewAlignmenttree(AlignmentTree *res) {
 
       } else {
 
-        if(currTree->child2->node1 == NULL) {
+        if(currTree->child2->node1 == nullptr) {
           childEdge->area = currTree->child2->node2->area;
           childEdge->scalardistance
             = currTree->child2->node2->scalardistanceParent;
-        } else if(currTree->child2->node2 == NULL) {
+        } else if(currTree->child2->node2 == nullptr) {
           childEdge->area = currTree->child2->node1->scalarValue;
           childEdge->scalardistance
             = currTree->child2->node1->scalardistanceParent;
@@ -898,8 +898,8 @@ void ttk::ContourTreeAlignment::computeNewAlignmenttree(AlignmentTree *res) {
       }
 
       childEdge->arcRefs = std::vector<std::pair<int, int>>();
-      if(currTree->child2->node1 != NULL) {
-        for(AlignmentEdge *e : openEdgesOld2) {
+      if(currTree->child2->node1 != nullptr) {
+        for(std::shared_ptr<AlignmentEdge> e : openEdgesOld2) {
           e->arcRefs.insert(e->arcRefs.end(),
                             currTree->child2->node1->arcRefs.begin(),
                             currTree->child2->node1->arcRefs.end());
@@ -910,8 +910,8 @@ void ttk::ContourTreeAlignment::computeNewAlignmenttree(AlignmentTree *res) {
                                   currTree->child2->node1->arcRefs.end());
       } else
         openEdgesOld2.push_back(childEdge);
-      if(currTree->child2->node2 != NULL) {
-        for(AlignmentEdge *e : openEdgesNew1) {
+      if(currTree->child2->node2 != nullptr) {
+        for(std::shared_ptr<AlignmentEdge> e : openEdgesNew1) {
           e->arcRefs.push_back(
             std::make_pair((int)contourtrees.size() - 1,
                            currTree->child2->node2->arcRefs[0].second));
@@ -955,43 +955,40 @@ int ttk::ContourTreeAlignment::getAlignmentRootIdx() {
   return idx;
 }
 
-std::vector<ContourTree *> ttk::ContourTreeAlignment::getContourTrees() {
-
-  /*std::vector<ContourForests*> trees_ttk;
-
-  for(ContourTree* ct : contourtrees){
-      trees_ttk.push_back(ct->getContourForest());
-  }
-
-  return trees_ttk;*/
+std::vector<std::shared_ptr<ContourTree>>
+  ttk::ContourTreeAlignment::getContourTrees() {
 
   return contourtrees;
 }
 
-std::vector<std::pair<std::vector<CTNode *>, std::vector<CTEdge *>>>
+std::vector<std::pair<std::vector<std::shared_ptr<CTNode>>,
+                      std::vector<std::shared_ptr<CTEdge>>>>
   ttk::ContourTreeAlignment::getGraphs() {
 
-  std::vector<std::pair<std::vector<CTNode *>, std::vector<CTEdge *>>>
+  std::vector<std::pair<std::vector<std::shared_ptr<CTNode>>,
+                        std::vector<std::shared_ptr<CTEdge>>>>
     trees_simplified;
 
-  for(ContourTree *ct : contourtrees) {
+  for(std::shared_ptr<ContourTree> ct : contourtrees) {
     trees_simplified.push_back(ct->getGraph());
   }
 
   return trees_simplified;
 }
 
-std::pair<std::vector<AlignmentNode *>, std::vector<AlignmentEdge *>>
+std::pair<std::vector<std::shared_ptr<AlignmentNode>>,
+          std::vector<std::shared_ptr<AlignmentEdge>>>
   ttk::ContourTreeAlignment::getAlignmentGraph() {
 
   return std::make_pair(nodes, arcs);
 }
 
-BinaryTree *ttk::ContourTreeAlignment::getAlignmentGraphRooted() {
+std::shared_ptr<BinaryTree>
+  ttk::ContourTreeAlignment::getAlignmentGraphRooted() {
 
-  AlignmentNode *root = nodes[0];
+  std::shared_ptr<AlignmentNode> root = nodes[0];
   float maxScalar = FLT_MIN;
-  for(AlignmentNode *node : nodes) {
+  for(std::shared_ptr<AlignmentNode> node : nodes) {
 
     // if(node->type==maxNode && node->edgeList[0]->scalardistance > maxRange){
     if(node->scalarValue > maxScalar) {
@@ -1007,70 +1004,52 @@ BinaryTree *ttk::ContourTreeAlignment::getAlignmentGraphRooted() {
 /// aligning two trees
 ///=====================================================================================================================
 
-std::pair<float, AlignmentTree *>
-  ttk::ContourTreeAlignment::getAlignmentBinary(BinaryTree *t1,
-                                                BinaryTree *t2) {
+std::pair<float, std::shared_ptr<AlignmentTree>>
+  ttk::ContourTreeAlignment::getAlignmentBinary(
+    std::shared_ptr<BinaryTree> t1, std::shared_ptr<BinaryTree> t2) {
 
   // initialize memoization tables
-
-  float **memT = new float *[t1->size + 1];
-  float **memF = new float *[t1->size + 1];
-
-  for(int i = 0; i <= t1->size; i++) {
-    memT[i] = new float[t2->size + 1];
-    memF[i] = new float[t2->size + 1];
-  }
-
-  for(int i = 0; i <= t1->size; i++) {
-    for(int j = 0; j <= t2->size; j++) {
-      memT[i][j] = -1;
-      memF[i][j] = -1;
-    }
-  }
+  std::vector<std::vector<float>> memT(
+    t1->size + 1, std::vector<float>(t2->size + 1, -1));
+  std::vector<std::vector<float>> memF(
+    t1->size + 1, std::vector<float>(t2->size + 1, -1));
 
   // compute table of distances
   float dist = alignTreeBinary(t1, t2, memT, memF);
 
   // backtrace through the table to get the alignment
-  AlignmentTree *res = traceAlignmentTree(t1, t2, memT, memF);
-
-  for(int i = 0; i <= t1->size; i++) {
-    delete[] memT[i];
-    delete[] memF[i];
-  }
-
-  delete[] memT;
-  delete[] memF;
+  std::shared_ptr<AlignmentTree> res = traceAlignmentTree(t1, t2, memT, memF);
 
   return std::make_pair(dist, res);
 }
 
-float ttk::ContourTreeAlignment::alignTreeBinary(BinaryTree *t1,
-                                                 BinaryTree *t2,
-                                                 float **memT,
-                                                 float **memF) {
+float ttk::ContourTreeAlignment::alignTreeBinary(
+  std::shared_ptr<BinaryTree> t1,
+  std::shared_ptr<BinaryTree> t2,
+  std::vector<std::vector<float>> &memT,
+  std::vector<std::vector<float>> &memF) {
 
   // base cases for matching to empty tree
 
-  if(t1 == NULL && t2 == NULL) {
+  if(t1 == nullptr && t2 == nullptr) {
     if(memT[0][0] < 0) {
       memT[0][0] = 0;
     }
     return memT[0][0];
   }
 
-  else if(t1 == NULL) {
+  else if(t1 == nullptr) {
     if(memT[0][t2->id] < 0) {
       memT[0][t2->id]
-        = editCost(NULL, t2) + alignForestBinary(NULL, t2, memT, memF);
+        = editCost(nullptr, t2) + alignForestBinary(nullptr, t2, memT, memF);
     }
     return memT[0][t2->id];
   }
 
-  else if(t2 == NULL) {
+  else if(t2 == nullptr) {
     if(memT[t1->id][0] < 0) {
       memT[t1->id][0]
-        = editCost(t1, NULL) + alignForestBinary(t1, NULL, memT, memF);
+        = editCost(t1, nullptr) + alignForestBinary(t1, nullptr, memT, memF);
     }
     return memT[t1->id][0];
   }
@@ -1087,61 +1066,66 @@ float ttk::ContourTreeAlignment::alignTreeBinary(BinaryTree *t1,
       // match t1 to blank, one of its children to t2, the other to blank (try
       // both children)
       if(t1->size > 1)
-        memT[t1->id][t2->id] = std::min(
-          editCost(t1, NULL) + alignTreeBinary(t1->child2, NULL, memT, memF)
-            + alignTreeBinary(t1->child1, t2, memT, memF),
-          memT[t1->id][t2->id]);
+        memT[t1->id][t2->id]
+          = std::min(editCost(t1, nullptr)
+                       + alignTreeBinary(t1->child2, nullptr, memT, memF)
+                       + alignTreeBinary(t1->child1, t2, memT, memF),
+                     memT[t1->id][t2->id]);
       if(t1->size > 1)
-        memT[t1->id][t2->id] = std::min(
-          editCost(t1, NULL) + alignTreeBinary(t1->child1, NULL, memT, memF)
-            + alignTreeBinary(t1->child2, t2, memT, memF),
-          memT[t1->id][t2->id]);
+        memT[t1->id][t2->id]
+          = std::min(editCost(t1, nullptr)
+                       + alignTreeBinary(t1->child1, nullptr, memT, memF)
+                       + alignTreeBinary(t1->child2, t2, memT, memF),
+                     memT[t1->id][t2->id]);
 
       // match t2 to blank, one of its children to t1, the other to blank (try
       // both children)
       if(t2->size > 1)
-        memT[t1->id][t2->id] = std::min(
-          editCost(NULL, t2) + alignTreeBinary(NULL, t2->child2, memT, memF)
-            + alignTreeBinary(t1, t2->child1, memT, memF),
-          memT[t1->id][t2->id]);
+        memT[t1->id][t2->id]
+          = std::min(editCost(nullptr, t2)
+                       + alignTreeBinary(nullptr, t2->child2, memT, memF)
+                       + alignTreeBinary(t1, t2->child1, memT, memF),
+                     memT[t1->id][t2->id]);
       if(t2->size > 1)
-        memT[t1->id][t2->id] = std::min(
-          editCost(NULL, t2) + alignTreeBinary(NULL, t2->child1, memT, memF)
-            + alignTreeBinary(t1, t2->child2, memT, memF),
-          memT[t1->id][t2->id]);
+        memT[t1->id][t2->id]
+          = std::min(editCost(nullptr, t2)
+                       + alignTreeBinary(nullptr, t2->child1, memT, memF)
+                       + alignTreeBinary(t1, t2->child2, memT, memF),
+                     memT[t1->id][t2->id]);
     }
     return memT[t1->id][t2->id];
   }
 }
 
-float ttk::ContourTreeAlignment::alignForestBinary(BinaryTree *t1,
-                                                   BinaryTree *t2,
-                                                   float **memT,
-                                                   float **memF) {
+float ttk::ContourTreeAlignment::alignForestBinary(
+  std::shared_ptr<BinaryTree> t1,
+  std::shared_ptr<BinaryTree> t2,
+  std::vector<std::vector<float>> &memT,
+  std::vector<std::vector<float>> &memF) {
 
   // base cases for matching to empty tree
 
-  if(t1 == NULL && t2 == NULL) {
+  if(t1 == nullptr && t2 == nullptr) {
     if(memF[0][0] < 0) {
       memF[0][0] = 0;
     }
     return memF[0][0];
   }
 
-  else if(t1 == NULL) {
+  else if(t1 == nullptr) {
     if(memF[0][t2->id] < 0) {
       memF[0][t2->id] = 0;
-      memF[0][t2->id] += alignTreeBinary(NULL, t2->child1, memT, memF);
-      memF[0][t2->id] += alignTreeBinary(NULL, t2->child2, memT, memF);
+      memF[0][t2->id] += alignTreeBinary(nullptr, t2->child1, memT, memF);
+      memF[0][t2->id] += alignTreeBinary(nullptr, t2->child2, memT, memF);
     }
     return memF[0][t2->id];
   }
 
-  else if(t2 == NULL) {
+  else if(t2 == nullptr) {
     if(memF[t1->id][0] < 0) {
       memF[t1->id][0] = 0;
-      memF[t1->id][0] += alignTreeBinary(t1->child1, NULL, memT, memF);
-      memF[t1->id][0] += alignTreeBinary(t1->child2, NULL, memT, memF);
+      memF[t1->id][0] += alignTreeBinary(t1->child1, nullptr, memT, memF);
+      memF[t1->id][0] += alignTreeBinary(t1->child2, nullptr, memT, memF);
     }
     return memF[t1->id][0];
   }
@@ -1153,31 +1137,31 @@ float ttk::ContourTreeAlignment::alignForestBinary(BinaryTree *t1,
 
       memF[t1->id][t2->id] = FLT_MAX;
 
-      if(t1->child2 != NULL && t1->child2->size > 1)
+      if(t1->child2 != nullptr && t1->child2->size > 1)
         memF[t1->id][t2->id]
           = std::min(memF[t1->id][t2->id],
-                     editCost(t1->child2, NULL)
+                     editCost(t1->child2, nullptr)
                        + alignForestBinary(t1->child2, t2, memT, memF)
-                       + alignTreeBinary(t1->child1, NULL, memT, memF));
-      if(t1->child1 != NULL && t1->child1->size > 1)
+                       + alignTreeBinary(t1->child1, nullptr, memT, memF));
+      if(t1->child1 != nullptr && t1->child1->size > 1)
         memF[t1->id][t2->id]
           = std::min(memF[t1->id][t2->id],
-                     editCost(t1->child1, NULL)
+                     editCost(t1->child1, nullptr)
                        + alignForestBinary(t1->child1, t2, memT, memF)
-                       + alignTreeBinary(t1->child2, NULL, memT, memF));
+                       + alignTreeBinary(t1->child2, nullptr, memT, memF));
 
-      if(t2->child2 != NULL && t2->child2->size > 1)
+      if(t2->child2 != nullptr && t2->child2->size > 1)
         memF[t1->id][t2->id]
           = std::min(memF[t1->id][t2->id],
-                     editCost(NULL, t2->child2)
+                     editCost(nullptr, t2->child2)
                        + alignForestBinary(t1, t2->child2, memT, memF)
-                       + alignTreeBinary(NULL, t2->child1, memT, memF));
-      if(t2->child1 != NULL && t2->child1->size > 1)
+                       + alignTreeBinary(nullptr, t2->child1, memT, memF));
+      if(t2->child1 != nullptr && t2->child1->size > 1)
         memF[t1->id][t2->id]
           = std::min(memF[t1->id][t2->id],
-                     editCost(NULL, t2->child1)
+                     editCost(nullptr, t2->child1)
                        + alignForestBinary(t1, t2->child1, memT, memF)
-                       + alignTreeBinary(NULL, t2->child2, memT, memF));
+                       + alignTreeBinary(nullptr, t2->child2, memT, memF));
 
       memF[t1->id][t2->id]
         = std::min(memF[t1->id][t2->id],
@@ -1192,26 +1176,27 @@ float ttk::ContourTreeAlignment::alignForestBinary(BinaryTree *t1,
   }
 }
 
-float ttk::ContourTreeAlignment::editCost(BinaryTree *t1, BinaryTree *t2) {
+float ttk::ContourTreeAlignment::editCost(std::shared_ptr<BinaryTree> t1,
+                                          std::shared_ptr<BinaryTree> t2) {
 
   float v1 = 0, v2 = 0;
-  if(t1 != NULL)
+  if(t1 != nullptr)
     v1 = arcMatchMode == persistence
            ? t1->scalardistanceParent
            : arcMatchMode == area ? t1->area : t1->volume;
-  if(t2 != NULL)
+  if(t2 != nullptr)
     v2 = arcMatchMode == persistence
            ? t2->scalardistanceParent
            : arcMatchMode == area ? t2->area : t2->volume;
 
-  if(t1 == NULL && t2 == NULL)
+  if(t1 == nullptr && t2 == nullptr)
     return 0;
 
-  else if(t1 == NULL)
+  else if(t1 == nullptr)
     return weightCombinatorialMatch + weightArcMatch * v2
            + weightScalarValueMatch;
 
-  else if(t2 == NULL)
+  else if(t2 == nullptr)
     return weightCombinatorialMatch + weightArcMatch * v1
            + weightScalarValueMatch;
 
@@ -1224,30 +1209,33 @@ float ttk::ContourTreeAlignment::editCost(BinaryTree *t1, BinaryTree *t2) {
     return FLT_MAX;
 }
 
-AlignmentTree *ttk::ContourTreeAlignment::traceAlignmentTree(BinaryTree *t1,
-                                                             BinaryTree *t2,
-                                                             float **memT,
-                                                             float **memF) {
+std::shared_ptr<AlignmentTree> ttk::ContourTreeAlignment::traceAlignmentTree(
+  std::shared_ptr<BinaryTree> t1,
+  std::shared_ptr<BinaryTree> t2,
+  std::vector<std::vector<float>> &memT,
+  std::vector<std::vector<float>> &memF) {
 
-  if(t1 == NULL)
+  if(t1 == nullptr)
     return traceNullAlignment(t2, false);
-  if(t2 == NULL)
+  if(t2 == nullptr)
     return traceNullAlignment(t1, true);
 
-  auto id = [](BinaryTree *t) { return t == NULL ? 0 : t->id; };
+  auto id = [this](std::shared_ptr<BinaryTree> t) {
+    return t == nullptr ? 0 : t->id;
+  };
 
   if(memT[t1->id][t2->id] == editCost(t1, t2) + memF[t1->id][t2->id]) {
 
-    AlignmentTree *resNode = new AlignmentTree;
+    std::shared_ptr<AlignmentTree> resNode(new AlignmentTree);
 
     resNode->node1 = t1;
     resNode->node2 = t2;
-    resNode->child1 = NULL;
-    resNode->child2 = NULL;
+    resNode->child1 = nullptr;
+    resNode->child2 = nullptr;
     resNode->height = 0;
     resNode->size = 1;
 
-    std::vector<AlignmentTree *> resChildren
+    std::vector<std::shared_ptr<AlignmentTree>> resChildren
       = traceAlignmentForest(t1, t2, memT, memF);
 
     if(resChildren.size() > 0)
@@ -1255,9 +1243,9 @@ AlignmentTree *ttk::ContourTreeAlignment::traceAlignmentTree(BinaryTree *t1,
     if(resChildren.size() > 1)
       resNode->child2 = resChildren[1];
 
-    for(AlignmentTree *child : resChildren) {
+    for(std::shared_ptr<AlignmentTree> child : resChildren) {
 
-      if(child != NULL) {
+      if(child != nullptr) {
         resNode->height = std::max(resNode->height, child->height + 1);
         resNode->size += child->size;
       }
@@ -1267,134 +1255,152 @@ AlignmentTree *ttk::ContourTreeAlignment::traceAlignmentTree(BinaryTree *t1,
   }
 
   if(memT[t1->id][t2->id]
-     == editCost(t1, NULL) + memT[id(t1->child2)][0]
+     == editCost(t1, nullptr) + memT[id(t1->child2)][0]
           + memT[id(t1->child1)]
                 [t2->id] /* && t1->type != maxNode && t1->type != minNode */) {
 
-    AlignmentTree *resChild1 = traceAlignmentTree(t1->child1, t2, memT, memF);
-    AlignmentTree *resChild2 = traceNullAlignment(t1->child2, true);
-    AlignmentTree *res = new AlignmentTree();
+    std::shared_ptr<AlignmentTree> resChild1
+      = traceAlignmentTree(t1->child1, t2, memT, memF);
+    std::shared_ptr<AlignmentTree> resChild2
+      = traceNullAlignment(t1->child2, true);
+    std::shared_ptr<AlignmentTree> res(new AlignmentTree());
     res->node1 = t1;
-    res->node2 = NULL;
+    res->node2 = nullptr;
     res->height = 0;
     res->size = 1;
     res->child1 = resChild1;
     res->child2 = resChild2;
-    res->size += resChild1 == NULL ? 0 : resChild1->size;
-    res->size += resChild2 == NULL ? 1 : resChild2->size;
+    res->size += resChild1 == nullptr ? 0 : resChild1->size;
+    res->size += resChild2 == nullptr ? 1 : resChild2->size;
     res->height
-      = std::max(res->height, resChild1 == NULL ? 0 : resChild1->height + 1);
+      = std::max(res->height, resChild1 == nullptr ? 0 : resChild1->height + 1);
     res->height
-      = std::max(res->height, resChild2 == NULL ? 0 : resChild2->height + 1);
+      = std::max(res->height, resChild2 == nullptr ? 0 : resChild2->height + 1);
     return res;
   }
 
   if(memT[t1->id][t2->id]
-     == editCost(t1, NULL) + memT[id(t1->child1)][0]
+     == editCost(t1, nullptr) + memT[id(t1->child1)][0]
           + memT[id(t1->child2)]
                 [t2->id] /* && t1->type != maxNode && t1->type != minNode */) {
 
-    AlignmentTree *resChild1 = traceAlignmentTree(t1->child2, t2, memT, memF);
-    AlignmentTree *resChild2 = traceNullAlignment(t1->child1, true);
-    AlignmentTree *res = new AlignmentTree();
+    std::shared_ptr<AlignmentTree> resChild1
+      = traceAlignmentTree(t1->child2, t2, memT, memF);
+    std::shared_ptr<AlignmentTree> resChild2
+      = traceNullAlignment(t1->child1, true);
+    std::shared_ptr<AlignmentTree> res(new AlignmentTree());
     res->node1 = t1;
-    res->node2 = NULL;
+    res->node2 = nullptr;
     res->height = 0;
     res->size = 1;
     res->child1 = resChild1;
     res->child2 = resChild2;
-    res->size += resChild1 == NULL ? 0 : resChild1->size;
-    res->size += resChild2 == NULL ? 0 : resChild2->size;
+    res->size += resChild1 == nullptr ? 0 : resChild1->size;
+    res->size += resChild2 == nullptr ? 0 : resChild2->size;
     res->height
-      = std::max(res->height, resChild1 == NULL ? 0 : resChild1->height + 1);
+      = std::max(res->height, resChild1 == nullptr ? 0 : resChild1->height + 1);
     res->height
-      = std::max(res->height, resChild2 == NULL ? 0 : resChild2->height + 1);
+      = std::max(res->height, resChild2 == nullptr ? 0 : resChild2->height + 1);
     return res;
   }
 
-  if(memT[t1->id][t2->id]
-     == editCost(NULL, t2) + memT[0][id(t2->child2)]
-          + memT[t1->id][id(
-            t2->child1)] /* && t2->type != maxNode && t2->type != minNode */) {
+  if(
+    memT[t1->id][t2->id]
+    == editCost(nullptr, t2) + memT[0][id(t2->child2)]
+         + memT[t1->id][id(
+             t2->child1)] /* && t2->type != maxNode && t2->type != minNode */) {
 
-    AlignmentTree *resChild1 = traceAlignmentTree(t1, t2->child1, memT, memF);
-    AlignmentTree *resChild2 = traceNullAlignment(t2->child2, false);
-    AlignmentTree *res = new AlignmentTree();
-    res->node1 = NULL;
+    std::shared_ptr<AlignmentTree> resChild1
+      = traceAlignmentTree(t1, t2->child1, memT, memF);
+    std::shared_ptr<AlignmentTree> resChild2
+      = traceNullAlignment(t2->child2, false);
+    std::shared_ptr<AlignmentTree> res(new AlignmentTree());
+    res->node1 = nullptr;
     res->node2 = t2;
     res->height = 0;
     res->size = 1;
     res->child1 = resChild1;
     res->child2 = resChild2;
-    res->size += resChild1 == NULL ? 0 : resChild1->size;
-    res->size += resChild2 == NULL ? 0 : resChild2->size;
+    res->size += resChild1 == nullptr ? 0 : resChild1->size;
+    res->size += resChild2 == nullptr ? 0 : resChild2->size;
     res->height
-      = std::max(res->height, resChild1 == NULL ? 0 : resChild1->height + 1);
+      = std::max(res->height, resChild1 == nullptr ? 0 : resChild1->height + 1);
     res->height
-      = std::max(res->height, resChild2 == NULL ? 0 : resChild2->height + 1);
+      = std::max(res->height, resChild2 == nullptr ? 0 : resChild2->height + 1);
     return res;
   }
 
-  if(memT[t1->id][t2->id]
-     == editCost(NULL, t2) + memT[0][id(t2->child1)]
-          + memT[t1->id][id(
-            t2->child2)] /* && t2->type != maxNode && t2->type != minNode */) {
+  if(
+    memT[t1->id][t2->id]
+    == editCost(nullptr, t2) + memT[0][id(t2->child1)]
+         + memT[t1->id][id(
+             t2->child2)] /* && t2->type != maxNode && t2->type != minNode */) {
 
-    AlignmentTree *resChild1 = traceAlignmentTree(t1, t2->child2, memT, memF);
-    AlignmentTree *resChild2 = traceNullAlignment(t2->child1, false);
-    AlignmentTree *res = new AlignmentTree();
-    res->node1 = NULL;
+    std::shared_ptr<AlignmentTree> resChild1
+      = traceAlignmentTree(t1, t2->child2, memT, memF);
+    std::shared_ptr<AlignmentTree> resChild2
+      = traceNullAlignment(t2->child1, false);
+    std::shared_ptr<AlignmentTree> res(new AlignmentTree());
+    res->node1 = nullptr;
     res->node2 = t2;
     res->height = 0;
     res->size = 1;
     res->child1 = resChild1;
     res->child2 = resChild2;
-    res->size += resChild1 == NULL ? 0 : resChild1->size;
-    res->size += resChild2 == NULL ? 0 : resChild2->size;
+    res->size += resChild1 == nullptr ? 0 : resChild1->size;
+    res->size += resChild2 == nullptr ? 0 : resChild2->size;
     res->height
-      = std::max(res->height, resChild1 == NULL ? 0 : resChild1->height + 1);
+      = std::max(res->height, resChild1 == nullptr ? 0 : resChild1->height + 1);
     res->height
-      = std::max(res->height, resChild2 == NULL ? 0 : resChild2->height + 1);
+      = std::max(res->height, resChild2 == nullptr ? 0 : resChild2->height + 1);
     return res;
   }
 
-  return nullptr;
+  printErr("Alignment computation failed. Traceback of memoization table not "
+           "possible.");
+  return std::shared_ptr<AlignmentTree>(new AlignmentTree());
 }
 
-std::vector<AlignmentTree *> ttk::ContourTreeAlignment::traceAlignmentForest(
-  BinaryTree *t1, BinaryTree *t2, float **memT, float **memF) {
+std::vector<std::shared_ptr<AlignmentTree>>
+  ttk::ContourTreeAlignment::traceAlignmentForest(
+    std::shared_ptr<BinaryTree> t1,
+    std::shared_ptr<BinaryTree> t2,
+    std::vector<std::vector<float>> &memT,
+    std::vector<std::vector<float>> &memF) {
 
-  if(t1 == NULL && t2 == NULL)
-    return std::vector<AlignmentTree *>();
-  if(t1 == NULL) {
-    std::vector<AlignmentTree *> res;
-    if(t2->child1 != NULL)
+  if(t1 == nullptr && t2 == nullptr)
+    return std::vector<std::shared_ptr<AlignmentTree>>();
+  if(t1 == nullptr) {
+    std::vector<std::shared_ptr<AlignmentTree>> res;
+    if(t2->child1 != nullptr)
       res.push_back(traceNullAlignment(t2->child1, false));
-    if(t2->child2 != NULL)
+    if(t2->child2 != nullptr)
       res.push_back(traceNullAlignment(t2->child2, false));
   }
-  if(t2 == NULL) {
-    std::vector<AlignmentTree *> res;
-    if(t1->child1 != NULL)
+  if(t2 == nullptr) {
+    std::vector<std::shared_ptr<AlignmentTree>> res;
+    if(t1->child1 != nullptr)
       res.push_back(traceNullAlignment(t1->child1, true));
-    if(t1->child2 != NULL)
+    if(t1->child2 != nullptr)
       res.push_back(traceNullAlignment(t1->child2, true));
   }
 
-  auto id = [](BinaryTree *t) { return t == NULL ? 0 : t->id; };
+  auto id = [this](std::shared_ptr<BinaryTree> t) {
+    return t == nullptr ? 0 : t->id;
+  };
 
   if(memF[t1->id][t2->id]
      == memT[id(t1->child1)][id(t2->child1)]
           + memT[id(t1->child2)][id(t2->child2)]) {
 
-    std::vector<AlignmentTree *> res;
-    AlignmentTree *res1
+    std::vector<std::shared_ptr<AlignmentTree>> res;
+    std::shared_ptr<AlignmentTree> res1
       = traceAlignmentTree(t1->child1, t2->child1, memT, memF);
-    if(res1 != NULL)
+    if(res1 != nullptr)
       res.push_back(res1);
-    AlignmentTree *res2
+    std::shared_ptr<AlignmentTree> res2
       = traceAlignmentTree(t1->child2, t2->child2, memT, memF);
-    if(res2 != NULL)
+    if(res2 != nullptr)
       res.push_back(res2);
 
     return res;
@@ -1404,53 +1410,53 @@ std::vector<AlignmentTree *> ttk::ContourTreeAlignment::traceAlignmentForest(
      == memT[id(t1->child1)][id(t2->child2)]
           + memT[id(t1->child2)][id(t2->child1)]) {
 
-    std::vector<AlignmentTree *> res;
-    AlignmentTree *res1
+    std::vector<std::shared_ptr<AlignmentTree>> res;
+    std::shared_ptr<AlignmentTree> res1
       = traceAlignmentTree(t1->child1, t2->child2, memT, memF);
-    if(res1 != NULL)
+    if(res1 != nullptr)
       res.push_back(res1);
-    AlignmentTree *res2
+    std::shared_ptr<AlignmentTree> res2
       = traceAlignmentTree(t1->child2, t2->child1, memT, memF);
-    if(res2 != NULL)
+    if(res2 != nullptr)
       res.push_back(res2);
 
     return res;
   }
 
   if(memF[t1->id][t2->id]
-     == editCost(t1->child1, NULL) + memF[id(t1->child1)][t2->id]
+     == editCost(t1->child1, nullptr) + memF[id(t1->child1)][t2->id]
           + memT[id(t1->child2)][0]) {
 
-    if(t1->child1 != NULL) {
+    if(t1->child1 != nullptr) {
 
-      std::vector<AlignmentTree *> res;
+      std::vector<std::shared_ptr<AlignmentTree>> res;
 
-      AlignmentTree *t = new AlignmentTree;
+      std::shared_ptr<AlignmentTree> t(new AlignmentTree);
       t->node1 = t1->child1;
-      t->node2 = NULL;
+      t->node2 = nullptr;
 
-      t->child1 = NULL;
-      t->child2 = NULL;
+      t->child1 = nullptr;
+      t->child2 = nullptr;
 
       t->size = 1;
       t->height = 0;
 
-      std::vector<AlignmentTree *> resChildren
+      std::vector<std::shared_ptr<AlignmentTree>> resChildren
         = traceAlignmentForest(t1->child1, t2, memT, memF);
       if(resChildren.size() > 0)
         t->child1 = resChildren[0];
       if(resChildren.size() > 1)
         t->child2 = resChildren[1];
 
-      for(AlignmentTree *c : resChildren) {
-        if(c != NULL) {
+      for(std::shared_ptr<AlignmentTree> c : resChildren) {
+        if(c != nullptr) {
           t->height = std::max(t->height, c->height + 1);
           t->size += c->size;
         }
       }
 
       res.push_back(t);
-      if(t1->child2 != NULL)
+      if(t1->child2 != nullptr)
         res.push_back(traceNullAlignment(t1->child2, true));
 
       return res;
@@ -1458,39 +1464,39 @@ std::vector<AlignmentTree *> ttk::ContourTreeAlignment::traceAlignmentForest(
   }
 
   if(memF[t1->id][t2->id]
-     == editCost(t1->child2, NULL) + memF[id(t1->child2)][t2->id]
+     == editCost(t1->child2, nullptr) + memF[id(t1->child2)][t2->id]
           + memT[id(t1->child1)][0]) {
 
-    if(t1->child2 != NULL) {
+    if(t1->child2 != nullptr) {
 
-      std::vector<AlignmentTree *> res;
+      std::vector<std::shared_ptr<AlignmentTree>> res;
 
-      AlignmentTree *t = new AlignmentTree;
+      std::shared_ptr<AlignmentTree> t(new AlignmentTree);
       t->node1 = t1->child2;
-      t->node2 = NULL;
+      t->node2 = nullptr;
 
-      t->child1 = NULL;
-      t->child2 = NULL;
+      t->child1 = nullptr;
+      t->child2 = nullptr;
 
       t->size = 1;
       t->height = 0;
 
-      std::vector<AlignmentTree *> resChildren
+      std::vector<std::shared_ptr<AlignmentTree>> resChildren
         = traceAlignmentForest(t1->child2, t2, memT, memF);
       if(resChildren.size() > 0)
         t->child1 = resChildren[0];
       if(resChildren.size() > 1)
         t->child2 = resChildren[1];
 
-      for(AlignmentTree *c : resChildren) {
-        if(c != NULL) {
+      for(std::shared_ptr<AlignmentTree> c : resChildren) {
+        if(c != nullptr) {
           t->height = std::max(t->height, c->height + 1);
           t->size += c->size;
         }
       }
 
       res.push_back(t);
-      if(t1->child1 != NULL)
+      if(t1->child1 != nullptr)
         res.push_back(traceNullAlignment(t1->child1, true));
 
       return res;
@@ -1498,39 +1504,39 @@ std::vector<AlignmentTree *> ttk::ContourTreeAlignment::traceAlignmentForest(
   }
 
   if(memF[t1->id][t2->id]
-     == editCost(NULL, t2->child1) + memF[t1->id][id(t2->child1)]
+     == editCost(nullptr, t2->child1) + memF[t1->id][id(t2->child1)]
           + memT[0][id(t2->child2)]) {
 
-    if(t2->child1 != NULL) {
+    if(t2->child1 != nullptr) {
 
-      std::vector<AlignmentTree *> res;
+      std::vector<std::shared_ptr<AlignmentTree>> res;
 
-      AlignmentTree *t = new AlignmentTree;
-      t->node1 = NULL;
+      std::shared_ptr<AlignmentTree> t(new AlignmentTree);
+      t->node1 = nullptr;
       t->node2 = t2->child1;
 
-      t->child1 = NULL;
-      t->child2 = NULL;
+      t->child1 = nullptr;
+      t->child2 = nullptr;
 
       t->size = 1;
       t->height = 0;
 
-      std::vector<AlignmentTree *> resChildren
+      std::vector<std::shared_ptr<AlignmentTree>> resChildren
         = traceAlignmentForest(t1, t2->child1, memT, memF);
       if(resChildren.size() > 0)
         t->child1 = resChildren[0];
       if(resChildren.size() > 1)
         t->child2 = resChildren[1];
 
-      for(AlignmentTree *c : resChildren) {
-        if(c != NULL) {
+      for(std::shared_ptr<AlignmentTree> c : resChildren) {
+        if(c != nullptr) {
           t->height = std::max(t->height, c->height + 1);
           t->size += c->size;
         }
       }
 
       res.push_back(t);
-      if(t2->child2 != NULL)
+      if(t2->child2 != nullptr)
         res.push_back(traceNullAlignment(t2->child2, false));
 
       return res;
@@ -1538,56 +1544,59 @@ std::vector<AlignmentTree *> ttk::ContourTreeAlignment::traceAlignmentForest(
   }
 
   if(memF[t1->id][t2->id]
-     == editCost(NULL, t2->child2) + memF[t1->id][id(t2->child2)]
+     == editCost(nullptr, t2->child2) + memF[t1->id][id(t2->child2)]
           + memT[0][id(t2->child1)]) {
 
-    if(t2->child2 != NULL) {
+    if(t2->child2 != nullptr) {
 
-      std::vector<AlignmentTree *> res;
+      std::vector<std::shared_ptr<AlignmentTree>> res;
 
-      AlignmentTree *t = new AlignmentTree;
-      t->node1 = NULL;
+      std::shared_ptr<AlignmentTree> t(new AlignmentTree);
+      t->node1 = nullptr;
       t->node2 = t2->child2;
 
-      t->child1 = NULL;
-      t->child2 = NULL;
+      t->child1 = nullptr;
+      t->child2 = nullptr;
 
       t->size = 1;
       t->height = 0;
 
-      std::vector<AlignmentTree *> resChildren
+      std::vector<std::shared_ptr<AlignmentTree>> resChildren
         = traceAlignmentForest(t1, t2->child2, memT, memF);
       if(resChildren.size() > 0)
         t->child1 = resChildren[0];
       if(resChildren.size() > 1)
         t->child2 = resChildren[1];
 
-      for(AlignmentTree *c : resChildren) {
-        if(c != NULL) {
+      for(std::shared_ptr<AlignmentTree> c : resChildren) {
+        if(c != nullptr) {
           t->height = std::max(t->height, c->height + 1);
           t->size += c->size;
         }
       }
 
       res.push_back(t);
-      if(t2->child1 != NULL)
+      if(t2->child1 != nullptr)
         res.push_back(traceNullAlignment(t2->child1, false));
 
       return res;
     }
   }
 
-  return std::vector<AlignmentTree *>();
+  printErr("Alignment computation failed. Traceback of memoization table not "
+           "possible.");
+  return std::vector<std::shared_ptr<AlignmentTree>>();
 }
 
-AlignmentTree *ttk::ContourTreeAlignment::traceNullAlignment(BinaryTree *t,
-                                                             bool first) {
+std::shared_ptr<AlignmentTree>
+  ttk::ContourTreeAlignment::traceNullAlignment(std::shared_ptr<BinaryTree> t,
+                                                bool first) {
 
-  if(t == NULL)
-    return NULL;
-  AlignmentTree *at = new AlignmentTree();
-  at->node1 = first ? t : NULL;
-  at->node2 = first ? NULL : t;
+  if(t == nullptr)
+    return nullptr;
+  std::shared_ptr<AlignmentTree> at(new AlignmentTree());
+  at->node1 = first ? t : nullptr;
+  at->node2 = first ? nullptr : t;
   at->height = t->height;
   at->size = t->size;
   at->child1 = traceNullAlignment(t->child1, first);
@@ -1599,33 +1608,35 @@ AlignmentTree *ttk::ContourTreeAlignment::traceNullAlignment(BinaryTree *t,
 /// helper functions
 ///=====================================================================================================================
 
-bool ttk::ContourTreeAlignment::isBinary(Tree *t) {
+bool ttk::ContourTreeAlignment::isBinary(std::shared_ptr<Tree> t) {
 
   if(t->children.size() > 2)
     return false;
   else {
     bool res = true;
-    for(Tree *c : t->children) {
+    for(std::shared_ptr<Tree> c : t->children) {
       res = res & isBinary(c);
     }
     return res;
   }
 }
 
-BinaryTree *ttk::ContourTreeAlignment::rootAtNode(AlignmentNode *root) {
+std::shared_ptr<BinaryTree>
+  ttk::ContourTreeAlignment::rootAtNode(std::shared_ptr<AlignmentNode> root) {
 
   int id = 1;
-  BinaryTree *t = computeRootedTree(root, NULL, id);
+  std::shared_ptr<BinaryTree> t = computeRootedTree(root, nullptr, id);
   return t;
 }
 
-BinaryTree *ttk::ContourTreeAlignment::computeRootedTree(AlignmentNode *node,
-                                                         AlignmentEdge *parent,
-                                                         int &id) {
+std::shared_ptr<BinaryTree> ttk::ContourTreeAlignment::computeRootedTree(
+  std::shared_ptr<AlignmentNode> node,
+  std::shared_ptr<AlignmentEdge> parent,
+  int &id) {
 
-  BinaryTree *t = new BinaryTree;
+  std::shared_ptr<BinaryTree> t(new BinaryTree);
 
-  if(parent == NULL) {
+  if(parent == nullptr) {
     t->scalardistanceParent = 10000;
     t->area = 10000;
     t->volume = 10000;
@@ -1636,12 +1647,12 @@ BinaryTree *ttk::ContourTreeAlignment::computeRootedTree(AlignmentNode *node,
   }
   t->freq = node->freq;
   t->type = node->type;
-  t->child1 = NULL;
-  t->child2 = NULL;
+  t->child1 = nullptr;
+  t->child2 = nullptr;
   t->id = id;
   t->scalarValue = node->scalarValue;
   t->nodeRefs = node->nodeRefs;
-  if(parent != NULL)
+  if(parent != nullptr)
     t->arcRefs = parent->arcRefs;
   else
     t->arcRefs = std::vector<std::pair<int, int>>();
@@ -1650,13 +1661,13 @@ BinaryTree *ttk::ContourTreeAlignment::computeRootedTree(AlignmentNode *node,
   t->size = 1;
   t->height = 0;
 
-  std::vector<BinaryTree *> children;
+  std::vector<std::shared_ptr<BinaryTree>> children;
 
-  for(AlignmentEdge *edge : node->edgeList) {
+  for(std::shared_ptr<AlignmentEdge> edge : node->edgeList) {
 
     if(edge != parent) {
 
-      BinaryTree *child = computeRootedTree(
+      std::shared_ptr<BinaryTree> child = computeRootedTree(
         edge->node1 == node ? edge->node2 : edge->node1, edge, id);
       children.push_back(child);
       t->size += child->size;
@@ -1673,11 +1684,10 @@ BinaryTree *ttk::ContourTreeAlignment::computeRootedTree(AlignmentNode *node,
   return t;
 }
 
-BinaryTree *ttk::ContourTreeAlignment::computeRootedDualTree(AlignmentEdge *arc,
-                                                             bool parent1,
-                                                             int &id) {
+std::shared_ptr<BinaryTree> ttk::ContourTreeAlignment::computeRootedDualTree(
+  std::shared_ptr<AlignmentEdge> arc, bool parent1, int &id) {
 
-  BinaryTree *t = new BinaryTree;
+  std::shared_ptr<BinaryTree> t(new BinaryTree);
 
   t->scalardistanceParent = arc->scalardistance;
   t->area = arc->area;
@@ -1688,8 +1698,8 @@ BinaryTree *ttk::ContourTreeAlignment::computeRootedDualTree(AlignmentEdge *arc,
               : arc->node1->type == minNode || arc->node2->type == minNode
                   ? minNode
                   : saddleNode;
-  t->child1 = NULL;
-  t->child2 = NULL;
+  t->child1 = nullptr;
+  t->child2 = nullptr;
   t->id = id;
   t->scalarValue = -1;
   t->arcRefs = arc->arcRefs;
@@ -1698,15 +1708,15 @@ BinaryTree *ttk::ContourTreeAlignment::computeRootedDualTree(AlignmentEdge *arc,
   t->size = 1;
   t->height = 0;
 
-  std::vector<BinaryTree *> children;
+  std::vector<std::shared_ptr<BinaryTree>> children;
 
-  AlignmentNode *node = parent1 ? arc->node2 : arc->node1;
+  std::shared_ptr<AlignmentNode> node = parent1 ? arc->node2 : arc->node1;
 
-  for(AlignmentEdge *edge : node->edgeList) {
+  for(std::shared_ptr<AlignmentEdge> edge : node->edgeList) {
 
     if(edge != arc) {
 
-      BinaryTree *child
+      std::shared_ptr<BinaryTree> child
         = computeRootedDualTree(edge, edge->node1 == node ? true : false, id);
       children.push_back(child);
       t->size += child->size;
