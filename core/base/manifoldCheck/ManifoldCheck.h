@@ -75,7 +75,8 @@ namespace ttk {
     /// \param triangulation Pointer to a valid triangulation.
     /// \return Returns 0 upon success, negative values otherwise.
     /// \sa ttk::Triangulation
-    inline int preconditionTriangulation(Triangulation *triangulation) {
+    inline int
+      preconditionTriangulation(AbstractTriangulation *const triangulation) {
 
       if(triangulation) {
 
