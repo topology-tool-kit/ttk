@@ -180,12 +180,12 @@ int ttk::MorseSmaleComplex3D::setAscendingSeparatrices2(
 
   const auto scalars = static_cast<const dataType *>(inputScalarField_);
   const auto offsets = inputOffsets_;
-  auto separatrixFunctionMaxima = static_cast<std::vector<dataType> *>(
-    outputSeparatrices2_cells_separatrixFunctionMaxima_);
-  auto separatrixFunctionMinima = static_cast<std::vector<dataType> *>(
-    outputSeparatrices2_cells_separatrixFunctionMinima_);
-  auto separatrixFunctionDiffs = static_cast<std::vector<dataType> *>(
-    outputSeparatrices2_cells_separatrixFunctionDiffs_);
+  auto separatrixFunctionMaxima
+    = outputSeparatrices2_cells_separatrixFunctionMaxima_;
+  auto separatrixFunctionMinima
+    = outputSeparatrices2_cells_separatrixFunctionMinima_;
+  auto separatrixFunctionDiffs
+    = outputSeparatrices2_cells_separatrixFunctionDiffs_;
 
   // max existing separatrix id + 1 or 0 if no previous separatrices
   const SimplexId separatrixId
@@ -247,8 +247,8 @@ int ttk::MorseSmaleComplex3D::setAscendingSeparatrices2(
     const dcg::Cell &src = sep.source_; // saddle1
 
     // compute separatrix function diff
-    const dataType sepFuncMin
-      = scalars[discreteGradient_.getCellLowerVertex(src, triangulation)];
+    const double sepFuncMin = static_cast<double>(
+      scalars[discreteGradient_.getCellLowerVertex(src, triangulation)]);
     const auto maxId = *std::max_element(
       sepSaddles.begin(), sepSaddles.end(),
       [&triangulation, offsets, this](const SimplexId a, const SimplexId b) {
@@ -257,8 +257,9 @@ int ttk::MorseSmaleComplex3D::setAscendingSeparatrices2(
                < offsets[discreteGradient_.getCellGreaterVertex(
                  Cell{2, b}, triangulation)];
       });
-    const dataType sepFuncMax = scalars[discreteGradient_.getCellGreaterVertex(
-      Cell{2, maxId}, triangulation)];
+    const double sepFuncMax
+      = static_cast<double>(scalars[discreteGradient_.getCellGreaterVertex(
+        Cell{2, maxId}, triangulation)]);
 
     // get boundary condition
     const char onBoundary
@@ -432,12 +433,12 @@ int ttk::MorseSmaleComplex3D::setDescendingSeparatrices2(
 
   const auto scalars = static_cast<const dataType *>(inputScalarField_);
   const auto offsets = inputOffsets_;
-  auto separatrixFunctionMaxima = static_cast<std::vector<dataType> *>(
-    outputSeparatrices2_cells_separatrixFunctionMaxima_);
-  auto separatrixFunctionMinima = static_cast<std::vector<dataType> *>(
-    outputSeparatrices2_cells_separatrixFunctionMinima_);
-  auto separatrixFunctionDiffs = static_cast<std::vector<dataType> *>(
-    outputSeparatrices2_cells_separatrixFunctionDiffs_);
+  auto separatrixFunctionMaxima
+    = outputSeparatrices2_cells_separatrixFunctionMaxima_;
+  auto separatrixFunctionMinima
+    = outputSeparatrices2_cells_separatrixFunctionMinima_;
+  auto separatrixFunctionDiffs
+    = outputSeparatrices2_cells_separatrixFunctionDiffs_;
 
   // max existing separatrix id + 1 or 0 if no previous separatrices
   const SimplexId separatrixId
@@ -515,8 +516,8 @@ int ttk::MorseSmaleComplex3D::setDescendingSeparatrices2(
     const char sepType = 2;
 
     // compute separatrix function diff
-    const dataType sepFuncMax
-      = scalars[discreteGradient_.getCellGreaterVertex(src, triangulation)];
+    const double sepFuncMax = static_cast<double>(
+      scalars[discreteGradient_.getCellGreaterVertex(src, triangulation)]);
     const auto minId = *std::min_element(
       sepSaddles.begin(), sepSaddles.end(),
       [&triangulation, offsets, this](const SimplexId a, const SimplexId b) {
@@ -525,9 +526,10 @@ int ttk::MorseSmaleComplex3D::setDescendingSeparatrices2(
                < offsets[discreteGradient_.getCellLowerVertex(
                  Cell{1, b}, triangulation)];
       });
-    const dataType sepFuncMin = scalars[discreteGradient_.getCellLowerVertex(
-      Cell{1, minId}, triangulation)];
-    const dataType sepFuncDiff = sepFuncMax - sepFuncMin;
+    const double sepFuncMin
+      = static_cast<double>(scalars[discreteGradient_.getCellLowerVertex(
+        Cell{1, minId}, triangulation)]);
+    const auto sepFuncDiff = sepFuncMax - sepFuncMin;
 
     // get boundary condition
     const char onBoundary
