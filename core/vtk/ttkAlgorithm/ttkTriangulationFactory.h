@@ -39,7 +39,7 @@ public:
   static ttk::Triangulation *GetTriangulation(int debugLevel,
                                               vtkDataSet *object);
 
-  static ttkTriangulationFactory *Instance;
+  static ttkTriangulationFactory Instance;
   static RegistryKey GetKey(vtkDataSet *dataSet);
 
   Registry registry;

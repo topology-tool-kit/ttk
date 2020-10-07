@@ -76,7 +76,7 @@ struct ttkOnDeleteCommand : public vtkCommand {
     if(this->observee)
       this->observee->RemoveObserver(this);
 
-    auto instance = ttkTriangulationFactory::Instance;
+    auto instance = &ttkTriangulationFactory::Instance;
 
     auto it = instance->registry.find(this->key);
     if(it != instance->registry.end()) {
@@ -285,7 +285,7 @@ ttk::Triangulation *
 ttk::Triangulation *
   ttkTriangulationFactory::GetTriangulation(int debugLevel,
                                             vtkDataSet *object) {
-  auto instance = ttkTriangulationFactory::Instance;
+  auto instance = &ttkTriangulationFactory::Instance;
   instance->setDebugLevel(debugLevel);
 
   auto key = ttkTriangulationFactory::GetKey(object);
@@ -362,5 +362,4 @@ RegistryKey ttkTriangulationFactory::GetKey(vtkDataSet *dataSet) {
   return 0;
 };
 
-ttkTriangulationFactory *ttkTriangulationFactory::Instance
-  = new ttkTriangulationFactory();
+ttkTriangulationFactory ttkTriangulationFactory::Instance{};
