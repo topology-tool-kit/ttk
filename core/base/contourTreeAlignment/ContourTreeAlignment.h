@@ -285,7 +285,7 @@ int ttk::ContourTreeAlignment::execute(const vector<void *> &scalarsVP,
   contourtrees = std::vector<std::shared_ptr<ContourTree>>();
   nodes = std::vector<std::shared_ptr<AlignmentNode>>();
   arcs = std::vector<std::shared_ptr<AlignmentEdge>>();
-  int bestRootIdx;
+  int bestRootIdx{};
 
   this->printMsg(ttk::debug::Separator::L1);
   this->printMsg("Shuffling input trees. Used seed: " + std::to_string(seed), 0,
@@ -298,7 +298,7 @@ int ttk::ContourTreeAlignment::execute(const vector<void *> &scalarsVP,
   }
   std::srand(seed);
   if(alignmenttreeType != lastMatchedValue)
-    std::random_shuffle(permutation.begin(), permutation.end());
+    std::shuffle(permutation.begin(), permutation.end(), std::random_device{});
 
   this->printMsg(
     "Shuffling input trees. Used seed: " + std::to_string(seed), 1);
