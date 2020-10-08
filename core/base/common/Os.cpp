@@ -37,8 +37,8 @@ namespace ttk {
     directoryPath = _getcwd(NULL, 0);
 #else
     std::vector<char> cwdName(PATH_MAX);
-    getcwd(cwdName.data(), cwdName.size());
-    directoryPath = std::string{cwdName.data()};
+    char *returnedString = getcwd(cwdName.data(), cwdName.size());
+    directoryPath = std::string{returnedString};
 #endif
     directoryPath += "/";
 
