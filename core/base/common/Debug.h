@@ -443,6 +443,10 @@ namespace ttk {
                                 const debug::LineMode &lineMode,
                                 std::ostream &stream = std::cout) const {
 
+      if((this->debugLevel_ < (int)priority)
+         && (globalDebugLevel_ < (int)priority))
+        return 0;
+
       // on error or warning print end of line
       if((int)priority < 2 && this->lastLineMode == debug::LineMode::REPLACE)
         stream << "\n";
