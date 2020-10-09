@@ -43,6 +43,12 @@ public:
   static ttkTriangulationFactory Instance;
   static RegistryKey GetKey(vtkDataSet *dataSet);
 
+#ifdef _WIN32
+  // to fix a weird MSVC warning about unique_ptr inside
+  // unordered_map, this dummy class member should be declared before
+  // the Registry
+  RegistryTriangulation dummy{};
+#endif // _WIN32
   Registry registry;
 
 private:
