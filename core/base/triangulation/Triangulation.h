@@ -2399,12 +2399,16 @@ namespace ttk {
         if(usePeriodicBoundaries == hasPeriodicBoundaries_) {
           return;
         }
-        hasPeriodicBoundaries_ = usePeriodicBoundaries;
-        if(hasPeriodicBoundaries_) {
+        if(usePeriodicBoundaries) {
           abstractTriangulation_ = &periodicImplicitTriangulation_;
         } else {
           abstractTriangulation_ = &implicitTriangulation_;
         }
+
+        // reset hasPreconditioned boolean
+        this->clear();
+        // but don't forget to set hasPeriodicBoundaries_
+        hasPeriodicBoundaries_ = usePeriodicBoundaries;
       }
     }
 
