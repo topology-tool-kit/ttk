@@ -45,6 +45,8 @@ int ttkGeometrySmoother::RequestData(vtkInformation *request,
   auto outputPointSet = vtkPointSet::GetData(outputVector);
 
   auto triangulation = ttkAlgorithm::GetTriangulation(inputPointSet);
+  if(!triangulation)
+    return 0;
   this->preconditionTriangulation(triangulation);
 
   vtkDataArray *inputMaskField = ttkAlgorithm::GetOptionalArray(
