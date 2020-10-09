@@ -99,14 +99,16 @@ namespace ttk {
      */
     template <typename triangulationType>
     int getDualPolygon(const SimplexId edgeId,
-                       std::vector<SimplexId> &polygon,
+                       SimplexId *const polygon,
+                       const size_t polSize,
                        const triangulationType &triangulation) const;
 
     /**
      * Sort the polygon vertices to be clockwise
      */
     template <typename triangulationType>
-    int sortDualPolygonVertices(std::vector<SimplexId> &polygon,
+    int sortDualPolygonVertices(SimplexId *const polygon,
+                                const size_t polSize,
                                 const triangulationType &triangulation) const;
 
     /**
@@ -225,16 +227,16 @@ int ttk::MorseSmaleComplex3D::setAscendingSeparatrices2(
     }
   }
 
-  struct PolygonCell {
-    std::vector<SimplexId> tetras_{};
-    dataType sepFuncMax_{}, sepFuncMin_{};
-    SimplexId sourceId_{}, sepId_{};
-    char onBoundary_{};
-    bool valid_{false};
-  };
-
+  // store the separatrices info (one per separatrix)
+  std::vector<double> sepFuncMaxs(validGeomIds.size());
+  std::vector<double> sepFuncMins(validGeomIds.size());
+  std::vector<SimplexId> sepSourceIds(validGeomIds.size());
+  std::vector<SimplexId> sepIds(validGeomIds.size());
+  std::vector<char> sepOnBoundary(validGeomIds.size());
   // store the polygonal cells tetras SimplexId
-  std::vector<PolygonCell> polygonTetras(ncells - noldcells);
+  std::vector<SimplexId> polygonNTetras(ncells - noldcells);
+  std::vector<SimplexId> polygonEdgeIds(ncells - noldcells);
+  std::vector<SimplexId> polygonSepInfosIds(ncells - noldcells);
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_) schedule(dynamic)
@@ -268,54 +270,65 @@ int ttk::MorseSmaleComplex3D::setAscendingSeparatrices2(
                         return triangulation.isEdgeOnBoundary(a);
                       });
 
+    sepIds[i] = sepId;
+    sepSourceIds[i] = src.id_;
+    sepFuncMins[i] = sepFuncMin;
+    sepFuncMaxs[i] = sepFuncMax;
+    sepOnBoundary[i] = onBoundary;
+
     for(size_t j = 0; j < sepGeom.size(); ++j) {
       const auto &cell = sepGeom[j];
       // index of current cell in cell data arrays
       const auto k = geomCellsBegId[i] + j - noldcells;
-      auto &polyCell = polygonTetras[k];
 
-      // Transform to dual : edge -> polygon
-      getDualPolygon(cell.id_, polyCell.tetras_, triangulation);
+      polygonNTetras[k] = triangulation.getEdgeStarNumber(cell.id_);
 
-      if(polyCell.tetras_.size() > 2) {
-        sortDualPolygonVertices(polyCell.tetras_, triangulation);
-        polyCell.sepFuncMax_ = sepFuncMax;
-        polyCell.sepFuncMin_ = sepFuncMin;
-        polyCell.sourceId_ = src.id_;
-        polyCell.sepId_ = sepId;
-        polyCell.onBoundary_ = onBoundary;
-        polyCell.valid_ = true;
+      if(polygonNTetras[k] > 2) {
+        polygonEdgeIds[k] = cell.id_;
+        polygonSepInfosIds[k] = i;
       }
     }
   }
 
-  decltype(polygonTetras) flatTetras{};
-  flatTetras.reserve(polygonTetras.size());
+  // indices of valid polygon tetras
+  std::vector<SimplexId> validTetraIds{};
+  validTetraIds.reserve(polygonNTetras.size());
 
-  for(auto &&polyCell : polygonTetras) {
-    if(polyCell.valid_) {
-      flatTetras.emplace_back(std::move(polyCell));
+  for(size_t i = 0; i < polygonNTetras.size(); ++i) {
+    if(polygonNTetras[i] > 2) {
+      validTetraIds.emplace_back(i);
     }
   }
 
   // count number of valid new cells and new points
   size_t nnewpoints{};
-  std::vector<size_t> pointsPerCell(flatTetras.size() + 1);
-  for(size_t i = 0; i < flatTetras.size(); ++i) {
-    const auto &poly = flatTetras[i];
-    nnewpoints += poly.tetras_.size();
+  std::vector<SimplexId> pointsPerCell(validTetraIds.size() + 1);
+  for(size_t i = 0; i < validTetraIds.size(); ++i) {
+    nnewpoints += polygonNTetras[validTetraIds[i]];
     pointsPerCell[i + 1] = nnewpoints;
   }
 
-  // reduce number of points to remove duplicates
+  // resize connectivity array
+  outputSeparatrices2_cells_connectivity_->resize(firstCellId + nnewpoints);
+  auto cellsConn = &outputSeparatrices2_cells_connectivity_->at(firstCellId);
+  // copy of cell connectivity array (for removing duplicates vertices)
   std::vector<SimplexId> cellVertsIds(nnewpoints);
+
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
-  for(size_t i = 0; i < flatTetras.size(); ++i) {
-    const auto &poly = flatTetras[i];
-    for(size_t j = 0; j < poly.tetras_.size(); ++j) {
-      cellVertsIds[pointsPerCell[i] + j] = poly.tetras_[j];
+  for(size_t i = 0; i < validTetraIds.size(); ++i) {
+    const auto k = validTetraIds[i];
+
+    // get tetras in edge star
+    getDualPolygon(polygonEdgeIds[k], &cellVertsIds[pointsPerCell[i]],
+                   polygonNTetras[k], triangulation);
+    // sort tetras (in-place)
+    sortDualPolygonVertices(
+      &cellVertsIds[pointsPerCell[i]], polygonNTetras[k], triangulation);
+
+    for(SimplexId j = 0; j < polygonNTetras[k]; ++j) {
+      cellsConn[pointsPerCell[i] + j] = cellVertsIds[pointsPerCell[i] + j];
     }
   }
 
@@ -324,20 +337,17 @@ int ttk::MorseSmaleComplex3D::setAscendingSeparatrices2(
   cellVertsIds.erase(last, cellVertsIds.end());
 
   // vertex Id to index in points array
-  std::vector<size_t> vertId2PointsId(triangulation.getNumberOfCells());
+  std::vector<SimplexId> vertId2PointsId(triangulation.getNumberOfCells());
 
   const auto noldpoints{npoints};
   npoints += cellVertsIds.size();
-  ncells = noldcells + flatTetras.size();
-  const auto nnewcellids = pointsPerCell.back();
+  ncells = noldcells + validTetraIds.size();
 
   // resize arrays
   outputSeparatrices2_points_->resize(3 * npoints);
   auto points = &outputSeparatrices2_points_->at(3 * noldpoints);
-  outputSeparatrices2_cells_connectivity_->resize(firstCellId + nnewcellids);
   outputSeparatrices2_cells_offsets_->resize(ncells + 1);
   outputSeparatrices2_cells_offsets_->at(0) = 0;
-  auto cellsConn = &outputSeparatrices2_cells_connectivity_->at(firstCellId);
   auto cellsOff = &outputSeparatrices2_cells_offsets_->at(noldcells);
   if(outputSeparatrices2_cells_sourceIds_ != nullptr)
     outputSeparatrices2_cells_sourceIds_->resize(ncells);
@@ -367,32 +377,34 @@ int ttk::MorseSmaleComplex3D::setAscendingSeparatrices2(
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif // TTK_ENABLE_OPENMP
-  for(size_t i = 0; i < flatTetras.size(); ++i) {
-    const auto &poly = flatTetras[i];
+  for(size_t i = 0; i < validTetraIds.size(); ++i) {
+    const auto m = validTetraIds[i];
     const auto k = pointsPerCell[i];
-    for(size_t j = 0; j < poly.tetras_.size(); ++j) {
-      cellsConn[k + j] = vertId2PointsId[poly.tetras_[j]];
+    for(SimplexId j = 0; j < polygonNTetras[m]; ++j) {
+      cellsConn[k + j] = vertId2PointsId[cellsConn[k + j]];
     }
     const auto l = i + noldcells;
+    const auto n = polygonSepInfosIds[m];
+
     if(outputSeparatrices2_cells_sourceIds_ != nullptr)
-      (*outputSeparatrices2_cells_sourceIds_)[l] = poly.sourceId_;
+      (*outputSeparatrices2_cells_sourceIds_)[l] = sepSourceIds[n];
     if(outputSeparatrices2_cells_separatrixIds_ != nullptr)
-      (*outputSeparatrices2_cells_separatrixIds_)[l] = poly.sepId_;
+      (*outputSeparatrices2_cells_separatrixIds_)[l] = sepIds[n];
     if(outputSeparatrices2_cells_separatrixTypes_ != nullptr)
       (*outputSeparatrices2_cells_separatrixTypes_)[l] = 1;
     if(separatrixFunctionMaxima != nullptr)
-      (*separatrixFunctionMaxima)[l] = poly.sepFuncMax_;
+      (*separatrixFunctionMaxima)[l] = sepFuncMaxs[n];
     if(separatrixFunctionDiffs != nullptr)
-      (*separatrixFunctionMinima)[l] = poly.sepFuncMin_;
+      (*separatrixFunctionMinima)[l] = sepFuncMins[n];
     if(separatrixFunctionDiffs != nullptr)
-      (*separatrixFunctionDiffs)[l] = poly.sepFuncMax_ - poly.sepFuncMin_;
+      (*separatrixFunctionDiffs)[l] = sepFuncMaxs[n] - sepFuncMins[n];
     if(outputSeparatrices2_cells_isOnBoundary_ != nullptr)
-      (*outputSeparatrices2_cells_isOnBoundary_)[l] = poly.onBoundary_;
+      (*outputSeparatrices2_cells_isOnBoundary_)[l] = sepOnBoundary[n];
   }
 
-  for(size_t i = 0; i < flatTetras.size(); ++i) {
+  for(size_t i = 0; i < validTetraIds.size(); ++i) {
     // fill offsets sequentially (due to iteration dependencies)
-    cellsOff[i + 1] = cellsOff[i] + flatTetras[i].tetras_.size();
+    cellsOff[i + 1] = cellsOff[i] + polygonNTetras[validTetraIds[i]];
   }
 
   (*outputSeparatrices2_numberOfPoints_) = npoints;
@@ -1075,11 +1087,11 @@ int ttk::MorseSmaleComplex3D::getDescendingSeparatrices2(
 template <typename triangulationType>
 int ttk::MorseSmaleComplex3D::getDualPolygon(
   const SimplexId edgeId,
-  std::vector<SimplexId> &polygon,
+  SimplexId *const polygon,
+  const size_t polSize,
   const triangulationType &triangulation) const {
 
-  polygon.resize(triangulation.getEdgeStarNumber(edgeId));
-  for(size_t i = 0; i < polygon.size(); ++i) {
+  for(size_t i = 0; i < polSize; ++i) {
     SimplexId starId;
     triangulation.getEdgeStar(edgeId, i, starId);
     polygon[i] = starId;
@@ -1090,15 +1102,16 @@ int ttk::MorseSmaleComplex3D::getDualPolygon(
 
 template <typename triangulationType>
 int ttk::MorseSmaleComplex3D::sortDualPolygonVertices(
-  std::vector<SimplexId> &polygon,
+  SimplexId *const polygon,
+  const size_t polSize,
   const triangulationType &triangulation) const {
 
-  for(size_t i = 1; i < polygon.size(); ++i) {
+  for(size_t i = 1; i < polSize; ++i) {
 
     // find polygon[i - 1] neighboring tetra in polygon[i..]
     bool isFound = false;
     size_t j = i;
-    for(; j < polygon.size(); ++j) {
+    for(; j < polSize; ++j) {
       // check if current is the neighbor
       for(SimplexId k = 0;
           k < triangulation.getCellNeighborNumber(polygon[i - 1]); ++k) {
