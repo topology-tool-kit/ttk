@@ -34,9 +34,9 @@
 
 namespace ttk {
 
-  extern bool welcomeMsg_;
-  extern bool goodbyeMsg_;
-  extern int globalDebugLevel_;
+  COMMON_EXPORTS extern bool welcomeMsg_;
+  COMMON_EXPORTS extern bool goodbyeMsg_;
+  COMMON_EXPORTS extern int globalDebugLevel_;
 
   namespace debug {
     enum class Priority : int {
@@ -401,7 +401,7 @@ namespace ttk {
   protected:
     mutable int debugLevel_;
 
-    static debug::LineMode lastLineMode;
+    COMMON_EXPORTS static debug::LineMode lastLineMode;
 
     std::string debugMsgPrefix_;
 

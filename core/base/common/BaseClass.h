@@ -19,9 +19,17 @@
 
 #include <DataTypes.h>
 
+#if defined(_MSC_VER) && defined(common_EXPORTS)
+#define COMMON_EXPORTS __declspec(dllexport)
+#elif defined(_MSC_VER)
+#define COMMON_EXPORTS __declspec(dllimport)
+#else
+#define COMMON_EXPORTS
+#endif // _MSC_VER
+
 namespace ttk {
 
-  extern int globalThreadNumber_;
+  COMMON_EXPORTS extern int globalThreadNumber_;
 
   class Wrapper;
 

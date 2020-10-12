@@ -1,10 +1,11 @@
 #include <Debug.h>
 
-ttk::debug::LineMode ttk::Debug::lastLineMode = ttk::debug::LineMode::NEW;
+COMMON_EXPORTS ttk::debug::LineMode ttk::Debug::lastLineMode
+  = ttk::debug::LineMode::NEW;
 
-bool ttk::welcomeMsg_ = true;
-bool ttk::goodbyeMsg_ = true;
-int ttk::globalDebugLevel_ = 0;
+COMMON_EXPORTS bool ttk::welcomeMsg_ = true;
+COMMON_EXPORTS bool ttk::goodbyeMsg_ = true;
+COMMON_EXPORTS int ttk::globalDebugLevel_ = 0;
 
 using namespace std;
 using namespace ttk;

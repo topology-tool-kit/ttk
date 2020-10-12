@@ -77,6 +77,9 @@ mark_as_advanced(TTK_ENABLE_DOUBLE_TEMPLATING)
 
 option(TTK_ENABLE_SHARED_BASE_LIBRARIES "Generate shared base libraries instead of static ones" OFF)
 mark_as_advanced(TTK_ENABLE_SHARED_BASE_LIBRARIES)
+if(TTK_ENABLE_SHARED_BASE_LIBRARIES AND MSVC)
+  set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+endif()
 
 option(TTK_BUILD_DOCUMENTATION "Build doxygen developer documentation" OFF)
 if(TTK_BUILD_DOCUMENTATION)
