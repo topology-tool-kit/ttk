@@ -7,7 +7,7 @@ if(TARGET ttkGeometrySmoother)
   target_link_libraries(${PROJECT_NAME}
     PRIVATE
       ttkGeometrySmoother
-      ttkProgramBase
+      VTK::IOXML
     )
   set_target_properties(${PROJECT_NAME}
     PROPERTIES
