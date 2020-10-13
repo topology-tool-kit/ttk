@@ -219,7 +219,10 @@ function(ttk_find_python)
     find_path(PYTHON_NUMPY_INCLUDE_DIR numpy/arrayobject.h PATHS
       ${PYTHON_INCLUDE_DIRS}
       /usr/lib/python${PYTHON_MAJOR_VERSION}.${PYTHON_MINOR_VERSION}/site-packages/numpy/core/include/
-      /usr/local/lib/python${PYTHON_MAJOR_VERSION}.${PYTHON_MINOR_VERSION}/site-packages/numpy/core/include)
+      /usr/local/lib/python${PYTHON_MAJOR_VERSION}.${PYTHON_MINOR_VERSION}/site-packages/numpy/core/include
+      C:/ProgramData/Anaconda3/Lib/site-packages/numpy/core/include
+      C:/Miniconda/Lib/site-packages/numpy/core/include
+      )
     if(PYTHON_NUMPY_INCLUDE_DIR)
       message(STATUS "Numpy headers: ${PYTHON_NUMPY_INCLUDE_DIR}")
       include_directories(SYSTEM ${PYTHON_NUMPY_INCLUDE_DIR})
@@ -232,7 +235,7 @@ function(ttk_find_python)
     option(TTK_ENABLE_SCIKIT_LEARN "Enable scikit-learn support" ON)
   else()
     option(TTK_ENABLE_SCIKIT_LEARN "Enable scikit-learn support" OFF)
-    message(STATUS 
+    message(STATUS
       "Improper python/numpy setup. Disabling sckikit-learn support in TTK.")
   endif()
 
