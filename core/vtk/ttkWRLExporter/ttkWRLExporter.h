@@ -8,5 +8,7 @@
 
 #pragma once
 
+#include <ttkWRLExporterModule.h>
+
 class vtkPolyData;
-extern vtkPolyData *wrlExporterPolyData_;
+TTKWRLEXPORTER_EXPORT vtkPolyData *wrlExporterPolyData_;
