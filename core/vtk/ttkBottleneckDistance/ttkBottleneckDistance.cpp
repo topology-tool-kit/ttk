@@ -535,8 +535,10 @@ int ttkBottleneckDistance::RequestData(vtkInformation * /*request*/,
   CTPersistenceDiagram1_ = vtkUnstructuredGrid::GetData(inputVector[0]);
   CTPersistenceDiagram2_ = vtkUnstructuredGrid::GetData(inputVector[1]);
 
-  if(!CTPersistenceDiagram1_ || !CTPersistenceDiagram2_ || !outputCT3)
-    return -1;
+  if(!CTPersistenceDiagram1_ || !CTPersistenceDiagram2_ || !outputCT3) {
+    this->printErr("Input grids should be non-NULL");
+    return 0;
+  }
 
   int dataType1 = CTPersistenceDiagram1_->GetCellData()
                     ->GetArray("Persistence")
@@ -544,8 +546,10 @@ int ttkBottleneckDistance::RequestData(vtkInformation * /*request*/,
   int dataType2 = CTPersistenceDiagram2_->GetCellData()
                     ->GetArray("Persistence")
                     ->GetDataType();
-  if(dataType1 != dataType2)
-    return -1;
+  if(dataType1 != dataType2) {
+    this->printErr("Persistence array data type should be the same");
+    return 0;
+  }
 
   auto birthScalars1 = vtkDoubleArray::SafeDownCast(
     CTPersistenceDiagram1_->GetPointData()->GetArray("Birth"));
@@ -557,8 +561,10 @@ int ttkBottleneckDistance::RequestData(vtkInformation * /*request*/,
     CTPersistenceDiagram1_->GetPointData()->GetArray("Death"));
   bool is2D1 = !deathScalars1 && !birthScalars1;
   bool is2D2 = !deathScalars2 && !birthScalars2;
-  if(is2D1 != is2D2)
-    return -2;
+  if(is2D1 != is2D2) {
+    this->printErr("Diagrams should not be embedded");
+    return 0;
+  }
   bool is2D = is2D1;
 
   // Call package
@@ -573,13 +579,15 @@ int ttkBottleneckDistance::RequestData(vtkInformation * /*request*/,
   status = getPersistenceDiagram<dataType>(
     CTDiagram1, CTPersistenceDiagram1_, Spacing, 0);
   if(status < 0) {
-    return -2;
+    this->printErr("Could not extract diagram from first input data-set");
+    return 0;
   }
 
   status = getPersistenceDiagram<dataType>(
     CTDiagram2, CTPersistenceDiagram2_, Spacing, 1);
   if(status < 0) {
-    return -2;
+    this->printErr("Could not extract diagram from second input data-set");
+    return 0;
   }
 
   this->setCTDiagram1(&CTDiagram1);
@@ -600,13 +608,20 @@ int ttkBottleneckDistance::RequestData(vtkInformation * /*request*/,
   bool usePersistenceMetric = UsePersistenceMetric;
   // double alpha = Alpha;
   status = this->execute<dataType>(usePersistenceMetric);
-  if(status != 0)
+  if(status != 0) {
+    this->printErr("Base layer failed with error status "
+                   + std::to_string(status));
     return 0;
+  }
 
   // Apply results to outputs 0 and 1.
   status = augmentPersistenceDiagrams<dataType>(
     CTDiagram1, CTDiagram2, matchings, CTPersistenceDiagram1_,
     CTPersistenceDiagram2_);
+  if(status != 1) {
+    this->printErr("Could not augment diagrams");
+    return 0;
+  }
 
   bool useOutputMatching = UseOutputMatching;
   bool useGeometricSpacing = UseGeometricSpacing;
@@ -615,10 +630,12 @@ int ttkBottleneckDistance::RequestData(vtkInformation * /*request*/,
   if(useOutputMatching) {
     status = getMatchingMesh<dataType>(
       CTDiagram1, CTDiagram2, matchings, useGeometricSpacing, Spacing, is2D);
-  }
 
-  // if(status != 0)
-  //   return status;
+    if(status != 1) {
+      this->printErr("Could not compute matchings");
+      return 0;
+    }
+  }
 
   // Set output.
   outputCT1->ShallowCopy(CTPersistenceDiagram1_);
