@@ -558,9 +558,9 @@ int ttkBottleneckDistance::RequestData(vtkInformation * /*request*/,
   auto deathScalars1 = vtkDoubleArray::SafeDownCast(
     CTPersistenceDiagram1->GetPointData()->GetArray("Death"));
   auto birthScalars2 = vtkDoubleArray::SafeDownCast(
-    CTPersistenceDiagram1->GetPointData()->GetArray("Birth"));
+    CTPersistenceDiagram2->GetPointData()->GetArray("Birth"));
   auto deathScalars2 = vtkDoubleArray::SafeDownCast(
-    CTPersistenceDiagram1->GetPointData()->GetArray("Death"));
+    CTPersistenceDiagram2->GetPointData()->GetArray("Death"));
   bool is2D1 = !deathScalars1 && !birthScalars1;
   bool is2D2 = !deathScalars2 && !birthScalars2;
   if(is2D1 != is2D2) {
