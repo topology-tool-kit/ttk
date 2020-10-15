@@ -595,21 +595,16 @@ int ttkBottleneckDistance::RequestData(vtkInformation * /*request*/,
   this->setCTDiagram1(&CTDiagram1);
   this->setCTDiagram2(&CTDiagram2);
 
-  std::string wassersteinMetric = WassersteinMetric;
-  this->setWasserstein(wassersteinMetric);
-  std::string algorithm = DistanceAlgorithm;
-  this->setAlgorithm(algorithm);
-  int pvAlgorithm = PVAlgorithm;
-  this->setPVAlgorithm(pvAlgorithm);
+  this->setWasserstein(WassersteinMetric);
+  this->setAlgorithm(DistanceAlgorithm);
+  this->setPVAlgorithm(PVAlgorithm);
 
   // Empty matchings.
   std::vector<matchingTuple> matchings;
   this->setOutputMatchings(&matchings);
 
   // Exec.
-  bool usePersistenceMetric = UsePersistenceMetric;
-  // double alpha = Alpha;
-  status = this->execute<dataType>(usePersistenceMetric);
+  status = this->execute<dataType>(UsePersistenceMetric);
   if(status != 0) {
     this->printErr("Base layer failed with error status "
                    + std::to_string(status));
