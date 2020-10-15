@@ -110,10 +110,11 @@ public:
     vtkUnstructuredGrid *const CTPersistenceDiagram2_);
 
   template <typename dataType>
-  int translateSecondDiagram(vtkUnstructuredGrid *&outputCT2, double &spacing);
+  int translateSecondDiagram(vtkUnstructuredGrid *outputCT2, double &spacing);
 
   template <typename dataType>
-  int getMatchingMesh(const std::vector<diagramTuple> &diagram1,
+  int getMatchingMesh(vtkUnstructuredGrid *const outputCT3,
+                      const std::vector<diagramTuple> &diagram1,
                       const std::vector<diagramTuple> &diagram2,
                       const std::vector<matchingTuple> &matchings,
                       bool useGeometricSpacing,
@@ -143,8 +144,4 @@ private:
   bool UsePersistenceMetric{false};
   bool UseGeometricSpacing{false};
   int PVAlgorithm{-1};
-
-  vtkUnstructuredGrid *CTPersistenceDiagram1_{};
-  vtkUnstructuredGrid *CTPersistenceDiagram2_{};
-  vtkUnstructuredGrid *CTPersistenceDiagram3_{};
 };
