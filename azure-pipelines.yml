@@ -606,7 +606,7 @@ jobs:
     displayName: 'Build TTKVTK Example'
 
   - bash: |
-      ./ttkExample-c++ -i ../examples/data/inputData.off
+      cmd.exe /C 'set PATH=$(Build.ArtifactStagingDirectory)/ttk-install/bin/ttk;%PATH% & ttkExample-c++.exe -i ../examples/data/inputData.off'
       if [ ! -f output.off ]; then
         exit 1
       fi
