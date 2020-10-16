@@ -67,7 +67,7 @@ int main(int argc, char **argv) {
     auto inputDataObject = reader->GetOutput();
     if(!inputDataObject) {
       msg.printErr("Unable to read input file `" + inputFilePaths[i] + "' :(");
-      return 0;
+      return 1;
     }
 
     auto inputAsVtkDataSet = vtkDataSet::SafeDownCast(inputDataObject);
@@ -90,7 +90,7 @@ int main(int argc, char **argv) {
       } else {
         msg.printErr("Unable to list arrays on file `" + inputFilePaths[i]
                      + "'");
-        return 0;
+        return 1;
       }
     } else {
       // feed input object to ttkManifoldCheck filter
@@ -107,7 +107,7 @@ int main(int argc, char **argv) {
 
   // terminate program if it was just asked to list arrays
   if(listArrays) {
-    return 1;
+    return 0;
   }
 
   // ---------------------------------------------------------------------------
@@ -134,5 +134,5 @@ int main(int argc, char **argv) {
     }
   }
 
-  return 1;
+  return 0;
 }
