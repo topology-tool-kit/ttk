@@ -2,7 +2,7 @@ diff --git c/CMakeLists.txt w/CMakeLists.txt
 index 792bfff6..3870fbb5 100644
 --- c/CMakeLists.txt
 +++ w/CMakeLists.txt
-@@ -803,3 +803,21 @@ install(FILES ${ParaView_SOURCE_DIR}/TTK/Data/Example2.vti
+@@ -803,3 +803,23 @@ install(FILES ${ParaView_SOURCE_DIR}/TTK/Data/Example2.vti
  install(FILES ${ParaView_SOURCE_DIR}/TTK/Data/Example3.vti
    DESTINATION share/paraview-5.8/examples/
    COMPONENT development)
@@ -23,4 +23,6 @@ index 792bfff6..3870fbb5 100644
 +set(CPACK_PACKAGE_VERSION_PATCH ${PARAVIEW_VERSION_PATCH})
 +# autogenerate dependency information
 +set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
++# package will be installed under %ProgramFiles%\${CPACK_PACKAGE_INSTALL_DIRECTORY} on Windows
++set(CPACK_PACKAGE_INSTALL_DIRECTORY "TTK-ParaView")
 +include(CPack)

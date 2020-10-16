@@ -40,6 +40,8 @@ set(CPACK_DEBIAN_PACKAGE_DEPENDS
   "ttk-paraview (= 5.8.1), python3-sklearn, libboost-system-dev, python3-dev, libgraphviz-dev, libsqlite3-dev")
 # autogenerate dependency information
 set (CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
+# package will be installed under %ProgramFiles%\${CPACK_PACKAGE_INSTALL_DIRECTORY} on Windows
+set(CPACK_PACKAGE_INSTALL_DIRECTORY "TTK")
 include(CPack)
 
 if(TTK_BUILD_STANDALONE_APPS AND NOT TTK_BUILD_VTK_WRAPPERS)
