@@ -409,10 +409,10 @@ namespace ttk {
     char *fileName{};
 
     // Char array that identifies the file format.
-    static const char *magicBytes_;
+    const char *magicBytes_{"TTKCompressedFileFormat"};
     // Current version of the file format. To be incremented at every
     // breaking change to keep backward compatibility.
-    static const unsigned long formatVersion_;
+    const unsigned long formatVersion_{1};
   };
 
 } // namespace ttk
