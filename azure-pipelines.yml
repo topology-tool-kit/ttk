@@ -403,10 +403,9 @@ jobs:
     displayName: 'Build and install TTK'
 
   - script: |
-      # DYLD_PRINT_LIBRARIES=1 ./bin/ttkHelloWorldCmd -i $(Build.SourcesDirectory)/examples/data/inputData.vtu
-      echo "Need a fix"
+      ./bin/ttkHelloWorldCmd -i $(Build.SourcesDirectory)/examples/data/inputData.vtu
     workingDirectory: '$(Build.ArtifactStagingDirectory)/ttk-install/'
-    displayName: 'Test TTK Command line (DISABLED FOR NOW)'
+    displayName: 'Test TTK Command line'
 
   - task: CMake@1
     inputs:
