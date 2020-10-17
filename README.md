@@ -12,3 +12,5 @@ Gallery: https://topology-tool-kit.github.io/gallery.html
 Installation: https://topology-tool-kit.github.io/installation.html
 
 Tutorials: https://topology-tool-kit.github.io/tutorials.html
+
+Events: https://topology-tool-kit.github.io/events.html
