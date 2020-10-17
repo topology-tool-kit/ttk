@@ -5,9 +5,6 @@ ttk::TopologicalCompression::TopologicalCompression() {
   this->setDebugMsgPrefix("TopologicalCompression");
 }
 
-const char *ttk::TopologicalCompression::magicBytes_{"TTKCompressedFileFormat"};
-const unsigned long ttk::TopologicalCompression::formatVersion_{1};
-
 // Dependencies.
 
 #ifdef TTK_ENABLE_ZFP

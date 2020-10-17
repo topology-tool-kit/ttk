@@ -513,13 +513,8 @@ jobs:
         VTKVPath: 9.0
 
   variables:
-    TTK_MODULE_DISABLE: '-DVTK_MODULE_ENABLE_ttkAddFieldData=NO
-                         -DVTK_MODULE_ENABLE_ttkWRLExporter=NO
-                         -DVTK_MODULE_ENABLE_ttkCinemaWriter=NO
-                         -DVTK_MODULE_ENABLE_ttkCinemaReader=NO
-                         -DVTK_MODULE_ENABLE_ttkCinemaQuery=NO
-                         -DVTK_MODULE_ENABLE_ttkCinemaImaging=NO
-                         -DVTK_MODULE_ENABLE_ttkUserInterfaceBase=NO'
+    TTK_MODULE_DISABLE: '-DVTK_MODULE_ENABLE_ttkCinemaWriter=NO
+                         -DVTK_MODULE_ENABLE_ttkCinemaQuery=NO'
     # used for dev
     TTK_MODULE_TEST: ''
 
@@ -611,7 +606,7 @@ jobs:
     displayName: 'Build TTKVTK Example'
 
   - bash: |
-      ./ttkExample-c++ -i ../examples/data/inputData.off
+      cmd.exe /C 'set PATH=$(Build.ArtifactStagingDirectory)/ttk-install/bin/ttk;%PATH% & ttkExample-c++.exe -i ../examples/data/inputData.off'
       if [ ! -f output.off ]; then
         exit 1
       fi

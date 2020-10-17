@@ -19,9 +19,21 @@
 
 #include <DataTypes.h>
 
+#if defined(_MSC_VER) && defined(TTK_ENABLE_SHARED_BASE_LIBRARIES)
+#if defined(common_EXPORTS)
+// building common.dll
+#define COMMON_EXPORTS __declspec(dllexport)
+// building every other .dll that include this header
+#else
+#define COMMON_EXPORTS __declspec(dllimport)
+#endif // common_EXPORTS
+#else
+#define COMMON_EXPORTS
+#endif // _MSC_VER && TTK_ENABLE_SHARED_BASE_LIBRARIES
+
 namespace ttk {
 
-  extern int globalThreadNumber_;
+  COMMON_EXPORTS extern int globalThreadNumber_;
 
   class Wrapper;
 

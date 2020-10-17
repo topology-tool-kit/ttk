@@ -145,6 +145,10 @@ function(ttk_set_compile_options library)
     target_compile_definitions(${library} PUBLIC TTK_ENABLE_DOUBLE_TEMPLATING)
   endif()
 
+  if (TTK_ENABLE_SHARED_BASE_LIBRARIES)
+    target_compile_definitions(${library} PUBLIC TTK_ENABLE_SHARED_BASE_LIBRARIES)
+  endif()
+
   if (TTK_ENABLE_KAMIKAZE)
     target_compile_definitions(${library} PUBLIC TTK_ENABLE_KAMIKAZE)
   endif()

@@ -28,7 +28,7 @@
 
 #include <ttkWRLExporter.h>
 
-vtkPolyData *ttkWRLExporterPolyData_ = nullptr;
+TTKWRLEXPORTER_EXPORT vtkPolyData *ttkWRLExporterPolyData_ = nullptr;
 
 // Over-ride the appropriate functions of the vtkVRMLExporter class.
 void vtkVRMLExporter::WriteAnActor(vtkActor *anActor, FILE *fp) {
