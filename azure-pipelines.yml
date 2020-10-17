@@ -137,7 +137,7 @@ jobs:
     displayName: 'Build and install TTK'
 
   - script: |
-      ./bin/ttkBlankCmd -i $(Build.SourcesDirectory)/examples/data/inputData.vtu
+      ./bin/ttkHelloWorldCmd -i $(Build.SourcesDirectory)/examples/data/inputData.vtu
     workingDirectory: '$(Build.ArtifactStagingDirectory)/ttk-install/'
     displayName: 'Test TTK command line'
 
@@ -273,7 +273,7 @@ jobs:
     displayName: 'Build and install TTK'
 
   - script: |
-      ./bin/ttkBlankCmd -i $(Build.SourcesDirectory)/examples/data/inputData.vtu
+      ./bin/ttkHelloWorldCmd -i $(Build.SourcesDirectory)/examples/data/inputData.vtu
     workingDirectory: '$(Build.ArtifactStagingDirectory)/ttk-install/'
     displayName: 'Test TTK Command line'
 
@@ -425,7 +425,7 @@ jobs:
     displayName: 'Build and install TTK'
 
   - script: |
-      # DYLD_PRINT_LIBRARIES=1 ./bin/ttkBlankCmd -i $(Build.SourcesDirectory)/examples/data/inputData.vtu
+      # DYLD_PRINT_LIBRARIES=1 ./bin/ttkHelloWorldCmd -i $(Build.SourcesDirectory)/examples/data/inputData.vtu
       echo "Need a fix"
     workingDirectory: '$(Build.ArtifactStagingDirectory)/ttk-install/'
     displayName: 'Test TTK Command line (DISABLED FOR NOW)'
