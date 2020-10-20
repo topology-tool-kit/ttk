@@ -135,7 +135,6 @@ jobs:
 
     - name: Test TTK examples
       run: |
-        source /etc/profile
         # base layer
         cd $GITHUB_WORKSPACE/examples/c++
         mkdir build && cd build
