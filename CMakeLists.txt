@@ -155,7 +155,7 @@ if(TTK_BUILD_PARAVIEW_PLUGINS)
         )
   else()
     set(TTK_INSTALL_PLUGIN_DIR
-        ${ParaView_DIR}/../../../bin/plugins/
+        "${CMAKE_INSTALL_BINDIR}/plugins"
         CACHE
         PATH
         "Directory where the ParaView plugin will be installed"
