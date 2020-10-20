@@ -81,7 +81,7 @@ install(
   NAMESPACE
     ttk::base::
   DESTINATION
-    lib/cmake/ttk
+    "${CMAKE_INSTALL_LIBDIR}/cmake/ttkBase"
   )
 
 configure_file(core/base/TTKBaseConfig.cmake.in TTKBaseConfig.cmake @ONLY)
@@ -89,7 +89,7 @@ install(
   FILES
     "${CMAKE_CURRENT_BINARY_DIR}/TTKBaseConfig.cmake"
   DESTINATION
-    lib/cmake/ttk
+    "${CMAKE_INSTALL_LIBDIR}/cmake/ttkBase"
   )
 
 
@@ -129,7 +129,7 @@ if(TTK_BUILD_VTK_WRAPPERS)
     NAMESPACE
       ttk::vtk::
     DESTINATION
-      lib/cmake/ttk
+      ${CMAKE_INSTALL_LIBDIR}/cmake/ttkVTK
     )
 
   configure_file(core/vtk/TTKVTKConfig.cmake.in TTKVTKConfig.cmake @ONLY)
@@ -137,7 +137,7 @@ if(TTK_BUILD_VTK_WRAPPERS)
     FILES
       "${CMAKE_CURRENT_BINARY_DIR}/TTKVTKConfig.cmake"
     DESTINATION
-      lib/cmake/ttk
+      ${CMAKE_INSTALL_LIBDIR}/cmake/ttkVTK
     )
 endif()
 

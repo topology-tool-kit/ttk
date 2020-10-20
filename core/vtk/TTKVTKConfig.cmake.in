@@ -9,7 +9,6 @@ else()
 endif()
 
 # Include the actual config for TTK Base
-include("${CMAKE_CURRENT_LIST_DIR}/TTKBaseConfig.cmake")
+include("${CMAKE_CURRENT_LIST_DIR}/../ttkBase/TTKBaseConfig.cmake")
 # And the actual targets for TTK VTK
 include("${CMAKE_CURRENT_LIST_DIR}/TTKVTKTargets.cmake")
-
