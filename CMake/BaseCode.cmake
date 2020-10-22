@@ -16,6 +16,8 @@ function(ttk_add_base_library library)
     add_library(${library} STATIC ${ARG_SOURCES} ${ARG_HEADERS})
   endif()
 
+  set_target_properties(${library} PROPERTIES OUTPUT_NAME "ttkBase${library}")
+
   set_target_properties(${library}
     PROPERTIES
       POSITION_INDEPENDENT_CODE TRUE
