@@ -30,8 +30,8 @@ struct RegistryValue {
   bool isValid(vtkDataSet *dataSet) const;
 };
 
-typedef long long RegistryKey;
-typedef std::unordered_map<RegistryKey, RegistryValue> Registry;
+using RegistryKey = long long;
+using Registry = std::unordered_map<RegistryKey, RegistryValue>;
 
 class TTKALGORITHM_EXPORT ttkTriangulationFactory : public ttk::Debug {
 public:
