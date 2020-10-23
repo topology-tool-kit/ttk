@@ -145,14 +145,13 @@ ttkTriangulationFactory::ttkTriangulationFactory() {
   this->setDebugMsgPrefix("TriangulationFactory");
 };
 
-std::unique_ptr<ttk::Triangulation>
+RegistryTriangulation
   ttkTriangulationFactory::CreateImplicitTriangulation(vtkImageData *image) {
   ttk::Timer timer;
   this->printMsg("Initializing Implicit Triangulation", 0, 0,
                  ttk::debug::LineMode::REPLACE, ttk::debug::Priority::DETAIL);
 
-  auto triangulation
-    = std::unique_ptr<ttk::Triangulation>(new ttk::Triangulation());
+  auto triangulation = RegistryTriangulation(new ttk::Triangulation());
 
   int extent[6];
   image->GetExtent(extent);
@@ -182,7 +181,7 @@ std::unique_ptr<ttk::Triangulation>
   return triangulation;
 };
 
-std::unique_ptr<ttk::Triangulation>
+RegistryTriangulation
   ttkTriangulationFactory::CreateExplicitTriangulation(vtkPointSet *pointSet) {
   ttk::Timer timer;
   this->printMsg("Initializing Explicit Triangulation", 0, 0,
@@ -200,8 +199,7 @@ std::unique_ptr<ttk::Triangulation>
     return nullptr;
   }
 
-  auto triangulation
-    = std::unique_ptr<ttk::Triangulation>(new ttk::Triangulation());
+  auto triangulation = RegistryTriangulation(new ttk::Triangulation());
 
   // Points
   {
@@ -254,7 +252,7 @@ std::unique_ptr<ttk::Triangulation>
   return triangulation;
 };
 
-std::unique_ptr<ttk::Triangulation>
+RegistryTriangulation
   ttkTriangulationFactory::CreateTriangulation(vtkDataSet *dataSet) {
   switch(dataSet->GetDataObjectType()) {
     case VTK_UNSTRUCTURED_GRID:

@@ -15,8 +15,10 @@ namespace ttk {
   class Triangulation;
 }
 
+using RegistryTriangulation = std::unique_ptr<ttk::Triangulation>;
+
 struct RegistryValue {
-  std::unique_ptr<ttk::Triangulation> triangulation;
+  RegistryTriangulation triangulation;
   vtkDataSet *owner;
 
   vtkMTimeType cellModTime{0};
@@ -44,11 +46,9 @@ public:
   Registry registry;
 
 private:
-  std::unique_ptr<ttk::Triangulation>
-    CreateImplicitTriangulation(vtkImageData *image);
-  std::unique_ptr<ttk::Triangulation>
-    CreateExplicitTriangulation(vtkPointSet *pointSet);
-  std::unique_ptr<ttk::Triangulation> CreateTriangulation(vtkDataSet *dataSet);
+  RegistryTriangulation CreateImplicitTriangulation(vtkImageData *image);
+  RegistryTriangulation CreateExplicitTriangulation(vtkPointSet *pointSet);
+  RegistryTriangulation CreateTriangulation(vtkDataSet *dataSet);
   int FindImplicitTriangulation(ttk::Triangulation *&triangulation,
                                 vtkImageData *image);
 
