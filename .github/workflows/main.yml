@@ -15,7 +15,7 @@ on:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "build"
-  build:
+  build-linux:
     # The type of runner that the job will run on
     runs-on: ${{ matrix.os }}
     strategy:
@@ -107,8 +107,8 @@ jobs:
         name: ttk-${{ matrix.os }}.deb
         path: build/ttk-${{ matrix.os }}.deb
 
-  test:
-    needs: build
+  test-linux:
+    needs: build-linux
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -157,9 +157,119 @@ jobs:
         cd $GITHUB_WORKSPACE
         ttkHelloWorldCmd -i examples/data/inputData.vtu
 
+  build-windows:
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: s-weigand/setup-conda@v1
+
+    - name: Install dependencies with conda
+      shell: bash
+      run: |
+        conda install -c anaconda qt boost
+        conda install -c conda-forge eigen spectralib zfp scikit-learn openmp
+
+    - name: Fetch ParaView installer
+      run: |
+        Invoke-WebRequest `
+        -OutFile ttk-paraview.exe `
+        -Uri https://github.com/topology-tool-kit/ttk-paraview/releases/download/v5.8.1/ttk-paraview.exe
+
+    - name: Install ParaView .exe
+      shell: cmd
+      run: |
+        ttk-paraview.exe /S
+
+    - name: Configure TTK
+      shell: cmd
+      run: |
+        set CONDA_ROOT="C:\Miniconda"
+        set CMAKE_PREFIX_PATH="%CONDA_ROOT%\Library\lib\cmake;%CONDA_ROOT%\Library\share\eigen3\cmake;%CONDA_ROOT%\Library\cmake;%ProgramFiles%\TTK-ParaView\lib\cmake"
+        call "%ProgramFiles(x86)%\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+        mkdir build
+        cd build
+        cmake ^
+          -DCMAKE_POLICY_DEFAULT_CMP0092=NEW ^
+          -DBUILD_SHARED_LIBS:BOOL=TRUE ^
+          -DTTK_BUILD_PARAVIEW_PLUGINS=TRUE ^
+          -DTTK_BUILD_VTK_WRAPPERS=TRUE ^
+          -DTTK_BUILD_STANDALONE_APPS=TRUE ^
+          -DTTK_ENABLE_KAMIKAZE=TRUE ^
+          -DTTK_ENABLE_DOUBLE_TEMPLATING=TRUE ^
+          -DTTK_ENABLE_OPENMP=TRUE ^
+          -DTTK_ENABLE_CPU_OPTIMIZATION=FALSE ^
+          -DTTK_ENABLE_SHARED_BASE_LIBRARIES=TRUE ^
+          -G"Visual Studio 16 2019" ^
+          -Tclangcl ^
+          ..
+
+    - name: Build & Package TTK
+      shell: bash
+      run: |
+        cd build
+        # use the correct OpenMP flags
+        find . -name "*.vcxproj" -exec sed -i "s/-Xclang -fopenmp/-openmp/g" {} \;
+        cmake --build . --config Release --parallel
+        cpack -C Release -G NSIS64
+
+    - name: Upload TTK .exe package
+      uses: actions/upload-artifact@v2
+      with:
+        name: ttk.exe
+        path: build/ttk.exe
+
+    - name: Install TTK
+      shell: cmd
+      run: |
+        cd build
+        ttk.exe /S
+
+    - name: Build & Test native TTK examples
+      shell: cmd
+      run: |
+        :: set environment variables
+        call "%ProgramFiles(x86)%\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+        set PV_DIR=%ProgramFiles%\TTK-ParaView
+        set TTK_DIR=%ProgramFiles%\TTK
+        set CMAKE_PREFIX_PATH=%TTK_DIR%\lib\cmake;%PV_DIR%\lib\cmake
+        set PATH=%PATH%;%PV_DIR%\bin;%TTK_DIR%\bin;%TTK_DIR%\bin\ttk
+        :: base layer
+        cd %GITHUB_WORKSPACE%\examples\c++
+        mkdir build
+        cd build
+        cmake -DCMAKE_BUILD_TYPE=Release -GNinja ..
+        ninja
+        ttkExample-c++.exe -i ..\..\data\inputData.off
+        :: VTK layer
+        cd %GITHUB_WORKSPACE%\examples\vtk-c++
+        mkdir build
+        cd build
+        cmake -DCMAKE_BUILD_TYPE=Release -GNinja ..
+        ninja
+        ttkExample-vtk-c++.exe -i ..\..\data\inputData.vtu
+        :: HelloWorld standalone
+        ttkHelloWorldCmd.exe -i %GITHUB_WORKSPACE%\examples\data\inputData.vtu
+
+    - name: Test Python examples
+      shell: bash
+      run: |
+        # set environment variables
+        export PV_BIN="/c/Program Files/TTK-ParaView/bin"
+        export TTK_BIN="/c/Program Files/TTK/bin"
+        export CONDA_ROOT="/c/Miniconda"
+        export PV_PLUGIN_PATH="$TTK_BIN/plugins"
+        export PATH="$PATH:$PV_PLUGIN_PATH:$PV_BIN:$TTK_BIN:$TTK_BIN/ttk"
+        export PYTHONPATH="$PV_BIN/Lib/site-packages:$TTK_BIN/Lib/site-packages:$CONDA_ROOT/Lib"
+        # pure python
+        cd $GITHUB_WORKSPACE/examples/python
+        python example.py ../data/inputData.vtu
+        # pvpython
+        cd $GITHUB_WORKSPACE/examples/pvpython
+        pvpython.exe example.py ../data/inputData.vtu
+
   create-release:
     runs-on: ubuntu-latest
-    needs: test
+    needs: [test-linux, build-windows]
     steps:
 
     - name: Create Release
@@ -195,3 +305,13 @@ jobs:
         asset_path: ttk-ubuntu-20.04.deb/ttk-ubuntu-20.04.deb
         asset_name: ttk-ubuntu-20.04.deb
         asset_content_type: application/vnd.debian.binary-package
+
+    - name: Upload Windows .exe as Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ttk.exe/ttk.exe
+        asset_name: ttk.exe
+        asset_content_type: application/vnd.microsoft.portable-executable
