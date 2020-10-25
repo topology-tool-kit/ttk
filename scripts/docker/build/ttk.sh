@@ -1,14 +1,11 @@
 #! /bin/bash
-
 set -e
-
-BUILD_DIR=/root/ttk-build
 
 build_pkgs \
         build-essential         \
         cmake                   \
         curl                    \
-        libboost-system1.67-dev \
+        libboost-system1.71-dev \
         libcgns-dev             \
         libeigen3-dev           \
         libexpat1-dev           \
@@ -30,37 +27,28 @@ build_pkgs \
         libtheora-dev           \
         libtiff-dev             \
         libxml2-dev             \
-        ninja-build             \
+	ninja-build             \
         protobuf-compiler       \
         python3-dev             \
         python3-numpy-dev       \
-        zlib1g-dev
+        zlib1g-dev              \
+        cmake-curses-gui        \
+        gdb
 
 runtime_pkgs \
-	libboost-system1.67	\
+	libboost-system1.71	\
 	python3-numpy		\
 	python3-sklearn		\
 	libsqlite3-0		\
 	graphviz		\
 	libgomp1
 
-echo "### build TTK ###"
-
 # get source code
-mkdir -p $BUILD_DIR
-
-url="https://github.com/topology-tool-kit/ttk/archive/${TTK_VERSION}.tar.gz"
-
-if [ ${PARAVIEW_VERSION%.*} == "5.7" ]; then
-    url="https://github.com/CharlesGueunet/ttk/archive/ParaView57.tar.gz"
-fi
-
-curl -kL "$url" | tar zx -C $BUILD_DIR --strip-components 1
+curl -kL "https://github.com/topology-tool-kit/ttk/archive/${TTK_VERSION}.tar.gz" | tar zx --strip-components 1
 
 # actually compile
-mkdir -p $BUILD_DIR/build
-
-pushd $BUILD_DIR/build
+mkdir build
+pushd build
 
 cmake -G Ninja \
     -DCMAKE_INSTALL_PREFIX=/usr \
@@ -68,13 +56,16 @@ cmake -G Ninja \
     -DTTK_BUILD_DOCUMENTATION=OFF \
     -DTTK_BUILD_PARAVIEW_PLUGINS=ON \
     -DTTK_BUILD_STANDALONE_APPS=OFF \
-    -DTTK_BUILD_VTK_WRAPPERS=ON \
-    -DVTK_DIR=/usr/lib/cmake/paraview-5.6 \
-    -DTTK_INSTALL_PLUGIN_DIR=${PV_PLUGIN_PATH} \
+    -DTTK_BUILD_VTK_WRAPPERS=OFF \
+    -DTTK_BUILD_VTK_PYTHON_MODULE=OFF \
+    -DTTK_ENABLE_OPENMP=ON \
+    -DTTK_ENABLE_KAMIKAZE=ON \
+    -DTTK_ENABLE_DOUBLE_TEMPLATING=ON \
     ..
 
-ninja install
+# call Ninja manually to ignore duplicate targets
+# cmake --build .
+ninja -w dupbuild=warn install
+cmake --install .
 
 popd
-
-rm -rf $BUILD_DIR

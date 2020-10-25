@@ -1,10 +1,8 @@
 #! /bin/bash
 
-SPECTRA_VERSION=0.8.1
-
 set -e
 
-echo "### build Spectra ###"
+SPECTRA_VERSION=0.8.1
 
 build_pkgs \
 	curl \
@@ -12,4 +10,4 @@ build_pkgs \
 
 # Spectra is header only -> fetch and extract includes directly to final location
 fetch_url https://codeload.github.com/yixuan/spectra/tar.gz/v0.8.1 \
-    | tar zvx -C usr --strip-components 1 "spectra-${SPECTRA_VERSION}/include"
+    | tar zx -C /usr --strip-components 1 "spectra-${SPECTRA_VERSION}/include"
