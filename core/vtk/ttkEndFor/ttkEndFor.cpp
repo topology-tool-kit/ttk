@@ -39,7 +39,7 @@ int ttkEndFor::FillOutputPortInformation(int port, vtkInformation *info) {
 int removeFieldDataRecursively(vtkDataObject *object) {
   object->GetFieldData()->RemoveArray("_ttk_IterationInfo");
   if(object->IsA("vtkMultiBlockDataSet")) {
-    auto objectAsMB = static_cast<vtkMultiBlockDataSet*>(object);
+    auto objectAsMB = static_cast<vtkMultiBlockDataSet *>(object);
     for(size_t i = 0; i < objectAsMB->GetNumberOfBlocks(); i++)
       removeFieldDataRecursively(objectAsMB->GetBlock(i));
   }
@@ -51,43 +51,43 @@ int ttkEndFor::RequestData(vtkInformation *request,
                            vtkInformationVector *outputVector) {
 
   // find for each head
-  ttkForEach* forEach = nullptr;
+  ttkForEach *forEach = nullptr;
   {
-    auto inputAlgorithm = this->GetInputAlgorithm(1,0);
-    while(inputAlgorithm && !inputAlgorithm->IsA("ttkForEach")){
+    auto inputAlgorithm = this->GetInputAlgorithm(1, 0);
+    while(inputAlgorithm && !inputAlgorithm->IsA("ttkForEach")) {
       inputAlgorithm = inputAlgorithm->GetInputAlgorithm();
     }
     forEach = ttkForEach::SafeDownCast(inputAlgorithm);
   }
 
-  if(!forEach){
+  if(!forEach) {
     this->printErr("Second input not connected to a ttkForEach filter.");
     return 0;
   }
 
   // get iteration info
-  int i = forEach->GetIterationIdx()-1;
+  int i = forEach->GetIterationIdx() - 1;
   int n = forEach->GetIterationNumber();
   this->printMsg("Iteration ( " + std::to_string(i) + " / "
-                + std::to_string(n - 1) + " ) complete ",
-              ttk::debug::Separator::BACKSLASH);
+                   + std::to_string(n - 1) + " ) complete ",
+                 ttk::debug::Separator::BACKSLASH);
 
-  if(i==n-1){
+  if(i == n - 1) {
     // if this is the last iteration
     auto input = vtkDataObject::GetData(inputVector[0]);
     auto output = vtkDataObject::GetData(outputVector);
     output->ShallowCopy(input);
-    removeFieldDataRecursively(object);
+    removeFieldDataRecursively(output);
     request->Remove(vtkStreamingDemandDrivenPipeline::CONTINUE_EXECUTING());
   } else {
     // if this is an intermediate iteration
-    auto inputAlgorithm = this->GetInputAlgorithm(0,0);
-    while(inputAlgorithm && !inputAlgorithm->IsA("ttkForEach")){
+    auto inputAlgorithm = this->GetInputAlgorithm(0, 0);
+    while(inputAlgorithm && !inputAlgorithm->IsA("ttkForEach")) {
       inputAlgorithm->Modified();
       inputAlgorithm = inputAlgorithm->GetInputAlgorithm();
     }
     forEach->Modified();
-    this->GetInputAlgorithm(0,0)->Update();
+    this->GetInputAlgorithm(0, 0)->Update();
 
     request->Set(vtkStreamingDemandDrivenPipeline::CONTINUE_EXECUTING(), 1);
   }

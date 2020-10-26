@@ -23,7 +23,7 @@
 class TTKFOREACH_EXPORT ttkForEach : public ttkExtract {
 
 private:
-  vtkDataObject* LastInput{nullptr};
+  vtkDataObject *LastInput{nullptr};
   int IterationIdx{0};
   int IterationNumber{0};
 
@@ -43,5 +43,4 @@ protected:
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;
-
 };

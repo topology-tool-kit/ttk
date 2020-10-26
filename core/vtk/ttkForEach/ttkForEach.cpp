@@ -40,7 +40,7 @@ int ttkForEach::RequestData(vtkInformation *request,
   // Get Input and Output
   auto input = vtkDataObject::GetData(inputVector[0]);
 
-  if(this->LastInput!=input || this->IterationIdx>=this->IterationNumber){
+  if(this->LastInput != input || this->IterationIdx >= this->IterationNumber) {
     this->LastInput = input;
     this->IterationIdx = 0;
   }
@@ -66,7 +66,8 @@ int ttkForEach::RequestData(vtkInformation *request,
       this->printErr("Block iteration requires 'vtkMultiBlockDataSet' input.");
       return 0;
     }
-    this->IterationNumber = ((vtkMultiBlockDataSet *)input)->GetNumberOfBlocks();
+    this->IterationNumber
+      = ((vtkMultiBlockDataSet *)input)->GetNumberOfBlocks();
   } else if(mode == 1) {
     if(!input->IsA("vtkTable")) {
       this->printErr("Row iteration requires 'vtkTable' input.");
@@ -102,11 +103,10 @@ int ttkForEach::RequestData(vtkInformation *request,
   iterationInformation->SetValue(0, this->IterationIdx);
   iterationInformation->SetValue(1, this->IterationNumber);
 
-  this->printMsg(
-    "[" + modeStrings[mode] + "] Iteration: ( "
-      + std::to_string(this->IterationIdx) + " / "
-      + std::to_string(this->IterationNumber-1) + " ) ",
-    ttk::debug::Separator::SLASH);
+  this->printMsg("[" + modeStrings[mode] + "] Iteration: ( "
+                   + std::to_string(this->IterationIdx) + " / "
+                   + std::to_string(this->IterationNumber - 1) + " ) ",
+                 ttk::debug::Separator::SLASH);
 
   this->SetExpressionString(std::to_string(this->IterationIdx));
   this->SetExtractUniqueValues(false);
