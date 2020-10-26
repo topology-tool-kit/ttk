@@ -188,23 +188,23 @@ int ttk::PersistenceDiagram::execute(std::vector<PersistencePair> &CTDiagram,
   contourTree_.computePersistencePairs<scalarType>(STPairs, false);
 
   // merge pairs
+  const auto JTSize = JTPairs.size();
+  const auto STSize = STPairs.size();
   std::vector<std::tuple<ttk::SimplexId, ttk::SimplexId, scalarType, bool>>
-    CTPairs(JTPairs.size() + STPairs.size());
-  const ttk::SimplexId JTSize = JTPairs.size();
-  for(ttk::SimplexId i = 0; i < JTSize; ++i) {
+    CTPairs(JTSize + STSize);
+  for(size_t i = 0; i < JTSize; ++i) {
     const auto &x = JTPairs[i];
     CTPairs[i]
       = std::make_tuple(std::get<0>(x), std::get<1>(x), std::get<2>(x), true);
   }
-  const ttk::SimplexId STSize = STPairs.size();
-  for(ttk::SimplexId i = 0; i < STSize; ++i) {
+  for(size_t i = 0; i < STSize; ++i) {
     const auto &x = STPairs[i];
     CTPairs[JTSize + i]
       = std::make_tuple(std::get<0>(x), std::get<1>(x), std::get<2>(x), false);
   }
 
   // remove the last pair which is present two times (global extrema pair)
-  {
+  if(!CTPairs.empty()) {
     auto cmp =
       [](
         const std::tuple<ttk::SimplexId, ttk::SimplexId, scalarType, bool> &a,

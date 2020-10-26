@@ -50,6 +50,10 @@ int ttkPersistenceDiagram::setPersistenceDiagram(
   const scalarType *const inputScalars,
   const triangulationType *triangulation) const {
 
+  if(diagram.empty()) {
+    return 1;
+  }
+
   vtkNew<vtkUnstructuredGrid> persistenceDiagram{};
 
   // point data arrays
