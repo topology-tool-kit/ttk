@@ -222,6 +222,63 @@ jobs:
         name: ttk.pkg
         path: build/ttk.pkg
 
+  test-macos:
+    needs: build-macos
+    runs-on: macos-latest
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install macOS run-time dependencies
+      run: |
+        # ParaView dependencies
+        brew cask install xquartz
+        brew install wget python libomp mesa glew qt
+        # TTK dependencies
+        brew install boost graphviz
+        python3 -m pip install scikit-learn
+
+    - name: Fetch ttk-paraview
+      run: |
+        wget https://github.com/topology-tool-kit/ttk-paraview/releases/download/v5.8.1/ttk-paraview.pkg
+
+    - name: Fetch TTK .pkg artifact
+      uses: actions/download-artifact@v2
+      with:
+        name: ttk.pkg
+
+    - name: Install .pkg packages
+      run: |
+        sudo installer -pkg ttk-paraview.pkg -target /
+        sudo installer -pkg ttk.pkg -target /
+
+    - name: Test TTK examples
+      run: |
+        # base layer
+        cd $GITHUB_WORKSPACE/examples/c++
+        mkdir build && cd build
+        cmake ..
+        make
+        ./ttkExample-c++ -i ../../data/inputData.off
+        # VTK layer
+        export CMAKE_PREFIX_PATH=$(brew --prefix qt)/lib/cmake:$CMAKE_PREFIX_PATH
+        cd $GITHUB_WORKSPACE/examples/vtk-c++
+        mkdir build &&  cd build
+        cmake ..
+        make
+        ./ttkExample-vtk-c++ -i ../../data/inputData.vtu
+        # pure Python
+        export PYTHONPATH=/Applications/lib/python3.8/site-packages
+        export DYLD_LIBRARY_PATH=/Applications/lib:$DYLD_LIBRARY_PATH
+        cd $GITHUB_WORKSPACE/examples/python
+        python3 example.py ../data/inputData.vtu
+        # pvpython
+        export PATH=/Applications/bin:$PATH
+        cd $GITHUB_WORKSPACE/examples/pvpython
+        pvpython example.py ../data/inputData.vtu
+        # standalones
+        cd $GITHUB_WORKSPACE
+        ttkHelloWorldCmd -i examples/data/inputData.vtu
+
   build-windows:
     runs-on: windows-latest
     steps:
@@ -334,7 +391,7 @@ jobs:
 
   create-release:
     runs-on: ubuntu-latest
-    needs: [test-linux, build-windows]
+    needs: [test-linux, test-macos, build-windows]
     steps:
 
     - name: Create Release
