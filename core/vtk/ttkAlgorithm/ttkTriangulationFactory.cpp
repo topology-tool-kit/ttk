@@ -78,6 +78,10 @@ struct ttkOnDeleteCommand : public vtkCommand {
 
     auto instance = &ttkTriangulationFactory::Instance;
 
+    if(instance->registry.empty()) {
+      return;
+    }
+
     auto it = instance->registry.find(this->key);
     if(it != instance->registry.end()) {
       instance->registry.erase(it);
