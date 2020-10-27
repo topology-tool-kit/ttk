@@ -352,8 +352,6 @@ jobs:
     CCACHE_DIR: $(Pipeline.Workspace)/ccache
     PV_VERSION: 'v5.8.0'
     PV_V: '5.8'
-    # installed brew version
-    Python_VERSION: '3.8.6'
     TTK_MODULE_DISABLE: ''
     # used for dev
     TTK_MODULE_TEST: ''
@@ -365,11 +363,12 @@ jobs:
   - script: |
       brew cask install xquartz
       brew install wget python libomp mesa glew boost ccache
+      brew list --versions > brew-versions.txt
     displayName: 'Install dependencies'
 
   - task: Cache@2
     inputs:
-      key: ParaView | $(Agent.OS) | "$(PV_VERSION)" | "$(Python_VERSION)"
+      key: ParaView | $(Agent.OS) | "$(PV_VERSION)" | brew-versions.txt
       path: ParaView-$(PV_VERSION)/build
       cacheHitVar: CACHE_RESTORED
     displayName: Cache ParaView build
