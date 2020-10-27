@@ -313,6 +313,8 @@ jobs:
         cmake ^
           -DCMAKE_POLICY_DEFAULT_CMP0092=NEW ^
           -DBUILD_SHARED_LIBS:BOOL=TRUE ^
+          -DPYTHON_LIBRARY="%CONDA_ROOT%\libs\python38.lib" ^
+          -DPYTHON_INCLUDE_DIR="%CONDA_ROOT%\include" ^
           -DTTK_BUILD_PARAVIEW_PLUGINS=TRUE ^
           -DTTK_BUILD_VTK_WRAPPERS=TRUE ^
           -DTTK_BUILD_STANDALONE_APPS=TRUE ^
