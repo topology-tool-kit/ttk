@@ -3,12 +3,11 @@
 #include <ttkUtils.h>
 #include <vtkFieldData.h>
 
-using namespace std;
 using namespace ttk;
 
-vtkStandardNewMacro(ttkPersistenceDiagramClustering)
+vtkStandardNewMacro(ttkPersistenceDiagramClustering);
 
-  ttkPersistenceDiagramClustering::ttkPersistenceDiagramClustering() {
+ttkPersistenceDiagramClustering::ttkPersistenceDiagramClustering() {
   SetNumberOfInputPorts(1);
   SetNumberOfOutputPorts(3);
 }
@@ -29,6 +28,11 @@ int ttkPersistenceDiagramClustering::FillOutputPortInformation(
   else
     return 0;
   return 1;
+}
+
+void ttkPersistenceDiagramClustering::Modified() {
+  needUpdate_ = true;
+  ttkAlgorithm::Modified();
 }
 
 // to adapt if your wrapper does not inherit from vtkDataSetAlgorithm
@@ -108,7 +112,7 @@ int ttkPersistenceDiagramClustering::RequestData(
       PersistenceDiagramBarycenter<double> persistenceDiagramsBarycenter;
       // persistenceDiagramsBarycenter.setWrapper(this);
 
-      string wassersteinMetric = std::to_string(WassersteinMetric);
+      std::string wassersteinMetric = std::to_string(WassersteinMetric);
       persistenceDiagramsBarycenter.setWasserstein(wassersteinMetric);
       persistenceDiagramsBarycenter.setMethod(2);
       persistenceDiagramsBarycenter.setNumberOfInputs(numInputs);

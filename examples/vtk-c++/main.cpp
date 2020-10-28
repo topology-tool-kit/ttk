@@ -24,6 +24,7 @@
 #include <ttkPersistenceDiagram.h>
 #include <ttkTopologicalSimplification.h>
 
+#include <vtkNew.h>
 #include <vtkTableWriter.h>
 #include <vtkThreshold.h>
 #include <vtkXMLUnstructuredGridReader.h>
@@ -40,43 +41,37 @@ int main(int argc, char **argv) {
   parser.parse(argc, argv);
 
   // 1. loading the input data
-  vtkSmartPointer<vtkXMLUnstructuredGridReader> reader
-    = vtkSmartPointer<vtkXMLUnstructuredGridReader>::New();
+  vtkNew<vtkXMLUnstructuredGridReader> reader{};
   reader->SetFileName(inputFilePath.data());
 
   // 2. computing the persistence curve
-  vtkSmartPointer<ttkPersistenceCurve> curve
-    = vtkSmartPointer<ttkPersistenceCurve>::New();
+  vtkNew<ttkPersistenceCurve> curve{};
   curve->SetInputConnection(reader->GetOutputPort());
   curve->SetInputArrayToProcess(
     0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_POINTS, "data");
 
   // 3. computing the persitence diagram
-  vtkSmartPointer<ttkPersistenceDiagram> diagram
-    = vtkSmartPointer<ttkPersistenceDiagram>::New();
+  vtkNew<ttkPersistenceDiagram> diagram{};
   diagram->SetInputConnection(reader->GetOutputPort());
   diagram->SetInputArrayToProcess(
     0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_POINTS, "data");
 
   // 4. selecting the critical point pairs
-  vtkSmartPointer<vtkThreshold> criticalPairs
-    = vtkSmartPointer<vtkThreshold>::New();
+  vtkNew<vtkThreshold> criticalPairs{};
   criticalPairs->SetInputConnection(diagram->GetOutputPort());
   criticalPairs->SetInputArrayToProcess(
     0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_CELLS, "PairIdentifier");
   criticalPairs->ThresholdBetween(-0.1, 999999);
 
   // 5. selecting the most persistent pairs
-  vtkSmartPointer<vtkThreshold> persistentPairs
-    = vtkSmartPointer<vtkThreshold>::New();
+  vtkNew<vtkThreshold> persistentPairs{};
   persistentPairs->SetInputConnection(criticalPairs->GetOutputPort());
   persistentPairs->SetInputArrayToProcess(
     0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_CELLS, "Persistence");
   persistentPairs->ThresholdBetween(0.05, 999999);
 
   // 6. simplifying the input data to remove non-persistent pairs
-  vtkSmartPointer<ttkTopologicalSimplification> topologicalSimplification
-    = vtkSmartPointer<ttkTopologicalSimplification>::New();
+  vtkNew<ttkTopologicalSimplification> topologicalSimplification{};
   topologicalSimplification->SetInputConnection(0, reader->GetOutputPort());
   topologicalSimplification->SetInputArrayToProcess(
     0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_POINTS, "data");
@@ -84,28 +79,24 @@ int main(int argc, char **argv) {
     1, persistentPairs->GetOutputPort());
 
   // 7. computing the Morse-Smale complex
-  vtkSmartPointer<ttkMorseSmaleComplex> morseSmaleComplex
-    = vtkSmartPointer<ttkMorseSmaleComplex>::New();
+  vtkNew<ttkMorseSmaleComplex> morseSmaleComplex{};
   morseSmaleComplex->SetInputConnection(
     topologicalSimplification->GetOutputPort());
   morseSmaleComplex->SetInputArrayToProcess(
     0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_POINTS, "data");
 
   // 8. saving the output data
-  vtkSmartPointer<vtkTableWriter> curveWriter
-    = vtkSmartPointer<vtkTableWriter>::New();
+  vtkNew<vtkTableWriter> curveWriter{};
   curveWriter->SetInputConnection(curve->GetOutputPort());
   curveWriter->SetFileName("curve.vtk");
   curveWriter->Write();
 
-  vtkSmartPointer<vtkXMLUnstructuredGridWriter> sepWriter
-    = vtkSmartPointer<vtkXMLUnstructuredGridWriter>::New();
+  vtkNew<vtkXMLUnstructuredGridWriter> sepWriter{};
   sepWriter->SetInputConnection(morseSmaleComplex->GetOutputPort(1));
   sepWriter->SetFileName("separatrices.vtu");
   sepWriter->Write();
 
-  vtkSmartPointer<vtkXMLUnstructuredGridWriter> segWriter
-    = vtkSmartPointer<vtkXMLUnstructuredGridWriter>::New();
+  vtkNew<vtkXMLUnstructuredGridWriter> segWriter{};
   segWriter->SetInputConnection(morseSmaleComplex->GetOutputPort(3));
   segWriter->SetFileName("segmentation.vtu");
   segWriter->Write();
