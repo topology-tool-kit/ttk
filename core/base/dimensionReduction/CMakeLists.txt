@@ -17,4 +17,7 @@ install(
   )
 
 target_compile_definitions(dimensionReduction PUBLIC -DTTK_SCRIPTS_PATH=${CMAKE_INSTALL_FULL_DATAROOTDIR}/ttk)
-target_link_libraries(dimensionReduction PRIVATE ${PYTHON_LIBRARY})
+
+if(TTK_ENABLE_SCIKIT_LEARN)
+  target_link_libraries(dimensionReduction PRIVATE Python3::Python Python3::NumPy)
+endif()

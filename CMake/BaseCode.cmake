@@ -188,55 +188,23 @@ endfunction()
 # Used by basedCode requiring "Python.h"
 
 function(ttk_find_python)
-  find_package(PythonLibs QUIET)
+  find_package(Python3 COMPONENTS Development NumPy)
 
-  if(PYTHON_INCLUDE_DIRS)
-    include_directories(SYSTEM ${PYTHON_INCLUDE_DIRS})
+  if(Python3_FOUND)
+    include_directories(SYSTEM ${Python3_INCLUDE_DIRS})
 
-    string(REPLACE \".\" \" \"
-      PYTHON_VERSION_LIST ${PYTHONLIBS_VERSION_STRING})
-
-    if(NOT PYTHON_VERSION_LIST)
-      string(REPLACE "." " "
-        PYTHON_VERSION_LIST ${PYTHONLIBS_VERSION_STRING})
-    endif()
-
-    separate_arguments(PYTHON_VERSION_LIST)
-    list(GET PYTHON_VERSION_LIST 0 PYTHON_MAJOR_VERSION)
-    list(GET PYTHON_VERSION_LIST 1 PYTHON_MINOR_VERSION)
-
-    set(TTK_PYTHON_MAJOR_VERSION "${PYTHON_MAJOR_VERSION}"
+    set(TTK_PYTHON_MAJOR_VERSION "${Python3_VERSION_MAJOR}"
       CACHE INTERNAL "TTK_PYTHON_MAJOR_VERSION")
-    set(TTK_PYTHON_MINOR_VERSION "${PYTHON_MINOR_VERSION}"
+    set(TTK_PYTHON_MINOR_VERSION "${Python3_VERSION_MINOR}"
       CACHE INTERNAL "TTK_PYTHON_MINOR_VERSION")
 
-    if(TTK_PYTHON_MAJOR_VERSION)
-      message(STATUS "Python version: ${TTK_PYTHON_MAJOR_VERSION}.${TTK_PYTHON_MINOR_VERSION}")
+    if(Python3_NumPy_FOUND)
+      option(TTK_ENABLE_SCIKIT_LEARN "Enable scikit-learn support" ON)
     else()
-      message(STATUS "Python version: NOT-FOUND")
+      option(TTK_ENABLE_SCIKIT_LEARN "Enable scikit-learn support" OFF)
+      message(STATUS
+        "Improper Python/NumPy setup. Disabling scikit-learn support in TTK.")
     endif()
-
-    find_path(PYTHON_NUMPY_INCLUDE_DIR numpy/arrayobject.h PATHS
-      ${PYTHON_INCLUDE_DIRS}
-      /usr/lib/python${PYTHON_MAJOR_VERSION}.${PYTHON_MINOR_VERSION}/site-packages/numpy/core/include/
-      /usr/local/lib/python${PYTHON_MAJOR_VERSION}.${PYTHON_MINOR_VERSION}/site-packages/numpy/core/include
-      C:/ProgramData/Anaconda3/Lib/site-packages/numpy/core/include
-      C:/Miniconda/Lib/site-packages/numpy/core/include
-      )
-    if(PYTHON_NUMPY_INCLUDE_DIR)
-      message(STATUS "Numpy headers: ${PYTHON_NUMPY_INCLUDE_DIR}")
-      include_directories(SYSTEM ${PYTHON_NUMPY_INCLUDE_DIR})
-    else()
-      message(STATUS "Numpy headers: NOT-FOUND")
-    endif()
-  endif()
-
-  if(PYTHON_NUMPY_INCLUDE_DIR)
-    option(TTK_ENABLE_SCIKIT_LEARN "Enable scikit-learn support" ON)
-  else()
-    option(TTK_ENABLE_SCIKIT_LEARN "Enable scikit-learn support" OFF)
-    message(STATUS
-      "Improper python/numpy setup. Disabling sckikit-learn support in TTK.")
   endif()
 
 endfunction()
