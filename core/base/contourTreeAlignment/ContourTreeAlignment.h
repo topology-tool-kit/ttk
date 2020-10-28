@@ -298,7 +298,7 @@ int ttk::ContourTreeAlignment::execute(const vector<void *> &scalarsVP,
   }
   std::srand(seed);
   if(alignmenttreeType != lastMatchedValue)
-    std::shuffle(permutation.begin(), permutation.end(), std::random_device{});
+    std::random_shuffle(permutation.begin(), permutation.end());
 
   this->printMsg(
     "Shuffling input trees. Used seed: " + std::to_string(seed), 1);
