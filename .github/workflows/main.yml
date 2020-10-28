@@ -87,11 +87,12 @@ jobs:
     - name: Build TTK
       run: |
         cd build
-        make -j$(nproc) package
+        make -j$(nproc)
 
-    - name: Update package informations
+    - name: Package TTK & update package informations
       run: |
         cd build
+        cpack -G DEB
         # unpack deb package to access control file
         mkdir tmp
         dpkg-deb --extract ttk.deb tmp
@@ -214,6 +215,10 @@ jobs:
       run: |
         cd build
         make -j$(nproc)
+
+    - name: Package TTK
+      run: |
+        cd build
         cpack -G productbuild
 
     - name: Upload .pgk package
@@ -326,13 +331,18 @@ jobs:
           -Tclangcl ^
           ..
 
-    - name: Build & Package TTK
+    - name: Build TTK
       shell: bash
       run: |
         cd build
         # use the correct OpenMP flags
         find . -name "*.vcxproj" -exec sed -i "s/-Xclang -fopenmp/-openmp/g" {} \;
         cmake --build . --config Release --parallel
+
+    - name: Package TTK
+      shell: bash
+      run: |
+        cd build
         cpack -C Release -G NSIS64
 
     - name: Upload TTK .exe package
