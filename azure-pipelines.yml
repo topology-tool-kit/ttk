@@ -378,6 +378,8 @@ jobs:
       xz -d ParaView-$(PV_VERSION).tar.xz
       tar xvf ParaView-$(PV_VERSION).tar
       mkdir -p ParaView-$(PV_VERSION)/build
+      # switch to Xcode 11 since Xcode 12 breaks the ParaView build
+      sudo xcode-select -s "/Applications/Xcode_11.7.app"
     displayName: 'Download and extract ParaView $(PV_VERSION)'
 
   - task: CMake@1
@@ -388,7 +390,6 @@ jobs:
                     -DPARAVIEW_BUILD_TESTING=OFF
                     -DPARAVIEW_ENABLE_PYTHON=ON
                     -DVTK_PYTHON_VERSION=3
-                    -DCMAKE_CXX_FLAGS="-Wno-error=implicit-function-declaration"
                     -DPARAVIEW_BUILD_QT_GUI=NO'
     condition: ne(variables.CACHE_RESTORED, 'true')
     displayName: 'Configure ParaView'
