@@ -388,6 +388,7 @@ jobs:
                     -DPARAVIEW_BUILD_TESTING=OFF
                     -DPARAVIEW_ENABLE_PYTHON=ON
                     -DVTK_PYTHON_VERSION=3
+                    -DCMAKE_CXX_FLAGS="-Wno-error=implicit-function-declaration"
                     -DPARAVIEW_BUILD_QT_GUI=NO'
     condition: ne(variables.CACHE_RESTORED, 'true')
     displayName: 'Configure ParaView'
