@@ -6,8 +6,10 @@ if("${PROJECT_SOURCE_DIR}" STREQUAL "${PROJECT_BINARY_DIR}")
   message(FATAL_ERROR "Build in sources is not supported by TTK, please use a separate build folder")
 endif()
 
+include(CMakeDependentOption)
+
 option(TTK_BUILD_VTK_WRAPPERS "Build the TTK VTK Wrappers" ON)
-option(TTK_BUILD_PARAVIEW_PLUGINS "Build the TTK ParaView Plugins" ON)
+cmake_dependent_option(TTK_BUILD_PARAVIEW_PLUGINS "Build the TTK ParaView Plugins" ON "TTK_BUILD_VTK_WRAPPERS" OFF)
 option(TTK_BUILD_STANDALONE_APPS "Build the TTK Standalone Applications" ON)
 option(TTK_WHITELIST_MODE "Explicitely enable each filter" OFF)
 mark_as_advanced(TTK_WHITELIST_MODE BUILD_SHARED_LIBS)
@@ -96,30 +98,6 @@ install(
 
 set(VTKWRAPPER_DIR "${CMAKE_CURRENT_LIST_DIR}/core/vtk/")
 
-if(TTK_BUILD_PARAVIEW_PLUGINS)
-  include(CMake/ParaViewFilter.cmake)
-  add_compile_definitions("TTK_BUILD_PARAVIEW_PLUGINS")
-
-  # Install location
-  if(NOT "$ENV{PV_PLUGIN_PATH}" STREQUAL "")
-    set(TTK_INSTALL_PLUGIN_DIR
-      $ENV{PV_PLUGIN_PATH}
-      CACHE
-      PATH
-        "Directory where the ParaView plugin will be installed"
-      )
-  else()
-    set(TTK_INSTALL_PLUGIN_DIR
-      ${ParaView_DIR}/../../../bin/plugins/
-      CACHE
-      PATH
-      "Directory where the ParaView plugin will be installed"
-      )
-  endif()
-
-  add_subdirectory(paraview)
-endif()
-
 # VTK Wrappers
 # ------------
 
@@ -161,6 +139,30 @@ if(TTK_BUILD_VTK_WRAPPERS)
     DESTINATION
       lib/cmake/ttk
     )
+endif()
+
+if(TTK_BUILD_PARAVIEW_PLUGINS)
+  include(CMake/ParaViewFilter.cmake)
+  add_compile_definitions("TTK_BUILD_PARAVIEW_PLUGINS")
+
+  # Install location
+  if(NOT "$ENV{PV_PLUGIN_PATH}" STREQUAL "")
+    set(TTK_INSTALL_PLUGIN_DIR
+        $ENV{PV_PLUGIN_PATH}
+        CACHE
+        PATH
+        "Directory where the ParaView plugin will be installed"
+        )
+  else()
+    set(TTK_INSTALL_PLUGIN_DIR
+        ${ParaView_DIR}/../../../bin/plugins/
+        CACHE
+        PATH
+        "Directory where the ParaView plugin will be installed"
+        )
+  endif()
+
+  add_subdirectory(paraview)
 endif()
 
 # Standalones
