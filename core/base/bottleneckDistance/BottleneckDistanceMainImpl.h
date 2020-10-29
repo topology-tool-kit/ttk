@@ -315,7 +315,7 @@ int BottleneckDistance::computeBottleneck(const std::vector<diagramTuple> &d1,
                    + "), diagMin(" + std::to_string(addedMinPersistence)
                    + "), diagSad(" + std::to_string(addedSadPersistence) + ")");
     this->printMsg("affAll(" + std::to_string(affectationD) + "), res("
-                   + std::to_string(d) + ")" + std::to_string(d) + ")");
+                   + std::to_string(d) + ")");
   }
 
   distance_ = (double)d;

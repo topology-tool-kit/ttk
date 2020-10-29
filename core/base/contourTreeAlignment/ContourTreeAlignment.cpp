@@ -1220,9 +1220,8 @@ std::shared_ptr<AlignmentTree> ttk::ContourTreeAlignment::traceAlignmentTree(
   if(t2 == nullptr)
     return traceNullAlignment(t1, true);
 
-  auto id = [this](std::shared_ptr<BinaryTree> t) {
-    return t == nullptr ? 0 : t->id;
-  };
+  auto id
+    = [](std::shared_ptr<BinaryTree> t) { return t == nullptr ? 0 : t->id; };
 
   if(memT[t1->id][t2->id] == editCost(t1, t2) + memF[t1->id][t2->id]) {
 
@@ -1304,11 +1303,10 @@ std::shared_ptr<AlignmentTree> ttk::ContourTreeAlignment::traceAlignmentTree(
     return res;
   }
 
-  if(
-    memT[t1->id][t2->id]
-    == editCost(nullptr, t2) + memT[0][id(t2->child2)]
-         + memT[t1->id][id(
-             t2->child1)] /* && t2->type != maxNode && t2->type != minNode */) {
+  if(memT[t1->id][t2->id]
+     == editCost(nullptr, t2) + memT[0][id(t2->child2)]
+          + memT[t1->id][id(
+            t2->child1)] /* && t2->type != maxNode && t2->type != minNode */) {
 
     std::shared_ptr<AlignmentTree> resChild1
       = traceAlignmentTree(t1, t2->child1, memT, memF);
@@ -1330,11 +1328,10 @@ std::shared_ptr<AlignmentTree> ttk::ContourTreeAlignment::traceAlignmentTree(
     return res;
   }
 
-  if(
-    memT[t1->id][t2->id]
-    == editCost(nullptr, t2) + memT[0][id(t2->child1)]
-         + memT[t1->id][id(
-             t2->child2)] /* && t2->type != maxNode && t2->type != minNode */) {
+  if(memT[t1->id][t2->id]
+     == editCost(nullptr, t2) + memT[0][id(t2->child1)]
+          + memT[t1->id][id(
+            t2->child2)] /* && t2->type != maxNode && t2->type != minNode */) {
 
     std::shared_ptr<AlignmentTree> resChild1
       = traceAlignmentTree(t1, t2->child2, memT, memF);
@@ -1385,9 +1382,8 @@ std::vector<std::shared_ptr<AlignmentTree>>
       res.push_back(traceNullAlignment(t1->child2, true));
   }
 
-  auto id = [this](std::shared_ptr<BinaryTree> t) {
-    return t == nullptr ? 0 : t->id;
-  };
+  auto id
+    = [](std::shared_ptr<BinaryTree> t) { return t == nullptr ? 0 : t->id; };
 
   if(memF[t1->id][t2->id]
      == memT[id(t1->child1)][id(t2->child1)]

@@ -363,11 +363,12 @@ jobs:
   - script: |
       brew cask install xquartz
       brew install wget python libomp mesa glew boost ccache
+      brew list --versions > brew-versions.txt
     displayName: 'Install dependencies'
 
   - task: Cache@2
     inputs:
-      key: ParaView | $(Agent.OS) | "$(PV_VERSION)"
+      key: ParaView | $(Agent.OS) | "$(PV_VERSION)" | brew-versions.txt
       path: ParaView-$(PV_VERSION)/build
       cacheHitVar: CACHE_RESTORED
     displayName: Cache ParaView build
@@ -377,6 +378,8 @@ jobs:
       xz -d ParaView-$(PV_VERSION).tar.xz
       tar xvf ParaView-$(PV_VERSION).tar
       mkdir -p ParaView-$(PV_VERSION)/build
+      # switch to Xcode 11 since Xcode 12 breaks the ParaView build
+      sudo xcode-select -s "/Applications/Xcode_11.7.app"
     displayName: 'Download and extract ParaView $(PV_VERSION)'
 
   - task: CMake@1
