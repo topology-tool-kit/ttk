@@ -355,6 +355,8 @@ jobs:
     TTK_MODULE_DISABLE: ''
     # used for dev
     TTK_MODULE_TEST: ''
+    # change this string to cause a cache miss and force a rebuild of ParaView
+    PV_CACHE_MISS: 'ttk'
 
   pool:
     vmImage: 'macOS-latest'
@@ -368,7 +370,7 @@ jobs:
 
   - task: Cache@2
     inputs:
-      key: ParaView | $(Agent.OS) | "$(PV_VERSION)" | brew-versions.txt
+      key: ParaView | $(Agent.OS) | "$(PV_VERSION)" | brew-versions.txt | "$(PV_CACHE_MISS)"
       path: ParaView-$(PV_VERSION)/build
       cacheHitVar: CACHE_RESTORED
     displayName: Cache ParaView build
