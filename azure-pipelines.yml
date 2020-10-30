@@ -362,7 +362,7 @@ jobs:
   steps:
   - script: |
       brew cask install xquartz
-      brew install wget python libomp mesa glew boost ccache
+      brew install wget python libomp mesa glew boost ccache qt
     displayName: 'Install dependencies'
 
   - script: |
@@ -384,7 +384,7 @@ jobs:
                      -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
                      -DCMAKE_INSTALL_PREFIX=$(Build.ArtifactStagingDirectory)/ttk-install
                      -DCMAKE_BUILD_TYPE=Release
-                     -DParaView_DIR=./ParaView-$(PV_VERSION)/build/
+                     -DQt5_DIR=/usr/local/opt/qt/lib/cmake/Qt5
                      -DTTK_INSTALL_PLUGIN_DIR=$(System.DefaultWorkingDirectory)/ParaView-$(PV_VERSION)/build/bin/plugins
                      -DTTK_BUILD_STANDALONE_APPS=ON
                      -DTTK_ENABLE_CPU_OPTIMIZATION=OFF
