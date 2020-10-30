@@ -448,6 +448,7 @@ jobs:
 
   - script: |
       export PYTHONPATH=$(Build.ArtifactStagingDirectory)/ttk-install/lib/python3.8/site-packages
+      export DYLD_LIBRARY_PATH=/Applications/lib
       /Applications/bin/pvpython ./example.py ../data/inputData.vtu
       if [ ! -f curve.vtk ] || [ ! -f separatrices.vtu ] || [ ! -f segmentation.vtu ] ; then
         exit 1
@@ -457,6 +458,7 @@ jobs:
 
   - script: |
       export PV_PLUGIN_PATH=$(System.DefaultWorkingDirectory)/ParaView-$(PV_VERSION)/build/bin/plugins
+      export DYLD_LIBRARY_PATH=/Applications/lib
       /Applications/bin/pvpython -v=9 ./example.py ../data/inputData.vtu
       if [ ! -f curve.vtk ] || [ ! -f separatrices.vtu ] || [ ! -f segmentation.vtu ] ; then
         exit 1
