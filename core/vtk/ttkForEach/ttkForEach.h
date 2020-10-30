@@ -22,17 +22,24 @@
 
 class TTKFOREACH_EXPORT ttkForEach : public ttkExtract {
 
+private:
+  vtkDataObject *LastInput{nullptr};
+  int IterationIdx{0};
+  int IterationNumber{0};
+
 public:
   static ttkForEach *New();
   vtkTypeMacro(ttkForEach, ttkExtract);
+
+  vtkGetMacro(IterationIdx, int);
+  vtkSetMacro(IterationIdx, int);
+  vtkGetMacro(IterationNumber, int);
+  vtkSetMacro(IterationNumber, int);
 
 protected:
   ttkForEach();
   ~ttkForEach();
 
-  int RequestInformation(vtkInformation *request,
-                         vtkInformationVector **inputVector,
-                         vtkInformationVector *outputVector) override;
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;
