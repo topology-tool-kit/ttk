@@ -46,6 +46,10 @@ set (CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
 set(CPACK_PACKAGE_INSTALL_DIRECTORY "TTK")
 # let the installer uninstall previous installations on Windows
 set(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL ON)
+# generate components, fix productbuild packaging for macOS
+if(APPLE)
+  set(CPACK_COMPONENTS_ALL Unspecified python development)
+endif()
 include(CPack)
 
 if(TTK_BUILD_STANDALONE_APPS AND NOT TTK_BUILD_VTK_WRAPPERS)
