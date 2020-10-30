@@ -366,7 +366,7 @@ jobs:
     displayName: 'Install dependencies'
 
   - script: |
-      wget https://github.com/topology-tool-kit/ttk-paraview/releases/download/$(PV_VERSION)/ttk-paraview.pkg
+      wget https://github.com/pierre-guillou/paraview-ttk/releases/download/latest/ttk-paraview.pkg
       sudo installer -pkg ttk-paraview.pkg -target /
     displayName: 'Download and install ParaView'
 
