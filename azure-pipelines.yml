@@ -421,7 +421,7 @@ jobs:
       workingDirectory: 'build-example-vtk/'
       cmakeArgs: '../examples/vtk-c++ $(CMakeArgs)
                   -DCMAKE_BUILD_TYPE=$(BuildType)
-                  -DParaView_DIR=$(System.DefaultWorkingDirectory)/ParaView-$(PV_VERSION)/build/
+                  -DQt5_DIR=/usr/local/opt/qt/lib/cmake/Qt5
                   -DTTKVTK_DIR=$(Build.ArtifactStagingDirectory)/ttk-install/lib/cmake/ttk'
     displayName: 'Configure TTKVTK Example'
 
