@@ -23,19 +23,6 @@ ttkForEach::ttkForEach() {
 
 ttkForEach::~ttkForEach(){};
 
-int ttkForEach::RequestInformation(vtkInformation *request,
-                                   vtkInformationVector **inputVector,
-                                   vtkInformationVector *outputVector) {
-  // These values need to exists to automatically enable temporal streaming
-  double dummy[2] = {-99999, -99998};
-  outputVector->GetInformationObject(0)->Set(
-    vtkStreamingDemandDrivenPipeline::TIME_STEPS(), dummy, 2);
-  outputVector->GetInformationObject(0)->Set(
-    vtkStreamingDemandDrivenPipeline::TIME_RANGE(), dummy, 2);
-
-  return 1;
-}
-
 int addRecursivelyToFieldData(vtkDataObject *object,
                               vtkSmartPointer<vtkDataArray> array) {
   object->GetFieldData()->AddArray(array);
@@ -50,23 +37,16 @@ int addRecursivelyToFieldData(vtkDataObject *object,
 int ttkForEach::RequestData(vtkInformation *request,
                             vtkInformationVector **inputVector,
                             vtkInformationVector *outputVector) {
-  // retrieve iterationIndex from pipeline
-  auto iterationIndex = outputVector->GetInformationObject(0)->Get(
-    vtkStreamingDemandDrivenPipeline::UPDATE_TIME_STEP());
-
   // Get Input and Output
   auto input = vtkDataObject::GetData(inputVector[0]);
 
+  if(this->LastInput != input || this->IterationIdx >= this->IterationNumber) {
+    this->LastInput = input;
+    this->IterationIdx = 0;
+  }
+
   // Determine Mode
   std::string modeStrings[5] = {"B", "R", "G", "V", "A"};
-
-  // Iteration info
-  auto iterationInformation = vtkSmartPointer<vtkDoubleArray>::New();
-  iterationInformation->SetName("_ttk_IterationInfo");
-  iterationInformation->SetNumberOfComponents(2);
-  iterationInformation->SetNumberOfTuples(1);
-  iterationInformation->SetValue(0, iterationIndex);
-  iterationInformation->SetValue(1, 0);
 
   auto mode = this->GetExtractionMode();
   if(mode < 0) {
@@ -86,21 +66,21 @@ int ttkForEach::RequestData(vtkInformation *request,
       this->printErr("Block iteration requires 'vtkMultiBlockDataSet' input.");
       return 0;
     }
-    iterationInformation->SetValue(
-      1, ((vtkMultiBlockDataSet *)input)->GetNumberOfBlocks());
+    this->IterationNumber
+      = ((vtkMultiBlockDataSet *)input)->GetNumberOfBlocks();
   } else if(mode == 1) {
     if(!input->IsA("vtkTable")) {
       this->printErr("Row iteration requires 'vtkTable' input.");
       return 0;
     }
-    iterationInformation->SetValue(1, ((vtkTable *)input)->GetNumberOfRows());
+    this->IterationNumber = ((vtkTable *)input)->GetNumberOfRows();
   } else if(mode == 3) {
     auto inputArray = this->GetInputArrayToProcess(0, inputVector);
     if(!inputArray) {
       this->printErr("Unable to retrieve input array.");
       return 0;
     }
-    iterationInformation->SetValue(1, inputArray->GetNumberOfTuples());
+    this->IterationNumber = inputArray->GetNumberOfTuples();
   } else if(mode == 4) {
     auto inputFD
       = input->GetAttributesAsFieldData(this->GetArrayAttributeType());
@@ -108,20 +88,27 @@ int ttkForEach::RequestData(vtkInformation *request,
       this->printErr("Unable to retrieve attribute type.");
       return 0;
     } else {
-      iterationInformation->SetValue(1, inputFD->GetNumberOfArrays());
+      this->IterationNumber = inputFD->GetNumberOfArrays();
     }
   } else {
     this->printErr("Unsupported mode");
     return 0;
   }
 
-  this->printMsg(
-    "[" + modeStrings[mode] + "] Iteration: ( "
-      + std::to_string((int)(iterationIndex)) + " / "
-      + std::to_string((int)(iterationInformation->GetValue(1)) - 1) + " ) ",
-    ttk::debug::Separator::SLASH);
+  // Iteration info
+  auto iterationInformation = vtkSmartPointer<vtkDoubleArray>::New();
+  iterationInformation->SetName("_ttk_IterationInfo");
+  iterationInformation->SetNumberOfComponents(2);
+  iterationInformation->SetNumberOfTuples(1);
+  iterationInformation->SetValue(0, this->IterationIdx);
+  iterationInformation->SetValue(1, this->IterationNumber);
 
-  this->SetExpressionString(std::to_string((int)iterationIndex));
+  this->printMsg("[" + modeStrings[mode] + "] Iteration: ( "
+                   + std::to_string(this->IterationIdx) + " / "
+                   + std::to_string(this->IterationNumber - 1) + " ) ",
+                 ttk::debug::Separator::SLASH);
+
+  this->SetExpressionString(std::to_string(this->IterationIdx));
   this->SetExtractUniqueValues(false);
   this->SetOutputArrayName("IterationArray");
 
@@ -131,6 +118,8 @@ int ttkForEach::RequestData(vtkInformation *request,
   // Add iteration info to output
   auto output = vtkDataObject::GetData(outputVector);
   addRecursivelyToFieldData(output, iterationInformation);
+
+  this->IterationIdx++;
 
   return 1;
 }

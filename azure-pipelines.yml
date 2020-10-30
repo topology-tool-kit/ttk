@@ -183,7 +183,7 @@ jobs:
   variables:
     CMakeArgs: ''
     CCACHE_DIR: $(Pipeline.Workspace)/ccache
-    PV_VERSION: 'v5.8.0'
+    PV_VERSION: 'v5.8.1'
     PV_V: '5.8'
     TTK_MODULE_DISABLE: ''
     # used for dev
@@ -227,7 +227,7 @@ jobs:
     displayName: 'Download and extract ParaView $(PV_VERSION)'
 
   - script: |
-      ./patch-paraview-5.8.0.sh ../../ParaView-$(PV_VERSION)
+      ./patch-paraview-5.8.1.sh ../../ParaView-$(PV_VERSION)
     workingDirectory: 'paraview/patch'
     condition: ne(variables.CACHE_RESTORED, 'true')
     displayName: 'Patch ParaView $(PV_VERSION)'
@@ -350,7 +350,7 @@ jobs:
   variables:
     CMakeArgs: ''
     CCACHE_DIR: $(Pipeline.Workspace)/ccache
-    PV_VERSION: 'v5.8.0'
+    PV_VERSION: 'v5.8.1'
     PV_V: '5.8'
     TTK_MODULE_DISABLE: ''
     # used for dev
