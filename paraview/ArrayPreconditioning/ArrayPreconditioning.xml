@@ -91,7 +91,7 @@
       </PropertyGroup>
 
       <Hints>
-        <ShowInMenu category="TTK - Misc" />
+        <ShowInMenu category="TTK - Scalar Data" />
       </Hints>
     </SourceProxy>
   </ProxyGroup>
