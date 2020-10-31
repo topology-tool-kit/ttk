@@ -37,6 +37,12 @@ set(CPACK_PACKAGE_HOMEPAGE_URL "https://topology-tool-kit.github.io/")
 if(NOT APPLE)
   set(CPACK_RESOURCE_FILE_LICENSE ${CMAKE_CURRENT_SOURCE_DIR}/LICENSE)
   set(CPACK_RESOURCE_FILE_README ${CMAKE_CURRENT_SOURCE_DIR}/README.md)
+else()
+  # macOS needs license & readme files ending with .txt
+  configure_file(LICENSE License.txt COPYONLY)
+  configure_file(README.md Readme.txt COPYONLY)
+  set(CPACK_RESOURCE_FILE_LICENSE ${PROJECT_BINARY_DIR}/License.txt)
+  set(CPACK_RESOURCE_FILE_README ${PROJECT_BINARY_DIR}/Readme.txt)
 endif()
 set(CPACK_DEBIAN_PACKAGE_DEPENDS
   "ttk-paraview (= 5.8.1), python3-sklearn, libboost-system-dev, python3-dev, libgraphviz-dev, libsqlite3-dev")
