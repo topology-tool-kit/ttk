@@ -109,7 +109,7 @@ function(ttk_add_base_template_library library)
     EXPORT TTKBaseTargets
     )
 
-  install(FILES ${ARG_HEADERS} DESTINATION include/ttk/base)
+  install(FILES ${ARG_HEADERS} DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}/ttk/base")
 endfunction()
 
 # Add compile flags and defintions to the target
