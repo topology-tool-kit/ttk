@@ -355,8 +355,6 @@ jobs:
     TTK_MODULE_DISABLE: ''
     # used for dev
     TTK_MODULE_TEST: ''
-    # change this string to cause a cache miss and force a rebuild of ParaView
-    PV_CACHE_MISS: 'ttk'
 
   pool:
     vmImage: 'macOS-latest'
@@ -364,43 +362,13 @@ jobs:
   steps:
   - script: |
       brew cask install xquartz
-      brew install wget python libomp mesa glew boost ccache
-      brew list --versions > brew-versions.txt
+      brew install wget python libomp mesa glew boost ccache qt
     displayName: 'Install dependencies'
 
-  - task: Cache@2
-    inputs:
-      key: ParaView | $(Agent.OS) | "$(PV_VERSION)" | brew-versions.txt | "$(PV_CACHE_MISS)"
-      path: ParaView-$(PV_VERSION)/build
-      cacheHitVar: CACHE_RESTORED
-    displayName: Cache ParaView build
-
   - script: |
-      wget https://www.paraview.org/files/v$(PV_V)/ParaView-$(PV_VERSION).tar.xz
-      xz -d ParaView-$(PV_VERSION).tar.xz
-      tar xvf ParaView-$(PV_VERSION).tar
-      mkdir -p ParaView-$(PV_VERSION)/build
-      # switch to Xcode 11 since Xcode 12 breaks the ParaView build
-      sudo xcode-select -s "/Applications/Xcode_11.7.app"
-    displayName: 'Download and extract ParaView $(PV_VERSION)'
-
-  - task: CMake@1
-    inputs:
-      workingDirectory: 'ParaView-$(PV_VERSION)/build'
-      cmakeArgs: '.. $(CMakeArgs)
-                    -DCMAKE_BUILD_TYPE=Release
-                    -DPARAVIEW_BUILD_TESTING=OFF
-                    -DPARAVIEW_ENABLE_PYTHON=ON
-                    -DVTK_PYTHON_VERSION=3
-                    -DPARAVIEW_BUILD_QT_GUI=NO'
-    condition: ne(variables.CACHE_RESTORED, 'true')
-    displayName: 'Configure ParaView'
-
-  - script: |
-      cmake --build . -- -j 4
-    workingDirectory: 'ParaView-$(PV_VERSION)/build'
-    condition: ne(variables.CACHE_RESTORED, 'true')
-    displayName: 'Build ParaView'
+      wget https://github.com/topology-tool-kit/ttk-paraview/releases/download/$(PV_VERSION)/ttk-paraview.pkg
+      sudo installer -pkg ttk-paraview.pkg -target /
+    displayName: 'Download and install ParaView'
 
   - task: Cache@2
     inputs:
@@ -416,7 +384,7 @@ jobs:
                      -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
                      -DCMAKE_INSTALL_PREFIX=$(Build.ArtifactStagingDirectory)/ttk-install
                      -DCMAKE_BUILD_TYPE=Release
-                     -DParaView_DIR=./ParaView-$(PV_VERSION)/build/
+                     -DQt5_DIR=/usr/local/opt/qt/lib/cmake/Qt5
                      -DTTK_INSTALL_PLUGIN_DIR=$(System.DefaultWorkingDirectory)/ParaView-$(PV_VERSION)/build/bin/plugins
                      -DTTK_BUILD_STANDALONE_APPS=ON
                      -DTTK_ENABLE_CPU_OPTIMIZATION=OFF
@@ -453,7 +421,7 @@ jobs:
       workingDirectory: 'build-example-vtk/'
       cmakeArgs: '../examples/vtk-c++ $(CMakeArgs)
                   -DCMAKE_BUILD_TYPE=$(BuildType)
-                  -DParaView_DIR=$(System.DefaultWorkingDirectory)/ParaView-$(PV_VERSION)/build/
+                  -DQt5_DIR=/usr/local/opt/qt/lib/cmake/Qt5
                   -DTTKVTK_DIR=$(Build.ArtifactStagingDirectory)/ttk-install/lib/cmake/ttk'
     displayName: 'Configure TTKVTK Example'
 
@@ -480,7 +448,8 @@ jobs:
 
   - script: |
       export PYTHONPATH=$(Build.ArtifactStagingDirectory)/ttk-install/lib/python3.8/site-packages
-      $(System.DefaultWorkingDirectory)/ParaView-$(PV_VERSION)/build/bin/pvpython ./example.py ../data/inputData.vtu
+      export DYLD_LIBRARY_PATH=/Applications/lib
+      /Applications/bin/pvpython ./example.py ../data/inputData.vtu
       if [ ! -f curve.vtk ] || [ ! -f separatrices.vtu ] || [ ! -f segmentation.vtu ] ; then
         exit 1
       fi
@@ -489,7 +458,8 @@ jobs:
 
   - script: |
       export PV_PLUGIN_PATH=$(System.DefaultWorkingDirectory)/ParaView-$(PV_VERSION)/build/bin/plugins
-      $(System.DefaultWorkingDirectory)/ParaView-$(PV_VERSION)/build/bin/pvpython -v=9 ./example.py ../data/inputData.vtu
+      export DYLD_LIBRARY_PATH=/Applications/lib
+      /Applications/bin/pvpython -v=9 ./example.py ../data/inputData.vtu
       if [ ! -f curve.vtk ] || [ ! -f separatrices.vtu ] || [ ! -f segmentation.vtu ] ; then
         exit 1
       fi

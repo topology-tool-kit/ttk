@@ -82,6 +82,8 @@ jobs:
 
     - name: Build patched ParaView & create package
       run: |
+        # switch to Xcode 11 since Xcode 12 breaks the ParaView build
+        sudo xcode-select -s "/Applications/Xcode_11.7.app"
         mkdir build && cd build
         cmake \
           -DCMAKE_BUILD_TYPE=Release \
