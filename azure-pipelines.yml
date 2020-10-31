@@ -41,7 +41,7 @@ jobs:
   variables:
     CMakeArgs: ''
     CCACHE_DIR: $(Pipeline.Workspace)/ccache
-    LD_LIBRARY_PATH: $(Build.ArtifactStagingDirectory)/vtk-install/lib/
+    LD_LIBRARY_PATH: $(Build.ArtifactStagingDirectory)/vtk-install/lib:$(Build.ArtifactStagingDirectory)/ttk-install/lib
     VTKVersion: v9.0.0
     VTKVPath: 9.0
     # cmake will compains about unused variables
@@ -147,7 +147,7 @@ jobs:
       cmakeArgs: '../examples/c++ $(CMakeArgs)
                   -GNinja
                   -DCMAKE_BUILD_TYPE=$(BuildType)
-                  -DTTKBase_DIR=$(Build.ArtifactStagingDirectory)/ttk-install/lib/cmake/ttk'
+                  -DCMAKE_PREFIX_PATH=$(Build.ArtifactStagingDirectory)/ttk-install/lib/cmake'
     displayName: 'Configure C++ Example'
 
   - script: |
@@ -162,7 +162,7 @@ jobs:
                   -GNinja
                   -DCMAKE_BUILD_TYPE=$(BuildType)
                   -DVTK_DIR=$(Build.ArtifactStagingDirectory)/vtk-install/lib/cmake/vtk-$(VTKVPath)
-                  -DTTKVTK_DIR=$(Build.ArtifactStagingDirectory)/ttk-install/lib/cmake/ttk'
+                  -DCMAKE_PREFIX_PATH=$(Build.ArtifactStagingDirectory)/ttk-install/lib/cmake'
     displayName: 'Configure TTKVTK Example'
 
   - script: |
@@ -183,6 +183,7 @@ jobs:
   variables:
     CMakeArgs: ''
     CCACHE_DIR: $(Pipeline.Workspace)/ccache
+    LD_LIBRARY_PATH: $(Build.ArtifactStagingDirectory)/pv-install/lib:$(Build.ArtifactStagingDirectory)/ttk-install/lib
     PV_VERSION: 'v5.8.1'
     PV_V: '5.8'
     TTK_MODULE_DISABLE: ''
@@ -282,7 +283,7 @@ jobs:
       workingDirectory: 'build-example/'
       cmakeArgs: '../examples/c++ $(CMakeArgs)
                   -DCMAKE_BUILD_TYPE=$(BuildType)
-                  -DTTKBase_DIR=$(Build.ArtifactStagingDirectory)/ttk-install/lib/cmake/ttk'
+                  -DCMAKE_PREFIX_PATH=$(Build.ArtifactStagingDirectory)/ttk-install/lib/cmake'
     displayName: 'Configure C++ Example'
 
   - script: |
@@ -296,7 +297,7 @@ jobs:
       cmakeArgs: '../examples/vtk-c++ $(CMakeArgs)
                   -DCMAKE_BUILD_TYPE=$(BuildType)
                   -DParaView_DIR=$(Build.ArtifactStagingDirectory)/pv-install/lib/cmake/paraview-$(PV_V)
-                  -DTTKVTK_DIR=$(Build.ArtifactStagingDirectory)/ttk-install/lib/cmake/ttk'
+                  -DCMAKE_PREFIX_PATH=$(Build.ArtifactStagingDirectory)/ttk-install/lib/cmake'
     displayName: 'Configure TTKVTK Example'
 
   - script: |
@@ -330,6 +331,7 @@ jobs:
     displayName: 'Test Python Example'
 
   - script: |
+      export PV_PLUGIN_PATH=$(Build.ArtifactStagingDirectory)/ttk-install/bin/plugins
       $(Build.ArtifactStagingDirectory)/pv-install/bin/pvpython ./example.py ../data/inputData.vtu
       if [ ! -f curve.vtk ] || [ ! -f separatrices.vtu ] || [ ! -f segmentation.vtu ] ; then
         exit 1
@@ -385,7 +387,6 @@ jobs:
                      -DCMAKE_INSTALL_PREFIX=$(Build.ArtifactStagingDirectory)/ttk-install
                      -DCMAKE_BUILD_TYPE=Release
                      -DQt5_DIR=/usr/local/opt/qt/lib/cmake/Qt5
-                     -DTTK_INSTALL_PLUGIN_DIR=$(System.DefaultWorkingDirectory)/ParaView-$(PV_VERSION)/build/bin/plugins
                      -DTTK_BUILD_STANDALONE_APPS=ON
                      -DTTK_ENABLE_CPU_OPTIMIZATION=OFF
                      $(TTK_MODULE_DISABLE)
@@ -408,7 +409,7 @@ jobs:
       workingDirectory: 'build-example/'
       cmakeArgs: '../examples/c++ $(CMakeArgs)
                   -DCMAKE_BUILD_TYPE=$(BuildType)
-                  -DTTKBase_DIR=$(Build.ArtifactStagingDirectory)/ttk-install/lib/cmake/ttk'
+                  -DCMAKE_PREFIX_PATH=$(Build.ArtifactStagingDirectory)/ttk-install/lib/cmake'
     displayName: 'Configure C++ Example'
 
   - script: |
@@ -422,7 +423,7 @@ jobs:
       cmakeArgs: '../examples/vtk-c++ $(CMakeArgs)
                   -DCMAKE_BUILD_TYPE=$(BuildType)
                   -DQt5_DIR=/usr/local/opt/qt/lib/cmake/Qt5
-                  -DTTKVTK_DIR=$(Build.ArtifactStagingDirectory)/ttk-install/lib/cmake/ttk'
+                  -DCMAKE_PREFIX_PATH=$(Build.ArtifactStagingDirectory)/ttk-install/lib/cmake'
     displayName: 'Configure TTKVTK Example'
 
   - script: |
@@ -448,7 +449,7 @@ jobs:
 
   - script: |
       export PYTHONPATH=$(Build.ArtifactStagingDirectory)/ttk-install/lib/python3.8/site-packages
-      export DYLD_LIBRARY_PATH=/Applications/lib
+      export DYLD_LIBRARY_PATH=/Applications/lib:$(Build.ArtifactStagingDirectory)/ttk-install/lib
       /Applications/bin/pvpython ./example.py ../data/inputData.vtu
       if [ ! -f curve.vtk ] || [ ! -f separatrices.vtu ] || [ ! -f segmentation.vtu ] ; then
         exit 1
@@ -457,8 +458,8 @@ jobs:
     displayName: 'Test Python Example'
 
   - script: |
-      export PV_PLUGIN_PATH=$(System.DefaultWorkingDirectory)/ParaView-$(PV_VERSION)/build/bin/plugins
-      export DYLD_LIBRARY_PATH=/Applications/lib
+      export PV_PLUGIN_PATH=$(Build.ArtifactStagingDirectory)/ttk-install/bin/plugins
+      export DYLD_LIBRARY_PATH=/Applications/lib:$(Build.ArtifactStagingDirectory)/ttk-install/lib
       /Applications/bin/pvpython -v=9 ./example.py ../data/inputData.vtu
       if [ ! -f curve.vtk ] || [ ! -f separatrices.vtu ] || [ ! -f segmentation.vtu ] ; then
         exit 1
@@ -553,7 +554,7 @@ jobs:
   - script: |
       $(compilerInitialization)
       set BOOST_ROOT=$(BOOST_ROOT_1_69_0)
-      cmake ../examples/c++ -GNinja -DCMAKE_BUILD_TYPE=Release -DTTKBase_DIR="$(Build.ArtifactStagingDirectory)/ttk-install/lib/cmake/ttk"
+      cmake ../examples/c++ -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$(Build.ArtifactStagingDirectory)/ttk-install/lib/cmake
     workingDirectory: 'build-example/'
     displayName: 'Configure C++ Example'
 
@@ -570,7 +571,7 @@ jobs:
   - script: |
       $(compilerInitialization)
       set BOOST_ROOT=$(BOOST_ROOT_1_69_0)
-      cmake ../examples/vtk-c++ -GNinja -DCMAKE_BUILD_TYPE=Release -DVTK_DIR=$(Build.ArtifactStagingDirectory)/vtk-install/lib/cmake/vtk-$(VTKVPath) -DTTKVTK_DIR="$(Build.ArtifactStagingDirectory)/ttk-install/lib/cmake/ttk"
+      cmake ../examples/vtk-c++ -GNinja -DCMAKE_BUILD_TYPE=Release -DVTK_DIR=$(Build.ArtifactStagingDirectory)/vtk-install/lib/cmake/vtk-$(VTKVPath) -DCMAKE_PREFIX_PATH="$(Build.ArtifactStagingDirectory)/ttk-install/lib/cmake
     workingDirectory: 'build-example-vtk/'
     displayName: 'Configure TTKVTK Example'
 
@@ -581,7 +582,7 @@ jobs:
     displayName: 'Build TTKVTK Example'
 
   - bash: |
-      cmd.exe /C 'set PATH=$(Build.ArtifactStagingDirectory)/ttk-install/bin/ttk;%PATH% & ttkExample-c++.exe -i ../examples/data/inputData.off'
+      cmd.exe /C 'set PATH=$(Build.ArtifactStagingDirectory)/ttk-install/bin;%PATH% & ttkExample-c++.exe -i ../examples/data/inputData.off'
       if [ ! -f output.off ]; then
         exit 1
       fi
@@ -589,7 +590,7 @@ jobs:
     displayName: 'Test C++ Example'
 
   - bash: |
-      cmd.exe /C 'set PATH=$(Build.ArtifactStagingDirectory)/vtk-install/bin;$(Build.ArtifactStagingDirectory)/ttk-install/bin/ttk;%PATH% & ttkExample-vtk-c++.exe -i ../examples/data/inputData.vtu'
+      cmd.exe /C 'set PATH=$(Build.ArtifactStagingDirectory)/vtk-install/bin;$(Build.ArtifactStagingDirectory)/ttk-install/bin;%PATH% & ttkExample-vtk-c++.exe -i ../examples/data/inputData.vtu'
       if [ ! -f curve.vtk ] || [ ! -f separatrices.vtu ] || [ ! -f segmentation.vtu ] ; then
         exit 1
       fi

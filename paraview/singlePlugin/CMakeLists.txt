@@ -19,6 +19,6 @@ if(NOT "${TTK_INSTALL_PLUGIN_DIR}" STREQUAL "")
     TARGETS
       TopologyToolKit
     DESTINATION
-      "${TTK_INSTALL_PLUGIN_DIR}"
+      "${TTK_INSTALL_PLUGIN_DIR}/${TTK_PLUGIN_SUBDIR}"
     )
 endif()

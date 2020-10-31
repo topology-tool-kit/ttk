@@ -34,6 +34,8 @@ set(CPACK_GENERATOR "DEB")
 set(CPACK_PACKAGE_CONTACT "Julien Tierny <julien.tierny@sorbonne-universite.fr>")
 set(CPACK_PACKAGE_VENDOR "LIP6 - Sorbonne Université")
 set(CPACK_PACKAGE_HOMEPAGE_URL "https://topology-tool-kit.github.io/")
+set(CPACK_RESOURCE_FILE_LICENSE ${CMAKE_CURRENT_SOURCE_DIR}/LICENSE)
+set(CPACK_RESOURCE_FILE_README ${CMAKE_CURRENT_SOURCE_DIR}/README.md)
 set(CPACK_DEBIAN_PACKAGE_DEPENDS
   "ttk-paraview (= 5.8.1), python3-sklearn, libboost-system-dev, python3-dev, libgraphviz-dev, libsqlite3-dev")
 # autogenerate dependency information
@@ -81,7 +83,7 @@ install(
   NAMESPACE
     ttk::base::
   DESTINATION
-    lib/cmake/ttk
+    "${CMAKE_INSTALL_LIBDIR}/cmake/ttkBase"
   )
 
 configure_file(core/base/TTKBaseConfig.cmake.in TTKBaseConfig.cmake @ONLY)
@@ -89,7 +91,7 @@ install(
   FILES
     "${CMAKE_CURRENT_BINARY_DIR}/TTKBaseConfig.cmake"
   DESTINATION
-    lib/cmake/ttk
+    "${CMAKE_INSTALL_LIBDIR}/cmake/ttkBase"
   )
 
 
@@ -129,7 +131,7 @@ if(TTK_BUILD_VTK_WRAPPERS)
     NAMESPACE
       ttk::vtk::
     DESTINATION
-      lib/cmake/ttk
+      ${CMAKE_INSTALL_LIBDIR}/cmake/ttkVTK
     )
 
   configure_file(core/vtk/TTKVTKConfig.cmake.in TTKVTKConfig.cmake @ONLY)
@@ -137,7 +139,7 @@ if(TTK_BUILD_VTK_WRAPPERS)
     FILES
       "${CMAKE_CURRENT_BINARY_DIR}/TTKVTKConfig.cmake"
     DESTINATION
-      lib/cmake/ttk
+      ${CMAKE_INSTALL_LIBDIR}/cmake/ttkVTK
     )
 endif()
 
@@ -155,7 +157,7 @@ if(TTK_BUILD_PARAVIEW_PLUGINS)
         )
   else()
     set(TTK_INSTALL_PLUGIN_DIR
-        ${ParaView_DIR}/../../../bin/plugins/
+        "${CMAKE_INSTALL_BINDIR}/plugins"
         CACHE
         PATH
         "Directory where the ParaView plugin will be installed"
@@ -170,17 +172,6 @@ endif()
 
 if(TTK_BUILD_STANDALONE_APPS)
   add_subdirectory(standalone)
-endif()
-
-# Environment variables
-# ---------------------
-
-if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
-  configure_file(ttk-env.sh.in ttk-env.sh)
-  install(
-    FILES "${PROJECT_BINARY_DIR}/ttk-env.sh"
-    DESTINATION "${CMAKE_INSTALL_FULL_SYSCONFDIR}/profile.d"
-    )
 endif()
 
 # Status

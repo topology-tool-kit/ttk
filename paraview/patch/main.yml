@@ -46,6 +46,7 @@ jobs:
           -DCMAKE_BUILD_TYPE=Release \
           -DCMAKE_INSTALL_PREFIX=/usr \
           -DVTK_ENABLE_OSPRAY=OFF \
+          -DPARAVIEW_PYTHON_SITE_PACKAGES_SUFFIX=lib/python3/dist-packages \
           $GITHUB_WORKSPACE
         make -j$(nproc)
         cpack -G DEB

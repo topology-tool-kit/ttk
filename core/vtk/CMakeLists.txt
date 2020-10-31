@@ -68,7 +68,7 @@ if(VTK_WRAP_PYTHON)
     MODULE_DESTINATION
       "${TTK_PYTHON_MODULE_DIR}"
     CMAKE_DESTINATION
-      "${CMAKE_INSTALL_LIBDIR}/ttk/python"
+      "${CMAKE_INSTALL_LIBDIR}/cmake/ttkPython"
     LIBRARY_DESTINATION
       "${CMAKE_INSTALL_LIBDIR}"
     INSTALL_HEADERS
@@ -110,7 +110,7 @@ if(VTK_WRAP_PYTHON)
     FILE
       TTKPython-targets.cmake
     DESTINATION
-      "${CMAKE_INSTALL_LIBDIR}/ttk/python"
+      "${CMAKE_INSTALL_LIBDIR}/cmake/ttkPython"
     )
 else()
   set(TTK_BUILD_VTK_PYTHON_MODULE
