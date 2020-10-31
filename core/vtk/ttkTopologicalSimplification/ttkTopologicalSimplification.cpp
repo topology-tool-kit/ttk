@@ -140,45 +140,39 @@ int ttkTopologicalSimplification::RequestData(
   }
 
   int ret{};
-  if(this->UseLTS){
-      auto lts = new ttk::LocalizedTopologicalSimplification();
-      lts->setDebugLevel( this->debugLevel_ );
-      lts->setThreadNumber( this->threadNumber_ );
+  if(this->UseLTS) {
+    auto lts = new ttk::LocalizedTopologicalSimplification();
+    lts->setDebugLevel(this->debugLevel_);
+    lts->setThreadNumber(this->threadNumber_);
 
-      lts->preconditionTriangulation(triangulation);
+    lts->preconditionTriangulation(triangulation);
 
     //   switch(inputScalars->GetDataType()) {
-        ttkVtkTemplateMacro(
-            inputScalars->GetDataType(),
-            triangulation->getType(),
-            (
-                ret = lts->removeUnauthorizedExtrema<VTK_TT, ttk::SimplexId, TTK_TT>(
-                    static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(outputScalars)),
-                    static_cast<SimplexId *>(ttkUtils::GetVoidPointer(outputOffsets)),
+    ttkVtkTemplateMacro(
+      inputScalars->GetDataType(), triangulation->getType(),
+      (ret = lts->removeUnauthorizedExtrema<VTK_TT, ttk::SimplexId, TTK_TT>(
+         static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(outputScalars)),
+         static_cast<SimplexId *>(ttkUtils::GetVoidPointer(outputOffsets)),
 
-                    static_cast<TTK_TT *>(triangulation->getData()),
-                    static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(inputScalars)),
-                    static_cast<SimplexId *>(ttkUtils::GetVoidPointer(offsets)),
-                    static_cast<SimplexId *>(ttkUtils::GetVoidPointer(identifiers)),
-                    numberOfConstraints,
-                    this->AddPerturbation
-                )
-            )
-        );
+         static_cast<TTK_TT *>(triangulation->getData()),
+         static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(inputScalars)),
+         static_cast<SimplexId *>(ttkUtils::GetVoidPointer(offsets)),
+         static_cast<SimplexId *>(ttkUtils::GetVoidPointer(identifiers)),
+         numberOfConstraints, this->AddPerturbation)));
 
-        // TODO: fix convention in original ttk module
-        ret = !ret;
+    // TODO: fix convention in original ttk module
+    ret = !ret;
   } else {
-      switch(inputScalars->GetDataType()) {
-        vtkTemplateMacro(
-          ret = this->execute(
-            static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(inputScalars)),
-            static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(outputScalars)),
-            static_cast<int *>(ttkUtils::GetVoidPointer(identifiers)),
-            static_cast<SimplexId *>(ttkUtils::GetVoidPointer(offsets)),
-            static_cast<SimplexId *>(ttkUtils::GetVoidPointer(outputOffsets)),
-            numberOfConstraints, *triangulation->getData()));
-      }
+    switch(inputScalars->GetDataType()) {
+      vtkTemplateMacro(
+        ret = this->execute(
+          static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(inputScalars)),
+          static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(outputScalars)),
+          static_cast<int *>(ttkUtils::GetVoidPointer(identifiers)),
+          static_cast<SimplexId *>(ttkUtils::GetVoidPointer(offsets)),
+          static_cast<SimplexId *>(ttkUtils::GetVoidPointer(outputOffsets)),
+          numberOfConstraints, *triangulation->getData()));
+    }
   }
 
   // something wrong in baseCode
