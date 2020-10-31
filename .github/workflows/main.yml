@@ -187,7 +187,7 @@ jobs:
           -DBUILD_SHARED_LIBS=OFF \
           -DBUILD_TESTING=OFF \
           ../zfp
-        sudo make -j$(nproc) install
+        sudo make -j$(sysctl -n hw.physicalcpu) install
 
     - name: Fetch & install ttk-paraview
       run: |
@@ -214,7 +214,7 @@ jobs:
     - name: Build TTK
       run: |
         cd build
-        make -j$(nproc)
+        make -j$(sysctl -n hw.physicalcpu)
 
     - name: Package TTK
       run: |
