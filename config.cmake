@@ -260,18 +260,17 @@ if(APPLE)
   message(STATUS "Disabling scikit-learn support by default under MacOs.")
 endif()
 
-if(NOT APPLE)
-  if(MSVC)
-    option(TTK_ENABLE_OPENMP "Enable OpenMP support" FALSE)
-  else()
-    option(TTK_ENABLE_OPENMP "Enable OpenMP support" TRUE)
-  endif()
+if(MSVC)
+  option(TTK_ENABLE_OPENMP "Enable OpenMP support" FALSE)
+else()
+  option(TTK_ENABLE_OPENMP "Enable OpenMP support" TRUE)
 endif()
+
 option(TTK_ENABLE_MPI "Enable MPI support" FALSE)
 
 if(TTK_ENABLE_OPENMP)
   find_package(OpenMP REQUIRED)
-  if(OPENMP_FOUND)
+  if(OpenMP_CXX_FOUND)
     option(TTK_ENABLE_OMP_PRIORITY
       "Gives tasks priority, high perf improvement"
       OFF

@@ -335,8 +335,6 @@ jobs:
       shell: bash
       run: |
         cd build
-        # use the correct OpenMP flags
-        find . -name "*.vcxproj" -exec sed -i "s/-Xclang -fopenmp/-openmp/g" {} \;
         cmake --build . --config Release --parallel
 
     - name: Package TTK
@@ -394,16 +392,16 @@ jobs:
         cd %GITHUB_WORKSPACE%\examples\c++
         mkdir build
         cd build
-        cmake -DCMAKE_BUILD_TYPE=Release -GNinja ..
-        ninja
-        ttkExample-c++.exe -i ..\..\data\inputData.off
+        cmake -G"Visual Studio 16 2019" -Tclangcl ..
+        cmake --build . --config Release --parallel
+        Release\ttkExample-c++.exe -i ..\..\data\inputData.off
         :: VTK layer
         cd %GITHUB_WORKSPACE%\examples\vtk-c++
         mkdir build
         cd build
-        cmake -DCMAKE_BUILD_TYPE=Release -GNinja ..
-        ninja
-        ttkExample-vtk-c++.exe -i ..\..\data\inputData.vtu
+        cmake -G"Visual Studio 16 2019" -Tclangcl ..
+        cmake --build . --config Release --parallel
+        Release\ttkExample-vtk-c++.exe -i ..\..\data\inputData.vtu
         :: HelloWorld standalone
         ttkHelloWorldCmd.exe -i %GITHUB_WORKSPACE%\examples\data\inputData.vtu
 

@@ -90,7 +90,7 @@ function(ttk_add_base_template_library library)
 
   if(TTK_ENABLE_OPENMP)
     target_compile_definitions(${library} INTERFACE TTK_ENABLE_OPENMP)
-    target_compile_options(${library} INTERFACE ${OpenMP_CXX_FLAGS})
+    target_link_libraries(${library} INTERFACE OpenMP::OpenMP_CXX)
   endif()
 
   if(ARG_DEPENDS)
@@ -144,8 +144,7 @@ function(ttk_set_compile_options library)
 
   if (TTK_ENABLE_OPENMP)
     target_compile_definitions(${library} PUBLIC TTK_ENABLE_OPENMP)
-    target_compile_options(${library} PUBLIC ${OpenMP_CXX_FLAGS})
-    target_link_libraries(${library} PUBLIC ${OpenMP_CXX_LIBRARIES})
+    target_link_libraries(${library} PUBLIC OpenMP::OpenMP_CXX)
 
     if (TTK_ENABLE_OMP_PRIORITY)
       target_compile_definitions(${library} PUBLIC TTK_ENABLE_OMP_PRIORITY)
