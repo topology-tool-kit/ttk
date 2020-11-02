@@ -322,7 +322,7 @@ namespace ttk {
     bool TTK_TRIANGULATION_INTERNAL(isEdgeOnBoundary)(
       const SimplexId &edgeId) const override;
 
-    bool isEmptyInternal() const {
+    inline bool isEmpty() const override {
       return !vertexNumber_;
     };
 
