@@ -8,9 +8,6 @@
 #include <ttkMacros.h>
 #include <ttkUtils.h>
 
-using namespace std;
-using namespace ttk;
-
 vtkStandardNewMacro(ttkIdentifierRandomizer);
 
 ttkIdentifierRandomizer::ttkIdentifierRandomizer() {
@@ -18,10 +15,7 @@ ttkIdentifierRandomizer::ttkIdentifierRandomizer() {
   this->SetNumberOfInputPorts(1);
   this->SetNumberOfOutputPorts(1);
 
-  setDebugMsgPrefix("IdentifierRandomizer");
-}
-
-ttkIdentifierRandomizer::~ttkIdentifierRandomizer() {
+  this->setDebugMsgPrefix("IdentifierRandomizer");
 }
 
 int ttkIdentifierRandomizer::FillInputPortInformation(int port,
@@ -46,7 +40,7 @@ int ttkIdentifierRandomizer::RequestData(vtkInformation *request,
                                          vtkInformationVector **inputVector,
                                          vtkInformationVector *outputVector) {
 
-  Timer t;
+  ttk::Timer t;
 
   bool isPointData = false;
 
@@ -73,16 +67,9 @@ int ttkIdentifierRandomizer::RequestData(vtkInformation *request,
     isPointData = true;
   }
 
-  {
-    stringstream msg;
-    msg << "Shuffling ";
-    if(isPointData)
-      msg << "vertex";
-    else
-      msg << "cell";
-    msg << " field `" << inputScalarField->GetName() << "'...";
-    printMsg(msg.str());
-  }
+  this->printMsg("Shuffling " + std::string{isPointData ? "vertex" : "cell"}
+                 + " field `" + std::string{inputScalarField->GetName()}
+                 + "'...");
 
   // allocate the memory for the output scalar field
   vtkSmartPointer<vtkDataArray> outputArray
@@ -91,14 +78,14 @@ int ttkIdentifierRandomizer::RequestData(vtkInformation *request,
   outputArray->SetNumberOfComponents(1);
   outputArray->SetNumberOfTuples(inputScalarField->GetNumberOfTuples());
 
-  vector<pair<SimplexId, SimplexId>> identifierMap;
+  std::vector<std::pair<ttk::SimplexId, ttk::SimplexId>> identifierMap;
 
-  for(SimplexId i = 0; i < inputScalarField->GetNumberOfTuples(); i++) {
+  for(int i = 0; i < inputScalarField->GetNumberOfTuples(); i++) {
     double inputIdentifier = -1;
     inputScalarField->GetTuple(i, &inputIdentifier);
 
     bool isIn = false;
-    for(SimplexId j = 0; j < (SimplexId)identifierMap.size(); j++) {
+    for(size_t j = 0; j < identifierMap.size(); j++) {
       if(identifierMap[j].first == inputIdentifier) {
         isIn = true;
         break;
@@ -106,24 +93,23 @@ int ttkIdentifierRandomizer::RequestData(vtkInformation *request,
     }
 
     if(!isIn) {
-      identifierMap.push_back(
-        pair<SimplexId, SimplexId>(inputIdentifier, -INT_MAX));
+      identifierMap.emplace_back(inputIdentifier, -INT_MAX);
     }
   }
 
   // now let's shuffle things around
-  SimplexId freeIdentifiers = identifierMap.size();
-  SimplexId randomIdentifier = -1;
+  ttk::SimplexId freeIdentifiers = identifierMap.size();
+  ttk::SimplexId randomIdentifier = -1;
 
-  for(SimplexId i = 0; i < (SimplexId)identifierMap.size(); i++) {
+  for(size_t i = 0; i < identifierMap.size(); i++) {
 
     randomIdentifier = drand48() * (freeIdentifiers);
 
-    SimplexId freeCounter = -1;
-    for(SimplexId j = 0; j < (SimplexId)identifierMap.size(); j++) {
+    ttk::SimplexId freeCounter = -1;
+    for(size_t j = 0; j < identifierMap.size(); j++) {
 
       bool isFound = false;
-      for(SimplexId k = 0; k < (SimplexId)identifierMap.size(); k++) {
+      for(size_t k = 0; k < identifierMap.size(); k++) {
 
         if(identifierMap[k].second == identifierMap[j].first) {
           isFound = true;
@@ -145,13 +131,13 @@ int ttkIdentifierRandomizer::RequestData(vtkInformation *request,
   }
 
   // now populate the output scalar field.
-  for(SimplexId i = 0; i < inputScalarField->GetNumberOfTuples(); i++) {
+  for(int i = 0; i < inputScalarField->GetNumberOfTuples(); i++) {
     double inputIdentifier = -1;
     double outputIdentifier = -1;
 
     inputScalarField->GetTuple(i, &inputIdentifier);
 
-    for(SimplexId j = 0; j < (SimplexId)identifierMap.size(); j++) {
+    for(size_t j = 0; j < identifierMap.size(); j++) {
       if(inputIdentifier == identifierMap[j].first) {
         outputIdentifier = identifierMap[j].second;
         break;
