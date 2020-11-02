@@ -1,55 +1,45 @@
 #include <ttkProjectionFromField.h>
 
 #include <vtkInformation.h>
+#include <vtkNew.h>
 #include <vtkPointData.h>
 #include <vtkPointSet.h>
 
 #include <ttkMacros.h>
 #include <ttkUtils.h>
 
-using namespace std;
-using namespace ttk;
-
 vtkStandardNewMacro(ttkProjectionFromField);
 
 ttkProjectionFromField::ttkProjectionFromField() {
-  // init
-  pointSet_ = vtkSmartPointer<vtkPoints>::New();
-
   this->SetNumberOfInputPorts(1);
   this->SetNumberOfOutputPorts(1);
 
-  setDebugMsgPrefix("ProjectionFromField");
-}
-
-ttkProjectionFromField::~ttkProjectionFromField() {
+  this->setDebugMsgPrefix("ProjectionFromField");
 }
 
 int ttkProjectionFromField::FillInputPortInformation(int port,
                                                      vtkInformation *info) {
-  if(port == 0)
+  if(port == 0) {
     info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkPointSet");
-  else
-    return 0;
-
-  return 1;
+    return 1;
+  }
+  return 0;
 }
 
 int ttkProjectionFromField::FillOutputPortInformation(int port,
                                                       vtkInformation *info) {
-  if(port == 0)
+  if(port == 0) {
     info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
-  else
-    return 0;
-
-  return 1;
+    return 1;
+  }
+  return 0;
 }
 
 int ttkProjectionFromField::RequestData(vtkInformation *request,
                                         vtkInformationVector **inputVector,
                                         vtkInformationVector *outputVector) {
 
-  Timer t;
+  ttk::Timer t;
 
   vtkPointSet *input = vtkPointSet::GetData(inputVector[0]);
   vtkPointSet *output = vtkPointSet::GetData(outputVector, 0);
@@ -83,12 +73,15 @@ int ttkProjectionFromField::RequestData(vtkInformation *request,
               {"  V-component", inputScalarFieldV->GetName()}});
   }
 
-  if(pointSet_->GetNumberOfPoints() != input->GetNumberOfPoints()) {
-    pointSet_->SetNumberOfPoints(input->GetNumberOfPoints());
+  vtkNew<vtkPoints> pointSet{};
+
+  if(pointSet->GetNumberOfPoints() != input->GetNumberOfPoints()) {
+    pointSet->SetNumberOfPoints(input->GetNumberOfPoints());
   }
 
-  vector<vector<double>> points(threadNumber_);
-  for(ThreadId i = 0; i < threadNumber_; i++) {
+  std::vector<std::vector<double>> points(threadNumber_);
+
+  for(int i = 0; i < threadNumber_; i++) {
     points[i].resize(3);
     points[i][2] = 0;
   }
@@ -96,12 +89,12 @@ int ttkProjectionFromField::RequestData(vtkInformation *request,
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
-  for(SimplexId i = 0; i < input->GetNumberOfPoints(); i++) {
-
-    ThreadId threadId = 0;
+  for(int i = 0; i < input->GetNumberOfPoints(); i++) {
 
 #ifdef TTK_ENABLE_OPENMP
-    threadId = omp_get_thread_num();
+    const int threadId = omp_get_thread_num();
+#else
+    const int threadId = 0;
 #endif
 
     if(UseTextureCoordinates) {
@@ -111,11 +104,11 @@ int ttkProjectionFromField::RequestData(vtkInformation *request,
       points[threadId][1] = inputScalarFieldV->GetComponent(i, 0);
     }
 
-    pointSet_->SetPoint(
+    pointSet->SetPoint(
       i, points[threadId][0], points[threadId][1], points[threadId][2]);
   }
 
-  output->SetPoints(pointSet_);
+  output->SetPoints(pointSet);
 
   printMsg(std::to_string(input->GetNumberOfPoints()) + " points projected", 1,
            t.getElapsedTime(), threadNumber_);

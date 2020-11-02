@@ -38,9 +38,6 @@
 ///
 #pragma once
 
-// VTK includes
-#include <vtkSmartPointer.h>
-
 // VTK Module
 #include <ttkProjectionFromFieldModule.h>
 
@@ -61,8 +58,6 @@ public:
 protected:
   ttkProjectionFromField();
 
-  ~ttkProjectionFromField() override;
-
   int FillInputPortInformation(int port, vtkInformation *info) override;
 
   int FillOutputPortInformation(int port, vtkInformation *info) override;
@@ -73,5 +68,4 @@ protected:
 
 private:
   bool UseTextureCoordinates{false};
-  vtkSmartPointer<vtkPoints> pointSet_;
 };
