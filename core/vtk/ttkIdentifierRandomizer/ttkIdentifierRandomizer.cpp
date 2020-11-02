@@ -8,6 +8,9 @@
 #include <ttkMacros.h>
 #include <ttkUtils.h>
 
+#include <map>
+#include <random>
+
 vtkStandardNewMacro(ttkIdentifierRandomizer);
 
 ttkIdentifierRandomizer::ttkIdentifierRandomizer() {
@@ -34,6 +37,54 @@ int ttkIdentifierRandomizer::FillOutputPortInformation(int port,
     return 1;
   }
   return 0;
+}
+
+template <typename T>
+int shuffleScalarFieldValues(const T *const inputField,
+                             T *const outputField,
+                             const int nValues,
+                             const int seed,
+                             const int nThreads = 1) {
+
+  // copy input field into vector
+  std::vector<T> inputValues(inputField, inputField + nValues);
+
+#if defined(_GLIBCXX_PARALLEL_FEATURES_H) && defined(TTK_ENABLE_OPENMP)
+#define PSORT                    \
+  omp_set_num_threads(nThreads); \
+  __gnu_parallel::sort
+#else
+#define PSORT std::sort
+#endif // _GLIBCXX_PARALLEL_FEATURES_H && TTK_ENABLE_OPENMP
+
+  // reduce the copy
+  PSORT(inputValues.begin(), inputValues.end());
+  const auto last = std::unique(inputValues.begin(), inputValues.end());
+  inputValues.erase(last, inputValues.end());
+
+  // copy the range of values
+  std::vector<T> shuffledValues(inputValues);
+
+  // shuffle them using the seed
+  std::mt19937 random_engine{};
+  random_engine.seed(seed);
+  std::shuffle(shuffledValues.begin(), shuffledValues.end(), random_engine);
+
+  // link original value to shuffled value correspondance
+  std::map<T, T> originalToShuffledValues{};
+  for(size_t i = 0; i < inputValues.size(); ++i) {
+    originalToShuffledValues[inputValues[i]] = shuffledValues[i];
+  }
+
+// write shuffled values inside the output scalar field
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(nThreads)
+#endif // TTK_ENABLE_OPENMP
+  for(int i = 0; i < nValues; ++i) {
+    outputField[i] = originalToShuffledValues[inputField[i]];
+  }
+
+  return 1;
 }
 
 int ttkIdentifierRandomizer::RequestData(vtkInformation *request,
@@ -78,73 +129,11 @@ int ttkIdentifierRandomizer::RequestData(vtkInformation *request,
   outputArray->SetNumberOfComponents(1);
   outputArray->SetNumberOfTuples(inputScalarField->GetNumberOfTuples());
 
-  std::vector<std::pair<ttk::SimplexId, ttk::SimplexId>> identifierMap;
-
-  for(int i = 0; i < inputScalarField->GetNumberOfTuples(); i++) {
-    double inputIdentifier = -1;
-    inputScalarField->GetTuple(i, &inputIdentifier);
-
-    bool isIn = false;
-    for(size_t j = 0; j < identifierMap.size(); j++) {
-      if(identifierMap[j].first == inputIdentifier) {
-        isIn = true;
-        break;
-      }
-    }
-
-    if(!isIn) {
-      identifierMap.emplace_back(inputIdentifier, -INT_MAX);
-    }
-  }
-
-  // now let's shuffle things around
-  ttk::SimplexId freeIdentifiers = identifierMap.size();
-  ttk::SimplexId randomIdentifier = -1;
-
-  for(size_t i = 0; i < identifierMap.size(); i++) {
-
-    randomIdentifier = drand48() * (freeIdentifiers);
-
-    ttk::SimplexId freeCounter = -1;
-    for(size_t j = 0; j < identifierMap.size(); j++) {
-
-      bool isFound = false;
-      for(size_t k = 0; k < identifierMap.size(); k++) {
-
-        if(identifierMap[k].second == identifierMap[j].first) {
-          isFound = true;
-          break;
-        }
-      }
-      if(!isFound) {
-        freeCounter++;
-      }
-
-      if(freeCounter >= randomIdentifier) {
-        randomIdentifier = identifierMap[j].first;
-        break;
-      }
-    }
-
-    identifierMap[i].second = randomIdentifier;
-    freeIdentifiers--;
-  }
-
-  // now populate the output scalar field.
-  for(int i = 0; i < inputScalarField->GetNumberOfTuples(); i++) {
-    double inputIdentifier = -1;
-    double outputIdentifier = -1;
-
-    inputScalarField->GetTuple(i, &inputIdentifier);
-
-    for(size_t j = 0; j < identifierMap.size(); j++) {
-      if(inputIdentifier == identifierMap[j].first) {
-        outputIdentifier = identifierMap[j].second;
-        break;
-      }
-    }
-
-    outputArray->SetTuple(i, &outputIdentifier);
+  switch(outputArray->GetDataType()) {
+    vtkTemplateMacro(shuffleScalarFieldValues(
+      static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(inputScalarField)),
+      static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(outputArray)),
+      outputArray->GetNumberOfTuples(), this->RandomSeed, this->threadNumber_));
   }
 
   if(isPointData)

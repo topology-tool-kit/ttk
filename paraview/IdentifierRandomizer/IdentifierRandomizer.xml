@@ -33,9 +33,9 @@
         </Documentation>
       </InputProperty>
 
-      <StringVectorProperty name="ScalarFieldNew" label="Scalar Field" 
-                            command="SetInputArrayToProcess" 
-                            element_types="0 0 0 0 2" 
+      <StringVectorProperty name="ScalarFieldNew" label="Scalar Field"
+                            command="SetInputArrayToProcess"
+                            element_types="0 0 0 0 2"
                             number_of_elements="5" default_values="0">
         <ArrayListDomain
           name="array_list"
@@ -49,8 +49,16 @@
         </Documentation>
       </StringVectorProperty>
 
+      <IntVectorProperty name="Seed"
+                         label="Random Seed"
+                         command="SetRandomSeed"
+                         number_of_elements="1"
+                         default_values="0">
+      </IntVectorProperty>
+
       <PropertyGroup panel_widget="Line" label="Input options">
         <Property name="ScalarFieldNew" />
+        <Property name="Seed" />
       </PropertyGroup>
 
       ${DEBUG_WIDGETS}
