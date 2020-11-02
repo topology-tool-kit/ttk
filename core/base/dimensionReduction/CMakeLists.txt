@@ -1,5 +1,3 @@
-ttk_find_python()
-
 ttk_add_base_library(dimensionReduction
   SOURCES
     DimensionReduction.cpp

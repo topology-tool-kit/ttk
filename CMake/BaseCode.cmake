@@ -183,27 +183,3 @@ function(ttk_set_compile_options library)
   endif()
 
 endfunction()
-
-# Used by basedCode requiring "Python.h"
-
-function(ttk_find_python)
-  find_package(Python3 COMPONENTS Development NumPy)
-
-  if(Python3_FOUND)
-    include_directories(SYSTEM ${Python3_INCLUDE_DIRS})
-
-    set(TTK_PYTHON_MAJOR_VERSION "${Python3_VERSION_MAJOR}"
-      CACHE INTERNAL "TTK_PYTHON_MAJOR_VERSION")
-    set(TTK_PYTHON_MINOR_VERSION "${Python3_VERSION_MINOR}"
-      CACHE INTERNAL "TTK_PYTHON_MINOR_VERSION")
-
-    if(Python3_NumPy_FOUND)
-      option(TTK_ENABLE_SCIKIT_LEARN "Enable scikit-learn support" ON)
-    else()
-      option(TTK_ENABLE_SCIKIT_LEARN "Enable scikit-learn support" OFF)
-      message(STATUS
-        "Improper Python/NumPy setup. Disabling scikit-learn support in TTK.")
-    endif()
-  endif()
-
-endfunction()
