@@ -71,12 +71,8 @@ public:
   vtkSetMacro(ComputeSaddleConnectors, bool);
   vtkGetMacro(ComputeSaddleConnectors, bool);
 
-  void SetShowInsideDomain(int onOff) {
-    ShowInsideDomain = onOff;
-    Modified();
-    computeDiagram_ = false;
-  }
-  vtkGetMacro(ShowInsideDomain, int);
+  vtkSetMacro(ShowInsideDomain, bool);
+  vtkGetMacro(ShowInsideDomain, bool);
 
 protected:
   ttkPersistenceDiagram();
@@ -87,7 +83,6 @@ protected:
 
   int FillInputPortInformation(int port, vtkInformation *info) override;
   int FillOutputPortInformation(int port, vtkInformation *info) override;
-  void Modified() override;
 
 private:
   template <typename scalarType, typename triangulationType>
@@ -105,8 +100,5 @@ private:
                             const triangulationType *triangulation) const;
 
   bool ForceInputOffsetScalarField{false};
-  int ShowInsideDomain{false};
-
-  bool computeDiagram_{true};
-  std::vector<ttk::PersistencePair> CTDiagram_{};
+  bool ShowInsideDomain{false};
 };
