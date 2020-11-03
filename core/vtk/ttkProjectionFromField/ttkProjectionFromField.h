@@ -44,6 +44,8 @@
 // ttk code includes
 #include <ttkAlgorithm.h>
 
+class vtkUnstructuredGrid;
+
 class TTKPROJECTIONFROMFIELD_EXPORT ttkProjectionFromField
   : public ttkAlgorithm {
 
@@ -55,6 +57,9 @@ public:
   vtkSetMacro(UseTextureCoordinates, bool);
   vtkGetMacro(UseTextureCoordinates, bool);
 
+  vtkSetMacro(ProjectPersistenceDiagram, bool);
+  vtkGetMacro(ProjectPersistenceDiagram, bool);
+
 protected:
   ttkProjectionFromField();
 
@@ -62,10 +67,17 @@ protected:
 
   int FillOutputPortInformation(int port, vtkInformation *info) override;
 
+  /**
+   * @brief Generate the spatial embedding of a given Persistence Diagram
+   */
+  int projectPersistenceDiagram(vtkUnstructuredGrid *const inputDiagram,
+                                vtkUnstructuredGrid *const outputDiagram);
+
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;
 
 private:
+  bool ProjectPersistenceDiagram{false};
   bool UseTextureCoordinates{false};
 };

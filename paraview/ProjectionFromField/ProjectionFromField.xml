@@ -35,17 +35,31 @@ point-data scalar fields to be used as 2D coordinates.
         </Documentation>
       </InputProperty>
 
+      <IntVectorProperty name="ProjectPersistenceDiagram"
+                     command="SetProjectPersistenceDiagram"
+                     label="Project Persistence Diagram"
+                     number_of_elements="1"
+                     default_values="0">
+        <BooleanDomain name="bool"/>
+      </IntVectorProperty>
+
       <IntVectorProperty name="UseTextureCoordinates"
                      command="SetUseTextureCoordinates"
                      label="Use Texture Coordinates"
                      number_of_elements="1"
                      default_values="0">
         <BooleanDomain name="bool"/>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="ProjectPersistenceDiagram"
+                                   value="0" />
+        </Hints>
       </IntVectorProperty>
 
-      <StringVectorProperty name="UComponentNew" label="U Component" 
-                            command="SetInputArrayToProcess" 
-                            element_types="0 0 0 0 2" 
+      <StringVectorProperty name="UComponentNew" label="U Component"
+                            command="SetInputArrayToProcess"
+                            element_types="0 0 0 0 2"
                             number_of_elements="5" default_values="0">
         <ArrayListDomain
           name="array_list"
@@ -54,14 +68,20 @@ point-data scalar fields to be used as 2D coordinates.
             <Property name="Input" function="Input" />
           </RequiredProperties>
         </ArrayListDomain>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="ProjectPersistenceDiagram"
+                                   value="0" />
+        </Hints>
         <Documentation>
           Select the scalar field to use as the U component.
         </Documentation>
       </StringVectorProperty>
 
-      <StringVectorProperty name="VComponentNew" label="V Component" 
-                            command="SetInputArrayToProcess" 
-                            element_types="0 0 0 0 2" 
+      <StringVectorProperty name="VComponentNew" label="V Component"
+                            command="SetInputArrayToProcess"
+                            element_types="0 0 0 0 2"
                             number_of_elements="5" default_values="1">
         <ArrayListDomain
           name="array_list"
@@ -70,6 +90,12 @@ point-data scalar fields to be used as 2D coordinates.
             <Property name="Input" function="Input" />
           </RequiredProperties>
         </ArrayListDomain>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="ProjectPersistenceDiagram"
+                                   value="0" />
+        </Hints>
         <Documentation>
           Select the scalar field to use as the V component.
         </Documentation>
@@ -77,12 +103,13 @@ point-data scalar fields to be used as 2D coordinates.
 
       <PropertyGroup panel_widget="Line" label="Input options">
         <Property name="UseTextureCoordinates" />
+        <Property name="ProjectPersistenceDiagram" />
         <Property name="UComponentNew" />
         <Property name="VComponentNew" />
       </PropertyGroup>
 
       ${DEBUG_WIDGETS}
-      
+
       <Hints>
         <ShowInMenu category="TTK - Misc" />
       </Hints>
