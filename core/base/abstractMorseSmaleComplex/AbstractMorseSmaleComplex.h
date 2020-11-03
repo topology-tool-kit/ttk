@@ -20,19 +20,7 @@
 
 #include <queue>
 
-#if defined(__GNUC__) && !defined(__clang__)
-#include <parallel/algorithm>
-#endif
-
 namespace ttk {
-
-#if defined(_GLIBCXX_PARALLEL_FEATURES_H) && defined(TTK_ENABLE_OPENMP)
-#define PSORT                               \
-  omp_set_num_threads(this->threadNumber_); \
-  __gnu_parallel::sort
-#else
-#define PSORT std::sort
-#endif // _GLIBCXX_PARALLEL_FEATURES_H && TTK_ENABLE_OPENMP
 
   /**
    * Utility class representing Ridge lines, Valley lines
@@ -942,7 +930,7 @@ int ttk::AbstractMorseSmaleComplex::setFinalSegmentation(
     morseSmaleManifold, morseSmaleManifold + nVerts);
 
   // get unique "sparse region ids"
-  PSORT(sparseRegionIds.begin(), sparseRegionIds.end());
+  PSORT(this->threadNumber_)(sparseRegionIds.begin(), sparseRegionIds.end());
   const auto last = std::unique(sparseRegionIds.begin(), sparseRegionIds.end());
   sparseRegionIds.erase(last, sparseRegionIds.end());
 

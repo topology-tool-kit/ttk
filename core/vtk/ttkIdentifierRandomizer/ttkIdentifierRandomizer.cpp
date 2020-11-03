@@ -49,16 +49,8 @@ int shuffleScalarFieldValues(const T *const inputField,
   // copy input field into vector
   std::vector<T> inputValues(inputField, inputField + nValues);
 
-#if defined(_GLIBCXX_PARALLEL_FEATURES_H) && defined(TTK_ENABLE_OPENMP)
-#define PSORT                    \
-  omp_set_num_threads(nThreads); \
-  __gnu_parallel::sort
-#else
-#define PSORT std::sort
-#endif // _GLIBCXX_PARALLEL_FEATURES_H && TTK_ENABLE_OPENMP
-
   // reduce the copy
-  PSORT(inputValues.begin(), inputValues.end());
+  PSORT(nThreads)(inputValues.begin(), inputValues.end());
   const auto last = std::unique(inputValues.begin(), inputValues.end());
   inputValues.erase(last, inputValues.end());
 
