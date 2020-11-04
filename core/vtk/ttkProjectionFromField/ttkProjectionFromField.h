@@ -68,10 +68,23 @@ protected:
   int FillOutputPortInformation(int port, vtkInformation *info) override;
 
   /**
-   * @brief Generate the spatial embedding of a given Persistence Diagram
+   * @brief Switch a given Persistence Diagram representation
    */
   int projectPersistenceDiagram(vtkUnstructuredGrid *const inputDiagram,
                                 vtkUnstructuredGrid *const outputDiagram);
+  /**
+   * @brief Generate the spatial embedding of a given Persistence Diagram
+   */
+  int projectDiagramInsideDomain(vtkUnstructuredGrid *const inputDiagram,
+                                 vtkUnstructuredGrid *const outputDiagram);
+  /**
+   * @brief Generate the 2D embedding of a given Persistence Diagram
+   */
+  template <typename VTK_TT>
+  int projectDiagramIn2D(vtkUnstructuredGrid *const inputDiagram,
+                         vtkUnstructuredGrid *const outputDiagram,
+                         const VTK_TT *const births,
+                         const VTK_TT *const deaths);
 
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,

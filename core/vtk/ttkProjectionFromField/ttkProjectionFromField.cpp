@@ -40,7 +40,7 @@ int ttkProjectionFromField::FillOutputPortInformation(int port,
   return 0;
 }
 
-int ttkProjectionFromField::projectPersistenceDiagram(
+int ttkProjectionFromField::projectDiagramInsideDomain(
   vtkUnstructuredGrid *const inputDiagram,
   vtkUnstructuredGrid *const outputDiagram) {
 
@@ -59,16 +59,6 @@ int ttkProjectionFromField::projectPersistenceDiagram(
 
   const auto critCoordinates = vtkFloatArray::SafeDownCast(
     diagonalLessData->GetAbstractArray("Coordinates"));
-
-  // ensure we have a Coordinates array
-  if(critCoordinates == nullptr) {
-    this->printErr("Missing `Coordinates' vtkPointData array");
-    return 0;
-  }
-  if(critCoordinates->GetNumberOfComponents() != 3) {
-    this->printErr("`Coordinates' array should have 3 components");
-    return 0;
-  }
 
   // set new points from Coordinates array
   vtkNew<vtkFloatArray> coords{};
@@ -107,6 +97,68 @@ int ttkProjectionFromField::projectPersistenceDiagram(
 
   this->printMsg("Projected Persistence Diagram inside domain", 1.0,
                  tm.getElapsedTime(), this->threadNumber_);
+
+  return 1;
+}
+
+template <typename VTK_TT>
+int ttkProjectionFromField::projectDiagramIn2D(
+  vtkUnstructuredGrid *const inputDiagram,
+  vtkUnstructuredGrid *const outputDiagram,
+  const VTK_TT *const births,
+  const VTK_TT *const deaths) {
+
+  ttk::Timer tm{};
+
+  // TODO
+
+  this->printMsg("Projected Persistence Diagram back to 2D", 1.0,
+                 tm.getElapsedTime(), this->threadNumber_);
+
+  return 1;
+}
+
+int ttkProjectionFromField::projectPersistenceDiagram(
+  vtkUnstructuredGrid *const inputDiagram,
+  vtkUnstructuredGrid *const outputDiagram) {
+
+  auto pointData = inputDiagram->GetPointData();
+
+  // ensure we have the right arrays
+  const auto critCoordinates
+    = vtkFloatArray::SafeDownCast(pointData->GetAbstractArray("Coordinates"));
+  const auto inputBirths
+    = vtkDataArray::SafeDownCast(pointData->GetAbstractArray("Birth"));
+  const auto inputDeaths
+    = vtkDataArray::SafeDownCast(pointData->GetAbstractArray("Death"));
+
+  if(critCoordinates == nullptr && inputBirths == nullptr
+     && inputDeaths == nullptr) {
+    this->printErr("Missing either `Coordinates' or `Birth' and `Death' "
+                   "vtkPointData arrays");
+    return 0;
+  }
+
+  bool embed = inputBirths != nullptr && inputDeaths != nullptr;
+
+  if(embed) {
+    switch(inputBirths->GetDataType()) {
+      vtkTemplateMacro(return this->projectDiagramIn2D(
+        inputDiagram, outputDiagram,
+        static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(inputBirths)),
+        static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(inputDeaths))));
+    }
+  } else {
+    if(critCoordinates == nullptr) {
+      this->printErr("Missing `Coordinates' vtkPointData array");
+      return 0;
+    }
+    if(critCoordinates->GetNumberOfComponents() != 3) {
+      this->printErr("`Coordinates' array should have 3 components");
+      return 0;
+    }
+    return this->projectDiagramInsideDomain(inputDiagram, outputDiagram);
+  }
 
   return 1;
 }
