@@ -13,6 +13,8 @@
 #include <ttkMacros.h>
 #include <ttkUtils.h>
 
+#include <array>
+
 vtkStandardNewMacro(ttkProjectionFromField);
 
 ttkProjectionFromField::ttkProjectionFromField() {
@@ -83,8 +85,10 @@ int ttkProjectionFromField::projectDiagramInsideDomain(
 #pragma omp parallel for num_threads(this->threadNumber_)
 #endif // TTK_ENABLE_OPENMP
   for(int i = 0; i < nPoints; ++i) {
-    births->SetTuple1(i, inputPoints->GetPoint(i)[0]);
-    deaths->SetTuple1(i, inputPoints->GetPoint(i)[1]);
+    std::array<double, 3> pt{};
+    inputPoints->GetPoint(i, pt.data());
+    births->SetTuple1(i, pt[0]);
+    deaths->SetTuple1(i, pt[1]);
   }
 
   diagonalLessData->AddArray(births);
