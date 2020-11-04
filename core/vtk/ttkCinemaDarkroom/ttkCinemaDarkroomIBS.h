@@ -1,5 +1,5 @@
 /// \ingroup vtk
-/// \class ttkCinemaDarkroomFXAA
+/// \class ttkCinemaDarkroomIBS
 /// \author Jonas Lukasczyk <jl@jluk.de>
 /// \date 01.11.2020
 ///

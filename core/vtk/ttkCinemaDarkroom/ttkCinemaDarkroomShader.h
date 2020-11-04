@@ -3,7 +3,7 @@
 /// \author Jonas Lukasczyk <jl@jluk.de>
 /// \date 01.11.2020
 ///
-/// \brief Base class for all CinemaDarkroom Shaders.
+/// \brief Base Class for all CinemaDarkroom Shaders.
 ///
 /// \param Input vtkImageData.
 /// \param Output vtkImageData.
