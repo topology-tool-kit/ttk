@@ -1,0 +1,397 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ServerManagerConfiguration>
+
+    <ProxyGroup name="filters">
+
+        <SourceProxy name="ttkCinemaDarkroomCompositing" class="ttkCinemaDarkroomCompositing">
+          <Documentation long_help="" short_help="">
+          </Documentation>
+          <InputProperty name="Input" port_index="0" clean_command="RemoveAllInputs" command="AddInputConnection" multiple_input="1">
+              <ProxyGroupDomain name="groups">
+                  <Group name="sources" />
+                  <Group name="filters" />
+              </ProxyGroupDomain>
+              <DataTypeDomain name="input_type">
+                  <DataType value="vtkImageData" />
+              </DataTypeDomain>
+              <InputArrayDomain name="input_array" attribute_type="point" />
+              <Documentation>.</Documentation>
+          </InputProperty>
+
+          <StringVectorProperty name="Depth Array" command="SetInputArrayToProcess" element_types="0 0 0 0 2" number_of_elements="5">
+              <ArrayListDomain attribute_type="Scalars" name="array_list">
+                  <RequiredProperties>
+                      <Property function="Input" name="Input" />
+                  </RequiredProperties>
+              </ArrayListDomain>
+              <Documentation>.</Documentation>
+          </StringVectorProperty>
+
+          <PropertyGroup panel_widget="Line" label="Input Options">
+              <Property name="Depth Array" />
+          </PropertyGroup>
+          <PropertyGroup panel_widget="Line" label="Output Options">
+          </PropertyGroup>
+
+          ${DEBUG_WIDGETS}
+
+          <Hints>
+              <ShowInMenu category="TTK - Cinema" />
+          </Hints>
+        </SourceProxy>
+
+        <!-- ////////////////////////////////////////////////////////////////-->
+
+        <SourceProxy name="ttkCinemaDarkroomColorMapping" class="ttkCinemaDarkroomColorMapping">
+          <Documentation long_help="" short_help="">
+          </Documentation>
+
+          <InputProperty name="Input" command="SetInputConnection">
+              <ProxyGroupDomain name="groups">
+                  <Group name="sources" />
+                  <Group name="filters" />
+              </ProxyGroupDomain>
+              <DataTypeDomain name="input_type">
+                  <DataType value="vtkImageData" />
+              </DataTypeDomain>
+              <Documentation>.</Documentation>
+          </InputProperty>
+
+          <StringVectorProperty name="ScalarArray" command="SetInputArrayToProcess" element_types="0 0 0 0 2" number_of_elements="5">
+              <ArrayListDomain attribute_type="Scalars" name="array_list">
+                  <RequiredProperties>
+                      <Property function="Input" name="Input" />
+                  </RequiredProperties>
+              </ArrayListDomain>
+              <Documentation>.</Documentation>
+          </StringVectorProperty>
+
+          <IntVectorProperty name="ColorMap" command="SetColorMap" number_of_elements="1" default_values="-1">
+              <EnumerationDomain name="enum">
+                <Entry value="-2" text="Manual"/>
+                <Entry value="-1" text="Solid"/>
+                <Entry value="0" text="R2B_EX"/>
+                <Entry value="1" text="Accent"/>
+                <Entry value="2" text="Blues"/>
+                <Entry value="3" text="BrBG"/>
+                <Entry value="4" text="BuGn"/>
+                <Entry value="5" text="BuPu"/>
+                <Entry value="6" text="Dark2"/>
+                <Entry value="7" text="GnBu"/><Entry value="8" text="Greens"/><Entry value="9" text="Greys"/><Entry value="10" text="OrRd"/><Entry value="11" text="Oranges"/><Entry value="12" text="PRGn"/><Entry value="13" text="Paired"/><Entry value="14" text="Pastel1"/><Entry value="15" text="Pastel2"/><Entry value="16" text="PiYG"/><Entry value="17" text="PuBu"/><Entry value="18" text="PuBuGn"/><Entry value="19" text="PuOr"/><Entry value="20" text="PuRd"/><Entry value="21" text="Purples"/><Entry value="22" text="RdBu"/><Entry value="23" text="RdGy"/><Entry value="24" text="RdPu"/><Entry value="25" text="RdYlBu"/><Entry value="26" text="RdYlGn"/><Entry value="27" text="Reds"/><Entry value="28" text="Set1"/><Entry value="29" text="Set2"/><Entry value="30" text="Set3"/><Entry value="31" text="Spectral"/><Entry value="32" text="YlGn"/><Entry value="33" text="YlGnBu"/><Entry value="34" text="YlOrBr"/><Entry value="35" text="YlOrRd"/><Entry value="36" text="autumn"/><Entry value="37" text="binary"/><Entry value="38" text="bone"/><Entry value="39" text="cool"/><Entry value="40" text="copper"/><Entry value="41" text="flag"/><Entry value="42" text="gist_earth"/><Entry value="43" text="gist_gray"/><Entry value="44" text="gist_heat"/><Entry value="45" text="gist_ncar"/><Entry value="46" text="gist_rainbow"/><Entry value="47" text="gist_stern"/><Entry value="48" text="gist_yarg"/><Entry value="49" text="gray"/><Entry value="50" text="hot"/>
+              </EnumerationDomain>
+              <Documentation>.</Documentation>
+          </IntVectorProperty>
+
+          <DoubleVectorProperty name="NANColor" label="NAN Color" command="SetNANColor" number_of_elements="3" default_values="0 0 0" panel_widget="color_selector">
+            <Documentation>.</Documentation>
+          </DoubleVectorProperty>
+
+          <DoubleVectorProperty name="SolidColor" command="SetSolidColor" number_of_elements="3" default_values="0 0 0" panel_widget="color_selector">
+            <Documentation>.</Documentation>
+            <Hints>
+                <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="ColorMap" value="-1" />
+            </Hints>
+          </DoubleVectorProperty>
+
+          <StringVectorProperty name="ManualColorMap" command="SetManualColorMap" number_of_elements="1" default_values="0,0,0,0,1,1,1,1">
+            <Documentation>.</Documentation>
+            <Hints>
+                <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="ColorMap" value="-2" />
+            </Hints>
+          </StringVectorProperty>
+
+
+          <PropertyGroup panel_widget="Line" label="Input Options">
+              <Property name="ScalarArray" />
+          </PropertyGroup>
+          <PropertyGroup panel_widget="Line" label="Output Options">
+              <Property name="ColorMap" />
+              <Property name="NANColor" />
+              <Property name="SolidColor" />
+              <Property name="ManualColorMap" />
+          </PropertyGroup>
+
+          ${DEBUG_WIDGETS}
+
+          <Hints>
+              <ShowInMenu category="TTK - Cinema" />
+          </Hints>
+        </SourceProxy>
+
+        <!-- ////////////////////////////////////////////////////////////////-->
+
+        <SourceProxy name="ttkCinemaDarkroomSSAO" class="ttkCinemaDarkroomSSAO">
+          <Documentation long_help="" short_help="">
+          </Documentation>
+
+          <InputProperty name="Input" command="SetInputConnection">
+              <ProxyGroupDomain name="groups">
+                  <Group name="sources" />
+                  <Group name="filters" />
+              </ProxyGroupDomain>
+              <DataTypeDomain name="input_type">
+                  <DataType value="vtkImageData" />
+              </DataTypeDomain>
+              <InputArrayDomain name="input_array" attribute_type="point" />
+              <Documentation>.</Documentation>
+          </InputProperty>
+
+          <StringVectorProperty name="Depth" command="SetInputArrayToProcess" element_types="0 0 0 0 2" number_of_elements="5" default_values="0">
+              <ArrayListDomain attribute_type="Scalars" name="array_list">
+                  <RequiredProperties>
+                      <Property function="Input" name="Input" />
+                  </RequiredProperties>
+              </ArrayListDomain>
+              <Documentation>.</Documentation>
+          </StringVectorProperty>
+
+          <DoubleVectorProperty name="Radius" command="SetRadius" number_of_elements="1" default_values="0.05">
+            <DoubleRangeDomain name="range" min="0" max="1" />
+          </DoubleVectorProperty>
+          <DoubleVectorProperty name="DiffArea" command="SetDiffArea" number_of_elements="1" default_values="0.5">
+            <DoubleRangeDomain name="range" min="0" max="1" />
+          </DoubleVectorProperty>
+
+          <PropertyGroup panel_widget="Line" label="Input Options">
+              <Property name="Depth" />
+          </PropertyGroup>
+          <PropertyGroup panel_widget="Line" label="Output Options">
+              <Property name="Radius" />
+              <Property name="DiffArea" />
+          </PropertyGroup>
+
+          ${DEBUG_WIDGETS}
+
+          <Hints>
+              <ShowInMenu category="TTK - Cinema" />
+          </Hints>
+        </SourceProxy>
+
+        <!-- ////////////////////////////////////////////////////////////////-->
+
+        <SourceProxy name="ttkCinemaDarkroomSSSAO" class="ttkCinemaDarkroomSSSAO">
+          <Documentation long_help="" short_help="">
+          </Documentation>
+
+          <InputProperty name="Input" command="SetInputConnection">
+              <ProxyGroupDomain name="groups">
+                  <Group name="sources" />
+                  <Group name="filters" />
+              </ProxyGroupDomain>
+              <DataTypeDomain name="input_type">
+                  <DataType value="vtkImageData" />
+              </DataTypeDomain>
+              <InputArrayDomain name="input_array" attribute_type="point" />
+              <Documentation>.</Documentation>
+          </InputProperty>
+
+          <StringVectorProperty name="Depth" command="SetInputArrayToProcess" element_types="0 0 0 0 2" number_of_elements="5" default_values="0">
+              <ArrayListDomain attribute_type="Scalars" name="array_list">
+                  <RequiredProperties>
+                      <Property function="Input" name="Input" />
+                  </RequiredProperties>
+              </ArrayListDomain>
+              <Documentation>.</Documentation>
+          </StringVectorProperty>
+
+          <IntVectorProperty name="Samples" command="SetSamples" number_of_elements="1" default_values="32">
+            <IntRangeDomain name="range" min="1" max="1000" />
+          </IntVectorProperty>
+          <DoubleVectorProperty name="Radius" command="SetRadius" number_of_elements="1" default_values="0.05">
+            <DoubleRangeDomain name="range" min="0" max="1" />
+          </DoubleVectorProperty>
+          <DoubleVectorProperty name="DiffArea" command="SetDiffArea" number_of_elements="1" default_values="0.5">
+            <DoubleRangeDomain name="range" min="0" max="1" />
+          </DoubleVectorProperty>
+
+          <PropertyGroup panel_widget="Line" label="Input Options">
+              <Property name="Depth" />
+          </PropertyGroup>
+          <PropertyGroup panel_widget="Line" label="Output Options">
+              <Property name="Samples" />
+              <Property name="Radius" />
+              <Property name="DiffArea" />
+          </PropertyGroup>
+
+          ${DEBUG_WIDGETS}
+
+          <Hints>
+              <ShowInMenu category="TTK - Cinema" />
+          </Hints>
+        </SourceProxy>
+
+        <!-- ////////////////////////////////////////////////////////////////-->
+
+        <SourceProxy name="ttkCinemaDarkroomIBS" class="ttkCinemaDarkroomIBS">
+          <Documentation long_help="" short_help="">
+          </Documentation>
+
+          <InputProperty name="Input" command="SetInputConnection">
+              <ProxyGroupDomain name="groups">
+                  <Group name="sources" />
+                  <Group name="filters" />
+              </ProxyGroupDomain>
+              <DataTypeDomain name="input_type">
+                  <DataType value="vtkImageData" />
+              </DataTypeDomain>
+              <InputArrayDomain name="input_array" attribute_type="point" />
+              <Documentation>.</Documentation>
+          </InputProperty>
+
+          <StringVectorProperty name="Color" command="SetInputArrayToProcess" element_types="0 0 0 0 2" number_of_elements="5" default_values="0">
+              <ArrayListDomain attribute_type="Scalars" name="array_list">
+                  <RequiredProperties>
+                      <Property function="Input" name="Input" />
+                  </RequiredProperties>
+              </ArrayListDomain>
+              <Documentation>.</Documentation>
+          </StringVectorProperty>
+          <StringVectorProperty name="Depth" command="SetInputArrayToProcess" element_types="0 0 0 0 2" number_of_elements="5" default_values="1">
+              <ArrayListDomain attribute_type="Scalars" name="array_list">
+                  <RequiredProperties>
+                      <Property function="Input" name="Input" />
+                  </RequiredProperties>
+              </ArrayListDomain>
+              <Documentation>.</Documentation>
+          </StringVectorProperty>
+          <StringVectorProperty name="AO" command="SetInputArrayToProcess" element_types="0 0 0 0 2" number_of_elements="5" default_values="2">
+              <ArrayListDomain attribute_type="Scalars" name="array_list">
+                  <RequiredProperties>
+                      <Property function="Input" name="Input" />
+                  </RequiredProperties>
+              </ArrayListDomain>
+              <Documentation>.</Documentation>
+          </StringVectorProperty>
+
+          <DoubleVectorProperty name="Strength" command="SetStrength" number_of_elements="1" default_values="1">
+            <DoubleRangeDomain name="range" min="0" max="10000" />
+          </DoubleVectorProperty>
+          <DoubleVectorProperty name="Luminance" command="SetLuminance" number_of_elements="1" default_values="1">
+            <DoubleRangeDomain name="range" min="0" max="2" />
+          </DoubleVectorProperty>
+
+          <PropertyGroup panel_widget="Line" label="Input Options">
+              <Property name="Color" />
+              <Property name="Depth" />
+              <Property name="AO" />
+          </PropertyGroup>
+          <PropertyGroup panel_widget="Line" label="Output Options">
+              <Property name="Strength" />
+              <Property name="Luminance" />
+          </PropertyGroup>
+
+          ${DEBUG_WIDGETS}
+
+          <Hints>
+              <ShowInMenu category="TTK - Cinema" />
+          </Hints>
+        </SourceProxy>
+
+        <!-- ////////////////////////////////////////////////////////////////-->
+
+        <SourceProxy name="ttkCinemaDarkroomFXAA" class="ttkCinemaDarkroomFXAA">
+          <Documentation long_help="" short_help="">
+          </Documentation>
+
+          <InputProperty name="Input" command="SetInputConnection">
+              <ProxyGroupDomain name="groups">
+                  <Group name="sources" />
+                  <Group name="filters" />
+              </ProxyGroupDomain>
+              <DataTypeDomain name="input_type">
+                  <DataType value="vtkImageData" />
+              </DataTypeDomain>
+              <InputArrayDomain name="input_array" attribute_type="point" />
+              <Documentation>.</Documentation>
+          </InputProperty>
+
+          <StringVectorProperty name="Color" command="SetInputArrayToProcess" element_types="0 0 0 0 2" number_of_elements="5" default_values="0">
+              <ArrayListDomain attribute_type="Scalars" name="array_list">
+                  <RequiredProperties>
+                      <Property function="Input" name="Input" />
+                  </RequiredProperties>
+              </ArrayListDomain>
+              <Documentation>.</Documentation>
+          </StringVectorProperty>
+
+          <PropertyGroup panel_widget="Line" label="Input Options">
+              <Property name="Color" />
+          </PropertyGroup>
+
+          ${DEBUG_WIDGETS}
+
+          <Hints>
+              <ShowInMenu category="TTK - Cinema" />
+          </Hints>
+        </SourceProxy>
+
+        <!-- ////////////////////////////////////////////////////////////////-->
+
+        <SourceProxy name="ttkCinemaDarkroomSSDoF" class="ttkCinemaDarkroomSSDoF">
+          <Documentation long_help="" short_help="">
+          </Documentation>
+
+          <InputProperty name="Input" command="SetInputConnection">
+              <ProxyGroupDomain name="groups">
+                  <Group name="sources" />
+                  <Group name="filters" />
+              </ProxyGroupDomain>
+              <DataTypeDomain name="input_type">
+                  <DataType value="vtkImageData" />
+              </DataTypeDomain>
+              <InputArrayDomain name="input_array" attribute_type="point" />
+              <Documentation>.</Documentation>
+          </InputProperty>
+
+          <StringVectorProperty name="Color" command="SetInputArrayToProcess" element_types="0 0 0 0 2" number_of_elements="5" default_values="0">
+              <ArrayListDomain name="array_list">
+                  <RequiredProperties>
+                      <Property function="Input" name="Input" />
+                  </RequiredProperties>
+              </ArrayListDomain>
+              <Documentation>.</Documentation>
+          </StringVectorProperty>
+
+          <StringVectorProperty name="Depth" command="SetInputArrayToProcess" element_types="0 0 0 0 2" number_of_elements="5" default_values="1">
+              <ArrayListDomain attribute_type="Scalars" name="array_list">
+                  <RequiredProperties>
+                      <Property function="Input" name="Input" />
+                  </RequiredProperties>
+              </ArrayListDomain>
+              <Documentation>.</Documentation>
+          </StringVectorProperty>
+
+          <DoubleVectorProperty name="Radius" command="SetRadius" number_of_elements="1" default_values="0.05">
+            <DoubleRangeDomain name="range" min="0" max="1" />
+          </DoubleVectorProperty>
+          <DoubleVectorProperty name="Aperture" command="SetAperture" number_of_elements="1" default_values="1">
+            <DoubleRangeDomain name="range" min="0" max="4" />
+          </DoubleVectorProperty>
+          <DoubleVectorProperty name="Distance" command="SetDistance" number_of_elements="1" default_values="1">
+            <DoubleRangeDomain name="range" min="0" max="1" />
+          </DoubleVectorProperty>
+          <DoubleVectorProperty name="MaxBlur" command="SetMaxBlur" number_of_elements="1" default_values="1">
+            <DoubleRangeDomain name="range" min="0" max="2" />
+          </DoubleVectorProperty>
+
+          <PropertyGroup panel_widget="Line" label="Input Options">
+              <Property name="Color" />
+              <Property name="Depth" />
+          </PropertyGroup>
+          <PropertyGroup panel_widget="Line" label="Output Options">
+              <Property name="Radius" />
+              <Property name="Aperture" />
+              <Property name="Distance" />
+              <Property name="MaxBlur" />
+          </PropertyGroup>
+
+          ${DEBUG_WIDGETS}
+
+          <Hints>
+              <ShowInMenu category="TTK - Cinema" />
+          </Hints>
+        </SourceProxy>
+
+    </ProxyGroup>
+
+</ServerManagerConfiguration>

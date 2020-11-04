@@ -1,0 +1,7 @@
+NAME
+  ttkCinemaDarkroom
+DEPENDS
+  ttkAlgorithm
+  VTK::FiltersSources
+  VTK::RenderingCore
+  VTK::RenderingOpenGL2
