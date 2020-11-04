@@ -110,7 +110,53 @@ int ttkProjectionFromField::projectDiagramIn2D(
 
   ttk::Timer tm{};
 
-  // TODO
+  outputDiagram->ShallowCopy(inputDiagram);
+
+  auto pointData = outputDiagram->GetPointData();
+
+  vtkNew<vtkFloatArray> coords{};
+  coords->DeepCopy(inputDiagram->GetPoints()->GetData());
+  coords->SetName("Coordinates");
+  pointData->AddArray(coords);
+
+  vtkNew<vtkPoints> points{};
+  const auto nPoints = inputDiagram->GetNumberOfPoints();
+  points->SetNumberOfPoints(nPoints);
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(this->threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+  for(int i = 0; i < nPoints; ++i) {
+    std::array<float, 3> pt{};
+    pt[0] = births[i];
+    pt[1] = deaths[i];
+    points->SetPoint(i, pt.data());
+  }
+
+  outputDiagram->SetPoints(points);
+
+  // add diagonal(first point -> last birth/penultimate point)
+  std::array<vtkIdType, 2> diag{0, 2 * (outputDiagram->GetNumberOfCells() - 1)};
+  outputDiagram->InsertNextCell(VTK_LINE, 2, diag.data());
+
+  // add diagonal data
+  auto cellData = outputDiagram->GetCellData();
+  auto pairIdentifierScalars
+    = vtkIntArray::SafeDownCast(cellData->GetArray("PairIdentifier"));
+  auto extremumIndexScalars
+    = vtkIntArray::SafeDownCast(cellData->GetArray("PairType"));
+  auto persistenceScalars
+    = vtkDoubleArray::SafeDownCast(cellData->GetArray("Persistence"));
+  pairIdentifierScalars->InsertNextTuple1(-1);
+  extremumIndexScalars->InsertNextTuple1(-1);
+  // 2 * persistence of min-max pair
+  persistenceScalars->InsertNextTuple1(2 * persistenceScalars->GetTuple1(0));
+
+  // remove birth and death arrays
+  pointData->RemoveArray("Birth");
+  pointData->RemoveArray("Death");
+
+  // don't forget to forward the Field Data
+  outputDiagram->GetFieldData()->ShallowCopy(inputDiagram->GetFieldData());
 
   this->printMsg("Projected Persistence Diagram back to 2D", 1.0,
                  tm.getElapsedTime(), this->threadNumber_);
