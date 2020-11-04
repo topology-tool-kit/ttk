@@ -1,3 +1,20 @@
+/// \ingroup vtk
+/// \class ttkCinemaDarkroomFXAA
+/// \author Jonas Lukasczyk <jl@jluk.de>
+/// \date 01.11.2020
+///
+/// \brief Fast Approximate Anti-Aliasing
+///
+/// \param Input vtkImageData.
+/// \param Output vtkImageData.
+///
+/// \b Related \b Publication:
+/// "Fast Approximate Anti-Aliasing (FXAA)".
+/// Timothy Lottes.
+/// NVIDIA Corporation. 2009
+///
+/// \sa ttkCinemaDarkroomShader
+
 #pragma once
 
 // VTK Module
@@ -5,10 +22,7 @@
 #include <ttkCinemaDarkroomShader.h>
 
 class TTKCINEMADARKROOM_EXPORT ttkCinemaDarkroomFXAA : public ttkCinemaDarkroomShader {
-private:
-
 public:
-
   static ttkCinemaDarkroomFXAA *New();
   vtkTypeMacro(ttkCinemaDarkroomFXAA, ttkCinemaDarkroomShader);
 

@@ -136,9 +136,9 @@ int ttkCinemaDarkroomSSDoF::RequestData(vtkInformation *request,
   this->AddReplacement("cAperture", {this->Aperture});
   this->AddReplacement("cDistance", {this->Distance});
 
-  if(!this->SetTexture(outputImage,0,0,nullptr))
+  if(!this->AddTexture(outputImage,0,0))
     return 0;
-  if(!this->SetTexture(outputImage,1,1,nullptr))
+  if(!this->AddTexture(outputImage,1,1))
     return 0;
 
   this->Render(outputImage, "IBS");

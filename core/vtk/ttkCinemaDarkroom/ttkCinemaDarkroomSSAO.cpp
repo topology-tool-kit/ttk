@@ -136,7 +136,7 @@ int ttkCinemaDarkroomSSAO::RequestData(vtkInformation *request,
   this->AddReplacement("cRadius", {this->Radius});
   this->AddReplacement("cDiffArea", {this->DiffArea});
 
-  if(!this->SetTexture(outputImage,0,0,nullptr))
+  if(!this->AddTexture(outputImage,0,0))
     return 0;
 
   this->Render(outputImage, "SSAO");

@@ -33,14 +33,6 @@ int ttkCinemaDarkroomCompositing::FillInputPortInformation(int port, vtkInformat
   return 0;
 }
 
-int ttkCinemaDarkroomCompositing::FillOutputPortInformation(int port, vtkInformation *info) {
-  if(port == 0) {
-    info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
-    return 1;
-  }
-  return 0;
-}
-
 template<typename DT>
 int computeMask(unsigned char* mask, const DT* depth0, const DT* depth1, const size_t nPixels){
   for(size_t i=0; i<nPixels; i++){

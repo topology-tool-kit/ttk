@@ -180,7 +180,7 @@ int ttkCinemaDarkroomShader::InitRenderer(vtkImageData* outputImage){
     return 1;
 }
 
-int ttkCinemaDarkroomShader::SetTexture(vtkImageData* image, int arrayIdx, int textureIdx, int* textureProperties){
+int ttkCinemaDarkroomShader::AddTexture(vtkImageData* image, int arrayIdx, int textureIdx){
     auto inputArray = this->GetInputArrayToProcess(arrayIdx, image);
     if(!inputArray || this->GetInputArrayAssociation(arrayIdx,image)!=0){
       this->printErr("Unable to retrieve input point data array " + std::to_string(arrayIdx) + ".");

@@ -145,7 +145,7 @@ int ttkCinemaDarkroomFXAA::RequestData(vtkInformation *request,
 
   this->InitRenderer( outputImage );
 
-  if(!this->SetTexture(outputImage,0,0,nullptr))
+  if(!this->AddTexture(outputImage,0,0))
     return 0;
 
   this->Render(outputImage, "FXAA");

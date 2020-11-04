@@ -86,11 +86,11 @@ int ttkCinemaDarkroomIBS::RequestData(vtkInformation *request,
   this->AddReplacement("cStrength", {this->Strength});
   this->AddReplacement("cLuminance", {this->Luminance});
 
-  if(!this->SetTexture(outputImage,0,0,nullptr))
+  if(!this->AddTexture(outputImage,0,0))
     return 0;
-  if(!this->SetTexture(outputImage,1,1,nullptr))
+  if(!this->AddTexture(outputImage,1,1))
     return 0;
-  if(!this->SetTexture(outputImage,2,2,nullptr))
+  if(!this->AddTexture(outputImage,2,2))
     return 0;
 
   this->Render(outputImage, "IBS");

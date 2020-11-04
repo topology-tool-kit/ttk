@@ -9,7 +9,7 @@ SOURCES
   ttkCinemaDarkroomSSDoF.cpp
   ttkCinemaDarkroomCompositing.cpp
   ttkCinemaDarkroomColorMapping.cpp
-  ttkCinemaDarkroomColorMaps.cpp
+  ttkCinemaDarkroomColorMaps.cxx
 HEADERS
   ttkCinemaDarkroomShader.h
   ttkCinemaDarkroomIBS.h

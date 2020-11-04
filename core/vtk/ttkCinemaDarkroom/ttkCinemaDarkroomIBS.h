@@ -1,3 +1,20 @@
+/// \ingroup vtk
+/// \class ttkCinemaDarkroomFXAA
+/// \author Jonas Lukasczyk <jl@jluk.de>
+/// \date 01.11.2020
+///
+/// \brief Image Based Shading
+///
+/// \param Input vtkImageData.
+/// \param Output vtkImageData.
+///
+/// \b Related \b Publication:
+/// "Dynamic Nested Tracking Graphs".
+/// Jonas Lukasczyk, Christoph Garth, Gunther H. Weber, Tim Biedert, Ross Maciejewski, Heike Leitte.
+/// IEEE Transactions on Visualization and Computer Graphics. 2019
+///
+/// \sa ttkCinemaDarkroomShader
+
 #pragma once
 
 // VTK Module

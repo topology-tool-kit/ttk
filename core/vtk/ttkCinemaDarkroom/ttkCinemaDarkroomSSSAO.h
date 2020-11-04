@@ -1,3 +1,15 @@
+/// \ingroup vtk
+/// \class ttkCinemaDarkroomSSSAO
+/// \author Jonas Lukasczyk <jl@jluk.de>
+/// \date 01.11.2020
+///
+/// \brief Scalable Screen Space Ambient Occlusion
+///
+/// \param Input vtkImageData.
+/// \param Output vtkImageData.
+///
+/// \sa ttkCinemaDarkroomShader
+
 #pragma once
 
 // VTK Module

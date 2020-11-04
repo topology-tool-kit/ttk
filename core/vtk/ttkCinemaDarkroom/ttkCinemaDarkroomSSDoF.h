@@ -1,3 +1,20 @@
+/// \ingroup vtk
+/// \class ttkCinemaDarkroomSSDoF
+/// \author Jonas Lukasczyk <jl@jluk.de>
+/// \date 01.11.2020
+///
+/// \brief Screen Space Depth of Field
+///
+/// \param Input vtkImageData.
+/// \param Output vtkImageData.
+///
+/// \b Related \b Publication:
+/// "Efficiently Simulating the Bokeh of Polygonal Apertures in a Post-Process Depth of Field Shader".
+/// L. McIntosh, B. E. Riecke and S. DiPaola.
+/// Computer Graphics Forum. 2012.
+///
+/// \sa ttkCinemaDarkroomShader
+
 #pragma once
 
 // VTK Module
