@@ -21,7 +21,8 @@
 #include <ttkCinemaDarkroomModule.h>
 #include <ttkCinemaDarkroomShader.h>
 
-class TTKCINEMADARKROOM_EXPORT ttkCinemaDarkroomFXAA : public ttkCinemaDarkroomShader {
+class TTKCINEMADARKROOM_EXPORT ttkCinemaDarkroomFXAA
+  : public ttkCinemaDarkroomShader {
 public:
   static ttkCinemaDarkroomFXAA *New();
   vtkTypeMacro(ttkCinemaDarkroomFXAA, ttkCinemaDarkroomShader);

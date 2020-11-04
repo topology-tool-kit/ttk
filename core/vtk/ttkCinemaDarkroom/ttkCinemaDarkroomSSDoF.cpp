@@ -3,11 +3,11 @@
 #include <vtkInformation.h>
 
 #include <vtkDataArray.h>
-#include <vtkUnsignedCharArray.h>
 #include <vtkDataSet.h>
+#include <vtkImageData.h>
 #include <vtkPointData.h>
 #include <vtkSmartPointer.h>
-#include <vtkImageData.h>
+#include <vtkUnsignedCharArray.h>
 
 #include <ttkMacros.h>
 #include <ttkUtils.h>
@@ -21,7 +21,7 @@ ttkCinemaDarkroomSSDoF::ttkCinemaDarkroomSSDoF() : ttkCinemaDarkroomShader() {
 ttkCinemaDarkroomSSDoF::~ttkCinemaDarkroomSSDoF() {
 }
 
-std::string ttkCinemaDarkroomSSDoF::GetFragmentShaderCode(){
+std::string ttkCinemaDarkroomSSDoF::GetFragmentShaderCode() {
   return std::string(R"(
 //VTK::System::Dec // always start with these lines in your FS
 //VTK::Output::Dec // always start with these lines in your FS
@@ -122,23 +122,23 @@ void main() {
 }
 
 int ttkCinemaDarkroomSSDoF::RequestData(vtkInformation *request,
-                               vtkInformationVector **inputVector,
-                               vtkInformationVector *outputVector) {
+                                        vtkInformationVector **inputVector,
+                                        vtkInformationVector *outputVector) {
 
   auto inputImage = vtkImageData::GetData(inputVector[0]);
   auto outputImage = vtkImageData::GetData(outputVector);
   outputImage->ShallowCopy(inputImage);
 
-  this->InitRenderer( outputImage );
+  this->InitRenderer(outputImage);
 
   this->AddReplacement("cRadius", {this->Radius});
   this->AddReplacement("cMaxBlur", {this->MaxBlur});
   this->AddReplacement("cAperture", {this->Aperture});
   this->AddReplacement("cDistance", {this->Distance});
 
-  if(!this->AddTexture(outputImage,0,0))
+  if(!this->AddTexture(outputImage, 0, 0))
     return 0;
-  if(!this->AddTexture(outputImage,1,1))
+  if(!this->AddTexture(outputImage, 1, 1))
     return 0;
 
   this->Render(outputImage, "IBS");

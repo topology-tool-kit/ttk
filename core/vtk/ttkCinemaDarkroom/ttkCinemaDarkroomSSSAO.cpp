@@ -3,11 +3,11 @@
 #include <vtkInformation.h>
 
 #include <vtkDataArray.h>
-#include <vtkUnsignedCharArray.h>
 #include <vtkDataSet.h>
+#include <vtkImageData.h>
 #include <vtkPointData.h>
 #include <vtkSmartPointer.h>
-#include <vtkImageData.h>
+#include <vtkUnsignedCharArray.h>
 
 #include <ttkMacros.h>
 #include <ttkUtils.h>
@@ -21,7 +21,7 @@ ttkCinemaDarkroomSSSAO::ttkCinemaDarkroomSSSAO() : ttkCinemaDarkroomShader() {
 ttkCinemaDarkroomSSSAO::~ttkCinemaDarkroomSSSAO() {
 }
 
-std::string ttkCinemaDarkroomSSSAO::GetFragmentShaderCode(){
+std::string ttkCinemaDarkroomSSSAO::GetFragmentShaderCode() {
   return std::string(R"(
 //VTK::System::Dec // always start with these lines in your FS
 //VTK::Output::Dec // always start with these lines in your FS
@@ -103,8 +103,8 @@ void main() {
 }
 
 int ttkCinemaDarkroomSSSAO::RequestData(vtkInformation *request,
-                               vtkInformationVector **inputVector,
-                               vtkInformationVector *outputVector) {
+                                        vtkInformationVector **inputVector,
+                                        vtkInformationVector *outputVector) {
 
   auto inputImage = vtkImageData::GetData(inputVector[0]);
   auto outputImage = vtkImageData::GetData(outputVector);
@@ -113,13 +113,13 @@ int ttkCinemaDarkroomSSSAO::RequestData(vtkInformation *request,
   int dim[3];
   outputImage->GetDimensions(dim);
 
-  this->InitRenderer( outputImage );
+  this->InitRenderer(outputImage);
 
   this->AddReplacement("cSamples", {(double)this->Samples}, true);
   this->AddReplacement("cRadius", {this->Radius});
   this->AddReplacement("cDiffArea", {this->DiffArea});
 
-  if(!this->AddTexture(outputImage,0,0))
+  if(!this->AddTexture(outputImage, 0, 0))
     return 0;
 
   this->Render(outputImage, "SSSAO");

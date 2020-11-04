@@ -8,7 +8,8 @@
 /// \param Input vtkImageData.
 /// \param Output vtkImageData.
 ///
-/// Composites multiple vtkImageData objects passed to the first input port base on depth point data arrays specified via
+/// Composites multiple vtkImageData objects passed to the first input port base
+/// on depth point data arrays specified via
 /// SetInputArrayToProcess(0,0,0,0,"DepthArrayName").
 ///
 /// \b Related \b Publication:
@@ -25,11 +26,10 @@
 #include <ttkCinemaDarkroomModule.h>
 #include <ttkCinemaDarkroomShader.h>
 
-class TTKCINEMADARKROOM_EXPORT ttkCinemaDarkroomCompositing : public ttkCinemaDarkroomShader {
+class TTKCINEMADARKROOM_EXPORT ttkCinemaDarkroomCompositing
+  : public ttkCinemaDarkroomShader {
 private:
-
 public:
-
   static ttkCinemaDarkroomCompositing *New();
   vtkTypeMacro(ttkCinemaDarkroomCompositing, ttkCinemaDarkroomShader);
 

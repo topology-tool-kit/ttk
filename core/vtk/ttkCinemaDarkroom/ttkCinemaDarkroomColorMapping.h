@@ -8,7 +8,8 @@
 /// \param Input vtkImageData.
 /// \param Output vtkImageData.
 ///
-/// This class maps each value of a scalar point data array to either a solid color, a predefined color map, or a manually defined color map.
+/// This class maps each value of a scalar point data array to either a solid
+/// color, a predefined color map, or a manually defined color map.
 ///
 /// \b Related \b Publication:
 /// "Cinema Database Specification - Dietrich Release v1.2".
@@ -24,19 +25,18 @@
 #include <ttkCinemaDarkroomModule.h>
 #include <ttkCinemaDarkroomShader.h>
 
-class TTKCINEMADARKROOM_EXPORT ttkCinemaDarkroomColorMapping : public ttkCinemaDarkroomShader {
+class TTKCINEMADARKROOM_EXPORT ttkCinemaDarkroomColorMapping
+  : public ttkCinemaDarkroomShader {
 private:
-
   static const std::vector<std::vector<double>> ColorMaps;
 
-  double ValueRange[2]{0,1};
+  double ValueRange[2]{0, 1};
   int ColorMap{0};
   std::string ManualColorMap{""};
-  double SolidColor[3]{0,0,0};
-  double NANColor[3]{0,0,0};
+  double SolidColor[3]{0, 0, 0};
+  double NANColor[3]{0, 0, 0};
 
 public:
-
   vtkSetVector2Macro(ValueRange, double);
   vtkGetVector2Macro(ValueRange, double);
   vtkSetMacro(ColorMap, int);
