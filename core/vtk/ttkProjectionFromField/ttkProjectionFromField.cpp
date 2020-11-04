@@ -7,6 +7,7 @@
 #include <vtkNew.h>
 #include <vtkPointData.h>
 #include <vtkPointSet.h>
+#include <vtkThreshold.h>
 #include <vtkUnstructuredGrid.h>
 
 #include <ttkMacros.h>
@@ -45,23 +46,19 @@ int ttkProjectionFromField::projectPersistenceDiagram(
 
   ttk::Timer tm{};
 
-  auto pointData = inputDiagram->GetPointData();
+  // use vtkThreshold to remove diagonal (PairIdentifier == -1)
+  vtkNew<vtkThreshold> threshold{};
+  threshold->SetInputDataObject(0, inputDiagram);
+  threshold->SetInputArrayToProcess(
+    0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_CELLS, "PairIdentifier");
+  threshold->ThresholdByUpper(0);
+  threshold->Update();
 
-  const auto vertexIdentifierScalars = vtkIntArray::SafeDownCast(
-    pointData->GetAbstractArray(ttk::VertexScalarFieldName));
-  const auto nodeTypeScalars
-    = vtkIntArray::SafeDownCast(pointData->GetAbstractArray("CriticalType"));
-  const auto critCoordinates
-    = vtkFloatArray::SafeDownCast(pointData->GetAbstractArray("Coordinates"));
+  auto diagonalLess = threshold->GetOutput();
+  auto diagonalLessData = diagonalLess->GetPointData();
 
-  auto cellData = inputDiagram->GetCellData();
-
-  const auto pairIdentifierScalars
-    = vtkIntArray::SafeDownCast(cellData->GetAbstractArray("PairIdentifier"));
-  const auto extremumIndexScalars
-    = vtkIntArray::SafeDownCast(cellData->GetAbstractArray("PairType"));
-  const auto persistenceScalars
-    = vtkDoubleArray::SafeDownCast(cellData->GetAbstractArray("Persistence"));
+  const auto critCoordinates = vtkFloatArray::SafeDownCast(
+    diagonalLessData->GetAbstractArray("Coordinates"));
 
   // ensure we have a Coordinates array
   if(critCoordinates == nullptr) {
@@ -72,76 +69,38 @@ int ttkProjectionFromField::projectPersistenceDiagram(
     this->printErr("`Coordinates' array should have 3 components");
     return 0;
   }
-  if(vertexIdentifierScalars == nullptr || nodeTypeScalars == nullptr
-     || critCoordinates == nullptr || pairIdentifierScalars == nullptr
-     || extremumIndexScalars == nullptr || persistenceScalars == nullptr) {
-    this->printErr("Missing at least one data array");
-    return 0;
-  }
 
   // set new points from Coordinates array
   vtkNew<vtkFloatArray> coords{};
   coords->DeepCopy(critCoordinates);
   coords->SetName("Points");
-  vtkNew<vtkPoints> points{};
-  points->SetData(coords);
+  diagonalLess->GetPoints()->SetData(coords);
+  diagonalLessData->RemoveArray("Coordinates");
 
   const auto inputPoints = inputDiagram->GetPoints();
+  const auto nPoints = inputDiagram->GetNumberOfPoints();
 
   // generate a birth and death arrays from diagram points coordinates
   vtkNew<vtkFloatArray> births{}, deaths{};
   births->SetNumberOfComponents(1);
   births->SetName("Birth");
-  births->SetNumberOfTuples(inputPoints->GetNumberOfPoints());
+  births->SetNumberOfTuples(nPoints);
   deaths->SetNumberOfComponents(1);
   deaths->SetName("Death");
-  deaths->SetNumberOfTuples(inputPoints->GetNumberOfPoints());
+  deaths->SetNumberOfTuples(nPoints);
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(this->threadNumber_)
 #endif // TTK_ENABLE_OPENMP
-  for(int i = 0; i < inputPoints->GetNumberOfPoints(); ++i) {
+  for(int i = 0; i < nPoints; ++i) {
     births->SetTuple1(i, inputPoints->GetPoint(i)[0]);
     deaths->SetTuple1(i, inputPoints->GetPoint(i)[1]);
   }
 
-  // remove diagonal data from cell arrays
-  const auto inputCells = inputDiagram->GetCells();
-  vtkNew<vtkIdTypeArray> offsets{}, connectivity{};
-  offsets->DeepCopy(inputCells->GetOffsetsArray());
-  connectivity->DeepCopy(inputCells->GetConnectivityArray());
-  // remove last entry (diagonal data)
-  offsets->SetNumberOfTuples(offsets->GetNumberOfTuples() - 1);
-  connectivity->SetNumberOfTuples(connectivity->GetNumberOfTuples() - 1);
-  vtkNew<vtkCellArray> cells{};
-  cells->SetData(offsets, connectivity);
+  diagonalLessData->AddArray(births);
+  diagonalLessData->AddArray(deaths);
 
-  // copy cell data arrays, removing diagonal data
-  vtkNew<vtkIntArray> pairIds{}, pairTypes{};
-  pairIds->DeepCopy(pairIdentifierScalars);
-  pairTypes->DeepCopy(extremumIndexScalars);
-  pairIds->SetNumberOfTuples(cells->GetNumberOfCells());
-  pairTypes->SetNumberOfTuples(cells->GetNumberOfCells());
-  vtkNew<vtkDoubleArray> persistence{};
-  persistence->DeepCopy(persistenceScalars);
-  persistence->SetNumberOfTuples(cells->GetNumberOfCells());
-
-  // create a new vtkUnstructuredGrid
-  vtkNew<vtkUnstructuredGrid> persistenceDiagram{};
-  persistenceDiagram->SetPoints(points);
-  persistenceDiagram->SetCells(VTK_LINE, cells);
-
-  // add  data arrays
-  persistenceDiagram->GetPointData()->AddArray(vertexIdentifierScalars);
-  persistenceDiagram->GetPointData()->AddArray(nodeTypeScalars);
-  persistenceDiagram->GetPointData()->AddArray(births);
-  persistenceDiagram->GetPointData()->AddArray(deaths);
-
-  persistenceDiagram->GetCellData()->AddArray(pairIds);
-  persistenceDiagram->GetCellData()->AddArray(pairTypes);
-  persistenceDiagram->GetCellData()->AddArray(persistence);
-
-  outputDiagram->ShallowCopy(persistenceDiagram);
+  outputDiagram->ShallowCopy(diagonalLess);
 
   // don't forget to forward the Field Data
   outputDiagram->GetFieldData()->ShallowCopy(inputDiagram->GetFieldData());
