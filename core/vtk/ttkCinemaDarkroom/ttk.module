@@ -21,3 +21,4 @@ HEADERS
   ttkCinemaDarkroomColorMapping.h
 DEPENDS
   ttkAlgorithm
+  Boost::boost
