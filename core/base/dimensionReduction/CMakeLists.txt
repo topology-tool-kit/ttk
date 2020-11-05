@@ -11,10 +11,10 @@ install(
   FILES
     ${CMAKE_CURRENT_SOURCE_DIR}/dimensionReduction.py
   DESTINATION
-    "${CMAKE_INSTALL_DATAROOTDIR}/ttk"
+    scripts/ttk
   )
 
-target_compile_definitions(dimensionReduction PUBLIC -DTTK_SCRIPTS_PATH=${CMAKE_INSTALL_FULL_DATAROOTDIR}/ttk)
+target_compile_definitions(dimensionReduction PUBLIC -DTTK_SCRIPTS_PATH=scripts/ttk)
 
 if(TTK_ENABLE_SCIKIT_LEARN)
   target_link_libraries(dimensionReduction PRIVATE Python3::Python Python3::NumPy)
