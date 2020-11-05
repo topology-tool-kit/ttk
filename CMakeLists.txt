@@ -34,12 +34,28 @@ set(CPACK_GENERATOR "DEB")
 set(CPACK_PACKAGE_CONTACT "Julien Tierny <julien.tierny@sorbonne-universite.fr>")
 set(CPACK_PACKAGE_VENDOR "LIP6 - Sorbonne Université")
 set(CPACK_PACKAGE_HOMEPAGE_URL "https://topology-tool-kit.github.io/")
-set(CPACK_RESOURCE_FILE_LICENSE ${CMAKE_CURRENT_SOURCE_DIR}/LICENSE)
-set(CPACK_RESOURCE_FILE_README ${CMAKE_CURRENT_SOURCE_DIR}/README.md)
+if(NOT APPLE)
+  set(CPACK_RESOURCE_FILE_LICENSE ${CMAKE_CURRENT_SOURCE_DIR}/LICENSE)
+  set(CPACK_RESOURCE_FILE_README ${CMAKE_CURRENT_SOURCE_DIR}/README.md)
+else()
+  # macOS needs license & readme files ending with .txt
+  configure_file(LICENSE License.txt COPYONLY)
+  configure_file(README.md Readme.txt COPYONLY)
+  set(CPACK_RESOURCE_FILE_LICENSE ${PROJECT_BINARY_DIR}/License.txt)
+  set(CPACK_RESOURCE_FILE_README ${PROJECT_BINARY_DIR}/Readme.txt)
+endif()
 set(CPACK_DEBIAN_PACKAGE_DEPENDS
   "ttk-paraview (= 5.8.1), python3-sklearn, libboost-system-dev, python3-dev, libgraphviz-dev, libsqlite3-dev")
 # autogenerate dependency information
 set (CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
+# package will be installed under %ProgramFiles%\${CPACK_PACKAGE_INSTALL_DIRECTORY} on Windows
+set(CPACK_PACKAGE_INSTALL_DIRECTORY "TTK")
+# let the installer uninstall previous installations on Windows
+set(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL ON)
+# generate components, fix productbuild packaging for macOS
+if(APPLE)
+  set(CPACK_COMPONENTS_ALL Unspecified python development)
+endif()
 include(CPack)
 
 if(TTK_BUILD_STANDALONE_APPS AND NOT TTK_BUILD_VTK_WRAPPERS)

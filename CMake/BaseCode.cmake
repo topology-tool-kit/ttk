@@ -90,7 +90,7 @@ function(ttk_add_base_template_library library)
 
   if(TTK_ENABLE_OPENMP)
     target_compile_definitions(${library} INTERFACE TTK_ENABLE_OPENMP)
-    target_compile_options(${library} INTERFACE ${OpenMP_CXX_FLAGS})
+    target_link_libraries(${library} INTERFACE OpenMP::OpenMP_CXX)
   endif()
 
   if(ARG_DEPENDS)
@@ -144,8 +144,7 @@ function(ttk_set_compile_options library)
 
   if (TTK_ENABLE_OPENMP)
     target_compile_definitions(${library} PUBLIC TTK_ENABLE_OPENMP)
-    target_compile_options(${library} PUBLIC ${OpenMP_CXX_FLAGS})
-    target_link_libraries(${library} PUBLIC ${OpenMP_CXX_LIBRARIES})
+    target_link_libraries(${library} PUBLIC OpenMP::OpenMP_CXX)
 
     if (TTK_ENABLE_OMP_PRIORITY)
       target_compile_definitions(${library} PUBLIC TTK_ENABLE_OMP_PRIORITY)
@@ -181,59 +180,6 @@ function(ttk_set_compile_options library)
 
   if (TTK_ENABLE_64BIT_IDS)
     target_compile_definitions(${library} PUBLIC TTK_ENABLE_64BIT_IDS)
-  endif()
-
-endfunction()
-
-# Used by basedCode requiring "Python.h"
-
-function(ttk_find_python)
-  find_package(PythonLibs QUIET)
-
-  if(PYTHON_INCLUDE_DIRS)
-    include_directories(SYSTEM ${PYTHON_INCLUDE_DIRS})
-
-    string(REPLACE \".\" \" \"
-      PYTHON_VERSION_LIST ${PYTHONLIBS_VERSION_STRING})
-
-    if(NOT PYTHON_VERSION_LIST)
-      string(REPLACE "." " "
-        PYTHON_VERSION_LIST ${PYTHONLIBS_VERSION_STRING})
-    endif()
-
-    separate_arguments(PYTHON_VERSION_LIST)
-    list(GET PYTHON_VERSION_LIST 0 PYTHON_MAJOR_VERSION)
-    list(GET PYTHON_VERSION_LIST 1 PYTHON_MINOR_VERSION)
-
-    set(TTK_PYTHON_MAJOR_VERSION "${PYTHON_MAJOR_VERSION}"
-      CACHE INTERNAL "TTK_PYTHON_MAJOR_VERSION")
-    set(TTK_PYTHON_MINOR_VERSION "${PYTHON_MINOR_VERSION}"
-      CACHE INTERNAL "TTK_PYTHON_MINOR_VERSION")
-
-    if(TTK_PYTHON_MAJOR_VERSION)
-      message(STATUS "Python version: ${TTK_PYTHON_MAJOR_VERSION}.${TTK_PYTHON_MINOR_VERSION}")
-    else()
-      message(STATUS "Python version: NOT-FOUND")
-    endif()
-
-    find_path(PYTHON_NUMPY_INCLUDE_DIR numpy/arrayobject.h PATHS
-      ${PYTHON_INCLUDE_DIRS}
-      /usr/lib/python${PYTHON_MAJOR_VERSION}.${PYTHON_MINOR_VERSION}/site-packages/numpy/core/include/
-      /usr/local/lib/python${PYTHON_MAJOR_VERSION}.${PYTHON_MINOR_VERSION}/site-packages/numpy/core/include)
-    if(PYTHON_NUMPY_INCLUDE_DIR)
-      message(STATUS "Numpy headers: ${PYTHON_NUMPY_INCLUDE_DIR}")
-      include_directories(SYSTEM ${PYTHON_NUMPY_INCLUDE_DIR})
-    else()
-      message(STATUS "Numpy headers: NOT-FOUND")
-    endif()
-  endif()
-
-  if(PYTHON_NUMPY_INCLUDE_DIR)
-    option(TTK_ENABLE_SCIKIT_LEARN "Enable scikit-learn support" ON)
-  else()
-    option(TTK_ENABLE_SCIKIT_LEARN "Enable scikit-learn support" OFF)
-    message(STATUS 
-      "Improper python/numpy setup. Disabling sckikit-learn support in TTK.")
   endif()
 
 endfunction()
