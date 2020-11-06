@@ -9,7 +9,7 @@ ttk_add_base_library(harmonicField
     triangulation
     )
 
-if (EIGEN3_FOUND)
+if(TTK_ENABLE_EIGEN)
   target_compile_definitions(harmonicField PRIVATE TTK_ENABLE_EIGEN)
   target_include_directories(harmonicField SYSTEM PRIVATE ${EIGEN3_INCLUDE_DIR})
 endif()

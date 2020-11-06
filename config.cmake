@@ -101,13 +101,13 @@ if(TTK_BUILD_DOCUMENTATION)
       DIRECTORY
         ${CMAKE_CURRENT_BINARY_DIR}/doc/html
       DESTINATION
-        ${CMAKE_INSTALL_PREFIX}/share/doc/ttk
+        ${CMAKE_INSTALL_DATAROOTDIR}/doc/ttk
         )
     install(
       DIRECTORY
         ${CMAKE_SOURCE_DIR}/doc/img
       DESTINATION
-        ${CMAKE_INSTALL_PREFIX}/share/doc/ttk
+        ${CMAKE_INSTALL_DATAROOTDIR}/doc/ttk
         )
   endif()
 endif()
@@ -254,24 +254,40 @@ else()
   message(STATUS "Spectra not found, disabling Spectra support in TTK.")
 endif()
 
-# scikit-learn support is disabled by default for now under MacOs
-if(APPLE)
-  option(TTK_ENABLE_SCIKIT_LEARN "Enable scikit-learn support" OFF)
-  message(STATUS "Disabling scikit-learn support by default under MacOs.")
-endif()
+find_package(Python3 COMPONENTS Development NumPy)
 
-if(NOT APPLE)
-  if(MSVC)
-    option(TTK_ENABLE_OPENMP "Enable OpenMP support" FALSE)
+if(Python3_FOUND)
+  include_directories(SYSTEM ${Python3_INCLUDE_DIRS})
+
+  set(TTK_PYTHON_MAJOR_VERSION "${Python3_VERSION_MAJOR}"
+    CACHE INTERNAL "TTK_PYTHON_MAJOR_VERSION")
+  set(TTK_PYTHON_MINOR_VERSION "${Python3_VERSION_MINOR}"
+    CACHE INTERNAL "TTK_PYTHON_MINOR_VERSION")
+
+  if(Python3_NumPy_FOUND AND NOT APPLE)
+    option(TTK_ENABLE_SCIKIT_LEARN "Enable scikit-learn support" ON)
+  elseif(APPLE)
+    # scikit-learn support is disabled by default for now under macOS
+    option(TTK_ENABLE_SCIKIT_LEARN "Enable scikit-learn support" OFF)
+    message(STATUS "Disabling scikit-learn support by default under macOS.")
   else()
-    option(TTK_ENABLE_OPENMP "Enable OpenMP support" TRUE)
+    option(TTK_ENABLE_SCIKIT_LEARN "Enable scikit-learn support" OFF)
+    message(STATUS
+      "Improper Python/NumPy setup. Disabling scikit-learn support in TTK.")
   endif()
 endif()
+
+if(MSVC)
+  option(TTK_ENABLE_OPENMP "Enable OpenMP support" FALSE)
+else()
+  option(TTK_ENABLE_OPENMP "Enable OpenMP support" TRUE)
+endif()
+
 option(TTK_ENABLE_MPI "Enable MPI support" FALSE)
 
 if(TTK_ENABLE_OPENMP)
   find_package(OpenMP REQUIRED)
-  if(OPENMP_FOUND)
+  if(OpenMP_CXX_FOUND)
     option(TTK_ENABLE_OMP_PRIORITY
       "Gives tasks priority, high perf improvement"
       OFF

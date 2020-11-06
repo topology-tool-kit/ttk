@@ -53,17 +53,8 @@ macro(ttk_add_vtk_module)
       vtk_module_link_options(${TTK_NAME} PRIVATE ${TTK_LINKER_FLAGS})
     endif()
 
-    install(
-      TARGETS
-        ${TTK_NAME}
-      EXPORT
-        TTKVTKTargets
-      RUNTIME DESTINATION
-        bin/ttk
-      ARCHIVE DESTINATION
-        lib/ttk
-      LIBRARY DESTINATION
-        lib/ttk
+    install(TARGETS ${TTK_NAME}
+      EXPORT TTKVTKTargets
       )
   endif()
 

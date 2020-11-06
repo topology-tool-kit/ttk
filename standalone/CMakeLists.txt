@@ -20,4 +20,4 @@ foreach(STANDALONE ${STANDALONE_DIRS})
   endif()
 endforeach()
 
-install(DIRECTORY textures DESTINATION share/ttk)
+install(DIRECTORY textures DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/ttk")

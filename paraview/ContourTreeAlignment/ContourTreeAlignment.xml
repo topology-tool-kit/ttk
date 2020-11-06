@@ -186,7 +186,7 @@
             ${DEBUG_WIDGETS}
 
             <Hints>
-                <ShowInMenu category="TTK - Misc" />
+                <ShowInMenu category="TTK - Ensemble Scalar Data" />
             </Hints>
         </SourceProxy>
     </ProxyGroup>

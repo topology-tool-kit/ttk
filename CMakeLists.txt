@@ -6,8 +6,10 @@ if("${PROJECT_SOURCE_DIR}" STREQUAL "${PROJECT_BINARY_DIR}")
   message(FATAL_ERROR "Build in sources is not supported by TTK, please use a separate build folder")
 endif()
 
+include(CMakeDependentOption)
+
 option(TTK_BUILD_VTK_WRAPPERS "Build the TTK VTK Wrappers" ON)
-option(TTK_BUILD_PARAVIEW_PLUGINS "Build the TTK ParaView Plugins" ON)
+cmake_dependent_option(TTK_BUILD_PARAVIEW_PLUGINS "Build the TTK ParaView Plugins" ON "TTK_BUILD_VTK_WRAPPERS" OFF)
 option(TTK_BUILD_STANDALONE_APPS "Build the TTK Standalone Applications" ON)
 option(TTK_WHITELIST_MODE "Explicitely enable each filter" OFF)
 mark_as_advanced(TTK_WHITELIST_MODE BUILD_SHARED_LIBS)
@@ -32,10 +34,28 @@ set(CPACK_GENERATOR "DEB")
 set(CPACK_PACKAGE_CONTACT "Julien Tierny <julien.tierny@sorbonne-universite.fr>")
 set(CPACK_PACKAGE_VENDOR "LIP6 - Sorbonne Université")
 set(CPACK_PACKAGE_HOMEPAGE_URL "https://topology-tool-kit.github.io/")
+if(NOT APPLE)
+  set(CPACK_RESOURCE_FILE_LICENSE ${CMAKE_CURRENT_SOURCE_DIR}/LICENSE)
+  set(CPACK_RESOURCE_FILE_README ${CMAKE_CURRENT_SOURCE_DIR}/README.md)
+else()
+  # macOS needs license & readme files ending with .txt
+  configure_file(LICENSE License.txt COPYONLY)
+  configure_file(README.md Readme.txt COPYONLY)
+  set(CPACK_RESOURCE_FILE_LICENSE ${PROJECT_BINARY_DIR}/License.txt)
+  set(CPACK_RESOURCE_FILE_README ${PROJECT_BINARY_DIR}/Readme.txt)
+endif()
 set(CPACK_DEBIAN_PACKAGE_DEPENDS
   "ttk-paraview (= 5.8.1), python3-sklearn, libboost-system-dev, python3-dev, libgraphviz-dev, libsqlite3-dev")
 # autogenerate dependency information
 set (CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
+# package will be installed under %ProgramFiles%\${CPACK_PACKAGE_INSTALL_DIRECTORY} on Windows
+set(CPACK_PACKAGE_INSTALL_DIRECTORY "TTK")
+# let the installer uninstall previous installations on Windows
+set(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL ON)
+# generate components, fix productbuild packaging for macOS
+if(APPLE)
+  set(CPACK_COMPONENTS_ALL Unspecified python development)
+endif()
 include(CPack)
 
 if(TTK_BUILD_STANDALONE_APPS AND NOT TTK_BUILD_VTK_WRAPPERS)
@@ -79,7 +99,7 @@ install(
   NAMESPACE
     ttk::base::
   DESTINATION
-    lib/cmake/ttk
+    "${CMAKE_INSTALL_LIBDIR}/cmake/ttkBase"
   )
 
 configure_file(core/base/TTKBaseConfig.cmake.in TTKBaseConfig.cmake @ONLY)
@@ -87,7 +107,7 @@ install(
   FILES
     "${CMAKE_CURRENT_BINARY_DIR}/TTKBaseConfig.cmake"
   DESTINATION
-    lib/cmake/ttk
+    "${CMAKE_INSTALL_LIBDIR}/cmake/ttkBase"
   )
 
 
@@ -95,30 +115,6 @@ install(
 # ---------------
 
 set(VTKWRAPPER_DIR "${CMAKE_CURRENT_LIST_DIR}/core/vtk/")
-
-if(TTK_BUILD_PARAVIEW_PLUGINS)
-  include(CMake/ParaViewFilter.cmake)
-  add_compile_definitions("TTK_BUILD_PARAVIEW_PLUGINS")
-
-  # Install location
-  if(NOT "$ENV{PV_PLUGIN_PATH}" STREQUAL "")
-    set(TTK_INSTALL_PLUGIN_DIR
-      $ENV{PV_PLUGIN_PATH}
-      CACHE
-      PATH
-        "Directory where the ParaView plugin will be installed"
-      )
-  else()
-    set(TTK_INSTALL_PLUGIN_DIR
-      ${ParaView_DIR}/../../../bin/plugins/
-      CACHE
-      PATH
-      "Directory where the ParaView plugin will be installed"
-      )
-  endif()
-
-  add_subdirectory(paraview)
-endif()
 
 # VTK Wrappers
 # ------------
@@ -151,7 +147,7 @@ if(TTK_BUILD_VTK_WRAPPERS)
     NAMESPACE
       ttk::vtk::
     DESTINATION
-      lib/cmake/ttk
+      ${CMAKE_INSTALL_LIBDIR}/cmake/ttkVTK
     )
 
   configure_file(core/vtk/TTKVTKConfig.cmake.in TTKVTKConfig.cmake @ONLY)
@@ -159,8 +155,32 @@ if(TTK_BUILD_VTK_WRAPPERS)
     FILES
       "${CMAKE_CURRENT_BINARY_DIR}/TTKVTKConfig.cmake"
     DESTINATION
-      lib/cmake/ttk
+      ${CMAKE_INSTALL_LIBDIR}/cmake/ttkVTK
     )
+endif()
+
+if(TTK_BUILD_PARAVIEW_PLUGINS)
+  include(CMake/ParaViewFilter.cmake)
+  add_compile_definitions("TTK_BUILD_PARAVIEW_PLUGINS")
+
+  # Install location
+  if(NOT "$ENV{PV_PLUGIN_PATH}" STREQUAL "")
+    set(TTK_INSTALL_PLUGIN_DIR
+        $ENV{PV_PLUGIN_PATH}
+        CACHE
+        PATH
+        "Directory where the ParaView plugin will be installed"
+        )
+  else()
+    set(TTK_INSTALL_PLUGIN_DIR
+        "${CMAKE_INSTALL_BINDIR}/plugins"
+        CACHE
+        PATH
+        "Directory where the ParaView plugin will be installed"
+        )
+  endif()
+
+  add_subdirectory(paraview)
 endif()
 
 # Standalones
@@ -168,17 +188,6 @@ endif()
 
 if(TTK_BUILD_STANDALONE_APPS)
   add_subdirectory(standalone)
-endif()
-
-# Environment variables
-# ---------------------
-
-if(${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
-  configure_file(ttk-env.sh.in ttk-env.sh)
-  install(
-    FILES "${PROJECT_BINARY_DIR}/ttk-env.sh"
-    DESTINATION "${CMAKE_INSTALL_FULL_SYSCONFDIR}/profile.d"
-    )
 endif()
 
 # Status

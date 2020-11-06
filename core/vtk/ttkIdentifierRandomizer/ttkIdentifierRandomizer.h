@@ -44,10 +44,11 @@ public:
   static ttkIdentifierRandomizer *New();
   vtkTypeMacro(ttkIdentifierRandomizer, ttkAlgorithm);
 
+  vtkGetMacro(RandomSeed, int);
+  vtkSetMacro(RandomSeed, int);
+
 protected:
   ttkIdentifierRandomizer();
-
-  ~ttkIdentifierRandomizer() override;
 
   int FillInputPortInformation(int port, vtkInformation *info) override;
 
@@ -58,4 +59,5 @@ protected:
                   vtkInformationVector *outputVector) override;
 
 private:
+  int RandomSeed{};
 };
