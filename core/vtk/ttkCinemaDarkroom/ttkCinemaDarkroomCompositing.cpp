@@ -1,13 +1,11 @@
 #include <ttkCinemaDarkroomCompositing.h>
 
+#include <vtkObjectFactory.h>
 #include <vtkInformation.h>
 #include <vtkInformationVector.h>
-
-#include <vtkDataArray.h>
-#include <vtkImageData.h>
-#include <vtkPointData.h>
-#include <vtkSmartPointer.h>
 #include <vtkUnsignedCharArray.h>
+#include <vtkPointData.h>
+#include <vtkImageData.h>
 
 #include <ttkMacros.h>
 #include <ttkUtils.h>

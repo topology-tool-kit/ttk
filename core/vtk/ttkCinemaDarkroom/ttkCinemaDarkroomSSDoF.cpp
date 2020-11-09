@@ -1,16 +1,8 @@
 #include <ttkCinemaDarkroomSSDoF.h>
 
+#include <vtkObjectFactory.h>
 #include <vtkInformation.h>
-
-#include <vtkDataArray.h>
-#include <vtkDataSet.h>
 #include <vtkImageData.h>
-#include <vtkPointData.h>
-#include <vtkSmartPointer.h>
-#include <vtkUnsignedCharArray.h>
-
-#include <ttkMacros.h>
-#include <ttkUtils.h>
 
 vtkStandardNewMacro(ttkCinemaDarkroomSSDoF);
 
@@ -39,7 +31,7 @@ float computeCircleOfConfusion(
     const in vec2 coord
 ){
     float s2 = readDepth(coord);
-    float c = cAperture * abs(s2-cDistance);
+    float c = cAperture * abs(s2-cFocalDepth);
     return clamp(c, 0.0, cMaxBlur);
 }
 
@@ -134,7 +126,7 @@ int ttkCinemaDarkroomSSDoF::RequestData(vtkInformation *request,
   this->AddReplacement("cRadius", {this->Radius});
   this->AddReplacement("cMaxBlur", {this->MaxBlur});
   this->AddReplacement("cAperture", {this->Aperture});
-  this->AddReplacement("cDistance", {this->Distance});
+  this->AddReplacement("cFocalDepth", {this->FocalDepth});
 
   if(!this->AddTexture(outputImage, 0, 0))
     return 0;
