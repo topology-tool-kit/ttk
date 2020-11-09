@@ -27,9 +27,8 @@ point-data scalar fields to be used as 2D coordinates.
         <DataTypeDomain name="input_type">
           <DataType value="vtkPointSet"/>
         </DataTypeDomain>
-<!--         <InputArrayDomain name="input_scalars" number_of_components="1"> -->
-<!--           <Property name="Input" function="FieldDataSelection" /> -->
-<!--         </InputArrayDomain> -->
+        <InputArrayDomain name="uv_comp" number_of_components="1" attribute_type="point" optional="1" />
+        <InputArrayDomain name="coords_array" number_of_components="3" attribute_type="point" optional="1" />
         <Documentation>
           Data-set to texture map.
         </Documentation>
@@ -41,11 +40,17 @@ point-data scalar fields to be used as 2D coordinates.
                      number_of_elements="1"
                      default_values="0">
         <BooleanDomain name="bool"/>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="Use3DCoordinatesArray"
+                                   value="0" />
+        </Hints>
       </IntVectorProperty>
 
-      <IntVectorProperty name="UseTextureCoordinates"
-                     command="SetUseTextureCoordinates"
-                     label="Use Texture Coordinates"
+      <IntVectorProperty name="Use3DCoordinatesArray"
+                     command="SetUse3DCoordinatesArray"
+                     label="Use 3D Coordinates Array"
                      number_of_elements="1"
                      default_values="0">
         <BooleanDomain name="bool"/>
@@ -57,22 +62,53 @@ point-data scalar fields to be used as 2D coordinates.
         </Hints>
       </IntVectorProperty>
 
+      <IntVectorProperty name="UseTextureCoordinates"
+                     command="SetUseTextureCoordinates"
+                     label="Use Texture Coordinates"
+                     number_of_elements="1"
+                     default_values="0">
+        <BooleanDomain name="bool"/>
+        <Hints>
+          <PropertyWidgetDecorator type="CompositeDecorator">
+            <Expression type="and">
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="Use3DCoordinatesArray"
+                                       value="0" />
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="ProjectPersistenceDiagram"
+                                       value="0" />
+            </Expression>
+          </PropertyWidgetDecorator>
+        </Hints>
+      </IntVectorProperty>
+
       <StringVectorProperty name="UComponentNew" label="U Component"
                             command="SetInputArrayToProcess"
                             element_types="0 0 0 0 2"
                             number_of_elements="5" default_values="0">
         <ArrayListDomain
-          name="array_list"
-          default_values="0">
+            name="array_list"
+            input_domain_name="uv_comp"
+            default_values="0">
           <RequiredProperties>
             <Property name="Input" function="Input" />
           </RequiredProperties>
         </ArrayListDomain>
         <Hints>
-          <PropertyWidgetDecorator type="GenericDecorator"
-                                   mode="visibility"
-                                   property="ProjectPersistenceDiagram"
-                                   value="0" />
+          <PropertyWidgetDecorator type="CompositeDecorator">
+            <Expression type="and">
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="Use3DCoordinatesArray"
+                                       value="0" />
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="ProjectPersistenceDiagram"
+                                       value="0" />
+            </Expression>
+          </PropertyWidgetDecorator>
         </Hints>
         <Documentation>
           Select the scalar field to use as the U component.
@@ -84,8 +120,39 @@ point-data scalar fields to be used as 2D coordinates.
                             element_types="0 0 0 0 2"
                             number_of_elements="5" default_values="1">
         <ArrayListDomain
-          name="array_list"
-          default_values="1">
+            name="array_list"
+            input_domain_name="uv_comp"
+            default_values="1">
+          <RequiredProperties>
+            <Property name="Input" function="Input" />
+          </RequiredProperties>
+        </ArrayListDomain>
+        <Hints>
+          <PropertyWidgetDecorator type="CompositeDecorator">
+            <Expression type="and">
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="Use3DCoordinatesArray"
+                                       value="0" />
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="ProjectPersistenceDiagram"
+                                       value="0" />
+            </Expression>
+          </PropertyWidgetDecorator>
+        </Hints>
+        <Documentation>
+          Select the scalar field to use as the V component.
+        </Documentation>
+      </StringVectorProperty>
+
+      <StringVectorProperty name="3DCoordinates" label="3D Coordinates"
+                            command="SetInputArrayToProcess"
+                            element_types="0 0 0 0 2"
+                            number_of_elements="5" default_values="2">
+        <ArrayListDomain
+            name="array_list"
+            input_domain_name="coords_array">
           <RequiredProperties>
             <Property name="Input" function="Input" />
           </RequiredProperties>
@@ -93,19 +160,22 @@ point-data scalar fields to be used as 2D coordinates.
         <Hints>
           <PropertyWidgetDecorator type="GenericDecorator"
                                    mode="visibility"
-                                   property="ProjectPersistenceDiagram"
-                                   value="0" />
+                                   property="Use3DCoordinatesArray"
+                                   value="1" />
         </Hints>
         <Documentation>
-          Select the scalar field to use as the V component.
+          Select the 3D coordinates array.
         </Documentation>
       </StringVectorProperty>
 
+
       <PropertyGroup panel_widget="Line" label="Input options">
         <Property name="UseTextureCoordinates" />
+        <Property name="Use3DCoordinatesArray" />
         <Property name="ProjectPersistenceDiagram" />
         <Property name="UComponentNew" />
         <Property name="VComponentNew" />
+        <Property name="3DCoordinates" />
       </PropertyGroup>
 
       ${DEBUG_WIDGETS}

@@ -237,6 +237,7 @@ int ttkProjectionFromField::RequestData(vtkInformation *request,
   vtkDataArray *inputScalarFieldU = nullptr;
   vtkDataArray *inputScalarFieldV = nullptr;
   vtkDataArray *textureCoordinates = nullptr;
+  vtkDataArray *inputCoordsArray{};
 
   if(UseTextureCoordinates) {
     textureCoordinates = input->GetPointData()->GetTCoords();
@@ -245,6 +246,15 @@ int ttkProjectionFromField::RequestData(vtkInformation *request,
       return -3;
 
     printMsg("Starting computation with texture coordinates...");
+  } else if(this->Use3DCoordinatesArray) {
+    inputCoordsArray = this->GetInputArrayToProcess(2, inputVector);
+    if(inputCoordsArray == nullptr) {
+      return 0;
+    }
+    printMsg("Starting computation...");
+    printMsg(std::vector<std::vector<std::string>>{
+      {"  Coordinates Array", inputCoordsArray->GetName()}});
+
   } else {
 
     inputScalarFieldU = this->GetInputArrayToProcess(0, inputVector);
@@ -262,38 +272,25 @@ int ttkProjectionFromField::RequestData(vtkInformation *request,
   }
 
   vtkNew<vtkPoints> pointSet{};
-
-  if(pointSet->GetNumberOfPoints() != input->GetNumberOfPoints()) {
-    pointSet->SetNumberOfPoints(input->GetNumberOfPoints());
-  }
-
-  std::vector<std::vector<double>> points(threadNumber_);
-
-  for(int i = 0; i < threadNumber_; i++) {
-    points[i].resize(3);
-    points[i][2] = 0;
-  }
+  pointSet->SetNumberOfPoints(input->GetNumberOfPoints());
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(int i = 0; i < input->GetNumberOfPoints(); i++) {
 
-#ifdef TTK_ENABLE_OPENMP
-    const int threadId = omp_get_thread_num();
-#else
-    const int threadId = 0;
-#endif
+    std::array<double, 3> pt{};
 
     if(UseTextureCoordinates) {
-      textureCoordinates->GetTuple(i, points[threadId].data());
+      textureCoordinates->GetTuple(i, pt.data());
+    } else if(this->Use3DCoordinatesArray) {
+      inputCoordsArray->GetTuple(i, pt.data());
     } else {
-      points[threadId][0] = inputScalarFieldU->GetComponent(i, 0);
-      points[threadId][1] = inputScalarFieldV->GetComponent(i, 0);
+      pt[0] = inputScalarFieldU->GetComponent(i, 0);
+      pt[1] = inputScalarFieldV->GetComponent(i, 0);
     }
 
-    pointSet->SetPoint(
-      i, points[threadId][0], points[threadId][1], points[threadId][2]);
+    pointSet->SetPoint(i, pt[0], pt[1], pt[2]);
   }
 
   output->SetPoints(pointSet);

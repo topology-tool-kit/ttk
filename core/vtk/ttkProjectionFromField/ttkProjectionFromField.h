@@ -57,6 +57,9 @@ public:
   vtkSetMacro(UseTextureCoordinates, bool);
   vtkGetMacro(UseTextureCoordinates, bool);
 
+  vtkSetMacro(Use3DCoordinatesArray, bool);
+  vtkGetMacro(Use3DCoordinatesArray, bool);
+
   vtkSetMacro(ProjectPersistenceDiagram, bool);
   vtkGetMacro(ProjectPersistenceDiagram, bool);
 
@@ -93,4 +96,5 @@ protected:
 private:
   bool ProjectPersistenceDiagram{false};
   bool UseTextureCoordinates{false};
+  bool Use3DCoordinatesArray{false};
 };
