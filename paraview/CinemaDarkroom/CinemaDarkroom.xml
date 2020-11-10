@@ -1,5 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ServerManagerConfiguration>
+    <ProxyGroup name="sources">
+      <SourceProxy name="ttkCinemaDarkroomCamera" class="ttkCinemaDarkroomCamera" label="TTK-CD Camera">
+          <Documentation long_help="Cinema Darkroom Compositing" short_help="Cinema Darkroom Compositing">
+
+          </Documentation>
+
+          <Property name="Update Camera" command="Modified" panel_widget="command_button">
+              <Documentation>Update Camera.</Documentation>
+          </Property>
+
+          ${DEBUG_WIDGETS}
+
+          <Hints>
+              <ShowInMenu category="TTK" />
+          </Hints>
+        </SourceProxy>
+    </ProxyGroup>
     <ProxyGroup name="filters">
 
         <!-- ////////////////////////////////////////////////////////////////-->
