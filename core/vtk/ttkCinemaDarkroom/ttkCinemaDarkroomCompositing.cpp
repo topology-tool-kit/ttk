@@ -1,11 +1,11 @@
 #include <ttkCinemaDarkroomCompositing.h>
 
-#include <vtkObjectFactory.h>
+#include <vtkImageData.h>
 #include <vtkInformation.h>
 #include <vtkInformationVector.h>
-#include <vtkUnsignedCharArray.h>
+#include <vtkObjectFactory.h>
 #include <vtkPointData.h>
-#include <vtkImageData.h>
+#include <vtkUnsignedCharArray.h>
 
 #include <ttkMacros.h>
 #include <ttkUtils.h>
@@ -72,7 +72,7 @@ int ttkCinemaDarkroomCompositing::RequestData(
 
   for(size_t i = 0; i < nInputs; i++) {
     auto input = vtkImageData::GetData(inputVector[0], i);
-    if(!input){
+    if(!input) {
       this->printErr("Input is not a list of vtkImageData objects.");
       return 0;
     }
@@ -84,7 +84,7 @@ int ttkCinemaDarkroomCompositing::RequestData(
     // get depth arrays
     auto depth0Array = this->GetInputArrayToProcess(0, output);
     auto depth1Array = this->GetInputArrayToProcess(0, input);
-    if(!depth0Array || !depth1Array){
+    if(!depth0Array || !depth1Array) {
       this->printErr("Unable to retrieve depth arrays.");
       return 0;
     }

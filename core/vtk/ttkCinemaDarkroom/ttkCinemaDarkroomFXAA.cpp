@@ -1,8 +1,8 @@
 #include <ttkCinemaDarkroomFXAA.h>
 
-#include <vtkObjectFactory.h>
-#include <vtkInformation.h>
 #include <vtkImageData.h>
+#include <vtkInformation.h>
+#include <vtkObjectFactory.h>
 
 vtkStandardNewMacro(ttkCinemaDarkroomFXAA);
 

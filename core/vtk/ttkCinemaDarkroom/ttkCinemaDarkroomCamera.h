@@ -5,7 +5,7 @@
 ///
 /// \brief This source generates a Cinema Darkroom Camera.
 ///
-/// \param Output vtkPointSet.
+/// \param Output vtkUnstructuredGrid.
 ///
 /// This source generates a single vertex with point data to represent a camera
 /// that can be used for Cinema Darkroom rendering. The source can also be
@@ -21,9 +21,9 @@
 
 class TTKCINEMADARKROOM_EXPORT ttkCinemaDarkroomCamera : public ttkAlgorithm {
 
-  double Position[3]{0,0,0};
-  double Up[3]{0,0,1};
-  double Focus[3]{0,0,0};
+  double Position[3]{0, 0, 0};
+  double Up[3]{0, 0, 1};
+  double Focus[3]{0, 0, 0};
 
 public:
   static ttkCinemaDarkroomCamera *New();
@@ -48,5 +48,4 @@ protected:
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;
-
 };
