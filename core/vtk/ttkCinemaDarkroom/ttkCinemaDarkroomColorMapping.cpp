@@ -115,13 +115,13 @@ int ttkCinemaDarkroomColorMapping::RequestData(
   if(this->ColorMap == -1) { // Solid
     manualColorMap.resize(8);
     manualColorMap[0] = 0;
-    manualColorMap[1] = this->SolidColor[0];
-    manualColorMap[2] = this->SolidColor[1];
-    manualColorMap[3] = this->SolidColor[2];
+    manualColorMap[1] = this->SingleColor[0];
+    manualColorMap[2] = this->SingleColor[1];
+    manualColorMap[3] = this->SingleColor[2];
     manualColorMap[4] = 1;
-    manualColorMap[5] = this->SolidColor[0];
-    manualColorMap[6] = this->SolidColor[1];
-    manualColorMap[7] = this->SolidColor[2];
+    manualColorMap[5] = this->SingleColor[0];
+    manualColorMap[6] = this->SingleColor[1];
+    manualColorMap[7] = this->SingleColor[2];
     colorMap = &manualColorMap;
   } else if(this->ColorMap == -2) {
     int status = ttkUtils::stringListToDoubleVector(

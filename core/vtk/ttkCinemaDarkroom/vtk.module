@@ -5,5 +5,4 @@ DEPENDS
   VTK::FiltersSources
   VTK::RenderingCore
   VTK::RenderingOpenGL2
-  ParaView::RemotingViews
-  ParaView::pqComponents
+  VTK::PythonInterpreter

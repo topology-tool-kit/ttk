@@ -72,6 +72,10 @@ int ttkCinemaDarkroomCompositing::RequestData(
 
   for(size_t i = 0; i < nInputs; i++) {
     auto input = vtkImageData::GetData(inputVector[0], i);
+    if(!input){
+      this->printErr("Input is not a list of vtkImageData objects.");
+      return 0;
+    }
     if(i == 0) {
       output->DeepCopy(input);
       continue;
@@ -80,6 +84,11 @@ int ttkCinemaDarkroomCompositing::RequestData(
     // get depth arrays
     auto depth0Array = this->GetInputArrayToProcess(0, output);
     auto depth1Array = this->GetInputArrayToProcess(0, input);
+    if(!depth0Array || !depth1Array){
+      this->printErr("Unable to retrieve depth arrays.");
+      return 0;
+    }
+
     size_t nPixels = depth0Array->GetNumberOfTuples();
 
     // compute mask

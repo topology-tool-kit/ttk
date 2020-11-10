@@ -3,12 +3,29 @@
     <ProxyGroup name="sources">
       <SourceProxy name="ttkCinemaDarkroomCamera" class="ttkCinemaDarkroomCamera" label="TTK-CD Camera">
           <Documentation long_help="Cinema Darkroom Compositing" short_help="Cinema Darkroom Compositing">
-
+This source generates a single vertex with point data to represent a camera that can be used for Cinema Darkroom rendering. The source can also be synchronized with the camera of an active view port.
           </Documentation>
 
-          <Property name="Update Camera" command="Modified" panel_widget="command_button">
-              <Documentation>Update Camera.</Documentation>
+          <DoubleVectorProperty name="Position" command="SetPosition" number_of_elements="3" default_values="1 1 1">
+            <Documentation>Camera Position.</Documentation>
+          </DoubleVectorProperty>
+          <DoubleVectorProperty name="Up" command="SetUp" number_of_elements="3" default_values="0 0 1">
+            <Documentation>Camera Up-Vector.</Documentation>
+          </DoubleVectorProperty>
+          <DoubleVectorProperty name="Focus" command="SetFocus" number_of_elements="3" default_values="0 0 0">
+            <Documentation>Camera Focus.</Documentation>
+          </DoubleVectorProperty>
+
+          <Property name="SyncCamera" command="SyncWithParaViewCamera" panel_widget="command_button">
+              <Documentation>Synchronize parameters with Camera of active ParaView renderview.</Documentation>
           </Property>
+
+          <PropertyGroup panel_widget="Line" label="Output Options">
+              <Property name="Position" />
+              <Property name="Up" />
+              <Property name="Focus" />
+              <Property name="SyncCamera" />
+          </PropertyGroup>
 
           ${DEBUG_WIDGETS}
 
@@ -33,6 +50,7 @@ Technical Report LA-UR-17-25072, Los Alamos National Laboratory. 2018.
 J. Lukasczyk, C. Garth, M. Larsen, W. Engelke, I. Hotz, D. Rogers, J. Ahrens, and R. Maciejewski.
 IEEE 10th Symposium on Large Data Analysis and Visualization (LDAV). 2020.
           </Documentation>
+
           <InputProperty name="Input" port_index="0" clean_command="RemoveAllInputs" command="AddInputConnection" multiple_input="1">
               <ProxyGroupDomain name="groups">
                   <Group name="sources" />
@@ -42,10 +60,10 @@ IEEE 10th Symposium on Large Data Analysis and Visualization (LDAV). 2020.
                   <DataType value="vtkImageData" />
               </DataTypeDomain>
               <InputArrayDomain name="input_array" attribute_type="point" />
-              <Documentation>vtkImageData objects that are going to be composited.</Documentation>
+              <Documentation>A vtkImageData object.</Documentation>
           </InputProperty>
 
-          <StringVectorProperty name="Depth" command="SetInputArrayToProcess" element_types="0 0 0 0 2" number_of_elements="5">
+          <StringVectorProperty name="Depth" command="SetInputArrayToProcess" element_types="0 0 0 0 2" number_of_elements="5" default_values="0">
               <ArrayListDomain attribute_type="Scalars" name="array_list">
                   <RequiredProperties>
                       <Property function="Input" name="Input" />
@@ -69,7 +87,7 @@ IEEE 10th Symposium on Large Data Analysis and Visualization (LDAV). 2020.
 
         <SourceProxy name="ttkCinemaDarkroomColorMapping" class="ttkCinemaDarkroomColorMapping" label="TTK-CD ColorMapping">
           <Documentation long_help="Cinema Darkroom Color Mapping" short_help="Cinema Darkroom Color Mapping">
-This filter maps scalars to either a fixed color, a manually defined color map, or any predefined color map.
+This filter maps scalars to either a single color, a manually defined color map, or any predefined color map.
 
 "Cinema Database Specification - Dietrich Release v1.2".
 D. Rogers, J. Woodring, J. Ahrens, J. Patchett, and J. Lukasczyk.
@@ -88,10 +106,11 @@ IEEE 10th Symposium on Large Data Analysis and Visualization (LDAV). 2020.
               <DataTypeDomain name="input_type">
                   <DataType value="vtkImageData" />
               </DataTypeDomain>
+              <InputArrayDomain name="input_array" attribute_type="point" />
               <Documentation>A vtkImageData object.</Documentation>
           </InputProperty>
 
-          <StringVectorProperty name="Scalars" command="SetInputArrayToProcess" element_types="0 0 0 0 2" number_of_elements="5">
+          <StringVectorProperty name="Scalars" command="SetInputArrayToProcess" element_types="0 0 0 0 2" number_of_elements="5" default_values="0">
               <ArrayListDomain attribute_type="Scalars" name="array_list">
                   <RequiredProperties>
                       <Property function="Input" name="Input" />
@@ -120,7 +139,7 @@ IEEE 10th Symposium on Large Data Analysis and Visualization (LDAV). 2020.
             <Documentation>The color that is used for Not-A-Number values.</Documentation>
           </DoubleVectorProperty>
 
-          <DoubleVectorProperty name="FixedColor" command="SetSolidColor" number_of_elements="3" default_values="0 0 0" panel_widget="color_selector">
+          <DoubleVectorProperty name="SingleColor" command="SetSingleColor" number_of_elements="3" default_values="0 0 0" panel_widget="color_selector">
             <Documentation>The color that is going to be used for fixed color mapping.</Documentation>
             <Hints>
                 <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="ColorMap" value="-1" />
@@ -141,7 +160,7 @@ IEEE 10th Symposium on Large Data Analysis and Visualization (LDAV). 2020.
           <PropertyGroup panel_widget="Line" label="Output Options">
               <Property name="ColorMap" />
               <Property name="NANColor" />
-              <Property name="FixedColor" />
+              <Property name="SingleColor" />
               <Property name="ManualColorMap" />
           </PropertyGroup>
 
@@ -472,7 +491,5 @@ IEEE 10th Symposium on Large Data Analysis and Visualization (LDAV). 2020.
               <ShowInMenu category="TTK - Cinema" />
           </Hints>
         </SourceProxy>
-
     </ProxyGroup>
-
 </ServerManagerConfiguration>

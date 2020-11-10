@@ -8,8 +8,11 @@
 #include <vtkDoubleArray.h>
 #include <vtkPointData.h>
 
-#include <pqActiveObjects.h>
-#include <vtkSMRenderViewProxy.h>
+
+// #include <pqActiveObjects.h>
+// #include <vtkSMRenderViewProxy.h>
+
+#include <vtkPythonInterpreter.h>
 
 #include <ttkUtils.h>
 
@@ -17,6 +20,8 @@
 vtkStandardNewMacro(ttkCinemaDarkroomCamera);
 
 ttkCinemaDarkroomCamera::ttkCinemaDarkroomCamera() {
+  this->setDebugMsgPrefix("CinemaDarkroomCamera");
+
   this->SetNumberOfInputPorts(0);
   this->SetNumberOfOutputPorts(1);
 }
@@ -37,31 +42,60 @@ int ttkCinemaDarkroomCamera::FillOutputPortInformation(int port,
   return 0;
 }
 
+int ttkCinemaDarkroomCamera::SyncWithParaViewCamera(){
+  ttk::Timer timer;
+  this->printMsg(
+    "Updating Camera Parameters", 0, 0, 1, ttk::debug::LineMode::REPLACE);
+
+  std::string code(R"(
+from paraview.simple import GetActiveView
+from paraview.simple import FindSource
+
+self = FindSource("TTKCDCamera1")
+
+view = GetActiveView()
+if view and self:
+  self.Position = view.CameraPosition
+  self.Up = view.CameraViewUp
+  self.Focus = view.CameraFocalPoint
+)");
+
+  vtkPythonInterpreter::RunSimpleString( code.data() );
+
+
+  //   auto& activeObjects = pqActiveObjects::instance();
+
+  //   auto view = activeObjects.activeView();
+  //   if(!view){
+  //     this->printErr("Unable to retrieve active view.");
+  //     return 0;
+  //   }
+
+  //   auto proxy = dynamic_cast<vtkSMRenderViewProxy*>(view->getViewProxy());
+  //   if(!proxy) {
+  //     this->printErr("Unable to cast to vtkSMRenderViewProxy.");
+  //     return 0;
+  //   }
+
+  //   auto camera = proxy->GetActiveCamera();
+
+  //   this->SetUp( camera->GetViewUp() );
+  //   this->SetFocus( camera->GetFocalPoint() );
+  //   this->SetPosition( camera->GetPosition() );
+
+  this->printMsg( "Updating Camera Parameters", 1, timer.getElapsedTime(), 1 );
+
+  this->Modified();
+
+  return 1;
+}
+
 int ttkCinemaDarkroomCamera::RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) {
-
-  {
-    auto& activeObjects = pqActiveObjects::instance();
-
-    auto view = activeObjects.activeView();
-    if(!view){
-      this->printErr("Unable to retrieve active view.");
-      return 0;
-    }
-
-    auto proxy = dynamic_cast<vtkSMRenderViewProxy*>(view->getViewProxy());
-    if(!proxy) {
-      this->printErr("Unable to cast to vtkSMRenderViewProxy.");
-      return 0;
-    }
-
-    auto camera = proxy->GetActiveCamera();
-
-    this->SetUp( camera->GetViewUp() );
-    this->SetFocus( camera->GetFocalPoint() );
-    this->SetPosition( camera->GetPosition() );
-  }
+  ttk::Timer timer;
+  this->printMsg(
+    "Generating Camera", 0, 0, 1, ttk::debug::LineMode::REPLACE);
 
   auto output = vtkUnstructuredGrid::GetData(outputVector);
 
@@ -109,6 +143,9 @@ int ttkCinemaDarkroomCamera::RequestData(vtkInformation *request,
   auto pd = output->GetPointData();
   generateArray(pd, "CamUp", this->Up);
   generateArray(pd, "CamFocus", this->Focus);
+
+  this->printMsg(
+    "Generating Camera", 1, timer.getElapsedTime(), 1);
 
   return 1;
 }
