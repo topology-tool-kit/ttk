@@ -1,16 +1,8 @@
 #include <ttkCinemaDarkroomIBS.h>
 
-#include <vtkInformation.h>
-
-#include <vtkDataArray.h>
-#include <vtkDataSet.h>
 #include <vtkImageData.h>
-#include <vtkPointData.h>
-#include <vtkSmartPointer.h>
-#include <vtkUnsignedCharArray.h>
-
-#include <ttkMacros.h>
-#include <ttkUtils.h>
+#include <vtkInformation.h>
+#include <vtkObjectFactory.h>
 
 vtkStandardNewMacro(ttkCinemaDarkroomIBS);
 

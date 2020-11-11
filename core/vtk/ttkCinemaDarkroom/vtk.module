@@ -5,3 +5,4 @@ DEPENDS
   VTK::FiltersSources
   VTK::RenderingCore
   VTK::RenderingOpenGL2
+  VTK::PythonInterpreter

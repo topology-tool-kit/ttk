@@ -1,6 +1,7 @@
 NAME
   ttkCinemaDarkroom
 SOURCES
+  ttkCinemaDarkroomCamera.cpp
   ttkCinemaDarkroomShader.cpp
   ttkCinemaDarkroomIBS.cpp
   ttkCinemaDarkroomFXAA.cpp
@@ -11,6 +12,7 @@ SOURCES
   ttkCinemaDarkroomColorMapping.cpp
   ttkCinemaDarkroomColorMaps.cxx
 HEADERS
+  ttkCinemaDarkroomCamera.h
   ttkCinemaDarkroomShader.h
   ttkCinemaDarkroomIBS.h
   ttkCinemaDarkroomFXAA.h

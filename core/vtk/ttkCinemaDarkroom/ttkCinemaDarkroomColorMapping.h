@@ -33,7 +33,7 @@ private:
   double ValueRange[2]{0, 1};
   int ColorMap{0};
   std::string ManualColorMap{""};
-  double SolidColor[3]{0, 0, 0};
+  double SingleColor[3]{0, 0, 0};
   double NANColor[3]{0, 0, 0};
 
 public:
@@ -45,8 +45,8 @@ public:
   vtkGetMacro(ManualColorMap, std::string);
   vtkSetVector3Macro(NANColor, double);
   vtkGetVector3Macro(NANColor, double);
-  vtkSetVector3Macro(SolidColor, double);
-  vtkGetVector3Macro(SolidColor, double);
+  vtkSetVector3Macro(SingleColor, double);
+  vtkGetVector3Macro(SingleColor, double);
 
   static ttkCinemaDarkroomColorMapping *New();
   vtkTypeMacro(ttkCinemaDarkroomColorMapping, ttkCinemaDarkroomShader);
