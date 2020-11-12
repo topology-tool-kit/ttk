@@ -235,6 +235,21 @@ RegistryTriangulation
   // Cells
   int nCells = cells->GetNumberOfCells();
   if(nCells > 0) {
+    if(!cells->IsStorage64Bit()) {
+      if(cells->CanConvertTo64BitStorage()) {
+        this->printWrn("Converting the cell array to 64-bit storage");
+        bool success = cells->ConvertTo64BitStorage();
+        if(!success) {
+          this->printErr(
+            "Error converting the provided cell array to 64-bit storage");
+          return {};
+        }
+      } else {
+        this->printErr(
+          "Cannot convert the provided cell array to 64-bit storage");
+        return {};
+      }
+    }
     auto connectivity = static_cast<vtkIdType *>(
       ttkUtils::GetVoidPointer(cells->GetConnectivityArray()));
     auto offsets = static_cast<vtkIdType *>(
