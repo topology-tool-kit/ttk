@@ -33,7 +33,13 @@ This source generates a single vertex with point data to represent a camera that
               <ShowInMenu category="TTK" />
           </Hints>
         </SourceProxy>
+
     </ProxyGroup>
+
+    <!-- ////////////////////////////////////////////////////////////////////-->
+    <!-- ////////////////////////////////////////////////////////////////////-->
+    <!-- ////////////////////////////////////////////////////////////////////-->
+
     <ProxyGroup name="filters">
 
         <!-- ////////////////////////////////////////////////////////////////-->
@@ -484,6 +490,31 @@ IEEE 10th Symposium on Large Data Analysis and Visualization (LDAV). 2020.
               <Property name="FocalDepth" />
               <Property name="MaxBlur" />
           </PropertyGroup>
+
+          ${DEBUG_WIDGETS}
+
+          <Hints>
+              <ShowInMenu category="TTK - Cinema" />
+          </Hints>
+        </SourceProxy>
+
+        <!-- ////////////////////////////////////////////////////////////////-->
+
+        <SourceProxy name="ttkCinemaDarkroomNoise" class="ttkCinemaDarkroomNoise" label="TTK-CD Noise">
+          <Documentation long_help="Cinema Darkroom Noise" short_help="Cinema Darkroom Noise">
+This filters generates noise of different types.
+          </Documentation>
+
+          <InputProperty name="Input" command="SetInputConnection">
+              <ProxyGroupDomain name="groups">
+                  <Group name="sources" />
+                  <Group name="filters" />
+              </ProxyGroupDomain>
+              <DataTypeDomain name="input_type">
+                  <DataType value="vtkImageData" />
+              </DataTypeDomain>
+              <Documentation>A vtkImageData object.</Documentation>
+          </InputProperty>
 
           ${DEBUG_WIDGETS}
 
