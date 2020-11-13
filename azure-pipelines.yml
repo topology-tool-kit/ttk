@@ -535,7 +535,7 @@ jobs:
     # need to disable filters linked to rendering
   - script: |
       $(compilerInitialization)
-      set BOOST_ROOT=$(BOOST_ROOT_1_69_0)
+      set BOOST_ROOT=$(BOOST_ROOT_1_72_0)
       cmake -DBoost_NO_BOOST_CMAKE=ON -DCMAKE_POLICY_DEFAULT_CMP0074=NEW -DCMAKE_POLICY_DEFAULT_CMP0092=NEW -DCMAKE_C_COMPILER:FILEPATH="$(cCompiler)" -DBUILD_SHARED_LIBS:BOOL=ON -DCMAKE_CXX_COMPILER="$(cxxCompiler)" -DCMAKE_INSTALL_PREFIX="$(Build.ArtifactStagingDirectory)/ttk-install" -DVTK_DIR=$(Build.ArtifactStagingDirectory)/vtk-install/lib/cmake/vtk-$(VTKVPath) -DCMAKE_BUILD_TYPE:STRING=Release -DTTK_BUILD_PARAVIEW_PLUGINS=OFF $(TTK_MODULE_DISABLE) $(CMAKE_TEST) -GNinja ..
     workingDirectory: build/
     displayName: 'Configure TTK'
@@ -553,7 +553,7 @@ jobs:
 
   - script: |
       $(compilerInitialization)
-      set BOOST_ROOT=$(BOOST_ROOT_1_69_0)
+      set BOOST_ROOT=$(BOOST_ROOT_1_72_0)
       cmake ../examples/c++ -GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_PREFIX_PATH="$(Build.ArtifactStagingDirectory)/ttk-install/lib/cmake
     workingDirectory: 'build-example/'
     displayName: 'Configure C++ Example'
@@ -570,7 +570,7 @@ jobs:
 
   - script: |
       $(compilerInitialization)
-      set BOOST_ROOT=$(BOOST_ROOT_1_69_0)
+      set BOOST_ROOT=$(BOOST_ROOT_1_72_0)
       cmake ../examples/vtk-c++ -GNinja -DCMAKE_BUILD_TYPE=Release -DVTK_DIR=$(Build.ArtifactStagingDirectory)/vtk-install/lib/cmake/vtk-$(VTKVPath) -DCMAKE_PREFIX_PATH="$(Build.ArtifactStagingDirectory)/ttk-install/lib/cmake
     workingDirectory: 'build-example-vtk/'
     displayName: 'Configure TTKVTK Example'
