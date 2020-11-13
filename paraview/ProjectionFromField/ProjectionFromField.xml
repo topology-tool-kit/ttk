@@ -34,56 +34,6 @@ point-data scalar fields to be used as 2D coordinates.
         </Documentation>
       </InputProperty>
 
-      <IntVectorProperty name="ProjectPersistenceDiagram"
-                     command="SetProjectPersistenceDiagram"
-                     label="Project Persistence Diagram"
-                     number_of_elements="1"
-                     default_values="0">
-        <BooleanDomain name="bool"/>
-        <Hints>
-          <PropertyWidgetDecorator type="GenericDecorator"
-                                   mode="visibility"
-                                   property="Use3DCoordinatesArray"
-                                   value="0" />
-        </Hints>
-      </IntVectorProperty>
-
-      <IntVectorProperty name="Use3DCoordinatesArray"
-                     command="SetUse3DCoordinatesArray"
-                     label="Use 3D Coordinates Array"
-                     number_of_elements="1"
-                     default_values="0">
-        <BooleanDomain name="bool"/>
-        <Hints>
-          <PropertyWidgetDecorator type="GenericDecorator"
-                                   mode="visibility"
-                                   property="ProjectPersistenceDiagram"
-                                   value="0" />
-        </Hints>
-      </IntVectorProperty>
-
-      <IntVectorProperty name="UseTextureCoordinates"
-                     command="SetUseTextureCoordinates"
-                     label="Use Texture Coordinates"
-                     number_of_elements="1"
-                     default_values="0">
-        <BooleanDomain name="bool"/>
-        <Hints>
-          <PropertyWidgetDecorator type="CompositeDecorator">
-            <Expression type="and">
-              <PropertyWidgetDecorator type="GenericDecorator"
-                                       mode="visibility"
-                                       property="Use3DCoordinatesArray"
-                                       value="0" />
-              <PropertyWidgetDecorator type="GenericDecorator"
-                                       mode="visibility"
-                                       property="ProjectPersistenceDiagram"
-                                       value="0" />
-            </Expression>
-          </PropertyWidgetDecorator>
-        </Hints>
-      </IntVectorProperty>
-
       <StringVectorProperty name="UComponentNew" label="U Component"
                             command="SetInputArrayToProcess"
                             element_types="0 0 0 0 2"
@@ -146,6 +96,43 @@ point-data scalar fields to be used as 2D coordinates.
         </Documentation>
       </StringVectorProperty>
 
+
+      <IntVectorProperty name="Use3DCoordinatesArray"
+                     command="SetUse3DCoordinatesArray"
+                     label="Use 3D Coordinates Array"
+                     number_of_elements="1"
+                     default_values="0">
+        <BooleanDomain name="bool"/>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="ProjectPersistenceDiagram"
+                                   value="0" />
+        </Hints>
+      </IntVectorProperty>
+
+      <IntVectorProperty name="UseTextureCoordinates"
+                     command="SetUseTextureCoordinates"
+                     label="Use Texture Coordinates"
+                     number_of_elements="1"
+                     default_values="0">
+        <BooleanDomain name="bool"/>
+        <Hints>
+          <PropertyWidgetDecorator type="CompositeDecorator">
+            <Expression type="and">
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="Use3DCoordinatesArray"
+                                       value="0" />
+              <PropertyWidgetDecorator type="GenericDecorator"
+                                       mode="visibility"
+                                       property="ProjectPersistenceDiagram"
+                                       value="0" />
+            </Expression>
+          </PropertyWidgetDecorator>
+        </Hints>
+      </IntVectorProperty>
+
       <StringVectorProperty name="3DCoordinates" label="3D Coordinates"
                             command="SetInputArrayToProcess"
                             element_types="0 0 0 0 2"
@@ -168,14 +155,28 @@ point-data scalar fields to be used as 2D coordinates.
         </Documentation>
       </StringVectorProperty>
 
+      <IntVectorProperty name="ProjectPersistenceDiagram"
+                     command="SetProjectPersistenceDiagram"
+                     label="Project Persistence Diagram"
+                     number_of_elements="1"
+                     default_values="0"
+                     panel_visibility="advanced">
+        <BooleanDomain name="bool"/>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="Use3DCoordinatesArray"
+                                   value="0" />
+        </Hints>
+      </IntVectorProperty>
 
       <PropertyGroup panel_widget="Line" label="Input options">
-        <Property name="UseTextureCoordinates" />
-        <Property name="Use3DCoordinatesArray" />
-        <Property name="ProjectPersistenceDiagram" />
         <Property name="UComponentNew" />
         <Property name="VComponentNew" />
+        <Property name="UseTextureCoordinates" />
+        <Property name="Use3DCoordinatesArray" />
         <Property name="3DCoordinates" />
+        <Property name="ProjectPersistenceDiagram" />
       </PropertyGroup>
 
       ${DEBUG_WIDGETS}
