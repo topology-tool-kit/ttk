@@ -6,7 +6,6 @@
 #include <vtkConnectivityFilter.h>
 #include <vtkDataObject.h>
 #include <vtkInformation.h>
-#include <vtkThreshold.h>
 
 using namespace ttk::ftr;
 

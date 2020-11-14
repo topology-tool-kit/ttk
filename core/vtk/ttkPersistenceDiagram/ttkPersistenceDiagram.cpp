@@ -37,11 +37,6 @@ int ttkPersistenceDiagram::FillOutputPortInformation(int port,
   return 0;
 }
 
-void ttkPersistenceDiagram::Modified() {
-  computeDiagram_ = true;
-  ttkAlgorithm::Modified();
-}
-
 template <typename scalarType, typename triangulationType>
 int ttkPersistenceDiagram::setPersistenceDiagram(
   vtkUnstructuredGrid *outputCTPersistenceDiagram,
@@ -221,19 +216,18 @@ int ttkPersistenceDiagram::dispatch(
   const triangulationType *triangulation) {
 
   int status{};
-  if(this->computeDiagram_ || CTDiagram_.empty()) {
-    CTDiagram_.clear();
-    status = this->execute(CTDiagram_, inputScalars, inputOrder, triangulation);
+  std::vector<ttk::PersistencePair> CTDiagram{};
 
-    // something wrong in baseCode
-    if(status != 0) {
-      this->printErr("PersistenceDiagram::execute() error code : "
-                     + std::to_string(status));
-      return 0;
-    }
+  status = this->execute(CTDiagram, inputScalars, inputOrder, triangulation);
+
+  // something wrong in baseCode
+  if(status != 0) {
+    this->printErr("PersistenceDiagram::execute() error code : "
+                   + std::to_string(status));
+    return 0;
   }
 
-  setPersistenceDiagram(outputCTPersistenceDiagram, CTDiagram_,
+  setPersistenceDiagram(outputCTPersistenceDiagram, CTDiagram,
                         inputScalarsArray, inputScalars, triangulation);
 
   return 1;
@@ -280,9 +274,6 @@ int ttkPersistenceDiagram::RequestData(vtkInformation *request,
   }
 #endif
 
-  if(this->GetMTime() < inputScalars->GetMTime())
-    computeDiagram_ = true;
-
   int status{};
   ttkVtkTemplateMacro(
     inputScalars->GetDataType(), triangulation->getType(),
@@ -295,8 +286,6 @@ int ttkPersistenceDiagram::RequestData(vtkInformation *request,
   // shallow copy input Field Data
   outputCTPersistenceDiagram->GetFieldData()->ShallowCopy(
     input->GetFieldData());
-
-  computeDiagram_ = false;
 
   return status;
 }

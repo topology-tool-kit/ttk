@@ -38,14 +38,13 @@
 ///
 #pragma once
 
-// VTK includes
-#include <vtkSmartPointer.h>
-
 // VTK Module
 #include <ttkProjectionFromFieldModule.h>
 
 // ttk code includes
 #include <ttkAlgorithm.h>
+
+class vtkUnstructuredGrid;
 
 class TTKPROJECTIONFROMFIELD_EXPORT ttkProjectionFromField
   : public ttkAlgorithm {
@@ -58,20 +57,44 @@ public:
   vtkSetMacro(UseTextureCoordinates, bool);
   vtkGetMacro(UseTextureCoordinates, bool);
 
+  vtkSetMacro(Use3DCoordinatesArray, bool);
+  vtkGetMacro(Use3DCoordinatesArray, bool);
+
+  vtkSetMacro(ProjectPersistenceDiagram, bool);
+  vtkGetMacro(ProjectPersistenceDiagram, bool);
+
 protected:
   ttkProjectionFromField();
-
-  ~ttkProjectionFromField() override;
 
   int FillInputPortInformation(int port, vtkInformation *info) override;
 
   int FillOutputPortInformation(int port, vtkInformation *info) override;
+
+  /**
+   * @brief Switch a given Persistence Diagram representation
+   */
+  int projectPersistenceDiagram(vtkUnstructuredGrid *const inputDiagram,
+                                vtkUnstructuredGrid *const outputDiagram);
+  /**
+   * @brief Generate the spatial embedding of a given Persistence Diagram
+   */
+  int projectDiagramInsideDomain(vtkUnstructuredGrid *const inputDiagram,
+                                 vtkUnstructuredGrid *const outputDiagram);
+  /**
+   * @brief Generate the 2D embedding of a given Persistence Diagram
+   */
+  template <typename VTK_TT>
+  int projectDiagramIn2D(vtkUnstructuredGrid *const inputDiagram,
+                         vtkUnstructuredGrid *const outputDiagram,
+                         const VTK_TT *const births,
+                         const VTK_TT *const deaths);
 
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;
 
 private:
+  bool ProjectPersistenceDiagram{false};
   bool UseTextureCoordinates{false};
-  vtkSmartPointer<vtkPoints> pointSet_;
+  bool Use3DCoordinatesArray{false};
 };
