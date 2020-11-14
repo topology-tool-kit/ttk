@@ -190,6 +190,9 @@ int ttkCinemaDarkroomShader::InitRenderer(vtkImageData *outputImage) {
 int ttkCinemaDarkroomShader::AddTexture(vtkImageData *image,
                                         int arrayIdx,
                                         int textureIdx) {
+  int dim[3];
+  image->GetDimensions(dim);
+
   auto inputArray = this->GetInputArrayToProcess(arrayIdx, image);
   if(!inputArray || this->GetInputArrayAssociation(arrayIdx, image) != 0) {
     this->printErr("Unable to retrieve input point data array "
@@ -206,19 +209,17 @@ int ttkCinemaDarkroomShader::AddTexture(vtkImageData *image,
 
   // create texture
   auto texture = vtkSmartPointer<vtkOpenGLTexture>::New();
+
   auto textureObj = vtkSmartPointer<vtkTextureObject>::New();
-
-  int dim[3];
-  image->GetDimensions(dim);
-
-  auto windowAsOGL = vtkOpenGLRenderWindow::SafeDownCast(this->RenderWindow);
-  textureObj->SetContext(windowAsOGL);
+  textureObj->SetContext(
+    vtkOpenGLRenderWindow::SafeDownCast(this->RenderWindow));
   textureObj->SetWrapT(vtkTextureObject::ClampToEdge);
   textureObj->SetWrapS(vtkTextureObject::ClampToEdge);
   textureObj->Create2DFromRaw(
     dim[0], dim[1], inputArray->GetNumberOfComponents(),
     inputArray->GetDataType(), ttkUtils::GetVoidPointer(inputArray));
   texture->SetTextureObject(textureObj);
+  texture->InterpolateOn();
 
   // add texture to properties
   properties->SetTexture(textureName.data(), texture);
@@ -240,17 +241,17 @@ int ttkCinemaDarkroomShader::Render(vtkImageData *image,
   this->FullScreenQuadActor->GetShaderProperty()->SetFragmentShaderCode(
     this->PerformReplacements(this->GetFragmentShaderCode()).data());
 
-  auto windowToImageFilter = vtkSmartPointer<vtkWindowToImageFilter>::New();
-  windowToImageFilter->SetInput(this->RenderWindow);
+  auto buffer = vtkSmartPointer<vtkUnsignedCharArray>::New();
+  buffer->SetName(name.data());
+  buffer->SetNumberOfComponents(4);
+  buffer->SetNumberOfTuples(dim[0] * dim[1]);
 
-  windowToImageFilter->Update();
+  this->RenderWindow->Render();
+  this->RenderWindow->GetRGBACharPixelData(
+    0, 0, dim[0] - 1, dim[1] - 1, 1, buffer);
 
-  auto windowImage = windowToImageFilter->GetOutput();
-  auto windowImageField = vtkUnsignedCharArray::SafeDownCast(
-    windowImage->GetPointData()->GetAbstractArray(0));
-  windowImageField->SetName(name.data());
-
-  image->GetPointData()->AddArray(windowImageField);
+  image->GetPointData()->AddArray(buffer);
+  image->GetPointData()->SetActiveScalars(buffer->GetName());
 
   this->printMsg(
     "Rendering (" + std::to_string(dim[0]) + "x" + std::to_string(dim[1]) + ")",

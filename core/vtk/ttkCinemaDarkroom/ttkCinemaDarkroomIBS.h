@@ -25,17 +25,17 @@
 class TTKCINEMADARKROOM_EXPORT ttkCinemaDarkroomIBS
   : public ttkCinemaDarkroomShader {
 private:
-  double Scale{1.0};
   double Strength{1.0};
   double Luminance{1.0};
+  double Ambient{0.2};
 
 public:
-  vtkSetMacro(Scale, double);
-  vtkGetMacro(Scale, double);
   vtkSetMacro(Strength, double);
   vtkGetMacro(Strength, double);
   vtkSetMacro(Luminance, double);
   vtkGetMacro(Luminance, double);
+  vtkSetMacro(Ambient, double);
+  vtkGetMacro(Ambient, double);
 
   static ttkCinemaDarkroomIBS *New();
   vtkTypeMacro(ttkCinemaDarkroomIBS, ttkCinemaDarkroomShader);

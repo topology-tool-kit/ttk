@@ -19,9 +19,7 @@
 class TTKCINEMADARKROOM_EXPORT ttkCinemaDarkroomNoise
   : public ttkCinemaDarkroomShader {
 private:
-
 public:
-
   static ttkCinemaDarkroomNoise *New();
   vtkTypeMacro(ttkCinemaDarkroomNoise, ttkCinemaDarkroomShader);
 

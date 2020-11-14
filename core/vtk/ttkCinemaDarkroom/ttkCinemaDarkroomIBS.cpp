@@ -56,11 +56,11 @@ void main() {
     vec3 lightPos = vec3(0,0,1);
     float lightInt = 1.0*dot(n,normalize(lightPos));
 
-    vec3 cAO = vec3( color * mix( vec3(ao), vec3(1.0), luminance * cLuminance ) );
+    vec3 outputColor = vec3( color * mix( vec3(ao), vec3(1.0), luminance * cLuminance ) );
 
-    vec3 final = cAO*0.2 + cAO*lightInt;
+    outputColor = outputColor*cAmbient + outputColor*lightInt;
 
-    gl_FragColor = vec4(final, 1);
+    gl_FragColor = vec4(outputColor, depth>0.99 ? 0.0 : 1.0);
 }
   )");
 }
@@ -77,6 +77,7 @@ int ttkCinemaDarkroomIBS::RequestData(vtkInformation *request,
 
   this->AddReplacement("cStrength", {this->Strength});
   this->AddReplacement("cLuminance", {this->Luminance});
+  this->AddReplacement("cAmbient", {this->Ambient});
 
   if(!this->AddTexture(outputImage, 0, 0))
     return 0;

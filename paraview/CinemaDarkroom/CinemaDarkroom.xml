@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ServerManagerConfiguration>
     <ProxyGroup name="sources">
-      <SourceProxy name="ttkCinemaDarkroomCamera" class="ttkCinemaDarkroomCamera" label="TTK-CD Camera">
+      <SourceProxy name="ttkCinemaDarkroomCamera" class="ttkCinemaDarkroomCamera" label="TTK Darkroom Camera">
           <Documentation long_help="Cinema Darkroom Compositing" short_help="Cinema Darkroom Compositing">
 This source generates a single vertex with point data to represent a camera that can be used for Cinema Darkroom rendering. The source can also be synchronized with the camera of an active view port.
           </Documentation>
@@ -44,7 +44,7 @@ This source generates a single vertex with point data to represent a camera that
 
         <!-- ////////////////////////////////////////////////////////////////-->
 
-        <SourceProxy name="ttkCinemaDarkroomCompositing" class="ttkCinemaDarkroomCompositing" label="TTK-CD Compositing">
+        <SourceProxy name="ttkCinemaDarkroomCompositing" class="ttkCinemaDarkroomCompositing" label="TTK Darkroom Compositing">
           <Documentation long_help="Cinema Darkroom Compositing" short_help="Cinema Darkroom Compositing">
 This filter composists all input vtkImageData objects at its first port based on a depth buffer.
 
@@ -91,7 +91,7 @@ IEEE 10th Symposium on Large Data Analysis and Visualization (LDAV). 2020.
 
         <!-- ////////////////////////////////////////////////////////////////-->
 
-        <SourceProxy name="ttkCinemaDarkroomColorMapping" class="ttkCinemaDarkroomColorMapping" label="TTK-CD ColorMapping">
+        <SourceProxy name="ttkCinemaDarkroomColorMapping" class="ttkCinemaDarkroomColorMapping" label="TTK Darkroom ColorMapping">
           <Documentation long_help="Cinema Darkroom Color Mapping" short_help="Cinema Darkroom Color Mapping">
 This filter maps scalars to either a single color, a manually defined color map, or any predefined color map.
 
@@ -179,7 +179,7 @@ IEEE 10th Symposium on Large Data Analysis and Visualization (LDAV). 2020.
 
         <!-- ////////////////////////////////////////////////////////////////-->
 
-        <SourceProxy name="ttkCinemaDarkroomSSAO" class="ttkCinemaDarkroomSSAO" label="TTK-CD SSAO">
+        <SourceProxy name="ttkCinemaDarkroomSSAO" class="ttkCinemaDarkroomSSAO" label="TTK Darkroom SSAO">
           <Documentation long_help="Cinema Darkroom Screen Space Ambient Occlusion" short_help="Cinema Darkroom Screen Space Ambient Occlusion">
 This filters computes Screen Space Ambient Occlusion based on a depth buffer.
 
@@ -235,7 +235,7 @@ IEEE 10th Symposium on Large Data Analysis and Visualization (LDAV). 2020.
 
         <!-- ////////////////////////////////////////////////////////////////-->
 
-        <SourceProxy name="ttkCinemaDarkroomSSSAO" class="ttkCinemaDarkroomSSSAO" label="TTK-CD SSSAO">
+        <SourceProxy name="ttkCinemaDarkroomSSSAO" class="ttkCinemaDarkroomSSSAO" label="TTK Darkroom SSSAO">
           <Documentation long_help="Cinema Darkroom Scalable Screen Space Occlusion" short_help="Cinema Darkroom Scalable Screen Space Occlusion">
 This filters computes Scalable Screen Space Ambient Occlusion based on a depth buffer.
 
@@ -296,7 +296,7 @@ IEEE 10th Symposium on Large Data Analysis and Visualization (LDAV). 2020.
 
         <!-- ////////////////////////////////////////////////////////////////-->
 
-        <SourceProxy name="ttkCinemaDarkroomIBS" class="ttkCinemaDarkroomIBS" label="TTK-CD IBS">
+        <SourceProxy name="ttkCinemaDarkroomIBS" class="ttkCinemaDarkroomIBS" label="TTK Darkroom IBS">
           <Documentation long_help="Cinema Darkroom Image Based Shading" short_help="Cinema Darkroom Image Based Shading">
 This filters computes Image Based Shading based on a depth, diffuse, and ambient occlusion buffer.
 
@@ -354,6 +354,10 @@ IEEE 10th Symposium on Large Data Analysis and Visualization (LDAV). 2020.
             <DoubleRangeDomain name="range" min="0" max="2" />
             <Documentation>Luminance factor.</Documentation>
           </DoubleVectorProperty>
+          <DoubleVectorProperty name="Ambient" command="SetAmbient" number_of_elements="1" default_values="0.2">
+            <DoubleRangeDomain name="range" min="0" max="2" />
+            <Documentation>Ambient light factor.</Documentation>
+          </DoubleVectorProperty>
 
           <PropertyGroup panel_widget="Line" label="Input Options">
               <Property name="Color" />
@@ -363,6 +367,7 @@ IEEE 10th Symposium on Large Data Analysis and Visualization (LDAV). 2020.
           <PropertyGroup panel_widget="Line" label="Output Options">
               <Property name="Strength" />
               <Property name="Luminance" />
+              <Property name="Ambient" />
           </PropertyGroup>
 
           ${DEBUG_WIDGETS}
@@ -374,7 +379,7 @@ IEEE 10th Symposium on Large Data Analysis and Visualization (LDAV). 2020.
 
         <!-- ////////////////////////////////////////////////////////////////-->
 
-        <SourceProxy name="ttkCinemaDarkroomFXAA" class="ttkCinemaDarkroomFXAA" label="TTK-CD FXAA">
+        <SourceProxy name="ttkCinemaDarkroomFXAA" class="ttkCinemaDarkroomFXAA" label="TTK Darkroom FXAA">
           <Documentation long_help="Cinema Darkroom Fast Approximate Anti-Aliasing" short_help="Cinema Darkroom Fast Approximate Anti-Aliasing">
 This filters computes Fast Approximate Anti-Aliasing based on a color buffer.
 
@@ -421,7 +426,7 @@ IEEE 10th Symposium on Large Data Analysis and Visualization (LDAV). 2020.
 
         <!-- ////////////////////////////////////////////////////////////////-->
 
-        <SourceProxy name="ttkCinemaDarkroomSSDoF" class="ttkCinemaDarkroomSSDoF" label="TTK-CD SSDoF">
+        <SourceProxy name="ttkCinemaDarkroomSSDoF" class="ttkCinemaDarkroomSSDoF" label="TTK Darkroom SSDoF">
           <Documentation long_help="Cinema Darkroom Screen Space Depth of Field" short_help="Cinema Darkroom Screen Space Depth of Field">
 This filters computes Screen Space Depth of Field based on a depth and a color buffer.
 
@@ -500,7 +505,7 @@ IEEE 10th Symposium on Large Data Analysis and Visualization (LDAV). 2020.
 
         <!-- ////////////////////////////////////////////////////////////////-->
 
-        <SourceProxy name="ttkCinemaDarkroomNoise" class="ttkCinemaDarkroomNoise" label="TTK-CD Noise">
+        <SourceProxy name="ttkCinemaDarkroomNoise" class="ttkCinemaDarkroomNoise" label="TTK Darkroom Noise">
           <Documentation long_help="Cinema Darkroom Noise" short_help="Cinema Darkroom Noise">
 This filters generates noise of different types.
           </Documentation>

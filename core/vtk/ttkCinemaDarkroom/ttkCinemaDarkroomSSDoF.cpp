@@ -108,7 +108,7 @@ vec4 SSDoF(
 }
 
 void main() {
-    gl_FragColor = vec4(SSDoF(vPos.xy).rgb, 1 );
+    gl_FragColor = SSDoF(vPos.xy);
 }
   )");
 }
@@ -133,7 +133,7 @@ int ttkCinemaDarkroomSSDoF::RequestData(vtkInformation *request,
   if(!this->AddTexture(outputImage, 1, 1))
     return 0;
 
-  this->Render(outputImage, "IBS");
+  this->Render(outputImage, "SSDoF");
 
   return 1;
 }

@@ -49,7 +49,6 @@ class vtkPolyData;
 class vtkActor;
 class vtkRenderer;
 class vtkRenderWindow;
-class vtkWindowToImageFilter;
 
 class TTKCINEMADARKROOM_EXPORT ttkCinemaDarkroomShader : public ttkAlgorithm {
 
@@ -99,7 +98,6 @@ private:
   vtkSmartPointer<vtkActor> FullScreenQuadActor;
   vtkSmartPointer<vtkRenderer> Renderer;
   vtkSmartPointer<vtkRenderWindow> RenderWindow;
-  vtkSmartPointer<vtkWindowToImageFilter> RenderWindowToImageFilter;
 
 public:
   static ttkCinemaDarkroomShader *New();
