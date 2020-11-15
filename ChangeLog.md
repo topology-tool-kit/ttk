@@ -12,7 +12,8 @@
 - Order-based simulation of simplicity (big performance updates)
 - Localized Topological Simplification of Scalar Data (IEEE VIS 2020)
 - Fuzzy Contour Trees: Alignment and Joint Layout of Multiple Contour Trees (EuroVis 2020)
-- Automatic deb binary packaging (for Ubuntu)
+- Cinema Darkroom: A Deferred Rendering Framework for Large-Scale Datasets (IEEE LDAV 2020)
+- Automatic deb binary packaging (for Ubuntu, Windows, MacOS)
 - Updated examples
 - Many fixes
 
