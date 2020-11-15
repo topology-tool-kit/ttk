@@ -53,9 +53,9 @@ int ttk::CinemaImagingEmbree::renderImage(float *depthBuffer,
                                           const double camPos[3],
                                           const double camDirRaw[3],
                                           const double camUp[3],
-                                          const double &camHeight,
-                                          const bool &orthographicProjection,
-                                          const double &viewAngle) const {
+                                          const double &camFactor,
+                                          const bool &orthographicProjection
+  ) const {
 
   ttk::Timer timer;
   const int resX = resolution[0];
@@ -104,7 +104,7 @@ int ttk::CinemaImagingEmbree::renderImage(float *depthBuffer,
 
     // Compute camera size
     const double aspect = resolution[0] / resolution[1];
-    const double camSize[2] = {aspect * camHeight, camHeight};
+    const double camSize[2] = {aspect * camFactor, camFactor};
 
     // Compute pixel size in world coordinates
     const double pixelWidthWorld = camSize[0] / resolution[0];
@@ -168,7 +168,7 @@ int ttk::CinemaImagingEmbree::renderImage(float *depthBuffer,
     }
   } else {
 
-    double factor = (viewAngle / 180.0 * 3.141592653589793) / resolution[0];
+    double factor = (camFactor / 180.0 * 3.141592653589793) / resolution[0];
 
     for(int y = 0; y < resY; y++) {
       double v = (y - resY * 0.5) * factor;

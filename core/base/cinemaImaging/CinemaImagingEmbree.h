@@ -46,9 +46,9 @@ namespace ttk {
                     const double camCenter[3],
                     const double camDir[3],
                     const double camUp[3],
-                    const double &camHeight,
-                    const bool &orthographicProjection = true,
-                    const double &focalLength = 1) const;
+                    const double &camFactor, // either height or angle
+                    const bool &orthographicProjection = true
+                    ) const;
 
     int deallocateScene(RTCDevice &device, RTCScene &scene) const;
 
