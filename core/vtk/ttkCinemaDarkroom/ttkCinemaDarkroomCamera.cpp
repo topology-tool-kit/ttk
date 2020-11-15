@@ -49,7 +49,7 @@ int ttkCinemaDarkroomCamera::SyncWithParaViewCamera() {
 from paraview.simple import GetActiveView
 from paraview.simple import FindSource
 
-self = FindSource("TTKCDCamera1")
+self = FindSource("TTKDarkroomCamera1")
 
 view = GetActiveView()
 if view and self:

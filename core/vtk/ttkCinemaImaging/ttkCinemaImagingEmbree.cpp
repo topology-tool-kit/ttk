@@ -136,6 +136,8 @@ int ttk::ttkCinemaImagingEmbree::RenderVTKObject(
 
   this->deallocateScene(device, scene);
 
+#else
+  this->printErr("TTK was build without EMBREE backend.");
 #endif
 
   return status;
