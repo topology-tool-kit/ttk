@@ -108,12 +108,13 @@ int ttk::ttkCinemaImagingEmbree::RenderVTKObject(
     outputImagePD->AddArray(barycentricCoordinates);
 
     // Render Object
-    status = this->renderImage(static_cast<float*>(ttkUtils::GetVoidPointer(depthBuffer)),
-                               primitiveIdArrayData, barycentricCoordinatesData,
+    status = this->renderImage(
+      static_cast<float *>(ttkUtils::GetVoidPointer(depthBuffer)),
+      primitiveIdArrayData, barycentricCoordinatesData,
 
-                               scene, &resolution[i * 2], camPos,
-                               &camDir[i * 3], &camUp[i * 3], projectionMode[i] == 0 ? camHeight[i] : camAngle[i],
-                               projectionMode[i] == 0);
+      scene, &resolution[i * 2], camPos, &camDir[i * 3], &camUp[i * 3],
+      projectionMode[i] == 0 ? camHeight[i] : camAngle[i],
+      projectionMode[i] == 0);
     if(!status)
       return 0;
 

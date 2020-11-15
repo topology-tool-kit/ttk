@@ -44,18 +44,18 @@ int ttk::CinemaImagingEmbree::initializeDevice(RTCDevice &device) const {
   return 1;
 };
 
-int ttk::CinemaImagingEmbree::renderImage(float *depthBuffer,
-                                          unsigned int *primitiveIds,
-                                          float *barycentricCoordinates,
+int ttk::CinemaImagingEmbree::renderImage(
+  float *depthBuffer,
+  unsigned int *primitiveIds,
+  float *barycentricCoordinates,
 
-                                          const RTCScene &scene,
-                                          const double resolution[2],
-                                          const double camPos[3],
-                                          const double camDirRaw[3],
-                                          const double camUp[3],
-                                          const double &camFactor,
-                                          const bool &orthographicProjection
-  ) const {
+  const RTCScene &scene,
+  const double resolution[2],
+  const double camPos[3],
+  const double camDirRaw[3],
+  const double camUp[3],
+  const double &camFactor,
+  const bool &orthographicProjection) const {
 
   ttk::Timer timer;
   const int resX = resolution[0];
