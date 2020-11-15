@@ -1,0 +1,14 @@
+ttk_add_base_library(cinemaImaging
+  SOURCES
+    CinemaImaging.cpp
+    CinemaImagingEmbree.cpp
+    CinemaImagingNative.cpp
+  HEADERS
+    CinemaImaging.h
+    CinemaImagingEmbree.h
+    CinemaImagingNative.h
+    BVH.h
+    Ray.h
+  DEPENDS
+    triangulation
+)

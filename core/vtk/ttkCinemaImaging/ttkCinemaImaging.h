@@ -8,7 +8,7 @@
 /// This filter takes images of a vtkDataObject from positions specified on a
 /// vtkPointSet. Each image will be a block of a vtkMultiBlockDataSet where
 /// block order corresponds to point order. Each sample point can optionally
-/// have vtkDoubleArrays to override the default rendering parameters, i.e, the
+/// have vtkDoubleArrays to override the  rendering parameters, i.e, the
 /// resolution, focus, clipping planes, and viewport height.
 ///
 /// VTK wrapping code for the @CinemaImaging package.
@@ -26,45 +26,114 @@
 // TTK includes
 #include <ttkAlgorithm.h>
 
+namespace ttk {
+  class CinemaImaging;
+}
+class vtkPolyData;
+class vtkMultiBlockDataSet;
+class vtkPointSet;
+class vtkFieldData;
+class vtkImageData;
+class vtkPointData;
+
 class TTKCINEMAIMAGING_EXPORT ttkCinemaImaging : public ttkAlgorithm {
+
+private:
+  int Backend{0};
+
+  int Resolution[2]{256, 256};
+
+  int ProjectionMode{0};
+
+  bool AutoFocalPoint{true};
+  bool AutoNearFar{true};
+  bool AutoHeight{true};
+
+  double FocalPoint[3]{0, 0, 0};
+  double NearFar[2]{0, 1};
+  double Height{1};
+
+  double Angle{45}; // only used for perpective view
 
 public:
   static ttkCinemaImaging *New();
   vtkTypeMacro(ttkCinemaImaging, ttkAlgorithm);
 
+  // Backend
+  vtkSetMacro(Backend, int);
+  vtkGetMacro(Backend, int);
+
   // General Settings
   vtkSetVector2Macro(Resolution, int);
   vtkGetVector2Macro(Resolution, int);
-  vtkSetMacro(GenerateScalarImages, bool);
-  vtkGetMacro(GenerateScalarImages, bool);
 
   // Camera
-  vtkSetMacro(CamProjectionMode, int);
-  vtkGetMacro(CamProjectionMode, int);
+  vtkSetMacro(ProjectionMode, int);
+  vtkGetMacro(ProjectionMode, int);
 
-  vtkSetMacro(CamFocusAuto, bool);
-  vtkGetMacro(CamFocusAuto, bool);
-  vtkSetVector3Macro(CamFocus, double);
-  vtkGetVector3Macro(CamFocus, double);
+  vtkSetMacro(AutoFocalPoint, bool);
+  vtkGetMacro(AutoFocalPoint, bool);
+  vtkSetVector3Macro(FocalPoint, double);
+  vtkGetVector3Macro(FocalPoint, double);
 
-  vtkSetMacro(CamNearFarAuto, bool);
-  vtkGetMacro(CamNearFarAuto, bool);
-  vtkSetVector2Macro(CamNearFar, double);
-  vtkGetVector2Macro(CamNearFar, double);
+  vtkSetMacro(AutoNearFar, bool);
+  vtkGetMacro(AutoNearFar, bool);
+  vtkSetVector2Macro(NearFar, double);
+  vtkGetVector2Macro(NearFar, double);
 
-  // Orthographic
-  vtkSetMacro(CamHeightAuto, bool);
-  vtkGetMacro(CamHeightAuto, bool);
-  vtkSetMacro(CamHeight, double);
-  vtkGetMacro(CamHeight, double);
+  vtkSetMacro(AutoHeight, bool);
+  vtkGetMacro(AutoHeight, bool);
+  vtkSetMacro(Height, double);
+  vtkGetMacro(Height, double);
 
   // Perspective
-  vtkSetMacro(CamAngle, double);
-  vtkGetMacro(CamAngle, double);
+  vtkSetMacro(Angle, double);
+  vtkGetMacro(Angle, double);
+
+  static vtkCellArray* GetCells(vtkPointSet* pointSet);
+
+  static int Normalize(
+    vtkDataArray* depthArray,
+    const double nearFar[2]
+  );
+
+  static int AddFieldDataArray(
+    vtkFieldData* fd,
+    vtkDataArray* array,
+    int tupelIdx,
+    std::string name = ""
+  );
+
+  static int AddAllFieldDataArrays(
+    vtkPointSet* inputGrid,
+    vtkImageData* image,
+    int tupelIdx
+  );
+
+  static int ComputeDirFromFocalPoint(
+    vtkPointSet* inputGrid
+  );
+
+  static int EnsureGridData(
+    vtkPointData* fd,
+    std::string name,
+    int nTuples,
+    const std::vector<double>& Values
+  );
+
+  static int MapPointAndCellData(
+    vtkImageData* outputImage,
+
+    vtkPointSet* inputObject,
+    const ttk::CinemaImaging* renderer,
+    const unsigned int* primitiveIdArray,
+    const float* barycentricCoordinates,
+    const vtkIdType* inputObjectConnectivityList
+  );
 
 protected:
   ttkCinemaImaging();
-  ~ttkCinemaImaging() override;
+  ~ttkCinemaImaging();
 
   int FillInputPortInformation(int port, vtkInformation *info) override;
   int FillOutputPortInformation(int port, vtkInformation *info) override;
@@ -73,17 +142,14 @@ protected:
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;
 
-private:
-  int Resolution[2]{256, 256};
-  bool GenerateScalarImages{true};
+  int RequestDataSingle(
+    vtkMultiBlockDataSet* collection,
 
-  int CamProjectionMode{0};
-  bool CamFocusAuto{true};
-  double CamFocus[3]{0, 0, 0};
-  bool CamNearFarAuto{true};
-  double CamNearFar[2]{0, 1};
-
-  bool CamHeightAuto{true};
-  double CamHeight{1};
-  double CamAngle{90};
+    vtkPointSet* object,
+    vtkPointSet* grid,
+    const std::vector<double>& defaultFocal,
+    const std::vector<double>& defaultNearFar,
+    const double defaultHeight,
+    const double defaultAngle
+  );
 };

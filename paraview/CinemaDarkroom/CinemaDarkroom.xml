@@ -12,8 +12,8 @@ This source generates a single vertex with point data to represent a camera that
           <DoubleVectorProperty name="Up" command="SetUp" number_of_elements="3" default_values="0 0 1">
             <Documentation>Camera Up-Vector.</Documentation>
           </DoubleVectorProperty>
-          <DoubleVectorProperty name="Focus" command="SetFocus" number_of_elements="3" default_values="0 0 0">
-            <Documentation>Camera Focus.</Documentation>
+          <DoubleVectorProperty name="FocalPoint" command="SetFocalPoint" number_of_elements="3" default_values="0 0 0">
+            <Documentation>Camera Focal Point.</Documentation>
           </DoubleVectorProperty>
 
           <Property name="SyncCamera" command="SyncWithParaViewCamera" panel_widget="command_button">
@@ -23,7 +23,7 @@ This source generates a single vertex with point data to represent a camera that
           <PropertyGroup panel_widget="Line" label="Output Options">
               <Property name="Position" />
               <Property name="Up" />
-              <Property name="Focus" />
+              <Property name="FocalPoint" />
               <Property name="SyncCamera" />
           </PropertyGroup>
 

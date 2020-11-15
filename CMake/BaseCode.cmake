@@ -171,6 +171,12 @@ function(ttk_set_compile_options library)
     target_link_libraries(${library} PUBLIC ${GRAPHVIZ_PATHPLAN_LIBRARY})
   endif()
 
+  if (TTK_ENABLE_EMBREE AND EMBREE_FOUND)
+    target_compile_definitions(${library} PUBLIC TTK_ENABLE_EMBREE)
+    target_include_directories(${library} PUBLIC ${EMBREE_INCLUDE_DIR})
+    target_link_libraries(${library} PUBLIC ${EMBREE_LIBRARY})
+  endif()
+
   # TODO per module
   if (TTK_ENABLE_SQLITE3)
     target_compile_definitions(${library} PUBLIC TTK_ENABLE_SQLITE3)
