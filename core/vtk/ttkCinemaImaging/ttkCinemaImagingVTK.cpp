@@ -2,43 +2,41 @@
 
 #include <ttkCinemaImaging.h>
 
-#include <vtkSmartPointer.h>
 #include <vtkDataSetSurfaceFilter.h>
+#include <vtkSmartPointer.h>
 
-#include <vtkPointSet.h>
 #include <vtkMultiBlockDataSet.h>
+#include <vtkPointSet.h>
 
-#include <vtkPolyDataMapper.h>
 #include <vtkActor.h>
 #include <vtkCamera.h>
-#include <vtkRenderWindow.h>
-#include <vtkWindowToImageFilter.h>
 #include <vtkCameraPass.h>
+#include <vtkOpenGLRenderer.h>
+#include <vtkPolyDataMapper.h>
+#include <vtkRenderPassCollection.h>
+#include <vtkRenderWindow.h>
+#include <vtkRenderer.h>
 #include <vtkSequencePass.h>
 #include <vtkValuePass.h>
-#include <vtkRenderPassCollection.h>
-#include <vtkRenderer.h>
-#include <vtkOpenGLRenderer.h>
+#include <vtkWindowToImageFilter.h>
 
-#include <vtkSignedCharArray.h>
 #include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
+#include <vtkSignedCharArray.h>
 
-#include <vtkPointData.h>
-#include <vtkCellData.h>
 #include <ttkUtils.h>
+#include <vtkCellData.h>
+#include <vtkPointData.h>
 
-ttk::ttkCinemaImagingVTK::ttkCinemaImagingVTK(){
-    this->setDebugMsgPrefix("CinemaImaging(VTK)");
+ttk::ttkCinemaImagingVTK::ttkCinemaImagingVTK() {
+  this->setDebugMsgPrefix("CinemaImaging(VTK)");
 };
-ttk::ttkCinemaImagingVTK::~ttkCinemaImagingVTK(){
+ttk::ttkCinemaImagingVTK::~ttkCinemaImagingVTK() {
 }
 
-int ttk::ttkCinemaImagingVTK::setupRenderer(
-    vtkRenderer *renderer,
-    vtkPointSet *object,
-    vtkCamera *camera
-) const {
+int ttk::ttkCinemaImagingVTK::setupRenderer(vtkRenderer *renderer,
+                                            vtkPointSet *object,
+                                            vtkCamera *camera) const {
   auto mapper = vtkSmartPointer<vtkPolyDataMapper>::New();
   mapper->SetInputDataObject(object);
 
@@ -53,11 +51,9 @@ int ttk::ttkCinemaImagingVTK::setupRenderer(
   return 1;
 }
 
-int ttk::ttkCinemaImagingVTK::setupWindow(
-    vtkRenderWindow *window,
-    vtkRenderer *renderer,
-    const double resolution[2]
-) const {
+int ttk::ttkCinemaImagingVTK::setupWindow(vtkRenderWindow *window,
+                                          vtkRenderer *renderer,
+                                          const double resolution[2]) const {
   window->SetSize(resolution[0], resolution[1]);
   window->SetMultiSamples(0); // Disable AA
   window->OffScreenRenderingOn();
@@ -67,18 +63,15 @@ int ttk::ttkCinemaImagingVTK::setupWindow(
 };
 
 int ttk::ttkCinemaImagingVTK::addValuePass(
-    vtkPointSet* object,
-    int fieldType,
-    vtkRenderPassCollection *valuePassCollection,
-    std::vector<std::string> &valuePassNames
-) const {
-  auto fd = static_cast<vtkFieldData*>(
-      fieldType == 0
-        ? (vtkFieldData *)object->GetPointData()
-        : (vtkFieldData *)object->GetCellData()
-  );
+  vtkPointSet *object,
+  int fieldType,
+  vtkRenderPassCollection *valuePassCollection,
+  std::vector<std::string> &valuePassNames) const {
+  auto fd = static_cast<vtkFieldData *>(
+    fieldType == 0 ? (vtkFieldData *)object->GetPointData()
+                   : (vtkFieldData *)object->GetCellData());
 
-  for(size_t i=0, j=fd->GetNumberOfArrays(); i<j; i++){
+  for(size_t i = 0, j = fd->GetNumberOfArrays(); i < j; i++) {
     auto array = fd->GetArray(i);
     if(!array)
       continue;
@@ -89,7 +82,7 @@ int ttk::ttkCinemaImagingVTK::addValuePass(
     array->GetRange(minmax);
 
     size_t nComponents = array->GetNumberOfComponents();
-    for(size_t c = 0; c < nComponents; c++){
+    for(size_t c = 0; c < nComponents; c++) {
       auto valuePass = vtkSmartPointer<vtkValuePass>::New();
       valuePass->SetRenderingMode(vtkValuePass::FLOATING_POINT);
       valuePass->SetInputArrayToProcess(fieldType == 0
@@ -99,8 +92,8 @@ int ttk::ttkCinemaImagingVTK::addValuePass(
       valuePass->SetInputComponentToProcess(c);
 
       valuePassCollection->AddItem(valuePass);
-      valuePassNames.push_back(nComponents == 1 ? name : name + "_"
-                                                           + std::to_string(c));
+      valuePassNames.push_back(
+        nComponents == 1 ? name : name + "_" + std::to_string(c));
     }
   }
 
@@ -108,20 +101,19 @@ int ttk::ttkCinemaImagingVTK::addValuePass(
 };
 
 int ttk::ttkCinemaImagingVTK::RenderVTKObject(
-  vtkMultiBlockDataSet* outputImages,
+  vtkMultiBlockDataSet *outputImages,
 
-  vtkPointSet* inputObject,
-  vtkPointSet* inputGrid
-) const {
+  vtkPointSet *inputObject,
+  vtkPointSet *inputGrid) const {
 
   auto inputObjectAsPD = vtkSmartPointer<vtkPolyData>::New();
-  if(inputObject->IsA("vtkPolyData")){
+  if(inputObject->IsA("vtkPolyData")) {
     inputObjectAsPD->ShallowCopy(inputObject);
   } else {
     auto surfaceFilter = vtkSmartPointer<vtkDataSetSurfaceFilter>::New();
     surfaceFilter->SetInputDataObject(inputObject);
     surfaceFilter->Update();
-    inputObjectAsPD->ShallowCopy( surfaceFilter->GetOutput() );
+    inputObjectAsPD->ShallowCopy(surfaceFilter->GetOutput());
   }
 
   // ---------------------------------------------------------------------------
@@ -130,16 +122,24 @@ int ttk::ttkCinemaImagingVTK::RenderVTKObject(
 
   // iterate over sampling locations
   this->printMsg(ttk::debug::Separator::L2);
-  float* samplingPositions = static_cast<float*>(ttkUtils::GetVoidPointer(inputGrid->GetPoints()));
+  float *samplingPositions
+    = static_cast<float *>(ttkUtils::GetVoidPointer(inputGrid->GetPoints()));
   int nSamplingPositions = inputGrid->GetNumberOfPoints();
   auto camParameters = inputGrid->GetPointData();
-  auto camUp = static_cast<double*>(ttkUtils::GetVoidPointer(camParameters->GetArray("CamUp")));
-  auto camFocalPoint = static_cast<double*>(ttkUtils::GetVoidPointer(camParameters->GetArray("CamFocalPoint")));
-  auto camHeight = static_cast<double*>(ttkUtils::GetVoidPointer(camParameters->GetArray("CamHeight")));
-  auto camAngle = static_cast<double*>(ttkUtils::GetVoidPointer(camParameters->GetArray("CamAngle")));
-  auto camNearFar = static_cast<double*>(ttkUtils::GetVoidPointer(camParameters->GetArray("CamNearFar")));
-  auto resolution = static_cast<double*>(ttkUtils::GetVoidPointer(camParameters->GetArray("Resolution")));
-  auto projectionMode = static_cast<double*>(ttkUtils::GetVoidPointer(camParameters->GetArray("ProjectionMode")));
+  auto camUp = static_cast<double *>(
+    ttkUtils::GetVoidPointer(camParameters->GetArray("CamUp")));
+  auto camFocalPoint = static_cast<double *>(
+    ttkUtils::GetVoidPointer(camParameters->GetArray("CamFocalPoint")));
+  auto camHeight = static_cast<double *>(
+    ttkUtils::GetVoidPointer(camParameters->GetArray("CamHeight")));
+  auto camAngle = static_cast<double *>(
+    ttkUtils::GetVoidPointer(camParameters->GetArray("CamAngle")));
+  auto camNearFar = static_cast<double *>(
+    ttkUtils::GetVoidPointer(camParameters->GetArray("CamNearFar")));
+  auto resolution = static_cast<double *>(
+    ttkUtils::GetVoidPointer(camParameters->GetArray("Resolution")));
+  auto projectionMode = static_cast<double *>(
+    ttkUtils::GetVoidPointer(camParameters->GetArray("ProjectionMode")));
 
   // Camera
   auto camera = vtkSmartPointer<vtkCamera>::New();
@@ -173,7 +173,7 @@ int ttk::ttkCinemaImagingVTK::RenderVTKObject(
     auto pd = object->GetPointData();
     auto cd = object->GetCellData();
 
-    if(pd->GetNumberOfArrays()<1 && cd->GetNumberOfArrays()>0) {
+    if(pd->GetNumberOfArrays() < 1 && cd->GetNumberOfArrays() > 0) {
       size_t nP = object->GetNumberOfPoints();
 
       auto fakeArray = vtkSmartPointer<vtkSignedCharArray>::New();
@@ -181,7 +181,7 @@ int ttk::ttkCinemaImagingVTK::RenderVTKObject(
       fakeArray->SetNumberOfComponents(1);
       fakeArray->SetNumberOfTuples(nP);
       auto fakeArrayData = (signed char *)fakeArray->GetVoidPointer(0);
-      for(size_t i = 0; i<nP; i++)
+      for(size_t i = 0; i < nP; i++)
         fakeArrayData[i] = 0;
       pd->AddArray(fakeArray);
       return 1;
@@ -209,76 +209,74 @@ int ttk::ttkCinemaImagingVTK::RenderVTKObject(
   // First pass to setup everything
   windowScalars->Render();
 
-  for(int i=0; i<nSamplingPositions; i++) {
-      ttk::Timer timer;
-      int resX = resolution[i*2];
-      int resY = resolution[i*2+1];
+  for(int i = 0; i < nSamplingPositions; i++) {
+    ttk::Timer timer;
+    int resX = resolution[i * 2];
+    int resY = resolution[i * 2 + 1];
 
-      this->printMsg(
-        "Rendering Image ("+std::string(projectionMode[i] ? "P" : "O")+ "|"+std::to_string(resX)+"x"+std::to_string(resY)+")",
-        0,0,this->threadNumber_,
-        ttk::debug::LineMode::REPLACE
-      );
+    this->printMsg("Rendering Image ("
+                     + std::string(projectionMode[i] ? "P" : "O") + "|"
+                     + std::to_string(resX) + "x" + std::to_string(resY) + ")",
+                   0, 0, this->threadNumber_, ttk::debug::LineMode::REPLACE);
 
-      double camPos[3]{samplingPositions[i*3],samplingPositions[i*3+1],samplingPositions[i*3+2]};
+    double camPos[3]{samplingPositions[i * 3], samplingPositions[i * 3 + 1],
+                     samplingPositions[i * 3 + 2]};
 
-      if(projectionMode[i] == 0) {
-        camera->SetParallelProjection(true);
-        camera->SetParallelScale(
-          camHeight[i] * 0.5); // *0.5 to convert CamHeight to weird VTK convention
-      } else {
-        camera->SetParallelProjection(false);
-        camera->SetViewAngle( camAngle[i] * resolution[i*2+1]/resolution[i*2] );
+    if(projectionMode[i] == 0) {
+      camera->SetParallelProjection(true);
+      camera->SetParallelScale(
+        camHeight[i]
+        * 0.5); // *0.5 to convert CamHeight to weird VTK convention
+    } else {
+      camera->SetParallelProjection(false);
+      camera->SetViewAngle(camAngle[i] * resolution[i * 2 + 1]
+                           / resolution[i * 2]);
+    }
+
+    camera->SetPosition(camPos);
+    camera->SetViewUp(&camUp[i * 3]);
+    camera->SetFocalPoint(&camFocalPoint[i * 3]);
+    camera->SetClippingRange(&camNearFar[i * 2]);
+
+    // Initialize Output
+    auto outputImage = vtkSmartPointer<vtkImageData>::New();
+    outputImage->SetDimensions(resolution[i * 2], resolution[i * 2 + 1], 1);
+    outputImage->SetSpacing(1, 1, 1);
+    outputImage->SetOrigin(0, 0, 0);
+    outputImage->AllocateScalars(VTK_FLOAT, 1);
+
+    auto outputImagePD = outputImage->GetPointData();
+
+    // Initialize as depth image
+    windowDepthToImageFilter->Modified();
+    windowDepthToImageFilter->Update();
+    outputImage->DeepCopy(windowDepthToImageFilter->GetOutput());
+    outputImagePD->GetAbstractArray(0)->SetName("Depth");
+
+    ttkCinemaImaging::AddAllFieldDataArrays(inputGrid, outputImage, i);
+
+    // Render Scalar Images
+    if(nValuePasses > firstValuePassIndex) {
+      windowScalars->Render();
+
+      for(size_t j = firstValuePassIndex; j < nValuePasses; j++) {
+        auto valuePass
+          = vtkValuePass::SafeDownCast(valuePassCollection->GetItemAsObject(j));
+        auto newValueArray = vtkSmartPointer<vtkFloatArray>::New();
+        newValueArray->DeepCopy(
+          valuePass->GetFloatImageDataArray(rendererScalars));
+        newValueArray->SetName(valuePassNames[j].data());
+        outputImagePD->AddArray(newValueArray);
       }
+    }
 
-      camera->SetPosition(camPos);
-      camera->SetViewUp(&camUp[i*3]);
-      camera->SetFocalPoint(&camFocalPoint[i*3]);
-      camera->SetClippingRange(&camNearFar[i*2]);
+    // Add to output collection
+    outputImages->SetBlock(i, outputImage);
 
-      // Initialize Output
-      auto outputImage = vtkSmartPointer<vtkImageData>::New();
-      outputImage->SetDimensions(resolution[i*2],resolution[i*2+1],1);
-      outputImage->SetSpacing(1,1,1);
-      outputImage->SetOrigin(0,0,0);
-      outputImage->AllocateScalars(VTK_FLOAT,1);
-
-      auto outputImagePD = outputImage->GetPointData();
-
-      // Initialize as depth image
-      windowDepthToImageFilter->Modified();
-      windowDepthToImageFilter->Update();
-      outputImage->DeepCopy(windowDepthToImageFilter->GetOutput());
-      outputImagePD->GetAbstractArray(0)->SetName("Depth");
-
-      ttkCinemaImaging::AddAllFieldDataArrays(
-        inputGrid,
-        outputImage,
-        i
-      );
-
-      // Render Scalar Images
-      if(nValuePasses > firstValuePassIndex) {
-        windowScalars->Render();
-
-        for(size_t j = firstValuePassIndex; j < nValuePasses; j++) {
-          auto valuePass = vtkValuePass::SafeDownCast(
-            valuePassCollection->GetItemAsObject(j));
-          auto newValueArray = vtkSmartPointer<vtkFloatArray>::New();
-          newValueArray->DeepCopy(
-            valuePass->GetFloatImageDataArray(rendererScalars));
-          newValueArray->SetName(valuePassNames[j].data());
-          outputImagePD->AddArray(newValueArray);
-        }
-      }
-
-      // Add to output collection
-      outputImages->SetBlock(i, outputImage);
-
-      this->printMsg(
-        "Rendering Image ("+std::string(projectionMode[i] ? "P" : "O")+ "|"+std::to_string(resX)+"x"+std::to_string(resY)+")",
-        1,timer.getElapsedTime(),this->threadNumber_
-      );
+    this->printMsg("Rendering Image ("
+                     + std::string(projectionMode[i] ? "P" : "O") + "|"
+                     + std::to_string(resX) + "x" + std::to_string(resY) + ")",
+                   1, timer.getElapsedTime(), this->threadNumber_);
   }
   this->printMsg(ttk::debug::Separator::L2);
 

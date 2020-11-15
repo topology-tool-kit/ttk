@@ -11,11 +11,9 @@ namespace ttk {
     ttkCinemaImagingEmbree();
     ~ttkCinemaImagingEmbree();
 
-    int RenderVTKObject(
-        vtkMultiBlockDataSet* outputImages,
+    int RenderVTKObject(vtkMultiBlockDataSet *outputImages,
 
-        vtkPointSet* inputObject,
-        vtkPointSet* inputGrid
-    ) const;
+                        vtkPointSet *inputObject,
+                        vtkPointSet *inputGrid) const;
   };
-};
+}; // namespace ttk

@@ -90,46 +90,33 @@ public:
   vtkSetMacro(Angle, double);
   vtkGetMacro(Angle, double);
 
-  static vtkCellArray* GetCells(vtkPointSet* pointSet);
+  static vtkCellArray *GetCells(vtkPointSet *pointSet);
 
-  static int Normalize(
-    vtkDataArray* depthArray,
-    const double nearFar[2]
-  );
+  static int Normalize(vtkDataArray *depthArray, const double nearFar[2]);
 
-  static int AddFieldDataArray(
-    vtkFieldData* fd,
-    vtkDataArray* array,
-    int tupelIdx,
-    std::string name = ""
-  );
+  static int AddFieldDataArray(vtkFieldData *fd,
+                               vtkDataArray *array,
+                               int tupelIdx,
+                               std::string name = "");
 
-  static int AddAllFieldDataArrays(
-    vtkPointSet* inputGrid,
-    vtkImageData* image,
-    int tupelIdx
-  );
+  static int AddAllFieldDataArrays(vtkPointSet *inputGrid,
+                                   vtkImageData *image,
+                                   int tupelIdx);
 
-  static int ComputeDirFromFocalPoint(
-    vtkPointSet* inputGrid
-  );
+  static int ComputeDirFromFocalPoint(vtkPointSet *inputGrid);
 
-  static int EnsureGridData(
-    vtkPointData* fd,
-    std::string name,
-    int nTuples,
-    const std::vector<double>& Values
-  );
+  static int EnsureGridData(vtkPointData *fd,
+                            std::string name,
+                            int nTuples,
+                            const std::vector<double> &Values);
 
-  static int MapPointAndCellData(
-    vtkImageData* outputImage,
+  static int MapPointAndCellData(vtkImageData *outputImage,
 
-    vtkPointSet* inputObject,
-    const ttk::CinemaImaging* renderer,
-    const unsigned int* primitiveIdArray,
-    const float* barycentricCoordinates,
-    const vtkIdType* inputObjectConnectivityList
-  );
+                                 vtkPointSet *inputObject,
+                                 const ttk::CinemaImaging *renderer,
+                                 const unsigned int *primitiveIdArray,
+                                 const float *barycentricCoordinates,
+                                 const vtkIdType *inputObjectConnectivityList);
 
 protected:
   ttkCinemaImaging();
@@ -142,14 +129,12 @@ protected:
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;
 
-  int RequestDataSingle(
-    vtkMultiBlockDataSet* collection,
+  int RequestDataSingle(vtkMultiBlockDataSet *collection,
 
-    vtkPointSet* object,
-    vtkPointSet* grid,
-    const std::vector<double>& defaultFocal,
-    const std::vector<double>& defaultNearFar,
-    const double defaultHeight,
-    const double defaultAngle
-  );
+                        vtkPointSet *object,
+                        vtkPointSet *grid,
+                        const std::vector<double> &defaultFocal,
+                        const std::vector<double> &defaultNearFar,
+                        const double defaultHeight,
+                        const double defaultAngle);
 };

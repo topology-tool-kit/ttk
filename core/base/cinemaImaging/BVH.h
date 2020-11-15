@@ -11,16 +11,16 @@
 #pragma once
 
 #include <CinemaImaging.h>
-#include <limits>
+#include <Ray.h>
 #include <algorithm>
+#include <limits>
 #include <stack>
 #include <vector>
-#include <Ray.h>
 
 namespace ttk {
   template <typename IT>
   class BVH {
-    protected:
+  protected:
     struct Node {
       Node() {
       }
@@ -52,6 +52,14 @@ namespace ttk {
         m_maxY = std::max(left->m_maxY, right->m_maxY);
         m_maxZ = std::max(left->m_maxZ, right->m_maxZ);
       }
+
+      ~Node() {
+        if(m_left)
+          delete m_left;
+        if(m_right)
+          delete m_right;
+      }
+
       std::vector<int> indices;
       int numTriangles;
       float m_minX, m_minY, m_minZ;
@@ -68,12 +76,13 @@ namespace ttk {
       float m_maxX, m_maxY, m_maxZ;
       Triangle() {
       }
-      Triangle(const int& index,
-               const float& centroid_x,
-               const float& centroid_y,
-               const float& centroid_z,
-               const float *pMin,
-               const float *pMax) {
+
+      void init(const int &index,
+                const float &centroid_x,
+                const float &centroid_y,
+                const float &centroid_z,
+                const float *pMin,
+                const float *pMax) {
         m_index = index;
         m_centroid_x = centroid_x;
         m_centroid_y = centroid_y;
@@ -88,26 +97,30 @@ namespace ttk {
       }
     };
 
-
   public:
     BVH(const float *coords,
         const IT *connectivityList,
         const size_t &nTriangles) {
-      Triangle *triangles
-        = buildTriangleList(coords, connectivityList, nTriangles);
-      size_t end = nTriangles;
-      this->nodes = buildTree(triangles, 0, end);
-      delete [] triangles;
+      std::vector<Triangle> triangles;
+      buildTriangleList(triangles, coords, connectivityList, nTriangles);
+
+      this->nodes = buildTree(triangles, 0, nTriangles);
     }
 
-    Node *buildTree(Triangle *triangles, size_t start, size_t end) {
+    ~BVH() {
+      if(this->nodes)
+        delete this->nodes;
+    }
+
+    Node *
+      buildTree(std::vector<Triangle> &triangles, size_t start, size_t end) {
 
       float minX, minY, minZ;
       float maxX, maxY, maxZ;
       minX = minY = minZ = std::numeric_limits<float>::max();
       maxX = maxY = maxZ = std::numeric_limits<float>::min();
       for(size_t i = start; i < end; i++) {
-        Triangle t = triangles[i];
+        const Triangle &t = triangles[i];
         minX = std::min(t.m_minX, minX);
         minY = std::min(t.m_minY, minY);
         minZ = std::min(t.m_minZ, minZ);
@@ -118,19 +131,20 @@ namespace ttk {
       }
       int numberTriangles = end - start;
       if(numberTriangles == 1) {
-        Triangle t = triangles[start];
+        const Triangle &t = triangles[start];
         std::vector<int> indices = {t.m_index};
         float pMin[3] = {t.m_minX, t.m_minY, t.m_minZ};
         float pMax[3] = {t.m_maxX, t.m_maxY, t.m_maxZ};
         return new Node(indices, 1, pMin, pMax);
       } else {
-        // find the bounds of the centroids, figure out what dimension to split on
+        // find the bounds of the centroids, figure out what dimension to split
+        // on
         float cminX, cminY, cminZ;
         float cmaxX, cmaxY, cmaxZ;
         cminX = cminY = cminZ = std::numeric_limits<float>::max();
         cmaxX = cmaxY = cmaxZ = std::numeric_limits<float>::min();
         for(size_t i = start; i < end; i++) {
-          Triangle t = triangles[i];
+          const Triangle &t = triangles[i];
           cminX = std::min(t.m_centroid_x, cminX);
           cminY = std::min(t.m_centroid_y, cminY);
           cminZ = std::min(t.m_centroid_z, cminZ);
@@ -160,7 +174,7 @@ namespace ttk {
           maxToCheck = cmaxZ;
         }
         size_t half = (start + end) / 2;
-        //partition triangles into two sets and build children
+        // partition triangles into two sets and build children
         if(minToCheck == maxToCheck) {
 
           std::vector<int> triangleIndices;
@@ -196,40 +210,40 @@ namespace ttk {
 
       return nullptr;
     }
-    Triangle *buildTriangleList(const float *coords,
-                                const IT *connectivityList,
-                                const size_t &nTriangles) {
-
-      Triangle *triangles = new Triangle[nTriangles];
+    int buildTriangleList(std::vector<Triangle> &triangles,
+                          const float *coords,
+                          const IT *connectivityList,
+                          const size_t &nTriangles) {
+      triangles.resize(nTriangles);
       for(size_t ti = 0; ti < nTriangles; ti++) {
 
-        const IT v1 = connectivityList[ti * 3 + 0]*3;
-        const IT v2 = connectivityList[ti * 3 + 1]*3;
-        const IT v3 = connectivityList[ti * 3 + 2]*3;
+        const IT v1 = connectivityList[ti * 3 + 0] * 3;
+        const IT v2 = connectivityList[ti * 3 + 1] * 3;
+        const IT v3 = connectivityList[ti * 3 + 2] * 3;
 
-        const float& x1 = coords[v1 + 0];
-        const float& x2 = coords[v2 + 0];
-        const float& x3 = coords[v3 + 0];
+        const float &x1 = coords[v1 + 0];
+        const float &x2 = coords[v2 + 0];
+        const float &x3 = coords[v3 + 0];
 
-        const float& y1 = coords[v1 + 1];
-        const float& y2 = coords[v2 + 1];
-        const float& y3 = coords[v3 + 1];
+        const float &y1 = coords[v1 + 1];
+        const float &y2 = coords[v2 + 1];
+        const float &y3 = coords[v3 + 1];
 
-        const float& z1 = coords[v1 + 2];
-        const float& z2 = coords[v2 + 2];
-        const float& z3 = coords[v3 + 2];
+        const float &z1 = coords[v1 + 2];
+        const float &z2 = coords[v2 + 2];
+        const float &z3 = coords[v3 + 2];
 
         const float pMin[3] = {std::min({x1, x2, x3}), std::min({y1, y2, y3}),
-                         std::min({z1, z2, z3})};
+                               std::min({z1, z2, z3})};
         const float pMax[3] = {std::max({x1, x2, x3}), std::max({y1, y2, y3}),
-                         std::max({z1, z2, z3})};
+                               std::max({z1, z2, z3})};
 
-        triangles[ti]
-          = Triangle(ti, findCentroid(x1, x2, x3), findCentroid(y1, y2, y3),
-                     findCentroid(z1, z2, z3), pMin, pMax);
+        triangles[ti].init(ti, findCentroid(x1, x2, x3),
+                           findCentroid(y1, y2, y3), findCentroid(z1, z2, z3),
+                           pMin, pMax);
       }
 
-      return triangles;
+      return 1;
     }
 
     bool MollerTrumbore(Ray &ray,

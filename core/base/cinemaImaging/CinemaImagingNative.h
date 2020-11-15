@@ -117,9 +117,9 @@ int ttk::CinemaImagingNative::renderImage(float *depthBuffer,
 
   float nan = std::numeric_limits<float>::quiet_NaN();
   if(orthographicProjection) {
-    #ifdef TTK_ENABLE_OPENMP
-    #pragma omp parallel for num_threads(this->threadNumber_)
-    #endif
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(this->threadNumber_)
+#endif
     for(int y = 0; y < resY; y++) {
       double v = ((double)y) * pixelHeightWorld;
 
@@ -165,17 +165,18 @@ int ttk::CinemaImagingNative::renderImage(float *depthBuffer,
       }
     }
   } else {
-    double focalLength = camSize[0] / 2 / tan(viewAngle / 360.0 * 3.141592653589793);
-    #ifdef TTK_ENABLE_OPENMP
-    #pragma omp parallel for num_threads(this->threadNumber_)
-    #endif
+    double factor = (viewAngle / 180.0 * 3.141592653589793) / resolution[0];
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(this->threadNumber_)
+#endif
     for(int y = 0; y < resY; y++) {
-      double v = ((double)y) * pixelHeightWorld;
+      double v = (y - resY * 0.5) * factor;
       size_t pixelIndex = y * resX;
       size_t bcIndex = 2 * pixelIndex;
 
       for(int x = 0; x < resX; x++) {
-        double u = ((double)x) * pixelWidthWorld;
+        double u = (x - resX * 0.5) * factor;
 
         depthBuffer[pixelIndex] = nan;
         primitiveIds[pixelIndex] = CinemaImaging::INVALID_ID;
@@ -189,12 +190,9 @@ int ttk::CinemaImagingNative::renderImage(float *depthBuffer,
 
         float ray_origin[3] = {org_x, org_y, org_z};
         // set dir
-        float dir_x = camPosCorner[0] + u * camRight[0] + v * camUpTrue[0]
-                      + camDir[0] * focalLength - org_x;
-        float dir_y = camPosCorner[1] + u * camRight[1] + v * camUpTrue[1]
-                      + camDir[1] * focalLength - org_y;
-        float dir_z = camPosCorner[2] + u * camRight[2] + v * camUpTrue[2]
-                      + camDir[2] * focalLength - org_z;
+        float dir_x = camDir[0] + u * camRight[0] + v * camUpTrue[0];
+        float dir_y = camDir[1] + u * camRight[1] + v * camUpTrue[1];
+        float dir_z = camDir[2] + u * camRight[2] + v * camUpTrue[2];
 
         float ray_dir[3] = {dir_x, dir_y, dir_z};
 
@@ -202,7 +200,8 @@ int ttk::CinemaImagingNative::renderImage(float *depthBuffer,
         bool wasHit = false;
         int triIdx;
         float distance;
-        wasHit = bvh.intersect(ray, connectivityList, vertexCoords, &triIdx, &distance);
+        wasHit = bvh.intersect(
+          ray, connectivityList, vertexCoords, &triIdx, &distance);
         if(wasHit) {
           depthBuffer[pixelIndex] = distance;
           primitiveIds[pixelIndex] = triIdx;
