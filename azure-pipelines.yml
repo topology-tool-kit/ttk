@@ -74,7 +74,7 @@ jobs:
 
   - task: Cache@2
     inputs:
-      key: VTK | $(Agent.OS) | "$(VTKVersion)" | "v-11-12-20"
+      key: VTK | $(Agent.OS) | "$(VTKVersion)" | "v-11-15-20"
       path: $(Build.ArtifactStagingDirectory)/vtk-install
       cacheHitVar: CACHE_RESTORED
     displayName: Cache VTK build
