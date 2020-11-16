@@ -307,6 +307,12 @@ jobs:
       run: |
         ttk-paraview.exe /S
 
+    - name: Fetch Visual C++ redistribuable run-time
+      run: |
+        Invoke-WebRequest `
+          -OutFile vc_redist.x64.exe `
+          -Uri https://aka.ms/vs/16/release/vc_redist.x64.exe
+
     - name: Configure TTK
       shell: cmd
       run: |
