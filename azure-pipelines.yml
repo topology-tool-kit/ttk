@@ -74,7 +74,7 @@ jobs:
 
   - task: Cache@2
     inputs:
-      key: VTK | $(Agent.OS) | "$(VTKVersion)" | "v-11-15-20"
+      key: VTK | $(Agent.OS) | "$(VTKVersion)" | "v-11-16-20b"
       path: $(Build.ArtifactStagingDirectory)/vtk-install
       cacheHitVar: CACHE_RESTORED
     displayName: Cache VTK build
@@ -214,7 +214,7 @@ jobs:
 
   - task: Cache@2
     inputs:
-      key: ParaView | $(Agent.OS) | "$(PV_VERSION)" | "v-11-12-20"
+      key: ParaView | $(Agent.OS) | "$(PV_VERSION)" | "v-11-16-20b"
       path: $(Build.ArtifactStagingDirectory)/pv-install
       cacheHitVar: CACHE_RESTORED
     displayName: Cache ParaView build
@@ -500,7 +500,7 @@ jobs:
   steps:
   - task: Cache@2
     inputs:
-      key: VTK | $(Agent.OS) | "$(VTKVersion)" | "v-11-12-20"
+      key: VTK | $(Agent.OS) | "$(VTKVersion)" | "v-11-16-20b"
       path: $(Build.ArtifactStagingDirectory)/vtk-install
       cacheHitVar: CACHE_RESTORED
     displayName: Cache VTK build
