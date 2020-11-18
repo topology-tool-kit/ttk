@@ -364,7 +364,7 @@ jobs:
   steps:
   - script: |
       brew cask install xquartz
-      brew install wget python libomp mesa glew boost ccache qt
+      brew install wget python@3.8 libomp mesa glew boost ccache qt
     displayName: 'Install dependencies'
 
   - script: |
