@@ -56,6 +56,13 @@ set(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL ON)
 if(APPLE)
   set(CPACK_COMPONENTS_ALL Unspecified python development)
 endif()
+# embed Visual C++ redistribuable for Windows
+if(WIN32 AND EXISTS "${CMAKE_SOURCE_DIR}/vc_redist.x64.exe")
+  install(PROGRAMS "${CMAKE_SOURCE_DIR}/vc_redist.x64.exe" DESTINATION bin)
+  list(APPEND CPACK_NSIS_EXTRA_INSTALL_COMMANDS
+    " ExecWait '$INSTDIR\\\\bin\\\\vc_redist.x64.exe /passive /norestart'
+      Delete '$INSTDIR\\\\bin\\\\vc_redist.x64.exe' ")
+endif()
 include(CPack)
 
 if(TTK_BUILD_STANDALONE_APPS AND NOT TTK_BUILD_VTK_WRAPPERS)

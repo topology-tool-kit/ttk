@@ -167,7 +167,7 @@ jobs:
       run: |
         # ParaView dependencies
         brew cask install xquartz
-        brew install wget python libomp mesa glew qt
+        brew install wget python@3.8 libomp mesa glew qt
         # TTK dependencies
         brew install boost eigen graphviz
         python3 -m pip install scikit-learn
@@ -237,7 +237,7 @@ jobs:
       run: |
         # ParaView dependencies
         brew cask install xquartz
-        brew install wget python libomp mesa glew qt
+        brew install wget python@3.8 libomp mesa glew qt
         # TTK dependencies
         brew install boost graphviz
         python3 -m pip install scikit-learn
@@ -306,6 +306,12 @@ jobs:
       shell: cmd
       run: |
         ttk-paraview.exe /S
+
+    - name: Fetch Visual C++ redistribuable run-time
+      run: |
+        Invoke-WebRequest `
+          -OutFile vc_redist.x64.exe `
+          -Uri https://aka.ms/vs/16/release/vc_redist.x64.exe
 
     - name: Configure TTK
       shell: cmd

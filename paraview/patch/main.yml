@@ -79,7 +79,7 @@ jobs:
     - name: Install macOS dependencies
       run: |
         brew cask install xquartz
-        brew install wget python libomp mesa glew boost qt ninja
+        brew install wget python@3.8 libomp mesa glew boost qt ninja
 
     - name: Build patched ParaView & create package
       run: |
