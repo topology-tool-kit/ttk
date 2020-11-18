@@ -110,7 +110,7 @@ for the L-infinity distance).
       </PropertyGroup>
 
       <Hints>
-        <ShowInMenu category="TTK - Scalar Data" />
+        <ShowInMenu category="TTK - Ensemble Scalar Data" />
       </Hints>
    </SourceProxy>
  </ProxyGroup>
