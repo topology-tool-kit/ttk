@@ -411,7 +411,7 @@ jobs:
         set PV_DIR=%ProgramFiles%\TTK-ParaView
         set TTK_DIR=%ProgramFiles%\TTK
         set CMAKE_PREFIX_PATH=%TTK_DIR%\lib\cmake;%PV_DIR%\lib\cmake
-        set PATH=%PATH%;%PV_DIR%\bin;%TTK_DIR%\bin;%TTK_DIR%\bin\ttk
+        set PATH=%PATH%;%PV_DIR%\bin;%TTK_DIR%\bin
         :: base layer
         cd %GITHUB_WORKSPACE%\examples\c++
         mkdir build
@@ -437,7 +437,7 @@ jobs:
         export TTK_BIN="/c/Program Files/TTK/bin"
         export CONDA_ROOT="/c/Miniconda"
         export PV_PLUGIN_PATH="$TTK_BIN/plugins"
-        export PATH="$PATH:$PV_PLUGIN_PATH:$PV_BIN:$TTK_BIN:$TTK_BIN/ttk"
+        export PATH="$PATH:$PV_BIN:$TTK_BIN"
         export PYTHONPATH="$PV_BIN/Lib/site-packages:$TTK_BIN/Lib/site-packages:$CONDA_ROOT/Lib"
         # pure python
         cd $GITHUB_WORKSPACE/examples/python
