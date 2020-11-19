@@ -1,0 +1,99 @@
+name: check_code
+
+on:
+  push:
+    # triggered on tag pushes with tags beginning with either "v" or "dev"
+    branch-ignore:
+      - '*'
+    tags:
+      - 'v*'
+      - 'dev*'
+  pull_request:
+    # also triggered by pull requests on the "dev" branch
+    branches:
+      - 'dev'
+
+jobs:
+  check-code:
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Use clang-format to detect formatting issues
+      run: |
+        git ls-files | grep -E "\.cpp$|\.cxx$|\.h$|\.hpp$" | xargs clang-format -n -Werror
+
+    - name: Check line endings (Unix rather than DOS) [NOT ENFORCED]
+      run: |
+        git ls-files | xargs file "{}" ";" | grep CRLF || true
+
+    - name: Check files not ending with a newline [NOT ENFORCED]
+      run: |
+        for f in $(git ls-files | grep -Ev 'png$|ico$' ); do
+          test $(tail -c 1 $f | wc -l) -eq 0 && echo $f || true
+        done
+
+    - name: Check non-standard C++ file extensions [NOT ENFORCED]
+      run: |
+        git ls-files | grep -E "\.cxx$|\.cc$|\.hpp$|\.hxx$|\.txx$|\.tpp$|\.inl$" || true
+
+    - name: Check for files containing Unicode characters [NOT ENFORCED]
+      run: |
+        git ls-files | xargs file | grep Unicode || true
+
+    - name: Check for empty files [NOT ENFORCED]
+      run: |
+        git ls-files | xargs file | grep empty || true
+
+    - name: Install Ubuntu dependencies
+      run: |
+        sudo apt update
+        # TTK dependencies
+        sudo apt install -y \
+          libboost-system-dev \
+          libeigen3-dev \
+          libgraphviz-dev \
+          libsqlite3-dev \
+          graphviz \
+          python3-sklearn \
+          zlib1g-dev \
+          dpkg-dev \
+          clang-tidy \
+          clang-tools
+
+    - uses: dsaltares/fetch-gh-release-asset@master
+      with:
+        repo: "topology-tool-kit/ttk-paraview"
+        version: "tags/v5.8.1"
+        file: "ttk-paraview-ubuntu-20.04.deb"
+
+    - name: Install ParaView .deb
+      run: |
+        sudo apt install ./ttk-paraview-ubuntu-20.04.deb
+
+    - name: Create & configure TTK build directory
+      run: |
+        mkdir build
+        cd build
+        cmake \
+          -DCMAKE_EXPORT_COMPILE_COMMANDS=TRUE \
+          -DTTK_BUILD_PARAVIEW_PLUGINS=TRUE \
+          -DTTK_BUILD_VTK_WRAPPERS=TRUE \
+          -DTTK_BUILD_STANDALONE_APPS=TRUE \
+          $GITHUB_WORKSPACE
+
+    - name: Use clang-check for compiler warnings
+      run: |
+        git ls-files \
+        | grep core \
+        | grep -E "\.cpp$|\.cxx$" \
+        | grep -Ev "Munkres|AuctionActor" \
+        | xargs clang-check -p build --extra-arg=-Werror
+
+    - name: Use clang-tidy to lint code [NOT ENFORCED]
+      run: |
+        git ls-files \
+        | grep core \
+        | grep -E "\.cpp$|\.cxx$" \
+        | grep -Ev "Munkres|AuctionActor" \
+        | xargs -n1 clang-tidy -p build
