@@ -163,14 +163,22 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
+    - uses: actions/setup-python@v2
+      with:
+        python-version: "3.8"
+
     - name: Install macOS dependencies
       run: |
         # ParaView dependencies
         brew cask install xquartz
-        brew install wget python@3.8 libomp mesa glew qt
+        brew install wget libomp mesa glew qt
         # TTK dependencies
         brew install boost eigen graphviz
-        python3 -m pip install scikit-learn
+        python -m pip install scikit-learn
+
+    - uses: actions/setup-python@v2
+      with:
+        python-version: "3.8"
 
     - name: Install Spectra dependency
       run: |
@@ -201,6 +209,8 @@ jobs:
         cmake \
           -DCMAKE_BUILD_TYPE=Release \
           -DQt5_DIR=$(brew --prefix qt)/lib/cmake/Qt5 \
+          -DPython3_FIND_STRATEGY=LOCATION \
+          -DPython3_ROOT_DIR=$(python -c "import sys; print(sys.prefix)") \
           -DTTK_BUILD_PARAVIEW_PLUGINS=TRUE \
           -DTTK_BUILD_VTK_WRAPPERS=TRUE \
           -DTTK_BUILD_STANDALONE_APPS=TRUE \
@@ -233,14 +243,22 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
+    - uses: actions/setup-python@v2
+      with:
+        python-version: "3.8"
+
     - name: Install macOS run-time dependencies
       run: |
         # ParaView dependencies
         brew cask install xquartz
-        brew install wget python@3.8 libomp mesa glew qt
+        brew install wget libomp mesa glew qt
         # TTK dependencies
         brew install boost graphviz
-        python3 -m pip install scikit-learn
+        python -m pip install scikit-learn
+
+    - uses: actions/setup-python@v2
+      with:
+        python-version: "3.8"
 
     - name: Fetch ttk-paraview
       run: |
@@ -275,7 +293,7 @@ jobs:
         export PYTHONPATH=/Applications/lib/python3.8/site-packages
         export DYLD_LIBRARY_PATH=/Applications/lib:$DYLD_LIBRARY_PATH
         cd $GITHUB_WORKSPACE/examples/python
-        python3 example.py ../data/inputData.vtu
+        python example.py ../data/inputData.vtu
         # pvpython
         export PATH=/Applications/bin:$PATH
         cd $GITHUB_WORKSPACE/examples/pvpython

@@ -364,8 +364,12 @@ jobs:
   steps:
   - script: |
       brew cask install xquartz
-      brew install wget python@3.8 libomp mesa glew boost ccache qt
+      brew install wget libomp mesa glew boost ccache qt
     displayName: 'Install dependencies'
+
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '3.8'
 
   - script: |
       wget https://github.com/topology-tool-kit/ttk-paraview/releases/download/$(PV_VERSION)/ttk-paraview.pkg
