@@ -67,9 +67,8 @@ int ttk::ttkCinemaImagingVTK::addValuePass(
   int fieldType,
   vtkRenderPassCollection *valuePassCollection,
   std::vector<std::string> &valuePassNames) const {
-  auto fd = static_cast<vtkFieldData *>(
-    fieldType == 0 ? (vtkFieldData *)object->GetPointData()
-                   : (vtkFieldData *)object->GetCellData());
+  auto fd = fieldType == 0 ? static_cast<vtkFieldData *>(object->GetPointData())
+                           : static_cast<vtkFieldData *>(object->GetCellData());
 
   for(size_t i = 0, j = fd->GetNumberOfArrays(); i < j; i++) {
     auto array = fd->GetArray(i);
