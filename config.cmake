@@ -128,7 +128,7 @@ else()
   option(TTK_ENABLE_ZLIB "Enable Zlib support" ON)
 endif()
 
-find_package(EMBREE 3.6)
+find_package(EMBREE 3.4)
 if(EMBREE_FOUND)
   option(TTK_ENABLE_EMBREE "Enable embree raytracing for ttkCinemaImaging" ON)
 else()
