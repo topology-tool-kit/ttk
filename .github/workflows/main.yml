@@ -473,7 +473,7 @@ jobs:
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: ttk-ubuntu-18.04.deb/ttk-ubuntu-18.04.deb
-        asset_name: ttk-${{ tag_name }}-ubuntu-18.04.deb
+        asset_name: ttk-ubuntu-18.04.deb
         asset_content_type: application/vnd.debian.binary-package
 
     - name: Upload Ubuntu Focal .deb as Release Asset
@@ -483,7 +483,7 @@ jobs:
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: ttk-ubuntu-20.04.deb/ttk-ubuntu-20.04.deb
-        asset_name: ttk-${{ tag_name }}-ubuntu-20.04.deb
+        asset_name: ttk-ubuntu-20.04.deb
         asset_content_type: application/vnd.debian.binary-package
 
     - name: Upload macOS .pkg as Release Asset
@@ -493,7 +493,7 @@ jobs:
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: ttk.pkg/ttk.pkg
-        asset_name: ttk-${{ tag_name }}.pkg
+        asset_name: ttk.pkg
         asset_content_type: application/x-newton-compatible-pkg
 
     - name: Upload Windows .exe as Release Asset
@@ -503,5 +503,5 @@ jobs:
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: ttk.exe/ttk.exe
-        asset_name: ttk-${{ github.ref }}.exe
+        asset_name: ttk.exe
         asset_content_type: application/vnd.microsoft.portable-executable
