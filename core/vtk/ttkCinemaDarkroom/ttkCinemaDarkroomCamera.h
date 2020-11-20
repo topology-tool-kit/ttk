@@ -23,7 +23,7 @@ class TTKCINEMADARKROOM_EXPORT ttkCinemaDarkroomCamera : public ttkAlgorithm {
 
   double Position[3]{0, 0, 0};
   double Up[3]{0, 0, 1};
-  double Focus[3]{0, 0, 0};
+  double FocalPoint[3]{0, 0, 0};
 
 public:
   static ttkCinemaDarkroomCamera *New();
@@ -33,8 +33,8 @@ public:
   vtkGetVector3Macro(Position, double);
   vtkSetVector3Macro(Up, double);
   vtkGetVector3Macro(Up, double);
-  vtkSetVector3Macro(Focus, double);
-  vtkGetVector3Macro(Focus, double);
+  vtkSetVector3Macro(FocalPoint, double);
+  vtkGetVector3Macro(FocalPoint, double);
 
   int SyncWithParaViewCamera();
 

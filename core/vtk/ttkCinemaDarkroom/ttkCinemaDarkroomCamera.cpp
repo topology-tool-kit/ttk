@@ -49,13 +49,13 @@ int ttkCinemaDarkroomCamera::SyncWithParaViewCamera() {
 from paraview.simple import GetActiveView
 from paraview.simple import FindSource
 
-self = FindSource("TTKCDCamera1")
+self = FindSource("TTKDarkroomCamera1")
 
 view = GetActiveView()
 if view and self:
   self.Position = view.CameraPosition
   self.Up = view.CameraViewUp
-  self.Focus = view.CameraFocalPoint
+  self.FocalPoint = view.CameraFocalPoint
 )");
 
   vtkPythonInterpreter::RunSimpleString(code.data());
@@ -77,7 +77,7 @@ if view and self:
   //   auto camera = proxy->GetActiveCamera();
 
   //   this->SetUp( camera->GetViewUp() );
-  //   this->SetFocus( camera->GetFocalPoint() );
+  //   this->SetFocalPoint( camera->GetFocalPoint() );
   //   this->SetPosition( camera->GetPosition() );
 
   this->printMsg("Updating Camera Parameters", 1, timer.getElapsedTime(), 1);
@@ -141,7 +141,7 @@ int ttkCinemaDarkroomCamera::RequestData(vtkInformation *request,
       };
   auto pd = output->GetPointData();
   generateArray(pd, "CamUp", this->Up);
-  generateArray(pd, "CamFocus", this->Focus);
+  generateArray(pd, "CamFocalPoint", this->FocalPoint);
 
   this->printMsg("Generating Camera", 1, timer.getElapsedTime(), 1);
 

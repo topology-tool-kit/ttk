@@ -128,6 +128,14 @@ else()
   option(TTK_ENABLE_ZLIB "Enable Zlib support" ON)
 endif()
 
+find_package(EMBREE 3.6)
+if(EMBREE_FOUND)
+  option(TTK_ENABLE_EMBREE "Enable embree raytracing for ttkCinemaImaging" ON)
+else()
+  option(TTK_ENABLE_EMBREE "Enable embree raytracing for ttkCinemaImaging" OFF)
+  message(STATUS "EMBREE library not found, disabling embree support in TTK.")
+endif()
+
 # START_FIND_GRAPHVIZ
 find_path(GRAPHVIZ_INCLUDE_DIR
   NAMES

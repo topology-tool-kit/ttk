@@ -11,9 +11,11 @@
                     <Group name="filters" />
                 </ProxyGroupDomain>
                 <DataTypeDomain name="input_type">
-                    <DataType value="vtkDataObject" />
+                    <DataType value="vtkMultiBlockDataSet" />
+                    <DataType value="vtkUnstructuredGrid" />
+                    <DataType value="vtkPolyData" />
                 </DataTypeDomain>
-                <Documentation>vtkDataObject to be depicted.</Documentation>
+                <Documentation>Triangulation that is going to be depicted.</Documentation>
             </InputProperty>
             <InputProperty name="SamplingGrid" port_index="1" command="SetInputConnection">
                 <ProxyGroupDomain name="groups">
@@ -26,78 +28,88 @@
                 <Documentation>vtkPointSet that represents the camera sampling locations.</Documentation>
             </InputProperty>
 
-            <!-- Global Options -->
+            <!-- GLOBAL OPTIONS -->
             <IntVectorProperty name="Resolution" label="Resolution" command="SetResolution" number_of_elements="2" default_values="256 256">
                 <Documentation>Image Resolution</Documentation>
             </IntVectorProperty>
-            <IntVectorProperty name="GenerateScalarImages" label="Generate Scalar Images" command="SetGenerateScalarImages" number_of_elements="1" default_values="1">
-                <BooleanDomain name="bool" />
-                <Documentation>Generate floating-point image for each data array of the input 'vtkDataObject'.</Documentation>
+            <IntVectorProperty name="Backend" label="Backend" command="SetBackend" number_of_elements="1" default_values="0">
+                <EnumerationDomain name="enum">
+                    <Entry value="0" text="VTK OpenGL"/>
+                    <Entry value="1" text="Embree"/>
+                    <Entry value="2" text="Native"/>
+                </EnumerationDomain>
+                <Documentation>Rendering Backend</Documentation>
             </IntVectorProperty>
 
-            <!-- Camera Options -->
-            <IntVectorProperty name="CamProjectionMode" label="Projection Mode" command="SetCamProjectionMode" number_of_elements="1" default_values="0">
+            <!-- PROJECTION -->
+            <IntVectorProperty name="ProjectionMode" command="SetProjectionMode" number_of_elements="1" default_values="0">
                 <EnumerationDomain name="enum">
                     <Entry value="0" text="Orthographic"/>
                     <Entry value="1" text="Perspective"/>
                 </EnumerationDomain>
                 <Documentation>Use orthographic or perspective camera projection.</Documentation>
             </IntVectorProperty>
-            <IntVectorProperty name="CamHeightAuto" label="Auto CamHeight" command="SetCamHeightAuto" number_of_elements="1" default_values="1">
-                <BooleanDomain name="bool" />
-                <Documentation>Automatically set camera height to sampling grid diameter.</Documentation>
-                <Hints>
-                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="CamProjectionMode" value="0" />
-                </Hints>
-            </IntVectorProperty>
-            <DoubleVectorProperty name="CamHeight" label="CamHeight" command="SetCamHeight" number_of_elements="1" default_values="1">
-                <Documentation>Height of the camera in world coordinates.</Documentation>
-                <Hints>
-                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="CamHeightAuto" value="0" />
-                </Hints>
-            </DoubleVectorProperty>
-            <DoubleVectorProperty name="CamAngle" label="CamAngle" command="SetCamAngle" number_of_elements="1" default_values="90">
-                <DoubleRangeDomain name="range" min="1" max="180" />
-                <Documentation>CamAngle</Documentation>
-                <Hints>
-                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="CamProjectionMode" value="1" />
-                </Hints>
-            </DoubleVectorProperty>
-            <IntVectorProperty name="CamNearFarAuto" label="Auto CamNearFar" command="SetCamNearFarAuto" number_of_elements="1" default_values="1">
-                <BooleanDomain name="bool" />
-                <Documentation>Automatically set camera near-far plane settings to sampling grid diameter.</Documentation>
-            </IntVectorProperty>
-            <DoubleVectorProperty name="CamNearFar" label="CamNearFar" command="SetCamNearFar" number_of_elements="2" default_values="0.1 1">
-                <Documentation>Near/Far plane settings.</Documentation>
-                <Hints>
-                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="CamNearFarAuto" value="0" />
-                </Hints>
-            </DoubleVectorProperty>
-            <IntVectorProperty name="CamFocusAuto" label="Auto CamFocus" command="SetCamFocusAuto" number_of_elements="1" default_values="1">
+
+
+            <!-- FOCAL POINT -->
+            <IntVectorProperty name="AutoFocalPoint" command="SetAutoFocalPoint" number_of_elements="1" default_values="1">
                 <BooleanDomain name="bool" />
                 <Documentation>Automatically set focus to sampling grid center.</Documentation>
             </IntVectorProperty>
-            <DoubleVectorProperty name="CamFocus" label="CamFocus" command="SetCamFocus" number_of_elements="3" default_values="0 0 0">
-                <Documentation>CamFocus</Documentation>
+            <DoubleVectorProperty name="FocalPoint" command="SetFocalPoint" number_of_elements="3" default_values="0 0 0">
+                <Documentation>Camera FocalPoint.</Documentation>
                 <Hints>
-                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="CamFocusAuto" value="0" />
+                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="AutoFocalPoint" value="0" />
+                </Hints>
+            </DoubleVectorProperty>
+
+            <!-- NEAR FAR -->
+            <IntVectorProperty name="AutoNearFar" command="SetAutoNearFar" number_of_elements="1" default_values="1">
+                <BooleanDomain name="bool" />
+                <Documentation>Automatically set camera near-far plane settings based on grid and object bounds.</Documentation>
+            </IntVectorProperty>
+            <DoubleVectorProperty name="NearFar" command="SetNearFar" number_of_elements="2" default_values="0.1 1">
+                <Documentation>Near/Far plane settings.</Documentation>
+                <Hints>
+                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="AutoNearFar" value="0" />
+                </Hints>
+            </DoubleVectorProperty>
+
+            <!-- HEIGHT -->
+            <IntVectorProperty name="AutoHeight" command="SetAutoHeight" number_of_elements="1" default_values="1">
+                <BooleanDomain name="bool" />
+                <Documentation>Automatically set camera height to sampling grid diameter.</Documentation>
+            </IntVectorProperty>
+            <DoubleVectorProperty name="Height" command="SetHeight" number_of_elements="1" default_values="1">
+                <Documentation>Height of the camera in world coordinates.</Documentation>
+                <Hints>
+                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="AutoHeight" value="0" />
+                </Hints>
+            </DoubleVectorProperty>
+
+            <!-- ANGLE -->
+            <DoubleVectorProperty name="Angle" command="SetAngle" number_of_elements="1" default_values="90">
+                <DoubleRangeDomain name="range" min="1" max="180" />
+                <Documentation>Camera Angle.</Documentation>
+                <Hints>
+                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="ProjectionMode" value="1" />
                 </Hints>
             </DoubleVectorProperty>
 
             <!-- Groups -->
-            <PropertyGroup panel_widget="Line" label="Output Options">
+            <PropertyGroup panel_widget="Line" label="Render Options">
                 <Property name="Resolution" />
-                <Property name="GenerateScalarImages" />
+                <Property name="Backend" />
             </PropertyGroup>
             <PropertyGroup panel_widget="Line" label="Camera Options">
-                <Property name="CamProjectionMode" />
-                <Property name="CamFocusAuto" />
-                <Property name="CamFocus" />
-                <Property name="CamNearFarAuto" />
-                <Property name="CamNearFar" />
-                <Property name="CamHeightAuto" />
-                <Property name="CamHeight" />
-                <Property name="CamAngle" />
+                <Property name="ProjectionMode" />
+                <Property name="AutoFocalPoint" />
+                <Property name="FocalPoint" />
+                <Property name="AutoNearFar" />
+                <Property name="NearFar" />
+                <Property name="AutoHeight" />
+                <Property name="Height" />
+                <Property name="Angle" />
             </PropertyGroup>
 
             ${DEBUG_WIDGETS}
