@@ -173,7 +173,7 @@ jobs:
         brew cask install xquartz
         brew install wget libomp mesa glew qt
         # TTK dependencies
-        brew install boost eigen graphviz
+        brew install boost eigen graphviz embree
         python -m pip install scikit-learn
 
     - uses: actions/setup-python@v2
@@ -253,7 +253,7 @@ jobs:
         brew cask install xquartz
         brew install wget libomp mesa glew qt
         # TTK dependencies
-        brew install boost graphviz
+        brew install boost graphviz embree
         python -m pip install scikit-learn
 
     - uses: actions/setup-python@v2
@@ -312,7 +312,7 @@ jobs:
       shell: bash
       run: |
         conda install -c anaconda qt boost
-        conda install -c conda-forge eigen spectralib zfp scikit-learn openmp
+        conda install -c conda-forge eigen spectralib zfp scikit-learn openmp embree3
 
     - name: Fetch ParaView installer
       run: |
@@ -384,7 +384,7 @@ jobs:
       shell: bash
       run: |
         conda install -c anaconda qt boost
-        conda install -c conda-forge zfp scikit-learn openmp
+        conda install -c conda-forge zfp scikit-learn openmp embree3
 
     - name: Fetch ParaView installer
       run: |
