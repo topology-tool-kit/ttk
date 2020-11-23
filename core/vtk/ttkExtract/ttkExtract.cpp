@@ -918,13 +918,12 @@ int ttkExtract::ExtractArray(vtkDataObject *output,
   ttk::Timer t;
   std::string indicesString;
   doubleVectorToString(indicesString, indices);
-  this->printMsg(
-    "Extracting array with idx [" + indicesString + "] from "
-      + std::string(this->ArrayAttributeType == 0
-                      ? "point"
-                      : this->ArrayAttributeType == 1 ? "cell" : "field")
-      + " data",
-    0, 0, ttk::debug::LineMode::REPLACE);
+  this->printMsg("Extracting array with idx [" + indicesString + "] from "
+                   + std::string(this->ArrayAttributeType == 0   ? "point"
+                                 : this->ArrayAttributeType == 1 ? "cell"
+                                                                 : "field")
+                   + " data",
+                 0, 0, ttk::debug::LineMode::REPLACE);
 
   output->ShallowCopy(input);
 
@@ -934,11 +933,10 @@ int ttkExtract::ExtractArray(vtkDataObject *output,
     return 0;
   }
 
-  vtkFieldData *inputAttribute = this->ArrayAttributeType == 0
-                                   ? outputAsDS->GetPointData()
-                                   : this->ArrayAttributeType == 1
-                                       ? outputAsDS->GetCellData()
-                                       : outputAsDS->GetFieldData();
+  vtkFieldData *inputAttribute
+    = this->ArrayAttributeType == 0   ? outputAsDS->GetPointData()
+      : this->ArrayAttributeType == 1 ? outputAsDS->GetCellData()
+                                      : outputAsDS->GetFieldData();
 
   if(indices.size() != 1) {
     this->printErr("Array extraction can only extract exactly one array.");
@@ -960,17 +958,16 @@ int ttkExtract::ExtractArray(vtkDataObject *output,
 
   this->ArrayAttributeType == 0
     ? outputAsDS->GetPointData()->ShallowCopy(outputAttribute)
-    : this->ArrayAttributeType == 1
-        ? outputAsDS->GetCellData()->ShallowCopy(outputAttribute)
-        : outputAsDS->GetFieldData()->ShallowCopy(outputAttribute);
+  : this->ArrayAttributeType == 1
+    ? outputAsDS->GetCellData()->ShallowCopy(outputAttribute)
+    : outputAsDS->GetFieldData()->ShallowCopy(outputAttribute);
 
-  this->printMsg(
-    "Extracting array with indices [" + indicesString + "] from "
-      + std::string(this->ArrayAttributeType == 0
-                      ? "point"
-                      : this->ArrayAttributeType == 1 ? "cell" : "field")
-      + " data",
-    1, t.getElapsedTime());
+  this->printMsg("Extracting array with indices [" + indicesString + "] from "
+                   + std::string(this->ArrayAttributeType == 0   ? "point"
+                                 : this->ArrayAttributeType == 1 ? "cell"
+                                                                 : "field")
+                   + " data",
+                 1, t.getElapsedTime());
 
   return 1;
 }

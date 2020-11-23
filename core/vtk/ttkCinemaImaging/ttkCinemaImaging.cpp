@@ -158,10 +158,9 @@ int ttkCinemaImaging::RequestData(vtkInformation *request,
   {
     this->printMsg(
       {{"#Objects", std::to_string(nInputObjects)},
-       {"Backend",
-        this->Backend == 0
-          ? std::string("VTK_OPENGL")
-          : this->Backend == 1 ? std::string("EMBREE") : std::string("NATIVE")},
+       {"Backend", this->Backend == 0   ? std::string("VTK_OPENGL")
+                   : this->Backend == 1 ? std::string("EMBREE")
+                                        : std::string("NATIVE")},
        {"Resolution", std::to_string(this->Resolution[0]) + " x "
                         + std::to_string(this->Resolution[1])},
        {"Projection", this->ProjectionMode ? "Perspective" : "Orthographic"},

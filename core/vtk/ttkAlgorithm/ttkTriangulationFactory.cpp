@@ -18,10 +18,9 @@ vtkCellArray *GetCells(vtkDataSet *dataSet) {
     }
     case VTK_POLY_DATA: {
       auto dataSetAsPD = static_cast<vtkPolyData *>(dataSet);
-      return dataSetAsPD->GetNumberOfPolys() > 0
-               ? dataSetAsPD->GetPolys()
-               : dataSetAsPD->GetNumberOfLines() > 0 ? dataSetAsPD->GetLines()
-                                                     : dataSetAsPD->GetVerts();
+      return dataSetAsPD->GetNumberOfPolys() > 0   ? dataSetAsPD->GetPolys()
+             : dataSetAsPD->GetNumberOfLines() > 0 ? dataSetAsPD->GetLines()
+                                                   : dataSetAsPD->GetVerts();
     }
   }
   return nullptr;

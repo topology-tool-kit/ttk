@@ -87,9 +87,9 @@ int ttkPlanarGraphLayout::RequestData(vtkInformation *request,
 
   auto dataType
     = this->GetUseSequences() ? sequenceArray->GetDataType() : VTK_CHAR;
-  auto idType = this->GetUseBranches()
-                  ? branchArray->GetDataType()
-                  : this->GetUseLevels() ? levelArray->GetDataType() : VTK_CHAR;
+  auto idType = this->GetUseBranches() ? branchArray->GetDataType()
+                : this->GetUseLevels() ? levelArray->GetDataType()
+                                       : VTK_CHAR;
   //   auto levelType
   //     = this->GetUseLevels()
   //         ? levels->GetDataType()

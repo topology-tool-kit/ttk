@@ -214,12 +214,10 @@ int ttkTrackingFromPersistenceDiagrams::buildMesh(
       BNodeType point1Type1 = std::get<1>(tuple1);
       BNodeType point1Type2 = std::get<3>(tuple1);
       BNodeType point1Type
-        = point1Type1 == BLocalMax || point1Type2 == BLocalMax
-            ? BLocalMax
-            : point1Type1 == BLocalMin || point1Type2 == BLocalMin
-                ? BLocalMin
-                : point1Type1 == BSaddle2 || point1Type2 == BSaddle2 ? BSaddle2
-                                                                     : BSaddle1;
+        = point1Type1 == BLocalMax || point1Type2 == BLocalMax   ? BLocalMax
+          : point1Type1 == BLocalMin || point1Type2 == BLocalMin ? BLocalMin
+          : point1Type1 == BSaddle2 || point1Type2 == BSaddle2   ? BSaddle2
+                                                                 : BSaddle1;
       bool t11Min = point1Type1 == BLocalMin;
       bool t11Max = point1Type1 == BLocalMax;
       bool t12Min = point1Type2 == BLocalMin;
@@ -232,15 +230,15 @@ int ttkTrackingFromPersistenceDiagrams::buildMesh(
         if(useGeometricSpacing)
           z1 += spacing * (numStart + c);
       } else {
-        x1 = t12Max ? std::get<11>(tuple1)
-                    : t11Min ? std::get<7>(tuple1)
-                             : (std::get<7>(tuple1) + std::get<11>(tuple1)) / 2;
-        y1 = t12Max ? std::get<12>(tuple1)
-                    : t11Min ? std::get<8>(tuple1)
-                             : (std::get<8>(tuple1) + std::get<12>(tuple1)) / 2;
-        z1 = t12Max ? std::get<13>(tuple1)
-                    : t11Min ? std::get<9>(tuple1)
-                             : (std::get<9>(tuple1) + std::get<13>(tuple1)) / 2;
+        x1 = t12Max   ? std::get<11>(tuple1)
+             : t11Min ? std::get<7>(tuple1)
+                      : (std::get<7>(tuple1) + std::get<11>(tuple1)) / 2;
+        y1 = t12Max   ? std::get<12>(tuple1)
+             : t11Min ? std::get<8>(tuple1)
+                      : (std::get<8>(tuple1) + std::get<12>(tuple1)) / 2;
+        z1 = t12Max   ? std::get<13>(tuple1)
+             : t11Min ? std::get<9>(tuple1)
+                      : (std::get<9>(tuple1) + std::get<13>(tuple1)) / 2;
         if(useGeometricSpacing)
           z1 += spacing * (numStart + c);
       }
@@ -277,13 +275,11 @@ int ttkTrackingFromPersistenceDiagrams::buildMesh(
             point1Type1 = std::get<1>(tupleN);
             point1Type2 = std::get<3>(tupleN);
             point1Type
-              = point1Type1 == BLocalMax || point1Type2 == BLocalMax
-                  ? BLocalMax
-                  : point1Type1 == BLocalMin || point1Type2 == BLocalMin
-                      ? BLocalMin
-                      : point1Type1 == BSaddle2 || point1Type2 == BSaddle2
-                          ? BSaddle2
-                          : BSaddle1;
+              = point1Type1 == BLocalMax || point1Type2 == BLocalMax ? BLocalMax
+                : point1Type1 == BLocalMin || point1Type2 == BLocalMin
+                  ? BLocalMin
+                : point1Type1 == BSaddle2 || point1Type2 == BSaddle2 ? BSaddle2
+                                                                     : BSaddle1;
             t11Min = point1Type1 == BLocalMin;
             t11Max = point1Type1 == BLocalMax;
             t12Min = point1Type2 == BLocalMin;
@@ -298,21 +294,15 @@ int ttkTrackingFromPersistenceDiagrams::buildMesh(
               if(useGeometricSpacing)
                 z1 += spacing * (numStart + c);
             } else {
-              x1 = t12Max
-                     ? std::get<11>(tupleN)
-                     : t11Min
-                         ? std::get<7>(tupleN)
-                         : (std::get<7>(tupleN) + std::get<11>(tupleN)) / 2;
-              y1 = t12Max
-                     ? std::get<12>(tupleN)
-                     : t11Min
-                         ? std::get<8>(tupleN)
-                         : (std::get<8>(tupleN) + std::get<12>(tupleN)) / 2;
-              z1 = t12Max
-                     ? std::get<13>(tupleN)
-                     : t11Min
-                         ? std::get<9>(tupleN)
-                         : (std::get<9>(tupleN) + std::get<13>(tupleN)) / 2;
+              x1 = t12Max   ? std::get<11>(tupleN)
+                   : t11Min ? std::get<7>(tupleN)
+                            : (std::get<7>(tupleN) + std::get<11>(tupleN)) / 2;
+              y1 = t12Max   ? std::get<12>(tupleN)
+                   : t11Min ? std::get<8>(tupleN)
+                            : (std::get<8>(tupleN) + std::get<12>(tupleN)) / 2;
+              z1 = t12Max   ? std::get<13>(tupleN)
+                   : t11Min ? std::get<9>(tupleN)
+                            : (std::get<9>(tupleN) + std::get<13>(tupleN)) / 2;
               if(useGeometricSpacing)
                 z1 += spacing * (numStart + c);
             }
@@ -331,12 +321,10 @@ int ttkTrackingFromPersistenceDiagrams::buildMesh(
       BNodeType point2Type1 = std::get<1>(tuple2);
       BNodeType point2Type2 = std::get<3>(tuple2);
       BNodeType point2Type
-        = point2Type1 == BLocalMax || point2Type2 == BLocalMax
-            ? BLocalMax
-            : point2Type1 == BLocalMin || point2Type2 == BLocalMin
-                ? BLocalMin
-                : point2Type1 == BSaddle2 || point2Type2 == BSaddle2 ? BSaddle2
-                                                                     : BSaddle1;
+        = point2Type1 == BLocalMax || point2Type2 == BLocalMax   ? BLocalMax
+          : point2Type1 == BLocalMin || point2Type2 == BLocalMin ? BLocalMin
+          : point2Type1 == BSaddle2 || point2Type2 == BSaddle2   ? BSaddle2
+                                                                 : BSaddle1;
       bool t21Ex = point2Type1 == BLocalMin || point2Type1 == BLocalMax;
       bool t22Ex = point2Type2 == BLocalMin || point2Type2 == BLocalMax;
       bool bothEx2 = t21Ex && t22Ex;
@@ -350,15 +338,15 @@ int ttkTrackingFromPersistenceDiagrams::buildMesh(
         if(useGeometricSpacing)
           z2 += spacing * (numStart + c + 1);
       } else {
-        x2 = t22Ex ? std::get<11>(tuple2)
-                   : t21Ex ? std::get<7>(tuple2)
-                           : (std::get<7>(tuple2) + std::get<11>(tuple2)) / 2;
-        y2 = t22Ex ? std::get<12>(tuple2)
-                   : t21Ex ? std::get<8>(tuple2)
-                           : (std::get<8>(tuple2) + std::get<12>(tuple2)) / 2;
-        z2 = t22Ex ? std::get<13>(tuple2)
-                   : t21Ex ? std::get<9>(tuple2)
-                           : (std::get<9>(tuple2) + std::get<13>(tuple2)) / 2;
+        x2 = t22Ex   ? std::get<11>(tuple2)
+             : t21Ex ? std::get<7>(tuple2)
+                     : (std::get<7>(tuple2) + std::get<11>(tuple2)) / 2;
+        y2 = t22Ex   ? std::get<12>(tuple2)
+             : t21Ex ? std::get<8>(tuple2)
+                     : (std::get<8>(tuple2) + std::get<12>(tuple2)) / 2;
+        z2 = t22Ex   ? std::get<13>(tuple2)
+             : t21Ex ? std::get<9>(tuple2)
+                     : (std::get<9>(tuple2) + std::get<13>(tuple2)) / 2;
         if(useGeometricSpacing)
           z2 += spacing * (numStart + c + 1);
       }

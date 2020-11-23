@@ -407,15 +407,15 @@ int ttkBottleneckDistance::getMatchingMesh(
             t12Max = t12 != BLocalMin;
           }
         }
-        x1 = t12Max ? std::get<11>(tuple1)
-                    : t11Max ? std::get<7>(tuple1)
-                             : (std::get<7>(tuple1) + std::get<11>(tuple1)) / 2;
-        y1 = t12Max ? std::get<12>(tuple1)
-                    : t11Max ? std::get<8>(tuple1)
-                             : (std::get<8>(tuple1) + std::get<12>(tuple1)) / 2;
-        z1 = t12Max ? std::get<13>(tuple1)
-                    : t11Max ? std::get<9>(tuple1)
-                             : (std::get<9>(tuple1) + std::get<13>(tuple1)) / 2;
+        x1 = t12Max   ? std::get<11>(tuple1)
+             : t11Max ? std::get<7>(tuple1)
+                      : (std::get<7>(tuple1) + std::get<11>(tuple1)) / 2;
+        y1 = t12Max   ? std::get<12>(tuple1)
+             : t11Max ? std::get<8>(tuple1)
+                      : (std::get<8>(tuple1) + std::get<12>(tuple1)) / 2;
+        z1 = t12Max   ? std::get<13>(tuple1)
+             : t11Max ? std::get<9>(tuple1)
+                      : (std::get<9>(tuple1) + std::get<13>(tuple1)) / 2;
       }
       points->InsertNextPoint(x1, y1, z1);
 
@@ -436,15 +436,15 @@ int ttkBottleneckDistance::getMatchingMesh(
             t22Max = t22 != BLocalMin;
           }
         }
-        x2 = t22Max ? std::get<11>(tuple2)
-                    : t21Max ? std::get<7>(tuple2)
-                             : (std::get<7>(tuple2) + std::get<11>(tuple2)) / 2;
-        y2 = t22Max ? std::get<12>(tuple2)
-                    : t21Max ? std::get<8>(tuple2)
-                             : (std::get<8>(tuple2) + std::get<12>(tuple2)) / 2;
-        z2 = t22Max ? std::get<13>(tuple2)
-                    : t21Max ? std::get<9>(tuple2)
-                             : (std::get<9>(tuple2) + std::get<13>(tuple2)) / 2;
+        x2 = t22Max   ? std::get<11>(tuple2)
+             : t21Max ? std::get<7>(tuple2)
+                      : (std::get<7>(tuple2) + std::get<11>(tuple2)) / 2;
+        y2 = t22Max   ? std::get<12>(tuple2)
+             : t21Max ? std::get<8>(tuple2)
+                      : (std::get<8>(tuple2) + std::get<12>(tuple2)) / 2;
+        z2 = t22Max   ? std::get<13>(tuple2)
+             : t21Max ? std::get<9>(tuple2)
+                      : (std::get<9>(tuple2) + std::get<13>(tuple2)) / 2;
       }
       points->InsertNextPoint(x2, y2, z2);
 

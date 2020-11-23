@@ -114,7 +114,8 @@ int ttkCinemaWriter::ProcessDataProduct(vtkDataObject *input) {
 
   std::string productExtension = this->Mode == 0
                                    ? xmlWriter->GetDefaultFileExtension()
-                                   : this->Mode == 1 ? "png" : "ttk";
+                                 : this->Mode == 1 ? "png"
+                                                   : "ttk";
 
   // -------------------------------------------------------------------------
   // Prepare Field Data
@@ -492,8 +493,9 @@ int ttkCinemaWriter::RequestData(vtkInformation *request,
 
   // Print Status
   {
-    std::string modeS
-      = this->Mode == 0 ? "VTK" : this->Mode == 1 ? "PNG" : "TTK";
+    std::string modeS = this->Mode == 0   ? "VTK"
+                        : this->Mode == 1 ? "PNG"
+                                          : "TTK";
     this->printMsg({{"Database", this->DatabasePath},
                     {"C. Level", std::to_string(this->CompressionLevel)},
                     {"Format", modeS},
