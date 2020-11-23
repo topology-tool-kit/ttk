@@ -56,12 +56,17 @@ set(CPACK_NSIS_ENABLE_UNINSTALL_BEFORE_INSTALL ON)
 if(APPLE)
   set(CPACK_COMPONENTS_ALL Unspecified python development)
 endif()
-# embed Visual C++ redistribuable for Windows
+# embed Visual C++ redistribuable for Windows + set environment variables
 if(WIN32 AND EXISTS "${CMAKE_SOURCE_DIR}/vc_redist.x64.exe")
+  install(FILES "${CMAKE_SOURCE_DIR}/scripts/set_windows_env_vars.ps1" DESTINATION bin)
   install(PROGRAMS "${CMAKE_SOURCE_DIR}/vc_redist.x64.exe" DESTINATION bin)
+  set(CPACK_VERBATIM_VARIABLES TRUE)
   list(APPEND CPACK_NSIS_EXTRA_INSTALL_COMMANDS
-    " ExecWait '$INSTDIR\\\\bin\\\\vc_redist.x64.exe /passive /norestart'
-      Delete '$INSTDIR\\\\bin\\\\vc_redist.x64.exe' ")
+    " ExecWait 'powershell -ExecutionPolicy Bypass -File \"$INSTDIR\\bin\\set_windows_env_vars.ps1\" install'
+      ExecWait '$INSTDIR\\bin\\vc_redist.x64.exe /passive /norestart'
+      Delete '$INSTDIR\\bin\\vc_redist.x64.exe' ")
+  list(APPEND CPACK_NSIS_EXTRA_UNINSTALL_COMMANDS
+    " ExecWait 'powershell -ExecutionPolicy Bypass -File \"$INSTDIR\\bin\\set_windows_env_vars.ps1\"' ")
 endif()
 include(CPack)
 
