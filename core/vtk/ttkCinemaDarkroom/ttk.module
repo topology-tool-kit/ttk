@@ -11,7 +11,7 @@ SOURCES
   ttkCinemaDarkroomCompositing.cpp
   ttkCinemaDarkroomColorMapping.cpp
   ttkCinemaDarkroomNoise.cpp
-  ttkCinemaDarkroomColorMaps.cxx
+  ttkCinemaDarkroomColorMaps.cpp
 HEADERS
   ttkCinemaDarkroomCamera.h
   ttkCinemaDarkroomShader.h
