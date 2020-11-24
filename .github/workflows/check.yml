@@ -19,9 +19,9 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Use clang-format to detect formatting issues
+    - name: Use clang-format to detect formatting issues [NOT ENFORCED]
       run: |
-        git ls-files | grep -E "\.cpp$|\.cxx$|\.h$|\.hpp$" | xargs clang-format -n -Werror
+        git ls-files | grep -E "\.cpp$|\.cxx$|\.h$|\.hpp$" | xargs clang-format -n
 
     - name: Check line endings (Unix rather than DOS) [NOT ENFORCED]
       run: |
