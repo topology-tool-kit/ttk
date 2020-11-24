@@ -231,7 +231,7 @@ jobs:
         cd build
         cpack -G productbuild
 
-    - name: Upload .pgk package
+    - name: Upload .pkg package
       uses: actions/upload-artifact@v2
       with:
         name: ttk.pkg
