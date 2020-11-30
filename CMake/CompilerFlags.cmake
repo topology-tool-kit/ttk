@@ -23,6 +23,13 @@ if (NOT MSVC) # GCC and Clang
       )
   endif()
 
+elseif(${CMAKE_CXX_COMPILER_ID} STREQUAL "Clang" AND "x${CMAKE_CXX_SIMULATE_ID}" STREQUAL "xMSVC")
+  # clang-cl on Windows
+  # c.f. https://stackoverflow.com/questions/50857779/cmake-detects-clang-cl-as-clang
+
+  # warning flags
+  list(APPEND TTK_COMPILER_FLAGS -Wno-unused-parameter)
+
 else() # MSVC
 
   # warning flags
