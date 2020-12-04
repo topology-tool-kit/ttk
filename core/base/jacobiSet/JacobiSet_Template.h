@@ -412,12 +412,18 @@ char ttk::JacobiSet::getCriticalType(const SimplexId &edgeId,
   }
 
   if(lowerNeighbors.empty()) {
-    // minimum
-    return 0;
+    if(rangeNormal[0] + rangeNormal[1] > 0)
+      // minimum
+      return 0;
+    // else maximum
+    return triangulation.getDimensionality() - 1;
   }
   if(upperNeighbors.empty()) {
-    // maximum
-    return 2;
+    if(rangeNormal[0] + rangeNormal[1] > 0)
+      // maximum
+      return triangulation.getDimensionality() - 1;
+    // else minimum
+    return 0;
   }
 
   // let's check the connectivity now
