@@ -1,5 +1,5 @@
 /// \ingroup base
-/// \class ttk::BVH
+/// \class ttk::BoundingVolumeHierarchy
 /// \author Rosty Hnatyshyn <rostyslav.hnatyshyn@gmail.com>
 /// \date 10.11.2020
 ///
@@ -10,8 +10,8 @@
 
 #pragma once
 
-#include <CinemaImaging.h>
-#include <Ray.h>
+#include "Ray.h"
+#include <Geometry.h>
 #include <algorithm>
 #include <limits>
 #include <stack>
@@ -19,7 +19,7 @@
 
 namespace ttk {
   template <typename IT>
-  class BVH {
+  class BoundingVolumeHierarchy {
   protected:
     struct Node {
       Node() {
@@ -98,7 +98,7 @@ namespace ttk {
     };
 
   public:
-    BVH(const float *coords,
+    BoundingVolumeHierarchy(const float *coords,
         const IT *connectivityList,
         const size_t &nTriangles) {
       std::vector<Triangle> triangles;
@@ -107,7 +107,7 @@ namespace ttk {
       this->nodes = buildTree(triangles, 0, nTriangles);
     }
 
-    ~BVH() {
+    ~BoundingVolumeHierarchy() {
       if(this->nodes)
         delete this->nodes;
     }
@@ -137,8 +137,7 @@ namespace ttk {
         float pMax[3] = {t.m_maxX, t.m_maxY, t.m_maxZ};
         return new Node(indices, 1, pMin, pMax);
       } else {
-        // find the bounds of the centroids, figure out what dimension to split
-        // on
+        // find the bounds of the centroids, figure out what dimension to split on
         float cminX, cminY, cminZ;
         float cmaxX, cmaxY, cmaxZ;
         cminX = cminY = cminZ = std::numeric_limits<float>::max();
@@ -254,30 +253,27 @@ namespace ttk {
       constexpr float kEpsilon = 1e-8;
 
       float v0v1[3], v0v2[3], pvec[3], tvec[3], qvec[3];
-
-      CinemaImaging::subVectors(v0v1, &vertexCoords[v0], &vertexCoords[v1]);
-      CinemaImaging::subVectors(v0v2, &vertexCoords[v0], &vertexCoords[v2]);
-
-      CinemaImaging::cross(pvec, ray.m_direction, v0v2);
-      float det = CinemaImaging::dot(v0v1, pvec);
+      ttk::Geometry::subtractVectors(&vertexCoords[v0], &vertexCoords[v1], v0v1);
+      ttk::Geometry::subtractVectors(&vertexCoords[v0], &vertexCoords[v2], v0v2);
+      ttk::Geometry::crossProduct(ray.m_direction, v0v2, pvec);
+      float det = ttk::Geometry::dotProduct(v0v1, pvec);
       if(det > -kEpsilon && det < kEpsilon)
         return false;
 
       float invDet = 1.0f / det;
 
-      CinemaImaging::subVectors(tvec, &vertexCoords[v0], ray.m_origin);
-      float u = CinemaImaging::dot(tvec, pvec) * invDet;
+      ttk::Geometry::subtractVectors(&vertexCoords[v0], ray.m_origin, tvec);
+      float u = ttk::Geometry::dotProduct(tvec, pvec) * invDet;
       if(u < 0.0 || u > 1.0)
         return false;
 
-      CinemaImaging::cross(qvec, tvec, v0v1);
-      float v = CinemaImaging::dot(ray.m_direction, qvec) * invDet;
+      ttk::Geometry::crossProduct(tvec, v0v1, qvec);
+      float v = ttk::Geometry::dotProduct(ray.m_direction, qvec) * invDet;
       if(v < 0.0 || u + v > 1.0)
         return false;
 
-      float t = CinemaImaging::dot(v0v2, qvec) * invDet;
+      float t = ttk::Geometry::dotProduct(v0v2, qvec) * invDet;
       ray.distance = t;
-
       ray.u = u;
       ray.v = v;
 

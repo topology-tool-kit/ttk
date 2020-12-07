@@ -10,14 +10,6 @@ namespace ttk {
   public:
     static const unsigned int INVALID_ID{
       std::numeric_limits<unsigned int>::max()};
-
-    static void
-      multiplyByScalar(float *out, const float *a, const float &scalar);
-    static void addVectors(float *out, const float *a, const float *b);
-    static void subVectors(float *out, const float *a, const float *b);
-    static void cross(float *out, const float *a, const float *b);
-    static float dot(const float *a, const float *b);
-
     template <typename DT, typename IT>
     int interpolateArray(DT *outputArray,
 

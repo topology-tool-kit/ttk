@@ -285,6 +285,14 @@ namespace ttk {
       // static_assert
       return T1{};
     }
+    
+    /// Computes the difference between two vectors. 
+    /// \param a xyz coordinates of the first vector
+    /// \param b xyz coordinates of the second vector
+    /// \param out the difference between the two vectors
+    /// \return Returns 0 for success, negative otherwise.
+    template <typename T>
+    int subtractVectors(const T *a, const T *b, T *out);
 
   } // namespace Geometry
 } // namespace ttk

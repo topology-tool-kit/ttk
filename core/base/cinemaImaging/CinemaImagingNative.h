@@ -9,9 +9,8 @@
 
 #pragma once
 
-#include <CinemaImaging.h>
-
-#include <BVH.h>
+#include "CinemaImaging.h"
+#include <BoundingVolumeHierarchy.h>
 #include <Ray.h>
 
 namespace ttk {
@@ -32,7 +31,7 @@ namespace ttk {
                     const size_t &nTriangles,
                     const IT *connectivityList,
 
-                    const BVH<IT> &bvh,
+                    const BoundingVolumeHierarchy<IT> &bvh,
 
                     const double resolution[2],
                     const double camPos[3],
@@ -53,7 +52,7 @@ int ttk::CinemaImagingNative::renderImage(float *depthBuffer,
                                           const float *vertexCoords,
                                           const size_t &nTriangles,
                                           const IT *connectivityList,
-                                          const BVH<IT> &bvh,
+                                          const BoundingVolumeHierarchy<IT> &bvh,
                                           const double resolution[2],
                                           const double camPos[3],
                                           const double camDirRaw[3],
