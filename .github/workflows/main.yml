@@ -11,6 +11,8 @@ on:
     tags:
       - 'v*'
       - 'dev*'
+      - '*-*-*'
+      - '*.*.*'
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -312,7 +314,7 @@ jobs:
       shell: bash
       run: |
         conda install -c anaconda qt boost
-        conda install -c conda-forge eigen spectralib zfp scikit-learn openmp embree3
+        conda install -c conda-forge eigen=3.3.8 spectralib zfp scikit-learn openmp embree3
 
     - name: Fetch ParaView installer
       run: |
