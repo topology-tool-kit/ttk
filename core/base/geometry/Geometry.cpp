@@ -510,8 +510,6 @@ int Geometry::subtractVectors(const T *a, const T *b, T *out) {
   return 0;
 }
 
-
-
 #define GEOMETRY_SPECIALIZE(TYPE)                                             \
   template TYPE Geometry::angle<TYPE>(                                        \
     TYPE const *, TYPE const *, TYPE const *, TYPE const *);                  \
@@ -554,9 +552,9 @@ int Geometry::subtractVectors(const T *a, const T *b, T *out) {
   template bool Geometry::isTriangleColinear<TYPE>(                           \
     TYPE const *, TYPE const *, TYPE const *, TYPE const *);                  \
   template TYPE Geometry::magnitude<TYPE>(TYPE const *);                      \
-  template TYPE Geometry::magnitude<TYPE>(TYPE const *, TYPE const *);	      \
+  template TYPE Geometry::magnitude<TYPE>(TYPE const *, TYPE const *);        \
   template int Geometry::subtractVectors<TYPE>(                               \
-   TYPE const *, TYPE const *, TYPE*)
+    TYPE const *, TYPE const *, TYPE *)
 
 // explicit specializations for float and double
 GEOMETRY_SPECIALIZE(float);

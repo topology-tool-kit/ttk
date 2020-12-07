@@ -99,8 +99,8 @@ namespace ttk {
 
   public:
     BoundingVolumeHierarchy(const float *coords,
-        const IT *connectivityList,
-        const size_t &nTriangles) {
+                            const IT *connectivityList,
+                            const size_t &nTriangles) {
       std::vector<Triangle> triangles;
       buildTriangleList(triangles, coords, connectivityList, nTriangles);
 
@@ -137,7 +137,8 @@ namespace ttk {
         float pMax[3] = {t.m_maxX, t.m_maxY, t.m_maxZ};
         return new Node(indices, 1, pMin, pMax);
       } else {
-        // find the bounds of the centroids, figure out what dimension to split on
+        // find the bounds of the centroids, figure out what dimension to split
+        // on
         float cminX, cminY, cminZ;
         float cmaxX, cmaxY, cmaxZ;
         cminX = cminY = cminZ = std::numeric_limits<float>::max();
@@ -253,8 +254,10 @@ namespace ttk {
       constexpr float kEpsilon = 1e-8;
 
       float v0v1[3], v0v2[3], pvec[3], tvec[3], qvec[3];
-      ttk::Geometry::subtractVectors(&vertexCoords[v0], &vertexCoords[v1], v0v1);
-      ttk::Geometry::subtractVectors(&vertexCoords[v0], &vertexCoords[v2], v0v2);
+      ttk::Geometry::subtractVectors(
+        &vertexCoords[v0], &vertexCoords[v1], v0v1);
+      ttk::Geometry::subtractVectors(
+        &vertexCoords[v0], &vertexCoords[v2], v0v2);
       ttk::Geometry::crossProduct(ray.m_direction, v0v2, pvec);
       float det = ttk::Geometry::dotProduct(v0v1, pvec);
       if(det > -kEpsilon && det < kEpsilon)

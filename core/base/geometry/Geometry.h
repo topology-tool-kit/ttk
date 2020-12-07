@@ -285,8 +285,8 @@ namespace ttk {
       // static_assert
       return T1{};
     }
-    
-    /// Computes the difference between two vectors. 
+
+    /// Computes the difference between two vectors.
     /// \param a xyz coordinates of the first vector
     /// \param b xyz coordinates of the second vector
     /// \param out the difference between the two vectors
