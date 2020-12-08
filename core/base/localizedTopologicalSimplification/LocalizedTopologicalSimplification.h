@@ -623,10 +623,8 @@ namespace ttk {
       while(containsResidualExtrema) {
         propagation->nIterations++;
 
-        if(propagation->nIterations > 20) {
-          this->printErr("Unable to converge within 20 iterations!");
-          return 0;
-        }
+        if(this->debugLevel_ > 3 && propagation->nIterations == 20)
+          this->printWrn("Unable to converge with less than 20 iterations!");
 
         // execute superlevel set propagation
         status = this->computeLocalOrderOfSegmentIteration<IT, TT>(
