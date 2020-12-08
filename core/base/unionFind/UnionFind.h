@@ -5,8 +5,7 @@
 ///
 /// \brief Union Find implementation for connectivity tracking.
 
-#ifndef _UNION_FIND_H
-#define _UNION_FIND_H
+#pragma once
 
 #include <Debug.h>
 
@@ -38,9 +37,39 @@ namespace ttk {
       return rank_;
     };
 
-    static inline UnionFind *makeUnion(UnionFind *uf0, UnionFind *uf1);
+    static inline UnionFind *makeUnion(UnionFind *uf0, UnionFind *uf1) {
+      uf0 = uf0->find();
+      uf1 = uf1->find();
 
-    static inline UnionFind *makeUnion(std::vector<UnionFind *> &sets);
+      if(uf0 == uf1) {
+        return uf0;
+      } else if(uf0->getRank() > uf1->getRank()) {
+        uf1->setParent(uf0);
+        return uf0;
+      } else if(uf0->getRank() < uf1->getRank()) {
+        uf0->setParent(uf1);
+        return uf1;
+      } else {
+        uf1->setParent(uf0);
+        uf0->setRank(uf0->getRank() + 1);
+        return uf0;
+      }
+    }
+
+    static inline UnionFind *makeUnion(std::vector<UnionFind *> &sets) {
+      UnionFind *n = NULL;
+
+      if(!sets.size())
+        return NULL;
+
+      if(sets.size() == 1)
+        return sets[0];
+
+      for(int i = 0; i < (int)sets.size() - 1; i++)
+        n = makeUnion(sets[i], sets[i + 1]);
+
+      return n;
+    }
 
     inline void setParent(UnionFind *parent) {
       parent_ = parent;
@@ -51,8 +80,8 @@ namespace ttk {
     };
 
   protected:
-    int rank_;
-    UnionFind *parent_;
+    int rank_{};
+    UnionFind *parent_{this};
   };
 
   inline UnionFind::UnionFind() {
@@ -77,42 +106,4 @@ namespace ttk {
     }
   }
 
-  static inline UnionFind *makeUnion(UnionFind *uf0, UnionFind *uf1) {
-
-    uf0 = uf0->find();
-    uf1 = uf1->find();
-
-    if(uf0 == uf1) {
-      return uf0;
-    } else if(uf0->getRank() > uf1->getRank()) {
-      uf1->setParent(uf0);
-      return uf0;
-    } else if(uf0->getRank() < uf1->getRank()) {
-      uf0->setParent(uf1);
-      return uf1;
-    } else {
-      uf1->setParent(uf0);
-      uf0->setRank(uf0->getRank() + 1);
-      return uf0;
-    }
-  }
-
-  static inline UnionFind *makeUnion(std::vector<UnionFind *> &sets) {
-
-    UnionFind *n = NULL;
-
-    if(!sets.size())
-      return NULL;
-
-    if(sets.size() == 1)
-      return sets[0];
-
-    for(int i = 0; i < (int)sets.size() - 1; i++)
-      n = makeUnion(sets[i], sets[i + 1]);
-
-    return n;
-  }
-
 } // namespace ttk
-
-#endif
