@@ -9,9 +9,8 @@
 
 #pragma once
 
-#include <CinemaImaging.h>
-
-#include <BVH.h>
+#include "CinemaImaging.h"
+#include <BoundingVolumeHierarchy.h>
 #include <Ray.h>
 
 namespace ttk {
@@ -32,7 +31,7 @@ namespace ttk {
                     const size_t &nTriangles,
                     const IT *connectivityList,
 
-                    const BVH<IT> &bvh,
+                    const BoundingVolumeHierarchy<IT> &bvh,
 
                     const double resolution[2],
                     const double camPos[3],
@@ -46,21 +45,22 @@ namespace ttk {
 }; // namespace ttk
 
 template <typename IT>
-int ttk::CinemaImagingNative::renderImage(float *depthBuffer,
-                                          unsigned int *primitiveIds,
-                                          float *barycentricCoordinates,
-                                          const size_t &nVertices,
-                                          const float *vertexCoords,
-                                          const size_t &nTriangles,
-                                          const IT *connectivityList,
-                                          const BVH<IT> &bvh,
-                                          const double resolution[2],
-                                          const double camPos[3],
-                                          const double camDirRaw[3],
-                                          const double camUp[3],
-                                          const double &camHeight,
-                                          const bool &orthographicProjection,
-                                          const double &viewAngle) const {
+int ttk::CinemaImagingNative::renderImage(
+  float *depthBuffer,
+  unsigned int *primitiveIds,
+  float *barycentricCoordinates,
+  const size_t &nVertices,
+  const float *vertexCoords,
+  const size_t &nTriangles,
+  const IT *connectivityList,
+  const BoundingVolumeHierarchy<IT> &bvh,
+  const double resolution[2],
+  const double camPos[3],
+  const double camDirRaw[3],
+  const double camUp[3],
+  const double &camHeight,
+  const bool &orthographicProjection,
+  const double &viewAngle) const {
   ttk::Timer timer;
   int resX = resolution[0];
   int resY = resolution[1];

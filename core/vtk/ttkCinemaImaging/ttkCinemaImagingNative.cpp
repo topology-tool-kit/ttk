@@ -13,7 +13,7 @@
 #include <ttkCinemaImaging.h>
 #include <ttkUtils.h>
 
-#include <BVH.h>
+#include <BoundingVolumeHierarchy.h>
 
 ttk::ttkCinemaImagingNative::ttkCinemaImagingNative() {
   this->setDebugMsgPrefix("CinemaImaging(Native)");
@@ -60,7 +60,7 @@ int ttk::ttkCinemaImagingNative::RenderVTKObject(
     ttkUtils::GetVoidPointer(inputObjectCells->GetConnectivityArray()));
 
   ttk::Timer test;
-  BVH<vtkIdType> bvh(
+  BoundingVolumeHierarchy<vtkIdType> bvh(
     static_cast<float *>(ttkUtils::GetVoidPointer(inputObject->GetPoints())),
     inputObjectConnectivityList, inputObjectCells->GetNumberOfCells());
 
