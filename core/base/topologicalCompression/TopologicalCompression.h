@@ -294,12 +294,12 @@ namespace ttk {
 
 #ifdef TTK_ENABLE_ZFP
     int CompressWithZFP(FILE *file,
-                        bool decompress,
+                        const bool decompress,
                         std::vector<double> &array,
-                        int nx,
-                        int ny,
-                        int nz,
-                        double rate);
+                        const int nx,
+                        const int ny,
+                        const int nz,
+                        const double zfpTolerance);
 #endif
 
 #ifdef TTK_ENABLE_ZLIB

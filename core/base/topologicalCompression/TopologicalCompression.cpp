@@ -12,23 +12,14 @@ ttk::TopologicalCompression::TopologicalCompression() {
 #include <zfp.h>
 
 int ttk::TopologicalCompression::CompressWithZFP(FILE *file,
-                                                 bool decompress,
+                                                 const bool decompress,
                                                  std::vector<double> &array,
-                                                 int nx,
-                                                 int ny,
-                                                 int nz,
-                                                 double rate) {
+                                                 const int nx,
+                                                 const int ny,
+                                                 const int nz,
+                                                 const double zfpTolerance) {
 
-  int status = 0; // return value: 0 = success
-  zfp_type type; // array scalar type
-  zfp_field *field; // array meta data
-  zfp_stream *zfp; // compressed stream
-  size_t bufsize; // byte size of compressed buffer
-  bitstream *stream; // bit stream to write to or read from
-  size_t zfpsize; // byte size of compressed stream
-
-  int n1 = 0;
-  int n2 = 0;
+  int n1 = 0, n2 = 0;
   bool is2D = nx == 1 || ny == 1 || nz == 1;
   if(is2D) {
     if(nx + ny == 2 || ny + nz == 2 || nx + nz == 2) {
@@ -40,59 +31,77 @@ int ttk::TopologicalCompression::CompressWithZFP(FILE *file,
     n2 = nx != 1 && ny != 1 ? ny : nz;
   }
 
-  // allocate meta data for the 3D array a[nz][ny][nx]
-  type = zfp_type_double;
+  // array scalar type
+  const auto type = zfp_type_double;
 
+  // array meta data
+  zfp_field *field;
   if(is2D) {
-    field
-      = zfp_field_2d(array.data(), type, (unsigned int)n1, (unsigned int)n2);
+    field = zfp_field_2d(array.data(), type, n1, n2);
   } else {
-    field = zfp_field_3d(
-      array.data(), type, (unsigned int)nx, (unsigned int)ny, (unsigned int)nz);
+    field = zfp_field_3d(array.data(), type, nx, ny, nz);
   }
 
-  // allocate meta data for a compressed stream
-  zfp = zfp_stream_open(NULL);
+  // compressed stream
+  auto *zfp = zfp_stream_open(nullptr);
 
-  // set compression mode and parameters via one of three functions
-  zfp_stream_set_rate(zfp, rate, type, 3, 0);
-  //  zfp_stream_set_precision(zfp, precision);
-  // zfp_stream_set_accuracy(zfp, tolerance);
+  // set compression mode and parameters via one of three functions (c.f.
+  // https://zfp.readthedocs.io/en/release0.5.5/modes.html)
+  // use fixed-accuracy mode
+  zfp_stream_set_accuracy(zfp, zfpTolerance);
 
   // allocate buffer for compressed data
-  bufsize = zfp_stream_maximum_size(zfp, field);
+  const auto bufsize = zfp_stream_maximum_size(zfp, field);
   std::vector<unsigned char> buffer(bufsize);
 
   // associate bit stream with allocated buffer
-  stream = stream_open(buffer.data(), bufsize);
+  auto *stream = stream_open(buffer.data(), bufsize);
   zfp_stream_set_bit_stream(zfp, stream);
   zfp_stream_rewind(zfp);
+
+  // return value: 0 = success
+  int status = 0;
+
+  // byte size of compressed stream
+  size_t zfpsize{};
 
   // compress or decompress entire array
   if(decompress) {
     // read compressed stream and decompress array
-    // zfpsize = fread(buffer, 1, bufsize, stdin);
-    zfpsize = fread(buffer.data(), 1, bufsize, file);
+    zfpsize += fread(buffer.data(), 1, bufsize, file);
+
+    // read the ZFP header (from v2)
+    const auto res = zfp_read_header(zfp, field, ZFP_HEADER_FULL);
+    if(res == 0) {
+      this->printErr("Could not read ZFP header");
+      status = 1;
+    }
+
     if(!zfp_decompress(zfp, field)) {
       this->printErr("Decompression failed");
       status = 1;
     }
   } else {
+    // write the ZFP header
+    const auto res = zfp_write_header(zfp, field, ZFP_HEADER_FULL);
+    if(res == 0) {
+      this->printErr("Could not write ZFP header");
+      status = 1;
+    }
+
     // compress array and output compressed stream
-    zfpsize = zfp_compress(zfp, field);
+    zfpsize += zfp_compress(zfp, field);
     if(!zfpsize) {
       this->printErr("Compression failed");
       status = 1;
     } else
       fwrite(buffer.data(), 1, zfpsize, file);
-    // fwrite(buffer, 1, zfpsize, stdout);
   }
 
   // clean up
   zfp_field_free(field);
   zfp_stream_close(zfp);
   stream_close(stream);
-  // free(array);
 
   if(status != 0) {
     this->printErr("Encountered a problem with ZFP.");
