@@ -22,5 +22,9 @@ if (@TTK_ENABLE_ZLIB@ AND NOT @TTK_ENABLE_SHARED_BASE_LIBRARIES@)
   find_dependency(ZLIB REQUIRED)
 endif()
 
+if (@TTK_ENABLE_SCIKIT_LEARN@ AND NOT @TTK_ENABLE_SHARED_BASE_LIBRARIES@)
+  find_package(Python3 COMPONENTS NumPy)
+endif()
+
 # Include the actual targets for TTK Base
 include("${CMAKE_CURRENT_LIST_DIR}/TTKBaseTargets.cmake")
