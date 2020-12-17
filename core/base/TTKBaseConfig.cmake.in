@@ -23,7 +23,7 @@ if (@TTK_ENABLE_ZLIB@ AND NOT @TTK_ENABLE_SHARED_BASE_LIBRARIES@)
 endif()
 
 if (@TTK_ENABLE_SCIKIT_LEARN@ AND NOT @TTK_ENABLE_SHARED_BASE_LIBRARIES@)
-  find_package(Python3 COMPONENTS NumPy)
+  find_package(Python3 COMPONENTS Development NumPy)
 endif()
 
 # Include the actual targets for TTK Base
