@@ -239,25 +239,17 @@ endif()
 
 find_package(Python3 COMPONENTS Development NumPy)
 
-if(Python3_FOUND)
+if(Python3_FOUND AND Python3_NumPy_FOUND)
   include_directories(SYSTEM ${Python3_INCLUDE_DIRS})
-
   set(TTK_PYTHON_MAJOR_VERSION "${Python3_VERSION_MAJOR}"
     CACHE INTERNAL "TTK_PYTHON_MAJOR_VERSION")
   set(TTK_PYTHON_MINOR_VERSION "${Python3_VERSION_MINOR}"
     CACHE INTERNAL "TTK_PYTHON_MINOR_VERSION")
 
-  if(Python3_NumPy_FOUND AND NOT APPLE)
-    option(TTK_ENABLE_SCIKIT_LEARN "Enable scikit-learn support" ON)
-  elseif(APPLE)
-    # scikit-learn support is disabled by default for now under macOS
-    option(TTK_ENABLE_SCIKIT_LEARN "Enable scikit-learn support" OFF)
-    message(STATUS "Disabling scikit-learn support by default under macOS.")
-  else()
-    option(TTK_ENABLE_SCIKIT_LEARN "Enable scikit-learn support" OFF)
-    message(STATUS
-      "Improper Python/NumPy setup. Disabling scikit-learn support in TTK.")
-  endif()
+  option(TTK_ENABLE_SCIKIT_LEARN "Enable scikit-learn support" ON)
+else()
+  option(TTK_ENABLE_SCIKIT_LEARN "Enable scikit-learn support" OFF)
+  message(STATUS "Improper Python/NumPy setup. Disabling scikit-learn support in TTK.")
 endif()
 
 if(MSVC)
