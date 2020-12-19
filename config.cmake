@@ -66,13 +66,13 @@ endif()
 option(TTK_ENABLE_64BIT_IDS "Enable processing on large datasets" OFF)
 mark_as_advanced(TTK_ENABLE_64BIT_IDS)
 
-option(TTK_ENABLE_KAMIKAZE "Enable Kamikaze compilation mode" OFF)
+option(TTK_ENABLE_KAMIKAZE "Enable Kamikaze compilation mode" ON)
 mark_as_advanced(TTK_ENABLE_KAMIKAZE)
 
 option(TTK_ENABLE_CPU_OPTIMIZATION "Enable native CPU optimizations" ON)
 mark_as_advanced(TTK_ENABLE_CPU_OPTIMIZATION)
 
-option(TTK_ENABLE_DOUBLE_TEMPLATING "Use double templating for bivariate data" OFF)
+option(TTK_ENABLE_DOUBLE_TEMPLATING "Use double templating for bivariate data" ON)
 mark_as_advanced(TTK_ENABLE_DOUBLE_TEMPLATING)
 
 option(TTK_ENABLE_SHARED_BASE_LIBRARIES "Generate shared base libraries instead of static ones" ON)
