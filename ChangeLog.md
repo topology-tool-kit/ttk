@@ -1,6 +1,8 @@
 ## TTK - ChangeLog
 =
 ### ttk.git
+
+### 0.9.9
 - Migration to VTK9/ParaView-5.8.0 \0/ clap! clap! clap! \0/
 - Support for ParaView-5.7.0 \0/
 - New branching management
@@ -16,7 +18,6 @@
 - Automatic deb binary packaging (for Ubuntu, Windows, MacOS)
 - Updated examples
 - Many fixes
-
 
 ### 0.9.8.9
 - Progressive Wasserstein Barycenters of Persistence Diagrams (IEEE VIS 2019)
