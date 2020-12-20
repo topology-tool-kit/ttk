@@ -144,7 +144,7 @@ int ThreeSkeleton::buildCellNeighborsFromTriangles(
   if(threadNumber_ == 1) {
 
     const SimplexId nbTriStars = localTriangleStars->size();
-    const SimplexId timeBuckets = std::min(10, nbTriStars);
+    const SimplexId timeBuckets = std::min<ttk::SimplexId>(10, nbTriStars);
 
     for(SimplexId i = 0; i < nbTriStars; i++) {
 
