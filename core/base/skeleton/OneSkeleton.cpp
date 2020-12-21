@@ -141,7 +141,7 @@ int OneSkeleton::buildEdgeList(
   printMsg("Building edges", 0, 0, 1, ttk::debug::LineMode::REPLACE);
 
   const SimplexId cellNumber = cellArray.getNbCells();
-  const int timeBuckets = std::min(10, cellNumber);
+  const int timeBuckets = std::min<ttk::SimplexId>(10, cellNumber);
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)

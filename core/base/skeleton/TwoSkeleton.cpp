@@ -309,7 +309,7 @@ int TwoSkeleton::buildTriangleList(
     vector<vector<pair<vector<SimplexId>, SimplexId>>> triangleTable(
       vertexNumber);
 
-    const SimplexId timeBuckets = std::min(10, cellNumber);
+    const SimplexId timeBuckets = std::min<ttk::SimplexId>(10, cellNumber);
 
     for(SimplexId i = 0; i < vertexNumber; i++)
       triangleTable[i].reserve(32);
