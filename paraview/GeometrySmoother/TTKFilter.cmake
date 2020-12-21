@@ -1,0 +1,1 @@
+ttk_register_pv_filter(ttkGeometrySmoother GeometrySmoother.xml)

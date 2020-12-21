@@ -15,14 +15,12 @@
 ///
 /// \sa ttkPersistenceCurve.cpp %for a usage example.
 
-#ifndef _PERSISTENCECURVE_H
-#define _PERSISTENCECURVE_H
+#pragma once
 
 // base code includes
+#include <DiscreteGradient.h>
 #include <FTMTreePP.h>
-#include <MorseSmaleComplex3D.h>
 #include <Triangulation.h>
-#include <Wrapper.h>
 
 namespace ttk {
 
@@ -30,15 +28,13 @@ namespace ttk {
    * Compute the persistence curve of a function on a triangulation.
    * TTK assumes that the input dataset is made of only one connected component.
    */
-  class PersistenceCurve : public Debug {
+  class PersistenceCurve : virtual public Debug {
 
   public:
     PersistenceCurve();
-    ~PersistenceCurve();
 
-    inline int setComputeSaddleConnectors(bool state) {
+    inline void setComputeSaddleConnectors(bool state) {
       ComputeSaddleConnectors = state;
-      return 0;
     }
 
     template <typename scalarType>
@@ -46,61 +42,54 @@ namespace ttk {
       const std::vector<std::tuple<SimplexId, SimplexId, scalarType>> &pairs,
       std::vector<std::pair<scalarType, SimplexId>> &plot) const;
 
-    template <typename scalarType, typename idType>
-    int execute() const;
+    /**
+     * @pre For this function to behave correctly in the absence of
+     * the VTK wrapper, ttk::preconditionOrderArray() needs to be
+     * called to fill the @p inputOffsets buffer prior to any
+     * computation (the VTK wrapper already includes a mecanism to
+     * automatically generate such a preconditioned buffer).
+     * @see examples/c++/main.cpp for an example use.
+     */
+    template <typename scalarType,
+              class triangulationType = ttk::AbstractTriangulation>
+    int execute(const scalarType *inputScalars,
+                const SimplexId *inputOffsets,
+                const triangulationType *triangulation);
 
-    inline int setupTriangulation(Triangulation *data) {
-      triangulation_ = data;
-      if(triangulation_) {
-        ftm::FTMTreePP contourTree;
-        contourTree.setDebugLevel(debugLevel_);
-        contourTree.setupTriangulation(triangulation_);
-
-        triangulation_->preprocessBoundaryVertices();
+    inline void preconditionTriangulation(Triangulation *triangulation) {
+      if(triangulation) {
+        triangulation->preconditionBoundaryVertices();
+        contourTree_.setDebugLevel(debugLevel_);
+        contourTree_.preconditionTriangulation(triangulation);
+        if(this->ComputeSaddleConnectors) {
+          dcg_.setDebugLevel(debugLevel_);
+          dcg_.setThreadNumber(threadNumber_);
+          dcg_.preconditionTriangulation(triangulation);
+        }
       }
-      return 0;
     }
 
-    inline int setInputScalars(void *data) {
-      inputScalars_ = data;
-      return 0;
-    }
-
-    inline int setInputOffsets(void *data) {
-      inputOffsets_ = data;
-      return 0;
-    }
-
-    inline int setOutputJTPlot(void *data) {
+    inline void setOutputJTPlot(void *const data) {
       JTPlot_ = data;
-      return 0;
     }
-
-    inline int setOutputSTPlot(void *data) {
+    inline void setOutputSTPlot(void *const data) {
       STPlot_ = data;
-      return 0;
     }
-
-    inline int setOutputMSCPlot(void *data) {
-      MSCPlot_ = data;
-      return 0;
-    }
-
-    inline int setOutputCTPlot(void *data) {
+    inline void setOutputCTPlot(void *const data) {
       CTPlot_ = data;
-      return 0;
+    }
+    inline void setOutputMSCPlot(void *const data) {
+      MSCPlot_ = data;
     }
 
   protected:
-    bool ComputeSaddleConnectors;
-
-    Triangulation *triangulation_;
-    void *inputScalars_;
-    void *inputOffsets_;
-    void *JTPlot_;
-    void *MSCPlot_;
-    void *STPlot_;
-    void *CTPlot_;
+    void *JTPlot_{};
+    void *STPlot_{};
+    void *CTPlot_{};
+    void *MSCPlot_{};
+    bool ComputeSaddleConnectors{false};
+    ftm::FTMTreePP contourTree_{};
+    dcg::DiscreteGradient dcg_{};
   };
 } // namespace ttk
 
@@ -114,7 +103,7 @@ int ttk::PersistenceCurve::computePersistencePlot(
 
   // build curve
   const scalarType epsilon
-    = static_cast<scalarType>(pow(10, -REAL_SIGNIFICANT_DIGITS));
+    = static_cast<scalarType>(Geometry::powIntTen(-REAL_SIGNIFICANT_DIGITS));
   for(SimplexId i = 0; i < nbElmnt; ++i) {
     plot[i].first = std::max(std::get<2>(pairs[i]), epsilon);
     plot[i].second = pairs.size() - i;
@@ -123,40 +112,34 @@ int ttk::PersistenceCurve::computePersistencePlot(
   return 0;
 }
 
-template <typename scalarType, typename idType>
-int ttk::PersistenceCurve::execute() const {
-  // get data
-  std::vector<std::pair<scalarType, SimplexId>> &JTPlot
-    = *static_cast<std::vector<std::pair<scalarType, SimplexId>> *>(JTPlot_);
-  std::vector<std::pair<scalarType, SimplexId>> &STPlot
-    = *static_cast<std::vector<std::pair<scalarType, SimplexId>> *>(STPlot_);
-  std::vector<std::pair<scalarType, SimplexId>> &MSCPlot
-    = *static_cast<std::vector<std::pair<scalarType, SimplexId>> *>(MSCPlot_);
-  std::vector<std::pair<scalarType, SimplexId>> &CTPlot
-    = *static_cast<std::vector<std::pair<scalarType, SimplexId>> *>(CTPlot_);
-  SimplexId *offsets = static_cast<SimplexId *>(inputOffsets_);
+template <typename scalarType, class triangulationType>
+int ttk::PersistenceCurve::execute(const scalarType *inputScalars,
+                                   const SimplexId *inputOffsets,
+                                   const triangulationType *triangulation) {
 
-  const SimplexId numberOfVertices = triangulation_->getNumberOfVertices();
-  // convert offsets into a valid format for contour tree
-  std::vector<SimplexId> voffsets(numberOfVertices);
-  std::copy(offsets, offsets + numberOfVertices, voffsets.begin());
+  printMsg(ttk::debug::Separator::L1);
 
-  // get contour tree
-  ftm::FTMTreePP contourTree;
-  contourTree.setDebugLevel(debugLevel_);
-  contourTree.setupTriangulation(triangulation_, false);
-  contourTree.setVertexScalars(inputScalars_);
-  contourTree.setTreeType(ftm::TreeType::Join_Split);
-  contourTree.setVertexSoSoffsets(voffsets.data());
-  contourTree.setSegmentation(false);
-  contourTree.setThreadNumber(threadNumber_);
-  contourTree.build<scalarType, idType>();
+  Timer timer;
+
+  using plotType = std::vector<std::pair<scalarType, SimplexId>>;
+
+  auto JTPlot = static_cast<plotType *>(JTPlot_);
+  auto STPlot = static_cast<plotType *>(STPlot_);
+  auto CTPlot = static_cast<plotType *>(CTPlot_);
+  auto MSCPlot = static_cast<plotType *>(MSCPlot_);
+
+  contourTree_.setVertexScalars(inputScalars);
+  contourTree_.setTreeType(ftm::TreeType::Join_Split);
+  contourTree_.setVertexSoSoffsets(inputOffsets);
+  contourTree_.setSegmentation(false);
+  contourTree_.setThreadNumber(threadNumber_);
+  contourTree_.build<scalarType>(triangulation);
 
   // get persistence pairs
   std::vector<std::tuple<SimplexId, SimplexId, scalarType>> JTPairs;
   std::vector<std::tuple<SimplexId, SimplexId, scalarType>> STPairs;
-  contourTree.computePersistencePairs<scalarType>(JTPairs, true);
-  contourTree.computePersistencePairs<scalarType>(STPairs, false);
+  contourTree_.computePersistencePairs<scalarType>(JTPairs, true);
+  contourTree_.computePersistencePairs<scalarType>(STPairs, false);
 
   // merge pairs
   std::vector<std::tuple<SimplexId, SimplexId, scalarType>> CTPairs(
@@ -172,18 +155,14 @@ int ttk::PersistenceCurve::execute() const {
   }
 
   // get the saddle-saddle pairs
-  std::vector<std::tuple<SimplexId, SimplexId, scalarType>>
-    pl_saddleSaddlePairs;
-  const int dimensionality = triangulation_->getDimensionality();
-  if(dimensionality == 3 and ComputeSaddleConnectors) {
-    MorseSmaleComplex3D morseSmaleComplex;
-    morseSmaleComplex.setDebugLevel(debugLevel_);
-    morseSmaleComplex.setThreadNumber(threadNumber_);
-    morseSmaleComplex.setupTriangulation(triangulation_);
-    morseSmaleComplex.setInputScalarField(inputScalars_);
-    morseSmaleComplex.setInputOffsets(inputOffsets_);
-    morseSmaleComplex.computePersistencePairs<scalarType, idType>(
-      JTPairs, STPairs, pl_saddleSaddlePairs);
+  const int dimensionality = triangulation->getDimensionality();
+  if(dimensionality == 3 and ComputeSaddleConnectors and MSCPlot_ != nullptr) {
+    std::vector<std::tuple<SimplexId, SimplexId, scalarType>>
+      pl_saddleSaddlePairs;
+    dcg_.setInputScalarField(inputScalars);
+    dcg_.setInputOffsets(inputOffsets);
+    dcg_.computeSaddleSaddlePersistencePairs<scalarType>(
+      pl_saddleSaddlePairs, *triangulation);
 
     // sort the saddle-saddle pairs by persistence value and compute curve
     {
@@ -194,7 +173,7 @@ int ttk::PersistenceCurve::execute() const {
       std::sort(pl_saddleSaddlePairs.begin(), pl_saddleSaddlePairs.end(), cmp);
     }
 
-    computePersistencePlot<scalarType>(pl_saddleSaddlePairs, MSCPlot);
+    computePersistencePlot<scalarType>(pl_saddleSaddlePairs, *MSCPlot);
   }
 
   // get persistence curves
@@ -205,21 +184,26 @@ int ttk::PersistenceCurve::execute() const {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp section
 #endif
-    if(JTPlot_)
-      computePersistencePlot<scalarType>(JTPairs, JTPlot);
+    if(JTPlot_ != nullptr) {
+      computePersistencePlot<scalarType>(JTPairs, *JTPlot);
+    }
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp section
 #endif
-    if(STPlot_)
-      computePersistencePlot<scalarType>(STPairs, STPlot);
+    if(STPlot_ != nullptr) {
+      computePersistencePlot<scalarType>(STPairs, *STPlot);
+    }
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp section
 #endif
-    if(CTPlot_)
-      computePersistencePlot<scalarType>(CTPairs, CTPlot);
+    if(CTPlot_ != nullptr) {
+      computePersistencePlot<scalarType>(CTPairs, *CTPlot);
+    }
   }
+
+  printMsg(
+    "Base execution completed", 1, timer.getElapsedTime(), threadNumber_);
+  printMsg(ttk::debug::Separator::L1);
 
   return 0;
 }
-
-#endif // PERSISTENCECURVE_H

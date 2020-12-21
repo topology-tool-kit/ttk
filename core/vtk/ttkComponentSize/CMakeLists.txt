@@ -1,9 +1,1 @@
-ttk_add_vtk_library(ttkComponentSize
-  SOURCES
-    ttkComponentSize.cpp
-  HEADERS
-    ttkComponentSize.h
-  LINK
-    common
-    ttkTriangulation
-    )
+ttk_add_vtk_module()

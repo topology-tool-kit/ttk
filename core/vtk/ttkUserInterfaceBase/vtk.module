@@ -1,0 +1,11 @@
+NAME
+ ttkUserInterfaceBase
+DEPENDS
+  VTK::FiltersCore
+  VTK::FiltersGeometry
+  VTK::InteractionStyle
+  VTK::IOExport
+  VTK::IOImage
+  VTK::RenderingOpenGL2
+PRIVATE_DEPENDS
+  VTK::CommonCore

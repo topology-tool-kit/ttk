@@ -12,66 +12,32 @@
 #pragma once
 
 // base code includes
+#include <Debug.h>
 #include <Geometry.h>
+#include <Laplacian.h>
 #include <Triangulation.h>
-#include <Wrapper.h>
 
 namespace ttk {
 
-  class EigenField : public Debug {
-
+  class EigenField : virtual public Debug {
   public:
-    // default constructor
-    EigenField() = default;
-    // default destructor
-    ~EigenField() override = default;
-    // default copy constructor
-    EigenField(const EigenField &) = default;
-    // default move constructor
-    EigenField(EigenField &&) = default;
-    // default copy assignment operator
-    EigenField &operator=(const EigenField &) = default;
-    // default move assignment operator
-    EigenField &operator=(EigenField &&) = default;
-
-    inline void setupTriangulation(Triangulation *triangulation) {
-      triangulation_ = triangulation;
-      if(triangulation_ != nullptr) {
-        vertexNumber_ = triangulation_->getNumberOfVertices();
-        triangulation_->preprocessVertexNeighbors();
-        // cotan weights method needs more pre-processing
-        triangulation_->preprocessEdgeTriangles();
-      }
-    }
-    inline void setOutputFieldPointer(void *data) {
-      outputFieldPointer_ = data;
-    }
-    inline void setOutputStatistics(void *data) {
-      outputStatistics_ = data;
-    }
-    inline void setEigenNumber(unsigned int eigenNumber) {
-      eigenNumber_ = eigenNumber;
-    }
-    inline void setComputeStatistics(bool value) {
-      computeStatistics_ = value;
+    EigenField() {
+      this->setDebugMsgPrefix("EigenField");
     }
 
-    template <typename T>
-    int execute() const;
+    inline void
+      preconditionTriangulation(AbstractTriangulation &triangulation) const {
+      triangulation.preconditionVertexNeighbors();
+      // cotan weights method needs more pre-processing
+      triangulation.preconditionEdgeTriangles();
+    }
 
-  private:
-    // the mesh
-    Triangulation *triangulation_{};
-    // number of vertices in the mesh
-    SimplexId vertexNumber_{};
-    // output eigenfunctions scalar fields
-    void *outputFieldPointer_{};
-    // output statistics array
-    void *outputStatistics_{};
-    // number of eigenfunctions to compute
-    unsigned int eigenNumber_{500};
-    // if statistics should be computed
-    bool computeStatistics_{false};
+    template <typename T, class TriangulationType = AbstractTriangulation>
+    int execute(const TriangulationType &triangulation,
+                T *const outputFieldPointer,
+                const unsigned int eigenNumber = 500,
+                bool computeStatistics = false,
+                T *const outputStatistics = nullptr) const;
   };
 
 } // namespace ttk

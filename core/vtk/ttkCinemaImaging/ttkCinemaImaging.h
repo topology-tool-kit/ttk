@@ -8,7 +8,7 @@
 /// This filter takes images of a vtkDataObject from positions specified on a
 /// vtkPointSet. Each image will be a block of a vtkMultiBlockDataSet where
 /// block order corresponds to point order. Each sample point can optionally
-/// have vtkDoubleArrays to override the default rendering parameters, i.e, the
+/// have vtkDoubleArrays to override the  rendering parameters, i.e, the
 /// resolution, focus, clipping planes, and viewport height.
 ///
 /// VTK wrapping code for the @CinemaImaging package.
@@ -20,114 +20,121 @@
 
 #pragma once
 
-// VTK includes
-#include <vtkInformation.h>
-#include <vtkMultiBlockDataSetAlgorithm.h>
+// VTK Module
+#include <ttkCinemaImagingModule.h>
 
 // TTK includes
-#include <ttkWrapper.h>
+#include <ttkAlgorithm.h>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkCinemaImaging
-#else
-class ttkCinemaImaging
-#endif
-  : public vtkMultiBlockDataSetAlgorithm,
-    public ttk::Wrapper {
+namespace ttk {
+  class CinemaImaging;
+}
+class vtkPolyData;
+class vtkMultiBlockDataSet;
+class vtkPointSet;
+class vtkFieldData;
+class vtkImageData;
+class vtkPointData;
+
+class TTKCINEMAIMAGING_EXPORT ttkCinemaImaging : public ttkAlgorithm {
+
+private:
+  int Backend{0};
+
+  int Resolution[2]{256, 256};
+
+  int ProjectionMode{0};
+
+  bool AutoFocalPoint{true};
+  bool AutoNearFar{true};
+  bool AutoHeight{true};
+
+  double FocalPoint[3]{0, 0, 0};
+  double NearFar[2]{0, 1};
+  double Height{1};
+
+  double Angle{45}; // only used for perpective view
 
 public:
   static ttkCinemaImaging *New();
-  vtkTypeMacro(ttkCinemaImaging, vtkMultiBlockDataSetAlgorithm)
+  vtkTypeMacro(ttkCinemaImaging, ttkAlgorithm);
 
-    vtkSetVector2Macro(Resolution, int);
+  // Backend
+  vtkSetMacro(Backend, int);
+  vtkGetMacro(Backend, int);
+
+  // General Settings
+  vtkSetVector2Macro(Resolution, int);
   vtkGetVector2Macro(Resolution, int);
 
-  vtkSetVector2Macro(CamNearFar, double);
-  vtkGetVector2Macro(CamNearFar, double);
+  // Camera
+  vtkSetMacro(ProjectionMode, int);
+  vtkGetMacro(ProjectionMode, int);
 
-  vtkSetVector3Macro(CamFocus, double);
-  vtkGetVector3Macro(CamFocus, double);
+  vtkSetMacro(AutoFocalPoint, bool);
+  vtkGetMacro(AutoFocalPoint, bool);
+  vtkSetVector3Macro(FocalPoint, double);
+  vtkGetVector3Macro(FocalPoint, double);
 
-  vtkSetMacro(CamHeight, double);
-  vtkGetMacro(CamHeight, double);
+  vtkSetMacro(AutoNearFar, bool);
+  vtkGetMacro(AutoNearFar, bool);
+  vtkSetVector2Macro(NearFar, double);
+  vtkGetVector2Macro(NearFar, double);
 
-  // default ttk setters
-  vtkSetMacro(debugLevel_, int);
-  void SetThreads() {
-    threadNumber_
-      = !UseAllCores ? ThreadNumber : ttk::OsCall::getNumberOfCores();
-    Modified();
-  }
-  void SetThreadNumber(int threadNumber) {
-    ThreadNumber = threadNumber;
-    SetThreads();
-  }
-  void SetUseAllCores(bool onOff) {
-    UseAllCores = onOff;
-    SetThreads();
-  }
-  // end of default ttk setters
+  vtkSetMacro(AutoHeight, bool);
+  vtkGetMacro(AutoHeight, bool);
+  vtkSetMacro(Height, double);
+  vtkGetMacro(Height, double);
 
-  int FillInputPortInformation(int port, vtkInformation *info) override {
-    switch(port) {
-      case 0:
-        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataObject");
-        break;
-      case 1:
-        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkPointSet");
-        break;
-      default:
-        return 0;
-    }
-    return 1;
-  }
+  // Perspective
+  vtkSetMacro(Angle, double);
+  vtkGetMacro(Angle, double);
 
-  int FillOutputPortInformation(int port, vtkInformation *info) override {
-    switch(port) {
-      case 0:
-        info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkMultiBlockDataSet");
-        break;
-      default:
-        return 0;
-    }
-    return 1;
-  }
+  static vtkCellArray *GetCells(vtkPointSet *pointSet);
+
+  static int Normalize(vtkDataArray *depthArray, const double nearFar[2]);
+
+  static int AddFieldDataArray(vtkFieldData *fd,
+                               vtkDataArray *array,
+                               int tupelIdx,
+                               std::string name = "");
+
+  static int AddAllFieldDataArrays(vtkPointSet *inputGrid,
+                                   vtkImageData *image,
+                                   int tupelIdx);
+
+  static int ComputeDirFromFocalPoint(vtkPointSet *inputGrid);
+
+  static int EnsureGridData(vtkPointData *fd,
+                            std::string name,
+                            int nTuples,
+                            const std::vector<double> &Values);
+
+  static int MapPointAndCellData(vtkImageData *outputImage,
+
+                                 vtkPointSet *inputObject,
+                                 const ttk::CinemaImaging *renderer,
+                                 const unsigned int *primitiveIdArray,
+                                 const float *barycentricCoordinates,
+                                 const vtkIdType *inputObjectConnectivityList);
 
 protected:
-  ttkCinemaImaging() {
-    int res[2] = {256, 256};
-    SetResolution(res);
-    double nf[2] = {0.1, 2};
-    SetCamNearFar(nf);
-    double foc[3] = {0, 0, 0};
-    SetCamFocus(foc);
-    SetCamHeight(1);
+  ttkCinemaImaging();
+  ~ttkCinemaImaging();
 
-    UseAllCores = false;
-
-    SetNumberOfInputPorts(2);
-    SetNumberOfOutputPorts(1);
-  }
-  ~ttkCinemaImaging(){};
-
-  bool UseAllCores;
-  int ThreadNumber;
-
-  int Resolution[2];
-  double CamNearFar[2];
-  double CamFocus[3];
-  double CamHeight;
+  int FillInputPortInformation(int port, vtkInformation *info) override;
+  int FillOutputPortInformation(int port, vtkInformation *info) override;
 
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;
 
-private:
-  bool needsToAbort() override {
-    return GetAbortExecute();
-  };
-  int updateProgress(const float &progress) override {
-    UpdateProgress(progress);
-    return 0;
-  };
+  int RequestDataSingle(vtkMultiBlockDataSet *collection,
+
+                        vtkPointSet *object,
+                        vtkPointSet *grid,
+                        const std::vector<double> &defaultFocal,
+                        const std::vector<double> &defaultNearFar,
+                        const double defaultHeight,
+                        const double defaultAngle);
 };

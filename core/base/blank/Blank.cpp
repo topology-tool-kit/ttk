@@ -6,9 +6,10 @@ using namespace blank;
 
 Blank::Blank() {
 
+  setDebugMsgPrefix("Blank");
+
   inputData_ = NULL;
   outputData_ = NULL;
-  triangulation_ = NULL;
 }
 
 Blank::~Blank() {

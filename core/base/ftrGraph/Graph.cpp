@@ -28,7 +28,7 @@ std::string Graph::print(const int verbosity) const {
 
   if(verbosity >= 3) {
     res << "Leaves: " << endl;
-    for(const auto v : leaves_) {
+    for(const auto &v : leaves_) {
       res << get<0>(v) << " ";
     }
     res << endl;
@@ -132,9 +132,7 @@ std::string Graph::printVisit() const {
 void Graph::alloc() {
 #ifndef TTK_ENABLE_KAMIKAZE
   if(nbElmt_ == nullVertex) {
-    cout
-      << "[FTR Graph]: ERROR, setNumberOfElmt not called before alloc in Graph"
-      << endl;
+    this->printErr("setNumberOfElmt not called before alloc in Graph");
   }
 #endif
   leaves_.reserve(nbElmt_);

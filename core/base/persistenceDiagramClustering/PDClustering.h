@@ -19,15 +19,17 @@
 //
 #include <KDTree.h>
 //
+#include <array>
 #include <limits>
-//
+
+#include <PDBarycenter.h>
 
 using namespace std;
 using namespace ttk;
 
 namespace ttk {
   template <typename dataType>
-  class PDClustering : public Debug {
+  class PDClustering : virtual public Debug {
 
   public:
     PDClustering() {
@@ -49,6 +51,7 @@ namespace ttk {
       cost_sad_ = 0;
       UseDeltaLim_ = false;
       distanceWritingOptions_ = 0;
+      this->setDebugMsgPrefix("PersistenceDiagramClustering");
     };
 
     ~PDClustering(){};
@@ -66,25 +69,27 @@ namespace ttk {
     void correctMatchings(
       vector<vector<vector<vector<matchingTuple>>>> &previous_matchings);
 
-    dataType computeDistance(BidderDiagram<dataType> &D1,
-                             BidderDiagram<dataType> &D2,
-                             dataType delta_lim);
-    dataType computeDistance(BidderDiagram<dataType> D1,
-                             GoodDiagram<dataType> D2,
-                             dataType delta_lim);
-    dataType computeDistance(BidderDiagram<dataType> *D1,
-                             GoodDiagram<dataType> *D2,
-                             dataType delta_lim);
-    dataType computeDistance(GoodDiagram<dataType> &D1,
-                             GoodDiagram<dataType> &D2,
-                             dataType delta_lim);
+    dataType computeDistance(const BidderDiagram<dataType> &D1,
+                             const BidderDiagram<dataType> &D2,
+                             const double delta_lim);
+    dataType computeDistance(const BidderDiagram<dataType> D1,
+                             const GoodDiagram<dataType> D2,
+                             const double delta_lim);
+    dataType computeDistance(BidderDiagram<dataType> *const D1,
+                             const GoodDiagram<dataType> *const D2,
+                             const double delta_lim);
+    dataType computeDistance(const GoodDiagram<dataType> &D1,
+                             const GoodDiagram<dataType> &D2,
+                             const double delta_lim);
 
     GoodDiagram<dataType>
-      centroidWithZeroPrices(GoodDiagram<dataType> centroid);
-    BidderDiagram<dataType> centroidToDiagram(GoodDiagram<dataType> centroid);
-    GoodDiagram<dataType> diagramToCentroid(BidderDiagram<dataType> diagram);
+      centroidWithZeroPrices(const GoodDiagram<dataType> centroid);
     BidderDiagram<dataType>
-      diagramWithZeroPrices(BidderDiagram<dataType> diagram);
+      centroidToDiagram(const GoodDiagram<dataType> centroid);
+    GoodDiagram<dataType>
+      diagramToCentroid(const BidderDiagram<dataType> diagram);
+    BidderDiagram<dataType>
+      diagramWithZeroPrices(const BidderDiagram<dataType> diagram);
 
     void setBidderDiagrams();
     void initializeEmptyClusters();
@@ -104,10 +109,12 @@ namespace ttk {
       std::vector<std::vector<dataType>> initial_diagonal_prices,
       std::vector<std::vector<dataType>> initial_off_diagonal_points,
       std::vector<int> min_points_to_add,
-      bool add_points_to_barycenter);
+      bool add_points_to_barycenter,
+      bool first_enrichment);
 
     std::vector<std::vector<dataType>> getDistanceMatrix();
     void getCentroidDistanceMatrix();
+    void computeDistanceToCentroid();
 
     void updateClusters();
     void invertClusters();
@@ -142,8 +149,6 @@ namespace ttk {
       do_sad_ = doSad;
       do_max_ = doMax;
 
-      original_dos.resize(3);
-
       original_dos[0] = do_min_;
       original_dos[1] = do_sad_;
       original_dos[2] = do_max_;
@@ -162,10 +167,6 @@ namespace ttk {
 
     inline void setWasserstein(const int &wasserstein) {
       wasserstein_ = wasserstein;
-    }
-
-    inline void setThreadNumber(const int &threadNumber) {
-      threadNumber_ = threadNumber;
     }
 
     inline void setUseProgressive(const bool use_progressive) {
@@ -200,9 +201,6 @@ namespace ttk {
     inline void setDeterministic(const bool deterministic) {
       deterministic_ = deterministic;
     }
-    inline void setDebugLevel(const int debugLevel) {
-      debugLevel_ = debugLevel;
-    }
 
     inline void setUseDeltaLim(const bool UseDeltaLim) {
       UseDeltaLim_ = UseDeltaLim;
@@ -221,29 +219,37 @@ namespace ttk {
     }
 
     inline void printClustering() {
+      std::string msg = "";
       for(int c = 0; c < k_; ++c) {
-        std::cout << "[PersistenceDiagramClustering] Cluster " << c << " : [";
+        msg.append(" Cluster " + std::to_string(c) + " = {");
         for(unsigned int idx = 0; idx < clustering_[c].size(); ++idx) {
           if(idx == clustering_[c].size() - 1) {
-            std::cout << clustering_[c][idx] << "]" << std::endl;
+            msg.append(std::to_string(clustering_[c][idx]) + "}");
+            this->printMsg(msg);
+            msg = "";
+            // msg << clustering_[c][idx] << "}" << std::endl;
           } else {
-            std::cout << clustering_[c][idx] << ", ";
+            msg.append(std::to_string(clustering_[c][idx]) + ", ");
+            // msg << clustering_[c][idx] << ", ";
           }
         }
       }
+      // cout<<msg.str()<<endl;
     }
 
     inline void printOldClustering() {
+      std::stringstream msg;
       for(int c = 0; c < k_; ++c) {
-        std::cout << "Cluster " << c << " : [";
+        msg << "Cluster " << c << " = {";
         for(unsigned int idx = 0; idx < old_clustering_[c].size(); ++idx) {
           if(idx == old_clustering_[c].size() - 1) {
-            std::cout << old_clustering_[c][idx] << "]" << std::endl;
+            msg << old_clustering_[c][idx] << "}" << std::endl;
           } else {
-            std::cout << old_clustering_[c][idx] << ", ";
+            msg << old_clustering_[c][idx] << ", ";
           }
         }
       }
+      this->printMsg(msg.str());
     }
 
     template <typename type>
@@ -276,16 +282,14 @@ namespace ttk {
     double lambda_;
 
     int k_;
-    int debugLevel_;
     int numberOfInputs_;
-    int threadNumber_;
     bool use_progressive_;
     bool use_accelerated_;
     bool use_kmeanspp_;
     bool use_kdtree_;
     double time_limit_;
 
-    dataType epsilon_min_;
+    double epsilon_min_;
     std::vector<double> epsilon_;
     dataType cost_;
     dataType cost_min_;
@@ -299,7 +303,7 @@ namespace ttk {
     std::vector<std::vector<diagramTuple>> *inputDiagramsSaddle_;
     std::vector<std::vector<diagramTuple>> *inputDiagramsMax_;
 
-    std::vector<bool> original_dos;
+    std::array<bool, 3> original_dos;
 
     bool do_min_;
     std::vector<BidderDiagram<dataType>> bidder_diagrams_min_;
@@ -328,7 +332,9 @@ namespace ttk {
     std::vector<bool> r_;
     std::vector<dataType> u_;
     std::vector<std::vector<dataType>> l_;
-    std::vector<std::vector<dataType>> d_;
+    std::vector<std::vector<double>> centroidsDistanceMatrix_{};
+    std::vector<double> distanceToCentroid_{};
+
     int n_iterations_;
   };
 } // namespace ttk

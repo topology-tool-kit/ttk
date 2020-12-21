@@ -3,7 +3,7 @@ ttk_add_base_library(morseSmaleComplex
     MorseSmaleComplex.cpp
   HEADERS
     MorseSmaleComplex.h
-  LINK
+  DEPENDS
     morseSmaleComplex2D
     morseSmaleComplex3D
     )

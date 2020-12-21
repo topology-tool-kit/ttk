@@ -1,8 +1,7 @@
 /// \ingroup base
 /// \class ttk::BottleneckDistance
 /// \author Maxime Soler <soler.maxime@total.com>
-#ifndef _BOTTLENECKDISTANCE_H
-#define _BOTTLENECKDISTANCE_H
+#pragma once
 
 #ifndef diagramTuple
 #define diagramTuple                                                        \
@@ -13,11 +12,6 @@
 #ifndef matchingTuple
 #define matchingTuple std::tuple<int, int, double>
 #endif
-
-#ifndef trackingTuple
-#define trackingTuple std::tuple<int, int, std::vector<int>>
-#endif
-// start ts, end ts or -1, list of indices for every ts
 
 #ifndef BNodeType
 #define BNodeType ttk::CriticalType
@@ -31,9 +25,7 @@
 // base code includes
 #include <GabowTarjan.h>
 #include <Munkres.h>
-#include <PersistenceDiagram.h>
 #include <Triangulation.h>
-#include <Wrapper.h>
 
 #include <functional>
 #include <string>
@@ -41,12 +33,16 @@
 
 namespace ttk {
 
-  class BottleneckDistance : public Debug {
+  using trackingTuple = std::tuple<int, int, std::vector<int>>;
+
+  class BottleneckDistance : virtual public Debug {
 
   public:
     BottleneckDistance()
       : distance_(-1), wasserstein_("inf"), pvAlgorithm_(-1), zeroThreshold_(0),
-        px_(0), py_(0), pz_(0), pe_(0), ps_(0){};
+        px_(0), py_(0), pz_(0), pe_(0), ps_(0) {
+      this->setDebugMsgPrefix("BottleneckDistance");
+    }
 
     ~BottleneckDistance(){};
 
@@ -111,8 +107,8 @@ namespace ttk {
 
     inline void message(const char *s) {
       std::stringstream msg;
-      msg << s << std::endl;
-      dMsg(std::cout, msg.str(), timeMsg);
+      msg << s;
+      this->printMsg(msg.str());
     }
 
     double getDistance() {
@@ -226,5 +222,3 @@ namespace ttk {
 #include <BottleneckDistanceMainImpl.h>
 
 } // namespace ttk
-
-#endif // _H

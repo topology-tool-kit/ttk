@@ -29,54 +29,22 @@
 
 #pragma once
 
-// VTK includes -- to adapt
-#include <vtkCharArray.h>
-#include <vtkDataArray.h>
-#include <vtkDataSet.h>
-#include <vtkDataSetAlgorithm.h>
-#include <vtkDoubleArray.h>
-#include <vtkFiltersCoreModule.h>
-#include <vtkFloatArray.h>
-#include <vtkInformation.h>
-#include <vtkIntArray.h>
-#include <vtkObjectFactory.h>
-#include <vtkPointData.h>
-#include <vtkShortArray.h>
-#include <vtkSmartPointer.h>
-#include <vtkUnsignedCharArray.h>
-#include <vtkUnsignedShortArray.h>
+// VTK Module
+#include <ttkEigenFieldModule.h>
 
-// ttk code includes
+// VTK Includes
+#include <ttkAlgorithm.h>
+
+// TTK Base Includes
 #include <EigenField.h>
-#include <ttkWrapper.h>
 
-#include <ttkTriangulation.h>
-
-enum EigenFieldType { Float = 0, Double };
-
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkEigenField
-#else
-class ttkEigenField
-#endif
-  : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+class TTKEIGENFIELD_EXPORT ttkEigenField : public ttkAlgorithm,
+                                           protected ttk::EigenField {
 
 public:
   static ttkEigenField *New();
-  vtkTypeMacro(ttkEigenField, vtkDataSetAlgorithm);
 
-  vtkSetMacro(debugLevel_, int);
-
-  void SetThreadNumber(int threadNumber) {
-    ThreadNumber = threadNumber;
-    SetThreads();
-  }
-
-  void SetUseAllCores(bool onOff) {
-    UseAllCores = onOff;
-    SetThreads();
-  }
+  vtkTypeMacro(ttkEigenField, ttkAlgorithm);
 
   vtkSetMacro(OutputFieldName, std::string);
   vtkGetMacro(OutputFieldName, std::string);
@@ -87,26 +55,15 @@ public:
   vtkSetMacro(ComputeStatistics, bool);
   vtkGetMacro(ComputeStatistics, bool);
 
-  // get mesh from VTK
-  int getTriangulation(vtkDataSet *input);
-
-  // default copy constructor
-  ttkEigenField(const ttkEigenField &) = delete;
-  // default move constructor
-  ttkEigenField(ttkEigenField &&) = delete;
-  // default copy assignment operator
-  ttkEigenField &operator=(const ttkEigenField &) = delete;
-  // default move assignment operator
-  ttkEigenField &operator=(ttkEigenField &&) = delete;
-
 protected:
   ttkEigenField();
-
   ~ttkEigenField() override = default;
 
-  TTK_SETUP();
-
   int FillInputPortInformation(int port, vtkInformation *info) override;
+  int FillOutputPortInformation(int port, vtkInformation *info) override;
+  int RequestData(vtkInformation *request,
+                  vtkInformationVector **inputVector,
+                  vtkInformationVector *outputVector) override;
 
 private:
   // output field name
@@ -117,9 +74,7 @@ private:
   bool ComputeStatistics{false};
 
   // enum: float or double
-  int OutputFieldType{EigenFieldType::Float};
-  // worker object
-  ttk::EigenField baseWorker_{};
-  // teh mesh
-  ttk::Triangulation *triangulation_{};
+  enum class FieldType { FLOAT, DOUBLE };
+
+  FieldType OutputFieldType{FieldType::FLOAT};
 };

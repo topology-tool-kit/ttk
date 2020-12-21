@@ -1,0 +1,10 @@
+NAME
+  ttkBlank
+SOURCES
+  ttkBlank.cpp
+HEADERS
+  ttkBlank.h
+DEPENDS
+  blank
+  ttkAlgorithm
+  ttkTriangulationAlgorithm

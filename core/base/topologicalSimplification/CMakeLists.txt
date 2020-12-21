@@ -3,6 +3,6 @@ ttk_add_base_library(topologicalSimplification
     TopologicalSimplification.cpp
   HEADERS
     TopologicalSimplification.h
-  LINK
+  DEPENDS
     triangulation
     )

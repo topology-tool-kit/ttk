@@ -5,9 +5,9 @@
        a filter already in ParaView (in Servers/ServerManager/Resources/*.xml)
        that matches your filter and then model your xml on it -->
   <ProxyGroup name="filters">
-   <SourceProxy 
-     name="ScalarFieldNormalizer" 
-     class="ttkScalarFieldNormalizer" 
+   <SourceProxy
+     name="ttkScalarFieldNormalizer"
+     class="ttkScalarFieldNormalizer"
      label="TTK ScalarFieldNormalizer">
      <Documentation
         long_help="TTK plugin that normalizes an input scalar field."
@@ -32,13 +32,10 @@
         </Documentation>
       </InputProperty>
 
-      <StringVectorProperty
-        name="Scalar Field"
-        command="SetScalarField"
-        number_of_elements="1"
-        animateable="0"
-        label="Scalar Field"
-        >
+      <StringVectorProperty name="ScalarFieldNew" label="Scalar Field" 
+                            command="SetInputArrayToProcess" 
+                            element_types="0 0 0 0 2" 
+                            number_of_elements="5" default_values="0">
         <ArrayListDomain
           name="array_list"
           default_values="0">
@@ -50,60 +47,9 @@
           Select the scalar field to normalize.
         </Documentation>
       </StringVectorProperty>
-      
-      <IntVectorProperty
-         name="UseAllCores"
-         label="Use All Cores"
-         command="SetUseAllCores"
-         number_of_elements="1"
-         default_values="1" panel_visibility="advanced">
-        <BooleanDomain name="bool"/>
-         <Documentation>
-          Use all available cores.
-         </Documentation>
-      </IntVectorProperty>
-      
-      <IntVectorProperty
-         name="ThreadNumber"
-         label="Thread Number"
-         command="SetThreadNumber"
-         number_of_elements="1"
-         default_values="1" panel_visibility="advanced">
-        <IntRangeDomain name="range" min="1" max="100" />
-        <Hints>
-          <PropertyWidgetDecorator type="GenericDecorator"
-            mode="visibility"
-            property="UseAllCores"
-            value="0" />
-        </Hints>
 
-         <Documentation>
-          Thread number.
-         </Documentation>
-      </IntVectorProperty>
-      
-      <IntVectorProperty
-         name="DebugLevel"
-         label="Debug Level"
-         command="SetdebugLevel_"
-         number_of_elements="1"
-         default_values="3" panel_visibility="advanced">
-        <IntRangeDomain name="range" min="0" max="100" />
-         <Documentation>
-           Debug level.
-         </Documentation>
-      </IntVectorProperty>
-      
-      <PropertyGroup panel_widget="Line" label="Input options">
-        <Property name="Scalar Field" />
-      </PropertyGroup>
-      
-      <PropertyGroup panel_widget="Line" label="Testing">
-        <Property name="UseAllCores" />
-        <Property name="ThreadNumber" />
-        <Property name="DebugLevel" />
-      </PropertyGroup>
-      
+      ${DEBUG_WIDGETS}
+
       <Hints>
         <ShowInMenu category="TTK - Scalar Data" />
       </Hints>

@@ -1,0 +1,9 @@
+NAME
+  ttkContourTreeAlignment
+SOURCES
+  ttkContourTreeAlignment.cpp
+HEADERS
+  ttkContourTreeAlignment.h
+DEPENDS
+  contourTreeAlignment
+  ttkAlgorithm

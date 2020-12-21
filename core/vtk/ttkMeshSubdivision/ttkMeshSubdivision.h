@@ -33,90 +33,32 @@
 /// See the related ParaView example state files for usage examples within a
 /// VTK pipeline.
 ///
-#ifndef _TTK_MESHSUBDIVISION_H
-#define _TTK_MESHSUBDIVISION_H
+#pragma once
 
-// VTK includes -- to adapt
-#include <vtkCellArray.h>
-#include <vtkCellData.h>
-#include <vtkDoubleArray.h>
-#include <vtkFiltersCoreModule.h>
-#include <vtkGenericCell.h>
-#include <vtkInformation.h>
-#include <vtkObjectFactory.h>
-#include <vtkPointData.h>
-#include <vtkSmartPointer.h>
-#include <vtkUnstructuredGrid.h>
-#include <vtkUnstructuredGridAlgorithm.h>
+// VTK Module
+#include <ttkMeshSubdivisionModule.h>
 
 // ttk code includes
-#include <ttkWrapper.h>
+#include <ttkAlgorithm.h>
 
-// in this example, this wrapper takes a data-set on the input and produces a
-// data-set on the output - to adapt.
-// see the documentation of the vtkAlgorithm class to decide from which VTK
-// class your wrapper should inherit.
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkMeshSubdivision
-#else
-class ttkMeshSubdivision
-#endif
-  : public vtkUnstructuredGridAlgorithm,
-    public ttk::Wrapper {
+class TTKMESHSUBDIVISION_EXPORT ttkMeshSubdivision : public ttkAlgorithm {
 
 public:
   static ttkMeshSubdivision *New();
+  vtkTypeMacro(ttkMeshSubdivision, ttkAlgorithm);
 
-  vtkTypeMacro(ttkMeshSubdivision, vtkUnstructuredGridAlgorithm);
-
-  // default ttk setters
-  vtkSetMacro(debugLevel_, int);
-
-  void SetThreads() {
-    if(!UseAllCores)
-      threadNumber_ = ThreadNumber;
-    else {
-      threadNumber_ = ttk::OsCall::getNumberOfCores();
-    }
-    Modified();
-  }
-
-  void SetThreadNumber(int threadNumber) {
-    ThreadNumber = threadNumber;
-    SetThreads();
-  }
-
-  void SetUseAllCores(bool onOff) {
-    UseAllCores = onOff;
-    SetThreads();
-  }
-  // end of default ttk setters
-
-  // set-getters macros to define from each variable you want to access from
-  // the outside (in particular from paraview) - to adapt.
   vtkSetMacro(IterationNumber, int);
   vtkGetMacro(IterationNumber, int);
 
 protected:
   ttkMeshSubdivision();
 
-  ~ttkMeshSubdivision();
-
+  int FillInputPortInformation(int port, vtkInformation *info) override;
+  int FillOutputPortInformation(int port, vtkInformation *info) override;
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;
 
 private:
-  bool UseAllCores;
-  int ThreadNumber;
-  int IterationNumber;
-
-  // base code features
-  int doIt(vtkUnstructuredGrid *input, vtkUnstructuredGrid *output);
-
-  bool needsToAbort() override;
-
-  int updateProgress(const float &progress) override;
+  int IterationNumber{1};
 };
-
-#endif // _TTK_MESHSUBDIVISION_H

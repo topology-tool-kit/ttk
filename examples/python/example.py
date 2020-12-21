@@ -3,7 +3,7 @@
 #/// \ingroup examples
 #/// \author Lutz Hofmann <lutz.hofmann@iwr.uni-heidelberg.de>
 #/// \date August 2019.
-#/// 
+#///
 #/// \brief Minimalist python TTK example pipeline, including:
 #///  -# The computation of a persistence curve
 #///  -# The computation of a persistence diagram
@@ -47,12 +47,14 @@ reader.SetFileName(inputFilePath)
 # 2. computing the persistence curve
 curve = ttkPersistenceCurve()
 curve.SetInputConnection(reader.GetOutputPort())
-curve.SetdebugLevel_(3)
+curve.SetInputArrayToProcess(0, 0, 0, 0, "data")
+curve.SetDebugLevel(3)
 
 # 3. computing the persitence diagram
 diagram = ttkPersistenceDiagram()
 diagram.SetInputConnection(reader.GetOutputPort())
-diagram.SetdebugLevel_(3)
+diagram.SetInputArrayToProcess(0, 0, 0, 0, "data")
+diagram.SetDebugLevel(3)
 
 # 4. selecting the critical point pairs
 criticalPairs = vtkThreshold()
@@ -71,13 +73,15 @@ persistentPairs.ThresholdBetween(0.05, 999999)
 # 6. simplifying the input data to remove non-persistent pairs
 topologicalSimplification = ttkTopologicalSimplification()
 topologicalSimplification.SetInputConnection(0, reader.GetOutputPort())
+topologicalSimplification.SetInputArrayToProcess(0, 0, 0, 0, "data")
 topologicalSimplification.SetInputConnection(1, persistentPairs.GetOutputPort())
-topologicalSimplification.SetdebugLevel_(3)
+topologicalSimplification.SetDebugLevel(3)
 
 # 7. computing the Morse-Smale complex
 morseSmaleComplex = ttkMorseSmaleComplex()
 morseSmaleComplex.SetInputConnection(topologicalSimplification.GetOutputPort())
-morseSmaleComplex.SetdebugLevel_(3)
+morseSmaleComplex.SetInputArrayToProcess(0, 0, 0, 0, "data")
+morseSmaleComplex.SetDebugLevel(3)
 
 # 8. saving the output data
 curveWriter = vtkTableWriter()

@@ -36,28 +36,29 @@
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnsignedShortArray.h>
 
+// VTK module
+#include <ttkBlankModule.h>
+
 // ttk code includes
 #include <Blank.h>
-#include <ttkWrapper.h>
+#include <ttkTriangulationAlgorithm.h>
 
 // in this example, this wrapper takes a data-set on the input and produces a
 // data-set on the output - to adapt.
 // see the documentation of the vtkAlgorithm class to decide from which VTK
 // class your wrapper should inherit.
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkBlank
-#else
-class ttkBlank
-#endif
-  : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+class TTKBLANK_EXPORT ttkBlank : public vtkDataSetAlgorithm,
+                                 protected ttk::Wrapper {
 
 public:
   static ttkBlank *New();
   vtkTypeMacro(ttkBlank, vtkDataSetAlgorithm)
 
     // default ttk setters
-    vtkSetMacro(debugLevel_, int);
+    void SetDebugLevel(int debugLevel) {
+    setDebugLevel(debugLevel);
+    Modified();
+  }
 
   void SetThreadNumber(int threadNumber) {
     ThreadNumber = threadNumber;
@@ -154,7 +155,7 @@ protected:
     // end of TODO-1
   }
 
-  ~ttkBlank(){};
+  ~ttkBlank() override{};
 
   TTK_SETUP();
 

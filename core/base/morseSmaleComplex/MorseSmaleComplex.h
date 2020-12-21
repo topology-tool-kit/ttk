@@ -20,8 +20,7 @@
 /// \sa ttk::Triangulation
 /// \sa ttkMorseSmaleComplex.cpp %for a usage example.
 
-#ifndef _MORSESMALECOMPLEX_H
-#define _MORSESMALECOMPLEX_H
+#pragma once
 
 // base code includes
 #include <MorseSmaleComplex2D.h>
@@ -179,7 +178,7 @@
 
 namespace ttk {
 
-  class MorseSmaleComplex {
+  class MorseSmaleComplex : public virtual Debug {
 
   public:
     MorseSmaleComplex();
@@ -193,26 +192,6 @@ namespace ttk {
 #endif
       return abstractMorseSmaleComplex_->setIterationThreshold(
         iterationThreshold);
-    }
-
-    int setReverseSaddleMaximumConnection(const bool state) {
-#ifndef TTK_ENABLE_KAMIKAZE
-      if(!abstractMorseSmaleComplex_) {
-        return -1;
-      }
-#endif
-      return abstractMorseSmaleComplex_->setReverveSaddleMaximumConnection(
-        state);
-    }
-
-    int setReverseSaddleSaddleConnection(const bool state) {
-#ifndef TTK_ENABLE_KAMIKAZE
-      if(!abstractMorseSmaleComplex_) {
-        return -1;
-      }
-#endif
-      return abstractMorseSmaleComplex_->setReverveSaddleSaddleConnection(
-        state);
     }
 
     int setComputeAscendingSeparatrices1(const bool state) {
@@ -283,45 +262,32 @@ namespace ttk {
         ->setSaddleConnectorsPersistenceThreshold(threshold);
     }
 
-    int setPrioritizeSpeedOverMemory(const bool state) {
-#ifndef TTK_ENABLE_KAMIKAZE
-      if(!abstractMorseSmaleComplex_) {
-        return -1;
-      }
-#endif
-      return abstractMorseSmaleComplex_->setPrioritizeSpeedOverMemory(state);
-    }
-
-    int setupTriangulation(Triangulation *const data) {
+    inline void preconditionTriangulation(AbstractTriangulation *const data) {
       dimensionality_ = data->getCellVertexNumber(0) - 1;
-
-      switch(dimensionality_) {
-        case 2:
-          abstractMorseSmaleComplex_ = &morseSmaleComplex2D_;
-          break;
-
-        case 3:
-          abstractMorseSmaleComplex_ = &morseSmaleComplex3D_;
-          break;
+      if(dimensionality_ == 2) {
+        abstractMorseSmaleComplex_ = &morseSmaleComplex2D_;
+      } else if(dimensionality_ == 3) {
+        abstractMorseSmaleComplex_ = &morseSmaleComplex3D_;
       }
 
-      abstractMorseSmaleComplex_->setupTriangulation(data);
-      return 0;
+      abstractMorseSmaleComplex_->preconditionTriangulation(data);
     }
 
     inline int setDebugLevel(const int &debugLevel) {
+      Debug::setDebugLevel(debugLevel);
       morseSmaleComplex2D_.setDebugLevel(debugLevel);
       morseSmaleComplex3D_.setDebugLevel(debugLevel);
       return 0;
     }
 
-    inline int setThreadNumber(const int &threadNumber) {
+    inline int setThreadNumber(const int threadNumber) {
       morseSmaleComplex2D_.setThreadNumber(threadNumber);
       morseSmaleComplex3D_.setThreadNumber(threadNumber);
       return 0;
     }
 
-    inline int setWrapper(const Wrapper *const wrapper) {
+    inline int setWrapper(const Wrapper *wrapper) {
+      Debug::setWrapper(wrapper);
       morseSmaleComplex2D_.setWrapper(wrapper);
       morseSmaleComplex3D_.setWrapper(wrapper);
       return 0;
@@ -337,7 +303,15 @@ namespace ttk {
       return 0;
     }
 
-    inline int setInputOffsets(void *const data) {
+    /**
+     * @pre For this function to behave correctly in the absence of
+     * the VTK wrapper, ttk::preconditionOrderArray() needs to be
+     * called to fill the @p data buffer prior to any
+     * computation (the VTK wrapper already includes a mecanism to
+     * automatically generate such a preconditioned buffer).
+     * @see examples/c++/main.cpp for an example use.
+     */
+    inline int setInputOffsets(const SimplexId *const data) {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(!abstractMorseSmaleComplex_) {
         return -1;
@@ -378,14 +352,14 @@ namespace ttk {
       std::vector<char> *const separatrices1_points_cellDimensions,
       std::vector<SimplexId> *const separatrices1_points_cellIds,
       SimplexId *const separatrices1_numberOfCells,
-      std::vector<SimplexId> *const separatrices1_cells,
+      std::vector<long long> *const separatrices1_cells_connectivity,
       std::vector<SimplexId> *const separatrices1_cells_sourceIds,
       std::vector<SimplexId> *const separatrices1_cells_destinationIds,
       std::vector<SimplexId> *const separatrices1_cells_separatrixIds,
       std::vector<char> *const separatrices1_cells_separatrixTypes,
-      void *const separatrices1_cells_separatrixFunctionMaxima,
-      void *const separatrices1_cells_separatrixFunctionMinima,
-      void *const separatrices1_cells_separatrixFunctionDiffs,
+      std::vector<double> *const separatrices1_cells_separatrixFunctionMaxima,
+      std::vector<double> *const separatrices1_cells_separatrixFunctionMinima,
+      std::vector<double> *const separatrices1_cells_separatrixFunctionDiffs,
       std::vector<char> *const separatrices1_cells_isOnBoundary) {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(!abstractMorseSmaleComplex_) {
@@ -396,7 +370,7 @@ namespace ttk {
         separatrices1_numberOfPoints, separatrices1_points,
         separatrices1_points_smoothingMask, separatrices1_points_cellDimensions,
         separatrices1_points_cellIds, separatrices1_numberOfCells,
-        separatrices1_cells, separatrices1_cells_sourceIds,
+        separatrices1_cells_connectivity, separatrices1_cells_sourceIds,
         separatrices1_cells_destinationIds, separatrices1_cells_separatrixIds,
         separatrices1_cells_separatrixTypes,
         separatrices1_cells_separatrixFunctionMaxima,
@@ -411,13 +385,14 @@ namespace ttk {
       SimplexId *const separatrices2_numberOfPoints,
       std::vector<float> *const separatrices2_points,
       SimplexId *const separatrices2_numberOfCells,
-      std::vector<SimplexId> *const separatrices2_cells,
+      std::vector<long long> *const separatrices2_cells_offsets,
+      std::vector<long long> *const separatrices2_cells_connectivity,
       std::vector<SimplexId> *const separatrices2_cells_sourceIds,
       std::vector<SimplexId> *const separatrices2_cells_separatrixIds,
       std::vector<char> *const separatrices2_cells_separatrixTypes,
-      void *const separatrices2_cells_separatrixFunctionMaxima,
-      void *const separatrices2_cells_separatrixFunctionMinima,
-      void *const separatrices2_cells_separatrixFunctionDiffs,
+      std::vector<double> *const separatrices2_cells_separatrixFunctionMaxima,
+      std::vector<double> *const separatrices2_cells_separatrixFunctionMinima,
+      std::vector<double> *const separatrices2_cells_separatrixFunctionDiffs,
       std::vector<char> *const separatrices2_cells_isOnBoundary) {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(!abstractMorseSmaleComplex_) {
@@ -426,9 +401,9 @@ namespace ttk {
 #endif
       abstractMorseSmaleComplex_->setOutputSeparatrices2(
         separatrices2_numberOfPoints, separatrices2_points,
-        separatrices2_numberOfCells, separatrices2_cells,
-        separatrices2_cells_sourceIds, separatrices2_cells_separatrixIds,
-        separatrices2_cells_separatrixTypes,
+        separatrices2_numberOfCells, separatrices2_cells_offsets,
+        separatrices2_cells_connectivity, separatrices2_cells_sourceIds,
+        separatrices2_cells_separatrixIds, separatrices2_cells_separatrixTypes,
         separatrices2_cells_separatrixFunctionMaxima,
         separatrices2_cells_separatrixFunctionMinima,
         separatrices2_cells_separatrixFunctionDiffs,
@@ -451,26 +426,24 @@ namespace ttk {
       return 0;
     }
 
-    template <typename dataType, typename idType>
-    int execute() {
+    template <typename dataType, typename triangulationType>
+    int execute(const triangulationType &triangulation) {
       switch(dimensionality_) {
         case 2:
-          morseSmaleComplex2D_.execute<dataType, idType>();
+          morseSmaleComplex2D_.execute<dataType>(triangulation);
           break;
 
         case 3:
-          morseSmaleComplex3D_.execute<dataType, idType>();
+          morseSmaleComplex3D_.execute<dataType>(triangulation);
           break;
       }
       return 0;
     }
 
   protected:
-    int dimensionality_;
-    AbstractMorseSmaleComplex *abstractMorseSmaleComplex_;
-    MorseSmaleComplex2D morseSmaleComplex2D_;
-    MorseSmaleComplex3D morseSmaleComplex3D_;
+    int dimensionality_{};
+    AbstractMorseSmaleComplex *abstractMorseSmaleComplex_{};
+    MorseSmaleComplex2D morseSmaleComplex2D_{};
+    MorseSmaleComplex3D morseSmaleComplex3D_{};
   };
 } // namespace ttk
-
-#endif // MORSESMALECOMPLEX_H

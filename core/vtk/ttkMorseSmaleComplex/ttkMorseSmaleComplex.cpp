@@ -1,247 +1,124 @@
+#include <ttkMacros.h>
 #include <ttkMorseSmaleComplex.h>
+#include <ttkUtils.h>
 
-using namespace std;
-using namespace ttk;
-using namespace dcg;
+#include <vtkCellData.h>
+#include <vtkDataArray.h>
+#include <vtkDataObject.h>
+#include <vtkDataSet.h>
+#include <vtkDoubleArray.h>
+#include <vtkFloatArray.h>
+#include <vtkInformation.h>
+#include <vtkNew.h>
+#include <vtkObjectFactory.h>
+#include <vtkPointData.h>
+#include <vtkSignedCharArray.h>
+#include <vtkUnsignedCharArray.h>
+#include <vtkUnstructuredGrid.h>
 
-vtkStandardNewMacro(ttkMorseSmaleComplex)
+vtkStandardNewMacro(ttkMorseSmaleComplex);
 
-  ttkMorseSmaleComplex::ttkMorseSmaleComplex()
-  : ScalarField{}, InputOffsetScalarFieldName{ttk::OffsetScalarFieldName},
-    ForceInputOffsetScalarField{}, PeriodicBoundaryConditions{false},
-    IterationThreshold{-1}, ReverseSaddleMaximumConnection{true},
-    ReverseSaddleSaddleConnection{true}, ComputeCriticalPoints{true},
-    ComputeAscendingSeparatrices1{true}, ComputeDescendingSeparatrices1{true},
-    ComputeSaddleConnectors{true}, ComputeAscendingSeparatrices2{false},
-    ComputeDescendingSeparatrices2{false}, ComputeAscendingSegmentation{true},
-    ComputeDescendingSegmentation{true}, ComputeFinalSegmentation{true},
-    ScalarFieldId{}, OffsetFieldId{-1}, ReturnSaddleConnectors{false},
-    SaddleConnectorsPersistenceThreshold{0}, PrioritizeSpeedOverMemory{false},
-
-    triangulation_{}, defaultOffsets_{}, hasUpdatedMesh_{} {
-  UseAllCores = true;
+ttkMorseSmaleComplex::ttkMorseSmaleComplex() {
+  this->setDebugMsgPrefix("MorseSmaleComplex");
   SetNumberOfInputPorts(1);
   SetNumberOfOutputPorts(4);
 }
 
-ttkMorseSmaleComplex::~ttkMorseSmaleComplex() {
-  if(defaultOffsets_)
-    defaultOffsets_->Delete();
-}
-
 int ttkMorseSmaleComplex::FillInputPortInformation(int port,
                                                    vtkInformation *info) {
-
-  switch(port) {
-    case 0:
-      info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataSet");
-      break;
+  if(port == 0) {
+    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
+    return 1;
   }
-
-  return 1;
+  return 0;
 }
 
 int ttkMorseSmaleComplex::FillOutputPortInformation(int port,
                                                     vtkInformation *info) {
-
-  switch(port) {
-    case 0:
-    case 1:
-    case 2:
-      info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
-      break;
-
-    case 3:
-      info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkDataSet");
-      break;
+  if(port == 0 || port == 1 || port == 2) {
+    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
+    return 1;
+  } else if(port == 3) {
+    info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
+    return 1;
   }
-
-  return 1;
-}
-
-int ttkMorseSmaleComplex::setupTriangulation(vtkDataSet *input) {
-  hasUpdatedMesh_ = false;
-
-  triangulation_ = ttkTriangulation::getTriangulation(input);
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(!triangulation_) {
-    cerr << "[ttkMorseSmaleComplex] Error : "
-            "ttkTriangulation::getTriangulation() is null."
-         << endl;
-    return -1;
-  }
-#endif
-
-  triangulation_->setPeriodicBoundaryConditions(PeriodicBoundaryConditions);
-  triangulation_->setWrapper(this);
-  // setupTriangulation() is called first to select the correct algorithm (2D or
-  // 3D)
-  morseSmaleComplex_.setupTriangulation(triangulation_);
-  morseSmaleComplex_.setWrapper(this);
-
-  if(triangulation_->isEmpty()
-     or ttkTriangulation::hasChangedConnectivity(triangulation_, input, this)) {
-    hasUpdatedMesh_ = true;
-    Modified();
-  }
-
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(triangulation_->isEmpty()) {
-    cerr
-      << "[ttkMorseSmaleComplex] Error : ttkTriangulation allocation problem."
-      << endl;
-    return -1;
-  }
-#endif
-
   return 0;
 }
 
-vtkDataArray *ttkMorseSmaleComplex::getScalars(vtkDataSet *input) {
-  vtkDataArray *inputScalars{};
-
-  vtkPointData *pointData = input->GetPointData();
-
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(!pointData) {
-    cerr << "[ttkMorseSmaleComplex] Error : input has no point data." << endl;
-    return inputScalars;
-  }
-#endif
-
-  if(ScalarField.length()) {
-    inputScalars = pointData->GetArray(ScalarField.data());
-  } else {
-    inputScalars = pointData->GetArray(ScalarFieldId);
-    if(inputScalars)
-      ScalarField = inputScalars->GetName();
-  }
-
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(!inputScalars) {
-    cerr << "[ttkMorseSmaleComplex] Error : input scalar field pointer is null."
-         << endl;
-    return inputScalars;
-  }
-#endif
-
-  return inputScalars;
+template <typename vtkArrayType, typename vectorType>
+void setArray(vtkArrayType &vtkArray, vectorType &vector) {
+  ttkUtils::SetVoidArray(vtkArray, vector.data(), vector.size(), 1);
 }
 
-vtkDataArray *ttkMorseSmaleComplex::getOffsets(vtkDataSet *input) {
-  vtkDataArray *inputOffsets{};
-
-  if(OffsetFieldId != -1) {
-    inputOffsets = input->GetPointData()->GetArray(OffsetFieldId);
-    if(inputOffsets) {
-      InputOffsetScalarFieldName = inputOffsets->GetName();
-      ForceInputOffsetScalarField = true;
-    }
-  }
-
-  if(ForceInputOffsetScalarField and InputOffsetScalarFieldName.length()) {
-    inputOffsets
-      = input->GetPointData()->GetArray(InputOffsetScalarFieldName.data());
-  } else if(input->GetPointData()->GetArray(ttk::OffsetScalarFieldName)) {
-    inputOffsets = input->GetPointData()->GetArray(ttk::OffsetScalarFieldName);
-  } else {
-    if(hasUpdatedMesh_ and defaultOffsets_) {
-      defaultOffsets_->Delete();
-      defaultOffsets_ = nullptr;
-    }
-
-    if(!defaultOffsets_) {
-      const SimplexId numberOfVertices = input->GetNumberOfPoints();
-
-      defaultOffsets_ = ttkSimplexIdTypeArray::New();
-      defaultOffsets_->SetNumberOfComponents(1);
-      defaultOffsets_->SetNumberOfTuples(numberOfVertices);
-      defaultOffsets_->SetName(ttk::OffsetScalarFieldName);
-      for(SimplexId i = 0; i < numberOfVertices; ++i)
-        defaultOffsets_->SetTuple1(i, i);
-    }
-
-    inputOffsets = defaultOffsets_;
-  }
-
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(!inputOffsets) {
-    cerr << "[ttkMorseSmaleComplex] Error : wrong input offset scalar field."
-         << endl;
-    return inputOffsets;
-  }
-#endif
-
-  return inputOffsets;
-}
-
-template <typename VTK_TT>
+template <typename scalarType, typename triangulationType>
 int ttkMorseSmaleComplex::dispatch(
-  vtkDataArray *inputScalars,
-  vtkDataArray *inputOffsets,
-  vtkUnstructuredGrid *outputCriticalPoints,
-  vtkUnstructuredGrid *outputSeparatrices1,
-  vtkUnstructuredGrid *outputSeparatrices2,
-  SimplexId criticalPoints_numberOfPoints,
-  vector<float> &criticalPoints_points,
-  vector<char> &criticalPoints_points_cellDimensions,
-  vector<SimplexId> &criticalPoints_points_cellIds,
-  vector<char> &criticalPoints_points_isOnBoundary,
-  vector<SimplexId> &criticalPoints_points_PLVertexIdentifiers,
-  vector<SimplexId> &criticalPoints_points_manifoldSize,
-  SimplexId separatrices1_numberOfPoints,
-  vector<float> &separatrices1_points,
-  vector<char> &separatrices1_points_smoothingMask,
-  vector<char> &separatrices1_points_cellDimensions,
-  vector<SimplexId> separatrices1_points_cellIds,
-  SimplexId separatrices1_numberOfCells,
-  vector<SimplexId> &separatrices1_cells,
-  vector<SimplexId> &separatrices1_cells_sourceIds,
-  vector<SimplexId> &separatrices1_cells_destinationIds,
-  vector<SimplexId> &separatrices1_cells_separatrixIds,
-  vector<char> &separatrices1_cells_separatrixTypes,
-  vector<char> &separatrices1_cells_isOnBoundary,
-  SimplexId separatrices2_numberOfPoints,
-  vector<float> &separatrices2_points,
-  SimplexId separatrices2_numberOfCells,
-  vector<SimplexId> &separatrices2_cells,
-  vector<SimplexId> &separatrices2_cells_sourceIds,
-  vector<SimplexId> &separatrices2_cells_separatrixIds,
-  vector<char> &separatrices2_cells_separatrixTypes,
-  vector<char> &separatrices2_cells_isOnBoundary) {
+  vtkDataArray *const inputScalars,
+  vtkDataArray *const inputOffsets,
+  vtkUnstructuredGrid *const outputCriticalPoints,
+  vtkUnstructuredGrid *const outputSeparatrices1,
+  vtkUnstructuredGrid *const outputSeparatrices2,
+  const triangulationType &triangulation) {
 
-  const int dimensionality = triangulation_->getCellVertexNumber(0) - 1;
+  const int dimensionality = triangulation.getCellVertexNumber(0) - 1;
 
   // critical points
-  vector<VTK_TT> criticalPoints_points_cellScalars;
+  SimplexId criticalPoints_numberOfPoints{};
+  std::vector<scalarType> criticalPoints_points_cellScalars;
+  criticalPoints_points.clear();
+  criticalPoints_points_cellDimensions.clear();
+  criticalPoints_points_cellIds.clear();
+  criticalPoints_points_isOnBoundary.clear();
+  criticalPoints_points_PLVertexIdentifiers.clear();
+  criticalPoints_points_manifoldSize.clear();
 
   // 1-separatrices
-  vector<VTK_TT> separatrices1_cells_separatrixFunctionMaxima;
-  vector<VTK_TT> separatrices1_cells_separatrixFunctionMinima;
-  vector<VTK_TT> separatrices1_cells_separatrixFunctionDiffs;
+  SimplexId separatrices1_numberOfPoints{};
+  SimplexId separatrices1_numberOfCells{};
+  separatrices1_points.clear();
+  separatrices1_points_smoothingMask.clear();
+  separatrices1_points_cellDimensions.clear();
+  separatrices1_points_cellIds.clear();
+  separatrices1_cells_connectivity.clear();
+  separatrices1_cells_sourceIds.clear();
+  separatrices1_cells_destinationIds.clear();
+  separatrices1_cells_separatrixIds.clear();
+  separatrices1_cells_separatrixTypes.clear();
+  separatrices1_cells_isOnBoundary.clear();
+  separatrices1_cells_separatrixFunctionMaxima.clear();
+  separatrices1_cells_separatrixFunctionMinima.clear();
+  separatrices1_cells_separatrixFunctionDiffs.clear();
 
   // 2-separatrices
-  vector<VTK_TT> separatrices2_cells_separatrixFunctionMaxima;
-  vector<VTK_TT> separatrices2_cells_separatrixFunctionMinima;
-  vector<VTK_TT> separatrices2_cells_separatrixFunctionDiffs;
+  SimplexId separatrices2_numberOfPoints{};
+  SimplexId separatrices2_numberOfCells{};
+  separatrices2_points.clear();
+  separatrices2_cells_offsets.clear();
+  separatrices2_cells_connectivity.clear();
+  separatrices2_cells_sourceIds.clear();
+  separatrices2_cells_separatrixIds.clear();
+  separatrices2_cells_separatrixTypes.clear();
+  separatrices2_cells_isOnBoundary.clear();
+  separatrices2_cells_separatrixFunctionMaxima.clear();
+  separatrices2_cells_separatrixFunctionMinima.clear();
+  separatrices2_cells_separatrixFunctionDiffs.clear();
 
   if(ComputeCriticalPoints) {
-    morseSmaleComplex_.setOutputCriticalPoints(
+    this->setOutputCriticalPoints(
       &criticalPoints_numberOfPoints, &criticalPoints_points,
       &criticalPoints_points_cellDimensions, &criticalPoints_points_cellIds,
       &criticalPoints_points_cellScalars, &criticalPoints_points_isOnBoundary,
       &criticalPoints_points_PLVertexIdentifiers,
       &criticalPoints_points_manifoldSize);
   } else {
-    morseSmaleComplex_.setOutputCriticalPoints(
+    this->setOutputCriticalPoints(
       nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr);
   }
 
-  morseSmaleComplex_.setOutputSeparatrices1(
+  this->setOutputSeparatrices1(
     &separatrices1_numberOfPoints, &separatrices1_points,
     &separatrices1_points_smoothingMask, &separatrices1_points_cellDimensions,
     &separatrices1_points_cellIds, &separatrices1_numberOfCells,
-    &separatrices1_cells, &separatrices1_cells_sourceIds,
+    &separatrices1_cells_connectivity, &separatrices1_cells_sourceIds,
     &separatrices1_cells_destinationIds, &separatrices1_cells_separatrixIds,
     &separatrices1_cells_separatrixTypes,
     &separatrices1_cells_separatrixFunctionMaxima,
@@ -249,139 +126,89 @@ int ttkMorseSmaleComplex::dispatch(
     &separatrices1_cells_separatrixFunctionDiffs,
     &separatrices1_cells_isOnBoundary);
 
-  morseSmaleComplex_.setOutputSeparatrices2(
+  this->setOutputSeparatrices2(
     &separatrices2_numberOfPoints, &separatrices2_points,
-    &separatrices2_numberOfCells, &separatrices2_cells,
-    &separatrices2_cells_sourceIds, &separatrices2_cells_separatrixIds,
-    &separatrices2_cells_separatrixTypes,
+    &separatrices2_numberOfCells, &separatrices2_cells_offsets,
+    &separatrices2_cells_connectivity, &separatrices2_cells_sourceIds,
+    &separatrices2_cells_separatrixIds, &separatrices2_cells_separatrixTypes,
     &separatrices2_cells_separatrixFunctionMaxima,
     &separatrices2_cells_separatrixFunctionMinima,
     &separatrices2_cells_separatrixFunctionDiffs,
     &separatrices2_cells_isOnBoundary);
 
-  int ret = 0;
-  if(inputOffsets->GetDataType() == VTK_INT)
-    ret = morseSmaleComplex_.execute<VTK_TT, int>();
-  if(inputOffsets->GetDataType() == VTK_ID_TYPE)
-    ret = morseSmaleComplex_.execute<VTK_TT, vtkIdType>();
+  const int ret = this->execute<scalarType, triangulationType>(triangulation);
+
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(ret) {
-    cerr << "[ttkMorseSmaleComplex] Error : MorseSmaleComplex.execute() "
-         << "error code : " << ret << endl;
+  if(ret != 0) {
+    this->printErr("MorseSmaleComplex.execute() error");
     return -1;
   }
 #endif
 
   // critical points
   {
-    vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+    vtkNew<vtkFloatArray> pointsCoords{};
+    vtkNew<vtkSignedCharArray> cellDimensions{};
+    vtkNew<ttkSimplexIdTypeArray> cellIds{};
+    vtkSmartPointer<vtkDataArray> cellScalars{inputScalars->NewInstance()};
+    vtkNew<vtkSignedCharArray> isOnBoundary{};
+    vtkNew<ttkSimplexIdTypeArray> PLVertexIdentifiers{};
+    vtkNew<ttkSimplexIdTypeArray> manifoldSizeScalars{};
+
 #ifndef TTK_ENABLE_KAMIKAZE
-    if(!points) {
-      cerr << "[ttkMorseSmaleComplex] Error : vtkPoints allocation "
-           << "problem." << endl;
+    if(!pointsCoords || !cellDimensions || !cellIds || !cellScalars
+       || !isOnBoundary || !PLVertexIdentifiers || !manifoldSizeScalars) {
+      this->printErr("Critical points vtkDataArray allocation problem.");
       return -1;
     }
 #endif
 
-    vtkSmartPointer<vtkCharArray> cellDimensions
-      = vtkSmartPointer<vtkCharArray>::New();
-#ifndef TTK_ENABLE_KAMIKAZE
-    if(!cellDimensions) {
-      cerr << "[ttkMorseSmaleComplex] Error : vtkCharArray allocation "
-           << "problem." << endl;
-      return -1;
-    }
-#endif
+    pointsCoords->SetNumberOfComponents(3);
+    setArray(pointsCoords, criticalPoints_points);
+
     cellDimensions->SetNumberOfComponents(1);
     cellDimensions->SetName("CellDimension");
+    setArray(cellDimensions, criticalPoints_points_cellDimensions);
 
-    vtkSmartPointer<ttkSimplexIdTypeArray> cellIds
-      = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
-#ifndef TTK_ENABLE_KAMIKAZE
-    if(!cellIds) {
-      cerr << "[ttkMorseSmaleComplex] Error : ttkSimplexIdTypeArray allocation "
-           << "problem." << endl;
-      return -1;
-    }
-#endif
     cellIds->SetNumberOfComponents(1);
     cellIds->SetName("CellId");
+    setArray(cellIds, criticalPoints_points_cellIds);
 
-    vtkSmartPointer<vtkDataArray> cellScalars{inputScalars->NewInstance()};
-#ifndef TTK_ENABLE_KAMIKAZE
-    if(!cellScalars) {
-      cerr << "[ttkMorseSmaleComplex] Error : vtkDataArray allocation "
-           << "problem." << endl;
-      return -1;
-    }
-#endif
     cellScalars->SetNumberOfComponents(1);
-    cellScalars->SetName(ScalarField.data());
-
-    vtkSmartPointer<vtkCharArray> isOnBoundary
-      = vtkSmartPointer<vtkCharArray>::New();
-#ifndef TTK_ENABLE_KAMIKAZE
-    if(!isOnBoundary) {
-      cerr << "[ttkMorseSmaleComplex] Error : vtkCharArray allocation "
-           << "problem." << endl;
-      return -1;
+    cellScalars->SetName(inputScalars->GetName());
+    cellScalars->SetNumberOfTuples(criticalPoints_numberOfPoints);
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(this->threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+    for(SimplexId i = 0; i < criticalPoints_numberOfPoints; ++i) {
+      cellScalars->SetTuple1(i, criticalPoints_points_cellScalars[i]);
     }
-#endif
+
     isOnBoundary->SetNumberOfComponents(1);
     isOnBoundary->SetName("IsOnBoundary");
+    setArray(isOnBoundary, criticalPoints_points_isOnBoundary);
 
-    vtkSmartPointer<ttkSimplexIdTypeArray> PLVertexIdentifiers
-      = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
-#ifndef TTK_ENABLE_KAMIKAZE
-    if(!PLVertexIdentifiers) {
-      cerr << "[ttkMorseSmaleComplex] Error : ttkSimplexIdTypeArray allocation "
-           << "problem." << endl;
-      return -1;
-    }
-#endif
     PLVertexIdentifiers->SetNumberOfComponents(1);
     PLVertexIdentifiers->SetName(ttk::VertexScalarFieldName);
+    setArray(PLVertexIdentifiers, criticalPoints_points_PLVertexIdentifiers);
 
-    vtkSmartPointer<ttkSimplexIdTypeArray> manifoldSizeScalars
-      = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
-#ifndef TTK_ENABLE_KAMIKAZE
-    if(!manifoldSizeScalars) {
-      cerr << "[ttkMorseSmaleComplex] Error : ttkSimplexIdTypeArray allocation "
-           << "problem." << endl;
-      return -1;
-    }
-#endif
     manifoldSizeScalars->SetNumberOfComponents(1);
     manifoldSizeScalars->SetName("ManifoldSize");
-
-    for(SimplexId i = 0; i < criticalPoints_numberOfPoints; ++i) {
-      points->InsertNextPoint(criticalPoints_points[3 * i],
-                              criticalPoints_points[3 * i + 1],
-                              criticalPoints_points[3 * i + 2]);
-
-      cellDimensions->InsertNextTuple1(criticalPoints_points_cellDimensions[i]);
-      cellIds->InsertNextTuple1(criticalPoints_points_cellIds[i]);
-
-      cellScalars->InsertNextTuple1(criticalPoints_points_cellScalars[i]);
-
-      isOnBoundary->InsertNextTuple1(criticalPoints_points_isOnBoundary[i]);
-
-      PLVertexIdentifiers->InsertNextTuple1(
-        criticalPoints_points_PLVertexIdentifiers[i]);
-
-      if(ComputeAscendingSegmentation and ComputeDescendingSegmentation)
-        manifoldSizeScalars->InsertNextTuple1(
-          criticalPoints_points_manifoldSize[i]);
-      else
-        manifoldSizeScalars->InsertNextTuple1(-1);
+    if(!ComputeAscendingSegmentation or !ComputeDescendingSegmentation) {
+      criticalPoints_points_manifoldSize.resize(criticalPoints_numberOfPoints);
+      std::fill(criticalPoints_points_manifoldSize.begin(),
+                criticalPoints_points_manifoldSize.end(), -1);
     }
+    setArray(manifoldSizeScalars, criticalPoints_points_manifoldSize);
+
+    vtkNew<vtkPoints> points{};
+    points->SetData(pointsCoords);
     outputCriticalPoints->SetPoints(points);
 
-    vtkPointData *pointData = outputCriticalPoints->GetPointData();
+    auto pointData = outputCriticalPoints->GetPointData();
 #ifndef TTK_ENABLE_KAMIKAZE
     if(!pointData) {
-      cerr << "[ttkMorseSmaleComplex] Error : outputCriticalPoints has "
-           << "no point data." << endl;
+      this->printErr("outputCriticalPoints has no point data.");
       return -1;
     }
 #endif
@@ -397,193 +224,106 @@ int ttkMorseSmaleComplex::dispatch(
   // 1-separatrices
   if(ComputeAscendingSeparatrices1 or ComputeDescendingSeparatrices1
      or ComputeSaddleConnectors) {
-    vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+
+    vtkNew<vtkFloatArray> pointsCoords{};
+    vtkNew<vtkSignedCharArray> smoothingMask{};
+    vtkNew<vtkSignedCharArray> cellDimensions{};
+    vtkNew<ttkSimplexIdTypeArray> cellIds{};
+    vtkNew<ttkSimplexIdTypeArray> sourceIds{};
+    vtkNew<ttkSimplexIdTypeArray> destinationIds{};
+    vtkNew<ttkSimplexIdTypeArray> separatrixIds{};
+    vtkNew<vtkSignedCharArray> separatrixTypes{};
+    vtkNew<vtkDoubleArray> separatrixFunctionMaxima{};
+    vtkNew<vtkDoubleArray> separatrixFunctionMinima{};
+    vtkNew<vtkDoubleArray> separatrixFunctionDiffs{};
+    vtkNew<vtkSignedCharArray> isOnBoundary{};
+
 #ifndef TTK_ENABLE_KAMIKAZE
-    if(!points) {
-      cerr << "[ttkMorseSmaleComplex] Error : vtkPoints allocation "
-           << "problem." << endl;
+    if(!pointsCoords || !smoothingMask || !cellDimensions || !cellIds
+       || !sourceIds || !destinationIds || !separatrixIds || !separatrixTypes
+       || !separatrixFunctionMaxima || !separatrixFunctionMinima
+       || !separatrixFunctionDiffs || !isOnBoundary) {
+      this->printErr("1-separatrices vtkDataArray allocation problem.");
       return -1;
     }
 #endif
-    vtkSmartPointer<vtkCharArray> smoothingMask
-      = vtkSmartPointer<vtkCharArray>::New();
-#ifndef TTK_ENABLE_KAMIKAZE
-    if(!smoothingMask) {
-      cerr << "[ttkMorseSmaleComplex] Error : vtkCharArray allocation "
-           << "problem." << endl;
-      return -1;
-    }
-#endif
+
+    pointsCoords->SetNumberOfComponents(3);
+    setArray(pointsCoords, separatrices1_points);
+
     smoothingMask->SetNumberOfComponents(1);
     smoothingMask->SetName(ttk::MaskScalarFieldName);
+    setArray(smoothingMask, separatrices1_points_smoothingMask);
 
-    vtkSmartPointer<vtkCharArray> cellDimensions
-      = vtkSmartPointer<vtkCharArray>::New();
-#ifndef TTK_ENABLE_KAMIKAZE
-    if(!cellDimensions) {
-      cerr << "[ttkMorseSmaleComplex] Error : vtkCharArray allocation "
-           << "problem." << endl;
-      return -1;
-    }
-#endif
     cellDimensions->SetNumberOfComponents(1);
     cellDimensions->SetName("CellDimension");
+    setArray(cellDimensions, separatrices1_points_cellDimensions);
 
-    vtkSmartPointer<ttkSimplexIdTypeArray> cellIds
-      = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
-#ifndef TTK_ENABLE_KAMIKAZE
-    if(!cellIds) {
-      cerr << "[ttkMorseSmaleComplex] Error : ttkSimplexIdTypeArray allocation "
-           << "problem." << endl;
-      return -1;
-    }
-#endif
     cellIds->SetNumberOfComponents(1);
     cellIds->SetName("CellId");
+    setArray(cellIds, separatrices1_points_cellIds);
 
-    vtkSmartPointer<ttkSimplexIdTypeArray> sourceIds
-      = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
-#ifndef TTK_ENABLE_KAMIKAZE
-    if(!sourceIds) {
-      cerr << "[ttkMorseSmaleComplex] Error : ttkSimplexIdTypeArray allocation "
-           << "problem." << endl;
-      return -1;
-    }
-#endif
     sourceIds->SetNumberOfComponents(1);
     sourceIds->SetName("SourceId");
+    setArray(sourceIds, separatrices1_cells_sourceIds);
 
-    vtkSmartPointer<ttkSimplexIdTypeArray> destinationIds
-      = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
-#ifndef TTK_ENABLE_KAMIKAZE
-    if(!destinationIds) {
-      cerr << "[ttkMorseSmaleComplex] Error : ttkSimplexIdTypeArray allocation "
-           << "problem." << endl;
-      return -1;
-    }
-#endif
     destinationIds->SetNumberOfComponents(1);
     destinationIds->SetName("DestinationId");
+    setArray(destinationIds, separatrices1_cells_destinationIds);
 
-    vtkSmartPointer<ttkSimplexIdTypeArray> separatrixIds
-      = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
-#ifndef TTK_ENABLE_KAMIKAZE
-    if(!separatrixIds) {
-      cerr << "[ttkMorseSmaleComplex] Error : ttkSimplexIdTypeArray allocation "
-           << "problem." << endl;
-      return -1;
-    }
-#endif
     separatrixIds->SetNumberOfComponents(1);
     separatrixIds->SetName("SeparatrixId");
+    setArray(separatrixIds, separatrices1_cells_separatrixIds);
 
-    vtkSmartPointer<vtkCharArray> separatrixTypes
-      = vtkSmartPointer<vtkCharArray>::New();
-#ifndef TTK_ENABLE_KAMIKAZE
-    if(!separatrixTypes) {
-      cerr << "[ttkMorseSmaleComplex] Error : vtkCharArray allocation "
-           << "problem." << endl;
-      return -1;
-    }
-#endif
     separatrixTypes->SetNumberOfComponents(1);
     separatrixTypes->SetName("SeparatrixType");
+    setArray(separatrixTypes, separatrices1_cells_separatrixTypes);
 
-    vtkSmartPointer<vtkDataArray> separatrixFunctionMaxima{
-      inputScalars->NewInstance()};
-#ifndef TTK_ENABLE_KAMIKAZE
-    if(!separatrixFunctionMaxima) {
-      cerr << "[ttkMorseSmaleComplex] Error : vtkDataArray allocation "
-           << "problem." << endl;
-      return -1;
-    }
-#endif
     separatrixFunctionMaxima->SetNumberOfComponents(1);
     separatrixFunctionMaxima->SetName("SeparatrixFunctionMaximum");
+    setArray(
+      separatrixFunctionMaxima, separatrices1_cells_separatrixFunctionMaxima);
 
-    vtkSmartPointer<vtkDataArray> separatrixFunctionMinima{
-      inputScalars->NewInstance()};
-#ifndef TTK_ENABLE_KAMIKAZE
-    if(!separatrixFunctionMinima) {
-      cerr << "[ttkMorseSmaleComplex] Error : vtkDataArray allocation "
-           << "problem." << endl;
-      return -1;
-    }
-#endif
     separatrixFunctionMinima->SetNumberOfComponents(1);
     separatrixFunctionMinima->SetName("SeparatrixFunctionMinimum");
+    setArray(
+      separatrixFunctionMinima, separatrices1_cells_separatrixFunctionMinima);
 
-    vtkSmartPointer<vtkDataArray> separatrixFunctionDiffs{
-      inputScalars->NewInstance()};
-#ifndef TTK_ENABLE_KAMIKAZE
-    if(!separatrixFunctionDiffs) {
-      cerr << "[ttkMorseSmaleComplex] Error : vtkDataArray allocation "
-           << "problem." << endl;
-      return -1;
-    }
-#endif
     separatrixFunctionDiffs->SetNumberOfComponents(1);
     separatrixFunctionDiffs->SetName("SeparatrixFunctionDifference");
+    setArray(
+      separatrixFunctionDiffs, separatrices1_cells_separatrixFunctionDiffs);
 
-    vtkSmartPointer<vtkCharArray> isOnBoundary
-      = vtkSmartPointer<vtkCharArray>::New();
-#ifndef TTK_ENABLE_KAMIKAZE
-    if(!isOnBoundary) {
-      cerr << "[ttkMorseSmaleComplex] Error : vtkCharArray allocation "
-           << "problem." << endl;
-      return -1;
-    }
-#endif
     isOnBoundary->SetNumberOfComponents(1);
     isOnBoundary->SetName("NumberOfCriticalPointsOnBoundary");
+    setArray(isOnBoundary, separatrices1_cells_isOnBoundary);
 
-    for(SimplexId i = 0; i < separatrices1_numberOfPoints; ++i) {
-      points->InsertNextPoint(separatrices1_points[3 * i],
-                              separatrices1_points[3 * i + 1],
-                              separatrices1_points[3 * i + 2]);
+    vtkNew<vtkIdTypeArray> offsets{}, connectivity{};
+    offsets->SetNumberOfComponents(1);
+    offsets->SetNumberOfTuples(separatrices1_numberOfCells + 1);
+    connectivity->SetNumberOfComponents(1);
+    setArray(connectivity, separatrices1_cells_connectivity);
 
-      smoothingMask->InsertNextTuple1(separatrices1_points_smoothingMask[i]);
-      cellDimensions->InsertNextTuple1(separatrices1_points_cellDimensions[i]);
-      cellIds->InsertNextTuple1(separatrices1_points_cellIds[i]);
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(this->threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+    for(SimplexId i = 0; i < separatrices1_numberOfCells + 1; ++i) {
+      offsets->SetTuple1(i, 2 * i);
     }
+
+    vtkNew<vtkPoints> points{};
+    points->SetData(pointsCoords);
     outputSeparatrices1->SetPoints(points);
-
-    outputSeparatrices1->Allocate(separatrices1_numberOfCells);
-    SimplexId ptr{};
-    for(SimplexId i = 0; i < separatrices1_numberOfCells; ++i) {
-      vtkIdType line[2];
-      line[0] = separatrices1_cells[ptr + 1];
-      line[1] = separatrices1_cells[ptr + 2];
-
-      outputSeparatrices1->InsertNextCell(VTK_LINE, 2, line);
-
-      sourceIds->InsertNextTuple1(separatrices1_cells_sourceIds[i]);
-
-      destinationIds->InsertNextTuple1(separatrices1_cells_destinationIds[i]);
-
-      separatrixIds->InsertNextTuple1(separatrices1_cells_separatrixIds[i]);
-
-      separatrixTypes->InsertNextTuple1(separatrices1_cells_separatrixTypes[i]);
-
-      separatrixFunctionMaxima->InsertNextTuple1(
-        separatrices1_cells_separatrixFunctionMaxima[i]);
-
-      separatrixFunctionMinima->InsertNextTuple1(
-        separatrices1_cells_separatrixFunctionMinima[i]);
-
-      separatrixFunctionDiffs->InsertNextTuple1(
-        separatrices1_cells_separatrixFunctionDiffs[i]);
-
-      isOnBoundary->InsertNextTuple1(separatrices1_cells_isOnBoundary[i]);
-
-      ptr += (separatrices1_cells[ptr] + 1);
-    }
+    vtkNew<vtkCellArray> cells{};
+    cells->SetData(offsets, connectivity);
+    outputSeparatrices1->SetCells(VTK_LINE, cells);
 
     auto pointData = outputSeparatrices1->GetPointData();
+    auto cellData = outputSeparatrices1->GetCellData();
+
 #ifndef TTK_ENABLE_KAMIKAZE
-    if(!pointData) {
-      cerr << "[ttkMorseSmaleComplex] Error : outputSeparatrices1 has "
-           << "no point data." << endl;
+    if(!pointData || !cellData) {
+      this->printErr("outputSeparatrices1 has no point or no cell data.");
       return -1;
     }
 #endif
@@ -591,15 +331,6 @@ int ttkMorseSmaleComplex::dispatch(
     pointData->AddArray(smoothingMask);
     pointData->AddArray(cellDimensions);
     pointData->AddArray(cellIds);
-
-    auto cellData = outputSeparatrices1->GetCellData();
-#ifndef TTK_ENABLE_KAMIKAZE
-    if(!cellData) {
-      cerr << "[ttkMorseSmaleComplex] Error : outputSeparatrices1 has "
-           << "no cell data." << endl;
-      return -1;
-    }
-#endif
 
     cellData->AddArray(sourceIds);
     cellData->AddArray(destinationIds);
@@ -614,151 +345,91 @@ int ttkMorseSmaleComplex::dispatch(
   // 2-separatrices
   if(dimensionality == 3
      and (ComputeAscendingSeparatrices2 or ComputeDescendingSeparatrices2)) {
-    vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
+
+    vtkNew<vtkFloatArray> pointsCoords{};
+    vtkNew<ttkSimplexIdTypeArray> sourceIds{};
+    vtkNew<ttkSimplexIdTypeArray> separatrixIds{};
+    vtkNew<vtkSignedCharArray> separatrixTypes{};
+    vtkNew<vtkDoubleArray> separatrixFunctionMaxima{};
+    vtkNew<vtkDoubleArray> separatrixFunctionMinima{};
+    vtkNew<vtkDoubleArray> separatrixFunctionDiffs{};
+    vtkNew<vtkSignedCharArray> isOnBoundary{};
+
 #ifndef TTK_ENABLE_KAMIKAZE
-    if(!points) {
-      cerr << "[ttkMorseSmaleComplex] Error : vtkPoints allocation problem."
-           << endl;
+    if(!pointsCoords || !sourceIds || !separatrixIds || !separatrixTypes
+       || !separatrixFunctionMaxima || !separatrixFunctionMinima
+       || !separatrixFunctionDiffs || !isOnBoundary) {
+      this->printErr("2-separatrices vtkDataArray allocation problem.");
       return -1;
     }
 #endif
 
-    vtkSmartPointer<ttkSimplexIdTypeArray> sourceIds
-      = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
-#ifndef TTK_ENABLE_KAMIKAZE
-    if(!sourceIds) {
-      cerr << "[ttkMorseSmaleComplex] Error : ttkSimplexIdTypeArray allocation "
-              "problem."
-           << endl;
-      return -1;
-    }
-#endif
+    pointsCoords->SetNumberOfComponents(3);
+    setArray(pointsCoords, separatrices2_points);
+
     sourceIds->SetNumberOfComponents(1);
     sourceIds->SetName("SourceId");
+    setArray(sourceIds, separatrices2_cells_sourceIds);
 
-    vtkSmartPointer<ttkSimplexIdTypeArray> separatrixIds
-      = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
-#ifndef TTK_ENABLE_KAMIKAZE
-    if(!separatrixIds) {
-      cerr << "[ttkMorseSmaleComplex] Error : ttkSimplexIdTypeArray allocation "
-              "problem."
-           << endl;
-      return -1;
-    }
-#endif
     separatrixIds->SetNumberOfComponents(1);
     separatrixIds->SetName("SeparatrixId");
+    setArray(separatrixIds, separatrices2_cells_separatrixIds);
 
-    vtkSmartPointer<vtkCharArray> separatrixTypes
-      = vtkSmartPointer<vtkCharArray>::New();
-#ifndef TTK_ENABLE_KAMIKAZE
-    if(!separatrixTypes) {
-      cerr << "[ttkMorseSmaleComplex] Error : vtkCharArray allocation  problem."
-           << endl;
-      return -1;
-    }
-#endif
     separatrixTypes->SetNumberOfComponents(1);
     separatrixTypes->SetName("SeparatrixType");
+    setArray(separatrixTypes, separatrices2_cells_separatrixTypes);
 
-    vtkSmartPointer<vtkDataArray> separatrixFunctionMaxima{
-      inputScalars->NewInstance()};
-#ifndef TTK_ENABLE_KAMIKAZE
-    if(!separatrixFunctionMaxima) {
-      cerr << "[ttkMorseSmaleComplex] Error : vtkDataArray allocation "
-           << "problem." << endl;
-      return -1;
-    }
-#endif
     separatrixFunctionMaxima->SetNumberOfComponents(1);
     separatrixFunctionMaxima->SetName("SeparatrixFunctionMaximum");
+    setArray(
+      separatrixFunctionMaxima, separatrices2_cells_separatrixFunctionMaxima);
 
-    vtkSmartPointer<vtkDataArray> separatrixFunctionMinima{
-      inputScalars->NewInstance()};
-#ifndef TTK_ENABLE_KAMIKAZE
-    if(!separatrixFunctionMinima) {
-      cerr << "[ttkMorseSmaleComplex] Error : vtkDataArray allocation "
-           << "problem." << endl;
-      return -1;
-    }
-#endif
     separatrixFunctionMinima->SetNumberOfComponents(1);
     separatrixFunctionMinima->SetName("SeparatrixFunctionMinimum");
+    setArray(
+      separatrixFunctionMinima, separatrices2_cells_separatrixFunctionMinima);
 
-    vtkSmartPointer<vtkDataArray> separatrixFunctionDiffs{
-      inputScalars->NewInstance()};
-#ifndef TTK_ENABLE_KAMIKAZE
-    if(!separatrixFunctionDiffs) {
-      cerr << "[ttkMorseSmaleComplex] Error : vtkDataArray allocation "
-           << "problem." << endl;
-      return -1;
-    }
-#endif
     separatrixFunctionDiffs->SetNumberOfComponents(1);
     separatrixFunctionDiffs->SetName("SeparatrixFunctionDifference");
+    setArray(
+      separatrixFunctionDiffs, separatrices2_cells_separatrixFunctionDiffs);
 
-    vtkSmartPointer<vtkCharArray> isOnBoundary
-      = vtkSmartPointer<vtkCharArray>::New();
-#ifndef TTK_ENABLE_KAMIKAZE
-    if(!isOnBoundary) {
-      cerr << "[ttkMorseSmaleComplex] Error : vtkCharArray allocation problem."
-           << endl;
-      return -1;
-    }
-#endif
     isOnBoundary->SetNumberOfComponents(1);
     isOnBoundary->SetName("NumberOfCriticalPointsOnBoundary");
+    setArray(isOnBoundary, separatrices2_cells_isOnBoundary);
 
-    for(SimplexId i = 0; i < separatrices2_numberOfPoints; ++i) {
-      points->InsertNextPoint(separatrices2_points[3 * i],
-                              separatrices2_points[3 * i + 1],
-                              separatrices2_points[3 * i + 2]);
-    }
-    outputSeparatrices2->SetPoints(points);
+    vtkNew<vtkUnsignedCharArray> cellTypes{};
+    cellTypes->SetNumberOfComponents(1);
+    cellTypes->SetNumberOfTuples(separatrices2_numberOfCells);
 
-    outputSeparatrices2->Allocate(separatrices2_numberOfCells);
-    SimplexId ptr{};
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(this->threadNumber_)
+#endif // TTK_ENABLE_OPENMP
     for(SimplexId i = 0; i < separatrices2_numberOfCells; ++i) {
-      const int vertexNumber = separatrices2_cells[ptr];
-
-      if(vertexNumber == 3) {
-        vtkIdType triangle[3];
-        triangle[0] = separatrices2_cells[ptr + 1];
-        triangle[1] = separatrices2_cells[ptr + 2];
-        triangle[2] = separatrices2_cells[ptr + 3];
-
-        outputSeparatrices2->InsertNextCell(
-          VTK_TRIANGLE, vertexNumber, triangle);
-      } else {
-        vtkIdType ids[16];
-        for(int j = 1; j <= vertexNumber; ++j)
-          ids[j - 1] = separatrices2_cells[ptr + j];
-
-        outputSeparatrices2->InsertNextCell(VTK_POLYGON, vertexNumber, ids);
+      if(separatrices2_cells_separatrixTypes[i] == 2) {
+        cellTypes->SetTuple1(i, VTK_TRIANGLE);
+      } else if(separatrices2_cells_separatrixTypes[i] == 1) {
+        cellTypes->SetTuple1(i, VTK_POLYGON);
       }
-
-      sourceIds->InsertNextTuple1(separatrices2_cells_sourceIds[i]);
-      separatrixIds->InsertNextTuple1(separatrices2_cells_separatrixIds[i]);
-
-      separatrixTypes->InsertNextTuple1(separatrices2_cells_separatrixTypes[i]);
-      separatrixFunctionMaxima->InsertNextTuple1(
-        separatrices2_cells_separatrixFunctionMaxima[i]);
-
-      separatrixFunctionMinima->InsertNextTuple1(
-        separatrices2_cells_separatrixFunctionMinima[i]);
-
-      separatrixFunctionDiffs->InsertNextTuple1(
-        separatrices2_cells_separatrixFunctionDiffs[i]);
-      isOnBoundary->InsertNextTuple1(separatrices2_cells_isOnBoundary[i]);
-
-      ptr += (separatrices2_cells[ptr] + 1);
     }
+
+    vtkNew<vtkIdTypeArray> offsets{}, connectivity{};
+    offsets->SetNumberOfComponents(1);
+    setArray(offsets, separatrices2_cells_offsets);
+    connectivity->SetNumberOfComponents(1);
+    setArray(connectivity, separatrices2_cells_connectivity);
+
+    vtkNew<vtkPoints> points{};
+    points->SetData(pointsCoords);
+    outputSeparatrices2->SetPoints(points);
+    vtkNew<vtkCellArray> cells{};
+    cells->SetData(offsets, connectivity);
+    outputSeparatrices2->SetCells(cellTypes, cells);
 
     auto cellData = outputSeparatrices2->GetCellData();
 #ifndef TTK_ENABLE_KAMIKAZE
     if(!cellData) {
-      cerr << "[ttkMorseSmaleComplex] Error : "
-           << "outputSeparatrices2 has no cell data." << endl;
+      this->printErr("outputSeparatrices2 has no cell data.");
       return -1;
     }
 #endif
@@ -775,134 +446,81 @@ int ttkMorseSmaleComplex::dispatch(
   return ret;
 }
 
-int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
-                               vector<vtkDataSet *> &outputs) {
-  Memory m;
+int ttkMorseSmaleComplex::RequestData(vtkInformation *request,
+                                      vtkInformationVector **inputVector,
+                                      vtkInformationVector *outputVector) {
 
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(!inputs.size()) {
-    cerr << "[ttkMorseSmaleComplex] Error: not enough input information."
-         << endl;
-    return -1;
-  }
-#endif
-
-  int ret{};
-
-  vtkDataSet *input = inputs[0];
-  vtkUnstructuredGrid *outputCriticalPoints
-    = vtkUnstructuredGrid::SafeDownCast(outputs[0]);
-  vtkUnstructuredGrid *outputSeparatrices1
-    = vtkUnstructuredGrid::SafeDownCast(outputs[1]);
-  vtkUnstructuredGrid *outputSeparatrices2
-    = vtkUnstructuredGrid::SafeDownCast(outputs[2]);
-  vtkDataSet *outputMorseComplexes = outputs[3];
+  const auto input = vtkDataSet::GetData(inputVector[0]);
+  auto outputCriticalPoints = vtkUnstructuredGrid::GetData(outputVector, 0);
+  auto outputSeparatrices1 = vtkUnstructuredGrid::GetData(outputVector, 1);
+  auto outputSeparatrices2 = vtkUnstructuredGrid::GetData(outputVector, 2);
+  auto outputMorseComplexes = vtkDataSet::GetData(outputVector, 3);
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!input) {
-    cerr << "[ttkMorseSmaleComplex] Error: input pointer is NULL." << endl;
+    this->printErr("Input pointer is NULL.");
     return -1;
   }
-
-  if(!input->GetNumberOfPoints()) {
-    cerr << "[ttkMorseSmaleComplex] Error: input has no point." << endl;
+  if(input->GetNumberOfPoints() == 0) {
+    this->printErr("Input has no point.");
     return -1;
   }
-
   if(!outputCriticalPoints or !outputSeparatrices1 or !outputSeparatrices2
      or !outputMorseComplexes) {
-    cerr << "[ttkMorseSmaleComplex] Error: output pointer is NULL." << endl;
+    this->printErr("Output pointers are NULL.");
     return -1;
   }
 #endif
 
-  ret = setupTriangulation(input);
+  const auto triangulation = ttkAlgorithm::GetTriangulation(input);
+  if(triangulation == nullptr) {
+    this->printErr("Triangulation is null");
+    return 0;
+  }
+  this->preconditionTriangulation(triangulation);
+
+  const auto inputScalars = this->GetInputArrayToProcess(0, inputVector);
+
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(ret) {
-    cerr << "[ttkMorseSmaleComplex] Error : wrong triangulation." << endl;
+  if(inputScalars == nullptr) {
+    this->printErr("wrong scalars.");
     return -1;
   }
 #endif
 
-  vtkDataArray *inputScalars = getScalars(input);
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(!inputScalars) {
-    cerr << "[ttkMorseSmaleComplex] Error : wrong scalars." << endl;
-    return -1;
-  }
-#endif
+  auto inputOffsets = ttkAlgorithm::GetOrderArray(
+    input, 0, 1, this->ForceInputOffsetScalarField);
 
-  vtkDataArray *inputOffsets = getOffsets(input);
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(!inputOffsets) {
-    cerr << "[ttkMorseSmaleComplex] Error : wrong offsets." << endl;
+  if(inputOffsets == nullptr) {
+    this->printErr("wrong offsets.");
     return -1;
   }
   if(inputOffsets->GetDataType() != VTK_INT
      and inputOffsets->GetDataType() != VTK_ID_TYPE) {
-    cerr
-      << "[ttkMorseSmaleComplex] Error : input offset field type not supported."
-      << endl;
+    this->printErr("input offset field type not supported.");
     return -1;
   }
 #endif
 
-  {
-    stringstream msg;
-    msg << "[ttkMorseSmaleComplex] Launching computation on field `"
-        << inputScalars->GetName() << "'..." << endl;
-    dMsg(cout, msg.str(), infoMsg);
-  }
-
-  // critical points
-  SimplexId criticalPoints_numberOfPoints{};
-  vector<float> criticalPoints_points;
-  vector<char> criticalPoints_points_cellDimensions;
-  vector<SimplexId> criticalPoints_points_cellIds;
-  vector<char> criticalPoints_points_isOnBoundary;
-  vector<SimplexId> criticalPoints_points_PLVertexIdentifiers;
-  vector<SimplexId> criticalPoints_points_manifoldSize;
-
-  // 1-separatrices
-  SimplexId separatrices1_numberOfPoints{};
-  vector<float> separatrices1_points;
-  vector<char> separatrices1_points_smoothingMask;
-  vector<char> separatrices1_points_cellDimensions;
-  vector<SimplexId> separatrices1_points_cellIds;
-  SimplexId separatrices1_numberOfCells{};
-  vector<SimplexId> separatrices1_cells;
-  vector<SimplexId> separatrices1_cells_sourceIds;
-  vector<SimplexId> separatrices1_cells_destinationIds;
-  vector<SimplexId> separatrices1_cells_separatrixIds;
-  vector<char> separatrices1_cells_separatrixTypes;
-  vector<char> separatrices1_cells_isOnBoundary;
-
-  // 2-separatrices
-  SimplexId separatrices2_numberOfPoints{};
-  vector<float> separatrices2_points;
-  SimplexId separatrices2_numberOfCells{};
-  vector<SimplexId> separatrices2_cells;
-  vector<SimplexId> separatrices2_cells_sourceIds;
-  vector<SimplexId> separatrices2_cells_separatrixIds;
-  vector<char> separatrices2_cells_separatrixTypes;
-  vector<char> separatrices2_cells_isOnBoundary;
+  this->printMsg("Launching computation on field `"
+                 + std::string(inputScalars->GetName()) + "'...");
 
   // morse complexes
-  const SimplexId numberOfVertices = triangulation_->getNumberOfVertices();
+  const SimplexId numberOfVertices = triangulation->getNumberOfVertices();
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!numberOfVertices) {
-    cerr << "[ttkMorseSmaleComplex] Error : input has no vertices." << endl;
+    this->printErr("Input has no vertices.");
     return -1;
   }
 #endif
 
-  vtkSmartPointer<ttkSimplexIdTypeArray> ascendingManifold
-    = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
+  vtkNew<ttkSimplexIdTypeArray> ascendingManifold{};
+  vtkNew<ttkSimplexIdTypeArray> descendingManifold{};
+  vtkNew<ttkSimplexIdTypeArray> morseSmaleManifold{};
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(!ascendingManifold) {
-    cerr << "[ttkMorseSmaleComplex] Error : ttkSimplexIdTypeArray allocation "
-            "problem."
-         << endl;
+  if(!ascendingManifold || !descendingManifold || !morseSmaleManifold) {
+    this->printErr("Manifold vtkDataArray allocation problem.");
     return -1;
   }
 #endif
@@ -910,103 +528,56 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
   ascendingManifold->SetNumberOfTuples(numberOfVertices);
   ascendingManifold->SetName("AscendingManifold");
 
-  vtkSmartPointer<ttkSimplexIdTypeArray> descendingManifold
-    = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(!descendingManifold) {
-    cerr << "[ttkMorseSmaleComplex] Error : ttkSimplexIdTypeArray allocation "
-            "problem."
-         << endl;
-    return -1;
-  }
-#endif
   descendingManifold->SetNumberOfComponents(1);
   descendingManifold->SetNumberOfTuples(numberOfVertices);
   descendingManifold->SetName("DescendingManifold");
 
-  vtkSmartPointer<ttkSimplexIdTypeArray> morseSmaleManifold
-    = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
-#ifndef TTK_ENABLE_KAMIKAZE
-  if(!morseSmaleManifold) {
-    cerr << "[ttkMorseSmaleComplex] Error : ttkSimplexIdTypeArray allocation "
-            "problem."
-         << endl;
-    return -1;
-  }
-#endif
   morseSmaleManifold->SetNumberOfComponents(1);
   morseSmaleManifold->SetNumberOfTuples(numberOfVertices);
   morseSmaleManifold->SetName("MorseSmaleManifold");
 
-  morseSmaleComplex_.setIterationThreshold(IterationThreshold);
+  this->setIterationThreshold(IterationThreshold);
 
-  morseSmaleComplex_.setReverseSaddleMaximumConnection(
-    ReverseSaddleMaximumConnection);
+  this->setComputeAscendingSeparatrices1(ComputeAscendingSeparatrices1);
+  this->setComputeDescendingSeparatrices1(ComputeDescendingSeparatrices1);
+  this->setComputeSaddleConnectors(ComputeSaddleConnectors);
 
-  morseSmaleComplex_.setReverseSaddleSaddleConnection(
-    ReverseSaddleSaddleConnection);
+  this->setComputeAscendingSeparatrices2(ComputeAscendingSeparatrices2);
+  this->setComputeDescendingSeparatrices2(ComputeDescendingSeparatrices2);
 
-  morseSmaleComplex_.setComputeAscendingSeparatrices1(
-    ComputeAscendingSeparatrices1);
-
-  morseSmaleComplex_.setComputeDescendingSeparatrices1(
-    ComputeDescendingSeparatrices1);
-  morseSmaleComplex_.setComputeSaddleConnectors(ComputeSaddleConnectors);
-
-  morseSmaleComplex_.setComputeAscendingSeparatrices2(
-    ComputeAscendingSeparatrices2);
-
-  morseSmaleComplex_.setComputeDescendingSeparatrices2(
-    ComputeDescendingSeparatrices2);
-
-  morseSmaleComplex_.setReturnSaddleConnectors(ReturnSaddleConnectors);
-  morseSmaleComplex_.setSaddleConnectorsPersistenceThreshold(
+  this->setReturnSaddleConnectors(ReturnSaddleConnectors);
+  this->setSaddleConnectorsPersistenceThreshold(
     SaddleConnectorsPersistenceThreshold);
 
-  morseSmaleComplex_.setPrioritizeSpeedOverMemory(PrioritizeSpeedOverMemory);
-
-  morseSmaleComplex_.setInputScalarField(inputScalars->GetVoidPointer(0));
-  morseSmaleComplex_.setInputOffsets(inputOffsets->GetVoidPointer(0));
+  this->setInputScalarField(ttkUtils::GetVoidPointer(inputScalars));
+  this->setInputOffsets(
+    static_cast<SimplexId *>(ttkUtils::GetVoidPointer(inputOffsets)));
 
   void *ascendingManifoldPtr = nullptr;
   void *descendingManifoldPtr = nullptr;
   void *morseSmaleManifoldPtr = nullptr;
   if(ComputeAscendingSegmentation)
-    ascendingManifoldPtr = ascendingManifold->GetVoidPointer(0);
+    ascendingManifoldPtr = ttkUtils::GetVoidPointer(ascendingManifold);
   if(ComputeDescendingSegmentation)
-    descendingManifoldPtr = descendingManifold->GetVoidPointer(0);
+    descendingManifoldPtr = ttkUtils::GetVoidPointer(descendingManifold);
   if(ComputeAscendingSegmentation and ComputeDescendingSegmentation
      and ComputeFinalSegmentation)
-    morseSmaleManifoldPtr = morseSmaleManifold->GetVoidPointer(0);
+    morseSmaleManifoldPtr = ttkUtils::GetVoidPointer(morseSmaleManifold);
 
-  morseSmaleComplex_.setOutputMorseComplexes(
+  this->setOutputMorseComplexes(
     ascendingManifoldPtr, descendingManifoldPtr, morseSmaleManifoldPtr);
 
-  switch(inputScalars->GetDataType()) {
-    vtkTemplateMacro(
-      ret = dispatch<VTK_TT>(
-        inputScalars, inputOffsets, outputCriticalPoints, outputSeparatrices1,
-        outputSeparatrices2, criticalPoints_numberOfPoints,
-        criticalPoints_points, criticalPoints_points_cellDimensions,
-        criticalPoints_points_cellIds, criticalPoints_points_isOnBoundary,
-        criticalPoints_points_PLVertexIdentifiers,
-        criticalPoints_points_manifoldSize, separatrices1_numberOfPoints,
-        separatrices1_points, separatrices1_points_smoothingMask,
-        separatrices1_points_cellDimensions, separatrices1_points_cellIds,
-        separatrices1_numberOfCells, separatrices1_cells,
-        separatrices1_cells_sourceIds, separatrices1_cells_destinationIds,
-        separatrices1_cells_separatrixIds, separatrices1_cells_separatrixTypes,
-        separatrices1_cells_isOnBoundary, separatrices2_numberOfPoints,
-        separatrices2_points, separatrices2_numberOfCells, separatrices2_cells,
-        separatrices2_cells_sourceIds, separatrices2_cells_separatrixIds,
-        separatrices2_cells_separatrixTypes, separatrices2_cells_isOnBoundary));
-  }
+  int ret{};
 
-#ifndef TTK_ENABLE_KAMIKAZE
+  ttkVtkTemplateMacro(
+    inputScalars->GetDataType(), triangulation->getType(),
+    (ret = dispatch<VTK_TT, TTK_TT>(
+       inputScalars, inputOffsets, outputCriticalPoints, outputSeparatrices1,
+       outputSeparatrices2, *static_cast<TTK_TT *>(triangulation->getData()))));
+
   if(ret != 0) {
     return -1;
   }
-#endif // TTK_ENABLE_KAMIKAZE
 
   outputMorseComplexes->ShallowCopy(input);
   // morse complexes
@@ -1014,9 +585,7 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
     vtkPointData *pointData = outputMorseComplexes->GetPointData();
 #ifndef TTK_ENABLE_KAMIKAZE
     if(!pointData) {
-      cerr
-        << "[ttkMorseSmaleComplex] Error : outputMorseComplexes has no point "
-        << "data." << endl;
+      this->printErr("outputMorseComplexes has no point data.");
       return -1;
     }
 #endif
@@ -1028,14 +597,9 @@ int ttkMorseSmaleComplex::doIt(vector<vtkDataSet *> &inputs,
     if(ComputeAscendingSegmentation and ComputeDescendingSegmentation
        and ComputeFinalSegmentation)
       pointData->AddArray(morseSmaleManifold);
+
+    pointData->AddArray(inputOffsets);
   }
 
-  {
-    stringstream msg;
-    msg << "[ttkMorseSmaleComplex] Memory usage: " << m.getElapsedUsage()
-        << " MB." << endl;
-    dMsg(cout, msg.str(), memoryMsg);
-  }
-
-  return ret;
+  return !ret;
 }

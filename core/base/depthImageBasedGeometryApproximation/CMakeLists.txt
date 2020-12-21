@@ -3,6 +3,6 @@ ttk_add_base_library(depthImageBasedGeometryApproximation
     DepthImageBasedGeometryApproximation.cpp
   HEADERS
     DepthImageBasedGeometryApproximation.h
-  LINK
+  DEPENDS
     triangulation
-    )
+  )

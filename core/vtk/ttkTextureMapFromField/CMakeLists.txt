@@ -1,9 +1,1 @@
-ttk_add_vtk_library(ttkTextureMapFromField
-  SOURCES
-    ttkTextureMapFromField.cpp
-  HEADERS
-    ttkTextureMapFromField.h
-  LINK
-    common
-    ttkTriangulation
-    )
+ttk_add_vtk_module()

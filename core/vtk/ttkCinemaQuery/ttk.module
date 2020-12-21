@@ -1,0 +1,11 @@
+NAME
+  ttkCinemaQuery
+SOURCES
+  ttkCinemaQuery.cpp
+HEADERS
+  ttkCinemaQuery.h
+DEPENDS
+  cinemaQuery
+  ttkAlgorithm
+  Boost::boost
+  Boost::system

@@ -1,0 +1,4 @@
+NAME
+ ttkBarycentricSubdivision
+DEPENDS
+ ttkAlgorithm

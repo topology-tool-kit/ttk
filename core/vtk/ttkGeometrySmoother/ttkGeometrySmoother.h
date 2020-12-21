@@ -21,49 +21,22 @@
 /// \sa vtkScalarFieldSmoother
 /// \sa ttk::ScalarFieldSmoother
 
-#ifndef _TTK_GEOMETRY_SMOOTHER_H
-#define _TTK_GEOMETRY_SMOOTHER_H
+#pragma once
 
-// VTK includes
-#include <vtkDataArray.h>
-#include <vtkDataSet.h>
-#include <vtkDataSetAlgorithm.h>
-#include <vtkFiltersCoreModule.h>
-#include <vtkInformation.h>
-#include <vtkObjectFactory.h>
-#include <vtkSmartPointer.h>
-
-// ttk code includes
 #include <ScalarFieldSmoother.h>
-#include <ttkWrapper.h>
+#include <ttkAlgorithm.h>
+#include <ttkGeometrySmootherModule.h>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkGeometrySmoother
-#else
-class ttkGeometrySmoother
-#endif
-  : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+class TTKGEOMETRYSMOOTHER_EXPORT ttkGeometrySmoother
+  : public ttkAlgorithm,
+    protected ttk::ScalarFieldSmoother {
+
+private:
+  int NumberOfIterations{1};
+  int MaskIdentifier{0};
+  bool ForceInputMaskScalarField{false};
 
 public:
-  static ttkGeometrySmoother *New();
-
-  vtkTypeMacro(ttkGeometrySmoother, vtkDataSetAlgorithm);
-
-  // default ttk setters
-  vtkSetMacro(debugLevel_, int);
-
-  void SetThreadNumber(int threadNumber) {
-    ThreadNumber = threadNumber;
-    SetThreads();
-  }
-
-  void SetUseAllCores(bool onOff) {
-    UseAllCores = onOff;
-    SetThreads();
-  }
-  // end of default ttk setters
-
   vtkSetMacro(NumberOfIterations, int);
   vtkGetMacro(NumberOfIterations, int);
 
@@ -73,23 +46,17 @@ public:
   vtkSetMacro(ForceInputMaskScalarField, bool);
   vtkGetMacro(ForceInputMaskScalarField, bool);
 
-  vtkSetMacro(InputMask, std::string);
-  vtkGetMacro(InputMask, std::string);
+  vtkTypeMacro(ttkGeometrySmoother, ttkAlgorithm);
+  static ttkGeometrySmoother *New();
 
 protected:
   ttkGeometrySmoother();
-
   ~ttkGeometrySmoother();
 
-  TTK_SETUP();
+  int FillInputPortInformation(int port, vtkInformation *info) override;
+  int FillOutputPortInformation(int port, vtkInformation *info) override;
 
-private:
-  int NumberOfIterations;
-  int MaskIdentifier;
-  bool ForceInputMaskScalarField;
-  std::string InputMask;
-
-  ttk::ScalarFieldSmoother smoother_;
+  int RequestData(vtkInformation *request,
+                  vtkInformationVector **inputVector,
+                  vtkInformationVector *outputVector) override;
 };
-
-#endif // _TTK_GEOMETRY_SMOOTHER_H

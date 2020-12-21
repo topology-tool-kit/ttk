@@ -1,5 +1,4 @@
-#ifndef _MUNKRESIMPL_H
-#define _MUNKRESIMPL_H
+#pragma once
 
 template <typename dataType>
 int Munkres::run(std::vector<matchingTuple> &matchings) {
@@ -15,31 +14,21 @@ int Munkres::run(std::vector<matchingTuple> &matchings) {
 
   while(!done) {
     ++iter;
-    {
-      std::stringstream msg;
-      msg << "[BottleneckDistence] Munkres step " << step << ", Iteration "
-          << iter << " in " << t.getElapsedTime() << std::endl;
-      dMsg(std::cout, msg.str(), advancedInfoMsg);
-    }
+    this->printMsg(
+      "Step " + std::to_string(step) + ", Iteration " + std::to_string(iter),
+      debug::Priority::DETAIL);
 
     if(iter > 20 && (iter % (int)std::round((double)maxIter / 5.0) == 0)) {
-      std::stringstream msg;
       double progress = std::round(100.0 * (double)iter / (double)maxIter);
-      msg << "[BottleneckDistance] Munkres progress " << progress << "%"
-          << std::endl;
-      dMsg(std::cout, msg.str(), timeMsg);
+      this->printMsg("Progress", progress / 100.0, t.getElapsedTime());
     }
 
     if(iter > maxIter) {
       // showCostMatrix<dataType>();
       // showMaskMatrix();
 
-      {
-        std::stringstream msg;
-        msg << "[BottleneckDistance] Munkres failed to converge after "
-            << (maxIter) << " iterations. Aborting." << std::endl;
-        dMsg(std::cout, msg.str(), timeMsg);
-      }
+      this->printMsg("Failed to converge after " + std::to_string(maxIter)
+                     + " iterations. Aborting.");
 
       step = 7;
       // Abort. Still found something
@@ -130,19 +119,17 @@ int Munkres::stepOne(int &step) // ~ 0% perf
   }
 
   if(droppedMinus > 0) {
-    std::stringstream msg;
-    msg << "[Munkres] Unexpected non-assignable row [minus], dropping "
-           "optimisation for "
-        << droppedMinus << " row(s)." << std::endl;
-    dMsg(std::cout, msg.str(), advancedInfoMsg);
+    this->printMsg(
+      "Unexpected non-assignable row [minus], dropping optimisation for "
+        + std::to_string(droppedMinus) + " row(s).",
+      debug::Priority::DETAIL);
   }
 
   if(droppedPlus > 0) {
-    std::stringstream msg;
-    msg << "[Munkres] Unexpected non-assignable row [plus], dropping "
-           "optimisation for "
-        << droppedPlus << " row(s)." << std::endl;
-    dMsg(std::cout, msg.str(), advancedInfoMsg);
+    this->printMsg(
+      "Unexpected non-assignable row [plus], dropping optimisation for "
+        + std::to_string(droppedPlus) + " row(s).",
+      debug::Priority::DETAIL);
   }
 
   droppedMinus = 0;
@@ -170,19 +157,17 @@ int Munkres::stepOne(int &step) // ~ 0% perf
   }
 
   if(droppedMinus > 0) {
-    std::stringstream msg;
-    msg << "[Munkres] Unexpected non-assignable column [minus], dropping "
-           "optimisation for "
-        << droppedMinus << " column(s)." << std::endl;
-    dMsg(std::cout, msg.str(), advancedInfoMsg);
+    this->printMsg(
+      "Unexpected non-assignable row [minus], dropping optimisation for "
+        + std::to_string(droppedMinus) + " row(s).",
+      debug::Priority::DETAIL);
   }
 
   if(droppedPlus > 0) {
-    std::stringstream msg;
-    msg << "[Munkres] Unexpected non-assignable column [plus], dropping "
-           "optimisation for "
-        << droppedPlus << " column(s)." << std::endl;
-    dMsg(std::cout, msg.str(), advancedInfoMsg);
+    this->printMsg(
+      "Unexpected non-assignable row [plus], dropping optimisation for "
+        + std::to_string(droppedPlus) + " row(s).",
+      debug::Priority::DETAIL);
   }
 
   rowLimitsMinus[rowSize - 1] = 0;
@@ -367,9 +352,7 @@ int Munkres::findZero(int &row, int &col) {
     }
   }
 
-  std::stringstream msg;
-  msg << "[Munkres] Zero not found" << std::endl;
-  dMsg(std::cout, msg.str(), advancedInfoMsg);
+  this->printMsg("Zero not found.", debug::Priority::DETAIL);
 
   return 0;
 }
@@ -406,9 +389,7 @@ int Munkres::stepFive(int &step) // ~ 10% perf
 
         c = findPrimeInRow<dataType>(path[pathCount - 1][0]);
         if(c == -1) {
-          std::stringstream msg;
-          msg << "[Munkres] Did not find an expected prime." << std::endl;
-          dMsg(std::cout, msg.str(), timeMsg);
+          this->printWrn("Did not find an expected prime.");
         }
         ++pathCount;
         path[pathCount - 1][0] = path[pathCount - 2][0];
@@ -520,9 +501,7 @@ int Munkres::stepSix(int &step) // ~ 35% perf
 
 template <typename dataType>
 int Munkres::stepSeven(int &step) {
-  std::stringstream msg;
-  msg << "[Munkres] Step 7 over." << std::endl;
-  dMsg(std::cout, msg.str(), advancedInfoMsg);
+  this->printMsg("Step 7 over.", debug::Priority::DETAIL);
   return 0;
 }
 
@@ -574,11 +553,7 @@ int Munkres::computeAffectationCost(
         total += C[r][c];
       }
 
-  std::stringstream msg;
-  msg << "[Munkres] Total cost = " << total << std::endl;
-  dMsg(std::cout, msg.str(), timeMsg);
+  this->printMsg("Total cost: " + std::to_string(total));
 
   return 0;
 }
-
-#endif

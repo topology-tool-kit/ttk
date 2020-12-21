@@ -12,8 +12,29 @@
 /// \param Input Input PL scalar field (vtkDataSet)
 /// \param Output Output critical points (vtkDataSet)
 ///
+/// The input data array needs to be specified via the standard VTK call
+/// vtkAlgorithm::SetInputArrayToProcess() with the following parameters:
+/// \param idx 0 (FIXED: the first array the algorithm requires)
+/// \param port 0 (FIXED: first port)
+/// \param connection 0 (FIXED: first connection)
+/// \param fieldAssociation 0 (FIXED: point data)
+/// \param arrayName (DYNAMIC: string identifier of the input array)
+///
+/// The optional offset array can be specified via the standard VTK call
+/// vtkAlgorithm::SetInputArrayToProcess() with the following parameters:
+/// \param idx 1 (FIXED: the second array the algorithm requires)
+/// \param port 0 (FIXED: first port)
+/// \param connection 0 (FIXED: first connection)
+/// \param fieldAssociation 0 (FIXED: point data)
+/// \param arrayName (DYNAMIC: string identifier of the offset array)
+/// \note: To use this optional array, `ForceInputOffsetScalarField` needs to be
+/// enabled with the setter `setForceInputOffsetScalarField()'.
+///
 /// This filter can be used as any other VTK filter (for instance, by using the
 /// sequence of calls SetInputData(), Update(), GetOutput()).
+///
+/// See the corresponding standalone program for a usage example:
+///   - standalone/ScalarFieldCriticalPoints/main.cpp
 ///
 /// See the related ParaView example state files for usage examples within a
 /// VTK pipeline.
@@ -25,68 +46,29 @@
 ///
 /// \sa ttk::ScalarFieldCriticalPoints
 ///
-#ifndef _TTK_SCALARFIELDCRITICALPOINTS_H
-#define _TTK_SCALARFIELDCRITICALPOINTS_H
+#pragma once
 
-// VTK includes -- to adapt
-#include <vtkCellArray.h>
-#include <vtkCharArray.h>
-#include <vtkDataArray.h>
-#include <vtkDataSet.h>
-#include <vtkDataSetAlgorithm.h>
-#include <vtkDoubleArray.h>
-#include <vtkFiltersCoreModule.h>
-#include <vtkFloatArray.h>
-#include <vtkInformation.h>
-#include <vtkIntArray.h>
-#include <vtkObjectFactory.h>
-#include <vtkPointData.h>
-#include <vtkSmartPointer.h>
-#include <vtkUnstructuredGrid.h>
+// VTK Module
+#include <ttkScalarFieldCriticalPointsModule.h>
+
+// VTK Includes
+#include <ttkAlgorithm.h>
 
 // ttk baseCode includes
 #include <ScalarFieldCriticalPoints.h>
-#include <ttkWrapper.h>
 
 // in this example, this wrapper takes a data-set on the input and produces a
 // data-set on the output - to adapt.
 // see the documentation of the vtkAlgorithm class to decide from which VTK
 // class your wrapper should inherit.
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkScalarFieldCriticalPoints
-#else
-class ttkScalarFieldCriticalPoints
-#endif
-  : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
+class TTKSCALARFIELDCRITICALPOINTS_EXPORT ttkScalarFieldCriticalPoints
+  : public ttkAlgorithm,
+    protected ttk::ScalarFieldCriticalPoints {
 
 public:
   static ttkScalarFieldCriticalPoints *New();
 
-  vtkTypeMacro(ttkScalarFieldCriticalPoints, vtkDataSetAlgorithm);
-
-  // default ttk setters
-  vtkSetMacro(debugLevel_, int);
-
-  void SetThreadNumber(int threadNumber) {
-    ThreadNumber = threadNumber;
-    SetThreads();
-  }
-
-  void SetUseAllCores(bool onOff) {
-    UseAllCores = onOff;
-    SetThreads();
-  }
-  // end of default ttk setters
-
-  vtkSetMacro(ScalarField, std::string);
-  vtkGetMacro(ScalarField, std::string);
-
-  vtkSetMacro(ScalarFieldId, int);
-  vtkGetMacro(ScalarFieldId, int);
-
-  vtkSetMacro(OffsetFieldId, int);
-  vtkGetMacro(OffsetFieldId, int);
+  vtkTypeMacro(ttkScalarFieldCriticalPoints, ttkAlgorithm);
 
   vtkGetMacro(VertexBoundary, bool);
   vtkSetMacro(VertexBoundary, bool);
@@ -100,35 +82,24 @@ public:
   vtkGetMacro(ForceInputOffsetScalarField, bool);
   vtkSetMacro(ForceInputOffsetScalarField, bool);
 
-  vtkGetMacro(OffsetField, std::string);
-  vtkSetMacro(OffsetField, std::string);
-
-  int FillOutputPortInformation(int port, vtkInformation *info) override {
-    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
-    return 1;
-  }
-
-  template <typename VTK_TT>
-  int dispatch(ttk::Triangulation *triangulation,
-               void *scalarValues,
-               const ttk::SimplexId vertexNumber);
-
 protected:
   ttkScalarFieldCriticalPoints();
 
-  ~ttkScalarFieldCriticalPoints();
+  ~ttkScalarFieldCriticalPoints() override;
 
-  TTK_SETUP();
+  int FillInputPortInformation(int port, vtkInformation *info) override;
+
+  int FillOutputPortInformation(int port, vtkInformation *info) override;
+
+  int RequestData(vtkInformation *request,
+                  vtkInformationVector **inputVector,
+                  vtkInformationVector *outputVector) override;
 
 private:
-  bool ForceInputOffsetScalarField;
-  int ScalarFieldId, OffsetFieldId;
-  bool VertexIds, VertexScalars, VertexBoundary;
-  std::string ScalarField, OffsetField;
+  bool ForceInputOffsetScalarField{false};
+  bool VertexIds{true}, VertexScalars{true}, VertexBoundary{true};
+
   std::vector<std::vector<std::pair<ttk::SimplexId, ttk::SimplexId>>>
     vertexLinkEdgeList_;
   std::vector<std::pair<ttk::SimplexId, char>> criticalPoints_;
-  std::vector<ttk::SimplexId> sosOffsets_;
 };
-
-#endif // _TTK_SCALARFIELDCRITICALPOINTS_H

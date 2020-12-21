@@ -5,24 +5,24 @@
        a filter already in ParaView (in Servers/ServerManager/Resources/*.xml)
        that matches your filter and then model your xml on it -->
   <ProxyGroup name="filters">
-   <SourceProxy 
-     name="JacobiSet" 
-     class="ttkJacobiSet" 
+   <SourceProxy
+     name="ttkJacobiSet"
+     class="ttkJacobiSet"
      label="TTK JacobiSet">
      <Documentation
-        long_help="TTK plugin that computes the Jacobi set of a bivariate 
+        long_help="TTK plugin that computes the Jacobi set of a bivariate
 volumetric data-set (tetrahedral meshes only)."
-        short_help="TTK plugin that computes the Jacobi set of a bivariate 
+        short_help="TTK plugin that computes the Jacobi set of a bivariate
 volumetric data-set (tetrahedral meshes only).">
 Given a bivariate scalar field defined on a PL 3-manifold, this filter
 produces the list of Jacobi edges.
 
 The input bivariate data must be provided as two independent scalar fields
-attached as point data to the input geometry. 
+attached as point data to the input geometry.
 
 Related publication:
-"Jacobi sets of multiple Morse functions" 
-Herbert Edelsbrunner, John Harer 
+"Jacobi sets of multiple Morse functions"
+Herbert Edelsbrunner, John Harer
 Foundations of Computational Mathematics. Cambridge University Press, 2002.
      </Documentation>
      <InputProperty
@@ -44,11 +44,12 @@ Foundations of Computational Mathematics. Cambridge University Press, 2002.
       </InputProperty>
 
       <StringVectorProperty
-        name="UComponent"
-        command="SetUcomponent"
-        number_of_elements="1"
+        name="U Component"
+        command="SetInputArrayToProcess"
+        element_types="0 0 0 0 2"
+        number_of_elements="5"
+        default_values="0"
         animateable="0"
-        label="U Component"
         >
         <ArrayListDomain
           name="array_list"
@@ -61,13 +62,14 @@ Foundations of Computational Mathematics. Cambridge University Press, 2002.
           Select the U component of the bivariate field.
         </Documentation>
       </StringVectorProperty>
-     
+
       <StringVectorProperty
-        name="VComponent"
-        command="SetVcomponent"
-        number_of_elements="1"
+        name="V Component"
+        command="SetInputArrayToProcess"
+        element_types="0 0 0 0 2"
+        number_of_elements="5"
+        default_values="1"
         animateable="0"
-        label="V Component"
         >
         <ArrayListDomain
           name="array_list"
@@ -80,7 +82,7 @@ Foundations of Computational Mathematics. Cambridge University Press, 2002.
           Select the V component of the bivariate field.
         </Documentation>
       </StringVectorProperty>
-     
+
       <IntVectorProperty name="With predefined offset"
         label="Force Input Offset Field"
         command="SetForceInputOffsetScalarField"
@@ -89,17 +91,18 @@ Foundations of Computational Mathematics. Cambridge University Press, 2002.
         default_values="0">
         <BooleanDomain name="bool"/>
         <Documentation>
-          Check this box to force the usage of a specific input scalar field 
+          Check this box to force the usage of a specific input scalar field
           as vertex offset (used to disambiguate flat plateaus).
         </Documentation>
       </IntVectorProperty>
-      
+
       <StringVectorProperty
-        name="OffsetU"
-        command="SetOffsetFieldU"
-        number_of_elements="1"
+        name="U Offset Field"
+        command="SetInputArrayToProcess"
+        element_types="0 0 0 0 2"
+        number_of_elements="5"
+        default_values="2"
         animateable="0"
-        label="U offset field"
         panel_visibility="advanced"
         >
         <ArrayListDomain
@@ -116,17 +119,18 @@ Foundations of Computational Mathematics. Cambridge University Press, 2002.
             value="1" />
         </Hints>
         <Documentation>
-          Select the scalar field to use as a vertex offset for the 
+          Select the scalar field to use as a vertex offset for the
 u-coordinate (used to disambiguate collinear edges).
         </Documentation>
       </StringVectorProperty>
-      
+
       <StringVectorProperty
-        name="OffsetV"
-        command="SetOffsetFieldV"
-        number_of_elements="1"
+        name="V Offset Field"
+        command="SetInputArrayToProcess"
+        element_types="0 0 0 0 2"
+        number_of_elements="5"
+        default_values="3"
         animateable="0"
-        label="V offset field"
         panel_visibility="advanced"
         >
         <ArrayListDomain
@@ -143,11 +147,11 @@ u-coordinate (used to disambiguate collinear edges).
             value="1" />
         </Hints>
         <Documentation>
-          Select the scalar field to use as a vertex offset for the 
+          Select the scalar field to use as a vertex offset for the
 v-coordinate (used to disambiguate collinear edges).
         </Documentation>
       </StringVectorProperty>
-      
+
       <IntVectorProperty name="With edge identifiers"
        command="SetEdgeIds"
        number_of_elements="1"
@@ -161,76 +165,30 @@ v-coordinate (used to disambiguate collinear edges).
        default_values="0">
         <BooleanDomain name="bool"/>
       </IntVectorProperty>
-      
-      <IntVectorProperty
-         name="UseAllCores"
-         label="Use All Cores"
-         command="SetUseAllCores"
-         number_of_elements="1"
-         default_values="1" panel_visibility="advanced">
-        <BooleanDomain name="bool"/>
-         <Documentation>
-          Use all available cores.
-         </Documentation>
-      </IntVectorProperty>
-      
-      <IntVectorProperty
-         name="ThreadNumber"
-         label="Thread Number"
-         command="SetThreadNumber"
-         number_of_elements="1"
-         default_values="1" panel_visibility="advanced">
-        <IntRangeDomain name="range" min="1" max="100" />
-        <Hints>
-          <PropertyWidgetDecorator type="GenericDecorator"
-            mode="visibility"
-            property="UseAllCores"
-            value="0" />
-        </Hints>
-         <Documentation>
-          Thread number.
-         </Documentation>
-      </IntVectorProperty>
-      
-      <IntVectorProperty
-         name="DebugLevel"
-         label="Debug Level"
-         command="SetdebugLevel_"
-         number_of_elements="1"
-         default_values="3" panel_visibility="advanced">
-        <IntRangeDomain name="range" min="0" max="100" />
-         <Documentation>
-           Debug level.
-         </Documentation>
-      </IntVectorProperty>
-      
+
+      ${DEBUG_WIDGETS}
+
       <PropertyGroup panel_widget="Line" label="Input options">
-        <Property name="UComponent" />
-        <Property name="VComponent" />
+        <Property name="U Component" />
+        <Property name="V Component" />
         <Property name="With predefined offset" />
-        <Property name="OffsetU" />
-        <Property name="OffsetV" />
+        <Property name="U Offset Field" />
+        <Property name="V Offset Field" />
       </PropertyGroup>
-      
-      <PropertyGroup panel_widget="Line" label="Testing">
-        <Property name="UseAllCores" />
-        <Property name="ThreadNumber" />
-        <Property name="DebugLevel" />
-      </PropertyGroup>
-      
+
       <PropertyGroup panel_widget="Line" label="Output options">
         <Property name="With edge identifiers" />
         <Property name="With vertex scalars" />
       </PropertyGroup>
-      
+
       <Hints>
         <ShowInMenu category="TTK - Bivariate Scalar Data" />
       </Hints>
-      
+
       <Hints>
         <Visibility replace_input="0" />
       </Hints>
-      
+
    </SourceProxy>
  </ProxyGroup>
 </ServerManagerConfiguration>

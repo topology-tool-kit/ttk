@@ -1,0 +1,9 @@
+NAME
+  ttkGeometrySmoother
+SOURCES
+  ttkGeometrySmoother.cpp
+HEADERS
+  ttkGeometrySmoother.h
+DEPENDS
+  scalarFieldSmoother
+  ttkAlgorithm

@@ -5,13 +5,8 @@ using namespace ttk;
 
 using namespace ftm;
 
-PersistenceDiagram::PersistenceDiagram()
-  : ComputeSaddleConnectors{},
-
-    triangulation_{}, inputScalars_{}, CTDiagram_{} {
-}
-
-PersistenceDiagram::~PersistenceDiagram() {
+PersistenceDiagram::PersistenceDiagram() {
+  setDebugMsgPrefix("PersistenceDiagram");
 }
 
 CriticalType PersistenceDiagram::getNodeType(FTMTree_MT *tree,
@@ -43,4 +38,14 @@ CriticalType PersistenceDiagram::getNodeType(FTMTree_MT *tree,
     else
       return CriticalType::Local_maximum;
   }
+}
+
+void ttk::PersistenceDiagram::sortPersistenceDiagram(
+  std::vector<PersistencePair> &diagram, const SimplexId *const offsets) const {
+
+  auto cmp = [offsets](const PersistencePair &a, const PersistencePair &b) {
+    return offsets[a.birth] < offsets[b.birth];
+  };
+
+  std::sort(diagram.begin(), diagram.end(), cmp);
 }

@@ -1,5 +1,4 @@
-#ifndef _GABOWTARJAN_H
-#define _GABOWTARJAN_H
+#pragma once
 
 #include "MatchingGraph.h"
 #include <Debug.h>
@@ -11,10 +10,11 @@
 
 namespace ttk {
 
-  class GabowTarjan {
+  class GabowTarjan : public Debug {
 
   public:
     GabowTarjan() {
+      this->setDebugMsgPrefix("Gabow-Tarjan");
     }
 
     ~GabowTarjan() {
@@ -37,10 +37,7 @@ namespace ttk {
       Size1 = (unsigned int)rowSize_ - 1;
       Size2 = (unsigned int)colSize_ - 1;
       if(Size1 <= 0 || Size2 <= 0) {
-        ttk::Debug d;
-        std::stringstream msg;
-        msg << "[Gabow-Tarjan] One or more empty diagram(s)." << std::endl;
-        d.dMsg(std::cout, msg.str(), ttk::Debug::timeMsg);
+        this->printMsg("One or more empty diagram(s).");
       }
 
       MaxSize = Size1 + Size2;
@@ -141,5 +138,3 @@ namespace ttk {
 #include <GabowTarjanImpl.h>
 
 } // namespace ttk
-
-#endif

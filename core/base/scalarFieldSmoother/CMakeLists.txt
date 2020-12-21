@@ -3,6 +3,6 @@ ttk_add_base_library(scalarFieldSmoother
     ScalarFieldSmoother.cpp
   HEADERS
     ScalarFieldSmoother.h
-  LINK
+  DEPENDS
     triangulation
     )

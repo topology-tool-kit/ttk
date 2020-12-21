@@ -1,0 +1,9 @@
+NAME
+  ttkReebSpace
+SOURCES
+  ttkReebSpace.cpp
+HEADERS
+  ttkReebSpace.h
+DEPENDS
+  reebSpace
+  ttkAlgorithm

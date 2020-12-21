@@ -17,10 +17,7 @@
 ///
 /// \sa ttkContourForests.cpp %for a usage example.
 
-#ifndef _CONTOURFOREST_H
-#define _CONTOURFOREST_H
-
-#include <typeinfo>
+#pragma once
 
 #include "ContourForestsTree.h"
 
@@ -133,12 +130,13 @@ namespace ttk {
       // Getters & Setters
       // {
 
-      inline void setThreadNumber(const unsigned short nbThread) {
+      inline int setThreadNumber(const int nbThread) {
         if(nbThread) {
           parallelParams_.nbThreads = nbThread;
         } else {
           parallelParams_.nbThreads = OsCall::getNumberOfCores();
         }
+        return 0;
       }
 
       inline void setPartitionNum(int p) {
@@ -156,13 +154,12 @@ namespace ttk {
         const SimplexId &start
           = (i == 0)
               ? 0
-              : scalars_
-                  ->mirrorVertices[parallelData_.interfaces[i - 1].getSeed()];
+              : scalars_->sosOffsets[parallelData_.interfaces[i - 1].getSeed()];
 
         const SimplexId &end
           = (i == parallelParams_.nbInterfaces)
               ? scalars_->size
-              : scalars_->mirrorVertices[parallelData_.interfaces[i].getSeed()];
+              : scalars_->sosOffsets[parallelData_.interfaces[i].getSeed()];
 
         return std::make_tuple(start, end);
       }
@@ -172,14 +169,12 @@ namespace ttk {
         const SimplexId &start
           = (i == parallelParams_.nbInterfaces)
               ? scalars_->size - 1
-              : scalars_->mirrorVertices[parallelData_.interfaces[i].getSeed()]
-                  - 1;
+              : scalars_->sosOffsets[parallelData_.interfaces[i].getSeed()] - 1;
 
         const SimplexId &end
           = (i == 0)
               ? -1
-              : scalars_
-                    ->mirrorVertices[parallelData_.interfaces[i - 1].getSeed()]
+              : scalars_->sosOffsets[parallelData_.interfaces[i - 1].getSeed()]
                   - 1;
 
         return std::make_tuple(start, end);
@@ -190,13 +185,12 @@ namespace ttk {
         const SimplexId &seed0
           = (i == 0)
               ? -1
-              : scalars_
-                  ->mirrorVertices[parallelData_.interfaces[i - 1].getSeed()];
+              : scalars_->sosOffsets[parallelData_.interfaces[i - 1].getSeed()];
 
         const SimplexId &seed1
           = (i == parallelParams_.nbInterfaces)
               ? nullVertex
-              : scalars_->mirrorVertices[parallelData_.interfaces[i].getSeed()];
+              : scalars_->sosOffsets[parallelData_.interfaces[i].getSeed()];
 
         return std::make_tuple(seed0, seed1);
       }
@@ -223,7 +217,8 @@ namespace ttk {
       // {
       void initInterfaces(void);
 
-      void initOverlap(void);
+      template <typename triangulationType>
+      void initOverlap(const triangulationType &mesh);
 
       void initNbPartitions(void);
 
@@ -231,13 +226,14 @@ namespace ttk {
       // Process
       // {
 
-      template <typename scalarType>
-      int build();
+      template <typename scalarType, typename triangulationType>
+      int build(const triangulationType &mesh);
 
-      template <typename scalarType>
+      template <typename scalarType, typename triangulationType>
       int
         parallelBuild(std::vector<std::vector<ExtendedUnionFind *>> &baseUF_JT,
-                      std::vector<std::vector<ExtendedUnionFind *>> &baseUF_ST);
+                      std::vector<std::vector<ExtendedUnionFind *>> &baseUF_ST,
+                      const triangulationType &mesh);
 
       void stitch(void);
       void stitchTree(const char tree);
@@ -257,6 +253,5 @@ namespace ttk {
 
   } // namespace cf
 } // namespace ttk
-#include <ContourForestsTemplate.h>
 
-#endif
+#include <ContourForestsTemplate.h>

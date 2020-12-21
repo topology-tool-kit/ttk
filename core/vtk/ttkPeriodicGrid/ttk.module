@@ -1,0 +1,8 @@
+NAME
+  ttkPeriodicGrid
+SOURCES
+  ttkPeriodicGrid.cpp
+HEADERS
+  ttkPeriodicGrid.h
+DEPENDS
+  ttkAlgorithm

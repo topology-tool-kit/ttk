@@ -3,8 +3,13 @@ ttk_add_base_library(harmonicField
     HarmonicField.cpp
   HEADERS
     HarmonicField.h
-  LINK
+  DEPENDS
     geometry
     laplacian
     triangulation
     )
+
+if(TTK_ENABLE_EIGEN)
+  target_compile_definitions(harmonicField PRIVATE TTK_ENABLE_EIGEN)
+  target_include_directories(harmonicField SYSTEM PRIVATE ${EIGEN3_INCLUDE_DIR})
+endif()

@@ -1,0 +1,25 @@
+--- a/Remoting/Core/vtkPVFileInformation.cxx	2018-04-06 22:03:33.000000000 +0200
++++ b/Remoting/Core/vtkPVFileInformation.cxx	2018-05-20 07:11:10.114020235 +0200
+@@ -1211,11 +1211,7 @@
+
+   // Where docs might be in relation to the executable
+   std::vector<std::string> prefixes = {
+-#if defined(_WIN32) || defined(__APPLE__)
+-    ".."
+-#else
+     "share/paraview-" PARAVIEW_VERSION
+-#endif
+   };
+
+   // Search for the docs directory
+@@ -1226,6 +1222,11 @@
+     resource_dir = vtksys::SystemTools::CollapseFullPath(resource_dir);
+   }
+
++  vtkProcessModule* pm = vtkProcessModule::GetProcessModule();
++
++  if((pm)&&(prefixes.size()))
++    resource_dir = pm->GetSelfDir() + "/../" + prefixes[0];
++
+   return resource_dir;
+ }

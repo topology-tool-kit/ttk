@@ -3,7 +3,7 @@ ttk_add_base_library(morseSmaleQuadrangulation
     MorseSmaleQuadrangulation.cpp
   HEADERS
     MorseSmaleQuadrangulation.h
-  LINK
+  DEPENDS
     barycentricSubdivision
     dijkstra
     geometry

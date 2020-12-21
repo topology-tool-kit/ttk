@@ -1,0 +1,6 @@
+NAME
+  ttkCinemaReader
+DEPENDS
+  ttkAlgorithm
+PRIVATE_DEPENDS
+  VTK::IOInfovis

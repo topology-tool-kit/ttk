@@ -1,0 +1,9 @@
+NAME
+  ttkJacobiSet
+SOURCES
+  ttkJacobiSet.cpp
+HEADERS
+  ttkJacobiSet.h
+DEPENDS
+  jacobiSet
+  ttkAlgorithm

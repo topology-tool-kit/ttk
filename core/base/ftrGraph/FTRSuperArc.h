@@ -10,8 +10,7 @@
 ///
 /// \sa ttk::FTRGraph
 
-#ifndef FTR_SUPERARC_H
-#define FTR_SUPERARC_H
+#pragma once
 
 // local includes
 #include "FTRAtomicUF.h"
@@ -28,31 +27,23 @@ namespace ttk {
   namespace ftr {
     class Node;
 
-    class SuperArc {
-    private:
-      idNode upNodeId_;
-      idNode downNodeId_;
-      AtomicUF *ufProp_;
-      bool visible_;
-      idVertex firstReg_, lastReg_, endV_;
-      idSuperArc merged_;
-      Segment segmentation_;
+    class SuperArc : virtual public Debug {
+      idNode upNodeId_{};
+      idNode downNodeId_{};
+      AtomicUF *ufProp_{};
+      bool visible_{true};
+      idVertex firstReg_{nullVertex}, lastReg_{nullVertex}, endV_{nullVertex};
+      idSuperArc merged_{nullSuperArc};
+      Segment segmentation_{};
 #ifndef NDEBUG
-      bool fromUp_;
+      bool fromUp_{false};
 #endif
 
     public:
       SuperArc(const idNode down = nullNode, const idNode up = nullNode)
-        : upNodeId_{up}, downNodeId_{down}, ufProp_{nullptr}, visible_{true},
-          firstReg_{nullVertex}, lastReg_{nullVertex}, endV_{nullVertex},
-          merged_{nullSuperArc}, segmentation_ {
+        : upNodeId_{up}, downNodeId_{down} {
+        this->setDebugMsgPrefix("SuperNode");
       }
-#ifndef NDEBUG
-      , fromUp_ {
-        false
-      }
-#endif
-      {}
 
       idNode getUpNodeId(void) const {
         // Caution. can be nullNode
@@ -66,7 +57,7 @@ namespace ttk {
       idNode getDownNodeId(void) const {
 #ifndef TTK_ENABLE_KAMIKAZE
         if(downNodeId_ == nullNode) {
-          std::cerr << "[FTR Graph]: Arc have null down node" << std::endl;
+          this->printErr("Arc have null down node");
         }
 #endif
         return downNodeId_;
@@ -79,7 +70,7 @@ namespace ttk {
       Propagation *getPropagation(void) const {
 #ifndef TTK_ENABLE_KAMIKAZE
         if(!ufProp_) {
-          std::cerr << "[FTR Graph]: Arc have null UF propagation" << std::endl;
+          this->printErr("Arc have null UF propagation");
         }
 #endif
         return ufProp_->find()->getPropagation();
@@ -173,5 +164,3 @@ namespace ttk {
     };
   } // namespace ftr
 } // namespace ttk
-
-#endif /* end of include guard: FTR_SUPERARC_H */

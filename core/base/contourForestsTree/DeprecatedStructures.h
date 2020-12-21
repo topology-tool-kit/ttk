@@ -18,7 +18,6 @@
 
 #include "DeprecatedDataTypes.h"
 #include "DeprecatedNode.h"
-#include "DeprecatedStructures.h"
 #include "DeprecatedSuperArc.h"
 
 namespace ttk {
@@ -33,25 +32,16 @@ namespace ttk {
 
     // Scalar related containers (global)
     struct Scalars {
-      SimplexId size;
-      void *values;
-      std::vector<SimplexId> sosOffsets;
-      std::vector<SimplexId> sortedVertices, mirrorVertices;
-
-      // Need vertices to be sorted : use mirrorVertices.
+      SimplexId size{};
+      void *values{};
+      const SimplexId *sosOffsets{};
+      std::vector<SimplexId> sortedVertices{};
 
       bool isLower(const SimplexId &a, const SimplexId &b) const {
-        return mirrorVertices[a] < mirrorVertices[b];
+        return sosOffsets[a] < sosOffsets[b];
       }
-      bool isEqLower(const SimplexId &a, const SimplexId &b) const {
-        return mirrorVertices[a] <= mirrorVertices[b];
-      }
-
       bool isHigher(const SimplexId &a, const SimplexId &b) const {
-        return mirrorVertices[a] > mirrorVertices[b];
-      }
-      bool isEqHigher(const SimplexId &a, const SimplexId &b) const {
-        return mirrorVertices[a] >= mirrorVertices[b];
+        return sosOffsets[a] > sosOffsets[b];
       }
     };
 

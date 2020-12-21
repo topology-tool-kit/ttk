@@ -16,6 +16,7 @@
 #include <map>
 
 // base code includes
+#include <CellArray.h>
 #include <Wrapper.h>
 
 namespace ttk {
@@ -44,51 +45,40 @@ namespace ttk {
     /// Compute the link of a single vertex of a triangulation (unspecified
     /// behavior if the input mesh is not a valid triangulation).
     /// \param vertexId Input vertex.
-    /// \param cellNumber Number of maximum-dimensional cells in the
-    /// triangulation (number of tetrahedra in 3D, triangles in 2D, etc.)
-    /// \param cellArray Pointer to a contiguous array of cells. Each entry
-    /// starts by the number of vertices in the cell, followed by the vertex
-    /// identifiers of the cell.
+    /// \param cellArray Cell container allowing to retrieve the vertices ids
+    /// of each cell.
     /// \param vertexLink Output vertex link. This std::vector contains, for
-    /// each
-    /// simplex of the link, the number of vertices in the simplex (triangles:
-    /// 3, edges: 2) followed by the corresponding vertex identifiers.
+    /// each simplex of the link, the number of vertices in the simplex
+    /// (triangles: 3, edges: 2) followed by the corresponding vertex
+    /// identifiers.
     /// \return Returns 0 upon success, negative values otherwise.
     int buildVertexLink(const SimplexId &vertexId,
-                        const SimplexId &cellNumber,
-                        const LongSimplexId *cellArray,
+                        const CellArray &cellArray,
                         std::vector<LongSimplexId> &vertexLink) const;
 
     /// Compute the link of each vertex of a triangulation (unspecified
     /// behavior if the input mesh is not a valid triangulation).
     /// \param vertexNumber Number of vertices in the triangulation.
-    /// \param cellNumber Number of maximum-dimensional cells in the
-    /// triangulation (number of tetrahedra in 3D, triangles in 2D, etc.)
-    /// \param cellArray Pointer to a contiguous array of cells. Each entry
-    /// starts by the number of vertices in the cell, followed by the vertex
-    /// identifiers of the cell.
+    /// \param cellArray Cell container allowing to retrieve the vertices ids
+    /// of each cell.
     /// \param vertexLinks Output vertex links. The size of this std::vector
     /// will be equal to the number of vertices in the mesh. Each entry will
     /// be a std::vector listing the simplices of the link of the entry's
-    /// vertex.
-    /// In particular, this std::vector contains, for each simplex, the
-    /// number of
-    /// vertices in the simplex (triangles: 3, edges: 2) followed by the
-    /// corresponding vertex identifiers.
-    /// \param vertexStars Optional list of vertex stars (list of
-    /// 3-dimensional cells connected to each vertex). If NULL, the
-    /// function will compute this list anyway and free the related memory
-    /// upon return. If not NULL but pointing to an empty std::vector, the
-    /// function will fill this empty std::vector (useful if this list needs
-    /// to be used later on by the calling program). If not NULL but pointing
-    /// to a non-empty std::vector, this function will use this std::vector
-    /// as internal
-    /// vertex star list. If this std::vector is not empty but incorrect, the
-    /// behavior is unspecified.
+    /// vertex. In particular, this std::vector contains, for each simplex, the
+    /// number of vertices in the simplex (triangles: 3, edges: 2) followed by
+    /// the corresponding vertex identifiers.
+    /// \param vertexStars Optional list of vertex stars (list of 3-dimensional
+    /// cells connected to each vertex). If NULL, the function will compute this
+    /// list anyway and free the related memory upon return. If not NULL but
+    /// pointing to an empty std::vector, the function will fill this empty
+    /// std::vector (useful if this list needs to be used later on by the
+    /// calling program). If not NULL but pointing to a non-empty std::vector,
+    /// this function will use this std::vector as internal vertex star list. If
+    /// this std::vector is not empty but incorrect, the behavior is
+    /// unspecified.
     /// \return Returns 0 upon success, negative values otherwise.
     int buildVertexLinks(const SimplexId &vertexNumber,
-                         const SimplexId &cellNumber,
-                         const LongSimplexId *cellArray,
+                         const CellArray &cellArray,
                          std::vector<std::vector<LongSimplexId>> &vertexLinks,
                          std::vector<std::vector<SimplexId>> *vertexStars
                          = NULL) const;
@@ -99,9 +89,8 @@ namespace ttk {
     /// should be equal to the number of vertices in the triangulation. Each
     /// entry is a std::vector listing the identifiers of triangles.
     /// \param cellEdges List of cell edges. The size of this std::vector
-    /// should be
-    /// equal to the number of triangles. Each entry is a std::vector of
-    /// identifiers of edges.
+    /// should be equal to the number of triangles. Each entry is a std::vector
+    /// of identifiers of edges.
     /// \param vertexLinks Output vertex links. The size of this std::vector
     /// will be equal to the number of vertices in the triangulation. Each
     /// entry will be a std::vector listing the edges in the link of the
@@ -137,53 +126,40 @@ namespace ttk {
     /// Compute the list of neighbors of each vertex of a triangulation.
     /// Unspecified behavior if the input mesh is not a valid triangulation).
     /// \param vertexNumber Number of vertices in the triangulation.
-    /// \param cellNumber Number of maximum-dimensional cells in the
-    /// triangulation (number of tetrahedra in 3D, triangles in 2D, etc.)
-    /// \param cellArray Pointer to a contiguous array of cells. Each entry
-    /// starts by the number of vertices in the cell, followed by the vertex
-    /// identifiers of the cell.
+    /// \param cellArray Cell container allowing to retrieve the vertices ids
+    /// of each cell.
     /// \param vertexNeighbors Output neighbor list. The size of this
-    /// std::vector
-    /// will be equal to the number of vertices in the mesh. Each entry will
-    /// be std::vector listing the vertex identifiers of the entry's vertex'
-    /// neighbors.
+    /// std::vector will be equal to the number of vertices in the mesh. Each
+    /// entry will be std::vector listing the vertex identifiers of the entry's
+    /// vertex' neighbors.
     /// \param edgeList Optional list of edges. If NULL, the function will
-    /// compute this list anyway and free the related memory upon return.
-    /// If not NULL but pointing to an empty std::vector, the function will
-    /// fill
-    /// this empty std::vector (useful if this list needs to be used later on
-    /// by
-    /// the calling program). If not NULL but pointing to a non-empty
-    /// std::vector,
-    /// this function will use this std::vector as internal edge list. If
-    /// this
+    /// compute this list anyway and free the related memory upon return. If not
+    /// NULL but pointing to an empty std::vector, the function will fill this
+    /// empty std::vector (useful if this list needs to be used later on by the
+    /// calling program). If not NULL but pointing to a non-empty std::vector,
+    /// this function will use this std::vector as internal edge list. If this
     /// std::vector is not empty but incorrect, the behavior is unspecified.
     /// \return Returns 0 upon success, negative values otherwise.
     int buildVertexNeighbors(
       const SimplexId &vertexNumber,
-      const SimplexId &cellNumber,
-      const LongSimplexId *cellArray,
+      const CellArray &cellArray,
       std::vector<std::vector<SimplexId>> &vertexNeighbors,
       std::vector<std::pair<SimplexId, SimplexId>> *edgeList = NULL) const;
 
     /// Compute the star of each vertex of a triangulation. Unspecified
     /// behavior if the input mesh is not a valid triangulation.
     /// \param vertexNumber Number of vertices in the triangulation.
-    /// \param cellNumber Number of maximum-dimensional cells in the
-    /// triangulation (number of tetrahedra in 3D, triangles in 2D, etc.)
-    /// \param cellArray Pointer to a contiguous array of cells. Each entry
-    /// starts by the number of vertices in the cell, followed by the vertex
-    /// identifiers of the cell.
+    /// \param cellArray Cell container allowing to retrieve the vertices
+    /// of each cell.
     /// \param vertexStars Output vertex stars. The size of this std::vector
     /// will be equal to the number of vertices in the mesh. Each entry will
     /// be a std::vector listing the identifiers of the maximum-dimensional
-    /// cells
-    /// (3D: tetrahedra, 2D: triangles, etc.) connected to the entry's vertex.
+    /// cells (3D: tetrahedra, 2D: triangles, etc.) connected to the entry's
+    /// vertex.
     /// \return Returns 0 upon success, negative values otherwise.
     int
       buildVertexStars(const SimplexId &vertexNumber,
-                       const SimplexId &cellNumber,
-                       const LongSimplexId *cellArray,
+                       const CellArray &cellArray,
                        std::vector<std::vector<SimplexId>> &vertexStars) const;
 
   protected:

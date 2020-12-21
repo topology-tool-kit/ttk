@@ -1,0 +1,9 @@
+NAME
+  ttkGaussianPointCloud
+SOURCES
+  ttkGaussianPointCloud.cpp
+HEADERS
+  ttkGaussianPointCloud.h
+DEPENDS
+  gaussianPointCloud
+  ttkAlgorithm

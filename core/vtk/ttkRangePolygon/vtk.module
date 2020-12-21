@@ -1,0 +1,7 @@
+NAME
+  ttkRangePolygon
+DEPENDS
+  ttkAlgorithm
+PRIVATE_DEPENDS
+  VTK::FiltersGeneral
+  VTK::FiltersGeometry

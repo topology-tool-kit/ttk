@@ -1,0 +1,4 @@
+NAME
+ ttkFTMTree
+DEPENDS
+ ttkAlgorithm

@@ -3,6 +3,6 @@ ttk_add_base_library(cinemaQuery
     CinemaQuery.cpp
   HEADERS
     CinemaQuery.h
-  LINK
+  DEPENDS
     triangulation
     )

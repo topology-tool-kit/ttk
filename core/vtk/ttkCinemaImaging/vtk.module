@@ -1,0 +1,7 @@
+NAME
+  ttkCinemaImaging
+DEPENDS
+  VTK::RenderingCore
+  VTK::RenderingOpenGL2
+  VTK::FiltersGeometry
+  ttkAlgorithm

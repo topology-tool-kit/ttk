@@ -1,0 +1,8 @@
+NAME
+  ttkImportEmbeddingFromTable
+SOURCES
+  ttkImportEmbeddingFromTable.cpp
+HEADERS
+  ttkImportEmbeddingFromTable.h
+DEPENDS
+  ttkAlgorithm

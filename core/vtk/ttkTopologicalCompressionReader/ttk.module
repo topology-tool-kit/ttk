@@ -1,0 +1,9 @@
+NAME
+  ttkTopologicalCompressionReader
+SOURCES
+  ttkTopologicalCompressionReader.cpp
+HEADERS
+  ttkTopologicalCompressionReader.h
+DEPENDS
+  ttkAlgorithm
+  topologicalCompression

@@ -21,7 +21,6 @@
 // base code includes
 #include <Geometry.h>
 #include <Triangulation.h>
-#include <Wrapper.h>
 
 #include "FTMDataTypes.h"
 #include "FTMTree_MT.h"
@@ -38,9 +37,7 @@ namespace ttk {
       // Constructors
       // -----------------
 
-      FTMTree_CT(Params *const params,
-                 Triangulation *mesh,
-                 Scalars *const scalars);
+      FTMTree_CT(Params *const params, Scalars *const scalars);
       virtual ~FTMTree_CT();
 
       // -----------------
@@ -67,17 +64,16 @@ namespace ttk {
             return this;
             break;
           default:
-            return this;
             break;
         }
         return this;
       }
 
-      inline void setupTriangulation(Triangulation *m,
-                                     const bool preproc = true) {
-        FTMTree_MT::setupTriangulation(m, preproc);
-        jt_->setupTriangulation(m, false);
-        st_->setupTriangulation(m, false);
+      inline void preconditionTriangulation(AbstractTriangulation *tri,
+                                            const bool preproc = true) {
+        FTMTree_MT::preconditionTriangulation(tri, preproc);
+        jt_->preconditionTriangulation(tri, false);
+        st_->preconditionTriangulation(tri, false);
       }
 
       inline int setDebugLevel(const int &d) {
@@ -98,9 +94,11 @@ namespace ttk {
       // PROCESS
       // -----------------
 
-      int leafSearch();
+      template <class triangulationType>
+      int leafSearch(const triangulationType *mesh);
 
-      void build(TreeType tt);
+      template <class triangulationType>
+      void build(const triangulationType *mesh, TreeType tt);
 
       void insertNodes();
 
@@ -117,5 +115,7 @@ namespace ttk {
 
   } // namespace ftm
 } // namespace ttk
+
+#include <FTMTree_CT_Template.h>
 
 #endif // CONTOURTREE_H

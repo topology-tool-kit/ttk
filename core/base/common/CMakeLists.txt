@@ -8,8 +8,8 @@ ttk_add_base_library(common
         CommandLineParser.h
         Debug.h
         DataTypes.h
+        OrderDisambiguation.h
         Os.h
         ProgramBase.h
         Wrapper.h
         )
-

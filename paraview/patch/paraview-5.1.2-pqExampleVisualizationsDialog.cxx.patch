@@ -3,7 +3,7 @@
 @@ -18,11 +18,11 @@
  {
    ui->setupUi(this);
- 
+
 -  QObject::connect(this->ui->CanExampleButton, SIGNAL(clicked(bool)),
 +  QObject::connect(this->ui->Example1Button, SIGNAL(clicked(bool)),
                     this, SLOT(onButtonPressed()));
@@ -14,7 +14,7 @@
 +  QObject::connect(this->ui->Example3Button, SIGNAL(clicked(bool)),
                     this, SLOT(onButtonPressed()));
  }
- 
+
 @@ -48,19 +48,19 @@
      {
      const char* stateFile = NULL;

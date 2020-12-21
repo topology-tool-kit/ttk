@@ -3,6 +3,6 @@ ttk_add_base_library(meshGraph
     MeshGraph.cpp
   HEADERS
     MeshGraph.h
-  LINK
+  DEPENDS
     triangulation
     )

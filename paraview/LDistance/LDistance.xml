@@ -5,17 +5,17 @@
        a filter already in ParaView (in Servers/ServerManager/Resources/*.xml)
        that matches your filter and then model your xml on it -->
   <ProxyGroup name="filters">
-   <SourceProxy 
-     name="LDistance" 
-     class="ttkLDistance" 
+   <SourceProxy
+     name="ttkLDistance"
+     class="ttkLDistance"
      label="TTK LDistance">
-     
+
      <Documentation
         long_help="TTK lDistance plugin."
         short_help="TTK lDistance plugin.">
           TTK lDistance plugin documentation.
      </Documentation>
-     
+
      <InputProperty
         name="Input"
         command="SetInputConnection">
@@ -35,11 +35,12 @@
       </InputProperty>
 
       <StringVectorProperty
-        name="ScalarField1"
-        command="SetScalarField1"
-        number_of_elements="1"
+        name="Scalar Field 1"
+        command="SetInputArrayToProcess"
+        element_types="0 0 0 0 2"
+        number_of_elements="5"
+        default_values="0"
         animateable="0"
-        label="Scalar Field 1"
         >
         <ArrayListDomain
           name="array_list"
@@ -52,13 +53,14 @@
           Select the first scalar field to process.
         </Documentation>
       </StringVectorProperty>
-      
+
      <StringVectorProperty
-        name="ScalarField2"
-        command="SetScalarField2"
-        number_of_elements="1"
+        name="Scalar Field 2"
+        command="SetInputArrayToProcess"
+        element_types="0 0 0 0 2"
+        number_of_elements="5"
+        default_values="1"
         animateable="0"
-        label="Scalar Field 2"
         >
         <ArrayListDomain
           name="array_list"
@@ -79,7 +81,7 @@
          number_of_elements="1"
          default_values="2" >
          <Documentation>
-          Value of the parameter p for the Lp distance computation (type "inf" 
+          Value of the parameter p for the Lp distance computation (type "inf"
 for the L-infinity distance).
          </Documentation>
      </StringVectorProperty>
@@ -94,67 +96,21 @@ for the L-infinity distance).
          Name of the output distance field.
        </Documentation>
      </StringVectorProperty>
-     
-      <IntVectorProperty
-         name="UseAllCores"
-         label="Use All Cores"
-         command="SetUseAllCores"
-         number_of_elements="1"
-         default_values="1" panel_visibility="advanced">
-        <BooleanDomain name="bool"/>
-         <Documentation>
-          Use all available cores.
-         </Documentation>
-      </IntVectorProperty>
-      
-      <IntVectorProperty
-         name="ThreadNumber"
-         label="Thread Number"
-         command="SetThreadNumber"
-         number_of_elements="1"
-         default_values="1" panel_visibility="advanced">
-        <IntRangeDomain name="range" min="1" max="100" />
-        <Hints>
-          <PropertyWidgetDecorator type="GenericDecorator"
-            mode="visibility"
-            property="UseAllCores"
-            value="0" />
-        </Hints>
-         <Documentation>
-          Thread number.
-         </Documentation>
-      </IntVectorProperty>
-      
-      <IntVectorProperty
-         name="DebugLevel"
-         label="Debug Level"
-         command="SetdebugLevel_"
-         number_of_elements="1"
-         default_values="3" panel_visibility="advanced">
-        <IntRangeDomain name="range" min="0" max="100" />
-         <Documentation>
-           Debug level.
-         </Documentation>
-      </IntVectorProperty>
-      
+
+     ${DEBUG_WIDGETS}
+
       <PropertyGroup panel_widget="Line" label="Input options">
-        <Property name="ScalarField1" />
-        <Property name="ScalarField2" />
+        <Property name="Scalar Field 1" />
+        <Property name="Scalar Field 2" />
       </PropertyGroup>
-      
+
       <PropertyGroup panel_widget="Line" label="Output options">
         <Property name="n" />
         <Property name="name" />
       </PropertyGroup>
-      
-      <PropertyGroup panel_widget="Line" label="Testing">
-        <Property name="UseAllCores" />
-        <Property name="ThreadNumber" />
-        <Property name="DebugLevel" />
-      </PropertyGroup>
-      
+
       <Hints>
-        <ShowInMenu category="TTK - Scalar Data" />
+        <ShowInMenu category="TTK - Ensemble Scalar Data" />
       </Hints>
    </SourceProxy>
  </ProxyGroup>

@@ -1,0 +1,8 @@
+NAME
+  ttkBlockAggregator
+SOURCES
+  ttkBlockAggregator.cpp
+HEADERS
+  ttkBlockAggregator.h
+DEPENDS
+  ttkAlgorithm

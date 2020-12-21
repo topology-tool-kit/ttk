@@ -1,0 +1,4 @@
+NAME
+ ttkMorseSmaleComplex
+DEPENDS
+ ttkAlgorithm

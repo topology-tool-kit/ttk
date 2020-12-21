@@ -1,0 +1,9 @@
+NAME
+  ttkTextureMapFromField
+SOURCES
+  ttkTextureMapFromField.cpp
+HEADERS
+  ttkTextureMapFromField.h
+DEPENDS
+  common
+  ttkAlgorithm

@@ -14,24 +14,26 @@
 ///
 /// \sa ttkContinuousScatterPlot.cpp %for a usage example.
 
-#ifndef _CONTINUOUSSCATTERPLOT_H
-#define _CONTINUOUSSCATTERPLOT_H
+#pragma once
 
 // base code includes
 #include <Geometry.h>
 #include <Triangulation.h>
-#include <Wrapper.h>
 
 namespace ttk {
 
-  class ContinuousScatterPlot : public Debug {
+  class ContinuousScatterPlot : virtual public Debug {
 
   public:
     ContinuousScatterPlot();
     ~ContinuousScatterPlot();
 
-    template <typename dataType1, typename dataType2>
-    int execute() const;
+    template <typename dataType1,
+              typename dataType2,
+              class triangulationType = AbstractTriangulation>
+    int execute(const dataType1 *,
+                const dataType2 *,
+                const triangulationType *) const;
 
     inline int setVertexNumber(const SimplexId &vertexNumber) {
       vertexNumber_ = vertexNumber;
@@ -46,25 +48,10 @@ namespace ttk {
       return 0;
     }
 
-    inline int setTriangulation(Triangulation *triangulation) {
-      triangulation_ = triangulation;
-      return 0;
-    }
-
     inline int setResolutions(const SimplexId &resolutionX,
                               const SimplexId &resolutionY) {
       resolutions_[0] = resolutionX;
       resolutions_[1] = resolutionY;
-      return 0;
-    }
-
-    inline int setInputScalarField1(void *data) {
-      inputScalarField1_ = data;
-      return 0;
-    }
-
-    inline int setInputScalarField2(void *data) {
-      inputScalarField2_ = data;
       return 0;
     }
 
@@ -90,12 +77,9 @@ namespace ttk {
 
   protected:
     SimplexId vertexNumber_;
-    Triangulation *triangulation_;
     bool withDummyValue_;
     double dummyValue_;
     SimplexId resolutions_[2];
-    void *inputScalarField1_;
-    void *inputScalarField2_;
     double *scalarMin_;
     double *scalarMax_;
     std::vector<std::vector<double>> *density_;
@@ -103,36 +87,36 @@ namespace ttk {
   };
 } // namespace ttk
 
-template <typename dataType1, typename dataType2>
-int ttk::ContinuousScatterPlot::execute() const {
+template <typename dataType1, typename dataType2, class triangulationType>
+int ttk::ContinuousScatterPlot::execute(
+  const dataType1 *scalars1,
+  const dataType2 *scalars2,
+  const triangulationType *triangulation) const {
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(!inputScalarField1_)
+  if(!scalars1)
     return -1;
-  if(!inputScalarField2_)
+  if(!scalars2)
     return -2;
-  if(!triangulation_)
+  if(!triangulation)
     return -3;
   if(!density_)
     return -4;
 
-  if(triangulation_->getNumberOfCells() <= 0) {
-    std::cerr << "[ContinuousScatterPlot] Error : no cells." << std::endl;
+  if(triangulation->getNumberOfCells() <= 0) {
+    this->printErr("no cells.");
     return -5;
   }
 
-  if(triangulation_->getCellVertexNumber(0) != 4) {
-    std::cerr << "[ContinuousScatterPlot] Error : no tetrahedra." << std::endl;
+  if(triangulation->getCellVertexNumber(0) != 4) {
+    this->printErr("no tetrahedra.");
     return -6;
   }
 #endif
 
-  dataType1 *scalars1 = static_cast<dataType1 *>(inputScalarField1_);
-  dataType2 *scalars2 = static_cast<dataType2 *>(inputScalarField2_);
-
   Timer t;
 
   // helpers:
-  const SimplexId numberOfCells = triangulation_->getNumberOfCells();
+  const SimplexId numberOfCells = triangulation->getNumberOfCells();
 
   // rendering helpers:
   // constant ray direction (ortho)
@@ -158,7 +142,7 @@ int ttk::ContinuousScatterPlot::execute() const {
     // for each triangle
     for(int k = 0; k < 4; ++k) {
       // get indices
-      triangulation_->getCellVertex(cell, k, vertex[k]);
+      triangulation->getCellVertex(cell, k, vertex[k]);
 
       // get scalars
       data[k][0] = scalars1[vertex[k]];
@@ -183,7 +167,7 @@ int ttk::ContinuousScatterPlot::execute() const {
 
       // get positions
 
-      triangulation_->getVertexPoint(
+      triangulation->getVertexPoint(
         vertex[k], position[k][0], position[k][1], position[k][2]);
     }
     if(isDummy)
@@ -494,13 +478,9 @@ int ttk::ContinuousScatterPlot::execute() const {
 
   {
     std::stringstream msg;
-    msg << "[ContinuousScatterPlot] Data-set (" << numberOfCells
-        << " tetrahedra) processed in " << t.getElapsedTime() << " s. ("
-        << threadNumber_ << " thread(s))." << std::endl;
-    dMsg(std::cout, msg.str(), timeMsg);
+    msg << "Processed " << numberOfCells << " tetrahedra";
+    this->printMsg(msg.str(), 1, t.getElapsedTime(), threadNumber_);
   }
 
   return 0;
 }
-
-#endif // CONTINUOUSSCATTERPLOT_H

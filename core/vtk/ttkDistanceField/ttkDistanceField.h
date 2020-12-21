@@ -28,52 +28,23 @@
 /// \sa ttk::DistanceField.cpp
 /// \sa vtkIdentifiers
 ///
-#ifndef _TTK_DISTANCEFIELD_H
-#define _TTK_DISTANCEFIELD_H
+#pragma once
 
-// VTK includes
-#include <vtkDataArray.h>
-#include <vtkDataSet.h>
-#include <vtkDataSetAlgorithm.h>
-#include <vtkDoubleArray.h>
-#include <vtkFiltersCoreModule.h>
-#include <vtkFloatArray.h>
-#include <vtkInformation.h>
-#include <vtkObjectFactory.h>
-#include <vtkPointData.h>
-#include <vtkPointSet.h>
-#include <vtkSmartPointer.h>
+// VTK Module
+#include <ttkDistanceFieldModule.h>
 
 // ttk code includes
 #include <DistanceField.h>
-#include <ttkWrapper.h>
+#include <ttkAlgorithm.h>
 
-enum DistanceType { Float = 0, Double };
+#include <string>
 
-#ifndef TTK_PLUGIN
-class VTKFILTERSCORE_EXPORT ttkDistanceField
-#else
-class ttkDistanceField
-#endif
-  : public vtkDataSetAlgorithm,
-    public ttk::Wrapper {
-
+class TTKDISTANCEFIELD_EXPORT ttkDistanceField : public ttkAlgorithm,
+                                                 protected ttk::DistanceField {
 public:
   static ttkDistanceField *New();
 
-  vtkTypeMacro(ttkDistanceField, vtkDataSetAlgorithm);
-
-  vtkSetMacro(debugLevel_, int);
-
-  void SetThreadNumber(int threadNumber) {
-    ThreadNumber = threadNumber;
-    SetThreads();
-  }
-
-  void SetUseAllCores(bool onOff) {
-    UseAllCores = onOff;
-    SetThreads();
-  }
+  vtkTypeMacro(ttkDistanceField, ttkAlgorithm);
 
   vtkSetMacro(OutputScalarFieldType, int);
   vtkGetMacro(OutputScalarFieldType, int);
@@ -81,33 +52,22 @@ public:
   vtkSetMacro(OutputScalarFieldName, std::string);
   vtkGetMacro(OutputScalarFieldName, std::string);
 
-  vtkSetMacro(ForceInputVertexScalarField, int);
-  vtkGetMacro(ForceInputVertexScalarField, int);
-
-  vtkSetMacro(InputVertexScalarFieldName, std::string);
-  vtkGetMacro(InputVertexScalarFieldName, std::string);
-
-  int getTriangulation(vtkDataSet *input);
-  int getIdentifiers(vtkDataSet *input);
+  vtkSetMacro(ForceInputVertexScalarField, bool);
+  vtkGetMacro(ForceInputVertexScalarField, bool);
 
 protected:
   ttkDistanceField();
-  ~ttkDistanceField();
-
-  TTK_SETUP();
 
   int FillInputPortInformation(int port, vtkInformation *info) override;
+  int FillOutputPortInformation(int port, vtkInformation *info) override;
+  int RequestData(vtkInformation *request,
+                  vtkInformationVector **inputVector,
+                  vtkInformationVector *outputVector) override;
 
 private:
-  std::string ScalarField;
-  int OutputScalarFieldType;
-  std::string OutputScalarFieldName;
-  bool ForceInputVertexScalarField;
-  std::string InputVertexScalarFieldName;
+  enum class DistanceType { Float = 0, Double = 1 };
 
-  ttk::DistanceField distanceField_;
-  ttk::Triangulation *triangulation_;
-  vtkDataArray *identifiers_;
+  bool ForceInputVertexScalarField{false};
+  int OutputScalarFieldType{static_cast<int>(DistanceType::Float)};
+  std::string OutputScalarFieldName{"DistanceFieldValues"};
 };
-
-#endif // _TTK_DISTANCEFIELD_H

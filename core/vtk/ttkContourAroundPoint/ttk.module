@@ -1,0 +1,9 @@
+NAME
+  ttkContourAroundPoint
+SOURCES
+  ttkContourAroundPoint.cpp
+HEADERS
+  ttkContourAroundPoint.h
+DEPENDS
+  contourAroundPoint
+  ttkAlgorithm

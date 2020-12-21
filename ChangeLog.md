@@ -1,7 +1,23 @@
 ## TTK - ChangeLog
 =
 ### ttk.git
+
+### 0.9.9
+- Migration to VTK9/ParaView-5.8.0 \0/ clap! clap! clap! \0/
+- Support for ParaView-5.7.0 \0/
 - New branching management
+- New triangulation preconditioning for regular grids
+- New templated triangulation API (up to x2 speedup)
+- New debugging API
+- New module API (simpler, clearer, more convenient)
+- Performance updates for the Morse-Smale complex (e.g. improved worstcase runtime with processlowerStar, IEEE PAMI 2011)
+- Order-based simulation of simplicity (big performance updates)
+- Localized Topological Simplification of Scalar Data (IEEE VIS 2020)
+- Fuzzy Contour Trees: Alignment and Joint Layout of Multiple Contour Trees (EuroVis 2020)
+- Cinema Darkroom: A Deferred Rendering Framework for Large-Scale Datasets (IEEE LDAV 2020)
+- Automatic deb binary packaging (for Ubuntu, Windows, MacOS)
+- Updated examples
+- Many fixes
 
 ### 0.9.8.9
 - Progressive Wasserstein Barycenters of Persistence Diagrams (IEEE VIS 2019)

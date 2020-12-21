@@ -1,9 +1,17 @@
 #include <LowestCommonAncestor.h>
 
-using namespace std;
-using namespace ttk;
+#include <algorithm>
+#include <climits>
+#include <cmath>
+#include <sstream>
+#include <stack>
+#include <string>
 
-int LowestCommonAncestor::preprocess() {
+ttk::LowestCommonAncestor::LowestCommonAncestor() {
+  this->setDebugMsgPrefix("LowestCommonAncestor");
+}
+
+int ttk::LowestCommonAncestor::preprocess() {
 
   Timer t;
 
@@ -27,17 +35,13 @@ int LowestCommonAncestor::preprocess() {
     return retval;
   }
 
-  if(debugLevel_ > timeMsg) {
-    stringstream msg;
-    msg << "[LowestCommonAncestor] Preprocessed queries in "
-        << t.getElapsedTime() << "s." << endl;
-    dMsg(cout, msg.str(), timeMsg);
-  }
+  this->printMsg("Preprocessed queries.", 1.0, t.getElapsedTime(), 1,
+                 debug::LineMode::NEW, debug::Priority::DETAIL);
 
   return 0;
 }
 
-int LowestCommonAncestor::RMQuery(const int &i, const int &j) const {
+int ttk::LowestCommonAncestor::RMQuery(const int &i, const int &j) const {
   // Bloc of i
   int blocI = i / blocSize_;
   // Bloc of j
@@ -45,7 +49,7 @@ int LowestCommonAncestor::RMQuery(const int &i, const int &j) const {
   // If i and j are in different blocs
   if(blocI != blocJ) {
     // Positions and values of the 3 range minima to compare
-    array<int, 3> min_pos, min_value;
+    std::array<int, 3> min_pos, min_value;
     // Position of the min in the bloc containing the ith case
     min_pos[0] = blocI * blocSize_
                  + normalizedBlocTable_[blocToNormalizedBloc_[blocI]]
@@ -73,20 +77,20 @@ int LowestCommonAncestor::RMQuery(const int &i, const int &j) const {
   }
 }
 
-int LowestCommonAncestor::computeBlocs() {
+int ttk::LowestCommonAncestor::computeBlocs() {
   // Size and number of blocs
   int sizeOfArray = static_cast<int>(nodeDepth_.size());
   blocSize_ = static_cast<int>(log2(sizeOfArray) / 2.0);
   int numberOfBlocs = sizeOfArray / blocSize_ + (sizeOfArray % blocSize_ != 0);
   // Define the bloc ranges
   for(int i = 0; i < numberOfBlocs; i++) {
-    pair<int, int> range;
+    std::pair<int, int> range;
     range.first = i * blocSize_;
     range.second = (i + 1) * blocSize_;
     blocPartition_.push_back(range);
   }
   if(sizeOfArray % blocSize_ != 0) {
-    pair<int, int> range;
+    std::pair<int, int> range;
     range.first = (numberOfBlocs - 1) * blocSize_;
     range.second = sizeOfArray;
     blocPartition_.push_back(range);
@@ -117,7 +121,7 @@ int LowestCommonAncestor::computeBlocs() {
   // Build the query table for each possible normalized bloc
   for(int i = 0; i < numberOfTables; i++) {
     // Building of the ith possible bloc
-    vector<bool> plusOne(blocSize_ - 1);
+    std::vector<bool> plusOne(blocSize_ - 1);
     int quotient = i;
     int remain;
     for(int j = 0; j < (blocSize_ - 1); j++) {
@@ -125,7 +129,10 @@ int LowestCommonAncestor::computeBlocs() {
       quotient /= 2;
       plusOne[blocSize_ - 2 - j] = static_cast<bool>(remain);
     }
-    vector<int> normalizedBloc(blocSize_);
+    if(blocSize_ < 1) {
+      return -1;
+    }
+    std::vector<int> normalizedBloc(blocSize_);
     normalizedBloc[0] = 0;
     for(int j = 0; j < (blocSize_ - 1); j++) {
       if(plusOne[j]) {
@@ -164,7 +171,7 @@ int LowestCommonAncestor::computeBlocs() {
   return 0;
 }
 
-int LowestCommonAncestor::eulerianTransverse() {
+int ttk::LowestCommonAncestor::eulerianTransverse() {
   // Find the root
   int rootId = -1;
   for(unsigned int i = 0; i < getNumberOfNodes(); i++) {
@@ -174,19 +181,14 @@ int LowestCommonAncestor::eulerianTransverse() {
     }
   }
   if(rootId == -1) {
-    stringstream msg;
-    msg << "[LowestCommonAncestor] Tree root not found." << endl;
-    dMsg(cerr, msg.str(), fatalMsg);
+    this->printErr("Tree root not found.");
     return -1;
   } else {
-    stringstream msg;
-    msg << "[LowestCommonAncestor] Root found : node id = " << rootId << endl;
-    dMsg(cout, msg.str(), advancedInfoMsg);
+    this->printMsg("Rout found: node id = " + std::to_string(rootId),
+                   debug::Priority::DETAIL);
   }
   if(!(node_[rootId].getNumberOfSuccessors() > 0)) {
-    stringstream msg;
-    msg << "[LowestCommonAncestor] Tree root found with no successor." << endl;
-    dMsg(cerr, msg.str(), fatalMsg);
+    this->printErr("Tree root found with no successor.");
     return -2;
   }
   // Initialize the vectors
@@ -197,10 +199,10 @@ int LowestCommonAncestor::eulerianTransverse() {
   nodeFirstAppearence_.clear();
   nodeFirstAppearence_.resize(getNumberOfNodes(), -1);
   // Transverse starting from the root
-  stack<int> nodeStack;
+  std::stack<int> nodeStack;
   int depth = 0;
   int iteration = 0;
-  vector<bool> isVisited(getNumberOfNodes(), false);
+  std::vector<bool> isVisited(getNumberOfNodes(), false);
   nodeStack.push(rootId);
   while(!nodeStack.empty()) {
     int nodeId = nodeStack.top();

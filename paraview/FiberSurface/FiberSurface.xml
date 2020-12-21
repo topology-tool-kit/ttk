@@ -5,30 +5,30 @@
        a filter already in ParaView (in Servers/ServerManager/Resources/*.xml)
        that matches your filter and then model your xml on it -->
   <ProxyGroup name="filters">
-   <SourceProxy 
-     name="FiberSurface" 
-     class="ttkFiberSurface" 
+   <SourceProxy
+     name="ttkFiberSurface"
+     class="ttkFiberSurface"
      label="TTK FiberSurface">
      <Documentation
         long_help="TTK plugin that computes fiber surfaces."
         short_help="TTK plugin that computes fiber surfaces.">
-          Fiber surfaces are defined as the pre-images of curves drawn in the 
-range of bivariate volumetric functions, typically on top of the continuous 
-scatterplot. Fiber surfaces generalize the segmentation features of 
+          Fiber surfaces are defined as the pre-images of curves drawn in the
+range of bivariate volumetric functions, typically on top of the continuous
+scatterplot. Fiber surfaces generalize the segmentation features of
 isosurfaces to bivariate data.
-This plugin implements an exact, parallel and fast algorithm for fiber 
+This plugin implements an exact, parallel and fast algorithm for fiber
 surface computation on (explicit or implicit) tetrahedral meshes.
 
 The input bivariate data must be provided as two independent scalar fields
-attached as point data to the input geometry. The input range polygon must 
-be provided as a vtkUnstructuredGrid with the actual 2D locations of the 
-vertices also provided as two independent scalar fields attached as point 
-data to the geometry. See the RangePolygon TTK plugin to create such an input 
+attached as point data to the input geometry. The input range polygon must
+be provided as a vtkUnstructuredGrid with the actual 2D locations of the
+vertices also provided as two independent scalar fields attached as point
+data to the geometry. See the RangePolygon TTK plugin to create such an input
 polygon from sparse user inputs.
 
 Related publication:
 "Fast and Exact Fiber Surface Extraction for Tetrahedral Meshes",
-Pavol Klacansky, Julien Tierny, Hamish Carr, Zhao Geng 
+Pavol Klacansky, Julien Tierny, Hamish Carr, Zhao Geng
 IEEE Transactions on Visualization and Computer Graphics, 2016.
      </Documentation>
      <InputProperty
@@ -67,14 +67,15 @@ IEEE Transactions on Visualization and Computer Graphics, 2016.
         <Documentation>
           Range polygon.
         </Documentation>
-      </InputProperty>      
+      </InputProperty>
 
       <StringVectorProperty
-        name="DataUComponent"
-        command="SetDataUcomponent"
-        number_of_elements="1"
+        name="Domain U Component"
+        command="SetInputArrayToProcess"
+        element_types="0 0 0 0 2"
+        number_of_elements="5"
+        default_values="0"
         animateable="0"
-        label="Domain U component"
         >
         <ArrayListDomain
           name="array_list"
@@ -87,13 +88,14 @@ IEEE Transactions on Visualization and Computer Graphics, 2016.
           Select the U component of the bivariate field on the input data.
         </Documentation>
       </StringVectorProperty>
-     
+
       <StringVectorProperty
-        name="DataVComponent"
-        command="SetDataVcomponent"
-        number_of_elements="1"
+        name="Domain V Component"
+        command="SetInputArrayToProcess"
+        element_types="0 0 0 0 2"
+        number_of_elements="5"
+        default_values="1"
         animateable="0"
-        label="Domain V component"
         >
         <ArrayListDomain
           name="array_list"
@@ -106,13 +108,14 @@ IEEE Transactions on Visualization and Computer Graphics, 2016.
           Select the V component of the bivariate field on the input data.
         </Documentation>
       </StringVectorProperty>
-      
+
       <StringVectorProperty
-        name="PolygonUComponent"
-        command="SetPolygonUcomponent"
-        number_of_elements="1"
+        name="Polygon U Component"
+        command="SetInputArrayToProcess"
+        element_types="0 0 0 0 2"
+        number_of_elements="5"
+        default_values="2"
         animateable="0"
-        label="Polygon U component"
         >
         <ArrayListDomain
           name="array_list"
@@ -125,13 +128,14 @@ IEEE Transactions on Visualization and Computer Graphics, 2016.
           Select the U component of the bivariate field for the range polygon.
         </Documentation>
       </StringVectorProperty>
-     
+
       <StringVectorProperty
-        name="PolygonVComponent"
-        command="SetPolygonVcomponent"
-        number_of_elements="1"
+        name="Polygon V Component"
+        command="SetInputArrayToProcess"
+        element_types="0 0 0 0 2"
+        number_of_elements="5"
+        default_values="3"
         animateable="0"
-        label="Polygon V component"
         >
         <ArrayListDomain
           name="array_list"
@@ -144,9 +148,9 @@ IEEE Transactions on Visualization and Computer Graphics, 2016.
           Select the V component of the bivariate field for the range polygon.
         </Documentation>
       </StringVectorProperty>
-      
-      
-      
+
+
+
       <!--
       <IntVectorProperty
         name="ThreadStrategy"
@@ -163,7 +167,7 @@ IEEE Transactions on Visualization and Computer Graphics, 2016.
           Select the parallelism strategy.
         </Documentation>
       </IntVectorProperty>
-      
+
       <IntVectorProperty
         name="ManifoldOutput"
         command="SetManifold"
@@ -176,15 +180,15 @@ IEEE Transactions on Visualization and Computer Graphics, 2016.
         </Documentation>
       </IntVectorProperty>
       -->
-      
+
       <!-- TODO:
         - octree parameters
         - manifold: set distance threshold
         - threading strategy (on edges or on tets)
         - better organize the sections -->
-      
-      
-      
+
+
+
       <IntVectorProperty
         name="WithRangeCoordinates"
         command="SetRangeCoordinates"
@@ -196,7 +200,7 @@ IEEE Transactions on Visualization and Computer Graphics, 2016.
           Stores the range coordinates for each vertex of the fiber surface.
         </Documentation>
       </IntVectorProperty>
-      
+
       <IntVectorProperty
         name="WithEdgeParameterization"
         command="SetEdgeParameterization"
@@ -205,11 +209,11 @@ IEEE Transactions on Visualization and Computer Graphics, 2016.
         label="With Edge Parameterization" panel_visibility="advanced">
         <BooleanDomain name="bool" />
         <Documentation>
-          Stores the edge parameterization 
+          Stores the edge parameterization
           for each vertex of the fiber surface.
         </Documentation>
       </IntVectorProperty>
-      
+
       <IntVectorProperty
         name="WithEdgeIds"
         command="SetEdgeIds"
@@ -222,7 +226,7 @@ IEEE Transactions on Visualization and Computer Graphics, 2016.
           for each triangle of the fiber surface.
         </Documentation>
       </IntVectorProperty>
-      
+
       <IntVectorProperty
         name="WithTetIds"
         command="SetTetIds"
@@ -235,7 +239,7 @@ IEEE Transactions on Visualization and Computer Graphics, 2016.
           for each triangle of the fiber surface.
         </Documentation>
       </IntVectorProperty>
-      
+
       <IntVectorProperty
         name="WithCaseIds"
         command="SetCaseIds"
@@ -248,7 +252,7 @@ IEEE Transactions on Visualization and Computer Graphics, 2016.
           for each triangle of the fiber surface.
         </Documentation>
       </IntVectorProperty>
-      
+
       <IntVectorProperty
         name="WithPointMerge"
         command="SetPointMerge"
@@ -260,7 +264,7 @@ IEEE Transactions on Visualization and Computer Graphics, 2016.
           Merges points that coincide.
         </Documentation>
       </IntVectorProperty>
-      
+
       <DoubleVectorProperty
          name="PointMergeDistanceThreshold"
          label="Distance Threshold"
@@ -272,7 +276,7 @@ IEEE Transactions on Visualization and Computer Graphics, 2016.
           Distance threshold to consider two points as coinciding.
          </Documentation>
       </DoubleVectorProperty>
-      
+
       <IntVectorProperty
         name="WithOctree"
         command="SetRangeOctree"
@@ -281,65 +285,24 @@ IEEE Transactions on Visualization and Computer Graphics, 2016.
         label="With Range Driven Octree" >
         <BooleanDomain name="bool" />
         <Documentation>
-          Pre-computes and uses a range driven octree to speed up 
+          Pre-computes and uses a range driven octree to speed up
           fiber surface extraction.
         </Documentation>
       </IntVectorProperty>
-      
-      <IntVectorProperty
-         name="UseAllCores"
-         label="Use All Cores"
-         command="SetUseAllCores"
-         number_of_elements="1"
-         default_values="1" panel_visibility="advanced">
-        <BooleanDomain name="bool"/>
-         <Documentation>
-          Use all available cores.
-         </Documentation>
-      </IntVectorProperty>
-      
-      <IntVectorProperty
-         name="ThreadNumber"
-         label="Thread Number"
-         command="SetThreadNumber"
-         number_of_elements="1"
-         default_values="1" panel_visibility="advanced">
-        <IntRangeDomain name="range" min="1" max="100" />
-        <Hints>
-          <PropertyWidgetDecorator type="GenericDecorator"
-            mode="visibility"
-            property="UseAllCores"
-            value="0" />
-        </Hints>
 
-         <Documentation>
-          Thread number.
-         </Documentation>
-      </IntVectorProperty>
-      
-      <IntVectorProperty
-         name="DebugLevel"
-         label="Debug Level"
-         command="SetdebugLevel_"
-         number_of_elements="1"
-         default_values="3" panel_visibility="advanced">
-        <IntRangeDomain name="range" min="0" max="100" />
-         <Documentation>
-           Debug level.
-         </Documentation>
-      </IntVectorProperty>
-      
+      ${DEBUG_WIDGETS}
+
       <PropertyGroup panel_widget="Line" label="Input options">
-        <Property name="DataUComponent" />
-        <Property name="DataVComponent" />
-        <Property name="PolygonUComponent" />
-        <Property name="PolygonVComponent" />
+        <Property name="Domain U Component" />
+        <Property name="Domain V Component" />
+        <Property name="Polygon U Component" />
+        <Property name="Polygon V Component" />
       </PropertyGroup>
-      
+
       <PropertyGroup panel_widget="Line" label="Pre-processing">
         <Property name="WithOctree" />
       </PropertyGroup>
-      
+
       <PropertyGroup panel_widget="Line" label="Output options">
         <Property name="WithPointMerge" />
         <Property name="PointMergeDistanceThreshold" />
@@ -349,13 +312,7 @@ IEEE Transactions on Visualization and Computer Graphics, 2016.
         <Property name="WithTetIds" />
         <Property name="WithCaseIds" />
       </PropertyGroup>
-      
-      <PropertyGroup panel_widget="Line" label="Testing">
-        <Property name="UseAllCores" />
-        <Property name="ThreadNumber" />
-        <Property name="DebugLevel" />
-      </PropertyGroup>
-      
+
       <Hints>
         <ShowInMenu category="TTK - Bivariate Scalar Data" />
       </Hints>

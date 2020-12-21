@@ -1,0 +1,9 @@
+NAME
+  ttkBottleneckDistance
+SOURCES
+  ttkBottleneckDistance.cpp
+HEADERS
+  ttkBottleneckDistance.h
+DEPENDS
+  bottleneckDistance
+  ttkAlgorithm

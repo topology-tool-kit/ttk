@@ -1,96 +1,95 @@
 #include <ttkEndFor.h>
 
+#include <vtkCompositeDataPipeline.h>
 #include <vtkDoubleArray.h>
 #include <vtkFieldData.h>
+#include <vtkInformation.h>
+#include <vtkInformationVector.h>
 #include <vtkMultiBlockDataSet.h>
-#include <vtkStreamingDemandDrivenPipeline.h>
 
-using namespace std;
-using namespace ttk;
+#include <ttkForEach.h>
 
-vtkStandardNewMacro(ttkEndFor)
+vtkStandardNewMacro(ttkEndFor);
 
-  int ttkEndFor::RequestInformation(vtkInformation *request,
-                                    vtkInformationVector **inputVector,
-                                    vtkInformationVector *outputVector) {
-  // Reset index
-  this->nextIndex = 0;
-  return this->Superclass::RequestInformation(
-    request, inputVector, outputVector);
+ttkEndFor::ttkEndFor() {
+  this->setDebugMsgPrefix("EndFor");
+
+  SetNumberOfInputPorts(2);
+  SetNumberOfOutputPorts(1);
 }
 
-int ttkEndFor::RequestUpdateExtent(vtkInformation *request,
-                                   vtkInformationVector **inputVector,
-                                   vtkInformationVector *outputVector) {
+ttkEndFor::~ttkEndFor(){};
 
-  // Request next index
-  vtkInformation *inInfo = inputVector[0]->GetInformationObject(0);
-  inInfo->Set(
-    vtkStreamingDemandDrivenPipeline::UPDATE_TIME_STEP(), this->nextIndex);
+int ttkEndFor::FillInputPortInformation(int port, vtkInformation *info) {
+  if(port == 0 || port == 1) {
+    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataObject", 1);
+    return 1;
+  }
+  return 0;
+}
 
+int ttkEndFor::FillOutputPortInformation(int port, vtkInformation *info) {
+  if(port == 0) {
+    info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
+    return 1;
+  }
+  return 0;
+}
+
+int removeFieldDataRecursively(vtkDataObject *object) {
+  object->GetFieldData()->RemoveArray("_ttk_IterationInfo");
+  if(object->IsA("vtkMultiBlockDataSet")) {
+    auto objectAsMB = static_cast<vtkMultiBlockDataSet *>(object);
+    for(size_t i = 0; i < objectAsMB->GetNumberOfBlocks(); i++)
+      removeFieldDataRecursively(objectAsMB->GetBlock(i));
+  }
   return 1;
 }
 
 int ttkEndFor::RequestData(vtkInformation *request,
                            vtkInformationVector **inputVector,
                            vtkInformationVector *outputVector) {
-  // Print status
-  string divider = "==========================================================="
-                   "=====================";
-  dMsg(cout, divider + "\n", infoMsg);
 
-  // Get Input
-  vtkInformation *inInfo0 = inputVector[1]->GetInformationObject(0);
-  auto inputFor = inInfo0->Get(vtkDataObject::DATA_OBJECT());
+  // find for each head
+  ttkForEach *forEach = nullptr;
+  {
+    auto inputAlgorithm = this->GetInputAlgorithm(1, 0);
+    while(inputAlgorithm && !inputAlgorithm->IsA("ttkForEach")) {
+      inputAlgorithm = inputAlgorithm->GetInputAlgorithm();
+    }
+    forEach = ttkForEach::SafeDownCast(inputAlgorithm);
+  }
 
-  // Get iteration information
-  auto iterationInformation = vtkDoubleArray::SafeDownCast(
-    inputFor->GetFieldData()->GetAbstractArray("_ttk_IterationInfo"));
-  if(!iterationInformation) {
-    dMsg(cout,
-         "[ttkEndFor] ERROR: Unable to retrieve iteration information (is the "
-         "input the start of the for loop?).\n",
-         fatalMsg);
+  if(!forEach) {
+    this->printErr("Second input not connected to a ttkForEach filter.");
     return 0;
   }
-  this->nextIndex = iterationInformation->GetValue(0) + 1;
-  double n = iterationInformation->GetValue(1);
 
-  if(this->nextIndex < n) {
-    // Request Next Element
-    request->Set(vtkStreamingDemandDrivenPipeline::CONTINUE_EXECUTING(), 1);
+  // get iteration info
+  int i = forEach->GetIterationIdx() - 1;
+  int n = forEach->GetIterationNumber();
+  this->printMsg("Iteration ( " + std::to_string(i) + " / "
+                   + std::to_string(n - 1) + " ) complete ",
+                 ttk::debug::Separator::BACKSLASH);
 
-    // Print status
-    {
-      stringstream msg;
-      msg << "[ttkEndFor] Next Iteration: " << this->nextIndex << "   ";
-      size_t padd = divider.length() - msg.str().length();
-      for(size_t i = 0; i < padd; i++)
-        msg << "\\";
-      msg << endl;
-      dMsg(cout, msg.str(), infoMsg);
-    }
-  } else {
-    // Stop iterations
-    request->Remove(vtkStreamingDemandDrivenPipeline::CONTINUE_EXECUTING());
-    this->nextIndex = 0;
-
-    // Print status
-    {
-      stringstream msg;
-      msg << "[ttkEndFor] Iteration complete" << endl;
-      dMsg(cout, msg.str(), infoMsg);
-    }
-
-    // Copy input to output
-    vtkInformation *inInfo1 = inputVector[0]->GetInformationObject(0);
-    auto input = inInfo1->Get(vtkDataObject::DATA_OBJECT());
-
-    vtkInformation *outInfo = outputVector->GetInformationObject(0);
-    auto output = outInfo->Get(vtkDataObject::DATA_OBJECT());
+  if(i == n - 1) {
+    // if this is the last iteration
+    auto input = vtkDataObject::GetData(inputVector[0]);
+    auto output = vtkDataObject::GetData(outputVector);
     output->ShallowCopy(input);
+    removeFieldDataRecursively(output);
+    request->Remove(vtkStreamingDemandDrivenPipeline::CONTINUE_EXECUTING());
+  } else {
+    // if this is an intermediate iteration
+    auto inputAlgorithm = this->GetInputAlgorithm(0, 0);
+    while(inputAlgorithm && !inputAlgorithm->IsA("ttkForEach")) {
+      inputAlgorithm->Modified();
+      inputAlgorithm = inputAlgorithm->GetInputAlgorithm();
+    }
+    forEach->Modified();
+    this->GetInputAlgorithm(0, 0)->Update();
 
-    output->GetFieldData()->RemoveArray("_ttk_IterationInfo");
+    request->Set(vtkStreamingDemandDrivenPipeline::CONTINUE_EXECUTING(), 1);
   }
 
   return 1;

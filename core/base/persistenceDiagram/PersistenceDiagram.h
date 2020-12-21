@@ -27,237 +27,184 @@
 ///
 /// \sa ttkPersistenceDiagram.cpp %for a usage example.
 
-#ifndef _PERSISTENCEDIAGRAM_H
-#define _PERSISTENCEDIAGRAM_H
+#pragma once
 
 // base code includes
+#include <DiscreteGradient.h>
 #include <FTMTreePP.h>
-#include <MorseSmaleComplex3D.h>
 #include <Triangulation.h>
-#include <Wrapper.h>
 
 namespace ttk {
+
+  /**
+   * @brief Persistence pair type (with persistence in double)
+   */
+  struct PersistencePair {
+    /** first (lower) vertex id */
+    ttk::SimplexId birth{};
+    /** first vertex type */
+    ttk::CriticalType birthType{};
+    /** second (higher) vertex id */
+    ttk::SimplexId death{};
+    /** second vertex type */
+    ttk::CriticalType deathType{};
+    /** persistence value (scalars[second] - scalars[first]) */
+    double persistence{};
+    /** pair type (min-saddle: 0, saddle-saddle: 1, saddle-max: 2) */
+    ttk::SimplexId pairType{};
+
+    PersistencePair() = default;
+    PersistencePair(const SimplexId b,
+                    const CriticalType bType,
+                    const SimplexId d,
+                    const CriticalType dType,
+                    const double pers,
+                    const SimplexId pType)
+      : birth{b}, birthType{bType}, death{d}, deathType{dType},
+        persistence{pers}, pairType{pType} {
+    }
+  };
 
   /**
    * Compute the persistence diagram of a function on a triangulation.
    * TTK assumes that the input dataset is made of only one connected component.
    */
-  class PersistenceDiagram : public Debug {
+  class PersistenceDiagram : virtual public Debug {
 
   public:
     PersistenceDiagram();
-    ~PersistenceDiagram();
 
-    inline int setComputeSaddleConnectors(bool state) {
+    inline void setComputeSaddleConnectors(bool state) {
       ComputeSaddleConnectors = state;
-      return 0;
     }
 
     ttk::CriticalType getNodeType(ftm::FTMTree_MT *tree,
                                   ftm::TreeType treeType,
                                   const SimplexId vertexId) const;
 
-    template <typename scalarType>
-    int sortPersistenceDiagram(std::vector<std::tuple<ttk::SimplexId,
-                                                      ttk::CriticalType,
-                                                      ttk::SimplexId,
-                                                      ttk::CriticalType,
-                                                      scalarType,
-                                                      ttk::SimplexId>> &diagram,
-                               scalarType *scalars,
-                               SimplexId *offsets) const;
+    void sortPersistenceDiagram(std::vector<PersistencePair> &diagram,
+                                const SimplexId *const offsets) const;
 
     template <typename scalarType>
     int computeCTPersistenceDiagram(
       ftm::FTMTreePP &tree,
       const std::vector<
         std::tuple<ttk::SimplexId, ttk::SimplexId, scalarType, bool>> &pairs,
-      std::vector<std::tuple<ttk::SimplexId,
-                             ttk::CriticalType,
-                             ttk::SimplexId,
-                             ttk::CriticalType,
-                             scalarType,
-                             ttk::SimplexId>> &diagram,
-      scalarType *scalars) const;
+      std::vector<PersistencePair> &diagram,
+      const scalarType *scalars) const;
 
-    template <class scalarType, typename idType>
-    int execute() const;
+    /**
+     * @pre For this function to behave correctly in the absence of
+     * the VTK wrapper, ttk::preconditionOrderArray() needs to be
+     * called to fill the @p inputOffsets buffer prior to any
+     * computation (the VTK wrapper already includes a mecanism to
+     * automatically generate such a preconditioned buffer).
+     * @see examples/c++/main.cpp for an example use.
+     */
+    template <typename scalarType, class triangulationType>
+    int execute(std::vector<PersistencePair> &CTDiagram,
+                const scalarType *inputScalars,
+                const SimplexId *inputOffsets,
+                const triangulationType *triangulation);
 
-    inline int
-      setDMTPairs(std::vector<std::tuple<dcg::Cell, dcg::Cell>> *data) {
-      dmt_pairs = data;
-      return 0;
-    }
-
-    inline int setupTriangulation(Triangulation *data) {
-      triangulation_ = data;
-      if(triangulation_) {
-        ftm::FTMTreePP contourTree;
-        contourTree.setupTriangulation(triangulation_);
-
-        triangulation_->preprocessBoundaryVertices();
+    inline void
+      preconditionTriangulation(AbstractTriangulation *triangulation) {
+      if(triangulation) {
+        triangulation->preconditionBoundaryVertices();
+        contourTree_.setDebugLevel(debugLevel_);
+        contourTree_.setThreadNumber(threadNumber_);
+        contourTree_.preconditionTriangulation(triangulation);
+        if(this->ComputeSaddleConnectors) {
+          dcg_.setDebugLevel(debugLevel_);
+          dcg_.setThreadNumber(threadNumber_);
+          dcg_.preconditionTriangulation(triangulation);
+        }
       }
-      return 0;
-    }
-
-    inline int setInputScalars(void *data) {
-      inputScalars_ = data;
-      return 0;
-    }
-
-    inline int setInputOffsets(void *data) {
-      inputOffsets_ = data;
-      return 0;
-    }
-
-    inline int setOutputCTDiagram(void *data) {
-      CTDiagram_ = data;
-      return 0;
     }
 
   protected:
-    std::vector<std::tuple<dcg::Cell, dcg::Cell>> *dmt_pairs;
-
-    bool ComputeSaddleConnectors;
-
-    Triangulation *triangulation_;
-    void *inputScalars_;
-    void *inputOffsets_;
-    void *CTDiagram_;
+    bool ComputeSaddleConnectors{false};
+    ftm::FTMTreePP contourTree_{};
+    dcg::DiscreteGradient dcg_{};
   };
 } // namespace ttk
-
-template <typename scalarType>
-int ttk::PersistenceDiagram::sortPersistenceDiagram(
-
-  std::vector<std::tuple<ttk::SimplexId,
-                         ttk::CriticalType,
-                         ttk::SimplexId,
-                         ttk::CriticalType,
-                         scalarType,
-                         ttk::SimplexId>> &diagram,
-  scalarType *scalars,
-  SimplexId *offsets) const {
-  auto cmp
-    = [scalars, offsets](
-        const std::tuple<ttk::SimplexId, ttk::CriticalType, ttk::SimplexId,
-                         ttk::CriticalType, scalarType, ttk::SimplexId> &a,
-        const std::tuple<ttk::SimplexId, ttk::CriticalType, ttk::SimplexId,
-                         ttk::CriticalType, scalarType, ttk::SimplexId> &b) {
-        const ttk::SimplexId idA = std::get<0>(a);
-        const ttk::SimplexId idB = std::get<0>(b);
-        const ttk::SimplexId va = offsets[idA];
-        const ttk::SimplexId vb = offsets[idB];
-        const scalarType sa = scalars[idA];
-        const scalarType sb = scalars[idB];
-
-        if(sa != sb)
-          return sa < sb;
-        else
-          return va < vb;
-      };
-
-  std::sort(diagram.begin(), diagram.end(), cmp);
-
-  return 0;
-}
 
 template <typename scalarType>
 int ttk::PersistenceDiagram::computeCTPersistenceDiagram(
   ftm::FTMTreePP &tree,
   const std::vector<
     std::tuple<ttk::SimplexId, ttk::SimplexId, scalarType, bool>> &pairs,
-  std::vector<std::tuple<ttk::SimplexId,
-                         ttk::CriticalType,
-                         ttk::SimplexId,
-                         ttk::CriticalType,
-                         scalarType,
-                         ttk::SimplexId>> &diagram,
-  scalarType *scalars) const {
+  std::vector<PersistencePair> &diagram,
+  const scalarType *scalars) const {
+
   const ttk::SimplexId numberOfPairs = pairs.size();
   diagram.resize(numberOfPairs);
   for(ttk::SimplexId i = 0; i < numberOfPairs; ++i) {
     const ttk::SimplexId v0 = std::get<0>(pairs[i]);
     const ttk::SimplexId v1 = std::get<1>(pairs[i]);
-    const scalarType persistenceValue = std::get<2>(pairs[i]);
+    const auto persistenceValue = static_cast<double>(std::get<2>(pairs[i]));
     const bool type = std::get<3>(pairs[i]);
 
-    std::get<4>(diagram[i]) = persistenceValue;
     if(type == true) {
-      std::get<0>(diagram[i]) = v0;
-      std::get<1>(diagram[i])
-        = getNodeType(tree.getJoinTree(), ftm::TreeType::Join, v0);
-      std::get<2>(diagram[i]) = v1;
-      std::get<3>(diagram[i])
-        = getNodeType(tree.getJoinTree(), ftm::TreeType::Join, v1);
-      std::get<5>(diagram[i]) = 0;
+      diagram[i] = PersistencePair{
+        v0,
+        getNodeType(tree.getJoinTree(), ftm::TreeType::Join, v0),
+        v1,
+        getNodeType(tree.getJoinTree(), ftm::TreeType::Join, v1),
+        persistenceValue,
+        0};
     } else {
-      std::get<0>(diagram[i]) = v1;
-      std::get<1>(diagram[i])
-        = getNodeType(tree.getSplitTree(), ftm::TreeType::Split, v1);
-      std::get<2>(diagram[i]) = v0;
-      std::get<3>(diagram[i])
-        = getNodeType(tree.getSplitTree(), ftm::TreeType::Split, v0);
-      std::get<5>(diagram[i]) = 2;
+      diagram[i] = PersistencePair{
+        v1,
+        getNodeType(tree.getSplitTree(), ftm::TreeType::Split, v1),
+        v0,
+        getNodeType(tree.getSplitTree(), ftm::TreeType::Split, v0),
+        persistenceValue,
+        2};
     }
   }
 
   return 0;
 }
 
-template <typename scalarType, typename idType>
-int ttk::PersistenceDiagram::execute() const {
+template <typename scalarType, class triangulationType>
+int ttk::PersistenceDiagram::execute(std::vector<PersistencePair> &CTDiagram,
+                                     const scalarType *inputScalars,
+                                     const SimplexId *inputOffsets,
+                                     const triangulationType *triangulation) {
 
-  // get data
-  std::vector<std::tuple<ttk::SimplexId, ttk::CriticalType, ttk::SimplexId,
-                         ttk::CriticalType, scalarType, ttk::SimplexId>>
-    &CTDiagram = *static_cast<
-      std::vector<std::tuple<ttk::SimplexId, ttk::CriticalType, ttk::SimplexId,
-                             ttk::CriticalType, scalarType, ttk::SimplexId>> *>(
-      CTDiagram_);
-  scalarType *scalars = static_cast<scalarType *>(inputScalars_);
-  SimplexId *offsets = static_cast<SimplexId *>(inputOffsets_);
+  printMsg(ttk::debug::Separator::L1);
 
-  const ttk::SimplexId numberOfVertices = triangulation_->getNumberOfVertices();
-  // convert offsets into a valid format for contour forests
-  std::vector<ttk::SimplexId> voffsets(numberOfVertices);
-  std::copy(offsets, offsets + numberOfVertices, voffsets.begin());
-
-  // get contour tree
-  ftm::FTMTreePP contourTree;
-  contourTree.setupTriangulation(triangulation_, false);
-  contourTree.setVertexScalars(inputScalars_);
-  contourTree.setTreeType(ftm::TreeType::Join_Split);
-  contourTree.setVertexSoSoffsets(voffsets.data());
-  contourTree.setThreadNumber(threadNumber_);
-  contourTree.setDebugLevel(debugLevel_);
-  contourTree.setSegmentation(false);
-  contourTree.build<scalarType, idType>();
+  contourTree_.setVertexScalars(inputScalars);
+  contourTree_.setTreeType(ftm::TreeType::Join_Split);
+  contourTree_.setVertexSoSoffsets(inputOffsets);
+  contourTree_.setSegmentation(false);
+  contourTree_.build<scalarType>(triangulation);
 
   // get persistence pairs
   std::vector<std::tuple<ttk::SimplexId, ttk::SimplexId, scalarType>> JTPairs;
   std::vector<std::tuple<ttk::SimplexId, ttk::SimplexId, scalarType>> STPairs;
-  contourTree.computePersistencePairs<scalarType>(JTPairs, true);
-  contourTree.computePersistencePairs<scalarType>(STPairs, false);
+  contourTree_.computePersistencePairs<scalarType>(JTPairs, true);
+  contourTree_.computePersistencePairs<scalarType>(STPairs, false);
 
   // merge pairs
+  const auto JTSize = JTPairs.size();
+  const auto STSize = STPairs.size();
   std::vector<std::tuple<ttk::SimplexId, ttk::SimplexId, scalarType, bool>>
-    CTPairs(JTPairs.size() + STPairs.size());
-  const ttk::SimplexId JTSize = JTPairs.size();
-  for(ttk::SimplexId i = 0; i < JTSize; ++i) {
+    CTPairs(JTSize + STSize);
+  for(size_t i = 0; i < JTSize; ++i) {
     const auto &x = JTPairs[i];
     CTPairs[i]
       = std::make_tuple(std::get<0>(x), std::get<1>(x), std::get<2>(x), true);
   }
-  const ttk::SimplexId STSize = STPairs.size();
-  for(ttk::SimplexId i = 0; i < STSize; ++i) {
+  for(size_t i = 0; i < STSize; ++i) {
     const auto &x = STPairs[i];
     CTPairs[JTSize + i]
       = std::make_tuple(std::get<0>(x), std::get<1>(x), std::get<2>(x), false);
   }
 
   // remove the last pair which is present two times (global extrema pair)
-  {
+  if(!CTPairs.empty()) {
     auto cmp =
       [](
         const std::tuple<ttk::SimplexId, ttk::SimplexId, scalarType, bool> &a,
@@ -269,51 +216,34 @@ int ttk::PersistenceDiagram::execute() const {
     CTPairs.erase(CTPairs.end() - 1);
   }
 
+  // get persistence diagrams
+  computeCTPersistenceDiagram<scalarType>(
+    contourTree_, CTPairs, CTDiagram, inputScalars);
+
   // get the saddle-saddle pairs
   std::vector<std::tuple<SimplexId, SimplexId, scalarType>>
     pl_saddleSaddlePairs;
-  const int dimensionality = triangulation_->getDimensionality();
-  if(dimensionality == 3 and ComputeSaddleConnectors) {
-    MorseSmaleComplex3D morseSmaleComplex;
-    morseSmaleComplex.setDebugLevel(debugLevel_);
-    morseSmaleComplex.setThreadNumber(threadNumber_);
-    morseSmaleComplex.setupTriangulation(triangulation_);
-    morseSmaleComplex.setInputScalarField(inputScalars_);
-    morseSmaleComplex.setInputOffsets(inputOffsets_);
-    morseSmaleComplex.computePersistencePairs<scalarType, idType>(
-      JTPairs, STPairs, pl_saddleSaddlePairs);
-  }
+  if(triangulation->getDimensionality() == 3 and ComputeSaddleConnectors) {
+    dcg_.setInputScalarField(inputScalars);
+    dcg_.setInputOffsets(inputOffsets);
+    dcg_.computeSaddleSaddlePersistencePairs<scalarType>(
+      pl_saddleSaddlePairs, *triangulation);
 
-  // get persistence diagrams
-  computeCTPersistenceDiagram<scalarType>(
-    contourTree, CTPairs, CTDiagram, scalars);
-
-  // add saddle-saddle pairs to the diagram if needed
-  if(dimensionality == 3 and ComputeSaddleConnectors) {
+    // add saddle-saddle pairs to the diagram
     for(const auto &i : pl_saddleSaddlePairs) {
       const ttk::SimplexId v0 = std::get<0>(i);
       const ttk::SimplexId v1 = std::get<1>(i);
-      const scalarType persistenceValue = std::get<2>(i);
+      const auto persistenceValue = static_cast<double>(std::get<2>(i));
 
-      std::tuple<ttk::SimplexId, ttk::CriticalType, ttk::SimplexId,
-                 ttk::CriticalType, scalarType, ttk::SimplexId>
-        t;
-
-      std::get<0>(t) = v0;
-      std::get<1>(t) = ttk::CriticalType::Saddle1;
-      std::get<2>(t) = v1;
-      std::get<3>(t) = ttk::CriticalType::Saddle2;
-      std::get<4>(t) = persistenceValue;
-      std::get<5>(t) = 1;
-
-      CTDiagram.push_back(t);
+      CTDiagram.emplace_back(v0, ttk::CriticalType::Saddle1, v1,
+                             ttk::CriticalType::Saddle2, persistenceValue, 1);
     }
   }
 
   // finally sort the diagram
-  sortPersistenceDiagram(CTDiagram, scalars, offsets);
+  sortPersistenceDiagram(CTDiagram, inputOffsets);
+
+  printMsg(ttk::debug::Separator::L1);
 
   return 0;
 }
-
-#endif // PERSISTENCEDIAGRAM_H

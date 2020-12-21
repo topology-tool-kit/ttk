@@ -1,0 +1,16 @@
+Checks: >-
+  -*,
+  bugprone-*,
+  -bugprone-narrowing-conversions,
+  -bugprone-too-small-loop-variable,
+  -bugprone-macro-parentheses,
+  misc-*,
+  -misc-non-private-member-variables-in-classes,
+  -misc-unused-parameters,
+  -modernize-*,
+  openmp-*,
+  -openmp-use-default-none,
+  performance-*,
+  portability-*,
+FormatStyle: file
+HeaderFilterRegex: 'core/(base|vtk)|standalone'

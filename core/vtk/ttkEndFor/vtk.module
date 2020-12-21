@@ -1,0 +1,5 @@
+NAME
+  ttkEndFor
+DEPENDS
+  ttkAlgorithm
+  ttkForEach

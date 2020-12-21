@@ -1,95 +1,78 @@
 #include <ttkGeometrySmoother.h>
 
-#include <vtkCharArray.h>
+#include <ttkUtils.h>
+#include <vtkInformation.h>
+
 #include <vtkPointData.h>
+#include <vtkPointSet.h>
+#include <vtkUnsignedCharArray.h>
 
-using namespace std;
-using namespace ttk;
+vtkStandardNewMacro(ttkGeometrySmoother);
 
-vtkStandardNewMacro(ttkGeometrySmoother)
+ttkGeometrySmoother::ttkGeometrySmoother() {
+  this->setDebugMsgPrefix("GeometrySmoother");
 
-  ttkGeometrySmoother::ttkGeometrySmoother() {
-
-  // init
-  NumberOfIterations = 1;
-  MaskIdentifier = 0;
-  ForceInputMaskScalarField = false;
-  InputMask = ttk::MaskScalarFieldName;
-  UseAllCores = true;
+  this->SetNumberOfInputPorts(1);
+  this->SetNumberOfOutputPorts(1);
 }
 
 ttkGeometrySmoother::~ttkGeometrySmoother() {
 }
 
-int ttkGeometrySmoother::doIt(vector<vtkDataSet *> &inputs,
-                              vector<vtkDataSet *> &outputs) {
-
-  Memory m;
-
-  vtkDataSet *input = inputs[0];
-  vtkDataSet *output = outputs[0];
-
-  Triangulation *triangulation = ttkTriangulation::getTriangulation(input);
-
-  if(!triangulation)
-    return -1;
-
-  triangulation->setWrapper(this);
-  smoother_.setupTriangulation(triangulation);
-  smoother_.setWrapper(this);
-
-  vtkCharArray *inputMaskField = NULL;
-
-  if(ForceInputMaskScalarField) {
-    if(InputMask.length()) {
-      inputMaskField = vtkCharArray::SafeDownCast(
-        input->GetPointData()->GetArray(InputMask.data()));
-    } else {
-      inputMaskField = vtkCharArray::SafeDownCast(
-        input->GetPointData()->GetArray(MaskIdentifier));
-    }
-
-    if(inputMaskField->GetName())
-      InputMask = inputMaskField->GetName();
-
-    {
-      stringstream msg;
-      msg << "[ScalarFieldSmoother] Using mask `" << inputMaskField->GetName()
-          << "'..." << endl;
-      dMsg(cout, msg.str(), infoMsg);
-    }
-  } else if(input->GetPointData()->GetArray(ttk::MaskScalarFieldName)) {
-    inputMaskField = vtkCharArray::SafeDownCast(
-      input->GetPointData()->GetArray(ttk::MaskScalarFieldName));
-    InputMask = ttk::MaskScalarFieldName;
+int ttkGeometrySmoother::FillInputPortInformation(int port,
+                                                  vtkInformation *info) {
+  if(port == 0) {
+    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkPointSet");
+    return 1;
   }
+  return 0;
+}
+
+int ttkGeometrySmoother::FillOutputPortInformation(int port,
+                                                   vtkInformation *info) {
+  if(port == 0) {
+    info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
+    return 1;
+  }
+  return 0;
+}
+
+int ttkGeometrySmoother::RequestData(vtkInformation *request,
+                                     vtkInformationVector **inputVector,
+                                     vtkInformationVector *outputVector) {
+
+  auto inputPointSet = vtkPointSet::GetData(inputVector[0]);
+  auto outputPointSet = vtkPointSet::GetData(outputVector);
+
+  auto triangulation = ttkAlgorithm::GetTriangulation(inputPointSet);
+  if(!triangulation)
+    return 0;
+  this->preconditionTriangulation(triangulation);
+
+  vtkDataArray *inputMaskField = ttkAlgorithm::GetOptionalArray(
+    ForceInputMaskScalarField, 1, ttk::MaskScalarFieldName, inputPointSet);
 
   // This filter copies the input into a new data-set (smoothed)
   // let's use shallow copies, in order to only duplicate point positions
   // (before and after). the rest is not changed, pointers are sufficient.
-  output->DeepCopy(input);
+  outputPointSet->DeepCopy(inputPointSet);
 
-  void *inputMaskPtr
-    = (inputMaskField) ? inputMaskField->GetVoidPointer(0) : nullptr;
   // calling the smoothing package
-  vtkPoints *inputPointSet = (vtkPointSet::SafeDownCast(input))->GetPoints();
-  vtkPoints *outputPointSet = (vtkPointSet::SafeDownCast(output))->GetPoints();
+  auto inputPoints = inputPointSet->GetPoints();
+  auto outputPoints = outputPointSet->GetPoints();
 
-  smoother_.setDimensionNumber(3);
-  smoother_.setInputDataPointer(inputPointSet->GetVoidPointer(0));
-  smoother_.setOutputDataPointer(outputPointSet->GetVoidPointer(0));
-  smoother_.setMaskDataPointer(inputMaskPtr);
+  this->setDimensionNumber(3);
+  this->setInputDataPointer(ttkUtils::GetVoidPointer(inputPoints));
+  this->setOutputDataPointer(ttkUtils::GetVoidPointer(outputPoints));
 
-  switch(outputPointSet->GetDataType()) {
-    vtkTemplateMacro(smoother_.smooth<VTK_TT>(NumberOfIterations));
+  if(inputMaskField) {
+    this->setMaskDataPointer(ttkUtils::GetVoidPointer(inputMaskField));
   }
 
-  {
-    stringstream msg;
-    msg << "[ttkGeometrySmoother] Memory usage: " << m.getElapsedUsage()
-        << " MB." << endl;
-    dMsg(cout, msg.str(), memoryMsg);
+  switch(outputPoints->GetDataType()) {
+    vtkTemplateMacro(
+      this->smooth<VTK_TT>(triangulation->getData(), this->NumberOfIterations));
   }
 
-  return 0;
+  return 1;
 }

@@ -6,7 +6,7 @@
        that matches your filter and then model your xml on it -->
   <ProxyGroup name="filters">
     <SourceProxy
-    name="TrackingFromFields"
+    name="ttkTrackingFromFields"
     class="ttkTrackingFromFields"
     label="TTK TrackingFromFields">
       <Documentation
@@ -16,11 +16,11 @@ by a list of scalar fields) and which computes a tracking mesh."
         by a list of scalar fields) and which computes a tracking mesh.">
         TTK plugin that takes an input time-varying data set (represented by a
         list of scalar fields) and which computes a tracking mesh.
-        
+
         Related publication:
         'Lifted Wasserstein Matcher for Fast and Robust Topology Tracking'
-        Maxime Soler, Melanie Plainchault, Bruno Conche, Julien Tierny 
-        Proc. of IEEE Symposium on Large Data Analysis and Visualization 2018. 
+        Maxime Soler, Melanie Plainchault, Bruno Conche, Julien Tierny
+        Proc. of IEEE Symposium on Large Data Analysis and Visualization 2018.
 
       </Documentation>
 
@@ -90,7 +90,7 @@ by a list of scalar fields) and which computes a tracking mesh."
         <DoubleRangeDomain name="range" min="0" max="100" />
       </DoubleVectorProperty>
 
-      
+
 
 
 
@@ -107,7 +107,7 @@ by a list of scalar fields) and which computes a tracking mesh."
           Method for computing matchings.
         </Documentation>
       </IntVectorProperty>
-      
+
       <!-- Bottleneck options -->
       <StringVectorProperty
         name="n"
@@ -132,7 +132,7 @@ by a list of scalar fields) and which computes a tracking mesh."
         <DoubleRangeDomain name="spe" min="0.0" max="1.0"/>
         <Documentation>Importance weight for extrema.</Documentation>
       </DoubleVectorProperty>
-      
+
       <DoubleVectorProperty
         name="sps"
         label="Saddle weight"
@@ -143,7 +143,7 @@ by a list of scalar fields) and which computes a tracking mesh."
         <DoubleRangeDomain name="sps" min="0.0" max="1.0"/>
         <Documentation>Importance weight for saddles.</Documentation>
       </DoubleVectorProperty>
-      
+
       <DoubleVectorProperty
         name="spx"
         label="X weight"
@@ -152,10 +152,10 @@ by a list of scalar fields) and which computes a tracking mesh."
         default_values="0"
         panel_visibility="advanced">
         <DoubleRangeDomain name="spx" min="0.0" max="1.0"/>
-        <Documentation>Importance weight for the X component of 
+        <Documentation>Importance weight for the X component of
 the extremum</Documentation>
       </DoubleVectorProperty>
-      
+
       <DoubleVectorProperty
         name="spy"
         label="Y weight"
@@ -164,10 +164,10 @@ the extremum</Documentation>
         default_values="0"
         panel_visibility="advanced">
         <DoubleRangeDomain name="spy" min="0.0" max="1.0"/>
-        <Documentation>Importance weight for the Y component of 
+        <Documentation>Importance weight for the Y component of
 the extremum</Documentation>
       </DoubleVectorProperty>
-      
+
       <DoubleVectorProperty
         name="spz"
         label="Z weight"
@@ -176,10 +176,10 @@ the extremum</Documentation>
         default_values="0"
         panel_visibility="advanced">
         <DoubleRangeDomain name="spz" min="0.0" max="1.0"/>
-        <Documentation>Importance weight for the Z component of 
+        <Documentation>Importance weight for the Z component of
 the extremum</Documentation>
       </DoubleVectorProperty>
-      
+
 
       <IntVectorProperty
       name="Use spacing"
@@ -195,7 +195,7 @@ the extremum</Documentation>
           visualize the matching between the diagrams of two 2D scalar fields.
         </Documentation>
       </IntVectorProperty>
-      
+
       <DoubleVectorProperty
         name="spacing"
         label="Z-Translation"
@@ -262,53 +262,7 @@ the extremum</Documentation>
       </PropertyGroup>
 
       <!-- TTK internals -->
-      <IntVectorProperty
-      name="UseAllCores"
-      label="Use All Cores"
-      command="SetUseAllCores"
-      number_of_elements="1"
-      default_values="1" panel_visibility="advanced">
-        <BooleanDomain name="bool"/>
-        <Documentation>
-          Use all available cores.
-        </Documentation>
-      </IntVectorProperty>
-
-      <IntVectorProperty
-      name="ThreadNumber"
-      label="Thread Number"
-      command="SetThreadNumber"
-      number_of_elements="1"
-      default_values="1" panel_visibility="advanced">
-        <IntRangeDomain name="range" min="1" max="100" />
-        <Hints>
-          <PropertyWidgetDecorator type="GenericDecorator"
-            mode="visibility"
-            property="UseAllCores"
-            value="0" />
-        </Hints>
-        <Documentation>
-          Thread number.
-        </Documentation>
-      </IntVectorProperty>
-
-      <IntVectorProperty
-      name="DebugLevel"
-      label="Debug Level"
-      command="SetdebugLevel_"
-      number_of_elements="1"
-      default_values="3" panel_visibility="advanced">
-        <IntRangeDomain name="range" min="0" max="100" />
-        <Documentation>
-          Debug level.
-        </Documentation>
-      </IntVectorProperty>
-
-      <PropertyGroup panel_widget="Line" label="Testing">
-        <Property name="UseAllCores" />
-        <Property name="ThreadNumber" />
-        <Property name="DebugLevel" />
-      </PropertyGroup>
+        ${DEBUG_WIDGETS}
 
       <!-- Outputs -->
       <OutputPort name="Persistence Mesh" index="2" id="port3"/>

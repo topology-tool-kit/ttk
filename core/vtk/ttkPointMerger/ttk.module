@@ -1,0 +1,9 @@
+NAME
+  ttkPointMerger
+SOURCES
+  ttkPointMerger.cpp
+HEADERS
+  ttkPointMerger.h
+DEPENDS
+  ttkAlgorithm
+  geometry

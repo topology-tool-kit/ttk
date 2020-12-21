@@ -1,0 +1,7 @@
+NAME
+ ttkProgramBase
+DEPENDS
+  VTK::FiltersCore
+  VTK::IOXML
+PRIVATE_DEPENDS
+  VTK::CommonCore

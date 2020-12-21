@@ -1,0 +1,9 @@
+NAME
+  ttkIntegralLines
+SOURCES
+  ttkIntegralLines.cpp
+HEADERS
+  ttkIntegralLines.h
+DEPENDS
+  integralLines
+  ttkAlgorithm

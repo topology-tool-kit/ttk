@@ -49,6 +49,8 @@
 #include "FTMStructures.h"
 #include "FTMSuperArc.h"
 
+static ttk::Timer _launchGlobalTime;
+
 namespace ttk {
   namespace ftm {
     using UF = AtomicUF *;
@@ -63,23 +65,24 @@ namespace ttk {
       TreeType treeType;
 
       // components : tree / nodes / extrema
-      AtomicVector<SuperArc> *superArcs;
-      AtomicVector<Node> *nodes;
-      AtomicVector<idNode> *roots;
-      std::vector<idNode> *leaves;
+      FTMAtomicVector<SuperArc> *superArcs = nullptr;
+      FTMAtomicVector<Node> *nodes = nullptr;
+      FTMAtomicVector<idNode> *roots = nullptr;
+      std::vector<idNode> *leaves = nullptr;
 
       // vertex 2 node / superarc
-      std::vector<idCorresp> *vert2tree;
-      std::vector<SimplexId> *visitOrder;
-      std::vector<std::list<std::vector<SimplexId>>> *trunkSegments;
+      std::vector<idCorresp> *vert2tree = nullptr;
+      std::vector<SimplexId> *visitOrder = nullptr;
+      std::vector<std::list<std::vector<SimplexId>>> *trunkSegments = nullptr;
 
       // Track informations
-      std::vector<UF> *ufs, *propagation;
-      AtomicVector<CurrentState> *states;
+      std::vector<UF> *ufs = nullptr;
+      std::vector<UF> *propagation = nullptr;
+      FTMAtomicVector<CurrentState> *states = nullptr;
       // valences
-      std::vector<valence> *valences;
+      std::vector<valence> *valences = nullptr;
       // opened nodes
-      std::vector<char> *openedNodes;
+      std::vector<char> *openedNodes = nullptr;
 
       // current nb of tasks
       idNode activeTasks;
@@ -89,12 +92,12 @@ namespace ttk {
       Segments segments_;
 
 #ifdef TTK_ENABLE_FTM_TREE_STATS_TIME
-      std::vector<ActiveTask> *activeTasksStats;
+      std::vector<ActiveTask> *activeTasksStats = nullptr;
 #endif
 
 #ifdef TTK_ENABLE_OMP_PRIORITY
       // Is this MT to be computed with greater task priority than others
-      bool prior;
+      bool prior = false;
 #endif
     };
 
@@ -102,7 +105,6 @@ namespace ttk {
     protected:
       // global
       Params *const params_;
-      Triangulation *mesh_;
       Scalars *const scalars_;
 
       // local
@@ -115,10 +117,7 @@ namespace ttk {
       // -----------
 
       // Tree with global data and partition number
-      FTMTree_MT(Params *const params,
-                 Triangulation *mesh,
-                 Scalars *const scalars,
-                 TreeType type);
+      FTMTree_MT(Params *const params, Scalars *const scalars, TreeType type);
 
       virtual ~FTMTree_MT();
 
@@ -126,22 +125,9 @@ namespace ttk {
       // Init
       // --------------------
 
-      void initNbScalars(void) {
-        scalars_->size = mesh_->getNumberOfVertices();
-      }
-
-      /// \brief init Simulation of Simplicity datastructure if not set
-      template <typename idType>
-      void initSoS(void) {
-        if(scalars_->offsets == nullptr) {
-          scalars_->offsets = new idType[scalars_->size];
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for
-#endif
-          for(SimplexId i = 0; i < scalars_->size; i++) {
-            ((idType *)scalars_->offsets)[i] = i;
-          }
-        }
+      template <class triangulationType>
+      void initNbScalars(const triangulationType *triangulation) {
+        scalars_->size = triangulation->getNumberOfVertices();
       }
 
       void initComp(void) {
@@ -171,8 +157,7 @@ namespace ttk {
       }
 
       /// \brief if sortedVertices_ is null, define and fill it
-      /// Also fill the mirror vector
-      template <typename scalarType, typename idType>
+      template <typename scalarType>
       void sortInput(void);
 
       /// \brief clear local data for new computation
@@ -227,7 +212,7 @@ namespace ttk {
       void initVectStates(const SimplexId nbLeaves) {
         if(!mt_data_.states) {
           mt_data_.states
-            = new AtomicVector<CurrentState>(nbLeaves, comp_.vertHigher);
+            = new FTMAtomicVector<CurrentState>(nbLeaves, comp_.vertHigher);
         }
         mt_data_.states->clear();
         mt_data_.states->reserve(nbLeaves);
@@ -238,27 +223,40 @@ namespace ttk {
       // -------------------
 
       /// \brief Compute the merge
-      void build(const bool ct);
+      template <class triangulationType>
+      void build(const triangulationType *mesh, const bool ct);
 
       // extrema
 
-      virtual int leafSearch();
+      template <class triangulationType>
+      int leafSearch(const triangulationType *mesh);
 
       // skeleton
 
-      void leafGrowth();
+      template <class triangulationType>
+      void leafGrowth(const triangulationType *mesh);
 
-      void arcGrowth(const SimplexId startVert, const SimplexId orig);
+      template <class triangulationType>
+      void arcGrowth(const triangulationType *mesh,
+                     const SimplexId startVert,
+                     const SimplexId orig);
 
-      std::tuple<bool, bool> propage(CurrentState &currentState, UF curUF);
+      template <class triangulationType>
+      std::tuple<bool, bool> propage(const triangulationType *mesh,
+                                     CurrentState &currentState,
+                                     UF curUF);
 
-      void closeAndMergeOnSaddle(SimplexId saddleVert);
+      template <class triangulationType>
+      void closeAndMergeOnSaddle(const triangulationType *mesh,
+                                 SimplexId saddleVert);
 
-      void closeOnBackBone(SimplexId saddleVert);
+      template <class triangulationType>
+      void closeOnBackBone(const triangulationType *mesh, SimplexId saddleVert);
 
       void closeArcsUF(idNode closeNode, UF uf);
 
-      SimplexId trunk(const bool ct);
+      template <class triangulationType>
+      SimplexId trunk(const triangulationType *mesh, const bool ct);
 
       virtual SimplexId
         trunkSegmentation(const std::vector<SimplexId> &pendingNodesVerts,
@@ -311,12 +309,11 @@ namespace ttk {
       // On this implementation, the warpper communicate with ContourForest
       // A child class of this one.
 
-      inline void setupTriangulation(Triangulation *m,
-                                     const bool preproc = true) {
-        mesh_ = m;
-        if(mesh_ && preproc) {
+      inline void preconditionTriangulation(AbstractTriangulation *tri,
+                                            const bool preproc = true) {
+        if(tri && preproc) {
           // propage through vertices (build)
-          mesh_->preprocessVertexNeighbors();
+          tri->preconditionVertexNeighbors();
         }
       }
 
@@ -359,9 +356,16 @@ namespace ttk {
       }
 
       // offset
-      template <typename idType>
-      inline void setVertexSoSoffsets(idType *sos) {
-        scalars_->offsets = (void *)sos;
+      /**
+       * @pre For this function to behave correctly in the absence of
+       * the VTK wrapper, ttk::preconditionOrderArray() needs to be
+       * called to fill the @p sos buffer prior to any
+       * computation (the VTK wrapper already includes a mecanism to
+       * automatically generate such a preconditioned buffer).
+       * @see examples/c++/main.cpp for an example use.
+       */
+      inline void setVertexSoSoffsets(const SimplexId *const sos) {
+        scalars_->offsets = sos;
       }
 
       // arcs
@@ -372,7 +376,7 @@ namespace ttk {
 
       inline SuperArc *getSuperArc(idSuperArc i) {
 #ifndef TTK_ENABLE_KAMIKAZE
-        if((size_t)i >= mt_data_.superArcs->size()) {
+        if(i >= mt_data_.superArcs->size()) {
           std::cout << "[Merge Tree] get superArc on bad id :" << i;
           std::cout << " / " << mt_data_.superArcs->size() << std::endl;
           return nullptr;
@@ -383,7 +387,7 @@ namespace ttk {
 
       inline const SuperArc *getSuperArc(idSuperArc i) const {
 #ifndef TTK_ENABLE_KAMIKAZE
-        if((size_t)i >= mt_data_.superArcs->size()) {
+        if(i >= mt_data_.superArcs->size()) {
           std::cout << "[Merge Tree] get superArc on bad id :" << i;
           std::cout << " / " << mt_data_.superArcs->size() << std::endl;
           return nullptr;
@@ -419,7 +423,7 @@ namespace ttk {
 
       inline idNode getLeave(const idNode id) const {
 #ifndef TTK_ENABLE_KAMIKAZE
-        if((size_t)id > (mt_data_.leaves->size())) {
+        if(id > mt_data_.leaves->size()) {
           std::stringstream msg;
           msg << "[MergTree] getLeaves out of bounds : " << id << std::endl;
           err(msg.str(), fatalMsg);
@@ -516,11 +520,11 @@ namespace ttk {
 
       inline idCorresp idNode2corr(const idNode id) const {
         // transform idNode to special value for the array : -idNode -1
-        return -(idCorresp)(id + 1);
+        return -static_cast<idCorresp>(id + 1);
       }
 
       inline idNode corr2idNode(const idCorresp &corr) const {
-        return -(idNode)((*mt_data_.vert2tree)[corr] + 1);
+        return static_cast<idNode>(-((*mt_data_.vert2tree)[corr] + 1));
       }
 
       // --------------------------------
@@ -583,7 +587,7 @@ namespace ttk {
 
       void printParams(void) const;
 
-      int printTime(DebugTimer &t,
+      int printTime(Timer &t,
                     const std::string &s,
                     SimplexId nbScalars = -1,
                     const int debugLevel = 2) const;
@@ -646,44 +650,12 @@ namespace ttk {
       // -----------------
       // Compare using the scalar array : only for sort step
 
-      template <typename scalarType, typename idType>
       inline bool isLower(SimplexId a, SimplexId b) const {
-        return ((scalarType *)scalars_->values)[a]
-                 < ((scalarType *)scalars_->values)[b]
-               || (((scalarType *)scalars_->values)[a]
-                     == ((scalarType *)scalars_->values)[b]
-                   && ((idType *)scalars_->offsets)[a]
-                        < ((idType *)scalars_->offsets)[b]);
+        return scalars_->offsets[a] < scalars_->offsets[b];
       }
 
-      template <typename scalarType, typename idType>
       inline bool isHigher(SimplexId a, SimplexId b) const {
-        return ((scalarType *)scalars_->values)[a]
-                 > ((scalarType *)scalars_->values)[b]
-               || (((scalarType *)scalars_->values)[a]
-                     == ((scalarType *)scalars_->values)[b]
-                   && ((idType *)scalars_->offsets)[a]
-                        > ((idType *)scalars_->offsets)[b]);
-      }
-
-      template <typename scalarType, typename idType>
-      inline bool isEqLower(SimplexId a, SimplexId b) const {
-        return ((scalarType *)scalars_->values)[a]
-                 < ((scalarType *)scalars_->values)[b]
-               || (((scalarType *)scalars_->values)[a]
-                     == ((scalarType *)scalars_->values)[b]
-                   && ((idType *)scalars_->offsets)[a]
-                        <= ((idType *)scalars_->offsets)[b]);
-      }
-
-      template <typename scalarType, typename idType>
-      inline bool isEqHigher(SimplexId a, SimplexId b) const {
-        return ((scalarType *)scalars_->values)[a]
-                 > ((scalarType *)scalars_->values)[b]
-               || (((scalarType *)scalars_->values)[a]
-                     == ((scalarType *)scalars_->values)[b]
-                   && ((idType *)scalars_->offsets)[a]
-                        >= ((idType *)scalars_->offsets)[b]);
+        return scalars_->offsets[a] > scalars_->offsets[b];
       }
 
       template <typename type>
@@ -694,9 +666,9 @@ namespace ttk {
       }
 
       template <typename type>
-      void createAtomicVector(AtomicVector<type> *&ptr) {
+      void createAtomicVector(FTMAtomicVector<type> *&ptr) {
         if(!ptr)
-          ptr = new AtomicVector<type>;
+          ptr = new FTMAtomicVector<type>;
         ptr->clear();
       }
 

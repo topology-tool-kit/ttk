@@ -1,0 +1,8 @@
+NAME
+  ttkArrayEditor
+SOURCES
+  ttkArrayEditor.cpp
+HEADERS
+  ttkArrayEditor.h
+DEPENDS
+  ttkAlgorithm

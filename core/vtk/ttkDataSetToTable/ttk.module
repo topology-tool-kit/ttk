@@ -1,0 +1,8 @@
+NAME
+  ttkDataSetToTable
+SOURCES
+  ttkDataSetToTable.cpp
+HEADERS
+  ttkDataSetToTable.h
+DEPENDS
+  ttkAlgorithm

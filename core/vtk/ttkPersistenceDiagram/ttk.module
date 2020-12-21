@@ -1,0 +1,9 @@
+NAME
+  ttkPersistenceDiagram
+SOURCES
+  ttkPersistenceDiagram.cpp
+HEADERS
+  ttkPersistenceDiagram.h
+DEPENDS
+  persistenceDiagram
+  ttkAlgorithm

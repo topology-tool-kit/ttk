@@ -1,0 +1,9 @@
+NAME
+  ttkEigenField
+SOURCES
+  ttkEigenField.cpp
+HEADERS
+  ttkEigenField.h
+DEPENDS
+  eigenField
+  ttkAlgorithm

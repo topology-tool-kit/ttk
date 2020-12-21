@@ -5,8 +5,8 @@
 #include <vtkDataSet.h>
 #include <vtkDoubleArray.h>
 #include <vtkIntArray.h>
+#include <vtkNew.h>
 #include <vtkPointData.h>
-#include <vtkSmartPointer.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkUnstructuredGrid.h>
 
@@ -20,34 +20,33 @@ namespace ttk {
     /// Vertex / Node / Arc data inherit from this
     /// master structure.
     struct ObjectData {
-      template <typename vtkArrayType>
-      inline vtkSmartPointer<vtkArrayType> allocArray(const char *fieldName,
-                                                      size_t nbElmnt) {
-        vtkSmartPointer<vtkArrayType> arr
-          = vtkSmartPointer<vtkArrayType>::New();
+      inline void allocArray(vtkDataArray *const arr,
+                             const char *fieldName,
+                             size_t nbElmnt) {
         arr->SetName(fieldName);
         arr->SetNumberOfComponents(1);
         arr->SetNumberOfTuples(nbElmnt);
 
 #ifndef TTK_ENABLE_KAMIKAZE
         if(!arr) {
-          cerr << "[ttkFTMTree] Error, unable to allocate " << fieldName
-               << " the program will likely crash" << endl;
+          Debug dbg{};
+          dbg.setDebugMsgPrefix("FTRGraph");
+          dbg.printErr("unable to allocate " + std::string{fieldName}
+                       + " the program will likely crash");
         }
 #endif
-        return arr;
       }
     };
 
     struct NodeData : public ObjectData {
-      vtkSmartPointer<vtkIntArray> ids;
-      vtkSmartPointer<vtkIntArray> types;
-      vtkSmartPointer<vtkDoubleArray> scalars;
+      vtkNew<vtkIntArray> ids{};
+      vtkNew<vtkIntArray> types{};
+      vtkNew<vtkDoubleArray> scalars{};
 
       explicit NodeData(const ttk::ftr::idVertex nbNodes) {
-        ids = allocArray<vtkIntArray>("VertexId", nbNodes);
-        types = allocArray<vtkIntArray>("CriticalType", nbNodes);
-        scalars = allocArray<vtkDoubleArray>("Scalar", nbNodes);
+        allocArray(ids, "VertexId", nbNodes);
+        allocArray(types, "CriticalType", nbNodes);
+        allocArray(scalars, "Scalar", nbNodes);
       }
 
       void addNode(const ttk::ftr::Graph &graph,
@@ -66,18 +65,18 @@ namespace ttk {
     };
 
     struct ArcData : public ObjectData {
-      vtkSmartPointer<vtkIntArray> ids;
-      vtkSmartPointer<vtkCharArray> reg;
+      vtkNew<vtkIntArray> ids{};
+      vtkNew<vtkCharArray> reg{};
 #ifndef NDEBUG
-      vtkSmartPointer<vtkUnsignedCharArray> fromUp;
+      vtkNew<vtkUnsignedCharArray> fromUp{};
 #endif
       std::map<ttk::ftr::idVertex, vtkIdType> points;
 
       ArcData(const ttk::ftr::idSuperArc nbArcs) {
-        ids = allocArray<vtkIntArray>("ArcId", nbArcs);
-        reg = allocArray<vtkCharArray>(ttk::MaskScalarFieldName, nbArcs * 2);
+        allocArray(ids, "ArcId", nbArcs);
+        allocArray(reg, ttk::MaskScalarFieldName, nbArcs * 2);
 #ifndef NDEBUG
-        fromUp = allocArray<vtkUnsignedCharArray>("growUp", nbArcs);
+        allocArray(fromUp, "growUp", nbArcs);
 #endif
       }
 
@@ -111,20 +110,20 @@ namespace ttk {
     };
 
     struct VertData : public ObjectData {
-      vtkSmartPointer<vtkIntArray> ids;
-      vtkSmartPointer<vtkIntArray> regionType;
+      vtkNew<vtkIntArray> ids{};
+      vtkNew<vtkIntArray> regionType{};
 #ifdef TTK_ENABLE_FTR_VERT_STATS
-      vtkSmartPointer<vtkIntArray> touch;
-      vtkSmartPointer<vtkIntArray> arcActif;
-      vtkSmartPointer<vtkIntArray> taskActif;
+      vtkNew<vtkIntArray> touch{};
+      vtkNew<vtkIntArray> arcActif{};
+      vtkNew<vtkIntArray> taskActif{};
 #endif
 
       explicit VertData(const ttk::ftr::idVertex nbVertices) {
-        ids = allocArray<vtkIntArray>("ArcId", nbVertices);
-        regionType = allocArray<vtkIntArray>("RegionType", nbVertices);
+        allocArray(ids, "ArcId", nbVertices);
+        allocArray(regionType, "RegionType", nbVertices);
 #ifdef TTK_ENABLE_FTR_VERT_STATS
-        touch = allocArray<vtkIntArray>("Visit", nbVertices);
-        arcActif = allocArray<vtkIntArray>("Arc active", nbVertices);
+        allocArray(touch, "Visit", nbVertices);
+        allocArray(arcActif, "Arc active", nbVertices);
 #endif
       }
 

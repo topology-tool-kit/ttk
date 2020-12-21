@@ -41,9 +41,8 @@ namespace ttk {
         "o", &outputPath_, "Output file name base (no extension)", true);
 
       parser_.parse(argc, argv);
-      debugLevel_ = ttk::globalDebugLevel_;
-
-      threadNumber_ = ttk::globalThreadNumber_;
+      setDebugLevel(ttk::globalDebugLevel_);
+      setThreadNumber(ttk::globalThreadNumber_);
 
       int ret = 0;
       ret = load(inputPaths);
@@ -84,15 +83,11 @@ namespace ttk {
 
   template <class ttkModule>
   class Program : public ProgramBase {
+    ttkModule module_{};
 
   public:
     Program() {
-      ttkModule_ = new ttkModule;
-    }
-
-    ~Program() {
-      if(ttkModule_)
-        delete ttkModule_;
+      ttkModule_ = &module_;
     }
   };
 } // namespace ttk

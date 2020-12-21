@@ -95,22 +95,20 @@ namespace ttk {
       // ............................{
 
       inline idSuperArc getNumberOfDownSuperArcs() const {
-        return (idSuperArc)vect_downSuperArcList_.size();
+        return vect_downSuperArcList_.size();
       }
 
       inline idSuperArc getNumberOfUpSuperArcs() const {
-        return (idSuperArc)vect_upSuperArcList_.size();
+        return vect_upSuperArcList_.size();
       }
 
       inline idSuperArc getNumberOfSuperArcs() const {
-        return (idSuperArc)(vect_upSuperArcList_.size()
-                            + vect_downSuperArcList_.size());
+        return vect_upSuperArcList_.size() + vect_downSuperArcList_.size();
       }
 
       inline idSuperArc getDownSuperArcId(const idSuperArc &neighborId) const {
 #ifndef TTK_ENABLE_KAMIKAZE
-        if((neighborId < 0)
-           || ((size_t)neighborId >= vect_downSuperArcList_.size())) {
+        if(neighborId >= vect_downSuperArcList_.size()) {
           std::cerr << "[Merge Tree:Node] get down on bad neighbor !";
           std::cerr << std::endl;
           return 0;
@@ -176,12 +174,15 @@ namespace ttk {
 
       // Find and remove the arc (better perf for young added arc)
       inline void removeDownSuperArcFromLast(const idSuperArc &idSa) {
-        for(idSuperArc i = vect_downSuperArcList_.size() - 1; i >= 0; --i) {
+        for(idSuperArc i = vect_downSuperArcList_.size() - 1;; --i) {
           if(vect_downSuperArcList_[i] == idSa) {
             vect_downSuperArcList_[i] = vect_downSuperArcList_.back();
             vect_downSuperArcList_.pop_back();
 
             decDownValence();
+            return;
+          }
+          if(i == 0) {
             return;
           }
         }
@@ -202,12 +203,15 @@ namespace ttk {
 
       // Find and remove the arc (better perf for young added arc)
       inline void removeUpSuperArcFromLast(const idSuperArc &idSa) {
-        for(idSuperArc i = vect_upSuperArcList_.size(); i >= 0; --i) {
+        for(idSuperArc i = vect_upSuperArcList_.size();; --i) {
           if(vect_upSuperArcList_[i] == idSa) {
             vect_upSuperArcList_[i] = vect_upSuperArcList_.back();
             vect_upSuperArcList_.pop_back();
 
             decUpValence();
+            return;
+          }
+          if(i == 0) {
             return;
           }
         }

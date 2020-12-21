@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- TODO 11: Add widgets to the ParaView UI that control the member variables of the vtk filter -->
+
+<!-- NOTE: Unfortunately the widget types and their properties are not well documented. -->
+<!--       The best thing you can do is to look at filters that have similar widgets you require and copy their source code. -->
+<!--       Good resources are: IcoSphere.xml, PersistenceDiagram.xml, and ArrayEditor.xml -->
+
+<ServerManagerConfiguration>
+    <ProxyGroup name="filters">
+        <SourceProxy name="ttkPeriodicGrid" class="ttkPeriodicGrid" label="TTK PeriodicGrid">
+           <Documentation long_help="PeriodicGrid Long" short_help="PeriodicGrid Short">
+               This filter converts a regular grid (vtkImageData) into a
+periodic regular grid (vtkImageData), in all dimensions.
+           </Documentation>
+
+            <!-- INPUT -->
+               <InputProperty name="Input" command="SetInputConnection">
+                    <ProxyGroupDomain name="groups">
+                        <Group name="sources" />
+                        <Group name="filters" />
+                    </ProxyGroupDomain>
+                    <DataTypeDomain name="input_type">
+                        <DataType value="vtkImageData" />
+                    </DataTypeDomain>
+                    <Documentation>An input vtkImageData data-set.
+                    </Documentation>
+                </InputProperty>
+
+                <IntVectorProperty
+                  name="SetPeriodicity"
+                  label="Periodicity in all dimensions"
+                  command="SetPeriodicity"
+                  number_of_elements="1"
+                  default_values="1">
+                  <BooleanDomain name="bool"/>
+                  <Documentation>
+                    Set the periodicity ON or OFF.
+                  </Documentation>
+                </IntVectorProperty>
+
+            <!-- OUTPUT PARAMETER WIDGETS -->
+
+                <!-- A string parameter that controls the name of the output array -->
+
+
+                <!-- Create a UI group that contains all output parameter widgets (here only one) -->
+                <PropertyGroup panel_widget="Line" label="Output Options">
+                    <Property name="SetPeriodicity" />
+                </PropertyGroup>
+
+            <!-- DEBUG -->
+            ${DEBUG_WIDGETS}
+
+            <!-- MENU CATEGORY -->
+                <Hints>
+                    <ShowInMenu category="TTK - Domain" />
+                </Hints>
+        </SourceProxy>
+    </ProxyGroup>
+</ServerManagerConfiguration>

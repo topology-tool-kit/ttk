@@ -1,0 +1,4 @@
+NAME
+  ttkTriangulationRequest
+DEPENDS
+  ttkAlgorithm

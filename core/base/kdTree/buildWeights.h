@@ -48,10 +48,10 @@ namespace ttk {
         idx_left.push_back(idx[i]);
       }
 
-      KDTree *left = new KDTree(this, (coords_number_ + 1) % dimension, true);
-      left->buildRecursive(data, idx_left, ptNumber, dimension, this,
-                           correspondance_map, weights, weight_number);
-      left_ = left;
+      this->left_ = std::unique_ptr<KDTree>(
+        new KDTree(this, (coords_number_ + 1) % dimension, true));
+      this->left_->buildRecursive(data, idx_left, ptNumber, dimension, this,
+                                  correspondance_map, weights, weight_number);
     }
 
     if(idx.size() > 1) {
@@ -60,10 +60,10 @@ namespace ttk {
       for(int i = 0; i < ptNumber - median_loc - 1; i++) {
         idx_right[i] = idx[i + median_loc + 1];
       }
-      KDTree *right = new KDTree(this, (coords_number_ + 1) % dimension, false);
-      right->buildRecursive(data, idx_right, ptNumber, dimension, this,
-                            correspondance_map, weights, weight_number);
-      right_ = right;
+      this->right_ = std::unique_ptr<KDTree>(
+        new KDTree(this, (coords_number_ + 1) % dimension, false));
+      this->right_->buildRecursive(data, idx_right, ptNumber, dimension, this,
+                                   correspondance_map, weights, weight_number);
     }
 
     return correspondance_map;
@@ -128,10 +128,10 @@ namespace ttk {
         idx_left[i] = idx_side[i];
       }
 
-      KDTree *left = new KDTree(this, (coords_number_ + 1) % dimension, true);
-      left->buildRecursive(data, idx_left, ptNumber, dimension, this,
-                           correspondance_map, weights, weight_number);
-      left_ = left;
+      this->left_ = std::unique_ptr<KDTree>(
+        new KDTree(this, (coords_number_ + 1) % dimension, true));
+      this->left_->buildRecursive(data, idx_left, ptNumber, dimension, this,
+                                  correspondance_map, weights, weight_number);
     }
 
     if(idx_side.size() > 1) {
@@ -140,10 +140,10 @@ namespace ttk {
       for(unsigned int i = 0; i < idx_side.size() - median_loc - 1; i++) {
         idx_right[i] = idx_side[i + median_loc + 1];
       }
-      KDTree *right = new KDTree(this, (coords_number_ + 1) % dimension, false);
-      right->buildRecursive(data, idx_right, ptNumber, dimension, this,
-                            correspondance_map, weights, weight_number);
-      right_ = right;
+      this->right_ = std::unique_ptr<KDTree>(
+        new KDTree(this, (coords_number_ + 1) % dimension, false));
+      this->right_->buildRecursive(data, idx_right, ptNumber, dimension, this,
+                                   correspondance_map, weights, weight_number);
     }
     return;
   }

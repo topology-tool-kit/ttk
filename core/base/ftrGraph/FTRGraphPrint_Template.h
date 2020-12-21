@@ -1,13 +1,12 @@
-#ifndef FTRGRAPHPRINT_TEMPLATE_H
-#define FTRGRAPHPRINT_TEMPLATE_H
+#pragma once
 
 #include "FTRGraph.h"
 
 namespace ttk {
   namespace ftr {
 
-    template <typename ScalarType>
-    std::string FTRGraph<ScalarType>::printMesh(void) const {
+    template <typename ScalarType, typename triangulationType>
+    std::string FTRGraph<ScalarType, triangulationType>::printMesh(void) const {
       std::stringstream res;
 
       res << "cells     : " << mesh_.getNumberOfCells() << std::endl;
@@ -18,8 +17,8 @@ namespace ttk {
       return res.str();
     }
 
-    template <typename ScalarType>
-    std::string FTRGraph<ScalarType>::printEdge(
+    template <typename ScalarType, typename triangulationType>
+    std::string FTRGraph<ScalarType, triangulationType>::printEdge(
       const idEdge edgeId, const Propagation *const localPropagation) const {
       const orderedEdge oEdge
         = mesh_.getOrderedEdge(edgeId, localPropagation->goUp());
@@ -31,8 +30,8 @@ namespace ttk {
       return res.str();
     }
 
-    template <typename ScalarType>
-    std::string FTRGraph<ScalarType>::printTriangle(
+    template <typename ScalarType, typename triangulationType>
+    std::string FTRGraph<ScalarType, triangulationType>::printTriangle(
       const idCell cellId, const Propagation *const localPropagation) const {
       std::stringstream res;
       const orderedTriangle oTriangle
@@ -55,21 +54,17 @@ namespace ttk {
       return res.str();
     }
 
-    template <typename ScalarType>
-    void FTRGraph<ScalarType>::printGraph(const int verbosity) const {
+    template <typename ScalarType, typename triangulationType>
+    void FTRGraph<ScalarType, triangulationType>::printGraph(
+      const int verbosity) const {
       std::cout << graph_.print(verbosity) << std::endl;
     }
 
-    template <typename ScalarType>
-    void FTRGraph<ScalarType>::printTime(DebugTimer &timer,
-                                         const std::string &msg,
-                                         const int lvl) const {
-      std::ostringstream outString(std::string(lvl, ' '));
-      outString << msg << timer.getElapsedTime() << std::endl;
-      dMsg(std::cout, outString.str(), lvl);
+    template <typename ScalarType, typename triangulationType>
+    void FTRGraph<ScalarType, triangulationType>::printTime(
+      Timer &timer, const std::string &msg, const int lvl) const {
+      this->printMsg(msg, 1.0, timer.getElapsedTime(), this->threadNumber_);
     }
 
   } // namespace ftr
 } // namespace ttk
-
-#endif /* end of include guard: FTRGRAPHPRINT_TEMPLATE_H */

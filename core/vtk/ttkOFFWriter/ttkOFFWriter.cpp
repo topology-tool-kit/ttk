@@ -2,32 +2,21 @@
 
 #include <vtkCell.h>
 #include <vtkCellData.h>
-#include <vtkCellType.h>
-#include <vtkDataObject.h>
-#include <vtkDoubleArray.h>
-#include <vtkIdList.h>
-#include <vtkInformation.h>
-#include <vtkInformationVector.h>
+#include <vtkDataArray.h>
+#include <vtkDataSet.h>
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
-#include <vtkStreamingDemandDrivenPipeline.h>
-#include <vtkUnstructuredGrid.h>
-
-#include <iostream>
-#include <sstream>
-
-using namespace std;
 
 vtkStandardNewMacro(ttkOFFWriter);
 
 // Public
 // {{{
 
-void ttkOFFWriter::PrintSelf(ostream &os, vtkIndent indent) {
+void ttkOFFWriter::PrintSelf(std::ostream &os, vtkIndent indent) {
   this->Superclass::PrintSelf(os, indent);
 
   os << indent << "File Name: " << (this->Filename ? this->Filename : "(none)")
-     << endl;
+     << std::endl;
 }
 
 // }}}
@@ -35,16 +24,15 @@ void ttkOFFWriter::PrintSelf(ostream &os, vtkIndent indent) {
 // {{{
 
 ttkOFFWriter::ttkOFFWriter() {
-  Filename = NULL;
+  this->setDebugMsgPrefix("OFFWriter");
 }
 
 ttkOFFWriter::~ttkOFFWriter() {
-  SetFilename(NULL);
 }
 
 int ttkOFFWriter::OpenFile() {
 
-  ofstream f(Filename, ios::out);
+  std::ofstream f(Filename, ios::out);
 
   if(!f.fail()) {
     Stream = std::move(f);
@@ -62,15 +50,14 @@ void ttkOFFWriter::WriteData() {
   if(!dataSet)
     return;
 
-  if(this->OpenFile()) {
-    cerr << "[ttkOFFWriter] Could not open file `" << FileName << "' :("
-         << endl;
+  if(this->OpenFile() == -1) {
+    this->printErr("Could not open file `" + std::string{FileName} + "' :(");
     return;
   }
 
-  Stream << "OFF" << endl;
+  Stream << "OFF" << std::endl;
   Stream << dataSet->GetNumberOfPoints() << " " << dataSet->GetNumberOfCells()
-         << " 0" << endl;
+         << " 0" << std::endl;
 
   double p[3];
   for(vtkIdType i = 0; i < dataSet->GetNumberOfPoints(); i++) {
@@ -86,7 +73,7 @@ void ttkOFFWriter::WriteData() {
       }
     }
 
-    Stream << endl;
+    Stream << std::endl;
   }
 
   for(vtkIdType i = 0; i < dataSet->GetNumberOfCells(); i++) {
@@ -106,7 +93,7 @@ void ttkOFFWriter::WriteData() {
       }
     }
 
-    Stream << endl;
+    Stream << std::endl;
   }
 }
 

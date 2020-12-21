@@ -4,6 +4,6 @@ ttk_add_base_library(contourForests
   HEADERS
     ContourForests.h
     ContourForestsTemplate.h
-  LINK
+  DEPENDS
     contourForestsTree
     )

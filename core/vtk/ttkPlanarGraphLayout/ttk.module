@@ -1,0 +1,9 @@
+NAME
+  ttkPlanarGraphLayout
+SOURCES
+  ttkPlanarGraphLayout.cpp
+HEADERS
+  ttkPlanarGraphLayout.h
+DEPENDS
+  planarGraphLayout
+  ttkAlgorithm

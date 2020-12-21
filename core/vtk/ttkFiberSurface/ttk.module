@@ -1,0 +1,9 @@
+NAME
+  ttkFiberSurface
+SOURCES
+  ttkFiberSurface.cpp
+HEADERS
+  ttkFiberSurface.h
+DEPENDS
+  fiberSurface
+  ttkAlgorithm

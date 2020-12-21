@@ -5,10 +5,6 @@ find_dependency(Boost REQUIRED COMPONENTS system)
 
 # Was TTK built with optional dependencies?
 
-if (@TTK_ENABLE_EIGEN@)
-  find_dependency(Eigen3 REQUIRED NO_MODULE)
-endif()
-
 if (@TTK_ENABLE_MPI@)
   find_package(MPI REQUIRED)
 endif()
@@ -17,16 +13,18 @@ if (@TTK_ENABLE_OPENMP@)
   find_dependency(OpenMP REQUIRED)
 endif()
 
-if (@TTK_ENABLE_ZFP@)
-  find_dependency(ZFP REQUIRED)
+if (@TTK_ENABLE_ZFP@ AND NOT @TTK_ENABLE_SHARED_BASE_LIBRARIES@)
+  set(ZFP_DIR "@ZFP_DIR@" CACHE PATH "Use TTK ZFP dir" FORCE)
+  find_dependency(ZFP REQUIRED @ZFP_DIR@)
 endif()
 
-if (@TTK_ENABLE_ZLIB@)
+if (@TTK_ENABLE_ZLIB@ AND NOT @TTK_ENABLE_SHARED_BASE_LIBRARIES@)
   find_dependency(ZLIB REQUIRED)
 endif()
 
-
+if (@TTK_ENABLE_SCIKIT_LEARN@ AND NOT @TTK_ENABLE_SHARED_BASE_LIBRARIES@)
+  find_package(Python3 COMPONENTS Development NumPy)
+endif()
 
 # Include the actual targets for TTK Base
 include("${CMAKE_CURRENT_LIST_DIR}/TTKBaseTargets.cmake")
-

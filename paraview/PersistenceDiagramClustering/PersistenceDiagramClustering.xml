@@ -6,26 +6,26 @@
        that matches your filter and then model your xml on it -->
   <ProxyGroup name="filters">
    <SourceProxy
-     name="PersistenceDiagramClustering"
+     name="ttkPersistenceDiagramClustering"
      class="ttkPersistenceDiagramClustering"
      label="TTK PersistenceDiagramClustering">
      <Documentation
        long_help="TTK plugin for the computation of distances, barycenters and clustering within a set of persistence diagrams."
        shorthelp="TTK plugin for the computation of distances, barycenters and clustering within a set of persistence diagrams."
        >
-       Given an input set of persistence diagrams and a number of clusters, this plugin computes a clustering of the 
-       persistence diagrams using a progressive and interruptible K-Means approach. The result of the clustering is printed in the console. 
-       The clustered diagrams and the corresponding centroid diagrams are produced, as well as the assignment between the critical points. 
+       Given an input set of persistence diagrams and a number of clusters, this plugin computes a clustering of the
+       persistence diagrams using a progressive and interruptible K-Means approach. The result of the clustering is printed in the console.
+       The clustered diagrams and the corresponding centroid diagrams are produced, as well as the assignment between the critical points.
 
-       If the number of clusters is set to 1 (default value), the Wasserstein barycenter of the set is computed using the same algorithm. 
+       If the number of clusters is set to 1 (default value), the Wasserstein barycenter of the set is computed using the same algorithm.
 
-       If the number of clusters is set to 1 and there are only two input diagrams, by default their Wasserstein distance is computed with 
-       the Auction algorithm, and the barycenter is deduced from the assignments. The use of the progressive approach can nevertheless be toggled 
-       in the Properties menu. 
+       If the number of clusters is set to 1 and there are only two input diagrams, by default their Wasserstein distance is computed with
+       the Auction algorithm, and the barycenter is deduced from the assignments. The use of the progressive approach can nevertheless be toggled
+       in the Properties menu.
 
-       Related publication: "Progressive Wasserstein Barycenters of Persistence Diagrams" 
-       Jules Vidal, Joseph Budin, Julien Tierny 
-       IEEE Transactions on Visualization and Computer Graphics. 
+       Related publication: "Progressive Wasserstein Barycenters of Persistence Diagrams"
+       Jules Vidal, Joseph Budin, Julien Tierny
+       IEEE Transactions on Visualization and Computer Graphics.
        Proceedings of IEEE VIS 2019.
 
        See also PersistenceDiagram, BottleneckDistance
@@ -33,14 +33,13 @@
 
      <InputProperty
         name="Input"
-        command="AddInputConnection"
-        multiple_input="1">
+        command="SetInputConnection">
         <ProxyGroupDomain name="groups">
           <Group name="sources"/>
           <Group name="filters"/>
         </ProxyGroupDomain>
         <DataTypeDomain name="input_type">
-          <DataType value="vtkDataSet"/>
+          <DataType value="vtkMultiBlockDataSet"/>
         </DataTypeDomain>
         <InputArrayDomain name="input_scalars" number_of_components="1">
           <Property name="Input" function="FieldDataSelection" />
@@ -56,7 +55,7 @@
           label="Algorithm"
           command="SetMethod"
           number_of_elements="1"
-         default_values="0" 
+         default_values="0"
          panel_visibility="advanced" >
 		 <EnumerationDomain name="enum">
           <Entry value="0" text="Progressive approach"/>
@@ -136,18 +135,18 @@
         </Documentation>
       </IntVectorProperty>
 
-        <StringVectorProperty
-          name="n"
-          label="p parameter"
-          command="SetWassersteinMetric"
-          number_of_elements="1"
-          default_values="2" 
-          panel_visibility="advanced">
+      <IntVectorProperty
+        name="n"
+        label="p parameter"
+        command="SetWassersteinMetric"
+        number_of_elements="1"
+        default_values="2"
+        panel_visibility="advanced">
         <Documentation>
           Value of the parameter p for the Wp (p-th Wasserstein) distance
-computation (type "inf" for the Bottleneck distance).
+          computation (type "inf" for the Bottleneck distance).
         </Documentation>
-      </StringVectorProperty>
+      </IntVectorProperty>
 
       <IntVectorProperty
           name="Deterministic"
@@ -258,7 +257,7 @@ computation (type "inf" for the Bottleneck distance).
         </Documentation>
 
         </DoubleVectorProperty>
-        
+
       <IntVectorProperty
         name="DisplayMethod"
         command="SetDisplayMethod"
@@ -278,7 +277,7 @@ computation (type "inf" for the Bottleneck distance).
 
 
         <DoubleVectorProperty
-          name="spacing_"
+          name="Spacing"
           label="Spacing"
           command="SetSpacing"
           number_of_elements="1"
@@ -310,7 +309,7 @@ computation (type "inf" for the Bottleneck distance).
          label="Use Accelerated KMeans"
          command="SetUseAccelerated"
             number_of_elements="1"
-            default_values="1" 
+            default_values="1"
             panel_visibility="advanced">
         <BooleanDomain name="bool"/>
          <Documentation>
@@ -325,7 +324,7 @@ computation (type "inf" for the Bottleneck distance).
          label="KMeanspp Initialization"
          command="SetUseKmeansppInit"
          number_of_elements="1"
-            default_values="1" 
+            default_values="1"
             panel_visibility="advanced">
         <BooleanDomain name="bool"/>
          <Documentation>
@@ -374,62 +373,14 @@ between matched critical points.
         </Documentation>
       </DoubleVectorProperty>
 
-      <!-- <PropertyGroup panel_widget="Line" label="Testing"> -->
-      <!--   <Property name="UseAllCores" /> -->
-      <!--   <Property name="ThreadNumber" /> -->
-      <!--   <Property name="DebugLevel" /> -->
-      <!-- </PropertyGroup> -->
-
-      <IntVectorProperty
-         name="UseAllCores"
-         label="Use All Cores"
-         command="SetUseAllCores"
-         number_of_elements="1"
-        default_values="1"
-        panel_visibility="advanced">
-        <BooleanDomain name="bool"/>
-         <Documentation>
-          Use all available cores.
-         </Documentation>
-      </IntVectorProperty>
-
-      <IntVectorProperty
-         name="ThreadNumber"
-         label="Thread Number"
-         command="SetThreadNumber"
-         number_of_elements="1"
-        default_values="1" 
-        panel_visibility="advanced">
-        <IntRangeDomain name="range" min="1" max="100" />
-         <Documentation>
-          Thread number.
-         </Documentation>
-      </IntVectorProperty>
-
-      <IntVectorProperty
-         name="DebugLevel"
-         label="Debug Level"
-         command="SetdebugLevel_"
-         number_of_elements="1"
-        default_values="1" 
-        panel_visibility="advanced">
-        <IntRangeDomain name="range" min="0" max="100" />
-         <Documentation>
-           Debug level.
-         </Documentation>
-       </IntVectorProperty>
-
-
-
-
-
+      ${DEBUG_WIDGETS}
 
       <OutputPort name="Clustered Diagrams" index="0" id="port0" />
       <OutputPort name="Cluster Centroids" index="1" id="port1" />
       <OutputPort name="Matchings" index="2" id="port2" />
 
       <Hints>
-        <ShowInMenu category="TTK - Scalar Data" />
+        <ShowInMenu category="TTK - Ensemble Scalar Data" />
       </Hints>
    </SourceProxy>
  </ProxyGroup>

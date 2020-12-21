@@ -1,0 +1,11 @@
+NAME
+  ttkContourForests
+SOURCES
+  ttkContourForests.cpp
+HEADERS
+  ttkContourForests.h
+DEPENDS
+  geometry
+  contourForests
+  contourForestsTree
+  ttkAlgorithm
