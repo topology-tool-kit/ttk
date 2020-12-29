@@ -12,7 +12,7 @@
 /// 'HelloWorld'
 /// Jonas Lukasczyk and Julien Tierny.
 /// TTK Publications.
-/// 2020.
+/// 2021.
 ///
 
 #pragma once
