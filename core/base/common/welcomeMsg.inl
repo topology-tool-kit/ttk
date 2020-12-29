@@ -4,42 +4,41 @@
 
 printMsg(
   debug::output::BOLD
-    + " _____ _____ _  __                    __  __    ____   ___ ____   ___  "
+    + " _____ _____ _  __                        __  __    ____   ___ ____  _" 
     + debug::output::ENDCOLOR,
   debug::Priority::PERFORMANCE,
   debug::LineMode::NEW,
   stream);
 printMsg(debug::output::BOLD
-           + "|_   _|_   _| |/ /                   / /__\\ \\  |___ \\ / _ "
-             "\\___ \\ / _ \\ "
+          + "|_   _|_   _| |/ /                       "
+            "/ /__\\ \\  |___ \\ / _ \\___ \\/ |"
            + debug::output::ENDCOLOR,
          debug::Priority::PERFORMANCE,
          debug::LineMode::NEW,
          stream);
 printMsg(
   debug::output::BOLD
-    + "  | |   | | | ' /                   | |/ __| |   __) | | | |__) | | | |"
+    + "  | |   | | | ' /                       | |/ __| |   __) | | | |__) | |"
     + debug::output::ENDCOLOR,
   debug::Priority::PERFORMANCE,
   debug::LineMode::NEW,
   stream);
 printMsg(
   debug::output::BOLD
-    + "  | |   | | | . \\                   | | (__| |  / __/| |_| / __/| |_| |"
+    + "  | |   | | | . \\                       | | (__| |  / __/| |_| / __/| |"
     + debug::output::ENDCOLOR,
   debug::Priority::PERFORMANCE,
   debug::LineMode::NEW,
   stream);
 printMsg(debug::output::BOLD
-           + "  |_|   |_| |_|\\_\\                  | |\\___| | "
-             "|_____|\\___/_____|\\___/ "
+          + "  |_|   |_| |_|\\_\\                      "
+            "| |\\___| | |_____|\\___/_____|_|"
            + debug::output::ENDCOLOR,
          debug::Priority::PERFORMANCE,
          debug::LineMode::NEW,
          stream);
 printMsg(debug::output::BOLD
-           + "                                     \\_\\  /_/                  "
-             "        "
+          + "                                         \\_\\  /_/"       
            + debug::output::ENDCOLOR,
          debug::Priority::PERFORMANCE,
          debug::LineMode::NEW,
