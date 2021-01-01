@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.12.2) # confirmed by Chris <kappe@cs.uni-kl.de>
 # The C is required to build with VTK when it has MPI
-project(ttk VERSION 0.9.9 LANGUAGES CXX C)
+project(ttk VERSION 0.9.10 LANGUAGES CXX C)
 
 if("${PROJECT_SOURCE_DIR}" STREQUAL "${PROJECT_BINARY_DIR}")
   message(FATAL_ERROR "Build in sources is not supported by TTK, please use a separate build folder")
