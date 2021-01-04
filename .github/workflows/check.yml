@@ -91,7 +91,6 @@ jobs:
         git ls-files \
         | grep core \
         | grep -E "\.cpp$|\.cxx$" \
-        | grep -Ev "Munkres|AuctionActor" \
         | xargs -n1 clang-tidy -p build
 
 
@@ -151,5 +150,4 @@ jobs:
         git ls-files \
         | grep core \
         | grep -E "\.cpp$|\.cxx$" \
-        | grep -Ev "Munkres|AuctionActor" \
         | xargs clang-check -p build --extra-arg=-Werror
