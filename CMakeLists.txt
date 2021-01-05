@@ -192,6 +192,9 @@ if(TTK_BUILD_PARAVIEW_PLUGINS)
         )
   endif()
 
+  # set rpath for the plugin
+  set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_RPATH};${TTK_INSTALL_PLUGIN_DIR}/${TTK_PLUGIN_SUBDIR}")
+
   add_subdirectory(paraview)
 endif()
 
