@@ -59,14 +59,14 @@ namespace ttk {
         isReversed_{separatrix.isReversed_}, geometry_{separatrix.geometry_} {
     }
 
-    explicit Separatrix(Separatrix &&separatrix)
+    explicit Separatrix(Separatrix &&separatrix) noexcept
       : isValid_{separatrix.isValid_}, source_{separatrix.source_},
         destination_{separatrix.destination_}, isReversed_{std::move(
                                                  separatrix.isReversed_)},
         geometry_{std::move(separatrix.geometry_)} {
     }
 
-    Separatrix &operator=(Separatrix &&separatrix) {
+    Separatrix &operator=(Separatrix &&separatrix) noexcept {
       isValid_ = separatrix.isValid_;
       source_ = separatrix.source_;
       destination_ = separatrix.destination_;

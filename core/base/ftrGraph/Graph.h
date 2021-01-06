@@ -55,11 +55,11 @@ namespace ttk {
       std::vector<valence> valDown_, valUp_;
 
       Graph();
-      Graph(Graph &&other) = default;
+      Graph(Graph &&other) noexcept = default;
       Graph(const Graph &other) = delete;
       virtual ~Graph();
 
-      Graph &operator=(Graph &&other) {
+      Graph &operator=(Graph &&other) noexcept {
         if(this != &other) {
           leaves_ = std::move(other.leaves_);
           nodes_ = std::move(other.nodes_);

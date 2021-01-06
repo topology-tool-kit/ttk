@@ -50,9 +50,9 @@ namespace ttk {
   public:
     Triangulation();
     Triangulation(const Triangulation &);
-    Triangulation(Triangulation &&);
+    Triangulation(Triangulation &&) noexcept;
     Triangulation &operator=(const Triangulation &);
-    Triangulation &operator=(Triangulation &&);
+    Triangulation &operator=(Triangulation &&) noexcept;
     ~Triangulation();
 
     enum class Type { EXPLICIT, IMPLICIT, PERIODIC };
