@@ -60,16 +60,16 @@ namespace ttk {
     }
 
     explicit Separatrix(Separatrix &&separatrix)
-      : isValid_{separatrix.isValid_}, source_{std::move(separatrix.source_)},
-        destination_{std::move(separatrix.destination_)},
-        isReversed_{std::move(separatrix.isReversed_)},
+      : isValid_{separatrix.isValid_}, source_{separatrix.source_},
+        destination_{separatrix.destination_}, isReversed_{std::move(
+                                                 separatrix.isReversed_)},
         geometry_{std::move(separatrix.geometry_)} {
     }
 
     Separatrix &operator=(Separatrix &&separatrix) {
       isValid_ = separatrix.isValid_;
-      source_ = std::move(separatrix.source_);
-      destination_ = std::move(separatrix.destination_);
+      source_ = separatrix.source_;
+      destination_ = separatrix.destination_;
       isReversed_ = std::move(separatrix.isReversed_);
       geometry_ = std::move(separatrix.geometry_);
 
