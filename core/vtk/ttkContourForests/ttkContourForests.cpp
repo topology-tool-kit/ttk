@@ -903,7 +903,7 @@ void ttkContourForests::getSkeleton() {
   else
     skeletonArcs_->ShallowCopy(voidPolyData_);
 
-  // ce qui est fait n'est plus à faire
+  // what is done is no longer to be done
   toComputeSkeleton_ = false;
 
   this->printMsg(
@@ -1090,7 +1090,7 @@ void ttkContourForests::getTree() {
                       (this->build<VTK_TT, TTK_TT *>(
                         static_cast<TTK_TT *>(triangulation_->getData()))));
 
-  // ce qui est fait n'est plus à faire
+  // what is done is no longer to be done
   toComputeContourTree_ = false;
 }
 
