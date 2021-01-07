@@ -25,7 +25,7 @@ function(ttk_add_base_library library)
   target_include_directories(${library}
     PUBLIC
       $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-      $<INSTALL_INTERFACE:include/ttk/base>
+      $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/ttk/base>
     )
 
   if(ARG_DEPENDS)
@@ -47,7 +47,7 @@ function(ttk_add_base_library library)
     )
 
   if(ARG_HEADERS)
-    install(FILES ${ARG_HEADERS} DESTINATION include/ttk/base)
+    install(FILES ${ARG_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/ttk/base)
   endif()
 endfunction()
 
@@ -70,7 +70,7 @@ function(ttk_add_base_template_library library)
   target_include_directories(${library}
     INTERFACE
       $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-      $<INSTALL_INTERFACE:include/ttk/base>
+      $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/ttk/base>
     )
 
   if(TTK_ENABLE_DOUBLE_TEMPLATING)
