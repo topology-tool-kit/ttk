@@ -25,7 +25,7 @@
 
 // base code includes
 #include <ProgramBase.h>
-#include <ttkTriangulationAlgorithm.h>
+#include <ttkAlgorithm.h>
 
 #include <ttkProgramBaseModule.h>
 
