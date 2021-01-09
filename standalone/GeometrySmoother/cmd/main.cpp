@@ -45,14 +45,10 @@ public:
     if(!inputPaths[0].length())
       return -2;
 
-    {
-      stringstream msg;
-      msg << "[ExampleProgram] Reading input mesh..." << endl;
-      // choose where to display this message (cout, cerr, a file)
-      // choose the priority of this message (1, nearly always displayed,
-      // higher values mean lower priorities)
-      Debug::dMsg(cout, msg.str(), Debug::timeMsg);
-    }
+    // choose where to display this message (cout, cerr, a file)
+    // choose the priority of this message (1, nearly always displayed,
+    // higher values mean lower priorities)
+    Debug::printMsg("Reading input mesh...");
 
     int vertexNumber = 0, triangleNumber = 0;
     string keyword;
@@ -60,19 +56,15 @@ public:
     ifstream f(inputPaths[0].data(), ios::in);
 
     if(!f) {
-      stringstream msg;
-      msg << "[Editor] Cannot open file `" << inputPaths[0] << "'!" << endl;
-      Debug::dMsg(cerr, msg.str(), Debug::fatalMsg);
+      Debug::printErr("Cannot open file `" + inputPaths[0] + "'!");
       return -1;
     }
 
     f >> keyword;
 
     if(keyword != "OFF") {
-      stringstream msg;
-      msg << "[Editor] Input OFF file `" << inputPaths[0]
-          << "' seems invalid :(" << endl;
-      Debug::dMsg(cerr, msg.str(), Debug::fatalMsg);
+      Debug::printErr("Input OFF file `" + inputPaths[0]
+                      + "' seems invalid :(");
       return -2;
     }
 
@@ -123,12 +115,9 @@ public:
 
     smoother->preconditionTriangulation(&triangleMesh_);
 
-    {
-      stringstream msg;
-      msg << "[Editor]   done! (read " << vertexNumber << " vertices, "
-          << triangleNumber << " triangles)" << endl;
-      Debug::dMsg(cout, msg.str(), Debug::timeMsg);
-    }
+    Debug::printMsg("done! (read " + std::to_string(vertexNumber)
+                    + " vertices, " + std::to_string(triangleNumber)
+                    + " triangles)");
 
     return 0;
   }
@@ -140,10 +129,7 @@ public:
     ofstream f(fileName.data(), ios::out);
 
     if(!f) {
-      stringstream msg;
-      msg << "[Editor] Could not write output file `" << fileName << "'!"
-          << endl;
-      Debug::dMsg(cerr, msg.str(), Debug::fatalMsg);
+      Debug::printErr("Could not write output file `" + fileName + "'!");
       return -1;
     }
 

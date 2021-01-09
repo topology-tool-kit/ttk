@@ -113,7 +113,7 @@ int Editor::init(int &argc, char **argv) {
 
   // set default values
   if(ttk::globalDebugLevel_ < 0) {
-    ttk::globalDebugLevel_ = infoMsg;
+    ttk::globalDebugLevel_ = static_cast<int>(ttk::debug::Priority::INFO);
   }
   debugLevel_ = ttk::globalDebugLevel_;
   if(threadNumber_ < 1) {
