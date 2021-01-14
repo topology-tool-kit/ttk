@@ -83,6 +83,10 @@ int ttkScalarFieldNormalizer::RequestData(vtkInformation *request,
 
   // get input scalar field
   vtkDataArray *inputArray = this->GetInputArrayToProcess(0, inputVector);
+  if(inputArray == nullptr) {
+    this->printErr("No such input scalar field");
+    return 0;
+  }
 
   vtkSmartPointer<vtkDataArray> outputArray
     = vtkSmartPointer<vtkDataArray>::Take(inputArray->NewInstance());
