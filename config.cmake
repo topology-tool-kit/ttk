@@ -1,11 +1,13 @@
 set(CMAKE_CXX_STANDARD 11)
 
-# Set a predefined build type
-if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+# Set a default build type if none was specified
+get_property(generator_is_multi_config GLOBAL
+  PROPERTY GENERATOR_IS_MULTI_CONFIG)
+if (NOT CMAKE_BUILD_TYPE AND NOT generator_is_multi_config)
   message(STATUS "Setting build type to 'Release'.")
   set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build." FORCE)
   set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release")
-endif()
+endif ()
 
 # Options & dependencies
 
