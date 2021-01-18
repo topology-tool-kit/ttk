@@ -372,9 +372,13 @@ jobs:
       versionSpec: '3.8'
 
   - script: |
-      wget https://github.com/topology-tool-kit/ttk-paraview/releases/download/$(PV_VERSION)/ttk-paraview.pkg
-      sudo installer -pkg ttk-paraview.pkg -target /
-    displayName: 'Download and install ParaView'
+      wget https://www.paraview.org/files/v$(PV_V)/ParaView-$(PV_VERSION).tar.xz
+      tar Jxvf ParaView-v5.8.1.tar.xz
+      cd paraview/patch
+      ./patch-paraview-5.8.1.sh $(Build.SourcesDirectory)/ParaView-v5.8.1
+      # switch to Xcode 11 since Xcode 12 breaks the ParaView build
+      sudo xcode-select -s "/Applications/Xcode_11.7.app"
+    displayName: 'Download & patch ParaView v5.8.1'
 
   - task: Cache@2
     inputs:
@@ -385,12 +389,28 @@ jobs:
 
   - task: CMake@1
     inputs:
+      workingDirectory: 'build_paraview/'
+      cmakeArgs: '.. $(CMakeArgs)
+                     -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
+                     -DCMAKE_INSTALL_PREFIX=$(Build.ArtifactStagingDirectory)/pv-install
+                     -DCMAKE_BUILD_TYPE=Release
+                     -DQt5_DIR=/usr/local/opt/qt/lib/cmake/Qt5'
+    displayName: 'Configure ParaView'
+
+  - script: |
+      cmake --build . --target install
+    workingDirectory: 'build_paraview/'
+    displayName: 'Build and install ParaView'
+
+  - task: CMake@1
+    inputs:
       workingDirectory: 'build/'
       cmakeArgs: '.. $(CMakeArgs)
                      -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
                      -DCMAKE_INSTALL_PREFIX=$(Build.ArtifactStagingDirectory)/ttk-install
                      -DCMAKE_BUILD_TYPE=Release
                      -DQt5_DIR=/usr/local/opt/qt/lib/cmake/Qt5
+                     -DParaView_Dir=$(Build.ArtifactStagingDirectory)/pv-install/lib/cmake/paraview-5.8
                      -DTTK_BUILD_STANDALONE_APPS=ON
                      -DTTK_ENABLE_CPU_OPTIMIZATION=OFF
                      $(TTK_MODULE_DISABLE)
