@@ -407,7 +407,7 @@ jobs:
                      -DCMAKE_INSTALL_PREFIX=$(Build.ArtifactStagingDirectory)/ttk-install
                      -DCMAKE_BUILD_TYPE=Release
                      -DQt5_DIR=/usr/local/opt/qt/lib/cmake/Qt5
-                     -DParaView_DIR=$(Build.ArtifactStagingDirectory)/pv-install/lib/cmake/paraview-5.8
+                     -DCMAKE_PREFIX_PATH=$(Build.ArtifactStagingDirectory)/pv-install/lib/cmake
                      -DTTK_BUILD_STANDALONE_APPS=ON
                      -DTTK_ENABLE_CPU_OPTIMIZATION=OFF
                      $(TTK_MODULE_DISABLE)
@@ -444,7 +444,7 @@ jobs:
       cmakeArgs: '../examples/vtk-c++ $(CMakeArgs)
                   -DCMAKE_BUILD_TYPE=$(BuildType)
                   -DQt5_DIR=/usr/local/opt/qt/lib/cmake/Qt5
-                  -DCMAKE_PREFIX_PATH=$(Build.ArtifactStagingDirectory)/ttk-install/lib/cmake'
+                  -DCMAKE_PREFIX_PATH=$(Build.ArtifactStagingDirectory)/ttk-install/lib/cmake;$(Build.ArtifactStagingDirectory)/pv-install/lib/cmake'
     displayName: 'Configure TTKVTK Example'
 
   - script: |
@@ -469,9 +469,9 @@ jobs:
     displayName: 'Test TTKVTK Example'
 
   - script: |
-      export PYTHONPATH=$(Build.ArtifactStagingDirectory)/ttk-install/lib/python3.8/site-packages
-      export DYLD_LIBRARY_PATH=/Applications/lib:$(Build.ArtifactStagingDirectory)/ttk-install/lib
-      /Applications/bin/pvpython ./example.py ../data/inputData.vtu
+      export PYTHONPATH=$(Build.ArtifactStagingDirectory)/ttk-install/lib/python3.9/site-packages:$(Build.ArtifactStagingDirectory)/pv-install/lib/python3.9/site-packages
+      export DYLD_LIBRARY_PATH=$(Build.ArtifactStagingDirectory)/pv-install/lib:$(Build.ArtifactStagingDirectory)/ttk-install/lib
+      $(Build.ArtifactStagingDirectory)/pv-install/bin/pvpython ./example.py ../data/inputData.vtu
       if [ ! -f curve.vtk ] || [ ! -f separatrices.vtu ] || [ ! -f segmentation.vtu ] ; then
         exit 1
       fi
@@ -480,8 +480,8 @@ jobs:
 
   - script: |
       export PV_PLUGIN_PATH=$(Build.ArtifactStagingDirectory)/ttk-install/bin/plugins
-      export DYLD_LIBRARY_PATH=/Applications/lib:$(Build.ArtifactStagingDirectory)/ttk-install/lib
-      /Applications/bin/pvpython -v=9 ./example.py ../data/inputData.vtu
+      export DYLD_LIBRARY_PATH=$(Build.ArtifactStagingDirectory)/pv-install/lib:$(Build.ArtifactStagingDirectory)/ttk-install/lib
+      $(Build.ArtifactStagingDirectory)/pv-install/bin/pvpython ./example.py ../data/inputData.vtu
       if [ ! -f curve.vtk ] || [ ! -f separatrices.vtu ] || [ ! -f segmentation.vtu ] ; then
         exit 1
       fi
