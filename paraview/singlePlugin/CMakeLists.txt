@@ -2,6 +2,8 @@
 # https://discourse.paraview.org/t/install-headers-for-vtk-modules-build-by-paraview-5-7-0/2721
 set(_paraview_add_plugin_MODULES_FILES TRUE)
 
+list(REMOVE_DUPLICATES TTK_MODULES)
+
 paraview_add_plugin(TopologyToolKit
   VERSION "1.0"
   REQUIRED_ON_CLIENT

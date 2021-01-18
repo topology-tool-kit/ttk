@@ -14,12 +14,6 @@ option(TTK_BUILD_STANDALONE_APPS "Build the TTK Standalone Applications" ON)
 option(TTK_WHITELIST_MODE "Explicitely enable each filter" OFF)
 mark_as_advanced(TTK_WHITELIST_MODE BUILD_SHARED_LIBS)
 
-if(${TTK_WHITELIST_MODE})
-  set(TTK_ENABLE_FILTER_DEFAULT "DONT_WANT" CACHE INTERNAL "Default value for each filter build")
-else()
-  set(TTK_ENABLE_FILTER_DEFAULT "WANT" CACHE INTERNAL "Default value for each filter build")
-endif()
-
 # This option allows library to be built dynamic
 # like the TopologyToolKit.so file for paraview
 option(BUILD_SHARED_LIBS "Build TTK as shared lib" ON)

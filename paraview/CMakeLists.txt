@@ -3,7 +3,6 @@
 # The goal is to create a single plugin for parview
 set(TTK_XMLS             "" CACHE INTERNAL "")
 set(TTK_MODULES          "" CACHE INTERNAL "")
-set(TTK_VTK_MODULE_FILES "" CACHE INTERNAL "")
 file(GLOB PARAVIEW_PLUGIN_DIRS *)
 foreach(PARAVIEW_PLUGIN ${PARAVIEW_PLUGIN_DIRS})
   if(IS_DIRECTORY ${PARAVIEW_PLUGIN})
