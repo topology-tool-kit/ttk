@@ -367,10 +367,6 @@ jobs:
       brew install wget libomp mesa glew boost ccache qt
     displayName: 'Install dependencies'
 
-  - task: UsePythonVersion@0
-    inputs:
-      versionSpec: '3.8'
-
   - script: |
       wget https://www.paraview.org/files/v$(PV_V)/ParaView-$(PV_VERSION).tar.xz
       tar Jxvf ParaView-v5.8.1.tar.xz
