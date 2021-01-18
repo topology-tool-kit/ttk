@@ -364,7 +364,7 @@ jobs:
   steps:
   - script: |
       brew cask install xquartz
-      brew install wget libomp mesa glew boost ccache qt
+      brew install wget libomp mesa glew boost ccache qt ninja python
     displayName: 'Install dependencies'
 
   - script: |
@@ -390,7 +390,8 @@ jobs:
                      -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
                      -DCMAKE_INSTALL_PREFIX=$(Build.ArtifactStagingDirectory)/pv-install
                      -DCMAKE_BUILD_TYPE=Release
-                     -DQt5_DIR=/usr/local/opt/qt/lib/cmake/Qt5'
+                     -DQt5_DIR=/usr/local/opt/qt/lib/cmake/Qt5
+                     -GNinja'
     displayName: 'Configure ParaView'
 
   - script: |
@@ -410,11 +411,12 @@ jobs:
                      -DTTK_BUILD_STANDALONE_APPS=ON
                      -DTTK_ENABLE_CPU_OPTIMIZATION=OFF
                      $(TTK_MODULE_DISABLE)
-                     $(TTK_MODULE_TEST)'
+                     $(TTK_MODULE_TEST)
+                     -GNinja'
     displayName: 'Configure TTK'
 
   - script: |
-      cmake --build . --target install -- -j 4
+      cmake --build . --target install
     workingDirectory: 'build/'
     displayName: 'Build and install TTK'
 
