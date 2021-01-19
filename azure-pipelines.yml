@@ -367,13 +367,6 @@ jobs:
       brew install wget libomp mesa glew boost ccache qt ninja python
     displayName: 'Install dependencies'
 
-  - task: Cache@2
-    inputs:
-      key: PV | $(Agent.OS) | "$(PV_VERSION)" | "2021-01-18"
-      path: $(Build.ArtifactStagingDirectory)/pv-install
-      cacheHitVar: CACHE_RESTORED
-    displayName: Cache ParaView install
-
   - script: |
       wget https://www.paraview.org/files/v$(PV_V)/ParaView-$(PV_VERSION).tar.xz
       tar Jxvf ParaView-$(PV_VERSION).tar.xz
@@ -381,7 +374,6 @@ jobs:
       ./patch-paraview-5.8.1.sh $(Build.SourcesDirectory)/ParaView-$(PV_VERSION)
       # switch to Xcode 11 since Xcode 12 breaks the ParaView build
       sudo xcode-select -s "/Applications/Xcode_11.7.app"
-    condition: ne(variables.CACHE_RESTORED, 'true')
     displayName: 'Download & patch ParaView $(PV_VERSION)'
 
   - task: Cache@2
@@ -400,13 +392,11 @@ jobs:
                      -DCMAKE_BUILD_TYPE=Release
                      -DQt5_DIR=/usr/local/opt/qt/lib/cmake/Qt5
                      -GNinja'
-    condition: ne(variables.CACHE_RESTORED, 'true')
     displayName: 'Configure ParaView'
 
   - script: |
       cmake --build . --target install
     workingDirectory: 'ParaView-$(PV_VERSION)/build'
-    condition: ne(variables.CACHE_RESTORED, 'true')
     displayName: 'Build and install ParaView'
 
   - task: CMake@1
