@@ -364,10 +364,7 @@ jobs:
   steps:
   - script: |
       brew cask install xquartz
-      brew install wget libomp mesa glew boost ccache qt ninja
-      # try to fix the install path of Python headers
-      brew reinstall python
-      brew ls -v python | grep Python.h
+      brew install wget libomp mesa glew boost ccache qt ninja python
     displayName: 'Install dependencies'
 
   - task: Cache@2
