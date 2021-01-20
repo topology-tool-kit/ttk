@@ -158,6 +158,28 @@ public:
                      vtkInformationVector **inputVectors,
                      vtkInformationVector *outputVector) override;
 
+  /**
+   * Get the output data object for a port on this algorithm.
+   */
+  vtkDataSet *GetOutput();
+  vtkDataSet *GetOutput(int);
+
+  /**
+   * Assign a data object as input. Note that this method does not
+   * establish a pipeline connection. Use SetInputConnection() to
+   * setup a pipeline connection.
+   */
+  void SetInputData(vtkDataSet *);
+  void SetInputData(int, vtkDataSet *);
+
+  /**
+   * Assign a data object as input. Note that this method does not
+   * establish a pipeline connection. Use AddInputConnection() to
+   * setup a pipeline connection.
+   */
+  void AddInputData(vtkDataSet *);
+  void AddInputData(int, vtkDataSet *);
+
 protected:
   ttkAlgorithm();
   virtual ~ttkAlgorithm();

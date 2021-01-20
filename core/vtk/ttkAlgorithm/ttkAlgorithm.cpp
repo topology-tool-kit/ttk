@@ -8,6 +8,7 @@
 
 #include <vtkCellTypes.h>
 #include <vtkCommand.h>
+#include <vtkDataSet.h>
 #include <vtkImageData.h>
 #include <vtkInformation.h>
 #include <vtkInformationIntegerKey.h>
@@ -219,6 +220,30 @@ int prepOutput(vtkInformation *info, std::string className) {
     info->Set(vtkDataObject::DATA_OBJECT(), newOutput);
   }
   return 1;
+}
+
+vtkDataSet *ttkAlgorithm::GetOutput() {
+  return this->GetOutput(0);
+}
+
+vtkDataSet *ttkAlgorithm::GetOutput(int port) {
+  return vtkDataSet::SafeDownCast(this->GetOutputDataObject(port));
+}
+
+void ttkAlgorithm::SetInputData(vtkDataSet *input) {
+  this->SetInputData(0, input);
+}
+
+void ttkAlgorithm::SetInputData(int index, vtkDataSet *input) {
+  this->SetInputDataInternal(index, input);
+}
+
+void ttkAlgorithm::AddInputData(vtkDataSet *input) {
+  this->AddInputData(0, input);
+}
+
+void ttkAlgorithm::AddInputData(int index, vtkDataSet *input) {
+  this->AddInputDataInternal(index, input);
 }
 
 int ttkAlgorithm::RequestDataObject(vtkInformation *request,
