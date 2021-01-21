@@ -363,7 +363,7 @@ jobs:
 
   steps:
   - script: |
-      brew cask install xquartz
+      brew install --cask xquartz
       brew install wget libomp mesa glew boost ccache qt ninja python
     displayName: 'Install dependencies'
 
