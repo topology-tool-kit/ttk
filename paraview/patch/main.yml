@@ -79,7 +79,7 @@ jobs:
 
     - name: Install macOS dependencies
       run: |
-        brew cask install xquartz
+        brew install --cask xquartz
         brew install wget libomp mesa glew boost qt ninja
 
     - uses: actions/setup-python@v2

@@ -172,7 +172,7 @@ jobs:
     - name: Install macOS dependencies
       run: |
         # ParaView dependencies
-        brew cask install xquartz
+        brew install --cask xquartz
         brew install wget libomp mesa glew qt
         # TTK dependencies
         brew install boost eigen graphviz embree
@@ -251,7 +251,7 @@ jobs:
     - name: Install macOS run-time dependencies
       run: |
         # ParaView dependencies
-        brew cask install xquartz
+        brew install --cask xquartz
         brew install wget libomp mesa glew qt
         # TTK dependencies
         brew install boost graphviz embree
