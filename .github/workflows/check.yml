@@ -14,7 +14,11 @@ on:
       - 'dev'
 
 jobs:
-  check-code:
+
+  # ------------- #
+  # Code lint job #
+  # ------------- #
+  lint-code:
     runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v2
@@ -82,18 +86,68 @@ jobs:
           -DTTK_BUILD_STANDALONE_APPS=TRUE \
           $GITHUB_WORKSPACE
 
-    - name: Use clang-check for compiler warnings
-      run: |
-        git ls-files \
-        | grep core \
-        | grep -E "\.cpp$|\.cxx$" \
-        | grep -Ev "Munkres|AuctionActor" \
-        | xargs clang-check -p build --extra-arg=-Werror
-
     - name: Use clang-tidy to lint code [NOT ENFORCED]
       run: |
         git ls-files \
         | grep core \
         | grep -E "\.cpp$|\.cxx$" \
-        | grep -Ev "Munkres|AuctionActor" \
         | xargs -n1 clang-tidy -p build
+
+
+  # ----------------------- #
+  # Check compiler warnings #
+  # ----------------------- #
+  check-warnings:
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        kamikaze: [KAMIKAZE=TRUE, KAMIKAZE=FALSE]
+        omp: [OPENMP=TRUE, OPENMP=FALSE]
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Install Ubuntu dependencies
+      run: |
+        sudo apt update
+        # TTK dependencies
+        sudo apt install -y \
+          libboost-system-dev \
+          libeigen3-dev \
+          libgraphviz-dev \
+          libsqlite3-dev \
+          graphviz \
+          python3-sklearn \
+          zlib1g-dev \
+          dpkg-dev \
+          clang-tidy \
+          clang-tools
+
+    - uses: dsaltares/fetch-gh-release-asset@master
+      with:
+        repo: "topology-tool-kit/ttk-paraview"
+        version: "tags/v5.8.1"
+        file: "ttk-paraview-ubuntu-20.04.deb"
+
+    - name: Install ParaView .deb
+      run: |
+        sudo apt install ./ttk-paraview-ubuntu-20.04.deb
+
+    - name: Create & configure TTK build directory
+      run: |
+        mkdir build
+        cd build
+        cmake \
+          -DCMAKE_EXPORT_COMPILE_COMMANDS=TRUE \
+          -DTTK_BUILD_PARAVIEW_PLUGINS=TRUE \
+          -DTTK_BUILD_VTK_WRAPPERS=TRUE \
+          -DTTK_BUILD_STANDALONE_APPS=TRUE \
+          -DTTK_ENABLE_${{ matrix.kamikaze }} \
+          -DTTK_ENABLE_${{ matrix.omp }} \
+          $GITHUB_WORKSPACE
+
+    - name: Use clang-check for compiler warnings
+      run: |
+        git ls-files \
+        | grep core \
+        | grep -E "\.cpp$|\.cxx$" \
+        | xargs clang-check -p build --extra-arg=-Werror

@@ -841,7 +841,7 @@ int ttk::MandatoryCriticalPoints::execute(
   Timer t;
 
 // Check the consistency of the variables
-// TODO Déplacer les vérifications des outputs dans les bonnes fonctions
+// TODO Move the output checks in the right functions
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!inputUpperBoundField_)
     return -1;
