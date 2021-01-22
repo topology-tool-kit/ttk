@@ -29,9 +29,9 @@ jobs:
         sudo apt install -y clang-format-11
         git ls-files | grep -E "\.cpp$|\.cxx$|\.h$|\.hpp$" | xargs clang-format-11 -n -Werror
 
-    - name: Check line endings (Unix rather than DOS) [NOT ENFORCED]
+    - name: Check line endings (Unix rather than DOS)
       run: |
-        git ls-files | xargs file "{}" ";" | grep CRLF || true
+        ! git ls-files | xargs file "{}" ";" | grep CRLF
 
     - name: Check files not ending with a newline [NOT ENFORCED]
       run: |
