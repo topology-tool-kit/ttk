@@ -23,9 +23,11 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Use clang-format to detect formatting issues [NOT ENFORCED]
+    - name: Use clang-format to detect formatting issues
       run: |
-        git ls-files | grep -E "\.cpp$|\.cxx$|\.h$|\.hpp$" | xargs clang-format -n
+        sudo apt update
+        sudo apt install -y clang-format-11
+        git ls-files | grep -E "\.cpp$|\.cxx$|\.h$|\.hpp$" | xargs clang-format-11 -n -Werror
 
     - name: Check line endings (Unix rather than DOS) [NOT ENFORCED]
       run: |
