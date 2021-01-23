@@ -76,9 +76,7 @@ jobs:
           graphviz \
           python3-sklearn \
           zlib1g-dev \
-          dpkg-dev \
-          clang-tidy \
-          clang-tools
+          clang-tidy
 
     - uses: dsaltares/fetch-gh-release-asset@master
       with:
@@ -134,8 +132,6 @@ jobs:
           graphviz \
           python3-sklearn \
           zlib1g-dev \
-          dpkg-dev \
-          clang-tidy \
           clang-tools
 
     - uses: dsaltares/fetch-gh-release-asset@master
