@@ -30,12 +30,7 @@ namespace ttk {
   class HelloWorld : virtual public Debug {
 
   public:
-    HelloWorld() {
-      this->setDebugMsgPrefix(
-        "HelloWorld"); // inherited from Debug: prefix will be printed at the
-      // beginning of every msg
-    };
-    ~HelloWorld(){};
+    HelloWorld();
 
     /**
      * TODO 2: This method preconditions the triangulation for all operations
