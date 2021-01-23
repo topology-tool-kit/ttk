@@ -15,6 +15,25 @@ on:
 
 jobs:
 
+
+  # ----------------------- #
+  # Check source formatting #
+  # ----------------------- #
+  check-formatting:
+    runs-on: ubuntu-20.04
+    env:
+      CLANG_FORMAT: clang-format-11
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install latest clang-format
+      run: |
+        sudo apt update
+        sudo apt install -y $CLANG_FORMAT
+    - name: Use clang-format to detect formatting issues
+      run: |
+        git ls-files | grep -E "\.cpp$|\.cxx$|\.h$|\.hpp$" | xargs $CLANG_FORMAT -n -Werror
+
+
   # ------------- #
   # Code lint job #
   # ------------- #
@@ -22,12 +41,6 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v2
-
-    - name: Use clang-format to detect formatting issues
-      run: |
-        sudo apt update
-        sudo apt install -y clang-format-11
-        git ls-files | grep -E "\.cpp$|\.cxx$|\.h$|\.hpp$" | xargs clang-format-11 -n -Werror
 
     - name: Check line endings (Unix rather than DOS)
       run: |
