@@ -61,9 +61,9 @@ jobs:
       run: |
         git ls-files | xargs file | grep Unicode || true
 
-    - name: Check for empty files [NOT ENFORCED]
+    - name: Check for empty files
       run: |
-        git ls-files | xargs file | grep empty || true
+        ! git ls-files | xargs file | grep empty
 
     - name: Install Ubuntu dependencies
       run: |
