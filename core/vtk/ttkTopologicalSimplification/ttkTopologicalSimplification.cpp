@@ -141,16 +141,16 @@ int ttkTopologicalSimplification::RequestData(
 
   int ret{};
   if(this->UseLTS) {
-    auto lts = new ttk::LocalizedTopologicalSimplification();
-    lts->setDebugLevel(this->debugLevel_);
-    lts->setThreadNumber(this->threadNumber_);
+    ttk::LocalizedTopologicalSimplification lts{};
+    lts.setDebugLevel(this->debugLevel_);
+    lts.setThreadNumber(this->threadNumber_);
 
-    lts->preconditionTriangulation(triangulation);
+    lts.preconditionTriangulation(triangulation);
 
     //   switch(inputScalars->GetDataType()) {
     ttkVtkTemplateMacro(
       inputScalars->GetDataType(), triangulation->getType(),
-      (ret = lts->removeUnauthorizedExtrema<VTK_TT, ttk::SimplexId, TTK_TT>(
+      (ret = lts.removeUnauthorizedExtrema<VTK_TT, ttk::SimplexId, TTK_TT>(
          static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(outputScalars)),
          static_cast<SimplexId *>(ttkUtils::GetVoidPointer(outputOffsets)),
 
