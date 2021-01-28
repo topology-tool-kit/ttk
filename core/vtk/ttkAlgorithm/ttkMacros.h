@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vtkIntArray.h>
+#include <vtkLongLongArray.h>
 
 #define TTK_COMMA ,
 

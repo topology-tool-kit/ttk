@@ -875,12 +875,13 @@ namespace ttk {
           msg << "partition : " << static_cast<unsigned>(treeData_.partition);
           msg << ", isJT : " << isJT;
           msg << ",  size : ";
-          msg << "before  : " << abs(beforeEnd - beforeStart);
-          msg << ", main : " << abs(mainEnd - mainStart);
-          msg << ", after : " << abs(afterEnd - afterStart);
+          msg << "before  : " << std::abs(beforeEnd - beforeStart);
+          msg << ", main : " << std::abs(mainEnd - mainStart);
+          msg << ", after : " << std::abs(afterEnd - afterStart);
           msg << ", Total : ";
-          msg << abs(beforeEnd - beforeStart) + abs(mainEnd - mainStart)
-                   + abs(afterEnd - afterStart);
+          msg << std::abs(beforeEnd - beforeStart)
+                   + std::abs(mainEnd - mainStart)
+                   + std::abs(afterEnd - afterStart);
           this->printMsg(msg.str());
         }
       }

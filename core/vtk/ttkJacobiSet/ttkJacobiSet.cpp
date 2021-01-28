@@ -123,7 +123,7 @@ int ttkJacobiSet::RequestData(vtkInformation *request,
   for(size_t i = 0; i < jacobiSet_.size(); i++) {
 
     int edgeId = jacobiSet_[i].first;
-    int vertexId0 = -1, vertexId1 = -1;
+    ttk::SimplexId vertexId0 = -1, vertexId1 = -1;
     triangulation->getEdgeVertex(edgeId, 0, vertexId0);
     triangulation->getEdgeVertex(edgeId, 1, vertexId1);
 
@@ -176,7 +176,7 @@ int ttkJacobiSet::RequestData(vtkInformation *request,
 
       for(size_t j = 0; j < jacobiSet_.size(); j++) {
         int edgeId = jacobiSet_[j].first;
-        int vertexId0 = -1, vertexId1 = -1;
+        ttk::SimplexId vertexId0 = -1, vertexId1 = -1;
         triangulation->getEdgeVertex(edgeId, 0, vertexId0);
         triangulation->getEdgeVertex(edgeId, 1, vertexId1);
 

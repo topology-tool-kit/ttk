@@ -312,7 +312,7 @@ int ttkReebSpace::RequestData(vtkInformation *request,
 
       if((sheet) && (!sheet->pruned_)) {
 
-        int vertexId0 = -1, vertexId1 = -1;
+        ttk::SimplexId vertexId0 = -1, vertexId1 = -1;
         triangulation->getEdgeVertex(i, 0, vertexId0);
         triangulation->getEdgeVertex(i, 1, vertexId1);
 

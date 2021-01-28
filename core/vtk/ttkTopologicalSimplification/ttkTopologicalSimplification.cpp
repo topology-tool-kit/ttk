@@ -168,7 +168,7 @@ int ttkTopologicalSimplification::RequestData(
         ret = this->execute(
           static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(inputScalars)),
           static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(outputScalars)),
-          static_cast<int *>(ttkUtils::GetVoidPointer(identifiers)),
+          static_cast<SimplexId *>(ttkUtils::GetVoidPointer(identifiers)),
           static_cast<SimplexId *>(ttkUtils::GetVoidPointer(offsets)),
           static_cast<SimplexId *>(ttkUtils::GetVoidPointer(outputOffsets)),
           numberOfConstraints, *triangulation->getData()));
