@@ -4,7 +4,7 @@ index 792bfff6..3870fbb5 100644
 +++ w/CMakeLists.txt
 @@ -803,3 +803,25 @@ install(FILES ${ParaView_SOURCE_DIR}/TTK/Data/Example2.vti
  install(FILES ${ParaView_SOURCE_DIR}/TTK/Data/Example3.vti
-   DESTINATION share/paraview-5.9/examples/
+   DESTINATION share/paraview-5.8/examples/
    COMPONENT development)
 +
 +#-----------------------------------------------------------------------------
