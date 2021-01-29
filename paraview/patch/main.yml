@@ -157,9 +157,10 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
+        tag: ${{ github.ref }}
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: ttk-paraview-ubuntu-18.04.deb/ttk-paraview.deb
-        asset_name: ttk-paraview-ubuntu-18.04.deb
+        asset_name: ttk-paraview-$tag-ubuntu-18.04.deb
         asset_content_type: application/vnd.debian.binary-package
 
     - name: Upload Ubuntu Focal .deb as Release Asset
@@ -167,9 +168,10 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
+        tag: ${{ github.ref }}
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: ttk-paraview-ubuntu-20.04.deb/ttk-paraview.deb
-        asset_name: ttk-paraview-ubuntu-20.04.deb
+        asset_name: ttk-paraview-$tag-ubuntu-20.04.deb
         asset_content_type: application/vnd.debian.binary-package
 
     - name: Upload .pkg as Release Asset
@@ -177,9 +179,10 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
+        tag: ${{ github.ref }}
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: ttk-paraview.pkg/ttk-paraview.pkg
-        asset_name: ttk-paraview.pkg
+        asset_name: ttk-paraview-$tag.pkg
         asset_content_type: application/x-newton-compatible-pkg
 
     - name: Upload .exe as Release Asset
@@ -187,7 +190,8 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
+        tag: ${{ github.ref }}
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: ttk-paraview.exe/ttk-paraview.exe
-        asset_name: ttk-paraview.exe
+        asset_name: ttk-paraview-$tag.exe
         asset_content_type: application/vnd.microsoft.portable-executable
