@@ -2,16 +2,6 @@
     <ProxyGroup name="filters">
         <SourceProxy
             base_proxygroup="filters"
-            base_proxyname="ttkBlank"
-            class="ttkBlank"
-            name="Blank"
-            label="TTK Blank (deprecated)">
-            <Deprecated deprecated_in="5.8" to_remove_in="5.9">
-                Please update your state file to use ttkBlank instead of Blank.
-            </Deprecated>
-        </SourceProxy>
-        <SourceProxy
-            base_proxygroup="filters"
             base_proxyname="ttkBlockAggregator"
             class="ttkBlockAggregator"
             name="BlockAggregator"
