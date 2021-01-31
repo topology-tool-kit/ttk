@@ -166,10 +166,10 @@ namespace ttk {
     inline std::vector<double> &getDecompressedData() {
       return decompressedData_;
     }
-    inline std::vector<int> &getDecompressedOffsets() {
+    inline std::vector<SimplexId> &getDecompressedOffsets() {
       return decompressedOffsets_;
     }
-    inline std::vector<int> &getCompressedOffsets() {
+    inline std::vector<SimplexId> &getCompressedOffsets() {
       return compressedOffsets_;
     }
 
@@ -403,8 +403,8 @@ namespace ttk {
     int NbSegments{0};
     int rawFileLength{0};
     std::vector<double> decompressedData_{};
-    std::vector<int> decompressedOffsets_{};
-    std::vector<int> compressedOffsets_{};
+    std::vector<SimplexId> decompressedOffsets_{};
+    std::vector<SimplexId> compressedOffsets_{};
     int vertexNumberRead_{};
     char *fileName{};
 

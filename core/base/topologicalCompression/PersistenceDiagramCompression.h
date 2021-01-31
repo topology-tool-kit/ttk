@@ -239,7 +239,7 @@ int ttk::TopologicalCompression::PerformSimplification(
   const triangulationType &triangulation) {
 
   std::vector<int> inputOffsets(vertexNumber);
-  std::vector<int> critConstraints(nbConstraints);
+  std::vector<SimplexId> critConstraints(nbConstraints);
   std::vector<double> inArray(vertexNumber);
   // std::vector<int> *oo = new std::vector<int>(vertexNumber);
   decompressedOffsets_.resize(vertexNumber); // oo->data();
@@ -449,7 +449,7 @@ int ttk::TopologicalCompression::compressForPersistenceDiagram(
 
   const char *sq = SQMethod.c_str();
   int nbCrit = 0;
-  std::vector<int> simplifiedConstraints;
+  std::vector<SimplexId> simplifiedConstraints;
   if(strcmp(sq, "") == 0 && !ZFPOnly) {
     // No SQ: perform topological control
 

@@ -315,7 +315,7 @@ namespace ttk {
         std::tuple<std::vector<SimplexId>, std::vector<SimplexId>> overlaps
           = getOverlaps(i);
         const SimplexId &partitionSize
-          = abs(std::get<0>(rangeJT) - std::get<1>(rangeJT))
+          = std::abs(std::get<0>(rangeJT) - std::get<1>(rangeJT))
             + std::get<0>(overlaps).size() + std::get<1>(overlaps).size();
 
         // ---------------

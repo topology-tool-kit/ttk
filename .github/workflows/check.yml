@@ -117,6 +117,7 @@ jobs:
       matrix:
         kamikaze: [KAMIKAZE=TRUE, KAMIKAZE=FALSE]
         omp: [OPENMP=TRUE, OPENMP=FALSE]
+        simplexId: [64BIT_IDS=TRUE, 64BIT_IDS=FALSE]
     steps:
     - uses: actions/checkout@v2
 
@@ -155,6 +156,7 @@ jobs:
           -DTTK_BUILD_STANDALONE_APPS=TRUE \
           -DTTK_ENABLE_${{ matrix.kamikaze }} \
           -DTTK_ENABLE_${{ matrix.omp }} \
+          -DTTK_ENABLE_${{ matrix.simplexId }} \
           $GITHUB_WORKSPACE
 
     - name: Use clang-check for compiler warnings
