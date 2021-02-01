@@ -46,9 +46,11 @@ public:
   static int stringListToDoubleVector(const std::string &iString,
                                       std::vector<double> &v);
 
-  static vtkSmartPointer<vtkAbstractArray> csvToVtkArray(std::string line);
+  static vtkSmartPointer<vtkAbstractArray>
+    csvToVtkArray(const std::string &line);
 
-  static vtkSmartPointer<vtkDoubleArray> csvToDoubleArray(std::string line);
+  static vtkSmartPointer<vtkDoubleArray>
+    csvToDoubleArray(const std::string &line);
 
   // Emultate old VTK functions
   static void *GetVoidPointer(vtkDataArray *array, vtkIdType start = 0);

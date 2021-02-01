@@ -19,13 +19,13 @@ int ttkUtils::replaceVariable(const std::string &iString,
   bool varIndexDefined = false;
 
   // Check if varIndex is specified
-  size_t indexDelimiter0 = iString.find("[");
-  size_t indexDelimiter1 = iString.find("]");
+  size_t indexDelimiter0 = iString.find('[');
+  size_t indexDelimiter1 = iString.find(']');
   if(indexDelimiter0 != std::string::npos
      && indexDelimiter1 != std::string::npos) {
     if(indexDelimiter0 > indexDelimiter1
-       || iString.find("[", indexDelimiter0 + 1) != std::string::npos
-       || iString.find("}", indexDelimiter1 + 1) != std::string::npos) {
+       || iString.find('[', indexDelimiter0 + 1) != std::string::npos
+       || iString.find('}', indexDelimiter1 + 1) != std::string::npos) {
       errorMsg = "Invalid Syntax:\n" + iString;
       return 0;
     }
@@ -71,18 +71,18 @@ int ttkUtils::replaceVariables(const std::string &iString,
                                std::string &errorMsg) {
   oString = iString;
 
-  while(oString.find("{") != std::string::npos
-        && oString.find("}") != std::string::npos) {
-    size_t o = oString.find("{");
-    size_t c = oString.find("}");
+  while(oString.find('{') != std::string::npos
+        && oString.find('}') != std::string::npos) {
+    size_t o = oString.find('{');
+    size_t c = oString.find('}');
     // {...{....{...}...}..}
     // |            |
     // o            c
 
-    size_t oNext = oString.find("{", o + 1);
+    size_t oNext = oString.find('{', o + 1);
     while(oNext != std::string::npos && oNext < c) {
       o = oNext;
-      oNext = oString.find("{", o + 1);
+      oNext = oString.find('{', o + 1);
     }
 
     // {...{....{var}...}..}
@@ -94,12 +94,12 @@ int ttkUtils::replaceVariables(const std::string &iString,
     if(!replaceVariable(var, fieldData, rVar, errorMsg))
       return 0;
 
-    oString = oString.substr(0, o) + rVar
-              + oString.substr(c + 1, oString.length() - c - 1);
+    oString = oString.substr(0, o).append(rVar).append(
+      oString.substr(c + 1, oString.length() - c - 1));
   }
 
-  if(oString.find("{") != std::string::npos
-     || oString.find("}") != std::string::npos) {
+  if(oString.find('{') != std::string::npos
+     || oString.find('}') != std::string::npos) {
     errorMsg = "Invalid Syntax:\n" + iString;
     return 0;
   }
@@ -113,11 +113,11 @@ int ttkUtils::stringListToVector(const std::string &iString,
   //     |  |
   //     i  j
   size_t i = 0;
-  size_t j = iString.find(",");
+  size_t j = iString.find(',');
   while(j != std::string::npos) {
     v.push_back(iString.substr(i, j - i));
     i = j + 1;
-    j = iString.find(",", i);
+    j = iString.find(',', i);
   }
   if(iString.length() > i)
     v.push_back(iString.substr(i, iString.length() - i));
@@ -143,8 +143,9 @@ int ttkUtils::stringListToDoubleVector(const std::string &iString,
   return 1;
 };
 
-vtkSmartPointer<vtkAbstractArray> ttkUtils::csvToVtkArray(std::string line) {
-  size_t firstComma = line.find(",", 0);
+vtkSmartPointer<vtkAbstractArray>
+  ttkUtils::csvToVtkArray(const std::string &line) {
+  size_t firstComma = line.find(',', 0);
 
   if(firstComma == std::string::npos)
     return nullptr;
@@ -188,8 +189,9 @@ vtkSmartPointer<vtkAbstractArray> ttkUtils::csvToVtkArray(std::string line) {
   }
 };
 
-vtkSmartPointer<vtkDoubleArray> ttkUtils::csvToDoubleArray(std::string line) {
-  size_t firstComma = line.find(",", 0);
+vtkSmartPointer<vtkDoubleArray>
+  ttkUtils::csvToDoubleArray(const std::string &line) {
+  size_t firstComma = line.find(',', 0);
 
   if(firstComma == std::string::npos)
     return nullptr;

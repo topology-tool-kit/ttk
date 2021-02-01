@@ -213,7 +213,7 @@ vtkDataArray *ttkAlgorithm::GetOrderArray(vtkDataSet *const inputData,
 }
 
 template <class vtkDataType>
-int prepOutput(vtkInformation *info, std::string className) {
+int prepOutput(vtkInformation *info, const std::string &className) {
   auto output = vtkDataObject::GetData(info);
   if(!output || !output->IsA(className.data())) {
     auto newOutput = vtkSmartPointer<vtkDataType>::New();
