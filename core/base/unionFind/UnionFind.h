@@ -90,7 +90,7 @@ namespace ttk {
     parent_ = this;
   }
 
-  inline UnionFind::UnionFind(const UnionFind &other) {
+  inline UnionFind::UnionFind(const UnionFind &other) : Debug(other) {
 
     rank_ = other.rank_;
     parent_ = this;

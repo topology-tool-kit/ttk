@@ -606,9 +606,7 @@ namespace ttk {
         best_val = val;
         best_good = &g;
         is_twin = true;
-      } else if(val > second_val) {
-        second_val = val;
-      } else if(diagonal_queue.size() == 0) {
+      } else if(val > second_val || diagonal_queue.empty()) {
         second_val = val;
       }
     } else {
@@ -728,9 +726,7 @@ namespace ttk {
         best_val = val;
         best_good = &g;
         is_twin = true;
-      } else if(val > second_val) {
-        second_val = val;
-      } else if(diagonal_queue.size() == 0) {
+      } else if(val > second_val || diagonal_queue.empty()) {
         second_val = val;
       }
     } else {
