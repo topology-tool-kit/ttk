@@ -305,7 +305,7 @@ int SubLevelSetTree::build() {
 
     if(!vertexSeeds[vertexId]) {
 
-      vertexSeeds[vertexId] = makeUnion(starSets);
+      vertexSeeds[vertexId] = UnionFind::makeUnion(starSets);
 
       int newNodeId = makeNode(vertexId);
 

@@ -480,15 +480,17 @@ std::vector<int> PDClustering<dataType>::execute(
       }
     }
     resetDosToOriginalValues();
-    {
-      std::stringstream msg;
-      if(matchings_only) {
-        msg << " Wasserstein distance: " << cost_min_ + cost_sad_ + cost_max_;
-      } else {
-        msg << " Final Cost: " << min_cost_min + min_cost_sad + min_cost_max;
-      }
-      this->printMsg(msg.str());
-    }
+
+    // display results
+    std::vector<std::vector<std::string>> rows{
+      {" Min-saddle cost", std::to_string(cost_min_)},
+      {" Saddle-saddle cost", std::to_string(cost_sad_)},
+      {" Saddle-max cost", std::to_string(cost_max_)},
+      {matchings_only ? "Wasserstein Distance" : "Final Cost",
+       std::to_string(cost_min_ + cost_sad_ + cost_max_)},
+    };
+    this->printMsg(rows);
+
     // cout<<"TOTAL ELAPSED "<<total_time<<endl;
     // dataType real_cost=0;
     // real_cost=computeRealCost();

@@ -102,9 +102,9 @@ int ttkMatrixToHeatMap::RequestData(vtkInformation * /*request*/,
       const auto curr{static_cast<vtkIdType>(i * nptline + j)};
       const auto o = i * nRows + j;
       connectivity->SetTuple1(4 * o + 0, curr);
-      connectivity->SetTuple1(4 * o + 1, curr + nptline);
-      connectivity->SetTuple1(4 * o + 2, curr + nptline + 1);
-      connectivity->SetTuple1(4 * o + 3, curr + 1);
+      connectivity->SetTuple1(4 * o + 1, curr + 1);
+      connectivity->SetTuple1(4 * o + 2, curr + nptline);
+      connectivity->SetTuple1(4 * o + 3, curr + nptline + 1);
       offsets->SetTuple1(o, 4 * o);
 
       // copy distance matrix to heat map cell data
@@ -121,7 +121,7 @@ int ttkMatrixToHeatMap::RequestData(vtkInformation * /*request*/,
   vtkNew<vtkCellArray> cells{};
   cells->SetData(offsets, connectivity);
   output->SetPoints(points);
-  output->SetCells(VTK_QUAD, cells);
+  output->SetCells(VTK_PIXEL, cells);
   output->GetCellData()->AddArray(dist);
   output->GetCellData()->AddArray(prox);
 

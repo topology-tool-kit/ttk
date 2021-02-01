@@ -346,7 +346,7 @@ jobs:
 
 - job:
   condition: true
-  displayName: MacOS-PV-Python3-OpenMP-Make (no install)
+  displayName: MacOS-PV-Python3-OpenMP-Ninja
   timeoutInMinutes: 180
 
   variables:
@@ -363,7 +363,7 @@ jobs:
 
   steps:
   - script: |
-      brew cask install xquartz
+      brew install --cask xquartz
       brew install wget libomp mesa glew boost ccache qt ninja python
     displayName: 'Install dependencies'
 

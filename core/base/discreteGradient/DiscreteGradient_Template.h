@@ -151,11 +151,10 @@ int DiscreteGradient::setCriticalPoints(
     outputCriticalPoints_points_PLVertexIdentifiers_[i] = vertId;
   }
 
-  std::vector<std::vector<std::string>> rows{};
+  std::vector<std::vector<std::string>> rows(numberOfDimensions);
   for(int i = 0; i < numberOfDimensions; ++i) {
-    rows.emplace_back(
-      std::vector<std::string>{"#" + std::to_string(i) + "-cell(s)",
-                               std::to_string(nCriticalPointsByDim[i])});
+    rows[i] = std::vector<std::string>{"#" + std::to_string(i) + "-cell(s)",
+                                       std::to_string(nCriticalPointsByDim[i])};
   }
   this->printMsg(rows);
 
@@ -1689,12 +1688,12 @@ int DiscreteGradient::reverseGradient(const triangulationType &triangulation,
         }
       }
 
-      std::vector<std::vector<std::string>> rows{};
+      std::vector<std::vector<std::string>> rows(numberOfDimensions);
       for(int i = 0; i < numberOfDimensions; ++i) {
-        rows.emplace_back(std::vector<std::string>{
+        rows[i] = std::vector<std::string>{
           "#" + std::to_string(i) + "-cell(s)",
           std::to_string(nDMTCriticalPoints[i]) + " (with "
-            + std::to_string(nPLInteriorCriticalPoints[i]) + " interior PL)"});
+            + std::to_string(nPLInteriorCriticalPoints[i]) + " interior PL)"};
       }
       this->printMsg(rows);
     }

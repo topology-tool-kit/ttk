@@ -95,6 +95,10 @@ int ttkPointDataConverter::RequestData(vtkInformation *request,
   output->ShallowCopy(input);
 
   const auto inputScalarField = this->GetInputArrayToProcess(0, input);
+  if(inputScalarField == nullptr) {
+    this->printErr("No such input scalar field");
+    return 0;
+  }
   auto InputType = inputScalarField->GetDataType();
 
   bool oldUseNormalization{UseNormalization};

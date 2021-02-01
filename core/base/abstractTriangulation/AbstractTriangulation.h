@@ -3143,7 +3143,7 @@ namespace ttk {
 
     template <class itemType>
     size_t tableFootprint(const std::vector<itemType> &table,
-                          const std::string tableName = "",
+                          const std::string &tableName = "",
                           std::ostream &stream = std::cout) const {
 
       std::stringstream msg;
@@ -3158,7 +3158,7 @@ namespace ttk {
 
     template <class itemType>
     size_t tableTableFootprint(const std::vector<std::vector<itemType>> &table,
-                               const std::string tableName = "",
+                               const std::string &tableName = "",
                                std::ostream &stream = std::cout) const;
 
     int updateProgress(const float &progress) {

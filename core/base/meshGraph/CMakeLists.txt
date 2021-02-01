@@ -1,6 +1,4 @@
-ttk_add_base_library(meshGraph
-  SOURCES
-    MeshGraph.cpp
+ttk_add_base_template_library(meshGraph
   HEADERS
     MeshGraph.h
   DEPENDS

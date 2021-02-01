@@ -64,11 +64,11 @@ namespace ttk {
       boost::heap::fibonacci_heap<SimplexId, boost::heap::compare<VertCompFN>>
         propagation;
 
-      CurrentState(SimplexId startVert, VertCompFN vertComp)
+      CurrentState(SimplexId startVert, VertCompFN &vertComp)
         : vertex(startVert), propagation(vertComp) {
       }
 
-      CurrentState(VertCompFN vertComp)
+      CurrentState(VertCompFN &vertComp)
         : vertex(nullVertex), propagation(vertComp) {
         // will need to use setStartVert before use
       }

@@ -39,28 +39,28 @@ namespace ttk {
     }
 
 #if defined(_GLIBCXX_PARALLEL_FEATURES_H) && defined(TTK_ENABLE_OPENMP)
-#define PSORT                    \
-  omp_set_num_threads(nThreads); \
+#define PSORT(NTHREADS)          \
+  omp_set_num_threads(NTHREADS); \
   __gnu_parallel::sort
 #else
-#define PSORT std::sort
+#define PSORT(NTHREADS) std::sort
 #endif // _GLIBCXX_PARALLEL_FEATURES_H && TTK_ENABLE_OPENMP
 
     if(offsets != nullptr) {
-      PSORT(sortedVertices.begin(), sortedVertices.end(),
-            [&](const SimplexId a, const SimplexId b) {
-              return (scalars[a] < scalars[b])
-                     || (scalars[a] == scalars[b] && offsets[a] < offsets[b]);
-            });
+      PSORT(nThreads)
+      (sortedVertices.begin(), sortedVertices.end(),
+       [&](const SimplexId a, const SimplexId b) {
+         return (scalars[a] < scalars[b])
+                || (scalars[a] == scalars[b] && offsets[a] < offsets[b]);
+       });
     } else {
-      PSORT(sortedVertices.begin(), sortedVertices.end(),
-            [&](const SimplexId a, const SimplexId b) {
-              return (scalars[a] < scalars[b])
-                     || (scalars[a] == scalars[b] && a < b);
-            });
+      PSORT(nThreads)
+      (sortedVertices.begin(), sortedVertices.end(),
+       [&](const SimplexId a, const SimplexId b) {
+         return (scalars[a] < scalars[b])
+                || (scalars[a] == scalars[b] && a < b);
+       });
     }
-
-#undef PSORT
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(nThreads)

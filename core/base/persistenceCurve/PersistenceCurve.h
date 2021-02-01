@@ -56,7 +56,8 @@ namespace ttk {
                 const SimplexId *inputOffsets,
                 const triangulationType *triangulation);
 
-    inline void preconditionTriangulation(Triangulation *triangulation) {
+    inline void
+      preconditionTriangulation(AbstractTriangulation *const triangulation) {
       if(triangulation) {
         triangulation->preconditionBoundaryVertices();
         contourTree_.setDebugLevel(debugLevel_);

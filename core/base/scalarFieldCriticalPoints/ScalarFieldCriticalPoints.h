@@ -344,8 +344,8 @@ std::pair<ttk::SimplexId, ttk::SimplexId>
                 }
               }
               if((lowerId0 != -1) && (lowerId1 != -1)) {
-                (*seeds)[lowerId0]
-                  = makeUnion((*seeds)[lowerId0], (*seeds)[lowerId1]);
+                (*seeds)[lowerId0] = UnionFind::makeUnion(
+                  (*seeds)[lowerId0], (*seeds)[lowerId1]);
                 (*seeds)[lowerId1] = (*seeds)[lowerId0];
               }
             }

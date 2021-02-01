@@ -168,12 +168,12 @@ namespace ttk {
       }
 
       void sortUpArcs(
-        std::function<bool(const idSuperArc, const idSuperArc)> comp) {
+        const std::function<bool(const idSuperArc, const idSuperArc)> &comp) {
         sort(vect_upSuperArcList_.begin(), vect_upSuperArcList_.end(), comp);
       }
 
       void sortDownArcs(
-        std::function<bool(const idSuperArc, const idSuperArc)> comp) {
+        const std::function<bool(const idSuperArc, const idSuperArc)> &comp) {
         sort(
           vect_downSuperArcList_.begin(), vect_downSuperArcList_.end(), comp);
       }

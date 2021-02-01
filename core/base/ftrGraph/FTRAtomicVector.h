@@ -52,7 +52,7 @@ namespace ttk {
     }
 
     // move constructor
-    FTRAtomicVector(FTRAtomicVector &&other) = default;
+    FTRAtomicVector(FTRAtomicVector &&other) noexcept = default;
 
     virtual ~FTRAtomicVector() = default;
 
@@ -154,7 +154,7 @@ namespace ttk {
       return *this;
     }
 
-    FTRAtomicVector<type> &operator=(FTRAtomicVector<type> &&other) {
+    FTRAtomicVector<type> &operator=(FTRAtomicVector<type> &&other) noexcept {
       std::vector<type>::operator=(std::move(other));
       nextId = std::move(other.nextId);
       return *this;

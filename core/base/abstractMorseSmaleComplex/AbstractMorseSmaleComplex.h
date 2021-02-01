@@ -20,19 +20,7 @@
 
 #include <queue>
 
-#if defined(__GNUC__) && !defined(__clang__)
-#include <parallel/algorithm>
-#endif
-
 namespace ttk {
-
-#if defined(_GLIBCXX_PARALLEL_FEATURES_H) && defined(TTK_ENABLE_OPENMP)
-#define PSORT                               \
-  omp_set_num_threads(this->threadNumber_); \
-  __gnu_parallel::sort
-#else
-#define PSORT std::sort
-#endif // _GLIBCXX_PARALLEL_FEATURES_H && TTK_ENABLE_OPENMP
 
   /**
    * Utility class representing Ridge lines, Valley lines
@@ -71,17 +59,17 @@ namespace ttk {
         isReversed_{separatrix.isReversed_}, geometry_{separatrix.geometry_} {
     }
 
-    explicit Separatrix(Separatrix &&separatrix)
-      : isValid_{separatrix.isValid_}, source_{std::move(separatrix.source_)},
-        destination_{std::move(separatrix.destination_)},
-        isReversed_{std::move(separatrix.isReversed_)},
+    explicit Separatrix(Separatrix &&separatrix) noexcept
+      : isValid_{separatrix.isValid_}, source_{separatrix.source_},
+        destination_{separatrix.destination_}, isReversed_{std::move(
+                                                 separatrix.isReversed_)},
         geometry_{std::move(separatrix.geometry_)} {
     }
 
-    Separatrix &operator=(Separatrix &&separatrix) {
+    Separatrix &operator=(Separatrix &&separatrix) noexcept {
       isValid_ = separatrix.isValid_;
-      source_ = std::move(separatrix.source_);
-      destination_ = std::move(separatrix.destination_);
+      source_ = separatrix.source_;
+      destination_ = separatrix.destination_;
       isReversed_ = std::move(separatrix.isReversed_);
       geometry_ = std::move(separatrix.geometry_);
 
@@ -942,7 +930,7 @@ int ttk::AbstractMorseSmaleComplex::setFinalSegmentation(
     morseSmaleManifold, morseSmaleManifold + nVerts);
 
   // get unique "sparse region ids"
-  PSORT(sparseRegionIds.begin(), sparseRegionIds.end());
+  PSORT(this->threadNumber_)(sparseRegionIds.begin(), sparseRegionIds.end());
   const auto last = std::unique(sparseRegionIds.begin(), sparseRegionIds.end());
   sparseRegionIds.erase(last, sparseRegionIds.end());
 

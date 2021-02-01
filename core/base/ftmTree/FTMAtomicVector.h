@@ -52,7 +52,7 @@ namespace ttk {
 #endif
     }
 
-    FTMAtomicVector(FTMAtomicVector &&other) = default;
+    FTMAtomicVector(FTMAtomicVector &&other) noexcept = default;
 
     virtual ~FTMAtomicVector() = default;
 

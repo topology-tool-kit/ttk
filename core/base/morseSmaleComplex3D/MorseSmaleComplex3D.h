@@ -332,7 +332,7 @@ int ttk::MorseSmaleComplex3D::setAscendingSeparatrices2(
     }
   }
 
-  PSORT(cellVertsIds.begin(), cellVertsIds.end());
+  PSORT(this->threadNumber_)(cellVertsIds.begin(), cellVertsIds.end());
   const auto last = std::unique(cellVertsIds.begin(), cellVertsIds.end());
   cellVertsIds.erase(last, cellVertsIds.end());
 
@@ -590,7 +590,7 @@ int ttk::MorseSmaleComplex3D::setDescendingSeparatrices2(
 
   // reduce the cell vertices ids
   // (cells are triangles sharing two vertices)
-  PSORT(cellVertsIds.begin(), cellVertsIds.end());
+  PSORT(this->threadNumber_)(cellVertsIds.begin(), cellVertsIds.end());
   const auto last = std::unique(cellVertsIds.begin(), cellVertsIds.end());
   cellVertsIds.erase(last, cellVertsIds.end());
 

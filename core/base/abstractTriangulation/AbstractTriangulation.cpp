@@ -66,7 +66,7 @@ int AbstractTriangulation::clear() {
 template <class itemType>
 size_t AbstractTriangulation::tableTableFootprint(
   const vector<vector<itemType>> &table,
-  const string tableName,
+  const string &tableName,
   ostream &stream) const {
 
   size_t localByteNumber = 0;

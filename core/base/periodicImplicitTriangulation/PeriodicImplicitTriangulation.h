@@ -266,7 +266,7 @@ namespace ttk {
     bool TTK_TRIANGULATION_INTERNAL(isEdgeOnBoundary)(
       const SimplexId &edgeId) const override;
 
-    bool isEmpty() const override {
+    inline bool isEmpty() const override {
       return !vertexNumber_;
     };
 
@@ -974,15 +974,7 @@ inline ttk::SimplexId
 inline ttk::SimplexId
   ttk::PeriodicImplicitTriangulation::getEdgeStar2dL(const SimplexId p[2],
                                                      const int id) const {
-  if(p[1] > 0 and p[1] < nbvoxels_[Dj_]) {
-    switch(id) {
-      case 0:
-        return p[0] * 2 + p[1] * tshift_[0];
-      case 1:
-        return p[0] * 2 + (p[1] - 1) * tshift_[0] + 1;
-    }
-    return -1;
-  } else if(p[1] == 0) {
+  if(p[1] == 0) {
     switch(id) {
       case 0:
         return p[0] * 2 + p[1] * tshift_[0];
@@ -1004,15 +996,7 @@ inline ttk::SimplexId
 inline ttk::SimplexId
   ttk::PeriodicImplicitTriangulation::getEdgeStar2dH(const SimplexId p[2],
                                                      const int id) const {
-  if(p[0] > 0 and p[0] < nbvoxels_[Di_]) {
-    switch(id) {
-      case 0:
-        return p[0] * 2 + p[1] * tshift_[0];
-      case 1:
-        return (p[0] - 1) * 2 + p[1] * tshift_[0] + 1;
-    }
-    return -1;
-  } else if(p[0] == 0) {
+  if(p[0] == 0) {
     switch(id) {
       case 0:
         return p[0] * 2 + p[1] * tshift_[0];

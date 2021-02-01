@@ -114,8 +114,8 @@ char ttk::ScalarFieldCriticalPoints::getCriticalType(
       std::map<SimplexId, SimplexId>::iterator n1It
         = global2LowerLink.find(neighborId1);
 
-      lowerList[n0It->second]
-        = makeUnion(lowerList[n0It->second], lowerList[n1It->second]);
+      lowerList[n0It->second] = UnionFind::makeUnion(
+        lowerList[n0It->second], lowerList[n1It->second]);
       lowerList[n1It->second] = lowerList[n0It->second];
     }
 
@@ -129,8 +129,8 @@ char ttk::ScalarFieldCriticalPoints::getCriticalType(
       std::map<SimplexId, SimplexId>::iterator n1It
         = global2UpperLink.find(neighborId1);
 
-      upperList[n0It->second]
-        = makeUnion(upperList[n0It->second], upperList[n1It->second]);
+      upperList[n0It->second] = UnionFind::makeUnion(
+        upperList[n0It->second], upperList[n1It->second]);
       upperList[n1It->second] = upperList[n0It->second];
     }
   }

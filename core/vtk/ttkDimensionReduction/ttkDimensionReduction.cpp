@@ -61,7 +61,9 @@ int ttkDimensionReduction::RequestData(vtkInformation *request,
 
 #ifndef TTK_ENABLE_KAMIKAZE
     if(numberOfRows <= 0 || numberOfColumns <= 0) {
-      this->printErr("input matrix has invalid dimensions");
+      this->printErr("input matrix has invalid dimensions (rows: "
+                     + std::to_string(numberOfRows)
+                     + ", columns: " + std::to_string(numberOfColumns) + ")");
       return -1;
     }
 #endif
