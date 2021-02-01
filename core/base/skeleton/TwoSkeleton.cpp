@@ -468,7 +468,7 @@ int TwoSkeleton::buildTriangleList(
         }
 
         // update the progress bar of the wrapping code -- to adapt
-        if(debugLevel_ > advancedInfoMsg) {
+        if(debugLevel_ > static_cast<int>(debug::Priority::DETAIL)) {
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp critical
 #endif

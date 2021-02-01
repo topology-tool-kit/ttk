@@ -6,4 +6,4 @@ HEADERS
   ttkProgramBase.h
 DEPENDS
   common
-  ttkTriangulationAlgorithm
+  ttkAlgorithm

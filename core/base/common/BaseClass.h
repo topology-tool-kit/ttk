@@ -59,7 +59,6 @@ namespace ttk {
     /// number of threads, etc.) from a wrapper to a base object.
     /// \param wrapper Pointer to the wrapping object.
     /// \return Returns 0 upon success, negative values otherwise.
-    /// \sa ttkBlank
     virtual int setWrapper(const Wrapper *wrapper);
 
   protected:

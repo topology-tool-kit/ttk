@@ -990,12 +990,10 @@ namespace ttk {
       // ------------
       // {
 
-      if(params_->debugLevel >= infoMsg) {
-        this->printMsg("Tree " + std::to_string(treeData_.partition)
-                         + " computed ("
-                         + std::to_string(getNumberOfSuperArcs()) + " arcs)",
-                       1.0, timerBegin.getElapsedTime(), this->threadNumber_);
-      }
+      this->printMsg("Tree " + std::to_string(treeData_.partition)
+                       + " computed (" + std::to_string(getNumberOfSuperArcs())
+                       + " arcs)",
+                     1.0, timerBegin.getElapsedTime(), this->threadNumber_);
 
       // }
 
@@ -1059,7 +1057,7 @@ namespace ttk {
         // if(overlap && partition_ == 1) cout << currentVertex << endl;
         treeData_.leaves.emplace_back(currentNode);
 
-        if(params_->debugLevel >= advancedInfoMsg) {
+        if(params_->debugLevel >= static_cast<int>(debug::Priority::DETAIL)) {
           if(isJT) {
             this->printMsg("Min node id: " + std::to_string(currentVertex), 1.0,
                            begin.getElapsedTime(), this->threadNumber_);
@@ -1117,9 +1115,8 @@ namespace ttk {
         // at "
         //<< getNode(getCorrespondingNode(farOrigin))->getVertexId() << endl;
 
-        if(params_->debugLevel >= advancedInfoMsg) {
-          this->printMsg("Saddle node id: " + std::to_string(currentVertex));
-        }
+        this->printMsg("Saddle node id: " + std::to_string(currentVertex),
+                       debug::Priority::DETAIL);
 
       } else {
 #ifndef TTK_ENABLE_KAMIKAZE

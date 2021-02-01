@@ -25,7 +25,7 @@
 
 // base code includes
 #include <ProgramBase.h>
-#include <ttkTriangulationAlgorithm.h>
+#include <ttkAlgorithm.h>
 
 #include <ttkProgramBaseModule.h>
 
@@ -153,7 +153,7 @@ int ttkProgramBase::save(const int &outputPortId) const {
   std::stringstream msg;
   msg << "[ttkProgramBase] Saving output file `" << fileName.str() << "'..."
       << std::endl;
-  dMsg(std::cout, msg.str(), Debug::infoMsg);
+  printMsg(msg.str());
 
   writer->Write();
 
@@ -177,7 +177,7 @@ int ttkProgramBase::load(
     // choose where to display this message (std::cout, std::cerr, a file)
     // choose the priority of this message (1, nearly always displayed,
     // higher values mean lower priorities)
-    dMsg(std::cout, msg.str(), 1);
+    printMsg(msg.str());
   }
 
   readerList.back()->Update();
@@ -197,7 +197,7 @@ int ttkProgramBase::load(
     msg << "[ttkProgramBase]   done! (read "
         << inputs_.back()->GetNumberOfPoints() << " vertices, "
         << inputs_.back()->GetNumberOfCells() << " cells)" << std::endl;
-    dMsg(std::cout, msg.str(), Debug::infoMsg);
+    printMsg(msg.str());
   }
 
   return 0;

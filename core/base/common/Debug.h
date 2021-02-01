@@ -92,42 +92,7 @@ namespace ttk {
 
     virtual ~Debug();
 
-    enum debugPriority {
-      fatalMsg, // 0
-      timeMsg, // 1
-      memoryMsg, // 2
-      infoMsg, // 3
-      detailedInfoMsg, // 4
-      advancedInfoMsg // 5
-    };
-
     // 2) functions
-    /// Send a debug message to a stream with a priority debugLevel (lower
-    /// means higher priority).
-    /// If the global debug level for the program is set to 0, the program
-    /// should be completely quiet. So the '0' priority should only be
-    /// reserved for fatal errors.
-    /// \param stream Output stream.
-    /// \param msg %Debug message (can contain std::endl characters).
-    /// \param debugLevel Priority of the message.
-    /// \return Returns 0 upon success, negative values otherwise.
-    /// \sa msg(), err()
-    virtual int dMsg(std::ostream &stream,
-                     std::string msg,
-                     const int &debugLevel = infoMsg) const;
-
-    /// Wrapper for dMsg() that sends a debug message to the standard error
-    /// output stream.
-    /// \return Returns 0 upon success, negative values otherwise.
-    /// \sa dMsg(), msg()
-    int err(const std::string msg, const int &debugLevel = fatalMsg) const;
-
-    /// Wrapper for dMsg() that sends a debug message to the standard
-    /// output stream.
-    /// \return Returns 0 upon success, negative values otherwise.
-    /// \sa dMsg(), msg()
-    int msg(const char *msg, const int &debugLevel = infoMsg) const;
-
     /// Set the debug level of a particular object. The global variable
     /// globalDebugLevel_ will over-ride this setting if it has a lower value.
     /// \return Returns 0 upon success, negative values otherwise.
@@ -140,7 +105,6 @@ namespace ttk {
     /// number of threads, etc.) from a wrapper to a base object.
     /// \param wrapper Pointer to the wrapping object.
     /// \return Returns 0 upon success, negative values otherwise.
-    /// \sa ttkBlank
     virtual int setWrapper(const Wrapper *wrapper);
 
     // =========================================================================
