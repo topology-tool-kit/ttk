@@ -1,12 +1,12 @@
 #pragma once
 
+#include <vtkIdTypeArray.h>
 #include <vtkIntArray.h>
-#include <vtkLongLongArray.h>
 
 #define TTK_COMMA ,
 
 #ifdef TTK_ENABLE_64BIT_IDS
-using ttkSimplexIdTypeArray = vtkLongLongArray;
+using ttkSimplexIdTypeArray = vtkIdTypeArray;
 #else
 using ttkSimplexIdTypeArray = vtkIntArray;
 #endif
