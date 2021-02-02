@@ -97,7 +97,7 @@ public:
   ~ContourTree();
 
   std::shared_ptr<BinaryTree> rootAtMax();
-  std::shared_ptr<BinaryTree> rootAtNode(std::shared_ptr<CTNode> root);
+  std::shared_ptr<BinaryTree> rootAtNode(const std::shared_ptr<CTNode> &root);
   bool isBinary();
   void computeBranches();
   std::pair<std::vector<std::shared_ptr<CTNode>>,
@@ -110,11 +110,13 @@ private:
 
   bool binary;
 
-  std::shared_ptr<Tree> computeRootedTree(std::shared_ptr<CTNode> node,
-                                          std::shared_ptr<CTEdge> parent,
+  std::shared_ptr<Tree> computeRootedTree(const std::shared_ptr<CTNode> &node,
+                                          const std::shared_ptr<CTEdge> &parent,
                                           int &id);
-  std::shared_ptr<BinaryTree> computeRootedTree_binary(
-    std::shared_ptr<CTNode> node, std::shared_ptr<CTEdge> parent, int &id);
+  std::shared_ptr<BinaryTree>
+    computeRootedTree_binary(const std::shared_ptr<CTNode> &node,
+                             const std::shared_ptr<CTEdge> &parent,
+                             int &id);
   std::pair<float, std::vector<int>> pathToMax(int root, int parent);
   std::pair<float, std::vector<int>> pathToMin(int root, int parent);
 };
