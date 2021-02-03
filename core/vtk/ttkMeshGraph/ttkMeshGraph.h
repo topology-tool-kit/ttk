@@ -32,17 +32,12 @@ class TTKMESHGRAPH_EXPORT ttkMeshGraph : public ttkAlgorithm,
                                          protected ttk::MeshGraph {
 
 private:
-  bool UseVariableSize{false};
   int SizeAxis{0};
   float SizeScale{1};
   bool UseQuadraticCells{true};
   int Subdivisions{0};
-  bool Tetrahedralize{false};
 
 public:
-  vtkSetMacro(UseVariableSize, bool);
-  vtkGetMacro(UseVariableSize, bool);
-
   vtkSetMacro(SizeAxis, int);
   vtkGetMacro(SizeAxis, int);
 
@@ -54,9 +49,6 @@ public:
 
   vtkSetMacro(Subdivisions, int);
   vtkGetMacro(Subdivisions, int);
-
-  vtkSetMacro(Tetrahedralize, bool);
-  vtkGetMacro(Tetrahedralize, bool);
 
   static ttkMeshGraph *New();
   vtkTypeMacro(ttkMeshGraph, ttkAlgorithm);
