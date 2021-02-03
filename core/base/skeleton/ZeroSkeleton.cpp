@@ -595,14 +595,14 @@ int ZeroSkeleton::buildVertexStars(
   printMsg("Built " + std::to_string(vertexNumber) + " vertex stars", 1,
            t.getElapsedTime(), threadNumber_);
 
-  if(debugLevel_ >= static_cast<int>(debug::Priority::DETAIL)) {
+  if(debugLevel_ >= static_cast<int>(debug::Priority::VERBOSE)) {
     for(SimplexId i = 0; i < (SimplexId)vertexStars.size(); i++) {
       stringstream msg;
       msg << "Vertex #" << i << " (" << vertexStars[i].size() << " cell(s)): ";
       for(SimplexId j = 0; j < (SimplexId)vertexStars[i].size(); j++) {
         msg << " " << vertexStars[i][j];
       }
-      printMsg(msg.str(), debug::Priority::INFO);
+      printMsg(msg.str(), debug::Priority::VERBOSE);
     }
   }
 
