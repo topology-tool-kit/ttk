@@ -60,7 +60,9 @@ int ttk::Laplacian::discreteLaplacian(SparseMatrixType &output,
       = Triplet(edgeVertices[1], edgeVertices[0], T(-1.0));
   }
 
+#ifndef __clang_analyzer__
   output.setFromTriplets(triplets.begin(), triplets.end());
+#endif // __clang_analyzer__
 
   return 0;
 }
@@ -178,7 +180,9 @@ int ttk::Laplacian::cotanWeights(SparseMatrixType &output,
     triplets[2 * edgeNumber + i] = Triplet(i, i, vertexWeightSum[i]);
   }
 
+#ifndef __clang_analyzer__
   output.setFromTriplets(triplets.begin(), triplets.end());
+#endif // __clang_analyzer__
 
   return 0;
 }
