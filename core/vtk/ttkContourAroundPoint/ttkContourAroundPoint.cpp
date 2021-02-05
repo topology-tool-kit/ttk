@@ -261,7 +261,7 @@ bool Class::postprocess() {
   }
   const vtkIdType cinfosSize = cinfoCounter;
 
-  auto cinfosBufVtk = reinterpret_cast<vtkIdType *>(cinfosBuf);
+  vtkIdType *cinfosBufVtk{};
   if(!std::is_same<ttk::SimplexId, vtkIdType>::value) { // unlikely
     // Actually a warning would be in order-
     // what if conversion is not possible (e.g. too large indices)?
@@ -269,6 +269,8 @@ bool Class::postprocess() {
     for(ttk::SimplexId i = 0; i < cinfosSize; ++i)
       cinfosBufVtk[i] = vtkIdType(cinfosBuf[i]);
     delete[] cinfosBuf;
+  } else {
+    cinfosBufVtk = reinterpret_cast<vtkIdType *>(cinfosBuf);
   }
 
   auto cells = vtkSmartPointer<vtkCellArray>::New();
