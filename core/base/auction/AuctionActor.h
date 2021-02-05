@@ -512,6 +512,9 @@ namespace ttk {
       // There is only one acceptable good for the bidder
       second_val = best_val;
     }
+    if(best_good == nullptr) {
+      return -1;
+    }
     dataType old_price = best_good->getPrice();
     dataType new_price = old_price + best_val - second_val + epsilon;
     if(new_price > std::numeric_limits<dataType>::max() / 2) {
