@@ -73,6 +73,7 @@ int ttkQuadrangulationSubdivision::RequestData(
   if(identifiers == nullptr) {
     this->printErr("Missing point data array named "
                    + std::string(ttk::VertexScalarFieldName));
+    return 0;
   }
 
   this->setInputQuads(
