@@ -73,77 +73,74 @@ namespace ttk {
     };
 
     inline size_t computeOutputCellSize(const size_t &nSubdivisions) const {
-      return 5
-             + nSubdivisions
-                 * 2; // cellDim + 4 corners + 2 for each subdivision
+      return 4 + nSubdivisions * 2; // 4 corners + 2 for each subdivision
     };
 
     inline size_t
-      computeOutputConnectivityListSize(const size_t &nInputCells,
-                                        const bool &useQuadraticCells,
-                                        const size_t &nSubdivisions = 0) const {
+      computeOutputConnectivityArraySize(const size_t &nInputCells,
+                                         const bool &useQuadraticCells,
+                                         const size_t &nSubdivisions
+                                         = 0) const {
       return useQuadraticCells
                ? nInputCells
-                   * 18 // 2*cellDim + 8 corners (a0,m0,m1,a1, m0,b0,b1,m1) + 8
+                   * 16 // 8 corners (a0,m0,m1,a1, m0,b0,b1,m1) + 8
                         // mid-edge nodes (a0m0,c,m1a1,a, m0b0,b,b1m1,c)
                : nInputCells * this->computeOutputCellSize(nSubdivisions);
     };
 
     // Mesh graph with quadratic quads
-    template <typename idType, typename dataType>
+    template <typename IT, typename CT, typename DT>
     int execute(
       // Output
-      float *outputPoints,
-      idType *outputConnectivityList,
+      CT *outputPoints,
+      IT *outputConnectivityArray,
+      IT *outputOffsetArray,
 
       // Input
-      const float *inputPoints,
-      const idType *inputConnectivityList,
+      const CT *inputPoints,
+      const IT *inputConnectivityArray,
       const size_t &nInputPoints,
       const size_t &nInputCells,
 
-      const dataType *inputPointSizes,
-      const float &sizeScale,
+      const DT *inputPointSizes,
+      const CT &sizeScale,
       const size_t &sizeAxis) const;
 
     // Mesh graph with linear polygon
-    template <typename idType, typename dataType>
+    template <typename IT, typename CT, typename DT>
     int execute2(
       // Output
-      float *outputPoints,
-      idType *outputConnectivityList,
+      CT *outputPoints,
+      IT *outputConnectivityArray,
+      IT *outputOffsetArray,
 
       // Input
-      const float *inputPoints,
-      const idType *inputConnectivityList,
+      const CT *inputPoints,
+      const IT *inputConnectivityArray,
       const size_t nInputPoints,
       const size_t nInputCells,
       const size_t nSubdivisions,
 
-      const dataType *inputPointSizes,
-      const float sizeScale,
+      const DT *inputPointSizes,
+      const CT sizeScale,
       const size_t sizeAxis) const;
 
     // Map input point data to output point data
-    template <typename idType, typename dataType>
-    int mapInputPointDataToOutputPointData(const idType *inputConnectivityList,
+    template <typename DT, typename IT>
+    int mapInputPointDataToOutputPointData(DT *outputPointData,
                                            const size_t &nInputPoints,
                                            const size_t &nInputCells,
-
-                                           const dataType *inputPointData,
-                                           dataType *outputPointData,
-
+                                           const IT *inputConnectivityArray,
+                                           const DT *inputPointData,
                                            const bool &useQuadraticCells,
                                            const size_t &nSubdivisions
                                            = 0) const;
 
     // Map input point data to output point data
-    template <typename idType, typename dataType>
-    int mapInputCellDataToOutputCellData(const size_t &nInputCells,
-
-                                         const dataType *inputCellData,
-                                         dataType *outputCellData,
-
+    template <typename DT>
+    int mapInputCellDataToOutputCellData(DT *outputCellData,
+                                         const size_t &nInputCells,
+                                         const DT *inputCellData,
                                          const bool &useQuadraticCells,
                                          const size_t &nSubdivisions = 0) const;
   };
@@ -152,21 +149,22 @@ namespace ttk {
 // =============================================================================
 // Version 1: Mesh Graph with Quadratic Quads
 // =============================================================================
-template <typename idType, typename dataType>
+template <typename IT, typename CT, typename DT>
 int ttk::MeshGraph::execute(
   // Output
-  float *outputPoints,
-  idType *outputConnectivityList,
+  CT *outputPoints,
+  IT *outputConnectivityArray,
+  IT *outputOffsetArray,
 
   // Input
-  const float *inputPoints,
-  const idType *inputConnectivityList,
+  const CT *inputPoints,
+  const IT *inputConnectivityArray,
   const size_t &nInputPoints,
   const size_t &nInputCells,
-
-  const dataType *inputPointSizes,
-  const float &sizeScale,
+  const DT *inputPointSizes,
+  const CT &sizeScale,
   const size_t &sizeAxis) const {
+
   // Print Input
   this->printMsg(debug::Separator::L1);
   this->printMsg({{"Mode", "Quadratic Quads"},
@@ -174,17 +172,7 @@ int ttk::MeshGraph::execute(
                   {"#Edges", std::to_string(nInputCells)}});
   this->printMsg(debug::Separator::L2);
 
-  auto getInputPointData = [&](const size_t &pointIndex, float data[4]) {
-    size_t i = pointIndex * 3;
-    data[0] = inputPoints[i++];
-    data[1] = inputPoints[i++];
-    data[2] = inputPoints[i];
-
-    data[3] = (inputPointSizes != nullptr)
-                ? ((float)inputPointSizes[pointIndex]) * sizeScale
-                : sizeScale;
-  };
-
+  const size_t edgePointOffset = nInputPoints * 3;
   // ---------------------------------------------------------------------------
   // Compute Output Point Locations
   // ---------------------------------------------------------------------------
@@ -192,7 +180,6 @@ int ttk::MeshGraph::execute(
   //     3 per input point (a,a0,a1,b,b0,b1,...),
   //     7 per input cell (m0,m1,a0m0,m0b0,b1m1,m1a1,c...)
   // ]
-  size_t edgePointOffset = 3 * nInputPoints;
   {
     Timer t;
     this->printMsg("Computing node locations", 0, debug::LineMode::REPLACE);
@@ -204,28 +191,29 @@ int ttk::MeshGraph::execute(
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
     for(size_t i = 0; i < nInputPoints; i++) {
-      float data[4];
-      getInputPointData(i, data);
+      const CT *coord = &inputPoints[i * 3];
 
       size_t q = i * 9; // i*3*3
       // a
-      outputPoints[q] = data[0];
-      outputPoints[q + 1] = data[1];
-      outputPoints[q + 2] = data[2];
+      outputPoints[q] = coord[0];
+      outputPoints[q + 1] = coord[1];
+      outputPoints[q + 2] = coord[2];
 
       // a0
-      outputPoints[q + 3] = data[0];
-      outputPoints[q + 4] = data[1];
-      outputPoints[q + 5] = data[2];
+      outputPoints[q + 3] = coord[0];
+      outputPoints[q + 4] = coord[1];
+      outputPoints[q + 5] = coord[2];
 
       // a1
-      outputPoints[q + 6] = data[0];
-      outputPoints[q + 7] = data[1];
-      outputPoints[q + 8] = data[2];
+      outputPoints[q + 6] = coord[0];
+      outputPoints[q + 7] = coord[1];
+      outputPoints[q + 8] = coord[2];
+
+      const CT &size = ((CT)inputPointSizes[i]) * sizeScale;
 
       // Move a0 and a1 along size axis
-      outputPoints[q + 3 + sizeAxis] += data[3] / 2;
-      outputPoints[q + 6 + sizeAxis] -= data[3] / 2;
+      outputPoints[q + 3 + sizeAxis] += size / 2;
+      outputPoints[q + 6 + sizeAxis] -= size / 2;
     }
 
     // -------------------------------------------------------------------------
@@ -246,7 +234,7 @@ int ttk::MeshGraph::execute(
     // bezier curve
     auto getMidPoint2
       = [&](const size_t &m, const size_t &p0, const size_t &p1) {
-          auto bezierPoint = [](float &n, const float &q0, const float &q2) {
+          auto bezierPoint = [](CT &n, const CT &q0, const CT &q2) {
             n = 0.5 * (0.5 * q0 + 0.5 * n) + 0.5 * (0.5 * n + 0.5 * q2);
           };
 
@@ -269,9 +257,9 @@ int ttk::MeshGraph::execute(
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
     for(size_t i = 0; i < nInputCells; i++) {
-      size_t temp = i * 3 + 1;
-      size_t aInputIndex = (size_t)inputConnectivityList[temp++];
-      size_t bInputIndex = (size_t)inputConnectivityList[temp];
+      size_t temp = i * 2;
+      size_t aInputIndex = (size_t)inputConnectivityArray[temp++];
+      size_t bInputIndex = (size_t)inputConnectivityArray[temp];
 
       // already computed points
       size_t a = aInputIndex * 3;
@@ -315,60 +303,62 @@ int ttk::MeshGraph::execute(
     Timer t;
     this->printMsg("Computing mesh cells", 0, debug::LineMode::REPLACE);
 
-    idType edgePointOffset_ = (idType)edgePointOffset;
+    IT edgePointOffset_ = (IT)edgePointOffset;
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
     for(size_t i = 0; i < nInputCells; i++) {
-      size_t temp = i * 3 + 1;
-      idType aInputIndex = inputConnectivityList[temp++];
-      idType bInputIndex = inputConnectivityList[temp];
+      size_t temp = i * 2;
+      IT aInputIndex = inputConnectivityArray[temp++];
+      IT bInputIndex = inputConnectivityArray[temp];
 
       // get point indicies
-      idType a = aInputIndex * 3;
-      idType a0 = a + 1;
-      idType a1 = a + 2;
-      idType b = bInputIndex * 3;
-      idType b0 = b + 1;
-      idType b1 = b + 2;
+      IT a = aInputIndex * 3;
+      IT a0 = a + 1;
+      IT a1 = a + 2;
+      IT b = bInputIndex * 3;
+      IT b0 = b + 1;
+      IT b1 = b + 2;
 
-      idType i_ = (idType)i;
-      idType offset = edgePointOffset_ + i_ * 7;
-      idType m0 = offset;
-      idType m1 = offset + 1;
-      idType a0m0 = offset + 2;
-      idType m0b0 = offset + 3;
-      idType b1m1 = offset + 4;
-      idType m1a1 = offset + 5;
-      idType c = offset + 6;
+      IT i_ = (IT)i;
+      IT offset = edgePointOffset_ + i_ * 7;
+      IT m0 = offset;
+      IT m1 = offset + 1;
+      IT a0m0 = offset + 2;
+      IT m0b0 = offset + 3;
+      IT b1m1 = offset + 4;
+      IT m1a1 = offset + 5;
+      IT c = offset + 6;
 
       // output cell offset
-      size_t q = i * 18;
+      size_t q = i * 16;
 
       // first quadratic quad
-      outputConnectivityList[q++] = 8;
-      outputConnectivityList[q++] = a0;
-      outputConnectivityList[q++] = m0;
-      outputConnectivityList[q++] = m1;
-      outputConnectivityList[q++] = a1;
+      outputConnectivityArray[q++] = a0;
+      outputConnectivityArray[q++] = m0;
+      outputConnectivityArray[q++] = m1;
+      outputConnectivityArray[q++] = a1;
 
-      outputConnectivityList[q++] = a0m0;
-      outputConnectivityList[q++] = c;
-      outputConnectivityList[q++] = m1a1;
-      outputConnectivityList[q++] = a;
+      outputConnectivityArray[q++] = a0m0;
+      outputConnectivityArray[q++] = c;
+      outputConnectivityArray[q++] = m1a1;
+      outputConnectivityArray[q++] = a;
 
       // second quadratic quad
-      outputConnectivityList[q++] = 8;
-      outputConnectivityList[q++] = m0;
-      outputConnectivityList[q++] = b0;
-      outputConnectivityList[q++] = b1;
-      outputConnectivityList[q++] = m1;
+      outputConnectivityArray[q++] = m0;
+      outputConnectivityArray[q++] = b0;
+      outputConnectivityArray[q++] = b1;
+      outputConnectivityArray[q++] = m1;
 
-      outputConnectivityList[q++] = m0b0;
-      outputConnectivityList[q++] = b;
-      outputConnectivityList[q++] = b1m1;
-      outputConnectivityList[q++] = c;
+      outputConnectivityArray[q++] = m0b0;
+      outputConnectivityArray[q++] = b;
+      outputConnectivityArray[q++] = b1m1;
+      outputConnectivityArray[q++] = c;
+    }
+
+    for(size_t i = 0; i <= 2 * nInputCells; i++) {
+      outputOffsetArray[i] = i * 8;
     }
 
     this->printMsg(
@@ -381,21 +371,21 @@ int ttk::MeshGraph::execute(
 // =============================================================================
 // Version 2: Mesh Graph with Linear Polygon
 // =============================================================================
-template <typename idType, typename dataType>
+template <typename IT, typename CT, typename DT>
 int ttk::MeshGraph::execute2(
   // Output
-  float *outputPoints,
-  idType *outputConnectivityList,
+  CT *outputPoints,
+  IT *outputConnectivityArray,
+  IT *outputOffsetArray,
 
   // Input
-  const float *inputPoints,
-  const idType *inputConnectivityList,
+  const CT *inputPoints,
+  const IT *inputConnectivityArray,
   const size_t nInputPoints,
   const size_t nInputCells,
   const size_t nSubdivisions,
-
-  const dataType *inputPointSizes,
-  const float sizeScale,
+  const DT *inputPointSizes,
+  const CT sizeScale,
   const size_t sizeAxis) const {
 
   this->printMsg(debug::Separator::L1);
@@ -404,17 +394,6 @@ int ttk::MeshGraph::execute2(
                   {"#Edges", std::to_string(nInputCells)},
                   {"#Subdivisions", std::to_string(nSubdivisions)}});
   this->printMsg(debug::Separator::L2);
-
-  auto getInputPointData = [&](const size_t &pointIndex, float data[4]) {
-    size_t i = pointIndex * 3;
-    data[0] = inputPoints[i++];
-    data[1] = inputPoints[i++];
-    data[2] = inputPoints[i];
-
-    data[3] = (inputPointSizes != nullptr)
-                ? ((float)inputPointSizes[pointIndex]) * sizeScale
-                : sizeScale;
-  };
 
   size_t subdivisionOffset = nInputPoints * 2;
   size_t nSubdivisionPoints = nSubdivisions * 2;
@@ -438,20 +417,21 @@ int ttk::MeshGraph::execute2(
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
     for(size_t i = 0; i < nInputPoints; i++) {
-      float data[4];
-      getInputPointData(i, data);
+      const CT *coords = &inputPoints[i * 3];
 
       size_t q = i * 6;
-      outputPoints[q] = data[0];
-      outputPoints[q + 1] = data[1];
-      outputPoints[q + 2] = data[2];
+      outputPoints[q] = coords[0];
+      outputPoints[q + 1] = coords[1];
+      outputPoints[q + 2] = coords[2];
 
-      outputPoints[q + 3] = data[0];
-      outputPoints[q + 4] = data[1];
-      outputPoints[q + 5] = data[2];
+      outputPoints[q + 3] = coords[0];
+      outputPoints[q + 4] = coords[1];
+      outputPoints[q + 5] = coords[2];
 
-      outputPoints[q + sizeAxis] += data[3] / 2;
-      outputPoints[q + 3 + sizeAxis] -= data[3] / 2;
+      const CT &size = ((CT)inputPointSizes[i]) * sizeScale;
+
+      outputPoints[q + sizeAxis] += size / 2;
+      outputPoints[q + 3 + sizeAxis] -= size / 2;
     }
 
     // -------------------------------------------------------------------------
@@ -490,12 +470,12 @@ int ttk::MeshGraph::execute2(
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
     for(size_t i = 0; i < nInputCells; i++) {
-      size_t temp = i * 3 + 1;
-      size_t n0 = (size_t)inputConnectivityList[temp++];
-      size_t n1 = (size_t)inputConnectivityList[temp];
+      size_t temp = i * 2;
+      IT n0 = inputConnectivityArray[temp++];
+      IT n1 = inputConnectivityArray[temp];
 
-      size_t no0 = n0 * 6;
-      size_t no1 = n1 * 6;
+      IT no0 = n0 * 6;
+      IT no1 = n1 * 6;
 
       size_t q2 = q + i * outputPointsSubdivisonOffset;
       for(float j = 1; j <= nSubdivisions; j++) {
@@ -518,38 +498,39 @@ int ttk::MeshGraph::execute2(
     this->printMsg("Computing mesh cells", 0, debug::LineMode::REPLACE);
 
     size_t cellSize = this->computeOutputCellSize(nSubdivisions);
-    idType cellDim = ((idType)cellSize) - 1;
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
     for(size_t i = 0; i < nInputCells; i++) {
-      size_t q = i * 3 + 1;
-      idType in0 = inputConnectivityList[q++] * 2;
-      idType in1 = inputConnectivityList[q] * 2;
+      size_t q = i * 2;
+      IT in0 = inputConnectivityArray[q++] * 2;
+      IT in1 = inputConnectivityArray[q] * 2;
 
-      idType c0 = in0;
-      idType c1 = in0 + 1;
-      idType c2 = in1 + 1;
-      idType c3 = in1;
+      IT c0 = in0;
+      IT c1 = in0 + 1;
+      IT c2 = in1 + 1;
+      IT c3 = in1;
 
       size_t q2 = cellSize * i;
-      outputConnectivityList[q2++] = cellDim;
 
-      outputConnectivityList[q2++] = c0;
-      outputConnectivityList[q2++] = c1;
+      outputConnectivityArray[q2++] = c0;
+      outputConnectivityArray[q2++] = c1;
 
       size_t temp = subdivisionOffset + i * nSubdivisionPoints;
 
       for(size_t j = 0; j < nSubdivisions; j++)
-        outputConnectivityList[q2++] = (idType)(temp + j * 2 + 1);
+        outputConnectivityArray[q2++] = (IT)(temp + j * 2 + 1);
 
-      outputConnectivityList[q2++] = c2;
-      outputConnectivityList[q2++] = c3;
+      outputConnectivityArray[q2++] = c2;
+      outputConnectivityArray[q2++] = c3;
 
       for(int j = nSubdivisions - 1; j >= 0; j--)
-        outputConnectivityList[q2++] = (idType)(temp + j * 2);
+        outputConnectivityArray[q2++] = (IT)(temp + j * 2);
     }
+
+    for(size_t i = 0; i <= nInputCells; i++)
+      outputOffsetArray[i] = i * cellSize;
 
     this->printMsg(
       "Computing mesh cells", 1, t.getElapsedTime(), this->threadNumber_);
@@ -561,15 +542,14 @@ int ttk::MeshGraph::execute2(
 // =============================================================================
 // Map input point data to output point data
 // =============================================================================
-template <typename idType, typename dataType>
+template <typename DT, typename IT>
 int ttk::MeshGraph::mapInputPointDataToOutputPointData(
-  const idType *inputConnectivityList,
+  DT *outputPointData,
+
   const size_t &nInputPoints,
   const size_t &nInputCells,
-
-  const dataType *inputPointData,
-  dataType *outputPointData,
-
+  const IT *inputConnectivityArray,
+  const DT *inputPointData,
   const bool &useQuadraticCells,
   const size_t &nSubdivisions) const {
 
@@ -592,9 +572,9 @@ int ttk::MeshGraph::mapInputPointDataToOutputPointData(
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
     for(size_t i = 0; i < nInputCells; i++) {
-      size_t temp = i * 3 + 1;
-      size_t aInputIndex = (size_t)inputConnectivityList[temp++];
-      size_t bInputIndex = (size_t)inputConnectivityList[temp];
+      size_t temp = i * 2;
+      size_t aInputIndex = (size_t)inputConnectivityArray[temp++];
+      size_t bInputIndex = (size_t)inputConnectivityArray[temp];
 
       size_t a = aInputIndex * 3;
       size_t b = bInputIndex * 3;
@@ -608,17 +588,16 @@ int ttk::MeshGraph::mapInputPointDataToOutputPointData(
       size_t m1a1 = offset + 5;
       size_t c = offset + 6;
 
-      outputPointData[c]
-        = (dataType)((outputPointData[a] + outputPointData[b]) / 2);
+      outputPointData[c] = (DT)((outputPointData[a] + outputPointData[b]) / 2);
       outputPointData[m0] = outputPointData[c];
       outputPointData[m1] = outputPointData[c];
 
       outputPointData[a0m0]
-        = (dataType)((outputPointData[a] + outputPointData[c]) / 2);
+        = (DT)((outputPointData[a] + outputPointData[c]) / 2);
       outputPointData[m1a1] = outputPointData[a0m0];
 
       outputPointData[m0b0]
-        = (dataType)((outputPointData[c] + outputPointData[b]) / 2);
+        = (DT)((outputPointData[c] + outputPointData[b]) / 2);
       outputPointData[b1m1] = outputPointData[m0b0];
     }
   } else {
@@ -642,9 +621,9 @@ int ttk::MeshGraph::mapInputPointDataToOutputPointData(
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
     for(size_t i = 0; i < nInputCells; i++) {
-      size_t q = i * 3 + 1;
-      idType c0 = inputConnectivityList[q];
-      dataType c0V = inputPointData[c0];
+      size_t q = i * 2;
+      IT c0 = inputConnectivityArray[q];
+      DT c0V = inputPointData[c0];
 
       size_t temp = subdivisionOffset + i * nSubdivisionPoints;
       for(size_t j = 0; j < nSubdivisions; j++) {
@@ -661,13 +640,12 @@ int ttk::MeshGraph::mapInputPointDataToOutputPointData(
 // =============================================================================
 // Map input cell data to output cell data
 // =============================================================================
-template <typename idType, typename dataType>
+template <typename DT>
 int ttk::MeshGraph::mapInputCellDataToOutputCellData(
+  DT *outputCellData,
+
   const size_t &nInputCells,
-
-  const dataType *inputCellData,
-  dataType *outputCellData,
-
+  const DT *inputCellData,
   const bool &useQuadraticCells,
   const size_t &nSubdivisions) const {
 

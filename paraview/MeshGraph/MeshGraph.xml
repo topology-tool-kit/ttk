@@ -16,20 +16,13 @@
                 <Documentation>Input Graph.</Documentation>
             </InputProperty>
 
-            <IntVectorProperty name="UseVariableSize" label="Use Variable Size" command="SetUseVariableSize" number_of_elements="1" default_values="0">
-                <BooleanDomain name="bool" />
-                <Documentation>Use variable edge sizes.</Documentation>
-            </IntVectorProperty>
             <StringVectorProperty name="SizeArray" label="Size Array" command="SetInputArrayToProcess" element_types="0 0 0 0 2" number_of_elements="5">
                 <ArrayListDomain attribute_type="Scalars" name="array_list">
                     <RequiredProperties>
                         <Property function="Input" name="Input" />
                     </RequiredProperties>
                 </ArrayListDomain>
-                <Hints>
-                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="UseVariableSize" value="1" />
-                </Hints>
-                <Documentation>Scalar array that contains point sizes.</Documentation>
+                <Documentation>Scalar array that contains point sizes (If you want constant scaling create a point array with the calculator filter).</Documentation>
             </StringVectorProperty>
 
             <DoubleVectorProperty name="SizeScale" label="Size Scale" command="SetSizeScale" number_of_elements="1" default_values="1">
@@ -54,16 +47,8 @@
                     <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="UseQuadraticCells" value="0" />
                 </Hints>
             </IntVectorProperty>
-            <IntVectorProperty name="UseTetrahedralize" label="Tetrahedralize Output" command="SetTetrahedralize" number_of_elements="1" default_values="1">
-                <BooleanDomain name="bool" />
-                <Documentation>Tetrahedralize meshed graph because VTK has problems with concave polygons.</Documentation>
-                <Hints>
-                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="UseQuadraticCells" value="0" />
-                </Hints>
-            </IntVectorProperty>
 
             <PropertyGroup panel_widget="Line" label="Input Options">
-                <Property name="UseVariableSize" />
                 <Property name="SizeArray" />
             </PropertyGroup>
             <PropertyGroup panel_widget="Line" label="Output Options">
@@ -71,7 +56,6 @@
                 <Property name="SizeScale" />
                 <Property name="UseQuadraticCells" />
                 <Property name="Subdivisions" />
-                <Property name="UseTetrahedralize" />
             </PropertyGroup>
 
             ${DEBUG_WIDGETS}
