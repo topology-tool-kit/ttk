@@ -61,10 +61,7 @@ int ttkContourForests::FillInputPortInformation(int port,
 
 int ttkContourForests::FillOutputPortInformation(int port,
                                                  vtkInformation *info) {
-  if(port == 0) {
-    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkPolyData");
-    return 1;
-  } else if(port == 1) {
+  if(port == 0 || port == 1) {
     info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkPolyData");
     return 1;
   } else if(port == 2) {

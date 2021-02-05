@@ -95,13 +95,7 @@ int ttkPersistenceCurve::getPersistenceCurve(
 
     switch(treeType) {
       case ttk::ftm::TreeType::Join:
-        outputCurve->ShallowCopy(persistenceCurve);
-        break;
-
       case ttk::ftm::TreeType::Split:
-        outputCurve->ShallowCopy(persistenceCurve);
-        break;
-
       case ttk::ftm::TreeType::Join_Split:
       case ttk::ftm::TreeType::Contour:
         outputCurve->ShallowCopy(persistenceCurve);
