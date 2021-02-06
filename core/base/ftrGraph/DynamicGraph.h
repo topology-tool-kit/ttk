@@ -186,7 +186,7 @@ namespace ttk {
 
       std::string print(void);
 
-      std::string print(std::function<std::string(std::size_t)>);
+      std::string print(const std::function<std::string(std::size_t)> &);
 
       std::string printNbCC(void);
 

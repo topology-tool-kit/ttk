@@ -128,8 +128,8 @@ protected:
     const std::vector<diagramTuple> &diagram1,
     const std::vector<diagramTuple> &diagram2,
     const std::vector<matchingTuple> &matchings,
-    vtkSmartPointer<vtkUnstructuredGrid> CTPersistenceDiagram1_,
-    vtkSmartPointer<vtkUnstructuredGrid> CTPersistenceDiagram2_);
+    const vtkSmartPointer<vtkUnstructuredGrid> &CTPersistenceDiagram1_,
+    const vtkSmartPointer<vtkUnstructuredGrid> &CTPersistenceDiagram2_);
 
 private:
   // Input bottleneck config.
@@ -507,8 +507,8 @@ int ttkTrackingFromPersistenceDiagrams::augmentPersistenceDiagrams(
   const std::vector<diagramTuple> &diagram1,
   const std::vector<diagramTuple> &diagram2,
   const std::vector<matchingTuple> &matchings,
-  vtkSmartPointer<vtkUnstructuredGrid> CTPersistenceDiagram1_,
-  vtkSmartPointer<vtkUnstructuredGrid> CTPersistenceDiagram2_) {
+  const vtkSmartPointer<vtkUnstructuredGrid> &CTPersistenceDiagram1_,
+  const vtkSmartPointer<vtkUnstructuredGrid> &CTPersistenceDiagram2_) {
 
   auto diagramSize1 = (BIdVertex)diagram1.size();
   auto diagramSize2 = (BIdVertex)diagram2.size();

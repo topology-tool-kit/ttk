@@ -39,7 +39,7 @@ int ttkImportEmbeddingFromTable::FillOutputPortInformation(
 }
 
 template <typename VTK_TT>
-inline void setPointFromData(vtkSmartPointer<vtkPoints> points,
+inline void setPointFromData(const vtkSmartPointer<vtkPoints> &points,
                              VTK_TT *xdata,
                              VTK_TT *ydata,
                              VTK_TT *zdata,

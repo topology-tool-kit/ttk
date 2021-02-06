@@ -59,7 +59,7 @@ int ttkCinemaWriter::FillOutputPortInformation(int port, vtkInformation *info) {
   return 1;
 }
 
-int ensureFolder(std::string path) {
+int ensureFolder(const std::string &path) {
   auto directory = vtkSmartPointer<vtkDirectory>::New();
   if(directory->Open(path.data()) == 1
      || vtkDirectory::MakeDirectory(path.data()) == 1)

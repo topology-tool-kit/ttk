@@ -45,7 +45,7 @@ protected:
   ttkCinemaProductReader();
   ~ttkCinemaProductReader();
 
-  vtkSmartPointer<vtkDataObject> readFileLocal(std::string pathToFile);
+  vtkSmartPointer<vtkDataObject> readFileLocal(const std::string &pathToFile);
   int addFieldDataRecursively(vtkDataObject *object, vtkFieldData *fd);
 
   int FillInputPortInformation(int port, vtkInformation *info) override;

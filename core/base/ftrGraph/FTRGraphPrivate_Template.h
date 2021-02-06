@@ -542,7 +542,9 @@ bool ttk::ftr::FTRGraph<ScalarType, triangulationType>::checkStop(
 template <typename ScalarType, typename triangulationType>
 std::pair<ttk::ftr::valence, ttk::ftr::valence>
   ttk::ftr::FTRGraph<ScalarType, triangulationType>::getLinkNbCC(
-    const idVertex curVert, LocalForests &localForests, VertCompFN comp) {
+    const idVertex curVert,
+    LocalForests &localForests,
+    const VertCompFN &comp) {
   // traduce edge id in a local id for the forests
   std::unordered_map<idEdge, std::size_t> mapNeighDown, mapNeighUp;
   std::size_t nextId = 0;

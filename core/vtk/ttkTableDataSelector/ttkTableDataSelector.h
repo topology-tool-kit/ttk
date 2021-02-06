@@ -46,7 +46,7 @@ public:
 
   // end of default ttk setters
 
-  void AddCol(std::string s) {
+  void AddCol(const std::string &s) {
     SelectedCols.push_back(s);
     Modified();
   }

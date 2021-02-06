@@ -273,8 +273,8 @@ int ttkContourTreeAlignment::RequestData(vtkInformation *request,
     outInfo->Get(vtkDataObject::DATA_OBJECT()));
 
   // Prep Array
-  auto prepArray = [](vtkAbstractArray *array, string name, size_t nComponents,
-                      size_t nTuples) {
+  auto prepArray = [](vtkAbstractArray *array, const string &name,
+                      size_t nComponents, size_t nTuples) {
     array->SetName(name.data());
     array->SetNumberOfComponents(nComponents);
     array->SetNumberOfTuples(nTuples);

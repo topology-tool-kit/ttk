@@ -51,7 +51,7 @@ public:
   vtkSetMacro(SelectedFieldName, std::string);
   vtkGetMacro(SelectedFieldName, std::string);
 
-  void AddScalarField(std::string s) {
+  void AddScalarField(const std::string &s) {
     SelectedFields.emplace_back(s);
     Modified();
   }
