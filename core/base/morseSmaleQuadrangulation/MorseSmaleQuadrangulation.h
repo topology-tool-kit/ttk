@@ -347,7 +347,7 @@ int ttk::MorseSmaleQuadrangulation::detectCellSeps(
       sepId.emplace(edgeOnSep[e0]);
       sepId.emplace(edgeOnSep[e1]);
     } else if(edgeOnSep[e1] != -1 && edgeOnSep[e2] != -1) {
-      sepId.emplace(edgeOnSep[e0]);
+      sepId.emplace(edgeOnSep[e1]);
       sepId.emplace(edgeOnSep[e2]);
     } else if(edgeOnSep[e0] != -1 && edgeOnSep[e2] != -1) {
       sepId.emplace(edgeOnSep[e0]);
