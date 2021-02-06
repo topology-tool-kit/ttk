@@ -303,8 +303,10 @@ namespace ttk {
       }
 
       DynGraphNode &operator=(const DynGraphNode &other) {
-        parent_ = other.parent_;
-        weight_ = other.weight_;
+        if(this != &other) {
+          parent_ = other.parent_;
+          weight_ = other.weight_;
+        }
         return *this;
       }
 

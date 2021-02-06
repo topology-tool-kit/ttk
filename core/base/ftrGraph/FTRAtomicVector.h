@@ -155,8 +155,8 @@ namespace ttk {
     }
 
     FTRAtomicVector<type> &operator=(FTRAtomicVector<type> &&other) noexcept {
-      std::vector<type>::operator=(std::move(other));
       nextId = std::move(other.nextId);
+      std::vector<type>::operator=(std::move(other));
       return *this;
     }
 
