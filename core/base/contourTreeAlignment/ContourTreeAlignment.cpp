@@ -1,10 +1,5 @@
 #include "ContourTreeAlignment.h"
 
-#include "float.h"
-#include <algorithm>
-#include <limits.h>
-#include <list>
-
 ///=====================================================================================================================
 /// branch decomposition
 ///=====================================================================================================================
@@ -527,6 +522,10 @@ void ttk::ContourTreeAlignment::computeNewAlignmenttree(
 
   currNode = std::shared_ptr<AlignmentNode>(new AlignmentNode());
 
+  if(res->node1 == nullptr && res->node2 == nullptr) {
+    return;
+  }
+
   currNode->freq = (res->node1 == nullptr ? 0 : res->node1->freq)
                    + (res->node2 == nullptr ? 0 : res->node2->freq);
   currNode->type = res->node1 == nullptr ? res->node2->type : res->node1->type;
@@ -602,6 +601,11 @@ void ttk::ContourTreeAlignment::computeNewAlignmenttree(
     // type 'rootNode' not possible, otherwise has to be catched
 
     if(currTree->child1 != nullptr) {
+
+      if(currTree->child1->node1 == nullptr
+         && currTree->child1->node2 == nullptr) {
+        continue;
+      }
 
       std::shared_ptr<AlignmentNode> childNode(new AlignmentNode());
 
@@ -776,6 +780,11 @@ void ttk::ContourTreeAlignment::computeNewAlignmenttree(
     }
 
     if(currTree->child2 != nullptr) {
+
+      if(currTree->child2->node1 == nullptr
+         && currTree->child2->node2 == nullptr) {
+        continue;
+      }
 
       std::shared_ptr<AlignmentNode> childNode(new AlignmentNode());
 
@@ -1193,11 +1202,11 @@ float ttk::ContourTreeAlignment::editCost(
   const std::shared_ptr<BinaryTree> &t2) {
 
   float v1 = 0, v2 = 0;
-  if(t1 != nullptr)
+  if(t1.get() != nullptr)
     v1 = arcMatchMode == persistence ? t1->scalardistanceParent
          : arcMatchMode == area      ? t1->area
                                      : t1->volume;
-  if(t2 != nullptr)
+  if(t2.get() != nullptr)
     v2 = arcMatchMode == persistence ? t2->scalardistanceParent
          : arcMatchMode == area      ? t2->area
                                      : t2->volume;
