@@ -93,6 +93,8 @@ namespace ttk {
     CompactTriangulation(const CompactTriangulation &rhs);
     CompactTriangulation &operator=(const CompactTriangulation &rhs);
     ~CompactTriangulation();
+    CompactTriangulation(CompactTriangulation &&rhs) = default;
+    CompactTriangulation &operator=(CompactTriangulation &&rhs) = default;
 
     /**
      * Set up vertices from the input.

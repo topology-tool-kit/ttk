@@ -52,6 +52,11 @@ namespace ttk {
 
     virtual ~AbstractTriangulation();
 
+    AbstractTriangulation(const AbstractTriangulation &) = default;
+    AbstractTriangulation(AbstractTriangulation &&) = default;
+    AbstractTriangulation &operator=(const AbstractTriangulation &) = default;
+    AbstractTriangulation &operator=(AbstractTriangulation &&) = default;
+
     /// Reset the triangulation data-structures.
     /// \return Returns 0 upon success, negative values otherwise.
     int clear();
