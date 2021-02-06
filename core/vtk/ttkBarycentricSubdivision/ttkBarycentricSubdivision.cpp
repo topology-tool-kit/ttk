@@ -213,11 +213,9 @@ int ttkBarycentricSubdivision::RequestData(vtkInformation *request,
     // generate the new triangulation
     this->execute(*triangulation, triangulationSubdivision);
 
-    // temporary vtkUnstructuredGrid moved from output
-    vtkSmartPointer<vtkUnstructuredGrid> tmp(std::move(output));
-    // interpolate from tmp to output
+    // interpolate output scalar fields
     InterpolateScalarFields(
-      tmp, output, *triangulation, triangulationSubdivision);
+      output, output, *triangulation, triangulationSubdivision);
   }
 
   // generated 3D coordinates
