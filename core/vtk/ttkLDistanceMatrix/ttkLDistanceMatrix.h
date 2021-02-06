@@ -26,7 +26,7 @@ public:
 
   vtkTypeMacro(ttkLDistanceMatrix, ttkAlgorithm);
 
-  vtkSetMacro(DistanceType, std::string);
+  vtkSetMacro(DistanceType, const std::string &);
   vtkGetMacro(DistanceType, std::string);
 
 protected:

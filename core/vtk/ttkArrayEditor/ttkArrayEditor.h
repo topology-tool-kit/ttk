@@ -53,12 +53,12 @@ public:
   vtkGetEnumMacro(EditorMode, MODE);
   vtkSetMacro(TargetAssociation, int);
   vtkGetMacro(TargetAssociation, int);
-  vtkSetMacro(DataString, std::string);
+  vtkSetMacro(DataString, const std::string &);
   vtkGetMacro(DataString, std::string);
   vtkSetMacro(ReplaceExistingArrays, bool);
   vtkGetMacro(ReplaceExistingArrays, bool);
 
-  vtkSetMacro(TargetArrayName, std::string);
+  vtkSetMacro(TargetArrayName, const std::string &);
   vtkGetMacro(TargetArrayName, std::string);
   vtkSetMacro(TargetArrayType, int);
   vtkGetMacro(TargetArrayType, int);

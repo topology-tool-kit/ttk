@@ -86,7 +86,7 @@ public:
    * TODO 6: Automatically generate getters and setters of filter
    *         parameters via vtkMacros.
    */
-  vtkSetMacro(OutputArrayName, std::string);
+  vtkSetMacro(OutputArrayName, const std::string &);
   vtkGetMacro(OutputArrayName, std::string);
 
   /**

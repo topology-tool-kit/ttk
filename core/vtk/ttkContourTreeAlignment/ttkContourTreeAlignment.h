@@ -87,7 +87,7 @@ public:
   vtkGetMacro(WeightScalarValueMatch, float);
   vtkSetMacro(ExportJSON, bool);
   vtkGetMacro(ExportJSON, bool);
-  vtkSetMacro(ExportPath, std::string);
+  vtkSetMacro(ExportPath, const std::string &);
   vtkGetMacro(ExportPath, std::string);
 
 protected:

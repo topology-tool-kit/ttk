@@ -33,13 +33,13 @@ public:
   static ttkCinemaQuery *New();
   vtkTypeMacro(ttkCinemaQuery, ttkAlgorithm);
 
-  vtkSetMacro(SQLStatement, std::string);
+  vtkSetMacro(SQLStatement, const std::string &);
   vtkGetMacro(SQLStatement, std::string);
 
   vtkSetMacro(ExcludeColumnsWithRegexp, bool);
   vtkGetMacro(ExcludeColumnsWithRegexp, bool);
 
-  vtkSetMacro(RegexpString, std::string);
+  vtkSetMacro(RegexpString, const std::string &);
   vtkGetMacro(RegexpString, std::string);
 
 protected:

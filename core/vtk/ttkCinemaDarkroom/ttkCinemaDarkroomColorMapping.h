@@ -41,7 +41,7 @@ public:
   vtkGetVector2Macro(ValueRange, double);
   vtkSetMacro(ColorMap, int);
   vtkGetMacro(ColorMap, int);
-  vtkSetMacro(ManualColorMap, std::string);
+  vtkSetMacro(ManualColorMap, const std::string &);
   vtkGetMacro(ManualColorMap, std::string);
   vtkSetVector3Macro(NANColor, double);
   vtkGetVector3Macro(NANColor, double);

@@ -65,10 +65,10 @@ public:
   vtkSetMacro(UsePersistenceMetric, bool);
   vtkGetMacro(UsePersistenceMetric, bool);
 
-  vtkSetMacro(WassersteinMetric, std::string);
+  vtkSetMacro(WassersteinMetric, const std::string &);
   vtkGetMacro(WassersteinMetric, std::string);
 
-  vtkSetMacro(DistanceAlgorithm, std::string);
+  vtkSetMacro(DistanceAlgorithm, const std::string &);
   vtkGetMacro(DistanceAlgorithm, std::string);
 
   vtkSetMacro(PVAlgorithm, int);

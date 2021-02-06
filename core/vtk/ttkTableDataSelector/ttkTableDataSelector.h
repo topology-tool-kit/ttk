@@ -39,7 +39,7 @@ public:
 
   // default ttk setters
 
-  vtkSetMacro(RegexpString, std::string);
+  vtkSetMacro(RegexpString, const std::string &);
 
   vtkGetVector2Macro(RangeId, int);
   vtkSetVector2Macro(RangeId, int);

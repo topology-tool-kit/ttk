@@ -36,7 +36,7 @@ public:
   static ttkCinemaProductReader *New();
   vtkTypeMacro(ttkCinemaProductReader, ttkAlgorithm);
 
-  vtkSetMacro(FilepathColumnName, std::string);
+  vtkSetMacro(FilepathColumnName, const std::string &);
   vtkGetMacro(FilepathColumnName, std::string);
   vtkSetMacro(AddFieldDataRecursively, bool);
   vtkGetMacro(AddFieldDataRecursively, bool);

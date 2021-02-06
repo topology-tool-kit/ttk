@@ -39,10 +39,10 @@ public:
 
   vtkTypeMacro(ttkIdentifiers, ttkAlgorithm);
 
-  vtkSetMacro(CellFieldName, std::string);
+  vtkSetMacro(CellFieldName, const std::string &);
   vtkGetMacro(CellFieldName, std::string);
 
-  vtkSetMacro(VertexFieldName, std::string);
+  vtkSetMacro(VertexFieldName, const std::string &);
   vtkGetMacro(VertexFieldName, std::string);
 
 protected:

@@ -51,7 +51,7 @@ public:
 
   vtkTypeMacro(ttkHarmonicField, ttkAlgorithm);
 
-  vtkSetMacro(OutputScalarFieldName, std::string);
+  vtkSetMacro(OutputScalarFieldName, const std::string &);
   vtkGetMacro(OutputScalarFieldName, std::string);
 
   vtkSetMacro(ForceConstraintIdentifiers, bool);
