@@ -205,7 +205,7 @@ int Editor::init(int &argc, char **argv) {
     double numberOfFiles = static_cast<double>(inputFileName_.size());
     double num = static_cast<double>(fraction);
     double den = static_cast<double>(numberOfFractions);
-    int first = static_cast<int>((numberOfFiles * (num - 1.0) / den) + 0.5);
+    int first = lround(numberOfFiles * (num - 1.0) / den);
     int last = static_cast<int>((numberOfFiles * num / den) - 0.5);
     std::vector<std::string> newList;
     newList.insert(newList.begin(), inputFileName_.begin() + first,
@@ -222,7 +222,7 @@ int Editor::init(int &argc, char **argv) {
   }
 
   // Initialize output
-  if(inputFormat_ == "raw") {
+  if(inputFormat_ == "raw" || inputFormat_ == "vti") {
     outputBounds_ = vtkImageData::New();
     outputHistograms_ = vtkImageData::New();
   } else if(inputFormat_ == "vtu") {
@@ -237,9 +237,6 @@ int Editor::init(int &argc, char **argv) {
   } else if(inputFormat_ == "vtr") {
     outputBounds_ = vtkRectilinearGrid::New();
     outputHistograms_ = vtkRectilinearGrid::New();
-  } else if(inputFormat_ == "vti") {
-    outputBounds_ = vtkImageData::New();
-    outputHistograms_ = vtkImageData::New();
   }
 
   this->printMsg("Directory: " + inputDirectory_, ttk::debug::Priority::DETAIL);
