@@ -169,7 +169,7 @@ int ttkCinemaWriter::ProcessDataProduct(vtkDataObject *input) {
     }
 
     // delete columns from fd
-    for(auto name : toIgnore)
+    for(const auto &name : toIgnore)
       inputFD->RemoveArray(name.data());
 
     nFields = inputFD->GetNumberOfArrays();
