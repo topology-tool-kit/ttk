@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.12.2) # confirmed by Chris <kappe@cs.uni-kl.de>
+cmake_minimum_required(VERSION 3.14) # see issue #532
 # The C is required to build with VTK when it has MPI
 project(ttk VERSION 0.9.10 LANGUAGES CXX C)
 
