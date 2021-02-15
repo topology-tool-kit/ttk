@@ -20,6 +20,7 @@
 #include <Debug.h>
 
 // std includes
+#include <cmath>
 #include <limits>
 
 namespace ttk {
@@ -197,7 +198,7 @@ int ttk::DepthImageBasedGeometryApproximation::execute(
     auto absDiff = [](const dataType &a, const dataType &b) {
       return a > b ? a - b : b - a;
     };
-    auto isNaN = [](const double &a) { return isnan(a) || a >= 1.0; };
+    auto isNaN = [](const double &a) { return std::isnan(a) || a >= 1.0; };
 
     const size_t nTriangles = 2 * (resolution[0] - 1) * (resolution[1] - 1);
 
