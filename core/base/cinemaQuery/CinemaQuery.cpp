@@ -48,7 +48,7 @@ int ttk::CinemaQuery::execute(
     // Initialize DB in memory
     rc = sqlite3_open(":memory:", &db);
     if(rc != SQLITE_OK) {
-      this->printErr(sqlite3_errmsg(db));
+      this->printErr("Creating database: " + std::string{sqlite3_errmsg(db)});
       return 0;
     }
 
@@ -124,7 +124,7 @@ int ttk::CinemaQuery::execute(
       }
 
       if(rc != SQLITE_DONE) {
-        this->printErr(sqlite3_errmsg(db));
+        this->printErr("Fetching result: " + std::string{sqlite3_errmsg(db)});
 
         sqlite3_close(db);
         return 0;
@@ -146,7 +146,7 @@ int ttk::CinemaQuery::execute(
 
     // Print status
     if(rc != SQLITE_OK) {
-      this->printErr(sqlite3_errmsg(db));
+      this->printErr("Closing database:" + std::string{sqlite3_errmsg(db)});
       return 0;
     } else {
       this->printMsg("Closing database", 1, timer.getElapsedTime());

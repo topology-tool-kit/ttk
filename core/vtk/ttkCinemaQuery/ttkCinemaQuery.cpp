@@ -126,6 +126,8 @@ int ttkCinemaQuery::RequestData(vtkInformation *request,
             if(isNumeric[k]) {
               const auto var = inTable->GetValue(q, k);
               if(var.IsChar() || var.IsSignedChar()) {
+                // convert char/signed char to int to get its value
+                // instead of its char representation
                 sqlInsertStatement += std::to_string(var.ToInt());
               } else {
                 sqlInsertStatement += var.ToString();
