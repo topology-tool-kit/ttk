@@ -1,6 +1,7 @@
 #include <ttkIcospheresFromPoints.h>
 
 #include <vtkInformation.h>
+#include <vtkObjectFactory.h>
 
 #include <vtkPointData.h>
 #include <vtkPointSet.h>
