@@ -29,6 +29,9 @@
 
 class vtkUnstructuredGrid;
 
+template <typename T>
+class vtkSmartPointer;
+
 class TTKBARYCENTRICSUBDIVISION_EXPORT ttkBarycentricSubdivision
   : public ttkAlgorithm,
     protected ttk::BarycentricSubdivision {

@@ -29,12 +29,12 @@
 namespace ttk {
   class CinemaImaging;
 }
-class vtkPolyData;
 class vtkMultiBlockDataSet;
 class vtkPointSet;
 class vtkFieldData;
 class vtkImageData;
 class vtkPointData;
+class vtkCellArray;
 
 class TTKCINEMAIMAGING_EXPORT ttkCinemaImaging : public ttkAlgorithm {
 
