@@ -3,6 +3,7 @@
 #include <ttkUtils.h>
 
 #include <vtkInformation.h>
+#include <vtkObjectFactory.h>
 
 #include <vtkCellArray.h>
 #include <vtkDoubleArray.h>
