@@ -7,6 +7,7 @@
 #include <vtkCellArray.h>
 #include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
+#include <vtkIdTypeArray.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkSmartPointer.h>
