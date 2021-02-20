@@ -1,10 +1,12 @@
 #include <ttkIcospheresFromPoints.h>
 
 #include <vtkInformation.h>
+#include <vtkObjectFactory.h>
 
 #include <vtkPointData.h>
 #include <vtkPointSet.h>
-#include <vtkUnstructuredGrid.h>
+
+#include <ttkUtils.h>
 
 vtkStandardNewMacro(ttkIcospheresFromPoints);
 
@@ -30,8 +32,8 @@ int copyArrayData(vtkDataArray *oldArray,
                   const size_t &nSpheres,
                   const size_t &nVerticesPerSphere,
                   const size_t &nComponents) {
-  auto oldData = (VTK_TT *)oldArray->GetVoidPointer(0);
-  auto newData = (VTK_TT *)newArray->GetVoidPointer(0);
+  auto oldData = ttkUtils::GetPointer<VTK_TT>(oldArray);
+  auto newData = ttkUtils::GetPointer<VTK_TT>(newArray);
 
   for(size_t i = 0; i < nSpheres; i++) {
     size_t sphereIndex = i * nVerticesPerSphere * nComponents;
@@ -51,7 +53,7 @@ int ttkIcospheresFromPoints::RequestData(vtkInformation *request,
                                          vtkInformationVector **inputVector,
                                          vtkInformationVector *outputVector) {
   auto input = vtkPointSet::GetData(inputVector[0], 0);
-  this->SetCenters(input->GetPoints());
+  this->SetCenters(input->GetPoints()->GetData());
 
   // compute spheres
   int status
@@ -64,7 +66,7 @@ int ttkIcospheresFromPoints::RequestData(vtkInformation *request,
   this->computeNumberOfVerticesAndTriangles(
     nVertices, nTriangles, this->GetNumberOfSubdivisions());
 
-  auto output = vtkUnstructuredGrid::GetData(outputVector);
+  auto output = vtkDataSet::GetData(outputVector);
   auto outputPD = output->GetPointData();
 
   // copy point data

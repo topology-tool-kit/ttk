@@ -2,7 +2,6 @@
 
 #include <vtkInformation.h>
 #include <vtkObjectFactory.h>
-// #include <vtkInformationVector.h>
 
 #include <vtkDataSet.h>
 #include <vtkMultiBlockDataSet.h>

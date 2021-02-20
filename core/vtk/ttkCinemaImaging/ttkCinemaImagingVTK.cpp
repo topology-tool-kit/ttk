@@ -83,7 +83,6 @@ int ttk::ttkCinemaImagingVTK::addValuePass(
     size_t nComponents = array->GetNumberOfComponents();
     for(size_t c = 0; c < nComponents; c++) {
       auto valuePass = vtkSmartPointer<vtkValuePass>::New();
-      valuePass->SetRenderingMode(vtkValuePass::FLOATING_POINT);
       valuePass->SetInputArrayToProcess(fieldType == 0
                                           ? VTK_SCALAR_MODE_USE_POINT_FIELD_DATA
                                           : VTK_SCALAR_MODE_USE_CELL_FIELD_DATA,
