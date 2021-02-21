@@ -54,10 +54,20 @@ namespace ttk {
       return cellEdgeList_[cellId].size();
     }
 
+    template <std::size_t N>
+    inline void
+      convertToVector(const std::vector<std::array<SimplexId, N>> &table,
+                      std::vector<std::vector<SimplexId>> &vec) {
+      for(size_t i = 0; i < table.size(); ++i) {
+        vec[i] = {table[i].begin(), table[i].end()};
+      }
+    }
+
     inline const std::vector<std::vector<SimplexId>> *
       getCellEdgesInternal() override {
 
-      return &cellEdgeList_;
+      convertToVector(cellEdgeList_, cellEdgeVector_);
+      return &cellEdgeVector_;
     }
 
     inline int TTK_TRIANGULATION_INTERNAL(getCellNeighbor)(
@@ -119,7 +129,8 @@ namespace ttk {
     inline const std::vector<std::vector<SimplexId>> *
       getCellTrianglesInternal() override {
 
-      return &cellTriangleList_;
+      convertToVector(cellTriangleList_, cellTriangleVector_);
+      return &cellTriangleVector_;
     }
 
     inline int TTK_TRIANGULATION_INTERNAL(getCellVertex)(
@@ -147,7 +158,7 @@ namespace ttk {
       return maxCellDim_;
     }
 
-    inline const std::vector<std::pair<SimplexId, SimplexId>> *
+    inline const std::vector<std::array<SimplexId, 2>> *
       TTK_TRIANGULATION_INTERNAL(getEdges)() override {
       return &edgeList_;
     }
@@ -254,9 +265,9 @@ namespace ttk {
         return -2;
 #endif
       if(!localVertexId)
-        vertexId = edgeList_[edgeId].first;
+        vertexId = edgeList_[edgeId][0];
       else
-        vertexId = edgeList_[edgeId].second;
+        vertexId = edgeList_[edgeId][1];
       return 0;
     }
 
@@ -278,7 +289,7 @@ namespace ttk {
       return vertexNumber_;
     }
 
-    inline const std::vector<std::vector<SimplexId>> *
+    inline const std::vector<std::array<SimplexId, 3>> *
       TTK_TRIANGULATION_INTERNAL(getTriangles)() override {
       return &triangleList_;
     }
@@ -315,7 +326,8 @@ namespace ttk {
     inline const std::vector<std::vector<SimplexId>> *
       getTriangleEdgesInternal() override {
 
-      return &triangleEdgeList_;
+      convertToVector(triangleEdgeList_, triangleEdgeVector_);
+      return &triangleEdgeVector_;
     }
 
     inline int TTK_TRIANGULATION_INTERNAL(getTriangleLink)(
@@ -687,8 +699,8 @@ namespace ttk {
 
         for(SimplexId i = 0; i < (SimplexId)edgeStarList_.size(); i++) {
           if(edgeStarList_[i].size() == 1) {
-            boundaryVertices_[edgeList_[i].first] = true;
-            boundaryVertices_[edgeList_[i].second] = true;
+            boundaryVertices_[edgeList_[i][0]] = true;
+            boundaryVertices_[edgeList_[i][1]] = true;
           }
         }
       } else if(getDimensionality() == 3) {
