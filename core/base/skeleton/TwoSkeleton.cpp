@@ -283,13 +283,13 @@ int TwoSkeleton::buildTriangleList(
 
   const SimplexId cellNumber = cellArray.getNbCells();
   if(triangleList) {
-    // NOTE: 9 is pretty empirical here...
+    // NOTE: 10 is pretty empirical here...
     triangleList->clear();
-    triangleList->reserve(9 * vertexNumber);
+    triangleList->reserve(10 * vertexNumber);
   }
   if(triangleStars) {
     triangleStars->clear();
-    triangleStars->reserve(9 * vertexNumber);
+    triangleStars->reserve(10 * vertexNumber);
   }
   if(cellTriangleList) {
     cellTriangleList->resize(cellNumber);
@@ -301,277 +301,86 @@ int TwoSkeleton::buildTriangleList(
   printMsg(
     "Building triangles", 0, 0, threadNumber_, ttk::debug::LineMode::REPLACE);
 
-  if(threadNumber_ == 1) {
+  // for each vertex,
+  //   list of triangles
+  //    each triangle is a list vertex Id + a triangleId
+  vector<vector<pair<std::array<SimplexId, 2>, SimplexId>>> triangleTable(
+    vertexNumber);
 
-    // for each vertex,
-    //   list of triangles
-    //    each triangle is a list vertex Id + a triangleId
-    vector<vector<pair<vector<SimplexId>, SimplexId>>> triangleTable(
-      vertexNumber);
+  const SimplexId timeBuckets = std::min<ttk::SimplexId>(10, cellNumber);
 
-    const SimplexId timeBuckets = std::min<ttk::SimplexId>(10, cellNumber);
+  for(SimplexId i = 0; i < vertexNumber; i++)
+    triangleTable[i].reserve(32);
 
-    for(SimplexId i = 0; i < vertexNumber; i++)
-      triangleTable[i].reserve(32);
+  for(SimplexId cid = 0; cid < cellNumber; cid++) {
 
-    for(SimplexId cid = 0; cid < cellNumber; cid++) {
+    if(!wrapper_ || (wrapper_ && !wrapper_->needsToAbort())) {
 
-      if(!wrapper_ || (wrapper_ && !wrapper_->needsToAbort())) {
+      std::array<SimplexId, 3> triangle{};
 
-        vector<SimplexId> triangle(3);
+      for(int j = 0; j < 4; j++) {
+        // doing triangle j
 
-        for(int j = 0; j < 4; j++) {
-          // doing triangle j
+        for(int k = 0; k < 3; k++) {
+          // TODO: ASSUME Regular Mesh Here!
+          triangle[k] = cellArray.getCellVertex(cid, (j + k) % 4);
+        }
+        std::sort(triangle.begin(), triangle.end());
+        auto &ttable = triangleTable[triangle[0]];
 
-          for(int k = 0; k < 3; k++) {
-            // TODO: ASSUME Regular Mesh Here!
-            triangle[k] = cellArray.getCellVertex(cid, (j + k) % 4);
+        SimplexId triangleId = -1;
+        for(size_t k = 0; k < ttable.size(); k++) {
+
+          // processing a triangle stored for that vertex
+          if((ttable[k].first[0] == triangle[1])
+             && (ttable[k].first[1] == triangle[2])) {
+            triangleId = ttable[k].second;
+            break;
           }
-          sort(triangle.begin(), triangle.end());
+        }
+        if(triangleId == -1) {
+          // not found yet
+          triangleId = triangleNumber;
+          ttable.emplace_back(
+            std::array<SimplexId, 2>{triangle[1], triangle[2]}, triangleNumber);
+          triangleNumber++;
 
-          SimplexId triangleId = -1;
-          for(SimplexId k = 0; k < (SimplexId)triangleTable[triangle[0]].size();
-              k++) {
-
-            // processing a triangle stored for that vertex
-            if((triangleTable[triangle[0]][k].first[1] == triangle[1])
-               && (triangleTable[triangle[0]][k].first[2] == triangle[2])) {
-              triangleId = triangleTable[triangle[0]][k].second;
-              break;
-            }
+          if(triangleList) {
+            triangleList->emplace_back(
+              std::vector<SimplexId>{triangle.begin(), triangle.end()});
           }
-          if(triangleId == -1) {
-            // not found yet
-            triangleId = triangleNumber;
-            triangleTable[triangle[0]].push_back(
-              pair<vector<SimplexId>, SimplexId>(triangle, triangleNumber));
-            triangleNumber++;
-
-            if(triangleList) {
-              triangleList->push_back(triangle);
-            }
-            if(triangleStars) {
-              triangleStars->resize(triangleStars->size() + 1);
-              triangleStars->back().resize(1);
-              // store the tet i in the triangleStars list
-              triangleStars->back().back() = cid;
-            }
-          } else {
-            if(triangleStars) {
-              // add tet i as a neighbor of triangleId
-              (*triangleStars)[triangleId].push_back(cid);
-            }
+          if(triangleStars) {
+            // store the tet i in the triangleStars list
+            triangleStars->emplace_back(std::vector<SimplexId>{cid});
           }
-
-          if(cellTriangleList) {
-            // add the triangle to the cell
-            for(int k = 0; k < 4; k++) {
-              if((*cellTriangleList)[cid][k] == -1) {
-                (*cellTriangleList)[cid][k] = triangleId;
-                break;
-              }
-            }
+        } else {
+          if(triangleStars) {
+            // add tet i as a neighbor of triangleId
+            (*triangleStars)[triangleId].push_back(cid);
           }
         }
 
-        // update the progress bar of the wrapping code -- to adapt
-        if(debugLevel_ >= (int)(debug::Priority::INFO)) {
-
-          if(!(cid % ((cellNumber) / timeBuckets))) {
-            printMsg("Building triangles", (cid / (float)cellNumber),
-                     t.getElapsedTime(), threadNumber_,
-                     ttk::debug::LineMode::REPLACE);
-            if(wrapper_) {
-              wrapper_->updateProgress(cid / (float)cellNumber);
-            }
-          }
+        if(cellTriangleList) {
+          // add the triangle to the cell
+          (*cellTriangleList)[cid][j] = triangleId;
         }
       }
-    }
-  } else {
 
-    Timer memTimer;
-    //  for each thread,
-    //    for each vertex
-    //      for each triangle
-    //        vertex ids
-    //        triangleId
-    vector<vector<vector<pair<vector<SimplexId>, SimplexId>>>>
-      threadedTriangleTable(threadNumber_);
+      // update the progress bar of the wrapping code -- to adapt
+      if(debugLevel_ >= (int)(debug::Priority::INFO)) {
 
-    vector<SimplexId> triangleNumbers(threadNumber_, 0);
-
-    vector<vector<vector<SimplexId>>> threadedTriangleStars(threadNumber_);
-
-    for(ThreadId i = 0; i < threadNumber_; i++) {
-      threadedTriangleTable[i].resize(vertexNumber);
-    }
-
-    int count = 0;
-
-    // TODO: duplicate code, almost same as above.
-
-    // the following open-mp processing is only relevant for embarassingly
-    // parallel algorithms (such as smoothing) -- to adapt
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
-#endif
-    for(SimplexId cid = 0; cid < (SimplexId)cellNumber; cid++) {
-
-      // avoid any processing if the abort signal is sent
-      if((!wrapper_) || ((wrapper_) && (!wrapper_->needsToAbort()))) {
-
-        ThreadId threadId = 1;
-#ifdef TTK_ENABLE_OPENMP
-        threadId = omp_get_thread_num();
-#endif
-
-        vector<SimplexId> triangle(3);
-
-        for(int j = 0; j < 4; j++) {
-          // doing triangle j
-
-          for(int k = 0; k < 3; k++) {
-            // TODO: ASSUME Regular Mesh Here!
-            triangle[k] = cellArray.getCellVertex(cid, (j + k) % 4);
-          }
-          sort(triangle.begin(), triangle.end());
-
-          SimplexId triangleId = -1;
-
-          for(auto triVerts : threadedTriangleTable[threadId][triangle[0]]) {
-            // processing a triangle stored for that vertex
-            if(triVerts.first[1] == triangle[1]
-               && triVerts.first[2] == triangle[2]) {
-              triangleId = triVerts.second;
-              break;
-            }
-          }
-          if(triangleId == -1) {
-            // not visited by this thread
-            threadedTriangleTable[threadId][triangle[0]].emplace_back(
-              pair<vector<SimplexId>, SimplexId>(
-                triangle, triangleNumbers[threadId]));
-            triangleNumbers[threadId]++;
-
-            if(triangleStars) {
-              threadedTriangleStars[threadId].resize(
-                threadedTriangleStars[threadId].size() + 1);
-              threadedTriangleStars[threadId].back().resize(1);
-              threadedTriangleStars[threadId].back().back() = cid;
-            }
-          } else {
-            if(triangleStars) {
-              threadedTriangleStars[threadId][triangleId].emplace_back(cid);
-            }
-          }
-        }
-
-        // update the progress bar of the wrapping code -- to adapt
-        if(debugLevel_ > static_cast<int>(debug::Priority::DETAIL)) {
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp critical
-#endif
-          {
-            if((wrapper_) && (!(count % ((cellNumber) / 10)))) {
-              wrapper_->updateProgress((count + 1.0) / cellNumber);
-            }
-
-            count++;
-          }
-        }
-      }
-    }
-
-    Timer mergeTimer;
-    // now merge the lists
-    vector<vector<pair<vector<SimplexId>, SimplexId>>> mainTriangleTable(
-      vertexNumber);
-    //     for(int i = 0; i < vertexNumber; i++){
-    //       mainTriangleTable[i].reserve(32);
-    //     }
-
-    for(ThreadId i = 0; i < threadNumber_; i++) {
-
-      // vertex j
-      for(SimplexId j = 0; j < (SimplexId)threadedTriangleTable[i].size();
-          j++) {
-
-        // triangle k
-        for(SimplexId k = 0; k < (SimplexId)threadedTriangleTable[i][j].size();
-            k++) {
-
-          SimplexId triangleId = -1;
-          // triangle l
-          for(SimplexId l = 0; l < (SimplexId)mainTriangleTable[j].size();
-              l++) {
-            if((threadedTriangleTable[i][j][k].first[0]
-                == mainTriangleTable[j][l].first[0])
-               && (threadedTriangleTable[i][j][k].first[1]
-                   == mainTriangleTable[j][l].first[1])
-               && (threadedTriangleTable[i][j][k].first[2]
-                   == mainTriangleTable[j][l].first[2])) {
-
-              triangleId = mainTriangleTable[j][l].second;
-              break;
-            }
-          }
-          if(triangleId == -1) {
-
-            triangleId = triangleNumber;
-            mainTriangleTable[j].push_back(pair<vector<SimplexId>, SimplexId>(
-              threadedTriangleTable[i][j][k].first, triangleNumber));
-            triangleNumber++;
-
-            if(triangleList)
-              triangleList->push_back(mainTriangleTable[j].back().first);
-
-            if(triangleStars) {
-              triangleStars->resize(triangleStars->size() + 1);
-              triangleStars->back().resize(1);
-              triangleStars->back()
-                = threadedTriangleStars[i]
-                                       [threadedTriangleTable[i][j][k].second];
-            }
-          } else {
-            if(triangleStars) {
-              for(SimplexId l = 0;
-                  l < (SimplexId)threadedTriangleStars
-                        [i][threadedTriangleTable[i][j][k].second]
-                          .size();
-                  l++) {
-                (*triangleStars)[triangleId].push_back(
-                  threadedTriangleStars[i][threadedTriangleTable[i][j][k]
-                                             .second][l]);
-              }
-            }
-          }
-
-          if(cellTriangleList) {
-            // add the triangle to the cell
-            SimplexId cellId = -1;
-
-            for(SimplexId l = 0;
-                l
-                < (SimplexId)
-                    threadedTriangleStars[i]
-                                         [threadedTriangleTable[i][j][k].second]
-                                           .size();
-                l++) {
-              cellId = threadedTriangleStars[i][threadedTriangleTable[i][j][k]
-                                                  .second][l];
-              for(int m = 0; m < 4; m++) {
-                if((*cellTriangleList)[cellId][m] == -1) {
-                  (*cellTriangleList)[cellId][m] = triangleId;
-                  break;
-                }
-              }
-            }
+        if(!(cid % ((cellNumber) / timeBuckets))) {
+          printMsg("Building triangles", (cid / (float)cellNumber),
+                   t.getElapsedTime(), threadNumber_,
+                   ttk::debug::LineMode::REPLACE);
+          if(wrapper_) {
+            wrapper_->updateProgress(cid / (float)cellNumber);
           }
         }
       }
     }
   }
+
   printMsg("Built " + to_string(triangleNumber) + " triangles", 1,
            t.getElapsedTime(), threadNumber_);
   threadNumber_ = oldThreadNumber;
