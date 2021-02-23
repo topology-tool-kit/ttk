@@ -425,6 +425,7 @@ according to them.
             // for filterSaddleConnectors
             contourTree_.preconditionTriangulation(data);
           }
+          this->initMemory(*data);
         }
       }
 
@@ -931,8 +932,10 @@ gradient, false otherwise.
       int reverseDescendingPathOnWall(const std::vector<Cell> &vpath,
                                       const triangulationType &triangulation);
 
-      template <typename triangulationType>
-      void initMemory(const triangulationType &triangulation);
+      /**
+       * @brief Initialize/Allocate discrete gradient memory
+       */
+      void initMemory(const AbstractTriangulation &triangulation);
 
     protected:
       ftm::FTMTree contourTree_{};
