@@ -931,6 +931,9 @@ gradient, false otherwise.
       int reverseDescendingPathOnWall(const std::vector<Cell> &vpath,
                                       const triangulationType &triangulation);
 
+      template <typename triangulationType>
+      void initMemory(const triangulationType &triangulation);
+
     protected:
       ftm::FTMTree contourTree_{};
 

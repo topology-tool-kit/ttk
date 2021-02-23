@@ -38,17 +38,15 @@ dataType DiscreteGradient::getPersistence(
 }
 
 template <typename triangulationType>
-int DiscreteGradient::buildGradient(const triangulationType &triangulation) {
-  Timer t;
+void DiscreteGradient::initMemory(const triangulationType &triangulation) {
 
-  const auto *const offsets = inputOffsets_;
-
-  const int numberOfDimensions = getNumberOfDimensions();
+  Timer tm{};
+  const int numberOfDimensions = this->getNumberOfDimensions();
 
   // init number of cells by dimension
   std::vector<SimplexId> numberOfCells(numberOfDimensions);
   for(int i = 0; i < numberOfDimensions; ++i) {
-    numberOfCells[i] = getNumberOfCells(i, triangulation);
+    numberOfCells[i] = this->getNumberOfCells(i, triangulation);
   }
 
   dmtMax2PL_.clear();
@@ -56,15 +54,13 @@ int DiscreteGradient::buildGradient(const triangulationType &triangulation) {
   dmt2Saddle2PL_.clear();
   gradient_.clear();
   gradient_.resize(dimensionality_);
+
   for(int i = 0; i < dimensionality_; ++i) {
     // init gradient memory
     gradient_[i].resize(numberOfDimensions);
     gradient_[i][i].resize(numberOfCells[i], -1);
     gradient_[i][i + 1].resize(numberOfCells[i + 1], -1);
   }
-
-  // compute gradient pairs
-  processLowerStars(offsets, triangulation);
 
   std::vector<std::vector<std::string>> rows{
     {"#Vertices", std::to_string(numberOfCells[0])},
@@ -77,6 +73,22 @@ int DiscreteGradient::buildGradient(const triangulationType &triangulation) {
   }
 
   this->printMsg(rows);
+  this->printMsg("Initialized discrete gradient memory", 1.0,
+                 tm.getElapsedTime(), this->threadNumber_, debug::LineMode::NEW,
+                 debug::Priority::DETAIL);
+}
+
+template <typename triangulationType>
+int DiscreteGradient::buildGradient(const triangulationType &triangulation) {
+  Timer t;
+
+  const auto *const offsets = inputOffsets_;
+
+  this->initMemory(triangulation);
+
+  // compute gradient pairs
+  processLowerStars(offsets, triangulation);
+
   this->printMsg(
     "Built discrete gradient", 1.0, t.getElapsedTime(), this->threadNumber_);
 
