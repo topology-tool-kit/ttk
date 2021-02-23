@@ -90,22 +90,13 @@ int ttkExtract::FillOutputPortInformation(int port, vtkInformation *info) {
 // RequestInformation
 // =============================================================================
 int ttkExtract::RequestInformation(vtkInformation *,
-                                   vtkInformationVector **,
+                                   vtkInformationVector **inputVector,
                                    vtkInformationVector *outputVector) {
+
   if(this->ExtractionMode == 0 && this->GetOutputType() == VTK_IMAGE_DATA) {
-    vtkInformation *outInfo = outputVector->GetInformationObject(0);
-
-    // Bounds
-    auto imageBounds = this->GetImageBounds();
-    outInfo->Set(vtkStreamingDemandDrivenPipeline::BOUNDS(), imageBounds, 6);
-
-    // Extent
-    int wholeExtent[6]
-      = {(int)imageBounds[0], (int)(imageBounds[1] - imageBounds[0]),
-         (int)imageBounds[2], (int)(imageBounds[3] - imageBounds[2]),
-         (int)imageBounds[4], (int)(imageBounds[5] - imageBounds[4])};
+    auto outInfo = outputVector->GetInformationObject(0);
     outInfo->Set(
-      vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(), wholeExtent, 6);
+      vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(), this->ImageExtent, 6);
   }
 
   return 1;
@@ -128,11 +119,19 @@ int ttkExtract::ExtractBlocks(vtkDataObject *output,
   doubleVectorToString(indicesString, indices);
   {
     std::string outputDataTypeName = "";
+    std::string extentString = "";
+    if(this->OutputType == VTK_IMAGE_DATA) {
+      extentString = "[" + std::to_string(this->ImageExtent[0]);
+      for(int i = 1; i < 6; i++)
+        extentString += "," + std::to_string(this->ImageExtent[i]);
+      extentString += "]";
+    }
+
     this->GetVtkDataTypeName(outputDataTypeName, this->OutputType);
 
     this->printMsg(ttk::debug::Separator::L1);
     this->printMsg({{"Extraction Mode", "Block"},
-                    {"Output Type", outputDataTypeName},
+                    {"Output Type", outputDataTypeName + extentString},
                     {"Indicies", "[" + indicesString + "]"}});
     this->printMsg(ttk::debug::Separator::L2);
   }

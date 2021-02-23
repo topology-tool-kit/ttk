@@ -29,7 +29,7 @@ private:
   int CellMode{0};
   int ArrayAttributeType{0};
   std::string OutputArrayName{"Data"};
-  double ImageBounds[6]{0, 0, 0, 0, 0, 0};
+  int ImageExtent[6]{0, 0, 0, 0, 0, 0};
 
 public:
   vtkSetMacro(ExtractionMode, int);
@@ -56,8 +56,8 @@ public:
   vtkSetMacro(OutputArrayName, std::string);
   vtkGetMacro(OutputArrayName, std::string);
 
-  vtkSetVector6Macro(ImageBounds, double);
-  vtkGetVector6Macro(ImageBounds, double);
+  vtkSetVector6Macro(ImageExtent, int);
+  vtkGetVector6Macro(ImageExtent, int);
 
   int GetVtkDataTypeName(std::string &dataTypeName, const int outputType) const;
 
