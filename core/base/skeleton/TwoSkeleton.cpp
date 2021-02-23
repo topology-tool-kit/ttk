@@ -264,13 +264,6 @@ int TwoSkeleton::buildTriangleList(
 
   Timer t;
 
-  // NOTE: parallel implementation not efficient (see bench at the bottom)
-  // let's force the usage of only 1 thread.
-  ThreadId oldThreadNumber = threadNumber_;
-  threadNumber_ = 1;
-
-  SimplexId triangleNumber = 0;
-
   // check the consistency of the variables -- to adapt
 #ifndef TTK_ENABLE_KAMIKAZE
   if(vertexNumber <= 0)
@@ -281,105 +274,123 @@ int TwoSkeleton::buildTriangleList(
   }
 #endif
 
+  printMsg(
+    "Building triangles", 0, 0, threadNumber_, ttk::debug::LineMode::REPLACE);
+
   const SimplexId cellNumber = cellArray.getNbCells();
-  if(triangleList) {
-    // NOTE: 10 is pretty empirical here...
-    triangleList->clear();
-    triangleList->reserve(10 * vertexNumber);
-  }
-  if(triangleStars) {
-    triangleStars->clear();
-    triangleStars->reserve(10 * vertexNumber);
-  }
   if(cellTriangleList) {
     cellTriangleList->resize(cellNumber, {-1, -1, -1, -1});
   }
 
-  printMsg(
-    "Building triangles", 0, 0, threadNumber_, ttk::debug::LineMode::REPLACE);
+  struct TriangleData {
+    // the two higher vertices id of the triangle
+    std::array<SimplexId, 2> highVerts{};
+    // the triangle id
+    SimplexId id{-1};
+    // tetra ids that have current triangle as face
+    std::array<SimplexId, 2> cellIds{-1, -1};
+    TriangleData(std::array<SimplexId, 2> hVerts, SimplexId i, SimplexId cellId)
+      : highVerts{hVerts}, id{i}, cellIds{cellId, -1} {
+    }
+  };
 
-  // for each vertex,
-  //   list of triangles
-  //    each triangle is a list vertex Id + a triangleId
-  vector<vector<pair<std::array<SimplexId, 2>, SimplexId>>> triangleTable(
-    vertexNumber);
+  // for each vertex, a vector of TriangleData
+  std::vector<std::vector<TriangleData>> triangleTable(vertexNumber);
 
-  const SimplexId timeBuckets = std::min<ttk::SimplexId>(10, cellNumber);
+  printMsg("Building triangles", 0.12, t.getElapsedTime(), 1,
+           ttk::debug::LineMode::REPLACE);
 
-  for(SimplexId i = 0; i < vertexNumber; i++)
-    triangleTable[i].reserve(32);
+  for(SimplexId i = 0; i < vertexNumber; i++) {
+    triangleTable[i].reserve(16);
+  }
+
+  SimplexId nTriangles{};
+
+  printMsg("Building triangles", 0.25, t.getElapsedTime(), 1,
+           debug::LineMode::REPLACE);
 
   for(SimplexId cid = 0; cid < cellNumber; cid++) {
-
-    if(!wrapper_ || (wrapper_ && !wrapper_->needsToAbort())) {
-
+    // a tetra cell has 4 faces
+    for(size_t j = 0; j < 4; j++) {
       std::array<SimplexId, 3> triangle{};
+      for(size_t k = 0; k < 3; k++) {
+        // TODO: ASSUME Regular Mesh Here!
+        triangle[k] = cellArray.getCellVertex(cid, (j + k) % 4);
+      }
+      std::sort(triangle.begin(), triangle.end());
+      auto &ttable = triangleTable[triangle[0]];
 
-      for(int j = 0; j < 4; j++) {
-        // doing triangle j
-
-        for(int k = 0; k < 3; k++) {
-          // TODO: ASSUME Regular Mesh Here!
-          triangle[k] = cellArray.getCellVertex(cid, (j + k) % 4);
-        }
-        std::sort(triangle.begin(), triangle.end());
-        auto &ttable = triangleTable[triangle[0]];
-
-        SimplexId triangleId = -1;
-        for(size_t k = 0; k < ttable.size(); k++) {
-
-          // processing a triangle stored for that vertex
-          if((ttable[k].first[0] == triangle[1])
-             && (ttable[k].first[1] == triangle[2])) {
-            triangleId = ttable[k].second;
-            break;
+      // check if current triangle already registered in triangleTable
+      // via another tetra in its star
+      bool found{false};
+      for(auto &d : ttable) {
+        if(d.highVerts[0] == triangle[1] && d.highVerts[1] == triangle[2]) {
+          found = true;
+          // hypothesis: at most two tetras sharing the same triangle
+          d.cellIds[1] = cid;
+          if(cellTriangleList != nullptr) {
+            (*cellTriangleList)[cid][j] = d.id;
           }
-        }
-        if(triangleId == -1) {
-          // not found yet
-          triangleId = triangleNumber;
-          ttable.emplace_back(
-            std::array<SimplexId, 2>{triangle[1], triangle[2]}, triangleNumber);
-          triangleNumber++;
-
-          if(triangleList) {
-            triangleList->emplace_back(triangle);
-          }
-          if(triangleStars) {
-            // store the tet i in the triangleStars list
-            triangleStars->emplace_back(std::vector<SimplexId>{cid});
-          }
-        } else {
-          if(triangleStars) {
-            // add tet i as a neighbor of triangleId
-            (*triangleStars)[triangleId].push_back(cid);
-          }
-        }
-
-        if(cellTriangleList) {
-          // add the triangle to the cell
-          (*cellTriangleList)[cid][j] = triangleId;
+          break;
         }
       }
+      if(!found) {
+        // new triangle added
+        ttable.emplace_back(
+          TriangleData{{triangle[1], triangle[2]}, nTriangles, cid});
+        if(cellTriangleList != nullptr) {
+          (*cellTriangleList)[cid][j] = nTriangles;
+        }
+        nTriangles++;
+      }
+    }
+  }
 
-      // update the progress bar of the wrapping code -- to adapt
-      if(debugLevel_ >= (int)(debug::Priority::INFO)) {
+  printMsg(
+    "Building triangles", 0.5, t.getElapsedTime(), 1, debug::LineMode::REPLACE);
 
-        if(!(cid % ((cellNumber) / timeBuckets))) {
-          printMsg("Building triangles", (cid / (float)cellNumber),
-                   t.getElapsedTime(), threadNumber_,
-                   ttk::debug::LineMode::REPLACE);
-          if(wrapper_) {
-            wrapper_->updateProgress(cid / (float)cellNumber);
-          }
+  // resize vectors to the correct size
+  if(triangleList) {
+    triangleList->resize(nTriangles);
+  }
+
+  printMsg("Building triangles", 0.67, t.getElapsedTime(), 1,
+           debug::LineMode::REPLACE);
+
+  if(triangleStars) {
+    triangleStars->resize(nTriangles);
+    for(auto &v : *triangleStars) {
+      v.reserve(2);
+    }
+  }
+
+  printMsg("Building triangles", 0.75, t.getElapsedTime(), 1,
+           debug::LineMode::REPLACE);
+
+  // fill data buffers in parallel
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(this->threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+  for(SimplexId i = 0; i < vertexNumber; ++i) {
+    const auto &ttable = triangleTable[i];
+    for(const auto &data : ttable) {
+      if(triangleList != nullptr) {
+        (*triangleList)[data.id] = {i, data.highVerts[0], data.highVerts[1]};
+      }
+      for(size_t j = 0; j < 2; ++j) {
+        if(data.cellIds[j] == -1) {
+          break;
+        }
+        if(triangleStars != nullptr) {
+          (*triangleStars)[data.id].emplace_back(data.cellIds[j]);
         }
       }
     }
   }
 
-  printMsg("Built " + to_string(triangleNumber) + " triangles", 1,
-           t.getElapsedTime(), threadNumber_);
-  threadNumber_ = oldThreadNumber;
+  printMsg(
+    "Built " + to_string(nTriangles) + " triangles", 1, t.getElapsedTime(), 1);
   // ethaneDiolMedium.vtu, 70Mtets, hal9000 (12coresHT)// 1 thread: 58.5631 s//
   // 24 threads: 87.5816 s (~) ethaneDiol.vtu, 8.7Mtets, vger (2coresHT) - no
   // tet adj// 1 thread: 5.7427 s// 4 threads: 9.14764 s (~)
