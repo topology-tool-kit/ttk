@@ -118,72 +118,37 @@ int OneSkeleton::buildEdgeList(
   const CellArray &cellArray,
   vector<std::array<SimplexId, 2>> &edgeList) const {
 
-  ThreadId oldThreadNumber = threadNumber_;
-
-  // NOTE: parallel implementation not efficient (see bench at the bottom)
-  // let's force the usage of only 1 thread.
-  // TODO: we should remove parallel part, only dead code.
-  threadNumber_ = 1;
-
   Timer t;
 
   // TODO: describe the content of this complex container
   // for each thread
   // - a vector of size nb vertices containing
   // - -
-  vector<vector<vector<SimplexId>>> threadedEdgeTable(threadNumber_);
-
-  for(auto &vect : threadedEdgeTable) {
-    vect.resize(vertexNumber);
-  }
+  std::vector<std::vector<SimplexId>> edgeTable(vertexNumber);
 
   printMsg("Building edges", 0, 0, 1, ttk::debug::LineMode::REPLACE);
 
   const SimplexId cellNumber = cellArray.getNbCells();
   const int timeBuckets = std::min<ttk::SimplexId>(10, cellNumber);
 
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
-#endif
   for(SimplexId cid = 0; cid < cellNumber; cid++) {
-
-    ThreadId threadId = 0;
-    array<SimplexId, 2> edgeIds;
-#ifdef TTK_ENABLE_OPENMP
-    threadId = omp_get_thread_num();
-#endif
 
     const SimplexId nbVertsInCell = cellArray.getCellVertexNumber(cid);
 
-    // tet case
-    // 0 - 1
-    // 0 - 2
-    // 0 - 3
-    // 1 - 2
-    // 1 - 3
-    // 2 - 3
+    // tet case: {0-1}, {0-2}, {0-3}, {1-2}, {1-3}, {2-3}
     for(SimplexId j = 0; j <= nbVertsInCell - 2; j++) {
       for(SimplexId k = j + 1; k <= nbVertsInCell - 1; k++) {
         // edge processing
-        edgeIds[0] = cellArray.getCellVertex(cid, j);
-        edgeIds[1] = cellArray.getCellVertex(cid, k);
-
-        if(edgeIds[0] > edgeIds[1]) {
-          std::swap(edgeIds[0], edgeIds[1]);
+        SimplexId v0 = cellArray.getCellVertex(cid, j);
+        SimplexId v1 = cellArray.getCellVertex(cid, k);
+        if(v0 > v1) {
+          std::swap(v0, v1);
         }
-
-        bool hasFound = false;
-        // TODO Traversing the list each time is suboptimal. Sort + uniq
-        for(const auto &l : threadedEdgeTable[threadId][edgeIds[0]]) {
-          if(edgeIds[1] == l) {
-            hasFound = true;
-            break;
-          }
+        auto &vec = edgeTable[v0];
+        const auto pos = std::find(vec.begin(), vec.end(), v1);
+        if(pos == vec.end()) {
+          edgeTable[v0].emplace_back(v1);
         }
-        if(!hasFound) {
-          threadedEdgeTable[threadId][edgeIds[0]].emplace_back(edgeIds[1]);
-        }
-        // end of edge processing
       }
     }
     if(debugLevel_ >= (int)(debug::Priority::INFO)) {
@@ -195,64 +160,23 @@ int OneSkeleton::buildEdgeList(
 
   // now merge the thing
   SimplexId edgeCount = 0;
-  vector<vector<SimplexId>> edgeTable;
 
-  if(threadNumber_ > 1) {
-    edgeTable.resize(vertexNumber);
-    // All these .size are recomputed each time. Us
-    const SimplexId nbThreads = threadedEdgeTable.size();
-    for(SimplexId i = 0; i < nbThreads; i++) {
-
-      const LongSimplexId nbVertThreadI = threadedEdgeTable[i].size();
-      for(LongSimplexId j = 0; j < nbVertThreadI; j++) {
-
-        const LongSimplexId nbAttachedVertsJ = threadedEdgeTable[i][j].size();
-        for(LongSimplexId k = 0; k < nbAttachedVertsJ; k++) {
-
-          // search if it already exists
-          bool hasFound = false;
-
-          // TODO here again, linear search is not optimal.
-          const LongSimplexId nbVertEdgeJ = edgeTable[j].size();
-          for(SimplexId l = 0; l < nbVertEdgeJ; l++) {
-            if(edgeTable[j][l] == threadedEdgeTable[i][j][k]) {
-              hasFound = true;
-              break;
-            }
-          }
-          if(!hasFound) {
-            edgeTable[j].emplace_back(threadedEdgeTable[i][j][k]);
-            edgeCount++;
-          }
-        }
-      }
-    }
-  } else {
-    for(SimplexId i = 0; i < (SimplexId)threadedEdgeTable[0].size(); i++)
-      edgeCount += threadedEdgeTable[0][i].size();
-  }
-
-  vector<vector<SimplexId>> *masterEdgeTable = &edgeTable;
-  if(threadNumber_ == 1) {
-    masterEdgeTable = &(threadedEdgeTable[0]);
+  for(const auto &vec : edgeTable) {
+    edgeCount += vec.size();
   }
 
   edgeList.resize(edgeCount);
-  edgeCount = 0;
-  for(SimplexId i = 0; i < (SimplexId)masterEdgeTable->size(); i++) {
+  size_t edgeId{};
 
-    for(SimplexId j = 0; j < (SimplexId)(*masterEdgeTable)[i].size(); j++) {
-
-      edgeList[edgeCount][0] = i;
-      edgeList[edgeCount][1] = (*masterEdgeTable)[i][j];
-      edgeCount++;
+  for(size_t i = 0; i < edgeTable.size(); i++) {
+    for(const auto v : edgeTable[i]) {
+      edgeList[edgeId] = {static_cast<SimplexId>(i), v};
+      edgeId++;
     }
   }
 
   printMsg(
     "Built " + to_string(edgeList.size()) + " edges", 1, t.getElapsedTime(), 1);
-
-  threadNumber_ = oldThreadNumber;
 
   // ethaneDiolMedium.vtu, 70Mtets, hal9000 (12coresHT)
   // 1 thread: 10.4979 s
