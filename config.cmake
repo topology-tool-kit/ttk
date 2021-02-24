@@ -11,10 +11,12 @@ endif ()
 
 # Options & dependencies
 
-# CellArray use legacy single array by default.
-# Do not use FORCE so that this settings can be overriden
-# when integrating TTK with add_subdirectory(). In such scenarios, set the value before the
-# add_subdirectory() call.
+# the 'TTK_CELL_ARRAY_LAYOUT' drive the behavior of TTK to store cell points.
+# This variable has two possible values "SingleArray" and "OffsetAndConnectiviy".
+# * "SingleArray" use a layout compatible with VTK < 9 were the cell array store the
+#   cells and their connectivity in a flat array
+# * "OffsetAndConnectivity" use a layout comatible with VTK >= 9, having two arrays 
+#   (see https://vtk.org/doc/nightly/html/classvtkCellArray.html#details for more info)
 set(TTK_CELL_ARRAY_LAYOUT "SingleArray" CACHE STRING "Layout for the cell array.")
 set_property(CACHE TTK_CELL_ARRAY_LAYOUT PROPERTY STRINGS "SingleArray" "OffsetAndConnectivity")
 mark_as_advanced(TTK_CELL_ARRAY_LAYOUT)
