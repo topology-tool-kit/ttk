@@ -82,16 +82,15 @@ int OneSkeleton::buildEdgeLinks(
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
-  for(SimplexId i = 0; i < (SimplexId)edgeLinks.size(); i++) {
+  for(size_t i = 0; i < edgeLinks.size(); i++) {
 
     SimplexId otherEdgeId = -1;
 
-    for(SimplexId j = 0; j < (SimplexId)edgeStars[i].size(); j++) {
+    for(size_t j = 0; j < edgeStars[i].size(); j++) {
 
       SimplexId linkEdgeId = -1;
 
-      for(SimplexId k = 0; k < (SimplexId)cellEdges[edgeStars[i][j]].size();
-          k++) {
+      for(size_t k = 0; k < cellEdges[edgeStars[i][j]].size(); k++) {
         otherEdgeId = cellEdges[edgeStars[i][j]][k];
 
         if((edgeList[otherEdgeId][0] != edgeList[i][0])
@@ -240,7 +239,7 @@ int OneSkeleton::buildEdgeStars(const SimplexId &vertexNumber,
   }
 
   starList.resize(localEdgeList->size());
-  for(SimplexId i = 0; i < (SimplexId)starList.size(); i++)
+  for(size_t i = 0; i < starList.size(); i++)
     starList[i].reserve(16);
 
   auto localVertexStars = vertexStars;
@@ -263,18 +262,16 @@ int OneSkeleton::buildEdgeStars(const SimplexId &vertexNumber,
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
-  for(SimplexId i = 0; i < (SimplexId)localEdgeList->size(); i++) {
+  for(size_t i = 0; i < localEdgeList->size(); i++) {
 
     SimplexId vertex0 = (*localEdgeList)[i][0];
     SimplexId vertex1 = (*localEdgeList)[i][1];
 
     // merge the two vertex stars
-    for(SimplexId j = 0; j < (SimplexId)(*localVertexStars)[vertex0].size();
-        j++) {
+    for(size_t j = 0; j < (*localVertexStars)[vertex0].size(); j++) {
 
       bool hasFound = false;
-      for(SimplexId k = 0; k < (SimplexId)(*localVertexStars)[vertex1].size();
-          k++) {
+      for(size_t k = 0; k < (*localVertexStars)[vertex1].size(); k++) {
         if((*localVertexStars)[vertex0][j] == (*localVertexStars)[vertex1][k]) {
           hasFound = true;
           break;

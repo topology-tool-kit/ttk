@@ -63,27 +63,25 @@ int TwoSkeleton::buildCellNeighborsFromVertices(
       SimplexId v1 = cellArray.getCellVertex(cid, (j + 1) % nbVertCell);
 
       // perform an intersection of the 2 sorted star lists
-      SimplexId pos0 = 0, pos1 = 0;
+      size_t pos0 = 0, pos1 = 0;
       SimplexId intersection = -1;
 
-      while((pos0 < (SimplexId)(*localVertexStars)[v0].size())
-            && (pos1 < (SimplexId)(*localVertexStars)[v1].size())) {
+      while(pos0 < (*localVertexStars)[v0].size()
+            && pos1 < (*localVertexStars)[v1].size()) {
 
         SimplexId biggest = (*localVertexStars)[v0][pos0];
         if((*localVertexStars)[v1][pos1] > biggest) {
           biggest = (*localVertexStars)[v1][pos1];
         }
 
-        for(SimplexId l = pos0; l < (SimplexId)(*localVertexStars)[v0].size();
-            l++) {
+        for(size_t l = pos0; l < (*localVertexStars)[v0].size(); l++) {
           if((*localVertexStars)[v0][l] < biggest) {
             pos0++;
           } else {
             break;
           }
         }
-        for(SimplexId l = pos1; l < (SimplexId)(*localVertexStars)[v1].size();
-            l++) {
+        for(size_t l = pos1; l < (*localVertexStars)[v1].size(); l++) {
           if((*localVertexStars)[v1][l] < biggest) {
             pos1++;
           } else {
@@ -194,14 +192,13 @@ int TwoSkeleton::buildEdgeTriangles(
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
-  for(SimplexId i = 0; i < (SimplexId)localEdgeList->size(); i++) {
+  for(size_t i = 0; i < localEdgeList->size(); i++) {
     SimplexId vertexId0, vertexId1, vertexId2;
 
-    for(SimplexId j = 0; j < (SimplexId)(*localEdgeStarList)[i].size(); j++) {
+    for(size_t j = 0; j < (*localEdgeStarList)[i].size(); j++) {
       SimplexId tetId = (*localEdgeStarList)[i][j];
 
-      for(SimplexId k = 0;
-          k < (SimplexId)(*localCellTriangleList)[tetId].size(); k++) {
+      for(size_t k = 0; k < (*localCellTriangleList)[tetId].size(); k++) {
         SimplexId triangleId = (*localCellTriangleList)[tetId][k];
 
         bool isAttached = false;
@@ -234,7 +231,7 @@ int TwoSkeleton::buildEdgeTriangles(
         if(isAttached) {
 
           bool isIn = false;
-          for(SimplexId l = 0; l < (SimplexId)edgeTriangleList[i].size(); l++) {
+          for(size_t l = 0; l < edgeTriangleList[i].size(); l++) {
             if(edgeTriangleList[i][l] == triangleId) {
               isIn = true;
               break;
@@ -470,14 +467,13 @@ int TwoSkeleton::buildTriangleEdgeList(
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
-  for(SimplexId i = 0; i < (SimplexId)localTriangleList->size(); i++) {
+  for(size_t i = 0; i < localTriangleList->size(); i++) {
     SimplexId nEdge{};
     SimplexId vertexId = -1;
-    for(SimplexId j = 0; j < (SimplexId)(*localTriangleList)[i].size(); j++) {
+    for(size_t j = 0; j < (*localTriangleList)[i].size(); j++) {
       vertexId = (*localTriangleList)[i][j];
 
-      for(SimplexId k = 0;
-          k < (SimplexId)(*localVertexEdgeList)[vertexId].size(); k++) {
+      for(size_t k = 0; k < (*localVertexEdgeList)[vertexId].size(); k++) {
         SimplexId edgeId = (*localVertexEdgeList)[vertexId][k];
 
         SimplexId otherVertexId = (*localEdgeList)[edgeId][0];
@@ -487,8 +483,7 @@ int TwoSkeleton::buildTriangleEdgeList(
         }
 
         bool isInTriangle = false;
-        for(SimplexId l = 0; l < (SimplexId)(*localTriangleList)[i].size();
-            l++) {
+        for(size_t l = 0; l < (*localTriangleList)[i].size(); l++) {
           if((*localTriangleList)[i][l] == otherVertexId) {
             isInTriangle = true;
             break;
@@ -497,7 +492,7 @@ int TwoSkeleton::buildTriangleEdgeList(
 
         if(isInTriangle) {
           bool isIn = false;
-          for(SimplexId l = 0; l < (SimplexId)triangleEdgeList[i].size(); l++) {
+          for(size_t l = 0; l < triangleEdgeList[i].size(); l++) {
             if(triangleEdgeList[i][l] == edgeId) {
               isIn = true;
               break;
@@ -543,11 +538,11 @@ int TwoSkeleton::buildTriangleLinks(
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
-  for(SimplexId i = 0; i < (SimplexId)triangleList.size(); i++) {
+  for(size_t i = 0; i < triangleList.size(); i++) {
 
-    for(SimplexId j = 0; j < (SimplexId)triangleStars[i].size(); j++) {
+    for(size_t j = 0; j < triangleStars[i].size(); j++) {
 
-      for(int k = 0; k < 4; k++) {
+      for(size_t k = 0; k < 4; k++) {
         SimplexId vertexId = cellArray.getCellVertex(triangleStars[i][j], k);
 
         if((vertexId != triangleList[i][0]) && (vertexId != triangleList[i][1])
