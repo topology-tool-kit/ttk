@@ -56,7 +56,7 @@ int ttk::CinemaQuery::execute(
     for(auto &sqlTableDefinition : sqlTableDefinitions) {
       rc = sqlite3_exec(db, sqlTableDefinition.data(), nullptr, 0, &zErrMsg);
       if(rc != SQLITE_OK) {
-        this->printErr(zErrMsg);
+        this->printErr("Create table: " + std::string{zErrMsg});
 
         sqlite3_free(zErrMsg);
         sqlite3_close(db);
@@ -69,7 +69,7 @@ int ttk::CinemaQuery::execute(
     for(auto &sqlInsertStatement : sqlInsertStatements) {
       rc = sqlite3_exec(db, sqlInsertStatement.data(), nullptr, 0, &zErrMsg);
       if(rc != SQLITE_OK) {
-        this->printErr(zErrMsg);
+        this->printErr("Insert values: " + std::string{zErrMsg});
 
         sqlite3_free(zErrMsg);
         sqlite3_close(db);
@@ -89,7 +89,7 @@ int ttk::CinemaQuery::execute(
 
     if(sqlite3_prepare_v2(db, sqlQuery.data(), -1, &sqlStatement, NULL)
        != SQLITE_OK) {
-      this->printErr(sqlite3_errmsg(db));
+      this->printErr("Query: " + std::string{sqlite3_errmsg(db)});
 
       sqlite3_close(db);
       return 0;
