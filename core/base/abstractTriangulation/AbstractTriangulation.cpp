@@ -95,27 +95,25 @@ size_t AbstractTriangulation::footprint() const {
 
   size += tableFootprint<bool>(boundaryVertices_, "boundaryVertices_");
 
-  size += tableTableFootprint<SimplexId>(cellEdgeList_, "cellEdgeList_");
+  size += tableFootprint(cellEdgeList_, "cellEdgeList_");
 
   size
     += tableTableFootprint<SimplexId>(cellNeighborList_, "cellNeighborList_");
 
-  size
-    += tableTableFootprint<SimplexId>(cellTriangleList_, "cellTriangleList_");
+  size += tableFootprint(cellTriangleList_, "cellTriangleList_");
 
   size += tableTableFootprint<SimplexId>(edgeLinkList_, "edgeLinkList_");
 
-  size += tableFootprint<pair<SimplexId, SimplexId>>(edgeList_, "edgeList_");
+  size += tableFootprint(edgeList_, "edgeList_");
 
   size += tableTableFootprint<SimplexId>(edgeStarList_, "edgeStarList_");
 
   size
     += tableTableFootprint<SimplexId>(edgeTriangleList_, "edgeTriangleList_");
 
-  size += tableTableFootprint<SimplexId>(triangleList_, "triangleList_");
+  size += tableFootprint(triangleList_, "triangleList_");
 
-  size
-    += tableTableFootprint<SimplexId>(triangleEdgeList_, "triangleEdgeList_");
+  size += tableFootprint(triangleEdgeList_, "triangleEdgeList_");
 
   size
     += tableTableFootprint<SimplexId>(triangleLinkList_, "triangleLinkList_");
@@ -134,6 +132,10 @@ size_t AbstractTriangulation::footprint() const {
 
   size += tableTableFootprint<SimplexId>(
     vertexTriangleList_, "vertexTriangleList_");
+
+  size += tableTableFootprint(cellEdgeVector_, "cellEdgeVector_");
+  size += tableTableFootprint(cellTriangleVector_, "cellTriangleVector_");
+  size += tableTableFootprint(triangleEdgeVector_, "triangleEdgeVector_");
 
   msg << "Total footprint: " << (size / 1024) / 1024 << " MB.";
   printMsg(msg.str());
