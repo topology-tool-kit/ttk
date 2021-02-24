@@ -1,3 +1,4 @@
+#include <OpenMPLock.h>
 #include <TwoSkeleton.h>
 
 using namespace std;
@@ -574,65 +575,22 @@ int TwoSkeleton::buildVertexTriangles(
   printMsg("Building vertex triangles", 0, 0, threadNumber_,
            ttk::debug::LineMode::REPLACE);
 
-  ThreadId oldThreadNumber = threadNumber_;
-
-  threadNumber_ = 1;
-
-  if(threadNumber_ != 1) {
-    vector<vector<vector<SimplexId>>> threadedLists(threadNumber_);
-    for(ThreadId i = 0; i < threadNumber_; i++) {
-      threadedLists[i].resize(vertexNumber);
-    }
+  vertexTriangleList.resize(vertexNumber);
+  std::vector<Lock> vertLock(vertexNumber);
 
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
+#pragma omp parallel for num_threads(threadNumber_) schedule(guided)
 #endif
-    for(SimplexId i = 0; i < (SimplexId)triangleList.size(); i++) {
-      ThreadId threadId = 0;
-#ifdef TTK_ENABLE_OPENMP
-      threadId = omp_get_thread_num();
-#endif
-
-      for(SimplexId j = 0; j < (SimplexId)triangleList[i].size(); j++) {
-        threadedLists[threadId][triangleList[i][j]].push_back(i);
-      }
-    }
-
-    // merge back
-    vertexTriangleList.resize(vertexNumber, vector<SimplexId>());
-    for(ThreadId i = 0; i < threadNumber_; i++) {
-      for(SimplexId j = 0; j < vertexNumber; j++) {
-        for(SimplexId k = 0; k < (SimplexId)threadedLists[i][j].size(); k++) {
-          vertexTriangleList[j].push_back(threadedLists[i][j][k]);
-        }
-      }
-    }
-  } else {
-
-    int timeBuckets = 10;
-    if(timeBuckets > (int)triangleList.size())
-      timeBuckets = triangleList.size();
-
-    vertexTriangleList.resize(vertexNumber);
-    for(SimplexId i = 0; i < (SimplexId)triangleList.size(); i++) {
-      for(SimplexId j = 0; j < (SimplexId)triangleList[i].size(); j++) {
-        vertexTriangleList[triangleList[i][j]].push_back(i);
-      }
-
-      if(debugLevel_ >= (int)(debug::Priority::INFO)) {
-        if(!(i % ((triangleList.size()) / timeBuckets))) {
-          printMsg("Building vertex triangles",
-                   (i / (float)triangleList.size()), t.getElapsedTime(),
-                   threadNumber_, ttk::debug::LineMode::REPLACE);
-        }
-      }
+  for(size_t i = 0; i < triangleList.size(); i++) {
+    for(size_t j = 0; j < triangleList[i].size(); j++) {
+      vertLock[triangleList[i][j]].lock();
+      vertexTriangleList[triangleList[i][j]].push_back(i);
+      vertLock[triangleList[i][j]].unlock();
     }
   }
 
   printMsg("Built " + std::to_string(vertexNumber) + " vertex triangles", 1,
            t.getElapsedTime(), threadNumber_);
-
-  threadNumber_ = oldThreadNumber;
 
   return 0;
 }
