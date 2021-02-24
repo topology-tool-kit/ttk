@@ -57,8 +57,8 @@ namespace ttk {
     /// \return Returns 0 upon success, negative values otherwise.
     int buildCellEdges(const SimplexId &vertexNumber,
                        const CellArray &cellArray,
-                       std::vector<std::vector<SimplexId>> &cellEdges,
-                       std::vector<std::pair<SimplexId, SimplexId>> *edgeList
+                       std::vector<std::array<SimplexId, 6>> &cellEdges,
+                       std::vector<std::array<SimplexId, 2>> *edgeList
                        = nullptr,
                        std::vector<std::vector<SimplexId>> *vertexEdges
                        = nullptr) const;

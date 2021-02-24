@@ -119,11 +119,11 @@ int TwoSkeleton::buildEdgeTriangles(
   const CellArray &cellArray,
   vector<vector<SimplexId>> &edgeTriangleList,
   vector<vector<SimplexId>> *vertexStarList,
-  vector<pair<SimplexId, SimplexId>> *edgeList,
+  vector<std::array<SimplexId, 2>> *edgeList,
   vector<vector<SimplexId>> *edgeStarList,
-  vector<vector<SimplexId>> *triangleList,
+  vector<std::array<SimplexId, 3>> *triangleList,
   vector<vector<SimplexId>> *triangleStarList,
-  vector<vector<SimplexId>> *cellTriangleList) const {
+  vector<std::array<SimplexId, 4>> *cellTriangleList) const {
 
   // check the consistency of the variables -- to adapt
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -136,7 +136,7 @@ int TwoSkeleton::buildEdgeTriangles(
   // need it.
 
   auto localEdgeList = edgeList;
-  vector<pair<SimplexId, SimplexId>> defaultEdgeList{};
+  vector<std::array<SimplexId, 2>> defaultEdgeList{};
   if(!localEdgeList) {
     localEdgeList = &defaultEdgeList;
   }
@@ -148,7 +148,7 @@ int TwoSkeleton::buildEdgeTriangles(
   }
 
   auto localTriangleList = triangleList;
-  vector<vector<SimplexId>> defaultTriangleList{};
+  vector<std::array<SimplexId, 3>> defaultTriangleList{};
   if(!localTriangleList) {
     localTriangleList = &defaultTriangleList;
   }
@@ -158,7 +158,7 @@ int TwoSkeleton::buildEdgeTriangles(
   // need it.
 
   auto localCellTriangleList = cellTriangleList;
-  vector<vector<SimplexId>> defaultCellTriangleList{};
+  vector<std::array<SimplexId, 4>> defaultCellTriangleList{};
   if(!localCellTriangleList) {
     localCellTriangleList = &defaultCellTriangleList;
   }
@@ -209,23 +209,23 @@ int TwoSkeleton::buildEdgeTriangles(
         vertexId1 = (*localTriangleList)[triangleId][1];
         vertexId2 = (*localTriangleList)[triangleId][2];
 
-        if((*localEdgeList)[i].first == vertexId0) {
-          if(((*localEdgeList)[i].second == vertexId1)
-             || ((*localEdgeList)[i].second == vertexId2)) {
+        if((*localEdgeList)[i][0] == vertexId0) {
+          if(((*localEdgeList)[i][1] == vertexId1)
+             || ((*localEdgeList)[i][1] == vertexId2)) {
             isAttached = true;
           }
         }
 
-        if((*localEdgeList)[i].first == vertexId1) {
-          if(((*localEdgeList)[i].second == vertexId0)
-             || ((*localEdgeList)[i].second == vertexId2)) {
+        if((*localEdgeList)[i][0] == vertexId1) {
+          if(((*localEdgeList)[i][1] == vertexId0)
+             || ((*localEdgeList)[i][1] == vertexId2)) {
             isAttached = true;
           }
         }
 
-        if((*localEdgeList)[i].first == vertexId2) {
-          if(((*localEdgeList)[i].second == vertexId1)
-             || ((*localEdgeList)[i].second == vertexId0)) {
+        if((*localEdgeList)[i][0] == vertexId2) {
+          if(((*localEdgeList)[i][1] == vertexId1)
+             || ((*localEdgeList)[i][1] == vertexId0)) {
             isAttached = true;
           }
         }
@@ -258,9 +258,9 @@ int TwoSkeleton::buildEdgeTriangles(
 int TwoSkeleton::buildTriangleList(
   const SimplexId &vertexNumber,
   const CellArray &cellArray,
-  vector<vector<SimplexId>> *triangleList,
+  vector<std::array<SimplexId, 3>> *triangleList,
   vector<vector<SimplexId>> *triangleStars,
-  vector<vector<SimplexId>> *cellTriangleList) const {
+  vector<std::array<SimplexId, 4>> *cellTriangleList) const {
 
   Timer t;
 
@@ -292,10 +292,7 @@ int TwoSkeleton::buildTriangleList(
     triangleStars->reserve(10 * vertexNumber);
   }
   if(cellTriangleList) {
-    cellTriangleList->resize(cellNumber);
-    for(SimplexId i = 0; i < cellNumber; i++)
-      // assuming tet-mesh here
-      (*cellTriangleList)[i].resize(4, -1);
+    cellTriangleList->resize(cellNumber, {-1, -1, -1, -1});
   }
 
   printMsg(
@@ -346,8 +343,7 @@ int TwoSkeleton::buildTriangleList(
           triangleNumber++;
 
           if(triangleList) {
-            triangleList->emplace_back(
-              std::vector<SimplexId>{triangle.begin(), triangle.end()});
+            triangleList->emplace_back(triangle);
           }
           if(triangleStars) {
             // store the tet i in the triangleStars list
@@ -397,15 +393,15 @@ int TwoSkeleton::buildTriangleList(
 int TwoSkeleton::buildTriangleEdgeList(
   const SimplexId &vertexNumber,
   const CellArray &cellArray,
-  vector<vector<SimplexId>> &triangleEdgeList,
+  vector<std::array<SimplexId, 3>> &triangleEdgeList,
   vector<vector<SimplexId>> *vertexEdgeList,
-  vector<pair<SimplexId, SimplexId>> *edgeList,
-  vector<vector<SimplexId>> *triangleList,
+  vector<std::array<SimplexId, 2>> *edgeList,
+  vector<std::array<SimplexId, 3>> *triangleList,
   vector<vector<SimplexId>> *triangleStarList,
-  vector<vector<SimplexId>> *cellTriangleList) const {
+  vector<std::array<SimplexId, 4>> *cellTriangleList) const {
 
   auto localEdgeList = edgeList;
-  vector<pair<SimplexId, SimplexId>> defaultEdgeList{};
+  vector<std::array<SimplexId, 2>> defaultEdgeList{};
   if(!localEdgeList) {
     localEdgeList = &defaultEdgeList;
   }
@@ -439,7 +435,7 @@ int TwoSkeleton::buildTriangleEdgeList(
   // can compute them for free optionally.
 
   auto localTriangleList = triangleList;
-  vector<vector<SimplexId>> defaultTriangleList{};
+  vector<std::array<SimplexId, 3>> defaultTriangleList{};
   if(!localTriangleList) {
     localTriangleList = &defaultTriangleList;
   }
@@ -463,6 +459,7 @@ int TwoSkeleton::buildTriangleEdgeList(
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(SimplexId i = 0; i < (SimplexId)localTriangleList->size(); i++) {
+    SimplexId nEdge{};
     SimplexId vertexId = -1;
     for(SimplexId j = 0; j < (SimplexId)(*localTriangleList)[i].size(); j++) {
       vertexId = (*localTriangleList)[i][j];
@@ -471,10 +468,10 @@ int TwoSkeleton::buildTriangleEdgeList(
           k < (SimplexId)(*localVertexEdgeList)[vertexId].size(); k++) {
         SimplexId edgeId = (*localVertexEdgeList)[vertexId][k];
 
-        SimplexId otherVertexId = (*localEdgeList)[edgeId].first;
+        SimplexId otherVertexId = (*localEdgeList)[edgeId][0];
 
         if(otherVertexId == vertexId) {
-          otherVertexId = (*localEdgeList)[edgeId].second;
+          otherVertexId = (*localEdgeList)[edgeId][1];
         }
 
         bool isInTriangle = false;
@@ -495,7 +492,8 @@ int TwoSkeleton::buildTriangleEdgeList(
             }
           }
           if(!isIn) {
-            triangleEdgeList[i].push_back(edgeId);
+            triangleEdgeList[i][nEdge] = edgeId;
+            nEdge++;
           }
         }
       }
@@ -511,7 +509,7 @@ int TwoSkeleton::buildTriangleEdgeList(
 }
 
 int TwoSkeleton::buildTriangleLinks(
-  const vector<vector<SimplexId>> &triangleList,
+  const vector<std::array<SimplexId, 3>> &triangleList,
   const vector<vector<SimplexId>> &triangleStars,
   const CellArray &cellArray,
   vector<vector<SimplexId>> &triangleLinks) const {
@@ -557,7 +555,7 @@ int TwoSkeleton::buildTriangleLinks(
 
 int TwoSkeleton::buildVertexTriangles(
   const SimplexId &vertexNumber,
-  const vector<vector<SimplexId>> &triangleList,
+  const vector<std::array<SimplexId, 3>> &triangleList,
   vector<vector<SimplexId>> &vertexTriangleList) const {
 
   Timer t;

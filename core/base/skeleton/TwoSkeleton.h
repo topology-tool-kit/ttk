@@ -122,11 +122,11 @@ namespace ttk {
       const CellArray &cellArray,
       std::vector<std::vector<SimplexId>> &edgeTriangleList,
       std::vector<std::vector<SimplexId>> *vertexStarList = nullptr,
-      std::vector<std::pair<SimplexId, SimplexId>> *edgeList = nullptr,
+      std::vector<std::array<SimplexId, 2>> *edgeList = nullptr,
       std::vector<std::vector<SimplexId>> *edgeStarList = nullptr,
-      std::vector<std::vector<SimplexId>> *triangleList = nullptr,
+      std::vector<std::array<SimplexId, 3>> *triangleList = nullptr,
       std::vector<std::vector<SimplexId>> *triangleStarList = nullptr,
-      std::vector<std::vector<SimplexId>> *cellTriangleList = nullptr) const;
+      std::vector<std::array<SimplexId, 4>> *cellTriangleList = nullptr) const;
 
     /// Compute the list of triangles of a triangulation represented by a
     /// vtkUnstructuredGrid object. Unspecified behavior if the input mesh is
@@ -142,9 +142,9 @@ namespace ttk {
     int buildTriangleList(
       const SimplexId &vertexNumber,
       const CellArray &cellArray,
-      std::vector<std::vector<SimplexId>> *triangleList = nullptr,
+      std::vector<std::array<SimplexId, 3>> *triangleList = nullptr,
       std::vector<std::vector<SimplexId>> *triangleStars = nullptr,
-      std::vector<std::vector<SimplexId>> *cellTriangleList = nullptr) const;
+      std::vector<std::array<SimplexId, 4>> *cellTriangleList = nullptr) const;
 
     /// Compute the list of edges connected to each triangle for 3D
     /// triangulations (unspecified behavior if the input mesh is not a
@@ -204,12 +204,12 @@ namespace ttk {
     int buildTriangleEdgeList(
       const SimplexId &vertexNumber,
       const CellArray &cellArray,
-      std::vector<std::vector<SimplexId>> &triangleEdgeList,
+      std::vector<std::array<SimplexId, 3>> &triangleEdgeList,
       std::vector<std::vector<SimplexId>> *vertexEdgeList = nullptr,
-      std::vector<std::pair<SimplexId, SimplexId>> *edgeList = nullptr,
-      std::vector<std::vector<SimplexId>> *triangleList = nullptr,
+      std::vector<std::array<SimplexId, 2>> *edgeList = nullptr,
+      std::vector<std::array<SimplexId, 3>> *triangleList = nullptr,
       std::vector<std::vector<SimplexId>> *triangleStarList = nullptr,
-      std::vector<std::vector<SimplexId>> *cellTriangleList = nullptr) const;
+      std::vector<std::array<SimplexId, 4>> *cellTriangleList = nullptr) const;
 
     /// Compute the links of triangles in a 3D triangulation.
     /// \param triangleList Input triangle list. The number of entries of this
@@ -227,7 +227,7 @@ namespace ttk {
     /// corresponding triangle.
     /// \return Returns 0 upon success, negative values otherwise.
     int buildTriangleLinks(
-      const std::vector<std::vector<SimplexId>> &triangeList,
+      const std::vector<std::array<SimplexId, 3>> &triangeList,
       const std::vector<std::vector<SimplexId>> &triangleStars,
       const CellArray &cellArray,
       std::vector<std::vector<SimplexId>> &triangleLinks) const;
@@ -242,7 +242,7 @@ namespace ttk {
     /// std::vectors of triangle identifiers).
     int buildVertexTriangles(
       const SimplexId &vertexNumber,
-      const std::vector<std::vector<SimplexId>> &triangleList,
+      const std::vector<std::array<SimplexId, 3>> &triangleList,
       std::vector<std::vector<SimplexId>> &vertexTriangleList) const;
   };
 } // namespace ttk

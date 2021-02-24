@@ -14,8 +14,8 @@ ThreeSkeleton::~ThreeSkeleton() {
 int ThreeSkeleton::buildCellEdges(
   const SimplexId &vertexNumber,
   const CellArray &cellArray,
-  vector<vector<SimplexId>> &cellEdges,
-  vector<pair<SimplexId, SimplexId>> *edgeList,
+  vector<std::array<SimplexId, 6>> &cellEdges,
+  vector<std::array<SimplexId, 2>> *edgeList,
   vector<vector<SimplexId>> *vertexEdges) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -25,7 +25,7 @@ int ThreeSkeleton::buildCellEdges(
 
   auto localEdgeList = edgeList;
   auto localVertexEdges = vertexEdges;
-  vector<pair<SimplexId, SimplexId>> defaultEdgeList{};
+  vector<std::array<SimplexId, 2>> defaultEdgeList{};
   vector<vector<SimplexId>> defaultVertexEdges{};
 
   if(!localEdgeList) {
@@ -60,10 +60,6 @@ int ThreeSkeleton::buildCellEdges(
 
   const SimplexId cellNumber = cellArray.getNbCells();
   cellEdges.resize(cellNumber);
-  for(SimplexId i = 0; i < cellNumber; i++) {
-    // optimized for tet meshes
-    cellEdges[i].reserve(6);
-  }
 
   // for each cell, for each pair of vertices, find the edge
   // TODO: check for parallel efficiency here
@@ -72,6 +68,7 @@ int ThreeSkeleton::buildCellEdges(
 #endif
   for(SimplexId cid = 0; cid < cellNumber; cid++) {
     const SimplexId nbVertCell = cellArray.getCellVertexNumber(cid);
+    SimplexId nEdges{};
 
     for(SimplexId j = 0; j < nbVertCell; j++) {
 
@@ -86,14 +83,15 @@ int ThreeSkeleton::buildCellEdges(
         for(SimplexId l = 0; l < nbEdges0; l++) {
 
           SimplexId localEdgeId = (*localVertexEdges)[vertexId0][l];
-          if(((*localEdgeList)[localEdgeId].first == vertexId1)
-             || ((*localEdgeList)[localEdgeId].second == vertexId1)) {
+          if(((*localEdgeList)[localEdgeId][0] == vertexId1)
+             || ((*localEdgeList)[localEdgeId][1] == vertexId1)) {
             edgeId = localEdgeId;
             break;
           }
         }
 
-        cellEdges[cid].push_back(edgeId);
+        cellEdges[cid][nEdges] = edgeId;
+        nEdges++;
       }
     }
   }

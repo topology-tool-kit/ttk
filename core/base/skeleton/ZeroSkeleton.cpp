@@ -13,7 +13,7 @@ ZeroSkeleton::~ZeroSkeleton() {
 
 int ZeroSkeleton::buildVertexEdges(
   const SimplexId &vertexNumber,
-  const vector<pair<SimplexId, SimplexId>> &edgeList,
+  const vector<std::array<SimplexId, 2>> &edgeList,
   vector<vector<SimplexId>> &vertexEdges) const {
 
   Timer t;
@@ -39,8 +39,8 @@ int ZeroSkeleton::buildVertexEdges(
              ttk::debug::LineMode::REPLACE);
 
     for(SimplexId i = 0; i < (SimplexId)edgeList.size(); i++) {
-      vertexEdges[edgeList[i].first].push_back(i);
-      vertexEdges[edgeList[i].second].push_back(i);
+      vertexEdges[edgeList[i][0]].push_back(i);
+      vertexEdges[edgeList[i][1]].push_back(i);
 
       if(debugLevel_ >= (int)(debug::Priority::INFO)) {
         if(!(i % ((edgeList.size()) / timeBuckets))) {
@@ -66,8 +66,8 @@ int ZeroSkeleton::buildVertexEdges(
       threadId = omp_get_thread_num();
 #endif
 
-      threadedVertexEdges[threadId][edgeList[i].first].push_back(i);
-      threadedVertexEdges[threadId][edgeList[i].second].push_back(i);
+      threadedVertexEdges[threadId][edgeList[i][0]].push_back(i);
+      threadedVertexEdges[threadId][edgeList[i][1]].push_back(i);
     }
 
     // now merge the thing
@@ -370,8 +370,8 @@ int ZeroSkeleton::buildVertexLinks(
 
 int ZeroSkeleton::buildVertexLinks(
   const vector<vector<SimplexId>> &vertexStars,
-  const vector<vector<SimplexId>> &cellEdges,
-  const vector<pair<SimplexId, SimplexId>> &edgeList,
+  const vector<std::array<SimplexId, 6>> &cellEdges,
+  const vector<std::array<SimplexId, 2>> &edgeList,
   vector<vector<SimplexId>> &vertexLinks) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -400,8 +400,8 @@ int ZeroSkeleton::buildVertexLinks(
           k++) {
         SimplexId edgeId = cellEdges[vertexStars[i][j]][k];
 
-        SimplexId vertexId0 = edgeList[edgeId].first;
-        SimplexId vertexId1 = edgeList[edgeId].second;
+        SimplexId vertexId0 = edgeList[edgeId][0];
+        SimplexId vertexId1 = edgeList[edgeId][1];
 
         if((vertexId0 != i) && (vertexId1 != i)) {
           vertexLinks[i].push_back(edgeId);
@@ -418,8 +418,8 @@ int ZeroSkeleton::buildVertexLinks(
 
 int ZeroSkeleton::buildVertexLinks(
   const vector<vector<SimplexId>> &vertexStars,
-  const vector<vector<SimplexId>> &cellTriangles,
-  const vector<vector<SimplexId>> &triangleList,
+  const vector<std::array<SimplexId, 4>> &cellTriangles,
+  const vector<std::array<SimplexId, 3>> &triangleList,
   vector<vector<SimplexId>> &vertexLinks) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -473,12 +473,12 @@ int ZeroSkeleton::buildVertexNeighbors(
   const SimplexId &vertexNumber,
   const CellArray &cellArray,
   vector<vector<SimplexId>> &oneSkeleton,
-  vector<pair<SimplexId, SimplexId>> *edgeList) const {
+  vector<std::array<SimplexId, 2>> *edgeList) const {
 
   oneSkeleton.resize(vertexNumber);
 
   auto localEdgeList = edgeList;
-  vector<pair<SimplexId, SimplexId>> defaultEdgeList{};
+  vector<std::array<SimplexId, 2>> defaultEdgeList{};
   if(!localEdgeList) {
     localEdgeList = &defaultEdgeList;
   }
@@ -497,10 +497,8 @@ int ZeroSkeleton::buildVertexNeighbors(
 
   const SimplexId nbEdge = localEdgeList->size();
   for(SimplexId i = 0; i < nbEdge; i++) {
-    oneSkeleton[(*localEdgeList)[i].first].emplace_back(
-      (*localEdgeList)[i].second);
-    oneSkeleton[(*localEdgeList)[i].second].emplace_back(
-      (*localEdgeList)[i].first);
+    oneSkeleton[(*localEdgeList)[i][0]].emplace_back((*localEdgeList)[i][1]);
+    oneSkeleton[(*localEdgeList)[i][1]].emplace_back((*localEdgeList)[i][0]);
   }
 
   printMsg("Built " + std::to_string(vertexNumber) + " vertex neighbors", 1,

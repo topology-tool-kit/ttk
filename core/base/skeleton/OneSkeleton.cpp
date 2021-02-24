@@ -11,7 +11,7 @@ OneSkeleton::~OneSkeleton() {
 }
 
 int OneSkeleton::buildEdgeLinks(
-  const vector<pair<SimplexId, SimplexId>> &edgeList,
+  const vector<std::array<SimplexId, 2>> &edgeList,
   const vector<vector<SimplexId>> &edgeStars,
   const CellArray &cellArray,
   vector<vector<SimplexId>> &edgeLinks) const {
@@ -42,8 +42,7 @@ int OneSkeleton::buildEdgeLinks(
       for(int k = 0; k < 3; k++) {
         const SimplexId tmpVertexId
           = cellArray.getCellVertex(edgeStars[i][j], k);
-        if(tmpVertexId != edgeList[i].first
-           && tmpVertexId != edgeList[i].second) {
+        if(tmpVertexId != edgeList[i][0] && tmpVertexId != edgeList[i][1]) {
           // found the vertex in the triangle
           edgeLinks[i].push_back(tmpVertexId);
           break;
@@ -59,9 +58,9 @@ int OneSkeleton::buildEdgeLinks(
 }
 
 int OneSkeleton::buildEdgeLinks(
-  const vector<pair<SimplexId, SimplexId>> &edgeList,
+  const vector<std::array<SimplexId, 2>> &edgeList,
   const vector<vector<SimplexId>> &edgeStars,
-  const vector<vector<SimplexId>> &cellEdges,
+  const vector<std::array<SimplexId, 6>> &cellEdges,
   vector<vector<SimplexId>> &edgeLinks) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -95,10 +94,10 @@ int OneSkeleton::buildEdgeLinks(
           k++) {
         otherEdgeId = cellEdges[edgeStars[i][j]][k];
 
-        if((edgeList[otherEdgeId].first != edgeList[i].first)
-           && (edgeList[otherEdgeId].first != edgeList[i].second)
-           && (edgeList[otherEdgeId].second != edgeList[i].first)
-           && (edgeList[otherEdgeId].second != edgeList[i].second)) {
+        if((edgeList[otherEdgeId][0] != edgeList[i][0])
+           && (edgeList[otherEdgeId][0] != edgeList[i][1])
+           && (edgeList[otherEdgeId][1] != edgeList[i][0])
+           && (edgeList[otherEdgeId][1] != edgeList[i][1])) {
           linkEdgeId = otherEdgeId;
           break;
         }
@@ -117,7 +116,7 @@ int OneSkeleton::buildEdgeLinks(
 int OneSkeleton::buildEdgeList(
   const SimplexId &vertexNumber,
   const CellArray &cellArray,
-  vector<pair<SimplexId, SimplexId>> &edgeList) const {
+  vector<std::array<SimplexId, 2>> &edgeList) const {
 
   ThreadId oldThreadNumber = threadNumber_;
 
@@ -149,7 +148,7 @@ int OneSkeleton::buildEdgeList(
   for(SimplexId cid = 0; cid < cellNumber; cid++) {
 
     ThreadId threadId = 0;
-    pair<SimplexId, SimplexId> edgeIds;
+    array<SimplexId, 2> edgeIds;
 #ifdef TTK_ENABLE_OPENMP
     threadId = omp_get_thread_num();
 #endif
@@ -166,24 +165,23 @@ int OneSkeleton::buildEdgeList(
     for(SimplexId j = 0; j <= nbVertsInCell - 2; j++) {
       for(SimplexId k = j + 1; k <= nbVertsInCell - 1; k++) {
         // edge processing
-        edgeIds.first = cellArray.getCellVertex(cid, j);
-        edgeIds.second = cellArray.getCellVertex(cid, k);
+        edgeIds[0] = cellArray.getCellVertex(cid, j);
+        edgeIds[1] = cellArray.getCellVertex(cid, k);
 
-        if(edgeIds.first > edgeIds.second) {
-          std::swap(edgeIds.first, edgeIds.second);
+        if(edgeIds[0] > edgeIds[1]) {
+          std::swap(edgeIds[0], edgeIds[1]);
         }
 
         bool hasFound = false;
         // TODO Traversing the list each time is suboptimal. Sort + uniq
-        for(const auto &l : threadedEdgeTable[threadId][edgeIds.first]) {
-          if(edgeIds.second == l) {
+        for(const auto &l : threadedEdgeTable[threadId][edgeIds[0]]) {
+          if(edgeIds[1] == l) {
             hasFound = true;
             break;
           }
         }
         if(!hasFound) {
-          threadedEdgeTable[threadId][edgeIds.first].emplace_back(
-            edgeIds.second);
+          threadedEdgeTable[threadId][edgeIds[0]].emplace_back(edgeIds[1]);
         }
         // end of edge processing
       }
@@ -245,8 +243,8 @@ int OneSkeleton::buildEdgeList(
 
     for(SimplexId j = 0; j < (SimplexId)(*masterEdgeTable)[i].size(); j++) {
 
-      edgeList[edgeCount].first = i;
-      edgeList[edgeCount].second = (*masterEdgeTable)[i][j];
+      edgeList[edgeCount][0] = i;
+      edgeList[edgeCount][1] = (*masterEdgeTable)[i][j];
       edgeCount++;
     }
   }
@@ -304,11 +302,11 @@ int OneSkeleton::buildEdgeList(
 int OneSkeleton::buildEdgeStars(const SimplexId &vertexNumber,
                                 const CellArray &cellArray,
                                 vector<vector<SimplexId>> &starList,
-                                vector<pair<SimplexId, SimplexId>> *edgeList,
+                                vector<std::array<SimplexId, 2>> *edgeList,
                                 vector<vector<SimplexId>> *vertexStars) const {
 
   auto localEdgeList = edgeList;
-  vector<pair<SimplexId, SimplexId>> defaultEdgeList{};
+  vector<std::array<SimplexId, 2>> defaultEdgeList{};
   if(!localEdgeList) {
     localEdgeList = &defaultEdgeList;
   }
@@ -343,8 +341,8 @@ int OneSkeleton::buildEdgeStars(const SimplexId &vertexNumber,
 #endif
   for(SimplexId i = 0; i < (SimplexId)localEdgeList->size(); i++) {
 
-    SimplexId vertex0 = (*localEdgeList)[i].first;
-    SimplexId vertex1 = (*localEdgeList)[i].second;
+    SimplexId vertex0 = (*localEdgeList)[i][0];
+    SimplexId vertex1 = (*localEdgeList)[i][1];
 
     // merge the two vertex stars
     for(SimplexId j = 0; j < (SimplexId)(*localVertexStars)[vertex0].size();
@@ -378,7 +376,7 @@ int OneSkeleton::buildEdgeStars(const SimplexId &vertexNumber,
 
 int OneSkeleton::buildEdgeSubList(
   const CellArray &cellArray,
-  vector<pair<SimplexId, SimplexId>> &edgeList) const {
+  vector<std::array<SimplexId, 2>> &edgeList) const {
 
   // NOTE: here we're dealing with a subportion of the mesh.
   // hence our lookup strategy (based on the number of total vertices) is no
@@ -387,15 +385,14 @@ int OneSkeleton::buildEdgeSubList(
   // look up strategy is about 7 times faster than the standard map.
   // For mesh portions, the standard map is orders of magnitude faster
 
-  map<pair<SimplexId, SimplexId>, bool> edgeMap;
+  map<std::array<SimplexId, 2>, bool> edgeMap;
   edgeList.clear();
 
   const SimplexId cellNumber = cellArray.getNbCells();
   for(SimplexId cid = 0; cid < cellNumber; cid++) {
     const SimplexId nbVertCell = cellArray.getCellVertexNumber(cid);
 
-    pair<SimplexId, SimplexId> edgeIds;
-    int tmpVertexId;
+    array<SimplexId, 2> edgeIds;
     // tet case
     // 0 - 1
     // 0 - 2
@@ -406,17 +403,14 @@ int OneSkeleton::buildEdgeSubList(
     for(SimplexId j = 0; j <= nbVertCell - 2; j++) {
       for(SimplexId k = j + 1; k <= nbVertCell - 1; k++) {
 
-        edgeIds.first = cellArray.getCellVertex(cid, j);
-        edgeIds.second = cellArray.getCellVertex(cid, k);
+        edgeIds[0] = cellArray.getCellVertex(cid, j);
+        edgeIds[1] = cellArray.getCellVertex(cid, k);
 
-        if(edgeIds.first > edgeIds.second) {
-          tmpVertexId = edgeIds.first;
-          edgeIds.first = edgeIds.second;
-          edgeIds.second = tmpVertexId;
+        if(edgeIds[0] > edgeIds[1]) {
+          std::swap(edgeIds[0], edgeIds[1]);
         }
 
-        map<pair<SimplexId, SimplexId>, bool>::iterator it
-          = edgeMap.find(edgeIds);
+        auto it = edgeMap.find(edgeIds);
 
         if(it == edgeMap.end()) {
           // not found, let's add this edge
