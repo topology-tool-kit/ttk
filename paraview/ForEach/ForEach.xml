@@ -60,7 +60,7 @@
                 <EnumerationDomain name="enum">
                     <Entry value="-1" text="Auto"/>
                     <Entry value="13" text="vtkMultiBlockDataSet"/>
-                    <!--<Entry value="6" text="vtkImageData"/>-->
+                    <Entry value="6" text="vtkImageData"/>
                     <Entry value="4" text="vtkUnstructuredGrid"/>
                     <Entry value="19" text="vtkTable"/>
                 </EnumerationDomain>
@@ -83,9 +83,25 @@ vtkMultiBlockDataSet: If only one block is extracted and it is of type 'vtkMulti
                 </Hints>
             </IntVectorProperty>
 
+            <IntVectorProperty command="SetImageExtent" default_values="0 0 0 0 0 0" name="ImageExtent" number_of_elements="6">
+              <ExtentDomain name="extent">
+                <RequiredProperties>
+                  <Property function="Input" name="Input" />
+                </RequiredProperties>
+              </ExtentDomain>
+              <Hints>
+                <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="OutputType" value="6"/>
+              </Hints>
+              <Documentation>
+                Controls the minimum and maximum extent index in each dimension for outputs of type vtkImageData.
+                Unfortunately, VTK requires that this information is explicitly defined during the RequestInformation pass, so it can not be deduced later during the RequestData pass.
+              </Documentation>
+            </IntVectorProperty>
+
             <PropertyGroup panel_widget="Line" label="Input Parameters">
                 <Property name="IterationMode" />
                 <Property name="OutputType" />
+                <Property name="ImageExtent" />
                 <Property name="InputArray" />
                 <Property name="ArrayAttributeType" />
             </PropertyGroup>
