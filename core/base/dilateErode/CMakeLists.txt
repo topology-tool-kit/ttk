@@ -1,6 +1,4 @@
-ttk_add_base_library(dilateErode
-  SOURCES
-    DilateErode.cpp
+ttk_add_base_template_library(dilateErode
   HEADERS
     DilateErode.h
   DEPENDS
