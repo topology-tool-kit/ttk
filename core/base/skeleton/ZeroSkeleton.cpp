@@ -493,10 +493,9 @@ int ZeroSkeleton::buildVertexNeighbors(
   printMsg("Building vertex neighbors", 0, 0, threadNumber_,
            ttk::debug::LineMode::REPLACE);
 
-  const SimplexId nbEdge = localEdgeList->size();
-  for(SimplexId i = 0; i < nbEdge; i++) {
-    oneSkeleton[(*localEdgeList)[i][0]].emplace_back((*localEdgeList)[i][1]);
-    oneSkeleton[(*localEdgeList)[i][1]].emplace_back((*localEdgeList)[i][0]);
+  for(const auto &e : *localEdgeList) {
+    oneSkeleton[e[0]].emplace_back(e[1]);
+    oneSkeleton[e[1]].emplace_back(e[0]);
   }
 
   printMsg("Built " + std::to_string(vertexNumber) + " vertex neighbors", 1,
