@@ -193,7 +193,8 @@ int TwoSkeleton::buildEdgeTriangles(
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(size_t i = 0; i < localEdgeList->size(); i++) {
-    SimplexId vertexId0, vertexId1, vertexId2;
+    auto &eVerts = (*localEdgeList)[i];
+    std::sort(eVerts.begin(), eVerts.end());
 
     for(size_t j = 0; j < (*localEdgeStarList)[i].size(); j++) {
       SimplexId tetId = (*localEdgeStarList)[i][j];
@@ -201,44 +202,24 @@ int TwoSkeleton::buildEdgeTriangles(
       for(size_t k = 0; k < (*localCellTriangleList)[tetId].size(); k++) {
         SimplexId triangleId = (*localCellTriangleList)[tetId][k];
 
+        auto &tVerts = (*localTriangleList)[triangleId];
+        std::sort(tVerts.begin(), tVerts.end());
+
         bool isAttached = false;
 
-        vertexId0 = (*localTriangleList)[triangleId][0];
-        vertexId1 = (*localTriangleList)[triangleId][1];
-        vertexId2 = (*localTriangleList)[triangleId][2];
-
-        if((*localEdgeList)[i][0] == vertexId0) {
-          if(((*localEdgeList)[i][1] == vertexId1)
-             || ((*localEdgeList)[i][1] == vertexId2)) {
+        if(eVerts[0] == tVerts[0]) {
+          if(eVerts[1] == tVerts[1] || eVerts[1] == tVerts[2]) {
             isAttached = true;
           }
-        }
-
-        if((*localEdgeList)[i][0] == vertexId1) {
-          if(((*localEdgeList)[i][1] == vertexId0)
-             || ((*localEdgeList)[i][1] == vertexId2)) {
-            isAttached = true;
-          }
-        }
-
-        if((*localEdgeList)[i][0] == vertexId2) {
-          if(((*localEdgeList)[i][1] == vertexId1)
-             || ((*localEdgeList)[i][1] == vertexId0)) {
-            isAttached = true;
-          }
+        } else if(eVerts[0] == tVerts[1] && eVerts[1] == tVerts[2]) {
+          isAttached = true;
         }
 
         if(isAttached) {
-
-          bool isIn = false;
-          for(size_t l = 0; l < edgeTriangleList[i].size(); l++) {
-            if(edgeTriangleList[i][l] == triangleId) {
-              isIn = true;
-              break;
-            }
-          }
-          if(!isIn) {
-            edgeTriangleList[i].push_back(triangleId);
+          const auto pos = std::find(
+            edgeTriangleList[i].begin(), edgeTriangleList[i].end(), triangleId);
+          if(pos == edgeTriangleList[i].end()) {
+            edgeTriangleList[i].emplace_back(triangleId);
           }
         }
       }
