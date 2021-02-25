@@ -64,11 +64,9 @@ int ttk::DilateErode::execute(
   std::vector<DT> temp;
   if(iterations > 1) {
     Timer t;
-
     this->printMsg("Allocating temporary memory", 0, 0, this->threadNumber_,
                    debug::LineMode::REPLACE);
     temp.resize(nVertices);
-
     this->printMsg("Allocating temporary memory", 1, t.getElapsedTime(),
                    this->threadNumber_);
   }
