@@ -3,4 +3,5 @@ ttk_add_base_template_library(icosphere
     Icosphere.h
   DEPENDS
     triangulation
+    Boost::boost
 )
