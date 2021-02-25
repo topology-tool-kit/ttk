@@ -5,7 +5,6 @@
 #include <vtkInformation.h>
 #include <vtkPointData.h>
 #include <vtkSmartPointer.h>
-#include <vtkObjectFactory.h>
 
 #include <ttkMacros.h>
 #include <ttkUtils.h>

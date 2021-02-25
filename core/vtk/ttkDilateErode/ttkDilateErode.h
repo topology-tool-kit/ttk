@@ -34,7 +34,7 @@
 #include <DilateErode.h>
 
 class TTKDILATEERODE_EXPORT ttkDilateErode : public ttkAlgorithm,
-                                             public ttk::DilateErode {
+                                             protected ttk::DilateErode {
 
 private:
   int Mode{0};
