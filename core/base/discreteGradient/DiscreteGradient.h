@@ -664,10 +664,10 @@ in the gradient.
        * 3-cells)
        */
       template <typename triangulationType>
-      inline lowerStarType
-        lowerStar(const SimplexId a,
-                  const SimplexId *const offsets,
-                  const triangulationType &triangulation) const;
+      inline void lowerStar(lowerStarType &ls,
+                            const SimplexId a,
+                            const SimplexId *const offsets,
+                            const triangulationType &triangulation) const;
 
       /**
        * @brief Return the number of unpaired faces of a given cell in

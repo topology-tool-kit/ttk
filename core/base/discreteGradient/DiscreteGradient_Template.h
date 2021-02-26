@@ -1773,18 +1773,23 @@ SimplexId DiscreteGradient::getNumberOfCells(
 }
 
 template <typename triangulationType>
-inline DiscreteGradient::lowerStarType
-  DiscreteGradient::lowerStar(const SimplexId a,
+inline void
+  DiscreteGradient::lowerStar(lowerStarType &ls,
+                              const SimplexId a,
                               const SimplexId *const offsets,
                               const triangulationType &triangulation) const {
-  lowerStarType res{};
+
+  // make sure that ls is cleared
+  for(auto &vec : ls) {
+    vec.clear();
+  }
 
   // a belongs to its lower star
-  res[0].emplace_back(CellExt{0, a});
+  ls[0].emplace_back(CellExt{0, a});
 
   // store lower edges
   const auto nedges = triangulation.getVertexEdgeNumber(a);
-  res[1].reserve(nedges);
+  ls[1].reserve(nedges);
   for(SimplexId i = 0; i < nedges; i++) {
     SimplexId edgeId;
     triangulation.getVertexEdge(a, i, edgeId);
@@ -1794,13 +1799,13 @@ inline DiscreteGradient::lowerStarType
       triangulation.getEdgeVertex(edgeId, 1, vertexId);
     }
     if(offsets[vertexId] < offsets[a]) {
-      res[1].emplace_back(CellExt{1, edgeId, {vertexId}, {}});
+      ls[1].emplace_back(CellExt{1, edgeId, {vertexId}, {}});
     }
   }
 
-  if(res[1].size() < 2) {
+  if(ls[1].size() < 2) {
     // at least two edges in the lower star for one triangle
-    return res;
+    return;
   }
 
   const auto processTriangle = [&](const SimplexId triangleId,
@@ -1821,13 +1826,13 @@ inline DiscreteGradient::lowerStarType
       uint8_t j{}, k{};
       // store edges indices of current triangle
       std::array<uint8_t, 3> faces{};
-      for(const auto &e : res[1]) {
+      for(const auto &e : ls[1]) {
         if(e.lowVerts_[0] == lowVerts[0] || e.lowVerts_[0] == lowVerts[1]) {
           faces[k++] = j;
         }
         j++;
       }
-      res[2].emplace_back(CellExt{2, triangleId, lowVerts, faces});
+      ls[2].emplace_back(CellExt{2, triangleId, lowVerts, faces});
     }
   };
 
@@ -1838,7 +1843,7 @@ inline DiscreteGradient::lowerStarType
     // getVertexStar instead of getVertexTriangle
     // getCellVertex instead of getTriangleVertex
     const auto ncells = triangulation.getVertexStarNumber(a);
-    res[2].reserve(ncells);
+    ls[2].reserve(ncells);
     for(SimplexId i = 0; i < ncells; ++i) {
       SimplexId cellId;
       triangulation.getVertexStar(a, i, cellId);
@@ -1851,7 +1856,7 @@ inline DiscreteGradient::lowerStarType
   } else if(dimensionality_ == 3) {
     // store lower triangles
     const auto ntri = triangulation.getVertexTriangleNumber(a);
-    res[2].reserve(ntri);
+    ls[2].reserve(ntri);
     for(SimplexId i = 0; i < ntri; i++) {
       SimplexId triangleId;
       triangulation.getVertexTriangle(a, i, triangleId);
@@ -1863,10 +1868,10 @@ inline DiscreteGradient::lowerStarType
     }
 
     // at least three triangles in the lower star for one tetra
-    if(res[2].size() >= 3) {
+    if(ls[2].size() >= 3) {
       // store lower tetra
       const auto ncells = triangulation.getVertexStarNumber(a);
-      res[3].reserve(ncells);
+      ls[3].reserve(ncells);
       for(SimplexId i = 0; i < ncells; ++i) {
         SimplexId cellId;
         triangulation.getVertexStar(a, i, cellId);
@@ -1899,7 +1904,7 @@ inline DiscreteGradient::lowerStarType
           uint8_t j{}, k{};
           // store triangles indices of current tetra
           std::array<uint8_t, 3> faces{};
-          for(const auto &t : res[2]) {
+          for(const auto &t : ls[2]) {
             if((t.lowVerts_[0] == lowVerts[0] || t.lowVerts_[0] == lowVerts[1]
                 || t.lowVerts_[0] == lowVerts[2])
                && (t.lowVerts_[1] == lowVerts[0]
@@ -1910,13 +1915,13 @@ inline DiscreteGradient::lowerStarType
             j++;
           }
 
-          res[3].emplace_back(CellExt{3, cellId, lowVerts, faces});
+          ls[3].emplace_back(CellExt{3, cellId, lowVerts, faces});
         }
       }
     }
   }
 
-  return res;
+  return;
 }
 
 template <typename triangulationType>
@@ -1991,84 +1996,100 @@ int DiscreteGradient::processLowerStars(
 
   auto nverts = triangulation.getNumberOfVertices();
 
+  // Comparison function for Cells inside priority queues
+  const auto orderCells = [&](const CellExt &a, const CellExt &b) -> bool {
+    if(a.dim_ == b.dim_) {
+      // there should be a shared facet between the two cells
+      // compare the vertices not in the shared facet
+      if(a.dim_ == 1) {
+        return offsets[a.lowVerts_[0]] > offsets[b.lowVerts_[0]];
+
+      } else if(a.dim_ == 2) {
+        const auto &m0 = a.lowVerts_[0];
+        const auto &m1 = a.lowVerts_[1];
+        const auto &n0 = b.lowVerts_[0];
+        const auto &n1 = b.lowVerts_[1];
+
+        if(m0 == n0) {
+          return offsets[m1] > offsets[n1];
+        } else if(m0 == n1) {
+          return offsets[m1] > offsets[n0];
+        } else if(m1 == n0) {
+          return offsets[m0] > offsets[n1];
+        } else if(m1 == n1) {
+          return offsets[m0] > offsets[n0];
+        }
+
+      } else if(a.dim_ == 3) {
+        SimplexId m{-1}, n{-1};
+
+        const auto &m0 = a.lowVerts_[0];
+        const auto &m1 = a.lowVerts_[1];
+        const auto &m2 = a.lowVerts_[2];
+        const auto &n0 = b.lowVerts_[0];
+        const auto &n1 = b.lowVerts_[1];
+        const auto &n2 = b.lowVerts_[2];
+
+        // extract vertex of a not in b
+        if(m0 != n0 && m0 != n1 && m0 != n2) {
+          m = m0;
+        } else if(m1 != n0 && m1 != n1 && m1 != n2) {
+          m = m1;
+        } else if(m2 != n0 && m2 != n1 && m2 != n2) {
+          m = m2;
+        }
+
+        // extract vertex of b not in a
+        if(n0 != m0 && n0 != m1 && n0 != m2) {
+          n = n0;
+        } else if(n1 != m0 && n1 != m1 && n1 != m2) {
+          n = n1;
+        } else if(n2 != m0 && n2 != m1 && n2 != m2) {
+          n = n2;
+        }
+
+        return offsets[m] > offsets[n];
+      }
+    } else {
+      // the cell of greater dimension should contain the cell of
+      // smaller dimension
+      return a.dim_ > b.dim_;
+    }
+
+    return false;
+  };
+
+  // Type alias for priority queues
+  using pqType
+    = std::priority_queue<std::reference_wrapper<CellExt>,
+                          std::vector<std::reference_wrapper<CellExt>>,
+                          decltype(orderCells)>;
+
+  // To reduce allocations, priority queues and lowerStar objects are
+  // cleaned & reused between iterations.
+
+  // Priority queues are pushed at the beginning and popped at the
+  // end. To pop the minimum, elements should be sorted in a
+  // decreasing order.
+  pqType pqZero{orderCells}, pqOne{orderCells};
+
+  // store lower star structure
+  lowerStarType Lx;
+
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
+#pragma omp parallel for num_threads(threadNumber_) \
+  firstprivate(Lx, pqZero, pqOne)
 #endif // TTK_ENABLE_OPENMP
   for(SimplexId x = 0; x < nverts; x++) {
 
-    // Comparison function for Cells inside priority queues
-    const auto orderCells = [&](const CellExt &a, const CellExt &b) -> bool {
-      if(a.dim_ == b.dim_) {
-        // there should be a shared facet between the two cells
-        // compare the vertices not in the shared facet
-        if(a.dim_ == 1) {
-          return offsets[a.lowVerts_[0]] > offsets[b.lowVerts_[0]];
-
-        } else if(a.dim_ == 2) {
-          const auto &m0 = a.lowVerts_[0];
-          const auto &m1 = a.lowVerts_[1];
-          const auto &n0 = b.lowVerts_[0];
-          const auto &n1 = b.lowVerts_[1];
-
-          if(m0 == n0) {
-            return offsets[m1] > offsets[n1];
-          } else if(m0 == n1) {
-            return offsets[m1] > offsets[n0];
-          } else if(m1 == n0) {
-            return offsets[m0] > offsets[n1];
-          } else if(m1 == n1) {
-            return offsets[m0] > offsets[n0];
-          }
-
-        } else if(a.dim_ == 3) {
-          SimplexId m{-1}, n{-1};
-
-          const auto &m0 = a.lowVerts_[0];
-          const auto &m1 = a.lowVerts_[1];
-          const auto &m2 = a.lowVerts_[2];
-          const auto &n0 = b.lowVerts_[0];
-          const auto &n1 = b.lowVerts_[1];
-          const auto &n2 = b.lowVerts_[2];
-
-          // extract vertex of a not in b
-          if(m0 != n0 && m0 != n1 && m0 != n2) {
-            m = m0;
-          } else if(m1 != n0 && m1 != n1 && m1 != n2) {
-            m = m1;
-          } else if(m2 != n0 && m2 != n1 && m2 != n2) {
-            m = m2;
-          }
-
-          // extract vertex of b not in a
-          if(n0 != m0 && n0 != m1 && n0 != m2) {
-            n = n0;
-          } else if(n1 != m0 && n1 != m1 && n1 != m2) {
-            n = n1;
-          } else if(n2 != m0 && n2 != m1 && n2 != m2) {
-            n = n2;
-          }
-
-          return offsets[m] > offsets[n];
-        }
-      } else {
-        // the cell of greater dimension should contain the cell of
-        // smaller dimension
-        return a.dim_ > b.dim_;
-      }
-
-      return false;
-    };
-
-    // Type alias for priority queues
-    using pqType
-      = std::priority_queue<std::reference_wrapper<CellExt>,
-                            std::vector<std::reference_wrapper<CellExt>>,
-                            decltype(orderCells)>;
-
-    // Priority queues are pushed at the beginning and popped at the
-    // end. To pop the minimum, elements should be sorted in a
-    // decreasing order.
-    pqType pqZero(orderCells), pqOne(orderCells);
+    // clear priority queues (they should be empty at the end of the
+    // previous iteration)
+    while(!pqZero.empty()) {
+      pqZero.pop();
+    }
+    while(!pqOne.empty()) {
+      pqOne.pop();
+    }
 
     // Insert into pqOne cofacets of cell c_alpha such as numUnpairedFaces == 1
     const auto insertCofacets = [&](const CellExt &ca, lowerStarType &ls) {
@@ -2097,7 +2118,7 @@ int DiscreteGradient::processLowerStars(
       }
     };
 
-    auto Lx = lowerStar(x, offsets, triangulation);
+    lowerStar(Lx, x, offsets, triangulation);
 
     // Lx[1] empty => x is a local minimum
 
