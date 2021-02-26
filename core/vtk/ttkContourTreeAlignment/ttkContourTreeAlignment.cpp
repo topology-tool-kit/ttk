@@ -169,8 +169,8 @@ int ttkContourTreeAlignment::RequestData(vtkInformation *request,
       "SegmentationId Array read from cell data.", debug::Priority::VERBOSE);
 
     if(segmentation){
-      //auto segArray_segmentation = this->GetInputArrayToProcess(2, segmentation);
-      auto segArray_segmentation = segmentation->GetPointData()->GetArray("SegmentationId");
+      auto segArray_segmentation = this->GetInputArrayToProcess(3, segmentation);
+      //auto segArray_segmentation = segmentation->GetPointData()->GetArray("SegmentationId");
       if(!segArray_segmentation) {
         printErr("No Cell Array \"SegmentationId\" found in segmentation.");
         return 0;
