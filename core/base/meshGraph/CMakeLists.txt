@@ -3,4 +3,4 @@ ttk_add_base_template_library(meshGraph
     MeshGraph.h
   DEPENDS
     triangulation
-    )
+)

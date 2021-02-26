@@ -1,6 +1,4 @@
-ttk_add_base_library(localizedTopologicalSimplification
-  SOURCES
-    LocalizedTopologicalSimplification.cpp
+ttk_add_base_template_library(localizedTopologicalSimplification
   HEADERS
     LocalizedTopologicalSimplification.h
     SSCPropagation.h
