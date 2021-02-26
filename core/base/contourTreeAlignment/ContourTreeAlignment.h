@@ -60,8 +60,8 @@ struct AlignmentNode {
 
 struct AlignmentEdge {
 
-  std::shared_ptr<AlignmentNode> node1;
-  std::shared_ptr<AlignmentNode> node2;
+  std::weak_ptr<AlignmentNode> node1;
+  std::weak_ptr<AlignmentNode> node2;
   float scalardistance;
   float area;
   float volume;
@@ -488,11 +488,11 @@ int ttk::ContourTreeAlignment::execute(const vector<void *> &scalarsVP,
     int i = 0;
     for(std::shared_ptr<AlignmentNode> node : nodes) {
 
-      if(node == edge->node1) {
+      if(node == edge->node1.lock()) {
         outputEdges.push_back(i);
       }
 
-      if(node == edge->node2) {
+      if(node == edge->node2.lock()) {
         outputEdges.push_back(i);
       }
 
