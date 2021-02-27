@@ -17,7 +17,7 @@
                 <Documentation>Object whose points will be used as ico sphere centers.</Documentation>
             </InputProperty>
 
-            <IntVectorProperty name="NumberOfSubdivisions" label="Subdivisions" command="SetNumberOfSubdivisions" number_of_elements="1" default_values="0">
+            <IntVectorProperty name="NumberOfSubdivisions" label="Subdivisions" command="SetNumberOfSubdivisions" number_of_elements="1" default_values="2">
                 <Documentation>Number of subdevisions.</Documentation>
             </IntVectorProperty>
             <DoubleVectorProperty name="Radius" label="Radius" command="SetRadius" number_of_elements="1" default_values="1">
@@ -27,7 +27,7 @@
                 <BooleanDomain name="bool" />
                 <Documentation>Add every point data array of the input to the output.</Documentation>
             </IntVectorProperty>
-            <IntVectorProperty name="ComputeNormals" label="Compute Normals" number_of_elements="1" default_values="0" command="SetComputeNormals" >
+            <IntVectorProperty name="ComputeNormals" label="Compute Normals" number_of_elements="1" default_values="1" command="SetComputeNormals" >
                 <BooleanDomain name="bool" />
                 <Documentation>Controls if the output contains normals at the vertices.</Documentation>
             </IntVectorProperty>
