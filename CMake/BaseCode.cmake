@@ -177,11 +177,8 @@ function(ttk_set_compile_options library)
     target_link_libraries(${library} PUBLIC ${EMBREE_LIBRARY})
   endif()
 
-  # TODO per module
   if (TTK_ENABLE_SQLITE3)
     target_compile_definitions(${library} PUBLIC TTK_ENABLE_SQLITE3)
-    target_include_directories(${library} PUBLIC ${SQLITE3_INCLUDE_DIR})
-    target_link_libraries(${library} PUBLIC ${SQLITE3_LIBRARY})
   endif()
 
   # TODO per module

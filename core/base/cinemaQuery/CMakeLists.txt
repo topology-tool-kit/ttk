@@ -6,3 +6,7 @@ ttk_add_base_library(cinemaQuery
   DEPENDS
     triangulation
 )
+
+if(TTK_ENABLE_SQLITE3)
+  target_link_libraries(cinemaQuery PRIVATE SQLite::SQLite3)
+endif()
