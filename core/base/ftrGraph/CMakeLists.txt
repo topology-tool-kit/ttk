@@ -49,7 +49,6 @@ ttk_add_base_library(ftrGraph
     triangulation
     scalarFieldCriticalPoints
     Boost::boost
-    Boost::system
     ${profiler_lib}
     )
 
