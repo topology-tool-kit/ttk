@@ -565,6 +565,16 @@ int TwoSkeleton::buildVertexTriangles(
     }
   }
 
+  if(this->threadNumber_ > 1) {
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif
+    for(size_t i = 0; i < vertexTriangleList.size(); i++) {
+      auto &vec = vertexTriangleList[i];
+      std::sort(vec.begin(), vec.end());
+    }
+  }
+
   printMsg("Built " + std::to_string(vertexNumber) + " vertex triangles", 1,
            t.getElapsedTime(), threadNumber_);
 
