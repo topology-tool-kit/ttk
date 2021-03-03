@@ -725,13 +725,17 @@ namespace ttk {
 
     inline int preconditionCellEdgesInternal() override {
 
-      if(!cellEdgeList_.size()) {
+      ThreeSkeleton threeSkeleton;
+      threeSkeleton.setWrapper(this);
 
-        ThreeSkeleton threeSkeleton;
-        threeSkeleton.setWrapper(this);
-
+      if(cellEdgeList_.empty() && getDimensionality() == 3) {
         threeSkeleton.buildCellEdges(vertexNumber_, *cellArray_, cellEdgeList_,
                                      &edgeList_, &vertexEdgeList_);
+
+      } else if(triangleEdgeList_.empty() && getDimensionality() == 2) {
+        threeSkeleton.buildCellEdges(vertexNumber_, *cellArray_,
+                                     triangleEdgeList_, &edgeList_,
+                                     &vertexEdgeList_);
       }
 
       return 0;
@@ -955,7 +959,7 @@ namespace ttk {
           ZeroSkeleton zeroSkeleton;
           zeroSkeleton.setWrapper(this);
           return zeroSkeleton.buildVertexLinks(
-            vertexStarList_, cellEdgeList_, edgeList_, vertexLinkList_);
+            vertexStarList_, triangleEdgeList_, edgeList_, vertexLinkList_);
         } else if(getDimensionality() == 3) {
           preconditionVertexStarsInternal();
           preconditionCellTrianglesInternal();
