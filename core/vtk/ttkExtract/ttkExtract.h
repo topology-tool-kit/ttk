@@ -59,11 +59,12 @@ public:
   vtkSetVector6Macro(ImageExtent, int);
   vtkGetVector6Macro(ImageExtent, int);
 
-  int GetVtkDataTypeName(std::string &dataTypeName, const int outputType) const;
+  std::string GetVtkDataTypeName(const int outputType) const;
 
   int ExtractBlocks(vtkDataObject *output,
                     vtkDataObject *input,
-                    const std::vector<double> &indices) const;
+                    const std::vector<double> &indices,
+                    const bool &extractTuples) const;
 
   int ExtractRows(vtkDataObject *output,
                   vtkDataObject *input,

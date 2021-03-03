@@ -21,6 +21,9 @@
 
 class TTKENDFOR_EXPORT ttkEndFor : public ttkAlgorithm {
 
+private:
+  int LastIterationIdx{-1};
+
 public:
   static ttkEndFor *New();
   vtkTypeMacro(ttkEndFor, ttkAlgorithm);
