@@ -68,11 +68,19 @@ int ttkEndFor::RequestData(vtkInformation *request,
   // get iteration info
   int i = forEach->GetIterationIdx() - 1;
   int n = forEach->GetIterationNumber();
-  this->printMsg("Iteration ( " + std::to_string(i) + " / "
-                   + std::to_string(n - 1) + " ) complete ",
-                 ttk::debug::Separator::BACKSLASH);
 
-  if(i == n - 1) {
+  bool isRepeatedIteration = this->LastIterationIdx == i && i > 0;
+  this->LastIterationIdx = i;
+
+  if(isRepeatedIteration)
+    this->printMsg("For Loop Modified -> Restarting Iterations",
+                   ttk::debug::Separator::BACKSLASH);
+  else
+    this->printMsg("Iteration ( " + std::to_string(i) + " / "
+                     + std::to_string(n - 1) + " ) complete ",
+                   ttk::debug::Separator::BACKSLASH);
+
+  if(i >= n - 1 && !isRepeatedIteration) {
     // if this is the last iteration
     auto input = vtkDataObject::GetData(inputVector[0]);
     auto output = vtkDataObject::GetData(outputVector);
@@ -81,11 +89,6 @@ int ttkEndFor::RequestData(vtkInformation *request,
     request->Remove(vtkStreamingDemandDrivenPipeline::CONTINUE_EXECUTING());
   } else {
     // if this is an intermediate iteration
-    auto inputAlgorithm = this->GetInputAlgorithm(0, 0);
-    while(inputAlgorithm && !inputAlgorithm->IsA("ttkForEach")) {
-      inputAlgorithm->Modified();
-      inputAlgorithm = inputAlgorithm->GetInputAlgorithm();
-    }
     forEach->Modified();
     this->GetInputAlgorithm(0, 0)->Update();
 

@@ -46,8 +46,6 @@ int ttkForEach::RequestData(vtkInformation *request,
   }
 
   // Determine Mode
-  std::string modeStrings[5] = {"B", "R", "G", "V", "A"};
-
   auto mode = this->GetExtractionMode();
   if(mode < 0) {
     if(input->IsA("vtkMultiBlockDataSet"))
@@ -62,18 +60,19 @@ int ttkForEach::RequestData(vtkInformation *request,
 
   // Get Iteration Bounds
   if(mode == 0) {
-    if(!input->IsA("vtkMultiBlockDataSet")) {
+    auto inputAsMB = vtkMultiBlockDataSet::SafeDownCast(input);
+    if(!inputAsMB) {
       this->printErr("Block iteration requires 'vtkMultiBlockDataSet' input.");
       return 0;
     }
-    this->IterationNumber
-      = ((vtkMultiBlockDataSet *)input)->GetNumberOfBlocks();
+    this->IterationNumber = inputAsMB->GetNumberOfBlocks();
   } else if(mode == 1) {
-    if(!input->IsA("vtkTable")) {
+    auto inputAsT = vtkTable::SafeDownCast(input);
+    if(!inputAsT) {
       this->printErr("Row iteration requires 'vtkTable' input.");
       return 0;
     }
-    this->IterationNumber = ((vtkTable *)input)->GetNumberOfRows();
+    this->IterationNumber = inputAsT->GetNumberOfRows();
   } else if(mode == 3) {
     auto inputArray = this->GetInputArrayToProcess(0, inputVector);
     if(!inputArray) {
@@ -90,6 +89,24 @@ int ttkForEach::RequestData(vtkInformation *request,
     } else {
       this->IterationNumber = inputFD->GetNumberOfArrays();
     }
+  } else if(mode == 5) {
+    auto inputAsMB = vtkMultiBlockDataSet::SafeDownCast(input);
+
+    if(!inputAsMB || inputAsMB->GetNumberOfBlocks() < 1) {
+      this->printErr(
+        "Block Tuple iteration requires 'vtkMultiBlockDataSet' input that "
+        "contains at least one 'vtkMultiBlockDataSet'.");
+      return 0;
+    }
+    auto firstComponent
+      = vtkMultiBlockDataSet::SafeDownCast(inputAsMB->GetBlock(0));
+    if(!firstComponent) {
+      this->printErr(
+        "Block Tuple iteration requires 'vtkMultiBlockDataSet' input that "
+        "contains at least one 'vtkMultiBlockDataSet'.");
+      return 0;
+    }
+    this->IterationNumber = firstComponent->GetNumberOfBlocks();
   } else {
     this->printErr("Unsupported mode");
     return 0;
@@ -103,6 +120,7 @@ int ttkForEach::RequestData(vtkInformation *request,
   iterationInformation->SetValue(0, this->IterationIdx);
   iterationInformation->SetValue(1, this->IterationNumber);
 
+  std::string modeStrings[6] = {"B", "R", "G", "V", "A", "BT"};
   this->printMsg("[" + modeStrings[mode] + "] Iteration: ( "
                    + std::to_string(this->IterationIdx) + " / "
                    + std::to_string(this->IterationNumber - 1) + " ) ",
