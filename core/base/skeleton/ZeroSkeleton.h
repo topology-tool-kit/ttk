@@ -96,9 +96,10 @@ namespace ttk {
     /// entry will be a std::vector listing the edges in the link of the
     /// corresponding vertex.
     /// \return Returns 0 upon success, negative values otherwise.
+    template <std::size_t n>
     int
       buildVertexLinks(const std::vector<std::vector<SimplexId>> &vertexStars,
-                       const std::vector<std::array<SimplexId, 6>> &cellEdges,
+                       const std::vector<std::array<SimplexId, n>> &cellEdges,
                        const std::vector<std::array<SimplexId, 2>> &edgeList,
                        std::vector<std::vector<SimplexId>> &vertexLinks) const;
 

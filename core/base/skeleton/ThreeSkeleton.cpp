@@ -11,10 +11,11 @@ ThreeSkeleton::ThreeSkeleton() {
 ThreeSkeleton::~ThreeSkeleton() {
 }
 
+template <std::size_t n>
 int ThreeSkeleton::buildCellEdges(
   const SimplexId &vertexNumber,
   const CellArray &cellArray,
-  vector<std::array<SimplexId, 6>> &cellEdges,
+  vector<std::array<SimplexId, n>> &cellEdges,
   vector<std::array<SimplexId, 2>> *edgeList,
   vector<vector<SimplexId>> *vertexEdges) const {
 
@@ -101,6 +102,22 @@ int ThreeSkeleton::buildCellEdges(
 
   return 0;
 }
+
+// explicit template instantiations for 3D cells (tetrahedrons)
+template int ThreeSkeleton::buildCellEdges<6>(
+  const SimplexId &vertexNumber,
+  const CellArray &cellArray,
+  std::vector<std::array<SimplexId, 6>> &cellEdges,
+  std::vector<std::array<SimplexId, 2>> *edgeList,
+  std::vector<std::vector<SimplexId>> *vertexEdges) const;
+
+// explicit template instantiations for 2D cells (triangles)
+template int ThreeSkeleton::buildCellEdges<3>(
+  const SimplexId &vertexNumber,
+  const CellArray &cellArray,
+  std::vector<std::array<SimplexId, 3>> &cellEdges,
+  std::vector<std::array<SimplexId, 2>> *edgeList,
+  std::vector<std::vector<SimplexId>> *vertexEdges) const;
 
 int ThreeSkeleton::buildCellNeighborsFromTriangles(
   const SimplexId &vertexNumber,
