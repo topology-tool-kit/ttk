@@ -94,6 +94,9 @@ namespace ttk {
       if(getDimensionality() == 1)
         return getCellNeighbor(cellId, localEdgeId, edgeId);
 
+      else if(getDimensionality() == 2)
+        return getTriangleEdgeInternal(cellId, localEdgeId, edgeId);
+
       return getCellEdgeInternal(cellId, localEdgeId, edgeId);
     }
 
@@ -120,6 +123,9 @@ namespace ttk {
 #endif
       if(getDimensionality() == 1)
         return getCellNeighborNumber(cellId);
+
+      else if(getDimensionality() == 2)
+        return getTriangleEdgeNumber(cellId);
 
       return getCellEdgeNumberInternal(cellId);
     };
@@ -159,6 +165,9 @@ namespace ttk {
 #endif
       if(getDimensionality() == 1)
         return getCellNeighbors();
+
+      else if(getDimensionality() == 2)
+        return getTriangleEdgesInternal();
 
       return getCellEdgesInternal();
     };
@@ -937,8 +946,6 @@ namespace ttk {
       if(!hasPreconditionedTriangleEdges())
         return -2;
 #endif
-      if(getDimensionality() == 2)
-        return getCellEdge(triangleId, localEdgeId, edgeId);
 
       return getTriangleEdgeInternal(triangleId, localEdgeId, edgeId);
     };
@@ -966,8 +973,6 @@ namespace ttk {
       if(!hasPreconditionedTriangleEdges())
         return -2;
 #endif
-      if(getDimensionality() == 2)
-        return getCellEdgeNumber(triangleId);
 
       return getTriangleEdgeNumberInternal(triangleId);
     };
@@ -1006,8 +1011,6 @@ namespace ttk {
       if(!hasPreconditionedTriangleEdges())
         return NULL;
 #endif
-      if(getDimensionality() == 2)
-        return getCellEdges();
 
       return getTriangleEdgesInternal();
     };
