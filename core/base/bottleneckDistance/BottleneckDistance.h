@@ -3,11 +3,6 @@
 /// \author Maxime Soler <soler.maxime@total.com>
 #pragma once
 
-
-#ifndef matchingTuple
-#define matchingTuple std::tuple<int, int, double>
-#endif
-
 #ifndef BNodeType
 #define BNodeType ttk::CriticalType
 #define BLocalMax ttk::CriticalType::Local_maximum

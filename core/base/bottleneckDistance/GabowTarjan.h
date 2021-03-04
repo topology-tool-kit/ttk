@@ -8,6 +8,8 @@
 #include <queue>
 #include <vector>
 
+typedef std::tuple<int, int, double> matchingTuple;
+
 namespace ttk {
 
   class GabowTarjan : public Debug {
