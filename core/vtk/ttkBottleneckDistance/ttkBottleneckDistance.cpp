@@ -44,7 +44,6 @@ int ttkBottleneckDistance::FillOutputPortInformation(int port,
   return 0;
 }
 
-template <typename dataType>
 int ttkBottleneckDistance::generatePersistenceDiagram(
   std::vector<diagramTuple> &diagram, const int size) {
   // srand(time(NULL));
@@ -130,7 +129,6 @@ int ttkBottleneckDistance::generatePersistenceDiagram(
 }
 
 // Warn: this is duplicated in ttkTrackingFromPersistenceDiagrams
-template <typename dataType>
 int ttkBottleneckDistance::getPersistenceDiagram(
   std::vector<diagramTuple> &diagram,
   vtkUnstructuredGrid *const CTPersistenceDiagram_,
@@ -258,7 +256,6 @@ int ttkBottleneckDistance::getPersistenceDiagram(
 }
 
 // Warn: this is duplicated in ttkTrackingFromPersistenceDiagrams
-template <typename dataType>
 int ttkBottleneckDistance::augmentPersistenceDiagrams(
   const std::vector<diagramTuple> &diagram1,
   const std::vector<diagramTuple> &diagram2,
@@ -319,7 +316,6 @@ int ttkBottleneckDistance::augmentPersistenceDiagrams(
   return 1;
 }
 
-template <typename dataType>
 int ttkBottleneckDistance::translateSecondDiagram(
   vtkUnstructuredGrid *outputCT2, double &spacing) {
 
@@ -355,7 +351,6 @@ int ttkBottleneckDistance::translateSecondDiagram(
   return 1;
 }
 
-template <typename dataType>
 int ttkBottleneckDistance::getMatchingMesh(
   vtkUnstructuredGrid *const outputCT3,
   const std::vector<diagramTuple> &diagram1,
@@ -475,10 +470,10 @@ int ttkBottleneckDistance::doBenchmark() {
 
   int benchmarkSize = BenchmarkSize;
   int status = 0;
-  status = generatePersistenceDiagram<double>(CTDiagram1, benchmarkSize);
+  status = generatePersistenceDiagram(CTDiagram1, benchmarkSize);
   if(status < 0)
     return status;
-  status = generatePersistenceDiagram<double>(CTDiagram2, 4 * benchmarkSize);
+  status = generatePersistenceDiagram(CTDiagram2, 4 * benchmarkSize);
   if(status < 0)
     return status;
 
@@ -505,7 +500,7 @@ int ttkBottleneckDistance::doBenchmark() {
 
   // Exec.
   bool usePersistenceMetric = UsePersistenceMetric;
-  status = this->execute<dataType>(usePersistenceMetric);
+  status = this->execute(usePersistenceMetric);
 
   return status;
 }
@@ -578,14 +573,14 @@ int ttkBottleneckDistance::RequestData(vtkInformation * /*request*/,
   std::vector<diagramTuple> CTDiagram1;
   std::vector<diagramTuple> CTDiagram2;
 
-  status = getPersistenceDiagram<dataType>(
+  status = getPersistenceDiagram(
     CTDiagram1, CTPersistenceDiagram1, Spacing, 0);
   if(status < 0) {
     this->printErr("Could not extract diagram from first input data-set");
     return 0;
   }
 
-  status = getPersistenceDiagram<dataType>(
+  status = getPersistenceDiagram(
     CTDiagram2, CTPersistenceDiagram2, Spacing, 1);
   if(status < 0) {
     this->printErr("Could not extract diagram from second input data-set");
@@ -604,7 +599,7 @@ int ttkBottleneckDistance::RequestData(vtkInformation * /*request*/,
   this->setOutputMatchings(&matchings);
 
   // Exec.
-  status = this->execute<dataType>(UsePersistenceMetric);
+  status = this->execute(UsePersistenceMetric);
   if(status != 0) {
     this->printErr("Base layer failed with error status "
                    + std::to_string(status));
@@ -612,7 +607,7 @@ int ttkBottleneckDistance::RequestData(vtkInformation * /*request*/,
   }
 
   // Apply results to outputs 0 and 1.
-  status = augmentPersistenceDiagrams<dataType>(
+  status = augmentPersistenceDiagrams(
     CTDiagram1, CTDiagram2, matchings, CTPersistenceDiagram1,
     CTPersistenceDiagram2);
   if(status != 1) {
@@ -623,7 +618,7 @@ int ttkBottleneckDistance::RequestData(vtkInformation * /*request*/,
   // Apply results to output 2.
   if(UseOutputMatching) {
     status
-      = getMatchingMesh<dataType>(outputCT3, CTDiagram1, CTDiagram2, matchings,
+      = getMatchingMesh(outputCT3, CTDiagram1, CTDiagram2, matchings,
                                   UseGeometricSpacing, Spacing, is2D);
 
     if(status != 1) {
@@ -636,7 +631,7 @@ int ttkBottleneckDistance::RequestData(vtkInformation * /*request*/,
   outputCT1->ShallowCopy(CTPersistenceDiagram1);
   outputCT2->DeepCopy(CTPersistenceDiagram2);
   if(UseGeometricSpacing)
-    translateSecondDiagram<dataType>(outputCT2, Spacing);
+    translateSecondDiagram(outputCT2, Spacing);
 
   return 1;
 }

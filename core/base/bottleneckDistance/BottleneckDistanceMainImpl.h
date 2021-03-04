@@ -1,5 +1,10 @@
 #pragma once
 
+#include "BottleneckDistance.h"
+
+namespace ttk {
+
+
 //  vector <   -- diagram
 //    tuple <    -- pair of critical points
 //      int , NodeType
@@ -10,7 +15,6 @@
 //      float, float, float -- vertex 1 coordinates
 //      dataType            -- scalar value at vertex 2
 //      float, float, float -- vertex 2 coordinates
-template <typename dataType>
 int BottleneckDistance::computeBottleneck(const std::vector<diagramTuple> &d1,
                                           const std::vector<diagramTuple> &d2,
                                           std::vector<matchingTuple> &matchings,
@@ -38,7 +42,7 @@ int BottleneckDistance::computeBottleneck(const std::vector<diagramTuple> &d1,
     return -4;
 
   // Needed to limit computation time.
-  const dataType zeroThresh = this->computeMinimumRelevantPersistence<dataType>(
+  const dataType zeroThresh = this->computeMinimumRelevantPersistence(
     CTDiagram1, CTDiagram2, d1Size, d2Size);
 
   // Initialize solvers.
@@ -238,17 +242,17 @@ int BottleneckDistance::computeBottleneck(const std::vector<diagramTuple> &d1,
   // Rebuild mappings.
   // Begin cost computation for unpaired vertices.
   // std::cout << "Min" << std::endl;
-  dataType addedMinPersistence = this->buildMappings<dataType>(
+  dataType addedMinPersistence = this->buildMappings(
     minMatchings, transposeOriginal, transposeMin, matchings, minMap1, minMap2,
     wasserstein);
 
   // std::cout << "Max" << std::endl;
-  dataType addedMaxPersistence = this->buildMappings<dataType>(
+  dataType addedMaxPersistence = this->buildMappings(
     maxMatchings, transposeOriginal, transposeMax, matchings, maxMap1, maxMap2,
     wasserstein);
 
   // std::cout << "Sad" << std::endl;
-  dataType addedSadPersistence = this->buildMappings<dataType>(
+  dataType addedSadPersistence = this->buildMappings(
     sadMatchings, transposeOriginal, transposeSad, matchings, sadMap1, sadMap2,
     wasserstein);
 
@@ -318,3 +322,5 @@ int BottleneckDistance::computeBottleneck(const std::vector<diagramTuple> &d1,
   distance_ = (double)d;
   return 0;
 }
+
+} // namespace ttk

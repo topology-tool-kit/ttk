@@ -1,10 +1,13 @@
 #pragma once
 
+#include "BottleneckDistance.h"
+
+namespace ttk {
+
 constexpr unsigned long long str2int(const char *str, int h = 0) {
   return !str[h] ? 5381 : (str2int(str, h + 1) * 33) ^ str[h];
 }
 
-template <typename dataType>
 int BottleneckDistance::execute(const bool usePersistenceMetric) {
   Timer t;
 
@@ -13,7 +16,7 @@ int BottleneckDistance::execute(const bool usePersistenceMetric) {
     switch(pvAlgorithm_) {
       case 0:
         this->printMsg("Solving with the TTK approach");
-        this->computeBottleneck<dataType>(
+        this->computeBottleneck(
           *static_cast<const std::vector<diagramTuple> *>(outputCT1_),
           *static_cast<const std::vector<diagramTuple> *>(outputCT2_),
           *static_cast<std::vector<matchingTuple> *>(matchings_),
@@ -47,7 +50,7 @@ int BottleneckDistance::execute(const bool usePersistenceMetric) {
       case str2int("0"):
       case str2int("ttk"):
         this->printMsg("Solving with the TTK approach");
-        this->computeBottleneck<dataType>(
+        this->computeBottleneck(
           *static_cast<const std::vector<diagramTuple> *>(outputCT1_),
           *static_cast<const std::vector<diagramTuple> *>(outputCT2_),
           *static_cast<std::vector<matchingTuple> *>(matchings_),
@@ -84,7 +87,6 @@ int BottleneckDistance::execute(const bool usePersistenceMetric) {
   return 0;
 }
 
-template <typename dataType>
 double BottleneckDistance::computeGeometricalRange(
   const std::vector<diagramTuple> &CTDiagram1,
   const std::vector<diagramTuple> &CTDiagram2,
@@ -133,7 +135,6 @@ double BottleneckDistance::computeGeometricalRange(
               + Geometry::pow(maxZ - minZ, 2));
 }
 
-template <typename dataType>
 double BottleneckDistance::computeMinimumRelevantPersistence(
   const std::vector<diagramTuple> &CTDiagram1,
   const std::vector<diagramTuple> &CTDiagram2,
@@ -172,7 +173,6 @@ double BottleneckDistance::computeMinimumRelevantPersistence(
   return s;
 }
 
-template <typename dataType>
 void BottleneckDistance::computeMinMaxSaddleNumberAndMapping(
   const std::vector<diagramTuple> &CTDiagram,
   int dSize,
@@ -212,7 +212,6 @@ void BottleneckDistance::computeMinMaxSaddleNumberAndMapping(
   }
 }
 
-template <typename dataType>
 void BottleneckDistance::buildCostMatrices(
   const std::vector<diagramTuple> &CTDiagram1,
   const std::vector<diagramTuple> &CTDiagram2,
@@ -387,7 +386,6 @@ void BottleneckDistance::buildCostMatrices(
   }
 }
 
-template <typename dataType>
 void BottleneckDistance::solvePWasserstein(
   const int nbRow,
   const int nbCol,
@@ -395,11 +393,10 @@ void BottleneckDistance::solvePWasserstein(
   std::vector<matchingTuple> &matchings,
   Munkres &solver) {
   solver.setInput(nbRow, nbCol, (void *)&matrix);
-  solver.run<dataType>(matchings);
-  solver.clearMatrix<dataType>();
+  solver.run(matchings);
+  solver.clearMatrix();
 }
 
-template <typename dataType>
 void BottleneckDistance::solveInfinityWasserstein(
   const int nbRow,
   const int nbCol,
@@ -417,12 +414,11 @@ void BottleneckDistance::solveInfinityWasserstein(
       bottleneckMatrix[i][j] = matrix[i][j];
 
   // Solve.
-  solver.setInput<dataType>(nbRow, nbCol, (void *)&bottleneckMatrix);
-  solver.run<dataType>(matchings);
-  solver.clear<dataType>();
+  solver.setInput(nbRow, nbCol, (void *)&bottleneckMatrix);
+  solver.run(matchings);
+  solver.clear();
 }
 
-template <typename dataType>
 dataType BottleneckDistance::buildMappings(
   const std::vector<matchingTuple> &inputMatchings,
   const bool transposeGlobal,
@@ -464,3 +460,5 @@ dataType BottleneckDistance::buildMappings(
 
   return addedPersistence;
 }
+
+} // namespace ttk
