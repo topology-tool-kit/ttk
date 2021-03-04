@@ -3181,9 +3181,9 @@ namespace ttk {
     std::array<int, 3> gridDimensions_;
 
     std::vector<bool> boundaryEdges_, boundaryTriangles_, boundaryVertices_;
-    std::vector<std::array<SimplexId, 6>> cellEdgeList_;
+    std::vector<std::array<SimplexId, 6>> tetraEdgeList_;
     std::vector<std::vector<SimplexId>> cellNeighborList_;
-    std::vector<std::array<SimplexId, 4>> cellTriangleList_;
+    std::vector<std::array<SimplexId, 4>> tetraTriangleList_;
     std::vector<std::vector<SimplexId>> edgeLinkList_;
     std::vector<std::array<SimplexId, 2>> edgeList_;
     std::vector<std::vector<SimplexId>> edgeStarList_;

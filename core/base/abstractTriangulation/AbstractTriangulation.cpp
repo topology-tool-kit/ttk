@@ -40,9 +40,9 @@ int AbstractTriangulation::clear() {
   boundaryTriangles_.clear();
   boundaryVertices_.clear();
 
-  cellEdgeList_.clear();
+  tetraEdgeList_.clear();
   cellNeighborList_.clear();
-  cellTriangleList_.clear();
+  tetraTriangleList_.clear();
 
   edgeLinkList_.clear();
   edgeList_.clear();
@@ -95,12 +95,12 @@ size_t AbstractTriangulation::footprint() const {
 
   size += tableFootprint<bool>(boundaryVertices_, "boundaryVertices_");
 
-  size += tableFootprint(cellEdgeList_, "cellEdgeList_");
+  size += tableFootprint(tetraEdgeList_, "tetraEdgeList_");
 
   size
     += tableTableFootprint<SimplexId>(cellNeighborList_, "cellNeighborList_");
 
-  size += tableFootprint(cellTriangleList_, "cellTriangleList_");
+  size += tableFootprint(tetraTriangleList_, "tetraTriangleList_");
 
   size += tableTableFootprint<SimplexId>(edgeLinkList_, "edgeLinkList_");
 
