@@ -463,8 +463,6 @@ int ttkBottleneckDistance::getMatchingMesh(
 }
 
 int ttkBottleneckDistance::doBenchmark() {
-  using dataType = double;
-
   std::vector<diagramTuple> CTDiagram1;
   std::vector<diagramTuple> CTDiagram2;
 
@@ -508,8 +506,6 @@ int ttkBottleneckDistance::doBenchmark() {
 int ttkBottleneckDistance::RequestData(vtkInformation * /*request*/,
                                        vtkInformationVector **inputVector,
                                        vtkInformationVector *outputVector) {
-  using dataType = double;
-
   int benchmarkSize = BenchmarkSize;
   bool benchmark = benchmarkSize > 0;
   if(benchmark) {
