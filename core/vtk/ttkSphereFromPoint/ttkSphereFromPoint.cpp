@@ -22,8 +22,8 @@ ttkSphereFromPoint::ttkSphereFromPoint() {
   this->SetNumberOfOutputPorts(1);
   setDebugMsgPrefix("SphereFromPoint");
 
-  vtkWarningMacro("SphereFromPoint is now deprecated. Please use "
-                  "IcospheresFromPoint instead.");
+  vtkWarningMacro("`TTK SphereFromPoint' is now deprecated. Please use "
+                  "`TTK IcospheresFromPoint' instead.");
 }
 
 ttkSphereFromPoint::~ttkSphereFromPoint() {
