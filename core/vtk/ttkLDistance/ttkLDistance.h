@@ -59,6 +59,6 @@ protected:
                   vtkInformationVector *outputVector) override;
 
 private:
-  std::string DistanceType{2};
+  std::string DistanceType{"2"};
   std::string DistanceFieldName{"L2-distance"};
 };
