@@ -42,19 +42,19 @@ int ttkLDistance::RequestData(vtkInformation *request,
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!input) {
     this->printErr("Input pointer is NULL.");
-    return -1;
+    return 0;
   }
   if(!input->GetNumberOfPoints()) {
     this->printErr("Input has no point.");
-    return -1;
+    return 0;
   }
   if(!input->GetPointData()) {
     this->printErr("Input has no point data.");
-    return -1;
+    return 0;
   }
   if(!output) {
     this->printErr("Output pointer is NULL.");
-    return -1;
+    return 0;
   }
 #endif
 
@@ -68,7 +68,7 @@ int ttkLDistance::RequestData(vtkInformation *request,
   if(!inputScalarField1 || !inputScalarField2
      || inputScalarField1->GetDataType() != inputScalarField2->GetDataType()) {
     this->printErr("Input scalar fields are NULL or have different types.");
-    return -1;
+    return 0;
   }
 #endif
 
