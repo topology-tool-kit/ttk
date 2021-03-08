@@ -364,7 +364,7 @@ jobs:
   steps:
   - script: |
       brew install --cask xquartz
-      brew install wget libomp mesa glew boost ccache qt ninja python
+      brew install wget libomp mesa glew boost ccache ninja python
     displayName: 'Install dependencies'
 
   - script: |
@@ -390,7 +390,7 @@ jobs:
                      -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
                      -DCMAKE_INSTALL_PREFIX=$(Build.ArtifactStagingDirectory)/pv-install
                      -DCMAKE_BUILD_TYPE=Release
-                     -DQt5_DIR=/usr/local/opt/qt/lib/cmake/Qt5
+                     -DPARAVIEW_USE_QT=OFF
                      -GNinja'
     displayName: 'Configure ParaView'
 
@@ -406,7 +406,6 @@ jobs:
                      -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
                      -DCMAKE_INSTALL_PREFIX=$(Build.ArtifactStagingDirectory)/ttk-install
                      -DCMAKE_BUILD_TYPE=Release
-                     -DQt5_DIR=/usr/local/opt/qt/lib/cmake/Qt5
                      -DCMAKE_PREFIX_PATH=$(Build.ArtifactStagingDirectory)/pv-install/lib/cmake
                      -DTTK_BUILD_STANDALONE_APPS=ON
                      -DTTK_ENABLE_CPU_OPTIMIZATION=OFF
@@ -443,7 +442,6 @@ jobs:
       workingDirectory: 'build-example-vtk/'
       cmakeArgs: '../examples/vtk-c++ $(CMakeArgs)
                   -DCMAKE_BUILD_TYPE=$(BuildType)
-                  -DQt5_DIR=/usr/local/opt/qt/lib/cmake/Qt5
                   -DCMAKE_PREFIX_PATH=$(Build.ArtifactStagingDirectory)/ttk-install/lib/cmake;$(Build.ArtifactStagingDirectory)/pv-install/lib/cmake'
     displayName: 'Configure TTKVTK Example'
 
