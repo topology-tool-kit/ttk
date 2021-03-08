@@ -122,7 +122,7 @@ int ttkBottleneckDistance::generatePersistenceDiagram(
 
   sort(diagram.begin(), diagram.end(),
        [](const diagramTuple &a, const diagramTuple &b) -> bool {
-         return std::get<6>(a) < std::get<6>(b);
+         return a.birthPoint.val < b.birthPoint.val;
        });
 
   return 1;
@@ -249,7 +249,7 @@ int ttkBottleneckDistance::getPersistenceDiagram(
 
   sort(diagram.begin(), diagram.end(),
        [](const diagramTuple &a, const diagramTuple &b) -> bool {
-         return std::get<6>(a) < std::get<6>(b);
+         return a.birthPoint.val < b.birthPoint.val;
        });
 
   return 1;
@@ -388,12 +388,12 @@ int ttkBottleneckDistance::getMatchingMesh(
 
       bool linkMiddles = false;
       if(linkMiddles) {
-        x1 = (std::get<7>(tuple1) + std::get<11>(tuple1)) / 2;
-        y1 = (std::get<8>(tuple1) + std::get<12>(tuple1)) / 2;
-        z1 = (std::get<9>(tuple1) + std::get<13>(tuple1)) / 2;
+        x1 = (tuple1.birthPoint.x + tuple1.deathPoint.x) / 2;
+        y1 = (tuple1.birthPoint.y + tuple1.deathPoint.y) / 2;
+        z1 = (tuple1.birthPoint.z + tuple1.deathPoint.z) / 2;
       } else {
-        BNodeType t11 = std::get<1>(tuple1);
-        BNodeType t12 = std::get<3>(tuple1);
+        BNodeType t11 = tuple1.birthType;
+        BNodeType t12 = tuple1.deathType;
         bool t11Max = t11 == BLocalMin || t11 == BLocalMax;
         bool t12Max = t12 == BLocalMin || t12 == BLocalMax;
         if(is2D) { // Quickchage for highlighting 2D matching
@@ -402,27 +402,27 @@ int ttkBottleneckDistance::getMatchingMesh(
             t12Max = t12 != BLocalMin;
           }
         }
-        x1 = t12Max   ? std::get<11>(tuple1)
-             : t11Max ? std::get<7>(tuple1)
-                      : (std::get<7>(tuple1) + std::get<11>(tuple1)) / 2;
-        y1 = t12Max   ? std::get<12>(tuple1)
-             : t11Max ? std::get<8>(tuple1)
-                      : (std::get<8>(tuple1) + std::get<12>(tuple1)) / 2;
-        z1 = t12Max   ? std::get<13>(tuple1)
-             : t11Max ? std::get<9>(tuple1)
-                      : (std::get<9>(tuple1) + std::get<13>(tuple1)) / 2;
+        x1 = t12Max   ? tuple1.deathPoint.x
+             : t11Max ? tuple1.birthPoint.x
+                      : (tuple1.birthPoint.x + tuple1.deathPoint.x) / 2;
+        y1 = t12Max   ? tuple1.deathPoint.y
+             : t11Max ? tuple1.birthPoint.y
+                      : (tuple1.birthPoint.y + tuple1.deathPoint.y) / 2;
+        z1 = t12Max   ? tuple1.deathPoint.z
+             : t11Max ? tuple1.birthPoint.z
+                      : (tuple1.birthPoint.z + tuple1.deathPoint.z) / 2;
       }
       points->InsertNextPoint(x1, y1, z1);
 
       if(linkMiddles) {
-        x2 = (std::get<7>(tuple2) + std::get<11>(tuple2)) / 2;
-        y2 = (std::get<8>(tuple2) + std::get<12>(tuple2)) / 2;
-        z2 = (std::get<9>(tuple2) + std::get<13>(tuple2)) / 2;
+        x2 = (tuple2.birthPoint.x + tuple2.deathPoint.x) / 2;
+        y2 = (tuple2.birthPoint.y + tuple2.deathPoint.y) / 2;
+        z2 = (tuple2.birthPoint.z + tuple2.deathPoint.z) / 2;
         if(useGeometricSpacing)
           z2 += spacing;
       } else {
-        BNodeType t21 = std::get<1>(tuple2);
-        BNodeType t22 = std::get<3>(tuple2);
+        BNodeType t21 = tuple2.birthType;
+        BNodeType t22 = tuple2.deathType;
         bool t21Max = t21 == BLocalMin || t21 == BLocalMax;
         bool t22Max = t22 == BLocalMin || t22 == BLocalMax;
         if(is2D) { // Quickchage for highlighting 2D matching
@@ -431,15 +431,15 @@ int ttkBottleneckDistance::getMatchingMesh(
             t22Max = t22 != BLocalMin;
           }
         }
-        x2 = t22Max   ? std::get<11>(tuple2)
-             : t21Max ? std::get<7>(tuple2)
-                      : (std::get<7>(tuple2) + std::get<11>(tuple2)) / 2;
-        y2 = t22Max   ? std::get<12>(tuple2)
-             : t21Max ? std::get<8>(tuple2)
-                      : (std::get<8>(tuple2) + std::get<12>(tuple2)) / 2;
-        z2 = t22Max   ? std::get<13>(tuple2)
-             : t21Max ? std::get<9>(tuple2)
-                      : (std::get<9>(tuple2) + std::get<13>(tuple2)) / 2;
+        x2 = t22Max   ? tuple2.deathPoint.x
+             : t21Max ? tuple2.birthPoint.x
+                      : (tuple2.birthPoint.x + tuple2.deathPoint.x) / 2;
+        y2 = t22Max   ? tuple2.deathPoint.y
+             : t21Max ? tuple2.birthPoint.y
+                      : (tuple2.birthPoint.y + tuple2.deathPoint.y) / 2;
+        z2 = t22Max   ? tuple2.deathPoint.z
+             : t21Max ? tuple2.birthPoint.z
+                      : (tuple2.birthPoint.z + tuple2.deathPoint.z) / 2;
       }
       points->InsertNextPoint(x2, y2, z2);
 

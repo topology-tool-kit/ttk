@@ -261,8 +261,8 @@ int ttkTrackingFromPersistenceDiagrams::buildMesh(
 
       double x1, y1, z1, x2, y2, z2;
 
-      BNodeType point1Type1 = std::get<1>(tuple1);
-      BNodeType point1Type2 = std::get<3>(tuple1);
+      BNodeType point1Type1 = tuple1.birthType;
+      BNodeType point1Type2 = tuple1.deathType;
       BNodeType point1Type
         = point1Type1 == BLocalMax || point1Type2 == BLocalMax   ? BLocalMax
           : point1Type1 == BLocalMin || point1Type2 == BLocalMin ? BLocalMin
@@ -274,21 +274,21 @@ int ttkTrackingFromPersistenceDiagrams::buildMesh(
       bool t12Max = point1Type2 == BLocalMax;
       bool bothEx1 = (t11Min && t12Max) || (t11Max && t12Min);
       if(bothEx1) {
-        x1 = t12Max ? std::get<11>(tuple1) : std::get<7>(tuple1);
-        y1 = t12Max ? std::get<12>(tuple1) : std::get<8>(tuple1);
-        z1 = t12Max ? std::get<13>(tuple1) : std::get<9>(tuple1);
+        x1 = t12Max ? tuple1.deathPoint.x : tuple1.birthPoint.x;
+        y1 = t12Max ? tuple1.deathPoint.y : tuple1.birthPoint.y;
+        z1 = t12Max ? tuple1.deathPoint.z : tuple1.birthPoint.z;
         if(useGeometricSpacing)
           z1 += spacing * (numStart + c);
       } else {
-        x1 = t12Max   ? std::get<11>(tuple1)
-             : t11Min ? std::get<7>(tuple1)
-                      : (std::get<7>(tuple1) + std::get<11>(tuple1)) / 2;
-        y1 = t12Max   ? std::get<12>(tuple1)
-             : t11Min ? std::get<8>(tuple1)
-                      : (std::get<8>(tuple1) + std::get<12>(tuple1)) / 2;
-        z1 = t12Max   ? std::get<13>(tuple1)
-             : t11Min ? std::get<9>(tuple1)
-                      : (std::get<9>(tuple1) + std::get<13>(tuple1)) / 2;
+        x1 = t12Max   ? tuple1.deathPoint.x
+             : t11Min ? tuple1.birthPoint.x
+                      : (tuple1.birthPoint.x + tuple1.deathPoint.x) / 2;
+        y1 = t12Max   ? tuple1.deathPoint.y
+             : t11Min ? tuple1.birthPoint.y
+                      : (tuple1.birthPoint.y + tuple1.deathPoint.y) / 2;
+        z1 = t12Max   ? tuple1.deathPoint.z
+             : t11Min ? tuple1.birthPoint.z
+                      : (tuple1.birthPoint.z + tuple1.deathPoint.z) / 2;
         if(useGeometricSpacing)
           z1 += spacing * (numStart + c);
       }
@@ -322,8 +322,8 @@ int ttkTrackingFromPersistenceDiagrams::buildMesh(
               = inputPersistenceDiagrams[numEnd2];
             diagramTuple tupleN = diagramRematch.at((unsigned long)nn);
 
-            point1Type1 = std::get<1>(tupleN);
-            point1Type2 = std::get<3>(tupleN);
+            point1Type1 = tupleN.birthType;
+            point1Type2 = tupleN.deathType;
             point1Type
               = point1Type1 == BLocalMax || point1Type2 == BLocalMax ? BLocalMax
                 : point1Type1 == BLocalMin || point1Type2 == BLocalMin
@@ -338,21 +338,21 @@ int ttkTrackingFromPersistenceDiagrams::buildMesh(
             // std::cout << "xyz " << x1 << ", " << y1 << ", " << z1 <<
             // std::endl;
             if(bothEx1) {
-              x1 = t12Max ? std::get<11>(tupleN) : std::get<7>(tupleN);
-              y1 = t12Max ? std::get<12>(tupleN) : std::get<8>(tupleN);
-              z1 = t12Max ? std::get<13>(tupleN) : std::get<9>(tupleN);
+              x1 = t12Max ? tupleN.deathPoint.x : tupleN.birthPoint.x;
+              y1 = t12Max ? tupleN.deathPoint.y : tupleN.birthPoint.y;
+              z1 = t12Max ? tupleN.deathPoint.z : tupleN.birthPoint.z;
               if(useGeometricSpacing)
                 z1 += spacing * (numStart + c);
             } else {
-              x1 = t12Max   ? std::get<11>(tupleN)
-                   : t11Min ? std::get<7>(tupleN)
-                            : (std::get<7>(tupleN) + std::get<11>(tupleN)) / 2;
-              y1 = t12Max   ? std::get<12>(tupleN)
-                   : t11Min ? std::get<8>(tupleN)
-                            : (std::get<8>(tupleN) + std::get<12>(tupleN)) / 2;
-              z1 = t12Max   ? std::get<13>(tupleN)
-                   : t11Min ? std::get<9>(tupleN)
-                            : (std::get<9>(tupleN) + std::get<13>(tupleN)) / 2;
+              x1 = t12Max   ? tupleN.deathPoint.x
+                   : t11Min ? tupleN.birthPoint.x
+                            : (tupleN.birthPoint.x + tupleN.deathPoint.x) / 2;
+              y1 = t12Max   ? tupleN.deathPoint.y
+                   : t11Min ? tupleN.birthPoint.y
+                            : (tupleN.birthPoint.y + tupleN.deathPoint.y) / 2;
+              z1 = t12Max   ? tupleN.deathPoint.z
+                   : t11Min ? tupleN.birthPoint.z
+                            : (tupleN.birthPoint.z + tupleN.deathPoint.z) / 2;
               if(useGeometricSpacing)
                 z1 += spacing * (numStart + c);
             }
@@ -368,8 +368,8 @@ int ttkTrackingFromPersistenceDiagrams::buildMesh(
       timeScalars->InsertTuple1(ids[0], (double)numStart + c);
       componentIds->InsertTuple1(ids[0], cid);
 
-      BNodeType point2Type1 = std::get<1>(tuple2);
-      BNodeType point2Type2 = std::get<3>(tuple2);
+      BNodeType point2Type1 = tuple2.birthType;
+      BNodeType point2Type2 = tuple2.deathType;
       BNodeType point2Type
         = point2Type1 == BLocalMax || point2Type2 == BLocalMax   ? BLocalMax
           : point2Type1 == BLocalMin || point2Type2 == BLocalMin ? BLocalMin
@@ -379,24 +379,24 @@ int ttkTrackingFromPersistenceDiagrams::buildMesh(
       bool t22Ex = point2Type2 == BLocalMin || point2Type2 == BLocalMax;
       bool bothEx2 = t21Ex && t22Ex;
       if(bothEx2) {
-        x2 = point2Type2 == BLocalMax ? std::get<11>(tuple2)
-                                      : std::get<7>(tuple2);
-        y2 = point2Type2 == BLocalMax ? std::get<12>(tuple2)
-                                      : std::get<8>(tuple2);
-        z2 = point2Type2 == BLocalMax ? std::get<13>(tuple2)
-                                      : std::get<9>(tuple2);
+        x2 = point2Type2 == BLocalMax ? tuple2.deathPoint.x
+                                      : tuple2.birthPoint.x;
+        y2 = point2Type2 == BLocalMax ? tuple2.deathPoint.y
+                                      : tuple2.birthPoint.y;
+        z2 = point2Type2 == BLocalMax ? tuple2.deathPoint.z
+                                      : tuple2.birthPoint.z;
         if(useGeometricSpacing)
           z2 += spacing * (numStart + c + 1);
       } else {
-        x2 = t22Ex   ? std::get<11>(tuple2)
-             : t21Ex ? std::get<7>(tuple2)
-                     : (std::get<7>(tuple2) + std::get<11>(tuple2)) / 2;
-        y2 = t22Ex   ? std::get<12>(tuple2)
-             : t21Ex ? std::get<8>(tuple2)
-                     : (std::get<8>(tuple2) + std::get<12>(tuple2)) / 2;
-        z2 = t22Ex   ? std::get<13>(tuple2)
-             : t21Ex ? std::get<9>(tuple2)
-                     : (std::get<9>(tuple2) + std::get<13>(tuple2)) / 2;
+        x2 = t22Ex   ? tuple2.deathPoint.x
+             : t21Ex ? tuple2.birthPoint.x
+                     : (tuple2.birthPoint.x + tuple2.deathPoint.x) / 2;
+        y2 = t22Ex   ? tuple2.deathPoint.y
+             : t21Ex ? tuple2.birthPoint.y
+                     : (tuple2.birthPoint.y + tuple2.deathPoint.y) / 2;
+        z2 = t22Ex   ? tuple2.deathPoint.z
+             : t21Ex ? tuple2.birthPoint.z
+                     : (tuple2.birthPoint.z + tuple2.deathPoint.z) / 2;
         if(useGeometricSpacing)
           z2 += spacing * (numStart + c + 1);
       }
@@ -412,7 +412,7 @@ int ttkTrackingFromPersistenceDiagrams::buildMesh(
 
       persistenceScalars->InsertTuple1(currentVertex, cost);
       valueScalars->InsertTuple1(
-        currentVertex, (std::get<10>(tuple1) + std::get<10>(tuple2)) / 2);
+        currentVertex, (tuple1.deathPoint.val + tuple2.deathPoint.val) / 2);
       matchingIdScalars->InsertTuple1(currentVertex, currentVertex);
       lengthScalars->InsertTuple1(currentVertex, chainLength);
 
@@ -544,7 +544,7 @@ int ttkTrackingFromPersistenceDiagrams::getPersistenceDiagram(
 
   sort(diagram.begin(), diagram.end(),
        [](const diagramTuple &a, const diagramTuple &b) -> bool {
-         return std::get<6>(a) < std::get<6>(b);
+         return a.birthPoint.val < b.birthPoint.val;
        });
 
   return 0;

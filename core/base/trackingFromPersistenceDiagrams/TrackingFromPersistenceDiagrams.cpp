@@ -212,8 +212,8 @@ int ttk::TrackingFromPersistenceDiagrams::performPostProcess(
 
     double x1, y1, z1, x2, y2, z2;
 
-    BNodeType point1Type1 = std::get<1>(tuple1);
-    BNodeType point1Type2 = std::get<3>(tuple1);
+    BNodeType point1Type1 = tuple1.birthType;
+    BNodeType point1Type2 = tuple1.deathType;
     bool t11Min = point1Type1 == BLocalMin;
     bool t11Max = point1Type1 == BLocalMax;
     bool t12Min = point1Type2 == BLocalMin;
@@ -222,12 +222,12 @@ int ttk::TrackingFromPersistenceDiagrams::performPostProcess(
     bool t1Max = t11Max || t12Max;
     bool t1Min = !t1Max && (t11Min || t12Min);
 
-    x1 = t1Max ? std::get<11>(tuple1) : t1Min ? std::get<7>(tuple1) : 0;
-    y1 = t1Max ? std::get<12>(tuple1) : t1Min ? std::get<8>(tuple1) : 0;
-    z1 = t1Max ? std::get<13>(tuple1) : t1Min ? std::get<9>(tuple1) : 0;
+    x1 = t1Max ? tuple1.deathPoint.x : t1Min ? tuple1.birthPoint.x : 0;
+    y1 = t1Max ? tuple1.deathPoint.y : t1Min ? tuple1.birthPoint.y : 0;
+    z1 = t1Max ? tuple1.deathPoint.z : t1Min ? tuple1.birthPoint.z : 0;
 
-    BNodeType point2Type1 = std::get<1>(tuple2);
-    BNodeType point2Type2 = std::get<3>(tuple2);
+    BNodeType point2Type1 = tuple2.birthType;
+    BNodeType point2Type2 = tuple2.deathType;
     bool t21Min = point2Type1 == BLocalMin;
     bool t21Max = point2Type1 == BLocalMax;
     bool t22Min = point2Type2 == BLocalMin;
@@ -237,9 +237,9 @@ int ttk::TrackingFromPersistenceDiagrams::performPostProcess(
     bool t2Min = !t2Max && (t21Min || t22Min);
 
     // if (bothEx2) {
-    x2 = t2Max ? std::get<11>(tuple2) : t2Min ? std::get<7>(tuple2) : 0;
-    y2 = t2Max ? std::get<12>(tuple2) : t2Min ? std::get<8>(tuple2) : 0;
-    z2 = t2Max ? std::get<13>(tuple2) : t2Min ? std::get<9>(tuple2) : 0;
+    x2 = t2Max ? tuple2.deathPoint.x : t2Min ? tuple2.birthPoint.x : 0;
+    y2 = t2Max ? tuple2.deathPoint.y : t2Min ? tuple2.birthPoint.y : 0;
+    z2 = t2Max ? tuple2.deathPoint.z : t2Min ? tuple2.birthPoint.z : 0;
     // }
     // if (!bothEx1 && !bothEx2)
     //  continue;
@@ -270,8 +270,8 @@ int ttk::TrackingFromPersistenceDiagrams::performPostProcess(
         std::vector<diagramTuple> &diagramM = allDiagrams[startM + c];
         diagramTuple &tuple3 = diagramM[n3];
         double x3, y3, z3;
-        BNodeType point3Type1 = std::get<1>(tuple3);
-        BNodeType point3Type2 = std::get<3>(tuple3);
+        BNodeType point3Type1 = tuple3.birthType;
+        BNodeType point3Type2 = tuple3.deathType;
         bool t31Min = point3Type1 == BLocalMin;
         bool t31Max = point3Type1 == BLocalMax;
         bool t32Min = point3Type2 == BLocalMin;
@@ -282,9 +282,9 @@ int ttk::TrackingFromPersistenceDiagrams::performPostProcess(
         bool t3Max = t31Max || t32Max;
         bool t3Min = !t3Max && (t31Min || t32Min);
 
-        x3 = t3Max ? std::get<11>(tuple3) : t3Min ? std::get<7>(tuple3) : 0;
-        y3 = t3Max ? std::get<12>(tuple3) : t3Min ? std::get<8>(tuple3) : 0;
-        z3 = t3Max ? std::get<13>(tuple3) : t3Min ? std::get<9>(tuple3) : 0;
+        x3 = t3Max ? tuple3.deathPoint.x : t3Min ? tuple3.birthPoint.x : 0;
+        y3 = t3Max ? tuple3.deathPoint.y : t3Min ? tuple3.birthPoint.y : 0;
+        z3 = t3Max ? tuple3.deathPoint.z : t3Min ? tuple3.birthPoint.z : 0;
 
         double dist = 0;
         bool hasMatched = false;

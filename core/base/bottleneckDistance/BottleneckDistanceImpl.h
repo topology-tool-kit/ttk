@@ -102,8 +102,8 @@ double BottleneckDistance::computeGeometricalRange(
 
   for(int i = 0; i < d1Size; ++i) {
     const diagramTuple &t = CTDiagram1[i];
-    float xa = std::get<7>(t), ya = std::get<8>(t), za = std::get<9>(t);
-    float xb = std::get<11>(t), yb = std::get<12>(t), zb = std::get<13>(t);
+    float xa = t.birthPoint.x, ya = t.birthPoint.y, za = t.birthPoint.z;
+    float xb = t.deathPoint.x, yb = t.deathPoint.y, zb = t.deathPoint.z;
     minX1 = std::min(std::min(minX1, xa), xb);
     minY1 = std::min(std::min(minY1, ya), yb);
     minZ1 = std::min(std::min(minZ1, za), zb);
@@ -114,8 +114,8 @@ double BottleneckDistance::computeGeometricalRange(
 
   for(int i = 0; i < d2Size; ++i) {
     const diagramTuple &t = CTDiagram2[i];
-    float xa = std::get<7>(t), ya = std::get<8>(t), za = std::get<9>(t);
-    float xb = std::get<11>(t), yb = std::get<12>(t), zb = std::get<13>(t);
+    float xa = t.birthPoint.x, ya = t.birthPoint.y, za = t.birthPoint.z;
+    float xb = t.deathPoint.x, yb = t.deathPoint.y, zb = t.deathPoint.z;
     minX2 = std::min(std::min(minX2, xa), xb);
     minY2 = std::min(std::min(minY2, ya), yb);
     minZ2 = std::min(std::min(minZ2, za), zb);
@@ -146,12 +146,12 @@ double BottleneckDistance::computeMinimumRelevantPersistence(
   std::vector<dataType> toSort;
   for(int i = 0; i < d1Size; ++i) {
     const diagramTuple &t = CTDiagram1[i];
-    dataType persistence = abs<dataType>(std::get<4>(t));
+    dataType persistence = abs<dataType>(t.persistence);
     toSort.push_back(persistence);
   }
   for(int i = 0; i < d2Size; ++i) {
     const diagramTuple &t = CTDiagram2[i];
-    dataType persistence = abs<dataType>(std::get<4>(t));
+    dataType persistence = abs<dataType>(t.persistence);
     toSort.push_back(persistence);
   }
   sort(toSort.begin(), toSort.end());
@@ -185,9 +185,9 @@ void BottleneckDistance::computeMinMaxSaddleNumberAndMapping(
   const dataType zeroThresh) {
   for(int i = 0; i < dSize; ++i) {
     const diagramTuple &t = CTDiagram[i];
-    BNodeType nt1 = std::get<1>(t);
-    BNodeType nt2 = std::get<3>(t);
-    dataType dt = std::get<4>(t);
+    BNodeType nt1 = t.birthType;
+    BNodeType nt2 = t.deathType;
+    dataType dt = t.persistence;
     if(abs<dataType>(dt) < zeroThresh)
       continue;
 
@@ -234,11 +234,11 @@ void BottleneckDistance::buildCostMatrices(
 
   for(int i = 0; i < d1Size; ++i) {
     const diagramTuple &t1 = CTDiagram1[i];
-    if(abs<dataType>(std::get<4>(t1)) < zeroThresh)
+    if(abs<dataType>(t1.persistence) < zeroThresh)
       continue;
 
-    BNodeType t11 = std::get<1>(t1);
-    BNodeType t13 = std::get<3>(t1);
+    BNodeType t11 = t1.birthType;
+    BNodeType t13 = t1.deathType;
     bool isMin1 = (t11 == BLocalMin || t13 == BLocalMin);
     bool isMax1 = (t11 == BLocalMax || t13 == BLocalMax);
     bool isSad1 = (t11 == BSaddle1 && t13 == BSaddle2)
@@ -254,11 +254,11 @@ void BottleneckDistance::buildCostMatrices(
 
     for(int j = 0; j < d2Size; ++j) {
       const diagramTuple &t2 = CTDiagram2[j];
-      if(abs<dataType>(std::get<4>(t2)) < zeroThresh)
+      if(abs<dataType>(t2.persistence) < zeroThresh)
         continue;
 
-      BNodeType t21 = std::get<1>(t2);
-      BNodeType t23 = std::get<3>(t2);
+      BNodeType t21 = t2.birthType;
+      BNodeType t23 = t2.deathType;
       bool isMin2 = (t21 == BLocalMin || t23 == BLocalMin);
       bool isMax2 = (t21 == BLocalMax || t23 == BLocalMax);
       bool isSad2 = (t21 == BSaddle1 && t23 == BSaddle2)
@@ -330,11 +330,11 @@ void BottleneckDistance::buildCostMatrices(
   // Last row: match remaining J components with diagonal.
   for(int j = 0; j < d2Size; ++j) {
     const diagramTuple &t2 = CTDiagram2[j];
-    if(abs<dataType>(std::get<4>(t2)) < zeroThresh)
+    if(abs<dataType>(t2.persistence) < zeroThresh)
       continue;
 
-    BNodeType t21 = std::get<1>(t2);
-    BNodeType t23 = std::get<3>(t2);
+    BNodeType t21 = t2.birthType;
+    BNodeType t23 = t2.deathType;
     bool isMin2 = (t21 == BLocalMin || t23 == BLocalMin);
     bool isMax2 = (t21 == BLocalMax || t23 == BLocalMax);
     bool isSad2 = (t21 == BSaddle1 && t23 == BSaddle2)

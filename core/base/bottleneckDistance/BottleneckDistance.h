@@ -21,8 +21,29 @@
 #include <string>
 #include <tuple>
 
+#include <PersistenceDiagram.h>
+
 typedef double dataType;
-typedef  std::tuple<int, ttk::CriticalType, int, ttk::CriticalType, dataType, int, dataType, float, float, float, dataType, float, float, float> diagramTuple;
+typedef std::tuple<int, ttk::CriticalType, int, ttk::CriticalType, dataType, int, dataType, float, float, float, dataType, float, float, float> diagramTupleOld;
+
+namespace ttk {
+  struct DecoratedDiagramTuple : public ttk::PersistencePair
+  {
+    DecoratedDiagramTuple(diagramTupleOld t) :
+      ttk::PersistencePair(std::get<0>(t), std::get<1>(t), std::get<2>(t), std::get<3>(t), std::get<4>(t), std::get<5>(t)), birthPoint(std::get<6>(t),std::get<7>(t),std::get<8>(t), std::get<9>(t)), deathPoint(std::get<10>(t),std::get<11>(t),std::get<12>(t), std::get<13>(t))
+    {}
+    DecoratedDiagramTuple() : DecoratedDiagramTuple(diagramTupleOld()) {} 
+    struct Coord { float x, y, z; };
+    struct DataPoint : public Coord {
+      DataPoint(dataType _v, float _x, float _y, float _z) : Coord({_x,_y,_z}),val(_v) {}
+      dataType val;
+    };
+    DataPoint birthPoint, deathPoint;
+  };
+  
+} // namespace ttk
+
+using diagramTuple = ttk::DecoratedDiagramTuple;
 
 namespace ttk {
 
@@ -202,3 +223,4 @@ namespace ttk {
   };
 
 } // namespace ttk
+
