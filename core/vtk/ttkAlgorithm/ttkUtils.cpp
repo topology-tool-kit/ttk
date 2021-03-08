@@ -160,27 +160,23 @@ vtkSmartPointer<vtkAbstractArray> ttkUtils::csvToVtkArray(std::string line) {
 
   // Check if all elements are numbers
   bool isNumeric = true;
-  {
-    for(size_t i = 0; i < nValues; i++) {
-      if(valuesAsString[i].size() > 0 && !isdigit(valuesAsString[i][0])) {
-        isNumeric = false;
-        break;
-      }
-    }
+
+  std::vector<double> valuesAsDouble(nValues);
+  try {
+    for(size_t i = 0; i < nValues; i++)
+      valuesAsDouble[i] = std::stod(valuesAsString[i]);
+  } catch(const std::invalid_argument &) {
+    isNumeric = false;
+  } catch(const std::out_of_range &) {
+    isNumeric = false;
   }
 
   if(isNumeric) {
     auto array = vtkSmartPointer<vtkDoubleArray>::New();
     array->SetName(arrayName.data());
-    array->SetNumberOfComponents(1);
-    array->SetNumberOfTuples(nValues);
-    auto arrayData = reinterpret_cast<double *>(GetVoidPointer(array));
-    // try {
+    array->SetNumberOfValues(nValues);
     for(size_t i = 0; i < nValues; i++)
-      arrayData[i] = std::stod(valuesAsString[i]);
-    // } catch(std::invalid_argument &e) {
-    //   // return nullptr;
-    // }
+      array->SetValue(i, valuesAsDouble[i]);
     return array;
   } else {
     auto array = vtkSmartPointer<vtkStringArray>::New();
