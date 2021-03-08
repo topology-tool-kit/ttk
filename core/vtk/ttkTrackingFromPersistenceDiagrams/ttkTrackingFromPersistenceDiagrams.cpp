@@ -1,3 +1,4 @@
+#include "BottleneckDistance.h"
 #include <ttkTrackingFromPersistenceDiagrams.h>
 
 vtkStandardNewMacro(ttkTrackingFromPersistenceDiagrams)
@@ -259,154 +260,53 @@ int ttkTrackingFromPersistenceDiagrams::buildMesh(
       diagramTuple tuple1 = diagram1[n1];
       diagramTuple tuple2 = diagram2[n2];
 
-      double x1, y1, z1, x2, y2, z2;
+      ttk::DecoratedDiagramTuple::DataPoint startPoint, endPoint;
+      auto barycenter = [](ttk::DecoratedDiagramTuple::DataPoint a,
+                           ttk::DecoratedDiagramTuple::DataPoint b) {
+        return ttk::DecoratedDiagramTuple::DataPoint((a.val + b.val) / 2,
+          (a.x + b.x) / 2, (a.y + b.y) / 2, (a.z + b.z) / 2);
+      };
 
-      BNodeType point1Type1 = tuple1.birthType;
-      BNodeType point1Type2 = tuple1.deathType;
-      BNodeType point1Type
-        = point1Type1 == BLocalMax || point1Type2 == BLocalMax   ? BLocalMax
-          : point1Type1 == BLocalMin || point1Type2 == BLocalMin ? BLocalMin
-          : point1Type1 == BSaddle2 || point1Type2 == BSaddle2   ? BSaddle2
-                                                                 : BSaddle1;
-      bool t11Min = point1Type1 == BLocalMin;
-      bool t11Max = point1Type1 == BLocalMax;
-      bool t12Min = point1Type2 == BLocalMin;
-      bool t12Max = point1Type2 == BLocalMax;
-      bool bothEx1 = (t11Min && t12Max) || (t11Max && t12Min);
-      if(bothEx1) {
-        x1 = t12Max ? tuple1.deathPoint.x : tuple1.birthPoint.x;
-        y1 = t12Max ? tuple1.deathPoint.y : tuple1.birthPoint.y;
-        z1 = t12Max ? tuple1.deathPoint.z : tuple1.birthPoint.z;
+      auto extractRepresentingPoint = [&](diagramTuple tup) {
+        ttk::DecoratedDiagramTuple::DataPoint ret;
+        // I guess this should be simplified by assuming birthType < deathType
+        bool t1Min = tup.birthType == BLocalMin;
+        bool t1Max = tup.birthType == BLocalMax;
+        bool t2Min = tup.deathType == BLocalMin;
+        bool t2Max = tup.deathType == BLocalMax;
+        bool bothEx1 = (t1Min && t2Max) || (t1Max && t2Min);
+        if(bothEx1)
+          ret = t2Max ? tup.deathPoint : tup.birthPoint;
+        else
+          ret = t2Max ? tup.deathPoint
+              : t1Min ? tup.birthPoint
+                      : barycenter(tup.birthPoint, tup.deathPoint);
         if(useGeometricSpacing)
-          z1 += spacing * (numStart + c);
-      } else {
-        x1 = t12Max   ? tuple1.deathPoint.x
-             : t11Min ? tuple1.birthPoint.x
-                      : (tuple1.birthPoint.x + tuple1.deathPoint.x) / 2;
-        y1 = t12Max   ? tuple1.deathPoint.y
-             : t11Min ? tuple1.birthPoint.y
-                      : (tuple1.birthPoint.y + tuple1.deathPoint.y) / 2;
-        z1 = t12Max   ? tuple1.deathPoint.z
-             : t11Min ? tuple1.birthPoint.z
-                      : (tuple1.birthPoint.z + tuple1.deathPoint.z) / 2;
-        if(useGeometricSpacing)
-          z1 += spacing * (numStart + c);
-      }
+          ret.z += spacing * (numStart + c);
 
-      // Postproc component ids.
-      int cid = k;
-      bool hasMergedFirst = false;
-      // if(DoPostProc) {
-      if(0) {
-        std::set<int> &connected = trackingTupleToMerged[k];
-        if(!connected.empty()) {
-          int min = *(connected.begin());
-          trackingTuple ttt = trackings.at((unsigned long)min);
-          // int numStart2 = std::get<0>(ttt);
-          int numEnd2 = std::get<1>(ttt);
-          if((numEnd2 > 0 && numStart + c > numEnd2 + 1) && min < (int)k) {
-            // std::cout << "[ttkTrackingFromPersistenceDiagrams] Switched " <<
-            // k << " for " << min << std::endl;
-            cid = min;
-            hasMergedFirst = numStart + c <= numEnd2 + 3;
-          }
+        return ret;
+      };
+      auto typeOfTuple = [](diagramTuple tup) {
+        return tup.birthType == BLocalMax || tup.deathType == BLocalMax ? BLocalMax
+             : tup.birthType == BLocalMin || tup.deathType == BLocalMin ? BLocalMin
+             : tup.birthType == BSaddle2  || tup.deathType == BSaddle2  ? BSaddle2
+                                                                        : BSaddle1;
+      };
+      startPoint = extractRepresentingPoint(tuple1);
 
-          if(hasMergedFirst) {
-            // std::cout << "Has merged first " << std::endl;
-
-            // Replace former first end of the segment with previous ending
-            // segment.
-            std::vector<BIdVertex> chain3 = std::get<2>(ttt);
-            auto nn = (int)chain3.at(chain3.size() - 1);
-            std::vector<diagramTuple> &diagramRematch
-              = inputPersistenceDiagrams[numEnd2];
-            diagramTuple tupleN = diagramRematch.at((unsigned long)nn);
-
-            point1Type1 = tupleN.birthType;
-            point1Type2 = tupleN.deathType;
-            point1Type
-              = point1Type1 == BLocalMax || point1Type2 == BLocalMax ? BLocalMax
-                : point1Type1 == BLocalMin || point1Type2 == BLocalMin
-                  ? BLocalMin
-                : point1Type1 == BSaddle2 || point1Type2 == BSaddle2 ? BSaddle2
-                                                                     : BSaddle1;
-            t11Min = point1Type1 == BLocalMin;
-            t11Max = point1Type1 == BLocalMax;
-            t12Min = point1Type2 == BLocalMin;
-            t12Max = point1Type2 == BLocalMax;
-            bothEx1 = (t11Min && t12Max) || (t11Max && t12Min);
-            // std::cout << "xyz " << x1 << ", " << y1 << ", " << z1 <<
-            // std::endl;
-            if(bothEx1) {
-              x1 = t12Max ? tupleN.deathPoint.x : tupleN.birthPoint.x;
-              y1 = t12Max ? tupleN.deathPoint.y : tupleN.birthPoint.y;
-              z1 = t12Max ? tupleN.deathPoint.z : tupleN.birthPoint.z;
-              if(useGeometricSpacing)
-                z1 += spacing * (numStart + c);
-            } else {
-              x1 = t12Max   ? tupleN.deathPoint.x
-                   : t11Min ? tupleN.birthPoint.x
-                            : (tupleN.birthPoint.x + tupleN.deathPoint.x) / 2;
-              y1 = t12Max   ? tupleN.deathPoint.y
-                   : t11Min ? tupleN.birthPoint.y
-                            : (tupleN.birthPoint.y + tupleN.deathPoint.y) / 2;
-              z1 = t12Max   ? tupleN.deathPoint.z
-                   : t11Min ? tupleN.birthPoint.z
-                            : (tupleN.birthPoint.z + tupleN.deathPoint.z) / 2;
-              if(useGeometricSpacing)
-                z1 += spacing * (numStart + c);
-            }
-            // std::cout << "xyz " << x1 << ", " << y1 << ", " << z1 <<
-            // std::endl;
-          }
-        }
-      }
-
-      points->InsertNextPoint(x1, y1, z1);
+      points->InsertNextPoint(startPoint.x, startPoint.y, startPoint.z);
       ids[0] = 2 * currentVertex;
-      pointTypeScalars->InsertTuple1(ids[0], (double)(int)point1Type);
+      pointTypeScalars->InsertTuple1(ids[0], (double)(int)typeOfTuple(tuple1));
       timeScalars->InsertTuple1(ids[0], (double)numStart + c);
-      componentIds->InsertTuple1(ids[0], cid);
+      componentIds->InsertTuple1(ids[0], k);
 
-      BNodeType point2Type1 = tuple2.birthType;
-      BNodeType point2Type2 = tuple2.deathType;
-      BNodeType point2Type
-        = point2Type1 == BLocalMax || point2Type2 == BLocalMax   ? BLocalMax
-          : point2Type1 == BLocalMin || point2Type2 == BLocalMin ? BLocalMin
-          : point2Type1 == BSaddle2 || point2Type2 == BSaddle2   ? BSaddle2
-                                                                 : BSaddle1;
-      bool t21Ex = point2Type1 == BLocalMin || point2Type1 == BLocalMax;
-      bool t22Ex = point2Type2 == BLocalMin || point2Type2 == BLocalMax;
-      bool bothEx2 = t21Ex && t22Ex;
-      if(bothEx2) {
-        x2 = point2Type2 == BLocalMax ? tuple2.deathPoint.x
-                                      : tuple2.birthPoint.x;
-        y2 = point2Type2 == BLocalMax ? tuple2.deathPoint.y
-                                      : tuple2.birthPoint.y;
-        z2 = point2Type2 == BLocalMax ? tuple2.deathPoint.z
-                                      : tuple2.birthPoint.z;
-        if(useGeometricSpacing)
-          z2 += spacing * (numStart + c + 1);
-      } else {
-        x2 = t22Ex   ? tuple2.deathPoint.x
-             : t21Ex ? tuple2.birthPoint.x
-                     : (tuple2.birthPoint.x + tuple2.deathPoint.x) / 2;
-        y2 = t22Ex   ? tuple2.deathPoint.y
-             : t21Ex ? tuple2.birthPoint.y
-                     : (tuple2.birthPoint.y + tuple2.deathPoint.y) / 2;
-        z2 = t22Ex   ? tuple2.deathPoint.z
-             : t21Ex ? tuple2.birthPoint.z
-                     : (tuple2.birthPoint.z + tuple2.deathPoint.z) / 2;
-        if(useGeometricSpacing)
-          z2 += spacing * (numStart + c + 1);
-      }
-      points->InsertNextPoint(x2, y2, z2);
+      endPoint = extractRepresentingPoint(tuple2);
+
+      points->InsertNextPoint(endPoint.x, endPoint.y, endPoint.z);
       ids[1] = 2 * currentVertex + 1;
-      pointTypeScalars->InsertTuple1(ids[1], (double)(int)point2Type);
+      pointTypeScalars->InsertTuple1(ids[1], (double)(int)typeOfTuple(tuple2));
       timeScalars->InsertTuple1(ids[1], (double)numStart + c);
-
-      // Postproc component ids.
-      componentIds->InsertTuple1(ids[1], cid);
+      componentIds->InsertTuple1(ids[1], k);
 
       persistenceDiagram->InsertNextCell(VTK_LINE, 2, ids);
 

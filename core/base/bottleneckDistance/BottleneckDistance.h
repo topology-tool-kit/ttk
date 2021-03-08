@@ -36,6 +36,7 @@ namespace ttk {
     struct Coord { float x, y, z; };
     struct DataPoint : public Coord {
       DataPoint(dataType _v, float _x, float _y, float _z) : Coord({_x,_y,_z}),val(_v) {}
+      DataPoint() = default;
       dataType val;
     };
     DataPoint birthPoint, deathPoint;
