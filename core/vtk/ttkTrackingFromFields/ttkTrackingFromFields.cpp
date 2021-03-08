@@ -74,7 +74,7 @@ int ttkTrackingFromFields::trackWithPersistenceMatching(
   vtkNew<vtkPoints> points{};
   vtkNew<vtkUnstructuredGrid> persistenceDiagram{};
 
-  vtkNew<vtkDoubleArray> persistenceScalars{};
+  vtkNew<vtkDoubleArray> costScalars{};
   vtkNew<vtkDoubleArray> valueScalars{};
   vtkNew<vtkIntArray> matchingIdScalars{};
   vtkNew<vtkIntArray> lengthScalars{};
@@ -82,7 +82,7 @@ int ttkTrackingFromFields::trackWithPersistenceMatching(
   vtkNew<vtkIntArray> componentIds{};
   vtkNew<vtkIntArray> pointTypeScalars{};
 
-  persistenceScalars->SetName("Cost");
+  costScalars->SetName("Cost");
   valueScalars->SetName("Scalar");
   matchingIdScalars->SetName("MatchingIdentifier");
   lengthScalars->SetName("ComponentLength");
@@ -109,7 +109,7 @@ int ttkTrackingFromFields::trackWithPersistenceMatching(
   ttkTrackingFromPersistenceDiagrams::buildMesh(
     trackingsBase, outputMatchings, persistenceDiagrams, useGeometricSpacing,
     spacing, DoPostProc, trackingTupleToMerged, points, persistenceDiagram,
-    persistenceScalars, valueScalars, matchingIdScalars, lengthScalars,
+    costScalars, valueScalars, matchingIdScalars, lengthScalars,
     timeScalars, componentIds, pointTypeScalars);
 
   output->ShallowCopy(persistenceDiagram);

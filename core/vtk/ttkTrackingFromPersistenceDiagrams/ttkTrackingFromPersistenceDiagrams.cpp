@@ -148,7 +148,7 @@ int ttkTrackingFromPersistenceDiagrams::RequestData(
   vtkSmartPointer<vtkUnstructuredGrid> persistenceDiagram
     = vtkSmartPointer<vtkUnstructuredGrid>::New();
 
-  vtkSmartPointer<vtkDoubleArray> persistenceScalars
+  vtkSmartPointer<vtkDoubleArray> costScalars
     = vtkSmartPointer<vtkDoubleArray>::New();
   vtkSmartPointer<vtkDoubleArray> valueScalars
     = vtkSmartPointer<vtkDoubleArray>::New();
@@ -162,7 +162,7 @@ int ttkTrackingFromPersistenceDiagrams::RequestData(
     = vtkSmartPointer<vtkIntArray>::New();
   vtkSmartPointer<vtkIntArray> pointTypeScalars
     = vtkSmartPointer<vtkIntArray>::New();
-  persistenceScalars->SetName("Cost");
+  costScalars->SetName("Cost");
   valueScalars->SetName("Scalar");
   matchingIdScalars->SetName("MatchingIdentifier");
   lengthScalars->SetName("ComponentLength");
@@ -194,7 +194,7 @@ int ttkTrackingFromPersistenceDiagrams::RequestData(
   buildMesh(
     trackingsBase, outputMatchings, inputPersistenceDiagrams,
     useGeometricSpacing, spacing, DoPostProc, trackingTupleToMerged, points,
-    persistenceDiagram, persistenceScalars, valueScalars, matchingIdScalars,
+    persistenceDiagram, costScalars, valueScalars, matchingIdScalars,
     lengthScalars, timeScalars, componentIds, pointTypeScalars);
 
   outputMesh_->ShallowCopy(persistenceDiagram);
@@ -213,7 +213,7 @@ int ttkTrackingFromPersistenceDiagrams::buildMesh(
   std::vector<std::set<int>> &trackingTupleToMerged,
   vtkPoints *points,
   vtkUnstructuredGrid *persistenceDiagram,
-  vtkDoubleArray *persistenceScalars,
+  vtkDoubleArray *costScalars,
   vtkDoubleArray *valueScalars,
   vtkIntArray *matchingIdScalars,
   vtkIntArray *lengthScalars,
@@ -410,7 +410,7 @@ int ttkTrackingFromPersistenceDiagrams::buildMesh(
 
       persistenceDiagram->InsertNextCell(VTK_LINE, 2, ids);
 
-      persistenceScalars->InsertTuple1(currentVertex, cost);
+      costScalars->InsertTuple1(currentVertex, cost);
       valueScalars->InsertTuple1(
         currentVertex, (tuple1.deathPoint.val + tuple2.deathPoint.val) / 2);
       matchingIdScalars->InsertTuple1(currentVertex, currentVertex);
@@ -421,7 +421,7 @@ int ttkTrackingFromPersistenceDiagrams::buildMesh(
   }
 
   persistenceDiagram->SetPoints(points);
-  persistenceDiagram->GetCellData()->AddArray(persistenceScalars);
+  persistenceDiagram->GetCellData()->AddArray(costScalars);
   persistenceDiagram->GetCellData()->AddArray(valueScalars);
   persistenceDiagram->GetCellData()->AddArray(matchingIdScalars);
   persistenceDiagram->GetCellData()->AddArray(lengthScalars);

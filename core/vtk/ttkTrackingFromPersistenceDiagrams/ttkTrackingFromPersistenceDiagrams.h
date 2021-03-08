@@ -93,7 +93,7 @@ public:
               std::vector<std::set<int>> &trackingTupleToMerged,
               vtkPoints *points,
               vtkUnstructuredGrid *persistenceDiagram,
-              vtkDoubleArray *persistenceScalars,
+              vtkDoubleArray *costScalars,
               vtkDoubleArray *valueScalars,
               vtkIntArray *matchingIdScalars,
               vtkIntArray *lengthScalars,
