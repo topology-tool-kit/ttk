@@ -61,9 +61,6 @@ public:
   vtkSetMacro(ComputeGradientGlyphs, bool);
   vtkGetMacro(ComputeGradientGlyphs, bool);
 
-  vtkSetMacro(IterationThreshold, int);
-  vtkGetMacro(IterationThreshold, int);
-
 protected:
   ttkDiscreteGradient();
 
