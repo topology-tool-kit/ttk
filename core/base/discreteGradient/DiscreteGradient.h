@@ -291,6 +291,10 @@ namespace ttk {
         // set size to 0 but keep allocated memory
         this->visitedIds_.clear();
       }
+      void insert(SimplexId id) {
+        this->isVisited_[id] = true;
+        this->visitedIds_.emplace_back(id);
+      }
     };
 
 #ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
