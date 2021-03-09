@@ -301,6 +301,8 @@ int ttkTrackingFromPersistenceDiagrams::buildMesh(
       componentIds->InsertTuple1(ids[0], k);
 
       endPoint = extractRepresentingPoint(tuple2);
+      if(useGeometricSpacing)
+        endPoint.z += spacing;
 
       points->InsertNextPoint(endPoint.x, endPoint.y, endPoint.z);
       ids[1] = 2 * currentVertex + 1;
