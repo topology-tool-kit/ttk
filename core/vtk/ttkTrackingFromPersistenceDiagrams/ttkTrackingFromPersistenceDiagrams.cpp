@@ -320,7 +320,7 @@ int ttkTrackingFromPersistenceDiagrams::buildMesh(
 
       costScalars->InsertTuple1(currentVertex, cost);
       valueScalars->InsertTuple1(
-        currentVertex, (tuple1.deathPoint.val + tuple2.deathPoint.val) / 2);
+        currentVertex, barycenter(startPoint, endPoint).val);
       matchingIdScalars->InsertTuple1(currentVertex, currentVertex);
       lengthScalars->InsertTuple1(currentVertex, chainLength);
 
