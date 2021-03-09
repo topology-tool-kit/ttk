@@ -1,4 +1,3 @@
-
 <ServerManagerConfiguration>
   <!-- This is the server manager configuration XML. It defines the interface to
        our new filter. As a rule of thumb, try to locate the configuration for
@@ -6,62 +5,68 @@
        that matches your filter and then model your xml on it -->
   <ProxyGroup name="filters">
     <SourceProxy
-      name="ttkPersistenceDiagram"
-      class="ttkPersistenceDiagram"
-      label="TTK PersistenceDiagram">
+        name="ttkPersistenceDiagram"
+        class="ttkPersistenceDiagram"
+        label="TTK PersistenceDiagram">
       <Documentation
-        long_help="TTK plugin for the computation of persistence diagrams."
-        short_help="TTK plugin for the computation of persistence diagrams.">
+          long_help="TTK plugin for the computation of persistence diagrams."
+          short_help="TTK plugin for the computation of persistence diagrams.">
         TTK plugin for the computation of persistence diagrams.
 
-This plugin computes the persistence diagram of the extremum-saddle pairs
-of an input scalar field. The X-coordinate of each pair corresponds to its
-birth, while its smallest and highest Y-coordinates correspond to its birth
-and death respectively.
+        This plugin computes the persistence diagram of the extremum-saddle pairs
+        of an input scalar field. The X-coordinate of each pair corresponds to its
+        birth, while its smallest and highest Y-coordinates correspond to its birth
+        and death respectively.
 
-In practice, the diagram is represented by a vtkUnstructuredGrid. Each
-vertex of this mesh represent a critical point of the input data. It is
-associated with point data (vertexId, critical type). Each vertical edge
-of this mesh represent a persistence pair. It is associated with cell data
-(persistence of the pair, critical index of the extremum of the pair).
-The diagonal of the diagram can be filtered out by considering its
-PairIdentifier value (set at -1).
+        In practice, the diagram is represented by a vtkUnstructuredGrid. Each
+        vertex of this mesh represent a critical point of the input data. It is
+        associated with point data (vertexId, critical type). Each vertical edge
+        of this mesh represent a persistence pair. It is associated with cell data
+        (persistence of the pair, critical index of the extremum of the pair).
+        The diagonal of the diagram can be filtered out by considering its
+        PairIdentifier value (set at -1).
 
-Persistence diagrams are useful and stable concise representations of the
-topological features of a data-set. It is useful to fine-tune persistence
-thresholds for topological simplification or for fast similarity
-estimations for instance.
+        Persistence diagrams are useful and stable concise representations of the
+        topological features of a data-set. It is useful to fine-tune persistence
+        thresholds for topological simplification or for fast similarity
+        estimations for instance.
 
-Two backends are available for the computation of the persistence diagram:
+        Three backends are available for the computation of the persistence diagram:
 
-1) FTM
+        1) FTM
 
-Related publication:
-'Task-based Augmented Merge Trees with Fibonacci Heaps',
-Charles Gueunet, Pierre Fortin, Julien Jomier, Julien Tierny,
-Proc. of IEEE LDAV 2017.
+        Related publication:
+        'Task-based Augmented Merge Trees with Fibonacci Heaps',
+        Charles Gueunet, Pierre Fortin, Julien Jomier, Julien Tierny,
+        Proc. of IEEE LDAV 2017.
 
-2) A progressive approach
+        2) A progressive approach
 
-Related publication:
-'A Progressive Approach to Scalar Field Topology'
-Jules Vidal, Pierre Guillou, Julien Tierny
-IEEE Transaction on Visualization and Computer Graphics, 2021
+        Related publication:
+        'A Progressive Approach to Scalar Field Topology'
+        Jules Vidal, Pierre Guillou, Julien Tierny
+        IEEE Transaction on Visualization and Computer Graphics, 2021
 
-This approach necessitates the input data to be defined on an implicit regular grid.
-It processes the data using a multiresolution hierarchical
-representation in a coarse-to-fine fashion.
-Set both the Start and End resolution levels to -1 to execute in
-non-progressive mode on the finest level, i.e. the original grid.
+        This approach necessitates the input data to be defined on an implicit regular grid.
+        It processes the data using a multiresolution hierarchical
+        representation in a coarse-to-fine fashion.
+        Set both the Start and End resolution levels to -1 to execute in
+        non-progressive mode on the finest level, i.e. the original grid.
 
+        3) Persistent Simplex
 
-See also ContourForests, PersistenceCurve, ScalarFieldCriticalPoints,
-TopologicalSimplification.
+        This is a textbook (and very slow) algorithm, described in
+        "Algorithm and Theory of Computation Handbook (Second Edition)
+        - Special Topics and Techniques" by Atallah and Blanton on
+        page 97.
+
+        See also ContourForests, PersistenceCurve, ScalarFieldCriticalPoints,
+        TopologicalSimplification.
       </Documentation>
 
       <InputProperty
-        name="Input"
-        command="SetInputConnection">
+          name="Input"
+          command="SetInputConnection">
         <ProxyGroupDomain name="groups">
           <Group name="sources"/>
           <Group name="filters"/>
@@ -79,17 +84,17 @@ TopologicalSimplification.
         </Documentation>
       </InputProperty>
 
-      <StringVectorProperty 
-        name="ScalarFieldNew" 
-        label="Scalar Field" 
-        command="SetInputArrayToProcess" 
-        element_types="0 0 0 0 2" 
-        number_of_elements="5" 
-        default_values="0"
-        >
+      <StringVectorProperty
+          name="ScalarFieldNew"
+          label="Scalar Field"
+          command="SetInputArrayToProcess"
+          element_types="0 0 0 0 2"
+          number_of_elements="5"
+          default_values="0"
+          >
         <ArrayListDomain
-          name="array_list"
-          default_values="0">
+            name="array_list"
+            default_values="0">
           <RequiredProperties>
             <Property name="Input" function="Input" />
           </RequiredProperties>
@@ -100,41 +105,41 @@ TopologicalSimplification.
       </StringVectorProperty>
 
       <IntVectorProperty
-         name="ForceInputOffsetScalarField"
-         command="SetForceInputOffsetScalarField"
-         label="Force Input Offset Field"
-         number_of_elements="1"
-         panel_visibility="advanced"
-         default_values="0">
+          name="ForceInputOffsetScalarField"
+          command="SetForceInputOffsetScalarField"
+          label="Force Input Offset Field"
+          number_of_elements="1"
+          panel_visibility="advanced"
+          default_values="0">
         <BooleanDomain name="bool"/>
-         <Documentation>
+        <Documentation>
           Check this box to force the usage of a specific input scalar field
           as vertex offset (used to disambiguate flat plateaus).
-         </Documentation>
+        </Documentation>
       </IntVectorProperty>
 
-      <StringVectorProperty 
-        name="InputOffsetScalarFieldNameNew" 
-        label="Input Offset Field" 
-        command="SetInputArrayToProcess" 
-        element_types="0 0 0 0 2" 
-        number_of_elements="5" 
-        default_values="1"
-        panel_visibility="advanced"
-        >
+      <StringVectorProperty
+          name="InputOffsetScalarFieldNameNew"
+          label="Input Offset Field"
+          command="SetInputArrayToProcess"
+          element_types="0 0 0 0 2"
+          number_of_elements="5"
+          default_values="1"
+          panel_visibility="advanced"
+          >
         <ArrayListDomain
-          name="array_list"
-					default_values="1"
-                    >
+            name="array_list"
+            default_values="1"
+            >
           <RequiredProperties>
             <Property name="Input" function="Input" />
           </RequiredProperties>
         </ArrayListDomain>
         <Hints>
           <PropertyWidgetDecorator type="GenericDecorator"
-            mode="visibility"
-            property="ForceInputOffsetScalarField"
-            value="1" />
+                                   mode="visibility"
+                                   property="ForceInputOffsetScalarField"
+                                   value="1" />
         </Hints>
         <Documentation>
           Select the input offset field (used to disambiguate flat plateaus).
@@ -146,11 +151,12 @@ TopologicalSimplification.
           label="Backend"
           command="SetBackEnd"
           number_of_elements="1"
-         default_values="0" 
+         default_values="0"
          panel_visibility="advanced" >
-		 <EnumerationDomain name="enum">
+         <EnumerationDomain name="enum">
           <Entry value="0" text="FTM (IEEE TPSD 2019)"/>
           <Entry value="1" text="Progressive Approach (IEEE TVCG 2020)"/>
+          <Entry value="2" text="Persistent Simplex"/>
         </EnumerationDomain>
         <Documentation>
             Backend for the computation of the persistence diagram.
@@ -163,7 +169,7 @@ TopologicalSimplification.
          label="Start resolution level"
          command="SetStartingResolutionLevel"
          number_of_elements="1"
-         default_values="0" 
+         default_values="0"
          panel_visibility="advanced" >
         <IntRangeDomain name="range" min="-1" max="100" />
         <Hints>
@@ -183,7 +189,7 @@ TopologicalSimplification.
          label="End resolution level"
          command="SetStoppingResolutionLevel"
          number_of_elements="1"
-         default_values="-1" 
+         default_values="-1"
          panel_visibility="advanced" >
         <IntRangeDomain name="range" min="-1" max="100" />
         <Hints>
@@ -231,7 +237,7 @@ TopologicalSimplification.
                                    value="1" />
         </Hints>
         <Documentation>
-          Maximal time of computation for the progressive computation. 
+          Maximal time of computation for the progressive computation.
           Set 0 for no time limit.
         </Documentation>
       </DoubleVectorProperty>
@@ -249,17 +255,17 @@ TopologicalSimplification.
                                    value="0" />
         </Hints>
         <BooleanDomain name="bool"/>
-         <Documentation>
+        <Documentation>
           Add saddle-saddle pairs in the diagram (SLOW!).
-         </Documentation>
+        </Documentation>
       </IntVectorProperty>
 
       <IntVectorProperty name="ShowInsideDomain"
-        label="Embed in Domain"
-        command="SetShowInsideDomain"
-        number_of_elements="1"
-        default_values="0"
-        panel_visibility="default">
+                         label="Embed in Domain"
+                         command="SetShowInsideDomain"
+                         number_of_elements="1"
+                         default_values="0"
+                         panel_visibility="default">
         <BooleanDomain name="bool"/>
         <Documentation>
           Embed the persistence pairs in the domain.
@@ -268,13 +274,16 @@ TopologicalSimplification.
 
       <PropertyGroup panel_widget="Line" label="Input options">
           <Property name="ScalarFieldNew" />
-	      <Property name="ForceInputOffsetScalarField"/>
-	      <Property name="InputOffsetScalarFieldNameNew"/>
+          <Property name="ForceInputOffsetScalarField"/>
+          <Property name="InputOffsetScalarFieldNameNew"/>
         <Property name="BackEnd" />
         <Property name="StartingResolutionLevel" />
         <Property name="StoppingResolutionLevel" />
         <Property name="IsResumable" />
         <Property name="TimeLimit" />
+        <Property name="ScalarFieldNew" />
+        <Property name="ForceInputOffsetScalarField"/>
+        <Property name="InputOffsetScalarFieldNameNew"/>
       </PropertyGroup>
 
       <PropertyGroup panel_widget="Line" label="Output options">
