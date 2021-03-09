@@ -94,6 +94,7 @@ public:
               vtkPoints *points,
               vtkUnstructuredGrid *persistenceDiagram,
               vtkDoubleArray *costScalars,
+              vtkDoubleArray *persistenceScalars,
               vtkDoubleArray *valueScalars,
               vtkIntArray *matchingIdScalars,
               vtkIntArray *lengthScalars,
