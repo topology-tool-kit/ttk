@@ -55,7 +55,7 @@ namespace ttk {
     /// this std::vector as internal vertex edge list. If this std::vector is
     /// not empty but incorrect, the behavior is unspecified.
     /// \return Returns 0 upon success, negative values otherwise.
-    template<std::size_t n>
+    template <std::size_t n>
     int buildCellEdges(const SimplexId &vertexNumber,
                        const CellArray &cellArray,
                        std::vector<std::array<SimplexId, n>> &cellEdges,
