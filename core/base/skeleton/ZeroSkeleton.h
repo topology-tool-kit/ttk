@@ -13,6 +13,7 @@
 #ifndef _ZEROSKELETON_H
 #define _ZEROSKELETON_H
 
+#include <array>
 #include <map>
 
 // base code includes

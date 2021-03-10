@@ -13,6 +13,7 @@
 #ifndef _ONESKELETON_H
 #define _ONESKELETON_H
 
+#include <array>
 #include <map>
 
 // base code includes

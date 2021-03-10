@@ -20,6 +20,7 @@
 #include <ZeroSkeleton.h>
 
 #include <algorithm>
+#include <array>
 
 namespace ttk {
 
