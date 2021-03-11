@@ -919,6 +919,13 @@ gradient, false otherwise.
                                const triangulationType &triangulation);
 
       /**
+       * Reverse the given descending VPath.
+       */
+      template <typename triangulationType>
+      int reverseDescendingPath(const std::vector<Cell> &vpath,
+                                const triangulationType &triangulation);
+
+      /**
        * Reverse the given ascending VPath restricted on a 2-separatrice.
        */
       template <typename triangulationType>

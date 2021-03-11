@@ -2956,6 +2956,43 @@ int DiscreteGradient::reverseAscendingPath(
 }
 
 template <typename triangulationType>
+int DiscreteGradient::reverseDescendingPath(
+  const std::vector<Cell> &vpath, const triangulationType &triangulation) {
+
+  // assume that the first cell is an edge
+  for(size_t i = 0; i < vpath.size(); i += 2) {
+    const SimplexId edgeId = vpath[i].id_;
+    const SimplexId vertId = vpath[i + 1].id_;
+
+#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
+    const auto nneighs = triangulation.getVertexEdgeNumber();
+    for(int k = 0; k < nneighs; ++k) {
+      SimplexId tmp;
+      triangulation.getVertexEdge(vertId, k, tmp);
+      if(tmp == edgeId) {
+        gradient_[0][0][vertId] = k;
+        break;
+      }
+    }
+    const auto nverts = triangulation.getEdgeStarNumber(edgeId);
+    for(int k = 0; k < nverts; ++k) {
+      SimplexId tmp;
+      triangulation.getEdgeVertex(edgeId, k, tmp);
+      if(tmp == vertId) {
+        gradient_[0][1][edgeId] = k;
+        break;
+      }
+    }
+#else
+    gradient_[0][0][vertId] = edgeId;
+    gradient_[0][1][edgeId] = vertId;
+#endif
+  }
+
+  return 0;
+}
+
+template <typename triangulationType>
 int DiscreteGradient::reverseAscendingPathOnWall(
   const std::vector<Cell> &vpath, const triangulationType &triangulation) {
 
