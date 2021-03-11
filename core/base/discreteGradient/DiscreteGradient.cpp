@@ -26,12 +26,9 @@ void DiscreteGradient::initMemory(const AbstractTriangulation &triangulation) {
   dmtMax2PL_.clear();
   dmt1Saddle2PL_.clear();
   dmt2Saddle2PL_.clear();
-  gradient_.clear();
-  gradient_.resize(dimensionality_);
 
   for(int i = 0; i < dimensionality_; ++i) {
     // init gradient memory
-    gradient_[i].resize(numberOfDimensions);
     gradient_[i][i].resize(numberOfCells[i], -1);
     gradient_[i][i + 1].resize(numberOfCells[i + 1], -1);
   }

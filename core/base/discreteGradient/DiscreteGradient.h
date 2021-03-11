@@ -293,10 +293,16 @@ namespace ttk {
       }
     };
 
+    /**
+     * @brief Discrete gradient struct
+     *
+     * Per dimension (from 0 to 2), 4 vector: 2 for dim <-> dim+1
+     * pairs and 2 for reverse pairs
+     */
 #ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
-    using gradientType = std::vector<std::vector<std::vector<char>>>;
+    using gradientType = std::array<std::array<std::vector<char>, 4>, 3>;
 #else
-    using gradientType = std::vector<std::vector<std::vector<SimplexId>>>;
+    using gradientType = std::array<std::array<std::vector<SimplexId>, 4>, 3>;
 #endif
 
     /**
