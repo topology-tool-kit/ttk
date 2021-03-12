@@ -293,17 +293,24 @@ namespace ttk {
       }
     };
 
+#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
+    using gradIdType = char;
+#else
+    using gradIdType = SimplexId;
+#endif
+
     /**
      * @brief Discrete gradient struct
      *
-     * Per dimension (from 0 to 2), 4 vector: 2 for dim <-> dim+1
-     * pairs and 2 for reverse pairs
+     * 0: paired edge id per vertex
+     * 1: paired vertex id per edge
+     * 2: paired triangle id per edge
+     * 3: paired edge id per triangle
+     * 4: paired tetra id per triangle
+     * 5: paired triangle id per tetra
+     * -1 if critical or paired to a cell of another dimension
      */
-#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
-    using gradientType = std::array<std::array<std::vector<char>, 4>, 3>;
-#else
-    using gradientType = std::array<std::array<std::vector<SimplexId>, 4>, 3>;
-#endif
+    using gradientType = std::array<std::vector<gradIdType>, 6>;
 
     /**
      * Compute and manage a discrete gradient of a function on a triangulation.

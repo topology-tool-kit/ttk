@@ -29,8 +29,8 @@ void DiscreteGradient::initMemory(const AbstractTriangulation &triangulation) {
 
   for(int i = 0; i < dimensionality_; ++i) {
     // init gradient memory
-    gradient_[i][i].resize(numberOfCells[i], -1);
-    gradient_[i][i + 1].resize(numberOfCells[i + 1], -1);
+    gradient_[2 * i].resize(numberOfCells[i], -1);
+    gradient_[2 * i + 1].resize(numberOfCells[i + 1], -1);
   }
 
   std::vector<std::vector<std::string>> rows{
@@ -113,7 +113,7 @@ CriticalType
 
 bool DiscreteGradient::isMinimum(const Cell &cell) const {
   if(cell.dim_ == 0) {
-    return (gradient_[0][0][cell.id_] == -1);
+    return (gradient_[0][cell.id_] == -1);
   }
 
   return false;
@@ -121,8 +121,7 @@ bool DiscreteGradient::isMinimum(const Cell &cell) const {
 
 bool DiscreteGradient::isSaddle1(const Cell &cell) const {
   if(cell.dim_ == 1) {
-    return (gradient_[0][1][cell.id_] == -1
-            and gradient_[1][1][cell.id_] == -1);
+    return (gradient_[1][cell.id_] == -1 and gradient_[2][cell.id_] == -1);
   }
 
   return false;
@@ -130,8 +129,7 @@ bool DiscreteGradient::isSaddle1(const Cell &cell) const {
 
 bool DiscreteGradient::isSaddle2(const Cell &cell) const {
   if(dimensionality_ == 3 and cell.dim_ == 2) {
-    return (gradient_[1][2][cell.id_] == -1
-            and gradient_[2][2][cell.id_] == -1);
+    return (gradient_[3][cell.id_] == -1 and gradient_[4][cell.id_] == -1);
   }
 
   return false;
@@ -139,11 +137,11 @@ bool DiscreteGradient::isSaddle2(const Cell &cell) const {
 
 bool DiscreteGradient::isMaximum(const Cell &cell) const {
   if(dimensionality_ == 2 and cell.dim_ == 2) {
-    return (gradient_[1][2][cell.id_] == -1);
+    return (gradient_[3][cell.id_] == -1);
   }
 
   if(dimensionality_ == 3 and cell.dim_ == 3) {
-    return (gradient_[2][3][cell.id_] == -1);
+    return (gradient_[5][cell.id_] == -1);
   }
 
   return false;
@@ -154,36 +152,33 @@ bool DiscreteGradient::isCellCritical(const int cellDim,
   if(dimensionality_ == 2) {
     switch(cellDim) {
       case 0:
-        return (gradient_[0][0][cellId] == -1);
+        return (gradient_[0][cellId] == -1);
         break;
 
       case 1:
-        return (gradient_[0][1][cellId] == -1
-                and gradient_[1][1][cellId] == -1);
+        return (gradient_[1][cellId] == -1 and gradient_[2][cellId] == -1);
         break;
 
       case 2:
-        return (gradient_[1][2][cellId] == -1);
+        return (gradient_[3][cellId] == -1);
         break;
     }
   } else if(dimensionality_ == 3) {
     switch(cellDim) {
       case 0:
-        return (gradient_[0][0][cellId] == -1);
+        return (gradient_[0][cellId] == -1);
         break;
 
       case 1:
-        return (gradient_[0][1][cellId] == -1
-                and gradient_[1][1][cellId] == -1);
+        return (gradient_[1][cellId] == -1 and gradient_[2][cellId] == -1);
         break;
 
       case 2:
-        return (gradient_[1][2][cellId] == -1
-                and gradient_[2][2][cellId] == -1);
+        return (gradient_[3][cellId] == -1 and gradient_[4][cellId] == -1);
         break;
 
       case 3:
-        return (gradient_[2][3][cellId] == -1);
+        return (gradient_[5][cellId] == -1);
         break;
     }
   }
