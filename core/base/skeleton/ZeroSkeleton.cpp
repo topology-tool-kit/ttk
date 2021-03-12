@@ -505,8 +505,7 @@ int ZeroSkeleton::buildVertexNeighbors(
 
   Timer t;
 
-  printMsg("Building vertex neighbors", 0, 0, threadNumber_,
-           ttk::debug::LineMode::REPLACE);
+  printMsg("Building vertex neighbors", 0, 0, 1, ttk::debug::LineMode::REPLACE);
 
   for(const auto &e : *localEdgeList) {
     oneSkeleton[e[0]].emplace_back(e[1]);
@@ -514,7 +513,7 @@ int ZeroSkeleton::buildVertexNeighbors(
   }
 
   printMsg("Built " + std::to_string(vertexNumber) + " vertex neighbors", 1,
-           t.getElapsedTime(), threadNumber_);
+           t.getElapsedTime(), 1);
 
   // ethaneDiolMedium.vtu, 70Mtets, hal9000 (12coresHT)
   // (only merging step, after edge list creation)
