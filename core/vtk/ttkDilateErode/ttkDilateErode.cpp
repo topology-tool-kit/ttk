@@ -106,8 +106,7 @@ int ttkDilateErode::RequestData(vtkInformation *request,
 
        // Input
        this->Mode, this->Iterations,
-       static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(inputLabels)),
-       static_cast<VTK_TT>(pivotLabel),
+       static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(inputLabels)), pivotLabel,
        static_cast<TTK_TT *>(triangulation->getData()))));
 
   if(!status)
