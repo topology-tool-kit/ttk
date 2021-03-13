@@ -94,6 +94,9 @@ namespace ttk {
       if(getDimensionality() == 1)
         return getCellNeighbor(cellId, localEdgeId, edgeId);
 
+      else if(getDimensionality() == 2)
+        return getTriangleEdgeInternal(cellId, localEdgeId, edgeId);
+
       return getCellEdgeInternal(cellId, localEdgeId, edgeId);
     }
 
@@ -120,6 +123,9 @@ namespace ttk {
 #endif
       if(getDimensionality() == 1)
         return getCellNeighborNumber(cellId);
+
+      else if(getDimensionality() == 2)
+        return getTriangleEdgeNumber(cellId);
 
       return getCellEdgeNumberInternal(cellId);
     };
@@ -159,6 +165,9 @@ namespace ttk {
 #endif
       if(getDimensionality() == 1)
         return getCellNeighbors();
+
+      else if(getDimensionality() == 2)
+        return getTriangleEdgesInternal();
 
       return getCellEdgesInternal();
     };
@@ -433,8 +442,7 @@ namespace ttk {
     /// \note It is recommended to exclude such a pre-processing step
     /// from any time performance measurement.
     /// \return Returns a pointer to the edge list.
-    virtual inline const std::vector<std::pair<SimplexId, SimplexId>> *
-      getEdges() {
+    virtual inline const std::vector<std::array<SimplexId, 2>> *getEdges() {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(getDimensionality() == 1)
         return NULL;
@@ -899,7 +907,7 @@ namespace ttk {
     /// \note It is recommended to exclude such a pre-processing step
     /// from any time performance measurement.
     /// \return Returns a pointer to the triangle list.
-    virtual inline const std::vector<std::vector<SimplexId>> *getTriangles() {
+    virtual inline const std::vector<std::array<SimplexId, 3>> *getTriangles() {
 #ifndef TTK_ENABLE_KAMIKAZE
       if(!hasPreconditionedTriangles())
         return NULL;
@@ -938,8 +946,6 @@ namespace ttk {
       if(!hasPreconditionedTriangleEdges())
         return -2;
 #endif
-      if(getDimensionality() == 2)
-        return getCellEdge(triangleId, localEdgeId, edgeId);
 
       return getTriangleEdgeInternal(triangleId, localEdgeId, edgeId);
     };
@@ -967,8 +973,6 @@ namespace ttk {
       if(!hasPreconditionedTriangleEdges())
         return -2;
 #endif
-      if(getDimensionality() == 2)
-        return getCellEdgeNumber(triangleId);
 
       return getTriangleEdgeNumberInternal(triangleId);
     };
@@ -1007,8 +1011,6 @@ namespace ttk {
       if(!hasPreconditionedTriangleEdges())
         return NULL;
 #endif
-      if(getDimensionality() == 2)
-        return getCellEdges();
 
       return getTriangleEdgesInternal();
     };
@@ -2548,7 +2550,7 @@ namespace ttk {
       return 0;
     }
 
-    virtual inline const std::vector<std::pair<SimplexId, SimplexId>> *
+    virtual inline const std::vector<std::array<SimplexId, 2>> *
       getEdgesInternal() {
       return NULL;
     };
@@ -2623,7 +2625,7 @@ namespace ttk {
       return 0;
     }
 
-    virtual inline const std::vector<std::vector<SimplexId>> *
+    virtual inline const std::vector<std::array<SimplexId, 3>> *
       getTrianglesInternal() {
       return NULL;
     };
@@ -3179,15 +3181,15 @@ namespace ttk {
     std::array<int, 3> gridDimensions_;
 
     std::vector<bool> boundaryEdges_, boundaryTriangles_, boundaryVertices_;
-    std::vector<std::vector<SimplexId>> cellEdgeList_;
+    std::vector<std::array<SimplexId, 6>> tetraEdgeList_;
     std::vector<std::vector<SimplexId>> cellNeighborList_;
-    std::vector<std::vector<SimplexId>> cellTriangleList_;
+    std::vector<std::array<SimplexId, 4>> tetraTriangleList_;
     std::vector<std::vector<SimplexId>> edgeLinkList_;
-    std::vector<std::pair<SimplexId, SimplexId>> edgeList_;
+    std::vector<std::array<SimplexId, 2>> edgeList_;
     std::vector<std::vector<SimplexId>> edgeStarList_;
     std::vector<std::vector<SimplexId>> edgeTriangleList_;
-    std::vector<std::vector<SimplexId>> triangleList_;
-    std::vector<std::vector<SimplexId>> triangleEdgeList_;
+    std::vector<std::array<SimplexId, 3>> triangleList_;
+    std::vector<std::array<SimplexId, 3>> triangleEdgeList_;
     std::vector<std::vector<SimplexId>> triangleLinkList_;
     std::vector<std::vector<SimplexId>> triangleStarList_;
     std::vector<std::vector<SimplexId>> vertexEdgeList_;
@@ -3195,6 +3197,12 @@ namespace ttk {
     std::vector<std::vector<SimplexId>> vertexNeighborList_;
     std::vector<std::vector<SimplexId>> vertexStarList_;
     std::vector<std::vector<SimplexId>> vertexTriangleList_;
+
+    // keep compatibility between getCellEdges(), getCellTriangles(),
+    // getCellNeighbors() and getTriangleEdges()
+    std::vector<std::vector<SimplexId>> cellEdgeVector_{};
+    std::vector<std::vector<SimplexId>> cellTriangleVector_{};
+    std::vector<std::vector<SimplexId>> triangleEdgeVector_{};
   };
 } // namespace ttk
 

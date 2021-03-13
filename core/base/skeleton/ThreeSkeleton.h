@@ -20,6 +20,7 @@
 #include <ZeroSkeleton.h>
 
 #include <algorithm>
+#include <array>
 
 namespace ttk {
 
@@ -55,10 +56,11 @@ namespace ttk {
     /// this std::vector as internal vertex edge list. If this std::vector is
     /// not empty but incorrect, the behavior is unspecified.
     /// \return Returns 0 upon success, negative values otherwise.
+    template <std::size_t n>
     int buildCellEdges(const SimplexId &vertexNumber,
                        const CellArray &cellArray,
-                       std::vector<std::vector<SimplexId>> &cellEdges,
-                       std::vector<std::pair<SimplexId, SimplexId>> *edgeList
+                       std::vector<std::array<SimplexId, n>> &cellEdges,
+                       std::vector<std::array<SimplexId, 2>> *edgeList
                        = nullptr,
                        std::vector<std::vector<SimplexId>> *vertexEdges
                        = nullptr) const;

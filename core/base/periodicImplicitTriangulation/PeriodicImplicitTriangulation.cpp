@@ -855,7 +855,7 @@ int PeriodicImplicitTriangulation::getEdgeVertexInternal(
   return 0;
 }
 
-const vector<pair<SimplexId, SimplexId>> *
+const vector<std::array<SimplexId, 2>> *
   PeriodicImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getEdges)() {
 
   if(!edgeList_.size()) {
@@ -866,8 +866,7 @@ const vector<pair<SimplexId, SimplexId>> *
       SimplexId id0, id1;
       getEdgeVertexInternal(i, 0, id0);
       getEdgeVertexInternal(i, 1, id1);
-      edgeList_[i].first = id0;
-      edgeList_[i].second = id1;
+      edgeList_[i] = {id0, id1};
     }
 
     printMsg(
@@ -1286,19 +1285,19 @@ int PeriodicImplicitTriangulation::getTriangleEdgesInternal(
 
 const vector<vector<SimplexId>> *
   PeriodicImplicitTriangulation::getTriangleEdgesInternal() {
-  if(!triangleEdgeList_.size()) {
+  if(triangleEdgeVector_.empty()) {
     Timer t;
 
-    getTriangleEdgesInternal(triangleEdgeList_);
+    getTriangleEdgesInternal(triangleEdgeVector_);
 
     printMsg("Built " + to_string(triangleNumber_) + " triangle edges.", 1,
              t.getElapsedTime(), 1);
   }
 
-  return &triangleEdgeList_;
+  return &triangleEdgeVector_;
 }
 
-const vector<vector<SimplexId>> *
+const vector<std::array<SimplexId, 3>> *
   PeriodicImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(getTriangles)() {
 
   if(!triangleList_.size()) {
@@ -1306,7 +1305,6 @@ const vector<vector<SimplexId>> *
 
     triangleList_.resize(triangleNumber_);
     for(SimplexId i = 0; i < triangleNumber_; ++i) {
-      triangleList_[i].resize(3);
       for(int j = 0; j < 3; ++j)
         getTriangleVertexInternal(i, j, triangleList_[i][j]);
     }
@@ -1842,19 +1840,19 @@ int PeriodicImplicitTriangulation::getCellEdgeInternal(
 
 const vector<vector<SimplexId>> *
   PeriodicImplicitTriangulation::getCellEdgesInternal() {
-  if(!cellEdgeList_.size()) {
+  if(cellEdgeVector_.empty()) {
     Timer t;
 
     if(dimensionality_ == 3)
-      getTetrahedronEdges(cellEdgeList_);
+      getTetrahedronEdges(cellEdgeVector_);
     else if(dimensionality_ == 2)
-      getTriangleEdgesInternal(cellEdgeList_);
+      getTriangleEdgesInternal(cellEdgeVector_);
 
     printMsg("Built " + to_string(cellNumber_) + " cell edges.", 1,
              t.getElapsedTime(), 1);
   }
 
-  return &cellEdgeList_;
+  return &cellEdgeVector_;
 }
 
 int PeriodicImplicitTriangulation::getCellTriangleInternal(
@@ -1869,17 +1867,17 @@ int PeriodicImplicitTriangulation::getCellTriangleInternal(
 
 const vector<vector<SimplexId>> *
   PeriodicImplicitTriangulation::getCellTrianglesInternal() {
-  if(!cellTriangleList_.size()) {
+  if(cellTriangleVector_.empty()) {
     Timer t;
 
     if(dimensionality_ == 3)
-      getTetrahedronTriangles(cellTriangleList_);
+      getTetrahedronTriangles(cellTriangleVector_);
 
     printMsg("Built " + to_string(cellNumber_) + " cell triangles.", 1,
              t.getElapsedTime(), 1);
   }
 
-  return &cellTriangleList_;
+  return &cellTriangleVector_;
 }
 
 SimplexId PeriodicImplicitTriangulation::TTK_TRIANGULATION_INTERNAL(
