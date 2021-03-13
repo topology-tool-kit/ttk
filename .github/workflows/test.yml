@@ -329,7 +329,7 @@ jobs:
     - name: Install dependencies with conda
       shell: bash
       run: |
-        conda install -c conda-forge boost glew eigen spectralib zfp scikit-learn openmp embree3
+        conda install -c conda-forge boost glew eigen spectralib zfp scikit-learn openmp graphviz
 
     - name: Remove hosted Python
       shell: bash
