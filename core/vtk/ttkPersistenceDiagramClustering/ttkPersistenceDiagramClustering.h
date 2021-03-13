@@ -121,7 +121,10 @@ public:
     Spacing = spacing;
     oldSpacing = spacing;
     Modified();
-    needUpdate_ = false;
+    if(!intermediateDiagrams_.empty()) {
+      // skip clustering computation only if done at least once before
+      needUpdate_ = false;
+    }
   }
   vtkGetMacro(Spacing, double);
 
@@ -133,7 +136,10 @@ public:
       Spacing = oldSpacing;
     }
     Modified();
-    needUpdate_ = false;
+    if(!intermediateDiagrams_.empty()) {
+      // skip clustering computation only if done at least once before
+      needUpdate_ = false;
+    }
   }
 
   vtkGetMacro(DisplayMethod, bool);
