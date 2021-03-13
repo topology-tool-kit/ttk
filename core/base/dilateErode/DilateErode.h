@@ -15,6 +15,8 @@
 // base code includes
 #include <Debug.h>
 #include <Triangulation.h>
+
+#include <array>
 #include <limits>
 
 namespace ttk {
@@ -44,11 +46,63 @@ namespace ttk {
       const DT *inputLabels,
       const DT &pivotLabel,
       TT *triangulation) const;
+
+    template <class DT, class TT = ttk::AbstractTriangulation>
+    int performElementaryMorphoOp(
+      // Output
+      DT *outputLabels,
+
+      // Input
+      const int &mode,
+      const int &iterations,
+      const DT *inputLabels,
+      const DT &pivotLabel,
+      TT *triangulation) const;
   };
 } // namespace ttk
 
 template <class DT, class TT>
 int ttk::DilateErode::execute(
+  // Output
+  DT *outputLabels,
+
+  // Input
+  const int &mode,
+  const int &iterations,
+  const DT *inputLabels,
+  const DT &pivotLabel,
+  TT *triangulation) const {
+
+  if(mode < 2) {
+    // erosion or dilation
+    return this->performElementaryMorphoOp(
+      outputLabels, mode, iterations, inputLabels, pivotLabel, triangulation);
+  } else {
+    std::array<int, 2> ops{};
+    if(mode == 2) {
+      // morphological opening
+      ops = {1, 0}; // erosion then dilation
+    } else if(mode == 3) {
+      // morphological closing
+      ops = {0, 1}; // dilation then erosion
+    } else {
+      this->printErr("Invalid morphological operation requested");
+      return 0;
+    }
+
+    std::vector<DT> tmp(triangulation->getNumberOfVertices());
+    const auto status = this->performElementaryMorphoOp(
+      tmp.data(), ops[0], iterations, inputLabels, pivotLabel, triangulation);
+    if(status != 1) {
+      return status;
+    }
+    return this->performElementaryMorphoOp(
+      outputLabels, ops[1], iterations, tmp.data(), pivotLabel, triangulation);
+  }
+}
+
+template <class DT, class TT>
+int ttk::DilateErode::performElementaryMorphoOp(
   // Output
   DT *outputLabels,
 
