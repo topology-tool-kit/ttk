@@ -469,29 +469,19 @@ namespace ttk {
       const SimplexId &vertexId,
       const int &localNeighborId,
       SimplexId &neighborId) const override {
-#ifndef TTK_ENABLE_KAMIKAZE
-      if((vertexId < 0) || (vertexId >= (SimplexId)vertexNeighborList_.size()))
-        return -1;
-      if((localNeighborId < 0)
-         || (localNeighborId
-             >= (SimplexId)vertexNeighborList_[vertexId].size()))
-        return -2;
-#endif
-      neighborId = vertexNeighborList_[vertexId][localNeighborId];
+
+      neighborId = vertexNeighborData_.get(vertexId, localNeighborId);
       return 0;
     }
 
     inline SimplexId TTK_TRIANGULATION_INTERNAL(getVertexNeighborNumber)(
       const SimplexId &vertexId) const override {
-#ifndef TTK_ENABLE_KAMIKAZE
-      if((vertexId < 0) || (vertexId >= vertexNumber_))
-        return -1;
-#endif
-      return vertexNeighborList_[vertexId].size();
+      return vertexNeighborData_.size(vertexId);
     }
 
     inline const std::vector<std::vector<SimplexId>> *
       TTK_TRIANGULATION_INTERNAL(getVertexNeighbors)() override {
+      vertexNeighborData_.copyTo(vertexNeighborList_);
       return &vertexNeighborList_;
     }
 
@@ -981,11 +971,11 @@ namespace ttk {
 
     inline int preconditionVertexNeighborsInternal() override {
 
-      if((SimplexId)vertexNeighborList_.size() != vertexNumber_) {
+      if((SimplexId)vertexNeighborData_.subvectorsNumber() != vertexNumber_) {
         ZeroSkeleton zeroSkeleton;
         zeroSkeleton.setWrapper(this);
         return zeroSkeleton.buildVertexNeighbors(
-          vertexNumber_, *cellArray_, vertexNeighborList_, &edgeList_);
+          vertexNumber_, *cellArray_, vertexNeighborData_, &edgeList_);
       }
       return 0;
     }
@@ -1114,6 +1104,8 @@ namespace ttk {
     const void *pointSet_;
     int maxCellDim_;
     std::shared_ptr<CellArray> cellArray_;
+
+    FlatJaggedArray vertexNeighborData_;
   };
 } // namespace ttk
 

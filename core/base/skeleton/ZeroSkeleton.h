@@ -18,6 +18,7 @@
 
 // base code includes
 #include <CellArray.h>
+#include <FlatJaggedArray.h>
 #include <Wrapper.h>
 
 namespace ttk {
@@ -142,12 +143,11 @@ namespace ttk {
     /// this function will use this std::vector as internal edge list. If this
     /// std::vector is not empty but incorrect, the behavior is unspecified.
     /// \return Returns 0 upon success, negative values otherwise.
-    int
-      buildVertexNeighbors(const SimplexId &vertexNumber,
-                           const CellArray &cellArray,
-                           std::vector<std::vector<SimplexId>> &vertexNeighbors,
-                           std::vector<std::array<SimplexId, 2>> *edgeList
-                           = NULL) const;
+    int buildVertexNeighbors(const SimplexId &vertexNumber,
+                             const CellArray &cellArray,
+                             FlatJaggedArray &vertexNeighbors,
+                             std::vector<std::array<SimplexId, 2>> *edgeList
+                             = NULL) const;
 
     /// Compute the star of each vertex of a triangulation. Unspecified
     /// behavior if the input mesh is not a valid triangulation.

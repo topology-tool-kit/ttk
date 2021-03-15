@@ -485,10 +485,12 @@ int ZeroSkeleton::buildVertexLinks(
 int ZeroSkeleton::buildVertexNeighbors(
   const SimplexId &vertexNumber,
   const CellArray &cellArray,
-  vector<vector<SimplexId>> &oneSkeleton,
+  FlatJaggedArray &vertexNeighbors,
   vector<std::array<SimplexId, 2>> *edgeList) const {
 
-  oneSkeleton.resize(vertexNumber);
+  std::vector<SimplexId> offsets(vertexNumber + 1);
+  // number of neighbors processed per vertex
+  std::vector<SimplexId> neighborsId(vertexNumber);
 
   auto localEdgeList = edgeList;
   vector<std::array<SimplexId, 2>> defaultEdgeList{};
@@ -507,10 +509,30 @@ int ZeroSkeleton::buildVertexNeighbors(
 
   printMsg("Building vertex neighbors", 0, 0, 1, ttk::debug::LineMode::REPLACE);
 
+  // store number of neighbors per vertex
   for(const auto &e : *localEdgeList) {
-    oneSkeleton[e[0]].emplace_back(e[1]);
-    oneSkeleton[e[1]].emplace_back(e[0]);
+    offsets[e[0] + 1]++;
+    offsets[e[1] + 1]++;
   }
+
+  // compute partial sum of number of neighbors per vertex
+  for(size_t i = 1; i < offsets.size(); ++i) {
+    offsets[i] += offsets[i - 1];
+  }
+
+  // allocate flat neighbors vector
+  std::vector<SimplexId> neighbors(offsets.back());
+
+  // fill flat neighbors vector using offsets and neighbors count vectors
+  for(const auto &e : *localEdgeList) {
+    neighbors[offsets[e[0]] + neighborsId[e[0]]] = e[1];
+    neighborsId[e[0]]++;
+    neighbors[offsets[e[1]] + neighborsId[e[1]]] = e[0];
+    neighborsId[e[1]]++;
+  }
+
+  // fill FlatJaggedArray struct
+  vertexNeighbors.setData(std::move(neighbors), std::move(offsets));
 
   printMsg("Built " + std::to_string(vertexNumber) + " vertex neighbors", 1,
            t.getElapsedTime(), 1);
