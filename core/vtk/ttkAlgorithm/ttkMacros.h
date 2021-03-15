@@ -11,6 +11,17 @@ using ttkSimplexIdTypeArray = vtkIdTypeArray;
 using ttkSimplexIdTypeArray = vtkIntArray;
 #endif
 
+#define ttkSetEnumMacro(name, enumType)                   \
+  virtual void Set##name(int _arg) {                      \
+    vtkDebugMacro(<< this->GetClassName() << " (" << this \
+                  << "): setting " #name " to " << _arg); \
+    if(this->name != static_cast<enumType>(_arg)) {       \
+      this->name = static_cast<enumType>(_arg);           \
+      this->Modified();                                   \
+    }                                                     \
+  }                                                       \
+  vtkSetEnumMacro(name, enumType);
+
 #define ttkVtkTemplateMacroCase(                         \
   dataType, triangulationType, triangulationClass, call) \
   case triangulationType: {                              \

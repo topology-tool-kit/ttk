@@ -17,23 +17,53 @@
 
 // TTK includes
 #include <ttkAlgorithm.h>
+#include <ttkMacros.h>
 
 class TTKEXTRACT_EXPORT ttkExtract : public ttkAlgorithm {
 
+public:
+  enum class EXTRACTION_MODE {
+    AUTO = -1,
+    BLOCKS = 0,
+    ROWS = 1,
+    GEOMETRY = 2,
+    ARRAY_VALUES = 3,
+    ARRAYS = 4,
+    BLOCK_TUPLES = 5
+  };
+
+  enum class VALIDATION_MODE {
+    LESS_THEN = 0,
+    LESS_EQUAL_THEN = 1,
+    EQUAL = 2,
+    UNEQUAL = 3,
+    GREATER_EQUAL_THEN = 4,
+    GREATER_THEN = 5
+  };
+
+  enum class CELL_MODE { ALL = 0, ANY = 1, SUB = 2 };
+
 private:
-  int ExtractionMode{0};
+  EXTRACTION_MODE ExtractionMode{EXTRACTION_MODE::AUTO};
+  VALIDATION_MODE ValidationMode{VALIDATION_MODE::EQUAL};
+  CELL_MODE CellMode{CELL_MODE::ANY};
+
   int OutputType{-1};
   bool ExtractUniqueValues{true};
   std::string ExpressionString{""};
-  int ValidationMode{0};
-  int CellMode{0};
   int ArrayAttributeType{0};
   std::string OutputArrayName{"Data"};
   int ImageExtent[6]{0, 0, 0, 0, 0, 0};
 
 public:
-  vtkSetMacro(ExtractionMode, int);
-  vtkGetMacro(ExtractionMode, int);
+  ttkSetEnumMacro(ExtractionMode, EXTRACTION_MODE);
+  vtkGetEnumMacro(ExtractionMode, EXTRACTION_MODE);
+
+  ttkSetEnumMacro(ValidationMode, VALIDATION_MODE);
+  vtkGetEnumMacro(ValidationMode, VALIDATION_MODE);
+
+  ttkSetEnumMacro(CellMode, CELL_MODE);
+  vtkGetEnumMacro(CellMode, CELL_MODE);
 
   vtkSetMacro(OutputType, int);
   vtkGetMacro(OutputType, int);
@@ -43,12 +73,6 @@ public:
 
   vtkSetMacro(ExtractUniqueValues, bool);
   vtkGetMacro(ExtractUniqueValues, bool);
-
-  vtkSetMacro(ValidationMode, int);
-  vtkGetMacro(ValidationMode, int);
-
-  vtkSetMacro(CellMode, int);
-  vtkGetMacro(CellMode, int);
 
   vtkSetMacro(ArrayAttributeType, int);
   vtkGetMacro(ArrayAttributeType, int);

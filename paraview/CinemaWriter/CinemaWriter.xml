@@ -36,7 +36,7 @@ NOTE:
                 <Documentation>Determines the compression level form 0 (fast + large files) to 9 (slow + small files).</Documentation>
             </IntVectorProperty>
 
-            <IntVectorProperty name="Mode" label="Store as" command="SetMode" number_of_elements="1" default_values="0">
+            <IntVectorProperty name="Format" label="Store as" command="SetFormat" number_of_elements="1" default_values="0">
                 <EnumerationDomain name="enum">
                     <Entry value="0" text="VTK File"/>
                     <Entry value="1" text="PNG Image"/>
@@ -50,17 +50,6 @@ NOTE:
                 <Documentation>If set to true and the input is a 'vtkMultiBlockDataSet' then store blocks individually.</Documentation>
             </IntVectorProperty>
 
-            <IntVectorProperty name="ForwardInput"
-                               label="Forward Input"
-                               command="SetForwardInput"
-                               number_of_elements="1"
-                               default_values="1">
-                <BooleanDomain name="bool" />
-                <Documentation>
-                  Forward input data to filter output.
-                </Documentation>
-            </IntVectorProperty>
-
             <Property name="DeleteDatabase" label="Delete Database" command="DeleteDatabase" panel_widget="command_button">
                 <Documentation>Delete the database folder. WARNING: NO UNDO</Documentation>
             </Property>
@@ -68,7 +57,7 @@ NOTE:
             <PropertyGroup panel_widget="Line" label="Output Options">
                 <Property name="DatabasePath" />
                 <Property name="CompressionLevel" />
-                <Property name="Mode" />
+                <Property name="Format" />
                 <Property name="IterateMultiBlock" />
             </PropertyGroup>
             <PropertyGroup panel_widget="Line" label="Commands">
@@ -91,7 +80,7 @@ NOTE:
                 <PropertyWidgetDecorator
                     type="GenericDecorator"
                     mode="visibility"
-                    property="Mode"
+                    property="Format"
                     value="2" />
               </Hints>
             </PropertyGroup>
