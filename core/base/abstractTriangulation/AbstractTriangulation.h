@@ -56,7 +56,7 @@ namespace ttk {
 
     /// Computes and displays the memory footprint of the data-structure.
     /// \return Returns 0 upon success, negative values otherwise.
-    size_t footprint() const;
+    size_t footprint(size_t size = 0) const;
 
     /// Get the \p localEdgeId-th edge of the \p cellId-th cell.
     ///

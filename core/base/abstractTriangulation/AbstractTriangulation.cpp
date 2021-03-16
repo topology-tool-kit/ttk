@@ -84,9 +84,9 @@ size_t AbstractTriangulation::tableTableFootprint(
   return localByteNumber;
 }
 
-size_t AbstractTriangulation::footprint() const {
+size_t AbstractTriangulation::footprint(size_t size) const {
 
-  size_t size = sizeof(*this);
+  size += sizeof(*this);
   stringstream msg;
 
   size += tableFootprint<bool>(boundaryEdges_, "boundaryEdges_");

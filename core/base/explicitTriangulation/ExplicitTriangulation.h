@@ -30,6 +30,8 @@ namespace ttk {
 
     int clear();
 
+    size_t footprint(size_t size = 0) const;
+
     inline int getCellEdgeInternal(const SimplexId &cellId,
                                    const int &localEdgeId,
                                    SimplexId &edgeId) const override {
