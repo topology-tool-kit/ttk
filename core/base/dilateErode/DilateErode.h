@@ -43,6 +43,7 @@ namespace ttk {
       // Input
       const int &mode,
       const int &iterations,
+      const bool grayscale,
       const DT *inputLabels,
       const DT &pivotLabel,
       TT *triangulation) const;
@@ -55,6 +56,7 @@ namespace ttk {
       // Input
       const int &mode,
       const int &iterations,
+      const bool grayscale,
       const DT *inputLabels,
       const DT &pivotLabel,
       TT *triangulation) const;
@@ -69,14 +71,16 @@ int ttk::DilateErode::execute(
   // Input
   const int &mode,
   const int &iterations,
+  const bool grayscale,
   const DT *inputLabels,
   const DT &pivotLabel,
   TT *triangulation) const {
 
   if(mode < 2) {
     // erosion or dilation
-    return this->performElementaryMorphoOp(
-      outputLabels, mode, iterations, inputLabels, pivotLabel, triangulation);
+    return this->performElementaryMorphoOp(outputLabels, mode, iterations,
+                                           grayscale, inputLabels, pivotLabel,
+                                           triangulation);
   } else {
     std::array<int, 2> ops{};
     if(mode == 2) {
@@ -92,12 +96,14 @@ int ttk::DilateErode::execute(
 
     std::vector<DT> tmp(triangulation->getNumberOfVertices());
     const auto status = this->performElementaryMorphoOp(
-      tmp.data(), ops[0], iterations, inputLabels, pivotLabel, triangulation);
+      tmp.data(), ops[0], iterations, grayscale, inputLabels, pivotLabel,
+      triangulation);
     if(status != 1) {
       return status;
     }
-    return this->performElementaryMorphoOp(
-      outputLabels, ops[1], iterations, tmp.data(), pivotLabel, triangulation);
+    return this->performElementaryMorphoOp(outputLabels, ops[1], iterations,
+                                           grayscale, tmp.data(), pivotLabel,
+                                           triangulation);
   }
 }
 
@@ -109,6 +115,7 @@ int ttk::DilateErode::performElementaryMorphoOp(
   // Input
   const int &mode,
   const int &iterations,
+  const bool grayscale,
   const DT *inputLabels,
   const DT &pivotLabel,
   TT *triangulation) const {
@@ -142,57 +149,88 @@ int ttk::DilateErode::performElementaryMorphoOp(
     // NOTE: Directly dilating a vertex value to all its neighbors requires
     // parallel write locks, so instead focusing on vertices that need to
     // update their value optimizes parallel efficiency.
-    if(mode == 0) {
-// Dilate
+    if(!grayscale) {
+      if(mode == 0) { // binary dilation
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(this->threadNumber_)
 #endif
-      for(SimplexId i = 0; i < nVertices; i++) {
-        // first copy data
-        target[i] = source[i];
+        for(SimplexId i = 0; i < nVertices; i++) {
+          // first copy data
+          target[i] = source[i];
 
-        // if current vertex value is not a dilated value
-        if(source[i] != pivotLabel) {
-          // check neighbors if they need to be dilated
-          const SimplexId nNeighbors
-            = triangulation->getVertexNeighborNumber(i);
-          SimplexId nIndex;
-          for(SimplexId n = 0; n < nNeighbors; n++) {
-            triangulation->getVertexNeighbor(i, n, nIndex);
-            if(source[nIndex] == pivotLabel) {
-              target[i] = source[nIndex];
-              break;
+          // if current vertex value is not a dilated value
+          if(source[i] != pivotLabel) {
+            // check neighbors if they need to be dilated
+            const SimplexId nNeighbors
+              = triangulation->getVertexNeighborNumber(i);
+            SimplexId nIndex;
+            for(SimplexId n = 0; n < nNeighbors; n++) {
+              triangulation->getVertexNeighbor(i, n, nIndex);
+              if(source[nIndex] == pivotLabel) {
+                target[i] = source[nIndex];
+                break;
+              }
             }
+          }
+        }
+      } else { // binary erosion
+        const DT minLabel = std::numeric_limits<DT>::min();
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(this->threadNumber_)
+#endif
+        for(SimplexId i = 0; i < nVertices; i++) {
+          // first copy data
+          target[i] = source[i];
+
+          // if current vertex value needs to be eroded
+          if(source[i] == pivotLabel) {
+            // check neighbors if neighbors have a non-eroded label
+            const SimplexId nNeighbors
+              = triangulation->getVertexNeighborNumber(i);
+            SimplexId nIndex;
+            DT maxNeighborLabel = minLabel;
+            for(SimplexId n = 0; n < nNeighbors; n++) {
+              triangulation->getVertexNeighbor(i, n, nIndex);
+              if(source[nIndex] != pivotLabel
+                 && maxNeighborLabel < source[nIndex]) {
+                maxNeighborLabel = source[nIndex];
+              }
+            }
+            if(maxNeighborLabel != minLabel)
+              target[i] = maxNeighborLabel;
           }
         }
       }
     } else {
-      // Erode
-      const DT minLabel = std::numeric_limits<DT>::min();
 
+      if(mode == 0) { // grayscale dilation
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(this->threadNumber_)
-#endif
-      for(SimplexId i = 0; i < nVertices; i++) {
-        // first copy data
-        target[i] = source[i];
-
-        // if current vertex value needs to be eroded
-        if(source[i] == pivotLabel) {
-          // check neighbors if neighbors have a non-eroded label
-          const SimplexId nNeighbors
-            = triangulation->getVertexNeighborNumber(i);
-          SimplexId nIndex;
-          DT maxNeighborLabel = minLabel;
-          for(SimplexId n = 0; n < nNeighbors; n++) {
-            triangulation->getVertexNeighbor(i, n, nIndex);
-            if(source[nIndex] != pivotLabel
-               && maxNeighborLabel < source[nIndex]) {
-              maxNeighborLabel = source[nIndex];
-            }
+#endif // TTK_ENABLE_OPENMP
+        for(SimplexId i = 0; i < nVertices; i++) {
+          // first copy data
+          target[i] = source[i];
+          const auto nNeighs = triangulation->getVertexNeighborNumber(i);
+          for(SimplexId n = 0; n < nNeighs; n++) {
+            SimplexId neigh{};
+            triangulation->getVertexNeighbor(i, n, neigh);
+            target[i] = std::max(target[i], source[neigh]);
           }
-          if(maxNeighborLabel != minLabel)
-            target[i] = maxNeighborLabel;
+        }
+      } else { // grayscale erosion
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(this->threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+        for(SimplexId i = 0; i < nVertices; i++) {
+          // first copy data
+          target[i] = source[i];
+          const auto nNeighs = triangulation->getVertexNeighborNumber(i);
+          for(SimplexId n = 0; n < nNeighs; n++) {
+            SimplexId neigh{};
+            triangulation->getVertexNeighbor(i, n, neigh);
+            target[i] = std::min(target[i], source[neigh]);
+          }
         }
       }
     }

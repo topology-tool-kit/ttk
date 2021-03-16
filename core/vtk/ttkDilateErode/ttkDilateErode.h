@@ -40,6 +40,7 @@ private:
   int Mode{0};
   std::string PivotLabel{"0"};
   int Iterations{1};
+  bool Grayscale{false};
 
 public:
   static ttkDilateErode *New();
@@ -47,10 +48,12 @@ public:
 
   vtkSetMacro(Mode, int);
   vtkGetMacro(Mode, int);
-  vtkSetMacro(PivotLabel, std::string);
+  vtkSetMacro(PivotLabel, const std::string &);
   vtkGetMacro(PivotLabel, std::string);
   vtkSetMacro(Iterations, int);
   vtkGetMacro(Iterations, int);
+  vtkSetMacro(Grayscale, bool);
+  vtkGetMacro(Grayscale, bool);
 
 protected:
   ttkDilateErode();
