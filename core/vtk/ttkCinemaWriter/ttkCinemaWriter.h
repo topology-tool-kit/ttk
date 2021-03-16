@@ -30,6 +30,7 @@ private:
   std::string DatabasePath{""};
   int CompressionLevel{5};
   bool IterateMultiBlock{true};
+  bool ForwardInput{true};
   FORMAT Format{FORMAT::VTK};
 
   // topological compression
@@ -58,6 +59,9 @@ public:
 
   vtkSetMacro(IterateMultiBlock, bool);
   vtkGetMacro(IterateMultiBlock, bool);
+
+  vtkSetMacro(ForwardInput, bool);
+  vtkGetMacro(ForwardInput, bool);
 
   vtkGetMacro(Tolerance, double);
   vtkSetMacro(Tolerance, double);

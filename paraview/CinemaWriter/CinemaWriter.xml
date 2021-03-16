@@ -23,7 +23,7 @@ NOTE:
                 <Documentation>Input data product of any type that is going to be stored in the Cinema database.</Documentation>
             </InputProperty>
 
-            <StringVectorProperty name="DatabasePath" animateable="0" command="SetDatabasePath" number_of_elements="1">
+            <StringVectorProperty name="DatabasePath" command="SetDatabasePath" number_of_elements="1">
                 <Documentation>Path to a Cinema Spec D database folder.</Documentation>
                 <FileListDomain name="files" />
                 <Hints>
@@ -31,7 +31,7 @@ NOTE:
                 </Hints>
             </StringVectorProperty>
 
-            <IntVectorProperty name="CompressionLevel" label="Compression Level" command="SetCompressionLevel" number_of_elements="1" default_values="5">
+            <IntVectorProperty name="CompressionLevel" command="SetCompressionLevel" number_of_elements="1" default_values="5">
                 <IntRangeDomain name="range" min="0" max="9" />
                 <Documentation>Determines the compression level form 0 (fast + large files) to 9 (slow + small files).</Documentation>
             </IntVectorProperty>
@@ -45,12 +45,17 @@ NOTE:
                 <Documentation>Store input as VTK file, a PNG image or a TTK compressed file.</Documentation>
             </IntVectorProperty>
 
-            <IntVectorProperty name="IterateMultiBlock" label="Iterate MultiBlock" command="SetIterateMultiBlock" number_of_elements="1" default_values="0">
+            <IntVectorProperty name="IterateMultiBlock" command="SetIterateMultiBlock" number_of_elements="1" default_values="0">
                 <BooleanDomain name="bool" />
                 <Documentation>If set to true and the input is a 'vtkMultiBlockDataSet' then store blocks individually.</Documentation>
             </IntVectorProperty>
 
-            <Property name="DeleteDatabase" label="Delete Database" command="DeleteDatabase" panel_widget="command_button">
+            <IntVectorProperty name="ForwardInput" command="SetForwardInput" number_of_elements="1" default_values="1">
+                <BooleanDomain name="bool" />
+                <Documentation>Controls if the filter returns an empty output or forwards the input as a shallow copy.</Documentation>
+            </IntVectorProperty>
+
+            <Property name="DeleteDatabase" command="DeleteDatabase" panel_widget="command_button">
                 <Documentation>Delete the database folder. WARNING: NO UNDO</Documentation>
             </Property>
 
@@ -59,6 +64,7 @@ NOTE:
                 <Property name="CompressionLevel" />
                 <Property name="Format" />
                 <Property name="IterateMultiBlock" />
+                <Property name="ForwardInput" />
             </PropertyGroup>
             <PropertyGroup panel_widget="Line" label="Commands">
                 <Property name="DeleteDatabase" />
