@@ -61,21 +61,22 @@ int ttkExtract::FillInputPortInformation(int port, vtkInformation *info) {
 }
 
 int ttkExtract::FillOutputPortInformation(int port, vtkInformation *info) {
-  if(port == 0) {
-    if(info->Has(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT()))
-      info->Remove(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT());
-
-    if(this->OutputType != -1) {
-      std::string DTName = this->GetVtkDataTypeName(this->OutputType);
-      if(DTName.length() < 1) {
-        this->printErr("Unsupported output type");
-        return 0;
-      }
-      info->Set(vtkDataObject::DATA_TYPE_NAME(), DTName.data());
-    } else
-      info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
-  } else
+  if(port != 0)
     return 0;
+
+  if(info->Has(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT()))
+    info->Remove(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT());
+
+  if(this->OutputType != -1) {
+    std::string DTName = this->GetVtkDataTypeName(this->OutputType);
+    if(DTName.length() < 1) {
+      this->printErr("Unsupported output type");
+      return 0;
+    }
+    info->Set(vtkDataObject::DATA_TYPE_NAME(), DTName.data());
+  } else
+    info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
+
   return 1;
 }
 
@@ -305,8 +306,6 @@ int computeMask_(signed char *mask,
 
     bool hasToBeMarked = false;
     for(size_t j = 0; j < nPivotValues; j++) {
-      std::cout << min[j] << " " << max[j] << " " << v << " "
-                << (min[j] <= v && v <= max[j]) << std::endl;
       if(min[j] <= v && v <= max[j]) {
         hasToBeMarked = true;
         break;
@@ -372,13 +371,8 @@ int computeMask(signed char *mask,
     }
   }
 
-  for(size_t j = 0; j < nPivotValues; j++)
-    std::cout << pivotValuesMin[j] << " " << pivotValuesMax[j] << std::endl;
-
-  int status = computeMask_<DT>(mask,
-
-                                nValues, values, pivotValuesMin, pivotValuesMax,
-                                threadNumber);
+  int status = computeMask_<DT>(
+    mask, nValues, values, pivotValuesMin, pivotValuesMax, threadNumber);
 
   if(validationMode == ttkExtract::VALIDATION_MODE::UNEQUAL)
     for(size_t i = 0; i < nValues; i++)
@@ -387,11 +381,23 @@ int computeMask(signed char *mask,
   return status;
 }
 
-int ttkExtract::ExtractGeometry(vtkDataObject *output,
-                                vtkDataObject *input,
-                                const std::vector<double> &expressionValues) {
-  ttk::Timer globalTimer;
+int ttkExtract::AddMaskArray(vtkDataObject *output,
+                             vtkDataObject *input,
+                             const std::vector<double> &expressionValues) {
+  ttk::Timer timer;
 
+  this->printMsg(
+    "Computing Mask", 0, 0, this->threadNumber_, ttk::debug::LineMode::REPLACE);
+
+  // check if input/output are of correct type
+  auto inputAsDS = vtkDataSet::SafeDownCast(input);
+  auto outputAsDS = vtkDataSet::SafeDownCast(output);
+  if(!inputAsDS || !outputAsDS) {
+    this->printErr("Masks can only be computed on vtkDataSet inputs.");
+    return 0;
+  }
+
+  // retrieve input array
   auto inputArray = this->GetInputArrayToProcess(0, input);
   if(!inputArray || inputArray->GetNumberOfComponents() != 1) {
     this->printErr("Unable to retrieve input scalar array.");
@@ -405,36 +411,19 @@ int ttkExtract::ExtractGeometry(vtkDataObject *output,
   }
   const bool isPointDataArray = this->GetInputArrayAssociation(0, input) == 0;
 
+  // print updated status
   std::string expressionValuesString = "";
   doubleVectorToString(expressionValuesString, expressionValues);
-
-  // print status
-  const std::string CellModeS[3] = {"All", "Any", "Sub"};
-  const std::string CellModeSLC[3] = {"all", "any", "sub"};
   const std::string ValidationModeS[6] = {"<", "<=", "==", "!=", ">=", ">"};
-  const std::string conditionS
-    = "'" + inputArrayName + "' "
-      + ValidationModeS[static_cast<int>(this->ValidationMode)] + " ["
-      + expressionValuesString + "]";
-  {
-    this->printMsg(ttk::debug::Separator::L1);
-    this->printMsg({{"Ext. Mode", "Geometry"},
-                    {"Cell Mode", CellModeS[static_cast<int>(this->CellMode)]},
-                    {"Condition", conditionS}});
-    this->printMsg(ttk::debug::Separator::L2);
-  }
+  std::string msg = "Computing Mask: '" + inputArrayName + "' "
+                    + ValidationModeS[static_cast<int>(this->ValidationMode)]
+                    + " [" + expressionValuesString + "]";
+  ;
+  this->printMsg(msg, 0, 0, this->threadNumber_, ttk::debug::LineMode::REPLACE);
 
-  // check input/output object validity
-  auto inputAsUG = vtkUnstructuredGrid::SafeDownCast(input);
-  auto outputAsUG = vtkUnstructuredGrid::SafeDownCast(output);
-  if(!inputAsUG || !outputAsUG) {
-    this->printErr(
-      "Geometry mode requires 'vtkUnstructuredGrid' input/output.");
-    return 0;
-  }
-
-  const size_t nInPoints = inputAsUG->GetNumberOfPoints();
-  const size_t nInCells = inputAsUG->GetNumberOfCells();
+  // initialize mask array
+  const size_t nInPoints = inputAsDS->GetNumberOfPoints();
+  const size_t nInCells = inputAsDS->GetNumberOfCells();
   const size_t nOutValus = isPointDataArray ? nInPoints : nInCells;
 
   auto maskArray = vtkSmartPointer<vtkSignedCharArray>::New();
@@ -442,6 +431,7 @@ int ttkExtract::ExtractGeometry(vtkDataObject *output,
   maskArray->SetNumberOfTuples(nOutValus);
   auto maskArrayData = ttkUtils::GetPointer<signed char>(maskArray);
 
+  // compute mask
   int status = 0;
   switch(inputArray->GetDataType()) {
     vtkTemplateMacro((
@@ -454,22 +444,68 @@ int ttkExtract::ExtractGeometry(vtkDataObject *output,
     return 0;
   }
 
-  auto temp = vtkSmartPointer<vtkUnstructuredGrid>::New();
-  temp->ShallowCopy(inputAsUG);
-
+  // add to output
+  outputAsDS->ShallowCopy(inputAsDS);
   if(isPointDataArray)
-    temp->GetPointData()->AddArray(maskArray);
+    outputAsDS->GetPointData()->AddArray(maskArray);
   else
-    temp->GetCellData()->AddArray(maskArray);
+    outputAsDS->GetCellData()->AddArray(maskArray);
 
-  auto threshold = vtkSmartPointer<vtkThreshold>::New();
-  threshold->SetInputDataObject(temp);
-  threshold->SetInputArrayToProcess(0, 0, 0, isPointDataArray ? 0 : 1, "Mask");
-  threshold->ThresholdByUpper(0.5);
-  threshold->SetAllScalars(this->CellMode == CELL_MODE::ALL);
-  threshold->Update();
+  this->printMsg(msg, 1, timer.getElapsedTime(), this->threadNumber_);
 
-  output->ShallowCopy(threshold->GetOutput());
+  return 1;
+}
+
+int ttkExtract::ExtractGeometry(vtkDataObject *output,
+                                vtkDataObject *input,
+                                const std::vector<double> &expressionValues) {
+
+  auto inputAsDS = vtkDataSet::SafeDownCast(input);
+  auto outputAsDS = vtkDataSet::SafeDownCast(output);
+  if(!inputAsDS || !outputAsDS) {
+    this->printErr("Geometry mode requires vtkDataSet input.");
+    return 0;
+  }
+
+  auto maskOutput = vtkSmartPointer<vtkDataSet>::Take(inputAsDS->NewInstance());
+
+  if(!this->AddMaskArray(maskOutput, inputAsDS, expressionValues))
+    return 0;
+
+  if(this->MaskOnly) {
+    outputAsDS->ShallowCopy(maskOutput);
+  } else {
+    ttk::Timer timer;
+    this->printMsg(
+      "Extracting Geometry based on Mask", 0, 0, ttk::debug::LineMode::REPLACE);
+
+    auto outputAsUG = vtkUnstructuredGrid::SafeDownCast(output);
+    if(!outputAsUG) {
+      this->printErr(
+        "Geometry Extraction requires vtkUnstructuredGrid input/output");
+      return 0;
+    }
+
+    const bool isPointDataArray = this->GetInputArrayAssociation(0, input) == 0;
+
+    auto threshold = vtkSmartPointer<vtkThreshold>::New();
+    threshold->SetInputDataObject(maskOutput);
+    threshold->SetInputArrayToProcess(
+      0, 0, 0, isPointDataArray ? 0 : 1, "Mask");
+    threshold->ThresholdByUpper(0.5);
+    threshold->SetAllScalars(this->CellMode == CELL_MODE::ALL);
+    threshold->Update();
+
+    outputAsDS->ShallowCopy(threshold->GetOutput());
+
+    if(isPointDataArray)
+      outputAsDS->GetPointData()->RemoveArray("Mask");
+    else
+      outputAsDS->GetCellData()->RemoveArray("Mask");
+
+    this->printMsg(
+      "Extracting Geometry based on Mask", 1, timer.getElapsedTime());
+  }
 
   return 1;
 }
@@ -690,8 +726,14 @@ int ttkExtract::RequestData(vtkInformation *request,
 
     for(size_t b = 0; b < nBlocks; b++) {
       auto inputBlock = inputAsMB->GetBlock(b);
-      auto outputBlock
-        = vtkSmartPointer<vtkDataObject>::Take(inputBlock->NewInstance());
+
+      vtkSmartPointer<vtkDataObject> outputBlock;
+      if(mode == EXTRACTION_MODE::BLOCKS && !this->MaskOnly)
+        outputBlock = vtkSmartPointer<vtkUnstructuredGrid>::New();
+      else
+        outputBlock
+          = vtkSmartPointer<vtkDataObject>::Take(inputBlock->NewInstance());
+
       outputAsMB->SetBlock(b, outputBlock);
     }
     output->ShallowCopy(outputAsMB);
