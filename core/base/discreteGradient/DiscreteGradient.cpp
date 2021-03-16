@@ -27,9 +27,19 @@ void DiscreteGradient::initMemory(const AbstractTriangulation &triangulation) {
   dmt1Saddle2PL_.clear();
   dmt2Saddle2PL_.clear();
 
+  outputCriticalPoints_numberOfPoints_ = 0;
+  outputCriticalPoints_points_.clear();
+  outputCriticalPoints_points_cellDimensions_.clear();
+  outputCriticalPoints_points_cellIds_.clear();
+  outputCriticalPoints_points_isOnBoundary_.clear();
+  outputCriticalPoints_points_PLVertexIdentifiers_.clear();
+  outputCriticalPoints_points_manifoldSize_.clear();
+
+  // clear & init gradient memory
   for(int i = 0; i < dimensionality_; ++i) {
-    // init gradient memory
+    gradient_[2 * i].clear();
     gradient_[2 * i].resize(numberOfCells[i], -1);
+    gradient_[2 * i + 1].clear();
     gradient_[2 * i + 1].resize(numberOfCells[i + 1], -1);
   }
 
