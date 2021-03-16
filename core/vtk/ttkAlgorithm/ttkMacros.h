@@ -24,6 +24,17 @@ using ttkSimplexIdTypeArray = vtkIntArray;
   }
 #endif
 
+#ifndef vtkGetEnumMacro
+#define vtkGetEnumMacro(name, enumType)                                      \
+  virtual enumType Get##name() const {                                       \
+    vtkDebugMacro(<< this->GetClassName() << " (" << this << "): returning " \
+                  << #name " of "                                            \
+                  << static_cast<std::underlying_type<enumType>::type>(      \
+                       this->name));                                         \
+    return this->name;                                                       \
+  }
+#endif
+
 #define ttkSetEnumMacro(name, enumType)                   \
   virtual void Set##name(int _arg) {                      \
     vtkDebugMacro(<< this->GetClassName() << " (" << this \
