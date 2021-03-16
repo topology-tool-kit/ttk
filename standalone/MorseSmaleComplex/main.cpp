@@ -124,6 +124,12 @@ int main(int argc, char **argv) {
   if(!outputPathPrefix.empty()) {
     for(int i = 0; i < msc->GetNumberOfOutputPorts(); i++) {
       auto output = msc->GetOutputDataObject(i);
+      if(output->GetNumberOfElements(vtkDataObject::AttributeTypes::POINT) == 0
+         || output->GetNumberOfElements(vtkDataObject::AttributeTypes::CELL)
+              == 0) {
+        continue;
+      }
+
       auto writer
         = vtkXMLDataObjectWriter::NewWriter(output->GetDataObjectType());
 
