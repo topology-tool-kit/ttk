@@ -276,28 +276,16 @@ int OneSkeleton::buildEdgeStars(const SimplexId &vertexNumber,
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
-#endif
+#endif // TTK_ENABLE_OPENMP
   for(size_t i = 0; i < localEdgeList->size(); i++) {
-
-    SimplexId vertex0 = (*localEdgeList)[i][0];
-    SimplexId vertex1 = (*localEdgeList)[i][1];
-
+    const auto &e = (*localEdgeList)[i];
+    const auto beg0 = localVertexStars->get_ptr(e[0], 0);
+    const auto end0 = beg0 + localVertexStars->size(e[0]);
+    const auto beg1 = localVertexStars->get_ptr(e[1], 0);
+    const auto end1 = beg1 + localVertexStars->size(e[1]);
     // merge the two vertex stars
-    for(SimplexId j = 0; j < localVertexStars->size(vertex0); j++) {
-
-      bool hasFound = false;
-      for(SimplexId k = 0; k < localVertexStars->size(vertex1); k++) {
-        if(localVertexStars->get(vertex0, j)
-           == localVertexStars->get(vertex1, k)) {
-          hasFound = true;
-          break;
-        }
-      }
-      if(hasFound) {
-        // common to the two vertex stars
-        starList[i].push_back(localVertexStars->get(vertex0, j));
-      }
-    }
+    std::set_intersection(
+      beg0, end0, beg1, end1, std::back_inserter(starList[i]));
   }
 
   printMsg("Built " + to_string(starList.size()) + " edge stars", 1,
