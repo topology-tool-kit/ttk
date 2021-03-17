@@ -39,10 +39,9 @@ namespace ttk {
     /// be a std::vector listing the identifiers of the edges connected to the
     /// entry's vertex.
     /// \return Returns 0 upon success, negative values otherwise.
-    int
-      buildVertexEdges(const SimplexId &vertexNumber,
-                       const std::vector<std::array<SimplexId, 2>> &edgeList,
-                       std::vector<std::vector<SimplexId>> &vertexEdges) const;
+    int buildVertexEdges(const SimplexId &vertexNumber,
+                         const std::vector<std::array<SimplexId, 2>> &edgeList,
+                         FlatJaggedArray &vertexEdges) const;
 
     /// Compute the link of a single vertex of a triangulation (unspecified
     /// behavior if the input mesh is not a valid triangulation).

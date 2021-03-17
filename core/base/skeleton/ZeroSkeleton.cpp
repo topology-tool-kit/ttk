@@ -14,85 +14,44 @@ ZeroSkeleton::~ZeroSkeleton() {
 int ZeroSkeleton::buildVertexEdges(
   const SimplexId &vertexNumber,
   const vector<std::array<SimplexId, 2>> &edgeList,
-  vector<vector<SimplexId>> &vertexEdges) const {
+  FlatJaggedArray &vertexEdges) const {
+
+  std::vector<SimplexId> offsets(vertexNumber + 1);
+  // number of edges processed per vertex
+  std::vector<SimplexId> edgesId(vertexNumber);
 
   Timer t;
 
-  // NOTE: parallel implementation not efficient (see bench at the bottom)
-  // let's force the usage of only 1 thread.
-  ThreadId oldThreadNumber = threadNumber_;
-  threadNumber_ = 1;
+  printMsg("Building vertex edges", 0, 0, 1, ttk::debug::LineMode::REPLACE);
 
-  vertexEdges.resize(vertexNumber);
-  for(size_t i = 0; i < vertexEdges.size(); i++) {
-    vertexEdges[i].clear();
+  // store number of edges per vertex
+  for(const auto &e : edgeList) {
+    offsets[e[0] + 1]++;
+    offsets[e[1] + 1]++;
   }
 
-  if(threadNumber_ == 1) {
-
-    int timeBuckets = 10;
-    if(timeBuckets > (int)edgeList.size()) {
-      timeBuckets = edgeList.size();
-    }
-
-    printMsg("Building vertex edges", 0, 0, threadNumber_,
-             ttk::debug::LineMode::REPLACE);
-
-    for(size_t i = 0; i < edgeList.size(); i++) {
-      vertexEdges[edgeList[i][0]].push_back(i);
-      vertexEdges[edgeList[i][1]].push_back(i);
-
-      if(debugLevel_ >= (int)(debug::Priority::INFO)) {
-        if(!(i % ((edgeList.size()) / timeBuckets))) {
-          printMsg("Building vertex edges", (i / (float)edgeList.size()),
-                   t.getElapsedTime(), threadNumber_, debug::LineMode::REPLACE);
-        }
-      }
-    }
-  } else {
-    vector<vector<vector<SimplexId>>> threadedVertexEdges(threadNumber_);
-    for(ThreadId i = 0; i < threadNumber_; i++) {
-      threadedVertexEdges[i].resize(vertexNumber);
-    }
-
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
-#endif
-    for(size_t i = 0; i < edgeList.size(); i++) {
-
-      ThreadId threadId = 0;
-
-#ifdef TTK_ENABLE_OPENMP
-      threadId = omp_get_thread_num();
-#endif
-
-      threadedVertexEdges[threadId][edgeList[i][0]].push_back(i);
-      threadedVertexEdges[threadId][edgeList[i][1]].push_back(i);
-    }
-
-    // now merge the thing
-    for(ThreadId i = 0; i < threadNumber_; i++) {
-      for(size_t j = 0; j < threadedVertexEdges[i].size(); j++) {
-        for(size_t k = 0; k < threadedVertexEdges[i][j].size(); k++) {
-
-          bool hasFound = false;
-          for(size_t l = 0; l < vertexEdges[j].size(); l++) {
-            if(vertexEdges[j][l] == threadedVertexEdges[i][j][k]) {
-              hasFound = true;
-              break;
-            }
-          }
-          if(!hasFound)
-            vertexEdges[j].push_back(threadedVertexEdges[i][j][k]);
-        }
-      }
-    }
+  // compute partial sum of number of neighbors per vertex
+  for(size_t i = 1; i < offsets.size(); ++i) {
+    offsets[i] += offsets[i - 1];
   }
+
+  // allocate flat neighbors vector
+  std::vector<SimplexId> data(offsets.back());
+
+  // fill flat data vector using offsets and edges count vectors
+  for(size_t i = 0; i < edgeList.size(); ++i) {
+    const auto &e{edgeList[i]};
+    data[offsets[e[0]] + edgesId[e[0]]] = i;
+    edgesId[e[0]]++;
+    data[offsets[e[1]] + edgesId[e[1]]] = i;
+    edgesId[e[1]]++;
+  }
+
+  // fill FlatJaggedArray struct
+  vertexEdges.setData(std::move(data), std::move(offsets));
 
   printMsg("Built " + std::to_string(vertexNumber) + " vertex edges", 1,
-           t.getElapsedTime(), threadNumber_);
-
-  threadNumber_ = oldThreadNumber;
+           t.getElapsedTime(), 1);
 
   // ethaneDiolMedium.vtu, 70Mtets, hal9000 (12coresHT)
   // 1 thread: 11.85 s

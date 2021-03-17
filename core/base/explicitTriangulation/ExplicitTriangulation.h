@@ -409,29 +409,18 @@ namespace ttk {
     inline int getVertexEdgeInternal(const SimplexId &vertexId,
                                      const int &localEdgeId,
                                      SimplexId &edgeId) const override {
-#ifndef TTK_ENABLE_KAMIKAZE
-      if((vertexId < 0) || (vertexId >= (SimplexId)vertexEdgeList_.size()))
-        return -1;
-      if((localEdgeId < 0)
-         || (localEdgeId >= (SimplexId)vertexEdgeList_[vertexId].size()))
-        return -2;
-#endif
-      edgeId = vertexEdgeList_[vertexId][localEdgeId];
+      edgeId = vertexEdgeData_.get(vertexId, localEdgeId);
       return 0;
     }
 
     inline SimplexId
       getVertexEdgeNumberInternal(const SimplexId &vertexId) const override {
-
-#ifndef TTK_ENABLE_KAMIKAZE
-      if((vertexId < 0) || (vertexId >= (SimplexId)vertexEdgeList_.size()))
-        return -1;
-#endif
-      return vertexEdgeList_[vertexId].size();
+      return vertexEdgeData_.size(vertexId);
     }
 
     inline const std::vector<std::vector<SimplexId>> *
       getVertexEdgesInternal() override {
+      vertexEdgeData_.copyTo(vertexEdgeList_);
       return &vertexEdgeList_;
     }
 
@@ -720,12 +709,12 @@ namespace ttk {
 
       if(tetraEdgeList_.empty() && getDimensionality() == 3) {
         threeSkeleton.buildCellEdges(vertexNumber_, *cellArray_, tetraEdgeList_,
-                                     &edgeList_, &vertexEdgeList_);
+                                     &edgeList_, &vertexEdgeData_);
 
       } else if(triangleEdgeList_.empty() && getDimensionality() == 2) {
         threeSkeleton.buildCellEdges(vertexNumber_, *cellArray_,
                                      triangleEdgeList_, &edgeList_,
-                                     &vertexEdgeList_);
+                                     &vertexEdgeData_);
       }
 
       return 0;
@@ -886,7 +875,7 @@ namespace ttk {
         twoSkeleton.setWrapper(this);
 
         return twoSkeleton.buildTriangleEdgeList(
-          vertexNumber_, *cellArray_, triangleEdgeList_, &vertexEdgeList_,
+          vertexNumber_, *cellArray_, triangleEdgeList_, &vertexEdgeData_,
           &edgeList_, &triangleList_, &triangleStarList_, &tetraTriangleList_);
       }
 
@@ -923,7 +912,7 @@ namespace ttk {
 
     inline int preconditionVertexEdgesInternal() override {
 
-      if((SimplexId)vertexEdgeList_.size() != vertexNumber_) {
+      if((SimplexId)vertexEdgeData_.subvectorsNumber() != vertexNumber_) {
         ZeroSkeleton zeroSkeleton;
 
         if(!edgeList_.size()) {
@@ -934,7 +923,7 @@ namespace ttk {
 
         zeroSkeleton.setWrapper(this);
         return zeroSkeleton.buildVertexEdges(
-          vertexNumber_, edgeList_, vertexEdgeList_);
+          vertexNumber_, edgeList_, vertexEdgeData_);
       }
       return 0;
     }
@@ -1106,6 +1095,7 @@ namespace ttk {
     std::shared_ptr<CellArray> cellArray_;
 
     FlatJaggedArray vertexNeighborData_;
+    FlatJaggedArray vertexEdgeData_;
   };
 } // namespace ttk
 

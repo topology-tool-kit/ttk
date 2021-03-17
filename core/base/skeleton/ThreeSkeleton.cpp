@@ -12,12 +12,11 @@ ThreeSkeleton::~ThreeSkeleton() {
 }
 
 template <std::size_t n>
-int ThreeSkeleton::buildCellEdges(
-  const SimplexId &vertexNumber,
-  const CellArray &cellArray,
-  vector<std::array<SimplexId, n>> &cellEdges,
-  vector<std::array<SimplexId, 2>> *edgeList,
-  vector<vector<SimplexId>> *vertexEdges) const {
+int ThreeSkeleton::buildCellEdges(const SimplexId &vertexNumber,
+                                  const CellArray &cellArray,
+                                  vector<std::array<SimplexId, n>> &cellEdges,
+                                  vector<std::array<SimplexId, 2>> *edgeList,
+                                  FlatJaggedArray *vertexEdges) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(vertexNumber <= 0)
@@ -27,7 +26,7 @@ int ThreeSkeleton::buildCellEdges(
   auto localEdgeList = edgeList;
   auto localVertexEdges = vertexEdges;
   vector<std::array<SimplexId, 2>> defaultEdgeList{};
-  vector<vector<SimplexId>> defaultVertexEdges{};
+  FlatJaggedArray defaultVertexEdges{};
 
   if(!localEdgeList) {
     localEdgeList = &defaultEdgeList;
@@ -45,7 +44,7 @@ int ThreeSkeleton::buildCellEdges(
     localVertexEdges = &defaultVertexEdges;
   }
 
-  if(!localVertexEdges->size()) {
+  if(localVertexEdges->empty()) {
 
     ZeroSkeleton zeroSkeleton;
     zeroSkeleton.setDebugLevel(debugLevel_);
@@ -80,10 +79,10 @@ int ThreeSkeleton::buildCellEdges(
 
         // loop around the edges of vertexId0 in search of vertexId1
         SimplexId edgeId = -1;
-        const SimplexId nbEdges0 = (*localVertexEdges)[vertexId0].size();
+        const SimplexId nbEdges0 = localVertexEdges->size(vertexId0);
         for(SimplexId l = 0; l < nbEdges0; l++) {
 
-          SimplexId localEdgeId = (*localVertexEdges)[vertexId0][l];
+          SimplexId localEdgeId = localVertexEdges->get(vertexId0, l);
           if(((*localEdgeList)[localEdgeId][0] == vertexId1)
              || ((*localEdgeList)[localEdgeId][1] == vertexId1)) {
             edgeId = localEdgeId;
@@ -109,7 +108,7 @@ template int ThreeSkeleton::buildCellEdges<6>(
   const CellArray &cellArray,
   std::vector<std::array<SimplexId, 6>> &cellEdges,
   std::vector<std::array<SimplexId, 2>> *edgeList,
-  std::vector<std::vector<SimplexId>> *vertexEdges) const;
+  FlatJaggedArray *vertexEdges) const;
 
 // explicit template instantiations for 2D cells (triangles)
 template int ThreeSkeleton::buildCellEdges<3>(
@@ -117,7 +116,7 @@ template int ThreeSkeleton::buildCellEdges<3>(
   const CellArray &cellArray,
   std::vector<std::array<SimplexId, 3>> &cellEdges,
   std::vector<std::array<SimplexId, 2>> *edgeList,
-  std::vector<std::vector<SimplexId>> *vertexEdges) const;
+  FlatJaggedArray *vertexEdges) const;
 
 int ThreeSkeleton::buildCellNeighborsFromTriangles(
   const SimplexId &vertexNumber,

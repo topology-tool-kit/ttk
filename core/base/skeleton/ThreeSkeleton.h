@@ -62,8 +62,7 @@ namespace ttk {
                        std::vector<std::array<SimplexId, n>> &cellEdges,
                        std::vector<std::array<SimplexId, 2>> *edgeList
                        = nullptr,
-                       std::vector<std::vector<SimplexId>> *vertexEdges
-                       = nullptr) const;
+                       FlatJaggedArray *vertexEdges = nullptr) const;
 
     /// Compute the list of cell-neighbors of each cell of a triangulation
     /// (unspecified behavior if the input mesh is not a triangulation).

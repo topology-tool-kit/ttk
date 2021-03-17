@@ -384,7 +384,7 @@ int TwoSkeleton::buildTriangleEdgeList(
   const SimplexId &vertexNumber,
   const CellArray &cellArray,
   vector<std::array<SimplexId, 3>> &triangleEdgeList,
-  vector<vector<SimplexId>> *vertexEdgeList,
+  FlatJaggedArray *vertexEdgeList,
   vector<std::array<SimplexId, 2>> *edgeList,
   vector<std::array<SimplexId, 3>> *triangleList,
   vector<vector<SimplexId>> *triangleStarList,
@@ -405,12 +405,12 @@ int TwoSkeleton::buildTriangleEdgeList(
   }
 
   auto localVertexEdgeList = vertexEdgeList;
-  vector<vector<SimplexId>> defaultVertexEdgeList{};
+  FlatJaggedArray defaultVertexEdgeList{};
   if(!localVertexEdgeList) {
     localVertexEdgeList = &defaultVertexEdgeList;
   }
 
-  if(!localVertexEdgeList->size()) {
+  if(localVertexEdgeList->empty()) {
 
     ZeroSkeleton zeroSkeleton;
     zeroSkeleton.setDebugLevel(debugLevel_);
@@ -454,8 +454,8 @@ int TwoSkeleton::buildTriangleEdgeList(
     for(size_t j = 0; j < (*localTriangleList)[i].size(); j++) {
       vertexId = (*localTriangleList)[i][j];
 
-      for(size_t k = 0; k < (*localVertexEdgeList)[vertexId].size(); k++) {
-        SimplexId edgeId = (*localVertexEdgeList)[vertexId][k];
+      for(SimplexId k = 0; k < localVertexEdgeList->size(vertexId); k++) {
+        SimplexId edgeId = localVertexEdgeList->get(vertexId, k);
 
         SimplexId otherVertexId = (*localEdgeList)[edgeId][0];
 
