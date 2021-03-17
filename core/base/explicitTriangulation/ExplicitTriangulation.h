@@ -526,32 +526,18 @@ namespace ttk {
     inline int getVertexTriangleInternal(const SimplexId &vertexId,
                                          const int &localTriangleId,
                                          SimplexId &triangleId) const override {
-
-#ifndef TTK_ENABLE_KAMIKAZE
-      if((vertexId < 0) || (vertexId >= (SimplexId)vertexTriangleList_.size()))
-        return -1;
-      if((localTriangleId < 0)
-         || (localTriangleId
-             >= (SimplexId)vertexTriangleList_[vertexId].size()))
-        return -2;
-#endif
-      triangleId = vertexTriangleList_[vertexId][localTriangleId];
+      triangleId = vertexTriangleData_.get(vertexId, localTriangleId);
       return 0;
     }
 
     inline SimplexId getVertexTriangleNumberInternal(
       const SimplexId &vertexId) const override {
-
-#ifndef TTK_ENABLE_KAMIKAZE
-      if((vertexId < 0) || (vertexId >= (SimplexId)vertexTriangleList_.size()))
-        return -1;
-#endif
-      return vertexTriangleList_[vertexId].size();
+      return vertexTriangleData_.size(vertexId);
     }
 
     inline const std::vector<std::vector<SimplexId>> *
       getVertexTrianglesInternal() override {
-
+      vertexTriangleData_.copyTo(vertexTriangleList_);
       return &vertexTriangleList_;
     }
 
@@ -983,7 +969,7 @@ namespace ttk {
 
     inline int preconditionVertexTrianglesInternal() override {
 
-      if((SimplexId)vertexTriangleList_.size() != vertexNumber_) {
+      if((SimplexId)vertexTriangleData_.subvectorsNumber() != vertexNumber_) {
 
         preconditionTrianglesInternal();
 
@@ -991,7 +977,7 @@ namespace ttk {
         twoSkeleton.setWrapper(this);
 
         twoSkeleton.buildVertexTriangles(
-          vertexNumber_, triangleList_, vertexTriangleList_);
+          vertexNumber_, triangleList_, vertexTriangleData_);
       }
 
       return 0;
@@ -1096,6 +1082,7 @@ namespace ttk {
 
     FlatJaggedArray vertexNeighborData_;
     FlatJaggedArray vertexEdgeData_;
+    FlatJaggedArray vertexTriangleData_;
   };
 } // namespace ttk
 

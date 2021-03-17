@@ -1,4 +1,3 @@
-#include <OpenMPLock.h>
 #include <TwoSkeleton.h>
 
 using namespace std;
@@ -544,39 +543,47 @@ int TwoSkeleton::buildTriangleLinks(
 int TwoSkeleton::buildVertexTriangles(
   const SimplexId &vertexNumber,
   const vector<std::array<SimplexId, 3>> &triangleList,
-  vector<vector<SimplexId>> &vertexTriangleList) const {
+  FlatJaggedArray &vertexTriangles) const {
 
-  Timer t;
+  Timer tm;
 
-  printMsg("Building vertex triangles", 0, 0, threadNumber_,
-           ttk::debug::LineMode::REPLACE);
+  printMsg("Building vertex triangles", 0, 0, 1, ttk::debug::LineMode::REPLACE);
 
-  vertexTriangleList.resize(vertexNumber);
-  std::vector<Lock> vertLock(vertexNumber);
+  std::vector<SimplexId> offsets(vertexNumber + 1);
+  // number of triangles processed per vertex
+  std::vector<SimplexId> trianglesId(vertexNumber);
 
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_) schedule(guided)
-#endif
-  for(size_t i = 0; i < triangleList.size(); i++) {
-    for(size_t j = 0; j < triangleList[i].size(); j++) {
-      vertLock[triangleList[i][j]].lock();
-      vertexTriangleList[triangleList[i][j]].push_back(i);
-      vertLock[triangleList[i][j]].unlock();
-    }
+  // store number of triangles per vertex
+  for(const auto &t : triangleList) {
+    offsets[t[0] + 1]++;
+    offsets[t[1] + 1]++;
+    offsets[t[2] + 1]++;
   }
 
-  if(this->threadNumber_ > 1) {
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
-#endif
-    for(size_t i = 0; i < vertexTriangleList.size(); i++) {
-      auto &vec = vertexTriangleList[i];
-      std::sort(vec.begin(), vec.end());
-    }
+  // compute partial sum of number of neighbors per vertex
+  for(size_t i = 1; i < offsets.size(); ++i) {
+    offsets[i] += offsets[i - 1];
   }
+
+  // allocate flat neighbors vector
+  std::vector<SimplexId> data(offsets.back());
+
+  // fill flat data vector using offsets and triangles count vectors
+  for(size_t i = 0; i < triangleList.size(); ++i) {
+    const auto &t{triangleList[i]};
+    data[offsets[t[0]] + trianglesId[t[0]]] = i;
+    trianglesId[t[0]]++;
+    data[offsets[t[1]] + trianglesId[t[1]]] = i;
+    trianglesId[t[1]]++;
+    data[offsets[t[2]] + trianglesId[t[2]]] = i;
+    trianglesId[t[2]]++;
+  }
+
+  // fill FlatJaggedArray struct
+  vertexTriangles.setData(std::move(data), std::move(offsets));
 
   printMsg("Built " + std::to_string(vertexNumber) + " vertex triangles", 1,
-           t.getElapsedTime(), threadNumber_);
+           tm.getElapsedTime(), 1);
 
   return 0;
 }

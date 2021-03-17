@@ -244,7 +244,7 @@ namespace ttk {
     int buildVertexTriangles(
       const SimplexId &vertexNumber,
       const std::vector<std::array<SimplexId, 3>> &triangleList,
-      std::vector<std::vector<SimplexId>> &vertexTriangleList) const;
+      FlatJaggedArray &vertexTriangles) const;
   };
 } // namespace ttk
 
