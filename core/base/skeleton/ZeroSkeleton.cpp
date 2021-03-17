@@ -150,19 +150,18 @@ int ZeroSkeleton::buildVertexLink(const SimplexId &vertexId,
   return 0;
 }
 
-int ZeroSkeleton::buildVertexLinks(
-  const SimplexId &vertexNumber,
-  const CellArray &cellArray,
-  vector<vector<LongSimplexId>> &vertexLinks,
-  vector<vector<SimplexId>> *vertexStars) const {
+int ZeroSkeleton::buildVertexLinks(const SimplexId &vertexNumber,
+                                   const CellArray &cellArray,
+                                   vector<vector<LongSimplexId>> &vertexLinks,
+                                   FlatJaggedArray *vertexStars) const {
 
   auto localVertexStars = vertexStars;
-  vector<vector<SimplexId>> defaultVertexStars{};
+  FlatJaggedArray defaultVertexStars{};
   if(!localVertexStars) {
     localVertexStars = &defaultVertexStars;
   }
 
-  if((SimplexId)localVertexStars->size() != vertexNumber) {
+  if((SimplexId)localVertexStars->subvectorsNumber() != vertexNumber) {
     ZeroSkeleton zeroSkeleton;
     zeroSkeleton.setDebugLevel(debugLevel_);
     zeroSkeleton.setThreadNumber(threadNumber_);
@@ -179,7 +178,8 @@ int ZeroSkeleton::buildVertexLinks(
     vertexLinks.resize(vertexNumber);
     for(SimplexId i = 0; i < nbVertLinks; i++) {
       SimplexId nbVertsInLinkI = 0;
-      for(auto cid : (*localVertexStars)[i]) {
+      for(SimplexId j = 0; j < localVertexStars->size(i); ++j) {
+        const auto cid = localVertexStars->get(i, j);
         nbVertsInLinkI += cellArray.getCellVertexNumber(cid);
       }
       vertexLinks[i].resize(nbVertsInLinkI);
@@ -207,10 +207,10 @@ int ZeroSkeleton::buildVertexLinks(
     threadId = omp_get_thread_num();
 #endif
 
-    const SimplexId nbCellInStarI = (*localVertexStars)[i].size();
+    const SimplexId nbCellInStarI = localVertexStars->size(i);
     for(SimplexId j = 0; j < nbCellInStarI; j++) {
 
-      const SimplexId cellId = (*localVertexStars)[i][j];
+      const SimplexId cellId = localVertexStars->get(i, j);
       const SimplexId nbVertCell = cellArray.getCellVertexNumber(cellId);
 
       faceIds[threadId].resize(nbVertCell); // no realloc here
@@ -328,7 +328,7 @@ int ZeroSkeleton::buildVertexLinks(
 
 template <std::size_t n>
 int ZeroSkeleton::buildVertexLinks(
-  const vector<vector<SimplexId>> &vertexStars,
+  const FlatJaggedArray &vertexStars,
   const vector<std::array<SimplexId, n>> &cellEdges,
   const vector<std::array<SimplexId, 2>> &edgeList,
   vector<vector<SimplexId>> &vertexLinks) const {
@@ -344,7 +344,7 @@ int ZeroSkeleton::buildVertexLinks(
 
   Timer t;
 
-  vertexLinks.resize(vertexStars.size());
+  vertexLinks.resize(vertexStars.subvectorsNumber());
 
   printMsg("Building vertex links", 0, 0, threadNumber_,
            ttk::debug::LineMode::REPLACE);
@@ -354,9 +354,9 @@ int ZeroSkeleton::buildVertexLinks(
 #endif
   for(size_t i = 0; i < vertexLinks.size(); i++) {
 
-    for(size_t j = 0; j < vertexStars[i].size(); j++) {
-      for(size_t k = 0; k < cellEdges[vertexStars[i][j]].size(); k++) {
-        SimplexId edgeId = cellEdges[vertexStars[i][j]][k];
+    for(SimplexId j = 0; j < vertexStars.size(i); j++) {
+      for(size_t k = 0; k < cellEdges[vertexStars.get(i, j)].size(); k++) {
+        SimplexId edgeId = cellEdges[vertexStars.get(i, j)][k];
 
         SimplexId vertexId0 = edgeList[edgeId][0];
         SimplexId vertexId1 = edgeList[edgeId][1];
@@ -377,20 +377,20 @@ int ZeroSkeleton::buildVertexLinks(
 
 // explicit template instantiations for 3D cells (tetrahedrons)
 template int ZeroSkeleton::buildVertexLinks<6>(
-  const vector<vector<SimplexId>> &vertexStars,
+  const FlatJaggedArray &vertexStars,
   const vector<std::array<SimplexId, 6>> &cellEdges,
   const vector<std::array<SimplexId, 2>> &edgeList,
   vector<vector<SimplexId>> &vertexLinks) const;
 
 // explicit template instantiations for 2D cells (triangles)
 template int ZeroSkeleton::buildVertexLinks<3>(
-  const vector<vector<SimplexId>> &vertexStars,
+  const FlatJaggedArray &vertexStars,
   const vector<std::array<SimplexId, 3>> &cellEdges,
   const vector<std::array<SimplexId, 2>> &edgeList,
   vector<vector<SimplexId>> &vertexLinks) const;
 
 int ZeroSkeleton::buildVertexLinks(
-  const vector<vector<SimplexId>> &vertexStars,
+  const FlatJaggedArray &vertexStars,
   const vector<std::array<SimplexId, 4>> &cellTriangles,
   const vector<std::array<SimplexId, 3>> &triangleList,
   vector<vector<SimplexId>> &vertexLinks) const {
@@ -406,7 +406,7 @@ int ZeroSkeleton::buildVertexLinks(
 
   Timer t;
 
-  vertexLinks.resize(vertexStars.size());
+  vertexLinks.resize(vertexStars.subvectorsNumber());
 
   printMsg("Building vertex links", 0, 0, threadNumber_,
            ttk::debug::LineMode::REPLACE);
@@ -416,9 +416,9 @@ int ZeroSkeleton::buildVertexLinks(
 #endif
   for(size_t i = 0; i < vertexLinks.size(); i++) {
 
-    for(size_t j = 0; j < vertexStars[i].size(); j++) {
-      for(size_t k = 0; k < cellTriangles[vertexStars[i][j]].size(); k++) {
-        SimplexId triangleId = cellTriangles[vertexStars[i][j]][k];
+    for(SimplexId j = 0; j < vertexStars.size(i); j++) {
+      for(size_t k = 0; k < cellTriangles[vertexStars.get(i, j)].size(); k++) {
+        SimplexId triangleId = cellTriangles[vertexStars.get(i, j)][k];
 
         bool hasVertex = false;
         for(int l = 0; l < 3; l++) {
@@ -504,99 +504,62 @@ int ZeroSkeleton::buildVertexNeighbors(
   return 0;
 }
 
-int ZeroSkeleton::buildVertexStars(
-  const SimplexId &vertexNumber,
-  const CellArray &cellArray,
-  vector<vector<SimplexId>> &vertexStars) const {
-
-  // NOTE: parallel implementation not efficient (see bench at the bottom)
-  // let's force the usage of only 1 thread.
-  ThreadId oldThreadNumber = threadNumber_;
-  threadNumber_ = 1;
+int ZeroSkeleton::buildVertexStars(const SimplexId &vertexNumber,
+                                   const CellArray &cellArray,
+                                   FlatJaggedArray &vertexStars) const {
 
   Timer t;
 
-  printMsg("Building vertex stars", 0, 0, threadNumber_,
-           ttk::debug::LineMode::REPLACE);
+  printMsg("Building vertex stars", 0, 0, 1, ttk::debug::LineMode::REPLACE);
 
-  std::vector<std::vector<std::vector<SimplexId>>> zeroSkelThr(threadNumber_);
-  for(auto &vi : zeroSkelThr) {
-    vi.resize(vertexNumber);
-    for(auto &vij : vi) {
-      vij.reserve(32);
+  std::vector<SimplexId> offsets(vertexNumber + 1);
+  // number of cells processed per vertex
+  std::vector<SimplexId> cellIds(vertexNumber);
+
+  const auto cellNumber = cellArray.getNbCells();
+
+  // store number of stars per vertex
+  for(SimplexId i = 0; i < cellNumber; ++i) {
+    const auto nbVertCell = cellArray.getCellVertexNumber(i);
+    for(SimplexId j = 0; j < nbVertCell; ++j) {
+      offsets[cellArray.getCellVertex(i, j) + 1]++;
     }
   }
 
-  if(threadNumber_ > 1) {
-    vertexStars.resize(vertexNumber);
-    for(auto &vs : vertexStars) {
-      vs.reserve(32);
+  // compute partial sum of number of stars per vertex
+  for(size_t i = 1; i < offsets.size(); ++i) {
+    offsets[i] += offsets[i - 1];
+  }
+
+  // allocate flat data vector
+  std::vector<SimplexId> data(offsets.back());
+
+  // fill flat data vector using offsets and edges count vectors
+  for(SimplexId i = 0; i < cellNumber; ++i) {
+    const auto nbVertCell = cellArray.getCellVertexNumber(i);
+    for(SimplexId j = 0; j < nbVertCell; ++j) {
+      const auto v = cellArray.getCellVertex(i, j);
+      data[offsets[v] + cellIds[v]] = i;
+      cellIds[v]++;
     }
   }
 
-  const SimplexId cellNumber = cellArray.getNbCells();
-  const SimplexId timeBuckets = std::min<ttk::SimplexId>(10, cellNumber);
-
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
-#endif
-  for(SimplexId cid = 0; cid < cellNumber; cid++) {
-
-    ThreadId threadId = 0;
-#ifdef TTK_ENABLE_OPENMP
-    threadId = omp_get_thread_num();
-#endif
-
-    const SimplexId nbVertCell = cellArray.getCellVertexNumber(cid);
-    for(SimplexId j = 0; j < nbVertCell; j++) {
-      zeroSkelThr[threadId][cellArray.getCellVertex(cid, j)].emplace_back(cid);
-    }
-
-    if(debugLevel_ >= (int)(debug::Priority::INFO) && threadNumber_ == 1) {
-      if(!(cid % ((cellNumber) / timeBuckets))) {
-        printMsg("Building vertex stars", (cid / (float)cellNumber),
-                 t.getElapsedTime(), threadNumber_, debug::LineMode::REPLACE);
-      }
-    }
-  }
-
-  if(threadNumber_ > 1) {
-    // now merge the thing
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
-#endif
-    for(size_t j = 0; j < vertexStars.size(); j++) {
-      auto &dst = vertexStars[j];
-
-      for(size_t i = 0; i < zeroSkelThr.size(); ++i) {
-        const auto &vij = zeroSkelThr[i][j];
-
-        // looping on the vertex star
-        for(size_t k = 0; k < vij.size(); k++) {
-          if(std::find(dst.begin(), dst.end(), vij[k]) == dst.end())
-            dst.emplace_back(vij[k]);
-        }
-      }
-    }
-  } else {
-    vertexStars = std::move(zeroSkelThr[0]);
-  }
+  // fill FlatJaggedArray struct
+  vertexStars.setData(std::move(data), std::move(offsets));
 
   printMsg("Built " + std::to_string(vertexNumber) + " vertex stars", 1,
-           t.getElapsedTime(), threadNumber_);
+           t.getElapsedTime(), 1);
 
   if(debugLevel_ >= static_cast<int>(debug::Priority::VERBOSE)) {
-    for(size_t i = 0; i < vertexStars.size(); i++) {
+    for(size_t i = 0; i < vertexStars.subvectorsNumber(); i++) {
       stringstream msg;
-      msg << "Vertex #" << i << " (" << vertexStars[i].size() << " cell(s)): ";
-      for(size_t j = 0; j < vertexStars[i].size(); j++) {
-        msg << " " << vertexStars[i][j];
+      msg << "Vertex #" << i << " (" << vertexStars.size(i) << " cell(s)): ";
+      for(SimplexId j = 0; j < vertexStars.size(i); j++) {
+        msg << " " << vertexStars.get(i, j);
       }
       printMsg(msg.str(), debug::Priority::VERBOSE);
     }
   }
-
-  threadNumber_ = oldThreadNumber;
 
   // ethaneDiol.vtu, 8.7Mtets, hal9000 (12coresHT)
   // 1 thread: 0.53 s

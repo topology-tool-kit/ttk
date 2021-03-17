@@ -53,7 +53,7 @@ namespace ttk {
       const SimplexId &vertexNumber,
       const CellArray &cellArray,
       std::vector<std::vector<SimplexId>> &cellNeighbors,
-      std::vector<std::vector<SimplexId>> *vertexStars = nullptr) const;
+      FlatJaggedArray *vertexStars = nullptr) const;
 
     /// Compute the list of triangles connected to each edge for 3D
     /// triangulations (unspecified behavior if the input mesh is not a
@@ -122,7 +122,7 @@ namespace ttk {
       const SimplexId &vertexNumber,
       const CellArray &cellArray,
       std::vector<std::vector<SimplexId>> &edgeTriangleList,
-      std::vector<std::vector<SimplexId>> *vertexStarList = nullptr,
+      FlatJaggedArray *vertexStarList = nullptr,
       std::vector<std::array<SimplexId, 2>> *edgeList = nullptr,
       std::vector<std::vector<SimplexId>> *edgeStarList = nullptr,
       std::vector<std::array<SimplexId, 3>> *triangleList = nullptr,

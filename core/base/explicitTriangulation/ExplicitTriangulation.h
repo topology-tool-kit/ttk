@@ -498,28 +498,18 @@ namespace ttk {
       const SimplexId &vertexId,
       const int &localStarId,
       SimplexId &starId) const override {
-#ifndef TTK_ENABLE_KAMIKAZE
-      if((vertexId < 0) || (vertexId >= (SimplexId)vertexStarList_.size()))
-        return -1;
-      if((localStarId < 0)
-         || (localStarId >= (SimplexId)vertexStarList_[vertexId].size()))
-        return -2;
-#endif
-      starId = vertexStarList_[vertexId][localStarId];
+      starId = vertexStarData_.get(vertexId, localStarId);
       return 0;
     }
 
     inline SimplexId TTK_TRIANGULATION_INTERNAL(getVertexStarNumber)(
       const SimplexId &vertexId) const override {
-#ifndef TTK_ENABLE_KAMIKAZE
-      if((vertexId < 0) || (vertexId >= (SimplexId)vertexStarList_.size()))
-        return -1;
-#endif
-      return vertexStarList_[vertexId].size();
+      return vertexStarData_.size(vertexId);
     }
 
     inline const std::vector<std::vector<SimplexId>> *
       TTK_TRIANGULATION_INTERNAL(getVertexStars)() override {
+      vertexStarData_.copyTo(vertexStarList_);
       return &vertexStarList_;
     }
 
@@ -653,8 +643,8 @@ namespace ttk {
       // look for singletons
       if(getDimensionality() == 1) {
         preconditionVertexStarsInternal();
-        for(SimplexId i = 0; i < (SimplexId)vertexStarList_.size(); i++) {
-          if(vertexStarList_[i].size() == 1) {
+        for(size_t i = 0; i < vertexStarData_.subvectorsNumber(); i++) {
+          if(vertexStarData_.size(i) == 1) {
             boundaryVertices_[i] = true;
           }
         }
@@ -714,7 +704,7 @@ namespace ttk {
 
         // choice here (for the more likely)
         threeSkeleton.buildCellNeighborsFromVertices(
-          vertexNumber_, *cellArray_, cellNeighborList_, &vertexStarList_);
+          vertexNumber_, *cellArray_, cellNeighborList_, &vertexStarData_);
       }
 
       return 0;
@@ -808,7 +798,7 @@ namespace ttk {
         oneSkeleton.setWrapper(this);
         return oneSkeleton.buildEdgeStars(vertexNumber_, *cellArray_,
                                           edgeStarList_, &edgeList_,
-                                          &vertexStarList_);
+                                          &vertexStarData_);
       }
       return 0;
     }
@@ -825,7 +815,7 @@ namespace ttk {
         TwoSkeleton twoSkeleton;
         twoSkeleton.setWrapper(this);
         return twoSkeleton.buildEdgeTriangles(
-          vertexNumber_, *cellArray_, edgeTriangleList_, &vertexStarList_,
+          vertexNumber_, *cellArray_, edgeTriangleList_, &vertexStarData_,
           &edgeList_, &edgeStarList_, &triangleList_, &triangleStarList_,
           &tetraTriangleList_);
       }
@@ -925,14 +915,14 @@ namespace ttk {
           ZeroSkeleton zeroSkeleton;
           zeroSkeleton.setWrapper(this);
           return zeroSkeleton.buildVertexLinks(
-            vertexStarList_, triangleEdgeList_, edgeList_, vertexLinkList_);
+            vertexStarData_, triangleEdgeList_, edgeList_, vertexLinkList_);
         } else if(getDimensionality() == 3) {
           preconditionVertexStarsInternal();
           preconditionCellTrianglesInternal();
 
           ZeroSkeleton zeroSkeleton;
           zeroSkeleton.setWrapper(this);
-          return zeroSkeleton.buildVertexLinks(vertexStarList_,
+          return zeroSkeleton.buildVertexLinks(vertexStarData_,
                                                tetraTriangleList_,
                                                triangleList_, vertexLinkList_);
         } else {
@@ -957,12 +947,12 @@ namespace ttk {
 
     inline int preconditionVertexStarsInternal() override {
 
-      if((SimplexId)vertexStarList_.size() != vertexNumber_) {
+      if((SimplexId)vertexStarData_.subvectorsNumber() != vertexNumber_) {
         ZeroSkeleton zeroSkeleton;
         zeroSkeleton.setWrapper(this);
 
         return zeroSkeleton.buildVertexStars(
-          vertexNumber_, *cellArray_, vertexStarList_);
+          vertexNumber_, *cellArray_, vertexStarData_);
       }
       return 0;
     }
@@ -1083,6 +1073,7 @@ namespace ttk {
     FlatJaggedArray vertexNeighborData_;
     FlatJaggedArray vertexEdgeData_;
     FlatJaggedArray vertexTriangleData_;
+    FlatJaggedArray vertexStarData_;
   };
 } // namespace ttk
 

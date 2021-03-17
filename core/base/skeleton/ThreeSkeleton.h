@@ -115,7 +115,7 @@ namespace ttk {
       const SimplexId &vertexNumber,
       const CellArray &cellArray,
       std::vector<std::vector<SimplexId>> &cellNeighbors,
-      std::vector<std::vector<SimplexId>> *vertexStars = nullptr) const;
+      FlatJaggedArray *vertexStars = nullptr) const;
   };
 } // namespace ttk
 

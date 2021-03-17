@@ -241,7 +241,7 @@ int OneSkeleton::buildEdgeStars(const SimplexId &vertexNumber,
                                 const CellArray &cellArray,
                                 vector<vector<SimplexId>> &starList,
                                 vector<std::array<SimplexId, 2>> *edgeList,
-                                vector<vector<SimplexId>> *vertexStars) const {
+                                FlatJaggedArray *vertexStars) const {
 
   auto localEdgeList = edgeList;
   vector<std::array<SimplexId, 2>> defaultEdgeList{};
@@ -258,11 +258,11 @@ int OneSkeleton::buildEdgeStars(const SimplexId &vertexNumber,
     starList[i].reserve(16);
 
   auto localVertexStars = vertexStars;
-  vector<vector<SimplexId>> defaultVertexStars{};
+  FlatJaggedArray defaultVertexStars{};
   if(!localVertexStars) {
     localVertexStars = &defaultVertexStars;
   }
-  if((SimplexId)localVertexStars->size() != vertexNumber) {
+  if((SimplexId)localVertexStars->subvectorsNumber() != vertexNumber) {
     ZeroSkeleton zeroSkeleton;
     zeroSkeleton.setThreadNumber(threadNumber_);
     zeroSkeleton.setDebugLevel(debugLevel_);
@@ -283,18 +283,19 @@ int OneSkeleton::buildEdgeStars(const SimplexId &vertexNumber,
     SimplexId vertex1 = (*localEdgeList)[i][1];
 
     // merge the two vertex stars
-    for(size_t j = 0; j < (*localVertexStars)[vertex0].size(); j++) {
+    for(SimplexId j = 0; j < localVertexStars->size(vertex0); j++) {
 
       bool hasFound = false;
-      for(size_t k = 0; k < (*localVertexStars)[vertex1].size(); k++) {
-        if((*localVertexStars)[vertex0][j] == (*localVertexStars)[vertex1][k]) {
+      for(SimplexId k = 0; k < localVertexStars->size(vertex1); k++) {
+        if(localVertexStars->get(vertex0, j)
+           == localVertexStars->get(vertex1, k)) {
           hasFound = true;
           break;
         }
       }
       if(hasFound) {
         // common to the two vertex stars
-        starList[i].push_back((*localVertexStars)[vertex0][j]);
+        starList[i].push_back(localVertexStars->get(vertex0, j));
       }
     }
   }

@@ -131,8 +131,7 @@ namespace ttk {
                        std::vector<std::vector<SimplexId>> &starList,
                        std::vector<std::array<SimplexId, 2>> *edgeList
                        = nullptr,
-                       std::vector<std::vector<SimplexId>> *vertexStars
-                       = nullptr) const;
+                       FlatJaggedArray *vertexStars = nullptr) const;
 
     /// Compute the list of edges of a sub-portion of a valid triangulation.
     /// \param cellArray Cell container allowing to retrieve the vertices ids

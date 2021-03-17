@@ -81,8 +81,7 @@ namespace ttk {
     int buildVertexLinks(const SimplexId &vertexNumber,
                          const CellArray &cellArray,
                          std::vector<std::vector<LongSimplexId>> &vertexLinks,
-                         std::vector<std::vector<SimplexId>> *vertexStars
-                         = NULL) const;
+                         FlatJaggedArray *vertexStars = NULL) const;
 
     /// Compute the link of each vertex of a 2D triangulation (unspecified
     /// behavior if the input mesh is not a valid triangulation).
@@ -99,7 +98,7 @@ namespace ttk {
     /// \return Returns 0 upon success, negative values otherwise.
     template <std::size_t n>
     int
-      buildVertexLinks(const std::vector<std::vector<SimplexId>> &vertexStars,
+      buildVertexLinks(const FlatJaggedArray &vertexStars,
                        const std::vector<std::array<SimplexId, n>> &cellEdges,
                        const std::vector<std::array<SimplexId, 2>> &edgeList,
                        std::vector<std::vector<SimplexId>> &vertexLinks) const;
@@ -120,7 +119,7 @@ namespace ttk {
     /// corresponding vertex.
     /// \return Returns 0 upon success, negative values otherwise.
     int buildVertexLinks(
-      const std::vector<std::vector<SimplexId>> &vertexStars,
+      const FlatJaggedArray &vertexStars,
       const std::vector<std::array<SimplexId, 4>> &cellTriangles,
       const std::vector<std::array<SimplexId, 3>> &triangleList,
       std::vector<std::vector<SimplexId>> &vertexLinks) const;
@@ -159,10 +158,9 @@ namespace ttk {
     /// cells (3D: tetrahedra, 2D: triangles, etc.) connected to the entry's
     /// vertex.
     /// \return Returns 0 upon success, negative values otherwise.
-    int
-      buildVertexStars(const SimplexId &vertexNumber,
-                       const CellArray &cellArray,
-                       std::vector<std::vector<SimplexId>> &vertexStars) const;
+    int buildVertexStars(const SimplexId &vertexNumber,
+                         const CellArray &cellArray,
+                         FlatJaggedArray &vertexStars) const;
 
   protected:
   };

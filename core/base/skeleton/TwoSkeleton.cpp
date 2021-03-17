@@ -15,16 +15,16 @@ int TwoSkeleton::buildCellNeighborsFromVertices(
   const SimplexId &vertexNumber,
   const CellArray &cellArray,
   vector<vector<SimplexId>> &cellNeighbors,
-  vector<vector<SimplexId>> *vertexStars) const {
+  FlatJaggedArray *vertexStars) const {
 
   auto localVertexStars = vertexStars;
-  vector<vector<SimplexId>> defaultVertexStars{};
+  FlatJaggedArray defaultVertexStars{};
 
   if(!localVertexStars) {
     localVertexStars = &defaultVertexStars;
   }
 
-  if(!localVertexStars->size()) {
+  if(localVertexStars->empty()) {
     ZeroSkeleton zeroSkeleton;
     zeroSkeleton.setThreadNumber(threadNumber_);
     zeroSkeleton.setDebugLevel(debugLevel_);
@@ -43,13 +43,6 @@ int TwoSkeleton::buildCellNeighborsFromVertices(
     cellNeighbors[cid].reserve(nbVertCell);
   }
 
-  // pre-sort vertex stars
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
-#endif
-  for(SimplexId i = 0; i < vertexNumber; i++)
-    sort((*localVertexStars)[i].begin(), (*localVertexStars)[i].end());
-
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
@@ -62,36 +55,35 @@ int TwoSkeleton::buildCellNeighborsFromVertices(
       SimplexId v1 = cellArray.getCellVertex(cid, (j + 1) % nbVertCell);
 
       // perform an intersection of the 2 sorted star lists
-      size_t pos0 = 0, pos1 = 0;
+      SimplexId pos0 = 0, pos1 = 0;
       SimplexId intersection = -1;
 
-      while(pos0 < (*localVertexStars)[v0].size()
-            && pos1 < (*localVertexStars)[v1].size()) {
+      while(pos0 < localVertexStars->size(v0)
+            && pos1 < localVertexStars->size(v1)) {
 
-        SimplexId biggest = (*localVertexStars)[v0][pos0];
-        if((*localVertexStars)[v1][pos1] > biggest) {
-          biggest = (*localVertexStars)[v1][pos1];
+        SimplexId biggest = localVertexStars->get(v0, pos0);
+        if(localVertexStars->get(v1, pos1) > biggest) {
+          biggest = localVertexStars->get(v1, pos1);
         }
 
-        for(size_t l = pos0; l < (*localVertexStars)[v0].size(); l++) {
-          if((*localVertexStars)[v0][l] < biggest) {
+        for(SimplexId l = pos0; l < localVertexStars->size(v0); l++) {
+          if(localVertexStars->get(v0, l) < biggest) {
             pos0++;
           } else {
             break;
           }
         }
-        for(size_t l = pos1; l < (*localVertexStars)[v1].size(); l++) {
-          if((*localVertexStars)[v1][l] < biggest) {
+        for(SimplexId l = pos1; l < localVertexStars->size(v1); l++) {
+          if(localVertexStars->get(v1, l) < biggest) {
             pos1++;
           } else {
             break;
           }
         }
 
-        if((*localVertexStars)[v0][pos0] == (*localVertexStars)[v1][pos1]) {
-
-          if((*localVertexStars)[v0][pos0] != cid) {
-            intersection = (*localVertexStars)[v0][pos0];
+        if(localVertexStars->get(v0, pos0) == localVertexStars->get(v1, pos1)) {
+          if(localVertexStars->get(v0, pos0) != cid) {
+            intersection = localVertexStars->get(v0, pos0);
             break;
           }
 
@@ -116,7 +108,7 @@ int TwoSkeleton::buildEdgeTriangles(
   const SimplexId &vertexNumber,
   const CellArray &cellArray,
   vector<vector<SimplexId>> &edgeTriangleList,
-  vector<vector<SimplexId>> *vertexStarList,
+  FlatJaggedArray *vertexStarList,
   vector<std::array<SimplexId, 2>> *edgeList,
   vector<vector<SimplexId>> *edgeStarList,
   vector<std::array<SimplexId, 3>> *triangleList,
