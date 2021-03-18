@@ -428,7 +428,7 @@ int TwoSkeleton::buildTriangleEdgeList(
 
   triangleEdgeList.resize(localTriangleList->size());
 
-  Timer t;
+  Timer tm;
 
   printMsg("Building triangle edges", 0, 0, threadNumber_,
            ttk::debug::LineMode::REPLACE);
@@ -438,51 +438,25 @@ int TwoSkeleton::buildTriangleEdgeList(
   // let's do the real stuff
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
-#endif
+#endif // TTK_ENABLE_OPENMP
   for(size_t i = 0; i < localTriangleList->size(); i++) {
-    SimplexId nEdge{};
-    SimplexId vertexId = -1;
-    for(size_t j = 0; j < (*localTriangleList)[i].size(); j++) {
-      vertexId = (*localTriangleList)[i][j];
-
-      for(SimplexId k = 0; k < localVertexEdgeList->size(vertexId); k++) {
-        SimplexId edgeId = localVertexEdgeList->get(vertexId, k);
-
-        SimplexId otherVertexId = (*localEdgeList)[edgeId][0];
-
-        if(otherVertexId == vertexId) {
-          otherVertexId = (*localEdgeList)[edgeId][1];
-        }
-
-        bool isInTriangle = false;
-        for(size_t l = 0; l < (*localTriangleList)[i].size(); l++) {
-          if((*localTriangleList)[i][l] == otherVertexId) {
-            isInTriangle = true;
-            break;
-          }
-        }
-
-        if(isInTriangle) {
-          bool isIn = false;
-          for(size_t l = 0; l < triangleEdgeList[i].size(); l++) {
-            if(triangleEdgeList[i][l] == edgeId) {
-              isIn = true;
-              break;
-            }
-          }
-          if(!isIn) {
-            triangleEdgeList[i][nEdge] = edgeId;
-            nEdge++;
-          }
-        }
-      }
-    }
+    const auto &t = (*localTriangleList)[i];
+    const auto beg0 = localVertexEdgeList->get_ptr(t[0], 0);
+    const auto end0 = beg0 + localVertexEdgeList->size(t[0]);
+    const auto beg1 = localVertexEdgeList->get_ptr(t[1], 0);
+    const auto end1 = beg1 + localVertexEdgeList->size(t[1]);
+    const auto beg2 = localVertexEdgeList->get_ptr(t[2], 0);
+    const auto end2 = beg2 + localVertexEdgeList->size(t[2]);
+    std::set_intersection(beg0, end0, beg1, end1, &triangleEdgeList[i][0]);
+    std::set_intersection(beg0, end0, beg2, end2, &triangleEdgeList[i][1]);
+    std::set_intersection(beg1, end1, beg2, end2, &triangleEdgeList[i][2]);
+    std::sort(triangleEdgeList[i].begin(), triangleEdgeList[i].end());
   }
 
   SimplexId triangleNumber = localTriangleList->size();
 
   printMsg("Built " + to_string(triangleNumber) + " triangle edges", 1,
-           t.getElapsedTime(), threadNumber_);
+           tm.getElapsedTime(), threadNumber_);
 
   return 0;
 }
