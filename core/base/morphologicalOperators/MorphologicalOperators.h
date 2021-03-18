@@ -1,14 +1,14 @@
 /// \ingroup base
-/// \class ttk::DilateErode
+/// \class ttk::MorphologicalOperators
 /// \author Jonas Lukasczyk <jl@jluk.de>
 /// \date 01.07.2020
 ///
-/// \brief TTK %dilateErode processing package.
+/// \brief TTK %morphologicalOperators processing package.
 ///
-/// %DilateErode is a TTK processing package that either a) dilates a specified
-/// label by assigning the label of a corresponding vertex to all its neighbors,
-/// or b) erodes a specified label by assigning to a corresponding vertex the
-/// largest label among its neighbors.
+/// %MorphologicalOperators is a TTK processing package that either a) dilates a
+/// specified label by assigning the label of a corresponding vertex to all its
+/// neighbors, or b) erodes a specified label by assigning to a corresponding
+/// vertex the largest label among its neighbors.
 
 #pragma once
 
@@ -21,13 +21,13 @@
 
 namespace ttk {
 
-  class DilateErode : public virtual Debug {
+  class MorphologicalOperators : public virtual Debug {
   public:
-    DilateErode() {
-      this->setDebugMsgPrefix("DilateErode");
+    MorphologicalOperators() {
+      this->setDebugMsgPrefix("MorphologicalOperators");
     }
 
-    ~DilateErode() {
+    ~MorphologicalOperators() {
     }
 
     int preconditionTriangulation(
@@ -64,7 +64,7 @@ namespace ttk {
 } // namespace ttk
 
 template <class DT, class TT>
-int ttk::DilateErode::execute(
+int ttk::MorphologicalOperators::execute(
   // Output
   DT *outputLabels,
 
@@ -108,7 +108,7 @@ int ttk::DilateErode::execute(
 }
 
 template <class DT, class TT>
-int ttk::DilateErode::performElementaryMorphoOp(
+int ttk::MorphologicalOperators::performElementaryMorphoOp(
   // Output
   DT *outputLabels,
 

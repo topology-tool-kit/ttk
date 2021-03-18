@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ServerManagerConfiguration>
     <ProxyGroup name="filters">
-        <SourceProxy name="DilateErode" class="ttkDilateErode" label="TTK DilateErode">
-            <Documentation long_help="TTK dilateErode" short_help="TTK dilateErode">
+        <SourceProxy name="MorphologicalOperators" class="ttkMorphologicalOperators" label="TTK MorphologicalOperators">
+            <Documentation long_help="TTK morphologicalOperators" short_help="TTK morphologicalOperators">
 This filter either a) dilates a specified label by assigning the label of a corresponding vertex to all its neighbors, or b) erodes a specified label by assigning to a corresponding vertex the largest label among its neighbors.
             </Documentation>
 
