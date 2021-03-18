@@ -806,18 +806,11 @@ namespace ttk {
     inline int preconditionEdgeTrianglesInternal() override {
 
       if(!edgeTriangleList_.size()) {
-
-        // WARNING
-        // here vertexStarList and triangleStarList will be computed (for
-        // free) although they are not requireed to get the edgeTriangleList.
-        // if memory usage is an issue, please change these pointers by nullptr.
-
         TwoSkeleton twoSkeleton;
         twoSkeleton.setWrapper(this);
         return twoSkeleton.buildEdgeTriangles(
-          vertexNumber_, *cellArray_, edgeTriangleList_, &vertexStarData_,
-          &edgeList_, &edgeStarList_, &triangleList_, &triangleStarList_,
-          &tetraTriangleList_);
+          vertexNumber_, *cellArray_, edgeTriangleList_, &edgeList_,
+          &triangleList_, &vertexTriangleData_);
       }
 
       return 0;

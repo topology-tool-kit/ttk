@@ -65,15 +65,6 @@ namespace ttk {
     /// std::vector will be equal to the number of edges in the triangulation.
     /// Each entry will be a std::vector listing the triangle identifiers for
     /// each triangle connected to the entry's edge.
-    /// \param vertexStarList Optional output vertex star list (list of
-    /// tetrahedron identifiers for each vertex). If nullptr, the function will
-    /// compute this list anyway and free the related memory upon return. If not
-    /// nullptr but pointing to an empty std::vector, the function will fill
-    /// this empty std::vector (useful if this list needs to be used later on by
-    /// the calling program). If not nullptr but pointing to a non-empty
-    /// std::vector, this function will use this std::vector as internal vertex
-    /// star list. If this std::vector is not empty but incorrect, the behavior
-    /// is unspecified.
     /// \param edgeList Optional output edge list (list of std::pairs of vertex
     /// identifiers). If nullptr, the function will compute this list anyway and
     /// free the related memory upon return. If not nullptr but pointing to an
@@ -82,15 +73,6 @@ namespace ttk {
     /// nullptr but pointing to a non-empty std::vector, this function will use
     /// this std::vector as internal edge list. If this std::vector is not empty
     /// but incorrect, the behavior is unspecified.
-    /// \param edgeStarList Optional output edge star list (list of tetrahedron
-    /// identifiers for each edge). If nullptr, the function will compute this
-    /// list anyway and free the related memory upon return. If not nullptr but
-    /// pointing to an empty std::vector, the function will fill this empty
-    /// std::vector (useful if this list needs to be used later on by the
-    /// calling program). If not nullptr but pointing to a non-empty
-    /// std::vector, this function will use this std::vector as internal edge
-    /// star list. If this std::vector is not empty but incorrect, the behavior
-    /// is unspecified.
     /// \param triangleList Optional output triangle list (list of std::vectors
     /// of vertex identifiers). If nullptr, the function will compute this list
     /// anyway and free the related memory upon return. If not nullptr but
@@ -100,17 +82,8 @@ namespace ttk {
     /// std::vector, this function will use this std::vector as internal
     /// triangle list. If this std::vector is not empty but incorrect, the
     /// behavior is unspecified.
-    /// \param triangleStarList Optional output triangle star list (list of
-    /// tetrahedron identifiers for each triangle). If nullptr, the function
-    /// will compute this list anyway and free the related memory upon return.
-    /// If not nullptr but pointing to an empty std::vector, the function will
-    /// fill this empty std::vector (useful if this list needs to be used later
-    /// on by the calling program). If not nullptr but pointing to a non-empty
-    /// std::vector, this function will use this std::vector as internal
-    /// triangle star list. If this std::vector is not empty but incorrect, the
-    /// behavior is unspecified.
-    /// \param cellTriangleList Optional output cell triangle list (list of
-    /// triangle identifiers for each tetrahedron). If nullptr, the function
+    /// \param vertexTriangleList Optional output vertex triangle list (list of
+    /// triangle identifiers for each vertex). If nullptr, the function
     /// will compute this list anyway and free the related memory upon return.
     /// If not nullptr but pointing to an empty std::vector, the function will
     /// fill this empty std::vector (useful if this list needs to be used later
@@ -122,12 +95,9 @@ namespace ttk {
       const SimplexId &vertexNumber,
       const CellArray &cellArray,
       std::vector<std::vector<SimplexId>> &edgeTriangleList,
-      FlatJaggedArray *vertexStarList = nullptr,
       std::vector<std::array<SimplexId, 2>> *edgeList = nullptr,
-      std::vector<std::vector<SimplexId>> *edgeStarList = nullptr,
       std::vector<std::array<SimplexId, 3>> *triangleList = nullptr,
-      std::vector<std::vector<SimplexId>> *triangleStarList = nullptr,
-      std::vector<std::array<SimplexId, 4>> *cellTriangleList = nullptr) const;
+      FlatJaggedArray *vertexTriangleList = nullptr) const;
 
     /// Compute the list of triangles of a triangulation represented by a
     /// vtkUnstructuredGrid object. Unspecified behavior if the input mesh is
