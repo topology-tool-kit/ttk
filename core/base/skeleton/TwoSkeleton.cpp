@@ -107,8 +107,8 @@ int TwoSkeleton::buildCellNeighborsFromVertices(
 int TwoSkeleton::buildEdgeTriangles(
   const SimplexId &vertexNumber,
   const CellArray &cellArray,
-  vector<vector<SimplexId>> &edgeTriangleList,
-  vector<std::array<SimplexId, 2>> *edgeList,
+  FlatJaggedArray &edgeTriangleList,
+  std::vector<std::array<SimplexId, 2>> *edgeList,
   std::vector<std::array<SimplexId, 3>> *triangleEdgeList) const {
 
   // check the consistency of the variables -- to adapt
@@ -142,21 +142,45 @@ int TwoSkeleton::buildEdgeTriangles(
     buildTriangleEdgeList(vertexNumber, cellArray, *localTriangleEdgeList);
   }
 
-  edgeTriangleList.resize(localEdgeList->size());
+  const auto edgeNumber{localEdgeList->size()};
+
+  std::vector<SimplexId> offsets(edgeNumber + 1);
+  // number of neighbors processed per vertex
+  std::vector<SimplexId> trianglesId(edgeNumber);
 
   Timer t;
 
   printMsg("Building edge triangles", 0, 0, threadNumber_,
            ttk::debug::LineMode::REPLACE);
 
-  for(size_t i = 0; i < localTriangleEdgeList->size(); ++i) {
-    const auto &te = (*localTriangleEdgeList)[i];
-    edgeTriangleList[te[0]].emplace_back(i);
-    edgeTriangleList[te[1]].emplace_back(i);
-    edgeTriangleList[te[2]].emplace_back(i);
+  // store number of triangles per edge
+  for(const auto &te : *localTriangleEdgeList) {
+    offsets[te[0] + 1]++;
+    offsets[te[1] + 1]++;
+    offsets[te[2] + 1]++;
   }
 
-  SimplexId edgeNumber = localEdgeList->size();
+  // compute partial sum of number of triangles per edge
+  for(size_t i = 1; i < offsets.size(); ++i) {
+    offsets[i] += offsets[i - 1];
+  }
+
+  // allocate flat edge triangle vector
+  std::vector<SimplexId> edgeTriangles(offsets.back());
+
+  // fill flat neighbors vector using offsets and neighbors count vectors
+  for(size_t i = 0; i < localTriangleEdgeList->size(); ++i) {
+    const auto &te{(*localTriangleEdgeList)[i]};
+    edgeTriangles[offsets[te[0]] + trianglesId[te[0]]] = i;
+    trianglesId[te[0]]++;
+    edgeTriangles[offsets[te[1]] + trianglesId[te[1]]] = i;
+    trianglesId[te[1]]++;
+    edgeTriangles[offsets[te[2]] + trianglesId[te[2]]] = i;
+    trianglesId[te[2]]++;
+  }
+
+  // fill FlatJaggedArray struct
+  edgeTriangleList.setData(std::move(edgeTriangles), std::move(offsets));
 
   printMsg("Built " + to_string(edgeNumber) + " edge triangles", 1,
            t.getElapsedTime(), threadNumber_);

@@ -224,34 +224,18 @@ namespace ttk {
     inline int getEdgeTriangleInternal(const SimplexId &edgeId,
                                        const int &localTriangleId,
                                        SimplexId &triangleId) const override {
-
-#ifndef TTK_ENABLE_KAMIKAZE
-      if((edgeId < 0) || (edgeId >= (SimplexId)edgeTriangleList_.size()))
-        return -1;
-      if((localTriangleId < 0)
-         || (localTriangleId >= (SimplexId)edgeTriangleList_[edgeId].size()))
-        return -2;
-#endif
-
-      triangleId = edgeTriangleList_[edgeId][localTriangleId];
-
+      triangleId = edgeTriangleData_.get(edgeId, localTriangleId);
       return 0;
     }
 
     inline SimplexId
       getEdgeTriangleNumberInternal(const SimplexId &edgeId) const override {
-
-#ifndef TTK_ENABLE_KAMIKAZE
-      if((edgeId < 0) || (edgeId >= (SimplexId)edgeTriangleList_.size()))
-        return -1;
-#endif
-
-      return edgeTriangleList_[edgeId].size();
+      return edgeTriangleData_.size(edgeId);
     }
 
     inline const std::vector<std::vector<SimplexId>> *
       getEdgeTrianglesInternal() override {
-
+      edgeTriangleData_.copyTo(edgeTriangleList_);
       return &edgeTriangleList_;
     }
 
@@ -805,12 +789,12 @@ namespace ttk {
 
     inline int preconditionEdgeTrianglesInternal() override {
 
-      if(!edgeTriangleList_.size()) {
+      if(edgeTriangleData_.empty()) {
         TwoSkeleton twoSkeleton;
         twoSkeleton.setWrapper(this);
-        return twoSkeleton.buildEdgeTriangles(
-          vertexNumber_, *cellArray_, edgeTriangleList_, &edgeList_,
-          &triangleEdgeList_);
+        return twoSkeleton.buildEdgeTriangles(vertexNumber_, *cellArray_,
+                                              edgeTriangleData_, &edgeList_,
+                                              &triangleEdgeList_);
       }
 
       return 0;
@@ -1067,6 +1051,7 @@ namespace ttk {
     FlatJaggedArray vertexEdgeData_;
     FlatJaggedArray vertexTriangleData_;
     FlatJaggedArray vertexStarData_;
+    FlatJaggedArray edgeTriangleData_;
   };
 } // namespace ttk
 

@@ -85,7 +85,7 @@ namespace ttk {
     int buildEdgeTriangles(
       const SimplexId &vertexNumber,
       const CellArray &cellArray,
-      std::vector<std::vector<SimplexId>> &edgeTriangleList,
+      FlatJaggedArray &edgeTriangleList,
       std::vector<std::array<SimplexId, 2>> *edgeList = nullptr,
       std::vector<std::array<SimplexId, 3>> *triangleEdgeList = nullptr) const;
 
