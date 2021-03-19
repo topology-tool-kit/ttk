@@ -3,7 +3,19 @@
     <ProxyGroup name="filters">
         <SourceProxy name="ttkExtract" class="ttkExtract" label="TTK Extract">
             <Documentation long_help="TTK Extract" short_help="TTK Extract">
-This filter uses a list of values to extract either blocks of a 'vtkMultiBlockDataSet' by interpreting the values as block indices, or the subset of a 'vtkDataObject' whose point/cell values are contained in that list.
+This filter provides multiple methods to extract subsets of an input data object based on a logical expression:
+
+1. Blocks: The filter extracts all blocks of a vtkMultiBlockDataSet based on a list of block indices. It is also possible to extract a single block of a vtkMultiBlockDataSet and explicitly specify its type, which is then returned instead of a vtkMultiBlockDataSet containing a single block. This is especially useful to extract vtkImageData objects, in which case one also needs to specify the extent of the image.
+
+2. Block Tuples: Many pipelines produce vtkMultiBlockDataSets that contain vtkMultiBlockDataSets that represent lists. For example, a parent vtkMultiBlockDataSet might contain lists of Merge Trees, Persistence Diagrams, and Domain segmentations, where each entry in a list represents a timestep/ensemble member. Extracting all elements for a given list of timesteps/ensemble members is very cumbersome with the original block extraction method. The block tuples mode makes it possible to conveniently extract these tuples based on a list of timesteps/ensemble member indices.
+
+3. Rows: The filter extracts all rows of a vtkTable based on a list of row indices.
+
+4. Geometry: The filter extracts the subset of the input geometry whose point/cell data satisfies a logical expression. It is also possible to pass on the input dataset and only add a mask array that marks points/cells that satisfy the condition.
+
+5. Array Values: The filter extracts all array values of a vtkAbstractArray based on a list of value indices. The extracted values are stored in a new field data array.
+
+6. Arrays: The filter extracts all point/cell data arrays based on a given list of indices (not names).
             </Documentation>
 
             <InputProperty name="Input" port_index="0" command="SetInputConnection">
@@ -73,7 +85,12 @@ Auto: Extracted blocks (of any type) are appended to a new 'vtkMultiBlockDataSet
                 </RequiredProperties>
               </ExtentDomain>
               <Hints>
-                <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="OutputType" value="6"/>
+                <PropertyWidgetDecorator type="CompositeDecorator">
+                  <Expression type="and">
+                      <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="ExtractionMode" value="0"/>
+                      <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="OutputType" value="6"/>
+                  </Expression>
+                </PropertyWidgetDecorator>
               </Hints>
               <Documentation>Controls the minimum and maximum extent index in each dimension for outputs of type vtkImageData.</Documentation>
             </IntVectorProperty>
@@ -92,8 +109,9 @@ Auto: Extracted blocks (of any type) are appended to a new 'vtkMultiBlockDataSet
                     <Entry value="0" text="&lt;"/>
                     <Entry value="1" text="&lt;="/>
                     <Entry value="2" text="=="/>
-                    <Entry value="3" text="&gt;="/>
-                    <Entry value="4" text="&gt; "/>
+                    <Entry value="3" text="!="/>
+                    <Entry value="4" text="&gt;="/>
+                    <Entry value="5" text="&gt; "/>
                 </EnumerationDomain>
                 <Hints>
                     <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="ExtractionMode" value="2" />
@@ -101,7 +119,6 @@ Auto: Extracted blocks (of any type) are appended to a new 'vtkMultiBlockDataSet
                 <Documentation>Determines how vertex values are compared agains each value of the expression.</Documentation>
             </IntVectorProperty>
 
-            <!-- Geometry Mode -->
             <StringVectorProperty name="InputArray" label="Input Array" command="SetInputArrayToProcess" element_types="0 0 0 0 2" number_of_elements="5">
                 <ArrayListDomain name="array_list">
                     <RequiredProperties>
@@ -119,16 +136,25 @@ Auto: Extracted blocks (of any type) are appended to a new 'vtkMultiBlockDataSet
                 <Documentation>The array that will be used to determine which part of the geometry should be extracted.</Documentation>
             </StringVectorProperty>
 
+            <!-- Geometry Mode -->
             <IntVectorProperty name="CellMode" command="SetCellMode" number_of_elements="1" animateable="0" label="Cell Mode" default_values="0">
                 <EnumerationDomain name="enum">
                     <Entry value="0" text="All"/>
                     <Entry value="1" text="Any"/>
-                    <Entry value="2" text="Sub"/>
+                    <!--<Entry value="2" text="Sub"/>-->
                 </EnumerationDomain>
                 <Hints>
                     <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="ExtractionMode" value="2" />
                 </Hints>
-                <Documentation>Determines if a complete cell is extracted if "All" or "Any" of its vertices fulfill the criterion. If mode is set to "Sub", cells are reduced to the vertices that fulfill the criterion (e.g., to an edge of a triangle/tetrahedron).</Documentation>
+                <Documentation>Determines if a complete cell is extracted if "All" or "Any" of its vertices fulfill the criterion.</Documentation>
+            </IntVectorProperty>
+
+            <IntVectorProperty name="MaskOnly" number_of_elements="1" default_values="0" command="SetMaskOnly" >
+                <BooleanDomain name="bool" />
+                <Documentation>This option controls whether the filter will only add a mask array to the input dataset that is either 0 or 1 depending if a point/cell satisfies the input condition.</Documentation>
+                <Hints>
+                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="ExtractionMode" value="2" />
+                </Hints>
             </IntVectorProperty>
 
             <IntVectorProperty name="ArrayAttributeType" label="Attribute" command="SetArrayAttributeType" number_of_elements="1" default_values="0">
@@ -161,6 +187,7 @@ Auto: Extracted blocks (of any type) are appended to a new 'vtkMultiBlockDataSet
                 <Property name="InputArray" />
                 <Property name="ExtractUniqueValues" />
                 <Property name="CellMode" />
+                <Property name="MaskOnly" />
                 <Property name="ArrayAttributeType" />
             </PropertyGroup>
 

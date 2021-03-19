@@ -3,12 +3,41 @@
 /// \author Jonas Lukasczyk <jl@jluk.de>
 /// \date 1.10.2018
 ///
-/// \brief TTK VTK-filter that extracts blocks or a geometry subset
+/// \brief TTK VTK-filter that provides multiple methods to extract subsets of
+/// an input data object based on a logical expression.
 ///
-/// This filter uses a list of values to extract either blocks of a
-/// 'vtkMultiBlockDataSet' by interpreting the values as block indices, or the
-/// subset of a 'vtkDataObject' whose point/cell values are contained in that
-/// list.
+/// This filter provides multiple methods to extract subsets of an input data
+/// object based on a logical expression:
+///
+/// 1. Blocks: The filter extracts all blocks of a vtkMultiBlockDataSet based on
+/// a list of block indices. It is also possible to extract a single block of a
+/// vtkMultiBlockDataSet and explicitly specify its type, which is then returned
+/// instead of a vtkMultiBlockDataSet containing a single block. This is
+/// especially useful to extract vtkImageData objects.
+///
+/// 2. Block Tuples: Many pipelines produce vtkMultiBlockDataSets that contain
+/// vtkMultiBlockDataSets that represent lists. For example, a parent
+/// vtkMultiBlockDataSet might contain lists of Merge Trees, Persistence
+/// Diagrams, and Domain segmentations, where each entry in a list represents a
+/// timestep/ensemble member. Extracting all elements for a given list of
+/// timesteps/ensemble members is very cumbersome with the original block
+/// extraction method. The block tuples mode makes it possible to conveniently
+/// extract these tuples based on a list of timesteps/ensemble member indices.
+///
+/// 3. Rows: The filter extracts all rows of a vtkTable based on a list of row
+/// indices.
+///
+/// 4. Geometry: The filter extracts the subset of the input geometry whose
+/// point/cell data satisfies a logical expression. It is also possible to pass
+/// on the input dataset and only add a mask array that marks points/cells that
+/// satisfy the condition.
+///
+/// 5. Array Values: The filter extracts all array values of a vtkAbstractArray
+/// based on a list of value indices. The extracted values are stored in a new
+/// field data array.
+///
+/// 6. Arrays: The filter extracts all point/cell data arrays based on a given
+/// list of indices (not names).
 ///
 #pragma once
 
@@ -17,23 +46,57 @@
 
 // TTK includes
 #include <ttkAlgorithm.h>
+#include <ttkMacros.h>
 
 class TTKEXTRACT_EXPORT ttkExtract : public ttkAlgorithm {
 
+public:
+  enum class EXTRACTION_MODE {
+    AUTO = -1,
+    BLOCKS = 0,
+    ROWS = 1,
+    GEOMETRY = 2,
+    ARRAY_VALUES = 3,
+    ARRAYS = 4,
+    BLOCK_TUPLES = 5
+  };
+
+  enum class VALIDATION_MODE {
+    LESS_THEN = 0,
+    LESS_EQUAL_THEN = 1,
+    EQUAL = 2,
+    UNEQUAL = 3,
+    GREATER_EQUAL_THEN = 4,
+    GREATER_THEN = 5
+  };
+
+  enum class CELL_MODE { ALL = 0, ANY = 1 };
+
 private:
-  int ExtractionMode{0};
+  EXTRACTION_MODE ExtractionMode{EXTRACTION_MODE::AUTO};
+  VALIDATION_MODE ValidationMode{VALIDATION_MODE::EQUAL};
+  CELL_MODE CellMode{CELL_MODE::ALL};
+
   int OutputType{-1};
-  bool ExtractUniqueValues{true};
   std::string ExpressionString{""};
-  int ValidationMode{0};
-  int CellMode{0};
   int ArrayAttributeType{0};
+  bool ExtractUniqueValues{true};
   std::string OutputArrayName{"Data"};
   int ImageExtent[6]{0, 0, 0, 0, 0, 0};
+  bool MaskOnly{false};
 
 public:
-  vtkSetMacro(ExtractionMode, int);
-  vtkGetMacro(ExtractionMode, int);
+  ttkSetEnumMacro(ExtractionMode, EXTRACTION_MODE);
+  vtkGetEnumMacro(ExtractionMode, EXTRACTION_MODE);
+
+  ttkSetEnumMacro(ValidationMode, VALIDATION_MODE);
+  vtkGetEnumMacro(ValidationMode, VALIDATION_MODE);
+
+  ttkSetEnumMacro(CellMode, CELL_MODE);
+  vtkGetEnumMacro(CellMode, CELL_MODE);
+
+  vtkSetMacro(MaskOnly, bool);
+  vtkGetMacro(MaskOnly, bool);
 
   vtkSetMacro(OutputType, int);
   vtkGetMacro(OutputType, int);
@@ -43,12 +106,6 @@ public:
 
   vtkSetMacro(ExtractUniqueValues, bool);
   vtkGetMacro(ExtractUniqueValues, bool);
-
-  vtkSetMacro(ValidationMode, int);
-  vtkGetMacro(ValidationMode, int);
-
-  vtkSetMacro(CellMode, int);
-  vtkGetMacro(CellMode, int);
 
   vtkSetMacro(ArrayAttributeType, int);
   vtkGetMacro(ArrayAttributeType, int);
@@ -69,6 +126,10 @@ public:
   int ExtractRows(vtkDataObject *output,
                   vtkDataObject *input,
                   const std::vector<double> &indices) const;
+
+  int AddMaskArray(vtkDataObject *output,
+                   vtkDataObject *input,
+                   const std::vector<double> &labels);
 
   int ExtractGeometry(vtkDataObject *output,
                       vtkDataObject *input,

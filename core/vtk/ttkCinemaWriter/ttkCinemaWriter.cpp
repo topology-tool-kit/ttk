@@ -23,6 +23,7 @@
 // product writers
 #include <vtkPNGWriter.h>
 #include <vtkXMLDataObjectWriter.h>
+#include <vtkXMLMultiBlockDataWriter.h>
 
 // file lock
 #include <boost/interprocess/sync/file_lock.hpp>
@@ -67,7 +68,7 @@ int ensureFolder(std::string path) {
     return 0;
 }
 
-int ttkCinemaWriter::validateDatabasePath() {
+int ttkCinemaWriter::ValidateDatabasePath() {
   if(this->DatabasePath.length() < 4
      || this->DatabasePath.substr(this->DatabasePath.length() - 4, 4)
             .compare(".cdb")
@@ -80,12 +81,38 @@ int ttkCinemaWriter::validateDatabasePath() {
 }
 
 int ttkCinemaWriter::DeleteDatabase() {
-  this->Modified();
+  ttk::Timer t;
+  this->printMsg("Deleting CDB: " + this->DatabasePath, 0,
+                 ttk::debug::LineMode::REPLACE, ttk::debug::Priority::DETAIL);
 
-  if(this->validateDatabasePath() == 0)
+  this->Modified();
+  if(this->ValidateDatabasePath() == 0)
+    return 0;
+  int status = vtkDirectory::DeleteDirectory(this->DatabasePath.data());
+
+  this->printMsg("Deleting CDB: " + this->DatabasePath, 1, t.getElapsedTime());
+
+  return status;
+}
+
+int ttkCinemaWriter::GetLockFilePath(std::string &path) {
+  if(!this->ValidateDatabasePath())
     return 0;
 
-  return vtkDirectory::DeleteDirectory(this->DatabasePath.data());
+  path = this->DatabasePath + ".lockfile";
+
+  return 1;
+}
+
+int ttkCinemaWriter::InitializeLockFile() {
+  std::string lockFilePath;
+  if(!this->GetLockFilePath(lockFilePath))
+    return 0;
+
+  std::ofstream output(lockFilePath);
+  output.close();
+
+  return 1;
 }
 
 // =============================================================================
@@ -93,29 +120,30 @@ int ttkCinemaWriter::DeleteDatabase() {
 // =============================================================================
 int ttkCinemaWriter::ProcessDataProduct(vtkDataObject *input) {
 
-  // deal with multi-block inputs (no XML writer available)
-  if(input->GetDataObjectType() == VTK_MULTIBLOCK_DATA_SET) {
-    // take the first block only?
-    input = vtkMultiBlockDataSet::SafeDownCast(input)->GetBlock(0);
+  // ---------------------------------------------------------------------------
+  // Get Correct Data Product Extension
+  // ---------------------------------------------------------------------------
+  vtkSmartPointer<vtkXMLWriter> xmlWriter;
+  if(input->IsA("vtkDataSet")) {
+    xmlWriter = vtkSmartPointer<vtkXMLWriter>::Take(
+      vtkXMLDataObjectWriter::NewWriter(input->GetDataObjectType()));
+  } else if(input->IsA("vtkMultiBlockDataSet")) {
+    xmlWriter = vtkSmartPointer<vtkXMLMultiBlockDataWriter>::New();
+  } else {
+    return 0;
   }
 
-  // -------------------------------------------------------------------------
-  // Get Correct Data Product Extension
-  // -------------------------------------------------------------------------
-  auto xmlWriter
-    = vtkXMLDataObjectWriter::NewWriter(input->GetDataObjectType());
   xmlWriter->SetDataModeToAppended();
   xmlWriter->SetCompressorTypeToZLib();
   const auto compressor
     = vtkZLibDataCompressor::SafeDownCast(xmlWriter->GetCompressor());
-  if(compressor != nullptr) {
+  if(compressor != nullptr)
     compressor->SetCompressionLevel(this->CompressionLevel);
-  }
 
-  std::string productExtension = this->Mode == 0
+  std::string productExtension = this->Format == FORMAT::VTK
                                    ? xmlWriter->GetDefaultFileExtension()
-                                 : this->Mode == 1 ? "png"
-                                                   : "ttk";
+                                 : this->Format == FORMAT::PNG ? "png"
+                                                               : "ttk";
 
   // -------------------------------------------------------------------------
   // Prepare Field Data
@@ -164,16 +192,16 @@ int ttkCinemaWriter::ProcessDataProduct(vtkDataObject *input) {
         auto n = array->GetNumberOfTuples();
         auto m = array->GetNumberOfComponents();
         std::string value;
-        if(n < 0) {
+        if(n < 1) {
           value = "null";
         } else {
           value = "";
           for(int j = 0; j < n; j++) {
             for(int k = 0; k < m; k++) {
-              value += array->GetVariantValue(j * m + k).ToString() + ";";
+              value += array->GetVariantValue(j * m + k).ToString() + "|";
             }
-            if(j < n - 1)
-              value += "|";
+            value = value.substr(0, value.size() - 1);
+            value += ";";
           }
           value = value.substr(0, value.size() - 1);
         }
@@ -190,6 +218,7 @@ int ttkCinemaWriter::ProcessDataProduct(vtkDataObject *input) {
     rDataProductPath = "data/" + productId + "." + productExtension;
   }
 
+  // print keys
   {
     std::vector<std::vector<std::string>> rows(nFields + 1);
     for(size_t i = 0; i < nFields; i++)
@@ -203,6 +232,18 @@ int ttkCinemaWriter::ProcessDataProduct(vtkDataObject *input) {
   // Update database
   // ===========================================================================
   {
+    // Initilize file lock for remaining operations
+    std::string lockFilePath;
+    if(!this->GetLockFilePath(lockFilePath))
+      return 0;
+
+    boost::interprocess::file_lock flock;
+    try {
+      flock = boost::interprocess::file_lock(lockFilePath.data());
+      flock.lock();
+    } catch(boost::interprocess::interprocess_exception &) {
+    }
+
     std::string csvPath = this->DatabasePath + "/data.csv";
     struct stat info;
 
@@ -241,16 +282,7 @@ int ttkCinemaWriter::ProcessDataProduct(vtkDataObject *input) {
 
     // -------------------------------------------------------------------------
     // Update data.csv file
-    // -----------------------------------------------------------------
-
-    // Initilize file lock for remaining operations
-    boost::interprocess::file_lock flock(csvPath.data());
-    try {
-      // flock.lock();
-    } catch(boost::interprocess::interprocess_exception &) {
-      this->printErr("Unable to initialize write lock.");
-      return 0;
-    }
+    // -------------------------------------------------------------------------
 
     // read data.csv file
     auto csvTable = vtkSmartPointer<vtkTable>::New();
@@ -404,78 +436,89 @@ int ttkCinemaWriter::ProcessDataProduct(vtkDataObject *input) {
     this->printMsg("Writing data product to disk", 0,
                    ttk::debug::LineMode::REPLACE, ttk::debug::Priority::DETAIL);
 
-    if(this->Mode == 0) {
-      xmlWriter->SetFileName(
-        (this->DatabasePath + "/" + rDataProductPath).data());
-      xmlWriter->SetInputData(input);
-      xmlWriter->Write();
-    } else if(this->Mode == 1) {
-      auto inputAsID = vtkImageData::SafeDownCast(input);
-      if(!inputAsID) {
-        this->printErr("PNG format requires input of type 'vtkImageData'.");
-        return 0;
-      }
+    switch(this->Format) {
 
-      // search color array
-      {
-        bool found = false;
-        auto inputPD = inputAsID->GetPointData();
-        for(int i = 0; i < inputPD->GetNumberOfArrays(); i++) {
-          auto array = inputPD->GetAbstractArray(i);
-          if(array->IsA("vtkUnsignedCharArray")) {
-            inputPD->SetActiveScalars(inputPD->GetArrayName(i));
-            found = true;
-            break;
+      case FORMAT::VTK: {
+        xmlWriter->SetFileName(
+          (this->DatabasePath + "/" + rDataProductPath).data());
+        xmlWriter->SetInputData(input);
+        xmlWriter->Write();
+        break;
+      }
+      case FORMAT::PNG: {
+        auto inputAsID = vtkImageData::SafeDownCast(input);
+        if(!inputAsID) {
+          this->printErr("PNG format requires input of type 'vtkImageData'.");
+          return 0;
+        }
+
+        // search color array
+        {
+          bool found = false;
+          auto inputPD = inputAsID->GetPointData();
+          for(int i = 0; i < inputPD->GetNumberOfArrays(); i++) {
+            auto array = inputPD->GetAbstractArray(i);
+            if(array->IsA("vtkUnsignedCharArray")) {
+              inputPD->SetActiveScalars(inputPD->GetArrayName(i));
+              found = true;
+              break;
+            }
+          }
+
+          if(!found) {
+            this->printErr("Input image does not have any color array.");
+            return 0;
           }
         }
 
-        if(!found) {
-          this->printErr("Input image does not have any color array.");
+        auto imageWriter = vtkSmartPointer<vtkPNGWriter>::New();
+        imageWriter->SetCompressionLevel(this->CompressionLevel);
+        imageWriter->SetFileName(
+          (this->DatabasePath + "/" + rDataProductPath).data());
+        imageWriter->SetInputData(inputAsID);
+        imageWriter->Write();
+        break;
+      }
+      case FORMAT::TTK: {
+        // Topological Compression
+        if(!input->IsA("vtkImageData")) {
+          vtkErrorMacro(
+            "Cannot use Topological Compression without a vtkImageData");
           return 0;
         }
-      }
 
-      auto imageWriter = vtkSmartPointer<vtkPNGWriter>::New();
-      imageWriter->SetCompressionLevel(this->CompressionLevel);
-      imageWriter->SetFileName(
-        (this->DatabasePath + "/" + rDataProductPath).data());
-      imageWriter->SetInputData(inputAsID);
-      imageWriter->Write();
-    } else {
-      // Topological Compression
-      if(!input->IsA("vtkImageData")) {
-        vtkErrorMacro(
-          "Cannot use Topological Compression without a vtkImageData");
+        const auto inputData = vtkImageData::SafeDownCast(input);
+        const auto sf = this->GetInputArrayToProcess(0, inputData);
+
+        vtkNew<ttkTopologicalCompressionWriter> topologicalCompressionWriter{};
+        topologicalCompressionWriter->SetInputArrayToProcess(
+          0, 0, 0, 0, sf->GetName());
+
+        topologicalCompressionWriter->SetTolerance(this->Tolerance);
+        topologicalCompressionWriter->SetMaximumError(this->MaximumError);
+        topologicalCompressionWriter->SetZFPBitBudget(this->ZFPBitBudget);
+        topologicalCompressionWriter->SetCompressionType(this->CompressionType);
+        topologicalCompressionWriter->SetSQMethodPV(this->SQMethodPV);
+        topologicalCompressionWriter->SetZFPOnly(this->ZFPOnly);
+        topologicalCompressionWriter->SetSubdivide(this->Subdivide);
+        topologicalCompressionWriter->SetUseTopologicalSimplification(
+          this->UseTopologicalSimplification);
+
+        // Check that input scalar field is indeed scalar
+        if(sf->GetNumberOfComponents() != 1) {
+          vtkErrorMacro("Input scalar field should have only 1 component");
+          return 0;
+        }
+        topologicalCompressionWriter->SetDebugLevel(this->debugLevel_);
+        topologicalCompressionWriter->SetFileName(
+          (this->DatabasePath + "/" + rDataProductPath).data());
+        topologicalCompressionWriter->SetInputData(inputData);
+        topologicalCompressionWriter->Write();
+        break;
+      }
+      default:
+        this->printErr("Unsupported Format");
         return 0;
-      }
-
-      const auto inputData = vtkImageData::SafeDownCast(input);
-      const auto sf = this->GetInputArrayToProcess(0, inputData);
-
-      vtkNew<ttkTopologicalCompressionWriter> topologicalCompressionWriter{};
-      topologicalCompressionWriter->SetInputArrayToProcess(
-        0, 0, 0, 0, sf->GetName());
-
-      topologicalCompressionWriter->SetTolerance(this->Tolerance);
-      topologicalCompressionWriter->SetMaximumError(this->MaximumError);
-      topologicalCompressionWriter->SetZFPBitBudget(this->ZFPBitBudget);
-      topologicalCompressionWriter->SetCompressionType(this->CompressionType);
-      topologicalCompressionWriter->SetSQMethodPV(this->SQMethodPV);
-      topologicalCompressionWriter->SetZFPOnly(this->ZFPOnly);
-      topologicalCompressionWriter->SetSubdivide(this->Subdivide);
-      topologicalCompressionWriter->SetUseTopologicalSimplification(
-        this->UseTopologicalSimplification);
-
-      // Check that input scalar field is indeed scalar
-      if(sf->GetNumberOfComponents() != 1) {
-        vtkErrorMacro("Input scalar field should have only 1 component");
-        return 0;
-      }
-      topologicalCompressionWriter->SetDebugLevel(this->debugLevel_);
-      topologicalCompressionWriter->SetFileName(
-        (this->DatabasePath + "/" + rDataProductPath).data());
-      topologicalCompressionWriter->SetInputData(inputData);
-      topologicalCompressionWriter->Write();
     }
 
     this->printMsg("Writing data product to disk", 1, t.getElapsedTime(),
@@ -493,12 +536,12 @@ int ttkCinemaWriter::RequestData(vtkInformation *request,
 
   // Print Status
   {
-    std::string modeS = this->Mode == 0   ? "VTK"
-                        : this->Mode == 1 ? "PNG"
-                                          : "TTK";
+    std::string format = this->Format == FORMAT::VTK   ? "VTK"
+                         : this->Format == FORMAT::PNG ? "PNG"
+                                                       : "TTK";
     this->printMsg({{"Database", this->DatabasePath},
                     {"C. Level", std::to_string(this->CompressionLevel)},
-                    {"Format", modeS},
+                    {"Format", format},
                     {"Iterate", this->IterateMultiBlock ? "Yes" : "No"}});
     this->printMsg(ttk::debug::Separator::L1);
   }
@@ -508,26 +551,37 @@ int ttkCinemaWriter::RequestData(vtkInformation *request,
   // -------------------------------------------------------------------------
   auto input = vtkDataObject::GetData(inputVector[0]);
   auto output = vtkDataObject::GetData(outputVector);
-
-  if(this->ForwardInput) {
+  if(this->ForwardInput)
     output->ShallowCopy(input);
-  }
 
   // -------------------------------------------------------------------------
   // Prepare Database
   // -------------------------------------------------------------------------
-  // Check if database path is valid
-  if(this->validateDatabasePath() == 0)
-    return 0;
+  {
+    // Initilize file lock for remaining operations
+    std::string lockFilePath;
+    if(!this->GetLockFilePath(lockFilePath))
+      return 0;
 
-  if(ensureFolder(this->DatabasePath) == 0) {
-    this->printErr("Unable to open/create cinema database.");
-    return 0;
-  }
+    boost::interprocess::file_lock flock;
+    try {
+      flock = boost::interprocess::file_lock(lockFilePath.data());
+      flock.lock();
+    } catch(boost::interprocess::interprocess_exception &) {
+    }
 
-  if(ensureFolder(this->DatabasePath + "/data") == 0) {
-    this->printErr("Unable to open/create cinema database.");
-    return 0;
+    if(this->ValidateDatabasePath() == 0)
+      return 0;
+
+    if(ensureFolder(this->DatabasePath) == 0) {
+      this->printErr("Unable to open/create cinema database.");
+      return 0;
+    }
+
+    if(ensureFolder(this->DatabasePath + "/data") == 0) {
+      this->printErr("Unable to open/create cinema database.");
+      return 0;
+    }
   }
 
   auto inputAsMB = vtkMultiBlockDataSet::SafeDownCast(input);

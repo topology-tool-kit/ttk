@@ -11,6 +11,41 @@ using ttkSimplexIdTypeArray = vtkIdTypeArray;
 using ttkSimplexIdTypeArray = vtkIntArray;
 #endif
 
+#ifndef vtkSetEnumMacro
+#define vtkSetEnumMacro(name, enumType)                                        \
+  virtual void Set##name(enumType _arg) {                                      \
+    vtkDebugMacro(<< this->GetClassName() << " (" << this                      \
+                  << "): setting " #name " to "                                \
+                  << static_cast<std::underlying_type<enumType>::type>(_arg)); \
+    if(this->name != _arg) {                                                   \
+      this->name = _arg;                                                       \
+      this->Modified();                                                        \
+    }                                                                          \
+  }
+#endif
+
+#ifndef vtkGetEnumMacro
+#define vtkGetEnumMacro(name, enumType)                                      \
+  virtual enumType Get##name() const {                                       \
+    vtkDebugMacro(<< this->GetClassName() << " (" << this << "): returning " \
+                  << #name " of "                                            \
+                  << static_cast<std::underlying_type<enumType>::type>(      \
+                       this->name));                                         \
+    return this->name;                                                       \
+  }
+#endif
+
+#define ttkSetEnumMacro(name, enumType)                   \
+  virtual void Set##name(int _arg) {                      \
+    vtkDebugMacro(<< this->GetClassName() << " (" << this \
+                  << "): setting " #name " to " << _arg); \
+    if(this->name != static_cast<enumType>(_arg)) {       \
+      this->name = static_cast<enumType>(_arg);           \
+      this->Modified();                                   \
+    }                                                     \
+  }                                                       \
+  vtkSetEnumMacro(name, enumType);
+
 #define ttkVtkTemplateMacroCase(                         \
   dataType, triangulationType, triangulationClass, call) \
   case triangulationType: {                              \

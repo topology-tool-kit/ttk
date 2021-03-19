@@ -47,11 +47,11 @@ int ttkForEach::RequestData(vtkInformation *request,
 
   // Determine Mode
   auto mode = this->GetExtractionMode();
-  if(mode < 0) {
+  if(mode == EXTRACTION_MODE::AUTO) {
     if(input->IsA("vtkMultiBlockDataSet"))
-      mode = 0;
+      mode = EXTRACTION_MODE::BLOCKS;
     else if(input->IsA("vtkTable"))
-      mode = 1;
+      mode = EXTRACTION_MODE::ROWS;
     else {
       this->printErr("Unable to automatically determine iteration mode.");
       return 0;
@@ -59,57 +59,75 @@ int ttkForEach::RequestData(vtkInformation *request,
   }
 
   // Get Iteration Bounds
-  if(mode == 0) {
-    auto inputAsMB = vtkMultiBlockDataSet::SafeDownCast(input);
-    if(!inputAsMB) {
-      this->printErr("Block iteration requires 'vtkMultiBlockDataSet' input.");
-      return 0;
+  switch(mode) {
+    case EXTRACTION_MODE::BLOCKS: {
+      auto inputAsMB = vtkMultiBlockDataSet::SafeDownCast(input);
+      if(!inputAsMB) {
+        this->printErr(
+          "Block iteration requires 'vtkMultiBlockDataSet' input.");
+        return 0;
+      }
+      this->IterationNumber = inputAsMB->GetNumberOfBlocks();
+      break;
     }
-    this->IterationNumber = inputAsMB->GetNumberOfBlocks();
-  } else if(mode == 1) {
-    auto inputAsT = vtkTable::SafeDownCast(input);
-    if(!inputAsT) {
-      this->printErr("Row iteration requires 'vtkTable' input.");
-      return 0;
-    }
-    this->IterationNumber = inputAsT->GetNumberOfRows();
-  } else if(mode == 3) {
-    auto inputArray = this->GetInputArrayToProcess(0, inputVector);
-    if(!inputArray) {
-      this->printErr("Unable to retrieve input array.");
-      return 0;
-    }
-    this->IterationNumber = inputArray->GetNumberOfTuples();
-  } else if(mode == 4) {
-    auto inputFD
-      = input->GetAttributesAsFieldData(this->GetArrayAttributeType());
-    if(inputFD == nullptr) {
-      this->printErr("Unable to retrieve attribute type.");
-      return 0;
-    } else {
-      this->IterationNumber = inputFD->GetNumberOfArrays();
-    }
-  } else if(mode == 5) {
-    auto inputAsMB = vtkMultiBlockDataSet::SafeDownCast(input);
 
-    if(!inputAsMB || inputAsMB->GetNumberOfBlocks() < 1) {
-      this->printErr(
-        "Block Tuple iteration requires 'vtkMultiBlockDataSet' input that "
-        "contains at least one 'vtkMultiBlockDataSet'.");
+    case EXTRACTION_MODE::BLOCK_TUPLES: {
+      auto inputAsMB = vtkMultiBlockDataSet::SafeDownCast(input);
+
+      if(!inputAsMB || inputAsMB->GetNumberOfBlocks() < 1) {
+        this->printErr(
+          "Block Tuple iteration requires 'vtkMultiBlockDataSet' input that "
+          "contains at least one 'vtkMultiBlockDataSet'.");
+        return 0;
+      }
+      auto firstComponent
+        = vtkMultiBlockDataSet::SafeDownCast(inputAsMB->GetBlock(0));
+      if(!firstComponent) {
+        this->printErr(
+          "Block Tuple iteration requires 'vtkMultiBlockDataSet' input that "
+          "contains at least one 'vtkMultiBlockDataSet'.");
+        return 0;
+      }
+      this->IterationNumber = firstComponent->GetNumberOfBlocks();
+      break;
+    }
+
+    case EXTRACTION_MODE::ROWS: {
+      auto inputAsT = vtkTable::SafeDownCast(input);
+      if(!inputAsT) {
+        this->printErr("Row iteration requires 'vtkTable' input.");
+        return 0;
+      }
+      this->IterationNumber = inputAsT->GetNumberOfRows();
+      break;
+    }
+
+    case EXTRACTION_MODE::ARRAY_VALUES: {
+      auto inputArray = this->GetInputArrayToProcess(0, inputVector);
+      if(!inputArray) {
+        this->printErr("Unable to retrieve input array.");
+        return 0;
+      }
+      this->IterationNumber = inputArray->GetNumberOfTuples();
+      break;
+    }
+
+    case EXTRACTION_MODE::ARRAYS: {
+      auto inputFD
+        = input->GetAttributesAsFieldData(this->GetArrayAttributeType());
+      if(inputFD) {
+        this->IterationNumber = inputFD->GetNumberOfArrays();
+      } else {
+        this->printErr("Unable to retrieve attribute type.");
+        return 0;
+      }
+      break;
+    }
+
+    default: {
+      this->printErr("Unsupported mode");
       return 0;
     }
-    auto firstComponent
-      = vtkMultiBlockDataSet::SafeDownCast(inputAsMB->GetBlock(0));
-    if(!firstComponent) {
-      this->printErr(
-        "Block Tuple iteration requires 'vtkMultiBlockDataSet' input that "
-        "contains at least one 'vtkMultiBlockDataSet'.");
-      return 0;
-    }
-    this->IterationNumber = firstComponent->GetNumberOfBlocks();
-  } else {
-    this->printErr("Unsupported mode");
-    return 0;
   }
 
   // Iteration info
@@ -121,7 +139,7 @@ int ttkForEach::RequestData(vtkInformation *request,
   iterationInformation->SetValue(1, this->IterationNumber);
 
   std::string modeStrings[6] = {"B", "R", "G", "V", "A", "BT"};
-  this->printMsg("[" + modeStrings[mode] + "] Iteration: ( "
+  this->printMsg("[" + modeStrings[static_cast<int>(mode)] + "] Iteration: ( "
                    + std::to_string(this->IterationIdx) + " / "
                    + std::to_string(this->IterationNumber - 1) + " ) ",
                  ttk::debug::Separator::SLASH);

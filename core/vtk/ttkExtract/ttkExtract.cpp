@@ -16,6 +16,8 @@
 #include <vtkFieldData.h>
 #include <vtkIdTypeArray.h>
 #include <vtkPointData.h>
+#include <vtkSignedCharArray.h>
+#include <vtkThreshold.h>
 
 #include <ttkUtils.h>
 
@@ -59,21 +61,22 @@ int ttkExtract::FillInputPortInformation(int port, vtkInformation *info) {
 }
 
 int ttkExtract::FillOutputPortInformation(int port, vtkInformation *info) {
-  if(port == 0) {
-    if(info->Has(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT()))
-      info->Remove(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT());
-
-    if(this->OutputType != -1) {
-      std::string dataTypeName = this->GetVtkDataTypeName(this->OutputType);
-      if(dataTypeName.length() < 1) {
-        this->printErr("Unsupported output type");
-        return 0;
-      }
-      info->Set(vtkDataObject::DATA_TYPE_NAME(), dataTypeName.data());
-    } else
-      info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
-  } else
+  if(port != 0)
     return 0;
+
+  if(info->Has(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT()))
+    info->Remove(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT());
+
+  if(this->OutputType != -1) {
+    std::string DTName = this->GetVtkDataTypeName(this->OutputType);
+    if(DTName.length() < 1) {
+      this->printErr("Unsupported output type");
+      return 0;
+    }
+    info->Set(vtkDataObject::DATA_TYPE_NAME(), DTName.data());
+  } else
+    info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
+
   return 1;
 }
 
@@ -84,7 +87,8 @@ int ttkExtract::RequestInformation(vtkInformation *,
                                    vtkInformationVector **inputVector,
                                    vtkInformationVector *outputVector) {
 
-  if(this->ExtractionMode == 0 && this->GetOutputType() == VTK_IMAGE_DATA) {
+  if(this->ExtractionMode == EXTRACTION_MODE::BLOCKS
+     && this->GetOutputType() == VTK_IMAGE_DATA) {
     auto outInfo = outputVector->GetInformationObject(0);
     outInfo->Set(
       vtkStreamingDemandDrivenPipeline::WHOLE_EXTENT(), this->ImageExtent, 6);
@@ -284,567 +288,239 @@ int ttkExtract::ExtractRows(vtkDataObject *output,
   return 1;
 }
 
-template <typename dataType>
-struct ComperatorLessOrEqual {
-  static bool Test(const dataType &d0, const dataType &d1) {
-    return d0 <= d1;
-  }
-};
-template <typename dataType>
-struct ComperatorLess {
-  static bool Test(const dataType &d0, const dataType &d1) {
-    return d0 < d1;
-  }
-};
-template <typename dataType>
-struct ComperatorGreaterOrEqual {
-  static bool Test(const dataType &d0, const dataType &d1) {
-    return d0 >= d1;
-  }
-};
-template <typename dataType>
-struct ComperatorGreater {
-  static bool Test(const dataType &d0, const dataType &d1) {
-    return d0 > d1;
-  }
-};
-template <typename dataType>
-struct ComperatorEqual {
-  static bool Test(const dataType &d0, const dataType &d1) {
-    return d0 == d1;
-  }
-};
+template <typename DT>
+int computeMask_(signed char *mask,
 
-template <typename dataType, typename ComperatorType>
-int testPointDataArray(std::vector<int> &oIndex_to_mIndex_map,
+                 const size_t &nValues,
+                 const DT *values,
+                 const std::vector<DT> &min,
+                 const std::vector<DT> &max,
+                 const size_t &threadNumber) {
+  const size_t nPivotValues = min.size();
 
-                       const size_t &nPoints,
-                       const dataType *inputPointDataArray,
-                       const std::vector<dataType> pivotValues,
-                       const size_t &threadNumber) {
-  const size_t nPivotValues = pivotValues.size();
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber)
 #endif // TTK_ENABLE_OPENMP
-  for(size_t i = 0; i < nPoints; i++) {
+  for(size_t i = 0; i < nValues; i++) {
+    const DT &v = values[i];
+
     bool hasToBeMarked = false;
-    const dataType &v = inputPointDataArray[i];
-    for(size_t j = 0; j < nPivotValues; j++)
-      if(ComperatorType::Test(v, pivotValues[j]))
+    for(size_t j = 0; j < nPivotValues; j++) {
+      if(min[j] <= v && v <= max[j]) {
         hasToBeMarked = true;
-    if(hasToBeMarked)
-      oIndex_to_mIndex_map[i] = -2;
+        break;
+      }
+    }
+
+    mask[i] = hasToBeMarked ? 1 : 0;
   }
 
   return 1;
 }
 
-template <typename dataType, typename ComperatorType>
-int testCellDataArray(std::vector<int> &oIndex_to_mIndex_map,
+template <typename DT>
+int computeMask(signed char *mask,
 
-                      const size_t &nCells,
-                      const vtkIdType *inConnectivityList,
-                      const dataType *inputCellDataArray,
-                      const std::vector<dataType> pivotValues,
-                      const size_t &threadNumber) {
+                const std::vector<double> &pivotValues,
+                const size_t &nValues,
+                const DT *values,
+                const ttkExtract::VALIDATION_MODE &validationMode,
+                const size_t &threadNumber) {
+
   const size_t nPivotValues = pivotValues.size();
+  std::vector<DT> pivotValuesMin(nPivotValues);
+  std::vector<DT> pivotValuesMax(nPivotValues);
 
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber)
-#endif // TTK_ENABLE_OPENMP
-  for(size_t i = 0; i < nCells; i++) {
-    const dataType &v = inputCellDataArray[i];
+  const DT delta = std::numeric_limits<DT>::is_integer
+                     ? 1
+                     : std::numeric_limits<DT>::epsilon();
 
-    bool hasToBeMarked = false;
-    for(size_t j = 0; j < nPivotValues; j++)
-      if(ComperatorType::Test(v, pivotValues[j]))
-        hasToBeMarked = true;
-    if(hasToBeMarked) {
-      const auto &u = inConnectivityList[i * 3 + 1];
-      const auto &w = inConnectivityList[i * 3 + 2];
-      oIndex_to_mIndex_map[u] = -2;
-      oIndex_to_mIndex_map[w] = -2;
+  for(size_t i = 0; i < nPivotValues; i++) {
+
+    switch(validationMode) {
+      case ttkExtract::VALIDATION_MODE::LESS_THEN: {
+        pivotValuesMin[i] = std::numeric_limits<DT>::lowest();
+        pivotValuesMax[i] = ((DT)pivotValues[i]) - delta;
+        break;
+      }
+
+      case ttkExtract::VALIDATION_MODE::LESS_EQUAL_THEN: {
+        pivotValuesMin[i] = std::numeric_limits<DT>::lowest();
+        pivotValuesMax[i] = ((DT)pivotValues[i]);
+        break;
+      }
+
+      case ttkExtract::VALIDATION_MODE::EQUAL:
+      case ttkExtract::VALIDATION_MODE::UNEQUAL: {
+        pivotValuesMin[i] = ((DT)pivotValues[i]);
+        pivotValuesMax[i] = ((DT)pivotValues[i]);
+        break;
+      }
+
+      case ttkExtract::VALIDATION_MODE::GREATER_EQUAL_THEN: {
+        pivotValuesMin[i] = ((DT)pivotValues[i]);
+        pivotValuesMax[i] = std::numeric_limits<DT>::max();
+        break;
+      }
+
+      case ttkExtract::VALIDATION_MODE::GREATER_THEN: {
+        pivotValuesMin[i] = ((DT)pivotValues[i]) + delta;
+        pivotValuesMax[i] = std::numeric_limits<DT>::max();
+        break;
+      }
     }
   }
 
+  int status = computeMask_<DT>(
+    mask, nValues, values, pivotValuesMin, pivotValuesMax, threadNumber);
+
+  if(validationMode == ttkExtract::VALIDATION_MODE::UNEQUAL)
+    for(size_t i = 0; i < nValues; i++)
+      mask[i] = mask[i] == 0 ? 1 : 0;
+
+  return status;
+}
+
+int ttkExtract::AddMaskArray(vtkDataObject *output,
+                             vtkDataObject *input,
+                             const std::vector<double> &expressionValues) {
+  ttk::Timer timer;
+
+  this->printMsg(
+    "Computing Mask", 0, 0, this->threadNumber_, ttk::debug::LineMode::REPLACE);
+
+  // check if input/output are of correct type
+  auto inputAsDS = vtkDataSet::SafeDownCast(input);
+  auto outputAsDS = vtkDataSet::SafeDownCast(output);
+  if(!inputAsDS || !outputAsDS) {
+    this->printErr("Masks can only be computed on vtkDataSet inputs.");
+    return 0;
+  }
+
+  // retrieve input array
+  auto inputArray = this->GetInputArrayToProcess(0, input);
+  if(!inputArray || inputArray->GetNumberOfComponents() != 1) {
+    this->printErr("Unable to retrieve input scalar array.");
+    return 0;
+  }
+  std::string inputArrayName = inputArray->GetName();
+  const int inputArrayAssociation = this->GetInputArrayAssociation(0, input);
+  if(inputArrayAssociation != 0 && inputArrayAssociation != 1) {
+    this->printErr("Geometry extraction requires point or cell data.");
+    return 0;
+  }
+  const bool isPointDataArray = this->GetInputArrayAssociation(0, input) == 0;
+
+  // print updated status
+  std::string expressionValuesString = "";
+  doubleVectorToString(expressionValuesString, expressionValues);
+  const std::string ValidationModeS[6] = {"<", "<=", "==", "!=", ">=", ">"};
+  std::string msg = "Computing Mask: '" + inputArrayName + "' "
+                    + ValidationModeS[static_cast<int>(this->ValidationMode)]
+                    + " [" + expressionValuesString + "]";
+  ;
+  this->printMsg(msg, 0, 0, this->threadNumber_, ttk::debug::LineMode::REPLACE);
+
+  // initialize mask array
+  const size_t nInPoints = inputAsDS->GetNumberOfPoints();
+  const size_t nInCells = inputAsDS->GetNumberOfCells();
+  const size_t nOutValus = isPointDataArray ? nInPoints : nInCells;
+
+  auto maskArray = vtkSmartPointer<vtkSignedCharArray>::New();
+  maskArray->SetName("Mask");
+  maskArray->SetNumberOfTuples(nOutValus);
+  auto maskArrayData = ttkUtils::GetPointer<signed char>(maskArray);
+
+  // compute mask
+  int status = 0;
+  switch(inputArray->GetDataType()) {
+    vtkTemplateMacro((
+      status = computeMask<VTK_TT>(maskArrayData, expressionValues, nOutValus,
+                                   ttkUtils::GetPointer<VTK_TT>(inputArray),
+                                   this->ValidationMode, this->threadNumber_)));
+  }
+  if(!status) {
+    this->printErr("Unable to compute mask");
+    return 0;
+  }
+
+  // add to output
+  outputAsDS->ShallowCopy(inputAsDS);
+  if(isPointDataArray)
+    outputAsDS->GetPointData()->AddArray(maskArray);
+  else
+    outputAsDS->GetCellData()->AddArray(maskArray);
+
+  this->printMsg(msg, 1, timer.getElapsedTime(), this->threadNumber_);
+
   return 1;
-}
-
-template <typename dataType>
-int markVerticesBasedOnPointData(std::vector<int> &oIndex_to_mIndex_map,
-
-                                 const std::vector<double> pivotValues,
-                                 const size_t &nPoints,
-                                 const dataType *inputPointDataArray,
-                                 const size_t &validationMode,
-                                 const size_t &threadNumber) {
-  const size_t nPivotValues = pivotValues.size();
-  std::vector<dataType> pivotValuesDT(nPivotValues);
-  for(size_t i = 0; i < nPivotValues; i++)
-    pivotValuesDT[i] = (dataType)pivotValues[i];
-
-  if(validationMode == 0)
-    return testPointDataArray<dataType, ComperatorLess<dataType>>(
-      oIndex_to_mIndex_map, nPoints, inputPointDataArray, pivotValuesDT,
-      threadNumber);
-  else if(validationMode == 1)
-    return testPointDataArray<dataType, ComperatorLessOrEqual<dataType>>(
-      oIndex_to_mIndex_map, nPoints, inputPointDataArray, pivotValuesDT,
-      threadNumber);
-  else if(validationMode == 2)
-    return testPointDataArray<dataType, ComperatorEqual<dataType>>(
-      oIndex_to_mIndex_map, nPoints, inputPointDataArray, pivotValuesDT,
-      threadNumber);
-  else if(validationMode == 3)
-    return testPointDataArray<dataType, ComperatorGreaterOrEqual<dataType>>(
-      oIndex_to_mIndex_map, nPoints, inputPointDataArray, pivotValuesDT,
-      threadNumber);
-  else if(validationMode == 4)
-    return testPointDataArray<dataType, ComperatorGreater<dataType>>(
-      oIndex_to_mIndex_map, nPoints, inputPointDataArray, pivotValuesDT,
-      threadNumber);
-
-  return 0;
-}
-
-template <typename dataType>
-int markVerticesBasedOnCellData(std::vector<int> &oIndex_to_mIndex_map,
-
-                                const std::vector<double> pivotValues,
-                                const size_t &nCells,
-                                const vtkIdType *inConnectivityList,
-                                const dataType *inputCellDataArray,
-                                const size_t &validationMode,
-                                const size_t &threadNumber) {
-  const size_t nPivotValues = pivotValues.size();
-  std::vector<dataType> pivotValuesDT(nPivotValues);
-  for(size_t i = 0; i < nPivotValues; i++)
-    pivotValuesDT[i] = (dataType)pivotValues[i];
-
-  if(validationMode == 0)
-    return testCellDataArray<dataType, ComperatorLess<dataType>>(
-      oIndex_to_mIndex_map, nCells, inConnectivityList, inputCellDataArray,
-      pivotValuesDT, threadNumber);
-  else if(validationMode == 1)
-    return testCellDataArray<dataType, ComperatorLessOrEqual<dataType>>(
-      oIndex_to_mIndex_map, nCells, inConnectivityList, inputCellDataArray,
-      pivotValuesDT, threadNumber);
-  else if(validationMode == 2)
-    return testCellDataArray<dataType, ComperatorEqual<dataType>>(
-      oIndex_to_mIndex_map, nCells, inConnectivityList, inputCellDataArray,
-      pivotValuesDT, threadNumber);
-  else if(validationMode == 3)
-    return testCellDataArray<dataType, ComperatorGreaterOrEqual<dataType>>(
-      oIndex_to_mIndex_map, nCells, inConnectivityList, inputCellDataArray,
-      pivotValuesDT, threadNumber);
-  else if(validationMode == 4)
-    return testCellDataArray<dataType, ComperatorGreater<dataType>>(
-      oIndex_to_mIndex_map, nCells, inConnectivityList, inputCellDataArray,
-      pivotValuesDT, threadNumber);
-
-  return 0;
 }
 
 int ttkExtract::ExtractGeometry(vtkDataObject *output,
                                 vtkDataObject *input,
                                 const std::vector<double> &expressionValues) {
-  ttk::Timer globalTimer;
 
-  auto inputArray = this->GetInputArrayToProcess(0, input);
-  if(!inputArray) {
-    this->printErr("Unable to retrieve input array.");
-    return 0;
-  }
-  std::string inputArrayName = inputArray->GetName();
-
-  std::string expressionValuesString = "";
-  doubleVectorToString(expressionValuesString, expressionValues);
-
-  // print status
-  const std::string CellModeS[3] = {"All", "Any", "Sub"};
-  const std::string CellModeSLC[3] = {"all", "any", "sub"};
-  const std::string ValidationModeS[5] = {"<", "<=", "==", ">=", ">"};
-  {
-    this->printMsg(ttk::debug::Separator::L1);
-    this->printMsg({{"Ext. Mode", "Geometry"},
-                    {"Cell Mode", CellModeS[this->CellMode]},
-                    {"Condition", "'" + inputArrayName + "' "
-                                    + ValidationModeS[this->ValidationMode]
-                                    + " [" + expressionValuesString + "]"}});
-    this->printMsg(ttk::debug::Separator::L2);
-  }
-
-  // check input/output object validity
-  auto inputAsUG = vtkUnstructuredGrid::SafeDownCast(input);
-  auto outputAsUG = vtkUnstructuredGrid::SafeDownCast(output);
-  if(!inputAsUG || !outputAsUG) {
-    this->printErr(
-      "Geometry mode requires 'vtkUnstructuredGrid' input/output.");
+  auto inputAsDS = vtkDataSet::SafeDownCast(input);
+  auto outputAsDS = vtkDataSet::SafeDownCast(output);
+  if(!inputAsDS || !outputAsDS) {
+    this->printErr("Geometry mode requires vtkDataSet input.");
     return 0;
   }
 
-  if(inputArray->GetNumberOfComponents() != 1) {
-    this->printErr("Data array '" + inputArrayName
-                   + "' must have only one component.");
+  auto maskOutput = vtkSmartPointer<vtkDataSet>::Take(inputAsDS->NewInstance());
+
+  if(!this->AddMaskArray(maskOutput, inputAsDS, expressionValues))
     return 0;
-  }
 
-  // get points and cells
-  const size_t nPoints = inputAsUG->GetNumberOfPoints();
-  auto inputPD = inputAsUG->GetPointData();
-  auto inputCD = inputAsUG->GetCellData();
+  if(this->MaskOnly) {
+    outputAsDS->ShallowCopy(maskOutput);
+  } else {
+    ttk::Timer timer;
+    this->printMsg(
+      "Extracting Geometry based on Mask", 0, 0, ttk::debug::LineMode::REPLACE);
 
-  // Input Topo
-  size_t nInCells = inputAsUG->GetNumberOfCells();
-  //   vtkIdType *inConnectivityList = inputAsUG->GetCells()->GetPointer();
-  vtkIdType *inConnectivityList
-    = inputAsUG->GetCells()->GetData()->GetPointer(0);
-  // Marked Points:
-  //     -1: does not satisfy condition
-  //     -2: satisfies condition
-  //     -3: satisfies condition extended to cell mode
-  //    >=0: mIndex
-  std::vector<int> oIndex_to_mIndex_map(nPoints, -1);
-  std::vector<bool> markedCells(nInCells, false);
-  int nMarkedPoints = 0;
-
-  // Output Topo Stats
-  size_t outTopologyDataSize = 0;
-  size_t nOutCells = 0;
-
-  // ---------------------------------------------------------------------
-  // Marking Vertices
-  // ---------------------------------------------------------------------
-  {
-    this->printMsg("Marking " + CellModeSLC[this->CellMode] + " cells with '"
-                     + inputArrayName + "' "
-                     + ValidationModeS[this->ValidationMode] + " ["
-                     + expressionValuesString + "]",
-                   0, ttk::debug::LineMode::REPLACE);
-    ttk::Timer t;
-
-    // Mark vertices that satisfy condition
-    if(this->GetInputArrayAssociation(0, input) == 0) {
-      switch(inputArray->GetDataType()) {
-        vtkTemplateMacro(markVerticesBasedOnPointData<VTK_TT>(
-          oIndex_to_mIndex_map, expressionValues, nPoints,
-          (VTK_TT *)inputArray->GetVoidPointer(0), this->ValidationMode,
-          this->threadNumber_));
-      }
-    } else if(this->GetInputArrayAssociation(0, input) == 1) {
-      switch(inputArray->GetDataType()) {
-        vtkTemplateMacro(markVerticesBasedOnCellData<VTK_TT>(
-          oIndex_to_mIndex_map, expressionValues, nInCells, inConnectivityList,
-          (VTK_TT *)inputArray->GetVoidPointer(0), this->ValidationMode,
-          this->threadNumber_));
-      }
-    } else {
+    auto outputAsUG = vtkUnstructuredGrid::SafeDownCast(output);
+    if(!outputAsUG) {
       this->printErr(
-        "Geomerty extraction is only supported based on point and cell data.");
+        "Geometry Extraction requires vtkUnstructuredGrid input/output");
       return 0;
     }
 
-    // Mark vertices based on cell mode and determine outTopo stats
-    {
-      if(this->CellMode == 0) {
-        // All
-        for(size_t i = 0, inTopoIndex = 0; i < nInCells; i++) {
-          size_t nVertices = inConnectivityList[inTopoIndex];
+    const bool isPointDataArray = this->GetInputArrayAssociation(0, input) == 0;
 
-          bool all = true;
-          for(size_t j = 1; j <= nVertices; j++)
-            if(oIndex_to_mIndex_map[inConnectivityList[inTopoIndex + j]]
-               == -1) {
-              all = false;
-              break;
-            }
+    auto threshold = vtkSmartPointer<vtkThreshold>::New();
+    threshold->SetInputDataObject(maskOutput);
+    threshold->SetInputArrayToProcess(
+      0, 0, 0, isPointDataArray ? 0 : 1, "Mask");
+    threshold->ThresholdByUpper(0.5);
+    threshold->SetAllScalars(this->CellMode == CELL_MODE::ALL);
+    threshold->Update();
 
-          if(all) {
-            nOutCells++;
-            markedCells[i] = true;
-            for(size_t j = 1; j <= nVertices; j++)
-              oIndex_to_mIndex_map[inConnectivityList[inTopoIndex + j]] = -3;
-            outTopologyDataSize += 1 + nVertices;
-          }
+    outputAsDS->ShallowCopy(threshold->GetOutput());
 
-          inTopoIndex += nVertices + 1;
-        }
-
-      } else if(this->CellMode == 1) {
-        // Any
-
-        // Mark Border Vertices
-        for(size_t i = 0, inTopoIndex = 0; i < nInCells; i++) {
-          size_t nVertices = inConnectivityList[inTopoIndex];
-          size_t mVertices = 0;
-
-          for(size_t j = 1; j <= nVertices; j++) {
-            auto &mIndex
-              = oIndex_to_mIndex_map[inConnectivityList[inTopoIndex + j]];
-            if(mIndex == -2 || mIndex == -3)
-              mVertices++;
-          }
-
-          // Mark border vertices
-          if(mVertices > 0) {
-            nOutCells++;
-            markedCells[i] = true;
-            for(size_t j = 1; j <= nVertices; j++) {
-              auto &mIndex
-                = oIndex_to_mIndex_map[inConnectivityList[inTopoIndex + j]];
-              if(mIndex == -1)
-                mIndex = -4; // Border Vertex
-              else if(mIndex == -2)
-                mIndex = -3; // Inner Vertex
-            }
-            outTopologyDataSize += 1 + nVertices;
-          }
-
-          inTopoIndex += nVertices + 1;
-        }
-
-        for(size_t i = 0; i < nPoints; i++) {
-          auto &mIndex = oIndex_to_mIndex_map[i];
-          if(mIndex == -4)
-            mIndex = -3;
-        }
-
-      } else if(this->CellMode == 2) {
-        // Sub
-        for(size_t i = 0, inTopoIndex = 0; i < nInCells; i++) {
-          size_t nVertices = inConnectivityList[inTopoIndex];
-          size_t mVertices = 0;
-
-          for(size_t j = 1; j <= nVertices; j++) {
-            const auto &mIndex
-              = oIndex_to_mIndex_map[inConnectivityList[inTopoIndex + j]];
-            if(mIndex == -2 || mIndex == -3)
-              mVertices++;
-          }
-
-          if(mVertices > 0) {
-            nOutCells++;
-            markedCells[i] = true;
-            for(size_t j = 1; j <= nVertices; j++) {
-              auto &mIndex
-                = oIndex_to_mIndex_map[inConnectivityList[inTopoIndex + j]];
-              if(mIndex == -2)
-                mIndex = -3;
-            }
-            outTopologyDataSize += 1 + mVertices;
-          }
-
-          inTopoIndex += nVertices + 1;
-        }
-      }
-    }
-
-    for(size_t i = 0; i < nPoints; i++)
-      if(oIndex_to_mIndex_map[i] == -2 || oIndex_to_mIndex_map[i] == -3)
-        oIndex_to_mIndex_map[i] = nMarkedPoints++;
-
-    this->printMsg("Marking " + CellModeSLC[this->CellMode] + " cells with '"
-                     + inputArrayName + "' "
-                     + ValidationModeS[this->ValidationMode] + " ["
-                     + expressionValuesString + "]",
-                   1, t.getElapsedTime());
-  }
-
-  // ---------------------------------------------------------------------
-  // Extracting Points
-  // ---------------------------------------------------------------------
-  {
-    ttk::Timer t;
-    this->printMsg(
-      "Extracting marked vertices", 0, ttk::debug::LineMode::REPLACE);
-
-    auto inPoints = inputAsUG->GetPoints();
-    auto inPointCoords = (float *)inPoints->GetVoidPointer(0);
-
-    auto outPoints = vtkSmartPointer<vtkPoints>::New();
-    outPoints->SetNumberOfPoints(nMarkedPoints);
-    auto outPointCoords = (float *)outPoints->GetVoidPointer(0);
-    outputAsUG->SetPoints(outPoints);
-
-    // Extract point coordinates
-    {
-      for(size_t i = 0, j = 0; i < nPoints; i++) {
-        const auto &mIndex = oIndex_to_mIndex_map[i];
-        if(mIndex >= 0) {
-          int iOffset = i * 3;
-          outPointCoords[j++] = inPointCoords[iOffset++];
-          outPointCoords[j++] = inPointCoords[iOffset++];
-          outPointCoords[j++] = inPointCoords[iOffset];
-        }
-      }
-    }
-
-    // Extract point data
-    {
-      size_t nArrays = inputPD->GetNumberOfArrays();
-      auto outputPD = outputAsUG->GetPointData();
-      for(size_t arrayIndex = 0; arrayIndex < nArrays; arrayIndex++) {
-        auto iArray = inputPD->GetAbstractArray(arrayIndex);
-        auto oArray
-          = vtkSmartPointer<vtkAbstractArray>::Take(iArray->NewInstance());
-        oArray->SetName(iArray->GetName());
-        oArray->SetNumberOfComponents(iArray->GetNumberOfComponents());
-        oArray->SetNumberOfTuples(nMarkedPoints);
-
-        switch(iArray->GetDataType()) {
-          vtkTemplateMacro({
-            auto iArrayData = (VTK_TT *)iArray->GetVoidPointer(0);
-            auto oArrayData = (VTK_TT *)oArray->GetVoidPointer(0);
-
-            for(size_t i = 0, j = 0; i < nPoints; i++) {
-              const auto &mIndex = oIndex_to_mIndex_map[i];
-              if(mIndex >= 0)
-                oArrayData[j++] = iArrayData[i];
-            }
-          });
-        }
-
-        outputPD->AddArray(oArray);
-      }
-    }
+    if(isPointDataArray)
+      outputAsDS->GetPointData()->RemoveArray("Mask");
+    else
+      outputAsDS->GetCellData()->RemoveArray("Mask");
 
     this->printMsg(
-      "Extracting marked vertices (#" + std::to_string(nMarkedPoints) + ")", 1,
-      t.getElapsedTime());
+      "Extracting Geometry based on Mask", 1, timer.getElapsedTime());
   }
-
-  // -------------------------------------------------------------------------
-  // Extracting Cells
-  // -------------------------------------------------------------------------
-  {
-    ttk::Timer t;
-    this->printMsg("Extracting marked cells", 0, ttk::debug::LineMode::REPLACE);
-
-    const int types[20] = {VTK_EMPTY_CELL,
-                           VTK_VERTEX,
-                           VTK_LINE,
-                           VTK_TRIANGLE,
-                           VTK_TETRA,
-                           VTK_CONVEX_POINT_SET, // 5
-                           VTK_CONVEX_POINT_SET, // 6
-                           VTK_CONVEX_POINT_SET, // 7
-                           VTK_VOXEL,
-                           VTK_CONVEX_POINT_SET,
-                           VTK_CONVEX_POINT_SET,
-                           VTK_CONVEX_POINT_SET,
-                           VTK_CONVEX_POINT_SET,
-                           VTK_CONVEX_POINT_SET,
-                           VTK_CONVEX_POINT_SET,
-                           VTK_CONVEX_POINT_SET,
-                           VTK_CONVEX_POINT_SET,
-                           VTK_CONVEX_POINT_SET,
-                           VTK_CONVEX_POINT_SET,
-                           VTK_CONVEX_POINT_SET};
-
-    std::vector<int> markedCellTypes(nOutCells);
-    auto outTopology = vtkSmartPointer<vtkIdTypeArray>::New();
-    outTopology->SetNumberOfValues(outTopologyDataSize);
-    auto outTopologyData = (vtkIdType *)outTopology->GetVoidPointer(0);
-
-    if(this->CellMode == 0 || this->CellMode == 1) {
-      for(size_t i = 0, inTopoIndex = 0, outTopoIndex = 0, outCellIndex = 0;
-          i < nInCells; i++) {
-        const size_t nVertices = inConnectivityList[inTopoIndex];
-        if(markedCells[i]) {
-          markedCellTypes[outCellIndex++] = types[nVertices];
-          outTopologyData[outTopoIndex] = nVertices;
-          for(size_t j = 1; j <= nVertices; j++)
-            outTopologyData[outTopoIndex + j]
-              = oIndex_to_mIndex_map[inConnectivityList[inTopoIndex + j]];
-          outTopoIndex += nVertices + 1;
-        }
-
-        inTopoIndex += nVertices + 1;
-      }
-    } else {
-      // Sub
-      for(size_t i = 0, inTopoIndex = 0, outTopoIndex = 0, outCellIndex = 0;
-          i < nInCells; i++) {
-        const size_t nVertices = inConnectivityList[inTopoIndex];
-
-        if(markedCells[i]) {
-          size_t mVertices = 0;
-          for(size_t j = 1; j <= nVertices; j++) {
-            const auto &mIndex
-              = oIndex_to_mIndex_map[inConnectivityList[inTopoIndex + j]];
-            if(mIndex > -1) {
-              outTopologyData[outTopoIndex + 1 + mVertices] = mIndex;
-              mVertices++;
-            }
-          }
-          outTopologyData[outTopoIndex] = mVertices;
-          markedCellTypes[outCellIndex++] = types[mVertices];
-
-          outTopoIndex += mVertices + 1;
-        }
-
-        inTopoIndex += nVertices + 1;
-      }
-    }
-
-    auto cellArray = vtkSmartPointer<vtkCellArray>::New();
-    cellArray->SetCells(nOutCells, outTopology);
-    outputAsUG->SetCells(markedCellTypes.data(), cellArray);
-
-    // Extract cell data
-    {
-      size_t nArrays = inputCD->GetNumberOfArrays();
-      auto outputCD = outputAsUG->GetCellData();
-      for(size_t arrayIndex = 0; arrayIndex < nArrays; arrayIndex++) {
-        auto iArray = inputCD->GetAbstractArray(arrayIndex);
-        auto oArray
-          = vtkSmartPointer<vtkAbstractArray>::Take(iArray->NewInstance());
-        oArray->SetName(iArray->GetName());
-        oArray->SetNumberOfComponents(iArray->GetNumberOfComponents());
-        oArray->SetNumberOfTuples(nOutCells);
-
-        switch(iArray->GetDataType()) {
-          vtkTemplateMacro({
-            auto iArrayData = (VTK_TT *)iArray->GetVoidPointer(0);
-            auto oArrayData = (VTK_TT *)oArray->GetVoidPointer(0);
-
-            for(size_t i = 0, j = 0; i < nInCells; i++) {
-              if(markedCells[i])
-                oArrayData[j++] = iArrayData[i];
-            }
-          });
-        }
-
-        outputCD->AddArray(oArray);
-      }
-    }
-
-    this->printMsg(
-      "Extracting marked cells (#" + std::to_string(nOutCells) + ")", 1,
-      t.getElapsedTime());
-  }
-
-  this->printMsg(ttk::debug::Separator::L2);
-  this->printMsg("Complete (" + std::to_string(nMarkedPoints) + " vertices, "
-                   + std::to_string(nOutCells) + " cells)",
-                 1, globalTimer.getElapsedTime());
-
-  outputAsUG->GetFieldData()->ShallowCopy(inputAsUG->GetFieldData());
 
   return 1;
 }
 
-template <class dataType>
+template <class DT>
 int createUniqueValueArray(vtkDataArray *uniqueValueArray,
                            vtkDataArray *valueArray) {
-  std::set<dataType> uniqueValues;
+  std::set<DT> uniqueValues;
 
   if(uniqueValueArray->GetDataType() != valueArray->GetDataType())
     return 0;
 
   size_t nValues
     = valueArray->GetNumberOfTuples() * valueArray->GetNumberOfComponents();
-  auto valueArrayData = (dataType *)valueArray->GetVoidPointer(0);
+  auto valueArrayData = ttkUtils::GetPointer<DT>(valueArray);
   for(size_t i = 0; i < nValues; i++)
     uniqueValues.insert(valueArrayData[i]);
 
@@ -853,7 +529,7 @@ int createUniqueValueArray(vtkDataArray *uniqueValueArray,
   uniqueValueArray->SetNumberOfComponents(1);
   uniqueValueArray->SetNumberOfTuples(nUniqueValues);
 
-  auto uniqueValueArrayData = (dataType *)uniqueValueArray->GetVoidPointer(0);
+  auto uniqueValueArrayData = ttkUtils::GetPointer<DT>(uniqueValueArray);
   auto it = uniqueValues.begin();
   for(size_t i = 0; i < nUniqueValues; i++) {
     uniqueValueArrayData[i] = *it;
@@ -1028,11 +704,11 @@ int ttkExtract::RequestData(vtkInformation *request,
   ttkUtils::stringListToDoubleVector(finalExpressionString, values);
 
   auto mode = this->ExtractionMode;
-  if(mode < 0) {
+  if(mode == EXTRACTION_MODE::AUTO) {
     if(input->IsA("vtkMultiBlockDataSet"))
-      mode = 0;
+      mode = EXTRACTION_MODE::BLOCKS;
     else if(input->IsA("vtkTable"))
-      mode = 1;
+      mode = EXTRACTION_MODE::ROWS;
     else {
       this->printErr("Unable to automatically determine extraction mode.");
       return 0;
@@ -1043,14 +719,21 @@ int ttkExtract::RequestData(vtkInformation *request,
   auto inputAsMB = vtkSmartPointer<vtkMultiBlockDataSet>::New();
   auto outputAsMB = vtkSmartPointer<vtkMultiBlockDataSet>::New();
   size_t nBlocks;
-  if(mode != 0 && mode != 5 && input->IsA("vtkMultiBlockDataSet")) {
+  if(mode != EXTRACTION_MODE::BLOCKS && mode != EXTRACTION_MODE::BLOCK_TUPLES
+     && input->IsA("vtkMultiBlockDataSet")) {
     inputAsMB->ShallowCopy(input);
     nBlocks = inputAsMB->GetNumberOfBlocks();
 
     for(size_t b = 0; b < nBlocks; b++) {
       auto inputBlock = inputAsMB->GetBlock(b);
-      auto outputBlock
-        = vtkSmartPointer<vtkDataObject>::Take(inputBlock->NewInstance());
+
+      vtkSmartPointer<vtkDataObject> outputBlock;
+      if(mode == EXTRACTION_MODE::BLOCKS && !this->MaskOnly)
+        outputBlock = vtkSmartPointer<vtkUnstructuredGrid>::New();
+      else
+        outputBlock
+          = vtkSmartPointer<vtkDataObject>::Take(inputBlock->NewInstance());
+
       outputAsMB->SetBlock(b, outputBlock);
     }
     output->ShallowCopy(outputAsMB);
@@ -1060,33 +743,47 @@ int ttkExtract::RequestData(vtkInformation *request,
     nBlocks = 1;
   }
 
-  if(mode == 0) {
-    if(!this->ExtractBlocks(output, input, values, false))
-      return 0;
-  } else if(mode == 1) {
-    if(!this->ExtractRows(output, input, values))
-      return 0;
-  } else if(mode == 2) {
-    for(size_t b = 0; b < nBlocks; b++)
-      if(!this->ExtractGeometry(
-           outputAsMB->GetBlock(b), inputAsMB->GetBlock(b), values))
+  switch(mode) {
+    case EXTRACTION_MODE::BLOCKS: {
+      if(!this->ExtractBlocks(output, input, values, false))
         return 0;
-  } else if(mode == 3) {
-    for(size_t b = 0; b < nBlocks; b++)
-      if(!this->ExtractArrayValues(
-           outputAsMB->GetBlock(b), inputAsMB->GetBlock(b), values))
+      break;
+    }
+    case EXTRACTION_MODE::BLOCK_TUPLES: {
+      if(!this->ExtractBlocks(output, input, values, true))
         return 0;
-  } else if(mode == 4) {
-    for(size_t b = 0; b < nBlocks; b++)
-      if(!this->ExtractArray(
-           outputAsMB->GetBlock(b), inputAsMB->GetBlock(b), values))
+      break;
+    }
+    case EXTRACTION_MODE::ROWS: {
+      if(!this->ExtractRows(output, input, values))
         return 0;
-  } else if(mode == 5) {
-    if(!this->ExtractBlocks(output, input, values, true))
+      break;
+    }
+    case EXTRACTION_MODE::GEOMETRY: {
+      for(size_t b = 0; b < nBlocks; b++)
+        if(!this->ExtractGeometry(
+             outputAsMB->GetBlock(b), inputAsMB->GetBlock(b), values))
+          return 0;
+      break;
+    }
+    case EXTRACTION_MODE::ARRAY_VALUES: {
+      for(size_t b = 0; b < nBlocks; b++)
+        if(!this->ExtractArrayValues(
+             outputAsMB->GetBlock(b), inputAsMB->GetBlock(b), values))
+          return 0;
+      break;
+    }
+    case EXTRACTION_MODE::ARRAYS: {
+      for(size_t b = 0; b < nBlocks; b++)
+        if(!this->ExtractArray(
+             outputAsMB->GetBlock(b), inputAsMB->GetBlock(b), values))
+          return 0;
+      break;
+    }
+    default: {
+      this->printErr("Unsupported Extraction Mode");
       return 0;
-  } else {
-    this->printErr("Unsupported Extraction Mode: " + std::to_string(mode));
-    return 0;
+    }
   }
 
   this->printMsg(ttk::debug::Separator::L1);
