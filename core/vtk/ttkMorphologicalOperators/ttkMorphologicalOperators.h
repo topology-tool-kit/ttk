@@ -1,11 +1,11 @@
 /// \ingroup vtk
-/// \class ttkDilateErode
+/// \class ttkMorphologicalOperators
 /// \author Jonas Lukasczyk (jl@jluk.de)
 /// \date 01.02.2019
 ///
 /// \brief TTK VTK-filter that dilates or erodes a specified vertex label.
 ///
-/// VTK wrapping code for the @DilateErode package.
+/// VTK wrapping code for the @MorphologicalOperators package.
 ///
 /// This filter either a) dilates a specified label by assigning the label of a
 /// corresponding vertex to all its neighbors, or b) erodes a specified label by
@@ -20,41 +20,45 @@
 /// \param fieldAssociation 0 (FIXED: point data)
 /// \param arrayName (DYNAMIC: string identifier of the VTK array)
 
-/// \sa ttk::DilateErode
+/// \sa ttk::MorphologicalOperators
 
 #pragma once
 
 // VTK Module
-#include <ttkDilateErodeModule.h>
+#include <ttkMorphologicalOperatorsModule.h>
 
 // VTK includes
 #include <ttkAlgorithm.h>
 
 // TTK includes
-#include <DilateErode.h>
+#include <MorphologicalOperators.h>
 
-class TTKDILATEERODE_EXPORT ttkDilateErode : public ttkAlgorithm,
-                                             protected ttk::DilateErode {
+class TTKMORPHOLOGICALOPERATORS_EXPORT ttkMorphologicalOperators
+  : public ttkAlgorithm,
+    protected ttk::MorphologicalOperators {
 
 private:
   int Mode{0};
   std::string PivotLabel{"0"};
   int Iterations{1};
+  bool Grayscale{false};
 
 public:
-  static ttkDilateErode *New();
-  vtkTypeMacro(ttkDilateErode, ttkAlgorithm);
+  static ttkMorphologicalOperators *New();
+  vtkTypeMacro(ttkMorphologicalOperators, ttkAlgorithm);
 
   vtkSetMacro(Mode, int);
   vtkGetMacro(Mode, int);
-  vtkSetMacro(PivotLabel, std::string);
+  vtkSetMacro(PivotLabel, const std::string &);
   vtkGetMacro(PivotLabel, std::string);
   vtkSetMacro(Iterations, int);
   vtkGetMacro(Iterations, int);
+  vtkSetMacro(Grayscale, bool);
+  vtkGetMacro(Grayscale, bool);
 
 protected:
-  ttkDilateErode();
-  ~ttkDilateErode();
+  ttkMorphologicalOperators();
+  ~ttkMorphologicalOperators();
 
   int FillInputPortInformation(int port, vtkInformation *info) override;
   int FillOutputPortInformation(int port, vtkInformation *info) override;

@@ -1,4 +1,4 @@
-#include <ttkDilateErode.h>
+#include <ttkMorphologicalOperators.h>
 
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
@@ -9,17 +9,18 @@
 #include <ttkMacros.h>
 #include <ttkUtils.h>
 
-vtkStandardNewMacro(ttkDilateErode);
+vtkStandardNewMacro(ttkMorphologicalOperators);
 
-ttkDilateErode::ttkDilateErode() {
+ttkMorphologicalOperators::ttkMorphologicalOperators() {
   this->SetNumberOfInputPorts(1);
   this->SetNumberOfOutputPorts(1);
 }
 
-ttkDilateErode::~ttkDilateErode() {
+ttkMorphologicalOperators::~ttkMorphologicalOperators() {
 }
 
-int ttkDilateErode::FillInputPortInformation(int port, vtkInformation *info) {
+int ttkMorphologicalOperators::FillInputPortInformation(int port,
+                                                        vtkInformation *info) {
   if(port == 0) {
     info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
     return 1;
@@ -27,7 +28,8 @@ int ttkDilateErode::FillInputPortInformation(int port, vtkInformation *info) {
   return 0;
 }
 
-int ttkDilateErode::FillOutputPortInformation(int port, vtkInformation *info) {
+int ttkMorphologicalOperators::FillOutputPortInformation(int port,
+                                                         vtkInformation *info) {
   if(port == 0) {
     info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
     return 1;
@@ -35,9 +37,9 @@ int ttkDilateErode::FillOutputPortInformation(int port, vtkInformation *info) {
   return 0;
 }
 
-int ttkDilateErode::RequestData(vtkInformation *request,
-                                vtkInformationVector **inputVector,
-                                vtkInformationVector *outputVector) {
+int ttkMorphologicalOperators::RequestData(vtkInformation *request,
+                                           vtkInformationVector **inputVector,
+                                           vtkInformationVector *outputVector) {
   // get input and output
   auto input = vtkDataSet::GetData(inputVector[0]);
   auto output = vtkDataSet::GetData(outputVector);
@@ -105,9 +107,8 @@ int ttkDilateErode::RequestData(vtkInformation *request,
        static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(outputLabels)),
 
        // Input
-       this->Mode, this->Iterations,
-       static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(inputLabels)),
-       static_cast<VTK_TT>(pivotLabel),
+       this->Mode, this->Iterations, this->Grayscale,
+       static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(inputLabels)), pivotLabel,
        static_cast<TTK_TT *>(triangulation->getData()))));
 
   if(!status)

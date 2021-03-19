@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ServerManagerConfiguration>
     <ProxyGroup name="filters">
-        <SourceProxy name="DilateErode" class="ttkDilateErode" label="TTK DilateErode">
-            <Documentation long_help="TTK dilateErode" short_help="TTK dilateErode">
+        <SourceProxy name="MorphologicalOperators" class="ttkMorphologicalOperators" label="TTK MorphologicalOperators">
+            <Documentation long_help="TTK morphologicalOperators" short_help="TTK morphologicalOperators">
 This filter either a) dilates a specified label by assigning the label of a corresponding vertex to all its neighbors, or b) erodes a specified label by assigning to a corresponding vertex the largest label among its neighbors.
             </Documentation>
 
@@ -31,6 +31,8 @@ This filter either a) dilates a specified label by assigning the label of a corr
                 <EnumerationDomain name="enum">
                     <Entry value="0" text="Dilate"/>
                     <Entry value="1" text="Erode"/>
+                    <Entry value="2" text="Open"/>
+                    <Entry value="3" text="Close"/>
                 </EnumerationDomain>
                 <Documentation>This option controls if the filter dilates or erodes the input array.</Documentation>
             </IntVectorProperty>
@@ -40,8 +42,26 @@ This filter either a) dilates a specified label by assigning the label of a corr
               <Documentation>Number of dilate/erode iterations.</Documentation>
             </IntVectorProperty>
 
+            <IntVectorProperty name="Grayscale"
+                               label="Use Grayscale Operators"
+                               command="SetGrayscale"
+                               number_of_elements="1"
+                               default_values="0"
+                               panel_visibility="default">
+              <BooleanDomain name="bool"/>
+              <Documentation>
+                Use the grayscale version of the morphological operators
+              </Documentation>
+            </IntVectorProperty>
+
             <StringVectorProperty name="PivotLabel" command="SetPivotLabel" number_of_elements="1" animateable="0" default_values="0">
                 <Documentation>The value that will be dialted or eroded.</Documentation>
+                <Hints>
+                  <PropertyWidgetDecorator type="GenericDecorator"
+                                           mode="visibility"
+                                           property="Grayscale"
+                                           value="0" />
+                </Hints>
             </StringVectorProperty>
 
             <PropertyGroup panel_widget="Line" label="Input Options">
@@ -50,6 +70,7 @@ This filter either a) dilates a specified label by assigning the label of a corr
             <PropertyGroup panel_widget="Line" label="Output Options">
                 <Property name="Mode" />
                 <Property name="Iterations" />
+                <Property name="Grayscale" />
                 <Property name="PivotLabel" />
             </PropertyGroup>
 
