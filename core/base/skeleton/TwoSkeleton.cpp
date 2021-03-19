@@ -109,8 +109,7 @@ int TwoSkeleton::buildEdgeTriangles(
   const CellArray &cellArray,
   vector<vector<SimplexId>> &edgeTriangleList,
   vector<std::array<SimplexId, 2>> *edgeList,
-  vector<std::array<SimplexId, 3>> *triangleList,
-  FlatJaggedArray *vertexTriangleList) const {
+  std::vector<std::array<SimplexId, 3>> *triangleEdgeList) const {
 
   // check the consistency of the variables -- to adapt
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -124,18 +123,6 @@ int TwoSkeleton::buildEdgeTriangles(
     localEdgeList = &defaultEdgeList;
   }
 
-  auto localVertexTriangleList = vertexTriangleList;
-  FlatJaggedArray defaultVertexTriangleList{};
-  if(!localVertexTriangleList) {
-    localVertexTriangleList = &defaultVertexTriangleList;
-  }
-
-  auto localTriangleList = triangleList;
-  vector<std::array<SimplexId, 3>> defaultTriangleList{};
-  if(!localTriangleList) {
-    localTriangleList = &defaultTriangleList;
-  }
-
   OneSkeleton oneSkeleton;
   oneSkeleton.setDebugLevel(debugLevel_);
   oneSkeleton.setThreadNumber(threadNumber_);
@@ -145,13 +132,14 @@ int TwoSkeleton::buildEdgeTriangles(
     oneSkeleton.buildEdgeList(vertexNumber, cellArray, (*localEdgeList));
   }
 
-  if(localTriangleList->empty()) {
-    buildTriangleList(vertexNumber, cellArray, localTriangleList);
+  auto localTriangleEdgeList = triangleEdgeList;
+  vector<std::array<SimplexId, 3>> defaultTriangleEdgeList{};
+  if(!localTriangleEdgeList) {
+    localTriangleEdgeList = &defaultTriangleEdgeList;
   }
 
-  if(localVertexTriangleList->empty()) {
-    buildVertexTriangles(
-      vertexNumber, (*localTriangleList), (*localVertexTriangleList));
+  if(localTriangleEdgeList->empty()) {
+    buildTriangleEdgeList(vertexNumber, cellArray, *localTriangleEdgeList);
   }
 
   edgeTriangleList.resize(localEdgeList->size());
@@ -161,18 +149,11 @@ int TwoSkeleton::buildEdgeTriangles(
   printMsg("Building edge triangles", 0, 0, threadNumber_,
            ttk::debug::LineMode::REPLACE);
 
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
-#endif // TTK_ENABLE_OPENMP
-  for(size_t i = 0; i < localEdgeList->size(); i++) {
-    const auto &e = (*localEdgeList)[i];
-    const auto beg0 = localVertexTriangleList->get_ptr(e[0], 0);
-    const auto end0 = beg0 + localVertexTriangleList->size(e[0]);
-    const auto beg1 = localVertexTriangleList->get_ptr(e[1], 0);
-    const auto end1 = beg1 + localVertexTriangleList->size(e[1]);
-    // merge the two vertex triangle lists
-    std::set_intersection(
-      beg0, end0, beg1, end1, std::back_inserter(edgeTriangleList[i]));
+  for(size_t i = 0; i < localTriangleEdgeList->size(); ++i) {
+    const auto &te = (*localTriangleEdgeList)[i];
+    edgeTriangleList[te[0]].emplace_back(i);
+    edgeTriangleList[te[1]].emplace_back(i);
+    edgeTriangleList[te[2]].emplace_back(i);
   }
 
   SimplexId edgeNumber = localEdgeList->size();

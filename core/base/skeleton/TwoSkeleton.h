@@ -73,31 +73,21 @@ namespace ttk {
     /// nullptr but pointing to a non-empty std::vector, this function will use
     /// this std::vector as internal edge list. If this std::vector is not empty
     /// but incorrect, the behavior is unspecified.
-    /// \param triangleList Optional output triangle list (list of std::vectors
-    /// of vertex identifiers). If nullptr, the function will compute this list
-    /// anyway and free the related memory upon return. If not nullptr but
-    /// pointing to an empty std::vector, the function will fill this empty
-    /// std::vector (useful if this list needs to be used later on by the
-    /// calling program). If not nullptr but pointing to a non-empty
-    /// std::vector, this function will use this std::vector as internal
-    /// triangle list. If this std::vector is not empty but incorrect, the
-    /// behavior is unspecified.
-    /// \param vertexTriangleList Optional output vertex triangle list (list of
-    /// triangle identifiers for each vertex). If nullptr, the function
-    /// will compute this list anyway and free the related memory upon return.
-    /// If not nullptr but pointing to an empty std::vector, the function will
-    /// fill this empty std::vector (useful if this list needs to be used later
-    /// on by the calling program). If not nullptr but pointing to a non-empty
-    /// std::vector, this function will use this std::vector as internal cell
-    /// triangle list. If this std::vector is not empty but incorrect, the
+    /// \param triangleEdgeList Optional output triangle edge list (list of
+    /// std::vectors of edges identifiers per triangle). If nullptr, the
+    /// function will compute this list anyway and free the related memory upon
+    /// return. If not nullptr but pointing to an empty std::vector, the
+    /// function will fill this empty std::vector (useful if this list needs to
+    /// be used later on by the calling program). If not nullptr but pointing to
+    /// a non-empty std::vector, this function will use this std::vector as
+    /// internal edge list. If this std::vector is not empty but incorrect, the
     /// behavior is unspecified.
     int buildEdgeTriangles(
       const SimplexId &vertexNumber,
       const CellArray &cellArray,
       std::vector<std::vector<SimplexId>> &edgeTriangleList,
       std::vector<std::array<SimplexId, 2>> *edgeList = nullptr,
-      std::vector<std::array<SimplexId, 3>> *triangleList = nullptr,
-      FlatJaggedArray *vertexTriangleList = nullptr) const;
+      std::vector<std::array<SimplexId, 3>> *triangleEdgeList = nullptr) const;
 
     /// Compute the list of triangles of a triangulation represented by a
     /// vtkUnstructuredGrid object. Unspecified behavior if the input mesh is

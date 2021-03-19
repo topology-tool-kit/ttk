@@ -810,7 +810,7 @@ namespace ttk {
         twoSkeleton.setWrapper(this);
         return twoSkeleton.buildEdgeTriangles(
           vertexNumber_, *cellArray_, edgeTriangleList_, &edgeList_,
-          &triangleList_, &vertexTriangleData_);
+          &triangleEdgeList_);
       }
 
       return 0;
