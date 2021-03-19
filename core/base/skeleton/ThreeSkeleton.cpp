@@ -122,15 +122,15 @@ int ThreeSkeleton::buildCellNeighborsFromTriangles(
   const SimplexId &vertexNumber,
   const CellArray &cellArray,
   vector<vector<SimplexId>> &cellNeighbors,
-  vector<vector<SimplexId>> *triangleStars) const {
+  FlatJaggedArray *triangleStars) const {
 
   auto localTriangleStars = triangleStars;
-  vector<vector<SimplexId>> defaultTriangleStars{};
+  FlatJaggedArray defaultTriangleStars{};
   if(!localTriangleStars) {
     localTriangleStars = &defaultTriangleStars;
   }
 
-  if(!localTriangleStars->size()) {
+  if(localTriangleStars->empty()) {
 
     TwoSkeleton twoSkeleton;
     twoSkeleton.setThreadNumber(threadNumber_);
@@ -157,28 +157,29 @@ int ThreeSkeleton::buildCellNeighborsFromTriangles(
 
   if(threadNumber_ == 1) {
 
-    const SimplexId nbTriStars = localTriangleStars->size();
+    const SimplexId nbTriStars = localTriangleStars->subvectorsNumber();
     const SimplexId timeBuckets = std::min<ttk::SimplexId>(10, nbTriStars);
 
     for(SimplexId i = 0; i < nbTriStars; i++) {
 
-      if((*localTriangleStars)[i].size() == 2) {
+      if(localTriangleStars->size(i) == 2) {
 
         // interior triangle
-        cellNeighbors[(*localTriangleStars)[i][0]].push_back(
-          (*localTriangleStars)[i][1]);
+        cellNeighbors[localTriangleStars->get(i, 0)].push_back(
+          localTriangleStars->get(i, 1));
 
-        cellNeighbors[(*localTriangleStars)[i][1]].push_back(
-          (*localTriangleStars)[i][0]);
+        cellNeighbors[localTriangleStars->get(i, 1)].push_back(
+          localTriangleStars->get(i, 0));
       }
 
       // update the progress bar of the wrapping code -- to adapt
       if(debugLevel_ >= (int)(debug::Priority::INFO)) {
 
-        if(!(i % ((localTriangleStars->size()) / timeBuckets))) {
+        if(!(i % ((localTriangleStars->subvectorsNumber()) / timeBuckets))) {
           printMsg("Building triangles",
-                   (i / (float)localTriangleStars->size()), t.getElapsedTime(),
-                   threadNumber_, ttk::debug::LineMode::REPLACE);
+                   (i / (float)localTriangleStars->subvectorsNumber()),
+                   t.getElapsedTime(), threadNumber_,
+                   ttk::debug::LineMode::REPLACE);
         }
       }
     }
@@ -195,22 +196,22 @@ int ThreeSkeleton::buildCellNeighborsFromTriangles(
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
-    for(size_t i = 0; i < (*localTriangleStars).size(); i++) {
+    for(size_t i = 0; i < localTriangleStars->subvectorsNumber(); i++) {
 
       ThreadId threadId = 0;
 #ifdef TTK_ENABLE_OPENMP
       threadId = omp_get_thread_num();
 #endif
 
-      if((*localTriangleStars)[i].size() == 2) {
+      if(localTriangleStars->size(i) == 2) {
 
         // interior triangles
 
-        threadedCellNeighbors[threadId][(*localTriangleStars)[i][0]].push_back(
-          (*localTriangleStars)[i][1]);
+        threadedCellNeighbors[threadId][localTriangleStars->get(i, 0)]
+          .push_back(localTriangleStars->get(i, 1));
 
-        threadedCellNeighbors[threadId][(*localTriangleStars)[i][1]].push_back(
-          (*localTriangleStars)[i][0]);
+        threadedCellNeighbors[threadId][localTriangleStars->get(i, 1)]
+          .push_back(localTriangleStars->get(i, 0));
       }
     }
 

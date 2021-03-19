@@ -192,7 +192,7 @@ int TwoSkeleton::buildTriangleList(
   const SimplexId &vertexNumber,
   const CellArray &cellArray,
   vector<std::array<SimplexId, 3>> *triangleList,
-  vector<vector<SimplexId>> *triangleStars,
+  FlatJaggedArray *triangleStars,
   vector<std::array<SimplexId, 4>> *cellTriangleList) const {
 
   Timer t;
@@ -211,6 +211,13 @@ int TwoSkeleton::buildTriangleList(
     "Building triangles", 0, 0, threadNumber_, ttk::debug::LineMode::REPLACE);
 
   const SimplexId cellNumber = cellArray.getNbCells();
+
+  // we need cellTriangleList to compute triangleStars
+  std::vector<std::array<SimplexId, 4>> defaultCellTriangleList{};
+  if(triangleStars != nullptr && cellTriangleList == nullptr) {
+    cellTriangleList = &defaultCellTriangleList;
+  }
+
   if(cellTriangleList) {
     cellTriangleList->resize(cellNumber, {-1, -1, -1, -1});
   }
@@ -220,10 +227,8 @@ int TwoSkeleton::buildTriangleList(
     std::array<SimplexId, 2> highVerts{};
     // the triangle id
     SimplexId id{-1};
-    // tetra ids that have current triangle as face
-    std::array<SimplexId, 2> cellIds{-1, -1};
-    TriangleData(std::array<SimplexId, 2> hVerts, SimplexId i, SimplexId cellId)
-      : highVerts{hVerts}, id{i}, cellIds{cellId, -1} {
+    TriangleData(std::array<SimplexId, 2> hVerts, SimplexId i)
+      : highVerts{hVerts}, id{i} {
     }
   };
 
@@ -259,8 +264,6 @@ int TwoSkeleton::buildTriangleList(
       for(auto &d : ttable) {
         if(d.highVerts[0] == triangle[1] && d.highVerts[1] == triangle[2]) {
           found = true;
-          // hypothesis: at most two tetras sharing the same triangle
-          d.cellIds[1] = cid;
           if(cellTriangleList != nullptr) {
             (*cellTriangleList)[cid][j] = d.id;
           }
@@ -270,7 +273,7 @@ int TwoSkeleton::buildTriangleList(
       if(!found) {
         // new triangle added
         ttable.emplace_back(
-          TriangleData{{triangle[1], triangle[2]}, nTriangles, cid});
+          TriangleData{{triangle[1], triangle[2]}, nTriangles});
         if(cellTriangleList != nullptr) {
           (*cellTriangleList)[cid][j] = nTriangles;
         }
@@ -287,19 +290,6 @@ int TwoSkeleton::buildTriangleList(
     triangleList->resize(nTriangles);
   }
 
-  printMsg("Building triangles", 0.67, t.getElapsedTime(), 1,
-           debug::LineMode::REPLACE);
-
-  if(triangleStars) {
-    triangleStars->resize(nTriangles);
-    for(auto &v : *triangleStars) {
-      v.reserve(2);
-    }
-  }
-
-  printMsg("Building triangles", 0.75, t.getElapsedTime(), 1,
-           debug::LineMode::REPLACE);
-
   // fill data buffers in parallel
 
 #ifdef TTK_ENABLE_OPENMP
@@ -311,15 +301,48 @@ int TwoSkeleton::buildTriangleList(
       if(triangleList != nullptr) {
         (*triangleList)[data.id] = {i, data.highVerts[0], data.highVerts[1]};
       }
-      for(size_t j = 0; j < 2; ++j) {
-        if(data.cellIds[j] == -1) {
-          break;
-        }
-        if(triangleStars != nullptr) {
-          (*triangleStars)[data.id].emplace_back(data.cellIds[j]);
-        }
-      }
     }
+  }
+
+  printMsg("Building triangles", 0.75, t.getElapsedTime(), 1,
+           debug::LineMode::REPLACE);
+
+  if(cellTriangleList != nullptr && triangleStars != nullptr) {
+    std::vector<SimplexId> offsets(nTriangles + 1);
+    // number of cells processed per vertex
+    std::vector<SimplexId> starIds(nTriangles);
+
+    // store number of cells per triangle
+    for(const auto &c : *cellTriangleList) {
+      offsets[c[0] + 1]++;
+      offsets[c[1] + 1]++;
+      offsets[c[2] + 1]++;
+      offsets[c[3] + 1]++;
+    }
+
+    // compute partial sum of number of cells per triangle
+    for(size_t i = 1; i < offsets.size(); ++i) {
+      offsets[i] += offsets[i - 1];
+    }
+
+    // allocate flat triangle stars vector
+    std::vector<SimplexId> triangleSt(offsets.back());
+
+    // fill flat neighbors vector using offsets and neighbors count vectors
+    for(size_t i = 0; i < cellTriangleList->size(); ++i) {
+      const auto &ct{(*cellTriangleList)[i]};
+      triangleSt[offsets[ct[0]] + starIds[ct[0]]] = i;
+      starIds[ct[0]]++;
+      triangleSt[offsets[ct[1]] + starIds[ct[1]]] = i;
+      starIds[ct[1]]++;
+      triangleSt[offsets[ct[2]] + starIds[ct[2]]] = i;
+      starIds[ct[2]]++;
+      triangleSt[offsets[ct[3]] + starIds[ct[3]]] = i;
+      starIds[ct[3]]++;
+    }
+
+    // fill FlatJaggedArray struct
+    triangleStars->setData(std::move(triangleSt), std::move(offsets));
   }
 
   printMsg(
@@ -341,7 +364,7 @@ int TwoSkeleton::buildTriangleEdgeList(
   FlatJaggedArray *vertexEdgeList,
   vector<std::array<SimplexId, 2>> *edgeList,
   vector<std::array<SimplexId, 3>> *triangleList,
-  vector<vector<SimplexId>> *triangleStarList,
+  FlatJaggedArray *triangleStarList,
   vector<std::array<SimplexId, 4>> *cellTriangleList) const {
 
   auto localEdgeList = edgeList;
@@ -426,14 +449,15 @@ int TwoSkeleton::buildTriangleEdgeList(
 
 int TwoSkeleton::buildTriangleLinks(
   const vector<std::array<SimplexId, 3>> &triangleList,
-  const vector<vector<SimplexId>> &triangleStars,
+  const FlatJaggedArray &triangleStars,
   const CellArray &cellArray,
   vector<vector<SimplexId>> &triangleLinks) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(triangleList.empty())
     return -1;
-  if((triangleStars.empty()) || (triangleStars.size() != triangleList.size()))
+  if((triangleStars.empty())
+     || (triangleStars.subvectorsNumber() != triangleList.size()))
     return -2;
 #endif
 
@@ -449,10 +473,11 @@ int TwoSkeleton::buildTriangleLinks(
 #endif
   for(size_t i = 0; i < triangleList.size(); i++) {
 
-    for(size_t j = 0; j < triangleStars[i].size(); j++) {
+    for(SimplexId j = 0; j < triangleStars.size(i); j++) {
 
       for(size_t k = 0; k < 4; k++) {
-        SimplexId vertexId = cellArray.getCellVertex(triangleStars[i][j], k);
+        SimplexId vertexId
+          = cellArray.getCellVertex(triangleStars.get(i, j), k);
 
         if((vertexId != triangleList[i][0]) && (vertexId != triangleList[i][1])
            && (vertexId != triangleList[i][2])) {

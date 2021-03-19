@@ -349,30 +349,18 @@ namespace ttk {
       const SimplexId &triangleId,
       const int &localStarId,
       SimplexId &starId) const override {
-#ifndef TTK_ENABLE_KAMIKAZE
-      if((triangleId < 0)
-         || (triangleId >= (SimplexId)triangleStarList_.size()))
-        return -1;
-      if((localStarId < 0)
-         || (localStarId >= (SimplexId)triangleStarList_[triangleId].size()))
-        return -2;
-#endif
-      starId = triangleStarList_[triangleId][localStarId];
+      starId = triangleStarData_.get(triangleId, localStarId);
       return 0;
     }
 
     inline SimplexId TTK_TRIANGULATION_INTERNAL(getTriangleStarNumber)(
       const SimplexId &triangleId) const override {
-#ifndef TTK_ENABLE_KAMIKAZE
-      if((triangleId < 0)
-         || (triangleId >= (SimplexId)triangleStarList_.size()))
-        return -1;
-#endif
-      return triangleStarList_[triangleId].size();
+      return triangleStarData_.size(triangleId);
     }
 
     inline const std::vector<std::vector<SimplexId>> *
       TTK_TRIANGULATION_INTERNAL(getTriangleStars)() override {
+      triangleStarData_.copyTo(triangleStarList_);
       return &triangleStarList_;
     }
 
@@ -568,8 +556,8 @@ namespace ttk {
         preconditionTriangleStarsInternal();
         preconditionTriangleEdgesInternal();
 
-        for(SimplexId i = 0; i < (SimplexId)triangleStarList_.size(); i++) {
-          if(triangleStarList_[i].size() == 1) {
+        for(size_t i = 0; i < triangleStarData_.subvectorsNumber(); i++) {
+          if(triangleStarData_.size(i) == 1) {
             for(int j = 0; j < 3; j++) {
               boundaryEdges_[triangleEdgeList_[i][j]] = true;
             }
@@ -600,8 +588,8 @@ namespace ttk {
       if(getDimensionality() == 3) {
         preconditionTriangleStarsInternal();
 
-        for(SimplexId i = 0; i < (SimplexId)triangleStarList_.size(); i++) {
-          if(triangleStarList_[i].size() == 1) {
+        for(size_t i = 0; i < triangleStarData_.subvectorsNumber(); i++) {
+          if(triangleStarData_.size(i) == 1) {
             boundaryTriangles_[i] = true;
           }
         }
@@ -646,8 +634,8 @@ namespace ttk {
         preconditionTrianglesInternal();
         preconditionTriangleStarsInternal();
 
-        for(SimplexId i = 0; i < (SimplexId)triangleStarList_.size(); i++) {
-          if(triangleStarList_[i].size() == 1) {
+        for(size_t i = 0; i < triangleStarData_.subvectorsNumber(); i++) {
+          if(triangleStarData_.size(i) == 1) {
             boundaryVertices_[triangleList_[i][0]] = true;
             boundaryVertices_[triangleList_[i][1]] = true;
             boundaryVertices_[triangleList_[i][2]] = true;
@@ -703,7 +691,7 @@ namespace ttk {
 
         if(triangleList_.size()) {
           // we already computed this guy, let's just get the cell triangles
-          if(triangleStarList_.size()) {
+          if(!triangleStarData_.empty()) {
             return twoSkeleton.buildTriangleList(vertexNumber_, *cellArray_,
                                                  nullptr, nullptr,
                                                  &tetraTriangleList_);
@@ -711,12 +699,12 @@ namespace ttk {
             // let's compute the triangle star while we're at it...
             // it's just a tiny overhead.
             return twoSkeleton.buildTriangleList(vertexNumber_, *cellArray_,
-                                                 nullptr, &triangleStarList_,
+                                                 nullptr, &triangleStarData_,
                                                  &tetraTriangleList_);
           }
         } else {
           // we have not computed this guy, let's do it while we're at it
-          if(triangleStarList_.size()) {
+          if(!triangleStarData_.empty()) {
             return twoSkeleton.buildTriangleList(vertexNumber_, *cellArray_,
                                                  &triangleList_, nullptr,
                                                  &tetraTriangleList_);
@@ -724,7 +712,7 @@ namespace ttk {
             // let's compute the triangle star while we're at it...
             // it's just a tiny overhead.
             return twoSkeleton.buildTriangleList(
-              vertexNumber_, *cellArray_, &triangleList_, &triangleStarList_,
+              vertexNumber_, *cellArray_, &triangleList_, &triangleStarData_,
               &tetraTriangleList_);
           }
         }
@@ -808,7 +796,7 @@ namespace ttk {
         twoSkeleton.setWrapper(this);
 
         twoSkeleton.buildTriangleList(vertexNumber_, *cellArray_,
-                                      &triangleList_, &triangleStarList_,
+                                      &triangleList_, &triangleStarData_,
                                       &tetraTriangleList_);
       }
 
@@ -829,7 +817,7 @@ namespace ttk {
 
         return twoSkeleton.buildTriangleEdgeList(
           vertexNumber_, *cellArray_, triangleEdgeList_, &vertexEdgeData_,
-          &edgeList_, &triangleList_, &triangleStarList_, &tetraTriangleList_);
+          &edgeList_, &triangleList_, &triangleStarData_, &tetraTriangleList_);
       }
 
       return 0;
@@ -844,7 +832,7 @@ namespace ttk {
         TwoSkeleton twoSkeleton;
         twoSkeleton.setWrapper(this);
         return twoSkeleton.buildTriangleLinks(
-          triangleList_, triangleStarList_, *cellArray_, triangleLinkList_);
+          triangleList_, triangleStarData_, *cellArray_, triangleLinkList_);
       }
 
       return 0;
@@ -852,12 +840,12 @@ namespace ttk {
 
     inline int preconditionTriangleStarsInternal() override {
 
-      if(!triangleStarList_.size()) {
+      if(triangleStarData_.empty()) {
 
         TwoSkeleton twoSkeleton;
         twoSkeleton.setWrapper(this);
         return twoSkeleton.buildTriangleList(
-          vertexNumber_, *cellArray_, &triangleList_, &triangleStarList_);
+          vertexNumber_, *cellArray_, &triangleList_, &triangleStarData_);
       }
 
       return 0;
@@ -1052,6 +1040,7 @@ namespace ttk {
     FlatJaggedArray vertexTriangleData_;
     FlatJaggedArray vertexStarData_;
     FlatJaggedArray edgeTriangleData_;
+    FlatJaggedArray triangleStarData_;
   };
 } // namespace ttk
 

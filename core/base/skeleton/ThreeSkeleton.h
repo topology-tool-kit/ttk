@@ -90,7 +90,7 @@ namespace ttk {
       const SimplexId &vertexNumber,
       const CellArray &cellArray,
       std::vector<std::vector<SimplexId>> &cellNeighbors,
-      std::vector<std::vector<SimplexId>> *triangleStars = nullptr) const;
+      FlatJaggedArray *triangleStars = nullptr) const;
 
     /// Compute the list of cell-neighbors of each cell of a triangulation
     /// (unspecified behavior if the input mesh is not a triangulation).
