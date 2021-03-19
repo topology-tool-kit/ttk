@@ -104,7 +104,7 @@ namespace ttk {
                               const int &localVertexId,
                               SimplexId &vertexId) const override;
 
-    const std::vector<std::pair<SimplexId, SimplexId>> *
+    const std::vector<std::array<SimplexId, 2>> *
       TTK_TRIANGULATION_INTERNAL(getEdges)() override;
 
     SimplexId TTK_TRIANGULATION_INTERNAL(getNumberOfCells)() const override {
@@ -199,7 +199,7 @@ namespace ttk {
                                   const int &localVertexId,
                                   SimplexId &vertexId) const override;
 
-    const std::vector<std::vector<SimplexId>> *
+    const std::vector<std::array<SimplexId, 3>> *
       TTK_TRIANGULATION_INTERNAL(getTriangles)() override;
 
     int getVertexEdgeInternal(const SimplexId &vertexId,
