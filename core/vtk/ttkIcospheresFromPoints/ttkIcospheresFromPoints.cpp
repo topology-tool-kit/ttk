@@ -53,6 +53,12 @@ int ttkIcospheresFromPoints::RequestData(vtkInformation *request,
                                          vtkInformationVector **inputVector,
                                          vtkInformationVector *outputVector) {
   auto input = vtkPointSet::GetData(inputVector[0], 0);
+  if(!input)
+    return 1;
+  size_t nPoints = input->GetNumberOfPoints();
+  if(nPoints < 1)
+    return 1;
+
   this->SetCenters(input->GetPoints()->GetData());
 
   // compute spheres
@@ -71,7 +77,6 @@ int ttkIcospheresFromPoints::RequestData(vtkInformation *request,
 
   // copy point data
   if(this->CopyPointData) {
-    size_t nPoints = input->GetNumberOfPoints();
 
     auto inputPD = input->GetPointData();
     for(size_t i = 0, n = inputPD->GetNumberOfArrays(); i < n; i++) {
