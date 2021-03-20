@@ -6,12 +6,8 @@
 #include <vtkInformation.h>
 #include <vtkLine.h>
 #include <vtkPointData.h>
+#include <vtkPolyData.h>
 #include <vtkSignedCharArray.h>
-#include <vtkUnstructuredGrid.h>
-
-using namespace std;
-using namespace ttk;
-using namespace dcg;
 
 vtkStandardNewMacro(ttkDiscreteGradient);
 
@@ -32,14 +28,14 @@ int ttkDiscreteGradient::FillInputPortInformation(int port,
 int ttkDiscreteGradient::FillOutputPortInformation(int port,
                                                    vtkInformation *info) {
   if(port == 0 || port == 1) {
-    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
+    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkPolyData");
     return 1;
   }
   return 0;
 }
 
 template <typename scalarType, typename triangulationType>
-int ttkDiscreteGradient::dispatch(vtkUnstructuredGrid *outputCriticalPoints,
+int ttkDiscreteGradient::dispatch(vtkPolyData *outputCriticalPoints,
                                   vtkDataArray *const inputScalars,
                                   vtkDataArray *const inputOffsets,
                                   const triangulationType &triangulation) {
@@ -123,7 +119,7 @@ int ttkDiscreteGradient::dispatch(vtkUnstructuredGrid *outputCriticalPoints,
     vtkNew<vtkCellArray> cells{};
     cells->SetData(offsets, connectivity);
     outputCriticalPoints->SetPoints(points);
-    outputCriticalPoints->SetCells(VTK_VERTEX, cells);
+    outputCriticalPoints->SetVerts(cells);
 
     vtkPointData *pointData = outputCriticalPoints->GetPointData();
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -148,8 +144,8 @@ int ttkDiscreteGradient::RequestData(vtkInformation *request,
                                      vtkInformationVector *outputVector) {
 
   auto input = vtkDataSet::GetData(inputVector[0]);
-  auto outputCriticalPoints = vtkUnstructuredGrid::GetData(outputVector, 0);
-  auto outputGradientGlyphs = vtkUnstructuredGrid::GetData(outputVector, 1);
+  auto outputCriticalPoints = vtkPolyData::GetData(outputVector, 0);
+  auto outputGradientGlyphs = vtkPolyData::GetData(outputVector, 1);
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!input) {
@@ -208,14 +204,14 @@ int ttkDiscreteGradient::RequestData(vtkInformation *request,
 
   // gradient glyphs
   if(ComputeGradientGlyphs) {
-    Timer tm{};
+    ttk::Timer tm{};
 
     SimplexId gradientGlyphs_numberOfPoints{};
-    vector<float> gradientGlyphs_points;
-    vector<char> gradientGlyphs_points_pairOrigins;
+    std::vector<float> gradientGlyphs_points;
+    std::vector<char> gradientGlyphs_points_pairOrigins;
     SimplexId gradientGlyphs_numberOfCells{};
-    vector<SimplexId> gradientGlyphs_cells;
-    vector<char> gradientGlyphs_cells_pairTypes;
+    std::vector<SimplexId> gradientGlyphs_cells;
+    std::vector<char> gradientGlyphs_cells_pairTypes;
 
     this->setGradientGlyphs(
       gradientGlyphs_numberOfPoints, gradientGlyphs_points,
@@ -223,31 +219,46 @@ int ttkDiscreteGradient::RequestData(vtkInformation *request,
       gradientGlyphs_cells, gradientGlyphs_cells_pairTypes, *triangulation);
 
     vtkNew<vtkPoints> points{};
+    points->SetNumberOfPoints(gradientGlyphs_numberOfPoints);
     vtkNew<vtkSignedCharArray> pairOrigins{};
     pairOrigins->SetNumberOfComponents(1);
     pairOrigins->SetName("PairOrigin");
-    vtkNew<vtkSignedCharArray> pairTypes{};
-    pairTypes->SetNumberOfComponents(1);
-    pairTypes->SetName("PairType");
+    pairOrigins->SetNumberOfTuples(gradientGlyphs_numberOfPoints);
 
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(this->threadNumber_)
+#endif // TTK_ENABLE_OPENMP
     for(SimplexId i = 0; i < gradientGlyphs_numberOfPoints; ++i) {
-      points->InsertNextPoint(gradientGlyphs_points[3 * i],
-                              gradientGlyphs_points[3 * i + 1],
-                              gradientGlyphs_points[3 * i + 2]);
-
-      pairOrigins->InsertNextTuple1(gradientGlyphs_points_pairOrigins[i]);
+      points->SetPoint(i, &gradientGlyphs_points[3 * i]);
+      pairOrigins->SetTuple1(i, gradientGlyphs_points_pairOrigins[i]);
     }
     outputGradientGlyphs->SetPoints(points);
 
-    outputGradientGlyphs->Allocate(gradientGlyphs_numberOfCells);
-    SimplexId ptr{};
+    vtkNew<vtkIdTypeArray> offsets{}, connectivity{};
+    offsets->SetNumberOfComponents(1);
+    offsets->SetNumberOfTuples(gradientGlyphs_numberOfCells + 1);
+    connectivity->SetNumberOfComponents(1);
+    connectivity->SetNumberOfTuples(2 * gradientGlyphs_numberOfCells);
+    vtkNew<vtkSignedCharArray> pairTypes{};
+    pairTypes->SetNumberOfComponents(1);
+    pairTypes->SetName("PairType");
+    pairTypes->SetNumberOfTuples(gradientGlyphs_numberOfCells);
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(this->threadNumber_)
+#endif // TTK_ENABLE_OPENMP
     for(SimplexId i = 0; i < gradientGlyphs_numberOfCells; ++i) {
-      std::array<vtkIdType, 2> line
-        = {gradientGlyphs_cells[ptr + 1], gradientGlyphs_cells[ptr + 2]};
-      outputGradientGlyphs->InsertNextCell(VTK_LINE, 2, line.data());
-      pairTypes->InsertNextTuple1(gradientGlyphs_cells_pairTypes[i]);
-      ptr += (gradientGlyphs_cells[ptr] + 1);
+      offsets->SetTuple1(i, 2 * i);
+      connectivity->SetTuple1(2 * i, gradientGlyphs_cells[3 * i + 1]);
+      connectivity->SetTuple1(2 * i + 1, gradientGlyphs_cells[3 * i + 2]);
+      pairTypes->SetTuple1(i, gradientGlyphs_cells_pairTypes[i]);
     }
+    offsets->SetTuple1(
+      gradientGlyphs_numberOfCells, gradientGlyphs_numberOfCells);
+
+    vtkNew<vtkCellArray> cells{};
+    cells->SetData(offsets, connectivity);
+    outputGradientGlyphs->SetLines(cells);
 
     vtkPointData *pointData = outputGradientGlyphs->GetPointData();
     vtkCellData *cellData = outputGradientGlyphs->GetCellData();

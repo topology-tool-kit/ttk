@@ -45,7 +45,7 @@
 #include <DiscreteGradient.h>
 #include <ttkAlgorithm.h>
 
-class vtkUnstructuredGrid;
+class vtkPolyData;
 
 class TTKDISCRETEGRADIENT_EXPORT ttkDiscreteGradient
   : public ttkAlgorithm,
@@ -75,7 +75,7 @@ protected:
 
 private:
   template <typename scalarType, typename triangulationType>
-  int dispatch(vtkUnstructuredGrid *outputCriticalPoints,
+  int dispatch(vtkPolyData *outputCriticalPoints,
                vtkDataArray *const inputScalars,
                vtkDataArray *const inputOffsets,
                const triangulationType &triangulation);
