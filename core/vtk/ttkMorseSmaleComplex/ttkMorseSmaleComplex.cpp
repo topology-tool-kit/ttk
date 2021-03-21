@@ -12,9 +12,9 @@
 #include <vtkNew.h>
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
+#include <vtkPolyData.h>
 #include <vtkSignedCharArray.h>
 #include <vtkUnsignedCharArray.h>
-#include <vtkUnstructuredGrid.h>
 
 vtkStandardNewMacro(ttkMorseSmaleComplex);
 
@@ -36,7 +36,7 @@ int ttkMorseSmaleComplex::FillInputPortInformation(int port,
 int ttkMorseSmaleComplex::FillOutputPortInformation(int port,
                                                     vtkInformation *info) {
   if(port == 0 || port == 1 || port == 2) {
-    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
+    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkPolyData");
     return 1;
   } else if(port == 3) {
     info->Set(ttkAlgorithm::SAME_DATA_TYPE_AS_INPUT_PORT(), 0);
@@ -54,9 +54,9 @@ template <typename scalarType, typename triangulationType>
 int ttkMorseSmaleComplex::dispatch(
   vtkDataArray *const inputScalars,
   vtkDataArray *const inputOffsets,
-  vtkUnstructuredGrid *const outputCriticalPoints,
-  vtkUnstructuredGrid *const outputSeparatrices1,
-  vtkUnstructuredGrid *const outputSeparatrices2,
+  vtkPolyData *const outputCriticalPoints,
+  vtkPolyData *const outputSeparatrices1,
+  vtkPolyData *const outputSeparatrices2,
   const triangulationType &triangulation) {
 
   const int dimensionality = triangulation.getCellVertexNumber(0) - 1;
@@ -221,7 +221,7 @@ int ttkMorseSmaleComplex::dispatch(
       criticalPoints_numberOfPoints, criticalPoints_numberOfPoints);
     vtkNew<vtkCellArray> cells{};
     cells->SetData(offsets, connectivity);
-    outputCriticalPoints->SetCells(VTK_VERTEX, cells);
+    outputCriticalPoints->SetVerts(cells);
 
     auto pointData = outputCriticalPoints->GetPointData();
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -334,7 +334,7 @@ int ttkMorseSmaleComplex::dispatch(
     outputSeparatrices1->SetPoints(points);
     vtkNew<vtkCellArray> cells{};
     cells->SetData(offsets, connectivity);
-    outputSeparatrices1->SetCells(VTK_LINE, cells);
+    outputSeparatrices1->SetLines(cells);
 
     auto pointData = outputSeparatrices1->GetPointData();
     auto cellData = outputSeparatrices1->GetCellData();
@@ -416,21 +416,6 @@ int ttkMorseSmaleComplex::dispatch(
     isOnBoundary->SetName("NumberOfCriticalPointsOnBoundary");
     setArray(isOnBoundary, separatrices2_cells_isOnBoundary);
 
-    vtkNew<vtkUnsignedCharArray> cellTypes{};
-    cellTypes->SetNumberOfComponents(1);
-    cellTypes->SetNumberOfTuples(separatrices2_numberOfCells);
-
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(this->threadNumber_)
-#endif // TTK_ENABLE_OPENMP
-    for(SimplexId i = 0; i < separatrices2_numberOfCells; ++i) {
-      if(separatrices2_cells_separatrixTypes[i] == 2) {
-        cellTypes->SetTuple1(i, VTK_TRIANGLE);
-      } else if(separatrices2_cells_separatrixTypes[i] == 1) {
-        cellTypes->SetTuple1(i, VTK_POLYGON);
-      }
-    }
-
     vtkNew<vtkIdTypeArray> offsets{}, connectivity{};
     offsets->SetNumberOfComponents(1);
     setArray(offsets, separatrices2_cells_offsets);
@@ -442,7 +427,7 @@ int ttkMorseSmaleComplex::dispatch(
     outputSeparatrices2->SetPoints(points);
     vtkNew<vtkCellArray> cells{};
     cells->SetData(offsets, connectivity);
-    outputSeparatrices2->SetCells(cellTypes, cells);
+    outputSeparatrices2->SetPolys(cells);
 
     auto cellData = outputSeparatrices2->GetCellData();
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -469,9 +454,9 @@ int ttkMorseSmaleComplex::RequestData(vtkInformation *request,
                                       vtkInformationVector *outputVector) {
 
   const auto input = vtkDataSet::GetData(inputVector[0]);
-  auto outputCriticalPoints = vtkUnstructuredGrid::GetData(outputVector, 0);
-  auto outputSeparatrices1 = vtkUnstructuredGrid::GetData(outputVector, 1);
-  auto outputSeparatrices2 = vtkUnstructuredGrid::GetData(outputVector, 2);
+  auto outputCriticalPoints = vtkPolyData::GetData(outputVector, 0);
+  auto outputSeparatrices1 = vtkPolyData::GetData(outputVector, 1);
+  auto outputSeparatrices2 = vtkPolyData::GetData(outputVector, 2);
   auto outputMorseComplexes = vtkDataSet::GetData(outputVector, 3);
 
 #ifndef TTK_ENABLE_KAMIKAZE
