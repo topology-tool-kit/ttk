@@ -74,22 +74,23 @@ int ThreeSkeleton::buildCellEdges(const SimplexId &vertexNumber,
 
       for(SimplexId k = j + 1; k < nbVertCell; k++) {
 
-        SimplexId vertexId0 = cellArray.getCellVertex(cid, j);
-        SimplexId vertexId1 = cellArray.getCellVertex(cid, k);
+        auto v0 = cellArray.getCellVertex(cid, j);
+        auto v1 = cellArray.getCellVertex(cid, k);
 
-        // loop around the edges of vertexId0 in search of vertexId1
-        SimplexId edgeId = -1;
-        const SimplexId nbEdges0 = localVertexEdges->size(vertexId0);
-        for(SimplexId l = 0; l < nbEdges0; l++) {
-
-          SimplexId localEdgeId = localVertexEdges->get(vertexId0, l);
-          if(((*localEdgeList)[localEdgeId][0] == vertexId1)
-             || ((*localEdgeList)[localEdgeId][1] == vertexId1)) {
-            edgeId = localEdgeId;
-            break;
-          }
+        if(v0 > v1) {
+          // ensure v0 < v1
+          std::swap(v0, v1);
         }
 
+        // loop around the edges of v1 in search of v0
+        // (since v1 > v0, v1 might have less neigbors)
+        const auto beg = localVertexEdges->get_ptr(v1, 0);
+        const auto end = beg + localVertexEdges->size(v1);
+
+        const auto edgeId = *std::find_if(beg, end, [&](const SimplexId eId) {
+          // first edge vertex is the lower one
+          return (*localEdgeList)[eId][0] == v0;
+        });
         cellEdges[cid][nEdges] = edgeId;
         nEdges++;
       }
