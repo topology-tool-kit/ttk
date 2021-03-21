@@ -75,8 +75,10 @@ int ttkQuadrangulationSubdivision::RequestData(
                    + std::string(ttk::VertexScalarFieldName));
   }
 
-  this->setInputQuads(ttkUtils::GetVoidPointer(inputCells->GetData()),
-                      inputCells->GetNumberOfCells());
+  this->setInputQuads(
+    // get quads from PolyData's connectivity array
+    ttkUtils::GetVoidPointer(inputCells->GetConnectivityArray()),
+    inputCells->GetNumberOfCells());
   this->setInputVertices(ttkUtils::GetVoidPointer(inputPoints->GetData()),
                          inputPoints->GetNumberOfPoints());
   this->setInputVertexIdentifiers(
@@ -98,16 +100,16 @@ int ttkQuadrangulationSubdivision::RequestData(
 
   vtkNew<vtkCellArray> cells{};
 
-  for(size_t i = 0; i < getQuadNumber(); i++) {
-    cells->InsertNextCell(4, &this->getQuadBuf()[5 * i + 1]);
+  for(size_t i = 0; i < outputQuads_.size(); i++) {
+    cells->InsertNextCell(4, this->outputQuads_[i].data());
   }
 
   // update output: get quadrangle values
   output->SetPolys(cells);
 
   vtkNew<vtkPoints> points{};
-  for(size_t i = 0; i < getPointsNumber(); ++i) {
-    points->InsertNextPoint(&this->getPointsBuf()[3 * i]);
+  for(size_t i = 0; i < outputPoints_.size(); ++i) {
+    points->InsertNextPoint(&outputPoints_[i].x);
   }
 
   // update output: get quadrangle vertices

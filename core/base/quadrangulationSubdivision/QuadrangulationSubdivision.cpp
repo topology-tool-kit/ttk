@@ -52,7 +52,7 @@ ttk::QuadrangulationSubdivision::Point
   std::vector<Quad> quads{};
   for(auto &q : outputQuads_) {
     auto _a = static_cast<LongSimplexId>(a);
-    if(q.i == _a || q.j == _a || q.k == _a || q.l == _a) {
+    if(q[0] == _a || q[1] == _a || q[2] == _a || q[3] == _a) {
       quads.emplace_back(q);
     }
   }
@@ -64,18 +64,18 @@ ttk::QuadrangulationSubdivision::Point
   for(auto &q : quads) {
     auto _a = static_cast<LongSimplexId>(a);
     std::array<size_t, 2> tmp{};
-    if(q.i == _a) {
-      tmp[0] = static_cast<size_t>(q.l);
-      tmp[1] = static_cast<size_t>(q.j);
-    } else if(q.j == _a) {
-      tmp[0] = static_cast<size_t>(q.i);
-      tmp[1] = static_cast<size_t>(q.k);
-    } else if(q.k == _a) {
-      tmp[0] = static_cast<size_t>(q.j);
-      tmp[1] = static_cast<size_t>(q.l);
-    } else if(q.l == _a) {
-      tmp[0] = static_cast<size_t>(q.k);
-      tmp[1] = static_cast<size_t>(q.i);
+    if(q[0] == _a) {
+      tmp[0] = static_cast<size_t>(q[3]);
+      tmp[1] = static_cast<size_t>(q[1]);
+    } else if(q[1] == _a) {
+      tmp[0] = static_cast<size_t>(q[0]);
+      tmp[1] = static_cast<size_t>(q[2]);
+    } else if(q[2] == _a) {
+      tmp[0] = static_cast<size_t>(q[1]);
+      tmp[1] = static_cast<size_t>(q[3]);
+    } else if(q[3] == _a) {
+      tmp[0] = static_cast<size_t>(q[2]);
+      tmp[1] = static_cast<size_t>(q[0]);
     }
     couples.insert(tmp);
   }
@@ -131,10 +131,10 @@ int ttk::QuadrangulationSubdivision::getQuadNeighbors(
   Timer tm;
 
   for(auto &q : quads) {
-    auto i = static_cast<size_t>(q.i);
-    auto j = static_cast<size_t>(q.j);
-    auto k = static_cast<size_t>(q.k);
-    auto l = static_cast<size_t>(q.l);
+    auto i = static_cast<size_t>(q[0]);
+    auto j = static_cast<size_t>(q[1]);
+    auto k = static_cast<size_t>(q[2]);
+    auto l = static_cast<size_t>(q[3]);
     if(secondNeighbors) {
       neighbors[i].insert(j);
       neighbors[i].insert(k);
