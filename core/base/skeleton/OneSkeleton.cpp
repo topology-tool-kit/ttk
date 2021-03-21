@@ -1,4 +1,5 @@
 #include <OneSkeleton.h>
+#include <boost/container/small_vector.hpp>
 
 using namespace std;
 using namespace ttk;
@@ -134,16 +135,15 @@ int OneSkeleton::buildEdgeList(
 
   Timer t;
 
-  // TODO: describe the content of this complex container
-  // for each thread
-  // - a vector of size nb vertices containing
-  // - -
-  std::vector<std::vector<SimplexId>> edgeTable(vertexNumber);
+  using boost::container::small_vector;
+  // for each vertex, a vector of neighbors/edges
+  std::vector<small_vector<SimplexId, 8>> edgeTable(vertexNumber);
 
   printMsg("Building edges", 0, 0, 1, ttk::debug::LineMode::REPLACE);
 
   const SimplexId cellNumber = cellArray.getNbCells();
   const int timeBuckets = std::min<ttk::SimplexId>(10, cellNumber);
+  SimplexId edgeCount = 0;
 
   for(SimplexId cid = 0; cid < cellNumber; cid++) {
 
@@ -162,6 +162,7 @@ int OneSkeleton::buildEdgeList(
         const auto pos = std::find(vec.begin(), vec.end(), v1);
         if(pos == vec.end()) {
           edgeTable[v0].emplace_back(v1);
+          edgeCount++;
         }
       }
     }
@@ -173,12 +174,6 @@ int OneSkeleton::buildEdgeList(
   }
 
   // now merge the thing
-  SimplexId edgeCount = 0;
-
-  for(const auto &vec : edgeTable) {
-    edgeCount += vec.size();
-  }
-
   edgeList.resize(edgeCount);
   size_t edgeId{};
 

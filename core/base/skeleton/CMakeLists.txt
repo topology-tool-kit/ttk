@@ -35,3 +35,4 @@ ttk_add_base_library(skeleton
 
 target_include_directories(skeleton PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>)
 target_compile_definitions(skeleton PUBLIC ${CellArrayDefine})
+target_link_libraries(skeleton PRIVATE Boost::boost)

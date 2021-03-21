@@ -1,4 +1,5 @@
 #include <TwoSkeleton.h>
+#include <boost/container/small_vector.hpp>
 
 using namespace std;
 using namespace ttk;
@@ -232,15 +233,9 @@ int TwoSkeleton::buildTriangleList(
     }
   };
 
+  using boost::container::small_vector;
   // for each vertex, a vector of TriangleData
-  std::vector<std::vector<TriangleData>> triangleTable(vertexNumber);
-
-  printMsg("Building triangles", 0.12, t.getElapsedTime(), 1,
-           ttk::debug::LineMode::REPLACE);
-
-  for(SimplexId i = 0; i < vertexNumber; i++) {
-    triangleTable[i].reserve(16);
-  }
+  std::vector<small_vector<TriangleData, 8>> triangleTable(vertexNumber);
 
   SimplexId nTriangles{};
 
