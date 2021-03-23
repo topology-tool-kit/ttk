@@ -4,11 +4,12 @@
 #include <vtkDataObject.h>
 #include <vtkDoubleArray.h>
 #include <vtkFiltersCoreModule.h>
+#include <vtkIdTypeArray.h>
 #include <vtkInformation.h>
 #include <vtkInformationVector.h>
 #include <vtkObjectFactory.h>
+#include <vtkPolyData.h>
 #include <vtkTable.h>
-#include <vtkUnstructuredGrid.h>
 
 #include <array>
 #include <regex>
@@ -33,7 +34,7 @@ int ttkMatrixToHeatMap::FillInputPortInformation(int port,
 int ttkMatrixToHeatMap::FillOutputPortInformation(int port,
                                                   vtkInformation *info) {
   if(port == 0) {
-    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
+    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkPolyData");
     return 1;
   }
   return 0;
@@ -45,7 +46,7 @@ int ttkMatrixToHeatMap::RequestData(vtkInformation * /*request*/,
   ttk::Timer tm{};
 
   const auto input = vtkTable::GetData(inputVector[0]);
-  const auto output = vtkUnstructuredGrid::GetData(outputVector);
+  const auto output = vtkPolyData::GetData(outputVector);
 
   if(SelectFieldsWithRegexp) {
     // select all input columns whose name is matching the regexp
@@ -102,9 +103,9 @@ int ttkMatrixToHeatMap::RequestData(vtkInformation * /*request*/,
       const auto curr{static_cast<vtkIdType>(i * nptline + j)};
       const auto o = i * nRows + j;
       connectivity->SetTuple1(4 * o + 0, curr);
-      connectivity->SetTuple1(4 * o + 1, curr + 1);
-      connectivity->SetTuple1(4 * o + 2, curr + nptline);
-      connectivity->SetTuple1(4 * o + 3, curr + nptline + 1);
+      connectivity->SetTuple1(4 * o + 1, curr + nptline);
+      connectivity->SetTuple1(4 * o + 2, curr + nptline + 1);
+      connectivity->SetTuple1(4 * o + 3, curr + 1);
       offsets->SetTuple1(o, 4 * o);
 
       // copy distance matrix to heat map cell data
@@ -117,11 +118,11 @@ int ttkMatrixToHeatMap::RequestData(vtkInformation * /*request*/,
   }
   offsets->SetTuple1(nInputs * nRows, connectivity->GetNumberOfTuples());
 
-  // gather arrays to make the UnstructuredGrid
+  // gather arrays to make the PolyData
   vtkNew<vtkCellArray> cells{};
   cells->SetData(offsets, connectivity);
   output->SetPoints(points);
-  output->SetCells(VTK_PIXEL, cells);
+  output->SetPolys(cells);
   output->GetCellData()->AddArray(dist);
   output->GetCellData()->AddArray(prox);
 
