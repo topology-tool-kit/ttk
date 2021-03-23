@@ -16,7 +16,7 @@ int OneSkeleton::buildEdgeLinks(
   const vector<std::array<SimplexId, 2>> &edgeList,
   const FlatJaggedArray &edgeStars,
   const CellArray &cellArray,
-  vector<vector<SimplexId>> &edgeLinks) const {
+  FlatJaggedArray &edgeLinks) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(edgeList.empty())
@@ -27,33 +27,40 @@ int OneSkeleton::buildEdgeLinks(
 
   Timer t;
 
+  const SimplexId edgeNumber = edgeStars.subvectorsNumber();
+  std::vector<SimplexId> offsets(edgeNumber + 1);
+  // one vertex per star
+  std::vector<SimplexId> links(edgeStars.dataSize());
+
   printMsg(
     "Building edge links", 0, 0, threadNumber_, ttk::debug::LineMode::REPLACE);
 
-  edgeLinks.resize(edgeList.size());
-
-  const SimplexId nbEdges = edgeLinks.size();
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
-#endif
-  for(SimplexId i = 0; i < nbEdges; i++) {
-    const SimplexId localNbTriangle = edgeStars.size(i);
-    for(SimplexId j = 0; j < localNbTriangle; j++) {
+#endif // TTK_ENABLE_OPENMP
+  for(SimplexId i = 0; i < edgeNumber; i++) {
+    // copy the edgeStars offsets array
+    offsets[i] = edgeStars.offset(i);
 
-      // Look for the right vertex in each triangle
+    for(SimplexId j = 0; j < edgeStars.size(i); j++) {
+      // for each cell/triangle in edge i's star, get the opposite vertex
       for(int k = 0; k < 3; k++) {
-        const SimplexId tmpVertexId
-          = cellArray.getCellVertex(edgeStars.get(i, j), k);
-        if(tmpVertexId != edgeList[i][0] && tmpVertexId != edgeList[i][1]) {
-          // found the vertex in the triangle
-          edgeLinks[i].push_back(tmpVertexId);
+        const auto v = cellArray.getCellVertex(edgeStars.get(i, j), k);
+        if(v != edgeList[i][0] && v != edgeList[i][1]) {
+          // edge i does not contain vertex i
+          links[offsets[i] + j] = v;
           break;
         }
       }
     }
   }
 
-  printMsg("Built " + to_string(edgeLinks.size()) + " edge links", 1,
+  // don't forget the last offset
+  offsets[edgeNumber] = edgeStars.offset(edgeNumber);
+
+  edgeLinks.setData(std::move(links), std::move(offsets));
+
+  printMsg("Built " + to_string(edgeNumber) + " edge links", 1,
            t.getElapsedTime(), threadNumber_);
 
   return 0;
@@ -64,7 +71,7 @@ int OneSkeleton::buildEdgeLinks(
   const vector<std::array<SimplexId, 2>> &edgeList,
   const FlatJaggedArray &edgeStars,
   const vector<std::array<SimplexId, 6>> &cellEdges,
-  vector<vector<SimplexId>> &edgeLinks) const {
+  FlatJaggedArray &edgeLinks) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(edgeList.empty())
@@ -77,39 +84,46 @@ int OneSkeleton::buildEdgeLinks(
 
   Timer t;
 
+  const SimplexId edgeNumber = edgeStars.subvectorsNumber();
+  std::vector<SimplexId> offsets(edgeNumber + 1);
+  // one edge per star
+  std::vector<SimplexId> links(edgeStars.dataSize());
+
   printMsg(
     "Building edge links", 0, 0, threadNumber_, debug::LineMode::REPLACE);
 
-  edgeLinks.resize(edgeList.size());
-
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
-#endif
-  for(size_t i = 0; i < edgeLinks.size(); i++) {
+#endif // TTK_ENABLE_OPENMP
+  for(SimplexId i = 0; i < edgeNumber; i++) {
+    // copy the edgeStars offsets array
+    offsets[i] = edgeStars.offset(i);
 
-    SimplexId otherEdgeId = -1;
-
+    // current edge vertices
+    const auto &e = edgeList[i];
     for(SimplexId j = 0; j < edgeStars.size(i); j++) {
+      const auto c = edgeStars.get(i, j);
+      for(size_t k = 0; k < cellEdges[c].size(); k++) {
+        // cell edge id
+        const auto ceid = cellEdges[c][k];
+        // cell edge vertices
+        const auto &ce = edgeList[ceid];
 
-      SimplexId linkEdgeId = -1;
-
-      for(size_t k = 0; k < cellEdges[edgeStars.get(i, j)].size(); k++) {
-        otherEdgeId = cellEdges[edgeStars.get(i, j)][k];
-
-        if((edgeList[otherEdgeId][0] != edgeList[i][0])
-           && (edgeList[otherEdgeId][0] != edgeList[i][1])
-           && (edgeList[otherEdgeId][1] != edgeList[i][0])
-           && (edgeList[otherEdgeId][1] != edgeList[i][1])) {
-          linkEdgeId = otherEdgeId;
+        if(ce[0] != e[0] && ce[0] != e[1] && ce[1] != e[0] && ce[1] != e[1]) {
+          // ce and e have no vertex in common
+          links[offsets[i] + j] = ceid;
           break;
         }
       }
-
-      edgeLinks[i].push_back(linkEdgeId);
     }
   }
 
-  printMsg("Built " + to_string(edgeLinks.size()) + " edge links", 1,
+  // don't forget the last offset
+  offsets[edgeNumber] = edgeStars.offset(edgeNumber);
+
+  edgeLinks.setData(std::move(links), std::move(offsets));
+
+  printMsg("Built " + to_string(edgeNumber) + " edge links", 1,
            t.getElapsedTime(), threadNumber_);
 
   return 0;

@@ -48,7 +48,7 @@ namespace ttk {
     int buildEdgeLinks(const std::vector<std::array<SimplexId, 2>> &edgeList,
                        const FlatJaggedArray &edgeStars,
                        const CellArray &cellArray,
-                       std::vector<std::vector<SimplexId>> &edgeLinks) const;
+                       FlatJaggedArray &edgeLinks) const;
 
     /// Compute the link of each edge of a 3D triangulation (unspecified
     /// behavior if the input mesh is not a valid triangulation).
@@ -69,7 +69,7 @@ namespace ttk {
     int buildEdgeLinks(const std::vector<std::array<SimplexId, 2>> &edgeList,
                        const FlatJaggedArray &edgeStars,
                        const std::vector<std::array<SimplexId, 6>> &cellEdges,
-                       std::vector<std::vector<SimplexId>> &edgeLinks) const;
+                       FlatJaggedArray &edgeLinks) const;
 
     /// Compute the list of edges of a valid triangulation.
     /// \param vertexNumber Number of vertices in the triangulation.

@@ -167,28 +167,19 @@ namespace ttk {
       const SimplexId &edgeId,
       const int &localLinkId,
       SimplexId &linkId) const override {
-#ifndef TTK_ENABLE_KAMIKAZE
-      if((edgeId < 0) || (edgeId >= (SimplexId)edgeLinkList_.size()))
-        return -1;
-      if((localLinkId < 0)
-         || (localLinkId >= (SimplexId)edgeLinkList_[edgeId].size()))
-        return -2;
-#endif
-      linkId = edgeLinkList_[edgeId][localLinkId];
+
+      linkId = edgeLinkData_.get(edgeId, localLinkId);
       return 0;
     }
 
     inline SimplexId TTK_TRIANGULATION_INTERNAL(getEdgeLinkNumber)(
       const SimplexId &edgeId) const override {
-#ifndef TTK_ENABLE_KAMIKAZE
-      if((edgeId < 0) || (edgeId >= (SimplexId)edgeLinkList_.size()))
-        return -1;
-#endif
-      return edgeLinkList_[edgeId].size();
+      return edgeLinkData_.size(edgeId);
     }
 
     inline const std::vector<std::vector<SimplexId>> *
       TTK_TRIANGULATION_INTERNAL(getEdgeLinks)() override {
+      edgeLinkData_.copyTo(edgeLinkList_);
       return &edgeLinkList_;
     }
 
@@ -717,7 +708,7 @@ namespace ttk {
 
     inline int preconditionEdgeLinksInternal() override {
 
-      if(!edgeLinkList_.size()) {
+      if(edgeLinkData_.empty()) {
 
         if(getDimensionality() == 2) {
           preconditionEdgesInternal();
@@ -726,7 +717,7 @@ namespace ttk {
           OneSkeleton oneSkeleton;
           oneSkeleton.setWrapper(this);
           return oneSkeleton.buildEdgeLinks(
-            edgeList_, edgeStarData_, *cellArray_, edgeLinkList_);
+            edgeList_, edgeStarData_, *cellArray_, edgeLinkData_);
         } else if(getDimensionality() == 3) {
           preconditionEdgesInternal();
           preconditionEdgeStarsInternal();
@@ -735,7 +726,7 @@ namespace ttk {
           OneSkeleton oneSkeleton;
           oneSkeleton.setWrapper(this);
           return oneSkeleton.buildEdgeLinks(
-            edgeList_, edgeStarData_, tetraEdgeList_, edgeLinkList_);
+            edgeList_, edgeStarData_, tetraEdgeList_, edgeLinkData_);
         } else {
           // unsupported dimension
           printErr("Unsupported dimension for edge link precondition");
@@ -1027,6 +1018,7 @@ namespace ttk {
     FlatJaggedArray triangleStarData_;
 
     FlatJaggedArray vertexLinkData_;
+    FlatJaggedArray edgeLinkData_;
   };
 } // namespace ttk
 
