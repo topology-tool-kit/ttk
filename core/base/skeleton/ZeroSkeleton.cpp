@@ -331,7 +331,7 @@ int ZeroSkeleton::buildVertexLinks(
   const FlatJaggedArray &vertexStars,
   const vector<std::array<SimplexId, 3>> &cellEdges,
   const vector<std::array<SimplexId, 2>> &edgeList,
-  vector<vector<SimplexId>> &vertexLinks) const {
+  FlatJaggedArray &vertexLinks) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(vertexStars.empty())
@@ -344,32 +344,40 @@ int ZeroSkeleton::buildVertexLinks(
 
   Timer t;
 
-  vertexLinks.resize(vertexStars.subvectorsNumber());
+  const SimplexId vertexNumber = vertexStars.subvectorsNumber();
+  std::vector<SimplexId> offsets(vertexNumber + 1);
+  // one edge per star
+  std::vector<SimplexId> links(vertexStars.dataSize());
 
   printMsg("Building vertex links", 0, 0, threadNumber_,
            ttk::debug::LineMode::REPLACE);
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
-#endif
-  for(size_t i = 0; i < vertexLinks.size(); i++) {
+#endif // TTK_ENABLE_OPENMP
+  for(SimplexId i = 0; i < vertexNumber; i++) {
+
+    // copy the vertexStars offsets array
+    offsets[i] = vertexStars.offset(i);
 
     for(SimplexId j = 0; j < vertexStars.size(i); j++) {
+      // for each cell/triangle in vertex i's star, get the opposite edge
       for(size_t k = 0; k < cellEdges[vertexStars.get(i, j)].size(); k++) {
-        SimplexId edgeId = cellEdges[vertexStars.get(i, j)][k];
-
-        SimplexId vertexId0 = edgeList[edgeId][0];
-        SimplexId vertexId1 = edgeList[edgeId][1];
-
-        if((vertexId0 != static_cast<SimplexId>(i))
-           && (vertexId1 != static_cast<SimplexId>(i))) {
-          vertexLinks[i].push_back(edgeId);
+        const auto e = cellEdges[vertexStars.get(i, j)][k];
+        if(i != edgeList[e][0] && i != edgeList[e][1]) {
+          links[offsets[i] + j] = e;
+          break;
         }
       }
     }
   }
 
-  printMsg("Built " + std::to_string(vertexLinks.size()) + " vertex links", 1,
+  // don't forget the last offset
+  offsets[vertexNumber] = vertexStars.offset(vertexNumber);
+
+  vertexLinks.setData(std::move(links), std::move(offsets));
+
+  printMsg("Built " + std::to_string(vertexNumber) + " vertex links", 1,
            t.getElapsedTime(), threadNumber_);
 
   return 0;
@@ -380,7 +388,7 @@ int ZeroSkeleton::buildVertexLinks(
   const FlatJaggedArray &vertexStars,
   const vector<std::array<SimplexId, 4>> &cellTriangles,
   const vector<std::array<SimplexId, 3>> &triangleList,
-  vector<vector<SimplexId>> &vertexLinks) const {
+  FlatJaggedArray &vertexLinks) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(vertexStars.empty())
@@ -391,39 +399,44 @@ int ZeroSkeleton::buildVertexLinks(
     return -3;
 #endif
 
-  Timer t;
+  Timer tm;
 
-  vertexLinks.resize(vertexStars.subvectorsNumber());
+  const SimplexId vertexNumber = vertexStars.subvectorsNumber();
+  std::vector<SimplexId> offsets(vertexNumber + 1);
+  // one triangle per star
+  std::vector<SimplexId> links(vertexStars.dataSize());
 
   printMsg("Building vertex links", 0, 0, threadNumber_,
            ttk::debug::LineMode::REPLACE);
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
-#endif
-  for(size_t i = 0; i < vertexLinks.size(); i++) {
+#endif // TTK_ENABLE_OPENMP
+  for(SimplexId i = 0; i < vertexNumber; i++) {
+
+    // copy the vertexStars offsets array
+    offsets[i] = vertexStars.offset(i);
 
     for(SimplexId j = 0; j < vertexStars.size(i); j++) {
+      // for each cell/tetra in vertex i's star, get the opposite triangle
       for(size_t k = 0; k < cellTriangles[vertexStars.get(i, j)].size(); k++) {
-        SimplexId triangleId = cellTriangles[vertexStars.get(i, j)][k];
-
-        bool hasVertex = false;
-        for(int l = 0; l < 3; l++) {
-          if(static_cast<SimplexId>(i) == triangleList[triangleId][l]) {
-            hasVertex = true;
-            break;
-          }
-        }
-
-        if(!hasVertex) {
-          vertexLinks[i].push_back(triangleId);
+        const auto t = cellTriangles[vertexStars.get(i, j)][k];
+        if(i != triangleList[t][0] && i != triangleList[t][1]
+           && i != triangleList[t][2]) {
+          links[offsets[i] + j] = t;
+          break;
         }
       }
     }
   }
 
-  printMsg("Built " + std::to_string(vertexLinks.size()) + " vertex links", 1,
-           t.getElapsedTime(), threadNumber_);
+  // don't forget the last offset
+  offsets[vertexNumber] = vertexStars.offset(vertexNumber);
+
+  vertexLinks.setData(std::move(links), std::move(offsets));
+
+  printMsg("Built " + std::to_string(vertexNumber) + " vertex links", 1,
+           tm.getElapsedTime(), threadNumber_);
 
   return 0;
 }

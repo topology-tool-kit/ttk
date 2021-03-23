@@ -400,29 +400,19 @@ namespace ttk {
       const SimplexId &vertexId,
       const int &localLinkId,
       SimplexId &linkId) const override {
-#ifndef TTK_ENABLE_KAMIKAZE
-      if((vertexId < 0) || (vertexId >= (SimplexId)vertexLinkList_.size()))
-        return -1;
-      if((localLinkId < 0)
-         || (localLinkId >= (SimplexId)vertexLinkList_[vertexId].size()))
-        return -2;
-#endif
-      linkId = vertexLinkList_[vertexId][localLinkId];
 
+      linkId = vertexLinkData_.get(vertexId, localLinkId);
       return 0;
     }
 
     inline SimplexId TTK_TRIANGULATION_INTERNAL(getVertexLinkNumber)(
       const SimplexId &vertexId) const override {
-#ifndef TTK_ENABLE_KAMIKAZE
-      if((vertexId < 0) || (vertexId >= (SimplexId)vertexLinkList_.size()))
-        return -1;
-#endif
-      return vertexLinkList_[vertexId].size();
+      return vertexLinkData_.size(vertexId);
     }
 
     inline const std::vector<std::vector<SimplexId>> *
       TTK_TRIANGULATION_INTERNAL(getVertexLinks)() override {
+      vertexLinkData_.copyTo(vertexLinkList_);
       return &vertexLinkList_;
     }
 
@@ -871,7 +861,7 @@ namespace ttk {
 
     inline int preconditionVertexLinksInternal() override {
 
-      if((SimplexId)vertexLinkList_.size() != vertexNumber_) {
+      if((SimplexId)vertexLinkData_.subvectorsNumber() != vertexNumber_) {
 
         if(getDimensionality() == 2) {
           preconditionVertexStarsInternal();
@@ -880,7 +870,7 @@ namespace ttk {
           ZeroSkeleton zeroSkeleton;
           zeroSkeleton.setWrapper(this);
           return zeroSkeleton.buildVertexLinks(
-            vertexStarData_, triangleEdgeList_, edgeList_, vertexLinkList_);
+            vertexStarData_, triangleEdgeList_, edgeList_, vertexLinkData_);
         } else if(getDimensionality() == 3) {
           preconditionVertexStarsInternal();
           preconditionCellTrianglesInternal();
@@ -889,7 +879,7 @@ namespace ttk {
           zeroSkeleton.setWrapper(this);
           return zeroSkeleton.buildVertexLinks(vertexStarData_,
                                                tetraTriangleList_,
-                                               triangleList_, vertexLinkList_);
+                                               triangleList_, vertexLinkData_);
         } else {
           // unsupported dimension
           printErr("Unsupported dimension for vertex link precondition");
@@ -1041,6 +1031,8 @@ namespace ttk {
     FlatJaggedArray vertexStarData_;
     FlatJaggedArray edgeTriangleData_;
     FlatJaggedArray triangleStarData_;
+
+    FlatJaggedArray vertexLinkData_;
   };
 } // namespace ttk
 

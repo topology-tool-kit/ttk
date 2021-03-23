@@ -96,11 +96,10 @@ namespace ttk {
     /// entry will be a std::vector listing the edges in the link of the
     /// corresponding vertex.
     /// \return Returns 0 upon success, negative values otherwise.
-    int
-      buildVertexLinks(const FlatJaggedArray &vertexStars,
-                       const std::vector<std::array<SimplexId, 3>> &cellEdges,
-                       const std::vector<std::array<SimplexId, 2>> &edgeList,
-                       std::vector<std::vector<SimplexId>> &vertexLinks) const;
+    int buildVertexLinks(const FlatJaggedArray &vertexStars,
+                         const std::vector<std::array<SimplexId, 3>> &cellEdges,
+                         const std::vector<std::array<SimplexId, 2>> &edgeList,
+                         FlatJaggedArray &vertexLinks) const;
 
     /// Compute the link of each vertex of a 3D triangulation (unspecified
     /// behavior if the input mesh is not a valid triangulation).
@@ -121,7 +120,7 @@ namespace ttk {
       const FlatJaggedArray &vertexStars,
       const std::vector<std::array<SimplexId, 4>> &cellTriangles,
       const std::vector<std::array<SimplexId, 3>> &triangleList,
-      std::vector<std::vector<SimplexId>> &vertexLinks) const;
+      FlatJaggedArray &vertexLinks) const;
 
     /// Compute the list of neighbors of each vertex of a triangulation.
     /// Unspecified behavior if the input mesh is not a valid triangulation).
