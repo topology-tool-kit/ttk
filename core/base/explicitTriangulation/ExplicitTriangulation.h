@@ -196,28 +196,19 @@ namespace ttk {
       const SimplexId &edgeId,
       const int &localStarId,
       SimplexId &starId) const override {
-#ifndef TTK_ENABLE_KAMIKAZE
-      if((edgeId < 0) || (edgeId >= (SimplexId)edgeStarList_.size()))
-        return -1;
-      if((localStarId < 0)
-         || (localStarId >= (SimplexId)edgeStarList_[edgeId].size()))
-        return -2;
-#endif
-      starId = edgeStarList_[edgeId][localStarId];
+
+      starId = edgeStarData_.get(edgeId, localStarId);
       return 0;
     }
 
     inline SimplexId TTK_TRIANGULATION_INTERNAL(getEdgeStarNumber)(
       const SimplexId &edgeId) const override {
-#ifndef TTK_ENABLE_KAMIKAZE
-      if((edgeId < 0) || (edgeId >= (SimplexId)edgeStarList_.size()))
-        return -1;
-#endif
-      return edgeStarList_[edgeId].size();
+      return edgeStarData_.size(edgeId);
     }
 
     inline const std::vector<std::vector<SimplexId>> *
       TTK_TRIANGULATION_INTERNAL(getEdgeStars)() override {
+      edgeStarData_.copyTo(edgeStarList_);
       return &edgeStarList_;
     }
 
@@ -537,8 +528,9 @@ namespace ttk {
 
       if(getDimensionality() == 2) {
         preconditionEdgeStarsInternal();
-        for(SimplexId i = 0; i < (SimplexId)edgeStarList_.size(); i++) {
-          if(edgeStarList_[i].size() == 1) {
+        for(SimplexId i = 0; i < (SimplexId)edgeStarData_.subvectorsNumber();
+            i++) {
+          if(edgeStarData_.size(i) == 1) {
             boundaryEdges_[i] = true;
           }
         }
@@ -614,8 +606,9 @@ namespace ttk {
         preconditionEdgesInternal();
         preconditionEdgeStarsInternal();
 
-        for(SimplexId i = 0; i < (SimplexId)edgeStarList_.size(); i++) {
-          if(edgeStarList_[i].size() == 1) {
+        for(SimplexId i = 0; i < (SimplexId)edgeStarData_.subvectorsNumber();
+            i++) {
+          if(edgeStarData_.size(i) == 1) {
             boundaryVertices_[edgeList_[i][0]] = true;
             boundaryVertices_[edgeList_[i][1]] = true;
           }
@@ -733,7 +726,7 @@ namespace ttk {
           OneSkeleton oneSkeleton;
           oneSkeleton.setWrapper(this);
           return oneSkeleton.buildEdgeLinks(
-            edgeList_, edgeStarList_, *cellArray_, edgeLinkList_);
+            edgeList_, edgeStarData_, *cellArray_, edgeLinkList_);
         } else if(getDimensionality() == 3) {
           preconditionEdgesInternal();
           preconditionEdgeStarsInternal();
@@ -742,7 +735,7 @@ namespace ttk {
           OneSkeleton oneSkeleton;
           oneSkeleton.setWrapper(this);
           return oneSkeleton.buildEdgeLinks(
-            edgeList_, edgeStarList_, tetraEdgeList_, edgeLinkList_);
+            edgeList_, edgeStarData_, tetraEdgeList_, edgeLinkList_);
         } else {
           // unsupported dimension
           printErr("Unsupported dimension for edge link precondition");
@@ -755,11 +748,11 @@ namespace ttk {
 
     inline int preconditionEdgeStarsInternal() override {
 
-      if(!edgeStarList_.size()) {
+      if(edgeStarData_.empty()) {
         OneSkeleton oneSkeleton;
         oneSkeleton.setWrapper(this);
         return oneSkeleton.buildEdgeStars(vertexNumber_, *cellArray_,
-                                          edgeStarList_, &edgeList_,
+                                          edgeStarData_, &edgeList_,
                                           &vertexStarData_);
       }
       return 0;
@@ -1030,6 +1023,7 @@ namespace ttk {
     FlatJaggedArray vertexTriangleData_;
     FlatJaggedArray vertexStarData_;
     FlatJaggedArray edgeTriangleData_;
+    FlatJaggedArray edgeStarData_;
     FlatJaggedArray triangleStarData_;
 
     FlatJaggedArray vertexLinkData_;

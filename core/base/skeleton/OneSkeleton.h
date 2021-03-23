@@ -46,7 +46,7 @@ namespace ttk {
     /// vertex.
     /// \return Returns 0 upon success, negative values otherwise.
     int buildEdgeLinks(const std::vector<std::array<SimplexId, 2>> &edgeList,
-                       const std::vector<std::vector<SimplexId>> &edgeStars,
+                       const FlatJaggedArray &edgeStars,
                        const CellArray &cellArray,
                        std::vector<std::vector<SimplexId>> &edgeLinks) const;
 
@@ -67,7 +67,7 @@ namespace ttk {
     /// corresponding vertex.
     /// \return Returns 0 upon success, negative values otherwise.
     int buildEdgeLinks(const std::vector<std::array<SimplexId, 2>> &edgeList,
-                       const std::vector<std::vector<SimplexId>> &edgeStars,
+                       const FlatJaggedArray &edgeStars,
                        const std::vector<std::array<SimplexId, 6>> &cellEdges,
                        std::vector<std::vector<SimplexId>> &edgeLinks) const;
 
@@ -127,7 +127,7 @@ namespace ttk {
     /// \return Returns 0 upon success, negative values otherwise.
     int buildEdgeStars(const SimplexId &vertexNumber,
                        const CellArray &cellArray,
-                       std::vector<std::vector<SimplexId>> &starList,
+                       FlatJaggedArray &starList,
                        std::vector<std::array<SimplexId, 2>> *edgeList
                        = nullptr,
                        FlatJaggedArray *vertexStars = nullptr) const;

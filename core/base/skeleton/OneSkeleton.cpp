@@ -14,14 +14,14 @@ OneSkeleton::~OneSkeleton() {
 // 2D cells (triangles)
 int OneSkeleton::buildEdgeLinks(
   const vector<std::array<SimplexId, 2>> &edgeList,
-  const vector<vector<SimplexId>> &edgeStars,
+  const FlatJaggedArray &edgeStars,
   const CellArray &cellArray,
   vector<vector<SimplexId>> &edgeLinks) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(edgeList.empty())
     return -1;
-  if(edgeStars.size() != edgeList.size())
+  if(edgeStars.subvectorsNumber() != edgeList.size())
     return -2;
 #endif
 
@@ -37,13 +37,13 @@ int OneSkeleton::buildEdgeLinks(
 #pragma omp parallel for num_threads(threadNumber_)
 #endif
   for(SimplexId i = 0; i < nbEdges; i++) {
-    const SimplexId localNbTriangle = edgeStars[i].size();
+    const SimplexId localNbTriangle = edgeStars.size(i);
     for(SimplexId j = 0; j < localNbTriangle; j++) {
 
       // Look for the right vertex in each triangle
       for(int k = 0; k < 3; k++) {
         const SimplexId tmpVertexId
-          = cellArray.getCellVertex(edgeStars[i][j], k);
+          = cellArray.getCellVertex(edgeStars.get(i, j), k);
         if(tmpVertexId != edgeList[i][0] && tmpVertexId != edgeList[i][1]) {
           // found the vertex in the triangle
           edgeLinks[i].push_back(tmpVertexId);
@@ -62,14 +62,14 @@ int OneSkeleton::buildEdgeLinks(
 // 3D cells (tetrahedron)
 int OneSkeleton::buildEdgeLinks(
   const vector<std::array<SimplexId, 2>> &edgeList,
-  const vector<vector<SimplexId>> &edgeStars,
+  const FlatJaggedArray &edgeStars,
   const vector<std::array<SimplexId, 6>> &cellEdges,
   vector<vector<SimplexId>> &edgeLinks) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(edgeList.empty())
     return -1;
-  if((edgeStars.empty()) || (edgeStars.size() != edgeList.size()))
+  if((edgeStars.empty()) || (edgeStars.subvectorsNumber() != edgeList.size()))
     return -2;
   if(cellEdges.empty())
     return -3;
@@ -89,12 +89,12 @@ int OneSkeleton::buildEdgeLinks(
 
     SimplexId otherEdgeId = -1;
 
-    for(size_t j = 0; j < edgeStars[i].size(); j++) {
+    for(SimplexId j = 0; j < edgeStars.size(i); j++) {
 
       SimplexId linkEdgeId = -1;
 
-      for(size_t k = 0; k < cellEdges[edgeStars[i][j]].size(); k++) {
-        otherEdgeId = cellEdges[edgeStars[i][j]][k];
+      for(size_t k = 0; k < cellEdges[edgeStars.get(i, j)].size(); k++) {
+        otherEdgeId = cellEdges[edgeStars.get(i, j)][k];
 
         if((edgeList[otherEdgeId][0] != edgeList[i][0])
            && (edgeList[otherEdgeId][0] != edgeList[i][1])
@@ -221,7 +221,7 @@ int OneSkeleton::buildEdgeList(
 
 int OneSkeleton::buildEdgeStars(const SimplexId &vertexNumber,
                                 const CellArray &cellArray,
-                                vector<vector<SimplexId>> &starList,
+                                FlatJaggedArray &starList,
                                 vector<std::array<SimplexId, 2>> *edgeList,
                                 FlatJaggedArray *vertexStars) const {
 
@@ -235,9 +235,9 @@ int OneSkeleton::buildEdgeStars(const SimplexId &vertexNumber,
     buildEdgeList(vertexNumber, cellArray, *localEdgeList);
   }
 
-  starList.resize(localEdgeList->size());
-  for(size_t i = 0; i < starList.size(); i++)
-    starList[i].reserve(16);
+  using boost::container::small_vector;
+  // for each edge, a vector of stars/cells
+  std::vector<small_vector<SimplexId, 8>> stars(localEdgeList->size());
 
   auto localVertexStars = vertexStars;
   FlatJaggedArray defaultVertexStars{};
@@ -266,11 +266,13 @@ int OneSkeleton::buildEdgeStars(const SimplexId &vertexNumber,
     const auto beg1 = localVertexStars->get_ptr(e[1], 0);
     const auto end1 = beg1 + localVertexStars->size(e[1]);
     // merge the two vertex stars
-    std::set_intersection(
-      beg0, end0, beg1, end1, std::back_inserter(starList[i]));
+    std::set_intersection(beg0, end0, beg1, end1, std::back_inserter(stars[i]));
   }
 
-  printMsg("Built " + to_string(starList.size()) + " edge stars", 1,
+  // convert to a FlatJaggedArray
+  starList.fillFrom(stars);
+
+  printMsg("Built " + to_string(stars.size()) + " edge stars", 1,
            t.getElapsedTime(), threadNumber_);
 
   // ethaneDiolMedium.vtu, 70Mtets, hal9000 (12coresHT)
