@@ -66,10 +66,9 @@ namespace ttk {
     /// entry will be a std::vector listing the vertices in the link of the
     /// corresponding vertex.
     /// \return Returns 0 upon success, negative values otherwise.
-    template <std::size_t n>
     int buildEdgeLinks(const std::vector<std::array<SimplexId, 2>> &edgeList,
                        const std::vector<std::vector<SimplexId>> &edgeStars,
-                       const std::vector<std::array<SimplexId, n>> &cellEdges,
+                       const std::vector<std::array<SimplexId, 6>> &cellEdges,
                        std::vector<std::vector<SimplexId>> &edgeLinks) const;
 
     /// Compute the list of edges of a valid triangulation.

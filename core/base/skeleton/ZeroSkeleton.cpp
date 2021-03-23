@@ -326,10 +326,10 @@ int ZeroSkeleton::buildVertexLinks(const SimplexId &vertexNumber,
   return 0;
 }
 
-template <std::size_t n>
+// 2D cells (triangles)
 int ZeroSkeleton::buildVertexLinks(
   const FlatJaggedArray &vertexStars,
-  const vector<std::array<SimplexId, n>> &cellEdges,
+  const vector<std::array<SimplexId, 3>> &cellEdges,
   const vector<std::array<SimplexId, 2>> &edgeList,
   vector<vector<SimplexId>> &vertexLinks) const {
 
@@ -375,20 +375,7 @@ int ZeroSkeleton::buildVertexLinks(
   return 0;
 }
 
-// explicit template instantiations for 3D cells (tetrahedrons)
-template int ZeroSkeleton::buildVertexLinks<6>(
-  const FlatJaggedArray &vertexStars,
-  const vector<std::array<SimplexId, 6>> &cellEdges,
-  const vector<std::array<SimplexId, 2>> &edgeList,
-  vector<vector<SimplexId>> &vertexLinks) const;
-
-// explicit template instantiations for 2D cells (triangles)
-template int ZeroSkeleton::buildVertexLinks<3>(
-  const FlatJaggedArray &vertexStars,
-  const vector<std::array<SimplexId, 3>> &cellEdges,
-  const vector<std::array<SimplexId, 2>> &edgeList,
-  vector<vector<SimplexId>> &vertexLinks) const;
-
+// 3D cells (tetrahedron)
 int ZeroSkeleton::buildVertexLinks(
   const FlatJaggedArray &vertexStars,
   const vector<std::array<SimplexId, 4>> &cellTriangles,

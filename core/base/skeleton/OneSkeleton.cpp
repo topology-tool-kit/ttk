@@ -11,6 +11,7 @@ OneSkeleton::OneSkeleton() {
 OneSkeleton::~OneSkeleton() {
 }
 
+// 2D cells (triangles)
 int OneSkeleton::buildEdgeLinks(
   const vector<std::array<SimplexId, 2>> &edgeList,
   const vector<vector<SimplexId>> &edgeStars,
@@ -58,11 +59,11 @@ int OneSkeleton::buildEdgeLinks(
   return 0;
 }
 
-template <std::size_t n>
+// 3D cells (tetrahedron)
 int OneSkeleton::buildEdgeLinks(
   const vector<std::array<SimplexId, 2>> &edgeList,
   const vector<vector<SimplexId>> &edgeStars,
-  const vector<std::array<SimplexId, n>> &cellEdges,
+  const vector<std::array<SimplexId, 6>> &cellEdges,
   vector<vector<SimplexId>> &edgeLinks) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -113,20 +114,6 @@ int OneSkeleton::buildEdgeLinks(
 
   return 0;
 }
-
-// explicit template instantiations for 3D cells (tetrahedrons)
-template int OneSkeleton::buildEdgeLinks<6>(
-  const vector<std::array<SimplexId, 2>> &edgeList,
-  const vector<vector<SimplexId>> &edgeStars,
-  const vector<std::array<SimplexId, 6>> &cellEdges,
-  vector<vector<SimplexId>> &edgeLinks) const;
-
-// explicit template instantiations for 2D cells (triangles)
-template int OneSkeleton::buildEdgeLinks<3>(
-  const vector<std::array<SimplexId, 2>> &edgeList,
-  const vector<vector<SimplexId>> &edgeStars,
-  const vector<std::array<SimplexId, 3>> &cellEdges,
-  vector<vector<SimplexId>> &edgeLinks) const;
 
 int OneSkeleton::buildEdgeList(
   const SimplexId &vertexNumber,
