@@ -191,7 +191,7 @@ namespace ttk {
       const std::vector<std::array<SimplexId, 3>> &triangeList,
       const FlatJaggedArray &triangleStars,
       const CellArray &cellArray,
-      std::vector<std::vector<SimplexId>> &triangleLinks) const;
+      FlatJaggedArray &triangleLinks) const;
 
     /// Compute the list of triangles connected to each vertex for 3D
     /// triangulations (unspecified behavior if the input mesh is not a

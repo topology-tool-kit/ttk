@@ -300,30 +300,19 @@ namespace ttk {
       const SimplexId &triangleId,
       const int &localLinkId,
       SimplexId &linkId) const override {
-#ifndef TTK_ENABLE_KAMIKAZE
-      if((triangleId < 0)
-         || (triangleId >= (SimplexId)triangleLinkList_.size()))
-        return -1;
-      if((localLinkId < 0)
-         || (localLinkId >= (SimplexId)triangleLinkList_[triangleId].size()))
-        return -2;
-#endif
-      linkId = triangleLinkList_[triangleId][localLinkId];
+
+      linkId = triangleLinkData_.get(triangleId, localLinkId);
       return 0;
     }
 
     inline SimplexId TTK_TRIANGULATION_INTERNAL(getTriangleLinkNumber)(
       const SimplexId &triangleId) const override {
-#ifndef TTK_ENABLE_KAMIKAZE
-      if((triangleId < 0)
-         || (triangleId >= (SimplexId)triangleLinkList_.size()))
-        return -1;
-#endif
-      return triangleLinkList_[triangleId].size();
+      return triangleLinkData_.size(triangleId);
     }
 
     inline const std::vector<std::vector<SimplexId>> *
       TTK_TRIANGULATION_INTERNAL(getTriangleLinks)() override {
+      triangleLinkData_.copyTo(triangleLinkList_);
       return &triangleLinkList_;
     }
 
@@ -799,14 +788,14 @@ namespace ttk {
 
     inline int preconditionTriangleLinksInternal() override {
 
-      if(!triangleLinkList_.size()) {
+      if(triangleLinkData_.empty()) {
 
         preconditionTriangleStarsInternal();
 
         TwoSkeleton twoSkeleton;
         twoSkeleton.setWrapper(this);
         return twoSkeleton.buildTriangleLinks(
-          triangleList_, triangleStarData_, *cellArray_, triangleLinkList_);
+          triangleList_, triangleStarData_, *cellArray_, triangleLinkData_);
       }
 
       return 0;
@@ -1019,6 +1008,7 @@ namespace ttk {
 
     FlatJaggedArray vertexLinkData_;
     FlatJaggedArray edgeLinkData_;
+    FlatJaggedArray triangleLinkData_;
   };
 } // namespace ttk
 

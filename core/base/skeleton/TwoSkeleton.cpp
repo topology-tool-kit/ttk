@@ -446,7 +446,7 @@ int TwoSkeleton::buildTriangleLinks(
   const vector<std::array<SimplexId, 3>> &triangleList,
   const FlatJaggedArray &triangleStars,
   const CellArray &cellArray,
-  vector<vector<SimplexId>> &triangleLinks) const {
+  FlatJaggedArray &triangleLinks) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(triangleList.empty())
@@ -456,35 +456,44 @@ int TwoSkeleton::buildTriangleLinks(
     return -2;
 #endif
 
-  Timer t;
+  Timer tm;
+
+  const SimplexId triangleNumber = triangleList.size();
+  std::vector<SimplexId> offsets(triangleNumber + 1);
+  // one vertex per star
+  std::vector<SimplexId> links(triangleStars.dataSize());
 
   printMsg("Building triangle links", 0, 0, threadNumber_,
            ttk::debug::LineMode::REPLACE);
 
-  triangleLinks.resize(triangleList.size());
-
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
-#endif
-  for(size_t i = 0; i < triangleList.size(); i++) {
+#endif // TTK_ENABLE_OPENMP
+  for(SimplexId i = 0; i < triangleNumber; i++) {
 
+    // copy the triangleStars offsets array
+    offsets[i] = triangleStars.offset(i);
+
+    const auto &t = triangleList[i];
     for(SimplexId j = 0; j < triangleStars.size(i); j++) {
-
+      // for each tetra in triangle i's star, get the opposite vertex
       for(size_t k = 0; k < 4; k++) {
-        SimplexId vertexId
-          = cellArray.getCellVertex(triangleStars.get(i, j), k);
-
-        if((vertexId != triangleList[i][0]) && (vertexId != triangleList[i][1])
-           && (vertexId != triangleList[i][2])) {
-          triangleLinks[i].push_back(vertexId);
+        const auto v = cellArray.getCellVertex(triangleStars.get(i, j), k);
+        if(v != t[0] && v != t[1] && v != t[2]) {
+          links[offsets[i] + j] = v;
           break;
         }
       }
     }
   }
 
-  printMsg("Built " + std::to_string(triangleList.size()) + " triangle links",
-           1, t.getElapsedTime(), threadNumber_);
+  // don't forget the last offset
+  offsets[triangleNumber] = triangleStars.offset(triangleNumber);
+
+  triangleLinks.setData(std::move(links), std::move(offsets));
+
+  printMsg("Built " + std::to_string(triangleNumber) + " triangle links", 1,
+           tm.getElapsedTime(), threadNumber_);
 
   return 0;
 }
