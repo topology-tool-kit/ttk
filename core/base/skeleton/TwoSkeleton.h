@@ -49,11 +49,11 @@ namespace ttk {
     /// internal vertex star list. If this std::vector is not empty but
     /// incorrect, the behavior is unspecified.
     ///  \return Returns 0 upon success, negative values otherwise.
-    int buildCellNeighborsFromVertices(
-      const SimplexId &vertexNumber,
-      const CellArray &cellArray,
-      std::vector<std::vector<SimplexId>> &cellNeighbors,
-      FlatJaggedArray *vertexStars = nullptr) const;
+    int buildCellNeighborsFromVertices(const SimplexId &vertexNumber,
+                                       const CellArray &cellArray,
+                                       FlatJaggedArray &cellNeighbors,
+                                       FlatJaggedArray *vertexStars
+                                       = nullptr) const;
 
     /// Compute the list of triangles connected to each edge for 3D
     /// triangulations (unspecified behavior if the input mesh is not a

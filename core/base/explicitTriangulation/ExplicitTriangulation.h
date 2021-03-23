@@ -74,28 +74,19 @@ namespace ttk {
       const SimplexId &cellId,
       const int &localNeighborId,
       SimplexId &neighborId) const override {
-#ifndef TTK_ENABLE_KAMIKAZE
-      if((cellId < 0) || (cellId >= (SimplexId)cellNeighborList_.size()))
-        return -1;
-      if((localNeighborId < 0)
-         || (localNeighborId >= (SimplexId)cellNeighborList_[cellId].size()))
-        return -2;
-#endif
-      neighborId = cellNeighborList_[cellId][localNeighborId];
+
+      neighborId = cellNeighborData_.get(cellId, localNeighborId);
       return 0;
     }
 
     inline SimplexId TTK_TRIANGULATION_INTERNAL(getCellNeighborNumber)(
       const SimplexId &cellId) const override {
-#ifndef TTK_ENABLE_KAMIKAZE
-      if((cellId < 0) || (cellId >= (SimplexId)cellNeighborList_.size()))
-        return -1;
-#endif
-      return cellNeighborList_[cellId].size();
+      return cellNeighborData_.size(cellId);
     }
 
     inline const std::vector<std::vector<SimplexId>> *
       TTK_TRIANGULATION_INTERNAL(getCellNeighbors)() override {
+      cellNeighborData_.copyTo(cellNeighborList_);
       return &cellNeighborList_;
     }
 
@@ -633,13 +624,13 @@ namespace ttk {
 
     inline int preconditionCellNeighborsInternal() override {
 
-      if(!cellNeighborList_.size()) {
+      if(cellNeighborData_.empty()) {
         ThreeSkeleton threeSkeleton;
         threeSkeleton.setWrapper(this);
 
         // choice here (for the more likely)
         threeSkeleton.buildCellNeighborsFromVertices(
-          vertexNumber_, *cellArray_, cellNeighborList_, &vertexStarData_);
+          vertexNumber_, *cellArray_, cellNeighborData_, &vertexStarData_);
       }
 
       return 0;
@@ -998,17 +989,17 @@ namespace ttk {
     int maxCellDim_;
     std::shared_ptr<CellArray> cellArray_;
 
-    FlatJaggedArray vertexNeighborData_;
-    FlatJaggedArray vertexEdgeData_;
-    FlatJaggedArray vertexTriangleData_;
-    FlatJaggedArray vertexStarData_;
-    FlatJaggedArray edgeTriangleData_;
-    FlatJaggedArray edgeStarData_;
-    FlatJaggedArray triangleStarData_;
-
-    FlatJaggedArray vertexLinkData_;
-    FlatJaggedArray edgeLinkData_;
-    FlatJaggedArray triangleLinkData_;
+    FlatJaggedArray vertexNeighborData_{};
+    FlatJaggedArray cellNeighborData_{};
+    FlatJaggedArray vertexEdgeData_{};
+    FlatJaggedArray vertexTriangleData_{};
+    FlatJaggedArray edgeTriangleData_{};
+    FlatJaggedArray vertexStarData_{};
+    FlatJaggedArray edgeStarData_{};
+    FlatJaggedArray triangleStarData_{};
+    FlatJaggedArray vertexLinkData_{};
+    FlatJaggedArray edgeLinkData_{};
+    FlatJaggedArray triangleLinkData_{};
   };
 } // namespace ttk
 

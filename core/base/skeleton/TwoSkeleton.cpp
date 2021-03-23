@@ -15,7 +15,7 @@ TwoSkeleton::~TwoSkeleton() {
 int TwoSkeleton::buildCellNeighborsFromVertices(
   const SimplexId &vertexNumber,
   const CellArray &cellArray,
-  vector<vector<SimplexId>> &cellNeighbors,
+  FlatJaggedArray &cellNeighbors,
   FlatJaggedArray *vertexStars) const {
 
   auto localVertexStars = vertexStars;
@@ -38,11 +38,9 @@ int TwoSkeleton::buildCellNeighborsFromVertices(
     "Building cell neighbors", 0, 0, threadNumber_, debug::LineMode::REPLACE);
 
   const SimplexId cellNumber = cellArray.getNbCells();
-  cellNeighbors.resize(cellNumber);
-  for(SimplexId cid = 0; cid < cellNumber; cid++) {
-    const SimplexId nbVertCell = cellArray.getCellVertexNumber(cid);
-    cellNeighbors[cid].reserve(nbVertCell);
-  }
+  using boost::container::small_vector;
+  // for each cell/triangle, a vector of neighbors
+  std::vector<small_vector<SimplexId, 3>> neighbors(cellNumber);
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
@@ -94,10 +92,13 @@ int TwoSkeleton::buildCellNeighborsFromVertices(
       }
 
       if(intersection != -1) {
-        cellNeighbors[cid].emplace_back(intersection);
+        neighbors[cid].emplace_back(intersection);
       }
     }
   }
+
+  // convert to a FlatJaggedArray
+  cellNeighbors.fillFrom(neighbors);
 
   printMsg("Built " + to_string(cellNumber) + " cell neighbors", 1,
            t.getElapsedTime(), threadNumber_);

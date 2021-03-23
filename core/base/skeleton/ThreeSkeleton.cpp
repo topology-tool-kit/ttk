@@ -1,4 +1,5 @@
 #include <ThreeSkeleton.h>
+#include <boost/container/small_vector.hpp>
 
 using namespace std;
 using namespace ttk;
@@ -122,7 +123,7 @@ template int ThreeSkeleton::buildCellEdges<3>(
 int ThreeSkeleton::buildCellNeighborsFromTriangles(
   const SimplexId &vertexNumber,
   const CellArray &cellArray,
-  vector<vector<SimplexId>> &cellNeighbors,
+  FlatJaggedArray &cellNeighbors,
   FlatJaggedArray *triangleStars) const {
 
   auto localTriangleStars = triangleStars;
@@ -132,7 +133,6 @@ int ThreeSkeleton::buildCellNeighborsFromTriangles(
   }
 
   if(localTriangleStars->empty()) {
-
     TwoSkeleton twoSkeleton;
     twoSkeleton.setThreadNumber(threadNumber_);
     twoSkeleton.setDebugLevel(debugLevel_);
@@ -140,97 +140,52 @@ int ThreeSkeleton::buildCellNeighborsFromTriangles(
       vertexNumber, cellArray, nullptr, localTriangleStars);
   }
 
-  const SimplexId cellNumber = cellArray.getNbCells();
-  cellNeighbors.resize(cellNumber);
-  for(SimplexId i = 0; i < cellNumber; i++) {
-    const SimplexId nbVertCell = cellArray.getCellVertexNumber(i);
-    cellNeighbors[i].reserve(nbVertCell);
-  }
-
-  // NOTE: not efficient so far in parallel
-  ThreadId oldThreadNumber = threadNumber_;
-  threadNumber_ = 1;
-
   Timer t;
 
-  printMsg("Building cell neighbors", 0, 0, threadNumber_,
-           ttk::debug::LineMode::REPLACE);
+  printMsg("Building cell neighbors", 0, 0, 1, ttk::debug::LineMode::REPLACE);
 
-  if(threadNumber_ == 1) {
+  const SimplexId cellNumber = cellArray.getNbCells();
+  const SimplexId triangleNumber = localTriangleStars->subvectorsNumber();
+  std::vector<SimplexId> offsets(cellNumber + 1);
+  // number of neighbors processed per cell
+  std::vector<SimplexId> neighborsId(cellNumber);
 
-    const SimplexId nbTriStars = localTriangleStars->subvectorsNumber();
-    const SimplexId timeBuckets = std::min<ttk::SimplexId>(10, nbTriStars);
-
-    for(SimplexId i = 0; i < nbTriStars; i++) {
-
-      if(localTriangleStars->size(i) == 2) {
-
-        // interior triangle
-        cellNeighbors[localTriangleStars->get(i, 0)].push_back(
-          localTriangleStars->get(i, 1));
-
-        cellNeighbors[localTriangleStars->get(i, 1)].push_back(
-          localTriangleStars->get(i, 0));
-      }
-
-      // update the progress bar of the wrapping code -- to adapt
-      if(debugLevel_ >= (int)(debug::Priority::INFO)) {
-
-        if(!(i % ((localTriangleStars->subvectorsNumber()) / timeBuckets))) {
-          printMsg("Building triangles",
-                   (i / (float)localTriangleStars->subvectorsNumber()),
-                   t.getElapsedTime(), threadNumber_,
-                   ttk::debug::LineMode::REPLACE);
-        }
-      }
-    }
-  } else {
-
-    vector<vector<vector<SimplexId>>> threadedCellNeighbors(threadNumber_);
-
-    for(ThreadId i = 0; i < threadNumber_; i++) {
-      threadedCellNeighbors[i].resize(cellNumber);
-      for(size_t j = 0; j < threadedCellNeighbors[i].size(); j++)
-        threadedCellNeighbors[i][j].reserve(4);
-    }
-
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
-#endif
-    for(size_t i = 0; i < localTriangleStars->subvectorsNumber(); i++) {
-
-      ThreadId threadId = 0;
-#ifdef TTK_ENABLE_OPENMP
-      threadId = omp_get_thread_num();
-#endif
-
-      if(localTriangleStars->size(i) == 2) {
-
-        // interior triangles
-
-        threadedCellNeighbors[threadId][localTriangleStars->get(i, 0)]
-          .push_back(localTriangleStars->get(i, 1));
-
-        threadedCellNeighbors[threadId][localTriangleStars->get(i, 1)]
-          .push_back(localTriangleStars->get(i, 0));
-      }
-    }
-
-    // now merge things
-    for(ThreadId i = 0; i < threadNumber_; i++) {
-      for(size_t j = 0; j < threadedCellNeighbors[i].size(); j++) {
-
-        for(size_t k = 0; k < threadedCellNeighbors[i][j].size(); k++) {
-          cellNeighbors[j].push_back(threadedCellNeighbors[i][j][k]);
-        }
-      }
+  for(SimplexId i = 0; i < triangleNumber; i++) {
+    if(localTriangleStars->size(i) == 2) {
+      // tetra cells in triangle i's star
+      const auto cs0 = localTriangleStars->get(i, 0);
+      const auto cs1 = localTriangleStars->get(i, 1);
+      offsets[cs0 + 1]++;
+      offsets[cs1 + 1]++;
     }
   }
 
-  printMsg("Built " + std::to_string(cellNumber) + " cell neighbors", 1,
-           t.getElapsedTime(), threadNumber_);
+  // compute partial sum of number of neighbors per vertex
+  for(size_t i = 1; i < offsets.size(); ++i) {
+    offsets[i] += offsets[i - 1];
+  }
 
-  threadNumber_ = oldThreadNumber;
+  // allocate flat neighbors vector
+  std::vector<SimplexId> neighbors(offsets.back());
+
+  // fill flat neighbors vector using offsets and neighbors count vectors
+  for(SimplexId i = 0; i < triangleNumber; i++) {
+    if(localTriangleStars->size(i) == 2) {
+      // tetra cells in triangle i's star
+      const auto cs0 = localTriangleStars->get(i, 0);
+      const auto cs1 = localTriangleStars->get(i, 1);
+      neighbors[offsets[cs0] + neighborsId[cs0]] = cs1;
+      neighborsId[cs0]++;
+      neighbors[offsets[cs1] + neighborsId[cs1]] = cs0;
+      neighborsId[cs1]++;
+    }
+  }
+
+  // fill FlatJaggedArray struct
+  cellNeighbors.setData(std::move(neighbors), std::move(offsets));
+
+  printMsg("Built " + std::to_string(cellNumber) + " cell neighbors", 1,
+           t.getElapsedTime(), 1);
 
   // ethaneDiol.vtu, 8.7Mtets, vger (4coresHT)
   // 1 thread: 9.80 s
@@ -254,7 +209,7 @@ int ThreeSkeleton::buildCellNeighborsFromTriangles(
 int ThreeSkeleton::buildCellNeighborsFromVertices(
   const SimplexId &vertexNumber,
   const CellArray &cellArray,
-  vector<vector<SimplexId>> &cellNeighbors,
+  FlatJaggedArray &cellNeighbors,
   FlatJaggedArray *vertexStars) const {
 
   // TODO: ASSUME uniform mesh here!
@@ -268,7 +223,7 @@ int ThreeSkeleton::buildCellNeighborsFromVertices(
 
   if(cellArray.getNbCells() && cellArray.getCellVertexNumber(0) <= 2) {
     // 1D
-    printErr("buildCellNeighbnorsFromVertices in 1D:");
+    printErr("buildCellNeighborsFromVertices in 1D:");
     printErr("Not implemented! TODO?!");
     return -1;
   }
@@ -294,11 +249,9 @@ int ThreeSkeleton::buildCellNeighborsFromVertices(
            ttk::debug::LineMode::REPLACE);
 
   const SimplexId cellNumber = cellArray.getNbCells();
-  cellNeighbors.resize(cellNumber);
-  for(size_t i = 0; i < cellNeighbors.size(); i++) {
-    const SimplexId nbVertCell = cellArray.getCellVertexNumber(i);
-    cellNeighbors[i].reserve(nbVertCell);
-  }
+  using boost::container::small_vector;
+  // for each cell/tetra, a vector of neighbors
+  std::vector<small_vector<SimplexId, 4>> neighbors(cellNumber);
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
@@ -373,10 +326,13 @@ int ThreeSkeleton::buildCellNeighborsFromVertices(
       }
 
       if(intersection != -1) {
-        cellNeighbors[cid].emplace_back(intersection);
+        neighbors[cid].emplace_back(intersection);
       }
     }
   }
+
+  // convert to a FlatJaggedArray
+  cellNeighbors.fillFrom(neighbors);
 
   printMsg("Built " + to_string(cellNumber) + " cell neighbors", 1,
            t.getElapsedTime(), threadNumber_);

@@ -86,11 +86,11 @@ namespace ttk {
     /// internal triangle star list. If this std::vector is not empty but
     /// incorrect, the behavior is unspecified. \return Returns 0 upon success,
     /// negative values otherwise.
-    int buildCellNeighborsFromTriangles(
-      const SimplexId &vertexNumber,
-      const CellArray &cellArray,
-      std::vector<std::vector<SimplexId>> &cellNeighbors,
-      FlatJaggedArray *triangleStars = nullptr) const;
+    int buildCellNeighborsFromTriangles(const SimplexId &vertexNumber,
+                                        const CellArray &cellArray,
+                                        FlatJaggedArray &cellNeighbors,
+                                        FlatJaggedArray *triangleStars
+                                        = nullptr) const;
 
     /// Compute the list of cell-neighbors of each cell of a triangulation
     /// (unspecified behavior if the input mesh is not a triangulation).
@@ -111,11 +111,11 @@ namespace ttk {
     /// internal vertex star list. If this std::vector is not empty but
     /// incorrect, the behavior is unspecified.
     /// \return Returns 0 upon success, negative values otherwise.
-    int buildCellNeighborsFromVertices(
-      const SimplexId &vertexNumber,
-      const CellArray &cellArray,
-      std::vector<std::vector<SimplexId>> &cellNeighbors,
-      FlatJaggedArray *vertexStars = nullptr) const;
+    int buildCellNeighborsFromVertices(const SimplexId &vertexNumber,
+                                       const CellArray &cellArray,
+                                       FlatJaggedArray &cellNeighbors,
+                                       FlatJaggedArray *vertexStars
+                                       = nullptr) const;
   };
 } // namespace ttk
 
