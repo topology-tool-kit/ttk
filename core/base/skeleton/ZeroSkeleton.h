@@ -10,8 +10,7 @@
 /// \sa Triangulation
 /// \sa ttkTriangulation
 
-#ifndef _ZEROSKELETON_H
-#define _ZEROSKELETON_H
+#pragma once
 
 #include <array>
 #include <map>
@@ -159,12 +158,5 @@ namespace ttk {
     int buildVertexStars(const SimplexId &vertexNumber,
                          const CellArray &cellArray,
                          FlatJaggedArray &vertexStars) const;
-
-  protected:
   };
 } // namespace ttk
-
-// if the package is not a template, comment the following line
-// #include                  <ZeroSkeleton.cpp>
-
-#endif // ZEROSKELETON_H

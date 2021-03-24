@@ -10,8 +10,7 @@
 /// \sa Triangulation
 /// \sa ttkTriangulation
 
-#ifndef _ONESKELETON_H
-#define _ONESKELETON_H
+#pragma once
 
 #include <array>
 #include <map>
@@ -142,5 +141,3 @@ namespace ttk {
                          std::vector<std::array<SimplexId, 2>> &edgeList) const;
   };
 } // namespace ttk
-
-#endif // ONESKELETON_H

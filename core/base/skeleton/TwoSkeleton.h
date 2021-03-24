@@ -10,8 +10,7 @@
 /// \sa Triangulation
 /// \sa ttkTriangulation
 
-#ifndef _TWOSKELETON_H
-#define _TWOSKELETON_H
+#pragma once
 
 // base code includes
 #include <OneSkeleton.h>
@@ -207,5 +206,3 @@ namespace ttk {
       FlatJaggedArray &vertexTriangles) const;
   };
 } // namespace ttk
-
-#endif // TWOSKELETON_H

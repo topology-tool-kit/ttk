@@ -10,8 +10,7 @@
 /// \sa Triangulation
 /// \sa ttkTriangulation
 
-#ifndef _THREESKELETON_H
-#define _THREESKELETON_H
+#pragma once
 
 // base code includes
 #include <OneSkeleton.h>
@@ -118,5 +117,3 @@ namespace ttk {
                                        = nullptr) const;
   };
 } // namespace ttk
-
-#endif // THREESKELETON_H
