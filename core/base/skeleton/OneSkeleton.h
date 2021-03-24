@@ -72,13 +72,20 @@ namespace ttk {
     /// \param vertexNumber Number of vertices in the triangulation.
     /// \param cellArray Cell container allowing to retrieve the vertices ids
     /// of each cell.
-    /// \param edgeList Output edge list (each entry is an ordered std::pair
-    /// of
-    /// vertex identifiers).
+    /// \param edgeList Optional output edge list (each entry is an
+    /// ordered std::array of vertex identifiers).
+    /// \param edgeStars Optional output for edge cell adjacency (for
+    /// each edge, a list of adjacent cells)
+    /// \param cellEdgeList Optional output for cell edges: per cell,
+    /// the list of its edges identifiers
     /// \return Returns 0 upon success, negative values otherwise.
+    template <std::size_t n = 3>
     int buildEdgeList(const SimplexId &vertexNumber,
                       const CellArray &cellArray,
-                      std::vector<std::array<SimplexId, 2>> &edgeList) const;
+                      std::vector<std::array<SimplexId, 2>> *edgeList = nullptr,
+                      FlatJaggedArray *edgeStars = nullptr,
+                      std::vector<std::array<SimplexId, n>> *cellEdgeList
+                      = nullptr) const;
 
     /// Compute the list of edges of multiple triangulations.
     /// \param cellArrays Vector of cells. For each triangulation, each entry

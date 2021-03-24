@@ -458,7 +458,7 @@ int ZeroSkeleton::buildVertexNeighbors(
     OneSkeleton osk;
     osk.setDebugLevel(debugLevel_);
     osk.setThreadNumber(threadNumber_);
-    osk.buildEdgeList(vertexNumber, cellArray, *localEdgeList);
+    osk.buildEdgeList(vertexNumber, cellArray, localEdgeList);
   }
 
   Timer t;

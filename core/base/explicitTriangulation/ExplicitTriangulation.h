@@ -682,7 +682,8 @@ namespace ttk {
       if(!edgeList_.size()) {
         OneSkeleton oneSkeleton;
         oneSkeleton.setWrapper(this);
-        return oneSkeleton.buildEdgeList(vertexNumber_, *cellArray_, edgeList_);
+        return oneSkeleton.buildEdgeList(
+          vertexNumber_, *cellArray_, &edgeList_);
       }
 
       return 0;
@@ -815,7 +816,7 @@ namespace ttk {
         if(!edgeList_.size()) {
           OneSkeleton oneSkeleton;
           oneSkeleton.setWrapper(this);
-          oneSkeleton.buildEdgeList(vertexNumber_, *cellArray_, edgeList_);
+          oneSkeleton.buildEdgeList(vertexNumber_, *cellArray_, &edgeList_);
         }
 
         zeroSkeleton.setWrapper(this);

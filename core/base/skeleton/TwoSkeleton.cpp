@@ -197,7 +197,7 @@ int TwoSkeleton::buildEdgeTriangles(
 
   // now do the pre-computation
   if(localEdgeList->empty()) {
-    oneSkeleton.buildEdgeList(vertexNumber, cellArray, (*localEdgeList));
+    oneSkeleton.buildEdgeList(vertexNumber, cellArray, localEdgeList);
   }
 
   auto localTriangleEdgeList = triangleEdgeList;
@@ -440,7 +440,7 @@ int TwoSkeleton::buildTriangleEdgeList(
     oneSkeleton.setDebugLevel(debugLevel_);
     oneSkeleton.setThreadNumber(threadNumber_);
 
-    oneSkeleton.buildEdgeList(vertexNumber, cellArray, (*localEdgeList));
+    oneSkeleton.buildEdgeList(vertexNumber, cellArray, localEdgeList);
   }
 
   auto localVertexEdgeList = vertexEdgeList;

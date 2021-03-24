@@ -126,26 +126,61 @@ int OneSkeleton::buildEdgeLinks(
   return 0;
 }
 
+template <std::size_t n>
 int OneSkeleton::buildEdgeList(
   const SimplexId &vertexNumber,
   const CellArray &cellArray,
-  vector<std::array<SimplexId, 2>> &edgeList) const {
+  vector<std::array<SimplexId, 2>> *edgeList,
+  FlatJaggedArray *edgeStars,
+  std::vector<std::array<SimplexId, n>> *cellEdgeList) const {
 
   Timer t;
 
-  using boost::container::small_vector;
-  // for each vertex, a vector of neighbors/edges
-  std::vector<small_vector<SimplexId, 8>> edgeTable(vertexNumber);
+  // check parameters consistency (we need n to be consistent with the
+  // dimensionality of the mesh)
+  const auto dim = cellArray.getCellVertexNumber(0) - 1;
+  if(n != dim * (dim + 1) / 2 && cellEdgeList != nullptr) {
+    this->printErr("Wrong template parameter (" + std::to_string(n)
+                   + "edges per cell in dim " + std::to_string(dim)
+                   + "), unable to compute cellEdgeList");
+    return -1;
+  }
 
   printMsg("Building edges", 0, 0, 1, ttk::debug::LineMode::REPLACE);
 
   const SimplexId cellNumber = cellArray.getNbCells();
+
+  // we will nee cellEdgeList to compute edgeStars
+  std::vector<std::array<SimplexId, n>> defaultCellEdgeList{};
+  if(edgeStars != nullptr && cellEdgeList == nullptr) {
+    cellEdgeList = &defaultCellEdgeList;
+  }
+
+  if(cellEdgeList != nullptr) {
+    cellEdgeList->resize(cellNumber);
+  }
+
+  struct EdgeData {
+    // the id of the edge higher vertex
+    SimplexId highVert{};
+    // the edge id
+    SimplexId id{};
+    EdgeData(SimplexId hv, SimplexId i) : highVert{hv}, id{i} {
+    }
+  };
+
+  using boost::container::small_vector;
+  // for each vertex, a vector of EdgeData
+  std::vector<small_vector<EdgeData, 8>> edgeTable(vertexNumber);
+
   const int timeBuckets = std::min<ttk::SimplexId>(10, cellNumber);
-  SimplexId edgeCount = 0;
+  SimplexId edgeCount{};
 
   for(SimplexId cid = 0; cid < cellNumber; cid++) {
 
     const SimplexId nbVertsInCell = cellArray.getCellVertexNumber(cid);
+    // id of edge in cell
+    SimplexId ecid{};
 
     // tet case: {0-1}, {0-2}, {0-3}, {1-2}, {1-3}, {2-3}
     for(SimplexId j = 0; j <= nbVertsInCell - 2; j++) {
@@ -157,11 +192,23 @@ int OneSkeleton::buildEdgeList(
           std::swap(v0, v1);
         }
         auto &vec = edgeTable[v0];
-        const auto pos = std::find(vec.begin(), vec.end(), v1);
+        const auto pos
+          = std::find_if(vec.begin(), vec.end(),
+                         [&](const EdgeData &a) { return a.highVert == v1; });
         if(pos == vec.end()) {
-          edgeTable[v0].emplace_back(v1);
+          // not found in edgeTable: new edge
+          vec.emplace_back(EdgeData{v1, edgeCount});
+          if(cellEdgeList != nullptr) {
+            (*cellEdgeList)[cid][ecid] = edgeCount;
+          }
           edgeCount++;
+        } else {
+          // found an existing edge
+          if(cellEdgeList != nullptr) {
+            (*cellEdgeList)[cid][ecid] = pos->id;
+          }
         }
+        ecid++;
       }
     }
     if(debugLevel_ >= (int)(debug::Priority::INFO)) {
@@ -171,19 +218,61 @@ int OneSkeleton::buildEdgeList(
     }
   }
 
-  // now merge the thing
-  edgeList.resize(edgeCount);
-  size_t edgeId{};
+  // allocate & fill edgeList in parallel
 
-  for(size_t i = 0; i < edgeTable.size(); i++) {
-    for(const auto v : edgeTable[i]) {
-      edgeList[edgeId] = {static_cast<SimplexId>(i), v};
-      edgeId++;
+  if(edgeList != nullptr) {
+    edgeList->resize(edgeCount);
+  }
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(this->threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+  for(SimplexId i = 0; i < vertexNumber; ++i) {
+    const auto &etable = edgeTable[i];
+    for(const auto &data : etable) {
+      if(edgeList != nullptr) {
+        (*edgeList)[data.id] = {i, data.highVert};
+      }
     }
   }
 
+  // return cellEdgeList to get edgeStars
+
+  if(cellEdgeList != nullptr && edgeStars != nullptr) {
+    std::vector<SimplexId> offsets(edgeCount + 1);
+    // number of cells processed per edge
+    std::vector<SimplexId> starIds(edgeCount);
+
+    // store number of cells per edge
+    for(const auto &ce : *cellEdgeList) {
+      for(const auto eid : ce) {
+        offsets[eid + 1]++;
+      }
+    }
+
+    // compute partial sum of number of cells per edge
+    for(size_t i = 1; i < offsets.size(); ++i) {
+      offsets[i] += offsets[i - 1];
+    }
+
+    // allocate flat edge stars vector
+    std::vector<SimplexId> edgeSt(offsets.back());
+
+    // fill flat neighbors vector using offsets and neighbors count vectors
+    for(size_t i = 0; i < cellEdgeList->size(); ++i) {
+      const auto &ce{(*cellEdgeList)[i]};
+      for(const auto eid : ce) {
+        edgeSt[offsets[eid] + starIds[eid]] = i;
+        starIds[eid]++;
+      }
+    }
+
+    // fill FlatJaggedArray struct
+    edgeStars->setData(std::move(edgeSt), std::move(offsets));
+  }
+
   printMsg(
-    "Built " + to_string(edgeList.size()) + " edges", 1, t.getElapsedTime(), 1);
+    "Built " + to_string(edgeCount) + " edges", 1, t.getElapsedTime(), 1);
 
   // ethaneDiolMedium.vtu, 70Mtets, hal9000 (12coresHT)
   // 1 thread: 10.4979 s
@@ -191,6 +280,22 @@ int OneSkeleton::buildEdgeList(
 
   return 0;
 }
+
+// explicit template instantiation for 2D cells (triangles)
+template int OneSkeleton::buildEdgeList<3>(
+  const SimplexId &vertexNumber,
+  const CellArray &cellArray,
+  vector<std::array<SimplexId, 2>> *edgeList,
+  FlatJaggedArray *edgeStars,
+  std::vector<std::array<SimplexId, 3>> *cellEdgeList) const;
+
+// explicit template instantiation for 3D cells (tetrathedron)
+template int OneSkeleton::buildEdgeList<6>(
+  const SimplexId &vertexNumber,
+  const CellArray &cellArray,
+  vector<std::array<SimplexId, 2>> *edgeList,
+  FlatJaggedArray *edgeStars,
+  std::vector<std::array<SimplexId, 6>> *cellEdgeList) const;
 
 // int OneSkeleton::buildEdgeLists(
 //   const vector<vector<LongSimplexId>> &cellArrays,
@@ -243,7 +348,7 @@ int OneSkeleton::buildEdgeStars(const SimplexId &vertexNumber,
   }
 
   if(!localEdgeList->size()) {
-    buildEdgeList(vertexNumber, cellArray, *localEdgeList);
+    buildEdgeList(vertexNumber, cellArray, localEdgeList);
   }
 
   using boost::container::small_vector;

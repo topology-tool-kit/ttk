@@ -35,7 +35,7 @@ int ThreeSkeleton::buildCellEdges(const SimplexId &vertexNumber,
     OneSkeleton oneSkeleton;
     oneSkeleton.setDebugLevel(debugLevel_);
     oneSkeleton.setThreadNumber(threadNumber_);
-    oneSkeleton.buildEdgeList(vertexNumber, cellArray, *localEdgeList);
+    oneSkeleton.buildEdgeList(vertexNumber, cellArray, localEdgeList);
   }
 
   if(!localVertexEdges) {
