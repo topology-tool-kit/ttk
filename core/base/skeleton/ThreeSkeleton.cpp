@@ -9,9 +9,6 @@ ThreeSkeleton::ThreeSkeleton() {
   setDebugMsgPrefix("ThreeSkeleton");
 }
 
-ThreeSkeleton::~ThreeSkeleton() {
-}
-
 template <std::size_t n>
 int ThreeSkeleton::buildCellEdges(const SimplexId &vertexNumber,
                                   const CellArray &cellArray,

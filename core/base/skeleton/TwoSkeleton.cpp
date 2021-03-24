@@ -9,9 +9,6 @@ TwoSkeleton::TwoSkeleton() {
   setDebugMsgPrefix("TwoSkeleton");
 }
 
-TwoSkeleton::~TwoSkeleton() {
-}
-
 int TwoSkeleton::buildCellNeighborsFromVertices(
   const SimplexId &vertexNumber,
   const CellArray &cellArray,

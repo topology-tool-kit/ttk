@@ -27,8 +27,6 @@ namespace ttk {
   public:
     OneSkeleton();
 
-    ~OneSkeleton();
-
     /// Compute the link of each edge of a 2D triangulation (unspecified
     /// behavior if the input mesh is not a valid triangulation).
     /// \param edgeList List of edges. The size of this std::vector

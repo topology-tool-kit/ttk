@@ -27,8 +27,6 @@ namespace ttk {
   public:
     TwoSkeleton();
 
-    ~TwoSkeleton();
-
     /// Compute the list of cell-neighbors of each cell of a 2D triangulation
     /// (unspecified behavior if the input mesh is not a triangulation).
     /// \param vertexNumber Number of vertices in the triangulation.

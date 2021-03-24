@@ -27,8 +27,6 @@ namespace ttk {
   public:
     ZeroSkeleton();
 
-    ~ZeroSkeleton();
-
     /// Compute the list of edges connected to each vertex of a triangulation.
     /// \param vertexNumber Number of vertices in the triangulation.
     /// \param edgeList List of edges. Each entry is represented by the

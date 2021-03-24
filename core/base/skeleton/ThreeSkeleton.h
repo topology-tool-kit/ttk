@@ -28,8 +28,6 @@ namespace ttk {
   public:
     ThreeSkeleton();
 
-    ~ThreeSkeleton();
-
     /// Compute the list of edges of each cell of a triangulation.
     /// \param vertexNumber Number of vertices in the triangulation.
     /// \param cellArray Cell container allowing to retrieve the vertices ids

@@ -8,9 +8,6 @@ OneSkeleton::OneSkeleton() {
   setDebugMsgPrefix("OneSkeleton");
 }
 
-OneSkeleton::~OneSkeleton() {
-}
-
 // 2D cells (triangles)
 int OneSkeleton::buildEdgeLinks(
   const vector<std::array<SimplexId, 2>> &edgeList,

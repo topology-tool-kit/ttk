@@ -8,9 +8,6 @@ ZeroSkeleton::ZeroSkeleton() {
   setDebugMsgPrefix("ZeroSkeleton");
 }
 
-ZeroSkeleton::~ZeroSkeleton() {
-}
-
 int ZeroSkeleton::buildVertexEdges(
   const SimplexId &vertexNumber,
   const vector<std::array<SimplexId, 2>> &edgeList,
