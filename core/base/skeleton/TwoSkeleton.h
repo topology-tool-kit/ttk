@@ -36,6 +36,30 @@ namespace ttk {
     /// will be equal to the number of cells in the mesh. Each entry will be a
     /// std::vector listing the cell identifiers of the entry's cell's
     /// neighbors.
+    /// \param edgeStars Optional list of edge stars (list of
+    /// 2-dimensional cells connected to each edge). If nullptr, the
+    /// function will compute this list anyway and free the related memory
+    /// upon return. If not nullptr but pointing to an empty std::vector, the
+    /// function will fill this empty std::vector (useful if this list needs
+    /// to be used later on by the calling program). If not nullptr but pointing
+    /// to a non-empty std::vector, this function will use this std::vector as
+    /// internal vertex star list. If this std::vector is not empty but
+    /// incorrect, the behavior is unspecified.
+    /// \return Returns 0 upon success, negative values otherwise.
+    int buildCellNeighborsFromEdges(const SimplexId &vertexNumber,
+                                    const CellArray &cellArray,
+                                    FlatJaggedArray &cellNeighbors,
+                                    FlatJaggedArray *edgeStars = nullptr) const;
+
+    /// Compute the list of cell-neighbors of each cell of a 2D triangulation
+    /// (unspecified behavior if the input mesh is not a triangulation).
+    /// \param vertexNumber Number of vertices in the triangulation.
+    /// \param cellArray Cell container allowing to retrieve the vertices ids
+    /// of each cell.
+    /// \param cellNeighbors Output neighbor list. The size of this std::vector
+    /// will be equal to the number of cells in the mesh. Each entry will be a
+    /// std::vector listing the cell identifiers of the entry's cell's
+    /// neighbors.
     /// \param vertexStars Optional list of vertex stars (list of
     /// 2-dimensional cells connected to each vertex). If nullptr, the
     /// function will compute this list anyway and free the related memory

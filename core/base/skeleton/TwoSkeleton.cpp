@@ -9,6 +9,75 @@ TwoSkeleton::TwoSkeleton() {
   setDebugMsgPrefix("TwoSkeleton");
 }
 
+int TwoSkeleton::buildCellNeighborsFromEdges(const SimplexId &vertexNumber,
+                                             const CellArray &cellArray,
+                                             FlatJaggedArray &cellNeighbors,
+                                             FlatJaggedArray *edgeStars) const {
+
+  auto localEdgeStars = edgeStars;
+  FlatJaggedArray defaultEdgeStars{};
+
+  if(!localEdgeStars) {
+    localEdgeStars = &defaultEdgeStars;
+  }
+
+  if(localEdgeStars->empty()) {
+    OneSkeleton os;
+    os.setThreadNumber(threadNumber_);
+    os.setDebugLevel(debugLevel_);
+    os.buildEdgeStars(vertexNumber, cellArray, *localEdgeStars);
+  }
+
+  Timer t;
+
+  printMsg("Building cell neighbors", 0, 0, 1, debug::LineMode::REPLACE);
+
+  const SimplexId cellNumber = cellArray.getNbCells();
+  const SimplexId edgeNumber = localEdgeStars->subvectorsNumber();
+  std::vector<SimplexId> offsets(cellNumber + 1);
+  // number of neigbhors processed per cell
+  std::vector<SimplexId> neighborsId(cellNumber);
+
+  for(SimplexId i = 0; i < edgeNumber; i++) {
+    if(localEdgeStars->size(i) == 2) {
+      // tetra cells in edge i's star
+      const auto cs0 = localEdgeStars->get(i, 0);
+      const auto cs1 = localEdgeStars->get(i, 1);
+      offsets[cs0 + 1]++;
+      offsets[cs1 + 1]++;
+    }
+  }
+
+  // compute partial sum of number of neighbors per vertex
+  for(size_t i = 1; i < offsets.size(); ++i) {
+    offsets[i] += offsets[i - 1];
+  }
+
+  // allocate flat neighbors vector
+  std::vector<SimplexId> neighbors(offsets.back());
+
+  // fill flat neighbors vector using offsets and neighbors count vectors
+  for(SimplexId i = 0; i < edgeNumber; i++) {
+    if(localEdgeStars->size(i) == 2) {
+      // tetra cells in edge i's star
+      const auto cs0 = localEdgeStars->get(i, 0);
+      const auto cs1 = localEdgeStars->get(i, 1);
+      neighbors[offsets[cs0] + neighborsId[cs0]] = cs1;
+      neighborsId[cs0]++;
+      neighbors[offsets[cs1] + neighborsId[cs1]] = cs0;
+      neighborsId[cs1]++;
+    }
+  }
+
+  // fill FlatJaggedArray struct
+  cellNeighbors.setData(std::move(neighbors), std::move(offsets));
+
+  printMsg("Built " + to_string(cellNumber) + " cell neighbors", 1,
+           t.getElapsedTime(), 1);
+
+  return 0;
+}
+
 int TwoSkeleton::buildCellNeighborsFromVertices(
   const SimplexId &vertexNumber,
   const CellArray &cellArray,
