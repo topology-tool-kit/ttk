@@ -87,21 +87,6 @@ namespace ttk {
                       std::vector<std::array<SimplexId, n>> *cellEdgeList
                       = nullptr) const;
 
-    /// Compute the list of edges of multiple triangulations.
-    /// \param cellArrays Vector of cells. For each triangulation, each entry
-    /// starts by the number of vertices in the cell, followed by the vertex
-    /// identifiers of the cell.
-    /// \param edgeList Output edge list (each entry is an ordered std::pair
-    ///  of vertex identifiers).
-    /// \return Returns 0 upon success, negative values otherwise.
-    // int
-    //   buildEdgeLists(const std::vector<std::vector<LongSimplexId>>
-    //   &cellArrays,
-    //                  std::vector<std::vector<std::pair<SimplexId,
-    //                  SimplexId>>>
-    //                    &edgeLists) const;
-    // Need to change to be compatible with CellArray, but not used in TTK...
-
     /// Compute the 3-star of all the edges of a triangulation (for each
     /// edge, list of the 3-dimensional cells connected to it).
     /// \param vertexNumber Number of vertices in the triangulation.
@@ -135,14 +120,5 @@ namespace ttk {
                        std::vector<std::array<SimplexId, 2>> *edgeList
                        = nullptr,
                        FlatJaggedArray *vertexStars = nullptr) const;
-
-    /// Compute the list of edges of a sub-portion of a valid triangulation.
-    /// \param cellArray Cell container allowing to retrieve the vertices ids
-    /// of each cell.
-    /// \param edgeList Output edge list (each entry is an ordered std::pair
-    /// of vertex identifiers).
-    /// \return Returns 0 upon success, negative values otherwise.
-    int buildEdgeSubList(const CellArray &cellArray,
-                         std::vector<std::array<SimplexId, 2>> &edgeList) const;
   };
 } // namespace ttk

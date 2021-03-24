@@ -297,44 +297,6 @@ template int OneSkeleton::buildEdgeList<6>(
   FlatJaggedArray *edgeStars,
   std::vector<std::array<SimplexId, 6>> *cellEdgeList) const;
 
-// int OneSkeleton::buildEdgeLists(
-//   const vector<vector<LongSimplexId>> &cellArrays,
-//   vector<vector<pair<SimplexId, SimplexId>>> &edgeLists) const {
-//   Timer t;
-//   printMsg(
-//     "Building edge lists", 0, 0, threadNumber_, debug::LineMode::REPLACE);
-//   edgeLists.resize(cellArrays.size());
-// #ifdef TTK_ENABLE_OPENMP
-// #pragma omp parallel for num_threads(threadNumber_)
-// #endif
-//   for(SimplexId i = 0; i < (SimplexId)cellArrays.size(); i++) {
-//     buildEdgeSubList(cellArrays[i].size() / (cellArrays[i][0] + 1),
-//                      cellArrays[i].data(), edgeLists[i]);
-//   }
-//   printMsg("Built " + to_string(edgeLists.size()) + " edge lists", 1,
-//            t.getElapsedTime(), threadNumber_);
-//   if(debugLevel_ >= (int)(debug::Priority::DETAIL)) {
-//     for(SimplexId i = 0; i < (SimplexId)edgeLists.size(); i++) {
-//       {
-//         stringstream stringStream;
-//         stringStream << "Surface #" << i << " (" << edgeLists[i].size()
-//                      << " edges):";
-//         printMsg(stringStream.str(), debug::Priority::DETAIL);
-//       }
-//       for(SimplexId j = 0; j < (SimplexId)edgeLists[i].size(); j++) {
-//         stringstream stringStream;
-//         stringStream << "- [" << edgeLists[i][j].first << " - "
-//                      << edgeLists[i][j].second << "]";
-//         printMsg(stringStream.str(), debug::Priority::DETAIL);
-//       }
-//     }
-//   }
-//   // computing the edge list of each vertex link:
-//   // 24 threads (12 cores): 1.69s.
-//   // 1 thread: 7.2 (> x4)
-//   return 0;
-// }
-
 int OneSkeleton::buildEdgeStars(const SimplexId &vertexNumber,
                                 const CellArray &cellArray,
                                 FlatJaggedArray &starList,
@@ -395,56 +357,6 @@ int OneSkeleton::buildEdgeStars(const SimplexId &vertexNumber,
   // with edge list and vertex stars
   // 1 thread: 13 s
   // 24 threads: 48 s (~ x4)
-
-  return 0;
-}
-
-int OneSkeleton::buildEdgeSubList(
-  const CellArray &cellArray,
-  vector<std::array<SimplexId, 2>> &edgeList) const {
-
-  // NOTE: here we're dealing with a subportion of the mesh.
-  // hence our lookup strategy (based on the number of total vertices) is no
-  // longer efficient. let's use a standard map instead
-  // NOTE: when dealing with the entire mesh (case above), our vertex based
-  // look up strategy is about 7 times faster than the standard map.
-  // For mesh portions, the standard map is orders of magnitude faster
-
-  map<std::array<SimplexId, 2>, bool> edgeMap;
-  edgeList.clear();
-
-  const SimplexId cellNumber = cellArray.getNbCells();
-  for(SimplexId cid = 0; cid < cellNumber; cid++) {
-    const SimplexId nbVertCell = cellArray.getCellVertexNumber(cid);
-
-    array<SimplexId, 2> edgeIds;
-    // tet case
-    // 0 - 1
-    // 0 - 2
-    // 0 - 3
-    // 1 - 2
-    // 1 - 3
-    // 2 - 3
-    for(SimplexId j = 0; j <= nbVertCell - 2; j++) {
-      for(SimplexId k = j + 1; k <= nbVertCell - 1; k++) {
-
-        edgeIds[0] = cellArray.getCellVertex(cid, j);
-        edgeIds[1] = cellArray.getCellVertex(cid, k);
-
-        if(edgeIds[0] > edgeIds[1]) {
-          std::swap(edgeIds[0], edgeIds[1]);
-        }
-
-        auto it = edgeMap.find(edgeIds);
-
-        if(it == edgeMap.end()) {
-          // not found, let's add this edge
-          edgeList.push_back(edgeIds);
-          edgeMap[edgeIds] = true;
-        }
-      }
-    }
-  }
 
   return 0;
 }
