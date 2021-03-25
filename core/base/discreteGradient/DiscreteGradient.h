@@ -653,11 +653,8 @@ in the gradient.
        * Build the glyphs representing the discrete gradient vector field.
        */
       template <typename triangulationType>
-      int setGradientGlyphs(SimplexId &numberOfPoints,
-                            std::vector<float> &points,
+      int setGradientGlyphs(std::vector<std::array<float, 3>> &points,
                             std::vector<char> &points_pairOrigins,
-                            SimplexId &numberOfCells,
-                            std::vector<SimplexId> &cells,
                             std::vector<char> &cells_pairTypes,
                             const triangulationType &triangulation) const;
 

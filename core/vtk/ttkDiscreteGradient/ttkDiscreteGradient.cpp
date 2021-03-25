@@ -137,55 +137,56 @@ int ttkDiscreteGradient::fillGradientGlyphs(
   const triangulationType &triangulation) {
 
   ttk::Timer tm{};
-  SimplexId gradientGlyphs_numberOfPoints{};
-  std::vector<float> gradientGlyphs_points;
+
+  std::vector<std::array<float, 3>> gradientGlyphs_points;
   std::vector<char> gradientGlyphs_points_pairOrigins;
-  SimplexId gradientGlyphs_numberOfCells{};
-  std::vector<SimplexId> gradientGlyphs_cells;
   std::vector<char> gradientGlyphs_cells_pairTypes;
 
-  this->setGradientGlyphs(gradientGlyphs_numberOfPoints, gradientGlyphs_points,
+  this->setGradientGlyphs(gradientGlyphs_points,
                           gradientGlyphs_points_pairOrigins,
-                          gradientGlyphs_numberOfCells, gradientGlyphs_cells,
                           gradientGlyphs_cells_pairTypes, triangulation);
 
+  const auto nPoints = gradientGlyphs_points.size();
+
   vtkNew<vtkPoints> points{};
-  points->SetNumberOfPoints(gradientGlyphs_numberOfPoints);
+  points->SetNumberOfPoints(nPoints);
   vtkNew<vtkSignedCharArray> pairOrigins{};
   pairOrigins->SetNumberOfComponents(1);
   pairOrigins->SetName("PairOrigin");
-  pairOrigins->SetNumberOfTuples(gradientGlyphs_numberOfPoints);
+  pairOrigins->SetNumberOfTuples(nPoints);
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(this->threadNumber_)
 #endif // TTK_ENABLE_OPENMP
-  for(SimplexId i = 0; i < gradientGlyphs_numberOfPoints; ++i) {
-    points->SetPoint(i, &gradientGlyphs_points[3 * i]);
+  for(size_t i = 0; i < nPoints; ++i) {
+    points->SetPoint(i, gradientGlyphs_points[i].data());
     pairOrigins->SetTuple1(i, gradientGlyphs_points_pairOrigins[i]);
   }
   outputGradientGlyphs->SetPoints(points);
 
+  const auto nCells = gradientGlyphs_cells_pairTypes.size();
+
   vtkNew<vtkIdTypeArray> offsets{}, connectivity{};
   offsets->SetNumberOfComponents(1);
-  offsets->SetNumberOfTuples(gradientGlyphs_numberOfCells + 1);
+  offsets->SetNumberOfTuples(nCells + 1);
   connectivity->SetNumberOfComponents(1);
-  connectivity->SetNumberOfTuples(2 * gradientGlyphs_numberOfCells);
+  connectivity->SetNumberOfTuples(2 * nCells);
   vtkNew<vtkSignedCharArray> pairTypes{};
   pairTypes->SetNumberOfComponents(1);
   pairTypes->SetName("PairType");
-  pairTypes->SetNumberOfTuples(gradientGlyphs_numberOfCells);
+  pairTypes->SetNumberOfTuples(nCells);
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(this->threadNumber_)
 #endif // TTK_ENABLE_OPENMP
-  for(SimplexId i = 0; i < gradientGlyphs_numberOfCells; ++i) {
+  for(size_t i = 0; i < nCells; ++i) {
     offsets->SetTuple1(i, 2 * i);
-    connectivity->SetTuple1(2 * i, gradientGlyphs_cells[3 * i + 1]);
-    connectivity->SetTuple1(2 * i + 1, gradientGlyphs_cells[3 * i + 2]);
+    // each glyph/line has unique points
+    connectivity->SetTuple1(2 * i, 2 * i);
+    connectivity->SetTuple1(2 * i + 1, 2 * i + 1);
     pairTypes->SetTuple1(i, gradientGlyphs_cells_pairTypes[i]);
   }
-  offsets->SetTuple1(
-    gradientGlyphs_numberOfCells, gradientGlyphs_numberOfCells);
+  offsets->SetTuple1(nCells, nCells);
 
   vtkNew<vtkCellArray> cells{};
   cells->SetData(offsets, connectivity);

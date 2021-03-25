@@ -3194,65 +3194,64 @@ ttk::SimplexId DiscreteGradient::getCellLowerVertex(
 
 template <typename triangulationType>
 int DiscreteGradient::setGradientGlyphs(
-  SimplexId &numberOfPoints,
-  std::vector<float> &points,
+  std::vector<std::array<float, 3>> &points,
   std::vector<char> &points_pairOrigins,
-  SimplexId &numberOfCells,
-  std::vector<SimplexId> &cells,
   std::vector<char> &cells_pairTypes,
   const triangulationType &triangulation) const {
 
-  SimplexId pointId{};
-  SimplexId cellId{};
+  const auto nDims = this->getNumberOfDimensions();
 
-  // foreach dimension
-  const int nDimensions = getNumberOfDimensions();
-  for(int i = 0; i < nDimensions - 1; ++i) {
-    // foreach cell of that dimension
-    const SimplexId nCells = getNumberOfCells(i, triangulation);
+  // number of glyphs per dimension
+  std::vector<size_t> nGlyphsPerDim(nDims);
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+  for(int i = 0; i < nDims - 1; ++i) {
+    const auto nCells = this->getNumberOfCells(i, triangulation);
     for(SimplexId j = 0; j < nCells; ++j) {
-      const Cell cell(i, j);
-
-      const SimplexId pairedCellId = getPairedCell(cell, triangulation);
-      if(pairedCellId != -1) {
-        // get gradient pair
-        const int pairedCellDim = i + 1;
-
-        const Cell pairedCell(pairedCellDim, pairedCellId);
-
-        std::array<float, 3> p0{};
-        triangulation.getCellIncenter(cell.id_, cell.dim_, p0.data());
-
-        points.push_back(p0[0]);
-        points.push_back(p0[1]);
-        points.push_back(p0[2]);
-
-        points_pairOrigins.push_back(0);
-
-        std::array<float, 3> p1{};
-        triangulation.getCellIncenter(
-          pairedCell.id_, pairedCell.dim_, p1.data());
-
-        points.push_back(p1[0]);
-        points.push_back(p1[1]);
-        points.push_back(p1[2]);
-
-        points_pairOrigins.push_back(1);
-
-        cells.push_back(2);
-        cells.push_back(pointId);
-        cells.push_back(pointId + 1);
-
-        cells_pairTypes.push_back(i);
-
-        pointId += 2;
-        cellId += 1;
+      if(this->getPairedCell(Cell{i, j}, triangulation) != -1) {
+        nGlyphsPerDim[i]++;
       }
     }
   }
 
-  numberOfPoints = pointId;
-  numberOfCells = cellId;
+  // partial sum of number of gradient glyphs
+  std::vector<size_t> offsets(nDims + 1);
+  for(SimplexId i = 0; i < nDims; ++i) {
+    offsets[i + 1] = offsets[i] + nGlyphsPerDim[i];
+  }
+
+  // total number of glyphs
+  const auto nGlyphs = offsets.back();
+
+  // resize arrays accordingly
+  points.resize(2 * nGlyphs);
+  points_pairOrigins.resize(2 * nGlyphs);
+  cells_pairTypes.resize(nGlyphs);
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+  for(int i = 0; i < nDims - 1; ++i) {
+    const SimplexId nCells = getNumberOfCells(i, triangulation);
+    size_t nProcessedGlyphs{offsets[i]};
+    for(SimplexId j = 0; j < nCells; ++j) {
+      const Cell c{i, j};
+      const auto pcid = this->getPairedCell(c, triangulation);
+      if(pcid != -1) {
+        const Cell pc{i + 1, pcid};
+        triangulation.getCellIncenter(
+          c.id_, c.dim_, points[2 * nProcessedGlyphs].data());
+        triangulation.getCellIncenter(
+          pc.id_, pc.dim_, points[2 * nProcessedGlyphs + 1].data());
+        points_pairOrigins[2 * nProcessedGlyphs] = 0;
+        points_pairOrigins[2 * nProcessedGlyphs + 1] = 1;
+        cells_pairTypes[nProcessedGlyphs] = i;
+        nProcessedGlyphs++;
+      }
+    }
+  }
 
   return 0;
 }
