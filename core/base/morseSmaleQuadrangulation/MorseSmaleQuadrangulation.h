@@ -246,6 +246,9 @@ int ttk::MorseSmaleQuadrangulation::detectCellSeps(
   ExplicitTriangulation newT{};
   bs.execute(triangulation, newT);
 
+  newT.setDebugLevel(this->debugLevel_);
+  newT.setThreadNumber(this->threadNumber_);
+  newT.preconditionEdges();
   newT.preconditionVertexNeighbors();
   newT.preconditionVertexEdges();
   newT.preconditionVertexTriangles();
