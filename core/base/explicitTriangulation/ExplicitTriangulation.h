@@ -608,17 +608,15 @@ namespace ttk {
 
     inline int preconditionCellEdgesInternal() override {
 
-      ThreeSkeleton threeSkeleton;
-      threeSkeleton.setWrapper(this);
+      OneSkeleton os;
+      os.setWrapper(this);
 
       if(tetraEdgeList_.empty() && getDimensionality() == 3) {
-        threeSkeleton.buildCellEdges(vertexNumber_, *cellArray_, tetraEdgeList_,
-                                     &edgeList_, &vertexEdgeData_);
-
+        os.buildEdgeList(
+          vertexNumber_, *cellArray_, nullptr, nullptr, &tetraEdgeList_);
       } else if(triangleEdgeList_.empty() && getDimensionality() == 2) {
-        threeSkeleton.buildCellEdges(vertexNumber_, *cellArray_,
-                                     triangleEdgeList_, &edgeList_,
-                                     &vertexEdgeData_);
+        os.buildEdgeList(
+          vertexNumber_, *cellArray_, nullptr, nullptr, &triangleEdgeList_);
       }
 
       return 0;
