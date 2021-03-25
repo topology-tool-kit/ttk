@@ -79,6 +79,10 @@ private:
                          vtkDataArray *const inputScalars,
                          const triangulationType &triangulation);
 
+  template <typename triangulationType>
+  int fillGradientGlyphs(vtkPolyData *const outputGradientGlyphs,
+                         const triangulationType &triangulation);
+
   bool ForceInputOffsetScalarField{false};
   bool ComputeGradientGlyphs{true};
 };
