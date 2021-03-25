@@ -625,12 +625,17 @@ namespace ttk {
     inline int preconditionCellNeighborsInternal() override {
 
       if(cellNeighborData_.empty()) {
-        ThreeSkeleton threeSkeleton;
-        threeSkeleton.setWrapper(this);
-
-        // choice here (for the more likely)
-        threeSkeleton.buildCellNeighborsFromVertices(
-          vertexNumber_, *cellArray_, cellNeighborData_, &vertexStarData_);
+        if(getDimensionality() == 3) {
+          ThreeSkeleton threeSkeleton;
+          threeSkeleton.setWrapper(this);
+          threeSkeleton.buildCellNeighborsFromTriangles(
+            vertexNumber_, *cellArray_, cellNeighborData_, &triangleStarData_);
+        } else if(getDimensionality() == 2) {
+          TwoSkeleton twoSkeleton;
+          twoSkeleton.setWrapper(this);
+          twoSkeleton.buildCellNeighborsFromEdges(
+            vertexNumber_, *cellArray_, cellNeighborData_, &edgeStarData_);
+        }
       }
 
       return 0;
