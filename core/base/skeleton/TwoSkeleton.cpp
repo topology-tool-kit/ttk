@@ -25,7 +25,8 @@ int TwoSkeleton::buildCellNeighborsFromEdges(const SimplexId &vertexNumber,
     OneSkeleton os;
     os.setThreadNumber(threadNumber_);
     os.setDebugLevel(debugLevel_);
-    os.buildEdgeStars(vertexNumber, cellArray, *localEdgeStars);
+    os.buildEdgeList<3>(
+      vertexNumber, cellArray, nullptr, localEdgeStars, nullptr);
   }
 
   Timer t;

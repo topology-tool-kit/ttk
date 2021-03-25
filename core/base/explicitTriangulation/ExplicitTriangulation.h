@@ -725,9 +725,8 @@ namespace ttk {
       if(edgeStarData_.empty()) {
         OneSkeleton oneSkeleton;
         oneSkeleton.setWrapper(this);
-        return oneSkeleton.buildEdgeStars(vertexNumber_, *cellArray_,
-                                          edgeStarData_, &edgeList_,
-                                          &vertexStarData_);
+        return oneSkeleton.buildEdgeList<3>(
+          vertexNumber_, *cellArray_, nullptr, &edgeStarData_, nullptr);
       }
       return 0;
     }

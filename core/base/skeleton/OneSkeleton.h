@@ -86,39 +86,5 @@ namespace ttk {
                       FlatJaggedArray *edgeStars = nullptr,
                       std::vector<std::array<SimplexId, n>> *cellEdgeList
                       = nullptr) const;
-
-    /// Compute the 3-star of all the edges of a triangulation (for each
-    /// edge, list of the 3-dimensional cells connected to it).
-    /// \param vertexNumber Number of vertices in the triangulation.
-    /// \param cellArray Cell container allowing to retrieve the vertices ids
-    /// of each cell.
-    /// \param starList Output list of 3-stars. The size of this std::vector
-    /// will be equal to the number of edges in the mesh. Each entry stores a
-    /// std::vector that lists the identifiers of all 3-dimensional cells
-    /// connected to the entry's edge.
-    /// \param edgeList Optional list of edges. If nullptr, the function will
-    /// compute this list anyway and free the related memory upon return. If not
-    /// nullptr but pointing to an empty std::vector, the function will fill
-    /// this empty std::vector (useful if this list needs to be used later on by
-    /// the calling program). If not nullptr but pointing to a non-empty
-    /// std::vector, this function will use this std::vector as internal edge
-    /// list. If this std::vector is not empty but incorrect, the behavior is
-    /// unspecified.
-    /// \param vertexStars Optional list of vertex stars (list of 3-dimensional
-    /// cells connected to each vertex). If nullptr, the function will compute
-    /// this list anyway and free the related memory upon return. If not nullptr
-    /// but pointing to an empty std::vector, the function will fill this empty
-    /// std::vector (useful if this list needs to be used later on by the
-    /// calling program). If not nullptr but pointing to a non-empty
-    /// std::vector, this function will use this std::vector as internal vertex
-    /// star list. If this std::vector is not empty but incorrect, the behavior
-    /// is unspecified.
-    /// \return Returns 0 upon success, negative values otherwise.
-    int buildEdgeStars(const SimplexId &vertexNumber,
-                       const CellArray &cellArray,
-                       FlatJaggedArray &starList,
-                       std::vector<std::array<SimplexId, 2>> *edgeList
-                       = nullptr,
-                       FlatJaggedArray *vertexStars = nullptr) const;
   };
 } // namespace ttk
