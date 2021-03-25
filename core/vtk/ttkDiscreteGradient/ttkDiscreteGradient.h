@@ -75,10 +75,9 @@ protected:
 
 private:
   template <typename scalarType, typename triangulationType>
-  int dispatch(vtkPolyData *outputCriticalPoints,
-               vtkDataArray *const inputScalars,
-               vtkDataArray *const inputOffsets,
-               const triangulationType &triangulation);
+  int fillCriticalPoints(vtkPolyData *output,
+                         vtkDataArray *const inputScalars,
+                         const triangulationType &triangulation);
 
   bool ForceInputOffsetScalarField{false};
   bool ComputeGradientGlyphs{true};

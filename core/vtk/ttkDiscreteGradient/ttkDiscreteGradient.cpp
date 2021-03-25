@@ -35,108 +35,95 @@ int ttkDiscreteGradient::FillOutputPortInformation(int port,
 }
 
 template <typename scalarType, typename triangulationType>
-int ttkDiscreteGradient::dispatch(vtkPolyData *outputCriticalPoints,
-                                  vtkDataArray *const inputScalars,
-                                  vtkDataArray *const inputOffsets,
-                                  const triangulationType &triangulation) {
+int ttkDiscreteGradient::fillCriticalPoints(
+  vtkPolyData *outputCriticalPoints,
+  vtkDataArray *const inputScalars,
+  const triangulationType &triangulation) {
 
   // critical points
   std::vector<scalarType> criticalPoints_points_cellScalars;
   this->setOutputCriticalPoints(&criticalPoints_points_cellScalars);
 
-  const int ret = this->buildGradient<triangulationType>(triangulation);
+  this->setCriticalPoints<scalarType>(triangulation);
+  const auto nPoints = outputCriticalPoints_numberOfPoints_;
 
+  vtkNew<vtkPoints> points{};
+  points->SetNumberOfPoints(nPoints);
+
+  vtkNew<vtkSignedCharArray> cellDimensions{};
+  cellDimensions->SetNumberOfComponents(1);
+  cellDimensions->SetName("CellDimension");
+  cellDimensions->SetNumberOfTuples(nPoints);
+
+  vtkNew<ttkSimplexIdTypeArray> cellIds{};
+  cellIds->SetNumberOfComponents(1);
+  cellIds->SetName("CellId");
+  cellIds->SetNumberOfTuples(nPoints);
+
+  vtkDataArray *cellScalars = inputScalars->NewInstance();
 #ifndef TTK_ENABLE_KAMIKAZE
-  if(ret) {
-    this->printErr("DiscreteGradient.buildGradient() error code: "
-                   + std::to_string(ret));
+  if(!cellScalars) {
+    this->printErr("vtkDataArray allocation problem.");
     return -1;
   }
 #endif
+  cellScalars->SetNumberOfComponents(1);
+  cellScalars->SetName(inputScalars->GetName());
+  cellScalars->SetNumberOfTuples(nPoints);
 
-  // critical points
-  {
-    this->setCriticalPoints<scalarType>(triangulation);
-    const auto nPoints = outputCriticalPoints_numberOfPoints_;
+  vtkNew<vtkSignedCharArray> isOnBoundary{};
+  isOnBoundary->SetNumberOfComponents(1);
+  isOnBoundary->SetName("IsOnBoundary");
+  isOnBoundary->SetNumberOfTuples(nPoints);
 
-    vtkNew<vtkPoints> points{};
-    points->SetNumberOfPoints(nPoints);
+  vtkNew<ttkSimplexIdTypeArray> PLVertexIdentifiers{};
+  PLVertexIdentifiers->SetNumberOfComponents(1);
+  PLVertexIdentifiers->SetName(ttk::VertexScalarFieldName);
+  PLVertexIdentifiers->SetNumberOfTuples(nPoints);
 
-    vtkNew<vtkSignedCharArray> cellDimensions{};
-    cellDimensions->SetNumberOfComponents(1);
-    cellDimensions->SetName("CellDimension");
-    cellDimensions->SetNumberOfTuples(nPoints);
-
-    vtkNew<ttkSimplexIdTypeArray> cellIds{};
-    cellIds->SetNumberOfComponents(1);
-    cellIds->SetName("CellId");
-    cellIds->SetNumberOfTuples(nPoints);
-
-    vtkDataArray *cellScalars = inputScalars->NewInstance();
-#ifndef TTK_ENABLE_KAMIKAZE
-    if(!cellScalars) {
-      this->printErr("vtkDataArray allocation problem.");
-      return -1;
-    }
-#endif
-    cellScalars->SetNumberOfComponents(1);
-    cellScalars->SetName(inputScalars->GetName());
-    cellScalars->SetNumberOfTuples(nPoints);
-
-    vtkNew<vtkSignedCharArray> isOnBoundary{};
-    isOnBoundary->SetNumberOfComponents(1);
-    isOnBoundary->SetName("IsOnBoundary");
-    isOnBoundary->SetNumberOfTuples(nPoints);
-
-    vtkNew<ttkSimplexIdTypeArray> PLVertexIdentifiers{};
-    PLVertexIdentifiers->SetNumberOfComponents(1);
-    PLVertexIdentifiers->SetName(ttk::VertexScalarFieldName);
-    PLVertexIdentifiers->SetNumberOfTuples(nPoints);
-
-    vtkNew<vtkIdTypeArray> offsets{}, connectivity{};
-    offsets->SetNumberOfComponents(1);
-    offsets->SetNumberOfTuples(nPoints + 1);
-    connectivity->SetNumberOfComponents(1);
-    connectivity->SetNumberOfTuples(nPoints);
+  vtkNew<vtkIdTypeArray> offsets{}, connectivity{};
+  offsets->SetNumberOfComponents(1);
+  offsets->SetNumberOfTuples(nPoints + 1);
+  connectivity->SetNumberOfComponents(1);
+  connectivity->SetNumberOfTuples(nPoints);
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(this->threadNumber_)
 #endif // TTK_ENABLE_OPENMP
-    for(SimplexId i = 0; i < nPoints; ++i) {
-      points->SetPoint(i, &outputCriticalPoints_points_[3 * i]);
-      cellDimensions->SetTuple1(
-        i, outputCriticalPoints_points_cellDimensions_[i]);
-      cellIds->SetTuple1(i, outputCriticalPoints_points_cellIds_[i]);
-      cellScalars->SetTuple1(i, criticalPoints_points_cellScalars[i]);
-      isOnBoundary->SetTuple1(i, outputCriticalPoints_points_isOnBoundary_[i]);
-      PLVertexIdentifiers->SetTuple1(
-        i, outputCriticalPoints_points_PLVertexIdentifiers_[i]);
-      offsets->SetTuple1(i, i);
-      connectivity->SetTuple1(i, i);
-    }
-    offsets->SetTuple1(nPoints, nPoints);
+  for(SimplexId i = 0; i < nPoints; ++i) {
+    points->SetPoint(i, &outputCriticalPoints_points_[3 * i]);
+    cellDimensions->SetTuple1(
+      i, outputCriticalPoints_points_cellDimensions_[i]);
+    cellIds->SetTuple1(i, outputCriticalPoints_points_cellIds_[i]);
+    cellScalars->SetTuple1(i, criticalPoints_points_cellScalars[i]);
+    isOnBoundary->SetTuple1(i, outputCriticalPoints_points_isOnBoundary_[i]);
+    PLVertexIdentifiers->SetTuple1(
+      i, outputCriticalPoints_points_PLVertexIdentifiers_[i]);
+    offsets->SetTuple1(i, i);
+    connectivity->SetTuple1(i, i);
+  }
+  offsets->SetTuple1(nPoints, nPoints);
 
-    vtkNew<vtkCellArray> cells{};
-    cells->SetData(offsets, connectivity);
-    outputCriticalPoints->SetPoints(points);
-    outputCriticalPoints->SetVerts(cells);
+  vtkNew<vtkCellArray> cells{};
+  cells->SetData(offsets, connectivity);
+  outputCriticalPoints->SetPoints(points);
+  outputCriticalPoints->SetVerts(cells);
 
-    vtkPointData *pointData = outputCriticalPoints->GetPointData();
+  vtkPointData *pointData = outputCriticalPoints->GetPointData();
 #ifndef TTK_ENABLE_KAMIKAZE
-    if(!pointData) {
-      this->printErr("outputCriticalPoints has no point data");
-      return -1;
-    }
+  if(!pointData) {
+    this->printErr("outputCriticalPoints has no point data");
+    return -1;
+  }
 #endif
 
-    pointData->AddArray(cellDimensions);
-    pointData->AddArray(cellIds);
-    pointData->AddArray(cellScalars);
-    pointData->AddArray(isOnBoundary);
-    pointData->AddArray(PLVertexIdentifiers);
-  }
+  pointData->AddArray(cellDimensions);
+  pointData->AddArray(cellIds);
+  pointData->AddArray(cellScalars);
+  pointData->AddArray(isOnBoundary);
+  pointData->AddArray(PLVertexIdentifiers);
 
-  return ret;
+  return 0;
 }
 
 int ttkDiscreteGradient::RequestData(vtkInformation *request,
@@ -193,14 +180,20 @@ int ttkDiscreteGradient::RequestData(vtkInformation *request,
   this->setInputOffsets(
     static_cast<SimplexId *>(ttkUtils::GetVoidPointer(inputOffsets)));
 
-  ttkVtkTemplateMacro(inputScalars->GetDataType(), triangulation->getType(),
-                      (ret = dispatch<VTK_TT, TTK_TT>(
-                         outputCriticalPoints, inputScalars, inputOffsets,
-                         *static_cast<TTK_TT *>(triangulation->getData()))));
+  ttkTemplateMacro(triangulation->getType(),
+                   (ret = this->buildGradient<TTK_TT>(
+                      *static_cast<TTK_TT *>(triangulation->getData()))));
 
   if(ret != 0) {
-    return -1;
+    this->printErr("DiscreteGradient.buildGradient() error code: "
+                   + std::to_string(ret));
+    return 0;
   }
+
+  ttkVtkTemplateMacro(inputScalars->GetDataType(), triangulation->getType(),
+                      (fillCriticalPoints<VTK_TT, TTK_TT>(
+                        outputCriticalPoints, inputScalars,
+                        *static_cast<TTK_TT *>(triangulation->getData()))));
 
   // gradient glyphs
   if(ComputeGradientGlyphs) {
