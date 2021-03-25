@@ -682,8 +682,16 @@ namespace ttk {
       if(!edgeList_.size()) {
         OneSkeleton oneSkeleton;
         oneSkeleton.setWrapper(this);
-        return oneSkeleton.buildEdgeList(
-          vertexNumber_, *cellArray_, &edgeList_);
+        // also computes edgeStar and triangleEdge / tetraEdge lists for free...
+        if(getDimensionality() == 2) {
+          return oneSkeleton.buildEdgeList(vertexNumber_, *cellArray_,
+                                           &edgeList_, &edgeStarData_,
+                                           &triangleEdgeList_);
+        } else if(getDimensionality() == 3) {
+          return oneSkeleton.buildEdgeList(vertexNumber_, *cellArray_,
+                                           &edgeList_, &edgeStarData_,
+                                           &tetraEdgeList_);
+        }
       }
 
       return 0;
