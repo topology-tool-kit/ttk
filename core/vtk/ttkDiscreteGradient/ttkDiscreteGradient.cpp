@@ -40,6 +40,8 @@ int ttkDiscreteGradient::fillCriticalPoints(
   vtkDataArray *const inputScalars,
   const triangulationType &triangulation) {
 
+  ttk::Timer tm{};
+
   // critical points
   std::vector<scalarType> criticalPoints_points_cellScalars;
   this->setOutputCriticalPoints(&criticalPoints_points_cellScalars);
@@ -123,6 +125,9 @@ int ttkDiscreteGradient::fillCriticalPoints(
   pointData->AddArray(isOnBoundary);
   pointData->AddArray(PLVertexIdentifiers);
 
+  this->printMsg(
+    "Extracted critical points", 1.0, tm.getElapsedTime(), this->threadNumber_);
+
   return 0;
 }
 
@@ -130,8 +135,8 @@ template <typename triangulationType>
 int ttkDiscreteGradient::fillGradientGlyphs(
   vtkPolyData *const outputGradientGlyphs,
   const triangulationType &triangulation) {
-  ttk::Timer tm{};
 
+  ttk::Timer tm{};
   SimplexId gradientGlyphs_numberOfPoints{};
   std::vector<float> gradientGlyphs_points;
   std::vector<char> gradientGlyphs_points_pairOrigins;
@@ -199,7 +204,10 @@ int ttkDiscreteGradient::fillGradientGlyphs(
   pointData->AddArray(pairOrigins);
   cellData->AddArray(pairTypes);
 
-  this->printMsg("Computed gradient glyphs", 1.0, tm.getElapsedTime(), 1);
+  this->printMsg(
+    "Computed gradient glyphs", 1.0, tm.getElapsedTime(), this->threadNumber_);
+
+  return 0;
 }
 
 int ttkDiscreteGradient::RequestData(vtkInformation *request,
