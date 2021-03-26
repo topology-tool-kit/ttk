@@ -310,6 +310,8 @@ int ExplicitTriangulation::preconditionEdgeStarsInternal() {
 int ExplicitTriangulation::preconditionEdgeTrianglesInternal() {
 
   if(edgeTriangleData_.empty()) {
+    preconditionTriangleEdgesInternal();
+
     TwoSkeleton twoSkeleton;
     twoSkeleton.setWrapper(this);
     return twoSkeleton.buildEdgeTriangles(vertexNumber_, *cellArray_,
