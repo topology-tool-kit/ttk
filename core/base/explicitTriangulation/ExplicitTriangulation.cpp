@@ -393,16 +393,16 @@ int ExplicitTriangulation::preconditionVertexLinksInternal() {
   if((SimplexId)vertexLinkData_.subvectorsNumber() != vertexNumber_) {
 
     if(getDimensionality() == 2) {
+      preconditionEdgesInternal();
       preconditionVertexStarsInternal();
-      preconditionCellEdgesInternal();
 
       ZeroSkeleton zeroSkeleton;
       zeroSkeleton.setWrapper(this);
       return zeroSkeleton.buildVertexLinks(
         vertexStarData_, triangleEdgeList_, edgeList_, vertexLinkData_);
     } else if(getDimensionality() == 3) {
+      preconditionTrianglesInternal();
       preconditionVertexStarsInternal();
-      preconditionCellTrianglesInternal();
 
       ZeroSkeleton zeroSkeleton;
       zeroSkeleton.setWrapper(this);
