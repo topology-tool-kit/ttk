@@ -87,23 +87,25 @@ int ttkContourTreeAlignment::RequestData(vtkInformation *request,
 
   for(size_t i = 0; i < n; i++) {
     auto contourTree = vtkUnstructuredGrid::SafeDownCast(inputMB->GetBlock(i));
-    vtkDataSet* segmentation = nullptr;
+    vtkDataSet *segmentation = nullptr;
 
     if(!contourTree) {
       auto pair = vtkMultiBlockDataSet::SafeDownCast(inputMB->GetBlock(i));
-      
-      if(!pair || pair->GetNumberOfBlocks()!=2){
+
+      if(!pair || pair->GetNumberOfBlocks() != 2) {
         this->printErr("block " + std::to_string(i)
-                      + " is not an unstructured grid or a pair of unstructured grid and segmentation.");
+                       + " is not an unstructured grid or a pair of "
+                         "unstructured grid and segmentation.");
         return 0;
       }
 
       contourTree = vtkUnstructuredGrid::SafeDownCast(pair->GetBlock(0));
       segmentation = vtkDataSet::SafeDownCast(pair->GetBlock(1));
 
-      if(!contourTree){
+      if(!contourTree) {
         this->printErr("block " + std::to_string(i)
-                      + " is not an unstructured grid or a pair of unstructured grid and segmentation.");
+                       + " is not an unstructured grid or a pair of "
+                         "unstructured grid and segmentation.");
         return 0;
       }
     }
@@ -168,16 +170,18 @@ int ttkContourTreeAlignment::RequestData(vtkInformation *request,
     this->printMsg(
       "SegmentationId Array read from cell data.", debug::Priority::VERBOSE);
 
-    if(segmentation){
-      auto segArray_segmentation = this->GetInputArrayToProcess(3, segmentation);
-      //auto segArray_segmentation = segmentation->GetPointData()->GetArray("SegmentationId");
+    if(segmentation) {
+      auto segArray_segmentation
+        = this->GetInputArrayToProcess(3, segmentation);
+      // auto segArray_segmentation =
+      // segmentation->GetPointData()->GetArray("SegmentationId");
       if(!segArray_segmentation) {
         printErr("No Cell Array \"SegmentationId\" found in segmentation.");
         return 0;
       }
-      segmentations.push_back( (int *)ttkUtils::GetVoidPointer(segArray_segmentation) );
-      this->printMsg(
-        "Segmentation read.", debug::Priority::VERBOSE);
+      segmentations.push_back(
+        (int *)ttkUtils::GetVoidPointer(segArray_segmentation));
+      this->printMsg("Segmentation read.", debug::Priority::VERBOSE);
       segSizes.push_back(segArray_segmentation->GetNumberOfValues());
     }
 
@@ -209,7 +213,7 @@ int ttkContourTreeAlignment::RequestData(vtkInformation *request,
       "Extracting topologies for " + std::to_string(n) + " trees", 1);
   }
 
-  for(auto s : segSizes){
+  for(auto s : segSizes) {
     this->printMsg(std::to_string(s));
   }
 
@@ -240,7 +244,8 @@ int ttkContourTreeAlignment::RequestData(vtkInformation *request,
   switch(scalarType) {
     vtkTemplateMacro({
       success = this->execute<VTK_TT>(
-        scalars, regionSizes, segmentationIds, topologies, nVertices, nEdges, segmentations, segSizes,
+        scalars, regionSizes, segmentationIds, topologies, nVertices, nEdges,
+        segmentations, segSizes,
 
         outputVertices, outputFrequencies, outputVertexIds, outputBranchIds,
         outputSegmentationIds, outputArcIds, outputEdges,

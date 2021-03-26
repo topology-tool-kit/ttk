@@ -287,32 +287,34 @@ int ttk::ContourTreeAlignment::execute(const vector<void *> &scalarsVP,
   }
 
   std::vector<std::vector<std::vector<int>>> segRegions;
-  if(!segsizes.empty()){
-    for(size_t i=0; i<nTrees; i++){
+  if(!segsizes.empty()) {
+    for(size_t i = 0; i < nTrees; i++) {
       int maxSegId = -1;
       std::vector<int> seg(segsizes[i]);
-      int* seg_arr = segmentations[i];
-      for(size_t j=0; j<segsizes[i]; j++){
-        maxSegId = std::max(maxSegId,segmentations[i][j]);
+      int *seg_arr = segmentations[i];
+      for(size_t j = 0; j < segsizes[i]; j++) {
+        maxSegId = std::max(maxSegId, segmentations[i][j]);
         seg[j] = segmentations[i][j];
       }
-      std::vector<std::vector<int>> reg(maxSegId+1);
-      for(size_t j=0; j<segsizes[i]; j++){
+      std::vector<std::vector<int>> reg(maxSegId + 1);
+      for(size_t j = 0; j < segsizes[i]; j++) {
         reg[segmentations[i][j]].push_back(j);
       }
       segRegions.push_back(reg);
     }
-    for(size_t i=0; i<nTrees; i++){
-      int sum=0;
-      for(auto seg : segRegions[i]){
-        sum+=seg.size();
+    for(size_t i = 0; i < nTrees; i++) {
+      int sum = 0;
+      for(auto seg : segRegions[i]) {
+        sum += seg.size();
       }
-      this->printMsg("Tree "+std::to_string(i)+", sum of segment sizes: "+std::to_string(sum));
-      sum=0;
-      for(size_t j = 0; j<nEdges[i]; j++){
-        sum+=regionSizes[i][j];
+      this->printMsg("Tree " + std::to_string(i)
+                     + ", sum of segment sizes: " + std::to_string(sum));
+      sum = 0;
+      for(size_t j = 0; j < nEdges[i]; j++) {
+        sum += regionSizes[i][j];
       }
-      this->printMsg("Tree "+std::to_string(i)+", sum of region sizes: "+std::to_string(sum));
+      this->printMsg("Tree " + std::to_string(i)
+                     + ", sum of region sizes: " + std::to_string(sum));
     }
   }
 
@@ -365,7 +367,8 @@ int ttk::ContourTreeAlignment::execute(const vector<void *> &scalarsVP,
     std::shared_ptr<ContourTree> ct(new ContourTree(
       scalars[permutation[i]], regionSizes[permutation[i]],
       segmentationIds[permutation[i]], topologies[permutation[i]],
-      nVertices[permutation[i]], nEdges[permutation[i]], segRegions.empty()?std::vector<std::vector<int>>():segRegions[i]));
+      nVertices[permutation[i]], nEdges[permutation[i]],
+      segRegions.empty() ? std::vector<std::vector<int>>() : segRegions[i]));
     if(ct->isBinary()) {
       contourtreesToAlign.push_back(ct);
     } else {
