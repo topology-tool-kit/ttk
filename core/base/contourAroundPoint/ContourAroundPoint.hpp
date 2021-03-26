@@ -163,6 +163,7 @@ namespace ttk {
       return _radius;
     }
 
+    
     /// If greater than 0, means the coordinates are supposed to lie on a sphere
     /// with fixed radius.
     double _radius = 0.;
@@ -197,6 +198,13 @@ namespace ttk {
     mutable std::vector<float> _outCentroidsCoords;
     mutable std::vector<float> _outCentroidsScalars;
     mutable std::vector<int> _outCentroidsFlags;
+    
+    /// `PointIterable` and `WeightIterable` must provide random access.
+    /// `PointIterable` must contain sth. like a tuple, pair or array.
+    template<class PointIterable, class WeightIterable>
+    static std::array<double,
+      std::tuple_size<typename PointIterable::value_type>::value>
+    average(const PointIterable& pts, const WeightIterable& ws);
   };
 } // namespace ttk
 
@@ -481,65 +489,111 @@ void ttk::ContourAroundPoint::extendOutPts(
 
   auto triang = reinterpret_cast<Triang *>(_inpFldTriang);
   auto inpScalars = reinterpret_cast<const scalarT *>(_inpFldScalars);
+  
+  const double radius = _radius;
+  const bool spherical = radius > 0.;
 
   // We weight the vertices based on the difference to the extreme value.
   // Vertices that are close to the extreme value get much weight,
   // vertices that are close to the isovalue get little weight.
-  const double dMax = std::abs(isoval - extremeVal);
-#ifndef NDEBUG
-  const double dMaxRelaxed = dMax * 1.001;
-#endif
+  const double scalarDiffMax = std::abs(isoval - extremeVal);
 
-  // For now, we use a "full cosine" kernel.
-  const double kernelInputScaler = M_PI / dMax;
-  // d=0 ... cos(0)=1 ... w=1, d=dMax ... cos(pi)=-1 ... w = 0
-  auto k_func = [kernelInputScaler](double d) {
+  // For now, we use a "full cosine" kernel
+  const double kernelInputScaler = M_PI / scalarDiffMax;
+  // d=0 ... cos(0)=1 ... w=1, d=scalarDiffMax ... cos(pi)=-1 ... w = 0
+  auto scalar_w = [kernelInputScaler](double d) {
     return (std::cos(d * kernelInputScaler) + 1.) / 2.;
   };
-
-  // do the computation in double precision
-  double wSum = 0.;
-  double outX = 0.;
-  double outY = 0.;
-  double outZ = 0.;
-  double outSca = 0.;
-
-  for(const auto v : vertices) {
+  
+  // Additionally, each vertex is weighted considering the size of the domain it
+  // "represents" (inversely proportional to the sampling density).
+  // NOTE Currently we assume that whenever we have a spherical domain,
+  // it is given on a regular lon-lat grid.
+  const bool regularLonLat = spherical;
+  
+  // We collect the 4D samples and weights to compute the weighted average
+  // in a separate function
+  const auto numVerts = vertices.size();
+  auto pts4d = std::vector<std::array<float, 4> >(numVerts);
+  auto ws = std::vector<double>(numVerts);
+  for(std::size_t i = 0; i < numVerts; ++i) {
+    
+    const auto v = vertices[i];
     const scalarT vSca = inpScalars[v];
     // Because we only use symmetric kernels for the weighting, the sign of
     // the difference does not matter.
-    const double d = vSca - extremeVal;
-#ifndef NDEBUG
-    if(std::abs(d) > dMaxRelaxed)
-      printWrn("d: " + std::to_string(d) + "  dMax: " + std::to_string(dMax));
-#endif
-    const double w = k_func(d);
-    wSum += w;
+    const double scalarDiff = vSca - extremeVal;
+    const double scalarW = scalar_w(scalarDiff);
 
     float x, y, z;
     triang->getVertexPoint(v, x, y, z);
-    outX += x * w;
-    outY += y * w;
-    outZ += z * w;
-    outSca += vSca * w;
+    pts4d[i] = {x, y, z, static_cast<float>(vSca)};
+    
+    if(!regularLonLat) {
+      // NOTE Implement case for arbitrary triangulation
+      ws[i] = scalarW;
+    } else {
+      const double latInRad = std::asin(z / radius);
+      // std::asin is in [-pi/2,+pi/2] => equator at 0 => fits
+      const double spatialW = std::cos(latInRad);
+      // weight 1 at equator, 0 at a pole
+      ws[i] = scalarW*spatialW; // or use sth like the mean weight here?
+    }
   }
-  assert(wSum != 0.);
-  outX /= wSum;
-  outY /= wSum;
-  outZ /= wSum;
-  outSca /= wSum;
+  
+  const auto res = average(pts4d, ws);
+  auto x = res[0];
+  auto y = res[1];
+  auto z = res[2];
 
-  if(_radius > 0.) {
-    const double radiusCur = std::sqrt(outX * outX + outY * outY + outZ * outZ);
-    const double radiusScaler = _radius / radiusCur;
-    outX *= radiusScaler;
-    outY *= radiusScaler;
-    outZ *= radiusScaler;
+  if(spherical) {
+    const auto radiusCur = std::sqrt(x*x + y*y + z*z);
+    const auto radiusScaler = radius / radiusCur;
+    x *= radiusScaler;
+    y *= radiusScaler;
+    z *= radiusScaler;
   }
 
-  _outCentroidsCoords.push_back(static_cast<float>(outX));
-  _outCentroidsCoords.push_back(static_cast<float>(outY));
-  _outCentroidsCoords.push_back(static_cast<float>(outZ));
-  _outCentroidsScalars.push_back(static_cast<float>(outSca));
+  _outCentroidsCoords.push_back(static_cast<float>(x));
+  _outCentroidsCoords.push_back(static_cast<float>(y));
+  _outCentroidsCoords.push_back(static_cast<float>(z));
+  _outCentroidsScalars.push_back(static_cast<float>(res[3]));
   _outCentroidsFlags.push_back(flag);
+}
+
+//----------------------------------------------------------------------------//
+template<class PointIterable, class WeightIterable>
+std::array<double, std::tuple_size<typename PointIterable::value_type>::value>
+ttk::ContourAroundPoint::average(
+  const PointIterable& pts, const WeightIterable& ws) {
+
+  constexpr auto numComponents =
+    std::tuple_size<typename PointIterable::value_type>::value;
+  std::array<double, numComponents> res{};
+  // as of C++14 there is no (simple) compile time "constexpr for loop"
+#ifndef NDEBUG
+  for(std::size_t j = 0; j < numComponents; ++j)
+//     assert(std::get<j>(res) == 0.);
+    assert(res[j] == 0.);
+#endif
+  double wSum = 0.;
+  
+  const auto numPts = pts.size();
+  assert(ws.size() == numPts);
+  
+  for(std::size_t i = 0; i < numPts; ++i) {
+    auto& pt = pts[i];
+    const auto w = ws[i];
+    wSum += w;
+    for(std::size_t j = 0; j < numComponents; ++j)
+//       std::get<j>(res) += std::get<j>(pt) * w;
+      res[j] += pt[j] * w;
+  }
+  
+  assert(wSum != 0.);
+  for(std::size_t j = 0; j < numComponents; ++j)
+//     std::get<j>(res) /= wSum;
+    res[j] /= wSum;
+  
+  return res;
 }
