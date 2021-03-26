@@ -276,6 +276,13 @@ int TwoSkeleton::buildTriangleList(
   }
 #endif
 
+  // check parameters consistency (this method is useless in 2D)
+  const auto dim = cellArray.getCellVertexNumber(0) - 1;
+  if(dim == 2) {
+    this->printWrn("Calling buildTriangleList is useless in 2D, skipping...");
+    return -1;
+  }
+
   printMsg(
     "Building triangles", 0, 0, threadNumber_, ttk::debug::LineMode::REPLACE);
 
@@ -525,6 +532,13 @@ int TwoSkeleton::buildTriangleLinks(
 #endif
 
   Timer tm;
+
+  // check parameters consistency (this method is useless in 2D)
+  const auto dim = cellArray.getCellVertexNumber(0) - 1;
+  if(dim == 2) {
+    this->printWrn("Calling buildTriangleLinks is useless in 2D, skipping...");
+    return -1;
+  }
 
   const SimplexId triangleNumber = triangleList.size();
   std::vector<SimplexId> offsets(triangleNumber + 1);
