@@ -57,6 +57,8 @@ int ExplicitTriangulation::preconditionBoundaryEdgesInternal() {
     return 0;
   }
 
+  Timer tm{};
+
   preconditionEdgesInternal();
   boundaryEdges_.resize(edgeList_.size(), false);
 
@@ -84,12 +86,16 @@ int ExplicitTriangulation::preconditionBoundaryEdgesInternal() {
     return -1;
   }
 
+  this->printMsg("Extracted boundary edges", 1.0, tm.getElapsedTime(), 1);
+
   return 0;
 }
 
 int ExplicitTriangulation::preconditionBoundaryTrianglesInternal() {
   if(getDimensionality() == 2)
     return 0;
+
+  Timer tm{};
 
   if((!boundaryTriangles_.empty())
      && (boundaryTriangles_.size() == triangleList_.size())) {
@@ -113,6 +119,8 @@ int ExplicitTriangulation::preconditionBoundaryTrianglesInternal() {
     return -1;
   }
 
+  this->printMsg("Extracted boundary triangles", 1.0, tm.getElapsedTime(), 1);
+
   return 0;
 }
 
@@ -120,6 +128,8 @@ int ExplicitTriangulation::preconditionBoundaryVerticesInternal() {
   if((!boundaryVertices_.empty())
      && ((SimplexId)boundaryVertices_.size() == vertexNumber_))
     return 0;
+
+  Timer tm{};
 
   boundaryVertices_.resize(vertexNumber_, false);
 
@@ -159,6 +169,8 @@ int ExplicitTriangulation::preconditionBoundaryVerticesInternal() {
     printErr("Unsupported dimension for boundary precondition");
     return -1;
   }
+
+  this->printMsg("Extracted boundary vertices", 1.0, tm.getElapsedTime(), 1);
 
   return 0;
 }
