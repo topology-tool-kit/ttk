@@ -17,14 +17,23 @@
 
 // VTK includes
 #include <ttkAlgorithm.h>
+#include <ttkMacros.h>
 #include <vtkDataObject.h>
 #include <vtkSmartPointer.h>
 
 class vtkDataArraySelection;
 
 class TTKARRAYEDITOR_EXPORT ttkArrayEditor : public ttkAlgorithm {
+public:
+  enum class MODE {
+    ADD_ARRAYS_FROM_STRING = 0,
+    ADD_ARRAYS_FROM_SOURCE = 1,
+    FILTER_ARRAYS_FROM_SOURCE = 2,
+    EDIT_ARRAY = 3
+  };
+
 private:
-  int EditorMode{0};
+  MODE EditorMode{MODE::ADD_ARRAYS_FROM_STRING};
   std::string DataString{""};
   bool ReplaceExistingArrays{true};
 
@@ -40,8 +49,8 @@ public:
   static ttkArrayEditor *New();
   vtkTypeMacro(ttkArrayEditor, ttkAlgorithm);
 
-  vtkSetMacro(EditorMode, int);
-  vtkGetMacro(EditorMode, int);
+  ttkSetEnumMacro(EditorMode, MODE);
+  vtkGetEnumMacro(EditorMode, MODE);
   vtkSetMacro(TargetAssociation, int);
   vtkGetMacro(TargetAssociation, int);
   vtkSetMacro(DataString, std::string);

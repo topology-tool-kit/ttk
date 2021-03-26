@@ -15,6 +15,9 @@ ttkComponentSize::ttkComponentSize() {
 
   this->SetNumberOfInputPorts(1);
   this->SetNumberOfOutputPorts(1);
+
+  vtkWarningMacro("`TTK ComponentSize' is now deprecated. Please use "
+                  "`Connectivity' instead.");
 }
 
 ttkComponentSize::~ttkComponentSize() {

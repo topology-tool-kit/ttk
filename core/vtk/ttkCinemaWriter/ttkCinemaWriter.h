@@ -14,7 +14,7 @@
 
 // VTK includes
 #include <ttkAlgorithm.h>
-#include <vtkNew.h>
+#include <ttkMacros.h>
 
 // VTK Module
 #include <ttkCinemaWriterModule.h>
@@ -23,6 +23,26 @@
 #include <ttkTopologicalCompressionWriter.h>
 
 class TTKCINEMAWRITER_EXPORT ttkCinemaWriter : public ttkAlgorithm {
+public:
+  enum class FORMAT { VTK = 0, PNG = 1, TTK = 2 };
+
+private:
+  std::string DatabasePath{""};
+  int CompressionLevel{5};
+  bool IterateMultiBlock{true};
+  bool ForwardInput{true};
+  FORMAT Format{FORMAT::VTK};
+
+  // topological compression
+  double Tolerance{1.0};
+  double MaximumError{};
+  double ZFPBitBudget{0};
+  int CompressionType{
+    static_cast<int>(ttk::CompressionType::PersistenceDiagram)};
+  int SQMethodPV{};
+  bool ZFPOnly{false};
+  bool Subdivide{false};
+  bool UseTopologicalSimplification{true};
 
 public:
   static ttkCinemaWriter *New();
@@ -31,8 +51,8 @@ public:
   vtkSetMacro(DatabasePath, std::string);
   vtkGetMacro(DatabasePath, std::string);
 
-  vtkSetMacro(Mode, int);
-  vtkGetMacro(Mode, int);
+  ttkSetEnumMacro(Format, FORMAT);
+  vtkGetEnumMacro(Format, FORMAT);
 
   vtkSetMacro(CompressionLevel, int);
   vtkGetMacro(CompressionLevel, int);
@@ -42,8 +62,6 @@ public:
 
   vtkSetMacro(ForwardInput, bool);
   vtkGetMacro(ForwardInput, bool);
-
-  int DeleteDatabase();
 
   vtkGetMacro(Tolerance, double);
   vtkSetMacro(Tolerance, double);
@@ -61,11 +79,15 @@ public:
   vtkSetMacro(UseTopologicalSimplification, bool);
   vtkSetMacro(SQMethodPV, int);
 
+  int DeleteDatabase();
+  int GetLockFilePath(std::string &path);
+  int InitializeLockFile();
+
 protected:
   ttkCinemaWriter();
   ~ttkCinemaWriter();
 
-  int validateDatabasePath();
+  int ValidateDatabasePath();
   int ProcessDataProduct(vtkDataObject *input);
 
   int FillInputPortInformation(int port, vtkInformation *info) override;
@@ -74,22 +96,4 @@ protected:
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,
                   vtkInformationVector *outputVector) override;
-
-private:
-  std::string DatabasePath{""};
-  int CompressionLevel{5};
-  bool IterateMultiBlock{true};
-  bool ForwardInput{true};
-  int Mode{0};
-
-  // topological compression
-  double Tolerance{1.0};
-  double MaximumError{};
-  double ZFPBitBudget{0};
-  int CompressionType{
-    static_cast<int>(ttk::CompressionType::PersistenceDiagram)};
-  int SQMethodPV{};
-  bool ZFPOnly{false};
-  bool Subdivide{false};
-  bool UseTopologicalSimplification{true};
 };

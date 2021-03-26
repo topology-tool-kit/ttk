@@ -34,7 +34,11 @@
 
 namespace ttk {
 
-  std::string toFixed(const float &number, const int precision = 2);
+  inline std::string toFixed(const float &number, const int precision = 2) {
+    std::stringstream vFraction;
+    vFraction << std::fixed << std::setprecision(precision) << number;
+    return vFraction.str();
+  }
 
   template <typename IT>
   std::string

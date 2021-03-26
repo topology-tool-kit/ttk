@@ -14,16 +14,11 @@ ExplicitTriangulation::~ExplicitTriangulation() {
 }
 
 int ExplicitTriangulation::clear() {
-
-  AbstractTriangulation::clear();
-
   vertexNumber_ = 0;
   cellNumber_ = 0;
   doublePrecision_ = false;
 
-  printMsg(
-    "[ExplicitTriangulation] Triangulation cleared.", debug::Priority::DETAIL);
-  // clear twice ??
+  printMsg("Triangulation cleared.", debug::Priority::DETAIL);
 
   return AbstractTriangulation::clear();
 }

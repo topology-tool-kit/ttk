@@ -40,7 +40,8 @@
                 <EnumerationDomain name="enum">
                     <Entry value="0" text="Add Arrays from String"/>
                     <Entry value="1" text="Add Arrays from Source"/>
-                    <Entry value="2" text="Edit Array"/>
+                    <Entry value="2" text="Filter Arrays from Source"/>
+                    <Entry value="3" text="Edit Array"/>
                 </EnumerationDomain>
                 <Documentation>Determines if data arrays are either a) added based on a CSV string; b) shallow copied from a source; or c) edited.</Documentation>
             </IntVectorProperty>
@@ -78,7 +79,12 @@
                   Select the point data arrays to pass through
                 </Documentation>
                 <Hints>
-                  <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="EditorMode" value="1" />
+                  <PropertyWidgetDecorator type="CompositeDecorator">
+                        <Expression type="or">
+                            <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="EditorMode" value="1" />
+                            <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="EditorMode" value="2" />
+                        </Expression>
+                  </PropertyWidgetDecorator>
                   <ArraySelectionWidget icon_type="point"/>
                 </Hints>
             </StringVectorProperty>
@@ -97,7 +103,10 @@
                   Select the cell data arrays to pass through
                 </Documentation>
                 <Hints>
-                  <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="EditorMode" value="1" />
+                  <Expression type="or">
+                      <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="EditorMode" value="1" />
+                      <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="EditorMode" value="2" />
+                  </Expression>
                   <ArraySelectionWidget icon_type="cell"/>
                 </Hints>
             </StringVectorProperty>
@@ -116,7 +125,10 @@
                   Select the field data arrays to pass through
                 </Documentation>
                 <Hints>
-                  <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="EditorMode" value="1" />
+                  <Expression type="or">
+                      <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="EditorMode" value="1" />
+                      <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="EditorMode" value="2" />
+                  </Expression>
                   <ArraySelectionWidget icon_type="field"/>
                 </Hints>
             </StringVectorProperty>
@@ -135,7 +147,10 @@
                   Select the vertex data arrays to pass through
                 </Documentation>
                 <Hints>
-                  <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="EditorMode" value="1" />
+                  <Expression type="or">
+                      <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="EditorMode" value="1" />
+                      <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="EditorMode" value="2" />
+                  </Expression>
                   <ArraySelectionWidget icon_type="vertex"/>
                 </Hints>
             </StringVectorProperty>
@@ -154,7 +169,10 @@
                   Select the edge data arrays to pass through
                 </Documentation>
                 <Hints>
-                  <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="EditorMode" value="1" />
+                  <Expression type="or">
+                      <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="EditorMode" value="1" />
+                      <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="EditorMode" value="2" />
+                  </Expression>
                   <ArraySelectionWidget icon_type="edge"/>
                 </Hints>
             </StringVectorProperty>
@@ -173,8 +191,11 @@
                   Select the row data arrays to pass through
                 </Documentation>
                 <Hints>
+                  <Expression type="or">
+                      <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="EditorMode" value="1" />
+                      <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="EditorMode" value="2" />
+                  </Expression>
                   <ArraySelectionWidget icon_type="row"/>
-                  <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="EditorMode" value="1" />
                 </Hints>
             </StringVectorProperty>
 
@@ -193,14 +214,14 @@
                     </RequiredProperties>
                 </ArrayListDomain>
                 <Hints>
-                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="EditorMode" value="2" />
+                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="EditorMode" value="3" />
                 </Hints>
                 <Documentation>Array that will be modified.</Documentation>
             </StringVectorProperty>
             <StringVectorProperty name="TargetArrayName" label="New Array Name" command="SetTargetArrayName" number_of_elements="1" default_values="">
                 <Documentation>New name of the resulting array (empty string will copy previous name).</Documentation>
                 <Hints>
-                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="EditorMode" value="2" />
+                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="EditorMode" value="3" />
                 </Hints>
             </StringVectorProperty>
             <IntVectorProperty command="SetTargetArrayType" default_values="-1" label="Result Array Type" name="TargetArrayType" number_of_elements="1">
@@ -219,13 +240,13 @@
                     <Entry value="12" text="Id Type" />
                 </EnumerationDomain>
                 <Hints>
-                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="EditorMode" value="2" />
+                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="EditorMode" value="3" />
                 </Hints>
                 <Documentation>This property determines the type of the edited array. The default is to keep the original data type.</Documentation>
             </IntVectorProperty>
             <IntVectorProperty command="SetTargetArrayIndexation" default_values="-1 -1" label="Number of tuples and components" name="TargetArrayIndexation" number_of_elements="2">
                 <Hints>
-                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="EditorMode" value="2" />
+                    <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="EditorMode" value="3" />
                 </Hints>
                 <Documentation>This property determines the number of tuples and components of the edited array. The default is to keep the original number.</Documentation>
             </IntVectorProperty>

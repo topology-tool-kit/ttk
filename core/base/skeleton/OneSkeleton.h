@@ -13,6 +13,7 @@
 #ifndef _ONESKELETON_H
 #define _ONESKELETON_H
 
+#include <array>
 #include <map>
 
 // base code includes
@@ -44,11 +45,10 @@ namespace ttk {
     /// std::vector listing the vertices in the link of the corresponding
     /// vertex.
     /// \return Returns 0 upon success, negative values otherwise.
-    int buildEdgeLinks(
-      const std::vector<std::pair<SimplexId, SimplexId>> &edgeList,
-      const std::vector<std::vector<SimplexId>> &edgeStars,
-      const CellArray &cellArray,
-      std::vector<std::vector<SimplexId>> &edgeLinks) const;
+    int buildEdgeLinks(const std::vector<std::array<SimplexId, 2>> &edgeList,
+                       const std::vector<std::vector<SimplexId>> &edgeStars,
+                       const CellArray &cellArray,
+                       std::vector<std::vector<SimplexId>> &edgeLinks) const;
 
     /// Compute the link of each edge of a 3D triangulation (unspecified
     /// behavior if the input mesh is not a valid triangulation).
@@ -66,11 +66,11 @@ namespace ttk {
     /// entry will be a std::vector listing the vertices in the link of the
     /// corresponding vertex.
     /// \return Returns 0 upon success, negative values otherwise.
-    int buildEdgeLinks(
-      const std::vector<std::pair<SimplexId, SimplexId>> &edgeList,
-      const std::vector<std::vector<SimplexId>> &edgeStars,
-      const std::vector<std::vector<SimplexId>> &cellEdges,
-      std::vector<std::vector<SimplexId>> &edgeLinks) const;
+    template <std::size_t n>
+    int buildEdgeLinks(const std::vector<std::array<SimplexId, 2>> &edgeList,
+                       const std::vector<std::vector<SimplexId>> &edgeStars,
+                       const std::vector<std::array<SimplexId, n>> &cellEdges,
+                       std::vector<std::vector<SimplexId>> &edgeLinks) const;
 
     /// Compute the list of edges of a valid triangulation.
     /// \param vertexNumber Number of vertices in the triangulation.
@@ -80,10 +80,9 @@ namespace ttk {
     /// of
     /// vertex identifiers).
     /// \return Returns 0 upon success, negative values otherwise.
-    int buildEdgeList(
-      const SimplexId &vertexNumber,
-      const CellArray &cellArray,
-      std::vector<std::pair<SimplexId, SimplexId>> &edgeList) const;
+    int buildEdgeList(const SimplexId &vertexNumber,
+                      const CellArray &cellArray,
+                      std::vector<std::array<SimplexId, 2>> &edgeList) const;
 
     /// Compute the list of edges of multiple triangulations.
     /// \param cellArrays Vector of cells. For each triangulation, each entry
@@ -130,7 +129,7 @@ namespace ttk {
     int buildEdgeStars(const SimplexId &vertexNumber,
                        const CellArray &cellArray,
                        std::vector<std::vector<SimplexId>> &starList,
-                       std::vector<std::pair<SimplexId, SimplexId>> *edgeList
+                       std::vector<std::array<SimplexId, 2>> *edgeList
                        = nullptr,
                        std::vector<std::vector<SimplexId>> *vertexStars
                        = nullptr) const;
@@ -141,9 +140,8 @@ namespace ttk {
     /// \param edgeList Output edge list (each entry is an ordered std::pair
     /// of vertex identifiers).
     /// \return Returns 0 upon success, negative values otherwise.
-    int buildEdgeSubList(
-      const CellArray &cellArray,
-      std::vector<std::pair<SimplexId, SimplexId>> &edgeList) const;
+    int buildEdgeSubList(const CellArray &cellArray,
+                         std::vector<std::array<SimplexId, 2>> &edgeList) const;
   };
 } // namespace ttk
 

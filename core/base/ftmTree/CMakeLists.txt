@@ -22,7 +22,6 @@ ttk_add_base_library(ftmTree
     triangulation
     geometry
     Boost::boost
-    Boost::system
     )
 
 option(TTK_ENABLE_FTM_TREE_PROCESS_SPEED "Enable FTM tree process speed" OFF)

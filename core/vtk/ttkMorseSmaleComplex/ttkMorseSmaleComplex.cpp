@@ -205,6 +205,24 @@ int ttkMorseSmaleComplex::dispatch(
     points->SetData(pointsCoords);
     outputCriticalPoints->SetPoints(points);
 
+    vtkNew<vtkIdTypeArray> offsets{}, connectivity{};
+    offsets->SetNumberOfComponents(1);
+    offsets->SetNumberOfTuples(criticalPoints_numberOfPoints + 1);
+    connectivity->SetNumberOfComponents(1);
+    connectivity->SetNumberOfTuples(criticalPoints_numberOfPoints);
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(this->threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+    for(SimplexId i = 0; i < criticalPoints_numberOfPoints; ++i) {
+      offsets->SetTuple1(i, i);
+      connectivity->SetTuple1(i, i);
+    }
+    offsets->SetTuple1(
+      criticalPoints_numberOfPoints, criticalPoints_numberOfPoints);
+    vtkNew<vtkCellArray> cells{};
+    cells->SetData(offsets, connectivity);
+    outputCriticalPoints->SetCells(VTK_VERTEX, cells);
+
     auto pointData = outputCriticalPoints->GetPointData();
 #ifndef TTK_ENABLE_KAMIKAZE
     if(!pointData) {

@@ -5,4 +5,4 @@ ttk_add_base_library(cinemaQuery
     CinemaQuery.h
   DEPENDS
     triangulation
-    )
+)

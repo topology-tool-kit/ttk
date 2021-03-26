@@ -425,6 +425,7 @@ according to them.
             // for filterSaddleConnectors
             contourTree_.preconditionTriangulation(data);
           }
+          this->initMemory(*data);
         }
       }
 
@@ -663,10 +664,10 @@ in the gradient.
        * 3-cells)
        */
       template <typename triangulationType>
-      inline lowerStarType
-        lowerStar(const SimplexId a,
-                  const SimplexId *const offsets,
-                  const triangulationType &triangulation) const;
+      inline void lowerStar(lowerStarType &ls,
+                            const SimplexId a,
+                            const SimplexId *const offsets,
+                            const triangulationType &triangulation) const;
 
       /**
        * @brief Return the number of unpaired faces of a given cell in
@@ -930,6 +931,11 @@ gradient, false otherwise.
       template <typename triangulationType>
       int reverseDescendingPathOnWall(const std::vector<Cell> &vpath,
                                       const triangulationType &triangulation);
+
+      /**
+       * @brief Initialize/Allocate discrete gradient memory
+       */
+      void initMemory(const AbstractTriangulation &triangulation);
 
     protected:
       ftm::FTMTree contourTree_{};

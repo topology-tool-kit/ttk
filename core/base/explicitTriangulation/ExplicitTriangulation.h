@@ -35,29 +35,39 @@ namespace ttk {
                                    SimplexId &edgeId) const override {
 
 #ifndef TTK_ENABLE_KAMIKAZE
-      if((cellId < 0) || (cellId >= (SimplexId)cellEdgeList_.size()))
+      if((cellId < 0) || (cellId >= (SimplexId)tetraEdgeList_.size()))
         return -1;
       if((localEdgeId < 0)
-         || (localEdgeId >= (SimplexId)cellEdgeList_[cellId].size()))
+         || (localEdgeId >= (SimplexId)tetraEdgeList_[cellId].size()))
         return -2;
 #endif
-      edgeId = cellEdgeList_[cellId][localEdgeId];
+      edgeId = tetraEdgeList_[cellId][localEdgeId];
       return 0;
     }
 
     inline SimplexId
       getCellEdgeNumberInternal(const SimplexId &cellId) const override {
 #ifndef TTK_ENABLE_KAMIKAZE
-      if((cellId < 0) || (cellId >= (SimplexId)cellEdgeList_.size()))
+      if((cellId < 0) || (cellId >= (SimplexId)tetraEdgeList_.size()))
         return -1;
 #endif
-      return cellEdgeList_[cellId].size();
+      return tetraEdgeList_[cellId].size();
+    }
+
+    template <std::size_t N>
+    inline void
+      convertToVector(const std::vector<std::array<SimplexId, N>> &table,
+                      std::vector<std::vector<SimplexId>> &vec) {
+      for(size_t i = 0; i < table.size(); ++i) {
+        vec[i] = {table[i].begin(), table[i].end()};
+      }
     }
 
     inline const std::vector<std::vector<SimplexId>> *
       getCellEdgesInternal() override {
 
-      return &cellEdgeList_;
+      convertToVector(tetraEdgeList_, cellEdgeVector_);
+      return &cellEdgeVector_;
     }
 
     inline int TTK_TRIANGULATION_INTERNAL(getCellNeighbor)(
@@ -94,13 +104,13 @@ namespace ttk {
                                        SimplexId &triangleId) const override {
 
 #ifndef TTK_ENABLE_KAMIKAZE
-      if((cellId < 0) || (cellId >= (SimplexId)cellTriangleList_.size()))
+      if((cellId < 0) || (cellId >= (SimplexId)tetraTriangleList_.size()))
         return -1;
       if((localTriangleId < 0)
-         || (localTriangleId >= (SimplexId)cellTriangleList_[cellId].size()))
+         || (localTriangleId >= (SimplexId)tetraTriangleList_[cellId].size()))
         return -2;
 #endif
-      triangleId = cellTriangleList_[cellId][localTriangleId];
+      triangleId = tetraTriangleList_[cellId][localTriangleId];
 
       return 0;
     }
@@ -109,17 +119,18 @@ namespace ttk {
       getCellTriangleNumberInternal(const SimplexId &cellId) const override {
 
 #ifndef TTK_ENABLE_KAMIKAZE
-      if((cellId < 0) || (cellId >= (SimplexId)cellTriangleList_.size()))
+      if((cellId < 0) || (cellId >= (SimplexId)tetraTriangleList_.size()))
         return -1;
 #endif
 
-      return cellTriangleList_[cellId].size();
+      return tetraTriangleList_[cellId].size();
     }
 
     inline const std::vector<std::vector<SimplexId>> *
       getCellTrianglesInternal() override {
 
-      return &cellTriangleList_;
+      convertToVector(tetraTriangleList_, cellTriangleVector_);
+      return &cellTriangleVector_;
     }
 
     inline int TTK_TRIANGULATION_INTERNAL(getCellVertex)(
@@ -147,7 +158,7 @@ namespace ttk {
       return maxCellDim_;
     }
 
-    inline const std::vector<std::pair<SimplexId, SimplexId>> *
+    inline const std::vector<std::array<SimplexId, 2>> *
       TTK_TRIANGULATION_INTERNAL(getEdges)() override {
       return &edgeList_;
     }
@@ -254,9 +265,9 @@ namespace ttk {
         return -2;
 #endif
       if(!localVertexId)
-        vertexId = edgeList_[edgeId].first;
+        vertexId = edgeList_[edgeId][0];
       else
-        vertexId = edgeList_[edgeId].second;
+        vertexId = edgeList_[edgeId][1];
       return 0;
     }
 
@@ -278,7 +289,7 @@ namespace ttk {
       return vertexNumber_;
     }
 
-    inline const std::vector<std::vector<SimplexId>> *
+    inline const std::vector<std::array<SimplexId, 3>> *
       TTK_TRIANGULATION_INTERNAL(getTriangles)() override {
       return &triangleList_;
     }
@@ -315,7 +326,8 @@ namespace ttk {
     inline const std::vector<std::vector<SimplexId>> *
       getTriangleEdgesInternal() override {
 
-      return &triangleEdgeList_;
+      convertToVector(triangleEdgeList_, triangleEdgeVector_);
+      return &triangleEdgeVector_;
     }
 
     inline int TTK_TRIANGULATION_INTERNAL(getTriangleLink)(
@@ -687,8 +699,8 @@ namespace ttk {
 
         for(SimplexId i = 0; i < (SimplexId)edgeStarList_.size(); i++) {
           if(edgeStarList_[i].size() == 1) {
-            boundaryVertices_[edgeList_[i].first] = true;
-            boundaryVertices_[edgeList_[i].second] = true;
+            boundaryVertices_[edgeList_[i][0]] = true;
+            boundaryVertices_[edgeList_[i][1]] = true;
           }
         }
       } else if(getDimensionality() == 3) {
@@ -713,13 +725,17 @@ namespace ttk {
 
     inline int preconditionCellEdgesInternal() override {
 
-      if(!cellEdgeList_.size()) {
+      ThreeSkeleton threeSkeleton;
+      threeSkeleton.setWrapper(this);
 
-        ThreeSkeleton threeSkeleton;
-        threeSkeleton.setWrapper(this);
-
-        threeSkeleton.buildCellEdges(vertexNumber_, *cellArray_, cellEdgeList_,
+      if(tetraEdgeList_.empty() && getDimensionality() == 3) {
+        threeSkeleton.buildCellEdges(vertexNumber_, *cellArray_, tetraEdgeList_,
                                      &edgeList_, &vertexEdgeList_);
+
+      } else if(triangleEdgeList_.empty() && getDimensionality() == 2) {
+        threeSkeleton.buildCellEdges(vertexNumber_, *cellArray_,
+                                     triangleEdgeList_, &edgeList_,
+                                     &vertexEdgeList_);
       }
 
       return 0;
@@ -741,7 +757,7 @@ namespace ttk {
 
     inline int preconditionCellTrianglesInternal() override {
 
-      if(!cellTriangleList_.size()) {
+      if(!tetraTriangleList_.size()) {
 
         TwoSkeleton twoSkeleton;
         twoSkeleton.setWrapper(this);
@@ -749,27 +765,28 @@ namespace ttk {
         if(triangleList_.size()) {
           // we already computed this guy, let's just get the cell triangles
           if(triangleStarList_.size()) {
-            return twoSkeleton.buildTriangleList(
-              vertexNumber_, *cellArray_, nullptr, nullptr, &cellTriangleList_);
+            return twoSkeleton.buildTriangleList(vertexNumber_, *cellArray_,
+                                                 nullptr, nullptr,
+                                                 &tetraTriangleList_);
           } else {
             // let's compute the triangle star while we're at it...
             // it's just a tiny overhead.
             return twoSkeleton.buildTriangleList(vertexNumber_, *cellArray_,
                                                  nullptr, &triangleStarList_,
-                                                 &cellTriangleList_);
+                                                 &tetraTriangleList_);
           }
         } else {
           // we have not computed this guy, let's do it while we're at it
           if(triangleStarList_.size()) {
             return twoSkeleton.buildTriangleList(vertexNumber_, *cellArray_,
                                                  &triangleList_, nullptr,
-                                                 &cellTriangleList_);
+                                                 &tetraTriangleList_);
           } else {
             // let's compute the triangle star while we're at it...
             // it's just a tiny overhead.
             return twoSkeleton.buildTriangleList(
               vertexNumber_, *cellArray_, &triangleList_, &triangleStarList_,
-              &cellTriangleList_);
+              &tetraTriangleList_);
           }
         }
       }
@@ -808,7 +825,7 @@ namespace ttk {
           OneSkeleton oneSkeleton;
           oneSkeleton.setWrapper(this);
           return oneSkeleton.buildEdgeLinks(
-            edgeList_, edgeStarList_, cellEdgeList_, edgeLinkList_);
+            edgeList_, edgeStarList_, tetraEdgeList_, edgeLinkList_);
         } else {
           // unsupported dimension
           printErr("Unsupported dimension for edge link precondition");
@@ -845,7 +862,7 @@ namespace ttk {
         return twoSkeleton.buildEdgeTriangles(
           vertexNumber_, *cellArray_, edgeTriangleList_, &vertexStarList_,
           &edgeList_, &edgeStarList_, &triangleList_, &triangleStarList_,
-          &cellTriangleList_);
+          &tetraTriangleList_);
       }
 
       return 0;
@@ -860,7 +877,7 @@ namespace ttk {
 
         twoSkeleton.buildTriangleList(vertexNumber_, *cellArray_,
                                       &triangleList_, &triangleStarList_,
-                                      &cellTriangleList_);
+                                      &tetraTriangleList_);
       }
 
       return 0;
@@ -880,7 +897,7 @@ namespace ttk {
 
         return twoSkeleton.buildTriangleEdgeList(
           vertexNumber_, *cellArray_, triangleEdgeList_, &vertexEdgeList_,
-          &edgeList_, &triangleList_, &triangleStarList_, &cellTriangleList_);
+          &edgeList_, &triangleList_, &triangleStarList_, &tetraTriangleList_);
       }
 
       return 0;
@@ -943,15 +960,16 @@ namespace ttk {
           ZeroSkeleton zeroSkeleton;
           zeroSkeleton.setWrapper(this);
           return zeroSkeleton.buildVertexLinks(
-            vertexStarList_, cellEdgeList_, edgeList_, vertexLinkList_);
+            vertexStarList_, triangleEdgeList_, edgeList_, vertexLinkList_);
         } else if(getDimensionality() == 3) {
           preconditionVertexStarsInternal();
           preconditionCellTrianglesInternal();
 
           ZeroSkeleton zeroSkeleton;
           zeroSkeleton.setWrapper(this);
-          return zeroSkeleton.buildVertexLinks(
-            vertexStarList_, cellTriangleList_, triangleList_, vertexLinkList_);
+          return zeroSkeleton.buildVertexLinks(vertexStarList_,
+                                               tetraTriangleList_,
+                                               triangleList_, vertexLinkList_);
         } else {
           // unsupported dimension
           printErr("Unsupported dimension for vertex link precondition");

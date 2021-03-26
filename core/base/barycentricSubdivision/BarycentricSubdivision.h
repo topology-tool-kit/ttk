@@ -220,7 +220,7 @@ int ttk::BarycentricSubdivision::subdiviseTriangulation(
   // set input point coordinates and ids
   for(SimplexId i = 0; i < nVertices_; ++i) {
     inputTriangl.getVertexPoint(
-      i, points_[i + 0], points_[i + 1], points_[i + 2]);
+      i, points_[3 * i + 0], points_[3 * i + 1], points_[3 * i + 2]);
     pointId_[i] = i;
   }
 

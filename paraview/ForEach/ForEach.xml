@@ -24,6 +24,7 @@
                     <Entry value="1" text="Rows"/>
                     <Entry value="3" text="Array Values"/>
                     <Entry value="4" text="Arrays"/>
+                    <Entry value="5" text="Block Tuples"/>
                 </EnumerationDomain>
                 <Documentation>
                     Iteration Mode.
@@ -58,34 +59,42 @@
 
             <IntVectorProperty name="OutputType" label="Output Type" command="SetOutputType" number_of_elements="1" default_values="-1">
                 <EnumerationDomain name="enum">
-                    <Entry value="-1" text="Auto"/>
-                    <Entry value="13" text="vtkMultiBlockDataSet"/>
-                    <!--<Entry value="6" text="vtkImageData"/>-->
-                    <Entry value="4" text="vtkUnstructuredGrid"/>
-                    <Entry value="19" text="vtkTable"/>
+                  <Entry value="-1" text="Auto"/>
+                  <Entry value="13" text="vtkMultiBlockDataSet"/>
+                  <Entry value= "6" text="vtkImageData"/>
+                  <Entry value= "0" text="vtkPolyData"/>
+                  <Entry value= "4" text="vtkUnstructuredGrid"/>
+                  <Entry value="19" text="vtkTable"/>
                 </EnumerationDomain>
-                <Documentation>If mode is set to 'Block', then this parameter is used to set the output type of the filter at the 'RequestInformation' pass.
+                <Documentation>
+If mode is set to 'Block', then this parameter is used to set the output type of the filter at the 'RequestInformation' pass.
 
-Auto: Extracted blocks (of any type) are appended to a new 'vtkMultiBlockDataSet'.
-
-
-vtkImageData: If only one block is extracted and it is of type 'vtkImageData', then this block is returned as the output.
-
-
-vtkUnstructuredGrid: If only one block is extracted and it is of type 'vtkUnstructuredGrid', then this block is returned as the output.
-
-
-vtkMultiBlockDataSet: If only one block is extracted and it is of type 'vtkMultiBlockDataSet', then this block is returned as the output.
-
+Auto: Extracted blocks (of any type) are appended to a new 'vtkMultiBlockDataSet'. If the output type is specified, then only one object is returned which is of the specified type (Note: In this case the object is not contained in a 'vtkMultiBlockDataSet').
                 </Documentation>
                 <Hints>
                     <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="ExtractionMode" value="0" />
                 </Hints>
             </IntVectorProperty>
 
+            <IntVectorProperty command="SetImageExtent" default_values="0 0 0 0 0 0" name="ImageExtent" number_of_elements="6">
+              <ExtentDomain name="extent">
+                <RequiredProperties>
+                  <Property function="Input" name="Input" />
+                </RequiredProperties>
+              </ExtentDomain>
+              <Hints>
+                <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="OutputType" value="6"/>
+              </Hints>
+              <Documentation>
+                Controls the minimum and maximum extent index in each dimension for outputs of type vtkImageData.
+                Unfortunately, VTK requires that this information is explicitly defined during the RequestInformation pass, so it can not be deduced later during the RequestData pass.
+              </Documentation>
+            </IntVectorProperty>
+
             <PropertyGroup panel_widget="Line" label="Input Parameters">
                 <Property name="IterationMode" />
                 <Property name="OutputType" />
+                <Property name="ImageExtent" />
                 <Property name="InputArray" />
                 <Property name="ArrayAttributeType" />
             </PropertyGroup>

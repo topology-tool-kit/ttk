@@ -1,10 +1,7 @@
-ttk_add_base_library(icosphere
-  SOURCES
-    Icosphere.cpp
+ttk_add_base_template_library(icosphere
   HEADERS
     Icosphere.h
   DEPENDS
     triangulation
     Boost::boost
-    Boost::system
-  )
+)

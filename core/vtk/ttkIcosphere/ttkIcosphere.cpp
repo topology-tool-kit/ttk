@@ -3,12 +3,15 @@
 #include <ttkUtils.h>
 
 #include <vtkInformation.h>
+#include <vtkObjectFactory.h>
 
 #include <vtkCellArray.h>
+#include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
+#include <vtkIdTypeArray.h>
 #include <vtkPointData.h>
+#include <vtkPolyData.h>
 #include <vtkSmartPointer.h>
-#include <vtkUnstructuredGrid.h>
 
 vtkStandardNewMacro(ttkIcosphere);
 
@@ -25,7 +28,7 @@ int ttkIcosphere::FillInputPortInformation(int port, vtkInformation *info) {
 
 int ttkIcosphere::FillOutputPortInformation(int port, vtkInformation *info) {
   if(port == 0)
-    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
+    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkPolyData");
   else
     return 0;
   return 1;
@@ -35,8 +38,8 @@ int ttkIcosphere::RequestData(vtkInformation *request,
                               vtkInformationVector **inputVector,
                               vtkInformationVector *outputVector) {
   // get parameter
-  int nSpheres = this->Centers ? this->Centers->GetNumberOfPoints() : 1;
-  int nSubdivisions = this->GetNumberOfSubdivisions();
+  size_t nSpheres = this->Centers ? this->Centers->GetNumberOfTuples() : 1;
+  size_t nSubdivisions = this->GetNumberOfSubdivisions();
   double radius = this->GetRadius();
 
   bool useDoublePrecision
@@ -48,84 +51,70 @@ int ttkIcosphere::RequestData(vtkInformation *request,
   this->computeNumberOfVerticesAndTriangles(
     nVertices, nTriangles, nSubdivisions);
 
+  const size_t nTotalVertices = nSpheres * nVertices;
+  const size_t nTotalTriangles = nSpheres * nTriangles;
+
   auto points = vtkSmartPointer<vtkPoints>::New();
   points->SetDataType(useDoublePrecision ? VTK_DOUBLE : VTK_FLOAT);
-  points->SetNumberOfPoints(nSpheres * nVertices);
+  points->SetNumberOfPoints(nTotalVertices);
 
-  auto normals = vtkSmartPointer<vtkFloatArray>::New();
+  vtkSmartPointer<vtkDataArray> normals;
   if(this->ComputeNormals) {
+    if(useDoublePrecision)
+      normals = vtkSmartPointer<vtkDoubleArray>::New();
+    else
+      normals = vtkSmartPointer<vtkFloatArray>::New();
+
     normals->SetName("Normals");
     normals->SetNumberOfComponents(3);
-    normals->SetNumberOfTuples(nVertices * nSpheres);
+    normals->SetNumberOfTuples(nTotalVertices);
   }
 
-  auto cells = vtkSmartPointer<vtkCellArray>::New();
+  auto offsets = vtkSmartPointer<vtkIdTypeArray>::New();
+  offsets->SetNumberOfTuples(nTotalTriangles + 1);
+  auto offsetsData
+    = static_cast<vtkIdType *>(ttkUtils::GetVoidPointer(offsets));
+  for(size_t i = 0; i <= nTotalTriangles; i++)
+    offsetsData[i] = i * 3;
 
-  // execute base code
-  // TODO: Improve here
-#ifdef TTK_CELL_ARRAY_NEW
-  std::vector<vtkIdType> cellArray;
-  cellArray.resize(nSpheres * nTriangles * 4);
+  auto connectivity = vtkSmartPointer<vtkIdTypeArray>::New();
+  connectivity->SetNumberOfTuples(nTotalTriangles * 3);
+
+  int status = 0;
   if(useDoublePrecision) {
-    if(!this->computeIcospheres<double, vtkIdType>(
-         (double *)ttkUtils::GetVoidPointer(points), cellArray.data(),
+    typedef double DT;
+    status = this->computeIcospheres<DT, vtkIdType>(
+      ttkUtils::GetPointer<DT>(points->GetData()),
+      ttkUtils::GetPointer<vtkIdType>(connectivity),
 
-         nSpheres, nSubdivisions, radius,
-         this->Centers ? (double *)ttkUtils::GetVoidPointer(this->Centers)
-                       : this->Center,
-         this->ComputeNormals ? (float *)ttkUtils::GetVoidPointer(normals)
-                              : nullptr)) {
-      return 0;
-    }
+      nSpheres, nSubdivisions, radius,
+      this->Centers ? ttkUtils::GetPointer<DT>(this->Centers) : this->Center,
+      this->ComputeNormals ? ttkUtils::GetPointer<DT>(normals) : nullptr);
   } else {
-    float centerFloat[3]{
-      (float)this->Center[0], (float)this->Center[1], (float)this->Center[2]};
-    if(!this->computeIcospheres<float, vtkIdType>(
-         (float *)ttkUtils::GetVoidPointer(points), cellArray.data(),
+    typedef float DT;
+    DT centerFloat[3]{
+      (DT)this->Center[0], (DT)this->Center[1], (DT)this->Center[2]};
+    status = this->computeIcospheres<DT, vtkIdType>(
+      ttkUtils::GetPointer<DT>(points->GetData()),
+      ttkUtils::GetPointer<vtkIdType>(connectivity),
 
-         nSpheres, nSubdivisions, radius,
-         this->Centers ? (float *)ttkUtils::GetVoidPointer(this->Centers)
-                       : centerFloat,
-         this->ComputeNormals ? (float *)ttkUtils::GetVoidPointer(normals)
-                              : nullptr))
-      return 0;
+      nSpheres, nSubdivisions, radius,
+      this->Centers ? ttkUtils::GetPointer<DT>(this->Centers) : centerFloat,
+      this->ComputeNormals ? ttkUtils::GetPointer<DT>(normals) : nullptr);
   }
-  ttkUtils::FillCellArrayFromSingle(
-    cellArray.data(), nSpheres * nTriangles, cells);
-#else
-  if(useDoublePrecision) {
-    if(!this->computeIcospheres<double, vtkIdType>(
-         (double *)ttkUtils::GetVoidPointer(points),
-         cells->WritePointer(nSpheres * nTriangles, nSpheres * nTriangles * 4),
 
-         nSpheres, nSubdivisions, radius,
-         this->Centers ? (double *)ttkUtils::GetVoidPointer(this->Centers)
-                       : this->Center,
-         this->ComputeNormals ? (float *)ttkUtils::GetVoidPointer(normals)
-                              : nullptr))
-      return 0;
-  } else {
-    float centerFloat[3]{
-      (float)this->Center[0], (float)this->Center[1], (float)this->Center[2]};
-    if(!this->computeIcospheres<float, vtkIdType>(
-         (float *)ttkUtils::GetVoidPointer(points),
-         cells->WritePointer(nSpheres * nTriangles, nSpheres * nTriangles * 4),
+  if(!status)
+    return 0;
 
-         nSpheres, nSubdivisions, radius,
-         this->Centers ? (float *)ttkUtils::GetVoidPointer(this->Centers)
-                       : centerFloat,
-         this->ComputeNormals ? (float *)ttkUtils::GetVoidPointer(normals)
-                              : nullptr))
-      return 0;
-  }
-#endif
-
-  // module easily finalize output
+  // finalize output
   {
-    auto output = vtkUnstructuredGrid::GetData(outputVector);
+    auto output = vtkPolyData::GetData(outputVector);
     output->SetPoints(points);
 
-    output->SetCells(VTK_TRIANGLE, cells);
+    auto cells = vtkSmartPointer<vtkCellArray>::New();
+    cells->SetData(offsets, connectivity);
+    output->SetPolys(cells);
+
     if(this->ComputeNormals)
       output->GetPointData()->SetNormals(normals);
   }
