@@ -7,8 +7,7 @@
 /// traversal methods on triangulations of piecewise linear manifolds.
 /// \sa Triangulation
 
-#ifndef _EXPLICITTRIANGULATION_H
-#define _EXPLICITTRIANGULATION_H
+#pragma once
 
 // base code includes
 #include <AbstractTriangulation.h>
@@ -621,5 +620,3 @@ namespace ttk {
     FlatJaggedArray triangleLinkData_{};
   };
 } // namespace ttk
-
-#endif // _EXPLICITTRIANGULATION_H
