@@ -50,11 +50,16 @@ int DiscreteGradient::buildGradient(const triangulationType &triangulation) {
   return 0;
 }
 
-template <typename dataType, typename triangulationType>
+template <typename triangulationType>
 int DiscreteGradient::setCriticalPoints(
   const std::vector<Cell> &criticalPoints,
   std::vector<size_t> &nCriticalPointsByDim,
-  const triangulationType &triangulation) {
+  std::vector<std::array<float, 3>> &points,
+  std::vector<char> &cellDimensions,
+  std::vector<SimplexId> &cellIds,
+  std::vector<char> &isOnBoundary,
+  std::vector<SimplexId> &PLVertexIdentifiers,
+  const triangulationType &triangulation) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!inputScalarField_) {
@@ -63,13 +68,8 @@ int DiscreteGradient::setCriticalPoints(
     return -1;
   }
 #endif
-  const auto *const scalars = static_cast<const dataType *>(inputScalarField_);
-  auto *outputCriticalPoints_points_cellScalars
-    = static_cast<std::vector<dataType> *>(
-      outputCriticalPoints_points_cellScalars_);
 
   const auto nCritPoints = criticalPoints.size();
-  outputCriticalPoints_numberOfPoints_ = nCritPoints;
 
   const int numberOfDimensions = getNumberOfDimensions();
   nCriticalPointsByDim.resize(numberOfDimensions, 0);
@@ -80,14 +80,11 @@ int DiscreteGradient::setCriticalPoints(
     nCriticalPointsByDim[cell.dim_]++;
   }
 
-  outputCriticalPoints_points_.resize(3 * nCritPoints);
-  outputCriticalPoints_points_cellDimensions_.resize(nCritPoints);
-  outputCriticalPoints_points_cellIds_.resize(nCritPoints);
-  if(outputCriticalPoints_points_cellScalars) {
-    outputCriticalPoints_points_cellScalars->resize(nCritPoints);
-  }
-  outputCriticalPoints_points_isOnBoundary_.resize(nCritPoints);
-  outputCriticalPoints_points_PLVertexIdentifiers_.resize(nCritPoints);
+  points.resize(nCritPoints);
+  cellDimensions.resize(nCritPoints);
+  cellIds.resize(nCritPoints);
+  isOnBoundary.resize(nCritPoints);
+  PLVertexIdentifiers.resize(nCritPoints);
 
   // for all critical cells
 #ifdef TTK_ENABLE_OPENMP
@@ -98,24 +95,11 @@ int DiscreteGradient::setCriticalPoints(
     const int cellDim = cell.dim_;
     const SimplexId cellId = cell.id_;
 
-    float incenter[3];
-    triangulation.getCellIncenter(cell.id_, cell.dim_, incenter);
-
-    const auto scalar = scalars[getCellGreaterVertex(cell, triangulation)];
-    const char isOnBoundary = isBoundary(cell, triangulation);
-
-    outputCriticalPoints_points_[3 * i] = incenter[0];
-    outputCriticalPoints_points_[3 * i + 1] = incenter[1];
-    outputCriticalPoints_points_[3 * i + 2] = incenter[2];
-
-    outputCriticalPoints_points_cellDimensions_[i] = cellDim;
-    outputCriticalPoints_points_cellIds_[i] = cellId;
-    if(outputCriticalPoints_points_cellScalars) {
-      (*outputCriticalPoints_points_cellScalars)[i] = scalar;
-    }
-    outputCriticalPoints_points_isOnBoundary_[i] = isOnBoundary;
-    auto vertId = getCellGreaterVertex(cell, triangulation);
-    outputCriticalPoints_points_PLVertexIdentifiers_[i] = vertId;
+    triangulation.getCellIncenter(cell.id_, cell.dim_, points[i].data());
+    cellDimensions[i] = cellDim;
+    cellIds[i] = cellId;
+    isOnBoundary[i] = this->isBoundary(cell, triangulation);
+    PLVertexIdentifiers[i] = this->getCellGreaterVertex(cell, triangulation);
   }
 
   std::vector<std::vector<std::string>> rows(numberOfDimensions);
@@ -128,15 +112,21 @@ int DiscreteGradient::setCriticalPoints(
   return 0;
 }
 
-template <typename dataType, typename triangulationType>
+template <typename triangulationType>
 int DiscreteGradient::setCriticalPoints(
-  const triangulationType &triangulation) {
+  std::vector<std::array<float, 3>> &points,
+  std::vector<char> &cellDimensions,
+  std::vector<SimplexId> &cellIds,
+  std::vector<char> &isOnBoundary,
+  std::vector<SimplexId> &PLVertexIdentifiers,
+  const triangulationType &triangulation) const {
 
   std::vector<Cell> criticalPoints;
   getCriticalPoints(criticalPoints, triangulation);
-  std::vector<size_t> nCriticalPointsByDim{};
-  setCriticalPoints<dataType>(
-    criticalPoints, nCriticalPointsByDim, triangulation);
+  std::vector<size_t> nCriticalPointsByDim;
+  setCriticalPoints(criticalPoints, nCriticalPointsByDim, points,
+                    cellDimensions, cellIds, isOnBoundary, PLVertexIdentifiers,
+                    triangulation);
 
   return 0;
 }

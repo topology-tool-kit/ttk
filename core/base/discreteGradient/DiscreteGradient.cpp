@@ -27,14 +27,6 @@ void DiscreteGradient::initMemory(const AbstractTriangulation &triangulation) {
   dmt1Saddle2PL_.clear();
   dmt2Saddle2PL_.clear();
 
-  outputCriticalPoints_numberOfPoints_ = 0;
-  outputCriticalPoints_points_.clear();
-  outputCriticalPoints_points_cellDimensions_.clear();
-  outputCriticalPoints_points_cellIds_.clear();
-  outputCriticalPoints_points_isOnBoundary_.clear();
-  outputCriticalPoints_points_PLVertexIdentifiers_.clear();
-  outputCriticalPoints_points_manifoldSize_.clear();
-
   // clear & init gradient memory
   for(int i = 0; i < dimensionality_; ++i) {
     gradient_[2 * i].clear();
@@ -218,12 +210,13 @@ int DiscreteGradient::setManifoldSize(
   const std::vector<size_t> &nCriticalPointsByDim,
   const std::vector<SimplexId> &maxSeeds,
   const SimplexId *const ascendingManifold,
-  const SimplexId *const descendingManifold) {
+  const SimplexId *const descendingManifold,
+  std::vector<SimplexId> &manifoldSize) const {
 
   const auto nCritPoints = criticalPoints.size();
   const auto nDimensions = getNumberOfDimensions();
 
-  outputCriticalPoints_points_manifoldSize_.resize(nCritPoints, 0);
+  manifoldSize.resize(nCritPoints, 0);
 
   // pre-compute size of descending manifold cells
   std::map<SimplexId, size_t> descendingCellsSize{};
@@ -238,8 +231,7 @@ int DiscreteGradient::setManifoldSize(
   for(size_t i = 0; i < nCriticalPointsByDim[0]; ++i) {
     const Cell &cell = criticalPoints[i];
     const SimplexId seedId = descendingManifold[cell.id_];
-    const SimplexId manifoldSize = descendingCellsSize[seedId];
-    outputCriticalPoints_points_manifoldSize_[i] = manifoldSize;
+    manifoldSize[i] = descendingCellsSize[seedId];
   }
 
   // index of first maximum in critical points array
@@ -268,8 +260,7 @@ int DiscreteGradient::setManifoldSize(
     const Cell &cell = criticalPoints[i];
     if(seedsPos.find(cell.id_) != seedsPos.end()) {
       const auto seedId = seedsPos[cell.id_];
-      const SimplexId manifoldSize = ascendingCellsSize[seedId];
-      outputCriticalPoints_points_manifoldSize_[i] = manifoldSize;
+      manifoldSize[i] = ascendingCellsSize[seedId];
     }
   }
 

@@ -43,11 +43,18 @@ int ttkDiscreteGradient::fillCriticalPoints(
   ttk::Timer tm{};
 
   // critical points
-  std::vector<scalarType> criticalPoints_points_cellScalars;
-  this->setOutputCriticalPoints(&criticalPoints_points_cellScalars);
+  std::vector<std::array<float, 3>> critPoints_coords;
+  std::vector<char> critPoints_cellDimensions;
+  std::vector<SimplexId> critPoints_cellIds;
+  std::vector<char> critPoints_isOnBoundary;
+  std::vector<SimplexId> critPoints_PLVertexIdentifiers;
 
-  this->setCriticalPoints<scalarType>(triangulation);
-  const auto nPoints = outputCriticalPoints_numberOfPoints_;
+  this->setCriticalPoints(critPoints_coords, critPoints_cellDimensions,
+                          critPoints_cellIds, critPoints_isOnBoundary,
+                          critPoints_PLVertexIdentifiers, triangulation);
+  const auto nPoints = critPoints_coords.size();
+  const auto scalars
+    = static_cast<scalarType *>(ttkUtils::GetVoidPointer(inputScalars));
 
   vtkNew<vtkPoints> points{};
   points->SetNumberOfPoints(nPoints);
@@ -62,7 +69,7 @@ int ttkDiscreteGradient::fillCriticalPoints(
   cellIds->SetName("CellId");
   cellIds->SetNumberOfTuples(nPoints);
 
-  vtkDataArray *cellScalars = inputScalars->NewInstance();
+  vtkSmartPointer<vtkDataArray> cellScalars{inputScalars->NewInstance()};
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!cellScalars) {
     this->printErr("vtkDataArray allocation problem.");
@@ -92,15 +99,13 @@ int ttkDiscreteGradient::fillCriticalPoints(
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(this->threadNumber_)
 #endif // TTK_ENABLE_OPENMP
-  for(SimplexId i = 0; i < nPoints; ++i) {
-    points->SetPoint(i, &outputCriticalPoints_points_[3 * i]);
-    cellDimensions->SetTuple1(
-      i, outputCriticalPoints_points_cellDimensions_[i]);
-    cellIds->SetTuple1(i, outputCriticalPoints_points_cellIds_[i]);
-    cellScalars->SetTuple1(i, criticalPoints_points_cellScalars[i]);
-    isOnBoundary->SetTuple1(i, outputCriticalPoints_points_isOnBoundary_[i]);
-    PLVertexIdentifiers->SetTuple1(
-      i, outputCriticalPoints_points_PLVertexIdentifiers_[i]);
+  for(size_t i = 0; i < nPoints; ++i) {
+    points->SetPoint(i, critPoints_coords[i].data());
+    cellDimensions->SetTuple1(i, critPoints_cellDimensions[i]);
+    cellIds->SetTuple1(i, critPoints_cellIds[i]);
+    cellScalars->SetTuple1(i, scalars[critPoints_PLVertexIdentifiers[i]]);
+    isOnBoundary->SetTuple1(i, critPoints_isOnBoundary[i]);
+    PLVertexIdentifiers->SetTuple1(i, critPoints_PLVertexIdentifiers[i]);
     offsets->SetTuple1(i, i);
     connectivity->SetTuple1(i, i);
   }
