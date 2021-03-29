@@ -51,19 +51,16 @@ void setArray(vtkArrayType &vtkArray, vectorType &vector) {
 }
 
 template <typename scalarType, typename triangulationType>
-int ttkMorseSmaleComplex::dispatch(
-  vtkDataArray *const inputScalars,
-  vtkDataArray *const inputOffsets,
-  vtkPolyData *const outputCriticalPoints,
-  vtkPolyData *const outputSeparatrices1,
-  vtkPolyData *const outputSeparatrices2,
-  const triangulationType &triangulation) {
+int ttkMorseSmaleComplex::dispatch(vtkDataArray *const inputScalars,
+                                   vtkDataArray *const inputOffsets,
+                                   vtkPolyData *const outputCriticalPoints,
+                                   vtkPolyData *const outputSeparatrices1,
+                                   vtkPolyData *const outputSeparatrices2,
+                                   const triangulationType &triangulation) {
 
   const int dimensionality = triangulation.getCellVertexNumber(0) - 1;
 
   // critical points
-  SimplexId criticalPoints_numberOfPoints{};
-  std::vector<scalarType> criticalPoints_points_cellScalars;
   criticalPoints_points.clear();
   criticalPoints_points_cellDimensions.clear();
   criticalPoints_points_cellIds.clear();
@@ -104,14 +101,13 @@ int ttkMorseSmaleComplex::dispatch(
 
   if(ComputeCriticalPoints) {
     this->setOutputCriticalPoints(
-      &criticalPoints_numberOfPoints, &criticalPoints_points,
-      &criticalPoints_points_cellDimensions, &criticalPoints_points_cellIds,
-      &criticalPoints_points_cellScalars, &criticalPoints_points_isOnBoundary,
+      &criticalPoints_points, &criticalPoints_points_cellDimensions,
+      &criticalPoints_points_cellIds, &criticalPoints_points_isOnBoundary,
       &criticalPoints_points_PLVertexIdentifiers,
       &criticalPoints_points_manifoldSize);
   } else {
     this->setOutputCriticalPoints(
-      nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr);
+      nullptr, nullptr, nullptr, nullptr, nullptr, nullptr);
   }
 
   this->setOutputSeparatrices1(
@@ -147,24 +143,26 @@ int ttkMorseSmaleComplex::dispatch(
 
   // critical points
   {
-    vtkNew<vtkFloatArray> pointsCoords{};
+    vtkNew<vtkPoints> points{};
     vtkNew<vtkSignedCharArray> cellDimensions{};
     vtkNew<ttkSimplexIdTypeArray> cellIds{};
     vtkSmartPointer<vtkDataArray> cellScalars{inputScalars->NewInstance()};
     vtkNew<vtkSignedCharArray> isOnBoundary{};
     vtkNew<ttkSimplexIdTypeArray> PLVertexIdentifiers{};
     vtkNew<ttkSimplexIdTypeArray> manifoldSizeScalars{};
+    const auto scalars
+      = static_cast<scalarType *>(ttkUtils::GetVoidPointer(inputScalars));
+    const auto nPoints = criticalPoints_points.size();
 
 #ifndef TTK_ENABLE_KAMIKAZE
-    if(!pointsCoords || !cellDimensions || !cellIds || !cellScalars
-       || !isOnBoundary || !PLVertexIdentifiers || !manifoldSizeScalars) {
+    if(!points || !cellDimensions || !cellIds || !cellScalars || !isOnBoundary
+       || !PLVertexIdentifiers || !manifoldSizeScalars) {
       this->printErr("Critical points vtkDataArray allocation problem.");
       return -1;
     }
 #endif
 
-    pointsCoords->SetNumberOfComponents(3);
-    setArray(pointsCoords, criticalPoints_points);
+    points->SetNumberOfPoints(nPoints);
 
     cellDimensions->SetNumberOfComponents(1);
     cellDimensions->SetName("CellDimension");
@@ -176,12 +174,14 @@ int ttkMorseSmaleComplex::dispatch(
 
     cellScalars->SetNumberOfComponents(1);
     cellScalars->SetName(inputScalars->GetName());
-    cellScalars->SetNumberOfTuples(criticalPoints_numberOfPoints);
+    cellScalars->SetNumberOfTuples(nPoints);
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(this->threadNumber_)
 #endif // TTK_ENABLE_OPENMP
-    for(SimplexId i = 0; i < criticalPoints_numberOfPoints; ++i) {
-      cellScalars->SetTuple1(i, criticalPoints_points_cellScalars[i]);
+    for(size_t i = 0; i < nPoints; ++i) {
+      points->SetPoint(i, criticalPoints_points[i].data());
+      cellScalars->SetTuple1(
+        i, scalars[criticalPoints_points_PLVertexIdentifiers[i]]);
     }
 
     isOnBoundary->SetNumberOfComponents(1);
@@ -195,30 +195,27 @@ int ttkMorseSmaleComplex::dispatch(
     manifoldSizeScalars->SetNumberOfComponents(1);
     manifoldSizeScalars->SetName("ManifoldSize");
     if(!ComputeAscendingSegmentation or !ComputeDescendingSegmentation) {
-      criticalPoints_points_manifoldSize.resize(criticalPoints_numberOfPoints);
+      criticalPoints_points_manifoldSize.resize(nPoints);
       std::fill(criticalPoints_points_manifoldSize.begin(),
                 criticalPoints_points_manifoldSize.end(), -1);
     }
     setArray(manifoldSizeScalars, criticalPoints_points_manifoldSize);
 
-    vtkNew<vtkPoints> points{};
-    points->SetData(pointsCoords);
     outputCriticalPoints->SetPoints(points);
 
     vtkNew<vtkIdTypeArray> offsets{}, connectivity{};
     offsets->SetNumberOfComponents(1);
-    offsets->SetNumberOfTuples(criticalPoints_numberOfPoints + 1);
+    offsets->SetNumberOfTuples(nPoints + 1);
     connectivity->SetNumberOfComponents(1);
-    connectivity->SetNumberOfTuples(criticalPoints_numberOfPoints);
+    connectivity->SetNumberOfTuples(nPoints);
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(this->threadNumber_)
 #endif // TTK_ENABLE_OPENMP
-    for(SimplexId i = 0; i < criticalPoints_numberOfPoints; ++i) {
+    for(size_t i = 0; i < nPoints; ++i) {
       offsets->SetTuple1(i, i);
       connectivity->SetTuple1(i, i);
     }
-    offsets->SetTuple1(
-      criticalPoints_numberOfPoints, criticalPoints_numberOfPoints);
+    offsets->SetTuple1(nPoints, nPoints);
     vtkNew<vtkCellArray> cells{};
     cells->SetData(offsets, connectivity);
     outputCriticalPoints->SetVerts(cells);

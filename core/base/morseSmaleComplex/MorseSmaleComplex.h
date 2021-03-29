@@ -322,11 +322,9 @@ namespace ttk {
     }
 
     inline int setOutputCriticalPoints(
-      SimplexId *const criticalPoints_numberOfPoints,
-      std::vector<float> *const criticalPoints_points,
+      std::vector<std::array<float, 3>> *const criticalPoints_points,
       std::vector<char> *const criticalPoints_points_cellDimensons,
       std::vector<SimplexId> *const criticalPoints_points_cellIds,
-      void *const criticalPoints_points_cellScalars,
       std::vector<char> *const criticalPoints_points_isOnBoundary,
       std::vector<SimplexId> *const criticalPoints_points_PLVertexIdentifiers,
       std::vector<SimplexId> *const criticalPoints_points_manifoldSize) {
@@ -336,9 +334,8 @@ namespace ttk {
       }
 #endif
       abstractMorseSmaleComplex_->setOutputCriticalPoints(
-        criticalPoints_numberOfPoints, criticalPoints_points,
-        criticalPoints_points_cellDimensons, criticalPoints_points_cellIds,
-        criticalPoints_points_cellScalars, criticalPoints_points_isOnBoundary,
+        criticalPoints_points, criticalPoints_points_cellDimensons,
+        criticalPoints_points_cellIds, criticalPoints_points_isOnBoundary,
         criticalPoints_points_PLVertexIdentifiers,
         criticalPoints_points_manifoldSize);
 

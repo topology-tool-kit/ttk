@@ -143,7 +143,7 @@ private:
   double SaddleConnectorsPersistenceThreshold{0.0};
 
   // critical points
-  std::vector<float> criticalPoints_points{};
+  std::vector<std::array<float, 3>> criticalPoints_points{};
   std::vector<char> criticalPoints_points_cellDimensions{};
   std::vector<ttk::SimplexId> criticalPoints_points_cellIds{};
   std::vector<char> criticalPoints_points_isOnBoundary{};
