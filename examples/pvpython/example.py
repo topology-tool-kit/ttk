@@ -60,5 +60,5 @@ morseSmaleComplex.ScalarField = ['POINTS', 'data']
 
 # 8. saving the output data
 SaveData('curve.vtk', OutputPort(persistenceCurve, 3))
-SaveData('separatrices.vtu', OutputPort(morseSmaleComplex, 1))
+SaveData('separatrices.vtp', OutputPort(morseSmaleComplex, 1))
 SaveData('segmentation.vtu', OutputPort(morseSmaleComplex, 3))
