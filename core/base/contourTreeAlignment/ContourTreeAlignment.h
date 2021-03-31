@@ -291,7 +291,6 @@ int ttk::ContourTreeAlignment::execute(const vector<void *> &scalarsVP,
     for(size_t i=0; i<nTrees; i++){
       int maxSegId = -1;
       std::vector<int> seg(segsizes[i]);
-      int* seg_arr = segmentations[i];
       for(size_t j=0; j<segsizes[i]; j++){
         maxSegId = std::max(maxSegId,segmentations[i][j]);
         seg[j] = segmentations[i][j];
