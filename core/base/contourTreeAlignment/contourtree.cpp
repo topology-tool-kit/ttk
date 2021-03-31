@@ -1,7 +1,7 @@
 #include "contourtree.h"
+#include <algorithm>
 #include <cmath>
 #include <float.h>
-#include <algorithm>
 
 ContourTree::ContourTree(float *scalars,
                          int *regionSizes,
@@ -33,9 +33,11 @@ ContourTree::ContourTree(float *scalars,
     std::shared_ptr<CTEdge> edge(new CTEdge);
     edge->area = regionSizes[i];
     edge->segId = segmentationIds[i];
-    if(!regions.empty()) edge->region = regions[segmentationIds[i]];
-    std::sort(edge->region.begin(),edge->region.end());
-    //if(!regions.empty()) std::cout << regionSizes[i] << " " << regions[segmentationIds[i]].size() << std::endl;
+    if(!regions.empty())
+      edge->region = regions[segmentationIds[i]];
+    std::sort(edge->region.begin(), edge->region.end());
+    // if(!regions.empty()) std::cout << regionSizes[i] << " " <<
+    // regions[segmentationIds[i]].size() << std::endl;
     edge->node1Idx = topology[j + 0];
     nodes[topology[j + 0]]->edgeList.push_back(i);
     edge->node2Idx = topology[j + 1];
@@ -156,9 +158,10 @@ std::shared_ptr<BinaryTree> ContourTree::computeRootedTree_binary(
   // if(parent != nullptr)
   // t->arcRefs.push_back(std::make_pair(-1,parent->segId));
   if(parent != nullptr) {
-    int arcRef = arcs[node->edgeList[0]] == parent   ? node->edgeList[0]
-                 : arcs[node->edgeList[1]] == parent ? node->edgeList[1]
-                                                     : node->edgeList[2];
+    int arcRef = arcs[node->edgeList[0]] == parent
+                   ? node->edgeList[0]
+                   : arcs[node->edgeList[1]] == parent ? node->edgeList[1]
+                                                       : node->edgeList[2];
     t->arcRefs.push_back(std::make_pair(-1, arcRef));
   }
 
@@ -206,7 +209,7 @@ std::shared_ptr<BinaryTree> ContourTree::computeRootedTree_binary(
     t->scalardistanceParent = 10000;
     t->area = 10000;
     t->volume = 10000;
-    t->region = std::vector<int>(1,-1);
+    t->region = std::vector<int>(1, -1);
   } else {
     t->scalardistanceParent = parent->scalardistance;
     t->area = parent->area;
