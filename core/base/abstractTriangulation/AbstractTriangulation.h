@@ -17,6 +17,7 @@
 #include <Wrapper.h>
 
 #include <array>
+#include <map>
 #include <ostream>
 
 #ifdef TTK_ENABLE_KAMIKAZE
@@ -56,6 +57,12 @@ namespace ttk {
     AbstractTriangulation(AbstractTriangulation &&) = default;
     AbstractTriangulation &operator=(const AbstractTriangulation &) = default;
     AbstractTriangulation &operator=(AbstractTriangulation &&) = default;
+
+    using gradientType = std::array<std::vector<SimplexId>, 6>;
+    using gradientCacheType = std::map<const void *const, gradientType *>;
+    inline gradientCacheType *getGradientCacheHandler() {
+      return &this->gradientCache_;
+    }
 
     /// Reset the triangulation data-structures.
     /// \return Returns 0 upon success, negative values otherwise.
@@ -3243,6 +3250,10 @@ namespace ttk {
     std::vector<std::vector<SimplexId>> cellEdgeVector_{};
     std::vector<std::vector<SimplexId>> cellTriangleVector_{};
     std::vector<std::vector<SimplexId>> triangleEdgeVector_{};
+
+    // store, for each triangulation object and per offset field, a
+    // reference to the discrete gradient internal structure
+    gradientCacheType gradientCache_{};
   };
 } // namespace ttk
 
