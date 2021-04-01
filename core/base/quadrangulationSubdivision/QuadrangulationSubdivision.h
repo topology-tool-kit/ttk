@@ -21,6 +21,7 @@
 #include <array>
 #include <cassert>
 #include <cmath>
+#include <map>
 #include <numeric>
 #include <set>
 #include <stack>

@@ -10,8 +10,7 @@
 /// \sa Triangulation
 /// \sa ttkTriangulation
 
-#ifndef _THREESKELETON_H
-#define _THREESKELETON_H
+#pragma once
 
 // base code includes
 #include <OneSkeleton.h>
@@ -28,42 +27,6 @@ namespace ttk {
 
   public:
     ThreeSkeleton();
-
-    ~ThreeSkeleton();
-
-    /// Compute the list of edges of each cell of a triangulation.
-    /// \param vertexNumber Number of vertices in the triangulation.
-    /// \param cellArray Cell container allowing to retrieve the vertices ids
-    /// of each cell.
-    /// \param cellEdges Output edge lists. The size of this std::vector
-    /// will be equal to the number of cells in the mesh. Each entry will be
-    /// a std::vector listing the edge identifiers of the entry's cell's
-    /// edges.
-    /// \param edgeList Optional list of edges. If nullptr, the function will
-    /// compute this list anyway and free the related memory upon return. If not
-    /// nullptr but pointing to an empty std::vector, the function will fill
-    /// this empty std::vector (useful if this list needs to be used later on by
-    /// the calling program). If not nullptr but pointing to a non-empty
-    /// std::vector, this function will use this std::vector as internal edge
-    /// list. If this std::vector is not empty but incorrect, the behavior is
-    /// unspecified.
-    /// \param vertexEdges Optional list of edges for each vertex.
-    /// If nullptr, the function will compute this list anyway and free the
-    /// related memory upon return. If not nullptr but pointing to an empty
-    /// std::vector, the function will fill this empty std::vector (useful if
-    /// this list needs to be used later on by the calling program). If not
-    /// nullptr but pointing to a non-empty std::vector, this function will use
-    /// this std::vector as internal vertex edge list. If this std::vector is
-    /// not empty but incorrect, the behavior is unspecified.
-    /// \return Returns 0 upon success, negative values otherwise.
-    template <std::size_t n>
-    int buildCellEdges(const SimplexId &vertexNumber,
-                       const CellArray &cellArray,
-                       std::vector<std::array<SimplexId, n>> &cellEdges,
-                       std::vector<std::array<SimplexId, 2>> *edgeList
-                       = nullptr,
-                       std::vector<std::vector<SimplexId>> *vertexEdges
-                       = nullptr) const;
 
     /// Compute the list of cell-neighbors of each cell of a triangulation
     /// (unspecified behavior if the input mesh is not a triangulation).
@@ -87,11 +50,11 @@ namespace ttk {
     /// internal triangle star list. If this std::vector is not empty but
     /// incorrect, the behavior is unspecified. \return Returns 0 upon success,
     /// negative values otherwise.
-    int buildCellNeighborsFromTriangles(
-      const SimplexId &vertexNumber,
-      const CellArray &cellArray,
-      std::vector<std::vector<SimplexId>> &cellNeighbors,
-      std::vector<std::vector<SimplexId>> *triangleStars = nullptr) const;
+    int buildCellNeighborsFromTriangles(const SimplexId &vertexNumber,
+                                        const CellArray &cellArray,
+                                        FlatJaggedArray &cellNeighbors,
+                                        FlatJaggedArray *triangleStars
+                                        = nullptr) const;
 
     /// Compute the list of cell-neighbors of each cell of a triangulation
     /// (unspecified behavior if the input mesh is not a triangulation).
@@ -112,12 +75,10 @@ namespace ttk {
     /// internal vertex star list. If this std::vector is not empty but
     /// incorrect, the behavior is unspecified.
     /// \return Returns 0 upon success, negative values otherwise.
-    int buildCellNeighborsFromVertices(
-      const SimplexId &vertexNumber,
-      const CellArray &cellArray,
-      std::vector<std::vector<SimplexId>> &cellNeighbors,
-      std::vector<std::vector<SimplexId>> *vertexStars = nullptr) const;
+    int buildCellNeighborsFromVertices(const SimplexId &vertexNumber,
+                                       const CellArray &cellArray,
+                                       FlatJaggedArray &cellNeighbors,
+                                       FlatJaggedArray *vertexStars
+                                       = nullptr) const;
   };
 } // namespace ttk
-
-#endif // THREESKELETON_H

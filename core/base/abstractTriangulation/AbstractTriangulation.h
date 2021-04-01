@@ -56,7 +56,7 @@ namespace ttk {
 
     /// Computes and displays the memory footprint of the data-structure.
     /// \return Returns 0 upon success, negative values otherwise.
-    size_t footprint() const;
+    size_t footprint(size_t size = 0) const;
 
     /// Get the \p localEdgeId-th edge of the \p cellId-th cell.
     ///
@@ -795,6 +795,12 @@ namespace ttk {
       return getEdgeVertexInternal(edgeId, localVertexId, vertexId);
     };
 
+    /// Get the number of vertices of a particular edge.
+    /// Always returns 2.
+    inline int getEdgeVertexNumber(const SimplexId edgeId) const {
+      return 2;
+    }
+
     /// Get the dimensions of the grid if the current object is the implicit
     /// triangulation of a regular grid.
     /// \param dimensions Vector that will be filled with the dimensions of
@@ -1247,6 +1253,12 @@ namespace ttk {
 
       return getTriangleVertexInternal(triangleId, localVertexId, vertexId);
     };
+
+    /// Get the number of vertices of a particular triangle.
+    /// Always returns 3.
+    inline int getTriangleVertexNumber(const SimplexId triangleId) const {
+      return 3;
+    }
 
     /// Get the \p localEdgeId-th edge identifier connected to the
     /// \p vertexId-th
