@@ -158,10 +158,9 @@ std::shared_ptr<BinaryTree> ContourTree::computeRootedTree_binary(
   // if(parent != nullptr)
   // t->arcRefs.push_back(std::make_pair(-1,parent->segId));
   if(parent != nullptr) {
-    int arcRef = arcs[node->edgeList[0]] == parent
-                   ? node->edgeList[0]
-                   : arcs[node->edgeList[1]] == parent ? node->edgeList[1]
-                                                       : node->edgeList[2];
+    int arcRef = arcs[node->edgeList[0]] == parent   ? node->edgeList[0]
+                 : arcs[node->edgeList[1]] == parent ? node->edgeList[1]
+                                                     : node->edgeList[2];
     t->arcRefs.push_back(std::make_pair(-1, arcRef));
   }
 
