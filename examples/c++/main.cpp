@@ -230,12 +230,10 @@ int main(int argc, char **argv) {
   // 7. computing the Morse-Smale complex
   ttk::MorseSmaleComplex morseSmaleComplex;
   // critical points
-  ttk::SimplexId criticalPoints_numberOfPoints{};
-  std::vector<float> criticalPoints_points;
+  std::vector<std::array<float, 3>> criticalPoints_points;
   std::vector<char> criticalPoints_points_cellDimensions;
   std::vector<ttk::SimplexId> criticalPoints_points_cellIds;
   std::vector<char> criticalPoints_points_isOnBoundary;
-  std::vector<float> criticalPoints_points_cellScalars;
   std::vector<ttk::SimplexId> criticalPoints_points_PLVertexIdentifiers;
   std::vector<ttk::SimplexId> criticalPoints_points_manifoldSize;
   // 1-separatrices
@@ -266,9 +264,8 @@ int main(int argc, char **argv) {
                                             descendingSegmentation.data(),
                                             mscSegmentation.data());
   morseSmaleComplex.setOutputCriticalPoints(
-    &criticalPoints_numberOfPoints, &criticalPoints_points,
-    &criticalPoints_points_cellDimensions, &criticalPoints_points_cellIds,
-    &criticalPoints_points_cellScalars, &criticalPoints_points_isOnBoundary,
+    &criticalPoints_points, &criticalPoints_points_cellDimensions,
+    &criticalPoints_points_cellIds, &criticalPoints_points_isOnBoundary,
     &criticalPoints_points_PLVertexIdentifiers,
     &criticalPoints_points_manifoldSize);
   morseSmaleComplex.setOutputSeparatrices1(

@@ -45,7 +45,7 @@
 #include <DiscreteGradient.h>
 #include <ttkAlgorithm.h>
 
-class vtkUnstructuredGrid;
+class vtkPolyData;
 
 class TTKDISCRETEGRADIENT_EXPORT ttkDiscreteGradient
   : public ttkAlgorithm,
@@ -61,9 +61,6 @@ public:
   vtkSetMacro(ComputeGradientGlyphs, bool);
   vtkGetMacro(ComputeGradientGlyphs, bool);
 
-  vtkSetMacro(IterationThreshold, int);
-  vtkGetMacro(IterationThreshold, int);
-
 protected:
   ttkDiscreteGradient();
 
@@ -75,10 +72,13 @@ protected:
 
 private:
   template <typename scalarType, typename triangulationType>
-  int dispatch(vtkUnstructuredGrid *outputCriticalPoints,
-               vtkDataArray *const inputScalars,
-               vtkDataArray *const inputOffsets,
-               const triangulationType &triangulation);
+  int fillCriticalPoints(vtkPolyData *output,
+                         vtkDataArray *const inputScalars,
+                         const triangulationType &triangulation);
+
+  template <typename triangulationType>
+  int fillGradientGlyphs(vtkPolyData *const outputGradientGlyphs,
+                         const triangulationType &triangulation);
 
   bool ForceInputOffsetScalarField{false};
   bool ComputeGradientGlyphs{true};

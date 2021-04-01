@@ -7,8 +7,8 @@
 #include <vtkIntArray.h>
 #include <vtkNew.h>
 #include <vtkPointData.h>
+#include <vtkPolyData.h>
 #include <vtkSignedCharArray.h>
-#include <vtkUnstructuredGrid.h>
 
 #include <ttkMacros.h>
 #include <ttkUtils.h>
@@ -40,7 +40,7 @@ int ttkScalarFieldCriticalPoints::FillInputPortInformation(
 int ttkScalarFieldCriticalPoints::FillOutputPortInformation(
   int port, vtkInformation *info) {
   if(port == 0)
-    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
+    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkPolyData");
   else
     return 0;
 
@@ -53,7 +53,7 @@ int ttkScalarFieldCriticalPoints::RequestData(
   vtkInformationVector *outputVector) {
 
   vtkDataSet *input = vtkDataSet::GetData(inputVector[0]);
-  vtkUnstructuredGrid *output = vtkUnstructuredGrid::GetData(outputVector, 0);
+  vtkPolyData *output = vtkPolyData::GetData(outputVector, 0);
 
   ttk::Triangulation *triangulation = ttkAlgorithm::GetTriangulation(input);
   if(!triangulation)
@@ -121,7 +121,7 @@ int ttkScalarFieldCriticalPoints::RequestData(
 
   vtkNew<vtkCellArray> cells{};
   cells->SetData(offsets, connectivity);
-  output->SetCells(VTK_VERTEX, cells);
+  output->SetVerts(cells);
   output->SetPoints(pointSet);
   output->GetPointData()->AddArray(vertexTypes);
 

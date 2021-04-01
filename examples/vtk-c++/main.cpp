@@ -27,6 +27,7 @@
 #include <vtkNew.h>
 #include <vtkTableWriter.h>
 #include <vtkThreshold.h>
+#include <vtkXMLPolyDataWriter.h>
 #include <vtkXMLUnstructuredGridReader.h>
 #include <vtkXMLUnstructuredGridWriter.h>
 
@@ -91,9 +92,9 @@ int main(int argc, char **argv) {
   curveWriter->SetFileName("curve.vtk");
   curveWriter->Write();
 
-  vtkNew<vtkXMLUnstructuredGridWriter> sepWriter{};
+  vtkNew<vtkXMLPolyDataWriter> sepWriter{};
   sepWriter->SetInputConnection(morseSmaleComplex->GetOutputPort(1));
-  sepWriter->SetFileName("separatrices.vtu");
+  sepWriter->SetFileName("separatrices.vtp");
   sepWriter->Write();
 
   vtkNew<vtkXMLUnstructuredGridWriter> segWriter{};

@@ -233,30 +233,22 @@ namespace ttk {
      * Set the output critical points data pointers.
      */
     inline int setOutputCriticalPoints(
-      SimplexId *const criticalPoints_numberOfPoints,
-      std::vector<float> *const criticalPoints_points,
+      std::vector<std::array<float, 3>> *const criticalPoints_points,
       std::vector<char> *const criticalPoints_points_cellDimensons,
       std::vector<SimplexId> *const criticalPoints_points_cellIds,
-      void *const criticalPoints_points_cellScalars,
       std::vector<char> *const criticalPoints_points_isOnBoundary,
       std::vector<SimplexId> *const criticalPoints_points_PLVertexIdentifiers,
       std::vector<SimplexId> *criticalPoints_points_manifoldSize) {
-      outputCriticalPoints_numberOfPoints_ = criticalPoints_numberOfPoints;
       outputCriticalPoints_points_ = criticalPoints_points;
       outputCriticalPoints_points_cellDimensions_
         = criticalPoints_points_cellDimensons;
       outputCriticalPoints_points_cellIds_ = criticalPoints_points_cellIds;
-      outputCriticalPoints_points_cellScalars_
-        = criticalPoints_points_cellScalars;
       outputCriticalPoints_points_isOnBoundary_
         = criticalPoints_points_isOnBoundary;
       outputCriticalPoints_points_PLVertexIdentifiers_
         = criticalPoints_points_PLVertexIdentifiers;
       outputCriticalPoints_points_manifoldSize_
         = criticalPoints_points_manifoldSize;
-
-      discreteGradient_.setOutputCriticalPoints(
-        criticalPoints_points_cellScalars);
       return 0;
     }
 
@@ -430,11 +422,9 @@ namespace ttk {
     const void *inputScalarField_{};
     const SimplexId *inputOffsets_{};
 
-    SimplexId *outputCriticalPoints_numberOfPoints_{};
-    std::vector<float> *outputCriticalPoints_points_{};
+    std::vector<std::array<float, 3>> *outputCriticalPoints_points_{};
     std::vector<char> *outputCriticalPoints_points_cellDimensions_{};
     std::vector<SimplexId> *outputCriticalPoints_points_cellIds_{};
-    void *outputCriticalPoints_points_cellScalars_{};
     std::vector<char> *outputCriticalPoints_points_isOnBoundary_{};
     std::vector<SimplexId> *outputCriticalPoints_points_PLVertexIdentifiers_{};
     std::vector<SimplexId> *outputCriticalPoints_points_manifoldSize_{};

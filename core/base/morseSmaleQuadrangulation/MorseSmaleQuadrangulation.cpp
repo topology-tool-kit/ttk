@@ -33,20 +33,18 @@ int ttk::MorseSmaleQuadrangulation::dualQuadrangulate() {
   // iterate over separatrices middles to build quadrangles around
   // them: the separatrix vertices and two barycenters
 
-  auto quads = reinterpret_cast<std::vector<Quad> *>(&outputCells_);
-  std::vector<LongSimplexId> dualQuads{};
-  auto dquads = reinterpret_cast<std::vector<Quad> *>(&dualQuads);
+  std::vector<Quad> dualQuads{};
 
   auto quadNeighbors = [&](const LongSimplexId a) {
     std::set<LongSimplexId> neighs{};
-    for(const auto &q : *quads) {
-      if(a == q.i || a == q.k) {
-        neighs.emplace(q.j);
-        neighs.emplace(q.l);
+    for(const auto &q : outputCells_) {
+      if(a == q[0] || a == q[2]) {
+        neighs.emplace(q[1]);
+        neighs.emplace(q[3]);
       }
-      if(a == q.j || a == q.l) {
-        neighs.emplace(q.i);
-        neighs.emplace(q.k);
+      if(a == q[1] || a == q[3]) {
+        neighs.emplace(q[0]);
+        neighs.emplace(q[2]);
       }
     }
     return neighs;
@@ -79,7 +77,7 @@ int ttk::MorseSmaleQuadrangulation::dualQuadrangulate() {
       }
     }
 
-    dquads->emplace_back(Quad{4, crit[0], gen[0], crit[1], gen[1]});
+    dualQuads.emplace_back(Quad{crit[0], gen[0], crit[1], gen[1]});
   }
 
   // for degenerate quadrangles, iterate over the single extremum, and
@@ -124,7 +122,7 @@ int ttk::MorseSmaleQuadrangulation::dualQuadrangulate() {
       }
     }
 
-    dquads->emplace_back(Quad{4, crit[0], gen[0], crit[1], gen[1]});
+    dualQuads.emplace_back(Quad{crit[0], gen[0], crit[1], gen[1]});
   }
 
   outputCells_ = std::move(dualQuads);

@@ -23,6 +23,7 @@ from vtk import (
     vtkDataObject,
     vtkTableWriter,
     vtkThreshold,
+    vtkXMLPolyDataWriter,
     vtkXMLUnstructuredGridReader,
     vtkXMLUnstructuredGridWriter,
 )
@@ -89,9 +90,9 @@ curveWriter.SetInputConnection(curve.GetOutputPort())
 curveWriter.SetFileName("curve.vtk")
 curveWriter.Write()
 
-sepWriter = vtkXMLUnstructuredGridWriter()
+sepWriter = vtkXMLPolyDataWriter()
 sepWriter.SetInputConnection(morseSmaleComplex.GetOutputPort(1))
-sepWriter.SetFileName("separatrices.vtu")
+sepWriter.SetFileName("separatrices.vtp")
 sepWriter.Write()
 
 segWriter = vtkXMLUnstructuredGridWriter()

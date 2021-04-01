@@ -21,7 +21,7 @@
           <Group name="filters"/>
         </ProxyGroupDomain>
         <DataTypeDomain name="input_type">
-          <DataType value="vtkUnstructuredGrid"/>
+          <DataType value="vtkDataSet"/>
         </DataTypeDomain>
         <Documentation>
           Input triangulated surface.
@@ -38,7 +38,7 @@
           <Group name="filters"/>
         </ProxyGroupDomain>
         <DataTypeDomain name="input_type">
-          <DataType value="vtkUnstructuredGrid"/>
+          <DataType value="vtkPolyData"/>
         </DataTypeDomain>
         <Documentation>
           Input coarse quadrangulation.

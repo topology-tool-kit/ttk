@@ -7,7 +7,7 @@
 #include <vtkInformation.h>
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
-#include <vtkUnstructuredGrid.h>
+#include <vtkPolyData.h>
 
 vtkStandardNewMacro(ttkQuadrangulationSubdivision);
 
@@ -21,7 +21,7 @@ ttkQuadrangulationSubdivision::ttkQuadrangulationSubdivision() {
 int ttkQuadrangulationSubdivision::FillInputPortInformation(
   int port, vtkInformation *info) {
   if(port == 0) { // input quadrangulation
-    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkUnstructuredGrid");
+    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkPolyData");
     return 1;
   } else if(port == 1) { // triangulated domain
     info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
@@ -33,7 +33,7 @@ int ttkQuadrangulationSubdivision::FillInputPortInformation(
 int ttkQuadrangulationSubdivision::FillOutputPortInformation(
   int port, vtkInformation *info) {
   if(port == 0) {
-    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
+    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkPolyData");
     return 1;
   }
   return 0;
@@ -44,9 +44,9 @@ int ttkQuadrangulationSubdivision::RequestData(
   vtkInformationVector **inputVector,
   vtkInformationVector *outputVector) {
 
-  auto quads = vtkUnstructuredGrid::GetData(inputVector[0]);
+  auto quads = vtkPolyData::GetData(inputVector[0]);
   auto mesh = vtkDataSet::GetData(inputVector[1]);
-  auto output = vtkUnstructuredGrid::GetData(outputVector);
+  auto output = vtkPolyData::GetData(outputVector);
 
   auto triangulation = ttkAlgorithm::GetTriangulation(mesh);
   if(triangulation == nullptr) {
@@ -54,7 +54,7 @@ int ttkQuadrangulationSubdivision::RequestData(
   }
   this->preconditionTriangulation(triangulation);
 
-  auto inputCells = quads->GetCells();
+  auto inputCells = quads->GetPolys();
   if(inputCells == nullptr || inputCells->GetData() == nullptr) {
     this->printErr("Invalid input quadrangle cells");
     return 0;
@@ -73,33 +73,22 @@ int ttkQuadrangulationSubdivision::RequestData(
   if(identifiers == nullptr) {
     this->printErr("Missing point data array named "
                    + std::string(ttk::VertexScalarFieldName));
+    return 0;
   }
 
-  this->setInputQuads(ttkUtils::GetVoidPointer(inputCells->GetData()),
-                      inputCells->GetNumberOfCells());
+  this->setInputQuads(
+    // get quads from PolyData's connectivity array
+    ttkUtils::GetVoidPointer(inputCells->GetConnectivityArray()),
+    inputCells->GetNumberOfCells());
   this->setInputVertices(ttkUtils::GetVoidPointer(inputPoints->GetData()),
                          inputPoints->GetNumberOfPoints());
   this->setInputVertexIdentifiers(
     ttkUtils::GetVoidPointer(identifiers), identifiers->GetNumberOfTuples());
 
-#define QUADSUB_EXPLICIT_CALLS(TRIANGL_CASE, TRIANGL_TYPE)                  \
-  case TRIANGL_CASE: {                                                      \
-    const auto tri = static_cast<TRIANGL_TYPE *>(triangulation->getData()); \
-    if(tri != nullptr) {                                                    \
-      res = this->execute<TRIANGL_TYPE>(*tri);                              \
-    }                                                                       \
-    break;                                                                  \
-  }
-
   int res{-1};
-  switch(triangulation->getType()) {
-    QUADSUB_EXPLICIT_CALLS(
-      ttk::Triangulation::Type::EXPLICIT, ttk::ExplicitTriangulation);
-    QUADSUB_EXPLICIT_CALLS(
-      ttk::Triangulation::Type::IMPLICIT, ttk::ImplicitTriangulation);
-    QUADSUB_EXPLICIT_CALLS(
-      ttk::Triangulation::Type::PERIODIC, ttk::PeriodicImplicitTriangulation);
-  }
+  ttkTemplateMacro(
+    triangulation->getType(),
+    res = this->execute(*static_cast<TTK_TT *>(triangulation->getData())));
 
   if(res != 0) {
     this->printWrn("Please increase the number of relaxation iterations, of "
@@ -110,38 +99,38 @@ int ttkQuadrangulationSubdivision::RequestData(
     }
   }
 
-  auto cells = vtkSmartPointer<vtkCellArray>::New();
+  vtkNew<vtkCellArray> cells{};
 
-  for(size_t i = 0; i < getQuadNumber(); i++) {
-    cells->InsertNextCell(4, &this->getQuadBuf()[5 * i + 1]);
+  for(size_t i = 0; i < outputQuads_.size(); i++) {
+    cells->InsertNextCell(4, this->outputQuads_[i].data());
   }
 
   // update output: get quadrangle values
-  output->SetCells(VTK_QUAD, cells);
+  output->SetPolys(cells);
 
-  auto points = vtkSmartPointer<vtkPoints>::New();
-  for(size_t i = 0; i < getPointsNumber(); ++i) {
-    points->InsertNextPoint(&this->getPointsBuf()[3 * i]);
+  vtkNew<vtkPoints> points{};
+  for(size_t i = 0; i < outputPoints_.size(); ++i) {
+    points->InsertNextPoint(&outputPoints_[i].x);
   }
 
   // update output: get quadrangle vertices
   output->SetPoints(points);
 
   // add data array of points valences
-  auto valences = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
+  vtkNew<ttkSimplexIdTypeArray> valences{};
   valences->SetName("Valence");
   ttkUtils::SetVoidArray(
     valences, outputValences_.data(), outputValences_.size(), 1);
   output->GetPointData()->AddArray(valences);
 
   // add data array of points infos
-  auto infos = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
+  vtkNew<ttkSimplexIdTypeArray> infos{};
   infos->SetName("Type");
   ttkUtils::SetVoidArray(
     infos, outputVertType_.data(), outputVertType_.size(), 1);
   output->GetPointData()->AddArray(infos);
 
-  auto subd = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
+  vtkNew<ttkSimplexIdTypeArray> subd{};
   subd->SetName("Subdivision");
   ttkUtils::SetVoidArray(
     subd, outputSubdivision_.data(), outputSubdivision_.size(), 1);
@@ -150,14 +139,14 @@ int ttkQuadrangulationSubdivision::RequestData(
   if(RelaxationIterations > 0) {
 
     // add data array of number of triangles checked
-    auto trChecked = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
+    vtkNew<ttkSimplexIdTypeArray> trChecked{};
     trChecked->SetName("Triangles checked");
     ttkUtils::SetVoidArray(
       trChecked, trianglesChecked_.data(), trianglesChecked_.size(), 1);
     output->GetPointData()->AddArray(trChecked);
 
     // add data array of projection success
-    auto projSucc = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
+    vtkNew<ttkSimplexIdTypeArray> projSucc{};
     projSucc->SetName("Projection");
     ttkUtils::SetVoidArray(
       projSucc, projSucceeded_.data(), projSucceeded_.size(), 1);
@@ -165,30 +154,30 @@ int ttkQuadrangulationSubdivision::RequestData(
   }
 
   if(QuadStatistics) {
-    auto quadArea = vtkSmartPointer<vtkFloatArray>::New();
+    vtkNew<vtkFloatArray> quadArea{};
     quadArea->SetName("Quad Area");
     ttkUtils::SetVoidArray(quadArea, quadArea_.data(), quadArea_.size(), 1);
     output->GetCellData()->AddArray(quadArea);
 
-    auto diagsRatio = vtkSmartPointer<vtkFloatArray>::New();
+    vtkNew<vtkFloatArray> diagsRatio{};
     diagsRatio->SetName("Diagonals Ratio");
     ttkUtils::SetVoidArray(
       diagsRatio, quadDiagsRatio_.data(), quadDiagsRatio_.size(), 1);
     output->GetCellData()->AddArray(diagsRatio);
 
-    auto edgesRatio = vtkSmartPointer<vtkFloatArray>::New();
+    vtkNew<vtkFloatArray> edgesRatio{};
     edgesRatio->SetName("Edges Ratio");
     ttkUtils::SetVoidArray(
       edgesRatio, quadEdgesRatio_.data(), quadEdgesRatio_.size(), 1);
     output->GetCellData()->AddArray(edgesRatio);
 
-    auto anglesRatio = vtkSmartPointer<vtkFloatArray>::New();
+    vtkNew<vtkFloatArray> anglesRatio{};
     anglesRatio->SetName("Angles Ratio");
     ttkUtils::SetVoidArray(
       anglesRatio, quadAnglesRatio_.data(), quadAnglesRatio_.size(), 1);
     output->GetCellData()->AddArray(anglesRatio);
 
-    auto hausDist = vtkSmartPointer<vtkFloatArray>::New();
+    vtkNew<vtkFloatArray> hausDist{};
     hausDist->SetName("Hausdorff");
     ttkUtils::SetVoidArray(hausDist, hausdorff_.data(), hausdorff_.size(), 1);
     output->GetPointData()->AddArray(hausDist);

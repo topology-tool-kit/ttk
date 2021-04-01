@@ -315,7 +315,7 @@ jobs:
 
   - script: |
       ./ttkExample-vtk-c++ -i ../examples/data/inputData.vtu
-      if [ ! -f curve.vtk ] || [ ! -f separatrices.vtu ] || [ ! -f segmentation.vtu ] ; then
+      if [ ! -f curve.vtk ] || [ ! -f separatrices.vtp ] || [ ! -f segmentation.vtu ] ; then
         exit 1
       fi
     workingDirectory: 'build-example-vtk/'
@@ -324,7 +324,7 @@ jobs:
   - script: |
       export PYTHONPATH=$(Build.ArtifactStagingDirectory)/ttk-install/lib/python3.6/site-packages
       $(Build.ArtifactStagingDirectory)/pv-install/bin/pvpython ./example.py ../data/inputData.vtu
-      if [ ! -f curve.vtk ] || [ ! -f separatrices.vtu ] || [ ! -f segmentation.vtu ] ; then
+      if [ ! -f curve.vtk ] || [ ! -f separatrices.vtp ] || [ ! -f segmentation.vtu ] ; then
         exit 1
       fi
     workingDirectory: 'examples/python/'
@@ -333,7 +333,7 @@ jobs:
   - script: |
       export PV_PLUGIN_PATH=$(Build.ArtifactStagingDirectory)/ttk-install/bin/plugins
       $(Build.ArtifactStagingDirectory)/pv-install/bin/pvpython ./example.py ../data/inputData.vtu
-      if [ ! -f curve.vtk ] || [ ! -f separatrices.vtu ] || [ ! -f segmentation.vtu ] ; then
+      if [ ! -f curve.vtk ] || [ ! -f separatrices.vtp ] || [ ! -f segmentation.vtu ] ; then
         exit 1
       fi
     workingDirectory: 'examples/pvpython/'
@@ -460,7 +460,7 @@ jobs:
 
   - script: |
       ./ttkExample-vtk-c++ -i ../examples/data/inputData.vtu
-      if [ ! -f curve.vtk ] || [ ! -f separatrices.vtu ] || [ ! -f segmentation.vtu ] ; then
+      if [ ! -f curve.vtk ] || [ ! -f separatrices.vtp ] || [ ! -f segmentation.vtu ] ; then
         exit 1
       fi
     workingDirectory: 'build-example-vtk/'
@@ -470,7 +470,7 @@ jobs:
       export PYTHONPATH=$(Build.ArtifactStagingDirectory)/ttk-install/lib/python3.9/site-packages:$(Build.ArtifactStagingDirectory)/pv-install/lib/python3.9/site-packages
       export DYLD_LIBRARY_PATH=$(Build.ArtifactStagingDirectory)/pv-install/lib:$(Build.ArtifactStagingDirectory)/ttk-install/lib
       $(Build.ArtifactStagingDirectory)/pv-install/bin/pvpython ./example.py ../data/inputData.vtu
-      if [ ! -f curve.vtk ] || [ ! -f separatrices.vtu ] || [ ! -f segmentation.vtu ] ; then
+      if [ ! -f curve.vtk ] || [ ! -f separatrices.vtp ] || [ ! -f segmentation.vtu ] ; then
         exit 1
       fi
     workingDirectory: 'examples/python/'
@@ -480,7 +480,7 @@ jobs:
       export PV_PLUGIN_PATH=$(Build.ArtifactStagingDirectory)/ttk-install/bin/plugins
       export DYLD_LIBRARY_PATH=$(Build.ArtifactStagingDirectory)/pv-install/lib:$(Build.ArtifactStagingDirectory)/ttk-install/lib
       $(Build.ArtifactStagingDirectory)/pv-install/bin/pvpython ./example.py ../data/inputData.vtu
-      if [ ! -f curve.vtk ] || [ ! -f separatrices.vtu ] || [ ! -f segmentation.vtu ] ; then
+      if [ ! -f curve.vtk ] || [ ! -f separatrices.vtp ] || [ ! -f segmentation.vtu ] ; then
         exit 1
       fi
     workingDirectory: 'examples/pvpython/'
@@ -618,7 +618,7 @@ jobs:
 
   - bash: |
       cmd.exe /C 'set PATH=$(Build.ArtifactStagingDirectory)/vtk-install/bin;$(Build.ArtifactStagingDirectory)/ttk-install/bin;%PATH% & ttkExample-vtk-c++.exe -i ../examples/data/inputData.vtu'
-      if [ ! -f curve.vtk ] || [ ! -f separatrices.vtu ] || [ ! -f segmentation.vtu ] ; then
+      if [ ! -f curve.vtk ] || [ ! -f separatrices.vtp ] || [ ! -f segmentation.vtu ] ; then
         exit 1
       fi
     workingDirectory: 'build-example-vtk/'

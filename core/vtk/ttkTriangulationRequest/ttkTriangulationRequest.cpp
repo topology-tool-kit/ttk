@@ -2,8 +2,12 @@
 #include <ttkTriangulationRequest.h>
 #include <ttkUtils.h>
 
-using namespace std;
-using namespace ttk;
+#include <vtkDataArray.h>
+#include <vtkDataSet.h>
+#include <vtkInformation.h>
+#include <vtkNew.h>
+#include <vtkPointData.h>
+#include <vtkUnstructuredGrid.h>
 
 vtkStandardNewMacro(ttkTriangulationRequest);
 
@@ -29,12 +33,12 @@ int ttkTriangulationRequest::RequestData(vtkInformation *request,
                                          vtkInformationVector **inputVector,
                                          vtkInformationVector *outputVector) {
 
-  Timer timer;
+  ttk::Timer timer;
 
   vtkDataSet *input = vtkDataSet::GetData(inputVector[0]);
   vtkUnstructuredGrid *output = vtkUnstructuredGrid::GetData(outputVector);
 
-  Triangulation *triangulation = ttkAlgorithm::GetTriangulation(input);
+  const auto triangulation = ttkAlgorithm::GetTriangulation(input);
   if(!triangulation)
     return 0;
 
@@ -42,21 +46,20 @@ int ttkTriangulationRequest::RequestData(vtkInformation *request,
   const Request requestType = static_cast<Request>(RequestType);
   const Simplex simplexType = static_cast<Simplex>(SimplexType);
 
-  vtkSmartPointer<vtkPoints> points = vtkSmartPointer<vtkPoints>::New();
-  vtkSmartPointer<vtkUnstructuredGrid> cells
-    = vtkSmartPointer<vtkUnstructuredGrid>::New();
+  vtkNew<vtkPoints> points{};
+  vtkNew<vtkUnstructuredGrid> cells{};
 
-  vector<SimplexId> vertices;
+  using ttk::SimplexId;
+
+  std::vector<SimplexId> vertices;
   const SimplexId numberOfVertices = triangulation->getNumberOfVertices();
-  vector<SimplexId> isVisited(numberOfVertices, -1);
+  std::vector<SimplexId> isVisited(numberOfVertices, -1);
 
   this->printMsg(ttk::debug::Separator::L1);
   this->printMsg({
     {"#Threads", std::to_string(this->threadNumber_)},
     {"#Vertices", std::to_string(numberOfVertices)},
   });
-
-  cells->Allocate();
 
   auto addVertex = [&](const SimplexId vertexId) {
     if(vertexId == -1)
@@ -195,9 +198,10 @@ int ttkTriangulationRequest::RequestData(vtkInformation *request,
   switch(requestType) {
     case ComputeSimplex:
       switch(simplexType) {
-        case Vertex:
-          addVertex(SimplexIdentifier);
-          break;
+        case Vertex: {
+          const auto vid = addVertex(SimplexIdentifier);
+          cells->InsertNextCell(VTK_VERTEX, 1, &vid);
+        } break;
 
         case Edge:
           addEdge(SimplexIdentifier);

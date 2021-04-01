@@ -108,18 +108,6 @@
         </Documentation>
       </IntVectorProperty>
 
-      <IntVectorProperty name="IterationThreshold"
-        label="Iteration Threshold"
-        command="SetIterationThreshold"
-        number_of_elements="1"
-        default_values="-1"
-        panel_visibility="advanced">
-        <IntRangeDomain name="range" min="0" max="100" />
-        <Documentation>
-          Iteration threshold.
-        </Documentation>
-      </IntVectorProperty>
-
       ${DEBUG_WIDGETS}
 
       <PropertyGroup panel_widget="Line" label="Input options">
@@ -127,10 +115,6 @@
         <Property name="ForceInputOffsetScalarField"/>
         <Property name="Offset Field"/>
         <Property name="ComputeGradientGlyphs"/>
-      </PropertyGroup>
-
-      <PropertyGroup panel_widget="Line" label="Testing">
-        <Property name="IterationThreshold"/>
       </PropertyGroup>
 
       <OutputPort name="Critical Points" index="0" id="port0"/>

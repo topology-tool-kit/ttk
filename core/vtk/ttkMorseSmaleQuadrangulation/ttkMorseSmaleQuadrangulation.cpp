@@ -5,7 +5,7 @@
 #include <vtkInformation.h>
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
-#include <vtkUnstructuredGrid.h>
+#include <vtkPolyData.h>
 
 vtkStandardNewMacro(ttkMorseSmaleQuadrangulation);
 
@@ -22,7 +22,7 @@ int ttkMorseSmaleQuadrangulation::FillInputPortInformation(
     info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkPointSet");
     return 1;
   } else if(port == 1) { // MSC separatrices
-    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkUnstructuredGrid");
+    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkPolyData");
     return 1;
   } else if(port == 2) { // triangulated domain
     info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
@@ -34,7 +34,7 @@ int ttkMorseSmaleQuadrangulation::FillInputPortInformation(
 int ttkMorseSmaleQuadrangulation::FillOutputPortInformation(
   int port, vtkInformation *info) {
   if(port == 0) {
-    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
+    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkPolyData");
     return 1;
   }
   return 0;
@@ -46,9 +46,9 @@ int ttkMorseSmaleQuadrangulation::RequestData(
   vtkInformationVector *outputVector) {
 
   auto critpoints = vtkPointSet::GetData(inputVector[0]);
-  auto seprs = vtkUnstructuredGrid::GetData(inputVector[1]);
+  auto seprs = vtkPolyData::GetData(inputVector[1]);
   auto domain = vtkDataSet::GetData(inputVector[2]);
-  auto output = vtkUnstructuredGrid::GetData(outputVector);
+  auto output = vtkPolyData::GetData(outputVector);
 
   auto triangulation = ttkAlgorithm::GetTriangulation(domain);
   if(triangulation == nullptr) {
@@ -90,24 +90,10 @@ int ttkMorseSmaleQuadrangulation::RequestData(
     ttkUtils::GetVoidPointer(sepdim), ttkUtils::GetVoidPointer(sepmask),
     ttkUtils::GetVoidPointer(seprsPoints));
 
-#define MSQUAD_EXPLICIT_CALLS(TRIANGL_CASE, TRIANGL_TYPE)                   \
-  case TRIANGL_CASE: {                                                      \
-    const auto tri = static_cast<TRIANGL_TYPE *>(triangulation->getData()); \
-    if(tri != nullptr) {                                                    \
-      res = this->execute<TRIANGL_TYPE>(*tri);                              \
-    }                                                                       \
-    break;                                                                  \
-  }
-
   int res{-1};
-  switch(triangulation->getType()) {
-    MSQUAD_EXPLICIT_CALLS(
-      ttk::Triangulation::Type::EXPLICIT, ttk::ExplicitTriangulation);
-    MSQUAD_EXPLICIT_CALLS(
-      ttk::Triangulation::Type::IMPLICIT, ttk::ImplicitTriangulation);
-    MSQUAD_EXPLICIT_CALLS(
-      ttk::Triangulation::Type::PERIODIC, ttk::PeriodicImplicitTriangulation);
-  }
+  ttkTemplateMacro(
+    triangulation->getType(),
+    res = this->execute(*static_cast<TTK_TT *>(triangulation->getData())););
 
   if(res != 0) {
     this->printWrn("Consider another (eigen) function, persistence threshold "
@@ -118,41 +104,41 @@ int ttkMorseSmaleQuadrangulation::RequestData(
   }
 
   // output points: critical points + generated separatrices middles
-  auto outQuadPoints = vtkSmartPointer<vtkPoints>::New();
+  vtkNew<vtkPoints> outQuadPoints{};
   for(size_t i = 0; i < outputPoints_.size() / 3; i++) {
     outQuadPoints->InsertNextPoint(&outputPoints_[3 * i]);
   }
   output->SetPoints(outQuadPoints);
 
   // quad vertices identifiers
-  auto identifiers = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
+  vtkNew<ttkSimplexIdTypeArray> identifiers{};
   identifiers->SetName(ttk::VertexScalarFieldName);
   ttkUtils::SetVoidArray(
     identifiers, outputPointsIds_.data(), outputPointsIds_.size(), 1);
   output->GetPointData()->AddArray(identifiers);
 
   // quad vertices type
-  auto type = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
+  vtkNew<ttkSimplexIdTypeArray> type{};
   type->SetName("QuadVertType");
   ttkUtils::SetVoidArray(
     type, outputPointsTypes_.data(), outputPointsTypes_.size(), 1);
   output->GetPointData()->AddArray(type);
 
   // quad vertices cells
-  auto cellid = vtkSmartPointer<ttkSimplexIdTypeArray>::New();
+  vtkNew<ttkSimplexIdTypeArray> cellid{};
   cellid->SetName("QuadCellId");
   ttkUtils::SetVoidArray(
     cellid, outputPointsCells_.data(), outputPointsCells_.size(), 1);
   output->GetPointData()->AddArray(cellid);
 
   // vtkCellArray of quadrangle values containing outArray
-  auto cells = vtkSmartPointer<vtkCellArray>::New();
-  for(size_t i = 0; i < outputCells_.size() / 5; i++) {
-    cells->InsertNextCell(4, &outputCells_[5 * i + 1]);
+  vtkNew<vtkCellArray> cells{};
+  for(size_t i = 0; i < outputCells_.size(); i++) {
+    cells->InsertNextCell(4, outputCells_[i].data());
   }
 
   // update output: get quadrangle values
-  output->SetCells(VTK_QUAD, cells);
+  output->SetPolys(cells);
 
   // shallow copy input field data
   output->GetFieldData()->ShallowCopy(domain->GetFieldData());

@@ -19,9 +19,9 @@
 /// \param Input Input scalar field, defined as a point data scalar field
 /// attached to a geometry, either 2D or 3D, either regular grid or
 /// triangulation (vtkDataSet)
-/// \param Output0 Output critical points (vtkUnstructuredGrid)
-/// \param Output1 Output 1-separatrices (vtkUnstructuredGrid)
-/// \param Output2 Output 2-separatrices (vtkUnstructuredGrid)
+/// \param Output0 Output critical points (vtkPolyData)
+/// \param Output1 Output 1-separatrices (vtkPolyData)
+/// \param Output2 Output 2-separatrices (vtkPolyData)
 /// \param Output3 Output data segmentation (vtkDataSet)
 ///
 /// The input data array needs to be specified via the standard VTK call
@@ -60,7 +60,7 @@
 #include <MorseSmaleComplex.h>
 #include <ttkAlgorithm.h>
 
-class vtkUnstructuredGrid;
+class vtkPolyData;
 
 class TTKMORSESMALECOMPLEX_EXPORT ttkMorseSmaleComplex
   : public ttkAlgorithm,
@@ -114,9 +114,9 @@ protected:
   template <typename scalarType, typename triangulationType>
   int dispatch(vtkDataArray *const inputScalars,
                vtkDataArray *const inputOffsets,
-               vtkUnstructuredGrid *const outputCriticalPoints,
-               vtkUnstructuredGrid *const outputSeparatrices1,
-               vtkUnstructuredGrid *const outputSeparatrices2,
+               vtkPolyData *const outputCriticalPoints,
+               vtkPolyData *const outputSeparatrices1,
+               vtkPolyData *const outputSeparatrices2,
                const triangulationType &triangulation);
 
   ttkMorseSmaleComplex();
@@ -143,7 +143,7 @@ private:
   double SaddleConnectorsPersistenceThreshold{0.0};
 
   // critical points
-  std::vector<float> criticalPoints_points{};
+  std::vector<std::array<float, 3>> criticalPoints_points{};
   std::vector<char> criticalPoints_points_cellDimensions{};
   std::vector<ttk::SimplexId> criticalPoints_points_cellIds{};
   std::vector<char> criticalPoints_points_isOnBoundary{};

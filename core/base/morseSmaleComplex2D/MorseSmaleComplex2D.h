@@ -137,24 +137,19 @@ int ttk::MorseSmaleComplex2D::execute(const triangulationType &triangulation) {
     }
   }
 
-  if(outputCriticalPoints_numberOfPoints_ and outputCriticalPoints_points_) {
+  if(outputCriticalPoints_points_ != nullptr) {
     std::vector<size_t> nCriticalPointsByDim{};
-    discreteGradient_.setCriticalPoints<dataType>(
-      criticalPoints, nCriticalPointsByDim, triangulation);
-
-    discreteGradient_.fetchOutputCriticalPoints(
-      outputCriticalPoints_numberOfPoints_, outputCriticalPoints_points_,
-      outputCriticalPoints_points_cellDimensions_,
-      outputCriticalPoints_points_cellIds_,
-      outputCriticalPoints_points_isOnBoundary_,
-      outputCriticalPoints_points_PLVertexIdentifiers_);
+    discreteGradient_.setCriticalPoints(
+      criticalPoints, nCriticalPointsByDim, *outputCriticalPoints_points_,
+      *outputCriticalPoints_points_cellDimensions_,
+      *outputCriticalPoints_points_cellIds_,
+      *outputCriticalPoints_points_isOnBoundary_,
+      *outputCriticalPoints_points_PLVertexIdentifiers_, triangulation);
 
     if(ascendingManifold and descendingManifold) {
-      discreteGradient_.setManifoldSize(criticalPoints, nCriticalPointsByDim,
-                                        maxSeeds, ascendingManifold,
-                                        descendingManifold);
-      discreteGradient_.fetchOutputManifoldSize(
-        outputCriticalPoints_points_manifoldSize_);
+      discreteGradient_.setManifoldSize(
+        criticalPoints, nCriticalPointsByDim, maxSeeds, ascendingManifold,
+        descendingManifold, *outputCriticalPoints_points_manifoldSize_);
     }
   }
 
