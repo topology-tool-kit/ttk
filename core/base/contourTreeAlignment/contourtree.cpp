@@ -1,4 +1,5 @@
 #include "contourtree.h"
+#include <algorithm>
 #include <cmath>
 #include <float.h>
 
@@ -7,7 +8,8 @@ ContourTree::ContourTree(float *scalars,
                          int *segmentationIds,
                          long long *topology,
                          size_t nVertices,
-                         size_t nEdges) {
+                         size_t nEdges,
+                         std::vector<std::vector<int>> regions) {
 
   nodes = std::vector<std::shared_ptr<CTNode>>();
   arcs = std::vector<std::shared_ptr<CTEdge>>();
@@ -31,6 +33,11 @@ ContourTree::ContourTree(float *scalars,
     std::shared_ptr<CTEdge> edge(new CTEdge);
     edge->area = regionSizes[i];
     edge->segId = segmentationIds[i];
+    if(!regions.empty())
+      edge->region = regions[segmentationIds[i]];
+    std::sort(edge->region.begin(), edge->region.end());
+    // if(!regions.empty()) std::cout << regionSizes[i] << " " <<
+    // regions[segmentationIds[i]].size() << std::endl;
     edge->node1Idx = topology[j + 0];
     nodes[topology[j + 0]]->edgeList.push_back(i);
     edge->node2Idx = topology[j + 1];
@@ -201,10 +208,12 @@ std::shared_ptr<BinaryTree> ContourTree::computeRootedTree_binary(
     t->scalardistanceParent = 10000;
     t->area = 10000;
     t->volume = 10000;
+    t->region = std::vector<int>(1, -1);
   } else {
     t->scalardistanceParent = parent->scalardistance;
     t->area = parent->area;
     t->volume = t->scalardistanceParent * parent->area;
+    t->region = parent->region;
   }
 
   return t;

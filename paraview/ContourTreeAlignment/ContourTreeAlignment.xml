@@ -85,7 +85,7 @@
                 number_of_elements="5"
                 default_values="2 0 0 1 SegmentationId"
                 animateable="0"
-                label="Segmentation ID array"
+                label="Segmentation ID array for CT"
                 >
                 <ArrayListDomain
                     name="seg_list"
@@ -98,6 +98,28 @@
                 </ArrayListDomain>
                 <Documentation>
                     The cell array for the segmentation ids of arcs.
+                </Documentation>
+            </StringVectorProperty>
+
+            <StringVectorProperty
+                name="SegmentationArray"
+                command="SetInputArrayToProcess"
+                element_types="0 0 0 0 2"
+                number_of_elements="5"
+                default_values="3 0 0 0 SegmentationId"
+                animateable="0"
+                label="Segment ID array for segmentation"
+                >
+                <ArrayListDomain
+                    name="segseg_list"
+                    attribute_type="Scalars"
+                    input_domain_name="input_array">
+                    <RequiredProperties>
+                        <Property name="Input" function="Input" />
+                    </RequiredProperties>
+                </ArrayListDomain>
+                <Documentation>
+                    The point array for the segment ids of points in segmentation.
                 </Documentation>
             </StringVectorProperty>
 
@@ -146,6 +168,7 @@
           		    <Entry value="0" text="persistence"/>
           		    <Entry value="1" text="area"/>
           		    <Entry value="2" text="volume"/>
+          		    <Entry value="3" text="overlap"/>
         	    </EnumerationDomain>
         	    <Documentation>
           		    This property indicates which arc property will be used for matching.

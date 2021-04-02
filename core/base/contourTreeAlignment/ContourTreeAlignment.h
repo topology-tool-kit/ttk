@@ -32,7 +32,7 @@
 
 enum Type_Alignmenttree { averageValues, medianValues, lastMatchedValue };
 // enum Type_Match { matchNodes, matchArcs };
-enum Mode_ArcMatch { persistence, area, volume };
+enum Mode_ArcMatch { persistence, area, volume, overlap };
 
 struct AlignmentTree {
   std::shared_ptr<AlignmentTree> child1;
@@ -60,11 +60,12 @@ struct AlignmentNode {
 
 struct AlignmentEdge {
 
-  std::shared_ptr<AlignmentNode> node1;
-  std::shared_ptr<AlignmentNode> node2;
+  std::weak_ptr<AlignmentNode> node1;
+  std::weak_ptr<AlignmentNode> node2;
   float scalardistance;
   float area;
   float volume;
+  std::vector<int> region;
   int freq;
 
   std::vector<std::pair<int, int>> arcRefs;
@@ -112,6 +113,8 @@ namespace ttk {
                 const vector<long long *> &topologies,
                 const vector<size_t> &nVertices,
                 const vector<size_t> &nEdges,
+                const vector<int *> &segmentations,
+                const vector<size_t> &segsizes,
 
                 vector<float> &outputVertices,
                 vector<long long> &outputFrequencies,
@@ -225,6 +228,8 @@ int ttk::ContourTreeAlignment::execute(const vector<void *> &scalarsVP,
                                        const vector<long long *> &topologies,
                                        const vector<size_t> &nVertices,
                                        const vector<size_t> &nEdges,
+                                       const vector<int *> &segmentations,
+                                       const vector<size_t> &segsizes,
                                        vector<float> &outputVertices,
                                        vector<long long> &outputFrequencies,
                                        vector<long long> &outputVertexIds,
@@ -281,6 +286,37 @@ int ttk::ContourTreeAlignment::execute(const vector<void *> &scalarsVP,
     this->printMsg(tableLines, debug::Priority::VERBOSE);
   }
 
+  std::vector<std::vector<std::vector<int>>> segRegions;
+  if(!segsizes.empty()) {
+    for(size_t i = 0; i < nTrees; i++) {
+      int maxSegId = -1;
+      std::vector<int> seg(segsizes[i]);
+      for(size_t j = 0; j < segsizes[i]; j++) {
+        maxSegId = std::max(maxSegId, segmentations[i][j]);
+        seg[j] = segmentations[i][j];
+      }
+      std::vector<std::vector<int>> reg(maxSegId + 1);
+      for(size_t j = 0; j < segsizes[i]; j++) {
+        reg[segmentations[i][j]].push_back(j);
+      }
+      segRegions.push_back(reg);
+    }
+    for(size_t i = 0; i < nTrees; i++) {
+      int sum = 0;
+      for(auto seg : segRegions[i]) {
+        sum += seg.size();
+      }
+      this->printMsg("Tree " + std::to_string(i)
+                     + ", sum of segment sizes: " + std::to_string(sum));
+      sum = 0;
+      for(size_t j = 0; j < nEdges[i]; j++) {
+        sum += regionSizes[i][j];
+      }
+      this->printMsg("Tree " + std::to_string(i)
+                     + ", sum of region sizes: " + std::to_string(sum));
+    }
+  }
+
   // prepare data structures
   contourtrees = std::vector<std::shared_ptr<ContourTree>>();
   nodes = std::vector<std::shared_ptr<AlignmentNode>>();
@@ -330,7 +366,8 @@ int ttk::ContourTreeAlignment::execute(const vector<void *> &scalarsVP,
     std::shared_ptr<ContourTree> ct(new ContourTree(
       scalars[permutation[i]], regionSizes[permutation[i]],
       segmentationIds[permutation[i]], topologies[permutation[i]],
-      nVertices[permutation[i]], nEdges[permutation[i]]));
+      nVertices[permutation[i]], nEdges[permutation[i]],
+      segRegions.empty() ? std::vector<std::vector<int>>() : segRegions[i]));
     if(ct->isBinary()) {
       contourtreesToAlign.push_back(ct);
     } else {
@@ -453,11 +490,11 @@ int ttk::ContourTreeAlignment::execute(const vector<void *> &scalarsVP,
     int i = 0;
     for(std::shared_ptr<AlignmentNode> node : nodes) {
 
-      if(node == edge->node1) {
+      if(node == edge->node1.lock()) {
         outputEdges.push_back(i);
       }
 
-      if(node == edge->node2) {
+      if(node == edge->node2.lock()) {
         outputEdges.push_back(i);
       }
 

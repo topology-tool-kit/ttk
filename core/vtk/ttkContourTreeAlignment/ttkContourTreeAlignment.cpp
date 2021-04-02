@@ -79,17 +79,35 @@ int ttkContourTreeAlignment::RequestData(vtkInformation *request,
   vector<void *> scalars(n); // scalar type will be determined dynamically
   vector<int *> regionSizes(n);
   vector<int *> segmentationIds(n);
+  vector<int *> segmentations;
+  vector<size_t> segSizes;
   vector<long long *> topologies(n);
   vector<size_t> nVertices(n);
   vector<size_t> nEdges(n);
 
   for(size_t i = 0; i < n; i++) {
     auto contourTree = vtkUnstructuredGrid::SafeDownCast(inputMB->GetBlock(i));
+    vtkDataSet *segmentation = nullptr;
 
     if(!contourTree) {
-      this->printErr("block " + std::to_string(i)
-                     + " is not an unstructured grid.");
-      return 0;
+      auto pair = vtkMultiBlockDataSet::SafeDownCast(inputMB->GetBlock(i));
+
+      if(!pair || pair->GetNumberOfBlocks() != 2) {
+        this->printErr("block " + std::to_string(i)
+                       + " is not an unstructured grid or a pair of "
+                         "unstructured grid and segmentation.");
+        return 0;
+      }
+
+      contourTree = vtkUnstructuredGrid::SafeDownCast(pair->GetBlock(0));
+      segmentation = vtkDataSet::SafeDownCast(pair->GetBlock(1));
+
+      if(!contourTree) {
+        this->printErr("block " + std::to_string(i)
+                       + " is not an unstructured grid or a pair of "
+                         "unstructured grid and segmentation.");
+        return 0;
+      }
     }
 
     this->printMsg("Block " + std::to_string(i) + " read from multiblock.",
@@ -113,7 +131,7 @@ int ttkContourTreeAlignment::RequestData(vtkInformation *request,
     }
     auto scalarArray = this->GetInputArrayToProcess(0, contourTree);
     if(!scalarArray) {
-      printErr("No Point Array \"Scalar\" found.");
+      printErr("No Point Array \"Scalar\" found in contour tree.");
       return 0;
     }
     scalars[i] = ttkUtils::GetVoidPointer(scalarArray);
@@ -131,7 +149,7 @@ int ttkContourTreeAlignment::RequestData(vtkInformation *request,
     }
     auto regionArray = this->GetInputArrayToProcess(1, contourTree);
     if(!regionArray) {
-      printErr("No Cell Array \"RegionSize\" found.");
+      printErr("No Cell Array \"RegionSize\" found in contour tree.");
       return 0;
     }
     regionSizes[i] = (int *)ttkUtils::GetVoidPointer(regionArray);
@@ -145,12 +163,27 @@ int ttkContourTreeAlignment::RequestData(vtkInformation *request,
     }
     auto segArray = this->GetInputArrayToProcess(2, contourTree);
     if(!segArray) {
-      printErr("No Cell Array \"SegmentationId\" found.");
+      printErr("No Cell Array \"SegmentationId\" found in contour tree.");
       return 0;
     }
     segmentationIds[i] = (int *)ttkUtils::GetVoidPointer(segArray);
     this->printMsg(
       "SegmentationId Array read from cell data.", debug::Priority::VERBOSE);
+
+    if(segmentation) {
+      auto segArray_segmentation
+        = this->GetInputArrayToProcess(3, segmentation);
+      // auto segArray_segmentation =
+      // segmentation->GetPointData()->GetArray("SegmentationId");
+      if(!segArray_segmentation) {
+        printErr("No Cell Array \"SegmentationId\" found in segmentation.");
+        return 0;
+      }
+      segmentations.push_back(
+        (int *)ttkUtils::GetVoidPointer(segArray_segmentation));
+      this->printMsg("Segmentation read.", debug::Priority::VERBOSE);
+      segSizes.push_back(segArray_segmentation->GetNumberOfValues());
+    }
 
     auto cells = contourTree->GetCells();
     auto cellSizes
@@ -178,6 +211,10 @@ int ttkContourTreeAlignment::RequestData(vtkInformation *request,
   if(this->debugLevel_ < static_cast<int>(debug::Priority::VERBOSE)) {
     this->printMsg(
       "Extracting topologies for " + std::to_string(n) + " trees", 1);
+  }
+
+  for(auto s : segSizes) {
+    this->printMsg(std::to_string(s));
   }
 
   this->printMsg("Starting alignment computation.");
@@ -208,6 +245,7 @@ int ttkContourTreeAlignment::RequestData(vtkInformation *request,
     vtkTemplateMacro({
       success = this->execute<VTK_TT>(
         scalars, regionSizes, segmentationIds, topologies, nVertices, nEdges,
+        segmentations, segSizes,
 
         outputVertices, outputFrequencies, outputVertexIds, outputBranchIds,
         outputSegmentationIds, outputArcIds, outputEdges,

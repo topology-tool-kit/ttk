@@ -43,6 +43,7 @@ struct BinaryTree {
   float area;
   float volume;
   float scalarValue;
+  std::vector<int> region;
 
   // for fuzzy trees
   int freq;
@@ -73,6 +74,7 @@ struct CTEdge {
   int node2Idx;
   float scalardistance;
   float area;
+  std::vector<int> region;
   float volume;
   int segId;
 };
@@ -89,7 +91,9 @@ public:
               int *segmentationIds,
               long long *topology,
               size_t nVertices,
-              size_t nEdges);
+              size_t nEdges,
+              std::vector<std::vector<int>> regions
+              = std::vector<std::vector<int>>());
   ~ContourTree();
 
   std::shared_ptr<BinaryTree> rootAtMax();
