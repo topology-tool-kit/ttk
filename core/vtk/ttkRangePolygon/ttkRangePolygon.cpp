@@ -22,6 +22,9 @@ ttkRangePolygon::ttkRangePolygon() {
   this->SetNumberOfOutputPorts(1);
 
   setDebugMsgPrefix("RangePolygon");
+
+  vtkWarningMacro("`TTK RangePolygon' is now deprecated. Please use instead "
+                  "`Poly Line Source' followed by `Resample With Dataset'.");
 }
 
 ttkRangePolygon::~ttkRangePolygon() {
