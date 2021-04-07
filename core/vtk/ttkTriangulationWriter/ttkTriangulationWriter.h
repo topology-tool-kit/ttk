@@ -34,8 +34,6 @@ protected:
   // Regular writer management.
   ttkTriangulationWriter();
   int FillInputPortInformation(int port, vtkInformation *info) override;
-  int writeImageData(vtkDataObject *);
-  int writeUnstructuredGrid(vtkDataObject *);
 
   int OpenFile();
 
