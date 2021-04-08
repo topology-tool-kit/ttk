@@ -493,10 +493,26 @@ int ExplicitTriangulation::writeToFile(std::ofstream &stream) const {
   const auto nVerts = this->getNumberOfVertices();
   writeBin(stream, nVerts);
   // 5. number of edges (SimplexId)
-  const auto nEdges = this->getNumberOfEdges();
+  const auto edgesNumber = [this, dim]() -> SimplexId {
+    if(dim == 1) {
+      return this->getNumberOfCells();
+    } else if(dim > 1) {
+      return this->edgeList_.size();
+    }
+    return 0;
+  };
+  const auto nEdges = edgesNumber();
   writeBin(stream, nEdges);
   // 6. number of triangles (SimplexId, 0 in 1D)
-  const auto nTriangles = dim > 1 ? this->getNumberOfTriangles() : 0;
+  const auto trianglesNumber = [this, dim]() -> SimplexId {
+    if(dim == 2) {
+      return this->getNumberOfCells();
+    } else if(dim == 3) {
+      return this->triangleList_.size();
+    }
+    return 0;
+  };
+  const auto nTriangles = trianglesNumber();
   writeBin(stream, nTriangles);
   // 7. number of tetrahedron (SimplexId, 0 in 2D)
   const auto nTetras = dim > 2 ? this->getNumberOfCells() : 0;
