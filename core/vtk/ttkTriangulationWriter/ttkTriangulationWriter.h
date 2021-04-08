@@ -1,11 +1,11 @@
 /// \ingroup vtk
 /// \class ttkTriangulationWriter
 /// \author Pierre Guillou <pierre.guillou@lip6.fr>
-/// \date July 2020
-/// \brief ttkTriangulationWriter - Dipha Image Data Format Writer
+/// \date April 2021
+/// \brief ttkTriangulationWriter - Explicit Triangulation Writer
 ///
-/// Writes a Dipha Cubical Complex file from a VTK Image Data or a
-/// Dipha Explicit Complex from a VTK Unstructured Grid dataset
+/// Writes the internal state of an Explicit Triangulation to disk to
+/// skip preconditioning when loaded with \sa ttkTriangulationReader
 
 #pragma once
 
