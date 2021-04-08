@@ -570,3 +570,139 @@ int ExplicitTriangulation::writeToFile(std::ofstream &stream) const {
 
   return 0;
 }
+
+template <typename T>
+void readBin(std::ifstream &stream, T &res) {
+  stream.read(reinterpret_cast<char *>(&res), sizeof(res));
+}
+
+template <typename T>
+void readBinArray(std::ifstream &stream, T *res, size_t size) {
+  stream.read(reinterpret_cast<char *>(res), size * sizeof(T));
+}
+
+int ExplicitTriangulation::readFromFile(std::ifstream &stream) {
+
+  // 1. magic bytes (char *)
+  const auto magicBytesLen = std::strlen(this->magicBytes_);
+  std::vector<char> mBytes(magicBytesLen + 1);
+  stream.read(mBytes.data(), magicBytesLen);
+  const auto hasMagicBytes = std::strcmp(mBytes.data(), this->magicBytes_) == 0;
+  if(!hasMagicBytes) {
+    this->printErr("Could not find magic bytes in input files!");
+    this->printErr("Aborting...");
+    return 0;
+  }
+  // 2. format version (unsigned long)
+  unsigned long version{};
+  readBin(stream, version);
+  if(version != this->formatVersion_) {
+    this->printWrn("File format version (" + std::to_string(version)
+                   + ") and software version ("
+                   + std::to_string(this->formatVersion_) + ") are different!");
+  }
+
+  int dim{};
+  SimplexId nVerts{}, nEdges{}, nTriangles{}, nTetras{};
+
+  // 3. dimensionality (int)
+  readBin(stream, dim);
+  // 4. number of vertices (SimplexId)
+  readBin(stream, nVerts);
+  // 5. number of edges (SimplexId)
+  readBin(stream, nEdges);
+  // 6. number of triangles (SimplexId, 0 in 1D)
+  readBin(stream, nTriangles);
+  // 7. number of tetrahedron (SimplexId, 0 in 2D)
+  readBin(stream, nTetras);
+
+  if(dim != this->getDimensionality()) {
+    this->printErr("Incorrect dimension!");
+    return 0;
+  }
+  if(nVerts != this->getNumberOfVertices()) {
+    this->printErr("Incorrect number of vertices!");
+    return 0;
+  }
+  if((dim == 2 && nTriangles != this->getNumberOfCells())
+     || (dim == 3 && nTetras != this->getNumberOfCells())) {
+    this->printErr("Incorrect number of cells!");
+    return 0;
+  }
+
+  // resize buffers
+  this->edgeList_.resize(nEdges);
+  this->triangleList_.resize(nTriangles);
+  this->triangleEdgeList_.resize(nTriangles);
+  this->tetraEdgeList_.resize(nTetras);
+  this->tetraTriangleList_.resize(nTetras);
+
+  // fixed-size arrays (in AbstractTriangulation.h)
+
+  // 8. edgeList (SimplexId array)
+  readBinArray(stream, this->edgeList_.data(), nEdges);
+  // 9. triangleList (SimplexId array)
+  readBinArray(stream, this->triangleList_.data(), nTriangles);
+  // 10. triangleEdgeList (SimplexId array)
+  readBinArray(stream, this->triangleEdgeList_.data(), nTriangles);
+  // 11. tetraEdgeList (SimplexId array)
+  readBinArray(stream, this->tetraEdgeList_.data(), nTetras);
+  // 12. tetraTriangleList (SimplexId array)
+  readBinArray(stream, this->tetraTriangleList_.data(), nTetras);
+
+  // variable-size arrays (FlagJaggedArrays in ExplicitTriangulation.h)
+
+  const auto read_variable
+    = [&stream](FlatJaggedArray &arr, const SimplexId n_items) {
+        std::vector<SimplexId> offsets{}, data{};
+        offsets.resize(n_items + 1);
+        readBinArray(stream, offsets.data(), offsets.size());
+        data.resize(offsets.back());
+        readBinArray(stream, data.data(), data.size());
+        arr.setData(std::move(data), std::move(offsets));
+      };
+
+  // 13. vertexNeighbors (SimplexId array, offsets then data)
+  read_variable(this->vertexNeighborData_, nVerts);
+  // 14. cellNeighbors (SimplexId array, offsets then data)
+  read_variable(this->cellNeighborData_, this->getNumberOfCells());
+  // 15. vertexEdges (SimplexId array, offsets then data)
+  read_variable(this->vertexEdgeData_, nVerts);
+  // 16. edgeTriangles (SimplexId array, offsets then data)
+  read_variable(this->edgeTriangleData_, nEdges);
+  // 17. vertexStars (SimplexId array, offsets then data)
+  read_variable(this->vertexStarData_, nVerts);
+  // 18. edgeStars (SimplexId array, offsets then data)
+  read_variable(this->edgeStarData_, nEdges);
+  // 19. triangleStars (SimplexId array, offsets then data)
+  read_variable(this->triangleStarData_, nTriangles);
+  // 20. vertexLinks (SimplexId array, offsets then data)
+  read_variable(this->vertexLinkData_, nVerts);
+  // 21. edgeLinks (SimplexId array, offsets then data)
+  read_variable(this->edgeLinkData_, nEdges);
+  // 22. triangleLinks (SimplexId array, offsets then data)
+  read_variable(this->triangleLinkData_, nTriangles);
+
+  // resize more buffers
+  this->boundaryVertices_.resize(nVerts);
+  this->boundaryEdges_.resize(nEdges);
+  this->boundaryTriangles_.resize(nTriangles);
+
+  const auto read_bool
+    = [&stream](std::vector<bool> &arr, const SimplexId n_items) {
+        for(SimplexId i = 0; i < n_items; ++i) {
+          char b{};
+          stream.read(&b, sizeof(b));
+          arr[i] = static_cast<bool>(b);
+        }
+      };
+
+  // 23. boundary vertices (bool array)
+  read_bool(this->boundaryVertices_, nVerts);
+  // 24. boundary edges (bool array)
+  read_bool(this->boundaryEdges_, nEdges);
+  // 25. boundary triangles (bool array)
+  read_bool(this->boundaryTriangles_, nTriangles);
+
+  return 0;
+}

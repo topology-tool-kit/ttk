@@ -606,6 +606,12 @@ namespace ttk {
      * Use a custom binary format for fast loading
      */
     int writeToFile(std::ofstream &stream) const;
+    /**
+     * @brief Read from disk into internal state
+     *
+     * Use a custom binary format for fast loading
+     */
+    int readFromFile(std::ifstream &stream);
 
   private:
     bool doublePrecision_;
