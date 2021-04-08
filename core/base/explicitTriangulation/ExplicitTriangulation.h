@@ -600,6 +600,13 @@ namespace ttk {
       return 0;
     }
 
+    /**
+     * @brief Write internal state to disk
+     *
+     * Use a custom binary format for fast loading
+     */
+    int writeToFile(std::ofstream &stream) const;
+
   private:
     bool doublePrecision_;
     SimplexId cellNumber_, vertexNumber_;
@@ -618,5 +625,11 @@ namespace ttk {
     FlatJaggedArray vertexLinkData_{};
     FlatJaggedArray edgeLinkData_{};
     FlatJaggedArray triangleLinkData_{};
+
+    // Char array that identifies the file format.
+    const char *magicBytes_{"TTKTriangulationFileFormat"};
+    // Current version of the file format. To be incremented at every
+    // breaking change to keep backward compatibility.
+    const unsigned long formatVersion_{1};
   };
 } // namespace ttk

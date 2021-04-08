@@ -3,6 +3,7 @@
 #include <ThreeSkeleton.h>
 #include <TwoSkeleton.h>
 #include <ZeroSkeleton.h>
+#include <cstring>
 
 using namespace ttk;
 
@@ -465,6 +466,106 @@ int ExplicitTriangulation::preconditionVertexTrianglesInternal() {
 
     twoSkeleton.buildVertexTriangles(
       vertexNumber_, triangleList_, vertexTriangleData_);
+  }
+
+  return 0;
+}
+
+template <typename T>
+void writeBin(std::ofstream &stream, const T var) {
+  stream.write(reinterpret_cast<const char *>(&var), sizeof(var));
+}
+
+int ExplicitTriangulation::writeToFile(std::ofstream &stream) const {
+
+  // 1. magic bytes (char *)
+  stream.write(this->magicBytes_, std::strlen(this->magicBytes_));
+  // 2. format version (unsigned long)
+  writeBin(stream, this->formatVersion_);
+  // 3. dimensionality (int)
+  const auto dim = this->getDimensionality();
+  writeBin(stream, dim);
+  // 4. number of vertices (SimplexId)
+  const auto nVerts = this->getNumberOfVertices();
+  writeBin(stream, nVerts);
+  // 5. number of edges (SimplexId)
+  const auto nEdges = this->getNumberOfEdges();
+  writeBin(stream, nEdges);
+  // 6. number of triangles (SimplexId, 0 in 1D)
+  const auto nTriangles = dim > 1 ? this->getNumberOfTriangles() : 0;
+  writeBin(stream, nTriangles);
+  // 7. number of tetrahedron (SimplexId, 0 in 2D)
+  const auto nTetras = dim > 2 ? this->getNumberOfCells() : 0;
+  writeBin(stream, nTetras);
+
+  // only write buffers oustside this->cellArray_ (cellVertex, vertexCoords),
+  // those ones will be provided by VTK
+
+  // fixed-size arrays (in AbstractTriangulation.h)
+
+#define WRITE_FIXED(ARRAY)      \
+  for(const auto &it : ARRAY) { \
+    for(const auto el : it) {   \
+      writeBin(stream, el);     \
+    }                           \
+  }
+
+  // 8. edgeList (SimplexId array)
+  WRITE_FIXED(this->edgeList_);
+  // 9. triangleList (SimplexId array)
+  WRITE_FIXED(this->triangleList_);
+  // 10. triangleEdgeList (SimplexId array)
+  WRITE_FIXED(this->triangleEdgeList_);
+  // 11. tetraEdgeList (SimplexId array)
+  WRITE_FIXED(this->tetraEdgeList_);
+  // 12. tetraTriangleList (SimplexId array)
+  WRITE_FIXED(this->tetraTriangleList_);
+
+  // variable-size arrays (FlagJaggedArrays in ExplicitTriangulation.h)
+
+#define WRITE_VARIABLE(ARRAY)                                \
+  for(size_t i = 0; i < ARRAY.subvectorsNumber() + 1; ++i) { \
+    writeBin(stream, ARRAY.offset(i));                       \
+  }                                                          \
+  for(size_t i = 0; i < ARRAY.subvectorsNumber(); ++i) {     \
+    const auto s = ARRAY.size(i);                            \
+    for(SimplexId j = 0; j < s; ++j) {                       \
+      writeBin(stream, ARRAY.get(i, j));                     \
+    }                                                        \
+  }
+
+  // 13. vertexNeighbors (SimplexId array, offsets then data)
+  WRITE_VARIABLE(this->vertexNeighborData_);
+  // 14. cellNeighbors (SimplexId array, offsets then data)
+  WRITE_VARIABLE(this->cellNeighborData_);
+  // 15. vertexEdges (SimplexId array, offsets then data)
+  WRITE_VARIABLE(this->vertexEdgeData_);
+  // 16. edgeTriangles (SimplexId array, offsets then data)
+  WRITE_VARIABLE(this->edgeTriangleData_);
+  // 17. vertexStars (SimplexId array, offsets then data)
+  WRITE_VARIABLE(this->vertexStarData_);
+  // 18. edgeStars (SimplexId array, offsets then data)
+  WRITE_VARIABLE(this->edgeStarData_);
+  // 19. triangleStars (SimplexId array, offsets then data)
+  WRITE_VARIABLE(this->triangleStarData_);
+  // 20. vertexLinks (SimplexId array, offsets then data)
+  WRITE_VARIABLE(this->vertexLinkData_);
+  // 21. edgeLinks (SimplexId array, offsets then data)
+  WRITE_VARIABLE(this->edgeLinkData_);
+  // 22. triangleLinks (SimplexId array, offsets then data)
+  WRITE_VARIABLE(this->triangleLinkData_);
+
+  // 23. boundary vertices (bool array)
+  for(SimplexId i = 0; i < nVerts; ++i) {
+    writeBin(stream, this->boundaryVertices_[i]);
+  }
+  // 24. boundary edges (bool array)
+  for(SimplexId i = 0; i < nEdges; ++i) {
+    writeBin(stream, this->boundaryEdges_[i]);
+  }
+  // 25. boundary triangles (bool array)
+  for(SimplexId i = 0; i < nTriangles; ++i) {
+    writeBin(stream, this->boundaryTriangles_[i]);
   }
 
   return 0;
