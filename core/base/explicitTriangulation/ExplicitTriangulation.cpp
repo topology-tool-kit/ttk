@@ -476,6 +476,10 @@ void writeBin(std::ofstream &stream, const T var) {
   stream.write(reinterpret_cast<const char *>(&var), sizeof(var));
 }
 
+// initialize static member variables
+const char *ExplicitTriangulation::magicBytes_ = "TTKTriangulationFileFormat";
+const unsigned long ExplicitTriangulation::formatVersion_ = 1;
+
 int ExplicitTriangulation::writeToFile(std::ofstream &stream) const {
 
   // 1. magic bytes (char *)
@@ -521,39 +525,40 @@ int ExplicitTriangulation::writeToFile(std::ofstream &stream) const {
   // 12. tetraTriangleList (SimplexId array)
   WRITE_FIXED(this->tetraTriangleList_);
 
-  // variable-size arrays (FlagJaggedArrays in ExplicitTriangulation.h)
+  // variable-size arrays (FlatJaggedArray in ExplicitTriangulation.h)
 
-#define WRITE_VARIABLE(ARRAY)                                \
-  for(size_t i = 0; i < ARRAY.subvectorsNumber() + 1; ++i) { \
-    writeBin(stream, ARRAY.offset(i));                       \
-  }                                                          \
-  for(size_t i = 0; i < ARRAY.subvectorsNumber(); ++i) {     \
-    const auto s = ARRAY.size(i);                            \
-    for(SimplexId j = 0; j < s; ++j) {                       \
-      writeBin(stream, ARRAY.get(i, j));                     \
-    }                                                        \
-  }
+  const auto write_variable = [&stream](const FlatJaggedArray &arr) {
+    for(size_t i = 0; i < arr.subvectorsNumber() + 1; ++i) {
+      writeBin(stream, arr.offset(i));
+    }
+    for(size_t i = 0; i < arr.subvectorsNumber(); ++i) {
+      const auto s = arr.size(i);
+      for(SimplexId j = 0; j < s; ++j) {
+        writeBin(stream, arr.get(i, j));
+      }
+    }
+  };
 
   // 13. vertexNeighbors (SimplexId array, offsets then data)
-  WRITE_VARIABLE(this->vertexNeighborData_);
+  write_variable(this->vertexNeighborData_);
   // 14. cellNeighbors (SimplexId array, offsets then data)
-  WRITE_VARIABLE(this->cellNeighborData_);
+  write_variable(this->cellNeighborData_);
   // 15. vertexEdges (SimplexId array, offsets then data)
-  WRITE_VARIABLE(this->vertexEdgeData_);
+  write_variable(this->vertexEdgeData_);
   // 16. edgeTriangles (SimplexId array, offsets then data)
-  WRITE_VARIABLE(this->edgeTriangleData_);
+  write_variable(this->edgeTriangleData_);
   // 17. vertexStars (SimplexId array, offsets then data)
-  WRITE_VARIABLE(this->vertexStarData_);
+  write_variable(this->vertexStarData_);
   // 18. edgeStars (SimplexId array, offsets then data)
-  WRITE_VARIABLE(this->edgeStarData_);
+  write_variable(this->edgeStarData_);
   // 19. triangleStars (SimplexId array, offsets then data)
-  WRITE_VARIABLE(this->triangleStarData_);
+  write_variable(this->triangleStarData_);
   // 20. vertexLinks (SimplexId array, offsets then data)
-  WRITE_VARIABLE(this->vertexLinkData_);
+  write_variable(this->vertexLinkData_);
   // 21. edgeLinks (SimplexId array, offsets then data)
-  WRITE_VARIABLE(this->edgeLinkData_);
+  write_variable(this->edgeLinkData_);
   // 22. triangleLinks (SimplexId array, offsets then data)
-  WRITE_VARIABLE(this->triangleLinkData_);
+  write_variable(this->triangleLinkData_);
 
   // 23. boundary vertices (bool array)
   for(SimplexId i = 0; i < nVerts; ++i) {

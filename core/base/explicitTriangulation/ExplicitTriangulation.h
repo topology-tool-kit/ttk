@@ -633,9 +633,9 @@ namespace ttk {
     FlatJaggedArray triangleLinkData_{};
 
     // Char array that identifies the file format.
-    const char *magicBytes_{"TTKTriangulationFileFormat"};
+    static const char *magicBytes_;
     // Current version of the file format. To be incremented at every
     // breaking change to keep backward compatibility.
-    const unsigned long formatVersion_{1};
+    static const unsigned long formatVersion_;
   };
 } // namespace ttk
