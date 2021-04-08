@@ -507,11 +507,16 @@ int ExplicitTriangulation::writeToFile(std::ofstream &stream) const {
 
   // fixed-size arrays (in AbstractTriangulation.h)
 
-#define WRITE_FIXED(ARRAY)      \
-  for(const auto &it : ARRAY) { \
-    for(const auto el : it) {   \
-      writeBin(stream, el);     \
-    }                           \
+#define WRITE_FIXED(ARRAY)        \
+  if(ARRAY.empty()) {             \
+    writeBin(stream, char{0});    \
+  } else {                        \
+    writeBin(stream, char{1});    \
+    for(const auto &it : ARRAY) { \
+      for(const auto el : it) {   \
+        writeBin(stream, el);     \
+      }                           \
+    }                             \
   }
 
   // 8. edgeList (SimplexId array)
@@ -527,7 +532,17 @@ int ExplicitTriangulation::writeToFile(std::ofstream &stream) const {
 
   // variable-size arrays (FlatJaggedArray in ExplicitTriangulation.h)
 
+#define WRITE_GUARD(ARRAY)     \
+  if(ARRAY.empty()) {          \
+    writeBin(stream, char{0}); \
+    return;                    \
+  } else {                     \
+    writeBin(stream, char{1}); \
+  }
+
   const auto write_variable = [&stream](const FlatJaggedArray &arr) {
+    // empty array guard
+    WRITE_GUARD(arr);
     for(size_t i = 0; i < arr.subvectorsNumber() + 1; ++i) {
       writeBin(stream, arr.offset(i));
     }
@@ -560,18 +575,21 @@ int ExplicitTriangulation::writeToFile(std::ofstream &stream) const {
   // 22. triangleLinks (SimplexId array, offsets then data)
   write_variable(this->triangleLinkData_);
 
+  const auto write_bool = [&stream](const std::vector<bool> &arr) {
+    // empty array guard
+    WRITE_GUARD(arr);
+    for(size_t i = 0; i < arr.size(); ++i) {
+      const auto b = static_cast<char>(arr[i]);
+      writeBin(stream, b);
+    }
+  };
+
   // 23. boundary vertices (bool array)
-  for(SimplexId i = 0; i < nVerts; ++i) {
-    writeBin(stream, this->boundaryVertices_[i]);
-  }
+  write_bool(this->boundaryVertices_);
   // 24. boundary edges (bool array)
-  for(SimplexId i = 0; i < nEdges; ++i) {
-    writeBin(stream, this->boundaryEdges_[i]);
-  }
+  write_bool(this->boundaryEdges_);
   // 25. boundary triangles (bool array)
-  for(SimplexId i = 0; i < nTriangles; ++i) {
-    writeBin(stream, this->boundaryTriangles_[i]);
-  }
+  write_bool(this->boundaryTriangles_);
 
   return 0;
 }
@@ -635,30 +653,42 @@ int ExplicitTriangulation::readFromFile(std::ifstream &stream) {
     return 0;
   }
 
-  // resize buffers
-  this->edgeList_.resize(nEdges);
-  this->triangleList_.resize(nTriangles);
-  this->triangleEdgeList_.resize(nTriangles);
-  this->tetraEdgeList_.resize(nTetras);
-  this->tetraTriangleList_.resize(nTetras);
-
   // fixed-size arrays (in AbstractTriangulation.h)
 
+  const auto read_guard = [&stream]() {
+    char g{};
+    readBin(stream, g);
+    if(g == 0) {
+      return true;
+    }
+    return false;
+  };
+
+#define READ_FIXED(ARRAY, N_ITEMS)               \
+  if(!read_guard()) {                            \
+    ARRAY.resize(N_ITEMS);                       \
+    readBinArray(stream, ARRAY.data(), N_ITEMS); \
+  }
+
   // 8. edgeList (SimplexId array)
-  readBinArray(stream, this->edgeList_.data(), nEdges);
+  READ_FIXED(this->edgeList_, nEdges);
   // 9. triangleList (SimplexId array)
-  readBinArray(stream, this->triangleList_.data(), nTriangles);
+  READ_FIXED(this->triangleList_, nTriangles);
   // 10. triangleEdgeList (SimplexId array)
-  readBinArray(stream, this->triangleEdgeList_.data(), nTriangles);
+  READ_FIXED(this->triangleEdgeList_, nTriangles);
   // 11. tetraEdgeList (SimplexId array)
-  readBinArray(stream, this->tetraEdgeList_.data(), nTetras);
+  READ_FIXED(this->tetraEdgeList_, nTetras);
   // 12. tetraTriangleList (SimplexId array)
-  readBinArray(stream, this->tetraTriangleList_.data(), nTetras);
+  READ_FIXED(this->tetraTriangleList_, nTetras);
 
   // variable-size arrays (FlagJaggedArrays in ExplicitTriangulation.h)
 
   const auto read_variable
-    = [&stream](FlatJaggedArray &arr, const SimplexId n_items) {
+    = [&stream, &read_guard](FlatJaggedArray &arr, const SimplexId n_items) {
+        // empty array guard
+        if(read_guard()) {
+          return;
+        }
         std::vector<SimplexId> offsets{}, data{};
         offsets.resize(n_items + 1);
         readBinArray(stream, offsets.data(), offsets.size());
@@ -688,13 +718,14 @@ int ExplicitTriangulation::readFromFile(std::ifstream &stream) {
   // 22. triangleLinks (SimplexId array, offsets then data)
   read_variable(this->triangleLinkData_, nTriangles);
 
-  // resize more buffers
-  this->boundaryVertices_.resize(nVerts);
-  this->boundaryEdges_.resize(nEdges);
-  this->boundaryTriangles_.resize(nTriangles);
-
   const auto read_bool
-    = [&stream](std::vector<bool> &arr, const SimplexId n_items) {
+    = [&stream, &read_guard](std::vector<bool> &arr, const SimplexId n_items) {
+        // empty array guard
+        if(read_guard()) {
+          return;
+        }
+        // resize vector
+        arr.resize(n_items);
         for(SimplexId i = 0; i < n_items; ++i) {
           char b{};
           stream.read(&b, sizeof(b));
