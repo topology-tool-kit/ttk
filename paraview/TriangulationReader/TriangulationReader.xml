@@ -1,16 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ServerManagerConfiguration>
-  <ProxyGroup name="sources">
+  <ProxyGroup name="filters">
     <SourceProxy name="ttkTriangulationReader"
                  class="ttkTriangulationReader"
                  label="TTK TriangulationReader">
       <Documentation
           long_help="TTK TriangulationReader"
           short_help="TTK TriangulationReader">
-        This source reads the content of an already preconditioned TTK
+        This filter reads the content of an already preconditioned TTK
         Explicit Triangulation File to import it into the current
         dataset.
       </Documentation>
+
+      <InputProperty
+          name="Input"
+          command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkUnstructuredGrid"/>
+        </DataTypeDomain>
+        <Documentation>
+          Data-set to process.
+        </Documentation>
+      </InputProperty>
 
       <StringVectorProperty name="TriangulationFilePath"
                             label="Triangulation File Path"
@@ -19,9 +34,9 @@
                             number_of_elements="1">
         <Documentation>Path to a TTK Triangulation File.</Documentation>
         <FileListDomain name="files" />
-        <Hints>
-          <UseDirectoryName />
-        </Hints>
+         <Hints>
+           <FileChooser extensions="ttk_tri" file_description="Triangulation files" />
+         </Hints>
       </StringVectorProperty>
 
       <PropertyGroup panel_widget="Line" label="Input Options">
@@ -31,7 +46,7 @@
       ${DEBUG_WIDGETS}
 
       <Hints>
-        <ShowInMenu category="TTK" />
+        <ShowInMenu category="TTK - Domain" />
       </Hints>
     </SourceProxy>
   </ProxyGroup>

@@ -1,43 +1,47 @@
+#include <ExplicitTriangulation.h>
 #include <ttkTriangulationReader.h>
 
+#include <vtkDataObject.h>
 #include <vtkInformation.h>
 #include <vtkObjectFactory.h>
 
-#include <vtkDelimitedTextReader.h>
-#include <vtkFieldData.h>
-#include <vtkSmartPointer.h>
-#include <vtkStringArray.h>
-#include <vtkTable.h>
-
 #include <ttkUtils.h>
+#include <vtkUnstructuredGrid.h>
 
 vtkStandardNewMacro(ttkTriangulationReader);
 
 ttkTriangulationReader::ttkTriangulationReader() {
   this->setDebugMsgPrefix("TriangulationReader");
 
-  this->SetNumberOfInputPorts(0);
+  this->SetNumberOfInputPorts(1);
   this->SetNumberOfOutputPorts(1);
 }
 
-ttkTriangulationReader::~ttkTriangulationReader() {
+int ttkTriangulationReader::FillInputPortInformation(int port,
+                                                     vtkInformation *info) {
+  if(port == 0) {
+    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkUnstructuredGrid");
+    return 1;
+  }
+  return 0;
 }
 
 int ttkTriangulationReader::FillOutputPortInformation(int port,
                                                       vtkInformation *info) {
-  if(port == 0)
-    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkTable");
-  else
-    return 0;
-  return 1;
+  if(port == 0) {
+    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
+    return 1;
+  }
+  return 0;
 }
 
-int ttkTriangulationReader::validateDatabasePath() {
-  if(this->DatabasePath.length() < 4
-     || this->DatabasePath.substr(this->DatabasePath.length() - 4, 4)
-            .compare(".cdb")
+int ttkTriangulationReader::validateFilePath() {
+  if(this->TriangulationFilePath.length() < 8
+     || this->TriangulationFilePath
+            .substr(this->TriangulationFilePath.length() - 8, 8)
+            .compare(".ttk_tri")
           != 0) {
-    this->printErr("Database path has to end with '.cdb'.");
+    this->printErr("Triangulation file path has to end with '.ttk_tri'.");
     return 0;
   }
 
@@ -49,66 +53,33 @@ int ttkTriangulationReader::RequestData(vtkInformation *request,
                                         vtkInformationVector *outputVector) {
   ttk::Timer timer;
 
-  // print input
-  this->printMsg({
-    {"Database", this->GetDatabasePath()},
-    {"FILE Columns", this->GetFilePathColumnNames()},
-  });
-  this->printMsg(ttk::debug::Separator::L1);
+  auto input = vtkUnstructuredGrid::GetData(inputVector[0]);
+  auto output = vtkUnstructuredGrid::GetData(outputVector, 0);
 
-  if(!this->validateDatabasePath())
+  if(input == nullptr || output == nullptr) {
+    this->printErr("Invalid input dataset");
     return 0;
-
-  this->printMsg("Reading CSV file", 0, ttk::debug::LineMode::REPLACE);
-
-  // get output
-  auto outTable = vtkTable::GetData(outputVector);
-
-  // read CSV file which is in Spec D format
-  {
-    auto reader = vtkSmartPointer<vtkDelimitedTextReader>::New();
-    reader->SetFileName((this->GetDatabasePath() + "/data.csv").data());
-    reader->DetectNumericColumnsOn();
-    reader->SetHaveHeaders(true);
-    reader->SetFieldDelimiterCharacters(",");
-    reader->Update();
-
-    if(reader->GetLastError().compare("") != 0)
-      return 0;
-
-    // copy information to output
-    outTable->ShallowCopy(reader->GetOutput());
-
-    // prepend database path to FILE column
-    std::vector<std::string> filePathColumnNames;
-    ttkUtils::stringListToVector(
-      this->GetFilePathColumnNames(), filePathColumnNames);
-
-    for(size_t j = 0; j < filePathColumnNames.size(); j++) {
-      auto filepathColumn = vtkStringArray::SafeDownCast(
-        outTable->GetColumnByName(filePathColumnNames[j].data()));
-      if(filepathColumn) {
-        size_t n = filepathColumn->GetNumberOfValues();
-        for(size_t i = 0; i < n; i++)
-          filepathColumn->SetValue(
-            i, this->GetDatabasePath() + "/" + filepathColumn->GetValue(i));
-      } else {
-        this->printErr("Input table does not have column '"
-                       + filePathColumnNames[j]
-                       + "' or is not of type 'vtkStringArray'.");
-        return 0;
-      }
-    }
-
-    this->printMsg("Reading CSV file", 1, timer.getElapsedTime());
   }
 
-  // print stats
-  this->printMsg(ttk::debug::Separator::L2);
-  this->printMsg(
-    "Complete (#rows: " + std::to_string(outTable->GetNumberOfRows()) + ")", 1,
-    timer.getElapsedTime());
-  this->printMsg(ttk::debug::Separator::L1);
+  output->ShallowCopy(input);
+
+  auto triangulation = ttkAlgorithm::GetTriangulation(input);
+  if(triangulation == nullptr) {
+    this->printErr("Invalid input triangulation");
+    return 0;
+  }
+
+  auto explTri
+    = static_cast<ttk::ExplicitTriangulation *>(triangulation->getData());
+
+  if(!this->validateFilePath()) {
+    return 0;
+  }
+  std::ifstream in(this->TriangulationFilePath);
+  explTri->readFromFile(in);
+
+  this->printMsg("Restored triangulation from " + this->TriangulationFilePath,
+                 1.0, timer.getElapsedTime(), 1);
 
   return 1;
 }
