@@ -47,6 +47,9 @@ void writeBin(std::ofstream &stream, const T var) {
 
 int ttkTriangulationWriter::Write() {
 
+  ttk::Timer tm{};
+  this->setDebugLevel(3);
+
   const auto dataset = vtkDataSet::SafeDownCast(this->GetInput());
   if(dataset == nullptr) {
     this->printErr("Invalid dataset");
@@ -71,6 +74,9 @@ int ttkTriangulationWriter::Write() {
   }
 
   explTri->writeToFile(this->Stream);
+
+  this->printMsg("Wrote triangulation to " + std::string{this->Filename}, 1.0,
+                 tm.getElapsedTime(), 1);
 
   return 0;
 }
