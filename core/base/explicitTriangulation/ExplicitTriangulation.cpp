@@ -576,19 +576,21 @@ int ExplicitTriangulation::writeToFile(std::ofstream &stream) const {
   write_variable(this->cellNeighborData_);
   // 15. vertexEdges (SimplexId array, offsets then data)
   write_variable(this->vertexEdgeData_);
-  // 16. edgeTriangles (SimplexId array, offsets then data)
+  // 16. vertexTriangles (SimplexId array, offsets then data)
+  write_variable(this->vertexTriangleData_);
+  // 17. edgeTriangles (SimplexId array, offsets then data)
   write_variable(this->edgeTriangleData_);
-  // 17. vertexStars (SimplexId array, offsets then data)
+  // 18. vertexStars (SimplexId array, offsets then data)
   write_variable(this->vertexStarData_);
-  // 18. edgeStars (SimplexId array, offsets then data)
+  // 19. edgeStars (SimplexId array, offsets then data)
   write_variable(this->edgeStarData_);
-  // 19. triangleStars (SimplexId array, offsets then data)
+  // 20. triangleStars (SimplexId array, offsets then data)
   write_variable(this->triangleStarData_);
-  // 20. vertexLinks (SimplexId array, offsets then data)
+  // 21. vertexLinks (SimplexId array, offsets then data)
   write_variable(this->vertexLinkData_);
-  // 21. edgeLinks (SimplexId array, offsets then data)
+  // 22. edgeLinks (SimplexId array, offsets then data)
   write_variable(this->edgeLinkData_);
-  // 22. triangleLinks (SimplexId array, offsets then data)
+  // 23. triangleLinks (SimplexId array, offsets then data)
   write_variable(this->triangleLinkData_);
 
   const auto write_bool = [&stream](const std::vector<bool> &arr) {
@@ -600,11 +602,11 @@ int ExplicitTriangulation::writeToFile(std::ofstream &stream) const {
     }
   };
 
-  // 23. boundary vertices (bool array)
+  // 24. boundary vertices (bool array)
   write_bool(this->boundaryVertices_);
-  // 24. boundary edges (bool array)
+  // 25. boundary edges (bool array)
   write_bool(this->boundaryEdges_);
-  // 25. boundary triangles (bool array)
+  // 26. boundary triangles (bool array)
   write_bool(this->boundaryTriangles_);
 
   return 0;
@@ -719,19 +721,21 @@ int ExplicitTriangulation::readFromFile(std::ifstream &stream) {
   read_variable(this->cellNeighborData_, this->getNumberOfCells());
   // 15. vertexEdges (SimplexId array, offsets then data)
   read_variable(this->vertexEdgeData_, nVerts);
-  // 16. edgeTriangles (SimplexId array, offsets then data)
+  // 16. vertexTriangles (SimplexId array, offsets then data)
+  read_variable(this->vertexTriangleData_, nVerts);
+  // 17. edgeTriangles (SimplexId array, offsets then data)
   read_variable(this->edgeTriangleData_, nEdges);
-  // 17. vertexStars (SimplexId array, offsets then data)
+  // 18. vertexStars (SimplexId array, offsets then data)
   read_variable(this->vertexStarData_, nVerts);
-  // 18. edgeStars (SimplexId array, offsets then data)
+  // 19. edgeStars (SimplexId array, offsets then data)
   read_variable(this->edgeStarData_, nEdges);
-  // 19. triangleStars (SimplexId array, offsets then data)
+  // 20. triangleStars (SimplexId array, offsets then data)
   read_variable(this->triangleStarData_, nTriangles);
-  // 20. vertexLinks (SimplexId array, offsets then data)
+  // 21. vertexLinks (SimplexId array, offsets then data)
   read_variable(this->vertexLinkData_, nVerts);
-  // 21. edgeLinks (SimplexId array, offsets then data)
+  // 22. edgeLinks (SimplexId array, offsets then data)
   read_variable(this->edgeLinkData_, nEdges);
-  // 22. triangleLinks (SimplexId array, offsets then data)
+  // 23. triangleLinks (SimplexId array, offsets then data)
   read_variable(this->triangleLinkData_, nTriangles);
 
   const auto read_bool
@@ -749,11 +753,11 @@ int ExplicitTriangulation::readFromFile(std::ifstream &stream) {
         }
       };
 
-  // 23. boundary vertices (bool array)
+  // 24. boundary vertices (bool array)
   read_bool(this->boundaryVertices_, nVerts);
-  // 24. boundary edges (bool array)
+  // 25. boundary edges (bool array)
   read_bool(this->boundaryEdges_, nEdges);
-  // 25. boundary triangles (bool array)
+  // 26. boundary triangles (bool array)
   read_bool(this->boundaryTriangles_, nTriangles);
 
   return 0;
