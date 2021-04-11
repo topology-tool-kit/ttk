@@ -74,6 +74,7 @@ int ttkTriangulationWriter::Write() {
   }
 
   explTri->writeToFile(this->Stream);
+  this->Stream.flush();
 
   this->printMsg("Wrote triangulation to " + std::string{this->Filename}, 1.0,
                  tm.getElapsedTime(), 1);
