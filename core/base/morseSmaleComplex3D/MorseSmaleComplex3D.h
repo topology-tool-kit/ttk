@@ -36,11 +36,6 @@ namespace ttk {
     template <typename dataType, typename triangulationType>
     int execute(const triangulationType &triangulation);
 
-    template <typename dataType>
-    int setAugmentedCriticalPoints(const std::vector<dcg::Cell> &criticalPoints,
-                                   SimplexId *ascendingManifold,
-                                   SimplexId *descendingManifold) const;
-
     /**
      * Compute the descending 1-separatrices by reading into the discrete
      * gradient.
