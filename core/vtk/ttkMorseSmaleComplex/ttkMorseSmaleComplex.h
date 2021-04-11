@@ -161,9 +161,6 @@ private:
   std::vector<ttk::SimplexId> separatrices1_cells_separatrixIds{};
   std::vector<char> separatrices1_cells_separatrixTypes{};
   std::vector<char> separatrices1_cells_isOnBoundary{};
-  std::vector<double> separatrices1_cells_separatrixFunctionMaxima{};
-  std::vector<double> separatrices1_cells_separatrixFunctionMinima{};
-  std::vector<double> separatrices1_cells_separatrixFunctionDiffs{};
 
   // 2-separatrices data
   std::vector<float> separatrices2_points{};
@@ -173,7 +170,4 @@ private:
   std::vector<ttk::SimplexId> separatrices2_cells_separatrixIds{};
   std::vector<char> separatrices2_cells_separatrixTypes{};
   std::vector<char> separatrices2_cells_isOnBoundary{};
-  std::vector<double> separatrices2_cells_separatrixFunctionMaxima{};
-  std::vector<double> separatrices2_cells_separatrixFunctionMinima{};
-  std::vector<double> separatrices2_cells_separatrixFunctionDiffs{};
 };
