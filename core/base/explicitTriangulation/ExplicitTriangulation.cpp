@@ -476,6 +476,13 @@ void writeBin(std::ofstream &stream, const T var) {
   stream.write(reinterpret_cast<const char *>(&var), sizeof(var));
 }
 
+template <typename T>
+void writeBinArray(std::ofstream &stream,
+                   const T *const buff,
+                   const size_t size) {
+  stream.write(reinterpret_cast<const char *>(buff), size * sizeof(T));
+}
+
 // initialize static member variables
 const char *ExplicitTriangulation::magicBytes_ = "TTKTriangulationFileFormat";
 const unsigned long ExplicitTriangulation::formatVersion_ = 1;
@@ -523,16 +530,12 @@ int ExplicitTriangulation::writeToFile(std::ofstream &stream) const {
 
   // fixed-size arrays (in AbstractTriangulation.h)
 
-#define WRITE_FIXED(ARRAY)        \
-  if(ARRAY.empty()) {             \
-    writeBin(stream, char{0});    \
-  } else {                        \
-    writeBin(stream, char{1});    \
-    for(const auto &it : ARRAY) { \
-      for(const auto el : it) {   \
-        writeBin(stream, el);     \
-      }                           \
-    }                             \
+#define WRITE_FIXED(ARRAY)                             \
+  if(ARRAY.empty()) {                                  \
+    writeBin(stream, char{0});                         \
+  } else {                                             \
+    writeBin(stream, char{1});                         \
+    writeBinArray(stream, ARRAY.data(), ARRAY.size()); \
   }
 
   // 8. edgeList (SimplexId array)
@@ -559,15 +562,8 @@ int ExplicitTriangulation::writeToFile(std::ofstream &stream) const {
   const auto write_variable = [&stream](const FlatJaggedArray &arr) {
     // empty array guard
     WRITE_GUARD(arr);
-    for(size_t i = 0; i < arr.subvectorsNumber() + 1; ++i) {
-      writeBin(stream, arr.offset(i));
-    }
-    for(size_t i = 0; i < arr.subvectorsNumber(); ++i) {
-      const auto s = arr.size(i);
-      for(SimplexId j = 0; j < s; ++j) {
-        writeBin(stream, arr.get(i, j));
-      }
-    }
+    writeBinArray(stream, arr.offset_ptr(), arr.subvectorsNumber() + 1);
+    writeBinArray(stream, arr.get_ptr(0, 0), arr.dataSize());
   };
 
   // 13. vertexNeighbors (SimplexId array, offsets then data)
@@ -618,7 +614,7 @@ void readBin(std::ifstream &stream, T &res) {
 }
 
 template <typename T>
-void readBinArray(std::ifstream &stream, T *res, size_t size) {
+void readBinArray(std::ifstream &stream, T *const res, const size_t size) {
   stream.read(reinterpret_cast<char *>(res), size * sizeof(T));
 }
 
