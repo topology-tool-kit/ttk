@@ -88,6 +88,13 @@ namespace ttk {
     }
 
     /**
+     * @brief Returns a const pointer to the offset member
+     */
+    inline const SimplexId *offset_ptr() const {
+      return offsets_.data();
+    }
+
+    /**
      * @brief Returns the number of sub-vectors
      */
     inline size_t subvectorsNumber() const {
