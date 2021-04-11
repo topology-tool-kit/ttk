@@ -369,15 +369,6 @@ saddle-connectors.
       }
 
       /**
-       * Compute the difference of function values of a pair of cells.
-       */
-      template <typename dataType, typename triangulationType>
-      dataType getPersistence(const Cell &up,
-                              const Cell &down,
-                              const dataType *const scalars,
-                              const triangulationType &triangulation) const;
-
-      /**
        * Compute the initial gradient field of the input scalar function on the
 triangulation.
        */
@@ -699,6 +690,15 @@ in the gradient.
       template <typename triangulationType>
       int processLowerStars(const SimplexId *const offsets,
                             const triangulationType &triangulation);
+
+      /**
+       * Compute the difference of function values of a pair of cells.
+       */
+      template <typename dataType, typename triangulationType>
+      dataType getPersistence(const Cell &up,
+                              const Cell &down,
+                              const dataType *const scalars,
+                              const triangulationType &triangulation) const;
 
       /**
        * Get the list of maxima candidates for simplification.
