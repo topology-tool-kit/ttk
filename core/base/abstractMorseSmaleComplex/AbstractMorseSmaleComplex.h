@@ -611,9 +611,9 @@ int ttk::AbstractMorseSmaleComplex::setSeparatrices1(
   if(outputSeparatrices1_cells_separatrixTypes_ != nullptr)
     outputSeparatrices1_cells_separatrixTypes_->resize(ncells);
   if(separatrixFunctionMaxima != nullptr)
-    separatrixFunctionMaxima->resize(ncells);
+    separatrixFunctionMaxima->resize(separatrixId + validGeomIds.size());
   if(separatrixFunctionMinima != nullptr)
-    separatrixFunctionMinima->resize(ncells);
+    separatrixFunctionMinima->resize(separatrixId + validGeomIds.size());
   if(outputSeparatrices1_cells_isOnBoundary_ != nullptr)
     outputSeparatrices1_cells_isOnBoundary_->resize(ncells);
 
@@ -649,6 +649,10 @@ int ttk::AbstractMorseSmaleComplex::setSeparatrices1(
       discreteGradient_.getCellLowerVertex(dst, triangulation)};
     const auto sepFuncMin
       = *std::min_element(lVerts.begin(), lVerts.end(), vertsOrder);
+    if(separatrixFunctionMaxima != nullptr)
+      (*separatrixFunctionMaxima)[sepId] = sepFuncMax;
+    if(separatrixFunctionMinima != nullptr)
+      (*separatrixFunctionMinima)[sepId] = sepFuncMin;
 
     // get boundary condition
     const auto onBoundary
@@ -698,10 +702,6 @@ int ttk::AbstractMorseSmaleComplex::setSeparatrices1(
         (*outputSeparatrices1_cells_separatrixIds_)[l] = sepId;
       if(outputSeparatrices1_cells_separatrixTypes_ != nullptr)
         (*outputSeparatrices1_cells_separatrixTypes_)[l] = sepType;
-      if(separatrixFunctionMaxima != nullptr)
-        (*separatrixFunctionMaxima)[l] = sepFuncMax;
-      if(separatrixFunctionMinima != nullptr)
-        (*separatrixFunctionMinima)[l] = sepFuncMin;
       if(outputSeparatrices1_cells_isOnBoundary_ != nullptr)
         (*outputSeparatrices1_cells_isOnBoundary_)[l] = onBoundary;
     }

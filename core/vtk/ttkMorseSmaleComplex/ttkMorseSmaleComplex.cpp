@@ -302,9 +302,10 @@ int ttkMorseSmaleComplex::dispatch(vtkDataArray *const inputScalars,
 #pragma omp parallel for num_threads(this->threadNumber_)
 #endif // TTK_ENABLE_OPENMP
     for(SimplexId i = 0; i < s1_numberOfCells; ++i) {
+      const auto sepId = separatrices1_cells_separatrixIds[i];
       // inputScalars->GetTuple1 not thread safe...
-      const auto min = scalars[s1_separatrixFunctionMinima[i]];
-      const auto max = scalars[s1_separatrixFunctionMaxima[i]];
+      const auto min = scalars[s1_separatrixFunctionMinima[sepId]];
+      const auto max = scalars[s1_separatrixFunctionMaxima[sepId]];
       separatrixFunctionMinima->SetTuple1(i, min);
       separatrixFunctionMaxima->SetTuple1(i, max);
       separatrixFunctionDiffs->SetTuple1(i, max - min);
@@ -411,9 +412,10 @@ int ttkMorseSmaleComplex::dispatch(vtkDataArray *const inputScalars,
 #pragma omp parallel for num_threads(this->threadNumber_)
 #endif // TTK_ENABLE_OPENMP
     for(SimplexId i = 0; i < s2_numberOfCells; ++i) {
+      const auto sepId = separatrices2_cells_separatrixIds[i];
       // inputScalars->GetTuple1 not thread safe...
-      const auto min = scalars[s2_separatrixFunctionMinima[i]];
-      const auto max = scalars[s2_separatrixFunctionMaxima[i]];
+      const auto min = scalars[s2_separatrixFunctionMinima[sepId]];
+      const auto max = scalars[s2_separatrixFunctionMaxima[sepId]];
       separatrixFunctionMinima->SetTuple1(i, min);
       separatrixFunctionMaxima->SetTuple1(i, max);
       separatrixFunctionDiffs->SetTuple1(i, max - min);

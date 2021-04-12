@@ -223,11 +223,13 @@ int ttk::MorseSmaleComplex3D::setAscendingSeparatrices2(
   }
 
   // store the separatrices info (one per separatrix)
-  std::vector<double> sepFuncMaxs(validGeomIds.size());
-  std::vector<double> sepFuncMins(validGeomIds.size());
   std::vector<SimplexId> sepSourceIds(validGeomIds.size());
   std::vector<SimplexId> sepIds(validGeomIds.size());
   std::vector<char> sepOnBoundary(validGeomIds.size());
+  if(separatrixFunctionMaxima != nullptr)
+    separatrixFunctionMaxima->resize(separatrixId + validGeomIds.size());
+  if(separatrixFunctionMinima != nullptr)
+    separatrixFunctionMinima->resize(separatrixId + validGeomIds.size());
   // store the polygonal cells tetras SimplexId
   std::vector<SimplexId> polygonNTetras(ncells - noldcells);
   std::vector<SimplexId> polygonEdgeIds(ncells - noldcells);
@@ -266,8 +268,10 @@ int ttk::MorseSmaleComplex3D::setAscendingSeparatrices2(
 
     sepIds[i] = sepId;
     sepSourceIds[i] = src.id_;
-    sepFuncMins[i] = sepFuncMin;
-    sepFuncMaxs[i] = sepFuncMax;
+    if(separatrixFunctionMaxima != nullptr)
+      (*separatrixFunctionMaxima)[sepId] = sepFuncMax;
+    if(separatrixFunctionMinima != nullptr)
+      (*separatrixFunctionMinima)[sepId] = sepFuncMin;
     sepOnBoundary[i] = onBoundary;
 
     for(size_t j = 0; j < sepGeom.size(); ++j) {
@@ -349,10 +353,6 @@ int ttk::MorseSmaleComplex3D::setAscendingSeparatrices2(
     outputSeparatrices2_cells_separatrixIds_->resize(ncells);
   if(outputSeparatrices2_cells_separatrixTypes_ != nullptr)
     outputSeparatrices2_cells_separatrixTypes_->resize(ncells);
-  if(separatrixFunctionMaxima != nullptr)
-    separatrixFunctionMaxima->resize(ncells);
-  if(separatrixFunctionMinima != nullptr)
-    separatrixFunctionMinima->resize(ncells);
   if(outputSeparatrices2_cells_isOnBoundary_ != nullptr)
     outputSeparatrices2_cells_isOnBoundary_->resize(ncells);
 
@@ -384,10 +384,6 @@ int ttk::MorseSmaleComplex3D::setAscendingSeparatrices2(
       (*outputSeparatrices2_cells_separatrixIds_)[l] = sepIds[n];
     if(outputSeparatrices2_cells_separatrixTypes_ != nullptr)
       (*outputSeparatrices2_cells_separatrixTypes_)[l] = 1;
-    if(separatrixFunctionMaxima != nullptr)
-      (*separatrixFunctionMaxima)[l] = sepFuncMaxs[n];
-    if(separatrixFunctionMinima != nullptr)
-      (*separatrixFunctionMinima)[l] = sepFuncMins[n];
     if(outputSeparatrices2_cells_isOnBoundary_ != nullptr)
       (*outputSeparatrices2_cells_isOnBoundary_)[l] = sepOnBoundary[n];
   }
@@ -490,9 +486,9 @@ int ttk::MorseSmaleComplex3D::setDescendingSeparatrices2(
   if(outputSeparatrices2_cells_separatrixTypes_ != nullptr)
     outputSeparatrices2_cells_separatrixTypes_->resize(ncells);
   if(separatrixFunctionMaxima != nullptr)
-    separatrixFunctionMaxima->resize(ncells);
+    separatrixFunctionMaxima->resize(separatrixId + validGeomIds.size());
   if(separatrixFunctionMinima != nullptr)
-    separatrixFunctionMinima->resize(ncells);
+    separatrixFunctionMinima->resize(separatrixId + validGeomIds.size());
   if(outputSeparatrices2_cells_isOnBoundary_ != nullptr)
     outputSeparatrices2_cells_isOnBoundary_->resize(ncells);
 
@@ -523,6 +519,10 @@ int ttk::MorseSmaleComplex3D::setDescendingSeparatrices2(
       });
     const auto sepFuncMin
       = discreteGradient_.getCellLowerVertex(Cell{1, minId}, triangulation);
+    if(separatrixFunctionMaxima != nullptr)
+      (*separatrixFunctionMaxima)[sepId] = sepFuncMax;
+    if(separatrixFunctionMinima != nullptr)
+      (*separatrixFunctionMinima)[sepId] = sepFuncMin;
 
     // get boundary condition
     const char onBoundary
@@ -558,10 +558,6 @@ int ttk::MorseSmaleComplex3D::setDescendingSeparatrices2(
         (*outputSeparatrices2_cells_separatrixIds_)[l] = sepId;
       if(outputSeparatrices2_cells_separatrixTypes_ != nullptr)
         (*outputSeparatrices2_cells_separatrixTypes_)[l] = sepType;
-      if(separatrixFunctionMaxima != nullptr)
-        (*separatrixFunctionMaxima)[l] = sepFuncMax;
-      if(separatrixFunctionMinima != nullptr)
-        (*separatrixFunctionMinima)[l] = sepFuncMin;
       if(outputSeparatrices2_cells_isOnBoundary_ != nullptr)
         (*outputSeparatrices2_cells_isOnBoundary_)[l] = onBoundary;
     }
