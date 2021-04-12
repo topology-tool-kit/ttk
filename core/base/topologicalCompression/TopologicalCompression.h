@@ -412,7 +412,7 @@ namespace ttk {
     const char *magicBytes_{"TTKCompressedFileFormat"};
     // Current version of the file format. To be incremented at every
     // breaking change to keep backward compatibility.
-    const unsigned long formatVersion_{1};
+    const unsigned long formatVersion_{2};
   };
 
 } // namespace ttk
@@ -763,20 +763,25 @@ int ttk::TopologicalCompression::ReadMetaData(FILE *fm) {
   ReadByteArray(fm, mBytes.data(), magicBytesLen);
 
   // To deal with pre-v1 file format (without scalar field array name)
-  bool hasMagicBytes = strcmp(mBytes.data(), magicBytes_) == 0;
-
+  const bool hasMagicBytes = strcmp(mBytes.data(), magicBytes_) == 0;
   if(!hasMagicBytes) {
-    this->printWrn("Could not find magic bytes in input file!");
-    this->printWrn("File might be corrupted!");
-
-    // rewind fm to beginning of file
-    std::rewind(fm);
+    this->printErr("Could not find magic bytes in input file!");
+    return 1;
   }
 
   // -3. File format version
-  unsigned long version = 0;
-  if(hasMagicBytes) {
-    version = Read<unsigned long>(fm);
+  const auto fileVersion = Read<unsigned long>(fm);
+  if(fileVersion < this->formatVersion_) {
+    this->printErr("Old format version detected (" + std::to_string(fileVersion)
+                   + " vs. " + std::to_string(this->formatVersion_) + ").");
+    this->printErr("Older formats are not supported!");
+    return 1;
+  } else if(fileVersion > this->formatVersion_) {
+    this->printErr("Newer format version detected ("
+                   + std::to_string(fileVersion) + " vs. "
+                   + std::to_string(this->formatVersion_) + ").");
+    this->printErr("Cannot read file with current TTK, try with to update.");
+    return 1;
   }
 
   // -2. Compression type.
@@ -807,11 +812,6 @@ int ttk::TopologicalCompression::ReadMetaData(FILE *fm) {
 
   // 5. Lossy compressor ratio
   ZFPBitBudget = Read<double>(fm);
-
-  if(version == 0) {
-    // Pre-v1 format has no scalar field array name
-    return 0;
-  }
 
   // 6. Length of array name
   size_t dataArrayNameLength = Read<unsigned long>(fm);

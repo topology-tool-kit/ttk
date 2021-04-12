@@ -45,7 +45,10 @@ int ttkTopologicalCompressionReader::RequestInformation(
 
   // Fill spacing, origin, extent, scalar type
   // L8 tolerance, ZFP factor
-  this->ReadMetaData<double>(fp);
+  const auto res = this->ReadMetaData<double>(fp);
+  if(res != 0) {
+    return 1;
+  }
   DataScalarType = this->getDataScalarType();
   for(int i = 0; i < 3; ++i) {
     DataSpacing[i] = this->getDataSpacing()[i];
@@ -92,7 +95,10 @@ int ttkTopologicalCompressionReader::RequestData(
   }
 
   this->setFileName(FileName);
-  this->ReadMetaData<double>(fp);
+  const auto res = this->ReadMetaData<double>(fp);
+  if(res != 0) {
+    return 1;
+  }
   DataScalarType = this->getDataScalarType();
   for(int i = 0; i < 3; ++i) {
     DataSpacing[i] = this->getDataSpacing()[i];

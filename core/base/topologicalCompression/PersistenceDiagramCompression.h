@@ -15,7 +15,6 @@ int ttk::TopologicalCompression::ComputeTotalSizeForPersistenceDiagram(
   int nSegments,
   int nVertices,
   double zfpBitBudget) {
-  using ttk::TopologicalCompression;
 
   int totalSize = 0;
 
@@ -93,7 +92,6 @@ int ttk::TopologicalCompression::WritePersistenceGeometry(FILE *fm,
     int nz = 1 + dataExtent[5] - dataExtent[4];
 
     std::vector<double> dataVector(toCompress, toCompress + (nx * ny * nz));
-    using ttk::TopologicalCompression;
     numberOfBytesWritten
       += CompressWithZFP(fm, false, dataVector, nx, ny, nz, zfpBitBudget);
 
@@ -116,7 +114,7 @@ int ttk::TopologicalCompression::ReadPersistenceTopology(FILE *fm) {
   int numberOfBytesRead = ReadCompactSegmentation(
     fm, segmentation_, numberOfVertices, numberOfSegments);
 
-  rawFileLength += numberOfBytesRead;
+  this->rawFileLength += numberOfBytesRead;
 
   return 0;
 }
@@ -180,7 +178,6 @@ int ttk::TopologicalCompression::ReadPersistenceGeometry(
   } else {
 #ifdef TTK_ENABLE_ZFP
     // 2.b. (2.) Read with ZFP.
-    using ttk::TopologicalCompression;
     numberOfBytesRead += zfpBitBudget * vertexNumber;
     CompressWithZFP(fm, true, decompressedData_, nx, ny, nz, zfpBitBudget);
     this->printMsg("Successfully read with ZFP.");
@@ -225,7 +222,7 @@ int ttk::TopologicalCompression::ReadPersistenceGeometry(
                                 triangulation);
   this->printMsg("Successfully performed simplification.");
 
-  rawFileLength += numberOfBytesRead;
+  this->rawFileLength += numberOfBytesRead;
 
   return 0;
 }
