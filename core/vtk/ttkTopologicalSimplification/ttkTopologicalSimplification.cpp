@@ -87,8 +87,10 @@ int ttkTopologicalSimplification::RequestData(
   }
 
   // constraint identifier field
-  const auto identifiers = this->GetOptionalArray(
-    ForceInputVertexScalarField, 1, ttk::VertexScalarFieldName, constraints);
+  std::vector<SimplexId> idSpareStorage{};
+  const auto identifiers = this->GetIdentifierArrayPtr(
+    ForceInputVertexScalarField, 1, ttk::VertexScalarFieldName, constraints,
+    idSpareStorage);
 
   if(!identifiers) {
     this->printErr("Wrong vertex identifier scalar field.");
@@ -134,11 +136,6 @@ int ttkTopologicalSimplification::RequestData(
     return -10;
   }
 
-  if(identifiers->GetDataType() != offsets->GetDataType()) {
-    this->printErr("Type of identifiers and offsets are different.");
-    return -11;
-  }
-
   int ret{};
   if(this->UseLTS) {
     ttk::LocalizedTopologicalSimplification lts{};
@@ -157,8 +154,7 @@ int ttkTopologicalSimplification::RequestData(
          static_cast<TTK_TT *>(triangulation->getData()),
          static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(inputScalars)),
          static_cast<SimplexId *>(ttkUtils::GetVoidPointer(offsets)),
-         static_cast<SimplexId *>(ttkUtils::GetVoidPointer(identifiers)),
-         numberOfConstraints, this->AddPerturbation)));
+         identifiers, numberOfConstraints, this->AddPerturbation)));
 
     // TODO: fix convention in original ttk module
     ret = !ret;
@@ -168,7 +164,7 @@ int ttkTopologicalSimplification::RequestData(
         ret = this->execute(
           static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(inputScalars)),
           static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(outputScalars)),
-          static_cast<SimplexId *>(ttkUtils::GetVoidPointer(identifiers)),
+          identifiers,
           static_cast<SimplexId *>(ttkUtils::GetVoidPointer(offsets)),
           static_cast<SimplexId *>(ttkUtils::GetVoidPointer(outputOffsets)),
           numberOfConstraints, *triangulation->getData()));
