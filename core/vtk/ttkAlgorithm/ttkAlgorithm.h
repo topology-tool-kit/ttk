@@ -110,6 +110,25 @@ public:
                               const bool enforceOrderArrayIdx = false);
 
   /**
+   * Retrieve an identifier field and provides a ttk::SimplexId
+   * pointer to the underlaying buffer.
+   *
+   * Use the same parameters as GetOptionalArray to fetch the VTK data
+   * array.
+   *
+   * Fills the vector \p spareStorage if the VTK data array is not a
+   * ttkSimplexIdTypeArray. This vector should have a lifetime of a
+   * least the filter's RequestData method.
+   */
+  ttk::SimplexId *
+    GetIdentifierArrayPtr(const bool &enforceArrayIndex,
+                          const int &arrayIndex,
+                          const std::string &arrayName,
+                          vtkDataSet *const inputData,
+                          std::vector<ttk::SimplexId> &spareStorage,
+                          const int inputPort = 0);
+
+  /**
    * This method retrieves the ttk::Triangulation of a vtkDataSet.
    *
    * Note, this method initializes a triangulation if one does not exist

@@ -212,6 +212,49 @@ vtkDataArray *ttkAlgorithm::GetOrderArray(vtkDataSet *const inputData,
   }
 }
 
+ttk::SimplexId *
+  ttkAlgorithm::GetIdentifierArrayPtr(const bool &enforceArrayIndex,
+                                      const int &arrayIndex,
+                                      const std::string &arrayName,
+                                      vtkDataSet *const inputData,
+                                      std::vector<ttk::SimplexId> &spareStorage,
+                                      const int inputPort) {
+
+  // fetch data array
+  const auto array = this->GetOptionalArray(
+    enforceArrayIndex, arrayIndex, arrayName, inputData, inputPort);
+  if(array == nullptr) {
+    this->printErr("Could not find the requested identifiers array");
+    return {};
+  }
+  if(array->GetNumberOfComponents() != 1) {
+    this->printErr("Identifiers field must have only one component!");
+    return {};
+  }
+
+#ifndef TTK_ENABLE_64BIT_IDS
+  if(array->GetDataType() == VTK_ID_TYPE
+     || array->GetDataType() == VTK_LONG_LONG) {
+    this->printMsg(
+      "Converting identifiers field from vtkIdType to SimplexId...");
+    const auto nItems = array->GetNumberOfTuples();
+
+    // fills the vector with the content of the data array converted to
+    // ttk::SimplexId
+    spareStorage.resize(nItems);
+    for(vtkIdType i = 0; i < nItems; ++i) {
+      spareStorage[i] = static_cast<ttk::SimplexId>(array->GetTuple1(i));
+    }
+
+    // return a pointer to the vector internal buffer
+    return spareStorage.data();
+  }
+#endif
+
+  // return a pointer to the data array internal buffer
+  return static_cast<ttk::SimplexId *>(ttkUtils::GetVoidPointer(array));
+}
+
 template <class vtkDataType>
 int prepOutput(vtkInformation *info, std::string className) {
   auto output = vtkDataObject::GetData(info);
