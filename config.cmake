@@ -15,7 +15,7 @@ endif ()
 # This variable has two possible values "SingleArray" and "OffsetAndConnectiviy".
 # * "SingleArray" use a layout compatible with VTK < 9 were the cell array store the
 #   cells and their connectivity in a flat array
-# * "OffsetAndConnectivity" use a layout comatible with VTK >= 9, having two arrays 
+# * "OffsetAndConnectivity" use a layout comatible with VTK >= 9, having two arrays
 #   (see https://vtk.org/doc/nightly/html/classvtkCellArray.html#details for more info)
 set(TTK_CELL_ARRAY_LAYOUT "SingleArray" CACHE STRING "Layout for the cell array.")
 set_property(CACHE TTK_CELL_ARRAY_LAYOUT PROPERTY STRINGS "SingleArray" "OffsetAndConnectivity")
@@ -45,7 +45,7 @@ if(TTK_BUILD_PARAVIEW_PLUGINS OR TTK_BUILD_VTK_WRAPPERS)
       # this is necessary to work with build folder directly (MacOS)
       add_definitions(-DVTK_VERSION_MAJOR=${VTK_VERSION_MAJOR})
       add_definitions(-DVTK_VERSION_MINOR=${VTK_VERSION_MINOR})
-  
+
       # Layout to use for the CellArray is driven by VTK version:
       # TODO: we can even hide the option here as the user should not change it in this case.
       if ("${VTK_VERSION}" VERSION_GREATER_EQUAL "9.0")
@@ -298,10 +298,17 @@ else()
   endif()
 endif()
 
-
-
 if (TTK_ENABLE_MPI)
   find_package(MPI REQUIRED)
+endif()
+
+find_package(WEBSOCKETPP)
+if(NOT WEBSOCKETPP_FOUND)
+  option(TTK_ENABLE_WEBSOCKETPP "Enable WebSocketIO module" OFF)
+  message(STATUS "WebSocketPP not found, disabling WebSocketIO module in TTK.")
+else()
+  option(TTK_ENABLE_WEBSOCKETPP "Enable WebSocketIO module" ON)
+  message(STATUS "WebSocketPP found, enabling WebSocketIO module in TTK.")
 endif()
 
 # Install path

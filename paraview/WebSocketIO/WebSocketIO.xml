@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ServerManagerConfiguration>
+  <ProxyGroup name="filters">
+    <SourceProxy name="WebSocketIO" class="ttkWebSocketIO" label="TTK WebSocketIO">
+      <Documentation long_help="ttkWebSocketIO" short_help="ttkWebSocketIO">
+        Upon creation this filter uses the WebSocketIO module of TTK to start a WebSocket server, and every time the filter is executed it sends its serialized input vtkDataObject to all connected clients. The server can also receive a serialized vtkDataObject which it converts to the filter output.
+      </Documentation>
+
+      <InputProperty name="Input" command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources" />
+          <Group name="filters" />
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkDataSet" />
+          <DataType value="vtkMultiBlockDataSet" />
+        </DataTypeDomain>
+        <Documentation>The input vtkDataObject that will be send to all connected clients.</Documentation>
+      </InputProperty>
+
+      <IntVectorProperty name="PortNumber" label="PortNumber" command="SetPortNumber" number_of_elements="1" default_values="9285">
+        <IntRangeDomain name="range" min="0" max="64000" />
+        <Documentation>TODO Port Number.</Documentation>
+      </IntVectorProperty>
+
+      ${DEBUG_WIDGETS}
+
+      <Hints>
+        <ShowInMenu category="TTK" />
+        <LiveSource interval="500" />
+        <Visibility replace_input="0" />
+      </Hints>
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>
