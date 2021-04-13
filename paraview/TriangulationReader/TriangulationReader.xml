@@ -35,7 +35,8 @@
         <Documentation>Path to a TTK Triangulation File.</Documentation>
         <FileListDomain name="files" />
          <Hints>
-           <FileChooser extensions="ttk_tri" file_description="Triangulation files" />
+           <FileChooser extensions="tpt"
+                        file_description="TTK Preconditioned Triangulation File Format" />
          </Hints>
       </StringVectorProperty>
 

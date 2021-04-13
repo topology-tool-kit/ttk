@@ -32,8 +32,8 @@
         <Hints>
           <Property name="Input" show="0"/>
           <Property name="FileName" show="0"/>
-          <WriterFactory extensions="ttk_tri"
-                         file_description="TTK Triangulation File Format" />
+          <WriterFactory extensions="tpt"
+                         file_description="TTK Preconditioned Triangulation File Format" />
         </Hints>
     </WriterProxy>
     <!-- End Writer -->

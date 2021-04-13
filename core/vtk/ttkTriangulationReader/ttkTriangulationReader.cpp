@@ -38,10 +38,11 @@ int ttkTriangulationReader::FillOutputPortInformation(int port,
 int ttkTriangulationReader::validateFilePath() {
   if(this->TriangulationFilePath.length() < 8
      || this->TriangulationFilePath
-            .substr(this->TriangulationFilePath.length() - 8, 8)
-            .compare(".ttk_tri")
+            .substr(this->TriangulationFilePath.length() - 4, 4)
+            .compare(".tpt")
           != 0) {
-    this->printErr("Triangulation file path has to end with '.ttk_tri'.");
+    this->printErr(
+      "TTK Preconditioned Triangulation file has to end with '.tpt'.");
     return 0;
   }
 
