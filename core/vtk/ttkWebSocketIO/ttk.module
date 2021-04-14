@@ -6,4 +6,5 @@ HEADERS
   ttkWebSocketIO.h
 DEPENDS
   webSocketIO
+  Boost::boost
   ttkAlgorithm

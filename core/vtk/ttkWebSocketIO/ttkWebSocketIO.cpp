@@ -5,6 +5,7 @@
 #include <vtkImageData.h>
 #include <vtkMultiBlockDataSet.h>
 #include <vtkPolyData.h>
+#include <vtkSmartPointer.h>
 #include <vtkStringArray.h>
 #include <vtkUnstructuredGrid.h>
 
