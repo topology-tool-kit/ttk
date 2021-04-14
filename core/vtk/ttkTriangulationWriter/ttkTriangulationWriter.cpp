@@ -1,4 +1,4 @@
-#include <ExplicitTriangulation.h>
+#include <Triangulation.h>
 #include <ttkTriangulationWriter.h>
 
 #include <array>
