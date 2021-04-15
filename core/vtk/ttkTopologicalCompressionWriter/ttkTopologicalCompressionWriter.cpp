@@ -31,8 +31,9 @@ int ttkTopologicalCompressionWriter::Write() {
 
   this->printMsg("New writing task.");
 
-  if(ZFPOnly && (ZFPBitBudget > 64 || ZFPBitBudget < 1)) {
-    this->printErr("Wrong ZFP bit budget for ZFP-onyl use, aborting.");
+  if(ZFPOnly && ZFPTolerance < 0.0) {
+    this->printErr(
+      "Wrong ZFP absolute error tolerance for ZFP-only use, aborting.");
     return 0;
   }
 
@@ -104,7 +105,7 @@ int ttkTopologicalCompressionWriter::Write() {
   this->setFileName(FileName);
   this->WriteToFile<double>(fp, CompressionType, ZFPOnly, SQMethod.c_str(), dt,
                             vti->GetExtent(), vti->GetSpacing(),
-                            vti->GetOrigin(), vp, Tolerance, ZFPBitBudget,
+                            vti->GetOrigin(), vp, Tolerance, ZFPTolerance,
                             inputScalarField->GetName());
 
   this->printMsg("Wrote to " + std::string{FileName} + ".");

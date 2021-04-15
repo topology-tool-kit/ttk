@@ -153,8 +153,8 @@ namespace ttk {
     inline double getTolerance() {
       return Tolerance;
     }
-    inline double getZFPBitBudget() {
-      return ZFPBitBudget;
+    inline double getZFPTolerance() {
+      return ZFPTolerance;
     }
     inline bool getZFPOnly() {
       return ZFPOnly;
@@ -264,7 +264,7 @@ namespace ttk {
                       double *dataSpacing,
                       double *dataOrigin,
                       double tolerance,
-                      double zfpBitBudget,
+                      double zfpTolerance,
                       const std::string &dataArrayName);
     template <typename T>
     int WriteToFile(FILE *fp,
@@ -277,7 +277,7 @@ namespace ttk {
                     double *dataOrigin,
                     double *data,
                     double tolerance,
-                    double zfpBitBudget,
+                    double zfpTolerance,
                     const std::string &dataArrayName);
 
     template <typename dataType>
@@ -323,7 +323,7 @@ namespace ttk {
       bool zfpOnly,
       int nbSegments,
       int nbVertices,
-      double zfpBitBudget);
+      double zfpTolerance);
 
     template <typename dataType>
     int ReadPersistenceTopology(FILE *fm);
@@ -343,7 +343,7 @@ namespace ttk {
     int WritePersistenceGeometry(FILE *fm,
                                  int *dataExtent,
                                  bool zfpOnly,
-                                 double zfpBitBudget,
+                                 double zfpTolerance,
                                  double *toCompress);
     template <typename dataType>
     int WriteOtherGeometry(FILE *fm);
@@ -376,7 +376,7 @@ namespace ttk {
     // Parameters
     int compressionType_{};
     bool ZFPOnly{false};
-    double ZFPBitBudget{};
+    double ZFPTolerance{50};
     int SQMethodInt{};
 
     double Tolerance{10};
@@ -461,12 +461,12 @@ int ttk::TopologicalCompression::WriteToFile(FILE *fp,
                                              double *dataOrigin,
                                              double *data,
                                              double tolerance,
-                                             double zfpBitBudget,
+                                             double zfpTolerance,
                                              const std::string &dataArrayName) {
   // [->fp] Write metadata.
   WriteMetaData<double>(fp, compressionType, zfpOnly, sqMethod, dataType,
                         dataExtent, dataSpacing, dataOrigin, tolerance,
-                        zfpBitBudget, dataArrayName);
+                        zfpTolerance, dataArrayName);
 
 #ifdef TTK_ENABLE_ZLIB
   Write(fp, true);
@@ -486,7 +486,7 @@ int ttk::TopologicalCompression::WriteToFile(FILE *fp,
   int totalSize = usePersistence
                     ? ComputeTotalSizeForPersistenceDiagram<double>(
                       getMapping(), getCriticalConstraints(), zfpOnly,
-                      getNbSegments(), getNbVertices(), zfpBitBudget)
+                      getNbSegments(), getNbVertices(), zfpTolerance)
                   : useOther ? ComputeTotalSizeForOther<double>()
                              : 0;
 
@@ -516,7 +516,7 @@ int ttk::TopologicalCompression::WriteToFile(FILE *fp,
   // [->fm] Write altered geometry.
   if(usePersistence)
     status = WritePersistenceGeometry<double>(
-      fm, dataExtent, zfpOnly, zfpBitBudget, data);
+      fm, dataExtent, zfpOnly, zfpTolerance, data);
   else if(useOther)
     status = WriteOtherGeometry<double>(fm);
 
@@ -586,7 +586,7 @@ int ttk::TopologicalCompression::WriteMetaData(
   double *dataSpacing,
   double *dataOrigin,
   double tolerance,
-  double zfpBitBudget,
+  double zfpTolerance,
   const std::string &dataArrayName) {
 
   // -4. Magic bytes
@@ -627,7 +627,7 @@ int ttk::TopologicalCompression::WriteMetaData(
   Write(fp, tolerance);
 
   // 5. ZFP ratio
-  Write(fp, zfpBitBudget);
+  Write(fp, zfpTolerance);
 
   // 6. Length of array name
   // (explicit call to unsigned long variant for MSVC compatibility)
@@ -648,8 +648,8 @@ int ttk::TopologicalCompression::ReadFromFile(
 
   this->printMsg("Successfully read metadata.");
 
-  if(ZFPOnly && (ZFPBitBudget > 64 || ZFPBitBudget < 1)) {
-    this->printMsg("Wrong ZFP bit budget for ZFP-only use.");
+  if(ZFPOnly && ZFPTolerance < 0.0) {
+    this->printMsg("Wrong ZFP absolute error tolerance for ZFP-only use.");
     return -4;
   }
 
@@ -811,7 +811,7 @@ int ttk::TopologicalCompression::ReadMetaData(FILE *fm) {
   Tolerance = Read<double>(fm);
 
   // 5. Lossy compressor ratio
-  ZFPBitBudget = Read<double>(fm);
+  ZFPTolerance = Read<double>(fm);
 
   // 6. Length of array name
   size_t dataArrayNameLength = Read<unsigned long>(fm);

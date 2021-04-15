@@ -78,7 +78,7 @@ NOTE:
               <Property name="Tolerance" />
               <Property name="Subdivide" />
               <Property name="MaximumError" />
-              <Property name="ZFPBitBudget" />
+              <Property name="ZFPTolerance" />
               <Property name="ZFPOnly" />
               <Property name="UseTopologicalSimplification" />
               <Property name="SQMethod" />

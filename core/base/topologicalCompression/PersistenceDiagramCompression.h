@@ -14,11 +14,11 @@ int ttk::TopologicalCompression::ComputeTotalSizeForPersistenceDiagram(
   bool zfpOnly,
   int nSegments,
   int nVertices,
-  double zfpBitBudget) {
+  double zfpTolerance) {
 
   int totalSize = 0;
 
-  if(!(zfpOnly)) {
+  if(!zfpOnly) {
     // Topological segments.
     int numberOfBitsPerSegment = log2(nSegments) + 1;
     double nbCharPerSegment = (double)numberOfBitsPerSegment / 8.0;
@@ -32,13 +32,9 @@ int ttk::TopologicalCompression::ComputeTotalSizeForPersistenceDiagram(
       += (constraintsSize) * (2 * sizeof(int) + sizeof(double)) + sizeof(int);
   }
 
-  totalSize += (zfpBitBudget <= 64 && zfpBitBudget > 0)
-                 ? (nVertices * std::ceil(zfpBitBudget / 2.0))
-                 : 0;
-  totalSize += 2;
-  // * 16 -> 32 bpd
-  // -> * bitbudget / 2
-  // -> * bitbudget / 2
+  // conservative estimate of the ZFP buffer (no compression at all...)
+  totalSize += zfpTolerance > 0.0 ? nVertices * sizeof(double) : 0 + 2;
+
   return totalSize;
 }
 
@@ -71,7 +67,7 @@ template <typename dataType>
 int ttk::TopologicalCompression::WritePersistenceGeometry(FILE *fm,
                                                           int *dataExtent,
                                                           bool zfpOnly,
-                                                          double zfpBitBudget,
+                                                          double zfpTolerance,
                                                           double *toCompress) {
   int numberOfBytesWritten = 0;
 
@@ -84,7 +80,7 @@ int ttk::TopologicalCompression::WritePersistenceGeometry(FILE *fm,
 
   this->printMsg("Wrote raw geometry.");
 
-  if(zfpBitBudget <= 64.0 && zfpBitBudget > 0) {
+  if(zfpTolerance >= 0.0) {
 #ifdef TTK_ENABLE_ZFP
     // (1. or 3.) Write zfp-compressed array.
     int nx = 1 + dataExtent[1] - dataExtent[0];
@@ -93,7 +89,7 @@ int ttk::TopologicalCompression::WritePersistenceGeometry(FILE *fm,
 
     std::vector<double> dataVector(toCompress, toCompress + (nx * ny * nz));
     numberOfBytesWritten
-      += CompressWithZFP(fm, false, dataVector, nx, ny, nz, zfpBitBudget);
+      += CompressWithZFP(fm, false, dataVector, nx, ny, nz, zfpTolerance);
 
 #else
     this->printErr("Attempted to write with ZFP but ZFP is not installed.");
@@ -123,10 +119,6 @@ template <typename dataType, typename triangulationType>
 int ttk::TopologicalCompression::ReadPersistenceGeometry(
   FILE *fm, const triangulationType &triangulation) {
 
-  int sqMethod = SQMethodInt;
-  double zfpBitBudget = ZFPBitBudget;
-  int *dataExtent = dataExtent_;
-
   std::vector<std::tuple<double, int>> mappingsSortedPerValue;
 
   double min = 0;
@@ -142,13 +134,13 @@ int ttk::TopologicalCompression::ReadPersistenceGeometry(
   }
 
   // Prepare array reconstruction.
-  int nx = 1 + dataExtent[1] - dataExtent[0];
-  int ny = 1 + dataExtent[3] - dataExtent[2];
-  int nz = 1 + dataExtent[5] - dataExtent[4];
+  int nx = 1 + dataExtent_[1] - dataExtent_[0];
+  int ny = 1 + dataExtent_[3] - dataExtent_[2];
+  int nz = 1 + dataExtent_[5] - dataExtent_[4];
   int vertexNumber = nx * ny * nz;
 
   decompressedData_.resize(vertexNumber);
-  if(zfpBitBudget > 64.0 || zfpBitBudget < 1) {
+  if(ZFPTolerance < 0.0) {
 
     // 2.a. (2.) Assign values to points thanks to topology indices.
     for(int i = 0; i < vertexNumber; ++i) {
@@ -178,8 +170,8 @@ int ttk::TopologicalCompression::ReadPersistenceGeometry(
   } else {
 #ifdef TTK_ENABLE_ZFP
     // 2.b. (2.) Read with ZFP.
-    numberOfBytesRead += zfpBitBudget * vertexNumber;
-    CompressWithZFP(fm, true, decompressedData_, nx, ny, nz, zfpBitBudget);
+    numberOfBytesRead
+      += CompressWithZFP(fm, true, decompressedData_, nx, ny, nz, ZFPTolerance);
     this->printMsg("Successfully read with ZFP.");
 #else
     this->printErr(
@@ -189,7 +181,7 @@ int ttk::TopologicalCompression::ReadPersistenceGeometry(
   }
 
   // No SQ.
-  if(sqMethod == 0 || sqMethod == 3) {
+  if(SQMethodInt == 0 || SQMethodInt == 3) {
     for(int i = 0; i < (int)criticalConstraints_.size(); ++i) {
       std::tuple<int, double, int> t = criticalConstraints_[i];
       int id = std::get<0>(t);
@@ -205,7 +197,7 @@ int ttk::TopologicalCompression::ReadPersistenceGeometry(
     // tolerance *= (max - min);
   }
 
-  if(sqMethod == 1 || sqMethod == 2)
+  if(SQMethodInt == 1 || SQMethodInt == 2)
     return 0;
 
   if(ZFPOnly)
