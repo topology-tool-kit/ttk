@@ -2,8 +2,10 @@
 
 #include <Geometry.h>
 
+#include <vtkDataArray.h>
 #include <vtkDataSet.h>
 #include <vtkInformation.h>
+#include <vtkObjectFactory.h>
 #include <vtkPointData.h>
 
 #include <ttkMacros.h>

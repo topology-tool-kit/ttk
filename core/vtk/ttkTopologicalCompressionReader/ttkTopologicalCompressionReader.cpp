@@ -5,9 +5,11 @@
 #include <vtkDataObject.h>
 #include <vtkDataSet.h>
 #include <vtkDoubleArray.h>
+#include <vtkIdTypeArray.h>
 #include <vtkImageData.h>
 #include <vtkInformation.h>
 #include <vtkInformationVector.h>
+#include <vtkIntArray.h>
 #include <vtkNew.h>
 #include <vtkPointData.h>
 #include <vtkStreamingDemandDrivenPipeline.h>

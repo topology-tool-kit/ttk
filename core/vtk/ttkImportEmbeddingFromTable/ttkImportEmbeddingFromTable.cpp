@@ -6,6 +6,7 @@
 #include <ttkUtils.h>
 
 // VTK includes
+#include <vtkIdTypeArray.h>
 #include <vtkInformation.h>
 #include <vtkPointSet.h>
 #include <vtkTable.h>

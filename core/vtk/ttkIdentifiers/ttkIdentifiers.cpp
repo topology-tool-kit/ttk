@@ -1,12 +1,13 @@
 #include <ttkIdentifiers.h>
+#include <ttkMacros.h>
+#include <ttkUtils.h>
 
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
+#include <vtkIdTypeArray.h>
 #include <vtkInformation.h>
+#include <vtkIntArray.h>
 #include <vtkPointData.h>
-
-#include <ttkMacros.h>
-#include <ttkUtils.h>
 
 using namespace std;
 using namespace ttk;

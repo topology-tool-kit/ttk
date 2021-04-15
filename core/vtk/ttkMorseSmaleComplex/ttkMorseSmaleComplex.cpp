@@ -8,9 +8,9 @@
 #include <vtkDataSet.h>
 #include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
+#include <vtkIdTypeArray.h>
 #include <vtkInformation.h>
 #include <vtkNew.h>
-#include <vtkObjectFactory.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
 #include <vtkSignedCharArray.h>

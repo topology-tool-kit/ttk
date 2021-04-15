@@ -2,14 +2,17 @@
 #include <ttkPersistenceCurve.h>
 #include <ttkUtils.h>
 
+#include <vtkIdTypeArray.h>
+#include <vtkIntArray.h>
+
 using namespace std;
 using namespace ttk;
 
 using namespace ftm;
 
-vtkStandardNewMacro(ttkPersistenceCurve)
+vtkStandardNewMacro(ttkPersistenceCurve);
 
-  ttkPersistenceCurve::ttkPersistenceCurve() {
+ttkPersistenceCurve::ttkPersistenceCurve() {
   this->SetNumberOfInputPorts(1);
   this->SetNumberOfOutputPorts(4);
 }

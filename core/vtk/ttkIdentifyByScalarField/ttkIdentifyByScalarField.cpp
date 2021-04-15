@@ -1,19 +1,22 @@
 #include <numeric>
+
 #include <ttkIdentifyByScalarField.h>
 #include <ttkMacros.h>
 #include <ttkUtils.h>
 
 #include <vtkCellData.h>
 #include <vtkDataSet.h>
+#include <vtkIdTypeArray.h>
 #include <vtkInformation.h>
+#include <vtkIntArray.h>
 #include <vtkPointData.h>
 
 using namespace std;
 using namespace ttk;
 
-vtkStandardNewMacro(ttkIdentifyByScalarField)
+vtkStandardNewMacro(ttkIdentifyByScalarField);
 
-  ttkIdentifyByScalarField::ttkIdentifyByScalarField() {
+ttkIdentifyByScalarField::ttkIdentifyByScalarField() {
   this->setDebugMsgPrefix("IdentifyByScalarField");
   SetNumberOfInputPorts(1);
   SetNumberOfOutputPorts(1);

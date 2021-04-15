@@ -3,8 +3,10 @@
 #include <ttkMacros.h>
 #include <ttkUtils.h>
 
+#include <vtkDataArray.h>
 #include <vtkDataSet.h>
 #include <vtkInformation.h>
+#include <vtkObjectFactory.h>
 #include <vtkPointData.h>
 
 using namespace std;

@@ -3,7 +3,9 @@
 #include <ttkUtils.h>
 
 #include <vtkCellData.h>
+#include <vtkIdTypeArray.h>
 #include <vtkInformation.h>
+#include <vtkIntArray.h>
 #include <vtkLine.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>

@@ -1,15 +1,15 @@
 #include <OrderDisambiguation.h>
 #include <ttkArrayPreconditioning.h>
-
-#include <vtkInformation.h>
+#include <ttkMacros.h>
+#include <ttkUtils.h>
 
 #include <vtkCommand.h>
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
+#include <vtkIdTypeArray.h>
+#include <vtkInformation.h>
+#include <vtkIntArray.h>
 #include <vtkPointData.h>
-
-#include <ttkMacros.h>
-#include <ttkUtils.h>
 
 #include <regex>
 
