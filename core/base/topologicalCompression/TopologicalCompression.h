@@ -72,14 +72,14 @@ namespace ttk {
 
     // Other compression methods.
     template <typename dataType>
-    int computeOther();
+    int computeOther() const;
 
     template <typename dataType>
     int compressForOther(int vertexNumber,
                          const dataType *const inputData,
                          const SimplexId *const inputOffsets,
                          dataType *outputData,
-                         const double &tol);
+                         const double &tol) const;
 
     // Getters and setters.
     inline void setCompressionType(int compressionType) {
@@ -116,10 +116,10 @@ namespace ttk {
       }
     }
 
-    inline int getNbVertices() {
+    inline int getNbVertices() const {
       return NbVertices;
     }
-    inline int getNbSegments() {
+    inline int getNbSegments() const {
       return NbSegments;
     }
     inline std::vector<int> &getSegmentation() {
@@ -132,13 +132,13 @@ namespace ttk {
       return criticalConstraints_;
     }
 
-    inline int getCompressionType() {
+    inline int getCompressionType() const {
       return compressionType_;
     }
-    inline int getSQMethod() {
+    inline int getSQMethod() const {
       return SQMethodInt;
     }
-    inline int getDataScalarType() {
+    inline int getDataScalarType() const {
       return dataScalarType_;
     }
     inline int *getDataExtent() {
@@ -150,13 +150,13 @@ namespace ttk {
     inline double *getDataOrigin() {
       return dataOrigin_;
     }
-    inline double getTolerance() {
+    inline double getTolerance() const {
       return Tolerance;
     }
-    inline double getZFPTolerance() {
+    inline double getZFPTolerance() const {
       return ZFPTolerance;
     }
-    inline bool getZFPOnly() {
+    inline bool getZFPOnly() const {
       return ZFPOnly;
     }
 
@@ -185,7 +185,7 @@ namespace ttk {
     };
 
     template <typename T>
-    static T Read(FILE *fm) {
+    T Read(FILE *fm) const {
       static_assert(std::is_same<T, bool>() || std::is_same<T, int>()
                       || std::is_same<T, unsigned long>()
                       || std::is_same<T, double>(),
@@ -193,46 +193,42 @@ namespace ttk {
       T ret;
       const auto status = std::fread(&ret, sizeof(T), 1, fm);
       if(status == 0) {
-        ttk::Debug dbg;
-        dbg.printErr("Error reading " + std::string(typeid(T).name()) + "!");
+        this->printErr("Error reading " + std::string(typeid(T).name()) + "!");
       }
       return ret;
     }
     template <typename T>
-    static void ReadByteArray(FILE *fm, T *buffer, size_t length) {
+    void ReadByteArray(FILE *fm, T *buffer, size_t length) const {
       const auto status = std::fread(buffer, sizeof(T), length, fm);
       if(status == 0) {
-        ttk::Debug dbg;
-        dbg.printErr("Error reading " + std::string(typeid(T).name())
-                     + "array!");
+        this->printErr("Error reading " + std::string(typeid(T).name())
+                       + "array!");
       }
     }
     template <typename T>
-    static void Write(FILE *fm, T data) {
+    void Write(FILE *fm, T data) const {
       static_assert(std::is_same<T, bool>() || std::is_same<T, int>()
                       || std::is_same<T, unsigned long>()
                       || std::is_same<T, double>(),
                     "Function should have only those types");
       auto status = std::fwrite(&data, sizeof(T), 1, fm);
       if(status == 0) {
-        ttk::Debug dbg;
-        dbg.printErr("Error writing " + std::string(typeid(T).name()) + "!");
+        this->printErr("Error writing " + std::string(typeid(T).name()) + "!");
       }
     }
     template <typename T>
-    static void WriteByteArray(FILE *fm, const T *buffer, size_t length) {
+    void WriteByteArray(FILE *fm, const T *buffer, size_t length) const {
       const auto status = std::fwrite(buffer, sizeof(T), length, fm);
       if(status == 0) {
-        ttk::Debug dbg;
-        dbg.printErr("Error writing " + std::string(typeid(T).name())
-                     + "array!");
+        this->printErr("Error writing " + std::string(typeid(T).name())
+                       + "array!");
       }
     }
 
     int ReadCompactSegmentation(FILE *fm,
                                 std::vector<int> &segmentation,
                                 int &numberOfVertices,
-                                int &numberOfSegments);
+                                int &numberOfSegments) const;
     int ReadPersistenceIndex(
       FILE *fm,
       std::vector<std::tuple<double, int>> &mappings,
@@ -240,7 +236,8 @@ namespace ttk {
       std::vector<std::tuple<int, double, int>> &constraints,
       double &min,
       double &max,
-      int &nbConstraints);
+      int &nbConstraints) const;
+
     template <typename dataType>
     int ReadMetaData(FILE *fm);
     template <typename dataType, typename triangulationType>
@@ -249,11 +246,12 @@ namespace ttk {
     int WriteCompactSegmentation(FILE *fm,
                                  const std::vector<int> &segmentation,
                                  int numberOfVertices,
-                                 int numberOfSegments);
+                                 int numberOfSegments) const;
     int WritePersistenceIndex(
       FILE *fm,
       std::vector<std::tuple<double, int>> &mapping,
-      std::vector<std::tuple<int, double, int>> &constraints);
+      std::vector<std::tuple<int, double, int>> &constraints) const;
+
     template <typename T>
     int WriteMetaData(FILE *fp,
                       int compressionType,
@@ -288,7 +286,7 @@ namespace ttk {
       double max,
       int vertexNumber,
       double *array,
-      std::vector<int> &Seg);
+      std::vector<int> &Seg) const;
 
     // API management.
 
@@ -299,23 +297,23 @@ namespace ttk {
                         const int nx,
                         const int ny,
                         const int nz,
-                        const double zfpTolerance);
+                        const double zfpTolerance) const;
 #endif
 
 #ifdef TTK_ENABLE_ZLIB
-    unsigned long GetZlibDestLen(const unsigned long sourceLen);
+    unsigned long GetZlibDestLen(const unsigned long sourceLen) const;
     void CompressWithZlib(bool decompress,
                           unsigned char *dest,
                           unsigned long &destLen,
                           const unsigned char *const source,
-                          const unsigned long sourceLen);
+                          const unsigned long sourceLen) const;
 #endif
 
   private:
     // Internal read/write.
 
     template <typename dataType>
-    int ComputeTotalSizeForOther();
+    int ComputeTotalSizeForOther() const;
     template <typename dataType>
     int ComputeTotalSizeForPersistenceDiagram(
       std::vector<std::tuple<double, int>> &mapping,
@@ -323,22 +321,22 @@ namespace ttk {
       bool zfpOnly,
       int nbSegments,
       int nbVertices,
-      double zfpTolerance);
+      double zfpTolerance) const;
 
     template <typename dataType>
     int ReadPersistenceTopology(FILE *fm);
     template <typename dataType>
-    int ReadOtherTopology(FILE *fm);
+    int ReadOtherTopology(FILE *fm) const;
     template <typename dataType, typename triangulationType>
     int ReadPersistenceGeometry(FILE *fm,
                                 const triangulationType &triangulation);
     template <typename dataType>
-    int ReadOtherGeometry(FILE *fm);
+    int ReadOtherGeometry(FILE *fm) const;
 
     template <typename dataType>
     int WritePersistenceTopology(FILE *fm);
     template <typename dataType>
-    int WriteOtherTopology(FILE *fm);
+    int WriteOtherTopology(FILE *fm) const;
     template <typename dataType>
     int WritePersistenceGeometry(FILE *fm,
                                  int *dataExtent,
@@ -346,7 +344,7 @@ namespace ttk {
                                  double zfpTolerance,
                                  double *toCompress);
     template <typename dataType>
-    int WriteOtherGeometry(FILE *fm);
+    int WriteOtherGeometry(FILE *fm) const;
 
     template <typename dataType, typename triangulationType>
     int PerformSimplification(

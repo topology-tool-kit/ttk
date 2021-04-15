@@ -11,13 +11,14 @@ ttk::TopologicalCompression::TopologicalCompression() {
 
 #include <zfp.h>
 
-int ttk::TopologicalCompression::CompressWithZFP(FILE *file,
-                                                 const bool decompress,
-                                                 std::vector<double> &array,
-                                                 const int nx,
-                                                 const int ny,
-                                                 const int nz,
-                                                 const double zfpTolerance) {
+int ttk::TopologicalCompression::CompressWithZFP(
+  FILE *file,
+  const bool decompress,
+  std::vector<double> &array,
+  const int nx,
+  const int ny,
+  const int nz,
+  const double zfpTolerance) const {
 
   int n1 = 0, n2 = 0;
   bool is2D = nx == 1 || ny == 1 || nz == 1;
@@ -116,8 +117,8 @@ int ttk::TopologicalCompression::CompressWithZFP(FILE *file,
 
 #include <zlib.h>
 
-unsigned long
-  ttk::TopologicalCompression::GetZlibDestLen(const unsigned long sourceLen) {
+unsigned long ttk::TopologicalCompression::GetZlibDestLen(
+  const unsigned long sourceLen) const {
   return compressBound(sourceLen);
 }
 
@@ -126,7 +127,7 @@ void ttk::TopologicalCompression::CompressWithZlib(
   unsigned char *dest,
   unsigned long &destLen,
   const unsigned char *const source,
-  const unsigned long sourceLen) {
+  const unsigned long sourceLen) const {
 
   if(decompress)
     uncompress(dest, &destLen, source, sourceLen);
@@ -155,7 +156,7 @@ int ttk::TopologicalCompression::ReadCompactSegmentation(
   FILE *fm,
   std::vector<int> &segmentation,
   int &numberOfVertices,
-  int &numberOfSegments) {
+  int &numberOfSegments) const {
 
   int numberOfBytesRead = 0;
 
@@ -259,7 +260,7 @@ int ttk::TopologicalCompression::WriteCompactSegmentation(
   FILE *fm,
   const std::vector<int> &segmentation,
   int numberOfVertices,
-  int numberOfSegments) {
+  int numberOfSegments) const {
 
   int numberOfBytesWritten = 0;
 
@@ -345,7 +346,8 @@ int ttk::TopologicalCompression::ReadPersistenceIndex(
   std::vector<std::tuple<int, double, int>> &constraints,
   double &min,
   double &max,
-  int &nbConstraints) {
+  int &nbConstraints) const {
+
   int numberOfBytesRead = 0;
 
   // 1.a. Read mapping.
@@ -407,7 +409,8 @@ int ttk::TopologicalCompression::ReadPersistenceIndex(
 int ttk::TopologicalCompression::WritePersistenceIndex(
   FILE *fm,
   std::vector<std::tuple<double, int>> &mapping,
-  std::vector<std::tuple<int, double, int>> &constraints) {
+  std::vector<std::tuple<int, double, int>> &constraints) const {
+
   int numberOfBytesWritten = 0;
 
   // Size.

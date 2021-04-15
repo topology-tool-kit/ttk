@@ -12,7 +12,7 @@
 #include <TopologicalCompression.h>
 
 template <typename dataType>
-int ttk::TopologicalCompression::ComputeTotalSizeForOther() {
+int ttk::TopologicalCompression::ComputeTotalSizeForOther() const {
   // Should return the number of bytes to be written on the output file
   // sizeof(char) = 1 (byte)
   // use sizeof(int), sizeof(double) to get the number of bytes of
@@ -21,7 +21,7 @@ int ttk::TopologicalCompression::ComputeTotalSizeForOther() {
 }
 
 template <typename dataType>
-int ttk::TopologicalCompression::computeOther() {
+int ttk::TopologicalCompression::computeOther() const {
   // Code me
   return 0;
 }
@@ -32,7 +32,7 @@ int ttk::TopologicalCompression::compressForOther(
   const dataType *const inputData,
   const SimplexId *const inputOffsets,
   dataType *outputData,
-  const double &tol) {
+  const double &tol) const {
 
   ttk::Timer t;
   // Code me
@@ -50,28 +50,28 @@ int ttk::TopologicalCompression::compressForOther(
 }
 
 template <typename dataType>
-int ttk::TopologicalCompression::WriteOtherTopology(FILE *fm) {
+int ttk::TopologicalCompression::WriteOtherTopology(FILE *fm) const {
   this->printWrn("Writing Other index / topology.");
   // Code me
   return 0;
 }
 
 template <typename dataType>
-int ttk::TopologicalCompression::WriteOtherGeometry(FILE *fm) {
+int ttk::TopologicalCompression::WriteOtherGeometry(FILE *fm) const {
   this->printWrn("Writing Other buffer / geometry.");
   // Code me
   return 0;
 }
 
 template <typename dataType>
-int ttk::TopologicalCompression::ReadOtherTopology(FILE *fm) {
+int ttk::TopologicalCompression::ReadOtherTopology(FILE *fm) const {
   this->printWrn("Reading Other index / topology.");
   // Code me
   return 0;
 }
 
 template <typename dataType>
-int ttk::TopologicalCompression::ReadOtherGeometry(FILE *fm) {
+int ttk::TopologicalCompression::ReadOtherGeometry(FILE *fm) const {
   this->printWrn("Reading Other buffer / geometry.");
   // Code me
   return 0;

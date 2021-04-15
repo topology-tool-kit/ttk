@@ -14,7 +14,7 @@ int ttk::TopologicalCompression::ComputeTotalSizeForPersistenceDiagram(
   bool zfpOnly,
   int nSegments,
   int nVertices,
-  double zfpTolerance) {
+  double zfpTolerance) const {
 
   int totalSize = 0;
 
@@ -303,7 +303,8 @@ void ttk::TopologicalCompression::CropIntervals(
   double max,
   int vertexNumber,
   double *array,
-  std::vector<int> &segmentation) {
+  std::vector<int> &segmentation) const {
+
   int numberOfMisses = 0;
   for(int i = 0; i < vertexNumber; ++i) {
     int seg = segmentation[i];
