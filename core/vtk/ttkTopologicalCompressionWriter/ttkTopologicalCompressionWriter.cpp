@@ -103,10 +103,9 @@ int ttkTopologicalCompressionWriter::Write() {
   auto vp = static_cast<double *>(ttkUtils::GetVoidPointer(inputScalarField));
 
   this->setFileName(FileName);
-  this->WriteToFile<double>(fp, CompressionType, ZFPOnly, SQMethod.c_str(), dt,
-                            vti->GetExtent(), vti->GetSpacing(),
-                            vti->GetOrigin(), vp, Tolerance, ZFPTolerance,
-                            inputScalarField->GetName());
+  this->WriteToFile(fp, CompressionType, ZFPOnly, SQMethod.c_str(), dt,
+                    vti->GetExtent(), vti->GetSpacing(), vti->GetOrigin(), vp,
+                    Tolerance, ZFPTolerance, inputScalarField->GetName());
 
   this->printMsg("Wrote to " + std::string{FileName} + ".");
   return 1;

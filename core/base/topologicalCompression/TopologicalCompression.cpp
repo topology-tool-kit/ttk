@@ -452,3 +452,410 @@ int ttk::TopologicalCompression::WritePersistenceIndex(
 
   return numberOfBytesWritten;
 }
+
+int ttk::TopologicalCompression::ComputeTotalSizeForPersistenceDiagram(
+  std::vector<std::tuple<double, int>> &mapping,
+  std::vector<std::tuple<int, double, int>> &criticalConstraints,
+  bool zfpOnly,
+  int nSegments,
+  int nVertices,
+  double zfpTolerance) const {
+
+  int totalSize = 0;
+
+  if(!zfpOnly) {
+    // Topological segments.
+    int numberOfBitsPerSegment = log2(nSegments) + 1;
+    double nbCharPerSegment = (double)numberOfBitsPerSegment / 8.0;
+    totalSize += (sizeof(int) * 2 + std::ceil(nbCharPerSegment * nVertices));
+
+    // Geometrical mapping.
+    auto mappingSize = (int)mapping.size();
+    auto constraintsSize = (int)criticalConstraints.size();
+    totalSize += (mappingSize) * (sizeof(int) + sizeof(double)) + sizeof(int);
+    totalSize
+      += (constraintsSize) * (2 * sizeof(int) + sizeof(double)) + sizeof(int);
+  }
+
+  // conservative estimate of the ZFP buffer (no compression at all...)
+  totalSize += zfpTolerance > 0.0 ? nVertices * sizeof(double) : 0 + 2;
+
+  return totalSize;
+}
+
+int ttk::TopologicalCompression::WritePersistenceTopology(FILE *fm) {
+  int numberOfBytesWritten = 0;
+
+  int numberOfVertices = getNbVertices();
+  int numberOfSegments = getNbSegments();
+
+  // Test arguments.
+  if(numberOfSegments < 1)
+    return -1;
+
+  numberOfBytesWritten += sizeof(int);
+  Write(fm, numberOfVertices);
+
+  numberOfBytesWritten += sizeof(int);
+  Write(fm, numberOfSegments);
+
+  numberOfBytesWritten += WriteCompactSegmentation(
+    fm, getSegmentation(), numberOfVertices, numberOfSegments);
+
+  rawFileLength += numberOfBytesWritten;
+
+  return 0;
+}
+
+int ttk::TopologicalCompression::WritePersistenceGeometry(FILE *fm,
+                                                          int *dataExtent,
+                                                          bool zfpOnly,
+                                                          double zfpTolerance,
+                                                          double *toCompress) {
+  int numberOfBytesWritten = 0;
+
+  if(!zfpOnly) {
+    // 1. Write segmentation map.
+    // 2. Write critical constraints.
+    numberOfBytesWritten
+      += WritePersistenceIndex(fm, mapping_, criticalConstraints_);
+  }
+
+  this->printMsg("Wrote raw geometry.");
+
+  if(zfpTolerance >= 0.0) {
+#ifdef TTK_ENABLE_ZFP
+    // (1. or 3.) Write zfp-compressed array.
+    int nx = 1 + dataExtent[1] - dataExtent[0];
+    int ny = 1 + dataExtent[3] - dataExtent[2];
+    int nz = 1 + dataExtent[5] - dataExtent[4];
+
+    std::vector<double> dataVector(toCompress, toCompress + (nx * ny * nz));
+    numberOfBytesWritten
+      += CompressWithZFP(fm, false, dataVector, nx, ny, nz, zfpTolerance);
+
+#else
+    this->printErr("Attempted to write with ZFP but ZFP is not installed.");
+    return -5;
+#endif
+  }
+
+  rawFileLength += numberOfBytesWritten;
+
+  return 0;
+}
+
+int ttk::TopologicalCompression::ReadPersistenceTopology(FILE *fm) {
+  int numberOfSegments;
+  int numberOfVertices;
+
+  int numberOfBytesRead = ReadCompactSegmentation(
+    fm, segmentation_, numberOfVertices, numberOfSegments);
+
+  this->rawFileLength += numberOfBytesRead;
+
+  return 0;
+}
+
+///////////////////////////////
+// Other compression methods //
+///////////////////////////////
+
+int ttk::TopologicalCompression::ComputeTotalSizeForOther() const {
+  // Should return the number of bytes to be written on the output file
+  // sizeof(char) = 1 (byte)
+  // use sizeof(int), sizeof(double) to get the number of bytes of
+  // the matching structures.
+  return 0;
+}
+
+int ttk::TopologicalCompression::computeOther() const {
+  // Code me
+  return 0;
+}
+
+int ttk::TopologicalCompression::WriteOtherTopology(FILE *fm) const {
+  this->printWrn("Writing Other index / topology.");
+  // Code me
+  return 0;
+}
+
+int ttk::TopologicalCompression::WriteOtherGeometry(FILE *fm) const {
+  this->printWrn("Writing Other buffer / geometry.");
+  // Code me
+  return 0;
+}
+
+int ttk::TopologicalCompression::ReadOtherTopology(FILE *fm) const {
+  this->printWrn("Reading Other index / topology.");
+  // Code me
+  return 0;
+}
+
+int ttk::TopologicalCompression::ReadOtherGeometry(FILE *fm) const {
+  this->printWrn("Reading Other buffer / geometry.");
+  // Code me
+  return 0;
+}
+
+/////////////////////////////
+// Read/Write File methods //
+/////////////////////////////
+
+int ttk::TopologicalCompression::WriteToFile(FILE *fp,
+                                             int compressionType,
+                                             bool zfpOnly,
+                                             const char *sqMethod,
+                                             int dataType,
+                                             int *dataExtent,
+                                             double *dataSpacing,
+                                             double *dataOrigin,
+                                             double *data,
+                                             double tolerance,
+                                             double zfpTolerance,
+                                             const std::string &dataArrayName) {
+  // [->fp] Write metadata.
+  WriteMetaData(fp, compressionType, zfpOnly, sqMethod, dataType, dataExtent,
+                dataSpacing, dataOrigin, tolerance, zfpTolerance,
+                dataArrayName);
+
+#ifdef TTK_ENABLE_ZLIB
+  Write(fp, true);
+#else
+  Write(fp, false);
+#endif
+
+  bool usePersistence
+    = compressionType == (int)ttk::CompressionType::PersistenceDiagram;
+  bool useOther = compressionType == (int)ttk::CompressionType::Other;
+
+  int numberOfVertices = 1;
+  for(int i = 0; i < 3; ++i)
+    numberOfVertices *= (1 + dataExtent[2 * i + 1] - dataExtent[2 * i]);
+  NbVertices = numberOfVertices;
+
+  int totalSize = usePersistence ? ComputeTotalSizeForPersistenceDiagram(
+                    getMapping(), getCriticalConstraints(), zfpOnly,
+                    getNbSegments(), getNbVertices(), zfpTolerance)
+                  : useOther ? ComputeTotalSizeForOther()
+                             : 0;
+
+  std::vector<char> bbuf(totalSize);
+  char *buf = bbuf.data();
+  size_t len = (size_t)totalSize;
+
+  // #ifndef _MSC_VER
+  // FILE *fm = fmemopen(buf, len, "r+");
+  // #else
+  const std::string s = fileName + std::string(".temp");
+  const char *ffn = s.c_str();
+  FILE *fm = fopen(ffn, "wb");
+  // #endif
+
+  // [->fm] Encode, lossless compress and write topology.
+  if(!(zfpOnly)) {
+    if(usePersistence)
+      WritePersistenceTopology(fm);
+    else if(useOther)
+      WriteOtherTopology(fm);
+  }
+
+  this->printMsg("Topology successfully written to buffer.");
+
+  int status = 0;
+  // [->fm] Write altered geometry.
+  if(usePersistence)
+    status
+      = WritePersistenceGeometry(fm, dataExtent, zfpOnly, zfpTolerance, data);
+  else if(useOther)
+    status = WriteOtherGeometry(fm);
+
+  fclose(fm); // !Close stream to write changes!
+  // #ifdef _MSC_VER
+  fm = fopen(ffn, "rb");
+  int ret = fread(buf, len, sizeof(char), fm);
+  fclose(fm);
+  remove(ffn);
+  // #endif
+
+  if(status == 0) {
+    this->printMsg("Geometry successfully written to buffer.");
+  } else {
+    this->printErr("Geometry was not successfully written to buffer.");
+    fflush(fp);
+    fclose(fp);
+    return -1;
+  }
+
+  // Check computed size vs read size.
+  if(totalSize < rawFileLength) {
+    this->printErr("Invalid total size (" + std::to_string(totalSize) + " vs "
+                   + std::to_string(rawFileLength) + ").");
+  }
+
+#ifdef TTK_ENABLE_ZLIB
+  // [fm->ff] Compress fm.
+  auto sourceLen = static_cast<unsigned long>(rawFileLength);
+  const auto source = reinterpret_cast<unsigned char *>(buf);
+  auto destLen = GetZlibDestLen(sourceLen);
+  std::vector<unsigned char> ddest(destLen);
+  CompressWithZlib(false, ddest.data(), destLen, source, sourceLen);
+  this->printMsg("Data successfully compressed.");
+
+  // [fm->fp] Copy fm to fp.
+  Write(fp, destLen); // Compressed size...
+  Write(fp, sourceLen);
+  WriteByteArray(fp, ddest.data(), destLen);
+  this->printMsg("Data successfully written to filesystem.");
+
+#else
+  this->printMsg("ZLIB not found, writing raw file.");
+  unsigned char *source = reinterpret_cast<unsigned char *>(buf);
+  unsigned long sourceLen = (unsigned long)rawFileLength;
+  unsigned long destLen = (unsigned long)rawFileLength;
+
+  Write(fp, destLen); // Compressed size...
+  Write(fp, sourceLen);
+  WriteByteArray(fp, source, destLen);
+#endif
+
+  fflush(fp);
+  fclose(fp);
+
+  return ret;
+}
+
+int ttk::TopologicalCompression::WriteMetaData(
+  FILE *fp,
+  int compressionType,
+  bool zfpOnly,
+  const char *sqMethod,
+  int dataType,
+  int *dataExtent,
+  double *dataSpacing,
+  double *dataOrigin,
+  double tolerance,
+  double zfpTolerance,
+  const std::string &dataArrayName) {
+
+  // -4. Magic bytes
+  WriteByteArray(fp, magicBytes_, std::strlen(magicBytes_));
+
+  // -3. File format version
+  Write(fp, formatVersion_);
+
+  // -2. Persistence, or Other
+  Write(fp, compressionType);
+
+  // -1. zfpOnly
+  Write(fp, zfpOnly);
+
+  // 0. SQ type
+  const char *sq = sqMethod;
+  int sqType = (strcmp(sq, "") == 0)                            ? 0
+               : (strcmp(sq, "r") == 0 || strcmp(sq, "R") == 0) ? 1
+               : (strcmp(sq, "d") == 0 || strcmp(sq, "D") == 0) ? 2
+                                                                : 3;
+
+  Write(fp, sqType);
+
+  // 1. DataType
+  Write(fp, dataType);
+
+  // 2. Data extent, spacing, origin
+  for(int i = 0; i < 6; ++i)
+    Write(fp, dataExtent[i]);
+
+  for(int i = 0; i < 3; ++i)
+    Write(fp, dataSpacing[i]);
+
+  for(int i = 0; i < 3; ++i)
+    Write(fp, dataOrigin[i]);
+
+  // 4. Tolerance
+  Write(fp, tolerance);
+
+  // 5. ZFP ratio
+  Write(fp, zfpTolerance);
+
+  // 6. Length of array name
+  // (explicit call to unsigned long variant for MSVC compatibility)
+  Write<unsigned long>(fp, dataArrayName.size());
+
+  // 7. Array name (as unsigned chars)
+  WriteByteArray(fp, dataArrayName.c_str(), dataArrayName.size());
+
+  this->printMsg("Metadata successfully written.");
+
+  return 0;
+}
+
+int ttk::TopologicalCompression::ReadMetaData(FILE *fm) {
+
+  // -4. Magic bytes
+  const auto magicBytesLen{std::strlen(magicBytes_)};
+  std::vector<char> mBytes(magicBytesLen + 1);
+  mBytes[magicBytesLen] = '\0'; // NULL-termination
+  ReadByteArray(fm, mBytes.data(), magicBytesLen);
+
+  // To deal with pre-v1 file format (without scalar field array name)
+  const bool hasMagicBytes = strcmp(mBytes.data(), magicBytes_) == 0;
+  if(!hasMagicBytes) {
+    this->printErr("Could not find magic bytes in input file!");
+    return 1;
+  }
+
+  // -3. File format version
+  const auto fileVersion = Read<unsigned long>(fm);
+  if(fileVersion < this->formatVersion_) {
+    this->printErr("Old format version detected (" + std::to_string(fileVersion)
+                   + " vs. " + std::to_string(this->formatVersion_) + ").");
+    this->printErr("Older formats are not supported!");
+    return 1;
+  } else if(fileVersion > this->formatVersion_) {
+    this->printErr("Newer format version detected ("
+                   + std::to_string(fileVersion) + " vs. "
+                   + std::to_string(this->formatVersion_) + ").");
+    this->printErr("Cannot read file with current TTK, try with to update.");
+    return 1;
+  }
+
+  // -2. Compression type.
+  compressionType_ = Read<int>(fm);
+
+  // -1. ZFP only type.
+  ZFPOnly = Read<bool>(fm);
+
+  // 0. SQ type
+  SQMethodInt = Read<int>(fm);
+
+  // 1. DataType
+  dataScalarType_ = Read<int>(fm);
+  // DataScalarType = VTK_DOUBLE;
+
+  // 2. Data extent, spacing, origin
+  for(int i = 0; i < 6; ++i)
+    dataExtent_[i] = Read<int>(fm);
+
+  for(int i = 0; i < 3; ++i)
+    dataSpacing_[i] = Read<double>(fm);
+
+  for(int i = 0; i < 3; ++i)
+    dataOrigin_[i] = Read<double>(fm);
+
+  // 4. Error tolerance (relative percentage)
+  Tolerance = Read<double>(fm);
+
+  // 5. Lossy compressor ratio
+  ZFPTolerance = Read<double>(fm);
+
+  // 6. Length of array name
+  size_t dataArrayNameLength = Read<unsigned long>(fm);
+
+  // 7. Array name (as unsigned chars)
+  dataArrayName_.resize(dataArrayNameLength + 1);
+  dataArrayName_[dataArrayNameLength] = '\0'; // NULL-termination
+  ReadByteArray(fm, dataArrayName_.data(), dataArrayNameLength);
+
+  return 0;
+}
