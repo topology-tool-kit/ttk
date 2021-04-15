@@ -19,13 +19,7 @@
 #include <Triangulation.h>
 
 // std
-#include <algorithm>
-#include <climits>
-#include <cmath>
-#include <cstdio>
-#include <cstdlib>
 #include <cstring>
-#include <iostream>
 #include <stack>
 #include <type_traits>
 
