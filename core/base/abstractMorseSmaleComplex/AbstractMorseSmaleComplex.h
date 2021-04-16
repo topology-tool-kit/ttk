@@ -262,7 +262,7 @@ namespace ttk {
       std::vector<char> *const separatrices1_points_cellDimensions,
       std::vector<SimplexId> *const separatrices1_points_cellIds,
       SimplexId *const separatrices1_numberOfCells,
-      std::vector<long long> *const separatrices1_cells_connectivity,
+      std::vector<SimplexId> *const separatrices1_cells_connectivity,
       std::vector<SimplexId> *const separatrices1_cells_sourceIds,
       std::vector<SimplexId> *const separatrices1_cells_destinationIds,
       std::vector<SimplexId> *const separatrices1_cells_separatrixIds,
@@ -303,8 +303,8 @@ namespace ttk {
       SimplexId *const separatrices2_numberOfPoints,
       std::vector<float> *const separatrices2_points,
       SimplexId *const separatrices2_numberOfCells,
-      std::vector<long long> *const separatrices2_cells_offsets,
-      std::vector<long long> *const separatrices2_cells_connectivity,
+      std::vector<SimplexId> *const separatrices2_cells_offsets,
+      std::vector<SimplexId> *const separatrices2_cells_connectivity,
       std::vector<SimplexId> *const separatrices2_cells_sourceIds,
       std::vector<SimplexId> *const separatrices2_cells_separatrixIds,
       std::vector<char> *const separatrices2_cells_separatrixTypes,
@@ -429,7 +429,7 @@ namespace ttk {
     std::vector<char> *outputSeparatrices1_points_cellDimensions_{};
     std::vector<SimplexId> *outputSeparatrices1_points_cellIds_{};
     SimplexId *outputSeparatrices1_numberOfCells_{};
-    std::vector<long long> *outputSeparatrices1_cells_connectivity_{};
+    std::vector<SimplexId> *outputSeparatrices1_cells_connectivity_{};
     std::vector<SimplexId> *outputSeparatrices1_cells_sourceIds_{};
     std::vector<SimplexId> *outputSeparatrices1_cells_destinationIds_{};
     std::vector<SimplexId> *outputSeparatrices1_cells_separatrixIds_{};
@@ -441,8 +441,8 @@ namespace ttk {
     SimplexId *outputSeparatrices2_numberOfPoints_{};
     std::vector<float> *outputSeparatrices2_points_{};
     SimplexId *outputSeparatrices2_numberOfCells_{};
-    std::vector<long long> *outputSeparatrices2_cells_offsets_{};
-    std::vector<long long> *outputSeparatrices2_cells_connectivity_{};
+    std::vector<SimplexId> *outputSeparatrices2_cells_offsets_{};
+    std::vector<SimplexId> *outputSeparatrices2_cells_connectivity_{};
     std::vector<SimplexId> *outputSeparatrices2_cells_sourceIds_{};
     std::vector<SimplexId> *outputSeparatrices2_cells_separatrixIds_{};
     std::vector<char> *outputSeparatrices2_cells_separatrixTypes_{};

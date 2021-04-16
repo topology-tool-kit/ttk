@@ -155,7 +155,7 @@ private:
   std::vector<char> separatrices1_points_smoothingMask{};
   std::vector<char> separatrices1_points_cellDimensions{};
   std::vector<ttk::SimplexId> separatrices1_points_cellIds{};
-  std::vector<vtkIdType> separatrices1_cells_connectivity{};
+  std::vector<ttk::SimplexId> separatrices1_cells_connectivity{};
   std::vector<ttk::SimplexId> separatrices1_cells_sourceIds{};
   std::vector<ttk::SimplexId> separatrices1_cells_destinationIds{};
   std::vector<ttk::SimplexId> separatrices1_cells_separatrixIds{};
@@ -164,8 +164,8 @@ private:
 
   // 2-separatrices data
   std::vector<float> separatrices2_points{};
-  std::vector<vtkIdType> separatrices2_cells_offsets{};
-  std::vector<vtkIdType> separatrices2_cells_connectivity{};
+  std::vector<ttk::SimplexId> separatrices2_cells_offsets{};
+  std::vector<ttk::SimplexId> separatrices2_cells_connectivity{};
   std::vector<ttk::SimplexId> separatrices2_cells_sourceIds{};
   std::vector<ttk::SimplexId> separatrices2_cells_separatrixIds{};
   std::vector<char> separatrices2_cells_separatrixTypes{};

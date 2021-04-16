@@ -315,7 +315,7 @@ int ttkMorseSmaleComplex::dispatch(vtkDataArray *const inputScalars,
     isOnBoundary->SetName("NumberOfCriticalPointsOnBoundary");
     setArray(isOnBoundary, separatrices1_cells_isOnBoundary);
 
-    vtkNew<vtkIdTypeArray> offsets{}, connectivity{};
+    vtkNew<ttkSimplexIdTypeArray> offsets{}, connectivity{};
     offsets->SetNumberOfComponents(1);
     offsets->SetNumberOfTuples(s1_numberOfCells + 1);
     connectivity->SetNumberOfComponents(1);
@@ -332,6 +332,9 @@ int ttkMorseSmaleComplex::dispatch(vtkDataArray *const inputScalars,
     points->SetData(pointsCoords);
     outputSeparatrices1->SetPoints(points);
     vtkNew<vtkCellArray> cells{};
+#ifndef TTK_ENABLE_64BIT_IDS
+    cells->Use32BitStorage();
+#endif // TTK_ENABLE_64BIT_IDS
     cells->SetData(offsets, connectivity);
     outputSeparatrices1->SetLines(cells);
 
@@ -425,7 +428,7 @@ int ttkMorseSmaleComplex::dispatch(vtkDataArray *const inputScalars,
     isOnBoundary->SetName("NumberOfCriticalPointsOnBoundary");
     setArray(isOnBoundary, separatrices2_cells_isOnBoundary);
 
-    vtkNew<vtkIdTypeArray> offsets{}, connectivity{};
+    vtkNew<ttkSimplexIdTypeArray> offsets{}, connectivity{};
     offsets->SetNumberOfComponents(1);
     setArray(offsets, separatrices2_cells_offsets);
     connectivity->SetNumberOfComponents(1);
@@ -435,6 +438,9 @@ int ttkMorseSmaleComplex::dispatch(vtkDataArray *const inputScalars,
     points->SetData(pointsCoords);
     outputSeparatrices2->SetPoints(points);
     vtkNew<vtkCellArray> cells{};
+#ifndef TTK_ENABLE_64BIT_IDS
+    cells->Use32BitStorage();
+#endif // TTK_ENABLE_64BIT_IDS
     cells->SetData(offsets, connectivity);
     outputSeparatrices2->SetPolys(cells);
 
