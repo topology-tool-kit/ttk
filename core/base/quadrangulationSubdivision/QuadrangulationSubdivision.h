@@ -723,7 +723,6 @@ int ttk::QuadrangulationSubdivision::subdivise(
   }
 
   for(auto &q : outputQuads_) {
-    assert(q.n == 4); // magic number...
 
     auto i = static_cast<size_t>(q[0]);
     auto j = static_cast<size_t>(q[1]);
