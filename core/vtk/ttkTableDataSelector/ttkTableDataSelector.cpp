@@ -2,15 +2,17 @@
 #include <ttkTableDataSelector.h>
 #include <ttkUtils.h>
 
+#include <vtkObjectFactory.h>
+
 #include <regex>
 
 using namespace std;
 using namespace ttk;
 
-vtkStandardNewMacro(ttkTableDataSelector)
+vtkStandardNewMacro(ttkTableDataSelector);
 
-  int ttkTableDataSelector::FillInputPortInformation(int port,
-                                                     vtkInformation *info) {
+int ttkTableDataSelector::FillInputPortInformation(int port,
+                                                   vtkInformation *info) {
   if(port == 0) {
     info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkTable");
     return 1;

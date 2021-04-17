@@ -4,6 +4,7 @@
 
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
+#include <vtkObjectFactory.h>
 #include <vtkPointData.h>
 #include <vtkSmartPointer.h>
 

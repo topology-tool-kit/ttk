@@ -8,6 +8,7 @@
 #include <vtkIdTypeArray.h>
 #include <vtkImageData.h>
 #include <vtkInformation.h>
+#include <vtkIntArray.h>
 #include <vtkPointData.h>
 #include <vtkSignedCharArray.h>
 

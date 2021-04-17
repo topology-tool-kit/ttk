@@ -1,8 +1,9 @@
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
+#include <vtkIdTypeArray.h>
 #include <vtkInformation.h>
+#include <vtkIntArray.h>
 #include <vtkNew.h>
-#include <vtkObjectFactory.h>
 #include <vtkPointData.h>
 #include <vtkPointSet.h>
 #include <vtkSmartPointer.h>

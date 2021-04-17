@@ -4,6 +4,7 @@
 
 #include <vtkDoubleArray.h>
 #include <vtkFloatArray.h>
+#include <vtkIdTypeArray.h>
 #include <vtkIntArray.h>
 #include <vtkNew.h>
 #include <vtkPointData.h>

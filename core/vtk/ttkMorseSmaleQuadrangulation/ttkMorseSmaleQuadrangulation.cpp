@@ -2,8 +2,8 @@
 #include <ttkMorseSmaleQuadrangulation.h>
 #include <ttkUtils.h>
 
+#include <vtkIdTypeArray.h>
 #include <vtkInformation.h>
-#include <vtkObjectFactory.h>
 #include <vtkPointData.h>
 #include <vtkPolyData.h>
 
