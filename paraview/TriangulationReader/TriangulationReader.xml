@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ServerManagerConfiguration>
+  <ProxyGroup name="filters">
+    <SourceProxy name="ttkTriangulationReader"
+                 class="ttkTriangulationReader"
+                 label="TTK TriangulationReader">
+      <Documentation
+          long_help="TTK TriangulationReader"
+          short_help="TTK TriangulationReader">
+        This filter reads the content of an already preconditioned TTK
+        Explicit Triangulation File to import it into the current
+        dataset.
+      </Documentation>
+
+      <InputProperty
+          name="Input"
+          command="SetInputConnection">
+        <ProxyGroupDomain name="groups">
+          <Group name="sources"/>
+          <Group name="filters"/>
+        </ProxyGroupDomain>
+        <DataTypeDomain name="input_type">
+          <DataType value="vtkUnstructuredGrid"/>
+        </DataTypeDomain>
+        <Documentation>
+          Data-set to process.
+        </Documentation>
+      </InputProperty>
+
+      <StringVectorProperty name="TriangulationFilePath"
+                            label="Triangulation File Path"
+                            animateable="0"
+                            command="SetTriangulationFilePath"
+                            number_of_elements="1">
+        <Documentation>Path to a TTK Triangulation File.</Documentation>
+        <FileListDomain name="files" />
+         <Hints>
+           <FileChooser extensions="tpt"
+                        file_description="TTK Preconditioned Triangulation File Format" />
+         </Hints>
+      </StringVectorProperty>
+
+      <PropertyGroup panel_widget="Line" label="Input Options">
+        <Property name="TriangulationFilePath" />
+      </PropertyGroup>
+
+      ${DEBUG_WIDGETS}
+
+      <Hints>
+        <ShowInMenu category="TTK - Domain" />
+      </Hints>
+    </SourceProxy>
+  </ProxyGroup>
+</ServerManagerConfiguration>

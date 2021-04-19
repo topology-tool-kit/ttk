@@ -1,0 +1,8 @@
+NAME
+  ttkTriangulationWriter
+SOURCES
+  ttkTriangulationWriter.cpp
+HEADERS
+  ttkTriangulationWriter.h
+DEPENDS
+  ttkAlgorithm

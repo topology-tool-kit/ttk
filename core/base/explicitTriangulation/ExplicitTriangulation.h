@@ -600,6 +600,19 @@ namespace ttk {
       return 0;
     }
 
+    /**
+     * @brief Write internal state to disk
+     *
+     * Use a custom binary format for fast loading
+     */
+    int writeToFile(std::ofstream &stream) const;
+    /**
+     * @brief Read from disk into internal state
+     *
+     * Use a custom binary format for fast loading
+     */
+    int readFromFile(std::ifstream &stream);
+
   private:
     bool doublePrecision_;
     SimplexId cellNumber_, vertexNumber_;
@@ -618,5 +631,11 @@ namespace ttk {
     FlatJaggedArray vertexLinkData_{};
     FlatJaggedArray edgeLinkData_{};
     FlatJaggedArray triangleLinkData_{};
+
+    // Char array that identifies the file format.
+    static const char *magicBytes_;
+    // Current version of the file format. To be incremented at every
+    // breaking change to keep backward compatibility.
+    static const unsigned long formatVersion_;
   };
 } // namespace ttk
