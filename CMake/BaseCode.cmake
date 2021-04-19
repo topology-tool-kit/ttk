@@ -184,6 +184,12 @@ function(ttk_set_compile_options library)
     target_link_libraries(${library} PUBLIC ${SQLITE3_LIBRARY})
   endif()
 
+  # TODO per module
+  if (TTK_ENABLE_WEBSOCKETPP)
+    target_compile_definitions(${library} PUBLIC TTK_ENABLE_WEBSOCKETPP)
+    target_include_directories(${library} PUBLIC ${WEBSOCKETPP_INCLUDE_DIR})
+  endif()
+
   if (TTK_ENABLE_64BIT_IDS)
     target_compile_definitions(${library} PUBLIC TTK_ENABLE_64BIT_IDS)
   endif()

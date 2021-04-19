@@ -1,0 +1,10 @@
+NAME
+  ttkWebSocketIO
+SOURCES
+  ttkWebSocketIO.cpp
+HEADERS
+  ttkWebSocketIO.h
+DEPENDS
+  webSocketIO
+  Boost::boost
+  ttkAlgorithm
