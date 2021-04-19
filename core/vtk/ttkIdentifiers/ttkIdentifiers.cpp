@@ -19,6 +19,9 @@ ttkIdentifiers::ttkIdentifiers() {
   this->SetNumberOfOutputPorts(1);
 
   setDebugMsgPrefix("Identifiers");
+
+  vtkWarningMacro("`TTK Identifiers' is now deprecated. Please use "
+                  "`Generate Ids' instead.");
 }
 
 ttkIdentifiers::~ttkIdentifiers() {
