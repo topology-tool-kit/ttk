@@ -25,7 +25,7 @@ namespace ttk {
       Node() {
       }
       // leaf constructor
-      Node(const std::vector<int> triangleIndices,
+      Node(const std::vector<int> &triangleIndices,
            const size_t nTriangles,
            const float *pMin,
            const float *pMax) {

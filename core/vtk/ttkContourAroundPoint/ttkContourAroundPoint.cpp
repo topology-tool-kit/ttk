@@ -37,9 +37,6 @@ int Class::FillInputPortInformation(int port, vtkInformation *info) {
       info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
       return 1;
     case 1:
-      info->Set(
-        vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkUnstructuredGrid");
-      return 1;
     case 2:
       info->Set(
         vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkUnstructuredGrid");
@@ -51,8 +48,6 @@ int Class::FillInputPortInformation(int port, vtkInformation *info) {
 int Class::FillOutputPortInformation(int port, vtkInformation *info) {
   switch(port) {
     case 0:
-      info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
-      return 1;
     case 1:
       info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
       return 1;

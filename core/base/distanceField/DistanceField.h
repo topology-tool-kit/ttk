@@ -98,9 +98,7 @@ int ttk::DistanceField::execute(const triangulationType *triangulation_) const {
   std::set<SimplexId> isSource;
   for(SimplexId k = 0; k < sourceNumber_; ++k)
     isSource.insert(identifiers[k]);
-  std::vector<SimplexId> sources;
-  for(auto s : isSource)
-    sources.push_back(s);
+  std::vector<SimplexId> sources(isSource.begin(), isSource.end());
   isSource.clear();
 
   // prepare output

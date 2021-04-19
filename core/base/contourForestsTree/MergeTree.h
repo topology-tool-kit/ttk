@@ -281,7 +281,7 @@ namespace ttk {
       // vert2tree
       // .....................{
 
-      inline void setVert2Tree(decltype(treeData_.vert2tree) const vect2tree) {
+      inline void setVert2Tree(decltype(treeData_.vert2tree) const &vect2tree) {
         treeData_.vert2tree = vect2tree;
       }
 

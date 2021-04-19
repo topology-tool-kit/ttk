@@ -670,7 +670,7 @@ namespace ttk {
       const PointType pointType,
       SubLevelSetTree &lowerTree,
       SubLevelSetTree &upperTree,
-      const std::vector<int> mandatoryExtremumVertex,
+      const std::vector<int> &mandatoryExtremumVertex,
       std::vector<std::pair<int, int>> &mandatorySaddleVertex,
       std::vector<std::vector<int>> &mandatoryMergedExtrema);
 

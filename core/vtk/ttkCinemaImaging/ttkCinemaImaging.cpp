@@ -268,7 +268,7 @@ vtkCellArray *ttkCinemaImaging::GetCells(vtkPointSet *pointSet) {
 int ttkCinemaImaging::AddFieldDataArray(vtkFieldData *fd,
                                         vtkDataArray *array,
                                         int tupelIdx,
-                                        std::string name) {
+                                        const std::string &name) {
   if(!array)
     return 0;
 
@@ -333,7 +333,7 @@ int ttkCinemaImaging::ComputeDirFromFocalPoint(vtkPointSet *inputGrid) {
 };
 
 int ttkCinemaImaging::EnsureGridData(vtkPointData *fd,
-                                     std::string name,
+                                     const std::string &name,
                                      int nTuples,
                                      const std::vector<double> &defaultValues) {
   auto array = vtkDoubleArray::SafeDownCast(fd->GetArray(name.data()));

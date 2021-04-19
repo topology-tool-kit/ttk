@@ -98,7 +98,7 @@ int ttkContinuousScatterPlot::RequestData(vtkInformation *request,
   SimplexId numberOfPoints = input->GetNumberOfPoints();
 #ifndef TTK_ENABLE_KAMIKAZE
   // no points
-  if(!numberOfPoints) {
+  if(numberOfPoints < 1) {
     this->printErr("no points.");
     return -4;
   }

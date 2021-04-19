@@ -39,7 +39,7 @@ ttkOFFReader::ttkOFFReader() {
   this->SetNumberOfOutputPorts(1);
 }
 
-int countVertsData(std::string line) {
+int countVertsData(const std::string &line) {
   std::istringstream ss(line);
   double buffer;
   int nbFields = -1;
@@ -51,7 +51,7 @@ int countVertsData(std::string line) {
   return nbFields - 3;
 }
 
-int countCellsData(std::string line) {
+int countCellsData(const std::string &line) {
   std::istringstream ss(line);
   double buffer;
   int nbFields = -1;

@@ -125,9 +125,7 @@ int ttk::IntegralLines::execute(const triangulationType *triangulation) const {
   std::unordered_set<SimplexId> isSeed;
   for(SimplexId k = 0; k < seedNumber_; ++k)
     isSeed.insert(identifiers[k]);
-  std::vector<SimplexId> seeds;
-  for(auto k : isSeed)
-    seeds.push_back(k);
+  std::vector<SimplexId> seeds(isSeed.begin(), isSeed.end());
   isSeed.clear();
 
   trajectories->resize(seeds.size());
@@ -188,9 +186,7 @@ int ttk::IntegralLines::execute(Compare cmp,
   std::unordered_set<SimplexId> isSeed;
   for(SimplexId k = 0; k < seedNumber_; ++k)
     isSeed.insert(identifiers[k]);
-  std::vector<SimplexId> seeds;
-  for(auto k : isSeed)
-    seeds.push_back(k);
+  std::vector<SimplexId> seeds(isSeed.begin(), isSeed.end());
   isSeed.clear();
 
   trajectories->resize(seeds.size());

@@ -129,8 +129,8 @@ double BottleneckDistance::computeGeometricalRange(
   minZ = std::min(minZ1, minZ2);
   maxZ = std::max(maxZ1, maxZ2);
 
-  return sqrt(Geometry::pow(maxX - minX, 2) + Geometry::pow(maxY - minY, 2)
-              + Geometry::pow(maxZ - minZ, 2));
+  return std::sqrt(Geometry::pow(maxX - minX, 2) + Geometry::pow(maxY - minY, 2)
+                   + Geometry::pow(maxZ - minZ, 2));
 }
 
 template <typename dataType>
@@ -444,10 +444,7 @@ dataType BottleneckDistance::buildMappings(
     int p1 = std::get<0>(t);
     int p2 = std::get<1>(t);
 
-    if(p1 >= (int)map1.size() || p1 < 0) {
-      addedPersistence = (wasserstein > 0 ? addedPersistence + val
-                                          : std::max(val, addedPersistence));
-    } else if(p2 >= (int)map2.size() || p2 < 0) {
+    if(p1 >= (int)map1.size() || p1 < 0 || p2 >= (int)map2.size() || p2 < 0) {
       addedPersistence = (wasserstein > 0 ? addedPersistence + val
                                           : std::max(val, addedPersistence));
     } else {

@@ -49,7 +49,7 @@ public:
   vtkSetMacro(OutputScalarFieldType, int);
   vtkGetMacro(OutputScalarFieldType, int);
 
-  vtkSetMacro(OutputScalarFieldName, std::string);
+  vtkSetMacro(OutputScalarFieldName, const std::string &);
   vtkGetMacro(OutputScalarFieldName, std::string);
 
   vtkSetMacro(ForceInputVertexScalarField, bool);

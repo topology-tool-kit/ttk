@@ -48,7 +48,7 @@ public:
   static ttkCinemaWriter *New();
   vtkTypeMacro(ttkCinemaWriter, ttkAlgorithm);
 
-  vtkSetMacro(DatabasePath, std::string);
+  vtkSetMacro(DatabasePath, const std::string &);
   vtkGetMacro(DatabasePath, std::string);
 
   ttkSetEnumMacro(Format, FORMAT);

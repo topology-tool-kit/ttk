@@ -76,10 +76,10 @@ namespace ttk {
     // we can do so by using sbegin and send which use this class
     class sorted_iterator : public segmentIterator {
     public:
-      sorted_iterator(segmentIterator base)
+      sorted_iterator(const segmentIterator &base)
         : segmentIterator(base), forward_(true) {
       }
-      sorted_iterator(segmentRevIterator base)
+      sorted_iterator(const segmentRevIterator &base)
         : segmentIterator(base.base()), forward_(false) {
       }
 

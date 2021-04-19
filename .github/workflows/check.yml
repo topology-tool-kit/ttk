@@ -106,7 +106,7 @@ jobs:
         git ls-files \
         | grep core \
         | grep -E "\.cpp$|\.cxx$" \
-        | xargs -n1 clang-tidy -p build
+        | xargs -n1 clang-tidy -p build 2> /dev/null
 
 
   # ----------------------- #

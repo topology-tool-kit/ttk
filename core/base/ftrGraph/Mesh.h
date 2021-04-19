@@ -188,9 +188,9 @@ namespace ttk {
 
       // precompute
 
-      void preSortEdges(VertCompFN lowerThan);
+      void preSortEdges(const VertCompFN &lowerThan);
 
-      void preSortTriangles(VertCompFN lowerThan);
+      void preSortTriangles(const VertCompFN &lowerThan);
 
       // get simplex
 
@@ -210,11 +210,11 @@ namespace ttk {
 
       bool compareEdges(const idEdge e0,
                         const idEdge e1,
-                        VertCompFN lowerThan) const;
+                        const VertCompFN &lowerThan) const;
 
       bool compareLinks(const linkEdge &l0,
                         const linkEdge &l1,
-                        VertCompFN lowerTan) const;
+                        const VertCompFN &lowerTan) const;
 
       // tools
 
@@ -224,7 +224,7 @@ namespace ttk {
     };
 
     template <typename triangulationType>
-    void Mesh<triangulationType>::preSortEdges(VertCompFN lowerThan) {
+    void Mesh<triangulationType>::preSortEdges(const VertCompFN &lowerThan) {
 // Can't be parallel on a vector of bool !!
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for schedule(static)
@@ -239,7 +239,8 @@ namespace ttk {
     }
 
     template <typename triangulationType>
-    void Mesh<triangulationType>::preSortTriangles(VertCompFN lowerThan) {
+    void
+      Mesh<triangulationType>::preSortTriangles(const VertCompFN &lowerThan) {
 // require edges to be already sorted
 //
 // Not sure we can parallelie on a vector of bitfields
@@ -463,9 +464,8 @@ namespace ttk {
     // tools
 
     template <typename triangulationType>
-    bool Mesh<triangulationType>::compareEdges(const idEdge e0,
-                                               const idEdge e1,
-                                               VertCompFN lowerThan) const {
+    bool Mesh<triangulationType>::compareEdges(
+      const idEdge e0, const idEdge e1, const VertCompFN &lowerThan) const {
       idVertex e0v0, e0v1;
       if(edgesSortId_[e0] == 0) {
         getEdgeVertex(e0, 0, e0v0);
@@ -490,9 +490,10 @@ namespace ttk {
     }
 
     template <typename triangulationType>
-    bool Mesh<triangulationType>::compareLinks(const linkEdge &l0,
-                                               const linkEdge &l1,
-                                               VertCompFN lowerThan) const {
+    bool
+      Mesh<triangulationType>::compareLinks(const linkEdge &l0,
+                                            const linkEdge &l1,
+                                            const VertCompFN &lowerThan) const {
       if(std::get<0>(l0) == std::get<0>(l1)) {
         return compareEdges(std::get<1>(l0), std::get<1>(l1), lowerThan);
       }

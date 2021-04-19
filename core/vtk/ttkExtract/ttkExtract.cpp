@@ -165,7 +165,7 @@ int ttkExtract::ExtractBlocks(vtkDataObject *output,
                            "that contains vtkMultiBlockDataSets as input.");
             return 0;
           }
-          if(tupleIndex < 0 || tupleIndex >= blockAsMB->GetNumberOfBlocks()) {
+          if(tupleIndex >= blockAsMB->GetNumberOfBlocks()) {
             this->printErr(
               "Index out of range (" + std::to_string(tupleIndex) + "/"
               + std::to_string(blockAsMB->GetNumberOfBlocks()) + ").");
@@ -182,7 +182,7 @@ int ttkExtract::ExtractBlocks(vtkDataObject *output,
     } else {
       for(size_t i = 0; i < indices.size(); i++) {
         size_t blockIndex = (size_t)indices[i];
-        if(blockIndex < 0 || blockIndex >= inputAsMB->GetNumberOfBlocks()) {
+        if(blockIndex >= inputAsMB->GetNumberOfBlocks()) {
           this->printErr("Index out of range (" + std::to_string(blockIndex)
                          + "/" + std::to_string(inputAsMB->GetNumberOfBlocks())
                          + ").");

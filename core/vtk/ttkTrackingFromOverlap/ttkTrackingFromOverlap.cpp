@@ -26,7 +26,7 @@ vtkStandardNewMacro(ttkTrackingFromOverlap)
   void getData(vtkMultiBlockDataSet *mb,
                size_t time,
                size_t level,
-               string labelFieldName,
+               const string &labelFieldName,
                vtkPointSet *&pointSet,
                vtkDataArray *&labels) {
   auto timesteps = vtkMultiBlockDataSet::SafeDownCast(mb->GetBlock(level));
@@ -56,7 +56,7 @@ int finalize(vector<vector<Nodes>> &levelTimeNodesMap,
              vector<vector<Edges>> &levelTimeEdgesTMap,
              vector<vector<Edges>> &timeLevelEdgesNMap,
              int labelTypeId,
-             string labelFieldName,
+             const string &labelFieldName,
 
              vtkDataObject *trackingGraphObject) {
   auto trackingGraph = vtkUnstructuredGrid::SafeDownCast(trackingGraphObject);
@@ -64,8 +64,8 @@ int finalize(vector<vector<Nodes>> &levelTimeNodesMap,
   size_t nL = levelTimeNodesMap.size();
   size_t nT = levelTimeNodesMap[0].size();
 
-  auto prepArray = [](vtkAbstractArray *array, string name, size_t nComponents,
-                      size_t nValues) {
+  auto prepArray = [](vtkAbstractArray *array, const string &name,
+                      size_t nComponents, size_t nValues) {
     array->SetName(name.data());
     array->SetNumberOfComponents(nComponents);
     array->SetNumberOfTuples(nValues);

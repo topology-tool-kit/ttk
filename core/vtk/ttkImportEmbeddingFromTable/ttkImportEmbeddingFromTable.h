@@ -29,13 +29,13 @@ public:
   static ttkImportEmbeddingFromTable *New();
   vtkTypeMacro(ttkImportEmbeddingFromTable, ttkAlgorithm)
 
-    vtkSetMacro(XColumn, std::string);
+    vtkSetMacro(XColumn, const std::string &);
   vtkGetMacro(XColumn, std::string);
 
-  vtkSetMacro(YColumn, std::string);
+  vtkSetMacro(YColumn, const std::string &);
   vtkGetMacro(YColumn, std::string);
 
-  vtkSetMacro(ZColumn, std::string);
+  vtkSetMacro(ZColumn, const std::string &);
   vtkGetMacro(ZColumn, std::string);
 
   vtkSetMacro(Embedding2D, bool);

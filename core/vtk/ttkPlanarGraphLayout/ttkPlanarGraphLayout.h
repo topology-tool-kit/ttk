@@ -78,7 +78,7 @@ public:
   vtkGetMacro(UseLevels, bool);
 
   // getters and setters for output array name
-  vtkSetMacro(OutputArrayName, std::string);
+  vtkSetMacro(OutputArrayName, const std::string &);
   vtkGetMacro(OutputArrayName, std::string);
 
   static ttkPlanarGraphLayout *New();

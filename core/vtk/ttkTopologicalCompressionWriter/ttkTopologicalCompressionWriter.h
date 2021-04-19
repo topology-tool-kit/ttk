@@ -51,7 +51,7 @@ public:
   vtkSetMacro(NbVertices, int);
 
   vtkGetMacro(SQMethod, std::string);
-  vtkSetMacro(SQMethod, std::string);
+  vtkSetMacro(SQMethod, const std::string &);
 
   vtkSetMacro(Subdivide, bool);
   vtkGetMacro(Subdivide, bool);

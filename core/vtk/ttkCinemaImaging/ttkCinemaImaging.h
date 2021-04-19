@@ -97,7 +97,7 @@ public:
   static int AddFieldDataArray(vtkFieldData *fd,
                                vtkDataArray *array,
                                int tupelIdx,
-                               std::string name = "");
+                               const std::string &name = "");
 
   static int AddAllFieldDataArrays(vtkPointSet *inputGrid,
                                    vtkImageData *image,
@@ -106,7 +106,7 @@ public:
   static int ComputeDirFromFocalPoint(vtkPointSet *inputGrid);
 
   static int EnsureGridData(vtkPointData *fd,
-                            std::string name,
+                            const std::string &name,
                             int nTuples,
                             const std::vector<double> &Values);
 

@@ -78,7 +78,7 @@ namespace ttk {
     inline void setCompressionType(int compressionType) {
       compressionType_ = compressionType;
     }
-    inline void setSQ(std::string sqMethod) {
+    inline void setSQ(const std::string &sqMethod) {
       SQMethod = sqMethod;
     }
     inline void setZFPOnly(bool z) {

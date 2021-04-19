@@ -50,6 +50,11 @@ int ttk::HarmonicField::execute(const TriangulationType &triangulation,
   Eigen::setNbThreads(threadNumber_);
 #endif // TTK_ENABLE_OPENMP
 
+  if(constraintNumber < 1) {
+    this->printErr("Cannot solve Laplace problem with no boundary constraints");
+    return 1;
+  }
+
   using SpMat = Eigen::SparseMatrix<T>;
   using SpVec = Eigen::SparseVector<T>;
   using TripletType = Eigen::Triplet<T>;

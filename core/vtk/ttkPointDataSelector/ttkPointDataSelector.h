@@ -34,7 +34,7 @@ public:
   static ttkPointDataSelector *New();
   vtkTypeMacro(ttkPointDataSelector, ttkAlgorithm);
 
-  vtkSetMacro(RegexpString, std::string);
+  vtkSetMacro(RegexpString, const std::string &);
 
   void SetRangeId(int data0, int data1) {
     RangeId[0] = data0;
@@ -48,10 +48,10 @@ public:
   vtkSetMacro(RenameSelected, bool);
   vtkGetMacro(RenameSelected, bool);
 
-  vtkSetMacro(SelectedFieldName, std::string);
+  vtkSetMacro(SelectedFieldName, const std::string &);
   vtkGetMacro(SelectedFieldName, std::string);
 
-  void AddScalarField(std::string s) {
+  void AddScalarField(const std::string &s) {
     SelectedFields.emplace_back(s);
     Modified();
   }

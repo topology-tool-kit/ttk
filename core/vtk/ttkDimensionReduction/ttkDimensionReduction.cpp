@@ -70,7 +70,7 @@ int ttkDimensionReduction::RequestData(vtkInformation *request,
 
     std::vector<double> inputData;
     std::vector<vtkAbstractArray *> arrays;
-    for(auto s : ScalarFields)
+    for(const auto &s : ScalarFields)
       arrays.push_back(input->GetColumnByName(s.data()));
     for(SimplexId i = 0; i < numberOfRows; ++i) {
       for(auto arr : arrays)

@@ -59,7 +59,7 @@ int ttkCinemaWriter::FillOutputPortInformation(int port, vtkInformation *info) {
   return 1;
 }
 
-int ensureFolder(std::string path) {
+int ensureFolder(const std::string &path) {
   auto directory = vtkSmartPointer<vtkDirectory>::New();
   if(directory->Open(path.data()) == 1
      || vtkDirectory::MakeDirectory(path.data()) == 1)
@@ -169,7 +169,7 @@ int ttkCinemaWriter::ProcessDataProduct(vtkDataObject *input) {
     }
 
     // delete columns from fd
-    for(auto name : toIgnore)
+    for(const auto &name : toIgnore)
       inputFD->RemoveArray(name.data());
 
     nFields = inputFD->GetNumberOfArrays();

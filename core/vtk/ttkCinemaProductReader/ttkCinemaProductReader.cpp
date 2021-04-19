@@ -39,7 +39,7 @@ int ttkCinemaProductReader::FillOutputPortInformation(int port,
 }
 
 template <class readerT>
-vtkSmartPointer<vtkDataObject> readFileLocal_(std::string pathToFile,
+vtkSmartPointer<vtkDataObject> readFileLocal_(const std::string &pathToFile,
                                               vtkNew<readerT> &reader) {
   reader->SetFileName(pathToFile.data());
   reader->Update();
@@ -53,7 +53,7 @@ vtkSmartPointer<vtkDataObject> readFileLocal_(std::string pathToFile,
 }
 
 vtkSmartPointer<vtkDataObject>
-  ttkCinemaProductReader::readFileLocal(std::string pathToFile) {
+  ttkCinemaProductReader::readFileLocal(const std::string &pathToFile) {
 
   if(pathToFile.substr(pathToFile.length() - 4, 4).compare(".ttk") == 0) {
     this->topologicalCompressionReader->SetDebugLevel(this->debugLevel_);

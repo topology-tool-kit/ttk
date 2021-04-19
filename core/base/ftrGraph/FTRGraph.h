@@ -288,7 +288,7 @@ namespace ttk {
       // return the number of component in lower/upper link
       std::pair<valence, valence> getLinkNbCC(const idVertex curVert,
                                               LocalForests &localForests,
-                                              VertCompFN comp);
+                                              const VertCompFN &comp);
 
       /// update (locally) the preimage graph (dynGraph) from that
       /// of immediately before f(v) to that of immediately after f(v).

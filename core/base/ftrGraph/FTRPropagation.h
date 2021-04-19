@@ -48,7 +48,7 @@ namespace ttk {
       AtomicUF id_;
 
     public:
-      Propagation(idVertex startVert, VertCompFN vertComp, bool up)
+      Propagation(idVertex startVert, const VertCompFN &vertComp, bool up)
         : curVert_{nullVertex}, nbArcs_{1}, comp_{vertComp}, goUp_{up},
           propagation_{vertComp}, id_{this} {
         propagation_.emplace(startVert);
@@ -111,7 +111,7 @@ namespace ttk {
         }
       }
 
-      void removeBelow(const idVertex d, VertCompFN comp) {
+      void removeBelow(const idVertex d, const VertCompFN &comp) {
         while(!propagation_.empty() && comp(propagation_.top(), d)) {
           propagation_.pop();
         }

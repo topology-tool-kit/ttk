@@ -61,10 +61,7 @@ int ttkContourForests::FillInputPortInformation(int port,
 
 int ttkContourForests::FillOutputPortInformation(int port,
                                                  vtkInformation *info) {
-  if(port == 0) {
-    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkPolyData");
-    return 1;
-  } else if(port == 1) {
+  if(port == 0 || port == 1) {
     info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkPolyData");
     return 1;
   } else if(port == 2) {
@@ -339,7 +336,7 @@ void ttkContourForests::getSkeletonArcs() {
         else
           upNodeVId = tree_->getNode(a->getUpNodeId())->getVertexId();
 
-        float pt[3];
+        std::array<float, 3> pt{};
         triangulation_->getVertexPoint(upNodeVId, pt[0], pt[1], pt[2]);
         point2[0] = pt[0];
         point2[1] = pt[1];
@@ -406,7 +403,7 @@ void ttkContourForests::getSkeletonArcs() {
         line->SetPoint1(point1);
 
         SimplexId upNodeVId = tree_->getNode(a->getUpNodeId())->getVertexId();
-        float pt[3];
+        std::array<float, 3> pt{};
         triangulation_->getVertexPoint(upNodeVId, pt[0], pt[1], pt[2]);
         point2[0] = pt[0];
         point2[1] = pt[1];
@@ -846,8 +843,8 @@ void ttkContourForests::smooth(const SimplexId idArc, bool order) {
                  ->getVertexId();
     }
 
-    float p0[3];
-    float p1[3];
+    std::array<float, 3> p0{};
+    std::array<float, 3> p1{};
     triangulation_->getVertexPoint(down_vId, p0[0], p0[1], p0[2]);
     triangulation_->getVertexPoint(up_vId, p1[0], p1[1], p1[2]);
 

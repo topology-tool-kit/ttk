@@ -53,7 +53,7 @@ public:
   vtkSetMacro(CompressionType, int);
   vtkGetMacro(CompressionType, int);
 
-  vtkSetMacro(SQMethod, std::string);
+  vtkSetMacro(SQMethod, const std::string &);
   vtkGetMacro(SQMethod, std::string);
 
   vtkSetMacro(Subdivide, bool);

@@ -278,10 +278,9 @@ std::vector<int> PDClustering<dataType>::execute(
               std::max(max_shift_vec[i_crit] / 8., epsilon_[i_crit] / 5.),
               epsilon0[i_crit] / Geometry::pow(n_iterations_, 2));
 
-            if(epsilon_candidate[i_crit] < epsilon_[i_crit]
-               && (!diagrams_complete[i_crit])) {
-              epsilon_[i_crit] = epsilon_candidate[i_crit];
-            } else if(diagrams_complete[i_crit]) {
+            if((epsilon_candidate[i_crit] < epsilon_[i_crit]
+                && !diagrams_complete[i_crit])
+               || diagrams_complete[i_crit]) {
               epsilon_[i_crit] = epsilon_candidate[i_crit];
             } else {
               epsilon_[i_crit] *= 0.95;

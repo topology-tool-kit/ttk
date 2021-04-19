@@ -512,6 +512,9 @@ namespace ttk {
       // There is only one acceptable good for the bidder
       second_val = best_val;
     }
+    if(best_good == nullptr) {
+      return -1;
+    }
     dataType old_price = best_good->getPrice();
     dataType new_price = old_price + best_val - second_val + epsilon;
     if(new_price > std::numeric_limits<dataType>::max() / 2) {
@@ -606,9 +609,7 @@ namespace ttk {
         best_val = val;
         best_good = &g;
         is_twin = true;
-      } else if(val > second_val) {
-        second_val = val;
-      } else if(diagonal_queue.size() == 0) {
+      } else if(val > second_val || diagonal_queue.empty()) {
         second_val = val;
       }
     } else {
@@ -728,9 +729,7 @@ namespace ttk {
         best_val = val;
         best_good = &g;
         is_twin = true;
-      } else if(val > second_val) {
-        second_val = val;
-      } else if(diagonal_queue.size() == 0) {
+      } else if(val > second_val || diagonal_queue.empty()) {
         second_val = val;
       }
     } else {
