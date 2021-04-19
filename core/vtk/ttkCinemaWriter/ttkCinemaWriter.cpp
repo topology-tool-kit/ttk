@@ -496,7 +496,7 @@ int ttkCinemaWriter::ProcessDataProduct(vtkDataObject *input) {
 
         topologicalCompressionWriter->SetTolerance(this->Tolerance);
         topologicalCompressionWriter->SetMaximumError(this->MaximumError);
-        topologicalCompressionWriter->SetZFPBitBudget(this->ZFPBitBudget);
+        topologicalCompressionWriter->SetZFPTolerance(this->ZFPTolerance);
         topologicalCompressionWriter->SetCompressionType(this->CompressionType);
         topologicalCompressionWriter->SetSQMethodPV(this->SQMethodPV);
         topologicalCompressionWriter->SetZFPOnly(this->ZFPOnly);

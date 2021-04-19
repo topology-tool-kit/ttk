@@ -35,8 +35,8 @@ public:
   vtkGetMacro(MaximumError, double);
   vtkSetMacro(MaximumError, double);
 
-  vtkGetMacro(ZFPBitBudget, double);
-  vtkSetMacro(ZFPBitBudget, double);
+  vtkGetMacro(ZFPTolerance, double);
+  vtkSetMacro(ZFPTolerance, double);
 
   vtkGetMacro(ZFPOnly, bool);
   vtkSetMacro(ZFPOnly, bool);

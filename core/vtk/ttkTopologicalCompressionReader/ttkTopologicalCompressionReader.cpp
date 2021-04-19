@@ -47,7 +47,10 @@ int ttkTopologicalCompressionReader::RequestInformation(
 
   // Fill spacing, origin, extent, scalar type
   // L8 tolerance, ZFP factor
-  this->ReadMetaData<double>(fp);
+  const auto res = this->ReadMetaData(fp);
+  if(res != 0) {
+    return 1;
+  }
   DataScalarType = this->getDataScalarType();
   for(int i = 0; i < 3; ++i) {
     DataSpacing[i] = this->getDataSpacing()[i];
@@ -94,7 +97,10 @@ int ttkTopologicalCompressionReader::RequestData(
   }
 
   this->setFileName(FileName);
-  this->ReadMetaData<double>(fp);
+  const auto res = this->ReadMetaData(fp);
+  if(res != 0) {
+    return 1;
+  }
   DataScalarType = this->getDataScalarType();
   for(int i = 0; i < 3; ++i) {
     DataSpacing[i] = this->getDataSpacing()[i];
@@ -116,7 +122,7 @@ int ttkTopologicalCompressionReader::RequestData(
 
   int status{0};
   ttkTemplateMacro(triangulation->getType(),
-                   status = this->ReadFromFile<double>(
+                   status = this->ReadFromFile(
                      fp, *static_cast<TTK_TT *>(triangulation->getData())));
   if(status != 0) {
     vtkWarningMacro("Failure when reading compressed TTK file");
