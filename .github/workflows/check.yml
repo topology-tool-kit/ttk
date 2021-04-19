@@ -119,6 +119,7 @@ jobs:
         kamikaze: [KAMIKAZE=TRUE, KAMIKAZE=FALSE]
         omp: [OPENMP=TRUE, OPENMP=FALSE]
         simplexId: [64BIT_IDS=TRUE, 64BIT_IDS=FALSE]
+        opt: [Debug, Release]
     steps:
     - uses: actions/checkout@v2
 
@@ -152,6 +153,7 @@ jobs:
         cd build
         cmake \
           -DCMAKE_EXPORT_COMPILE_COMMANDS=TRUE \
+          -DCMAKE_BUILD_TYPE=${{ matrix.opt }} \
           -DTTK_BUILD_PARAVIEW_PLUGINS=TRUE \
           -DTTK_BUILD_VTK_WRAPPERS=TRUE \
           -DTTK_BUILD_STANDALONE_APPS=TRUE \
