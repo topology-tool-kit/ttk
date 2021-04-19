@@ -52,7 +52,7 @@ namespace ttk {
       return triangulation->preconditionVertexNeighbors();
     }
 
-    inline void setVertexIdentifierScalarFieldPointer(void *data) {
+    inline void setVertexIdentifierScalarFieldPointer(SimplexId *const data) {
       vertexIdentifierScalarFieldPointer_ = data;
     }
 
@@ -71,7 +71,7 @@ namespace ttk {
   protected:
     SimplexId vertexNumber_{};
     SimplexId sourceNumber_{};
-    void *vertexIdentifierScalarFieldPointer_{};
+    SimplexId *vertexIdentifierScalarFieldPointer_{};
     void *outputScalarFieldPointer_{};
     void *outputIdentifiers_{};
     void *outputSegmentation_{};
@@ -84,8 +84,7 @@ int ttk::DistanceField::execute(const triangulationType *triangulation_) const {
   // start global timer
   ttk::Timer globalTimer;
 
-  SimplexId *identifiers
-    = static_cast<SimplexId *>(vertexIdentifierScalarFieldPointer_);
+  const SimplexId *identifiers = vertexIdentifierScalarFieldPointer_;
   dataType *dist = static_cast<dataType *>(outputScalarFieldPointer_);
   SimplexId *origin = static_cast<SimplexId *>(outputIdentifiers_);
   SimplexId *seg = static_cast<SimplexId *>(outputSegmentation_);

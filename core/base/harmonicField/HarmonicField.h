@@ -40,14 +40,14 @@ namespace ttk {
 
     template <class T, class TriangulationType = AbstractTriangulation>
     int execute(const TriangulationType &triangulation,
-                SimplexId constraintNumber,
-                SimplexId *sources,
-                T *constraints,
-                T *outputScalarField,
-                bool useCotanWeights = true,
-                SolvingMethodUserType solvingMethod
+                const SimplexId constraintNumber,
+                const SimplexId *const sources,
+                const T *const constraints,
+                T *const outputScalarField,
+                const bool useCotanWeights = true,
+                const SolvingMethodUserType solvingMethod
                 = SolvingMethodUserType::AUTO,
-                double logAlpha = 5.0) const;
+                const double logAlpha = 5.0) const;
 
   private:
     SolvingMethodType findBestSolver(const SimplexId vertexNumber,

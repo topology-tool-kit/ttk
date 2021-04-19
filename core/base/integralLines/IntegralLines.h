@@ -92,7 +92,7 @@ namespace ttk {
       inputOffsets_ = data;
     }
 
-    inline void setVertexIdentifierScalarField(void *data) {
+    inline void setVertexIdentifierScalarField(SimplexId *const data) {
       vertexIdentifierScalarField_ = data;
     }
 
@@ -107,7 +107,7 @@ namespace ttk {
     int direction_;
     void *inputScalarField_;
     const SimplexId *inputOffsets_;
-    void *vertexIdentifierScalarField_;
+    SimplexId *vertexIdentifierScalarField_;
     std::vector<std::vector<SimplexId>> *outputTrajectories_;
   };
 } // namespace ttk
@@ -115,8 +115,7 @@ namespace ttk {
 template <typename dataType, class triangulationType>
 int ttk::IntegralLines::execute(const triangulationType *triangulation) const {
   const auto offsets = inputOffsets_;
-  SimplexId *identifiers
-    = static_cast<SimplexId *>(vertexIdentifierScalarField_);
+  SimplexId *identifiers = vertexIdentifierScalarField_;
   dataType *scalars = static_cast<dataType *>(inputScalarField_);
   std::vector<std::vector<SimplexId>> *trajectories = outputTrajectories_;
 

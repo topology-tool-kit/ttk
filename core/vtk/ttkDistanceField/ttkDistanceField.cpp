@@ -58,8 +58,10 @@ int ttkDistanceField::RequestData(vtkInformation *request,
   }
 #endif
 
-  vtkDataArray *identifiers = this->GetOptionalArray(
-    ForceInputVertexScalarField, 0, ttk::VertexScalarFieldName, sources);
+  std::vector<ttk::SimplexId> idSpareStorage{};
+  auto *identifiers = this->GetIdentifierArrayPtr(ForceInputVertexScalarField,
+                                                  0, ttk::VertexScalarFieldName,
+                                                  sources, idSpareStorage);
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!identifiers) {
     printErr("wrong identifiers.");
@@ -112,8 +114,7 @@ int ttkDistanceField::RequestData(vtkInformation *request,
 
   this->setVertexNumber(numberOfPointsInDomain);
   this->setSourceNumber(numberOfPointsInSources);
-  this->setVertexIdentifierScalarFieldPointer(
-    ttkUtils::GetVoidPointer(identifiers));
+  this->setVertexIdentifierScalarFieldPointer(identifiers);
   this->setOutputIdentifiers(ttkUtils::GetVoidPointer(origin));
   this->setOutputSegmentation(ttkUtils::GetVoidPointer(seg));
 
