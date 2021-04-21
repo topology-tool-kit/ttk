@@ -245,8 +245,8 @@ int ttkWebSocketIO::ParseVtkDataObjectFromJSON(const std::string &json) {
                                      const boost::property_tree::ptree &fdJSON,
                                      const std::string &fdKey) {
       // parse point data
-      for(auto pda : fdJSON.get_child(fdKey)) {
-        auto &jsonArray = pda.second;
+      for(const auto &pda : fdJSON.get_child(fdKey)) {
+        const auto &jsonArray = pda.second;
         size_t nComponents = jsonGetValue<size_t>(jsonArray, "nComponents");
         size_t nTuples = jsonGetValue<size_t>(jsonArray, "nTuples");
 
