@@ -1021,11 +1021,10 @@ void ttkContourForests::getSegmentation(vtkDataSet *input) {
       // cout << endl;
 
       // RegionType
-      if(upNodeType == CriticalType::Local_minimum
-         && downNodeType == CriticalType::Local_maximum)
-        regionType = static_cast<int>(ArcType::Min_arc);
-      else if(upNodeType == CriticalType::Local_minimum
-              || downNodeType == CriticalType::Local_minimum)
+      if((upNodeType == CriticalType::Local_minimum
+          && downNodeType == CriticalType::Local_maximum)
+         || (upNodeType == CriticalType::Local_minimum
+             || downNodeType == CriticalType::Local_minimum))
         regionType = static_cast<int>(ArcType::Min_arc);
       else if(upNodeType == CriticalType::Local_maximum
               || downNodeType == CriticalType::Local_maximum)
