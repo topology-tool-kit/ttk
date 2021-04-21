@@ -11,4 +11,4 @@
 #include <ttkWRLExporterModule.h>
 
 class vtkPolyData;
-TTKWRLEXPORTER_EXPORT vtkPolyData *wrlExporterPolyData_;
+extern TTKWRLEXPORTER_EXPORT vtkPolyData *wrlExporterPolyData_;
