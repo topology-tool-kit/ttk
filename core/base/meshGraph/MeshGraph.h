@@ -516,16 +516,16 @@ int ttk::MeshGraph::execute2(
       outputConnectivityArray[q2++] = c0;
       outputConnectivityArray[q2++] = c1;
 
-      size_t temp = subdivisionOffset + i * nSubdivisionPoints;
+      IT temp = subdivisionOffset + i * nSubdivisionPoints;
 
       for(size_t j = 0; j < nSubdivisions; j++)
-        outputConnectivityArray[q2++] = (IT)(temp + j * 2 + 1);
+        outputConnectivityArray[q2++] = temp + j * 2 + 1;
 
       outputConnectivityArray[q2++] = c2;
       outputConnectivityArray[q2++] = c3;
 
       for(int j = nSubdivisions - 1; j >= 0; j--)
-        outputConnectivityArray[q2++] = (IT)(temp + j * 2);
+        outputConnectivityArray[q2++] = temp + j * 2;
     }
 
     for(size_t i = 0; i <= nInputCells; i++)
