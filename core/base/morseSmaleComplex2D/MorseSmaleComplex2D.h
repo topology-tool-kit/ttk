@@ -31,7 +31,7 @@ namespace ttk {
     /**
      * Main function for computing the whole Morse-Smale complex.
      */
-    template <typename dataType, typename triangulationType>
+    template <typename triangulationType>
     int execute(const triangulationType &triangulation);
 
     /**
@@ -47,7 +47,7 @@ namespace ttk {
   };
 } // namespace ttk
 
-template <typename dataType, typename triangulationType>
+template <typename triangulationType>
 int ttk::MorseSmaleComplex2D::execute(const triangulationType &triangulation) {
 #ifndef TTK_ENABLE_KAMIKAZE
   if(!inputScalarField_) {
@@ -91,8 +91,7 @@ int ttk::MorseSmaleComplex2D::execute(const triangulationType &triangulation) {
     std::vector<std::vector<dcg::Cell>> separatricesGeometry;
     getDescendingSeparatrices1(
       criticalPoints, separatrices, separatricesGeometry, triangulation);
-    setSeparatrices1<dataType>(
-      separatrices, separatricesGeometry, triangulation);
+    setSeparatrices1(separatrices, separatricesGeometry, triangulation);
 
     this->printMsg("Descending 1-separatrices computed", 1.0,
                    tmp.getElapsedTime(), this->threadNumber_);
@@ -104,8 +103,7 @@ int ttk::MorseSmaleComplex2D::execute(const triangulationType &triangulation) {
     std::vector<std::vector<dcg::Cell>> separatricesGeometry;
     getAscendingSeparatrices1(
       criticalPoints, separatrices, separatricesGeometry, triangulation);
-    setSeparatrices1<dataType>(
-      separatrices, separatricesGeometry, triangulation);
+    setSeparatrices1(separatrices, separatricesGeometry, triangulation);
 
     this->printMsg("Ascending 1-separatrices computed", 1.0,
                    tmp.getElapsedTime(), this->threadNumber_);

@@ -262,14 +262,13 @@ namespace ttk {
       std::vector<char> *const separatrices1_points_cellDimensions,
       std::vector<SimplexId> *const separatrices1_points_cellIds,
       SimplexId *const separatrices1_numberOfCells,
-      std::vector<long long> *const separatrices1_cells_connectivity,
+      std::vector<SimplexId> *const separatrices1_cells_connectivity,
       std::vector<SimplexId> *const separatrices1_cells_sourceIds,
       std::vector<SimplexId> *const separatrices1_cells_destinationIds,
       std::vector<SimplexId> *const separatrices1_cells_separatrixIds,
       std::vector<char> *const separatrices1_cells_separatrixTypes,
-      std::vector<double> *const separatrices1_cells_separatrixFunctionMaxima,
-      std::vector<double> *const separatrices1_cells_separatrixFunctionMinima,
-      std::vector<double> *const separatrices1_cells_separatrixFunctionDiffs,
+      std::vector<SimplexId> *const s1_cells_separatrixFunctionMaximaId,
+      std::vector<SimplexId> *const s1_cells_separatrixFunctionMinimaId,
       std::vector<char> *const separatrices1_cells_isOnBoundary) {
       outputSeparatrices1_numberOfPoints_ = separatrices1_numberOfPoints;
       outputSeparatrices1_points_ = separatrices1_points;
@@ -288,12 +287,10 @@ namespace ttk {
         = separatrices1_cells_separatrixIds;
       outputSeparatrices1_cells_separatrixTypes_
         = separatrices1_cells_separatrixTypes;
-      outputSeparatrices1_cells_separatrixFunctionMaxima_
-        = separatrices1_cells_separatrixFunctionMaxima;
-      outputSeparatrices1_cells_separatrixFunctionMinima_
-        = separatrices1_cells_separatrixFunctionMinima;
-      outputSeparatrices1_cells_separatrixFunctionDiffs_
-        = separatrices1_cells_separatrixFunctionDiffs;
+      outputS1_cells_separatrixFunctionMaximaId_
+        = s1_cells_separatrixFunctionMaximaId;
+      outputS1_cells_separatrixFunctionMinimaId_
+        = s1_cells_separatrixFunctionMinimaId;
       outputSeparatrices1_cells_isOnBoundary_
         = separatrices1_cells_isOnBoundary;
       return 0;
@@ -306,14 +303,13 @@ namespace ttk {
       SimplexId *const separatrices2_numberOfPoints,
       std::vector<float> *const separatrices2_points,
       SimplexId *const separatrices2_numberOfCells,
-      std::vector<long long> *const separatrices2_cells_offsets,
-      std::vector<long long> *const separatrices2_cells_connectivity,
+      std::vector<SimplexId> *const separatrices2_cells_offsets,
+      std::vector<SimplexId> *const separatrices2_cells_connectivity,
       std::vector<SimplexId> *const separatrices2_cells_sourceIds,
       std::vector<SimplexId> *const separatrices2_cells_separatrixIds,
       std::vector<char> *const separatrices2_cells_separatrixTypes,
-      std::vector<double> *const separatrices2_cells_separatrixFunctionMaxima,
-      std::vector<double> *const separatrices2_cells_separatrixFunctionMinima,
-      std::vector<double> *const separatrices2_cells_separatrixFunctionDiffs,
+      std::vector<SimplexId> *const s2_cells_separatrixFunctionMaximaId,
+      std::vector<SimplexId> *const s2_cells_separatrixFunctionMinimaId,
       std::vector<char> *const separatrices2_cells_isOnBoundary) {
       outputSeparatrices2_numberOfPoints_ = separatrices2_numberOfPoints;
       outputSeparatrices2_points_ = separatrices2_points;
@@ -326,12 +322,10 @@ namespace ttk {
         = separatrices2_cells_separatrixIds;
       outputSeparatrices2_cells_separatrixTypes_
         = separatrices2_cells_separatrixTypes;
-      outputSeparatrices2_cells_separatrixFunctionMaxima_
-        = separatrices2_cells_separatrixFunctionMaxima;
-      outputSeparatrices2_cells_separatrixFunctionMinima_
-        = separatrices2_cells_separatrixFunctionMinima;
-      outputSeparatrices2_cells_separatrixFunctionDiffs_
-        = separatrices2_cells_separatrixFunctionDiffs;
+      outputS2_cells_separatrixFunctionMaximaId_
+        = s2_cells_separatrixFunctionMaximaId;
+      outputS2_cells_separatrixFunctionMinimaId_
+        = s2_cells_separatrixFunctionMinimaId;
       outputSeparatrices2_cells_isOnBoundary_
         = separatrices2_cells_isOnBoundary;
       return 0;
@@ -369,7 +363,7 @@ namespace ttk {
      * outputSeparatrices1_cells_
      * inputScalarField_
      */
-    template <typename dataType, typename triangulationType>
+    template <typename triangulationType>
     int setSeparatrices1(
       const std::vector<Separatrix> &separatrices,
       const std::vector<std::vector<dcg::Cell>> &separatricesGeometry,
@@ -435,27 +429,25 @@ namespace ttk {
     std::vector<char> *outputSeparatrices1_points_cellDimensions_{};
     std::vector<SimplexId> *outputSeparatrices1_points_cellIds_{};
     SimplexId *outputSeparatrices1_numberOfCells_{};
-    std::vector<long long> *outputSeparatrices1_cells_connectivity_{};
+    std::vector<SimplexId> *outputSeparatrices1_cells_connectivity_{};
     std::vector<SimplexId> *outputSeparatrices1_cells_sourceIds_{};
     std::vector<SimplexId> *outputSeparatrices1_cells_destinationIds_{};
     std::vector<SimplexId> *outputSeparatrices1_cells_separatrixIds_{};
     std::vector<char> *outputSeparatrices1_cells_separatrixTypes_{};
-    std::vector<double> *outputSeparatrices1_cells_separatrixFunctionMaxima_{};
-    std::vector<double> *outputSeparatrices1_cells_separatrixFunctionMinima_{};
-    std::vector<double> *outputSeparatrices1_cells_separatrixFunctionDiffs_{};
+    std::vector<SimplexId> *outputS1_cells_separatrixFunctionMaximaId_{};
+    std::vector<SimplexId> *outputS1_cells_separatrixFunctionMinimaId_{};
     std::vector<char> *outputSeparatrices1_cells_isOnBoundary_{};
 
     SimplexId *outputSeparatrices2_numberOfPoints_{};
     std::vector<float> *outputSeparatrices2_points_{};
     SimplexId *outputSeparatrices2_numberOfCells_{};
-    std::vector<long long> *outputSeparatrices2_cells_offsets_{};
-    std::vector<long long> *outputSeparatrices2_cells_connectivity_{};
+    std::vector<SimplexId> *outputSeparatrices2_cells_offsets_{};
+    std::vector<SimplexId> *outputSeparatrices2_cells_connectivity_{};
     std::vector<SimplexId> *outputSeparatrices2_cells_sourceIds_{};
     std::vector<SimplexId> *outputSeparatrices2_cells_separatrixIds_{};
     std::vector<char> *outputSeparatrices2_cells_separatrixTypes_{};
-    std::vector<double> *outputSeparatrices2_cells_separatrixFunctionMaxima_{};
-    std::vector<double> *outputSeparatrices2_cells_separatrixFunctionMinima_{};
-    std::vector<double> *outputSeparatrices2_cells_separatrixFunctionDiffs_{};
+    std::vector<SimplexId> *outputS2_cells_separatrixFunctionMaximaId_{};
+    std::vector<SimplexId> *outputS2_cells_separatrixFunctionMinimaId_{};
     std::vector<char> *outputSeparatrices2_cells_isOnBoundary_{};
 
     void *outputAscendingManifold_{};
@@ -525,7 +517,7 @@ int ttk::AbstractMorseSmaleComplex::getDescendingSeparatrices1(
   return 0;
 }
 
-template <typename dataType, typename triangulationType>
+template <typename triangulationType>
 int ttk::AbstractMorseSmaleComplex::setSeparatrices1(
   const std::vector<Separatrix> &separatrices,
   const std::vector<std::vector<dcg::Cell>> &separatricesGeometry,
@@ -555,13 +547,8 @@ int ttk::AbstractMorseSmaleComplex::setSeparatrices1(
   }
 #endif
 
-  const auto scalars = static_cast<const dataType *>(inputScalarField_);
-  auto separatrixFunctionMaxima
-    = outputSeparatrices1_cells_separatrixFunctionMaxima_;
-  auto separatrixFunctionMinima
-    = outputSeparatrices1_cells_separatrixFunctionMinima_;
-  auto separatrixFunctionDiffs
-    = outputSeparatrices1_cells_separatrixFunctionDiffs_;
+  auto separatrixFunctionMaxima = outputS1_cells_separatrixFunctionMaximaId_;
+  auto separatrixFunctionMinima = outputS1_cells_separatrixFunctionMinimaId_;
 
   // max existing separatrix id + 1 or 0
   const SimplexId separatrixId
@@ -624,11 +611,9 @@ int ttk::AbstractMorseSmaleComplex::setSeparatrices1(
   if(outputSeparatrices1_cells_separatrixTypes_ != nullptr)
     outputSeparatrices1_cells_separatrixTypes_->resize(ncells);
   if(separatrixFunctionMaxima != nullptr)
-    separatrixFunctionMaxima->resize(ncells);
+    separatrixFunctionMaxima->resize(separatrixId + validGeomIds.size());
   if(separatrixFunctionMinima != nullptr)
-    separatrixFunctionMinima->resize(ncells);
-  if(separatrixFunctionDiffs != nullptr)
-    separatrixFunctionDiffs->resize(ncells);
+    separatrixFunctionMinima->resize(separatrixId + validGeomIds.size());
   if(outputSeparatrices1_cells_isOnBoundary_ != nullptr)
     outputSeparatrices1_cells_isOnBoundary_->resize(ncells);
 
@@ -651,13 +636,23 @@ int ttk::AbstractMorseSmaleComplex::setSeparatrices1(
       = saddleConnector ? 1 : std::min(dst.dim_, dimensionality - 1);
 
     // compute separatrix function diff
-    const auto sepFuncMax = static_cast<double>(std::max(
-      scalars[discreteGradient_.getCellGreaterVertex(src, triangulation)],
-      scalars[discreteGradient_.getCellGreaterVertex(dst, triangulation)]));
-    const auto sepFuncMin = static_cast<double>(std::min(
-      scalars[discreteGradient_.getCellLowerVertex(src, triangulation)],
-      scalars[discreteGradient_.getCellLowerVertex(dst, triangulation)]));
-    const auto sepFuncDiff = sepFuncMax - sepFuncMin;
+    const auto vertsOrder = [this](const SimplexId a, const SimplexId b) {
+      return this->inputOffsets_[a] < this->inputOffsets_[b];
+    };
+    const std::array<SimplexId, 2> gVerts{
+      discreteGradient_.getCellGreaterVertex(src, triangulation),
+      discreteGradient_.getCellGreaterVertex(dst, triangulation)};
+    const auto sepFuncMax
+      = *std::max_element(gVerts.begin(), gVerts.end(), vertsOrder);
+    const std::array<SimplexId, 2> lVerts{
+      discreteGradient_.getCellLowerVertex(src, triangulation),
+      discreteGradient_.getCellLowerVertex(dst, triangulation)};
+    const auto sepFuncMin
+      = *std::min_element(lVerts.begin(), lVerts.end(), vertsOrder);
+    if(separatrixFunctionMaxima != nullptr)
+      (*separatrixFunctionMaxima)[sepId] = sepFuncMax;
+    if(separatrixFunctionMinima != nullptr)
+      (*separatrixFunctionMinima)[sepId] = sepFuncMin;
 
     // get boundary condition
     const auto onBoundary
@@ -707,12 +702,6 @@ int ttk::AbstractMorseSmaleComplex::setSeparatrices1(
         (*outputSeparatrices1_cells_separatrixIds_)[l] = sepId;
       if(outputSeparatrices1_cells_separatrixTypes_ != nullptr)
         (*outputSeparatrices1_cells_separatrixTypes_)[l] = sepType;
-      if(separatrixFunctionMaxima != nullptr)
-        (*separatrixFunctionMaxima)[l] = sepFuncMax;
-      if(separatrixFunctionDiffs != nullptr)
-        (*separatrixFunctionMinima)[l] = sepFuncMin;
-      if(separatrixFunctionDiffs != nullptr)
-        (*separatrixFunctionDiffs)[l] = sepFuncDiff;
       if(outputSeparatrices1_cells_isOnBoundary_ != nullptr)
         (*outputSeparatrices1_cells_isOnBoundary_)[l] = onBoundary;
     }
