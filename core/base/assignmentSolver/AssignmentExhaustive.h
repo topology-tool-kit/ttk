@@ -1,6 +1,6 @@
 /// \ingroup base
 /// \class ttk::AssignmentExhaustive
-/// \author XXXXX
+/// \author Mathieu Pont (mathieu.pont@lip6.fr)
 ///
 /// Exhaustive Search for Unbalanced Assignement Problem
 ///   (TODO manage balanced problem)
