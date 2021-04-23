@@ -23,8 +23,8 @@
 #endif
 
 // base code includes
-#include <GabowTarjan.h>
 #include <AssignmentMunkres.h>
+#include <GabowTarjan.h>
 #include <Triangulation.h>
 
 #include <functional>
