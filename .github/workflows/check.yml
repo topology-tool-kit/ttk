@@ -139,13 +139,13 @@ jobs:
         | grep -E "\.cpp$|\.cxx$" \
         | xargs -n1 $CLANG_TIDY -p build 2> /dev/null
 
-    - name: Use Clang static analyzer [NOT ENFORCED]
+    - name: Use Clang static analyzer
       if: matrix.config.sa
       run: |
         git ls-files \
         | grep core \
         | grep -E "\.cpp$|\.cxx$" \
-        | xargs -n1 -P2 $CLANG_TIDY -p build --checks="-*,clang-analyzer-*" 2> /dev/null
+        | xargs -n1 -P2 $CLANG_TIDY -p build --checks="-*,clang-analyzer-*" --warnings-as-errors="*" 2> /dev/null
 
     - name: Check Doxygen documentation warnings
       if: matrix.config.dox
