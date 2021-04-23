@@ -17,7 +17,7 @@
 #include <array>
 #include <limits>
 
-#include <Auction.h>
+#include <PersistenceDiagramAuction.h>
 #include <Wrapper.h>
 
 namespace ttk {

@@ -120,22 +120,25 @@ int BottleneckDistance::computeBottleneck(const std::vector<diagramTuple> &d1,
           ? (px * Geometry::pow(abs(std::get<11>(a) - std::get<11>(b)), w)
              + py * Geometry::pow(abs(std::get<12>(a) - std::get<12>(b)), w)
              + pz * Geometry::pow(abs(std::get<13>(a) - std::get<13>(b)), w))
-        : isMin1
-          ? (px * Geometry::pow(abs(std::get<7>(a) - std::get<7>(b)), w)
-             + py * Geometry::pow(abs(std::get<8>(a) - std::get<8>(b)), w)
-             + pz * Geometry::pow(abs(std::get<9>(a) - std::get<9>(b)), w))
-          : (px
-               * Geometry::pow(abs(std::get<7>(a) + std::get<11>(a)) / 2
-                                 - abs(std::get<7>(b) + std::get<11>(b)) / 2,
-                               w)
-             + py
-                 * Geometry::pow(abs(std::get<8>(a) + std::get<12>(a)) / 2
-                                   - abs(std::get<8>(b) + std::get<12>(b)) / 2,
-                                 w)
-             + pz
-                 * Geometry::pow(abs(std::get<9>(a) + std::get<13>(a)) / 2
-                                   - abs(std::get<9>(b) + std::get<13>(b)) / 2,
-                                 w));
+          : isMin1
+              ? (px * Geometry::pow(abs(std::get<7>(a) - std::get<7>(b)), w)
+                 + py * Geometry::pow(abs(std::get<8>(a) - std::get<8>(b)), w)
+                 + pz * Geometry::pow(abs(std::get<9>(a) - std::get<9>(b)), w))
+              : (
+                px
+                  * Geometry::pow(abs(std::get<7>(a) + std::get<11>(a)) / 2
+                                    - abs(std::get<7>(b) + std::get<11>(b)) / 2,
+                                  w)
+                + py
+                    * Geometry::pow(
+                      abs(std::get<8>(a) + std::get<12>(a)) / 2
+                        - abs(std::get<8>(b) + std::get<12>(b)) / 2,
+                      w)
+                + pz
+                    * Geometry::pow(
+                      abs(std::get<9>(a) + std::get<13>(a)) / 2
+                        - abs(std::get<9>(b) + std::get<13>(b)) / 2,
+                      w));
 
     double persDistance = x + y;
     double val = persDistance + geoDistance;
@@ -183,21 +186,21 @@ int BottleneckDistance::computeBottleneck(const std::vector<diagramTuple> &d1,
   if(wasserstein > 0) {
 
     if(nbRowMin > 0 && nbColMin > 0) {
-      Munkres solverMin;
+      AssignmentMunkres<dataType> solverMin;
       this->printMsg("Affecting minima...");
       this->solvePWasserstein(
         minRowColMin, maxRowColMin, minMatrix, minMatchings, solverMin);
     }
 
     if(nbRowMax > 0 && nbColMax > 0) {
-      Munkres solverMax;
+      AssignmentMunkres<dataType> solverMax;
       this->printMsg("Affecting maxima...");
       this->solvePWasserstein(
         minRowColMax, maxRowColMax, maxMatrix, maxMatchings, solverMax);
     }
 
     if(nbRowSad > 0 && nbColSad > 0) {
-      Munkres solverSad;
+      AssignmentMunkres<dataType> solverSad;
       this->printMsg("Affecting saddles...");
       this->solvePWasserstein(
         minRowColSad, maxRowColSad, sadMatrix, sadMatchings, solverSad);
