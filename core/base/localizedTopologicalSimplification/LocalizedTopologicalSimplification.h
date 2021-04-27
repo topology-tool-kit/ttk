@@ -624,7 +624,7 @@ namespace ttk {
 
         segment.resize(propagation->segmentSize);
         IT segmentIndex = 0;
-        {
+        if(propagation->segmentSize > 0) {
           std::vector<IT> queue(propagation->segmentSize);
           IT queueIndex = 0;
 
@@ -701,7 +701,7 @@ namespace ttk {
           return 0;
 
         // print status
-        if(this->debugLevel_ < 4) {
+        if(this->debugLevel_ < 4 || nPropagations == 0) {
           this->printMsg(msg, 1, timer.getElapsedTime(), this->threadNumber_);
         } else {
 
@@ -944,7 +944,7 @@ namespace ttk {
             = std::numeric_limits<IT>::max();
         }
 
-        if(this->debugLevel_ < 4) {
+        if(this->debugLevel_ < 4 || nPropagations == 0) {
           this->printMsg("Computing Local Order of Segments ("
                            + std::to_string(nPropagations) + ")",
                          1, timer.getElapsedTime(), this->threadNumber_);

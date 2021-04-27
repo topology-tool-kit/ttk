@@ -112,6 +112,13 @@ int ttkStableManifoldPersistence::AttachPersistence(vtkDataSet *output) const {
     output->GetCellData()->AddArray(persistenceArray);
     output->GetCellData()->AddArray(pairTypeArray);
   } else {
+
+    if((IsUnstable && descendingManifoldArray == nullptr)
+       || ascendingManifoldArray == nullptr) {
+      this->printErr("Missing array");
+      return -4;
+    }
+
     int vertexNumber = output->GetNumberOfPoints();
 
     persistenceArray->SetNumberOfTuples(vertexNumber);

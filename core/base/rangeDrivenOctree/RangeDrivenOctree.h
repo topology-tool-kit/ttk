@@ -174,7 +174,7 @@ int ttk::RangeDrivenOctree::build(
         vertexId = cell[j];
       }
 
-      float p[3];
+      std::array<float, 3> p{};
       if(triangulation) {
         triangulation->getVertexPoint(vertexId, p[0], p[1], p[2]);
       } else {
@@ -236,7 +236,7 @@ int ttk::RangeDrivenOctree::build(
   for(SimplexId i = 0; i < vertexNumber_; i++) {
 
     // domain one
-    float p[3];
+    std::array<float, 3> p{};
     if(triangulation) {
       triangulation->getVertexPoint(i, p[0], p[1], p[2]);
     } else {
