@@ -120,25 +120,22 @@ int BottleneckDistance::computeBottleneck(const std::vector<diagramTuple> &d1,
           ? (px * Geometry::pow(abs(std::get<11>(a) - std::get<11>(b)), w)
              + py * Geometry::pow(abs(std::get<12>(a) - std::get<12>(b)), w)
              + pz * Geometry::pow(abs(std::get<13>(a) - std::get<13>(b)), w))
-          : isMin1
-              ? (px * Geometry::pow(abs(std::get<7>(a) - std::get<7>(b)), w)
-                 + py * Geometry::pow(abs(std::get<8>(a) - std::get<8>(b)), w)
-                 + pz * Geometry::pow(abs(std::get<9>(a) - std::get<9>(b)), w))
-              : (
-                px
-                  * Geometry::pow(abs(std::get<7>(a) + std::get<11>(a)) / 2
-                                    - abs(std::get<7>(b) + std::get<11>(b)) / 2,
-                                  w)
-                + py
-                    * Geometry::pow(
-                      abs(std::get<8>(a) + std::get<12>(a)) / 2
-                        - abs(std::get<8>(b) + std::get<12>(b)) / 2,
-                      w)
-                + pz
-                    * Geometry::pow(
-                      abs(std::get<9>(a) + std::get<13>(a)) / 2
-                        - abs(std::get<9>(b) + std::get<13>(b)) / 2,
-                      w));
+        : isMin1
+          ? (px * Geometry::pow(abs(std::get<7>(a) - std::get<7>(b)), w)
+             + py * Geometry::pow(abs(std::get<8>(a) - std::get<8>(b)), w)
+             + pz * Geometry::pow(abs(std::get<9>(a) - std::get<9>(b)), w))
+          : (px
+               * Geometry::pow(abs(std::get<7>(a) + std::get<11>(a)) / 2
+                                 - abs(std::get<7>(b) + std::get<11>(b)) / 2,
+                               w)
+             + py
+                 * Geometry::pow(abs(std::get<8>(a) + std::get<12>(a)) / 2
+                                   - abs(std::get<8>(b) + std::get<12>(b)) / 2,
+                                 w)
+             + pz
+                 * Geometry::pow(abs(std::get<9>(a) + std::get<13>(a)) / 2
+                                   - abs(std::get<9>(b) + std::get<13>(b)) / 2,
+                                 w));
 
     double persDistance = x + y;
     double val = persDistance + geoDistance;
