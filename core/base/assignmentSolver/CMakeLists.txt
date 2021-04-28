@@ -4,7 +4,7 @@ ttk_add_base_library(assignmentSolver
   HEADERS 
     AssignmentSolver.h
     AssignmentAuction.h
-    #AssignmentExhaustive.h
+    AssignmentExhaustive.h
     AssignmentMunkres.h
     AssignmentMunkresImpl.h
   DEPENDS
