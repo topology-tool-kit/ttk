@@ -1,8 +1,13 @@
 ttk_add_base_library(planarGraphLayout
   SOURCES
     PlanarGraphLayout.cpp
+    FTMTreePPCompute.cpp
   HEADERS
     PlanarGraphLayout.h
+    MergeTreeVisu.h
+    MergeTreeVisuUtils.h
+    FTMTreePPCompute.h
   DEPENDS
     common
+    ftmTree
 )

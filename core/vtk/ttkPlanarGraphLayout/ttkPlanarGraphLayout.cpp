@@ -6,9 +6,12 @@
 #include <vtkCellArray.h>
 #include <vtkFloatArray.h>
 #include <vtkInformation.h>
+#include <vtkInformationVector.h>
 #include <vtkPointData.h>
 #include <vtkSmartPointer.h>
 #include <vtkUnstructuredGrid.h>
+
+#include <MergeTreeVisu.h>
 
 vtkStandardNewMacro(ttkPlanarGraphLayout);
 
@@ -21,9 +24,10 @@ ttkPlanarGraphLayout::~ttkPlanarGraphLayout() {
 
 int ttkPlanarGraphLayout::FillInputPortInformation(int port,
                                                    vtkInformation *info) {
-  if(port == 0)
+  if(port == 0) {
+    info->Set(vtkAlgorithm::INPUT_IS_REPEATABLE(), 1);
     info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkUnstructuredGrid");
-  else
+  } else
     return 0;
   return 1;
 }
@@ -37,9 +41,10 @@ int ttkPlanarGraphLayout::FillOutputPortInformation(int port,
   return 1;
 }
 
-int ttkPlanarGraphLayout::RequestData(vtkInformation *request,
-                                      vtkInformationVector **inputVector,
-                                      vtkInformationVector *outputVector) {
+int ttkPlanarGraphLayout::planarGraphLayoutCall(
+  vtkInformation *request,
+  vtkInformationVector **inputVector,
+  vtkInformationVector *outputVector) {
   // Get input and output objects
   auto input = vtkUnstructuredGrid::GetData(inputVector[0]);
   auto output = vtkUnstructuredGrid::GetData(outputVector);
@@ -143,4 +148,63 @@ int ttkPlanarGraphLayout::RequestData(vtkInformation *request,
   output->GetPointData()->AddArray(outputArray);
 
   return 1;
+}
+
+int ttkPlanarGraphLayout::mergeTreePlanarLayoutCall(
+  vtkInformation *request,
+  vtkInformationVector **inputVector,
+  vtkInformationVector *outputVector) {
+
+  int verbose = 0;
+  vtkUnstructuredGrid *treeNodes
+    = vtkUnstructuredGrid::GetData(inputVector[0], 0);
+  vtkUnstructuredGrid *treeArcs
+    = vtkUnstructuredGrid::GetData(inputVector[0], 1);
+  auto output = vtkUnstructuredGrid::GetData(outputVector);
+  int dataTypeInt
+    = treeNodes->GetPointData()->GetArray("Scalar")->GetDataType();
+
+  /*treeNodes->PrintSelf(std::cout, vtkIndent(2));
+  treeArcs->PrintSelf(std::cout, vtkIndent(2));*/
+
+  MergeTree2 mergeTree = makeTree2(treeNodes, treeArcs);
+  FTMTree_MT *tree = &(mergeTree.tree);
+  // tree->printTree2();
+
+  switch(dataTypeInt) {
+    vtkTemplateMacro(computePersistencePairs2<VTK_TT>(tree));
+  }
+
+  std::vector<std::vector<int>> treeNodeCorrMesh(1);
+  treeNodeCorrMesh[0] = std::vector<int>(tree->getNumberOfNodes());
+  for(unsigned int j = 0; j < tree->getNumberOfNodes(); ++j)
+    treeNodeCorrMesh[0][j] = j;
+
+  MergeTreeVisu visuMaker;
+  visuMaker.setPlanarLayout(true);
+  visuMaker.setOutputSegmentation(false);
+  visuMaker.setBranchDecompositionPlanarLayout(BranchDecompositionPlanarLayout);
+  visuMaker.setBranchSpacing(BranchSpacing);
+  visuMaker.setImportantPairs(ImportantPairs);
+  visuMaker.setImportantPairsSpacing(ImportantPairsSpacing);
+  visuMaker.setNonImportantPairsSpacing(NonImportantPairsSpacing);
+  visuMaker.setNonImportantPairsProximity(NonImportantPairsProximity);
+  visuMaker.setVtkOutputNode(output);
+  visuMaker.setVtkOutputArc(output);
+  visuMaker.setTreesNodes(treeNodes);
+  visuMaker.setTreesNodeCorrMesh(treeNodeCorrMesh);
+  switch(dataTypeInt) {
+    vtkTemplateMacro(visuMaker.makeTreesOutput<VTK_TT>(tree, verbose));
+  }
+
+  return 1;
+}
+
+int ttkPlanarGraphLayout::RequestData(vtkInformation *request,
+                                      vtkInformationVector **inputVector,
+                                      vtkInformationVector *outputVector) {
+  if(not InputIsAMergeTree)
+    return planarGraphLayoutCall(request, inputVector, outputVector);
+  else
+    return mergeTreePlanarLayoutCall(request, inputVector, outputVector);
 }
