@@ -24,6 +24,9 @@ ttkPointDataConverter::ttkPointDataConverter() {
   this->setDebugMsgPrefix("PointDataConverter");
   this->SetNumberOfInputPorts(1);
   this->SetNumberOfOutputPorts(1);
+
+  vtkWarningMacro("`TTK PointDataConverter' is now deprecated. Please use "
+                  "`Calculator' instead.");
 }
 
 int ttkPointDataConverter::FillInputPortInformation(int port,
