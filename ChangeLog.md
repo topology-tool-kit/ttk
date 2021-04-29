@@ -2,6 +2,14 @@
 =
 ### ttk.git
 - Migration to ParaView-5.9.0
+- Marking deprecated filters (ParaView integration)
+- Explicit triangulation performance improvement 
+- IO for preconditioned triangulations
+- Morphological modules (DilateErode)
+- More performance optimization (Discrete Morse Theory / Morse-Smale complex)
+- Improved ZFP integration (fixed accuracy instead of fixed rate)
+- Support for WebSocketIO (web browser interaction)
+- CMake improvements
 - Bug fixes
 
 ### 0.9.9
