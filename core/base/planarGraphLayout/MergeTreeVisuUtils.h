@@ -27,8 +27,11 @@ bool isNodeOriginDefined(ftm::FTMTree_MT *tree, ftm::idNode nodeId) {
 }
 
 bool isRoot(ftm::FTMTree_MT *tree, ftm::idNode nodeId) {
-  if(nodeId >= tree->getNumberOfNodes())
-    std::cout << nodeId << " _____ " << tree->getNumberOfNodes() << std::endl;
+  /*if(nodeId >= tree->getNumberOfNodes()){
+    std::stringstream ss;
+    ss << nodeId << " _____ " << tree->getNumberOfNodes();
+    printMsg(ss.str());
+  }*/
   return tree->getNode(nodeId)->getNumberOfUpSuperArcs() == 0;
 }
 
@@ -228,9 +231,9 @@ void getTreeBranching(FTMTree_MT *tree,
       parentNodeOrigin = getParent(tree, parentNodeOrigin);
       /*if(oldParentNodeOrigin == parentNodeOrigin) {
         printTree(tree);
-        std::cout << getRoot(tree) << " _ " << parentNodeOrigin << std::endl;
-        std::cout << node << " _ " << nodeOrigin << std::endl;
-        std::cout << "getTreeBranching" << std::endl;
+        printMsg( getRoot(tree) << " _ " << parentNodeOrigin );
+        printMsg( node << " _ " << nodeOrigin );
+        printMsg( "getTreeBranching" );
         myPause();
       }*/
     }
