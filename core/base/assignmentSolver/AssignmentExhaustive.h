@@ -262,20 +262,22 @@ namespace ttk {
     }
 
     void printAssignments(std::vector<std::vector<int>> &allAsgn) {
-      std::cout << " ------------------------------ " << std::endl;
-      std::cout << "{";
+      std::stringstream ss;
+      ss << " ------------------------------ " << std::endl;
+      ss << "{";
       for(auto vecTemp : allAsgn) {
-        std::cout << "{";
+        ss << "{";
         for(unsigned int i = 0; i < vecTemp.size(); ++i) {
           auto valTemp = vecTemp[i];
-          std::cout << valTemp;
+          ss << valTemp;
           if(i != vecTemp.size() - 1)
-            std::cout << ",";
+            ss << ",";
         }
-        std::cout << "}, ";
+        ss << "}, ";
       }
-      std::cout << "}";
-      std::cout << std::endl << " ------------------------------ " << std::endl;
+      ss << "}";
+      ss << std::endl << " ------------------------------ " << std::endl;
+      printMsg(ss.str());
     }
 
   private:
@@ -331,12 +333,14 @@ namespace ttk {
       std::string asgnName = ss.str();
       auto it = savedAsgn.find(asgnName);
       if(it == savedAsgn.end()) { // not found
-        std::cout << asgnName << std::endl;
+        std::stringstream ss2;
+        ss2 << asgnName << std::endl;
         // allAsgn = constructAssignments(min_dim, max_dim);
         // allAsgn = constructAssignments2(min_dim, max_dim);
         allAsgn = constructAssignments3(min_dim, max_dim);
         savedAsgn[asgnName] = allAsgn;
-        std::cout << allAsgn.size() << " done" << std::endl;
+        ss2 << allAsgn.size() << " done" << std::endl;
+        printMsg(ss2.str());
       } else
         allAsgn = savedAsgn[asgnName];
     }

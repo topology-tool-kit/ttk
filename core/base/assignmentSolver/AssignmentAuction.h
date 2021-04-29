@@ -78,10 +78,12 @@ namespace ttk {
 
     template <class vecType>
     void printVector(std::vector<vecType> &vec) {
+      std::stringstream ss;
       for(auto valTemp : vec)
-        std::cout << valTemp << " ";
-      std::cout << std::endl;
-      std::cout << " ------------------------------ " << std::endl;
+        ss << valTemp << " ";
+      ss << std::endl;
+      ss << " ------------------------------ " << std::endl;
+      printMsg(ss.str());
     }
 
   private:
