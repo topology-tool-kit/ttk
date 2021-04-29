@@ -28,7 +28,7 @@
 
 #include <Debug.h>
 #include <ttkAlgorithm.h>
-#include <ttkTriangulation.h>
+//#include <ttkTriangulation.h>
 
 // VTK Includes
 #include <vtkAppendFilter.h>
