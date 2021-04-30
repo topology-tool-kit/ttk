@@ -81,9 +81,8 @@ namespace ttk {
       std::stringstream ss;
       for(auto valTemp : vec)
         ss << valTemp << " ";
-      ss << std::endl;
-      ss << " ------------------------------ " << std::endl;
-      printMsg(ss.str());
+      printMsg(ss.str(), debug::Priority::VERBOSE);
+      printMsg(" ------------------------------ ", debug::Priority::VERBOSE);
     }
 
   private:

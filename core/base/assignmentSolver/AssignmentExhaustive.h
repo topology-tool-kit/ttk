@@ -262,8 +262,8 @@ namespace ttk {
     }
 
     void printAssignments(std::vector<std::vector<int>> &allAsgn) {
+      printMsg(" ------------------------------ ", debug::Priority::VERBOSE);
       std::stringstream ss;
-      ss << " ------------------------------ " << std::endl;
       ss << "{";
       for(auto vecTemp : allAsgn) {
         ss << "{";
@@ -276,8 +276,8 @@ namespace ttk {
         ss << "}, ";
       }
       ss << "}";
-      ss << std::endl << " ------------------------------ " << std::endl;
-      printMsg(ss.str());
+      printMsg(ss.str(), debug::Priority::VERBOSE);
+      printMsg(" ------------------------------ ", debug::Priority::VERBOSE);
     }
 
   private:
@@ -333,14 +333,14 @@ namespace ttk {
       std::string asgnName = ss.str();
       auto it = savedAsgn.find(asgnName);
       if(it == savedAsgn.end()) { // not found
-        std::stringstream ss2;
-        ss2 << asgnName << std::endl;
+        printMsg(asgnName, debug::Priority::VERBOSE);
         // allAsgn = constructAssignments(min_dim, max_dim);
         // allAsgn = constructAssignments2(min_dim, max_dim);
         allAsgn = constructAssignments3(min_dim, max_dim);
         savedAsgn[asgnName] = allAsgn;
-        ss2 << allAsgn.size() << " done" << std::endl;
-        printMsg(ss2.str());
+        std::stringstream ss2;
+        ss2 << allAsgn.size() << " done";
+        printMsg(ss2.str(), debug::Priority::VERBOSE);
       } else
         allAsgn = savedAsgn[asgnName];
     }

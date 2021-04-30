@@ -66,15 +66,15 @@ namespace ttk {
     }
 
     void printTableVector(std::vector<std::vector<dataType>> &table) {
-      std::stringstream ss;
       for(auto vecTemp : table) {
+        std::stringstream ss;
         for(auto valTemp : vecTemp) {
           ss << valTemp << " ";
         }
-        ss << std::endl;
+        printMsg(ss.str(), debug::Priority::VERBOSE);
       }
-      ss << " ------------------------------ " << std::endl;
-      printMsg(ss.str());
+      printMsg(" ------------------------------ ", debug::Priority::VERBOSE);
+      
     }
 
   protected:
