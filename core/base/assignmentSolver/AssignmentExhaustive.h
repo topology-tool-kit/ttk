@@ -262,7 +262,7 @@ namespace ttk {
     }
 
     void printAssignments(std::vector<std::vector<int>> &allAsgn) {
-      printMsg(ttk::debug::Separator::L1, debug::Priority::VERBOSE);
+      printMsg(debug::Separator::L1, debug::Priority::VERBOSE);
       std::stringstream ss;
       ss << "{";
       for(auto vecTemp : allAsgn) {
@@ -277,7 +277,7 @@ namespace ttk {
       }
       ss << "}";
       printMsg(ss.str(), debug::Priority::VERBOSE);
-      printMsg(ttk::debug::Separator::L1, debug::Priority::VERBOSE);
+      printMsg(debug::Separator::L1, debug::Priority::VERBOSE);
     }
 
   private:

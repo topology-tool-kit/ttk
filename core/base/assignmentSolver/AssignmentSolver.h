@@ -73,7 +73,7 @@ namespace ttk {
         }
         printMsg(ss.str(), debug::Priority::VERBOSE);
       }
-      printMsg(ttk::debug::Separator::L1, debug::Priority::VERBOSE);
+      printMsg(debug::Separator::L1, debug::Priority::VERBOSE);
     }
 
   protected:
