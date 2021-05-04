@@ -164,7 +164,13 @@ jobs:
       run: |
         cd ttk-data/tests
         python3 run.py
+        tar zcfv screenshots.tar.gz *.png
 
+    - name: Upload result screenshots
+      uses: actions/upload-artifact@v2
+      with:
+        name: screenshots-${{ matrix.os }}.tar.gz
+        path: ttk-data/tests/screenshots.tar.gz
 
   # -----------------#
   # Test macOS build #
@@ -294,7 +300,13 @@ jobs:
         cd ttk-data/tests
         export PV_PLUGIN_PATH=/usr/local/bin/plugins
         python3 -u run.py
+        tar zcfv screenshots.tar.gz *.png
 
+    - name: Upload result screenshots
+      uses: actions/upload-artifact@v2
+      with:
+        name: screenshots-macOS.tar.gz
+        path: ttk-data/tests/screenshots.tar.gz
 
   # ------------------ #
   # Test Windows build #
