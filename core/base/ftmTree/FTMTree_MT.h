@@ -921,7 +921,9 @@ namespace ttk {
       }
 
       MergeTree<dataType> &operator=(const MergeTree<dataType> &mt) {
-        copy(mt);
+        if(&mt != this) {
+          copy(mt);
+        }
         return *this;
       }
     };

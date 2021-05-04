@@ -149,8 +149,10 @@ namespace ttk {
     // --------
 
     FTRAtomicVector<type> &operator=(const FTRAtomicVector<type> &other) {
-      std::vector<type>::operator=(other);
-      nextId = other.nextId;
+      if(&other != this) {
+        std::vector<type>::operator=(other);
+        nextId = other.nextId;
+      }
       return *this;
     }
 
