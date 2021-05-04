@@ -2,7 +2,6 @@ Checks: >-
   -*,
   bugprone-*,
   -bugprone-narrowing-conversions,
-  -bugprone-too-small-loop-variable,
   -bugprone-macro-parentheses,
   -bugprone-reserved-identifier,
   cert-oop54-cpp,
