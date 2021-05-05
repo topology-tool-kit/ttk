@@ -40,6 +40,8 @@ jobs:
   # ------------- #
   lint-code:
     runs-on: ubuntu-20.04
+    env:
+      CLANG_TIDY: clang-tidy-11
     strategy:
       matrix:
         config:
@@ -83,7 +85,7 @@ jobs:
           graphviz \
           python3-sklearn \
           zlib1g-dev \
-          clang-tidy
+          $CLANG_TIDY
 
     - uses: dsaltares/fetch-gh-release-asset@0.0.5
       with:
@@ -113,7 +115,7 @@ jobs:
         git ls-files \
         | grep core \
         | grep -E "\.cpp$|\.cxx$" \
-        | xargs -n1 clang-tidy -p build 2> /dev/null
+        | xargs -n1 $CLANG_TIDY -p build 2> /dev/null
 
     - name: Use Clang static analyzer [NOT ENFORCED]
       if: matrix.config.sa
@@ -121,7 +123,7 @@ jobs:
         git ls-files \
         | grep core \
         | grep -E "\.cpp$|\.cxx$" \
-        | xargs -n1 clang-tidy -p build --checks="-*,clang-analyzer-*" 2> /dev/null
+        | xargs -n1 $CLANG_TIDY -p build --checks="-*,clang-analyzer-*" 2> /dev/null
 
 
   # ----------------------- #
@@ -150,7 +152,7 @@ jobs:
           graphviz \
           python3-sklearn \
           zlib1g-dev \
-          clang-tools
+          clang-tools-11
 
     - uses: dsaltares/fetch-gh-release-asset@0.0.5
       with:
@@ -182,4 +184,4 @@ jobs:
         git ls-files \
         | grep core \
         | grep -E "\.cpp$|\.cxx$" \
-        | xargs clang-check -p build --extra-arg=-Werror
+        | xargs clang-check-11 -p build --extra-arg=-Werror
