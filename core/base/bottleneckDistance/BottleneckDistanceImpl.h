@@ -393,10 +393,10 @@ void BottleneckDistance::solvePWasserstein(
   const int nbCol,
   std::vector<std::vector<dataType>> &matrix,
   std::vector<matchingTuple> &matchings,
-  Munkres &solver) {
-  solver.setInput(nbRow, nbCol, (void *)&matrix);
-  solver.run<dataType>(matchings);
-  solver.clearMatrix<dataType>();
+  AssignmentMunkres<dataType> &solver) {
+  solver.setInput(matrix);
+  solver.run(matchings);
+  solver.clearMatrix();
 }
 
 template <typename dataType>

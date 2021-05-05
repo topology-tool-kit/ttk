@@ -1,0 +1,12 @@
+ttk_add_base_library(assignmentSolver
+  SOURCES 
+    AssignmentSolver.cpp
+  HEADERS 
+    AssignmentSolver.h
+    AssignmentAuction.h
+    AssignmentExhaustive.h
+    AssignmentMunkres.h
+    AssignmentMunkresImpl.h
+  DEPENDS
+   triangulation
+)
