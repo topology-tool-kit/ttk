@@ -167,7 +167,7 @@ double PersistenceDiagramDistanceMatrix::computeDistance(
     D2_bis.addGood(g);
   }
 
-  Auction<double> auction(
+  PersistenceDiagramAuction<double> auction(
     this->Wasserstein, this->Alpha, this->Lambda, this->DeltaLim, true);
   auction.BuildAuctionDiagrams(&D1, &D2_bis);
   return auction.run();

@@ -1,13 +1,13 @@
-#ifndef _AUCTIONIMPL_H
-#define _AUCTIONIMPL_H
+#ifndef _PERSISTENCEDIAGRAMAUCTIONIMPL_H
+#define _PERSISTENCEDIAGRAMAUCTIONIMPL_H
 
 #ifndef matchingTuple
 #define matchingTuple std::tuple<SimplexId, SimplexId, dataType>
 #endif
 
 template <typename dataType>
-void ttk::Auction<dataType>::runAuctionRound(int &n_biddings,
-                                             const int kdt_index) {
+void ttk::PersistenceDiagramAuction<dataType>::runAuctionRound(
+  int &n_biddings, const int kdt_index) {
   dataType max_price = getMaximalPrice();
   dataType epsilon = epsilon_;
   if(epsilon_ < 1e-6 * max_price) {
@@ -64,7 +64,7 @@ void ttk::Auction<dataType>::runAuctionRound(int &n_biddings,
 }
 
 template <typename dataType>
-dataType ttk::Auction<dataType>::getMaximalPrice() {
+dataType ttk::PersistenceDiagramAuction<dataType>::getMaximalPrice() {
   dataType max_price = 0;
   for(int i = 0; i < goods_.size(); ++i) {
     Good<dataType> &g = goods_.get(i);
@@ -86,7 +86,7 @@ dataType ttk::Auction<dataType>::getMaximalPrice() {
 }
 
 template <typename dataType>
-dataType ttk::Auction<dataType>::getMatchingsAndDistance(
+dataType ttk::PersistenceDiagramAuction<dataType>::getMatchingsAndDistance(
   std::vector<matchingTuple> *matchings, bool get_diagonal_matches) {
   dataType wassersteinDistance = 0;
   for(int i = 0; i < bidders_.size(); i++) {
@@ -102,7 +102,8 @@ dataType ttk::Auction<dataType>::getMatchingsAndDistance(
         matchings->push_back(t);
       } else {
         if(!b.getProperty().isDiagonal()) {
-          std::cout << "[AuctionImpl] Huho : both the bidder and the good are "
+          std::cout << "[PersistenceDiagramAuctionImpl] Huho : both the bidder "
+                       "and the good are "
                        "diagonal points"
                     << std::endl;
         }
@@ -130,7 +131,8 @@ dataType ttk::Auction<dataType>::getMatchingsAndDistance(
 }
 
 template <typename dataType>
-dataType ttk::Auction<dataType>::run(std::vector<matchingTuple> *matchings) {
+dataType ttk::PersistenceDiagramAuction<dataType>::run(
+  std::vector<matchingTuple> *matchings) {
   initializeEpsilon();
   int n_biddings = 0;
   dataType delta = 5;

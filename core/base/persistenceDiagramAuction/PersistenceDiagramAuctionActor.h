@@ -1,5 +1,5 @@
-#ifndef _AUCTIONACTOR_H
-#define _AUCTIONACTOR_H
+#ifndef _PERSISTENCEDIAGRAMAUCTIONACTOR_H
+#define _PERSISTENCEDIAGRAMAUCTIONACTOR_H
 
 #include <Debug.h>
 #include <KDTree.h>
@@ -22,14 +22,14 @@ namespace ttk {
   struct Compare;
 
   template <typename dataType>
-  class AuctionActor : public Debug {
+  class PersistenceDiagramAuctionActor : public Debug {
   public:
     dataType x_;
     dataType y_;
     int id_;
     float coords_x_, coords_y_, coords_z_;
 
-    AuctionActor() {
+    PersistenceDiagramAuctionActor() {
       id_ = 0;
       x_ = 0;
       y_ = 0;
@@ -43,7 +43,10 @@ namespace ttk {
       // geom_pair_length_[2] = 0;
     }
 
-    AuctionActor(dataType x, dataType y, bool is_diagonal, int id) {
+    PersistenceDiagramAuctionActor(dataType x,
+                                   dataType y,
+                                   bool is_diagonal,
+                                   int id) {
       id_ = id;
       x_ = x;
       y_ = y;
@@ -58,7 +61,7 @@ namespace ttk {
       // geom_pair_length_[1] = 0;
       // geom_pair_length_[2] = 0;
     }
-    ~AuctionActor() = default;
+    ~PersistenceDiagramAuctionActor() = default;
 
     void SetCoordinates(dataType &x, dataType &y);
     void SetCriticalCoordinates(float coords_x, float coords_y, float coords_z);
@@ -73,11 +76,13 @@ namespace ttk {
       return (var >= 0) ? var : -var;
     }
 
-    dataType
-      cost(const AuctionActor &g, int &wasserstein, double &geometricalFactor);
+    dataType cost(const PersistenceDiagramAuctionActor &g,
+                  int &wasserstein,
+                  double &geometricalFactor);
 
-    inline dataType
-      cost(const AuctionActor *g, int &wasserstein, double &geometricalFactor);
+    inline dataType cost(const PersistenceDiagramAuctionActor *g,
+                         int &wasserstein,
+                         double &geometricalFactor);
 
     double getPairGeometricalLength(const int wasserstein) const;
 
@@ -87,20 +92,20 @@ namespace ttk {
   };
 
   template <typename dataType>
-  int AuctionActor<dataType>::getId() const {
+  int PersistenceDiagramAuctionActor<dataType>::getId() const {
     return id_;
   }
 
   template <typename dataType>
-  void AuctionActor<dataType>::SetCoordinates(dataType &x, dataType &y) {
+  void PersistenceDiagramAuctionActor<dataType>::SetCoordinates(dataType &x,
+                                                                dataType &y) {
     x_ = x;
     y_ = y;
   }
 
   template <typename dataType>
-  void AuctionActor<dataType>::SetCriticalCoordinates(float coords_x,
-                                                      float coords_y,
-                                                      float coords_z) {
+  void PersistenceDiagramAuctionActor<dataType>::SetCriticalCoordinates(
+    float coords_x, float coords_y, float coords_z) {
     coords_x_ = coords_x;
     coords_y_ = coords_y;
     coords_z_ = coords_z;
@@ -108,29 +113,29 @@ namespace ttk {
 
   template <typename dataType>
   std::tuple<float, float, float>
-    AuctionActor<dataType>::GetCriticalCoordinates() const {
+    PersistenceDiagramAuctionActor<dataType>::GetCriticalCoordinates() const {
     return std::make_tuple(coords_x_, coords_y_, coords_z_);
   }
 
   template <typename dataType>
-  void AuctionActor<dataType>::projectOnDiagonal() {
+  void PersistenceDiagramAuctionActor<dataType>::projectOnDiagonal() {
     x_ = (x_ + y_) / 2;
     y_ = x_;
     is_diagonal_ = true;
   }
 
   template <typename dataType>
-  dataType AuctionActor<dataType>::getPersistence() const {
+  dataType PersistenceDiagramAuctionActor<dataType>::getPersistence() const {
     return y_ - x_;
   }
 
   template <typename dataType>
-  bool AuctionActor<dataType>::isDiagonal() const {
+  bool PersistenceDiagramAuctionActor<dataType>::isDiagonal() const {
     return (is_diagonal_);
   }
 
   template <typename dataType>
-  double AuctionActor<dataType>::getPairGeometricalLength(
+  double PersistenceDiagramAuctionActor<dataType>::getPairGeometricalLength(
     const int wasserstein) const {
     return Geometry::pow(geom_pair_length_[0], wasserstein)
            + Geometry::pow(geom_pair_length_[1], wasserstein)
@@ -138,9 +143,10 @@ namespace ttk {
   }
 
   template <typename dataType>
-  dataType AuctionActor<dataType>::cost(const AuctionActor &g,
-                                        int &wasserstein,
-                                        double &geometricalFactor) {
+  dataType PersistenceDiagramAuctionActor<dataType>::cost(
+    const PersistenceDiagramAuctionActor &g,
+    int &wasserstein,
+    double &geometricalFactor) {
     if(is_diagonal_ && g.isDiagonal()) {
       return 0;
     } else if(is_diagonal_) {
@@ -170,21 +176,22 @@ namespace ttk {
   }
 
   template <typename dataType>
-  dataType AuctionActor<dataType>::cost(const AuctionActor *g,
-                                        int &wasserstein,
-                                        double &geometricalFactor) {
+  dataType PersistenceDiagramAuctionActor<dataType>::cost(
+    const PersistenceDiagramAuctionActor *g,
+    int &wasserstein,
+    double &geometricalFactor) {
     return this->cost(*g, wasserstein, geometricalFactor);
   }
 
   template <typename dataType>
-  class Good : public AuctionActor<dataType> {
+  class Good : public PersistenceDiagramAuctionActor<dataType> {
 
   public:
     Good(){};
     Good(dataType x, dataType y, bool is_diagonal, int id)
-      : AuctionActor<dataType>(x, y, is_diagonal, id) {
-      AuctionActor<dataType>::is_diagonal_ = is_diagonal;
-      AuctionActor<dataType>::id_ = id;
+      : PersistenceDiagramAuctionActor<dataType>(x, y, is_diagonal, id) {
+      PersistenceDiagramAuctionActor<dataType>::is_diagonal_ = is_diagonal;
+      PersistenceDiagramAuctionActor<dataType>::id_ = id;
     }
 
     // lambda : 0<=lambda<=1
@@ -193,8 +200,8 @@ namespace ttk {
     // pair sad-max) lambda = 0 : saddle (bad stability) lambda = 1/2 : middle
     // of the 2 critical points of the pair
     Good(diagramTuple &tuple, int id, double lambda)
-      : AuctionActor<dataType>() {
-      AuctionActor<dataType>::id_ = id;
+      : PersistenceDiagramAuctionActor<dataType>() {
+      PersistenceDiagramAuctionActor<dataType>::id_ = id;
 
       BNodeType type1 = std::get<1>(tuple);
       BNodeType type2 = std::get<3>(tuple);
@@ -238,22 +245,23 @@ namespace ttk {
       this->SetCriticalCoordinates(coords_x, coords_y, coords_z);
 
       if(x == y) {
-        AuctionActor<dataType>::is_diagonal_ = true;
+        PersistenceDiagramAuctionActor<dataType>::is_diagonal_ = true;
       } else {
-        AuctionActor<dataType>::is_diagonal_ = false;
+        PersistenceDiagramAuctionActor<dataType>::is_diagonal_ = false;
       }
     }
 
-    Good(diagramTuple &tuple, int id) : AuctionActor<dataType>() {
-      AuctionActor<dataType>::id_ = id;
+    Good(diagramTuple &tuple, int id)
+      : PersistenceDiagramAuctionActor<dataType>() {
+      PersistenceDiagramAuctionActor<dataType>::id_ = id;
       dataType x = std::get<6>(tuple);
       dataType y = std::get<10>(tuple);
       this->SetCoordinates(x, y);
 
       if(x == y) {
-        AuctionActor<dataType>::is_diagonal_ = true;
+        PersistenceDiagramAuctionActor<dataType>::is_diagonal_ = true;
       } else {
-        AuctionActor<dataType>::is_diagonal_ = false;
+        PersistenceDiagramAuctionActor<dataType>::is_diagonal_ = false;
       }
     }
 
@@ -341,22 +349,22 @@ namespace ttk {
   }
 
   template <typename dataType>
-  class Bidder : public AuctionActor<dataType> {
+  class Bidder : public PersistenceDiagramAuctionActor<dataType> {
   public:
     dataType diagonal_price_;
 
     Bidder(){};
     Bidder(dataType x, dataType y, bool is_diagonal, int id)
-      : AuctionActor<dataType>(x, y, is_diagonal, id) {
+      : PersistenceDiagramAuctionActor<dataType>(x, y, is_diagonal, id) {
       price_paid_ = 0;
       diagonal_price_ = 0;
-      AuctionActor<dataType>::is_diagonal_ = is_diagonal;
-      AuctionActor<dataType>::id_ = id;
+      PersistenceDiagramAuctionActor<dataType>::is_diagonal_ = is_diagonal;
+      PersistenceDiagramAuctionActor<dataType>::id_ = id;
     }
 
     Bidder(diagramTuple &tuple, int id, double lambda)
-      : AuctionActor<dataType>() {
-      AuctionActor<dataType>::id_ = id;
+      : PersistenceDiagramAuctionActor<dataType>() {
+      PersistenceDiagramAuctionActor<dataType>::id_ = id;
 
       BNodeType type1 = std::get<1>(tuple);
       BNodeType type2 = std::get<3>(tuple);
@@ -400,9 +408,9 @@ namespace ttk {
 
       if(std::abs(static_cast<double>(x) - static_cast<double>(y))
          < Geometry::powIntTen<double>(-12)) {
-        AuctionActor<dataType>::is_diagonal_ = true;
+        PersistenceDiagramAuctionActor<dataType>::is_diagonal_ = true;
       } else {
-        AuctionActor<dataType>::is_diagonal_ = false;
+        PersistenceDiagramAuctionActor<dataType>::is_diagonal_ = false;
       }
       price_paid_ = 0;
       diagonal_price_ = 0;

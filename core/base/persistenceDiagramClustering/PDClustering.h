@@ -15,7 +15,7 @@
 #ifndef _PDCLUSTERING_H
 #define _PDCLUSTERING_H
 
-#include <Auction.h>
+#include <PersistenceDiagramAuction.h>
 //
 #include <KDTree.h>
 //

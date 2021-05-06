@@ -937,7 +937,7 @@ dataType
                                           const double delta_lim) {
   std::vector<matchingTuple> matchings;
   const auto D2_bis = centroidWithZeroPrices(D2);
-  Auction<dataType> auction(
+  PersistenceDiagramAuction<dataType> auction(
     wasserstein_, geometrical_factor_, lambda_, delta_lim, use_kdtree_);
   auction.BuildAuctionDiagrams(&D1, &D2_bis);
   dataType cost = auction.run(&matchings);
@@ -950,7 +950,7 @@ dataType
                                           const GoodDiagram<dataType> *const D2,
                                           const double delta_lim) {
   std::vector<matchingTuple> matchings;
-  Auction<dataType> auction(
+  PersistenceDiagramAuction<dataType> auction(
     wasserstein_, geometrical_factor_, lambda_, delta_lim, use_kdtree_);
   int size1 = D1->size();
   auction.BuildAuctionDiagrams(D1, D2);

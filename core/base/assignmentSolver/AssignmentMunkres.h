@@ -1,6 +1,13 @@
 /// \ingroup base
-/// \class ttk::Munkres
+/// \class ttk::AssignmentMunkres
 /// \author Maxime Soler <soler.maxime@total.com>
+
+#ifndef _ASSIGNMENTMUNKRES_H
+#define _ASSIGNMENTMUNKRES_H
+
+#include <Debug.h>
+
+#include "AssignmentSolver.h"
 
 #pragma once
 
@@ -11,45 +18,32 @@
 
 namespace ttk {
 
-  class Munkres : public Debug {
+  template <class dataType>
+  class AssignmentMunkres : virtual public Debug,
+                            public AssignmentSolver<dataType> {
 
   public:
-    Munkres() {
-      this->setDebugMsgPrefix("Munkres");
+    AssignmentMunkres() {
+      this->setDebugMsgPrefix("AssignmentMunkres");
     }
 
-    ~Munkres(){};
+    ~AssignmentMunkres(){};
 
-    template <typename dataType>
-    int run(std::vector<matchingTuple> &matchings);
+    int run(std::vector<asgnMatchingTuple> &matchings);
 
-    template <typename dataType>
     inline void clear() {
+      AssignmentSolver<dataType>::clear();
       pathCount = 0;
-      rowSize = 0;
-      colSize = 0;
       createdZeros.clear();
     }
 
-    template <typename dataType>
-    inline void clearMatrix() {
-      std::vector<std::vector<dataType>> C
-        = *((std::vector<std::vector<dataType>> *)Cptr);
-      for(int r = 0, rS0 = rowSize; r < rS0; ++r)
-        for(int c = 0, cS0 = colSize; c < cS0; ++c)
-          C[r][c] = 0.0;
-    }
-
-    inline int setInput(int rowSize_, int colSize_, void *C_) {
-      rowSize = rowSize_;
-      colSize = colSize_;
+    inline int setInput(std::vector<std::vector<dataType>> &C_) {
+      AssignmentSolver<dataType>::setInput(C_);
 
       createdZeros.clear();
 
-      Cptr = C_;
-
-      auto r = (unsigned long)rowSize_;
-      auto c = (unsigned long)colSize_;
+      auto r = (unsigned long)this->rowSize;
+      auto c = (unsigned long)this->colSize;
 
       rowCover.resize(r);
       colCover.resize(c);
@@ -60,10 +54,10 @@ namespace ttk {
       colLimitsPlus.resize(c);
 
       M.resize(r);
-      for(int row = 0; row < rowSize_; ++row)
+      for(int row = 0; row < this->rowSize; ++row)
         M[row].resize(c);
 
-      int nbPaths = 1 + colSize_ + rowSize_;
+      int nbPaths = 1 + this->colSize + this->rowSize;
       path.resize((unsigned long)nbPaths);
       for(int p = 0; p < nbPaths; ++p)
         path[p].resize(2);
@@ -73,13 +67,12 @@ namespace ttk {
       return 0;
     }
 
-    template <typename dataType>
     inline void showCostMatrix() {
-      auto C = (std::vector<std::vector<dataType>> *)Cptr;
+      auto C = AssignmentSolver<dataType>::getCostMatrix();
       std::stringstream msg;
-      for(int r = 0; r < rowSize; ++r) {
+      for(int r = 0; r < this->rowSize; ++r) {
         msg << std::endl << "  ";
-        for(int c = 0; c < colSize; ++c)
+        for(int c = 0; c < this->colSize; ++c)
           msg << std::fixed << std::setprecision(3) << (*C)[r][c] << " ";
       }
 
@@ -89,17 +82,17 @@ namespace ttk {
     inline void showMaskMatrix() {
       std::stringstream msg;
       msg << std::endl << "   | ";
-      for(int c = 0; c < colSize; ++c) {
+      for(int c = 0; c < this->colSize; ++c) {
         msg << colCover[c] << "  ";
       }
       msg << std::endl << "   | ";
-      for(int c = 0; c < colSize; ++c) {
+      for(int c = 0; c < this->colSize; ++c) {
         msg << "---";
       }
       msg << std::endl;
-      for(int r = 0; r < rowSize; ++r) {
+      for(int r = 0; r < this->rowSize; ++r) {
         msg << " " << rowCover[r] << " | ";
-        for(int c = 0; c < colSize; ++c)
+        for(int c = 0; c < this->colSize; ++c)
           msg << M[r][c] << "  ";
         msg << std::endl;
       }
@@ -107,8 +100,6 @@ namespace ttk {
     }
 
   private:
-    void *Cptr;
-
     std::vector<std::vector<int>> M;
     std::vector<bool> rowCover;
     std::vector<bool> colCover;
@@ -125,68 +116,50 @@ namespace ttk {
     int pathCol0;
     int pathCount = 0;
 
-    int rowSize = 0;
-    int colSize = 0;
-
     // internal methods
-    template <typename dataType>
     int stepOne(int &step);
 
-    template <typename dataType>
     int stepTwo(int &step);
 
-    template <typename dataType>
     int stepThree(int &step);
 
-    template <typename dataType>
     int stepFour(int &step);
-    template <typename dataType>
     int findZero(int &row, int &col);
-    template <typename dataType>
     int findStarInRow(int row);
 
-    template <typename dataType>
     int stepFive(int &step);
-    template <typename dataType>
     int findStarInCol(int col);
-    template <typename dataType>
     int findPrimeInRow(int row);
 
-    template <typename dataType>
     int stepSix(int &step);
 
-    template <typename dataType>
     int stepSeven(int &step);
 
-    template <typename dataType>
-    int affect(std::vector<matchingTuple> &matchings,
+    int affect(std::vector<asgnMatchingTuple> &matchings,
                const std::vector<std::vector<dataType>> &C);
 
-    template <typename dataType>
     int computeAffectationCost(const std::vector<std::vector<dataType>> &C);
 
-    template <typename dataType>
     inline bool isZero(dataType t) {
       // return std::abs((double) t) < 1e-15;
       return t == 0.;
     }
 
     inline int resetMasks() {
-      for(int r = 0; r < rowSize; ++r) {
+      for(int r = 0; r < this->rowSize; ++r) {
         rowCover[r] = false;
-        for(int c = 0; c < colSize; ++c)
+        for(int c = 0; c < this->colSize; ++c)
           M[r][c] = 0;
       }
-      for(int c = 0; c < colSize; ++c)
+      for(int c = 0; c < this->colSize; ++c)
         colCover[c] = false;
       return 0;
     }
 
-    template <typename dataType>
     inline int copyInputMatrix(std::vector<std::vector<dataType>> &saveInput) {
-      auto C = (std::vector<std::vector<dataType>> *)Cptr;
-      int rS = rowSize;
-      int cS = colSize;
+      auto C = AssignmentSolver<dataType>::getCostMatrixPointer();
+      int rS = this->rowSize;
+      int cS = this->colSize;
 
       for(int r = 0; r < rS; ++r)
         for(int c = 0; c < cS; ++c)
@@ -197,6 +170,8 @@ namespace ttk {
   };
 
 // Include in namespace ttk
-#include <MunkresImpl.h>
+#include <AssignmentMunkresImpl.h>
 
 } // namespace ttk
+
+#endif

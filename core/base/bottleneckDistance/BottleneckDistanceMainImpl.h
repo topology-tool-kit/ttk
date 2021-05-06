@@ -183,21 +183,21 @@ int BottleneckDistance::computeBottleneck(const std::vector<diagramTuple> &d1,
   if(wasserstein > 0) {
 
     if(nbRowMin > 0 && nbColMin > 0) {
-      Munkres solverMin;
+      AssignmentMunkres<dataType> solverMin;
       this->printMsg("Affecting minima...");
       this->solvePWasserstein(
         minRowColMin, maxRowColMin, minMatrix, minMatchings, solverMin);
     }
 
     if(nbRowMax > 0 && nbColMax > 0) {
-      Munkres solverMax;
+      AssignmentMunkres<dataType> solverMax;
       this->printMsg("Affecting maxima...");
       this->solvePWasserstein(
         minRowColMax, maxRowColMax, maxMatrix, maxMatchings, solverMax);
     }
 
     if(nbRowSad > 0 && nbColSad > 0) {
-      Munkres solverSad;
+      AssignmentMunkres<dataType> solverSad;
       this->printMsg("Affecting saddles...");
       this->solvePWasserstein(
         minRowColSad, maxRowColSad, sadMatrix, sadMatchings, solverSad);
