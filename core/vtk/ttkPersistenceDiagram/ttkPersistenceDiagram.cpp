@@ -240,6 +240,7 @@ int ttkPersistenceDiagram::dispatch(
     progPD_.setStartingDecimationLevel(StartingDecimationLevel);
     progPD_.setStoppingDecimationLevel(StoppingDecimationLevel);
     progPD_.setTimeLimit(TimeLimit);
+    progPD_.setPreallocateMemory(PreallocateMemoryProgressive);
     if(StoppingDecimationLevel > 0 || TimeLimit > 0) {
       // store state for resume only in a lower decimation level
       progPD_.setIsResumable(IsResumable);

@@ -5,18 +5,19 @@
 /// \date 2020.
 ///
 /// \brief TTK processing package for progressive Topological Data Analysis
-/// 
-/// This package introduces a multiresolution hierarchical representation of the data
-/// which allows the definition of efficient progressive algorithms for TDA. It is applied to
-/// the progressive computation of Critical Points (not yet integrated) and Persistence Diagrams 
-/// (called in ttkPersistenceDiagram).
+///
+/// This package introduces a multiresolution hierarchical representation of the
+/// data which allows the definition of efficient progressive algorithms for
+/// TDA. It is applied to the progressive computation of Critical Points (not
+/// yet integrated) and Persistence Diagrams (called in ttkPersistenceDiagram).
 ///
 /// \b Related \b publication \n
 /// "A Progressive Approach to Scalar Field Topology" \n
 /// Jules Vidal, Pierre Guillou, Julien Tierny\n
 /// IEEE Transactions on Visualization and Computer Graphics, 2020
 ///
-/// \sa ttkPersistenceDiagram.cpp %for a usage example on the progressive computation of Persistence Diagrams
+/// \sa ttkPersistenceDiagram.cpp %for a usage example on the progressive
+/// computation of Persistence Diagrams
 
 #pragma once
 
@@ -165,6 +166,9 @@ namespace ttk {
     }
     inline void setIsResumable(const bool b) {
       this->isResumable_ = b;
+    }
+    inline void setPreallocateMemory(const bool b) {
+      this->preallocateMemory_ = b;
     }
     inline void setTimeLimit(const double d) {
       if(d <= 0.0) {
@@ -365,6 +369,7 @@ namespace ttk {
     bool isResumable_{false};
     // time limit
     double timeLimit_{0.0};
+    bool preallocateMemory_{true};
 
     // keep state in case of resuming computation
     std::vector<std::vector<SimplexId>> vertexRepresentativesMax_{},
@@ -429,6 +434,8 @@ int ttk::ProgressiveTopology::executeCPProgressive(
   const scalarType *scalars,
   const SimplexId *offsets) {
 
+  printMsg(ttk::debug::Separator::L1);
+
   // get data
   Timer timer;
   // auto &CTDiagram = *static_cast<
@@ -486,17 +493,22 @@ int ttk::ProgressiveTopology::executeCPProgressive(
   std::vector<Lock> vertLockMin(vertexNumber), vertLockMax(vertexNumber);
 
   // pre-allocate memory
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(threadNumber_)
-#endif // TTK_ENABLE_OPENMP
-  for(SimplexId i = 0; i < vertexNumber; ++i) {
-    vertexLinkPolarity[i].reserve(maxNeigh);
-    link[i].alloc(maxNeigh);
+  if(preallocateMemory_) {
+    double tm_prealloc = timer.getElapsedTime();
+    printMsg("Pre-allocating data structures", 0, 0, threadNumber_,
+             ttk::debug::LineMode::REPLACE);
+    for(SimplexId i = 0; i < vertexNumber; ++i) {
+      vertexLinkPolarity[i].reserve(maxNeigh);
+      link[i].alloc(maxNeigh);
+    }
+    printMsg("Pre-allocating data structures", 1,
+             timer.getElapsedTime() - tm_prealloc, threadNumber_);
   }
 
   tm_allocation = timer.getElapsedTime() - tm_allocation;
   if(debugLevel_ > 3)
     std::cout << "ALLOCATION " << tm_allocation << std::endl;
+  printMsg("Total memory allocation", 1, tm_allocation, threadNumber_);
 
   // computation of implicit link
   std::vector<SimplexId> boundReps{};
@@ -519,6 +531,9 @@ int ttk::ProgressiveTopology::executeCPProgressive(
     std::cout << std::endl;
   }
 
+  printMsg("Decimation level " + std::to_string(decimationLevel_), 0,
+           timer.getElapsedTime() - tm_allocation, this->threadNumber_,
+           ttk::debug::LineMode::REPLACE);
   multiresTriangulation_.setDecimationLevel(decimationLevel_);
   initCriticalPoints(isNew, vertexLinkPolarity, toPropageMin, toPropageMax,
                      toProcess, link, vertexLink, vertexLinkByBoundaryType,
@@ -533,6 +548,9 @@ int ttk::ProgressiveTopology::executeCPProgressive(
     CTDiagram, scalars, offsets, vertexRepresentativesMin,
     vertexRepresentativesMax, toPropageMin, toPropageMax);
 
+  printMsg("Decimation level " + std::to_string(decimationLevel_), 1,
+      timer.getElapsedTime() - tm_allocation, this->threadNumber_);
+
   // skip subsequent propagations if time limit is exceeded
   stopComputationIf(timer.getElapsedTime() - tm_allocation
                     > 0.9 * this->timeLimit_);
@@ -543,7 +561,8 @@ int ttk::ProgressiveTopology::executeCPProgressive(
     multiresTriangulation_.setDecimationLevel(decimationLevel_);
 
     printMsg("Decimation level " + std::to_string(decimationLevel_), 0,
-             timer.getElapsedTime() - tm_allocation, this->threadNumber_);
+             timer.getElapsedTime() - tm_allocation, this->threadNumber_,
+             ttk::debug::LineMode::REPLACE);
 
     updateCriticalPoints(isNew, vertexLinkPolarity, toPropageMin, toPropageMax,
                          toProcess, toReprocess, link, vertexLink,
@@ -560,6 +579,9 @@ int ttk::ProgressiveTopology::executeCPProgressive(
     const auto itDuration = tmIter.getElapsedTime();
     const auto nextItDuration
       = predictNextIterationDuration(itDuration, CTDiagram.size() + 1);
+
+    printMsg("Decimation level " + std::to_string(decimationLevel_), 1,
+        timer.getElapsedTime() - tm_allocation, this->threadNumber_);
 
     // skip subsequent propagations if time limit is exceeded
     stopComputationIf(timer.getElapsedTime() + nextItDuration - tm_allocation
@@ -597,10 +619,8 @@ int ttk::ProgressiveTopology::executeCPProgressive(
   // finally sort the diagram
   sortPersistenceDiagram(CTDiagram, offsets);
   // sortPersistenceDiagram(CTDiagram, scalars, offsets);
-  std::cout << "hello" << std::endl;
   this->printMsg("Complete", 1.0, timer.getElapsedTime() - tm_allocation,
                  this->threadNumber_);
-  std::cout << "bye" << std::endl;
   return 0;
 }
 

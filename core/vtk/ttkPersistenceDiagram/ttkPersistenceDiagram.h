@@ -92,6 +92,9 @@ public:
   vtkSetMacro(IsResumable, bool);
   vtkGetMacro(IsResumable, bool);
 
+  vtkSetMacro(PreallocateMemoryProgressive, bool);
+  vtkGetMacro(PreallocateMemoryProgressive, bool);
+
 protected:
   ttkPersistenceDiagram();
 
@@ -127,4 +130,5 @@ private:
   int StoppingDecimationLevel{0};
   double TimeLimit{1};
   bool IsResumable{false};
+  bool PreallocateMemoryProgressive{true};
 };
