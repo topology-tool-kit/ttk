@@ -156,18 +156,32 @@ namespace ttk {
                              const SimplexId *inputOffsets);
 
     template <typename scalarType>
-    int resumeProgressive();
+    int resumeProgressive(std::vector<ttk::PersistencePair> &CTDiagram,
+                          const scalarType *scalars,
+                          const SimplexId *offsets);
 
     inline void setStartingDecimationLevel(int data) {
+      if(data != startingDecimationLevel_) {
+        resumeProgressive_ = false;
+      }
       startingDecimationLevel_ = std::max(data, 0);
     }
     inline void setStoppingDecimationLevel(int data) {
+      if(data >= stoppingDecimationLevel_) {
+        resumeProgressive_ = false;
+      }
       stoppingDecimationLevel_ = std::max(data, 0);
     }
     inline void setIsResumable(const bool b) {
       this->isResumable_ = b;
+      if(!b) {
+        resumeProgressive_ = false;
+      }
     }
     inline void setPreallocateMemory(const bool b) {
+      if(b != preallocateMemory_) {
+        resumeProgressive_ = false;
+      }
       this->preallocateMemory_ = b;
     }
     inline void setTimeLimit(const double d) {
@@ -367,6 +381,7 @@ namespace ttk {
     int stoppingDecimationLevel_{};
     // do some extra computations to allow to resume computation
     bool isResumable_{false};
+    bool resumeProgressive_{false};
     // time limit
     double timeLimit_{0.0};
     bool preallocateMemory_{true};
@@ -435,6 +450,11 @@ int ttk::ProgressiveTopology::executeCPProgressive(
   const SimplexId *offsets) {
 
   printMsg(ttk::debug::Separator::L1);
+
+  if(resumeProgressive_) {
+    resumeProgressive(CTDiagram, scalars, offsets);
+    return 0;
+  }
 
   // get data
   Timer timer;
@@ -549,7 +569,7 @@ int ttk::ProgressiveTopology::executeCPProgressive(
     vertexRepresentativesMax, toPropageMin, toPropageMax);
 
   printMsg("Decimation level " + std::to_string(decimationLevel_), 1,
-      timer.getElapsedTime() - tm_allocation, this->threadNumber_);
+           timer.getElapsedTime() - tm_allocation, this->threadNumber_);
 
   // skip subsequent propagations if time limit is exceeded
   stopComputationIf(timer.getElapsedTime() - tm_allocation
@@ -581,7 +601,7 @@ int ttk::ProgressiveTopology::executeCPProgressive(
       = predictNextIterationDuration(itDuration, CTDiagram.size() + 1);
 
     printMsg("Decimation level " + std::to_string(decimationLevel_), 1,
-        timer.getElapsedTime() - tm_allocation, this->threadNumber_);
+             timer.getElapsedTime() - tm_allocation, this->threadNumber_);
 
     // skip subsequent propagations if time limit is exceeded
     stopComputationIf(timer.getElapsedTime() + nextItDuration - tm_allocation
@@ -602,7 +622,7 @@ int ttk::ProgressiveTopology::executeCPProgressive(
                          -1);
 
   // store state for resuming computation
-  if(this->isResumable_) {
+  if(this->isResumable_ and decimationLevel_ > 0) {
     this->vertexRepresentativesMax_ = std::move(vertexRepresentativesMax);
     this->vertexRepresentativesMin_ = std::move(vertexRepresentativesMin);
     this->vertexLinkPolarity_ = std::move(vertexLinkPolarity);
@@ -614,6 +634,7 @@ int ttk::ProgressiveTopology::executeCPProgressive(
     this->link_ = std::move(link);
     this->vertexLink_ = std::move(vertexLink);
     this->vertexLinkByBoundaryType_ = std::move(vertexLinkByBoundaryType);
+    this->resumeProgressive_ = true;
   }
 
   // finally sort the diagram
@@ -625,16 +646,18 @@ int ttk::ProgressiveTopology::executeCPProgressive(
 }
 
 template <typename scalarType>
-int ttk::ProgressiveTopology::resumeProgressive() {
+int ttk::ProgressiveTopology::resumeProgressive(
+  std::vector<ttk::PersistencePair> &CTDiagram,
+  const scalarType *scalars,
+  const SimplexId *offsets) {
 
   // always called in progressive mode
   // (stoppingDecimationLevel_ < startingDecimationLevel_)
 
   // begin from the last decimationLevel_
 
-  Timer timer;
-  auto &CTDiagram
-    = *static_cast<std::vector<ttk::PersistencePair> *>(this->CTDiagram_);
+  // auto &CTDiagram
+  //   = *static_cast<std::vector<ttk::PersistencePair> *>(this->CTDiagram_);
   // auto &CTDiagram = *static_cast<
   //   std::vector<std::tuple<ttk::SimplexId, ttk::CriticalType, ttk::SimplexId,
   //                          ttk::CriticalType, scalarType, ttk::SimplexId>>
@@ -642,10 +665,10 @@ int ttk::ProgressiveTopology::resumeProgressive() {
   //   this->CTDiagram_);
 
   const auto vertexNumber = multiresTriangulation_.getVertexNumber();
-  const scalarType *const scalars
-    = static_cast<scalarType *>(this->inputScalars_);
-  const SimplexId *const offsets
-    = static_cast<SimplexId *>(this->inputOffsets_);
+  // const scalarType *const scalars
+  //   = static_cast<scalarType *>(this->inputScalars_);
+  // const SimplexId *const offsets
+  //   = static_cast<SimplexId *>(this->inputOffsets_);
 
   this->printMsg("Resuming computation from decimation level "
                  + std::to_string(this->decimationLevel_) + " to level "
@@ -659,10 +682,15 @@ int ttk::ProgressiveTopology::resumeProgressive() {
   std::vector<polarity> isUpToDateMin(vertexNumber, 0),
     isUpToDateMax(vertexNumber, 0);
 
+  Timer timer;
+
   while(this->decimationLevel_ > this->stoppingDecimationLevel_) {
     Timer tmIter{};
     this->decimationLevel_--;
     multiresTriangulation_.setDecimationLevel(this->decimationLevel_);
+    printMsg("Decimation level " + std::to_string(decimationLevel_), 0,
+             timer.getElapsedTime(), this->threadNumber_,
+             ttk::debug::LineMode::REPLACE);
     updateCriticalPoints(
       isNew_, vertexLinkPolarity_, toPropageMin, toPropageMax, toProcess_,
       toReprocess_, link_, vertexLink_, vertexLinkByBoundaryType_, saddleCCMin_,
@@ -679,6 +707,9 @@ int ttk::ProgressiveTopology::resumeProgressive() {
     const auto nextItDuration
       = predictNextIterationDuration(itDuration, CTDiagram.size() + 1);
 
+    printMsg("Decimation level " + std::to_string(decimationLevel_), 1,
+             timer.getElapsedTime(), this->threadNumber_);
+    //
     // skip subsequent propagations if time limit is exceeded
     stopComputationIf(timer.getElapsedTime() + nextItDuration
                       > this->timeLimit_);
