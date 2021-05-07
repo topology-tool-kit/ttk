@@ -235,6 +235,7 @@ int ttkPersistenceDiagram::dispatch(
     // vtkSmartPointer<ttk::ProgressiveTopology>::New();
 
     progPD_.setDebugLevel(debugLevel_);
+    progPD_.setThreadNumber(threadNumber_);
     progPD_.setupTriangulation((ttk::ImplicitTriangulation *)triangulation);
     progPD_.setStartingDecimationLevel(StartingDecimationLevel);
     progPD_.setStoppingDecimationLevel(StoppingDecimationLevel);
