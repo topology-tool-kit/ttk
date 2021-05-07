@@ -9,8 +9,8 @@
 
 #pragma once
 
-#include "FTMTreePPCompute.h"
 #include <FTMTree.h>
+#include <FTMTreePP.h>
 
 #include <ttkUtils.h>
 
@@ -171,8 +171,12 @@ void getPersistencePairs2(
   ftm::FTMTree_MT *tree,
   // std::vector<std::tuple<SimplexId, SimplexId>> &pairs){
   std::vector<std::tuple<SimplexId, SimplexId, dataType>> &pairs) {
-  ttk::ftm::FTMTreePPCompute pairsCompute;
-  pairsCompute.computePersistencePairs<dataType>(tree, pairs);
+  /*ttk::ftm::FTMTreePPCompute pairsCompute;
+  pairsCompute.computePersistencePairs<dataType>(tree, pairs);*/
+  ttk::ftm::FTMTreePP pairsCompute;
+  pairsCompute.setCustomTree(tree);
+  pairsCompute.computePersistencePairs<dataType>(
+    pairs, isJoinTree2<dataType>(tree));
 }
 
 template <class dataType>
