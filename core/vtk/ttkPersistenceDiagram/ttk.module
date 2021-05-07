@@ -6,4 +6,5 @@ HEADERS
   ttkPersistenceDiagram.h
 DEPENDS
   persistenceDiagram
+  progressiveTopology
   ttkAlgorithm
