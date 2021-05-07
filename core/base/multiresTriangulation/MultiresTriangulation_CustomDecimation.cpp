@@ -1042,7 +1042,6 @@ inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationAEFB(
   const SimplexId shiftZ,
   const int decimation) const {
   // V(aefb)=V(b)+V(a)::{b}+V(e)::{b}+V(f)::{b}
-  isAccelerated_=false;
   // cout << "AEFB"<<endl;
   switch(id) {
     case 0:
