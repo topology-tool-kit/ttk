@@ -1,7 +1,8 @@
 #pragma once
 
 template <typename dataType>
-int Munkres::run(std::vector<matchingTuple> &matchings) {
+int AssignmentMunkres<dataType>::run(
+  std::vector<asgnMatchingTuple> &matchings) {
   int step = 1;
   int iter = 0;
   int maxIter = 100000;
@@ -9,8 +10,8 @@ int Munkres::run(std::vector<matchingTuple> &matchings) {
   Timer t;
 
   std::vector<std::vector<dataType>> inputMatrix(
-    rowSize, std::vector<dataType>(colSize));
-  copyInputMatrix<dataType>(inputMatrix);
+    this->rowSize, std::vector<dataType>(this->colSize));
+  copyInputMatrix(inputMatrix);
 
   while(!done) {
     ++iter;
@@ -41,25 +42,25 @@ int Munkres::run(std::vector<matchingTuple> &matchings) {
 
     switch(step) {
       case 1:
-        stepOne<dataType>(step);
+        stepOne(step);
         break;
       case 2:
-        stepTwo<dataType>(step);
+        stepTwo(step);
         break;
       case 3:
-        stepThree<dataType>(step);
+        stepThree(step);
         break;
       case 4:
-        stepFour<dataType>(step);
+        stepFour(step);
         break;
       case 5:
-        stepFive<dataType>(step);
+        stepFive(step);
         break;
       case 6:
-        stepSix<dataType>(step);
+        stepSix(step);
         break;
       case 7:
-        stepSeven<dataType>(step);
+        stepSeven(step);
         done = true;
         break;
       default:
@@ -67,28 +68,28 @@ int Munkres::run(std::vector<matchingTuple> &matchings) {
     }
   }
 
-  this->computeAffectationCost<dataType>(inputMatrix);
-  this->affect<dataType>(matchings, inputMatrix);
-  this->clear<dataType>();
+  this->computeAffectationCost(inputMatrix);
+  this->affect(matchings, inputMatrix);
+  this->clear();
 
   return 0;
 }
 
 // Preprocess cost matrix.
 template <typename dataType>
-int Munkres::stepOne(int &step) // ~ 0% perf
+int AssignmentMunkres<dataType>::stepOne(int &step) // ~ 0% perf
 {
   double minInCol;
   std::vector<std::vector<dataType>> *C
-    = (std::vector<std::vector<dataType>> *)Cptr;
+    = AssignmentSolver<dataType>::getCostMatrixPointer();
 
   // Benefit from the matrix sparsity.
   dataType maxVal = std::numeric_limits<dataType>::max();
-  for(int r = 0; r < rowSize - 1; ++r) {
+  for(int r = 0; r < this->rowSize - 1; ++r) {
     rowLimitsPlus[r] = -1;
     rowLimitsMinus[r] = -1;
   }
-  for(int c = 0; c < colSize - 1; ++c) {
+  for(int c = 0; c < this->colSize - 1; ++c) {
     colLimitsPlus[c] = -1;
     colLimitsMinus[c] = -1;
   }
@@ -96,8 +97,8 @@ int Munkres::stepOne(int &step) // ~ 0% perf
   int droppedMinus = 0;
   int droppedPlus = 0;
 
-  for(int r = 0; r < rowSize - 1; ++r) {
-    for(int c = 0; c < colSize - 1; ++c)
+  for(int r = 0; r < this->rowSize - 1; ++r) {
+    for(int c = 0; c < this->colSize - 1; ++c)
       if((*C)[r][c] != maxVal) {
         rowLimitsMinus[r] = c; // Included
         break;
@@ -107,14 +108,14 @@ int Munkres::stepOne(int &step) // ~ 0% perf
       rowLimitsMinus[r] = 0;
     } // Included
 
-    for(int c = colSize - 2; c >= 0; --c)
+    for(int c = this->colSize - 2; c >= 0; --c)
       if((*C)[r][c] != maxVal) {
         rowLimitsPlus[r] = c + 1; // Not included
         break;
       }
     if(rowLimitsPlus[r] == -1) {
       ++droppedPlus;
-      rowLimitsPlus[r] = colSize - 1;
+      rowLimitsPlus[r] = this->colSize - 1;
     } // Not included
   }
 
@@ -135,13 +136,13 @@ int Munkres::stepOne(int &step) // ~ 0% perf
   droppedMinus = 0;
   droppedPlus = 0;
 
-  for(int c = 0; c < colSize - 1; ++c) {
-    for(int r = 0; r < rowSize - 1; ++r)
+  for(int c = 0; c < this->colSize - 1; ++c) {
+    for(int r = 0; r < this->rowSize - 1; ++r)
       if((*C)[r][c] != maxVal) {
         colLimitsMinus[c] = r; // Inclusive
         break;
       }
-    for(int r = rowSize - 1; r >= 0; --r)
+    for(int r = this->rowSize - 1; r >= 0; --r)
       if((*C)[r][c] != maxVal) {
         colLimitsPlus[c] = r + 1; // Exclusive.
         break;
@@ -152,7 +153,7 @@ int Munkres::stepOne(int &step) // ~ 0% perf
     }
     if(colLimitsMinus[c] == -1) {
       ++droppedMinus;
-      colLimitsMinus[c] = rowSize;
+      colLimitsMinus[c] = this->rowSize;
     }
   }
 
@@ -170,27 +171,27 @@ int Munkres::stepOne(int &step) // ~ 0% perf
       debug::Priority::DETAIL);
   }
 
-  rowLimitsMinus[rowSize - 1] = 0;
-  rowLimitsPlus[rowSize - 1] = colSize - 1;
+  rowLimitsMinus[this->rowSize - 1] = 0;
+  rowLimitsPlus[this->rowSize - 1] = this->colSize - 1;
 
   // Remove last column (except the last element) from all other columns.
   // The last column will then be ignored during the solving.
-  for(int r = 0; r < rowSize - 1; ++r) {
-    dataType lastElement = (*C)[r][colSize - 1];
-    for(int c = 0; c < colSize - 1; ++c) {
+  for(int r = 0; r < this->rowSize - 1; ++r) {
+    dataType lastElement = (*C)[r][this->colSize - 1];
+    for(int c = 0; c < this->colSize - 1; ++c) {
       (*C)[r][c] -= lastElement;
     }
   }
 
   // Substract minimum value in every column except the last.
-  for(int c = 0; c < colSize - 1; ++c) {
+  for(int c = 0; c < this->colSize - 1; ++c) {
     minInCol = (*C)[0][c];
 
-    for(int r = 0; r < rowSize; ++r)
+    for(int r = 0; r < this->rowSize; ++r)
       if((*C)[r][c] < minInCol)
         minInCol = (*C)[r][c];
 
-    for(int r = 0; r < rowSize; ++r)
+    for(int r = 0; r < this->rowSize; ++r)
       (*C)[r][c] -= minInCol;
   }
 
@@ -201,14 +202,14 @@ int Munkres::stepOne(int &step) // ~ 0% perf
 // Find a zero in the matrix,
 // star it if it is the only one in its row and col.
 template <typename dataType>
-int Munkres::stepTwo(int &step) // ~ 0% perf
+int AssignmentMunkres<dataType>::stepTwo(int &step) // ~ 0% perf
 {
   std::vector<std::vector<dataType>> *C
-    = (std::vector<std::vector<dataType>> *)Cptr;
+    = AssignmentSolver<dataType>::getCostMatrixPointer();
 
-  for(int r = 0; r < rowSize - 1; ++r) {
-    for(int c = 0; c < colSize - 1; ++c) {
-      if(!rowCover[r] && !colCover[c] && isZero<dataType>((*C)[r][c])) {
+  for(int r = 0; r < this->rowSize - 1; ++r) {
+    for(int c = 0; c < this->colSize - 1; ++c) {
+      if(!rowCover[r] && !colCover[c] && isZero((*C)[r][c])) {
         M[r][c] = 1;
         // Temporarily cover row and column to find independent zeros.
         rowCover[r] = true;
@@ -219,18 +220,18 @@ int Munkres::stepTwo(int &step) // ~ 0% perf
     // Don't account for last column.
   }
 
-  for(int c = 0; c < colSize - 1; ++c)
-    if(isZero<dataType>((*C)[rowSize - 1][c]) && !colCover[c]) {
-      M[rowSize - 1][c] = 1;
+  for(int c = 0; c < this->colSize - 1; ++c)
+    if(isZero((*C)[this->rowSize - 1][c]) && !colCover[c]) {
+      M[this->rowSize - 1][c] = 1;
       // Don't ban last row where elements are all independent.
       colCover[c] = true;
     }
 
   // Remove coverings (temporarily used to find independent zeros).
-  for(int r = 0; r < rowSize; ++r)
+  for(int r = 0; r < this->rowSize; ++r)
     rowCover[r] = false;
 
-  for(int c = 0; c < colSize - 1; ++c)
+  for(int c = 0; c < this->colSize - 1; ++c)
     colCover[c] = false;
 
   step = 3;
@@ -241,9 +242,9 @@ int Munkres::stepTwo(int &step) // ~ 0% perf
 // If all columns are starred (1 star only per column is possible)
 // then the algorithm is terminated.
 template <typename dataType>
-int Munkres::stepThree(int &step) // ~ 10% perf
+int AssignmentMunkres<dataType>::stepThree(int &step) // ~ 10% perf
 {
-  for(int r = 0; r < rowSize; ++r) {
+  for(int r = 0; r < this->rowSize; ++r) {
     int start = rowLimitsMinus[r];
     int end = rowLimitsPlus[r];
     for(int c = start; c < end; ++c)
@@ -253,11 +254,11 @@ int Munkres::stepThree(int &step) // ~ 10% perf
 
   int processedCols = 0;
 
-  for(int c = 0; c < colSize - 1; ++c)
+  for(int c = 0; c < this->colSize - 1; ++c)
     if(colCover[c])
       ++processedCols;
 
-  if(processedCols >= colSize - 1)
+  if(processedCols >= this->colSize - 1)
     step = 7; // end algorithm
   else
     step = 4; // follow prime scheme
@@ -270,14 +271,14 @@ int Munkres::stepThree(int &step) // ~ 10% perf
 // Repeat until there are no uncovered zero left
 // Save smallest uncovered value then -> step 6
 template <typename dataType>
-int Munkres::stepFour(int &step) // ~ 45% perf
+int AssignmentMunkres<dataType>::stepFour(int &step) // ~ 45% perf
 {
   int row = -1;
   int col = -1;
   bool done = false;
 
   while(!done) {
-    findZero<dataType>(row, col);
+    findZero(row, col);
 
     if(row == -1) {
       done = true;
@@ -286,9 +287,9 @@ int Munkres::stepFour(int &step) // ~ 45% perf
 
     else {
       M[row][col] = 2;
-      int colOfStarInRow = findStarInRow<dataType>(row);
+      int colOfStarInRow = findStarInRow(row);
       // If a star was found and it is not in the last row
-      if(colOfStarInRow > -1 && row < rowSize - 1) {
+      if(colOfStarInRow > -1 && row < this->rowSize - 1) {
         rowCover[row] = true;
         colCover[colOfStarInRow] = false;
       }
@@ -306,7 +307,7 @@ int Munkres::stepFour(int &step) // ~ 45% perf
 }
 
 template <typename dataType>
-int Munkres::findStarInRow(int row) {
+int AssignmentMunkres<dataType>::findStarInRow(int row) {
   int start = rowLimitsMinus[row];
   int end = rowLimitsPlus[row];
   for(int c = start; c < end; ++c)
@@ -316,9 +317,10 @@ int Munkres::findStarInRow(int row) {
 }
 
 template <typename dataType>
-int Munkres::findZero(int &row, int &col) {
+int AssignmentMunkres<dataType>::findZero(int &row, int &col) {
   std::vector<std::vector<dataType>> *C
-    = (std::vector<std::vector<dataType>> *)Cptr;
+    = AssignmentSolver<dataType>::getCostMatrixPointer();
+  ;
 
   row = -1;
   col = -1;
@@ -335,7 +337,7 @@ int Munkres::findZero(int &row, int &col) {
     }
   }
 
-  for(int r = 0; r < rowSize; ++r) {
+  for(int r = 0; r < this->rowSize; ++r) {
     int start = rowLimitsMinus[r];
     int end = rowLimitsPlus[r];
     if(rowCover[r])
@@ -366,7 +368,7 @@ int Munkres::findZero(int &row, int &col) {
 // in the series,
 // erase all primes, uncover every line, return to step 3.
 template <typename dataType>
-int Munkres::stepFive(int &step) // ~ 10% perf
+int AssignmentMunkres<dataType>::stepFive(int &step) // ~ 10% perf
 {
   {
     int r;
@@ -378,7 +380,7 @@ int Munkres::stepFive(int &step) // ~ 10% perf
 
     bool done = false;
     while(!done) {
-      r = findStarInCol<dataType>(path[pathCount - 1][1]);
+      r = findStarInCol(path[pathCount - 1][1]);
       if(r == -1)
         done = true;
 
@@ -387,7 +389,7 @@ int Munkres::stepFive(int &step) // ~ 10% perf
         path[pathCount - 1][0] = r;
         path[pathCount - 1][1] = path[pathCount - 2][1];
 
-        c = findPrimeInRow<dataType>(path[pathCount - 1][0]);
+        c = findPrimeInRow(path[pathCount - 1][0]);
         if(c == -1) {
           this->printWrn("Did not find an expected prime.");
         }
@@ -407,13 +409,13 @@ int Munkres::stepFive(int &step) // ~ 10% perf
   }
 
   // clear covers
-  for(int r = 0; r < rowSize; ++r)
+  for(int r = 0; r < this->rowSize; ++r)
     rowCover[r] = false;
-  for(int c = 0; c < colSize - 1; ++c)
+  for(int c = 0; c < this->colSize - 1; ++c)
     colCover[c] = false;
 
   // erase primes
-  for(int r = 0; r < rowSize; ++r) {
+  for(int r = 0; r < this->rowSize; ++r) {
     int start = rowLimitsMinus[r];
     int end = rowLimitsPlus[r];
     for(int c = start; c < end; ++c)
@@ -426,20 +428,20 @@ int Munkres::stepFive(int &step) // ~ 10% perf
 }
 
 template <typename dataType>
-int Munkres::findStarInCol(int col) {
+int AssignmentMunkres<dataType>::findStarInCol(int col) {
   int start = colLimitsMinus[col];
   int end = colLimitsPlus[col];
   for(int r = start; r < end; ++r)
     if(M[r][col] == 1)
       return r;
 
-  if(M[rowSize - 1][col] == 1)
-    return (rowSize - 1);
+  if(M[this->rowSize - 1][col] == 1)
+    return (this->rowSize - 1);
   return -1;
 }
 
 template <typename dataType>
-int Munkres::findPrimeInRow(int row) {
+int AssignmentMunkres<dataType>::findPrimeInRow(int row) {
   int start = rowLimitsMinus[row];
   int end = rowLimitsPlus[row];
   for(int c = start; c < end; ++c)
@@ -452,15 +454,15 @@ int Munkres::findPrimeInRow(int row) {
 // subtract it from every element of each uncovered col.
 // Return to step 4 without altering any stars/primes/covers.
 template <typename dataType>
-int Munkres::stepSix(int &step) // ~ 35% perf
+int AssignmentMunkres<dataType>::stepSix(int &step) // ~ 35% perf
 {
   std::vector<std::vector<dataType>> *C
-    = (std::vector<std::vector<dataType>> *)Cptr;
+    = AssignmentSolver<dataType>::getCostMatrixPointer();
 
   dataType minVal = std::numeric_limits<dataType>::max();
 
   // find smallest
-  for(int r = 0; r < rowSize; ++r) {
+  for(int r = 0; r < this->rowSize; ++r) {
     if(rowCover[r])
       continue;
 
@@ -478,7 +480,7 @@ int Munkres::stepSix(int &step) // ~ 35% perf
   createdZeros.clear();
 
   // add and subtract
-  for(int r = 0; r < rowSize; ++r) {
+  for(int r = 0; r < this->rowSize; ++r) {
 
     int start = rowLimitsMinus[r];
     int end = rowLimitsPlus[r];
@@ -488,7 +490,7 @@ int Munkres::stepSix(int &step) // ~ 35% perf
         (*C)[r][c] = (*C)[r][c] + minVal;
       if(!colCover[c]) {
         (*C)[r][c] = (*C)[r][c] - minVal;
-        if(isZero<dataType>((*C)[r][c])) {
+        if(isZero((*C)[r][c])) {
           createdZeros.emplace_back(r, c);
         }
       }
@@ -500,23 +502,24 @@ int Munkres::stepSix(int &step) // ~ 35% perf
 }
 
 template <typename dataType>
-int Munkres::stepSeven(int &step) {
+int AssignmentMunkres<dataType>::stepSeven(int &step) {
   this->printMsg("Step 7 over.", debug::Priority::DETAIL);
   return 0;
 }
 
 template <typename dataType>
-int Munkres::affect(std::vector<matchingTuple> &matchings,
-                    const std::vector<std::vector<dataType>> &C) {
-  int nbC = colSize;
-  int nbR = rowSize;
+int AssignmentMunkres<dataType>::affect(
+  std::vector<asgnMatchingTuple> &matchings,
+  const std::vector<std::vector<dataType>> &C) {
+  int nbC = this->colSize;
+  int nbR = this->rowSize;
 
   matchings.clear();
 
   for(int r = 0; r < nbR; ++r)
     for(int c = 0; c < nbC; ++c)
       if(M[r][c] == 1) {
-        matchingTuple t = std::make_tuple(r, c, C[r][c]);
+        asgnMatchingTuple t = std::make_tuple(r, c, C[r][c]);
         matchings.push_back(t);
         // Use row cover to match to last column diagonal.
         if(r < nbR - 1)
@@ -527,7 +530,7 @@ int Munkres::affect(std::vector<matchingTuple> &matchings,
   for(int r = 0; r < nbR - 1; ++r) {
     // Match to diagonal.
     if(!rowCover[r]) {
-      matchingTuple t = std::make_tuple(r, nbC - 1, C[r][nbC - 1]);
+      asgnMatchingTuple t = std::make_tuple(r, nbC - 1, C[r][nbC - 1]);
       matchings.push_back(t);
     }
     // Ensure row covers are cleared.
@@ -540,10 +543,10 @@ int Munkres::affect(std::vector<matchingTuple> &matchings,
 }
 
 template <typename dataType>
-int Munkres::computeAffectationCost(
+int AssignmentMunkres<dataType>::computeAffectationCost(
   const std::vector<std::vector<dataType>> &C) {
-  int nbC = colSize;
-  int nbR = rowSize;
+  int nbC = this->colSize;
+  int nbR = this->rowSize;
 
   dataType total = 0;
 

@@ -20,9 +20,9 @@
 #define BIdVertex int
 #endif
 
-#include <AuctionActor.h>
 #include <Debug.h>
 #include <KDTree.h>
+#include <PersistenceDiagramAuctionActor.h>
 #include <cmath>
 #include <iostream>
 #include <limits>
@@ -43,7 +43,7 @@ namespace ttk {
   };
 
   template <typename dataType>
-  class Auction : public Debug {
+  class PersistenceDiagramAuction : public Debug {
 
   public:
     inline int getAugmentedNumberOfBidders() {
@@ -56,26 +56,27 @@ namespace ttk {
     std::vector<KDTree<dataType> *> &correspondance_kdt_map_{
       default_correspondance_kdt_map_};
 
-    Auction(int wasserstein,
-            double geometricalFactor,
-            double lambda,
-            double delta_lim,
-            bool use_kdTree)
+    PersistenceDiagramAuction(int wasserstein,
+                              double geometricalFactor,
+                              double lambda,
+                              double delta_lim,
+                              bool use_kdTree)
       : wasserstein_{wasserstein}, geometricalFactor_{geometricalFactor},
         lambda_{lambda}, delta_lim_{delta_lim}, use_kdt_{use_kdTree} {
     }
 
-    Auction(BidderDiagram<dataType> &bidders,
-            GoodDiagram<dataType> &goods,
-            int wasserstein,
-            double geometricalFactor,
-            double lambda,
-            double delta_lim,
-            KDTree<dataType> &kdt,
-            std::vector<KDTree<dataType> *> &correspondance_kdt_map,
-            dataType epsilon = {},
-            dataType initial_diag_price = {},
-            bool use_kdTree = true)
+    PersistenceDiagramAuction(
+      BidderDiagram<dataType> &bidders,
+      GoodDiagram<dataType> &goods,
+      int wasserstein,
+      double geometricalFactor,
+      double lambda,
+      double delta_lim,
+      KDTree<dataType> &kdt,
+      std::vector<KDTree<dataType> *> &correspondance_kdt_map,
+      dataType epsilon = {},
+      dataType initial_diag_price = {},
+      bool use_kdTree = true)
       : kdt_{kdt}, correspondance_kdt_map_{correspondance_kdt_map},
         bidders_{bidders}, goods_{goods} {
 
@@ -359,4 +360,4 @@ namespace ttk {
   }; // namespace ttk
 } // namespace ttk
 
-#include <AuctionImpl.h>
+#include <PersistenceDiagramAuctionImpl.h>

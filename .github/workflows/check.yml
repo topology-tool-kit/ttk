@@ -79,7 +79,7 @@ jobs:
           zlib1g-dev \
           clang-tidy
 
-    - uses: dsaltares/fetch-gh-release-asset@master
+    - uses: dsaltares/fetch-gh-release-asset@0.0.5
       with:
         repo: "topology-tool-kit/ttk-paraview"
         version: "tags/v5.8.1"
@@ -137,7 +137,7 @@ jobs:
           zlib1g-dev \
           clang-tools
 
-    - uses: dsaltares/fetch-gh-release-asset@master
+    - uses: dsaltares/fetch-gh-release-asset@0.0.5
       with:
         repo: "topology-tool-kit/ttk-paraview"
         version: "tags/v5.8.1"

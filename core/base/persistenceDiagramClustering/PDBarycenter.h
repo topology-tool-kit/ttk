@@ -15,7 +15,7 @@
 #ifndef _PDBARYCENTER_H
 #define _PDBARYCENTER_H
 
-#include <Auction.h>
+#include <PersistenceDiagramAuction.h>
 //
 #include <KDTree.h>
 //

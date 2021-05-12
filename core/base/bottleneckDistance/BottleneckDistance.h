@@ -23,8 +23,8 @@
 #endif
 
 // base code includes
+#include <AssignmentMunkres.h>
 #include <GabowTarjan.h>
-#include <Munkres.h>
 #include <Triangulation.h>
 
 #include <functional>
@@ -196,7 +196,7 @@ namespace ttk {
                            int nbCol,
                            std::vector<std::vector<dataType>> &matrix,
                            std::vector<matchingTuple> &matchings,
-                           Munkres &solver);
+                           AssignmentMunkres<dataType> &solver);
 
     template <typename dataType>
     void solveInfinityWasserstein(int nbRow,

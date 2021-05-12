@@ -64,10 +64,11 @@ void PDBarycenter<dataType>::runMatching(
   for(int i = 0; i < numberOfInputs_; i++) {
     // cout<<"input "<<i<<" sizes : "<<current_bidder_diagrams_.size()<<"
     // "<<barycenter_goods_.size()<<" "<<min_diag_price->size()<<endl;
-    Auction<dataType> auction = Auction<dataType>(
-      current_bidder_diagrams_[i], barycenter_goods_[i], wasserstein_,
-      geometrical_factor_, lambda_, 0.01, kdt, correspondance_kdt_map, epsilon,
-      min_diag_price->at(i), use_kdt);
+    PersistenceDiagramAuction<dataType> auction
+      = PersistenceDiagramAuction<dataType>(
+        current_bidder_diagrams_[i], barycenter_goods_[i], wasserstein_,
+        geometrical_factor_, lambda_, 0.01, kdt, correspondance_kdt_map,
+        epsilon, min_diag_price->at(i), use_kdt);
     // cout<<"\n RUN MATCHINGS : "<<i<<endl;
     // cout<<use_kdt<<endl;
     // cout<<epsilon<<endl;
@@ -137,10 +138,11 @@ void PDBarycenter<dataType>::runMatchingAuction(
 #pragma omp parallel for num_threads(threadNumber_) schedule(dynamic, 1)
 #endif
   for(int i = 0; i < numberOfInputs_; i++) {
-    Auction<dataType> auction = Auction<dataType>(
-      current_bidder_diagrams_[i], barycenter_goods_[i], wasserstein_,
-      geometrical_factor_, lambda_, 0.01, kdt, correspondance_kdt_map,
-      (*min_diag_price)[i], use_kdt);
+    PersistenceDiagramAuction<dataType> auction
+      = PersistenceDiagramAuction<dataType>(
+        current_bidder_diagrams_[i], barycenter_goods_[i], wasserstein_,
+        geometrical_factor_, lambda_, 0.01, kdt, correspondance_kdt_map,
+        (*min_diag_price)[i], use_kdt);
     std::vector<matchingTuple> matchings;
     dataType cost = auction.run(&matchings);
     all_matchings->at(i) = matchings;
@@ -929,7 +931,7 @@ dataType PDBarycenter<dataType>::computeRealCost() {
   //     current_barycenter.addGood(good_tmp);
   // }
   for(int i = 0; i < numberOfInputs_; i++) {
-    Auction<dataType> auction(
+    PersistenceDiagramAuction<dataType> auction(
       wasserstein_, geometrical_factor_, lambda_, 0.01, true);
     GoodDiagram<dataType> current_barycenter = barycenter_goods_[0];
     BidderDiagram<dataType> current_bidder_diagram = bidder_diagrams_[i];
