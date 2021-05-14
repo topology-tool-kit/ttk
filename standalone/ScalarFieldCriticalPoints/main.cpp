@@ -27,6 +27,12 @@ int main(int argc, char **argv) {
   bool listArrays{false};
   bool forceOffset{false};
 
+  int backEnd = 0;
+  int startingDL = 8;
+  int stoppingDL = 0;
+  double tl = 0.0;
+  bool listArrays{false};
+
   // ---------------------------------------------------------------------------
   // Set program variables based on command line arguments
   // ---------------------------------------------------------------------------
@@ -44,6 +50,15 @@ int main(int argc, char **argv) {
     parser.setOption("l", &listArrays, "List available arrays");
 
     parser.setOption("F", &forceOffset, "Force custom offset field (array #1)");
+
+    parser.setArgument("B", &backEnd, "Method (0:FTM, 1: progressive)", true);
+    parser.setArgument(
+      "S", &startingDL,
+      "Starting Decimation Level for progressive multiresolution scheme", true);
+    parser.setArgument(
+      "E", &stoppingDL,
+      "Stopping Decimation Level for progressive multiresolution scheme", true);
+    parser.setArgument("T", &tl, "Time limit for progressive method", true);
 
     parser.parse(argc, argv);
   }
@@ -131,6 +146,10 @@ int main(int argc, char **argv) {
   // ---------------------------------------------------------------------------
   // Execute ttkScalarFieldCriticalPoints filter
   // ---------------------------------------------------------------------------
+  scalarFieldCriticalPoints->SetBackEnd(backEnd);
+  scalarFieldCriticalPoints->SetTimeLimit(tl);
+  scalarFieldCriticalPoints->SetStartingDecimationLevel(startingDL);
+  scalarFieldCriticalPoints->SetStoppingDecimationLevel(stoppingDL);
   scalarFieldCriticalPoints->SetForceInputOffsetScalarField(forceOffset);
   scalarFieldCriticalPoints->Update();
 
