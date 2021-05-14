@@ -137,6 +137,97 @@
         </Documentation>
       </IntVectorProperty>
 
+       <IntVectorProperty
+          name="BackEnd"
+          label="Algorithm"
+          command="SetBackEnd"
+          number_of_elements="1"
+         default_values="0" 
+         panel_visibility="default" >
+		 <EnumerationDomain name="enum">
+          <Entry value="0" text="Classical"/>
+          <Entry value="1" text="Progressive Approach (TVCG 2020)"/>
+        </EnumerationDomain>
+        <Documentation>
+        </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+         name="StartingDecimationLevel"
+         label="StartingDecimationLevel"
+         command="SetStartingDecimationLevel"
+         number_of_elements="1"
+         default_values="0" >
+        <IntRangeDomain name="range" min="1" max="100" />
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="BackEnd"
+            value="1" />
+        </Hints>
+         <Documentation>
+          Thread number
+         </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+         name="StoppingDecimationLevel"
+         label="StoppingDecimationLevel"
+         command="SetStoppingDecimationLevel"
+         number_of_elements="1"
+         default_values="0" >
+        <IntRangeDomain name="range" min="1" max="100" />
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="Method"
+            value="1" />
+        </Hints>
+         <Documentation>
+          Thread number
+         </Documentation>
+      </IntVectorProperty>
+
+      <IntVectorProperty
+          name="IsResumable"
+          label="Resumable Computation"
+          command="SetIsResumable"
+          number_of_elements="1"
+          default_values="0"
+          >
+        <BooleanDomain name="bool"/>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+            mode="visibility"
+            property="Method"
+            value="1" />
+        </Hints>
+        <Documentation>
+          Allow resuming computation from a lower decimation (do extra
+          computation at the previous decimation level).
+        </Documentation>
+      </IntVectorProperty>
+
+      <DoubleVectorProperty
+          name="TimeLimit"
+          label="Time Limit (s)"
+          command="SetTimeLimit"
+          number_of_elements="1"
+          default_values="0"
+          >
+          <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="Method"
+                                   value="1" />
+        </Hints>
+        <Documentation>
+          Maximal time of computation for the persistence diagram
+          progressive computation. A low value of Time Limit will
+          yield approximate results.
+        </Documentation>
+      </DoubleVectorProperty>
+
       <PropertyGroup panel_widget="Line" label="Input options">
         <Property name="ScalarFieldNew" />
         <Property name="With predefined offset" />

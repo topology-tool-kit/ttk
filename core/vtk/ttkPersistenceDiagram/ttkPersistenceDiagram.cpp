@@ -215,39 +215,10 @@ int ttkPersistenceDiagram::dispatch(
   const SimplexId *const inputOrder,
   const triangulationType *triangulation) {
 
-  if(Method > 0 and !std::is_same<triangulationType, ttk::ImplicitTriangulation>::value) {
-    printErr("Triangulation unsupported: an implicit regular grid is expected for this method");
-    return 0;
-  }   
   int status{};
   std::vector<ttk::PersistencePair> CTDiagram{};
-  if(Method == 0) { // ftm
 
-    status = this->execute(CTDiagram, inputScalars, inputOrder, triangulation);
-
-  } else { // progressive approach (TVCG 2020)
-
-    using tuple_t = std::tuple<SimplexId, ttk::CriticalType, SimplexId,
-                               ttk::CriticalType, scalarType, SimplexId>;
-    // std::vector<tuple_t> CTDiagram_tmp(0);
-
-    // vtkSmartPointer<ttk::ProgressiveTopology> progPD =
-    // vtkSmartPointer<ttk::ProgressiveTopology>::New();
-
-    progPD_.setDebugLevel(debugLevel_);
-    progPD_.setThreadNumber(threadNumber_);
-    progPD_.setupTriangulation((ttk::ImplicitTriangulation *)triangulation);
-    progPD_.setStartingDecimationLevel(StartingDecimationLevel);
-    progPD_.setStoppingDecimationLevel(StoppingDecimationLevel);
-    progPD_.setTimeLimit(TimeLimit);
-    progPD_.setPreallocateMemory(PreallocateMemoryProgressive);
-    if(StoppingDecimationLevel > 0 || TimeLimit > 0) {
-      // store state for resume only in a lower decimation level
-      progPD_.setIsResumable(IsResumable);
-    }
-    status
-      = progPD_.executeCPProgressive(CTDiagram, inputScalars, inputOrder);
-  }
+  status = this->execute(CTDiagram, inputScalars, inputOrder, triangulation);
 
   // something wrong in baseCode
   if(status != 0) {

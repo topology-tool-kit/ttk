@@ -45,8 +45,6 @@
 
 #pragma once
 
-#include <tuple>
-
 // VTK includes
 #include <vtkDataArray.h>
 #include <vtkUnstructuredGrid.h>
@@ -56,7 +54,6 @@
 
 // ttk code includes
 #include <PersistenceDiagram.h>
-#include <ProgressiveTopology.h>
 #include <ttkAlgorithm.h>
 
 class TTKPERSISTENCEDIAGRAM_EXPORT ttkPersistenceDiagram
@@ -76,24 +73,6 @@ public:
 
   vtkSetMacro(ShowInsideDomain, bool);
   vtkGetMacro(ShowInsideDomain, bool);
-
-  vtkSetMacro(Method, int);
-  vtkGetMacro(Method, int);
-
-  vtkSetMacro(StartingDecimationLevel, int);
-  vtkGetMacro(StartingDecimationLevel, int);
-
-  vtkSetMacro(StoppingDecimationLevel, int);
-  vtkGetMacro(StoppingDecimationLevel, int);
-
-  vtkSetMacro(TimeLimit, double);
-  vtkGetMacro(TimeLimit, double);
-
-  vtkSetMacro(IsResumable, bool);
-  vtkGetMacro(IsResumable, bool);
-
-  vtkSetMacro(PreallocateMemoryProgressive, bool);
-  vtkGetMacro(PreallocateMemoryProgressive, bool);
 
 protected:
   ttkPersistenceDiagram();
@@ -122,13 +101,4 @@ private:
 
   bool ForceInputOffsetScalarField{false};
   bool ShowInsideDomain{false};
-
-  ttk::ProgressiveTopology progPD_;
-
-  int Method{0};
-  int StartingDecimationLevel{8};
-  int StoppingDecimationLevel{0};
-  double TimeLimit{1};
-  bool IsResumable{false};
-  bool PreallocateMemoryProgressive{true};
 };
