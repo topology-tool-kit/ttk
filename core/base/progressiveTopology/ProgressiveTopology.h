@@ -24,7 +24,6 @@
 // base code includes
 #include <DynamicTree.h>
 #include <MultiresTriangulation.h>
-#include <PersistenceDiagram.h>
 #include <Triangulation.h>
 
 #include <tuple>
@@ -38,31 +37,6 @@ namespace ttk {
   /**
    * @brief Persistence pair type (with persistence in double)
    */
-  // struct ttk::PersistencePair {
-  //   /** first (lower) vertex id */
-  //   ttk::SimplexId birth{};
-  //   /** first vertex type */
-  //   ttk::CriticalType birthType{};
-  //   /** second (higher) vertex id */
-  //   ttk::SimplexId death{};
-  //   /** second vertex type */
-  //   ttk::CriticalType deathType{};
-  //   /** persistence value (scalars[second] - scalars[first]) */
-  //   double persistence{};
-  //   /** pair type (min-saddle: 0, saddle-saddle: 1, saddle-max: 2) */
-  //   ttk::SimplexId pairType{};
-
-  //   ttk::PersistencePair() = default;
-  //   ttk::PersistencePair(const SimplexId b,
-  //                   const CriticalType bType,
-  //                   const SimplexId d,
-  //                   const CriticalType dType,
-  //                   const double pers,
-  //                   const SimplexId pType)
-  //     : birth{b}, birthType{bType}, death{d}, deathType{dType},
-  //       persistence{pers}, pairType{pType} {
-  //   }
-  // };
 
 #if defined(_GLIBCXX_PARALLEL_FEATURES_H) && defined(TTK_ENABLE_OPENMP)
 #define PARALLEL_SORT                       \
@@ -115,6 +89,26 @@ namespace ttk {
    */
   class ProgressiveTopology : public Debug {
 
+    struct PersistencePair {
+      /** first (lower) vertex id */
+      ttk::SimplexId birth{};
+      /** first vertex type */
+      ttk::CriticalType birthType{};
+      /** second (higher) vertex id */
+      ttk::SimplexId death{};
+      /** second vertex type */
+      ttk::CriticalType deathType{};
+      /** pair type (min-saddle: 0, saddle-saddle: 1, saddle-max: 2) */
+      ttk::SimplexId pairType{};
+
+      PersistencePair() = default;
+      PersistencePair(const SimplexId b,
+                      const SimplexId d,
+                      const SimplexId pType)
+        : birth{b}, death{d}, pairType{pType} {
+      }
+    };
+
   public:
     ProgressiveTopology() {
       this->setDebugMsgPrefix("ProgressiveTopology");
@@ -138,10 +132,10 @@ namespace ttk {
     // }
 
   protected:
-    void sortPersistenceDiagram2(std::vector<ttk::PersistencePair> &diagram,
+    void sortPersistenceDiagram2(std::vector<PersistencePair> &diagram,
                                  const SimplexId *const offsets) const;
     // template <typename scalarType>
-    // int sortPersistenceDiagram(std::vector<ttk::PersistencePair> &diagram,
+    // int sortPersistenceDiagram(std::vector<PersistencePair> &diagram,
     //                            const scalarType *const scalars,
     //                            const SimplexId *const offsets) const;
 
@@ -196,7 +190,7 @@ namespace ttk {
     }
 
     template <typename scalarType>
-    int computeProgressivePD(std::vector<ttk::PersistencePair> &CTDiagram,
+    int computeProgressivePD(std::vector<PersistencePair> &CTDiagram,
                              const scalarType *scalars,
                              const SimplexId *offsets);
 
@@ -283,7 +277,7 @@ namespace ttk {
 
     template <typename scalarType, typename offsetType>
     void tripletsToPersistencePairs(
-      std::vector<ttk::PersistencePair> &pairs,
+      std::vector<PersistencePair> &pairs,
       std::vector<std::vector<SimplexId>> &vertexRepresentatives,
       std::vector<triplet> &triplets,
       const scalarType *const scalars,
@@ -390,7 +384,7 @@ namespace ttk {
 
     template <typename ScalarType, typename OffsetType>
     void computePersistencePairsFromSaddles(
-      std::vector<ttk::PersistencePair> &CTDiagram,
+      std::vector<PersistencePair> &CTDiagram,
       const ScalarType *const scalars,
       const OffsetType *const offsets,
       std::vector<std::vector<SimplexId>> &vertexRepresentativesMin,
@@ -443,13 +437,13 @@ namespace ttk {
     std::vector<std::vector<SimplexId>> saddleCCMin_{};
     std::vector<std::vector<SimplexId>> saddleCCMax_{};
     std::vector<char> vertexTypes_{};
-    std::vector<ttk::PersistencePair> CTDiagram_;
+    std::vector<PersistencePair> CTDiagram_;
   };
 } // namespace ttk
 
 // template <typename scalarType>
 // int ttk::ProgressiveTopology::sortPersistenceDiagram(
-//   std::vector<ttk::PersistencePair> &diagram,
+//   std::vector<PersistencePair> &diagram,
 //   const scalarType *const scalars,
 //   const SimplexId *const offsets) const {
 //   auto cmp
@@ -477,7 +471,7 @@ namespace ttk {
 // }
 template <typename scalarType>
 int ttk::ProgressiveTopology::computeProgressivePD(
-  std::vector<ttk::PersistencePair> &CTDiagram,
+  std::vector<PersistencePair> &CTDiagram,
   const scalarType *scalars,
   const SimplexId *offsets) {
   int ret = -1;
@@ -679,10 +673,7 @@ int ttk::ProgressiveTopology::executeCPProgressive(
 
   // ADD GLOBAL MIN-MAX PAIR
   if(computePersistenceDiagram) {
-    CTDiagram_.emplace_back(
-      this->globalMin_, ttk::CriticalType::Local_minimum, this->globalMax_,
-      ttk::CriticalType::Local_maximum,
-      scalars[this->globalMax_] - scalars[this->globalMin_], -1);
+    CTDiagram_.emplace_back(this->globalMin_, this->globalMax_, -1);
   }
 
   // store state for resuming computation
@@ -779,10 +770,7 @@ int ttk::ProgressiveTopology::resumeProgressive(int computePersistenceDiagram,
 
   // ADD GLOBAL MIN-MAX PAIR
   if(computePersistenceDiagram) {
-    CTDiagram_.emplace_back(
-      this->globalMin_, ttk::CriticalType::Local_minimum, this->globalMax_,
-      ttk::CriticalType::Local_maximum,
-      scalars[this->globalMax_] - scalars[this->globalMin_], -1);
+    CTDiagram_.emplace_back(this->globalMin_, this->globalMax_, -1);
   }
   // finally sort the diagram
   sortPersistenceDiagram2(CTDiagram_, offsets);
@@ -799,7 +787,7 @@ int ttk::ProgressiveTopology::resumeProgressive(int computePersistenceDiagram,
 
 template <typename ScalarType, typename OffsetType>
 void ttk::ProgressiveTopology::computePersistencePairsFromSaddles(
-  std::vector<ttk::PersistencePair> &CTDiagram,
+  std::vector<PersistencePair> &CTDiagram,
   const ScalarType *const scalars,
   const OffsetType *const offsets,
   std::vector<std::vector<SimplexId>> &vertexRepresentativesMin,
@@ -891,7 +879,7 @@ void ttk::ProgressiveTopology::sortTriplets(std::vector<triplet> &triplets,
 
 template <typename scalarType, typename offsetType>
 void ttk::ProgressiveTopology::tripletsToPersistencePairs(
-  std::vector<ttk::PersistencePair> &pairs,
+  std::vector<PersistencePair> &pairs,
   std::vector<std::vector<SimplexId>> &vertexRepresentatives,
   std::vector<triplet> &triplets,
   const scalarType *const scalars,
@@ -932,9 +920,7 @@ void ttk::ProgressiveTopology::tripletsToPersistencePairs(
           std::swap(r1, r2);
         }
         // pair saddle-max: s -> min(r1, r2);
-        pairs.emplace_back(s, ttk::CriticalType::Saddle2, r1,
-                           ttk::CriticalType::Local_maximum,
-                           scalars[r1] - scalars[s], 2);
+        pairs.emplace_back(s, r1, 2);
 
       } else {
         // r1 = max(r1, r2), r2 = min(r1, r2)
@@ -942,9 +928,7 @@ void ttk::ProgressiveTopology::tripletsToPersistencePairs(
           std::swap(r1, r2);
         }
         // pair min-saddle: max(r1, r2) -> s;
-        pairs.emplace_back(r1, ttk::CriticalType::Local_minimum, s,
-                           ttk::CriticalType::Saddle1, scalars[s] - scalars[r1],
-                           0);
+        pairs.emplace_back(r1, s, 0);
       }
 
       vertexRepresentatives[std::get<1>(t)][0] = r2;

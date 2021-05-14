@@ -32,6 +32,7 @@
 // base code includes
 #include <DiscreteGradient.h>
 #include <FTMTreePP.h>
+#include <ProgressiveTopology.h>
 #include <Triangulation.h>
 
 namespace ttk {
@@ -126,6 +127,16 @@ namespace ttk {
     bool ComputeSaddleConnectors{false};
     ftm::FTMTreePP contourTree_{};
     dcg::DiscreteGradient dcg_{};
+
+    int BackEnd{0};
+
+    // progressivity
+    ttk::ProgressiveTopology progT_{};
+
+    int StartingDecimationLevel{8};
+    int StoppingDecimationLevel{0};
+    bool IsResumable{false};
+    double TimeLimit{};
   };
 } // namespace ttk
 
@@ -174,6 +185,42 @@ int ttk::PersistenceDiagram::execute(std::vector<PersistencePair> &CTDiagram,
                                      const triangulationType *triangulation) {
 
   printMsg(ttk::debug::Separator::L1);
+
+  BackEnd = 1;
+  if(BackEnd == 1) { // progressive approach
+
+    progT_.setDebugLevel(debugLevel_);
+    progT_.setThreadNumber(threadNumber_);
+    progT_.setupTriangulation((ttk::ImplicitTriangulation *)triangulation);
+    progT_.setStartingDecimationLevel(StartingDecimationLevel);
+    progT_.setStoppingDecimationLevel(StoppingDecimationLevel);
+    progT_.setTimeLimit(TimeLimit);
+    progT_.setIsResumable(IsResumable);
+    progT_.setPreallocateMemory(true);
+
+    std::vector<ProgressiveTopology::PersistencePair> resultDiagram{};
+
+    progT_.computeProgressivePD(resultDiagram, inputScalars, inputOffsets);
+
+    for(const auto &p : resultDiagram) {
+      if(p.pairType == 0) {
+        CTDiagram.emplace_back(
+          p.birth, CriticalType::Local_minimum, p.death, CriticalType::Saddle1,
+          inputScalars[p.death] - inputScalars[p.birth], p.pairType);
+      } else if(p.pairType == 2) {
+        CTDiagram.emplace_back(
+          p.birth, CriticalType::Saddle2, p.death, CriticalType::Local_maximum,
+          inputScalars[p.death] - inputScalars[p.birth], p.pairType);
+      } else if(p.pairType == -1) {
+        CTDiagram.emplace_back(p.birth, CriticalType::Local_minimum, p.death,
+                               CriticalType::Local_maximum,
+                               inputScalars[p.death] - inputScalars[p.birth],
+                               p.pairType);
+      }
+    }
+
+    return 0;
+  }
 
   contourTree_.setVertexScalars(inputScalars);
   contourTree_.setTreeType(ftm::TreeType::Join_Split);

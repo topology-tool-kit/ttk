@@ -270,11 +270,11 @@ char ttk::ProgressiveTopology::getCriticalTypeFromLink(
 }
 
 void ttk::ProgressiveTopology::sortPersistenceDiagram2(
-  std::vector<ttk::PersistencePair> &diagram,
+  std::vector<PersistencePair> &diagram,
   const SimplexId *const offsets) const {
 
   auto cmp
-    = [offsets](const ttk::PersistencePair &a, const ttk::PersistencePair &b) {
+    = [offsets](const PersistencePair &a, const PersistencePair &b) {
         return offsets[a.birth] < offsets[b.birth];
       };
 

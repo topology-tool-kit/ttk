@@ -24,7 +24,7 @@ int main(int argc, char **argv) {
   std::vector<std::string> inputFilePaths;
   std::vector<std::string> inputArrayNames;
   std::string outputPathPrefix{"output"};
-  int method = 0;
+  int backEnd = 0;
   int startingDL = 8;
   int stoppingDL = 0;
   double tl = 1.0;
@@ -45,7 +45,7 @@ int main(int argc, char **argv) {
     parser.setArgument("a", &inputArrayNames, "Input array names", true);
     parser.setArgument(
       "o", &outputPathPrefix, "Output file prefix (no extension)", true);
-    parser.setArgument("M", &method, "Method (0:FTM, 1: progressive)", true);
+    parser.setArgument("B", &backEnd, "Method (0:FTM, 1: progressive)", true);
     parser.setArgument(
       "S", &startingDL,
       "Starting Decimation Level for progressive multiresolution scheme", true);
@@ -141,12 +141,10 @@ int main(int argc, char **argv) {
   // ---------------------------------------------------------------------------
   // Execute ttkPersistenceDiagram filter
   // ---------------------------------------------------------------------------
-  persistenceDiagram->SetMethod(method);
+  persistenceDiagram->SetBackEnd(backEnd);
   persistenceDiagram->SetTimeLimit(tl);
   persistenceDiagram->SetStartingDecimationLevel(startingDL);
   persistenceDiagram->SetStoppingDecimationLevel(stoppingDL);
-  persistenceDiagram->SetMethod(method);
-  persistenceDiagram->SetPreallocateMemoryProgressive((bool)preallocate);
   persistenceDiagram->Update();
 
   // ---------------------------------------------------------------------------
