@@ -73,6 +73,8 @@ namespace ttk {
   class PersistenceDiagram : virtual public Debug {
 
   public:
+    enum class BACKEND { FTM = 0, PROGRESSIVE_TOPOLOGY = 1 };
+
     PersistenceDiagram();
 
     inline void setComputeSaddleConnectors(bool state) {
@@ -140,8 +142,8 @@ namespace ttk {
     ftm::FTMTreePP contourTree_{};
     dcg::DiscreteGradient dcg_{};
 
-    int BackEnd{0};
-
+    // int BackEnd{0};
+    BACKEND BackEnd{BACKEND::FTM};
     // progressivity
     ttk::ProgressiveTopology progT_{};
 
@@ -198,13 +200,14 @@ int ttk::PersistenceDiagram::execute(std::vector<PersistencePair> &CTDiagram,
 
   printMsg(ttk::debug::Separator::L1);
 
-  if(BackEnd == 0) { // FTM
-
-    executeFTM(CTDiagram, inputScalars, inputOffsets, triangulation);
-
-  } else if(BackEnd == 1) { // progressive approach
-    executeProgressiveTopology(
-      CTDiagram, inputScalars, inputOffsets, triangulation);
+  switch(BackEnd) {
+    case BACKEND::PROGRESSIVE_TOPOLOGY:
+      executeProgressiveTopology(
+        CTDiagram, inputScalars, inputOffsets, triangulation);
+      break;
+    case BACKEND::FTM:
+      executeFTM(CTDiagram, inputScalars, inputOffsets, triangulation);
+      break;
   }
 
   // finally sort the diagram
@@ -257,10 +260,11 @@ int ttk::PersistenceDiagram::executeProgressiveTopology(
 }
 
 template <typename scalarType, class triangulationType>
-int ttk::PersistenceDiagram::executeFTM(std::vector<PersistencePair> &CTDiagram,
-               const scalarType *inputScalars,
-               const SimplexId *inputOffsets,
-               const triangulationType *triangulation) {
+int ttk::PersistenceDiagram::executeFTM(
+  std::vector<PersistencePair> &CTDiagram,
+  const scalarType *inputScalars,
+  const SimplexId *inputOffsets,
+  const triangulationType *triangulation) {
 
   contourTree_.setVertexScalars(inputScalars);
   contourTree_.setTreeType(ftm::TreeType::Join_Split);

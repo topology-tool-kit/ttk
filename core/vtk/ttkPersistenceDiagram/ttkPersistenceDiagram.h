@@ -55,6 +55,7 @@
 // ttk code includes
 #include <PersistenceDiagram.h>
 #include <ttkAlgorithm.h>
+#include <ttkMacros.h>
 
 class TTKPERSISTENCEDIAGRAM_EXPORT ttkPersistenceDiagram
   : public ttkAlgorithm,
@@ -74,8 +75,8 @@ public:
   vtkSetMacro(ShowInsideDomain, bool);
   vtkGetMacro(ShowInsideDomain, bool);
 
-  vtkGetMacro(BackEnd, int);
-  vtkSetMacro(BackEnd, int);
+  ttkSetEnumMacro(BackEnd, BACKEND);
+  vtkGetEnumMacro(BackEnd, BACKEND);
 
   vtkGetMacro(StartingDecimationLevel, int);
   vtkSetMacro(StartingDecimationLevel, int);
