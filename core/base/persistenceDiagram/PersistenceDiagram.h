@@ -108,6 +108,18 @@ namespace ttk {
                 const SimplexId *inputOffsets,
                 const triangulationType *triangulation);
 
+    template <typename scalarType, class triangulationType>
+    int executeFTM(std::vector<PersistencePair> &CTDiagram,
+                   const scalarType *inputScalars,
+                   const SimplexId *inputOffsets,
+                   const triangulationType *triangulation);
+
+    template <typename scalarType, class triangulationType>
+    int executeProgressiveTopology(std::vector<PersistencePair> &CTDiagram,
+                                   const scalarType *inputScalars,
+                                   const SimplexId *inputOffsets,
+                                   const triangulationType *triangulation);
+
     inline void
       preconditionTriangulation(AbstractTriangulation *triangulation) {
       if(triangulation) {
@@ -186,41 +198,69 @@ int ttk::PersistenceDiagram::execute(std::vector<PersistencePair> &CTDiagram,
 
   printMsg(ttk::debug::Separator::L1);
 
-  BackEnd = 1;
-  if(BackEnd == 1) { // progressive approach
+  if(BackEnd == 0) { // FTM
 
-    progT_.setDebugLevel(debugLevel_);
-    progT_.setThreadNumber(threadNumber_);
-    progT_.setupTriangulation((ttk::ImplicitTriangulation *)triangulation);
-    progT_.setStartingDecimationLevel(StartingDecimationLevel);
-    progT_.setStoppingDecimationLevel(StoppingDecimationLevel);
-    progT_.setTimeLimit(TimeLimit);
-    progT_.setIsResumable(IsResumable);
-    progT_.setPreallocateMemory(true);
+    executeFTM(CTDiagram, inputScalars, inputOffsets, triangulation);
 
-    std::vector<ProgressiveTopology::PersistencePair> resultDiagram{};
-
-    progT_.computeProgressivePD(resultDiagram, inputScalars, inputOffsets);
-
-    for(const auto &p : resultDiagram) {
-      if(p.pairType == 0) {
-        CTDiagram.emplace_back(
-          p.birth, CriticalType::Local_minimum, p.death, CriticalType::Saddle1,
-          inputScalars[p.death] - inputScalars[p.birth], p.pairType);
-      } else if(p.pairType == 2) {
-        CTDiagram.emplace_back(
-          p.birth, CriticalType::Saddle2, p.death, CriticalType::Local_maximum,
-          inputScalars[p.death] - inputScalars[p.birth], p.pairType);
-      } else if(p.pairType == -1) {
-        CTDiagram.emplace_back(p.birth, CriticalType::Local_minimum, p.death,
-                               CriticalType::Local_maximum,
-                               inputScalars[p.death] - inputScalars[p.birth],
-                               p.pairType);
-      }
-    }
-
-    return 0;
+  } else if(BackEnd == 1) { // progressive approach
+    executeProgressiveTopology(
+      CTDiagram, inputScalars, inputOffsets, triangulation);
   }
+
+  // finally sort the diagram
+  sortPersistenceDiagram(CTDiagram, inputOffsets);
+
+  printMsg(ttk::debug::Separator::L1);
+
+  return 0;
+}
+
+template <typename scalarType, class triangulationType>
+int ttk::PersistenceDiagram::executeProgressiveTopology(
+  std::vector<PersistencePair> &CTDiagram,
+  const scalarType *inputScalars,
+  const SimplexId *inputOffsets,
+  const triangulationType *triangulation) {
+
+  progT_.setDebugLevel(debugLevel_);
+  progT_.setThreadNumber(threadNumber_);
+  progT_.setupTriangulation((ttk::ImplicitTriangulation *)triangulation);
+  progT_.setStartingDecimationLevel(StartingDecimationLevel);
+  progT_.setStoppingDecimationLevel(StoppingDecimationLevel);
+  progT_.setTimeLimit(TimeLimit);
+  progT_.setIsResumable(IsResumable);
+  progT_.setPreallocateMemory(true);
+
+  std::vector<ProgressiveTopology::PersistencePair> resultDiagram{};
+
+  progT_.computeProgressivePD(resultDiagram, inputScalars, inputOffsets);
+
+  // create the final diagram
+  for(const auto &p : resultDiagram) {
+    if(p.pairType == 0) {
+      CTDiagram.emplace_back(
+        p.birth, CriticalType::Local_minimum, p.death, CriticalType::Saddle1,
+        inputScalars[p.death] - inputScalars[p.birth], p.pairType);
+    } else if(p.pairType == 2) {
+      CTDiagram.emplace_back(
+        p.birth, CriticalType::Saddle2, p.death, CriticalType::Local_maximum,
+        inputScalars[p.death] - inputScalars[p.birth], p.pairType);
+    } else if(p.pairType == -1) {
+      CTDiagram.emplace_back(p.birth, CriticalType::Local_minimum, p.death,
+                             CriticalType::Local_maximum,
+                             inputScalars[p.death] - inputScalars[p.birth],
+                             p.pairType);
+    }
+  }
+
+  return 0;
+}
+
+template <typename scalarType, class triangulationType>
+int ttk::PersistenceDiagram::executeFTM(std::vector<PersistencePair> &CTDiagram,
+               const scalarType *inputScalars,
+               const SimplexId *inputOffsets,
+               const triangulationType *triangulation) {
 
   contourTree_.setVertexScalars(inputScalars);
   contourTree_.setTreeType(ftm::TreeType::Join_Split);
@@ -286,11 +326,6 @@ int ttk::PersistenceDiagram::execute(std::vector<PersistencePair> &CTDiagram,
                              ttk::CriticalType::Saddle2, persistenceValue, 1);
     }
   }
-
-  // finally sort the diagram
-  sortPersistenceDiagram(CTDiagram, inputOffsets);
-
-  printMsg(ttk::debug::Separator::L1);
-
   return 0;
 }
+
