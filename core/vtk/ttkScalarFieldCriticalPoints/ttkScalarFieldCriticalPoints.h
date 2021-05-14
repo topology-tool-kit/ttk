@@ -82,6 +82,21 @@ public:
   vtkGetMacro(ForceInputOffsetScalarField, bool);
   vtkSetMacro(ForceInputOffsetScalarField, bool);
 
+  vtkGetMacro(BackEnd, int);
+  vtkSetMacro(BackEnd, int);
+
+  vtkGetMacro(StartingDecimationLevel, int);
+  vtkSetMacro(StartingDecimationLevel, int);
+
+  vtkGetMacro(StoppingDecimationLevel, int);
+  vtkSetMacro(StoppingDecimationLevel, int);
+
+  vtkGetMacro(IsResumable, bool);
+  vtkSetMacro(IsResumable, bool);
+
+  vtkGetMacro(TimeLimit, double);
+  vtkSetMacro(TimeLimit, double);
+
 protected:
   ttkScalarFieldCriticalPoints();
 

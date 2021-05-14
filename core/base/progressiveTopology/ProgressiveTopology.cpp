@@ -70,7 +70,7 @@ void ttk::ProgressiveTopology::buildVertexLinkByBoundary(
   }
 }
 
-void ttk::ProgressiveTopology::updateCriticalType(
+void ttk::ProgressiveTopology::updateDynamicLink(
   DynamicTree &link,
   std::vector<std::pair<polarity, polarity>> &vlp,
   std::vector<std::pair<SimplexId, SimplexId>> &vl) const {
@@ -201,5 +201,102 @@ void ttk::ProgressiveTopology::clearResumableState() {
   toReprocess_ = {};
   saddleCCMin_ = {};
   saddleCCMax_ = {};
+  vertexTypes_ = {};
 }
 
+char ttk::ProgressiveTopology::getCriticalTypeFromLink(
+  const SimplexId vertexId,
+  const std::vector<std::pair<polarity, polarity>> &vlp,
+  DynamicTree &link) const {
+
+  const auto nbCC = link.getNbCC();
+
+  int dimensionality = multiresTriangulation_.getDimensionality();
+  SimplexId downValence = 0, upValence = 0;
+
+  std::vector<size_t> CCIds;
+  CCIds.reserve(nbCC);
+  link.retrieveNbCC(CCIds);
+  for(size_t i = 0; i < CCIds.size(); i++) {
+    const SimplexId neighbor = CCIds[i];
+    const polarity isUpper = vlp[neighbor].first;
+    if(isUpper) {
+      upValence++;
+    } else {
+      downValence++;
+    }
+  }
+
+  if(downValence == -1 && upValence == -1) {
+    return -1;
+  } else if(downValence == 0 && upValence == 1) {
+    return static_cast<char>(CriticalType::Local_minimum);
+  } else if(downValence == 1 && upValence == 0) {
+    return static_cast<char>(CriticalType::Local_maximum);
+  } else if(downValence == 1 && upValence == 1) {
+    // regular point
+    return static_cast<char>(CriticalType::Regular);
+  } else {
+    // saddles
+    if(dimensionality == 2) {
+      if((downValence == 2 && upValence == 1)
+         || (downValence == 1 && upValence == 2)
+         || (downValence == 2 && upValence == 2)) {
+        // regular saddle
+        return static_cast<char>(CriticalType::Saddle1);
+      } else {
+        // monkey saddle, saddle + extremum
+        return static_cast<char>(CriticalType::Degenerate);
+        // NOTE: you may have multi-saddles on the boundary in that
+        // configuration
+        // to make this computation 100% correct, one would need to
+        // disambiguate boundary from interior vertices
+      }
+    } else if(dimensionality == 3) {
+      if(downValence == 2 && upValence == 1) {
+        return static_cast<char>(CriticalType::Saddle1);
+      } else if(downValence == 1 && upValence == 2) {
+        return static_cast<char>(CriticalType::Saddle2);
+      } else {
+        // monkey saddle, saddle + extremum
+        return static_cast<char>(CriticalType::Degenerate);
+        // NOTE: we may have a similar effect in 3D (TODO)
+      }
+    }
+  }
+
+  // -2: regular points
+  return static_cast<char>(CriticalType::Regular);
+}
+
+void ttk::ProgressiveTopology::sortPersistenceDiagram2(
+  std::vector<ttk::PersistencePair> &diagram,
+  const SimplexId *const offsets) const {
+
+  auto cmp
+    = [offsets](const ttk::PersistencePair &a, const ttk::PersistencePair &b) {
+        return offsets[a.birth] < offsets[b.birth];
+      };
+
+  std::sort(diagram.begin(), diagram.end(), cmp);
+}
+
+int ttk::ProgressiveTopology::computeProgressiveCP(
+  std::vector<std::pair<SimplexId, char>> *criticalPoints,
+  const SimplexId *offsets) {
+
+  printMsg("Progressive Critical Points computation");
+  int ret = -1;
+  const double *dummyScalars{};
+  ret = executeCPProgressive<double>(0, dummyScalars, offsets);
+
+  SimplexId vertexNumber = multiresTriangulation_.getVertexNumber();
+  criticalPoints->clear();
+  criticalPoints->reserve(vertexNumber);
+  for(SimplexId i = 0; i < vertexNumber; i++) {
+    if(vertexTypes_[i] != (char)(CriticalType::Regular)) {
+      criticalPoints->emplace_back(i, vertexTypes_[i]);
+    }
+  }
+  return ret;
+}

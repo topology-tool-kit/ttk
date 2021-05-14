@@ -24,6 +24,7 @@
 #include <map>
 
 // base code includes
+#include <ProgressiveTopology.h>
 #include <Triangulation.h>
 #include <UnionFind.h>
 
@@ -105,6 +106,8 @@ namespace ttk {
       forceNonManifoldCheck = b;
     }
 
+    void displayStats();
+
   protected:
     int dimension_{};
     SimplexId vertexNumber_{};
@@ -113,6 +116,14 @@ namespace ttk {
     std::vector<std::pair<SimplexId, char>> *criticalPoints_{};
 
     bool forceNonManifoldCheck{false};
+
+    // progressive
+    int BackEnd{0};
+    ProgressiveTopology progT_{};
+    int StartingDecimationLevel{8};
+    int StoppingDecimationLevel{0};
+    bool IsResumable{false};
+    double TimeLimit{};
   };
 } // namespace ttk
 
@@ -120,6 +131,24 @@ namespace ttk {
 template <class triangulationType>
 int ttk::ScalarFieldCriticalPoints::execute(
   const SimplexId *const offsets, const triangulationType *triangulation) {
+
+
+  if(BackEnd == 1) { // progressive approach
+
+    progT_.setDebugLevel(debugLevel_);
+    progT_.setThreadNumber(threadNumber_);
+    progT_.setupTriangulation((ttk::ImplicitTriangulation *)triangulation);
+    progT_.setStartingDecimationLevel(StartingDecimationLevel);
+    progT_.setStoppingDecimationLevel(StoppingDecimationLevel);
+    progT_.setTimeLimit(TimeLimit);
+    progT_.setIsResumable(IsResumable);
+    progT_.setPreallocateMemory(true);
+
+    progT_.computeProgressiveCP(criticalPoints_, offsets);
+
+    displayStats();
+    return 0;
+  }
 
   // check the consistency of the variables -- to adapt
 #ifndef TTK_ENABLE_KAMIKAZE

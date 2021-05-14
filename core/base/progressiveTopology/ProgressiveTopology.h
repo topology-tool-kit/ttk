@@ -122,9 +122,6 @@ namespace ttk {
 
     inline int setupTriangulation(ImplicitTriangulation *data) {
       triangulation_ = data;
-      if(triangulation_) {
-        triangulation_->preconditionBoundaryVertices();
-      }
       return 0;
     }
     inline int setInputScalars(void *data) {
@@ -135,14 +132,14 @@ namespace ttk {
       inputOffsets_ = data;
       return 0;
     }
-    inline int setOutputCTDiagram(void *data) {
-      CTDiagram_ = data;
-      return 0;
-    }
+    // inline int setOutputCTDiagram(void *data) {
+    //   CTDiagram_ = data;
+    //   return 0;
+    // }
 
   protected:
-    void sortPersistenceDiagram(std::vector<ttk::PersistencePair> &diagram,
-                                const SimplexId *const offsets) const;
+    void sortPersistenceDiagram2(std::vector<ttk::PersistencePair> &diagram,
+                                 const SimplexId *const offsets) const;
     // template <typename scalarType>
     // int sortPersistenceDiagram(std::vector<ttk::PersistencePair> &diagram,
     //                            const scalarType *const scalars,
@@ -151,15 +148,18 @@ namespace ttk {
     /* PROGRESSIVE MODE DECLARATIONS */
   public:
     template <class scalarType>
-    int executeCPProgressive(std::vector<ttk::PersistencePair> &CTDiagram,
+    int executeCPProgressive(int computePersistenceDiagram,
                              const scalarType *inputScalars,
                              const SimplexId *inputOffsets);
 
     template <typename scalarType>
-    int resumeProgressive(std::vector<ttk::PersistencePair> &CTDiagram,
+    int resumeProgressive(int computePersistenceDiagram,
                           const scalarType *scalars,
                           const SimplexId *offsets);
 
+    inline void setAlgorithm(int data) {
+      computePersistenceDiagram_ = data;
+    }
     inline void setStartingDecimationLevel(int data) {
       if(data != startingDecimationLevel_) {
         resumeProgressive_ = false;
@@ -195,6 +195,15 @@ namespace ttk {
       return this->stoppingDecimationLevel_;
     }
 
+    template <typename scalarType>
+    int computeProgressivePD(std::vector<ttk::PersistencePair> &CTDiagram,
+                             const scalarType *scalars,
+                             const SimplexId *offsets);
+
+    int computeProgressiveCP(
+      std::vector<std::pair<SimplexId, char>> *criticalPoints,
+      const SimplexId *offsets);
+
   protected:
     // maximum link size in 3D
     static const size_t nLink_ = 27;
@@ -204,6 +213,18 @@ namespace ttk {
     template <typename ScalarType, typename OffsetType>
     void
       initCriticalPoints(std::vector<polarity> &isNew,
+                         std::vector<std::vector<std::pair<polarity, polarity>>>
+                           &vertexLinkPolarity,
+                         std::vector<polarity> &toProcess,
+                         std::vector<DynamicTree> &link,
+                         std::vector<uint8_t> &vertexLink,
+                         VLBoundaryType &vertexLinkByBoundaryType,
+                         std::vector<char> &vertexTypes,
+                         const ScalarType *const scalars,
+                         const OffsetType *const offsets) const;
+
+    template <typename ScalarType, typename OffsetType>
+    void initSaddleSeeds(std::vector<polarity> &isNew,
                          std::vector<std::vector<std::pair<polarity, polarity>>>
                            &vertexLinkPolarity,
                          std::vector<polarity> &toPropageMin,
@@ -233,7 +254,7 @@ namespace ttk {
       const OffsetType *const offsets) const;
 
     template <typename ScalarType, typename OffsetType>
-    void updatePropagationCP(
+    void updatePropagation(
       std::vector<polarity> &toPropageMin,
       std::vector<polarity> &toPropageMax,
       std::vector<std::vector<SimplexId>> &vertexRepresentativesMin,
@@ -273,13 +294,18 @@ namespace ttk {
                                    VLBoundaryType &vlbt) const;
 
     template <typename ScalarType, typename OffsetType>
-    void getCriticalType(const SimplexId &vertexId,
+    void initDynamicLink(const SimplexId &vertexId,
                          std::vector<std::pair<polarity, polarity>> &vlp,
                          uint8_t &vertexLink,
                          DynamicTree &link,
                          VLBoundaryType &vlbt,
                          const ScalarType *const scalars,
                          const OffsetType *const offsets) const;
+
+    char getCriticalTypeFromLink(
+      const SimplexId vertexId,
+      const std::vector<std::pair<polarity, polarity>> &vlp,
+      DynamicTree &link) const;
 
     void getValencesFromLink(
       const SimplexId vertexId,
@@ -289,29 +315,44 @@ namespace ttk {
       std::vector<polarity> &toPropageMax,
       std::vector<std::vector<SimplexId>> &saddleCCMin,
       std::vector<std::vector<SimplexId>> &saddleCCMax) const;
-    void updateCriticalType(
-      DynamicTree &link,
-      std::vector<std::pair<polarity, polarity>> &vlp,
-      std::vector<std::pair<SimplexId, SimplexId>> &vl) const;
+
+    void
+      updateDynamicLink(DynamicTree &link,
+                        std::vector<std::pair<polarity, polarity>> &vlp,
+                        std::vector<std::pair<SimplexId, SimplexId>> &vl) const;
 
     template <typename ScalarType, typename OffsetType>
     void updateCriticalPoints(
       std::vector<polarity> &isNew,
       std::vector<std::vector<std::pair<polarity, polarity>>>
         &vertexLinkPolarity,
-      std::vector<polarity> &toPropageMin,
-      std::vector<polarity> &toPropageMax,
       std::vector<polarity> &toProcess,
       std::vector<polarity> &toReprocess,
       std::vector<DynamicTree> &link,
       std::vector<uint8_t> &vertexLink,
       VLBoundaryType &vertexLinkByBoundaryType,
-      std::vector<std::vector<SimplexId>> &saddleCCMin,
-      std::vector<std::vector<SimplexId>> &saddleCCMax,
-      std::vector<polarity> &isUpdatedMin,
-      std::vector<polarity> &isUpdatedMax,
+      std::vector<char> &vertexTypes,
       const ScalarType *const scalars,
       const OffsetType *const offsets) const;
+
+    template <typename ScalarType, typename OffsetType>
+    void
+      updateSaddleSeeds(std::vector<polarity> &isNew,
+                        std::vector<std::vector<std::pair<polarity, polarity>>>
+                          &vertexLinkPolarity,
+                        std::vector<polarity> &toPropageMin,
+                        std::vector<polarity> &toPropageMax,
+                        std::vector<polarity> &toProcess,
+                        std::vector<polarity> &toReprocess,
+                        std::vector<DynamicTree> &link,
+                        std::vector<uint8_t> &vertexLink,
+                        VLBoundaryType &vertexLinkByBoundaryType,
+                        std::vector<std::vector<SimplexId>> &saddleCCMin,
+                        std::vector<std::vector<SimplexId>> &saddleCCMax,
+                        std::vector<polarity> &isUpdatedMin,
+                        std::vector<polarity> &isUpdatedMax,
+                        const ScalarType *const scalars,
+                        const OffsetType *const offsets) const;
 
     template <typename ScalarType, typename OffsetType>
     bool getMonotonyChangeByOldPointCP(
@@ -366,7 +407,7 @@ namespace ttk {
     ImplicitTriangulation *triangulation_{};
     void *inputScalars_{};
     void *inputOffsets_{};
-    void *CTDiagram_{};
+    // void *CTDiagram_{};
 
     // new non-progressive approach
     MultiresTriangulation multiresTriangulation_{};
@@ -376,6 +417,7 @@ namespace ttk {
     mutable SimplexId globalMax_{}, globalMin_{};
 
     // progressive approach
+    int computePersistenceDiagram_{1};
     int decimationLevel_{};
     int startingDecimationLevel_{};
     int stoppingDecimationLevel_{};
@@ -400,20 +442,11 @@ namespace ttk {
     std::vector<polarity> toReprocess_{};
     std::vector<std::vector<SimplexId>> saddleCCMin_{};
     std::vector<std::vector<SimplexId>> saddleCCMax_{};
+    std::vector<char> vertexTypes_{};
+    std::vector<ttk::PersistencePair> CTDiagram_;
   };
 } // namespace ttk
 
-void ttk::ProgressiveTopology::sortPersistenceDiagram(
-  std::vector<ttk::PersistencePair> &diagram,
-  const SimplexId *const offsets) const {
-
-  auto cmp
-    = [offsets](const ttk::PersistencePair &a, const ttk::PersistencePair &b) {
-        return offsets[a.birth] < offsets[b.birth];
-      };
-
-  std::sort(diagram.begin(), diagram.end(), cmp);
-}
 // template <typename scalarType>
 // int ttk::ProgressiveTopology::sortPersistenceDiagram(
 //   std::vector<ttk::PersistencePair> &diagram,
@@ -442,31 +475,38 @@ void ttk::ProgressiveTopology::sortPersistenceDiagram(
 
 //   return 0;
 // }
+template <typename scalarType>
+int ttk::ProgressiveTopology::computeProgressivePD(
+  std::vector<ttk::PersistencePair> &CTDiagram,
+  const scalarType *scalars,
+  const SimplexId *offsets) {
+  int ret = -1;
+  printMsg("Progressive Persistence Diagram computation");
+  ret = executeCPProgressive(1, scalars, offsets);
+  CTDiagram = std::move(CTDiagram_);
+  CTDiagram_.clear();
+
+  return ret;
+}
 
 template <typename scalarType>
 int ttk::ProgressiveTopology::executeCPProgressive(
-  std::vector<ttk::PersistencePair> &CTDiagram,
+  int computePersistenceDiagram,
   const scalarType *scalars,
   const SimplexId *offsets) {
 
   printMsg(ttk::debug::Separator::L1);
 
   if(resumeProgressive_) {
-    resumeProgressive(CTDiagram, scalars, offsets);
+    resumeProgressive(computePersistenceDiagram, scalars, offsets);
     return 0;
   }
 
-  // get data
   Timer timer;
-  // auto &CTDiagram = *static_cast<
-  //   std::vector<std::tuple<ttk::SimplexId, ttk::CriticalType, ttk::SimplexId,
-  //                          ttk::CriticalType, scalarType, ttk::SimplexId>>
-  //                          *>(
-  //   CTDiagram_);
-  // const scalarType *scalars = static_cast<scalarType *>(inputScalars);
-  // const SimplexId *offsets = static_cast<SimplexId *>(inputOffsets);
+
   decimationLevel_ = startingDecimationLevel_;
   multiresTriangulation_.setTriangulation(triangulation_);
+  multiresTriangulation_.setDecimationLevel(0);
   const SimplexId vertexNumber = multiresTriangulation_.getVertexNumber();
 
 #ifdef TTK_ENABLE_KAMIKAZE
@@ -484,23 +524,35 @@ int ttk::ProgressiveTopology::executeCPProgressive(
   const auto dim = multiresTriangulation_.getDimensionality();
   const size_t maxNeigh = dim == 3 ? 14 : (dim == 2 ? 6 : 0);
 
-  std::vector<std::vector<SimplexId>> saddleCCMin(vertexNumber),
-    saddleCCMax(vertexNumber);
-  std::vector<std::vector<SimplexId>> vertexRepresentativesMin(vertexNumber),
-    vertexRepresentativesMax(vertexNumber);
+  std::vector<std::vector<SimplexId>> saddleCCMin{}, saddleCCMax{};
+  std::vector<std::vector<SimplexId>> vertexRepresentativesMin{},
+    vertexRepresentativesMax{};
+  std::vector<polarity> toPropageMin{}, toPropageMax{};
+  std::vector<polarity> isUpToDateMin{}, isUpToDateMax{};
+  std::vector<char> vertexTypes{};
 
-  std::vector<std::vector<std::pair<polarity, polarity>>> vertexLinkPolarity(
-    vertexNumber);
-  std::vector<polarity> isNew(vertexNumber, 255);
-  std::vector<polarity> toPropageMin(vertexNumber, 0),
-    toPropageMax(vertexNumber, 0);
-  std::vector<polarity> isUpToDateMin(vertexNumber, 0),
-    isUpToDateMax(vertexNumber, 0);
+  // std::vector<char> vertexTypes{};
+
+  if(computePersistenceDiagram) {
+    saddleCCMin.resize(vertexNumber);
+    saddleCCMax.resize(vertexNumber);
+    vertexRepresentativesMin.resize(vertexNumber);
+    vertexRepresentativesMax.resize(vertexNumber);
+    toPropageMin.resize(vertexNumber, 0);
+    toPropageMax.resize(vertexNumber, 0);
+    isUpToDateMin.resize(vertexNumber, 0);
+    isUpToDateMax.resize(vertexNumber, 0);
+  } else {
+    vertexTypes.resize(vertexNumber, static_cast<char>(CriticalType::Regular));
+  }
 
   // index in vertexLinkByBoundaryType
   std::vector<uint8_t> vertexLink(vertexNumber);
   VLBoundaryType vertexLinkByBoundaryType{};
   std::vector<DynamicTree> link(vertexNumber);
+  std::vector<polarity> isNew(vertexNumber, 255);
+  std::vector<std::vector<std::pair<polarity, polarity>>> vertexLinkPolarity(
+    vertexNumber);
   std::vector<polarity> toProcess(vertexNumber, 0), toReprocess{};
 
   if(this->startingDecimationLevel_ > this->stoppingDecimationLevel_
@@ -526,8 +578,6 @@ int ttk::ProgressiveTopology::executeCPProgressive(
   }
 
   tm_allocation = timer.getElapsedTime() - tm_allocation;
-  if(debugLevel_ > 3)
-    std::cout << "ALLOCATION " << tm_allocation << std::endl;
   printMsg("Total memory allocation", 1, tm_allocation, threadNumber_);
 
   // computation of implicit link
@@ -555,18 +605,24 @@ int ttk::ProgressiveTopology::executeCPProgressive(
            timer.getElapsedTime() - tm_allocation, this->threadNumber_,
            ttk::debug::LineMode::REPLACE);
   multiresTriangulation_.setDecimationLevel(decimationLevel_);
-  initCriticalPoints(isNew, vertexLinkPolarity, toPropageMin, toPropageMax,
-                     toProcess, link, vertexLink, vertexLinkByBoundaryType,
-                     saddleCCMin, saddleCCMax, scalars, offsets);
-  initPropagation(toPropageMin, toPropageMax, vertexRepresentativesMin,
-                  vertexRepresentativesMax, saddleCCMin, saddleCCMax,
-                  vertLockMin, vertLockMax, isUpToDateMin, isUpToDateMax,
-                  scalars, offsets);
 
-  // compute pairs in non-progressive mode
-  computePersistencePairsFromSaddles(
-    CTDiagram, scalars, offsets, vertexRepresentativesMin,
-    vertexRepresentativesMax, toPropageMin, toPropageMax);
+  if(computePersistenceDiagram) {
+    initSaddleSeeds(isNew, vertexLinkPolarity, toPropageMin, toPropageMax,
+                    toProcess, link, vertexLink, vertexLinkByBoundaryType,
+                    saddleCCMin, saddleCCMax, scalars, offsets);
+    initPropagation(toPropageMin, toPropageMax, vertexRepresentativesMin,
+                    vertexRepresentativesMax, saddleCCMin, saddleCCMax,
+                    vertLockMin, vertLockMax, isUpToDateMin, isUpToDateMax,
+                    scalars, offsets);
+
+    // compute pairs in non-progressive mode
+    computePersistencePairsFromSaddles(
+      CTDiagram_, scalars, offsets, vertexRepresentativesMin,
+      vertexRepresentativesMax, toPropageMin, toPropageMax);
+  } else {
+    initCriticalPoints(isNew, vertexLinkPolarity, toProcess, link, vertexLink,
+                       vertexLinkByBoundaryType, vertexTypes, scalars, offsets);
+  }
 
   printMsg("Decimation level " + std::to_string(decimationLevel_), 1,
            timer.getElapsedTime() - tm_allocation, this->threadNumber_);
@@ -584,21 +640,27 @@ int ttk::ProgressiveTopology::executeCPProgressive(
              timer.getElapsedTime() - tm_allocation, this->threadNumber_,
              ttk::debug::LineMode::REPLACE);
 
-    updateCriticalPoints(isNew, vertexLinkPolarity, toPropageMin, toPropageMax,
-                         toProcess, toReprocess, link, vertexLink,
-                         vertexLinkByBoundaryType, saddleCCMin, saddleCCMax,
-                         isUpToDateMin, isUpToDateMax, scalars, offsets);
-    updatePropagationCP(toPropageMin, toPropageMax, vertexRepresentativesMin,
+    if(computePersistenceDiagram) {
+      updateSaddleSeeds(isNew, vertexLinkPolarity, toPropageMin, toPropageMax,
+                        toProcess, toReprocess, link, vertexLink,
+                        vertexLinkByBoundaryType, saddleCCMin, saddleCCMax,
+                        isUpToDateMin, isUpToDateMax, scalars, offsets);
+      updatePropagation(toPropageMin, toPropageMax, vertexRepresentativesMin,
                         vertexRepresentativesMax, saddleCCMin, saddleCCMax,
                         vertLockMin, vertLockMax, isUpToDateMin, isUpToDateMax,
                         scalars, offsets);
-    computePersistencePairsFromSaddles(
-      CTDiagram, scalars, offsets, vertexRepresentativesMin,
-      vertexRepresentativesMax, toPropageMin, toPropageMax);
+      computePersistencePairsFromSaddles(
+        CTDiagram_, scalars, offsets, vertexRepresentativesMin,
+        vertexRepresentativesMax, toPropageMin, toPropageMax);
+    } else {
+      updateCriticalPoints(isNew, vertexLinkPolarity, toProcess, toReprocess,
+                           link, vertexLink, vertexLinkByBoundaryType,
+                           vertexTypes, scalars, offsets);
+    }
 
     const auto itDuration = tmIter.getElapsedTime();
     const auto nextItDuration
-      = predictNextIterationDuration(itDuration, CTDiagram.size() + 1);
+      = predictNextIterationDuration(itDuration, CTDiagram_.size() + 1);
 
     printMsg("Decimation level " + std::to_string(decimationLevel_), 1,
              timer.getElapsedTime() - tm_allocation, this->threadNumber_);
@@ -616,29 +678,36 @@ int ttk::ProgressiveTopology::executeCPProgressive(
   }
 
   // ADD GLOBAL MIN-MAX PAIR
-  CTDiagram.emplace_back(this->globalMin_, ttk::CriticalType::Local_minimum,
-                         this->globalMax_, ttk::CriticalType::Local_maximum,
-                         scalars[this->globalMax_] - scalars[this->globalMin_],
-                         -1);
+  if(computePersistenceDiagram) {
+    CTDiagram_.emplace_back(
+      this->globalMin_, ttk::CriticalType::Local_minimum, this->globalMax_,
+      ttk::CriticalType::Local_maximum,
+      scalars[this->globalMax_] - scalars[this->globalMin_], -1);
+  }
 
   // store state for resuming computation
   if(this->isResumable_ and decimationLevel_ > 0) {
-    this->vertexRepresentativesMax_ = std::move(vertexRepresentativesMax);
-    this->vertexRepresentativesMin_ = std::move(vertexRepresentativesMin);
-    this->vertexLinkPolarity_ = std::move(vertexLinkPolarity);
+    if(computePersistenceDiagram) {
+      this->vertexRepresentativesMax_ = std::move(vertexRepresentativesMax);
+      this->vertexRepresentativesMin_ = std::move(vertexRepresentativesMin);
+      this->saddleCCMin_ = std::move(saddleCCMin);
+      this->saddleCCMax_ = std::move(saddleCCMax);
+    }
     this->isNew_ = std::move(isNew);
     this->toProcess_ = std::move(toProcess);
     this->toReprocess_ = std::move(toReprocess);
-    this->saddleCCMin_ = std::move(saddleCCMin);
-    this->saddleCCMax_ = std::move(saddleCCMax);
+    this->vertexLinkPolarity_ = std::move(vertexLinkPolarity);
     this->link_ = std::move(link);
     this->vertexLink_ = std::move(vertexLink);
     this->vertexLinkByBoundaryType_ = std::move(vertexLinkByBoundaryType);
     this->resumeProgressive_ = true;
   }
 
+  // prepare outputs
+  vertexTypes_ = std::move(vertexTypes);
+
   // finally sort the diagram
-  sortPersistenceDiagram(CTDiagram, offsets);
+  sortPersistenceDiagram2(CTDiagram_, offsets);
   // sortPersistenceDiagram(CTDiagram, scalars, offsets);
   this->printMsg("Complete", 1.0, timer.getElapsedTime() - tm_allocation,
                  this->threadNumber_);
@@ -646,29 +715,11 @@ int ttk::ProgressiveTopology::executeCPProgressive(
 }
 
 template <typename scalarType>
-int ttk::ProgressiveTopology::resumeProgressive(
-  std::vector<ttk::PersistencePair> &CTDiagram,
-  const scalarType *scalars,
-  const SimplexId *offsets) {
-
-  // always called in progressive mode
-  // (stoppingDecimationLevel_ < startingDecimationLevel_)
-
-  // begin from the last decimationLevel_
-
-  // auto &CTDiagram
-  //   = *static_cast<std::vector<ttk::PersistencePair> *>(this->CTDiagram_);
-  // auto &CTDiagram = *static_cast<
-  //   std::vector<std::tuple<ttk::SimplexId, ttk::CriticalType, ttk::SimplexId,
-  //                          ttk::CriticalType, scalarType, ttk::SimplexId>>
-  //                          *>(
-  //   this->CTDiagram_);
+int ttk::ProgressiveTopology::resumeProgressive(int computePersistenceDiagram,
+                                                const scalarType *scalars,
+                                                const SimplexId *offsets) {
 
   const auto vertexNumber = multiresTriangulation_.getVertexNumber();
-  // const scalarType *const scalars
-  //   = static_cast<scalarType *>(this->inputScalars_);
-  // const SimplexId *const offsets
-  //   = static_cast<SimplexId *>(this->inputOffsets_);
 
   this->printMsg("Resuming computation from decimation level "
                  + std::to_string(this->decimationLevel_) + " to level "
@@ -677,10 +728,15 @@ int ttk::ProgressiveTopology::resumeProgressive(
   // lock vertex thread access for firstPropage
   std::vector<Lock> vertLockMin(vertexNumber), vertLockMax(vertexNumber);
   // propagation markers
-  std::vector<polarity> toPropageMin(vertexNumber, 0),
-    toPropageMax(vertexNumber, 0);
-  std::vector<polarity> isUpToDateMin(vertexNumber, 0),
-    isUpToDateMax(vertexNumber, 0);
+  std::vector<polarity> toPropageMin{}, toPropageMax{};
+  std::vector<polarity> isUpToDateMin{}, isUpToDateMax{};
+
+  if(computePersistenceDiagram) {
+    toPropageMin.resize(vertexNumber, 0);
+    toPropageMax.resize(vertexNumber, 0);
+    isUpToDateMin.resize(vertexNumber, 0);
+    isUpToDateMax.resize(vertexNumber, 0);
+  }
 
   Timer timer;
 
@@ -691,21 +747,27 @@ int ttk::ProgressiveTopology::resumeProgressive(
     printMsg("Decimation level " + std::to_string(decimationLevel_), 0,
              timer.getElapsedTime(), this->threadNumber_,
              ttk::debug::LineMode::REPLACE);
-    updateCriticalPoints(
-      isNew_, vertexLinkPolarity_, toPropageMin, toPropageMax, toProcess_,
-      toReprocess_, link_, vertexLink_, vertexLinkByBoundaryType_, saddleCCMin_,
-      saddleCCMax_, isUpToDateMin, isUpToDateMax, scalars, offsets);
-    updatePropagationCP(toPropageMin, toPropageMax, vertexRepresentativesMin_,
+    if(computePersistenceDiagram) {
+      updateSaddleSeeds(isNew_, vertexLinkPolarity_, toPropageMin, toPropageMax,
+                        toProcess_, toReprocess_, link_, vertexLink_,
+                        vertexLinkByBoundaryType_, saddleCCMin_, saddleCCMax_,
+                        isUpToDateMin, isUpToDateMax, scalars, offsets);
+      updatePropagation(toPropageMin, toPropageMax, vertexRepresentativesMin_,
                         vertexRepresentativesMax_, saddleCCMin_, saddleCCMax_,
                         vertLockMin, vertLockMax, isUpToDateMin, isUpToDateMax,
                         scalars, offsets);
-    computePersistencePairsFromSaddles(
-      CTDiagram, scalars, offsets, vertexRepresentativesMin_,
-      vertexRepresentativesMax_, toPropageMin, toPropageMax);
+      computePersistencePairsFromSaddles(
+        CTDiagram_, scalars, offsets, vertexRepresentativesMin_,
+        vertexRepresentativesMax_, toPropageMin, toPropageMax);
+    } else {
+      updateCriticalPoints(
+        isNew_, vertexLinkPolarity_, toProcess_, toReprocess_, link_,
+        vertexLink_, vertexLinkByBoundaryType_, vertexTypes_, scalars, offsets);
+    }
 
     const auto itDuration = tmIter.getElapsedTime();
     const auto nextItDuration
-      = predictNextIterationDuration(itDuration, CTDiagram.size() + 1);
+      = predictNextIterationDuration(itDuration, CTDiagram_.size() + 1);
 
     printMsg("Decimation level " + std::to_string(decimationLevel_), 1,
              timer.getElapsedTime(), this->threadNumber_);
@@ -716,12 +778,14 @@ int ttk::ProgressiveTopology::resumeProgressive(
   }
 
   // ADD GLOBAL MIN-MAX PAIR
-  CTDiagram.emplace_back(this->globalMin_, ttk::CriticalType::Local_minimum,
-                         this->globalMax_, ttk::CriticalType::Local_maximum,
-                         scalars[this->globalMax_] - scalars[this->globalMin_],
-                         -1);
+  if(computePersistenceDiagram) {
+    CTDiagram_.emplace_back(
+      this->globalMin_, ttk::CriticalType::Local_minimum, this->globalMax_,
+      ttk::CriticalType::Local_maximum,
+      scalars[this->globalMax_] - scalars[this->globalMin_], -1);
+  }
   // finally sort the diagram
-  sortPersistenceDiagram(CTDiagram, offsets);
+  sortPersistenceDiagram2(CTDiagram_, offsets);
   // sortPersistenceDiagram(CTDiagram, scalars, offsets);
   this->printMsg("Complete", 1.0, timer.getElapsedTime(), this->threadNumber_);
 
@@ -918,7 +982,7 @@ void ttk::ProgressiveTopology::buildVertexLinkPolarity(
 }
 
 template <typename ScalarType, typename OffsetType>
-void ttk::ProgressiveTopology::getCriticalType(
+void ttk::ProgressiveTopology::initDynamicLink(
   const SimplexId &vertexId,
   std::vector<std::pair<polarity, polarity>> &vlp,
   uint8_t &vertexLink,
@@ -953,6 +1017,89 @@ void ttk::ProgressiveTopology::getCriticalType(
 
 template <typename ScalarType, typename OffsetType>
 void ttk::ProgressiveTopology::updateCriticalPoints(
+  std::vector<polarity> &isNew,
+  std::vector<std::vector<std::pair<polarity, polarity>>> &vertexLinkPolarity,
+  std::vector<polarity> &toProcess,
+  std::vector<polarity> &toReprocess,
+  std::vector<DynamicTree> &link,
+  std::vector<uint8_t> &vertexLink,
+  VLBoundaryType &vertexLinkByBoundaryType,
+  std::vector<char> &vertexTypes,
+  const ScalarType *const scalars,
+  const OffsetType *const offsets) const {
+
+  Timer tm;
+  const auto nDecVerts = multiresTriangulation_.getDecimatedVertexNumber();
+
+  // find breaking edges
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+  for(SimplexId localId = 0; localId < nDecVerts; localId++) {
+    SimplexId globalId = multiresTriangulation_.localToGlobalVertexId(localId);
+    if(isNew[globalId]) {
+      if(decimationLevel_ > stoppingDecimationLevel_ || isResumable_) {
+        buildVertexLinkPolarity(
+          globalId, vertexLinkPolarity[globalId], scalars, offsets);
+      }
+    } else {
+      getMonotonyChangeByOldPointCP(globalId, isNew, toProcess, toReprocess,
+                                    vertexLinkPolarity[globalId], scalars,
+                                    offsets);
+    }
+  }
+
+  if(debugLevel_ > 3) {
+    std::cout << "MONOTONY " << tm.getElapsedTime() << " s." << std::endl;
+  }
+
+  double t_critical = tm.getElapsedTime();
+  // second Loop  process or reprocess
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif
+  for(int i = 0; i < nDecVerts; i++) {
+    SimplexId globalId = multiresTriangulation_.localToGlobalVertexId(i);
+
+    if(isNew[globalId]) { // new point
+      if(toProcess[globalId]) {
+        initDynamicLink(globalId, vertexLinkPolarity[globalId],
+                        vertexLink[globalId], link[globalId],
+                        vertexLinkByBoundaryType, scalars, offsets);
+        vertexTypes[globalId] = getCriticalTypeFromLink(
+          globalId, vertexLinkPolarity[globalId], link[globalId]);
+      }
+      isNew[globalId] = false;
+
+    } else { // old point
+      if(toReprocess[globalId]) {
+        if(toProcess[globalId]) { // was already processed : need to reprocess
+          updateDynamicLink(link[globalId], vertexLinkPolarity[globalId],
+                            vertexLinkByBoundaryType[vertexLink[globalId]]);
+        } else { // first processing
+          updateLinkPolarity(
+            globalId, vertexLinkPolarity[globalId], scalars, offsets);
+          initDynamicLink(globalId, vertexLinkPolarity[globalId],
+                          vertexLink[globalId], link[globalId],
+                          vertexLinkByBoundaryType, scalars, offsets);
+          toProcess[globalId] = 255; // mark as processed
+        }
+        vertexTypes[globalId] = getCriticalTypeFromLink(
+          globalId, vertexLinkPolarity[globalId], link[globalId]);
+        toReprocess[globalId] = 0;
+      }
+    }
+
+  } // end for openmp
+
+  if(debugLevel_ > 3) {
+    std::cout << "CRITICAL POINTS UPDATE " << tm.getElapsedTime() - t_critical
+              << std::endl;
+  }
+}
+
+template <typename ScalarType, typename OffsetType>
+void ttk::ProgressiveTopology::updateSaddleSeeds(
   std::vector<polarity> &isNew,
   std::vector<std::vector<std::pair<polarity, polarity>>> &vertexLinkPolarity,
   std::vector<polarity> &toPropageMin,
@@ -1004,7 +1151,7 @@ void ttk::ProgressiveTopology::updateCriticalPoints(
 
     if(isNew[globalId]) { // new point
       if(toProcess[globalId]) {
-        getCriticalType(globalId, vertexLinkPolarity[globalId],
+        initDynamicLink(globalId, vertexLinkPolarity[globalId],
                         vertexLink[globalId], link[globalId],
                         vertexLinkByBoundaryType, scalars, offsets);
         getValencesFromLink(globalId, vertexLinkPolarity[globalId],
@@ -1016,12 +1163,12 @@ void ttk::ProgressiveTopology::updateCriticalPoints(
     } else { // old point
       if(toReprocess[globalId]) {
         if(toProcess[globalId]) { // was already processed : need to reprocess
-          updateCriticalType(link[globalId], vertexLinkPolarity[globalId],
-                             vertexLinkByBoundaryType[vertexLink[globalId]]);
+          updateDynamicLink(link[globalId], vertexLinkPolarity[globalId],
+                            vertexLinkByBoundaryType[vertexLink[globalId]]);
         } else { // first processing
           updateLinkPolarity(
             globalId, vertexLinkPolarity[globalId], scalars, offsets);
-          getCriticalType(globalId, vertexLinkPolarity[globalId],
+          initDynamicLink(globalId, vertexLinkPolarity[globalId],
                           vertexLink[globalId], link[globalId],
                           vertexLinkByBoundaryType, scalars, offsets);
           toProcess[globalId] = 255; // mark as processed
@@ -1190,6 +1337,44 @@ template <typename ScalarType, typename OffsetType>
 void ttk::ProgressiveTopology::initCriticalPoints(
   std::vector<polarity> &isNew,
   std::vector<std::vector<std::pair<polarity, polarity>>> &vertexLinkPolarity,
+  std::vector<polarity> &toProcess,
+  std::vector<DynamicTree> &link,
+  std::vector<uint8_t> &vertexLink,
+  VLBoundaryType &vertexLinkByBoundaryType,
+  std::vector<char> &vertexTypes,
+  const ScalarType *const scalars,
+  const OffsetType *const offsets) const {
+
+  Timer timer{};
+  const size_t nDecVerts = multiresTriangulation_.getDecimatedVertexNumber();
+
+  // computes the critical types of all points
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+  for(size_t i = 0; i < nDecVerts; i++) {
+    SimplexId globalId = multiresTriangulation_.localToGlobalVertexId(i);
+    buildVertexLinkPolarity(
+      globalId, vertexLinkPolarity[globalId], scalars, offsets);
+    initDynamicLink(globalId, vertexLinkPolarity[globalId],
+                    vertexLink[globalId], link[globalId],
+                    vertexLinkByBoundaryType, scalars, offsets);
+    vertexTypes[globalId] = getCriticalTypeFromLink(
+      globalId, vertexLinkPolarity[globalId], link[globalId]);
+    toProcess[globalId] = 255;
+    isNew[globalId] = 0;
+  }
+
+  if(debugLevel_ > 3) {
+    std::cout << "initial critical types in " << timer.getElapsedTime() << " s."
+              << std::endl;
+  }
+}
+
+template <typename ScalarType, typename OffsetType>
+void ttk::ProgressiveTopology::initSaddleSeeds(
+  std::vector<polarity> &isNew,
+  std::vector<std::vector<std::pair<polarity, polarity>>> &vertexLinkPolarity,
   std::vector<polarity> &toPropageMin,
   std::vector<polarity> &toPropageMax,
   std::vector<polarity> &toProcess,
@@ -1212,7 +1397,7 @@ void ttk::ProgressiveTopology::initCriticalPoints(
     SimplexId globalId = multiresTriangulation_.localToGlobalVertexId(i);
     buildVertexLinkPolarity(
       globalId, vertexLinkPolarity[globalId], scalars, offsets);
-    getCriticalType(globalId, vertexLinkPolarity[globalId],
+    initDynamicLink(globalId, vertexLinkPolarity[globalId],
                     vertexLink[globalId], link[globalId],
                     vertexLinkByBoundaryType, scalars, offsets);
     getValencesFromLink(globalId, vertexLinkPolarity[globalId], link[globalId],
@@ -1280,7 +1465,7 @@ void ttk::ProgressiveTopology::initPropagation(
 }
 
 template <typename ScalarType, typename OffsetType>
-void ttk::ProgressiveTopology::updatePropagationCP(
+void ttk::ProgressiveTopology::updatePropagation(
   std::vector<polarity> &toPropageMin,
   std::vector<polarity> &toPropageMax,
   std::vector<std::vector<SimplexId>> &vertexRepresentativesMin,
