@@ -122,6 +122,9 @@ namespace ttk {
                                    const SimplexId *inputOffsets,
                                    const triangulationType *triangulation);
 
+    template <class triangulationType>
+    void checkProgressivityRequirement(const triangulationType *triangulation);
+
     inline void
       preconditionTriangulation(AbstractTriangulation *triangulation) {
       if(triangulation) {
@@ -200,14 +203,21 @@ int ttk::PersistenceDiagram::execute(std::vector<PersistencePair> &CTDiagram,
 
   printMsg(ttk::debug::Separator::L1);
 
+  checkProgressivityRequirement(triangulation);
+
   switch(BackEnd) {
+
     case BACKEND::PROGRESSIVE_TOPOLOGY:
       executeProgressiveTopology(
         CTDiagram, inputScalars, inputOffsets, triangulation);
       break;
+
     case BACKEND::FTM:
       executeFTM(CTDiagram, inputScalars, inputOffsets, triangulation);
       break;
+
+    default:
+      printErr("No method was selected");
   }
 
   // finally sort the diagram
@@ -333,3 +343,17 @@ int ttk::PersistenceDiagram::executeFTM(
   return 0;
 }
 
+template <class triangulationType>
+void ttk::PersistenceDiagram::checkProgressivityRequirement(
+  const triangulationType *triangulation) {
+  if(BackEnd == BACKEND::PROGRESSIVE_TOPOLOGY) {
+    if(!std::is_same<triangulationType, ttk::ImplicitTriangulation>::value) {
+
+      printWrn("An Explicit triangulation was detected");
+      printWrn("The progressive approach expects an Implicit regular grid");
+      printWrn("Defaulting to the FTM backend");
+
+      BackEnd = BACKEND::FTM;
+    }
+  }
+}

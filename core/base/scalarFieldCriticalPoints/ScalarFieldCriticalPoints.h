@@ -50,16 +50,20 @@ namespace ttk {
      * @see examples/c++/main.cpp for an example use.
      */
     template <class triangulationType = AbstractTriangulation>
-      int execute(const SimplexId *const offsets,
-          const triangulationType *triangulation);
+    int execute(const SimplexId *const offsets,
+                const triangulationType *triangulation);
 
     template <class triangulationType = AbstractTriangulation>
     int executeLegacy(const SimplexId *const offsets,
-                const triangulationType *triangulation);
+                      const triangulationType *triangulation);
 
     template <class triangulationType = AbstractTriangulation>
     int executeProgressive(const SimplexId *const offsets,
-                const triangulationType *triangulation);
+                           const triangulationType *triangulation);
+
+    template <class triangulationType>
+    void checkProgressivityRequirement(
+      const triangulationType *triangulation);
 
     template <class triangulationType = AbstractTriangulation>
     std::pair<SimplexId, SimplexId> getNumberOfLowerUpperComponents(
@@ -143,12 +147,17 @@ int ttk::ScalarFieldCriticalPoints::execute(
   const SimplexId *const offsets, const triangulationType *triangulation) {
 
   switch(BackEnd) {
+
     case BACKEND::PROGRESSIVE_TOPOLOGY:
       this->executeProgressive(offsets, triangulation);
       break;
+
     case BACKEND::LEGACY:
       this->executeLegacy(offsets, triangulation);
       break;
+
+    default:
+      printErr("No method was selected");
   }
 
   printMsg(ttk::debug::Separator::L1);
@@ -485,4 +494,19 @@ char ttk::ScalarFieldCriticalPoints::getCriticalType(
 
   // -2: regular points
   return (char)(CriticalType::Regular);
+}
+
+template <class triangulationType>
+void ttk::ScalarFieldCriticalPoints::checkProgressivityRequirement(
+  const triangulationType *triangulation) {
+  if(BackEnd == BACKEND::PROGRESSIVE_TOPOLOGY) {
+    if(!std::is_same<triangulationType, ttk::ImplicitTriangulation>::value) {
+
+      printWrn("An Explicit triangulation was detected");
+      printWrn("The progressive approach expects an Implicit regular grid");
+      printWrn("Defaulting to the legacy approach");
+
+      BackEnd = BACKEND::LEGACY;
+    }
+  }
 }
