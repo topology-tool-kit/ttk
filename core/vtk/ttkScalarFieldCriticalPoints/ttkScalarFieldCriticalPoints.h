@@ -53,6 +53,7 @@
 
 // VTK Includes
 #include <ttkAlgorithm.h>
+#include <ttkMacros.h>
 
 // ttk baseCode includes
 #include <ScalarFieldCriticalPoints.h>
@@ -82,8 +83,8 @@ public:
   vtkGetMacro(ForceInputOffsetScalarField, bool);
   vtkSetMacro(ForceInputOffsetScalarField, bool);
 
-  vtkGetMacro(BackEnd, int);
-  vtkSetMacro(BackEnd, int);
+  ttkSetEnumMacro(BackEnd, BACKEND);
+  vtkGetEnumMacro(BackEnd, BACKEND);
 
   vtkGetMacro(StartingDecimationLevel, int);
   vtkSetMacro(StartingDecimationLevel, int);
