@@ -180,7 +180,7 @@
         <Hints>
           <PropertyWidgetDecorator type="GenericDecorator"
             mode="visibility"
-            property="Method"
+            property="BackEnd"
             value="1" />
         </Hints>
          <Documentation>
@@ -199,7 +199,7 @@
         <Hints>
           <PropertyWidgetDecorator type="GenericDecorator"
             mode="visibility"
-            property="Method"
+            property="BackEnd"
             value="1" />
         </Hints>
         <Documentation>
@@ -218,7 +218,7 @@
           <Hints>
           <PropertyWidgetDecorator type="GenericDecorator"
                                    mode="visibility"
-                                   property="Method"
+                                   property="BackEnd"
                                    value="1" />
         </Hints>
         <Documentation>
