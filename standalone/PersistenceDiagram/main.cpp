@@ -27,7 +27,7 @@ int main(int argc, char **argv) {
   int backEnd = 0;
   int startingDL = 8;
   int stoppingDL = 0;
-  double tl = 1.0;
+  double tl = 0.0;
   int preallocate = 1;
   bool listArrays{false};
 
