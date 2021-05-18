@@ -18,6 +18,7 @@
 #include <Triangulation.h>
 
 // std includes
+#include <limits>
 #include <unordered_set>
 
 namespace ttk {
