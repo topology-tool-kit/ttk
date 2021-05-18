@@ -26,30 +26,15 @@ jobs:
       CLANG_FORMAT: clang-format-11
     steps:
     - uses: actions/checkout@v2
+
     - name: Install latest clang-format
       run: |
         sudo apt update
         sudo apt install -y $CLANG_FORMAT
+
     - name: Use clang-format to detect formatting issues
       run: |
         git ls-files | grep -E "\.cpp$|\.cxx$|\.h$|\.hpp$" | xargs $CLANG_FORMAT -n -Werror
-
-
-  # ------------- #
-  # Code lint job #
-  # ------------- #
-  lint-code:
-    runs-on: ubuntu-20.04
-    env:
-      CLANG_TIDY: clang-tidy-11
-    strategy:
-      matrix:
-        config:
-          - {tidy: true, sa: false}
-          - {tidy: false, sa: true}
-
-    steps:
-    - uses: actions/checkout@v2
 
     - name: Check line endings (Unix rather than DOS)
       run: |
@@ -72,6 +57,23 @@ jobs:
     - name: Check for empty files
       run: |
         ! git ls-files | xargs file | grep empty
+
+
+  # ------------- #
+  # Code lint job #
+  # ------------- #
+  lint-code:
+    runs-on: ubuntu-20.04
+    env:
+      CLANG_TIDY: clang-tidy-11
+    strategy:
+      matrix:
+        config:
+          - {tidy: true, sa: false}
+          - {tidy: false, sa: true}
+
+    steps:
+    - uses: actions/checkout@v2
 
     - name: Install Ubuntu dependencies
       run: |
