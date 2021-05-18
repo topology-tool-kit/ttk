@@ -78,6 +78,8 @@ jobs:
     - name: Install Ubuntu dependencies
       run: |
         sudo apt update
+        # workaround: remove GCC 11
+        sudo apt purge gcc-11 libgcc-11-dev libgfortran-11-dev libstdc++-11-dev
         # TTK dependencies
         sudo apt install -y \
           libboost-system-dev \
@@ -145,6 +147,8 @@ jobs:
     - name: Install Ubuntu dependencies
       run: |
         sudo apt update
+        # workaround: remove GCC 11
+        sudo apt purge gcc-11 libgcc-11-dev libgfortran-11-dev libstdc++-11-dev
         # TTK dependencies
         sudo apt install -y \
           libboost-system-dev \
