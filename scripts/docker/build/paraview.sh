@@ -95,7 +95,8 @@ else
     conf_args \
         -DPARAVIEW_USE_QT=OFF 				\
         -DPARAVIEW_USE_PYTHON=ON 			\
-        -DPARAVIEW_ENABLE_RAYTRACING=ON
+        -DPARAVIEW_ENABLE_RAYTRACING=ON     \
+        -DVTKOSPRAY_ENABLE_DENOISER=ON
 fi
 
 mkdir build
@@ -104,5 +105,10 @@ pushd build
 cmake ${configure_args} ..
 cmake --build .
 cmake --install .
+
+# download and install materials
+mkdir -p /usr/share/materials 
+curl -kL https://gitlab.kitware.com/paraview/materials/-/archive/master/materials-master.tar.bz2 | \
+    tar jxv --strip-components 1 -C /usr/share/materials
 
 popd

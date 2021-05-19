@@ -3,41 +3,41 @@
 set -e
 
 build_pkgs \
-	build-essential \
-	pkg-config	\
-	curl		\
-	cmake		\
-	clang-7		\
-	cmake-curses-gui\
-        ninja-build     \
+	build-essential 		\
+	pkg-config				\
+	curl					\
+	cmake					\
+	cmake-curses-gui		\
+    ninja-build     		\
+	libfreeimage-dev		\
+	python3-minimal			\
+	clang-7					\
 
 runtime_pkgs \
-	libstdc++6	\
+	libstdc++6				\
+	libfreeimage3			\
 	zlib1g
 
-BUILD_DIR=/root/mdl-build
 
-# get source
-mkdir -p $BUILD_DIR
+# get source code
+curl -kL https://github.com/NVIDIA/MDL-SDK/archive/2020.1.2.tar.gz | \
+	tar xz --strip-components 1
 
-curl -kL https://github.com/NVIDIA/MDL-SDK/archive/2020.1.tar.gz \
-    | tar zx -C $BUILD_DIR --strip-components 1
+mkdir build
+pushd build
 
-exit 0
-
-# configure and build
-pushd $BUILD_DIR
+exit 
 
 cmake -G Ninja \
-      -DCMAKE_INSTALL_PREFIX=/usr       \
-      -DCMAKE_BUILD_TYPE=MinSizeRel        \
-      -DBUILD_EXAMPLES=OFF              \
-      ..
+    -DCMAKE_BUILD_TYPE=Release    \
+    -DCMAKE_INSTALL_PREFIX=/usr   \
+    -DBUILD_TESTING=OFF           \
+    ..
 
-exit 0
-
-ninja -C build install
+cmake --build .
+cmake --install .
 
 popd
 
-rm -rf $BUILD_DIR
+exit 0
+

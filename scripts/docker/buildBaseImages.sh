@@ -3,18 +3,31 @@
 SCRIPTPATH=$(dirname $(realpath $0))
 
 VERSIONS=(
+    5.9.1-dev
+    5.9.1-0.9.9
+
+    5.9.0-dev
+    5.9.0-0.9.9
+
     5.8.1-dev
+    5.8.1-0.9.9
+
     5.8.0-dev
-    5.7.0-dev
-    5.6.2-stable
-    5.6.1-stable
-    5.6.0-stable
+    5.8.0-0.9.9
+
+    # no longer maintained
+    # 5.7.0-stable
+    # 5.6.2-0.9.8
+    # 5.6.1-0.9.8
+    # 5.6.0-0.9.8
 )
 
 for version in ${VERSIONS[@]}; do
     paraview=${version%-*}
-    ttk=${version#*-}
+    ttk=${version##*-}
 
+    echo $paraview $ttk
+    
     # build base image (without TTK)
     docker build \
         --build-arg paraview=${paraview} \
@@ -22,14 +35,20 @@ for version in ${VERSIONS[@]}; do
         -f build/Dockerfile.base \
         "${SCRIPTPATH}/build"
 
-    # build dev image (with TTK)
+    # build dev image (without TTK)
     docker build \
-        --build-arg ttk=${ttk} \
-        --build-arg paraview=${paraview} \
-        -t topologytoolkit/ttk:${paraview}-${ttk} \
-        -f build/Dockerfile \
-        "${SCRIPTPATH}/build"
-done
+       --build-arg dev=true \
+       --build-arg paraview=${paraview} \
+       -t topologytoolkit/ttk-dev:${paraview} \
+       -f build/Dockerfile \
+       "${SCRIPTPATH}/build"
 
-# docker build --build-arg ttk=dev --build-arg paraview=5.8.1 -t topologytoolkit/ttk:5.8.1-dev -f build/Dockerfile build
+    # build image (with TTK)
+    docker build \
+       --build-arg ttk=${ttk} \
+       --build-arg paraview=${paraview} \
+       -t topologytoolkit/ttk:${paraview}-${ttk} \
+       -f build/Dockerfile \
+       "${SCRIPTPATH}/build"
+done
 
