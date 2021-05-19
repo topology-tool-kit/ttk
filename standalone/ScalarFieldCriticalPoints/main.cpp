@@ -28,8 +28,8 @@ int main(int argc, char **argv) {
   bool forceOffset{false};
 
   int backEnd = 0;
-  int startingDL = 8;
-  int stoppingDL = 0;
+  int startingRL = 0;
+  int stoppingRL = -1;
   double tl = 0.0;
 
   // ---------------------------------------------------------------------------
@@ -51,12 +51,14 @@ int main(int argc, char **argv) {
     parser.setOption("F", &forceOffset, "Force custom offset field (array #1)");
 
     parser.setArgument("B", &backEnd, "Method (0:FTM, 1: progressive)", true);
-    parser.setArgument(
-      "S", &startingDL,
-      "Starting Decimation Level for progressive multiresolution scheme", true);
-    parser.setArgument(
-      "E", &stoppingDL,
-      "Stopping Decimation Level for progressive multiresolution scheme", true);
+    parser.setArgument("S", &startingRL,
+                       "Starting Resolution Level for progressive "
+                       "multiresolution scheme (-1: finest level)",
+                       true);
+    parser.setArgument("E", &stoppingRL,
+                       "Stopping Resolution Level for progressive "
+                       "multiresolution scheme (-1: finest level)",
+                       true);
     parser.setArgument("T", &tl, "Time limit for progressive method", true);
 
     parser.parse(argc, argv);
@@ -147,8 +149,8 @@ int main(int argc, char **argv) {
   // ---------------------------------------------------------------------------
   scalarFieldCriticalPoints->SetBackEnd(backEnd);
   scalarFieldCriticalPoints->SetTimeLimit(tl);
-  scalarFieldCriticalPoints->SetStartingDecimationLevel(startingDL);
-  scalarFieldCriticalPoints->SetStoppingDecimationLevel(stoppingDL);
+  scalarFieldCriticalPoints->SetStartingResolutionLevel(startingRL);
+  scalarFieldCriticalPoints->SetStoppingResolutionLevel(stoppingRL);
   scalarFieldCriticalPoints->SetForceInputOffsetScalarField(forceOffset);
   scalarFieldCriticalPoints->Update();
 

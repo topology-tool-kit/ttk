@@ -62,8 +62,7 @@ namespace ttk {
                            const triangulationType *triangulation);
 
     template <class triangulationType>
-    void checkProgressivityRequirement(
-      const triangulationType *triangulation);
+    void checkProgressivityRequirement(const triangulationType *triangulation);
 
     template <class triangulationType = AbstractTriangulation>
     std::pair<SimplexId, SimplexId> getNumberOfLowerUpperComponents(
@@ -134,8 +133,8 @@ namespace ttk {
     // progressive
     BACKEND BackEnd{BACKEND::LEGACY};
     ProgressiveTopology progT_{};
-    int StartingDecimationLevel{8};
-    int StoppingDecimationLevel{0};
+    int StartingResolutionLevel{0};
+    int StoppingResolutionLevel{-1};
     bool IsResumable{false};
     double TimeLimit{};
   };
@@ -145,6 +144,8 @@ namespace ttk {
 template <class triangulationType>
 int ttk::ScalarFieldCriticalPoints::execute(
   const SimplexId *const offsets, const triangulationType *triangulation) {
+
+  checkProgressivityRequirement(triangulation);
 
   switch(BackEnd) {
 
@@ -171,8 +172,8 @@ int ttk::ScalarFieldCriticalPoints::executeProgressive(
   progT_.setDebugLevel(debugLevel_);
   progT_.setThreadNumber(threadNumber_);
   progT_.setupTriangulation((ttk::ImplicitTriangulation *)triangulation);
-  progT_.setStartingDecimationLevel(StartingDecimationLevel);
-  progT_.setStoppingDecimationLevel(StoppingDecimationLevel);
+  progT_.setStartingResolutionLevel(StartingResolutionLevel);
+  progT_.setStoppingResolutionLevel(StoppingResolutionLevel);
   progT_.setTimeLimit(TimeLimit);
   progT_.setIsResumable(IsResumable);
   progT_.setPreallocateMemory(true);

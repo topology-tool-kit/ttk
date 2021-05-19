@@ -86,11 +86,11 @@ public:
   ttkSetEnumMacro(BackEnd, BACKEND);
   vtkGetEnumMacro(BackEnd, BACKEND);
 
-  vtkGetMacro(StartingDecimationLevel, int);
-  vtkSetMacro(StartingDecimationLevel, int);
+  vtkGetMacro(StartingResolutionLevel, int);
+  vtkSetMacro(StartingResolutionLevel, int);
 
-  vtkGetMacro(StoppingDecimationLevel, int);
-  vtkSetMacro(StoppingDecimationLevel, int);
+  vtkGetMacro(StoppingResolutionLevel, int);
+  vtkSetMacro(StoppingResolutionLevel, int);
 
   vtkGetMacro(IsResumable, bool);
   vtkSetMacro(IsResumable, bool);

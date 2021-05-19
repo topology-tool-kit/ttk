@@ -722,9 +722,12 @@ int ttk::ProgressiveTopology::resumeProgressive(int computePersistenceDiagram,
 
   const auto vertexNumber = multiresTriangulation_.getVertexNumber();
 
-  this->printMsg("Resuming computation from decimation level "
-                 + std::to_string(this->decimationLevel_) + " to level "
-                 + std::to_string(this->stoppingDecimationLevel_));
+  this->printMsg(
+    "Resuming computation from resolution level "
+    + std::to_string(multiresTriangulation_.DL_to_RL(decimationLevel_))
+    + " to level "
+    + std::to_string(
+      multiresTriangulation_.DL_to_RL(stoppingDecimationLevel_)));
 
   // lock vertex thread access for firstPropage
   std::vector<Lock> vertLockMin(vertexNumber), vertLockMax(vertexNumber);

@@ -120,52 +120,58 @@ TopologicalSimplification.
 
        <IntVectorProperty
           name="BackEnd"
-          label="Algorithm"
+          label="Backend"
           command="SetBackEnd"
           number_of_elements="1"
          default_values="0" 
-         panel_visibility="default" >
+         panel_visibility="advanced" >
 		 <EnumerationDomain name="enum">
-          <Entry value="0" text="FTM"/>
-          <Entry value="1" text="Progressive Approach (TVCG 2020)"/>
+          <Entry value="0" text="FTM (IEEE TPSD 2019)"/>
+          <Entry value="1" text="Progressive Approach (IEEE TVCG 2020)"/>
         </EnumerationDomain>
         <Documentation>
+            Backend for the computation of the persistence diagram.
+            The progressive approach only allows the computation of saddle-extremum pairs.
         </Documentation>
       </IntVectorProperty>
 
       <IntVectorProperty
-         name="StartingDecimationLevel"
-         label="StartingDecimationLevel"
-         command="SetStartingDecimationLevel"
+         name="StartingResolutionLevel"
+         label="Start resolution level"
+         command="SetStartingResolutionLevel"
          number_of_elements="1"
-         default_values="0" >
-        <IntRangeDomain name="range" min="1" max="100" />
+         default_values="0" 
+         panel_visibility="advanced" >
+        <IntRangeDomain name="range" min="-1" max="100" />
         <Hints>
           <PropertyWidgetDecorator type="GenericDecorator"
             mode="visibility"
             property="BackEnd"
             value="1" />
         </Hints>
-         <Documentation>
-          Thread number
+        <Documentation>
+             Set the starting level of resolution for the progressive approach.
+             Set -1 for the finest level.
          </Documentation>
       </IntVectorProperty>
 
       <IntVectorProperty
-         name="StoppingDecimationLevel"
-         label="StoppingDecimationLevel"
-         command="SetStoppingDecimationLevel"
+         name="StoppingResolutionLevel"
+         label="End resolution level"
+         command="SetStoppingResolutionLevel"
          number_of_elements="1"
-         default_values="0" >
-        <IntRangeDomain name="range" min="1" max="100" />
+         default_values="-1" 
+         panel_visibility="advanced" >
+        <IntRangeDomain name="range" min="-1" max="100" />
         <Hints>
           <PropertyWidgetDecorator type="GenericDecorator"
             mode="visibility"
             property="BackEnd"
             value="1" />
         </Hints>
-         <Documentation>
-          Thread number
+        <Documentation>
+             Set the ending level of resolution for the progressive approach.
+             Set -1 for the finest level.
          </Documentation>
       </IntVectorProperty>
 
@@ -174,8 +180,8 @@ TopologicalSimplification.
           label="Resumable Computation"
           command="SetIsResumable"
           number_of_elements="1"
-          default_values="0"
-          >
+          default_values="1"
+         panel_visibility="advanced" >
         <BooleanDomain name="bool"/>
         <Hints>
           <PropertyWidgetDecorator type="GenericDecorator"
@@ -184,8 +190,7 @@ TopologicalSimplification.
             value="1" />
         </Hints>
         <Documentation>
-          Allow resuming computation from a lower decimation (do extra
-          computation at the previous decimation level).
+          Allow resuming computation from a lower resolution
         </Documentation>
       </IntVectorProperty>
 
@@ -195,7 +200,7 @@ TopologicalSimplification.
           command="SetTimeLimit"
           number_of_elements="1"
           default_values="0"
-          >
+         panel_visibility="advanced" >
           <Hints>
           <PropertyWidgetDecorator type="GenericDecorator"
                                    mode="visibility"
@@ -203,9 +208,8 @@ TopologicalSimplification.
                                    value="1" />
         </Hints>
         <Documentation>
-          Maximal time of computation for the persistence diagram
-          progressive computation. A low value of Time Limit will
-          yield approximate results.
+          Maximal time of computation for the progressive computation. 
+          Set 0 for no time limit.
         </Documentation>
       </DoubleVectorProperty>
 
@@ -215,6 +219,12 @@ TopologicalSimplification.
          label="Compute saddle-saddle pairs (SLOW!)"
          number_of_elements="1"
          default_values="0" panel_visibility="advanced">
+          <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator"
+                                   mode="visibility"
+                                   property="BackEnd"
+                                   value="0" />
+        </Hints>
         <BooleanDomain name="bool"/>
          <Documentation>
           Add saddle-saddle pairs in the diagram (SLOW!).

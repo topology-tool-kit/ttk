@@ -182,8 +182,9 @@ double ttk::ProgressiveTopology::predictNextIterationDuration(
 void ttk::ProgressiveTopology::stopComputationIf(const bool b) {
   if(b) {
     if(this->decimationLevel_ > this->stoppingDecimationLevel_) {
-      this->printMsg("Computation stopped at decimation level "
-                     + std::to_string(this->decimationLevel_));
+      this->printMsg("Computation stopped at resolution level "
+                     + std::to_string(multiresTriangulation_.DL_to_RL(
+                       this->decimationLevel_)));
     }
     this->stoppingDecimationLevel_ = this->decimationLevel_;
   }
