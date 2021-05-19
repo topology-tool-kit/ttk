@@ -8,16 +8,16 @@
 ///
 /// This package introduces a multiresolution hierarchical representation of the
 /// data which allows the definition of efficient progressive algorithms for
-/// TDA. It is applied to the progressive computation of Critical Points (not
-/// yet integrated) and Persistence Diagrams (called in ttkPersistenceDiagram).
+/// TDA. It is applied to the progressive computation of Critical Points
+/// and Persistence Diagrams.
 ///
 /// \b Related \b publication \n
 /// "A Progressive Approach to Scalar Field Topology" \n
 /// Jules Vidal, Pierre Guillou, Julien Tierny\n
 /// IEEE Transactions on Visualization and Computer Graphics, 2020
 ///
-/// \sa ttkPersistenceDiagram.cpp %for a usage example on the progressive
-/// computation of Persistence Diagrams
+/// \sa PersistenceDiagram
+/// \sa ScalarFieldCriticalPoints
 
 #pragma once
 
