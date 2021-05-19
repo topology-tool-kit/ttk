@@ -116,6 +116,7 @@ namespace ttk {
 
     inline int setupTriangulation(ImplicitTriangulation *data) {
       triangulation_ = data;
+      multiresTriangulation_.setTriangulation(triangulation_);
       return 0;
     }
     inline int setInputScalars(void *data) {
@@ -197,6 +198,14 @@ namespace ttk {
     int computeProgressiveCP(
       std::vector<std::pair<SimplexId, char>> *criticalPoints,
       const SimplexId *offsets);
+
+    void setStartingResolutionLevel(int rl) {
+      this->setStartingDecimationLevel(multiresTriangulation_.RL_to_DL(rl));
+    }
+
+    void setStoppingResolutionLevel(int rl) {
+      this->setStoppingDecimationLevel(multiresTriangulation_.RL_to_DL(rl));
+    }
 
   protected:
     // maximum link size in 3D
@@ -397,6 +406,7 @@ namespace ttk {
 
     void stopComputationIf(const bool b);
     void clearResumableState();
+    std::string resolutionInfoString();
 
     ImplicitTriangulation *triangulation_{};
     void *inputScalars_{};
@@ -499,7 +509,7 @@ int ttk::ProgressiveTopology::executeCPProgressive(
   Timer timer;
 
   decimationLevel_ = startingDecimationLevel_;
-  multiresTriangulation_.setTriangulation(triangulation_);
+  // multiresTriangulation_.setTriangulation(triangulation_);
   multiresTriangulation_.setDecimationLevel(0);
   const SimplexId vertexNumber = multiresTriangulation_.getVertexNumber();
 
@@ -595,7 +605,7 @@ int ttk::ProgressiveTopology::executeCPProgressive(
     std::cout << std::endl;
   }
 
-  printMsg("Decimation level " + std::to_string(decimationLevel_), 0,
+  printMsg(this->resolutionInfoString(), 0,
            timer.getElapsedTime() - tm_allocation, this->threadNumber_,
            ttk::debug::LineMode::REPLACE);
   multiresTriangulation_.setDecimationLevel(decimationLevel_);
@@ -618,7 +628,7 @@ int ttk::ProgressiveTopology::executeCPProgressive(
                        vertexLinkByBoundaryType, vertexTypes, scalars, offsets);
   }
 
-  printMsg("Decimation level " + std::to_string(decimationLevel_), 1,
+  printMsg(this->resolutionInfoString(), 1,
            timer.getElapsedTime() - tm_allocation, this->threadNumber_);
 
   // skip subsequent propagations if time limit is exceeded
@@ -630,7 +640,7 @@ int ttk::ProgressiveTopology::executeCPProgressive(
     decimationLevel_--;
     multiresTriangulation_.setDecimationLevel(decimationLevel_);
 
-    printMsg("Decimation level " + std::to_string(decimationLevel_), 0,
+    printMsg(this->resolutionInfoString(), 0,
              timer.getElapsedTime() - tm_allocation, this->threadNumber_,
              ttk::debug::LineMode::REPLACE);
 
@@ -656,7 +666,7 @@ int ttk::ProgressiveTopology::executeCPProgressive(
     const auto nextItDuration
       = predictNextIterationDuration(itDuration, CTDiagram_.size() + 1);
 
-    printMsg("Decimation level " + std::to_string(decimationLevel_), 1,
+    printMsg(this->resolutionInfoString(), 1,
              timer.getElapsedTime() - tm_allocation, this->threadNumber_);
 
     // skip subsequent propagations if time limit is exceeded
@@ -735,9 +745,8 @@ int ttk::ProgressiveTopology::resumeProgressive(int computePersistenceDiagram,
     Timer tmIter{};
     this->decimationLevel_--;
     multiresTriangulation_.setDecimationLevel(this->decimationLevel_);
-    printMsg("Decimation level " + std::to_string(decimationLevel_), 0,
-             timer.getElapsedTime(), this->threadNumber_,
-             ttk::debug::LineMode::REPLACE);
+    printMsg(this->resolutionInfoString(), 0, timer.getElapsedTime(),
+             this->threadNumber_, ttk::debug::LineMode::REPLACE);
     if(computePersistenceDiagram) {
       updateSaddleSeeds(isNew_, vertexLinkPolarity_, toPropageMin, toPropageMax,
                         toProcess_, toReprocess_, link_, vertexLink_,
@@ -760,8 +769,8 @@ int ttk::ProgressiveTopology::resumeProgressive(int computePersistenceDiagram,
     const auto nextItDuration
       = predictNextIterationDuration(itDuration, CTDiagram_.size() + 1);
 
-    printMsg("Decimation level " + std::to_string(decimationLevel_), 1,
-             timer.getElapsedTime(), this->threadNumber_);
+    printMsg(this->resolutionInfoString(), 1, timer.getElapsedTime(),
+             this->threadNumber_);
     //
     // skip subsequent propagations if time limit is exceeded
     stopComputationIf(timer.getElapsedTime() + nextItDuration

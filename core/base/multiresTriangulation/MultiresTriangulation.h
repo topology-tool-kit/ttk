@@ -849,6 +849,7 @@ namespace ttk {
           printErr("Wrong dimensionality");
         }
         this->preconditionVerticesInternal();
+        this->computeCoarsestDecimationLevel();
 
       } else {
         printErr("Empty input triangulation !");
@@ -927,6 +928,12 @@ namespace ttk {
       }
     }
 
+    void computeCoarsestDecimationLevel();
+
+    int RL_to_DL(int rl);
+
+    int DL_to_RL(int dl);
+
     std::vector<int> getGridDimensions() const {
       std::vector<int> dimensions(3);
       dimensions[0] = gridDimensions_[0];
@@ -944,15 +951,6 @@ namespace ttk {
     int setDebugLevel(const int &debugLevel) override {
       debugLevel_ = debugLevel;
       return 0;
-    }
-    void setTimers() {
-      time_requests = 0;
-      time_inverse_requests = 0;
-    }
-    void getTimers() {
-      std::cout << "multires timers :\n\ttime for requests " << time_requests
-                << "\n\ttime for inverse requests " << time_inverse_requests
-                << std::endl;
     }
     std::vector<SimplexId> getExtendedStar(const SimplexId &vertexId) const;
     void findBoundaryRepresentatives(
@@ -1043,13 +1041,12 @@ namespace ttk {
     int vertexNumber_;
     int decimatedVertexNumber_;
     int decimationLevel_;
+    int coarsestDL_;
     int gridDimensions_[3];
     int gridDecimatedDimensions_[3];
     int nbvoxels_[3];
     int Di_, Dj_, Dk_;
     int vshift_[2];
-    double time_requests;
-    double time_inverse_requests;
 
     ImplicitTriangulation *triangulation_;
   };

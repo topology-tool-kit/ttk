@@ -31,7 +31,6 @@ int main(int argc, char **argv) {
   int startingDL = 8;
   int stoppingDL = 0;
   double tl = 0.0;
-  bool listArrays{false};
 
   // ---------------------------------------------------------------------------
   // Set program variables based on command line arguments

@@ -270,13 +270,11 @@ char ttk::ProgressiveTopology::getCriticalTypeFromLink(
 }
 
 void ttk::ProgressiveTopology::sortPersistenceDiagram2(
-  std::vector<PersistencePair> &diagram,
-  const SimplexId *const offsets) const {
+  std::vector<PersistencePair> &diagram, const SimplexId *const offsets) const {
 
-  auto cmp
-    = [offsets](const PersistencePair &a, const PersistencePair &b) {
-        return offsets[a.birth] < offsets[b.birth];
-      };
+  auto cmp = [offsets](const PersistencePair &a, const PersistencePair &b) {
+    return offsets[a.birth] < offsets[b.birth];
+  };
 
   std::sort(diagram.begin(), diagram.end(), cmp);
 }
@@ -299,4 +297,14 @@ int ttk::ProgressiveTopology::computeProgressiveCP(
     }
   }
   return ret;
+}
+
+std::string ttk::ProgressiveTopology::resolutionInfoString() {
+  std::stringstream res;
+  res << "Resolution level "
+      << multiresTriangulation_.DL_to_RL(decimationLevel_);
+  if(decimationLevel_ == 0) {
+    res << " (final)";
+  }
+  return res.str();
 }

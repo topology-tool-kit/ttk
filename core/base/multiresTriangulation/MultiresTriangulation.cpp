@@ -4781,3 +4781,27 @@ bool ttk::MultiresTriangulation::isBoundaryImpacted(SimplexId v) const {
   }
   return ret;
 }
+
+void ttk::MultiresTriangulation::computeCoarsestDecimationLevel() {
+  int maxDim = std::max(
+    gridDimensions_[0], std::max(gridDimensions_[1], gridDimensions_[2]));
+  int dl = 0;
+  while(maxDim > 2) {
+    maxDim
+      = ((maxDim - 1) % 2) ? ((maxDim - 1) / 2 + 2) : ((maxDim - 1) / 2 + 1);
+    dl++;
+  }
+  coarsestDL_ = dl;
+}
+
+int ttk::MultiresTriangulation::RL_to_DL(int rl) {
+  if(rl < 0) {
+    return 0;
+  } else {
+    return std::max(coarsestDL_ - rl, 0);
+  }
+}
+
+int ttk::MultiresTriangulation::DL_to_RL(int dl) {
+  return coarsestDL_ - dl;
+}

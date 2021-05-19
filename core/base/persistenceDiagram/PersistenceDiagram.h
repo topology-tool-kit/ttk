@@ -150,8 +150,8 @@ namespace ttk {
     // progressivity
     ttk::ProgressiveTopology progT_{};
 
-    int StartingDecimationLevel{8};
-    int StoppingDecimationLevel{0};
+    int StartingResolutionLevel{0};
+    int StoppingResolutionLevel{-1};
     bool IsResumable{false};
     double TimeLimit{};
   };
@@ -238,8 +238,10 @@ int ttk::PersistenceDiagram::executeProgressiveTopology(
   progT_.setDebugLevel(debugLevel_);
   progT_.setThreadNumber(threadNumber_);
   progT_.setupTriangulation((ttk::ImplicitTriangulation *)triangulation);
-  progT_.setStartingDecimationLevel(StartingDecimationLevel);
-  progT_.setStoppingDecimationLevel(StoppingDecimationLevel);
+  progT_.setStartingResolutionLevel(StartingResolutionLevel);
+  progT_.setStoppingResolutionLevel(StoppingResolutionLevel);
+  // progT_.setStoppingDecimationLevel(StoppingDecimationLevel);
+  // progT_.setStartingDecimationLevel(StartingDecimationLevel);
   progT_.setTimeLimit(TimeLimit);
   progT_.setIsResumable(IsResumable);
   progT_.setPreallocateMemory(true);
