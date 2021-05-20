@@ -90,7 +90,6 @@ namespace ttk {
   class ProgressiveTopology : public Debug {
 
   public:
-
     struct PersistencePair {
       /** first (lower) vertex id */
       ttk::SimplexId birth{};
@@ -105,10 +104,10 @@ namespace ttk {
 
       PersistencePair() = default;
       PersistencePair(const SimplexId b,
-          const SimplexId d,
-          const SimplexId pType)
+                      const SimplexId d,
+                      const SimplexId pType)
         : birth{b}, death{d}, pairType{pType} {
-        }
+      }
     };
 
     ProgressiveTopology() {
