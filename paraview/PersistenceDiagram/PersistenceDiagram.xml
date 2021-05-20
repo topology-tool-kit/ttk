@@ -270,6 +270,11 @@ TopologicalSimplification.
           <Property name="ScalarFieldNew" />
 	      <Property name="ForceInputOffsetScalarField"/>
 	      <Property name="InputOffsetScalarFieldNameNew"/>
+        <Property name="BackEnd" />
+        <Property name="StartingResolutionLevel" />
+        <Property name="StoppingResolutionLevel" />
+        <Property name="IsResumable" />
+        <Property name="TimeLimit" />
       </PropertyGroup>
 
       <PropertyGroup panel_widget="Line" label="Output options">
