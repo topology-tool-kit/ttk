@@ -14,7 +14,7 @@
 /// \b Related \b publication \n
 /// "A Progressive Approach to Scalar Field Topology" \n
 /// Jules Vidal, Pierre Guillou, Julien Tierny\n
-/// IEEE Transactions on Visualization and Computer Graphics, 2020
+/// IEEE Transactions on Visualization and Computer Graphics, 2021
 ///
 /// \sa PersistenceDiagram
 /// \sa ScalarFieldCriticalPoints
