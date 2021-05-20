@@ -35,7 +35,7 @@ namespace ttk {
   public:
     ScalarFieldCriticalPoints();
 
-    enum class BACKEND { LEGACY = 0, PROGRESSIVE_TOPOLOGY = 1 };
+    enum class BACKEND { GENERIC = 0, PROGRESSIVE_TOPOLOGY = 1 };
 
     /**
      * Execute the package.
@@ -131,7 +131,7 @@ namespace ttk {
     bool forceNonManifoldCheck{false};
 
     // progressive
-    BACKEND BackEnd{BACKEND::LEGACY};
+    BACKEND BackEnd{BACKEND::PROGRESSIVE_TOPOLOGY};
     ProgressiveTopology progT_{};
     int StartingResolutionLevel{0};
     int StoppingResolutionLevel{-1};
@@ -153,7 +153,7 @@ int ttk::ScalarFieldCriticalPoints::execute(
       this->executeProgressive(offsets, triangulation);
       break;
 
-    case BACKEND::LEGACY:
+    case BACKEND::GENERIC:
       this->executeLegacy(offsets, triangulation);
       break;
 
@@ -503,11 +503,10 @@ void ttk::ScalarFieldCriticalPoints::checkProgressivityRequirement(
   if(BackEnd == BACKEND::PROGRESSIVE_TOPOLOGY) {
     if(!std::is_same<triangulationType, ttk::ImplicitTriangulation>::value) {
 
-      printWrn("An Explicit triangulation was detected");
-      printWrn("The progressive approach expects an Implicit regular grid");
-      printWrn("Defaulting to the legacy approach");
+      printWrn("Explicit triangulation detected.");
+      printWrn("Defaulting to the generic backend.");
 
-      BackEnd = BACKEND::LEGACY;
+      BackEnd = BACKEND::GENERIC;
     }
   }
 }

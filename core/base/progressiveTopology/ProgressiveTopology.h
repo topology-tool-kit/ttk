@@ -710,7 +710,7 @@ int ttk::ProgressiveTopology::executeCPProgressive(
   // finally sort the diagram
   sortPersistenceDiagram2(CTDiagram_, offsets);
   // sortPersistenceDiagram(CTDiagram, scalars, offsets);
-  this->printMsg("Complete", 1.0, timer.getElapsedTime() - tm_allocation,
+  this->printMsg("Total", 1.0, timer.getElapsedTime() - tm_allocation,
                  this->threadNumber_);
   return 0;
 }
@@ -787,7 +787,7 @@ int ttk::ProgressiveTopology::resumeProgressive(int computePersistenceDiagram,
   // finally sort the diagram
   sortPersistenceDiagram2(CTDiagram_, offsets);
   // sortPersistenceDiagram(CTDiagram, scalars, offsets);
-  this->printMsg("Complete", 1.0, timer.getElapsedTime(), this->threadNumber_);
+  this->printMsg("Total", 1.0, timer.getElapsedTime(), this->threadNumber_);
 
   // clean state (we don't need it anymore)
   if(this->decimationLevel_ == 0) {

@@ -351,9 +351,8 @@ void ttk::PersistenceDiagram::checkProgressivityRequirement(
   if(BackEnd == BACKEND::PROGRESSIVE_TOPOLOGY) {
     if(!std::is_same<triangulationType, ttk::ImplicitTriangulation>::value) {
 
-      printWrn("An Explicit triangulation was detected");
-      printWrn("The progressive approach expects an Implicit regular grid");
-      printWrn("Defaulting to the FTM backend");
+      printWrn("Explicit triangulation detected.");
+      printWrn("Defaulting to the FTM backend.");
 
       BackEnd = BACKEND::FTM;
     }
