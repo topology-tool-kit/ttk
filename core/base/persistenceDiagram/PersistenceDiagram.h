@@ -33,7 +33,7 @@
 /// Charles Gueunet, Pierre Fortin, Julien Jomier, Julien Tierny
 /// IEEE Transactions on Parallel and Distributed Systems, 2019
 ///
-///  2) Progressive Approach 
+///  2) Progressive Approach
 /// \b Related \b publication \n
 /// "A Progressive Approach to Scalar Field Topology" \n
 /// Jules Vidal, Pierre Guillou, Julien Tierny\n

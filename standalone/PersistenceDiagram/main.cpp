@@ -45,12 +45,14 @@ int main(int argc, char **argv) {
     parser.setArgument(
       "o", &outputPathPrefix, "Output file prefix (no extension)", true);
     parser.setArgument("B", &backEnd, "Method (0:FTM, 1: progressive)", true);
-    parser.setArgument(
-      "S", &startingRL,
-      "Starting Resolution Level for progressive multiresolution scheme (-1: finest level)", true);
-    parser.setArgument(
-      "E", &stoppingRL,
-      "Stopping Resolution Level for progressive multiresolution scheme (-1: finest level)", true);
+    parser.setArgument("S", &startingRL,
+                       "Starting Resolution Level for progressive "
+                       "multiresolution scheme (-1: finest level)",
+                       true);
+    parser.setArgument("E", &stoppingRL,
+                       "Stopping Resolution Level for progressive "
+                       "multiresolution scheme (-1: finest level)",
+                       true);
     parser.setArgument("T", &tl, "Time limit for progressive method", true);
     parser.setOption("l", &listArrays, "List available arrays");
     parser.parse(argc, argv);

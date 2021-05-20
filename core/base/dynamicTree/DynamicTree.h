@@ -1,8 +1,8 @@
 /// \ingroup base
 /// \class ttk::DynamicTree
 /// \author Gueunet Charles <charles.gueunet+ttk@gmail.com>
-/// \adapted by Jules Vidal <jules.vidal@lip6.fr> from the DynamicGraph class in FTRGraph.h
-/// \date 2019-09-15
+/// \adapted by Jules Vidal <jules.vidal@lip6.fr> from the DynamicGraph class in
+/// FTRGraph.h \date 2019-09-15
 ///
 /// \brief Implements the Dynamic Tree data-structure (or ST-Tree)
 /// Previously implemented in ftrGraph
