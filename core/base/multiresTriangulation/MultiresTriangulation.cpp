@@ -3216,12 +3216,12 @@ bool MultiresTriangulation::isInTriangulation(const SimplexId vertexId) const {
   if(dimensionality_ == 1) {
     is_in_triangulation = ((vertexId % decimation_) == 0);
   } else if(dimensionality_ == 2) {
-    int p[2];
+    SimplexId p[2];
     vertexToPosition2d(vertexId, p);
     is_in_triangulation
       = ((p[0] % decimation_) == 0) and ((p[1] % decimation_) == 0);
   } else if(dimensionality_ == 3) {
-    int p[3];
+    SimplexId p[3];
     vertexToPosition(vertexId, p);
     is_in_triangulation = ((p[0] % decimation_) == 0)
                           and ((p[1] % decimation_) == 0)
@@ -3559,7 +3559,7 @@ char MultiresTriangulation::localNeighborId(SimplexId neighborId,
 //       break;
 //   }
 // }
-SimplexId MultiresTriangulation::getInteriorInvertedVertexNeighbor(
+int MultiresTriangulation::getInteriorInvertedVertexNeighbor(
   SimplexId vertexId,
   SimplexId localNeighborId,
   SimplexId &invertedVertexId,

@@ -8,17 +8,15 @@ std::string ttk::DynamicTree::print(void) const {
   std::stringstream res;
 
   for(const auto &node : nodes_) {
-    if(1 or node.parent_) {
-      res << "id: " << &node - &nodes_[0];
-      if(node.parent_) {
-        res << ", parent: " << node.parent_ - &nodes_[0];
-      } else {
-        res << ", parent: X";
-      }
-      res << " find root: " << node.findRoot();
-      res << " root: " << node.findRoot() - &nodes_[0];
-      res << std::endl;
+    res << "id: " << &node - &nodes_[0];
+    if(node.parent_) {
+      res << ", parent: " << node.parent_ - &nodes_[0];
+    } else {
+      res << ", parent: X";
     }
+    res << " find root: " << node.findRoot();
+    res << " root: " << node.findRoot() - &nodes_[0];
+    res << std::endl;
   }
   return res.str();
 }

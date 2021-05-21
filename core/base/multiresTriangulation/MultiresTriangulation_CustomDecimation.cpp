@@ -3,7 +3,7 @@
 using namespace std;
 using namespace ttk;
 
-int MultiresTriangulation::getVertexNeighborAtDecimation(
+SimplexId MultiresTriangulation::getVertexNeighborAtDecimation(
   const SimplexId &vertexId,
   const int &localNeighborId,
   SimplexId &neighborId,
