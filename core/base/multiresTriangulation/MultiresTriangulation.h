@@ -13,14 +13,9 @@
 /// \sa ProgressiveTopology
 /// \sa Triangulation
 
-#ifndef _MULTIRESTRIANGULATION_H
-#define _MULTIRESTRIANGULATION_H
+#pragma once
 
 // base code includes
-
-#ifdef _WIN32
-#include <ciso646>
-#endif
 #include <Geometry.h>
 #include <ImplicitTriangulation.h>
 
@@ -1071,5 +1066,3 @@ inline bool ttk::MultiresTriangulation::areVerticesNeighbors(
   }
   return false;
 }
-
-#endif
