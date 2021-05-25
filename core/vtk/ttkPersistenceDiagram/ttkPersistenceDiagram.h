@@ -1,4 +1,4 @@
-// \ingroup vtk
+/// \ingroup vtk
 /// \class ttkPersistenceDiagram
 /// \author Guillaume Favelier <guillaume.favelier@lip6.fr>
 /// \author Julien Tierny <julien.tierny@lip6.fr>
