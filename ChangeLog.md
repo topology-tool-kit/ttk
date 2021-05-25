@@ -2,6 +2,7 @@
 =
 ### ttk.git
 - Migration to ParaView-5.9.0
+- Progressive Scalar Field Topology (IEEE TVCG 2021)
 - Marking deprecated filters (ParaView integration)
 - Explicit triangulation performance improvement 
 - IO for preconditioned triangulations
