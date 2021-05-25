@@ -59,7 +59,7 @@ int ttk::MultiresTriangulation::preconditionVerticesInternal() {
         else
           vertexPositions_[i] = VertexPosition::BOTTOM_RIGHT_CORNER_2D; // d
       }
-      vertexCoords_[i] = std::move(p);
+      vertexCoords_[i] = p;
     }
 
   } else if(dimensionality_ == 3) {
@@ -145,7 +145,7 @@ int ttk::MultiresTriangulation::preconditionVerticesInternal() {
               = VertexPosition::BOTTOM_RIGHT_BACK_CORNER_3D; // h
         }
       }
-      vertexCoords_[i] = std::move(p);
+      vertexCoords_[i] = p;
     }
   }
   return 0;
@@ -3379,21 +3379,11 @@ void MultiresTriangulation::getImpactedVertices(SimplexId vertexId,
       if(0 < p[1] and p[1] < nbvoxels_[Dj_]) {
         getImpactedVertices2dAC(p, localNeighborId0,
                                 localNeighborId1); // ac
-        // cout << "ac" << endl;
-      } else if(p[1] == 0) {
-        // cout << "a" << endl;
-      } else {
-        // cout << "c" << endl;
       }
     } else {
       if(0 < p[1] and p[1] < nbvoxels_[Dj_]) {
         getImpactedVertices2dBD(p, localNeighborId0,
                                 localNeighborId1); // bd
-        // cout << "bd" << endl;
-      } else if(p[1] == 0) {
-        // cout << "b" << endl;
-      } else {
-        // cout << "d" << endl;
       }
     }
   } else {
