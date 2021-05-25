@@ -29,11 +29,6 @@ namespace ttk {
     MultiresTriangulation();
     ~MultiresTriangulation();
 
-    // void findEnclosingVoxel(const SimplexId &vertexId,
-    //                         int decimation,
-    //                         std::vector<SimplexId> &vertexList,
-    //                         std::vector<float> &baryCentrics) const;
-
     SimplexId getVertexNeighborAtDecimation(const SimplexId &vertexId,
                                             const int &localNeighborId,
                                             SimplexId &neighborId,
@@ -694,6 +689,8 @@ namespace ttk {
     void getImpactedVertices2dAC(std::array<SimplexId, 3> &p,
                                  SimplexId &localNeighborId0,
                                  SimplexId &localNeighborId1) const;
+    void getImpactedVerticesError(const int prev_decim,
+                                  const std::array<SimplexId, 3> &p) const;
 
     void getInvertedLocalNeighborA(SimplexId id,
                                    SimplexId &invertedLocalNeighbor) const;
@@ -858,10 +855,6 @@ namespace ttk {
       } else {
         printErr("Empty input triangulation !");
       }
-      // cout << "DIM " << dimensionality_ << " - gridDims " <<
-      // gridDimensions_[0]
-      //      << " " << gridDimensions_[1] << " " << gridDimensions_[2]
-      //      << "  -  vertexNb " << vertexNumber_ << endl;
     }
 
     /**
@@ -898,15 +891,6 @@ namespace ttk {
     void
       getImpactedVertices(SimplexId vertexId, SimplexId v0[3], SimplexId v1[3]);
 
-    inline void printInfos() const {
-      std::cout << "[MultiresTriangulation] INFOS\n\t decimationLvl : "
-                << decimationLevel_ << " , decimation : " << decimation_
-                << "\n dimensions : " << gridDimensions_[0] << ", "
-                << gridDimensions_[1] << ", " << gridDimensions_[2]
-                << "\n dimensionality : " << dimensionality_ << ", "
-                << "vshifts " << vshift_[0] << " " << vshift_[1] << std::endl;
-    }
-
     void computeDecimatedDimensions() {
       int xDim = gridDimensions_[0];
       int yDim = gridDimensions_[1];
@@ -925,11 +909,6 @@ namespace ttk {
       gridDecimatedDimensions_[1] = yDim;
       gridDecimatedDimensions_[2] = zDim;
       decimatedVertexNumber_ = xDim * yDim * zDim;
-      if(debugLevel_ > 5) {
-        std::cout << "[MultiresTriangulation] computing dimensions decimated "
-                  << decimationLevel_ << " times : " << xDim << " " << yDim
-                  << " " << zDim << std::endl;
-      }
     }
 
     void computeCoarsestDecimationLevel();
