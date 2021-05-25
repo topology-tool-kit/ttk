@@ -35,7 +35,7 @@ int ttk::MultiresTriangulation::preconditionVerticesInternal() {
 #endif // TTK_ENABLE_OPENMP
     for(SimplexId i = 0; i < vertexNumber_; ++i) {
       std::array<SimplexId, 3> p{};
-      vertexToPosition2d(i, p.data());
+      vertexToPosition2d(i, p);
 
       if(0 < p[0] and p[0] < nbvoxels_[Di_]) {
         if(0 < p[1] and p[1] < nbvoxels_[Dj_])
@@ -68,7 +68,7 @@ int ttk::MultiresTriangulation::preconditionVerticesInternal() {
 #endif // TTK_ENABLE_OPENMP
     for(SimplexId i = 0; i < vertexNumber_; ++i) {
       std::array<SimplexId, 3> p{};
-      vertexToPosition(i, p.data());
+      vertexToPosition(i, p);
 
       if(0 < p[0] and p[0] < nbvoxels_[0]) {
         if(0 < p[1] and p[1] < nbvoxels_[1]) {
@@ -3187,8 +3187,8 @@ void MultiresTriangulation::getInvertedLocalNeighborH(
   }
 }
 
-void MultiresTriangulation::vertexToPosition2d(const SimplexId vertex,
-                                               SimplexId p[2]) const {
+void MultiresTriangulation::vertexToPosition2d(
+  const SimplexId vertex, std::array<SimplexId, 3> &p) const {
   // if(isAccelerated_) {
   //   p[0] = vertex & mod_[0];
   //   p[1] = vertex >> div_[0];
@@ -3198,8 +3198,8 @@ void MultiresTriangulation::vertexToPosition2d(const SimplexId vertex,
   // }
 }
 
-void MultiresTriangulation::vertexToPosition(const SimplexId vertex,
-                                             SimplexId p[3]) const {
+void MultiresTriangulation::vertexToPosition(
+  const SimplexId vertex, std::array<SimplexId, 3> &p) const {
   // if(isAccelerated_) {
   //   p[0] = vertex & mod_[0];
   //   p[1] = (vertex & mod_[1]) >> div_[0];
@@ -3216,12 +3216,12 @@ bool MultiresTriangulation::isInTriangulation(const SimplexId vertexId) const {
   if(dimensionality_ == 1) {
     is_in_triangulation = ((vertexId % decimation_) == 0);
   } else if(dimensionality_ == 2) {
-    SimplexId p[2];
+    std::array<SimplexId, 3> p{};
     vertexToPosition2d(vertexId, p);
     is_in_triangulation
       = ((p[0] % decimation_) == 0) and ((p[1] % decimation_) == 0);
   } else if(dimensionality_ == 3) {
-    SimplexId p[3];
+    std::array<SimplexId, 3> p{};
     vertexToPosition(vertexId, p);
     is_in_triangulation = ((p[0] % decimation_) == 0)
                           and ((p[1] % decimation_) == 0)
@@ -3281,7 +3281,7 @@ void MultiresTriangulation::getImpactedVertices(SimplexId vertexId,
 
   SimplexId localNeighborId0 = -1, localNeighborId1 = -1;
   if(dimensionality_ == 3) {
-    SimplexId p[3];
+    std::array<SimplexId, 3> p{};
     vertexToPosition(vertexId, p);
 
     if(0 < p[0] and p[0] < nbvoxels_[0]) {
@@ -3358,7 +3358,7 @@ void MultiresTriangulation::getImpactedVertices(SimplexId vertexId,
     }
 
   } else if(dimensionality_ == 2) {
-    SimplexId p[2];
+    std::array<SimplexId, 3> p{};
     vertexToPosition2d(vertexId, p);
 
     if(0 < p[0] and p[0] < nbvoxels_[Di_]) {
@@ -3556,7 +3556,7 @@ int MultiresTriangulation::getInteriorInvertedVertexNeighbor(
   SimplexId &invertedLocalNeighborId) const {
 
   if(dimensionality_ == 3) {
-    SimplexId p[3];
+    std::array<SimplexId, 3> p{};
     vertexToPosition(vertexId, p);
     SimplexId shiftX = decimation_;
     SimplexId shiftY = decimation_;
@@ -3675,7 +3675,7 @@ int MultiresTriangulation::getInteriorInvertedVertexNeighbor(
     return -1;
 
   } else if(dimensionality_ == 2) {
-    SimplexId p[2];
+    std::array<SimplexId, 3> p{};
     vertexToPosition2d(vertexId, p);
     SimplexId shiftX = decimation_;
     SimplexId shiftY = decimation_;
@@ -3914,7 +3914,7 @@ SimplexId MultiresTriangulation::getInvertedLocalNeighbor2dCD(
 }
 
 void MultiresTriangulation::getImpactedVerticesABCDEFGH(
-  SimplexId p[3],
+  std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
 
@@ -3957,7 +3957,7 @@ void MultiresTriangulation::getImpactedVerticesABCDEFGH(
 }
 
 void MultiresTriangulation::getImpactedVerticesABDC(
-  SimplexId p[3],
+  std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
   // cout<<"getting impacted vertices in ABDC"<<endl;
@@ -3984,7 +3984,7 @@ void MultiresTriangulation::getImpactedVerticesABDC(
   }
 }
 void MultiresTriangulation::getImpactedVerticesEFHG(
-  SimplexId p[3],
+  std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
   // cout<<"getting impacted vertices in EFHG"<<endl;
@@ -4011,7 +4011,7 @@ void MultiresTriangulation::getImpactedVerticesEFHG(
   }
 }
 void MultiresTriangulation::getImpactedVerticesAEGC(
-  SimplexId p[3],
+  std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
   // cout<<"getting impacted vertices in AEGC"<<endl;
@@ -4037,7 +4037,7 @@ void MultiresTriangulation::getImpactedVerticesAEGC(
   }
 }
 void MultiresTriangulation::getImpactedVerticesBFHD(
-  SimplexId p[3],
+  std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
   // cout<<"getting impacted vertices in BFHD"<<endl;
@@ -4063,7 +4063,7 @@ void MultiresTriangulation::getImpactedVerticesBFHD(
   }
 }
 void MultiresTriangulation::getImpactedVerticesAEFB(
-  SimplexId p[3],
+  std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
   // cout<<"getting impacted vertices in AEFB"<<endl;
@@ -4089,7 +4089,7 @@ void MultiresTriangulation::getImpactedVerticesAEFB(
   }
 }
 void MultiresTriangulation::getImpactedVerticesGHDC(
-  SimplexId p[3],
+  std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
   // cout<<"getting impacted vertices in GHDC"<<endl;
@@ -4115,7 +4115,7 @@ void MultiresTriangulation::getImpactedVerticesGHDC(
   }
 }
 void MultiresTriangulation::getImpactedVerticesAB(
-  SimplexId p[3],
+  std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
   // cout<<"getting impacted vertices in AB"<<endl;
@@ -4133,7 +4133,7 @@ void MultiresTriangulation::getImpactedVerticesAB(
   }
 }
 void MultiresTriangulation::getImpactedVerticesCD(
-  SimplexId p[3],
+  std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
   // cout<<"getting impacted vertices in CD"<<endl;
@@ -4151,7 +4151,7 @@ void MultiresTriangulation::getImpactedVerticesCD(
   }
 }
 void MultiresTriangulation::getImpactedVerticesEF(
-  SimplexId p[3],
+  std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
   // cout<<"getting impacted vertices in EF"<<endl;
@@ -4169,7 +4169,7 @@ void MultiresTriangulation::getImpactedVerticesEF(
   }
 }
 void MultiresTriangulation::getImpactedVerticesGH(
-  SimplexId p[3],
+  std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
   // cout<<"getting impacted vertices in GH"<<endl;
@@ -4187,7 +4187,7 @@ void MultiresTriangulation::getImpactedVerticesGH(
   }
 }
 void MultiresTriangulation::getImpactedVerticesAC(
-  SimplexId p[3],
+  std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
   // cout<<"getting impacted vertices in AC"<<endl;
@@ -4205,7 +4205,7 @@ void MultiresTriangulation::getImpactedVerticesAC(
   }
 }
 void MultiresTriangulation::getImpactedVerticesBD(
-  SimplexId p[3],
+  std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
   // cout<<"getting impacted vertices in BD"<<endl;
@@ -4223,7 +4223,7 @@ void MultiresTriangulation::getImpactedVerticesBD(
   }
 }
 void MultiresTriangulation::getImpactedVerticesEG(
-  SimplexId p[3],
+  std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
   // cout<<"getting impacted vertices in EG"<<endl;
@@ -4241,7 +4241,7 @@ void MultiresTriangulation::getImpactedVerticesEG(
   }
 }
 void MultiresTriangulation::getImpactedVerticesFH(
-  SimplexId p[3],
+  std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
   // cout<<"getting impacted vertices in FH"<<endl;
@@ -4259,7 +4259,7 @@ void MultiresTriangulation::getImpactedVerticesFH(
   }
 }
 void MultiresTriangulation::getImpactedVerticesAE(
-  SimplexId p[3],
+  std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
   // cout<<"getting impacted vertices in AE"<<endl;
@@ -4278,7 +4278,7 @@ void MultiresTriangulation::getImpactedVerticesAE(
 }
 
 void MultiresTriangulation::getImpactedVerticesBF(
-  SimplexId p[3],
+  std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
   // cout<<"getting impacted vertices in BF"<<endl;
@@ -4297,7 +4297,7 @@ void MultiresTriangulation::getImpactedVerticesBF(
 }
 
 void MultiresTriangulation::getImpactedVerticesCG(
-  SimplexId p[3],
+  std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
   // cout<<"getting impacted vertices in CG"<<endl;
@@ -4316,7 +4316,7 @@ void MultiresTriangulation::getImpactedVerticesCG(
 }
 
 void MultiresTriangulation::getImpactedVerticesDH(
-  SimplexId p[3],
+  std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
   // cout<<"getting impacted vertices in DH"<<endl;
@@ -4335,7 +4335,7 @@ void MultiresTriangulation::getImpactedVerticesDH(
 }
 
 void MultiresTriangulation::getImpactedVertices2dABCD(
-  SimplexId p[2],
+  std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
   // cout<<"getting impacted vertices in 2dABCD"<<endl;
@@ -4362,7 +4362,7 @@ void MultiresTriangulation::getImpactedVertices2dABCD(
 }
 
 void MultiresTriangulation::getImpactedVertices2dAB(
-  SimplexId p[2],
+  std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
   // cout<<"getting impacted vertices in 2dAB"<<endl;
@@ -4381,7 +4381,7 @@ void MultiresTriangulation::getImpactedVertices2dAB(
 }
 
 void MultiresTriangulation::getImpactedVertices2dCD(
-  SimplexId p[2],
+  std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
   // cout<<"getting impacted vertices in 2dCD"<<endl;
@@ -4400,7 +4400,7 @@ void MultiresTriangulation::getImpactedVertices2dCD(
 }
 
 void MultiresTriangulation::getImpactedVertices2dAC(
-  SimplexId p[2],
+  std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
   // cout<<"getting impacted vertices in 2dAC"<<endl;
@@ -4418,7 +4418,7 @@ void MultiresTriangulation::getImpactedVertices2dAC(
   }
 }
 void MultiresTriangulation::getImpactedVertices2dBD(
-  SimplexId p[2],
+  std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
   // cout<<"getting impacted vertices in 2dBD"<<endl;
@@ -4441,7 +4441,7 @@ vector<SimplexId>
 
   vector<SimplexId> result;
   if(dimensionality_ == 3) {
-    SimplexId p[3];
+    std::array<SimplexId, 3> p{};
     vertexToPosition(vertexId, p);
     SimplexId shiftX = decimation_;
     SimplexId shiftY = decimation_;
@@ -4495,7 +4495,7 @@ vector<SimplexId>
     }
 
   } else if(dimensionality_ == 2) {
-    SimplexId p[2];
+    std::array<SimplexId, 3> p{};
     vertexToPosition2d(vertexId, p);
     SimplexId shiftX = decimation_;
     SimplexId shiftY = decimation_;
@@ -4545,7 +4545,7 @@ int MultiresTriangulation::getVertexBoundaryIndex(
   const SimplexId vertexId) const {
 
   if(dimensionality_ == 3) {
-    SimplexId p[3];
+    std::array<SimplexId, 3> p{};
     vertexToPosition(vertexId, p);
 
     if(0 < p[0] and p[0] < nbvoxels_[0]) {
@@ -4620,7 +4620,7 @@ int MultiresTriangulation::getVertexBoundaryIndex(
     }
 
   } else if(dimensionality_ == 2) {
-    SimplexId p[2];
+    std::array<SimplexId, 3> p{};
     vertexToPosition2d(vertexId, p);
 
     if(0 < p[0] and p[0] < nbvoxels_[Di_]) {
@@ -4757,7 +4757,7 @@ void MultiresTriangulation::findBoundaryRepresentatives(
 bool ttk::MultiresTriangulation::isBoundaryImpacted(SimplexId v) const {
   bool ret = false;
   if(dimensionality_ == 3) {
-    SimplexId p[3];
+    std::array<SimplexId, 3> p{};
     vertexToPosition(v, p);
     if((nbvoxels_[0] % decimation_) and (p[0] + decimation_ > nbvoxels_[0])) {
       ret = true;
