@@ -447,33 +447,3 @@ jobs:
       run: |
         cd %GITHUB_WORKSPACE%\examples\vtk-c++
         ttkHelloWorldCmd.exe -i %GITHUB_WORKSPACE%\examples\data\inputData.vtu
-
-    - uses: actions/checkout@v2
-      with:
-        repository: "pierre-guillou/ttk-data"
-        ref: "dev"
-        path: "ttk-data"
-      name: Checkout ttk-data
-
-    - name: Fetch OpenGL software implementation
-      run: |
-        Invoke-WebRequest `
-          -OutFile mesa3d-20.3.4-release-msvc.7z `
-          -Uri https://github.com/pal1000/mesa-dist-win/releases/download/20.3.4/mesa3d-20.3.4-release-msvc.7z
-
-    - name: Install OpenGL software implementation
-      shell: bash
-      run: |
-        mkdir mesa-dist-win
-        cd mesa-dist-win
-        7z x ../mesa3d-20.3.4-release-msvc.7z
-        rm -f x64/*.exe
-        mv x64/* "$PV_DIR/bin"
-
-    - name: Run ttk-data states
-      shell: cmd
-      run: |
-        set PYTHONPATH=%PV_DIR%\bin\Lib\site-packages;%TTK_DIR%\bin\Lib\site-packages;%CONDA_ROOT%\Lib
-        set PV_PLUGIN_PATH=%TTK_DIR%\bin\plugins
-        cd ttk-data\tests
-        python run.py
