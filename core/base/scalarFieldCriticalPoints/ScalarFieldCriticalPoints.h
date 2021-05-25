@@ -17,6 +17,12 @@
 /// Thomas Banchoff \n
 /// American Mathematical Monthly, 1970.
 ///
+///  Progressive Approach used by default
+/// \b Related \b publication \n
+/// "A Progressive Approach to Scalar Field Topology" \n
+/// Jules Vidal, Pierre Guillou, Julien Tierny\n
+/// IEEE Transactions on Visualization and Computer Graphics, 2021
+///
 /// \sa ttkScalarFieldCriticalPoints.cpp %for a usage example.
 
 #pragma once
@@ -24,6 +30,7 @@
 #include <map>
 
 // base code includes
+#include <ProgressiveTopology.h>
 #include <Triangulation.h>
 #include <UnionFind.h>
 
@@ -33,6 +40,8 @@ namespace ttk {
 
   public:
     ScalarFieldCriticalPoints();
+
+    enum class BACKEND { GENERIC = 0, PROGRESSIVE_TOPOLOGY = 1 };
 
     /**
      * Execute the package.
@@ -49,6 +58,17 @@ namespace ttk {
     template <class triangulationType = AbstractTriangulation>
     int execute(const SimplexId *const offsets,
                 const triangulationType *triangulation);
+
+    template <class triangulationType = AbstractTriangulation>
+    int executeLegacy(const SimplexId *const offsets,
+                      const triangulationType *triangulation);
+
+    template <class triangulationType = AbstractTriangulation>
+    int executeProgressive(const SimplexId *const offsets,
+                           const triangulationType *triangulation);
+
+    template <class triangulationType>
+    void checkProgressivityRequirement(const triangulationType *triangulation);
 
     template <class triangulationType = AbstractTriangulation>
     std::pair<SimplexId, SimplexId> getNumberOfLowerUpperComponents(
@@ -105,6 +125,8 @@ namespace ttk {
       forceNonManifoldCheck = b;
     }
 
+    void displayStats();
+
   protected:
     int dimension_{};
     SimplexId vertexNumber_{};
@@ -113,12 +135,63 @@ namespace ttk {
     std::vector<std::pair<SimplexId, char>> *criticalPoints_{};
 
     bool forceNonManifoldCheck{false};
+
+    // progressive
+    BACKEND BackEnd{BACKEND::PROGRESSIVE_TOPOLOGY};
+    ProgressiveTopology progT_{};
+    int StartingResolutionLevel{0};
+    int StoppingResolutionLevel{-1};
+    bool IsResumable{false};
+    double TimeLimit{};
   };
 } // namespace ttk
 
 // template functions
 template <class triangulationType>
 int ttk::ScalarFieldCriticalPoints::execute(
+  const SimplexId *const offsets, const triangulationType *triangulation) {
+
+  checkProgressivityRequirement(triangulation);
+
+  switch(BackEnd) {
+
+    case BACKEND::PROGRESSIVE_TOPOLOGY:
+      this->executeProgressive(offsets, triangulation);
+      break;
+
+    case BACKEND::GENERIC:
+      this->executeLegacy(offsets, triangulation);
+      break;
+
+    default:
+      printErr("No method was selected");
+  }
+
+  printMsg(ttk::debug::Separator::L1);
+  return 0;
+}
+
+template <class triangulationType>
+int ttk::ScalarFieldCriticalPoints::executeProgressive(
+  const SimplexId *const offsets, const triangulationType *triangulation) {
+
+  progT_.setDebugLevel(debugLevel_);
+  progT_.setThreadNumber(threadNumber_);
+  progT_.setupTriangulation((ttk::ImplicitTriangulation *)triangulation);
+  progT_.setStartingResolutionLevel(StartingResolutionLevel);
+  progT_.setStoppingResolutionLevel(StoppingResolutionLevel);
+  progT_.setTimeLimit(TimeLimit);
+  progT_.setIsResumable(IsResumable);
+  progT_.setPreallocateMemory(true);
+
+  progT_.computeProgressiveCP(criticalPoints_, offsets);
+
+  displayStats();
+  return 0;
+}
+
+template <class triangulationType>
+int ttk::ScalarFieldCriticalPoints::executeLegacy(
   const SimplexId *const offsets, const triangulationType *triangulation) {
 
   // check the consistency of the variables -- to adapt
@@ -244,8 +317,6 @@ int ttk::ScalarFieldCriticalPoints::execute(
 
   printMsg("Processed " + std::to_string(vertexNumber_) + " vertices", 1,
            t.getElapsedTime(), threadNumber_);
-
-  printMsg(ttk::debug::Separator::L1);
 
   return 0;
 }
@@ -430,4 +501,18 @@ char ttk::ScalarFieldCriticalPoints::getCriticalType(
 
   // -2: regular points
   return (char)(CriticalType::Regular);
+}
+
+template <class triangulationType>
+void ttk::ScalarFieldCriticalPoints::checkProgressivityRequirement(
+  const triangulationType *triangulation) {
+  if(BackEnd == BACKEND::PROGRESSIVE_TOPOLOGY) {
+    if(!std::is_same<triangulationType, ttk::ImplicitTriangulation>::value) {
+
+      printWrn("Explicit triangulation detected.");
+      printWrn("Defaulting to the generic backend.");
+
+      BackEnd = BACKEND::GENERIC;
+    }
+  }
 }

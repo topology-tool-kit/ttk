@@ -23,6 +23,16 @@ namespace ttk {
     ImplicitTriangulation();
     ~ImplicitTriangulation();
 
+    int getGridDimensions(std::vector<int> &dimensions) override {
+
+      dimensions.resize(3);
+      dimensions[0] = dimensions_[0];
+      dimensions[1] = dimensions_[1];
+      dimensions[2] = dimensions_[2];
+
+      return 0;
+    }
+
     int getCellEdgeInternal(const SimplexId &cellId,
                             const int &id,
                             SimplexId &edgeId) const override;
