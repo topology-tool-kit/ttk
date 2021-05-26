@@ -32,6 +32,9 @@
 
 #if TTK_ENABLE_WEBSOCKETPP
 
+// fix undefined reference to boost::system link error
+#define BOOST_ERROR_CODE_HEADER_ONLY
+
 #include <websocketpp/config/asio_no_tls.hpp>
 #include <websocketpp/server.hpp>
 
