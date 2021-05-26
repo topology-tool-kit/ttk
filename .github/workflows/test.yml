@@ -122,37 +122,6 @@ jobs:
         cmake --build . --parallel
         sudo cmake --build . --target install
 
-    - name: Test C++ example
-      run: |
-        cd $GITHUB_WORKSPACE/examples/c++
-        mkdir build && cd build
-        cmake ..
-        cmake --build . --parallel
-        ./ttkExample-c++ -i ../../data/inputData.off
-
-    - name: Test VTK-C++ example
-      run: |
-        cd $GITHUB_WORKSPACE/examples/vtk-c++
-        mkdir build && cd build
-        cmake ..
-        cmake --build . --parallel
-        ./ttkExample-vtk-c++ -i ../../data/inputData.vtu
-
-    - name: Test Python example
-      run: |
-        cd $GITHUB_WORKSPACE/examples/python
-        python3 example.py ../data/inputData.vtu
-
-    - name: Test pvpython example
-      run: |
-        cd $GITHUB_WORKSPACE/examples/pvpython
-        pvpython example.py ../data/inputData.vtu
-
-    - name: Test standalone
-      run: |
-        cd $GITHUB_WORKSPACE
-        ttkHelloWorldCmd -i examples/data/inputData.vtu
-
     - uses: actions/checkout@v2
       with:
         repository: "pierre-guillou/ttk-data"
@@ -160,11 +129,8 @@ jobs:
         path: "ttk-data"
       name: Checkout ttk-data
 
-    - name: Run ttk-data states
-      run: |
-        cd ttk-data/tests
-        python3 run.py
-        tar zcfv screenshots.tar.gz *.png
+    - name: Run TTK tests
+      uses: ./.github/actions/test-ttk-unix
 
     - name: Upload result screenshots
       uses: actions/upload-artifact@v2
@@ -257,37 +223,6 @@ jobs:
         cmake --build . --parallel
         sudo cmake --build . --target install
 
-    - name: Test C++ example
-      run: |
-        cd $GITHUB_WORKSPACE/examples/c++
-        mkdir build && cd build
-        cmake ..
-        cmake --build . --parallel
-        ./ttkExample-c++ -i ../../data/inputData.off
-
-    - name: Test VTK-C++ example
-      run: |
-        cd $GITHUB_WORKSPACE/examples/vtk-c++
-        mkdir build && cd build
-        cmake ..
-        cmake --build . --parallel
-        ./ttkExample-vtk-c++ -i ../../data/inputData.vtu
-
-    - name: Test Python example
-      run: |
-        cd $GITHUB_WORKSPACE/examples/python
-        python3 example.py ../data/inputData.vtu
-
-    - name: Test pvpython example
-      run: |
-        cd $GITHUB_WORKSPACE/examples/pvpython
-        pvpython example.py ../data/inputData.vtu
-
-    - name: Test standalone
-      run: |
-        cd $GITHUB_WORKSPACE
-        ttkHelloWorldCmd -i examples/data/inputData.vtu
-
     - uses: actions/checkout@v2
       with:
         repository: "pierre-guillou/ttk-data"
@@ -295,12 +230,8 @@ jobs:
         path: "ttk-data"
       name: Checkout ttk-data
 
-    - name: Run ttk-data states
-      run: |
-        cd ttk-data/tests
-        export PV_PLUGIN_PATH=/usr/local/bin/plugins
-        python3 -u run.py
-        tar zcfv screenshots.tar.gz *.png
+    - name: Run TTK tests
+      uses: ./.github/actions/test-ttk-unix
 
     - name: Upload result screenshots
       uses: actions/upload-artifact@v2
