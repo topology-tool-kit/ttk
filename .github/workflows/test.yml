@@ -60,6 +60,9 @@ jobs:
           zlib1g-dev \
           dpkg-dev
 
+    - name: Install optional dependencies
+      uses: ./.github/actions/install-deps-unix
+
     - name: Cache binary objects
       uses: actions/cache@v2
       with:
@@ -170,6 +173,9 @@ jobs:
         python3 -m pip install scikit-learn
         # prepend ccache to system path
         echo "$(brew --prefix)/opt/ccache/libexec" >> $GITHUB_PATH
+
+    - name: Install optional dependencies
+      uses: ./.github/actions/install-deps-unix
 
     - name: Cache binary objects
       uses: actions/cache@v2
