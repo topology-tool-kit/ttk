@@ -28,6 +28,7 @@ int ttkTopologicalSimplification::FillInputPortInformation(
     return 1;
   } else if(port == 1) {
     info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkPointSet");
+    info->Set(vtkAlgorithm::INPUT_IS_OPTIONAL(), 1);
     return 1;
   }
   return 0;
@@ -87,17 +88,6 @@ int ttkTopologicalSimplification::RequestData(
     return -3;
   }
 
-  // constraint identifier field
-  std::vector<SimplexId> idSpareStorage{};
-  const auto identifiers = this->GetIdentifierArrayPtr(
-    ForceInputVertexScalarField, 1, ttk::VertexScalarFieldName, constraints,
-    idSpareStorage);
-
-  if(!identifiers) {
-    this->printErr("Wrong vertex identifier scalar field.");
-    return -1;
-  }
-
   // domain offset field
   const auto offsets
     = this->GetOrderArray(domain, 0, 2, ForceInputOffsetScalarField);
@@ -131,10 +121,16 @@ int ttkTopologicalSimplification::RequestData(
     return -9;
   }
 
-  const auto numberOfConstraints = constraints->GetNumberOfPoints();
-  if(numberOfConstraints <= 0) {
-    this->printErr("Input has no constraints.");
-    return -10;
+  // constraint identifier field
+  int numberOfConstraints = 0;
+  ttk::SimplexId *identifiers = nullptr;
+  if(constraints) {
+    numberOfConstraints = constraints->GetNumberOfPoints();
+
+    std::vector<SimplexId> idSpareStorage{};
+    identifiers = this->GetIdentifierArrayPtr(ForceInputVertexScalarField, 1,
+                                              ttk::VertexScalarFieldName,
+                                              constraints, idSpareStorage);
   }
 
   int ret{};
@@ -145,30 +141,44 @@ int ttkTopologicalSimplification::RequestData(
 
     lts.preconditionTriangulation(triangulation);
 
-    //   switch(inputScalars->GetDataType()) {
-    ttkVtkTemplateMacro(
-      inputScalars->GetDataType(), triangulation->getType(),
-      (ret = lts.removeUnauthorizedExtrema<VTK_TT, ttk::SimplexId, TTK_TT>(
-         static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(outputScalars)),
-         static_cast<SimplexId *>(ttkUtils::GetVoidPointer(outputOffsets)),
+    if(constraints) {
+      ttkVtkTemplateMacro(
+        inputScalars->GetDataType(), triangulation->getType(),
+        (ret = lts.removeUnauthorizedExtrema<VTK_TT, ttk::SimplexId, TTK_TT>(
+           ttkUtils::GetPointer<VTK_TT>(outputScalars),
+           ttkUtils::GetPointer<SimplexId>(outputOffsets),
 
-         static_cast<TTK_TT *>(triangulation->getData()),
-         static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(inputScalars)),
-         static_cast<SimplexId *>(ttkUtils::GetVoidPointer(offsets)),
-         identifiers, numberOfConstraints, this->AddPerturbation)));
+           static_cast<TTK_TT *>(triangulation->getData()),
+           ttkUtils::GetPointer<VTK_TT>(inputScalars),
+           ttkUtils::GetPointer<SimplexId>(offsets), identifiers,
+           numberOfConstraints, this->AddPerturbation)));
+    } else {
+      ttkVtkTemplateMacro(
+        inputScalars->GetDataType(), triangulation->getType(),
+        (ret = lts.removeNonPersistentExtrema<VTK_TT, ttk::SimplexId, TTK_TT>(
+           ttkUtils::GetPointer<VTK_TT>(outputScalars),
+           ttkUtils::GetPointer<SimplexId>(outputOffsets),
+
+           static_cast<TTK_TT *>(triangulation->getData()),
+           ttkUtils::GetPointer<VTK_TT>(inputScalars),
+           ttkUtils::GetPointer<SimplexId>(offsets), this->PersistenceThreshold,
+           this->AddPerturbation)));
+    }
 
     // TODO: fix convention in original ttk module
     ret = !ret;
   } else {
+    if(!constraints)
+      return !this->printErr(
+        "Persistence Sensitive Simplification only supported in LTS.");
+
     switch(inputScalars->GetDataType()) {
-      vtkTemplateMacro(
-        ret = this->execute(
-          static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(inputScalars)),
-          static_cast<VTK_TT *>(ttkUtils::GetVoidPointer(outputScalars)),
-          identifiers,
-          static_cast<SimplexId *>(ttkUtils::GetVoidPointer(offsets)),
-          static_cast<SimplexId *>(ttkUtils::GetVoidPointer(outputOffsets)),
-          numberOfConstraints, *triangulation->getData()));
+      vtkTemplateMacro(ret = this->execute(
+                         ttkUtils::GetPointer<VTK_TT>(inputScalars),
+                         ttkUtils::GetPointer<VTK_TT>(outputScalars),
+                         identifiers, ttkUtils::GetPointer<SimplexId>(offsets),
+                         ttkUtils::GetPointer<SimplexId>(outputOffsets),
+                         numberOfConstraints, *triangulation->getData()));
     }
   }
 

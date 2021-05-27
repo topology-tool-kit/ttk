@@ -86,6 +86,9 @@ public:
   vtkSetMacro(UseLTS, bool);
   vtkGetMacro(UseLTS, bool);
 
+  vtkSetMacro(PersistenceThreshold, double);
+  vtkGetMacro(PersistenceThreshold, double);
+
 protected:
   ttkTopologicalSimplification();
 
@@ -101,4 +104,5 @@ private:
   bool ConsiderIdentifierAsBlackList{false};
   bool AddPerturbation{false};
   bool UseLTS{true};
+  double PersistenceThreshold{0};
 };
