@@ -100,7 +100,10 @@
       </StringVectorProperty>
 
       <DoubleVectorProperty name="PersistenceThreshold" command="SetPersistenceThreshold" number_of_elements="1" default_values="0">
-          <Documentation>Persistence Threshold.</Documentation>
+        <Hints>
+          <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="Constraints" value="null" />
+        </Hints>
+        <Documentation>Persistence Threshold.</Documentation>
       </DoubleVectorProperty>
 
       <IntVectorProperty
