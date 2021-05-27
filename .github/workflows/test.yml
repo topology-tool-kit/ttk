@@ -161,7 +161,7 @@ jobs:
       run: |
         # ParaView dependencies
         brew install --cask xquartz
-        brew install wget libomp mesa glew ninja python
+        brew install wget libomp ninja python
         # TTK dependencies
         brew install boost eigen graphviz numpy embree ccache
         python3 -m pip install scikit-learn
