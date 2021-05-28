@@ -132,7 +132,7 @@ jobs:
 
     - uses: actions/checkout@v2
       with:
-        repository: "pierre-guillou/ttk-data"
+        repository: "topology-tool-kit/ttk-data"
         ref: "dev"
         path: "ttk-data"
       name: Checkout ttk-data
