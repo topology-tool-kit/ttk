@@ -23,10 +23,11 @@
 
 // base code includes
 #include <DynamicTree.h>
+#include <ImplicitTriangulation.h>
 #include <MultiresTriangulation.h>
 #include <OpenMPLock.h>
-#include <Triangulation.h>
 
+#include <limits>
 #include <tuple>
 
 namespace ttk {
