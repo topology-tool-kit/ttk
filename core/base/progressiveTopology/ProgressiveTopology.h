@@ -673,12 +673,10 @@ int ttk::ProgressiveTopology::executeCPProgressive(
     stopComputationIf(timer.getElapsedTime() + nextItDuration - tm_allocation
                       > this->timeLimit_);
 
-    if(debugLevel_ > 3) {
-      std::cout << "current iteration lasted " << itDuration << "s"
-                << std::endl;
-      std::cout << "next iteration predicted to last at most " << nextItDuration
-                << "s" << std::endl;
-    }
+    this->printMsg("current iteration", 1.0, itDuration, 1,
+                   debug::LineMode::NEW, debug::Priority::DETAIL);
+    this->printMsg("next iteration duration prediction", 1.0, nextItDuration, 1,
+                   debug::LineMode::NEW, debug::Priority::DETAIL);
   }
 
   // ADD GLOBAL MIN-MAX PAIR
@@ -821,18 +819,17 @@ void ttk::ProgressiveTopology::computePersistencePairsFromSaddles(
     }
   }
 
-  if(debugLevel_ > 3) {
-    std::cout << "TRIPLETS " << timer.getElapsedTime() << std::endl;
-  }
+  this->printMsg("TRIPLETS", 1.0, timer.getElapsedTime(), this->threadNumber_,
+                 debug::LineMode::NEW, debug::Priority::DETAIL);
+
   double tm_pairs = timer.getElapsedTime();
 
   sortTriplets(tripletsMax, scalars, offsets, true);
   sortTriplets(tripletsMin, scalars, offsets, false);
 
   const auto tm_sort = timer.getElapsedTime();
-  if(debugLevel_ > 3) {
-    std::cout << "TRIPLETS SORT " << tm_sort - tm_pairs << std::endl;
-  }
+  this->printMsg("TRIPLETS SORT", 1.0, tm_sort - tm_pairs, this->threadNumber_,
+                 debug::LineMode::NEW, debug::Priority::DETAIL);
 
   typename std::remove_reference<decltype(CTDiagram)>::type CTDiagramMin{},
     CTDiagramMax{};
@@ -855,9 +852,9 @@ void ttk::ProgressiveTopology::computePersistencePairsFromSaddles(
   CTDiagram = std::move(CTDiagramMin);
   CTDiagram.insert(CTDiagram.end(), CTDiagramMax.begin(), CTDiagramMax.end());
 
-  if(debugLevel_ > 3) {
-    std::cout << "PAIRS " << timer.getElapsedTime() - tm_sort << std::endl;
-  }
+  this->printMsg("PAIRS", 1.0, timer.getElapsedTime() - tm_sort,
+                 this->threadNumber_, debug::LineMode::NEW,
+                 debug::Priority::DETAIL);
 }
 
 template <typename ScalarType, typename OffsetType>
@@ -948,11 +945,10 @@ void ttk::ProgressiveTopology::tripletsToPersistencePairs(
     }
   }
 
-  if(debugLevel_ > 3) {
-    std::string prefix = splitTree ? "[sad-max]" : "[min-sad]";
-    std::cout << prefix << "  found all pairs in " << tm.getElapsedTime()
-              << " s." << std::endl;
-  }
+  const std::string ptype = splitTree ? "sad-max" : "min-sad";
+  this->printMsg("found all " + ptype + " pairs", 1.0, tm.getElapsedTime(),
+                 this->threadNumber_, debug::LineMode::NEW,
+                 debug::Priority::DETAIL);
 }
 
 template <typename ScalarType, typename OffsetType>
@@ -1045,9 +1041,8 @@ void ttk::ProgressiveTopology::updateCriticalPoints(
     }
   }
 
-  if(debugLevel_ > 3) {
-    std::cout << "MONOTONY " << tm.getElapsedTime() << " s." << std::endl;
-  }
+  this->printMsg("MONOTONY", 1.0, tm.getElapsedTime(), this->threadNumber_,
+                 debug::LineMode::NEW, debug::Priority::DETAIL);
 
   double t_critical = tm.getElapsedTime();
   // second Loop  process or reprocess
@@ -1088,10 +1083,9 @@ void ttk::ProgressiveTopology::updateCriticalPoints(
 
   } // end for openmp
 
-  if(debugLevel_ > 3) {
-    std::cout << "CRITICAL POINTS UPDATE " << tm.getElapsedTime() - t_critical
-              << std::endl;
-  }
+  this->printMsg("CRITICAL POINTS UPDATE", 1.0,
+                 tm.getElapsedTime() - t_critical, this->threadNumber_,
+                 debug::LineMode::NEW, debug::Priority::DETAIL);
 }
 
 template <typename ScalarType, typename OffsetType>
@@ -1133,9 +1127,8 @@ void ttk::ProgressiveTopology::updateSaddleSeeds(
     }
   }
 
-  if(debugLevel_ > 3) {
-    std::cout << "MONOTONY " << tm.getElapsedTime() << " s." << std::endl;
-  }
+  this->printMsg("MONOTONY", 1.0, tm.getElapsedTime(), this->threadNumber_,
+                 debug::LineMode::NEW, debug::Priority::DETAIL);
 
   double t_critical = tm.getElapsedTime();
   // second Loop  process or reprocess
@@ -1181,13 +1174,12 @@ void ttk::ProgressiveTopology::updateSaddleSeeds(
     isUpdatedMax[globalId] = 0;
   } // end for openmp
 
-  if(debugLevel_ > 3) {
-    std::cout << "CRITICAL POINTS UPDATE " << tm.getElapsedTime() - t_critical
-              << std::endl;
-  }
+  this->printMsg("CRITICAL POINTS UPDATE", 1.0,
+                 tm.getElapsedTime() - t_critical, this->threadNumber_,
+                 debug::LineMode::NEW, debug::Priority::DETAIL);
 }
-template <typename ScalarType, typename OffsetType>
 
+template <typename ScalarType, typename OffsetType>
 bool ttk::ProgressiveTopology::getMonotonyChangeByOldPointCP(
   const SimplexId vertexId,
   const std::vector<polarity> &isNew,
@@ -1361,10 +1353,9 @@ void ttk::ProgressiveTopology::initCriticalPoints(
     isNew[globalId] = 0;
   }
 
-  if(debugLevel_ > 3) {
-    std::cout << "initial critical types in " << timer.getElapsedTime() << " s."
-              << std::endl;
-  }
+  this->printMsg("initial critical types", 1.0, timer.getElapsedTime(),
+                 this->threadNumber_, debug::LineMode::NEW,
+                 debug::Priority::DETAIL);
 }
 
 template <typename ScalarType, typename OffsetType>
@@ -1402,10 +1393,9 @@ void ttk::ProgressiveTopology::initSaddleSeeds(
     isNew[globalId] = 0;
   }
 
-  if(debugLevel_ > 3) {
-    std::cout << "initial critical types in " << timer.getElapsedTime() << " s."
-              << std::endl;
-  }
+  this->printMsg("initial critical types", 1.0, timer.getElapsedTime(),
+                 this->threadNumber_, debug::LineMode::NEW,
+                 debug::Priority::DETAIL);
 }
 
 template <typename ScalarType, typename OffsetType>
@@ -1455,9 +1445,9 @@ void ttk::ProgressiveTopology::initPropagation(
   globalMin_ = *std::min_element(globalMinThr.begin(), globalMinThr.end(), lt);
   globalMax_ = *std::max_element(globalMaxThr.begin(), globalMaxThr.end(), lt);
 
-  if(debugLevel_ > 3) {
-    std::cout << "FIRSTPROPAGATION " << timer.getElapsedTime() << std::endl;
-  }
+  this->printMsg("FIRSTPROPAGATION", 1.0, timer.getElapsedTime(),
+                 this->threadNumber_, debug::LineMode::NEW,
+                 debug::Priority::DETAIL);
 }
 
 template <typename ScalarType, typename OffsetType>
@@ -1520,9 +1510,9 @@ void ttk::ProgressiveTopology::updatePropagation(
   globalMin_ = *std::min_element(globalMinThr.begin(), globalMinThr.end(), lt);
   globalMax_ = *std::max_element(globalMaxThr.begin(), globalMaxThr.end(), lt);
 
-  if(debugLevel_ > 3) {
-    std::cout << "PROPAGATION UPDATE " << tm.getElapsedTime() << std::endl;
-  }
+  this->printMsg("PROPAGATION UPDATE", 1.0, tm.getElapsedTime(),
+                 this->threadNumber_, debug::LineMode::NEW,
+                 debug::Priority::DETAIL);
 }
 
 template <typename ScalarType, typename OffsetType>

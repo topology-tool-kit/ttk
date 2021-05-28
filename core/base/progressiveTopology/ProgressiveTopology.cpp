@@ -152,7 +152,7 @@ void ttk::ProgressiveTopology::getTripletsFromSaddles(
 #ifndef TTK_ENABLE_KAMIKAZE
   const auto &repsm = vertexReps[m];
   if(m == -1 || repsm.empty() || repsm[0] != m) {
-    std::cout << "HERE PROBLEM" << std::endl;
+    this->printErr("HERE PROBLEM");
   }
 #endif // TTK_ENABLE_KAMIKAZE
   for(size_t i = 1; i < reps.size(); i++) {
@@ -160,7 +160,7 @@ void ttk::ProgressiveTopology::getTripletsFromSaddles(
 #ifndef TTK_ENABLE_KAMIKAZE
     const auto &repsn = vertexReps[n];
     if(n == -1 || repsn.empty() || repsn[0] != n) {
-      std::cout << "HERE2 PROBLEM" << std::endl;
+      this->printErr("HERE2 PROBLEM");
     }
 #endif // TTK_ENABLE_KAMIKAZE
     triplets.emplace_back(vertexId, m, n);
