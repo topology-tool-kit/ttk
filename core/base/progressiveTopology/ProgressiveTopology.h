@@ -28,23 +28,11 @@
 
 #include <tuple>
 
-#if defined(__GNUC__) && !defined(__clang__)
-#include <parallel/algorithm>
-#endif
-
 namespace ttk {
 
   /**
    * @brief Persistence pair type (with persistence in double)
    */
-
-#if defined(_GLIBCXX_PARALLEL_FEATURES_H) && defined(TTK_ENABLE_OPENMP)
-#define PARALLEL_SORT                       \
-  omp_set_num_threads(this->threadNumber_); \
-  __gnu_parallel::sort
-#else
-#define PARALLEL_SORT std::sort
-#endif // _GLIBCXX_PARALLEL_FEATURES_H && TTK_ENABLE_OPENMP
 
   using triplet = std::tuple<ttk::SimplexId, ttk::SimplexId, ttk::SimplexId>;
   using polarity = unsigned char;
@@ -883,7 +871,7 @@ void ttk::ProgressiveTopology::sortTriplets(std::vector<triplet> &triplets,
       return lt(m1, m2) == splitTree;
   };
 
-  PARALLEL_SORT(triplets.begin(), triplets.end(), cmp);
+  PSORT(this->threadNumber_)(triplets.begin(), triplets.end(), cmp);
 }
 
 template <typename scalarType, typename offsetType>
