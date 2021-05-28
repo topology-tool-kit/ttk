@@ -81,12 +81,8 @@ namespace ttk {
     struct PersistencePair {
       /** first (lower) vertex id */
       ttk::SimplexId birth{};
-      /** first vertex type */
-      ttk::CriticalType birthType{};
       /** second (higher) vertex id */
       ttk::SimplexId death{};
-      /** second vertex type */
-      ttk::CriticalType deathType{};
       /** pair type (min-saddle: 0, saddle-saddle: 1, saddle-max: 2) */
       ttk::SimplexId pairType{};
 
@@ -115,18 +111,10 @@ namespace ttk {
       inputOffsets_ = data;
       return 0;
     }
-    // inline int setOutputCTDiagram(void *data) {
-    //   CTDiagram_ = data;
-    //   return 0;
-    // }
 
   protected:
     void sortPersistenceDiagram2(std::vector<PersistencePair> &diagram,
                                  const SimplexId *const offsets) const;
-    // template <typename scalarType>
-    // int sortPersistenceDiagram(std::vector<PersistencePair> &diagram,
-    //                            const scalarType *const scalars,
-    //                            const SimplexId *const offsets) const;
 
     /* PROGRESSIVE MODE DECLARATIONS */
   public:
@@ -399,7 +387,6 @@ namespace ttk {
     ImplicitTriangulation *triangulation_{};
     void *inputScalars_{};
     void *inputOffsets_{};
-    // void *CTDiagram_{};
 
     // new non-progressive approach
     MultiresTriangulation multiresTriangulation_{};
@@ -439,34 +426,6 @@ namespace ttk {
   };
 } // namespace ttk
 
-// template <typename scalarType>
-// int ttk::ProgressiveTopology::sortPersistenceDiagram(
-//   std::vector<PersistencePair> &diagram,
-//   const scalarType *const scalars,
-//   const SimplexId *const offsets) const {
-//   auto cmp
-//     = [scalars, offsets](
-//         const std::tuple<ttk::SimplexId, ttk::CriticalType, ttk::SimplexId,
-//                          ttk::CriticalType, scalarType, ttk::SimplexId> &a,
-//         const std::tuple<ttk::SimplexId, ttk::CriticalType, ttk::SimplexId,
-//                          ttk::CriticalType, scalarType, ttk::SimplexId> &b) {
-//         const ttk::SimplexId idA = std::get<0>(a);
-//         const ttk::SimplexId idB = std::get<0>(b);
-//         const ttk::SimplexId va = offsets[idA];
-//         const ttk::SimplexId vb = offsets[idB];
-//         const scalarType sa = scalars[idA];
-//         const scalarType sb = scalars[idB];
-
-//         if(sa != sb)
-//           return sa < sb;
-//         else
-//           return va < vb;
-//       };
-
-//   std::sort(diagram.begin(), diagram.end(), cmp);
-
-//   return 0;
-// }
 template <typename scalarType>
 int ttk::ProgressiveTopology::computeProgressivePD(
   std::vector<PersistencePair> &CTDiagram,
@@ -497,7 +456,6 @@ int ttk::ProgressiveTopology::executeCPProgressive(
   Timer timer;
 
   decimationLevel_ = startingDecimationLevel_;
-  // multiresTriangulation_.setTriangulation(triangulation_);
   multiresTriangulation_.setDecimationLevel(0);
   const SimplexId vertexNumber = multiresTriangulation_.getVertexNumber();
 
@@ -522,8 +480,6 @@ int ttk::ProgressiveTopology::executeCPProgressive(
   std::vector<polarity> toPropageMin{}, toPropageMax{};
   std::vector<polarity> isUpToDateMin{}, isUpToDateMax{};
   std::vector<char> vertexTypes{};
-
-  // std::vector<char> vertexTypes{};
 
   if(computePersistenceDiagram) {
     saddleCCMin.resize(vertexNumber);
@@ -583,14 +539,6 @@ int ttk::ProgressiveTopology::executeCPProgressive(
     if(boundReps[i] != -1) {
       buildVertexLinkByBoundary(boundReps[i], vertexLinkByBoundaryType);
     }
-  }
-
-  if(debugLevel_ > 4) {
-    std::cout << "boundary representatives : ";
-    for(auto bb : boundReps) {
-      std::cout << ", " << bb;
-    }
-    std::cout << std::endl;
   }
 
   printMsg(this->resolutionInfoString(), 0,
@@ -760,7 +708,7 @@ int ttk::ProgressiveTopology::resumeProgressive(int computePersistenceDiagram,
 
     printMsg(this->resolutionInfoString(), 1, timer.getElapsedTime(),
              this->threadNumber_);
-    //
+
     // skip subsequent propagations if time limit is exceeded
     stopComputationIf(timer.getElapsedTime() + nextItDuration
                       > this->timeLimit_);
@@ -855,8 +803,6 @@ void ttk::ProgressiveTopology::sortTriplets(std::vector<triplet> &triplets,
 
   const auto lt = [=](const SimplexId a, const SimplexId b) -> bool {
     return offsets[a] < offsets[b];
-    // return (scalars[a] < scalars[b])
-    //        || (scalars[a] == scalars[b] && offsets[a] < offsets[b]);
   };
 
   // Sorting step
@@ -890,8 +836,6 @@ void ttk::ProgressiveTopology::tripletsToPersistencePairs(
 
   const auto lt = [=](const SimplexId a, const SimplexId b) -> bool {
     return offsets[a] < offsets[b];
-    // return (scalars[a] < scalars[b])
-    //        || (scalars[a] == scalars[b] && offsets[a] < offsets[b]);
   };
 
   const auto getRep = [&](SimplexId v) -> SimplexId {
@@ -953,9 +897,6 @@ void ttk::ProgressiveTopology::buildVertexLinkPolarity(
     SimplexId neighborId0 = -1;
     multiresTriangulation_.getVertexNeighbor(vertexId, i, neighborId0);
     const bool lower0 = offsets[neighborId0] < offsets[vertexId];
-    // const bool lower0 = (scalars[neighborId0] < scalars[vertexId])
-    //                     || (scalars[neighborId0] == scalars[vertexId]
-    //                         && offsets[neighborId0] < offsets[vertexId]);
     const polarity isUpper0 = static_cast<polarity>(!lower0) * 255;
     vlp[i] = std::make_pair(isUpper0, 0);
   }
@@ -1186,9 +1127,6 @@ bool ttk::ProgressiveTopology::getMonotonyChangeByOldPointCP(
 
     // check for monotony changes
     const bool lower = offsets[neighborId] < offsets[vertexId];
-    // const bool lower = (scalars[neighborId] < scalars[vertexId])
-    //                    || (scalars[neighborId] == scalars[vertexId]
-    //                        && offsets[neighborId] < offsets[vertexId]);
     const polarity isUpper = lower ? 0 : 255;
     const polarity isUpperOld = vlp[i].first;
 
@@ -1231,9 +1169,6 @@ ttk::SimplexId ttk::ProgressiveTopology::propageFromSaddles(
 
   const auto gt = [=](const SimplexId a, const SimplexId b) {
     return (offsets[a] > offsets[b]) == splitTree;
-    // return ((scalars[a] > scalars[b])
-    //         || (scalars[a] == scalars[b] && offsets[a] > offsets[b]))
-    //        == splitTree;
   };
 
   if(updated) {
@@ -1426,8 +1361,6 @@ void ttk::ProgressiveTopology::initPropagation(
 
   const auto lt = [=](const SimplexId a, const SimplexId b) -> bool {
     return offsets[a] < offsets[b];
-    // return (scalars[a] < scalars[b])
-    //        || (scalars[a] == scalars[b] && offsets[a] < offsets[b]);
   };
 
   globalMin_ = *std::min_element(globalMinThr.begin(), globalMinThr.end(), lt);
@@ -1456,18 +1389,6 @@ void ttk::ProgressiveTopology::updatePropagation(
   Timer tm{};
   const size_t nDecVerts = multiresTriangulation_.getDecimatedVertexNumber();
 
-  if(debugLevel_ > 5) {
-    const auto pred = [](const polarity a) { return a > 0; };
-    const auto numberOfCandidatesToPropageMax
-      = std::count_if(toPropageMax.begin(), toPropageMax.end(), pred);
-    std::cout << " sad-max we have " << numberOfCandidatesToPropageMax
-              << " vertices to propage from outta " << nDecVerts << std::endl;
-    const auto numberOfCandidatesToPropageMin
-      = std::count_if(toPropageMin.begin(), toPropageMin.end(), pred);
-    std::cout << " min-sad we have " << numberOfCandidatesToPropageMin
-              << " vertices to propage from outta " << nDecVerts << std::endl;
-  }
-
   std::vector<SimplexId> globalMaxThr(threadNumber_, 0);
   std::vector<SimplexId> globalMinThr(threadNumber_, 0);
 
@@ -1491,8 +1412,6 @@ void ttk::ProgressiveTopology::updatePropagation(
 
   const auto lt = [=](const SimplexId a, const SimplexId b) -> bool {
     return offsets[a] < offsets[b];
-    // return (scalars[a] < scalars[b])
-    //        || (scalars[a] == scalars[b] && offsets[a] < offsets[b]);
   };
 
   globalMin_ = *std::min_element(globalMinThr.begin(), globalMinThr.end(), lt);
@@ -1513,9 +1432,6 @@ void ttk::ProgressiveTopology::updateLinkPolarity(
   for(size_t i = 0; i < vlp.size(); i++) {
     SimplexId neighborId = -1;
     multiresTriangulation_.getVertexNeighbor(vertexId, i, neighborId);
-    // const bool lower = (scalars[neighborId] < scalars[vertexId])
-    //                    || (scalars[neighborId] == scalars[vertexId]
-    //                        && offsets[neighborId] < offsets[vertexId]);
     const bool lower = offsets[neighborId] < offsets[vertexId];
     const polarity isUpper = lower ? 0 : 255;
     vlp[i] = std::make_pair(isUpper, 0);
