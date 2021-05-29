@@ -173,41 +173,14 @@ else()
 endif()
 # END_FIND_GRAPHVIZ
 
-# START_FIND_SQLITE3
-find_path(SQLITE3_INCLUDE_DIR sqlite3.h
-  PATHS
-    /usr/include
-    /usr/local/include
-    )
-set(SQLITE3_NAMES ${SQLITE3_NAMES} sqlite3)
-find_library(SQLITE3_LIBRARY
-  NAMES
-    ${SQLITE3_NAMES}
-  PATHS
-    $ENV{SQLITE3_ROOT_DIR}/lib /opt/sqlite3/lib
-    )
-if (SQLITE3_LIBRARY AND SQLITE3_INCLUDE_DIR)
-  set(SQLITE3_LIBRARIES ${SQLITE3_LIBRARY})
-  set(SQLITE3_FOUND "YES")
-else (SQLITE3_LIBRARY AND SQLITE3_INCLUDE_DIR)
-  set(SQLITE3_FOUND "NO")
-endif (SQLITE3_LIBRARY AND SQLITE3_INCLUDE_DIR)
-if (SQLITE3_FOUND)
-  if (NOT SQLITE3_FIND_QUIETLY)
-    message(STATUS "Found SQLite3 (${SQLITE3_LIBRARIES})")
-  endif (NOT SQLITE3_FIND_QUIETLY)
-else (SQLITE3_FOUND)
-  if (SQLITE3_FIND_REQUIRED)
-    message(FATAL_ERROR "Could not find SQLITE3 library...")
-  endif (SQLITE3_FIND_REQUIRED)
-endif (SQLITE3_FOUND)
-mark_as_advanced(SQLITE3_LIBRARY SQLITE3_INCLUDE_DIR)
-# END_FINDSQLITE3
-if(SQLITE3_FOUND)
+# FindSQLite3 supported since CMake 3.14
+find_package(SQLite3 QUIET)
+if(SQLite3_FOUND)
   option(TTK_ENABLE_SQLITE3 "Enable SQLITE3 support" ON)
+  message(STATUS "Found SQLite3 ${SQLite3_VERSION} (${SQLite3_LIBRARIES})")
 else()
   option(TTK_ENABLE_SQLITE3 "Enable SQLITE3 support" OFF)
-  message(STATUS "SQLITE3 not found, disabling SQLITE3 support in TTK.")
+  message(STATUS "SQLite3 not found, disabling SQLite3 support in TTK.")
 endif()
 
 find_package(ZFP QUIET)
@@ -234,7 +207,8 @@ if(EIGEN3_FOUND)
   find_package(Spectra QUIET)
   if(Spectra_FOUND)
     option(TTK_ENABLE_SPECTRA "Enable Spectra support" ON)
-    message(STATUS "Found Spectra ${Spectra_VERSION} (${SPECTRA_INCLUDE_DIR})")
+    get_property(SPECTRA_INCLUDES TARGET Spectra::Spectra PROPERTY INTERFACE_INCLUDE_DIRECTORIES)
+    message(STATUS "Found Spectra ${Spectra_VERSION} (${SPECTRA_INCLUDES})")
   else()
     option(TTK_ENABLE_SPECTRA "Enable Spectra support" OFF)
     message(STATUS "Spectra >=0.9.0 not found, disabling Spectra support in TTK.")
