@@ -54,6 +54,12 @@ size_t ExplicitTriangulation::footprint(size_t size) const {
 }
 
 int ExplicitTriangulation::preconditionBoundaryEdgesInternal() {
+
+  if(this->cellArray_ == nullptr || this->vertexNumber_ == 0) {
+    this->printErr("Empty dataset, precondition skipped");
+    return 1;
+  }
+
   if((!boundaryEdges_.empty()) && (boundaryEdges_.size() == edgeList_.size())) {
     return 0;
   }
@@ -93,6 +99,12 @@ int ExplicitTriangulation::preconditionBoundaryEdgesInternal() {
 }
 
 int ExplicitTriangulation::preconditionBoundaryTrianglesInternal() {
+
+  if(this->cellArray_ == nullptr || this->vertexNumber_ == 0) {
+    this->printErr("Empty dataset, precondition skipped");
+    return 1;
+  }
+
   if(getDimensionality() == 2)
     return 0;
 
@@ -126,6 +138,12 @@ int ExplicitTriangulation::preconditionBoundaryTrianglesInternal() {
 }
 
 int ExplicitTriangulation::preconditionBoundaryVerticesInternal() {
+
+  if(this->cellArray_ == nullptr || this->vertexNumber_ == 0) {
+    this->printErr("Empty dataset, precondition skipped");
+    return 1;
+  }
+
   if((!boundaryVertices_.empty())
      && ((SimplexId)boundaryVertices_.size() == vertexNumber_))
     return 0;
@@ -177,6 +195,12 @@ int ExplicitTriangulation::preconditionBoundaryVerticesInternal() {
 }
 
 int ExplicitTriangulation::preconditionCellEdgesInternal() {
+
+  if(this->cellArray_ == nullptr || this->vertexNumber_ == 0) {
+    this->printErr("Empty dataset, precondition skipped");
+    return 1;
+  }
+
   OneSkeleton os;
   os.setWrapper(this);
 
@@ -192,6 +216,11 @@ int ExplicitTriangulation::preconditionCellEdgesInternal() {
 }
 
 int ExplicitTriangulation::preconditionCellNeighborsInternal() {
+
+  if(this->cellArray_ == nullptr || this->vertexNumber_ == 0) {
+    this->printErr("Empty dataset, precondition skipped");
+    return 1;
+  }
 
   if(cellNeighborData_.empty()) {
     if(getDimensionality() == 3) {
@@ -212,7 +241,12 @@ int ExplicitTriangulation::preconditionCellNeighborsInternal() {
 
 int ExplicitTriangulation::preconditionCellTrianglesInternal() {
 
-  if(!tetraTriangleList_.size()) {
+  if(this->cellArray_ == nullptr || this->vertexNumber_ == 0) {
+    this->printErr("Empty dataset, precondition skipped");
+    return 1;
+  }
+
+  if(tetraTriangleList_.empty()) {
 
     TwoSkeleton twoSkeleton;
     twoSkeleton.setWrapper(this);
@@ -250,7 +284,12 @@ int ExplicitTriangulation::preconditionCellTrianglesInternal() {
 
 int ExplicitTriangulation::preconditionEdgesInternal() {
 
-  if(!edgeList_.size()) {
+  if(this->cellArray_ == nullptr || this->vertexNumber_ == 0) {
+    this->printErr("Empty dataset, precondition skipped");
+    return 1;
+  }
+
+  if(edgeList_.empty()) {
     OneSkeleton oneSkeleton;
     oneSkeleton.setWrapper(this);
     // also computes edgeStar and triangleEdge / tetraEdge lists for free...
@@ -267,6 +306,11 @@ int ExplicitTriangulation::preconditionEdgesInternal() {
 }
 
 int ExplicitTriangulation::preconditionEdgeLinksInternal() {
+
+  if(this->cellArray_ == nullptr || this->vertexNumber_ == 0) {
+    this->printErr("Empty dataset, precondition skipped");
+    return 1;
+  }
 
   if(edgeLinkData_.empty()) {
 
@@ -299,6 +343,11 @@ int ExplicitTriangulation::preconditionEdgeLinksInternal() {
 
 int ExplicitTriangulation::preconditionEdgeStarsInternal() {
 
+  if(this->cellArray_ == nullptr || this->vertexNumber_ == 0) {
+    this->printErr("Empty dataset, precondition skipped");
+    return 1;
+  }
+
   if(edgeStarData_.empty()) {
     OneSkeleton oneSkeleton;
     oneSkeleton.setWrapper(this);
@@ -309,6 +358,11 @@ int ExplicitTriangulation::preconditionEdgeStarsInternal() {
 }
 
 int ExplicitTriangulation::preconditionEdgeTrianglesInternal() {
+
+  if(this->cellArray_ == nullptr || this->vertexNumber_ == 0) {
+    this->printErr("Empty dataset, precondition skipped");
+    return 1;
+  }
 
   if(edgeTriangleData_.empty()) {
     preconditionTriangleEdgesInternal();
@@ -325,7 +379,12 @@ int ExplicitTriangulation::preconditionEdgeTrianglesInternal() {
 
 int ExplicitTriangulation::preconditionTrianglesInternal() {
 
-  if(!triangleList_.size()) {
+  if(this->cellArray_ == nullptr || this->vertexNumber_ == 0) {
+    this->printErr("Empty dataset, precondition skipped");
+    return 1;
+  }
+
+  if(triangleList_.empty()) {
 
     TwoSkeleton twoSkeleton;
     twoSkeleton.setWrapper(this);
@@ -339,7 +398,12 @@ int ExplicitTriangulation::preconditionTrianglesInternal() {
 
 int ExplicitTriangulation::preconditionTriangleEdgesInternal() {
 
-  if(!triangleEdgeList_.size()) {
+  if(this->cellArray_ == nullptr || this->vertexNumber_ == 0) {
+    this->printErr("Empty dataset, precondition skipped");
+    return 1;
+  }
+
+  if(triangleEdgeList_.empty()) {
 
     // WARNING
     // here triangleStarList and cellTriangleList will be computed (for
@@ -359,6 +423,11 @@ int ExplicitTriangulation::preconditionTriangleEdgesInternal() {
 
 int ExplicitTriangulation::preconditionTriangleLinksInternal() {
 
+  if(this->cellArray_ == nullptr || this->vertexNumber_ == 0) {
+    this->printErr("Empty dataset, precondition skipped");
+    return 1;
+  }
+
   if(triangleLinkData_.empty()) {
 
     preconditionTriangleStarsInternal();
@@ -374,6 +443,11 @@ int ExplicitTriangulation::preconditionTriangleLinksInternal() {
 
 int ExplicitTriangulation::preconditionTriangleStarsInternal() {
 
+  if(this->cellArray_ == nullptr || this->vertexNumber_ == 0) {
+    this->printErr("Empty dataset, precondition skipped");
+    return 1;
+  }
+
   if(triangleStarData_.empty()) {
 
     TwoSkeleton twoSkeleton;
@@ -387,10 +461,15 @@ int ExplicitTriangulation::preconditionTriangleStarsInternal() {
 
 int ExplicitTriangulation::preconditionVertexEdgesInternal() {
 
+  if(this->cellArray_ == nullptr || this->vertexNumber_ == 0) {
+    this->printErr("Empty dataset, precondition skipped");
+    return 1;
+  }
+
   if((SimplexId)vertexEdgeData_.subvectorsNumber() != vertexNumber_) {
     ZeroSkeleton zeroSkeleton;
 
-    if(!edgeList_.size()) {
+    if(edgeList_.empty()) {
       OneSkeleton oneSkeleton;
       oneSkeleton.setWrapper(this);
       oneSkeleton.buildEdgeList(vertexNumber_, *cellArray_, &edgeList_);
@@ -404,6 +483,11 @@ int ExplicitTriangulation::preconditionVertexEdgesInternal() {
 }
 
 int ExplicitTriangulation::preconditionVertexLinksInternal() {
+
+  if(this->cellArray_ == nullptr || this->vertexNumber_ == 0) {
+    this->printErr("Empty dataset, precondition skipped");
+    return 1;
+  }
 
   if((SimplexId)vertexLinkData_.subvectorsNumber() != vertexNumber_) {
 
@@ -434,6 +518,11 @@ int ExplicitTriangulation::preconditionVertexLinksInternal() {
 
 int ExplicitTriangulation::preconditionVertexNeighborsInternal() {
 
+  if(this->cellArray_ == nullptr || this->vertexNumber_ == 0) {
+    this->printErr("Empty dataset, precondition skipped");
+    return 1;
+  }
+
   if((SimplexId)vertexNeighborData_.subvectorsNumber() != vertexNumber_) {
     ZeroSkeleton zeroSkeleton;
     zeroSkeleton.setWrapper(this);
@@ -444,6 +533,11 @@ int ExplicitTriangulation::preconditionVertexNeighborsInternal() {
 }
 
 int ExplicitTriangulation::preconditionVertexStarsInternal() {
+
+  if(this->cellArray_ == nullptr || this->vertexNumber_ == 0) {
+    this->printErr("Empty dataset, precondition skipped");
+    return 1;
+  }
 
   if((SimplexId)vertexStarData_.subvectorsNumber() != vertexNumber_) {
     ZeroSkeleton zeroSkeleton;
@@ -456,6 +550,11 @@ int ExplicitTriangulation::preconditionVertexStarsInternal() {
 }
 
 int ExplicitTriangulation::preconditionVertexTrianglesInternal() {
+
+  if(this->cellArray_ == nullptr || this->vertexNumber_ == 0) {
+    this->printErr("Empty dataset, precondition skipped");
+    return 1;
+  }
 
   if((SimplexId)vertexTriangleData_.subvectorsNumber() != vertexNumber_) {
 
