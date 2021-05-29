@@ -71,12 +71,7 @@ namespace ttk {
       multiresTriangulation_.setTriangulation(triangulation_);
     }
 
-  protected:
-    void sortPersistenceDiagram2(std::vector<PersistencePair> &diagram,
-                                 const SimplexId *const offsets) const;
-
     /* PROGRESSIVE MODE DECLARATIONS */
-  public:
     int executeCPProgressive(int computePersistenceDiagram,
                              const SimplexId *inputOffsets);
 
@@ -137,6 +132,9 @@ namespace ttk {
     }
 
   protected:
+    void sortPersistenceDiagram2(std::vector<PersistencePair> &diagram,
+                                 const SimplexId *const offsets) const;
+
     // maximum link size in 3D
     static const size_t nLink_ = 27;
     using VLBoundaryType
