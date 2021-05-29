@@ -258,8 +258,9 @@ int ttk::MorseSmaleComplex3D::setAscendingSeparatrices2(
     const char onBoundary
       = std::count_if(sepSaddles.begin(), sepSaddles.end(),
                       [&triangulation](const SimplexId a) {
-                        return triangulation.isEdgeOnBoundary(a);
-                      });
+                        return triangulation.isTriangleOnBoundary(a);
+                      })
+        + triangulation.isEdgeOnBoundary(src.id_);
 
     sepIds[i] = sepId;
     sepSourceIds[i] = src.id_;
@@ -524,7 +525,8 @@ int ttk::MorseSmaleComplex3D::setDescendingSeparatrices2(
       = std::count_if(sepSaddles.begin(), sepSaddles.end(),
                       [&triangulation](const SimplexId a) {
                         return triangulation.isEdgeOnBoundary(a);
-                      });
+                      })
+        + triangulation.isTriangleOnBoundary(src.id_);
 
     for(size_t j = 0; j < sepGeom.size(); ++j) {
       const auto &cell = sepGeom[j];
