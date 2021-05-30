@@ -58,9 +58,9 @@ jobs:
           libsqlite3-dev \
           graphviz \
           ninja-build \
-          python3-sklearn \
           zlib1g-dev \
           dpkg-dev
+        sudo python3 -m pip install scikit-learn
 
     - name: Install optional dependencies
       uses: ./.github/actions/install-deps-unix
