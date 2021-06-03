@@ -342,7 +342,7 @@ namespace ttk {
 
       const TT *triangulation,
       const IT *order,
-      const DT *inputScalars,
+      const DT *scalars,
       const DT persistenceThreshold) const {
 
       // pointer used to compare against representative
@@ -353,7 +353,7 @@ namespace ttk {
       auto queue = &currentPropagation->queue;
       queue->emplace(order[segmentId], segmentId);
 
-      DT s0 = inputScalars[segmentId];
+      DT s0 = scalars[segmentId];
 
       queueMask[segmentId] = segmentId;
 
@@ -369,7 +369,7 @@ namespace ttk {
           continue;
 
         // if propagation exceeds persistence threshold stop
-        const auto &s1 = inputScalars[v];
+        const auto &s1 = scalars[v];
         const auto &sd = s0 < s1 ? s1 - s0 : s0 - s1;
         if(sd > persistenceThreshold) {
           currentPropagation->aborted = true;
@@ -447,7 +447,7 @@ namespace ttk {
 
           queue = &currentPropagation->queue;
           segmentId = currentPropagation->criticalPoints[0];
-          s0 = inputScalars[segmentId];
+          s0 = scalars[segmentId];
         }
 
         // mark vertex as visited and continue
@@ -504,8 +504,8 @@ namespace ttk {
       IT *queueMask,
 
       const TT *triangulation,
-      const IT *inputOrder,
-      const DT *inputScalars,
+      const IT *order,
+      const DT *scalars,
       const DT persistenceThreshold) const {
       ttk::Timer timer;
       const IT nPropagations = propagations.size();
@@ -523,7 +523,7 @@ namespace ttk {
           = this->computePersistenceSensitivePropagation<IT, DT, TT>(
             propagations[p], propagationMask, segmentation, queueMask,
 
-            triangulation, inputOrder, inputScalars, persistenceThreshold);
+            triangulation, order, scalars, persistenceThreshold);
 
         if(!localStatus)
           status = 0;
@@ -966,24 +966,18 @@ namespace ttk {
     };
 
     template <typename DT, typename IT>
-    int flattenScalars(DT *outputScalars,
+    int flattenScalars(DT *scalars,
 
-                       const std::vector<Propagation<IT>> &propagationsMin,
-                       const std::vector<Propagation<IT>> &propagationsMax,
-                       const DT *inputScalars,
-                       const IT &nVertices) const {
+                       const IT &nVertices,
+                       const std::vector<Propagation<IT>> &propagationsA,
+                       const std::vector<Propagation<IT>> &propagationsB
+                       = {}) const {
       ttk::Timer timer;
       this->printMsg("Flattening Scalar Array", 0, 0, this->threadNumber_,
                      debug::LineMode::REPLACE);
 
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for schedule(dynamic) num_threads(this->threadNumber_)
-#endif // TTK_ENABLE_OPENMP
-      for(IT v = 0; v < nVertices; v++)
-        outputScalars[v] = inputScalars[v];
-
       std::vector<const std::vector<Propagation<IT>> *> propagationsPair
-        = {&propagationsMin, &propagationsMax};
+        = {&propagationsA, &propagationsB};
 
       for(const auto propagations : propagationsPair) {
         const IT nPropagations = propagations->size();
@@ -994,13 +988,12 @@ namespace ttk {
 #endif // TTK_ENABLE_OPENMP
         for(IT p = 0; p < nPropagations; p++) {
           const auto &propagation = (*propagations)[p];
-          if(propagation.parent != &propagation)
+          if(propagation.parent != &propagation || propagation.aborted)
             continue;
 
-          const auto &saddleScalar
-            = outputScalars[propagation.criticalPoints.back()];
+          const auto &saddleScalar = scalars[propagation.criticalPoints.back()];
           for(const auto &v : propagation.segment)
-            outputScalars[v] = saddleScalar;
+            scalars[v] = saddleScalar;
         }
       }
 
@@ -1173,7 +1166,8 @@ namespace ttk {
 
     template <typename IT, typename DT, class TT>
     int detectAndRemoveNonPersistentMaxima(
-      IT *outputOrder,
+      DT *scalars,
+      IT *order,
       IT *segmentation,
       IT *queueMask,
       IT *localOrder,
@@ -1182,7 +1176,6 @@ namespace ttk {
       std::vector<std::tuple<IT, IT, IT>> &sortedIndices,
 
       const TT *triangulation,
-      const DT *inputScalars,
       const DT persistenceThreshold) const {
       const IT nVertices = triangulation->getNumberOfVertices();
 
@@ -1203,7 +1196,7 @@ namespace ttk {
         localOrder, // use as maxima buffer (will be overriden by subsequent
                     // procedures)
 
-        nullptr, 0, outputOrder, triangulation);
+        nullptr, 0, order, triangulation);
       if(!status)
         return 0;
 
@@ -1211,7 +1204,7 @@ namespace ttk {
       status = this->computePersistenceSensitivePropagations<IT, DT, TT>(
         propagations, propagationMask, segmentation, queueMask,
 
-        triangulation, outputOrder, inputScalars, persistenceThreshold);
+        triangulation, order, scalars, persistenceThreshold);
       if(!status)
         return 0;
 
@@ -1234,21 +1227,25 @@ namespace ttk {
       status = this->computeLocalOrderOfSegments<IT, TT>(
         localOrder,
 
-        triangulation, segmentation, outputOrder, parentPropagations);
+        triangulation, segmentation, order, parentPropagations);
       if(!status)
         return 0;
 
       // flatten order
-      status = this->flattenOrder<IT>(outputOrder,
+      status = this->flattenOrder<IT>(order,
 
                                       parentPropagations, nVertices);
       if(!status)
         return 0;
 
       // compute global offsets
-      status = this->computeGlobalOrder<IT, IT>(outputOrder, sortedIndices,
+      status = this->computeGlobalOrder<IT, IT>(order, sortedIndices,
 
-                                                outputOrder, localOrder);
+                                                order, localOrder);
+      if(!status)
+        return 0;
+
+      status = this->flattenScalars<DT, IT>(scalars, nVertices, propagations);
       if(!status)
         return 0;
 
@@ -1285,7 +1282,7 @@ namespace ttk {
                                   const IT *inputOrder,
                                   const IT *authorizedExtremaIndices,
                                   const IT &nAuthorizedExtremaIndices,
-                                  const bool &addPerturbation) const {
+                                  const bool &computePerturbation) const {
       ttk::Timer globalTimer;
 
       IT nVertices = triangulation->getNumberOfVertices();
@@ -1346,15 +1343,13 @@ namespace ttk {
           return 0;
       }
 
-      status = this->flattenScalars<DT, IT>(outputScalars,
-
-                                            propagationsMin, propagationsMax,
-                                            inputScalars, nVertices);
+      status = this->flattenScalars<DT, IT>(
+        outputScalars, nVertices, propagationsMin, propagationsMax);
       if(!status)
         return 0;
 
-      // optionally add perturbation
-      if(addPerturbation) {
+      // optionally compute perturbation
+      if(computePerturbation) {
         this->printMsg(debug::Separator::L2);
         status = this->computeNumericalPerturbation<DT, IT>(outputScalars,
 
@@ -1380,7 +1375,7 @@ namespace ttk {
                                    const DT *inputScalars,
                                    const IT *inputOrder,
                                    const DT persistenceThreshold,
-                                   const bool &addPerturbation) const {
+                                   const bool &computePerturbation) const {
       ttk::Timer globalTimer;
 
       IT nVertices = triangulation->getNumberOfVertices();
@@ -1400,6 +1395,7 @@ namespace ttk {
 
                                nVertices);
 
+      // Minima
       {
         this->printMsg("----------- [Removing Non-Persistent Minima]",
                        ttk::debug::Separator::L2);
@@ -1412,10 +1408,11 @@ namespace ttk {
           return 0;
 
         status = this->detectAndRemoveNonPersistentMaxima<IT, DT, TT>(
-          outputOrder, segmentation.data(), queueMask.data(), localOrder.data(),
-          propagationMask.data(), propagationsMin, sortedIndices,
+          outputScalars, outputOrder, segmentation.data(), queueMask.data(),
+          localOrder.data(), propagationMask.data(), propagationsMin,
+          sortedIndices,
 
-          triangulation, inputScalars, persistenceThreshold);
+          triangulation, persistenceThreshold);
         if(!status)
           return 0;
       }
@@ -1433,23 +1430,17 @@ namespace ttk {
           return 0;
 
         status = this->detectAndRemoveNonPersistentMaxima<IT, DT, TT>(
-          outputOrder, segmentation.data(), queueMask.data(), localOrder.data(),
-          propagationMask.data(), propagationsMax, sortedIndices,
+          outputScalars, outputOrder, segmentation.data(), queueMask.data(),
+          localOrder.data(), propagationMask.data(), propagationsMax,
+          sortedIndices,
 
-          triangulation, inputScalars, persistenceThreshold);
+          triangulation, persistenceThreshold);
         if(!status)
           return 0;
       }
 
-      status = this->flattenScalars<DT, IT>(outputScalars,
-
-                                            propagationsMin, propagationsMax,
-                                            inputScalars, nVertices);
-      if(!status)
-        return 0;
-
-      // optionally add perturbation
-      if(addPerturbation) {
+      // optionally compute perturbation
+      if(computePerturbation) {
         this->printMsg(debug::Separator::L2);
         status = this->computeNumericalPerturbation<DT, IT>(outputScalars,
 

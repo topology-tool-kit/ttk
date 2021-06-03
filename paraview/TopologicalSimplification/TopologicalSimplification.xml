@@ -71,9 +71,6 @@
           <DataType value="vtkDataSet" />
         </DataTypeDomain>
         <InputArrayDomain name="input_array" attribute_type="point" number_of_components="1" />
-        <Hints>
-          <Optional />
-        </Hints>
         <Documentation>
           vtkPointSet that represent the constraints of the topological simplification.
         </Documentation>
@@ -98,13 +95,6 @@
           Select the scalar field to process.
         </Documentation>
       </StringVectorProperty>
-
-      <DoubleVectorProperty name="PersistenceThreshold" command="SetPersistenceThreshold" number_of_elements="1" default_values="0">
-        <Hints>
-          <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="Constraints" value="null" />
-        </Hints>
-        <Documentation>Persistence Threshold.</Documentation>
-      </DoubleVectorProperty>
 
       <IntVectorProperty
         name="ForceInputOffsetScalarField"
@@ -230,7 +220,6 @@
 
       <PropertyGroup panel_widget="Line" label="Input options">
         <Property name="Scalar Field" />
-        <Property name="PersistenceThreshold" />
         <Property name="ForceInputVertexScalarField" />
         <Property name="Vertex Identifier Field" />
         <Property name="ForceInputOffsetScalarField" />
