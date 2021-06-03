@@ -127,6 +127,9 @@ jobs:
         cmake --build . --parallel
         sudo cmake --build . --target install
 
+    - name: Run TTK tests
+      uses: ./.github/actions/test-ttk-unix
+
     - uses: actions/checkout@v2
       with:
         repository: "pierre-guillou/ttk-data"
@@ -134,10 +137,16 @@ jobs:
         path: "ttk-data"
       name: Checkout ttk-data
 
-    - name: Run TTK tests
-      uses: ./.github/actions/test-ttk-unix
+    - name: Run ttk-data states
+      id: validate
+      shell: bash
+      run: |
+        cd ttk-data/tests
+        mkdir output_screenshots
+        python3 -u validate.py || (tar zcf screenshots.tar.gz output_screenshots && false)
 
     - name: Upload result screenshots
+      if: steps.validate.outputs.exit_code == 1
       uses: actions/upload-artifact@v2
       with:
         name: screenshots-${{ matrix.os }}.tar.gz
@@ -251,21 +260,8 @@ jobs:
         cmake --build . --parallel
         sudo cmake --build . --target install
 
-    - uses: actions/checkout@v2
-      with:
-        repository: "pierre-guillou/ttk-data"
-        ref: "dev"
-        path: "ttk-data"
-      name: Checkout ttk-data
-
     - name: Run TTK tests
       uses: ./.github/actions/test-ttk-unix
-
-    - name: Upload result screenshots
-      uses: actions/upload-artifact@v2
-      with:
-        name: screenshots-macOS.tar.gz
-        path: ttk-data/tests/screenshots.tar.gz
 
   # ------------------ #
   # Test Windows build #

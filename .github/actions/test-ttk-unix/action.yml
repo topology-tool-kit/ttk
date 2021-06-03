@@ -39,13 +39,3 @@ runs:
       run: |
         cd $GITHUB_WORKSPACE
         ttkHelloWorldCmd -i examples/data/inputData.vtu
-
-    - name: Run ttk-data states
-      shell: bash
-      run: |
-        cd ttk-data/tests
-        # macOS still needs PV_PLUGIN_PATH
-        export PV_PLUGIN_PATH=/usr/local/bin/plugins
-        mkdir output_screenshots
-        python3 -u validate.py
-        tar zcfv screenshots.tar.gz output_screenshots
