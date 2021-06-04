@@ -38,7 +38,12 @@ void DiscreteGradient::initMemory(const AbstractTriangulation &triangulation) {
   std::vector<std::vector<std::string>> rows{
     {"#Vertices", std::to_string(numberOfCells[0])},
     {"#Edges", std::to_string(numberOfCells[1])},
-    {"#Triangles", std::to_string(numberOfCells[2])}};
+  };
+
+  if(dimensionality_ >= 2) {
+    rows.emplace_back(
+      std::vector<std::string>{"#Triangles", std::to_string(numberOfCells[2])});
+  }
 
   if(dimensionality_ == 3) {
     rows.emplace_back(
