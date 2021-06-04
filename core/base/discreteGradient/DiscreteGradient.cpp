@@ -138,6 +138,10 @@ bool DiscreteGradient::isSaddle2(const Cell &cell) const {
 }
 
 bool DiscreteGradient::isMaximum(const Cell &cell) const {
+  if(dimensionality_ == 1 and cell.dim_ == 1) {
+    return (gradient_[1][cell.id_] == -1);
+  }
+
   if(dimensionality_ == 2 and cell.dim_ == 2) {
     return (gradient_[3][cell.id_] == -1);
   }
