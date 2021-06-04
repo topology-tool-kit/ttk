@@ -127,9 +127,7 @@ int ttkTopologicalSimplification::RequestData(
          ttkUtils::GetPointer<VTK_TT>(outputScalars),
          ttkUtils::GetPointer<SimplexId>(outputOrder),
 
-         static_cast<TTK_TT *>(triangulation->getData()),
-         ttkUtils::GetPointer<VTK_TT>(inputScalars),
-         ttkUtils::GetPointer<SimplexId>(inputOrder), identifiers,
+         static_cast<TTK_TT *>(triangulation->getData()), identifiers,
          numberOfConstraints, this->AddPerturbation)));
 
     // TODO: fix convention in original ttk module

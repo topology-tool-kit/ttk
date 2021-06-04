@@ -49,6 +49,12 @@ namespace ttk {
   class LocalizedTopologicalSimplification : virtual public Debug {
 
   public:
+    enum class PAIR_TYPE {
+      EXTREMUM_SADDLE = 0,
+      MINIMUM_SADDLE = 1,
+      MAXIMUM_SADDLE = 2
+    };
+
     LocalizedTopologicalSimplification() {
       this->setDebugMsgPrefix("LTS");
     };
@@ -640,9 +646,9 @@ namespace ttk {
       const IT nVertices = triangulation->getNumberOfVertices();
 
       ttk::Timer timer;
-      this->printMsg(
-        "Computing segments (" + std::to_string(nPropagations) + ")", 0, 0,
-        this->threadNumber_, debug::LineMode::REPLACE);
+      const std::string msg
+        = "Computing Segments (" + std::to_string(nPropagations) + ")";
+      this->printMsg(msg, 0, 0, this->threadNumber_, debug::LineMode::REPLACE);
 
       int status = 1;
 
@@ -663,9 +669,7 @@ namespace ttk {
 
       // print status
       if(this->debugLevel_ < 4) {
-        this->printMsg(
-          "Computing segments (" + std::to_string(nPropagations) + ")", 1,
-          timer.getElapsedTime(), this->threadNumber_);
+        this->printMsg(msg, 1, timer.getElapsedTime(), this->threadNumber_);
       } else {
 
         IT min = propagations[0]->segmentSize;
@@ -683,7 +687,7 @@ namespace ttk {
 
         avg /= nPropagations;
 
-        this->printMsg("Computing segments (" + std::to_string(nPropagations)
+        this->printMsg("Computing Segments (" + std::to_string(nPropagations)
                          + "|" + toFixed(min, nVertices) + "|"
                          + toFixed(avg, nVertices) + "|"
                          + toFixed(max, nVertices) + ")",
@@ -987,13 +991,16 @@ namespace ttk {
 #pragma omp parallel for schedule(dynamic) num_threads(this->threadNumber_)
 #endif // TTK_ENABLE_OPENMP
         for(IT p = 0; p < nPropagations; p++) {
-          const auto &propagation = (*propagations)[p];
-          if(propagation.parent != &propagation || propagation.aborted)
-            continue;
+          const auto propagation = &((*propagations)[p]);
 
-          const auto &saddleScalar = scalars[propagation.criticalPoints.back()];
-          for(const auto &v : propagation.segment)
-            scalars[v] = saddleScalar;
+          if(!propagation->aborted
+             && (propagation->parent == propagation
+                 || propagation->parent->aborted)) {
+            const auto &saddleScalar
+              = scalars[propagation->criticalPoints.back()];
+            for(const auto &v : propagation->segment)
+              scalars[v] = saddleScalar;
+          }
         }
       }
 
@@ -1003,12 +1010,11 @@ namespace ttk {
       return 1;
     };
 
-    template <typename DT, typename IT>
-    int computeGlobalOrder(IT *outputOrder,
-                           std::vector<std::tuple<DT, IT, IT>> &sortedIndices,
-
-                           const DT *rank1,
-                           const IT *rank2) const {
+    template <typename IT>
+    int computeGlobalOrder(
+      IT *order,
+      const IT *localOrder,
+      std::vector<std::tuple<IT, IT, IT>> &sortedIndices) const {
       ttk::Timer timer;
 
       const IT nVertices = sortedIndices.size();
@@ -1019,8 +1025,8 @@ namespace ttk {
 #endif // TTK_ENABLE_OPENMP
       for(IT i = 0; i < nVertices; i++) {
         auto &t = sortedIndices[i];
-        std::get<0>(t) = rank1[i];
-        std::get<1>(t) = rank2[i];
+        std::get<0>(t) = order[i];
+        std::get<1>(t) = localOrder[i];
         std::get<2>(t) = i;
       }
 
@@ -1048,7 +1054,7 @@ namespace ttk {
 #pragma omp parallel for num_threads(this->threadNumber_)
 #endif // TTK_ENABLE_OPENMP
       for(IT i = 0; i < nVertices; i++)
-        outputOrder[std::get<2>(sortedIndices[i])] = i;
+        order[std::get<2>(sortedIndices[i])] = i;
 
       this->printMsg("Computing Global Order", 1, timer.getElapsedTime(),
                      this->threadNumber_);
@@ -1058,19 +1064,29 @@ namespace ttk {
 
     template <typename DT, typename IT>
     int computeNumericalPerturbation(
-      DT *outputScalars,
-      const std::vector<std::tuple<IT, IT, IT>> &sortedIndices) const {
+      DT *scalars,
+      const std::vector<std::tuple<IT, IT, IT>> &sortedIndices,
+      const bool descending = false) const {
       ttk::Timer timer;
       this->printMsg("Applying numerical perturbation", 0, 0,
                      this->threadNumber_, debug::LineMode::REPLACE);
 
       const IT nVertices = sortedIndices.size();
-      for(IT i = 1; i < nVertices; i++) {
-        const IT &v0 = std::get<2>(sortedIndices[i - 1]);
-        const IT &v1 = std::get<2>(sortedIndices[i]);
-        if(outputScalars[v0] >= outputScalars[v1])
-          outputScalars[v1] = boost::math::float_next(outputScalars[v0]);
-      }
+
+      if(descending)
+        for(IT i = 1; i < nVertices; i++) {
+          const IT &v0 = std::get<2>(sortedIndices[i - 1]);
+          const IT &v1 = std::get<2>(sortedIndices[i]);
+          if(scalars[v0] >= scalars[v1])
+            scalars[v1] = boost::math::float_next(scalars[v0]);
+        }
+      else
+        for(IT i = nVertices - 1; i > 0; i--) {
+          const IT &v0 = std::get<2>(sortedIndices[i]);
+          const IT &v1 = std::get<2>(sortedIndices[i - 1]);
+          if(scalars[v0] >= scalars[v1])
+            scalars[v1] = boost::math::float_next(scalars[v0]);
+        }
 
       this->printMsg("Applying numerical perturbation", 1,
                      timer.getElapsedTime(), this->threadNumber_);
@@ -1155,9 +1171,8 @@ namespace ttk {
         return 0;
 
       // compute global offsets
-      status = this->computeGlobalOrder<IT, IT>(outputOrder, sortedIndices,
-
-                                                outputOrder, localOrder);
+      status
+        = this->computeGlobalOrder<IT>(outputOrder, localOrder, sortedIndices);
       if(!status)
         return 0;
 
@@ -1177,6 +1192,7 @@ namespace ttk {
 
       const TT *triangulation,
       const DT persistenceThreshold) const {
+
       const IT nVertices = triangulation->getNumberOfVertices();
 
       int status = 0;
@@ -1239,9 +1255,7 @@ namespace ttk {
         return 0;
 
       // compute global offsets
-      status = this->computeGlobalOrder<IT, IT>(order, sortedIndices,
-
-                                                order, localOrder);
+      status = this->computeGlobalOrder<IT>(order, localOrder, sortedIndices);
       if(!status)
         return 0;
 
@@ -1253,33 +1267,30 @@ namespace ttk {
     };
 
     template <typename IT>
-    int invertArray(IT *outputOrder,
-
-                    const IT *inputOrder,
-                    const IT &nVertices) const {
+    int invertOrder(IT *outputOrder, const IT &nVertices) const {
       ttk::Timer timer;
       this->printMsg(
-        "Inverting Array", 0, 0, this->threadNumber_, debug::LineMode::REPLACE);
+        "Inverting Order", 0, 0, this->threadNumber_, debug::LineMode::REPLACE);
+
+      const auto nVerticesM1 = nVertices - 1;
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(this->threadNumber_)
 #endif // TTK_ENABLE_OPENMP
       for(IT v = 0; v < nVertices; v++)
-        outputOrder[v] = nVertices - inputOrder[v];
+        outputOrder[v] = nVerticesM1 - outputOrder[v];
 
       this->printMsg(
-        "Inverting Array", 1, timer.getElapsedTime(), this->threadNumber_);
+        "Inverting Order", 1, timer.getElapsedTime(), this->threadNumber_);
 
       return 1;
     }
 
     template <typename DT, typename IT, class TT>
-    int removeUnauthorizedExtrema(DT *outputScalars,
-                                  IT *outputOrder,
+    int removeUnauthorizedExtrema(DT *scalars,
+                                  IT *order,
 
                                   const TT *triangulation,
-                                  const DT *inputScalars,
-                                  const IT *inputOrder,
                                   const IT *authorizedExtremaIndices,
                                   const IT &nAuthorizedExtremaIndices,
                                   const bool &computePerturbation) const {
@@ -1302,40 +1313,13 @@ namespace ttk {
 
                                nVertices);
 
-      {
-        this->printMsg("----------- [Removing Unauthorized Minima]",
-                       ttk::debug::Separator::L2);
-
-        // init output order as input order
-        status = this->invertArray(outputOrder,
-
-                                   inputOrder, nVertices);
-        if(!status)
-          return 0;
-
-        status = this->detectAndRemoveUnauthorizedMaxima<IT, TT>(
-          outputOrder, segmentation.data(), queueMask.data(), localOrder.data(),
-          propagationMask.data(), propagationsMin, sortedIndices,
-
-          triangulation, authorizedExtremaIndices, nAuthorizedExtremaIndices);
-        if(!status)
-          return 0;
-      }
-
       // Maxima
       {
         this->printMsg("----------- [Removing Unauthorized Maxima]",
                        ttk::debug::Separator::L2);
 
-        // invert outputOrder
-        status = this->invertArray(outputOrder,
-
-                                   outputOrder, nVertices);
-        if(!status)
-          return 0;
-
         status = this->detectAndRemoveUnauthorizedMaxima<IT, TT>(
-          outputOrder, segmentation.data(), queueMask.data(), localOrder.data(),
+          order, segmentation.data(), queueMask.data(), localOrder.data(),
           propagationMask.data(), propagationsMax, sortedIndices,
 
           triangulation, authorizedExtremaIndices, nAuthorizedExtremaIndices);
@@ -1343,17 +1327,38 @@ namespace ttk {
           return 0;
       }
 
+      // Minima
+      {
+        this->printMsg("----------- [Removing Unauthorized Minima]",
+                       ttk::debug::Separator::L2);
+
+        // init output order as input order
+        if(!this->invertOrder(order, nVertices))
+          return 0;
+
+        status = this->detectAndRemoveUnauthorizedMaxima<IT, TT>(
+          order, segmentation.data(), queueMask.data(), localOrder.data(),
+          propagationMask.data(), propagationsMin, sortedIndices,
+
+          triangulation, authorizedExtremaIndices, nAuthorizedExtremaIndices);
+        if(!status)
+          return 0;
+
+        // invert order
+        if(!this->invertOrder(order, nVertices))
+          return 0;
+      }
+
       status = this->flattenScalars<DT, IT>(
-        outputScalars, nVertices, propagationsMin, propagationsMax);
+        scalars, nVertices, propagationsMin, propagationsMax);
       if(!status)
         return 0;
 
       // optionally compute perturbation
       if(computePerturbation) {
         this->printMsg(debug::Separator::L2);
-        status = this->computeNumericalPerturbation<DT, IT>(outputScalars,
-
-                                                            sortedIndices);
+        status
+          = this->computeNumericalPerturbation<DT, IT>(scalars, sortedIndices);
         if(!status)
           return 0;
       }
@@ -1368,14 +1373,14 @@ namespace ttk {
     };
 
     template <typename DT, typename IT, class TT>
-    int removeNonPersistentExtrema(DT *outputScalars,
-                                   IT *outputOrder,
+    int removeNonPersistentExtrema(DT *scalars,
+                                   IT *order,
 
                                    const TT *triangulation,
-                                   const DT *inputScalars,
-                                   const IT *inputOrder,
                                    const DT persistenceThreshold,
-                                   const bool &computePerturbation) const {
+                                   const bool &computePerturbation,
+                                   const PAIR_TYPE &pairType
+                                   = PAIR_TYPE::EXTREMUM_SADDLE) const {
       ttk::Timer globalTimer;
 
       IT nVertices = triangulation->getNumberOfVertices();
@@ -1395,42 +1400,14 @@ namespace ttk {
 
                                nVertices);
 
-      // Minima
-      {
-        this->printMsg("----------- [Removing Non-Persistent Minima]",
-                       ttk::debug::Separator::L2);
-
-        // init output order as input order
-        status = this->invertArray(outputOrder,
-
-                                   inputOrder, nVertices);
-        if(!status)
-          return 0;
-
-        status = this->detectAndRemoveNonPersistentMaxima<IT, DT, TT>(
-          outputScalars, outputOrder, segmentation.data(), queueMask.data(),
-          localOrder.data(), propagationMask.data(), propagationsMin,
-          sortedIndices,
-
-          triangulation, persistenceThreshold);
-        if(!status)
-          return 0;
-      }
-
       // Maxima
-      {
+      if(pairType == PAIR_TYPE::EXTREMUM_SADDLE
+         || pairType == PAIR_TYPE::MAXIMUM_SADDLE) {
         this->printMsg("----------- [Removing Non-Persistent Maxima]",
                        ttk::debug::Separator::L2);
 
-        // invert outputOrder
-        status = this->invertArray(outputOrder,
-
-                                   outputOrder, nVertices);
-        if(!status)
-          return 0;
-
         status = this->detectAndRemoveNonPersistentMaxima<IT, DT, TT>(
-          outputScalars, outputOrder, segmentation.data(), queueMask.data(),
+          scalars, order, segmentation.data(), queueMask.data(),
           localOrder.data(), propagationMask.data(), propagationsMax,
           sortedIndices,
 
@@ -1439,12 +1416,33 @@ namespace ttk {
           return 0;
       }
 
+      // Minima
+      if(pairType == PAIR_TYPE::EXTREMUM_SADDLE
+         || pairType == PAIR_TYPE::MINIMUM_SADDLE) {
+        this->printMsg("----------- [Removing Non-Persistent Minima]",
+                       ttk::debug::Separator::L2);
+
+        if(!this->invertOrder(order, nVertices))
+          return 0;
+
+        status = this->detectAndRemoveNonPersistentMaxima<IT, DT, TT>(
+          scalars, order, segmentation.data(), queueMask.data(),
+          localOrder.data(), propagationMask.data(), propagationsMin,
+          sortedIndices,
+
+          triangulation, persistenceThreshold);
+        if(!status)
+          return 0;
+
+        if(!this->invertOrder(order, nVertices))
+          return 0;
+      }
+
       // optionally compute perturbation
       if(computePerturbation) {
         this->printMsg(debug::Separator::L2);
-        status = this->computeNumericalPerturbation<DT, IT>(outputScalars,
-
-                                                            sortedIndices);
+        status = this->computeNumericalPerturbation<DT, IT>(
+          scalars, sortedIndices, pairType == PAIR_TYPE::MAXIMUM_SADDLE);
         if(!status)
           return 0;
       }

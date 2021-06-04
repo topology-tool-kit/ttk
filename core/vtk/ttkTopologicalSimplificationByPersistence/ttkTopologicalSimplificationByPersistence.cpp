@@ -85,22 +85,20 @@ int ttkTopologicalSimplificationByPersistence::RequestData(
   double persistenceThreshold = this->PersistenceThreshold;
   if(!this->ThresholdIsAbsolute) {
     double range[2];
-    inputScalars->GetRange(range);
+    outputScalars->GetRange(range);
     persistenceThreshold = (range[1] - range[0]) * persistenceThreshold;
   }
 
   // perform simplification
   int status = 0;
   ttkVtkTemplateMacro(
-    inputScalars->GetDataType(), triangulation->getType(),
+    outputScalars->GetDataType(), triangulation->getType(),
     (status = this->removeNonPersistentExtrema<VTK_TT, ttk::SimplexId, TTK_TT>(
        ttkUtils::GetPointer<VTK_TT>(outputScalars),
        ttkUtils::GetPointer<ttk::SimplexId>(outputOrder),
 
-       static_cast<TTK_TT *>(triangulation->getData()),
-       ttkUtils::GetPointer<VTK_TT>(inputScalars),
-       ttkUtils::GetPointer<ttk::SimplexId>(inputOrder), persistenceThreshold,
-       this->ComputePerturbation)));
+       static_cast<TTK_TT *>(triangulation->getData()), persistenceThreshold,
+       this->ComputePerturbation, this->PairType)));
 
   // On error cancel filter execution
   if(status != 1)

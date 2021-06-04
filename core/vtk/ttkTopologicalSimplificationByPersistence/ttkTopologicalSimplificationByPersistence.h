@@ -54,6 +54,7 @@
 
 // TTK Includes
 #include <LocalizedTopologicalSimplification.h>
+#include <ttkMacros.h>
 
 class TTKTOPOLOGICALSIMPLIFICATIONBYPERSISTENCE_EXPORT
   ttkTopologicalSimplificationByPersistence
@@ -63,6 +64,7 @@ private:
   double PersistenceThreshold{0.0};
   bool ThresholdIsAbsolute{true};
   bool ComputePerturbation{false};
+  PAIR_TYPE PairType{PAIR_TYPE::EXTREMUM_SADDLE};
 
 public:
   vtkSetMacro(PersistenceThreshold, double);
@@ -71,6 +73,8 @@ public:
   vtkGetMacro(ThresholdIsAbsolute, bool);
   vtkSetMacro(ComputePerturbation, bool);
   vtkGetMacro(ComputePerturbation, bool);
+  ttkSetEnumMacro(PairType, PAIR_TYPE);
+  vtkGetEnumMacro(PairType, PAIR_TYPE);
 
   static ttkTopologicalSimplificationByPersistence *New();
   vtkTypeMacro(ttkTopologicalSimplificationByPersistence, ttkAlgorithm);
