@@ -89,7 +89,7 @@ int ExplicitTriangulation::preconditionBoundaryEdgesInternal() {
     }
   } else {
     // unsupported dimension
-    printErr("Unsupported dimension for boundary precondition");
+    printErr("Unsupported dimension for edge boundary precondition");
     return -1;
   }
 
@@ -128,7 +128,7 @@ int ExplicitTriangulation::preconditionBoundaryTrianglesInternal() {
     }
   } else {
     // unsupported dimension
-    printErr("Unsupported dimension for boundary precondition");
+    printErr("Unsupported dimension for triangle boundary precondition");
     return -1;
   }
 
@@ -185,7 +185,7 @@ int ExplicitTriangulation::preconditionBoundaryVerticesInternal() {
     }
   } else {
     // unsupported dimension
-    printErr("Unsupported dimension for boundary precondition");
+    printErr("Unsupported dimension for vertex boundary precondition");
     return -1;
   }
 

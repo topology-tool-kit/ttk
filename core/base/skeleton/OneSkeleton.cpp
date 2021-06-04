@@ -138,11 +138,11 @@ int OneSkeleton::buildEdgeList(
 
   // check parameters consistency (we need n to be consistent with the
   // dimensionality of the mesh)
-  const auto dim = cellArray.getCellVertexNumber(0) - 1;
-  if(n != dim * (dim + 1) / 2 && cellEdgeList != nullptr) {
+  const size_t dim = cellArray.getCellVertexNumber(0) - 1;
+  if(n != dim * (dim + 1) / 2) {
     this->printErr("Wrong template parameter (" + std::to_string(n)
-                   + "edges per cell in dim " + std::to_string(dim)
-                   + "), unable to compute cellEdgeList");
+                   + " edges per " + std::to_string(dim) + "D cell)");
+    this->printErr("Cannot build edge list");
     return -1;
   }
 
