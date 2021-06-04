@@ -1720,38 +1720,27 @@ void DiscreteGradient::computeSaddleSaddlePersistencePairs(
 template <typename triangulationType>
 SimplexId DiscreteGradient::getNumberOfCells(
   const int dimension, const triangulationType &triangulation) const {
-  if(dimensionality_ == 2) {
-    switch(dimension) {
-      case 0:
-        return triangulation.getNumberOfVertices();
-        break;
 
-      case 1:
-        return triangulation.getNumberOfEdges();
-        break;
+  if(dimension > this->dimensionality_ || dimension < 0) {
+    return -1;
+  }
 
-      case 2:
-        return triangulation.getNumberOfCells();
-        break;
-    }
-  } else if(dimensionality_ == 3) {
-    switch(dimension) {
-      case 0:
-        return triangulation.getNumberOfVertices();
-        break;
+  switch(dimension) {
+    case 0:
+      return triangulation.getNumberOfVertices();
+      break;
 
-      case 1:
-        return triangulation.getNumberOfEdges();
-        break;
+    case 1:
+      return triangulation.getNumberOfEdges();
+      break;
 
-      case 2:
-        return triangulation.getNumberOfTriangles();
-        break;
+    case 2:
+      return triangulation.getNumberOfTriangles();
+      break;
 
-      case 3:
-        return triangulation.getNumberOfCells();
-        break;
-    }
+    case 3:
+      return triangulation.getNumberOfCells();
+      break;
   }
 
   return -1;
