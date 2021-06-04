@@ -2233,99 +2233,62 @@ SimplexId
   TTK_FORCE_USE(triangulation);
 #endif // !TTK_ENABLE_DCG_OPTIMIZE_MEMORY
 
+  if((cell.dim_ > this->dimensionality_ - 1 && !isReverse)
+     || (cell.dim_ > this->dimensionality_ && isReverse) || cell.dim_ < 0) {
+    return -1;
+  }
+
   SimplexId id{-1};
-  if(dimensionality_ == 2) {
-    switch(cell.dim_) {
-      case 0:
-#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
-        triangulation.getVertexEdge(cell.id_, gradient_[0][cell.id_], id);
-#else
-        return gradient_[0][cell.id_];
-#endif
-        break;
 
-      case 1:
-        if(isReverse) {
+  if(cell.dim_ == 0) {
+    if(!isReverse) {
 #ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
-          triangulation.getEdgeVertex(cell.id_, gradient_[1][cell.id_], id);
-          return id;
+      triangulation.getVertexEdge(cell.id_, gradient_[0][cell.id_], id);
 #else
-          return gradient_[1][cell.id_];
+      id = gradient_[0][cell.id_];
 #endif
-        }
-
-#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
-        triangulation.getEdgeStar(cell.id_, gradient_[2][cell.id_], id);
-#else
-        return gradient_[2][cell.id_];
-#endif
-        break;
-
-      case 2:
-        if(isReverse) {
-#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
-          triangulation.getCellEdge(cell.id_, gradient_[3][cell.id_], id);
-          return id;
-#else
-          return gradient_[3][cell.id_];
-#endif
-        }
-        break;
     }
-  } else if(dimensionality_ == 3) {
-    switch(cell.dim_) {
-      case 0:
-#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
-        triangulation.getVertexEdge(cell.id_, gradient_[0][cell.id_], id);
-#else
-        return gradient_[0][cell.id_];
-#endif
-        break;
+  }
 
-      case 1:
-        if(isReverse) {
+  else if(cell.dim_ == 1) {
+    if(isReverse) {
 #ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
-          triangulation.getEdgeVertex(cell.id_, gradient_[1][cell.id_], id);
-          return id;
+      triangulation.getEdgeVertex(cell.id_, gradient_[1][cell.id_], id);
 #else
-          return gradient_[1][cell.id_];
+      id = gradient_[1][cell.id_];
 #endif
-        }
+    } else {
+#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
+      triangulation.getEdgeTriangle(cell.id_, gradient_[2][cell.id_], id);
+#else
+      id = gradient_[2][cell.id_];
+#endif
+    }
+  }
 
+  else if(cell.dim_ == 2) {
+    if(isReverse) {
 #ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
-        triangulation.getEdgeTriangle(cell.id_, gradient_[2][cell.id_], id);
+      triangulation.getTriangleEdge(cell.id_, gradient_[3][cell.id_], id);
 #else
-        return gradient_[2][cell.id_];
+      id = gradient_[3][cell.id_];
 #endif
-        break;
+    } else {
+#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
+      triangulation.getTriangleStar(cell.id_, gradient_[4][cell.id_], id);
+#else
+      id = gradient_[4][cell.id_];
+#endif
+    }
+  }
 
-      case 2:
-        if(isReverse) {
+  else if(cell.dim_ == 3) {
+    if(isReverse) {
 #ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
-          triangulation.getTriangleEdge(cell.id_, gradient_[3][cell.id_], id);
-          return id;
+      triangulation.getCellTriangle(cell.id_, gradient_[5][cell.id_], id);
 #else
-          return gradient_[3][cell.id_];
+      id = gradient_[5][cell.id_];
 #endif
-        }
-
-#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
-        triangulation.getTriangleStar(cell.id_, gradient_[4][cell.id_], id);
-#else
-        return gradient_[4][cell.id_];
-#endif
-        break;
-
-      case 3:
-        if(isReverse) {
-#ifdef TTK_ENABLE_DCG_OPTIMIZE_MEMORY
-          triangulation.getCellTriangle(cell.id_, gradient_[5][cell.id_], id);
-          return id;
-#else
-          return gradient_[5][cell.id_];
-#endif
-        }
-        break;
     }
   }
 
