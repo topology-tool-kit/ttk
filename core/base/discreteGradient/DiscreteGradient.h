@@ -409,12 +409,14 @@ according to them.
           numberOfVertices_ = data->getNumberOfVertices();
 
           data->preconditionBoundaryVertices();
-          data->preconditionBoundaryEdges();
           data->preconditionVertexNeighbors();
           data->preconditionVertexEdges();
           data->preconditionVertexStars();
           data->preconditionEdges();
           data->preconditionEdgeStars();
+          if(dimensionality_ >= 2) {
+            data->preconditionBoundaryEdges();
+          }
           if(dimensionality_ == 2) {
             data->preconditionCellEdges();
           } else if(dimensionality_ == 3) {
