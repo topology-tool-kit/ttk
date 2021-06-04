@@ -151,39 +151,29 @@ bool DiscreteGradient::isMaximum(const Cell &cell) const {
 
 bool DiscreteGradient::isCellCritical(const int cellDim,
                                       const SimplexId cellId) const {
-  if(dimensionality_ == 2) {
-    switch(cellDim) {
-      case 0:
-        return (gradient_[0][cellId] == -1);
-        break;
 
-      case 1:
-        return (gradient_[1][cellId] == -1 and gradient_[2][cellId] == -1);
-        break;
-
-      case 2:
-        return (gradient_[3][cellId] == -1);
-        break;
-    }
-  } else if(dimensionality_ == 3) {
-    switch(cellDim) {
-      case 0:
-        return (gradient_[0][cellId] == -1);
-        break;
-
-      case 1:
-        return (gradient_[1][cellId] == -1 and gradient_[2][cellId] == -1);
-        break;
-
-      case 2:
-        return (gradient_[3][cellId] == -1 and gradient_[4][cellId] == -1);
-        break;
-
-      case 3:
-        return (gradient_[5][cellId] == -1);
-        break;
-    }
+  if(cellDim > this->dimensionality_) {
+    return false;
   }
+
+  if(cellDim == 0) {
+    return (gradient_[0][cellId] == -1);
+  }
+
+  if(cellDim == 1) {
+    return (gradient_[1][cellId] == -1
+            && (dimensionality_ == 1 || gradient_[2][cellId] == -1));
+  }
+
+  if(cellDim == 2) {
+    return (gradient_[3][cellId] == -1
+            && (dimensionality_ == 2 || gradient_[4][cellId] == -1));
+  }
+
+  if(cellDim == 3) {
+    return (gradient_[5][cellId] == -1);
+  }
+
   return false;
 }
 
