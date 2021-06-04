@@ -259,6 +259,14 @@ int OneSkeleton::buildEdgeList(
   return 0;
 }
 
+// explicit template instantiation for 1D cells (edges)
+template int OneSkeleton::buildEdgeList<1>(
+  const SimplexId &vertexNumber,
+  const CellArray &cellArray,
+  std::vector<std::array<SimplexId, 2>> &edgeList,
+  FlatJaggedArray &edgeStars,
+  std::vector<std::array<SimplexId, 1>> &cellEdgeList) const;
+
 // explicit template instantiation for 2D cells (triangles)
 template int OneSkeleton::buildEdgeList<3>(
   const SimplexId &vertexNumber,
