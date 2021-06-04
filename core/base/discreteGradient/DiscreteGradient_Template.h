@@ -2172,49 +2172,51 @@ int DiscreteGradient::processLowerStars(
 template <typename triangulationType>
 bool DiscreteGradient::isBoundary(
   const Cell &cell, const triangulationType &triangulation) const {
-  const int cellDim = cell.dim_;
-  const SimplexId cellId = cell.id_;
 
-  if(dimensionality_ == 2) {
-    switch(cellDim) {
-      case 0:
-        return triangulation.isVertexOnBoundary(cellId);
+  if(cell.dim_ > this->dimensionality_ || cell.dim_ < 0) {
+    return false;
+  }
 
-      case 1:
-        return triangulation.isEdgeOnBoundary(cellId);
+  if(cell.dim_ == 0) {
+    return triangulation.isVertexOnBoundary(cell.id_);
+  }
 
-      case 2:
-        for(int i = 0; i < 3; ++i) {
-          SimplexId edgeId;
-          triangulation.getCellEdge(cellId, i, edgeId);
-          if(triangulation.isEdgeOnBoundary(edgeId)) {
-            return true;
-          }
-        }
-        break;
+  if(cell.dim_ == 1) {
+    if(this->dimensionality_ > 1) {
+      return triangulation.isEdgeOnBoundary(cell.id_);
     }
-  } else if(dimensionality_ == 3) {
-    switch(cellDim) {
-      case 0:
-        return triangulation.isVertexOnBoundary(cellId);
-
-      case 1:
-        return triangulation.isEdgeOnBoundary(cellId);
-
-      case 2:
-        return triangulation.isTriangleOnBoundary(cellId);
-
-      case 3:
-        for(int i = 0; i < 4; ++i) {
-          SimplexId triangleId;
-          triangulation.getCellTriangle(cellId, i, triangleId);
-          if(triangulation.isTriangleOnBoundary(triangleId)) {
-            return true;
-          }
-        }
-        break;
+    for(int i = 0; i < 2; ++i) {
+      SimplexId v{};
+      triangulation.getEdgeVertex(cell.id_, i, v);
+      if(triangulation.isVertexOnBoundary(v)) {
+        return true;
+      }
     }
   }
+
+  if(cell.dim_ == 2) {
+    if(this->dimensionality_ > 2) {
+      return triangulation.isTriangleOnBoundary(cell.id_);
+    }
+    for(int i = 0; i < 3; ++i) {
+      SimplexId e{};
+      triangulation.getCellEdge(cell.id_, i, e);
+      if(triangulation.isEdgeOnBoundary(e)) {
+        return true;
+      }
+    }
+  }
+
+  if(cell.dim_ == 3) {
+    for(int i = 0; i < 4; ++i) {
+      SimplexId t{};
+      triangulation.getCellTriangle(cell.id_, i, t);
+      if(triangulation.isTriangleOnBoundary(t)) {
+        return true;
+      }
+    }
+  }
+
   return false;
 }
 
