@@ -1,22 +1,13 @@
 #include <MultiresTriangulation.h>
 
-using namespace std;
-using namespace ttk;
+using ttk::MultiresTriangulation;
+using ttk::SimplexId;
 
 SimplexId MultiresTriangulation::getVertexNeighborAtDecimation(
   const SimplexId &vertexId,
   const int &localNeighborId,
   SimplexId &neighborId,
   int decimation) const {
-
-#ifndef TTK_ENABLE_KAMIKAZE
-  // if(triangulation_->isEmptyCheck()) {
-  //   return -1;
-  // }
-  // if(localNeighborId < 0
-  //    or localNeighborId >= getVertexNeighborNumber(vertexId))
-  //   return -1;
-#endif
 
   const auto &p = this->vertexCoords_[vertexId];
 
@@ -380,7 +371,6 @@ inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationA(
   const SimplexId shiftZ,
   const int decimation) const {
   // V(a)={b,c,e,g}
-  // cout << "A"<<endl;
   switch(id) {
     case 0:
       return v + shiftX; // b
@@ -402,7 +392,6 @@ inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationB(
   const SimplexId shiftZ,
   const int decimation) const {
   // V(b)={a,c,d,e,f,g,h}
-  // cout << "B"<<endl;
   switch(id) {
     case 0:
       return v - shiftX; // a
@@ -429,7 +418,6 @@ inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationC(
   const SimplexId shiftZ,
   const int decimation) const {
   // V(c)={a,b,d,g}
-  // cout << "C"<<endl;
   switch(id) {
     case 0:
       return v - vshift_[0] * shiftY; // a
@@ -451,7 +439,6 @@ inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationD(
   const SimplexId shiftZ,
   const int decimation) const {
   // V(d)={b,c,g,h}
-  // cout << "D"<<endl;
   switch(id) {
     case 0:
       return v - vshift_[0] * shiftY; // b
@@ -473,7 +460,6 @@ inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationE(
   const SimplexId shiftZ,
   const int decimation) const {
   // V(e)={a,b,f,g}
-  // cout << "E"<<endl;
   switch(id) {
     case 0:
       return v - vshift_[1] * shiftZ; // a
@@ -495,7 +481,6 @@ inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationF(
   const SimplexId shiftZ,
   const int decimation) const {
   // V(f)={b,e,g,h}
-  // cout << "F"<<endl;
   switch(id) {
     case 0:
       return v - vshift_[1] * shiftZ; // b
@@ -517,7 +502,6 @@ inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationG(
   const SimplexId shiftZ,
   const int decimation) const {
   // V(g)={a,b,c,d,e,f,h}
-  // cout << "G"<<endl;
   switch(id) {
     case 0:
       return v - (vshift_[0] * shiftY + vshift_[1] * shiftZ); // a
@@ -545,7 +529,6 @@ inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationH(
   const SimplexId shiftZ,
   const int decimation) const {
   // V(h)={b,d,f,g}
-  // cout << "H"<<endl;
   switch(id) {
     case 0:
       return v - (vshift_[0] * shiftY + vshift_[1] * shiftZ); // b
@@ -567,7 +550,6 @@ inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationAB(
   const SimplexId shiftZ,
   const int decimation) const {
   // V(ab)=V(b)+V(a)::{b}
-  // cout << "AB"<<endl;
   switch(id) {
     case 0:
       return v - decimation; // a
@@ -597,7 +579,6 @@ inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationCD(
   const SimplexId shiftZ,
   const int decimation) const {
   // V(cd)=V(d)+V(c)::{b,d}
-  // cout << "CD"<<endl;
   switch(id) {
     case 0:
       return v - vshift_[0] * shiftY; // b
@@ -623,7 +604,6 @@ inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationEF(
   const SimplexId shiftZ,
   const int decimation) const {
   // V(ef)=V(f)+V(e)::{b,f}
-  // cout << "EF"<<endl;
   switch(id) {
     case 0:
       return v - vshift_[1] * shiftZ; // b
@@ -679,7 +659,6 @@ inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationAC(
   const SimplexId shiftZ,
   const int decimation) const {
   // V(ac)=V(c)+V(a)::{c,g}
-  // cout << "AC"<<endl;
   switch(id) {
     case 0:
       return v - vshift_[0] * decimation; // a
@@ -705,7 +684,6 @@ inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationBD(
   const SimplexId shiftZ,
   const int decimation) const {
   // V(bd)=V(b)+V(d)::{b}
-  // cout << "BD"<<endl;
   switch(id) {
     case 0:
       return v - shiftX; // a
@@ -735,7 +713,6 @@ inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationEG(
   const SimplexId shiftZ,
   const int decimation) const {
   // V(eg)=V(g)+V(e)::{g}
-  // cout << "EG"<<endl;
   switch(id) {
     case 0:
       return v - (vshift_[0] * decimation + vshift_[1] * shiftZ); // a
@@ -765,7 +742,6 @@ inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationFH(
   const SimplexId shiftZ,
   const int decimation) const {
   // V(fh)=V(f)+V(h)::{b,f}
-  // cout << "FH"<<endl;
   switch(id) {
     case 0:
       return v - vshift_[1] * shiftZ; // b
@@ -791,7 +767,6 @@ inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationAE(
   const SimplexId shiftZ,
   const int decimation) const {
   // V(ae)=V(a)+V(e)::{a,b}
-  // cout << "AE"<<endl;
   switch(id) {
     case 0:
       return v + shiftX; // b
@@ -817,7 +792,6 @@ inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationBF(
   const SimplexId shiftZ,
   const int decimation) const {
   // V(bf)=V(b)+V(f)::{b}
-  // cout << "BF"<<endl;
   switch(id) {
     case 0:
       return v - shiftX; // a
@@ -847,7 +821,6 @@ inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationCG(
   const SimplexId shiftZ,
   const int decimation) const {
   // V(cg)=V(g)+V(c)::{g}
-  // cout << "CG"<<endl;
   switch(id) {
     case 0:
       return v - (vshift_[0] * shiftY + vshift_[1] * decimation); // a
@@ -877,7 +850,6 @@ inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationDH(
   const SimplexId shiftZ,
   const int decimation) const {
   // V(dh)=V(d)+V(h)::{b,d}
-  // cout << "DH"<<endl;
   switch(id) {
     case 0:
       return v - vshift_[0] * shiftY; // b
@@ -903,7 +875,6 @@ inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationABDC(
   const SimplexId shiftZ,
   const int decimation) const {
   // V(abdc)=V(b)+V(d)::{b}+V(c)::{b}+V(a)::{b}
-  // cout << "ABDC"<<endl;
   switch(id) {
     case 0:
       return v - decimation; // a
@@ -937,7 +908,6 @@ inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationEFHG(
   const SimplexId shiftZ,
   const int decimation) const {
   // V(efhg)=V(g)+V(h)::{g}+V(f)::{g,h}
-  // cout << "EFHG"<<endl;
   switch(id) {
     case 0:
       return v - (vshift_[0] * decimation + vshift_[1] * shiftZ); // a
@@ -971,7 +941,6 @@ inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationAEGC(
   const SimplexId shiftZ,
   const int decimation) const {
   // V(aegc)=V(g)+V(a)::{c,g}+V(c)::{g}
-  // cout << "AEGC"<<endl;
   switch(id) {
     case 0:
       return v - (vshift_[0] * decimation + vshift_[1] * decimation); // a
@@ -1007,7 +976,6 @@ inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationBFHD(
   const SimplexId shiftZ,
   const int decimation) const {
   // V(bfhd)=V(b)+V(f)::{b}+V(h)::{b}+V(d)::{b}
-  // cout << "BFHD"<<endl;
   switch(id) {
     case 0:
       return v - shiftX; // a
@@ -1042,7 +1010,6 @@ inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationAEFB(
   const SimplexId shiftZ,
   const int decimation) const {
   // V(aefb)=V(b)+V(a)::{b}+V(e)::{b}+V(f)::{b}
-  // cout << "AEFB"<<endl;
   switch(id) {
     case 0:
       return v - decimation; // a
@@ -1076,7 +1043,6 @@ inline ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationGHDC(
   const SimplexId shiftZ,
   const int decimation) const {
   // V(ghdc)=V(g)+V(h)::{g}+V(d)::{g,h}
-  // cout << "GHDC"<<endl;
   switch(id) {
     case 0:
       return v - (vshift_[0] * shiftY + vshift_[1] * decimation); // a
@@ -1110,7 +1076,6 @@ ttk::SimplexId MultiresTriangulation::getVertexNeighborAtDecimationABCDEFGH(
   const SimplexId shiftZ,
   const int decimation) const {
   // V(abcdefgh)=V(g)+V(d)::{g,h}+V(h)::{g}+V(b)::{c,d,g,h}
-  // cout << "ABCDEFGH"<<endl;
   switch(id) {
     case 0:
       return v - (vshift_[0] * decimation + vshift_[1] * decimation); // a

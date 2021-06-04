@@ -254,15 +254,13 @@ int ttk::PersistenceDiagram::executeProgressiveTopology(
   progT_.setupTriangulation((ttk::ImplicitTriangulation *)triangulation);
   progT_.setStartingResolutionLevel(StartingResolutionLevel);
   progT_.setStoppingResolutionLevel(StoppingResolutionLevel);
-  // progT_.setStoppingDecimationLevel(StoppingDecimationLevel);
-  // progT_.setStartingDecimationLevel(StartingDecimationLevel);
   progT_.setTimeLimit(TimeLimit);
   progT_.setIsResumable(IsResumable);
   progT_.setPreallocateMemory(true);
 
   std::vector<ProgressiveTopology::PersistencePair> resultDiagram{};
 
-  progT_.computeProgressivePD(resultDiagram, inputScalars, inputOffsets);
+  progT_.computeProgressivePD(resultDiagram, inputOffsets);
 
   // create the final diagram
   for(const auto &p : resultDiagram) {

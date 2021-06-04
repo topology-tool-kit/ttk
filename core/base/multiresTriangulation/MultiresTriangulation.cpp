@@ -1,7 +1,7 @@
 #include <MultiresTriangulation.h>
 
-using namespace std;
-using namespace ttk;
+using ttk::MultiresTriangulation;
+using ttk::SimplexId;
 
 MultiresTriangulation::MultiresTriangulation() {
   decimation_ = 1;
@@ -35,7 +35,7 @@ int ttk::MultiresTriangulation::preconditionVerticesInternal() {
 #endif // TTK_ENABLE_OPENMP
     for(SimplexId i = 0; i < vertexNumber_; ++i) {
       std::array<SimplexId, 3> p{};
-      vertexToPosition2d(i, p.data());
+      vertexToPosition2d(i, p);
 
       if(0 < p[0] and p[0] < nbvoxels_[Di_]) {
         if(0 < p[1] and p[1] < nbvoxels_[Dj_])
@@ -59,7 +59,7 @@ int ttk::MultiresTriangulation::preconditionVerticesInternal() {
         else
           vertexPositions_[i] = VertexPosition::BOTTOM_RIGHT_CORNER_2D; // d
       }
-      vertexCoords_[i] = std::move(p);
+      vertexCoords_[i] = p;
     }
 
   } else if(dimensionality_ == 3) {
@@ -68,7 +68,7 @@ int ttk::MultiresTriangulation::preconditionVerticesInternal() {
 #endif // TTK_ENABLE_OPENMP
     for(SimplexId i = 0; i < vertexNumber_; ++i) {
       std::array<SimplexId, 3> p{};
-      vertexToPosition(i, p.data());
+      vertexToPosition(i, p);
 
       if(0 < p[0] and p[0] < nbvoxels_[0]) {
         if(0 < p[1] and p[1] < nbvoxels_[1]) {
@@ -145,7 +145,7 @@ int ttk::MultiresTriangulation::preconditionVerticesInternal() {
               = VertexPosition::BOTTOM_RIGHT_BACK_CORNER_3D; // h
         }
       }
-      vertexCoords_[i] = std::move(p);
+      vertexCoords_[i] = p;
     }
   }
   return 0;
@@ -947,7 +947,6 @@ inline ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborA(
   const SimplexId shiftY,
   const SimplexId shiftZ) const {
   // V(a)={b,c,e,g}
-  // cout << "A"<<endl;
   if(neighborId == v + shiftX)
     return 0; // b
   else if(neighborId == v + vshift_[0] * shiftY)
@@ -966,7 +965,6 @@ inline ttk::SimplexId
                                             const SimplexId shiftY,
                                             const SimplexId shiftZ) const {
   // V(a)={b,c,e,g}
-  // cout << "A"<<endl;
   switch(id) {
     case 0:
       return v + shiftX; // b
@@ -987,7 +985,6 @@ inline ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborB(
   const SimplexId shiftY,
   const SimplexId shiftZ) const {
   // V(b)={a,c,d,e,f,g,h}
-  // cout << "B"<<endl;
   if(neighborId == v - shiftX)
     return 0; // a
   else if(neighborId == v + (vshift_[0] * shiftY - shiftX))
@@ -1013,7 +1010,6 @@ inline ttk::SimplexId
                                             const SimplexId shiftY,
                                             const SimplexId shiftZ) const {
   // V(b)={a,c,d,e,f,g,h}
-  // cout << "B"<<endl;
   switch(id) {
     case 0:
       return v - shiftX; // a
@@ -1040,7 +1036,6 @@ inline ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborC(
   const SimplexId shiftY,
   const SimplexId shiftZ) const {
   // V(c)={a,b,d,g}
-  // cout << "C"<<endl;
   if(neighborId == v - vshift_[0] * shiftY)
     return 0; // a
   else if(neighborId == v + (shiftX - vshift_[0] * shiftY))
@@ -1059,7 +1054,6 @@ inline ttk::SimplexId
                                             const SimplexId shiftY,
                                             const SimplexId shiftZ) const {
   // V(c)={a,b,d,g}
-  // cout << "C"<<endl;
   switch(id) {
     case 0:
       return v - vshift_[0] * shiftY; // a
@@ -1080,7 +1074,6 @@ inline ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborD(
   const SimplexId shiftY,
   const SimplexId shiftZ) const {
   // V(d)={b,c,g,h}
-  // cout << "D"<<endl;
   if(neighborId == v - vshift_[0] * shiftY)
     return 0; // b
   else if(neighborId == v - shiftX)
@@ -1099,7 +1092,6 @@ inline ttk::SimplexId
                                             const SimplexId shiftY,
                                             const SimplexId shiftZ) const {
   // V(d)={b,c,g,h}
-  // cout << "D"<<endl;
   switch(id) {
     case 0:
       return v - vshift_[0] * shiftY; // b
@@ -1120,7 +1112,6 @@ inline ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborE(
   const SimplexId shiftY,
   const SimplexId shiftZ) const {
   // V(e)={a,b,f,g}
-  // cout << "E"<<endl;
   if(neighborId == v - vshift_[1] * shiftZ)
     return 0; // a
   else if(neighborId == v + (shiftX - vshift_[1] * shiftZ))
@@ -1139,7 +1130,6 @@ inline ttk::SimplexId
                                             const SimplexId shiftY,
                                             const SimplexId shiftZ) const {
   // V(e)={a,b,f,g}
-  // cout << "E"<<endl;
   switch(id) {
     case 0:
       return v - vshift_[1] * shiftZ; // a
@@ -1160,7 +1150,6 @@ inline ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborF(
   const SimplexId shiftY,
   const SimplexId shiftZ) const {
   // V(f)={b,e,g,h}
-  // cout << "F"<<endl;
   if(neighborId == v - vshift_[1] * shiftZ)
     return 0; // b
   else if(neighborId == v - shiftX)
@@ -1179,7 +1168,6 @@ inline ttk::SimplexId
                                             const SimplexId shiftY,
                                             const SimplexId shiftZ) const {
   // V(f)={b,e,g,h}
-  // cout << "F"<<endl;
   switch(id) {
     case 0:
       return v - vshift_[1] * shiftZ; // b
@@ -1200,7 +1188,6 @@ inline ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborG(
   const SimplexId shiftY,
   const SimplexId shiftZ) const {
   // V(g)={a,b,c,d,e,f,h}
-  // cout << "G"<<endl;
   if(neighborId == v - (vshift_[0] * shiftY + vshift_[1] * shiftZ))
     return 0; // a
   else if(neighborId
@@ -1226,7 +1213,6 @@ inline ttk::SimplexId
                                             const SimplexId shiftY,
                                             const SimplexId shiftZ) const {
   // V(g)={a,b,c,d,e,f,h}
-  // cout << "G"<<endl;
   switch(id) {
     case 0:
       return v - (vshift_[0] * shiftY + vshift_[1] * shiftZ); // a
@@ -1253,7 +1239,6 @@ inline ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborH(
   const SimplexId shiftY,
   const SimplexId shiftZ) const {
   // V(h)={b,d,f,g}
-  // cout << "invert H "<<"global "<<v<<" neighbor"<<neighborId<<endl;
   if(neighborId == v - (vshift_[0] * shiftY + vshift_[1] * shiftZ))
     return 0; // b
   else if(neighborId == v - vshift_[1] * shiftZ)
@@ -1272,7 +1257,6 @@ inline ttk::SimplexId
                                             const SimplexId shiftY,
                                             const SimplexId shiftZ) const {
   // V(h)={b,d,f,g}
-  // cout << "H"<<endl;
   switch(id) {
     case 0:
       return v - (vshift_[0] * shiftY + vshift_[1] * shiftZ); // b
@@ -1293,7 +1277,6 @@ inline ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborAB(
   const SimplexId shiftY,
   const SimplexId shiftZ) const {
   // V(ab)=V(b)+V(a)::{b}
-  // cout << "AB"<<endl;
   if(neighborId == v - decimation_)
     return 0; // a
   else if(neighborId == v + (vshift_[0] * shiftY - decimation_))
@@ -1321,7 +1304,6 @@ inline ttk::SimplexId
                                              const SimplexId shiftY,
                                              const SimplexId shiftZ) const {
   // V(ab)=V(b)+V(a)::{b}
-  // cout << "AB"<<endl;
   switch(id) {
     case 0:
       return v - decimation_; // a
@@ -1350,7 +1332,6 @@ inline ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborCD(
   const SimplexId shiftY,
   const SimplexId shiftZ) const {
   // V(cd)=V(d)+V(c)::{b,d}
-  // cout << "CD"<<endl;
   if(neighborId == v - vshift_[0] * shiftY)
     return 0; // b
   else if(neighborId == v - decimation_)
@@ -1372,7 +1353,6 @@ inline ttk::SimplexId
                                              const SimplexId shiftY,
                                              const SimplexId shiftZ) const {
   // V(cd)=V(d)+V(c)::{b,d}
-  // cout << "CD"<<endl;
   switch(id) {
     case 0:
       return v - vshift_[0] * shiftY; // b
@@ -1397,7 +1377,6 @@ inline ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborEF(
   const SimplexId shiftY,
   const SimplexId shiftZ) const {
   // V(ef)=V(f)+V(e)::{b,f}
-  // cout << "EF"<<endl;
   if(neighborId == v - vshift_[1] * shiftZ)
     return 0; // b
   else if(neighborId == v - decimation_)
@@ -1419,7 +1398,6 @@ inline ttk::SimplexId
                                              const SimplexId shiftY,
                                              const SimplexId shiftZ) const {
   // V(ef)=V(f)+V(e)::{b,f}
-  // cout << "EF"<<endl;
   switch(id) {
     case 0:
       return v - vshift_[1] * shiftZ; // b
@@ -1444,7 +1422,6 @@ inline ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborGH(
   const SimplexId shiftY,
   const SimplexId shiftZ) const {
   // V(gh)=V(g)+V(h)::{g}
-  // cout << "GH"<<endl;
   if(neighborId == v - (vshift_[0] * shiftY + vshift_[1] * shiftZ))
     return 0; // a
   else if(neighborId
@@ -1501,7 +1478,6 @@ inline ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborAC(
   const SimplexId shiftY,
   const SimplexId shiftZ) const {
   // V(ac)=V(c)+V(a)::{c,g}
-  // cout << "AC"<<endl;
   if(neighborId == v - vshift_[0] * decimation_)
     return 0; // a
   else if(neighborId == v + (shiftX - vshift_[0] * decimation_))
@@ -1523,7 +1499,6 @@ inline ttk::SimplexId
                                              const SimplexId shiftY,
                                              const SimplexId shiftZ) const {
   // V(ac)=V(c)+V(a)::{c,g}
-  // cout << "AC"<<endl;
   switch(id) {
     case 0:
       return v - vshift_[0] * decimation_; // a
@@ -1548,7 +1523,6 @@ inline ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborBD(
   const SimplexId shiftY,
   const SimplexId shiftZ) const {
   // V(bd)=V(b)+V(d)::{b}
-  // cout << "BD"<<endl;
   if(neighborId == v - shiftX)
     return 0; // a
   else if(neighborId == v + (vshift_[0] * shiftY - shiftX))
@@ -1575,7 +1549,6 @@ inline ttk::SimplexId
                                              const SimplexId shiftY,
                                              const SimplexId shiftZ) const {
   // V(bd)=V(b)+V(d)::{b}
-  // cout << "BD"<<endl;
   switch(id) {
     case 0:
       return v - shiftX; // a
@@ -1604,7 +1577,6 @@ inline ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborEG(
   const SimplexId shiftY,
   const SimplexId shiftZ) const {
   // V(eg)=V(g)+V(e)::{g}
-  // cout << "EG"<<endl;
   if(neighborId == v - (vshift_[0] * decimation_ + vshift_[1] * shiftZ))
     return 0; // a
   else if(neighborId
@@ -1631,7 +1603,6 @@ inline ttk::SimplexId
                                              const SimplexId shiftY,
                                              const SimplexId shiftZ) const {
   // V(eg)=V(g)+V(e)::{g}
-  // cout << "EG"<<endl;
   switch(id) {
     case 0:
       return v - (vshift_[0] * decimation_ + vshift_[1] * shiftZ); // a
@@ -1660,7 +1631,6 @@ inline ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborFH(
   const SimplexId shiftY,
   const SimplexId shiftZ) const {
   // V(fh)=V(f)+V(h)::{b,f}
-  // cout << "FH"<<endl;
   if(neighborId == v - vshift_[1] * shiftZ)
     return 0; // b
   else if(neighborId == v - shiftX)
@@ -1682,7 +1652,6 @@ inline ttk::SimplexId
                                              const SimplexId shiftY,
                                              const SimplexId shiftZ) const {
   // V(fh)=V(f)+V(h)::{b,f}
-  // cout << "FH"<<endl;
   switch(id) {
     case 0:
       return v - vshift_[1] * shiftZ; // b
@@ -1707,7 +1676,6 @@ inline ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborAE(
   const SimplexId shiftY,
   const SimplexId shiftZ) const {
   // V(ae)=V(a)+V(e)::{a,b}
-  // cout << "AE"<<endl;
   if(neighborId == v + shiftX)
     return 0; // b
   else if(neighborId == v + vshift_[0] * shiftY)
@@ -1729,7 +1697,6 @@ inline ttk::SimplexId
                                              const SimplexId shiftY,
                                              const SimplexId shiftZ) const {
   // V(ae)=V(a)+V(e)::{a,b}
-  // cout << "AE"<<endl;
   switch(id) {
     case 0:
       return v + shiftX; // b
@@ -1754,7 +1721,6 @@ inline ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborBF(
   const SimplexId shiftY,
   const SimplexId shiftZ) const {
   // V(bf)=V(b)+V(f)::{b}
-  // cout << "BF"<<endl;
   if(neighborId == v - shiftX)
     return 0; // a
   else if(neighborId == v + (vshift_[0] * shiftY - shiftX))
@@ -1782,7 +1748,6 @@ inline ttk::SimplexId
                                              const SimplexId shiftY,
                                              const SimplexId shiftZ) const {
   // V(bf)=V(b)+V(f)::{b}
-  // cout << "BF"<<endl;
   switch(id) {
     case 0:
       return v - shiftX; // a
@@ -1811,7 +1776,6 @@ inline ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborCG(
   const SimplexId shiftY,
   const SimplexId shiftZ) const {
   // V(cg)=V(g)+V(c)::{g}
-  // cout << "CG"<<endl;
   if(neighborId == v - (vshift_[0] * shiftY + vshift_[1] * decimation_))
     return 0; // a
   else if(neighborId
@@ -1838,7 +1802,6 @@ inline ttk::SimplexId
                                              const SimplexId shiftY,
                                              const SimplexId shiftZ) const {
   // V(cg)=V(g)+V(c)::{g}
-  // cout << "CG"<<endl;
   switch(id) {
     case 0:
       return v - (vshift_[0] * shiftY + vshift_[1] * decimation_); // a
@@ -1867,7 +1830,6 @@ inline ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborDH(
   const SimplexId shiftY,
   const SimplexId shiftZ) const {
   // V(dh)=V(d)+V(h)::{b,d}
-  // cout << "DH"<<endl;
   if(neighborId == v - vshift_[0] * shiftY)
     return 0; // b
   else if(neighborId == v - shiftX)
@@ -1889,7 +1851,6 @@ inline ttk::SimplexId
                                              const SimplexId shiftY,
                                              const SimplexId shiftZ) const {
   // V(dh)=V(d)+V(h)::{b,d}
-  // cout << "DH"<<endl;
   switch(id) {
     case 0:
       return v - vshift_[0] * shiftY; // b
@@ -1914,7 +1875,6 @@ inline ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborABDC(
   const SimplexId shiftY,
   const SimplexId shiftZ) const {
   // V(abdc)=V(b)+V(d)::{b}+V(c)::{b}+V(a)::{b}
-  // cout << "ABDC"<<endl;
   if(neighborId == v - decimation_)
     return 0;
   else if(neighborId == v + (vshift_[0] * shiftY - decimation_)) // c
@@ -1946,7 +1906,6 @@ inline ttk::SimplexId
                                                const SimplexId shiftY,
                                                const SimplexId shiftZ) const {
   // V(abdc)=V(b)+V(d)::{b}+V(c)::{b}+V(a)::{b}
-  // cout << "ABDC"<<endl;
   switch(id) {
     case 0:
       return v - decimation_; // a
@@ -1979,7 +1938,6 @@ inline ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborEFHG(
   const SimplexId shiftY,
   const SimplexId shiftZ) const {
   // V(efhg)=V(g)+V(h)::{g}+V(f)::{g,h}
-  // cout << "EFHG"<<endl;
   if(neighborId == v - (vshift_[0] * decimation_ + vshift_[1] * shiftZ))
     return 0; // a
   else if(neighborId
@@ -2010,7 +1968,6 @@ inline ttk::SimplexId
                                                const SimplexId shiftY,
                                                const SimplexId shiftZ) const {
   // V(efhg)=V(g)+V(h)::{g}+V(f)::{g,h}
-  // cout << "EFHG"<<endl;
   switch(id) {
     case 0:
       return v - (vshift_[0] * decimation_ + vshift_[1] * shiftZ); // a
@@ -2043,7 +2000,6 @@ inline ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborAEGC(
   const SimplexId shiftY,
   const SimplexId shiftZ) const {
   // V(aegc)=V(g)+V(a)::{c,g}+V(c)::{g}
-  // cout << "AEGC"<<endl;
   if(neighborId == v - (vshift_[0] * decimation_ + vshift_[1] * decimation_))
     return 0; // a
   else if(neighborId
@@ -2074,7 +2030,6 @@ inline ttk::SimplexId
                                                const SimplexId shiftY,
                                                const SimplexId shiftZ) const {
   // V(aegc)=V(g)+V(a)::{c,g}+V(c)::{g}
-  // cout << "AEGC"<<endl;
   switch(id) {
     case 0:
       return v - (vshift_[0] * decimation_ + vshift_[1] * decimation_); // a
@@ -2109,7 +2064,6 @@ inline ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborBFHD(
   const SimplexId shiftY,
   const SimplexId shiftZ) const {
   // V(bfhd)=V(b)+V(f)::{b}+V(h)::{b}+V(d)::{b}
-  // cout << "BFHD"<<endl;
   if(neighborId == v - shiftX)
     return 0; // a
   else if(neighborId == v + (vshift_[0] * shiftY - shiftX))
@@ -2141,7 +2095,6 @@ inline ttk::SimplexId
                                                const SimplexId shiftY,
                                                const SimplexId shiftZ) const {
   // V(bfhd)=V(b)+V(f)::{b}+V(h)::{b}+V(d)::{b}
-  // cout << "BFHD"<<endl;
   switch(id) {
     case 0:
       return v - shiftX; // a
@@ -2176,7 +2129,6 @@ inline ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborAEFB(
   const SimplexId shiftY,
   const SimplexId shiftZ) const {
   // V(aefb)=V(b)+V(a)::{b}+V(e)::{b}+V(f)::{b}
-  // cout << "AEFB"<<endl;
   if(neighborId == v - decimation_)
     return 0; // a
   else if(neighborId == v + (vshift_[0] * shiftY - decimation_))
@@ -2207,7 +2159,6 @@ inline ttk::SimplexId
                                                const SimplexId shiftY,
                                                const SimplexId shiftZ) const {
   // V(aefb)=V(b)+V(a)::{b}+V(e)::{b}+V(f)::{b}
-  // cout << "AEFB"<<endl;
   switch(id) {
     case 0:
       return v - decimation_; // a
@@ -2240,7 +2191,6 @@ inline ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborGHDC(
   const SimplexId shiftY,
   const SimplexId shiftZ) const {
   // V(ghdc)=V(g)+V(h)::{g}+V(d)::{g,h}
-  // cout << "GHDC"<<endl;
   if(neighborId == v - (vshift_[0] * shiftY + vshift_[1] * decimation_))
     return 0; // a
   else if(neighborId
@@ -2271,7 +2221,6 @@ inline ttk::SimplexId
                                                const SimplexId shiftY,
                                                const SimplexId shiftZ) const {
   // V(ghdc)=V(g)+V(h)::{g}+V(d)::{g,h}
-  // cout << "GHDC"<<endl;
   switch(id) {
     case 0:
       return v - (vshift_[0] * shiftY + vshift_[1] * decimation_); // a
@@ -2304,7 +2253,6 @@ ttk::SimplexId MultiresTriangulation::getInvertVertexNeighborABCDEFGH(
   const SimplexId shiftY,
   const SimplexId shiftZ) const {
   // V(abcdefgh)=V(g)+V(d)::{g,h}+V(h)::{g}+V(b)::{c,d,g,h}
-  // cout << "ABCDEFGH"<<endl;
   if(neighborId == v - (vshift_[0] * decimation_ + vshift_[1] * decimation_))
     return 0; // a
   else if(neighborId
@@ -2344,7 +2292,6 @@ ttk::SimplexId MultiresTriangulation::getVertexNeighborABCDEFGH(
   const SimplexId shiftY,
   const SimplexId shiftZ) const {
   // V(abcdefgh)=V(g)+V(d)::{g,h}+V(h)::{g}+V(b)::{c,d,g,h}
-  // cout << "ABCDEFGH"<<endl;
   switch(id) {
     case 0:
       return v - (vshift_[0] * decimation_ + vshift_[1] * decimation_); // a
@@ -2389,7 +2336,6 @@ ttk::SimplexId MultiresTriangulation::getInvertedVertexNeighborABCDEFGH(
   const SimplexId shiftZ,
   SimplexId &invertedLocalNeighbor) const {
   // V(abcdefgh)=V(g)+V(d)::{g,h}+V(h)::{g}+V(b)::{c,d,g,h}
-  // cout << "ABCDEFGH"<<endl;
   SimplexId invertedVertexId = -1;
   switch(id) {
     case 0:
@@ -2459,8 +2405,6 @@ ttk::SimplexId MultiresTriangulation::getInvertedVertexNeighborABCDEFGH(
 }
 void MultiresTriangulation::getInvertedLocalNeighborABDC(
   SimplexId id, SimplexId &invertedLocalNeighbor) const {
-  // cout<<"ABDC"<<endl;
-  // } else if(boundary == 0) { // ABDC
   switch(id) {
     case 0:
       invertedLocalNeighbor = 6;
@@ -2497,8 +2441,6 @@ void MultiresTriangulation::getInvertedLocalNeighborABDC(
 
 void MultiresTriangulation::getInvertedLocalNeighborEFHG(
   SimplexId id, SimplexId &invertedLocalNeighbor) const {
-  // cout<<"EFHG"<<endl;
-  // } else if(boundary == 1) { // EFHG
   switch(id) {
     case 13:
       invertedLocalNeighbor = 0;
@@ -2535,9 +2477,7 @@ void MultiresTriangulation::getInvertedLocalNeighborEFHG(
 
 void MultiresTriangulation::getInvertedLocalNeighborAEFB(
   SimplexId id, SimplexId &invertedLocalNeighbor) const {
-  // cout<<"AEFB"<<endl;
   switch(id) {
-      // } else if(boundary == 2) { // AEFB
     case 6:
       invertedLocalNeighbor = 0;
       break;
@@ -2572,9 +2512,7 @@ void MultiresTriangulation::getInvertedLocalNeighborAEFB(
 }
 void MultiresTriangulation::getInvertedLocalNeighborGHDC(
   SimplexId id, SimplexId &invertedLocalNeighbor) const {
-  // cout<<"GHDC"<<endl;
   switch(id) {
-      // } else if(boundary == 3) { // GHDC
     case 13:
       invertedLocalNeighbor = 0;
       break;
@@ -2609,9 +2547,7 @@ void MultiresTriangulation::getInvertedLocalNeighborGHDC(
 }
 void MultiresTriangulation::getInvertedLocalNeighborAEGC(
   SimplexId id, SimplexId &invertedLocalNeighbor) const {
-  // cout<<"AEGC"<<endl;
   switch(id) {
-      // } else if(boundary == 4) { // AEGC
     case 13:
       invertedLocalNeighbor = 0;
       break;
@@ -2646,9 +2582,7 @@ void MultiresTriangulation::getInvertedLocalNeighborAEGC(
 }
 void MultiresTriangulation::getInvertedLocalNeighborBFHD(
   SimplexId id, SimplexId &invertedLocalNeighbor) const {
-  // cout<<"BFHD"<<endl;
   switch(id) {
-    // } else if(boundary == 5) { // BFHD
     case 6:
       invertedLocalNeighbor = 0;
       break;
@@ -2683,9 +2617,7 @@ void MultiresTriangulation::getInvertedLocalNeighborBFHD(
 }
 void MultiresTriangulation::getInvertedLocalNeighborAB(
   SimplexId id, SimplexId &invertedLocalNeighbor) const {
-  // cout<<"AB"<<endl;
   switch(id) {
-    // } else if(boundary == 6) { // AB
     case 6:
       invertedLocalNeighbor = 0;
       break;
@@ -2714,9 +2646,7 @@ void MultiresTriangulation::getInvertedLocalNeighborAB(
 }
 void MultiresTriangulation::getInvertedLocalNeighborEF(
   SimplexId id, SimplexId &invertedLocalNeighbor) const {
-  // cout<<"EF"<<endl;
   switch(id) {
-    // } else if(boundary == 7) { // EF
     case 8:
       invertedLocalNeighbor = 0;
       break;
@@ -2739,9 +2669,7 @@ void MultiresTriangulation::getInvertedLocalNeighborEF(
 }
 void MultiresTriangulation::getInvertedLocalNeighborCD(
   SimplexId id, SimplexId &invertedLocalNeighbor) const {
-  // cout<<"CD"<<endl;
   switch(id) {
-      // } else if(boundary == 8) { // CD
     case 11:
       invertedLocalNeighbor = 0;
       break;
@@ -2764,9 +2692,7 @@ void MultiresTriangulation::getInvertedLocalNeighborCD(
 }
 void MultiresTriangulation::getInvertedLocalNeighborGH(
   SimplexId id, SimplexId &invertedLocalNeighbor) const {
-  // cout<<"GH"<<endl;
   switch(id) {
-    // } else if(boundary == 9) { // GH
     case 13:
       invertedLocalNeighbor = 0;
       break;
@@ -2795,9 +2721,7 @@ void MultiresTriangulation::getInvertedLocalNeighborGH(
 }
 void MultiresTriangulation::getInvertedLocalNeighborAC(
   SimplexId id, SimplexId &invertedLocalNeighbor) const {
-  // cout<<"AC"<<endl;
   switch(id) {
-    // } else if(boundary == 10) { // AC
     case 11:
       invertedLocalNeighbor = 0;
       break;
@@ -2820,9 +2744,7 @@ void MultiresTriangulation::getInvertedLocalNeighborAC(
 }
 void MultiresTriangulation::getInvertedLocalNeighborEG(
   SimplexId id, SimplexId &invertedLocalNeighbor) const {
-  // cout<<"EG"<<endl;
   switch(id) {
-    // } else if(boundary == 11) { // EG
     case 13:
       invertedLocalNeighbor = 0;
       break;
@@ -2851,8 +2773,6 @@ void MultiresTriangulation::getInvertedLocalNeighborEG(
 }
 void MultiresTriangulation::getInvertedLocalNeighborAE(
   SimplexId id, SimplexId &invertedLocalNeighbor) const {
-  // cout<<"AE"<<endl;
-  // }else if(boundary == 12) { // AE
   switch(id) {
     case 9:
       invertedLocalNeighbor = 0;
@@ -2876,9 +2796,7 @@ void MultiresTriangulation::getInvertedLocalNeighborAE(
 }
 void MultiresTriangulation::getInvertedLocalNeighborCG(
   SimplexId id, SimplexId &invertedLocalNeighbor) const {
-  // cout<<"CG"<<endl;
   switch(id) {
-      // } else if(boundary == 13) { // CG
     case 13:
       invertedLocalNeighbor = 0;
       break;
@@ -2907,9 +2825,7 @@ void MultiresTriangulation::getInvertedLocalNeighborCG(
 }
 void MultiresTriangulation::getInvertedLocalNeighborBD(
   SimplexId id, SimplexId &invertedLocalNeighbor) const {
-  // cout<<"BD"<<endl;
   switch(id) {
-    // } else if(boundary == 14) { // BD
     case 6:
       invertedLocalNeighbor = 0;
       break;
@@ -2938,9 +2854,7 @@ void MultiresTriangulation::getInvertedLocalNeighborBD(
 }
 void MultiresTriangulation::getInvertedLocalNeighborFH(
   SimplexId id, SimplexId &invertedLocalNeighbor) const {
-  // cout<<"FH"<<endl;
   switch(id) {
-      // } else if(boundary == 15) { // FH
     case 8:
       invertedLocalNeighbor = 0;
       break;
@@ -2963,9 +2877,7 @@ void MultiresTriangulation::getInvertedLocalNeighborFH(
 }
 void MultiresTriangulation::getInvertedLocalNeighborBF(
   SimplexId id, SimplexId &invertedLocalNeighbor) const {
-  // cout<<"BF"<<endl;
   switch(id) {
-      // } else if(boundary == 16) { // BF
     case 6:
       invertedLocalNeighbor = 0;
       break;
@@ -2994,9 +2906,7 @@ void MultiresTriangulation::getInvertedLocalNeighborBF(
 }
 void MultiresTriangulation::getInvertedLocalNeighborDH(
   SimplexId id, SimplexId &invertedLocalNeighbor) const {
-  // cout<<"DH"<<endl;
   switch(id) {
-      // } else if(boundary == 17) { // DH
     case 11:
       invertedLocalNeighbor = 0;
       break;
@@ -3019,9 +2929,7 @@ void MultiresTriangulation::getInvertedLocalNeighborDH(
 }
 void MultiresTriangulation::getInvertedLocalNeighborA(
   SimplexId id, SimplexId &invertedLocalNeighbor) const {
-  // cout<<"A"<<endl;
   switch(id) {
-      // } else if(boundary == 18) { // A
     case 9:
       invertedLocalNeighbor = 0;
       break;
@@ -3039,7 +2947,6 @@ void MultiresTriangulation::getInvertedLocalNeighborA(
 void MultiresTriangulation::getInvertedLocalNeighborE(
   SimplexId id, SimplexId &invertedLocalNeighbor) const {
   switch(id) {
-      // } else if(boundary == 19) { // E
     case 8:
       invertedLocalNeighbor = 0;
       break;
@@ -3056,9 +2963,7 @@ void MultiresTriangulation::getInvertedLocalNeighborE(
 }
 void MultiresTriangulation::getInvertedLocalNeighborC(
   SimplexId id, SimplexId &invertedLocalNeighbor) const {
-  // cout<<"C"<<endl;
   switch(id) {
-      // } else if(boundary == 20) { // C
     case 11:
       invertedLocalNeighbor = 0;
       break;
@@ -3075,9 +2980,7 @@ void MultiresTriangulation::getInvertedLocalNeighborC(
 }
 void MultiresTriangulation::getInvertedLocalNeighborG(
   SimplexId id, SimplexId &invertedLocalNeighbor) const {
-  // cout<<"G"<<endl;
   switch(id) {
-      // } else if(boundary == 21) { // G
     case 13:
       invertedLocalNeighbor = 0;
       break;
@@ -3103,9 +3006,7 @@ void MultiresTriangulation::getInvertedLocalNeighborG(
 }
 void MultiresTriangulation::getInvertedLocalNeighborB(
   SimplexId id, SimplexId &invertedLocalNeighbor) const {
-  // cout<<"B"<<endl;
   switch(id) {
-      // } else if(boundary == 22) { // B
     case 6:
       invertedLocalNeighbor = 0;
       break;
@@ -3131,9 +3032,7 @@ void MultiresTriangulation::getInvertedLocalNeighborB(
 }
 void MultiresTriangulation::getInvertedLocalNeighborF(
   SimplexId id, SimplexId &invertedLocalNeighbor) const {
-  // cout<<"F"<<endl;
   switch(id) {
-      // } else if(boundary == 23) { // F
     case 8:
       invertedLocalNeighbor = 0;
       break;
@@ -3150,9 +3049,7 @@ void MultiresTriangulation::getInvertedLocalNeighborF(
 }
 void MultiresTriangulation::getInvertedLocalNeighborD(
   SimplexId id, SimplexId &invertedLocalNeighbor) const {
-  // cout<<"D"<<endl;
   switch(id) {
-      // } else if(boundary == 24) { // D
     case 11:
       invertedLocalNeighbor = 0;
       break;
@@ -3169,9 +3066,7 @@ void MultiresTriangulation::getInvertedLocalNeighborD(
 }
 void MultiresTriangulation::getInvertedLocalNeighborH(
   SimplexId id, SimplexId &invertedLocalNeighbor) const {
-  // cout<<"H"<<endl;
   switch(id) {
-      // } else if(boundary == 25) { // H
     case 13:
       invertedLocalNeighbor = 0;
       break;
@@ -3187,28 +3082,17 @@ void MultiresTriangulation::getInvertedLocalNeighborH(
   }
 }
 
-void MultiresTriangulation::vertexToPosition2d(const SimplexId vertex,
-                                               SimplexId p[2]) const {
-  // if(isAccelerated_) {
-  //   p[0] = vertex & mod_[0];
-  //   p[1] = vertex >> div_[0];
-  // } else {
+void MultiresTriangulation::vertexToPosition2d(
+  const SimplexId vertex, std::array<SimplexId, 3> &p) const {
   p[0] = vertex % vshift_[0];
   p[1] = vertex / vshift_[0];
-  // }
 }
 
-void MultiresTriangulation::vertexToPosition(const SimplexId vertex,
-                                             SimplexId p[3]) const {
-  // if(isAccelerated_) {
-  //   p[0] = vertex & mod_[0];
-  //   p[1] = (vertex & mod_[1]) >> div_[0];
-  //   p[2] = vertex >> div_[1];
-  // } else {
+void MultiresTriangulation::vertexToPosition(
+  const SimplexId vertex, std::array<SimplexId, 3> &p) const {
   p[0] = vertex % vshift_[0];
   p[1] = (vertex % vshift_[1]) / vshift_[0];
   p[2] = vertex / vshift_[1];
-  // }
 }
 
 bool MultiresTriangulation::isInTriangulation(const SimplexId vertexId) const {
@@ -3216,20 +3100,18 @@ bool MultiresTriangulation::isInTriangulation(const SimplexId vertexId) const {
   if(dimensionality_ == 1) {
     is_in_triangulation = ((vertexId % decimation_) == 0);
   } else if(dimensionality_ == 2) {
-    SimplexId p[2];
+    std::array<SimplexId, 3> p{};
     vertexToPosition2d(vertexId, p);
     is_in_triangulation
       = ((p[0] % decimation_) == 0) and ((p[1] % decimation_) == 0);
   } else if(dimensionality_ == 3) {
-    SimplexId p[3];
+    std::array<SimplexId, 3> p{};
     vertexToPosition(vertexId, p);
     is_in_triangulation = ((p[0] % decimation_) == 0)
                           and ((p[1] % decimation_) == 0)
                           and ((p[2] % decimation_) == 0);
   } else {
-    stringstream msg;
-    msg << "[MultiresTriangulation] Dimension unknown : " << dimensionality_;
-    printErr(msg.str());
+    this->printErr("Unknown dimension " + std::to_string(dimensionality_));
   }
   return is_in_triangulation;
 }
@@ -3281,7 +3163,7 @@ void MultiresTriangulation::getImpactedVertices(SimplexId vertexId,
 
   SimplexId localNeighborId0 = -1, localNeighborId1 = -1;
   if(dimensionality_ == 3) {
-    SimplexId p[3];
+    std::array<SimplexId, 3> p{};
     vertexToPosition(vertexId, p);
 
     if(0 < p[0] and p[0] < nbvoxels_[0]) {
@@ -3322,14 +3204,10 @@ void MultiresTriangulation::getImpactedVertices(SimplexId vertexId,
         if(0 < p[2] and p[2] < nbvoxels_[2])
           getImpactedVerticesAE(p, localNeighborId0,
                                 localNeighborId1); //
-        else
-          cout << "getImpactedVertices ; shouln't happen" << endl;
       } else {
         if(0 < p[2] and p[2] < nbvoxels_[2])
           getImpactedVerticesCG(p, localNeighborId0,
                                 localNeighborId1); //
-        else
-          cout << "getImpactedVertices ; shouln't happen" << endl;
       }
     } else {
       if(0 < p[1] and p[1] < nbvoxels_[1]) {
@@ -3346,86 +3224,53 @@ void MultiresTriangulation::getImpactedVertices(SimplexId vertexId,
         if(0 < p[2] and p[2] < nbvoxels_[2])
           getImpactedVerticesBF(p, localNeighborId0,
                                 localNeighborId1); //
-        else
-          cout << "getImpactedVertices ; shouln't happen" << endl;
       } else {
         if(0 < p[2] and p[2] < nbvoxels_[2])
           getImpactedVerticesDH(p, localNeighborId0,
                                 localNeighborId1); //
-        else
-          cout << "getImpactedVertices ; shouln't happen" << endl;
       }
     }
 
   } else if(dimensionality_ == 2) {
-    SimplexId p[2];
+    std::array<SimplexId, 3> p{};
     vertexToPosition2d(vertexId, p);
 
     if(0 < p[0] and p[0] < nbvoxels_[Di_]) {
       if(0 < p[1] and p[1] < nbvoxels_[Dj_]) {
         getImpactedVertices2dABCD(p, localNeighborId0,
                                   localNeighborId1); // abcd
-        // cout << "abcd" << endl;
       } else if(p[1] == 0) {
         getImpactedVertices2dAB(p, localNeighborId0,
                                 localNeighborId1); // ab
-        // cout << "ab" << endl;
       } else {
         getImpactedVertices2dCD(p, localNeighborId0,
                                 localNeighborId1); // cd
-        // cout << "cd" << endl;
       }
     } else if(p[0] == 0) {
       if(0 < p[1] and p[1] < nbvoxels_[Dj_]) {
         getImpactedVertices2dAC(p, localNeighborId0,
                                 localNeighborId1); // ac
-        // cout << "ac" << endl;
-      } else if(p[1] == 0) {
-        // cout << "a" << endl;
-      } else {
-        // cout << "c" << endl;
       }
     } else {
       if(0 < p[1] and p[1] < nbvoxels_[Dj_]) {
         getImpactedVertices2dBD(p, localNeighborId0,
                                 localNeighborId1); // bd
-        // cout << "bd" << endl;
-      } else if(p[1] == 0) {
-        // cout << "b" << endl;
-      } else {
-        // cout << "d" << endl;
       }
     }
   } else {
-    cout << "function getImpactedVertices : not implemented for 1D yet" << endl;
-    // cout << " " << p[0] << " " << p[1] << " "<<p[2]<<endl;
+    this->printWrn("getImpactedVertices not implemented for 1D yet");
   }
   v0[0] = localNeighborId0;
   v1[0] = localNeighborId1;
-  // cout << "calling getVertexNeighbor " << v0[0] << " " << v1[0] << endl;
   getVertexNeighbor(vertexId, v0[0], v0[1]);
   getVertexNeighbor(vertexId, v1[0], v1[1]);
-  // cout << "got global neighbors " << v0[1] << " " << v1[1]
-  //      << "\n now calling getinvert" << endl;
   getInvertVertexNeighbor(v0[1], vertexId, v0[2]);
   getInvertVertexNeighbor(v1[1], vertexId, v1[2]);
-  // cout << "got invert local neighbors " << v0[2] << " " << v1[2] << endl;
-
-  // cout << "calld getinteriorinvertedneighbor, all good" << endl;
 }
-
-// SimplexId mappingProgressiveToGlobalIndex(Simplex vertexId, int
-// decimationLevel){
-//   SimplexId size = getSize(decimationLevel + 1);
-//   if(vertexId >= size) {
-//     return mappingProgressiveToGlobalIndex(vertexId, decimationLevel + 1);
-//   } else{
-//   }
-// }
 
 char MultiresTriangulation::localNeighborId(SimplexId neighborId,
                                             SimplexId vertexId) {
-  cout << "\nBOUNDARY CASES TO TAKE CARE OF\n" << endl;
+  this->printMsg("BOUNDARY CASES TO TAKE CARE OF");
 
   SimplexId pLocalNeighbor[3];
   pLocalNeighbor[0] = neighborId % gridDecimatedDimensions_[Di_];
@@ -3452,9 +3297,7 @@ char MultiresTriangulation::localNeighborId(SimplexId neighborId,
   if(dimensionality_ == 2) {
     if(pLocalNeighbor[0] == pLocalVertex[0]) {
       if(pLocalNeighbor[1] == pLocalVertex[1]) {
-        cout << "MultiresTriangulation::localNeighbor : not a neighbor ! "
-                "same point actually "
-             << endl;
+        this->printErr("localNeighbor: not a neighbor!");
       } else if(pLocalNeighbor[1] == pLocalVertex[1] + 1) {
         localNeighbor = 4;
       } else if(pLocalNeighbor[1] == pLocalVertex[1] - 1) {
@@ -3466,8 +3309,7 @@ char MultiresTriangulation::localNeighborId(SimplexId neighborId,
       } else if(pLocalNeighbor[1] == pLocalVertex[1] - 1) {
         localNeighbor = 2;
       } else {
-        cout << "MultiresTriangulation::localNeighbor : not a neighbor ! "
-             << endl;
+        this->printErr("localNeighbor: not a neighbor!");
       }
     } else if(pLocalNeighbor[0] == pLocalVertex[0] - 1) {
       if(pLocalNeighbor[1] == pLocalVertex[1]) {
@@ -3475,90 +3317,18 @@ char MultiresTriangulation::localNeighborId(SimplexId neighborId,
       } else if(pLocalNeighbor[1] == pLocalVertex[1] + 1) {
         localNeighbor = 5;
       } else {
-        cout << "MultiresTriangulation::localNeighbor : not a neighbor ! "
-             << endl;
+        this->printErr("localNeighbor: not a neighbor!");
       }
     } else {
-      cout << "MultiresTriangulation::localNeighbor : not a neighbor ! "
-           << endl;
+      this->printErr("localNeighbor: not a neighbor!");
     }
   } else if(dimensionality_ == 3) {
-    cout << " LOCAL NEIGHBORS IDs NOT IMPLEMENTED YET FOR 3D" << endl;
+    this->printWrn("Local neighbors ids not implemented yet for 3D");
   }
-
-  // int boundaryIndex = isBoundary(vertexId, pLocalVertex[0], pLocalVertex[1],
-  // pLocalVertex[2]); localNeighbor = localNeighborForBoundary(localNeighbor,
-  // boundaryIndex);
 
   return localNeighbor;
 }
 
-// int MultiresTriangulation::isBoundary(SimplexId vertexId, SimplexId p0=-1,
-// SimplexId p1=-1, SimplexId p2=-1){
-//   if(p0 == -1 or p1 == -1 or p2 == -1){
-//     p0 = vertexId % gridDecimatedDimensions_[Di_];
-//     p1 = (vertexId
-//           % (gridDecimatedDimensions_[Di_] * gridDecimatedDimensions_[Dj_]))
-//          / gridDecimatedDimensions_[Di_];
-//     p2 = vertexId
-//          / (gridDecimatedDimensions_[Di_] * gridDecimatedDimensions_[Dj_]);
-//   }
-//   int boundaryIndex = -1;
-//   /* boundary indexation
-//      7 ______2______ 6
-//       |             |
-//       |             |
-//      3|             |1
-//       |             |
-//       |_____________|
-//      4       0       5
-//   */
-//   if(p0 == 0) {
-//     if(p1 == 0) {
-//       boundaryIndex = 4;
-//     } else if(p1 == gridDecimatedDimensions_[Dj_] - 1) {
-//       boundaryIndex = 7;
-//     } else {
-//       boundaryIndex = 3;
-//     }
-//   } else if(p0 == gridDecimatedDimensions_[Di_] - 1) {
-//     if(p1 == 0) {
-//       boundaryIndex = 5;
-//     } else if(p1 == gridDecimatedDimensions_[Dj_] - 1) {
-//       boundaryIndex = 6;
-//     } else {
-//       boundaryIndex = 1;
-//     }
-//   } else {
-//     if(p1 == 0) {
-//       boundaryIndex = 0;
-//     } else if(p1 == gridDecimatedDimensions_[Dj_] - 1) {
-//       boundaryIndex = 2;
-//     }
-//   }
-//   if(dimensionality_==3){
-//     cout<<" BOUNDARIES LOCAL VERTICES NOT IMPLEMENTED IN 3D"<<endl;
-//   }
-//   return boundaryIndex;
-// }
-
-// inline int MultiresTriangulation::localNeighborForBoundary2d(int
-// localNeighborId, int boundaryIndex){
-//   switch(boundaryIndex) {
-//     case 0:
-//       return localNeighborId + 3+;
-//       break;
-//     case 1:
-//       return localNeighborId + 3;
-//       break;
-//     case 4:
-//       return localNeighborId + 3;
-//       break;
-//     case 5:
-//       return localNeighborId + 3;
-//       break;
-//   }
-// }
 int MultiresTriangulation::getInteriorInvertedVertexNeighbor(
   SimplexId vertexId,
   SimplexId localNeighborId,
@@ -3566,7 +3336,7 @@ int MultiresTriangulation::getInteriorInvertedVertexNeighbor(
   SimplexId &invertedLocalNeighborId) const {
 
   if(dimensionality_ == 3) {
-    SimplexId p[3];
+    std::array<SimplexId, 3> p{};
     vertexToPosition(vertexId, p);
     SimplexId shiftX = decimation_;
     SimplexId shiftY = decimation_;
@@ -3685,7 +3455,7 @@ int MultiresTriangulation::getInteriorInvertedVertexNeighbor(
     return -1;
 
   } else if(dimensionality_ == 2) {
-    SimplexId p[2];
+    std::array<SimplexId, 3> p{};
     vertexToPosition2d(vertexId, p);
     SimplexId shiftX = decimation_;
     SimplexId shiftY = decimation_;
@@ -3705,41 +3475,32 @@ int MultiresTriangulation::getInteriorInvertedVertexNeighbor(
 
     if(0 < p[0] and p[0] < nbvoxels_[Di_] - shiftX) {
       if(decimation_ < p[1] and p[1] < nbvoxels_[Dj_]) {
-        // cout << "abcd" << endl;
         // nothing to do here
       } else if(p[1] == decimation_) {
         getInvertedLocalNeighbor2dAB(vertexId, invertedLocalNeighborId);
-        // cout << "ab" << endl;
       } else {
         getInvertedLocalNeighbor2dCD(vertexId, invertedLocalNeighborId); // cd
-        // cout << "cd" << endl;
       }
     } else if(p[0] == decimation_) {
       if(decimation_ < p[1] and p[1] < nbvoxels_[Dj_] - shiftY) {
         getInvertedLocalNeighbor2dAC(vertexId, invertedLocalNeighborId); // ac
-        // cout << "ac" << endl;
       } else if(p[1] == decimation_) {
         getInvertedLocalNeighbor2dA(vertexId, invertedLocalNeighborId); // a
-        // cout << "a" << endl;
       } else {
         getInvertedLocalNeighbor2dC(vertexId, invertedLocalNeighborId); // c
-        // cout << "c" << endl;
       }
     } else {
       if(decimation_ < p[1] and p[1] < nbvoxels_[Dj_] - shiftY) {
         getInvertedLocalNeighbor2dBD(vertexId, invertedLocalNeighborId); // bd
-        // cout << "bd" << endl;
       } else if(p[1] == decimation_) {
         getInvertedLocalNeighbor2dB(vertexId, invertedLocalNeighborId); // b
-        // cout << "b" << endl;
       } else {
         getInvertedLocalNeighbor2dD(vertexId, invertedLocalNeighborId); // d
-        // cout << "d" << endl;
       }
     }
   } else if(dimensionality_ == 1) {
     // ab
-    cout << "NOT TESTED IN DIM 1" << endl;
+    this->printWrn("NOT TESTED IN 1D");
     if(vertexId > decimation_ and vertexId < nbvoxels_[Di_]) {
       if(localNeighborId == decimation_)
         invertedVertexId = vertexId + decimation_;
@@ -3923,12 +3684,22 @@ SimplexId MultiresTriangulation::getInvertedLocalNeighbor2dCD(
   return 0;
 }
 
+void MultiresTriangulation::getImpactedVerticesError(
+  const int prev_decim, const std::array<SimplexId, 3> &p) const {
+  this->printErr("THIS SHOULDNT HAPPEN");
+  this->printErr("previous decimation: " + std::to_string(prev_decim));
+  this->printErr("position: " + std::to_string(p[0]) + " "
+                 + std::to_string(p[1]) + " " + std::to_string(p[2]));
+  this->printErr("grid size: " + std::to_string(gridDimensions_[0]) + " "
+                 + std::to_string(gridDimensions_[1]) + " "
+                 + std::to_string(gridDimensions_[2]));
+}
+
 void MultiresTriangulation::getImpactedVerticesABCDEFGH(
-  SimplexId p[3],
+  std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
 
-  // cout<<"getting impacted vertices in ABCDEFGH"<<endl;
   int previous_decimation = pow(2, (decimationLevel_ + 1));
   if((p[0] % previous_decimation) and (p[1] % previous_decimation)
      and (p[2] % previous_decimation)) {
@@ -3958,19 +3729,14 @@ void MultiresTriangulation::getImpactedVerticesABCDEFGH(
     localNeighborId0 = 2;
     localNeighborId1 = 8;
   } else {
-    cout << "THIS SHOULDNT HAPPEN" << endl;
-    cout << "previous decimation " << previous_decimation << endl;
-    cout << "position " << p[0] << " " << p[1] << " " << p[2] << endl;
-    cout << "gridsize " << gridDimensions_[0] << " " << gridDimensions_[1]
-         << " " << gridDimensions_[2] << endl;
+    this->getImpactedVerticesError(previous_decimation, p);
   }
 }
 
 void MultiresTriangulation::getImpactedVerticesABDC(
-  SimplexId p[3],
+  std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
-  // cout<<"getting impacted vertices in ABDC"<<endl;
   int previous_decimation = pow(2, (decimationLevel_ + 1));
 
   if((p[0] % previous_decimation) and (p[1] % previous_decimation)) {
@@ -3986,18 +3752,13 @@ void MultiresTriangulation::getImpactedVerticesABDC(
     localNeighborId1 = 7;
 
   } else {
-    cout << "THIS SHOULDNT HAPPEN" << endl;
-    cout << "previous decimation " << previous_decimation << endl;
-    cout << "position " << p[0] << " " << p[1] << " " << p[2] << endl;
-    cout << "gridsize " << gridDimensions_[0] << " " << gridDimensions_[1]
-         << " " << gridDimensions_[2] << endl;
+    this->getImpactedVerticesError(previous_decimation, p);
   }
 }
 void MultiresTriangulation::getImpactedVerticesEFHG(
-  SimplexId p[3],
+  std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
-  // cout<<"getting impacted vertices in EFHG"<<endl;
   int previous_decimation = pow(2, (decimationLevel_ + 1));
 
   if((p[0] % previous_decimation) and (p[1] % previous_decimation)) {
@@ -4013,18 +3774,13 @@ void MultiresTriangulation::getImpactedVerticesEFHG(
     localNeighborId1 = 9;
 
   } else {
-    cout << "THIS SHOULDNT HAPPEN" << endl;
-    cout << "previous decimation " << previous_decimation << endl;
-    cout << "position " << p[0] << " " << p[1] << " " << p[2] << endl;
-    cout << "gridsize " << gridDimensions_[0] << " " << gridDimensions_[1]
-         << " " << gridDimensions_[2] << endl;
+    this->getImpactedVerticesError(previous_decimation, p);
   }
 }
 void MultiresTriangulation::getImpactedVerticesAEGC(
-  SimplexId p[3],
+  std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
-  // cout<<"getting impacted vertices in AEGC"<<endl;
   int previous_decimation = pow(2, (decimationLevel_ + 1));
 
   if((p[1] % previous_decimation) and (p[2] % previous_decimation)) {
@@ -4039,18 +3795,13 @@ void MultiresTriangulation::getImpactedVerticesAEGC(
     localNeighborId0 = 2;
     localNeighborId1 = 9;
   } else {
-    cout << "THIS SHOULDNT HAPPEN" << endl;
-    cout << "previous decimation " << previous_decimation << endl;
-    cout << "position " << p[0] << " " << p[1] << " " << p[2] << endl;
-    cout << "gridsize " << gridDimensions_[0] << " " << gridDimensions_[1]
-         << " " << gridDimensions_[2] << endl;
+    this->getImpactedVerticesError(previous_decimation, p);
   }
 }
 void MultiresTriangulation::getImpactedVerticesBFHD(
-  SimplexId p[3],
+  std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
-  // cout<<"getting impacted vertices in BFHD"<<endl;
   int previous_decimation = pow(2, (decimationLevel_ + 1));
 
   if((p[1] % previous_decimation) and (p[2] % previous_decimation)) {
@@ -4065,18 +3816,13 @@ void MultiresTriangulation::getImpactedVerticesBFHD(
     localNeighborId0 = 7;
     localNeighborId1 = 4;
   } else {
-    cout << "THIS SHOULDNT HAPPEN" << endl;
-    cout << "previous decimation " << previous_decimation << endl;
-    cout << "position " << p[0] << " " << p[1] << " " << p[2] << endl;
-    cout << "gridsize " << gridDimensions_[0] << " " << gridDimensions_[1]
-         << " " << gridDimensions_[2] << endl;
+    this->getImpactedVerticesError(previous_decimation, p);
   }
 }
 void MultiresTriangulation::getImpactedVerticesAEFB(
-  SimplexId p[3],
+  std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
-  // cout<<"getting impacted vertices in AEFB"<<endl;
   int previous_decimation = pow(2, (decimationLevel_ + 1));
 
   if((p[0] % previous_decimation) and (p[2] % previous_decimation)) {
@@ -4091,18 +3837,13 @@ void MultiresTriangulation::getImpactedVerticesAEFB(
     localNeighborId0 = 9;
     localNeighborId1 = 4;
   } else {
-    cout << "THIS SHOULDNT HAPPEN" << endl;
-    cout << "previous decimation " << previous_decimation << endl;
-    cout << "position " << p[0] << " " << p[1] << " " << p[2] << endl;
-    cout << "gridsize " << gridDimensions_[0] << " " << gridDimensions_[1]
-         << " " << gridDimensions_[2] << endl;
+    this->getImpactedVerticesError(previous_decimation, p);
   }
 }
 void MultiresTriangulation::getImpactedVerticesGHDC(
-  SimplexId p[3],
+  std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
-  // cout<<"getting impacted vertices in GHDC"<<endl;
   int previous_decimation = pow(2, (decimationLevel_ + 1));
 
   if((p[0] % previous_decimation) and (p[2] % previous_decimation)) {
@@ -4117,238 +3858,173 @@ void MultiresTriangulation::getImpactedVerticesGHDC(
     localNeighborId0 = 2;
     localNeighborId1 = 9;
   } else {
-    cout << "THIS SHOULDNT HAPPEN" << endl;
-    cout << "previous decimation " << previous_decimation << endl;
-    cout << "position " << p[0] << " " << p[1] << " " << p[2] << endl;
-    cout << "gridsize " << gridDimensions_[0] << " " << gridDimensions_[1]
-         << " " << gridDimensions_[2] << endl;
+    this->getImpactedVerticesError(previous_decimation, p);
   }
 }
 void MultiresTriangulation::getImpactedVerticesAB(
-  SimplexId p[3],
+  std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
-  // cout<<"getting impacted vertices in AB"<<endl;
   int previous_decimation = pow(2, (decimationLevel_ + 1));
 
   if(p[0] % previous_decimation) {
     localNeighborId0 = 0;
     localNeighborId1 = 7;
   } else {
-    cout << "THIS SHOULDNT HAPPEN" << endl;
-    cout << "previous decimation " << previous_decimation << endl;
-    cout << "position " << p[0] << " " << p[1] << " " << p[2] << endl;
-    cout << "gridsize " << gridDimensions_[0] << " " << gridDimensions_[1]
-         << " " << gridDimensions_[2] << endl;
+    this->getImpactedVerticesError(previous_decimation, p);
   }
 }
 void MultiresTriangulation::getImpactedVerticesCD(
-  SimplexId p[3],
+  std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
-  // cout<<"getting impacted vertices in CD"<<endl;
   int previous_decimation = pow(2, (decimationLevel_ + 1));
 
   if(p[0] % previous_decimation) {
     localNeighborId0 = 1;
     localNeighborId1 = 5;
   } else {
-    cout << "THIS SHOULDNT HAPPEN" << endl;
-    cout << "previous decimation " << previous_decimation << endl;
-    cout << "position " << p[0] << " " << p[1] << " " << p[2] << endl;
-    cout << "gridsize " << gridDimensions_[0] << " " << gridDimensions_[1]
-         << " " << gridDimensions_[2] << endl;
+    this->getImpactedVerticesError(previous_decimation, p);
   }
 }
 void MultiresTriangulation::getImpactedVerticesEF(
-  SimplexId p[3],
+  std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
-  // cout<<"getting impacted vertices in EF"<<endl;
   int previous_decimation = pow(2, (decimationLevel_ + 1));
 
   if(p[0] % previous_decimation) {
     localNeighborId0 = 1;
     localNeighborId1 = 5;
   } else {
-    cout << "THIS SHOULDNT HAPPEN" << endl;
-    cout << "previous decimation " << previous_decimation << endl;
-    cout << "position " << p[0] << " " << p[1] << " " << p[2] << endl;
-    cout << "gridsize " << gridDimensions_[0] << " " << gridDimensions_[1]
-         << " " << gridDimensions_[2] << endl;
+    this->getImpactedVerticesError(previous_decimation, p);
   }
 }
 void MultiresTriangulation::getImpactedVerticesGH(
-  SimplexId p[3],
+  std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
-  // cout<<"getting impacted vertices in GH"<<endl;
   int previous_decimation = pow(2, (decimationLevel_ + 1));
 
   if(p[0] % previous_decimation) {
     localNeighborId0 = 7;
     localNeighborId1 = 6;
   } else {
-    cout << "THIS SHOULDNT HAPPEN" << endl;
-    cout << "previous decimation " << previous_decimation << endl;
-    cout << "position " << p[0] << " " << p[1] << " " << p[2] << endl;
-    cout << "gridsize " << gridDimensions_[0] << " " << gridDimensions_[1]
-         << " " << gridDimensions_[2] << endl;
+    this->getImpactedVerticesError(previous_decimation, p);
   }
 }
 void MultiresTriangulation::getImpactedVerticesAC(
-  SimplexId p[3],
+  std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
-  // cout<<"getting impacted vertices in AC"<<endl;
   int previous_decimation = pow(2, (decimationLevel_ + 1));
 
   if(p[1] % previous_decimation) {
     localNeighborId0 = 0;
     localNeighborId1 = 4;
   } else {
-    cout << "THIS SHOULDNT HAPPEN" << endl;
-    cout << "previous decimation " << previous_decimation << endl;
-    cout << "position " << p[0] << " " << p[1] << " " << p[2] << endl;
-    cout << "gridsize " << gridDimensions_[0] << " " << gridDimensions_[1]
-         << " " << gridDimensions_[2] << endl;
+    this->getImpactedVerticesError(previous_decimation, p);
   }
 }
 void MultiresTriangulation::getImpactedVerticesBD(
-  SimplexId p[3],
+  std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
-  // cout<<"getting impacted vertices in BD"<<endl;
   int previous_decimation = pow(2, (decimationLevel_ + 1));
 
   if(p[1] % previous_decimation) {
     localNeighborId0 = 2;
     localNeighborId1 = 7;
   } else {
-    cout << "THIS SHOULDNT HAPPEN" << endl;
-    cout << "previous decimation " << previous_decimation << endl;
-    cout << "position " << p[0] << " " << p[1] << " " << p[2] << endl;
-    cout << "gridsize " << gridDimensions_[0] << " " << gridDimensions_[1]
-         << " " << gridDimensions_[2] << endl;
+    this->getImpactedVerticesError(previous_decimation, p);
   }
 }
 void MultiresTriangulation::getImpactedVerticesEG(
-  SimplexId p[3],
+  std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
-  // cout<<"getting impacted vertices in EG"<<endl;
   int previous_decimation = pow(2, (decimationLevel_ + 1));
 
   if(p[1] % previous_decimation) {
     localNeighborId0 = 4;
     localNeighborId1 = 7;
   } else {
-    cout << "THIS SHOULDNT HAPPEN" << endl;
-    cout << "previous decimation " << previous_decimation << endl;
-    cout << "position " << p[0] << " " << p[1] << " " << p[2] << endl;
-    cout << "gridsize " << gridDimensions_[0] << " " << gridDimensions_[1]
-         << " " << gridDimensions_[2] << endl;
+    this->getImpactedVerticesError(previous_decimation, p);
   }
 }
 void MultiresTriangulation::getImpactedVerticesFH(
-  SimplexId p[3],
+  std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
-  // cout<<"getting impacted vertices in FH"<<endl;
   int previous_decimation = pow(2, (decimationLevel_ + 1));
 
   if(p[1] % previous_decimation) {
     localNeighborId0 = 5;
     localNeighborId1 = 3;
   } else {
-    cout << "THIS SHOULDNT HAPPEN" << endl;
-    cout << "previous decimation " << previous_decimation << endl;
-    cout << "position " << p[0] << " " << p[1] << " " << p[2] << endl;
-    cout << "gridsize " << gridDimensions_[0] << " " << gridDimensions_[1]
-         << " " << gridDimensions_[2] << endl;
+    this->getImpactedVerticesError(previous_decimation, p);
   }
 }
 void MultiresTriangulation::getImpactedVerticesAE(
-  SimplexId p[3],
+  std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
-  // cout<<"getting impacted vertices in AE"<<endl;
   int previous_decimation = pow(2, (decimationLevel_ + 1));
 
   if(p[2] % previous_decimation) {
     localNeighborId0 = 4;
     localNeighborId1 = 2;
   } else {
-    cout << "THIS SHOULDNT HAPPEN" << endl;
-    cout << "previous decimation " << previous_decimation << endl;
-    cout << "position " << p[0] << " " << p[1] << " " << p[2] << endl;
-    cout << "gridsize " << gridDimensions_[0] << " " << gridDimensions_[1]
-         << " " << gridDimensions_[2] << endl;
+    this->getImpactedVerticesError(previous_decimation, p);
   }
 }
 
 void MultiresTriangulation::getImpactedVerticesBF(
-  SimplexId p[3],
+  std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
-  // cout<<"getting impacted vertices in BF"<<endl;
   int previous_decimation = pow(2, (decimationLevel_ + 1));
 
   if(p[2] % previous_decimation) {
     localNeighborId0 = 7;
     localNeighborId1 = 4;
   } else {
-    cout << "THIS SHOULDNT HAPPEN" << endl;
-    cout << "previous decimation " << previous_decimation << endl;
-    cout << "position " << p[0] << " " << p[1] << " " << p[2] << endl;
-    cout << "gridsize " << gridDimensions_[0] << " " << gridDimensions_[1]
-         << " " << gridDimensions_[2] << endl;
+    this->getImpactedVerticesError(previous_decimation, p);
   }
 }
 
 void MultiresTriangulation::getImpactedVerticesCG(
-  SimplexId p[3],
+  std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
-  // cout<<"getting impacted vertices in CG"<<endl;
   int previous_decimation = pow(2, (decimationLevel_ + 1));
 
   if(p[2] % previous_decimation) {
     localNeighborId0 = 2;
     localNeighborId1 = 7;
   } else {
-    cout << "THIS SHOULDNT HAPPEN" << endl;
-    cout << "previous decimation " << previous_decimation << endl;
-    cout << "position " << p[0] << " " << p[1] << " " << p[2] << endl;
-    cout << "gridsize " << gridDimensions_[0] << " " << gridDimensions_[1]
-         << " " << gridDimensions_[2] << endl;
+    this->getImpactedVerticesError(previous_decimation, p);
   }
 }
 
 void MultiresTriangulation::getImpactedVerticesDH(
-  SimplexId p[3],
+  std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
-  // cout<<"getting impacted vertices in DH"<<endl;
   int previous_decimation = pow(2, (decimationLevel_ + 1));
 
   if(p[2] % previous_decimation) {
     localNeighborId0 = 5;
     localNeighborId1 = 3;
   } else {
-    cout << "THIS SHOULDNT HAPPEN" << endl;
-    cout << "previous decimation " << previous_decimation << endl;
-    cout << "position " << p[0] << " " << p[1] << " " << p[2] << endl;
-    cout << "gridsize " << gridDimensions_[0] << " " << gridDimensions_[1]
-         << " " << gridDimensions_[2] << endl;
+    this->getImpactedVerticesError(previous_decimation, p);
   }
 }
 
 void MultiresTriangulation::getImpactedVertices2dABCD(
-  SimplexId p[2],
+  std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
-  // cout<<"getting impacted vertices in 2dABCD"<<endl;
   int previous_decimation = pow(2, (decimationLevel_ + 1));
 
   if((p[0] % previous_decimation) and (p[1] % previous_decimation)) {
@@ -4363,95 +4039,71 @@ void MultiresTriangulation::getImpactedVertices2dABCD(
     localNeighborId0 = 1;
     localNeighborId1 = 4;
   } else {
-    cout << "THIS SHOULDNT HAPPEN" << endl;
-    cout << "previous decimation " << previous_decimation << endl;
-    cout << "position " << p[0] << " " << p[1] << " " << p[2] << endl;
-    cout << "gridsize " << gridDimensions_[0] << " " << gridDimensions_[1]
-         << " " << gridDimensions_[2] << endl;
+    this->getImpactedVerticesError(previous_decimation, p);
   }
 }
 
 void MultiresTriangulation::getImpactedVertices2dAB(
-  SimplexId p[2],
+  std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
-  // cout<<"getting impacted vertices in 2dAB"<<endl;
   int previous_decimation = pow(2, (decimationLevel_ + 1));
 
   if(p[0] % previous_decimation) {
     localNeighborId0 = 0;
     localNeighborId1 = 3;
   } else {
-    cout << "THIS SHOULDNT HAPPEN" << endl;
-    cout << "previous decimation " << previous_decimation << endl;
-    cout << "position " << p[0] << " " << p[1] << " " << p[2] << endl;
-    cout << "gridsize " << gridDimensions_[0] << " " << gridDimensions_[1]
-         << " " << gridDimensions_[2] << endl;
+    this->getImpactedVerticesError(previous_decimation, p);
   }
 }
 
 void MultiresTriangulation::getImpactedVertices2dCD(
-  SimplexId p[2],
+  std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
-  // cout<<"getting impacted vertices in 2dCD"<<endl;
   int previous_decimation = pow(2, (decimationLevel_ + 1));
 
   if(p[0] % previous_decimation) {
     localNeighborId0 = 0;
     localNeighborId1 = 3;
   } else {
-    cout << "THIS SHOULDNT HAPPEN" << endl;
-    cout << "previous decimation " << previous_decimation << endl;
-    cout << "position " << p[0] << " " << p[1] << " " << p[2] << endl;
-    cout << "gridsize " << gridDimensions_[0] << " " << gridDimensions_[1]
-         << " " << gridDimensions_[2] << endl;
+    this->getImpactedVerticesError(previous_decimation, p);
   }
 }
 
 void MultiresTriangulation::getImpactedVertices2dAC(
-  SimplexId p[2],
+  std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
-  // cout<<"getting impacted vertices in 2dAC"<<endl;
   int previous_decimation = pow(2, (decimationLevel_ + 1));
 
   if(p[1] % previous_decimation) {
     localNeighborId0 = 0;
     localNeighborId1 = 3;
   } else {
-    cout << "THIS SHOULDNT HAPPEN" << endl;
-    cout << "previous decimation " << previous_decimation << endl;
-    cout << "position " << p[0] << " " << p[1] << " " << p[2] << endl;
-    cout << "gridsize " << gridDimensions_[0] << " " << gridDimensions_[1]
-         << " " << gridDimensions_[2] << endl;
+    this->getImpactedVerticesError(previous_decimation, p);
   }
 }
 void MultiresTriangulation::getImpactedVertices2dBD(
-  SimplexId p[2],
+  std::array<SimplexId, 3> &p,
   SimplexId &localNeighborId0,
   SimplexId &localNeighborId1) const {
-  // cout<<"getting impacted vertices in 2dBD"<<endl;
   int previous_decimation = pow(2, (decimationLevel_ + 1));
 
   if(p[1] % previous_decimation) {
     localNeighborId0 = 2;
     localNeighborId1 = 1;
   } else {
-    cout << "THIS SHOULDNT HAPPEN" << endl;
-    cout << "previous decimation " << previous_decimation << endl;
-    cout << "position " << p[0] << " " << p[1] << " " << p[2] << endl;
-    cout << "gridsize " << gridDimensions_[0] << " " << gridDimensions_[1]
-         << " " << gridDimensions_[2] << endl;
+    this->getImpactedVerticesError(previous_decimation, p);
   }
 }
 
-vector<SimplexId>
+std::vector<SimplexId>
   MultiresTriangulation::getExtendedStar(const SimplexId &vertexId) const {
 
-  vector<SimplexId> result;
+  std::vector<SimplexId> result;
   if(dimensionality_ == 3) {
-    SimplexId p[3];
+    std::array<SimplexId, 3> p{};
     vertexToPosition(vertexId, p);
     SimplexId shiftX = decimation_;
     SimplexId shiftY = decimation_;
@@ -4467,17 +4119,17 @@ vector<SimplexId>
       shiftZ = nbvoxels_[2] % decimation_;
     }
 
-    vector<SimplexId> vi;
+    std::vector<SimplexId> vi;
     vi.push_back(-decimation_);
     vi.push_back(0);
     vi.push_back(shiftX);
 
-    vector<SimplexId> vj;
+    std::vector<SimplexId> vj;
     vj.push_back(-decimation_);
     vj.push_back(0);
     vj.push_back(shiftY);
 
-    vector<SimplexId> vk;
+    std::vector<SimplexId> vk;
     vk.push_back(-decimation_);
     vk.push_back(0);
     vk.push_back(shiftZ);
@@ -4505,7 +4157,7 @@ vector<SimplexId>
     }
 
   } else if(dimensionality_ == 2) {
-    SimplexId p[2];
+    std::array<SimplexId, 3> p{};
     vertexToPosition2d(vertexId, p);
     SimplexId shiftX = decimation_;
     SimplexId shiftY = decimation_;
@@ -4519,12 +4171,12 @@ vector<SimplexId>
       shiftY = nbvoxels_[1] % decimation_;
     }
 
-    vector<SimplexId> vi;
+    std::vector<SimplexId> vi;
     vi.push_back(-decimation_);
     vi.push_back(0);
     vi.push_back(shiftX);
 
-    vector<SimplexId> vj;
+    std::vector<SimplexId> vj;
     vj.push_back(-decimation_);
     vj.push_back(0);
     vj.push_back(shiftY);
@@ -4541,8 +4193,6 @@ vector<SimplexId>
     for(SimplexId i : vi) {
       for(SimplexId j : vj) {
         if(i != 0 or j != 0) {
-          cout << " lil test for " << vertexId << " " << i << " " << j << " "
-               << nbvoxels_[0] << " " << nbvoxels_[1] << endl;
           result.push_back(vertexId + i + j * vshift_[Di_]);
         }
       }
@@ -4555,7 +4205,7 @@ int MultiresTriangulation::getVertexBoundaryIndex(
   const SimplexId vertexId) const {
 
   if(dimensionality_ == 3) {
-    SimplexId p[3];
+    std::array<SimplexId, 3> p{};
     vertexToPosition(vertexId, p);
 
     if(0 < p[0] and p[0] < nbvoxels_[0]) {
@@ -4630,7 +4280,7 @@ int MultiresTriangulation::getVertexBoundaryIndex(
     }
 
   } else if(dimensionality_ == 2) {
-    SimplexId p[2];
+    std::array<SimplexId, 3> p{};
     vertexToPosition2d(vertexId, p);
 
     if(0 < p[0] and p[0] < nbvoxels_[Di_]) {
@@ -4663,7 +4313,7 @@ int MultiresTriangulation::getVertexBoundaryIndex(
 }
 
 void MultiresTriangulation::findBoundaryRepresentatives(
-  vector<SimplexId> &boundaryRepresentatives) {
+  std::vector<SimplexId> &boundaryRepresentatives) {
   int currentDecimationLevel = decimationLevel_;
   setDecimationLevel(0);
   if(dimensionality_ == 3) { // here gridDimension[i] > 1 for all i =0,1,2
@@ -4756,18 +4406,11 @@ void MultiresTriangulation::findBoundaryRepresentatives(
   }
   setDecimationLevel(currentDecimationLevel);
 }
-// void MultiresTriangulation::getImpactedVerticesSecondVersion(
-//   SimplexId vertexId,
-//   vector<SimplexId> &localIndices,
-//   vector<SimplexId> &globalIndices,
-//   vector<SimplexId> &invertedLocalIndices) {
-//   SimplexId neighborNumber = getVertexNeighborNumber(vertexId);
-// }
 
 bool ttk::MultiresTriangulation::isBoundaryImpacted(SimplexId v) const {
   bool ret = false;
   if(dimensionality_ == 3) {
-    SimplexId p[3];
+    std::array<SimplexId, 3> p{};
     vertexToPosition(v, p);
     if((nbvoxels_[0] % decimation_) and (p[0] + decimation_ > nbvoxels_[0])) {
       ret = true;

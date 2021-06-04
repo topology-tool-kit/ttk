@@ -13,14 +13,9 @@
 /// \sa ProgressiveTopology
 /// \sa Triangulation
 
-#ifndef _MULTIRESTRIANGULATION_H
-#define _MULTIRESTRIANGULATION_H
+#pragma once
 
 // base code includes
-
-#ifdef _WIN32
-#include <ciso646>
-#endif
 #include <Geometry.h>
 #include <ImplicitTriangulation.h>
 
@@ -33,11 +28,6 @@ namespace ttk {
   public:
     MultiresTriangulation();
     ~MultiresTriangulation();
-
-    // void findEnclosingVoxel(const SimplexId &vertexId,
-    //                         int decimation,
-    //                         std::vector<SimplexId> &vertexList,
-    //                         std::vector<float> &baryCentrics) const;
 
     SimplexId getVertexNeighborAtDecimation(const SimplexId &vertexId,
                                             const int &localNeighborId,
@@ -602,103 +592,105 @@ namespace ttk {
                                         const SimplexId shiftY,
                                         const SimplexId shiftZ,
                                         SimplexId &invertedLocalNeighbor) const;
-    void getImpactedVerticesA(SimplexId p[3],
+    void getImpactedVerticesA(std::array<SimplexId, 3> &p,
                               SimplexId &localNeighborId0,
                               SimplexId &localNeighborId1) const;
-    void getImpactedVerticesB(SimplexId p[3],
+    void getImpactedVerticesB(std::array<SimplexId, 3> &p,
                               SimplexId &localNeighborId0,
                               SimplexId &localNeighborId1) const;
-    void getImpactedVerticesC(SimplexId p[3],
+    void getImpactedVerticesC(std::array<SimplexId, 3> &p,
                               SimplexId &localNeighborId0,
                               SimplexId &localNeighborId1) const;
-    void getImpactedVerticesD(SimplexId p[3],
+    void getImpactedVerticesD(std::array<SimplexId, 3> &p,
                               SimplexId &localNeighborId0,
                               SimplexId &localNeighborId1) const;
-    void getImpactedVerticesE(SimplexId p[3],
+    void getImpactedVerticesE(std::array<SimplexId, 3> &p,
                               SimplexId &localNeighborId0,
                               SimplexId &localNeighborId1) const;
-    void getImpactedVerticesF(SimplexId p[3],
+    void getImpactedVerticesF(std::array<SimplexId, 3> &p,
                               SimplexId &localNeighborId0,
                               SimplexId &localNeighborId1) const;
-    void getImpactedVerticesG(SimplexId p[3],
+    void getImpactedVerticesG(std::array<SimplexId, 3> &p,
                               SimplexId &localNeighborId0,
                               SimplexId &localNeighborId1) const;
-    void getImpactedVerticesH(SimplexId p[3],
+    void getImpactedVerticesH(std::array<SimplexId, 3> &p,
                               SimplexId &localNeighborId0,
                               SimplexId &localNeighborId1) const;
-    void getImpactedVerticesAB(SimplexId p[3],
+    void getImpactedVerticesAB(std::array<SimplexId, 3> &p,
                                SimplexId &localNeighborId0,
                                SimplexId &localNeighborId1) const;
-    void getImpactedVerticesEF(SimplexId p[3],
+    void getImpactedVerticesEF(std::array<SimplexId, 3> &p,
                                SimplexId &localNeighborId0,
                                SimplexId &localNeighborId1) const;
-    void getImpactedVerticesCD(SimplexId p[3],
+    void getImpactedVerticesCD(std::array<SimplexId, 3> &p,
                                SimplexId &localNeighborId0,
                                SimplexId &localNeighborId1) const;
-    void getImpactedVerticesGH(SimplexId p[3],
+    void getImpactedVerticesGH(std::array<SimplexId, 3> &p,
                                SimplexId &localNeighborId0,
                                SimplexId &localNeighborId1) const;
-    void getImpactedVerticesAC(SimplexId p[3],
+    void getImpactedVerticesAC(std::array<SimplexId, 3> &p,
                                SimplexId &localNeighborId0,
                                SimplexId &localNeighborId1) const;
-    void getImpactedVerticesEG(SimplexId p[3],
+    void getImpactedVerticesEG(std::array<SimplexId, 3> &p,
                                SimplexId &localNeighborId0,
                                SimplexId &localNeighborId1) const;
-    void getImpactedVerticesAE(SimplexId p[3],
+    void getImpactedVerticesAE(std::array<SimplexId, 3> &p,
                                SimplexId &localNeighborId0,
                                SimplexId &localNeighborId1) const;
-    void getImpactedVerticesCG(SimplexId p[3],
+    void getImpactedVerticesCG(std::array<SimplexId, 3> &p,
                                SimplexId &localNeighborId0,
                                SimplexId &localNeighborId1) const;
-    void getImpactedVerticesBD(SimplexId p[3],
+    void getImpactedVerticesBD(std::array<SimplexId, 3> &p,
                                SimplexId &localNeighborId0,
                                SimplexId &localNeighborId1) const;
-    void getImpactedVerticesFH(SimplexId p[3],
+    void getImpactedVerticesFH(std::array<SimplexId, 3> &p,
                                SimplexId &localNeighborId0,
                                SimplexId &localNeighborId1) const;
-    void getImpactedVerticesBF(SimplexId p[3],
+    void getImpactedVerticesBF(std::array<SimplexId, 3> &p,
                                SimplexId &localNeighborId0,
                                SimplexId &localNeighborId1) const;
-    void getImpactedVerticesDH(SimplexId p[3],
+    void getImpactedVerticesDH(std::array<SimplexId, 3> &p,
                                SimplexId &localNeighborId0,
                                SimplexId &localNeighborId1) const;
-    void getImpactedVerticesABDC(SimplexId p[3],
+    void getImpactedVerticesABDC(std::array<SimplexId, 3> &p,
                                  SimplexId &localNeighborId0,
                                  SimplexId &localNeighborId1) const;
-    void getImpactedVerticesEFHG(SimplexId p[3],
+    void getImpactedVerticesEFHG(std::array<SimplexId, 3> &p,
                                  SimplexId &localNeighborId0,
                                  SimplexId &localNeighborId1) const;
-    void getImpactedVerticesAEFB(SimplexId p[3],
+    void getImpactedVerticesAEFB(std::array<SimplexId, 3> &p,
                                  SimplexId &localNeighborId0,
                                  SimplexId &localNeighborId1) const;
-    void getImpactedVerticesGHDC(SimplexId p[3],
+    void getImpactedVerticesGHDC(std::array<SimplexId, 3> &p,
                                  SimplexId &localNeighborId0,
                                  SimplexId &localNeighborId1) const;
-    void getImpactedVerticesAEGC(SimplexId p[3],
+    void getImpactedVerticesAEGC(std::array<SimplexId, 3> &p,
                                  SimplexId &localNeighborId0,
                                  SimplexId &localNeighborId1) const;
-    void getImpactedVerticesBFHD(SimplexId p[3],
+    void getImpactedVerticesBFHD(std::array<SimplexId, 3> &p,
                                  SimplexId &localNeighborId0,
                                  SimplexId &localNeighborId1) const;
-    void getImpactedVerticesABCDEFGH(SimplexId p[3],
+    void getImpactedVerticesABCDEFGH(std::array<SimplexId, 3> &p,
                                      SimplexId &localNeighborId0,
                                      SimplexId &localNeighborId1) const;
 
-    void getImpactedVertices2dABCD(SimplexId p[2],
+    void getImpactedVertices2dABCD(std::array<SimplexId, 3> &p,
                                    SimplexId &localNeighborId0,
                                    SimplexId &localNeighborId1) const;
-    void getImpactedVertices2dAB(SimplexId p[2],
+    void getImpactedVertices2dAB(std::array<SimplexId, 3> &p,
                                  SimplexId &localNeighborId0,
                                  SimplexId &localNeighborId1) const;
-    void getImpactedVertices2dCD(SimplexId p[2],
+    void getImpactedVertices2dCD(std::array<SimplexId, 3> &p,
                                  SimplexId &localNeighborId0,
                                  SimplexId &localNeighborId1) const;
-    void getImpactedVertices2dBD(SimplexId p[2],
+    void getImpactedVertices2dBD(std::array<SimplexId, 3> &p,
                                  SimplexId &localNeighborId0,
                                  SimplexId &localNeighborId1) const;
-    void getImpactedVertices2dAC(SimplexId p[2],
+    void getImpactedVertices2dAC(std::array<SimplexId, 3> &p,
                                  SimplexId &localNeighborId0,
                                  SimplexId &localNeighborId1) const;
+    void getImpactedVerticesError(const int prev_decim,
+                                  const std::array<SimplexId, 3> &p) const;
 
     void getInvertedLocalNeighborA(SimplexId id,
                                    SimplexId &invertedLocalNeighbor) const;
@@ -804,8 +796,10 @@ namespace ttk {
     bool areVerticesNeighbors(const SimplexId, const SimplexId) const;
     bool isBoundaryImpacted(SimplexId) const;
     SimplexId getVertexNeighborNumber(const SimplexId &vertexId) const;
-    void vertexToPosition2d(const SimplexId vertex, SimplexId p[2]) const;
-    void vertexToPosition(const SimplexId vertex, SimplexId p[3]) const;
+    void vertexToPosition2d(const SimplexId vertex,
+                            std::array<SimplexId, 3> &p) const;
+    void vertexToPosition(const SimplexId vertex,
+                          std::array<SimplexId, 3> &p) const;
     SimplexId localToGlobalVertexId(const SimplexId localId) const;
     int getVertexBoundaryIndex(const SimplexId) const;
 
@@ -861,10 +855,6 @@ namespace ttk {
       } else {
         printErr("Empty input triangulation !");
       }
-      // cout << "DIM " << dimensionality_ << " - gridDims " <<
-      // gridDimensions_[0]
-      //      << " " << gridDimensions_[1] << " " << gridDimensions_[2]
-      //      << "  -  vertexNb " << vertexNumber_ << endl;
     }
 
     /**
@@ -901,15 +891,6 @@ namespace ttk {
     void
       getImpactedVertices(SimplexId vertexId, SimplexId v0[3], SimplexId v1[3]);
 
-    inline void printInfos() const {
-      std::cout << "[MultiresTriangulation] INFOS\n\t decimationLvl : "
-                << decimationLevel_ << " , decimation : " << decimation_
-                << "\n dimensions : " << gridDimensions_[0] << ", "
-                << gridDimensions_[1] << ", " << gridDimensions_[2]
-                << "\n dimensionality : " << dimensionality_ << ", "
-                << "vshifts " << vshift_[0] << " " << vshift_[1] << std::endl;
-    }
-
     void computeDecimatedDimensions() {
       int xDim = gridDimensions_[0];
       int yDim = gridDimensions_[1];
@@ -928,11 +909,6 @@ namespace ttk {
       gridDecimatedDimensions_[1] = yDim;
       gridDecimatedDimensions_[2] = zDim;
       decimatedVertexNumber_ = xDim * yDim * zDim;
-      if(debugLevel_ > 5) {
-        std::cout << "[MultiresTriangulation] computing dimensions decimated "
-                  << decimationLevel_ << " times : " << xDim << " " << yDim
-                  << " " << zDim << std::endl;
-      }
     }
 
     void computeCoarsestDecimationLevel();
@@ -1071,5 +1047,3 @@ inline bool ttk::MultiresTriangulation::areVerticesNeighbors(
   }
   return false;
 }
-
-#endif
