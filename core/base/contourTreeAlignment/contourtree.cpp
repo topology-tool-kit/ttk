@@ -49,7 +49,7 @@ ContourTree::ContourTree(float *scalars,
     j += 2;
   }
 
-  for(std::shared_ptr<CTNode> node : nodes) {
+  for(const std::shared_ptr<CTNode> &node : nodes) {
     if(node->edgeList.size() == 0)
       std::cout << "wtf?\n" << std::flush;
     if(node->edgeList.size() > 1)
@@ -67,7 +67,7 @@ ContourTree::ContourTree(float *scalars,
   }
 
   binary = true;
-  for(std::shared_ptr<CTNode> node : nodes) {
+  for(const std::shared_ptr<CTNode> &node : nodes) {
     if(node->edgeList.size() > 3)
       binary = false;
   }
@@ -76,8 +76,10 @@ ContourTree::ContourTree(float *scalars,
 ContourTree::~ContourTree() {
 }
 
-std::shared_ptr<Tree> ContourTree::computeRootedTree(
-  std::shared_ptr<CTNode> node, std::shared_ptr<CTEdge> parent, int &id) {
+std::shared_ptr<Tree>
+  ContourTree::computeRootedTree(const std::shared_ptr<CTNode> &node,
+                                 const std::shared_ptr<CTEdge> &parent,
+                                 int &id) {
 
   // initialize tree
   std::shared_ptr<Tree> t(new Tree);
@@ -138,8 +140,10 @@ std::shared_ptr<Tree> ContourTree::computeRootedTree(
   return t;
 }
 
-std::shared_ptr<BinaryTree> ContourTree::computeRootedTree_binary(
-  std::shared_ptr<CTNode> node, std::shared_ptr<CTEdge> parent, int &id) {
+std::shared_ptr<BinaryTree>
+  ContourTree::computeRootedTree_binary(const std::shared_ptr<CTNode> &node,
+                                        const std::shared_ptr<CTEdge> &parent,
+                                        int &id) {
 
   // initialize tree
   std::shared_ptr<BinaryTree> t(new BinaryTree);
@@ -225,7 +229,7 @@ std::shared_ptr<BinaryTree> ContourTree::rootAtMax() {
   float maxVal = -FLT_MAX;
   std::shared_ptr<CTNode> globalMax = nullptr;
 
-  for(std::shared_ptr<CTNode> node : nodes) {
+  for(const std::shared_ptr<CTNode> &node : nodes) {
     if(node->scalarValue > maxVal) {
       globalMax = node;
       maxVal = node->scalarValue;
@@ -238,7 +242,7 @@ std::shared_ptr<BinaryTree> ContourTree::rootAtMax() {
 }
 
 std::shared_ptr<BinaryTree>
-  ContourTree::rootAtNode(std::shared_ptr<CTNode> root) {
+  ContourTree::rootAtNode(const std::shared_ptr<CTNode> &root) {
 
   int id = 1;
 
