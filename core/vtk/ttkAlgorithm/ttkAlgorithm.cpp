@@ -147,8 +147,8 @@ vtkDataArray *ttkAlgorithm::GetOrderArray(vtkDataSet *const inputData,
   switch(isValidOrderArray(orderArray)) {
     case -4: {
       ttk::Timer timer;
-      this->printWrn("No pre-existing order for array `"
-                     + std::string(scalarArray->GetName()) + "`.");
+      this->printWrn("No pre-existing order for array:");
+      this->printWrn("  `" + std::string(scalarArray->GetName()) + "`.");
 
       this->printMsg("Initializing order array.", 0, 0, this->threadNumber_,
                      ttk::debug::LineMode::REPLACE);
@@ -177,8 +177,8 @@ vtkDataArray *ttkAlgorithm::GetOrderArray(vtkDataSet *const inputData,
       this->printMsg("Initializing order array.", 1, timer.getElapsedTime(),
                      this->threadNumber_);
 
-      this->printWrn("Tip: run `ttkArrayPreconditioning` first for improved "
-                     "performances :)");
+      this->printWrn("TIP: run `ttkArrayPreconditioning` first");
+      this->printWrn("for improved performances :)");
 
       return newOrderArray;
     }
