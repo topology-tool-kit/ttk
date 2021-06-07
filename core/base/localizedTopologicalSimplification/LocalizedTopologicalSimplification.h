@@ -1332,7 +1332,7 @@ namespace ttk {
         this->printMsg("----------- [Removing Unauthorized Minima]",
                        ttk::debug::Separator::L2);
 
-        // init output order as input order
+        // invert order
         if(!this->invertOrder(order, nVertices))
           return 0;
 
@@ -1344,13 +1344,14 @@ namespace ttk {
         if(!status)
           return 0;
 
-        // invert order
+        // revert order
         if(!this->invertOrder(order, nVertices))
           return 0;
       }
 
+      // flatten scalars
       status = this->flattenScalars<DT, IT>(
-        scalars, nVertices, propagationsMin, propagationsMax);
+        scalars, nVertices, propagationsMax, propagationsMin);
       if(!status)
         return 0;
 
