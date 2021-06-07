@@ -79,12 +79,7 @@
                   Select the point data arrays to pass through
                 </Documentation>
                 <Hints>
-                  <PropertyWidgetDecorator type="CompositeDecorator">
-                        <Expression type="or">
-                            <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="EditorMode" value="1" />
-                            <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="EditorMode" value="2" />
-                        </Expression>
-                  </PropertyWidgetDecorator>
+                  <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="Source" />
                   <ArraySelectionWidget icon_type="point"/>
                 </Hints>
             </StringVectorProperty>
@@ -103,10 +98,7 @@
                   Select the cell data arrays to pass through
                 </Documentation>
                 <Hints>
-                  <Expression type="or">
-                      <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="EditorMode" value="1" />
-                      <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="EditorMode" value="2" />
-                  </Expression>
+                  <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="Source" />
                   <ArraySelectionWidget icon_type="cell"/>
                 </Hints>
             </StringVectorProperty>
@@ -125,10 +117,7 @@
                   Select the field data arrays to pass through
                 </Documentation>
                 <Hints>
-                  <Expression type="or">
-                      <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="EditorMode" value="1" />
-                      <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="EditorMode" value="2" />
-                  </Expression>
+                  <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="Source" />
                   <ArraySelectionWidget icon_type="field"/>
                 </Hints>
             </StringVectorProperty>
@@ -147,10 +136,7 @@
                   Select the vertex data arrays to pass through
                 </Documentation>
                 <Hints>
-                  <Expression type="or">
-                      <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="EditorMode" value="1" />
-                      <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="EditorMode" value="2" />
-                  </Expression>
+                  <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="Source" />
                   <ArraySelectionWidget icon_type="vertex"/>
                 </Hints>
             </StringVectorProperty>
@@ -169,10 +155,7 @@
                   Select the edge data arrays to pass through
                 </Documentation>
                 <Hints>
-                  <Expression type="or">
-                      <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="EditorMode" value="1" />
-                      <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="EditorMode" value="2" />
-                  </Expression>
+                  <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="Source" />
                   <ArraySelectionWidget icon_type="edge"/>
                 </Hints>
             </StringVectorProperty>
@@ -191,10 +174,7 @@
                   Select the row data arrays to pass through
                 </Documentation>
                 <Hints>
-                  <Expression type="or">
-                      <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="EditorMode" value="1" />
-                      <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="EditorMode" value="2" />
-                  </Expression>
+                  <PropertyWidgetDecorator type="GenericDecorator" mode="visibility" property="Source" />
                   <ArraySelectionWidget icon_type="row"/>
                 </Hints>
             </StringVectorProperty>
@@ -228,7 +208,7 @@
                 <EnumerationDomain name="enum">
                     <Entry value="-1" text="Automatic" />
                     <Entry value="15" text="Signed Char" />
-                    <Entry value="4" text="Unsigned Char" />
+                    <Entry value="3" text="Unsigned Char" />
                     <Entry value="4" text="Short" />
                     <Entry value="5" text="Unsigned Short" />
                     <Entry value="6" text="Int" />
