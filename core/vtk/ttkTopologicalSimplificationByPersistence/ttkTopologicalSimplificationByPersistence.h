@@ -60,7 +60,7 @@
 class TTKTOPOLOGICALSIMPLIFICATIONBYPERSISTENCE_EXPORT
   ttkTopologicalSimplificationByPersistence
   : public ttkAlgorithm,
-    protected ttk::LocalizedTopologicalSimplification {
+    protected ttk::lts::LocalizedTopologicalSimplification {
 private:
   double PersistenceThreshold{0.0};
   bool ThresholdIsAbsolute{true};

@@ -117,7 +117,7 @@ int ttkTopologicalSimplification::RequestData(
   // (the switch would then happen in the base code)
   int ret{};
   if(this->UseLTS) {
-    ttk::LocalizedTopologicalSimplification lts{};
+    ttk::lts::LocalizedTopologicalSimplification lts{};
     lts.setDebugLevel(this->debugLevel_);
     lts.setThreadNumber(this->threadNumber_);
 

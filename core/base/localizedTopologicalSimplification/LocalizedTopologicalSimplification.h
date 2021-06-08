@@ -32,7 +32,7 @@
 
 #include <Propagation.h>
 
-namespace ttk {
+namespace ttk::lts {
 
   inline std::string toFixed(const float &number, const int precision = 2) {
     std::stringstream vFraction;
