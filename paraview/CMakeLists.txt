@@ -3,14 +3,11 @@
 # The goal is to create a single plugin for parview
 set(TTK_XMLS             "" CACHE INTERNAL "")
 set(TTK_MODULES          "" CACHE INTERNAL "")
-file(GLOB PARAVIEW_PLUGIN_DIRS *)
+file(GLOB PARAVIEW_PLUGIN_DIRS xmls/*.xml)
+
 foreach(PARAVIEW_PLUGIN ${PARAVIEW_PLUGIN_DIRS})
-  if(IS_DIRECTORY ${PARAVIEW_PLUGIN})
-    if(NOT ${PARAVIEW_PLUGIN} MATCHES "patch"
-        AND NOT ${PARAVIEW_PLUGIN} MATCHES "singlePlugin")
-      include(${PARAVIEW_PLUGIN}/TTKFilter.cmake)
-    endif()
-  endif()
+  get_filename_component(MODULE ${PARAVIEW_PLUGIN} NAME_WLE)
+  ttk_register_pv_filter(ttk${MODULE} xmls/${MODULE}.xml)
 endforeach()
 
 set("PARAVIEW_PLUGIN_ENABLE_TopologyToolKit"
@@ -57,3 +54,4 @@ install(
   DESTINATION
     "${TTK_INSTALL_PLUGIN_DIR}"
   )
+
