@@ -1476,4 +1476,4 @@ namespace ttk::lts {
     };
 
   }; // class
-} // namespace ttk
+} // namespace ttk::lts

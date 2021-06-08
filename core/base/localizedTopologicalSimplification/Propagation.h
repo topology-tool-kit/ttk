@@ -62,4 +62,4 @@ namespace ttk::lts {
       return 1;
     }
   };
-} // namespace ttk
+} // namespace ttk::lts
