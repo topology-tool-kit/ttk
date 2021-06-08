@@ -1,13 +1,13 @@
 <ServerManagerConfiguration>
   <ProxyGroup name="filters">
     <SourceProxy
-        name="ttkTopologicalSimplification"
-        class="ttkTopologicalSimplification"
-        label="TTK TopologicalSimplification">
+      name="ttkTopologicalSimplification"
+      class="ttkTopologicalSimplification"
+      label="TTK TopologicalSimplification">
       <Documentation
-          long_help="TTK plugin for the topological simplification of scalar data."
-          short_help="TTK plugin for the topological simplification of scalar
-                      data.">
+        long_help="TTK plugin for the topological simplification of scalar data."
+        short_help="TTK plugin for the topological simplification of scalar
+        data.">
 
         Given an input scalar field and a list of critical points to remove,
         this plugin minimally edits the scalar field such that the listed critical
@@ -32,7 +32,7 @@
         Julien Tierny, Valerio Pascucci
         Proc. of IEEE VIS 2012.
         IEEE Transactions on Visualization and Computer Graphics, 2012.
-        
+
         "Localized Topological Simplification of Scalar Data"
         Jonas Lukasczyk, Christoph Garth, Ross Maciejewski, Julien Tierny
         Proc. of IEEE VIS 2020.
@@ -43,54 +43,50 @@
       </Documentation>
 
       <InputProperty
-          name="Domain"
-          port_index="0"
-          command="SetInputConnection">
+        name="Domain"
+        port_index="0"
+        command="SetInputConnection">
         <ProxyGroupDomain name="groups">
-          <Group name="sources"/>
-          <Group name="filters"/>
+          <Group name="sources" />
+          <Group name="filters" />
         </ProxyGroupDomain>
         <DataTypeDomain name="input_type">
-          <DataType value="vtkDataSet"/>
+          <DataType value="vtkDataSet" />
         </DataTypeDomain>
-        <InputArrayDomain name="input_scalars" number_of_components="1">
-          <Property name="Domain" function="FieldDataSelection" />
-        </InputArrayDomain>
+        <InputArrayDomain name="input_array" attribute_type="point" number_of_components="1" />
         <Documentation>
           Data-set to process.
         </Documentation>
       </InputProperty>
 
       <InputProperty
-          name="Constraints"
-          port_index="1"
-          command="SetInputConnection">
+        name="Constraints"
+        port_index="1"
+        command="SetInputConnection">
         <ProxyGroupDomain name="groups">
-          <Group name="sources"/>
-          <Group name="filters"/>
+          <Group name="sources" />
+          <Group name="filters" />
         </ProxyGroupDomain>
         <DataTypeDomain name="input_type">
-          <DataType value="vtkPointSet"/>
+          <DataType value="vtkDataSet" />
         </DataTypeDomain>
-        <InputArrayDomain name="input_scalars" number_of_components="1">
-          <Property name="Constraints" function="FieldDataSelection" />
-        </InputArrayDomain>
+        <InputArrayDomain name="input_array" attribute_type="point" number_of_components="1" />
         <Documentation>
           vtkPointSet that represent the constraints of the topological simplification.
         </Documentation>
       </InputProperty>
 
       <StringVectorProperty
-          name="Scalar Field"
-          command="SetInputArrayToProcess"
-          element_types="0 0 0 0 2"
-          number_of_elements="5"
-          default_values="0"
-          animateable="0"
-          >
+        name="Scalar Field"
+        command="SetInputArrayToProcess"
+        element_types="0 0 0 0 2"
+        number_of_elements="5"
+        default_values="0"
+        animateable="0"
+        >
         <ArrayListDomain
-            name="array_list"
-            default_values="0">
+          name="array_list"
+          default_values="0">
           <RequiredProperties>
             <Property name="Domain" function="Input" />
           </RequiredProperties>
@@ -101,13 +97,13 @@
       </StringVectorProperty>
 
       <IntVectorProperty
-          name="ForceInputOffsetScalarField"
-          command="SetForceInputOffsetScalarField"
-          label="Force Input Offset Field"
-          number_of_elements="1"
-          panel_visibility="advanced"
-          default_values="0">
-        <BooleanDomain name="bool"/>
+        name="ForceInputOffsetScalarField"
+        command="SetForceInputOffsetScalarField"
+        label="Force Input Offset Field"
+        number_of_elements="1"
+        panel_visibility="advanced"
+        default_values="0">
+        <BooleanDomain name="bool" />
         <Documentation>
           Check this box to force the usage of a specific input scalar field
           as vertex offset (used to disambiguate flat plateaus).
@@ -115,27 +111,27 @@
       </IntVectorProperty>
 
       <StringVectorProperty
-          name="Input Offset Field"
-          command="SetInputArrayToProcess"
-          element_types="0 0 0 0 2"
-          number_of_elements="5"
-          default_values="2"
-          animateable="0"
-          panel_visibility="advanced"
-          >
+        name="Input Offset Field"
+        command="SetInputArrayToProcess"
+        element_types="0 0 0 0 2"
+        number_of_elements="5"
+        default_values="2"
+        animateable="0"
+        panel_visibility="advanced"
+        >
         <ArrayListDomain
-            name="array_list"
-            default_values="0"
-            >
+          name="array_list"
+          default_values="0"
+          >
           <RequiredProperties>
             <Property name="Domain" function="Input" />
           </RequiredProperties>
         </ArrayListDomain>
         <Hints>
           <PropertyWidgetDecorator type="GenericDecorator"
-                                   mode="visibility"
-                                   property="ForceInputOffsetScalarField"
-                                   value="1" />
+            mode="visibility"
+            property="ForceInputOffsetScalarField"
+            value="1" />
         </Hints>
         <Documentation>
           Select the input offset field (to disambiguate flat plateaus).
@@ -143,38 +139,38 @@
       </StringVectorProperty>
 
       <IntVectorProperty name="ForceInputVertexScalarField"
-                         label="Force Input Vertex ScalarField"
-                         command="SetForceInputVertexScalarField"
-                         number_of_elements="1"
-                         default_values="0"
-                         panel_visibility="advanced">
-        <BooleanDomain name="bool"/>
+        label="Force Input Vertex ScalarField"
+        command="SetForceInputVertexScalarField"
+        number_of_elements="1"
+        default_values="0"
+        panel_visibility="advanced">
+        <BooleanDomain name="bool" />
         <Documentation>
         </Documentation>
       </IntVectorProperty>
 
       <StringVectorProperty
-          name="Vertex Identifier Field"
-          command="SetInputArrayToProcess"
-          element_types="0 0 0 0 2"
-          number_of_elements="5"
-          default_values="1"
-          animateable="0"
-          panel_visibility="advanced"
-          >
+        name="Vertex Identifier Field"
+        command="SetInputArrayToProcess"
+        element_types="0 0 0 0 2"
+        number_of_elements="5"
+        default_values="1"
+        animateable="0"
+        panel_visibility="advanced"
+        >
         <ArrayListDomain
-            name="array_list"
-            default_values="0"
-            >
+          name="array_list"
+          default_values="0"
+          >
           <RequiredProperties>
             <Property name="Constraints" function="Input" />
           </RequiredProperties>
         </ArrayListDomain>
         <Hints>
           <PropertyWidgetDecorator type="GenericDecorator"
-                                   mode="visibility"
-                                   property="ForceInputVertexScalarField"
-                                   value="1" />
+            mode="visibility"
+            property="ForceInputVertexScalarField"
+            value="1" />
         </Hints>
         <Documentation>
           Select the vertex identifier scalar field in the sources.
@@ -182,12 +178,12 @@
       </StringVectorProperty>
 
       <IntVectorProperty
-          name="ConsiderIdentifierAsBlackList"
-          command="SetConsiderIdentifierAsBlackList"
-          label="Remove selected extrema"
-          number_of_elements="1"
-          default_values="0">
-        <BooleanDomain name="bool"/>
+        name="ConsiderIdentifierAsBlackList"
+        command="SetConsiderIdentifierAsBlackList"
+        label="Remove selected extrema"
+        number_of_elements="1"
+        default_values="0">
+        <BooleanDomain name="bool" />
         <Documentation>
           Check this box to remove the selected extrema (instead of
           removing all non-selected extrema).
@@ -195,25 +191,25 @@
       </IntVectorProperty>
 
       <IntVectorProperty
-          name="UseLTS"
-          label="Use LTS"
-          command="SetUseLTS"
-          number_of_elements="1"
-          panel_visibility="advanced"
-          default_values="1">
-        <BooleanDomain name="bool"/>
+        name="UseLTS"
+        label="Use LTS"
+        command="SetUseLTS"
+        number_of_elements="1"
+        panel_visibility="advanced"
+        default_values="1">
+        <BooleanDomain name="bool" />
         <Documentation>
           Use the Localized Topological Simplification algorithm.
         </Documentation>
       </IntVectorProperty>
 
       <IntVectorProperty
-          name="AddPerturbation"
-          command="SetAddPerturbation"
-          label="Numerical Perturbation"
-          number_of_elements="1"
-          default_values="0">
-        <BooleanDomain name="bool"/>
+        name="AddPerturbation"
+        command="SetAddPerturbation"
+        label="Numerical Perturbation"
+        number_of_elements="1"
+        default_values="0">
+        <BooleanDomain name="bool" />
         <Documentation>
           Numerically perturb the output (to avoid the usage of an output
           offset field for flat plateau disambiguation).
@@ -223,17 +219,17 @@
       ${DEBUG_WIDGETS}
 
       <PropertyGroup panel_widget="Line" label="Input options">
-        <Property name="Scalar Field"/>
+        <Property name="Scalar Field" />
         <Property name="ForceInputVertexScalarField" />
         <Property name="Vertex Identifier Field" />
-        <Property name="ForceInputOffsetScalarField"/>
-        <Property name="Input Offset Field"/>
-        <Property name="ConsiderIdentifierAsBlackList"/>
+        <Property name="ForceInputOffsetScalarField" />
+        <Property name="Input Offset Field" />
+        <Property name="ConsiderIdentifierAsBlackList" />
       </PropertyGroup>
 
       <PropertyGroup panel_widget="Line" label="Output options">
-        <Property name="UseLTS"/>
-        <Property name="AddPerturbation"/>
+        <Property name="UseLTS" />
+        <Property name="AddPerturbation" />
       </PropertyGroup>
 
       <Hints>

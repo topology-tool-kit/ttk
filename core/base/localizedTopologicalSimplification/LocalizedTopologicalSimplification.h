@@ -30,7 +30,7 @@
 #include <Debug.h>
 #include <Triangulation.h>
 
-#include <SSCPropagation.h>
+#include <Propagation.h>
 
 namespace ttk {
 
@@ -49,6 +49,12 @@ namespace ttk {
   class LocalizedTopologicalSimplification : virtual public Debug {
 
   public:
+    enum class PAIR_TYPE {
+      EXTREMUM_SADDLE = 0,
+      MINIMUM_SADDLE = 1,
+      MAXIMUM_SADDLE = 2
+    };
+
     LocalizedTopologicalSimplification() {
       this->setDebugMsgPrefix("LTS");
     };
@@ -59,21 +65,19 @@ namespace ttk {
       return triangulation->preconditionVertexNeighbors();
     };
 
+    /// This method allocates all temporary memory required for LTS procedures.
     template <typename IT>
     int allocateMemory(std::vector<IT> &segmentation,
                        std::vector<IT> &queueMask,
                        std::vector<IT> &localOrder,
-                       std::vector<SSCPropagation<IT> *> &propagationMask,
+                       std::vector<Propagation<IT> *> &propagationMask,
                        std::vector<std::tuple<IT, IT, IT>> &sortedIndices,
 
                        const IT &nVertices) const {
       ttk::Timer timer;
 
-      // -------------------------------------------------------------
-      // allocate and init memory
-      // -------------------------------------------------------------
-      this->printMsg("Allocating Memory", 0, 0, this->threadNumber_,
-                     debug::LineMode::REPLACE);
+      constexpr char msg[] = "Allocating Memory";
+      this->printMsg(msg, 0, 0, this->threadNumber_, debug::LineMode::REPLACE);
 
       segmentation.resize(nVertices);
       queueMask.resize(nVertices);
@@ -81,26 +85,24 @@ namespace ttk {
       propagationMask.resize(nVertices);
       sortedIndices.resize(nVertices);
 
-      this->printMsg(
-        "Allocating Memory", 1, timer.getElapsedTime(), this->threadNumber_);
+      this->printMsg(msg, 1, timer.getElapsedTime(), this->threadNumber_);
 
       return 1;
     };
 
+    /// This method initializes all temporary memory for LTS procedures (assumes
+    /// memory is already allocated).
     template <typename IT>
     int initializeMemory(IT *segmentation,
                          IT *queueMask,
                          IT *localOrder,
-                         SSCPropagation<IT> **propagationMask,
+                         Propagation<IT> **propagationMask,
 
                          const IT &nVertices) const {
       ttk::Timer timer;
 
-      // -------------------------------------------------------------
-      // allocate and init memory
-      // -------------------------------------------------------------
-      this->printMsg("Initializing Memory", 0, 0, this->threadNumber_,
-                     debug::LineMode::REPLACE);
+      constexpr char msg[] = "Initializing Memory";
+      this->printMsg(msg, 0, 0, this->threadNumber_, debug::LineMode::REPLACE);
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(this->threadNumber_)
@@ -112,21 +114,27 @@ namespace ttk {
         propagationMask[i] = nullptr;
       }
 
-      this->printMsg(
-        "Initializing Memory", 1, timer.getElapsedTime(), this->threadNumber_);
+      this->printMsg(msg, 1, timer.getElapsedTime(), this->threadNumber_);
 
       return 1;
     };
 
+    /// This method iterates over an order array and detects all maxima, for
+    /// which it will then initialize a propagation data structure. One can also
+    /// pass a whitelist of authorized maxima that will be skipped. The
+    /// maximaBuffer parameter needs to be big enough to fit all possible maxima
+    /// indices (the buffer is explicitly exposed for memory reuse). Note,
+    /// propagations are sorted in ascending order of their corresponding
+    /// maxima.
     template <typename IT, class TT>
     int initializePropagations(
-      std::vector<SSCPropagation<IT>> &propagations,
+      std::vector<Propagation<IT>> &propagations,
       IT *authorizationMask, // assumes preservation mask is initialized as -1
       IT *maximaBuffer,
 
       const IT *authorizedExtremaIndices,
       const IT &nAuthorizedExtremaIndices,
-      const IT *inputOrder,
+      const IT *order,
       const TT *triangulation) const {
 
       ttk::Timer timer;
@@ -134,9 +142,9 @@ namespace ttk {
                      debug::LineMode::REPLACE);
 
       const IT nVertices = triangulation->getNumberOfVertices();
-
 #ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(this->threadNumber_)
+#pragma omp parallel for num_threads( \
+  this->threadNumber_) if(nAuthorizedExtremaIndices > 1000)
 #endif // TTK_ENABLE_OPENMP
       for(IT i = 0; i < nAuthorizedExtremaIndices; i++)
         authorizationMask[authorizedExtremaIndices[i]] = -2;
@@ -154,12 +162,12 @@ namespace ttk {
 
         // check if v has larger neighbors
         bool hasLargerNeighbor = false;
-        const IT &vOrder = inputOrder[v];
+        const IT &vOrder = order[v];
         const IT nNeighbors = triangulation->getVertexNeighborNumber(v);
         for(IT n = 0; n < nNeighbors; n++) {
           IT u;
           triangulation->getVertexNeighbor(v, n, u);
-          if(vOrder < inputOrder[u]) {
+          if(vOrder < order[u]) {
             hasLargerNeighbor = true;
             break;
           }
@@ -183,6 +191,15 @@ namespace ttk {
         maximaBuffer[localWriteIndex] = v;
       }
 
+      // sort maxima in ascending order
+      std::sort(
+        maximaBuffer, maximaBuffer + writeIndex,
+        [=](const IT &a, const IT &b) -> bool { return order[a] < order[b]; });
+
+      // if there are no authorized maxima then always skip most persistent prop
+      if(nAuthorizedExtremaIndices < 1)
+        writeIndex--;
+
       // init propagations
       propagations.resize(writeIndex);
 #ifdef TTK_ENABLE_OPENMP
@@ -201,32 +218,29 @@ namespace ttk {
 
     /// This is a simple superlevel set propagation procedure that just absorbs
     /// the largest neighbor of the current set until the propagation encounters
-    /// a saddle. To gain additional speedup this procedure does NOT compute a
-    /// list of visited critical points and does not check for an early escape.
+    /// a saddle. To gain additional speedup this procedure keeps track of
+    /// vertices that have already been added to the Fibonacci heap via the
+    /// queueMask (duplicate entries slow down the heap).
     template <typename IT, typename TT>
     int computeSimplePropagation(
-      SSCPropagation<IT> &propagation,
-      SSCPropagation<IT> **propagationMask,
+      Propagation<IT> &propagation,
+      Propagation<IT> **propagationMask,
       IT *segmentation, // used here to also store registered larger vertices
       IT *queueMask, // used to mark vertices that have already been added to
                      // the queue by this thread
 
       const TT *triangulation,
-      const IT *orderField) const {
+      const IT *order) const {
 
       // pointer used to compare against representative
       auto *currentPropagation = &propagation;
 
-      // frequently used propagation members
-      IT &extremumIndex = currentPropagation->criticalPoints[0];
-      auto *queue = &currentPropagation->queue;
+      // add extremumIndex (stored in segmentId) to queue
+      IT segmentId = currentPropagation->criticalPoints[0];
+      auto queue = &currentPropagation->queue;
+      queue->emplace(order[segmentId], segmentId);
 
-      // add extremumIndex to queue
-      queue->emplace(orderField[extremumIndex], extremumIndex);
-
-      IT queueMaskLabel = extremumIndex;
-      queueMask[extremumIndex] = queueMaskLabel;
-      IT segmentId = extremumIndex;
+      queueMask[segmentId] = segmentId;
 
       // grow segment until prop reaches a saddle and then decide if prop should
       // continue
@@ -239,7 +253,7 @@ namespace ttk {
         if(propagationMask[v] != nullptr)
           continue;
 
-        const IT &orderV = orderField[v];
+        const IT &orderV = order[v];
 
         // add neighbors to queue AND check if v is a saddle
         bool isSaddle = false;
@@ -251,7 +265,7 @@ namespace ttk {
           IT u;
           triangulation->getVertexNeighbor(v, n, u);
 
-          const IT &orderU = orderField[u];
+          const IT &orderU = order[u];
 
           // if larger neighbor
           if(orderU > orderV) {
@@ -263,16 +277,16 @@ namespace ttk {
               isSaddle = true;
             else
               numberOfLargerNeighborsThisThreadVisited++;
-          } else if(queueMask[u] != queueMaskLabel) {
+          } else if(queueMask[u] != segmentId) {
             queue->emplace(orderU, u);
-            queueMask[u] = queueMaskLabel;
+            queueMask[u] = segmentId;
           }
         }
 
         // if v is a saddle we have to check if the current thread is the last
         // visitor
         if(isSaddle) {
-          currentPropagation->lastEncounteredCriticalPoint = v;
+          currentPropagation->criticalPoints.push_back(v);
 
           IT numberOfRegisteredLargerVertices = 0;
 #ifdef TTK_ENABLE_OPENMP
@@ -288,23 +302,28 @@ namespace ttk {
           if(numberOfRegisteredLargerVertices != -numberOfLargerNeighbors - 1)
             return 1;
 
-          // merge propagations
+          // get most dominant propagation
+          std::vector<Propagation<IT> *> neighborPropagations(
+            nNeighbors, nullptr);
           for(IT n = 0; n < nNeighbors; n++) {
             IT u;
             triangulation->getVertexNeighbor(v, n, u);
-
             if(propagationMask[u] != nullptr) {
-              auto uPropagation = propagationMask[u]->find();
-              if(uPropagation != currentPropagation) {
-                currentPropagation = SSCPropagation<IT>::unify(
-                  currentPropagation, uPropagation, orderField);
-              }
+              auto &neighborPropagation = neighborPropagations[n];
+              neighborPropagation = propagationMask[u]->find();
+              if(order[neighborPropagation->criticalPoints[0]]
+                 > order[currentPropagation->criticalPoints[0]])
+                currentPropagation = neighborPropagation;
             }
           }
 
+          // merge propagations
+          for(IT n = 0; n < nNeighbors; n++) {
+            Propagation<IT>::unify(currentPropagation, neighborPropagations[n]);
+          }
+
           queue = &currentPropagation->queue;
-          segmentId = v;
-          queueMaskLabel = currentPropagation->criticalPoints[0];
+          segmentId = currentPropagation->criticalPoints[0];
         }
 
         // mark vertex as visited and continue
@@ -319,20 +338,152 @@ namespace ttk {
       return 0;
     };
 
+    /// Basically the same as the simple propagation procedure, except that a
+    /// propagation keeps track of the persistence of the computed propagation.
+    /// As soon as the persistence strictly exceeds the given threshold the
+    /// propagation is aborted.
+    template <typename IT, typename DT, typename TT>
+    int computePersistenceSensitivePropagation(
+      Propagation<IT> &propagation,
+      Propagation<IT> **propagationMask,
+      IT *segmentation, // used here to also store registered larger vertices
+      IT *queueMask, // used to mark vertices that have already been added to
+                     // the queue by this thread
+
+      const TT *triangulation,
+      const IT *order,
+      const DT *scalars,
+      const DT persistenceThreshold) const {
+
+      // pointer used to compare against representative
+      auto *currentPropagation = &propagation;
+
+      // add extremumIndex (stored in segmentId) to queue
+      IT segmentId = currentPropagation->criticalPoints[0];
+      auto queue = &currentPropagation->queue;
+      queue->emplace(order[segmentId], segmentId);
+
+      DT s0 = scalars[segmentId];
+
+      queueMask[segmentId] = segmentId;
+
+      // grow segment until prop reaches a saddle and then decide if prop should
+      // continue
+      IT v = -1;
+      while(!queue->empty()) {
+        v = std::get<1>(queue->top());
+        queue->pop();
+
+        // continue if this thread has already seen this vertex
+        if(propagationMask[v] != nullptr)
+          continue;
+
+        // if propagation exceeds persistence threshold stop
+        const DT &s1 = scalars[v];
+        const DT &sd = s0 < s1 ? s1 - s0 : s0 - s1;
+        if(sd > persistenceThreshold) {
+          currentPropagation->aborted = true;
+          return 1;
+        }
+
+        const IT &orderV = order[v];
+
+        // add neighbors to queue AND check if v is a saddle
+        bool isSaddle = false;
+        const IT nNeighbors = triangulation->getVertexNeighborNumber(v);
+
+        IT numberOfLargerNeighbors = 0;
+        IT numberOfLargerNeighborsThisThreadVisited = 0;
+        for(IT n = 0; n < nNeighbors; n++) {
+          IT u;
+          triangulation->getVertexNeighbor(v, n, u);
+
+          const IT &orderU = order[u];
+
+          // if larger neighbor
+          if(orderU > orderV) {
+            numberOfLargerNeighbors++;
+
+            auto uPropagation = propagationMask[u];
+            if(uPropagation == nullptr
+               || currentPropagation != uPropagation->find())
+              isSaddle = true;
+            else
+              numberOfLargerNeighborsThisThreadVisited++;
+          } else if(queueMask[u] != segmentId) {
+            queue->emplace(orderU, u);
+            queueMask[u] = segmentId;
+          }
+        }
+
+        // if v is a saddle we have to check if the current thread is the last
+        // visitor
+        if(isSaddle) {
+          currentPropagation->criticalPoints.push_back(v);
+
+          IT numberOfRegisteredLargerVertices = 0;
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp atomic capture
+#endif // TTK_ENABLE_OPENMP
+          {
+            segmentation[v] -= numberOfLargerNeighborsThisThreadVisited;
+            numberOfRegisteredLargerVertices = segmentation[v];
+          }
+
+          // if this thread did not register the last remaining larger vertices
+          // then terminate propagation
+          if(numberOfRegisteredLargerVertices != -numberOfLargerNeighbors - 1)
+            return 1;
+
+          // get most dominant propagation
+          std::vector<Propagation<IT> *> neighborPropagations(
+            nNeighbors, nullptr);
+          for(IT n = 0; n < nNeighbors; n++) {
+            IT u;
+            triangulation->getVertexNeighbor(v, n, u);
+            if(propagationMask[u] != nullptr) {
+              auto &neighborPropagation = neighborPropagations[n];
+              neighborPropagation = propagationMask[u]->find();
+              if(order[neighborPropagation->criticalPoints[0]]
+                 > order[currentPropagation->criticalPoints[0]])
+                currentPropagation = neighborPropagation;
+            }
+          }
+
+          // merge propagations
+          for(IT n = 0; n < nNeighbors; n++) {
+            Propagation<IT>::unify(currentPropagation, neighborPropagations[n]);
+          }
+
+          queue = &currentPropagation->queue;
+          segmentId = currentPropagation->criticalPoints[0];
+          s0 = scalars[segmentId];
+        }
+
+        // mark vertex as visited and continue
+        propagationMask[v] = currentPropagation;
+        segmentation[v] = segmentId;
+        currentPropagation->segmentSize++;
+      }
+
+      return 0;
+    };
+
+    /// This method computes (optionally in parallel) a list of simple
+    /// propagations.
     template <typename IT, class TT>
-    int computeSimplePropagations(std::vector<SSCPropagation<IT>> &propagations,
-                                  SSCPropagation<IT> **propagationMask,
+    int computeSimplePropagations(std::vector<Propagation<IT>> &propagations,
+                                  Propagation<IT> **propagationMask,
                                   IT *segmentation,
                                   IT *queueMask,
 
                                   const TT *triangulation,
                                   const IT *inputOrder) const {
       ttk::Timer timer;
-
       const IT nPropagations = propagations.size();
-      this->printMsg(
-        "Computing Propagations (" + std::to_string(nPropagations) + ")", 0, 0,
-        this->threadNumber_, debug::LineMode::REPLACE);
+      const std::string msg
+        = "Computing Propagations (" + std::to_string(nPropagations) + ")";
+      this->printMsg(msg, 0, 0, this->threadNumber_, debug::LineMode::REPLACE);
 
       int status = 1;
 // compute propagations
@@ -352,19 +503,64 @@ namespace ttk {
       if(!status)
         return 0;
 
-      this->printMsg(
-        "Computing Propagations (" + std::to_string(nPropagations) + ")", 1,
-        timer.getElapsedTime(), this->threadNumber_);
+      this->printMsg(msg, 1, timer.getElapsedTime(), this->threadNumber_);
 
       return 1;
     }
 
-    template <typename IT>
-    int finalizePropagations(
-      std::vector<SSCPropagation<IT> *> &parentPropagations,
-      std::vector<SSCPropagation<IT>> &propagations,
+    /// This method computes (optionally in parallel) a list of
+    /// persistence-sensitive propagations.
+    template <typename IT, typename DT, class TT>
+    int computePersistenceSensitivePropagations(
+      std::vector<Propagation<IT>> &propagations,
+      Propagation<IT> **propagationMask,
+      IT *segmentation,
+      IT *queueMask,
 
-      const IT nVertices) const {
+      const TT *triangulation,
+      const IT *order,
+      const DT *scalars,
+      const DT persistenceThreshold) const {
+      ttk::Timer timer;
+      const IT nPropagations = propagations.size();
+      const std::string msg = "Computing Persistence-Sensitive Propagations ("
+                              + std::to_string(nPropagations) + ")";
+      this->printMsg(msg, 0, 0, this->threadNumber_, debug::LineMode::REPLACE);
+
+      int status = 1;
+// compute propagations
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for schedule(dynamic, 1) num_threads(this->threadNumber_)
+#endif // TTK_ENABLE_OPENMP
+      for(IT p = 0; p < nPropagations; p++) {
+        int localStatus
+          = this->computePersistenceSensitivePropagation<IT, DT, TT>(
+            propagations[p], propagationMask, segmentation, queueMask,
+
+            triangulation, order, scalars, persistenceThreshold);
+
+        if(!localStatus)
+          status = 0;
+      }
+
+      if(!status)
+        return 0;
+
+      this->printMsg(msg, 1, timer.getElapsedTime(), this->threadNumber_);
+
+      return 1;
+    }
+
+    /// This method identifies from a set of propagations so-called parent
+    /// propagations, which are those propagations that either terminated at a
+    /// saddle who has larger unvisited neighbors, or that were merged into a
+    /// propagation that was aborted (during persistence-sensitive
+    /// simplification).
+    template <typename IT>
+    int finalizePropagations(std::vector<Propagation<IT> *> &parentPropagations,
+                             std::vector<Propagation<IT>> &propagations,
+
+                             const IT nVertices) const {
       ttk::Timer timer;
 
       const IT nPropagations = propagations.size();
@@ -375,22 +571,17 @@ namespace ttk {
 
       IT nSegmentVertices = 0;
       IT nParentPropagations = 0;
-      parentPropagations.clear();
       parentPropagations.resize(nPropagations);
       for(IT p = 0; p < nPropagations; p++) {
         auto *propagation = &propagations[p];
-        if(propagation->parent == propagation) {
+        if(!propagation->aborted
+           && (propagation->parent == propagation
+               || propagation->parent->aborted)) {
           nSegmentVertices = nSegmentVertices + propagation->segmentSize;
           parentPropagations[nParentPropagations++] = propagation;
         }
       }
       parentPropagations.resize(nParentPropagations);
-
-      std::stringstream pFraction, vFraction;
-      pFraction << std::fixed << std::setprecision(2)
-                << ((float)nParentPropagations / (float)nPropagations);
-      vFraction << std::fixed << std::setprecision(2)
-                << ((float)nSegmentVertices / (float)nVertices);
 
       this->printMsg("Finalizing Propagations ("
                        + std::to_string(nParentPropagations) + "|"
@@ -401,13 +592,19 @@ namespace ttk {
       return 1;
     };
 
+    /// This method computes the domain segment of a given propagation. To this
+    /// end, it stores a list of all segment vertices on the propagation data
+    /// structure, and adds labels to the segmentation array.
     template <typename IT, class TT>
     int computeSegment(IT *segmentation,
-                       SSCPropagation<IT> *propagation,
+                       Propagation<IT> *propagation,
 
+                       const IT *order,
                        const TT *triangulation) const {
 
       const IT &extremumIndex = propagation->criticalPoints[0];
+      const IT &saddleIndex = propagation->criticalPoints.back();
+      const IT &saddleOrder = order[saddleIndex];
 
       // collect segment
       auto &segment = propagation->segment;
@@ -421,7 +618,7 @@ namespace ttk {
         // init queue
         {
           queue[queueIndex++] = extremumIndex;
-          segmentation[extremumIndex] = -1000;
+          segmentation[extremumIndex] = -1000; // mark as visited
         }
 
         // flood fill by starting from extremum
@@ -434,8 +631,9 @@ namespace ttk {
           for(IT n = 0; n < nNeighbors; n++) {
             IT u;
             triangulation->getVertexNeighbor(v, n, u);
-            if(segmentation[u] >= 0) {
-              segmentation[u] = -999; // mark as visited
+            auto &s = segmentation[u];
+            if(s >= 0 && order[u] > saddleOrder) {
+              s = -1000; // mark as visited
               queue[queueIndex++] = u; // add to queue
             }
           }
@@ -454,19 +652,21 @@ namespace ttk {
       return 1;
     };
 
+    /// This method computes the segments of a given list of propagations.
     template <typename IT, class TT>
     int computeSegments(IT *segmentation,
-                        std::vector<SSCPropagation<IT> *> &propagations,
+                        std::vector<Propagation<IT> *> &propagations,
 
+                        const IT *order,
                         const TT *triangulation) const {
 
       const IT nPropagations = propagations.size();
       const IT nVertices = triangulation->getNumberOfVertices();
 
       ttk::Timer timer;
-      this->printMsg(
-        "Computing segments (" + std::to_string(nPropagations) + ")", 0, 0,
-        this->threadNumber_, debug::LineMode::REPLACE);
+      const std::string msg
+        = "Computing Segments (" + std::to_string(nPropagations) + ")";
+      this->printMsg(msg, 0, 0, this->threadNumber_, debug::LineMode::REPLACE);
 
       int status = 1;
 
@@ -478,7 +678,7 @@ namespace ttk {
         int localStatus
           = this->computeSegment<IT, TT>(segmentation, propagations[p],
 
-                                         triangulation);
+                                         order, triangulation);
         if(!localStatus)
           status = 0;
       }
@@ -487,9 +687,7 @@ namespace ttk {
 
       // print status
       if(this->debugLevel_ < 4) {
-        this->printMsg(
-          "Computing segments (" + std::to_string(nPropagations) + ")", 1,
-          timer.getElapsedTime(), this->threadNumber_);
+        this->printMsg(msg, 1, timer.getElapsedTime(), this->threadNumber_);
       } else {
 
         IT min = propagations[0]->segmentSize;
@@ -507,7 +705,7 @@ namespace ttk {
 
         avg /= nPropagations;
 
-        this->printMsg("Computing segments (" + std::to_string(nPropagations)
+        this->printMsg("Computing Segments (" + std::to_string(nPropagations)
                          + "|" + toFixed(min, nVertices) + "|"
                          + toFixed(avg, nVertices) + "|"
                          + toFixed(max, nVertices) + ")",
@@ -591,7 +789,7 @@ namespace ttk {
     template <typename IT, class TT>
     int computeLocalOrderOfSegment(IT *localOrder,
 
-                                   const SSCPropagation<IT> *propagation,
+                                   const Propagation<IT> *propagation,
                                    const TT *triangulation,
                                    const IT *segmentation,
                                    const IT *inputOrder) const {
@@ -609,7 +807,7 @@ namespace ttk {
         localOrder[v] = inputOrder[v] - nVertices;
 
       const IT &extremumIndex = propagation->criticalPoints[0];
-      const IT &saddleIndex = propagation->lastEncounteredCriticalPoint;
+      const IT &saddleIndex = propagation->criticalPoints.back();
 
       // vector to record boundary
       std::vector<IT> boundary;
@@ -699,7 +897,7 @@ namespace ttk {
       const TT *triangulation,
       const IT *segmentation,
       const IT *inputOrder,
-      const std::vector<SSCPropagation<IT> *> &propagations) const {
+      const std::vector<Propagation<IT> *> &propagations) const {
       ttk::Timer timer;
 
       const IT nPropagations = propagations.size();
@@ -727,7 +925,7 @@ namespace ttk {
 #pragma omp parallel for num_threads(this->threadNumber_)
 #endif // TTK_ENABLE_OPENMP
       for(IT p = 0; p < nPropagations; p++) {
-        localOrder[propagations[p]->lastEncounteredCriticalPoint]
+        localOrder[propagations[p]->criticalPoints.back()]
           = std::numeric_limits<IT>::max();
       }
 
@@ -762,13 +960,12 @@ namespace ttk {
     };
 
     template <typename IT>
-    int
-      flattenOrder(IT *outputOrder,
+    int flattenOrder(IT *outputOrder,
 
-                   const std::vector<SSCPropagation<IT> *> &parentPropagations,
-                   const IT &nVertices) const {
+                     const std::vector<Propagation<IT> *> &parentPropagations,
+                     const IT &nVertices) const {
       ttk::Timer timer;
-      this->printMsg("Flattening Order Field", 0, 0, this->threadNumber_,
+      this->printMsg("Flattening Order Array", 0, 0, this->threadNumber_,
                      debug::LineMode::REPLACE);
 
       const IT nParentPropagations = parentPropagations.size();
@@ -779,37 +976,31 @@ namespace ttk {
 #endif // TTK_ENABLE_OPENMP
       for(IT p = 0; p < nParentPropagations; p++) {
         const auto *propagation = parentPropagations[p];
-        const auto &order
-          = outputOrder[propagation->lastEncounteredCriticalPoint];
+        const auto &saddleOrder
+          = outputOrder[propagation->criticalPoints.back()];
         for(const auto &v : propagation->segment)
-          outputOrder[v] = order;
+          outputOrder[v] = saddleOrder;
       }
 
-      this->printMsg("Flattening Order Field", 1, timer.getElapsedTime(),
+      this->printMsg("Flattening Order Array", 1, timer.getElapsedTime(),
                      this->threadNumber_);
 
       return 1;
     };
 
     template <typename DT, typename IT>
-    int flattenScalars(DT *outputScalars,
+    int flattenScalars(DT *scalars,
 
-                       const std::vector<SSCPropagation<IT>> &propagationsMin,
-                       const std::vector<SSCPropagation<IT>> &propagationsMax,
-                       const DT *inputScalars,
-                       const IT &nVertices) const {
+                       const IT &nVertices,
+                       const std::vector<Propagation<IT>> &propagationsA,
+                       const std::vector<Propagation<IT>> &propagationsB
+                       = {}) const {
       ttk::Timer timer;
-      this->printMsg("Flattening Scalar Field", 0, 0, this->threadNumber_,
+      this->printMsg("Flattening Scalar Array", 0, 0, this->threadNumber_,
                      debug::LineMode::REPLACE);
 
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for schedule(dynamic) num_threads(this->threadNumber_)
-#endif // TTK_ENABLE_OPENMP
-      for(IT v = 0; v < nVertices; v++)
-        outputScalars[v] = inputScalars[v];
-
-      std::vector<const std::vector<SSCPropagation<IT>> *> propagationsPair
-        = {&propagationsMin, &propagationsMax};
+      std::vector<const std::vector<Propagation<IT>> *> propagationsPair
+        = {&propagationsA, &propagationsB};
 
       for(const auto propagations : propagationsPair) {
         const IT nPropagations = propagations->size();
@@ -819,29 +1010,30 @@ namespace ttk {
 #pragma omp parallel for schedule(dynamic) num_threads(this->threadNumber_)
 #endif // TTK_ENABLE_OPENMP
         for(IT p = 0; p < nPropagations; p++) {
-          const auto &propagation = (*propagations)[p];
-          if(propagation.parent != &propagation)
-            continue;
+          const auto propagation = &((*propagations)[p]);
 
-          const auto &saddleScalar
-            = outputScalars[propagation.lastEncounteredCriticalPoint];
-          for(const auto &v : propagation.segment)
-            outputScalars[v] = saddleScalar;
+          if(!propagation->aborted
+             && (propagation->parent == propagation
+                 || propagation->parent->aborted)) {
+            const auto &saddleScalar
+              = scalars[propagation->criticalPoints.back()];
+            for(const auto &v : propagation->segment)
+              scalars[v] = saddleScalar;
+          }
         }
       }
 
-      this->printMsg("Flattening Scalar Field", 1, timer.getElapsedTime(),
+      this->printMsg("Flattening Scalar Array", 1, timer.getElapsedTime(),
                      this->threadNumber_);
 
       return 1;
     };
 
-    template <typename DT, typename IT>
-    int computeGlobalOrder(IT *outputOrder,
-                           std::vector<std::tuple<DT, IT, IT>> &sortedIndices,
-
-                           const DT *rank1,
-                           const IT *rank2) const {
+    template <typename IT>
+    int computeGlobalOrder(
+      IT *order,
+      const IT *localOrder,
+      std::vector<std::tuple<IT, IT, IT>> &sortedIndices) const {
       ttk::Timer timer;
 
       const IT nVertices = sortedIndices.size();
@@ -852,8 +1044,8 @@ namespace ttk {
 #endif // TTK_ENABLE_OPENMP
       for(IT i = 0; i < nVertices; i++) {
         auto &t = sortedIndices[i];
-        std::get<0>(t) = rank1[i];
-        std::get<1>(t) = rank2[i];
+        std::get<0>(t) = order[i];
+        std::get<1>(t) = localOrder[i];
         std::get<2>(t) = i;
       }
 
@@ -881,7 +1073,7 @@ namespace ttk {
 #pragma omp parallel for num_threads(this->threadNumber_)
 #endif // TTK_ENABLE_OPENMP
       for(IT i = 0; i < nVertices; i++)
-        outputOrder[std::get<2>(sortedIndices[i])] = i;
+        order[std::get<2>(sortedIndices[i])] = i;
 
       this->printMsg("Computing Global Order", 1, timer.getElapsedTime(),
                      this->threadNumber_);
@@ -891,19 +1083,29 @@ namespace ttk {
 
     template <typename DT, typename IT>
     int computeNumericalPerturbation(
-      DT *outputScalars,
-      const std::vector<std::tuple<IT, IT, IT>> &sortedIndices) const {
+      DT *scalars,
+      const std::vector<std::tuple<IT, IT, IT>> &sortedIndices,
+      const bool descending = false) const {
       ttk::Timer timer;
       this->printMsg("Applying numerical perturbation", 0, 0,
                      this->threadNumber_, debug::LineMode::REPLACE);
 
       const IT nVertices = sortedIndices.size();
-      for(IT i = 1; i < nVertices; i++) {
-        const IT &v0 = std::get<2>(sortedIndices[i - 1]);
-        const IT &v1 = std::get<2>(sortedIndices[i]);
-        if(outputScalars[v0] >= outputScalars[v1])
-          outputScalars[v1] = boost::math::float_next(outputScalars[v0]);
-      }
+
+      if(descending)
+        for(IT i = 1; i < nVertices; i++) {
+          const IT &v0 = std::get<2>(sortedIndices[i - 1]);
+          const IT &v1 = std::get<2>(sortedIndices[i]);
+          if(scalars[v0] >= scalars[v1])
+            scalars[v1] = boost::math::float_next(scalars[v0]);
+        }
+      else
+        for(IT i = nVertices - 1; i > 0; i--) {
+          const IT &v0 = std::get<2>(sortedIndices[i]);
+          const IT &v1 = std::get<2>(sortedIndices[i - 1]);
+          if(scalars[v0] >= scalars[v1])
+            scalars[v1] = boost::math::float_next(scalars[v0]);
+        }
 
       this->printMsg("Applying numerical perturbation", 1,
                      timer.getElapsedTime(), this->threadNumber_);
@@ -913,12 +1115,12 @@ namespace ttk {
 
     template <typename IT, class TT>
     int detectAndRemoveUnauthorizedMaxima(
-      IT *outputOrder,
+      IT *order,
       IT *segmentation,
       IT *queueMask,
       IT *localOrder,
-      SSCPropagation<IT> **propagationMask,
-      std::vector<SSCPropagation<IT>> &propagations,
+      Propagation<IT> **propagationMask,
+      std::vector<Propagation<IT>> &propagations,
       std::vector<std::tuple<IT, IT, IT>> &sortedIndices,
 
       const TT *triangulation,
@@ -944,21 +1146,21 @@ namespace ttk {
         localOrder, // use as maxima buffer (will be overriden by subsequent
                     // procedures)
 
-        authorizedExtremaIndices, nAuthorizedExtremaIndices, outputOrder,
+        authorizedExtremaIndices, nAuthorizedExtremaIndices, order,
         triangulation);
       if(!status)
         return 0;
 
       // compute propagations
-      status = this->computeSimplePropagations<IT>(
+      status = this->computeSimplePropagations<IT, TT>(
         propagations, propagationMask, segmentation, queueMask,
 
-        triangulation, outputOrder);
+        triangulation, order);
       if(!status)
         return 0;
 
       // finalize master propagations
-      std::vector<SSCPropagation<IT> *> parentPropagations;
+      std::vector<Propagation<IT> *> parentPropagations;
       status = this->finalizePropagations<IT>(parentPropagations, propagations,
 
                                               nVertices);
@@ -968,7 +1170,7 @@ namespace ttk {
       // compute segments
       status = this->computeSegments<IT, TT>(segmentation, parentPropagations,
 
-                                             triangulation);
+                                             order, triangulation);
       if(!status)
         return 0;
 
@@ -976,21 +1178,106 @@ namespace ttk {
       status = this->computeLocalOrderOfSegments<IT, TT>(
         localOrder,
 
-        triangulation, segmentation, outputOrder, parentPropagations);
+        triangulation, segmentation, order, parentPropagations);
       if(!status)
         return 0;
 
       // flatten order
-      status = this->flattenOrder<IT>(outputOrder,
+      status = this->flattenOrder<IT>(order,
 
                                       parentPropagations, nVertices);
       if(!status)
         return 0;
 
       // compute global offsets
-      status = this->computeGlobalOrder<IT, IT>(outputOrder, sortedIndices,
+      status = this->computeGlobalOrder<IT>(order, localOrder, sortedIndices);
+      if(!status)
+        return 0;
 
-                                                outputOrder, localOrder);
+      return 1;
+    };
+
+    template <typename IT, typename DT, class TT>
+    int detectAndRemoveNonPersistentMaxima(
+      DT *scalars,
+      IT *order,
+      IT *segmentation,
+      IT *queueMask,
+      IT *localOrder,
+      Propagation<IT> **propagationMask,
+      std::vector<Propagation<IT>> &propagations,
+      std::vector<std::tuple<IT, IT, IT>> &sortedIndices,
+
+      const TT *triangulation,
+      const DT persistenceThreshold) const {
+
+      const IT nVertices = triangulation->getNumberOfVertices();
+
+      int status = 0;
+
+      // init propagations
+      status = this->initializeMemory<IT>(segmentation, queueMask, localOrder,
+                                          propagationMask,
+
+                                          nVertices);
+      if(!status)
+        return 0;
+
+      // init propagations
+      status = this->initializePropagations<IT, TT>(
+        propagations,
+        queueMask, // will be ignored since there are no authorized maxima
+        localOrder, // use as maxima buffer (will be overriden by subsequent
+                    // procedures)
+
+        nullptr, 0, order, triangulation);
+      if(!status)
+        return 0;
+
+      // compute propagations
+      status = this->computePersistenceSensitivePropagations<IT, DT, TT>(
+        propagations, propagationMask, segmentation, queueMask,
+
+        triangulation, order, scalars, persistenceThreshold);
+      if(!status)
+        return 0;
+
+      // finalize master propagations
+      std::vector<Propagation<IT> *> parentPropagations;
+      status = this->finalizePropagations<IT>(parentPropagations, propagations,
+
+                                              nVertices);
+      if(!status)
+        return 0;
+
+      // compute segments
+      status = this->computeSegments<IT, TT>(segmentation, parentPropagations,
+
+                                             order, triangulation);
+      if(!status)
+        return 0;
+
+      // compute local order of segments
+      status = this->computeLocalOrderOfSegments<IT, TT>(
+        localOrder,
+
+        triangulation, segmentation, order, parentPropagations);
+      if(!status)
+        return 0;
+
+      // flatten order
+      status = this->flattenOrder<IT>(order,
+
+                                      parentPropagations, nVertices);
+      if(!status)
+        return 0;
+
+      // compute global offsets
+      status = this->computeGlobalOrder<IT>(order, localOrder, sortedIndices);
+      if(!status)
+        return 0;
+
+      status = this->flattenScalars<DT, IT>(scalars, nVertices, propagations);
       if(!status)
         return 0;
 
@@ -998,36 +1285,33 @@ namespace ttk {
     };
 
     template <typename IT>
-    int invertArray(IT *outputOrder,
-
-                    const IT *inputOrder,
-                    const IT &nVertices) const {
+    int invertOrder(IT *outputOrder, const IT &nVertices) const {
       ttk::Timer timer;
       this->printMsg(
-        "Inverting Array", 0, 0, this->threadNumber_, debug::LineMode::REPLACE);
+        "Inverting Order", 0, 0, this->threadNumber_, debug::LineMode::REPLACE);
+
+      const auto nVerticesM1 = nVertices - 1;
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(this->threadNumber_)
 #endif // TTK_ENABLE_OPENMP
       for(IT v = 0; v < nVertices; v++)
-        outputOrder[v] = nVertices - inputOrder[v];
+        outputOrder[v] = nVerticesM1 - outputOrder[v];
 
       this->printMsg(
-        "Inverting Array", 1, timer.getElapsedTime(), this->threadNumber_);
+        "Inverting Order", 1, timer.getElapsedTime(), this->threadNumber_);
 
       return 1;
     }
 
     template <typename DT, typename IT, class TT>
-    int removeUnauthorizedExtrema(DT *outputScalars,
-                                  IT *outputOrder,
+    int removeUnauthorizedExtrema(DT *scalars,
+                                  IT *order,
 
                                   const TT *triangulation,
-                                  const DT *inputScalars,
-                                  const IT *inputOrder,
                                   const IT *authorizedExtremaIndices,
                                   const IT &nAuthorizedExtremaIndices,
-                                  const bool &addPerturbation) const {
+                                  const bool &computePerturbation) const {
       ttk::Timer globalTimer;
 
       IT nVertices = triangulation->getNumberOfVertices();
@@ -1037,9 +1321,9 @@ namespace ttk {
       std::vector<IT> segmentation;
       std::vector<IT> queueMask;
       std::vector<IT> localOrder;
-      std::vector<SSCPropagation<IT> *> propagationMask;
-      std::vector<SSCPropagation<IT>> propagationsMax;
-      std::vector<SSCPropagation<IT>> propagationsMin;
+      std::vector<Propagation<IT> *> propagationMask;
+      std::vector<Propagation<IT>> propagationsMax;
+      std::vector<Propagation<IT>> propagationsMin;
       std::vector<std::tuple<IT, IT, IT>> sortedIndices;
 
       this->allocateMemory<IT>(segmentation, queueMask, localOrder,
@@ -1047,40 +1331,13 @@ namespace ttk {
 
                                nVertices);
 
-      {
-        this->printMsg("----------- [Removing unauthorized minima]",
-                       ttk::debug::Separator::L2);
-
-        // init output order as input order
-        status = this->invertArray(outputOrder,
-
-                                   inputOrder, nVertices);
-        if(!status)
-          return 0;
-
-        status = this->detectAndRemoveUnauthorizedMaxima<IT, TT>(
-          outputOrder, segmentation.data(), queueMask.data(), localOrder.data(),
-          propagationMask.data(), propagationsMin, sortedIndices,
-
-          triangulation, authorizedExtremaIndices, nAuthorizedExtremaIndices);
-        if(!status)
-          return 0;
-      }
-
       // Maxima
       {
-        this->printMsg("----------- [Removing unauthorized maxima]",
+        this->printMsg("----------- [Removing Unauthorized Maxima]",
                        ttk::debug::Separator::L2);
 
-        // invert outputOrder
-        status = this->invertArray(outputOrder,
-
-                                   outputOrder, nVertices);
-        if(!status)
-          return 0;
-
         status = this->detectAndRemoveUnauthorizedMaxima<IT, TT>(
-          outputOrder, segmentation.data(), queueMask.data(), localOrder.data(),
+          order, segmentation.data(), queueMask.data(), localOrder.data(),
           propagationMask.data(), propagationsMax, sortedIndices,
 
           triangulation, authorizedExtremaIndices, nAuthorizedExtremaIndices);
@@ -1088,19 +1345,123 @@ namespace ttk {
           return 0;
       }
 
-      status = this->flattenScalars<DT, IT>(outputScalars,
+      // Minima
+      {
+        this->printMsg("----------- [Removing Unauthorized Minima]",
+                       ttk::debug::Separator::L2);
 
-                                            propagationsMin, propagationsMax,
-                                            inputScalars, nVertices);
+        // invert order
+        if(!this->invertOrder(order, nVertices))
+          return 0;
+
+        status = this->detectAndRemoveUnauthorizedMaxima<IT, TT>(
+          order, segmentation.data(), queueMask.data(), localOrder.data(),
+          propagationMask.data(), propagationsMin, sortedIndices,
+
+          triangulation, authorizedExtremaIndices, nAuthorizedExtremaIndices);
+        if(!status)
+          return 0;
+
+        // revert order
+        if(!this->invertOrder(order, nVertices))
+          return 0;
+      }
+
+      // flatten scalars
+      status = this->flattenScalars<DT, IT>(
+        scalars, nVertices, propagationsMax, propagationsMin);
       if(!status)
         return 0;
 
-      // optionally add perturbation
-      if(addPerturbation) {
+      // optionally compute perturbation
+      if(computePerturbation) {
         this->printMsg(debug::Separator::L2);
-        status = this->computeNumericalPerturbation<DT, IT>(outputScalars,
+        status
+          = this->computeNumericalPerturbation<DT, IT>(scalars, sortedIndices);
+        if(!status)
+          return 0;
+      }
 
-                                                            sortedIndices);
+      this->printMsg(debug::Separator::L2);
+      this->printMsg(
+        "Complete", 1, globalTimer.getElapsedTime(), this->threadNumber_);
+
+      this->printMsg(debug::Separator::L1);
+
+      return 1;
+    };
+
+    template <typename DT, typename IT, class TT>
+    int removeNonPersistentExtrema(DT *scalars,
+                                   IT *order,
+
+                                   const TT *triangulation,
+                                   const DT persistenceThreshold,
+                                   const bool &computePerturbation,
+                                   const PAIR_TYPE &pairType
+                                   = PAIR_TYPE::EXTREMUM_SADDLE) const {
+      ttk::Timer globalTimer;
+
+      IT nVertices = triangulation->getNumberOfVertices();
+
+      // Allocating Memory
+      int status = 0;
+      std::vector<IT> segmentation;
+      std::vector<IT> queueMask;
+      std::vector<IT> localOrder;
+      std::vector<Propagation<IT> *> propagationMask;
+      std::vector<Propagation<IT>> propagationsMax;
+      std::vector<Propagation<IT>> propagationsMin;
+      std::vector<std::tuple<IT, IT, IT>> sortedIndices;
+
+      this->allocateMemory<IT>(segmentation, queueMask, localOrder,
+                               propagationMask, sortedIndices,
+
+                               nVertices);
+
+      // Maxima
+      if(pairType == PAIR_TYPE::EXTREMUM_SADDLE
+         || pairType == PAIR_TYPE::MAXIMUM_SADDLE) {
+        this->printMsg("----------- [Removing Non-Persistent Maxima]",
+                       ttk::debug::Separator::L2);
+
+        status = this->detectAndRemoveNonPersistentMaxima<IT, DT, TT>(
+          scalars, order, segmentation.data(), queueMask.data(),
+          localOrder.data(), propagationMask.data(), propagationsMax,
+          sortedIndices,
+
+          triangulation, persistenceThreshold);
+        if(!status)
+          return 0;
+      }
+
+      // Minima
+      if(pairType == PAIR_TYPE::EXTREMUM_SADDLE
+         || pairType == PAIR_TYPE::MINIMUM_SADDLE) {
+        this->printMsg("----------- [Removing Non-Persistent Minima]",
+                       ttk::debug::Separator::L2);
+
+        if(!this->invertOrder(order, nVertices))
+          return 0;
+
+        status = this->detectAndRemoveNonPersistentMaxima<IT, DT, TT>(
+          scalars, order, segmentation.data(), queueMask.data(),
+          localOrder.data(), propagationMask.data(), propagationsMin,
+          sortedIndices,
+
+          triangulation, persistenceThreshold);
+        if(!status)
+          return 0;
+
+        if(!this->invertOrder(order, nVertices))
+          return 0;
+      }
+
+      // optionally compute perturbation
+      if(computePerturbation) {
+        this->printMsg(debug::Separator::L2);
+        status = this->computeNumericalPerturbation<DT, IT>(
+          scalars, sortedIndices, pairType == PAIR_TYPE::MAXIMUM_SADDLE);
         if(!status)
           return 0;
       }
