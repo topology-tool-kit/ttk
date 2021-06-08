@@ -1,5 +1,7 @@
 #include <WebSocketIO.h>
 
+#include <exception>
+
 ttk::WebSocketIO::WebSocketIO() {
   this->setDebugMsgPrefix("WebSocketIO");
 
@@ -27,7 +29,11 @@ ttk::WebSocketIO::WebSocketIO() {
 }
 
 ttk::WebSocketIO::~WebSocketIO() {
-  this->stopServer();
+  try {
+    this->stopServer();
+  } catch(const std::exception &e) {
+    this->printErr(e.what());
+  }
 }
 
 #if TTK_ENABLE_WEBSOCKETPP
