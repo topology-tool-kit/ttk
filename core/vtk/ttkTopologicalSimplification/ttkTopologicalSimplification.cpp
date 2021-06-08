@@ -115,10 +115,6 @@ int ttkTopologicalSimplification::RequestData(
 
   // NOTE it'd be better if the two backends were inheriting from the same API
   // (the switch would then happen in the base code)
-  this->printWrn("TIP: if you want to simplify data just");
-  this->printWrn("by persistence, please consider");
-  this->printWrn("`TopologicalSimplificationByPersistence`.");
-
   int ret{};
   if(this->UseLTS) {
     ttk::LocalizedTopologicalSimplification lts{};

@@ -46,9 +46,11 @@
 /// Proc. of IEEE VIS 2020.
 /// IEEE Transactions on Visualization and Computer Graphics
 ///
+/// \sa ttkTopologicalSimplificationByPersistence
 /// \sa ttkScalarFieldCriticalPoints
 /// \sa ttkIntegralLines
 /// \sa ttkFTMTree
+/// \sa ttkMorseSmaleComplex
 /// \sa ttkIdentifiers
 /// \sa ttk::TopologicalSimplification
 
