@@ -38,13 +38,11 @@
 #include <websocketpp/config/asio_no_tls.hpp>
 #include <websocketpp/server.hpp>
 
-typedef websocketpp::server<websocketpp::config::asio> server;
 using websocketpp::connection_hdl;
-using websocketpp::lib::bind;
 using websocketpp::lib::thread;
 
-typedef std::set<connection_hdl, std::owner_less<connection_hdl>> con_list;
-typedef websocketpp::server<websocketpp::config::asio> WSServer;
+using con_list = std::set<connection_hdl, std::owner_less<connection_hdl>>;
+using WSServer = websocketpp::server<websocketpp::config::asio>;
 
 #endif
 
@@ -112,7 +110,7 @@ namespace ttk {
     int on_open(const websocketpp::connection_hdl &hdl);
     int on_close(const websocketpp::connection_hdl &hdl);
     int on_message(const websocketpp::connection_hdl &hdl,
-                   const server::message_ptr &msg);
+                   const WSServer::message_ptr &msg);
 
     std::list<Message> messageQueue;
 #endif
