@@ -109,9 +109,10 @@ namespace ttk {
     bool serverThreadRunning = false;
     int portNumber = 0;
 
-    int on_open(websocketpp::connection_hdl hdl);
-    int on_close(websocketpp::connection_hdl hdl);
-    int on_message(websocketpp::connection_hdl hdl, server::message_ptr msg);
+    int on_open(const websocketpp::connection_hdl &hdl);
+    int on_close(const websocketpp::connection_hdl &hdl);
+    int on_message(const websocketpp::connection_hdl &hdl,
+                   const server::message_ptr &msg);
 
     std::list<Message> messageQueue;
 #endif

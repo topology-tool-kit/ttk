@@ -245,7 +245,7 @@ int ttk::WebSocketIO::processEvent(const std::string &eventName,
   return 1;
 }
 
-int ttk::WebSocketIO::on_open(websocketpp::connection_hdl hdl) {
+int ttk::WebSocketIO::on_open(const websocketpp::connection_hdl &hdl) {
   std::lock_guard<std::mutex> lock(this->mutex);
 
   ttk::Timer t;
@@ -267,7 +267,7 @@ int ttk::WebSocketIO::on_open(websocketpp::connection_hdl hdl) {
   return 1;
 }
 
-int ttk::WebSocketIO::on_close(websocketpp::connection_hdl hdl) {
+int ttk::WebSocketIO::on_close(const websocketpp::connection_hdl &hdl) {
   std::lock_guard<std::mutex> lock(this->mutex);
 
   ttk::Timer t;
@@ -278,8 +278,10 @@ int ttk::WebSocketIO::on_close(websocketpp::connection_hdl hdl) {
   return 1;
 }
 
-int ttk::WebSocketIO::on_message(websocketpp::connection_hdl ttkNotUsed(hdl),
-                                 WSServer::message_ptr msg) {
+int ttk::WebSocketIO::on_message(
+  const websocketpp::connection_hdl &ttkNotUsed(hdl),
+  const WSServer::message_ptr &msg) {
+
   const auto &eventData = msg->get_payload();
   if(eventData.rfind("ttk_WSIO_", 9) != 0)
     this->printMsg("Custom Message Received", 1, 0);
