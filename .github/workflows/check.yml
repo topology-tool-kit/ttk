@@ -58,6 +58,13 @@ jobs:
       run: |
         ! git ls-files | xargs file | grep empty
 
+    - name: Check for VTK includes in the base layer
+      run: |
+        ! git ls-files \
+          | grep "core/base" \
+          | grep -E "\.cpp$|\.cxx$|\.h$|\.hpp$" \
+          | xargs grep -e "^#include.*vtk"
+
 
   # ------------- #
   # Code lint job #
