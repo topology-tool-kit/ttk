@@ -3,11 +3,11 @@
 # The goal is to create a single plugin for parview
 set(TTK_XMLS             "" CACHE INTERNAL "")
 set(TTK_MODULES          "" CACHE INTERNAL "")
-file(GLOB PARAVIEW_PLUGIN_DIRS xmls/*.xml)
+file(GLOB XML_FILES xmls/*.xml)
 
-foreach(PARAVIEW_PLUGIN ${PARAVIEW_PLUGIN_DIRS})
-  get_filename_component(MODULE ${PARAVIEW_PLUGIN} NAME_WLE)
-  ttk_register_pv_filter(ttk${MODULE} xmls/${MODULE}.xml)
+foreach(XML_FILE ${XML_FILES})
+  get_filename_component(MODULE_NAME ${XML_FILE} NAME_WLE)
+  ttk_register_pv_filter(ttk${MODULE_NAME} xmls/${MODULE_NAME}.xml)
 endforeach()
 
 set("PARAVIEW_PLUGIN_ENABLE_TopologyToolKit"
