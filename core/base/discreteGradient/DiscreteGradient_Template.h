@@ -2303,84 +2303,43 @@ int DiscreteGradient::getDescendingPath(
   std::vector<Cell> &vpath,
   const triangulationType &triangulation) const {
 
-  if(dimensionality_ == 2) {
-    if(cell.dim_ == 0) {
-      // assume that cellId is a vertex
-      SimplexId currentId = cell.id_;
-      SimplexId connectedEdgeId;
-      do {
-        // add a vertex
-        const Cell vertex(0, currentId);
-        vpath.push_back(vertex);
+  if(cell.dim_ == 0) {
+    // assume that cellId is a vertex
+    SimplexId currentId = cell.id_;
+    SimplexId connectedEdgeId;
+    do {
+      // add a vertex
+      const Cell vertex(0, currentId);
+      vpath.push_back(vertex);
 
-        if(isCellCritical(vertex)) {
+      if(isCellCritical(vertex)) {
+        break;
+      }
+
+      connectedEdgeId = getPairedCell(vertex, triangulation);
+      if(connectedEdgeId == -1) {
+        break;
+      }
+
+      // add an edge
+      const Cell edge(1, connectedEdgeId);
+      vpath.push_back(edge);
+
+      if(isCellCritical(edge)) {
+        break;
+      }
+
+      for(int i = 0; i < 2; ++i) {
+        SimplexId vertexId;
+        triangulation.getEdgeVertex(connectedEdgeId, i, vertexId);
+
+        if(vertexId != currentId) {
+          currentId = vertexId;
           break;
         }
+      }
 
-        connectedEdgeId = getPairedCell(vertex, triangulation);
-        if(connectedEdgeId == -1) {
-          break;
-        }
-
-        // add an edge
-        const Cell edge(1, connectedEdgeId);
-        vpath.push_back(edge);
-
-        if(isCellCritical(edge)) {
-          break;
-        }
-
-        for(int i = 0; i < 2; ++i) {
-          SimplexId vertexId;
-          triangulation.getEdgeVertex(connectedEdgeId, i, vertexId);
-
-          if(vertexId != currentId) {
-            currentId = vertexId;
-            break;
-          }
-        }
-
-      } while(connectedEdgeId != -1);
-    }
-  } else if(dimensionality_ == 3) {
-    if(cell.dim_ == 0) {
-      // assume that cellId is a vertex
-      SimplexId currentId = cell.id_;
-      SimplexId connectedEdgeId;
-      do {
-        // add a vertex
-        const Cell vertex(0, currentId);
-        vpath.push_back(vertex);
-
-        if(isCellCritical(vertex)) {
-          break;
-        }
-
-        connectedEdgeId = getPairedCell(vertex, triangulation);
-        if(connectedEdgeId == -1) {
-          break;
-        }
-
-        // add an edge
-        const Cell edge(1, connectedEdgeId);
-        vpath.push_back(edge);
-
-        if(isCellCritical(edge)) {
-          break;
-        }
-
-        for(int i = 0; i < 2; ++i) {
-          SimplexId vertexId;
-          triangulation.getEdgeVertex(connectedEdgeId, i, vertexId);
-
-          if(vertexId != currentId) {
-            currentId = vertexId;
-            break;
-          }
-        }
-
-      } while(connectedEdgeId != -1);
-    }
+    } while(connectedEdgeId != -1);
   }
 
   return 0;
