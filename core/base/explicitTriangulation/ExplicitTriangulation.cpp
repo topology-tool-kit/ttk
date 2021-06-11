@@ -229,10 +229,11 @@ int ExplicitTriangulation::preconditionCellNeighborsInternal() {
       threeSkeleton.buildCellNeighborsFromTriangles(
         vertexNumber_, *cellArray_, cellNeighborData_, &triangleStarData_);
     } else if(getDimensionality() == 2) {
+      this->preconditionEdgeStarsInternal();
       TwoSkeleton twoSkeleton;
       twoSkeleton.setWrapper(this);
       twoSkeleton.buildCellNeighborsFromEdges(
-        vertexNumber_, *cellArray_, cellNeighborData_, &edgeStarData_);
+        vertexNumber_, *cellArray_, cellNeighborData_, edgeStarData_);
     }
   }
 
@@ -370,12 +371,13 @@ int ExplicitTriangulation::preconditionEdgeTrianglesInternal() {
   }
 
   if(edgeTriangleData_.empty()) {
-    preconditionTriangleEdgesInternal();
+    this->preconditionEdgesInternal();
+    this->preconditionTriangleEdgesInternal();
 
     TwoSkeleton twoSkeleton;
     twoSkeleton.setWrapper(this);
     return twoSkeleton.buildEdgeTriangles(vertexNumber_, *cellArray_,
-                                          edgeTriangleData_, &edgeList_,
+                                          edgeTriangleData_, edgeList_,
                                           &triangleEdgeList_);
   }
 
@@ -409,6 +411,7 @@ int ExplicitTriangulation::preconditionTriangleEdgesInternal() {
   }
 
   if(triangleEdgeList_.empty()) {
+    this->preconditionEdgesInternal();
 
     // WARNING
     // here triangleStarList and cellTriangleList will be computed (for
@@ -419,8 +422,9 @@ int ExplicitTriangulation::preconditionTriangleEdgesInternal() {
     twoSkeleton.setWrapper(this);
 
     return twoSkeleton.buildTriangleEdgeList(
-      vertexNumber_, *cellArray_, triangleEdgeList_, &vertexEdgeData_,
-      &edgeList_, &triangleList_, &triangleStarData_, &tetraTriangleList_);
+      vertexNumber_, *cellArray_, triangleEdgeList_, edgeList_,
+      &vertexEdgeData_, &triangleList_, &triangleStarData_,
+      &tetraTriangleList_);
   }
 
   return 0;
@@ -529,10 +533,11 @@ int ExplicitTriangulation::preconditionVertexNeighborsInternal() {
   }
 
   if((SimplexId)vertexNeighborData_.subvectorsNumber() != vertexNumber_) {
+    this->preconditionEdgesInternal();
     ZeroSkeleton zeroSkeleton;
     zeroSkeleton.setWrapper(this);
     return zeroSkeleton.buildVertexNeighbors(
-      vertexNumber_, *cellArray_, vertexNeighborData_, &edgeList_);
+      vertexNumber_, *cellArray_, vertexNeighborData_, edgeList_);
   }
   return 0;
 }
