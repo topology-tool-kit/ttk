@@ -351,8 +351,13 @@ int ExplicitTriangulation::preconditionEdgeStarsInternal() {
   if(edgeStarData_.empty()) {
     OneSkeleton oneSkeleton;
     oneSkeleton.setWrapper(this);
-    return oneSkeleton.buildEdgeList<3>(
-      vertexNumber_, *cellArray_, nullptr, &edgeStarData_, nullptr);
+    if(this->getDimensionality() == 3) {
+      return oneSkeleton.buildEdgeList<6>(
+        vertexNumber_, *cellArray_, nullptr, &edgeStarData_, nullptr);
+    } else { // 2D and 1D
+      return oneSkeleton.buildEdgeList<3>(
+        vertexNumber_, *cellArray_, nullptr, &edgeStarData_, nullptr);
+    }
   }
   return 0;
 }
