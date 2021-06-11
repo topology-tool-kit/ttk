@@ -88,19 +88,14 @@ namespace ttk {
     /// std::vector will be equal to the number of vertices in the mesh. Each
     /// entry will be std::vector listing the vertex identifiers of the entry's
     /// vertex' neighbors.
-    /// \param edgeList Optional list of edges. If NULL, the function will
-    /// compute this list anyway and free the related memory upon return. If not
-    /// NULL but pointing to an empty std::vector, the function will fill this
-    /// empty std::vector (useful if this list needs to be used later on by the
-    /// calling program). If not NULL but pointing to a non-empty std::vector,
-    /// this function will use this std::vector as internal edge list. If this
-    /// std::vector is not empty but incorrect, the behavior is unspecified.
+    /// \param edgeList List of edges. If this std::vector is not
+    /// empty but incorrect, the behavior is unspecified.
     /// \return Returns 0 upon success, negative values otherwise.
-    int buildVertexNeighbors(const SimplexId &vertexNumber,
-                             const CellArray &cellArray,
-                             FlatJaggedArray &vertexNeighbors,
-                             std::vector<std::array<SimplexId, 2>> *edgeList
-                             = NULL) const;
+    int buildVertexNeighbors(
+      const SimplexId &vertexNumber,
+      const CellArray &cellArray,
+      FlatJaggedArray &vertexNeighbors,
+      const std::vector<std::array<SimplexId, 2>> &edgeList) const;
 
     /// Compute the star of each vertex of a triangulation. Unspecified
     /// behavior if the input mesh is not a valid triangulation.

@@ -1,7 +1,5 @@
-#include <OneSkeleton.h>
 #include <ZeroSkeleton.h>
 
-using namespace std;
 using namespace ttk;
 
 ZeroSkeleton::ZeroSkeleton() {
@@ -10,7 +8,7 @@ ZeroSkeleton::ZeroSkeleton() {
 
 int ZeroSkeleton::buildVertexEdges(
   const SimplexId &vertexNumber,
-  const vector<std::array<SimplexId, 2>> &edgeList,
+  const std::vector<std::array<SimplexId, 2>> &edgeList,
   FlatJaggedArray &vertexEdges) const {
 
   std::vector<SimplexId> offsets(vertexNumber + 1);
@@ -60,8 +58,8 @@ int ZeroSkeleton::buildVertexEdges(
 // 2D cells (triangles)
 int ZeroSkeleton::buildVertexLinks(
   const FlatJaggedArray &vertexStars,
-  const vector<std::array<SimplexId, 3>> &cellEdges,
-  const vector<std::array<SimplexId, 2>> &edgeList,
+  const std::vector<std::array<SimplexId, 3>> &cellEdges,
+  const std::vector<std::array<SimplexId, 2>> &edgeList,
   FlatJaggedArray &vertexLinks) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -117,8 +115,8 @@ int ZeroSkeleton::buildVertexLinks(
 // 3D cells (tetrahedron)
 int ZeroSkeleton::buildVertexLinks(
   const FlatJaggedArray &vertexStars,
-  const vector<std::array<SimplexId, 4>> &cellTriangles,
-  const vector<std::array<SimplexId, 3>> &triangleList,
+  const std::vector<std::array<SimplexId, 4>> &cellTriangles,
+  const std::vector<std::array<SimplexId, 3>> &triangleList,
   FlatJaggedArray &vertexLinks) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -176,31 +174,18 @@ int ZeroSkeleton::buildVertexNeighbors(
   const SimplexId &vertexNumber,
   const CellArray &cellArray,
   FlatJaggedArray &vertexNeighbors,
-  vector<std::array<SimplexId, 2>> *edgeList) const {
+  const std::vector<std::array<SimplexId, 2>> &edgeList) const {
 
   std::vector<SimplexId> offsets(vertexNumber + 1);
   // number of neighbors processed per vertex
   std::vector<SimplexId> neighborsId(vertexNumber);
-
-  auto localEdgeList = edgeList;
-  vector<std::array<SimplexId, 2>> defaultEdgeList{};
-  if(!localEdgeList) {
-    localEdgeList = &defaultEdgeList;
-  }
-
-  if(!localEdgeList->size()) {
-    OneSkeleton osk;
-    osk.setDebugLevel(debugLevel_);
-    osk.setThreadNumber(threadNumber_);
-    osk.buildEdgeList(vertexNumber, cellArray, localEdgeList);
-  }
 
   Timer t;
 
   printMsg("Building vertex neighbors", 0, 0, 1, ttk::debug::LineMode::REPLACE);
 
   // store number of neighbors per vertex
-  for(const auto &e : *localEdgeList) {
+  for(const auto &e : edgeList) {
     offsets[e[0] + 1]++;
     offsets[e[1] + 1]++;
   }
@@ -214,7 +199,7 @@ int ZeroSkeleton::buildVertexNeighbors(
   std::vector<SimplexId> neighbors(offsets.back());
 
   // fill flat neighbors vector using offsets and neighbors count vectors
-  for(const auto &e : *localEdgeList) {
+  for(const auto &e : edgeList) {
     neighbors[offsets[e[0]] + neighborsId[e[0]]] = e[1];
     neighborsId[e[0]]++;
     neighbors[offsets[e[1]] + neighborsId[e[1]]] = e[0];
@@ -283,7 +268,7 @@ int ZeroSkeleton::buildVertexStars(const SimplexId &vertexNumber,
 
   if(debugLevel_ >= static_cast<int>(debug::Priority::VERBOSE)) {
     for(size_t i = 0; i < vertexStars.subvectorsNumber(); i++) {
-      stringstream msg;
+      std::stringstream msg;
       msg << "Vertex #" << i << " (" << vertexStars.size(i) << " cell(s)): ";
       for(SimplexId j = 0; j < vertexStars.size(i); j++) {
         msg << " " << vertexStars.get(i, j);
