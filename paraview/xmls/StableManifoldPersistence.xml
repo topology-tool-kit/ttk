@@ -5,9 +5,8 @@
       class="ttkStableManifoldPersistence"
       label="TTK StableManifoldPersistence">
       <Documentation
-        long_help="TTK plugin for the topological simplification of scalar data."
-        short_help="TTK plugin for the topological simplification of scalar
-        data.">
+        long_help="TTK plugin for attaching to an input stable manifold (given by the Morse-Smale complex module) its persistence (given by the persistence diagram)."
+        short_help="TTK plugin for attaching persistence on stable manifolds.">
 
         TODO
 
@@ -15,7 +14,7 @@
       </Documentation>
 
       <InputProperty
-        name="Persistence Diagram"
+        name="Stable manifolds"
         port_index="0"
         command="SetInputConnection">
         <ProxyGroupDomain name="groups">
@@ -23,18 +22,19 @@
           <Group name="filters" />
         </ProxyGroupDomain>
         <DataTypeDomain name="input_type">
-          <DataType value="vtkUnstructuredGrid" />
+          <DataType value="vtkDataSet" />
         </DataTypeDomain>
         <InputArrayDomain name="input_array" attribute_type="point" number_of_components="1" />
         <Documentation>
-          vtkUnstructuredGrid that represents the persistence diagram of the
-considered data set. This is typically the output of the Persistence Diagram
-module.
+          vtkDataSet that represents stable manifolds (separatrices and
+segments) obtained from the Morse-Smale complex module. This is typically any
+of the three last outputs (`1-Separatrices`, or `2-Separatrices` or
+`Segmentation`) of the Morse-Smale complex module.
         </Documentation>
       </InputProperty>
 
       <InputProperty
-        name="Critical cells"
+        name="Critical points"
         port_index="1"
         command="SetInputConnection">
         <ProxyGroupDomain name="groups">
@@ -42,18 +42,18 @@ module.
           <Group name="filters" />
         </ProxyGroupDomain>
         <DataTypeDomain name="input_type">
-          <DataType value="vtkPolyData" />
+          <DataType value="vtkDataSet" />
         </DataTypeDomain>
         <InputArrayDomain name="input_array" attribute_type="point" number_of_components="1" />
         <Documentation>
-          vtkPolyData that represents the critical cells of the data. This
+          vtkDataSet that represents the critical cells of the data. This
 is typically the first output (`Critical Points`) of the Morse-Smale complex
 module.
         </Documentation>
       </InputProperty>
 
       <InputProperty
-        name="Stable manifolds"
+        name="Persistence diagram"
         port_index="2"
         command="SetInputConnection">
         <ProxyGroupDomain name="groups">
@@ -61,173 +61,25 @@ module.
           <Group name="filters" />
         </ProxyGroupDomain>
         <DataTypeDomain name="input_type">
-          <DataType value="vtkPolyData" />
+          <DataType value="vtkDataSet" />
         </DataTypeDomain>
-        <InputArrayDomain name="input_array" attribute_type="point"
-number_of_components="1" />
+        <InputArrayDomain name="input_array" attribute_type="point" number_of_components="1" />
         <Documentation>
-          vtkPolyData that represents stable manifolds (separatrices and
-segments) obtained from the Morse-Smale complex module. This is typically any
-of the three last outputs (`1-Separatrices`, or `2-Separatrices` or
-`Segmentation`) of the Morse-Smale complex module.
+          vtkDataSet that represents the persistence diagram of the
+considered data set. This is typically the output of the Persistence Diagram
+module.
         </Documentation>
       </InputProperty>
 
-      <StringVectorProperty
-        name="Scalar Field"
-        command="SetInputArrayToProcess"
-        element_types="0 0 0 0 2"
-        number_of_elements="5"
-        default_values="0"
-        animateable="0"
-        >
-        <ArrayListDomain
-          name="array_list"
-          default_values="0">
-          <RequiredProperties>
-            <Property name="Domain" function="Input" />
-          </RequiredProperties>
-        </ArrayListDomain>
-        <Documentation>
-          Select the scalar field to process.
-        </Documentation>
-      </StringVectorProperty>
-
-      <IntVectorProperty
-        name="ForceInputOffsetScalarField"
-        command="SetForceInputOffsetScalarField"
-        label="Force Input Offset Field"
-        number_of_elements="1"
-        panel_visibility="advanced"
-        default_values="0">
-        <BooleanDomain name="bool" />
-        <Documentation>
-          Check this box to force the usage of a specific input scalar field
-          as vertex offset (used to disambiguate flat plateaus).
-        </Documentation>
-      </IntVectorProperty>
-
-      <StringVectorProperty
-        name="Input Offset Field"
-        command="SetInputArrayToProcess"
-        element_types="0 0 0 0 2"
-        number_of_elements="5"
-        default_values="2"
-        animateable="0"
-        panel_visibility="advanced"
-        >
-        <ArrayListDomain
-          name="array_list"
-          default_values="0"
-          >
-          <RequiredProperties>
-            <Property name="Domain" function="Input" />
-          </RequiredProperties>
-        </ArrayListDomain>
-        <Hints>
-          <PropertyWidgetDecorator type="GenericDecorator"
-            mode="visibility"
-            property="ForceInputOffsetScalarField"
-            value="1" />
-        </Hints>
-        <Documentation>
-          Select the input offset field (to disambiguate flat plateaus).
-        </Documentation>
-      </StringVectorProperty>
-
-      <IntVectorProperty name="ForceInputVertexScalarField"
-        label="Force Input Vertex ScalarField"
-        command="SetForceInputVertexScalarField"
-        number_of_elements="1"
-        default_values="0"
-        panel_visibility="advanced">
-        <BooleanDomain name="bool" />
-        <Documentation>
-        </Documentation>
-      </IntVectorProperty>
-
-      <StringVectorProperty
-        name="Vertex Identifier Field"
-        command="SetInputArrayToProcess"
-        element_types="0 0 0 0 2"
-        number_of_elements="5"
-        default_values="1"
-        animateable="0"
-        panel_visibility="advanced"
-        >
-        <ArrayListDomain
-          name="array_list"
-          default_values="0"
-          >
-          <RequiredProperties>
-            <Property name="Constraints" function="Input" />
-          </RequiredProperties>
-        </ArrayListDomain>
-        <Hints>
-          <PropertyWidgetDecorator type="GenericDecorator"
-            mode="visibility"
-            property="ForceInputVertexScalarField"
-            value="1" />
-        </Hints>
-        <Documentation>
-          Select the vertex identifier scalar field in the sources.
-        </Documentation>
-      </StringVectorProperty>
-
-      <IntVectorProperty
-        name="ConsiderIdentifierAsBlackList"
-        command="SetConsiderIdentifierAsBlackList"
-        label="Remove selected extrema"
-        number_of_elements="1"
-        default_values="0">
-        <BooleanDomain name="bool" />
-        <Documentation>
-          Check this box to remove the selected extrema (instead of
-          removing all non-selected extrema).
-        </Documentation>
-      </IntVectorProperty>
-
-      <IntVectorProperty
-        name="UseLTS"
-        label="Use LTS"
-        command="SetUseLTS"
-        number_of_elements="1"
-        panel_visibility="advanced"
-        default_values="1">
-        <BooleanDomain name="bool" />
-        <Documentation>
-          Use the Localized Topological Simplification algorithm.
-        </Documentation>
-      </IntVectorProperty>
-
-      <IntVectorProperty
-        name="AddPerturbation"
-        command="SetAddPerturbation"
-        label="Numerical Perturbation"
-        number_of_elements="1"
-        default_values="0">
-        <BooleanDomain name="bool" />
-        <Documentation>
-          Numerically perturb the output (to avoid the usage of an output
-          offset field for flat plateau disambiguation).
-        </Documentation>
-      </IntVectorProperty>
-
       ${DEBUG_WIDGETS}
 
-      <PropertyGroup panel_widget="Line" label="Input options">
-        <Property name="Scalar Field" />
-        <Property name="ForceInputVertexScalarField" />
-        <Property name="Vertex Identifier Field" />
-        <Property name="ForceInputOffsetScalarField" />
-        <Property name="Input Offset Field" />
-        <Property name="ConsiderIdentifierAsBlackList" />
+<!--      <PropertyGroup panel_widget="Line" label="Input options">
       </PropertyGroup>
 
       <PropertyGroup panel_widget="Line" label="Output options">
         <Property name="UseLTS" />
         <Property name="AddPerturbation" />
-      </PropertyGroup>
+      </PropertyGroup>-->
 
       <Hints>
         <ShowInMenu category="TTK - Scalar Data" />

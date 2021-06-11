@@ -1,12 +1,16 @@
+#include <vtkCellData.h>
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
+#include <vtkDoubleArray.h>
 #include <vtkIdTypeArray.h>
 #include <vtkInformation.h>
 #include <vtkIntArray.h>
 #include <vtkNew.h>
 #include <vtkPointData.h>
 #include <vtkPointSet.h>
+#include <vtkPolyData.h>
 #include <vtkSmartPointer.h>
+#include <vtkUnstructuredGrid.h>
 
 #include <ttkMacros.h>
 #include <ttkStableManifoldPersistence.h>
@@ -15,6 +19,10 @@
 vtkStandardNewMacro(ttkStableManifoldPersistence);
 
 ttkStableManifoldPersistence::ttkStableManifoldPersistence() {
+
+  this->setDebugMsgPrefix("StableManifoldPersistence");
+  this->SetNumberOfInputPorts(3);
+  this->SetNumberOfOutputPorts(1);
 }
 
 int ttkStableManifoldPersistence::FillInputPortInformation(
@@ -23,7 +31,10 @@ int ttkStableManifoldPersistence::FillInputPortInformation(
     info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkDataSet");
     return 1;
   } else if(port == 1) {
-    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkPointSet");
+    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkPolyData");
+    return 1;
+  }else if(port == 2){
+    info->Set(vtkAlgorithm::INPUT_REQUIRED_DATA_TYPE(), "vtkUnstructuredGrid");
     return 1;
   }
   return 0;
@@ -43,41 +54,24 @@ int ttkStableManifoldPersistence::RequestData(
   vtkInformationVector **inputVector,
   vtkInformationVector *outputVector) {
 
-  using ttk::SimplexId;
+  ttk::Timer t;
 
-  const auto domain = vtkDataSet::GetData(inputVector[0]);
-  const auto constraints = vtkPointSet::GetData(inputVector[1]);
-  if(!domain || !constraints)
-    return !this->printErr("Unable to retrieve required input data objects.");
+  this->printMsg("Go for it!");
 
+  const auto stableManifold = vtkDataSet::GetData(inputVector[0]);
+  const auto criticalPoints = vtkPolyData::GetData(inputVector[1]);
+  const auto persistenceDiagram = vtkUnstructuredGrid::GetData(inputVector[2]);
+
+//
+//
   auto output = vtkDataSet::GetData(outputVector);
-
-  // domain scalar field
-  const auto inputScalars = this->GetInputArrayToProcess(0, domain);
-  if(!inputScalars) {
-    this->printErr("Input scalar field pointer is null.");
-    return -3;
-  }
-
-  // create output arrays
-  auto outputScalars
-    = vtkSmartPointer<vtkDataArray>::Take(inputScalars->NewInstance());
-  outputScalars->DeepCopy(inputScalars);
-
-  // constraint identifier field
-  int numberOfConstraints = constraints->GetNumberOfPoints();
-
-  int ret = 0;
-
-  // something wrong in baseCode
-  if(ret) {
-    this->printErr("StableManifoldPersistence.execute() error code: "
-                   + std::to_string(ret));
-    return -12;
-  }
-
-  output->ShallowCopy(domain);
-  output->GetPointData()->AddArray(outputScalars);
+//
+//   // preparing the outpout data structure
+  output->ShallowCopy(stableManifold);
+//
+// //   vtkNew<vtkDoubleArray> outputPersistence;
+//
+// //   output->GetCellData()->AddArray(outputPersistence);
 
   return 1;
 }
