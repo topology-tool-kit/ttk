@@ -47,6 +47,8 @@
 #include <ttkAlgorithm.h>
 
 class vtkDataArray;
+class vtkPolyData;
+class vtkUnstructuredGrid;
 
 class TTKSTABLEMANIFOLDPERSISTENCE_EXPORT ttkStableManifoldPersistence
   : public ttkAlgorithm {
@@ -65,4 +67,8 @@ protected:
                   vtkInformationVector *outputVector) override;
 
 private:
+  int BuildSimplex2PersistenceMap(
+    vtkPolyData *criticalPoints,
+    vtkUnstructuredGrid *persistenceDiagram,
+    std::vector<double> &vertex2persistence) const;
 };

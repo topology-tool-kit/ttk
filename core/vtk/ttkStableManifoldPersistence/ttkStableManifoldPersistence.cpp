@@ -49,6 +49,37 @@ int ttkStableManifoldPersistence::FillOutputPortInformation(
   return 0;
 }
 
+int ttkStableManifoldPersistence::BuildSimplex2PersistenceMap(
+  vtkPolyData *criticalPoints,
+  vtkUnstructuredGrid *persistenceDiagram,
+  std::vector<double> &simplex2persistence) const {
+
+  vtkDataArray *vertexIds
+    = persistenceDiagram->GetPointData()->GetArray(ttk::VertexScalarFieldName);
+
+  if(!vertexIds) {
+    printErr("The input #2 is not a valid persistence diagram.");
+    return -1;
+  }
+
+  int maximumVertexId = vertexIds->GetMaxNorm();
+
+  vtkDataArray *criticalPointVertexIds
+    = criticalPoints->GetPointData()->GetArray(ttk::VertexScalarFieldName);
+  if(!criticalPointVertexIds) {
+    printErr("The input #1 is not a valid set of critical points.");
+    return -2;
+  }
+  int maximumCriticalVertexId = criticalPointVertexIds->GetMaxNorm();
+
+  if(maximumCriticalVertexId > maximumVertexId)
+    maximumVertexId = maximumCriticalVertexId;
+
+  std::vector<double> vertex2persistence(maximumVertexId, -1);
+
+  return 0;
+}
+
 int ttkStableManifoldPersistence::RequestData(
   vtkInformation *request,
   vtkInformationVector **inputVector,
@@ -56,14 +87,18 @@ int ttkStableManifoldPersistence::RequestData(
 
   ttk::Timer t;
 
-  this->printMsg("Go for it!");
-
   const auto stableManifold = vtkDataSet::GetData(inputVector[0]);
   const auto criticalPoints = vtkPolyData::GetData(inputVector[1]);
   const auto persistenceDiagram = vtkUnstructuredGrid::GetData(inputVector[2]);
 
-//
-//
+  std::vector<double> simplex2persistence;
+  int ret = this->BuildSimplex2PersistenceMap(
+    criticalPoints, persistenceDiagram, simplex2persistence);
+
+  if(ret)
+    return ret;
+  //
+  //
   auto output = vtkDataSet::GetData(outputVector);
 //
 //   // preparing the outpout data structure
@@ -72,6 +107,9 @@ int ttkStableManifoldPersistence::RequestData(
 // //   vtkNew<vtkDoubleArray> outputPersistence;
 //
 // //   output->GetCellData()->AddArray(outputPersistence);
+
+  // TODO: parallelism
+  // TODO: documentation
 
   return 1;
 }
