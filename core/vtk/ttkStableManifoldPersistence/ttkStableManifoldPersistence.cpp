@@ -149,15 +149,26 @@ int ttkStableManifoldPersistence::RequestData(
   if(ret)
     return ret;
 
+  printMsg("Attaching persistence to stable manifold...");
+
   auto output = vtkDataSet::GetData(outputVector);
   output->ShallowCopy(stableManifold);
 
+  vtkSmartPointer<vtkDoubleArray> persistenceArray
+    = vtkSmartPointer<vtkDoubleArray>::New();
+  persistenceArray->SetName(ttk::PersistenceName);
+  // TODO:
+  // size=number of vertices for d-dimensional things
+  //   persistenceArray->SetNumberOfTuples(stableManifold->GetNumberOfCells());
+
+  //   vtkDataArray *ascendingArray =
+  //     stableManifold->GetPointData();
+
   // TODO: parallelism
+  // TODO: improve above messages (with 100% 0 to 100)
   // TODO: documentation
 
-  printMsg("Processed " + std::to_string(stableManifold->GetNumberOfCells())
-             + " cells",
-           1, t.getElapsedTime(), threadNumber_);
+  printMsg("Stable manifold processed", 1, t.getElapsedTime(), threadNumber_);
 
   return 1;
 }
