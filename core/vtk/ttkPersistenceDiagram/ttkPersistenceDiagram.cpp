@@ -60,7 +60,7 @@ int ttkPersistenceDiagram::setPersistenceDiagram(
 
   vtkNew<vtkIntArray> nodeTypeScalars{};
   nodeTypeScalars->SetNumberOfComponents(1);
-  nodeTypeScalars->SetName("CriticalType");
+  nodeTypeScalars->SetName(ttk::PersistenceCriticalTypeName);
   nodeTypeScalars->SetNumberOfTuples(2 * diagram.size());
 
   vtkNew<vtkFloatArray> coordsScalars{};
@@ -69,15 +69,15 @@ int ttkPersistenceDiagram::setPersistenceDiagram(
 
   if(this->ShowInsideDomain) {
     birthScalars->SetNumberOfComponents(1);
-    birthScalars->SetName("Birth");
+    birthScalars->SetName(ttk::PersistenceBirthName);
     birthScalars->SetNumberOfTuples(2 * diagram.size());
 
     deathScalars->SetNumberOfComponents(1);
-    deathScalars->SetName("Death");
+    deathScalars->SetName(ttk::PersistenceDeathName);
     deathScalars->SetNumberOfTuples(2 * diagram.size());
   } else {
     coordsScalars->SetNumberOfComponents(3);
-    coordsScalars->SetName("Coordinates");
+    coordsScalars->SetName(ttk::PersistenceCoordinatesName);
     coordsScalars->SetNumberOfTuples(2 * diagram.size());
   }
 
@@ -85,17 +85,17 @@ int ttkPersistenceDiagram::setPersistenceDiagram(
 
   vtkNew<ttkSimplexIdTypeArray> pairIdentifierScalars{};
   pairIdentifierScalars->SetNumberOfComponents(1);
-  pairIdentifierScalars->SetName("PairIdentifier");
+  pairIdentifierScalars->SetName(ttk::PersistencePairIdentifierName);
   pairIdentifierScalars->SetNumberOfTuples(diagram.size());
 
   vtkNew<vtkDoubleArray> persistenceScalars{};
   persistenceScalars->SetNumberOfComponents(1);
-  persistenceScalars->SetName("Persistence");
+  persistenceScalars->SetName(ttk::PersistenceName);
   persistenceScalars->SetNumberOfTuples(diagram.size());
 
   vtkNew<vtkIntArray> extremumIndexScalars{};
   extremumIndexScalars->SetNumberOfComponents(1);
-  extremumIndexScalars->SetName("PairType");
+  extremumIndexScalars->SetName(ttk::PersistencePairTypeName);
   extremumIndexScalars->SetNumberOfTuples(diagram.size());
 
   const ttk::SimplexId minIndex = 0;
