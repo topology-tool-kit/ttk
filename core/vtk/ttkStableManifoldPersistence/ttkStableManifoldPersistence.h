@@ -67,6 +67,9 @@ protected:
                   vtkInformationVector *outputVector) override;
 
 private:
+  int AttachPersistence(const std::vector<double> &vertex2persistence,
+                        vtkDataSet *output) const;
+
   int BuildSimplex2PersistenceMap(
     vtkPolyData *criticalPoints,
     vtkUnstructuredGrid *persistenceDiagram,

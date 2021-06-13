@@ -49,12 +49,38 @@ int ttkStableManifoldPersistence::FillOutputPortInformation(
   return 0;
 }
 
+int ttkStableManifoldPersistence::AttachPersistence(
+  const std::vector<double> &vertex2persistence, vtkDataSet *output) const {
+
+  ttk::Timer t;
+
+  printMsg("Attaching persistence...", 0, 0, threadNumber_,
+           ttk::debug::LineMode::REPLACE);
+
+  vtkSmartPointer<vtkDoubleArray> persistenceArray
+    = vtkSmartPointer<vtkDoubleArray>::New();
+  persistenceArray->SetName(ttk::PersistenceName);
+  // TODO:
+  // size=number of vertices for d-dimensional things
+  //   persistenceArray->SetNumberOfTuples(stableManifold->GetNumberOfCells());
+
+  //   vtkDataArray *ascendingArray =
+  //     stableManifold->GetPointData();
+
+  printMsg("Persistence attached!", 1, t.getElapsedTime(), threadNumber_);
+
+  return 0;
+}
+
 int ttkStableManifoldPersistence::BuildSimplex2PersistenceMap(
   vtkPolyData *criticalPoints,
   vtkUnstructuredGrid *persistenceDiagram,
   std::vector<double> &simplex2persistence) const {
 
-  printMsg("Building critical simplex to persistence map...");
+  ttk::Timer t;
+
+  printMsg("Building critical persistence map...", 0, 0, threadNumber_,
+           ttk::debug::LineMode::REPLACE);
 
   vtkDataArray *criticalPointVertexIdArray
     = criticalPoints->GetPointData()->GetArray(ttk::VertexScalarFieldName);
@@ -128,6 +154,9 @@ int ttkStableManifoldPersistence::BuildSimplex2PersistenceMap(
     simplex2persistence[(int)cellId] = vertex2persistence[(int)vertexId];
   }
 
+  printMsg(
+    "Critical persistence map built!", 1, t.getElapsedTime(), threadNumber_);
+
   return 0;
 }
 
@@ -149,26 +178,19 @@ int ttkStableManifoldPersistence::RequestData(
   if(ret)
     return ret;
 
-  printMsg("Attaching persistence to stable manifold...");
-
   auto output = vtkDataSet::GetData(outputVector);
   output->ShallowCopy(stableManifold);
 
-  vtkSmartPointer<vtkDoubleArray> persistenceArray
-    = vtkSmartPointer<vtkDoubleArray>::New();
-  persistenceArray->SetName(ttk::PersistenceName);
-  // TODO:
-  // size=number of vertices for d-dimensional things
-  //   persistenceArray->SetNumberOfTuples(stableManifold->GetNumberOfCells());
+  ret = this->AttachPersistence(simplex2persistence, output);
 
-  //   vtkDataArray *ascendingArray =
-  //     stableManifold->GetPointData();
+  if(ret)
+    return ret;
 
   // TODO: parallelism
   // TODO: improve above messages (with 100% 0 to 100)
   // TODO: documentation
 
-  printMsg("Stable manifold processed", 1, t.getElapsedTime(), threadNumber_);
+  printMsg("Stable manifold total time", 1, t.getElapsedTime(), threadNumber_);
 
   return 1;
 }
