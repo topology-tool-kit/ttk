@@ -72,11 +72,12 @@ protected:
 private:
   bool IsUnstable{false};
 
-  int AttachPersistence(const std::vector<double> &simplex2persistence,
-                        vtkDataSet *output) const;
+  std::vector<int> max2simplex, min2simplex;
+  std::vector<double> simplex2persistence;
 
-  int BuildSimplex2PersistenceMap(
-    vtkPolyData *criticalPoints,
-    vtkUnstructuredGrid *persistenceDiagram,
-    std::vector<double> &simplex2persistence) const;
+  int AttachPersistence(vtkDataSet *output) const;
+
+  int BuildSimplex2PersistenceMap(vtkDataSet *stableManifold,
+                                  vtkPolyData *criticalPoints,
+                                  vtkUnstructuredGrid *persistenceDiagram);
 };

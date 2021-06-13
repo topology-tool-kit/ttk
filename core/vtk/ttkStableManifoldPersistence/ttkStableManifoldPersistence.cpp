@@ -49,17 +49,16 @@ int ttkStableManifoldPersistence::FillOutputPortInformation(
   return 0;
 }
 
-int ttkStableManifoldPersistence::AttachPersistence(
-  const std::vector<double> &simplex2persistence, vtkDataSet *output) const {
+int ttkStableManifoldPersistence::AttachPersistence(vtkDataSet *output) const {
 
   ttk::Timer t;
 
   printMsg("Attaching persistence...", 0, 0, threadNumber_,
            ttk::debug::LineMode::REPLACE);
 
-  auto ascendingManifold
+  auto ascendingManifoldArray
     = output->GetPointData()->GetArray(ttk::MorseSmaleAscendingName);
-  auto descendingManifold
+  auto descendingManifoldArray
     = output->GetPointData()->GetArray(ttk::MorseSmaleDescendingName);
 
   auto sourceArray
@@ -67,14 +66,15 @@ int ttkStableManifoldPersistence::AttachPersistence(
   auto destinationArray
     = output->GetCellData()->GetArray(ttk::MorseSmaleDestinationIdName);
 
-  if((!ascendingManifold) && (!descendingManifold) && (!sourceArray)) {
+  if((!ascendingManifoldArray) && (!descendingManifoldArray)
+     && (!sourceArray)) {
     printErr("The input #0 is not a valid stable manifold.");
     return -3;
   }
 
   bool isSegmentation = false;
 
-  if((ascendingManifold) || (descendingManifold))
+  if((ascendingManifoldArray) || (descendingManifoldArray))
     isSegmentation = true;
 
   vtkSmartPointer<vtkDoubleArray> persistenceArray
@@ -103,6 +103,26 @@ int ttkStableManifoldPersistence::AttachPersistence(
 
     output->GetCellData()->AddArray(persistenceArray);
   } else {
+    int vertexNumber = output->GetNumberOfPoints();
+
+    persistenceArray->SetNumberOfTuples(vertexNumber);
+
+    // TODO: parallel
+    for(int i = 0; i < vertexNumber; i++) {
+      int cellId = -1;
+      double extremumId = -1;
+      if(IsUnstable) {
+        descendingManifoldArray->GetTuple(i, &extremumId);
+        cellId = min2simplex[(int)extremumId];
+      } else {
+        ascendingManifoldArray->GetTuple(i, &extremumId);
+        cellId = max2simplex[(int)extremumId];
+      }
+      double persistence = simplex2persistence[(int)cellId];
+      persistenceArray->SetTuple(i, &persistence);
+    }
+
+    output->GetPointData()->AddArray(persistenceArray);
   }
 
   // TODO:
@@ -118,9 +138,9 @@ int ttkStableManifoldPersistence::AttachPersistence(
 }
 
 int ttkStableManifoldPersistence::BuildSimplex2PersistenceMap(
+  vtkDataSet *stableManifold,
   vtkPolyData *criticalPoints,
-  vtkUnstructuredGrid *persistenceDiagram,
-  std::vector<double> &simplex2persistence) const {
+  vtkUnstructuredGrid *persistenceDiagram) {
 
   ttk::Timer t;
 
@@ -131,7 +151,11 @@ int ttkStableManifoldPersistence::BuildSimplex2PersistenceMap(
     = criticalPoints->GetPointData()->GetArray(ttk::VertexScalarFieldName);
   vtkDataArray *criticalCellIdArray
     = criticalPoints->GetPointData()->GetArray(ttk::MorseSmaleCellIdName);
-  if((!criticalPointVertexIdArray) || (!criticalCellIdArray)) {
+  vtkDataArray *criticalCellDimensionArray
+    = criticalPoints->GetPointData()->GetArray(
+      ttk::MorseSmaleCellDimensionName);
+  if((!criticalPointVertexIdArray) || (!criticalCellIdArray)
+     || (!criticalCellDimensionArray)) {
     printErr("The input #1 is not a valid set of critical points.");
     return -1;
   }
@@ -199,6 +223,41 @@ int ttkStableManifoldPersistence::BuildSimplex2PersistenceMap(
     simplex2persistence[(int)cellId] = vertex2persistence[(int)vertexId];
   }
 
+  // taking care of the maximum to simplex map
+  // get dimensionality from the stable manifold (the following maps are only
+  // useful if the module is called on the segmentation output of the
+  // morse-smale complex; then, we'll get the dimension right).
+  if(stableManifold->GetNumberOfCells()) {
+    int cellType = stableManifold->GetCellType(0);
+    int dimension = -1;
+    if((cellType == VTK_TETRA) || (cellType == VTK_VOXEL))
+      dimension = 3;
+    else if((cellType == VTK_TRIANGLE) || (cellType == VTK_PIXEL))
+      dimension = 2;
+    else
+      dimension = 1;
+
+    int minimumNumber = 0, maximumNumber = 0;
+    min2simplex.resize(maximumSimplexId + 1, -1);
+    max2simplex.resize(maximumSimplexId + 1, -1);
+    for(int i = 0; i < criticalPointNumber; i++) {
+      double cellId = -1;
+      double criticalSimplexDimension = -1;
+      criticalCellDimensionArray->GetTuple(i, &criticalSimplexDimension);
+      criticalCellIdArray->GetTuple(i, &cellId);
+      if(criticalSimplexDimension == 0) {
+        // minimum
+        min2simplex[(int)cellId] = minimumNumber;
+        minimumNumber++;
+      } else if(criticalSimplexDimension == dimension) {
+        // maximum
+        max2simplex[(int)cellId] = maximumNumber;
+        maximumNumber++;
+        // TODO: debug here
+      }
+    }
+  }
+
   printMsg(
     "Critical persistence map built!", 1, t.getElapsedTime(), threadNumber_);
 
@@ -216,9 +275,8 @@ int ttkStableManifoldPersistence::RequestData(
   const auto criticalPoints = vtkPolyData::GetData(inputVector[1]);
   const auto persistenceDiagram = vtkUnstructuredGrid::GetData(inputVector[2]);
 
-  std::vector<double> simplex2persistence;
   int ret = this->BuildSimplex2PersistenceMap(
-    criticalPoints, persistenceDiagram, simplex2persistence);
+    stableManifold, criticalPoints, persistenceDiagram);
 
   if(ret)
     return ret;
@@ -226,7 +284,7 @@ int ttkStableManifoldPersistence::RequestData(
   auto output = vtkDataSet::GetData(outputVector);
   output->ShallowCopy(stableManifold);
 
-  ret = this->AttachPersistence(simplex2persistence, output);
+  ret = this->AttachPersistence(output);
 
   if(ret)
     return ret;
