@@ -50,16 +50,61 @@ int ttkStableManifoldPersistence::FillOutputPortInformation(
 }
 
 int ttkStableManifoldPersistence::AttachPersistence(
-  const std::vector<double> &vertex2persistence, vtkDataSet *output) const {
+  const std::vector<double> &simplex2persistence, vtkDataSet *output) const {
 
   ttk::Timer t;
 
   printMsg("Attaching persistence...", 0, 0, threadNumber_,
            ttk::debug::LineMode::REPLACE);
 
+  auto ascendingManifold
+    = output->GetPointData()->GetArray(ttk::MorseSmaleAscendingName);
+  auto descendingManifold
+    = output->GetPointData()->GetArray(ttk::MorseSmaleDescendingName);
+
+  auto sourceArray
+    = output->GetCellData()->GetArray(ttk::MorseSmaleSourceIdName);
+  auto destinationArray
+    = output->GetCellData()->GetArray(ttk::MorseSmaleDestinationIdName);
+
+  if((!ascendingManifold) && (!descendingManifold) && (!sourceArray)) {
+    printErr("The input #0 is not a valid stable manifold.");
+    return -3;
+  }
+
+  bool isSegmentation = false;
+
+  if((ascendingManifold) || (descendingManifold))
+    isSegmentation = true;
+
   vtkSmartPointer<vtkDoubleArray> persistenceArray
     = vtkSmartPointer<vtkDoubleArray>::New();
   persistenceArray->SetName(ttk::PersistenceName);
+
+  if(!isSegmentation) {
+
+    int cellNumber = output->GetNumberOfCells();
+
+    persistenceArray->SetNumberOfTuples(cellNumber);
+
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif
+    for(int i = 0; i < cellNumber; i++) {
+      double cellId = -1;
+      if((destinationArray) && (IsUnstable)) {
+        destinationArray->GetTuple(i, &cellId);
+      } else {
+        sourceArray->GetTuple(i, &cellId);
+      }
+      double persistence = simplex2persistence[(int)cellId];
+      persistenceArray->SetTuple(i, &persistence);
+    }
+
+    output->GetCellData()->AddArray(persistenceArray);
+  } else {
+  }
+
   // TODO:
   // size=number of vertices for d-dimensional things
   //   persistenceArray->SetNumberOfTuples(stableManifold->GetNumberOfCells());

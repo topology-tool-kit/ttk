@@ -57,6 +57,9 @@ public:
   static ttkStableManifoldPersistence *New();
   vtkTypeMacro(ttkStableManifoldPersistence, ttkAlgorithm);
 
+  vtkGetMacro(IsUnstable, bool);
+  vtkSetMacro(IsUnstable, bool);
+
 protected:
   ttkStableManifoldPersistence();
 
@@ -67,11 +70,13 @@ protected:
                   vtkInformationVector *outputVector) override;
 
 private:
-  int AttachPersistence(const std::vector<double> &vertex2persistence,
+  bool IsUnstable{false};
+
+  int AttachPersistence(const std::vector<double> &simplex2persistence,
                         vtkDataSet *output) const;
 
   int BuildSimplex2PersistenceMap(
     vtkPolyData *criticalPoints,
     vtkUnstructuredGrid *persistenceDiagram,
-    std::vector<double> &vertex2persistence) const;
+    std::vector<double> &simplex2persistence) const;
 };
