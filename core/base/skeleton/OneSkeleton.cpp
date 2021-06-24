@@ -1,7 +1,6 @@
 #include <OneSkeleton.h>
 #include <boost/container/small_vector.hpp>
 
-using namespace std;
 using namespace ttk;
 
 OneSkeleton::OneSkeleton() {
@@ -10,7 +9,7 @@ OneSkeleton::OneSkeleton() {
 
 // 2D cells (triangles)
 int OneSkeleton::buildEdgeLinks(
-  const vector<std::array<SimplexId, 2>> &edgeList,
+  const std::vector<std::array<SimplexId, 2>> &edgeList,
   const FlatJaggedArray &edgeStars,
   const CellArray &cellArray,
   FlatJaggedArray &edgeLinks) const {
@@ -57,7 +56,7 @@ int OneSkeleton::buildEdgeLinks(
 
   edgeLinks.setData(std::move(links), std::move(offsets));
 
-  printMsg("Built " + to_string(edgeNumber) + " edge links", 1,
+  printMsg("Built " + std::to_string(edgeNumber) + " edge links", 1,
            t.getElapsedTime(), threadNumber_);
 
   return 0;
@@ -65,9 +64,9 @@ int OneSkeleton::buildEdgeLinks(
 
 // 3D cells (tetrahedron)
 int OneSkeleton::buildEdgeLinks(
-  const vector<std::array<SimplexId, 2>> &edgeList,
+  const std::vector<std::array<SimplexId, 2>> &edgeList,
   const FlatJaggedArray &edgeStars,
-  const vector<std::array<SimplexId, 6>> &cellEdges,
+  const std::vector<std::array<SimplexId, 6>> &cellEdges,
   FlatJaggedArray &edgeLinks) const {
 
 #ifndef TTK_ENABLE_KAMIKAZE
@@ -120,7 +119,7 @@ int OneSkeleton::buildEdgeLinks(
 
   edgeLinks.setData(std::move(links), std::move(offsets));
 
-  printMsg("Built " + to_string(edgeNumber) + " edge links", 1,
+  printMsg("Built " + std::to_string(edgeNumber) + " edge links", 1,
            t.getElapsedTime(), threadNumber_);
 
   return 0;
@@ -251,7 +250,7 @@ int OneSkeleton::buildEdgeList(
   edgeStars.setData(std::move(edgeSt), std::move(offsets));
 
   printMsg(
-    "Built " + to_string(edgeCount) + " edges", 1, t.getElapsedTime(), 1);
+    "Built " + std::to_string(edgeCount) + " edges", 1, t.getElapsedTime(), 1);
 
   // ethaneDiolMedium.vtu, 70Mtets, hal9000 (12coresHT)
   // 1 thread: 10.4979 s
@@ -264,7 +263,7 @@ int OneSkeleton::buildEdgeList(
 template int OneSkeleton::buildEdgeList<3>(
   const SimplexId &vertexNumber,
   const CellArray &cellArray,
-  vector<std::array<SimplexId, 2>> &edgeList,
+  std::vector<std::array<SimplexId, 2>> &edgeList,
   FlatJaggedArray &edgeStars,
   std::vector<std::array<SimplexId, 3>> &cellEdgeList) const;
 
@@ -272,6 +271,6 @@ template int OneSkeleton::buildEdgeList<3>(
 template int OneSkeleton::buildEdgeList<6>(
   const SimplexId &vertexNumber,
   const CellArray &cellArray,
-  vector<std::array<SimplexId, 2>> &edgeList,
+  std::vector<std::array<SimplexId, 2>> &edgeList,
   FlatJaggedArray &edgeStars,
   std::vector<std::array<SimplexId, 6>> &cellEdgeList) const;
