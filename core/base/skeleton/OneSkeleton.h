@@ -79,7 +79,7 @@ namespace ttk {
     /// \param cellEdgeList Optional output for cell edges: per cell,
     /// the list of its edges identifiers
     /// \return Returns 0 upon success, negative values otherwise.
-    template <std::size_t n = 3>
+    template <std::size_t n>
     int buildEdgeList(const SimplexId &vertexNumber,
                       const CellArray &cellArray,
                       std::vector<std::array<SimplexId, 2>> *edgeList = nullptr,
