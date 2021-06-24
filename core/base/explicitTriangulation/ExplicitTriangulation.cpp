@@ -289,11 +289,11 @@ int ExplicitTriangulation::preconditionEdgesInternal() {
     oneSkeleton.setWrapper(this);
     // also computes edgeStar and triangleEdge / tetraEdge lists for free...
     if(getDimensionality() == 2) {
-      return oneSkeleton.buildEdgeList(vertexNumber_, *cellArray_, &edgeList_,
-                                       &edgeStarData_, &triangleEdgeList_);
+      return oneSkeleton.buildEdgeList(vertexNumber_, *cellArray_, edgeList_,
+                                       edgeStarData_, triangleEdgeList_);
     } else if(getDimensionality() == 3) {
-      return oneSkeleton.buildEdgeList(vertexNumber_, *cellArray_, &edgeList_,
-                                       &edgeStarData_, &tetraEdgeList_);
+      return oneSkeleton.buildEdgeList(
+        vertexNumber_, *cellArray_, edgeList_, edgeStarData_, tetraEdgeList_);
     }
   }
 
