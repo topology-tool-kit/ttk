@@ -97,7 +97,7 @@ int ttkStableManifoldPersistence::AttachPersistence(vtkDataSet *output) const {
       } else {
         sourceArray->GetTuple(i, &cellId);
       }
-      double persistence = simplex2persistence[(int)cellId];
+      double persistence = simplex2persistence_[(int)cellId];
       persistenceArray->SetTuple(i, &persistence);
     }
 
@@ -107,30 +107,25 @@ int ttkStableManifoldPersistence::AttachPersistence(vtkDataSet *output) const {
 
     persistenceArray->SetNumberOfTuples(vertexNumber);
 
-    // TODO: parallel
+#ifdef TTK_ENABLE_OPENMP
+#pragma omp parallel for num_threads(threadNumber_)
+#endif
     for(int i = 0; i < vertexNumber; i++) {
       int cellId = -1;
       double extremumId = -1;
       if(IsUnstable) {
         descendingManifoldArray->GetTuple(i, &extremumId);
-        cellId = min2simplex[(int)extremumId];
+        cellId = min2simplex_[(int)extremumId];
       } else {
         ascendingManifoldArray->GetTuple(i, &extremumId);
-        cellId = max2simplex[(int)extremumId];
+        cellId = max2simplex_[(int)extremumId];
       }
-      double persistence = simplex2persistence[(int)cellId];
+      double persistence = simplex2persistence_[(int)cellId];
       persistenceArray->SetTuple(i, &persistence);
     }
 
     output->GetPointData()->AddArray(persistenceArray);
   }
-
-  // TODO:
-  // size=number of vertices for d-dimensional things
-  //   persistenceArray->SetNumberOfTuples(stableManifold->GetNumberOfCells());
-
-  //   vtkDataArray *ascendingArray =
-  //     stableManifold->GetPointData();
 
   printMsg("Persistence attached!", 1, t.getElapsedTime(), threadNumber_);
 
@@ -144,7 +139,7 @@ int ttkStableManifoldPersistence::BuildSimplex2PersistenceMap(
 
   ttk::Timer t;
 
-  printMsg("Building critical persistence map...", 0, 0, threadNumber_,
+  printMsg("Building critical persistence map.", 0, 0, threadNumber_,
            ttk::debug::LineMode::REPLACE);
 
   vtkDataArray *criticalPointVertexIdArray
@@ -207,7 +202,7 @@ int ttkStableManifoldPersistence::BuildSimplex2PersistenceMap(
   }
 
   int maximumSimplexId = criticalCellIdArray->GetMaxNorm();
-  simplex2persistence.resize(maximumSimplexId + 1, -1);
+  simplex2persistence_.resize(maximumSimplexId + 1, -1);
 
   int criticalPointNumber = criticalCellIdArray->GetNumberOfTuples();
 #ifdef TTK_ENABLE_OPENMP
@@ -220,7 +215,7 @@ int ttkStableManifoldPersistence::BuildSimplex2PersistenceMap(
     double vertexId = -1;
     criticalPointVertexIdArray->GetTuple(i, &vertexId);
 
-    simplex2persistence[(int)cellId] = vertex2persistence[(int)vertexId];
+    simplex2persistence_[(int)cellId] = vertex2persistence[(int)vertexId];
   }
 
   // taking care of the maximum to simplex map
@@ -237,9 +232,8 @@ int ttkStableManifoldPersistence::BuildSimplex2PersistenceMap(
     else
       dimension = 1;
 
-    int minimumNumber = 0, maximumNumber = 0;
-    min2simplex.resize(maximumSimplexId + 1, -1);
-    max2simplex.resize(maximumSimplexId + 1, -1);
+    min2simplex_.clear();
+    max2simplex_.clear();
     for(int i = 0; i < criticalPointNumber; i++) {
       double cellId = -1;
       double criticalSimplexDimension = -1;
@@ -247,13 +241,10 @@ int ttkStableManifoldPersistence::BuildSimplex2PersistenceMap(
       criticalCellIdArray->GetTuple(i, &cellId);
       if(criticalSimplexDimension == 0) {
         // minimum
-        min2simplex[(int)cellId] = minimumNumber;
-        minimumNumber++;
+        min2simplex_.push_back(cellId);
       } else if(criticalSimplexDimension == dimension) {
         // maximum
-        max2simplex[(int)cellId] = maximumNumber;
-        maximumNumber++;
-        // TODO: debug here
+        max2simplex_.push_back(cellId);
       }
     }
   }
@@ -289,8 +280,6 @@ int ttkStableManifoldPersistence::RequestData(
   if(ret)
     return ret;
 
-  // TODO: parallelism
-  // TODO: improve above messages (with 100% 0 to 100)
   // TODO: documentation
 
   printMsg("Stable manifold total time", 1, t.getElapsedTime(), threadNumber_);

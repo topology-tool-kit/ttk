@@ -72,8 +72,8 @@ protected:
 private:
   bool IsUnstable{false};
 
-  std::vector<int> max2simplex, min2simplex;
-  std::vector<double> simplex2persistence;
+  std::vector<int> max2simplex_, min2simplex_;
+  std::vector<double> simplex2persistence_;
 
   int AttachPersistence(vtkDataSet *output) const;
 
