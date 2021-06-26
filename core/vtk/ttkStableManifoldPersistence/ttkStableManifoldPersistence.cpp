@@ -280,6 +280,8 @@ int ttkStableManifoldPersistence::RequestData(
   if(ret)
     return ret;
 
+  // TODO: make an absolute version
+  //  - color all separatrices on the path to the paired critical point
   // TODO: documentation
 
   printMsg("Stable manifold total time", 1, t.getElapsedTime(), threadNumber_);
