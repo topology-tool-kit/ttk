@@ -55,24 +55,23 @@ int ttk::EigenField::execute(const TriangulationType &triangulation,
   }
 
   Spectra::SparseSymMatProd<T> op(lap);
-  Spectra::SymEigsSolver<T, Spectra::LARGEST_ALGE, decltype(op)> solver(
-    &op, m, 2 * m);
+  Spectra::SymEigsSolver<decltype(op)> solver(op, m, 2 * m);
 
   solver.init();
 
   // number of eigenpairs correctly computed
-  int nconv = solver.compute();
+  int nconv = solver.compute(Spectra::SortRule::LargestAlge);
 
   switch(solver.info()) {
-    case Spectra::COMPUTATION_INFO::NUMERICAL_ISSUE:
+    case Spectra::CompInfo::NumericalIssue:
       this->printMsg("Numerical Issue!", ttk::debug::Priority::ERROR);
       break;
-    case Spectra::COMPUTATION_INFO::NOT_CONVERGING:
+    case Spectra::CompInfo::NotConverging:
       this->printMsg("No Convergence! (" + std::to_string(nconv) + " out of "
                        + std::to_string(eigenNumber) + " values computed)",
                      ttk::debug::Priority::ERROR);
       break;
-    case Spectra::COMPUTATION_INFO::NOT_COMPUTED:
+    case Spectra::CompInfo::NotComputed:
       this->printMsg("Invalid Input!", ttk::debug::Priority::ERROR);
       break;
     default:
