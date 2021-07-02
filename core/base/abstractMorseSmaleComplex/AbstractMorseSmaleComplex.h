@@ -656,13 +656,8 @@ int ttk::AbstractMorseSmaleComplex::setSeparatrices1(
 
     // get boundary condition
     const auto onBoundary
-      = saddleConnector
-          ? static_cast<char>(
-            discreteGradient_.isBoundary(src, triangulation)
-            && discreteGradient_.isBoundary(dst, triangulation))
-          : static_cast<char>(discreteGradient_.isBoundary(src, triangulation))
-              + static_cast<char>(
-                discreteGradient_.isBoundary(dst, triangulation));
+      = static_cast<char>(discreteGradient_.isBoundary(src, triangulation))
+        + static_cast<char>(discreteGradient_.isBoundary(dst, triangulation));
 
     for(size_t j = 0; j < sepGeom.size(); ++j) {
       const auto &cell = sepGeom[j];

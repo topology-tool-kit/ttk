@@ -26,22 +26,15 @@ jobs:
       CLANG_FORMAT: clang-format-11
     steps:
     - uses: actions/checkout@v2
+
     - name: Install latest clang-format
       run: |
         sudo apt update
         sudo apt install -y $CLANG_FORMAT
+
     - name: Use clang-format to detect formatting issues
       run: |
         git ls-files | grep -E "\.cpp$|\.cxx$|\.h$|\.hpp$" | xargs $CLANG_FORMAT -n -Werror
-
-
-  # ------------- #
-  # Code lint job #
-  # ------------- #
-  lint-code:
-    runs-on: ubuntu-20.04
-    steps:
-    - uses: actions/checkout@v2
 
     - name: Check line endings (Unix rather than DOS)
       run: |
@@ -65,9 +58,35 @@ jobs:
       run: |
         ! git ls-files | xargs file | grep empty
 
+    - name: Check for VTK includes in the base layer
+      run: |
+        ! git ls-files \
+          | grep "core/base" \
+          | grep -E "\.cpp$|\.cxx$|\.h$|\.hpp$" \
+          | xargs grep -e "^#include.*vtk"
+
+
+  # ------------- #
+  # Code lint job #
+  # ------------- #
+  lint-code:
+    runs-on: ubuntu-20.04
+    env:
+      CLANG_TIDY: clang-tidy-11
+    strategy:
+      matrix:
+        config:
+          - {tidy: true, sa: false}
+          - {tidy: false, sa: true}
+
+    steps:
+    - uses: actions/checkout@v2
+
     - name: Install Ubuntu dependencies
       run: |
         sudo apt update
+        # workaround: remove GCC 11
+        sudo apt purge gcc-11 libgcc-11-dev libgfortran-11-dev libstdc++-11-dev
         # TTK dependencies
         sudo apt install -y \
           libboost-system-dev \
@@ -77,7 +96,7 @@ jobs:
           graphviz \
           python3-sklearn \
           zlib1g-dev \
-          clang-tidy
+          $CLANG_TIDY
 
     - uses: dsaltares/fetch-gh-release-asset@0.0.5
       with:
@@ -102,11 +121,20 @@ jobs:
           $GITHUB_WORKSPACE
 
     - name: Use clang-tidy to lint code [NOT ENFORCED]
+      if: matrix.config.tidy
       run: |
         git ls-files \
         | grep core \
         | grep -E "\.cpp$|\.cxx$" \
-        | xargs -n1 clang-tidy -p build 2> /dev/null
+        | xargs -n1 $CLANG_TIDY -p build 2> /dev/null
+
+    - name: Use Clang static analyzer [NOT ENFORCED]
+      if: matrix.config.sa
+      run: |
+        git ls-files \
+        | grep core \
+        | grep -E "\.cpp$|\.cxx$" \
+        | xargs -n1 -P2 $CLANG_TIDY -p build --checks="-*,clang-analyzer-*" 2> /dev/null
 
 
   # ----------------------- #
@@ -126,6 +154,8 @@ jobs:
     - name: Install Ubuntu dependencies
       run: |
         sudo apt update
+        # workaround: remove GCC 11
+        sudo apt purge gcc-11 libgcc-11-dev libgfortran-11-dev libstdc++-11-dev
         # TTK dependencies
         sudo apt install -y \
           libboost-system-dev \
@@ -135,7 +165,7 @@ jobs:
           graphviz \
           python3-sklearn \
           zlib1g-dev \
-          clang-tools
+          clang-tools-11
 
     - uses: dsaltares/fetch-gh-release-asset@0.0.5
       with:
@@ -167,4 +197,4 @@ jobs:
         git ls-files \
         | grep core \
         | grep -E "\.cpp$|\.cxx$" \
-        | xargs clang-check -p build --extra-arg=-Werror
+        | xargs clang-check-11 -p build --extra-arg=-Werror

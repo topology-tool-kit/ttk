@@ -41,7 +41,8 @@ meson build 					\
     -Dllvm=true					\
     -Ddri-drivers=				\
     -Dvulkan-drivers=			\
+	-Dswr-arches=avx			\
     -Dshared-glapi=true
 
-ninja -C build install
+ninja -v -C build install
 
