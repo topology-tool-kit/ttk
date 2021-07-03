@@ -82,7 +82,7 @@ int ttk::JacobiSet::execute(std::vector<std::pair<SimplexId, char>> &jacobiSet,
 #endif
     for(int i = 0; i < (int)jacobiSet.size(); i++) {
       int edgeId = jacobiSet[i].first;
-      int vertexId0 = -1, vertexId1 = -1;
+      SimplexId vertexId0 = -1, vertexId1 = -1;
       triangulation.getEdgeVertex(edgeId, 0, vertexId0);
       triangulation.getEdgeVertex(edgeId, 1, vertexId1);
       double denominator = vField[vertexId1] - vField[vertexId0];
