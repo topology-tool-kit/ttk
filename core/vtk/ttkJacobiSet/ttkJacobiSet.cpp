@@ -46,7 +46,8 @@ int ttkJacobiSet::dispatch(const dataTypeU *const uField,
   ttkTemplateMacro(
     triangulation->getType(),
     this->execute(jacobiSet_, uField, vField,
-                  *static_cast<TTK_TT *>(triangulation->getData())));
+                  *static_cast<TTK_TT *>(triangulation->getData()),
+                  &isPareto_));
   return 0;
 }
 
@@ -111,6 +112,11 @@ int ttkJacobiSet::RequestData(vtkInformation *request,
   edgeTypes->SetNumberOfTuples(2 * jacobiSet_.size());
   edgeTypes->SetName("Critical Type");
 
+  vtkNew<vtkSignedCharArray> isPareto{};
+  isPareto->SetNumberOfComponents(1);
+  isPareto->SetNumberOfTuples(2 * jacobiSet_.size());
+  isPareto->SetName("IsPareto");
+
   vtkNew<vtkPoints> pointSet{};
   pointSet->SetNumberOfPoints(2 * jacobiSet_.size());
 
@@ -130,12 +136,15 @@ int ttkJacobiSet::RequestData(vtkInformation *request,
     input->GetPoint(vertexId0, p.data());
     pointSet->SetPoint(pointCount, p.data());
     edgeTypes->SetTuple1(pointCount, (float)jacobiSet_[i].second);
+    isPareto->SetTuple1(pointCount, (float)isPareto_[i]);
+
     idList->SetId(0, pointCount);
     pointCount++;
 
     input->GetPoint(vertexId1, p.data());
     pointSet->SetPoint(pointCount, p.data());
     edgeTypes->SetTuple1(pointCount, (float)jacobiSet_[i].second);
+    isPareto->SetTuple1(pointCount, (float)isPareto_[i]);
     idList->SetId(1, pointCount);
     pointCount++;
 
@@ -144,6 +153,7 @@ int ttkJacobiSet::RequestData(vtkInformation *request,
   output->SetPoints(pointSet);
   output->SetCells(VTK_LINE, cellArray);
   output->GetPointData()->AddArray(edgeTypes);
+  output->GetPointData()->AddArray(isPareto);
 
   if(EdgeIds) {
     vtkNew<ttkSimplexIdTypeArray> edgeIdArray{};

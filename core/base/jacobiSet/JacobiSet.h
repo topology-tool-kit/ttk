@@ -40,7 +40,8 @@ namespace ttk {
     int execute(std::vector<std::pair<SimplexId, char>> &jacobiSet,
                 const dataTypeU *const uField,
                 const dataTypeV *const vField,
-                const triangulationType &triangulation);
+                const triangulationType &triangulation,
+                std::vector<char> *isPareto = NULL);
 
     template <class dataTypeU, class dataTypeV, typename triangulationType>
     char getCriticalType(const SimplexId &edgeId,
