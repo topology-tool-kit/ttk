@@ -139,14 +139,14 @@ jobs:
 
     - name: Run ttk-data states
       id: validate
-      shell: bash
+      continue-on-error: true
       run: |
         cd ttk-data/tests
         mkdir output_screenshots
         python3 -u validate.py || (tar zcf screenshots.tar.gz output_screenshots && false)
 
     - name: Upload result screenshots
-      if: steps.validate.outputs.exit_code == 1
+      if: steps.validate.outcome == 'failure'
       uses: actions/upload-artifact@v2
       with:
         name: screenshots-${{ matrix.os }}.tar.gz
