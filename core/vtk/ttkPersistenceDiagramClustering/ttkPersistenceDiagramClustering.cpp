@@ -45,7 +45,7 @@ void outputClusteredDiagrams(
   vtkMultiBlockDataSet *output,
   const std::vector<vtkUnstructuredGrid *> &inputDiags,
   const std::vector<int> &inv_clustering,
-  const DisplayMethod dm,
+  const enum DisplayMethodType dm,
   const double spacing,
   const double max_persistence) {
 
@@ -55,7 +55,7 @@ void outputClusteredDiagrams(
   std::vector<int> clustSize{};
 
   // prep work for displaying diagrams as cluster stars
-  if(dm == DisplayMethod::STARS) {
+  if(dm == DisplayMethodType::STARS) {
     // total number of clusters
     const auto nClusters
       = 1 + *std::max_element(inv_clustering.begin(), inv_clustering.end());
@@ -79,7 +79,7 @@ void outputClusteredDiagrams(
     clusterId->Fill(inv_clustering[i]);
     diag->GetPointData()->AddArray(clusterId);
 
-    if(dm == DisplayMethod::MATCHINGS && spacing > 0) {
+    if(dm == DisplayMethodType::MATCHINGS && spacing > 0) {
       // translate diagrams along the Z axis
       vtkNew<vtkTransform> tr{};
       tr->Translate(0, 0, i == 0 ? -spacing : spacing);
@@ -88,7 +88,7 @@ void outputClusteredDiagrams(
       trf->SetInputData(diag);
       trf->Update();
       output->SetBlock(i, trf->GetOutputDataObject(0));
-    } else if(dm == DisplayMethod::STARS && spacing > 0) {
+    } else if(dm == DisplayMethodType::STARS && spacing > 0) {
       const auto c = inv_clustering[i];
       const auto angle = 2.0 * M_PI * static_cast<double>(diagIdInClust[i])
                          / static_cast<double>(clustSize[c]);
@@ -112,9 +112,8 @@ void outputClusteredDiagrams(
 
 void outputCentroids(
   vtkMultiBlockDataSet *output,
-  std::vector<std::vector<ttkPersistenceDiagramClustering::diagramType>>
-    &final_centroids,
-  const DisplayMethod dm,
+  std::vector<ttkPersistenceDiagramClustering::diagramType> &final_centroids,
+  const DisplayMethodType dm,
   const double spacing,
   const double max_persistence) {
 
@@ -193,7 +192,7 @@ void outputCentroids(
       critType->SetTuple1(2 * j + 1, static_cast<int>(deathType));
 
       auto birthShift{birth};
-      if(dm == DisplayMethod::STARS && spacing > 0) {
+      if(dm == DisplayMethodType::STARS && spacing > 0) {
         // shift diagram along the X axis
         birthShift += 3.0 * (spacing + 0.2) * max_persistence * i;
       }
@@ -303,10 +302,10 @@ int ttkPersistenceDiagramClustering::RequestData(
   output_matchings->ShallowCopy(createMatchings());
 
   outputClusteredDiagrams(output_clusters, input, this->inv_clustering_,
-                          static_cast<enum DisplayMethod>(this->DisplayMethod),
+                          static_cast<enum DisplayMethodType>(this->DisplayMethod),
                           this->Spacing, this->max_dimension_total_);
   outputCentroids(output_centroids, this->final_centroids_,
-                  static_cast<enum DisplayMethod>(this->DisplayMethod),
+                  static_cast<enum DisplayMethodType>(this->DisplayMethod),
                   this->Spacing, this->max_dimension_total_);
 
   // collect input FieldData to annotate outputClusters
@@ -336,8 +335,7 @@ int ttkPersistenceDiagramClustering::RequestData(
 }
 
 double ttkPersistenceDiagramClustering::getPersistenceDiagram(
-  std::vector<diagramType> &diagram,
-  vtkUnstructuredGrid *CTPersistenceDiagram_) {
+  diagramType &diagram, vtkUnstructuredGrid *CTPersistenceDiagram_) {
   vtkIntArray *vertexIdentifierScalars
     = vtkIntArray::SafeDownCast(CTPersistenceDiagram_->GetPointData()->GetArray(
       ttk::VertexScalarFieldName));
@@ -559,12 +557,12 @@ vtkNew<vtkUnstructuredGrid> ttkPersistenceDiagramClustering::createMatchings() {
         count_to_good.push_back(good_id);
       }
 
-      diagramType t1 = final_centroids_[c][good_id];
+      pairTuple t1 = final_centroids_[c][good_id];
       double x1 = std::get<6>(t1);
       double y1 = std::get<10>(t1);
       double z1 = 0;
 
-      diagramType t2 = diagram[bidder_id];
+      pairTuple t2 = diagram[bidder_id];
       double x2 = std::get<6>(t2);
       double y2 = std::get<10>(t2);
       double z2 = 0; // Change 1 to j if you want to isolate the diagrams

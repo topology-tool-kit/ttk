@@ -43,7 +43,7 @@
 #include <PersistenceDiagramClustering.h>
 #include <ttkAlgorithm.h>
 
-enum class DisplayMethod {
+enum class DisplayMethodType {
   COMPACT = 0,
   STARS = 1,
   MATCHINGS = 2,
@@ -146,27 +146,29 @@ public:
   vtkSetMacro(Method, double);
   vtkGetMacro(Method, double);
 
-  using diagramType = std::tuple<ttk::SimplexId,
-                                 ttk::CriticalType,
-                                 ttk::SimplexId,
-                                 ttk::CriticalType,
-                                 double,
-                                 ttk::SimplexId,
-                                 double,
-                                 float,
-                                 float,
-                                 float,
-                                 double,
-                                 float,
-                                 float,
-                                 float>;
-
+  // TODO: CONVERT TO A STRUCT!
+  using pairTuple = std::tuple<ttk::SimplexId, // birth vertex id
+                               ttk::CriticalType, // birth critical type
+                               ttk::SimplexId, // death vertex id
+                               ttk::CriticalType, // death critical type
+                               double, // persistence
+                               ttk::SimplexId, // pair dimension
+                               double, // birth scalar field value
+                               float,
+                               float,
+                               float, // birth vertex 3D coordinates
+                               double, // death scalar field value
+                               float,
+                               float,
+                               float // death vertex 3D coordinates
+                               >;
+  using diagramType = std::vector<pairTuple>;
   using matchingType = std::tuple<ttk::SimplexId, ttk::SimplexId, double>;
 
 protected:
   ttkPersistenceDiagramClustering();
 
-  double getPersistenceDiagram(std::vector<diagramType> &diagram,
+  double getPersistenceDiagram(diagramType &diagram,
                                vtkUnstructuredGrid *CTPersistenceDiagram_);
 
   int FillInputPortInformation(int port, vtkInformation *info) override;
@@ -180,9 +182,9 @@ protected:
                   vtkInformationVector *outputVector) override;
 
 private:
-  std::vector<std::vector<diagramType>> intermediateDiagrams_{};
+  std::vector<diagramType> intermediateDiagrams_{};
   std::vector<std::vector<std::vector<matchingType>>> all_matchings_{};
-  std::vector<std::vector<diagramType>> final_centroids_{};
+  std::vector<diagramType> final_centroids_{};
   std::vector<int> inv_clustering_{};
 
   double Spacing{1.0};
