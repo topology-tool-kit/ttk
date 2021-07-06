@@ -43,6 +43,12 @@
 #include <PersistenceDiagramClustering.h>
 #include <ttkAlgorithm.h>
 
+enum class DisplayMethod {
+  COMPACT = 0,
+  STARS = 1,
+  MATCHINGS = 2,
+};
+
 class TTKPERSISTENCEDIAGRAMCLUSTERING_EXPORT ttkPersistenceDiagramClustering
   : public ttkAlgorithm,
     protected ttk::PersistenceDiagramClustering {
@@ -168,7 +174,6 @@ protected:
   void Modified() override;
 
   vtkNew<vtkUnstructuredGrid> createMatchings();
-  vtkNew<vtkUnstructuredGrid> createOutputClusteredDiagrams();
   vtkNew<vtkUnstructuredGrid> createOutputCentroids();
 
   int RequestData(vtkInformation *request,
