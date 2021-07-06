@@ -17,19 +17,7 @@
 
 #pragma once
 
-#ifndef diagramTuple
-#define diagramTuple                                                       \
-  std::tuple<ttk::SimplexId, ttk::CriticalType, ttk::SimplexId,            \
-             ttk::CriticalType, dataType, ttk::SimplexId, dataType, float, \
-             float, float, dataType, float, float, float>
-#endif
-
-#define BLocalMax ttk::CriticalType::Local_maximum
-#define BLocalMin ttk::CriticalType::Local_minimum
-#define BSaddle1 ttk::CriticalType::Saddle1
-#define BSaddle2 ttk::CriticalType::Saddle2
-
-// VTK includes -- to adapt
+// VTK includes
 #include <vtkCellData.h>
 #include <vtkCharArray.h>
 #include <vtkDataArray.h>
@@ -50,10 +38,9 @@
 // VTK Module
 #include <ttkPersistenceDiagramClusteringModule.h>
 
-// ttk code includes
+// TTK includes
 #include <PersistenceDiagramBarycenter.h>
 #include <PersistenceDiagramClustering.h>
-
 #include <ttkAlgorithm.h>
 
 class TTKPERSISTENCEDIAGRAMCLUSTERING_EXPORT ttkPersistenceDiagramClustering
@@ -76,7 +63,6 @@ public:
 
   void SetAlpha(double data) {
     if(data > 0 && data <= 1) {
-
       Alpha = data;
     } else if(data > 1) {
       Alpha = 1;
@@ -140,7 +126,6 @@ public:
       needUpdate_ = false;
     }
   }
-
   vtkGetMacro(DisplayMethod, bool);
 
   vtkSetMacro(UseAdditionalPrecision, bool);
