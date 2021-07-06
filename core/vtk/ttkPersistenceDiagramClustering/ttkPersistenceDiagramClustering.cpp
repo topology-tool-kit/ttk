@@ -313,7 +313,7 @@ double ttkPersistenceDiagramClustering::getPersistenceDiagram(
   return max_dimension;
 }
 
-vtkSmartPointer<vtkUnstructuredGrid>
+vtkNew<vtkUnstructuredGrid>
   ttkPersistenceDiagramClustering::createOutputCentroids() {
   this->printMsg("Creating vtk diagrams", debug::Priority::VERBOSE);
   vtkNew<vtkPoints> points{};
@@ -466,7 +466,7 @@ vtkSmartPointer<vtkUnstructuredGrid>
   return persistenceDiagram;
 }
 
-vtkSmartPointer<vtkUnstructuredGrid>
+vtkNew<vtkUnstructuredGrid>
   ttkPersistenceDiagramClustering::createOutputClusteredDiagrams() {
   this->printMsg("Creating vtk outputs", debug::Priority::VERBOSE);
   vtkNew<vtkPoints> points{};
@@ -665,8 +665,7 @@ vtkSmartPointer<vtkUnstructuredGrid>
   return persistenceDiagram;
 }
 
-vtkSmartPointer<vtkUnstructuredGrid>
-  ttkPersistenceDiagramClustering::createMatchings() {
+vtkNew<vtkUnstructuredGrid> ttkPersistenceDiagramClustering::createMatchings() {
   this->printMsg("Creating vtk matchings", debug::Priority::VERBOSE);
   vtkNew<vtkPoints> matchingPoints{};
 

@@ -45,7 +45,6 @@
 #include <vtkNew.h>
 #include <vtkObjectFactory.h>
 #include <vtkPointData.h>
-#include <vtkSmartPointer.h>
 #include <vtkUnstructuredGrid.h>
 
 // VTK Module
@@ -183,9 +182,9 @@ protected:
   int FillOutputPortInformation(int port, vtkInformation *info) override;
   void Modified() override;
 
-  vtkSmartPointer<vtkUnstructuredGrid> createMatchings();
-  vtkSmartPointer<vtkUnstructuredGrid> createOutputClusteredDiagrams();
-  vtkSmartPointer<vtkUnstructuredGrid> createOutputCentroids();
+  vtkNew<vtkUnstructuredGrid> createMatchings();
+  vtkNew<vtkUnstructuredGrid> createOutputClusteredDiagrams();
+  vtkNew<vtkUnstructuredGrid> createOutputCentroids();
 
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,
