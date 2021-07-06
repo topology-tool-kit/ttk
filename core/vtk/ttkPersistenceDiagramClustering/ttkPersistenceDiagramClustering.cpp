@@ -35,20 +35,20 @@ void ttkPersistenceDiagramClustering::Modified() {
   ttkAlgorithm::Modified();
 }
 
-// to adapt if your wrapper does not inherit from vtkDataSetAlgorithm
 int ttkPersistenceDiagramClustering::RequestData(
-  vtkInformation * /*request*/,
+  vtkInformation *request,
   vtkInformationVector **inputVector,
   vtkInformationVector *outputVector) {
+
   Memory m;
 
-  // // Number of input files
-  int numInputs = 0; // numberOfInputsFromCommandLine;
+  auto blocks = vtkMultiBlockDataSet::GetData(inputVector[0], 0);
 
-  // Get input data
+  // Flat storage for diagrams extracted from blocks
   std::vector<vtkUnstructuredGrid *> input;
 
-  auto blocks = vtkMultiBlockDataSet::GetData(inputVector[0], 0);
+  // Number of input diagrams
+  int numInputs = 0;
 
   if(blocks != nullptr) {
     numInputs = blocks->GetNumberOfBlocks();
@@ -61,13 +61,10 @@ int ttkPersistenceDiagramClustering::RequestData(
     }
   }
 
-  // Set outputs
-  auto output_clusters = vtkUnstructuredGrid::SafeDownCast(
-    outputVector->GetInformationObject(0)->Get(vtkDataObject::DATA_OBJECT()));
-  auto output_centroids = vtkUnstructuredGrid::SafeDownCast(
-    outputVector->GetInformationObject(1)->Get(vtkDataObject::DATA_OBJECT()));
-  auto output_matchings = vtkUnstructuredGrid::SafeDownCast(
-    outputVector->GetInformationObject(2)->Get(vtkDataObject::DATA_OBJECT()));
+  // Get output pointers
+  auto output_clusters = vtkUnstructuredGrid::GetData(outputVector, 0);
+  auto output_centroids = vtkUnstructuredGrid::GetData(outputVector, 1);
+  auto output_matchings = vtkUnstructuredGrid::GetData(outputVector, 2);
 
   if(needUpdate_) {
     // clear data before computation
@@ -88,46 +85,38 @@ int ttkPersistenceDiagramClustering::RequestData(
     }
 
     if(Method == 0) {
-      // Progressive approach
-      // PersistenceDiagramClustering persistenceDiagramsClustering;
-      // persistenceDiagramsClustering.setWrapper(this);
 
+      // Progressive approach
       if(!UseInterruptible) {
         TimeLimit = 999999999;
       }
 
       inv_clustering_ = this->execute<double>(
         intermediateDiagrams_, final_centroids_, all_matchings_);
-
       needUpdate_ = false;
-    }
 
-    else {
+    } else {
+
       // AUCTION APPROACH
       final_centroids_.resize(1);
       inv_clustering_.resize(numInputs);
       for(int i_input = 0; i_input < numInputs; i_input++) {
         inv_clustering_[i_input] = 0;
       }
-      PersistenceDiagramBarycenter<double> persistenceDiagramsBarycenter;
-      // persistenceDiagramsBarycenter.setWrapper(this);
+      PersistenceDiagramBarycenter<double> pdBarycenter;
 
-      std::string wassersteinMetric = std::to_string(WassersteinMetric);
-      persistenceDiagramsBarycenter.setWasserstein(wassersteinMetric);
-      persistenceDiagramsBarycenter.setMethod(2);
-      persistenceDiagramsBarycenter.setNumberOfInputs(numInputs);
-      persistenceDiagramsBarycenter.setTimeLimit(TimeLimit);
-      persistenceDiagramsBarycenter.setDeterministic(Deterministic);
-      persistenceDiagramsBarycenter.setUseProgressive(UseProgressive);
-      persistenceDiagramsBarycenter.setDebugLevel(debugLevel_);
-      persistenceDiagramsBarycenter.setThreadNumber(threadNumber_);
-      persistenceDiagramsBarycenter.setAlpha(Alpha);
-      persistenceDiagramsBarycenter.setLambda(Lambda);
-      // persistenceDiagramsBarycenter.setReinitPrices(ReinitPrices);
-      // persistenceDiagramsBarycenter.setEpsilonDecreases(EpsilonDecreases);
-      // persistenceDiagramsBarycenter.setEarlyStoppage(EarlyStoppage);
-
-      persistenceDiagramsBarycenter.execute(
+      const auto wassersteinMetric = std::to_string(WassersteinMetric);
+      pdBarycenter.setWasserstein(wassersteinMetric);
+      pdBarycenter.setMethod(2);
+      pdBarycenter.setNumberOfInputs(numInputs);
+      pdBarycenter.setTimeLimit(TimeLimit);
+      pdBarycenter.setDeterministic(Deterministic);
+      pdBarycenter.setUseProgressive(UseProgressive);
+      pdBarycenter.setDebugLevel(debugLevel_);
+      pdBarycenter.setThreadNumber(threadNumber_);
+      pdBarycenter.setAlpha(Alpha);
+      pdBarycenter.setLambda(Lambda);
+      pdBarycenter.execute(
         intermediateDiagrams_, final_centroids_[0], all_matchings_);
 
       needUpdate_ = false;
