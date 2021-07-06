@@ -146,9 +146,6 @@ public:
   vtkSetMacro(Method, double);
   vtkGetMacro(Method, double);
 
-protected:
-  ttkPersistenceDiagramClustering();
-
   using diagramType = std::tuple<ttk::SimplexId,
                                  ttk::CriticalType,
                                  ttk::SimplexId,
@@ -166,6 +163,9 @@ protected:
 
   using matchingType = std::tuple<ttk::SimplexId, ttk::SimplexId, double>;
 
+protected:
+  ttkPersistenceDiagramClustering();
+
   double getPersistenceDiagram(std::vector<diagramType> &diagram,
                                vtkUnstructuredGrid *CTPersistenceDiagram_);
 
@@ -174,7 +174,6 @@ protected:
   void Modified() override;
 
   vtkNew<vtkUnstructuredGrid> createMatchings();
-  vtkNew<vtkUnstructuredGrid> createOutputCentroids();
 
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,

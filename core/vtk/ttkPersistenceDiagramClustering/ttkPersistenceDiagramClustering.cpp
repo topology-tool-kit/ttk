@@ -26,9 +26,9 @@ int ttkPersistenceDiagramClustering::FillInputPortInformation(
 
 int ttkPersistenceDiagramClustering::FillOutputPortInformation(
   int port, vtkInformation *info) {
-  if(port == 0) {
+  if(port == 0 || port == 1) {
     info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkMultiBlockDataSet");
-  } else if(port == 1 || port == 2) {
+  } else if(port == 2) {
     info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
   } else {
     return 0;
@@ -110,6 +110,108 @@ void outputClusteredDiagrams(
   }
 }
 
+void outputCentroids(
+  vtkMultiBlockDataSet *output,
+  std::vector<std::vector<ttkPersistenceDiagramClustering::diagramType>>
+    &final_centroids,
+  const DisplayMethod dm,
+  const double spacing,
+  const double max_persistence) {
+
+  for(size_t i = 0; i < final_centroids.size(); ++i) {
+    const auto &bary{final_centroids[i]};
+
+    const auto nPoints = 2 * bary.size();
+    vtkNew<vtkPoints> points{};
+    points->SetNumberOfPoints(nPoints);
+
+    vtkNew<vtkUnstructuredGrid> diagram{};
+    diagram->SetPoints(points);
+
+    // point data
+    vtkNew<vtkIntArray> critType{};
+    critType->SetName("CriticalType");
+    critType->SetNumberOfTuples(nPoints);
+    diagram->GetPointData()->AddArray(critType);
+
+    vtkNew<vtkIntArray> clusterId{};
+    clusterId->SetName("ClusterID");
+    clusterId->SetNumberOfTuples(nPoints);
+    clusterId->Fill(i);
+    diagram->GetPointData()->AddArray(clusterId);
+
+    vtkNew<vtkFloatArray> coords{};
+    coords->SetNumberOfComponents(3);
+    coords->SetName("Coordinates");
+    coords->SetNumberOfTuples(nPoints);
+    diagram->GetPointData()->AddArray(coords);
+
+    vtkNew<vtkDoubleArray> pointPers{};
+    pointPers->SetName("Persistence");
+    pointPers->SetNumberOfTuples(nPoints);
+    diagram->GetPointData()->AddArray(pointPers);
+
+    // cell data
+    vtkNew<vtkIntArray> pairId{};
+    pairId->SetName("PairID");
+    pairId->SetNumberOfTuples(bary.size());
+    diagram->GetCellData()->AddArray(pairId);
+
+    vtkNew<vtkIntArray> pairType{};
+    pairType->SetName("PairType");
+    pairType->SetNumberOfTuples(bary.size());
+    diagram->GetCellData()->AddArray(pairType);
+
+    vtkNew<vtkDoubleArray> pairPers{};
+    pairPers->SetName("Persistence");
+    pairPers->SetNumberOfTuples(bary.size());
+    diagram->GetCellData()->AddArray(pairPers);
+
+    for(size_t j = 0; j < bary.size(); ++j) {
+      const auto &pair{bary[j]};
+      const auto birth{std::get<6>(pair)};
+      const auto death{std::get<10>(pair)};
+      const auto pType{std::get<5>(pair)};
+      const auto birthType{std::get<1>(pair)};
+      const auto deathType{std::get<3>(pair)};
+      std::array<float, 3> coordsBirth{
+        std::get<7>(pair), std::get<8>(pair), std::get<9>(pair)};
+      std::array<float, 3> coordsDeath{
+        std::get<11>(pair), std::get<12>(pair), std::get<13>(pair)};
+
+      // cell data
+      pairId->SetTuple1(j, j);
+      pairType->SetTuple1(j, pType);
+      pairPers->SetTuple1(j, death - birth);
+
+      // point data
+      coords->SetTuple(2 * j + 0, coordsBirth.data());
+      coords->SetTuple(2 * j + 1, coordsDeath.data());
+      pointPers->SetTuple1(2 * j + 0, death - birth);
+      pointPers->SetTuple1(2 * j + 1, death - birth);
+      critType->SetTuple1(2 * j + 0, static_cast<int>(birthType));
+      critType->SetTuple1(2 * j + 1, static_cast<int>(deathType));
+
+      auto birthShift{birth};
+      if(dm == DisplayMethod::STARS && spacing > 0) {
+        // shift diagram along the X axis
+        birthShift += 3.0 * (spacing + 0.2) * max_persistence * i;
+      }
+      points->SetPoint(2 * j + 0, birthShift, birth, 0);
+      points->SetPoint(2 * j + 1, birthShift, death, 0);
+
+      const std::array<vtkIdType, 2> ids{
+        2 * static_cast<vtkIdType>(j) + 0,
+        2 * static_cast<vtkIdType>(j) + 1,
+      };
+      diagram->InsertNextCell(VTK_LINE, 2, ids.data());
+    }
+
+    // attach barycenter diagram to multi-block output
+    output->SetBlock(i, diagram);
+  }
+}
+
 int ttkPersistenceDiagramClustering::RequestData(
   vtkInformation *request,
   vtkInformationVector **inputVector,
@@ -138,7 +240,7 @@ int ttkPersistenceDiagramClustering::RequestData(
 
   // Get output pointers
   auto output_clusters = vtkMultiBlockDataSet::GetData(outputVector, 0);
-  auto output_centroids = vtkUnstructuredGrid::GetData(outputVector, 1);
+  auto output_centroids = vtkMultiBlockDataSet::GetData(outputVector, 1);
   auto output_matchings = vtkUnstructuredGrid::GetData(outputVector, 2);
 
   if(needUpdate_) {
@@ -199,11 +301,13 @@ int ttkPersistenceDiagramClustering::RequestData(
   }
 
   output_matchings->ShallowCopy(createMatchings());
-  output_centroids->ShallowCopy(createOutputCentroids());
 
   outputClusteredDiagrams(output_clusters, input, this->inv_clustering_,
                           static_cast<enum DisplayMethod>(this->DisplayMethod),
                           this->Spacing, this->max_dimension_total_);
+  outputCentroids(output_centroids, this->final_centroids_,
+                  static_cast<enum DisplayMethod>(this->DisplayMethod),
+                  this->Spacing, this->max_dimension_total_);
 
   // collect input FieldData to annotate outputClusters
   auto fd = output_clusters->GetFieldData();
@@ -378,159 +482,6 @@ double ttkPersistenceDiagramClustering::getPersistenceDiagram(
   }
 
   return max_dimension;
-}
-
-vtkNew<vtkUnstructuredGrid>
-  ttkPersistenceDiagramClustering::createOutputCentroids() {
-  this->printMsg("Creating vtk diagrams", debug::Priority::VERBOSE);
-  vtkNew<vtkPoints> points{};
-
-  vtkNew<vtkUnstructuredGrid> persistenceDiagram{};
-
-  vtkNew<vtkIntArray> nodeType{};
-  nodeType->SetName("CriticalType");
-
-  vtkNew<vtkDoubleArray> persistenceScalars{};
-  persistenceScalars->SetName("Persistence");
-
-  vtkNew<vtkIntArray> idOfPair{};
-  idOfPair->SetName("PairID");
-
-  vtkNew<vtkDoubleArray> persistenceScalarsPoint{};
-  persistenceScalarsPoint->SetName("Persistence");
-
-  vtkNew<vtkIntArray> idOfDiagramPoint{};
-  idOfDiagramPoint->SetName("ClusterID");
-
-  vtkNew<vtkIntArray> pairType{};
-  pairType->SetName("PairType");
-
-  vtkNew<vtkFloatArray> coordsScalars{};
-  coordsScalars->SetNumberOfComponents(3);
-  coordsScalars->SetName("Coordinates");
-
-  int count = 0;
-  for(unsigned int j = 0; j < final_centroids_.size(); ++j) {
-    const std::vector<diagramType> &diagram = final_centroids_[j];
-
-    // First, add diagram points to the global input diagram
-    for(unsigned int i = 0; i < diagram.size(); ++i) {
-      vtkIdType ids[2];
-      const diagramType &t = diagram[i];
-      double x1 = std::get<6>(t);
-      double y1 = x1;
-      if(DisplayMethod == 1 && Spacing != 0) {
-        x1 += 3 * (abs(Spacing) + 0.2) * max_dimension_total_ * j;
-      }
-      double z1 = 0; // Change 1 to j if you want to isolate the diagrams
-
-      float coords1[3];
-      coords1[0] = std::get<7>(t);
-      coords1[1] = std::get<8>(t);
-      coords1[2] = std::get<9>(t);
-
-      double x2 = std::get<6>(t);
-      double y2 = std::get<10>(t);
-      double z2 = 0; // Change 1 to j if you want to isolate the
-
-      float coords2[3];
-      coords2[0] = std::get<11>(t);
-      coords2[1] = std::get<12>(t);
-      coords2[2] = std::get<13>(t);
-
-      idOfPair->InsertTuple1(count, i);
-
-      points->InsertNextPoint(x1, y1, z1);
-      coordsScalars->InsertTuple3(
-        2 * count, coords1[0], coords1[1], coords1[2]);
-      idOfDiagramPoint->InsertTuple1(2 * count, j);
-      const ttk::CriticalType n1Type = std::get<1>(t);
-      switch(n1Type) {
-        case BLocalMin:
-          nodeType->InsertTuple1(2 * count, 0);
-          break;
-
-        case BSaddle1:
-          nodeType->InsertTuple1(2 * count, 1);
-          break;
-
-        case BSaddle2:
-          nodeType->InsertTuple1(2 * count, 2);
-          break;
-
-        case BLocalMax:
-          nodeType->InsertTuple1(2 * count, 3);
-          break;
-        default:
-          nodeType->InsertTuple1(2 * count, 0);
-      }
-      if(DisplayMethod == 1 && Spacing != 0) {
-        points->InsertNextPoint(
-          x2 + 3 * (abs(Spacing) + 0.2) * max_dimension_total_ * j, y2, z2);
-      } else {
-        points->InsertNextPoint(x2, y2, z2);
-      }
-      coordsScalars->InsertTuple3(
-        2 * count + 1, coords2[0], coords2[1], coords2[2]);
-      idOfDiagramPoint->InsertTuple1(2 * count + 1, j);
-      const ttk::CriticalType n2Type = std::get<3>(t);
-      switch(n2Type) {
-        case BLocalMin:
-          nodeType->InsertTuple1(2 * count + 1, 0);
-          break;
-
-        case BSaddle1:
-          nodeType->InsertTuple1(2 * count + 1, 1);
-          break;
-
-        case BSaddle2:
-          nodeType->InsertTuple1(2 * count + 1, 2);
-          break;
-
-        case BLocalMax:
-          nodeType->InsertTuple1(2 * count + 1, 3);
-          break;
-        default:
-          nodeType->InsertTuple1(2 * count + 1, 0);
-      }
-
-      ids[0] = 2 * count;
-      ids[1] = 2 * count + 1;
-
-      persistenceDiagram->InsertNextCell(VTK_LINE, 2, ids);
-      persistenceScalars->InsertTuple1(count, y2 - x2);
-      persistenceScalarsPoint->InsertTuple1(2 * count, y2 - x2);
-      persistenceScalarsPoint->InsertTuple1(2 * count + 1, y2 - x2);
-      const ttk::SimplexId type = std::get<5>(t);
-      switch(type) {
-        case 0:
-          pairType->InsertTuple1(count, 0);
-          break;
-
-        case 1:
-          pairType->InsertTuple1(count, 1);
-          break;
-
-        case 2:
-          pairType->InsertTuple1(count, 2);
-          break;
-        default:
-          pairType->InsertTuple1(count, 0);
-      }
-      count++;
-    }
-  }
-
-  persistenceDiagram->SetPoints(points);
-  persistenceDiagram->GetCellData()->AddArray(persistenceScalars);
-  persistenceDiagram->GetCellData()->AddArray(pairType);
-  persistenceDiagram->GetCellData()->AddArray(idOfPair);
-  persistenceDiagram->GetPointData()->AddArray(nodeType);
-  persistenceDiagram->GetPointData()->AddArray(coordsScalars);
-  persistenceDiagram->GetPointData()->AddArray(idOfDiagramPoint);
-  persistenceDiagram->GetPointData()->AddArray(persistenceScalarsPoint);
-
-  return persistenceDiagram;
 }
 
 vtkNew<vtkUnstructuredGrid> ttkPersistenceDiagramClustering::createMatchings() {
