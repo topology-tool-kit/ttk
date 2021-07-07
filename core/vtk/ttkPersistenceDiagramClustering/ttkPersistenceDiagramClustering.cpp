@@ -36,10 +36,8 @@ int ttkPersistenceDiagramClustering::FillInputPortInformation(
 
 int ttkPersistenceDiagramClustering::FillOutputPortInformation(
   int port, vtkInformation *info) {
-  if(port == 0 || port == 1) {
+  if(port == 0 || port == 1 || port == 2) {
     info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkMultiBlockDataSet");
-  } else if(port == 2) {
-    info->Set(vtkDataObject::DATA_TYPE_NAME(), "vtkUnstructuredGrid");
   } else {
     return 0;
   }
@@ -280,7 +278,7 @@ int ttkPersistenceDiagramClustering::RequestData(
   // Get output pointers
   auto output_clusters = vtkMultiBlockDataSet::GetData(outputVector, 0);
   auto output_centroids = vtkMultiBlockDataSet::GetData(outputVector, 1);
-  auto output_matchings = vtkUnstructuredGrid::GetData(outputVector, 2);
+  auto output_matchings = vtkMultiBlockDataSet::GetData(outputVector, 2);
 
   if(needUpdate_) {
     // clear data before computation
@@ -339,13 +337,15 @@ int ttkPersistenceDiagramClustering::RequestData(
     }
   }
 
-  output_matchings->ShallowCopy(createMatchings());
-
   outputClusteredDiagrams(output_clusters, this->intermediateDiagrams_,
                           this->inv_clustering_, this->DisplayMethod,
                           this->Spacing, this->max_dimension_total_);
   outputCentroids(output_centroids, this->final_centroids_, this->DisplayMethod,
                   this->Spacing, this->max_dimension_total_);
+  outputMatchings(
+    output_matchings, this->NumberOfClusters, this->intermediateDiagrams_,
+    this->all_matchings_, this->final_centroids_, this->inv_clustering_,
+    this->DisplayMethod, this->Spacing, this->max_dimension_total_);
 
   // collect input FieldData to annotate outputClusters
   auto fd = output_clusters->GetFieldData();
@@ -514,152 +514,157 @@ void ttkPersistenceDiagramClustering::VTUToDiagram(
   }
 }
 
-vtkNew<vtkUnstructuredGrid> ttkPersistenceDiagramClustering::createMatchings() {
-  this->printMsg("Creating vtk matchings", debug::Priority::VERBOSE);
-  vtkNew<vtkPoints> matchingPoints{};
+void ttkPersistenceDiagramClustering::outputMatchings(
+  vtkMultiBlockDataSet *output,
+  const size_t nClusters,
+  const std::vector<diagramType> &diags,
+  const std::vector<std::vector<std::vector<matchingType>>>
+    &matchingsPerCluster,
+  const std::vector<diagramType> &centroids,
+  const std::vector<int> &inv_clustering,
+  const DISPLAY dm,
+  const double spacing,
+  const double max_persistence) const {
 
-  vtkNew<vtkUnstructuredGrid> matchingMesh{};
+  // index of diagram in its cluster
+  std::vector<int> diagIdInClust{};
+  // number of diagrams per cluster
+  std::vector<int> clustSize{};
 
-  vtkNew<vtkIntArray> idOfDiagramMatchingPoint{};
-  idOfDiagramMatchingPoint->SetName("DiagramID");
-
-  vtkNew<vtkIntArray> idOfPoint{};
-  idOfPoint->SetName("PointID");
-
-  vtkNew<vtkIntArray> idOfDiagramMatching{};
-  idOfDiagramMatching->SetName("DiagramID");
-
-  vtkNew<vtkIntArray> idOfCluster{};
-  idOfCluster->SetName("ClusterID");
-
-  vtkNew<vtkDoubleArray> cost{};
-  cost->SetName("Cost");
-
-  vtkNew<vtkIntArray> pairType{};
-  pairType->SetName("PairType");
-
-  vtkNew<vtkIntArray> matchingCount{};
-  matchingCount->SetName("MatchNumber");
-
-  std::vector<int> cluster_size;
-  std::vector<int> idxInCluster(intermediateDiagrams_.size());
-
-  std::vector<int> matchings_count(final_centroids_[0].size(), 0);
-  std::vector<int> count_to_good;
-
-  for(unsigned int j = 0; j < intermediateDiagrams_.size(); ++j) {
-    idxInCluster[j] = 0;
-  }
-  // RE-Invert clusters
-  if(DisplayMethod == DISPLAY::STARS && Spacing > 0) {
-    for(unsigned int j = 0; j < intermediateDiagrams_.size(); ++j) {
-      unsigned int c = inv_clustering_[j];
-      if(c + 1 > cluster_size.size()) {
-        cluster_size.resize(c + 1);
-        cluster_size[c] = 1;
-        idxInCluster[j] = 0;
-      } else {
-        cluster_size[c]++;
-        idxInCluster[j] = cluster_size[c] - 1;
-      }
+  // prep work for displaying diagrams as cluster stars
+  if(dm == DISPLAY::STARS) {
+    clustSize.resize(nClusters, 0);
+    diagIdInClust.resize(diags.size());
+    for(size_t i = 0; i < inv_clustering.size(); ++i) {
+      auto &diagsInClust = clustSize[inv_clustering[i]];
+      diagIdInClust[i] = diagsInClust;
+      diagsInClust++;
     }
   }
-  int count = 0;
-  for(unsigned int j = 0; j < intermediateDiagrams_.size(); ++j) {
-    int c = inv_clustering_[j];
-    const auto &diagram = intermediateDiagrams_[j];
-    std::vector<matchingType> matchings_j
-      = all_matchings_[inv_clustering_[j]][j];
-    for(unsigned int i = 0; i < matchings_j.size(); ++i) {
 
-      vtkIdType ids[2];
-      ids[0] = 2 * count;
-      ids[1] = 2 * count + 1;
-      matchingType m = matchings_j[i];
-      const size_t bidder_id = std::get<0>(m);
-      const size_t good_id = std::get<1>(m);
+  // count the number of bidders per centroid pair
+  // (when with only 1 cluster and 2 diagrams)
+  std::vector<int> matchings_count(centroids[0].size());
+  std::vector<int> count_to_good{};
+
+  for(size_t i = 0; i < diags.size(); ++i) {
+    const auto cid = inv_clustering[i];
+    const auto &diag{diags[i]};
+    const auto &matchings{matchingsPerCluster[cid][i]};
+
+    vtkNew<vtkUnstructuredGrid> matchingsGrid{};
+
+    const auto nCells{matchings.size()};
+    const auto nPoints{2 * matchings.size()};
+
+    vtkNew<vtkPoints> points{};
+    points->SetNumberOfPoints(nPoints);
+    matchingsGrid->SetPoints(points);
+
+    // point data
+    vtkNew<vtkIntArray> diagIdVerts{};
+    diagIdVerts->SetName("DiagramID");
+    diagIdVerts->SetNumberOfTuples(nPoints);
+    matchingsGrid->GetPointData()->AddArray(diagIdVerts);
+
+    vtkNew<vtkIntArray> pointId{};
+    pointId->SetName("PointID");
+    pointId->SetNumberOfTuples(nPoints);
+    matchingsGrid->GetPointData()->AddArray(pointId);
+
+    // cell data
+    vtkNew<vtkIntArray> diagIdCells{};
+    diagIdCells->SetName("DiagramID");
+    diagIdCells->SetNumberOfTuples(nCells);
+    matchingsGrid->GetCellData()->AddArray(diagIdCells);
+
+    vtkNew<vtkIntArray> clusterId{};
+    clusterId->SetName("ClusterID");
+    clusterId->SetNumberOfTuples(nCells);
+    clusterId->Fill(cid);
+    matchingsGrid->GetCellData()->AddArray(clusterId);
+
+    vtkNew<vtkDoubleArray> matchCost{};
+    matchCost->SetName("Cost");
+    matchCost->SetNumberOfTuples(nCells);
+    matchingsGrid->GetCellData()->AddArray(matchCost);
+
+    vtkNew<vtkIntArray> pairType{};
+    pairType->SetName("PairType");
+    pairType->SetNumberOfTuples(nCells);
+    matchingsGrid->GetCellData()->AddArray(pairType);
+
+    for(size_t j = 0; j < matchings.size(); ++j) {
+      const auto &m{matchings[j]};
+      const auto bidderId{std::get<0>(m)};
+      const auto goodId{std::get<1>(m)};
 
       // avoid out-of-bound accesses
-      if(good_id >= matchings_count.size() || bidder_id >= diagram.size()) {
+      if(goodId >= static_cast<ttk::SimplexId>(centroids[cid].size())
+         || bidderId >= static_cast<ttk::SimplexId>(diag.size())) {
+        this->printWrn("Out-of-bounds access averted");
         continue;
       }
 
-      if(NumberOfClusters == 1) {
-        matchings_count[good_id] += 1;
-        count_to_good.push_back(good_id);
+      if(nClusters == 1) {
+        matchings_count[goodId] += 1;
+        count_to_good.push_back(goodId);
       }
 
-      pairTuple t1 = final_centroids_[c][good_id];
-      double x1 = std::get<6>(t1);
-      double y1 = std::get<10>(t1);
-      double z1 = 0;
+      const auto &p0{centroids[cid][goodId]};
+      const auto &p1{diag[bidderId]};
+      std::array<double, 3> coords0{std::get<6>(p0), std::get<10>(p0), 0};
+      std::array<double, 3> coords1{std::get<6>(p1), std::get<10>(p1), 0};
 
-      pairTuple t2 = diagram[bidder_id];
-      double x2 = std::get<6>(t2);
-      double y2 = std::get<10>(t2);
-      double z2 = 0; // Change 1 to j if you want to isolate the diagrams
+      if(dm == DISPLAY::STARS && spacing > 0) {
+        const auto angle = 2.0 * M_PI * static_cast<double>(diagIdInClust[i])
+                           / static_cast<double>(clustSize[cid]);
+        const auto shift
+          = 3.0 * (std::abs(spacing) + 0.2) * max_persistence * cid;
+        coords0[0] += shift;
+        coords1[0] += shift + spacing * max_persistence * std::cos(angle);
+        coords1[1] += spacing * max_persistence * std::sin(angle);
 
-      if(DisplayMethod == DISPLAY::STARS && Spacing > 0) {
-        double angle
-          = 2 * 3.1415926 * (double)(idxInCluster[j]) / cluster_size[c];
-        x1 += (abs(Spacing) + .2) * 3 * max_dimension_total_ * c;
-        x2 += (abs(Spacing) + .2) * 3 * max_dimension_total_ * c
-              + Spacing * max_dimension_total_ * cos(angle);
-        y2 += Spacing * max_dimension_total_ * sin(angle);
-      } else if(DisplayMethod == DISPLAY::MATCHINGS) {
-        z2 = Spacing;
-        if(intermediateDiagrams_.size() == 2 and j == 0) {
-          z2 = -Spacing;
-        }
+      } else if(dm == DISPLAY::MATCHINGS) {
+        coords1[2] = (diags.size() == 2 && i == 0) ? -spacing : spacing;
       }
 
-      matchingPoints->InsertNextPoint(x1, y1, z1);
-      matchingPoints->InsertNextPoint(x2, y2, z2);
-      matchingMesh->InsertNextCell(VTK_LINE, 2, ids);
-      idOfDiagramMatching->InsertTuple1(count, j);
-      idOfCluster->InsertTuple1(count, inv_clustering_[j]);
-      cost->InsertTuple1(count, std::get<2>(m));
-      idOfDiagramMatchingPoint->InsertTuple1(2 * count, j);
-      idOfDiagramMatchingPoint->InsertTuple1(2 * count + 1, j);
-      idOfPoint->InsertTuple1(2 * count, good_id);
-      idOfPoint->InsertTuple1(2 * count + 1, bidder_id);
+      points->SetPoint(2 * j + 0, coords0.data());
+      points->SetPoint(2 * j + 1, coords1.data());
+      std::array<vtkIdType, 2> ids{
+        2 * static_cast<vtkIdType>(j) + 0,
+        2 * static_cast<vtkIdType>(j) + 1,
+      };
+      matchingsGrid->InsertNextCell(VTK_LINE, 2, ids.data());
 
-      const ttk::SimplexId type = std::get<5>(t2);
-      switch(type) {
-        case 0:
-          pairType->InsertTuple1(count, 0);
-          break;
+      diagIdCells->SetTuple1(j, i);
+      matchCost->SetTuple1(j, std::get<2>(m));
+      diagIdVerts->SetTuple1(2 * j + 0, i);
+      diagIdVerts->SetTuple1(2 * j + 1, i);
+      pointId->SetTuple1(2 * j + 0, goodId);
+      pointId->SetTuple1(2 * j + 1, bidderId);
+      pairType->SetTuple1(j, std::get<5>(p1));
+    }
 
-        case 1:
-          pairType->InsertTuple1(count, 1);
-          break;
+    output->SetBlock(i, matchingsGrid);
+  }
 
-        case 2:
-          pairType->InsertTuple1(count, 2);
-          break;
-        default:
-          pairType->InsertTuple1(count, 0);
+  // add matchings number
+  if(nClusters == 1 && diags.size() == 2) {
+    size_t nPrevCells{};
+    for(size_t i = 0; i < diags.size(); ++i) {
+      vtkNew<vtkIntArray> matchNumber{};
+      matchNumber->SetName("MatchNumber");
+      const auto matchings
+        = vtkUnstructuredGrid::SafeDownCast(output->GetBlock(i));
+      const auto nCells = matchings->GetNumberOfCells();
+      matchNumber->SetNumberOfTuples(nCells);
+      for(int j = 0; j < nCells; j++) {
+        const auto goodId = count_to_good[j + (i == 0 ? 0 : nPrevCells)];
+        matchNumber->SetTuple1(j, matchings_count[goodId]);
       }
-      count++;
+      matchings->GetCellData()->AddArray(matchNumber);
+      nPrevCells = nCells;
     }
   }
-
-  if(NumberOfClusters == 1 and intermediateDiagrams_.size() == 2) {
-    for(int i = 0; i < count; i++) {
-      matchingCount->InsertTuple1(i, matchings_count[count_to_good[i]]);
-    }
-  }
-
-  matchingMesh->SetPoints(matchingPoints);
-  matchingMesh->GetPointData()->AddArray(idOfDiagramMatchingPoint);
-  matchingMesh->GetPointData()->AddArray(idOfPoint);
-  matchingMesh->GetCellData()->AddArray(idOfDiagramMatching);
-  matchingMesh->GetCellData()->AddArray(idOfCluster);
-  matchingMesh->GetCellData()->AddArray(pairType);
-  matchingMesh->GetCellData()->AddArray(cost);
-  if(NumberOfClusters == 1 and intermediateDiagrams_.size() == 2) {
-    matchingMesh->GetCellData()->AddArray(matchingCount);
-  }
-
-  return matchingMesh;
 }

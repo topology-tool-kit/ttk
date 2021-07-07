@@ -163,14 +163,22 @@ protected:
                        const DISPLAY dm,
                        const double spacing,
                        const double max_persistence) const;
+  void outputMatchings(vtkMultiBlockDataSet *output,
+                       const size_t nClusters,
+                       const std::vector<diagramType> &diags,
+                       const std::vector<std::vector<std::vector<matchingType>>>
+                         &matchingsPerCluster,
+                       const std::vector<diagramType> &centroids,
+                       const std::vector<int> &inv_clustering,
+                       const ttkPersistenceDiagramClustering::DISPLAY dm,
+                       const double spacing,
+                       const double max_persistence) const;
 
   void VTUToDiagram(diagramType &diagram, vtkUnstructuredGrid *vtu) const;
   void diagramToVTU(vtkUnstructuredGrid *output,
                     const diagramType &diagram,
                     const int cid,
                     const double max_persistence) const;
-
-  vtkNew<vtkUnstructuredGrid> createMatchings();
 
   int RequestData(vtkInformation *request,
                   vtkInformationVector **inputVector,
