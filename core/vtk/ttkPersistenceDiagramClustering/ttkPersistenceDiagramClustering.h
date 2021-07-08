@@ -156,9 +156,6 @@ public:
 protected:
   ttkPersistenceDiagramClustering();
 
-  double getPersistenceDiagram(diagramType &diagram,
-                               vtkUnstructuredGrid *CTPersistenceDiagram_);
-
   int FillInputPortInformation(int port, vtkInformation *info) override;
   int FillOutputPortInformation(int port, vtkInformation *info) override;
   void Modified() override;
@@ -175,6 +172,7 @@ protected:
                        const double spacing,
                        const double max_persistence) const;
 
+  void VTUToDiagram(diagramType &diagram, vtkUnstructuredGrid *vtu) const;
   void diagramToVTU(vtkUnstructuredGrid *output,
                     const diagramType &diagram,
                     const int cid,
