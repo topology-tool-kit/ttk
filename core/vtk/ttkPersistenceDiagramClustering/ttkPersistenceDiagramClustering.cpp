@@ -41,13 +41,13 @@ void ttkPersistenceDiagramClustering::Modified() {
   ttkAlgorithm::Modified();
 }
 
-void outputClusteredDiagrams(
+void ttkPersistenceDiagramClustering::outputClusteredDiagrams(
   vtkMultiBlockDataSet *output,
-  const std::vector<vtkUnstructuredGrid *> &inputDiags,
+  const std::vector<diagramType> &diags,
   const std::vector<int> &inv_clustering,
   const enum DisplayMethodType dm,
   const double spacing,
-  const double max_persistence) {
+  const double max_persistence) const {
 
   // index of diagram in its cluster
   std::vector<int> diagIdInClust{};
@@ -60,7 +60,7 @@ void outputClusteredDiagrams(
     const auto nClusters
       = 1 + *std::max_element(inv_clustering.begin(), inv_clustering.end());
     clustSize.resize(nClusters, 0);
-    diagIdInClust.resize(inputDiags.size());
+    diagIdInClust.resize(diags.size());
     for(size_t i = 0; i < inv_clustering.size(); ++i) {
       auto &diagsInClust = clustSize[inv_clustering[i]];
       diagIdInClust[i] = diagsInClust;
@@ -68,16 +68,111 @@ void outputClusteredDiagrams(
     }
   }
 
-  output->SetNumberOfBlocks(inputDiags.size());
-  for(size_t i = 0; i < inputDiags.size(); ++i) {
-    const auto diag = inputDiags[i];
-    // add clustering info to diagram
+  output->SetNumberOfBlocks(diags.size());
+  for(size_t i = 0; i < diags.size(); ++i) {
+    const auto diag = diags[i];
+
+    const auto nPoints = 2 * diag.size();
+    if(nPoints == 0) {
+      this->printWrn("Diagram with no points");
+      continue;
+    }
+
+    vtkNew<vtkPoints> points{};
+    points->SetNumberOfPoints(nPoints);
+
+    vtkNew<vtkUnstructuredGrid> vtu{};
+    vtu->SetPoints(points);
+
+    // point data
+    vtkNew<vtkIntArray> critType{};
+    critType->SetName("CriticalType");
+    critType->SetNumberOfTuples(nPoints);
+    vtu->GetPointData()->AddArray(critType);
+
     vtkNew<vtkIntArray> clusterId{};
     clusterId->SetName("ClusterID");
     clusterId->SetNumberOfComponents(1);
-    clusterId->SetNumberOfTuples(diag->GetNumberOfPoints());
+    clusterId->SetNumberOfTuples(nPoints);
     clusterId->Fill(inv_clustering[i]);
-    diag->GetPointData()->AddArray(clusterId);
+    vtu->GetPointData()->AddArray(clusterId);
+
+    vtkNew<vtkFloatArray> coords{};
+    coords->SetNumberOfComponents(3);
+    coords->SetName("Coordinates");
+    coords->SetNumberOfTuples(nPoints);
+    vtu->GetPointData()->AddArray(coords);
+
+    vtkNew<vtkDoubleArray> pointPers{};
+    pointPers->SetName("Persistence");
+    pointPers->SetNumberOfTuples(nPoints);
+    vtu->GetPointData()->AddArray(pointPers);
+
+    // cell data
+    vtkNew<vtkIntArray> pairId{};
+    pairId->SetName("PairID");
+    pairId->SetNumberOfTuples(diag.size() + 1);
+    vtu->GetCellData()->AddArray(pairId);
+
+    vtkNew<vtkIntArray> pairType{};
+    pairType->SetName("PairType");
+    pairType->SetNumberOfTuples(diag.size() + 1);
+    vtu->GetCellData()->AddArray(pairType);
+
+    vtkNew<vtkDoubleArray> pairPers{};
+    pairPers->SetName("Persistence");
+    pairPers->SetNumberOfTuples(diag.size() + 1);
+    vtu->GetCellData()->AddArray(pairPers);
+
+    for(size_t j = 0; j < diag.size(); ++j) {
+      const auto &pair{diag[j]};
+      const auto birth{std::get<6>(pair)};
+      const auto death{std::get<10>(pair)};
+      const auto pType{std::get<5>(pair)};
+      const auto birthType{std::get<1>(pair)};
+      const auto deathType{std::get<3>(pair)};
+      std::array<float, 3> coordsBirth{
+        std::get<7>(pair), std::get<8>(pair), std::get<9>(pair)};
+      std::array<float, 3> coordsDeath{
+        std::get<11>(pair), std::get<12>(pair), std::get<13>(pair)};
+
+      // cell data
+      pairId->SetTuple1(j, j);
+      pairType->SetTuple1(j, pType);
+      pairPers->SetTuple1(j, death - birth);
+
+      // point data
+      coords->SetTuple(2 * j + 0, coordsBirth.data());
+      coords->SetTuple(2 * j + 1, coordsDeath.data());
+      pointPers->SetTuple1(2 * j + 0, death - birth);
+      pointPers->SetTuple1(2 * j + 1, death - birth);
+      critType->SetTuple1(2 * j + 0, static_cast<int>(birthType));
+      critType->SetTuple1(2 * j + 1, static_cast<int>(deathType));
+
+      points->SetPoint(2 * j + 0, birth, birth, 0);
+      points->SetPoint(2 * j + 1, birth, death, 0);
+
+      const std::array<vtkIdType, 2> ids{
+        2 * static_cast<vtkIdType>(j) + 0,
+        2 * static_cast<vtkIdType>(j) + 1,
+      };
+      vtu->InsertNextCell(VTK_LINE, 2, ids.data());
+    }
+
+    // add diagonal
+    const auto minmax_birth = std::minmax_element(
+      diag.begin(), diag.end(), [](const pairTuple &a, const pairTuple &b) {
+        return std::get<6>(a) < std::get<6>(b);
+      });
+    const std::array<vtkIdType, 2> ids{
+      2 * (minmax_birth.first - diag.begin()),
+      2 * (minmax_birth.second - diag.begin()),
+    };
+    vtu->InsertNextCell(VTK_LINE, 2, ids.data());
+    pairId->SetTuple1(diag.size(), diag.size());
+    pairType->SetTuple1(diag.size(), -1);
+    // use the max persistence of all input diagrams...
+    pairPers->SetTuple1(diag.size(), max_persistence);
 
     if(dm == DisplayMethodType::MATCHINGS && spacing > 0) {
       // translate diagrams along the Z axis
@@ -85,7 +180,7 @@ void outputClusteredDiagrams(
       tr->Translate(0, 0, i == 0 ? -spacing : spacing);
       vtkNew<vtkTransformFilter> trf{};
       trf->SetTransform(tr);
-      trf->SetInputData(diag);
+      trf->SetInputData(vtu);
       trf->Update();
       output->SetBlock(i, trf->GetOutputDataObject(0));
     } else if(dm == DisplayMethodType::STARS && spacing > 0) {
@@ -99,23 +194,23 @@ void outputClusteredDiagrams(
                     spacing * max_persistence * std::sin(angle), 0);
       vtkNew<vtkTransformFilter> trf{};
       trf->SetTransform(tr);
-      trf->SetInputData(diag);
+      trf->SetInputData(vtu);
       trf->Update();
       output->SetBlock(i, trf->GetOutputDataObject(0));
 
     } else {
       // add diagram to output multi-block dataset
-      output->SetBlock(i, diag);
+      output->SetBlock(i, vtu);
     }
   }
 }
 
-void outputCentroids(
+void ttkPersistenceDiagramClustering::outputCentroids(
   vtkMultiBlockDataSet *output,
-  std::vector<ttkPersistenceDiagramClustering::diagramType> &final_centroids,
+  std::vector<diagramType> &final_centroids,
   const DisplayMethodType dm,
   const double spacing,
-  const double max_persistence) {
+  const double max_persistence) const {
 
   for(size_t i = 0; i < final_centroids.size(); ++i) {
     const auto &bary{final_centroids[i]};
@@ -153,17 +248,17 @@ void outputCentroids(
     // cell data
     vtkNew<vtkIntArray> pairId{};
     pairId->SetName("PairID");
-    pairId->SetNumberOfTuples(bary.size());
+    pairId->SetNumberOfTuples(bary.size() + 1);
     diagram->GetCellData()->AddArray(pairId);
 
     vtkNew<vtkIntArray> pairType{};
     pairType->SetName("PairType");
-    pairType->SetNumberOfTuples(bary.size());
+    pairType->SetNumberOfTuples(bary.size() + 1);
     diagram->GetCellData()->AddArray(pairType);
 
     vtkNew<vtkDoubleArray> pairPers{};
     pairPers->SetName("Persistence");
-    pairPers->SetNumberOfTuples(bary.size());
+    pairPers->SetNumberOfTuples(bary.size() + 1);
     diagram->GetCellData()->AddArray(pairPers);
 
     for(size_t j = 0; j < bary.size(); ++j) {
@@ -205,6 +300,21 @@ void outputCentroids(
       };
       diagram->InsertNextCell(VTK_LINE, 2, ids.data());
     }
+
+    // add diagonal
+    const auto minmax_birth = std::minmax_element(
+      bary.begin(), bary.end(), [](const pairTuple &a, const pairTuple &b) {
+        return std::get<6>(a) < std::get<6>(b);
+      });
+    const std::array<vtkIdType, 2> ids{
+      2 * (minmax_birth.first - bary.begin()),
+      2 * (minmax_birth.second - bary.begin()),
+    };
+    diagram->InsertNextCell(VTK_LINE, 2, ids.data());
+    pairId->SetTuple1(bary.size(), bary.size());
+    pairType->SetTuple1(bary.size(), -1);
+    // use the max persistence of all input diagrams...
+    pairPers->SetTuple1(bary.size(), max_persistence);
 
     // attach barycenter diagram to multi-block output
     output->SetBlock(i, diagram);
@@ -301,9 +411,10 @@ int ttkPersistenceDiagramClustering::RequestData(
 
   output_matchings->ShallowCopy(createMatchings());
 
-  outputClusteredDiagrams(output_clusters, input, this->inv_clustering_,
-                          static_cast<enum DisplayMethodType>(this->DisplayMethod),
-                          this->Spacing, this->max_dimension_total_);
+  outputClusteredDiagrams(
+    output_clusters, this->intermediateDiagrams_, this->inv_clustering_,
+    static_cast<enum DisplayMethodType>(this->DisplayMethod), this->Spacing,
+    this->max_dimension_total_);
   outputCentroids(output_centroids, this->final_centroids_,
                   static_cast<enum DisplayMethodType>(this->DisplayMethod),
                   this->Spacing, this->max_dimension_total_);

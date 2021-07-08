@@ -175,6 +175,18 @@ protected:
   int FillOutputPortInformation(int port, vtkInformation *info) override;
   void Modified() override;
 
+  void outputClusteredDiagrams(vtkMultiBlockDataSet *output,
+                               const std::vector<diagramType> &diags,
+                               const std::vector<int> &inv_clustering,
+                               const DisplayMethodType dm,
+                               const double spacing,
+                               const double max_persistence) const;
+  void outputCentroids(vtkMultiBlockDataSet *output,
+                       std::vector<diagramType> &final_centroids,
+                       const DisplayMethodType dm,
+                       const double spacing,
+                       const double max_persistence) const;
+
   vtkNew<vtkUnstructuredGrid> createMatchings();
 
   int RequestData(vtkInformation *request,
