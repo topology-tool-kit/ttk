@@ -18,22 +18,8 @@
 #pragma once
 
 // VTK includes
-#include <vtkCellData.h>
-#include <vtkCharArray.h>
-#include <vtkDataArray.h>
-#include <vtkDataSet.h>
-#include <vtkDoubleArray.h>
-#include <vtkFiltersCoreModule.h>
-#include <vtkFloatArray.h>
-#include <vtkInformation.h>
-#include <vtkInformationVector.h>
-#include <vtkIntArray.h>
-#include <vtkMultiBlockDataSet.h>
 #include <vtkMultiBlockDataSetAlgorithm.h>
 #include <vtkNew.h>
-#include <vtkObjectFactory.h>
-#include <vtkPointData.h>
-#include <vtkUnstructuredGrid.h>
 
 // VTK Module
 #include <ttkPersistenceDiagramClusteringModule.h>
@@ -42,6 +28,9 @@
 #include <PersistenceDiagramBarycenter.h>
 #include <PersistenceDiagramClustering.h>
 #include <ttkAlgorithm.h>
+#include <ttkMacros.h>
+
+class vtkUnstructuredGrid;
 
 class TTKPERSISTENCEDIAGRAMCLUSTERING_EXPORT ttkPersistenceDiagramClustering
   : public ttkAlgorithm,

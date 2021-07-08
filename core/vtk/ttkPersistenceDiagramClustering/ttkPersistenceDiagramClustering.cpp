@@ -1,9 +1,19 @@
 #include <ttkMacros.h>
 #include <ttkPersistenceDiagramClustering.h>
 #include <ttkUtils.h>
+#include <vtkCellData.h>
+#include <vtkDataArray.h>
+#include <vtkDoubleArray.h>
 #include <vtkFieldData.h>
+#include <vtkFloatArray.h>
+#include <vtkInformation.h>
+#include <vtkIntArray.h>
+#include <vtkMultiBlockDataSet.h>
+#include <vtkNew.h>
+#include <vtkPointData.h>
 #include <vtkTransform.h>
 #include <vtkTransformFilter.h>
+#include <vtkUnstructuredGrid.h>
 
 using namespace ttk;
 
