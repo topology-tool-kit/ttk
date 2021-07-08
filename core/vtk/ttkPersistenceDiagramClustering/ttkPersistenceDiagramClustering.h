@@ -175,6 +175,11 @@ protected:
                        const double spacing,
                        const double max_persistence) const;
 
+  void diagramToVTU(vtkUnstructuredGrid *output,
+                    const diagramType &diagram,
+                    const int cid,
+                    const double max_persistence) const;
+
   vtkNew<vtkUnstructuredGrid> createMatchings();
 
   int RequestData(vtkInformation *request,
