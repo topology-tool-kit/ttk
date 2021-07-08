@@ -104,7 +104,6 @@ public:
 
   void SetSpacing(double spacing) {
     this->Spacing = spacing;
-    this->oldSpacing = spacing;
     Modified();
     if(!intermediateDiagrams_.empty()) {
       // skip clustering computation only if done at least once before
@@ -115,11 +114,6 @@ public:
 
   void SetDisplayMethod(int displayMethod) {
     this->DisplayMethod = static_cast<DISPLAY>(displayMethod);
-    if(this->DisplayMethod == DISPLAY::COMPACT) {
-      this->Spacing = 0;
-    } else {
-      this->Spacing = this->oldSpacing;
-    }
     Modified();
     if(!intermediateDiagrams_.empty()) {
       // skip clustering computation only if done at least once before
@@ -194,7 +188,6 @@ private:
   std::vector<int> inv_clustering_{};
 
   double Spacing{1.0};
-  double oldSpacing{1.0};
   double max_dimension_total_{};
 
   DISPLAY DisplayMethod{DISPLAY::COMPACT};
