@@ -43,12 +43,6 @@
 #include <PersistenceDiagramClustering.h>
 #include <ttkAlgorithm.h>
 
-enum class DisplayMethodType {
-  COMPACT = 0,
-  STARS = 1,
-  MATCHINGS = 2,
-};
-
 class TTKPERSISTENCEDIAGRAMCLUSTERING_EXPORT ttkPersistenceDiagramClustering
   : public ttkAlgorithm,
     protected ttk::PersistenceDiagramClustering {
@@ -57,6 +51,17 @@ public:
   static ttkPersistenceDiagramClustering *New();
 
   vtkTypeMacro(ttkPersistenceDiagramClustering, ttkAlgorithm);
+
+  enum class DISPLAY {
+    COMPACT = 0,
+    STARS = 1,
+    MATCHINGS = 2,
+  };
+
+  enum class METHOD {
+    PROGRESSIVE = 0,
+    AUCTION = 1,
+  };
 
   vtkSetMacro(WassersteinMetric, int);
   vtkGetMacro(WassersteinMetric, int);
@@ -109,30 +114,30 @@ public:
   vtkGetMacro(PairTypeClustering, int);
 
   void SetSpacing(double spacing) {
-    Spacing = spacing;
-    oldSpacing = spacing;
+    this->Spacing = spacing;
+    this->oldSpacing = spacing;
     Modified();
     if(!intermediateDiagrams_.empty()) {
       // skip clustering computation only if done at least once before
-      needUpdate_ = false;
+      this->needUpdate_ = false;
     }
   }
   vtkGetMacro(Spacing, double);
 
   void SetDisplayMethod(int displayMethod) {
-    DisplayMethod = displayMethod;
-    if(displayMethod == 0) { // compact display
-      Spacing = 0;
+    this->DisplayMethod = static_cast<DISPLAY>(displayMethod);
+    if(this->DisplayMethod == DISPLAY::COMPACT) {
+      this->Spacing = 0;
     } else {
-      Spacing = oldSpacing;
+      this->Spacing = this->oldSpacing;
     }
     Modified();
     if(!intermediateDiagrams_.empty()) {
       // skip clustering computation only if done at least once before
-      needUpdate_ = false;
+      this->needUpdate_ = false;
     }
   }
-  vtkGetMacro(DisplayMethod, bool);
+  vtkGetEnumMacro(DisplayMethod, DISPLAY);
 
   vtkSetMacro(UseAdditionalPrecision, bool);
   vtkGetMacro(UseAdditionalPrecision, bool);
@@ -143,8 +148,8 @@ public:
   vtkSetMacro(UseInterruptible, bool);
   vtkGetMacro(UseInterruptible, bool);
 
-  vtkSetMacro(Method, double);
-  vtkGetMacro(Method, double);
+  ttkSetEnumMacro(Method, METHOD);
+  vtkGetEnumMacro(Method, METHOD);
 
   // TODO: CONVERT TO A STRUCT!
   using pairTuple = std::tuple<ttk::SimplexId, // birth vertex id
@@ -178,12 +183,12 @@ protected:
   void outputClusteredDiagrams(vtkMultiBlockDataSet *output,
                                const std::vector<diagramType> &diags,
                                const std::vector<int> &inv_clustering,
-                               const DisplayMethodType dm,
+                               const DISPLAY dm,
                                const double spacing,
                                const double max_persistence) const;
   void outputCentroids(vtkMultiBlockDataSet *output,
                        std::vector<diagramType> &final_centroids,
-                       const DisplayMethodType dm,
+                       const DISPLAY dm,
                        const double spacing,
                        const double max_persistence) const;
 
@@ -200,10 +205,10 @@ private:
   std::vector<int> inv_clustering_{};
 
   double Spacing{1.0};
-  int DisplayMethod{0};
   double oldSpacing{1.0};
-
   double max_dimension_total_{};
-  int Method{0}; // 0 = progressive approach, 1 = Auction approach
+
+  DISPLAY DisplayMethod{DISPLAY::COMPACT};
+  METHOD Method{METHOD::PROGRESSIVE};
   bool needUpdate_{true};
 };

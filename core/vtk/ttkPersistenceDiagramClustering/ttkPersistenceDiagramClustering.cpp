@@ -45,7 +45,7 @@ void ttkPersistenceDiagramClustering::outputClusteredDiagrams(
   vtkMultiBlockDataSet *output,
   const std::vector<diagramType> &diags,
   const std::vector<int> &inv_clustering,
-  const enum DisplayMethodType dm,
+  const enum DISPLAY dm,
   const double spacing,
   const double max_persistence) const {
 
@@ -55,7 +55,7 @@ void ttkPersistenceDiagramClustering::outputClusteredDiagrams(
   std::vector<int> clustSize{};
 
   // prep work for displaying diagrams as cluster stars
-  if(dm == DisplayMethodType::STARS) {
+  if(dm == DISPLAY::STARS) {
     // total number of clusters
     const auto nClusters
       = 1 + *std::max_element(inv_clustering.begin(), inv_clustering.end());
@@ -174,7 +174,7 @@ void ttkPersistenceDiagramClustering::outputClusteredDiagrams(
     // use the max persistence of all input diagrams...
     pairPers->SetTuple1(diag.size(), max_persistence);
 
-    if(dm == DisplayMethodType::MATCHINGS && spacing > 0) {
+    if(dm == DISPLAY::MATCHINGS && spacing > 0) {
       // translate diagrams along the Z axis
       vtkNew<vtkTransform> tr{};
       tr->Translate(0, 0, i == 0 ? -spacing : spacing);
@@ -183,7 +183,7 @@ void ttkPersistenceDiagramClustering::outputClusteredDiagrams(
       trf->SetInputData(vtu);
       trf->Update();
       output->SetBlock(i, trf->GetOutputDataObject(0));
-    } else if(dm == DisplayMethodType::STARS && spacing > 0) {
+    } else if(dm == DISPLAY::STARS && spacing > 0) {
       const auto c = inv_clustering[i];
       const auto angle = 2.0 * M_PI * static_cast<double>(diagIdInClust[i])
                          / static_cast<double>(clustSize[c]);
@@ -208,7 +208,7 @@ void ttkPersistenceDiagramClustering::outputClusteredDiagrams(
 void ttkPersistenceDiagramClustering::outputCentroids(
   vtkMultiBlockDataSet *output,
   std::vector<diagramType> &final_centroids,
-  const DisplayMethodType dm,
+  const DISPLAY dm,
   const double spacing,
   const double max_persistence) const {
 
@@ -287,7 +287,7 @@ void ttkPersistenceDiagramClustering::outputCentroids(
       critType->SetTuple1(2 * j + 1, static_cast<int>(deathType));
 
       auto birthShift{birth};
-      if(dm == DisplayMethodType::STARS && spacing > 0) {
+      if(dm == DISPLAY::STARS && spacing > 0) {
         // shift diagram along the X axis
         birthShift += 3.0 * (spacing + 0.2) * max_persistence * i;
       }
@@ -370,9 +370,8 @@ int ttkPersistenceDiagramClustering::RequestData(
       }
     }
 
-    if(Method == 0) {
+    if(this->Method == METHOD::PROGRESSIVE) {
 
-      // Progressive approach
       if(!UseInterruptible) {
         TimeLimit = 999999999;
       }
@@ -381,9 +380,8 @@ int ttkPersistenceDiagramClustering::RequestData(
         intermediateDiagrams_, final_centroids_, all_matchings_);
       needUpdate_ = false;
 
-    } else {
+    } else if(this->Method == METHOD::AUCTION) {
 
-      // AUCTION APPROACH
       final_centroids_.resize(1);
       inv_clustering_.resize(numInputs);
       for(int i_input = 0; i_input < numInputs; i_input++) {
@@ -411,12 +409,10 @@ int ttkPersistenceDiagramClustering::RequestData(
 
   output_matchings->ShallowCopy(createMatchings());
 
-  outputClusteredDiagrams(
-    output_clusters, this->intermediateDiagrams_, this->inv_clustering_,
-    static_cast<enum DisplayMethodType>(this->DisplayMethod), this->Spacing,
-    this->max_dimension_total_);
-  outputCentroids(output_centroids, this->final_centroids_,
-                  static_cast<enum DisplayMethodType>(this->DisplayMethod),
+  outputClusteredDiagrams(output_clusters, this->intermediateDiagrams_,
+                          this->inv_clustering_, this->DisplayMethod,
+                          this->Spacing, this->max_dimension_total_);
+  outputCentroids(output_centroids, this->final_centroids_, this->DisplayMethod,
                   this->Spacing, this->max_dimension_total_);
 
   // collect input FieldData to annotate outputClusters
@@ -630,7 +626,7 @@ vtkNew<vtkUnstructuredGrid> ttkPersistenceDiagramClustering::createMatchings() {
     idxInCluster[j] = 0;
   }
   // RE-Invert clusters
-  if(DisplayMethod == 1 && Spacing > 0) {
+  if(DisplayMethod == DISPLAY::STARS && Spacing > 0) {
     for(unsigned int j = 0; j < intermediateDiagrams_.size(); ++j) {
       unsigned int c = inv_clustering_[j];
       if(c + 1 > cluster_size.size()) {
@@ -678,14 +674,14 @@ vtkNew<vtkUnstructuredGrid> ttkPersistenceDiagramClustering::createMatchings() {
       double y2 = std::get<10>(t2);
       double z2 = 0; // Change 1 to j if you want to isolate the diagrams
 
-      if(DisplayMethod == 1 && Spacing > 0) {
+      if(DisplayMethod == DISPLAY::STARS && Spacing > 0) {
         double angle
           = 2 * 3.1415926 * (double)(idxInCluster[j]) / cluster_size[c];
         x1 += (abs(Spacing) + .2) * 3 * max_dimension_total_ * c;
         x2 += (abs(Spacing) + .2) * 3 * max_dimension_total_ * c
               + Spacing * max_dimension_total_ * cos(angle);
         y2 += Spacing * max_dimension_total_ * sin(angle);
-      } else if(DisplayMethod == 2) {
+      } else if(DisplayMethod == DISPLAY::MATCHINGS) {
         z2 = Spacing;
         if(intermediateDiagrams_.size() == 2 and j == 0) {
           z2 = -Spacing;
