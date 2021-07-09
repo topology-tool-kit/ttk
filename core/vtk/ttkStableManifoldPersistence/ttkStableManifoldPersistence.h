@@ -47,6 +47,8 @@
 #include <ttkAlgorithm.h>
 
 class vtkDataArray;
+class vtkPolyData;
+class vtkUnstructuredGrid;
 
 class TTKSTABLEMANIFOLDPERSISTENCE_EXPORT ttkStableManifoldPersistence
   : public ttkAlgorithm {
@@ -54,6 +56,9 @@ class TTKSTABLEMANIFOLDPERSISTENCE_EXPORT ttkStableManifoldPersistence
 public:
   static ttkStableManifoldPersistence *New();
   vtkTypeMacro(ttkStableManifoldPersistence, ttkAlgorithm);
+
+  vtkGetMacro(IsUnstable, bool);
+  vtkSetMacro(IsUnstable, bool);
 
 protected:
   ttkStableManifoldPersistence();
@@ -65,4 +70,14 @@ protected:
                   vtkInformationVector *outputVector) override;
 
 private:
+  bool IsUnstable{false};
+
+  std::vector<int> max2simplex_, min2simplex_;
+  std::vector<double> simplex2persistence_;
+
+  int AttachPersistence(vtkDataSet *output) const;
+
+  int BuildSimplex2PersistenceMap(vtkDataSet *stableManifold,
+                                  vtkPolyData *criticalPoints,
+                                  vtkUnstructuredGrid *persistenceDiagram);
 };
