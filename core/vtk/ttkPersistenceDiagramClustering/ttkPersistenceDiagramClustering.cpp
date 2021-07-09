@@ -162,7 +162,7 @@ void ttkPersistenceDiagramClustering::outputClusteredDiagrams(
   vtkMultiBlockDataSet *output,
   const std::vector<diagramType> &diags,
   const std::vector<int> &inv_clustering,
-  const enum DISPLAY dm,
+  const DISPLAY dm,
   const double spacing,
   const double max_persistence) const {
 
@@ -225,7 +225,7 @@ void ttkPersistenceDiagramClustering::outputClusteredDiagrams(
 
 void ttkPersistenceDiagramClustering::outputCentroids(
   vtkMultiBlockDataSet *output,
-  std::vector<diagramType> &final_centroids,
+  const std::vector<diagramType> &final_centroids,
   const DISPLAY dm,
   const double spacing,
   const double max_persistence) const {
@@ -413,11 +413,11 @@ void ttkPersistenceDiagramClustering::VTUToDiagram(
 
   int nPairs = pairId->GetNumberOfTuples();
 
-  // FIX : no more missed pairs
-  for(int pair_index = 0; pair_index < nPairs; pair_index++) {
-    const float index_of_pair = pair_index;
-    if(pairId->GetTuple1(pair_index) != -1)
-      pairId->SetTuple(pair_index, &index_of_pair);
+  // compact pairIds in [0, nPairs - 1] (diagonal excepted)
+  for(int i = 0; i < nPairs; i++) {
+    if(pairId->GetTuple1(i) != -1) {
+      pairId->SetTuple1(i, i);
+    }
   }
 
   // skip diagram diagonal if present (assuming it's the last pair in the

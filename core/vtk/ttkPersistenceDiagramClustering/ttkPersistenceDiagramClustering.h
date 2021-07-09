@@ -159,7 +159,7 @@ protected:
                                const double spacing,
                                const double max_persistence) const;
   void outputCentroids(vtkMultiBlockDataSet *output,
-                       std::vector<diagramType> &final_centroids,
+                       const std::vector<diagramType> &final_centroids,
                        const DISPLAY dm,
                        const double spacing,
                        const double max_persistence) const;
