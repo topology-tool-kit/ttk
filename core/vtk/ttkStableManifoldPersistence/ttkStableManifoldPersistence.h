@@ -74,6 +74,7 @@ private:
 
   std::vector<int> max2simplex_, min2simplex_;
   std::vector<double> simplex2persistence_;
+  std::vector<int> simplex2pairType_;
 
   int AttachPersistence(vtkDataSet *output) const;
 

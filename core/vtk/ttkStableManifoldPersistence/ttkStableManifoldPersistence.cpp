@@ -81,11 +81,16 @@ int ttkStableManifoldPersistence::AttachPersistence(vtkDataSet *output) const {
     = vtkSmartPointer<vtkDoubleArray>::New();
   persistenceArray->SetName(ttk::PersistenceName);
 
+  vtkSmartPointer<vtkIntArray> pairTypeArray
+    = vtkSmartPointer<vtkIntArray>::New();
+  pairTypeArray->SetName(ttk::PersistencePairTypeName);
+
   if(!isSegmentation) {
 
     int cellNumber = output->GetNumberOfCells();
 
     persistenceArray->SetNumberOfTuples(cellNumber);
+    pairTypeArray->SetNumberOfTuples(cellNumber);
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
@@ -98,14 +103,18 @@ int ttkStableManifoldPersistence::AttachPersistence(vtkDataSet *output) const {
         sourceArray->GetTuple(i, &cellId);
       }
       double persistence = simplex2persistence_[(int)cellId];
+      double pairType = simplex2pairType_[(int) cellId];
       persistenceArray->SetTuple(i, &persistence);
+      pairTypeArray->SetTuple(i, &pairType);
     }
 
     output->GetCellData()->AddArray(persistenceArray);
+    output->GetCellData()->AddArray(pairTypeArray);
   } else {
     int vertexNumber = output->GetNumberOfPoints();
 
     persistenceArray->SetNumberOfTuples(vertexNumber);
+    pairTypeArray->SetNumberOfTuples(vertexNumber);
 
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(threadNumber_)
@@ -121,10 +130,13 @@ int ttkStableManifoldPersistence::AttachPersistence(vtkDataSet *output) const {
         cellId = max2simplex_[(int)extremumId];
       }
       double persistence = simplex2persistence_[(int)cellId];
+      double pairType = simplex2pairType_[(int) cellId];
       persistenceArray->SetTuple(i, &persistence);
+      pairTypeArray->SetTuple(i, &pairType);
     }
 
     output->GetPointData()->AddArray(persistenceArray);
+    output->GetPointData()->AddArray(pairTypeArray);
   }
 
   printMsg("Persistence attached!", 1, t.getElapsedTime(), threadNumber_);
@@ -162,14 +174,19 @@ int ttkStableManifoldPersistence::BuildSimplex2PersistenceMap(
   vtkDataArray *persistencePairIdArray
     = persistenceDiagram->GetCellData()->GetArray(
       ttk::PersistencePairIdentifierName);
+  vtkDataArray *persistencePairTypeArray
+    = persistenceDiagram->GetCellData()->GetArray(
+      ttk::PersistencePairTypeName);
 
-  if((!vertexIdArray) || (!persistenceArray) || (!persistencePairIdArray)) {
+  if((!vertexIdArray) || (!persistenceArray)
+    || (!persistencePairIdArray) ||(!persistencePairTypeArray)) {
     printErr("The input #2 is not a valid persistence diagram.");
     return -2;
   }
 
   int maximumVertexId = vertexIdArray->GetMaxNorm();
   std::vector<double> vertex2persistence(maximumVertexId + 1, -1);
+  std::vector<int> vertex2pairType(maximumVertexId + 1, -1);
 
   int cellNumber = persistenceDiagram->GetNumberOfCells();
 
@@ -190,19 +207,27 @@ int ttkStableManifoldPersistence::BuildSimplex2PersistenceMap(
       double persistence = -1;
       persistenceArray->GetTuple(i, &persistence);
 
+      double pairType = -1;
+      persistencePairTypeArray->GetTuple(i, &pairType);
+
       double vertexId0 = -1, vertexId1 = -1;
       vertexIdArray->GetTuple(pointId0, &vertexId0);
       vertexIdArray->GetTuple(pointId1, &vertexId1);
 
-      if(vertex2persistence[(int)vertexId0] < persistence)
+      if(vertex2persistence[(int)vertexId0] < persistence){
         vertex2persistence[(int)vertexId0] = persistence;
-      if(vertex2persistence[(int)vertexId1] < persistence)
+        vertex2pairType[(int) vertexId0] = pairType;
+      }
+      if(vertex2persistence[(int)vertexId1] < persistence){
         vertex2persistence[(int)vertexId1] = persistence;
+        vertex2pairType[(int) vertexId1] = pairType;
+      }
     }
   }
 
   int maximumSimplexId = criticalCellIdArray->GetMaxNorm();
   simplex2persistence_.resize(maximumSimplexId + 1, -1);
+  simplex2pairType_.resize(maximumSimplexId + 1, -1);
 
   int criticalPointNumber = criticalCellIdArray->GetNumberOfTuples();
 #ifdef TTK_ENABLE_OPENMP
@@ -216,6 +241,7 @@ int ttkStableManifoldPersistence::BuildSimplex2PersistenceMap(
     criticalPointVertexIdArray->GetTuple(i, &vertexId);
 
     simplex2persistence_[(int)cellId] = vertex2persistence[(int)vertexId];
+    simplex2pairType_[(int) cellId] = vertex2pairType[(int) vertexId];
   }
 
   // taking care of the maximum to simplex map
