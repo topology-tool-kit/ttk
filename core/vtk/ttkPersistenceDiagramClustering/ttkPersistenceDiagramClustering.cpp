@@ -147,29 +147,23 @@ int ttkPersistenceDiagramClustering::RequestData(
     this->all_matchings_, this->final_centroids_, this->inv_clustering_,
     this->DisplayMethod, this->Spacing, this->max_dimension_total_);
 
-  // collect input FieldData to annotate outputClusters
-  auto fd = output_clusters->GetFieldData();
-  bool hasStructure{false};
-  for(const auto diag : input) {
-    if(diag->GetFieldData() != nullptr) {
-      // ensure fd has the same structure as the first non-null input
-      // FieldData
-      if(!hasStructure) {
-        fd->CopyStructure(diag->GetFieldData());
-        hasStructure = true;
-      }
-      // copy data
-      fd->InsertNextTuple(0, diag->GetFieldData());
+  // forward input diagrams FieldData to output_clusters blocks
+  for(size_t i = 0; i < input.size(); ++i) {
+    const auto diag{input[i]};
+    const auto block{
+      vtkUnstructuredGrid::SafeDownCast(output_clusters->GetBlock(i))};
+    if(block != nullptr && block->GetFieldData() != nullptr
+       && diag->GetFieldData() != nullptr) {
+      block->GetFieldData()->ShallowCopy(diag->GetFieldData());
+      // add clusterId to FieldData
+      vtkNew<vtkIntArray> cid{};
+      cid->SetName("ClusterId");
+      cid->SetNumberOfTuples(1);
+      cid->SetTuple1(0, this->inv_clustering_[i]);
+      block->GetFieldData()->AddArray(cid);
     }
   }
 
-  // add clusterId to outputClusters FieldData
-  vtkNew<vtkIntArray> cid{};
-  cid->SetName("ClusterId");
-  for(const auto c : this->inv_clustering_) {
-    cid->InsertNextValue(c);
-  }
-  fd->AddArray(cid);
   return 1;
 }
 
