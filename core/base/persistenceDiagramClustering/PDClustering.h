@@ -60,6 +60,10 @@ namespace ttk {
       execute(std::vector<std::vector<diagramTuple>> &final_centroids,
               vector<vector<vector<vector<matchingTuple>>>> &all_matchings);
 
+    std::array<double, 3> getDistances() const {
+      return {this->cost_min_, this->cost_sad_, this->cost_max_};
+    }
+
     dataType getMostPersistent(int type = -1);
     vector<vector<int>> get_centroids_sizes();
     dataType getLessPersistent(int type = -1);
