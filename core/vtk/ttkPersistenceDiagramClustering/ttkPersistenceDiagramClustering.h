@@ -61,22 +61,14 @@ public:
   vtkSetMacro(TimeLimit, double);
   vtkGetMacro(TimeLimit, double);
 
-  void SetAlpha(double data) {
-    if(data > 0 && data <= 1) {
-      Alpha = data;
-    } else if(data > 1) {
-      Alpha = 1;
-    } else {
-      Alpha = 0.001;
-    }
+  void SetAlpha(const double alpha) {
+    this->Alpha = std::min(std::abs(alpha), 1.0);
     Modified();
   }
-  vtkGetMacro(Alpha, double);
-
-  void SetAntiAlpha(double data) {
-    double alpha = 1 - data;
-    SetAlpha(alpha);
+  void SetAntiAlpha(const double antiAlpha) {
+    SetAlpha(1.0 - antiAlpha);
   }
+  vtkGetMacro(Alpha, double);
 
   vtkSetMacro(DeltaLim, double);
   vtkGetMacro(DeltaLim, double);
