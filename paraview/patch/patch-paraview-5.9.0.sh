@@ -92,10 +92,8 @@ $PATCH_BIN -p1 \
   < "${PATCH_DIR}/paraview-5.9.0-CPack-CMakeLists.txt.patch"
 $PATCH_BIN -p1 \
   < "${PATCH_DIR}/paraview-5.9.0-build-options-CMakeLists.txt.patch"
-#$PATCH_BIN -p1 \
-#  < "${PATCH_DIR}/paraview-5.8.0-numpy_interface-warning.patch"
-#$PATCH_BIN -p1 \
-#  < "${PATCH_DIR}/paraview-5.8.1-Python3.9-compatibility.patch"
+$PATCH_BIN -p1 \
+  < "${PATCH_DIR}/paraview-5.9.0-gcc11-missing-includes.patch"
 mkdir -p .github/workflows/
 cp ${PATCH_DIR}/main.yml .github/workflows
 
