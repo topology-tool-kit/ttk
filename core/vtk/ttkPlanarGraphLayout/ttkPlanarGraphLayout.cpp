@@ -11,7 +11,9 @@
 #include <vtkSmartPointer.h>
 #include <vtkUnstructuredGrid.h>
 
-#include <MergeTreeVisu.h>
+#include <FTMTreePPUtils.h>
+#include <ttkFTMTreeUtils.h>
+#include <ttkMergeTreeVisu.h>
 
 vtkStandardNewMacro(ttkPlanarGraphLayout);
 
@@ -172,7 +174,7 @@ int ttkPlanarGraphLayout::mergeTreePlanarLayoutCall(
   // tree->printTree2();
 
   switch(dataTypeInt) {
-    vtkTemplateMacro(computePersistencePairs2<VTK_TT>(tree));
+    vtkTemplateMacro(computePersistencePairs<VTK_TT>(tree));
   }
 
   std::vector<std::vector<int>> treeNodeCorrMesh(1);
@@ -180,7 +182,7 @@ int ttkPlanarGraphLayout::mergeTreePlanarLayoutCall(
   for(unsigned int j = 0; j < tree->getNumberOfNodes(); ++j)
     treeNodeCorrMesh[0][j] = j;
 
-  MergeTreeVisu visuMaker;
+  ttkMergeTreeVisu visuMaker;
   visuMaker.setPlanarLayout(true);
   visuMaker.setOutputSegmentation(false);
   visuMaker.setBranchDecompositionPlanarLayout(BranchDecompositionPlanarLayout);

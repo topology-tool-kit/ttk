@@ -144,13 +144,13 @@ void ttk::ftm::FTMTreePP::computePersistencePairs(
   const bool jt) {
   ftm::FTMTree_MT *tree;
   idNode nbLeaves;
-  
+
   if(useCustomTree) {
     tree = customTree;
     customTreeLeaves = getLeavesFromTree(tree);
     nbLeaves = customTreeLeaves.size();
     isJt = jt;
-  } else{
+  } else {
     tree = jt ? getJoinTree() : getSplitTree();
     nbLeaves = tree->getNumberOfLeaves();
   }
