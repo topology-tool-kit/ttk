@@ -164,6 +164,39 @@ int ttkPersistenceDiagramClustering::RequestData(
     }
   }
 
+  // add distance results to output_matchings FieldData
+  vtkNew<vtkDoubleArray> minSad{};
+  minSad->SetName("MinSaddleCost");
+  minSad->SetNumberOfTuples(1);
+  minSad->SetTuple1(0, this->distances[0]);
+
+  vtkNew<vtkDoubleArray> sadSad{};
+  sadSad->SetName("SaddleSaddleCost");
+  sadSad->SetNumberOfTuples(1);
+  sadSad->SetTuple1(0, this->distances[1]);
+
+  vtkNew<vtkDoubleArray> sadMax{};
+  sadMax->SetName("SaddleMaxCost");
+  sadMax->SetNumberOfTuples(1);
+  sadMax->SetTuple1(0, this->distances[2]);
+
+  vtkNew<vtkDoubleArray> wass{};
+  wass->SetName("WassersteinDistance");
+  wass->SetNumberOfTuples(1);
+  wass->SetTuple1(
+    0, std::accumulate(this->distances.begin(), this->distances.end(), 0.0));
+
+  for(size_t i = 0; i < output_matchings->GetNumberOfBlocks(); ++i) {
+    const auto block{
+      vtkUnstructuredGrid::SafeDownCast(output_matchings->GetBlock(i))};
+    if(block != nullptr && block->GetFieldData() != nullptr) {
+      block->GetFieldData()->AddArray(minSad);
+      block->GetFieldData()->AddArray(sadSad);
+      block->GetFieldData()->AddArray(sadMax);
+      block->GetFieldData()->AddArray(wass);
+    }
+  }
+
   return 1;
 }
 
