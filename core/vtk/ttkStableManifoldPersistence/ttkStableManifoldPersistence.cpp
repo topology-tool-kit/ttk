@@ -2,6 +2,7 @@
 #include <vtkDataArray.h>
 #include <vtkDataSet.h>
 #include <vtkDoubleArray.h>
+#include <vtkGenericCell.h>
 #include <vtkIdTypeArray.h>
 #include <vtkInformation.h>
 #include <vtkIntArray.h>
