@@ -1,8 +1,8 @@
 #include <PlanarGraphLayout.h>
 
 #if TTK_ENABLE_GRAPHVIZ
-#include <graphviz/cgraph.h>
-#include <graphviz/gvc.h>
+#include <cgraph.h>
+#include <gvc.h>
 #endif
 
 ttk::PlanarGraphLayout::PlanarGraphLayout() {
