@@ -8,6 +8,8 @@
 - Explicit triangulation performance improvement 
 - IO for preconditioned triangulations
 - Morphological modules (DilateErode)
+- StableManifoldPersistence module 
+- Pareto set extension to Jacobi sets
 - More performance optimization (Discrete Morse Theory / Morse-Smale complex)
 - Improved ZFP integration (fixed accuracy instead of fixed rate)
 - Support for WebSocketIO (web browser interaction)

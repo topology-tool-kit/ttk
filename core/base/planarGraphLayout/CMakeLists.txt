@@ -9,11 +9,8 @@ ttk_add_base_library(planarGraphLayout
     ftmTree
 )
 
-if (TTK_ENABLE_GRAPHVIZ AND GRAPHVIZ_FOUND)
+if (TTK_ENABLE_GRAPHVIZ AND Graphviz_FOUND)
   target_compile_definitions(planarGraphLayout PRIVATE TTK_ENABLE_GRAPHVIZ)
-  target_include_directories(planarGraphLayout PRIVATE ${GRAPHVIZ_INCLUDE_DIR})
-  target_link_libraries(planarGraphLayout PRIVATE ${GRAPHVIZ_CDT_LIBRARY})
-  target_link_libraries(planarGraphLayout PRIVATE ${GRAPHVIZ_GVC_LIBRARY})
-  target_link_libraries(planarGraphLayout PRIVATE ${GRAPHVIZ_CGRAPH_LIBRARY})
-  target_link_libraries(planarGraphLayout PRIVATE ${GRAPHVIZ_PATHPLAN_LIBRARY})
+  target_link_libraries(planarGraphLayout PRIVATE Graphviz::cgraph)
+  target_link_libraries(planarGraphLayout PRIVATE Graphviz::gvc)
 endif()

@@ -38,6 +38,34 @@ namespace ttk {
   const char OffsetFieldUName[] = "ttkOffsetFieldU";
   const char OffsetFieldVName[] = "ttkOffsetFieldV";
 
+  // default names for the Morse-Smale complex
+  const char MorseSmaleCellDimensionName[] = "CellDimension";
+  const char MorseSmaleCellIdName[] = "CellId";
+  const char MorseSmaleBoundaryName[] = "IsOnBoundary";
+  const char MorseSmaleManifoldSizeName[] = "ManifoldSize";
+  const char MorseSmaleSourceIdName[] = "SourceId";
+  const char MorseSmaleDestinationIdName[] = "DestinationId";
+  const char MorseSmaleSeparatrixIdName[] = "SeparatrixId";
+  const char MorseSmaleSeparatrixTypeName[] = "SeparatrixType";
+  const char MorseSmaleSeparatrixMaximumName[] = "SeparatrixFunctionMaximum";
+  const char MorseSmaleSeparatrixMinimumName[] = "SeparatrixFunctionMinimum";
+  const char MorseSmaleSeparatrixDifferenceName[]
+    = "SeparatrixFunctionDifference";
+  const char MorseSmaleCriticalPointsOnBoundaryName[]
+    = "NumberOfCriticalPointsOnBoundary";
+  const char MorseSmaleAscendingName[] = "AscendingManifold";
+  const char MorseSmaleDescendingName[] = "DescendingManifold";
+  const char MorseSmaleManifoldName[] = "MorseSmaleManifold";
+
+  // default names for persistence diagram meta data
+  const char PersistenceCriticalTypeName[] = "CriticalType";
+  const char PersistenceBirthName[] = "Birth";
+  const char PersistenceDeathName[] = "Death";
+  const char PersistenceCoordinatesName[] = "Coordinates";
+  const char PersistencePairIdentifierName[] = "PairIdentifier";
+  const char PersistenceName[] = "Persistence";
+  const char PersistencePairTypeName[] = "PairType";
+
   /// default value for critical index
   enum class CriticalType {
     Local_minimum = 0,
