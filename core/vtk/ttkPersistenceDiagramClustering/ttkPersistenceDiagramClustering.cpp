@@ -482,6 +482,12 @@ void ttkPersistenceDiagramClustering::outputClusteredDiagrams(
     this->diagramToVTU(
       vtu, diags[i], this->inv_clustering_[i], this->max_dimension_total_);
 
+    vtkNew<vtkIntArray> diagId{};
+    diagId->SetName("DiagramID");
+    diagId->SetNumberOfTuples(vtu->GetNumberOfPoints());
+    diagId->Fill(i);
+    vtu->GetPointData()->AddArray(diagId);
+
     if(dm == DISPLAY::MATCHINGS && spacing > 0) {
       // translate diagrams along the Z axis
       vtkNew<vtkTransform> tr{};
