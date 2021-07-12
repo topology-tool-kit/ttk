@@ -383,7 +383,7 @@ void ttkPersistenceDiagramClustering::diagramToVTU(
 
   // cell data
   vtkNew<vtkIntArray> pairId{};
-  pairId->SetName("PairID");
+  pairId->SetName("PairIdentifier");
   pairId->SetNumberOfTuples(diagram.size() + 1);
   output->GetCellData()->AddArray(pairId);
 
