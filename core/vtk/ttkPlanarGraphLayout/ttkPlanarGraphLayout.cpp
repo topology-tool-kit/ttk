@@ -158,7 +158,7 @@ int ttkPlanarGraphLayout::mergeTreePlanarLayoutCallTemplate(
   vtkUnstructuredGrid *treeArcs,
   vtkUnstructuredGrid *output) {
   int verbose = 0;
-  MergeTree<dataType> mergeTree = makeTree<dataType>(treeNodes, treeArcs);
+  MergeTree mergeTree = makeTree<dataType>(treeNodes, treeArcs);
   FTMTree_MT *tree = &(mergeTree.tree);
   // tree->printTree2();
 
