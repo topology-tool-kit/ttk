@@ -135,7 +135,9 @@ protected:
   int mergeTreePlanarLayoutCall(vtkInformation *request,
                                 vtkInformationVector **inputVector,
                                 vtkInformationVector *outputVector);
-                                
+
   template <class dataType>
-  int mergeTreePlanarLayoutCallTemplate(vtkUnstructuredGrid *treeNodes, vtkUnstructuredGrid *treeArcs, vtkUnstructuredGrid *output);
+  int mergeTreePlanarLayoutCallTemplate(vtkUnstructuredGrid *treeNodes,
+                                        vtkUnstructuredGrid *treeArcs,
+                                        vtkUnstructuredGrid *output);
 };

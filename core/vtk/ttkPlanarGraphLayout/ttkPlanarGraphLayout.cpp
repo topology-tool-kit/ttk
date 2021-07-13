@@ -153,8 +153,11 @@ int ttkPlanarGraphLayout::planarGraphLayoutCall(
 }
 
 template <class dataType>
-int ttkPlanarGraphLayout::mergeTreePlanarLayoutCallTemplate(vtkUnstructuredGrid *treeNodes, vtkUnstructuredGrid *treeArcs, vtkUnstructuredGrid *output){
-int verbose = 0;
+int ttkPlanarGraphLayout::mergeTreePlanarLayoutCallTemplate(
+  vtkUnstructuredGrid *treeNodes,
+  vtkUnstructuredGrid *treeArcs,
+  vtkUnstructuredGrid *output) {
+  int verbose = 0;
   MergeTree<dataType> mergeTree = makeTree<dataType>(treeNodes, treeArcs);
   FTMTree_MT *tree = &(mergeTree.tree);
   // tree->printTree2();
@@ -201,12 +204,12 @@ int ttkPlanarGraphLayout::mergeTreePlanarLayoutCall(
   treeArcs->PrintSelf(std::cout, vtkIndent(2));*/
 
   int res = 0;
-  
+
   switch(dataTypeInt) {
-    vtkTemplateMacro(
-      res = mergeTreePlanarLayoutCallTemplate<VTK_TT>(treeNodes, treeArcs, output););
+    vtkTemplateMacro(res = mergeTreePlanarLayoutCallTemplate<VTK_TT>(
+                       treeNodes, treeArcs, output););
   }
-  
+
   return res;
 }
 
