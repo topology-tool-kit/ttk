@@ -48,6 +48,7 @@
 
 // TTK includes
 #include <PlanarGraphLayout.h>
+#include <vtkUnstructuredGrid.h>
 
 class TTKPLANARGRAPHLAYOUT_EXPORT ttkPlanarGraphLayout
   : public ttkAlgorithm,
@@ -134,4 +135,7 @@ protected:
   int mergeTreePlanarLayoutCall(vtkInformation *request,
                                 vtkInformationVector **inputVector,
                                 vtkInformationVector *outputVector);
+                                
+  template <class dataType>
+  int mergeTreePlanarLayoutCallTemplate(vtkUnstructuredGrid *treeNodes, vtkUnstructuredGrid *treeArcs, vtkUnstructuredGrid *output);
 };

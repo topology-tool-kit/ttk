@@ -135,14 +135,14 @@ bool isImportantPair(ftm::FTMTree_MT *tree,
 // --------------------
 
 template <typename type>
-static type myAbs2(const type var) {
+static type myAbs(const type var) {
   return (var >= 0) ? var : -var;
 }
 
 template <class dataType>
 bool isEqual(dataType first, dataType two, double eps = 1e-6) {
-  return myAbs2<dataType>(first - two)
-         < eps * std::max(myAbs2<dataType>(first), myAbs2<dataType>(two));
+  return myAbs<dataType>(first - two)
+         < eps * std::max(myAbs<dataType>(first), myAbs<dataType>(two));
 }
 
 #endif

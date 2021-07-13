@@ -22,16 +22,46 @@
 using namespace ttk;
 using namespace ftm;
 
-struct MergeTree2 {
+template <typename dataType>
+struct MergeTree {
   ftm::Scalars scalars;
+  std::vector<dataType> scalarsValues;
   ftm::Params params;
   ftm::FTMTree_MT tree;
-  MergeTree2(ftm::Scalars scalarsT, ftm::Params paramsT)
-    : scalars(scalarsT), params(paramsT), tree(&params, &scalars, Join_Split) {
+
+  ftm::Scalars emptyScalars(){
+    ftm::Scalars scalarsT;
+    scalarsT.size = 0;
+    dataType *scalarsValuesT = nullptr;
+    scalarsT.values = (void *)scalarsValuesT;
+    return scalarsT;
+  }
+  
+  ftm::Params emptyParams(){
+    ftm::Params paramsT;
+    paramsT.treeType = ftm::Join_Split;
+    return paramsT;
+  }
+  
+  MergeTree() : MergeTree(emptyScalars(), emptyParams()){}
+  
+  MergeTree(ftm::Scalars scalarsT, ftm::Params paramsT)
+    : scalars(scalarsT), params(paramsT), tree(&params, &scalars, params.treeType) {
+    tree.makeAlloc();
+  }
+
+  MergeTree(ftm::Scalars scalarsT,
+             std::vector<dataType> scalarValuesT,
+             ftm::Params paramsT)
+    : scalars(scalarsT), scalarsValues(scalarValuesT), params(paramsT),
+      tree(&params, &scalars, params.treeType) {
+    scalars.values = (void*)(scalarsValues.data());
+    tree.makeAlloc();
   }
 };
 
-MergeTree2 makeTree2(vtkUnstructuredGrid *treeNodes,
+template <class dataType>
+MergeTree<dataType> makeTree(vtkUnstructuredGrid *treeNodes,
                      vtkUnstructuredGrid *treeArcs) {
   // Init Scalars
   Scalars scalars;
@@ -43,7 +73,7 @@ MergeTree2 makeTree2(vtkUnstructuredGrid *treeNodes,
   // Init Tree
   Params params;
   params.treeType = Join_Split;
-  MergeTree2 mergeTree(scalars, params);
+  MergeTree<dataType> mergeTree(scalars, params);
   mergeTree.tree.makeAlloc();
 
   // Add Nodes
