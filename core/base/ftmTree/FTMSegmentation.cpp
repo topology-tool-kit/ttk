@@ -234,8 +234,8 @@ SimplexId ArcRegion::findBelow(SimplexId v,
   const bool chkOther = vert2treeOther.size() > 0;
 
   for(const auto &reg : segmentsIn_) {
-    if(s->isLower(*reg.segmentBegin, v)
-       && s->isHigher(*(reg.segmentEnd - 1), v)) {
+    if(s->isEqLower(*reg.segmentBegin, v)
+       && s->isEqHigher(*(reg.segmentEnd - 1), v)) {
       // is v is between beg/end
       // append once
       const auto &oldBeg = reg.segmentBegin;
@@ -312,8 +312,8 @@ tuple<SimplexId, ArcRegion> ArcRegion::splitBack(SimplexId v,
   for(decltype(segmentsIn_)::iterator it = segmentsIn_.begin();
       it != segmentsIn_.end(); ++it) {
     auto &reg = *it;
-    if(s->isLower(*reg.segmentBegin, v)
-       && s->isHigher(*(reg.segmentEnd - 1), v)) {
+    if(s->isEqLower(*reg.segmentBegin, v)
+       && s->isEqHigher(*(reg.segmentEnd - 1), v)) {
       // is v is between beg/end
       // append once
       const auto &oldBeg = reg.segmentBegin;
@@ -367,8 +367,8 @@ tuple<SimplexId, ArcRegion> ArcRegion::splitFront(SimplexId v,
   for(decltype(segmentsIn_)::iterator it = segmentsIn_.begin();
       it != segmentsIn_.end(); ++it) {
     auto &reg = *it;
-    if(s->isLower(*reg.segmentBegin, v)
-       && s->isHigher(*(reg.segmentEnd - 1), v)) {
+    if(s->isEqLower(*reg.segmentBegin, v)
+       && s->isEqHigher(*(reg.segmentEnd - 1), v)) {
       // is v is between beg/end
       // append once
       const auto &oldEnd = reg.segmentEnd;
