@@ -2,7 +2,6 @@
 
 #include <vtkPointData.h>
 #include <vtkPointSet.h>
-#include <vtkStringArray.h>
 #include <vtkUnstructuredGrid.h>
 
 #include <vtkInformation.h>
