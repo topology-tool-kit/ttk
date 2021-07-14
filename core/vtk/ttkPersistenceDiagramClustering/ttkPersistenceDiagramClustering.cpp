@@ -381,6 +381,11 @@ void ttkPersistenceDiagramClustering::diagramToVTU(
   pointPers->SetNumberOfTuples(nPoints);
   output->GetPointData()->AddArray(pointPers);
 
+  vtkNew<ttkSimplexIdTypeArray> vsf{};
+  vsf->SetName(ttk::VertexScalarFieldName);
+  vsf->SetNumberOfTuples(nPoints);
+  output->GetPointData()->AddArray(vsf);
+
   // cell data
   vtkNew<vtkIntArray> pairId{};
   pairId->SetName("PairIdentifier");
@@ -401,6 +406,8 @@ void ttkPersistenceDiagramClustering::diagramToVTU(
     const auto &pair{diagram[j]};
     const auto birth{std::get<6>(pair)};
     const auto death{std::get<10>(pair)};
+    const auto birtVertId{std::get<0>(pair)};
+    const auto deathVertId{std::get<2>(pair)};
     const auto pType{std::get<5>(pair)};
     const auto birthType{std::get<1>(pair)};
     const auto deathType{std::get<3>(pair)};
@@ -421,6 +428,8 @@ void ttkPersistenceDiagramClustering::diagramToVTU(
     pointPers->SetTuple1(2 * j + 1, death - birth);
     critType->SetTuple1(2 * j + 0, static_cast<int>(birthType));
     critType->SetTuple1(2 * j + 1, static_cast<int>(deathType));
+    vsf->SetTuple1(2 * j + 0, birtVertId);
+    vsf->SetTuple1(2 * j + 1, deathVertId);
 
     points->SetPoint(2 * j + 0, birth, birth, 0);
     points->SetPoint(2 * j + 1, birth, death, 0);
