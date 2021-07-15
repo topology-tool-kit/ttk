@@ -137,9 +137,9 @@ int ttkPersistenceDiagramClustering::RequestData(
     }
   }
 
-  outputClusteredDiagrams(output_clusters, this->intermediateDiagrams_,
-                          this->inv_clustering_, this->DisplayMethod,
-                          this->Spacing, this->max_dimension_total_);
+  outputClusteredDiagrams(output_clusters, input, this->inv_clustering_,
+                          this->DisplayMethod, this->Spacing,
+                          this->max_dimension_total_);
   outputCentroids(output_centroids, this->final_centroids_, this->DisplayMethod,
                   this->Spacing, this->max_dimension_total_);
   outputMatchings(
@@ -459,7 +459,7 @@ void ttkPersistenceDiagramClustering::diagramToVTU(
 
 void ttkPersistenceDiagramClustering::outputClusteredDiagrams(
   vtkMultiBlockDataSet *output,
-  const std::vector<diagramType> &diags,
+  const std::vector<vtkUnstructuredGrid *> &diags,
   const std::vector<int> &inv_clustering,
   const DISPLAY dm,
   const double spacing,
@@ -488,8 +488,7 @@ void ttkPersistenceDiagramClustering::outputClusteredDiagrams(
 
   for(size_t i = 0; i < diags.size(); ++i) {
     vtkNew<vtkUnstructuredGrid> vtu{};
-    this->diagramToVTU(
-      vtu, diags[i], this->inv_clustering_[i], this->max_dimension_total_);
+    vtu->ShallowCopy(diags[i]);
 
     vtkNew<vtkIntArray> diagId{};
     diagId->SetName("DiagramID");
