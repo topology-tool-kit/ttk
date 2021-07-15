@@ -764,8 +764,8 @@ public:
       queue.pop();
 
       // Skip if we go in the branch in which is branchRoot
-      if(branching[node] != branchRoot and tree->getParentSafe(node) == branchRoot
-         and node != branchRoot)
+      if(branching[node] != branchRoot
+         and tree->getParentSafe(node) == branchRoot and node != branchRoot)
         continue;
 
       // Skip if restricted
@@ -873,8 +873,8 @@ public:
       ftm::idNode node = queue.front();
       queue.pop();
 
-      if(branching[node] != branchRoot and tree->getParentSafe(node) == branchRoot
-         and node != branchRoot)
+      if(branching[node] != branchRoot
+         and tree->getParentSafe(node) == branchRoot and node != branchRoot)
         continue;
 
       if(node != branchRoot)

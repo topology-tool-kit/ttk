@@ -587,11 +587,11 @@ namespace ttk {
                     const int debugLevel = 2) const;
 
       // ----------------------------------------
-      // Utils functions 
+      // Utils functions
       // Mathieu Pont (mathieu.pont@lip6.fr)
       // 2021
       // ----------------------------------------
-                    
+
       // --------------------
       // Is
       // --------------------
@@ -607,7 +607,7 @@ namespace ttk {
       bool isFullMerge();
 
       bool isBranchOrigin(idNode nodeId);
-      
+
       template <class dataType>
       bool isJoinTree();
 
@@ -650,9 +650,9 @@ namespace ttk {
 
       template <class dataType>
       dataType getNodePersistence(idNode nodeId);
-      
+
       // ----------------------------------------
-      // End of utils functions 
+      // End of utils functions
       // ----------------------------------------
 
     protected:
