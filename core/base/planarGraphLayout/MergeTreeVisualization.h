@@ -1,28 +1,25 @@
 /// \ingroup base
-/// \class MergeTreeVisu
+/// \class MergeTreeVisualization
 /// \author Mathieu Pont (mathieu.pont@lip6.fr)
 /// \date 2021.
 ///
 /// Visualization module for merge trees.
 ///
 
-#ifndef _MERGETREEVISU_H
-#define _MERGETREEVISU_H
+#ifndef _MERGETREEVISUALIZATION_H
+#define _MERGETREEVISUALIZATION_H
 
 #pragma once
 
 #include <FTMTree.h>
 #include <FTMTreeUtils.h>
 
-#include <Debug.h>
-#include <ttkAlgorithm.h>
-
 #include <stack>
 
 using namespace ttk;
 using namespace ftm;
 
-class MergeTreeVisu : virtual public Debug {
+class MergeTreeVisualization : virtual public Debug {
 protected:
   // Visualization parameters
   bool PlanarLayout = false;
@@ -35,8 +32,8 @@ protected:
   double NonImportantPairsProximity = 0.05;
 
 public:
-  MergeTreeVisu(){};
-  ~MergeTreeVisu(){};
+  MergeTreeVisualization(){};
+  ~MergeTreeVisualization(){};
 
   // ==========================================================================
   // Getter / Setter
@@ -650,29 +647,15 @@ public:
       // Get branch x and y bounds
       allBranchBounds[nodeOrigin]
         = getBranchBounds(retVec, treeSimplexId, branching, tree, nodeOrigin);
-
-      // Verify conflict (testing)
-      /*printMsg( "====================================" ,
-      debug::Priority::VERBOSE); for(int i = 0; i <
-      allBranchOrigins[nodeOrigin].size(); ++i)
-        printTuple(allBranchBounds[allBranchOrigins[nodeOrigin][i]]);*/
-      /*for(int i = 1; i < allBranchOrigins[nodeOrigin].size(); ++i){
-        ftm::idNode branchNodeOrigin = allBranchOrigins[nodeOrigin][i];
-        for(int j = 0; j < i; ++j){
-          ftm::idNode previousBranchNodeOrigin =
-  allBranchOrigins[nodeOrigin][j]; auto first =
-  allBranchBounds[branchNodeOrigin]; auto second =
-  allBranchBounds[previousBranchNodeOrigin]; std::cout <<
-  "-------------------------" << std::endl; std::cout << branchNodeOrigin << " _
-  " << previousBranchNodeOrigin << std::endl; printTuple(first);
-  printTuple(second); if(isConflictingBounds(first, second)) std::cout << i << "
-  _ " << j << " conflict" << std::endl;
-        }
-      }*/
-
     } // end while
 
     // ----- Correction of important/non-important pairs gap
+    // TODO the gap between important pairs can be higher than the minimum gap
+    // needed to avoid conflict. The gap is computed using the maximum number of
+    // non-important pairs attached to an inmportant pairs Unfortunately the
+    // real gap can only be computed here, after the conflicts has been avoided.
+    // The maximum real gap must be calculated and propagated to all important
+    // branches and we also need to manage to avoid conflict with this new gap.
     // Get real gap
     double realImportantPairsGap = std::numeric_limits<double>::lowest();
     /*if(customImportantPairsSpacing)

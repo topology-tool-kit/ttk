@@ -13,7 +13,7 @@
 
 #include <FTMTreePPUtils.h>
 #include <ttkFTMTreeUtils.h>
-#include <ttkMergeTreeVisu.h>
+#include <ttkMergeTreeVisualization.h>
 
 vtkStandardNewMacro(ttkPlanarGraphLayout);
 
@@ -169,7 +169,7 @@ int ttkPlanarGraphLayout::mergeTreePlanarLayoutCallTemplate(
   for(unsigned int j = 0; j < tree->getNumberOfNodes(); ++j)
     treeNodeCorrMesh[0][j] = j;
 
-  ttkMergeTreeVisu visuMaker;
+  ttkMergeTreeVisualization visuMaker;
   visuMaker.setPlanarLayout(true);
   visuMaker.setOutputSegmentation(false);
   visuMaker.setBranchDecompositionPlanarLayout(BranchDecompositionPlanarLayout);

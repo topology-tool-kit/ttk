@@ -11,6 +11,7 @@
 #pragma once
 
 #include <FTMTree.h>
+#include <FTMTreeUtils.h>
 
 #include <ttkUtils.h>
 
@@ -19,69 +20,61 @@
 #include <vtkPointData.h>
 #include <vtkUnstructuredGrid.h>
 
-using namespace ttk;
-using namespace ftm;
+namespace ttk {
+  namespace ftm {
 
-struct MergeTree {
-  ftm::Scalars scalars;
-  ftm::Params params;
-  ftm::FTMTree_MT tree;
-  MergeTree(ftm::Scalars scalarsT, ftm::Params paramsT)
-    : scalars(scalarsT), params(paramsT),
-      tree(&params, &scalars, params.treeType) {
-    tree.makeAlloc();
-  }
-};
+    template <class dataType>
+    MergeTree makeTree(vtkUnstructuredGrid *treeNodes,
+                       vtkUnstructuredGrid *treeArcs) {
+      // Init Scalars
+      Scalars scalars;
+      vtkSmartPointer<vtkDataArray> nodesScalar
+        = treeNodes->GetPointData()->GetArray("Scalar"); // 1: Scalar
+      scalars.size = nodesScalar->GetNumberOfTuples();
+      scalars.values = ttkUtils::GetVoidPointer(nodesScalar);
 
-template <class dataType>
-MergeTree makeTree(vtkUnstructuredGrid *treeNodes,
-                   vtkUnstructuredGrid *treeArcs) {
-  // Init Scalars
-  Scalars scalars;
-  vtkSmartPointer<vtkDataArray> nodesScalar
-    = treeNodes->GetPointData()->GetArray("Scalar"); // 1: Scalar
-  scalars.size = nodesScalar->GetNumberOfTuples();
-  scalars.values = ttkUtils::GetVoidPointer(nodesScalar);
+      // Init Tree
+      Params params;
+      params.treeType = Join_Split;
+      MergeTree mergeTree(scalars, params);
 
-  // Init Tree
-  Params params;
-  params.treeType = Join_Split;
-  MergeTree mergeTree(scalars, params);
+      // Add Nodes
+      vtkSmartPointer<vtkDataArray> nodesId
+        = treeNodes->GetPointData()->GetArray("NodeId"); // 0: NodeId
+      vtkIdType nodesNumTuples = nodesId->GetNumberOfTuples();
+      for(vtkIdType i = 0; i < nodesNumTuples; ++i) {
+        mergeTree.tree.makeNode(i);
+      }
 
-  // Add Nodes
-  vtkSmartPointer<vtkDataArray> nodesId
-    = treeNodes->GetPointData()->GetArray("NodeId"); // 0: NodeId
-  vtkIdType nodesNumTuples = nodesId->GetNumberOfTuples();
-  for(vtkIdType i = 0; i < nodesNumTuples; ++i) {
-    mergeTree.tree.makeNode(i);
-  }
+      // Add Arcs
+      vtkSmartPointer<vtkDataArray> arcsUp
+        = treeArcs->GetCellData()->GetArray("upNodeId"); // 1: upNodeId
+      vtkSmartPointer<vtkDataArray> arcsDown
+        = treeArcs->GetCellData()->GetArray("downNodeId"); // 2: downNodeId
+      vtkIdType arcsNumTuples = arcsUp->GetNumberOfTuples();
+      std::set<std::tuple<double, double>> added_arcs; // Avoid duplicates
+      for(vtkIdType i = 0; i < arcsNumTuples; ++i) {
+        double downId = arcsDown->GetTuple1(i);
+        double upId = arcsUp->GetTuple1(i);
+        auto it = added_arcs.find(std::make_tuple(downId, upId));
+        if(it == added_arcs.end()) { // arc not added yet
+          mergeTree.tree.makeSuperArc(downId, upId); // (down, Up)
+          added_arcs.insert(std::make_tuple(downId, upId));
+        }
+      }
 
-  // Add Arcs
-  vtkSmartPointer<vtkDataArray> arcsUp
-    = treeArcs->GetCellData()->GetArray("upNodeId"); // 1: upNodeId
-  vtkSmartPointer<vtkDataArray> arcsDown
-    = treeArcs->GetCellData()->GetArray("downNodeId"); // 2: downNodeId
-  vtkIdType arcsNumTuples = arcsUp->GetNumberOfTuples();
-  std::set<std::tuple<double, double>> added_arcs; // Avoid duplicates
-  for(vtkIdType i = 0; i < arcsNumTuples; ++i) {
-    double downId = arcsDown->GetTuple1(i);
-    double upId = arcsUp->GetTuple1(i);
-    auto it = added_arcs.find(std::make_tuple(downId, upId));
-    if(it == added_arcs.end()) { // arc not added yet
-      mergeTree.tree.makeSuperArc(downId, upId); // (down, Up)
-      added_arcs.insert(std::make_tuple(downId, upId));
+      // Manage inconsistent arcs
+      // manageInconsistentArcsMultiParent(tree);;
+
+      // Remove self link
+      // removeSelfLink(tree);
+
+      // tree->printTree2();
+
+      return mergeTree;
     }
-  }
 
-  // Manage inconsistent arcs
-  // manageInconsistentArcsMultiParent(tree);;
-
-  // Remove self link
-  // removeSelfLink(tree);
-
-  // tree->printTree2();
-
-  return mergeTree;
-}
+  } // namespace ftm
+} // namespace ttk
 
 #endif

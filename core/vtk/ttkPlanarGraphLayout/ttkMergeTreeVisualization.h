@@ -1,5 +1,5 @@
 /// \ingroup vtk
-/// \class ttkMergeTreeVisu
+/// \class ttkMergeTreeVisualization
 /// \author Mathieu Pont (mathieu.pont@lip6.fr)
 /// \date 2021.
 ///
@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <MergeTreeVisu.h>
+#include <MergeTreeVisualization.h>
 
 #include <FTMTree.h>
 #include <FTMTreeUtils.h>
@@ -31,7 +31,7 @@
 using namespace ttk;
 using namespace ftm;
 
-class ttkMergeTreeVisu : public MergeTreeVisu {
+class ttkMergeTreeVisualization : public MergeTreeVisualization {
 private:
   // Visualization parameters
   double DimensionSpacing = 1.;
@@ -78,8 +78,8 @@ private:
   std::vector<double> clusterShift;
 
 public:
-  ttkMergeTreeVisu(){};
-  ~ttkMergeTreeVisu(){};
+  ttkMergeTreeVisualization(){};
+  ~ttkMergeTreeVisualization(){};
 
   // ==========================================================================
   // Getter / Setter
