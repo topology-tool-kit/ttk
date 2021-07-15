@@ -1,5 +1,4 @@
 #include <FTMTree.h>
-#include <FTMTreeUtils.h>
 
 namespace ttk {
   namespace ftm {
@@ -47,7 +46,7 @@ namespace ttk {
       return nullNodes;
     }
 
-    idNode FTMTree_MT::getParent(idNode nodeId) {
+    idNode FTMTree_MT::getParentSafe(idNode nodeId) {
       if(!this->isRoot(nodeId)) {
         // _ Nodes in merge trees should have only one parent
         idSuperArc arcId = this->getNode(nodeId)->getUpSuperArcId(0);

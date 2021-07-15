@@ -757,7 +757,7 @@ public:
             vtkIdType pointIds[2];
             pointIds[0] = treeSimplexId[node];
 
-            ftm::idNode nodeParent = trees[i]->getParent(node);
+            ftm::idNode nodeParent = trees[i]->getParentSafe(node);
             // TODO too many dummy cells are created
             bool dummyCell = PlanarLayout
                              and not BranchDecompositionPlanarLayout

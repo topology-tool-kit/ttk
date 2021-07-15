@@ -460,7 +460,7 @@ public:
           = retVec[treeSimplexId[nodeOrigin] * 2] + inc;
 
         // Push nodes in the branch to the stack
-        ftm::idNode nodeParent = tree->getParent(node);
+        ftm::idNode nodeParent = tree->getParentSafe(node);
         ftm::idNode oldNodeParent = -1;
         while(nodeParent != nodeOrigin) {
           if(not nodeDone[nodeParent])
@@ -468,7 +468,7 @@ public:
           else
             break;
           oldNodeParent = nodeParent;
-          nodeParent = tree->getParent(nodeParent);
+          nodeParent = tree->getParentSafe(nodeParent);
           if(oldNodeParent == nodeParent) {
             std::stringstream ss;
             ss << "treePlanarLayoutImpl oldNodeParent == nodeParent";
@@ -764,7 +764,7 @@ public:
       queue.pop();
 
       // Skip if we go in the branch in which is branchRoot
-      if(branching[node] != branchRoot and tree->getParent(node) == branchRoot
+      if(branching[node] != branchRoot and tree->getParentSafe(node) == branchRoot
          and node != branchRoot)
         continue;
 
@@ -873,7 +873,7 @@ public:
       ftm::idNode node = queue.front();
       queue.pop();
 
-      if(branching[node] != branchRoot and tree->getParent(node) == branchRoot
+      if(branching[node] != branchRoot and tree->getParentSafe(node) == branchRoot
          and node != branchRoot)
         continue;
 

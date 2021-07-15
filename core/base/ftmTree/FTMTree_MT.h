@@ -558,9 +558,9 @@ namespace ttk {
       idNode getLowerNodeId(const SuperArc *a);
       idNode getUpperNodeId(const SuperArc *a);
 
-      /*idNode getParent(const idNode n) {
+      idNode getParent(const idNode n) {
         return getSuperArc(getNode(n)->getUpSuperArcId(0))->getUpNodeId();
-      }*/
+      }
 
       void delNode(idNode node);
 
@@ -586,7 +586,74 @@ namespace ttk {
                     SimplexId nbScalars = -1,
                     const int debugLevel = 2) const;
 
-#include <FTMTreeUtils.h>
+      // ----------------------------------------
+      // Utils functions 
+      // Mathieu Pont (mathieu.pont@lip6.fr)
+      // 2021
+      // ----------------------------------------
+                    
+      // --------------------
+      // Is
+      // --------------------
+
+      bool isNodeOriginDefined(idNode nodeId);
+
+      bool isRoot(idNode nodeId);
+
+      bool isLeaf(idNode nodeId);
+
+      bool isNodeAlone(idNode nodeId);
+
+      bool isFullMerge();
+
+      bool isBranchOrigin(idNode nodeId);
+      
+      template <class dataType>
+      bool isJoinTree();
+
+      template <class dataType>
+      bool isImportantPair(idNode nodeId, double threshold);
+
+      // --------------------
+      // Get
+      // --------------------
+
+      idNode getRoot();
+
+      idNode getParentSafe(idNode nodeId);
+
+      std::vector<idNode> getChildren(idNode nodeId);
+
+      std::vector<idNode> getLeavesFromTree();
+
+      int getNumberOfLeavesFromTree();
+
+      int getNumberOfNodeAlone();
+
+      int getRealNumberOfNodes();
+
+      std::tuple<std::vector<idNode>, std::vector<idNode>>
+        getBranchOriginsFromThisBranch(idNode node);
+
+      void getTreeBranching(std::vector<idNode> &branching,
+                            std::vector<int> &branchingID,
+                            std::vector<std::vector<idNode>> &nodeBranching);
+
+      void getTreeBranching(std::vector<idNode> &branching,
+                            std::vector<int> &branchingID);
+
+      template <class dataType>
+      std::tuple<dataType, dataType> getBirthDeath(idNode nodeId);
+
+      template <class dataType>
+      dataType getBirth(idNode nodeId);
+
+      template <class dataType>
+      dataType getNodePersistence(idNode nodeId);
+      
+      // ----------------------------------------
+      // End of utils functions 
+      // ----------------------------------------
 
     protected:
       // -----
