@@ -123,17 +123,6 @@ namespace ttk {
           }
         }
       }
-
-      std::vector<ftm::idNode> getLeavesFromTree(ftm::FTMTree_MT *tree) {
-        std::vector<ftm::idNode> treeLeavesT;
-        for(ftm::idNode i = 0; i < tree->getNumberOfNodes(); ++i) {
-          if(tree->getNode(i)->getNumberOfDownSuperArcs() == 0
-             and tree->getNode(i)->getNumberOfUpSuperArcs() != 0)
-            treeLeavesT.push_back(i);
-        }
-
-        return treeLeavesT;
-      }
     };
   } // namespace ftm
 } // namespace ttk
@@ -147,7 +136,7 @@ void ttk::ftm::FTMTreePP::computePersistencePairs(
 
   if(useCustomTree) {
     tree = customTree;
-    customTreeLeaves = getLeavesFromTree(tree);
+    customTreeLeaves = tree->getLeavesFromTree();
     nbLeaves = customTreeLeaves.size();
     isJt = jt;
   } else {

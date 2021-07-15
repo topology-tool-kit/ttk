@@ -11,7 +11,6 @@
 #include <MergeTreeVisualization.h>
 
 #include <FTMTree.h>
-#include <FTMTreeUtils.h>
 
 #include <Debug.h>
 #include <ttkAlgorithm.h>
@@ -342,8 +341,8 @@ public:
           if(verbose > 1)
             printMsg(
               "// Add mean matched persistence", debug::Priority::VERBOSE);
-          double tree1Pers = getNodePersistence<dataType>(tree1, tree1NodeId);
-          double tree2Pers = getNodePersistence<dataType>(tree2, tree2NodeId);
+          double tree1Pers = tree1->getNodePersistence<dataType>(tree1NodeId);
+          double tree2Pers = tree2->getNodePersistence<dataType>(tree2NodeId);
           double meanPersistence = (tree1Pers + tree2Pers) / 2;
           matchPers->InsertNextTuple1(meanPersistence);
 
@@ -430,8 +429,8 @@ public:
     std::vector<std::vector<int>> allBaryBranchingID(barycenters.size());
     for(unsigned int c = 0; c < barycenters.size(); ++c) {
       allBaryBounds[c] = getMaximalBounds(allBounds, clusteringAssignment, c);
-      getTreeBranching(
-        barycenters[c], allBaryBranching[c], allBaryBranchingID[c]);
+      barycenters[c]->getTreeBranching(
+        allBaryBranching[c], allBaryBranchingID[c]);
     }
     if(not clusteringOutput)
       allBaryBounds.push_back(
@@ -579,7 +578,7 @@ public:
           printMsg("// Get branching", debug::Priority::VERBOSE);
         std::vector<ftm::idNode> treeBranching;
         std::vector<int> treeBranchingID;
-        getTreeBranching(trees[i], treeBranching, treeBranchingID);
+        trees[i]->getTreeBranching(treeBranching, treeBranchingID);
 
         // Get shift
         if(verbose > 1)
@@ -633,11 +632,11 @@ public:
         if(PlanarLayout) {
           double refPersistence;
           if(clusteringOutput)
-            refPersistence = getNodePersistence<dataType>(
-              barycenters[0], getRoot(barycenters[0]));
+            refPersistence = barycenters[0]->getNodePersistence<dataType>(
+              barycenters[0]->getRoot());
           else
             refPersistence
-              = getNodePersistence<dataType>(trees[0], getRoot(trees[0]));
+              = trees[0]->getNodePersistence<dataType>(trees[0]->getRoot());
           layout = treePlanarLayout<dataType>(
             trees[i], allBaryBounds[c], refPersistence);
         }
@@ -673,7 +672,7 @@ public:
         if(verbose > 0)
           printMsg("// Tree traversal", debug::Priority::VERBOSE);
         std::queue<idNode> queue;
-        queue.push(getRoot(trees[i]));
+        queue.push(trees[i]->getRoot());
         while(!queue.empty()) {
           idNode node = queue.front();
           queue.pop();
@@ -682,7 +681,7 @@ public:
           // Push children to the queue
           if(verbose > 2)
             printMsg("// Push children to the queue", debug::Priority::VERBOSE);
-          for(auto child : getChildren(trees[i], node))
+          for(auto child : trees[i]->getChildren(node))
             queue.push(child);
 
           // --------------
@@ -736,7 +735,7 @@ public:
 
           // TODO too many dummy nodes are created
           bool dummyNode = PlanarLayout and not BranchDecompositionPlanarLayout
-                           and !isRoot(trees[i], node)
+                           and !trees[i]->isRoot(node)
             /*and !isLeaf(trees[i], node)
             and isBranchOrigin(trees[i], node)*/
             ;
@@ -754,16 +753,16 @@ public:
           // --------------
           if(verbose > 2)
             printMsg("// Add cell connecting parent", debug::Priority::VERBOSE);
-          if(!isRoot(trees[i], node)) {
+          if(!trees[i]->isRoot(node)) {
             vtkIdType pointIds[2];
             pointIds[0] = treeSimplexId[node];
 
-            ftm::idNode nodeParent = getParent(trees[i], node);
+            ftm::idNode nodeParent = trees[i]->getParent(node);
             // TODO too many dummy cells are created
             bool dummyCell = PlanarLayout
                              and not BranchDecompositionPlanarLayout
                              and treeBranching[node] == nodeParent
-                             and !isRoot(trees[i], nodeParent);
+                             and !trees[i]->isRoot(nodeParent);
             if(PlanarLayout and BranchDecompositionPlanarLayout) {
               pointIds[1] = treeSimplexId[treeBranching[node]];
             } else if(dummyCell) {
@@ -800,7 +799,7 @@ public:
                 if(treeMatching[node] >= 0
                    and treeMatching[node] < allBaryBranchingID[c].size()) {
                   tBranchID = allBaryBranchingID[c][treeMatching[node]];
-                  if(not isLeaf(trees[i], node)
+                  if(not trees[i]->isLeaf(node)
                      and treeMatching[nodeOrigin] >= 0
                      and treeMatching[nodeOrigin]
                            < allBaryBranchingID[c].size())
@@ -824,7 +823,7 @@ public:
               if(PlanarLayout and BranchDecompositionPlanarLayout)
                 nodeToGetPers = node;
               double persToAdd
-                = getNodePersistence<dataType>(trees[i], nodeToGetPers);
+                = trees[i]->getNodePersistence<dataType>(nodeToGetPers);
               persistenceArc->InsertNextTuple1(persToAdd);
 
               // Add arc persistence barycenter
@@ -835,8 +834,8 @@ public:
                 if(treeMatching[nodeToGet] >= 0
                    and treeMatching[nodeToGet] < allBaryBranchingID[c].size())
                   persistenceBaryArc->InsertNextTuple1(
-                    getNodePersistence<dataType>(
-                      barycenters[c], treeMatching[nodeToGet]));
+                    barycenters[c]->getNodePersistence<dataType>(
+                      treeMatching[nodeToGet]));
               }
 
               // Add arc cluster ID
@@ -850,8 +849,8 @@ public:
               idNode nodeToGetImportance = treeBranching[node];
               if(PlanarLayout and BranchDecompositionPlanarLayout)
                 nodeToGetImportance = node;
-              isImportant = isImportantPair<dataType>(
-                trees[i], nodeToGetImportance, ImportantPairs);
+              isImportant = trees[i]->isImportantPair<dataType>(
+                nodeToGetImportance, ImportantPairs);
               isImportantPairsArc->InsertNextTuple1(isImportant);
 
               // Add isDummyArc
@@ -913,7 +912,7 @@ public:
               if(treeMatching[node] >= 0
                  and treeMatching[node] < allBaryBranchingID[c].size()) {
                 tBranchID = allBaryBranchingID[c][treeMatching[node]];
-                if(not isLeaf(trees[i], node) and treeMatching[nodeOrigin] >= 0
+                if(not trees[i]->isLeaf(node) and treeMatching[nodeOrigin] >= 0
                    and treeMatching[nodeOrigin] < allBaryBranchingID[c].size())
                   tBranchID = allBaryBranchingID[c][treeMatching[nodeOrigin]];
               }
@@ -922,7 +921,7 @@ public:
 
             // Add node branch bary id
             int tBranchID = treeBranchingID[node];
-            if(not isLeaf(trees[i], node))
+            if(not trees[i]->isLeaf(node))
               tBranchID = treeBranchingID[nodeOrigin];
             branchNodeID->InsertNextTuple1(tBranchID);
 
@@ -930,15 +929,15 @@ public:
             if(verbose > 2)
               printMsg("// Push node persistence", debug::Priority::VERBOSE);
             persistenceNode->InsertNextTuple1(
-              getNodePersistence<dataType>(trees[i], node));
+              trees[i]->getNodePersistence<dataType>(node));
 
             // Add node persistence barycenter
             if(clusteringOutput and ShiftMode != 1)
               if(treeMatching[node] >= 0
                  and treeMatching[node] < allBaryBranchingID[c].size())
                 persistenceBaryNode->InsertNextTuple1(
-                  getNodePersistence<dataType>(
-                    barycenters[c], treeMatching[node]));
+                  barycenters[c]->getNodePersistence<dataType>(
+                    treeMatching[node]));
 
             // Add node clusterID
             clusterIDNode->InsertNextTuple1(clusteringAssignment[i]);
@@ -948,7 +947,7 @@ public:
 
             // Add isDummyNode
             bool isDummy
-              = toAdd == 2 and toAddT == 1 and !isRoot(trees[i], node);
+              = toAdd == 2 and toAddT == 1 and !trees[i]->isRoot(node);
             isDummyNode->InsertNextTuple1(isDummy);
 
             // Add isInterpolatedTree
@@ -957,7 +956,7 @@ public:
             // Add isImportantPair
             bool isImportant = false;
             isImportant
-              = isImportantPair<dataType>(trees[i], node, ImportantPairs);
+              = trees[i]->isImportantPair<dataType>(node, ImportantPairs);
             isImportantPairsNode->InsertNextTuple1(isImportant);
           }
 
@@ -1061,7 +1060,7 @@ public:
     double y_max = std::numeric_limits<double>::lowest();
     double z_max = std::numeric_limits<double>::lowest();
     std::queue<idNode> queue;
-    queue.push(getRoot(tree));
+    queue.push(tree->getRoot());
     while(!queue.empty()) {
       idNode node = queue.front();
       queue.pop();
@@ -1072,7 +1071,7 @@ public:
       y_max = std::max(y_max, point[1]);
       z_min = std::min(z_min, point[2]);
       z_max = std::max(z_max, point[2]);
-      for(auto child : getChildren(tree, node))
+      for(auto child : tree->getChildren(node))
         queue.push(child);
     }
     return std::make_tuple(x_min, x_max, y_min, y_max, z_min, z_max);

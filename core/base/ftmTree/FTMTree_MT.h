@@ -558,9 +558,9 @@ namespace ttk {
       idNode getLowerNodeId(const SuperArc *a);
       idNode getUpperNodeId(const SuperArc *a);
 
-      idNode getParent(const idNode n) {
+      /*idNode getParent(const idNode n) {
         return getSuperArc(getNode(n)->getUpSuperArcId(0))->getUpNodeId();
-      }
+      }*/
 
       void delNode(idNode node);
 
@@ -585,6 +585,8 @@ namespace ttk {
                     const std::string &s,
                     SimplexId nbScalars = -1,
                     const int debugLevel = 2) const;
+
+#include <FTMTreeUtils.h>
 
     protected:
       // -----
@@ -676,14 +678,26 @@ namespace ttk {
           (*vect)[i] = val;
         }
       }
-    };
+    }; // end of FTMTree_MT class
 
     std::ostream &operator<<(std::ostream &o, Node const &n);
     std::ostream &operator<<(std::ostream &o, SuperArc const &a);
 
+    struct MergeTree {
+      ftm::Scalars scalars;
+      ftm::Params params;
+      ftm::FTMTree_MT tree;
+      MergeTree(ftm::Scalars scalarsT, ftm::Params paramsT)
+        : scalars(scalarsT), params(paramsT),
+          tree(&params, &scalars, params.treeType) {
+        tree.makeAlloc();
+      }
+    };
+
   } // namespace ftm
 } // namespace ttk
 
+#include <FTMTreeUtils_Template.h>
 #include <FTMTree_MT_Template.h>
 
 #endif /* end of include guard: MERGETREE_H */

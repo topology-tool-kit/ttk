@@ -12,7 +12,6 @@
 
 #include <FTMTree.h>
 #include <FTMTreePP.h>
-#include <FTMTreeUtils.h>
 
 namespace ttk {
   namespace ftm {
@@ -24,7 +23,7 @@ namespace ttk {
       FTMTreePP pairsCompute;
       pairsCompute.setCustomTree(tree);
       pairsCompute.computePersistencePairs<dataType>(
-        pairs, isJoinTree<dataType>(tree));
+        pairs, tree->isJoinTree<dataType>());
     }
 
     template <class dataType>

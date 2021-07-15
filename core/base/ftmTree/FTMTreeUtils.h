@@ -10,149 +10,75 @@
 
 #pragma once
 
-#include <FTMTree.h>
+// --------------------
+// Is
+// --------------------
 
-namespace ttk {
-  namespace ftm {
+bool isNodeOriginDefined(idNode nodeId);
 
-    struct MergeTree {
-      ftm::Scalars scalars;
-      ftm::Params params;
-      ftm::FTMTree_MT tree;
-      MergeTree(ftm::Scalars scalarsT, ftm::Params paramsT)
-        : scalars(scalarsT), params(paramsT),
-          tree(&params, &scalars, params.treeType) {
-        tree.makeAlloc();
-      }
-    };
+bool isRoot(idNode nodeId);
 
-    // --------------------
-    // Is
-    // --------------------
+bool isLeaf(idNode nodeId);
 
-    bool isNodeOriginDefined(FTMTree_MT *tree, idNode nodeId);
+bool isNodeAlone(idNode nodeId);
 
-    bool isRoot(FTMTree_MT *tree, idNode nodeId);
+bool isFullMerge();
 
-    bool isLeaf(FTMTree_MT *tree, idNode nodeId);
+bool isBranchOrigin(idNode nodeId);
 
-    bool isNodeAlone(FTMTree_MT *tree, idNode nodeId);
+// --------------------
+// Get
+// --------------------
 
-    bool isFullMerge(FTMTree_MT *tree);
+idNode getRoot();
 
-    bool isBranchOrigin(FTMTree_MT *tree, idNode nodeId);
+idNode getParent(idNode nodeId);
 
-    // --------------------
-    // Get
-    // --------------------
+std::vector<idNode> getChildren(idNode nodeId);
 
-    idNode getRoot(FTMTree_MT *tree);
+std::vector<idNode> getLeavesFromTree();
 
-    idNode getParent(FTMTree_MT *tree, idNode nodeId);
+int getNumberOfLeavesFromTree();
 
-    std::vector<idNode> getChildren(FTMTree_MT *tree, idNode nodeId);
+int getNumberOfNodeAlone();
 
-    std::vector<idNode> getLeaves(FTMTree_MT *tree);
+int getRealNumberOfNodes();
 
-    int getNumberOfLeaves(FTMTree_MT *tree);
+std::tuple<std::vector<idNode>, std::vector<idNode>>
+  getBranchOriginsFromThisBranch(idNode node);
 
-    int getNumberOfNodeAlone(FTMTree_MT *tree);
+void getTreeBranching(std::vector<idNode> &branching,
+                      std::vector<int> &branchingID,
+                      std::vector<std::vector<idNode>> &nodeBranching);
 
-    int getRealNumberOfNodes(FTMTree_MT *tree);
+void getTreeBranching(std::vector<idNode> &branching,
+                      std::vector<int> &branchingID);
 
-    std::tuple<std::vector<idNode>, std::vector<idNode>>
-      getBranchOriginsFromThisBranch(FTMTree_MT *tree, idNode node);
+// ----------------------------------------
+// Template functions
+// ----------------------------------------
 
-    void getTreeBranching(FTMTree_MT *tree,
-                          std::vector<idNode> &branching,
-                          std::vector<int> &branchingID,
-                          std::vector<std::vector<idNode>> &nodeBranching);
+// --------------------
+// Get
+// --------------------
 
-    void getTreeBranching(FTMTree_MT *tree,
-                          std::vector<idNode> &branching,
-                          std::vector<int> &branchingID);
+template <class dataType>
+std::tuple<dataType, dataType> getBirthDeath(idNode nodeId);
 
-    // ----------------------------------------
-    // Template functions
-    // ----------------------------------------
+template <class dataType>
+dataType getBirth(idNode nodeId);
 
-    // --------------------
-    // Get
-    // --------------------
+template <class dataType>
+dataType getNodePersistence(idNode nodeId);
 
-    template <class dataType>
-    std::tuple<dataType, dataType> getBirthDeath(FTMTree_MT *tree,
-                                                 idNode nodeId) {
-      idNode originId = tree->getNode(nodeId)->getOrigin();
-      if(isNodeOriginDefined(
-           tree, nodeId)) { // Avoid error if origin is not defined
-        dataType pers1 = tree->getValue<dataType>(nodeId);
-        dataType pers2 = tree->getValue<dataType>(originId);
-        dataType birth = std::min(pers1, pers2);
-        dataType death = std::max(pers1, pers2);
-        return std::make_tuple(birth, death);
-      }
-      return std::make_tuple(0.0, 0.0);
-    }
+// --------------------
+// Is
+// --------------------
 
-    template <class dataType>
-    dataType getBirth(FTMTree_MT *tree, idNode nodeId) {
-      return std::get<0>(getBirthDeath<dataType>(tree, nodeId));
-    }
+template <class dataType>
+bool isJoinTree();
 
-    template <class dataType>
-    dataType getNodePersistence(FTMTree_MT *tree, idNode nodeId) {
-      std::tuple<dataType, dataType> birthDeath
-        = getBirthDeath<dataType>(tree, nodeId);
-      return std::get<1>(birthDeath) - std::get<0>(birthDeath);
-    }
-
-    // --------------------
-    // Is
-    // --------------------
-
-    template <class dataType>
-    bool isJoinTree(FTMTree_MT *tree) {
-      auto root = getRoot(tree);
-      idNode child = getChildren(tree, root)[0];
-      if(isFullMerge(tree)) {
-        dataType min = std::numeric_limits<dataType>::max();
-        for(unsigned int i = 0; i < tree->getNumberOfNodes(); ++i) {
-          dataType value = tree->getValue<dataType>(i);
-          if(not isNodeAlone(tree, i) and value < min) {
-            min = value;
-            child = i;
-          }
-        }
-      }
-      return tree->getValue<dataType>(root) > tree->getValue<dataType>(child);
-    }
-
-    template <class dataType>
-    bool isImportantPair(FTMTree_MT *tree, idNode nodeId, double threshold) {
-      dataType rootPers = getNodePersistence<dataType>(tree, getRoot(tree));
-      if(threshold > 1)
-        threshold /= 100.0;
-      threshold = rootPers * threshold;
-      return getNodePersistence<dataType>(tree, nodeId) > threshold;
-    }
-
-    // --------------------
-    // Utils
-    // --------------------
-
-    template <typename type>
-    static type myAbs(const type var) {
-      return (var >= 0) ? var : -var;
-    }
-
-    template <class dataType>
-    bool isEqual(dataType first, dataType two, double eps = 1e-6) {
-      return myAbs<dataType>(first - two)
-             < eps * std::max(myAbs<dataType>(first), myAbs<dataType>(two));
-    }
-
-  } // namespace ftm
-} // namespace ttk
+template <class dataType>
+bool isImportantPair(idNode nodeId, double threshold);
 
 #endif

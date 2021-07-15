@@ -12,7 +12,6 @@
 #pragma once
 
 #include <FTMTree.h>
-#include <FTMTreeUtils.h>
 
 #include <stack>
 
@@ -75,13 +74,13 @@ public:
     std::vector<LongSimplexId> &treeSimplexId,
     std::vector<idNode> &branching,
     std::vector<std::vector<ftm::idNode>> &nodeBranching) {
-    idNode treeRoot = getRoot(tree);
+    idNode treeRoot = tree->getRoot();
     idNode treeRootOrigin = tree->getNode(treeRoot)->getOrigin();
     float rootY = retVec[treeSimplexId[treeRoot] * 2 + 1];
     float rootOriginY = retVec[treeSimplexId[treeRootOrigin] * 2 + 1];
     float rootYmin = std::min(rootY, rootOriginY);
     float rootYmax = std::max(rootY, rootOriginY);
-    dataType rootPers = getNodePersistence<dataType>(tree, treeRoot);
+    dataType rootPers = tree->getNodePersistence<dataType>(treeRoot);
     std::vector<std::tuple<float, float>> allNodeSpanX(
       tree->getNumberOfNodes());
     std::vector<std::tuple<float, float>> allNodeImportantSpanX(
@@ -95,15 +94,15 @@ public:
 
     // Some functions
     auto comp = [&](const ftm::idNode a, const ftm::idNode b) {
-      return getNodePersistence<dataType>(tree, a)
-             < getNodePersistence<dataType>(tree, b);
+      return tree->getNodePersistence<dataType>(a)
+             < tree->getNodePersistence<dataType>(b);
     };
     auto compSup = [&](const ftm::idNode a, const ftm::idNode b) {
       return not comp(a, b);
     };
 
     // Go
-    std::vector<ftm::idNode> leaves = getLeaves(tree);
+    std::vector<ftm::idNode> leaves = tree->getLeavesFromTree();
     sort(leaves.begin(), leaves.end(), comp);
     std::queue<ftm::idNode> queue;
     for(auto node : leaves)
@@ -113,13 +112,13 @@ public:
       queue.pop();
       idNode nodeOrigin = tree->getNode(node)->getOrigin();
 
-      dataType nodePers = getNodePersistence<dataType>(tree, node);
+      dataType nodePers = tree->getNodePersistence<dataType>(node);
       retVec[treeSimplexId[nodeOrigin] * 2] = 0;
       retVec[treeSimplexId[nodeOrigin] * 2 + 1]
         = nodePers / rootPers * (rootYmax - rootYmin) + rootYmin;
 
       // Positioning nodes in the branch
-      if(isBranchOrigin(tree, nodeOrigin)) {
+      if(tree->isBranchOrigin(nodeOrigin)) {
         float prevX = 0;
         std::vector<idNode> nodeBranchingVector;
         for(unsigned int i = 1; i < nodeBranching[nodeOrigin].size(); ++i)
@@ -138,27 +137,27 @@ public:
           // Get x spacing
           float nodeSpacing = 0;
           if(i > 0) {
-            if(isImportantPair<dataType>(
-                 tree, nodeBranchingVector[i], ImportantPairs)) {
+            if(tree->isImportantPair<dataType>(
+                 nodeBranchingVector[i], ImportantPairs)) {
               nodeSpacing = importantPairsGap;
-            } else if(isImportantPair<dataType>(
-                        tree, nodeBranchingVector[i - 1], ImportantPairs)) {
+            } else if(tree->isImportantPair<dataType>(
+                        nodeBranchingVector[i - 1], ImportantPairs)) {
               nodeSpacing = NonImportantPairsProximity;
               // prevX =
             } else {
               nodeSpacing = nonImportantPairsGap;
             }
-          } else if(not isImportantPair<dataType>(
-                      tree, nodeBranchingVector[i], ImportantPairs)
-                    and isImportantPair<dataType>(
-                      tree, nodeOrigin, ImportantPairs))
+          } else if(not tree->isImportantPair<dataType>(
+                      nodeBranchingVector[i], ImportantPairs)
+                    and tree->isImportantPair<dataType>(
+                      nodeOrigin, ImportantPairs))
             nodeSpacing = NonImportantPairsProximity;
           float newMin = prevX + nodeSpacing;
           float shiftX = newMin - oldMin;
 
           // Set y coordinate according difference in persistence
           dataType nodeBranchingIPers
-            = getNodePersistence<dataType>(tree, nodeBranchingI);
+            = tree->getNodePersistence<dataType>(nodeBranchingI);
           float shiftY = nodeBranchingIPers * BranchSpacing;
           float diffY = retVec[treeSimplexId[nodeBranchingI] * 2 + 1];
           retVec[treeSimplexId[nodeBranchingI] * 2 + 1]
@@ -174,7 +173,7 @@ public:
             retVec[treeSimplexId[nodeBranchOrigin] * 2] += shiftX;
             if(nodeBranchOrigin != nodeBranchingI)
               retVec[treeSimplexId[nodeBranchOrigin] * 2 + 1] += diffY;
-            if(isBranchOrigin(tree, nodeBranchOrigin))
+            if(tree->isBranchOrigin(nodeBranchOrigin))
               for(auto nodeB : nodeBranching[nodeBranchOrigin])
                 queueBranching.push(nodeB);
           }
@@ -189,13 +188,13 @@ public:
 
           // Update x base for next iteration
           prevX = std::get<1>(allNodeSpanX[nodeBranchingI]);
-          if(isImportantPair<dataType>(
-               tree, nodeBranchingVector[i], ImportantPairs)) {
+          if(tree->isImportantPair<dataType>(
+               nodeBranchingVector[i], ImportantPairs)) {
             lastIndexImportant = i;
             prevX = std::get<1>(allNodeImportantSpanX[nodeBranchingI]);
             if(i < nodeBranchingVector.size() - 1
-               and not isImportantPair<dataType>(
-                 tree, nodeBranchingVector[i + 1], ImportantPairs)) {
+               and not tree->isImportantPair<dataType>(
+                 nodeBranchingVector[i + 1], ImportantPairs)) {
               float spanMin = std::get<0>(allNodeSpanX[nodeBranchingVector[0]]);
               float spanMax = std::get<1>(
                 allNodeImportantSpanX[nodeBranchingVector[lastIndexImportant]]);
@@ -263,7 +262,7 @@ public:
     if(verbose > 1)
       printMsg("Init internal parameters", debug::Priority::VERBOSE);
 
-    auto nPoints = getRealNumberOfNodes(tree);
+    auto nPoints = tree->getRealNumberOfNodes();
     int outNumberOfPoints = nPoints * 2;
     std::vector<float> retVec(outNumberOfPoints);
 
@@ -272,7 +271,7 @@ public:
     std::vector<idNode> branching;
     std::vector<int> branchingID;
     std::vector<std::vector<ftm::idNode>> nodeBranching;
-    getTreeBranching(tree, branching, branchingID, nodeBranching);
+    tree->getTreeBranching(branching, branchingID, nodeBranching);
 
     if(verbose > 0) {
       std::stringstream ss;
@@ -288,7 +287,7 @@ public:
       printMsg("Iterate through tree", debug::Priority::VERBOSE);
 
     std::queue<idNode> queue;
-    ftm::idNode treeRoot = getRoot(tree);
+    ftm::idNode treeRoot = tree->getRoot();
     ftm::idNode treeRootOrigin = tree->getNode(treeRoot)->getOrigin();
     queue.push(treeRoot);
     while(!queue.empty()) {
@@ -300,7 +299,7 @@ public:
       ++cptNode;
 
       // Push children to the queue
-      auto children = getChildren(tree, node);
+      auto children = tree->getChildren(node);
       for(unsigned int i = 0; i < children.size(); ++i) {
         auto child = children[i];
         queue.push(child);
@@ -327,7 +326,7 @@ public:
       retVec[treeSimplexId[node] * 2 + 1] = tree->getValue<dataType>(node);
 
       // Push children to the queue
-      for(auto child : getChildren(tree, node))
+      for(auto child : tree->getChildren(node))
         queue2.push(child);
     }
 
@@ -357,8 +356,8 @@ public:
     double offset = std::max(std::get<0>(oldBounds), std::get<2>(oldBounds));
     if(not RescaleTreesIndividually) {
       // diff *= getNodePersistence<dataType>(tree, treeRoot) / refPersistence;
-      diff = getNodePersistence<dataType>(tree, treeRoot);
-      offset = getBirth<dataType>(tree, treeRoot);
+      diff = tree->getNodePersistence<dataType>(treeRoot);
+      offset = tree->getBirth<dataType>(treeRoot);
     }
 
     for(int i = 0; i < outNumberOfPoints; i += 2) {
@@ -404,7 +403,7 @@ public:
     float rootOriginY = retVec[treeSimplexId[treeRootOrigin] * 2 + 1];
     float rootYmin = std::min(rootY, rootOriginY);
     float rootYmax = std::max(rootY, rootOriginY);
-    auto rootBirthDeath = getBirthDeath<dataType>(tree, treeRoot);
+    auto rootBirthDeath = tree->getBirthDeath<dataType>(treeRoot);
     dataType rootBirth = std::get<0>(rootBirthDeath);
     dataType rootDeath = std::get<1>(rootBirthDeath);
     for(unsigned int i = 0; i < tree->getNumberOfNodes(); ++i) {
@@ -428,12 +427,12 @@ public:
       printMsg("Scale pairs given persistence", debug::Priority::VERBOSE);
 
     // printTree(tree);
-    dataType rootPers = getNodePersistence<dataType>(tree, treeRoot);
+    dataType rootPers = tree->getNodePersistence<dataType>(treeRoot);
 
-    std::vector<ftm::idNode> leaves = getLeaves(tree);
+    std::vector<ftm::idNode> leaves = tree->getLeavesFromTree();
     auto comp = [&](const ftm::idNode a, const ftm::idNode b) {
-      return getNodePersistence<dataType>(tree, a)
-             < getNodePersistence<dataType>(tree, b);
+      return tree->getNodePersistence<dataType>(a)
+             < tree->getNodePersistence<dataType>(b);
     };
     sort(leaves.begin(), leaves.end(), comp);
     std::stack<ftm::idNode> stack;
@@ -445,14 +444,14 @@ public:
       stack.pop();
       nodeDone[node] = true;
 
-      if(node == treeRoot or node == treeRootOrigin or isNodeAlone(tree, node))
+      if(node == treeRoot or node == treeRootOrigin or tree->isNodeAlone(node))
         continue;
 
-      dataType nodePers = getNodePersistence<dataType>(tree, node);
+      dataType nodePers = tree->getNodePersistence<dataType>(node);
       ftm::idNode nodeOrigin = tree->getNode(node)->getOrigin();
 
       // Manage leaf
-      if(isLeaf(tree, node)) {
+      if(tree->isLeaf(node)) {
         float nodeDiff = (retVec[treeSimplexId[node] * 2]
                           - retVec[treeSimplexId[nodeOrigin] * 2]);
         int sign = nodeDiff / std::abs(nodeDiff);
@@ -461,7 +460,7 @@ public:
           = retVec[treeSimplexId[nodeOrigin] * 2] + inc;
 
         // Push nodes in the branch to the stack
-        ftm::idNode nodeParent = getParent(tree, node);
+        ftm::idNode nodeParent = tree->getParent(node);
         ftm::idNode oldNodeParent = -1;
         while(nodeParent != nodeOrigin) {
           if(not nodeDone[nodeParent])
@@ -469,7 +468,7 @@ public:
           else
             break;
           oldNodeParent = nodeParent;
-          nodeParent = getParent(tree, nodeParent);
+          nodeParent = tree->getParent(nodeParent);
           if(oldNodeParent == nodeParent) {
             std::stringstream ss;
             ss << "treePlanarLayoutImpl oldNodeParent == nodeParent";
@@ -480,7 +479,7 @@ public:
       }
 
       // Manage saddle
-      if(not isLeaf(tree, node) and not isRoot(tree, node)) {
+      if(not tree->isLeaf(node) and not tree->isRoot(node)) {
         float branchY
           = retVec[treeSimplexId[tree->getNode(branching[node])->getOrigin()]
                    * 2];
@@ -501,7 +500,7 @@ public:
     if(verbose > 1)
       printMsg("Avoid edges crossing", debug::Priority::VERBOSE);
 
-    bool isJT = isJoinTree<dataType>(tree);
+    bool isJT = tree->isJoinTree<dataType>();
     auto compValue = [&](const ftm::idNode a, const ftm::idNode b) {
       return (isJT ? tree->getValue<dataType>(a) < tree->getValue<dataType>(b)
                    : tree->getValue<dataType>(a) > tree->getValue<dataType>(b));
@@ -524,7 +523,7 @@ public:
       ftm::idNode nodeOrigin = tree->getNode(node)->getOrigin();
 
       // Get saddle nodes in the branch
-      auto tupBranchOrigins = getBranchOriginsFromThisBranch(tree, nodeOrigin);
+      auto tupBranchOrigins = tree->getBranchOriginsFromThisBranch(nodeOrigin);
       allBranchOrigins[nodeOrigin] = std::get<0>(tupBranchOrigins);
       std::vector<ftm::idNode> nonBranchOrigins = std::get<1>(tupBranchOrigins);
       allBranchOrigins[nodeOrigin].insert(allBranchOrigins[nodeOrigin].end(),
@@ -538,13 +537,13 @@ public:
       for(unsigned int i = 0; i < allBranchOrigins[nodeOrigin].size(); ++i) {
         ftm::idNode branchNodeOrigin = allBranchOrigins[nodeOrigin][i];
         bool isSubBranchImportant
-          = isImportantPair<dataType>(tree, branchNodeOrigin, ImportantPairs);
+          = tree->isImportantPair<dataType>(branchNodeOrigin, ImportantPairs);
         if(not isSubBranchImportant)
           allBranchOriginsSize[nodeOrigin]
             += allBranchOriginsSize[branchNodeOrigin];
       }
 
-      if(isImportantPair<dataType>(tree, nodeOrigin, ImportantPairs))
+      if(tree->isImportantPair<dataType>(nodeOrigin, ImportantPairs))
         maxSize = std::max(maxSize, allBranchOriginsSize[nodeOrigin]);
     }
     double nonImportantPairsGap
@@ -573,7 +572,7 @@ public:
         ftm::idNode branchNode = tree->getNode(branchNodeOrigin)->getOrigin();
 
         bool isSubBranchImportant
-          = isImportantPair<dataType>(tree, branchNodeOrigin, ImportantPairs);
+          = tree->isImportantPair<dataType>(branchNodeOrigin, ImportantPairs);
         bool toLeft = not isSubBranchImportant;
 
         // float branchNodeOriginXmin =
@@ -628,8 +627,8 @@ public:
                        // previousbranchNodeOriginXmax - branchNodeOriginXmin;
                   previousbranchNodeOriginXmax
                     - retVec[treeSimplexId[branchNode] * 2];
-            bool isSubBranchImportant = isImportantPair<dataType>(
-              tree, branchNodeOrigin, ImportantPairs);
+            bool isSubBranchImportant = tree->isImportantPair<dataType>(
+              branchNodeOrigin, ImportantPairs);
             shift += (isLeft ? -1 : 1)
                      * (isSubBranchImportant ? importantPairsGap
                                              : nonImportantPairsGap);
@@ -690,14 +689,14 @@ public:
       ftm::idNode nodeOrigin = tree->getNode(node)->getOrigin();
 
       bool isBranchImportant
-        = isImportantPair<dataType>(tree, nodeOrigin, ImportantPairs);
+        = tree->isImportantPair<dataType>(nodeOrigin, ImportantPairs);
       if(not isBranchImportant)
         continue;
 
       for(unsigned int i = 0; i < allBranchOrigins[nodeOrigin].size(); ++i) {
         ftm::idNode branchNodeOrigin = allBranchOrigins[nodeOrigin][i];
         bool isSubBranchImportant
-          = isImportantPair<dataType>(tree, branchNodeOrigin, ImportantPairs);
+          = tree->isImportantPair<dataType>(branchNodeOrigin, ImportantPairs);
         double shift = 0;
         if(not isSubBranchImportant) {
           double gap = retVec[treeSimplexId[node] * 2]
@@ -765,12 +764,12 @@ public:
       queue.pop();
 
       // Skip if we go in the branch in which is branchRoot
-      if(branching[node] != branchRoot and getParent(tree, node) == branchRoot
+      if(branching[node] != branchRoot and tree->getParent(node) == branchRoot
          and node != branchRoot)
         continue;
 
       // Skip if restricted
-      if(restricted and !isLeaf(tree, node) and branching[node] != branchRoot
+      if(restricted and !tree->isLeaf(node) and branching[node] != branchRoot
          and node != branchRoot)
         continue;
 
@@ -781,7 +780,7 @@ public:
         x_max = std::max(x_max, retVec[treeSimplexId[node] * 2]);
       }
 
-      for(auto child : getChildren(tree, node))
+      for(auto child : tree->getChildren(node))
         queue.push(child);
     }
 
@@ -874,14 +873,14 @@ public:
       ftm::idNode node = queue.front();
       queue.pop();
 
-      if(branching[node] != branchRoot and getParent(tree, node) == branchRoot
+      if(branching[node] != branchRoot and tree->getParent(node) == branchRoot
          and node != branchRoot)
         continue;
 
       if(node != branchRoot)
         retVec[treeSimplexId[node] * 2] += shift;
 
-      for(auto child : getChildren(tree, node))
+      for(auto child : tree->getChildren(node))
         queue.push(child);
     }
     allBranchBounds[branchRoot]
