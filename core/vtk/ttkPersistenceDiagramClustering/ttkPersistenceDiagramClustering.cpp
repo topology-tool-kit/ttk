@@ -496,6 +496,20 @@ void ttkPersistenceDiagramClustering::outputClusteredDiagrams(
     diagId->Fill(i);
     vtu->GetPointData()->AddArray(diagId);
 
+    // add Persistence data array on vertices
+    vtkNew<vtkDoubleArray> pointPers{};
+    pointPers->SetName("Persistence");
+    pointPers->SetNumberOfTuples(vtu->GetNumberOfPoints());
+    vtu->GetPointData()->AddArray(pointPers);
+
+    // diagonal uses two existing points
+    for(int j = 0; j < vtu->GetNumberOfCells() - 1; ++j) {
+      const auto persArray = vtu->GetCellData()->GetArray("Persistence");
+      const auto pers = persArray->GetTuple1(j);
+      pointPers->SetTuple1(2 * j + 0, pers);
+      pointPers->SetTuple1(2 * j + 1, pers);
+    }
+
     if(dm == DISPLAY::MATCHINGS && spacing > 0) {
       // translate diagrams along the Z axis
       vtkNew<vtkTransform> tr{};
