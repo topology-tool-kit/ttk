@@ -451,10 +451,10 @@ void ttkPersistenceDiagramClustering::diagramToVTU(
     2 * (minmax_birth.second - diagram.begin()),
   };
   output->InsertNextCell(VTK_LINE, 2, ids.data());
-  pairId->SetTuple1(diagram.size(), diagram.size());
+  pairId->SetTuple1(diagram.size(), -1);
   pairType->SetTuple1(diagram.size(), -1);
-  // use the max persistence of all input diagrams...
-  pairPers->SetTuple1(diagram.size(), max_persistence);
+  // use twice the max persistence of all input diagrams...
+  pairPers->SetTuple1(diagram.size(), 2.0 * max_persistence);
 }
 
 void ttkPersistenceDiagramClustering::outputClusteredDiagrams(
