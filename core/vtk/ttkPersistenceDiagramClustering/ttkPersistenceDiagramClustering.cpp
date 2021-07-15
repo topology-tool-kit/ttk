@@ -496,6 +496,13 @@ void ttkPersistenceDiagramClustering::outputClusteredDiagrams(
     diagId->Fill(i);
     vtu->GetPointData()->AddArray(diagId);
 
+    vtkNew<vtkIntArray> clusterId{};
+    clusterId->SetName("ClusterID");
+    clusterId->SetNumberOfComponents(1);
+    clusterId->SetNumberOfTuples(vtu->GetNumberOfPoints());
+    clusterId->Fill(inv_clustering[i]);
+    vtu->GetPointData()->AddArray(clusterId);
+
     // add Persistence data array on vertices
     vtkNew<vtkDoubleArray> pointPers{};
     pointPers->SetName("Persistence");
