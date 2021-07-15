@@ -382,12 +382,13 @@ namespace ttk {
 
       // is last
       valence oldVal;
+      valence &tmp = (*mt_data_.valences)[currentState.vertex];
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp atomic capture
 #endif
       {
-        oldVal = (*mt_data_.valences)[currentState.vertex];
-        (*mt_data_.valences)[currentState.vertex] -= decr;
+        oldVal = tmp;
+        tmp -= decr;
       }
       if(oldVal == decr) {
         isLast = true;

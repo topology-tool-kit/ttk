@@ -2,3 +2,5 @@ NAME
  ttkPersistenceDiagramClustering
 DEPENDS
   ttkAlgorithm
+PRIVATE_DEPENDS
+  VTK::FiltersGeneral
