@@ -252,7 +252,7 @@ public:
     // printTree(tree); printPairsFromTree<dataType>(tree);
 
     if(verbose > 0) {
-      printMsg("================================", debug::Priority::VERBOSE);
+      printMsg(debug::Separator::L1, debug::Priority::VERBOSE);
       printMsg("Planar Layout", debug::Priority::VERBOSE);
     }
 
@@ -718,7 +718,7 @@ public:
       std::stringstream ss;
       ss << "AVOID CROSSING  = " << t_avoid.getElapsedTime();
       printMsg(ss.str(), debug::Priority::VERBOSE);
-      printMsg("================================", debug::Priority::VERBOSE);
+      printMsg(debug::Separator::L2, debug::Priority::VERBOSE);
     }
 
     return retVec;
@@ -738,7 +738,7 @@ public:
   // Bounds Utils
   // ==========================================================================
   void printTuple(std::tuple<float, float, float, float> tup) {
-    printMsg("-------------------------", debug::Priority::VERBOSE);
+    printMsg(debug::Separator::L2, debug::Priority::VERBOSE);
     std::stringstream ss;
     ss << std::get<0>(tup) << " _ " << std::get<1>(tup) << " _ "
        << std::get<2>(tup) << " _ " << std::get<3>(tup) << " _ ";
