@@ -44,7 +44,7 @@ int ttkBottleneckDistance::FillOutputPortInformation(int port,
 // Warn: this is duplicated in ttkTrackingFromPersistenceDiagrams
 int augmentDiagrams(const ttk::DiagramType &diag0,
                     const ttk::DiagramType &diag1,
-                    const std::vector<matchingTuple> &matchings,
+                    const std::vector<ttk::MatchingType> &matchings,
                     vtkUnstructuredGrid *const vtu0,
                     vtkUnstructuredGrid *const vtu1) {
 
@@ -95,7 +95,7 @@ int translateDiagram(vtkUnstructuredGrid *output,
 int generateMatchings(vtkUnstructuredGrid *const outputCT3,
                       const ttk::DiagramType &diagram1,
                       const ttk::DiagramType &diagram2,
-                      const std::vector<matchingTuple> &matchings,
+                      const std::vector<ttk::MatchingType> &matchings,
                       const double spacing,
                       const bool is2D0,
                       const bool is2D1) {
@@ -208,6 +208,7 @@ int ttkBottleneckDistance::RequestData(vtkInformation *request,
   int status = 0;
 
   ttk::DiagramType diagram0{}, diagram1{};
+  std::vector<ttk::MatchingType> matchings{};
 
   status = VTUToDiagram(diagram0, inputDiags[0], *this);
   if(status < 0) {
@@ -221,19 +222,13 @@ int ttkBottleneckDistance::RequestData(vtkInformation *request,
     return 0;
   }
 
-  this->setCTDiagram1(&diagram0);
-  this->setCTDiagram2(&diagram1);
-
   this->setWasserstein(this->WassersteinMetric);
   this->setAlgorithm(this->DistanceAlgorithm);
   this->setPVAlgorithm(this->PVAlgorithm);
 
-  // Empty matchings.
-  std::vector<matchingTuple> matchings;
-  this->setOutputMatchings(&matchings);
-
   // Exec.
-  status = this->execute<double>(this->UsePersistenceMetric);
+  status
+    = this->execute(diagram0, diagram1, matchings, this->UsePersistenceMetric);
   if(status != 0) {
     this->printErr("Base layer failed with error status "
                    + std::to_string(status));
