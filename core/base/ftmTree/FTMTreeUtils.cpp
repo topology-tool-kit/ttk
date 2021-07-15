@@ -118,7 +118,7 @@ namespace ttk {
         = std::vector<std::vector<idNode>>(this->getNumberOfNodes());
       int branchID = 0;
       std::queue<idNode> queue;
-      queue.push(this->getRoot());
+      queue.emplace(this->getRoot());
       while(!queue.empty()) {
         idNode node = queue.front();
         queue.pop();
@@ -138,7 +138,7 @@ namespace ttk {
         }
         ++branchID;
         for(auto child : this->getChildren(node))
-          queue.push(child);
+          queue.emplace(child);
       }
     }
 

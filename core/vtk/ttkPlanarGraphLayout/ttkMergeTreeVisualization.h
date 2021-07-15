@@ -114,11 +114,11 @@ public:
   }
   void setTreesNodes(vtkUnstructuredGrid *nodes) {
     treesNodes.clear();
-    treesNodes.push_back(nodes);
+    treesNodes.emplace_back(nodes);
   }
   void setTreesNodeCorrMesh(std::vector<int> &nodeCorrMesh) {
     treesNodeCorrMesh.clear();
-    treesNodeCorrMesh.push_back(nodeCorrMesh);
+    treesNodeCorrMesh.emplace_back(nodeCorrMesh);
   }
 
   // Segmentation
@@ -127,7 +127,7 @@ public:
   }
   void setTreesSegmentation(vtkDataSet *segmentation) {
     treesSegmentation.clear();
-    treesSegmentation.push_back(segmentation);
+    treesSegmentation.emplace_back(segmentation);
   }
 
   // Clustering output
@@ -191,7 +191,7 @@ public:
 
     std::vector<std::tuple<ftm::idNode, ftm::idNode>> tMatching;
     for(auto match : matching)
-      tMatching.push_back(
+      tMatching.emplace_back(
         std::make_tuple(std::get<0>(match), std::get<1>(match)));
 
     outputMatchingBarycenter[0][0] = tMatching;
@@ -427,13 +427,13 @@ public:
       allBaryBounds(barycenters.size());
     std::vector<std::vector<ftm::idNode>> allBaryBranching(barycenters.size());
     std::vector<std::vector<int>> allBaryBranchingID(barycenters.size());
-    for(unsigned int c = 0; c < barycenters.size(); ++c) {
+    for(size_t c = 0; c < barycenters.size(); ++c) {
       allBaryBounds[c] = getMaximalBounds(allBounds, clusteringAssignment, c);
       barycenters[c]->getTreeBranching(
         allBaryBranching[c], allBaryBranchingID[c]);
     }
     if(not clusteringOutput)
-      allBaryBounds.push_back(
+      allBaryBounds.emplace_back(
         getMaximalBounds(allBounds, clusteringAssignment, 0));
 
     // ----------------------------------------------------------------------
@@ -446,8 +446,8 @@ public:
       trees.clear();
       clusteringAssignment.clear();
       for(unsigned int j = 0; j < barycenters.size(); ++j) {
-        trees.push_back(barycenters[j]);
-        clusteringAssignment.push_back(j);
+        trees.emplace_back(barycenters[j]);
+        clusteringAssignment.emplace_back(j);
       }
       numInputs = trees.size();
     }
@@ -604,7 +604,7 @@ public:
               diff_y = -(prevYMax + radius / 2);
               diff_x = allPrevXMax[i - int(numInputs / 2)] + radius;
             } else
-              allPrevXMax.push_back(prevXMax);
+              allPrevXMax.emplace_back(prevXMax);
             break;
           default:
             break;
@@ -659,7 +659,7 @@ public:
           trees[i]->getNumberOfNodes(),
           std::vector<ftm::idNode>(numInputsOri, -1));
         if(ShiftMode == 1) {
-          for(unsigned int j = 0; j < outputMatchingBarycenter[c].size(); ++j)
+          for(size_t j = 0; j < outputMatchingBarycenter[c].size(); ++j)
             for(auto match : outputMatchingBarycenter[c][j])
               baryMatching[std::get<0>(match)][j] = std::get<1>(match);
           allBaryPercentMatch[c]
@@ -672,7 +672,7 @@ public:
         if(verbose > 0)
           printMsg("// Tree traversal", debug::Priority::VERBOSE);
         std::queue<idNode> queue;
-        queue.push(trees[i]->getRoot());
+        queue.emplace(trees[i]->getRoot());
         while(!queue.empty()) {
           idNode node = queue.front();
           queue.pop();
@@ -682,7 +682,7 @@ public:
           if(verbose > 2)
             printMsg("// Push children to the queue", debug::Priority::VERBOSE);
           for(auto child : trees[i]->getChildren(node))
-            queue.push(child);
+            queue.emplace(child);
 
           // --------------
           // Insert point
@@ -1060,7 +1060,7 @@ public:
     double y_max = std::numeric_limits<double>::lowest();
     double z_max = std::numeric_limits<double>::lowest();
     std::queue<idNode> queue;
-    queue.push(tree->getRoot());
+    queue.emplace(tree->getRoot());
     while(!queue.empty()) {
       idNode node = queue.front();
       queue.pop();
@@ -1072,7 +1072,7 @@ public:
       z_min = std::min(z_min, point[2]);
       z_max = std::max(z_max, point[2]);
       for(auto child : tree->getChildren(node))
-        queue.push(child);
+        queue.emplace(child);
     }
     return std::make_tuple(x_min, x_max, y_min, y_max, z_min, z_max);
   }
@@ -1080,7 +1080,7 @@ public:
   std::tuple<double, double, double, double, double, double>
     getRealBounds(vtkUnstructuredGrid *treeNodes, FTMTree_MT *tree) {
     std::vector<int> nodeCorrT(tree->getNumberOfNodes());
-    for(int i = 0; i < (int)nodeCorrT.size(); ++i)
+    for(size_t i = 0; i < nodeCorrT.size(); ++i)
       nodeCorrT[i] = i;
 
     return getRealBounds(treeNodes, tree, nodeCorrT);

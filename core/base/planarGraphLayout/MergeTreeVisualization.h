@@ -31,8 +31,8 @@ protected:
   double NonImportantPairsProximity = 0.05;
 
 public:
-  MergeTreeVisualization(){};
-  ~MergeTreeVisualization(){};
+  MergeTreeVisualization() = default;
+  virtual ~MergeTreeVisualization() = default;
 
   // ==========================================================================
   // Getter / Setter
@@ -93,20 +93,20 @@ public:
       = std::max(nonImportantPairsGap, (float)ImportantPairsSpacing);
 
     // Some functions
-    auto comp = [&](const ftm::idNode a, const ftm::idNode b) {
+    auto compLowerPers = [&](const ftm::idNode a, const ftm::idNode b) {
       return tree->getNodePersistence<dataType>(a)
              < tree->getNodePersistence<dataType>(b);
     };
-    auto compSup = [&](const ftm::idNode a, const ftm::idNode b) {
-      return not comp(a, b);
+    auto compEqUpperPers = [&](const ftm::idNode a, const ftm::idNode b) {
+      return not compLowerPers(a, b);
     };
 
     // Go
     std::vector<ftm::idNode> leaves = tree->getLeavesFromTree();
-    sort(leaves.begin(), leaves.end(), comp);
+    std::sort(leaves.begin(), leaves.end(), compLowerPers);
     std::queue<ftm::idNode> queue;
     for(auto node : leaves)
-      queue.push(node);
+      queue.emplace(node);
     while(!queue.empty()) {
       idNode node = queue.front();
       queue.pop();
@@ -121,13 +121,14 @@ public:
       if(tree->isBranchOrigin(nodeOrigin)) {
         float prevX = 0;
         std::vector<idNode> nodeBranchingVector;
-        for(unsigned int i = 1; i < nodeBranching[nodeOrigin].size(); ++i)
+        for(size_t i = 1; i < nodeBranching[nodeOrigin].size(); ++i)
           nodeBranchingVector.push_back(nodeBranching[nodeOrigin][i]);
-        sort(nodeBranchingVector.begin(), nodeBranchingVector.end(), compSup);
+        std::sort(nodeBranchingVector.begin(), nodeBranchingVector.end(),
+                  compEqUpperPers);
 
         // Iterate through each node of the branch
         int lastIndexImportant = -1;
-        for(unsigned int i = 0; i < nodeBranchingVector.size(); ++i) {
+        for(size_t i = 0; i < nodeBranchingVector.size(); ++i) {
           idNode nodeBranchingI = nodeBranchingVector[i];
 
           // Get old node span X
@@ -166,7 +167,7 @@ public:
 
           // Shift this branch
           std::queue<idNode> queueBranching;
-          queueBranching.push(nodeBranchingI);
+          queueBranching.emplace(nodeBranchingI);
           while(!queueBranching.empty()) {
             idNode nodeBranchOrigin = queueBranching.front();
             queueBranching.pop();
@@ -175,7 +176,7 @@ public:
               retVec[treeSimplexId[nodeBranchOrigin] * 2 + 1] += diffY;
             if(tree->isBranchOrigin(nodeBranchOrigin))
               for(auto nodeB : nodeBranching[nodeBranchOrigin])
-                queueBranching.push(nodeB);
+                queueBranching.emplace(nodeB);
           }
 
           // Update node span X
@@ -230,7 +231,7 @@ public:
 
     // Copy coordinates of nodeOrigin
     for(auto node : leaves)
-      queue.push(node);
+      queue.emplace(node);
     while(!queue.empty()) {
       idNode node = queue.front();
       queue.pop();
@@ -248,7 +249,6 @@ public:
     std::tuple<double, double, double, double, double, double> oldBounds,
     double refPersistence) {
     int verbose = 0;
-    // printTree(tree); printPairsFromTree<dataType>(tree);
 
     if(verbose > 0) {
       printMsg(debug::Separator::L1, debug::Priority::VERBOSE);
@@ -289,7 +289,7 @@ public:
     std::queue<idNode> queue;
     ftm::idNode treeRoot = tree->getRoot();
     ftm::idNode treeRootOrigin = tree->getNode(treeRoot)->getOrigin();
-    queue.push(treeRoot);
+    queue.emplace(treeRoot);
     while(!queue.empty()) {
       idNode node = queue.front();
       queue.pop();
@@ -300,9 +300,9 @@ public:
 
       // Push children to the queue
       auto children = tree->getChildren(node);
-      for(unsigned int i = 0; i < children.size(); ++i) {
+      for(size_t i = 0; i < children.size(); ++i) {
         auto child = children[i];
-        queue.push(child);
+        queue.emplace(child);
       }
     }
 
@@ -316,7 +316,7 @@ public:
     // Prepositioning coordinates
     // ----------------------------------------------------
     std::queue<idNode> queue2;
-    queue2.push(treeRoot);
+    queue2.emplace(treeRoot);
     while(!queue2.empty()) {
       idNode node = queue2.front();
       queue2.pop();
@@ -327,7 +327,7 @@ public:
 
       // Push children to the queue
       for(auto child : tree->getChildren(node))
-        queue2.push(child);
+        queue2.emplace(child);
     }
 
     // ----------------------------------------------------
@@ -406,7 +406,7 @@ public:
     auto rootBirthDeath = tree->getBirthDeath<dataType>(treeRoot);
     dataType rootBirth = std::get<0>(rootBirthDeath);
     dataType rootDeath = std::get<1>(rootBirthDeath);
-    for(unsigned int i = 0; i < tree->getNumberOfNodes(); ++i) {
+    for(size_t i = 0; i < tree->getNumberOfNodes(); ++i) {
       retVec[treeSimplexId[i] * 2 + 1]
         = (tree->getValue<dataType>(i) - rootBirth) / (rootDeath - rootBirth);
       retVec[treeSimplexId[i] * 2 + 1]
@@ -426,18 +426,17 @@ public:
     if(verbose > 1)
       printMsg("Scale pairs given persistence", debug::Priority::VERBOSE);
 
-    // printTree(tree);
     dataType rootPers = tree->getNodePersistence<dataType>(treeRoot);
 
     std::vector<ftm::idNode> leaves = tree->getLeavesFromTree();
-    auto comp = [&](const ftm::idNode a, const ftm::idNode b) {
+    auto compLowerPers = [&](const ftm::idNode a, const ftm::idNode b) {
       return tree->getNodePersistence<dataType>(a)
              < tree->getNodePersistence<dataType>(b);
     };
-    sort(leaves.begin(), leaves.end(), comp);
+    std::sort(leaves.begin(), leaves.end(), compLowerPers);
     std::stack<ftm::idNode> stack;
     for(auto node : leaves)
-      stack.push(node);
+      stack.emplace(node);
     std::vector<bool> nodeDone(tree->getNumberOfNodes(), false);
     while(!stack.empty()) {
       ftm::idNode node = stack.top();
@@ -464,7 +463,7 @@ public:
         ftm::idNode oldNodeParent = -1;
         while(nodeParent != nodeOrigin) {
           if(not nodeDone[nodeParent])
-            stack.push(nodeParent);
+            stack.emplace(nodeParent);
           else
             break;
           oldNodeParent = nodeParent;
@@ -516,7 +515,7 @@ public:
     // each branch
     int maxSize = std::numeric_limits<int>::lowest();
     for(auto leaf : leaves)
-      queueCrossing.push(leaf);
+      queueCrossing.emplace(leaf);
     while(!queueCrossing.empty()) {
       ftm::idNode node = queueCrossing.front();
       queueCrossing.pop();
@@ -529,12 +528,12 @@ public:
       allBranchOrigins[nodeOrigin].insert(allBranchOrigins[nodeOrigin].end(),
                                           nonBranchOrigins.begin(),
                                           nonBranchOrigins.end());
-      sort(allBranchOrigins[nodeOrigin].begin(),
-           allBranchOrigins[nodeOrigin].end(), compValue);
+      std::sort(allBranchOrigins[nodeOrigin].begin(),
+                allBranchOrigins[nodeOrigin].end(), compValue);
       allBranchOriginsSize[nodeOrigin] = allBranchOrigins[nodeOrigin].size();
 
       // Get sizes of sub-branches if they are non-important
-      for(unsigned int i = 0; i < allBranchOrigins[nodeOrigin].size(); ++i) {
+      for(size_t i = 0; i < allBranchOrigins[nodeOrigin].size(); ++i) {
         ftm::idNode branchNodeOrigin = allBranchOrigins[nodeOrigin][i];
         bool isSubBranchImportant
           = tree->isImportantPair<dataType>(branchNodeOrigin, ImportantPairs);
@@ -556,7 +555,7 @@ public:
 
     // ----- Positioning of branches and avoid conflict
     for(auto leaf : leaves)
-      queueCrossing.push(leaf);
+      queueCrossing.emplace(leaf);
     while(!queueCrossing.empty()) {
       ftm::idNode node = queueCrossing.front();
       queueCrossing.pop();
@@ -567,7 +566,7 @@ public:
       // branching, tree, nodeOrigin, true);
       auto restrictedBounds = std::make_tuple(
         retVec[treeSimplexId[node] * 2], retVec[treeSimplexId[node] * 2], 0, 0);
-      for(unsigned int i = 0; i < allBranchOrigins[nodeOrigin].size(); ++i) {
+      for(size_t i = 0; i < allBranchOrigins[nodeOrigin].size(); ++i) {
         ftm::idNode branchNodeOrigin = allBranchOrigins[nodeOrigin][i];
         ftm::idNode branchNode = tree->getNode(branchNodeOrigin)->getOrigin();
 
@@ -594,10 +593,10 @@ public:
       }
 
       // Shift a branch if conflict with another one
-      for(unsigned int i = 1; i < allBranchOrigins[nodeOrigin].size(); ++i) {
+      for(size_t i = 1; i < allBranchOrigins[nodeOrigin].size(); ++i) {
         ftm::idNode branchNodeOrigin = allBranchOrigins[nodeOrigin][i];
         ftm::idNode branchNode = tree->getNode(branchNodeOrigin)->getOrigin();
-        for(unsigned int j = 0; j < i; ++j) {
+        for(size_t j = 0; j < i; ++j) {
           auto first = allBranchBounds[branchNodeOrigin];
           ftm::idNode previousBranchNodeOrigin
             = allBranchOrigins[nodeOrigin][j];
@@ -661,7 +660,7 @@ public:
       realImportantPairsGap = importantPairsGap;
     else{
       for(auto leaf : leaves)
-        queueCrossing.push(leaf);
+        queueCrossing.emplace(leaf);
       while(!queueCrossing.empty()){
         ftm::idNode node = queueCrossing.front();
         queueCrossing.pop();
@@ -682,7 +681,7 @@ public:
 
     // Shift given real gap
     for(auto leaf : leaves)
-      queueCrossing.push(leaf);
+      queueCrossing.emplace(leaf);
     while(!queueCrossing.empty()) {
       ftm::idNode node = queueCrossing.front();
       queueCrossing.pop();
@@ -693,7 +692,7 @@ public:
       if(not isBranchImportant)
         continue;
 
-      for(unsigned int i = 0; i < allBranchOrigins[nodeOrigin].size(); ++i) {
+      for(size_t i = 0; i < allBranchOrigins[nodeOrigin].size(); ++i) {
         ftm::idNode branchNodeOrigin = allBranchOrigins[nodeOrigin][i];
         bool isSubBranchImportant
           = tree->isImportantPair<dataType>(branchNodeOrigin, ImportantPairs);
@@ -758,7 +757,7 @@ public:
     float y_max = std::numeric_limits<float>::lowest();
 
     std::queue<ftm::idNode> queue;
-    queue.push(branchRoot);
+    queue.emplace(branchRoot);
     while(!queue.empty()) {
       ftm::idNode node = queue.front();
       queue.pop();
@@ -781,7 +780,7 @@ public:
       }
 
       for(auto child : tree->getChildren(node))
-        queue.push(child);
+        queue.emplace(child);
     }
 
     return std::make_tuple(x_min, x_max, y_min, y_max);
@@ -868,7 +867,7 @@ public:
     ftm::idNode branchRoot,
     float shift) {
     std::queue<ftm::idNode> queue;
-    queue.push(branchRoot);
+    queue.emplace(branchRoot);
     while(!queue.empty()) {
       ftm::idNode node = queue.front();
       queue.pop();
@@ -881,7 +880,7 @@ public:
         retVec[treeSimplexId[node] * 2] += shift;
 
       for(auto child : tree->getChildren(node))
-        queue.push(child);
+        queue.emplace(child);
     }
     allBranchBounds[branchRoot]
       = shiftBranchBoundsTuple(allBranchBounds[branchRoot], shift);
@@ -914,7 +913,7 @@ public:
     double x_max = std::numeric_limits<double>::lowest();
     double y_max = std::numeric_limits<double>::lowest();
     double z_max = std::numeric_limits<double>::lowest();
-    for(int i = 0; i < (int)allBounds.size(); ++i)
+    for(size_t i = 0; i < allBounds.size(); ++i)
       if(clusteringAssignmentT[i] == clusterID) {
         x_min = std::min(x_min, std::get<0>(allBounds[i]));
         x_max = std::max(x_max, std::get<1>(allBounds[i]));

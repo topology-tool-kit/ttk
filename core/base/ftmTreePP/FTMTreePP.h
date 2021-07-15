@@ -81,7 +81,6 @@ namespace ttk {
           if((useCustomTree
               and ((!isJt and tmpVal > minVal) or (isJt and tmpVal < minVal)))
              or (not useCustomTree and tree->compLower(vtmp, minVert))) {
-            // if(tree->compLower(vtmp, minVert)) {
             minVal = tmpVal;
             minVert = vtmp;
           }
@@ -115,7 +114,6 @@ namespace ttk {
                                         : tree->getValue<scalarType>(tmpVert);
             if((useCustomTree and tmpVal < curVal)
                or (not useCustomTree and scalars_->isLower(tmpVert, curVert))) {
-              // if(scalars_->isLower(tmpVert, curVert)) {
               pairs.emplace_back(tmpVert, curVert, curVal - tmpVal);
             } else {
               pairs.emplace_back(tmpVert, curVert, tmpVal - curVal);
@@ -171,7 +169,6 @@ void ttk::ftm::FTMTreePP::computePairs(
 
   // start at the leaves
   auto &vectLeaves = (not useCustomTree) ? tree->getLeaves() : customTreeLeaves;
-  // auto &vectLeaves = tree->getLeaves();
   for(auto nid : vectLeaves) {
     toSee.emplace(nid);
   }
