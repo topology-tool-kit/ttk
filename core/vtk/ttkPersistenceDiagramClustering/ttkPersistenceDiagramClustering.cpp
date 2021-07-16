@@ -137,9 +137,9 @@ int ttkPersistenceDiagramClustering::RequestData(
     }
   }
 
-  outputClusteredDiagrams(output_clusters, this->intermediateDiagrams_,
-                          this->inv_clustering_, this->DisplayMethod,
-                          this->Spacing, this->max_dimension_total_);
+  outputClusteredDiagrams(output_clusters, input, this->inv_clustering_,
+                          this->DisplayMethod, this->Spacing,
+                          this->max_dimension_total_);
   outputCentroids(output_centroids, this->final_centroids_, this->DisplayMethod,
                   this->Spacing, this->max_dimension_total_);
   outputMatchings(
@@ -381,6 +381,11 @@ void ttkPersistenceDiagramClustering::diagramToVTU(
   pointPers->SetNumberOfTuples(nPoints);
   output->GetPointData()->AddArray(pointPers);
 
+  vtkNew<ttkSimplexIdTypeArray> vsf{};
+  vsf->SetName(ttk::VertexScalarFieldName);
+  vsf->SetNumberOfTuples(nPoints);
+  output->GetPointData()->AddArray(vsf);
+
   // cell data
   vtkNew<vtkIntArray> pairId{};
   pairId->SetName("PairIdentifier");
@@ -401,6 +406,8 @@ void ttkPersistenceDiagramClustering::diagramToVTU(
     const auto &pair{diagram[j]};
     const auto birth{std::get<6>(pair)};
     const auto death{std::get<10>(pair)};
+    const auto birtVertId{std::get<0>(pair)};
+    const auto deathVertId{std::get<2>(pair)};
     const auto pType{std::get<5>(pair)};
     const auto birthType{std::get<1>(pair)};
     const auto deathType{std::get<3>(pair)};
@@ -421,6 +428,8 @@ void ttkPersistenceDiagramClustering::diagramToVTU(
     pointPers->SetTuple1(2 * j + 1, death - birth);
     critType->SetTuple1(2 * j + 0, static_cast<int>(birthType));
     critType->SetTuple1(2 * j + 1, static_cast<int>(deathType));
+    vsf->SetTuple1(2 * j + 0, birtVertId);
+    vsf->SetTuple1(2 * j + 1, deathVertId);
 
     points->SetPoint(2 * j + 0, birth, birth, 0);
     points->SetPoint(2 * j + 1, birth, death, 0);
@@ -442,15 +451,15 @@ void ttkPersistenceDiagramClustering::diagramToVTU(
     2 * (minmax_birth.second - diagram.begin()),
   };
   output->InsertNextCell(VTK_LINE, 2, ids.data());
-  pairId->SetTuple1(diagram.size(), diagram.size());
+  pairId->SetTuple1(diagram.size(), -1);
   pairType->SetTuple1(diagram.size(), -1);
-  // use the max persistence of all input diagrams...
-  pairPers->SetTuple1(diagram.size(), max_persistence);
+  // use twice the max persistence of all input diagrams...
+  pairPers->SetTuple1(diagram.size(), 2.0 * max_persistence);
 }
 
 void ttkPersistenceDiagramClustering::outputClusteredDiagrams(
   vtkMultiBlockDataSet *output,
-  const std::vector<diagramType> &diags,
+  const std::vector<vtkUnstructuredGrid *> &diags,
   const std::vector<int> &inv_clustering,
   const DISPLAY dm,
   const double spacing,
@@ -479,14 +488,34 @@ void ttkPersistenceDiagramClustering::outputClusteredDiagrams(
 
   for(size_t i = 0; i < diags.size(); ++i) {
     vtkNew<vtkUnstructuredGrid> vtu{};
-    this->diagramToVTU(
-      vtu, diags[i], this->inv_clustering_[i], this->max_dimension_total_);
+    vtu->ShallowCopy(diags[i]);
 
     vtkNew<vtkIntArray> diagId{};
     diagId->SetName("DiagramID");
     diagId->SetNumberOfTuples(vtu->GetNumberOfPoints());
     diagId->Fill(i);
     vtu->GetPointData()->AddArray(diagId);
+
+    vtkNew<vtkIntArray> clusterId{};
+    clusterId->SetName("ClusterID");
+    clusterId->SetNumberOfComponents(1);
+    clusterId->SetNumberOfTuples(vtu->GetNumberOfPoints());
+    clusterId->Fill(inv_clustering[i]);
+    vtu->GetPointData()->AddArray(clusterId);
+
+    // add Persistence data array on vertices
+    vtkNew<vtkDoubleArray> pointPers{};
+    pointPers->SetName("Persistence");
+    pointPers->SetNumberOfTuples(vtu->GetNumberOfPoints());
+    vtu->GetPointData()->AddArray(pointPers);
+
+    // diagonal uses two existing points
+    for(int j = 0; j < vtu->GetNumberOfCells() - 1; ++j) {
+      const auto persArray = vtu->GetCellData()->GetArray("Persistence");
+      const auto pers = persArray->GetTuple1(j);
+      pointPers->SetTuple1(2 * j + 0, pers);
+      pointPers->SetTuple1(2 * j + 1, pers);
+    }
 
     if(dm == DISPLAY::MATCHINGS && spacing > 0) {
       // translate diagrams along the Z axis

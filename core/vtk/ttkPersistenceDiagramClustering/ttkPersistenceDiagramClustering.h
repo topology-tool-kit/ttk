@@ -153,7 +153,7 @@ protected:
   void Modified() override;
 
   void outputClusteredDiagrams(vtkMultiBlockDataSet *output,
-                               const std::vector<diagramType> &diags,
+                               const std::vector<vtkUnstructuredGrid *> &diags,
                                const std::vector<int> &inv_clustering,
                                const DISPLAY dm,
                                const double spacing,
