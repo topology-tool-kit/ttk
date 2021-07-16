@@ -8,6 +8,7 @@
 #include <vtkPointData.h>
 #include <vtkPointSet.h>
 #include <vtkThreshold.h>
+#include <vtkUnsignedCharArray.h>
 #include <vtkUnstructuredGrid.h>
 
 #include <ttkMacros.h>
@@ -51,8 +52,9 @@ int ttkProjectionFromField::projectDiagramInsideDomain(
   // use vtkThreshold to remove diagonal (PairIdentifier == -1)
   vtkNew<vtkThreshold> threshold{};
   threshold->SetInputDataObject(0, inputDiagram);
-  threshold->SetInputArrayToProcess(
-    0, 0, 0, vtkDataObject::FIELD_ASSOCIATION_CELLS, "PairIdentifier");
+  threshold->SetInputArrayToProcess(0, 0, 0,
+                                    vtkDataObject::FIELD_ASSOCIATION_CELLS,
+                                    ttk::PersistencePairIdentifierName);
   threshold->ThresholdByUpper(0);
   threshold->Update();
 
@@ -60,39 +62,14 @@ int ttkProjectionFromField::projectDiagramInsideDomain(
   auto diagonalLessData = diagonalLess->GetPointData();
 
   const auto critCoordinates = vtkFloatArray::SafeDownCast(
-    diagonalLessData->GetAbstractArray("Coordinates"));
+    diagonalLessData->GetAbstractArray(ttk::PersistenceCoordinatesName));
 
   // set new points from Coordinates array
   vtkNew<vtkFloatArray> coords{};
   coords->DeepCopy(critCoordinates);
   coords->SetName("Points");
   diagonalLess->GetPoints()->SetData(coords);
-  diagonalLessData->RemoveArray("Coordinates");
-
-  const auto inputPoints = inputDiagram->GetPoints();
-  const auto nPoints = inputDiagram->GetNumberOfPoints();
-
-  // generate a birth and death arrays from diagram points coordinates
-  vtkNew<vtkFloatArray> births{}, deaths{};
-  births->SetNumberOfComponents(1);
-  births->SetName("Birth");
-  births->SetNumberOfTuples(nPoints);
-  deaths->SetNumberOfComponents(1);
-  deaths->SetName("Death");
-  deaths->SetNumberOfTuples(nPoints);
-
-#ifdef TTK_ENABLE_OPENMP
-#pragma omp parallel for num_threads(this->threadNumber_)
-#endif // TTK_ENABLE_OPENMP
-  for(int i = 0; i < nPoints; ++i) {
-    std::array<double, 3> pt{};
-    inputPoints->GetPoint(i, pt.data());
-    births->SetTuple1(i, pt[0]);
-    deaths->SetTuple1(i, pt[1]);
-  }
-
-  diagonalLessData->AddArray(births);
-  diagonalLessData->AddArray(deaths);
+  diagonalLessData->RemoveArray(ttk::PersistenceCoordinatesName);
 
   outputDiagram->ShallowCopy(diagonalLess);
 
@@ -120,20 +97,29 @@ int ttkProjectionFromField::projectDiagramIn2D(
 
   vtkNew<vtkFloatArray> coords{};
   coords->DeepCopy(inputDiagram->GetPoints()->GetData());
-  coords->SetName("Coordinates");
+  coords->SetName(ttk::PersistenceCoordinatesName);
   pointData->AddArray(coords);
 
   vtkNew<vtkPoints> points{};
   const auto nPoints = inputDiagram->GetNumberOfPoints();
   points->SetNumberOfPoints(nPoints);
+
 #ifdef TTK_ENABLE_OPENMP
 #pragma omp parallel for num_threads(this->threadNumber_)
 #endif // TTK_ENABLE_OPENMP
-  for(int i = 0; i < nPoints; ++i) {
-    std::array<float, 3> pt{};
-    pt[0] = births[i];
-    pt[1] = deaths[i];
-    points->SetPoint(i, pt.data());
+  for(int i = 0; i < nPoints / 2; ++i) {
+    std::array<float, 3> pt0{
+      static_cast<float>(births[i]),
+      static_cast<float>(births[i]),
+      0,
+    };
+    std::array<float, 3> pt1{
+      static_cast<float>(births[i]),
+      static_cast<float>(deaths[i]),
+      0,
+    };
+    points->SetPoint(2 * i + 0, pt0.data());
+    points->SetPoint(2 * i + 1, pt1.data());
   }
 
   outputDiagram->SetPoints(points);
@@ -144,20 +130,23 @@ int ttkProjectionFromField::projectDiagramIn2D(
 
   // add diagonal data
   auto cellData = outputDiagram->GetCellData();
-  auto pairIdentifierScalars
-    = vtkIntArray::SafeDownCast(cellData->GetArray("PairIdentifier"));
-  auto extremumIndexScalars
-    = vtkIntArray::SafeDownCast(cellData->GetArray("PairType"));
-  auto persistenceScalars
-    = vtkDoubleArray::SafeDownCast(cellData->GetArray("Persistence"));
+  auto pairIdentifierScalars = vtkIntArray::SafeDownCast(
+    cellData->GetArray(ttk::PersistencePairIdentifierName));
+  auto extremumIndexScalars = vtkIntArray::SafeDownCast(
+    cellData->GetArray(ttk::PersistencePairTypeName));
+  auto persistenceScalars = cellData->GetArray(ttk::PersistenceName);
+  auto birthScalars = cellData->GetArray(ttk::PersistenceBirthName);
+  auto deathScalars = cellData->GetArray(ttk::PersistenceDeathName);
+  auto isFinite = cellData->GetArray(ttk::PersistenceIsFinite);
+
   pairIdentifierScalars->InsertNextTuple1(-1);
   extremumIndexScalars->InsertNextTuple1(-1);
+  isFinite->InsertNextTuple1(0);
   // 2 * persistence of min-max pair
   persistenceScalars->InsertNextTuple1(2 * persistenceScalars->GetTuple1(0));
-
-  // remove birth and death arrays
-  pointData->RemoveArray("Birth");
-  pointData->RemoveArray("Death");
+  // birth == death == 0
+  birthScalars->InsertNextTuple1(0);
+  deathScalars->InsertNextTuple1(0);
 
   // don't forget to forward the Field Data
   outputDiagram->GetFieldData()->ShallowCopy(inputDiagram->GetFieldData());
@@ -173,23 +162,17 @@ int ttkProjectionFromField::projectPersistenceDiagram(
   vtkUnstructuredGrid *const outputDiagram) {
 
   auto pointData = inputDiagram->GetPointData();
+  auto cellData = inputDiagram->GetCellData();
 
   // ensure we have the right arrays
-  const auto critCoordinates
-    = vtkFloatArray::SafeDownCast(pointData->GetAbstractArray("Coordinates"));
-  const auto inputBirths
-    = vtkDataArray::SafeDownCast(pointData->GetAbstractArray("Birth"));
-  const auto inputDeaths
-    = vtkDataArray::SafeDownCast(pointData->GetAbstractArray("Death"));
+  const auto critCoordinates = vtkFloatArray::SafeDownCast(
+    pointData->GetAbstractArray(ttk::PersistenceCoordinatesName));
+  const auto inputBirths = vtkDataArray::SafeDownCast(
+    cellData->GetAbstractArray(ttk::PersistenceBirthName));
+  const auto inputDeaths = vtkDataArray::SafeDownCast(
+    cellData->GetAbstractArray(ttk::PersistenceDeathName));
 
-  if(critCoordinates == nullptr && inputBirths == nullptr
-     && inputDeaths == nullptr) {
-    this->printErr("Missing either `Coordinates' or `Birth' and `Death' "
-                   "vtkPointData arrays");
-    return 0;
-  }
-
-  bool embed = inputBirths != nullptr && inputDeaths != nullptr;
+  bool embed = critCoordinates == nullptr;
 
   if(embed) {
     switch(inputBirths->GetDataType()) {
