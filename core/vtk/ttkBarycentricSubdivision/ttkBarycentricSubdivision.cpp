@@ -173,10 +173,14 @@ int ttkBarycentricSubdivision::RequestData(vtkInformation *ttkNotUsed(request),
   this->preconditionTriangulation(triangulation);
 
   // first iteration: generate the new triangulation
-  this->execute(*triangulation, triangulationSubdivision);
+  int ret = this->execute(*triangulation, triangulationSubdivision);
+  if(ret != 0) {
+    this->printErr("Could not subdivide input mesh");
+    return 0;
+  }
 
   // first iteration: interpolate input scalar fields
-  int ret = InterpolateScalarFields(input, output, *triangulation);
+  ret = InterpolateScalarFields(input, output, *triangulation);
   if(ret != 0) {
     this->printErr("Error interpolating input data array(s)");
     return 0;
